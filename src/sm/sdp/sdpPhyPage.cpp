@@ -16,31 +16,31 @@
  
 
 /***********************************************************************
- * $Id: sdpPhyPage.cpp 84847 2019-01-31 05:18:28Z jiwon.kim $
+ * $Id: sdpPhyPage.cpp 87929 2020-07-03 00:38:42Z et16 $
  *
  * Description :
  *
- * # physical pageì˜ ê¸°ëŠ¥ êµ¬í˜„
+ * # physical pageÀÇ ±â´É ±¸Çö
  *
- * pageì˜ physical headerë¥¼ ê´€ë¦¬í•œë‹¤.
- * ë˜í•œ ìš”ì²­ì— ë”°ë¼ keymapì„ ìƒì„±í•˜ê³  ì‚­ì œí•˜ë©°
- * free offsetê³¼ free sizeë¥¼ ê´€ë¦¬í•œë‹¤.
+ * pageÀÇ physical header¸¦ °ü¸®ÇÑ´Ù.
+ * ¶ÇÇÑ ¿äÃ»¿¡ µû¶ó keymapÀ» »ı¼ºÇÏ°í »èÁ¦ÇÏ¸ç
+ * free offset°ú free size¸¦ °ü¸®ÇÑ´Ù.
  *
- * sdpPhysicalPageì—ì„œ  free offsetìœ¼ë¡œ ì œê³µë˜ëŠ” ê¸°ëŠ¥ì„
- * sdpPageListì—ì„œëŠ” last slotì˜ ê´€ë¦¬ë¡œ ì‚¬ìš©í•˜ê³ ,
- * ì´ì— ì¶”ê°€í•˜ì—¬ í˜ì´ì§€ì˜ freeì¸ ê³µê°„ì„ ìœ„í•œ ê´€ë¦¬ë¥¼ ì œê³µí•  ê²ƒì´ë‹¤.
+ * sdpPhysicalPage¿¡¼­  free offsetÀ¸·Î Á¦°øµÇ´Â ±â´ÉÀ»
+ * sdpPageList¿¡¼­´Â last slotÀÇ °ü¸®·Î »ç¿ëÇÏ°í,
+ * ÀÌ¿¡ Ãß°¡ÇÏ¿© ÆäÀÌÁöÀÇ freeÀÎ °ø°£À» À§ÇÑ °ü¸®¸¦ Á¦°øÇÒ °ÍÀÌ´Ù.
  *
- * ì°¸ì¡° : sdcRecord.cpp
+ * ÂüÁ¶ : sdcRecord.cpp
  *
- * # API ì›ì¹™
- * - í•¨ìˆ˜ ì¸ìë¡œ ë°›ëŠ” UChar * page ptrëŠ” í˜ì´ì§€ì˜ ì„ì˜ì˜ ì‹œì‘ì ì´ë‹¤.
- * - í•¨ìˆ˜ ì¸ìë¡œ ë°›ëŠ” UChar * start ptrëŠ” í˜ì´ì§€ì˜ ì‹œì‘ì§€ì ì…ë‹ˆë‹¤.
- * - page ptrì„ ì¸ìë¡œ ë°›ì„ ë•ŒëŠ” ë‚´ë¶€ì—ì„œëŠ” page ì‹œì‘ì ì„ êµ¬í•´ì•¼ í•œë‹¤.
- * - page ptrë¥¼ ì¸ìë¡œ ë°›ëŠ” ì´ìœ ëŠ” layerê°„ í˜¸ì¶œë•Œë¬¸ì´ë‹¤.
- * - ìƒìœ„ layerí˜¹ì€ ê°™ì€ layerì—ì„œ í˜¸ì¶œë˜ëŠ” ëª¨ë“  í•¨ìˆ˜ëŠ” sdpPhyPageHdr*ë¥¼
- *   ì¸ìë¡œ ë°›ìœ¼ë©°, ì´ë¥¼ í˜¸ì¶œí•˜ëŠ” ìª½ì—ì„œ ìºìŠ¤íŒ…í•˜ì—¬ ë„˜ê²¨ì•¼ í•œë‹¤.
- * - getHdr í•¨ìˆ˜ë¡œ  sdpPhyPageHdrë¥¼ êµ¬í•  ìˆ˜ ìˆë‹¤.
- * - getPageStart í•¨ìˆ˜ë¡œ pageì˜ ì‹œì‘ì§€ì ì„ êµ¬í•  ìˆ˜ ìˆë‹¤.
+ * # API ¿øÄ¢
+ * - ÇÔ¼ö ÀÎÀÚ·Î ¹Ş´Â UChar * page ptr´Â ÆäÀÌÁöÀÇ ÀÓÀÇÀÇ ½ÃÀÛÁ¡ÀÌ´Ù.
+ * - ÇÔ¼ö ÀÎÀÚ·Î ¹Ş´Â UChar * start ptr´Â ÆäÀÌÁöÀÇ ½ÃÀÛÁöÁ¡ÀÔ´Ï´Ù.
+ * - page ptrÀ» ÀÎÀÚ·Î ¹ŞÀ» ¶§´Â ³»ºÎ¿¡¼­´Â page ½ÃÀÛÁ¡À» ±¸ÇØ¾ß ÇÑ´Ù.
+ * - page ptr¸¦ ÀÎÀÚ·Î ¹Ş´Â ÀÌÀ¯´Â layer°£ È£Ãâ¶§¹®ÀÌ´Ù.
+ * - »óÀ§ layerÈ¤Àº °°Àº layer¿¡¼­ È£ÃâµÇ´Â ¸ğµç ÇÔ¼ö´Â sdpPhyPageHdr*¸¦
+ *   ÀÎÀÚ·Î ¹ŞÀ¸¸ç, ÀÌ¸¦ È£ÃâÇÏ´Â ÂÊ¿¡¼­ Ä³½ºÆÃÇÏ¿© ³Ñ°Ü¾ß ÇÑ´Ù.
+ * - getHdr ÇÔ¼ö·Î  sdpPhyPageHdr¸¦ ±¸ÇÒ ¼ö ÀÖ´Ù.
+ * - getPageStart ÇÔ¼ö·Î pageÀÇ ½ÃÀÛÁöÁ¡À» ±¸ÇÒ ¼ö ÀÖ´Ù.
  *
  **********************************************************************/
 
@@ -60,7 +60,7 @@
 /***********************************************************************
  *
  * Description :
- *  physical pageë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ *  physical page¸¦ ÃÊ±âÈ­ÇÑ´Ù.
  *
  *  aPageHdr    - [IN] physical page header
  *  aPageID     - [IN] page id
@@ -85,7 +85,7 @@ IDE_RC sdpPhyPage::initialize( sdpPhyPageHdr  *aPageHdr,
 
     sFrameHdr  = *((sdbFrameHdr*)aPageHdr);
 
-    // XXX: Indexìª½ì— ë¬¸ì œê°€ ìˆëŠ”ê²ƒ ê°™ìŠµë‹ˆë‹¤. ì¶”í›„ì— ê²€ì¦ì´ í•„ìš”í•©ë‹ˆë‹¤.
+    // XXX: IndexÂÊ¿¡ ¹®Á¦°¡ ÀÖ´Â°Í °°½À´Ï´Ù. ÃßÈÄ¿¡ °ËÁõÀÌ ÇÊ¿äÇÕ´Ï´Ù.
     idlOS::memset( (void *)aPageHdr, SDP_INIT_PAGE_VALUE, SD_PAGE_SIZE );
 
     sPageFooter = (sdpPageFooter*) getPageFooterStartPtr( (UChar*)aPageHdr );
@@ -111,9 +111,9 @@ IDE_RC sdpPhyPage::initialize( sdpPhyPageHdr  *aPageHdr,
     aPageHdr->mPageState     = aPageState;
     aPageHdr->mIsConsistent  = SDP_PAGE_CONSISTENT;
 
-    // ì´í›„ ë¶€ë¶„ì€ êµ³ì´ ì´ˆê¸°í™”í•  í•„ìš” ì—†ìœ¼ë‚˜
-    // SDP_INIT_PAGE_VALUE ê°’ì´ 0ì´ ì•„ë‹ ê²½ìš°ì—
-    // ë°˜ë“œì‹œ í•„ìš”í•˜ë‹¤. í˜„ì¬ëŠ” 0ì´ë¯€ë¡œ ë³„ í•„ìš”ì—†ëŠ” ë¶€ë¶„ì„.
+    // ÀÌÈÄ ºÎºĞÀº ±»ÀÌ ÃÊ±âÈ­ÇÒ ÇÊ¿ä ¾øÀ¸³ª
+    // SDP_INIT_PAGE_VALUE °ªÀÌ 0ÀÌ ¾Æ´Ò °æ¿ì¿¡
+    // ¹İµå½Ã ÇÊ¿äÇÏ´Ù. ÇöÀç´Â 0ÀÌ¹Ç·Î º° ÇÊ¿ä¾ø´Â ºÎºĞÀÓ.
     aPageHdr->mFrameHdr.mCheckSum   = 0;
     SM_LSN_INIT( aPageHdr->mFrameHdr.mPageLSN );
     aPageHdr->mFrameHdr.mIndexSMONo = 0;
@@ -144,27 +144,27 @@ IDE_RC sdpPhyPage::initialize( sdpPhyPageHdr  *aPageHdr,
 /* ------------------------------------------------
  * Description :
  *
- * page í• ë‹¹ì‹œ physical header ì´ˆê¸°í™” ë° ë¡œê¹…
+ * page ÇÒ´ç½Ã physical header ÃÊ±âÈ­ ¹× ·Î±ë
  *
- * - í˜ì´ì§€ë¥¼ SM_PAGE_SIZEë§Œí¼ 0x00ë¡œ ì´ˆê¸°í™”í•œë‹¤.
- * - í˜ì´ì§€ free offsetì„ physical headerì™€ logical header
- *   í›„ì˜ ìœ„ì¹˜ì— set
+ * - ÆäÀÌÁö¸¦ SM_PAGE_SIZE¸¸Å­ 0x00·Î ÃÊ±âÈ­ÇÑ´Ù.
+ * - ÆäÀÌÁö free offsetÀ» physical header¿Í logical header
+ *   ÈÄÀÇ À§Ä¡¿¡ set
  *
- * - ë‚¨ì€ ê³µê°„ì„ ê³„ì‚°í•˜ì—¬ free sizeë¡œ setí•œë‹¤.
+ * - ³²Àº °ø°£À» °è»êÇÏ¿© free size·Î setÇÑ´Ù.
  *                      -> sdpPhysicalPage::calcFreeSize
  *                      -> setFreeSize
  *
- * - í˜ì´ì§€ stateë¥¼ INSERTABLEë¡œ í•œë‹¤.
- * - ê¸°íƒ€ ë©¤ë²„ ì…‹
- * - SDR_INIT_FILE_PAGE íƒ€ì… ë¡œê¹…
+ * - ÆäÀÌÁö state¸¦ INSERTABLE·Î ÇÑ´Ù.
+ * - ±âÅ¸ ¸â¹ö ¼Â
+ * - SDR_INIT_FILE_PAGE Å¸ÀÔ ·Î±ë
  *
  * - extent RID, page ID
- *   ì´ ê°’ì€ ë°˜ë“œì‹œ write ë˜ì–´ì•¼ í•˜ê³ , logging ë˜ì–´ì•¼ í•œë‹¤.
- *   page idì™€ extent ridëŠ” page ptrë¡œë¶€í„° space , page idë¥¼ êµ¬í•  ë•Œ í•„ìš”í•˜ë‹¤.
- *   extent RIDëŠ” mtx ë¡œê¹…ì‹œ ë°ì´íƒ€ë¡œ writeëœë‹¤.
+ *   ÀÌ °ªÀº ¹İµå½Ã write µÇ¾î¾ß ÇÏ°í, logging µÇ¾î¾ß ÇÑ´Ù.
+ *   page id¿Í extent rid´Â page ptr·ÎºÎÅÍ space , page id¸¦ ±¸ÇÒ ¶§ ÇÊ¿äÇÏ´Ù.
+ *   extent RID´Â mtx ·Î±ë½Ã µ¥ÀÌÅ¸·Î writeµÈ´Ù.
  *
- * ì´ í•¨ìˆ˜ëŠ” sdpSegment::allocPageì—ì„œ í˜¸ì¶œë˜ë©°
- * pageë¥¼ createí•˜ê³ ì í•˜ëŠ” í•¨ìˆ˜ëŠ” ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê²Œ ëœë‹¤.
+ * ÀÌ ÇÔ¼ö´Â sdpSegment::allocPage¿¡¼­ È£ÃâµÇ¸ç
+ * page¸¦ createÇÏ°íÀÚ ÇÏ´Â ÇÔ¼ö´Â ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ°Ô µÈ´Ù.
  *
  * ----------------------------------------------*/
 IDE_RC sdpPhyPage::logAndInit( sdpPhyPageHdr *aPageHdr,
@@ -212,7 +212,7 @@ IDE_RC sdpPhyPage::logAndInit( sdpPhyPageHdr *aPageHdr,
     return IDE_FAILURE;
 }
 
-/* í•œë²ˆì— Formatëœ í˜ì´ì§€ë¥¼ í•„ìš”í•œ í˜ì´ì§€ íƒ€ì…ìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤. */
+/* ÇÑ¹ø¿¡ FormatµÈ ÆäÀÌÁö¸¦ ÇÊ¿äÇÑ ÆäÀÌÁö Å¸ÀÔÀ¸·Î ÃÊ±âÈ­ÇÑ´Ù. */
 IDE_RC sdpPhyPage::setLinkState( sdpPhyPageHdr    * aPageHdr,
                                  sdpPageListState   aLinkState,
                                  sdrMtx           * aMtx )
@@ -246,7 +246,7 @@ IDE_RC sdpPhyPage::create( idvSQL        *aStatistics,
 
     IDE_ASSERT( aPagePtr != NULL );
 
-    /* Tablespaceì˜ 0ë²ˆ meta page ìƒì„± */
+    /* TablespaceÀÇ 0¹ø meta page »ı¼º */
     IDE_TEST( sdbBufferMgr::createPage( aStatistics,
                                         aSpaceID,
                                         aPageID,
@@ -257,7 +257,7 @@ IDE_RC sdpPhyPage::create( idvSQL        *aStatistics,
 
     sPageHdr = getHdr( sPagePtr );
 
-    /* ìƒì„±ëœ pageì˜ physical header ì´ˆê¸°í™” */
+    /* »ı¼ºµÈ pageÀÇ physical header ÃÊ±âÈ­ */
     IDE_TEST( sdpPhyPage::logAndInit( sPageHdr,
                                       aPageID,
                                       aParentInfo,
@@ -303,7 +303,7 @@ IDE_RC sdpPhyPage::create4DPath( idvSQL        *aStatistics,
 
     IDE_ASSERT( aPagePtr != NULL );
 
-    /* Tablespaceì˜ 0ë²ˆ meta page ìƒì„± */
+    /* TablespaceÀÇ 0¹ø meta page »ı¼º */
     IDE_TEST( sdbDPathBufferMgr::createPage( aStatistics,
                                              aTrans,
                                              aSpaceID,
@@ -314,7 +314,7 @@ IDE_RC sdpPhyPage::create4DPath( idvSQL        *aStatistics,
 
     sPageHdr = getHdr( sPagePtr );
 
-    /* ìƒì„±ëœ pageì˜ physical header ì´ˆê¸°í™” */
+    /* »ı¼ºµÈ pageÀÇ physical header ÃÊ±âÈ­ */
     IDE_TEST( sdpPhyPage::initialize( sPageHdr,
                                       aPageID,
                                       aParentInfo,
@@ -340,19 +340,19 @@ IDE_RC sdpPhyPage::create4DPath( idvSQL        *aStatistics,
  *
  * Description :
  *
- *  í˜ì´ì§€ë¥¼ ì´ˆê¸°í™” í•œë‹¤.
- *  initializeì™€ ê±°ì˜ ë™ì¼í•˜ë‚˜ physical, logical header
- *  ì˜ ë°ì´íƒ€ë¥¼ ê·¸ëŒ€ë¡œ ë‘ì–´ì•¼ í•œë‹¤.
+ *  ÆäÀÌÁö¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+ *  initialize¿Í °ÅÀÇ µ¿ÀÏÇÏ³ª physical, logical header
+ *  ÀÇ µ¥ÀÌÅ¸¸¦ ±×´ë·Î µÎ¾î¾ß ÇÑ´Ù.
  *
- *  - logical header ì´í›„ì˜ ë¶€ë¶„ì„ ì „ë¶€ ì´ˆê¸°í™” í•œë‹¤.
- *  - keyslotì„ ì „ë¶€ ì‚­ì œí•œë‹¤.
- *  - free offset, free sizeë¥¼ initialize ìƒíƒœë¡œ set
+ *  - logical header ÀÌÈÄÀÇ ºÎºĞÀ» ÀüºÎ ÃÊ±âÈ­ ÇÑ´Ù.
+ *  - keyslotÀ» ÀüºÎ »èÁ¦ÇÑ´Ù.
+ *  - free offset, free size¸¦ initialize »óÅÂ·Î set
  *
- *  ì´ í•¨ìˆ˜ëŠ” index SMOê³¼ì •ì—ì„œ ë°œìƒí•œë‹¤.
+ *  ÀÌ ÇÔ¼ö´Â index SMO°úÁ¤¿¡¼­ ¹ß»ıÇÑ´Ù.
  *
  *  aPageHdr        - [IN] physical page header
  *  aLogicalHdrSize - [IN] logical header size
- *  aMtx            - [IN] mini íŠ¸ëœì­ì…˜
+ *  aMtx            - [IN] mini Æ®·£Àè¼Ç
  *
  **********************************************************************/
 IDE_RC sdpPhyPage::reset(
@@ -396,12 +396,12 @@ IDE_RC sdpPhyPage::reset(
 /***********************************************************************
  *
  * Description :
- *  logical headerë¥¼ ì´ˆê¸°í™”í•œë‹¤.(with logging)
+ *  logical header¸¦ ÃÊ±âÈ­ÇÑ´Ù.(with logging)
  *
  *  aPageHdr            - [IN]  physical page header
  *  aSize               - [IN]  logical header size
- *  aMtx                - [IN]  mini íŠ¸ëœì­ì…˜
- *  aLogicalHdrStartPtr - [OUT] logical header ì‹œì‘ìœ„ì¹˜
+ *  aMtx                - [IN]  mini Æ®·£Àè¼Ç
+ *  aLogicalHdrStartPtr - [OUT] logical header ½ÃÀÛÀ§Ä¡
  *
  **********************************************************************/
 IDE_RC  sdpPhyPage::logAndInitLogicalHdr(
@@ -436,7 +436,7 @@ IDE_RC  sdpPhyPage::logAndInitLogicalHdr(
 /***********************************************************************
  *
  * Description :
- *  logical headerë¥¼ ì´ˆê¸°í™”í•œë‹¤.(no logging)
+ *  logical header¸¦ ÃÊ±âÈ­ÇÑ´Ù.(no logging)
  *
  *  aPageHdr - [IN]  physical page header
  *  aSize    - [IN]  logical header size
@@ -465,10 +465,10 @@ UChar* sdpPhyPage::initLogicalHdr( sdpPhyPageHdr  *aPageHdr,
 
 /***********************************************************************
  *
- * Description : Change Transaction Layer ì´ˆê¸°í™”
+ * Description : Change Transaction Layer ÃÊ±âÈ­
  *
- * í˜ì´ì§€ì˜ Chained Transaction Layerë¥¼ ì´ˆê¸°í™”í•˜ê³ ,
- * sdpPhyPageHdrì˜ FreeSize ë° ê°ì¢… Offsetì„ ì„¤ì •í•œë‹¤.
+ * ÆäÀÌÁöÀÇ Chained Transaction Layer¸¦ ÃÊ±âÈ­ÇÏ°í,
+ * sdpPhyPageHdrÀÇ FreeSize ¹× °¢Á¾ OffsetÀ» ¼³Á¤ÇÑ´Ù.
  *
  ***********************************************************************/
 void sdpPhyPage::initCTL( sdpPhyPageHdr   * aPageHdr,
@@ -497,11 +497,11 @@ void sdpPhyPage::initCTL( sdpPhyPageHdr   * aPageHdr,
 
 /***********************************************************************
  *
- * Description : Base Touched Transaction Layer í™•ì¥
+ * Description : Base Touched Transaction Layer È®Àå
  *
- * CTLì€ ìë™í™•ì¥ì‹œ Available Free Sizeë§Œì„ ê³ ë ¤í•œë‹¤.
- * ìë™í™•ì¥ìœ¼ë¡œ ì¸í•´ì„œ SlotDirEntryê°€ ì•„ë˜ë¡œ ì´ë™í•˜ë©°,
- * íŒ¨ì´ì§€ Compactionì´ ë°œìƒí• ìˆ˜ë„ ìˆë‹¤.
+ * CTLÀº ÀÚµ¿È®Àå½Ã Available Free Size¸¸À» °í·ÁÇÑ´Ù.
+ * ÀÚµ¿È®ÀåÀ¸·Î ÀÎÇØ¼­ SlotDirEntry°¡ ¾Æ·¡·Î ÀÌµ¿ÇÏ¸ç,
+ * ÆĞÀÌÁö CompactionÀÌ ¹ß»ıÇÒ¼öµµ ÀÖ´Ù.
  *
  ***********************************************************************/
 IDE_RC sdpPhyPage::extendCTL( sdpPhyPageHdr * aPageHdr,
@@ -547,8 +547,8 @@ IDE_RC sdpPhyPage::extendCTL( sdpPhyPageHdr * aPageHdr,
     aPageHdr->mTotalFreeSize        -= sExtendSize;
     aPageHdr->mAvailableFreeSize    -= sExtendSize;
 
-    /* memmove í•˜ê¸°ì „ ì‹œì‘ SlotDirPtrì´ í™•ì¥í›„ í™•ì¥ëœ CTSì˜
-     * ì‹œì‘ Ptr ê°€ëœë‹¤.*/
+    /* memmove ÇÏ±âÀü ½ÃÀÛ SlotDirPtrÀÌ È®ÀåÈÄ È®ÀåµÈ CTSÀÇ
+     * ½ÃÀÛ Ptr °¡µÈ´Ù.*/
     sTrySuccess      = ID_TRUE;
     sNewSlotStartPtr = sSlotDirPtr;
 
@@ -568,7 +568,7 @@ IDE_RC sdpPhyPage::extendCTL( sdpPhyPageHdr * aPageHdr,
 /***********************************************************************
  *
  * Description :
- *  slot directory ì „ì²´ë¥¼ ì•„ë˜ë¡œ ì´ë™ì‹œí‚¨ë‹¤.
+ *  slot directory ÀüÃ¼¸¦ ¾Æ·¡·Î ÀÌµ¿½ÃÅ²´Ù.
  *
  *  aPhyPageHdr - [IN] physical page header
  *  aShiftSize  - [IN] shift size
@@ -589,11 +589,11 @@ void sdpPhyPage::shiftSlotDirToBottom(sdpPhyPageHdr     *aPageHdr,
 
 /******************************************************************************
  * Description :
- *  slot í• ë‹¹ì´ ê°€ëŠ¥í•œì§€ ì—¬ë¶€ë¥¼ ì•Œë ¤ì¤€ë‹¤.
+ *  slot ÇÒ´çÀÌ °¡´ÉÇÑÁö ¿©ºÎ¸¦ ¾Ë·ÁÁØ´Ù.
  *
  *  aPageHdr            - [IN] physical page header
- *  aSlotSize           - [IN] ì €ì¥í•˜ë ¤ëŠ” slotì˜ í¬ê¸°
- *  aNeedAllocSlotEntry - [IN] slot entry í• ë‹¹ì´ í•„ìš”í•œì§€ ì—¬ë¶€
+ *  aSlotSize           - [IN] ÀúÀåÇÏ·Á´Â slotÀÇ Å©±â
+ *  aNeedAllocSlotEntry - [IN] slot entry ÇÒ´çÀÌ ÇÊ¿äÇÑÁö ¿©ºÎ
  *  aSlotAlignValue     - [IN] align value
  *
  ******************************************************************************/
@@ -624,16 +624,16 @@ idBool sdpPhyPage::canAllocSlot( sdpPhyPageHdr *aPageHdr,
 
             sMinRowPieceSize = smLayerCallback::getMinRowPieceSize();
             /* BUG-25395
-             * [SD] alloc slot, free slotì‹œì—
-             * row chainingì„ ìœ„í•œ ê³µê°„(6byte)ë¥¼ ê³„ì‚°í•´ì•¼ í•©ë‹ˆë‹¤. */
+             * [SD] alloc slot, free slot½Ã¿¡
+             * row chainingÀ» À§ÇÑ °ø°£(6byte)¸¦ °è»êÇØ¾ß ÇÕ´Ï´Ù. */
             if ( aSlotSize < sMinRowPieceSize )
             {
-                /* slotì˜ í¬ê¸°ê°€ minimum rowpiece sizeë³´ë‹¤ ì‘ì„ ê²½ìš°,
-                 * row migrationì´ ë°œìƒí–ˆì„ë•Œ í˜ì´ì§€ì— ê°€ìš©ê³µê°„ì´ ë¶€ì¡±í•˜ë©´
-                 * slot ì¬í• ë‹¹ì— ì‹¤íŒ¨í•˜ì—¬ ì„œë²„ê°€ ì‚¬ë§í•œë‹¤.
-                 * ê·¸ë˜ì„œ ì´ëŸ° ê²½ìš°ì— ëŒ€ë¹„í•˜ì—¬ alloc slotì‹œì—
-                 * (min rowpiece size - slot size)ë§Œí¼ì˜ ê³µê°„ì„
-                 * ì¶”ê°€ë¡œ ë” í™•ë³´í•´ë‘”ë‹¤.
+                /* slotÀÇ Å©±â°¡ minimum rowpiece sizeº¸´Ù ÀÛÀ» °æ¿ì,
+                 * row migrationÀÌ ¹ß»ıÇßÀ»¶§ ÆäÀÌÁö¿¡ °¡¿ë°ø°£ÀÌ ºÎÁ·ÇÏ¸é
+                 * slot ÀçÇÒ´ç¿¡ ½ÇÆĞÇÏ¿© ¼­¹ö°¡ »ç¸ÁÇÑ´Ù.
+                 * ±×·¡¼­ ÀÌ·± °æ¿ì¿¡ ´ëºñÇÏ¿© alloc slot½Ã¿¡
+                 * (min rowpiece size - slot size)¸¸Å­ÀÇ °ø°£À»
+                 * Ãß°¡·Î ´õ È®º¸ÇØµĞ´Ù.
                  */
                 sReserveSize4Chaining  = sMinRowPieceSize - aSlotSize;
                 sExtraSize            += sReserveSize4Chaining;
@@ -668,18 +668,18 @@ idBool sdpPhyPage::canAllocSlot( sdpPhyPageHdr *aPageHdr,
 /***********************************************************************
  *
  * Description :
- *  í˜ì´ì§€ì—ì„œ slotì„ í• ë‹¹í•œë‹¤.
+ *  ÆäÀÌÁö¿¡¼­ slotÀ» ÇÒ´çÇÑ´Ù.
  *
- *  allocSlot() í•¨ìˆ˜ì™€ì˜ ì°¨ì´ì 
- *  1. í•„ìš”ì‹œ ìë™ìœ¼ë¡œ compact page ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
- *  2. slot directoryë¥¼ shiftí•˜ì§€ ì•ŠëŠ”ë‹¤.
- *  3. alignì„ ê³ ë ¤í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *  allocSlot() ÇÔ¼ö¿ÍÀÇ Â÷ÀÌÁ¡
+ *  1. ÇÊ¿ä½Ã ÀÚµ¿À¸·Î compact page ¿¬»êÀ» ¼öÇàÇÑ´Ù.
+ *  2. slot directory¸¦ shiftÇÏÁö ¾Ê´Â´Ù.
+ *  3. alignÀ» °í·ÁÇÏÁö ¾Ê´Â´Ù.
  *
- *  aPageHdr         - [IN]  í˜ì´ì§€ í—¤ë”
- *  aSlotSize        - [IN]  í• ë‹¹í•˜ë ¤ëŠ” slotì˜ í¬ê¸°
- *  aAllocSlotPtr    - [OUT] í• ë‹¹ë°›ì€ slotì˜ ì‹œì‘ pointer
- *  aAllocSlotNum    - [OUT] í• ë‹¹ë°›ì€ slot entry number
- *  aAllocSlotOffset - [OUT] í• ë‹¹ë°›ì€ slotì˜ offfset
+ *  aPageHdr         - [IN]  ÆäÀÌÁö Çì´õ
+ *  aSlotSize        - [IN]  ÇÒ´çÇÏ·Á´Â slotÀÇ Å©±â
+ *  aAllocSlotPtr    - [OUT] ÇÒ´ç¹ŞÀº slotÀÇ ½ÃÀÛ pointer
+ *  aAllocSlotNum    - [OUT] ÇÒ´ç¹ŞÀº slot entry number
+ *  aAllocSlotOffset - [OUT] ÇÒ´ç¹ŞÀº slotÀÇ offfset
  *
  **********************************************************************/
 IDE_RC sdpPhyPage::allocSlot4SID( sdpPhyPageHdr       *aPageHdr,
@@ -697,13 +697,13 @@ IDE_RC sdpPhyPage::allocSlot4SID( sdpPhyPageHdr       *aPageHdr,
     IDE_DASSERT( aPageHdr != NULL );
     IDE_DASSERT( validate(aPageHdr) == ID_TRUE );
 
-    /* í˜„ì¬ëŠ” data pageì—ì„œë§Œ ì´ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•œë‹¤. */
+    /* ÇöÀç´Â data page¿¡¼­¸¸ ÀÌ ÇÔ¼ö¸¦ »ç¿ëÇÑ´Ù. */
     IDE_ERROR_MSG( aPageHdr->mPageType == SDP_PAGE_DATA,
                    "aPageHdr->mPageType : %"ID_UINT32_FMT,
                    aPageHdr->mPageType );
 
-    /* ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê¸° ì „ì— canAllocSlotì„ í†µí•´
-     *  ë°˜ë“œì‹œ alloc ê°€ëŠ¥í•œì§€ í™•ì¸í•˜ê³ , ê°€ëŠ¥í• ë•Œë§Œ í˜¸ì¶œí•´ì•¼ í•œë‹¤. */
+    /* ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ±â Àü¿¡ canAllocSlotÀ» ÅëÇØ
+     *  ¹İµå½Ã alloc °¡´ÉÇÑÁö È®ÀÎÇÏ°í, °¡´ÉÇÒ¶§¸¸ È£ÃâÇØ¾ß ÇÑ´Ù. */
     IDE_ERROR( canAllocSlot( aPageHdr,
                              aSlotSize,
                              ID_TRUE /* aNeedAllocSlotEntry */,
@@ -712,15 +712,15 @@ IDE_RC sdpPhyPage::allocSlot4SID( sdpPhyPageHdr       *aPageHdr,
 
     if ( (aSlotSize + ID_SIZEOF(sdpSlotEntry)) > getNonFragFreeSize(aPageHdr) )
     {
-        /* FSEOì™€ FSBO ì‚¬ì´ì˜ ê³µê°„ì´ ë¶€ì¡±í•  ê²½ìš°
-         * compact page ì—°ì‚°ì„ ìˆ˜í–‰í•˜ì—¬
-         * ë‹¨í¸í™”ëœ ê³µê°„ë“¤ì„ ëª¨ìœ¼ê³ 
-         * ì—°ì†ëœ freespaceë¥¼ í™•ë³´í•œë‹¤. */
+        /* FSEO¿Í FSBO »çÀÌÀÇ °ø°£ÀÌ ºÎÁ·ÇÒ °æ¿ì
+         * compact page ¿¬»êÀ» ¼öÇàÇÏ¿©
+         * ´ÜÆíÈ­µÈ °ø°£µéÀ» ¸ğÀ¸°í
+         * ¿¬¼ÓµÈ freespace¸¦ È®º¸ÇÑ´Ù. */
         IDE_TEST( compactPage( aPageHdr, smLayerCallback::getRowPieceSize )
                   != IDE_SUCCESS );
     }
 
-    /* aSlotSize ë§Œí¼ì˜ ê³µê°„ì„ í˜ì´ì§€ë¡œë¶€í„° í• ë‹¹í•œë‹¤. */
+    /* aSlotSize ¸¸Å­ÀÇ °ø°£À» ÆäÀÌÁö·ÎºÎÅÍ ÇÒ´çÇÑ´Ù. */
     IDE_TEST( allocSlotSpace( aPageHdr,
                               aSlotSize,
                               &sAllocSlotPtr,
@@ -729,7 +729,7 @@ IDE_RC sdpPhyPage::allocSlot4SID( sdpPhyPageHdr       *aPageHdr,
 
     IDE_DASSERT( validate(aPageHdr) == ID_TRUE );
 
-    /* slot directoryë¡œë¶€í„° í•˜ë‚˜ì˜ slot entryë¥¼ í• ë‹¹í•œë‹¤. */
+    /* slot directory·ÎºÎÅÍ ÇÏ³ªÀÇ slot entry¸¦ ÇÒ´çÇÑ´Ù. */
     IDE_ERROR( sdpSlotDirectory::alloc( aPageHdr,
                                         sAllocSlotOffset,
                                         &sAllocSlotNum )
@@ -739,16 +739,16 @@ IDE_RC sdpPhyPage::allocSlot4SID( sdpPhyPageHdr       *aPageHdr,
     {
         sMinRowPieceSize = smLayerCallback::getMinRowPieceSize();
         /* BUG-25395
-         * [SD] alloc slot, free slotì‹œì—
-         * row chainingì„ ìœ„í•œ ê³µê°„(6byte)ë¥¼ ê³„ì‚°í•´ì•¼ í•©ë‹ˆë‹¤. */
+         * [SD] alloc slot, free slot½Ã¿¡
+         * row chainingÀ» À§ÇÑ °ø°£(6byte)¸¦ °è»êÇØ¾ß ÇÕ´Ï´Ù. */
         if ( aSlotSize < sMinRowPieceSize )
         {
-            /* slotì˜ í¬ê¸°ê°€ minimum rowpiece sizeë³´ë‹¤ ì‘ì„ ê²½ìš°,
-             * row migrationì´ ë°œìƒí–ˆì„ë•Œ í˜ì´ì§€ì— ê°€ìš©ê³µê°„ì´ ë¶€ì¡±í•˜ë©´
-             * slot ì¬í• ë‹¹ì— ì‹¤íŒ¨í•˜ì—¬ ì„œë²„ê°€ ì‚¬ë§í•œë‹¤.
-             * ê·¸ë˜ì„œ ì´ëŸ° ê²½ìš°ì— ëŒ€ë¹„í•˜ì—¬
-             * (min rowpiece size - slot size)ë§Œí¼ì˜ ê³µê°„ì„
-             * ì¶”ê°€ë¡œ ë” í™•ë³´í•´ë‘”ë‹¤.
+            /* slotÀÇ Å©±â°¡ minimum rowpiece sizeº¸´Ù ÀÛÀ» °æ¿ì,
+             * row migrationÀÌ ¹ß»ıÇßÀ»¶§ ÆäÀÌÁö¿¡ °¡¿ë°ø°£ÀÌ ºÎÁ·ÇÏ¸é
+             * slot ÀçÇÒ´ç¿¡ ½ÇÆĞÇÏ¿© ¼­¹ö°¡ »ç¸ÁÇÑ´Ù.
+             * ±×·¡¼­ ÀÌ·± °æ¿ì¿¡ ´ëºñÇÏ¿©
+             * (min rowpiece size - slot size)¸¸Å­ÀÇ °ø°£À»
+             * Ãß°¡·Î ´õ È®º¸ÇØµĞ´Ù.
              */
             sReserveSize4Chaining = sMinRowPieceSize - aSlotSize;
 
@@ -788,21 +788,21 @@ IDE_RC sdpPhyPage::allocSlot4SID( sdpPhyPageHdr       *aPageHdr,
 /***********************************************************************
  *
  * Description :
- *   í˜ì´ì§€ì—ì„œ slotì„ í• ë‹¹í•œë‹¤.
+ *   ÆäÀÌÁö¿¡¼­ slotÀ» ÇÒ´çÇÑ´Ù.
  *
- *  allocSlot4SID() í•¨ìˆ˜ì™€ì˜ ì°¨ì´ì 
- *  1. ìë™ìœ¼ë¡œ compact page ì—°ì‚°ì„ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
- *  2. slot directoryë¥¼ shiftí•œë‹¤.
- *  3. ì €ì¥ì‹œì— alignì„ ê³ ë ¤í•œë‹¤.
+ *  allocSlot4SID() ÇÔ¼ö¿ÍÀÇ Â÷ÀÌÁ¡
+ *  1. ÀÚµ¿À¸·Î compact page ¿¬»êÀ» ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+ *  2. slot directory¸¦ shiftÇÑ´Ù.
+ *  3. ÀúÀå½Ã¿¡ alignÀ» °í·ÁÇÑ´Ù.
  *
- *  aPageHdr            - [IN] í˜ì´ì§€ í—¤ë”
- *  aSlotNum            - [IN] í• ë‹¹í•˜ë ¤ëŠ” slot number
- *  aSaveSize           - [IN] í• ë‹¹í•˜ë ¤ëŠ” slotì˜ í¬ê¸°
- *  aNeedAllocSlotEntry - [IN] slot entry í• ë‹¹ì´ í•„ìš”í•œì§€ ì—¬ë¶€
- *  aAllowedSize        - [OUT] í˜ì´ì§€ë¡œë¶€í„° í• ë‹¹ë°›ì€ ê³µê°„ì˜ í¬ê¸°
- *  aAllocSlotPtr       - [OUT] í• ë‹¹ë°›ì€ slotì˜ ì‹œì‘ pointer
- *  aAllocSlotOffset    - [OUT] í• ë‹¹ë°›ì€ slotì˜ offfset
- *  aSlotAlignValue     - [IN] ê³ ë ¤í•´ì•¼ í•˜ëŠ” align í¬ê¸°
+ *  aPageHdr            - [IN] ÆäÀÌÁö Çì´õ
+ *  aSlotNum            - [IN] ÇÒ´çÇÏ·Á´Â slot number
+ *  aSaveSize           - [IN] ÇÒ´çÇÏ·Á´Â slotÀÇ Å©±â
+ *  aNeedAllocSlotEntry - [IN] slot entry ÇÒ´çÀÌ ÇÊ¿äÇÑÁö ¿©ºÎ
+ *  aAllowedSize        - [OUT] ÆäÀÌÁö·ÎºÎÅÍ ÇÒ´ç¹ŞÀº °ø°£ÀÇ Å©±â
+ *  aAllocSlotPtr       - [OUT] ÇÒ´ç¹ŞÀº slotÀÇ ½ÃÀÛ pointer
+ *  aAllocSlotOffset    - [OUT] ÇÒ´ç¹ŞÀº slotÀÇ offfset
+ *  aSlotAlignValue     - [IN] °í·ÁÇØ¾ß ÇÏ´Â align Å©±â
  *
  **********************************************************************/
 IDE_RC sdpPhyPage::allocSlot( sdpPhyPageHdr       *aPageHdr,
@@ -824,25 +824,25 @@ IDE_RC sdpPhyPage::allocSlot( sdpPhyPageHdr       *aPageHdr,
                ( getPageType(aPageHdr) != SDP_PAGE_LOB_INDEX ) );
     IDE_DASSERT( validate(aPageHdr) == ID_TRUE );
 
-    /* data pageì—ì„œëŠ” allocSlot()ì´ ì•„ë‹ˆê³  allocSlot4SID() í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤. */
+    /* data page¿¡¼­´Â allocSlot()ÀÌ ¾Æ´Ï°í allocSlot4SID() ÇÔ¼ö¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù. */
     IDE_ERROR( aPageHdr->mPageType != SDP_PAGE_DATA );
 
-    /* ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê¸° ì „ì— canAllocSlotì„ í†µí•´
-     *  ë°˜ë“œì‹œ alloc ê°€ëŠ¥í•œì§€ í™•ì¸í•˜ê³ , ê°€ëŠ¥í• ë•Œë§Œ í˜¸ì¶œí•´ì•¼ í•œë‹¤. */
+    /* ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ±â Àü¿¡ canAllocSlotÀ» ÅëÇØ
+     *  ¹İµå½Ã alloc °¡´ÉÇÑÁö È®ÀÎÇÏ°í, °¡´ÉÇÒ¶§¸¸ È£ÃâÇØ¾ß ÇÑ´Ù. */
     IDE_ERROR( canAllocSlot( aPageHdr,
                              sAlignedSize,
                              aNeedAllocSlotEntry,
                              aSlotAlignValue )
                == ID_TRUE );
 
-    /* sAlignedSize ë§Œí¼ì˜ ê³µê°„ì„ í˜ì´ì§€ë¡œë¶€í„° í• ë‹¹í•œë‹¤. */
+    /* sAlignedSize ¸¸Å­ÀÇ °ø°£À» ÆäÀÌÁö·ÎºÎÅÍ ÇÒ´çÇÑ´Ù. */
     IDE_TEST( allocSlotSpace( aPageHdr,
                               sAlignedSize,
                               &sAllocSlotPtr,
                               &sAllocSlotOffset )
               != IDE_SUCCESS );
 
-    /* í•„ìš”í•  ê²½ìš°, slot directoryë¡œë¶€í„° í•˜ë‚˜ì˜ slot entryë¥¼ í• ë‹¹í•œë‹¤. */
+    /* ÇÊ¿äÇÒ °æ¿ì, slot directory·ÎºÎÅÍ ÇÏ³ªÀÇ slot entry¸¦ ÇÒ´çÇÑ´Ù. */
     if ( aNeedAllocSlotEntry == ID_TRUE )
     {
         sdpSlotDirectory::allocWithShift( aPageHdr,
@@ -885,12 +885,12 @@ IDE_RC sdpPhyPage::allocSlot( sdpPhyPageHdr       *aPageHdr,
 /***********************************************************************
  *
  * Description :
- *  slotì„ ì €ì¥í•  ê³µê°„ì„ í• ë‹¹í•œë‹¤.
+ *  slotÀ» ÀúÀåÇÒ °ø°£À» ÇÒ´çÇÑ´Ù.
  *
- *  aPageHdr         - [IN] í˜ì´ì§€ í—¤ë”
- *  aSaveSize        - [IN] í• ë‹¹í•˜ë ¤ëŠ” slotì˜ í¬ê¸°
- *  aAllocSlotPtr    - [OUT] í• ë‹¹ë°›ì€ slotì˜ ì‹œì‘ pointer
- *  aAllocSlotOffset - [OUT] í• ë‹¹ë°›ì€ slotì˜ offfset
+ *  aPageHdr         - [IN] ÆäÀÌÁö Çì´õ
+ *  aSaveSize        - [IN] ÇÒ´çÇÏ·Á´Â slotÀÇ Å©±â
+ *  aAllocSlotPtr    - [OUT] ÇÒ´ç¹ŞÀº slotÀÇ ½ÃÀÛ pointer
+ *  aAllocSlotOffset - [OUT] ÇÒ´ç¹ŞÀº slotÀÇ offfset
  *
  **********************************************************************/
 IDE_RC sdpPhyPage::allocSlotSpace( sdpPhyPageHdr       *aPageHdr,
@@ -903,8 +903,8 @@ IDE_RC sdpPhyPage::allocSlotSpace( sdpPhyPageHdr       *aPageHdr,
     IDE_DASSERT( aPageHdr != NULL );
     IDE_DASSERT( validate(aPageHdr) == ID_TRUE );
 
-    // BUG-30462 Pageì˜ Max Sizeë¥¼ ì´ˆê³¼í•˜ì—¬ ì‚½ì…í•˜ë ¤ëŠ” ê²½ìš°ë¡œ ì¸í•˜ì—¬
-    //           ê²€ì¦ì½”ë“œë¥¼ ì¶”ê°€í•©ë‹ˆë‹¤.
+    // BUG-30462 PageÀÇ Max Size¸¦ ÃÊ°úÇÏ¿© »ğÀÔÇÏ·Á´Â °æ¿ì·Î ÀÎÇÏ¿©
+    //           °ËÁõÄÚµå¸¦ Ãß°¡ÇÕ´Ï´Ù.
     IDE_ERROR( aPageHdr->mFreeSpaceEndOffset >= aSaveSize );
     IDE_ERROR( aPageHdr->mTotalFreeSize      >= aSaveSize );
     IDE_ERROR( aPageHdr->mAvailableFreeSize  >= aSaveSize );
@@ -936,10 +936,10 @@ IDE_RC sdpPhyPage::allocSlotSpace( sdpPhyPageHdr       *aPageHdr,
 
 
 /***********************************************************************
- *
  * Description :
  *
- *
+ * BUG-47580 1. compact page µğ¹ö±ë Á¤º¸ º¸°­
+ *           2. Assert -> Compact ÀÌÀü page·Î º¹¿øÇÏ°í ¿¹¿ÜÃ³¸®
  *
  **********************************************************************/
 IDE_RC sdpPhyPage::compactPage( sdpPhyPageHdr        * aPageHdr,
@@ -951,19 +951,20 @@ IDE_RC sdpPhyPage::compactPage( sdpPhyPageHdr        * aPageHdr,
     UChar      *sNewSlotPtr;
     UShort      sOldSlotOffset = 0;
     UShort      sNewSlotOffset = 0;
-    UShort      sFreeSpaceEndOffset;
+    UShort      sFreeSpaceEndOffset = 0;
     UShort      sSlotSize;
     UShort      sCount;
     scSlotNum   sSlotNum;
 
     IDE_ASSERT( aPageHdr            != NULL );
-    IDE_ASSERT( aGetSlotSizeFunc != NULL );
-    IDE_ASSERT( validate(aPageHdr) == ID_TRUE );
-    IDE_ASSERT( (aPageHdr->mPageType == SDP_PAGE_DATA) ||
-                (aPageHdr->mPageType == SDP_PAGE_TEMP_TABLE_META) ||
-                (aPageHdr->mPageType == SDP_PAGE_TEMP_TABLE_DATA) );
+    IDE_ASSERT( aGetSlotSizeFunc    != NULL );
+    IDE_DASSERT( validate(aPageHdr) == ID_TRUE );
 
     idlOS::memcpy( (UChar*)sOldPageImage, (UChar*)aPageHdr, SD_PAGE_SIZE );
+
+    IDE_TEST( ((aPageHdr->mPageType != SDP_PAGE_DATA) &&
+               (aPageHdr->mPageType != SDP_PAGE_TEMP_TABLE_META) &&
+               (aPageHdr->mPageType != SDP_PAGE_TEMP_TABLE_DATA)) );
 
     sFreeSpaceEndOffset =
         getPageFooterStartPtr((UChar*)aPageHdr) - (UChar *)aPageHdr;
@@ -976,7 +977,7 @@ IDE_RC sdpPhyPage::compactPage( sdpPhyPageHdr        * aPageHdr,
         if ( sdpSlotDirectory::isUnusedSlotEntry(sSlotDirPtr, sSlotNum)
             == ID_TRUE )
         {
-            IDE_ASSERT( aPageHdr->mPageType == SDP_PAGE_DATA );
+            IDE_TEST( aPageHdr->mPageType != SDP_PAGE_DATA );
         }
         else
         {
@@ -987,6 +988,20 @@ IDE_RC sdpPhyPage::compactPage( sdpPhyPageHdr        * aPageHdr,
             sOldSlotPtr = (UChar*)sOldPageImage + sOldSlotOffset;
 
             sSlotSize = aGetSlotSizeFunc( sOldSlotPtr );
+
+            // BUG-47580 compact page µğ¹ö±ë Á¤º¸ º¸°­
+            // 1. ³²¾ÆÀÖ´Â Free size (end - begin) º¸´Ù slot size°¡ ´õ Å« °æ¿ì
+            //   or
+            // 2. ³²¾ÆÀÖ´Â ½ÇÁúÀûÀÎ Free size (end - begin - slot size) °¡
+            //    page header¿¡ ±â·ÏµÈ free size º¸´Ù ÀÛÀº °æ¿ì
+            IDE_TEST_RAISE( ( sSlotSize >
+                              (sFreeSpaceEndOffset -
+                               aPageHdr->mFreeSpaceBeginOffset )) ||
+                            ( aPageHdr->mTotalFreeSize >
+                              ( sFreeSpaceEndOffset - sSlotSize -
+                                aPageHdr->mFreeSpaceBeginOffset )),
+                            err_invalid_slotsize );
+            IDU_FIT_POINT_RAISE( "BUG-47580@sdpPhyPage::compactPage", err_invalid_slotsize );
 
             sFreeSpaceEndOffset -= sSlotSize;
             sNewSlotOffset       = sFreeSpaceEndOffset;
@@ -1002,15 +1017,51 @@ IDE_RC sdpPhyPage::compactPage( sdpPhyPageHdr        * aPageHdr,
 
     aPageHdr->mFreeSpaceEndOffset = sFreeSpaceEndOffset;
 
-    IDE_ASSERT( aPageHdr->mTotalFreeSize <=
-                (aPageHdr->mFreeSpaceEndOffset -
-                 aPageHdr->mFreeSpaceBeginOffset) );
+    IDE_TEST( aPageHdr->mTotalFreeSize >
+              (aPageHdr->mFreeSpaceEndOffset -
+               aPageHdr->mFreeSpaceBeginOffset) );
 
     IDE_DASSERT( validate(aPageHdr) == ID_TRUE );
 
     return IDE_SUCCESS;
-    
+
+    IDE_EXCEPTION( err_invalid_slotsize )
+    {
+        ideLog::log(IDE_ERR_0,
+                    "compactPage Failure\n"
+                    "Table OID: %"ID_vULONG_FMT", "
+                    "Page ID: %"ID_UINT32_FMT", "
+                    "Page Type: %"ID_UINT32_FMT"\n"
+                    "Total Free Size: %"ID_UINT32_FMT", "
+                    "Free Space Offset: %"ID_UINT32_FMT" - %"ID_UINT32_FMT", "
+                    "Slot Offset: %"ID_UINT32_FMT", "
+                    "Slot Size: %"ID_UINT32_FMT"\n",
+                    aPageHdr->mTableOID,
+                    aPageHdr->mPageID,
+                    aPageHdr->mPageType,
+                    aPageHdr->mTotalFreeSize ,
+                    aPageHdr->mFreeSpaceBeginOffset,
+                    sFreeSpaceEndOffset,
+                    sOldSlotOffset,
+                    sSlotSize );
+    }
     IDE_EXCEPTION_END;
+
+    // ÀÛ¾÷ÁßÀÌ´ø page Ãâ·Â
+    sdpPhyPage::tracePage( IDE_DUMP_0,
+                           (UChar*)aPageHdr,
+                           "compactPage Failure\n"
+                           "NEW PAGE:");
+    // º¹¿øÇÏ°í ¿¹¿ÜÃ³¸®ÇÔ.
+    idlOS::memcpy( (UChar*)aPageHdr,
+                   (UChar*)sOldPageImage,
+                   SD_PAGE_SIZE );
+
+    // ÀÛ¾÷ ÀÌÀüÀÇ »óÅÂ·Î º¹¿øÇÏ°í page Ãâ·Â
+    sdpPhyPage::tracePage( IDE_DUMP_0,
+                           (UChar*)aPageHdr,
+                           "compactPage Failure\n"
+                           "OLD PAGE:");
 
     return IDE_FAILURE;
 }
@@ -1018,16 +1069,16 @@ IDE_RC sdpPhyPage::compactPage( sdpPhyPageHdr        * aPageHdr,
 /***********************************************************************
  *
  * Description :
- *  í˜ì´ì§€ì—ì„œ slotì„ í•´ì œí•œë‹¤.
+ *  ÆäÀÌÁö¿¡¼­ slotÀ» ÇØÁ¦ÇÑ´Ù.
  *
- *  freeSlot() í•¨ìˆ˜ì™€ì˜ ì°¨ì´ì 
- *  1. slot directoryë¥¼ shiftí•˜ì§€ ì•ŠëŠ”ë‹¤.
- *  2. alignì„ ê³ ë ¤í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *  freeSlot() ÇÔ¼ö¿ÍÀÇ Â÷ÀÌÁ¡
+ *  1. slot directory¸¦ shiftÇÏÁö ¾Ê´Â´Ù.
+ *  2. alignÀ» °í·ÁÇÏÁö ¾Ê´Â´Ù.
  *
- *  aPageHdr  - [IN]  í˜ì´ì§€ í—¤ë”
- *  aSlotPtr  - [IN]  í•´ì œí•˜ë ¤ëŠ” slotì˜ pointer
- *  aSlotNum  - [IN]  í•´ì œí•˜ë ¤ëŠ” slotì˜ entry number
- *  aSlotSize - [IN]  í•´ì œí•˜ë ¤ëŠ” slotì˜ size
+ *  aPageHdr  - [IN]  ÆäÀÌÁö Çì´õ
+ *  aSlotPtr  - [IN]  ÇØÁ¦ÇÏ·Á´Â slotÀÇ pointer
+ *  aSlotNum  - [IN]  ÇØÁ¦ÇÏ·Á´Â slotÀÇ entry number
+ *  aSlotSize - [IN]  ÇØÁ¦ÇÏ·Á´Â slotÀÇ size
  *
  **********************************************************************/
 IDE_RC sdpPhyPage::freeSlot4SID( sdpPhyPageHdr      *aPageHdr,
@@ -1055,15 +1106,15 @@ IDE_RC sdpPhyPage::freeSlot4SID( sdpPhyPageHdr      *aPageHdr,
     {
         sMinRowPieceSize = smLayerCallback::getMinRowPieceSize();
         /* BUG-25395
-         * [SD] alloc slot, free slotì‹œì—
-         * row chainingì„ ìœ„í•œ ê³µê°„(6byte)ë¥¼ ê³„ì‚°í•´ì•¼ í•©ë‹ˆë‹¤. */
+         * [SD] alloc slot, free slot½Ã¿¡
+         * row chainingÀ» À§ÇÑ °ø°£(6byte)¸¦ °è»êÇØ¾ß ÇÕ´Ï´Ù. */
         if ( aSlotSize < sMinRowPieceSize )
         {
-            /* slotì˜ í¬ê¸°ê°€ minimum rowpiece sizeë³´ë‹¤ ì‘ì„ ê²½ìš°,
-             * alloc slotì‹œì— (min rowpiece size - slot size)ë§Œí¼ì˜ ê³µê°„ì„
-             * ì¶”ê°€ë¡œ ë” í• ë‹¹í•˜ì˜€ë‹¤.
-             * ( sdpPageList::allocSlot4SID() í•¨ìˆ˜ ì°¸ì¡° )
-             * ê·¸ë˜ì„œ free slotì‹œì— ì¶”ê°€ë¡œ í• ë‹¹í•œ ê³µê°„ì„ í•´ì œí•´ì£¼ì–´ì•¼ í•œë‹¤.
+            /* slotÀÇ Å©±â°¡ minimum rowpiece sizeº¸´Ù ÀÛÀ» °æ¿ì,
+             * alloc slot½Ã¿¡ (min rowpiece size - slot size)¸¸Å­ÀÇ °ø°£À»
+             * Ãß°¡·Î ´õ ÇÒ´çÇÏ¿´´Ù.
+             * ( sdpPageList::allocSlot4SID() ÇÔ¼ö ÂüÁ¶ )
+             * ±×·¡¼­ free slot½Ã¿¡ Ãß°¡·Î ÇÒ´çÇÑ °ø°£À» ÇØÁ¦ÇØÁÖ¾î¾ß ÇÑ´Ù.
              */
             sReserveSize4Chaining = sMinRowPieceSize - aSlotSize;
 
@@ -1097,16 +1148,16 @@ IDE_RC sdpPhyPage::freeSlot4SID( sdpPhyPageHdr      *aPageHdr,
 /***********************************************************************
  *
  * Description :
- *  í˜ì´ì§€ì—ì„œ slotì„ í•´ì œí•œë‹¤.
+ *  ÆäÀÌÁö¿¡¼­ slotÀ» ÇØÁ¦ÇÑ´Ù.
  *
- *  freeSlot4SID() í•¨ìˆ˜ì™€ì˜ ì°¨ì´ì 
- *  1. slot directoryë¥¼ shiftí•œë‹¤.
- *  2. ì €ì¥ì‹œì— alignì„ ê³ ë ¤í•œë‹¤.
+ *  freeSlot4SID() ÇÔ¼ö¿ÍÀÇ Â÷ÀÌÁ¡
+ *  1. slot directory¸¦ shiftÇÑ´Ù.
+ *  2. ÀúÀå½Ã¿¡ alignÀ» °í·ÁÇÑ´Ù.
  *
- *  aPageHdr           - [IN] í˜ì´ì§€ í—¤ë”
- *  aSlotPtr           - [IN] í•´ì œí•˜ë ¤ëŠ” slotì˜ pointer
- *  aFreeSize          - [IN] í•´ì œí•˜ë ¤ëŠ” slotì˜ size
- *  aNeedFreeSlotEntry - [IN] slot entryë¥¼ í•´ì œí• ì§€ ì—¬ë¶€
+ *  aPageHdr           - [IN] ÆäÀÌÁö Çì´õ
+ *  aSlotPtr           - [IN] ÇØÁ¦ÇÏ·Á´Â slotÀÇ pointer
+ *  aFreeSize          - [IN] ÇØÁ¦ÇÏ·Á´Â slotÀÇ size
+ *  aNeedFreeSlotEntry - [IN] slot entry¸¦ ÇØÁ¦ÇÒÁö ¿©ºÎ
  *  aSlotAlignValue    - [IN] align value
  *
  **********************************************************************/
@@ -1172,15 +1223,15 @@ IDE_RC sdpPhyPage::freeSlot( sdpPhyPageHdr      *aPageHdr,
 /***********************************************************************
  *
  * Description :
- *  í˜ì´ì§€ì—ì„œ slotì„ í•´ì œí•œë‹¤.
+ *  ÆäÀÌÁö¿¡¼­ slotÀ» ÇØÁ¦ÇÑ´Ù.
  *
- *  freeSlot4SID() í•¨ìˆ˜ì™€ì˜ ì°¨ì´ì 
- *  1. slot directoryë¥¼ shiftí•œë‹¤.
- *  2. ì €ì¥ì‹œì— alignì„ ê³ ë ¤í•œë‹¤.
+ *  freeSlot4SID() ÇÔ¼ö¿ÍÀÇ Â÷ÀÌÁ¡
+ *  1. slot directory¸¦ shiftÇÑ´Ù.
+ *  2. ÀúÀå½Ã¿¡ alignÀ» °í·ÁÇÑ´Ù.
  *
- *  aPageHdr           - [IN] í˜ì´ì§€ í—¤ë”
- *  aSlotNum           - [IN] í•´ì œí•˜ë ¤ëŠ” slotì˜ entry number
- *  aFreeSize          - [IN] í•´ì œí•˜ë ¤ëŠ” slotì˜ size
+ *  aPageHdr           - [IN] ÆäÀÌÁö Çì´õ
+ *  aSlotNum           - [IN] ÇØÁ¦ÇÏ·Á´Â slotÀÇ entry number
+ *  aFreeSize          - [IN] ÇØÁ¦ÇÏ·Á´Â slotÀÇ size
  *  aSlotAlignValue    - [IN] align value
  *
  **********************************************************************/
@@ -1258,29 +1309,28 @@ void sdpPhyPage::freeSlotSpace( sdpPhyPageHdr        *aPageHdr,
 
 /***********************************************************************
  *
- * Description :
- * í•œ í˜ì´ì§€ê°€ ì œëŒ€ë¡œ ëëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+ * Description : ÇÑ ÆäÀÌÁö°¡ Á¦´ë·Î µÆ´ÂÁö °Ë»çÇÑ´Ù.
+ *               BUG-47953 »óÅÂ È®ÀÎ ±îÁö¸¸ ÇÏ´Â ÇÔ¼öµµ ÇÊ¿äÇÏ´Ù.
  *
  * Implementation :
- * if ( LSN ì²´í¬ë©´ )
- *     ì²« LSNê³¼ ë§ˆì§€ë§‰ LSN ë¹„êµ
+ * if ( LSN Ã¼Å©¸é )
+ *     Ã¹ LSN°ú ¸¶Áö¸· LSN ºñ±³
  *
  * else
- *     í˜ì´ì§€ì˜ ì²´í¬ì„¬ì„ êµ¬í•œë‹¤.
- *     if ( ë‹¤ë¥´ë‹¤ë©´  )
+ *     ÆäÀÌÁöÀÇ Ã¼Å©¼¶À» ±¸ÇÑ´Ù.
+ *     if ( ´Ù¸£´Ù¸é  )
  *         return true
  *     return false
  *
  **********************************************************************/
-idBool sdpPhyPage::isPageCorrupted(
-    scSpaceID  aSpaceID,
-    UChar     *aStartPtr )
+idBool sdpPhyPage::isPageCorrupted( UChar  * aStartPtr )
 {
+
     idBool isCorrupted = ID_TRUE;
     sdpPhyPageHdr *sPageHdr;
     sdpPageFooter *sPageFooter;
     smLSN          sHeadLSN;
-    smLSN          sTailLSN;
+    smLSN          sTailLSN; 
 
     sPageHdr    = getHdr(aStartPtr);
     sPageFooter = (sdpPageFooter*)
@@ -1298,12 +1348,12 @@ idBool sdpPhyPage::isPageCorrupted(
     {
         if ( smuProperty::getCheckSumMethod() == SDP_CHECK_CHECKSUM )
         {
-            // BUG-45598: checksum ê°’ì´ ì´ˆê¸°ìƒíƒœ ë¼ë©´, ì´ë²ˆì—”  LSN ìœ¼ë¡œ ê²€ì‚¬
+            // BUG-45598: checksum °ªÀÌ ÃÊ±â»óÅÂ ¶ó¸é, ÀÌ¹ø¿£  LSN À¸·Î °Ë»ç  
             if( getCheckSum(sPageHdr) == SDP_CHECKSUM_INIT_VAL )
             {
                 sHeadLSN = getPageLSN((UChar*)sPageHdr);
                 sTailLSN = sPageFooter->mPageLSN;
-
+             
                 isCorrupted = smrCompareLSN::isEQ( &sHeadLSN, &sTailLSN ) ?
                     ID_FALSE : ID_TRUE;
             }
@@ -1312,38 +1362,52 @@ idBool sdpPhyPage::isPageCorrupted(
                 isCorrupted =
                     ( getCheckSum(sPageHdr) != calcCheckSum(sPageHdr) ?
                       ID_TRUE : ID_FALSE );
-            }            
+            }
         }
         else
         {
             IDE_DASSERT( ID_FALSE );
         }
     }
+    return isCorrupted;
+}
 
-    // BUG-45598: sdpPhyPage::isPageCorrupted ì—ì„œ inconsistent ì„¤ì •
-    if ( ( isCorrupted == ID_TRUE ) )
+/***********************************************************************
+ * Description : ÇÑ ÆäÀÌÁö°¡ Á¦´ë·Î µÆ´ÂÁö °Ë»çÇÏ°í,
+ *               ¹®Á¦°¡ ÀÖÀ¸¸é inconsistent ·Î ¼³Á¤ÇÑ´Ù.
+ *
+ * return : sdpPhyPage::isPageCorrupted() ¿Í µ¿ÀÏ
+ *          ID_TRUE  : Corrupted, Inconsistent Page
+ *          ID_FALSE : Consistent Page
+ **********************************************************************/
+idBool sdpPhyPage::checkAndSetPageCorrupted( scSpaceID  aSpaceID,
+                                             UChar     *aStartPtr )
+{
+    idBool isCorrupted ;
+    sdpPhyPageHdr *sPageHdr;
+
+    isCorrupted = isPageCorrupted( aStartPtr );
+
+    // BUG-45598: sdpPhyPage::isPageCorrupted ¿¡¼­ inconsistent ¼³Á¤
+    if ( isCorrupted == ID_TRUE )
     {
-        if ( ( smrRecoveryMgr::isRestart() == ID_FALSE
-               &&( isConsistentPage( aStartPtr ) == ID_TRUE ) ) )
+        sPageHdr = getHdr(aStartPtr);
+        if ( ( smrRecoveryMgr::isRestart() == ID_FALSE ) &&
+             ( isConsistentPage( aStartPtr ) == ID_TRUE ) )
         {
             setPageInconsistency( sPageHdr );
         }
-    }
 
-    // To verify CASE-6829
-    if ( smuProperty::getSMChecksumDisable() == 1 )
-    {
-        if ( isCorrupted == ID_TRUE )
+        // To verify CASE-6829
+        if ( smuProperty::getSMChecksumDisable() == 1 )
         {
             ideLog::log(IDE_SM_0,
                         "[WARNING!!] Page(%u,%u) is corrupted\n",
                         aSpaceID,
                         sPageHdr->mPageID);
+            return ID_FALSE;
         }
-
-        return ID_FALSE;
     }
-
     return isCorrupted;
 }
 
@@ -1444,18 +1508,18 @@ IDE_RC sdpPhyPage::verify( sdpPhyPageHdr *aPageHdr,
  * Description :
  *
  * if ( aIsConsistent == 'F' )
- *     physical headerì˜ mIsConsistentë¥¼ 'F'ë¡œ loggingí•œë‹¤.
+ *     physical headerÀÇ mIsConsistent¸¦ 'F'·Î loggingÇÑ´Ù.
  * else // aIsConsistent == 'T'
- *     physical headerì˜ mIsConsistentë¥¼ 'T'ë¡œ ì„¤ì •í•œë‹¤. // nologging
+ *     physical headerÀÇ mIsConsistent¸¦ 'T'·Î ¼³Á¤ÇÑ´Ù. // nologging
  *
- * logì—†ì´ ìƒì„±ëœ pageì— ëŒ€í•´, ì •ìƒì ì¸ operation(logging mode operation)ì´
- * ìˆ˜í–‰ëœ í›„ media failureê°€ ë°œìƒí–ˆì„ ë•Œ redo ìˆ˜í–‰ë„ì¤‘ serverê°€ ì£½ëŠ” í˜„ìƒì´
- * ë°œìƒí•œë‹¤. (nologging noforceë¡œ ìƒì„±ëœ indexì˜ ê²½ìš°, index buildí›„
- * ê°±ì‹ ì—°ì‚°ì´ ìˆ˜í–‰ë˜ê³  failureê°€ ë°œìƒí–ˆì„ ë•Œë„ redo ìˆ˜í–‰ë„ì¤‘ serverê°€ ì£½ëŠ”ë‹¤)
- * ì´ë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•´ pageì˜ physical headerì— pageë¥¼ logical redoí•  ìˆ˜ ìˆëŠ”ì§€
- * ì—¬ë¶€ë¥¼ í‘œì‹œí•˜ëŠ” mIsConsistentë¥¼ ì¶”ê°€í•˜ê³  nologging operationì‹œ 'F'ë¡œ ì´ˆê¸°í™”
- * í•´ì„œ loggingí•˜ê³ , nologging operationì´ ì™„ë£Œí•œ í›„ physical headerì— 'T'ë¡œ
- * ì„¤ì •í•œë‹¤. ì´ë•Œ logë¥¼ ê¸°ë¡í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ * log¾øÀÌ »ı¼ºµÈ page¿¡ ´ëÇØ, Á¤»óÀûÀÎ operation(logging mode operation)ÀÌ
+ * ¼öÇàµÈ ÈÄ media failure°¡ ¹ß»ıÇßÀ» ¶§ redo ¼öÇàµµÁß server°¡ Á×´Â Çö»óÀÌ
+ * ¹ß»ıÇÑ´Ù. (nologging noforce·Î »ı¼ºµÈ indexÀÇ °æ¿ì, index buildÈÄ
+ * °»½Å¿¬»êÀÌ ¼öÇàµÇ°í failure°¡ ¹ß»ıÇßÀ» ¶§µµ redo ¼öÇàµµÁß server°¡ Á×´Â´Ù)
+ * ÀÌ¸¦ ¹æÁöÇÏ±â À§ÇØ pageÀÇ physical header¿¡ page¸¦ logical redoÇÒ ¼ö ÀÖ´ÂÁö
+ * ¿©ºÎ¸¦ Ç¥½ÃÇÏ´Â mIsConsistent¸¦ Ãß°¡ÇÏ°í nologging operation½Ã 'F'·Î ÃÊ±âÈ­
+ * ÇØ¼­ loggingÇÏ°í, nologging operationÀÌ ¿Ï·áÇÑ ÈÄ physical header¿¡ 'T'·Î
+ * ¼³Á¤ÇÑ´Ù. ÀÌ¶§ log¸¦ ±â·ÏÇÏÁö ¾Ê´Â´Ù.
  *
  **********************************************************************/
 IDE_RC  sdpPhyPage::setPageConsistency(
@@ -1476,7 +1540,7 @@ IDE_RC  sdpPhyPage::setPageConsistency(
     return IDE_FAILURE;
 }
 
-/* PROJ-2162 Mtxì—†ì´ ì•Œì•„ì„œ ìˆ˜í–‰í•˜ê¸° */
+/* PROJ-2162 Mtx¾øÀÌ ¾Ë¾Æ¼­ ¼öÇàÇÏ±â */
 IDE_RC sdpPhyPage::setPageInconsistency( scSpaceID       aSpaceID,
                                          scPageID        aPageID )
 {
@@ -1508,7 +1572,7 @@ IDE_RC sdpPhyPage::setPageInconsistency( scSpaceID       aSpaceID,
               != IDE_SUCCESS );
     IDE_ERROR( sIsSuccess == ID_TRUE );
 
-    /* ì˜ëª»ëœ í˜ì´ì§€ì— ëŒ€í•œ ì •ë³´ë¥¼ ê¸°ë¡í•¨ */
+    /* Àß¸øµÈ ÆäÀÌÁö¿¡ ´ëÇÑ Á¤º¸¸¦ ±â·ÏÇÔ */
     sdpPhyPage::tracePage( IDE_DUMP_0,
                            (UChar*)sPagePtr,
                            "DRDB PAGE:");
@@ -1531,13 +1595,13 @@ IDE_RC sdpPhyPage::setPageInconsistency( scSpaceID       aSpaceID,
     return IDE_FAILURE;
 }
 
-// BUG-45598: ìš´ì˜ì¤‘ í˜ì´ì§€ corrupt ë°œìƒí•  ê²½ìš° ì²´í¬
+// BUG-45598: ¿î¿µÁß ÆäÀÌÁö corrupt ¹ß»ıÇÒ °æ¿ì Ã¼Å©
 IDE_RC sdpPhyPage::setPageInconsistency( sdpPhyPageHdr * aPagePtr )
 {
     sdrMtx          sMtx;
     idBool          sIsMtxBegin = ID_FALSE;
     UChar           sIsConsistent = SDP_PAGE_INCONSISTENT;
-
+    
     IDE_TEST( sdrMiniTrans::begin( NULL, // idvSQL
                                    &sMtx,
                                    NULL, // Trans
@@ -1547,7 +1611,7 @@ IDE_RC sdpPhyPage::setPageInconsistency( sdpPhyPageHdr * aPagePtr )
               != IDE_SUCCESS );
     sIsMtxBegin = ID_TRUE;
 
-    /* ì˜ëª»ëœ í˜ì´ì§€ì— ëŒ€í•œ ì •ë³´ë¥¼ ê¸°ë¡í•¨ */
+    /* Àß¸øµÈ ÆäÀÌÁö¿¡ ´ëÇÑ Á¤º¸¸¦ ±â·ÏÇÔ */
     sdpPhyPage::tracePage( IDE_DUMP_0,
                            (UChar*)aPagePtr,
                            "DRDB PAGE:");
@@ -1624,13 +1688,13 @@ idBool sdpPhyPage::validate( sdpPhyPageHdr * aPageHdr )
 }
 
 /* --------------------------------------------------------------------
- * TASK-4007 [SM]PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
+ * TASK-4007 [SM]PBT¸¦ À§ÇÑ ±â´É Ãß°¡
  *
- * Description : dump í•¨ìˆ˜. sdpPhyPageHdrë¥¼ ì–‘ì‹ì— ë§ê²Œ ë¿Œë ¤ì¤€ë‹¤.
+ * Description : dump ÇÔ¼ö. sdpPhyPageHdr¸¦ ¾ç½Ä¿¡ ¸Â°Ô »Ñ·ÁÁØ´Ù.
  *
- * BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ë‚´ì—ì„œ
- * local Arrayì˜ ptrë¥¼ ë°˜í™˜í•˜ê³  ìˆìŠµë‹ˆë‹¤.
- * Local ArrayëŒ€ì‹  OutBufë¥¼ ë°›ì•„ ë¦¬í„´í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤.
+ * BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ³»¿¡¼­
+ * local ArrayÀÇ ptr¸¦ ¹İÈ¯ÇÏ°í ÀÖ½À´Ï´Ù.
+ * Local Array´ë½Å OutBuf¸¦ ¹Ş¾Æ ¸®ÅÏÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù.
  * ----------------------------------------------------------------- */
 
 IDE_RC sdpPhyPage::dumpHdr( const UChar    * aPage ,
@@ -1638,6 +1702,7 @@ IDE_RC sdpPhyPage::dumpHdr( const UChar    * aPage ,
                             UInt             aOutSize )
 {
     const sdpPhyPageHdr * sPageHdr;
+    smLSN sTailLSN;
 
     IDE_ERROR( aPage   != NULL );
     IDE_ERROR( aOutBuf != NULL );
@@ -1647,8 +1712,10 @@ IDE_RC sdpPhyPage::dumpHdr( const UChar    * aPage ,
 
     IDE_DASSERT( (UChar*)sPageHdr == aPage );
 
-    // TODO: Fixed Tableì—ì„œ SmoNoë¥¼ ìœ„í•œ ê°’ì´ UIntì—ì„œ ULongìœ¼ë¡œ ë³€ê²½ë˜ì–´ë„
-    //       ë˜ëŠ”ì§€ í™•ì¸í•˜ê¸°
+    sTailLSN = ((sdpPageFooter*)getPageFooterStartPtr((UChar*)sPageHdr))->mPageLSN;
+
+    // TODO: Fixed Table¿¡¼­ SmoNo¸¦ À§ÇÑ °ªÀÌ UInt¿¡¼­ ULongÀ¸·Î º¯°æµÇ¾îµµ
+    //       µÇ´ÂÁö È®ÀÎÇÏ±â
     idlOS::snprintf( aOutBuf ,
                      aOutSize ,
                      "----------- Physical Page Begin ----------\n"
@@ -1676,6 +1743,8 @@ IDE_RC sdpPhyPage::dumpHdr( const UChar    * aPage ,
                      "TableOID                  : %"ID_vULONG_FMT"\n"
                      "IndexID                   : %"ID_UINT32_FMT"\n"
                      "Seq No                    : %"ID_UINT64_FMT"\n"
+                     "TailPageLSN.mFileNo       : %"ID_UINT32_FMT"\n"
+                     "TailPageLSN.mOffset       : %"ID_UINT32_FMT"\n"
                      "----------- Physical Page End ----------\n",
                      (UChar*)sPageHdr,
                      sPageHdr->mFrameHdr.mCheckSum,
@@ -1701,7 +1770,9 @@ IDE_RC sdpPhyPage::dumpHdr( const UChar    * aPage ,
                      sPageHdr->mListNode.mNext,
                      sPageHdr->mTableOID,
                      sPageHdr->mIndexID,
-                     sPageHdr->mSeqNo );
+                     sPageHdr->mSeqNo,
+                     sTailLSN.mFileNo,
+                     sTailLSN.mOffset );
 
     return IDE_SUCCESS;
 
@@ -1713,9 +1784,9 @@ IDE_RC sdpPhyPage::dumpHdr( const UChar    * aPage ,
 /* --------------------------------------------------------------------
  * PROJ-2118 BUG Reporting
  *
- * Description : Pageì˜ Hexa data ë¥¼ ì§€ì •í•œ trace fileì— ë¿Œë ¤ì¤€ë‹¤.
- *               Page ID ë“± í•´ë‹¹ Pageì— ëŒ€í•œ ë‹¤ë¥¸ ì •ë³´ë¥¼
- *               ì¶”ê°€ë¡œ ì…ë ¥í•˜ì—¬ ê¸°ë¡í•˜ê²Œ í•  ìˆ˜ ìˆë‹¤.
+ * Description : PageÀÇ Hexa data ¸¦ ÁöÁ¤ÇÑ trace file¿¡ »Ñ·ÁÁØ´Ù.
+ *               Page ID µî ÇØ´ç Page¿¡ ´ëÇÑ ´Ù¸¥ Á¤º¸¸¦
+ *               Ãß°¡·Î ÀÔ·ÂÇÏ¿© ±â·ÏÇÏ°Ô ÇÒ ¼ö ÀÖ´Ù.
  *
  * ----------------------------------------------------------------- */
 IDE_RC sdpPhyPage::tracePage( UInt           aChkFlag,
@@ -1826,12 +1897,12 @@ IDE_RC sdpPhyPage::tracePageInternal( UInt           aChkFlag,
 }
 
 /* --------------------------------------------------------------------
- * Description : Disk pageìš© memcpyí•¨ìˆ˜
- *               pageì˜ ê²½ê³„ë¥¼ ë„˜ì–´ì„œê±°ë‚˜, sdpPhyPageHeaderì— ê²¹ì¹˜ê²Œ
- *               memcpyí•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+ * Description : Disk page¿ë memcpyÇÔ¼ö
+ *               pageÀÇ °æ°è¸¦ ³Ñ¾î¼­°Å³ª, sdpPhyPageHeader¿¡ °ãÄ¡°Ô
+ *               memcpyÇÏ´ÂÁö °Ë»çÇÑ´Ù.
  *
- * BUG-32528 disk page headerì˜ BCB Pointer ê°€ ê¸í˜”ì„ ê²½ìš°ì— ëŒ€í•œ
- * ë””ë²„ê¹… ì •ë³´ ì¶”ê°€.
+ * BUG-32528 disk page headerÀÇ BCB Pointer °¡ ±ÜÇûÀ» °æ¿ì¿¡ ´ëÇÑ
+ * µğ¹ö±ë Á¤º¸ Ãß°¡.
  * ----------------------------------------------------------------- */
 IDE_RC sdpPhyPage::writeToPage( UChar * aDestPagePtr,
                                 UChar * aSrcPtr,
@@ -1870,4 +1941,56 @@ IDE_RC sdpPhyPage::writeToPage( UChar * aDestPagePtr,
     }
 
     return IDE_FAILURE;
+}
+
+/* --------------------------------------------------------------------
+ * Description : BUG-47429 SMO NO ResetÀ» ¸®ÆÑÅä¸µ ÇÕ´Ï´Ù.
+ *
+ * aPageHdr      - [IN] PageÀÇ Header
+ * aSpaceID      - [IN] OnlineOffline¿©ºÎ¸¦ ÆÇ´Ü ÇØ¾ß ÇÏ´Â SpaceÀÇ SpaceID
+ * aChkOnlineTBS - [IN] Online Offline ¿©ºÎ ÆÇ´Ü ÇØ¾ßÇÏ´ÂÁö À¯¹«
+ *                      BUG-47439¸¦ ÁøÇàÇÏ¸é¼­ ±âÁ¸¿¡ sOnlineTBSLSN4Idx¸¦
+ *                      INITÀ¸·Î ³Ñ±â´Â °æ¿ì´Â ID_FALSE·Î ´ëÃ¼ÇÏ¿´´Ù.
+ * ----------------------------------------------------------------- */
+void sdpPhyPage::resetIndexSMONo( sdpPhyPageHdr * aPageHdr,
+                                  scSpaceID       aSpaceID,
+                                  idBool          aChkOnlineTBS )
+{
+    smLSN    sStartLSN;
+    smLSN    sPageLSN;
+    smLSN    sOnlineTBSLSN4Idx;
+    void   * sSpaceNode;
+
+    // SMO no¸¦ ÃÊ±âÈ­ÇØ¾ß ÇÑ´Ù.
+    sStartLSN  = smrRecoveryMgr::getIdxSMOLSN();
+    sPageLSN   = aPageHdr->mFrameHdr.mPageLSN ;
+    // restart ÀÌÈÄ¿¡ Runtime Á¤º¸ÀÎ SMO No¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    if ( smLayerCallback::isLSNGT( &sPageLSN, &sStartLSN ) == ID_FALSE )
+    {
+        // recorvery LSN°ú ºñ±³ÇÏ¿© ÀÛÀº °Í¸¸ setÇÑ´Ù.
+        setIndexSMONo( aPageHdr, 0 );
+    }
+    else
+    {
+        /* fix BUG-17456 Disk Tablespace onlineÀÌÈÄ update ¹ß»ı½Ã index ¹«ÇÑ·çÇÁ
+         * sPageLSN <= sStartLSN ÀÌ°Å³ª sPageLSN <= aOnlineTBSLSN4Idx
+         *
+         * BUG-17456À» ÇØ°áÇÏ±â À§ÇØ Ãß°¡µÈ Á¶°ÇÀÌ´Ù.
+         * ¿î¿µÁß¿¡ offline µÇ¾ú´Ù ´Ù½Ã Online µÈ TBSÀÇ IndexÀÇ SMO No¸¦
+         * º¸Á¤ÇÏ¿´°í, aOnlineTBSLSN4IdxÀÌÀüÀÇ PageLSNÀ» °¡Áø Page¸¦
+         * readÇÑ °æ¿ì¿¡´Â SMO No¸¦ 0À¸·Î ÃÊ±âÈ­ÇÏ¿© index traverseÇÒ¶§
+         * ¹«ÇÑ loop ¿¡ ºüÁöÁö ¾Ê°Ô ÇÑ´Ù. */
+        if ( aChkOnlineTBS == ID_TRUE )
+        {
+            sSpaceNode = sctTableSpaceMgr::findSpaceNodeIncludingDropped( aSpaceID );
+            sOnlineTBSLSN4Idx = sddTableSpace::getOnlineTBSLSN4Idx( sSpaceNode );
+
+            if ( (!( SM_IS_LSN_INIT( sOnlineTBSLSN4Idx ) ) ) &&
+                 ( smLayerCallback::isLSNGT( &sPageLSN, &sOnlineTBSLSN4Idx )
+                   == ID_FALSE ) )
+            {
+                setIndexSMONo( aPageHdr, 0 );
+            }
+        }
+    }
 }

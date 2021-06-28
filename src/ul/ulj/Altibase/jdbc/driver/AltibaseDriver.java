@@ -17,11 +17,7 @@
 package Altibase.jdbc.driver;
 
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.DriverPropertyInfo;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,14 +72,14 @@ public final class AltibaseDriver implements Driver
             mLogger.log(Level.INFO, "URL : {0}, Properties : {1}", new Object[] { aURL, aInfo});
         }
         AltibaseProperties sAltiProp = new AltibaseProperties(aInfo);
-        // BUG-43349 url parsingì„ ë³„ë„ì˜ í´ë˜ìŠ¤ì—ì„œ ì²˜ë¦¬í•œë‹¤.
+        // BUG-43349 url parsingÀ» º°µµÀÇ Å¬·¡½º¿¡¼­ Ã³¸®ÇÑ´Ù.
         return createConnection(sAltiProp, AltibaseUrlParser.parseURL(aURL, sAltiProp));
     }
 
     private Connection createConnection(AltibaseProperties aAltiProp,
                                         boolean aIncludesShardPrefix) throws SQLException
     {
-        // PROJ-2690 shard prefixê°€ í¬í•¨ë˜ì–´ ìˆëŠ” ê²½ìš° AltibaseShardingConnectionì„ ìƒì„±í•œë‹¤.
+        // PROJ-2690 shard prefix°¡ Æ÷ÇÔµÇ¾î ÀÖ´Â °æ¿ì AltibaseShardingConnectionÀ» »ı¼ºÇÑ´Ù.
         Connection sConn = (aIncludesShardPrefix) ? new AltibaseShardingConnection(aAltiProp) :
                                                     new AltibaseConnection(aAltiProp, null, null);
 
@@ -117,9 +113,20 @@ public final class AltibaseDriver implements Driver
         return false;
     }
 
-    // BUG-43349 AltibaseDataSource.setURL()ë¶€ë¶„ì—ì„œ ì°¸ì¡°í•˜ê³  ìˆê¸°ë•Œë¬¸ì— í•´ë‹¹ ë©”ì†Œë“œë¥¼ ìœ ì§€í•œë‹¤.
+    // BUG-43349 AltibaseDataSource.setURL()ºÎºĞ¿¡¼­ ÂüÁ¶ÇÏ°í ÀÖ±â¶§¹®¿¡ ÇØ´ç ¸Ş¼Òµå¸¦ À¯ÁöÇÑ´Ù.
     static void parseURL(String aURL, AltibaseProperties aProps) throws SQLException
     {
         AltibaseUrlParser.parseURL(aURL, aProps);
+    }
+
+    @Override
+    public Logger getParentLogger()
+    {
+        if (TraceFlag.TRACE_COMPILE && TraceFlag.TRACE_ENABLED)
+        {
+            return Logger.getLogger(LoggingProxy.JDBC_LOGGER_DEFAULT);
+        }
+
+        return null;
     }
 }

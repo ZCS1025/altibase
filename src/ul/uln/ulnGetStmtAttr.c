@@ -131,14 +131,14 @@ static void ulnGetStmtAttrReturnLengthToUser(acp_sint32_t *aStringLengthPtr, acp
  *          SQL_ATTR_APP_PARAM_DESC  --------+
  *          SQL_ATTR_APP_ROW_DESC            |
  *          SQL_ATTR_IMP_PARAM_DESC          |
- *          SQL_ATTR_IMP_ROW_DESC            +--> í¬ì¸í„° íƒ€ìž…. ì‹ ê²½ì“°ì§€ ì•Šì•„ë„ ë¨.
+ *          SQL_ATTR_IMP_ROW_DESC            +--> Æ÷ÀÎÅÍ Å¸ÀÔ. ½Å°æ¾²Áö ¾Ê¾Æµµ µÊ.
  *          SQL_ATTR_PARAM_BIND_OFFSET_PTR   |
  *          SQL_ATTR_ROW_BIND_OFFSET_PTR     |
  *          SQL_ATTR_ROWS_FETCHED_PTR -------+
  *
- *          SQL_ATTR_MAX_LENGTH  : ì§€ì›í•˜ì§€ ì•ŠìŒ
- *          SQL_ATTR_KEYSET_SIZE : ì§€ì›í•˜ì§€ ì•ŠìŒ
- *          SQL_ATTR_MAX_ROWS    : ì§€ì›í•˜ì§€ ì•ŠìŒ
+ *          SQL_ATTR_MAX_LENGTH  : Áö¿øÇÏÁö ¾ÊÀ½
+ *          SQL_ATTR_KEYSET_SIZE : Áö¿øÇÏÁö ¾ÊÀ½
+ *          SQL_ATTR_MAX_ROWS    : Áö¿øÇÏÁö ¾ÊÀ½
  *
  *          SQL_ATTR_ROW_ARRAY_SIZE
  *          SQL_ATTR_ROW_NUMBER
@@ -153,6 +153,7 @@ SQLRETURN ulnGetStmtAttr(ulnStmt      *aStmt,
     acp_bool_t    sNeedExit = ACP_FALSE;
     ulnFnContext  sFnContext;
     ulnDesc      *sDesc = NULL;
+    ulnDbc       *sSrcDbc  = NULL;
 
     ACP_UNUSED(aBufferLength);
 
@@ -167,7 +168,7 @@ SQLRETURN ulnGetStmtAttr(ulnStmt      *aStmt,
     sNeedExit = ACP_TRUE;
 
     /*
-     * Optional Feature Not Implemented ë¥¼ ë¦¬í„´í•  ì†ì„±ë“¤ì˜ ëª©ë¡ì„ ë¨¼ì € ì²´í¬.
+     * Optional Feature Not Implemented ¸¦ ¸®ÅÏÇÒ ¼Ó¼ºµéÀÇ ¸ñ·ÏÀ» ¸ÕÀú Ã¼Å©.
      */
     ACI_TEST(ulnStmtAttrCheckUnsupportedAttr(&sFnContext, aAttribute) != ACI_SUCCESS);
 
@@ -197,8 +198,8 @@ SQLRETURN ulnGetStmtAttr(ulnStmt      *aStmt,
             sDesc = ulnStmtGetIpd(aStmt);
             ACI_TEST_RAISE(sDesc == NULL, LABEL_MEM_MAN_ERR);
             /*
-             * PROJ-1697: SQLSetDescField or SQLSetDescRecì—ì„œ DescRec(PRECISION)ì„ ìˆ˜ì •í•  ê²½ìš°,
-             * ì´ë¥¼ stmtì— ë°˜ì˜í•˜ê¸° ìœ„í•¨
+             * PROJ-1697: SQLSetDescField or SQLSetDescRec¿¡¼­ DescRec(PRECISION)À» ¼öÁ¤ÇÒ °æ¿ì,
+             * ÀÌ¸¦ stmt¿¡ ¹Ý¿µÇÏ±â À§ÇÔ
              */
             sDesc->mStmt = (void*)aStmt;
             *(ulnDesc **)aValuePtr = sDesc;
@@ -215,10 +216,10 @@ SQLRETURN ulnGetStmtAttr(ulnStmt      *aStmt,
             break;
 
             /*
-             * Note: ì•„ëž˜ì˜ ë„¤ ì†ì„± (SQL_ATTR_CONCURRENCY, SQL_ATTR_CURSOR_SCROLLABLE,
-             *       SQL_ATTR_CURSOR_SENSITIVITY, SQL_ATTR_CURSOR_TYPE) ì€ í•˜ë‚˜ë¥¼ ì†ëŒ€ë©´
-             *       ë‹¤ë¥¸ ê²ƒë„ consistency ìœ ì§€ë¥¼ ìœ„í•´ì„œ í•¨ê»˜ ë°”ë€Œì–´ ì¤˜ì•¼ í•œë‹¤.
-             *       í•„ìš”í•˜ë‹¤ë©´ ë‹¤ë¥¸ ì†ì„±ë„ ì†ëŒˆ ìˆ˜ ìžˆë‹¤. consistency ìœ ì§€ë¥¼ ìœ„í•´ì„œ
+             * Note: ¾Æ·¡ÀÇ ³× ¼Ó¼º (SQL_ATTR_CONCURRENCY, SQL_ATTR_CURSOR_SCROLLABLE,
+             *       SQL_ATTR_CURSOR_SENSITIVITY, SQL_ATTR_CURSOR_TYPE) Àº ÇÏ³ª¸¦ ¼Õ´ë¸é
+             *       ´Ù¸¥ °Íµµ consistency À¯Áö¸¦ À§ÇØ¼­ ÇÔ²² ¹Ù²î¾î Áà¾ß ÇÑ´Ù.
+             *       ÇÊ¿äÇÏ´Ù¸é ´Ù¸¥ ¼Ó¼ºµµ ¼Õ´î ¼ö ÀÖ´Ù. consistency À¯Áö¸¦ À§ÇØ¼­
              *        -- refer to M$DN ODBC Cursor Characteristics and Cursor Type section
              */
         case SQL_ATTR_CONCURRENCY:
@@ -283,10 +284,10 @@ SQLRETURN ulnGetStmtAttr(ulnStmt      *aStmt,
 
         case SQL_ATTR_ROW_ARRAY_SIZE:
             /*
-             * Note : 64ë¹„íŠ¸ odbc ì— ë”°ë¥´ë©´ í•„ë“œê°€ 64ë¹„íŠ¸ë¥¼ ì§€ì›í•´ì•¼ í•˜ëŠ”ë°,
-             *        ì–´ë–¤ -_-;; ì‚¬ëžŒì´ 20ì–µê°œ ì´ìƒì˜ array ë¥¼ ì¨ì„œ ë°”ì¸ë”© í•˜ê² ëˆ„ -_-;;
+             * Note : 64ºñÆ® odbc ¿¡ µû¸£¸é ÇÊµå°¡ 64ºñÆ®¸¦ Áö¿øÇØ¾ß ÇÏ´Âµ¥,
+             *        ¾î¶² -_-;; »ç¶÷ÀÌ 20¾ï°³ ÀÌ»óÀÇ array ¸¦ ½á¼­ ¹ÙÀÎµù ÇÏ°Ú´© -_-;;
              *
-             *        ê·¸ëƒ¥ ë‚´ë¶€ì—ì„œëŠ” acp_uint32_t ë¡œ í•˜ê³ , SQLSet/GetStmtAttr í•¨ìˆ˜ë“¤ì—ì„œ ìºìŠ¤íŒ…ë§Œ í•˜ìž.
+             *        ±×³É ³»ºÎ¿¡¼­´Â acp_uint32_t ·Î ÇÏ°í, SQLSet/GetStmtAttr ÇÔ¼öµé¿¡¼­ Ä³½ºÆÃ¸¸ ÇÏÀÚ.
              */
             *(ulvULen *)aValuePtr = (ulvULen)ulnStmtGetAttrRowArraySize(aStmt);
             ulnGetStmtAttrReturnLengthToUser(aStringLengthPtr, ACI_SIZEOF(ulvULen));
@@ -434,6 +435,24 @@ SQLRETURN ulnGetStmtAttr(ulnStmt      *aStmt,
         case ALTIBASE_PREPARE_WITH_DESCRIBEPARAM:
             *(acp_uint32_t *)aValuePtr = (acp_uint32_t)ulnStmtGetAttrPrepareWithDescribeParam(aStmt);
             ulnGetStmtAttrReturnLengthToUser(aStringLengthPtr, ACI_SIZEOF(acp_uint32_t));
+            break;
+
+        case ALTIBASE_UNUSED_05: /* ALTIBASE_SHARD_DIST_TX_INFO for NATC */
+            /* BUG-49065 */
+            if (aStmt->mParentDbc->mShardDbcCxt.mParentDbc != NULL)
+            {
+                sSrcDbc = aStmt->mParentDbc->mShardDbcCxt.mParentDbc;
+            }
+            else
+            {
+                sSrcDbc = aStmt->mParentDbc;
+            }
+            ((ulnShardDistTxInfoStruct *)aValuePtr)->mEnvSCN          = sSrcDbc->mParentEnv->mSCN;
+            ((ulnShardDistTxInfoStruct *)aValuePtr)->mSCN             = sSrcDbc->mSCN;
+            ((ulnShardDistTxInfoStruct *)aValuePtr)->mTxFirstStmtSCN  = sSrcDbc->mTxFirstStmtSCN;
+            ((ulnShardDistTxInfoStruct *)aValuePtr)->mTxFirstStmtTime = sSrcDbc->mTxFirstStmtTime;
+            ((ulnShardDistTxInfoStruct *)aValuePtr)->mDistLevel       = sSrcDbc->mDistLevel;
+            ulnGetStmtAttrReturnLengthToUser(aStringLengthPtr, ACI_SIZEOF(ulnShardDistTxInfoStruct));
             break;
 
         default:

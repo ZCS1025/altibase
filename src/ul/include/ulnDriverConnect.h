@@ -19,10 +19,9 @@
 
 ACI_RC ulnSFID_68(ulnFnContext *aContext);
 
-/* BUG-38496 */
-ACI_RC ulnCallbackDBConnectExResult(cmiProtocolContext *aProtocolContext,
-                                    cmiProtocol        *aProtocol,
-                                    void               *aServiceSession,
-                                    void               *aUserContext);
+ACI_RC ulnCallbackDBConnectResult(cmiProtocolContext *aProtocolContext,
+                                  cmiProtocol        *aProtocol,
+                                  void               *aServiceSession,
+                                  void               *aUserContext);
 
 #endif /* _O_ULN_DRIVER_CONNECT_H_ */

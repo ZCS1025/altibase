@@ -20,8 +20,6 @@ package Altibase.jdbc.driver.sharding.routing;
 import Altibase.jdbc.driver.cm.CmProtocolContextShardStmt;
 import Altibase.jdbc.driver.cm.CmShardAnalyzeResult;
 import Altibase.jdbc.driver.datatype.Column;
-import Altibase.jdbc.driver.sharding.algorithm.ListShardingValue;
-import Altibase.jdbc.driver.sharding.algorithm.ShardingValue;
 import Altibase.jdbc.driver.sharding.core.DataNode;
 import Altibase.jdbc.driver.sharding.core.ShardKeyDataType;
 import Altibase.jdbc.driver.sharding.core.ShardSplitMethod;
@@ -30,7 +28,6 @@ import Altibase.jdbc.driver.sharding.strategy.CompositeShardingStrategy;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class CompositeShardKeyRoutingEngine extends ShardKeyBaseRoutingEngine
 {
@@ -46,52 +43,41 @@ public class CompositeShardKeyRoutingEngine extends ShardKeyBaseRoutingEngine
         List<ShardSplitMethod> sShardSplitMethodList = new ArrayList<ShardSplitMethod>();
         sShardSplitMethodList.add(mShardSplitMethod);
         sShardSplitMethodList.add(mShardSubSplitMethod);
-        mShardingStrategy = new CompositeShardingStrategy(mShardRangeList, getDefaultNode(),
-                                                          sShardSplitMethodList);
+        mShardingStrategy = new CompositeShardingStrategy(mShardRangeList, getDefaultNode(), sShardSplitMethodList,
+                                                          mShardValueCnt, mShardSubValueCnt);
     }
 
-    public SQLRouteResult route(String aSql, List<Column> aParameters) throws SQLException
+    public List<DataNode> route(String aSql, List<Column> aParameters) throws SQLException
     {
-        List<ShardingValue> sShardingValues = new ArrayList<ShardingValue>();
         CmShardAnalyzeResult sShardAnalyzeResult = mShardStmtCtx.getShardAnalyzeResult();
         List<Comparable<?>> sShardValues = getShardValues(aParameters,
                                                           sShardAnalyzeResult.getShardValueInfoList(),
                                                           mShardSplitMethod,
                                                           mShardKeyDataType,
                                                           false);
-        sShardingValues.add(new ListShardingValue<Comparable<?>>(mShardParamIdx, sShardValues));
 
         List<Comparable<?>> sShardSubValues = getShardValues(aParameters,
                                                              sShardAnalyzeResult.getShardSubValueInfoList(),
                                                              mShardSubSplitMethod,
                                                              mShardSubKeyDataType,
                                                              true);
-        sShardingValues.add(new ListShardingValue<Comparable<?>>(mShardSubParamIdx, sShardSubValues));
+        List<Comparable<?>> sShardingValues = new ArrayList<Comparable<?>>(sShardValues);
+        sShardingValues.addAll(sShardSubValues);
 
-        SQLRouteResult sResult = new SQLRouteResult();
-        Set<DataNode> sShardResult = mShardingStrategy.doSharding(sShardingValues);
-
-        for (DataNode sEach : sShardResult)
-        {
-            sResult.getExecutionUnits().add(new SQLExecutionUnit(sEach, aSql));
-        }
-
-        return sResult;
+        return mShardingStrategy.doSharding(sShardingValues);
     }
 
     @Override
     public String toString()
     {
-        final StringBuilder sSb = new StringBuilder("CompositeShardKeyRoutingEngine{");
-        sSb.append("mShardStmtCtx=").append(mShardStmtCtx);
-        sSb.append(", mShardingStrategy=").append(mShardingStrategy);
-        sSb.append(", mShardSplitMethod=").append(mShardSplitMethod);
-        sSb.append(", mShardKeyDataType=").append(mShardKeyDataType);
-        sSb.append(", mShardSubSplitMethod=").append(mShardSubSplitMethod);
-        sSb.append(", mShardSubKeyDataType=").append(mShardSubKeyDataType);
-        sSb.append(", mShardParamIdx=").append(mShardParamIdx);
-        sSb.append(", mShardSubParamIdx=").append(mShardSubParamIdx);
-        sSb.append('}');
-        return sSb.toString();
+        return "CompositeShardKeyRoutingEngine{" + "mShardStmtCtx=" + mShardStmtCtx
+               + ", mShardingStrategy=" + mShardingStrategy
+               + ", mShardSplitMethod=" + mShardSplitMethod
+               + ", mShardKeyDataType=" + mShardKeyDataType
+               + ", mShardSubSplitMethod=" + mShardSubSplitMethod
+               + ", mShardSubKeyDataType=" + mShardSubKeyDataType
+               + ", mShardParamIdx=" + mShardParamIdx
+               + ", mShardSubParamIdx=" + mShardSubParamIdx
+               + '}';
     }
 }

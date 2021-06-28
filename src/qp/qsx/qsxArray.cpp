@@ -32,14 +32,14 @@ IDE_RC qsxArray::initArray( qcStatement  *  aQcStmt,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 array ì´ˆê¸°í™”
+ * Description : PROJ-1075 array ÃÊ±âÈ­
  *
  * Implementation :
- *          array ë³€ìˆ˜ì— í•„ìš”í•œ ë‹¤ìŒ ì •ë³´ë“¤ì„ ì„¸íŒ…í•œë‹¤.
- *          (1) avlTreeì—ì„œ í•„ìš”í•œ ì •ë³´
+ *          array º¯¼ö¿¡ ÇÊ¿äÇÑ ´ÙÀ½ Á¤º¸µéÀ» ¼¼ÆÃÇÑ´Ù.
+ *          (1) avlTree¿¡¼­ ÇÊ¿äÇÑ Á¤º¸
  *              memory - iduMemListOld
  *              column - keyColumn, dataColumn
- *              statistics - ì„¸ì…˜ ì´ë²¤íŠ¸ ê°ì§€ìš©
+ *              statistics - ¼¼¼Ç ÀÌº¥Æ® °¨Áö¿ë
  *
  ***********************************************************************/    
 
@@ -50,9 +50,9 @@ IDE_RC qsxArray::initArray( qcStatement  *  aQcStmt,
 
     /*
      * PROJ-1904 Extend UDT
-     * 1) aArrayInfo í• ë‹¹
-     * 2) avl tree ì´ˆê¸°í™”
-     * 3) memory manager í• ë‹¹
+     * 1) aArrayInfo ÇÒ´ç
+     * 2) avl tree ÃÊ±âÈ­
+     * 3) memory manager ÇÒ´ç
      */
     IDE_TEST( qsxUtil::allocArrayInfo( aQcStmt,
                                        &sArrayInfo )
@@ -99,10 +99,10 @@ IDE_RC qsxArray::initArray( qcStatement  *  aQcStmt,
 /***********************************************************************
  *
  * Description : PROJ-1094 Extend UDT
- *               Array type ë³€ìˆ˜ë¥¼ ì •ë¦¬ í•œë‹¤.
+ *               Array type º¯¼ö¸¦ Á¤¸® ÇÑ´Ù.
  *
  * Implementation : 
- *   * Array type ë³€ìˆ˜ì˜ ê° columnì˜ typeì— ë§ê²Œ ë™ì‘í•œë‹¤.
+ *   * Array type º¯¼öÀÇ °¢ columnÀÇ type¿¡ ¸Â°Ô µ¿ÀÛÇÑ´Ù.
  *     (1) AA type        : truncate table & free qsxArrayInfo
  *     (2) Record type    : Nothing to do.
  *     (3) primitive type : Nothing to do.
@@ -167,11 +167,11 @@ IDE_RC qsxArray::truncateArray( qsxArrayInfo * aArrayInfo )
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 array elementë“¤ì„ ëª¨ë‘ ì‚­ì œ.
+ * Description : PROJ-1075 array elementµéÀ» ¸ğµÎ »èÁ¦.
  *
  * Implementation :
- *          array elementsëŠ” ëª¨ë‘ avlTreeì—ì„œ ê´€ë¦¬í•˜ê¸° ë•Œë¬¸ì—
- *          avlTreeì˜ nodeë“¤ì„ ëª¨ë‘ ì‚­ì œ.
+ *          array elements´Â ¸ğµÎ avlTree¿¡¼­ °ü¸®ÇÏ±â ¶§¹®¿¡
+ *          avlTreeÀÇ nodeµéÀ» ¸ğµÎ »èÁ¦.
  *
  ***********************************************************************/    
     IDE_TEST( qsxAvl::deleteAll( &aArrayInfo->avlTree )
@@ -193,13 +193,13 @@ IDE_RC qsxArray::searchKey( qcStatement  * aQcStmt,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 keyì— í•´ë‹¹í•˜ëŠ” ê°’ì„ search.
+ * Description : PROJ-1075 key¿¡ ÇØ´çÇÏ´Â °ªÀ» search.
  *
  * Implementation :
- *         (1) aInsertê°€ trueì¸ ê²½ìš°
- *             searchí•´ì„œ ì—†ìœ¼ë©´ insert
- *         (2) aInsertê°€ falseì¸ ê²½ìš°
- *             searchí•´ì„œ ì—†ìœ¼ë©´ error
+ *         (1) aInsert°¡ trueÀÎ °æ¿ì
+ *             searchÇØ¼­ ¾øÀ¸¸é insert
+ *         (2) aInsert°¡ falseÀÎ °æ¿ì
+ *             searchÇØ¼­ ¾øÀ¸¸é error
  *
  ***********************************************************************/
 
@@ -285,10 +285,10 @@ IDE_RC qsxArray::deleteOneElement( qsxArrayInfo * aArrayInfo,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 element í•œê°œë¥¼ ì‚­ì œ
+ * Description : PROJ-1075 element ÇÑ°³¸¦ »èÁ¦
  *
  * Implementation :
- *           qsxAvl::deleteKeyí•¨ìˆ˜ í˜¸ì¶œ.
+ *           qsxAvl::deleteKeyÇÔ¼ö È£Ãâ.
  *
  ***********************************************************************/    
 
@@ -314,10 +314,10 @@ IDE_RC qsxArray::deleteElementsRange( qsxArrayInfo * aArrayInfo,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 rangeì— ì†í•œ elementë¥¼ ì‚­ì œ
+ * Description : PROJ-1075 range¿¡ ¼ÓÇÑ element¸¦ »èÁ¦
  *
  * Implementation :
- *           qsxAvl::deleteRangeí•¨ìˆ˜ í˜¸ì¶œ.
+ *           qsxAvl::deleteRangeÇÔ¼ö È£Ãâ.
  *
  ***********************************************************************/
 
@@ -344,12 +344,12 @@ IDE_RC qsxArray::searchNext( qsxArrayInfo * aArrayInfo,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 í•´ë‹¹ keyì˜ ë‹¤ìŒ keyë¥¼ ê°€ì ¸ì˜´.
+ * Description : PROJ-1075 ÇØ´ç keyÀÇ ´ÙÀ½ key¸¦ °¡Á®¿È.
  *
  * Implementation :
- *           qsxAvl::searchNext í˜¸ì¶œ.
- *           nextë¥¼ ê°€ì ¸ì™€ì•¼ í•˜ë¯€ë¡œ AVL_RIGHT
- *           ìê¸°ìì‹ ì„ í¬í•¨í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ AVL_NEXT
+ *           qsxAvl::searchNext È£Ãâ.
+ *           next¸¦ °¡Á®¿Í¾ß ÇÏ¹Ç·Î AVL_RIGHT
+ *           ÀÚ±âÀÚ½ÅÀ» Æ÷ÇÔÇÏÁö ¾ÊÀ¸¹Ç·Î AVL_NEXT
  *
  ***********************************************************************/
 
@@ -388,12 +388,12 @@ IDE_RC qsxArray::searchPrior( qsxArrayInfo * aArrayInfo,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 í•´ë‹¹ keyì˜ ì´ì „ keyë¥¼ ê°€ì ¸ì˜´.
+ * Description : PROJ-1075 ÇØ´ç keyÀÇ ÀÌÀü key¸¦ °¡Á®¿È.
  *
  * Implementation :
- *           qsxAvl::searchNext í˜¸ì¶œ.
- *           priorë¥¼ ê°€ì ¸ì™€ì•¼ í•˜ë¯€ë¡œ AVL_LEFT
- *           ìê¸°ìì‹ ì„ í¬í•¨í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ AVL_NEXT
+ *           qsxAvl::searchNext È£Ãâ.
+ *           prior¸¦ °¡Á®¿Í¾ß ÇÏ¹Ç·Î AVL_LEFT
+ *           ÀÚ±âÀÚ½ÅÀ» Æ÷ÇÔÇÏÁö ¾ÊÀ¸¹Ç·Î AVL_NEXT
  *
  ***********************************************************************/
 
@@ -430,11 +430,11 @@ IDE_RC qsxArray::searchFirst( qsxArrayInfo * aArrayInfo,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 min keyë¥¼ ê°€ì ¸ì˜´.
+ * Description : PROJ-1075 min key¸¦ °¡Á®¿È.
  *
  * Implementation :
- *          qsxAvl::searchMinMaxí•¨ìˆ˜ í˜¸ì¶œ.
- *          minì´ë¯€ë¡œ AVL_LEFT
+ *          qsxAvl::searchMinMaxÇÔ¼ö È£Ãâ.
+ *          minÀÌ¹Ç·Î AVL_LEFT
  *
  ***********************************************************************/
 
@@ -468,11 +468,11 @@ IDE_RC qsxArray::searchLast( qsxArrayInfo * aArrayInfo,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 max keyë¥¼ ê°€ì ¸ì˜´.
+ * Description : PROJ-1075 max key¸¦ °¡Á®¿È.
  *
  * Implementation :
- *          qsxAvl::searchMinMaxí•¨ìˆ˜ í˜¸ì¶œ.
- *          maxì´ë¯€ë¡œ AVL_RIGHT
+ *          qsxAvl::searchMinMaxÇÔ¼ö È£Ãâ.
+ *          maxÀÌ¹Ç·Î AVL_RIGHT
  *
  ***********************************************************************/
 
@@ -547,7 +547,7 @@ IDE_RC qsxArray::exists( qsxArrayInfo * aArrayInfo,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 í•´ë‹¹ keyë¥¼ ê°€ì§„ elementê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬.
+ * Description : PROJ-1075 ÇØ´ç key¸¦ °¡Áø element°¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç.
  *
  * Implementation :
  *
@@ -573,7 +573,7 @@ SInt qsxArray::getElementsCount( qsxArrayInfo * aArrayInfo )
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 countë¥¼ ê°€ì ¸ì˜´.
+ * Description : PROJ-1075 count¸¦ °¡Á®¿È.
  *
  * Implementation :
  *
@@ -591,8 +591,8 @@ IDE_RC qsxArray::assign( mtcTemplate  * aDstTemplate,
  * Description : PROJ-1075 array assign
  *
  * Implementation :
- *        (1) aDstArrayInfoë¥¼ truncateí•œë‹¤.
- *        (2) aSrcArrayInfoì—ì„œ í•˜ë‚˜ì”© ê°€ì ¸ì™€ì„œ aDstArrayInfoì— ì‚½ì….
+ *        (1) aDstArrayInfo¸¦ truncateÇÑ´Ù.
+ *        (2) aSrcArrayInfo¿¡¼­ ÇÏ³ª¾¿ °¡Á®¿Í¼­ aDstArrayInfo¿¡ »ğÀÔ.
  *
  ***********************************************************************/
 
@@ -614,7 +614,7 @@ IDE_RC qsxArray::assign( mtcTemplate  * aDstTemplate,
     sSrcTree = &aSrcArrayInfo->avlTree;
     sDstTree = &aDstArrayInfo->avlTree;
 
-    // ë™ì¼í•œ treeë©´ copy í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // µ¿ÀÏÇÑ tree¸é copy ÇÏÁö ¾Ê´Â´Ù.
     IDE_TEST_CONT( sSrcTree == sDstTree, SKIP_ASSIGN );
 
     IDE_TEST( truncateArray( aDstArrayInfo )

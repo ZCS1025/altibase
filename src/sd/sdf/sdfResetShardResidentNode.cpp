@@ -28,7 +28,8 @@
  *                                     old_node_name VARCHAR,
  *                                     new_node_name VARCHAR,
  *                                     value         VARCHAR,
- *                                     sub_value     VARCHAR )
+ *                                     sub_value     VARCHAR,
+ *                                     is_default    INT )
  *    RETURN 0
  *
  **********************************************************************/
@@ -54,7 +55,7 @@ static IDE_RC sdfEstimate( mtcNode*        aNode,
 mtfModule sdfResetShardResidentNodeModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     sdfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -86,7 +87,7 @@ static IDE_RC sdfEstimate( mtcNode*     aNode,
                            SInt      /* aRemain */,
                            mtcCallBack* aCallBack )
 {
-    const mtdModule* sModules[6] =
+    const mtdModule* sModules[7] =
     {
         &mtdVarchar, // user_name
         &mtdVarchar, // table_name
@@ -94,6 +95,7 @@ static IDE_RC sdfEstimate( mtcNode*     aNode,
         &mtdVarchar, // new_node_name
         &mtdVarchar, // value
         &mtdVarchar, // sub_value
+        &mtdInteger, // is_default
     };
     const mtdModule* sModule = &mtdInteger;
 
@@ -101,7 +103,7 @@ static IDE_RC sdfEstimate( mtcNode*     aNode,
                     MTC_NODE_QUANTIFIER_TRUE,
                     ERR_NOT_AGGREGATION );
 
-    IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) != 6,
+    IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) != 7,
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
     IDE_TEST( mtf::makeConversionNodes( aNode,
@@ -173,8 +175,34 @@ IDE_RC sdfCalculate_ResetShardResidentNode( mtcNode*     aNode,
     smiStatement              sSmiStmt;
     UInt                      sSmiStmtFlag;
     SInt                      sState = 0;
+    idBool                    sIsOldSessionShardMetaTouched = ID_FALSE;
+    SChar                     sPartitionName[ QC_MAX_OBJECT_NAME_LEN + 1];
+    qcmTablePartitionType     sTablePartitionType = QCM_PARTITIONED_TABLE;
+    SChar                     sObjectValue[SDI_RANGE_VARCHAR_MAX_PRECISION + 1];
+    
+    mtdIntegerType            sIsDefault;
+
+    sdiShardObjectType         sShardTableType = SDI_NON_SHARD_OBJECT;
+
+    sdiTableInfo              sTableInfo;
+    idBool                    sIsTableFound = ID_FALSE;
+    sdiGlobalMetaInfo         sMetaNodeInfo = { ID_ULONG(0) };
+    sdiLocalMetaInfo          sLocalMetaInfo;
+    idBool                    sIsUsable     = ID_FALSE;
+
+    sdiInternalOperation      sInternalOP = SDI_INTERNAL_OP_NOT;
 
     sStatement   = ((qcTemplate*)aTemplate)->stmt;
+    sOldStmt     = QC_SMI_STMT(sStatement);
+    sStatement->mFlag &= ~QC_STMT_SHARD_META_CHANGE_MASK;
+    sStatement->mFlag |= QC_STMT_SHARD_META_CHANGE_TRUE;
+
+    /* BUG-47623 »þµå ¸ÞÅ¸ º¯°æ¿¡ ´ëÇÑ trc ·Î±×Áß commit ·Î±×¸¦ ÀÛ¼ºÇÏ±âÀü¿¡ DASSERT ·Î Á×´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù. */
+    if ( ( sStatement->session->mQPSpecific.mFlag & QC_SESSION_SHARD_META_TOUCH_MASK ) ==
+         QC_SESSION_SHARD_META_TOUCH_TRUE )
+    {
+        sIsOldSessionShardMetaTouched = ID_TRUE;
+    }
 
     // Check Privilege
     IDE_TEST_RAISE( QCG_GET_SESSION_USER_ID(sStatement) != QCI_SYS_USER_ID,
@@ -225,7 +253,7 @@ IDE_RC sdfCalculate_ResetShardResidentNode( mtcNode*     aNode,
         // old node name
         sOldNodeName = (mtdCharType*)aStack[3].value;
 
-        IDE_TEST_RAISE( sOldNodeName->length > SDI_NODE_NAME_MAX_SIZE,
+        IDE_TEST_RAISE( sOldNodeName->length > SDI_CHECK_NODE_NAME_MAX_SIZE,
                         ERR_SHARD_GROUP_NAME_TOO_LONG );
         idlOS::strncpy( sOldNodeNameStr,
                         (SChar*)sOldNodeName->value,
@@ -235,7 +263,7 @@ IDE_RC sdfCalculate_ResetShardResidentNode( mtcNode*     aNode,
         // new node name
         sNewNodeName = (mtdCharType*)aStack[4].value;
 
-        IDE_TEST_RAISE( sNewNodeName->length > SDI_NODE_NAME_MAX_SIZE,
+        IDE_TEST_RAISE( sNewNodeName->length > SDI_CHECK_NODE_NAME_MAX_SIZE,
                         ERR_SHARD_GROUP_NAME_TOO_LONG );
         idlOS::strncpy( sNewNodeNameStr,
                         (SChar*)sNewNodeName->value,
@@ -252,6 +280,24 @@ IDE_RC sdfCalculate_ResetShardResidentNode( mtcNode*     aNode,
                         sValue->length );
         sValueStr[sValue->length] = '\0';
 
+        // PARTITION VALUE¸¦ ÀÔ·Â°ú µ¿ÀÏÇÏ°Ô ' ºÙ¿© ÁØ´Ù.
+        if ( sValueStr[0] == '\'' )
+        {
+            // INPUT ARG ('''A''') => 'A' => '''A'''
+            idlOS::snprintf( sObjectValue,
+                             SDI_RANGE_VARCHAR_MAX_PRECISION + 1,
+                             "''%s''",
+                             sValueStr );
+        }
+        else
+        {
+            // INPUT ARG ('A') => A => 'A'
+            idlOS::snprintf( sObjectValue,
+                             SDI_RANGE_VARCHAR_MAX_PRECISION + 1,
+                             "'%s'",
+                             sValueStr );
+        }
+
         // sub value
         sSubValue = (mtdCharType*)aStack[6].value;
 
@@ -261,6 +307,15 @@ IDE_RC sdfCalculate_ResetShardResidentNode( mtcNode*     aNode,
                         (SChar*)sSubValue->value,
                         sSubValue->length );
         sSubValueStr[sSubValue->length] = '\0';
+
+        // is_default
+        sIsDefault = *(mtdIntegerType*)aStack[7].value;
+        IDE_TEST_RAISE( ( sIsDefault > 1 ) ||
+                        ( sIsDefault < 0 ),
+                        ERR_ARGUMENT_NOT_APPLICABLE );
+
+        // Internal Option
+        sInternalOP = (sdiInternalOperation)QCG_GET_SESSION_SHARD_INTERNAL_LOCAL_OPERATION( sStatement );
 
         //---------------------------------
         // Begin Statement for meta
@@ -277,19 +332,90 @@ IDE_RC sdfCalculate_ResetShardResidentNode( mtcNode*     aNode,
                   != IDE_SUCCESS );
         sState = 2;
 
-        //---------------------------------
-        // Insert Meta
-        //---------------------------------
-
-        IDE_TEST( sdm::updateRange( sStatement,
-                                    (SChar*)sUserNameStr,
-                                    (SChar*)sTableNameStr,
-                                    (SChar*)sOldNodeNameStr,
-                                    (SChar*)sNewNodeNameStr,
-                                    (SChar*)sValueStr,
-                                    (SChar*)sSubValueStr,
-                                    &sRowCnt )
+        /* get TableInfo */
+        IDE_TEST( sdm::getGlobalMetaInfoCore( QC_SMI_STMT(sStatement),
+                                              &sMetaNodeInfo ) != IDE_SUCCESS );
+       
+        IDE_TEST( sdm::getTableInfo( QC_SMI_STMT( sStatement ),
+                                     sUserNameStr,
+                                     sTableNameStr,
+                                     sMetaNodeInfo.mShardMetaNumber,
+                                     &sTableInfo,
+                                     &sIsTableFound )
                   != IDE_SUCCESS );
+
+        /* check Table Type */
+        sShardTableType = sdi::getShardObjectType( &sTableInfo );
+        
+        /* TableÀÇ Shard Type¿¡ ¸Â°Ô Value¸¦ °¡Á®¿Â´Ù. */
+        if ( sTableInfo.mObjectType == 'T' )
+        {
+            switch( sShardTableType )
+            {
+                case SDI_SINGLE_SHARD_KEY_DIST_OBJECT:
+                    IDE_TEST( sdm::getPartitionNameByValue( QC_SMI_STMT( sStatement ),
+                                                            sUserNameStr,
+                                                            sTableNameStr,
+                                                            sObjectValue,
+                                                            &sTablePartitionType,
+                                                            sPartitionName ) != IDE_SUCCESS );
+                    
+                    if ( idlOS::strncmp( sPartitionName, SDM_NA_STR, QC_MAX_OBJECT_NAME_LEN + 1 ) == 0 )
+                    {
+                        // partitioned tableÀÇ °æ¿ì range value¿Í partitionÀÇ °æ°è°ªÀÌ ¸Â´Â °ÍÀÌ ¾øÀ¸¸é ¿¡·¯¸¦ ¹ÝÈ¯ÇÑ´Ù.
+                        IDE_TEST_RAISE( sTablePartitionType != QCM_NONE_PARTITIONED_TABLE, ERR_ARGUMENT_NOT_APPLICABLE );
+                    }
+                    break;
+                case SDI_SOLO_DIST_OBJECT:
+                case SDI_CLONE_DIST_OBJECT:
+                    /* Solo/CloneÀº PartitionÀÌ ¾ø´Ù. */
+                    sPartitionName[0] = '\0';
+                    break;
+                case SDI_COMPOSITE_SHARD_KEY_DIST_OBJECT:
+                case SDI_NON_SHARD_OBJECT:
+                default:
+                    IDE_RAISE( ERR_SHARD_TYPE );
+                    break;
+            }
+        }
+        else
+        {
+            idlOS::strncpy( sPartitionName,
+                            SDM_NA_STR,
+                            QC_MAX_OBJECT_NAME_LEN + 1 );
+        }
+
+        //---------------------------------
+        // Update Meta
+        //---------------------------------
+        if ( sIsDefault != 0 )
+        {
+            IDE_TEST(sdm::updateDefaultNodeAndPartititon( sStatement,
+                                                          sUserNameStr,
+                                                          sTableNameStr,
+                                                          sNewNodeNameStr,
+                                                          sPartitionName,
+                                                          &sRowCnt,
+                                                          sInternalOP ) != IDE_SUCCESS);
+            IDE_TEST_RAISE( sRowCnt == 0,
+                            ERR_INVALID_SHARD_INFO_D );
+        }
+        else
+        {
+            IDE_TEST( sdm::updateRange( sStatement,
+                                        (SChar*)sUserNameStr,
+                                        (SChar*)sTableNameStr,
+                                        (SChar*)sOldNodeNameStr,
+                                        (SChar*)sNewNodeNameStr,
+                                        (SChar*)sPartitionName,
+                                        (SChar*)sObjectValue,
+                                        (SChar*)sSubValueStr,
+                                        &sRowCnt,
+                                        sInternalOP )
+                      != IDE_SUCCESS );
+            IDE_TEST_RAISE( sRowCnt == 0,
+                            ERR_INVALID_SHARD_INFO_R );
+        }
 
         //---------------------------------
         // End Statement
@@ -301,14 +427,53 @@ IDE_RC sdfCalculate_ResetShardResidentNode( mtcNode*     aNode,
         sState = 0;
         QC_SMI_STMT(sStatement) = sOldStmt;
 
-        IDE_TEST_RAISE( sRowCnt == 0,
-                        ERR_INVALID_SHARD_INFO );
+        /* TASK-7307 DML Data Consistency in Shard */
+        if ( ( SDU_SHARD_LOCAL_FORCE != 1 ) &&
+             ( sTableInfo.mObjectType == 'T' ) )
+        {
+            IDE_TEST( sdm::getLocalMetaInfo( &sLocalMetaInfo ) != IDE_SUCCESS );
+
+            /* ÁöÁ¤µÈ OldNode¿Í ³» NodeNameÀÌ ÀÏÄ¡ÇÏ¸é unusable·Î º¯°æ
+             * ÁöÁ¤µÈ NewNode¿Í ³» NodeNameÀÌ ÀÏÄ¡ÇÏ¸é usable·Î º¯°æ */
+            if ( idlOS::strncmp(sLocalMetaInfo.mNodeName, sOldNodeNameStr, SDI_NODE_NAME_MAX_SIZE + 1) == 0 )
+            {
+                sIsUsable = ID_FALSE;
+            }
+            else if ( idlOS::strncmp(sLocalMetaInfo.mNodeName, sNewNodeNameStr, SDI_NODE_NAME_MAX_SIZE + 1) == 0 )
+            {
+                sIsUsable = ID_TRUE;
+            }
+            else
+            {
+                IDE_CONT( normal_exit );
+            }
+
+            IDE_TEST( sdm::alterUsable( sStatement,
+                                        sUserNameStr,
+                                        sTableNameStr,
+                                        sPartitionName,
+                                        sIsUsable,
+                                        ID_FALSE ) // IsNewTrans
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
     }
+
+    IDE_EXCEPTION_CONT( normal_exit );
 
     *(mtdIntegerType*)aStack[0].value = 0;
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_SHARD_TYPE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdfCalculate_ResetShardResidentNode",
+                                  "Invalid Shard Type" ) );
+    }
     IDE_EXCEPTION( ERR_SHARD_USER_NAME_TOO_LONG );
     {
         IDE_SET( ideSetErrorCode( sdERR_ABORT_SDF_SHARD_USER_NAME_TOO_LONG ) );
@@ -329,9 +494,28 @@ IDE_RC sdfCalculate_ResetShardResidentNode( mtcNode*     aNode,
     {
         IDE_SET(ideSetErrorCode(mtERR_ABORT_ARGUMENT_NOT_APPLICABLE));
     }
-    IDE_EXCEPTION( ERR_INVALID_SHARD_INFO );
+    IDE_EXCEPTION( ERR_INVALID_SHARD_INFO_D );
     {
-        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDF_INVALID_META_CHANGE ) );
+
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDF_INVALID_META_CHANGE_ARG,
+                                  sUserNameStr,
+                                  sTableNameStr,
+                                  sNewNodeNameStr,
+                                  sPartitionName,
+                                  "",
+                                  "",
+                                  "" ) );
+    }
+    IDE_EXCEPTION( ERR_INVALID_SHARD_INFO_R );
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDF_INVALID_META_CHANGE_ARG,
+                                  sUserNameStr,
+                                  sTableNameStr,
+                                  sOldNodeNameStr,
+                                  sNewNodeNameStr,
+                                  sPartitionName,
+                                  sValueStr,
+                                  "" ) );
     }
     IDE_EXCEPTION( ERR_NO_GRANT )
     {
@@ -339,6 +523,8 @@ IDE_RC sdfCalculate_ResetShardResidentNode( mtcNode*     aNode,
     }
     IDE_EXCEPTION_END;
 
+    IDE_PUSH();
+        
     switch ( sState )
     {
         case 2:
@@ -356,5 +542,17 @@ IDE_RC sdfCalculate_ResetShardResidentNode( mtcNode*     aNode,
             break;
     }
 
+    /* BUG-47623 »þµå ¸ÞÅ¸ º¯°æ¿¡ ´ëÇÑ trc ·Î±×Áß commit ·Î±×¸¦ ÀÛ¼ºÇÏ±âÀü¿¡ DASSERT ·Î Á×´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù. */
+    if ( sIsOldSessionShardMetaTouched == ID_TRUE )
+    {
+        sdi::setShardMetaTouched( sStatement->session );
+    }
+    else
+    {
+        sdi::unsetShardMetaTouched( sStatement->session );
+    }
+
+    IDE_POP();
+    
     return IDE_FAILURE;
 }

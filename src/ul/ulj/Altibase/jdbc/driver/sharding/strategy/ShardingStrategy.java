@@ -17,14 +17,12 @@
 
 package Altibase.jdbc.driver.sharding.strategy;
 
-import Altibase.jdbc.driver.sharding.algorithm.ShardingValue;
 import Altibase.jdbc.driver.sharding.core.DataNode;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Set;
 
 public interface ShardingStrategy
 {
-    Set<DataNode> doSharding(List<ShardingValue> aValue) throws SQLException;
+    List<DataNode> doSharding(List<Comparable<?>> aValue) throws SQLException;
 }

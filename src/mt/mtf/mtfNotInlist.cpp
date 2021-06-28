@@ -135,7 +135,7 @@ IDE_RC mtfNotInlistEstimate( mtcNode*     aNode,
                                 != ID_TRUE, ERR_CONVERSION_NOT_APPLICABLE );
             }
 
-            /* column conversion ì„ ë¶™ì¸ë‹¤. */
+            /* column conversion À» ºÙÀÎ´Ù. */
             sModules[0] = sTarget;
             sModules[1] = &mtdChar;
 
@@ -168,7 +168,7 @@ IDE_RC mtfNotInlistEstimate( mtcNode*     aNode,
                                     != ID_TRUE, ERR_CONVERSION_NOT_APPLICABLE );
                 }
 
-                /* column conversion ì„ ë¶™ì¸ë‹¤. */
+                /* column conversion À» ºÙÀÎ´Ù. */
                 sModules[0] = sTarget;
                 sModules[1] = &mtdVarchar;
 
@@ -182,7 +182,7 @@ IDE_RC mtfNotInlistEstimate( mtcNode*     aNode,
             }
             else
             {
-                /*char varchar ê°€ ì•„ë‹Œ ê²½ìš° ê°•ì œë¡œ varchar ë¡œ conversion */
+                /*char varchar °¡ ¾Æ´Ñ °æ¿ì °­Á¦·Î varchar ·Î conversion */
                 IDE_TEST( mtf::getComparisonModule( &sTarget,
                                                     aStack[1].column->module->no,
                                                     mtdVarchar.no )
@@ -200,7 +200,7 @@ IDE_RC mtfNotInlistEstimate( mtcNode*     aNode,
                                     != ID_TRUE, ERR_CONVERSION_NOT_APPLICABLE );
                 }
 
-                /* column conversion ì„ ë¶™ì¸ë‹¤. */
+                /* column conversion À» ºÙÀÎ´Ù. */
                 sModules[0] = sTarget;
                 sModules[1] = &mtdVarchar;
 
@@ -239,7 +239,7 @@ IDE_RC mtfNotInlistCalculate( mtcNode*     aNode,
                               void*        aInfo,
                               mtcTemplate* aTemplate )
 {
-    /* mtfInlistCalculate í•¨ìˆ˜ì˜ ê²°ê³¼ì˜ ë°˜ëŒ€ì˜ ê²°ê³¼ë¥¼ ë¦¬í„´í•˜ë„ë¡ í•œë‹¤. */
+    /* mtfInlistCalculate ÇÔ¼öÀÇ °á°úÀÇ ¹İ´ëÀÇ °á°ú¸¦ ¸®ÅÏÇÏµµ·Ï ÇÑ´Ù. */
     IDE_TEST( mtfInlistCalculate( aNode, aStack, aRemain, aInfo, aTemplate )
               != IDE_SUCCESS );
 

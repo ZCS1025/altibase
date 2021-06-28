@@ -27,7 +27,7 @@ ACI_RC ulnCallbackPlanGetResult(cmiProtocolContext *aPtContext,
     ulnDbc                  *sDbc;
     acp_uint8_t             *sPlan;
     acp_uint8_t             *sRow = NULL;
-    acp_uint32_t             sRowSize= 0;    /* BUG-46360 */
+    acp_uint32_t             sRowSize;
 
     acp_uint32_t             sStatementID;
     acp_uint32_t             sLen;
@@ -54,7 +54,7 @@ ACI_RC ulnCallbackPlanGetResult(cmiProtocolContext *aPtContext,
     }
 
     /*
-     * Null Termination character ê¹Œì§€ í¬í•¨
+     * Null Termination character ±îÁö Æ÷ÇÔ
      */
     ACI_TEST_RAISE(ulnStmtAllocPlanTree(sFnContext->mHandle.mStmt, sLen + 1)
                    != ACI_SUCCESS,
@@ -65,7 +65,7 @@ ACI_RC ulnCallbackPlanGetResult(cmiProtocolContext *aPtContext,
     
     if ( cmiGetLinkImpl(aPtContext) == CMI_LINK_IMPL_IPCDA )
     {
-        /* PROJ-2616 ë©”ëª¨ë¦¬ì— ë°”ë¡œ ì ‘ê·¼í•˜ì—¬ ë°ì´í„°ë¥¼ ì½ë„ë¡ í•œë‹¤. */
+        /* PROJ-2616 ¸Þ¸ð¸®¿¡ ¹Ù·Î Á¢±ÙÇÏ¿© µ¥ÀÌÅÍ¸¦ ÀÐµµ·Ï ÇÑ´Ù. */
         ACI_TEST_RAISE( cmiSplitReadIPCDA(aPtContext,
                                           sLen,
                                           &sRow,
@@ -146,13 +146,13 @@ SQLRETURN ulnGetPlan(ulnStmt *aStmt, acp_char_t **aPlan)
     /* BUG-46052 codesonar Null Pointer Dereference */
     ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
-    /* PROJ-1381, BUG-32902 Explain Plan OFF ì¼ ë•ŒëŠ” ì—ëŸ¬ë¥¼ ë‚´ëŠ”ê²Œ ë‚«ë‹¤.
-     * Prepareê°€ ë˜ì§€ ì•Šì•˜ì„ ë•Œë„ êµ³ì´ ì„œë²„ì— ê°”ë‹¤ ì˜¬ í•„ìš” ì—†ë‹¤. */
+    /* PROJ-1381, BUG-32902 Explain Plan OFF ÀÏ ¶§´Â ¿¡·¯¸¦ ³»´Â°Ô ³´´Ù.
+     * Prepare°¡ µÇÁö ¾Ê¾ÒÀ» ¶§µµ ±»ÀÌ ¼­¹ö¿¡ °¬´Ù ¿Ã ÇÊ¿ä ¾ø´Ù. */
     ACI_TEST_RAISE(sDbc->mAttrExplainPlan == SQL_FALSE, FuncSeqError);
     ACI_TEST_RAISE(ulnStmtIsPrepared(aStmt) != ACP_TRUE, FuncSeqError);
 
     /*
-     * Protocol Context ì´ˆê¸°í™”
+     * Protocol Context ÃÊ±âÈ­
      */
     //fix BUG-17722
     ACI_TEST(ulnInitializeProtocolContext(&sFnContext,
@@ -188,7 +188,7 @@ SQLRETURN ulnGetPlan(ulnStmt *aStmt, acp_char_t **aPlan)
     *aPlan = sFnContext.mHandle.mStmt->mPlanTree;
 
     /*
-     * Protocol Context ì •ë¦¬
+     * Protocol Context Á¤¸®
      */
     sNeedFinPtContext = ACP_FALSE;
     //fix BUG-17722

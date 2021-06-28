@@ -18,11 +18,11 @@
 /***********************************************************************
  * $Id: qmgShardSELT.cpp 77650 2016-10-17 02:19:47Z timmy.kim $
  *
- * Description : Shard Graphë¥¼ ìœ„í•œ ìˆ˜í–‰ í•¨ìˆ˜
+ * Description : Shard Graph¸¦ À§ÇÑ ¼öÇà ÇÔ¼ö
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -34,6 +34,11 @@
 #include <qmgShardDML.h>
 #include <qmgSelection.h>
 #include <qmoOneNonPlan.h>
+#include <qmgSorting.h>            /* TASK-7219 */
+#include <qmoUtil.h>               /* TASK-7219 */
+#include <qmoPushPred.h>           /* TASK-7219 */
+#include <qmoCheckViewColumnRef.h> /* TASK-7219 */
+#include <qmvShardTransform.h>     /* TASK-7219 Shard Transformer Refactoring */
 
 IDE_RC qmgShardSelect::init( qcStatement  * aStatement,
                              qmsQuerySet  * aQuerySet,
@@ -42,7 +47,7 @@ IDE_RC qmgShardSelect::init( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgShardSELT Graphì˜ ì´ˆê¸°í™”
+ * Description : qmgShardSELT GraphÀÇ ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -56,7 +61,7 @@ IDE_RC qmgShardSelect::init( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgShardSelect::init::__FT__" );
 
     //---------------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
@@ -64,15 +69,15 @@ IDE_RC qmgShardSelect::init( qcStatement  * aStatement,
     IDE_FT_ASSERT( aFrom != NULL );
 
     //---------------------------------------------------
-    // Shard Graphë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
+    // Shard Graph¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
     //---------------------------------------------------
 
-    // qmgShardSELTì„ ìœ„í•œ ê³µê°„ í• ë‹¹
+    // qmgShardSELTÀ» À§ÇÑ °ø°£ ÇÒ´ç
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmgShardSELT ),
                                              (void**) &sMyGraph )
               != IDE_SUCCESS );
 
-    // Graph ê³µí†µ ì •ë³´ì˜ ì´ˆê¸°í™”
+    // Graph °øÅë Á¤º¸ÀÇ ÃÊ±âÈ­
     IDE_TEST( qmg::initGraph( & sMyGraph->graph ) != IDE_SUCCESS );
 
     sMyGraph->graph.type = QMG_SHARD_SELECT;
@@ -86,18 +91,19 @@ IDE_RC qmgShardSelect::init( qcStatement  * aStatement,
     sMyGraph->graph.printGraph = qmgShardSelect::printGraph;
 
     // BUGBUG
-    // SDSE ìžì²´ëŠ” disk ë¡œ ìƒì„±í•˜ë‚˜
-    // SDSE ì˜ ìƒìœ„ plan ì˜ interResultType ì€ memory temp ë¡œ ìˆ˜í–‰ë˜ì–´ì•¼ í•œë‹¤.
+    // SDSE ÀÚÃ¼´Â disk ·Î »ý¼ºÇÏ³ª
+    // SDSE ÀÇ »óÀ§ plan ÀÇ interResultType Àº memory temp ·Î ¼öÇàµÇ¾î¾ß ÇÑ´Ù.
     sMyGraph->graph.flag &= ~QMG_GRAPH_TYPE_MASK;
     sMyGraph->graph.flag |=  QMG_GRAPH_TYPE_DISK;
 
     //---------------------------------------------------
-    // Shard ê³ ìœ  ì •ë³´ì˜ ì´ˆê¸°í™”
+    // Shard °íÀ¯ Á¤º¸ÀÇ ÃÊ±âÈ­
     //---------------------------------------------------
 
     SET_POSITION( sMyGraph->shardQuery,
                   aFrom->tableRef->view->myPlan->parseTree->stmtPos );
     sMyGraph->shardAnalysis = aFrom->tableRef->view->myPlan->mShardAnalysis;
+    sMyGraph->shardParamInfo = aFrom->tableRef->view->myPlan->mShardParamInfo; /* TASK-7219 Non-shard DML */
     sMyGraph->shardParamOffset = aFrom->tableRef->view->myPlan->mShardParamOffset;
     sMyGraph->shardParamCount = aFrom->tableRef->view->myPlan->mShardParamCount;
 
@@ -106,7 +112,10 @@ IDE_RC qmgShardSelect::init( qcStatement  * aStatement,
     sMyGraph->accessMethodCnt = 0;
     sMyGraph->flag = QMG_SHARD_FLAG_CLEAR;
 
-    // out ì„¤ì •
+    /* TASK-7219 */
+    sMyGraph->mShardQueryBuf = NULL;
+
+    // out ¼³Á¤
     *aGraph = (qmgGraph *)sMyGraph;
 
     return IDE_SUCCESS;
@@ -121,18 +130,18 @@ IDE_RC qmgShardSelect::optimize( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgShardSELT ì˜ ìµœì í™”
+ * Description : qmgShardSELT ÀÇ ÃÖÀûÈ­
  *
  * Implementation :
  *
- *      - í†µê³„ì •ë³´ êµ¬ì¶•
- *      - Subquery Graph ìƒì„±
- *      - ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì • (recordSize, inputRecordCnt)
- *      - Predicate ìž¬ë°°ì¹˜ ë° ê°œë³„ Predicateì˜ selectivity ê³„ì‚°
- *      - ì „ì²´ selectivity ê³„ì‚° ë° ê³µí†µ ë¹„ìš© ì •ë³´ì˜ selectivityì— ì €ìž¥
- *      - Access Method ì„ íƒ
- *      - Preserved Order ì„¤ì •
- *      - ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì • (outputRecordCnt, myCost, totalCost)
+ *      - Åë°èÁ¤º¸ ±¸Ãà
+ *      - Subquery Graph »ý¼º
+ *      - °øÅë ºñ¿ë Á¤º¸ ¼³Á¤ (recordSize, inputRecordCnt)
+ *      - Predicate Àç¹èÄ¡ ¹× °³º° PredicateÀÇ selectivity °è»ê
+ *      - ÀüÃ¼ selectivity °è»ê ¹× °øÅë ºñ¿ë Á¤º¸ÀÇ selectivity¿¡ ÀúÀå
+ *      - Access Method ¼±ÅÃ
+ *      - Preserved Order ¼³Á¤
+ *      - °øÅë ºñ¿ë Á¤º¸ ¼³Á¤ (outputRecordCnt, myCost, totalCost)
  *
  ***********************************************************************/
 
@@ -148,14 +157,14 @@ IDE_RC qmgShardSelect::optimize( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgShardSelect::optimize::__FT__" );
 
     //---------------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
     IDE_FT_ASSERT( aGraph != NULL );
 
     //---------------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //---------------------------------------------------
 
     sMyGraph = (qmgShardSELT *)aGraph;
@@ -165,7 +174,7 @@ IDE_RC qmgShardSelect::optimize( qcStatement * aStatement,
     IDE_FT_ASSERT( sTableRef->view != NULL );
 
     //---------------------------------------------------
-    // í†µê³„ ì •ë³´ êµ¬ì¶•
+    // Åë°è Á¤º¸ ±¸Ãà
     //---------------------------------------------------
 
     IDE_TEST( qmoStat::getStatInfo4RemoteTable( aStatement,
@@ -174,7 +183,7 @@ IDE_RC qmgShardSelect::optimize( qcStatement * aStatement,
               != IDE_SUCCESS );
 
     //---------------------------------------------------
-    // Subqueryì˜ Graph ìƒì„±
+    // SubqueryÀÇ Graph »ý¼º
     //---------------------------------------------------
 
     if ( sMyGraph->graph.myPredicate != NULL )
@@ -190,7 +199,7 @@ IDE_RC qmgShardSelect::optimize( qcStatement * aStatement,
     }
 
     //---------------------------------------------------
-    // ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì • (recordSize, inputRecordCnt)
+    // °øÅë ºñ¿ë Á¤º¸ ¼³Á¤ (recordSize, inputRecordCnt)
     //---------------------------------------------------
 
     sParseTree = (qmsParseTree *)sTableRef->view->myPlan->parseTree;
@@ -211,7 +220,7 @@ IDE_RC qmgShardSelect::optimize( qcStatement * aStatement,
         }
     }
 
-    // recordSize ì„¤ì •
+    // recordSize ¼³Á¤
     // To Fix BUG-8241
     IDE_FT_ASSERT( sQuerySet != NULL );
     IDE_FT_ASSERT( sQuerySet->SFWGH != NULL );
@@ -246,21 +255,23 @@ IDE_RC qmgShardSelect::optimize( qcStatement * aStatement,
             ( sTargetColumn->module->id != MTD_NCHAR_ID    ) &&
             ( sTargetColumn->module->id != MTD_NVARCHAR_ID ) &&
             ( sTargetColumn->module->id != MTD_NULL_ID     ) &&
-            ( sTargetColumn->module->id != MTD_GEOMETRY_ID ),
+            ( sTargetColumn->module->id != MTD_GEOMETRY_ID ) &&
+            ( sTargetColumn->module->id != MTD_BLOB_LOCATOR_ID ) &&
+            ( sTargetColumn->module->id != MTD_CLOB_LOCATOR_ID ),
             ERR_INVALID_SHARD_QUERY );
 
         sRecordSize += sTargetColumn->column.size;
     }
 
-    // BUG-36463 sRecordSize ëŠ” 0ì´ ë˜ì–´ì„œëŠ” ì•ˆëœë‹¤.
+    // BUG-36463 sRecordSize ´Â 0ÀÌ µÇ¾î¼­´Â ¾ÈµÈ´Ù.
     sRecordSize = IDL_MAX( sRecordSize, 1 );
     sMyGraph->graph.costInfo.recordSize = sRecordSize;
 
-    // inputRecordCnt ì„¤ì •
+    // inputRecordCnt ¼³Á¤
     sMyGraph->graph.costInfo.inputRecordCnt = sTableRef->statInfo->totalRecordCnt;
 
     //---------------------------------------------------
-    // Predicateì˜ ìž¬ë°°ì¹˜ ë° ê°œë³„ Predicateì˜ Selectivity ê³„ì‚°
+    // PredicateÀÇ Àç¹èÄ¡ ¹× °³º° PredicateÀÇ Selectivity °è»ê
     //---------------------------------------------------
 
     if ( sMyGraph->graph.myPredicate != NULL )
@@ -296,19 +307,19 @@ IDE_RC qmgShardSelect::optimize( qcStatement * aStatement,
     sMyGraph->accessMethodCnt = 1;
 
     //---------------------------------------------------
-    // Preserved Order ì„¤ì •
+    // Preserved Order ¼³Á¤
     //---------------------------------------------------
 
     sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
     sMyGraph->graph.flag |=  QMG_PRESERVED_ORDER_NEVER;
 
     //---------------------------------------------------
-    // ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì • (outputRecordCnt, myCost, totalCost)
+    // °øÅë ºñ¿ë Á¤º¸ ¼³Á¤ (outputRecordCnt, myCost, totalCost)
     //---------------------------------------------------
 
     sMyGraph->graph.costInfo.selectivity = sMyGraph->accessMethod->methodSelectivity;
 
-    // output record count ì„¤ì •
+    // output record count ¼³Á¤
     sOutputRecordCnt = sMyGraph->graph.costInfo.selectivity *
         sMyGraph->graph.costInfo.inputRecordCnt;
 
@@ -343,9 +354,9 @@ IDE_RC qmgShardSelect::makePlan( qcStatement    * aStatement,
 {
 /***********************************************************************
  *
- *  Description : qmgShardSELT ë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
+ *  Description : qmgShardSELT ·Î ºÎÅÍ PlanÀ» »ý¼ºÇÑ´Ù.
  *
- *  Implementation : SHARDê°€ ìžˆì„ ê²½ìš° ì•„ëž˜ì™€ ê°™ì€ planì„ ìƒì„±í•œë‹¤.
+ *  Implementation : SHARD°¡ ÀÖÀ» °æ¿ì ¾Æ·¡¿Í °°Àº planÀ» »ý¼ºÇÑ´Ù.
  *
  *          [PARENT]
  *            |
@@ -357,11 +368,13 @@ IDE_RC qmgShardSelect::makePlan( qcStatement    * aStatement,
 
     qmgShardSELT * sMyGraph = NULL;
     qmnPlan      * sSDSE    = NULL;
+    qtcNode      * sLobFilter; // BUG-25916
+    qmnPlan      * sFILT;
 
     IDU_FIT_POINT_FATAL( "qmgShardSelect::makePlan::__FT__" );
 
     //---------------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
@@ -370,8 +383,14 @@ IDE_RC qmgShardSelect::makePlan( qcStatement    * aStatement,
 
     sMyGraph = (qmgShardSELT*)aGraph;
 
+    /* TASK-7219 */
+    IDE_TEST( qmgShardSelect::pushSeriesOptimize( aStatement,
+                                                  aParent,
+                                                  sMyGraph )
+              != IDE_SUCCESS );
+
     //---------------------------------------------------
-    // Current CNFì˜ ë“±ë¡
+    // Current CNFÀÇ µî·Ï
     //---------------------------------------------------
 
     if ( sMyGraph->graph.myCNF != NULL )
@@ -404,7 +423,7 @@ IDE_RC qmgShardSelect::makePlan( qcStatement    * aStatement,
                                        aParent->myPlan,
                                        &sMyGraph->shardQuery,
                                        sMyGraph->shardAnalysis,
-                                       sMyGraph->shardParamOffset,
+                                       sMyGraph->shardParamInfo, /* TASK-7219 Non-shard DML */
                                        sMyGraph->shardParamCount,
                                        &sMyGraph->graph,
                                        sSDSE )
@@ -412,7 +431,41 @@ IDE_RC qmgShardSelect::makePlan( qcStatement    * aStatement,
 
     qmg::setPlanInfo( aStatement, sSDSE, &(sMyGraph->graph) );
 
-    sMyGraph->graph.myPlan = sSDSE;
+    /* PROJ-2728 Sharding LOB
+         BUG-47751 ¹Ý¿µÀ¸·Î ÀÎÇØ ¾Æ·¡ BUG-25916 ÄÚµå Àû¿ë */
+    // BUG-25916 : clobÀ» select for update ÇÏ´ø µµÁß assert ¹ß»ý
+    // clob locatorÀÇ Á¦¾àÀ¸·Î lobfilter·Î ºÐ·ùµÈ °ÍÀÌ Á¸ÀçÇÏ¸é
+    // SCAN ³ëµå »óÀ§¿¡ FILTER ³ëµå·Î Ã³¸®ÇØ¾ß ÇÑ´Ù.
+    sLobFilter = ((qmncSDSE*)sSDSE)->lobFilter;
+
+    if ( sLobFilter != NULL )
+    {
+        // BUGBUG
+        // Lob filterÀÇ °æ¿ì SCANÀ» »ý¼ºÇÑ ÈÄ¿¡ À¯¹«¸¦ ¾Ë ¼ö ÀÖ´Ù.
+        // µû¶ó¼­ FILTÀÇ »ý¼º ¿©ºÎµµ SCANÀÇ »ý¼º ÈÄ¿¡ °áÁ¤µÈ´Ù.
+        // BUG-25916ÀÇ ¹®Á¦ ÇØ°á ¹æ¹ýÀ» ¼öÁ¤ÇØ¾ß ÇÑ´Ù.
+        IDE_TEST( qmoOneNonPlan::initFILT(
+                      aStatement ,
+                      sMyGraph->graph.myQuerySet ,
+                      sLobFilter ,
+                      sMyGraph->graph.myPlan ,
+                      &sFILT) != IDE_SUCCESS);
+
+        IDE_TEST( qmoOneNonPlan::makeFILT(
+                      aStatement ,
+                      sMyGraph->graph.myQuerySet ,
+                      sLobFilter ,
+                      NULL,
+                      sSDSE ,
+                      sFILT) != IDE_SUCCESS);
+        sMyGraph->graph.myPlan = sFILT;
+
+        qmg::setPlanInfo( aStatement, sFILT, &(sMyGraph->graph) );
+    }
+    else
+    {
+        sMyGraph->graph.myPlan = sSDSE;
+    }
 
     return IDE_SUCCESS;
 
@@ -428,7 +481,7 @@ IDE_RC qmgShardSelect::printGraph( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : Graphë¥¼ êµ¬ì„±í•˜ëŠ” ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ * Description : Graph¸¦ ±¸¼ºÇÏ´Â °øÅë Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  * Implementation :
  *
@@ -442,7 +495,7 @@ IDE_RC qmgShardSelect::printGraph( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgShardSelect::printGraph::__FT__" );
 
     //-----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //-----------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
@@ -452,7 +505,7 @@ IDE_RC qmgShardSelect::printGraph( qcStatement  * aStatement,
     sMyGraph = (qmgShardSELT *)aGraph;
 
     //-----------------------------------
-    // Graphì˜ ì‹œìž‘ ì¶œë ¥
+    // GraphÀÇ ½ÃÀÛ Ãâ·Â
     //-----------------------------------
 
     if (aDepth == 0)
@@ -467,7 +520,7 @@ IDE_RC qmgShardSelect::printGraph( qcStatement  * aStatement,
     }
 
     //-----------------------------------
-    // Graph ê³µí†µ ì •ë³´ì˜ ì¶œë ¥
+    // Graph °øÅë Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
     IDE_TEST( qmg::printGraph( aStatement,
@@ -477,7 +530,7 @@ IDE_RC qmgShardSelect::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
+    // Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
     IDE_TEST( qmoStat::printStat( aGraph->myFrom,
@@ -486,7 +539,7 @@ IDE_RC qmgShardSelect::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Access method ì •ë³´ ì¶œë ¥
+    // Access method Á¤º¸ Ãâ·Â
     //-----------------------------------
 
     QMG_PRINT_LINE_FEED( i, aDepth, aString );
@@ -500,7 +553,7 @@ IDE_RC qmgShardSelect::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Subquery Graph ì •ë³´ì˜ ì¶œë ¥
+    // Subquery Graph Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
     for ( sPredicate = aGraph->myPredicate;
@@ -536,7 +589,7 @@ IDE_RC qmgShardSelect::printGraph( qcStatement  * aStatement,
     }
 
     //-----------------------------------
-    // shard ì •ë³´ ì¶œë ¥
+    // shard Á¤º¸ Ãâ·Â
     //-----------------------------------
 
     IDE_TEST( qmgShardDML::printShardInfo( aStatement,
@@ -547,7 +600,7 @@ IDE_RC qmgShardSelect::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Graphì˜ ë§ˆì§€ë§‰ ì¶œë ¥
+    // GraphÀÇ ¸¶Áö¸· Ãâ·Â
     //-----------------------------------
 
     if (aDepth == 0)
@@ -601,4 +654,2710 @@ IDE_RC qmgShardSelect::printAccessMethod( qcStatement     * /* aStatement */ ,
 
     return IDE_SUCCESS;
     
+}
+
+/* TASK-7219 */
+IDE_RC qmgShardSelect::copySelect( qmgTransformInfo * aInfo )
+{
+/****************************************************************************************
+ *
+ * Description : Plan String Buffer·Î Select¸¦ º¹Á¦ÇÑ´Ù. Set ¿¬»êÀ» °í·ÁÇØ¼­ SELECT * ¸¦
+ *               ¾Õ¿¡ Ãß°¡·Î ´Þ°Å³ª, ±âÁ¸ÀÇ Query Text¸¦ ±×´ë·Î ÀÌ¿ëÇÑ´Ù.
+ *
+ *  QUERY   / SELECT C1 FROM ( SELECT * FROM T1 ORDER BY C1 )
+ *  ANALYZE / SELECT C1 FROM ( SELECT * FROM SHARD( SELECT * FROM T1 ) ORDER BY C1 )
+ *
+ *  SHARD   /                                       SELECT * FROM T1
+ *  COPY    /                                       SELECT
+ *
+ *  SET     /                 ( SELECT * FROM T1 ) UNION ALL ( SELECT * FROM T1 )
+ *  WRAP    / SELECT *
+ *
+ *  SET     /                 ( SELECT * FROM T1 ) UNION ALL ( SELECT * FROM T1 )
+ *  SKIP    /
+ *
+ *  HALFSET /                 ( SELECT * FROM T1 )
+ *  COPY    /                 ( SELECT *
+ *
+ * Implementation : 1.   SELECT or ( SELECT
+ *                  2.1. Set °¨½Î´Â Transform¸¦ ¼öÇàÇÑ´Ù.
+ *                  2.2. ±âº» Set ¿¬»êÀÎ °æ¿ì copyFrom¿¡¼­ ÀÛ¾÷ÇÑ´Ù.
+ *                  2.3. ±âÁ¸ÀÇ Query Text¸¦ ±×·¡µµ º¹Á¦ÇÑ´Ù.
+ *                  2.4. Bind Á¤º¸¸¦ ¼öÁýÇÑ´Ù
+ *
+ ****************************************************************************************/
+
+    IDE_TEST_RAISE( aInfo == NULL, ERR_NULL_INFO );
+    IDE_TEST_RAISE( aInfo->mQuerySet == NULL, ERR_NULL_QUERYSET );
+    IDE_TEST_RAISE( aInfo->mString == NULL, ERR_NULL_PLAN_STRING );
+
+    if ( aInfo->mTarget != NULL )
+    {
+        /* 1.   SELECT or ( SELECT */
+        if ( aInfo->mQuerySet->setOp != QMS_NONE )
+        {
+            /*  Set ¿¬»ê¿¡ Push ProjectionÇÒ TargetÀÌ ÀÖÀ¸¹Ç·Î,
+             *  aInfo->mNeedWrapSet == ID_TRUEÀÎ »óÈ².
+             *  From¿¡¼­ SetÀ» °¨½Ñ´Ù.
+             */
+            IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                          "SELECT " )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /*  Set ¿¬»êÀÌ ¾Æ´Ñ °æ¿ì, ¾Æ·¡ÀÇ µÎ ÇüÅÂÀÌ´Ù.
+             *  |  SELECT ...  |  ( SELECT ...  )  |
+             *     ^              ^
+             *      \______________\____ aInfo->mPosition.offset
+             */
+            if ( aInfo->mPosition.stmtText[ aInfo->mPosition.offset ] == '(' )
+            {
+                IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                              "( SELECT " )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                              "SELECT " )
+                          != IDE_SUCCESS );
+            }
+        }
+    }
+    else
+    {
+        if ( aInfo->mQuerySet->setOp != QMS_NONE )
+        {
+            /* 2.1. Set °¨½Î´Â Transform¸¦ ¼öÇàÇÑ´Ù. */
+            if ( aInfo->mNeedWrapSet == ID_TRUE )
+            {
+                /*  Push Projection¸¦ ¼öÇàÇÏÁö ¾ÊÁö¸¸, Push SelectionÀ» ¼öÇàÇØ¼­,
+                 *  aInfo->mNeedWrapSet == ID_TRUEÀÎ »óÈ²À¸·Î
+                 *  From¿¡¼­ SetÀ» °¨½Ñ´Ù.
+                 */
+                IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                              "SELECT * " )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* 2.2. ±âº» Set ¿¬»êÀÎ °æ¿ì copyFrom¿¡¼­ ÀÛ¾÷ÇÑ´Ù.
+                 *
+                 *  Push Projection¸¦ ¼öÇàÇÏÁö ¾Ê°í,
+                 *  Set¸¦ °¨½ÎÁöµµ ¾Ê±â ¶§¹®¿¡,
+                 *  º¯°æÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+                 */
+            }
+        }
+        else
+        {
+            /* 2.3. ±âÁ¸ÀÇ Query Text¸¦ ±×´ë·Î º¹Á¦ÇÑ´Ù.
+             *
+             *  Set ¿¬»êÀÌ ¾Æ´Ñ °æ¿ì, ¾Æ·¡ÀÇ µÎ ÇüÅÂÀÌ´Ù.
+             *  |  SELECT ...  |  ( SELECT ...  )  |
+             *     ^              ^
+             *      \______________\____ aInfo->mPosition.offset
+             *
+             */
+            IDE_TEST( iduVarStringAppendLength( aInfo->mString,
+                                                aInfo->mPosition.stmtText
+                                                + aInfo->mPosition.offset,
+                                                aInfo->mQuerySet->SFWGH->from->fromPosition.offset
+                                                - aInfo->mPosition.offset )
+                      != IDE_SUCCESS );
+
+            IDE_TEST_RAISE( aInfo->mGraph == NULL, ERR_NULL_GRAPH );
+
+            /* 2.4.   Bind Á¤º¸¸¦ ¼öÁýÇÑ´Ù. */
+            IDE_TEST( qmg::copyAndCollectParamOffset( aInfo->mStatement,
+                                                      aInfo->mPosition.offset,
+                                                      aInfo->mQuerySet->SFWGH->from->fromPosition.offset,
+                                                      aInfo->mGraph->shardParamOffset,
+                                                      aInfo->mGraph->shardParamCount,
+                                                      aInfo->mGraph->shardParamInfo,
+                                                      aInfo->mParamOffsetInfo )
+                      != IDE_SUCCESS );
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_INFO )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::copySelect",
+                                  "info is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_QUERYSET )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::copySelect",
+                                  "query set is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_PLAN_STRING )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::copySelect",
+                                  "plan string is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_GRAPH )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::copySelect",
+                                  "graph is null" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmgShardSelect::copyFrom( qmgTransformInfo * aInfo )
+{
+/****************************************************************************************
+ *
+ * Description : Plan String Buffer·Î FromÀý Text¸¦ º¹Á¦ÇÑ´Ù.
+ *               Set ¿¬»êÀÚ¸¦ °í·ÁÇØ¼­ º¹Á¦ÇÏ¸ç, Push Selection ¿©ºÎ¿¡ µû¶ó¼­, Set ¿¬»êÀÎ
+ *               Query Set¸¦ View ·Î ÇÑ¹ø °¨½Î´Â TransformÀ¸·Î º¯°æÇÏ±âµµ ÇÑ´Ù.
+ *
+ *  SET    /        ( SELECT * FROM T1 ) UNION ALL ( SELECT * FROM T1 )
+ *  WRAP   / FROM ( ( SELECT * FROM T1 ) UNION ALL ( SELECT * FROM T1 ) )  <-- 3.2
+ *  COPY   /        ( SELECT * FROM T1 ) UNION ALL ( SELECT * FROM T1 )    <-- 4.1
+ *
+ *  COMMON / SELECT * FROM T1
+ *  WRAP   /        X
+ *  COPY   /          FROM T1  <-- 4.2
+ *
+ * Implementation : 1.   Set ¿¬»êÀÚ À¯¹«¿¡ µû¶ó¼­ ½ÃÀÛ Offset¸¦ °áÁ¤ÇÑ´Ù.
+ *                  2.1. Set ¿¬»êÀÚ°¡ ÀÖ´Ù¸é, ¸¶Áö¸· Right ±îÁö º¹Á¦ÇÑ´Ù.
+ *                  2.2. ¾Æ´Ï¶ó¸é, ÇöÀç From ºÎÅÍ ¸¶Áö¸· From ±îÁö Ã£´Â´Ù.
+ *                  3.1. Set °¨½Î´Â Transform¸¦ ¼öÇàÇÑ´Ù.
+ *                  3.2. FROM (
+ *                  3.3. ½ÃÀÛ OffsetºÎÅÍ ¸¶Áö¸· Offset±îÁö º¹Á¦ÇÑ´Ù.
+ *                  3.4. )
+ *                  4.1. ¾Æ´Ï¸é Query Set ¿©ºÎ¿¡ µû¶ó¼­ º¹Á¦ÇÑ´Ù.
+ *                  4.2. FROM
+ *                  4.3. ½ÃÀÛ OffsetºÎÅÍ ¸¶Áö¸· Offset±îÁö º¹Á¦ÇÑ´Ù.
+ *                  5.   Bind Á¤º¸¸¦ ¼öÁýÇÑ´Ù.
+ *
+ ****************************************************************************************/
+
+    qmsQuerySet * sLeft   = NULL;
+    qmsQuerySet * sRight  = NULL;
+    qmsFrom     * sFrom   = NULL;
+    SInt          sStart  = 0;
+    SInt          sEnd    = 0;
+
+    IDE_TEST_RAISE( aInfo == NULL, ERR_NULL_INFO );
+    IDE_TEST_RAISE( aInfo->mQuerySet == NULL, ERR_NULL_QUERYSET );
+
+    /* 1.   Set ¿¬»êÀÚ À¯¹«¿¡ µû¶ó¼­ ½ÃÀÛ Offset¸¦ °áÁ¤ÇÑ´Ù. */
+    if ( aInfo->mQuerySet->setOp != QMS_NONE )
+    {
+        sLeft = aInfo->mQuerySet->left;
+
+        while ( sLeft->setOp != QMS_NONE )
+        {
+            sLeft = sLeft->left;
+        }
+
+        sRight = aInfo->mQuerySet->right;
+
+        while ( sRight->setOp != QMS_NONE )
+        {
+            sRight = sRight->right;
+        }
+    }
+    else
+    {
+        sFrom = aInfo->mQuerySet->SFWGH->from;
+    }
+
+    /* 2.1. Set ¿¬»êÀÚ°¡ ÀÖ´Ù¸é, ¸¶Áö¸· Right ±îÁö º¹Á¦ÇÑ´Ù. */
+    if ( sRight != NULL )
+    {
+        IDE_TEST_RAISE( sLeft->startPos.stmtText != aInfo->mPosition.stmtText, ERR_DIFF_LEFT );
+        IDE_TEST_RAISE( sRight->startPos.stmtText != aInfo->mPosition.stmtText, ERR_DIFF_RIGHT );
+
+        sStart = sLeft->startPos.offset;
+        sEnd   = sRight->endPos.offset + sRight->endPos.size;
+    }
+    else
+    {
+        if ( sFrom->onCondition != NULL )
+        {
+            IDE_TEST_RAISE( sFrom->onCondition->position.stmtText != aInfo->mPosition.stmtText, ERR_DIFF_TABLE );
+        }
+        else
+        {
+            IDE_TEST_RAISE( sFrom->tableRef->position.stmtText != aInfo->mPosition.stmtText, ERR_DIFF_TABLE );
+        }
+
+        /* 2.2. ¾Æ´Ï¶ó¸é, ÇöÀç From ºÎÅÍ ¸¶Áö¸· From ±îÁö Ã£´Â´Ù.*/
+        IDE_TEST( qmg::getFromOffset( sFrom,
+                                      &( sStart ),
+                                      &( sEnd ) )
+                  != IDE_SUCCESS );
+    }
+
+    IDE_TEST_RAISE( aInfo->mString == NULL, ERR_NULL_PLAN_STRING );
+
+    /* 3.1. Set °¨½Î´Â Transform¸¦ ¼öÇàÇÑ´Ù. */
+    if ( aInfo->mNeedWrapSet == ID_TRUE )
+    {
+        /* 3.2. FROM ( */
+        IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                      "FROM ( " )
+                  != IDE_SUCCESS );
+
+
+        /* 3.3. ½ÃÀÛ OffsetºÎÅÍ ¸¶Áö¸· Offset±îÁö º¹Á¦ÇÑ´Ù. */
+        IDE_TEST( iduVarStringAppendLength( aInfo->mString,
+                                            aInfo->mPosition.stmtText
+                                            + sStart,
+                                            sEnd
+                                            - sStart )
+                  != IDE_SUCCESS );
+
+        /* 3.4. ) */
+        IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                      " )" )
+                  != IDE_SUCCESS );
+
+        if ( ( sEnd < aInfo->mPosition.offset + aInfo->mPosition.size ) &&
+             ( aInfo->mPosition.stmtText[ aInfo->mPosition.offset
+                                          + aInfo->mPosition.size
+                                          - 1 ] == ')' ) )
+        {
+            aInfo->mPosition.size--;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        if ( aInfo->mQuerySet->setOp != QMS_NONE )
+        {
+            /* 4.1. ¾Æ´Ï¸é Query Set ¿©ºÎ¿¡ µû¶ó¼­ º¹Á¦ÇÑ´Ù. */
+            IDE_TEST( iduVarStringAppendLength( aInfo->mString,
+                                                aInfo->mPosition.stmtText
+                                                + sStart,
+                                                sEnd
+                                                - sStart )
+                  != IDE_SUCCESS );
+        }
+        else
+        {
+            /* 4.2. FROM */
+            IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                          "FROM " )
+                      != IDE_SUCCESS );
+
+            /* 4.3. ½ÃÀÛ OffsetºÎÅÍ ¸¶Áö¸· Offset±îÁö º¹Á¦ÇÑ´Ù. */
+            IDE_TEST( iduVarStringAppendLength( aInfo->mString,
+                                                aInfo->mPosition.stmtText
+                                                + sStart,
+                                                sEnd
+                                                - sStart )
+                      != IDE_SUCCESS );
+        }
+
+    }
+
+    IDE_TEST_RAISE( aInfo->mGraph == NULL, ERR_NULL_GRAPH );
+
+    /* 5.   Bind Á¤º¸¸¦ ¼öÁýÇÑ´Ù. */
+    IDE_TEST( qmg::copyAndCollectParamOffset( aInfo->mStatement,
+                                              sStart,
+                                              sEnd,
+                                              aInfo->mGraph->shardParamOffset,
+                                              aInfo->mGraph->shardParamCount,
+                                              aInfo->mGraph->shardParamInfo,
+                                              aInfo->mParamOffsetInfo )
+              != IDE_SUCCESS );
+
+    aInfo->mPosition.size  -= sEnd - aInfo->mPosition.offset;
+    aInfo->mPosition.offset = sEnd;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_INFO )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::copyFrom",
+                                  "info is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_QUERYSET )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::copyFrom",
+                                  "query set is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_PLAN_STRING )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::copyFrom",
+                                  "plan string is null" ) );
+    }
+    IDE_EXCEPTION( ERR_DIFF_LEFT )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::copyFrom",
+                                  "left position is diff" ) );
+    }
+    IDE_EXCEPTION( ERR_DIFF_RIGHT )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::copyFrom",
+                                  "right position is diff" ) );
+    }
+    IDE_EXCEPTION( ERR_DIFF_TABLE )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::copyFrom",
+                                  "table position is diff" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_GRAPH )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::copyFrom",
+                                  "graph is null" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmgShardSelect::copyWhere( qmgTransformInfo * aInfo )
+{
+/****************************************************************************************
+ *
+ * Description : Plan String Buffer·Î WhereÀý Text¸¦ º¹Á¦ÇÑ´Ù.
+ *               Push Selection ¿©ºÎ¿¡ µû¶ó¼­ Where Text ±¸¼ºÀÌ º¯°æµÉ ¼ö ÀÖ´Ù.
+ *
+ *  Where          /   / WHEHE C2 = 1 AND C3 > 2
+ *                             *****************
+ *  Push Selection / O / WHERE ( PUSH SELECTION ) AND ( C2 = 1 AND C3 > 2 )
+ *                                                *************************
+ *  Push Selection / X / WHEHE C2 = 1 AND C3 > 2
+ *                       ***********************
+ *
+ * Implementation : 1.1. AND (
+ *                  1.2. WHERE
+ *                  2.   ½ÃÀÛ Offset¸¦ °è»êÇÑ´Ù.
+ *                  3.   ¸¶Áö¸· Offset¸¦ °è»êÇÑ´Ù.
+ *                  4.   ½ÃÀÛºÎÅÍ ¸¶Áö¸·±îÁö º¹Á¦ÇÑ´Ù.
+ *                  5.   )
+ *                  6.   Bind Á¤º¸¸¦ ¼öÁýÇÑ´Ù.
+ *
+ ****************************************************************************************/
+
+    qtcNode * sNode  = NULL;
+    qtcNode * sLast  = NULL;
+    SInt      sStart = 0;
+    SInt      sEnd   = 0;
+
+    IDE_TEST_RAISE( aInfo == NULL, ERR_NULL_INFO );
+
+    if ( aInfo->mWhere != NULL )
+    {
+        IDE_TEST_RAISE( aInfo->mString == NULL, ERR_NULL_PLAN_STRING );
+
+        if ( aInfo->mPushPred != NULL )
+        {
+            /* 1.1. AND ( */
+            IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                          " AND ( " )
+                          != IDE_SUCCESS );
+        }
+        else
+        {
+            /* 1.2. WHERE */
+            IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                          " WHERE " )
+                      != IDE_SUCCESS );
+        }
+
+        /* 2.   ½ÃÀÛ Offset¸¦ °è»êÇÑ´Ù. */
+        IDE_TEST( qmg::getNodeOffset( aInfo->mWhere,
+                                      ID_TRUE,
+                                      &( sStart ),
+                                      NULL )
+                  != IDE_SUCCESS );
+
+        /* 3.   ¸¶Áö¸· Offset¸¦ °è»êÇÑ´Ù. */
+        for ( sNode  = aInfo->mWhere;
+              sNode != NULL;
+              sNode  = (qtcNode *)sNode->node.next )
+        {
+            sLast = sNode;
+        }
+
+        IDE_TEST( qmg::getNodeOffset( sLast,
+                                      ID_TRUE,
+                                      NULL,
+                                      &( sEnd ) )
+                  != IDE_SUCCESS );
+
+        IDE_TEST_RAISE( sLast->position.stmtText != aInfo->mPosition.stmtText, ERR_DIFF_QUERY );
+
+        /* 4.   ½ÃÀÛºÎÅÍ ¸¶Áö¸·±îÁö º¹Á¦ÇÑ´Ù. */
+        IDE_TEST( iduVarStringAppendLength( aInfo->mString,
+                                            sLast->position.stmtText
+                                            + sStart,
+                                            sEnd
+                                            - sStart )
+                  != IDE_SUCCESS );
+
+        if ( aInfo->mPushPred != NULL )
+        {
+            /* 5.   ) */
+            IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                              " )" )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        IDE_TEST_RAISE( aInfo->mGraph == NULL, ERR_NULL_GRAPH );
+
+        /* 6.   Bind Á¤º¸¸¦ ¼öÁýÇÑ´Ù. */
+        IDE_TEST( qmg::copyAndCollectParamOffset( aInfo->mStatement,
+                                                  sStart,
+                                                  sEnd,
+                                                  aInfo->mGraph->shardParamOffset,
+                                                  aInfo->mGraph->shardParamCount,
+                                                  aInfo->mGraph->shardParamInfo,
+                                                  aInfo->mParamOffsetInfo )
+                  != IDE_SUCCESS );
+
+        aInfo->mPosition.size  -= sEnd - aInfo->mPosition.offset;
+        aInfo->mPosition.offset = sEnd;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_INFO )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::copyWhere",
+                                  "info is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_PLAN_STRING )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::copyWhere",
+                                  "plan string is null" ) );
+    }
+    IDE_EXCEPTION( ERR_DIFF_QUERY )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::copyWhere",
+                                  "query position is diff" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_GRAPH )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::copyWhere",
+                                  "graph is null" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmgShardSelect::generateTargetText( qmgTransformInfo * aInfo,
+                                           qmsTarget        * aTarget )
+{
+/****************************************************************************************
+ *
+ * Description : Asterisk ( * ) ¸¦ »ç¿ëÇÑ Query¿¡¼­´Â qmvQuerySet::expandAllTarget ÇÔ¼ö·Î
+ *               TargetÀ» È®ÀåÇÏ¿© Target Node¸¦ »ý¼ºÇÏ±â ¶§¹®¿¡, Target PositionÀÌ ¾ø´Ù.
+ *
+ *               ÀÌ¶§, tableInfo->column ³»¿ëÀ» ±â¹ÝÀ¸·Î ÀÛ¼ºµÈ userName, tableName,
+ *               aliasTableName, columnName, aliasColumnNameÀ» °¡Áö°í
+ *               È®ÀåµÈ TargetÀÇ ÀÌ¸§À» »ý¼ºÇÑ´Ù.
+ *
+ * Implementation : 1.1. Set ¿¬»êÀÌ ÀÖ´Ù¸é, column »ý¼ºÇÑ´Ù.
+ *                  1.2. AliasColumnName°¡ ÀÖ´Ù¸é Text¸¦ »ý¼ºÇÑ´Ù.
+ *                  1.3. Column°¡ ÀÖ´Ù¸é Text¸¦ »ý¼ºÇÑ´Ù.
+ *                  2.1. UserName°¡ ÀÖ´Ù¸é Text¸¦ »ý¼ºÇÑ´Ù.
+ *                  2.2. AliasTableName°¡ ÀÖ´Ù¸é Text¸¦ »ý¼ºÇÑ´Ù.
+ *                  2.3. TableName°¡ ÀÖ´Ù¸é Text¸¦ »ý¼ºÇÑ´Ù.
+ *                  2.4. Column°¡ ÀÖ´Ù¸é Text¸¦ »ý¼ºÇÑ´Ù.
+ *                  2.5. AliasColumnName°¡ ÀÖ´Ù¸é Text¸¦ »ý¼ºÇÑ´Ù.
+ *
+ ****************************************************************************************/
+
+    IDE_TEST_RAISE( aInfo == NULL, ERR_NULL_INFO );
+    IDE_TEST_RAISE( aTarget == NULL, ERR_NULL_NODE );
+    IDE_TEST_RAISE( aInfo->mString == NULL, ERR_NULL_PLAN_STRING );
+
+    /* 1.1. Set ¿¬»êÀÌ ÀÖ´Ù¸é, column¸¸ »ý¼ºÇÑ´Ù. */
+    if ( aInfo->mQuerySet->setOp != QMS_NONE )
+    {
+        /* 1.2. AliasColumnName°¡ ÀÖ´Ù¸é Text¸¦ »ý¼ºÇÑ´Ù. */
+        if ( QC_IS_NULL_NAME( aTarget->aliasColumnName ) != ID_TRUE )
+        {
+            IDE_TEST( iduVarStringAppendLength( aInfo->mString,
+                                                aTarget->aliasColumnName.name,
+                                                aTarget->aliasColumnName.size )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            IDE_TEST_RAISE( QC_IS_NULL_NAME( aTarget->columnName ) == ID_TRUE, ERR_NULL_COLUMNNAME );
+
+            /* 1.3. Column°¡ ÀÖ´Ù¸é Text¸¦ »ý¼ºÇÑ´Ù. */
+            IDE_TEST( iduVarStringAppendLength( aInfo->mString,
+                                                aTarget->columnName.name,
+                                                aTarget->columnName.size )
+                      != IDE_SUCCESS );
+        }
+    }
+    else
+    {
+        /* 2.1. UserName°¡ ÀÖ´Ù¸é Text¸¦ »ý¼ºÇÑ´Ù. */
+        if ( QC_IS_NULL_NAME( aTarget->userName ) != ID_TRUE )
+        {
+            IDE_TEST( iduVarStringAppendLength( aInfo->mString,
+                                                aTarget->userName.name,
+                                                aTarget->userName.size )
+                      != IDE_SUCCESS );
+
+            IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                          "." )
+                      != IDE_SUCCESS );
+
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        /* 2.2. AliasTableName°¡ ÀÖ´Ù¸é Text¸¦ »ý¼ºÇÑ´Ù. */
+        if ( QC_IS_NULL_NAME( aTarget->aliasTableName ) != ID_TRUE )
+        {
+            IDE_TEST( iduVarStringAppendLength( aInfo->mString,
+                                                aTarget->aliasTableName.name,
+                                                aTarget->aliasTableName.size )
+                      != IDE_SUCCESS );
+
+            IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                          "." )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* 2.3. TableName°¡ ÀÖ´Ù¸é Text¸¦ »ý¼ºÇÑ´Ù. */
+            if ( QC_IS_NULL_NAME( aTarget->tableName ) != ID_TRUE )
+            {
+                IDE_TEST( iduVarStringAppendLength( aInfo->mString,
+                                                    aTarget->tableName.name,
+                                                    aTarget->tableName.size )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                              "." )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+
+        IDE_TEST_RAISE( QC_IS_NULL_NAME( aTarget->columnName ) == ID_TRUE, ERR_NULL_COLUMNNAME );
+
+        /* 2.4. Column°¡ ÀÖ´Ù¸é Text¸¦ »ý¼ºÇÑ´Ù. */
+        IDE_TEST( iduVarStringAppendLength( aInfo->mString,
+                                            aTarget->columnName.name,
+                                            aTarget->columnName.size )
+                  != IDE_SUCCESS );
+
+        /* 2.5. AliasColumnName°¡ ÀÖ´Ù¸é Text¸¦ »ý¼ºÇÑ´Ù. */
+        if ( QC_IS_NULL_NAME( aTarget->aliasColumnName ) != ID_TRUE )
+        {
+            IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                          " AS " )
+                      != IDE_SUCCESS );
+
+            IDE_TEST( iduVarStringAppendLength( aInfo->mString,
+                                                aTarget->aliasColumnName.name,
+                                                aTarget->aliasColumnName.size )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_INFO )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::generateTargetText",
+                                  "info is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_NODE )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::generateTargetText",
+                                  "node is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_PLAN_STRING )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::generateTargetText",
+                                  "plan string is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_COLUMNNAME )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::generateTargetText",
+                                  "column name is null" ) );
+    }
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmgShardSelect::generatePredText( qmgTransformInfo * aInfo,
+                                         qtcNode          * aNode )
+{
+/****************************************************************************************
+ *
+ * Description : qmoUtil::printPredInPlan ¸¦ Âü°íÇÏ¿© ÀÛ¼ºµÈ Query Text ÇüÅÂÀÇ Predicate
+ *               Node Text »ý¼º ÇÔ¼öÀÌ´Ù. ÁßÀ§ ¼øÈ¸·Î ¼øÈ¸ÇÏ¸é¼­ ÇÑÁÙ·Î »ý¼ºÇØ³½´Ù.
+ *
+ * Implementation : 1. ³í¸® ¿¬»êÀÚ¶ó¸é Àç±Í È£ÃâÇÑ´Ù.
+ *                  2. ÁßÀ§ ¼øÈ¸·Î ³í¸® ¿¬»êÀÚ¸¦ Áß°£¿¡ ÀÛ¼ºÇÑ´Ù.
+ *                  3. ³í¸® ¿¬»êÀÚ°¡ ¾Æ´Ï¶ó¸é, Node Text¸¦ »ý¼ºÇÑ´Ù.
+ *
+ ****************************************************************************************/
+
+    qtcNode * sNode = NULL;
+
+    IDE_TEST_RAISE( aNode == NULL, ERR_NULL_NODE );
+    IDE_TEST_RAISE( aInfo == NULL, ERR_NULL_INFO );
+    IDE_TEST_RAISE( aInfo->mStatement == NULL, ERR_NULL_STATEMENT );
+    IDE_TEST_RAISE( aInfo->mString == NULL, ERR_NULL_PLAN_STRING );
+
+    /* 1. ³í¸® ¿¬»êÀÚ¶ó¸é Àç±Í È£ÃâÇÑ´Ù. */
+    if ( ( aNode->node.lflag & MTC_NODE_LOGICAL_CONDITION_MASK )
+            == MTC_NODE_LOGICAL_CONDITION_TRUE )
+    {
+        for ( sNode  = (qtcNode *)( aNode->node.arguments );
+              sNode != NULL;
+              sNode  = (qtcNode *)( sNode->node.next ) )
+        {
+            IDE_TEST( generatePredText( aInfo,
+                                        sNode )
+                     != IDE_SUCCESS );
+
+            /* 2. ÁßÀ§ ¼øÈ¸·Î ³í¸® ¿¬»êÀÚ¸¦ Áß°£¿¡ ÀÛ¼ºÇÑ´Ù. */
+            if ( sNode->node.next != NULL )
+            {
+                if ( ( aNode->node.lflag & MTC_NODE_OPERATOR_MASK )
+                     == MTC_NODE_OPERATOR_AND )
+                {
+                    IDE_TEST( iduVarStringAppendLength( aInfo->mString,
+                                                        " AND ",
+                                                        5 )
+                              != IDE_SUCCESS );
+                }
+                else if ( ( aNode->node.lflag & MTC_NODE_OPERATOR_MASK )
+                          == MTC_NODE_OPERATOR_OR )
+                {
+                    IDE_TEST( iduVarStringAppendLength( aInfo->mString,
+                                                        " OR ",
+                                                        4 )
+                              != IDE_SUCCESS );
+                }
+                else if ( ( aNode->node.lflag & MTC_NODE_OPERATOR_MASK )
+                          == MTC_NODE_OPERATOR_NOT )
+                {
+                    IDE_TEST( iduVarStringAppendLength( aInfo->mString,
+                                                        " NOT ",
+                                                        6 )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    IDE_RAISE( ERR_UNEXPECT );
+                }
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+    }
+    else
+    {
+        QC_SHARED_TMPLATE( aInfo->mStatement )->flag &= ~QC_TMP_SHARD_OUT_REF_COL_TO_BIND_MASK;
+        QC_SHARED_TMPLATE( aInfo->mStatement )->flag |= QC_TMP_SHARD_OUT_REF_COL_TO_BIND_TRUE;
+        
+        /* 3. ³í¸® ¿¬»êÀÚ°¡ ¾Æ´Ï¶ó¸é, Node Text¸¦ »ý¼ºÇÑ´Ù. */
+        IDE_TEST( qmoUtil::printExpressionInPlan( QC_SHARED_TMPLATE( aInfo->mStatement ),
+                                                  aInfo->mString,
+                                                  aNode,
+                                                  QMO_PRINT_UPPER_NODE_NORMAL )
+                  != IDE_SUCCESS );
+
+        QC_SHARED_TMPLATE( aInfo->mStatement )->flag &= ~QC_TMP_SHARD_OUT_REF_COL_TO_BIND_MASK;
+        QC_SHARED_TMPLATE( aInfo->mStatement )->flag |= QC_TMP_SHARD_OUT_REF_COL_TO_BIND_FALSE;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_INFO )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::generatePredText",
+                                  "info is null" ) );
+    }
+        IDE_EXCEPTION( ERR_NULL_STATEMENT )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::generatePredText",
+                                  "statement is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_PLAN_STRING )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::generatePredText",
+                                  "plan string is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_NODE )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::generatePredText",
+                                  "node is null" ) );
+    }
+    IDE_EXCEPTION( ERR_UNEXPECT )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::generatePredText",
+                                  "unexpected error" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmgShardSelect::pushProjectOptimize( qmgTransformInfo * aInfo )
+{
+/****************************************************************************************
+ *
+ * Description : Plan String Buffer·Î TargetÀ» Push, Text¸¦ º¹Á¦ÇÑ´Ù.
+ *               QMS_TARGET_IS_USELESS_TRUE ÀÎ TargetÀº Á¦°ÅÇÑ´Ù. Target Á¦°Å·Î PushÇÒ
+ *               TargetÀÌ ¾ø¾îÁö¸é Null Target¸¦ Ãß°¡ÇÑ´Ù.
+ *
+ *  QUERY   / SELECT C1 FROM ( SELECT * FROM T1 ORDER BY C1 )
+ *  ANALYZE / SELECT C1 FROM ( SELECT * FROM SHARD( SELECT * FROM T1 ) ORDER BY C1 )
+ *
+ *  SHARD   /                                       SELECT * FROM T1
+ *  EXPAND  /                                       SELECT C1, C2 FROM T1
+ *  SELECT  /                                       SELECT
+ *  USELESS /                                              F   T
+ *  PROJECT /                                              C1               <-- 2.1, 2.3
+ *  FROM    /                                                     FROM T1
+ *
+ *
+ * Implementation : 1.   Push Projection ´ë»óÀÌ ÀÖ´Â °æ¿ì¿¡ ÃÖÀûÈ­ÇÑ´Ù.
+ *                  2.1. ¸ðµç Target¸¦ ¼ö»öÇÏ¸ç, ÃÖÀûÈ­ÇÑ´Ù.
+ *                  2.2. QMS_TARGET_IS_USELESS_TRUEÀÎ TargetÀº Á¦°ÅÇÑ´Ù.
+ *                  2.3. ÀÌÀü Target¿¡ ,·Î ¿¬°áÇÑ´Ù.
+ *                  3.1. Query Text¿¡¼­ ÀÖ´ø TargetÀº º¹Á¦ÇÑ´Ù.
+ *                  3.2. ½ÃÀÛºÎÅÍ ¸¶Áö¸·±îÁö º¹Á¦ÇÑ´Ù.
+ *                  3.3. aliasColumnName´Â PositionÀÌ ¾ø¾î »õ·Î Text¸¦ »ý¼ºÇÑ´Ù.
+ *                  3.4. »ý¼ºµÈ TargetÀº »õ·Î Text¸¦ »ý¼ºÇÑ´Ù.
+ *                  4.   PushÇÒ TargetÀÇ Bind Á¤º¸¸¦ ¼öÁýÇÑ´Ù.
+ *                  5.   PushÇÒ TargetÀÌ ¾ø´Ù¸é, NULL Target ¸¦ Ãß°¡ÇÑ´Ù.
+ *                  6.   Tuple Column¸¦ Á¶Á¤ÇÑ´Ù.
+ *
+ ****************************************************************************************/
+
+    qmsTarget * sTarget      = NULL;
+    SInt        sStart       = 0;
+    SInt        sEnd         = 0;
+    idBool      sIsTransform = ID_FALSE;
+
+    IDE_TEST_RAISE( aInfo == NULL, ERR_NULL_INFO );
+    IDE_TEST_RAISE( aInfo->mQuerySet == NULL, ERR_NULL_QUERYSET );
+    IDE_TEST_RAISE( aInfo->mString == NULL, ERR_NULL_PLAN_STRING );
+
+    /* 1.   Push Projection ´ë»óÀÌ ÀÖ´Â °æ¿ì¿¡ ÃÖÀûÈ­ÇÑ´Ù. */
+    if ( aInfo->mTarget != NULL )
+    {
+        /* 2.1. ¸ðµç Target¸¦ ¼ö»öÇÏ¸ç, ÃÖÀûÈ­ÇÑ´Ù. */
+        for ( sTarget  = aInfo->mTarget;
+              sTarget != NULL;
+              sTarget  = sTarget->next )
+        {
+            /* 2.2.   QMS_TARGET_IS_USELESS_TRUE ÀÎ TargetÀº Á¦°ÅÇÑ´Ù. */
+            if ( ( sTarget->flag & QMS_TARGET_IS_USELESS_MASK ) == QMS_TARGET_IS_USELESS_TRUE )
+            {
+                continue;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+
+            /* 2.3.   ÀÌÀü Target¿¡ ,·Î ¿¬°áÇÑ´Ù. */
+            if ( sIsTransform == ID_TRUE )
+            {
+                IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                              ", " )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                sIsTransform = ID_TRUE;
+            }
+
+            /* 3.1. Query Text¿¡¼­ ÀÖ´ø TargetÀº º¹Á¦ÇÑ´Ù. */
+            if ( ( QC_IS_NULL_NAME( sTarget->targetColumn->position ) != ID_TRUE ) &&
+                 ( sTarget->targetColumn->position.stmtText == aInfo->mPosition.stmtText ) )
+            {
+                IDE_TEST( qmg::getNodeOffset( sTarget->targetColumn,
+                                              ID_FALSE,
+                                              &( sStart ),
+                                              &( sEnd ) )
+                          != IDE_SUCCESS );
+
+                /* 3.2. ½ÃÀÛºÎÅÍ ¸¶Áö¸·±îÁö º¹Á¦ÇÑ´Ù. */
+                IDE_TEST( iduVarStringAppendLength( aInfo->mString,
+                                                    sTarget->targetColumn->position.stmtText
+                                                    + sStart,
+                                                    sEnd
+                                                    - sStart )
+                          != IDE_SUCCESS );
+
+                /* 3.3. aliasColumnName´Â PositionÀÌ ¾ø¾î »õ·Î Text¸¦ »ý¼ºÇÑ´Ù. */
+                if ( QC_IS_NULL_NAME( sTarget->aliasColumnName ) != ID_TRUE )
+                {
+                    IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                                  " AS " )
+                              != IDE_SUCCESS );
+
+                    IDE_TEST( iduVarStringAppendLength( aInfo->mString,
+                                                        sTarget->aliasColumnName.name,
+                                                        sTarget->aliasColumnName.size )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+            }
+            else
+            {
+                /* 3.4. »ý¼ºµÈ TargetÀº »õ·Î Text¸¦ »ý¼ºÇÑ´Ù.
+                 *  - qmvQuerySet::expandAllTarget
+                 *  - qmvQuerySet::expandTarget
+                 *  - qmvShardTransform::appendSortNode
+                 *  - qmvShardTransform::adjustTargetAndSort
+                 */
+                IDE_TEST( generateTargetText( aInfo,
+                                              sTarget )
+                          != IDE_SUCCESS );
+            }
+
+            /* 4.   PushÇÒ TargetÀÇ Bind Á¤º¸¸¦ ¼öÁýÇÑ´Ù. */
+            IDE_TEST( qmg::findAndCollectParamOffset( aInfo->mStatement,
+                                                      sTarget->targetColumn,
+                                                      aInfo->mParamOffsetInfo )
+                      != IDE_SUCCESS );
+        }
+
+        if ( sIsTransform == ID_TRUE )
+        {
+            IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                          " " )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* 5.   PushÇÒ TargetÀÌ ¾ø´Ù¸é, NULL Target ¸¦ Ãß°¡ÇÑ´Ù. */
+            IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                          "NULL " )
+                      != IDE_SUCCESS );
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_INFO )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::pushProjectOptimize",
+                                  "info is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_QUERYSET )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::pushProjectOptimize",
+                                  "query set is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_PLAN_STRING )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::pushProjectOptimize",
+                                  "plan string is null" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmgShardSelect::pushSelectOptimize( qmgTransformInfo * aInfo )
+{
+/****************************************************************************************
+ *
+ * Description : Plan String Buffer·Î WhereÀýÀ» Push, Text¸¦ º¹Á¦ÇÑ´Ù.
+ *               Predicate ´ÜÀ§¸¦ ( )·Î °¨½Î°í, Push Selection ÀüÃ¼µµ ( )·Î °¨½Ñ´Ù.
+ *
+ *  TARGET PREDICATE            |  Push Selection
+ *                              |
+ *    OR                        |   WHERE (
+ *     AND                      |          (
+ *      A.C2 = 1 ---  A.C3 = 2  |            T1.C2 = 1
+ *                              |                      )
+ *                              |                        AND
+ *                              |                            (
+ *                              |                              T2.C2 = 1
+ *                              |                                        )
+ *                              |                                          )
+ *                              |
+ *                              |   WHERE ( ( T1.C2 = 1 ) AND ( T2.C2 = 1 ) )
+ *
+ * Implementation : 1.  PushÇÒ Predicate°¡ ÀÖÀ» ¶§¸¸ ¼öÇàÇÑ´Ù.
+ *                  2.  WHERE (
+ *                  3.  ÀÌÀü Predicade¿¡ AND·Î ¿¬°áÇÑ´Ù.
+ *                  4.  Shard View¿¡ ÀûÇÕÇÏ°Ô Predicate Node ÀÌ¸§À» º¯°æÇÑ´Ù.
+ *                  5.  (
+ *                  6.  Predicate Node¸¦ TextÈ­ ÇÑ´Ù.
+ *                  7.  )
+ *                  8.  PushÇÒ PredicateÀÇ Bind Á¤º¸¸¦ ¼öÁýÇÑ´Ù.
+ *                  9.  Shard Key ColumnnÀÌ¶ó¸é Shard Value¸¦ ¸¸µç´Ù.
+ *                  10. )
+ *
+ ****************************************************************************************/
+
+    qmgPushPred * sPushPred    = NULL;
+    idBool        sIsTransform = ID_FALSE;
+
+    IDE_TEST_RAISE( aInfo == NULL, ERR_NULL_INFO );
+
+    /* 1.  PushÇÒ Predicate°¡ ÀÖÀ» ¶§¸¸ ¼öÇàÇÑ´Ù. */
+    if ( aInfo->mPushPred != NULL )
+    {
+        IDE_TEST_RAISE( aInfo->mString == NULL, ERR_NULL_PLAN_STRING );
+
+        /* 2.  WHERE ( */
+        IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                      " WHERE ( " )
+                  != IDE_SUCCESS );
+
+        for ( sPushPred  = aInfo->mPushPred;
+              sPushPred != NULL;
+              sPushPred  = sPushPred->mNext )
+        {
+            if ( sIsTransform == ID_TRUE )
+            {
+                /* 3.  ÀÌÀü Predicade¿¡ AND·Î ¿¬°áÇÑ´Ù. */
+                IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                              " AND " )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                sIsTransform = ID_TRUE;
+            }
+
+            /* 5.  ( */
+            IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                          "( " )
+                      != IDE_SUCCESS );
+
+            /* 6.  Predicate Node¸¦ TextÈ­ ÇÑ´Ù. */
+            IDE_TEST( generatePredText( aInfo,
+                                        sPushPred->mNode )
+                      != IDE_SUCCESS );
+
+            /* 7.  ) */
+            IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                          " )" )
+                      != IDE_SUCCESS );
+
+            /* 8.  PushÇÒ PredicateÀÇ Bind Á¤º¸¸¦ ¼öÁýÇÑ´Ù. */
+            IDE_TEST( qmg::findAndCollectParamOffset( aInfo->mStatement,
+                                                      sPushPred->mNode,
+                                                      aInfo->mParamOffsetInfo )
+                      != IDE_SUCCESS );
+        }
+
+        IDE_TEST_RAISE( sIsTransform == ID_FALSE, ERR_UNEXPECTED );
+
+        /* 10. ) */
+        IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                      " )" )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_INFO )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::pushSelectOptimize",
+                                  "info is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_PLAN_STRING )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::pushSelectOptimize",
+                                  "plan string is null" ) );
+    }
+    IDE_EXCEPTION( ERR_UNEXPECTED )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::pushSelectOptimize",
+                                  "target predicate is none" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmgShardSelect::pushOrderByOptimize( qmgTransformInfo * aInfo )
+{
+/****************************************************************************************
+ *
+ * Description : Plan String Buffer·Î Order ByÀýÀ» Push, Text¸¦ º¹Á¦ÇÑ´Ù.
+ *               Limit SortÀÎ °æ¿ì¸¸ ¼öÇàÇÑ´Ù. ±×¸®°í Order ByÀýÀ» ¸ÕÀú Push, ¿¬¼ÓÇØ¼­
+ *               pushLimitOptimize¸¦ È£ÃâÇØ¼­ ÇØ¾ß ÇÑ´Ù. µû¶ó¼­ Order ByÀýÀ» PushÇÑ ´ÙÀ½
+ *               LimitÀýÀ» PushÇÑ´Ù.
+ *
+ *  ORDER BY C2, C3 ASC  |  ORDER BY C2, C3 NULL LAST
+ *  *******************  |  *************************
+ *
+ * Implementation : 1. PushÇÒ Order By°¡ ÀÖÀ» ¶§¸¸ ¼öÇàÇÑ´Ù.
+ *                  2. ½ÃÀÛ Offset¸¦ °è»êÇÑ´Ù.
+ *                  3. ¸¶Áö¸· Offset¸¦ °è»êÇÑ´Ù.
+ *                  4. PushÇÒ Order ByÀÇ Bind Á¤º¸¸¦ ¼öÁýÇÑ´Ù.
+ *                  5. ½ÃÀÛºÎÅÍ ¸¶Áö¸·±îÁö º¹Á¦ÇÑ´Ù.
+ *
+ ****************************************************************************************/
+
+    qmsSortColumns * sOrderBy = NULL;
+    qmsSortColumns * sLast    = NULL;
+    SInt             sStart   = 0;
+    SInt             sEnd     = 0;
+
+    IDE_TEST_RAISE( aInfo == NULL, ERR_NULL_INFO );
+    IDE_TEST_RAISE( aInfo->mString == NULL, ERR_NULL_PLAN_STRING );
+
+    /*  1. PushÇÒ Order By°¡ ÀÖÀ» ¶§¸¸ ¼öÇàÇÑ´Ù. */
+    if ( aInfo->mOrderBy != NULL )
+    {
+        /* 2. ½ÃÀÛ Offset¸¦ °è»êÇÑ´Ù. */
+        IDE_TEST( qmg::getNodeOffset( aInfo->mOrderBy->sortColumn,
+                                      ID_TRUE,
+                                      &( sStart ),
+                                      NULL )
+                  != IDE_SUCCESS );
+
+        /* 3. ¸¶Áö¸· Offset¸¦ °è»êÇÑ´Ù. */
+        for ( sOrderBy  = aInfo->mOrderBy;
+              sOrderBy != NULL;
+              sOrderBy  = sOrderBy->next )
+        {
+            /* 4.PushÇÒ Order ByÀÇ Bind Á¤º¸¸¦ ¼öÁýÇÑ´Ù. */
+            IDE_TEST( qmg::findAndCollectParamOffset( aInfo->mStatement,
+                                                      sOrderBy->sortColumn,
+                                                      aInfo->mParamOffsetInfo )
+                      != IDE_SUCCESS );
+
+            sLast = sOrderBy;
+        }
+
+        if ( QC_IS_NULL_NAME( sLast->mNullsOptPos ) != ID_TRUE )
+        {
+            sEnd = sLast->mNullsOptPos.offset + sLast->mNullsOptPos.size;
+        }
+        else if ( QC_IS_NULL_NAME( sLast->mSortModePos ) != ID_TRUE )
+        {
+            sEnd = sLast->mSortModePos.offset + sLast->mSortModePos.size;
+        }
+        else
+        {
+            IDE_TEST( qmg::getNodeOffset( sLast->sortColumn,
+                                          ID_TRUE,
+                                          NULL,
+                                          &( sEnd ) )
+                      != IDE_SUCCESS );
+        }
+
+        IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                      " ORDER BY " )
+                  != IDE_SUCCESS );
+
+        /* 5. ½ÃÀÛºÎÅÍ ¸¶Áö¸·±îÁö º¹Á¦ÇÑ´Ù. */
+        IDE_TEST( iduVarStringAppendLength( aInfo->mString,
+                                            sLast->sortColumn->position.stmtText
+                                            + sStart,
+                                            sEnd
+                                            - sStart )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_INFO )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::pushOrderByOptimize",
+                                  "info is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_PLAN_STRING )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::pushOrderByOptimize",
+                                  "plan string is null" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmgShardSelect::pushLimitOptimize( qmgTransformInfo * aInfo )
+{
+/****************************************************************************************
+ *
+ * Description : Plan String Buffer·Î LimitÀýÀ» Push, Query Set Text¸¦ º¹Á¦ÇÑ´Ù.
+ *               Push Limit ÃÖÀûÈ­·Î Shard Select Plan¿¡¼­ Node ¸¶´Ù Limit¸¦ ¼öÇàÇÑ´Ù.
+ *
+ *  BEFORE                       |  AFTER
+ *  - LIMIT 2 OFFSET 2 ( COORD ) |  -- LIMIT CAST( 2 AS BIGINT ) + CAST( 2 AS BIGINT ) - 1 ( NODE1 )
+ *                               |  -- LIMIT CAST( 2 AS BIGINT ) + CAST( 2 AS BIGINT ) - 1 ( NODE2 )
+ *                               |  - LIMIT 2 OFFSET 2 ( COORD )
+ *
+ * Implementation : 1.   PushÇÒ Limit°¡ ÀÖÀ» ¶§¸¸ ¼öÇàÇÑ´Ù.
+ *                  2.   LIMIT FOR SHARD CAST(
+ *                  3.1. START
+ *                  3.2. PushÇÒ LimitÀÇ Bind Á¤º¸¸¦ ¼öÁýÇÑ´Ù.
+ *                  4.   AS BIGINT ) + CAST(
+ *                  5.1  COUNT
+ *                  5.2. PushÇÒ LimitÀÇ Bind Á¤º¸¸¦ ¼öÁýÇÑ´Ù.
+ *                  6.   AS BIGINT ) - 1
+ *
+ ****************************************************************************************/
+
+    IDE_TEST_RAISE( aInfo == NULL, ERR_NULL_INFO );
+    IDE_TEST_RAISE( aInfo->mString == NULL, ERR_NULL_PLAN_STRING );
+
+    /*  1.   PushÇÒ Limit°¡ ÀÖÀ» ¶§¸¸ ¼öÇàÇÑ´Ù. */
+    if ( aInfo->mLimit != NULL )
+    {
+        /* 2.   LIMIT ( */
+        IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                      " LIMIT FOR SHARD CAST( " )
+                  != IDE_SUCCESS );
+
+        /* 3.1. START */
+        if ( QC_IS_NULL_NAME( aInfo->mLimit->start.mPosition ) != ID_TRUE )
+        {
+            IDE_TEST( iduVarStringAppendLength( aInfo->mString,
+                                                aInfo->mLimit->start.mPosition.stmtText
+                                                + aInfo->mLimit->start.mPosition.offset,
+                                                aInfo->mLimit->start.mPosition.size )
+                      != IDE_SUCCESS );
+
+            if ( qmsLimitI::hasHostBind( qmsLimitI::getStart( aInfo->mLimit ) ) == ID_TRUE )
+            {
+                /* 3.2. PushÇÒ LimitÀÇ Bind Á¤º¸¸¦ ¼öÁýÇÑ´Ù. */
+                IDE_TEST( qmg::findAndCollectParamOffset( aInfo->mStatement,
+                                                          qmsLimitI::getHostNode(
+                                                              qmsLimitI::getStart( aInfo->mLimit ) ),
+                                                          aInfo->mParamOffsetInfo )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        else
+        {
+            IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                          "1" )
+                      != IDE_SUCCESS );
+        }
+
+        /* 4.   AS BIGINT ) + ( */
+        IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                      " AS BIGINT ) + CAST( " )
+                  != IDE_SUCCESS );
+
+        /* 5.1. COUNT */
+        IDE_TEST( iduVarStringAppendLength( aInfo->mString,
+                                            aInfo->mLimit->count.mPosition.stmtText
+                                            + aInfo->mLimit->count.mPosition.offset,
+                                            aInfo->mLimit->count.mPosition.size )
+                  != IDE_SUCCESS );
+
+        if ( qmsLimitI::hasHostBind( qmsLimitI::getCount( aInfo->mLimit ) ) == ID_TRUE )
+        {
+            /* 5.2. PushÇÒ LimitÀÇ Bind Á¤º¸¸¦ ¼öÁýÇÑ´Ù. */
+            IDE_TEST( qmg::findAndCollectParamOffset( aInfo->mStatement,
+                                                      qmsLimitI::getHostNode(
+                                                          qmsLimitI::getCount( aInfo->mLimit ) ),
+                                                      aInfo->mParamOffsetInfo )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        /* 6.   AS BIGINT ) - 1 SHARD */
+        IDE_TEST( iduVarStringAppend( aInfo->mString,
+                                      " AS BIGINT ) - 1" )
+                  != IDE_SUCCESS );
+
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_INFO )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::pushLimitOptimize",
+                                  "info is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_PLAN_STRING )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::pushLimitOptimize",
+                                  "plan string is null" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmgShardSelect::pushSeriesOptimize( qcStatement    * aStatement,
+                                           const qmgGraph * aParent,
+                                           qmgShardSELT   * aMyGraph )
+{
+/****************************************************************************************
+ *
+ * Description : Shard Query·Î Push Projection, Push Selection, Push Limit ÃÖÀûÈ­¸¦
+ *               ¼öÇàÇÑ´Ù.
+ *
+ *               Æ¯È÷, Push Limit´Â LimitÀý ÇÏ³ª¸¸ PushÇÏ°Å³ª, Limit SortÀÎ °æ¿ì
+ *               Order ByÀý ±îÁöµµ °°ÀÌ PushÇØ¾ß ÇÑ´Ù.
+ *
+ * Implementation : 1.  º¯È¯ÀÌ ÇÊ¿äÇÑ Áö °Ë»çÇÑ´Ù.
+ *                  2.  º¯È¯ÀÌ ÇÊ¿äÇÒ ¶§¸¸ ¼öÇàÇÑ´Ù.
+ *                  3.  Select¸¦ º¹Á¦ÇÑ´Ù.
+ *                  4.  Push Projection¸¦ ¼öÇàÇÑ´Ù.
+ *                  5.  From ÀýÀ» º¹Á¦ÇÑ´Ù.
+ *                  6.  Push Selection¸¦ ¼öÇàÇÑ´Ù.
+ *                  7.  Where ÀýÀ» º¹Á¦ÇÑ´Ù.
+ *                  8.  Group By Having ÀýÀ» º¹Á¦ÇÑ´Ù
+ *                  9.  Bind Á¤º¸¸¦ ¼öÁýÇÑ´Ù.
+ *                  10. Push Limit¸¦ ¼öÇàÇÑ´Ù.
+ *                  11. º¯È¯ÇÑ Query¸¦ Buffer¿¡ Ãâ·ÂÇÑ´Ù.
+ *                  12. º¯È¯ÇÑ Query·Î Tuple Column¸¦ ¼³Á¤ÇÑ´Ù.
+ *                  13. º¯È¯ÇÑ Query·Î Shard Key Value¸¦ ¼³Á¤ÇÑ´Ù.
+ *                  14. º¯È¯ÇÑ Query·Î Shard Parameter¸¦ ¼³Á¤
+ *                  15. º¯È¯ÇÑ Query¸¦ Shard Query·Î ¼³Á¤ÇÑ´Ù.
+ *
+ ****************************************************************************************/
+
+    qmgTransformInfo sTransformInfo;
+
+    IDE_TEST_RAISE( aStatement == NULL, ERR_NULL_STATEMENT );
+    IDE_TEST_RAISE( aParent == NULL, ERR_NULL_PARENT_GRAPH );
+    IDE_TEST_RAISE( aMyGraph == NULL, ERR_NULL_MY_GRAPH );
+
+    /* 1.  º¯È¯ÀÌ ÇÊ¿äÇÑ Áö °Ë»çÇÑ´Ù. */
+    IDE_TEST( checkAndGetPushSeries( aStatement,
+                                     aParent,
+                                     aMyGraph,
+                                     &( sTransformInfo ) )
+              != IDE_SUCCESS );
+
+    /* 2.  º¯È¯ÀÌ ÇÊ¿äÇÒ ¶§¸¸ ¼öÇàÇÑ´Ù. */
+    if ( sTransformInfo.mIsTransform == ID_TRUE )
+    {
+        IDE_TEST( iduVarStringTruncate( sTransformInfo.mString,
+                                        ID_TRUE )
+                  != IDE_SUCCESS );
+
+        /* 3. Select¸¦ º¹Á¦ÇÑ´Ù. */
+        IDE_TEST( copySelect( &( sTransformInfo ) ) != IDE_SUCCESS );
+
+        /* 4.  Push Projection¸¦ ¼öÇàÇÑ´Ù. */
+        IDE_TEST( pushProjectOptimize( &( sTransformInfo ) ) != IDE_SUCCESS );
+
+        /* 5.  From ÀýÀ» º¹Á¦ÇÑ´Ù. */
+        IDE_TEST( copyFrom( &( sTransformInfo ) ) != IDE_SUCCESS );
+
+        /* 6.  Push Selection¸¦ ¼öÇàÇÑ´Ù. */
+        IDE_TEST( pushSelectOptimize( &( sTransformInfo ) ) != IDE_SUCCESS );
+
+        /* 7.  Where ÀýÀ» º¹Á¦ÇÑ´Ù. */
+        IDE_TEST( copyWhere( &( sTransformInfo ) ) != IDE_SUCCESS );
+
+        /* 8.  Group By Having ÀýÀ» º¹Á¦ÇÑ´Ù. */
+        IDE_TEST( iduVarStringAppendLength( sTransformInfo.mString,
+                                            sTransformInfo.mPosition.stmtText
+                                            + sTransformInfo.mPosition.offset,
+                                            sTransformInfo.mPosition.size )
+                  != IDE_SUCCESS );
+
+        /* 9.  Bind Á¤º¸¸¦ ¼öÁýÇÑ´Ù. */
+        IDE_TEST( qmg::copyAndCollectParamOffset( aStatement,
+                                                  sTransformInfo.mPosition.offset,
+                                                  sTransformInfo.mPosition.offset
+                                                  + sTransformInfo.mPosition.size,
+                                                  aMyGraph->shardParamOffset,
+                                                  aMyGraph->shardParamCount,
+                                                  aMyGraph->shardParamInfo,
+                                                  sTransformInfo.mParamOffsetInfo )
+                  != IDE_SUCCESS );
+
+        /* 10. Push Limit¸¦ ¼öÇàÇÑ´Ù. */
+        IDE_TEST( pushOrderByOptimize( &( sTransformInfo ) ) != IDE_SUCCESS );
+
+        IDE_TEST( pushLimitOptimize( &( sTransformInfo ) ) != IDE_SUCCESS );
+
+        /* 11. º¯È¯ÇÑ Query¸¦ Buffer¿¡ Ãâ·ÂÇÑ´Ù. */
+        aMyGraph->mShardQueryLength = iduVarStringGetLength( sTransformInfo.mString );
+
+        IDE_TEST( QC_QMP_MEM( aStatement )->alloc( aMyGraph->mShardQueryLength + 1,
+                                                   (void**)&( aMyGraph->mShardQueryBuf ) )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( iduVarStringConvToCString( sTransformInfo.mString,
+                                             aMyGraph->mShardQueryLength + 1,
+                                             aMyGraph->mShardQueryBuf )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( iduVarStringTruncate( sTransformInfo.mString,
+                                        ID_TRUE )
+                  != IDE_SUCCESS );
+
+        /* 12. º¯È¯ÇÑ Query·Î Tuple Column¸¦ tÁ¤ÇÑ´Ù. */
+        IDE_TEST( setShardTupleColumn( &( sTransformInfo ) ) != IDE_SUCCESS );
+
+        /* 13. º¯È¯ÇÑ Query·Î Shard Key Value¸¦ ¼³Á¤ÇÑ´Ù. */
+        IDE_TEST( setShardKeyValue( &( sTransformInfo ) ) != IDE_SUCCESS );
+
+        /* 14. º¯È¯ÇÑ Query·Î Shard Parameter¸¦ ¼³Á¤ÇÑ´Ù. */
+        IDE_TEST( setShardParameter( &( sTransformInfo ) ) != IDE_SUCCESS );
+
+        /* 15. º¯È¯ÇÑ Query¸¦ Shard Query·Î ¼³Á¤ÇÑ´Ù. */
+        aMyGraph->shardQuery.stmtText = aMyGraph->mShardQueryBuf;
+        aMyGraph->shardQuery.offset   = 0;
+        aMyGraph->shardQuery.size     = aMyGraph->mShardQueryLength;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_STATEMENT )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::pushSeriesOptimize",
+                                  "statement is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_PARENT_GRAPH )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::pushSeriesOptimize",
+                                  "parent graph is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_MY_GRAPH )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::pushSeriesOptimize",
+                                  "my graph is null" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmgShardSelect::setShardKeyValue( qmgTransformInfo * aInfo )
+{
+/****************************************************************************************
+ *
+ * Description : Push SelectionÀ¸·Î Shard Key°¡ ³»·Á°¥ ¶§¿¡, Shard Key Value¸¦ Á¶Á¤ÇÏ´Â
+ *               ÇÔ¼öÀÌ´Ù. qmvShardTransform::isShardQuery ÇÔ¼ö »óÀ§¸¦ ÂüÁ¶ÇÏ¿´´Ù.
+ *
+ *               Dummy Statement¸¦ »ý¼ºÇÏ°í, Push SelectionÀÌ Àû¿ëµÈ Query¸¦ ´Ù½Ã PVO,
+ *               Analyze ÇÑ´Ù. Analyze °á°ú·Î ¹ÝÈ¯µÇ´Â Shard Key Value¸¸ ÃëÇÏ°í
+ *               ³ª¸ÓÁö´Â ¹ö¸°´Ù.
+ *
+ *
+ *  BEFORE / SELECT CAST( ? AS INTEGER )
+ *            FROM ( SELECT CAST( ? AS INTEGER ), C1
+ *                    FROM T1 WHERE C3 != ?
+ *                     ORDER BY C2 )
+ *             WHERE C1 != ?;
+ *
+ *  AFTER1 / SELECT CAST( ? AS INTEGER )
+ *            FROM ( SELECT *
+ *                    FROM ( SELECT CAST( ? AS INTEGER ), C1
+ *                            FROM T1 WHERE C3 != ?
+ *                             ORDER BY C2 ) )
+ *             WHERE C1 != 1;
+ *
+ *  SHARD VALUE / COUNT 0 / NONE
+ *
+ *
+ *  AFTER2 / SELECT CAST( ? AS INTEGER )
+ *            FROM ( SELECT *
+ *                    FROM ( SELECT CAST( ? AS INTEGER ), C1
+ *                            FROM T1 WHERE C3 != ?
+ *                             AND C1 != 1
+ *                                 *******
+ *                              ORDER BY C2 ) )
+ *             WHERE C1 != 1;
+ *
+ *  SHARD VALUE / COUNT 1 / VALUE 1
+ *
+ *
+ * Implementation : 1.  Push SelectionÀÌ ¼öÇàµÈ °æ¿ì¸¸ º¯°æÇÑ´Ù.
+ *                  2.  Dummy Statement¸¦ »ý¼ºÇÑ´Ù.
+ *                  3.  TransformµÈ Query¸¦ ¼³Á¤ÇÑ´Ù.
+ *                  4.  ±âÁ¸ Bind Á¤º¸¸¦ À¯ÁöÇÏ·Á°í, Shard ±¸ºÐ¿ë Bind Offset¸¦ ¼³Á¤ÇÑ´Ù.
+ *                  5.  prasePartial¸¦ ¼öÇàÇÑ´Ù.
+ *                  6.  ºÐ¼® ´ë»óÀÎÁö ¸ÕÀú È®ÀÎÇÑ´Ù.
+ *                  7.  Dummy Bind Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
+ *                  8.  Validate¸¦ ¼öÇàÇÑ´Ù.
+ *                  9.  Analyze¸¦ ¼öÇàÇÑ´Ù.
+ *                  10. Shard ±¸ºÐ¿ë Bind Offset¸¦ ¿øº¹ÇÑ´Ù.
+ *                  11. Shard Key Value¸¦ º¹»çÇÑ´Ù.
+ *                  12. Dummy Statement¸¦ Á¤¸®ÇÑ´Ù.
+ *
+ ****************************************************************************************/
+
+    qcStatement    * sStatement        = NULL;
+    qmsQuerySet    * sQuerySet         = NULL;
+    sdiAnalyzeInfo * sAnalyzeInfo      = NULL;
+    ULong            sSMN              = ID_ULONG(0);
+    idBool           sIsShardParseTree = ID_FALSE;
+    idBool           sIsShardQuerySet  = ID_FALSE;
+    idBool           sIsTransformAble  = ID_FALSE;
+    qcNamePosition * sStmtPos          = NULL;
+    qcNamePosition   sStmtBuffer;
+
+    IDE_TEST_RAISE( aInfo == NULL, ERR_NULL_INFO );
+    IDE_TEST_RAISE( aInfo->mStatement == NULL, ERR_NULL_STATEMENT );
+    IDE_TEST_RAISE( aInfo->mGraph == NULL, ERR_NULL_GRAPH );
+
+    /* 1.  Push SelectionÀÌ ¼öÇàµÈ °æ¿ì¸¸ º¯°æÇÑ´Ù. */
+    IDE_TEST_CONT( aInfo->mPushPred == NULL, NORMAL_EXIT );
+    IDE_TEST_CONT( aInfo->mGraph->shardAnalysis == NULL, NORMAL_EXIT );
+
+    /* 2. */
+    sStatement  = aInfo->mStatement;
+    sQuerySet   = aInfo->mQuerySet;
+    sStmtPos    = &( sStmtBuffer );
+
+    if ( sdi::detectShardMetaChange( sStatement ) == ID_TRUE )
+    {
+        sSMN = sdi::getSMNForDataNode();
+    }
+    else
+    {
+        sSMN = QCG_GET_SESSION_SHARD_META_NUMBER( sStatement );
+    }
+
+    /* TASK-7219 Non-shard DML */
+    sStatement->mShardPartialExecType = aInfo->mStatement->mShardPartialExecType;
+
+    /* 3.  TransformµÈ Query¸¦ ¼³Á¤ÇÑ´Ù. */
+    sStmtPos->stmtText = aInfo->mGraph->mShardQueryBuf;
+    sStmtPos->offset   = 0;
+    sStmtPos->size     = aInfo->mGraph->mShardQueryLength;
+
+    /* 4. */
+    SDI_SET_QUERYSET_LIST_STATE( sStatement->mShardQuerySetList,
+                                 SDI_QUERYSET_LIST_STATE_MAIN_PARTIAL );
+
+    IDE_TEST( qmvShardTransform::doShardAnalyze( sStatement,
+                                                 sStmtPos,
+                                                 sSMN,
+                                                 sQuerySet )
+              != IDE_SUCCESS );
+
+    IDE_TEST( sdi::isShardParseTree( sStatement->myPlan->parseTree,
+                                     &( sIsShardParseTree ) )
+              != IDE_SUCCESS );
+
+    if ( sIsShardParseTree == ID_FALSE )
+    {
+        IDE_TEST( sdi::isShardQuerySet( sQuerySet,
+                                        &( sIsShardQuerySet ),
+                                        &( sIsTransformAble ) )
+                  != IDE_SUCCESS );
+
+        if ( ( sIsShardQuerySet == ID_FALSE )
+             &&
+             ( sIsTransformAble == ID_FALSE ) )
+        {
+            IDE_TEST_RAISE( aInfo->mUseShardKwd == ID_FALSE, ERR_UNEXPECTED );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    IDE_TEST( sdi::makeAndSetAnalyzeInfoFromQuerySet( sStatement,
+                                                      sQuerySet,
+                                                      &( sAnalyzeInfo ) )
+              != IDE_SUCCESS );
+
+    aInfo->mGraph->shardAnalysis = sAnalyzeInfo;
+
+    IDE_EXCEPTION_CONT( NORMAL_EXIT );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_INFO )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::setShardKeyValue",
+                                  "info is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_STATEMENT )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::setShardKeyValue",
+                                  "statement is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_GRAPH )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::setShardKeyValue",
+                                  "graph is null" ) );
+    }
+    IDE_EXCEPTION( ERR_UNEXPECTED )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::setShardKeyValue",
+                                  "transformed query is non shard" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmgShardSelect::setShardParameter( qmgTransformInfo * aInfo )
+{
+/****************************************************************************************
+ *
+ * Description : Push SelectionÀ¸·Î Shard Key Bind°¡ ³»·Á°¥ ¶§¿¡, Shard Key Bind
+ *               Á¤º¸¸¦ Á¶Á¤ÇÏ´Â ÇÔ¼öÀÌ´Ù. qmvShardTransform::isShardQuery ÇÔ¼ö ÇÏÀ§¸¦
+ *               ÂüÁ¶ÇÏ¿´´Ù.
+ *
+ *               Transform ½Ã Bind Á¤º¸´Â Transform °úÁ¤ Áß¿¡ ¼öÁýµÈ Á¤º¸¸¦ °¡Áö°í, Shard
+ *               Bind°¡ ¿øº» Query¿¡ ¿¬°üµÈ Bind OffsetÀ¸·Î Array¸¦ »ý¼ºÇÑ´Ù.
+ *
+ *               ¸¸¾à qmgShardSelect::setShardKeyValue °¡ ¼öÇàµÇ¾ú´Ù¸é, TransformµÈ
+ *               Query ³»ÀÇ Bind OffsetÀ¸·Î Shard Key Bind¸¦ ¼³Á¤ÇÏ±â ¶§¹®¿¡,
+ *               Shard Param Offset Array Á¤º¸¿Í »óÀÌÇÏ´Ù.
+ *
+ *               Shard Param Offset Array´Â TransformµÈ Query ³»ÀÇ Shard Bind °³¼ö¿Í
+ *               À§Ä¡ ÇØ´çÇÏ´Â ÀûÀýÇÑ OffsetÀÌ ±â·ÏµÇ¾î ÀÖÀ¸¹Ç·Î, ÇØ´ç Á¤º¸·Î º¯°æÇØ¾ß ÇÑ´Ù.
+ *
+ *
+ *  BEFORE / SELECT CAST( ? AS INTEGER )
+ *            FROM ( SELECT CAST( ? AS INTEGER ), C1
+ *                    FROM T1 WHERE C3 != ?
+ *                     ORDER BY C2 )
+ *             WHERE C1 != ?;
+ *
+ *  BIND       / COUNT 4 / OFFSET 0 1 2 3
+ *                                       \______________________________
+ *                                                                      |
+ *  AFTER1 / SELECT CAST( ? AS INTEGER )                                |
+ *            FROM ( SELECT *                                           |
+ *                    FROM ( SELECT CAST( ? AS INTEGER ), C1            |
+ *                            FROM T1 WHERE C3 != ?                     |
+ *                             ORDER BY C2 ) )                          |
+ *             WHERE C1 != ?;                                           |
+ *                                                                      |
+ *  SHARD BIND  / COUNT 2 / OFFSET 1 2                                  |
+ *  SHARD VALUE / COUNT 0 / NONE                                        |
+ *                                                                      |
+ *                                                                      |
+ *  AFTER2 / SELECT CAST( ? AS INTEGER )                                |
+ *            FROM ( SELECT *                                           |
+ *                    FROM ( SELECT CAST( ? AS INTEGER ), C1 -- BIND 0  |
+ *                            FROM T1 WHERE C3 != ?          -- BIND 1  |
+ *                             AND C1 != ?                   -- BIND 2  |
+ *                              ORDER BY C2 ) )                         |
+ *             WHERE C1 != ?;            _______________________________|
+ *                                      /                               |
+ *  SHARD BIND  / COUNT 2 / OFFSET 1 2 3                                |
+ *  SHARD VALUE / COUNT 1 / BIND 2    /                                 |
+ *                                \__/                                  |
+ *                                DIFF                                  |
+ *                                                                      |
+ *  qmgShardSelect::setShardParameter()                                 |
+ *                                                                      |
+ *  SHARD VALUE / COUNT 1 / BIND 3                                      |
+ *                                \_____________________________________|
+ *
+ *
+ * Implementation : 1.  Shard Param Offset Array¸¦ »ý¼ºÇÑ´Ù.
+ *                  2.  Push SelectionÀÌ ¼öÇàµÈ °æ¿ì¸¸ º¯°æÇÑ´Ù.
+ *                  3.  Shard Key Value¸¦ º¯°æÇÑ´Ù.
+ *                  4.  Shard SubKey Value¸¦ º¯°æÇÑ´Ù.
+ *
+ ****************************************************************************************/
+
+    UShort             sShardParamCount = ID_USHORT_MAX;
+    qcShardParamInfo * sShardParamInfo  = NULL;
+
+    IDE_TEST_RAISE( aInfo == NULL, ERR_NULL_INFO );
+    IDE_TEST_RAISE( aInfo->mStatement == NULL, ERR_NULL_STATEMENT );
+    IDE_TEST_RAISE( aInfo->mParamOffsetInfo == NULL, ERR_NULL_PARAM_INFO );
+    IDE_TEST_RAISE( aInfo->mGraph == NULL, ERR_NULL_GRAPH );
+
+    /* 1.  Shard Param Offset Array¸¦ »ý¼ºÇÑ´Ù. */
+    IDE_TEST( qmg::makeShardParamOffsetArrayForGraph( aInfo->mStatement,
+                                                      aInfo->mParamOffsetInfo,
+                                                      &( sShardParamCount ),
+                                                      &( sShardParamInfo ) )
+              != IDE_SUCCESS );
+
+    aInfo->mGraph->shardParamCount       = sShardParamCount;
+    aInfo->mGraph->shardParamInfo = sShardParamInfo;
+
+    /* 2.  Push SelectionÀÌ ¼öÇàµÈ °æ¿ì¸¸ º¯°æÇÑ´Ù. */
+    IDE_TEST_CONT( aInfo->mPushPred == NULL, NORMAL_EXIT );
+    IDE_TEST_CONT( aInfo->mGraph->shardAnalysis == NULL, NORMAL_EXIT );
+
+    IDE_TEST( qmg::adjustParamOffsetForAnalyzeInfo( aInfo->mGraph->shardAnalysis,
+                                                    sShardParamCount,
+                                                    &sShardParamInfo )
+              != IDE_SUCCESS );
+
+    IDE_EXCEPTION_CONT( NORMAL_EXIT );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_INFO )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::setShardParameter",
+                                  "info is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_STATEMENT )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::setShardParameter",
+                                  "statement is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_GRAPH )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::setShardParameter",
+                                  "graph is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_PARAM_INFO )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::setShardParameter",
+                                  "param info is null" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmgShardSelect::setShardTupleColumn( qmgTransformInfo * aInfo )
+{
+/****************************************************************************************
+ *
+ * Description : Push ProjecionÀ¸·Î ColumnÀÌ Á¦°ÅµÇ´Â »óÈ²À» °í·ÁÇØ¼­ Tuple Column¸¦
+ *               Á¶Á¤ÇÏ´Â ÇÔ¼öÀÌ´Ù.
+ *
+ *               TargetÀÌ Á¦°ÅµÈ ÇüÅÂÀÇ Shard Query·Î ÀÎÇØ¼­, DATA NODE ºÎÅÍ ¹Þ¾Æ¿Ã
+ *               Tuple ´Â ÇÊ¿äÇÑ Target Column ¸¸ ¿¬ÀÌ¾î¼­ ±â·ÏÇÑ´Ù.
+ *
+ *               COORD NODE ¿¡´Â ÀÌ ÇüÅÂ¿¡ ÀûÇÕÇÏ°Ô, ÇÊ¿äÇÑ Target ColumnÀÇ OffsetÀ»
+ *               Tuple ¾ÕÀ¸·Î Á¶Á¤ÇÑ´Ù.
+ *
+ *               ¹Ý´ë·Î ºÒÇÊ¿äÇÑ Target ColumnÀº Tuple µÚ·Î Á¶Á¤ÇÏ°í, ÀÌÈÄ¿¡
+ *               Column Type Null Ã³¸®¸¦ ¼öÇàÇØ¾ß ÇÑ´Ù.
+ *
+ *
+ *  QUERY     / SELECT C2 FROM      ( SELECT C1, C2, C3, C4 FROM T1 ) ORDER BY C4
+ *  ANALYZE   / SELECT C2 FROM SHARD( SELECT C1, C2, C3, C4 FROM T1 ) ORDER BY C4
+ *  TRANSFROM /                SHARD( SELECT     C2,     C4 FROM T1 )
+ *
+ *  DATA      /                SHARD( SELECT     C2,     C4 FROM T1 )
+ *   RESULT   /                     |- C2 -|- C4 -|
+ *                                      \______\___________________________________
+ *                                                                                 |
+ *  COORD     / SELECT C2 FROM      ( SELECT C1, C2, C3, C4 FROM T1 ) ORDER BY C4  |
+ *   BEFORE   /                     |- C1 -|- C2 -|- C3 -|- C4 -|                  |
+ *   AFTER    /                     |- C2 -|- C4 -|- C1 -|- C3 -|                  |
+ *                                      \______\___________________________________|
+ *
+ *
+ * Implementation : 1. Push Projection À» ¼öÇàÇÏ´Â °æ¿ì¸¸, Á¶Á¤ÇÑ´Ù.
+ *                  2. »ç¿ëÁßÀÎ TargetÀº TupleÀÇ ¾ÕºÎºÐÀ» »ç¿ëÇÏµµ·Ï Offset¸¦ Á¶Á¤ÇÑ´Ù.
+ *                  3. »ç¿ëÇÏÁö ¾Ê´Â TargetÀº TupleÀÇ µÞºÎºÐÀ» »ç¿ëÇÏµµ·Ï Offset¸¦ Á¶Á¤ÇÑ´Ù.
+ *
+ ****************************************************************************************/
+
+    qmsTarget * sTarget      = NULL;
+    mtcTuple  * sTuple       = NULL;
+    mtcColumn * sColumn      = NULL;
+    UShort      sIdx         = 0;
+    UShort      sTable       = 0;
+    UShort      sColumnCount = 0;
+    UInt        sOffset      = 0;
+
+    IDE_TEST_RAISE( aInfo == NULL, ERR_NULL_INFO );
+
+    /* 1. Push Projection À» ¼öÇàÇÏ´Â °æ¿ì¸¸, Á¶Á¤ÇÑ´Ù. */
+    IDE_TEST_CONT( aInfo->mTarget == NULL, NORMAL_EXIT );
+
+    sTarget      = aInfo->mTarget;
+    sTable       = aInfo->mGraph->graph.myFrom->tableRef->table;
+    sTuple       = & QC_SHARED_TMPLATE( aInfo->mStatement )->tmplate.rows[ sTable ];    
+    sColumnCount = sTuple->columnCount;
+    sColumn      = sTuple->columns;
+    sOffset      = sColumn->column.offset;
+
+    /* 2. »ç¿ëÁßÀÎ TargetÀº TupleÀÇ ¾ÕºÎºÐÀ» »ç¿ëÇÏµµ·Ï Offset¸¦ Á¶Á¤ÇÑ´Ù. */
+    for ( sIdx = 0, sColumn = sTuple->columns, sTarget = aInfo->mTarget;
+          sIdx < sColumnCount;
+          sIdx++, sColumn++, sTarget = sTarget->next )
+    {
+        if ( ( sTarget->flag & QMS_TARGET_IS_USELESS_MASK ) == QMS_TARGET_IS_USELESS_TRUE )
+        {
+            sColumn->flag &= ~MTC_COLUMN_NULL_TYPE_MASK;
+            sColumn->flag |= MTC_COLUMN_NULL_TYPE_TRUE;
+        }
+        else
+        {
+            sOffset = idlOS::align( sOffset,
+                                    sColumn->module->align );
+
+            sColumn->column.offset = sOffset;
+
+            sOffset += sColumn->column.size;
+        }
+    }
+
+    /* 3. »ç¿ëÇÏÁö ¾Ê´Â TargetÀº TupleÀÇ µÞºÎºÐÀ» »ç¿ëÇÏµµ·Ï Offset¸¦ Á¶Á¤ÇÑ´Ù. */
+    for ( sIdx = 0, sColumn = sTuple->columns;
+          sIdx < sColumnCount;
+          sIdx++, sColumn++ )
+    {
+        if ( ( sColumn->flag & MTC_COLUMN_NULL_TYPE_MASK ) == MTC_COLUMN_NULL_TYPE_TRUE )
+        {
+            sOffset = idlOS::align( sOffset,
+                                    sColumn->module->align );
+
+            sColumn->column.offset = sOffset;
+
+            sOffset += sColumn->column.size;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    IDE_EXCEPTION_CONT( NORMAL_EXIT );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_INFO )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::setShardTupleColumn",
+                                  "info is null" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmgShardSelect::makePushPredicate( qcStatement  * aStatement,
+                                          qmgShardSELT * aMyGraph,
+                                          qmsParseTree * aViewParseTree,
+                                          qmsSFWGH     * aOuterQuery,
+                                          SInt         * aRemain,
+                                          qmoPredicate * aPredicate,
+                                          qmgPushPred ** aHead,
+                                          qmgPushPred ** aTail )
+{
+/****************************************************************************************
+ *
+ * Description : qmgSelection::doViewPushSelection ¸¦ ÂüÁ¶ÇÏ¿© Push SelectionÀÌ °¡´ÉÇÑ
+ *               °æ¿ì¿¡ ÇØ´ç Predicate¸¦ ¼öÁýÇÑ´Ù.
+ *
+ * Implementation : 1.   Predicate °Ë»çÇÑ´Ù.
+ *                  2.   PredicateÀÌ Push DownÇÏ±â ValidÇÑ ´ë»óÀÌ¾î¾ß ÇÑ´Ù.
+ *                  3.1. Push SelectionÀ» °Ë»çÇÑ´Ù.
+ *                  3.2. ÀûÀýÇÑ Table Predicate·Î º¯°æÇÑ´Ù.
+ *                  3.3. ÇØ´ç PredicateÀ» Æ÷ÇÔÇØ¼­ Mtc Stack Á¦ÇÑÀ» °Ë»çÇÑ´Ù.
+ *                  3.4. °¡´ÉÇÑ Predicate¸¦ ¼öÁýÇÑ´Ù.
+ *                  4.   aPredicate->next ¸ÕÀú °Ë»çÇÑ´Ù.
+ *                  5.   aPredicate->more ¸ÕÀú °Ë»çÇÑ´Ù.
+ *                  6.   Stack »ç¿ë·®À» Àü´ÞÇÑ´Ù.
+ *
+ ****************************************************************************************/
+
+    qmgPushPred  * sNewPred    = NULL;
+    qtcNode      * sNode       = NULL;
+    UShort         sTupleId    = ID_USHORT_MAX;
+    idBool         sIsValid    = ID_FALSE;
+    idBool         sIsPushPred = ID_FALSE;
+    idBool         sIsOverflow = ID_FALSE;
+    SInt           sRemain     = 0;
+
+    IDE_TEST_RAISE( aStatement == NULL, ERR_NULL_STATEMENT );
+    IDE_TEST_RAISE( aMyGraph == NULL, ERR_NULL_MY_GRAPH );
+    IDE_TEST_RAISE( aViewParseTree == NULL, ERR_NULL_PARSETREE );
+    IDE_TEST_RAISE( aPredicate == NULL, ERR_NULL_PREDICATE );
+
+    sRemain = *aRemain;
+
+    IDE_TEST_CONT( sRemain < 1, NORMAL_EXIT );
+
+    /* 1.   Predicate °Ë»çÇÑ´Ù. */
+    IDE_TEST( qmoPred::isValidPushDownPredicate( aStatement,
+                                                 &( aMyGraph->graph ),
+                                                 aPredicate,
+                                                 &( sIsValid ) )
+              != IDE_SUCCESS );
+
+    /* 2.   PredicateÀÌ Push DownÇÏ±â ValidÇÑ ´ë»óÀÌ¾î¾ß ÇÑ´Ù. */
+    if ( sIsValid == ID_FALSE )
+    {
+        IDE_CONT( NORMAL_EXIT );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    /* 3.1. Push SelectionÀ» °Ë»çÇÑ´Ù. */
+    sTupleId = aMyGraph->graph.myFrom->tableRef->table;
+
+    IDE_TEST( qmoPushPred::checkPushDownPredicate( aStatement,
+                                                   aViewParseTree,
+                                                   aViewParseTree->querySet,
+                                                   aOuterQuery,
+                                                   sTupleId,
+                                                   aPredicate,
+                                                   &( sIsPushPred ) )
+              != IDE_SUCCESS );
+
+    if ( sIsPushPred == ID_TRUE )
+    {
+        /* 3.2. ÀûÀýÇÑ Table Predicate·Î º¯°æÇÑ´Ù. */
+        IDE_TEST( qmoPushPred::changePredicateNodeName( aStatement,
+                                                        aViewParseTree->querySet,
+                                                        sTupleId,
+                                                        aPredicate->node,
+                                                        &( sNode ) )
+                  != IDE_SUCCESS );
+
+        /* 3.3. ÇØ´ç PredicateÀ» Æ÷ÇÔÇØ¼­ Mtc Stack Á¦ÇÑÀ» °Ë»çÇÑ´Ù.
+         *   - ANDÀÇ Argument·Î ¿¬°áµÇ¾î, 1¸¦ °¨»êÇÑ´Ù.
+         */
+        sRemain -= 1;
+
+        IDE_TEST( qmg::checkStackOverflow( &( sNode->node ),
+                                           sRemain,
+                                           &( sIsOverflow ) )
+                  != IDE_SUCCESS );
+
+        IDE_TEST_CONT( sIsOverflow == ID_TRUE, NORMAL_EXIT );
+
+        /* 3.4. °¡´ÉÇÑ Predicate¸¦ ¼öÁýÇÑ´Ù. */
+        IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM( aStatement ),
+                                qmgPushPred,
+                                &( sNewPred ) )
+                  != IDE_SUCCESS );
+
+        sNewPred->mNode = sNode;
+        sNewPred->mNext = NULL;
+
+        if ( *aHead == NULL )
+        {
+            sNewPred->mId = 1;
+
+            *aHead = sNewPred;
+            *aTail = sNewPred;
+        }
+        else
+        {
+            sNewPred->mId = (*aTail)->mId + 1;
+
+            (*aTail)->mNext = sNewPred;
+            *aTail          = sNewPred;
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    /* 4.   aPredicate->next ¸ÕÀú °Ë»çÇÑ´Ù. */
+    if ( aPredicate->next != NULL )
+    {
+        IDE_TEST( makePushPredicate( aStatement,
+                                     aMyGraph,
+                                     aViewParseTree,
+                                     aOuterQuery,
+                                     &( sRemain ),
+                                     aPredicate->next,
+                                     aHead,
+                                     aTail )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    /* 5.   aPredicate->more ¸ÕÀú °Ë»çÇÑ´Ù. */
+    if ( aPredicate->more != NULL )
+    {
+        IDE_TEST( makePushPredicate( aStatement,
+                                     aMyGraph,
+                                     aViewParseTree,
+                                     aOuterQuery,
+                                     &( sRemain ),
+                                     aPredicate->more,
+                                     aHead,
+                                     aTail )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    /* 6.   Stack »ç¿ë·®À» Àü´ÞÇÑ´Ù. */
+    if ( aRemain != NULL )
+    {
+        *aRemain = sRemain;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    IDE_EXCEPTION_CONT( NORMAL_EXIT );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_STATEMENT )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::makePushPredicate",
+                                  "statement is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_MY_GRAPH )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::makePushPredicate",
+                                  "my graph is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_PARSETREE )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::makePushPredicate",
+                                  "view parse tree is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_PREDICATE )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::makePushPredicate",
+                                  "predicate tree is nul" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmgShardSelect::checkPushProject( qcStatement  * aStatement,
+                                         qmgShardSELT * aMyGraph,
+                                         qmsParseTree * aParseTree,
+                                         qmsTarget   ** aTarget,
+                                         idBool       * aNeedWrapSet )
+{
+/****************************************************************************************
+ *
+ * Description : PROJ-2469 Optimize View MaterializationÀÇ View Target ÃÖÀûÈ­¸¦ ÀÌ¿ëÇØ¼­
+ *               Push Projection ¿©ºÎ¸¸ °Ë»çÇÏ´Â ÇÔ¼öÀÌ´Ù.
+ *
+ *               Shard Graph ¾Æ·¡·Î Graph »ý¼ºÀ» ÇÏÁö ¾Ê¾Æ¼­, View Target ÃÖÀûÈ­°¡
+ *               Shard Graph ±îÁö¸¸ Àû¿ëµÇ¾î ÀÖ´Ù. µû¶ó¼­ Shard GraphÀÇ View Target
+ *               Á¤º¸·Î viewColumnRefList ¸¦ Á¶Á¤ÇÏ°í, ÀÌ Á¤º¸·Î Shard View Target ±îÁö
+ *               Àû¿ëÇÏµµ·Ï qmoCheckViewColumnRef::checkUselessViewTarget È£ÃâÇÑ´Ù.
+ *               ¶Ç Implicit Order By Transform Á¤º¸¸¦ Àü´ÞÇÑ´Ù.
+ *
+ *               ÀÌ ÇÔ¼ö·Î ºÒÇÊ¿äÇÑ Target¸¦ Ã£¾Æ³»¸é, Shard GraphÀÇ
+ *               qmgShardSelect::pushProjectOptimize ¿¡¼­ ±× Target¸¦ Á¦°ÅÇÑ
+ *               Shard QueryÀ¸·Î º¯È¯ÇÑ´Ù.
+ *
+ *               qmgShardSelect::pushProjectOptimize ¿¡¼­ º¯È¯µÇ´Â Shard Query¿¡ ÀûÇÕÇÏ°Ô
+ *               Tuple Column¸¦ Á¶Á¤ÇÑ´Ù.
+ *
+ * Implementation : 1. ÇÁ·ÎÆÛÆ¼¸¦ °Ë»çÇÑ´Ù.
+ *                  2. viewColumnRefList¸¦ Á¶Á¤ÇÑ´Ù.
+ *                  3. Shard View·Î Push Projection Á¤º¸¸¦ Àü´ÞÇÑ´Ù.
+ *                  4. Shard View·Î Implicit Order By Transform Á¤º¸¸¦ Àü´ÞÇÑ´Ù.
+ *
+ ****************************************************************************************/
+
+    qmsTarget        * sTarget       = NULL;
+    qmsColumnRefList * sColumnRef    = NULL;
+    qmsSortColumns   * sOrderBy      = NULL;
+    idBool             sNeedPushProj = ID_FALSE;
+    UInt               sTargetOrder  = 0;
+
+    IDE_TEST_RAISE( aStatement == NULL, ERR_NULL_STATEMENT );
+    IDE_TEST_RAISE( aMyGraph == NULL, ERR_NULL_MY_GRAPH );
+    IDE_TEST_RAISE( aParseTree == NULL, ERR_NULL_PARSETREE );
+
+    /* 1. ÇÁ·ÎÆÛÆ¼¸¦ °Ë»çÇÑ´Ù. */
+    IDE_TEST_CONT( ( SDU_SHARD_TRANSFORM_MODE & SDU_SHARD_TRANSFORM_PUSH_PROJECT_MASK )
+                   != SDU_SHARD_TRANSFORM_PUSH_PROJECT_ENABLE,
+                   NORMAL_EXIT );
+
+    /* 2. viewColumnRefList¸¦ Á¶Á¤ÇÑ´Ù. */
+    for ( sTarget  = aMyGraph->graph.myQuerySet->target, sTargetOrder = 0;
+          sTarget != NULL;
+          sTarget  = sTarget->next, sTargetOrder++ )
+    {
+        if ( ( sTarget->flag & QMS_TARGET_IS_USELESS_MASK )
+             == QMS_TARGET_IS_USELESS_FALSE )
+        {
+            for ( sColumnRef  = aMyGraph->graph.myFrom->tableRef->viewColumnRefList;
+                  sColumnRef != NULL;
+                  sColumnRef  = sColumnRef->next )
+            {
+                if ( sColumnRef->targetOrder == sTargetOrder )
+                {
+                    sColumnRef->isUsed = ID_TRUE;
+
+                    break;
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+            }
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    sTarget    = aParseTree->querySet->target;
+    sColumnRef = aMyGraph->graph.myFrom->tableRef->viewColumnRefList;
+    sOrderBy   = ( (qmsParseTree *)( aStatement->myPlan->parseTree ) )->orderBy;
+
+    /* 3. Shard View·Î Push Projection Á¤º¸¸¦ Àü´ÞÇÑ´Ù. */
+    IDE_TEST( qmoCheckViewColumnRef::checkUselessViewTarget( sTarget,
+                                                             sColumnRef,
+                                                             sOrderBy )
+              != IDE_SUCCESS );
+
+    /* 4. Shard View·Î Implicit Order By Transform Á¤º¸¸¦ Àü´ÞÇÑ´Ù. */
+    for ( sTarget  = aParseTree->querySet->target;
+          sTarget != NULL;
+          sTarget  = sTarget->next )
+    {
+        if ( ( sTarget->flag & QMS_TARGET_IS_USELESS_MASK )
+             == QMS_TARGET_IS_USELESS_TRUE )
+        {
+            sNeedPushProj = ID_TRUE;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        if ( ( sTarget->flag & QMS_TARGET_SHARD_ORDER_BY_TRANS_MASK )
+             != QMS_TARGET_SHARD_ORDER_BY_TRANS_NONE )
+        {
+            sTarget->flag &= ~QMS_TARGET_IS_USELESS_MASK;
+            sTarget->flag |= QMS_TARGET_IS_USELESS_FALSE;
+
+            sNeedPushProj = ID_TRUE;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    IDE_EXCEPTION_CONT( NORMAL_EXIT );
+
+    if ( sNeedPushProj == ID_TRUE )
+    {
+        if ( aParseTree->querySet->setOp != QMS_NONE )
+        {
+            *aNeedWrapSet = ID_TRUE;
+            *aTarget      = aParseTree->querySet->target;
+        }
+        else
+        {
+            *aTarget = aParseTree->querySet->target;
+        }
+    }
+    else
+    {
+        *aTarget = NULL;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_STATEMENT )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::checkPushProject",
+                                  "statement is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_MY_GRAPH )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::checkPushProject",
+                                  "my graph is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_PARSETREE )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::checkPushProject",
+                                  "parse tree is null" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmgShardSelect::checkPushSelect( qcStatement  * aStatement,
+                                        qmgShardSELT * aMyGraph,
+                                        qmsParseTree * aViewParseTree,
+                                        qmsSFWGH     * aOuterQuery,
+                                        qmgPushPred ** aPushPred,
+                                        qtcNode     ** aWhere,
+                                        idBool       * aNeedWrapSet )
+{
+/****************************************************************************************
+ *
+ * Description : ±âÁ¸ WhereÀÇ Mtc Stack Á¦ÇÑ¸¦ °í·ÁÇØ¼­ ÇØ´ç Predicate¸¦ ¼öÁýÇÑ´Ù.
+ *
+ * Implementation : 1.   ÇÁ·ÎÆÛÆ¼¸¦ °Ë»çÇÑ´Ù.
+ *                  2.1. Mtc Stack »ç¿ë·®¸¦ °è»êÇÑ´Ù.
+ *                  2.2. ±âÁ¸ WhereÀý Mtc Stack »ç¿ë·®¸¦ °¨»êÇÑ´Ù
+ *                  2.   Predicate¸¦ ¼öÁýÇÑ´Ù.
+ *                  3.   Push Selection ¿©ºÎ¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ *
+ ****************************************************************************************/
+
+    qmgPushPred * sPushPred = NULL;
+    qmgPushPred * sTail     = NULL;
+    qtcNode     * sWhere    = NULL;
+    SInt          sRemain   = 0;
+
+    IDE_TEST_RAISE( aStatement == NULL, ERR_NULL_STATEMENT );
+    IDE_TEST_RAISE( aMyGraph == NULL, ERR_NULL_MY_GRAPH );
+    IDE_TEST_RAISE( aViewParseTree == NULL, ERR_NULL_PARSETREE );
+
+    /* 1.   ÇÁ·ÎÆÛÆ¼¸¦ °Ë»çÇÑ´Ù. */
+    IDE_TEST_CONT( ( SDU_SHARD_TRANSFORM_MODE & SDU_SHARD_TRANSFORM_PUSH_SELECT_MASK )
+                   != SDU_SHARD_TRANSFORM_PUSH_SELECT_ENABLE,
+                   NORMAL_EXIT );
+
+    if ( aMyGraph->graph.myPredicate != NULL )
+    {
+        /* 2.1. Mtc Stack »ç¿ë·®¸¦ °è»êÇÑ´Ù. */
+        sRemain = QCG_GET_SESSION_STACK_SIZE( aStatement );
+
+        if ( aViewParseTree->querySet->setOp != QMS_NONE )
+        {
+            /* Nothing to do */
+        }
+        else
+        {
+            /* 2.2. ±âÁ¸ WhereÀý Mtc Stack »ç¿ë·®¸¦ °¨»êÇÑ´Ù.
+             *
+             *   - ÃÖ»óÀ§ AND ¿¬»êÀÚ Ãß°¡¸¦ °í·ÁÇØ¼­, 1¸¦ °¨»êÇÑ´Ù.
+             *   - ÃÖ»óÀ§ Node°¡ ANDÀÎ °æ¿ì¿¡ Argument °³¼ö¸¸Å­ °¨»êÇÑ´Ù.
+             *
+             *   - Push SelectionÀ» AND ¿¬»ê·Î ¿¬°áÇÏ´Âµ¥,
+             *   - °¢°¢ AND ¿¬»êÀÚ´Â ÃÖ»óÀ§ AND ¿¬»êÀÚÀÇ ´Ù¼ö Argument·Î ¹­ÀÎ´Ù.
+             */
+            sWhere = aViewParseTree->querySet->SFWGH->where;
+
+            if ( sWhere != NULL )
+            {
+                sRemain -= 1;
+
+                if ( ( sWhere->node.lflag & MTC_NODE_OPERATOR_MASK )
+                     == MTC_NODE_OPERATOR_AND )
+                {
+                    sRemain -= (SInt)( sWhere->node.lflag & MTC_NODE_ARGUMENT_COUNT_MASK );
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+
+        /* 3.   Predicate¸¦ ¼öÁýÇÑ´Ù. */
+        IDE_TEST( makePushPredicate( aStatement,
+                                     aMyGraph,
+                                     aViewParseTree,
+                                     aOuterQuery,
+                                     &( sRemain ),
+                                     aMyGraph->graph.myPredicate,
+                                     &( sPushPred ),
+                                     &( sTail ) )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    IDE_EXCEPTION_CONT( NORMAL_EXIT );
+
+    /* 4.   Push Selection ¿©ºÎ¸¦ ¹ÝÈ¯ÇÑ´Ù. */
+    if ( aViewParseTree->querySet->setOp != QMS_NONE )
+    {
+        if ( sPushPred != NULL )
+        {
+            *aNeedWrapSet = ID_TRUE;
+            *aPushPred    = sPushPred;
+            *aWhere       = NULL;
+        }
+        else
+        {
+            *aPushPred = NULL;
+            *aWhere    = NULL;
+        }
+    }
+    else
+    {
+        *aPushPred = sPushPred;
+        *aWhere    = aViewParseTree->querySet->SFWGH->where;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_STATEMENT )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::checkPushSelect",
+                                  "statement is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_MY_GRAPH )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::checkPushSelect",
+                                  "my graph is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_PARSETREE )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::checkPushSelect",
+                                  "parse tree is null" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmgShardSelect::checkPushLimit( qcStatement     * aStatement,
+                                       const qmgGraph  * aParent,
+                                       qmgShardSELT    * aMyGraph,
+                                       qmsParseTree    * aParseTree,
+                                       qmsSortColumns ** aOrderBy,
+                                       qmsLimit       ** aLimit )
+{
+/****************************************************************************************
+ *
+ * Description : Shard View ¹Ù·Î À§ Graph¿¡¼­ Limit°¡ ÀÖ´ÂÁö °Ë»çÇÏ´Â ÇÔ¼öÀÌ´Ù.
+ *               ÀÌ·¯ÇÑ °æ¿ì ¿ø°ÝÁö·Î ±ÔÄ¢¿¡ ¸Â°Ô Limit±îÁö Query·Î º¯È¯ÇØ¼­,
+ *               Àü¼ÛÇÏ¸é °á°ú°¡ ´Þ¶óÁöÁö ¾Ê´Â´Ù.
+ *
+ * Implementation : 1. Limit°¡ ÀÖ´Ù¸é, ÃÖÀûÈ­ÇÏÁö ¾Ê´Â´Ù.
+ *                  2. ÇÁ·ÎÆÛÆ¼¸¦ °Ë»çÇÑ´Ù.
+ *                  3. Where ÀýÀÌ ÀÖ´Ù¸é, ÃÖÀûÈ­ÇÏÁö ¾Ê´Â´Ù
+ *                  4. Push SelectionÀÌ °¡´ÉÇÏ¸é Flag¿¡ ±â·ÏÇÑ´Ù.
+ *                  5. Push LimitÀÌ °¡´ÉÇÏ¸é ¿©ºÎ¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ *
+ ****************************************************************************************/
+
+    qmsLimit       * sLimit     = NULL;
+    qmsSortColumns * sOrderBy   = NULL;
+
+    IDE_TEST_RAISE( aParent == NULL, ERR_NULL_PARENT_GRAPH );
+    IDE_TEST_RAISE( aMyGraph == NULL, ERR_NULL_MY_GRAPH );
+    IDE_TEST_RAISE( aParseTree == NULL, ERR_NULL_PARSETREE );
+
+    /* 1. Limit°¡ ÀÖ´Ù¸é, ÃÖÀûÈ­ÇÏÁö ¾Ê´Â´Ù. */
+    IDE_TEST_CONT( aParseTree->limit != NULL, NORMAL_EXIT );
+
+    /* 2. ÇÁ·ÎÆÛÆ¼¸¦ °Ë»çÇÑ´Ù. */
+    IDE_TEST_CONT( ( SDU_SHARD_TRANSFORM_MODE & SDU_SHARD_TRANSFORM_PUSH_LIMIT_MASK )
+                   != SDU_SHARD_TRANSFORM_PUSH_LIMIT_ENABLE,
+                   NORMAL_EXIT );
+
+    /* 3. Where ÀýÀÌ ÀÖ´Ù¸é, ÃÖÀûÈ­ÇÏÁö ¾Ê´Â´Ù. */
+    IDE_TEST_CONT( aMyGraph->graph.myPredicate != NULL, NORMAL_EXIT );
+
+    /* 4. Parent Graph¿¡¼­ PushÇÒ ´ë»óÀ» °Ë»çÇÑ´Ù. */
+    if ( aParent->type == QMG_PROJECTION )
+    {
+        sLimit = ( (qmgPROJ *)aParent )->limit;
+    }
+    else if ( aParent->type == QMG_SORTING )
+    {
+        if ( ( aParent->flag & QMG_SORT_OPT_TIP_MASK ) == QMG_SORT_OPT_TIP_LMST )
+        {
+            sOrderBy = ( (qmgSORT *)aParent )->orderBy;
+            sLimit   = ( (qmsParseTree *)( aStatement->myPlan->parseTree ) )->limit;
+
+            IDE_TEST_RAISE( sOrderBy == NULL, ERR_NULL_ORDER_BY );
+            IDE_TEST_RAISE( sLimit   == NULL, ERR_NULL_LIMIT );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    IDE_EXCEPTION_CONT( NORMAL_EXIT );
+
+    /* 5. Push LimitÀÌ °¡´ÉÇÏ¸é ¿©ºÎ¸¦ ¹ÝÈ¯ÇÑ´Ù. */
+    if ( aOrderBy != NULL )
+    {
+        *aOrderBy = sOrderBy;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    if ( aLimit != NULL )
+    {
+        *aLimit = sLimit;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_PARENT_GRAPH )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::checkPushLimit",
+                                  "parent graph is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_MY_GRAPH )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::checkPushLimit",
+                                  "my graph is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_PARSETREE )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::checkPushLimit",
+                                  "parse tree is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_ORDER_BY )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::checkPushLimit",
+                                  "order by is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_LIMIT )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::checkPushLimit",
+                                  "limit is null" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmgShardSelect::checkAndGetPushSeries( qcStatement      * aStatement,
+                                              const qmgGraph   * aParent,
+                                              qmgShardSELT     * aMyGraph,
+                                              qmgTransformInfo * aInfo )
+{
+/****************************************************************************************
+ *
+ * Description : Push Projection, Push Selection, Push Limit ÃÖÀûÈ­¸¦ ¼öÇà °¡´ÉÇÑÁö
+ *               ÃÖÀûÈ­ ¿ä¼Ò¸¦ °Ë»çÇÑ´Ù.
+ *
+ * Implementation : 1. Plan StringÀÌ ÀÖÀ» ¶§¸¸ ¼öÇàÇÑ´Ù.
+ *                  2. Å°¿öµå¸¦ »ç¿ëÇß´Ù¸é, ÃÖÀûÈ­ÇÏÁö ¾Ê´Â´Ù.
+ *                  3. Parent Graph ¿¡¼­ PushÇÒ ´ë»óÀ» Ã£¾Æ¿Â´Ù.
+ *                  4. My Graph ¿¡¼­ PushÇÒ ´ë»óÀ» °Ë»çÇÑ´Ù.
+ *
+ ****************************************************************************************/
+
+    qcParamOffsetInfo * sParamOffsetInfo = NULL;
+    iduVarString      * sString          = NULL;
+    qmsParseTree      * sViewParseTree   = NULL;
+    qmsQuerySet       * sViewQuerySet    = NULL;
+
+    /* TASK-7219 Non-shard DML */
+    qmsSFWGH          * sOuterQuery      = NULL;
+
+    qmsTarget         * sTarget          = NULL;
+    qmgPushPred       * sPushPred        = NULL;
+    qtcNode           * sWhere           = NULL;
+    qmsSortColumns    * sOrderBy         = NULL;
+    qmsLimit          * sLimit           = NULL;
+    idBool              sNeedWrapSet     = ID_FALSE;
+    idBool              sUseShardKwd     = ID_FALSE; /* TASK-7219 Shard Transformer Refactoring */
+    idBool              sIsTransform     = ID_FALSE;
+    idBool              sIsSupported     = ID_FALSE; /* TASK-7219 Shard Transformer Refactoring */
+
+    IDE_TEST_RAISE( aStatement == NULL, ERR_NULL_STATEMENT );
+    IDE_TEST_RAISE( aInfo == NULL, ERR_NULL_INFO );
+
+    sString = (iduVarString *)qci::mSessionCallback.mGetPlanString( QC_MM_STMT( aStatement ) );
+
+    /* 1. Plan StringÀÌ ÀÖÀ» ¶§¸¸ ¼öÇàÇÑ´Ù. */
+    if ( sString != NULL )
+    {
+        IDE_TEST_RAISE( aMyGraph == NULL, ERR_NULL_MY_GRAPH );
+        IDE_TEST_RAISE( aMyGraph->graph.myFrom == NULL, ERR_NULL_FROM );
+        IDE_TEST_RAISE( aMyGraph->graph.myFrom->tableRef->view == NULL, ERR_NULL_VIEW );
+        IDE_TEST_RAISE( aMyGraph->graph.myQuerySet->SFWGH == NULL, ERR_NULL_SFWGH );
+
+        sViewParseTree = (qmsParseTree *)aMyGraph->graph.myFrom->tableRef->view->myPlan->parseTree;
+        sViewQuerySet  = sViewParseTree->querySet;
+
+        sOuterQuery = aMyGraph->graph.myQuerySet->SFWGH->outerQuery;
+
+        /* 2. Å°¿öµå¸¦ »ç¿ëÇß´Ù¸é, ÃÖÀûÈ­ÇÏÁö ¾Ê´Â´Ù. */
+        IDE_TEST_CONT( sViewParseTree->common.stmtShard != QC_STMT_SHARD_ANALYZE, NORMAL_EXIT );
+
+        /* TASK-7219 Shard Transformer Refactoring */
+        if ( sViewParseTree->isShardView == ID_TRUE )
+        {
+            sUseShardKwd = ID_TRUE;
+
+            IDE_TEST( sdi::isSupported( sViewQuerySet,
+                                        &( sIsSupported ) )
+                      != IDE_SUCCESS );
+
+            IDE_TEST_CONT( sIsSupported == ID_FALSE, NORMAL_EXIT );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        /* 3. My Graph ¿¡¼­ PushÇÒ ´ë»óÀ» °Ë»çÇÑ´Ù. */
+        IDE_TEST( checkPushProject( aStatement,
+                                    aMyGraph,
+                                    sViewParseTree,
+                                    &( sTarget ),
+                                    &( sNeedWrapSet ) )
+                  != IDE_SUCCESS );
+
+        if ( sTarget != NULL )
+        {
+            sIsTransform = ID_TRUE;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        IDE_TEST( checkPushSelect( aStatement,
+                                   aMyGraph,
+                                   sViewParseTree,
+                                   sOuterQuery,
+                                   &( sPushPred ),
+                                   &( sWhere ),
+                                   &( sNeedWrapSet ) )
+                  != IDE_SUCCESS );
+
+        if ( sPushPred != NULL )
+        {
+            sIsTransform = ID_TRUE;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        /* 4. Parent Graph ¿¡¼­ PushÇÒ ´ë»óÀ» Ã£¾Æ¿Â´Ù. */
+        IDE_TEST( checkPushLimit( aStatement,
+                                  aParent,
+                                  aMyGraph,
+                                  sViewParseTree,
+                                  &( sOrderBy ),
+                                  &( sLimit ) )
+                  != IDE_SUCCESS );
+
+        if ( sLimit != NULL )
+        {
+            sIsTransform = ID_TRUE;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    if ( sIsTransform == ID_TRUE )
+    {
+        IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM( aStatement ),
+                                qcParamOffsetInfo,
+                                &( sParamOffsetInfo ) )
+                  != IDE_SUCCESS );
+
+        QC_INIT_PARAM_OFFSET_INFO( sParamOffsetInfo );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    IDE_EXCEPTION_CONT( NORMAL_EXIT );
+
+    aInfo->mString          = sString;
+    aInfo->mGraph           = aMyGraph;
+    aInfo->mStatement       = aStatement;
+    aInfo->mQuerySet        = sViewQuerySet;
+    aInfo->mTarget          = sTarget;
+    aInfo->mPushPred        = sPushPred;
+    aInfo->mWhere           = sWhere;
+    aInfo->mOrderBy         = sOrderBy;
+    aInfo->mLimit           = sLimit;
+    aInfo->mParamOffsetInfo = sParamOffsetInfo;
+    aInfo->mNeedWrapSet     = sNeedWrapSet;
+    aInfo->mUseShardKwd     = sUseShardKwd; /* TASK-7219 Shard Transformer Refactoring */
+    aInfo->mIsTransform     = sIsTransform;
+
+    SET_POSITION( aInfo->mPosition, aMyGraph->shardQuery );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_STATEMENT )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::checkAndGetPushSeries",
+                                  "statement is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_INFO )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::checkAndGetPushSeries",
+                                  "info is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_MY_GRAPH )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::checkAndGetPushSeries",
+                                  "my graph is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_FROM )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::checkAndGetPushSeries",
+                                  "from is null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_VIEW )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::checkAndGetPushSeries",
+                                  "shard viewis null" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_SFWGH )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgShardSelect::checkAndGetPushSeries",
+                                  "SFWGH is NULL" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }

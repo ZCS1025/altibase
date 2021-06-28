@@ -17,23 +17,21 @@
 
 package Altibase.jdbc.driver.sharding.executor;
 
-import Altibase.jdbc.driver.ex.ShardJdbcException;
-
 import java.sql.SQLException;
 
 public class ExecutorExceptionHandler
 {
     /**
-     * failover ê´€ë ¨ëœ Exceptionì€ ìì²´ì ìœ¼ë¡œ node nameì´ ìˆê¸° ë•Œë¬¸ì— ê·¸ëƒ¥ ëŒë ¤ì£¼ê³  ë‚˜ë¨¸ì§€ëŠ” node nameì„
-     * ì¶”ê°€í•´ì„œ ëŒë ¤ì¤€ë‹¤.
+     * failover °ü·ÃµÈ ExceptionÀº ÀÚÃ¼ÀûÀ¸·Î node nameÀÌ ÀÖ±â ¶§¹®¿¡ ±×³É µ¹·ÁÁÖ°í ³ª¸ÓÁö´Â node nameÀ»
+     * Ãß°¡ÇØ¼­ µ¹·ÁÁØ´Ù.
      *
-     * @param aException ì²˜ë¦¬í•  Exception
-     * @param aNodeName ë…¸ë“œë„¤ì„
+     * @param aException Ã³¸®ÇÒ Exception
+     * @param aNodeName ³ëµå³×ÀÓ
      * @throws SQLException SQLException
      */
     public static void handleException(Exception aException, String aNodeName) throws SQLException
     {
-        // BUG-46513 SQLExceptionì—ëŠ” sql messageì— node nameì„ ì¶”ê°€í•´ì„œ ë˜ì§€ê³  ë‚˜ë¨¸ì§€ëŠ” RuntimeExceptionìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤.
+        // BUG-46513 SQLException¿¡´Â sql message¿¡ node nameÀ» Ãß°¡ÇØ¼­ ´øÁö°í ³ª¸ÓÁö´Â RuntimeExceptionÀ¸·Î Ã³¸®ÇÑ´Ù.
         if (aException instanceof SQLException)
         {
             throwShardSQLException(aException, aNodeName);

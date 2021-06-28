@@ -15,7 +15,7 @@
  */
 
 /***********************************************************************
- * $Id: mtxFromDateTo.cpp 85045 2019-03-20 01:40:10Z andrew.shin $
+ * $Id: mtxFromDateTo.cpp 84859 2019-02-01 06:07:08Z andrew.shin $
  **********************************************************************/
 
 #include <mtx.h>
@@ -90,7 +90,7 @@ static IDE_RC mtxFromDateToChar( mtxEntry ** aEntry )
                                             sFormatLen )
                   != IDE_SUCCESS );
 
-        /* PROJ-1436 - dateFormatì„ ì°¸ì¡°í–ˆìŒì„ í‘œì‹œí•œë‹¤. */
+        /* PROJ-1436 - dateFormatÀ» ÂüÁ¶ÇßÀ½À» Ç¥½ÃÇÑ´Ù. */
         *sArg3Val= ID_TRUE;
 
         sReturn->length = (UShort)sLength;
@@ -140,7 +140,7 @@ static IDE_RC mtxFromDateToVarchar( mtxEntry ** aEntry )
                                             sFormatLen )
                   != IDE_SUCCESS );
 
-        /* PROJ-1436 - dateFormatì„ ì°¸ì¡°í–ˆìŒì„ í‘œì‹œí•œë‹¤. */
+        /* PROJ-1436 - dateFormatÀ» ÂüÁ¶ÇßÀ½À» Ç¥½ÃÇÑ´Ù. */
         *sArg3Val= ID_TRUE;
 
         sReturn->length = (UShort)sLength;

@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qcmCreate.cpp 84317 2018-11-12 00:39:24Z minku.kang $
+ * $Id: qcmCreate.cpp 90270 2021-03-21 23:20:18Z bethy $
  **********************************************************************/
 
 #include <idl.h>
@@ -44,8 +44,6 @@ IDE_RC qcmCreate::createDB( idvSQL * aStatistics,
     smiStatement    sSmiStmt;
     smiStatement  * sDummySmiStmt;
     UInt            sSmiStmtFlag  = 0;
-    //PROJ-1677 DEQ
-    smSCN          sDummySCN;
     iduMemory       sIduMem;
 
     // initialize smiStatement flag
@@ -82,7 +80,7 @@ IDE_RC qcmCreate::createDB( idvSQL * aStatistics,
 
     IDE_TEST(sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
 
-    IDE_TEST(sTrans.commit(&sDummySCN) != IDE_SUCCESS);
+    IDE_TEST(sTrans.commit() != IDE_SUCCESS);
 
     // create sequence, create other meta, create index.
     IDE_TEST
@@ -111,7 +109,7 @@ IDE_RC qcmCreate::createDB( idvSQL * aStatistics,
 
     IDE_TEST(sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
 
-    IDE_TEST(sTrans.commit(&sDummySCN) != IDE_SUCCESS);
+    IDE_TEST(sTrans.commit() != IDE_SUCCESS);
 
     IDE_TEST(sTrans.destroy( aStatistics ) != IDE_SUCCESS);
 
@@ -136,19 +134,19 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
 /***********************************************************************
  *
  * Description :
- *    ë©”íƒ€ í…Œì´ë¸” SYS_TABLES_ ìƒì„±
+ *    ¸ŞÅ¸ Å×ÀÌºí SYS_TABLES_ »ı¼º
  *
  * Implementation :
- *    1. SYS_TABLES_ í…Œì´ë¸”ì˜ ê° ì»¬ëŸ¼ì˜ type,offset,id ë¶€ì—¬
- *    2. actualSize ë¥¼ êµ¬í•œ ë‹¤ìŒ smiColumnList ë¥¼ ë§Œë“ ë‹¤.
+ *    1. SYS_TABLES_ Å×ÀÌºíÀÇ °¢ ÄÃ·³ÀÇ type,offset,id ºÎ¿©
+ *    2. actualSize ¸¦ ±¸ÇÑ ´ÙÀ½ smiColumnList ¸¦ ¸¸µç´Ù.
  *    3. create SM table => smiTable::createTable
  *    4. make TempInfo => createTableInfoForCreateDB
  *
- *    PROJ-1705 ë””ìŠ¤í¬ë ˆì½”ë“œìµœì í™”í”„ë¡œì íŠ¸ ìˆ˜í–‰ìœ¼ë¡œ
- *    smì— ë ˆì½”ë“œ ì „ë‹¬ì„ ìœ„í•´ smiValue ìë£Œêµ¬ì¡° ì •ë³´ êµ¬ì„±ì‹œ
- *    ì•„ë˜ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•´ì„œ memory/disk tableì˜ ë ˆì½”ë“œë¥¼
- *    ì ì ˆíˆ ì²˜ë¦¬í•˜ë„ë¡ ìˆ˜ì •ë˜ì—ˆìœ¼ë‚˜,
- *    ë©”íƒ€í…Œì´ë¸”ì€ memory tableì´ë¯€ë¡œ ê¸°ì¡´ ì½”ë“œë¥¼ ìˆ˜ì •í•˜ì§€ ì•ŠìŒ.
+ *    PROJ-1705 µğ½ºÅ©·¹ÄÚµåÃÖÀûÈ­ÇÁ·ÎÁ§Æ® ¼öÇàÀ¸·Î
+ *    sm¿¡ ·¹ÄÚµå Àü´ŞÀ» À§ÇØ smiValue ÀÚ·á±¸Á¶ Á¤º¸ ±¸¼º½Ã
+ *    ¾Æ·¡ ÇÔ¼ö¸¦ »ç¿ëÇØ¼­ memory/disk tableÀÇ ·¹ÄÚµå¸¦
+ *    ÀûÀıÈ÷ Ã³¸®ÇÏµµ·Ï ¼öÁ¤µÇ¾úÀ¸³ª,
+ *    ¸ŞÅ¸Å×ÀÌºíÀº memory tableÀÌ¹Ç·Î ±âÁ¸ ÄÚµå¸¦ ¼öÁ¤ÇÏÁö ¾ÊÀ½.
  *    
  ***********************************************************************/
 
@@ -179,8 +177,10 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
         HIDDEN                     CHAR(1),  // PROJ-1624 Global Non-partitioned Index      
         ACCESS                     CHAR(1),  // PROJ-2359 Table/Partition Access Option
         PARALLEL_DEGREE            INTEGER,  // PROJ-1071 Parallel query
-        CREATED                    DATE,     // BUG-14394 ê°ì²´ ìƒì„±ì‹œê°„
-        LAST_DDL_TIME              DATE,     // BUG-14394 DDL ìˆ˜í–‰ì‹œê°„
+        USABLE                     CHAR(1),  // TASK-7307 DML Data Consistency in Shard
+        SHARD_FLAG                 INTEGER,  // TASK-7307 DML Data Consistency in Shard
+        CREATED                    DATE,     // BUG-14394 °´Ã¼ »ı¼º½Ã°£
+        LAST_DDL_TIME              DATE,     // BUG-14394 DDL ¼öÇà½Ã°£
     )
     *---------------------------------------------------------------*/
 
@@ -222,8 +222,10 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
         (SChar*) "HIDDEN",            // PROJ-1624 Global Non-partitioned Index        
         (SChar*) "ACCESS",            // PROJ-2359 Table/Partition Access Option
         (SChar*) "PARALLEL_DEGREE",   // PROJ-1071 Parallel query
-        (SChar*) "CREATED",           // BUG-14394 ê°ì²´ ìƒì„±ì‹œê°„
-        (SChar*) "LAST_DDL_TIME"      // BUG-14394 DDL ìˆ˜í–‰ì‹œê°„
+        (SChar*) "USABLE",            // TASK-7307 DML Data Consistency in Shard
+        (SChar*) "SHARD_FLAG",        // TASK-7307 DML Data Consistency in Shard
+        (SChar*) "CREATED",           // BUG-14394 °´Ã¼ »ı¼º½Ã°£
+        (SChar*) "LAST_DDL_TIME"      // BUG-14394 DDL ¼öÇà½Ã°£
     };
 
     sCurrentOffset = smiGetRowHeaderSize(SMI_TABLE_MEMORY);
@@ -234,8 +236,8 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
 
     i = 0;
 
-    // USER_ID Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ integer, languageëŠ” defaultë¡œ ì„¤ì •
+    // USER_ID ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº integer, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_INTEGER_ID,
                                      0,
@@ -243,12 +245,12 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -258,8 +260,8 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
 
     i = 1;
 
-    // TABLE_ID Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ integer, languageëŠ” defaultë¡œ ì„¤ì •
+    // TABLE_ID ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº integer, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_INTEGER_ID,
                                      0,
@@ -267,12 +269,12 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -282,8 +284,8 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
 
     i = 2;
 
-    // TABLE_OID Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ big int, languageëŠ” defaultë¡œ ì„¤ì •
+    // TABLE_OID ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº big int, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_BIGINT_ID,
                                      0,
@@ -291,12 +293,12 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -306,8 +308,8 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
 
     i = 3;
 
-    // COLUMN_COUNT Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ integer, languageëŠ” defaultë¡œ ì„¤ì •
+    // COLUMN_COUNT ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº integer, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_INTEGER_ID,
                                      0,
@@ -315,12 +317,12 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -330,8 +332,8 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
 
     i = 4;
 
-    // TABLE_NAME Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ varchar, languageëŠ” defaultë¡œ ì„¤ì •
+    // TABLE_NAME ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº varchar, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_VARCHAR_ID,
                                      1,
@@ -339,12 +341,12 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -354,8 +356,8 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
 
     i = 5;
 
-    // TABLE_TYPE Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ char, languageëŠ” defaultë¡œ ì„¤ì •
+    // TABLE_TYPE ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº char, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_CHAR_ID,
                                      1,
@@ -363,12 +365,12 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -378,8 +380,8 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
 
     i = 6;
 
-    // REPLICATION_COUNT Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ integer, languageëŠ” defaultë¡œ ì„¤ì •
+    // REPLICATION_COUNT ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº integer, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_INTEGER_ID,
                                      0,
@@ -387,12 +389,12 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -402,8 +404,8 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
     
     i = 7;
     
-    // REPLICATION_RECOVERY_COUNT Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ integer, languageëŠ” defaultë¡œ ì„¤ì •
+    // REPLICATION_RECOVERY_COUNT ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº integer, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_INTEGER_ID,
                                      0,
@@ -411,12 +413,12 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
     
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -426,8 +428,8 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
 
     i = 8;
 
-    // MAXROW Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ bigint, languageëŠ” defaultë¡œ ì„¤ì •
+    // MAXROW ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº bigint, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_BIGINT_ID,
                                      0,
@@ -435,12 +437,12 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -450,8 +452,8 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
 
     i = 9;
 
-    // TBS_ID Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ integer, languageëŠ” defaultë¡œ ì„¤ì •
+    // TBS_ID ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº integer, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_INTEGER_ID,
                                      0,
@@ -459,12 +461,12 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -475,8 +477,8 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
     
     i = 10;
     
-    // TBS_NAME Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ varchar, languageëŠ” defaultë¡œ ì„¤ì •
+    // TBS_NAME ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº varchar, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                     MTD_VARCHAR_ID,
                                     1,
@@ -484,12 +486,12 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                     0 )
              != IDE_SUCCESS );
     
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -500,8 +502,8 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
 
     i = 11;
 
-    // PCTFREE INTEGER Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ integer, languageëŠ” defaultë¡œ ì„¤ì •
+    // PCTFREE INTEGER ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº integer, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_INTEGER_ID,
                                      0,
@@ -509,12 +511,12 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -524,8 +526,8 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
 
     i = 12;
 
-    // PCTUSED INTEGER Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ integer, languageëŠ” defaultë¡œ ì„¤ì •
+    // PCTUSED INTEGER ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº integer, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_INTEGER_ID,
                                      0,
@@ -533,12 +535,12 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -549,8 +551,8 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
 
     i = 13;
 
-    // INIT_TRANS INTEGER Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ integer, languageëŠ” defaultë¡œ ì„¤ì •
+    // INIT_TRANS INTEGER ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº integer, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_INTEGER_ID,
                                      0,
@@ -558,12 +560,12 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -573,8 +575,8 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
 
     i = 14;
 
-    // MAX_TRANS INTEGER Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ integer, languageëŠ” defaultë¡œ ì„¤ì •
+    // MAX_TRANS INTEGER ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº integer, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_INTEGER_ID,
                                      0,
@@ -582,12 +584,12 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -597,8 +599,8 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
 
     i = 15;
 
-    // INITEXTENS Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ bigint, languageëŠ” defaultë¡œ ì„¤ì •
+    // INITEXTENS ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº bigint, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_BIGINT_ID,
                                      0,
@@ -606,12 +608,12 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -622,8 +624,8 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
 
     i = 16;
 
-    // NEXTEXTENS Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ bigint, languageëŠ” defaultë¡œ ì„¤ì •
+    // NEXTEXTENS ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº bigint, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_BIGINT_ID,
                                      0,
@@ -631,12 +633,12 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -647,8 +649,8 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
 
     i = 17;
 
-    // MINEXTENS Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ bigint, languageëŠ” defaultë¡œ ì„¤ì •
+    // MINEXTENS ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº bigint, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_BIGINT_ID,
                                      0,
@@ -656,12 +658,12 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -672,8 +674,8 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
 
     i = 18;
 
-    // MAXEXTENS Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ bigint, languageëŠ” defaultë¡œ ì„¤ì •
+    // MAXEXTENS ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº bigint, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_BIGINT_ID,
                                      0,
@@ -681,12 +683,12 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -696,8 +698,8 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
 
     i = 19;
 
-    // IS_PARTITIONED CHAR Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ char, languageëŠ” defaultë¡œ ì„¤ì •
+    // IS_PARTITIONED CHAR ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº char, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_CHAR_ID,
                                      1,
@@ -705,12 +707,12 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -720,8 +722,8 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
 
     i = 20;
 
-    // TEMPORARY CHAR Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ char, languageëŠ” defaultë¡œ ì„¤ì •
+    // TEMPORARY CHAR ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº char, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_CHAR_ID,
                                      1,
@@ -729,12 +731,12 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -745,8 +747,8 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
 
     i = 21;
 
-    // HIDDEN CHAR Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ char, languageëŠ” defaultë¡œ ì„¤ì •
+    // HIDDEN CHAR ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº char, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_CHAR_ID,
                                      1,
@@ -754,12 +756,12 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -767,8 +769,8 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
     // set ACCESS CHAR(1)
     //---------------------------
     i = 22;
-    // ACCESS CHAR Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ char, languageëŠ” defaultë¡œ ì„¤ì •
+    // ACCESS CHAR ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº char, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_CHAR_ID,
                                      1,
@@ -776,12 +778,12 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -790,20 +792,63 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
     // set PARALLEL_DEGREE INTEGER
     //---------------------------
     i = 23;
-    // PARALLEL DEGREE Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ integer, languageëŠ” defaultë¡œ ì„¤ì •
+    // PARALLEL DEGREE ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº integer, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_INTEGER_ID,
                                      0,
                                      0,
                                      0 )
               != IDE_SUCCESS );
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
+    sColumn[i].column.vcInOutBaseSize = 0;
+    sColumn[i].column.value = NULL;
+
+    //---------------------------
+    // set USABLE CHAR(1)
+    //---------------------------
+    i = 24;
+    // USABLE CHAR ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº char, language´Â default·Î ¼³Á¤
+    IDE_TEST( mtc::initializeColumn( & sColumn[i],
+                                     MTD_CHAR_ID,
+                                     1,
+                                     1,
+                                     0 )
+              != IDE_SUCCESS );
+
+    // offset ¼³Á¤
+    sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
+    sColumn[i].column.offset = sCurrentOffset;
+    sCurrentOffset += sColumn[i].column.size;
+    sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
+    sColumn[i].column.vcInOutBaseSize = 0;
+    sColumn[i].column.value = NULL;
+
+    //---------------------------
+    // set SHARD_FLAG INTEGER
+    //---------------------------
+    i = 25;
+    // SHARD_FLAG ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº integer, language´Â default·Î ¼³Á¤
+    IDE_TEST( mtc::initializeColumn( & sColumn[i],
+                                     MTD_INTEGER_ID,
+                                     0,
+                                     0,
+                                     0 )
+              != IDE_SUCCESS );
+    // offset ¼³Á¤
+    sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
+    sColumn[i].column.offset = sCurrentOffset;
+    sCurrentOffset += sColumn[i].column.size;
+    sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -811,10 +856,10 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
     // set CREATED DATE
     //---------------------------
 
-    i = 24;
+    i = 26;
 
-    // CREATED DATE Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ date, languageëŠ” defaultë¡œ ì„¤ì •
+    // CREATED DATE ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº date, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_DATE_ID,
                                      0,
@@ -822,12 +867,12 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -835,10 +880,10 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
     // set LAST_DDL_TIME DATE
     //---------------------------
 
-    i = 25;
+    i = 27;
 
-    // LAST_DDL_TIME DATE Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ date, languageëŠ” defaultë¡œ ì„¤ì •
+    // LAST_DDL_TIME DATE ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº date, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_DATE_ID,
                                      0,
@@ -846,12 +891,12 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -876,7 +921,7 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
         if ( ( sColumn[i].column.flag & SMI_COLUMN_TYPE_MASK )
              == SMI_COLUMN_TYPE_VARIABLE )
         {
-            /* BUG-43287 Variable Colum ë“¤ì˜ Align ì¤‘ ê°€ì¥ í° ê°’ì„ êµ¬í•œë‹¤. */
+            /* BUG-43287 Variable Colum µéÀÇ Align Áß °¡Àå Å« °ªÀ» ±¸ÇÑ´Ù. */
             sMaxAlign = IDL_MAX( sMaxAlign, (UShort)sColumn[i].module->align );
         }
         else
@@ -885,8 +930,8 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
         }
         
         // PROJ-1391 Variable Null
-        // Variable columnì— ëŒ€í•œ null ì²˜ë¦¬ëŠ”
-        // smiValue.valueì— NULLì„ í• ë‹¹í•œë‹¤.
+        // Variable column¿¡ ´ëÇÑ null Ã³¸®´Â
+        // smiValue.value¿¡ NULLÀ» ÇÒ´çÇÑ´Ù.
         // fix BUG-14665
         if( ( sColumn[i].column.flag & SMI_COLUMN_TYPE_MASK )
             != SMI_COLUMN_TYPE_FIXED )
@@ -906,13 +951,13 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
                                                sNullRow[i].value );
         }
 
-        // BUG-44814 smiTable::createTable ì„ í˜¸ì¶œí•˜ê¸°ì „ì— í†µê³„ì •ë³´ë¥¼ clear í•´ì•¼ í•œë‹¤.
+        // BUG-44814 smiTable::createTable À» È£ÃâÇÏ±âÀü¿¡ Åë°èÁ¤º¸¸¦ clear ÇØ¾ß ÇÑ´Ù.
         idlOS::memset( &sColumn[i].column.mStat, 0x00, ID_SIZEOF(smiColumnStat) );
 
         // make smiColumnList
         sSmiColumnList[i].column = &(sColumn[i].column);
         
-        //BUG-43117 : smiColumnì— alignê°’ ì…ë ¥(SYS_TABLES_) 
+        //BUG-43117 : smiColumn¿¡ align°ª ÀÔ·Â(SYS_TABLES_) 
         sColumn[i].column.align = sColumn[i].module->align;
 
         if (i == QCM_TABLES_COL_CNT - 1)
@@ -925,13 +970,13 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
         }
     }
 
-    /* BUG-43287 Variable column ë“¤ì˜ Align ì¤‘ ê°€ì¥ í° ê°’ì„ ê¸°ë¡í•´ ë‘”ë‹¤. */
+    /* BUG-43287 Variable column µéÀÇ Align Áß °¡Àå Å« °ªÀ» ±â·ÏÇØ µĞ´Ù. */
     for ( i = 0; i < QCM_TABLES_COL_CNT; i++ )
     {
         sColumn[i].column.maxAlign = sMaxAlign;
     }
 
-    // Memory Table ì€ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” ì†ì„±ì´ì§€ë§Œ, ì„¤ì •í•˜ì—¬ ì „ë‹¬í•œë‹¤.
+    // Memory Table Àº »ç¿ëÇÏÁö ¾Ê´Â ¼Ó¼ºÀÌÁö¸¸, ¼³Á¤ÇÏ¿© Àü´ŞÇÑ´Ù.
     sSegmentAttr.mPctFree =
                   QD_MEMORY_TABLE_DEFAULT_PCTFREE;  // PCTFREE
     sSegmentAttr.mPctUsed =
@@ -990,7 +1035,7 @@ IDE_RC qcmCreate::createQcmTables( idvSQL          * aStatistics,
     smiSetTableTempInfo( gQcmTables, (void*) sTableInfo);
 
     // To Fix PR-12539
-    // ë©”ëª¨ë¦¬ í•´ì œê°€ ë‘ë²ˆ ë  ìˆ˜ ìˆìŒ.
+    // ¸Ş¸ğ¸® ÇØÁ¦°¡ µÎ¹ø µÉ ¼ö ÀÖÀ½.
     IDE_TEST(iduMemMgr::free(sNullRowValue) 
              != IDE_SUCCESS);
     sNullRowValue = NULL;
@@ -1030,19 +1075,19 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
 /***********************************************************************
  *
  * Description :
- *    ë©”íƒ€ í…Œì´ë¸” SYS_COLUMNS_ ìƒì„±
+ *    ¸ŞÅ¸ Å×ÀÌºí SYS_COLUMNS_ »ı¼º
  *
  * Implementation :
- *    1. SYS_COLUMNS_ í…Œì´ë¸”ì˜ ê° ì»¬ëŸ¼ì˜ type,offset,id ë¶€ì—¬
- *    2. actualSize ë¥¼ êµ¬í•œ ë‹¤ìŒ smiColumnList ë¥¼ ë§Œë“ ë‹¤.
+ *    1. SYS_COLUMNS_ Å×ÀÌºíÀÇ °¢ ÄÃ·³ÀÇ type,offset,id ºÎ¿©
+ *    2. actualSize ¸¦ ±¸ÇÑ ´ÙÀ½ smiColumnList ¸¦ ¸¸µç´Ù.
  *    3. create SM table => smiTable::createTable
  *    4. make TempInfo => createTableInfoForCreateDB
  *
- *    PROJ-1705 ë””ìŠ¤í¬ë ˆì½”ë“œìµœì í™”í”„ë¡œì íŠ¸ ìˆ˜í–‰ìœ¼ë¡œ
- *    smì— ë ˆì½”ë“œ ì „ë‹¬ì„ ìœ„í•´ smiValue ìë£Œêµ¬ì¡° ì •ë³´ êµ¬ì„±ì‹œ
- *    ì•„ë˜ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•´ì„œ memory/disk tableì˜ ë ˆì½”ë“œë¥¼
- *    ì ì ˆíˆ ì²˜ë¦¬í•˜ë„ë¡ ìˆ˜ì •ë˜ì—ˆìœ¼ë‚˜,
- *    ë©”íƒ€í…Œì´ë¸”ì€ memory tableì´ë¯€ë¡œ ê¸°ì¡´ ì½”ë“œë¥¼ ìˆ˜ì •í•˜ì§€ ì•ŠìŒ.
+ *    PROJ-1705 µğ½ºÅ©·¹ÄÚµåÃÖÀûÈ­ÇÁ·ÎÁ§Æ® ¼öÇàÀ¸·Î
+ *    sm¿¡ ·¹ÄÚµå Àü´ŞÀ» À§ÇØ smiValue ÀÚ·á±¸Á¶ Á¤º¸ ±¸¼º½Ã
+ *    ¾Æ·¡ ÇÔ¼ö¸¦ »ç¿ëÇØ¼­ memory/disk tableÀÇ ·¹ÄÚµå¸¦
+ *    ÀûÀıÈ÷ Ã³¸®ÇÏµµ·Ï ¼öÁ¤µÇ¾úÀ¸³ª,
+ *    ¸ŞÅ¸Å×ÀÌºíÀº memory tableÀÌ¹Ç·Î ±âÁ¸ ÄÚµå¸¦ ¼öÁ¤ÇÏÁö ¾ÊÀ½.
  *
  ***********************************************************************/
 
@@ -1116,8 +1161,8 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
 
     for (i = 0; i < 3; i++)
     {
-        // ê° Columnì˜ ì´ˆê¸°í™”
-        // : dataTypeì€ integer, languageëŠ” defaultë¡œ ì„¤ì •
+        // °¢ ColumnÀÇ ÃÊ±âÈ­
+        // : dataTypeÀº integer, language´Â default·Î ¼³Á¤
         IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                          MTD_INTEGER_ID,
                                          0,
@@ -1125,13 +1170,13 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
                                          0 )
                   != IDE_SUCCESS );
 
-        // offset ì„¤ì •
+        // offset ¼³Á¤
         sCurrentOffset =
             idlOS::align(sCurrentOffset, sColumn[i].module->align);
         sColumn[i].column.offset = sCurrentOffset;
         sCurrentOffset += sColumn[i].column.size;
         sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-        // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+        // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
         sColumn[i].column.vcInOutBaseSize = 0;
         sColumn[i].column.value = NULL;
     }
@@ -1143,8 +1188,8 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
 
     for ( ; i < 5; i++)
     {
-        // ê° Columnì˜ ì´ˆê¸°í™”
-        // : dataTypeì€ bigint, languageëŠ” defaultë¡œ ì„¤ì •
+        // °¢ ColumnÀÇ ÃÊ±âÈ­
+        // : dataTypeÀº bigint, language´Â default·Î ¼³Á¤
         IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                          MTD_BIGINT_ID,
                                          0,
@@ -1152,13 +1197,13 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
                                          0 )
                   != IDE_SUCCESS );
 
-        // offset ì„¤ì •
+        // offset ¼³Á¤
         sCurrentOffset =
             idlOS::align(sCurrentOffset, sColumn[i].module->align);
         sColumn[i].column.offset = sCurrentOffset;
         sCurrentOffset += sColumn[i].column.size;
         sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-        // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+        // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
         sColumn[i].column.vcInOutBaseSize = 0;
         sColumn[i].column.value = NULL;
     }
@@ -1173,8 +1218,8 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
 
     for ( ; i < 10; i++)
     {
-        // ê° Columnì˜ ì´ˆê¸°í™”
-        // : dataTypeì€ integer, languageëŠ” defaultë¡œ ì„¤ì •
+        // °¢ ColumnÀÇ ÃÊ±âÈ­
+        // : dataTypeÀº integer, language´Â default·Î ¼³Á¤
         IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                          MTD_INTEGER_ID,
                                          0,
@@ -1182,13 +1227,13 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
                                          0 )
                   != IDE_SUCCESS );
 
-        // offset ì„¤ì •
+        // offset ¼³Á¤
         sCurrentOffset =
             idlOS::align(sCurrentOffset, sColumn[i].module->align);
         sColumn[i].column.offset = sCurrentOffset;
         sCurrentOffset += sColumn[i].column.size;
         sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-        // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+        // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
         sColumn[i].column.vcInOutBaseSize = 0;
         sColumn[i].column.value = NULL;
     }
@@ -1199,8 +1244,8 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
 
     i = 10;
 
-    // COLUMN_NAME Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ varchar, languageëŠ” defaultë¡œ ì„¤ì •
+    // COLUMN_NAME ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº varchar, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_VARCHAR_ID,
                                      1,
@@ -1208,12 +1253,12 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -1223,8 +1268,8 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
 
     i = 11;
 
-    // IS_NULLABLE Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ char, languageëŠ” defaultë¡œ ì„¤ì •
+    // IS_NULLABLE ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº char, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_CHAR_ID,
                                      1,
@@ -1232,26 +1277,26 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
 
     //---------------------------
     // To Fix PR-5795
-    // Variable Columnìœ¼ë¡œ ì§€ì •í•¨.
+    // Variable ColumnÀ¸·Î ÁöÁ¤ÇÔ.
     // set DEFAULT_VAL VARCHAR(4000)
     //---------------------------
 
     i = 12;
 
-    // DEFAULT_VAL Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ varchar, languageëŠ” defaultë¡œ ì„¤ì •
+    // DEFAULT_VAL ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº varchar, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_VARCHAR_ID,
                                      1,
@@ -1259,12 +1304,12 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sColumn[i].column.flag = SMI_COLUMN_TYPE_VARIABLE;
-    sColumn[i].column.offset = 0;               /* 32000 ì´í•˜ì˜ variable column offset ì€ í•­ìƒ 0 */
-    sColumn[i].column.varOrder = 0;             /* variable columnì˜ ìˆœì„œ, ì—¬ê¸°ì„œëŠ” 1ê°œë¿ì´ë‹ˆê¹Œ 0 */
+    sColumn[i].column.offset = 0;               /* 32000 ÀÌÇÏÀÇ variable column offset Àº Ç×»ó 0 */
+    sColumn[i].column.varOrder = 0;             /* variable columnÀÇ ¼ø¼­, ¿©±â¼­´Â 1°³»ÓÀÌ´Ï±î 0 */
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -1275,8 +1320,8 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
 
     i = 13;
 
-    // STORE_TYPE Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ char, languageëŠ” defaultë¡œ ì„¤ì •
+    // STORE_TYPE ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº char, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_CHAR_ID,
                                      1,
@@ -1284,12 +1329,12 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -1301,8 +1346,8 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
 
     i = 14;
 
-    // IN_ROW_SIZE Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ integer, languageëŠ” defaultë¡œ ì„¤ì •
+    // IN_ROW_SIZE ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº integer, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_INTEGER_ID,
                                      0,
@@ -1310,13 +1355,13 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset =
         idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -1327,8 +1372,8 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
 
     i = 15;
 
-    // REPL_CONDITION Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ integer, languageëŠ” defaultë¡œ ì„¤ì •
+    // REPL_CONDITION ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº integer, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_INTEGER_ID,
                                      0,
@@ -1336,12 +1381,12 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -1352,8 +1397,8 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
 
     i = 16;
 
-    // HIDDEN_COLUMN Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ char, languageëŠ” defaultë¡œ ì„¤ì •
+    // HIDDEN_COLUMN ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº char, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_CHAR_ID,
                                      1,
@@ -1361,12 +1406,12 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -1377,8 +1422,8 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
 
     i = 17;
 
-    // HIDDEN_COLUMN Columnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ char, languageëŠ” defaultë¡œ ì„¤ì •
+    // HIDDEN_COLUMN ColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº char, language´Â default·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn( & sColumn[i],
                                      MTD_CHAR_ID,
                                      1,
@@ -1386,12 +1431,12 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
                                      0 )
               != IDE_SUCCESS );
 
-    // offset ì„¤ì •
+    // offset ¼³Á¤
     sCurrentOffset = idlOS::align(sCurrentOffset, sColumn[i].module->align);
     sColumn[i].column.offset = sCurrentOffset;
     sCurrentOffset += sColumn[i].column.size;
     sColumn[i].column.id = (sTableID * SMI_COLUMN_ID_MAXIMUM) + i;
-    // PROJ-1557 vcInOutBaseSizeë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    // PROJ-1557 vcInOutBaseSize¸¦ 0À¸·Î ¼³Á¤
     sColumn[i].column.vcInOutBaseSize = 0;
     sColumn[i].column.value = NULL;
 
@@ -1410,15 +1455,15 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
         // set NULL row
 
         // PROJ-1391 Variable Null
-        // Variable columnì— ëŒ€í•œ null ì²˜ë¦¬ëŠ”
-        // smiValue.valueì— NULLì„ í• ë‹¹í•œë‹¤.
+        // Variable column¿¡ ´ëÇÑ null Ã³¸®´Â
+        // smiValue.value¿¡ NULLÀ» ÇÒ´çÇÑ´Ù.
         // fix BUG-14665
         if( ( sColumn[i].column.flag & SMI_COLUMN_TYPE_MASK )
             == SMI_COLUMN_TYPE_VARIABLE )
         {
             sNullRow[i].value = NULL;
             sNullRow[i].length = 0;
-            /* BUG-43287 Variable Colum ë“¤ì˜ Align ì¤‘ ê°€ì¥ í° ê°’ì„ êµ¬í•œë‹¤. */
+            /* BUG-43287 Variable Colum µéÀÇ Align Áß °¡Àå Å« °ªÀ» ±¸ÇÑ´Ù. */
             sMaxAlign = ( sMaxAlign > (UShort)sColumn[i].module->align ) ? sMaxAlign : (UShort)sColumn[i].module->align;
         }
         else
@@ -1426,7 +1471,7 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
             sNullRow[i].value = sNullRowValue + sColumn[i].column.offset;
 
             // To Fix PR-5709
-            // Variable Columnì„ ì²˜ë¦¬í•  ìˆ˜ ì—†ìŒ.
+            // Variable ColumnÀ» Ã³¸®ÇÒ ¼ö ¾øÀ½.
             // sColumn[i].module->null( sColumn + i,
             //                          sNullRowValue,
             //                          MTD_OFFSET_USE );
@@ -1439,10 +1484,10 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
         }
 
         // make smiColumnList
-        // BUG-43117 : smiColumnì— alignê°’ ì…ë ¥(SYS_COLUMNS_)
+        // BUG-43117 : smiColumn¿¡ align°ª ÀÔ·Â(SYS_COLUMNS_)
         sColumn[i].column.align = sColumn[i].module->align;
 
-        // BUG-44814 smiTable::createTable ì„ í˜¸ì¶œí•˜ê¸°ì „ì— í†µê³„ì •ë³´ë¥¼ clear í•´ì•¼ í•œë‹¤.
+        // BUG-44814 smiTable::createTable À» È£ÃâÇÏ±âÀü¿¡ Åë°èÁ¤º¸¸¦ clear ÇØ¾ß ÇÑ´Ù.
         idlOS::memset( &sColumn[i].column.mStat, 0x00, ID_SIZEOF(smiColumnStat) );
         
         sSmiColumnList[i].column = &(sColumn[i].column);
@@ -1457,13 +1502,13 @@ IDE_RC qcmCreate::createQcmColumns( idvSQL          * aStatistics,
         }
     }
 
-    /* BUG-43287 Variable column ë“¤ì˜ Align ì¤‘ ê°€ì¥ í° ê°’ì„ ê¸°ë¡í•´ ë‘”ë‹¤. */
+    /* BUG-43287 Variable column µéÀÇ Align Áß °¡Àå Å« °ªÀ» ±â·ÏÇØ µĞ´Ù. */
     for ( i = 0; i < QCM_COLUMNS_COL_CNT; i++ )
     {
         sColumn[i].column.maxAlign = sMaxAlign;
     }
 
-    // Memory Table ì€ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” ì†ì„±ì´ì§€ë§Œ, ì„¤ì •í•˜ì—¬ ì „ë‹¬í•œë‹¤.
+    // Memory Table Àº »ç¿ëÇÏÁö ¾Ê´Â ¼Ó¼ºÀÌÁö¸¸, ¼³Á¤ÇÏ¿© Àü´ŞÇÑ´Ù.
     sSegmentAttr.mPctFree = 
                   QD_MEMORY_TABLE_DEFAULT_PCTFREE;  // PCTFREE
     sSegmentAttr.mPctUsed = 
@@ -1561,11 +1606,11 @@ IDE_RC qcmCreate::createTableIDSequence( smiStatement *aSmiStmt,
                                          mtcColumn    *aColumn )
 {
 /*********************************************************************
- *    PROJ-1705 ë””ìŠ¤í¬ë ˆì½”ë“œìµœì í™”í”„ë¡œì íŠ¸ ìˆ˜í–‰ìœ¼ë¡œ
- *    smì— ë ˆì½”ë“œ ì „ë‹¬ì„ ìœ„í•´ smiValue ìë£Œêµ¬ì¡° ì •ë³´ êµ¬ì„±ì‹œ
- *    ì•„ë˜ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•´ì„œ memory/disk tableì˜ ë ˆì½”ë“œë¥¼
- *    ì ì ˆíˆ ì²˜ë¦¬í•˜ë„ë¡ ìˆ˜ì •ë˜ì—ˆìœ¼ë‚˜,
- *    ë©”íƒ€í…Œì´ë¸”ì€ memory tableì´ë¯€ë¡œ ê¸°ì¡´ ì½”ë“œë¥¼ ìˆ˜ì •í•˜ì§€ ì•ŠìŒ.
+ *    PROJ-1705 µğ½ºÅ©·¹ÄÚµåÃÖÀûÈ­ÇÁ·ÎÁ§Æ® ¼öÇàÀ¸·Î
+ *    sm¿¡ ·¹ÄÚµå Àü´ŞÀ» À§ÇØ smiValue ÀÚ·á±¸Á¶ Á¤º¸ ±¸¼º½Ã
+ *    ¾Æ·¡ ÇÔ¼ö¸¦ »ç¿ëÇØ¼­ memory/disk tableÀÇ ·¹ÄÚµå¸¦
+ *    ÀûÀıÈ÷ Ã³¸®ÇÏµµ·Ï ¼öÁ¤µÇ¾úÀ¸³ª,
+ *    ¸ŞÅ¸Å×ÀÌºíÀº memory tableÀÌ¹Ç·Î ±âÁ¸ ÄÚµå¸¦ ¼öÁ¤ÇÏÁö ¾ÊÀ½.
  **********************************************************************/
 
     const void       * sTableIDSeqHandle;
@@ -1613,6 +1658,12 @@ IDE_RC qcmCreate::createTableIDSequence( smiStatement *aSmiStmt,
     qcNameCharBuffer   sAccessBuffer;
     mtdCharType      * sAccess
         = ( mtdCharType * ) & sAccessBuffer;
+
+    /* TASK-7307 DML Data Consistency in Shard */
+    qcNameCharBuffer   sUsableBuffer;
+    mtdCharType      * sUsable
+        = ( mtdCharType * ) & sUsableBuffer;
+    UInt               sShardFlag = 0;
 
     UInt               sReplCount = 0;
     UInt               sReplRecoveryCount = 0;
@@ -1811,18 +1862,30 @@ IDE_RC qcmCreate::createTableIDSequence( smiStatement *aSmiStmt,
     sValues[i].length = ID_SIZEOF(sParallelDegree);
     sValues[i].value = &sParallelDegree;
 
+    /* TASK-7307 DML Data Consistency in Shard */
+    // USABLE
+    i = 24;
+    qtc::setCharValue( sUsable, &(aColumn[i]), (SChar*)"Y");
+    sValues[i].value = (void *) sUsable;
+    sValues[i].length = aColumn[i].module->actualSize( aColumn + i,
+                                                       sValues[i].value );
+    // SHARD_FLAG
+    i = 25;
+    sValues[i].length = ID_SIZEOF(sShardFlag);
+    sValues[i].value = &sShardFlag;
+
     // BUG-14394
     qtc::sysdate( &sSysDate );
 
     // CREATED
-    i = 24;
+    i = 26;
     sValues[i].value = (void *)&sSysDate;
     sValues[i].length = aColumn[i].module->actualSize( aColumn + i,
                                                        sValues[i].value );
 
     // BUG-14394
     // LAST_DDL_TIME
-    i = 25;
+    i = 27;
     sValues[i].value = (void *)&sSysDate;
     sValues[i].length = aColumn[i].module->actualSize( aColumn + i,
                                                        sValues[i].value );
@@ -1882,8 +1945,8 @@ IDE_RC qcmCreate::createTableInfoForCreateDB( qcmTableInfo  * aTableInfo,
     aTableInfo->replicationRecoveryCount = 0; //PROJ-1608
     aTableInfo->notNullCount     = 0;
     aTableInfo->notNulls         = NULL;
-    aTableInfo->checkCount       = 0;       /* PROJ-1107 Check Constraint ì§€ì› */
-    aTableInfo->checks           = NULL;    /* PROJ-1107 Check Constraint ì§€ì› */
+    aTableInfo->checkCount       = 0;       /* PROJ-1107 Check Constraint Áö¿ø */
+    aTableInfo->checks           = NULL;    /* PROJ-1107 Check Constraint Áö¿ø */
     aTableInfo->tableType        = QCM_META_TABLE;
     aTableInfo->mPVType          = QCM_PV_TYPE_NONE;    /* BUG-45646 */
     aTableInfo->maxrows          = 0;
@@ -1930,6 +1993,10 @@ IDE_RC qcmCreate::createTableInfoForCreateDB( qcmTableInfo  * aTableInfo,
     aTableInfo->isDictionary    = ID_FALSE;
     aTableInfo->viewReadOnly    = QCM_VIEW_NON_READ_ONLY;
 
+    // TASK-7307 DML Data Consistency in Shard
+    aTableInfo->mIsUsable       = ID_TRUE;
+    aTableInfo->mShardFlag      = QCM_SHARD_FLAG_TABLE_NONE;
+
     // BUG-13725
     qcm::setOperatableFlag( aTableInfo->tableType,
                             &aTableInfo->operatableFlag );
@@ -1939,12 +2006,12 @@ IDE_RC qcmCreate::createTableInfoForCreateDB( qcmTableInfo  * aTableInfo,
         sQcmColumn[i].flag = 0;
         sQcmColumn[i].basicInfo = &aMtcColumn[i];
 
-        // mtdModule ì„¤ì •
+        // mtdModule ¼³Á¤
         IDE_TEST(mtd::moduleById( &(sQcmColumn[i].basicInfo->module),
                                   sQcmColumn[i].basicInfo->type.dataTypeId )
                  != IDE_SUCCESS);
 
-        // mtlModule ì„¤ì •
+        // mtlModule ¼³Á¤
         IDE_TEST(mtl::moduleById( &(sQcmColumn[i].basicInfo->language),
                                   sQcmColumn[i].basicInfo->type.languageId )
                  != IDE_SUCCESS);
@@ -2013,14 +2080,14 @@ IDE_RC qcmCreate::insertIntoQcmTables( smiStatement    * aSmiStmt,
  *    insert into SYS_TABLES_ values
  *
  * Implementation :
- *    1. SYS_TABLES_ í…Œì´ë¸” ì •ë³´ë¥¼ SYS_TABLES_ í…Œì´ë¸”ì— ì…ë ¥
- *    2. SYS_COLUMNS_ í…Œì´ë¸” ì •ë³´ë¥¼ SYS_TABLES_ í…Œì´ë¸”ì— ì…ë ¥
+ *    1. SYS_TABLES_ Å×ÀÌºí Á¤º¸¸¦ SYS_TABLES_ Å×ÀÌºí¿¡ ÀÔ·Â
+ *    2. SYS_COLUMNS_ Å×ÀÌºí Á¤º¸¸¦ SYS_TABLES_ Å×ÀÌºí¿¡ ÀÔ·Â
  *
- *    PROJ-1705 ë””ìŠ¤í¬ë ˆì½”ë“œìµœì í™”í”„ë¡œì íŠ¸ ìˆ˜í–‰ìœ¼ë¡œ
- *    smì— ë ˆì½”ë“œ ì „ë‹¬ì„ ìœ„í•´ smiValue ìë£Œêµ¬ì¡° ì •ë³´ êµ¬ì„±ì‹œ
- *    ì•„ë˜ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•´ì„œ memory/disk tableì˜ ë ˆì½”ë“œë¥¼
- *    ì ì ˆíˆ ì²˜ë¦¬í•˜ë„ë¡ ìˆ˜ì •ë˜ì—ˆìœ¼ë‚˜,
- *    ë©”íƒ€í…Œì´ë¸”ì€ memory tableì´ë¯€ë¡œ ê¸°ì¡´ ì½”ë“œë¥¼ ìˆ˜ì •í•˜ì§€ ì•ŠìŒ.
+ *    PROJ-1705 µğ½ºÅ©·¹ÄÚµåÃÖÀûÈ­ÇÁ·ÎÁ§Æ® ¼öÇàÀ¸·Î
+ *    sm¿¡ ·¹ÄÚµå Àü´ŞÀ» À§ÇØ smiValue ÀÚ·á±¸Á¶ Á¤º¸ ±¸¼º½Ã
+ *    ¾Æ·¡ ÇÔ¼ö¸¦ »ç¿ëÇØ¼­ memory/disk tableÀÇ ·¹ÄÚµå¸¦
+ *    ÀûÀıÈ÷ Ã³¸®ÇÏµµ·Ï ¼öÁ¤µÇ¾úÀ¸³ª,
+ *    ¸ŞÅ¸Å×ÀÌºíÀº memory tableÀÌ¹Ç·Î ±âÁ¸ ÄÚµå¸¦ ¼öÁ¤ÇÏÁö ¾ÊÀ½.
  ***********************************************************************/
 
     UInt               sStage = 0;
@@ -2065,6 +2132,11 @@ IDE_RC qcmCreate::insertIntoQcmTables( smiStatement    * aSmiStmt,
     /* PROJ-2359 Table/Partition Access Option */
     qcNameCharBuffer   sAccessOptionBuffer;
     mtdCharType      * sAccessOption = (mtdCharType *)&sAccessOptionBuffer;
+
+    /* TASK-7307 DML Data Consistency in Shard */
+    qcNameCharBuffer   sUsableBuffer;
+    mtdCharType      * sUsable = (mtdCharType *)&sUsableBuffer;
+    UInt               sShardFlag = 0;
 
     UInt               sReplCount = 0;
     ULong              sMaxRows = 0;
@@ -2264,18 +2336,30 @@ IDE_RC qcmCreate::insertIntoQcmTables( smiStatement    * aSmiStmt,
     sValues[i].length = ID_SIZEOF(sParallelDegree);
     sValues[i].value = &sParallelDegree;
 
+    /* TASK-7307 DML Data Consistency in Shard */
+    // USABLE
+    i = 24;
+    qtc::setCharValue( sUsable, &(aColumn[i]), (SChar*)"Y");
+    sValues[i].value = (void *) sUsable;
+    sValues[i].length = aColumn[i].module->actualSize( aColumn + i,
+                                                       sValues[i].value );
+    // SHARD_FLAG
+    i = 25;
+    sValues[i].length = ID_SIZEOF(sShardFlag);
+    sValues[i].value = &sShardFlag;
+
     // BUG-14394
     IDE_TEST( qtc::sysdate( &sSysDate ) != IDE_SUCCESS );
 
     // CREATED
-    i = 24;
+    i = 26;
     sValues[i].value = (void *)&sSysDate;
     sValues[i].length = aColumn[i].module->actualSize( aColumn + i,
                                                        sValues[i].value );
 
     // BUG-14394
     // LAST_DDL_TIME
-    i = 25;
+    i = 27;
     sValues[i].value = (void *)&sSysDate;
     sValues[i].length = aColumn[i].module->actualSize( aColumn + i,
                                                        sValues[i].value );
@@ -2335,14 +2419,14 @@ IDE_RC qcmCreate::insertIntoQcmColumns( smiStatement    * aSmiStmt,
  *    insert into SYS_COLUMNS_ values
  *
  * Implementation :
- *    1. SYS_TABLES_ í…Œì´ë¸”ì˜ ì»¬ëŸ¼ ì •ë³´ë¥¼ SYS_COLUMNS_ í…Œì´ë¸”ì— ì…ë ¥
- *    2. SYS_COLUMNS_ í…Œì´ë¸”ì˜ ì»¬ëŸ¼ ì •ë³´ë¥¼ SYS_COLUMNS_ í…Œì´ë¸”ì— ì…ë ¥
+ *    1. SYS_TABLES_ Å×ÀÌºíÀÇ ÄÃ·³ Á¤º¸¸¦ SYS_COLUMNS_ Å×ÀÌºí¿¡ ÀÔ·Â
+ *    2. SYS_COLUMNS_ Å×ÀÌºíÀÇ ÄÃ·³ Á¤º¸¸¦ SYS_COLUMNS_ Å×ÀÌºí¿¡ ÀÔ·Â
  *
- *    PROJ-1705 ë””ìŠ¤í¬ë ˆì½”ë“œìµœì í™”í”„ë¡œì íŠ¸ ìˆ˜í–‰ìœ¼ë¡œ
- *    smì— ë ˆì½”ë“œ ì „ë‹¬ì„ ìœ„í•´ smiValue ìë£Œêµ¬ì¡° ì •ë³´ êµ¬ì„±ì‹œ
- *    ì•„ë˜ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•´ì„œ memory/disk tableì˜ ë ˆì½”ë“œë¥¼
- *    ì ì ˆíˆ ì²˜ë¦¬í•˜ë„ë¡ ìˆ˜ì •ë˜ì—ˆìœ¼ë‚˜,
- *    ë©”íƒ€í…Œì´ë¸”ì€ memory tableì´ë¯€ë¡œ ê¸°ì¡´ ì½”ë“œë¥¼ ìˆ˜ì •í•˜ì§€ ì•ŠìŒ.
+ *    PROJ-1705 µğ½ºÅ©·¹ÄÚµåÃÖÀûÈ­ÇÁ·ÎÁ§Æ® ¼öÇàÀ¸·Î
+ *    sm¿¡ ·¹ÄÚµå Àü´ŞÀ» À§ÇØ smiValue ÀÚ·á±¸Á¶ Á¤º¸ ±¸¼º½Ã
+ *    ¾Æ·¡ ÇÔ¼ö¸¦ »ç¿ëÇØ¼­ memory/disk tableÀÇ ·¹ÄÚµå¸¦
+ *    ÀûÀıÈ÷ Ã³¸®ÇÏµµ·Ï ¼öÁ¤µÇ¾úÀ¸³ª,
+ *    ¸ŞÅ¸Å×ÀÌºíÀº memory tableÀÌ¹Ç·Î ±âÁ¸ ÄÚµå¸¦ ¼öÁ¤ÇÏÁö ¾ÊÀ½.
  ***********************************************************************/
 
     UInt               sStage = 0;
@@ -2606,10 +2690,16 @@ IDE_RC qcmCreate::insertIntoQcmColumns( smiStatement    * aSmiStmt,
                 /* PROJ-1071 Parallel Query */
                 idlOS::snprintf(sColNameStr, QC_MAX_OBJECT_NAME_LEN + 1, "PARALLEL_DEGREE");
                 break;
-            case 24: // BUG-14394
+            case 24: /* TASK-7307 DML Data Consistency in Shard */
+                idlOS::snprintf(sColNameStr, QC_MAX_OBJECT_NAME_LEN + 1, "USABLE");
+                break;     
+            case 25: /* TASK-7307 DML Data Consistency in Shard */
+                idlOS::snprintf(sColNameStr, QC_MAX_OBJECT_NAME_LEN + 1, "SHARD_FLAG");
+                break;
+            case 26: // BUG-14394
                 idlOS::snprintf(sColNameStr, QC_MAX_OBJECT_NAME_LEN + 1, "CREATED");
                 break;
-            case 25: // BUG-14394
+            case 27: // BUG-14394
                 idlOS::snprintf(sColNameStr, QC_MAX_OBJECT_NAME_LEN + 1, "LAST_DDL_TIME");
                 break;
             default:
@@ -3061,9 +3151,9 @@ USER_ID INTEGER,  \
 IS_ACCESS INTEGER)"
         ,
 // PROJ-1502 PARTITIONED DISK TABLE
-// IS_PARTITIONED ì¶”ê°€
+// IS_PARTITIONED Ãß°¡
 /* PROJ-2433 Direct Key Index
- * IS_DIRECTKEY ì¶”ê°€ */
+ * IS_DIRECTKEY Ãß°¡ */
         (SChar*) "CREATE TABLE SYS_INDICES_ ( \
 USER_ID INTEGER, \
 TABLE_ID INTEGER, \
@@ -3213,21 +3303,21 @@ RELATED_OBJECT_NAME            VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED, \
 RELATED_OBJECT_TYPE            INTEGER )"
         ,
 //=========================================================
-// [PROJ-1359] Triggerë¥¼ ìœ„í•œ Meta Table êµ¬ì¡°
+// [PROJ-1359] Trigger¸¦ À§ÇÑ Meta Table ±¸Á¶
 // SYS_TRIGGERS_
 // USER_ID          : User ID
 // USER_NAME        : User Name
 // TRIGGER_OID      : Trigger Object ID
 // TRIGGER_NAME     : Trigger Name
-// TABLE_ID         : Triggerê°€ ì°¸ì¡°í•˜ëŠ” Tableì˜ ID
-// IS_ENABLE        : ìˆ˜í–‰ ì—¬ë¶€ì˜ ì§€ì •
+// TABLE_ID         : Trigger°¡ ÂüÁ¶ÇÏ´Â TableÀÇ ID
+// IS_ENABLE        : ¼öÇà ¿©ºÎÀÇ ÁöÁ¤
 // EVENT_TIME       : BEFORE or AFTER Event
-// EVENT_TYPE       : Trigger Eventì˜ ì¢…ë¥˜(INSERT, DELETE, UPDATE)
-// UPDATE_COLUMN_CNT: Update Eventì— í¬í•¨ëœ Columnì˜ ê°œìˆ˜
+// EVENT_TYPE       : Trigger EventÀÇ Á¾·ù(INSERT, DELETE, UPDATE)
+// UPDATE_COLUMN_CNT: Update Event¿¡ Æ÷ÇÔµÈ ColumnÀÇ °³¼ö
 // GRANULARITY      : Action Granularity
-// REF_ROW_CNT      : Referencing Row ì˜ ê°œìˆ˜
-// SUBSTING_CNT     : Trigger ìƒì„±ë¬¸ì´ ë¶„í• ëœ ê°œìˆ˜
-// STRING_LENGTH    : Trigger ìƒì„±ë¬¸ì˜ ì´ ê¸¸ì´
+// REF_ROW_CNT      : Referencing Row ÀÇ °³¼ö
+// SUBSTING_CNT     : Trigger »ı¼º¹®ÀÌ ºĞÇÒµÈ °³¼ö
+// STRING_LENGTH    : Trigger »ı¼º¹®ÀÇ ÃÑ ±æÀÌ
 //=========================================================
 
         (SChar*) "CREATE TABLE SYS_TRIGGERS_ (                   \
@@ -3249,12 +3339,12 @@ LAST_DDL_TIME                  DATE )"
 ,
 
 //=========================================================
-// [PROJ-1359] ë¶„í• ëœ Trigger êµ¬ë¬¸ì˜ ê´€ë¦¬
+// [PROJ-1359] ºĞÇÒµÈ Trigger ±¸¹®ÀÇ °ü¸®
 // SYS_TRIGGER_STRINGS_
 // TABLE_ID      : Table ID
-// TRIGGER_ID    : Triggerì˜ ID
-// SEQNO         : Trigger ìƒì„± êµ¬ë¬¸ì˜ Substring ìˆœì„œ
-// SUBSTRING     : Trigger ìƒì„± êµ¬ë¬¸ì˜ ì‹¤ì œ Sub-String
+// TRIGGER_ID    : TriggerÀÇ ID
+// SEQNO         : Trigger »ı¼º ±¸¹®ÀÇ Substring ¼ø¼­
+// SUBSTRING     : Trigger »ı¼º ±¸¹®ÀÇ ½ÇÁ¦ Sub-String
 //=========================================================
 
         (SChar*) "CREATE TABLE SYS_TRIGGER_STRINGS_ (            \
@@ -3265,11 +3355,11 @@ SUBSTRING             VARCHAR("QCM_TRIGGER_SUBSTRING_LEN_STR") FIXED )"
         ,
 
 //=========================================================
-// [PROJ-1359] UPDATE Eventì˜ OF êµ¬ë¬¸ì— ì¡´ì¬í•˜ëŠ” Columnì„ ê´€ë¦¬
+// [PROJ-1359] UPDATE EventÀÇ OF ±¸¹®¿¡ Á¸ÀçÇÏ´Â ColumnÀ» °ü¸®
 // SYS_TRIGGER_UPDATE_COLUMNS_
 // TABLE_ID      : Table ID
-// TRIGGER_OID    : Triggerì˜ ID
-// COLUMN_ID      : OF êµ¬ë¬¸ì˜ Column ID
+// TRIGGER_OID    : TriggerÀÇ ID
+// COLUMN_ID      : OF ±¸¹®ÀÇ Column ID
 //=========================================================
 
         (SChar*) "CREATE TABLE SYS_TRIGGER_UPDATE_COLUMNS_ (      \
@@ -3279,12 +3369,12 @@ COLUMN_ID              INTEGER )"
         ,
 
 //=========================================================
-// [PROJ-1359] Action Bodyê°€ DMLë¡œ ì ‘ê·¼í•˜ëŠ” í…Œì´ë¸”ì„ ê´€ë¦¬
+// [PROJ-1359] Action Body°¡ DML·Î Á¢±ÙÇÏ´Â Å×ÀÌºíÀ» °ü¸®
 // SYS_TRIGGER_DML_TABLES_
 // TABLE_ID          : Table ID
-// TRIGGER_ID        : Triggerì˜ ID
-// DML_TABLE_ID      : DMLë¡œ ì ‘ê·¼í•˜ëŠ” Tableì˜ ID
-// STMT_TYPE         : í•´ë‹¹ Tableì— ì ‘ê·¼í•˜ëŠ” STMTì˜ ì¢…ë¥˜
+// TRIGGER_ID        : TriggerÀÇ ID
+// DML_TABLE_ID      : DML·Î Á¢±ÙÇÏ´Â TableÀÇ ID
+// STMT_TYPE         : ÇØ´ç Table¿¡ Á¢±ÙÇÏ´Â STMTÀÇ Á¾·ù
 //=========================================================
 
         (SChar*) "CREATE TABLE SYS_TRIGGER_DML_TABLES_ (         \
@@ -3295,7 +3385,7 @@ STMT_TYPE             INTEGER )"
         ,
 
 //=========================================================
-// [PROJ-1362] LOBì„ ìœ„í•œ Meta Table êµ¬ì¡°
+// [PROJ-1362] LOBÀ» À§ÇÑ Meta Table ±¸Á¶
 // SYS_LOBS_
 // USER_ID           : User ID
 // TABLE_ID          : Table ID
@@ -3336,7 +3426,15 @@ PARALLEL_APPLIER_COUNT      INTEGER,\
 APPLIER_INIT_BUFFER_SIZE    BIGINT, \
 REMOTE_XSN                  BIGINT, \
 PEER_REPLICATION_NAME       VARCHAR("QCM_META_NAME_LEN") FIXED, \
-REMOTE_LAST_DDL_XSN         BIGINT )"
+REMOTE_LAST_DDL_XSN         BIGINT, \
+CURRENT_READ_XLOGFILE_NO    INTEGER, \
+CURRENT_READ_XLOGFILE_OFFSET INTEGER )"
+        ,
+        (SChar*) "CREATE TABLE SYS_REPL_RECEIVER_ ( \
+REPLICATION_NAME            VARCHAR("QCM_META_NAME_LEN") FIXED, \
+REMOTE_XSN                  BIGINT, \
+CURRENT_READ_XLOGFILE_NO    INTEGER, \
+CURRENT_READ_XLOGFILE_OFFSET INTEGER )"
         ,
         (SChar*) "CREATE TABLE SYS_REPL_HOSTS_( \
 HOST_NO INTEGER, \
@@ -3358,9 +3456,18 @@ REMOTE_PARTITION_NAME VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED, \
 IS_PARTITION CHAR(1), \
 INVALID_MAX_SN BIGINT, \
 CONDITION VARCHAR(1000) VARIABLE, \
-REPLICATION_UNIT CHAR(1) )"
+REPLICATION_UNIT CHAR(1),\
+IS_CONDITION_SYNCED INTEGER )"
         ,
-/* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš© */
+        (SChar*) "CREATE TABLE SYS_REPL_ITEMS_HISTORY_ ( \
+REPLICATION_NAME VARCHAR("QCM_META_NAME_LEN") FIXED, \
+USER_NAME VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED, \
+TABLE_NAME VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED, \
+PARTITION_NAME VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED, \
+OLD_OID BIGINT, \
+NEW_OID BIGINT )"
+        ,
+/* PROJ-1442 Replication Online Áß DDL Çã¿ë */
         (SChar*) "CREATE TABLE SYS_REPL_OLD_ITEMS_ ( \
 REPLICATION_NAME VARCHAR("QCM_META_NAME_LEN") FIXED, \
 TABLE_OID BIGINT, \
@@ -3374,8 +3481,14 @@ REMOTE_PARTITION_NAME VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED, \
 PARTITION_ORDER       INTEGER, \
 PARTITION_MIN_VALUE   VARCHAR(4000) VARIABLE, \
 PARTITION_MAX_VALUE   VARCHAR(4000) VARIABLE, \
-INVALID_MAX_SN BIGINT ) "
-
+INVALID_MAX_SN BIGINT, \
+TABLE_ID                    INTEGER, \
+TABLE_PARTITION_TYPE        INTEGER, \
+IS_PARTITION                CHAR(1), \
+REPLICATION_UNIT            CHAR(1), \
+TBS_TYPE                    INTEGER, \
+PARTITION_METHOD            INTEGER, \
+PARTITION_COUNT             INTEGER  )"
         ,
         (SChar*) "CREATE TABLE SYS_REPL_OLD_COLUMNS_ ( \
 REPLICATION_NAME VARCHAR("QCM_META_NAME_LEN") FIXED, \
@@ -3388,6 +3501,7 @@ MT_PRECISION INTEGER, \
 MT_SCALE INTEGER, \
 MT_ENCRYPT_PRECISION INTEGER, \
 MT_POLICY_NAME VARCHAR(16) FIXED, \
+MT_SRID INTEGER  FIXED, \
 SM_ID INTEGER, \
 SM_FLAG INTEGER, \
 SM_OFFSET INTEGER, \
@@ -3442,6 +3556,16 @@ REPLICATION_NAME VARCHAR("QCM_META_NAME_LEN") FIXED, \
 LFG_ID INTEGER,\
 PATH VARCHAR(512) FIXED )"
         ,
+
+        (SChar*) "CREATE TABLE SYS_REPL_ITEM_REPLACE_HISTORY_ ( \
+REPLICATION_NAME VARCHAR("QCM_META_NAME_LEN") FIXED, \
+USER_NAME VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED, \
+TABLE_NAME VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED, \
+PARTITION_NAME VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED, \
+OLD_OID BIGINT, \
+NEW_OID BIGINT )"
+        ,
+
 #endif
         (SChar*) "CREATE TABLE SYS_PRIVILEGES_ ( \
 PRIV_ID INTEGER, \
@@ -3513,94 +3637,27 @@ LAST_DDL_TIME       DATE )"
         (SChar*) "CREATE TABLE SYS_DUMMY_ ( \
 DUMMY VARCHAR(1))"
         ,
+#endif
 
 /**************************************************/
 /* PROJ-1488 for Altibase Spatio-Temporal DBMS */
 /**************************************************/
-        (SChar*) "CREATE TABLE STO_COLUMNS_ ( \
+/* PROJ-2422 srid */
+        (SChar*) "CREATE TABLE SYS_GEOMETRIES_ ( \
+USER_ID             INTEGER, \
 TABLE_ID            INTEGER, \
 COLUMN_ID           INTEGER, \
-GEOMETRY_TABLE_ID   INTEGER, \
-TOLERANCE_X         DOUBLE, \
-TOLERANCE_Y         DOUBLE, \
-TOLERANCE_Z         DOUBLE, \
-TOLERANCE_TIME      DOUBLE, \
+COORD_DIMENSION     INTEGER, \
 SRID                INTEGER )"
         ,
-        (SChar*) "CREATE TABLE STO_USER_COLUMNS_ ( \
-TABLE_NAME      VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED, \
-COLUMN_NAME     VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED, \
-TOLERANCE_X     DOUBLE, \
-TOLERANCE_Y     DOUBLE, \
-TOLERANCE_Z     DOUBLE, \
-TOLERANCE_TIME  DOUBLE, \
-SRID            INTEGER )"
+        (SChar*) "CREATE TABLE USER_SRS_ ( \
+SRID                INTEGER NOT NULL,   \
+AUTH_NAME           VARCHAR(256) FIXED, \
+AUTH_SRID           INTEGER,            \
+SRTEXT              VARCHAR(2048),      \
+PROJ4TEXT           VARCHAR(2048) )"
         ,
-        (SChar*) "CREATE TABLE STO_SRS_ ( \
-SRID        INTEGER, \
-NAME        VARCHAR(256) FIXED, \
-SRTEXT      VARCHAR(2048) FIXED, \
-PROJCS      INTEGER, \
-GEOGCS      INTEGER, \
-GEOCCS      INTEGER )"
-        ,
-        (SChar*) "CREATE TABLE STO_PROJCS_ ( \
-PROJCS                  INTEGER, \
-NAME                    VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED, \
-GEOGCS                  INTEGER, \
-PROJECTION              INTEGER, \
-CENTRAL_MERIDIAN        DOUBLE, \
-SCALE_FACTOR            DOUBLE, \
-STANDARD_PARALLEL_1     DOUBLE, \
-STANDARD_PARALLEL_2     DOUBLE, \
-LONGITUDE_OF_CENTER     DOUBLE, \
-LATITUDE_OF_CENTER      DOUBLE, \
-FALSE_EASTING           DOUBLE, \
-FALSE_NORTHING          DOUBLE, \
-AZIMUTH                 DOUBLE, \
-LONGITUDE_OF_POINT_1    DOUBLE, \
-LATITUDE_OF_POINT_1     DOUBLE, \
-LONGITUDE_OF_POINT_2    DOUBLE, \
-LATITUDE_OF_POINT_2     DOUBLE, \
-UTM_ZONE                VARCHAR(10) FIXED, \
-LINEAR_UNIT             VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED )"
-        ,
-        (SChar*) "CREATE TABLE STO_PROJECTIONS_ ( \
-PROJECTION      INTEGER, \
-NAME            VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED )"
-        ,
-        (SChar*) "CREATE TABLE STO_GEOGCS_ ( \
-GEOGCS              INTEGER, \
-NAME                VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED, \
-DATUM               INTEGER, \
-ELLIPSOID           INTEGER, \
-PRIME_MERIDIAN      INTEGER, \
-ANGULAR_UNIT        VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED )"
-        ,
-        (SChar*) "CREATE TABLE STO_GEOCCS_ ( \
-GEOCCS              INTEGER, \
-NAME                VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED, \
-DATUM               INTEGER, \
-ELLIPSOID           INTEGER, \
-PRIME_MERIDIAN      INTEGER, \
-LINEAR_UNIT         VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED )"
-        ,
-        (SChar*) "CREATE TABLE STO_DATUMS_ ( \
-DATUM       INTEGER, \
-NAME        VARCHAR("QCM_META_OBJECT_NAME_LEN") FIXED )"
-        ,
-        (SChar*) "CREATE TABLE STO_ELLIPSOIDS_ ( \
-ELLIPSOID               INTEGER, \
-NAME                    VARCHAR(64) FIXED, \
-SEMI_MAJOR_AXIS         DOUBLE, \
-INVERSE_FLATTENING  DOUBLE )"
-        ,
-        (SChar*) "CREATE TABLE STO_PRIMEMS_ ( \
-PRIME_MERIDIAN      INTEGER, \
-NAME                VARCHAR(10) FIXED, \
-LONGITUDE           DOUBLE )"
-        ,
-#endif
+
 /**************************************************
  * PROJ-1502 PARTITIONED DISK TABLE - TABLE CREATE
  **************************************************/
@@ -3629,6 +3686,7 @@ PARTITION_MAX_VALUE   VARCHAR(4000) VARIABLE, \
 PARTITION_ORDER       INTEGER, \
 TBS_ID                INTEGER, \
 PARTITION_ACCESS      CHAR(1) NOT NULL, \
+PARTITION_USABLE      CHAR(1) NOT NULL, \
 REPLICATION_COUNT     INTEGER, \
 REPLICATION_RECOVERY_COUNT INTEGER, \
 CREATED               DATE, \
@@ -3678,18 +3736,18 @@ COMMENTS              VARCHAR("QC_MAX_COMMENT_LITERAL_LEN_STR") )"
  * PROJ-2002 COLUMN SECURITY
  *
  * SYS_SECURITY_
- * MODULE_NAME       : ì™¸ë¶€ ë³´ì•ˆëª¨ë“ˆì˜ ì´ë¦„
- * MODULE_VERSION    : ì™¸ë¶€ ë³´ì•ˆëª¨ë“ˆì˜ ë²„ì „
- * ECC_POLICY_NAME   : ECC ìƒì„±ì— ì‚¬ìš©í•˜ëŠ” policy name
- * ECC_POLICY_CODE   : ECC policyì˜ ìœ íš¨ì„± ê²€ì¦ ì½”ë“œ
+ * MODULE_NAME       : ¿ÜºÎ º¸¾È¸ğµâÀÇ ÀÌ¸§
+ * MODULE_VERSION    : ¿ÜºÎ º¸¾È¸ğµâÀÇ ¹öÀü
+ * ECC_POLICY_NAME   : ECC »ı¼º¿¡ »ç¿ëÇÏ´Â policy name
+ * ECC_POLICY_CODE   : ECC policyÀÇ À¯È¿¼º °ËÁõ ÄÚµå
  *
  * SYS_ENCRYPTED_COLUMNS_
  * USER_ID           : User ID
  * TABLE_ID          : Table ID
  * COLUMN_ID         : Column ID
- * ENCRYPT_PRECISION : ì»¬ëŸ¼ ì•”í˜¸í™”ì˜ precision
- * POLICY_NAME       : ì»¬ëŸ¼ ì•”í˜¸í™”ì— ì‚¬ìš©í•œ policy name
- * POLICY_CODE       : ì»¬ëŸ¼ ì•”í˜¸í™”ì— ì‚¬ìš©í•œ policyì˜ ìœ íš¨ì„± ê²€ì¦ ì½”ë“œ
+ * ENCRYPT_PRECISION : ÄÃ·³ ¾ÏÈ£È­ÀÇ precision
+ * POLICY_NAME       : ÄÃ·³ ¾ÏÈ£È­¿¡ »ç¿ëÇÑ policy name
+ * POLICY_CODE       : ÄÃ·³ ¾ÏÈ£È­¿¡ »ç¿ëÇÑ policyÀÇ À¯È¿¼º °ËÁõ ÄÚµå
  **************************************************/
         (SChar*) "CREATE TABLE SYS_SECURITY_ ( \
 MODULE_NAME           VARCHAR(24)  FIXED, \
@@ -3810,7 +3868,7 @@ PASSWORD_DATE         DATE )"
 "MAXROWS             BIGINT      NOT NULL )"
         ,
 
-/* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
+/* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
         (SChar*) "CREATE TABLE SYS_CONSTRAINT_RELATED_ ( "
 "USER_ID                INTEGER           NOT NULL, "
 "TABLE_ID               INTEGER           NOT NULL, "
@@ -3948,6 +4006,10 @@ SYS_CONSTRAINT_COLUMNS_ (TABLE_ID)"
         (SChar*) "CREATE UNIQUE INDEX SYS_REPLICATIONS_INDEX1 ON \
 SYS_REPLICATIONS_ (REPLICATION_NAME)"
         ,
+/* INDEX OF   SYS_REPL_RECEIVER_  */
+        (SChar*) "CREATE UNIQUE INDEX SYS_REPL_RECEIVER_INDEX1 ON \
+SYS_REPL_RECEIVER_ (REPLICATION_NAME)"
+        ,
 /* INDEX OF   SYS_REPL_HOSTS_  */
         (SChar*) "CREATE UNIQUE INDEX SYS_REPL_HOSTS_INDEX1 ON \
 SYS_REPL_HOSTS_ (HOST_NO)"
@@ -3961,6 +4023,9 @@ SYS_REPL_HOSTS_ (HOST_IP, PORT_NO)"
 /* INDEX OF   SYS_REPL_ITEMS_  */
         (SChar*) "CREATE UNIQUE INDEX SYS_REPLITEMS_INDEX1 ON \
 SYS_REPL_ITEMS_ ( REPLICATION_NAME, TABLE_OID )"
+        ,
+        (SChar*) "CREATE INDEX SYS_REPLITEMS_INDEX2 ON \
+SYS_REPL_ITEMS_ ( TABLE_OID )"
         ,
 /* INDEX OF   SYS_REPL_OLD_ITEMS_ */
         (SChar*) "CREATE UNIQUE INDEX SYS_REPLOLDITEMS_INDEX1 ON \
@@ -3991,6 +4056,10 @@ SYS_REPL_OLD_CHECK_COLUMNS_ ( REPLICATION_NAME, TABLE_OID, CONSTRAINT_ID, COLUMN
         (SChar*) "CREATE UNIQUE INDEX SYS_REPL_OFFLINE_DIR_INDEX1 ON \
 SYS_REPL_OFFLINE_DIR_ ( REPLICATION_NAME, LFG_ID )"
         ,
+/* INDEX OF   SYS_REPL_ITEM_REPLACE_HISTORY_  */
+        (SChar*) "CREATE UNIQUE INDEX SYS_REPL_ITEM_REPLACE_HISTORY_INDEX1 ON \
+SYS_REPL_ITEM_REPLACE_HISTORY_ ( REPLICATION_NAME, OLD_OID )"
+, 
 #endif
 /* INDEX OF   SYS_PROCEDURES_  */
         (SChar*) "CREATE UNIQUE INDEX SYS_PROCEDURES_INDEX1 ON \
@@ -4068,7 +4137,7 @@ SYS_PACKAGE_RELATED_ ( PACKAGE_OID )"
 SYS_PACKAGE_RELATED_ ( RELATED_USER_ID, RELATED_OBJECT_NAME, RELATED_OBJECT_TYPE )"
         ,
 //=========================================================
-// [PROJ-1359] SYS_TRIGGERS_ë¥¼ ìœ„í•œ Index
+// [PROJ-1359] SYS_TRIGGERS_¸¦ À§ÇÑ Index
 //=========================================================
 
         (SChar*) "CREATE UNIQUE INDEX SYS_TRIGGERS_USERID_TRIGGERNAME_IDX ON \
@@ -4079,7 +4148,7 @@ SYS_TRIGGERS_ ( TABLE_ID, TRIGGER_OID ) "
         ,
 
 //=========================================================
-// [PROJ-1359] SYS_TRIGGER_STRINGS_ ë¥¼ ìœ„í•œ Index
+// [PROJ-1359] SYS_TRIGGER_STRINGS_ ¸¦ À§ÇÑ Index
 //=========================================================
 
         (SChar *) "CREATE INDEX SYS_TRIGGER_STRINGS_OID_SEQNO_IDX ON \
@@ -4090,7 +4159,7 @@ SYS_TRIGGER_STRINGS_ ( TABLE_ID )"
         ,
 
 //=========================================================
-// [PROJ-1359] SYS_TRIGGER_UPDATE_COLUMNS_ ë¥¼ ìœ„í•œ Index
+// [PROJ-1359] SYS_TRIGGER_UPDATE_COLUMNS_ ¸¦ À§ÇÑ Index
 //=========================================================
 
         (SChar *) "CREATE INDEX SYS_TRIGGER_UPDATE_COLUMNS_OID_IDX ON \
@@ -4101,7 +4170,7 @@ SYS_TRIGGER_UPDATE_COLUMNS_ ( TABLE_ID )"
         ,
 
 //=========================================================
-// [PROJ-1359] SYS_TRIGGER_DML_TABLES_ ë¥¼ ìœ„í•œ Index
+// [PROJ-1359] SYS_TRIGGER_DML_TABLES_ ¸¦ À§ÇÑ Index
 //=========================================================
 
         (SChar *) "CREATE INDEX SYS_TRIGGER_DML_TABLES_TABLE_ID_IDX ON \
@@ -4111,7 +4180,7 @@ SYS_TRIGGER_DML_TABLES_ ( TABLE_ID )"
 SYS_TRIGGER_DML_TABLES_ ( TRIGGER_OID )"
         ,
 //=========================================================
-// [PROJ-1362] SYS_LOBS_ ë¥¼ ìœ„í•œ Index
+// [PROJ-1362] SYS_LOBS_ ¸¦ À§ÇÑ Index
 //=========================================================
         (SChar*) "CREATE UNIQUE INDEX SYS_LOBS_INDEX1 ON \
 SYS_LOBS_ (COLUMN_ID)"
@@ -4193,7 +4262,7 @@ SYS_USER_ROLES_ ( ROLE_ID )"
         (SChar*) "CREATE USER SYS IDENTIFIED BY MANAGER"
         ,
 //=========================================================
-// [PROJ-1371] SYS_DIRECTORIES_ ë¥¼ ìœ„í•œ Index
+// [PROJ-1371] SYS_DIRECTORIES_ ¸¦ À§ÇÑ Index
 //=========================================================
         (SChar*) "CREATE UNIQUE INDEX SYS_DIRECTORIES_INDEX1 ON \
 SYS_DIRECTORIES_ ( DIRECTORY_ID )"
@@ -4205,115 +4274,23 @@ SYS_DIRECTORIES_ ( USER_ID )"
 SYS_DIRECTORIES_ ( DIRECTORY_NAME )"
         ,
 
-#if !defined(SMALL_FOOTPRINT)
 /**************************************************/
 /* PROJ-1488 for Altibase Spatio-Temporal DBMS */
 /**************************************************/
-/* INDEX OF STO_COLUMNS_ */
-        (SChar*) "CREATE UNIQUE INDEX STO_COLUMNS_TABLE_ID_COLUMN_ID_IDX ON \
-STO_COLUMNS_ (TABLE_ID, COLUMN_ID)"
+/* INDEX OF SYS_GEOMETRIES_ */
+        (SChar*) "CREATE UNIQUE INDEX SYS_GEOMETRIES_INDEX1 ON \
+SYS_GEOMETRIES_ (COLUMN_ID)"
         ,
-        (SChar*) "CREATE UNIQUE INDEX STO_COLUMNS_GEOMETRY_TABLE_ID_IDX ON \
-STO_COLUMNS_ (GEOMETRY_TABLE_ID)"
+        (SChar*) "CREATE UNIQUE INDEX SYS_GEOMETRIES_INDEX2 ON \
+SYS_GEOMETRIES_ (TABLE_ID, COLUMN_ID)"
         ,
-/*
-  (SChar*) "ALTER TABLE STO_COLUMNS_ ADD CONSTRAINT \
-  FK_SRID REFERENCES STO_SRS_ (SRID)"
-  ,
-*/
-/* INDEX OF STO_USER_COLUMNS_ */
-        (SChar*) "CREATE UNIQUE INDEX STO_USER_COLUMNS_TBL_NAME_COL_NAME_IDX ON \
-STO_USER_COLUMNS_ (TABLE_NAME, COLUMN_NAME)"
+/* INDEX OF USER_SRS_ */
+        (SChar*) "CREATE UNIQUE INDEX USER_SRS_INDEX1 ON \
+USER_SRS_ (SRID)"
         ,
-/*
-  (SChar*) "ALTER TABLE STO_USER_COLUMNS_ ADD CONSTRAINT \
-  FK_USER_SRID REFERENCES STO_SRS_ (SRID)"
-  ,
-*/
-/* INDEX OF STO_SRS_ */
-        (SChar*) "CREATE UNIQUE INDEX STO_SRS_SRID_IDX ON \
-STO_SRS_ (SRID)"
+        (SChar*) "CREATE UNIQUE INDEX USER_SRS_INDEX2 ON \
+USER_SRS_ (AUTH_SRID)"
         ,
-/*
-  (SChar*) "ALTER TABLE STO_SRS_ ADD CONSTRAINT \
-  FK_SRS_PROJCS REFERENCES STO_PROJCS_ (PROJCS)"
-  ,
-
-  (SChar*) "ALTER TABLE STO_SRS_ ADD CONSTRAINT \
-  FK_SRS_GEOGCS REFERENCES STO_GEOGCS_ (GEOGCS)"
-  ,
-  (SChar*) "ALTER TABLE STO_SRS_ ADD CONSTRAINT \
-  FK_SRS_GEOCCS REFERENCES STO_GEOCCS_ (GEOCCS)"
-  ,
-*/
-/* INDEX OF STO_PROJCS_ */
-        (SChar*) "CREATE UNIQUE INDEX STO_PROJCS_PROJCS_IDX ON \
-STO_PROJCS_ (PROJCS)"
-        ,
-/*
-  (SChar*) "ALTER TABLE STO_PROJCS_ ADD CONSTRAINT \
-  FK_PROJCS_GEOCCS REFERENCES STO_GEOCCS_ (GEOCCS)"
-  ,
-  (SChar*) "ALTER TABLE STO_PROJCS_ ADD CONSTRAINT \
-  FK_PROJCS_PROJECTION REFERENCES STO_PROJECTIONS_ (PROJECTION)"
-  ,
-  (SChar*) "ALTER TABLE STO_PROJCS_ ADD CONSTRAINT \
-  FK_PROJCS_LINEAR_UNIT REFERENCES X$_LINEAR_UNITS_ (UNITS)"
-  ,
-*/
-/* INDEX OF STO_PROJECTIONS_ */
-        (SChar*) "CREATE UNIQUE INDEX STO_PROJECTIONS_PROJECTION_IDX ON \
-STO_PROJECTIONS_ (PROJECTION)"
-        ,
-/* INDEX OF STO_GEOGCS_ */
-        (SChar*) "CREATE UNIQUE INDEX STO_GEOGCS_GEOGCS_IDX ON \
-STO_GEOGCS_ (GEOGCS)"
-        ,
-/*
-  (SChar*) "ALTER TABLE STO_GEOGCS_ ADD CONSTRAINT \
-  FK_GEOGCS_DATUM REFERENCES STO_ DATUMS_ (DATUM)"
-  ,
-  (SChar*) "ALTER TABLE STO_GEOGCS_ ADD CONSTRAINT \
-  FK_GEOGCS_ELLIPSOID REFERENCES STO_ELLIPSOIDS_ (ELLIPSOID)"
-  ,
-  (SChar*) "ALTER TABLE STO_GEOGCS_ ADD CONSTRAINT \
-  FK_GEOGCS_PRIME_MERIDIAN REFERENCES STO_PRIMEMS_ (PRIME_MERIDIAN)"
-  ,
-  (SChar*) "ALTER TABLE STO_GEOGCS_ ADD CONSTRAINT \
-  FK_GEOGCS_ANGULAR_UNIT REFERENCES X$_ANGULAR_UNITS_ (UNITS)"
-  ,
-*/
-/* INDEX OF STO_GEOCCS_ */
-        (SChar*) "CREATE UNIQUE INDEX STO_GEOCCS_GEOCCS_IDX ON \
-STO_GEOCCS_ (GEOCCS)"
-        ,
-/*
-  (SChar*) "ALTER TABLE STO_GEOCCS_ ADD CONSTRAINT \
-  FK_GEOCCS_DATUM REFERENCES STO_ DATUMS_ (DATUM)"
-  ,
-  (SChar*) "ALTER TABLE STO_GEOCCS_ ADD CONSTRAINT \
-  FK_GEOCCS_ELLIPSOID REFERENCES STO_ELLIPSOIDS_ (ELLIPSOID)"
-  ,
-  (SChar*) "ALTER TABLE STO_GEOCCS_ ADD CONSTRAINT \
-  FK_GEOCCS_PRIME_MERIDIAN REFERENCES STO_PRIMEMS_ (PRIME_MERIDIAN)"
-  ,
-  (SChar*) "ALTER TABLE STO_GEOCCS_ ADD CONSTRAINT \
-  FK_GEOCCS_LINEAR_UNIT REFERENCES X$_LINEAR_UNITS_ (UNITS)"
-  ,
-*/
-/* INDEX OF STO_DATUMS_ */
-        (SChar*) "CREATE UNIQUE INDEX STO_DATUMS_DATUM_IDX ON \
-STO_DATUMS_ (DATUM)"
-        ,
-/* INDEX OF STO_ELLIPSOIDS_ */
-        (SChar*) "CREATE UNIQUE INDEX STO_ELLIPSOIDS_ELLIPSOID_IDX ON \
-STO_ELLIPSOIDS_ (ELLIPSOID)"
-        ,
-/* INDEX OF STO_PRIMEMS_ */
-        (SChar*) "CREATE UNIQUE INDEX STO_PRIMEMS_PRIME_MERIDIAN_IDX ON \
-STO_PRIMEMS_ (PRIME_MERIDIAN)"
-        ,
-#endif
 
 /**************************************************
  * PROJ-1502 PARTITIONED DISK TABLE - INDEX CREATE
@@ -4423,7 +4400,7 @@ SYS_COMPRESSION_TABLES_ (TABLE_ID, COLUMN_ID, DIC_TABLE_ID)"
 "SYS_AUDIT_ALL_OPTS_ ( USER_ID, OBJECT_NAME )"
         ,
 
-/* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
+/* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
         (SChar*) "CREATE        INDEX SYS_CONSTRAINT_RELATED_INDEX1 ON "
 "SYS_CONSTRAINT_RELATED_ ( USER_ID )"
         ,
@@ -4610,6 +4587,15 @@ SYS_COMPRESSION_TABLES_ (TABLE_ID, COLUMN_ID, DIC_TABLE_ID)"
 (SChar *) "INSERT INTO SYS_SYNONYMS_ VALUES (NULL, "
 "VARCHAR'SET_MODULE', VARCHAR'SYSTEM_', VARCHAR'SET_MODULE', SYSDATE, SYSDATE )"
 ,
+
+/* PROJ-2422 srid */
+(SChar *)"INSERT INTO SYS_SYNONYMS_ VALUES ( NULL, "
+"VARCHAR'GEOMETRY_COLUMNS', VARCHAR'SYSTEM_', VARCHAR'SYS_GEOMETRY_COLUMNS_', SYSDATE, SYSDATE )"
+,
+(SChar *)"INSERT INTO SYS_SYNONYMS_ VALUES ( NULL, "
+"VARCHAR'SPATIAL_REF_SYS', VARCHAR'SYSTEM_', VARCHAR'USER_SRS_', SYSDATE, SYSDATE )"
+,
+
 /* The last item should be NULL */
         NULL    };
 
@@ -5289,6 +5275,15 @@ PASSWORD_REUSE_TIME, PASSWORD_REUSE_MAX, PASSWORD_REUSE_COUNT, PASSWORD_VERIFY_F
 USER_TYPE, DISABLE_TCP, CREATED, LAST_DDL_TIME \
 FROM DBA_USERS_; "
         ,
+        /* PROJ-2422 srid */
+        (SChar*)"CREATE VIEW SYS_GEOMETRY_COLUMNS_(F_TABLE_SCHEMA, F_TABLE_NAME, F_GEOMETRY_COLUMN, "
+        "  COORD_DIMENSION, SRID) "
+        "AS "
+        "SELECT U.USER_NAME, T.TABLE_NAME, C.COLUMN_NAME, G.COORD_DIMENSION, G.SRID "
+        "FROM SYSTEM_.SYS_USERS_ U, SYSTEM_.SYS_TABLES_ T, SYSTEM_.SYS_COLUMNS_ C, "
+        "  SYSTEM_.SYS_GEOMETRIES_ G "
+        "WHERE G.USER_ID = U.USER_ID AND G.TABLE_ID = T.TABLE_ID AND G.COLUMN_ID = C.COLUMN_ID"
+        ,
         NULL };
 
     SInt            i;
@@ -5296,8 +5291,6 @@ FROM DBA_USERS_; "
     smiStatement  * sDummySmiStmt;
     smiStatement    sSmiStmt;
     UInt            sStage = 0;
-    //PROJ-1677 DEQ
-    smSCN          sDummySCN;
 
     UInt            sSmiStmtFlag  = 0;
 
@@ -5343,7 +5336,7 @@ FROM DBA_USERS_; "
         IDE_TEST(sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
         sStage = 1;
 
-        IDE_TEST(aTrans->commit(&sDummySCN) != IDE_SUCCESS);
+        IDE_TEST(aTrans->commit() != IDE_SUCCESS);
     }
 
     /****************************************************/
@@ -5369,7 +5362,7 @@ FROM DBA_USERS_; "
     IDE_TEST(sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
 
     sStage = 1;
-    IDE_TEST(aTrans->commit(&sDummySCN) != IDE_SUCCESS);
+    IDE_TEST(aTrans->commit() != IDE_SUCCESS);
     
     /****************************************************/
     /* PHASE 3 : initialize meta module                 */
@@ -5397,7 +5390,7 @@ FROM DBA_USERS_; "
     IDE_TEST(sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
 
     sStage = 1;
-    IDE_TEST(aTrans->commit(&sDummySCN) != IDE_SUCCESS);
+    IDE_TEST(aTrans->commit() != IDE_SUCCESS);
 
     /****************************************************/
     /* PHASE 4 : create procedures                      */
@@ -5415,7 +5408,7 @@ FROM DBA_USERS_; "
               != IDE_SUCCESS );
 
     sStage = 1;
-    IDE_TEST(aTrans->commit(&sDummySCN) != IDE_SUCCESS);
+    IDE_TEST(aTrans->commit() != IDE_SUCCESS);
 
     /**************************************************************/
     /* PHASE 5 : INSERT DEFAULT VALUES                            */
@@ -5470,7 +5463,7 @@ FROM DBA_USERS_; "
 
         }
 
-        IDE_TEST(aTrans->commit(&sDummySCN) != IDE_SUCCESS);
+        IDE_TEST(aTrans->commit() != IDE_SUCCESS);
 
     }
 
@@ -5502,7 +5495,7 @@ FROM DBA_USERS_; "
             idlOS::abort();
         }
 
-        IDE_TEST(aTrans->commit(&sDummySCN) != IDE_SUCCESS);
+        IDE_TEST(aTrans->commit() != IDE_SUCCESS);
     }
 #endif
     
@@ -5533,7 +5526,7 @@ FROM DBA_USERS_; "
             idlOS::abort();
         }
 
-        IDE_TEST(aTrans->commit(&sDummySCN) != IDE_SUCCESS);
+        IDE_TEST(aTrans->commit() != IDE_SUCCESS);
     }
     
     // free the members of qcStatement
@@ -5633,177 +5626,17 @@ IDE_RC qcmCreate::executeDDL(
 IDE_RC qcmCreate::upgradeMeta( idvSQL * aStatistics,
                                SInt     aMinorVer )
 {
+    UInt            i;
     smiTrans        sTrans;
     smiStatement    sSmiStmt;
     smiStatement  * sDummySmiStmt = NULL;
     qcStatement     sStatement;
     UInt            sStage = 0;
-    //PROJ-1677 DEQ
-    smSCN           sDummySCN;
 
     iduMemory       sIduMem;
-
     UInt            sSmiStmtFlag  = 0;
-    UInt            i = 0;
 
-    // BUG-45571 Upgrade meta for authid clause of PSM
-    iduMemory       procBuildMem;
-
-    SChar         * sUpgradeVer1ToVer2[] = { 
-        (SChar*) "DROP TABLE SYS_DATABASE_"
-        ,
-        (SChar*) "CREATE TABLE SYS_DATABASE_ ( "                        
-                 "DB_NAME VARCHAR(40) FIXED, "                          
-                 "OWNER_DN VARCHAR(2048) FIXED, "                       
-                 "META_MAJOR_VER INTEGER, "                             
-                 "META_MINOR_VER INTEGER, "                             
-                 "META_PATCH_VER INTEGER )"
-        ,
-        (SChar*) "INSERT INTO SYS_DATABASE_ VALUES ( '%s', "            
-                 "'%s',"                                                
-                 QCM_META_MAJOR_STR_VER", " 
-                 QCM_META_MINOR_STR_VER", "
-                 QCM_META_PATCH_STR_VER" )" 
-        ,
-        (SChar*) "CREATE TABLE SYS_REPL_OLD_CHECKS_ ( "                 
-            "REPLICATION_NAME VARCHAR("QCM_META_NAME_LEN") FIXED, "     
-            "TABLE_OID BIGINT, "                                        
-            "CONSTRAINT_ID INTEGER, "                                   
-            "CHECK_NAME VARCHAR("QCM_META_NAME_LEN") FIXED, "           
-            "CONDITION VARCHAR(4000) VARIABLE ) "
-        ,
-        (SChar*) "CREATE TABLE SYS_REPL_OLD_CHECK_COLUMNS_ ( "          
-            "REPLICATION_NAME VARCHAR("QCM_META_NAME_LEN") FIXED, "     
-            "TABLE_OID BIGINT, "                                        
-            "CONSTRAINT_ID INTEGER, "                                   
-            "COLUMN_ID INTEGER ) "
-        ,
-        (SChar*) "CREATE UNIQUE INDEX SYS_REPLOLDCHECKS_INDEX1 ON "     
-            "SYS_REPL_OLD_CHECKS_ "                                     
-            "( REPLICATION_NAME, TABLE_OID, CONSTRAINT_ID )"            
-        ,
-        (SChar*) "CREATE UNIQUE INDEX SYS_REPLOLDCHECKCOLUMNS_INDEX1 ON "
-            "SYS_REPL_OLD_CHECK_COLUMNS_ "                             
-            "( REPLICATION_NAME, TABLE_OID, CONSTRAINT_ID, COLUMN_ID )" 
-        ,
-        NULL };
-
-    SChar         * sUpgradeVer2ToVer3[] = { 
-        (SChar*) "DROP TABLE SYS_DATABASE_"
-        ,
-        (SChar*) "CREATE TABLE SYS_DATABASE_ ( "                        
-                 "DB_NAME VARCHAR(40) FIXED, "                          
-                 "OWNER_DN VARCHAR(2048) FIXED, "                       
-                 "META_MAJOR_VER INTEGER, "                             
-                 "META_MINOR_VER INTEGER, "                             
-                 "META_PATCH_VER INTEGER )"
-        ,
-        (SChar*) "INSERT INTO SYS_DATABASE_ VALUES ( '%s', "            
-                 "'%s', "                                               
-                  QCM_META_MAJOR_STR_VER", "                            
-                  QCM_META_MINOR_STR_VER", "                            
-                  QCM_META_PATCH_STR_VER" )"                           
-        ,
-        (SChar*) "ALTER TABLE SYS_REPLICATIONS_ ADD COLUMN "            
-            "( APPLIER_INIT_BUFFER_SIZE BIGINT FIXED, REMOTE_XSN BIGINT FIXED )"
-        ,
-        (SChar*) "UPDATE SYS_REPLICATIONS_ SET APPLIER_INIT_BUFFER_SIZE = 0"
-        ,
-        (SChar*) "UPDATE SYS_REPLICATIONS_ SET REMOTE_XSN = '%"ID_INT64_FMT"'" 
-        , 
-        (SChar*) "ALTER TABLE SYS_REPLICATIONS_ ADD COLUMN "
-                 "( PEER_REPLICATION_NAME VARCHAR("QCM_META_NAME_LEN") FIXED )"
-        ,
-    	NULL };
-
-    // BUG-45571 Upgrade meta for authid clause of PSM
-    SChar         * sUpgradeVer3ToVer4[] = {
-        (SChar*) "DROP TABLE SYS_DATABASE_"
-        ,
-        (SChar*) "CREATE TABLE SYS_DATABASE_ ( "                        
-                 "DB_NAME VARCHAR(40) FIXED, "                          
-                 "OWNER_DN VARCHAR(2048) FIXED, "                       
-                 "META_MAJOR_VER INTEGER, "                             
-                 "META_MINOR_VER INTEGER, "                             
-                 "META_PATCH_VER INTEGER )"
-        ,
-        (SChar*) "INSERT INTO SYS_DATABASE_ VALUES ( '%s', "            
-                 "'%s',"                                                
-                 QCM_META_MAJOR_STR_VER", " 
-                 QCM_META_MINOR_STR_VER", "
-                 QCM_META_PATCH_STR_VER" )" 
-        ,
-        (SChar*) "ALTER TABLE SYS_PROCEDURES_ ADD COLUMN "
-                 "( AUTHID INTEGER FIXED DEFAULT 0 )"
-        ,
-        (SChar*) "ALTER TABLE SYS_PACKAGES_ ADD COLUMN "
-                 "( AUTHID INTEGER FIXED DEFAULT 0 )"
-        ,
-        NULL };
-
-    // PROJ-2689 downgrade meta
-    SChar         * sUpgradeVer4ToVer5[] = {
-        (SChar*) "DROP TABLE SYS_DATABASE_"
-        ,
-        (SChar*) "CREATE TABLE SYS_DATABASE_ ( "                        
-                 "DB_NAME VARCHAR(40) FIXED, "                          
-                 "OWNER_DN VARCHAR(2048) FIXED, "                       
-                 "META_MAJOR_VER INTEGER, "                             
-                 "META_MINOR_VER INTEGER, "                             
-                 "META_PATCH_VER INTEGER, "
-                 "PREV_META_MAJOR_VER INTEGER, "                             
-                 "PREV_META_MINOR_VER INTEGER, "                             
-                 "PREV_META_PATCH_VER INTEGER )"
-        ,
-        (SChar*) "INSERT INTO SYS_DATABASE_ VALUES ( '%s', "            
-                 "'%s',"                                                
-                 QCM_META_MAJOR_STR_VER", " 
-                 QCM_META_MINOR_STR_VER", "
-                 QCM_META_PATCH_STR_VER", "
-                 QCM_META_MAJOR_STR_VER", " 
-                 "%"ID_INT32_FMT", "
-                 QCM_META_PATCH_STR_VER" )"
-        ,
-        (SChar *)" CREATE OR REPLACE PROCEDURE SET_PREVMETAVER ( MAJOR IN INTEGER, MINOR IN INTEGER, PATCH IN INTEGER ) "
-            "AS "
-            "  v1 BOOLEAN;"
-            "BEGIN "
-            "  v1 := SP_SET_PREVMETAVER( MAJOR, MINOR, PATCH );"
-            "END; "
-            ,
-        NULL };
-
-    SChar         * sUpgradeVer5ToVer6[] = {
-        (SChar*) "DROP TABLE SYS_DATABASE_"
-        ,
-        (SChar*) "CREATE TABLE SYS_DATABASE_ ( "                        
-                 "DB_NAME VARCHAR(40) FIXED, "                          
-                 "OWNER_DN VARCHAR(2048) FIXED, "                       
-                 "META_MAJOR_VER INTEGER, "                             
-                 "META_MINOR_VER INTEGER, "                             
-                 "META_PATCH_VER INTEGER, "
-                 "PREV_META_MAJOR_VER INTEGER, "                             
-                 "PREV_META_MINOR_VER INTEGER, "                             
-                 "PREV_META_PATCH_VER INTEGER )"
-        ,
-        (SChar*) "INSERT INTO SYS_DATABASE_ VALUES ( '%s', "            
-                 "'%s',"                                                
-                 QCM_META_MAJOR_STR_VER", " 
-                 QCM_META_MINOR_STR_VER", "
-                 QCM_META_PATCH_STR_VER", "
-                 QCM_META_MAJOR_STR_VER", " 
-                 "%"ID_INT32_FMT", "
-                 QCM_META_PATCH_STR_VER" )"
-        ,
-        (SChar*) "ALTER TABLE SYS_REPL_HOSTS_ ADD COLUMN "            
-            "( CONN_TYPE VARCHAR(20) FIXED DEFAULT 'TCP', IB_LATENCY VARCHAR(10) FIXED DEFAULT 'N/A' )"
-        ,
-        (SChar*) "UPDATE SYS_REPL_HOSTS_ SET CONN_TYPE = 'UNIX_DOMAIN' WHERE HOST_IP = 'UNIX_DOMAIN'"
-        ,
-
-        NULL };
-
-    SChar         * sUpgradeVer6ToVer7[] = {
+    SChar * sUpgradeVer1ToVer2[] = {
         (SChar*) "DROP TABLE SYS_DATABASE_"
             ,
         (SChar*) "CREATE TABLE SYS_DATABASE_ ( "
@@ -5857,13 +5690,20 @@ IDE_RC qcmCreate::upgradeMeta( idvSQL * aStatistics,
             "( SYSTEM_.SYS_TABLE_PARTITIONS_.USER_ID = SYSTEM_.SYS_USERS_.USER_ID ) AND "
             "( SYSTEM_.SYS_REPL_OLD_ITEMS_.USER_NAME = SYSTEM_.SYS_USERS_.USER_NAME ) )"
             ,
+        (SChar*) "ALTER TABLE SYS_TABLES_ "
+            "ADD COLUMN ( USABLE CHAR(1) NOT NULL, SHARD_FLAG INTEGER NOT NULL )"
+            ,
+        (SChar*) "ALTER TABLE SYS_TABLE_PARTITIONS_ "
+            "ADD COLUMN ( PARTITION_USABLE CHAR(1) NOT NULL )"
+            ,
         NULL    };
+
     //-----------------------------------------------------------------
-    // ì—…ê·¸ë ˆì´ë“œì‹œ,
+    // ¾÷±×·¹ÀÌµå½Ã,
     //
-    // (1) ì•„ë˜ì™€ ê°™ì´ í•„ìš”í•œ sqlë¬¸ë“¤ì˜ ë°°ì—´ì„ ìƒì„±
+    // (1) ¾Æ·¡¿Í °°ÀÌ ÇÊ¿äÇÑ sql¹®µéÀÇ ¹è¿­À» »ı¼º
     //
-    //    ì˜ˆ)
+    //    ¿¹)
     //    SChar * sUpgradeVer5ToVer6[] = {
     //     (SChar*) "DROP TABLE SYS_DATABASE_"
     //     ,
@@ -5872,23 +5712,25 @@ IDE_RC qcmCreate::upgradeMeta( idvSQL * aStatistics,
     //               OWNER_DN VARCHAR(2048) FIXED,
     //               META_MAJOR_VER INTEGER,
     //               META_MINOR_VER INTEGER,
-    //               META_PATCH_VER INTEGER )"
+    //               META_PATCH_VER INTEGER,
+    //               PREV_META_MAJOR_VER INTEGER,
+    //               PREV_META_MINOR_VER INTEGER,
+    //               PREV_META_PATCH_VER INTEGER )"
     //     ,
     //     (SChar*) "INSERT INTO SYS_DATABASE_ VALUES ( NULL,
     //               '%s',
     //               "QCM_META_MAJOR_STR_VER",
     //               "QCM_META_MINOR_STR_VER",
+    //               "QCM_META_PATCH_STR_VER",
+    //               "QCM_META_MAJOR_STR_VER", 
+    //               "%"ID_INT32_FMT", "
     //               "QCM_META_PATCH_STR_VER" )"
-    //     ,
-    //     (SChar*) "ALTER TABLE SYS_PROCEDURES_
-    //               ADD COLUMN ( CREATED DATE,
-    //               LAST_COMPILED DATE )"
     //     ,
     //     /* The last item should be NULL */
     //     NULL    };
     //
-    // (2) ë°‘ ë¶€ë¶„ switch case ì—ì„œ,
-    //     upgradeí•˜ë ¤ëŠ” versionì—ì„œ (1)ì˜ sqlë¬¸ ì‹¤í–‰.
+    // (2) ¹Ø ºÎºĞ switch case ¿¡¼­,
+    //     upgradeÇÏ·Á´Â version¿¡¼­ (1)ÀÇ sql¹® ½ÇÇà.
     //
     //    switch ( aMinorVer )
     //    {
@@ -5898,7 +5740,7 @@ IDE_RC qcmCreate::upgradeMeta( idvSQL * aStatistics,
     //     case 2:
     //     case 3:
     //     case 4:
-    //         // ë²„ì „ 4ê¹Œì§€ ì§€ì›ë¶ˆê°€.
+    //         // ¹öÀü 4±îÁö Áö¿øºÒ°¡.
     //         IDE_RAISE( err_upgrade_meta_fail );
     //     case 5:
     //         for (i = 0; sUpgradeVer5ToVer6[i] != NULL; i++)
@@ -5907,7 +5749,7 @@ IDE_RC qcmCreate::upgradeMeta( idvSQL * aStatistics,
     //                 != IDE_SUCCESS );
     //             sStage = 3;
     //
-    //             /* runDDLForMETA ì˜ sInsDefaultValuesSql ì°¸ì¡°
+    //             /* runDDLForMETA ÀÇ sInsDefaultValuesSql ÂüÁ¶
     //              * especially treat when i equals 2,
     //              * for formatted string of SYS_DATABASE_
     //              */
@@ -5916,7 +5758,7 @@ IDE_RC qcmCreate::upgradeMeta( idvSQL * aStatistics,
     //                 SChar sInsSql[4096];
     //                 SChar sOwnerDN[4096];
     //                 
-    //                 /* ë°”ë¡œ 2ë²ˆ SQLì´
+    //                 /* ¹Ù·Î 2¹ø SQLÀÌ
     //                  *INSERT INTO SYS_DATABASE_ VALUES ( '%s','%s',
     //                  *  QCM_META_MAJOR_STR_VER", " 
     //                  *  QCM_META_MINOR_STR_VER", "
@@ -5924,22 +5766,22 @@ IDE_RC qcmCreate::upgradeMeta( idvSQL * aStatistics,
     //                  *  QCM_META_MAJOR_STR_VER", " 
     //                  *  "%"ID_INT32_FMT", "
     //                  *  QCM_META_PATCH_STR_VER" )"
-    //                  * ì´ë‹¤. ì¦‰ DBì˜ META ë²„ì „ì„ ì—…ê·¸ë ˆì´ë“œ ì‹œì¼œì•¼ í•˜ëŠ”ë°
-    //                  * SYS_DATABASE_ì˜ OwnerDNê³¼ DBNameì„ ì•Œ ìˆ˜ ì—†ë‹¤.
-    //                  * (ParseTreeê°€ êµ¬ì¶•ë˜ì§€ ì•ŠëŠ” metaUpgradeì˜ íŠ¹ì„±ìƒ
-    //                  *  Updateë¡œ ìœ„ ë°ì´í„°ë§Œ ë°”ê¾¸ëŠ” ê²ƒì´ ë¶ˆê°€ëŠ¥í•˜ë‹¤ )
-    //                  *  ë”°ë¼ì„œ ë”°ë¡œ ë°ì´í„°ë¥¼ ê°€ì ¸ì™€ì„œ Sqlì„ ìˆ˜í–‰í•œë‹¤.) */
+    //                  * ÀÌ´Ù. Áï DBÀÇ META ¹öÀüÀ» ¾÷±×·¹ÀÌµå ½ÃÄÑ¾ß ÇÏ´Âµ¥
+    //                  * SYS_DATABASE_ÀÇ OwnerDN°ú DBNameÀ» ¾Ë ¼ö ¾ø´Ù.
+    //                  * (ParseTree°¡ ±¸ÃàµÇÁö ¾Ê´Â metaUpgradeÀÇ Æ¯¼º»ó
+    //                  *  Update·Î À§ µ¥ÀÌÅÍ¸¸ ¹Ù²Ù´Â °ÍÀÌ ºÒ°¡´ÉÇÏ´Ù )
+    //                  *  µû¶ó¼­ µû·Î µ¥ÀÌÅÍ¸¦ °¡Á®¿Í¼­ SqlÀ» ¼öÇàÇÑ´Ù.) */
     //                  * //PROJ-2689 
-    //                  *  ë©”íƒ€ ì—…ê·¸ë ˆì´ë“œ ë  ê²½ìš°, ì´ì „ ë©”íƒ€ ë²„ì „ì„ PREV_ë¡œ
-    //                  *  ì €ì¥í•´ì•¼í•œë‹¤.  */
+    //                  *  ¸ŞÅ¸ ¾÷±×·¹ÀÌµå µÉ °æ¿ì, ÀÌÀü ¸ŞÅ¸ ¹öÀüÀ» PREV_·Î
+    //                  *  ÀúÀåÇØ¾ßÇÑ´Ù.  */
     //
-    //                 // OwnerDN íšë“
+    //                 // OwnerDN È¹µæ
     //                 IDE_TEST( qcmDatabase::checkDatabase( &sSmiStmt,
     //                                                       (SChar*)sOwnerDN,
     //                                                       ID_SIZEOF(sOwnerDN) )
     //                           != IDE_SUCCESS );
     //                 
-    //                 // DBNameíšë“, ì—…ë°ì´íŠ¸ ì´ì „ì˜ ë©”íƒ€ë²„ì „ ì €ì¥
+    //                 // DBNameÈ¹µæ, ¾÷µ¥ÀÌÆ® ÀÌÀüÀÇ ¸ŞÅ¸¹öÀü ÀúÀå
     //                 idlOS::snprintf( sInsSql, 
     //                                  ID_SIZEOF(sInsSql), 
     //                                  sUpgradeVer5ToVer6[i], 
@@ -6013,34 +5855,38 @@ IDE_RC qcmCreate::upgradeMeta( idvSQL * aStatistics,
     {
         // have NO break statement
         case 0:
-            // upgrate from minor version 0 to minor version 1
+            // upgrade from minor version 0 to minor version 1
             /* fall through */
         case 1:
-
-            // upgrate from minor version 1 to minor version 2
-            //
-            for ( i = 0; sUpgradeVer1ToVer2[i] != NULL; i++ )
+            // upgrade from minor version 1 to minor version 2
+            for (i = 0; sUpgradeVer1ToVer2[i] != NULL; i++)
             {
-                IDE_TEST( sSmiStmt.begin( aStatistics,
-                                          sDummySmiStmt,
-                                          sSmiStmtFlag )
+                IDE_TEST( sSmiStmt.begin(aStatistics, 
+                                         sDummySmiStmt, 
+                                         sSmiStmtFlag)
                           != IDE_SUCCESS );
                 sStage = 3;
 
-                if ( i == 2 )
+                /* runDDLForMETA ÀÇ sInsDefaultValuesSql ÂüÁ¶
+                 * especially treat when i equals 2,
+                 * for formatted string of SYS_DATABASE_
+                 */
+                if( i == 2 )
                 {
-                    SChar sInsSql[4096] = { 0, };
-                    SChar sOwnerDN[4096] = { 0, };
+                    SChar sInsSql[4096];
+                    SChar sOwnerDN[4096];
 
+                    // OwnerDN È¹µæ
                     IDE_TEST( qcmDatabase::checkDatabase( &sSmiStmt,
                                                           (SChar*)sOwnerDN,
                                                           ID_SIZEOF(sOwnerDN) )
                               != IDE_SUCCESS );
 
-                    idlOS::snprintf( sInsSql,
-                                     ID_SIZEOF(sInsSql),
-                                     sUpgradeVer1ToVer2[i],
-                                     smiGetDBName(), sOwnerDN );
+                    // DBNameÈ¹µæ, ¾÷µ¥ÀÌÆ® ÀÌÀüÀÇ ¸ŞÅ¸¹öÀü ÀúÀå
+                    idlOS::snprintf( sInsSql, 
+                                     ID_SIZEOF(sInsSql), 
+                                     sUpgradeVer1ToVer2[i], 
+                                     smiGetDBName(), sOwnerDN, aMinorVer );
 
                     IDE_TEST( executeDDL( &sStatement,
                                           sInsSql )
@@ -6052,262 +5898,13 @@ IDE_RC qcmCreate::upgradeMeta( idvSQL * aStatistics,
                                           sUpgradeVer1ToVer2[i] )
                               != IDE_SUCCESS );
                 }
-
                 sStage = 2;
-                IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
 
-                ideLog::log( IDE_QP_0, "[QCM_META_UPGRADE] UpgradeMeta %s\n",
-                             sUpgradeVer1ToVer2[i] );
-            }
-
-            /* fall through */
-        case 2:
-            // upgrate from minor version 2 to minor version 3
-            //
-            for ( i = 0; sUpgradeVer2ToVer3[i] != NULL; i++ )
-            {
-                IDE_TEST( sSmiStmt.begin( aStatistics,
-                                          sDummySmiStmt,
-                                          sSmiStmtFlag )
+                IDE_TEST( sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS)
                           != IDE_SUCCESS );
-                sStage = 3;
-
-                if ( i == 2 )
-                {
-                    SChar sInsSql[4096] = { 0, };
-                    SChar sOwnerDN[4096] = { 0, };
-
-                    IDE_TEST( qcmDatabase::checkDatabase( &sSmiStmt,
-                                                          (SChar*)sOwnerDN,
-                                                          ID_SIZEOF(sOwnerDN) )
-                              != IDE_SUCCESS );
-
-                    idlOS::snprintf( sInsSql,
-                                     ID_SIZEOF(sInsSql),
-                                     sUpgradeVer2ToVer3[i],
-                                     smiGetDBName(), sOwnerDN );
-
-                    IDE_TEST( executeDDL( &sStatement,
-                                          sInsSql )
-                              != IDE_SUCCESS );
-                }
-                else if ( i == 5 )
-                {
-                    SChar sInsSql[4096] = { 0, };
-
-                    idlOS::snprintf( sInsSql,
-                                     ID_SIZEOF(sInsSql),
-                                     sUpgradeVer2ToVer3[i],
-                                     SM_SN_NULL );
-
-                    IDE_TEST( executeDDL( &sStatement,
-                                          sInsSql )
-                              != IDE_SUCCESS );
-                }
-                else
-                {
-                    IDE_TEST( executeDDL( &sStatement,
-                                          sUpgradeVer2ToVer3[i] )
-                              != IDE_SUCCESS );
-                }
-
-                sStage = 2;
-                IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
-
-                ideLog::log( IDE_QP_0, "[QCM_META_UPGRADE] UpgradeMeta %s\n",
-                             sUpgradeVer2ToVer3[i] );
-            }
-
-            /* fall through */
-        case 3:
-            // BUG-45571 Upgrade meta for authid clause of PSM
-            for ( i = 0; sUpgradeVer3ToVer4[i] != NULL; i++ )
-            {
-                IDE_TEST( sSmiStmt.begin( aStatistics,
-                                          sDummySmiStmt,
-                                          sSmiStmtFlag )
-                          != IDE_SUCCESS );
-                sStage = 3;
-
-                if ( i == 2 )
-                {
-                    SChar sInsSql[4096] = { 0, };
-                    SChar sOwnerDN[4096] = { 0, };
-
-                    IDE_TEST( qcmDatabase::checkDatabase( &sSmiStmt,
-                                                          (SChar*)sOwnerDN,
-                                                          ID_SIZEOF(sOwnerDN) )
-                              != IDE_SUCCESS );
-
-                    idlOS::snprintf( sInsSql,
-                                     ID_SIZEOF(sInsSql),
-                                     sUpgradeVer3ToVer4[i],
-                                     smiGetDBName(), sOwnerDN );
-
-                    IDE_TEST( executeDDL( &sStatement,
-                                          sInsSql )
-                              != IDE_SUCCESS );
-                }
-                else
-                {
-                    IDE_TEST( executeDDL( &sStatement,
-                                          sUpgradeVer3ToVer4[i] )
-                              != IDE_SUCCESS );
-                }
-
-                sStage = 2;
-                IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
-
-                ideLog::log( IDE_QP_0, "[QCM_META_UPGRADE] UpgradeMeta %s\n",
-                             sUpgradeVer3ToVer4[i] );
-            }
-
-            // BUG-45571 Upgrade meta for authid clause of PSM
-            // ProcObjectInfoì™€ procInfoê°€ í•„ìš”í•˜ì—¬ PSMì„ ë¯¸ë¦¬ load í•œë‹¤.
-            // Built-in packageëŠ” ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ ê³ ë ¤í•˜ì§€ ì•ŠëŠ”ë‹¤.
-            procBuildMem.init(IDU_MEM_QCI);
-
-            IDE_TEST( qsx::loadAllProcForMetaUpgrade( &sSmiStmt, &procBuildMem )
-                      != IDE_SUCCESS );
-
-            procBuildMem.destroy();
-
-            IDE_TEST( createBuiltInPSM( aStatistics, &sStatement, &sSmiStmt, sDummySmiStmt )
-                      != IDE_SUCCESS );
-
-            /* fall through */
-        case 4:
-            // PROJ-2689 downgrade meta
-            // upgrate from minor version 4 to minor version 5
-            for ( i = 0; sUpgradeVer4ToVer5[i] != NULL; i++ )
-            {
-                IDE_TEST( sSmiStmt.begin( aStatistics,
-                                          sDummySmiStmt,
-                                          sSmiStmtFlag )
-                          != IDE_SUCCESS );
-                sStage = 3;
-
-                if ( i == 2 )
-                {
-                    SChar sInsSql[4096] = { 0, };
-                    SChar sOwnerDN[4096] = { 0, };
-
-                    IDE_TEST( qcmDatabase::checkDatabase( &sSmiStmt,
-                                                          (SChar*)sOwnerDN,
-                                                          ID_SIZEOF(sOwnerDN) )
-                              != IDE_SUCCESS );
-
-                    idlOS::snprintf( sInsSql,
-                                     ID_SIZEOF(sInsSql),
-                                     sUpgradeVer4ToVer5[i],
-                                     smiGetDBName(), sOwnerDN, aMinorVer );
-
-                    IDE_TEST( executeDDL( &sStatement,
-                                          sInsSql )
-                              != IDE_SUCCESS );
-                }
-                else
-                {
-                    IDE_TEST( executeDDL( &sStatement,
-                                          sUpgradeVer4ToVer5[i] )
-                              != IDE_SUCCESS );
-                }
-
-                sStage = 2;
-                IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
-
-                ideLog::log( IDE_QP_0, "[QCM_META_UPGRADE] UpgradeMeta %s\n",
-                             sUpgradeVer4ToVer5[i] );
-            }
-
-            /* fall through */
-        case 5:
-            // upgrate from minor version 5 to minor version 6
-            // BUG-45984 IB support on Replication
-            for ( i = 0; sUpgradeVer5ToVer6[i] != NULL; i++ )
-            {
-                IDE_TEST( sSmiStmt.begin( aStatistics,
-                                          sDummySmiStmt,
-                                          sSmiStmtFlag )
-                          != IDE_SUCCESS );
-                sStage = 3;
-
-                if ( i == 2 )
-                {
-                    SChar sInsSql[4096] = { 0, };
-                    SChar sOwnerDN[4096] = { 0, };
-
-                    IDE_TEST( qcmDatabase::checkDatabase( &sSmiStmt,
-                                                          (SChar*)sOwnerDN,
-                                                          ID_SIZEOF(sOwnerDN) )
-                              != IDE_SUCCESS );
-
-                    idlOS::snprintf( sInsSql,
-                                     ID_SIZEOF(sInsSql),
-                                     sUpgradeVer5ToVer6[i],
-                                     smiGetDBName(), sOwnerDN, aMinorVer );
-
-                    IDE_TEST( executeDDL( &sStatement,
-                                          sInsSql )
-                              != IDE_SUCCESS );
-                }
-                else
-                {
-                    IDE_TEST( executeDDL( &sStatement,
-                                          sUpgradeVer5ToVer6[i] )
-                              != IDE_SUCCESS );
-                }
-
-                sStage = 2;
-                IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
-
-                ideLog::log( IDE_QP_0, "[QCM_META_UPGRADE] UpgradeMeta %s\n",
-                             sUpgradeVer5ToVer6[i] );
-            }
-
-            /* fall through */
-        case 6:
-            // upgrate from minor version 6 to minor version 7
-            // BUG-46252 Partition Merge / Split / Replace DDL asynchronization support
-            for ( i = 0; sUpgradeVer6ToVer7[i] != NULL; i++ )
-            {
-                IDE_TEST( sSmiStmt.begin( aStatistics,
-                                          sDummySmiStmt,
-                                          sSmiStmtFlag )
-                          != IDE_SUCCESS );
-                sStage = 3;
-
-                if ( i == 2 )
-                {
-                    SChar sInsSql[4096] = { 0, };
-                    SChar sOwnerDN[4096] = { 0, };
-
-                    IDE_TEST( qcmDatabase::checkDatabase( &sSmiStmt,
-                                                          (SChar*)sOwnerDN,
-                                                          ID_SIZEOF(sOwnerDN) )
-                              != IDE_SUCCESS );
-
-                    idlOS::snprintf( sInsSql, 
-                                     ID_SIZEOF(sInsSql), 
-                                     sUpgradeVer6ToVer7[i], 
-                                     smiGetDBName(), sOwnerDN, aMinorVer );
-
-                    IDE_TEST( executeDDL( &sStatement,
-                                          sInsSql )
-                              != IDE_SUCCESS );
-                }
-                else
-                {
-                    IDE_TEST( executeDDL( &sStatement,
-                                          sUpgradeVer6ToVer7[i] )
-                              != IDE_SUCCESS );
-                }
-
-                sStage = 2;
-                IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
-
-                ideLog::log( IDE_QP_0, "[QCM_META_UPGRADE] UpgradeMeta %s\n",
-                             sUpgradeVer6ToVer7[i] );
+                sStage = 1;
+                ideLog::log(IDE_QP_0, "[QCM_META_UPGRADE] UpgradeMeta %s\n",
+                            sUpgradeVer1ToVer2[i]);
             }
             /* fall through */
         default:
@@ -6316,7 +5913,7 @@ IDE_RC qcmCreate::upgradeMeta( idvSQL * aStatistics,
 
     // transaction commit
     sStage = 1;
-    IDE_TEST( sTrans.commit(&sDummySCN) != IDE_SUCCESS );
+    IDE_TEST( sTrans.commit() != IDE_SUCCESS );
 
     ideLog::log(IDE_QP_0,"[QCM_META_UPGRADE] TRANSACTION COMMIT SUCCESS\n");
 
@@ -6348,7 +5945,7 @@ IDE_RC qcmCreate::upgradeMeta( idvSQL * aStatistics,
 }
 
 /*
-    Meta Tableì˜ SM Flagë¥¼ ì´ˆê¸°í™” í•œë‹¤.
+    Meta TableÀÇ SM Flag¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
  */
 IDE_RC qcmCreate::initMetaTableFlag( smiStatement     * aSmiStmt )
 {
@@ -6364,40 +5961,40 @@ IDE_RC qcmCreate::initMetaTableFlag( smiStatement     * aSmiStmt )
     
 
 /*
-   [ Meta Tableì˜ Log Flush Flagë¥¼ ëˆë‹¤. ]
+   [ Meta TableÀÇ Log Flush Flag¸¦ ²ö´Ù. ]
 
-   => Create Databaseë„ì¤‘ì—ë§Œ ë¶ˆë¦¬ìš´ë‹¤.
+   => Create DatabaseµµÁß¿¡¸¸ ºÒ¸®¿î´Ù.
 
-   ** TASK-2401 Disk/Memory í…Œì´ë¸”ì˜ Logë¶„ë¦¬ **
-   Meta Tableì— ëŒ€í•´ Log Flushì—¬ë¶€ ê²°ì •
+   ** TASK-2401 Disk/Memory Å×ÀÌºíÀÇ LogºĞ¸® **
+   Meta Table¿¡ ´ëÇØ Log Flush¿©ºÎ °áÁ¤
 
-   LFG=2ë¡œ ì„¤ì •ëœ ê²½ìš° Hybrid Transactionì´ Commití•  ê²½ìš°
-   Dependentí•œ LFGì— ëŒ€í•´ Flushë¥¼ í•˜ì—¬ì•¼ í•œë‹¤.
+   LFG=2·Î ¼³Á¤µÈ °æ¿ì Hybrid TransactionÀÌ CommitÇÒ °æ¿ì
+   DependentÇÑ LFG¿¡ ´ëÇØ Flush¸¦ ÇÏ¿©¾ß ÇÑ´Ù.
 
-   ì´ë•Œ Disk Tableì˜ Validationê³¼ì •ì—ì„œ Meta Tableì„ ì ‘ê·¼í•˜ê²Œ ë˜ì–´
-   í•­ìƒ Hybrid Transactionìœ¼ë¡œ ë¶„ë¥˜ë˜ëŠ” ë¬¸ì œë¥¼ í•´ê²°í•˜ê¸° ìœ„í•œ Flagì´ë‹¤.
+   ÀÌ¶§ Disk TableÀÇ Validation°úÁ¤¿¡¼­ Meta TableÀ» Á¢±ÙÇÏ°Ô µÇ¾î
+   Ç×»ó Hybrid TransactionÀ¸·Î ºĞ·ùµÇ´Â ¹®Á¦¸¦ ÇØ°áÇÏ±â À§ÇÑ FlagÀÌ´Ù.
    
-   => ë¬¸ì œì  :
-      Disk Tableì— ëŒ€í•œ DMLì‹œ Validationê³¼ì •ì—ì„œ
-      Tableì˜ Meta Tableì„ ì°¸ì¡°í•˜ê²Œ ëœë‹¤
-      ê·¸ëŸ°ë° Meta Tableì€ Memory Tableì´ê¸° ë•Œë¬¸ì—,
-      Memory Table(Meta)ì„ ì½ê³  Disk Tableì— DMLì„ í•˜ê²Œ ë˜ë©´
-      Hybrid Transactionìœ¼ë¡œ ë¶„ë¥˜ê°€ ë˜ì–´
-      Memory ë¡œê·¸ê°€ í•­ìƒ Flushë˜ëŠ” ë¬¸ì œê°€ ë°œìƒí•œë‹¤.
+   => ¹®Á¦Á¡ :
+      Disk Table¿¡ ´ëÇÑ DML½Ã Validation°úÁ¤¿¡¼­
+      TableÀÇ Meta TableÀ» ÂüÁ¶ÇÏ°Ô µÈ´Ù
+      ±×·±µ¥ Meta TableÀº Memory TableÀÌ±â ¶§¹®¿¡,
+      Memory Table(Meta)À» ÀĞ°í Disk Table¿¡ DMLÀ» ÇÏ°Ô µÇ¸é
+      Hybrid TransactionÀ¸·Î ºĞ·ù°¡ µÇ¾î
+      Memory ·Î±×°¡ Ç×»ó FlushµÇ´Â ¹®Á¦°¡ ¹ß»ıÇÑ´Ù.
       
-      => í•´ê²°ì±… :
-        Meta Tableì„ ì½ëŠ” ê²½ìš° Hybrid Transactionìœ¼ë¡œ ë¶„ë¥˜í•˜ì§€ ì•ŠëŠ” ëŒ€ì‹ 
-        Meta Tableì˜ ë³€ê²½ì‹œì— Memory Logë¥¼ Flushí•˜ë„ë¡ í•œë‹¤.
+      => ÇØ°áÃ¥ :
+        Meta TableÀ» ÀĞ´Â °æ¿ì Hybrid TransactionÀ¸·Î ºĞ·ùÇÏÁö ¾Ê´Â ´ë½Å
+        Meta TableÀÇ º¯°æ½Ã¿¡ Memory Log¸¦ FlushÇÏµµ·Ï ÇÑ´Ù.
       
-   => ë˜ë‹¤ë¥¸ ë¬¸ì œì  :
-      Meta Tableì¤‘ Replicationì˜ XSNê³¼ ê°™ì´ DMLê³¼ ê´€ê³„ì—†ì´ ë¹ˆë²ˆí•˜ê²Œ
-      ìˆ˜ì •ë˜ëŠ” Meta Tableì˜ ê²½ìš° ë§¤ë²ˆ Logë¥¼ Flushí•  ê²½ìš° ì„±ëŠ¥ì €í•˜ë°œìƒ
+   => ¶Ç´Ù¸¥ ¹®Á¦Á¡ :
+      Meta TableÁß ReplicationÀÇ XSN°ú °°ÀÌ DML°ú °ü°è¾øÀÌ ºó¹øÇÏ°Ô
+      ¼öÁ¤µÇ´Â Meta TableÀÇ °æ¿ì ¸Å¹ø Log¸¦ FlushÇÒ °æ¿ì ¼º´ÉÀúÇÏ¹ß»ı
       
-      => í•´ê²°ì±… :
-         Meta Tableë§ˆë‹¤ ë³€ê²½ì´ ë˜ì—ˆì„ ë•Œ Logë¥¼ Flushí• ì§€ ì—¬ë¶€ë¥¼
-         Flagë¡œ ë‘”ë‹¤.
-         ì´ Flagê°€ ì¼œì ¸ ìˆëŠ” ê²½ìš°ì—ë§Œ Meta Tableë³€ê²½í•œ Transactionì˜
-         Commitì‹œì— ë¡œê·¸ë¥¼ Flushí•˜ë„ë¡ í•œë‹¤.
+      => ÇØ°áÃ¥ :
+         Meta Table¸¶´Ù º¯°æÀÌ µÇ¾úÀ» ¶§ Log¸¦ FlushÇÒÁö ¿©ºÎ¸¦
+         Flag·Î µĞ´Ù.
+         ÀÌ Flag°¡ ÄÑÁ® ÀÖ´Â °æ¿ì¿¡¸¸ Meta Tableº¯°æÇÑ TransactionÀÇ
+         Commit½Ã¿¡ ·Î±×¸¦ FlushÇÏµµ·Ï ÇÑ´Ù.
  */
 IDE_RC qcmCreate::turnOffMetaTableLogFlushFlag( smiStatement * aSmiStmt )
 {
@@ -6419,7 +6016,7 @@ IDE_RC qcmCreate::turnOffMetaTableLogFlushFlag( smiStatement * aSmiStmt )
     {
         sTableName = sTableName4NoFlush[i];
 
-        // Tableì˜ ì´ë¦„ìœ¼ë¡œë¶€í„° Table Handleì„ ì•Œì•„ë‚¸ë‹¤
+        // TableÀÇ ÀÌ¸§À¸·ÎºÎÅÍ Table HandleÀ» ¾Ë¾Æ³½´Ù
         IDE_TEST( qcm::getTableHandleByName( aSmiStmt,
                                              QC_SYSTEM_USER_ID,
                                              (UChar*) sTableName,
@@ -6428,7 +6025,7 @@ IDE_RC qcmCreate::turnOffMetaTableLogFlushFlag( smiStatement * aSmiStmt )
                                              & sTableSCN )
                   != IDE_SUCCESS );
 
-        // Meta Tableì˜ Log Flush Flagë¥¼ ëˆë‹¤.
+        // Meta TableÀÇ Log Flush Flag¸¦ ²ö´Ù.
         IDE_TEST(smiTable::alterTableFlag(
                      aSmiStmt,
                      sTableHandle,
@@ -7387,22 +6984,18 @@ END"
 IDE_RC qcmCreate::downgradeMeta( idvSQL * aStatistics,
                                  SInt     aPrevMinorVer )
 {
+    UInt            i;
     smiTrans        sTrans;
     smiStatement    sSmiStmt;
     smiStatement  * sDummySmiStmt = NULL;
     qcStatement     sStatement;
     UInt            sStage = 0;
-    //PROJ-1677 DEQ
-    smSCN           sDummySCN;
 
     iduMemory       sIduMem;
 
     UInt            sSmiStmtFlag  = 0;
-    UInt            i = 0;
 
-    iduMemory       sProcBuildMem;
-
-    SChar         * sDowngradeVer7ToVer6[] = {
+    SChar * sDowngradeVer2ToVer1[] = {
         (SChar*) "DROP TABLE SYS_DATABASE_"
             ,
         (SChar*) "CREATE TABLE SYS_DATABASE_ ( "
@@ -7447,55 +7040,20 @@ IDE_RC qcmCreate::downgradeMeta( idvSQL * aStatistics,
         (SChar*) "ALTER TABLE SYS_REPLICATIONS_ DROP COLUMN ( "
             "REMOTE_LAST_DDL_XSN )"
             ,
+        (SChar*) "ALTER TABLE SYS_TABLES_ DROP COLUMN ( "
+            "USABLE, "
+            "SHARD_FLAG )"
+            ,
+        (SChar*) "ALTER TABLE SYS_TABLE_PARTITIONS_ DROP COLUMN ( "
+            "PARTITION_USABLE )"
+            ,
         NULL    };
-
-    SChar         * sDowngradeVer5ToVer4[] = {
-        (SChar*) "DROP TABLE SYS_DATABASE_"
-            ,
-        (SChar*) "CREATE TABLE SYS_DATABASE_ ( "                        
-            "DB_NAME VARCHAR(40) FIXED, "                          
-            "OWNER_DN VARCHAR(2048) FIXED, "                       
-            "META_MAJOR_VER INTEGER, "                             
-            "META_MINOR_VER INTEGER, "                             
-            "META_PATCH_VER INTEGER )"
-            ,
-        (SChar*) "INSERT INTO SYS_DATABASE_ VALUES ( '%s', "            
-            "'%s',"                                                
-            QCM_META_MAJOR_STR_VER", " 
-            "%"ID_INT32_FMT", "
-            QCM_META_PATCH_STR_VER" )" 
-            ,
-        (SChar*) "DROP PROCEDURE SET_PREVMETAVER"
-            ,
-        NULL };
-
-    SChar         * sDowngradeVer6ToVer5[] = {
-        (SChar*) "DROP TABLE SYS_DATABASE_"
-            ,
-        (SChar*) "CREATE TABLE SYS_DATABASE_ ( "                        
-            "DB_NAME VARCHAR(40) FIXED, "                          
-            "OWNER_DN VARCHAR(2048) FIXED, "                       
-            "META_MAJOR_VER INTEGER, "                             
-            "META_MINOR_VER INTEGER, "                             
-            "META_PATCH_VER INTEGER )"
-            ,
-        (SChar*) "INSERT INTO SYS_DATABASE_ VALUES ( '%s', "            
-            "'%s',"                                                
-            QCM_META_MAJOR_STR_VER", " 
-            "%"ID_INT32_FMT", "
-            QCM_META_PATCH_STR_VER" )" 
-            ,
-        (SChar*) "ALTER TABLE SYS_REPL_HOSTS_ DROP COLUMN CONN_TYPE"
-            ,
-        (SChar*) "ALTER TABLE SYS_REPL_HOSTS_ DROP COLUMN IB_LATENCY"
-            ,
-        NULL };
 
     //---------------------------------------------------
     // PROJ-2689 downgrade meta
     //
-    // ë‹¤ìš´ê·¸ë ˆì´ë“œ ì‹œ,
-    // (1) ì•„ë˜ì™€ ê°™ì´ í•„ìš”í•œ sqlë¬¸ë“¤ì˜ ë°°ì—´ì„ ìƒì„±
+    // ´Ù¿î±×·¹ÀÌµå ½Ã,
+    // (1) ¾Æ·¡¿Í °°ÀÌ ÇÊ¿äÇÑ sql¹®µéÀÇ ¹è¿­À» »ı¼º
     //  
     //     SChar         * sDowngradeVer6ToVer5[] = {
     //         (SChar*) "DROP TABLE SYS_DATABASE_"
@@ -7519,11 +7077,9 @@ IDE_RC qcmCreate::downgradeMeta( idvSQL * aStatistics,
     //                  "%"ID_INT32_FMT", "
     //                  QCM_META_PATCH_STR_VER" )"
     //         ,
-    //         (SChar*) "DROP PROCEDURE SET_PREVMETAVER"
-    //         ,
     //         NULL };
     //  
-    //     qcmCreate::upgradeMetaì™€ ìƒë°˜ë˜ëŠ” SQLêµ¬ë¬¸ ì‘ì„±
+    //     qcmCreate::upgradeMeta¿Í »ó¹İµÇ´Â SQL±¸¹® ÀÛ¼º
     //     EX) 
     //     upgrade meta SQL                    | downgrade meta SQL
     //     ----------------------------------------------------------------------
@@ -7536,13 +7092,13 @@ IDE_RC qcmCreate::downgradeMeta( idvSQL * aStatistics,
     //      CREATE PROCEDURE ...;              | DROP PROCEDURE ...;   // built-in procedure
     //  
     //     CAUTION!!!!!!!)
-    //     1. upgrade meta SQLì— Drop TABLE / ALTER TABLE .. DROP COLUMN .. ê³¼ ê°™ì€ êµ¬ë¬¸ì€ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
-    //         ì‚¬ìš©í•˜ì§€ì•ŠëŠ” ë©”íƒ€(ì»¬ëŸ¼ ë˜ëŠ” í…Œì´ë¸”)ì¸ ê²½ìš°ì— í•œë²ˆì— ì œê±°í•œ í›„, majorë²„ì „ìœ¼ë¡œ ì˜¬ë ¤ì•¼í•œë‹¤.
-    //     2. upgrade meta SQLì— DELETE / TRUNCATE ì™€ ê°™ì´ ë©”íƒ€ì˜ ë°ì´í„°ë¥¼ ì œê±°í•˜ëŠ” êµ¬ë¬¸ì˜ ì‚¬ìš©ì„ ìì œí•´ì•¼í•œë‹¤.
-    //         ë§Œì•½ ë‹¤ìš´ê·¸ë ˆì´ë“œê°€ ê°€ëŠ¥í•˜ë‹¤ê³  íŒë‹¨ë˜ëŠ” ê²½ìš°ì—ë§Œ ì‚¬ìš© í•  ìˆ˜ ìˆë‹¤.
+    //     1. upgrade meta SQL¿¡ Drop TABLE / ALTER TABLE .. DROP COLUMN .. °ú °°Àº ±¸¹®Àº »ç¿ëÇÒ ¼ö ¾ø´Ù.
+    //         »ç¿ëÇÏÁö¾Ê´Â ¸ŞÅ¸(ÄÃ·³ ¶Ç´Â Å×ÀÌºí)ÀÎ °æ¿ì¿¡ ÇÑ¹ø¿¡ Á¦°ÅÇÑ ÈÄ, major¹öÀüÀ¸·Î ¿Ã·Á¾ßÇÑ´Ù.
+    //     2. upgrade meta SQL¿¡ DELETE / TRUNCATE ¿Í °°ÀÌ ¸ŞÅ¸ÀÇ µ¥ÀÌÅÍ¸¦ Á¦°ÅÇÏ´Â ±¸¹®ÀÇ »ç¿ëÀ» ÀÚÁ¦ÇØ¾ßÇÑ´Ù.
+    //         ¸¸¾à ´Ù¿î±×·¹ÀÌµå°¡ °¡´ÉÇÏ´Ù°í ÆÇ´ÜµÇ´Â °æ¿ì¿¡¸¸ »ç¿ë ÇÒ ¼ö ÀÖ´Ù.
     //  
-    // (2) ë°‘ ë¶€ë¶„ switch case ì—ì„œ,
-    //     downgradeí•˜ë ¤ëŠ” versionì—ì„œ (1)ì˜ sqlë¬¸ ì‹¤í–‰
+    // (2) ¹Ø ºÎºĞ switch case ¿¡¼­,
+    //     downgradeÇÏ·Á´Â version¿¡¼­ (1)ÀÇ sql¹® ½ÇÇà
     //  
     //     switch ( QCM_META_MINOR_VER )
     //     {
@@ -7563,26 +7119,16 @@ IDE_RC qcmCreate::downgradeMeta( idvSQL * aStatistics,
     //                                                           (SChar*)sOwnerDN,
     //                                                           ID_SIZEOF(sOwnerDN) )
     //                               != IDE_SUCCESS );
-    //                     /* ë‹¤ìš´ê·¸ë ˆì´ë“œì‹œ, SYS_DATABASE_.PREV_META_MINOR_VERê°’ì€
-    //                      * aPrevMinorVer ì´ì—¬ì•¼í•œë‹¤. 
-    //                      * ì´í›„ ë©”íƒ€ ë‹¤ìš´ê·¸ë ˆì´ë“œ ë  ìˆ˜ ì—†ë„ë¡ í•´ì•¼í•˜ê¸°
-    //                      * ë•Œë¬¸ì´ë‹¤. */
+    //                     /* ´Ù¿î±×·¹ÀÌµå½Ã, SYS_DATABASE_.PREV_META_MINOR_VER°ªÀº
+    //                      * aPrevMinorVer ÀÌ¿©¾ßÇÑ´Ù. 
+    //                      * ÀÌÈÄ ¸ŞÅ¸ ´Ù¿î±×·¹ÀÌµå µÉ ¼ö ¾øµµ·Ï ÇØ¾ßÇÏ±â
+    //                      * ¶§¹®ÀÌ´Ù. */
     //                     idlOS::snprintf( sInsSql,
     //                                      ID_SIZEOF(sInsSql),
     //                                      sDowngradeVer5ToVer4[i],
     //                                      smiGetDBName(), sOwnerDN, aPrevMinorVer, aPrevMinorVer );
     //                     IDE_TEST( executeDDL( &sStatement,
     //                                           sInsSql )
-    //                               != IDE_SUCCESS );
-    //                 }
-    //                 else if( i == 3 ) // PSM DROP
-    //                 {
-    //                     sProcBuildMem.init(IDU_MEM_QCI);
-    //                     IDE_TEST( qsx::loadAllProcForMetaUpgrade( &sSmiStmt, &sProcBuildMem )
-    //                               != IDE_SUCCESS );
-    //                     sProcBuildMem.destroy();
-    //                     IDE_TEST( executeDDL( &sStatement,
-    //                                           sDowngradeVer5ToVer4[i] )
     //                               != IDE_SUCCESS );
     //                 }
     //                 else
@@ -7601,7 +7147,7 @@ IDE_RC qcmCreate::downgradeMeta( idvSQL * aStatistics,
     //         case 4 :
     //         case 3 :
     //         case 2 :
-    //             // ë²„ì „ 2ê¹Œì§€ ì§€ì›ë¶ˆê°€.
+    //             // ¹öÀü 2±îÁö Áö¿øºÒ°¡.
     //             IDE_RAISE( err_downgrade_meta_fail );
     //         case 1 :
     //             // downgrade from minor version 1 to minor version 0
@@ -7654,161 +7200,48 @@ IDE_RC qcmCreate::downgradeMeta( idvSQL * aStatistics,
 
     switch ( QCM_META_MINOR_VER )
     {
-        case 7:
-            // downgrade from minor version 7 to minor version 6
-            // BUG-46252 Partition Merge / Split / Replace DDL asynchronization support 
-            for ( i = 0; sDowngradeVer7ToVer6[i] != NULL; i++ )
-            {
-                IDE_TEST( sSmiStmt.begin( aStatistics,
-                                          sDummySmiStmt,
-                                          sSmiStmtFlag )
-                          != IDE_SUCCESS );
-                sStage = 3;
-
-                if ( i == 2 )
-                {
-                    SChar sInsSql[4096] = { 0, };
-                    SChar sOwnerDN[4096] = { 0, };
-
-                    IDE_TEST( qcmDatabase::checkDatabase( &sSmiStmt,
-                                                          (SChar*)sOwnerDN,
-                                                          ID_SIZEOF(sOwnerDN) )
-                              != IDE_SUCCESS );
-
-                    idlOS::snprintf( sInsSql,
-                                     ID_SIZEOF(sInsSql),
-                                     sDowngradeVer7ToVer6[i],
-                                     smiGetDBName(), sOwnerDN, aPrevMinorVer );
-
-                    IDE_TEST( executeDDL( &sStatement,
-                                          sInsSql )
-                              != IDE_SUCCESS );
-                }
-                else
-                {
-                    IDE_TEST( executeDDL( &sStatement,
-                                          sDowngradeVer7ToVer6[i] )
-                              != IDE_SUCCESS );
-                }
-
-                sStage = 2;
-                IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
-
-                ideLog::log( IDE_QP_0, "[QCM_META_DOWNGRADE] DowngradeMeta %s\n",
-                             sDowngradeVer7ToVer6[i] );
-
-            }
-            IDE_TEST_CONT( aPrevMinorVer == 6, STOP_DOWNGRADE );
-            /* fall through */
-        case 6:
-            // downgrade from minor version 6 to minor version 5
-            for ( i = 0; sDowngradeVer6ToVer5[i] != NULL; i++ )
-            {
-                IDE_TEST( sSmiStmt.begin( aStatistics,
-                                          sDummySmiStmt,
-                                          sSmiStmtFlag )
-                          != IDE_SUCCESS );
-                sStage = 3;
-
-                if ( i == 2 )
-                {
-                    SChar sInsSql[4096] = { 0, };
-                    SChar sOwnerDN[4096] = { 0, };
-
-                    IDE_TEST( qcmDatabase::checkDatabase( &sSmiStmt,
-                                                          (SChar*)sOwnerDN,
-                                                          ID_SIZEOF(sOwnerDN) )
-                              != IDE_SUCCESS );
-
-                    idlOS::snprintf( sInsSql,
-                                     ID_SIZEOF(sInsSql),
-                                     sDowngradeVer6ToVer5[i],
-                                     smiGetDBName(), sOwnerDN, aPrevMinorVer );
-
-                    IDE_TEST( executeDDL( &sStatement,
-                                          sInsSql )
-                              != IDE_SUCCESS );
-                }
-                else
-                {
-                    IDE_TEST( executeDDL( &sStatement,
-                                          sDowngradeVer6ToVer5[i] )
-                              != IDE_SUCCESS );
-                }
-
-                sStage = 2;
-                IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
-
-                ideLog::log( IDE_QP_0, "[QCM_META_DOWNGRADE] DowngradeMeta %s\n",
-                             sDowngradeVer6ToVer5[i] );
-
-            }
-            IDE_TEST_CONT( aPrevMinorVer == 5, STOP_DOWNGRADE );
-            /* fall through */
-        case 5:
-            // downgrade from minor version 5 to minor version 4
-            for ( i = 0; sDowngradeVer5ToVer4[i] != NULL; i++ )
-            {
-                IDE_TEST( sSmiStmt.begin( aStatistics,
-                                          sDummySmiStmt,
-                                          sSmiStmtFlag )
-                          != IDE_SUCCESS );
-                sStage = 3;
-
-                if ( i == 2 )
-                {
-                    SChar sInsSql[4096] = { 0, };
-                    SChar sOwnerDN[4096] = { 0, };
-
-                    IDE_TEST( qcmDatabase::checkDatabase( &sSmiStmt,
-                                                          (SChar*)sOwnerDN,
-                                                          ID_SIZEOF(sOwnerDN) )
-                              != IDE_SUCCESS );
-
-                    idlOS::snprintf( sInsSql,
-                                     ID_SIZEOF(sInsSql),
-                                     sDowngradeVer5ToVer4[i],
-                                     smiGetDBName(), sOwnerDN, aPrevMinorVer );
-
-                    IDE_TEST( executeDDL( &sStatement,
-                                          sInsSql )
-                              != IDE_SUCCESS );
-                }
-                else if ( i == 3 )
-                {
-                    IDE_TEST( sProcBuildMem.init(IDU_MEM_QCI)
-                              != IDE_SUCCESS );
-
-                    IDE_TEST( qsx::loadAllProcForMetaUpgrade( &sSmiStmt, &sProcBuildMem )
-                              != IDE_SUCCESS );
-
-                    sProcBuildMem.destroy();
-
-                    IDE_TEST( executeDDL( &sStatement,
-                                          sDowngradeVer5ToVer4[i] )
-                              != IDE_SUCCESS );
-                }
-                else
-                {
-                    IDE_TEST( executeDDL( &sStatement,
-                                          sDowngradeVer5ToVer4[i] )
-                              != IDE_SUCCESS );
-                }
-
-                sStage = 2;
-                IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
-
-                ideLog::log( IDE_QP_0, "[QCM_META_DOWNGRADE] DowngradeMeta %s\n",
-                             sDowngradeVer5ToVer4[i] );
-
-            }
-            IDE_TEST_CONT( aPrevMinorVer == 4, STOP_DOWNGRADE );
-            /* fall through */
-        case 4:
-        case 3:
         case 2:
-            // ë²„ì „ 2ê¹Œì§€ ì§€ì›ë¶ˆê°€.
-            IDE_RAISE( err_downgrade_meta_fail );
+            // downgrade from minor version 2 to minor version 1
+            for ( i = 0; sDowngradeVer2ToVer1[i] != NULL; i++ )
+            {
+                IDE_TEST( sSmiStmt.begin( aStatistics,
+                                          sDummySmiStmt,
+                                          sSmiStmtFlag )
+                          != IDE_SUCCESS );
+                sStage = 3;
+                if ( i == 2 )
+                {
+                    SChar sInsSql[4096] = { 0, };
+                    SChar sOwnerDN[4096] = { 0, };
+                    IDE_TEST( qcmDatabase::checkDatabase( &sSmiStmt,
+                                                          (SChar*)sOwnerDN,
+                                                          ID_SIZEOF(sOwnerDN) )
+                              != IDE_SUCCESS );
+                    /* ´Ù¿î±×·¹ÀÌµå½Ã, SYS_DATABASE_.PREV_META_MINOR_VER°ªÀº
+                     * aPrevMinorVer ÀÌ¿©¾ßÇÑ´Ù. 
+                     * ÀÌÈÄ ¸ŞÅ¸ ´Ù¿î±×·¹ÀÌµå µÉ ¼ö ¾øµµ·Ï ÇØ¾ßÇÏ±â
+                     * ¶§¹®ÀÌ´Ù. */
+                    idlOS::snprintf( sInsSql,
+                                     ID_SIZEOF(sInsSql),
+                                     sDowngradeVer2ToVer1[i],
+                                     smiGetDBName(), sOwnerDN, aPrevMinorVer, aPrevMinorVer );
+                    IDE_TEST( executeDDL( &sStatement,
+                                          sInsSql )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    IDE_TEST( executeDDL( &sStatement,
+                                          sDowngradeVer2ToVer1[i] )
+                              != IDE_SUCCESS );
+                }
+                sStage = 2;
+                IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+                ideLog::log( IDE_QP_0, "[QCM_META_DOWNGRADE] DowngradeMeta %s\n",
+                             sDowngradeVer2ToVer1[i] );
+            }
+            IDE_TEST_CONT( aPrevMinorVer == 1, STOP_DOWNGRADE ) // stop
+            /* fall through */
         case 1:
             // downgrade from minor version 1 to minor version 0
             /* fall through */
@@ -7816,11 +7249,12 @@ IDE_RC qcmCreate::downgradeMeta( idvSQL * aStatistics,
             break;
     }
 
+    // downgrade Ãß°¡ ½Ã ÁÖ¼® Á¦°Å 
     IDE_EXCEPTION_CONT( STOP_DOWNGRADE );
 
     // transaction commit
     sStage = 1;
-    IDE_TEST( sTrans.commit(&sDummySCN) != IDE_SUCCESS );
+    IDE_TEST( sTrans.commit() != IDE_SUCCESS );
 
     ideLog::log(IDE_QP_0, "[QCM_META_DOWNGRADE] TRANSACTION COMMIT SUCCESS\n");
 
@@ -7831,12 +7265,15 @@ IDE_RC qcmCreate::downgradeMeta( idvSQL * aStatistics,
     sIduMem.destroy();
 
     return IDE_SUCCESS;
-
+    
+   // downgrade Ãß°¡ ½Ã ÁÖ¼® Á¦°Å 
+/*
     IDE_EXCEPTION(err_downgrade_meta_fail);
     {
         IDE_SET(ideSetErrorCode(qpERR_ABORT_QCM_INITDB));
         ideLog::log(IDE_QP_0, "[QCM_META_DOWNGRADE] Not supported.\n");
     }
+*/
     IDE_EXCEPTION_END;
 
     switch (sStage)

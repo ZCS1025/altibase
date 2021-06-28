@@ -29,7 +29,7 @@
 #include <smmDef.h>
 
 /*
-   Memory DBì˜ Tablespaceê´€ë ¨ ì—°ì‚°ë“¤ì„ êµ¬í˜„í•œ class
+   Memory DBÀÇ Tablespace°ü·Ã ¿¬»êµéÀ» ±¸ÇöÇÑ class
    
    - Alter Tablespace Offline
    - Alter Tablespace Online
@@ -37,36 +37,36 @@
 class smpTBSAlterOnOff
 {
 public :
-    // ìƒì„±ì (ì•„ë¬´ê²ƒë„ ì•ˆí•¨)
+    // »ı¼ºÀÚ (¾Æ¹«°Íµµ ¾ÈÇÔ)
     smpTBSAlterOnOff();
 
     ////////////////////////////////////////////////////////////////////
-    // ì¸í„°í˜ì´ìŠ¤ í•¨ìˆ˜ ( smiTableSpaceì—ì„œ ë°”ë¡œ í˜¸ì¶œ )
+    // ÀÎÅÍÆäÀÌ½º ÇÔ¼ö ( smiTableSpace¿¡¼­ ¹Ù·Î È£Ãâ )
     ////////////////////////////////////////////////////////////////////
 
-    //Memory Tablespaceì— ëŒ€í•´ Alter Tablespace Online/Offlineì„ ìˆ˜í–‰
+    //Memory Tablespace¿¡ ´ëÇØ Alter Tablespace Online/OfflineÀ» ¼öÇà
     static IDE_RC alterTBSStatus( void       * aTrans,
                                   smmTBSNode * aTBSNode,
                                   UInt         aState );
 
     ////////////////////////////////////////////////////////////////////
-    // Restart Recoveryì‹œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜
+    // Restart Recovery½Ã È£ÃâµÇ´Â ÇÔ¼ö
     ////////////////////////////////////////////////////////////////////
-    // Restart REDO, UNDOëë‚œ í›„ì— Offline ìƒíƒœì¸
-    // Tablespaceì˜ ë©”ëª¨ë¦¬ë¥¼ í•´ì œ
+    // Restart REDO, UNDO³¡³­ ÈÄ¿¡ Offline »óÅÂÀÎ
+    // TablespaceÀÇ ¸Ş¸ğ¸®¸¦ ÇØÁ¦
     static IDE_RC finiOfflineTBS();
 
 
     ////////////////////////////////////////////////////////////////////
-    // Alter Tablespace Online/Offline ê´€ë ¨í•¨ìˆ˜
+    // Alter Tablespace Online/Offline °ü·ÃÇÔ¼ö
     ////////////////////////////////////////////////////////////////////
-    // Tablespaceë¥¼ OFFLINEì‹œí‚¨ Txê°€ Commitë˜ì—ˆì„ ë•Œ ë¶ˆë¦¬ëŠ” Pendingí•¨ìˆ˜
+    // Tablespace¸¦ OFFLINE½ÃÅ² Tx°¡ CommitµÇ¾úÀ» ¶§ ºÒ¸®´Â PendingÇÔ¼ö
     static IDE_RC alterOfflineCommitPending(
                       idvSQL*             aStatistics, 
                       sctTableSpaceNode * aTBSNode,
                       sctPendingOp      * aPendingOp );
 
-    // Tablespaceë¥¼ ONLINEì‹œí‚¨ Txê°€ Commitë˜ì—ˆì„ ë•Œ ë¶ˆë¦¬ëŠ” Pendingí•¨ìˆ˜
+    // Tablespace¸¦ ONLINE½ÃÅ² Tx°¡ CommitµÇ¾úÀ» ¶§ ºÒ¸®´Â PendingÇÔ¼ö
     static IDE_RC alterOnlineCommitPending(
                       idvSQL*             aStatistics, 
                       sctTableSpaceNode * aTBSNode,
@@ -76,33 +76,33 @@ public :
     
 private:
     ////////////////////////////////////////////////////////////////////
-    // Alter Tablespace Online/Offline ê´€ë ¨í•¨ìˆ˜
+    // Alter Tablespace Online/Offline °ü·ÃÇÔ¼ö
     ////////////////////////////////////////////////////////////////////
     
-    // META, SERVICEë‹¨ê³„ì—ì„œ Tablespaceë¥¼ Offlineìƒíƒœë¡œ ë³€ê²½í•œë‹¤.
+    // META, SERVICE´Ü°è¿¡¼­ Tablespace¸¦ Offline»óÅÂ·Î º¯°æÇÑ´Ù.
     static IDE_RC alterTBSoffline(void       * aTrans,
                                   smmTBSNode * aTBSNode );
 
 
-    // META/SERVICEë‹¨ê³„ì—ì„œ Tablespaceë¥¼ Onlineìƒíƒœë¡œ ë³€ê²½í•œë‹¤.
+    // META/SERVICE´Ü°è¿¡¼­ Tablespace¸¦ Online»óÅÂ·Î º¯°æÇÑ´Ù.
     static IDE_RC alterTBSonline(void       * aTrans,
                                  smmTBSNode * aTBSNode );
 
 
     ////////////////////////////////////////////////////////////////////
-    // Restart Recoveryì‹œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜
+    // Restart Recovery½Ã È£ÃâµÇ´Â ÇÔ¼ö
     ////////////////////////////////////////////////////////////////////
-    // finiOfflineTBSë¥¼ ìœ„í•œ Actioní•¨ìˆ˜
+    // finiOfflineTBS¸¦ À§ÇÑ ActionÇÔ¼ö
     static IDE_RC finiOfflineTBSAction( idvSQL            * aStatistics,
                                         sctTableSpaceNode * aTBSNode,
                                         void * /* aActionArg */ );
     
     
     ////////////////////////////////////////////////////////////////////
-    // Alter Tablespace Online/Offline ì´ ê³µí†µì ìœ¼ë¡œ ì‚¬ìš©í•˜ëŠ” í•¨ìˆ˜
+    // Alter Tablespace Online/Offline ÀÌ °øÅëÀûÀ¸·Î »ç¿ëÇÏ´Â ÇÔ¼ö
     ////////////////////////////////////////////////////////////////////
 
-    // Alter Tablespace Online Offline ë¡œê·¸ë¥¼ ê¸°ë¡ 
+    // Alter Tablespace Online Offline ·Î±×¸¦ ±â·Ï 
     static IDE_RC writeAlterTBSStateLog(
                       void                 * aTrans,
                       smmTBSNode           * aTBSNode,

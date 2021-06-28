@@ -21,8 +21,8 @@ import java.io.Serializable;
 import java.util.Comparator;
 
 /**
- * ë²”ìœ„ë¥¼ ë‚˜íƒ€ë‚´ëŠ” í´ë˜ìŠ¤<br>
- * ì´ í´ë˜ìŠ¤ë¥¼ ì‚¬ìš©í•˜ë ¤ë©´ ë°˜ë“œì‹œ Comparatorë¥¼ êµ¬í˜„í•´ì•¼ í•œë‹¤.
+ * ¹üÀ§¸¦ ³ªÅ¸³»´Â Å¬·¡½º<br>
+ * ÀÌ Å¬·¡½º¸¦ »ç¿ëÇÏ·Á¸é ¹İµå½Ã Comparator¸¦ ±¸ÇöÇØ¾ß ÇÑ´Ù.
  */
 public final class Range<T> implements Serializable
 {
@@ -34,14 +34,14 @@ public final class Range<T> implements Serializable
     private transient String    mToString;
 
     /**
-     * mMinimumê°’ê³¼ mMaximumê°’ ì‚¬ì´ì— í•´ë‹¹í•˜ëŠ” Rangeê°ì²´ë¥¼ ìƒì„±í•œë‹¤.
+     * mMinimum°ª°ú mMaximum°ª »çÀÌ¿¡ ÇØ´çÇÏ´Â Range°´Ã¼¸¦ »ı¼ºÇÑ´Ù.
      *
-     * @param <T> ë²”ìœ„ì— ë“¤ì–´ê°€ëŠ” ì—˜ë¦¬ë©˜íŠ¸ íƒ€ì…
-     * @param aFrom ë²”ìœ„ì˜ ì‹œì‘ì„ ë‚˜íƒ€ë‚´ëŠ” ê°’
-     * @param aTo ë²”ìœ„ì˜ ëì„ ë‚˜íƒ€ë‚´ëŠ” ê°’
-     * @return ë²”ìœ„ ê°ì²´
-     * @throws IllegalArgumentException ì—˜ë¦¬ë¨¼íŠ¸ê°€ nullì¸ ê²½ìš°
-     * @throws ClassCastException ì—˜ë¦¬ë¨¼íŠ¸ê°€ Comparableì„ êµ¬í˜„í•˜ê³  ìˆì§€ ì•Šì€ ê²½ìš°
+     * @param <T> ¹üÀ§¿¡ µé¾î°¡´Â ¿¤¸®¸àÆ® Å¸ÀÔ
+     * @param aFrom ¹üÀ§ÀÇ ½ÃÀÛÀ» ³ªÅ¸³»´Â °ª
+     * @param aTo ¹üÀ§ÀÇ ³¡À» ³ªÅ¸³»´Â °ª
+     * @return ¹üÀ§ °´Ã¼
+     * @throws IllegalArgumentException ¿¤¸®¸ÕÆ®°¡ nullÀÎ °æ¿ì
+     * @throws ClassCastException ¿¤¸®¸ÕÆ®°¡ ComparableÀ» ±¸ÇöÇÏ°í ÀÖÁö ¾ÊÀº °æ¿ì
      */
     public static <T extends Comparable<T>> Range<T> between(T aFrom, T aTo)
     {
@@ -49,14 +49,14 @@ public final class Range<T> implements Serializable
     }
 
     /**
-     * ì²«ë²ˆì§¸ Rangeì˜ maxê°’ê³¼ mMaximumê°’ ì‚¬ì´ì— í•´ë‹¹í•˜ëŠ” Rangeê°ì²´ë¥¼ ìƒì„±í•œë‹¤.
+     * Ã¹¹øÂ° RangeÀÇ max°ª°ú mMaximum°ª »çÀÌ¿¡ ÇØ´çÇÏ´Â Range°´Ã¼¸¦ »ı¼ºÇÑ´Ù.
      *
-     * @param <T> ë²”ìœ„ì— ë“¤ì–´ê°€ëŠ” ì—˜ë¦¬ë©˜íŠ¸ íƒ€ì…
-     * @param aFrom ë²”ìœ„ì˜ ì‹œì‘ì„ ë‚˜íƒ€ë‚´ëŠ” Rangeê°ì²´
-     * @param aTo ë²”ìœ„ì˜ ëì„ ë‚˜íƒ€ë‚´ëŠ” ê°’
-     * @return ë²”ìœ„ ê°ì²´
-     * @throws IllegalArgumentException ì—˜ë¦¬ë¨¼íŠ¸ê°€ nullì¸ ê²½ìš°
-     * @throws ClassCastException ì—˜ë¦¬ë¨¼íŠ¸ê°€ Comparableì„ êµ¬í˜„í•˜ê³  ìˆì§€ ì•Šì€ ê²½ìš°
+     * @param <T> ¹üÀ§¿¡ µé¾î°¡´Â ¿¤¸®¸àÆ® Å¸ÀÔ
+     * @param aFrom ¹üÀ§ÀÇ ½ÃÀÛÀ» ³ªÅ¸³»´Â Range°´Ã¼
+     * @param aTo ¹üÀ§ÀÇ ³¡À» ³ªÅ¸³»´Â °ª
+     * @return ¹üÀ§ °´Ã¼
+     * @throws IllegalArgumentException ¿¤¸®¸ÕÆ®°¡ nullÀÎ °æ¿ì
+     * @throws ClassCastException ¿¤¸®¸ÕÆ®°¡ ComparableÀ» ±¸ÇöÇÏ°í ÀÖÁö ¾ÊÀº °æ¿ì
      */
     public static <T extends Comparable<T>> Range<T> between(Range<T> aFrom, T aTo)
     {
@@ -73,15 +73,15 @@ public final class Range<T> implements Serializable
     }
 
     /**
-     * ë§¤ê°œë³€ìˆ˜ë¡œ ì§€ì •ëœ Comparatorë¥¼ ì‚¬ìš©í•´ Rangeê°ì²´ë¥¼ ìƒì„±í•œë‹¤.
+     * ¸Å°³º¯¼ö·Î ÁöÁ¤µÈ Comparator¸¦ »ç¿ëÇØ Range°´Ã¼¸¦ »ı¼ºÇÑ´Ù.
      *
-     * @param <T> ë²”ìœ„ì— ë“¤ì–´ê°€ëŠ” ì—˜ë¦¬ë©˜íŠ¸ íƒ€ì…
-     * @param aFrom ë²”ìœ„ì˜ ì‹œì‘ì„ ë‚˜íƒ€ë‚´ëŠ” ê°’
-     * @param aTo ë²”ìœ„ì˜ ëì„ ë‚˜íƒ€ë‚´ëŠ” ê°’
-     * @param aComparator ì •ë ¬ì„ ìœ„í•´ ì‚¬ìš©í•  Comparatorê°ì²´, nullì¸ ê²½ìš°ì—ëŠ” natural orderingì„ ì‚¬ìš©í•œë‹¤.
-     * @return ë²”ìœ„ ê°ì²´
-     * @throws IllegalArgumentException ì—˜ë¦¬ë¨¼íŠ¸ê°€ nullì¸ ê²½ìš°
-     * @throws ClassCastException ì—˜ë¦¬ë¨¼íŠ¸ê°€ natural orderingì„ ì‚¬ìš©í•˜ê³  Comparableì„ êµ¬í˜„í•˜ê³  ìˆì§€ ì•Šì€ ê²½ìš°.
+     * @param <T> ¹üÀ§¿¡ µé¾î°¡´Â ¿¤¸®¸àÆ® Å¸ÀÔ
+     * @param aFrom ¹üÀ§ÀÇ ½ÃÀÛÀ» ³ªÅ¸³»´Â °ª
+     * @param aTo ¹üÀ§ÀÇ ³¡À» ³ªÅ¸³»´Â °ª
+     * @param aComparator Á¤·ÄÀ» À§ÇØ »ç¿ëÇÒ Comparator°´Ã¼, nullÀÎ °æ¿ì¿¡´Â natural orderingÀ» »ç¿ëÇÑ´Ù.
+     * @return ¹üÀ§ °´Ã¼
+     * @throws IllegalArgumentException ¿¤¸®¸ÕÆ®°¡ nullÀÎ °æ¿ì
+     * @throws ClassCastException ¿¤¸®¸ÕÆ®°¡ natural orderingÀ» »ç¿ëÇÏ°í ComparableÀ» ±¸ÇöÇÏ°í ÀÖÁö ¾ÊÀº °æ¿ì.
      */
     public static <T> Range<T> between(T aFrom, T aTo, Comparator<T> aComparator)
     {
@@ -89,11 +89,11 @@ public final class Range<T> implements Serializable
     }
 
     /**
-     * Rangeê°ì²´ ìƒì„±
+     * Range°´Ã¼ »ı¼º
      *
-     * @param aFrom ì²«ë²ˆì§¸ ë²”ìœ„ê°’
-     * @param aTo ë‘ë²ˆì§¸ ë²”ìœ„ê°’
-     * @param aComparator Comparator ê°ì²´, nullì¸ ê²½ìš°ì—ëŠ” natural ordering
+     * @param aFrom Ã¹¹øÂ° ¹üÀ§°ª
+     * @param aTo µÎ¹øÂ° ¹üÀ§°ª
+     * @param aComparator Comparator °´Ã¼, nullÀÎ °æ¿ì¿¡´Â natural ordering
      */
     @SuppressWarnings("unchecked")
     private Range(T aFrom, T aTo, Comparator<T> aComparator)
@@ -125,9 +125,9 @@ public final class Range<T> implements Serializable
     }
 
     /**
-     * ë²”ìœ„ì˜ ìµœì†Œê°’ì„ ë¦¬í„´í•œë‹¤.
+     * ¹üÀ§ÀÇ ÃÖ¼Ò°ªÀ» ¸®ÅÏÇÑ´Ù.
      *
-     * @return ë²”ìœ„ ìµœì†Œê°’
+     * @return ¹üÀ§ ÃÖ¼Ò°ª
      */
     public T getMinimum()
     {
@@ -135,9 +135,9 @@ public final class Range<T> implements Serializable
     }
 
     /**
-     * ë²”ìœ„ì˜ ìµœëŒ€ê°’ì„ ë¦¬í„´í•œë‹¤.
+     * ¹üÀ§ÀÇ ÃÖ´ë°ªÀ» ¸®ÅÏÇÑ´Ù.
      *
-     * @return ë²”ìœ„ ìµœëŒ€ê°’
+     * @return ¹üÀ§ ÃÖ´ë°ª
      */
     public T getMaximum()
     {
@@ -145,10 +145,10 @@ public final class Range<T> implements Serializable
     }
 
     /**
-     * í•´ë‹¹ ì—˜ë¦¬ë¨¼íŠ¸ê°€ ë²”ìœ„ì— ì†í•˜ëŠ”ì§€ ì—¬ë¶€ë¥¼ ë¦¬í„´í•œë‹¤.<br>
-     * ë²”ìœ„ì˜ ìµœì†Œê°’ê³¼ ìµœëŒ€ê°’ì„ í¬í•¨í•´ì„œ íŒë‹¨í•œë‹¤.(inclusive)
-     * @param aElement ë¹„êµí•  ì—˜ë¦¬ë©˜íŠ¸ê°’
-     * @return í•´ë‹¹ ì—˜ë¦¬ë¨¼íŠ¸ê°€ ë²”ìœ„ì— í¬í•¨ë˜ì–´ ìˆëŠ”ì§€ ì—¬ë¶€
+     * ÇØ´ç ¿¤¸®¸ÕÆ®°¡ ¹üÀ§¿¡ ¼ÓÇÏ´ÂÁö ¿©ºÎ¸¦ ¸®ÅÏÇÑ´Ù.<br>
+     * ¹üÀ§ÀÇ ÃÖ¼Ò°ª°ú ÃÖ´ë°ªÀ» Æ÷ÇÔÇØ¼­ ÆÇ´ÜÇÑ´Ù.(inclusive)
+     * @param aElement ºñ±³ÇÒ ¿¤¸®¸àÆ®°ª
+     * @return ÇØ´ç ¿¤¸®¸ÕÆ®°¡ ¹üÀ§¿¡ Æ÷ÇÔµÇ¾î ÀÖ´ÂÁö ¿©ºÎ
      */
     public boolean contains(T aElement)
     {
@@ -161,10 +161,10 @@ public final class Range<T> implements Serializable
     }
 
     /**
-     * í•´ë‹¹ ì—˜ë¦¬ë¨¼íŠ¸ê°€ ë²”ìœ„ì— ì†í•˜ëŠ”ì§€ ì—¬ë¶€ë¥¼ ë¦¬í„´í•œë‹¤.<br>
-     * ë²”ìœ„ì˜ ìµœì†Œê°’ì€ ë¹„êµí•˜ì§€ ì•Šê³  ìµœëŒ€ê°’ ë³´ë‹¤ ì‘ì€ì§€ë§Œ íŒë‹¨í•œë‹¤.(exclusive)
-     * @param aElement ë¹„êµí•  ì—˜ë¦¬ë©˜íŠ¸ê°’
-     * @return í•´ë‹¹ ì—˜ë¦¬ë¨¼íŠ¸ê°€ ë²”ìœ„ì— í¬í•¨ë˜ì–´ ìˆëŠ”ì§€ ì—¬ë¶€
+     * ÇØ´ç ¿¤¸®¸ÕÆ®°¡ ¹üÀ§¿¡ ¼ÓÇÏ´ÂÁö ¿©ºÎ¸¦ ¸®ÅÏÇÑ´Ù.<br>
+     * ¹üÀ§ÀÇ ÃÖ¼Ò°ªÀº ºñ±³ÇÏÁö ¾Ê°í ÃÖ´ë°ª º¸´Ù ÀÛÀºÁö¸¸ ÆÇ´ÜÇÑ´Ù.(exclusive)
+     * @param aElement ºñ±³ÇÒ ¿¤¸®¸àÆ®°ª
+     * @return ÇØ´ç ¿¤¸®¸ÕÆ®°¡ ¹üÀ§¿¡ Æ÷ÇÔµÇ¾î ÀÖ´ÂÁö ¿©ºÎ
      */
     public boolean containsEndedBy(T aElement)
     {
@@ -177,10 +177,10 @@ public final class Range<T> implements Serializable
     }
 
     /**
-     * í•´ë‹¹ ì—˜ë¦¬ë¨¼íŠ¸ê°€ ë²”ìœ„ì— ì†í•˜ëŠ”ì§€ ì—¬ë¶€ë¥¼ ë¦¬í„´í•œë‹¤.<br>
-     * ë²”ìœ„ì˜ ìµœì†Œê°’ë³´ë‹¤ëŠ” í¬ê±°ë‚˜ ê°™ê³ (inclusive) ìµœëŒ€ê°’ ë³´ë‹¤ëŠ” ì‘ì€ì§€ íŒë‹¨í•œë‹¤.(exclusive)
-     * @param aElement ë¹„êµí•  ì—˜ë¦¬ë©˜íŠ¸ê°’
-     * @return í•´ë‹¹ ì—˜ë¦¬ë¨¼íŠ¸ê°€ ë²”ìœ„ì— í¬í•¨ë˜ì–´ ìˆëŠ”ì§€ ì—¬ë¶€
+     * ÇØ´ç ¿¤¸®¸ÕÆ®°¡ ¹üÀ§¿¡ ¼ÓÇÏ´ÂÁö ¿©ºÎ¸¦ ¸®ÅÏÇÑ´Ù.<br>
+     * ¹üÀ§ÀÇ ÃÖ¼Ò°ªº¸´Ù´Â Å©°Å³ª °°°í(inclusive) ÃÖ´ë°ª º¸´Ù´Â ÀÛÀºÁö ÆÇ´ÜÇÑ´Ù.(exclusive)
+     * @param aElement ºñ±³ÇÒ ¿¤¸®¸àÆ®°ª
+     * @return ÇØ´ç ¿¤¸®¸ÕÆ®°¡ ¹üÀ§¿¡ Æ÷ÇÔµÇ¾î ÀÖ´ÂÁö ¿©ºÎ
      */
     public boolean containsEqualAndLessThan(T aElement)
     {
@@ -189,7 +189,7 @@ public final class Range<T> implements Serializable
             return false;
         }
 
-        if (mMinimum == null) // minê°’ì´ nullì¸ ê²½ìš°ì—ëŠ” maxë§Œ ë¹„êµ
+        if (mMinimum == null) // min°ªÀÌ nullÀÎ °æ¿ì¿¡´Â max¸¸ ºñ±³
         {
             return mComparator.compare(aElement, mMaximum) < 0;
         }
@@ -199,9 +199,9 @@ public final class Range<T> implements Serializable
     }
 
     /**
-     * í•´ë‹¹ ê°’ì´ ë²”ìœ„ì˜ ìµœì†Œê°’ ë³´ë‹¤ ì‘ì€ì§€ ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤(exclusive).
-     * @param element ê²€ì‚¬í•  ê°ì²´
-     * @return true í•´ë‹¹ ì—˜ë¦¬ë¨¼íŠ¸ê°€ ë²”ìœ„ë³´ë‹¤ ì‘ì€ ê²½ìš°
+     * ÇØ´ç °ªÀÌ ¹üÀ§ÀÇ ÃÖ¼Ò°ª º¸´Ù ÀÛÀºÁö ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù(exclusive).
+     * @param element °Ë»çÇÒ °´Ã¼
+     * @return true ÇØ´ç ¿¤¸®¸ÕÆ®°¡ ¹üÀ§º¸´Ù ÀÛÀº °æ¿ì
      */
     public boolean isAfter(T element)
     {
@@ -213,10 +213,10 @@ public final class Range<T> implements Serializable
     }
 
     /**
-     * í•´ë‹¹ ê°ì²´ë¡œ ë²”ìœ„ê°€ ì‹œì‘ë˜ëŠ”ì§€ ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤(inclusive).
+     * ÇØ´ç °´Ã¼·Î ¹üÀ§°¡ ½ÃÀÛµÇ´ÂÁö ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù(inclusive).
      *
-     * @param element ê²€ì‚¬í•  ê°ì²´
-     * @return true ë²”ìœ„ê°€ í•´ë‹¹ ê°’ìœ¼ë¡œ ì‹œì‘í•˜ëŠ” ê²½ìš°
+     * @param element °Ë»çÇÒ °´Ã¼
+     * @return true ¹üÀ§°¡ ÇØ´ç °ªÀ¸·Î ½ÃÀÛÇÏ´Â °æ¿ì
      */
     public boolean isStartedBy(T element)
     {
@@ -228,10 +228,10 @@ public final class Range<T> implements Serializable
     }
 
     /**
-     * í•´ë‹¹ ê°ì²´ë¡œ ë²”ìœ„ê°€ ëë‚˜ëŠ”ì§€ ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤(inclusive).
+     * ÇØ´ç °´Ã¼·Î ¹üÀ§°¡ ³¡³ª´ÂÁö ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù(inclusive).
      *
-     * @param aElement ê²€ì‚¬í•  ê°ì²´
-     * @return true ë²”ìœ„ê°€ í•´ë‹¹ ê°’ìœ¼ë¡œ ëë‚˜ëŠ” ê²½ìš°
+     * @param aElement °Ë»çÇÒ °´Ã¼
+     * @return true ¹üÀ§°¡ ÇØ´ç °ªÀ¸·Î ³¡³ª´Â °æ¿ì
      */
     public boolean isEndedBy(T aElement)
     {
@@ -243,9 +243,9 @@ public final class Range<T> implements Serializable
     }
 
     /**
-     * í•´ë‹¹ ê°’ì´ ë²”ìœ„ì˜ ìµœëŒ€ê°’ ë³´ë‹¤ í° ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤(exclusive).
-     * @param element ê²€ì‚¬í•  ê°ì²´
-     * @return true í•´ë‹¹ ì—˜ë¦¬ë¨¼íŠ¸ê°€ ë²”ìœ„ë³´ë‹¤ í° ê²½ìš°
+     * ÇØ´ç °ªÀÌ ¹üÀ§ÀÇ ÃÖ´ë°ª º¸´Ù Å« ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù(exclusive).
+     * @param element °Ë»çÇÒ °´Ã¼
+     * @return true ÇØ´ç ¿¤¸®¸ÕÆ®°¡ ¹üÀ§º¸´Ù Å« °æ¿ì
      */
     public boolean isBefore(T element)
     {
@@ -257,11 +257,11 @@ public final class Range<T> implements Serializable
     }
 
     /**
-     * ì„ íƒëœ ë²”ìœ„ê°€ Rangeì— í¬í•¨ë˜ëŠ”ì§€ ì—¬ë¶€ë¥¼ ë¦¬í„´í•œë‹¤(inclusive).
+     * ¼±ÅÃµÈ ¹üÀ§°¡ Range¿¡ Æ÷ÇÔµÇ´ÂÁö ¿©ºÎ¸¦ ¸®ÅÏÇÑ´Ù(inclusive).
      *
-     * @param aRange ì²´í¬í•  Rangeê°ì²´
-     * @return true ì²´í¬í•  Rangeê°ì²´ê°€ í¬í•¨ë˜ëŠ” ê²½ìš°
-     * @throws RuntimeException ë²”ìœ„ë¥¼ ë¹„êµí•  ìˆ˜ ì—†ëŠ” ê²½ìš°
+     * @param aRange Ã¼Å©ÇÒ Range°´Ã¼
+     * @return true Ã¼Å©ÇÒ Range°´Ã¼°¡ Æ÷ÇÔµÇ´Â °æ¿ì
+     * @throws RuntimeException ¹üÀ§¸¦ ºñ±³ÇÒ ¼ö ¾ø´Â °æ¿ì
      */
     public boolean containsRange(Range<T> aRange)
     {
@@ -273,11 +273,11 @@ public final class Range<T> implements Serializable
     }
 
     /**
-     * ë²”ìœ„ê°€ aRangeì˜ ë²”ìœ„ë³´ë‹¤ í›„ì¸ì§€ í™•ì¸í•œë‹¤.
+     * ¹üÀ§°¡ aRangeÀÇ ¹üÀ§º¸´Ù ÈÄÀÎÁö È®ÀÎÇÑ´Ù.
      *
-     * @param aRange í™•ì¸í•  ë²”ìœ„ ë³€ìˆ˜
-     * @return true ë²”ìœ„ì˜ ìµœì†Œê°’ì´ aRangeì˜ ë²”ìœ„ maxê°’ë³´ë‹¤ í´ë•Œ
-     * @throws RuntimeException ë²”ìœ„ë¥¼ ë¹„êµí•  ìˆ˜ ì—†ëŠ” ê²½ìš°
+     * @param aRange È®ÀÎÇÒ ¹üÀ§ º¯¼ö
+     * @return true ¹üÀ§ÀÇ ÃÖ¼Ò°ªÀÌ aRangeÀÇ ¹üÀ§ max°ªº¸´Ù Å¬¶§
+     * @throws RuntimeException ¹üÀ§¸¦ ºñ±³ÇÒ ¼ö ¾ø´Â °æ¿ì
      */
     public boolean isAfterRange(Range<T> aRange)
     {
@@ -289,12 +289,12 @@ public final class Range<T> implements Serializable
     }
 
     /**
-     * í•´ë‹¹ ë²”ìœ„ê°€ ë§¤ê°œë³€ìˆ˜ë¡œ ë“¤ì–´ì˜¨ ë²”ìœ„ì— ì˜¤ë²„ë© ë˜ëŠ”ì§€ ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.<br>
-     * (ë‘ ë²”ìœ„ì— ì ì–´ë„ í•˜ë‚˜ì˜ ìš”ì†Œê°€ í¬í•¨ë˜ëŠ” ê²½ìš°)
+     * ÇØ´ç ¹üÀ§°¡ ¸Å°³º¯¼ö·Î µé¾î¿Â ¹üÀ§¿¡ ¿À¹ö·¦ µÇ´ÂÁö ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.<br>
+     * (µÎ ¹üÀ§¿¡ Àû¾îµµ ÇÏ³ªÀÇ ¿ä¼Ò°¡ Æ÷ÇÔµÇ´Â °æ¿ì)
      *
-     * @param aOtherRange í™•ì¸í•  ë²”ìœ„ ê°ì²´
-     * @return true ì§€ì •ëœ ë²”ìœ„ê°€ í•´ë‹¹ ë²”ìœ„ì™€ ì˜¤ë²„ë© ë˜ëŠ” ê²½ìš°
-     * @throws RuntimeException ë²”ìœ„ë¥¼ ë¹„êµí•  ìˆ˜ ì—†ëŠ” ê²½ìš°
+     * @param aOtherRange È®ÀÎÇÒ ¹üÀ§ °´Ã¼
+     * @return true ÁöÁ¤µÈ ¹üÀ§°¡ ÇØ´ç ¹üÀ§¿Í ¿À¹ö·¦ µÇ´Â °æ¿ì
+     * @throws RuntimeException ¹üÀ§¸¦ ºñ±³ÇÒ ¼ö ¾ø´Â °æ¿ì
      */
     public boolean isOverlappedBy(Range<T> aOtherRange)
     {
@@ -307,11 +307,11 @@ public final class Range<T> implements Serializable
     }
 
     /**
-     * ë²”ìœ„ê°€ ì§€ì •ëœ ë²”ìœ„ë³´ë‹¤ ì™„ì „í•˜ê²Œ ì•ì— ìˆëŠ”ì§€ ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
+     * ¹üÀ§°¡ ÁöÁ¤µÈ ¹üÀ§º¸´Ù ¿ÏÀüÇÏ°Ô ¾Õ¿¡ ÀÖ´ÂÁö ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
      *
-     * @param aOtherRange í™•ì¸í•  ë²”ìœ„ ê°ì²´
-     * @return true í•´ë‹¹ ë²”ìœ„ê°€ ì§€ì •ëœ ë²”ìœ„ë³´ë‹¤ ì•ì— ìˆì„ ê²½ìš°
-     * @throws RuntimeException ë²”ìœ„ë¥¼ ë¹„êµí•  ìˆ˜ ì—†ëŠ” ê²½ìš°
+     * @param aOtherRange È®ÀÎÇÒ ¹üÀ§ °´Ã¼
+     * @return true ÇØ´ç ¹üÀ§°¡ ÁöÁ¤µÈ ¹üÀ§º¸´Ù ¾Õ¿¡ ÀÖÀ» °æ¿ì
+     * @throws RuntimeException ¹üÀ§¸¦ ºñ±³ÇÒ ¼ö ¾ø´Â °æ¿ì
      */
     public boolean isBeforeRange(Range<T> aOtherRange)
     {
@@ -323,10 +323,10 @@ public final class Range<T> implements Serializable
     }
 
     /**
-     * ë‘ê°œì˜ ê°ì²´ê°€ ë™ì¼í•˜ë ¤ë©´ ìµœì†Œê°’ê³¼ ìµœëŒ€ê°’ì´ ë™ì¼í•´ì•¼í•˜ë©° ì´ ë•Œ Comparatorì˜ ì°¨ì´ì ì€ ë¬´ì‹œëœë‹¤.
+     * µÎ°³ÀÇ °´Ã¼°¡ µ¿ÀÏÇÏ·Á¸é ÃÖ¼Ò°ª°ú ÃÖ´ë°ªÀÌ µ¿ÀÏÇØ¾ßÇÏ¸ç ÀÌ ¶§ ComparatorÀÇ Â÷ÀÌÁ¡Àº ¹«½ÃµÈ´Ù.
      *
-     * @param aObject ë¹„êµí•  ê°ì²´
-     * @return true ë‘ê°œ ê°ì²´ê°€ ë™ì¼í• ë•Œ
+     * @param aObject ºñ±³ÇÒ °´Ã¼
+     * @return true µÎ°³ °´Ã¼°¡ µ¿ÀÏÇÒ¶§
      */
     @Override
     public boolean equals(Object aObject)
@@ -352,9 +352,9 @@ public final class Range<T> implements Serializable
     }
 
     /**
-     * ë²”ìœ„ê°ì²´ì— ì ì ˆí•œ í•´ì‰¬ì½”ë“œë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+     * ¹üÀ§°´Ã¼¿¡ ÀûÀıÇÑ ÇØ½¬ÄÚµå¸¦ °¡Á®¿Â´Ù.
      *
-     * @return í•´ì‰¬ì½”ë“œ ê°’
+     * @return ÇØ½¬ÄÚµå °ª
      */
     @Override
     public int hashCode()
@@ -395,10 +395,10 @@ public final class Range<T> implements Serializable
     {
         INSTANCE;
         /**
-         * Comparable ë² ì´ìŠ¤ êµ¬í˜„(ì‹±ê¸€í„´ìœ¼ë¡œ ìƒì„±í•˜ê¸° ìœ„í•´ enumì‚¬ìš©)
+         * Comparable º£ÀÌ½º ±¸Çö(½Ì±ÛÅÏÀ¸·Î »ı¼ºÇÏ±â À§ÇØ enum»ç¿ë)
          *
-         * @param aObj1 ë¹„êµëŒ€ìƒê°’ 1
-         * @param aObj2 ë¹„êµëŒ€ìƒê°’ 2
+         * @param aObj1 ºñ±³´ë»ó°ª 1
+         * @param aObj2 ºñ±³´ë»ó°ª 2
          * @return negative  aObj1 < aObj2
          *         0         aObj1 = aObj2
          *         positive  aObj1 > aObj2

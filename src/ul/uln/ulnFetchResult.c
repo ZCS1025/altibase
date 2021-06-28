@@ -21,7 +21,7 @@
 
 /*
  * ======================================
- * Fetch ë˜ì–´ ì˜¨ ë°ì´í„°ë¥¼ ì²˜ë¦¬í•˜ëŠ” í•¨ìˆ˜ë“¤
+ * Fetch µÇ¾î ¿Â µ¥ÀÌÅÍ¸¦ Ã³¸®ÇÏ´Â ÇÔ¼öµé
  * ======================================
  */
 
@@ -35,7 +35,7 @@ ACI_RC ulnCallbackFetchResult(cmiProtocolContext *aProtocolContext,
     ulnStmt       *sStmt      = sFnContext->mHandle.mStmt;
     ulnCache      *sCache     = ulnStmtGetCache(sStmt);
     acp_uint8_t   *sRow;
-    acp_uint32_t   sRowSize = 0;    /* BUG-46360 */
+    acp_uint32_t   sRowSize;
     acp_sint64_t   sPosition;
     acp_sint64_t   sPRowID;
 
@@ -77,7 +77,7 @@ ACI_RC ulnCallbackFetchResult(cmiProtocolContext *aProtocolContext,
     /* PROJ-1789 Updatable Scrollable Cursor */
     if (sStmt->mParentStmt != NULL)
     {
-        /* _PROWIDë¥¼ ê¸°ì¤€ìœ¼ë¡œ ìŒ“ìœ¼ë¯€ë¡œ Cache ì‹œì‘ì ì„ ì•Œì•„ì•¼ í•œë‹¤. */
+        /* _PROWID¸¦ ±âÁØÀ¸·Î ½×À¸¹Ç·Î Cache ½ÃÀÛÁ¡À» ¾Ë¾Æ¾ß ÇÑ´Ù. */
         ulnCacheSetStartPosition( sCache, sStmt->mRowsetCacheStartPosition );
 
         // only read _PROWID
@@ -149,13 +149,13 @@ ACI_RC ulnCallbackFetchResult(cmiProtocolContext *aProtocolContext,
     }
 
     /*
-     * Note : ACI_SUCCESS ë¥¼ ë¦¬í„´í•˜ëŠ” ê²ƒì€ ë²„ê·¸ê°€ ì•„ë‹ˆë‹¤.
-     *        cm ì˜ ì½œë°±í•¨ìˆ˜ê°€ ACI_FAILURE ë¥¼ ë¦¬í„´í•˜ë©´ communication error ë¡œ
-     *        ì·¨ê¸‰ë˜ì–´ ë²„ë¦¬ê¸° ë•Œë¬¸ì— ì–¸ì œë‚˜ ACI_SUCCESS ë¥¼ ë¦¬í„´í•´ì•¼ í•œë‹¤.
+     * Note : ACI_SUCCESS ¸¦ ¸®ÅÏÇÏ´Â °ÍÀº ¹ö±×°¡ ¾Æ´Ï´Ù.
+     *        cm ÀÇ Äİ¹éÇÔ¼ö°¡ ACI_FAILURE ¸¦ ¸®ÅÏÇÏ¸é communication error ·Î
+     *        Ãë±ŞµÇ¾î ¹ö¸®±â ¶§¹®¿¡ ¾ğÁ¦³ª ACI_SUCCESS ¸¦ ¸®ÅÏÇØ¾ß ÇÑ´Ù.
      *
-     *        ì–´ì°Œë˜ì—ˆë˜ ê°„ì—, Function Context ì˜ ë©¤ë²„ì¸ mSqlReturn ì— í•¨ìˆ˜ ë¦¬í„´ê°’ì´
-     *        ì €ì¥ë˜ê²Œ ë  ê²ƒì´ë©°, uln ì˜ cmi ë§¤í•‘ í•¨ìˆ˜ì¸ ulnReadProtocol() í•¨ìˆ˜ ì•ˆì—ì„œ
-     *        Function Context ì˜ mSqlReturn ì„ ì²´í¬í•´ì„œ ì ì ˆí•œ ì¡°ì¹˜ë¥¼ ì·¨í•˜ê²Œ ë  ê²ƒì´ë‹¤.
+     *        ¾îÂîµÇ¾ú´ø °£¿¡, Function Context ÀÇ ¸â¹öÀÎ mSqlReturn ¿¡ ÇÔ¼ö ¸®ÅÏ°ªÀÌ
+     *        ÀúÀåµÇ°Ô µÉ °ÍÀÌ¸ç, uln ÀÇ cmi ¸ÅÇÎ ÇÔ¼öÀÎ ulnReadProtocol() ÇÔ¼ö ¾È¿¡¼­
+     *        Function Context ÀÇ mSqlReturn À» Ã¼Å©ÇØ¼­ ÀûÀıÇÑ Á¶Ä¡¸¦ ÃëÇÏ°Ô µÉ °ÍÀÌ´Ù.
      */
     return ACI_SUCCESS;
 }
@@ -183,13 +183,13 @@ ACI_RC ulnCallbackFetchBeginResult(cmiProtocolContext *aProtocolContext,
     CMI_SKIP_READ_BLOCK( aProtocolContext, 6);
 
     /*
-     * Note : ì´ ì½œë°±ì€ ì„œë²„ì—ì„œ ì™„ì „íˆ ìƒˆë¡œìš´ fetch ê°€ ì‹œì‘ë˜ì—ˆì„ ë•Œì—ë§Œ í˜¸ì¶œëœë‹¤.
-     *        ë”°ë¼ì„œ, ì´ë¯¸ í• ë‹¹í•œ ë©”ëª¨ë¦¬ë§Œ ê·¸ëŒ€ë¡œ ë‘ê³  ìºì‰¬ë¥¼ ì™„ì „íˆ ì´ˆê¸°í™” í•´ë²„ë ¤ì•¼ í•œë‹¤.
+     * Note : ÀÌ Äİ¹éÀº ¼­¹ö¿¡¼­ ¿ÏÀüÈ÷ »õ·Î¿î fetch °¡ ½ÃÀÛµÇ¾úÀ» ¶§¿¡¸¸ È£ÃâµÈ´Ù.
+     *        µû¶ó¼­, ÀÌ¹Ì ÇÒ´çÇÑ ¸Ş¸ğ¸®¸¸ ±×´ë·Î µÎ°í Ä³½¬¸¦ ¿ÏÀüÈ÷ ÃÊ±âÈ­ ÇØ¹ö·Á¾ß ÇÑ´Ù.
      *
-     *        ì—¬íƒœê¹Œì§€ì˜ fetch ëœ ê²°ê³¼ëŠ” ë‹¤ ë²„ë¦°ë‹¤.
+     *        ¿©ÅÂ±îÁöÀÇ fetch µÈ °á°ú´Â ´Ù ¹ö¸°´Ù.
      *
-     *        ìºì‰¬ì— ë§¤ë‹¬ë¦° ulnLob ë“¤ì€ CloseCursor() í•˜ê±°ë‚˜, ìºì‰¬ ë¯¸ìŠ¤ê°€ ë°œìƒí•˜ë©´ free í•˜ë¯€ë¡œ
-     *        ì—¬ê¸°ì„œ ì‹ ê²½ì“°ì§€ ì•Šì•„ë„ ëœë‹¤.
+     *        Ä³½¬¿¡ ¸Å´Ş¸° ulnLob µéÀº CloseCursor() ÇÏ°Å³ª, Ä³½¬ ¹Ì½º°¡ ¹ß»ıÇÏ¸é free ÇÏ¹Ç·Î
+     *        ¿©±â¼­ ½Å°æ¾²Áö ¾Ê¾Æµµ µÈ´Ù.
      */
     ACI_TEST( ulnCacheInitialize(sCache) != ACI_SUCCESS );
 
@@ -205,26 +205,26 @@ ACI_RC ulnCallbackFetchBeginResult(cmiProtocolContext *aProtocolContext,
     }
 
     /*
-     * column info ë¥¼ ìœ ì§€í•  ë°°ì—´ì„ ì¤€ë¹„í•œë‹¤.
+     * column info ¸¦ À¯ÁöÇÒ ¹è¿­À» ÁØºñÇÑ´Ù.
      */
     ACI_TEST_RAISE(ulnCachePrepareColumnInfoArray(sCache, sColumnCount)
                    != ACI_SUCCESS,
                    LABEL_NOT_ENOUGH_MEM);
 
     /*
-     * ìºì‰¬ì˜ ì»¬ëŸ¼ í˜•ìƒê³¼ ë¸”ë¡ í• ë‹¹ ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
+     * Ä³½¬ÀÇ ÄÃ·³ Çü»ó°ú ºí·Ï ÇÒ´ç Á¤º¸¸¦ °»½ÅÇÑ´Ù.
      */
 
     sColumnPosition = 0;
 
     /* PROJ-1789 Updatable Scrollable Cursor
-     * Bookmark ì²˜ë¦¬ë¥¼ ìœ„í•´ 0ë²ˆì§¸ ì»¬ëŸ¼ ì •ë³´ë¥¼ ì´ˆê¸°í™” í•´ì•¼í•œë‹¤.
-     * ì—¬ê¸°ì„œ MTypeì€ USE_BOOKMARKì— ë”°ë¼ ë°”ë€” ìˆ˜ ìˆëŠ”ë°, ì¼ë‹¨ BIGINTë¡œ í•´ë‘”ë‹¤.
+     * Bookmark Ã³¸®¸¦ À§ÇØ 0¹øÂ° ÄÃ·³ Á¤º¸¸¦ ÃÊ±âÈ­ ÇØ¾ßÇÑ´Ù.
+     * ¿©±â¼­ MTypeÀº USE_BOOKMARK¿¡ µû¶ó ¹Ù²ğ ¼ö ÀÖ´Âµ¥, ÀÏ´Ü BIGINT·Î ÇØµĞ´Ù.
      * (@seealso ulnDataBuildColumnZero) */
     ulnCacheSetColumnInfo(sCache, 0, ULN_MTYPE_BIGINT, 0);
 
     /* PROJ-1789 Updatable Scrollable Cursor
-     * Keyset-drivenì´ë©´ ì²«ë²ˆì§¸ ì»¬ëŸ¼ìœ¼ë¡œ _PROWIDê°€ ì¶”ê°€ëœë‹¤. ì´ê±¸ ë–¼ì–´ë‚´ì•¼í•œë‹¤. */
+     * Keyset-drivenÀÌ¸é Ã¹¹øÂ° ÄÃ·³À¸·Î _PROWID°¡ Ãß°¡µÈ´Ù. ÀÌ°É ¶¼¾î³»¾ßÇÑ´Ù. */
     if (sStmt->mParentStmt != SQL_NULL_HSTMT) /* is RowsetStmt ? */
     {
         sColumnNumber       = 2;
@@ -239,8 +239,8 @@ ACI_RC ulnCallbackFetchBeginResult(cmiProtocolContext *aProtocolContext,
     {
         /*
          * BUG-28623 [CodeSonar]Null Pointer Dereference
-         * sDescRecIrdì— ëŒ€í•œ NULL ê²€ì‚¬ê°€ ì—†ìŒ
-         * ë”°ë¼ì„œ ACI_TEST ê²€ì‚¬ ì¶”ê°€
+         * sDescRecIrd¿¡ ´ëÇÑ NULL °Ë»ç°¡ ¾øÀ½
+         * µû¶ó¼­ ACI_TEST °Ë»ç Ãß°¡
          */
         sDescRecIrd = ulnDescGetDescRec(sStmt->mAttrIrd, sColumnNumber);
         ACI_TEST( sDescRecIrd == NULL );
@@ -258,7 +258,7 @@ ACI_RC ulnCallbackFetchBeginResult(cmiProtocolContext *aProtocolContext,
                              ACP_ALIGN8(ACI_SIZEOF(ulnRow)) + ACP_ALIGN8(sColumnPosition));
 
     /*
-     * ì»¤ì„œ ìƒíƒœ ë³€ê²½
+     * Ä¿¼­ »óÅÂ º¯°æ
      */
     ulnCursorSetServerCursorState(&sStmt->mCursor, ULN_CURSOR_STATE_OPEN);
 
@@ -274,13 +274,13 @@ ACI_RC ulnCallbackFetchBeginResult(cmiProtocolContext *aProtocolContext,
     ACI_EXCEPTION_END;
 
     /*
-     * Note : ACI_SUCCESS ë¥¼ ë¦¬í„´í•˜ëŠ” ê²ƒì€ ë²„ê·¸ê°€ ì•„ë‹ˆë‹¤.
-     *        cm ì˜ ì½œë°±í•¨ìˆ˜ê°€ ACI_FAILURE ë¥¼ ë¦¬í„´í•˜ë©´ communication error ë¡œ ì·¨ê¸‰ë˜ì–´ ë²„ë¦¬ê¸°
-     *        ë•Œë¬¸ì´ë‹¤.
+     * Note : ACI_SUCCESS ¸¦ ¸®ÅÏÇÏ´Â °ÍÀº ¹ö±×°¡ ¾Æ´Ï´Ù.
+     *        cm ÀÇ Äİ¹éÇÔ¼ö°¡ ACI_FAILURE ¸¦ ¸®ÅÏÇÏ¸é communication error ·Î Ãë±ŞµÇ¾î ¹ö¸®±â
+     *        ¶§¹®ÀÌ´Ù.
      *
-     *        ì–´ì°Œë˜ì—ˆë˜ ê°„ì—, Function Context ì˜ ë©¤ë²„ì¸ mSqlReturn ì— í•¨ìˆ˜ ë¦¬í„´ê°’ì´
-     *        ì €ì¥ë˜ê²Œ ë  ê²ƒì´ë©°, uln ì˜ cmi ë§¤í•‘ í•¨ìˆ˜ì¸ ulnReadProtocol() í•¨ìˆ˜ ì•ˆì—ì„œ
-     *        Function Context ì˜ mSqlReturn ì„ ì²´í¬í•´ì„œ ì ì ˆí•œ ì¡°ì¹˜ë¥¼ ì·¨í•˜ê²Œ ë  ê²ƒì´ë‹¤.
+     *        ¾îÂîµÇ¾ú´ø °£¿¡, Function Context ÀÇ ¸â¹öÀÎ mSqlReturn ¿¡ ÇÔ¼ö ¸®ÅÏ°ªÀÌ
+     *        ÀúÀåµÇ°Ô µÉ °ÍÀÌ¸ç, uln ÀÇ cmi ¸ÅÇÎ ÇÔ¼öÀÎ ulnReadProtocol() ÇÔ¼ö ¾È¿¡¼­
+     *        Function Context ÀÇ mSqlReturn À» Ã¼Å©ÇØ¼­ ÀûÀıÇÑ Á¶Ä¡¸¦ ÃëÇÏ°Ô µÉ °ÍÀÌ´Ù.
      */
     return ACI_SUCCESS;
 }
@@ -301,9 +301,9 @@ ACI_RC ulnCallbackFetchEndResult(cmiProtocolContext *aProtocolContext,
     CMI_SKIP_READ_BLOCK( aProtocolContext, 6);
 
     /* PROJ-1381, BUG-32902 FAC
-     * Holdable StatementëŠ” CloseCursor ì „ê¹Œì§€ ì„ì˜ë¡œ ëë‚´ì§€ ì•ŠëŠ”ë‹¤. */
+     * Holdable Statement´Â CloseCursor Àü±îÁö ÀÓÀÇ·Î ³¡³»Áö ¾Ê´Â´Ù. */
     /* PROJ-1789 Updatable Scrollable Cursor
-     * Keyset-drivenë„ CloseCursor ì „ê¹Œì§€ ì„ì˜ë¡œ ëë‚´ì§€ ì•ŠëŠ”ë‹¤. */
+     * Keyset-drivenµµ CloseCursor Àü±îÁö ÀÓÀÇ·Î ³¡³»Áö ¾Ê´Â´Ù. */
     if ((ulnCursorGetHoldability(sCursor) != SQL_CURSOR_HOLD_ON)
      && (ulnCursorGetType(sCursor) != SQL_CURSOR_KEYSET_DRIVEN))
     {

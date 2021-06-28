@@ -21,8 +21,10 @@ import Altibase.jdbc.driver.ex.ErrorDef;
 
 import java.sql.*;
 import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.Executor;
 
-public class AltibaseLogicalConnection implements Connection
+public class AltibaseLogicalConnection extends AbstractConnection
 {
     protected Connection               mPhysicalConnection;
     protected AltibasePooledConnection mPooledConnection;
@@ -255,7 +257,7 @@ public class AltibaseLogicalConnection implements Connection
         throwErrorForClosed();
         return mPhysicalConnection.prepareStatement(aSql, aColumnNames);
     }
-    
+
     // PROJ-2583 jdbc logging
     public int getSessionId() throws SQLException
     {
@@ -263,11 +265,60 @@ public class AltibaseLogicalConnection implements Connection
         return ((AltibaseConnection)mPhysicalConnection).getSessionId();
     }
     
-    private void throwErrorForClosed() throws SQLException
+    protected void throwErrorForClosed() throws SQLException
     {
         if (mClosed)
         {
             Error.throwSQLException(ErrorDef.CLOSED_CONNECTION);            
         }
+    }
+
+    @Override
+    public boolean isValid(int aTimeout) throws SQLException
+    {
+        throwErrorForClosed();
+        return mPhysicalConnection.isValid(aTimeout);
+    }
+
+    @Override
+    public void setClientInfo(String aName, String aValue) throws SQLClientInfoException
+    {
+        mPhysicalConnection.setClientInfo(aName, aValue);
+    }
+
+    @Override
+    public void setClientInfo(Properties aProperties) throws SQLClientInfoException
+    {
+        mPhysicalConnection.setClientInfo(aProperties);
+    }
+
+    @Override
+    public String getClientInfo(String aName) throws SQLException
+    {
+        return mPhysicalConnection.getClientInfo(aName);
+    }
+
+    @Override
+    public Properties getClientInfo() throws SQLException
+    {
+        return mPhysicalConnection.getClientInfo();
+    }
+
+    @Override
+    public void abort(Executor aExecutor) throws SQLException
+    {
+        mPhysicalConnection.abort(aExecutor);
+    }
+
+    @Override
+    public void setNetworkTimeout(Executor aExecutor, int aMilliseconds) throws SQLException
+    {
+        mPhysicalConnection.setNetworkTimeout(aExecutor, aMilliseconds);
+    }
+
+    @Override
+    public int getNetworkTimeout() throws SQLException
+    {
+        return mPhysicalConnection.getNetworkTimeout();
     }
 }

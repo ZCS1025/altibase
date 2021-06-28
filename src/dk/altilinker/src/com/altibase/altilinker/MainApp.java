@@ -428,7 +428,6 @@ public class MainApp
         int         sMinorVersion = 0;
 
         sMajorVersion = Integer.parseInt( sVersion[0] );
-        sMinorVersion = Integer.parseInt( sVersion[1] );
 
         if ( sMajorVersion > REQUIRED_JAVA_MAJOR_VERSION ) 
         {
@@ -436,6 +435,7 @@ public class MainApp
         }
         else if ( sMajorVersion == REQUIRED_JAVA_MAJOR_VERSION )
         {
+            sMinorVersion = Integer.parseInt( sVersion[1] );
             if ( sMinorVersion >= REQUIRED_JAVA_MINOR_VERSION )
             {
                 sRC = true;

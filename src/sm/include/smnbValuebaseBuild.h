@@ -47,7 +47,7 @@ public:
                               smnGetPageFunc    aGetPageFunc,
                               smnGetRowFunc     aGetRowFunc );
 
-    /* ì“°ë ˆë“œ ì´ˆê¸°í™” */
+    /* ¾²·¹µå ÃÊ±âÈ­ */
     IDE_RC initialize( void            * aTrans,
                        smcTableHeader  * aTable,
                        smnIndexHeader  * aIndex,
@@ -62,7 +62,7 @@ public:
                        smnGetPageFunc    aGetPageFunc,
                        smnGetRowFunc     aGetRowFunc );
 
-    /* BUG-27403 ì“°ë ˆë“œ ì •ë¦¬ */
+    /* BUG-27403 ¾²·¹µå Á¤¸® */
     IDE_RC destroy( );
 
     void run();
@@ -88,9 +88,6 @@ private:
     smnbBuildRun       * mFstRun;
     smnbBuildRun       * mLstRun;
 
-    smnbBuildRun       * mFstFreeRun; // run ìž¬ì‚¬ìš© : ì²«ë²ˆì§¸ freeNode
-    smnbBuildRun       * mLstFreeRun; // run ìž¬ì‚¬ìš© : ë§ˆì§€ë§‰ freeNode
-    
     idBool               mIsNeedValidation;
     idBool               mIsUnique;
     
@@ -104,7 +101,6 @@ private:
     UInt                 mMyTID;
     UInt                 mSortedRunCount;
     UInt                 mMergedRunCount;
-    SInt                 mTotalRunCnt;
 
     idBool               mIsSuccess;
     
@@ -206,6 +202,20 @@ private:
     IDE_RC allocRun( smnbBuildRun  ** aRun );
 
     void freeRun( smnbBuildRun      * aRun );
+
+    SInt getPivot( smnbStatistic * aIndexStat,
+                   smnbHeader    * aIndexHeader,
+                   SChar         * aBuffer,
+                   UShort        * aKeyOffset,
+                   SInt            aLeftPos,
+                   SInt            aRightPos );
+
+    SInt getPivot4Large( smnbStatistic * aIndexStat,
+                         smnbHeader    * aIndexHeader,
+                         SChar         * aBuffer,
+                         UShort        * aKeyOffset,
+                         SInt            aLeftPos,
+                         SInt            aRightPos );
 };
 
 #endif /* _O_SMNB_VALUE_BASE_BUILD_H_ */

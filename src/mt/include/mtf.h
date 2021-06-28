@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtf.h 85313 2019-04-24 05:52:44Z andrew.shin $
+ * $Id: mtf.h 85458 2019-05-16 07:13:00Z andrew.shin $
  **********************************************************************/
 
 #ifndef _O_MTF_H_
@@ -85,11 +85,11 @@ private:
 
     static IDE_RC finalizeComparisonTable( void );
 
-    // Conversion CostÎ•º Î≥ÄÍ≤Ω Î∞è ÏõêÎ≥µ
+    // Conversion Cost∏¶ ∫Ø∞Ê π◊ ø¯∫π
     static IDE_RC changeConvertCost( void );
     static IDE_RC restoreConvertCost( void );
 
-    // ÏõêÎ≥µÌïòÍ∏∞ ÏúÑÌï¥ Ï†ÄÏû•ÌïòÎäî Í≥µÍ∞Ñ
+    // ø¯∫π«œ±‚ ¿ß«ÿ ¿˙¿Â«œ¥¬ ∞¯∞£
     static ULong  saveCost[3][3];
     static const mtdModule*** comparisonTable;
 
@@ -197,28 +197,28 @@ public:
                                 const void*       aName,
                                 UInt              aLength );
 
-    // To Fix BUG-12306 FilterÍ∞Ä ÌïÑÏöîÌïúÏßÄ Í≤ÄÏÇ¨
+    // To Fix BUG-12306 Filter∞° « ø‰«—¡ˆ ∞ÀªÁ
     static IDE_RC checkNeedFilter( mtcTemplate * aTmplate,
                                    mtcNode     * aNode,
                                    idBool      * aNeedFilter );
 
-    // PROJ-1075 module->noÏóê ÎåÄÏùëÎêòÎäî comparisonModuleÏùÑ Î∞òÌôò.
+    // PROJ-1075 module->noø° ¥Î¿¿µ«¥¬ comparisonModule¿ª π›»Ø.
     static IDE_RC getComparisonModule( const mtdModule** aModule,
                                        UInt              aNo1,
                                        UInt              aNo2 );
 
-    // PROJ-1075 module->noÏóê ÎåÄÏùëÎêòÎäî mtfSubModuleÏùÑ Î∞òÌôò.
+    // PROJ-1075 module->noø° ¥Î¿¿µ«¥¬ mtfSubModule¿ª π›»Ø.
     static IDE_RC getSubModule1Arg( const mtfSubModule** aModule,
                                     mtfSubModule**       aTable,
                                     UInt aNo );
 
-    // PROJ-1075 2Í∞úÏùò module->noÏóê ÎåÄÏùëÎêòÎäî mtfSubModuleÏùÑ Î∞òÌôò.
+    // PROJ-1075 2∞≥¿« module->noø° ¥Î¿¿µ«¥¬ mtfSubModule¿ª π›»Ø.
     static IDE_RC getSubModule2Args( const mtfSubModule** aModule,
                                      mtfSubModule***      aTable,
                                      UInt                 aNo1,
                                      UInt                 aNo2 );
 
-    // BUG-15208, BUG-15212 ÎèôÏπò ÎπÑÍµêÍ∞Ä Í∞ÄÎä•Ìïú Data TypeÏù∏ÏßÄ Í≤ÄÏÇ¨
+    // BUG-15208, BUG-15212 µøƒ° ∫Ò±≥∞° ∞°¥…«— Data Type¿Œ¡ˆ ∞ÀªÁ
     static idBool isEquiValidType( const mtdModule * aModule );
     static idBool isGreaterLessValidType( const mtdModule * aModule );
 
@@ -299,9 +299,9 @@ public:
     static void freeFuncDataMemory( iduMemory * aMemoryMgr );
 
     /* BUG-46892 */
-    static IDE_RC getFuncDataMemorySize( mtcTemplate * aTemplate,
-                                         iduMemory   * aMemoryMgr,
-                                         ULong         aSize );
+    static IDE_RC checkFuncDataMemoryMaximum( mtcTemplate * aTemplate,
+                                              iduMemory   * aMemoryMgr,
+                                              ULong         aSize );
 
     static IDE_RC setKeepOrderData( mtcNode          * aNode,
                                     mtcStack         * aStack,

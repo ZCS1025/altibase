@@ -84,7 +84,7 @@ extern mtvModule mtvClob2ClobLocator;
 extern mtvModule mtvNibble2Varchar;
 extern mtvModule mtvVarchar2Nibble;
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 extern mtvModule mtvClob2Varchar;
 
 // PROJ-1571
@@ -143,7 +143,7 @@ extern mtvModule mtvUndef2BlobLocator;
 extern mtvModule mtvUndef2ClobLocator;
 extern mtvModule mtvUndef2Binary;
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 extern mtvModule mtvClobLocator2Clob;
 
 extern mtvModule mtvByte2Varbyte;    // BUG-40973
@@ -206,7 +206,7 @@ const mtvModule* mtv::mInternalModule[] = {
     &mtvClobLocator2Clob,  // PROJ-1362
     &mtvBlob2BlobLocator,  // PROJ-1362
     &mtvClob2ClobLocator,  // PROJ-1362
-    &mtvClob2Varchar,      /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+    &mtvClob2Varchar,      /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
     &mtvNibble2Varchar,    // PROJ-1362
     &mtvVarchar2Nibble,    // PROJ-1362
     &mtvVarbit2Varchar,  // PROJ-1571

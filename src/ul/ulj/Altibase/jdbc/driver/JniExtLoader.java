@@ -35,7 +35,7 @@ public class JniExtLoader
     }
 
     /**
-     * JNI ext. module Л²└ load Л▀°М┌╗К▀╓.
+     * JNI ext. module ю╩ load ╫це╡╢ы.
      */
     private static void initialize()
     {

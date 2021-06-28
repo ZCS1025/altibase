@@ -46,8 +46,8 @@ typedef struct qriParseTree
     SInt                  startOption;        // BUG-18714
     ULong                 startSN;
     SInt                  role;
-    //replication createì‹œ ì„¤ì •ëœ ì˜µì…˜ ë¦¬ìŠ¤íŠ¸ë¥¼ flagë¡œ í‘œì‹œ 0x00000001(recovery)
-    //alter replication setì‹œ ì„¤ì •ëœ ì˜µì…˜ì„ flagë¡œ í‘œì‹œ
+    //replication create½Ã ¼³Á¤µÈ ¿É¼Ç ¸®½ºÆ®¸¦ flag·Î Ç¥½Ã 0x00000001(recovery)
+    //alter replication set½Ã ¼³Á¤µÈ ¿É¼ÇÀ» flag·Î Ç¥½Ã
     /* PROJ-1915 */
     struct qriReplOptions* replOptions;
 
@@ -56,8 +56,11 @@ typedef struct qriParseTree
     rpFlushOption         flushOption;
     
     // BUG-21761
-    // Níƒ€ìž…ì„ Uíƒ€ìž…ìœ¼ë¡œ ë³€í˜•ì‹œí‚¬ ë•Œ ì‚¬ìš©
+    // NÅ¸ÀÔÀ» UÅ¸ÀÔÀ¸·Î º¯Çü½ÃÅ³ ¶§ »ç¿ë
     qciNamePosList       * ncharList;
+
+    // DDL °ú  RP ÀÇ lock ¼ø¼­¸¦ º¸Àå ÇØÁÖ±â À§ÇØ »ç¿ë
+    void                 * lockTable;
     
 } qriParseTree;
 
@@ -74,6 +77,7 @@ typedef struct qriParseTree
     _dst_->startOption     = RP_START_OPTION_NONE;      \
     _dst_->replMode        = RP_LAZY_MODE;              \
     _dst_->ncharList       = NULL;                      \
+    _dst_->role            = RP_ROLE_REPLICATION;       \
 }
 
 typedef struct qriSessionParseTree
@@ -97,7 +101,7 @@ typedef struct qriReplConnOpt
     rpIBLatency             ibLatency;
 } qriReplConnOpt;
 
-/* PROJ-1915 : replication reption í™•ìž¥  for off-line replication */
+/* PROJ-1915 : replication reption È®Àå  for off-line replication */
 typedef struct qriReplDirPath
 {
     qciNamePosition         path;

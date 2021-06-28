@@ -17,14 +17,39 @@
 #ifndef _O_ULSD_ERROR_H_
 #define _O_ULSD_ERROR_H_ 1
 
+#include <sdErrorCodeClient.h>
+
 void ulsdNativeErrorToUlnError( ulnFnContext       *aFnContext,
                                 acp_sint16_t        aHandleType,
                                 ulnObject          *aErrorRaiseObject,
                                 ulsdNodeInfo       *aNodeInfo,
                                 acp_char_t         *aOperation );
 
-void ulsdErrorHandleShardingError( ulnFnContext * aFnContext );
+void ulsdErrorHandleShardingError( ulnFnContext * aFnContext,
+                                   acp_uint32_t   aNodeId );
 
 void ulsdErrorCheckAndAlignDataNode( ulnFnContext * aFnContext );
+
+/* TASK-7218 Multi-Error Handling 2nd */
+#define ULSD_IS_MULTIPLE_ERROR(aNodeId)         \
+    (((aNodeId) == ACP_UINT32_MAX)? ACP_TRUE : ACP_FALSE)
+
+ACI_RC ulsdMultiErrorAdd( ulnFnContext *aFnContext,
+                          ulnDiagRec   *aDiagRec );
+
+ACP_INLINE acp_bool_t ulsdIsMultipleError( ulnDiagRec * aDiagRec )
+{
+    return ULSD_IS_MULTIPLE_ERROR(aDiagRec->mNodeId);
+}
+
+ACP_INLINE acp_uint32_t ulsdMultiErrorGetErrorCode()
+{
+    return ACI_E_ERROR_CODE(sdERR_ABORT_SHARD_MULTIPLE_ERRORS);
+}
+
+ACP_INLINE acp_char_t *ulsdMultiErrorGetSQLSTATE()
+{
+    return (acp_char_t *)"HY000";
+}
 
 #endif /* _O_ULSD_ERROR_H_ */

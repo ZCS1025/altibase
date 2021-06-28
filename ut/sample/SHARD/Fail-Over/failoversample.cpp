@@ -67,7 +67,7 @@ void execute_err(SQLHDBC aCon, SQLHSTMT aStmt, char* q)
     }
 }
 
-/* Fail-Over Successê°€ ëœ ë…¸ë“œê°€ ìˆëŠ”ì§€ ì—¬ë¶€ë¥¼ íŒë‹¨í•˜ëŠ” í•¨ìˆ˜. */
+/* Fail-Over Success°¡ µÈ ³ëµå°¡ ÀÖ´ÂÁö ¿©ºÎ¸¦ ÆÇ´ÜÇÏ´Â ÇÔ¼ö. */
 int isFailOverErrorEvent(SQLSMALLINT aHandleType, SQLHANDLE aHandle)
 {
     SQLRETURN   sRc;
@@ -104,7 +104,7 @@ int isFailOverErrorEvent(SQLSMALLINT aHandleType, SQLHANDLE aHandle)
     return sRet;
 }
 
-/* Shard Node Retry ê°€ ê°€ëŠ¥í•œì§€ ì—¬ë¶€ë¥¼ íŒë‹¨í•˜ëŠ” í•¨ìˆ˜. */
+/* Shard Node Retry °¡ °¡´ÉÇÑÁö ¿©ºÎ¸¦ ÆÇ´ÜÇÏ´Â ÇÔ¼ö. */
 int  isShardNodeRetryNotAvailable(SQLHSTMT aStmt)
 {
     SQLRETURN   sRc;
@@ -142,8 +142,8 @@ int  isShardNodeRetryNotAvailable(SQLHSTMT aStmt)
 }
 
 /* 
- * ìƒ¤ë“œ failover ë°œìƒ í›„ ë¶„ì‚° íŠ¸ëœì­ì…˜ rollbackì„ ìœ„í•œ í•¨ìˆ˜ 
- * ë¶„ì‚° íŠ¸ëœì­ì…˜ rollback ì‹œì—ë„ failoverê°€ ë°œìƒí•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ Rollbackì„ ë‘ ë²ˆ ì‹œë„í•œë‹¤.
+ * »şµå failover ¹ß»ı ÈÄ ºĞ»ê Æ®·£Àè¼Ç rollbackÀ» À§ÇÑ ÇÔ¼ö 
+ * ºĞ»ê Æ®·£Àè¼Ç rollback ½Ã¿¡µµ failover°¡ ¹ß»ıÇÒ ¼ö ÀÖÀ¸¹Ç·Î RollbackÀ» µÎ ¹ø ½ÃµµÇÑ´Ù.
  */
 int failoverRollback(SQLHANDLE aDbc)
 {
@@ -201,12 +201,12 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    /* AlternateServersê°€ ê°€ìš©ë…¸ë“œ attributeì´ë‹¤. 
-     * connection stringì„ ê¸¸ê²Œ êµ¬ì„±í•˜ê³  ì‹¶ì§€ ì•Šì€ ê²½ìš°,
-     * altibase_cli.iniì—ì„œ Data Source sectionì„ ê¸°ìˆ í•˜ê³ ,
-     * [DataSourceì´ë¦„] 
+    /* AlternateServers°¡ °¡¿ë³ëµå attributeÀÌ´Ù. 
+     * connection stringÀ» ±æ°Ô ±¸¼ºÇÏ°í ½ÍÁö ¾ÊÀº °æ¿ì,
+     * altibase_cli.ini¿¡¼­ Data Source sectionÀ» ±â¼úÇÏ°í,
+     * [DataSourceÀÌ¸§] 
      * AlternateServers=(128.1.3.53:20300,128.1.3.52:20301)
-     * DSN=DataSource ì´ë¦„ì„ ê¸°ìˆ í•˜ë©´ ëœë‹¤.
+     * DSN=DataSource ÀÌ¸§À» ±â¼úÇÏ¸é µÈ´Ù.
      */
     sprintf(sConnStr,
             "DSN=127.0.0.1;PORT=%d;UID=SYS;PWD=MANAGER;AlternateServers=(127.0.0.1:%d);"
@@ -235,7 +235,7 @@ int main(int argc, char* argv[])
                                 SQL_DRIVER_NOPROMPT);
     if(sRetCode != SQL_SUCCESS)
     {
-        /* CTFê°€ ë¶ˆê°€ëŠ¥í•œ ìƒí™©ì—ì„œ ì„œë²„ê°€ ëœ° ë•Œê¹Œì§€ ì¬ì‹œì‘í•  ìˆ˜ ìˆë‹¤. */
+        /* CTF°¡ ºÒ°¡´ÉÇÑ »óÈ²¿¡¼­ ¼­¹ö°¡ ¶ã ¶§±îÁö Àç½ÃÀÛÇÒ ¼ö ÀÖ´Ù. */
         sRetCode = SQLDisconnect(sDbc);
         test_error_exit(sRetCode,"SQLDisconnect()");
         sleep(1);
@@ -275,10 +275,10 @@ retryDirect:
                 sleep(1);
                 goto retry_connect;
             }
-           /* Service Time Fail-Overê°€ ë°œìƒí•˜ë©´
-            * ì´ì „ì— ìˆ˜í–‰í•œ BindëŠ” ë‹¤ì‹œ ìˆ˜í–‰í•˜ì§€ ì•Šì•„ë„ ë˜ë©°, 
-            * SQLDirectExecuteê²½ìš°ëŠ” SQLPrepareê°€ í•„ìš”í•˜ì§€ ì•Šê³ ,
-            * ë‹¤ì‹œ SQLDirectExecuteë¥¼ ìˆ˜í–‰í•˜ë©´ ëœë‹¤.
+           /* Service Time Fail-Over°¡ ¹ß»ıÇÏ¸é
+            * ÀÌÀü¿¡ ¼öÇàÇÑ Bind´Â ´Ù½Ã ¼öÇàÇÏÁö ¾Ê¾Æµµ µÇ¸ç, 
+            * SQLDirectExecute°æ¿ì´Â SQLPrepare°¡ ÇÊ¿äÇÏÁö ¾Ê°í,
+            * ´Ù½Ã SQLDirectExecute¸¦ ¼öÇàÇÏ¸é µÈ´Ù.
             */
             printf("failover event occur at prepare goto prepare.\n");
             goto retryDirect;
@@ -293,7 +293,7 @@ retryDirect:
         }
 		else
 		{
-		    /* ì¼ë°˜ ì—ëŸ¬ì— ëŒ€í•´ì„œ ì‚¬ìš©ì ì—ëŸ¬ ì²˜ë¦¬ ë¡œì§ì„ ìˆ˜í–‰í•œë‹¤. */
+		    /* ÀÏ¹İ ¿¡·¯¿¡ ´ëÇØ¼­ »ç¿ëÀÚ ¿¡·¯ Ã³¸® ·ÎÁ÷À» ¼öÇàÇÑ´Ù. */
 		}
     }
 
@@ -313,8 +313,8 @@ retryDirect:
                 sleep(1);
                 goto retry_connect;
             }
-            /* Service Time Fail-Overê°€ ë°œìƒí•˜ë©´ SQLPrepareë¶€í„° ë‹¤ì‹œ í•´ì•¼ í•œë‹¤.
-            * ì´ì „ì— ìˆ˜í–‰í•œ BindëŠ” ë‹¤ì‹œ ìˆ˜í–‰í•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
+            /* Service Time Fail-Over°¡ ¹ß»ıÇÏ¸é SQLPrepareºÎÅÍ ´Ù½Ã ÇØ¾ß ÇÑ´Ù.
+            * ÀÌÀü¿¡ ¼öÇàÇÑ Bind´Â ´Ù½Ã ¼öÇàÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
             */
             printf("failover event occur at prepare goto prepare\n");
             goto retry;
@@ -383,7 +383,7 @@ retryDirect:
                     goto retry_connect;
                 }
                 printf("failover event occur at fetch goto prepare\n");
-                /* Fetchì¤‘ì— FailOverê°€ ë°œìƒí•˜ë©´ SQLCloseCursorë¥¼ í•´ì•¼í•œë‹¤.*/ 
+                /* FetchÁß¿¡ FailOver°¡ ¹ß»ıÇÏ¸é SQLCloseCursor¸¦ ÇØ¾ßÇÑ´Ù.*/ 
                 SQLCloseCursor(sStmt);
                 goto retry;
             }

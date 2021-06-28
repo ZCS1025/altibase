@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: utAtb.h 82706 2018-04-05 01:32:59Z bethy $
+ * $Id: utAtb.h 82705 2018-04-05 01:31:36Z bethy $
  ******************************************************************************/
 #ifndef _UT_ALTIBASE_H_
 #define _UT_ALTIBASE_H_ 1
@@ -137,7 +137,7 @@ public:
 
     SChar * error(void) { return _conn->error(_stmt); }
 
-    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
+    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
     IDE_RC  utaCloseCur(void);
 
     /* BUG-45909 Improve LOB Processing */
@@ -189,7 +189,7 @@ public:
     IDE_RC initialize();
     IDE_RC reset();
 
-    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
+    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
     IDE_RC setStmtAttr4Array(void);
 
 protected:  friend class utAtbQuery;
@@ -208,10 +208,10 @@ public:
     IDE_RC  bindColumn(SInt,void* = NULL);
 
     inline bool isNull() { return ( *mValueInd == SQL_NULL_DATA); }
-    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
+    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
     inline SQLLEN *getValueInd() { return (mValueInd); }
-    // file modeì¼ ê²½ìš°ì—ëŠ” fileë¡œ ë¶€í„° í•„ë“œë¥¼ ì½ì–´ì˜¤ê¸° ë•Œë¬¸ì— indicatorê°’ì„
-    // SQL_NULL_DATAë¡œ setí• ìˆ˜ ìˆëŠ” í•¨ìˆ˜ê°€ í•„ìš”.
+    // file modeÀÏ °æ¿ì¿¡´Â file·Î ºÎÅÍ ÇÊµå¸¦ ÀĞ¾î¿À±â ¶§¹®¿¡ indicator°ªÀ»
+    // SQL_NULL_DATA·Î setÇÒ¼ö ÀÖ´Â ÇÔ¼ö°¡ ÇÊ¿ä.
     inline void setIsNull(bool aIsNull) { *mValueInd = (aIsNull)?SQL_NULL_DATA:0; }
 
     /* BUG-45909 Improve LOB Processing */
@@ -230,8 +230,8 @@ protected:  friend class utAtbRow;
 
     SQLULEN     precision;
     SQLSMALLINT scale;
-    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
-    // array fetch ë¥¼ ìœ„í•œ indicator ë°°ì—´.
+    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+    // array fetch ¸¦ À§ÇÑ indicator ¹è¿­.
     SQLLEN     *mValueInd;
 
     IDE_RC initialize( UShort aNo ,utAtbRow * aRow);

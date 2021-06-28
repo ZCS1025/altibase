@@ -16,22 +16,22 @@
  
 
 /***********************************************************************
- * $Id: qmoNonCrtPathMgr.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmoNonCrtPathMgr.cpp 89835 2021-01-22 10:10:02Z andrew.shin $
  *
  * Description :
  *     Non Critical Path Manager
  *
- *     Critical Path ì´ì™¸ì˜ ë¶€ë¶„ì— ëŒ€í•œ ìµœì í™” ë° ê·¸ëž˜í”„ë¥¼ ìƒì„±í•œë‹¤.
- *     ì¦‰, ë‹¤ìŒê³¼ ê°™ì€ ë¶€ë¶„ì— ëŒ€í•œ ê·¸ëž˜í”„ ìµœì í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *     Critical Path ÀÌ¿ÜÀÇ ºÎºÐ¿¡ ´ëÇÑ ÃÖÀûÈ­ ¹× ±×·¡ÇÁ¸¦ »ý¼ºÇÑ´Ù.
+ *     Áï, ´ÙÀ½°ú °°Àº ºÎºÐ¿¡ ´ëÇÑ ±×·¡ÇÁ ÃÖÀûÈ­¸¦ ¼öÇàÇÑ´Ù.
  *         - Projection Graph
  *         - Set Graph
  *         - Sorting Graph
  *         - Distinction Graph
  *         - Grouping Graph
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -56,13 +56,13 @@ qmoNonCrtPathMgr::init( qcStatement    * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmoNonCrtPath ìƒì„± ë° ì´ˆê¸°í™”
+ * Description : qmoNonCrtPath »ý¼º ¹× ÃÊ±âÈ­
  *
  * Implementation :
- *    (1) qmoNonCrtPath ë§Œí¼ ë©”ëª¨ë¦¬ í• ë‹¹
- *    (2) qmoNonCrtPath ì´ˆê¸°í™”
- *    (2) crtPath ìƒì„± ë° ì´ˆê¸°í™”
- *    (3) left, right ìƒì„± ë° ì´ˆê¸°í™” í•¨ìˆ˜ í˜¸ì¶œ
+ *    (1) qmoNonCrtPath ¸¸Å­ ¸Þ¸ð¸® ÇÒ´ç
+ *    (2) qmoNonCrtPath ÃÊ±âÈ­
+ *    (2) crtPath »ý¼º ¹× ÃÊ±âÈ­
+ *    (3) left, right »ý¼º ¹× ÃÊ±âÈ­ ÇÔ¼ö È£Ãâ
  *
  ***********************************************************************/
 
@@ -74,14 +74,14 @@ qmoNonCrtPathMgr::init( qcStatement    * aStatement,
     IDU_FIT_POINT_FATAL( "qmoNonCrtPathMgr::init::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aQuerySet != NULL );
 
     //------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //------------------------------------------
 
     sParseTree  = (qmsParseTree *)aStatement->myPlan->parseTree;
@@ -90,17 +90,17 @@ qmoNonCrtPathMgr::init( qcStatement    * aStatement,
     sCrtPath    = NULL;
 
     //------------------------------------------
-    // qmoNonCrtPath ì´ˆê¸°í™”
+    // qmoNonCrtPath ÃÊ±âÈ­
     //------------------------------------------
 
-    // qmoNonCrtPath ë©”ëª¨ë¦¬ í• ë‹¹ ë°›ìŒ
+    // qmoNonCrtPath ¸Þ¸ð¸® ÇÒ´ç ¹ÞÀ½
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmoNonCrtPath),
                                              (void**) & sNonCrtPath )
               != IDE_SUCCESS);
 
     sNonCrtPath->flag = QMO_NONCRT_PATH_INITIALIZE;
 
-    // flag ì •ë³´ ì„¤ì •
+    // flag Á¤º¸ ¼³Á¤
     if ( aIsTop == ID_TRUE )
     {
         sNonCrtPath->flag &= ~QMO_NONCRT_PATH_TOP_MASK;
@@ -117,13 +117,13 @@ qmoNonCrtPathMgr::init( qcStatement    * aStatement,
     sNonCrtPath->myQuerySet = sQuerySet;
 
     //------------------------------------------
-    // crtPath ìƒì„± ë° ì´ˆê¸°í™” : Leaf Non Critical Path ì¸ ê²½ìš°ì—ë§Œ
+    // crtPath »ý¼º ¹× ÃÊ±âÈ­ : Leaf Non Critical Path ÀÎ °æ¿ì¿¡¸¸
     //------------------------------------------
 
     if ( sQuerySet->setOp == QMS_NONE )
     {
         //------------------------------------------
-        // PROJ-1413 constant exprssionì˜ ìƒìˆ˜ ë³€í™˜
+        // PROJ-1413 constant exprssionÀÇ »ó¼ö º¯È¯
         //------------------------------------------
 
         IDE_TEST( qmoConstExpr::processConstExpr( aStatement,
@@ -131,7 +131,7 @@ qmoNonCrtPathMgr::init( qcStatement    * aStatement,
                   != IDE_SUCCESS );
 
         //------------------------------------------
-        // Leaf Non Critical Path : crtPath ìƒì„± ë° ì´ˆê¸°í™”
+        // Leaf Non Critical Path : crtPath »ý¼º ¹× ÃÊ±âÈ­
         //------------------------------------------
 
         IDE_TEST( qmoCrtPathMgr::init( aStatement, sQuerySet, &sCrtPath )
@@ -141,7 +141,7 @@ qmoNonCrtPathMgr::init( qcStatement    * aStatement,
     else
     {
         //------------------------------------------
-        // Non-Leaf Non Critical Path : left, right ìƒì„± ë° ì´ˆê¸°í™” í•¨ìˆ˜ í˜¸ì¶œ
+        // Non-Leaf Non Critical Path : left, right »ý¼º ¹× ÃÊ±âÈ­ ÇÔ¼ö È£Ãâ
         //------------------------------------------
 
         IDE_TEST( init( aStatement, sQuerySet->left, ID_FALSE,
@@ -154,14 +154,14 @@ qmoNonCrtPathMgr::init( qcStatement    * aStatement,
     }
 
     //------------------------------------------
-    // PROJ-1413 constant exprssionì˜ ìƒìˆ˜ ë³€í™˜
+    // PROJ-1413 constant exprssionÀÇ »ó¼ö º¯È¯
     //------------------------------------------
 
     IDE_TEST( qmoConstExpr::processConstExprForOrderBy( aStatement,
                                                         sParseTree )
               != IDE_SUCCESS );
 
-    // out ì„¤ì •
+    // out ¼³Á¤
     *aNonCrtPath = sNonCrtPath;
 
     return IDE_SUCCESS;
@@ -177,24 +177,24 @@ qmoNonCrtPathMgr::optimize( qcStatement    * aStatement,
 {
 /***********************************************************************
  *
- * Description : Non Critical Pathì˜ ìµœì í™”( ì¦‰, qmoNonCrtPathì˜ ìµœì í™”)
+ * Description : Non Critical PathÀÇ ÃÖÀûÈ­( Áï, qmoNonCrtPathÀÇ ÃÖÀûÈ­)
  *
  * Implementation :
- *    (1) Leaf Non Critical Pathì˜ ìµœì í™” ( myQuerySet->setOp == QMS_NONE )
- *        a. Critical Pathì˜ ìµœì í™” ìˆ˜í–‰
- *        b. Groupingì˜ ì²˜ë¦¬
- *        c. Nested Groupingì˜ ì²˜ë¦¬
- *        d. Distinctionì˜ ì²˜ë¦¬
- *        e. ê²°ê³¼ graphë¥¼ qmoNonCrtPath::myGraphì— ì—°ê²°
- *    (2) Non Leaf Non Critical Pathì˜ ìµœì í™” ( myQuerySet->setOp != QMS_NONE )
- *        a. left, right ìµœì í™” í•¨ìˆ˜ í˜¸ì¶œ
- *        b. qmgSet ìƒì„± ë° ì´ˆê¸°í™”
- *        c. qmgSet ìµœì í™”
- *        d. ìµœì í™”í•œ qmgSetì„ qmoNonCrtPath::myGraphì— ì—°ê²°
- *    (4) Top Non Critical Pathì˜ ì²˜ë¦¬
- *        a. Order Byì˜ ì²˜ë¦¬
- *        b. Projection ì²˜ë¦¬
- *        c. ê²°ê³¼ graphë¥¼ qmoNonCrtPath::myGraphì— ì—°ê²°
+ *    (1) Leaf Non Critical PathÀÇ ÃÖÀûÈ­ ( myQuerySet->setOp == QMS_NONE )
+ *        a. Critical PathÀÇ ÃÖÀûÈ­ ¼öÇà
+ *        b. GroupingÀÇ Ã³¸®
+ *        c. Nested GroupingÀÇ Ã³¸®
+ *        d. DistinctionÀÇ Ã³¸®
+ *        e. °á°ú graph¸¦ qmoNonCrtPath::myGraph¿¡ ¿¬°á
+ *    (2) Non Leaf Non Critical PathÀÇ ÃÖÀûÈ­ ( myQuerySet->setOp != QMS_NONE )
+ *        a. left, right ÃÖÀûÈ­ ÇÔ¼ö È£Ãâ
+ *        b. qmgSet »ý¼º ¹× ÃÊ±âÈ­
+ *        c. qmgSet ÃÖÀûÈ­
+ *        d. ÃÖÀûÈ­ÇÑ qmgSetÀ» qmoNonCrtPath::myGraph¿¡ ¿¬°á
+ *    (4) Top Non Critical PathÀÇ Ã³¸®
+ *        a. Order ByÀÇ Ã³¸®
+ *        b. Projection Ã³¸®
+ *        c. °á°ú graph¸¦ qmoNonCrtPath::myGraph¿¡ ¿¬°á
  *
  ***********************************************************************/
 
@@ -206,14 +206,14 @@ qmoNonCrtPathMgr::optimize( qcStatement    * aStatement,
     IDU_FIT_POINT_FATAL( "qmoNonCrtPathMgr::optimize::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aNonCrtPath != NULL );
 
     //------------------------------------------
-    // Leafì¸ ê²½ìš°, Non-Leat ê²½ìš°ì˜ ì²˜ë¦¬
+    // LeafÀÎ °æ¿ì, Non-Leat °æ¿ìÀÇ Ã³¸®
     //------------------------------------------
 
     sNonCrtPath = aNonCrtPath;
@@ -223,7 +223,7 @@ qmoNonCrtPathMgr::optimize( qcStatement    * aStatement,
     if ( sQuerySet->setOp == QMS_NONE )
     {
         //------------------------------------------
-        // Leaf Non Critical Pathì¸ ê²½ìš°
+        // Leaf Non Critical PathÀÎ °æ¿ì
         //------------------------------------------
 
         IDE_TEST( optimizeLeaf( aStatement, sNonCrtPath ) != IDE_SUCCESS );
@@ -231,21 +231,21 @@ qmoNonCrtPathMgr::optimize( qcStatement    * aStatement,
     else
     {
         //------------------------------------------
-        // Non-Leaf Non Critical Pathì¸ ê²½ìš°
+        // Non-Leaf Non Critical PathÀÎ °æ¿ì
         //------------------------------------------
         IDE_TEST( optimizeNonLeaf( aStatement, sNonCrtPath ) != IDE_SUCCESS );
     }
     sMyGraph = sNonCrtPath->myGraph;
 
     //------------------------------------------
-    // Top ì—¬ë¶€ì— ë”°ë¥¸ ì²˜ë¦¬
+    // Top ¿©ºÎ¿¡ µû¸¥ Ã³¸®
     //------------------------------------------
 
     if ( ( sNonCrtPath->flag & QMO_NONCRT_PATH_TOP_MASK )
          == QMO_NONCRT_PATH_TOP_TRUE )
     {
         //------------------------------------------
-        // ORDER BY ì²˜ë¦¬
+        // ORDER BY Ã³¸®
         //------------------------------------------
 
         if ( sParseTree->orderBy != NULL )
@@ -265,7 +265,7 @@ qmoNonCrtPathMgr::optimize( qcStatement    * aStatement,
         }
 
         //------------------------------------------
-        // Projection ì²˜ë¦¬
+        // Projection Ã³¸®
         //------------------------------------------
 
         IDE_TEST( qmgProjection::init( aStatement,
@@ -297,14 +297,14 @@ qmoNonCrtPathMgr::optimizeLeaf( qcStatement   * aStatement,
 {
 /***********************************************************************
  *
- * Description : Leaf Non Critical Pathì˜ ìµœì í™”
+ * Description : Leaf Non Critical PathÀÇ ÃÖÀûÈ­
  *
  * Implementation :
- *    (1) Critical Path ì˜ ìµœì í™” ìˆ˜í–‰
- *    (2) Groupingì˜ ìˆ˜í–‰
- *    (3) Nested Groupingì˜ ìˆ˜í–‰
- *    (4) Distinctionì˜ ìˆ˜í–‰
- *    (5) ê²°ê³¼ graphë¥¼ qmoNonCrtPath::myGraphì— ì—°ê²°
+ *    (1) Critical Path ÀÇ ÃÖÀûÈ­ ¼öÇà
+ *    (2) GroupingÀÇ ¼öÇà
+ *    (3) Nested GroupingÀÇ ¼öÇà
+ *    (4) DistinctionÀÇ ¼öÇà
+ *    (5) °á°ú graph¸¦ qmoNonCrtPath::myGraph¿¡ ¿¬°á
  *
  ***********************************************************************/
 
@@ -318,21 +318,21 @@ qmoNonCrtPathMgr::optimizeLeaf( qcStatement   * aStatement,
     IDU_FIT_POINT_FATAL( "qmoNonCrtPathMgr::optimizeLeaf::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aNonCrtPath != NULL );
 
     //------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //------------------------------------------
 
     sNonCrtPath = aNonCrtPath;
     sQuerySet   = sNonCrtPath->myQuerySet;
 
     //------------------------------------------
-    // Critical Path ìµœì í™”
+    // Critical Path ÃÖÀûÈ­
     //------------------------------------------
 
     IDE_TEST( qmoCrtPathMgr::optimize( aStatement,sNonCrtPath->crtPath )
@@ -341,7 +341,7 @@ qmoNonCrtPathMgr::optimizeLeaf( qcStatement   * aStatement,
     sMyGraph = sNonCrtPath->crtPath->myGraph;
 
     //------------------------------------------
-    // Groupingì˜ ì²˜ë¦¬
+    // GroupingÀÇ Ã³¸®
     //------------------------------------------
 
     // dummyNode
@@ -363,7 +363,7 @@ qmoNonCrtPathMgr::optimizeLeaf( qcStatement   * aStatement,
             }
 
             // BUG-37496
-            // nested aggregation ì„ ì‚¬ìš©í•œ ì¿¼ë¦¬ì˜ ê²°ê³¼ê°€ ì˜¬ë°”ë¥´ì§€ ì•ŠìŠµë‹ˆë‹¤.
+            // nested aggregation À» »ç¿ëÇÑ Äõ¸®ÀÇ °á°ú°¡ ¿Ã¹Ù¸£Áö ¾Ê½À´Ï´Ù.
             if( sPrev == NULL )
             {
                 sQuerySet->SFWGH->aggsDepth1 = sAggr->next;
@@ -406,7 +406,7 @@ qmoNonCrtPathMgr::optimizeLeaf( qcStatement   * aStatement,
     }
 
     //------------------------------------------
-    // Nested Groupingì˜ ì²˜ë¦¬
+    // Nested GroupingÀÇ Ã³¸®
     //------------------------------------------
 
     if ( sQuerySet->SFWGH->aggsDepth2 != NULL )
@@ -427,7 +427,7 @@ qmoNonCrtPathMgr::optimizeLeaf( qcStatement   * aStatement,
     }
 
     //------------------------------------------
-    // Windowingì˜ ì²˜ë¦¬
+    // WindowingÀÇ Ã³¸®
     //------------------------------------------
 
     if ( sQuerySet->analyticFuncList != NULL )
@@ -447,7 +447,7 @@ qmoNonCrtPathMgr::optimizeLeaf( qcStatement   * aStatement,
     }
 
     //------------------------------------------
-    // Distinctionì˜ ì²˜ë¦¬
+    // DistinctionÀÇ Ã³¸®
     //------------------------------------------
 
     if ( sQuerySet->SFWGH->selectType == QMS_DISTINCT )
@@ -466,7 +466,7 @@ qmoNonCrtPathMgr::optimizeLeaf( qcStatement   * aStatement,
         // Nohting To Do
     }
 
-    // ê²°ê³¼ Graph ì—°ê²°
+    // °á°ú Graph ¿¬°á
     sNonCrtPath->myGraph = sMyGraph;
 
     return IDE_SUCCESS;
@@ -483,13 +483,13 @@ qmoNonCrtPathMgr::optimizeNonLeaf( qcStatement   * aStatement,
 {
 /***********************************************************************
  *
- * Description : Non-Leaf Non Critical Pathì˜ ìµœì í™”
+ * Description : Non-Leaf Non Critical PathÀÇ ÃÖÀûÈ­
  *
  * Implementation :
- *    (1) left, right ìµœì í™” í•¨ìˆ˜ í˜¸ì¶œ
- *    (2) qmgSet ì´ˆê¸°í™”
- *    (3) qmgSet ìµœì í™”
- *    (4) ê²°ê³¼ graphë¥¼ qmoNonCrtPath::myGraphì— ì—°ê²°
+ *    (1) left, right ÃÖÀûÈ­ ÇÔ¼ö È£Ãâ
+ *    (2) qmgSet ÃÊ±âÈ­
+ *    (3) qmgSet ÃÖÀûÈ­
+ *    (4) °á°ú graph¸¦ qmoNonCrtPath::myGraph¿¡ ¿¬°á
  *
  ***********************************************************************/
 
@@ -499,21 +499,21 @@ qmoNonCrtPathMgr::optimizeNonLeaf( qcStatement   * aStatement,
     IDU_FIT_POINT_FATAL( "qmoNonCrtPathMgr::optimizeNonLeaf::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aNonCrtPath != NULL );
 
     //------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //------------------------------------------
 
     sNonCrtPath = aNonCrtPath;
     sQuerySet   = sNonCrtPath->myQuerySet;
 
     // PROJ-2582 recursive with
-    if ( ( sQuerySet->flag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
+    if ( ( sQuerySet->lflag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
          == QMV_QUERYSET_RECURSIVE_VIEW_TOP )
     {
         IDE_TEST( optimizeSetRecursive( aStatement,
@@ -539,13 +539,13 @@ IDE_RC qmoNonCrtPathMgr::optimizeSet( qcStatement   * aStatement,
 {
 /***********************************************************************
  *
- * Description : Non-Leaf Non Critical Pathì˜ ìµœì í™”
+ * Description : Non-Leaf Non Critical PathÀÇ ÃÖÀûÈ­
  *
  * Implementation :
- *    (1) left, right ìµœì í™” í•¨ìˆ˜ í˜¸ì¶œ
- *    (2) qmgSet ì´ˆê¸°í™”
- *    (3) qmgSet ìµœì í™”
- *    (4) ê²°ê³¼ graphë¥¼ qmoNonCrtPath::myGraphì— ì—°ê²°
+ *    (1) left, right ÃÖÀûÈ­ ÇÔ¼ö È£Ãâ
+ *    (2) qmgSet ÃÊ±âÈ­
+ *    (3) qmgSet ÃÖÀûÈ­
+ *    (4) °á°ú graph¸¦ qmoNonCrtPath::myGraph¿¡ ¿¬°á
  *
  ***********************************************************************/
 
@@ -556,40 +556,40 @@ IDE_RC qmoNonCrtPathMgr::optimizeSet( qcStatement   * aStatement,
     IDU_FIT_POINT_FATAL( "qmoNonCrtPathMgr::optimizeSet::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aNonCrtPath != NULL );
 
     //------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //------------------------------------------
 
     sNonCrtPath = aNonCrtPath;
     sQuerySet   = sNonCrtPath->myQuerySet;
 
     //------------------------------------------
-    // left, right ìµœì í™” í•¨ìˆ˜ í˜¸ì¶œ
+    // left, right ÃÖÀûÈ­ ÇÔ¼ö È£Ãâ
     //------------------------------------------
 
     IDE_TEST( optimize( aStatement, sNonCrtPath->left ) != IDE_SUCCESS );
     IDE_TEST( optimize( aStatement, sNonCrtPath->right ) != IDE_SUCCESS );
 
     // To Fix PR-9567
-    // Non Leaf Query Setì˜ ê²½ìš°
-    // Child Query Setì€ ë‹¤ìŒê³¼ ê°™ì´ ë‹¤ì–‘í•œ í˜•íƒœë¡œ êµ¬ì„±ë  ìˆ˜ ìžˆë‹¤.
+    // Non Leaf Query SetÀÇ °æ¿ì
+    // Child Query SetÀº ´ÙÀ½°ú °°ÀÌ ´Ù¾çÇÑ ÇüÅÂ·Î ±¸¼ºµÉ ¼ö ÀÖ´Ù.
     // ----------------------------------------------------
     // Left   :  Leaf   | Leaf     | Non-Leaf | Non-Leaf
     // Right  :  Leaf   | Non-Leaf | Leaf     | Non-Leaf
     // ----------------------------------------------------
-    // ìœ„ì™€ ê°™ì€ ë‹¤ì–‘í•œ ì²˜ë¦¬ë¥¼ ìœ„í•˜ì—¬
-    // Left Query Setê³¼ Right Query Setì„ ë³„ë„ë¡œ ì²˜ë¦¬í•˜ì—¬ì•¼ í•œë‹¤.
+    // À§¿Í °°Àº ´Ù¾çÇÑ Ã³¸®¸¦ À§ÇÏ¿©
+    // Left Query Set°ú Right Query SetÀ» º°µµ·Î Ã³¸®ÇÏ¿©¾ß ÇÑ´Ù.
 
     if ( sNonCrtPath->left->myQuerySet->setOp == QMS_NONE )
     {
         //------------------------------------------
-        // left projection graphì˜ ìƒì„±
+        // left projection graphÀÇ »ý¼º
         //------------------------------------------
 
         IDE_TEST( qmgProjection::init( aStatement,
@@ -605,8 +605,8 @@ IDE_RC qmoNonCrtPathMgr::optimizeSet( qcStatement   * aStatement,
     else
     {
         // To Fix PR-9567
-        // í•˜ìœ„ Query Setì´ SETì„ ì˜ë¯¸í•  ê²½ìš°
-        // Parentê°€ SETìž„ì„ ëª…ì‹œí•˜ì—¬ì•¼ í•¨.
+        // ÇÏÀ§ Query SetÀÌ SETÀ» ÀÇ¹ÌÇÒ °æ¿ì
+        // Parent°¡ SETÀÓÀ» ¸í½ÃÇÏ¿©¾ß ÇÔ.
         aNonCrtPath->left->myGraph->flag &= ~QMG_SET_PARENT_TYPE_SET_MASK;
         aNonCrtPath->left->myGraph->flag |= QMG_SET_PARENT_TYPE_SET_TRUE;
     }
@@ -614,7 +614,7 @@ IDE_RC qmoNonCrtPathMgr::optimizeSet( qcStatement   * aStatement,
     if ( sNonCrtPath->right->myQuerySet->setOp == QMS_NONE )
     {
         //------------------------------------------
-        // right projection graphì˜ ìƒì„±
+        // right projection graphÀÇ »ý¼º
         //------------------------------------------
 
         IDE_TEST( qmgProjection::init( aStatement,
@@ -630,13 +630,13 @@ IDE_RC qmoNonCrtPathMgr::optimizeSet( qcStatement   * aStatement,
     else
     {
         // To Fix PR-9567
-        // í•˜ìœ„ Query Setì´ SETì„ ì˜ë¯¸í•  ê²½ìš°
-        // Parentê°€ SETìž„ì„ ëª…ì‹œí•˜ì—¬ì•¼ í•¨.
+        // ÇÏÀ§ Query SetÀÌ SETÀ» ÀÇ¹ÌÇÒ °æ¿ì
+        // Parent°¡ SETÀÓÀ» ¸í½ÃÇÏ¿©¾ß ÇÔ.
         aNonCrtPath->right->myGraph->flag &= ~QMG_SET_PARENT_TYPE_SET_MASK;
         aNonCrtPath->right->myGraph->flag |= QMG_SET_PARENT_TYPE_SET_TRUE;
     }
 
-    // qmgSet ì´ˆê¸°í™”
+    // qmgSet ÃÊ±âÈ­
     IDE_TEST( qmgSet::init( aStatement,
                             sQuerySet,
                             sNonCrtPath->left->myGraph, // left child
@@ -644,10 +644,10 @@ IDE_RC qmoNonCrtPathMgr::optimizeSet( qcStatement   * aStatement,
                             &sMyGraph )                 // result graph
               != IDE_SUCCESS );
 
-    // qmgSet ìµœì í™”
+    // qmgSet ÃÖÀûÈ­
     IDE_TEST( qmgSet::optimize( aStatement, sMyGraph ) != IDE_SUCCESS );
 
-    // ê²°ê³¼ Graph ì—°ê²°
+    // °á°ú Graph ¿¬°á
     sNonCrtPath->myGraph = sMyGraph;
 
     return IDE_SUCCESS;
@@ -663,13 +663,13 @@ IDE_RC qmoNonCrtPathMgr::optimizeSetRecursive( qcStatement   * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-2582 recursive with
- *    Non-Leaf Non Critical Path ( recrusvie union all)ì˜ ìµœì í™”
+ *    Non-Leaf Non Critical Path ( recrusvie union all)ÀÇ ÃÖÀûÈ­
  *
  * Implementation :
- *    (1) left, right ìµœì í™” í•¨ìˆ˜ í˜¸ì¶œ
- *    (2) qmgSetRecursive ì´ˆê¸°í™”
- *    (3) qmgSetRecursive ìµœì í™”
- *    (4) ê²°ê³¼ graphë¥¼ qmoNonCrtPath::myGraphì— ì—°ê²°
+ *    (1) left, right ÃÖÀûÈ­ ÇÔ¼ö È£Ãâ
+ *    (2) qmgSetRecursive ÃÊ±âÈ­
+ *    (3) qmgSetRecursive ÃÖÀûÈ­
+ *    (4) °á°ú graph¸¦ qmoNonCrtPath::myGraph¿¡ ¿¬°á
  *
  ***********************************************************************/
 
@@ -680,32 +680,32 @@ IDE_RC qmoNonCrtPathMgr::optimizeSetRecursive( qcStatement   * aStatement,
     IDU_FIT_POINT_FATAL( "qmoNonCrtPathMgr::optimizeSetRecursive::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aNonCrtPath != NULL );
 
     //------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //------------------------------------------
 
     sNonCrtPath = aNonCrtPath;
     sQuerySet   = sNonCrtPath->myQuerySet;
 
     //------------------------------------------
-    // left ìµœì í™” í•¨ìˆ˜ í˜¸ì¶œ
+    // left ÃÖÀûÈ­ ÇÔ¼ö È£Ãâ
     //------------------------------------------
 
     IDE_TEST( optimize( aStatement, sNonCrtPath->left )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // left projection graphì˜ ìƒì„±
+    // left projection graphÀÇ »ý¼º
     //------------------------------------------
 
-    // Recursive Query Setì˜ ê²½ìš°
-    // Child Query Setì€ Leafë§Œ ê°€ëŠ¥í•˜ë‹¤.
+    // Recursive Query SetÀÇ °æ¿ì
+    // Child Query SetÀº Leaf¸¸ °¡´ÉÇÏ´Ù.
     IDE_TEST_RAISE( ( sNonCrtPath->left->myQuerySet->setOp != QMS_NONE ) ||
                     ( sNonCrtPath->right->myQuerySet->setOp != QMS_NONE ),
                     ERR_INVALID_CHILD );
@@ -721,18 +721,18 @@ IDE_RC qmoNonCrtPathMgr::optimizeSetRecursive( qcStatement   * aStatement,
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // right ìµœì í™” í•¨ìˆ˜ í˜¸ì¶œ
+    // right ÃÖÀûÈ­ ÇÔ¼ö È£Ãâ
     //------------------------------------------
 
-    // ìž„ì‹œë¡œ recursive viewì˜ leftë¥¼ ê¸°ë¡í•˜ê³ 
-    // rightì˜ graphë¥¼ ìƒì„±í•  ë•Œ ì‚¬ìš©í•œë‹¤.
+    // ÀÓ½Ã·Î recursive viewÀÇ left¸¦ ±â·ÏÇÏ°í
+    // rightÀÇ graph¸¦ »ý¼ºÇÒ ¶§ »ç¿ëÇÑ´Ù.
     aStatement->myPlan->graph = aNonCrtPath->left->myGraph;
 
     IDE_TEST( optimize( aStatement, sNonCrtPath->right )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // right projection graphì˜ ìƒì„±
+    // right projection graphÀÇ »ý¼º
     //------------------------------------------
 
     IDE_TEST( qmgProjection::init( aStatement,
@@ -746,26 +746,26 @@ IDE_RC qmoNonCrtPathMgr::optimizeSetRecursive( qcStatement   * aStatement,
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // set recursive graphì˜ ìƒì„±
+    // set recursive graphÀÇ »ý¼º
     //------------------------------------------
 
-    // right queryì˜ í•˜ìœ„ recursive view graphê°€ ë‹¬ë ¤ìžˆì–´ì•¼ í•œë‹¤.
+    // right queryÀÇ ÇÏÀ§ recursive view graph°¡ ´Þ·ÁÀÖ¾î¾ß ÇÑ´Ù.
     IDE_DASSERT( aStatement->myPlan->graph != NULL );
 
-    // qmgSet ì´ˆê¸°í™”
+    // qmgSet ÃÊ±âÈ­
     IDE_TEST( qmgSetRecursive::init( aStatement,
                                      sQuerySet,
                                      sNonCrtPath->left->myGraph, // left child
                                      sNonCrtPath->right->myGraph,// right child
-                                     aStatement->myPlan->graph,  // right queryì˜ í•˜ìœ„ recursive view
+                                     aStatement->myPlan->graph,  // right queryÀÇ ÇÏÀ§ recursive view
                                      & sMyGraph )                 // result graph
               != IDE_SUCCESS );
 
-    // qmgSet ìµœì í™”
+    // qmgSet ÃÖÀûÈ­
     IDE_TEST( qmgSetRecursive::optimize( aStatement, sMyGraph )
               != IDE_SUCCESS );
 
-    // ê²°ê³¼ Graph ì—°ê²°
+    // °á°ú Graph ¿¬°á
     sNonCrtPath->myGraph = sMyGraph;
 
     return IDE_SUCCESS;

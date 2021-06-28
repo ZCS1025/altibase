@@ -71,11 +71,13 @@ static ACI_RC cmnSockCheckIOCTL(acp_sock_t *aSock, acp_bool_t *aIsClosed)
     ACI_EXCEPTION(InvalidHandle);
     {
         errno = EBADF;
-        ACI_SET(aciSetErrorCode(cmERR_ABORT_SELECT_ERROR));
+        /* BUG-47714 ¿¡·¯ ¸Þ¼¼Áö¿¡ sock number Ãß°¡ */
+        ACI_SET(aciSetErrorCode(cmERR_ABORT_SELECT_ERROR, aSock->mHandle));
     }
     ACI_EXCEPTION(SelectError);
     {
-        ACI_SET(aciSetErrorCode(cmERR_ABORT_SELECT_ERROR));
+        /* BUG-47714 ¿¡·¯ ¸Þ¼¼Áö¿¡ sock number Ãß°¡ */
+        ACI_SET(aciSetErrorCode(cmERR_ABORT_SELECT_ERROR, aSock->mHandle));
     }
     ACI_EXCEPTION_END;
 
@@ -206,12 +208,12 @@ ACI_RC cmnSockRecv(cmbBlock       *aBlock,
     acp_rc_t    sRC;
 
     /*
-     * aSize ì´ìƒ aBlockìœ¼ë¡œ ë°ì´í„° ì½ìŒ
+     * aSize ÀÌ»ó aBlockÀ¸·Î µ¥ÀÌÅÍ ÀÐÀ½
      */
     while (aBlock->mDataSize < aSize)
     {
         /*
-         * Dispatcherë¥¼ ì´ìš©í•˜ì—¬ Timeout ë§Œí¼ ëŒ€ê¸°
+         * Dispatcher¸¦ ÀÌ¿ëÇÏ¿© Timeout ¸¸Å­ ´ë±â
          */
         if (aTimeout != ACP_TIME_INFINITE)
         {
@@ -221,7 +223,7 @@ ACI_RC cmnSockRecv(cmbBlock       *aBlock,
         }
 
         /*
-         * Socketìœ¼ë¡œë¶€í„° ì½ìŒ
+         * SocketÀ¸·ÎºÎÅÍ ÀÐÀ½
          */
         sRC = acpSockRecv(aSock,
                           aBlock->mData + aBlock->mDataSize,
@@ -291,7 +293,7 @@ ACI_RC cmnSockSend(cmbBlock       *aBlock,
     while (aBlock->mCursor < aBlock->mDataSize)
     {
         /*
-         * Dispatcherë¥¼ ì´ìš©í•˜ì—¬ Timeout ë§Œí¼ ëŒ€ê¸°
+         * Dispatcher¸¦ ÀÌ¿ëÇÏ¿© Timeout ¸¸Å­ ´ë±â
          */
         if (aTimeout != ACP_TIME_INFINITE)
         {
@@ -301,7 +303,7 @@ ACI_RC cmnSockSend(cmbBlock       *aBlock,
         }
 
         /*
-         * socketìœ¼ë¡œ ë°ì´í„° ì”€
+         * socketÀ¸·Î µ¥ÀÌÅÍ ¾¸
          */
         sRC = acpSockSend(aSock,
                           aBlock->mData + aBlock->mCursor,

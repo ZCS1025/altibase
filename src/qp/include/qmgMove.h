@@ -19,11 +19,11 @@
  * $Id: qmgMove.h 53265 2012-05-18 00:05:06Z seo0jun $
  *
  * Description :
- *     Move Graphë¥¼ ìœ„í•œ ì •ì˜
+ *     Move Graph¸¦ À§ÇÑ Á¤ÀÇ
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -34,20 +34,20 @@
 #include <qmgDef.h>
 
 //---------------------------------------------------
-// Move Graphì˜ Define ìƒìˆ˜
+// Move GraphÀÇ Define »ó¼ö
 //---------------------------------------------------
 
 
 //---------------------------------------------------
-// Move Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+// Move Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
 //---------------------------------------------------
 
 typedef struct qmgMOVE
 {
-    qmgGraph             graph;    // ê³µí†µ Graph ì •ë³´
+    qmgGraph             graph;    // °øÅë Graph Á¤º¸
 
     //---------------------------------
-    // move ê´€ë ¨ ì •ë³´
+    // move °ü·Ã Á¤º¸
     //---------------------------------
     
     struct qmsTableRef * targetTableRef;
@@ -62,17 +62,17 @@ typedef struct qmgMOVE
     // PROJ-2264 Dictionary table
     UInt                 compressedTuple;
 
-    // sequence ì •ë³´
+    // sequence Á¤º¸
     qcParseSeqCaches   * nextValSeqs;
     
     //---------------------------------
-    // Limitation ê´€ë ¨ ì •ë³´
+    // Limitation °ü·Ã Á¤º¸
     //---------------------------------
     
-    qmsLimit           * limit;   // limit ì •ë³´
+    qmsLimit           * limit;   // limit Á¤º¸
 
     //---------------------------------
-    // constraint ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
+    // constraint Ã³¸®¸¦ À§ÇÑ Á¤º¸
     //---------------------------------
 
     // parent constraints of target table
@@ -81,7 +81,7 @@ typedef struct qmgMOVE
     // child constraints of source table, BUG-28049
     qcmRefChildInfo    * childConstraints;
 
-    /* PROJ-1107 Check Constraint ì§€ì› */
+    /* PROJ-1107 Check Constraint Áö¿ø */
     qdConstraintSpec   * checkConstrList;
 
     //---------------------------------
@@ -94,27 +94,27 @@ typedef struct qmgMOVE
 } qmgMOVE;
 
 //---------------------------------------------------
-// Move Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+// Move Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
 //---------------------------------------------------
 
 class qmgMove
 {
 public:
-    // Graph ì˜ ì´ˆê¸°í™”
+    // Graph ÀÇ ÃÊ±âÈ­
     static IDE_RC  init( qcStatement * aStatement,
                          qmsQuerySet * aQuerySet,
                          qmgGraph    * aChildGraph,
                          qmgGraph   ** aGraph );
 
-    // Graphì˜ ìµœì í™” ìˆ˜í–‰
+    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
     static IDE_RC  optimize( qcStatement * aStatement, qmgGraph * aGraph );
 
-    // Graphì˜ Plan Tree ìƒì„±
+    // GraphÀÇ Plan Tree »ı¼º
     static IDE_RC  makePlan( qcStatement    * aStatement,
                              const qmgGraph * aParent,
                              qmgGraph       * aGraph );
 
-    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
+    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
     static IDE_RC  printGraph( qcStatement  * aStatement,
                                qmgGraph     * aGraph,
                                ULong          aDepth,

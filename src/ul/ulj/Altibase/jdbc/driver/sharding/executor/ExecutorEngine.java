@@ -17,23 +17,25 @@
 
 package Altibase.jdbc.driver.sharding.executor;
 
-import Altibase.jdbc.driver.sharding.routing.SQLExecutionUnit;
+import Altibase.jdbc.driver.sharding.core.DataNode;
 
-import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 public interface ExecutorEngine
 {
-    <T> List<T> executeStatement(List<? extends BaseStatementUnit> aStatements,
+    <T> List<T> executeStatement(List<Statement> aStatements,
                                  ExecuteCallback<T> aExecuteCallback) throws SQLException;
 
-    <T> List<T> generateStatement(Set<SQLExecutionUnit> aSqlExecutionUnit,
-                                  GenerateCallback<T> aGenerateStmtCallback) throws SQLException;
+    <T> List<T> generateStatement(List<DataNode> aNodes, GenerateCallback<T> aGenerateStmtCallback) throws SQLException;
 
-    void doTransaction(Collection<Connection> aConnections,
-                       ConnectionParallelProcessCallback aParallelProcessCallback) throws SQLException;
+    <T> void doTransaction(Collection<T> aConnections,
+                       ParallelProcessCallback<T> aParallelProcessCallback) throws SQLException;
 
+    void closeStatements(Collection<Statement> aStatements) throws SQLException;
+
+    <T> void closeCursor(Collection<T> aStatements, ParallelProcessCallback<T> aParallelProcessCallback) throws SQLException;
+    <T> void doPartialRollback(Collection<T> aStatements, ParallelProcessCallback<T> aParallelProcessCallback) throws SQLException;
 }

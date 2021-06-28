@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcphl.l 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qcphl.l 89424 2020-12-04 00:29:01Z hykim $
  **********************************************************************/
 
 %option c++
@@ -47,9 +47,9 @@
 #include "qcphl.h"
 
 // To Fix PR-11793 To Remove Warning
-// Linuxì˜ ê²½ìš° /usr/include/bits/termios.h ì— ECHOê°€ ì •ì˜ë˜ì–´ ìˆìŒ.'
-// Flexê°€ ECHOë¥¼ defineí•˜ì—¬ ì‚¬ìš©í•˜ë¯€ë¡œ, undefí•´ì•¼ í•¨.
-// ì°¸ì¡°) Flexê°€ ìƒì„±í•˜ëŠ” qcphl.cpp ì—ëŠ” ë‹¤ìŒê³¼ ê°™ì€ Codeê°€ ìƒì„±ë¨.
+// LinuxÀÇ °æ¿ì /usr/include/bits/termios.h ¿¡ ECHO°¡ Á¤ÀÇµÇ¾î ÀÖÀ½.'
+// Flex°¡ ECHO¸¦ defineÇÏ¿© »ç¿ëÇÏ¹Ç·Î, undefÇØ¾ß ÇÔ.
+// ÂüÁ¶) Flex°¡ »ı¼ºÇÏ´Â qcphl.cpp ¿¡´Â ´ÙÀ½°ú °°Àº Code°¡ »ı¼ºµÊ.
 //       #ifndef ECHO
 //       #define ECHO LexerOutput( yytext, yyleng )
 //       #endif
@@ -116,6 +116,12 @@ INDEX_DESC        { return TO_INDEX_DESC;        }
 BUCKET            { return TA_BUCKET;            }
 COUNT             { return TA_COUNT;             }
 PARTIAL           { return TA_PARTIAL;           }
+ALTI_PARTIAL_FULL_SCAN { return TA_ALTI_PARTIAL_FULL_SCAN; }
+ALTI_PARALLEL          { return TA_ALTI_PARALLEL;          }
+ALTI_INDEX             { return TA_ALTI_INDEX;             }
+ALTI_INDEX_ASC         { return TA_ALTI_INDEX_ASC;         }
+ALTI_INDEX_DESC        { return TA_ALTI_INDEX_DESC;        }
+ALTI_NO_INDEX          { return TA_ALTI_NO_INDEX;          }
 
 <NEG_TRAIL>([_A-Z]|({NEG_TRAIL_CH}))([_0-9A-Z$]|({NEG_TRAIL_CH}))*   {
                                          return TI_NONQUOTED_IDENTIFIER; }
@@ -265,7 +271,7 @@ SChar * qcphLexer::getLexLastError( SChar * aMessage )
 
 void qcphLexer::getPosition( qcNamePosition* aPosition )
 {
-    // mBufferëŠ” ë³µì‚¬ëœ ë²„í¼ì´ë¯€ë¡œ mStatement->stmtTextë¥¼ ì €ì¥í•´ì•¼ í•œë‹¤.
+    // mBuffer´Â º¹»çµÈ ¹öÆÛÀÌ¹Ç·Î mStatement->stmtText¸¦ ÀúÀåÇØ¾ß ÇÑ´Ù.
     aPosition->stmtText = mStatement->myPlan->stmtText;
     aPosition->offset   = (mBufferLast-mBuffer)+(YYText()-mBufferInput);
     aPosition->size     = YYLeng();
@@ -284,7 +290,7 @@ void qcphLexer::strUpper( qcNamePosition* aPosition )
     }
     
     // BUG-9020
-    // mBufferëŠ” ë³µì‚¬ëœ ë²„í¼ì´ë¯€ë¡œ mStatement->stmtTextì—ë„ ë°˜ì˜í•´ì•¼í•œë‹¤.
+    // mBuffer´Â º¹»çµÈ ¹öÆÛÀÌ¹Ç·Î mStatement->stmtText¿¡µµ ¹İ¿µÇØ¾ßÇÑ´Ù.
     sIndex = mStatement->myPlan->stmtText + mTextOffset + aPosition->offset;
     sFence = sIndex + aPosition->size;
 
@@ -323,7 +329,7 @@ void qcphLexer::setInitState( void )
         switch(mMtlModule->id)
         {
             case MTL_SHIFTJIS_ID:
-            /* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */ 
+            /* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */ 
             case MTL_MS932_ID:
             {
                 gCharType = IDN_CF_SJIS;
@@ -331,7 +337,7 @@ void qcphLexer::setInitState( void )
             }
             case MTL_BIG5_ID:
             case MTL_GB231280_ID:
-            /* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
+            /* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
             case MTL_MS936_ID:
             case MTL_MS949_ID:
             {

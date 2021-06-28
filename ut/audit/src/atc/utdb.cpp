@@ -193,10 +193,10 @@ IDE_RC metaColumns::addPK(SChar * key)
     ++pkCount;
     return IDE_SUCCESS;
 
-    // BUG-25229 [CodeSonar] Auditì˜ ë©”ëª¨ë¦¬ Leak
+    // BUG-25229 [CodeSonar] AuditÀÇ ¸Ş¸ğ¸® Leak
     IDE_EXCEPTION(err_column_already_exist);
     {
-        // í˜„ì¬ i ëŠ” calloc ë¥¼ ë°›ì§€ ì•Šì•˜ë‹¤.
+        // ÇöÀç i ´Â calloc ¸¦ ¹ŞÁö ¾Ê¾Ò´Ù.
         i = NULL;
     }
     IDE_EXCEPTION_END;
@@ -297,10 +297,10 @@ IDE_RC metaColumns::addCL(SChar * key, bool aIsLobType)
     
     return IDE_SUCCESS;
 
-    // BUG-25229 [CodeSonar] Auditì˜ ë©”ëª¨ë¦¬ Leak
+    // BUG-25229 [CodeSonar] AuditÀÇ ¸Ş¸ğ¸® Leak
     IDE_EXCEPTION(err_column_already_exist);
     {
-        // í˜„ì¬ i ëŠ” calloc ë¥¼ ë°›ì§€ ì•Šì•˜ë‹¤.
+        // ÇöÀç i ´Â calloc ¸¦ ¹ŞÁö ¾Ê¾Ò´Ù.
         i = NULL;
     }
     IDE_EXCEPTION_END;

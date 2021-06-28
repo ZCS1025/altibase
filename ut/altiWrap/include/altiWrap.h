@@ -81,20 +81,20 @@ typedef struct altiWrapTextList
     altiWrapTextList * mNext;
 } altiWrapTextList;
 
-/* wrapì„ ì‹¤í–‰í•˜ê¸° ìœ„í•´ í•„ìš”í•œ ì •ë³´ë¥¼ ì €ì¥í•˜ê¸° ìœ„í•œ ìë£Œêµ¬ì¡°
-   ë©¤ë²„ ì¶”ê°€í–ˆì„ ê²½ìš°,
-   altiWrapi::allocAltiWrap, altiWrapi::finalizeAltiWrap ì¶”ê°€í•  ê²ƒ. */
+/* wrapÀ» ½ÇÇàÇÏ±â À§ÇØ ÇÊ¿äÇÑ Á¤º¸¸¦ ÀúÀåÇÏ±â À§ÇÑ ÀÚ·á±¸Á¶
+   ¸â¹ö Ãß°¡ÇßÀ» °æ¿ì,
+   altiWrapi::allocAltiWrap, altiWrapi::finalizeAltiWrap Ãß°¡ÇÒ °Í. */
 typedef struct altiWrap
 {
-    /* wrapCommandë¥¼ parsingí•œ í›„ì˜ ê²°ê³¼, input ë° outputíŒŒì¼ì˜ ìœ„ì¹˜ ë° ì •ë³´ ì €ì¥ */
+    /* wrapCommand¸¦ parsingÇÑ ÈÄÀÇ °á°ú, input ¹× outputÆÄÀÏÀÇ À§Ä¡ ¹× Á¤º¸ ÀúÀå */
     altiWrapPathInfo     * mFilePathInfo;
-    /* input íŒŒì¼ì— ìˆëŠ” ë‚´ìš© */
+    /* input ÆÄÀÏ¿¡ ÀÖ´Â ³»¿ë */
     altiWrapText         * mPlainText;
-    /* plain textë¥¼ parsingí•œ í›„ì˜ ê²°ê³¼, header ë° bodyë¡œ êµ¬ë¶„ */
+    /* plain text¸¦ parsingÇÑ ÈÄÀÇ °á°ú, header ¹× body·Î ±¸ºĞ */
     altiWrapNamePosition   mCrtPSMStmtHeaderPos;
-    /* encrypted text, output íŒŒì¼ì— ì‹¤ì œ writeë˜ëŠ” ë‚´ìš© */
+    /* encrypted text, output ÆÄÀÏ¿¡ ½ÇÁ¦ writeµÇ´Â ³»¿ë */
     altiWrapTextList     * mEncryptedTextList;
-    /* wrapì„ ì‹¤í–‰í•˜ëŠ” ë™ì•ˆ ë°œìƒí•œ ì—ëŸ¬ì— ëŒ€í•˜ì„œ ì²˜ë¦¬ */
+    /* wrapÀ» ½ÇÇàÇÏ´Â µ¿¾È ¹ß»ıÇÑ ¿¡·¯¿¡ ´ëÇÏ¼­ Ã³¸® */
     uteErrorMgr          * mErrorMgr;
 } altiWrap;
 

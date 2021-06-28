@@ -61,11 +61,11 @@ static ACI_RC ulnProcColCreateQueryString(ulnFnContext *aFnContext,
 
     /******************************************************
        bug-36655: the params order of a PSM is strange.
-       ë³€ê²½ì‚¬í•­
-       1. unionì„ ì¶”ê°€í•˜ì—¬ return_value ì¡°íšŒë„ ì¶”ê°€
-          (jdbc getProcedureColumns()ë¥¼ ì°¸ê³ í•¨)
-       2. order byë¥¼ inout_typeì—ì„œ íŒŒë¼ë¯¸í„° ìˆœì„œë¡œ ë³€ê²½
-          (inout_typeìœ¼ë¡œ ë˜ì–´ìžˆëŠ” msdn odbc specì´ ì´ìƒí•¨)
+       º¯°æ»çÇ×
+       1. unionÀ» Ãß°¡ÇÏ¿© return_value Á¶È¸µµ Ãß°¡
+          (jdbc getProcedureColumns()¸¦ Âü°íÇÔ)
+       2. order by¸¦ inout_type¿¡¼­ ÆÄ¶ó¹ÌÅÍ ¼ø¼­·Î º¯°æ
+          (inout_typeÀ¸·Î µÇ¾îÀÖ´Â msdn odbc specÀÌ ÀÌ»óÇÔ)
     ******************************************************/
     sRet = acpSnprintf(aQueryStringBuffer, aQueryStringBufferSize,
             "SELECT " "(SELECT DB_NAME FROM V$DATABASE LIMIT 1) AS %s," 
@@ -122,7 +122,7 @@ static ACI_RC ulnProcColCreateQueryString(ulnFnContext *aFnContext,
     sSize = acpCStrLen(aQueryStringBuffer, aQueryStringBufferSize);
 
     // bug-25905: conn nls not applied to client lang module
-    // aFnContext ì¸ìž ì¶”ê°€
+    // aFnContext ÀÎÀÚ Ãß°¡
     sSize = ulnAppendFormatParameter(aFnContext,
                                      aQueryStringBuffer,
                                      aQueryStringBufferSize,
@@ -133,7 +133,7 @@ static ACI_RC ulnProcColCreateQueryString(ulnFnContext *aFnContext,
     ACI_TEST_RAISE(sSize >= (acp_sint32_t)aQueryStringBufferSize, ERR_HY001);
 
     // bug-25905: conn nls not applied to client lang module
-    // aFnContext ì¸ìž ì¶”ê°€
+    // aFnContext ÀÎÀÚ Ãß°¡
     sSize = ulnAppendFormatParameter(aFnContext,
                                      aQueryStringBuffer,
                                      aQueryStringBufferSize,
@@ -155,7 +155,7 @@ static ACI_RC ulnProcColCreateQueryString(ulnFnContext *aFnContext,
             " as TYPE_NAME,"
             "NVL2(t.TYPE_NAME,"
                  "cast( decode(a.precision,0,"
-                              "decode(a.data_type," // fix BUG-26817 ë¬¸ìžì—´ì˜ pricisionì´ 0ì´ë©´ 0 ë°˜í™˜
+                              "decode(a.data_type," // fix BUG-26817 ¹®ÀÚ¿­ÀÇ pricisionÀÌ 0ÀÌ¸é 0 ¹ÝÈ¯
                                       "1, a.precision,"
                                      "12, a.precision,"
                                      "-8, a.precision,"
@@ -200,7 +200,7 @@ static ACI_RC ulnProcColCreateQueryString(ulnFnContext *aFnContext,
     sSize = acpCStrLen(aQueryStringBuffer, aQueryStringBufferSize);
 
     // bug-25905: conn nls not applied to client lang module
-    // aFnContext ì¸ìž ì¶”ê°€
+    // aFnContext ÀÎÀÚ Ãß°¡
     sSize = ulnAppendFormatParameter(aFnContext,
                                      aQueryStringBuffer,
                                      aQueryStringBufferSize,
@@ -211,7 +211,7 @@ static ACI_RC ulnProcColCreateQueryString(ulnFnContext *aFnContext,
     ACI_TEST_RAISE(sSize >= (acp_sint32_t)aQueryStringBufferSize, ERR_HY001);
 
     // bug-25905: conn nls not applied to client lang module
-    // aFnContext ì¸ìž ì¶”ê°€
+    // aFnContext ÀÎÀÚ Ãß°¡
     sSize = ulnAppendFormatParameter(aFnContext,
                                      aQueryStringBuffer,
                                      aQueryStringBufferSize,
@@ -221,7 +221,7 @@ static ACI_RC ulnProcColCreateQueryString(ulnFnContext *aFnContext,
     ACI_TEST_RAISE(sSize >= (acp_sint32_t)aQueryStringBufferSize, ERR_HY001);
 
     // bug-25905: conn nls not applied to client lang module
-    // aFnContext ì¸ìž ì¶”ê°€
+    // aFnContext ÀÎÀÚ Ãß°¡
     sSize = ulnAppendFormatParameter(aFnContext,
                                      aQueryStringBuffer,
                                      aQueryStringBufferSize,
@@ -291,7 +291,7 @@ SQLRETURN ulnProcedureColumns(ulnStmt      *aStmt,
     ULN_FLAG_UP(sNeedExit);
 
     /*
-     * BUGBUG : Argument validity checking ì„ ìˆ˜í–‰í•´ì•¼ í•œë‹¤.
+     * BUGBUG : Argument validity checking À» ¼öÇàÇØ¾ß ÇÑ´Ù.
      */
 
     ACI_TEST(ulnProcColCreateQueryString(&sFnContext,
@@ -306,7 +306,7 @@ SQLRETURN ulnProcedureColumns(ulnStmt      *aStmt,
                                          aOrderByPos) != ACI_SUCCESS);
 
     /*
-     * Protocol Context ì´ˆê¸°í™”
+     * Protocol Context ÃÊ±âÈ­
      */
     //fix BUG-17722
     ACI_TEST(ulnInitializeProtocolContext(&sFnContext,
@@ -336,13 +336,13 @@ SQLRETURN ulnProcedureColumns(ulnStmt      *aStmt,
                                      aStmt->mParentDbc->mConnTimeoutValue) != ACI_SUCCESS);
 
     /*
-     * Protocol Context ì •ë¦¬
+     * Protocol Context Á¤¸®
      */
     ULN_FLAG_DOWN(sNeedFinPtContext);
     ACI_TEST(ulnFinalizeProtocolContext(&sFnContext,&(aStmt->mParentDbc->mPtContext)) != ACI_SUCCESS);
 
     /*
-     * BUGBUG : ì»¬ëŸ¼ì˜ íƒ€ìž…ì„ ê°•ì œë¡œ ì§€ì •í•´ ì£¼ëŠ” ì½”ë“œê°€ cli2 ì—ëŠ” ìžˆì—ˆë‹¤.
+     * BUGBUG : ÄÃ·³ÀÇ Å¸ÀÔÀ» °­Á¦·Î ÁöÁ¤ÇØ ÁÖ´Â ÄÚµå°¡ cli2 ¿¡´Â ÀÖ¾ú´Ù.
      *          stmt->bindings[ 5-1].forced_type = SQL_C_SSHORT;
      *          stmt->bindings[ 6-1].forced_type = SQL_C_SSHORT;
      *          stmt->bindings[ 8-1].forced_type = SQL_C_SLONG;

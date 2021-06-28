@@ -32,21 +32,21 @@ static IDE_RC svnnPrepareIteratorMem( const smnIndexModule* );
 
 static IDE_RC svnnReleaseIteratorMem(const smnIndexModule* );
 
-static IDE_RC svnnInit( idvSQL*             /* aStatistics */,
-                        svnnIterator*       aIterator,
-                        void*               aTrans,
-                        smcTableHeader*     aTable,
-                        smnIndexHeader*     aIndex,
-                        void*               aDumpObject,
-                        const smiRange*     aKeyRange,
-                        const smiRange*     aKeyFilter,
-                        const smiCallBack*  aRowFilter,
+static IDE_RC svnnInit( svnnIterator      * aIterator,
+                        void              * aTrans,
+                        smcTableHeader    * aTable,
+                        smnIndexHeader    * /* aIndex */,
+                        void              * /* aDumpObject */,
+                        const smiRange    * /* aKeyRange */,
+                        const smiRange    * /* aKeyFilter */,
+                        const smiCallBack * aRowFilter,
                         UInt                aFlag,
                         smSCN               aSCN,
                         smSCN               aInfinite,
-                        idBool              sUntouchable,
+                        idBool              /* aUntouchable */,
                         smiCursorProperties * aProperties,
-                        const smSeekFunc**  aSeekFunc );
+                        const smSeekFunc   ** aSeekFunc,
+                        smiStatement        * aStatement );
 
 static IDE_RC svnnDest( svnnIterator*       aIterator );
 
@@ -120,7 +120,6 @@ smnIndexModule svnnModule = {
     (smTableCursorLockRowFunc) smnManager::lockRow,
     (smnDeleteFunc)            NULL,
     (smnFreeFunc)              NULL,
-    (smnExistKeyFunc)          NULL,
     (smnInsertRollbackFunc)    NULL,
     (smnDeleteRollbackFunc)    NULL,
     (smnAgingFunc)             NULL,
@@ -145,7 +144,7 @@ smnIndexModule svnnModule = {
     (smnRebuildIndexColumn) NULL,
     (smnSetIndexConsistency)NULL,
     (smnGatherStat)         svnnGatherStat
-    /*BUGBUG ÎÇòÏ§ëÏóê smnnGatherStat ÏúºÎ°ú Î∞îÍøîÏïº Ìï® */
+    /*BUGBUG ≥™¡ﬂø° smnnGatherStat ¿∏∑Œ πŸ≤„æﬂ «‘ */
 };
 
 static const smSeekFunc svnnSeekFunctions[32][12] =
@@ -608,21 +607,21 @@ static IDE_RC svnnReleaseIteratorMem(const smnIndexModule* )
     return IDE_SUCCESS;
 }
 
-static IDE_RC svnnInit( idvSQL*             /* aStatistics */,
-                        svnnIterator*       aIterator,
-                        void*               aTrans,
-                        smcTableHeader*     aTable,
-                        smnIndexHeader*,
-                        void*               /* aDumpObject */,
-                        const smiRange*,
-                        const smiRange*,
-                        const smiCallBack*  aFilter,
+static IDE_RC svnnInit( svnnIterator      * aIterator,
+                        void              * aTrans,
+                        smcTableHeader    * aTable,
+                        smnIndexHeader    *,
+                        void              *, 
+                        const smiRange    *,
+                        const smiRange    *,
+                        const smiCallBack * aFilter,
                         UInt                aFlag,
                         smSCN               aSCN,
                         smSCN               aInfinite,
-                        idBool,
+                        idBool              ,
                         smiCursorProperties * aProperties,
-                        const smSeekFunc** aSeekFunc )
+                        const smSeekFunc   ** aSeekFunc,
+                        smiStatement        * aStatement )
 {
     idvSQL                    *sSQLStat;
 
@@ -639,6 +638,7 @@ static IDE_RC svnnInit( idvSQL*             /* aStatistics */,
     aIterator->mScanBackModifySeq = 0;
     aIterator->mModifySeqForScan  = 0;
     aIterator->page               = SM_NULL_PID;
+    aIterator->mStatement         = aStatement;
 
     *aSeekFunc = svnnSeekFunctions[aFlag&(SMI_TRAVERSE_MASK|
                                           SMI_PREVIOUS_MASK|
@@ -699,6 +699,7 @@ static IDE_RC svnnBeforeFirst( svnnIterator* aIterator,
     smxTrans*         sTrans               = (smxTrans*)aIterator->trans;
     idBool            sCanReusableRollback = ID_TRUE;
     idBool            sReusableCheckAgain  = ID_FALSE;
+    idBool            sIsVisible;
 
     sFixed                     = (smpPageListEntry*)&(aIterator->table->mFixed.mVRDB);
     aIterator->curRecPtr       = NULL;
@@ -725,12 +726,12 @@ static IDE_RC svnnBeforeFirst( svnnIterator* aIterator,
          ( aIterator->page != SM_SPECIAL_PID ) &&
          ( aIterator->mProperties->mReadRecordCount > 0 ) )
     {
-        /* BUG-39423 : trace log Ï∂úÎ†• Ïãú ÏÑ±Îä• Ï†ÄÌïò Î∞è Ï†ïÏÉÅ ÏûëÎèô Í≤ΩÏö∞ Ï∂úÎ†• Î∞©ÏßÄ */
+        /* BUG-39423 : trace log √‚∑¬ Ω√ º∫¥… ¿˙«œ π◊ ¡§ªÛ ¿€µø ∞ÊøÏ √‚∑¬ πÊ¡ˆ */
 #ifdef DEBUG
         if(   ( aIterator->page < svpManager::getFirstScanPageID(sFixed) )
             ||( aIterator->page > svpManager::getLastScanPageID(sFixed)  ) )
         {
-            /* Scan Page ListÏóê Îì§Ïñ¥Ïò®Ï†ÅÏù¥ ÏóÜÎäî pageÏùº Í≤ΩÏö∞ */  
+            /* Scan Page Listø° µÈæÓø¬¿˚¿Ã æ¯¥¬ page¿œ ∞ÊøÏ */  
             if( aIterator->mModifySeqForScan == 0 )
             {
                 ideLog::log(IDE_SM_0,
@@ -749,7 +750,7 @@ static IDE_RC svnnBeforeFirst( svnnIterator* aIterator,
                                              aIterator->page) != IDE_SUCCESS );
         sLocked = ID_TRUE;
 
-        IDE_ASSERT( svmManager::getPersPagePtr( 
+        IDE_ASSERT( smmManager::getPersPagePtr( 
                         aIterator->table->mSpaceID, 
                         aIterator->page, 
                         (void**)&sPagePtr )
@@ -757,25 +758,17 @@ static IDE_RC svnnBeforeFirst( svnnIterator* aIterator,
 
         IDE_ASSERT( sPagePtr != NULL );
 
+        /* BUG-48353
+           checkSCN() ø°º≠ Pending Wait ∏¶ πﬂª˝«“ºˆ¿÷±‚ ∂ßπÆø°
+           PAGE release ¿Ã»ƒ∑Œ checkSCN()¿ª πÃ∑È¥Ÿ.
+           ø©±‚º≠¥¬ row pointer ∏µŒ∏¶ ƒ≥Ω¨∑Œ ∫πªÁ«—¥Ÿ. */
         for( sRowPtr    = sPagePtr + SMP_PERS_PAGE_BODY_OFFSET,
              sHighFence = aIterator->highFence,
              sFence     = sRowPtr + sFixed->mSlotCount * sSize;
              sRowPtr    < sFence;
              sRowPtr   += sSize )
         {
-            sRow = (smpSlotHeader*)sRowPtr;
-            if( smnManager::checkSCN( (smiIterator*)aIterator, sRow, &sCanReusableRollback )
-                == ID_TRUE )
-            {
-                *(++sHighFence) = sRowPtr;
-                aIterator->mScanBackPID = aIterator->page;
-                aIterator->mScanBackModifySeq = aIterator->mModifySeqForScan;
-
-                if( sCanReusableRollback == ID_FALSE ) 
-                {
-                    sReusableCheckAgain = ID_TRUE;
-                }
-            }
+            *(++sHighFence) = sRowPtr;
         }
 
         sLocked = ID_FALSE;
@@ -790,10 +783,32 @@ static IDE_RC svnnBeforeFirst( svnnIterator* aIterator,
              sSlot <= sHighFence;
              sSlot++ )
         {
+            sRow = (smpSlotHeader *)(*sSlot);
+
+            IDE_TEST( smnManager::checkSCN( (smiIterator *)aIterator,
+                                            sRow,
+                                            &sCanReusableRollback,
+                                            &sIsVisible,
+                                            ID_TRUE )
+                      != IDE_SUCCESS );
+
+            if ( sIsVisible  == ID_FALSE )
+            {
+                continue;
+            }
+
+            aIterator->mScanBackPID = aIterator->page;
+            aIterator->mScanBackModifySeq = aIterator->mModifySeqForScan;
+
+            if ( sCanReusableRollback == ID_FALSE ) 
+            {
+                sReusableCheckAgain = ID_TRUE;
+            }
+
             SC_MAKE_GRID( sRowGRID,
                           aIterator->table->mSpaceID,
-                          SMP_SLOT_GET_PID( (smpSlotHeader*)*sSlot ),
-                          SMP_SLOT_GET_OFFSET( (smpSlotHeader*)*sSlot ) );
+                          SMP_SLOT_GET_PID( sRow ),
+                          SMP_SLOT_GET_OFFSET( sRow ) );
 
             IDE_TEST( aIterator->filter->callback( &sResult,
                                                    *sSlot,
@@ -804,8 +819,8 @@ static IDE_RC svnnBeforeFirst( svnnIterator* aIterator,
                       != IDE_SUCCESS );
             if( sResult == ID_TRUE )
             {
-                /* SCN Ï°∞Í±¥ÏùÑ ÌÜµÍ≥ºÌïú slotÏ§ë ÌïòÎÇòÎùºÎèÑ cursor reusable Ï≤¥ÌÅ¨Í∞Ä ÌïÑÏöîÌï† Í≤ΩÏö∞
-                 * filter Ï°∞Í±¥ÏùÑ ÌÜµÍ≥ºÌïú slotÏùÑ ÎåÄÏÉÅÏúºÎ°ú Îã§Ïãú ÌôïÏù∏Ìï¥Ïïº ÌïúÎã§. */
+                /* SCN ¡∂∞«¿ª ≈Î∞˙«— slot¡ﬂ «œ≥™∂Ûµµ cursor reusable √º≈©∞° « ø‰«“ ∞ÊøÏ
+                 * filter ¡∂∞«¿ª ≈Î∞˙«— slot¿ª ¥ÎªÛ¿∏∑Œ ¥ŸΩ√ »Æ¿Œ«ÿæﬂ «—¥Ÿ. */
                 if( ( sReusableCheckAgain == ID_TRUE ) && ( sTrans->mIsReusableRollback == ID_TRUE ) )
                 {
                     if( smnManager::checkCanReusableRollback( ( smiIterator* )aIterator, *sSlot )
@@ -880,6 +895,7 @@ static IDE_RC svnnAfterLast( svnnIterator* aIterator,
     smxTrans*         sTrans               = (smxTrans*)aIterator->trans;
     idBool            sCanReusableRollback = ID_TRUE;
     idBool            sReusableCheckAgain  = ID_FALSE;
+    idBool            sIsVisible;
 
     sFixed                     = (smpPageListEntry*)&(aIterator->table->mFixed.mVRDB);
     aIterator->curRecPtr       = NULL;
@@ -894,16 +910,17 @@ static IDE_RC svnnAfterLast( svnnIterator* aIterator,
 #ifdef DEBUG
     sTransID                   = aIterator->tid;
 #endif
+
     IDE_TEST( svnnMovePrev( aIterator ) != IDE_SUCCESS );
 
     if( aIterator->page != SM_NULL_PID && aIterator->mProperties->mReadRecordCount > 0)
     {
-        /* BUG-39423 : trace log Ï∂úÎ†• Ïãú ÏÑ±Îä• Ï†ÄÌïò Î∞è Ï†ïÏÉÅ ÏûëÎèô Í≤ΩÏö∞ Ï∂úÎ†• Î∞©ÏßÄ */
+        /* BUG-39423 : trace log √‚∑¬ Ω√ º∫¥… ¿˙«œ π◊ ¡§ªÛ ¿€µø ∞ÊøÏ √‚∑¬ πÊ¡ˆ */
 #ifdef DEBUG
         if(   ( aIterator->page < svpManager::getFirstScanPageID(sFixed) )
             ||( aIterator->page > svpManager::getLastScanPageID(sFixed)  ) )
         {
-            /* Scan Page ListÏóê Îì§Ïñ¥Ïò®Ï†ÅÏù¥ ÏóÜÎäî pageÏùº Í≤ΩÏö∞ */  
+            /* Scan Page Listø° µÈæÓø¬¿˚¿Ã æ¯¥¬ page¿œ ∞ÊøÏ */  
             if( aIterator->mModifySeqForScan == 0 )
             {
                 ideLog::log(IDE_SM_0,
@@ -922,31 +939,23 @@ static IDE_RC svnnAfterLast( svnnIterator* aIterator,
                                              aIterator->page) != IDE_SUCCESS );
         sLocked = ID_TRUE;
 
-        IDE_ASSERT( svmManager::getOIDPtr( 
+        IDE_ASSERT( smmManager::getOIDPtr( 
                         aIterator->table->mSpaceID, 
                         SM_MAKE_OID( aIterator->page, 
                                      SMP_PERS_PAGE_BODY_OFFSET ),
                         (void**)&sFence )
                     == IDE_SUCCESS );
 
+        /* BUG-48353
+           checkSCN() ø°º≠ Pending Wait ∏¶ πﬂª˝«“ºˆ¿÷±‚ ∂ßπÆø°
+           PAGE release ¿Ã»ƒ∑Œ checkSCN()¿ª πÃ∑È¥Ÿ.
+           ø©±‚º≠¥¬ row pointer ∏µŒ∏¶ ƒ≥Ω¨∑Œ ∫πªÁ«—¥Ÿ. */
         for( sLowFence  = aIterator->lowFence,
              sRowPtr    = sFence + ( sFixed->mSlotCount - 1 ) * sSize;
              sRowPtr   >= sFence;
              sRowPtr   -= sSize )
         {
-            sRow = (smpSlotHeader*)sRowPtr;
-            if( smnManager::checkSCN( (smiIterator*)aIterator, sRow, &sCanReusableRollback )
-                == ID_TRUE )
-            {
-                *(--sLowFence) = sRowPtr;
-                aIterator->mScanBackPID = aIterator->page;
-                aIterator->mScanBackModifySeq = aIterator->mModifySeqForScan;
-
-                if( sCanReusableRollback == ID_FALSE ) 
-                {
-                    sReusableCheckAgain = ID_TRUE;
-                }
-            }
+            *(--sLowFence) = sRowPtr;
         }
 
         sLocked = ID_FALSE;
@@ -960,10 +969,32 @@ static IDE_RC svnnAfterLast( svnnIterator* aIterator,
              sSlot >= sLowFence;
              sSlot-- )
         {
+            sRow = (smpSlotHeader *)(*sSlot);
+
+            IDE_TEST( smnManager::checkSCN( (smiIterator *)aIterator,
+                                            sRow,
+                                            &sCanReusableRollback,
+                                            &sIsVisible,
+                                            ID_TRUE )
+                      != IDE_SUCCESS );
+
+            if ( sIsVisible  == ID_FALSE )
+            {
+                continue;
+            }
+
+            aIterator->mScanBackPID = aIterator->page;
+            aIterator->mScanBackModifySeq = aIterator->mModifySeqForScan;
+
+            if( sCanReusableRollback == ID_FALSE ) 
+            {
+                sReusableCheckAgain = ID_TRUE;
+            }
+
             SC_MAKE_GRID( sRowGRID,
                           aIterator->table->mSpaceID,
-                          SMP_SLOT_GET_PID( (smpSlotHeader*)*sSlot ),
-                          SMP_SLOT_GET_OFFSET( (smpSlotHeader*)*sSlot ) );
+                          SMP_SLOT_GET_PID( sRow ),
+                          SMP_SLOT_GET_OFFSET( sRow ) );
 
             IDE_TEST( aIterator->filter->callback( &sResult,
                                                    *sSlot,
@@ -974,8 +1005,8 @@ static IDE_RC svnnAfterLast( svnnIterator* aIterator,
                       != IDE_SUCCESS );
             if( sResult == ID_TRUE )
             {
-                /* SCN Ï°∞Í±¥ÏùÑ ÌÜµÍ≥ºÌïú slotÏ§ë ÌïòÎÇòÎùºÎèÑ cursor reusable Ï≤¥ÌÅ¨Í∞Ä ÌïÑÏöîÌï† Í≤ΩÏö∞
-                 * filter Ï°∞Í±¥ÏùÑ ÌÜµÍ≥ºÌïú slotÏùÑ ÎåÄÏÉÅÏúºÎ°ú Îã§Ïãú ÌôïÏù∏Ìï¥Ïïº ÌïúÎã§. */
+                /* SCN ¡∂∞«¿ª ≈Î∞˙«— slot¡ﬂ «œ≥™∂Ûµµ cursor reusable √º≈©∞° « ø‰«“ ∞ÊøÏ
+                 * filter ¡∂∞«¿ª ≈Î∞˙«— slot¿ª ¥ÎªÛ¿∏∑Œ ¥ŸΩ√ »Æ¿Œ«ÿæﬂ «—¥Ÿ. */
                 if( ( sReusableCheckAgain == ID_TRUE ) && ( sTrans->mIsReusableRollback == ID_TRUE ) )
                 {
                     if( smnManager::checkCanReusableRollback( ( smiIterator* )aIterator, *sSlot )
@@ -1142,20 +1173,20 @@ static IDE_RC svnnMoveNext( svnnIterator   * aIterator )
 }
 /****************************************************************************
  *
- * BUG-25179 [SMM] Full ScanÏùÑ ÏúÑÌïú ÌéòÏù¥ÏßÄÍ∞Ñ Scan ListÍ∞Ä ÌïÑÏöîÌï©ÎãàÎã§.
+ * BUG-25179 [SMM] Full Scan¿ª ¿ß«— ∆‰¿Ã¡ˆ∞£ Scan List∞° « ø‰«’¥œ¥Ÿ.
  *
- * ÌòÑÏû¨ Scan PageÎ°úÎ∂ÄÌÑ∞ Îã§Ïùå ÏùΩÏùÑ Scan PageÎ•º Íµ¨Ìï®.
+ * «ˆ¿Á Scan Page∑Œ∫Œ≈Õ ¥Ÿ¿Ω ¿–¿ª Scan Page∏¶ ±∏«‘.
  *
- * IteratorÍ∞Ä Í∞ÄÎ¶¨ÌÇ§Îäî PageÍ∞Ä CacheÎêú Ïù¥ÌõÑÏóê ÏàòÏ†ïÎê†Ïàò ÏûàÍ∏∞ ÎïåÎ¨∏Ïóê Next LinkÍ∞Ä
- * Ïú†Ìö®ÌïòÏßÄ ÏïäÏùÑÏàò ÏûàÎã§. Ïù¥Ïóê ÎåÄÌïú Î≥¥Ï†ïÏù¥ ÌïÑÏöîÌïòÎ©∞ Ïù¥Îäî Modify SequenceÎ•º Ïù¥Ïö©ÌïúÎã§.
- * CacheÎêú Ïù¥ÌõÑÏóê Scan ListÏóêÏÑú Ï†úÍ±∞ÎêòÏóàÎã§Î©¥ Modify SequenceÍ∞Ä Ï¶ùÍ∞ÄÎêòÍ∏∞ ÎïåÎ¨∏Ïóê
- * Ïù¥Î•º ÌôïÏù∏ÌïúÌõÑ Ïú†Ìö®Ìïú Next LinkÎ•º ÌôïÎ≥¥ÌïúÎã§.
+ * Iterator∞° ∞°∏Æ≈∞¥¬ Page∞° Cacheµ» ¿Ã»ƒø° ºˆ¡§µ…ºˆ ¿÷±‚ ∂ßπÆø° Next Link∞°
+ * ¿Ø»ø«œ¡ˆ æ ¿ªºˆ ¿÷¥Ÿ. ¿Ãø° ¥Î«— ∫∏¡§¿Ã « ø‰«œ∏Á ¿Ã¥¬ Modify Sequence∏¶ ¿ÃøÎ«—¥Ÿ.
+ * Cacheµ» ¿Ã»ƒø° Scan Listø°º≠ ¡¶∞≈µ«æ˙¥Ÿ∏È Modify Sequence∞° ¡ı∞°µ«±‚ ∂ßπÆø°
+ * ¿Ã∏¶ »Æ¿Œ«—»ƒ ¿Ø»ø«— Next Link∏¶ »Æ∫∏«—¥Ÿ.
  *
- * ÎòêÌïú ÌòÑÏû¨ PageÍ∞Ä Scan ListÏÉÅÏóê Ï°¥Ïû¨ÌïòÏßÄ ÏïäÏùÑÏàò ÏûàÍ∏∞ ÎïåÎ¨∏Ïóê Scan Back PageÎ°ú
- * Ïù¥ÎèôÌõÑ Îã§Ïãú Ïû¨ÏãúÏûëÌïúÎã§.
+ * ∂««— «ˆ¿Á Page∞° Scan ListªÛø° ¡∏¿Á«œ¡ˆ æ ¿ªºˆ ¿÷±‚ ∂ßπÆø° Scan Back Page∑Œ
+ * ¿Ãµø»ƒ ¥ŸΩ√ ¿ÁΩ√¿€«—¥Ÿ.
  *
- * Scan Back PageÎäî ÌïúÍ±¥Ïù¥ÎùºÎèÑ Ïú†Ìö®Ìïú Î†àÏΩîÎìúÍ∞Ä ÏûàÎäî ÌéòÏù¥ÏßÄÎ•º ÏùòÎØ∏ÌïúÎã§. Ï¶â,
- * Ï†àÎåÄÎ°ú Scan ListÏóêÏÑú Ï†úÍ±∞ÎêòÏßÄ ÏïäÎäî ÌéòÏù¥ÏßÄÎ•º ÏùòÎØ∏ÌïúÎã§.
+ * Scan Back Page¥¬ «—∞«¿Ã∂Ûµµ ¿Ø»ø«— ∑πƒ⁄µÂ∞° ¿÷¥¬ ∆‰¿Ã¡ˆ∏¶ ¿«πÃ«—¥Ÿ. ¡Ô,
+ * ¿˝¥Î∑Œ Scan Listø°º≠ ¡¶∞≈µ«¡ˆ æ ¥¬ ∆‰¿Ã¡ˆ∏¶ ¿«πÃ«—¥Ÿ.
  *
  ****************************************************************************/
 
@@ -1181,9 +1212,9 @@ static IDE_RC svnnMoveNextBlock( svnnIterator * aIterator )
         IDE_TEST( sScanPageList->mMutex->lock( NULL ) != IDE_SUCCESS );
 
         /*
-         * Ïù¥Ï†ÑÏóê IteratorÏóêÏÑú QPÎ°ú Í≤∞Í≥ºÎ•º Ïò¨Î¶∞Ï†ÅÏù¥ ÏóÜÎäî Í≤ΩÏö∞
-         * 1. beforeFirstÍ∞Ä Ìò∏Ï∂úÎêú Í≤ΩÏö∞
-         * 2. pageÍ∞Ä NULLÏùÑ Í∞ñÎäî ScanBackPIDÎ°úÎ∂ÄÌÑ∞ ÏÑ§Ï†ïÎêú Í≤ΩÏö∞
+         * ¿Ã¿¸ø° Iteratorø°º≠ QP∑Œ ∞·∞˙∏¶ ø√∏∞¿˚¿Ã æ¯¥¬ ∞ÊøÏ
+         * 1. beforeFirst∞° »£√‚µ» ∞ÊøÏ
+         * 2. page∞° NULL¿ª ∞Æ¥¬ ScanBackPID∑Œ∫Œ≈Õ º≥¡§µ» ∞ÊøÏ
          */
         if( aIterator->page == SM_NULL_PID )
         {
@@ -1211,9 +1242,9 @@ static IDE_RC svnnMoveNextBlock( svnnIterator * aIterator )
                                                              aIterator->page );
 
             /*
-             * ÌòÑÏû¨ PageÍ∞Ä Scan ListÏÉÅÏùò ÎßàÏßÄÎßâ PageÎùºÎ©¥ ÎçîÏù¥ÏÉÅ NextÎßÅÌÅ¨Î•º
-             * ÏñªÏùÑ ÌïÑÏöîÍ∞Ä ÏóÜÎã§. ÎòêÌïú, ÌòÑÏû¨ PageÍ∞Ä Scan ListÏóêÏÑú Ï†úÍ±∞Îêú ÏÉÅÌÉúÎùºÎ©¥
-             * ScanBackPIDÎ°úÎ∂ÄÌÑ∞ Next PageÎ•º Î≥¥Ï†ïÌïúÎã§.
+             * «ˆ¿Á Page∞° Scan ListªÛ¿« ∏∂¡ˆ∏∑ Page∂Û∏È ¥ı¿ÃªÛ Next∏µ≈©∏¶
+             * æÚ¿ª « ø‰∞° æ¯¥Ÿ. ∂««—, «ˆ¿Á Page∞° Scan Listø°º≠ ¡¶∞≈µ» ªÛ≈¬∂Û∏È
+             * ScanBackPID∑Œ∫Œ≈Õ Next Page∏¶ ∫∏¡§«—¥Ÿ.
              */
             if( (aIterator->page != SM_SPECIAL_PID) &&
                 (aIterator->page != SM_NULL_PID) )
@@ -1228,8 +1259,8 @@ static IDE_RC svnnMoveNextBlock( svnnIterator * aIterator )
         IDE_TEST( sScanPageList->mMutex->unlock() != IDE_SUCCESS );
 
         /*
-         * ÌòÑÏû¨ PageÍ∞Ä Scan ListÏóêÏÑú Ï†úÍ±∞ÎêòÏóàÍ±∞ÎÇò, Ï†úÍ±∞Îêú Ïù¥ÌõÑÏóê Îã§Ïãú Scan ListÏóê
-         * ÏÇΩÏûÖÎêú Í≤ΩÏö∞ÎùºÎ©¥ Îêú ÏÉÅÌÉúÎùºÎ©¥ ScanBackPIDÎ°úÎ∂ÄÌÑ∞ Next PageÎ•º Î≥¥Ï†ïÌïúÎã§.
+         * «ˆ¿Á Page∞° Scan Listø°º≠ ¡¶∞≈µ«æ˙∞≈≥™, ¡¶∞≈µ» ¿Ã»ƒø° ¥ŸΩ√ Scan Listø°
+         * ª¿‘µ» ∞ÊøÏ∂Û∏È µ» ªÛ≈¬∂Û∏È ScanBackPID∑Œ∫Œ≈Õ Next Page∏¶ ∫∏¡§«—¥Ÿ.
          */
         if( sCurScanModifySeq != aIterator->mModifySeqForScan )
         {
@@ -1247,8 +1278,8 @@ static IDE_RC svnnMoveNextBlock( svnnIterator * aIterator )
     if ( ( aIterator->page != SM_SPECIAL_PID ) &&
          ( aIterator->page != SM_NULL_PID) )
     {
-        // Next PageIDÎ•º Í∏∞Î∞òÏúºÎ°ú Current pageÍ∞Ä ÎßàÏßÄÎßâ pageÏù∏ÏßÄ ÌôïÏù∏ÌïúÎã§.
-        // BUG-43463 Next Page IDÎ•º Î∞òÌôò ÌïòÏßÄ ÏïäÍ≥†, IteratorÏóê Î∞îÎ°ú ÏÑ§Ï†ïÌïúÎã§
+        // Next PageID∏¶ ±‚π›¿∏∑Œ Current page∞° ∏∂¡ˆ∏∑ page¿Œ¡ˆ »Æ¿Œ«—¥Ÿ.
+        // BUG-43463 Next Page ID∏¶ π›»Ø «œ¡ˆ æ ∞Ì, Iteratorø° πŸ∑Œ º≥¡§«—¥Ÿ
         aIterator->highest = ( SM_SPECIAL_PID == sNextPID ) ? ID_TRUE : ID_FALSE;
     }
 
@@ -1262,12 +1293,12 @@ static IDE_RC svnnMoveNextBlock( svnnIterator * aIterator )
 }
 
 /****************************************************************************
- * BUG-43463 memory full scan page list mutex Î≥ëÎ™© Ï†úÍ±∞
+ * BUG-43463 memory full scan page list mutex ∫¥∏Ò ¡¶∞≈
  *
- *     FullscanÏãúÏóê iteratorÎ•º Next PageÎ°ú ÏòÆÍ∏∞Îäî Ìï®Ïàò,
- *     svnnMoveNextBlock() Ìï®ÏàòÏôÄ ÎèôÏùºÌïú Ïó≠Ìï†ÏùÑ ÌïúÎã§,
- *     sScanPageList->mMutex Î•º Ïû°ÏßÄ ÏïäÎèÑÎ°ù ÏàòÏ†ïÎêòÏóàÎã§.
- *     ÎèôÏûë ÏõêÎ¶¨Îäî smnnSeq::moveNextNonBlock() Ï£ºÏÑùÏùÑ Ï∞∏Í≥†ÌïòÎùº
+ *     FullscanΩ√ø° iterator∏¶ Next Page∑Œ ø≈±‚¥¬ «‘ºˆ,
+ *     svnnMoveNextBlock() «‘ºˆøÕ µø¿œ«— ø™«“¿ª «—¥Ÿ,
+ *     sScanPageList->mMutex ∏¶ ¿‚¡ˆ æ µµ∑œ ºˆ¡§µ«æ˙¥Ÿ.
+ *     µø¿€ ø¯∏Æ¥¬ smnnSeq::moveNextNonBlock() ¡÷ºÆ¿ª ¬¸∞Ì«œ∂Û
  *
  * aIterator    - [IN/OUT]  Iterator
  *
@@ -1294,9 +1325,9 @@ static IDE_RC svnnMoveNextNonBlock( svnnIterator * aIterator )
     while( 1 )
     {
         /*
-         * Ïù¥Ï†ÑÏóê IteratorÏóêÏÑú QPÎ°ú Í≤∞Í≥ºÎ•º Ïò¨Î¶∞Ï†ÅÏù¥ ÏóÜÎäî Í≤ΩÏö∞
-         * 1. beforeFirstÍ∞Ä Ìò∏Ï∂úÎêú Í≤ΩÏö∞
-         * 2. pageÍ∞Ä NULLÏùÑ Í∞ñÎäî ScanBackPIDÎ°úÎ∂ÄÌÑ∞ ÏÑ§Ï†ïÎêú Í≤ΩÏö∞
+         * ¿Ã¿¸ø° Iteratorø°º≠ QP∑Œ ∞·∞˙∏¶ ø√∏∞¿˚¿Ã æ¯¥¬ ∞ÊøÏ
+         * 1. beforeFirst∞° »£√‚µ» ∞ÊøÏ
+         * 2. page∞° NULL¿ª ∞Æ¥¬ ScanBackPID∑Œ∫Œ≈Õ º≥¡§µ» ∞ÊøÏ
          */
         if( aIterator->page == SM_NULL_PID )
         {
@@ -1346,9 +1377,9 @@ static IDE_RC svnnMoveNextNonBlock( svnnIterator * aIterator )
                                                       sCurrPID );
 
             /*
-             * ÌòÑÏû¨ PageÍ∞Ä Scan ListÏÉÅÏùò ÎßàÏßÄÎßâ PageÎùºÎ©¥ ÎçîÏù¥ÏÉÅ NextÎßÅÌÅ¨Î•º
-             * ÏñªÏùÑ ÌïÑÏöîÍ∞Ä ÏóÜÎã§. ÎòêÌïú, ÌòÑÏû¨ PageÍ∞Ä Scan ListÏóêÏÑú Ï†úÍ±∞Îêú ÏÉÅÌÉúÎùºÎ©¥
-             * ScanBackPIDÎ°úÎ∂ÄÌÑ∞ Next PageÎ•º Î≥¥Ï†ïÌïúÎã§.
+             * «ˆ¿Á Page∞° Scan ListªÛ¿« ∏∂¡ˆ∏∑ Page∂Û∏È ¥ı¿ÃªÛ Next∏µ≈©∏¶
+             * æÚ¿ª « ø‰∞° æ¯¥Ÿ. ∂««—, «ˆ¿Á Page∞° Scan Listø°º≠ ¡¶∞≈µ» ªÛ≈¬∂Û∏È
+             * ScanBackPID∑Œ∫Œ≈Õ Next Page∏¶ ∫∏¡§«—¥Ÿ.
              */
             if( ( sNextPID != SM_SPECIAL_PID) &&
                 ( sNextPID != SM_NULL_PID) )
@@ -1374,8 +1405,8 @@ static IDE_RC svnnMoveNextNonBlock( svnnIterator * aIterator )
             {
                 IDE_DASSERT( sCurrPID != aIterator->mScanBackPID );
 
-                /* ÌòÑÏû¨ PageÍ∞Ä Scan ListÏóêÏÑú Ï†úÍ±∞ÎêòÏóàÍ±∞ÎÇò, Ï†úÍ±∞Îêú Ïù¥ÌõÑÏóê Îã§Ïãú Scan ListÏóê
-                * ÏÇΩÏûÖÎêú Í≤ΩÏö∞ÎùºÎ©¥ Îêú ÏÉÅÌÉúÎùºÎ©¥ ScanBackPIDÎ°úÎ∂ÄÌÑ∞ Next PageÎ•º Î≥¥Ï†ïÌïúÎã§.
+                /* «ˆ¿Á Page∞° Scan Listø°º≠ ¡¶∞≈µ«æ˙∞≈≥™, ¡¶∞≈µ» ¿Ã»ƒø° ¥ŸΩ√ Scan Listø°
+                * ª¿‘µ» ∞ÊøÏ∂Û∏È µ» ªÛ≈¬∂Û∏È ScanBackPID∑Œ∫Œ≈Õ Next Page∏¶ ∫∏¡§«—¥Ÿ.
                 */
                 aIterator->page              = aIterator->mScanBackPID;
                 aIterator->mModifySeqForScan = aIterator->mScanBackModifySeq;
@@ -1395,8 +1426,8 @@ static IDE_RC svnnMoveNextNonBlock( svnnIterator * aIterator )
     if ( ( aIterator->page != SM_SPECIAL_PID ) &&
          ( aIterator->page != SM_NULL_PID) )
     {
-        // Next PageIDÎ•º Í∏∞Î∞òÏúºÎ°ú Current pageÍ∞Ä ÎßàÏßÄÎßâ pageÏù∏ÏßÄ ÌôïÏù∏ÌïúÎã§.
-        // BUG-43463 Next Page IDÎ•º Î∞òÌôò ÌïòÏßÄ ÏïäÍ≥†, IteratorÏóê Î∞îÎ°ú ÏÑ§Ï†ïÌïúÎã§
+        // Next PageID∏¶ ±‚π›¿∏∑Œ Current page∞° ∏∂¡ˆ∏∑ page¿Œ¡ˆ »Æ¿Œ«—¥Ÿ.
+        // BUG-43463 Next Page ID∏¶ π›»Ø «œ¡ˆ æ ∞Ì, Iteratorø° πŸ∑Œ º≥¡§«—¥Ÿ
         aIterator->highest = ( SM_SPECIAL_PID == sNextNextPID ) ? ID_TRUE : ID_FALSE;
     }
 
@@ -1445,9 +1476,9 @@ static IDE_RC svnnMoveNextParallelBlock( svnnIterator * aIterator )
         IDE_TEST( sScanPageList->mMutex->lock( NULL ) != IDE_SUCCESS );
 
         /*
-         * Ïù¥Ï†ÑÏóê IteratorÏóêÏÑú QPÎ°ú Í≤∞Í≥ºÎ•º Ïò¨Î¶∞Ï†ÅÏù¥ ÏóÜÎäî Í≤ΩÏö∞
-         * 1. beforeFirstÍ∞Ä Ìò∏Ï∂úÎêú Í≤ΩÏö∞
-         * 2. pageÍ∞Ä NULLÏùÑ Í∞ñÎäî ScanBackPIDÎ°úÎ∂ÄÌÑ∞ ÏÑ§Ï†ïÎêú Í≤ΩÏö∞
+         * ¿Ã¿¸ø° Iteratorø°º≠ QP∑Œ ∞·∞˙∏¶ ø√∏∞¿˚¿Ã æ¯¥¬ ∞ÊøÏ
+         * 1. beforeFirst∞° »£√‚µ» ∞ÊøÏ
+         * 2. page∞° NULL¿ª ∞Æ¥¬ ScanBackPID∑Œ∫Œ≈Õ º≥¡§µ» ∞ÊøÏ
          */
         if ( aIterator->page == SM_NULL_PID )
         {
@@ -1478,9 +1509,9 @@ static IDE_RC svnnMoveNextParallelBlock( svnnIterator * aIterator )
                                                              aIterator->page );
 
             /*
-             * ÌòÑÏû¨ PageÍ∞Ä Scan ListÏÉÅÏùò ÎßàÏßÄÎßâ PageÎùºÎ©¥ ÎçîÏù¥ÏÉÅ NextÎßÅÌÅ¨Î•º
-             * ÏñªÏùÑ ÌïÑÏöîÍ∞Ä ÏóÜÎã§. ÎòêÌïú, ÌòÑÏû¨ PageÍ∞Ä Scan ListÏóêÏÑú Ï†úÍ±∞Îêú ÏÉÅÌÉúÎùºÎ©¥
-             * ScanBackPIDÎ°úÎ∂ÄÌÑ∞ Next PageÎ•º Î≥¥Ï†ïÌïúÎã§.
+             * «ˆ¿Á Page∞° Scan ListªÛ¿« ∏∂¡ˆ∏∑ Page∂Û∏È ¥ı¿ÃªÛ Next∏µ≈©∏¶
+             * æÚ¿ª « ø‰∞° æ¯¥Ÿ. ∂««—, «ˆ¿Á Page∞° Scan Listø°º≠ ¡¶∞≈µ» ªÛ≈¬∂Û∏È
+             * ScanBackPID∑Œ∫Œ≈Õ Next Page∏¶ ∫∏¡§«—¥Ÿ.
              */
             if ( ( aIterator->page != SM_SPECIAL_PID ) &&
                  ( aIterator->page != SM_NULL_PID) )
@@ -1503,8 +1534,8 @@ static IDE_RC svnnMoveNextParallelBlock( svnnIterator * aIterator )
         IDE_TEST( sScanPageList->mMutex->unlock() != IDE_SUCCESS );
 
         /*
-         * ÌòÑÏû¨ PageÍ∞Ä Scan ListÏóêÏÑú Ï†úÍ±∞ÎêòÏóàÍ±∞ÎÇò, Ï†úÍ±∞Îêú Ïù¥ÌõÑÏóê Îã§Ïãú Scan ListÏóê
-         * ÏÇΩÏûÖÎêú Í≤ΩÏö∞ÎùºÎ©¥ Îêú ÏÉÅÌÉúÎùºÎ©¥ ScanBackPIDÎ°úÎ∂ÄÌÑ∞ Next PageÎ•º Î≥¥Ï†ïÌïúÎã§.
+         * «ˆ¿Á Page∞° Scan Listø°º≠ ¡¶∞≈µ«æ˙∞≈≥™, ¡¶∞≈µ» ¿Ã»ƒø° ¥ŸΩ√ Scan Listø°
+         * ª¿‘µ» ∞ÊøÏ∂Û∏È µ» ªÛ≈¬∂Û∏È ScanBackPID∑Œ∫Œ≈Õ Next Page∏¶ ∫∏¡§«—¥Ÿ.
          */
         if ( sCurScanModifySeq != aIterator->mModifySeqForScan )
         {
@@ -1540,8 +1571,8 @@ static IDE_RC svnnMoveNextParallelBlock( svnnIterator * aIterator )
     if ( ( aIterator->page != SM_SPECIAL_PID ) &&
          ( aIterator->page != SM_NULL_PID) )
     {
-        // Next PageIDÎ•º Í∏∞Î∞òÏúºÎ°ú Current pageÍ∞Ä ÎßàÏßÄÎßâ pageÏù∏ÏßÄ ÌôïÏù∏ÌïúÎã§.
-        // BUG-43463 Next Page IDÎ•º Î∞òÌôò ÌïòÏßÄ ÏïäÍ≥†, IteratorÏóê Î∞îÎ°ú ÏÑ§Ï†ïÌïúÎã§
+        // Next PageID∏¶ ±‚π›¿∏∑Œ Current page∞° ∏∂¡ˆ∏∑ page¿Œ¡ˆ »Æ¿Œ«—¥Ÿ.
+        // BUG-43463 Next Page ID∏¶ π›»Ø «œ¡ˆ æ ∞Ì, Iteratorø° πŸ∑Œ º≥¡§«—¥Ÿ
         aIterator->highest = ( SM_SPECIAL_PID == sNextPID ) ? ID_TRUE : ID_FALSE;
     }
 
@@ -1555,12 +1586,12 @@ static IDE_RC svnnMoveNextParallelBlock( svnnIterator * aIterator )
 }
 
 /****************************************************************************
- * BUG-43463 memory full scan page list mutex Î≥ëÎ™© Ï†úÍ±∞
+ * BUG-43463 memory full scan page list mutex ∫¥∏Ò ¡¶∞≈
  *
- *     FullscanÏãúÏóê iteratorÎ•º Next PageÎ°ú ÏòÆÍ∏∞Îäî Ìï®Ïàò,
- *     svnnMoveNextParallelBlock() Ìï®ÏàòÏôÄ ÎèôÏùºÌïú Ïó≠Ìï†ÏùÑ ÌïúÎã§,
- *     sScanPageList->mMutex Î•º Ïû°ÏßÄ ÏïäÎèÑÎ°ù ÏàòÏ†ïÎêòÏóàÎã§.
- *     ÎèôÏûë ÏõêÎ¶¨Îäî smnnSeq::moveNextNonBlock() Ï£ºÏÑùÏùÑ Ï∞∏Í≥†ÌïòÎùº
+ *     FullscanΩ√ø° iterator∏¶ Next Page∑Œ ø≈±‚¥¬ «‘ºˆ,
+ *     svnnMoveNextParallelBlock() «‘ºˆøÕ µø¿œ«— ø™«“¿ª «—¥Ÿ,
+ *     sScanPageList->mMutex ∏¶ ¿‚¡ˆ æ µµ∑œ ºˆ¡§µ«æ˙¥Ÿ.
+ *     µø¿€ ø¯∏Æ¥¬ smnnSeq::moveNextNonBlock() ¡÷ºÆ¿ª ¬¸∞Ì«œ∂Û
  *
  * aIterator    - [IN/OUT]  Iterator
  *
@@ -1589,9 +1620,9 @@ static IDE_RC svnnMoveNextParallelNonBlock( svnnIterator * aIterator )
     while ( 1 )
     {
         /*
-         * Ïù¥Ï†ÑÏóê IteratorÏóêÏÑú QPÎ°ú Í≤∞Í≥ºÎ•º Ïò¨Î¶∞Ï†ÅÏù¥ ÏóÜÎäî Í≤ΩÏö∞
-         * 1. beforeFirstÍ∞Ä Ìò∏Ï∂úÎêú Í≤ΩÏö∞
-         * 2. pageÍ∞Ä NULLÏùÑ Í∞ñÎäî ScanBackPIDÎ°úÎ∂ÄÌÑ∞ ÏÑ§Ï†ïÎêú Í≤ΩÏö∞
+         * ¿Ã¿¸ø° Iteratorø°º≠ QP∑Œ ∞·∞˙∏¶ ø√∏∞¿˚¿Ã æ¯¥¬ ∞ÊøÏ
+         * 1. beforeFirst∞° »£√‚µ» ∞ÊøÏ
+         * 2. page∞° NULL¿ª ∞Æ¥¬ ScanBackPID∑Œ∫Œ≈Õ º≥¡§µ» ∞ÊøÏ
          */
         if ( aIterator->page == SM_NULL_PID )
         {
@@ -1651,9 +1682,9 @@ static IDE_RC svnnMoveNextParallelNonBlock( svnnIterator * aIterator )
             sNextPID = svpManager::getNextScanPageID( sSpaceID,
                                                       sCurrPID );
             /*
-             * ÌòÑÏû¨ PageÍ∞Ä Scan ListÏÉÅÏùò ÎßàÏßÄÎßâ PageÎùºÎ©¥ ÎçîÏù¥ÏÉÅ NextÎßÅÌÅ¨Î•º
-             * ÏñªÏùÑ ÌïÑÏöîÍ∞Ä ÏóÜÎã§. ÎòêÌïú, ÌòÑÏû¨ PageÍ∞Ä Scan ListÏóêÏÑú Ï†úÍ±∞Îêú ÏÉÅÌÉúÎùºÎ©¥
-             * ScanBackPIDÎ°úÎ∂ÄÌÑ∞ Next PageÎ•º Î≥¥Ï†ïÌïúÎã§.
+             * «ˆ¿Á Page∞° Scan ListªÛ¿« ∏∂¡ˆ∏∑ Page∂Û∏È ¥ı¿ÃªÛ Next∏µ≈©∏¶
+             * æÚ¿ª « ø‰∞° æ¯¥Ÿ. ∂««—, «ˆ¿Á Page∞° Scan Listø°º≠ ¡¶∞≈µ» ªÛ≈¬∂Û∏È
+             * ScanBackPID∑Œ∫Œ≈Õ Next Page∏¶ ∫∏¡§«—¥Ÿ.
              */
             if ( ( sNextPID != SM_SPECIAL_PID ) &&
                  ( sNextPID != SM_NULL_PID) )
@@ -1679,8 +1710,8 @@ static IDE_RC svnnMoveNextParallelNonBlock( svnnIterator * aIterator )
             }
 
             /*
-             * ÌòÑÏû¨ PageÍ∞Ä Scan ListÏóêÏÑú Ï†úÍ±∞ÎêòÏóàÍ±∞ÎÇò, Ï†úÍ±∞Îêú Ïù¥ÌõÑÏóê Îã§Ïãú Scan ListÏóê
-             * ÏÇΩÏûÖÎêú Í≤ΩÏö∞ÎùºÎ©¥ Îêú ÏÉÅÌÉúÎùºÎ©¥ ScanBackPIDÎ°úÎ∂ÄÌÑ∞ Next PageÎ•º Î≥¥Ï†ïÌïúÎã§.
+             * «ˆ¿Á Page∞° Scan Listø°º≠ ¡¶∞≈µ«æ˙∞≈≥™, ¡¶∞≈µ» ¿Ã»ƒø° ¥ŸΩ√ Scan Listø°
+             * ª¿‘µ» ∞ÊøÏ∂Û∏È µ» ªÛ≈¬∂Û∏È ScanBackPID∑Œ∫Œ≈Õ Next Page∏¶ ∫∏¡§«—¥Ÿ.
              */
             if( svpManager::getModifySeqForScan( sSpaceID,
                                                  sCurrPID ) != sCurScanModifySeq )
@@ -1718,8 +1749,8 @@ static IDE_RC svnnMoveNextParallelNonBlock( svnnIterator * aIterator )
     if ( ( aIterator->page != SM_SPECIAL_PID ) &&
          ( aIterator->page != SM_NULL_PID) )
     {
-        // Next PageIDÎ•º Í∏∞Î∞òÏúºÎ°ú Current pageÍ∞Ä ÎßàÏßÄÎßâ pageÏù∏ÏßÄ ÌôïÏù∏ÌïúÎã§.
-        // BUG-43463 Next Page IDÎ•º Î∞òÌôò ÌïòÏßÄ ÏïäÍ≥†, IteratorÏóê Î∞îÎ°ú ÏÑ§Ï†ïÌïúÎã§
+        // Next PageID∏¶ ±‚π›¿∏∑Œ Current page∞° ∏∂¡ˆ∏∑ page¿Œ¡ˆ »Æ¿Œ«—¥Ÿ.
+        // BUG-43463 Next Page ID∏¶ π›»Ø «œ¡ˆ æ ∞Ì, Iteratorø° πŸ∑Œ º≥¡§«—¥Ÿ
         aIterator->highest = ( SM_SPECIAL_PID == sNextNextPID ) ? ID_TRUE : ID_FALSE;
     }
 
@@ -1746,20 +1777,20 @@ static IDE_RC svnnMovePrev( svnnIterator*       aIterator )
 
 /****************************************************************************
  *
- * BUG-25179 [SMM] Full ScanÏùÑ ÏúÑÌïú ÌéòÏù¥ÏßÄÍ∞Ñ Scan ListÍ∞Ä ÌïÑÏöîÌï©ÎãàÎã§.
+ * BUG-25179 [SMM] Full Scan¿ª ¿ß«— ∆‰¿Ã¡ˆ∞£ Scan List∞° « ø‰«’¥œ¥Ÿ.
  *
- * ÌòÑÏû¨ Scan PageÎ°úÎ∂ÄÌÑ∞ Îã§Ïùå ÏùΩÏùÑ Scan PageÎ•º Íµ¨Ìï®.
+ * «ˆ¿Á Scan Page∑Œ∫Œ≈Õ ¥Ÿ¿Ω ¿–¿ª Scan Page∏¶ ±∏«‘.
  *
- * IteratorÍ∞Ä Í∞ÄÎ¶¨ÌÇ§Îäî PageÍ∞Ä CacheÎêú Ïù¥ÌõÑÏóê ÏàòÏ†ïÎê†Ïàò ÏûàÍ∏∞ ÎïåÎ¨∏Ïóê Previous LinkÍ∞Ä
- * Ïú†Ìö®ÌïòÏßÄ ÏïäÏùÑÏàò ÏûàÎã§. Ïù¥Ïóê ÎåÄÌïú Î≥¥Ï†ïÏù¥ ÌïÑÏöîÌïòÎ©∞ Ïù¥Îäî Modify SequenceÎ•º Ïù¥Ïö©ÌïúÎã§.
- * CacheÎêú Ïù¥ÌõÑÏóê Scan ListÏóêÏÑú Ï†úÍ±∞ÎêòÏóàÎã§Î©¥ Modify SequenceÍ∞Ä Ï¶ùÍ∞ÄÎêòÍ∏∞ ÎïåÎ¨∏Ïóê
- * Ïù¥Î•º ÌôïÏù∏ÌïúÌõÑ Ïú†Ìö®Ìïú Previous LinkÎ•º ÌôïÎ≥¥ÌïúÎã§.
+ * Iterator∞° ∞°∏Æ≈∞¥¬ Page∞° Cacheµ» ¿Ã»ƒø° ºˆ¡§µ…ºˆ ¿÷±‚ ∂ßπÆø° Previous Link∞°
+ * ¿Ø»ø«œ¡ˆ æ ¿ªºˆ ¿÷¥Ÿ. ¿Ãø° ¥Î«— ∫∏¡§¿Ã « ø‰«œ∏Á ¿Ã¥¬ Modify Sequence∏¶ ¿ÃøÎ«—¥Ÿ.
+ * Cacheµ» ¿Ã»ƒø° Scan Listø°º≠ ¡¶∞≈µ«æ˙¥Ÿ∏È Modify Sequence∞° ¡ı∞°µ«±‚ ∂ßπÆø°
+ * ¿Ã∏¶ »Æ¿Œ«—»ƒ ¿Ø»ø«— Previous Link∏¶ »Æ∫∏«—¥Ÿ.
  *
- * ÎòêÌïú ÌòÑÏû¨ PageÍ∞Ä Scan ListÏÉÅÏóê Ï°¥Ïû¨ÌïòÏßÄ ÏïäÏùÑÏàò ÏûàÍ∏∞ ÎïåÎ¨∏Ïóê Scan Back PageÎ°ú
- * Ïù¥ÎèôÌõÑ Îã§Ïãú Ïû¨ÏãúÏûëÌïúÎã§.
+ * ∂««— «ˆ¿Á Page∞° Scan ListªÛø° ¡∏¿Á«œ¡ˆ æ ¿ªºˆ ¿÷±‚ ∂ßπÆø° Scan Back Page∑Œ
+ * ¿Ãµø»ƒ ¥ŸΩ√ ¿ÁΩ√¿€«—¥Ÿ.
  *
- * Scan Back PageÎäî ÌïúÍ±¥Ïù¥ÎùºÎèÑ Ïú†Ìö®Ìïú Î†àÏΩîÎìúÍ∞Ä ÏûàÎäî ÌéòÏù¥ÏßÄÎ•º ÏùòÎØ∏ÌïúÎã§. Ï¶â,
- * Ï†àÎåÄÎ°ú Scan ListÏóêÏÑú Ï†úÍ±∞ÎêòÏßÄ ÏïäÎäî ÌéòÏù¥ÏßÄÎ•º ÏùòÎØ∏ÌïúÎã§.
+ * Scan Back Page¥¬ «—∞«¿Ã∂Ûµµ ¿Ø»ø«— ∑πƒ⁄µÂ∞° ¿÷¥¬ ∆‰¿Ã¡ˆ∏¶ ¿«πÃ«—¥Ÿ. ¡Ô,
+ * ¿˝¥Î∑Œ Scan Listø°º≠ ¡¶∞≈µ«¡ˆ æ ¥¬ ∆‰¿Ã¡ˆ∏¶ ¿«πÃ«—¥Ÿ.
  *
  ****************************************************************************/
 
@@ -1785,9 +1816,9 @@ static IDE_RC svnnMovePrevBlock( svnnIterator * aIterator )
         IDE_TEST( sScanPageList->mMutex->lock( NULL ) != IDE_SUCCESS );
 
         /*
-         * Ïù¥Ï†ÑÏóê IteratorÏóêÏÑú QPÎ°ú Í≤∞Í≥ºÎ•º Ïò¨Î¶∞Ï†ÅÏù¥ ÏóÜÎäî Í≤ΩÏö∞
-         * 1. beforeFirstÍ∞Ä Ìò∏Ï∂úÎêú Í≤ΩÏö∞
-         * 2. pageÍ∞Ä NULLÏùÑ Í∞ñÎäî ScanBackPIDÎ°úÎ∂ÄÌÑ∞ ÏÑ§Ï†ïÎêú Í≤ΩÏö∞
+         * ¿Ã¿¸ø° Iteratorø°º≠ QP∑Œ ∞·∞˙∏¶ ø√∏∞¿˚¿Ã æ¯¥¬ ∞ÊøÏ
+         * 1. beforeFirst∞° »£√‚µ» ∞ÊøÏ
+         * 2. page∞° NULL¿ª ∞Æ¥¬ ScanBackPID∑Œ∫Œ≈Õ º≥¡§µ» ∞ÊøÏ
          */
         if( aIterator->page == SM_NULL_PID )
         {
@@ -1811,9 +1842,9 @@ static IDE_RC svnnMovePrevBlock( svnnIterator * aIterator )
                                                              aIterator->page );
 
             /*
-             * ÌòÑÏû¨ PageÍ∞Ä Scan ListÏÉÅÏùò Ï≤òÏùå PageÎùºÎ©¥ ÎçîÏù¥ÏÉÅ PrevÎßÅÌÅ¨Î•º
-             * ÏñªÏùÑ ÌïÑÏöîÍ∞Ä ÏóÜÎã§. ÎòêÌïú, ÌòÑÏû¨ PageÍ∞Ä Scan ListÏóêÏÑú Ï†úÍ±∞Îêú ÏÉÅÌÉúÎùºÎ©¥
-             * ScanBackPIDÎ°úÎ∂ÄÌÑ∞ Previous PageÎ•º Î≥¥Ï†ïÌïúÎã§.
+             * «ˆ¿Á Page∞° Scan ListªÛ¿« √≥¿Ω Page∂Û∏È ¥ı¿ÃªÛ Prev∏µ≈©∏¶
+             * æÚ¿ª « ø‰∞° æ¯¥Ÿ. ∂««—, «ˆ¿Á Page∞° Scan Listø°º≠ ¡¶∞≈µ» ªÛ≈¬∂Û∏È
+             * ScanBackPID∑Œ∫Œ≈Õ Previous Page∏¶ ∫∏¡§«—¥Ÿ.
              */
             if( (aIterator->page != SM_SPECIAL_PID) &&
                 (aIterator->page != SM_NULL_PID) )
@@ -1828,8 +1859,8 @@ static IDE_RC svnnMovePrevBlock( svnnIterator * aIterator )
         IDE_TEST( sScanPageList->mMutex->unlock() != IDE_SUCCESS );
 
         /*
-         * ÌòÑÏû¨ PageÍ∞Ä Scan ListÏóêÏÑú Ï†úÍ±∞ÎêòÏóàÍ±∞ÎÇò, Ï†úÍ±∞Îêú Ïù¥ÌõÑÏóê Îã§Ïãú Scan ListÏóê
-         * ÏÇΩÏûÖÎêú Í≤ΩÏö∞ÎùºÎ©¥ Îêú ÏÉÅÌÉúÎùºÎ©¥ ScanBackPIDÎ°úÎ∂ÄÌÑ∞ Previous PageÎ•º Î≥¥Ï†ïÌïúÎã§.
+         * «ˆ¿Á Page∞° Scan Listø°º≠ ¡¶∞≈µ«æ˙∞≈≥™, ¡¶∞≈µ» ¿Ã»ƒø° ¥ŸΩ√ Scan Listø°
+         * ª¿‘µ» ∞ÊøÏ∂Û∏È µ» ªÛ≈¬∂Û∏È ScanBackPID∑Œ∫Œ≈Õ Previous Page∏¶ ∫∏¡§«—¥Ÿ.
          */
         if( sCurScanModifySeq != aIterator->mModifySeqForScan )
         {
@@ -1846,8 +1877,8 @@ static IDE_RC svnnMovePrevBlock( svnnIterator * aIterator )
     if ( ( aIterator->page != SM_SPECIAL_PID ) &&
          ( aIterator->page != SM_NULL_PID) )
     {
-        // Prev PageIDÎ•º Í∏∞Î∞òÏúºÎ°ú Current pageÍ∞Ä ÎßàÏßÄÎßâ pageÏù∏ÏßÄ ÌôïÏù∏ÌïúÎã§.
-        // BUG-43463 Prev Page IDÎ•º Î∞òÌôò ÌïòÏßÄ ÏïäÍ≥†, IteratorÏóê Î∞îÎ°ú ÏÑ§Ï†ïÌïúÎã§
+        // Prev PageID∏¶ ±‚π›¿∏∑Œ Current page∞° ∏∂¡ˆ∏∑ page¿Œ¡ˆ »Æ¿Œ«—¥Ÿ.
+        // BUG-43463 Prev Page ID∏¶ π›»Ø «œ¡ˆ æ ∞Ì, Iteratorø° πŸ∑Œ º≥¡§«—¥Ÿ
         aIterator->least = ( SM_SPECIAL_PID == sPrevPID ) ? ID_TRUE : ID_FALSE ;
     }
 
@@ -1861,12 +1892,12 @@ static IDE_RC svnnMovePrevBlock( svnnIterator * aIterator )
 }
 
 /****************************************************************************
- * BUG-43463 memory full scan page list mutex Î≥ëÎ™© Ï†úÍ±∞
+ * BUG-43463 memory full scan page list mutex ∫¥∏Ò ¡¶∞≈
  *
- *     FullscanÏãúÏóê iteratorÎ•º Prev PageÎ°ú ÏòÆÍ∏∞Îäî Ìï®Ïàò,
- *     svnnMovePrevBlock() Ìï®ÏàòÏôÄ ÎèôÏùºÌïú Ïó≠Ìï†ÏùÑ ÌïúÎã§,
- *     sScanPageList->mMutex Î•º Ïû°ÏßÄ ÏïäÎèÑÎ°ù ÏàòÏ†ïÎêòÏóàÎã§.
- *     ÎèôÏûë ÏõêÎ¶¨Îäî smnnSeq::moveNextNonBlock() Ï£ºÏÑùÏùÑ Ï∞∏Í≥†ÌïòÎùº
+ *     FullscanΩ√ø° iterator∏¶ Prev Page∑Œ ø≈±‚¥¬ «‘ºˆ,
+ *     svnnMovePrevBlock() «‘ºˆøÕ µø¿œ«— ø™«“¿ª «—¥Ÿ,
+ *     sScanPageList->mMutex ∏¶ ¿‚¡ˆ æ µµ∑œ ºˆ¡§µ«æ˙¥Ÿ.
+ *     µø¿€ ø¯∏Æ¥¬ smnnSeq::moveNextNonBlock() ¡÷ºÆ¿ª ¬¸∞Ì«œ∂Û
  *
  * aIterator    - [IN/OUT]  Iterator
  *
@@ -1893,9 +1924,9 @@ static IDE_RC svnnMovePrevNonBlock( svnnIterator * aIterator )
     while( 1 )
     {
         /*
-         * Ïù¥Ï†ÑÏóê IteratorÏóêÏÑú QPÎ°ú Í≤∞Í≥ºÎ•º Ïò¨Î¶∞Ï†ÅÏù¥ ÏóÜÎäî Í≤ΩÏö∞
-         * 1. beforeFirstÍ∞Ä Ìò∏Ï∂úÎêú Í≤ΩÏö∞
-         * 2. pageÍ∞Ä NULLÏùÑ Í∞ñÎäî ScanBackPIDÎ°úÎ∂ÄÌÑ∞ ÏÑ§Ï†ïÎêú Í≤ΩÏö∞
+         * ¿Ã¿¸ø° Iteratorø°º≠ QP∑Œ ∞·∞˙∏¶ ø√∏∞¿˚¿Ã æ¯¥¬ ∞ÊøÏ
+         * 1. beforeFirst∞° »£√‚µ» ∞ÊøÏ
+         * 2. page∞° NULL¿ª ∞Æ¥¬ ScanBackPID∑Œ∫Œ≈Õ º≥¡§µ» ∞ÊøÏ
          */
         if( aIterator->page == SM_NULL_PID )
         {
@@ -1941,9 +1972,9 @@ static IDE_RC svnnMovePrevNonBlock( svnnIterator * aIterator )
             sPrevPID = svpManager::getPrevScanPageID( sSpaceID,
                                                       sCurrPID );
             /*
-             * ÌòÑÏû¨ PageÍ∞Ä Scan ListÏÉÅÏùò Ï≤òÏùå PageÎùºÎ©¥ ÎçîÏù¥ÏÉÅ PrevÎßÅÌÅ¨Î•º
-             * ÏñªÏùÑ ÌïÑÏöîÍ∞Ä ÏóÜÎã§. ÎòêÌïú, ÌòÑÏû¨ PageÍ∞Ä Scan ListÏóêÏÑú Ï†úÍ±∞Îêú ÏÉÅÌÉúÎùºÎ©¥
-             * ScanBackPIDÎ°úÎ∂ÄÌÑ∞ Previous PageÎ•º Î≥¥Ï†ïÌïúÎã§.
+             * «ˆ¿Á Page∞° Scan ListªÛ¿« √≥¿Ω Page∂Û∏È ¥ı¿ÃªÛ Prev∏µ≈©∏¶
+             * æÚ¿ª « ø‰∞° æ¯¥Ÿ. ∂««—, «ˆ¿Á Page∞° Scan Listø°º≠ ¡¶∞≈µ» ªÛ≈¬∂Û∏È
+             * ScanBackPID∑Œ∫Œ≈Õ Previous Page∏¶ ∫∏¡§«—¥Ÿ.
              */
             if( ( sPrevPID != SM_SPECIAL_PID ) &&
                 ( sPrevPID != SM_NULL_PID) )
@@ -1965,8 +1996,8 @@ static IDE_RC svnnMovePrevNonBlock( svnnIterator * aIterator )
             }
 
             /*
-             * ÌòÑÏû¨ PageÍ∞Ä Scan ListÏóêÏÑú Ï†úÍ±∞ÎêòÏóàÍ±∞ÎÇò, Ï†úÍ±∞Îêú Ïù¥ÌõÑÏóê Îã§Ïãú Scan ListÏóê
-             * ÏÇΩÏûÖÎêú Í≤ΩÏö∞ÎùºÎ©¥ Îêú ÏÉÅÌÉúÎùºÎ©¥ ScanBackPIDÎ°úÎ∂ÄÌÑ∞ Previous PageÎ•º Î≥¥Ï†ïÌïúÎã§.
+             * «ˆ¿Á Page∞° Scan Listø°º≠ ¡¶∞≈µ«æ˙∞≈≥™, ¡¶∞≈µ» ¿Ã»ƒø° ¥ŸΩ√ Scan Listø°
+             * ª¿‘µ» ∞ÊøÏ∂Û∏È µ» ªÛ≈¬∂Û∏È ScanBackPID∑Œ∫Œ≈Õ Previous Page∏¶ ∫∏¡§«—¥Ÿ.
              */
             if( svpManager::getModifySeqForScan( sSpaceID,
                                                  sCurrPID ) != sCurScanModifySeq )
@@ -1989,8 +2020,8 @@ static IDE_RC svnnMovePrevNonBlock( svnnIterator * aIterator )
     if ( ( aIterator->page != SM_SPECIAL_PID ) &&
          ( aIterator->page != SM_NULL_PID) )
     {
-        // Prev PageIDÎ•º Í∏∞Î∞òÏúºÎ°ú Current pageÍ∞Ä ÎßàÏßÄÎßâ pageÏù∏ÏßÄ ÌôïÏù∏ÌïúÎã§.
-        // BUG-43463 Prev Page IDÎ•º Î∞òÌôò ÌïòÏßÄ ÏïäÍ≥†, IteratorÏóê Î∞îÎ°ú ÏÑ§Ï†ïÌïúÎã§
+        // Prev PageID∏¶ ±‚π›¿∏∑Œ Current page∞° ∏∂¡ˆ∏∑ page¿Œ¡ˆ »Æ¿Œ«—¥Ÿ.
+        // BUG-43463 Prev Page ID∏¶ π›»Ø «œ¡ˆ æ ∞Ì, Iteratorø° πŸ∑Œ º≥¡§«—¥Ÿ
         aIterator->least = ( SM_SPECIAL_PID == sPrevPrevPID ) ? ID_TRUE : ID_FALSE ;
     }
 
@@ -2024,6 +2055,7 @@ static IDE_RC svnnFetchNext( svnnIterator* aIterator,
     smxTrans*         sTrans               = (smxTrans*)aIterator->trans;
     idBool            sCanReusableRollback = ID_TRUE;
     idBool            sReusableCheckAgain  = ID_FALSE;
+    idBool            sIsVisible;
 
     restart:
 
@@ -2058,9 +2090,9 @@ static IDE_RC svnnFetchNext( svnnIterator* aIterator,
         }
 
         /*
-         * pageÍ∞Ä NULLÏù∏ Í≤ΩÏö∞Îäî beforeFirstÏóêÏÑú Í≤∞Í≥ºÍ∞Ä ÏóÜÏùÑÎïå Î∞úÏÉùÌï†Ïàò ÏûàÏúºÎ©∞,
-         * pageÍ∞Ä SPECIALÏù∏ Í≤ΩÏö∞Îäî next pageÍ∞Ä ÏóÜÏùåÏùÑ ÏùòÎØ∏ÌïúÎã§.
-         * Ïù¥Îü¨Ìïú 2Í∞ÄÏßÄ Í≤ΩÏö∞Îäî ÎçîÏù¥ÏÉÅ ÏùΩÏùÑ Î†àÏΩîÎìúÍ∞Ä ÏóÜÏùåÏùÑ ÏùòÎØ∏ÌïúÎã§.
+         * page∞° NULL¿Œ ∞ÊøÏ¥¬ beforeFirstø°º≠ ∞·∞˙∞° æ¯¿ª∂ß πﬂª˝«“ºˆ ¿÷¿∏∏Á,
+         * page∞° SPECIAL¿Œ ∞ÊøÏ¥¬ next page∞° æ¯¿Ω¿ª ¿«πÃ«—¥Ÿ.
+         * ¿Ã∑Ø«— 2∞°¡ˆ ∞ÊøÏ¥¬ ¥ı¿ÃªÛ ¿–¿ª ∑πƒ⁄µÂ∞° æ¯¿Ω¿ª ¿«πÃ«—¥Ÿ.
          */
         IDE_TEST_CONT( (aIterator->page == SM_NULL_PID) ||
                        (aIterator->page == SM_SPECIAL_PID), RETURN_SUCCESS );
@@ -2068,12 +2100,12 @@ static IDE_RC svnnFetchNext( svnnIterator* aIterator,
         aIterator->slot = aIterator->highFence = ( aIterator->lowFence = aIterator->rows ) - 1;
         aIterator->least = ID_FALSE;
 
-        /* BUG-39423 : trace log Ï∂úÎ†• Ïãú ÏÑ±Îä• Ï†ÄÌïò Î∞è Ï†ïÏÉÅ ÏûëÎèô Í≤ΩÏö∞ Ï∂úÎ†• Î∞©ÏßÄ */
+        /* BUG-39423 : trace log √‚∑¬ Ω√ º∫¥… ¿˙«œ π◊ ¡§ªÛ ¿€µø ∞ÊøÏ √‚∑¬ πÊ¡ˆ */
 #ifdef DEBUG
         if(   ( aIterator->page < svpManager::getFirstScanPageID(sFixed) )
             ||( aIterator->page > svpManager::getLastScanPageID(sFixed)  ) )
         {
-            /* Scan Page ListÏóê Îì§Ïñ¥Ïò®Ï†ÅÏù¥ ÏóÜÎäî pageÏùº Í≤ΩÏö∞ */  
+            /* Scan Page Listø° µÈæÓø¬¿˚¿Ã æ¯¥¬ page¿œ ∞ÊøÏ */  
             if( aIterator->mModifySeqForScan == 0 )
             {
                 ideLog::log(IDE_SM_0,
@@ -2092,31 +2124,23 @@ static IDE_RC svnnFetchNext( svnnIterator* aIterator,
                                              aIterator->page) != IDE_SUCCESS );
         sLocked = ID_TRUE;
 
-        IDE_ASSERT( svmManager::getOIDPtr( 
+        IDE_ASSERT( smmManager::getOIDPtr( 
                         aIterator->table->mSpaceID, 
                         SM_MAKE_OID( aIterator->page, 
                                      SMP_PERS_PAGE_BODY_OFFSET ),
                         (void**)&sRowPtr )
                     == IDE_SUCCESS );
 
+        /* BUG-48353
+           checkSCN() ø°º≠ Pending Wait ∏¶ πﬂª˝«“ºˆ¿÷±‚ ∂ßπÆø°
+           PAGE release ¿Ã»ƒ∑Œ checkSCN()¿ª πÃ∑È¥Ÿ.
+           ø©±‚º≠¥¬ row pointer ∏µŒ∏¶ ƒ≥Ω¨∑Œ ∫πªÁ«—¥Ÿ. */
         for( sHighFence = aIterator->highFence,
              sFence     = sRowPtr + sFixed->mSlotCount * sSize;
              sRowPtr    < sFence;
              sRowPtr   += sSize )
         {
-            sRow = (smpSlotHeader*)sRowPtr;
-            if( smnManager::checkSCN( (smiIterator*)aIterator, sRow, &sCanReusableRollback )
-                == ID_TRUE )
-            {
-                *(++sHighFence) = sRowPtr;
-                aIterator->mScanBackPID = aIterator->page;
-                aIterator->mScanBackModifySeq = aIterator->mModifySeqForScan;
-
-                if( sCanReusableRollback == ID_FALSE ) 
-                {
-                    sReusableCheckAgain = ID_TRUE;
-                }
-            }
+            *(++sHighFence) = sRowPtr;
         }
 
         sLocked = ID_FALSE;
@@ -2130,10 +2154,32 @@ static IDE_RC svnnFetchNext( svnnIterator* aIterator,
              sSlot <= sHighFence;
              sSlot++ )
         {
+            sRow = (smpSlotHeader *)(*sSlot);
+
+            IDE_TEST( smnManager::checkSCN( (smiIterator *)aIterator,
+                                            sRow,
+                                            &sCanReusableRollback,
+                                            &sIsVisible,
+                                            ID_TRUE )
+                      != IDE_SUCCESS );
+
+            if( sIsVisible == ID_FALSE )
+            {
+                continue;
+            }
+
+            aIterator->mScanBackPID = aIterator->page;
+            aIterator->mScanBackModifySeq = aIterator->mModifySeqForScan;
+
+            if( sCanReusableRollback == ID_FALSE ) 
+            {
+                sReusableCheckAgain = ID_TRUE;
+            }
+
             SC_MAKE_GRID( sRowGRID,
                           aIterator->table->mSpaceID,
-                          SMP_SLOT_GET_PID( (smpSlotHeader*)*sSlot ),
-                          SMP_SLOT_GET_OFFSET( (smpSlotHeader*)*sSlot ) );
+                          SMP_SLOT_GET_PID( sRow ),
+                          SMP_SLOT_GET_OFFSET( sRow ) );
 
             IDE_TEST( aIterator->filter->callback( &sResult,
                                                    *sSlot,
@@ -2144,8 +2190,8 @@ static IDE_RC svnnFetchNext( svnnIterator* aIterator,
                       != IDE_SUCCESS );
             if( sResult == ID_TRUE )
             {
-                /* SCN Ï°∞Í±¥ÏùÑ ÌÜµÍ≥ºÌïú slotÏ§ë ÌïòÎÇòÎùºÎèÑ cursor reusable Ï≤¥ÌÅ¨Í∞Ä ÌïÑÏöîÌï† Í≤ΩÏö∞
-                 * filter Ï°∞Í±¥ÏùÑ ÌÜµÍ≥ºÌïú slotÏùÑ ÎåÄÏÉÅÏúºÎ°ú Îã§Ïãú ÌôïÏù∏Ìï¥Ïïº ÌïúÎã§. */
+                /* SCN ¡∂∞«¿ª ≈Î∞˙«— slot¡ﬂ «œ≥™∂Ûµµ cursor reusable √º≈©∞° « ø‰«“ ∞ÊøÏ
+                 * filter ¡∂∞«¿ª ≈Î∞˙«— slot¿ª ¥ÎªÛ¿∏∑Œ ¥ŸΩ√ »Æ¿Œ«ÿæﬂ «—¥Ÿ. */
                 if( ( sReusableCheckAgain == ID_TRUE ) && ( sTrans->mIsReusableRollback == ID_TRUE ) )
                 {
                     if( smnManager::checkCanReusableRollback( ( smiIterator* )aIterator, *sSlot )
@@ -2224,6 +2270,7 @@ static IDE_RC svnnFetchPrev( svnnIterator* aIterator,
     smxTrans*         sTrans = (smxTrans*)aIterator->trans;
     idBool            sCanReusableRollback = ID_TRUE;
     idBool            sReusableCheckAgain  = ID_FALSE;
+    idBool            sIsVisible;
 
 restart:
 
@@ -2251,9 +2298,9 @@ restart:
         IDE_TEST( svnnMovePrev( aIterator ) != IDE_SUCCESS );
 
         /*
-         * pageÍ∞Ä NULLÏù∏ Í≤ΩÏö∞Îäî beforeFirstÏóêÏÑú Í≤∞Í≥ºÍ∞Ä ÏóÜÏùÑÎïå Î∞úÏÉùÌï†Ïàò ÏûàÏúºÎ©∞,
-         * pageÍ∞Ä SPECIALÏù∏ Í≤ΩÏö∞Îäî previous pageÍ∞Ä ÏóÜÏùåÏùÑ ÏùòÎØ∏ÌïúÎã§.
-         * Ïù¥Îü¨Ìïú 2Í∞ÄÏßÄ Í≤ΩÏö∞Îäî ÎçîÏù¥ÏÉÅ ÏùΩÏùÑ Î†àÏΩîÎìúÍ∞Ä ÏóÜÏùåÏùÑ ÏùòÎØ∏ÌïúÎã§.
+         * page∞° NULL¿Œ ∞ÊøÏ¥¬ beforeFirstø°º≠ ∞·∞˙∞° æ¯¿ª∂ß πﬂª˝«“ºˆ ¿÷¿∏∏Á,
+         * page∞° SPECIAL¿Œ ∞ÊøÏ¥¬ previous page∞° æ¯¿Ω¿ª ¿«πÃ«—¥Ÿ.
+         * ¿Ã∑Ø«— 2∞°¡ˆ ∞ÊøÏ¥¬ ¥ı¿ÃªÛ ¿–¿ª ∑πƒ⁄µÂ∞° æ¯¿Ω¿ª ¿«πÃ«—¥Ÿ.
          */
         IDE_TEST_CONT( (aIterator->page == SM_NULL_PID) ||
                        (aIterator->page == SM_SPECIAL_PID), RETURN_SUCCESS );
@@ -2262,12 +2309,12 @@ restart:
             ( aIterator->slot = aIterator->lowFence = aIterator->rows + SVNN_ROWS_CACHE ) - 1;
         aIterator->highest = ID_TRUE;
 
-        /* BUG-39423 : trace log Ï∂úÎ†• Ïãú ÏÑ±Îä• Ï†ÄÌïò Î∞è Ï†ïÏÉÅ ÏûëÎèô Í≤ΩÏö∞ Ï∂úÎ†• Î∞©ÏßÄ */
+        /* BUG-39423 : trace log √‚∑¬ Ω√ º∫¥… ¿˙«œ π◊ ¡§ªÛ ¿€µø ∞ÊøÏ √‚∑¬ πÊ¡ˆ */
 #ifdef DEBUG
         if(   ( aIterator->page < svpManager::getFirstScanPageID(sFixed) )
             ||( aIterator->page > svpManager::getLastScanPageID(sFixed)  ) )
         {
-            /* Scan Page ListÏóê Îì§Ïñ¥Ïò®Ï†ÅÏù¥ ÏóÜÎäî pageÏùº Í≤ΩÏö∞ */  
+            /* Scan Page Listø° µÈæÓø¬¿˚¿Ã æ¯¥¬ page¿œ ∞ÊøÏ */  
             if( aIterator->mModifySeqForScan == 0 )
             {
                 ideLog::log(IDE_SM_0,
@@ -2286,31 +2333,23 @@ restart:
                                              aIterator->page) != IDE_SUCCESS );
         sLocked = ID_TRUE;
 
-        IDE_ASSERT( svmManager::getOIDPtr( 
+        IDE_ASSERT( smmManager::getOIDPtr( 
                         aIterator->table->mSpaceID, 
                         SM_MAKE_OID( aIterator->page, 
                                      SMP_PERS_PAGE_BODY_OFFSET ),
                         (void**)&sFence )
                     == IDE_SUCCESS );
 
+        /* BUG-48353
+           checkSCN() ø°º≠ Pending Wait ∏¶ πﬂª˝«“ºˆ¿÷±‚ ∂ßπÆø°
+           PAGE release ¿Ã»ƒ∑Œ checkSCN()¿ª πÃ∑È¥Ÿ.
+           ø©±‚º≠¥¬ row pointer ∏µŒ∏¶ ƒ≥Ω¨∑Œ ∫πªÁ«—¥Ÿ. */
         for( sLowFence = aIterator->lowFence,
              sRowPtr   = sFence + ( sFixed->mSlotCount - 1 ) * sSize;
              sRowPtr  >= sFence;
              sRowPtr  -= sSize )
         {
-            sRow = (smpSlotHeader*)sRowPtr;
-            if( smnManager::checkSCN( (smiIterator*)aIterator, sRow, &sCanReusableRollback )
-                == ID_TRUE )
-            {
-                *(--sLowFence) = sRowPtr;
-                aIterator->mScanBackPID = aIterator->page;
-                aIterator->mScanBackModifySeq = aIterator->mModifySeqForScan;
-
-                if( sCanReusableRollback == ID_FALSE ) 
-                {
-                    sReusableCheckAgain = ID_TRUE;
-                }
-            }
+            *(--sLowFence) = sRowPtr;
         }
 
         sLocked = ID_FALSE;
@@ -2324,10 +2363,32 @@ restart:
              sSlot >= sLowFence;
              sSlot-- )
         {
+            sRow = (smpSlotHeader *)(*sSlot);
+
+            IDE_TEST( smnManager::checkSCN( (smiIterator *)aIterator,
+                                            sRow,
+                                            &sCanReusableRollback,
+                                            &sIsVisible,
+                                            ID_TRUE )
+                      != IDE_SUCCESS );
+
+            if( sIsVisible == ID_FALSE )
+            {
+                continue;
+            }
+
+            aIterator->mScanBackPID = aIterator->page;
+            aIterator->mScanBackModifySeq = aIterator->mModifySeqForScan;
+
+            if( sCanReusableRollback == ID_FALSE ) 
+            {
+                sReusableCheckAgain = ID_TRUE;
+            }
+
             SC_MAKE_GRID( sRowGRID,
                           aIterator->table->mSpaceID,
-                          SMP_SLOT_GET_PID( (smpSlotHeader*)*sSlot ),
-                          SMP_SLOT_GET_OFFSET( (smpSlotHeader*)*sSlot ) );
+                          SMP_SLOT_GET_PID( sRow ),
+                          SMP_SLOT_GET_OFFSET( sRow ) );
 
             IDE_TEST( aIterator->filter->callback( &sResult,
                                                    *sSlot,
@@ -2338,8 +2399,8 @@ restart:
                       != IDE_SUCCESS );
             if( sResult == ID_TRUE )
             {
-                /* SCN Ï°∞Í±¥ÏùÑ ÌÜµÍ≥ºÌïú slotÏ§ë ÌïòÎÇòÎùºÎèÑ cursor reusable Ï≤¥ÌÅ¨Í∞Ä ÌïÑÏöîÌï† Í≤ΩÏö∞
-                 * filter Ï°∞Í±¥ÏùÑ ÌÜµÍ≥ºÌïú slotÏùÑ ÎåÄÏÉÅÏúºÎ°ú Îã§Ïãú ÌôïÏù∏Ìï¥Ïïº ÌïúÎã§. */
+                /* SCN ¡∂∞«¿ª ≈Î∞˙«— slot¡ﬂ «œ≥™∂Ûµµ cursor reusable √º≈©∞° « ø‰«“ ∞ÊøÏ
+                 * filter ¡∂∞«¿ª ≈Î∞˙«— slot¿ª ¥ÎªÛ¿∏∑Œ ¥ŸΩ√ »Æ¿Œ«ÿæﬂ «—¥Ÿ. */
                 if( ( sReusableCheckAgain == ID_TRUE ) && ( sTrans->mIsReusableRollback == ID_TRUE ) )
                 {
                     if( smnManager::checkCanReusableRollback( ( smiIterator* )aIterator, *sSlot )
@@ -2419,6 +2480,7 @@ static IDE_RC svnnFetchNextU( svnnIterator* aIterator,
     smxTrans*         sTrans               = (smxTrans*)aIterator->trans;
     idBool            sCanReusableRollback = ID_TRUE;
     idBool            sReusableCheckAgain  = ID_FALSE;
+    idBool            sIsVisible;
 
 restart:
 
@@ -2450,9 +2512,9 @@ restart:
         IDE_TEST( svnnMoveNext( aIterator ) != IDE_SUCCESS );
 
         /*
-         * pageÍ∞Ä NULLÏù∏ Í≤ΩÏö∞Îäî beforeFirstÏóêÏÑú Í≤∞Í≥ºÍ∞Ä ÏóÜÏùÑÎïå Î∞úÏÉùÌï†Ïàò ÏûàÏúºÎ©∞,
-         * pageÍ∞Ä SPECIALÏù∏ Í≤ΩÏö∞Îäî next pageÍ∞Ä ÏóÜÏùåÏùÑ ÏùòÎØ∏ÌïúÎã§.
-         * Ïù¥Îü¨Ìïú 2Í∞ÄÏßÄ Í≤ΩÏö∞Îäî ÎçîÏù¥ÏÉÅ ÏùΩÏùÑ Î†àÏΩîÎìúÍ∞Ä ÏóÜÏùåÏùÑ ÏùòÎØ∏ÌïúÎã§.
+         * page∞° NULL¿Œ ∞ÊøÏ¥¬ beforeFirstø°º≠ ∞·∞˙∞° æ¯¿ª∂ß πﬂª˝«“ºˆ ¿÷¿∏∏Á,
+         * page∞° SPECIAL¿Œ ∞ÊøÏ¥¬ next page∞° æ¯¿Ω¿ª ¿«πÃ«—¥Ÿ.
+         * ¿Ã∑Ø«— 2∞°¡ˆ ∞ÊøÏ¥¬ ¥ı¿ÃªÛ ¿–¿ª ∑πƒ⁄µÂ∞° æ¯¿Ω¿ª ¿«πÃ«—¥Ÿ.
          */
         IDE_TEST_CONT( (aIterator->page == SM_NULL_PID) ||
                        (aIterator->page == SM_SPECIAL_PID), RETURN_SUCCESS );
@@ -2460,12 +2522,12 @@ restart:
         aIterator->slot = aIterator->highFence = ( aIterator->lowFence = aIterator->rows ) - 1;
         aIterator->least = ID_FALSE;
 
-        /* BUG-39423 : trace log Ï∂úÎ†• Ïãú ÏÑ±Îä• Ï†ÄÌïò Î∞è Ï†ïÏÉÅ ÏûëÎèô Í≤ΩÏö∞ Ï∂úÎ†• Î∞©ÏßÄ */
+        /* BUG-39423 : trace log √‚∑¬ Ω√ º∫¥… ¿˙«œ π◊ ¡§ªÛ ¿€µø ∞ÊøÏ √‚∑¬ πÊ¡ˆ */
 #ifdef DEBUG
         if(   ( aIterator->page < svpManager::getFirstScanPageID(sFixed) )
             ||( aIterator->page > svpManager::getLastScanPageID(sFixed)  ) )
         {
-            /* Scan Page ListÏóê Îì§Ïñ¥Ïò®Ï†ÅÏù¥ ÏóÜÎäî pageÏùº Í≤ΩÏö∞ */  
+            /* Scan Page Listø° µÈæÓø¬¿˚¿Ã æ¯¥¬ page¿œ ∞ÊøÏ */  
             if( aIterator->mModifySeqForScan == 0 )
             {
                 ideLog::log(IDE_SM_0,
@@ -2484,31 +2546,23 @@ restart:
                                              aIterator->page) != IDE_SUCCESS );
         sLocked = ID_TRUE;
 
-        IDE_ASSERT( svmManager::getOIDPtr( 
+        IDE_ASSERT( smmManager::getOIDPtr( 
                         aIterator->table->mSpaceID, 
                         SM_MAKE_OID( aIterator->page, 
                                      SMP_PERS_PAGE_BODY_OFFSET ),
                         (void**)&sRowPtr )
                     == IDE_SUCCESS );
 
+        /* BUG-48353
+           checkSCN() ø°º≠ Pending Wait ∏¶ πﬂª˝«“ºˆ¿÷±‚ ∂ßπÆø°
+           PAGE release ¿Ã»ƒ∑Œ checkSCN()¿ª πÃ∑È¥Ÿ.
+           ø©±‚º≠¥¬ row pointer ∏µŒ∏¶ ƒ≥Ω¨∑Œ ∫πªÁ«—¥Ÿ. */
         for( sHighFence = aIterator->highFence,
              sFence     = sRowPtr + sFixed->mSlotCount * sSize;
              sRowPtr    < sFence;
              sRowPtr   += sSize )
         {
-            sRow = (smpSlotHeader*)sRowPtr;
-            if( smnManager::checkSCN( (smiIterator*)aIterator, sRow, &sCanReusableRollback )
-                == ID_TRUE )
-            {
-                *(++sHighFence) = sRowPtr;
-                aIterator->mScanBackPID = aIterator->page;
-                aIterator->mScanBackModifySeq = aIterator->mModifySeqForScan;
-
-                if( sCanReusableRollback == ID_FALSE ) 
-                {
-                    sReusableCheckAgain = ID_TRUE;
-                }
-            }
+            *(++sHighFence) = sRowPtr;
         }
 
         sLocked = ID_FALSE;
@@ -2522,10 +2576,32 @@ restart:
              sSlot <= sHighFence;
              sSlot++ )
         {
+            sRow = (smpSlotHeader *)(*sSlot);
+
+            IDE_TEST( smnManager::checkSCN( (smiIterator *)aIterator,
+                                            sRow,
+                                            &sCanReusableRollback,
+                                            &sIsVisible,
+                                            ID_TRUE )
+                      != IDE_SUCCESS );
+
+            if ( sIsVisible == ID_FALSE )
+            {
+                continue;
+            }
+                
+            aIterator->mScanBackPID = aIterator->page;
+            aIterator->mScanBackModifySeq = aIterator->mModifySeqForScan;
+
+            if( sCanReusableRollback == ID_FALSE ) 
+            {
+                sReusableCheckAgain = ID_TRUE;
+            }
+
             SC_MAKE_GRID( sRowGRID,
                           aIterator->table->mSpaceID,
-                          SMP_SLOT_GET_PID( (smpSlotHeader*)*sSlot ),
-                          SMP_SLOT_GET_OFFSET( (smpSlotHeader*)*sSlot ) );
+                          SMP_SLOT_GET_PID( sRow ),
+                          SMP_SLOT_GET_OFFSET( sRow ) );
 
             IDE_TEST( aIterator->filter->callback( &sResult,
                                                    *sSlot,
@@ -2536,8 +2612,8 @@ restart:
                       != IDE_SUCCESS );
             if( sResult == ID_TRUE )
             {
-                /* SCN Ï°∞Í±¥ÏùÑ ÌÜµÍ≥ºÌïú slotÏ§ë ÌïòÎÇòÎùºÎèÑ cursor reusable Ï≤¥ÌÅ¨Í∞Ä ÌïÑÏöîÌï† Í≤ΩÏö∞
-                 * filter Ï°∞Í±¥ÏùÑ ÌÜµÍ≥ºÌïú slotÏùÑ ÎåÄÏÉÅÏúºÎ°ú Îã§Ïãú ÌôïÏù∏Ìï¥Ïïº ÌïúÎã§. */
+                /* SCN ¡∂∞«¿ª ≈Î∞˙«— slot¡ﬂ «œ≥™∂Ûµµ cursor reusable √º≈©∞° « ø‰«“ ∞ÊøÏ
+                 * filter ¡∂∞«¿ª ≈Î∞˙«— slot¿ª ¥ÎªÛ¿∏∑Œ ¥ŸΩ√ »Æ¿Œ«ÿæﬂ «—¥Ÿ. */
                 if( ( sReusableCheckAgain == ID_TRUE ) && ( sTrans->mIsReusableRollback == ID_TRUE ) )
                 {
                     if( smnManager::checkCanReusableRollback( ( smiIterator* )aIterator, *sSlot )
@@ -2618,6 +2694,7 @@ static IDE_RC svnnFetchPrevU( svnnIterator* aIterator,
     smxTrans*         sTrans               = (smxTrans*)aIterator->trans;
     idBool            sCanReusableRollback = ID_TRUE;
     idBool            sReusableCheckAgain  = ID_FALSE;
+    idBool            sIsVisible;
 
 restart:
 
@@ -2649,9 +2726,9 @@ restart:
         IDE_TEST( svnnMovePrev( aIterator ) != IDE_SUCCESS );
 
         /*
-         * pageÍ∞Ä NULLÏù∏ Í≤ΩÏö∞Îäî beforeFirstÏóêÏÑú Í≤∞Í≥ºÍ∞Ä ÏóÜÏùÑÎïå Î∞úÏÉùÌï†Ïàò ÏûàÏúºÎ©∞,
-         * pageÍ∞Ä SPECIALÏù∏ Í≤ΩÏö∞Îäî previous pageÍ∞Ä ÏóÜÏùåÏùÑ ÏùòÎØ∏ÌïúÎã§.
-         * Ïù¥Îü¨Ìïú 2Í∞ÄÏßÄ Í≤ΩÏö∞Îäî ÎçîÏù¥ÏÉÅ ÏùΩÏùÑ Î†àÏΩîÎìúÍ∞Ä ÏóÜÏùåÏùÑ ÏùòÎØ∏ÌïúÎã§.
+         * page∞° NULL¿Œ ∞ÊøÏ¥¬ beforeFirstø°º≠ ∞·∞˙∞° æ¯¿ª∂ß πﬂª˝«“ºˆ ¿÷¿∏∏Á,
+         * page∞° SPECIAL¿Œ ∞ÊøÏ¥¬ previous page∞° æ¯¿Ω¿ª ¿«πÃ«—¥Ÿ.
+         * ¿Ã∑Ø«— 2∞°¡ˆ ∞ÊøÏ¥¬ ¥ı¿ÃªÛ ¿–¿ª ∑πƒ⁄µÂ∞° æ¯¿Ω¿ª ¿«πÃ«—¥Ÿ.
          */
         IDE_TEST_CONT( (aIterator->page == SM_NULL_PID) ||
                        (aIterator->page == SM_SPECIAL_PID), RETURN_SUCCESS );
@@ -2660,12 +2737,12 @@ restart:
             ( aIterator->slot = aIterator->lowFence = aIterator->rows + SVNN_ROWS_CACHE ) - 1;
         aIterator->highest = ID_TRUE;
 
-        /* BUG-39423 : trace log Ï∂úÎ†• Ïãú ÏÑ±Îä• Ï†ÄÌïò Î∞è Ï†ïÏÉÅ ÏûëÎèô Í≤ΩÏö∞ Ï∂úÎ†• Î∞©ÏßÄ */
+        /* BUG-39423 : trace log √‚∑¬ Ω√ º∫¥… ¿˙«œ π◊ ¡§ªÛ ¿€µø ∞ÊøÏ √‚∑¬ πÊ¡ˆ */
 #ifdef DEBUG
         if(   ( aIterator->page < svpManager::getFirstScanPageID(sFixed) )
             ||( aIterator->page > svpManager::getLastScanPageID(sFixed)  ) )
         {
-            /* Scan Page ListÏóê Îì§Ïñ¥Ïò®Ï†ÅÏù¥ ÏóÜÎäî pageÏùº Í≤ΩÏö∞ */  
+            /* Scan Page Listø° µÈæÓø¬¿˚¿Ã æ¯¥¬ page¿œ ∞ÊøÏ */  
             if( aIterator->mModifySeqForScan == 0 )
             {
                 ideLog::log(IDE_SM_0,
@@ -2684,30 +2761,23 @@ restart:
                                              aIterator->page) != IDE_SUCCESS );
         sLocked = ID_TRUE;
 
-        IDE_ASSERT( svmManager::getOIDPtr( 
+        IDE_ASSERT( smmManager::getOIDPtr( 
                         aIterator->table->mSpaceID, 
                         SM_MAKE_OID( aIterator->page, 
                                      SMP_PERS_PAGE_BODY_OFFSET ),
                         (void**)&sFence )
                     == IDE_SUCCESS );
+
+        /* BUG-48353
+           checkSCN() ø°º≠ Pending Wait ∏¶ πﬂª˝«“ºˆ¿÷±‚ ∂ßπÆø°
+           PAGE release ¿Ã»ƒ∑Œ checkSCN()¿ª πÃ∑È¥Ÿ.
+           ø©±‚º≠¥¬ row pointer ∏µŒ∏¶ ƒ≥Ω¨∑Œ ∫πªÁ«—¥Ÿ. */
         for( sLowFence = aIterator->lowFence,
              sRowPtr   = sFence + ( sFixed->mSlotCount - 1 ) * sSize;
              sRowPtr  >= sFence;
              sRowPtr  -= sSize )
         {
-            sRow = (smpSlotHeader*)sRowPtr;
-            if( smnManager::checkSCN( (smiIterator*)aIterator, sRow, &sCanReusableRollback )
-                == ID_TRUE )
-            {
-                *(--sLowFence) = sRowPtr;
-                aIterator->mScanBackPID = aIterator->page;
-                aIterator->mScanBackModifySeq = aIterator->mModifySeqForScan;
-
-                if( sCanReusableRollback == ID_FALSE ) 
-                {
-                    sReusableCheckAgain = ID_TRUE;
-                }
-            }
+            *(--sLowFence) = sRowPtr;
         }
 
         sLocked = ID_FALSE;
@@ -2721,10 +2791,32 @@ restart:
              sSlot >= sLowFence;
              sSlot-- )
         {
+            sRow = (smpSlotHeader *)(*sSlot);
+
+            IDE_TEST( smnManager::checkSCN( (smiIterator *)aIterator,
+                                            sRow,
+                                            &sCanReusableRollback,
+                                            &sIsVisible,
+                                            ID_TRUE )
+                      != IDE_SUCCESS );
+
+            if ( sIsVisible == ID_FALSE )
+            {
+                continue;
+            }
+
+            aIterator->mScanBackPID = aIterator->page;
+            aIterator->mScanBackModifySeq = aIterator->mModifySeqForScan;
+
+            if( sCanReusableRollback == ID_FALSE ) 
+            {
+                sReusableCheckAgain = ID_TRUE;
+            }
+
             SC_MAKE_GRID( sRowGRID,
                           aIterator->table->mSpaceID,
-                          SMP_SLOT_GET_PID( (smpSlotHeader*)*sSlot ),
-                          SMP_SLOT_GET_OFFSET( (smpSlotHeader*)*sSlot ) );
+                          SMP_SLOT_GET_PID( sRow ),
+                          SMP_SLOT_GET_OFFSET( sRow ) );
 
             IDE_TEST( aIterator->filter->callback( &sResult,
                                                    *sSlot,
@@ -2735,8 +2827,8 @@ restart:
                       != IDE_SUCCESS );
             if( sResult == ID_TRUE )
             {
-                /* SCN Ï°∞Í±¥ÏùÑ ÌÜµÍ≥ºÌïú slotÏ§ë ÌïòÎÇòÎùºÎèÑ cursor reusable Ï≤¥ÌÅ¨Í∞Ä ÌïÑÏöîÌï† Í≤ΩÏö∞
-                 * filter Ï°∞Í±¥ÏùÑ ÌÜµÍ≥ºÌïú slotÏùÑ ÎåÄÏÉÅÏúºÎ°ú Îã§Ïãú ÌôïÏù∏Ìï¥Ïïº ÌïúÎã§. */
+                /* SCN ¡∂∞«¿ª ≈Î∞˙«— slot¡ﬂ «œ≥™∂Ûµµ cursor reusable √º≈©∞° « ø‰«“ ∞ÊøÏ
+                 * filter ¡∂∞«¿ª ≈Î∞˙«— slot¿ª ¥ÎªÛ¿∏∑Œ ¥ŸΩ√ »Æ¿Œ«ÿæﬂ «—¥Ÿ. */
                 if( ( sReusableCheckAgain == ID_TRUE ) && ( sTrans->mIsReusableRollback == ID_TRUE ) )
                 {
                     if( smnManager::checkCanReusableRollback( ( smiIterator* )aIterator, &sSlot )
@@ -2816,6 +2908,7 @@ static IDE_RC svnnFetchNextR( svnnIterator* aIterator)
     smxTrans*         sTrans               = (smxTrans*)aIterator->trans;
     idBool            sCanReusableRollback = ID_TRUE;
     idBool            sReusableCheckAgain  = ID_FALSE;
+    idBool            sIsVisible;
 
     sFixed = (smpPageListEntry*)&(aIterator->table->mFixed.mVRDB);
     sSize  = sFixed->mSlotSize;
@@ -2839,9 +2932,9 @@ restart:
         IDE_TEST( svnnMoveNext( aIterator ) != IDE_SUCCESS );
 
         /*
-         * pageÍ∞Ä NULLÏù∏ Í≤ΩÏö∞Îäî beforeFirstÏóêÏÑú Í≤∞Í≥ºÍ∞Ä ÏóÜÏùÑÎïå Î∞úÏÉùÌï†Ïàò ÏûàÏúºÎ©∞,
-         * pageÍ∞Ä SPECIALÏù∏ Í≤ΩÏö∞Îäî next pageÍ∞Ä ÏóÜÏùåÏùÑ ÏùòÎØ∏ÌïúÎã§.
-         * Ïù¥Îü¨Ìïú 2Í∞ÄÏßÄ Í≤ΩÏö∞Îäî ÎçîÏù¥ÏÉÅ ÏùΩÏùÑ Î†àÏΩîÎìúÍ∞Ä ÏóÜÏùåÏùÑ ÏùòÎØ∏ÌïúÎã§.
+         * page∞° NULL¿Œ ∞ÊøÏ¥¬ beforeFirstø°º≠ ∞·∞˙∞° æ¯¿ª∂ß πﬂª˝«“ºˆ ¿÷¿∏∏Á,
+         * page∞° SPECIAL¿Œ ∞ÊøÏ¥¬ next page∞° æ¯¿Ω¿ª ¿«πÃ«—¥Ÿ.
+         * ¿Ã∑Ø«— 2∞°¡ˆ ∞ÊøÏ¥¬ ¥ı¿ÃªÛ ¿–¿ª ∑πƒ⁄µÂ∞° æ¯¿Ω¿ª ¿«πÃ«—¥Ÿ.
          */
         IDE_TEST_CONT( (aIterator->page == SM_NULL_PID) ||
                        (aIterator->page == SM_SPECIAL_PID), RETURN_SUCCESS );
@@ -2849,12 +2942,12 @@ restart:
         aIterator->slot = aIterator->highFence = ( aIterator->lowFence = aIterator->rows ) - 1;
         aIterator->least = ID_FALSE;
         
-        /* BUG-39423 : trace log Ï∂úÎ†• Ïãú ÏÑ±Îä• Ï†ÄÌïò Î∞è Ï†ïÏÉÅ ÏûëÎèô Í≤ΩÏö∞ Ï∂úÎ†• Î∞©ÏßÄ */
+        /* BUG-39423 : trace log √‚∑¬ Ω√ º∫¥… ¿˙«œ π◊ ¡§ªÛ ¿€µø ∞ÊøÏ √‚∑¬ πÊ¡ˆ */
 #ifdef DEBUG
         if(   ( aIterator->page < svpManager::getFirstScanPageID(sFixed) )
             ||( aIterator->page > svpManager::getLastScanPageID(sFixed)  ) )
         {
-            /* Scan Page ListÏóê Îì§Ïñ¥Ïò®Ï†ÅÏù¥ ÏóÜÎäî pageÏùº Í≤ΩÏö∞ */  
+            /* Scan Page Listø° µÈæÓø¬¿˚¿Ã æ¯¥¬ page¿œ ∞ÊøÏ */  
             if( aIterator->mModifySeqForScan == 0 )
             {
                 ideLog::log(IDE_SM_0,
@@ -2873,32 +2966,22 @@ restart:
                                              aIterator->page) != IDE_SUCCESS );
         sLocked = ID_TRUE;
 
-        IDE_ASSERT( svmManager::getOIDPtr( 
-                        aIterator->table->mSpaceID, 
-                        SM_MAKE_OID( aIterator->page, 
-                                     SMP_PERS_PAGE_BODY_OFFSET ),
-                        (void**)&sRowPtr )
+        IDE_ASSERT( smmManager::getOIDPtr( aIterator->table->mSpaceID, 
+                                           SM_MAKE_OID( aIterator->page, 
+                                                        SMP_PERS_PAGE_BODY_OFFSET ),
+                                           (void**)&sRowPtr )
                     == IDE_SUCCESS );
 
+        /* BUG-48353
+           checkSCN() ø°º≠ Pending Wait ∏¶ πﬂª˝«“ºˆ¿÷±‚ ∂ßπÆø°
+           PAGE release ¿Ã»ƒ∑Œ checkSCN()¿ª πÃ∑È¥Ÿ.
+           ø©±‚º≠¥¬ row pointer ∏µŒ∏¶ ƒ≥Ω¨∑Œ ∫πªÁ«—¥Ÿ. */
         for( sHighFence = aIterator->highFence,
              sFence     = sRowPtr + sFixed->mSlotCount * sSize;
              sRowPtr    < sFence;
              sRowPtr   += sSize )
         {
-            sRow = (smpSlotHeader*)sRowPtr;
-            if( smnManager::checkSCN( (smiIterator*)aIterator, sRow, &sCanReusableRollback )
-                == ID_TRUE )
-            {
-                *(++sHighFence) = sRowPtr;
-                aIterator->mScanBackPID = aIterator->page;
-                // BUG-30538 ScanBackModifySeq Î•º ÏûòÎ™ª Í∏∞Î°ùÌïòÍ≥† ÏûàÏäµÎãàÎã§.
-                aIterator->mScanBackModifySeq = aIterator->mModifySeqForScan;
-
-                if( sCanReusableRollback == ID_FALSE ) 
-                {
-                    sReusableCheckAgain = ID_TRUE;
-                }
-            }
+            *(++sHighFence) = sRowPtr;
         }
 
         sLocked = ID_FALSE;
@@ -2912,10 +2995,33 @@ restart:
              sSlot <= sHighFence;
              sSlot++ )
         {
+            sRow = (smpSlotHeader *)(*sSlot);
+
+            IDE_TEST( smnManager::checkSCN( (smiIterator *)aIterator,
+                                            sRow,
+                                            &sCanReusableRollback,
+                                            &sIsVisible,
+                                            ID_TRUE )
+                      != IDE_SUCCESS );
+
+            if ( sIsVisible == ID_FALSE )
+            {
+                continue;
+            }
+
+            aIterator->mScanBackPID = aIterator->page;
+            // BUG-30538 ScanBackModifySeq ∏¶ ¿ﬂ∏¯ ±‚∑œ«œ∞Ì ¿÷Ω¿¥œ¥Ÿ.
+            aIterator->mScanBackModifySeq = aIterator->mModifySeqForScan;
+
+            if( sCanReusableRollback == ID_FALSE ) 
+            {
+                sReusableCheckAgain = ID_TRUE;
+            }
+
             SC_MAKE_GRID( sRowGRID,
                           aIterator->table->mSpaceID,
-                          SMP_SLOT_GET_PID( (smpSlotHeader*)*sSlot ),
-                          SMP_SLOT_GET_OFFSET( (smpSlotHeader*)*sSlot ) );
+                          SMP_SLOT_GET_PID( sRow ),
+                          SMP_SLOT_GET_OFFSET( sRow ) );
 
             IDE_TEST( aIterator->filter->callback( &sResult,
                                                    *sSlot,
@@ -2926,8 +3032,8 @@ restart:
                       != IDE_SUCCESS );
             if( sResult == ID_TRUE )
             {
-                /* SCN Ï°∞Í±¥ÏùÑ ÌÜµÍ≥ºÌïú slotÏ§ë ÌïòÎÇòÎùºÎèÑ cursor reusable Ï≤¥ÌÅ¨Í∞Ä ÌïÑÏöîÌï† Í≤ΩÏö∞
-                 * filter Ï°∞Í±¥ÏùÑ ÌÜµÍ≥ºÌïú slotÏùÑ ÎåÄÏÉÅÏúºÎ°ú Îã§Ïãú ÌôïÏù∏Ìï¥Ïïº ÌïúÎã§. */
+                /* SCN ¡∂∞«¿ª ≈Î∞˙«— slot¡ﬂ «œ≥™∂Ûµµ cursor reusable √º≈©∞° « ø‰«“ ∞ÊøÏ
+                 * filter ¡∂∞«¿ª ≈Î∞˙«— slot¿ª ¥ÎªÛ¿∏∑Œ ¥ŸΩ√ »Æ¿Œ«ÿæﬂ «—¥Ÿ. */
                 if( ( sReusableCheckAgain == ID_TRUE ) && ( sTrans->mIsReusableRollback == ID_TRUE ) )
                 {
                     if( smnManager::checkCanReusableRollback( ( smiIterator* )aIterator, *sSlot )
@@ -3002,8 +3108,8 @@ static IDE_RC svnnFreeIterator( void * /* aIteratorMem */ )
 /*********************************************************************
  * FUNCTION DESCRIPTION : svnnGatherStat                             *
  * ------------------------------------------------------------------*
- * ÌÜµÍ≥ÑÏ†ïÎ≥¥Î•º Íµ¨Ï∂ïÌïúÎã§.
- * BUGBUG ÎÇòÏ§ëÏóê smnnGatherStat ÏúºÎ°ú Î∞îÍøîÏïº Ìï®. Ï§ëÎ≥µÏûÑ
+ * ≈Î∞Ë¡§∫∏∏¶ ±∏√‡«—¥Ÿ.
+ * BUGBUG ≥™¡ﬂø° smnnGatherStat ¿∏∑Œ πŸ≤„æﬂ «‘. ¡ﬂ∫π¿”
  *********************************************************************/
 IDE_RC svnnGatherStat( idvSQL         * aStatistics,
                        void           * aTrans,

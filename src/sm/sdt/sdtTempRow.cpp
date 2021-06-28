@@ -13,117 +13,153 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
- 
 
 /***********************************************************************
  * $Id $
  **********************************************************************/
 
 #include <sdtTempRow.h>
-#include <sdtWorkArea.h>
 
 /**************************************************************************
  * Description :
- * ì‚½ì…í•  ìƒˆ í˜ì´ì§€ë¥¼ í• ë‹¹ë°›ìŒ
+ * »ğÀÔÇÒ »õ ÆäÀÌÁö¸¦ ÇÒ´ç¹ŞÀ½
  *
  * <IN>
- * aWASegment     - ëŒ€ìƒ WASegment
- * aWAGroupID     - ëŒ€ìƒ Group ID
- * aPrevWPID      - ìƒˆë¡­ê²Œ í• ë‹¹í•œ í˜ì´ì§€ì˜ PrevPIDë¡œ ì„¤ì •í•  WPID
- * aPageType      - ìƒˆ Pageì˜ Type
+ * aWASegment     - ´ë»ó WASegment
+ * aWAGroupID     - ´ë»ó Group ID
+ * aPrevWCBPtr    - »õ·Ó°Ô ÇÒ´çÇÑ ÆäÀÌÁöÀÇ ÀÌÀü pageÀÇ WCB
+ * aPageType      - »õ PageÀÇ Type
  * <OUT>
- * aRowPageCount  - Row í•˜ë‚˜ë¥¼ ê¸°ë¡í•˜ê¸° ìœ„í•´ í• ë‹¹í•œ Pageì˜ ê°œìˆ˜
- * aNewWPID       - í• ë‹¹ë°›ì€ ìƒˆ í˜ì´ì§€
- * aWAPagePtr     - í• ë‹¹ë°›ì€ ìƒˆ í˜ì´ì§€ì˜ Frame Ptr
+ * aRowPageCount  - Row ÇÏ³ª¸¦ ±â·ÏÇÏ±â À§ÇØ ÇÒ´çÇÑ PageÀÇ °³¼ö
+ * aNewWCBPtr     - ÇÒ´ç¹ŞÀº »õ ÆäÀÌÁöÀÇ WCB Ptr
  ***************************************************************************/
-IDE_RC sdtTempRow::allocNewPage( sdtWASegment     * aWASegment,
-                                 sdtWAGroupID       aWAGroupID,
-                                 scPageID           aPrevWPID,
+IDE_RC sdtTempRow::allocNewPage( sdtSortSegHdr    * aWASegment,
+                                 sdtGroupID         aWAGroupID,
+                                 sdtWCB           * aPrevWCBPtr,
                                  sdtTempPageType    aPageType,
                                  UInt             * aRowPageCount,
-                                 scPageID         * aNewWPID,
-                                 UChar           ** aWAPagePtr )
+                                 sdtWCB          ** aNewWCBPtr )
 {
     scPageID        sTargetWPID = SD_NULL_PID;
     scPageID        sTargetNPID = SD_NULL_PID;
     scPageID        sPrevPID;
     UChar         * sWAPagePtr;
-    idBool          sIsInMemoryGroup = sdtWASegment::isInMemoryGroup( aWASegment, aWAGroupID );
+    sdtWCB        * sTargetWCBPtr;
+    sdtSortGroup  * sGrpInfo;
 
-    if ( sIsInMemoryGroup == ID_FALSE )
+    IDE_ERROR( aWAGroupID != SDT_WAGROUPID_NONE );
+
+    sGrpInfo = sdtSortSegment::getWAGroupInfo( aWASegment, aWAGroupID );
+
+    if( aPrevWCBPtr != NULL )
     {
-        /* BUG-44364 getFreeWAPageë¥¼ ìˆ˜í–‰í•˜ë©´ì„œ prevWPIDì™€ NPIDì˜ ì—°ê²°ì´ ë°”ë€”ìˆ˜ ìˆìœ¼ë¯€ë¡œ
-         *           getFreeWAPageë¥¼ ìˆ˜í–‰í•˜ê¸° ì „ NPIDë¥¼ ë¨¼ì € êµ¬í•´ì•¼ í•œë‹¤. */
-        /* MemoryGroupì´ ì•„ë‹ˆë‹ˆ NPIDë¡œ ë³€ê²½í•´ì•¼ í•¨ */
-        sPrevPID = sdtWASegment::getNPID( aWASegment, aPrevWPID );
+        /* ÀÌÀü page¿Í µ¿ÀÏÇÑ WCB¸¦ ÇÒ´ç¹Ş´Â °ÍÀ» ¹æÁöÇÑ´Ù. */
+        sdtSortSegment::fixWAPage( aPrevWCBPtr );
+    }
+
+    switch( sGrpInfo->mPolicy )
+    {
+        case SDT_WA_REUSE_INMEMORY:
+            IDE_TEST( sdtSortSegment::getFreeWAPageINMEMORY( aWASegment,
+                                                             sGrpInfo,
+                                                             &sTargetWCBPtr )
+                      != IDE_SUCCESS );
+            break;
+        case SDT_WA_REUSE_FIFO:
+            IDE_TEST( sdtSortSegment::getFreeWAPageFIFO( aWASegment,
+                                                         sGrpInfo,
+                                                         &sTargetWCBPtr )
+                      != IDE_SUCCESS );
+            break;
+        case SDT_WA_REUSE_LRU:
+            IDE_TEST( sdtSortSegment::getFreeWAPageLRU( aWASegment,
+                                                        sGrpInfo,
+                                                        &sTargetWCBPtr )
+                      != IDE_SUCCESS );
+            break;
+        default:
+            IDE_ERROR( 0 );
+            break;
+    }
+
+    if( aPrevWCBPtr != NULL )
+    {
+        /* ÀÌÀü page¿Í µ¿ÀÏÇÑ WCB¸¦ ÇÒ´ç¹ŞÀ¸¸é ¾ÈµÈ´Ù. */
+        IDE_DASSERT( sTargetWCBPtr != aPrevWCBPtr );
+
+        sdtSortSegment::unfixWAPage( aPrevWCBPtr );
+    }
+
+    if ( sTargetWCBPtr == NULL )
+    {
+        /* Free ÆäÀÌÁö ¾øÀ½ */
+        *aNewWCBPtr = NULL;
     }
     else
     {
-        sPrevPID = aPrevWPID;
-    }
-
-    IDE_TEST( sdtWASegment::getFreeWAPage( aWASegment,
-                                           aWAGroupID,
-                                           &sTargetWPID )
-              != IDE_SUCCESS );
-    if( sTargetWPID == SD_NULL_PID )
-    {
-        /* Free í˜ì´ì§€ ì—†ìŒ */
-        *aNewWPID   = SC_NULL_PID;
-        *aWAPagePtr = NULL;
-    }
-    else
-    {
-        if ( sIsInMemoryGroup == ID_TRUE )
+        if ( sGrpInfo->mPolicy == SDT_WA_REUSE_INMEMORY )
         {
-            if( aPrevWPID != SD_NULL_PID )
+            if ( aPrevWCBPtr != NULL )
             {
-                /* ì´ì „í˜ì´ì§€ì™€ì˜ ë§í¬ë¥¼ ì—°ê²°í•¨ */
-                sWAPagePtr = sdtWASegment::getWAPagePtr( aWASegment,
-                                                         aWAGroupID,
-                                                         aPrevWPID );
-                sdtTempPage::setNextPID( sWAPagePtr, sTargetWPID );
+                /* ÀÌÀüÆäÀÌÁö¿ÍÀÇ ¸µÅ©¸¦ ¿¬°áÇÔ */
+                sWAPagePtr = sdtSortSegment::getWAPagePtr( aWASegment,
+                                                           aWAGroupID,
+                                                           aPrevWCBPtr );
+
+                sPrevPID    = sdtSortSegment::getWPageID( aWASegment,
+                                                          aPrevWCBPtr );
+
+                sTargetWPID = sdtSortSegment::getWPageID( aWASegment,
+                                                          sTargetWCBPtr );
+
+                sdtTempPage::setNextPID( sWAPagePtr,
+                                         sTargetWPID );
                 (*aRowPageCount) ++;
+            }
+            else
+            {
+                sPrevPID = SD_NULL_PID;
             }
         }
         else
         {
-            /* NPageë¥¼ í• ë‹¹í•´ì„œ Bindingì‹œì¼œì•¼ í•¨ */
-            IDE_TEST( sdtWASegment::allocAndAssignNPage( aWASegment,
-                                                         sTargetWPID )
+            /* NPage¸¦ ÇÒ´çÇØ¼­ Binding½ÃÄÑ¾ß ÇÔ */
+            IDE_TEST( sdtSortSegment::allocAndAssignNPage( aWASegment,
+                                                           sTargetWCBPtr )
                       != IDE_SUCCESS );
-            sTargetNPID = sdtWASegment::getNPID( aWASegment, sTargetWPID );
+            sTargetNPID = sdtSortSegment::getNPID( sTargetWCBPtr );
 
-            if( aPrevWPID != SD_NULL_PID )
+            if ( aPrevWCBPtr != NULL )
             {
-                /* ì´ì „í˜ì´ì§€ì™€ ë§í¬ë¥¼ ì—°ê²°í•¨ */
-                sWAPagePtr = sdtWASegment::getWAPagePtr( aWASegment,
-                                                         aWAGroupID,
-                                                         aPrevWPID );
+                /* ÀÌÀüÆäÀÌÁö¿Í ¸µÅ©¸¦ ¿¬°áÇÔ */
+                sPrevPID   = sdtSortSegment::getNPID( aPrevWCBPtr );
+                sWAPagePtr = sdtSortSegment::getWAPagePtr( aWASegment,
+                                                           aWAGroupID,
+                                                           aPrevWCBPtr );
+                sdtTempPage::setNextPID( sWAPagePtr,
+                                         sTargetNPID );
 
-                IDE_ERROR( sPrevPID != sTargetNPID );
-                sdtTempPage::setNextPID( sWAPagePtr, sTargetNPID );
-
-                IDE_TEST( sdtWASegment::writeNPage( aWASegment,
-                                                    aPrevWPID )
-                          != IDE_SUCCESS );
+                IDE_ASSERT( aPrevWCBPtr->mWPState != SDT_WA_PAGESTATE_INIT );
+                aPrevWCBPtr->mWPState = SDT_WA_PAGESTATE_DIRTY;
 
                 (*aRowPageCount) ++;
             }
+            else
+            {
+                sPrevPID = SD_NULL_PID;
+            }
         }
 
-        sWAPagePtr = sdtWASegment::getWAPagePtr( aWASegment,
-                                                 aWAGroupID,
-                                                 sTargetWPID );
-        IDE_TEST( sdtTempPage::init( sWAPagePtr,
-                                     aPageType,
-                                     sPrevPID,    /* Prev */
-                                     sTargetNPID, /* Self */
-                                     SD_NULL_PID )/* Next */
-                  != IDE_SUCCESS );
+        sWAPagePtr = sdtSortSegment::getWAPagePtr( aWASegment,
+                                                   aWAGroupID,
+                                                   sTargetWCBPtr );
+        sdtTempPage::init( (sdtSortPageHdr*)sWAPagePtr,
+                           aPageType,
+                           sPrevPID,    /* Prev */
+                           sTargetNPID, /* Self */
+                           SD_NULL_PID );/* Next */
 
-        (*aNewWPID)   = sTargetWPID;
-        (*aWAPagePtr) = sWAPagePtr;
+        (*aNewWCBPtr) = sTargetWCBPtr;
     }
 
     return IDE_SUCCESS;
@@ -136,41 +172,44 @@ IDE_RC sdtTempRow::allocNewPage( sdtWASegment     * aWASegment,
 
 /**************************************************************************
  * Description :
- * pageì— ì¡´ì¬í•˜ëŠ” Row ì „ì²´ë¥¼ rowInfoí˜•íƒœë¡œ ì½ëŠ”ë‹¤.
+ * page¿¡ Á¸ÀçÇÏ´Â Row ÀüÃ¼¸¦ rowInfoÇüÅÂ·Î ÀĞ´Â´Ù.
  *
  * <IN>
- * aWASegment     - ëŒ€ìƒ WASegment
- * aWAGroupID     - ëŒ€ìƒ Group ID
- * aGRID          - Rowì˜ ìœ„ì¹˜ GRID
- * aValueLength   - Rowì˜ Valueë¶€ë¶„ì˜ ì´ ê¸¸ì´
- * aRowBuffer     - ìª¼ê°œì§„ Columnì„ ì €ì¥í•˜ê¸° ìœ„í•œ Buffer
+ * aWASegment     - ´ë»ó WASegment
+ * aWAGroupID     - ´ë»ó Group ID
+ * aGRID          - RowÀÇ À§Ä¡ GRID
+ * aValueLength   - RowÀÇ ValueºÎºĞÀÇ ÃÑ ±æÀÌ
+ * aRowBuffer     - ÂÉ°³Áø ColumnÀ» ÀúÀåÇÏ±â À§ÇÑ Buffer
  * <OUT>
- * aTRPInfo       - Fetchí•œ ê²°ê³¼
+ * aTRPInfo       - FetchÇÑ °á°ú
  ***************************************************************************/
-IDE_RC sdtTempRow::fetchByGRID( sdtWASegment         * aWASegment,
-                                sdtWAGroupID           aGroupID,
-                                scGRID                 aGRID,
-                                UInt                   aValueLength,
-                                UChar                * aRowBuffer,
-                                sdtTRPInfo4Select    * aTRPInfo )
+IDE_RC sdtTempRow::fetchByGRID( sdtSortSegHdr   * aWASegment,
+                                sdtGroupID        aGroupID,
+                                scGRID            aGRID,
+                                UInt              aValueLength,
+                                UChar           * aRowBuffer,
+                                sdtSortScanInfo * aTRPInfo )
 {
-    UChar        * sCursor      = NULL;
-    idBool         sIsValidSlot = ID_FALSE;
-
-    IDE_TEST( sdtWASegment::getPagePtrByGRID( aWASegment,
-                                              aGroupID,
-                                              aGRID,
-                                              &sCursor,
-                                              &sIsValidSlot )
+    IDE_TEST( sdtSortSegment::getPagePtrByGRID( aWASegment,
+                                                aGroupID,
+                                                aGRID,
+                                                (UChar**)&aTRPInfo->mTRPHeader )
               != IDE_SUCCESS );
-    IDE_ERROR( sIsValidSlot == ID_TRUE );
-    IDE_DASSERT( SM_IS_FLAG_ON( ((sdtTRPHeader*)sCursor)->mTRFlag, SDT_TRFLAG_HEAD ) );
+    IDE_DASSERT( SM_IS_FLAG_ON( aTRPInfo->mTRPHeader->mTRFlag, SDT_TRFLAG_HEAD ) );
 
-    SC_COPY_GRID( aGRID, aTRPInfo->mTRPHGRID );
+#ifdef DEBUG
+    if ( ( SC_MAKE_SPACE( aGRID ) != SDT_SPACEID_WAMAP ) &&
+         ( SC_MAKE_SPACE( aGRID ) != SDT_SPACEID_WORKAREA ) )
+    {
+        sdtWCB * sWCBPtr = sdtSortSegment::findWCB( aWASegment, SC_MAKE_PID( aGRID ) );
+
+        IDE_ASSERT( sdtSortSegment::isFixedPage( sWCBPtr ) == ID_TRUE );
+    }
+#endif
+    aTRPInfo->mFetchEndOffset = aValueLength;
+
     IDE_TEST( fetch( aWASegment,
                      aGroupID,
-                     sCursor,
-                     aValueLength,
                      aRowBuffer,
                      aTRPInfo )
               != IDE_SUCCESS );
@@ -191,129 +230,77 @@ IDE_RC sdtTempRow::fetchByGRID( sdtWASegment         * aWASegment,
 
 /**************************************************************************
  * Description :
- * Rowê°€ Chaining, ì¦‰ ë‹¤ë¥¸ Pageì— ê±¸ì³ ê¸°ë¡ë  ê²½ìš° ì‚¬ìš©ë˜ë©°, ê±¸ì¹œ ë¶€ë¶„ì„
- * Fetchí•´ì˜¨ë‹¤.
+ * Row°¡ Chaining, Áï ´Ù¸¥ Page¿¡ °ÉÃÄ ±â·ÏµÉ °æ¿ì »ç¿ëµÇ¸ç, °ÉÄ£ ºÎºĞÀ»
+ * FetchÇØ¿Â´Ù.
  *
  * <IN>
- * aWASegment     - ëŒ€ìƒ WASegment
- * aWAGroupID     - ëŒ€ìƒ Group ID
- * aRowPtr        - Rowì˜ Pointer ìœ„ì¹˜
- * aValueLength   - Rowì˜ Valueë¶€ë¶„ì˜ ì´ ê¸¸ì´
- * aRowBuffer     - ìª¼ê°œì§„ Columnì„ ì €ì¥í•˜ê¸° ìœ„í•œ Buffer
+ * aWASegment     - ´ë»ó WASegment
+ * aWAGroupID     - ´ë»ó Group ID
+ * aRowBuffer     - ÂÉ°³Áø ColumnÀ» ÀúÀåÇÏ±â À§ÇÑ Buffer
  * <OUT>
- * aTRPInfo       - Fetchí•œ ê²°ê³¼
+ * aTRPInfo       - FetchÇÑ °á°ú
  ***************************************************************************/
-IDE_RC sdtTempRow::fetchChainedRowPiece( sdtWASegment         * aWASegment,
-                                         sdtWAGroupID           aGroupID,
-                                         UChar                * aRowPtr,
-                                         UInt                   aValueLength,
+IDE_RC sdtTempRow::fetchChainedRowPiece( sdtSortSegHdr        * aWASegment,
+                                         sdtGroupID             aGroupID,
                                          UChar                * aRowBuffer,
-                                         sdtTRPInfo4Select    * aTRPInfo )
+                                         sdtSortScanInfo      * aTRPInfo )
 {
-    UChar        * sCursor    = aRowPtr;
-    sdtTRPHeader * sTRPHeader = aTRPInfo->mTRPHeader;
-    scGRID         sGRID      = SC_NULL_GRID;
-    scGRID         sNextGRID;
-    scSpaceID      sSpaceID;
-    scPageID       sNPID;
-    scPageID       sFixedWPID;
+    UChar        * sCursor;
+    sdtSortTRPHdr* sTRPHeader;
     UChar          sFlag;
-    sdtWCB       * sWCBPtr;
-    idBool         sIsValidSlot;
-    idBool         sIsFixed = ID_FALSE;
     UInt           sRowBufferOffset = 0;
     UInt           sTRPHeaderSize;
 
-    sTRPHeaderSize = SDT_TR_HEADER_SIZE( aTRPInfo->mTRPHeader->mTRFlag );
+    sTRPHeader     = aTRPInfo->mTRPHeader;
+    sFlag          = sTRPHeader->mTRFlag;
+    sTRPHeaderSize = SDT_TR_HEADER_SIZE( sFlag );
 
-    /* BUG-46410 sdcTempRow::filteringAndFetch()ì—ì„œ row Ptrì´ ì˜ëª» ì„¤ì • ë  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
-     * Chainig Rowì¼ê²½ìš°, ìì‹ ì´ ReadPageí•˜ë©´ì„œ HeadRowê°€ replaceë  ìˆ˜ ìˆê¸°ì—,
-     * Headerê°€ ì¬í™œìš© ë˜ì§€ ì•Šê²Œ fixpage í•´ë‘ê³  ì´ìš©í•¨*/
-    sNextGRID = aTRPInfo->mTRPHeader->mNextGRID;
-
-    if (( aWASegment->mDiscardPage == ID_TRUE ) &&
-        ( SC_GRID_IS_NULL( aTRPInfo->mTRPHGRID ) == ID_FALSE ))
-    {
-        sSpaceID = SC_MAKE_SPACE( aTRPInfo->mTRPHGRID );
-
-        if (( sSpaceID != SDT_SPACEID_WORKAREA ) &&
-            ( sSpaceID != SDT_SPACEID_WAMAP ))
-        {
-            sNPID   = SC_MAKE_PID( aTRPInfo->mTRPHGRID );
-            sWCBPtr = sdtWASegment::findWCB( aWASegment,
-                                             sSpaceID,
-                                             sNPID );
-
-            IDE_ERROR( sWCBPtr != NULL );
-            IDE_ERROR(( (UChar*)sTRPHeader > sWCBPtr->mWAPagePtr ) &&
-                      ( (UChar*)sTRPHeader < sWCBPtr->mWAPagePtr + SD_PAGE_SIZE ));
-
-            sFixedWPID = sWCBPtr->mWPageID;
-
-            sdtWASegment::fixPage( aWASegment, sFixedWPID );
-            sIsFixed = ID_TRUE;
-        }
-    }
-
-    sCursor += sTRPHeaderSize;
+    sCursor = ((UChar*)sTRPHeader) + sTRPHeaderSize;
 
     aTRPInfo->mValuePtr  = aRowBuffer;
-
     idlOS::memcpy( aRowBuffer + sRowBufferOffset,
                    sCursor,
-                   sTRPHeader->mValueLength);
+                   sTRPHeader->mValueLength );
 
     sRowBufferOffset       += sTRPHeader->mValueLength;
     aTRPInfo->mValueLength  = sTRPHeader->mValueLength;
-    sGRID                   = sTRPHeader->mNextGRID;
 
-    do
+    /* Chainig RowÀÏ°æ¿ì, ÀÚ½ÅÀÌ ReadPageÇÏ¸é¼­
+     * HeadRow°¡ unfixµÉ ¼ö ÀÖ±â¿¡, Header¸¦ º¹»çÇØµÎ°í ÀÌ¿ëÇÔ*/
+#ifdef DEBUG
+    sdtSortTRPHdr  sTRPHeaderBuffer;
+    idlOS::memcpy( &sTRPHeaderBuffer,
+                   aTRPInfo->mTRPHeader,
+                   sTRPHeaderSize );
+#endif
+
+    while ( aTRPInfo->mFetchEndOffset > sRowBufferOffset )
     {
-        IDE_TEST( sdtWASegment::getPagePtrByGRID( aWASegment,
-                                                  aGroupID,
-                                                  sGRID,
-                                                  &sCursor,
-                                                  &sIsValidSlot )
+        IDE_ERROR ( SM_IS_FLAG_ON( sFlag, SDT_TRFLAG_NEXTGRID ) );
+        IDE_ERROR ( SC_GRID_IS_NOT_NULL( sTRPHeader->mNextGRID ) );
+
+        IDE_TEST( sdtSortSegment::getPagePtrByGRID( aWASegment,
+                                                    aGroupID,
+                                                    sTRPHeader->mNextGRID,
+                                                    &sCursor )
                   != IDE_SUCCESS );
-
-        IDE_ERROR( sIsValidSlot == ID_TRUE );
-
-        sTRPHeader = (sdtTRPHeader*)sCursor;
+        sTRPHeader = (sdtSortTRPHdr*)sCursor;
         sFlag      = sTRPHeader->mTRFlag;
         sCursor   += SDT_TR_HEADER_SIZE( sFlag );
 
-        IDE_ERROR( sRowBufferOffset + sTRPHeader->mValueLength
-                   <= aValueLength );
         idlOS::memcpy( aRowBuffer + sRowBufferOffset,
                        sCursor,
                        sTRPHeader->mValueLength);
+
         sRowBufferOffset       += sTRPHeader->mValueLength;
         aTRPInfo->mValueLength += sTRPHeader->mValueLength;
-
-        if ( SM_IS_FLAG_ON( sFlag, SDT_TRFLAG_NEXTGRID ) )
-        {
-            sGRID = sTRPHeader->mNextGRID;
-        }
-        else
-        {
-            sGRID = SC_NULL_GRID;
-        }
-    }
-    while( !SC_GRID_IS_NULL( sGRID ) );
-
-    IDE_ERROR( aTRPInfo->mValueLength == aValueLength );
-
-    if ( sIsFixed == ID_TRUE )
-    {
-        sdtWASegment::unfixPage( aWASegment, sFixedWPID );
-        sIsFixed = ID_FALSE;
     }
 
-    // BUG-46410 sdcTempRow::filteringAndFetch()ì—ì„œ row Ptrì´ ì˜ëª» ì„¤ì • ë  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
-    // sTRPHeaderê°€ ë³€ê²½ ë˜ì—ˆëŠ”ì§€ë¥¼ NextGRIDë¡œ í™•ì¸í•¨,
-    IDE_ERROR( SC_GRID_IS_EQUAL( sNextGRID,
-                                 aTRPInfo->mTRPHeader->mNextGRID ) == ID_TRUE );
-
+#ifdef DEBUG
+    IDE_ASSERT( idlOS::memcmp( &sTRPHeaderBuffer,
+                               aTRPInfo->mTRPHeader,
+                               sTRPHeaderSize ) == 0 );
+#endif
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -322,243 +309,141 @@ IDE_RC sdtTempRow::fetchChainedRowPiece( sdtWASegment         * aWASegment,
                                     smuUtility::dumpUInt,
                                     (void*)&aGroupID );
     smuUtility::dumpFuncWithBuffer( IDE_DUMP_0,
-                                    smuUtility::dumpGRID,
-                                    &sGRID );
-    smuUtility::dumpFuncWithBuffer( IDE_DUMP_0,
                                     dumpTempTRPHeader,
                                     (void*)aTRPInfo->mTRPHeader );
-
-    if ( sIsFixed == ID_TRUE )
-    {
-        sdtWASegment::unfixPage( aWASegment, sFixedWPID );
-        sIsFixed = ID_FALSE;
-    }
 
     return IDE_FAILURE;
 }
 
+
 /**************************************************************************
  * Description :
- * Rowì˜ íŠ¹ì • Columnì„ ê°±ì‹ í•œë‹¤.
- * Updateí•  RowëŠ” ì²˜ìŒ ì‚½ì…í• ë•Œë¶€í„° ì¶©ë¶„í•œ ê³µê°„ì„ í™•ë³´í–ˆê¸° ë•Œë¬¸ì— ë°˜ë“œì‹œ
- * Rowì˜ êµ¬ì¡° ë³€ê²½ ì—†ì´ ì„±ê³µí•œë‹¤
+ * RowÀÇ Æ¯Á¤ ColumnÀ» °»½ÅÇÑ´Ù.
+ * UpdateÇÒ Row´Â Ã³À½ »ğÀÔÇÒ¶§ºÎÅÍ ÃæºĞÇÑ °ø°£À» È®º¸Çß±â ¶§¹®¿¡ ¹İµå½Ã
+ * RowÀÇ ±¸Á¶ º¯°æ ¾øÀÌ ¼º°øÇÑ´Ù
  *
  * <IN>
- * aTempCursor    - ëŒ€ìƒ ì»¤ì„œ
- * aValue         - ê°±ì‹ í•  Value
+ * aTempCursor    - ´ë»ó Ä¿¼­
+ * aValueList     - °»½ÅÇÒ Value List
  ***************************************************************************/
-IDE_RC sdtTempRow::update( smiTempCursor * aTempCursor,
-                           smiValue      * aValueList )
+IDE_RC sdtTempRow::updateChainedRowPiece( smiSortTempCursor* aTempCursor,
+                                          smiValue         * aValueList )
 {
-    smiTempTableHeader * sHeader      = aTempCursor->mTTHeader;
-    sdtWASegment       * sWASeg       = (sdtWASegment*)sHeader->mWASegment;
-    smiColumnList      * sUpdateColumn;
-    smiValue           * sValueList;
-    UChar              * sRowPos      = NULL;
-    sdtTRPHeader       * sTRPHeader   = NULL;
-    scGRID               sGRID        = aTempCursor->mGRID;
-    scPageID             sWPID        = SC_NULL_PID;
-    idBool               sIsValidSlot = ID_FALSE;
-    UInt                 sBeginOffset = 0;
-    UInt                 sEndOffset   = 0;
+    const smiColumnList  * sUpdateColumn;
+    const smiColumn* sColumn;
+    smiValue       * sValueList;
+    UChar          * sRowPos      = NULL;
+    sdtSortTRPHdr  * sTRPHeader   = NULL;
+    scGRID           sGRID;
+    sdtWCB         * sWCBPtr;
+    UInt             sBeginOffset = 0;
+    UInt             sEndOffset;
+    UInt             sDstOffset;
+    UInt             sSrcOffset;
+    UInt             sSize;
+    idBool           sIsWrite;
+    idBool           sNeedDirty;
 
-    IDE_ERROR( aTempCursor->mRowPtr != NULL );
-    IDE_ERROR( SM_IS_FLAG_ON( ((sdtTRPHeader*)aTempCursor->mRowPtr)->mTRFlag, SDT_TRFLAG_HEAD ) );
+    if ( ( SC_GRID_IS_NULL( aTempCursor->mGRID ) ) ||
+         ( SC_MAKE_SPACE( aTempCursor->mGRID ) == SDT_SPACEID_WORKAREA ) ||
+         ( SC_MAKE_SPACE( aTempCursor->mGRID ) == SDT_SPACEID_WAMAP ) )
+    {
+        /* InMemory ¿¬»êÀÌ±â¿¡ SetDirty°¡ ÇÊ¿ä ¾ø´Ù */
+        IDE_DASSERT((((smiTempTableHeader*)aTempCursor->mTTHeader)->mTTState != SMI_TTSTATE_SORT_MERGE ) &&
+                    (((smiTempTableHeader*)aTempCursor->mTTHeader)->mTTState != SMI_TTSTATE_SORT_MERGESCAN ));
+
+        sNeedDirty = ID_FALSE;
+    }
+    else
+    {
+        IDE_DASSERT( SC_MAKE_SPACE( aTempCursor->mGRID ) ==
+                     ((sdtSortSegHdr*)aTempCursor->mWASegment)->mSpaceID );
+
+        sNeedDirty = ID_TRUE;
+    }
+
+    SC_COPY_GRID( aTempCursor->mGRID, sGRID );
+    sRowPos = aTempCursor->mRowPtr;
 
     while( 1 )
     {
-        if( sRowPos == NULL )
-        {
-            sRowPos = aTempCursor->mRowPtr;
-        }
-        else
-        {
-            IDE_TEST( sdtWASegment::getPagePtrByGRID( sWASeg,
-                                                      aTempCursor->mWAGroupID,
-                                                      sGRID,
-                                                      &sRowPos,
-                                                      &sIsValidSlot)
-                      != IDE_SUCCESS );
-            IDE_ERROR( sIsValidSlot == ID_TRUE );
-        }
-
-        sTRPHeader = (sdtTRPHeader*)sRowPos;
+        sTRPHeader = (sdtSortTRPHdr*)sRowPos;
         sEndOffset = sBeginOffset + sTRPHeader->mValueLength;
 
         sRowPos   += SDT_TR_HEADER_SIZE( sTRPHeader->mTRFlag );
 
         sUpdateColumn = aTempCursor->mUpdateColumns;
         sValueList    = aValueList;
+        sIsWrite      = ID_FALSE;
+
         while( sUpdateColumn != NULL )
         {
-            copyColumn( sRowPos,
-                        sBeginOffset,
-                        sEndOffset,
-                        (smiColumn*)sUpdateColumn->column,
-                        sValueList );
+            sColumn = ( smiColumn*)sUpdateColumn->column;
+
+            if (( sEndOffset > sColumn->offset ) &&                         // ½ÃÀÛÁ¡ÀÌ end º¸´Ù ÀÛ°í
+                ( sBeginOffset <= (sColumn->offset + sValueList->length ))) // ³¡ Á¡ÀÌ Beginº¸´Ù Å©´Ù
+            {
+                sSize = sValueList->length;
+                if ( sColumn->offset < sBeginOffset ) /* ¿ŞÂÊ ½ÃÀÛ ºÎºĞÀÌ Àß·È´Â°¡? */
+                {
+                    // Àß·È´Ù.
+                    sDstOffset = 0;
+                    sSrcOffset = sBeginOffset - sColumn->offset;
+                    sSize -= sSrcOffset;
+                }
+                else
+                {
+                    // ¾ÈÀß·È´Ù.
+                    sDstOffset = sColumn->offset - sBeginOffset;
+                    sSrcOffset = 0;
+                }
+
+                /* ¿À¸¥ÂÊ ³¡ ºÎºĞÀÌ Àß·È´Â°¡? */
+                if ( (sColumn->offset + sValueList->length ) > sEndOffset )
+                {
+                    // Àß·È´Ù.
+                    sSize -= (sColumn->offset + sValueList->length - sEndOffset);
+                }
+
+                idlOS::memcpy( sRowPos + sDstOffset,
+                               ((UChar*)sValueList->value) + sSrcOffset,
+                               sSize );
+                sIsWrite = ID_TRUE;
+            }
+
             sValueList ++;
             sUpdateColumn = sUpdateColumn->next;
         }
+
         sBeginOffset = sEndOffset;
 
-        if( ( SC_GRID_IS_NULL( sGRID ) ) ||
-            ( SC_MAKE_SPACE( sGRID ) == SDT_SPACEID_WORKAREA ) ||
-            ( SC_MAKE_SPACE( sGRID ) == SDT_SPACEID_WAMAP ) )
+        if (( sIsWrite == ID_TRUE ) && ( sNeedDirty == ID_TRUE ))
         {
-            /* InMemory ì—°ì‚°ì´ê¸°ì— SetDirtyê°€ í•„ìš” ì—†ë‹¤ */
-            IDE_DASSERT( ( sHeader->mTTState != SMI_TTSTATE_SORT_MERGE ) &&
-                         ( sHeader->mTTState != SMI_TTSTATE_SORT_MERGESCAN ) ) ;
-        }
-        else
-        {
-            IDE_TEST( sdtWASegment::getWPIDFromGRID( sWASeg,
-                                                     aTempCursor->mWAGroupID,
-                                                     sGRID,
-                                                     &sWPID )
-                      != IDE_SUCCESS );
-            IDE_TEST( sdtWASegment::setDirtyWAPage( sWASeg, sWPID )
-                      != IDE_SUCCESS);
+            /* ¹İµå½Ã ÀÖ¾î¾ß ÇÑ´Ù. */
+            sWCBPtr = sdtSortSegment::findWCB( (sdtSortSegHdr*)aTempCursor->mWASegment,
+                                               SC_MAKE_PID( sGRID ));
+            IDE_ERROR( sWCBPtr != NULL );
+            IDE_ASSERT( sWCBPtr->mWPState != SDT_WA_PAGESTATE_INIT );
+
+            sWCBPtr->mWPState = SDT_WA_PAGESTATE_DIRTY;
         }
 
-        if ( SM_IS_FLAG_ON( sTRPHeader->mTRFlag, SDT_TRFLAG_NEXTGRID ) )
+        if ( aTempCursor->mUpdateEndOffset <= sEndOffset )
         {
-            sGRID = sTRPHeader->mNextGRID;
-        }
-        else
-        {
-            sGRID = SC_NULL_GRID;
+            // update ¿Ï·á
             break;
         }
+
+        IDE_ERROR( SM_IS_FLAG_ON( sTRPHeader->mTRFlag, SDT_TRFLAG_NEXTGRID ) );
+        IDE_ERROR( SC_GRID_IS_NOT_NULL( sTRPHeader->mNextGRID ) );
+
+        SC_COPY_GRID( sTRPHeader->mNextGRID, sGRID );
+        IDE_TEST( sdtSortSegment::getPagePtrByGRID( (sdtSortSegHdr*)aTempCursor->mWASegment,
+                                                    aTempCursor->mWAGroupID,
+                                                    sGRID,
+                                                    &sRowPos )
+                  != IDE_SUCCESS );
     }
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    smuUtility::dumpFuncWithBuffer( IDE_DUMP_0,
-                                    dumpRowWithCursor,
-                                    aTempCursor );
-    return IDE_FAILURE;
-}
-
-
-/**************************************************************************
- * Description :
- * HitFlagë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
- *
- * <IN>
- * aCursor      - ê°±ì‹ í•  Rowë¥¼ ê°€ë¦¬í‚¤ëŠ” ì»¤ì„œ
- * aHitSeq      - ì„¤ì •í•  Hitê°’
- ***************************************************************************/
-IDE_RC sdtTempRow::setHitFlag( smiTempCursor * aTempCursor,
-                               ULong           aHitSeq )
-{
-    sdtWASegment * sWASeg     = (sdtWASegment*)aTempCursor->mTTHeader->mWASegment;
-    sdtTRPHeader * sTRPHeader = (sdtTRPHeader*)aTempCursor->mRowPtr;
-    scPageID       sWPID      = SC_NULL_PID;
-    UChar        * sPageStartPtr = NULL;
-    scPageID       sNPID         = SC_NULL_PID;
-    idBool         sIsValidSlot  = ID_FALSE;
-    smiTempTableHeader * sHeader = (smiTempTableHeader*)aTempCursor->mTTHeader;
-
-    IDE_ERROR( sTRPHeader != NULL );
-
-    /* BUG-45474 hash_area_sizeê°€ ë¶€ì¡±í•˜ë©´ ë¹„ì •ìƒì¢…ë£Œí•˜ê±°ë‚˜ SQL ì˜ ê²°ê³¼ê°€ ì¤‘ë³µëœ ê°’ì´ ì¶œë ¥ë  ìˆ˜ ìˆìŠµë‹ˆë‹¤. */
-    if ( ( SC_MAKE_SPACE( aTempCursor->mGRID ) != SDT_SPACEID_WAMAP ) &&
-         ( SC_MAKE_SPACE( aTempCursor->mGRID ) != SDT_SPACEID_WORKAREA ) )
-    {
-        sPageStartPtr = sdtTempPage::getPageStartPtr( sTRPHeader );
-        sNPID         = sdtTempPage::getPID( sPageStartPtr );
-
-        if ( SC_MAKE_PID( aTempCursor->mGRID ) != sNPID )
-        {
-            IDE_TEST( sdtWASegment::getPagePtrByGRID( sWASeg,
-                                                      aTempCursor->mWAGroupID,
-                                                      aTempCursor->mGRID,
-                                                      (UChar**)&sTRPHeader,
-                                                      &sIsValidSlot )
-                    != IDE_SUCCESS );
-            IDE_ERROR( sIsValidSlot == ID_TRUE );
-            IDE_ERROR( SM_IS_FLAG_ON( sTRPHeader->mTRFlag, SDT_TRFLAG_HEAD ) );
-        }
-        else
-        {
-            /* nothing to do */
-        }
-
-    }
-    else
-    {
-        /* nothing to do */
-    }
-
-#ifdef DEBUG
-    if ( sHeader->mTTState == SMI_TTSTATE_SORT_INMEMORYSCAN )
-    {
-        IDE_DASSERT( sHeader->mFetchGroupID == SDT_WAGROUPID_NONE );
-        IDE_DASSERT( SC_MAKE_SPACE( aTempCursor->mGRID ) == SDT_SPACEID_WAMAP );
-    }
-    else
-    {
-        if ( ( sHeader->mTTState == SMI_TTSTATE_SORT_INDEXSCAN ) ||
-             ( sHeader->mTTState == SMI_TTSTATE_SORT_SCAN )      ||
-             ( sHeader->mTTState == SMI_TTSTATE_CLUSTERHASH_PARTITIONING ) ||
-             ( sHeader->mTTState == SMI_TTSTATE_CLUSTERHASH_SCAN )         ||
-             ( sHeader->mTTState == SMI_TTSTATE_UNIQUEHASH )  )
-        {
-            IDE_DASSERT( ( SC_MAKE_SPACE( aTempCursor->mGRID ) != SDT_SPACEID_WAMAP ) &&
-                         ( SC_MAKE_SPACE( aTempCursor->mGRID ) != SDT_SPACEID_WORKAREA ) );
-        }
-        else
-        {
-            IDE_DASSERT( ( sHeader->mTTState == SMI_TTSTATE_SORT_MERGE ) ||
-                         ( sHeader->mTTState == SMI_TTSTATE_SORT_MERGESCAN ) );
-        }
-    }
-    IDE_DASSERT( SM_IS_FLAG_ON( sTRPHeader->mTRFlag, SDT_TRFLAG_HEAD ) );
-    IDE_DASSERT( ID_SIZEOF( sTRPHeader->mHitSequence ) == ID_SIZEOF( aHitSeq ) );
-#endif
-
-    sTRPHeader->mHitSequence = aHitSeq;
-
-    if ( ( SC_GRID_IS_NULL( aTempCursor->mGRID ) ) ||
-         ( SC_MAKE_SPACE( aTempCursor->mGRID ) == SDT_SPACEID_WAMAP ) )
-    {
-        /* InMemory ì—°ì‚°ì´ê¸°ì— SetDirtyê°€ í•„ìš” ì—†ë‹¤ */
-    }
-    else
-    {
-        if ( SC_MAKE_SPACE( aTempCursor->mGRID ) == SDT_SPACEID_WORKAREA )
-        {
-            /* BUG-44074 merge ì¤‘ê°„ì— í˜¸ì¶œë˜ëŠ” ê²½ìš° GRID ëŠ” heapì— ìˆëŠ” run ì •ë³´.
-               run ì„ ë”°ë¼ê°€ì„œ setdirty ì•ˆí•´ì£¼ë©´ í•´ë‹¹ í˜ì´ì§€ì— hitseq ì„¤ì •í•œ ì •ë³´ê°€ ì‚¬ë¼ì§ˆìˆ˜ ìˆë‹¤. */
-            if ( ( sHeader->mTTState == SMI_TTSTATE_SORT_MERGE ) ||
-                 ( sHeader->mTTState == SMI_TTSTATE_SORT_MERGESCAN ) )
-            {
-                IDE_TEST( sdtWASegment::getWPIDFromGRID( sWASeg,
-                                                         aTempCursor->mWAGroupID,
-                                                         aTempCursor->mGRID,
-                                                         &sWPID )
-                          != IDE_SUCCESS );
-                IDE_TEST( sdtWASegment::setDirtyWAPage( sWASeg, sWPID ) !=IDE_SUCCESS );
-            }
-            else
-            {
-                /* nothing to do */
-            }
-        }
-        else
-        {
-            /* setDirty! */
-            IDE_TEST( sdtWASegment::getWPIDFromGRID( sWASeg,
-                                                     aTempCursor->mWAGroupID,
-                                                     aTempCursor->mGRID,
-                                                     &sWPID )
-                      != IDE_SUCCESS );
-            IDE_TEST( sdtWASegment::setDirtyWAPage( sWASeg, sWPID ) !=IDE_SUCCESS );
-
-        }
-    }//else
 
     return IDE_SUCCESS;
 
@@ -569,73 +454,40 @@ IDE_RC sdtTempRow::setHitFlag( smiTempCursor * aTempCursor,
 
 /**************************************************************************
  * Description :
- * HitFlagê°€ ìˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
- *
- * <IN>
- * aHitSeq            - í˜„ì¬ Hit Sequence
- * aIsHitFlagged      - Hit Flag ì—¬ë¶€
- ***************************************************************************/
-idBool sdtTempRow::isHitFlagged( smiTempCursor * aTempCursor,
-                                 ULong           aHitSeq )
-{
-    idBool sIsHitFlagged = ID_FALSE;
-
-    sdtTRPHeader * sTRPHeader = (sdtTRPHeader*)aTempCursor->mRowPtr;
-
-    IDE_DASSERT( ID_SIZEOF( sTRPHeader->mHitSequence ) ==
-                 ID_SIZEOF( aHitSeq ) );
-
-    // No Type Casting. (because of above assertion code)
-    if( sTRPHeader->mHitSequence == aHitSeq )
-    {
-        sIsHitFlagged = ID_TRUE;
-    }
-    else
-    {
-        sIsHitFlagged = ID_FALSE;
-    }
-
-    return sIsHitFlagged;
-}
-
-/**************************************************************************
- * Description :
- *   ê³µìš© ë³€ìˆ˜ë“¤ì— ëŒ€í•œ DumpFunction 
+ *    °ø¿ë º¯¼öµé¿¡ ´ëÇÑ DumpFunction 
  ***************************************************************************/
 void sdtTempRow::dumpTempTRPHeader( void       * aTRPHeader,
                                     SChar      * aOutBuf,
                                     UInt         aOutSize )
 {
-    sdtTRPHeader * sTRPHeader = (sdtTRPHeader*)aTRPHeader;
+    sdtSortTRPHdr* sTRPHeader = (sdtSortTRPHdr*)aTRPHeader;
 
-    idlVA::appendFormat( aOutBuf,
-                         aOutSize,
-                         "DUMP TRPHeader:\n"
-                         "mFlag        : %"ID_UINT32_FMT"\n"
-                         "mHitSequence : %"ID_UINT64_FMT"\n"
-                         "mValueLength : %"ID_UINT32_FMT"\n"
-                         "mHashValue   : %"ID_UINT32_FMT"\n",
-                         sTRPHeader->mTRFlag,
-                         sTRPHeader->mHitSequence,
-                         sTRPHeader->mValueLength,
-                         sTRPHeader->mHashValue );
+    (void)idlVA::appendFormat( aOutBuf,
+                               aOutSize,
+                               "DUMP TRPHeader:\n"
+                               "mFlag        : %"ID_UINT32_FMT"\n"
+                               "mHitSequence : %"ID_UINT32_FMT"\n"
+                               "mValueLength : %"ID_UINT32_FMT"\n",
+                               sTRPHeader->mTRFlag,
+                               sTRPHeader->mHitSequence,
+                               sTRPHeader->mValueLength );
 
     if ( SDT_TR_HEADER_SIZE( sTRPHeader->mTRFlag ) == SDT_TR_HEADER_SIZE_FULL )
     {
-        idlVA::appendFormat( aOutBuf,
-                             aOutSize,
-                             "mNextGRID    : <%"ID_UINT32_FMT
-                             ",%"ID_UINT32_FMT
-                             ",%"ID_UINT32_FMT">\n"
-                             "mChildGRID   : <%"ID_UINT32_FMT
-                             ",%"ID_UINT32_FMT
-                             ",%"ID_UINT32_FMT">\n",
-                             sTRPHeader->mNextGRID.mSpaceID,
-                             sTRPHeader->mNextGRID.mPageID,
-                             sTRPHeader->mNextGRID.mOffset,
-                             sTRPHeader->mChildGRID.mSpaceID,
-                             sTRPHeader->mChildGRID.mPageID,
-                             sTRPHeader->mChildGRID.mOffset );
+        (void)idlVA::appendFormat( aOutBuf,
+                                   aOutSize,
+                                   "mNextGRID    : <%"ID_UINT32_FMT
+                                   ",%"ID_UINT32_FMT
+                                   ",%"ID_UINT32_FMT">\n"
+                                   "mChildGRID   : <%"ID_UINT32_FMT
+                                   ",%"ID_UINT32_FMT
+                                   ",%"ID_UINT32_FMT">\n",
+                                   sTRPHeader->mNextGRID.mSpaceID,
+                                   sTRPHeader->mNextGRID.mPageID,
+                                   sTRPHeader->mNextGRID.mOffset,
+                                   sTRPHeader->mChildGRID.mSpaceID,
+                                   sTRPHeader->mChildGRID.mPageID,
+                                   sTRPHeader->mChildGRID.mOffset );
     }
 
     return;
@@ -646,97 +498,44 @@ void sdtTempRow::dumpTempTRPInfo4Insert( void       * aTRPInfo,
                                          SChar      * aOutBuf,
                                          UInt         aOutSize )
 {
-    sdtTRPInfo4Insert * sTRPInfo = (sdtTRPInfo4Insert*)aTRPInfo;
-    UInt                sSize;
-    UInt                i;
-    UInt                sDumpSize;
+    sdtSortInsertInfo * sTRPInfo = (sdtSortInsertInfo*)aTRPInfo;
+    UInt         sSize;
+    UInt         i;
+    UInt         sDumpSize;
 
     dumpTempTRPHeader( &sTRPInfo->mTRPHeader, aOutBuf, aOutSize );
 
-    for ( i = 0 ; i < sTRPInfo->mColumnCount ; i ++ )
+    for ( i = 0 ; i < sTRPInfo->mColumnCount ; i++ )
     {
-        idlVA::appendFormat( aOutBuf,
-                             aOutSize,
-                             "[%2"ID_UINT32_FMT"] Length:%4"ID_UINT32_FMT"\n",
-                             i,
-                             sTRPInfo->mValueList[ i ].length );
+        (void)idlVA::appendFormat( aOutBuf,
+                                   aOutSize,
+                                   "[%2"ID_UINT32_FMT"] Length:%4"ID_UINT32_FMT"\n",
+                                   i,
+                                   sTRPInfo->mValueList[ i ].length );
 
-        idlVA::appendFormat( aOutBuf,
-                             aOutSize,
-                             "Value : ");
+        (void)idlVA::appendFormat( aOutBuf,
+                                   aOutSize,
+                                   "Value : ");
         sSize     = idlOS::strlen( aOutBuf );
         sDumpSize = sTRPInfo->mValueList[ i ].length;
         if ( sDumpSize > 64 )
         {
-            /* IDE_MESSAGE_SIZE ë¥¼ ë„˜ìœ¼ë©´ ì¶œë ¥ì•ˆë ìˆ˜ë„ ìˆìœ¼ë¯€ë¡œ 
-               ì„ì˜ì˜ ê°’ìœ¼ë¡œ ìë¦„  */
+            /* IDE_MESSAGE_SIZE ¸¦ ³ÑÀ¸¸é Ãâ·Â¾ÈµÉ¼öµµ ÀÖÀ¸¹Ç·Î 
+               ÀÓÀÇÀÇ °ªÀ¸·Î ÀÚ¸§  */
             sDumpSize = 64;
         }
-        IDE_TEST( ideLog::ideMemToHexStr(
-                                  (UChar*)sTRPInfo->mValueList[ i ].value,
-                                  sDumpSize,
-                                  IDE_DUMP_FORMAT_VALUEONLY,
-                                  aOutBuf + sSize,
-                                  aOutSize - sSize )
+        IDE_TEST( ideLog::ideMemToHexStr( (UChar*)sTRPInfo->mValueList[ i ].value,
+                                          sDumpSize ,
+                                          IDE_DUMP_FORMAT_VALUEONLY,
+                                          aOutBuf + sSize,
+                                          aOutSize - sSize )
                   != IDE_SUCCESS );
-        idlVA::appendFormat( aOutBuf, aOutSize, "\n" );
+        (void)idlVA::appendFormat( aOutBuf, aOutSize, "\n\n" );
     }
 
     return;
 
     IDE_EXCEPTION_END;
-
-    return;
-}
-
-void sdtTempRow::dumpTempTRPInfo4Select( void       * aTRPInfo,
-                                         SChar      * aOutBuf,
-                                         UInt         aOutSize )
-{
-    sdtTRPInfo4Select * sTRPInfo = (sdtTRPInfo4Select*)aTRPInfo;
-    UInt                sSize;
-    UInt                sDumpSize;
-
-    dumpTempTRPHeader( sTRPInfo->mTRPHeader, aOutBuf, aOutSize );
-
-    idlVA::appendFormat( aOutBuf,
-                         aOutSize,
-                         "Value : ");
-    sSize     = idlOS::strlen( aOutBuf );
-    sDumpSize = sTRPInfo->mTRPHeader->mValueLength;
-    if ( sDumpSize > 64 )
-    {
-        /* IDE_MESSAGE_SIZE ë¥¼ ë„˜ìœ¼ë©´ ì¶œë ¥ì•ˆë ìˆ˜ë„ ìˆìœ¼ë¯€ë¡œ 
-           ì„ì˜ì˜ ê°’ìœ¼ë¡œ ìë¦„  */
-        sDumpSize = 64;
-    }
-    IDE_TEST( ideLog::ideMemToHexStr(
-                                  (UChar*)sTRPInfo->mValuePtr,
-                                  sDumpSize,
-                                  IDE_DUMP_FORMAT_VALUEONLY,
-                                  aOutBuf + sSize,
-                                  aOutSize - sSize )
-              != IDE_SUCCESS );
-    idlVA::appendFormat( aOutBuf, aOutSize, "\n" );
-
-    return;
-
-    IDE_EXCEPTION_END;
-
-    return;
-}
-
-void sdtTempRow::dumpTempRow( void  * aRowPtr,
-                              SChar * aOutBuf,
-                              UInt    aOutSize )
-{
-    sdtTRPInfo4Select   sTRPInfo;
-
-    sTRPInfo.mTRPHeader = (sdtTRPHeader*)aRowPtr;
-    sTRPInfo.mValuePtr  = ((UChar*)aRowPtr) +
-               SDT_TR_HEADER_SIZE( sTRPInfo.mTRPHeader->mTRFlag );
-
-    dumpTempTRPInfo4Select( (void*)&sTRPInfo, aOutBuf, aOutSize );
 
     return;
 }
@@ -745,19 +544,53 @@ void sdtTempRow::dumpTempPageByRow( void  * aPagePtr,
                                     SChar * aOutBuf,
                                     UInt    aOutSize )
 {
-    UChar         * sPagePtr = (UChar*)aPagePtr;
-    UInt            sSlotValue;
-    UInt            sSlotCount;
-    UInt            i;
+    UChar     * sPagePtr = (UChar*)aPagePtr;
+    UChar     * sRowPtr;
+    UChar     * sValuePtr;
+    UInt        sSlotValue;
+    UInt        sSlotCount;
+    UInt        i;
+    UInt        sSize;
+    UInt        sDumpSize;
+    sdtSortTRPHdr* sTRPHeader;
 
-    IDE_TEST( sdtTempPage::getSlotCount( sPagePtr, &sSlotCount )
-              != IDE_SUCCESS );
+    sSlotCount = sdtTempPage::getSlotCount( sPagePtr );
 
     for ( i = 0 ; i < sSlotCount ; i ++ )
     {
         sSlotValue = sdtTempPage::getSlotOffset( sPagePtr, i );
-        dumpTempRow( sPagePtr + sSlotValue, aOutBuf, aOutSize );
+
+        sRowPtr = sPagePtr + sSlotValue;
+
+        sTRPHeader = (sdtSortTRPHdr*)(sRowPtr);
+        sValuePtr  = sRowPtr + SDT_TR_HEADER_SIZE( sTRPHeader->mTRFlag );
+
+        (void)idlVA::appendFormat( aOutBuf,
+                                   aOutSize,
+                                   "[%4"ID_UINT32_FMT"] ",i);
+        dumpTempTRPHeader( sTRPHeader, aOutBuf, aOutSize );
+
+        (void)idlVA::appendFormat( aOutBuf,
+                                   aOutSize,
+                                   "Value : ");
+        sSize     = idlOS::strlen( aOutBuf );
+        sDumpSize = sTRPHeader->mValueLength;
+        if ( sDumpSize > 64 )
+        {
+            /* IDE_MESSAGE_SIZE ¸¦ ³ÑÀ¸¸é Ãâ·Â¾ÈµÉ¼öµµ ÀÖÀ¸¹Ç·Î 
+               ÀÓÀÇÀÇ °ªÀ¸·Î ÀÚ¸§  */
+            sDumpSize = 64;
+        }
+        IDE_TEST( ideLog::ideMemToHexStr( (UChar*)sValuePtr,
+                                          sDumpSize,
+                                          IDE_DUMP_FORMAT_VALUEONLY,
+                                          aOutBuf + sSize,
+                                          aOutSize - sSize )
+                  != IDE_SUCCESS );
+        (void)idlVA::appendFormat( aOutBuf, aOutSize, "\n\n" );
     }
+
+    return;
 
     IDE_EXCEPTION_END;
 
@@ -766,31 +599,30 @@ void sdtTempRow::dumpTempPageByRow( void  * aPagePtr,
 
 /**************************************************************************
  * Description :
- * Rowì˜ íŠ¹ì • Columnì„ ê°±ì‹ í•˜ë‹¤ ì‹¤íŒ¨ í–ˆì„ë•Œ Column ì •ë³´ë“¤ì„ ì¶œë ¥í•œë‹¤.
+ * RowÀÇ Æ¯Á¤ ColumnÀ» °»½ÅÇÏ´Ù ½ÇÆĞ ÇßÀ»¶§ Column Á¤º¸µéÀ» Ãâ·ÂÇÑ´Ù.
  ***************************************************************************/
 void sdtTempRow::dumpRowWithCursor( void   * aTempCursor,
                                     SChar  * aOutBuf,
                                     UInt     aOutSize )
 {
 
-    smiTempCursor      * sCursor       = (smiTempCursor*)aTempCursor;
-    smiTempTableHeader * sHeader       = sCursor->mTTHeader;
-    sdtWASegment       * sWASeg        = (sdtWASegment*)sHeader->mWASegment;
-    smiColumnList      * sUpdateColumn;
-    UChar              * sRowPos       = NULL;
-    sdtTRPHeader       * sTRPHeader    = NULL;
-    scGRID               sGRID         = sCursor->mGRID;
-    idBool               sIsValidSlot  = ID_FALSE;
-    UInt                 sBeginOffset  = 0;
-    UInt                 sEndOffset    = 0;
-    UInt                 sSize         = 0;
-    UInt                 sDumpSize     = 0;
+    smiSortTempCursor   * sCursor       = (smiSortTempCursor*)aTempCursor;
+    smiTempTableHeader  * sHeader       = sCursor->mTTHeader;
+    sdtSortSegHdr       * sWASeg        = (sdtSortSegHdr*)sHeader->mWASegment;
+    const smiColumnList * sUpdateColumn;
+    UChar               * sRowPos       = NULL;
+    sdtSortTRPHdr       * sTRPHeader    = NULL;
+    scGRID                sGRID         = sCursor->mGRID;
+    UInt                  sBeginOffset  = 0;
+    UInt                  sEndOffset    = 0;
+    UInt                  sSize         = 0;
+    UInt                  sDumpSize     = 0;
 
     IDE_ERROR( sCursor != NULL );
 
-    idlVA::appendFormat( aOutBuf,
-                         aOutSize,
-                         "DUMP TEMPROW\n");
+    (void)idlVA::appendFormat( aOutBuf,
+                               aOutSize,
+                               "DUMP TEMPROW\n");
     while( 1 )
     {
         if ( sRowPos == NULL )
@@ -799,25 +631,23 @@ void sdtTempRow::dumpRowWithCursor( void   * aTempCursor,
         }
         else
         {
-            IDE_TEST( sdtWASegment::getPagePtrByGRID( sWASeg,
-                                                      sCursor->mWAGroupID,
-                                                      sGRID,
-                                                      &sRowPos,
-                                                      &sIsValidSlot)
+            IDE_TEST( sdtSortSegment::getPagePtrByGRID( sWASeg,
+                                                        sCursor->mWAGroupID,
+                                                        sGRID,
+                                                        &sRowPos )
                       != IDE_SUCCESS );
-            IDE_ERROR( sIsValidSlot == ID_TRUE );
         }
 
-        idlVA::appendFormat( aOutBuf,
-                             aOutSize,
-                             "GRID  : %4"ID_UINT32_FMT","
-                             "%4"ID_UINT32_FMT","
-                             "%4"ID_UINT32_FMT"\n",
-                             sGRID.mSpaceID,
-                             sGRID.mPageID,
-                             sGRID.mOffset );
+        (void)idlVA::appendFormat( aOutBuf,
+                                   aOutSize,
+                                   "GRID  : %4"ID_UINT32_FMT","
+                                   "%4"ID_UINT32_FMT","
+                                   "%4"ID_UINT32_FMT"\n",
+                                   sGRID.mSpaceID,
+                                   sGRID.mPageID,
+                                   sGRID.mOffset );
 
-        sTRPHeader = (sdtTRPHeader*)sRowPos;
+        sTRPHeader = (sdtSortTRPHdr*)sRowPos;
         sEndOffset = sBeginOffset + sTRPHeader->mValueLength;
 
         sRowPos   += SDT_TR_HEADER_SIZE( sTRPHeader->mTRFlag );
@@ -826,36 +656,35 @@ void sdtTempRow::dumpRowWithCursor( void   * aTempCursor,
 
         if ( sUpdateColumn != NULL )
         {
-            idlVA::appendFormat( aOutBuf,
-                                 aOutSize,
-                                 "length: %"ID_UINT32_FMT"\n",
-                                 sTRPHeader->mValueLength );
+            (void)idlVA::appendFormat( aOutBuf,
+                                       aOutSize,
+                                       "length: %"ID_UINT32_FMT"\n",
+                                       sTRPHeader->mValueLength );
 
-            idlVA::appendFormat( aOutBuf,
-                                 aOutSize,
-                                 "value : ");
+            (void)idlVA::appendFormat( aOutBuf,
+                                       aOutSize,
+                                       "value : ");
             sSize = idlOS::strlen( aOutBuf );
             sDumpSize = sTRPHeader->mValueLength;
             if ( sDumpSize > 64 )
             {
-                /* IDE_MESSAGE_SIZE ë¥¼ ë„˜ìœ¼ë©´ ì¶œë ¥ì•ˆë ìˆ˜ë„ ìˆìœ¼ë¯€ë¡œ 
-                   ì„ì˜ì˜ ê°’ìœ¼ë¡œ ìë¦„  */
+                /* IDE_MESSAGE_SIZE ¸¦ ³ÑÀ¸¸é Ãâ·Â¾ÈµÉ¼öµµ ÀÖÀ¸¹Ç·Î 
+                   ÀÓÀÇÀÇ °ªÀ¸·Î ÀÚ¸§  */
                 sDumpSize = 64;
             }
-            IDE_TEST( ideLog::ideMemToHexStr(
-                                          sRowPos,
-                                          sDumpSize,
-                                          IDE_DUMP_FORMAT_VALUEONLY,
-                                          aOutBuf + sSize,
-                                          aOutSize - sSize )
+            IDE_TEST( ideLog::ideMemToHexStr( sRowPos,
+                                              sDumpSize,
+                                              IDE_DUMP_FORMAT_VALUEONLY,
+                                              aOutBuf + sSize,
+                                              aOutSize - sSize )
                       != IDE_SUCCESS );
-            idlVA::appendFormat( aOutBuf, aOutSize, "\n" );
+            (void)idlVA::appendFormat( aOutBuf, aOutSize, "\n\n" );
         }
         sBeginOffset = sEndOffset;
 
         if ( SM_IS_FLAG_ON( sTRPHeader->mTRFlag, SDT_TRFLAG_NEXTGRID ) )
         {
-            sGRID = sTRPHeader->mNextGRID;
+            SC_COPY_GRID( sTRPHeader->mNextGRID, sGRID ) ;
         }
         else
         {
@@ -867,8 +696,8 @@ void sdtTempRow::dumpRowWithCursor( void   * aTempCursor,
 
     IDE_EXCEPTION_END;
 
-    idlVA::appendFormat(aOutBuf,
-                        aOutSize,
-                        "DUMP TEMPCURSOR ERROR\n" );
+    (void)idlVA::appendFormat(aOutBuf,
+                              aOutSize,
+                              "DUMP TEMPCURSOR ERROR\n" );
     return;
 }

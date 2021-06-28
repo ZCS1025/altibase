@@ -30,77 +30,77 @@
 #include <smu.h>
 
 /*
-  [ì°¸ê³ ] SMMì•ˆì—ì„œì˜ Fileê°„ì˜ Layerë° ì—­í• ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
-         í•˜ìœ„ Layerì˜ ì½”ë“œì—ì„œëŠ” ìƒìœ„ Layerì˜ ì½”ë“œë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+  [Âü°í] SMM¾È¿¡¼­ÀÇ File°£ÀÇ Layer¹× ¿ªÇÒÀº ´ÙÀ½°ú °°´Ù.
+         ÇÏÀ§ LayerÀÇ ÄÚµå¿¡¼­´Â »óÀ§ LayerÀÇ ÄÚµå¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù.
 
   ----------------------------------------------------------------------------
-  smmTBSCreate          ; Create Tablespace êµ¬í˜„
-  smmTBSDrop            ; Drop Tablespace êµ¬í˜„
-  smmTBSAlterAutoExtend ; Alter Tablespace Auto Extend êµ¬í˜„
-  smmTBSAlterChkptPath  ; Alter Tablespace Add/Rename/Drop Checkpoint Pathêµ¬í˜„
-  smmTBSAlterDiscard    ; Alter Tablespace Discard êµ¬í˜„
-  smmTBSStartupShutdown ; Startup, Shutdownì‹œì˜ Tablespaceê´€ë ¨ ì²˜ë¦¬ë¥¼ êµ¬í˜„
+  smmTBSCreate          ; Create Tablespace ±¸Çö
+  smmTBSDrop            ; Drop Tablespace ±¸Çö
+  smmTBSAlterAutoExtend ; Alter Tablespace Auto Extend ±¸Çö
+  smmTBSAlterChkptPath  ; Alter Tablespace Add/Rename/Drop Checkpoint Path±¸Çö
+  smmTBSAlterDiscard    ; Alter Tablespace Discard ±¸Çö
+  smmTBSStartupShutdown ; Startup, Shutdown½ÃÀÇ Tablespace°ü·Ã Ã³¸®¸¦ ±¸Çö
   ----------------------------------------------------------------------------
-  smmTBSChkptPath  ; Tablespaceì˜ Checkpoint Path ê´€ë¦¬
-  smmTBSMultiPhase ; Tablespaceì˜ ë‹¤ë‹¨ê³„ ì´ˆê¸°í™”
+  smmTBSChkptPath  ; TablespaceÀÇ Checkpoint Path °ü¸®
+  smmTBSMultiPhase ; TablespaceÀÇ ´Ù´Ü°è ÃÊ±âÈ­
   ----------------------------------------------------------------------------
-  smmManager       ; Tablespaceì˜ ë‚´ë¶€ êµ¬í˜„ 
-  smmFPLManager    ; Tablespace Free Page Listì˜ ë‚´ë¶€ êµ¬í˜„
-  smmExpandChunk   ; Chunkì˜ ë‚´ë¶€êµ¬ì¡° êµ¬í˜„
+  smmManager       ; TablespaceÀÇ ³»ºÎ ±¸Çö 
+  smmFPLManager    ; Tablespace Free Page ListÀÇ ³»ºÎ ±¸Çö
+  smmExpandChunk   ; ChunkÀÇ ³»ºÎ±¸Á¶ ±¸Çö
   ----------------------------------------------------------------------------
 
-  c.f> Memory Tablespaceì˜ Alter Online/Offlineì€ smp layerì— êµ¬í˜„ë˜ì–´ ìˆë‹¤.
+  c.f> Memory TablespaceÀÇ Alter Online/OfflineÀº smp layer¿¡ ±¸ÇöµÇ¾î ÀÖ´Ù.
 
 */
 
 /*
-  Memory Tablespaceì™€ ê´€ë ¨í•˜ì—¬ Startup, Shutdownì‹œì˜ ì²˜ë¦¬ì‚¬í•­ì„ êµ¬í˜„í•œë‹¤.
+  Memory Tablespace¿Í °ü·ÃÇÏ¿© Startup, Shutdown½ÃÀÇ Ã³¸®»çÇ×À» ±¸ÇöÇÑ´Ù.
  */
 class smmTBSStartupShutdown
 {
 public :
-    // ìƒì„±ì (ì•„ë¬´ê²ƒë„ ì•ˆí•¨)
+    // »ı¼ºÀÚ (¾Æ¹«°Íµµ ¾ÈÇÔ)
     smmTBSStartupShutdown();
 
-    // Memory Tablespace ê´€ë¦¬ìì˜ ì´ˆê¸°í™”
+    // Memory Tablespace °ü¸®ÀÚÀÇ ÃÊ±âÈ­
     static IDE_RC initializeStatic();
 
-    // Memory Tablespaceê´€ë¦¬ìì˜ í•´ì œ
+    // Memory Tablespace°ü¸®ÀÚÀÇ ÇØÁ¦
     static IDE_RC destroyStatic();
     ////////////////////////////////////////////////////////////////////
-    // ì¸í„°í˜ì´ìŠ¤ í•¨ìˆ˜ ( SMì˜ ë‹¤ë¥¸ ëª¨ë“ˆì—ì„œ í˜¸ì¶œ )
+    // ÀÎÅÍÆäÀÌ½º ÇÔ¼ö ( SMÀÇ ´Ù¸¥ ¸ğµâ¿¡¼­ È£Ãâ )
     ////////////////////////////////////////////////////////////////////
-    // ëª¨ë“  Tablespaceë¥¼ destroyí•œë‹¤. ( Shutdownì‹œ í˜¸ì¶œ )
+    // ¸ğµç Tablespace¸¦ destroyÇÑ´Ù. ( Shutdown½Ã È£Ãâ )
     static IDE_RC destroyAllTBSNode();
     
 
     ////////////////////////////////////////////////////////////////////
-    // Server Startupì‹œ Tablespaceì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
+    // Server Startup½Ã TablespaceÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
     ////////////////////////////////////////////////////////////////////
-    // Server startupì‹œ Log Anchorì˜ Tablespace Attributeë¥¼ ë°”íƒ•ìœ¼ë¡œ
-    // Tablespace Nodeë¥¼ êµ¬ì¶•í•œë‹¤.
+    // Server startup½Ã Log AnchorÀÇ Tablespace Attribute¸¦ ¹ÙÅÁÀ¸·Î
+    // Tablespace Node¸¦ ±¸ÃàÇÑ´Ù.
     static IDE_RC loadTableSpaceNode(
                       smiTableSpaceAttr   * aTBSAttr,
                       UInt                  aAnchorOffset );
 
 
-    // Checkpoint Image Attributeë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+    // Checkpoint Image Attribute¸¦ ÃÊ±âÈ­ÇÑ´Ù.
     static IDE_RC initializeChkptImageAttr(
                       smmChkptImageAttr * aChkptImageAttr,
                       smLSN             * aMemRedoLSN,
                       UInt                aAnchorOffset );
 
 
-    // Loganchorë¡œë¶€í„° ì½ì–´ë“¤ì¸ Checkpoint Path Attributeë¡œ Nodeë¥¼ ìƒì„±í•œë‹¤.
+    // Loganchor·ÎºÎÅÍ ÀĞ¾îµéÀÎ Checkpoint Path Attribute·Î Node¸¦ »ı¼ºÇÑ´Ù.
     static IDE_RC createChkptPathNode( smiChkptPathAttr  * aChkptPathAttr,
                                        UInt                aAnchorOffset );
 
 
-    // ëª¨ë“  Tablespaceì˜ ë‹¤ë‹¨ê³„ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
+    // ¸ğµç TablespaceÀÇ ´Ù´Ü°è ÃÊ±âÈ­¸¦ ¼öÇàÇÑ´Ù.
     static IDE_RC initFromStatePhase4AllTBS();
     
 private :
-    // smmTBSStartupShutdown::initFromStatePhase4AllTBS ì˜ ì•¡ì…˜ í•¨ìˆ˜
+    // smmTBSStartupShutdown::initFromStatePhase4AllTBS ÀÇ ¾×¼Ç ÇÔ¼ö
     static IDE_RC initFromStatePhaseAction( idvSQL            * aStatistics, 
                                             sctTableSpaceNode * aTBSNode,
                                             void * /* aActionArg */ );

@@ -66,10 +66,10 @@ mtlNCRet mtlShiftJISNextChar( UChar ** aSource, UChar * aFence )
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 Next Char ìµœì í™”
+ * Description : PROJ-1755 Next Char ÃÖÀûÈ­
  *
  * Implementation :
- *    ë‹¤ìŒ ë¬¸ì ìœ„ì¹˜ë¡œ pointer ì´ë™
+ *    ´ÙÀ½ ¹®ÀÚ À§Ä¡·Î pointer ÀÌµ¿
  *
  ***********************************************************************/
 
@@ -114,14 +114,14 @@ static SInt mtlShiftJISMaxPrecision( SInt aLength )
 {
 /***********************************************************************
  *
- * Description : ë¬¸ìê°¯ìˆ˜(aLength)ì˜ ShiftJISì˜ ìµœëŒ€ precision ê³„ì‚°
+ * Description : ¹®ÀÚ°¹¼ö(aLength)ÀÇ ShiftJISÀÇ ÃÖ´ë precision °è»ê
  *
  * Implementation :
  *
- *    ì¸ìë¡œ ë°›ì€ aLengthì—
- *    ShiftJIS í•œë¬¸ìì˜ ìµœëŒ€ í¬ê¸°ë¥¼ ê³±í•œ ê°’ì„ ë¦¬í„´í•¨.
+ *    ÀÎÀÚ·Î ¹ŞÀº aLength¿¡
+ *    ShiftJIS ÇÑ¹®ÀÚÀÇ ÃÖ´ë Å©±â¸¦ °öÇÑ °ªÀ» ¸®ÅÏÇÔ.
  *
- *    aLengthëŠ” ë¬¸ìê°¯ìˆ˜ì˜ ì˜ë¯¸ê°€ ìˆìŒ.
+ *    aLength´Â ¹®ÀÚ°¹¼öÀÇ ÀÇ¹Ì°¡ ÀÖÀ½.
  *
  ***********************************************************************/
     

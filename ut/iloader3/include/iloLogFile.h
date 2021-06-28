@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iloLogFile.h 80545 2017-07-19 08:05:23Z daramix $
+ * $Id: iloLogFile.h 88494 2020-09-04 04:29:31Z chkim $
  **********************************************************************/
 
 #ifndef _O_ILO_LOGFILE_H
@@ -28,13 +28,14 @@ public:
 
     void SetTerminator(SChar *szFiledTerm, SChar *szRowTerm);
 
-    SInt OpenFile(SChar *szFileName);
+    /* BUG-47652 Set file permission */
+    SInt OpenFile( SChar *szFileName, idBool aIsExistFilePerm );
 
     SInt CloseFile();
 
     void PrintLogMsg(const SChar *szMsg);
-    // BUG-21640 iloaderì—ì„œ ì—ëŸ¬ë©”ì‹œì§€ë¥¼ ì•Œì•„ë³´ê¸° í¸í•˜ê²Œ ì¶œë ¥í•˜ê¸°
-    // ê¸°ì¡´ ì—ëŸ¬ë©”ì‹œì§€ì™€ ë™ì¼í•œ í˜•ì‹ìœ¼ë¡œ ì¶œë ¥í•˜ëŠ” í•¨ìˆ˜ì¶”ê°€
+    // BUG-21640 iloader¿¡¼­ ¿¡·¯¸Ş½ÃÁö¸¦ ¾Ë¾Æº¸±â ÆíÇÏ°Ô Ãâ·ÂÇÏ±â
+    // ±âÁ¸ ¿¡·¯¸Ş½ÃÁö¿Í µ¿ÀÏÇÑ Çü½ÄÀ¸·Î Ãâ·ÂÇÏ´Â ÇÔ¼öÃß°¡
     void PrintLogErr(uteErrorMgr *aMgr);
 
     void PrintTime(const SChar *szPrnStr);

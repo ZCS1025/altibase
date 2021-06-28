@@ -20,6 +20,7 @@
  **********************************************************************/
 #ifndef _O_ULSDN_DBC_H_
 #define _O_ULSDN_DBC_H_ 1
+
 /* PROJ-2638 shard native linker */
 acp_char_t * ulsdDbcGetShardTargetDataNodeName(ulnDbc *aDbc);
 void ulsdDbcSetShardTargetDataNodeName(ulnDbc *aDbc, acp_uint8_t * aNodeName);
@@ -27,4 +28,5 @@ void ulsdDbcGetLinkInfo(ulnDbc      *aDbc,
                         acp_char_t  *aOutBuff,
                         acp_uint32_t aOutBufLength,
                         acp_sint32_t aKey);
+
 #endif // _O_ULSDN_DBC_H_ 1

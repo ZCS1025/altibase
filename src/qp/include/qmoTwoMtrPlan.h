@@ -21,15 +21,15 @@
  * Description :
  *     Plan Generator
  *
- *     Two-child Materialized Planì„ ìƒì„±í•˜ê¸° ìœ„í•œ ê´€ë¦¬ìì´ë‹¤.
+ *     Two-child Materialized PlanÀ» »ı¼ºÇÏ±â À§ÇÑ °ü¸®ÀÚÀÌ´Ù.
  *
- *     ë‹¤ìŒê³¼ ê°™ì€ Plan Nodeì˜ ìƒì„±ì„ ê´€ë¦¬í•œë‹¤.
- *         - SITS ë…¸ë“œ
- *         - SDIF ë…¸ë“œ
+ *     ´ÙÀ½°ú °°Àº Plan NodeÀÇ »ı¼ºÀ» °ü¸®ÇÑ´Ù.
+ *         - SITS ³ëµå
+ *         - SDIF ³ëµå
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -46,7 +46,7 @@
 #include <qmoSubquery.h>
 
 //------------------------------
-//SITSë…¸ë“œì˜ dependencyë¥¼ í˜¸ì¶œì„ ìœ„í•œ flag
+//SITS³ëµåÀÇ dependency¸¦ È£ÃâÀ» À§ÇÑ flag
 //------------------------------
 #define QMO_SITS_DEPENDENCY ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_FALSE      | \
                               QMO_DEPENDENCY_STEP2_BASE_TABLE_FALSE         | \
@@ -57,7 +57,7 @@
 
 
 //------------------------------
-//SDIFë…¸ë“œì˜ dependencyë¥¼ í˜¸ì¶œì„ ìœ„í•œ flag
+//SDIF³ëµåÀÇ dependency¸¦ È£ÃâÀ» À§ÇÑ flag
 //------------------------------
 #define QMO_SDIF_DEPENDENCY ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_FALSE      | \
                               QMO_DEPENDENCY_STEP2_BASE_TABLE_FALSE         | \
@@ -67,11 +67,11 @@
                               QMO_DEPENDENCY_STEP6_DEPENDENCIES_REFINE_FALSE  )
 
 //---------------------------------------------------
-// Two-Child Meterialized Planì„ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+// Two-Child Meterialized PlanÀ» °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
 //---------------------------------------------------
 
 //------------------------------
-//makeSITS()í•¨ìˆ˜ì— í•„ìš”í•œ flag
+//makeSITS()ÇÔ¼ö¿¡ ÇÊ¿äÇÑ flag
 //------------------------------
 
 #define QMO_MAKESITS_TEMP_TABLE_MASK             (0x00000001)
@@ -79,7 +79,7 @@
 #define QMO_MAKESITS_DISK_TEMP_TABLE             (0x00000001)
 
 //------------------------------
-//makeSDIF()í•¨ìˆ˜ì— í•„ìš”í•œ flag
+//makeSDIF()ÇÔ¼ö¿¡ ÇÊ¿äÇÑ flag
 //------------------------------
 
 #define QMO_MAKESDIF_TEMP_TABLE_MASK             (0x00000001)
@@ -87,14 +87,14 @@
 #define QMO_MAKESDIF_DISK_TEMP_TABLE             (0x00000001)
 
 //---------------------------------------------------
-// Two-Child Materialized Planì„ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+// Two-Child Materialized PlanÀ» °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
 //---------------------------------------------------
 
 class qmoTwoMtrPlan
 {
 public:
 
-    // SITS ë…¸ë“œì˜ ìƒì„±
+    // SITS ³ëµåÀÇ »ı¼º
     static IDE_RC    initSITS( qcStatement  * aStatement ,
                                qmsQuerySet  * aQuerySet ,
                                qmnPlan      * aParent,
@@ -108,7 +108,7 @@ public:
                                qmnPlan      * aRightChild ,
                                qmnPlan      * aPlan );
 
-    // SDIF ë…¸ë“œì˜ ìƒì„±
+    // SDIF ³ëµåÀÇ »ı¼º
     static IDE_RC    initSDIF( qcStatement  * aStatement,
                                qmsQuerySet  * aQuerySet ,
                                qmnPlan      * aParent,

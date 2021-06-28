@@ -18,11 +18,11 @@
 /***********************************************************************
  * $Id: qmgShardSelect.h 76914 2016-08-30 04:16:27Z hykim $
  *
- * Description : Shard select graphÎ•º ÏúÑÌïú Ï†ïÏùò
+ * Description : Shard select graph∏¶ ¿ß«— ¡§¿«
  *
- * Ïö©Ïñ¥ ÏÑ§Î™Ö :
+ * øÎæÓ º≥∏Ì :
  *
- * ÏïΩÏñ¥ :
+ * æ‡æÓ :
  *
  **********************************************************************/
 
@@ -34,55 +34,87 @@
 #include <qmoOneNonPlan.h>
 
 //---------------------------------------------------
-// Shard graphÏùò Define ÏÉÅÏàò
+// Shard graph¿« Define ªÛºˆ
 //---------------------------------------------------
 
 #define QMG_SHARD_FLAG_CLEAR                     (0x00000000)
 
 //---------------------------------------------------
-// Shard graph Î•º Í¥ÄÎ¶¨ÌïòÍ∏∞ ÏúÑÌïú ÏûêÎ£å Íµ¨Ï°∞
+// Shard graph ∏¶ ∞¸∏Æ«œ±‚ ¿ß«— ¿⁄∑· ±∏¡∂
 //---------------------------------------------------
 
 typedef struct qmgShardSELT
 {
-    // Í≥µÌÜµ Ï†ïÎ≥¥
-    qmgGraph          graph;
+    // ∞¯≈Î ¡§∫∏
+    qmgGraph           graph;
 
-    // Í≥†Ïú† Ï†ïÎ≥¥
-    qcNamePosition    shardQuery;
-    sdiAnalyzeInfo  * shardAnalysis;
-    UShort            shardParamOffset;
-    UShort            shardParamCount;
+    // ∞Ì¿Ø ¡§∫∏
+    qcNamePosition     shardQuery;
+    sdiAnalyzeInfo   * shardAnalysis;
+    qcShardParamInfo * shardParamInfo; /* TASK-7219 Non-shard DML */
+    UShort             shardParamOffset;
+    UShort             shardParamCount;
 
-    qmsLimit        * limit;            // ÏÉÅÏúÑ PROJ ÎÖ∏Îìú ÏÉùÏÑ±Ïãú, limit start value Ï°∞Ï†ïÏùò Ï†ïÎ≥¥Í∞Ä Îê®.
-    qmoAccessMethod * accessMethod;     // full scan
-    UInt              accessMethodCnt;
-    UInt              flag;
+    qmsLimit         * limit;            // ªÛ¿ß PROJ ≥ÎµÂ ª˝º∫Ω√, limit start value ¡∂¡§¿« ¡§∫∏∞° µ .
+    qmoAccessMethod  * accessMethod;     // full scan
+    UInt               accessMethodCnt;
+    UInt               flag;
+
+    /* TASK-7219 */
+    SChar            * mShardQueryBuf;
+    SInt               mShardQueryLength;
 } qmgShardSELT;
 
+
+/* TASK-7219 */
+typedef struct qmgPushPred
+{
+    SInt          mId;        
+    qtcNode     * mNode;
+    qmgPushPred * mNext;
+} qmgPushPred;
+
+typedef struct qmgTransformInfo
+{
+    iduVarString      * mString;
+    qmgShardSELT      * mGraph;
+    qcStatement       * mStatement;
+    qmsQuerySet       * mQuerySet;
+    qmsTarget         * mTarget;
+    qmgPushPred       * mPushPred;
+    qtcNode           * mWhere;
+    qmsSortColumns    * mOrderBy;
+    qmsLimit          * mLimit;
+    qcParamOffsetInfo * mParamOffsetInfo;
+    idBool              mNeedWrapSet;
+    idBool              mUseShardKwd; /* TASK-7219 Shard Transformer Refactoring */
+    idBool              mIsTransform;
+    qcNamePosition      mPosition;
+} qmgTransformInfo;
+
 //---------------------------------------------------
-// Shard graph Î•º Í¥ÄÎ¶¨ÌïòÍ∏∞ ÏúÑÌïú Ìï®Ïàò
+// Shard graph ∏¶ ∞¸∏Æ«œ±‚ ¿ß«— «‘ºˆ
 //---------------------------------------------------
 
 class qmgShardSelect
 {
 public:
-    // Graph Ïùò Ï¥àÍ∏∞Ìôî
+    // Graph ¿« √ ±‚»≠
     static IDE_RC  init( qcStatement * aStatement,
                          qmsQuerySet * aQuerySet,
                          qmsFrom     * aFrom,
                          qmgGraph   ** aGraph );
 
-    // GraphÏùò ÏµúÏ†ÅÌôî ÏàòÌñâ
+    // Graph¿« √÷¿˚»≠ ºˆ«‡
     static IDE_RC optimize( qcStatement * aStatement,
                             qmgGraph * aGraph );
 
-    // GraphÏùò Plan Tree ÏÉùÏÑ±
+    // Graph¿« Plan Tree ª˝º∫
     static IDE_RC makePlan( qcStatement * aStatement,
                             const qmgGraph * aParent, 
                             qmgGraph * aGraph );
 
-    // GraphÏùò Í≥µÌÜµ Ï†ïÎ≥¥Î•º Ï∂úÎ†•Ìï®.
+    // Graph¿« ∞¯≈Î ¡§∫∏∏¶ √‚∑¬«‘.
     static IDE_RC printGraph( qcStatement  * aStatement,
                               qmgGraph     * aGraph,
                               ULong          aDepth,
@@ -95,6 +127,71 @@ public:
 
 private:
 
+    /* TASK-7219 */
+    static IDE_RC copySelect( qmgTransformInfo * aInfo );
+
+    static IDE_RC copyFrom( qmgTransformInfo * aInfo );
+
+    static IDE_RC copyWhere( qmgTransformInfo * aInfo );
+
+    static IDE_RC generateTargetText( qmgTransformInfo * aInfo,
+                                      qmsTarget        * aTarget );
+
+    static IDE_RC generatePredText( qmgTransformInfo * aInfo,
+                                    qtcNode          * aNode );
+
+    static IDE_RC pushProjectOptimize( qmgTransformInfo * aInfo );
+
+    static IDE_RC pushSelectOptimize( qmgTransformInfo * aInfo );
+
+    static IDE_RC pushOrderByOptimize( qmgTransformInfo * aInfo );
+
+    static IDE_RC pushLimitOptimize( qmgTransformInfo * aInfo );
+
+    static IDE_RC pushSeriesOptimize( qcStatement    * aStatement,
+                                      const qmgGraph * aParent,
+                                      qmgShardSELT   * aMyGraph );
+
+    static IDE_RC setShardKeyValue( qmgTransformInfo * aInfo );
+
+    static IDE_RC setShardParameter( qmgTransformInfo * aInfo );
+
+    static IDE_RC setShardTupleColumn( qmgTransformInfo * aInfo );
+
+    static IDE_RC makePushPredicate( qcStatement  * aStatement,
+                                     qmgShardSELT * aMyGraph,
+                                     qmsParseTree * aViewParseTree,
+                                     qmsSFWGH     * aOuterQuery,
+                                     SInt         * aRemain,
+                                     qmoPredicate * aPredicate,
+                                     qmgPushPred ** aHead,
+                                     qmgPushPred ** aTail );
+
+    static IDE_RC checkPushProject( qcStatement  * aStatement,
+                                    qmgShardSELT * aMyGraph,
+                                    qmsParseTree * aParseTree,
+                                    qmsTarget   ** aTarget,
+                                    idBool       * aNeedWrapSet );
+
+    static IDE_RC checkPushSelect( qcStatement  * aStatement,
+                                   qmgShardSELT * aMyGraph,
+                                   qmsParseTree * aViewParseTree,
+                                   qmsSFWGH     * aOuterQuery,
+                                   qmgPushPred ** aPredicate,
+                                   qtcNode     ** aWhere,
+                                   idBool       * aNeedWrapSet );
+
+    static IDE_RC checkPushLimit( qcStatement     * aStatement,
+                                  const qmgGraph  * aParent,
+                                  qmgShardSELT    * aMyGraph,
+                                  qmsParseTree    * aParseTree,
+                                  qmsSortColumns ** aOrderBy,
+                                  qmsLimit       ** aLimit );
+
+    static IDE_RC checkAndGetPushSeries( qcStatement      * aStatement,
+                                         const qmgGraph   * aParent,
+                                         qmgShardSELT     * aMyGraph,
+                                         qmgTransformInfo * aInfo );
 };
 
 #endif /* _O_QMG_SHARD_SELECT_H_ */

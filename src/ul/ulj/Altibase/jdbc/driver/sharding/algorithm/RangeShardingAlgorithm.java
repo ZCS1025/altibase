@@ -20,10 +20,9 @@ package Altibase.jdbc.driver.sharding.algorithm;
 import Altibase.jdbc.driver.sharding.core.DataNode;
 
 import java.sql.SQLException;
-import java.util.Set;
+import java.util.List;
 
 public interface RangeShardingAlgorithm<T extends Comparable<?>> extends ShardingAlgorithm
 {
-    Set<DataNode> doSharding(PreciseShardingValue<T> aShardingValue, DataNode aDefaultNode)
-            throws SQLException;
+    List<DataNode> doSharding(Comparable<?> aShardingValue, DataNode aDefaultNode) throws SQLException;
 }

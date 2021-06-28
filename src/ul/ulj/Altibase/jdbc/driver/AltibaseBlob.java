@@ -43,7 +43,10 @@ public class AltibaseBlob extends AltibaseLob implements Blob
         if (mInputStream == null)
         {
             mInputStream = (BlobInputStream)LobObjectFactory.createBinaryStream(mLocatorId, mLobLength, mLobCache);
-            mInputStream.open(mChannel);
+            if (mChannel != null) // BUG-48892 채널이 오픈되어 있는지 확인한다.
+            {
+                mInputStream.open(mChannel);
+            }
         }
         return mInputStream;
     }
@@ -127,5 +130,22 @@ public class AltibaseBlob extends AltibaseLob implements Blob
         }
         mLobUpdated = true;
         return aData.length;
+    }
+
+    @Override
+    public InputStream getBinaryStream(long aPos, long aLobLength) throws SQLException
+    {
+        if (mInputStream == null)
+        {
+            mInputStream = (BlobInputStream)LobObjectFactory.createBinaryStream(mLocatorId, aLobLength, mLobCache);
+            if (mChannel != null) // BUG-48892 채널이 오픈되어 있는지 확인한다.
+            {
+                mInputStream.open(mChannel);
+            }
+        }
+        // PROJ-2707 position으로 서버 offset을 맞춘다.
+        mInputStream.setOffset4Server(aPos);
+
+        return mInputStream;
     }
 }

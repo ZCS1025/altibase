@@ -19,7 +19,7 @@
  *
  * $Id: sdpscSH.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
- * ë³¸ íŒŒì¼ì€ Circular-List Managed Segmentì˜ Segment Headerì˜ í—¤ë”íŒŒì¼ì´ë‹¤.
+ * º» ÆÄÀÏÀº Circular-List Managed SegmentÀÇ Segment HeaderÀÇ Çì´õÆÄÀÏÀÌ´Ù.
  *
  ***********************************************************************/
 
@@ -37,20 +37,20 @@ class sdpscSegHdr
 
 public:
 
-    /* Segment Header í˜ì´ì§€ë¥¼ ì´ˆê¸°í™”í•œë‹¤. */
+    /* Segment Header ÆäÀÌÁö¸¦ ÃÊ±âÈ­ÇÑ´Ù. */
     static void initSegHdr ( sdpscSegMetaHdr * aSegHdreader,
                              scPageID          aSegHdrPID,
                              sdpSegType        aSegType,
                              UInt              aPageCntInExt,
                              UShort            aMaxExtCntInExtDir );
 
-    /* [ INTERFACE ] segment ìƒíƒœë¥¼ ë°˜í™˜í•œë‹¤. */
+    /* [ INTERFACE ] segment »óÅÂ¸¦ ¹İÈ¯ÇÑ´Ù. */
     static IDE_RC getSegState( idvSQL        *aStatistics,
                                scSpaceID      aSpaceID,
                                scPageID       aSegPID,
                                sdpSegState   *aSegState );
 
-    /* Segment Header í˜ì´ì§€ ìƒì„± */
+    /* Segment Header ÆäÀÌÁö »ı¼º */
     static IDE_RC createAndInitPage( idvSQL                * aStatistics,
                                      sdrMtxStartInfo       * aStartInfo,
                                      scSpaceID               aSpaceID,
@@ -77,20 +77,20 @@ public:
                                 UInt               * aTotExtCntOfSeg );
 
 
-    /* Segment Header í˜ì´ì§€ì— ìƒˆë¡œìš´ ExtDir ì—°ê²° */
+    /* Segment Header ÆäÀÌÁö¿¡ »õ·Î¿î ExtDir ¿¬°á */
     static IDE_RC addNewExtDir( sdrMtx             * aMtx,
                                 sdpscSegMetaHdr    * aSegHdr,
                                 sdpscExtDirCntlHdr * aCurExtDirCntlHdr,
                                 sdpscExtDirCntlHdr * aNewExtDirCntlHdr );
 
-    /* Segment Header í˜ì´ì§€ì— ExtDir ì œê±° */
+    /* Segment Header ÆäÀÌÁö¿¡ ExtDir Á¦°Å */
     static IDE_RC removeExtDir( sdrMtx             * aMtx,
                                 sdpscSegMetaHdr    * aSegHdr,
                                 sdpscExtDirCntlHdr * aPrvExtDirCntlHdr,
                                 scPageID             aRemExtDir,
                                 scPageID             aNewNxtExtDir );
 
-    /* [ INTERFACE ] Sequential Scan Before Firstì—ì„œ Segment ì •ë³´ ë°˜í™˜ */
+    /* [ INTERFACE ] Sequential Scan Before First¿¡¼­ Segment Á¤º¸ ¹İÈ¯ */
     static IDE_RC getSegInfo( idvSQL        * aStatistics,
                               scSpaceID       aSpaceID,
                               scPageID        aSegPID,
@@ -102,25 +102,25 @@ public:
                                  sdpSegHandle  *aSegHandle,
                                  ULong         *aFmtPageCnt );
 
-    /* Segment Header í˜ì´ì§€ì—ì„œ ë§ˆì§€ë§‰ Lst ExtDir PIDë¥¼ ë°˜í™˜í•œë‹¤. */
+    /* Segment Header ÆäÀÌÁö¿¡¼­ ¸¶Áö¸· Lst ExtDir PID¸¦ ¹İÈ¯ÇÑ´Ù. */
     static inline scPageID getLstExtDir( sdpscSegMetaHdr * aSegHdr );
 
-    /* Segment Header í˜ì´ì§€ì—ì„œ ì²«ë²ˆì§¸ ExtDir PIDë¥¼ ë°˜í™˜í•œë‹¤. */
+    /* Segment Header ÆäÀÌÁö¿¡¼­ Ã¹¹øÂ° ExtDir PID¸¦ ¹İÈ¯ÇÑ´Ù. */
     static inline scPageID getFstExtDir( sdpscSegMetaHdr * aSegHdr );
 
-    /* ExtDirì˜ ê°œìˆ˜ë¥¼ ë°˜í™˜í•œë‹¤. */
+    /* ExtDirÀÇ °³¼ö¸¦ ¹İÈ¯ÇÑ´Ù. */
     static inline UInt     getExtDirCnt( sdpscSegMetaHdr * aSegHdr );
 
-    /* ExtDir Control Header ë°˜í™˜ */
+    /* ExtDir Control Header ¹İÈ¯ */
     static inline sdpscExtDirCntlHdr * getExtDirCntlHdr( sdpscSegMetaHdr * aSegHdr );
 
-    /* Extent Control Header ë°˜í™˜ */
+    /* Extent Control Header ¹İÈ¯ */
     static inline sdpscExtCntlHdr * getExtCntlHdr( sdpscSegMetaHdr * aSegHdr );
 
-    /* Segment Control Header ë°˜í™˜ */
+    /* Segment Control Header ¹İÈ¯ */
     static inline sdpscSegCntlHdr * getSegCntlHdr( sdpscSegMetaHdr * aSegHdr );
 
-    /* í˜ì´ì§€ì˜ ì„ì˜ì˜ í¬ì¸í„°ì—ì„œ Logical Header Ptrë¥¼ ë°˜í™˜ */
+    /* ÆäÀÌÁöÀÇ ÀÓÀÇÀÇ Æ÷ÀÎÅÍ¿¡¼­ Logical Header Ptr¸¦ ¹İÈ¯ */
     static inline sdpscSegMetaHdr* getHdrPtr( UChar * aPagePtr );
 
     static inline void  calcExtRID2ExtInfo( scPageID             aSegPID,
@@ -134,10 +134,10 @@ public:
                                             scPageID             aExtDir,
                                             SShort               aDescIdx,
                                             sdRID              * aExtRID );
-    // ìµœëŒ€ ì €ì¥í•  ìˆ˜ ìˆëŠ” Ext Descì˜ ê°œìˆ˜
+    // ÃÖ´ë ÀúÀåÇÒ ¼ö ÀÖ´Â Ext DescÀÇ °³¼ö
     static inline UShort getMaxExtDescCnt( sdpSegType aSegType );
 
-    /* ExtDirì— ê¸°ë¡í•  ìˆ˜ ìˆëŠ” ExtDesc ê°œìˆ˜ ë°˜í™˜ */
+    /* ExtDir¿¡ ±â·ÏÇÒ ¼ö ÀÖ´Â ExtDesc °³¼ö ¹İÈ¯ */
     static inline UShort getFreeDescCntOfExtDir(
                             sdpscExtDirCntlHdr * aCntlHdr,
                             sdpSegType           aSegType );
@@ -170,7 +170,7 @@ private :
 };
 
 /*
- * í˜ì´ì§€ì˜ ì„ì˜ì˜ í¬ì¸í„°ì—ì„œ Logical Header Ptrë¥¼ ë°˜í™˜í•œë‹¤.
+ * ÆäÀÌÁöÀÇ ÀÓÀÇÀÇ Æ÷ÀÎÅÍ¿¡¼­ Logical Header Ptr¸¦ ¹İÈ¯ÇÑ´Ù.
  */
 inline sdpscSegMetaHdr* sdpscSegHdr::getHdrPtr( UChar * aPagePtr )
 {
@@ -178,25 +178,25 @@ inline sdpscSegMetaHdr* sdpscSegHdr::getHdrPtr( UChar * aPagePtr )
     return (sdpscSegMetaHdr*)sdpPhyPage::getLogicalHdrStartPtr( aPagePtr );
 }
 
-/* Segment Headerì—ì„œ Segment Control Headerì˜ Ptrë¥¼ ë°˜í™˜í•œë‹¤. */
+/* Segment Header¿¡¼­ Segment Control HeaderÀÇ Ptr¸¦ ¹İÈ¯ÇÑ´Ù. */
 inline sdpscSegCntlHdr * sdpscSegHdr::getSegCntlHdr( sdpscSegMetaHdr * aSegHdr )
 {
     return (sdpscSegCntlHdr*)&(aSegHdr->mSegCntlHdr);
 }
 
-/* Segment Headerì—ì„œ Segment Control Headerì˜ Ptrë¥¼ ë°˜í™˜í•œë‹¤. */
+/* Segment Header¿¡¼­ Segment Control HeaderÀÇ Ptr¸¦ ¹İÈ¯ÇÑ´Ù. */
 inline sdpscExtCntlHdr * sdpscSegHdr::getExtCntlHdr( sdpscSegMetaHdr * aSegHdr )
 {
     return (sdpscExtCntlHdr*)&(aSegHdr->mExtCntlHdr);
 }
 
-/* ExtDir Control Header ë°˜í™˜ */
+/* ExtDir Control Header ¹İÈ¯ */
 inline sdpscExtDirCntlHdr * sdpscSegHdr::getExtDirCntlHdr( sdpscSegMetaHdr * aSegHdr )
 {
     return (sdpscExtDirCntlHdr*)&(aSegHdr->mExtDirCntlHdr);
 }
 
-/* Segment Headerì˜ ExtDir ì˜ì—­ì˜ ìµœëŒ€ ExtDesc ê°œìˆ˜ ë°˜í™˜ */
+/* Segment HeaderÀÇ ExtDir ¿µ¿ªÀÇ ÃÖ´ë ExtDesc °³¼ö ¹İÈ¯ */
 inline UShort sdpscSegHdr::getMaxExtDescCnt( sdpSegType  aSegType )
 {
     UShort sPropDescCnt;
@@ -225,33 +225,33 @@ inline UShort sdpscSegHdr::getMaxExtDescCnt( sdpSegType  aSegType )
     return sPropDescCnt;
 }
 
-/* ExtDirì— ê¸°ë¡í•  ìˆ˜ ìˆëŠ” ExtDesc ê°œìˆ˜ ë°˜í™˜ */
+/* ExtDir¿¡ ±â·ÏÇÒ ¼ö ÀÖ´Â ExtDesc °³¼ö ¹İÈ¯ */
 inline UShort sdpscSegHdr::getFreeDescCntOfExtDir( sdpscExtDirCntlHdr * aCntlHdr,
                                                    sdpSegType           aSegType )
 {
     return (getMaxExtDescCnt( aSegType ) - aCntlHdr->mExtCnt);
 }
 
-/* Segment Header í˜ì´ì§€ì—ì„œ ë§ˆì§€ë§‰ Lst ExtDir PIDë¥¼ ë°˜í™˜í•œë‹¤. */
+/* Segment Header ÆäÀÌÁö¿¡¼­ ¸¶Áö¸· Lst ExtDir PID¸¦ ¹İÈ¯ÇÑ´Ù. */
 inline scPageID sdpscSegHdr::getLstExtDir( sdpscSegMetaHdr * aSegHdr )
 {
     return getExtCntlHdr( aSegHdr )->mLstExtDir;
 }
 
-/* Segment Header í˜ì´ì§€ì—ì„œ ì²«ë²ˆì§¸ ExtDir PIDë¥¼ ë°˜í™˜í•œë‹¤. */
+/* Segment Header ÆäÀÌÁö¿¡¼­ Ã¹¹øÂ° ExtDir PID¸¦ ¹İÈ¯ÇÑ´Ù. */
 inline scPageID sdpscSegHdr::getFstExtDir( sdpscSegMetaHdr * aSegHdr )
 {
     return getExtDirCntlHdr( aSegHdr )->mNxtExtDir;
 }
 
-/* ExtDirì˜ ê°œìˆ˜ë¥¼ ë°˜í™˜í•œë‹¤. */
+/* ExtDirÀÇ °³¼ö¸¦ ¹İÈ¯ÇÑ´Ù. */
 inline UInt  sdpscSegHdr::getExtDirCnt( sdpscSegMetaHdr  * aSegHdr )
 {
     return getExtCntlHdr( aSegHdr )->mTotExtDirCnt;
 }
 
 /***********************************************************************
- * Description : ExtDir PIDì™€ ExtDesc ìˆœë²ˆìœ¼ë¡œ ExtDescì˜ RID ë³€í™˜
+ * Description : ExtDir PID¿Í ExtDesc ¼ø¹øÀ¸·Î ExtDescÀÇ RID º¯È¯
  ***********************************************************************/
 inline void  sdpscSegHdr::calcExtInfo2ExtRID( scPageID             aSegPID,
                                               sdpscSegMetaHdr    * aSegHdr,
@@ -280,7 +280,7 @@ inline void  sdpscSegHdr::calcExtInfo2ExtRID( scPageID             aSegPID,
 }
 
 /***********************************************************************
- * Description : ExtDescì˜ RIDë¡œ ExtDir PIDì™€ ExtDesc ìˆœë²ˆ ë³€í™˜
+ * Description : ExtDescÀÇ RID·Î ExtDir PID¿Í ExtDesc ¼ø¹ø º¯È¯
  ***********************************************************************/
 inline void  sdpscSegHdr::calcExtRID2ExtInfo( scPageID             aSegPID,
                                               sdpscSegMetaHdr    * aSegHdr,

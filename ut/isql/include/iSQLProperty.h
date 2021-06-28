@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLProperty.h 84322 2018-11-12 02:04:29Z bethy $
+ * $Id: iSQLProperty.h 86554 2020-01-21 05:05:40Z bethy $
  **********************************************************************/
 
 #ifndef _O_ISQLPROPERTY_H_
@@ -35,10 +35,10 @@ typedef enum isqlFmtType
  * BUG-40426 COLUMN col FORMAT fmt
  * mType   : FMT_CHR for CHARacter type
  *           FMT_NUM for NUMber type
- * mOnOff  : Ìè¨Îß∑ Ï†ÅÏö© Ïó¨Î∂Ä ÏÑ§Ï†ï
+ * mOnOff  : ∆˜∏À ¿˚øÎ ø©∫Œ º≥¡§
  * mKey    : Column Name
- * mColSize: CHAR ÌÉÄÏûÖÏùÑ ÏúÑÌïú ÏÇ¨Ïù¥Ï¶à Ï†ÄÏû•
- * mFmt    : Ìè¨Îß∑ Î¨∏ÏûêÏó¥ Ï†ÄÏû•
+ * mColSize: CHAR ≈∏¿‘¿ª ¿ß«— ªÁ¿Ã¡Ó ¿˙¿Â
+ * mFmt    : ∆˜∏À πÆ¿⁄ø≠ ¿˙¿Â
  */
 typedef struct isqlFmtNode
 {
@@ -58,34 +58,34 @@ public:
     ~iSQLProperty();
 
     void            SetEnv();
-    void            SetColSize(SChar *a_CommandStr, SInt a_ColSize);
-    void            SetFeedback(SChar *a_CommandStr, SInt a_Feedback);
+    void            SetColSize(SInt a_ColSize);
+    void            SetFeedback(SInt a_Feedback);
     SInt            GetFeedback()    { return m_Feedback; }
     SInt            GetColSize()     { return m_ColSize; }
-    void            SetLineSize(SChar *a_CommandStr, SInt a_LineSize);
+    void            SetLineSize(SInt a_LineSize);
     SInt            GetLineSize()    { return m_LineSize; }
-    void            SetLobOffset(SChar *a_CommandStr, SInt a_LobOffset);
+    void            SetLobOffset(SInt a_LobOffset);
     SInt            GetLobOffset()   { return m_LobOffset; }
-    void            SetLobSize(SChar *a_CommandStr, SInt a_LobSize);
+    void            SetLobSize(SInt a_LobSize);
     SInt            GetLobSize()     { return m_LobSize; }
-    void            SetPageSize(SChar *a_CommandStr, SInt a_PageSize);
+    void            SetPageSize(SInt a_PageSize);
     SInt            GetPageSize()    { return m_PageSize; }
-    void            SetTerm(SChar *a_CommandStr, idBool a_IsTerm);
+    void            SetTerm(idBool a_IsTerm);
     idBool          GetTerm()        { return m_Term; }
-    void            SetTiming(SChar *a_CommandStr, idBool a_IsTiming);
+    void            SetTiming(idBool a_IsTiming);
     idBool          GetTiming()      { return m_Timing; }
 
-    // BUG-22685 set vertical on Íµ¨Î¨∏Ï∂îÍ∞Ä
-    void            SetVertical(SChar *a_CommandStr, idBool a_IsVertical);
+    // BUG-22685 set vertical on ±∏πÆ√ﬂ∞°
+    void            SetVertical(idBool a_IsVertical);
     idBool          GetVertical()    { return m_Vertical; }
 
-    void            SetHeading(SChar *a_CommandStr, idBool a_IsHeading);
+    void            SetHeading(idBool a_IsHeading);
     idBool          GetHeading()     { return m_Heading; }
-    void            SetTimeScale(SChar *a_CommandStr, iSQLTimeScale a_Timescale);
+    void            SetTimeScale(iSQLTimeScale a_Timescale);
     iSQLTimeScale   GetTimeScale()   { return m_TimeScale; }
     
     // BUG-39213 Need to support SET NUMWIDTH in isql
-    void            SetNumWidth(SChar *a_CommandStr, SInt a_NumWidth);
+    void            SetNumWidth(SInt a_NumWidth);
     SInt            GetNumWidth()    { return m_NumWidth; }
 
     void            SetConnToRealInstance(idBool aIsConn)
@@ -124,28 +124,22 @@ public:
     SChar         * GetEditor()      { return m_Editor; }
     SInt            GetCommandLen()  { return m_CommandLen; }
 
-    void            ShowStmt(SChar          * a_CommandStr,
-                             iSQLOptionKind   a_iSQLOptionKind);
+    void            ShowStmt(iSQLOptionKind   a_iSQLOptionKind);
 
     /* BUG-43516 desc with partitions-information */
-    void            SetPartitions( SChar *a_CommandStr,
-                                   idBool a_ShowPartitions );
+    void            SetPartitions( idBool a_ShowPartitions );
     idBool          GetPartitions() { return m_ShowPartitions; }
 
-    /* PROJ-1107 Check Constraint ÏßÄÏõê */
-    void            SetCheckConstraints( SChar *a_CommandStr,
-                                         idBool a_ShowCheckConstraints );
+    /* PROJ-1107 Check Constraint ¡ˆø¯ */
+    void            SetCheckConstraints( idBool a_ShowCheckConstraints );
     idBool          GetCheckConstraints() { return m_ShowCheckConstraints; }
 
-    void            SetForeignKeys( SChar *a_CommandStr,
-                                    idBool a_ShowForeignKeys );
+    void            SetForeignKeys( idBool a_ShowForeignKeys );
     idBool          GetForeignKeys() { return m_ShowForeignKeys; }
-    void            SetPlanCommit( SChar * a_CommandStr,
-                                   idBool  a_Commit );
+    void            SetPlanCommit( idBool  a_Commit );
     idBool          GetPlanCommit()  { return m_PlanCommit; }
 
-    void            SetQueryLogging( SChar * a_CommandStr,
-                                     idBool  a_Loggin );
+    void            SetQueryLogging( idBool  a_Loggin );
     idBool          GetQueryLogging(){ return m_QueryLogging; }
     void            SetExplainPlan(SChar           * aCmdStr,
                                    iSQLSessionKind   aExplainPlan);
@@ -158,35 +152,39 @@ public:
     }
 
     /* BUG-37772 */
-    void   SetEcho( SChar * aCommandStr, idBool  aIsEcho );
+    void   SetEcho( idBool  aIsEcho );
     idBool GetEcho( void );
 
     /* BUG-39620 */
-    void   SetFullName( SChar * aCommandStr, idBool  aIsFullName );
+    void   SetFullName( idBool  aIsFullName );
     idBool GetFullName( void );
 
     /* BUG-41163 SET SQLP[ROMPT] */
     void    InitSqlPrompt();
     void    ResetSqlPrompt();
-    void    SetSqlPrompt( SChar * aCommandStr, SChar*  aSqlPrompt );
+    void    SetSqlPrompt( SChar*  aSqlPrompt );
     SChar * GetSqlPrompt( void );
     void    SetPromptRefreshFlag( UInt aFlag );
 
-    void    SetDefine( SChar * a_CommandStr, idBool  a_IsDefine );
+    void    SetDefine( idBool  a_IsDefine );
     idBool  GetDefine() {return m_Define; }
 
     /* BUG-43599 SET VERIFY ON|OFF */
-    void    SetVerify( SChar * a_CommandStr, idBool  a_IsVerify );
+    void    SetVerify( idBool  a_IsVerify );
     idBool  GetVerify() {return m_Verify; }
 
     /* BUG-44613 Set PrefetchRow */
-    void    SetPrefetchRows(SChar *a_CommandStr, SInt a_PrefetchRows);
+    void    SetPrefetchRows(SInt a_PrefetchRows);
     SInt    GetPrefetchRows()    { return m_PrefetchRows; }
 
     /* BUG-44613 Set AsyncPrefetch On|Auto|Off */
-    void    SetAsyncPrefetch( SChar * a_CommandStr, AsyncPrefetchType  a_Type );
+    void    SetAsyncPrefetch( AsyncPrefetchType  a_Type );
     AsyncPrefetchType
             GetAsyncPrefetch() {return m_AsyncPrefetch; }
+
+    /* BUG-47627 SET MULTIERROR ON|OFF */
+    void    SetMultiError( idBool  a_IsMultiError );
+    idBool  GetMultiError() {return m_MultiError; }
 
     /* BUG-40246 COLUMN char_col FORMAT fmt */
     IDE_RC ClearFormat();
@@ -252,7 +250,7 @@ private:
     idBool          m_Vertical; // BUG-22685
     idBool          m_Heading;
     idBool          m_IsDisplayComment;
-    idBool          m_ShowCheckConstraints; /* PROJ-1107 Check Constraint ÏßÄÏõê */
+    idBool          m_ShowCheckConstraints; /* PROJ-1107 Check Constraint ¡ˆø¯ */
     idBool          m_ShowForeignKeys;
     idBool          m_ShowPartitions; /* BUG-43516 */
     idBool          m_PlanCommit;
@@ -276,6 +274,7 @@ private:
     idBool          mFullName;
     idBool          m_Define; // BUG-41173
     idBool          m_Verify; /* BUG-43599 SET VERIFY ON|OFF */
+    idBool          m_MultiError; /* BUG-47627 */
 
     /* BUG-44613 */
     SInt              m_PrefetchRows;

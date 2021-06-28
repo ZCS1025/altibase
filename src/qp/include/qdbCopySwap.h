@@ -49,6 +49,11 @@ private:
                                           qcmTableInfo         * aPeerTableInfo,
                                           qcmPartitionInfoList * aPeerPartInfoList );
 
+    static IDE_RC compareReplicationInfoPartition( qcStatement          * aStatement,
+                                                   qdTableParseTree     * aParseTree, 
+                                                   qcmTableInfo         * aMyTableInfo,
+                                                   qcmTableInfo         * aPeerTableInfo );
+    
     static IDE_RC executeCreateTablePartition( qcStatement           * aStatement,
                                                qcmTableInfo          * aMyTableInfo,
                                                qcmTableInfo          * aPeerTableInfo,
@@ -134,6 +139,10 @@ private:
                                        UInt          aTargetTableID,
                                        UInt          aSourceTableID );
 
+    static IDE_RC insertReplItemMetaToReplaceHistory( qcStatement  * aStatement,
+                                                      qcmTableInfo * aTargetTableInfo,
+                                                      qcmTableInfo * aSourceTableInfo );
+
     static IDE_RC swapReplItemsMeta( qcStatement  * aStatement,
                                      qcmTableInfo * aTargetTableInfo,
                                      qcmTableInfo * aSourceTableInfo );
@@ -184,7 +193,11 @@ private:
     static IDE_RC swapReplicationFlagOnPartitonTableHeader( smiStatement  * aStatement,
                                                             qcmTableInfo  * aTargetPartTableInfo,
                                                             qcmTableInfo  * aSourcePartTableInfo );
-        
+         
+    static IDE_RC insertReplItemsForParititonMetaToReplaceHistory( qcStatement  * aStatement,
+                                                                   qcmTableInfo * aTargetPartTableInfo,
+                                                                   qcmTableInfo * aSourcePartTableInfo );
+
     static IDE_RC swapReplItemsForParititonMeta( qcStatement  * aStatement,
                                                  qcmTableInfo * aTargetPartTableInfo,
                                                  qcmTableInfo * aSourcePartTableInfo );

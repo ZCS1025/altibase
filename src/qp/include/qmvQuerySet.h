@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmvQuerySet.h 84835 2019-01-30 01:06:28Z donovan.seo $
+ * $Id: qmvQuerySet.h 86122 2019-09-04 07:20:21Z donovan.seo $
  **********************************************************************/
 
 #ifndef _Q_QMV_QUERY_SET_H_
@@ -102,7 +102,7 @@ public:
         qcmColumn       * aColumnAlias,
         qcmTableInfo   ** aTableInfo,
         smOID             aObjectID );     // BUG-37981
-                                           // cursor for loop Ïãú cursorÏùò objectIDÎ•º ÎÑòÍ∏∞Í∏∞ ÏúÑÌïú parameter
+                                           // cursor for loop Ω√ cursor¿« objectID∏¶ ≥—±‚±‚ ¿ß«— parameter
     
     static IDE_RC estimateTargetCount(
         qcStatement * aStatement,
@@ -132,13 +132,13 @@ public:
         qtcNode      * aNode,
         qtcNode     ** aNewNode );
 
-    /* PROJ-1530 PSM/TriggerÏóêÏÑú LOB Îç∞Ïù¥ÌÉÄ ÌÉÄÏûÖ ÏßÄÏõê */
+    /* PROJ-1530 PSM/Triggerø°º≠ LOB µ•¿Ã≈∏ ≈∏¿‘ ¡ˆø¯ */
     static IDE_RC addBLobLocatorFuncForNode(
         qcStatement  * aStatement,
         qtcNode      * aNode,
         qtcNode     ** aNewNode );
 
-    /* PROJ-1530 PSM/TriggerÏóêÏÑú LOB Îç∞Ïù¥ÌÉÄ ÌÉÄÏûÖ ÏßÄÏõê */
+    /* PROJ-1530 PSM/Triggerø°º≠ LOB µ•¿Ã≈∏ ≈∏¿‘ ¡ˆø¯ */
     static IDE_RC addCLobLocatorFuncForNode(
         qcStatement  * aStatement,
         qtcNode      * aNode,
@@ -160,6 +160,26 @@ public:
         qtcNode       * aNode,
         qtcNode      ** aNewNode,
         idBool          aContainRootsNext );
+
+    // BUG-38273
+    static idBool checkInnerJoin( qmsFrom * aFrom );
+
+    static IDE_RC innerJoinToNoJoin( qcStatement * aStatement,
+                                     qmsSFWGH    * aSFWGH,
+                                     qmsFrom     * aFrom );
+
+    static IDE_RC validateQmsFromWithOnCond( qmsQuerySet * aQuerySet,
+                                             qmsSFWGH    * aSFWGH,
+                                             qmsFrom     * aFrom,
+                                             qcStatement * aStatement,
+                                             UInt          aIsNullableFlag ); // PR-13597
+
+    static IDE_RC validateJoin( qcStatement * aStatement,
+                                qmsFrom     * aFrom,
+                                qmsSFWGH    * aSFWGH );
+
+    static IDE_RC convertAnsiInnerJoin( qcStatement * aStatement,
+                                        qmsSFWGH    * aSFWGH );
 
 private:
     static IDE_RC validateGroupOneColumn(
@@ -195,11 +215,6 @@ private:
         qmsQuerySet     * aQuerySet,
         qmsSFWGH        * aSFWGH,
         qmsTarget       * aCurrTarget );
-    
-    static IDE_RC validateJoin(
-        qcStatement     * aStatement,
-        qmsFrom         * aFrom,
-        qmsSFWGH        * aSFWGH );
 
     static IDE_RC getTableRef(
         qcStatement       * aStatement,
@@ -212,13 +227,6 @@ private:
         qcStatement * aStatement,
         qmsSFWGH    * aSFWGH,
         qmsTableRef * aTableRef);
-
-    static IDE_RC validateQmsFromWithOnCond(
-        qmsQuerySet * aQuerySet,
-        qmsSFWGH    * aSFWGH,
-        qmsFrom     * aFrom,
-        qcStatement * aStatement,
-        UInt          aIsNullableFlag ); // PR-13597
 
     static IDE_RC makeTargetListForTableRef(
         qcStatement     * aStatement,
@@ -299,13 +307,6 @@ private:
     static void validateParallelHint(qcStatement* aStatement, qmsSFWGH* aSFWGH);
     static void setParallelDegreeOnAllTables(qmsFrom* aFrom, UInt aDegree);
 
-    // BUG-38273
-    static idBool checkInnerJoin( qmsFrom * aFrom );
-
-    static IDE_RC innerJoinToNoJoin( qcStatement * aStatement,
-                                     qmsSFWGH    * aSFWGH,
-                                     qmsFrom     * aFrom );
-
     // BUG-38946
     static void getDisplayName( qtcNode        * aNode,
                                 qcNamePosition * aNamePos );
@@ -314,13 +315,13 @@ private:
                                  qmsNamePosition * aNamePos );
 
     // PROJ-2418
-    // Lateral ViewÏùò outerQuery / outerFrom ÏÑ§Ï†ï
+    // Lateral View¿« outerQuery / outerFrom º≥¡§
     static void setLateralOuterQueryAndFrom( qmsQuerySet * aViewQuerySet,
                                              qmsTableRef * aViewTableRef,
                                              qmsSFWGH    * aOuterSFWGH );
 
     // PROJ-2418
-    // Lateral ViewÏùò outerFromÏù¥ Îê† Join Tree Î∞òÌôò
+    // Lateral View¿« outerFrom¿Ã µ… Join Tree π›»Ø
     static void getLateralOuterFrom( qmsQuerySet  * aViewQuerySet,
                                      qmsTableRef  * aViewTableRef,
                                      qmsFrom      * aFrom,

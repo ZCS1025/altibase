@@ -18,12 +18,18 @@
 package Altibase.jdbc.driver.ex;
 
 /**
- * Shard í™˜ê²½í•˜ì—ì„œ alternateserversì…‹íŒ…ì´ ì—†ì„ì‹œ ì»¤ë„¥ì…˜ ì¥ì• ê°€ ë°œìƒí–ˆì„ë•Œ ìƒì„±ëœë‹¤.
+ * Shard È¯°æÇÏ¿¡¼­ alternateservers¼ÂÆÃÀÌ ¾øÀ»½Ã Ä¿³Ø¼Ç Àå¾Ö°¡ ¹ß»ıÇßÀ»¶§ »ı¼ºµÈ´Ù.
  */
 public class ShardFailoverIsNotAvailableException extends ShardJdbcException
 {
-    public ShardFailoverIsNotAvailableException(String aErrorMsg, int aErrorCode, String aNodeName)
+    public ShardFailoverIsNotAvailableException(String aErrorMsg, int aErrorCode, String aNodeName,
+                                                String aIpAddress, int aPort)
     {
-        super(aErrorMsg, aErrorCode, aNodeName);
+        super(aErrorMsg, aErrorCode, aNodeName, aIpAddress, aPort);
+    }
+
+    public ShardFailoverIsNotAvailableException(String aErrorMsg, int aErrorCode)
+    {
+        super(aErrorMsg, aErrorCode, null, null, 0);
     }
 }

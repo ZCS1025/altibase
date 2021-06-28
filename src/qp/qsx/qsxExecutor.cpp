@@ -15,9 +15,10 @@
  */
  
 /***********************************************************************
- * $Id: qsxExecutor.cpp 83637 2018-08-07 05:40:38Z khkwak $
+ * $Id: qsxExecutor.cpp 90434 2021-04-02 06:56:50Z khkwak $
  **********************************************************************/
 
+#include <ideErrorMgr.h>
 #include <qcg.h>
 #include <qsxExecutor.h>
 #include <qsxDef.h>
@@ -28,6 +29,8 @@
 #include <qsxExtProc.h> // PROJ-1685
 #include <qcuSessionPkg.h>
 #include <qsxArray.h>
+#include <qsxLibrary.h>
+#include <sdi.h>
 
 IDE_RC qsxExecutor::initialize( qsxExecutorInfo  * aExecInfo,
                                 qsProcParseTree  * aProcPlanTree,
@@ -84,8 +87,8 @@ IDE_RC qsxExecutor::initializeSqlCursor( qsxExecutorInfo  * aExecInfo,
     else
     {
         /* PROJ-1073 Package
-         * package bodyÏùò initialize sectionÏóêÏÑú DMLÎ¨∏Ïù¥ Ïã§Ìñâ Í∞ÄÎä•Ìï¥ÏïºÌï©ÎãàÎã§.
-         * Í∑∏Î†áÍ∏∞ ÎïåÎ¨∏Ïóê SP cursorÍ∞Ä ÌïÑÏöîÌïòÎ©∞, Ïù¥ cursorÏóê ÎåÄÌï¥ initializeÎ•º Ìï¥Ï§òÏïº Ìï©ÎãàÎã§. */
+         * package body¿« initialize sectionø°º≠ DMLπÆ¿Ã Ω««‡ ∞°¥…«ÿæﬂ«’¥œ¥Ÿ.
+         * ±◊∑∏±‚ ∂ßπÆø° SP cursor∞° « ø‰«œ∏Á, ¿Ã cursorø° ¥Î«ÿ initialize∏¶ «ÿ¡‡æﬂ «’¥œ¥Ÿ. */
         aExecInfo->mSqlCursorInfo = (qsxCursorInfo *)
             QTC_TMPL_FIXEDDATA( QC_PRIVATE_TMPLATE(aQcStmt),
                                 aExecInfo->mPkgPlanTree->sqlCursorTypeNode );
@@ -127,19 +130,26 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
     UInt                sVarStage       = 0;
     SChar             * sOriStmtText    = NULL;
     SInt                sOriStmtTextLen = 0;
-    SChar               sFuncName[QC_MAX_OBJECT_NAME_LEN * 2 + ID_SIZEOF(UChar) + 1];
     UInt                sTopExec        = 0;
-    idBool              sEnvTrigger     = ID_FALSE;
     iduListNode       * sCacheNode      = NULL;
     // PROJ-1073 Package - package cursor
     qsxProcPlanList   * sPlanList       = NULL;
+    idBool              sEnvTrigger     = ID_FALSE;
     idBool              sOrgPSMFlag     = ID_FALSE;
-    UInt                sUserID         = QCG_GET_SESSION_USER_ID( aQcStmt );      /* BUG-45306 PSM AUTHID */
+    SChar             * sOrgInvokeUserName = QCG_GET_SESSION_INVOKE_USER_NAME(aQcStmt);
+    UInt                sUserID            = QCG_GET_SESSION_USER_ID(aQcStmt);      /* BUG-45306 PSM AUTHID */
 
     UInt                i = 0;
-    qsxStmtList       * sOrgStmtList = aQcStmt->spvEnv->mStmtList;
+    qsxStmtList       * sOrgStmtList  = aQcStmt->spvEnv->mStmtList;
+    qsxStmtList2      * sOrgStmtList2 = aQcStmt->spvEnv->mStmtList2;
     qcStmtListInfo    * sStmtListInfo = &(aQcStmt->session->mQPSpecific.mStmtListInfo);
     qsxStmtList       * sStmtList = NULL;
+    qsxStmtList2      * sStmtList2 = NULL;
+
+    idBool              sShardInPSMEnable = ID_TRUE;
+    idBool              sShardInPSMEnableOrg = ID_TRUE;
+
+    UInt                sOrgSpxEnvFlag;
 
     // BUG-41030 Backup called by PSM flag
     sOrgPSMFlag = aQcStmt->calledByPSMFlag;
@@ -147,7 +157,36 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
     sProcInfo   = sParseTree->procInfo;
 
     // BUG-43158 Enhance statement list caching in PSM
-    aQcStmt->spvEnv->mStmtList = NULL;
+    aQcStmt->spvEnv->mStmtList  = NULL;
+    aQcStmt->spvEnv->mStmtList2 = NULL;
+
+    // TASK-7244 Check restrictions for Sharding
+    sOrgSpxEnvFlag = aQcStmt->spxEnv->mFlag;
+
+    if ( sProcInfo != NULL )
+    {
+        switch ( sProcInfo->shardSplitMethod )
+        {
+            case SDI_SPLIT_HASH:
+                aQcStmt->spxEnv->mFlag |= QSX_ENV_SHARD_HASH_PROC;
+                break;
+            case SDI_SPLIT_RANGE:
+                aQcStmt->spxEnv->mFlag |= QSX_ENV_SHARD_RANGE_PROC;
+                break;
+            case SDI_SPLIT_LIST:
+                aQcStmt->spxEnv->mFlag |= QSX_ENV_SHARD_LIST_PROC;
+                break;
+            case SDI_SPLIT_CLONE:
+                aQcStmt->spxEnv->mFlag |= QSX_ENV_SHARD_CLONE_PROC;
+                break;
+            case SDI_SPLIT_SOLO:
+                aQcStmt->spxEnv->mFlag |= QSX_ENV_SHARD_SOLO_PROC;
+                break;
+            default:
+                // Nothing to do.
+                break;
+        }
+    }
 
     if( ( ( aQcStmt->spvEnv->flag & QSV_ENV_TRIGGER_MASK ) == QSV_ENV_TRIGGER_TRUE ) && 
         ( aExecInfo->mTriggerTmplate != NULL ) )
@@ -159,8 +198,67 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
         sEnvTrigger = ID_FALSE;
     }
 
-    // BUG-17489
-    // ÏµúÏÉÅÏúÑ PSMÌò∏Ï∂úÏù∏ Í≤ΩÏö∞ planTreeFlagÎ•º FALSEÎ°ú Î∞îÍæºÎã§.
+    if ( SDU_SHARD_ENABLE == 1 )
+    {
+        sShardInPSMEnableOrg = QCG_GET_SESSION_SHARD_IN_PSM_ENABLE(aQcStmt);
+
+        // BUG-48706
+        // Globalø°º≠ local∑Œ∏∏ ∫Ø∞Ê«“ ºˆ ¿÷¥Ÿ.
+        if ( sShardInPSMEnableOrg == ID_TRUE )
+        {
+            // BUG-48700
+            // User session¿Ã æ∆¥— ∞ÊøÏ PSM¿∫ local∑Œ µø¿€«’¥œ¥Ÿ.
+            // Local∑Œ µø¿€«“ ∂ß clone tableø° write«œ¥¬ ∞Õ¿ª ¡¶«—«œ±‚ ¿ß«ÿº≠
+            // local∑Œ µø¿€«“ ∂ß plan¿ª ∫∞µµ∑Œ ª˝º∫«ÿæﬂ «’¥œ¥Ÿ.
+            // µ˚∂Ûº≠ user sessino¿Ã æ∆¥œ∏È session propertyø° local∑Œ µø¿€«‘¿ª ∏ÌΩ√«’¥œ¥Ÿ.
+            if ( QCG_GET_SESSION_SHARD_SESSION_TYPE( aQcStmt ) != SDI_SESSION_TYPE_USER )
+            {
+                sShardInPSMEnable = ID_FALSE;
+            }
+            else
+            {
+                // BUG-46349, BUG-48706
+                // 1. Trigger¥¬ local∑Œ µø¿€«—¥Ÿ.
+                // 2. Queryø°º≠ Ω««‡«— function¿∫ local∑Œ µø¿€«—¥Ÿ.
+                // 3. ±◊ ø‹ø°¥¬ global∑Œ µø¿€«—¥Ÿ.
+                // 4. Local∑Œ µø¿€«— ¿Ã»ƒø°¥¬ local∑Œ ∞Ëº” µø¿€«—¥Ÿ.
+                if ( sEnvTrigger == ID_TRUE )
+                {
+                    // 1. Trigger¥¬ local∑Œ µø¿€«—¥Ÿ.
+                    sShardInPSMEnable = ID_FALSE;
+                }
+                else
+                {
+                    if( (sParseTree->returnTypeVar != NULL) &&
+                        (((aQcStmt->spxEnv->mFlag) & (QSX_ENV_DURING_SELECT | QSX_ENV_DURING_DML)) != QSX_ENV_FLAG_INIT) )
+                    {
+                        // 2. Queryø°º≠ Ω««‡«— function¿∫ local∑Œ µø¿€«—¥Ÿ.
+                        sShardInPSMEnable = ID_FALSE;
+                    }
+                    else
+                    {
+                        // 3. ±◊ ø‹ø°¥¬ global∑Œ µø¿€«—¥Ÿ.
+                        sShardInPSMEnable = ID_TRUE;
+                    }
+                }
+            }
+
+            // BUG-48685
+            // MM session callback¿ª ≈Î«ÿº≠ Ω««‡«œπ«∑Œ ∫Ø∞Ê«ÿæﬂ «“ ∂ß∏∏ ∞™¿ª ∫Ø∞Ê«—¥Ÿ.
+            if ( sShardInPSMEnableOrg != sShardInPSMEnable )
+            {
+                QCG_SET_SESSION_SHARD_IN_PSM_ENABLE(aQcStmt, sShardInPSMEnable);
+            }
+        }
+    }
+    else
+    {
+        // Shard∞° æ∆¥œ∏È default (ID_TRUE)
+        // sShardInPSMEnable∞˙ sShardInPSMEnableOrg∞° «◊ªÛ µø¿œ«œ¥Ÿ.
+    }
+
+   // BUG-17489
+    // √÷ªÛ¿ß PSM»£√‚¿Œ ∞ÊøÏ planTreeFlag∏¶ FALSE∑Œ πŸ≤€¥Ÿ.
     qcg::lock( aQcStmt );
     if ( aQcStmt->planTreeFlag == ID_TRUE )
     {
@@ -185,6 +283,19 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
     if ( aExecInfo->mIsDefiner == ID_TRUE )
     {
         QCG_SET_SESSION_USER_ID( aQcStmt, aExecInfo->mDefinerUserID );
+        // BUG-47861 INVOKE_USER_ID, INVOKE_USER_NAME function
+        QCG_SET_SESSION_INVOKE_USER_NAME( aQcStmt, sParseTree->objectNameInfo.userName );
+
+        if ( SDU_SHARD_ENABLE == 1 )
+        {
+            IDE_TEST( qci::mSessionCallback.mSetInvokeUserPropertyInternal(
+                        aQcStmt->session->mMmSession,
+                        (SChar*)"INVOKE_USER",
+                        11,
+                        sParseTree->objectNameInfo.userName,
+                        idlOS::strlen(sParseTree->objectNameInfo.userName) )
+                      != IDE_SUCCESS );
+        }
     }
     else
     {
@@ -194,8 +305,8 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
     sSourceTemplate = QC_PRIVATE_TMPLATE(aQcStmt);
     sStage = 2;
 
-    // Ìä∏Î¶¨Í±∞Í∞Ä ÏïÑÎãàÎ©¥ mTriggerTmplateÏùò Í∞íÏùÄ NULLÏù¥Îã§.
-    // package subprogramÏù¥ ÏïÑÎãàÎ©¥ mPkgTemplateÏùò Í∞íÏùÄ NULLÏù¥Îã§.
+    // ∆Æ∏Æ∞≈∞° æ∆¥œ∏È mTriggerTmplate¿« ∞™¿∫ NULL¿Ã¥Ÿ.
+    // package subprogram¿Ã æ∆¥œ∏È mPkgTemplate¿« ∞™¿∫ NULL¿Ã¥Ÿ.
     if( aExecInfo->mTriggerTmplate == NULL )
     { 
         if( aExecInfo->mPkgTemplate == NULL )
@@ -234,7 +345,7 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
     }
     else
     {
-        // Ìä∏Î¶¨Í±∞Îäî Ïù¥ÎØ∏ Î≥µÏÇ¨Í∞Ä ÎêòÏÑú ÎÑòÏñ¥Ïò®Îã§.
+        // ∆Æ∏Æ∞≈¥¬ ¿ÃπÃ ∫πªÁ∞° µ«º≠ ≥—æÓø¬¥Ÿ.
         QC_PRIVATE_TMPLATE(aQcStmt) = aExecInfo->mTriggerTmplate;
     }
 
@@ -242,75 +353,145 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
     if ( (sParseTree->procSqlCount > 0) &&
          (sParseTree->procSqlCount <= sStmtListInfo->mStmtPoolCount) )
     {
-        for ( sStmtList = aQcStmt->mStmtList; sStmtList != NULL; sStmtList = sStmtList->mNext )
+        if ( sStmtListInfo->mUsePtr == ID_TRUE )
         {
-            if ( sStmtList->mParseTree == sParseTree )
+            for ( sStmtList = aQcStmt->mStmtList; sStmtList != NULL; sStmtList = sStmtList->mNext )
             {
-                break;
-            }
-            else
-            {
-                // Nothing to do.
-            }
-        }
-
-        // Í∏∞Ï°¥Ïóê Îì±Î°ùÌïú Í≤ÉÏù¥ ÏóÜÎäî Í≤ΩÏö∞.
-        if ( sStmtList == NULL )
-        {
-            if ( sStmtListInfo->mStmtListFreedCount > 0 )
-            {
-                for ( i = 0; i < sStmtListInfo->mStmtListCursor; i++ )
+                if ( sStmtList->mParseTree == sParseTree )
                 {
-                    if ( sStmtListInfo->mStmtList[i].mParseTree == NULL )
+                    break;
+                }
+                else
+                {
+                    // Nothing to do.
+                }
+            }
+
+            // ±‚¡∏ø° µÓ∑œ«— ∞Õ¿Ã æ¯¥¬ ∞ÊøÏ.
+            if ( sStmtList == NULL )
+            {
+                if ( sStmtListInfo->mStmtListFreedCount > 0 )
+                {
+                    for ( i = 0; i < sStmtListInfo->mStmtListCursor; i++ )
                     {
-                        sStmtList = &sStmtListInfo->mStmtList[i];
+                        if ( sStmtListInfo->mStmtList[i].mParseTree == NULL )
+                        {
+                            sStmtList = &sStmtListInfo->mStmtList[i];
 
-                        sStmtList->mParseTree = sParseTree;
-                        sStmtList->mNext = aQcStmt->mStmtList;
+                            sStmtList->mParseTree = sParseTree;
+                            sStmtList->mNext = aQcStmt->mStmtList;
 
-                        aQcStmt->mStmtList = sStmtList;
+                            aQcStmt->mStmtList = sStmtList;
 
-                        sStmtListInfo->mStmtListFreedCount--;
+                            sStmtListInfo->mStmtListFreedCount--;
+                            break;
+                        }
+                        else
+                        {
+                            // Nothing to do.
+                        }
                     }
-                    else
-                    {
-                        // Nothing to do.
-                    }
+                }
+                else
+                {
+                    // Nothing to do.
+                }
+
+                if ( (sStmtList == NULL) &&
+                     (sStmtListInfo->mStmtListCursor < sStmtListInfo->mStmtListCount) )
+                {
+                    sStmtList = &sStmtListInfo->mStmtList[sStmtListInfo->mStmtListCursor];
+
+                    sStmtList->mParseTree = sParseTree;
+                    sStmtList->mNext = aQcStmt->mStmtList;
+
+                    aQcStmt->mStmtList = sStmtList;
+
+                    sStmtListInfo->mStmtListCursor++;
+                }
+                else
+                {
+                    // Nothing to do.
                 }
             }
             else
             {
                 // Nothing to do.
             }
-
-            if ( (sStmtList == NULL) &&
-                 (sStmtListInfo->mStmtListCursor < sStmtListInfo->mStmtListCount) )
+            aQcStmt->spvEnv->mStmtList  = sStmtList;
+        }
+        else
+        {
+            for ( sStmtList2 = aQcStmt->mStmtList2; sStmtList2 != NULL; sStmtList2 = sStmtList2->mNext )
             {
-                sStmtList = &sStmtListInfo->mStmtList[sStmtListInfo->mStmtListCursor];
+                if ( sStmtList2->mParseTree == sParseTree )
+                {
+                    break;
+                }
+                else
+                {
+                    // Nothing to do.
+                }
+            }
 
-                sStmtList->mParseTree = sParseTree;
-                sStmtList->mNext = aQcStmt->mStmtList;
+            // ±‚¡∏ø° µÓ∑œ«— ∞Õ¿Ã æ¯¥¬ ∞ÊøÏ.
+            if ( sStmtList2 == NULL )
+            {
+                if ( sStmtListInfo->mStmtListFreedCount > 0 )
+                {
+                    for ( i = 0; i < sStmtListInfo->mStmtListCursor; i++ )
+                    {
+                        if ( sStmtListInfo->mStmtList2[i].mParseTree == NULL )
+                        {
+                            sStmtList2 = &sStmtListInfo->mStmtList2[i];
 
-                aQcStmt->mStmtList = sStmtList;
+                            sStmtList2->mParseTree = sParseTree;
+                            sStmtList2->mNext = aQcStmt->mStmtList2;
 
-                sStmtListInfo->mStmtListCursor++;
+                            aQcStmt->mStmtList2 = sStmtList2;
+
+                            sStmtListInfo->mStmtListFreedCount--;
+                            break;
+                        }
+                        else
+                        {
+                            // Nothing to do.
+                        }
+                    }
+                }
+                else
+                {
+                    // Nothing to do.
+                }
+
+                if ( (sStmtList2 == NULL) &&
+                     (sStmtListInfo->mStmtListCursor < sStmtListInfo->mStmtListCount) )
+                {
+                    sStmtList2 = &sStmtListInfo->mStmtList2[sStmtListInfo->mStmtListCursor];
+
+                    sStmtList2->mParseTree = sParseTree;
+                    sStmtList2->mNext = aQcStmt->mStmtList2;
+
+                    aQcStmt->mStmtList2 = sStmtList2;
+
+                    sStmtListInfo->mStmtListCursor++;
+                }
+                else
+                {
+                    // Nothing to do.
+                }
             }
             else
             {
                 // Nothing to do.
             }
-        }
-        else
-        {
-            // Nothing to do.
+            aQcStmt->spvEnv->mStmtList2 = sStmtList2;
         }
     }
     else
     {
         // Nothing to do.
     }
-
-    aQcStmt->spvEnv->mStmtList = sStmtList;
 
     // set stack buffer PR2475
     QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.stackBuffer = aStack;
@@ -319,9 +500,9 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
     QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.stackRemain = aStackRemain;
     QC_PRIVATE_TMPLATE(aQcStmt)->stmt                = aQcStmt;
  
-    // BUG-11192 date format session property Ï∂îÍ∞Ä
-    // cloneÎêú templateÏùò dateFormatÏùÄ Îã§Î•∏ ÏÑ∏ÏÖòÏùò Í∞íÏù¥ÎØÄÎ°ú
-    // ÏÉàÎ°úÏù¥ assignÌï¥Ï£ºÏñ¥Ïïº ÌïúÎã§.
+    // BUG-11192 date format session property √ﬂ∞°
+    // cloneµ» template¿« dateFormat¿∫ ¥Ÿ∏• ººº«¿« ∞™¿Ãπ«∑Œ
+    // ªı∑Œ¿Ã assign«ÿ¡÷æÓæﬂ «—¥Ÿ.
     QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.dateFormat     = sSourceTemplate->tmplate.dateFormat;
 
     /* PROJ-2208 Multi Currency */
@@ -346,8 +527,8 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
               != IDE_SUCCESS );
 
     /* PROJ-1073 Package - package cursor
-       packageÏóê ÏÑ†Ïñ∏Îêú cursor Ïó≠Ïãú procedureÏùò cursorÏôÄ ÎèôÏùºÌïòÍ≤å
-       Ïã§Ìñâ Ïãú Ï¥àÍ∏∞Ìôî ÏãúÌÇ§Í≥† Ïã§Ìñâ Ï¢ÖÎ£åÏôÄ ÎèôÏãúÏóê close ÏãúÌÇ®Îã§. */
+       packageø° º±æµ» cursor ø™Ω√ procedure¿« cursorøÕ µø¿œ«œ∞‘
+       Ω««‡ Ω√ √ ±‚»≠ Ω√≈∞∞Ì Ω««‡ ¡æ∑·øÕ µøΩ√ø° close Ω√≈≤¥Ÿ. */
     if ( sTopExec == 1 )
     {
         for( sPlanList = aQcStmt->spvEnv->procPlanList ;
@@ -379,10 +560,10 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
     }
     sVarStage = 1;
 
-    // PROJ-1075 returnTypeVarÏóê ÎåÄÌïú Ï¥àÍ∏∞ÌôîÍ∞Ä Ïù¥Î£®Ïñ¥ Ï†∏Ïïº ÌïúÎã§.
-    // arrayÎ≥ÄÏàòÏù∏ Í≤ΩÏö∞ Ï¥àÍ∏∞ÌôîÍ∞Ä Î∞òÎìúÏãú ÌïÑÏöîÌï®.
-    // Ï¥àÍ∏∞ÌôîÎäî ÌïòÏßÄÎßå Ìï®Ïàò Ï¢ÖÎ£å ÏßÅÏ†ÑÍπåÏßÄ Ìï†Îãπ Ìï¥Ï†úÎäî ÌïòÏßÄ ÏïäÏùå
-    // ->Ïù¥ Ìï®ÏàòÏùò Ìò∏Ï∂úÏûêÍ∞Ä Ìï¥Ï†ú
+    // PROJ-1075 returnTypeVarø° ¥Î«— √ ±‚»≠∞° ¿Ã∑ÁæÓ ¡Ææﬂ «—¥Ÿ.
+    // array∫Øºˆ¿Œ ∞ÊøÏ √ ±‚»≠∞° π›µÂΩ√ « ø‰«‘.
+    // √ ±‚»≠¥¬ «œ¡ˆ∏∏ «‘ºˆ ¡æ∑· ¡˜¿¸±Ó¡ˆ «“¥Á «ÿ¡¶¥¬ «œ¡ˆ æ ¿Ω
+    // ->¿Ã «‘ºˆ¿« »£√‚¿⁄∞° «ÿ¡¶
     if( sParseTree->returnTypeVar != NULL )
     {
         IDE_TEST( initVariableItems( aExecInfo,
@@ -408,8 +589,8 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
         // Nothing to do.
     }
 
-    // PROJ-1075 parameterÏóê ÎåÄÌïú Ï¥àÍ∏∞ÌôîÍ∞Ä Ïù¥Î£®Ïñ¥ Ï†∏Ïïº ÌïúÎã§.
-    // arrayÎ≥ÄÏàòÏù∏ Í≤ΩÏö∞ Ï¥àÍ∏∞ÌôîÍ∞Ä Î∞òÎìúÏãú ÌïÑÏöîÌï®.
+    // PROJ-1075 parameterø° ¥Î«— √ ±‚»≠∞° ¿Ã∑ÁæÓ ¡Ææﬂ «—¥Ÿ.
+    // array∫Øºˆ¿Œ ∞ÊøÏ √ ±‚»≠∞° π›µÂΩ√ « ø‰«‘.
     IDE_TEST( initVariableItems( aExecInfo,
                                  aQcStmt,
                                  sParseTree->paraDecls,
@@ -418,7 +599,7 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
     sVarStage = 3;
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // PSMÏùº Í≤ΩÏö∞ÏóêÎßå argumentÎ•º Î≥µÏÇ¨ÌïúÎã§.
+    // PSM¿œ ∞ÊøÏø°∏∏ argument∏¶ ∫πªÁ«—¥Ÿ.
     if( sEnvTrigger != ID_TRUE )
     {
         IDE_TEST( setArgumentValuesFromSourceTemplate(
@@ -434,23 +615,36 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
     aQcStmt->calledByPSMFlag = ID_TRUE;
 
     // PROJ-1685
-    if( sParseTree->procType == QS_INTERNAL )
+    if( sParseTree->procType == QS_NORMAL )
     {
         IDE_TEST( execBlock( aExecInfo,
                              aQcStmt,
                              (qsProcStmts* ) sParseTree->block )
                   != IDE_SUCCESS );
     }
-    else
+    else if ( sParseTree->procType == QS_EXTERNAL_C )
     {
         aExecInfo->mIsReturnValueValid = ID_TRUE;
 
         IDE_TEST( execExtproc( aExecInfo,
                                aQcStmt ) != IDE_SUCCESS ); 
     }
+    else if ( sParseTree->procType == QS_INTERNAL_C )
+    {
+        // PROJ-2717 Internal procedure
+        aExecInfo->mIsReturnValueValid = ID_TRUE;
+
+        IDE_TEST( execIntproc( aExecInfo,
+                               aQcStmt ) != IDE_SUCCESS );
+    }
+    else
+    {
+        IDE_ERROR_RAISE( 0,
+                         ERR_INVALID_OPTION );
+    }
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // PSMÏùº Í≤ΩÏö∞ÏóêÎßå argumentÎ•º Î≥µÏÇ¨ÌïúÎã§.
+    // PSM¿œ ∞ÊøÏø°∏∏ argument∏¶ ∫πªÁ«—¥Ÿ.
     if( sEnvTrigger != ID_TRUE )
     {
         IDE_TEST( setOutArgumentValuesToSourceTemplate(
@@ -493,6 +687,9 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
                 case QSX_ACCESS_DENIED_NO:
                 case QSX_DELETE_FAILED_NO:
                 case QSX_RENAME_FAILED_NO:
+
+                    // TASK-7218 Handling Shard Multiple Errors
+                case QSX_SHARD_MULTIPLE_ERRORS_NO:
                 case QSX_OTHER_SYSTEM_ERROR_NO :
                     unsetFlowControl(aExecInfo, ID_FALSE);
                     // error code and message is already set.
@@ -512,18 +709,18 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
                         err_no_return );
 
         /* PROJ-2586 PSM Parameters and return without precision
-           packageÏùò Í≤ΩÏö∞, sessionÏóê ÏûàÎäî templateÏùÑ Í∞ÄÏ†∏ÏôÄ ÏÇ¨Ïö©Ìï®ÏúºÎ°ú
-           Ïù¥Ï†Ñ Ïã§ÌñâÌñàÎçò Í≤∞Í≥ºÏóê ÎåÄÌïú precision, scale Î∞è smiColumn size Ï†ïÎ≥¥Î•º Í∞ÄÏßÄÍ≥† ÏûàÎã§.
-           Ïù¥Î•º precision, scale Î∞è smiColumn sizeÎ•º defaultÍ∞íÏúºÎ°ú ÏõêÎ≥µ ÏãúÏºúÏ£º ÌõÑ
-           ÌòÑÏû¨ Ïã§ÌñâÌïòÎäî Í≤∞Í≥ºÏùò precision, scale Î∞è smiColumn sizeÎ•º Ï°∞Ï†ïÌïúÎã§. */
+           package¿« ∞ÊøÏ, sessionø° ¿÷¥¬ template¿ª ∞°¡ÆøÕ ªÁøÎ«‘¿∏∑Œ
+           ¿Ã¿¸ Ω««‡«ﬂ¥¯ ∞·∞˙ø° ¥Î«— precision, scale π◊ smiColumn size ¡§∫∏∏¶ ∞°¡ˆ∞Ì ¿÷¥Ÿ.
+           ¿Ã∏¶ precision, scale π◊ smiColumn size∏¶ default∞™¿∏∑Œ ø¯∫π Ω√ƒ—¡÷ »ƒ
+           «ˆ¿Á Ω««‡«œ¥¬ ∞·∞˙¿« precision, scale π◊ smiColumn size∏¶ ¡∂¡§«—¥Ÿ. */
         IDE_TEST( qsxUtil::finalizeParamAndReturnColumnInfo( aExecInfo->mSourceTemplateStack->column )
                   != IDE_SUCCESS );
 
         // set return value to stack[0] of source template.
-        // PROJ-1075 return valueÍ∞Ä ÎßåÏïΩ arrayÏù∏ Í≤ΩÏö∞
-        // stackÏùò valueÎäî psmÎ≥ÄÏàòÍ∞Ä ÏïÑÎãàÍ∏∞ ÎïåÎ¨∏Ïóê Ï¥àÍ∏∞ÌôîÍ∞Ä ÎêòÏñ¥ ÏûàÏßÄ ÏïäÎã§.
-        // Îî∞ÎùºÏÑú Ïù¥ ÎïåÎäî reference copyÎ•º Ìï®.
-        // ->assignValueÏùò ÎßàÏßÄÎßâ Ïù∏ÏûêÍ∞Ä TRUE Ïù¥Î©¥ reference copy
+        // PROJ-1075 return value∞° ∏∏æ‡ array¿Œ ∞ÊøÏ
+        // stack¿« value¥¬ psm∫Øºˆ∞° æ∆¥œ±‚ ∂ßπÆø° √ ±‚»≠∞° µ«æÓ ¿÷¡ˆ æ ¥Ÿ.
+        // µ˚∂Ûº≠ ¿Ã ∂ß¥¬ reference copy∏¶ «‘.
+        // ->assignValue¿« ∏∂¡ˆ∏∑ ¿Œ¿⁄∞° TRUE ¿Ã∏È reference copy
         IDE_TEST( qsxUtil::assignValue( QC_QMX_MEM( aQcStmt ),
                                         sParseTree->returnTypeVar->variableTypeNode,  // source
                                         QC_PRIVATE_TMPLATE(aQcStmt),                  // source
@@ -531,13 +728,13 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
                                         aExecInfo->mSourceTemplateStack,              // dest
                                         aExecInfo->mSourceTemplateStackRemain,        // dest
                                         sSourceTemplate,
-                                        ID_TRUE,                                      // parameter ÎòêÎäî return Ïó¨Î∂Ä
+                                        ID_TRUE,                                      // parameter ∂«¥¬ return ø©∫Œ
                                         ID_TRUE )                                     // copyRef
                   != IDE_SUCCESS );
 
         // PROJ-1075
-        // ÎßåÏïΩ return typeÏù¥ arrayÏù¥Î©¥
-        // qsxEnvÏùò returnedArrayÏóê Ïó∞Í≤∞.
+        // ∏∏æ‡ return type¿Ã array¿Ã∏È
+        // qsxEnv¿« returnedArrayø° ø¨∞·.
         if( sParseTree->returnTypeVar->variableType == QS_ASSOCIATIVE_ARRAY_TYPE )
         {
             IDE_DASSERT( aExecInfo->mSourceTemplateStack->column->module->id
@@ -549,7 +746,7 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
 
             IDE_TEST_RAISE( *sArrayInfo == NULL, ERR_INVALID_ARRAY );
 
-            // qsxEnvÏùò returnedArrayÏóê Ïó∞Í≤∞.
+            // qsxEnv¿« returnedArrayø° ø¨∞·.
             IDE_TEST( qsxEnv::addReturnArray( QC_QSX_ENV(aQcStmt),
                                               *sArrayInfo )           // source tmplate value
                       != IDE_SUCCESS );
@@ -563,8 +760,8 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
     }
 
     sVarStage = 2;
-    // PROJ-1075 parameter Î≥ÄÏàòÏùò finalization
-    // arrayÎ≥ÄÏàòÏù∏ Í≤ΩÏö∞ Ìï†Îãπ Ìï¥Ï†úÎ•º Ïù¥ ÏïàÏóêÏÑú Ìï¥Ï§ÄÎã§.
+    // PROJ-1075 parameter ∫Øºˆ¿« finalization
+    // array∫Øºˆ¿Œ ∞ÊøÏ «“¥Á «ÿ¡¶∏¶ ¿Ã æ»ø°º≠ «ÿ¡ÿ¥Ÿ.
     IDE_TEST( finiVariableItems( aQcStmt,
                                  sParseTree->paraDecls )
               != IDE_SUCCESS );
@@ -583,8 +780,8 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
 
     sVarStage = 0;
     /* PROJ-1073 Package - package cursor
-       packageÏóê ÏÑ†Ïñ∏Îêú cursor Ïó≠Ïãú procedureÏùò cursorÏôÄ ÎèôÏùºÌïòÍ≤å
-       Ïã§Ìñâ Ïãú Ï¥àÍ∏∞Ìôî ÏãúÌÇ§Í≥† Ïã§Ìñâ Ï¢ÖÎ£åÏôÄ ÎèôÏãúÏóê close ÏãúÌÇ®Îã§. */
+       packageø° º±æµ» cursor ø™Ω√ procedure¿« cursorøÕ µø¿œ«œ∞‘
+       Ω««‡ Ω√ √ ±‚»≠ Ω√≈∞∞Ì Ω««‡ ¡æ∑·øÕ µøΩ√ø° close Ω√≈≤¥Ÿ. */
     if ( sTopExec == 1 )
     {
         for( sPlanList = aQcStmt->spvEnv->procPlanList ;
@@ -653,9 +850,9 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
     sStage = 1;
     QC_PRIVATE_TMPLATE(aQcStmt) = sSourceTemplate;
 
-    // BUG-44294 PSMÎÇ¥ÏóêÏÑú Ïã§ÌñâÌïú DMLÏù¥ Î≥ÄÍ≤ΩÌïú row ÏàòÎ•º Î∞òÌôòÌïòÎèÑÎ°ù Ìï©ÎãàÎã§.
+    // BUG-44294 PSM≥ªø°º≠ Ω««‡«— DML¿Ã ∫Ø∞Ê«— row ºˆ∏¶ π›»Ø«œµµ∑œ «’¥œ¥Ÿ.
     if ( ( aExecInfo->mTriggerTmplate == NULL ) &&
-         ( aQcStmt->spxEnv->mFlag == QSX_ENV_FLAG_INIT ) )
+         ( (aQcStmt->spxEnv->mFlag & QSX_ENV_STMT_TYPE_MASK) == QSX_ENV_FLAG_INIT ) )
     {
         QC_PRIVATE_TMPLATE(aQcStmt)->numRows  = aExecInfo->mSqlCursorInfo->mRowCount;
         QC_PRIVATE_TMPLATE(aQcStmt)->stmtType = aExecInfo->mSqlCursorInfo->mStmtType;
@@ -667,6 +864,19 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
 
     /* BUG-45306 PSM AUTHID */
     QCG_SET_SESSION_USER_ID( aQcStmt, sUserID );
+    // BUG-47861 INVOKE_USER_ID, INVOKE_USER_NAME function
+    QCG_SET_SESSION_INVOKE_USER_NAME( aQcStmt, sOrgInvokeUserName );
+
+    if ( SDU_SHARD_ENABLE == 1 )
+    {
+        IDE_TEST( qci::mSessionCallback.mSetInvokeUserPropertyInternal(
+                    aQcStmt->session->mMmSession,
+                    (SChar*)"INVOKE_USER",
+                    11,
+                    sOrgInvokeUserName,
+                    idlOS::strlen(sOrgInvokeUserName) )
+                  != IDE_SUCCESS );
+    }
 
     sStage = 0;
     IDE_TEST( QC_QMX_MEM(aQcStmt)->setStatus( &sQmxMemStatus )
@@ -678,6 +888,9 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
         qcg::setPlanTreeState( aQcStmt, ID_TRUE );
     }
 
+    // TASK-7244 Check restrictions for Sharding
+    aQcStmt->spxEnv->mFlag = sOrgSpxEnvFlag;
+
     // BUG-41030 Restore called by PSM flag
     aQcStmt->calledByPSMFlag = sOrgPSMFlag;
 
@@ -685,7 +898,15 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
     qsxEnv::popStack( QC_QSX_ENV(aQcStmt) );
 
     // BUG-43158 Enhance statement list caching in PSM
-    aQcStmt->spvEnv->mStmtList = sOrgStmtList;
+    aQcStmt->spvEnv->mStmtList  = sOrgStmtList;
+    aQcStmt->spvEnv->mStmtList2 = sOrgStmtList2;
+
+    // BUG-48685
+    // ø¯∫π¿Ã « ø‰«— ∞ÊøÏø°∏∏ »£√‚«—¥Ÿ.
+    if ( sShardInPSMEnableOrg != sShardInPSMEnable )
+    {
+        QCG_SET_SESSION_SHARD_IN_PSM_ENABLE(aQcStmt, sShardInPSMEnableOrg);
+    }
 
     return IDE_SUCCESS;
 
@@ -705,12 +926,8 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
     }
     IDE_EXCEPTION(err_no_return);
     {
-        sParseTree->procNamePos.stmtText = aQcStmt->myPlan->stmtText;
-
-        QC_STR_COPY( sFuncName, sParseTree->procNamePos );
-
         IDE_SET(ideSetErrorCode(qpERR_ABORT_QSX_FUNCTION_WITH_NO_RETURN,
-                                sFuncName));
+                                sParseTree->objectNameInfo.name));
     }
     IDE_EXCEPTION(err_stmt_is_null);
     {
@@ -721,11 +938,16 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
     {
         IDE_SET(ideSetErrorCode(qpERR_ABORT_QSX_UNINITIALIZED_ARRAY));
     }
+    IDE_EXCEPTION( ERR_INVALID_OPTION );
+    {
+        IDE_SET(ideSetErrorCode(qpERR_ABORT_QSX_INTERNAL_SERVER_ERROR_ARG,
+                                "invalid procedure type"));
+    }
     IDE_EXCEPTION(err_pass);
     IDE_EXCEPTION_END;
 
-    // PROJ-1075 ÏóêÎü¨Í∞Ä ÎÇòÎäî Í≤ΩÏö∞
-    // parameter ÎøêÎßå ÏïÑÎãàÎùº return valueÎèÑ Í∞ôÏù¥ Ìï†Îãπ Ìï¥Ï†úÎ•º Ìï¥Ï£ºÏñ¥Ïïº ÌïúÎã§.
+    // PROJ-1075 ø°∑Ø∞° ≥™¥¬ ∞ÊøÏ
+    // parameter ª”∏∏ æ∆¥œ∂Û return valueµµ ∞∞¿Ã «“¥Á «ÿ¡¶∏¶ «ÿ¡÷æÓæﬂ «—¥Ÿ.
     switch( sVarStage )
     {
         case 3:
@@ -857,12 +1079,35 @@ IDE_RC qsxExecutor::execPlan ( qsxExecutorInfo  * aExecInfo,
 
     /* BUG-45306 PSM AUTHID */
     QCG_SET_SESSION_USER_ID( aQcStmt, sUserID );
+    // BUG-47861 INVOKE_USER_ID, INVOKE_USER_NAME function
+    QCG_SET_SESSION_INVOKE_USER_NAME( aQcStmt, sOrgInvokeUserName );
+
+    if ( SDU_SHARD_ENABLE == 1 )
+    {
+        (void)qci::mSessionCallback.mSetInvokeUserPropertyInternal(
+                aQcStmt->session->mMmSession,
+                (SChar*)"INVOKE_USER",
+                11,
+                sOrgInvokeUserName,
+                idlOS::strlen(sOrgInvokeUserName) );
+    }
 
     // BUG-42322
     qsxEnv::popStack( QC_QSX_ENV(aQcStmt) );
 
+    // TASK-7244 Check restrictions for Sharding
+    aQcStmt->spxEnv->mFlag = sOrgSpxEnvFlag;
+
     // BUG-43158 Enhance statement list caching in PSM
-    aQcStmt->spvEnv->mStmtList = sOrgStmtList;
+    aQcStmt->spvEnv->mStmtList  = sOrgStmtList;
+    aQcStmt->spvEnv->mStmtList2 = sOrgStmtList2;
+
+    // BUG-48685
+    // ø¯∫π¿Ã « ø‰«— ∞ÊøÏø°∏∏ »£√‚«—¥Ÿ.
+    if ( sShardInPSMEnableOrg != sShardInPSMEnable )
+    {
+        QCG_SET_SESSION_SHARD_IN_PSM_ENABLE(aQcStmt, sShardInPSMEnableOrg);
+    }
 
     return IDE_FAILURE;
 }
@@ -906,8 +1151,8 @@ IDE_RC qsxExecutor::setArgumentValuesFromSourceTemplate (
         {
             case QS_OUT :
                 // To fix BUG-15195
-                // ÌååÎùºÎØ∏ÌÑ∞Îäî initVariableItemsÏóêÏÑú Ï¥àÍ∏∞Ìôî ÌñàÏúºÎØÄÎ°ú
-                // Ïó¨Í∏∞ÏÑú Ï¥àÍ∏∞Ìôî ÌïòÎ©¥ ÏïàÎê®.
+                // ∆ƒ∂ÛπÃ≈Õ¥¬ initVariableItemsø°º≠ √ ±‚»≠ «ﬂ¿∏π«∑Œ
+                // ø©±‚º≠ √ ±‚»≠ «œ∏È æ»µ .
                 break;
             case QS_IN :
             case QS_INOUT :
@@ -929,7 +1174,7 @@ IDE_RC qsxExecutor::setArgumentValuesFromSourceTemplate (
                           != IDE_SUCCESS );
                 break;
             default :
-                // IN-OUT TypeÏù¥ Ï†ïÌï¥ÏßÄÏßÄ ÏïäÏùÑ Ïàò ÏóÜÏùå
+                // IN-OUT Type¿Ã ¡§«ÿ¡ˆ¡ˆ æ ¿ª ºˆ æ¯¿Ω
                 IDE_ERROR( 0 );
                 break;
         }
@@ -989,14 +1234,14 @@ IDE_RC qsxExecutor::setOutArgumentValuesToSourceTemplate (
                         sStack,
                         sStackRemain,
                         aSourceTmplate,
-                        ID_TRUE,      // parameter ÎòêÎäî return Ïó¨Î∂Ä
+                        ID_TRUE,      // parameter ∂«¥¬ return ø©∫Œ
                         sCopyRef )
                     != IDE_SUCCESS );
                 break;
             case QS_IN :
                 break;
             default :
-                // IN-OUT TypeÏù¥ Ï†ïÌï¥ÏßÄÏßÄ ÏïäÏùÑ Ïàò ÏóÜÏùå
+                // IN-OUT Type¿Ã ¡§«ÿ¡ˆ¡ˆ æ ¿ª ºˆ æ¯¿Ω
                 IDE_ERROR( 0 );
                 break;
         }
@@ -1050,7 +1295,7 @@ IDE_RC qsxExecutor::getRaisedExceptionName( qsxExecutorInfo * aExecInfo,
             if ( QC_IS_NULL_NAME( aExecInfo->mRecentRaise->exception->userNamePos )
                  != ID_TRUE )
             {
-                // Buffer LengthÎ•º ÎÑòÏßÄ ÏïäÎäî Î≤îÏúÑÏóêÏÑú Î≥µÏÇ¨ÌïòÍ∏∞ ÏúÑÌïú Í∏∏Ïù¥ Ï∏°Ï†ï
+                // Buffer Length∏¶ ≥—¡ˆ æ ¥¬ π¸¿ßø°º≠ ∫πªÁ«œ±‚ ¿ß«— ±Ê¿Ã √¯¡§
                 sLength = IDL_MIN( aExecInfo->mRecentRaise->exception->userNamePos.size , QC_MAX_OBJECT_NAME_LEN );
 
                 idlOS::snprintf( QC_QSX_ENV(aQcStmt)->mRaisedExcpInfo.mRaisedExcpErrorMsg,
@@ -1071,7 +1316,7 @@ IDE_RC qsxExecutor::getRaisedExceptionName( qsxExecutorInfo * aExecInfo,
             if ( QC_IS_NULL_NAME( aExecInfo->mRecentRaise->exception->labelNamePos )
                  != ID_TRUE )
             {
-                // Buffer LengthÎ•º ÎÑòÏßÄ ÏïäÎäî Î≤îÏúÑÏóêÏÑú Î≥µÏÇ¨ÌïòÍ∏∞ ÏúÑÌïú Í∏∏Ïù¥ Ï∏°Ï†ï
+                // Buffer Length∏¶ ≥—¡ˆ æ ¥¬ π¸¿ßø°º≠ ∫πªÁ«œ±‚ ¿ß«— ±Ê¿Ã √¯¡§
                 sLength = IDL_MIN( aExecInfo->mRecentRaise->exception->labelNamePos.size , QC_MAX_OBJECT_NAME_LEN );
 
                 idlOS::snprintf( QC_QSX_ENV(aQcStmt)->mRaisedExcpInfo.mRaisedExcpErrorMsg + sTotalLength,
@@ -1089,7 +1334,7 @@ IDE_RC qsxExecutor::getRaisedExceptionName( qsxExecutorInfo * aExecInfo,
                 // Nothing to do.
             }
 
-            // Buffer LengthÎ•º ÎÑòÏßÄ ÏïäÎäî Î≤îÏúÑÏóêÏÑú Î≥µÏÇ¨ÌïòÍ∏∞ ÏúÑÌïú Í∏∏Ïù¥ Ï∏°Ï†ï
+            // Buffer Length∏¶ ≥—¡ˆ æ ¥¬ π¸¿ßø°º≠ ∫πªÁ«œ±‚ ¿ß«— ±Ê¿Ã √¯¡§
             sLength = IDL_MIN( aExecInfo->mRecentRaise->exception->exceptionNamePos.size , QC_MAX_OBJECT_NAME_LEN );
 
             idlOS::snprintf( QC_QSX_ENV(aQcStmt)->mRaisedExcpInfo.mRaisedExcpErrorMsg + sTotalLength,
@@ -1151,10 +1396,10 @@ IDE_RC qsxExecutor::execBlock (
 
     sStage=2;
 
-    // PROJ-1335 RAISE ÏßÄÏõê
+    // PROJ-1335 RAISE ¡ˆø¯
     // To fix BUG-12642
-    // exception handlingÏù¥ Ïù¥Î£®Ïñ¥ÏßÄÎ©¥ Î∏îÎ°ù ÏãúÏûë Ïù¥Ï†ÑÏùò
-    // ÏóêÎü¨ÏΩîÎìúÎ°ú ÎèåÏïÑÍ∞ÄÏïº Ìï®
+    // exception handling¿Ã ¿Ã∑ÁæÓ¡ˆ∏È ∫Ì∑œ Ω√¿€ ¿Ã¿¸¿«
+    // ø°∑Øƒ⁄µÂ∑Œ µπæ∆∞°æﬂ «‘
     IDE_TEST( QC_QMX_MEM(aQcStmt)->alloc(
             MAX_ERROR_MSG_LEN + 1,
             (void**) & sOriSqlErrorMsg )
@@ -1190,9 +1435,9 @@ IDE_RC qsxExecutor::execBlock (
         // Nothing to do.
     }
 
-    // PROJ-1335 RAISE ÏßÄÏõê
+    // PROJ-1335 RAISE ¡ˆø¯
     // To fix BUG-12642
-    // re-raiseÎêòÏßÄ ÏïäÏïòÎã§Î©¥ Ïù¥Ï†Ñ ÏóêÎü¨ÏΩîÎìúÎ°ú Î≥µÍ∑Ä.
+    // re-raiseµ«¡ˆ æ æ“¥Ÿ∏È ¿Ã¿¸ ø°∑Øƒ⁄µÂ∑Œ ∫π±Õ.
     if( aExecInfo->mFlow != QSX_FLOW_RAISE )
     {
         QC_QSX_ENV(aQcStmt)->mSqlCode = sOriSqlCode;
@@ -1359,8 +1604,8 @@ IDE_RC qsxExecutor::initVariableItems(
                     if ( (sVariable->variableTypeNode->lflag & QTC_NODE_SP_PARAM_OR_RETURN_MASK)
                          == QTC_NODE_SP_PARAM_OR_RETURN_TRUE )
                     {
-                        /* parameterÎäî qsxExecutor::setArgumentFromSourceTemplateÏóêÏÑú
-                           default valueÎ•º Ìï†ÎãπÌïúÎã§. */
+                        /* parameter¥¬ qsxExecutor::setArgumentFromSourceTemplateø°º≠
+                           default value∏¶ «“¥Á«—¥Ÿ. */
                         // Nothing to do.
                     }
                     else
@@ -1400,7 +1645,7 @@ IDE_RC qsxExecutor::initVariableItems(
                 break;
             case QS_TRIGGER_NEW_VARIABLE:
                 // BUG-46074
-                // Delete triggerÏùò new rowÎäî NULLÏù¥Îã§.
+                // Delete trigger¿« new row¥¬ NULL¿Ã¥Ÿ.
                 if ( aQcStmt->spxEnv->mTriggerEventType == QCM_TRIGGER_EVENT_DELETE )
                 {
                     sVariable = ( qsVariables * ) aVarItems;
@@ -1413,7 +1658,7 @@ IDE_RC qsxExecutor::initVariableItems(
                 break;
             case QS_TRIGGER_OLD_VARIABLE:
                 // BUG-46074
-                // Insert triggerÏùò old rowÎäî NULLÏù¥Îã§.
+                // Insert trigger¿« old row¥¬ NULL¿Ã¥Ÿ.
                 if ( aQcStmt->spxEnv->mTriggerEventType == QCM_TRIGGER_EVENT_INSERT )
                 {
                     sVariable = ( qsVariables * ) aVarItems;
@@ -1437,8 +1682,8 @@ IDE_RC qsxExecutor::initVariableItems(
 
                 sCursorInfo->mCursor = sCursor;
 
-                // PROJ-2197ÏóêÏÑú Ïã§ÏãúÍ∞Ñ rebuildÎ•º Ï†úÍ±∞ÌïòÏó¨
-                // execOpen, execOpenForÏóêÏÑú Í∞ÅÍ∞Å ÏàòÌñâÌïòÎçò Í≤ÉÏùÑ ÏõêÎ≥µÌï®.
+                // PROJ-2197ø°º≠ Ω«Ω√∞£ rebuild∏¶ ¡¶∞≈«œø©
+                // execOpen, execOpenForø°º≠ ∞¢∞¢ ºˆ«‡«œ¥¯ ∞Õ¿ª ø¯∫π«‘.
                 (void)qsxCursor::setCursorSpec( sCursorInfo,
                                                 sCursor->paraDecls );
 
@@ -1466,7 +1711,7 @@ IDE_RC qsxExecutor::initVariableItems(
     IDE_EXCEPTION( err_pass_wrap_sqltext )
     {
         // To fix BUG-13208
-        // system_Ïú†Ï†ÄÍ∞Ä ÎßåÎì† ÌîÑÎ°úÏãúÏ†∏Îäî ÎÇ¥Î∂ÄÍ≥µÍ∞ú ÏïàÌï®.
+        // system_¿Ø¿˙∞° ∏∏µÁ «¡∑ŒΩ√¡Æ¥¬ ≥ª∫Œ∞¯∞≥ æ»«‘.
         if ( aExecInfo->mDefinerUserID == QC_SYSTEM_USER_ID )
         {
             qsxEnv::setErrorCode( QC_QSX_ENV(aQcStmt) );
@@ -1478,7 +1723,7 @@ IDE_RC qsxExecutor::initVariableItems(
             qsxEnv::setErrorCode( QC_QSX_ENV(aQcStmt) );
 
             // BUG-43998
-            // PSM ÏÉùÏÑ± Ïò§Î•ò Î∞úÏÉùÏãú Ïò§Î•ò Î∞úÏÉù ÏúÑÏπòÎ•º Ìïú Î≤àÎßå Ï∂úÎ†•ÌïòÎèÑÎ°ù Ìï©ÎãàÎã§.
+            // PSM ª˝º∫ ø¿∑˘ πﬂª˝Ω√ ø¿∑˘ πﬂª˝ ¿ßƒ°∏¶ «— π¯∏∏ √‚∑¬«œµµ∑œ «’¥œ¥Ÿ.
             if ( ideHasErrorPosition() == ID_FALSE )
             {
                 (void)sSqlInfo.initWithBeforeMessage( QC_QMX_MEM(aQcStmt) );
@@ -1574,7 +1819,7 @@ IDE_RC qsxExecutor::finiVariableItems(
                 else if ( (sVariable->variableType == QS_ROW_TYPE) ||
                           (sVariable->variableType == QS_RECORD_TYPE) )
                 {
-                    // record typeÏóê array typeÏùÑ Ìè¨Ìï®ÌïòÎäî Í≤ΩÏö∞ Í∞Å arrayÎèÑ finalize Ìï¥Ïïº ÌïúÎã§.
+                    // record typeø° array type¿ª ∆˜«‘«œ¥¬ ∞ÊøÏ ∞¢ arrayµµ finalize «ÿæﬂ «—¥Ÿ.
                     IDE_TEST( qsxUtil::finalizeRecordVar( QC_PRIVATE_TMPLATE(aQcStmt),
                                                           sVariable->variableTypeNode )
                               != IDE_SUCCESS );
@@ -1671,7 +1916,7 @@ IDE_RC qsxExecutor::execStmtList (
 
         if ( sRc != IDE_SUCCESS )
         {
-            sErrorCode = ideGetErrorCode();
+            sErrorCode = sdi::getMultiErrorCode();
 
             // do critical errors should not be sent to
             // others section .
@@ -1709,8 +1954,8 @@ IDE_RC qsxExecutor::execStmtList (
                                &sLabel )
                     == ID_TRUE )
                 {
-                    // gotoÍ∞Ä Ï∞∏Ï°∞ÌïòÎäî labelÏù¥ parentÏóê ÏûàÎäî Í≤ΩÏö∞
-                    // Îã§Ïùå Ïã§Ìñâ statementÎ•º label->stmtÎ°ú ÏßÄÏ†ï
+                    // goto∞° ¬¸¡∂«œ¥¬ label¿Ã parentø° ¿÷¥¬ ∞ÊøÏ
+                    // ¥Ÿ¿Ω Ω««‡ statement∏¶ label->stmt∑Œ ¡ˆ¡§
                     sProcNextStmts = sLabel->stmt;
                     unsetFlowControl(aExecInfo);
                 }
@@ -1732,9 +1977,9 @@ IDE_RC qsxExecutor::execStmtList (
                 IDE_RAISE(err_unknown_flow_control);
         }
 
-        // PROJ-1075 ÌïòÎÇòÏùò procedure statementÎ•º Ïã§ÌñâÌïú Ïù¥ÌõÑ
-        // ÌòπÏãú functionÏóêÏÑú returnÎêú arrayÎ≥ÄÏàòÍ∞Ä ÏûàÎÇò Ï≤¥ÌÅ¨ÌïòÍ≥†
-        // ÏûàÏúºÎ©¥ Ìï†Îãπ Ìï¥Ï†ú.
+        // PROJ-1075 «œ≥™¿« procedure statement∏¶ Ω««‡«— ¿Ã»ƒ
+        // »§Ω√ functionø°º≠ returnµ» array∫Øºˆ∞° ¿÷≥™ √º≈©«œ∞Ì
+        // ¿÷¿∏∏È «“¥Á «ÿ¡¶.
         qsxEnv::freeReturnArray( QC_QSX_ENV(aQcStmt) );
 
         // BUG-41311
@@ -1795,90 +2040,93 @@ void qsxExecutor::raiseConvertedException(
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
     SInt exception = QSX_INVALID_EXCEPTION_ID;
-    switch(aIdeErrorCode)
+    switch(E_ERROR_CODE(aIdeErrorCode))
     {
-        case qpERR_ABORT_QSX_CURSOR_ALREADY_OPEN :
+        case E_ERROR_CODE(qpERR_ABORT_QSX_CURSOR_ALREADY_OPEN) :
             exception = QSX_CURSOR_ALREADY_OPEN_NO;
             break;
-        case smERR_ABORT_smnUniqueViolation :
-        case qpERR_ABORT_QSX_DUP_VAL_ON_INDEX :
+        case E_ERROR_CODE(smERR_ABORT_smnUniqueViolation) :
+        case E_ERROR_CODE(qpERR_ABORT_QSX_DUP_VAL_ON_INDEX) :
             exception = QSX_DUP_VAL_ON_INDEX_NO;
             break;
-        case qpERR_ABORT_QSX_INVALID_CURSOR :
+        case E_ERROR_CODE(qpERR_ABORT_QSX_INVALID_CURSOR) :
             exception = QSX_INVALID_CURSOR_NO;
             break;
-        case idERR_ABORT_idaInvalidNumeric :
-        case mtERR_ABORT_INVALID_LITERAL :
-        case qpERR_ABORT_QSX_INVALID_NUMBER :
+        case E_ERROR_CODE(idERR_ABORT_idaInvalidNumeric) :
+        case E_ERROR_CODE(mtERR_ABORT_INVALID_LITERAL) :
+        case E_ERROR_CODE(qpERR_ABORT_QSX_INVALID_NUMBER) :
             exception = QSX_INVALID_NUMBER_NO;
             break;
-        case qpERR_ABORT_QSX_NO_DATA_FOUND :
-        case idERR_ABORT_IDU_FILE_NO_DATA_FOUND :
+        case E_ERROR_CODE(qpERR_ABORT_QSX_NO_DATA_FOUND) :
+        case E_ERROR_CODE(idERR_ABORT_IDU_FILE_NO_DATA_FOUND) :
             exception = QSX_NO_DATA_FOUND_NO;
             break;
-        case qpERR_ABORT_QSX_PROGRAM_ERROR :
+        case E_ERROR_CODE(qpERR_ABORT_QSX_PROGRAM_ERROR) :
             exception = QSX_PROGRAM_ERROR_NO;
             break;
-        case qpERR_ABORT_QSX_STORAGE_ERROR :
+        case E_ERROR_CODE(qpERR_ABORT_QSX_STORAGE_ERROR) :
             exception = QSX_STORAGE_ERROR_NO;
             break;
-        case qpERR_ABORT_QSX_TIMEOUT_ON_RESOURCE :
+        case E_ERROR_CODE(qpERR_ABORT_QSX_TIMEOUT_ON_RESOURCE) :
             exception = QSX_TIMEOUT_ON_RESOURCE_NO;
             break;
-        case qpERR_ABORT_QSX_TOO_MANY_ROWS :
+        case E_ERROR_CODE(qpERR_ABORT_QSX_TOO_MANY_ROWS) :
             exception = QSX_TOO_MANY_ROWS_NO;
             break;
-        case idERR_ABORT_idaDivideByZero :
-        case mtERR_ABORT_DIVIDE_BY_ZERO :
-        case qpERR_ABORT_QSX_ZERO_DIVIDE :
+        case E_ERROR_CODE(idERR_ABORT_idaDivideByZero) :
+        case E_ERROR_CODE(mtERR_ABORT_DIVIDE_BY_ZERO) :
+        case E_ERROR_CODE(qpERR_ABORT_QSX_ZERO_DIVIDE) :
             exception = QSX_ZERO_DIVIDE_NO;
             break;
-        case idERR_ABORT_idaOverflow :
-        case idERR_ABORT_idaLengthOutbound :
-        case idERR_ABORT_idaPrecisionOutbound :
-        case idERR_ABORT_idaScaleOutbound :
-        case idERR_ABORT_idaLargerThanPrecision :
-        case mtERR_FATAL_CONVERSION_COLLISION  :
-        case mtERR_FATAL_INCOMPATIBLE_TYPE :
-        case mtERR_ABORT_CONVERSION_NOT_APPLICABLE :
-        case mtERR_ABORT_INVALID_LENGTH :
-        case mtERR_ABORT_INVALID_PRECISION :
-        case mtERR_ABORT_INVALID_SCALE :
-        case mtERR_ABORT_VALUE_OVERFLOW :
-        case mtERR_ABORT_STACK_OVERFLOW :
-        case mtERR_ABORT_ARGUMENT_NOT_APPLICABLE :
-        case mtERR_ABORT_INVALID_WKT :
-        case mtERR_ABORT_TO_CHAR_MAX_PRECISION :
-        case qpERR_ABORT_QTC_MULTIPLE_ROWS:
-        case qpERR_ABORT_QSX_VALUE_ERROR :
+        case E_ERROR_CODE(idERR_ABORT_idaOverflow) :
+        case E_ERROR_CODE(idERR_ABORT_idaLengthOutbound) :
+        case E_ERROR_CODE(idERR_ABORT_idaPrecisionOutbound) :
+        case E_ERROR_CODE(idERR_ABORT_idaScaleOutbound) :
+        case E_ERROR_CODE(idERR_ABORT_idaLargerThanPrecision) :
+        case E_ERROR_CODE(mtERR_FATAL_CONVERSION_COLLISION ) :
+        case E_ERROR_CODE(mtERR_FATAL_INCOMPATIBLE_TYPE) :
+        case E_ERROR_CODE(mtERR_ABORT_CONVERSION_NOT_APPLICABLE) :
+        case E_ERROR_CODE(mtERR_ABORT_INVALID_LENGTH) :
+        case E_ERROR_CODE(mtERR_ABORT_INVALID_PRECISION) :
+        case E_ERROR_CODE(mtERR_ABORT_INVALID_SCALE) :
+        case E_ERROR_CODE(mtERR_ABORT_VALUE_OVERFLOW) :
+        case E_ERROR_CODE(mtERR_ABORT_STACK_OVERFLOW) :
+        case E_ERROR_CODE(mtERR_ABORT_ARGUMENT_NOT_APPLICABLE) :
+        case E_ERROR_CODE(mtERR_ABORT_INVALID_WKT) :
+        case E_ERROR_CODE(mtERR_ABORT_TO_CHAR_MAX_PRECISION) :
+        case E_ERROR_CODE(qpERR_ABORT_QTC_MULTIPLE_ROWS) :
+        case E_ERROR_CODE(qpERR_ABORT_QSX_VALUE_ERROR) :
             exception = QSX_VALUE_ERROR_NO;
             break;
-        case idERR_ABORT_IDU_FILE_INVALID_PATH :
+        case E_ERROR_CODE(idERR_ABORT_IDU_FILE_INVALID_PATH) :
             exception = QSX_INVALID_PATH_NO;
             break;
-        case qpERR_ABORT_QSF_INVALID_FILEOPEN_MODE :
+        case E_ERROR_CODE(qpERR_ABORT_QSF_INVALID_FILEOPEN_MODE) :
             exception = QSX_INVALID_MODE_NO;
             break;
-        case idERR_ABORT_IDU_FILE_INVALID_FILEHANDLE :
+        case E_ERROR_CODE(idERR_ABORT_IDU_FILE_INVALID_FILEHANDLE) :
             exception = QSX_INVALID_FILEHANDLE_NO;
             break;
-        case idERR_ABORT_IDU_FILE_INVALID_OPERATION :
+        case E_ERROR_CODE(idERR_ABORT_IDU_FILE_INVALID_OPERATION) :
             exception = QSX_INVALID_OPERATION_NO;
             break;
-        case idERR_ABORT_IDU_FILE_READ_ERROR :
+        case E_ERROR_CODE(idERR_ABORT_IDU_FILE_READ_ERROR) :
             exception = QSX_READ_ERROR_NO;
             break;
-        case idERR_ABORT_IDU_FILE_WRITE_ERROR :
+        case E_ERROR_CODE(idERR_ABORT_IDU_FILE_WRITE_ERROR) :
             exception = QSX_WRITE_ERROR_NO;
             break;
-        case qpERR_ABORT_QSF_DIRECTORY_ACCESS_DENIED :
+        case E_ERROR_CODE(qpERR_ABORT_QSF_DIRECTORY_ACCESS_DENIED) :
             exception = QSX_ACCESS_DENIED_NO;
             break;
-        case idERR_ABORT_IDU_FILE_DELETE_FAILED :
+        case E_ERROR_CODE(idERR_ABORT_IDU_FILE_DELETE_FAILED) :
             exception = QSX_DELETE_FAILED_NO;
             break;
-        case idERR_ABORT_IDU_FILE_RENAME_FAILED :
+        case E_ERROR_CODE(idERR_ABORT_IDU_FILE_RENAME_FAILED) :
             exception = QSX_RENAME_FAILED_NO;
+            break;
+        case E_ERROR_CODE(sdERR_ABORT_SHARD_MULTIPLE_ERRORS) :
+            exception = QSX_SHARD_MULTIPLE_ERRORS_NO;
             break;
         default :
             exception = QSX_OTHER_SYSTEM_ERROR_NO;
@@ -1919,8 +2167,14 @@ IDE_RC qsxExecutor::catchException (
 {
     qsExceptionHandlers  * sExcpHdlr;
     qsExceptions         * sExcp;
-    idBool                 sIsExcpFound;
+    idBool                 sIsExcpFound = ID_FALSE;
     idBool                 sOthersFound = ID_FALSE;
+
+    // TASK-7244 DBMS_SHARD_GET_DIAGNOSTICS package
+    UInt                   sFlag = 0;
+    UInt                   sOrgErrorListCount;
+    iduList                sOrgErrorList;
+    ideErrorCollection   * sErrors;
 
     if ( aExecInfo->mFlow == QSX_FLOW_RAISE )
     {
@@ -1938,19 +2192,7 @@ IDE_RC qsxExecutor::catchException (
                 aExecInfo->mFlow == QSX_FLOW_RAISE)
             {
                 sOthersFound = ID_TRUE;
-                unsetFlowControl( aExecInfo );
-
-                IDE_TEST( qsxEnv::beginOthersClause( QC_QSX_ENV(aQcStmt) )
-                          != IDE_SUCCESS );
-
-                IDE_TEST(execStmtList(aExecInfo,
-                                      aQcStmt,
-                                      sExcpHdlr->actionStmt)
-                         != IDE_SUCCESS);
-                sOthersFound = ID_FALSE;
-
-                IDE_TEST( qsxEnv::endOthersClause( QC_QSX_ENV(aQcStmt) )
-                          != IDE_SUCCESS );
+                sIsExcpFound = ID_TRUE;
             }
             else // EXCP1 OR EXCP2 OR ...
             {
@@ -1964,23 +2206,95 @@ IDE_RC qsxExecutor::catchException (
                          (sExcp->errorCode == QSX_ENV_ERROR_CODE(QC_QSX_ENV(aQcStmt))) ||
                          (sExcp->userErrorCode == E_ERROR_CODE(QSX_ENV_ERROR_CODE(QC_QSX_ENV(aQcStmt)))) )
                     {
-                        unsetFlowControl( aExecInfo );
-                        IDE_TEST(execStmtList (aExecInfo,
-                                               aQcStmt,
-                                               sExcpHdlr->actionStmt)
-                                 != IDE_SUCCESS);
                         sIsExcpFound = ID_TRUE;
-                    }
-                    else
-                    {
-                        // Nothing to do.
+                        break;
                     }
                 }
+            }
 
-                if (sIsExcpFound)
+            if ( sIsExcpFound == ID_TRUE )
+            {
+                break;
+            }
+        }
+
+        if ( sIsExcpFound == ID_TRUE )
+        {
+            if ( SDU_SHARD_ENABLE == 1 )
+            {
+                /* ================= BEGIN error adjustment =======================
+                 *  øœ∑· ¿¸±Ó¡ˆ EXCEPTION¿Ã πﬂª˝«œ∏È æ»µ 
+                 *  1. SPXENV => BACKUP
+                 *  2. ERRMGR => SPXENV
+                 *  3. ERRMGR INIT */
+                // 1. SPXENV => BACKUP
+                sOrgErrorListCount = aQcStmt->spxEnv->mErrorListCount;
+                IDU_LIST_INIT( &sOrgErrorList );
+                IDU_LIST_JOIN_LIST( &sOrgErrorList, &(aQcStmt->spxEnv->mErrorList) );
+
+                sErrors = &(ideGetErrorMgr()->mErrors);
+                // 2. ERRORMGR => SPXENV
+                aQcStmt->spxEnv->mErrorListCount = sErrors->mErrorListCnt;
+                IDU_LIST_JOIN_LIST( &(aQcStmt->spxEnv->mErrorList), &(sErrors->mErrorList) );
+
+                // 3. ERRMGR INIT (mErrorList¥¬ IDU_LIST_JOIN_LIST«œ∏Á √ ±‚»≠ «‘)
+                sErrors->mErrorListCnt = 0;
+                /* =================== END error adjustment ======================= */
+                sFlag = 1;
+            }
+
+            unsetFlowControl( aExecInfo );
+
+            if ( sOthersFound == ID_TRUE )
+            {
+                IDE_TEST( qsxEnv::beginOthersClause( QC_QSX_ENV(aQcStmt) )
+                          != IDE_SUCCESS );
+            }
+
+            IDE_TEST(execStmtList (aExecInfo,
+                                   aQcStmt,
+                                   sExcpHdlr->actionStmt)
+                     != IDE_SUCCESS);
+
+            if ( sOthersFound == ID_TRUE )
+            {
+                IDE_TEST( qsxEnv::endOthersClause( QC_QSX_ENV(aQcStmt) )
+                          != IDE_SUCCESS );
+            }
+
+            // sFlag∞° 1¿Œ ∞Õ¿∫ SDU_SHARD_ENABLE == 1 ¿ª ∆˜«‘«‘.
+            if ( sFlag == 1 )
+            {
+                sFlag = 0;
+                /* ================= BEGIN error adjustment =======================
+                 *  øœ∑· ¿¸±Ó¡ˆ EXCEPTION¿Ã πﬂª˝«œ∏È æ»µ 
+                 *  1. SPXENV => ERRMGR (FREE LIST)
+                 *  2. SPXENV INIT
+                 *  3. Exception handler≥ªø°º≠ error πﬂª˝ ¿Øπ´ø° µ˚∂Û µø¿€¿ª ¥ﬁ∏Æ«‘
+                 *    3-1. ERROR πﬂª˝X
+                 *         BACKUP => SPXENV
+                 *    3-2. ERROR πﬂª˝O
+                 *         BACKUP => ERRMGR (FREE LIST)
+                 */
+                // 1. SPXENV => ERRMGR (FREE LIST)
+                sErrors->mFreeListCnt += aQcStmt->spxEnv->mErrorListCount;
+                IDU_LIST_JOIN_LIST( &(sErrors->mFreeList), &(aQcStmt->spxEnv->mErrorList) );
+                // 2. SPXENV INIT
+                aQcStmt->spxEnv->mErrorListCount = 0;
+
+                // 3. BACKUP √≥∏Æ
+                if ( sErrors->mErrorListCnt != 0 ) // 3-1. ¥Ÿ∏• error∞° πﬂª˝«— ∞ÊøÏ
                 {
-                    break;
+                    
+                    sErrors->mFreeListCnt += sOrgErrorListCount;
+                    IDU_LIST_JOIN_LIST( &(sErrors->mFreeList), &sOrgErrorList );
                 }
+                else // 3-2. ¥Ÿ∏• error∞° πﬂª˝«œ¡ˆ æ ¿∫ ∞ÊøÏ
+                {
+                    aQcStmt->spxEnv->mErrorListCount = sOrgErrorListCount;
+                    IDU_LIST_JOIN_LIST( &(aQcStmt->spxEnv->mErrorList), &sOrgErrorList );
+                }
+                /* =================== END error adjustment ======================= */
             }
         }
     }
@@ -2002,6 +2316,19 @@ IDE_RC qsxExecutor::catchException (
     if (sOthersFound == ID_TRUE)
     {
         (void) qsxEnv::endOthersClause( QC_QSX_ENV(aQcStmt) );
+    }
+
+    // catchExceptionø°º≠ exception¿∏∑Œ ø¿¥¬ ∞ÊøÏ¥¬ critical error∞≈≥™ internal error¿Ã¥Ÿ.
+    // µ˚∂Ûº≠ ¿œπ›¿˚¿Œ ∞ÊøÏø°¥¬ ¿Ã∞˜¿∏∑Œ ø¿¥¬ ∞ÊøÏ¥¬ æ¯¥Ÿ.
+    // sFlag∞° 1¿Œ ∞Õ¿∫ SDU_SHARD_ENABLE == 1 ¿ª ∆˜«‘«‘.
+    if ( sFlag == 1 )
+    {
+        // 1. SPXENV => ERRMGR (FREE LIST)
+        sErrors->mFreeListCnt += aQcStmt->spxEnv->mErrorListCount;
+        IDU_LIST_JOIN_LIST( &(sErrors->mFreeList), &(aQcStmt->spxEnv->mErrorList) );
+        // 2. BACKUP => ERRMGR (FREE LIST)
+        sErrors->mFreeListCnt += sOrgErrorListCount;
+        IDU_LIST_JOIN_LIST( &(sErrors->mFreeList), &sOrgErrorList );
     }
 
     return IDE_FAILURE;
@@ -2031,10 +2358,10 @@ IDE_RC qsxExecutor::execInvoke (
         != IDE_SUCCESS )
     {
         /* BUG-43160
-           unhandling Îêú exception valueÍ∞Ä package exception valueÏùº ÏàòÎèÑ ÏûàÎã§.
-           Îî∞ÎùºÏÑú, errorÎ•º Î≥¥Í≥† unhandling errorÏùº Í≤ΩÏö∞,
-           qsxEnvInfoÏóê Ï†ÄÏû•Ìï¥ ÎÜìÍ≥† Ï†ïÎ≥¥Î•º qsxExecutorInfoÏóê ÏÖãÌåÖÌï¥Ï§ÄÎã§.
-           execInvokeÏóêÏÑú Ïã§ÌñâÍ∏∞Í∞Ñ ÏÇ¨Ïö©Îêú qsxExecutorInfoÏôÄ aExecInfoÎäî Îã§Î•∏ qsxExecutorInfoÏù¥Îã§. */
+           unhandling µ» exception value∞° package exception value¿œ ºˆµµ ¿÷¥Ÿ.
+           µ˚∂Ûº≠, error∏¶ ∫∏∞Ì unhandling error¿œ ∞ÊøÏ,
+           qsxEnvInfoø° ¿˙¿Â«ÿ ≥ı∞Ì ¡§∫∏∏¶ qsxExecutorInfoø° º¬∆√«ÿ¡ÿ¥Ÿ.
+           execInvokeø°º≠ Ω««‡±‚∞£ ªÁøÎµ» qsxExecutorInfoøÕ aExecInfo¥¬ ¥Ÿ∏• qsxExecutorInfo¿Ã¥Ÿ. */
         if ( ideGetErrorCode() != qpERR_ABORT_QSX_UNHANDLED_EXCEPTION )
         {
             IDE_RAISE(err_pass_wrap_sqltext);
@@ -2088,8 +2415,9 @@ IDE_RC qsxExecutor::execSelect (
     qcStatement      * sExecQcStmt = NULL;
     idBool             sIsFirst    = ID_TRUE;
     idBool             sIsNeedFree = ID_FALSE;
-
-    qsxStmtList      * sStmtList = aQcStmt->spvEnv->mStmtList;
+    UInt               sPoolCount  = 0;
+    qsxStmtList      * sStmtList   = aQcStmt->spvEnv->mStmtList;
+    qsxStmtList2     * sStmtList2  = aQcStmt->spvEnv->mStmtList2;
 
     sProcSql = (qsProcStmtSql*) aProcSql;
 
@@ -2100,26 +2428,52 @@ IDE_RC qsxExecutor::execSelect (
     qcd::initStmt(&sHstmt);
 
     // BUG-36203 PSM Optimize
-    if ( sStmtList != NULL )
+    if ( ( sStmtList != NULL ) || ( sStmtList2 != NULL ) )
     {
-        // BUG-43158 Enhance statement list caching in PSM
-        if ( QSX_STMT_LIST_IS_UNUSED( sStmtList->mStmtPoolStatus, sProcSql->sqlIdx)
-             == ID_TRUE )
+        IDU_FIT_POINT_RAISE( "qsxExecutor::execSelect::is_unused", err_sql_index );
+        sPoolCount = aQcStmt->session->mQPSpecific.mStmtListInfo.mStmtPoolCount;
+        IDE_TEST_RAISE( sProcSql->sqlIdx >= sPoolCount, err_sql_index );
+
+        if ( sStmtList != NULL )
         {
-            // stmt alloc
-            IDE_TEST( qcd::allocStmt( aQcStmt,
-                                      &sHstmt )
-                      != IDE_SUCCESS );
+            // BUG-43158 Enhance statement list caching in PSM
+            if ( QSX_STMT_LIST_IS_UNUSED( sStmtList->mStmtPoolStatus, sProcSql->sqlIdx)
+                 == ID_TRUE )
+            {
+                // stmt alloc
+                IDE_TEST( qcd::allocStmt( aQcStmt, &sHstmt )
+                          != IDE_SUCCESS );
 
-            sIsNeedFree = ID_TRUE;
+                sIsNeedFree = ID_TRUE;
 
-            sStmtList->mStmtPool[sProcSql->sqlIdx] = sHstmt;
+                sStmtList->mStmtPool[sProcSql->sqlIdx] = sHstmt;
+            }
+            else
+            {
+                sHstmt = (void*)sStmtList->mStmtPool[sProcSql->sqlIdx];
+
+                sIsFirst = ID_FALSE;
+            }
         }
-        else
-        {
-            sHstmt = (void*)sStmtList->mStmtPool[sProcSql->sqlIdx];
 
-            sIsFirst = ID_FALSE;
+        if ( sStmtList2 != NULL )
+        {
+            // BUG-43158 Enhance statement list caching in PSM
+            if ( QSX_STMT_LIST_IS_UNUSED( sStmtList2->mStmtPoolStatus, sProcSql->sqlIdx)
+                 == ID_TRUE )
+            {
+                // stmt alloc
+                IDE_TEST( qcd::allocStmt( aQcStmt, &sHstmt )
+                          != IDE_SUCCESS );
+
+                sIsNeedFree = ID_TRUE;
+                sStmtList2->mStmtPool[sProcSql->sqlIdx] = sHstmt;
+            }
+            else
+            {
+                sHstmt = (void*)sStmtList2->mStmtPool[sProcSql->sqlIdx];
+                sIsFirst = ID_FALSE;
+            }
         }
     }
     else
@@ -2135,10 +2489,10 @@ IDE_RC qsxExecutor::execSelect (
     sStage = 2;
 
     /* PROJ-2197 PSM Renewal
-     * 1. mmStmtÏóêÏÑú qcStmtÎ•º ÏñªÏñ¥ÏôÄÏÑú
-     * 2. callDepthÎ•º ÏÑ§Ï†ïÌïúÎã§.
-     * qcdÎ•º ÌÜµÌï¥ Ïã§ÌñâÌïòÎ©¥ qcStmtÏùò ÏÉÅÏÜçÍ¥ÄÍ≥ÑÍ∞Ä ÏóÜÍ∏∞ ÎïåÎ¨∏Ïóê
-     * stack overflowÎ°ú serverÍ∞Ä ÎπÑÏ†ïÏÉÅ Ï¢ÖÎ£åÌï† Ïàò ÏûàÎã§. */
+     * 1. mmStmtø°º≠ qcStmt∏¶ æÚæÓøÕº≠
+     * 2. callDepth∏¶ º≥¡§«—¥Ÿ.
+     * qcd∏¶ ≈Î«ÿ Ω««‡«œ∏È qcStmt¿« ªÛº”∞¸∞Ë∞° æ¯±‚ ∂ßπÆø°
+     * stack overflow∑Œ server∞° ∫Ò¡§ªÛ ¡æ∑·«“ ºˆ ¿÷¥Ÿ. */
     IDE_TEST( qcd::getQcStmt( sHstmt,
                               &sExecQcStmt )
               != IDE_SUCCESS );
@@ -2146,13 +2500,13 @@ IDE_RC qsxExecutor::execSelect (
     // BUG-36203 PSM Optimize
     if( sIsFirst == ID_TRUE )
     {
-        sExecQcStmt->spxEnv->mCallDepth = aQcStmt->spxEnv->mCallDepth;
-
         // stmt prepare
         IDE_TEST( qcd::prepare( sHstmt,
+                                aQcStmt,
+                                sExecQcStmt,
+                                &sStmtType,
                                 sProcSql->sqlText,
                                 sProcSql->sqlTextLen,
-                                &sStmtType,
                                 ID_FALSE )
                   != IDE_SUCCESS );
 
@@ -2163,11 +2517,20 @@ IDE_RC qsxExecutor::execSelect (
                   != IDE_SUCCESS );
 
         // BUG-43158 Enhance statement list caching in PSM
-        if ( ( sStmtList != NULL ) &&
+        if ( ( ( sStmtList != NULL ) || ( sStmtList2 != NULL ) ) &&
              ( sIsNeedFree == ID_TRUE ) )
         {
+            IDU_FIT_POINT_RAISE( "qsxExecutor::execSelect::set_used", err_sql_index );
+            IDE_TEST_RAISE( sProcSql->sqlIdx >= sPoolCount, err_sql_index );
             sIsNeedFree = ID_FALSE;
-            QSX_STMT_LIST_SET_USED( sStmtList->mStmtPoolStatus, sProcSql->sqlIdx);
+            if ( sStmtList != NULL )
+            {
+                QSX_STMT_LIST_SET_USED( sStmtList->mStmtPoolStatus, sProcSql->sqlIdx);
+            }
+            if ( sStmtList2 != NULL )
+            {
+                QSX_STMT_LIST_SET_USED( sStmtList2->mStmtPoolStatus, sProcSql->sqlIdx);
+            }
         }
         else
         {
@@ -2206,14 +2569,6 @@ IDE_RC qsxExecutor::execSelect (
         // Nothing to do.
     }
 
-    /* PROJ-2197 PSM Renewal
-     * prepare Ïù¥ÌõÑÏóê stmtÎ•º Ï¥àÍ∏∞ÌôîÌïòÎØÄÎ°ú
-     * executeÏ†ÑÏóê call depthÎ•º Îã§Ïãú Î≥ÄÍ≤ΩÌïúÎã§. */
-    sExecQcStmt->spxEnv->mCallDepth = aQcStmt->spxEnv->mCallDepth;
-    // BUG-41279
-    // Prevent parallel execution while executing 'select for update' clause.
-    sExecQcStmt->spxEnv->mFlag      = aQcStmt->spxEnv->mFlag;
-
     IDE_TEST( qcd::execute( sHstmt,
                             aQcStmt,
                             NULL /* out param */,
@@ -2250,6 +2605,11 @@ IDE_RC qsxExecutor::execSelect (
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION(err_sql_index)
+    {
+        IDE_SET(ideSetErrorCode( qpERR_ABORT_QSX_INTERNAL_SERVER_ERROR_ARG,
+                                 "[qsxExecutor::execSelect_sql_index_is_wrong]"));
+    }
     IDE_EXCEPTION_END;
 
     (void)qsxExecutor::adjustErrorMsg( aExecInfo,
@@ -2413,8 +2773,10 @@ IDE_RC qsxExecutor::execNonSelectDML (
     qcStatement      * sExecQcStmt = NULL;
     idBool             sIsFirst    = ID_TRUE;
     idBool             sIsNeedFree = ID_FALSE;
-
-    qsxStmtList      * sStmtList = aQcStmt->spvEnv->mStmtList;
+    UInt               sPoolCount = 0;
+    qsxStmtList      * sStmtList  = aQcStmt->spvEnv->mStmtList;
+    qsxStmtList2     * sStmtList2 = aQcStmt->spvEnv->mStmtList2;
+    qciBindData      * sOutBindParamDataList = NULL;
 
     sProcSql = (qsProcStmtSql*) aProcSql;
 
@@ -2432,26 +2794,50 @@ IDE_RC qsxExecutor::execNonSelectDML (
     qcd::initStmt(&sHstmt);
 
     // BUG-36203 PSM Optimize
-    if ( sStmtList != NULL )
+    if ( ( sStmtList != NULL ) || ( sStmtList2 != NULL ) )
     {
-        // BUG-43158 Enhance statement list caching in PSM
-        if ( QSX_STMT_LIST_IS_UNUSED( sStmtList->mStmtPoolStatus, sProcSql->sqlIdx)
-             == ID_TRUE )
+        IDU_FIT_POINT_RAISE( "qsxExecutor::execNonSelectDML::is_unused", err_sql_index );
+        sPoolCount = aQcStmt->session->mQPSpecific.mStmtListInfo.mStmtPoolCount;
+        IDE_TEST_RAISE( sProcSql->sqlIdx >= sPoolCount, err_sql_index );
+
+        if ( sStmtList != NULL )
         {
-            // stmt alloc
-            IDE_TEST( qcd::allocStmt( aQcStmt,
-                                      &sHstmt )
-                      != IDE_SUCCESS );
+            // BUG-43158 Enhance statement list caching in PSM
+            if ( QSX_STMT_LIST_IS_UNUSED( sStmtList->mStmtPoolStatus, sProcSql->sqlIdx)
+                 == ID_TRUE )
+            {
+                // stmt alloc
+                IDE_TEST( qcd::allocStmt( aQcStmt, &sHstmt )
+                          != IDE_SUCCESS );
 
-            sIsNeedFree = ID_TRUE;
-
-            sStmtList->mStmtPool[sProcSql->sqlIdx] = sHstmt;
+                sIsNeedFree = ID_TRUE;
+                sStmtList->mStmtPool[sProcSql->sqlIdx] = sHstmt;
+            }
+            else
+            {
+                sHstmt = (void*)sStmtList->mStmtPool[sProcSql->sqlIdx];
+                sIsFirst = ID_FALSE;
+            }
         }
-        else
-        {
-            sHstmt = (void*)sStmtList->mStmtPool[sProcSql->sqlIdx];
 
-            sIsFirst = ID_FALSE;
+        if ( sStmtList2 != NULL )
+        {
+            // BUG-43158 Enhance statement list caching in PSM
+            if ( QSX_STMT_LIST_IS_UNUSED( sStmtList2->mStmtPoolStatus, sProcSql->sqlIdx)
+                 == ID_TRUE )
+            {
+                // stmt alloc
+                IDE_TEST( qcd::allocStmt( aQcStmt, &sHstmt )
+                          != IDE_SUCCESS );
+
+                sIsNeedFree = ID_TRUE;
+                sStmtList2->mStmtPool[sProcSql->sqlIdx] = sHstmt;
+            }
+            else
+            {
+                sHstmt = (void*)sStmtList2->mStmtPool[sProcSql->sqlIdx];
+                sIsFirst = ID_FALSE;
+            }
         }
     }
     else
@@ -2467,10 +2853,10 @@ IDE_RC qsxExecutor::execNonSelectDML (
     sStage = 2;
 
     /* PROJ-2197 PSM Renewal
-     * 1. mmStmtÏóêÏÑú qcStmtÎ•º ÏñªÏñ¥ÏôÄÏÑú
-     * 2. callDepthÎ•º ÏÑ§Ï†ïÌïúÎã§.
-     * qcdÎ•º ÌÜµÌï¥ Ïã§ÌñâÌïòÎ©¥ qcStmtÏùò ÏÉÅÏÜçÍ¥ÄÍ≥ÑÍ∞Ä ÏóÜÍ∏∞ ÎïåÎ¨∏Ïóê
-     * stack overflowÎ°ú serverÍ∞Ä ÎπÑÏ†ïÏÉÅ Ï¢ÖÎ£åÌï† Ïàò ÏûàÎã§. */
+     * 1. mmStmtø°º≠ qcStmt∏¶ æÚæÓøÕº≠
+     * 2. callDepth∏¶ º≥¡§«—¥Ÿ.
+     * qcd∏¶ ≈Î«ÿ Ω««‡«œ∏È qcStmt¿« ªÛº”∞¸∞Ë∞° æ¯±‚ ∂ßπÆø°
+     * stack overflow∑Œ server∞° ∫Ò¡§ªÛ ¡æ∑·«“ ºˆ ¿÷¥Ÿ. */
     IDE_TEST( qcd::getQcStmt( sHstmt,
                               &sExecQcStmt )
               != IDE_SUCCESS );
@@ -2478,13 +2864,13 @@ IDE_RC qsxExecutor::execNonSelectDML (
     // BUG-36203 PSM Optimize
     if( sIsFirst == ID_TRUE )
     {
-        sExecQcStmt->spxEnv->mCallDepth = aQcStmt->spxEnv->mCallDepth;
-
         // stmt prepare
         IDE_TEST( qcd::prepare( sHstmt,
+                                aQcStmt,
+                                sExecQcStmt,
+                                &sStmtType,
                                 sProcSql->sqlText,
                                 sProcSql->sqlTextLen,
-                                &sStmtType,
                                 ID_FALSE )
                   != IDE_SUCCESS );
 
@@ -2495,11 +2881,21 @@ IDE_RC qsxExecutor::execNonSelectDML (
                   != IDE_SUCCESS );
 
         // BUG-43158 Enhance statement list caching in PSM
-        if ( ( sStmtList != NULL ) &&
+        if ( ( ( sStmtList != NULL ) || ( sStmtList2 != NULL ) )&&
              ( sIsNeedFree == ID_TRUE ) )
         {
+            IDU_FIT_POINT_RAISE( "qsxExecutor::execNonSelectDML::set_used", err_sql_index );
+            IDE_TEST_RAISE( sProcSql->sqlIdx >= sPoolCount, err_sql_index );
             sIsNeedFree = ID_FALSE;
-            QSX_STMT_LIST_SET_USED( sStmtList->mStmtPoolStatus, sProcSql->sqlIdx);
+
+            if ( sStmtList != NULL )
+            {
+                QSX_STMT_LIST_SET_USED( sStmtList->mStmtPoolStatus, sProcSql->sqlIdx);
+            }
+            if ( sStmtList2 != NULL )
+            {
+                QSX_STMT_LIST_SET_USED( sStmtList2->mStmtPoolStatus, sProcSql->sqlIdx);
+            }
         }
         else
         {
@@ -2514,7 +2910,7 @@ IDE_RC qsxExecutor::execNonSelectDML (
     IDE_TEST( qsxExecutor::bindParam( aQcStmt,
                                       sHstmt,
                                       sProcSql->usingParams,
-                                      NULL,
+                                      &sOutBindParamDataList,
                                       sIsFirst )
               != IDE_SUCCESS );
 
@@ -2540,7 +2936,7 @@ IDE_RC qsxExecutor::execNonSelectDML (
     }
 
     // BUG-37011
-    // associative arrayÎ•º truncate Ìï¥Ïïº ÌïúÎã§.
+    // associative array∏¶ truncate «ÿæﬂ «—¥Ÿ.
     if( sExecQcStmt->parentInfo->parentReturnInto != NULL )
     {
         if( sExecQcStmt->parentInfo->parentReturnInto->bulkCollect == ID_TRUE )
@@ -2552,25 +2948,15 @@ IDE_RC qsxExecutor::execNonSelectDML (
         }
         else
         {
-            // Nothing to do.
+            // bulk collect into∞° æ∆¥œ∏È bind-execute∑Œ µø¿€«—¥Ÿ.
+            sExecQcStmt->parentInfo->parentTmplate = NULL;
+            sExecQcStmt->parentInfo->parentReturnInto = NULL;
         }
     }
-    else
-    {
-        // Nothing to do.
-    }
-
-    /* PROJ-2197 PSM Renewal
-     * prepare Ïù¥ÌõÑÏóê stmtÎ•º Ï¥àÍ∏∞ÌôîÌïòÎØÄÎ°ú
-     * executeÏ†ÑÏóê call depthÎ•º Îã§Ïãú Î≥ÄÍ≤ΩÌïúÎã§. */
-    sExecQcStmt->spxEnv->mCallDepth = aQcStmt->spxEnv->mCallDepth;
-    // BUG-41279
-    // Prevent parallel execution while executing 'select for update' clause.
-    sExecQcStmt->spxEnv->mFlag      = aQcStmt->spxEnv->mFlag;
 
     IDE_TEST( qcd::execute( sHstmt,
                             aQcStmt,
-                            NULL /* out param */,
+                            sOutBindParamDataList /* out param */,
                             &sAffectedRowCount,
                             &sResultSetExist,
                             &sRecordExist,
@@ -2603,6 +2989,11 @@ IDE_RC qsxExecutor::execNonSelectDML (
     IDE_EXCEPTION(ERR_PSM_INSIDE_QUERY)
     {
         IDE_SET(ideSetErrorCode(qpERR_ABORT_QSX_PSM_INSIDE_QUERY));
+    }
+    IDE_EXCEPTION(err_sql_index)
+    {
+        IDE_SET(ideSetErrorCode( qpERR_ABORT_QSX_INTERNAL_SERVER_ERROR_ARG,
+                                 "[qsxExecutor::execNonSelectDML_sql_index_is_wrong]"));
     }
     IDE_EXCEPTION_END;
 
@@ -2664,6 +3055,12 @@ IDE_RC qsxExecutor::execSavepoint (
 
     QC_STR_COPY( sSavepointName, sTransParse->savepointName );
 
+    // TASK-7244 Check restrictions for Sharding
+    if ( SDU_SHARD_ENABLE == 1 )
+    {
+        IDE_TEST( checkRestrictionsForShard( aQcStmt ) != IDE_SUCCESS );
+    }
+
     IDE_TEST( qsxEnv::savepoint( QC_QSX_ENV( aQcStmt ) ,
                                  sSavepointName )
               != IDE_SUCCESS );
@@ -2686,6 +3083,12 @@ IDE_RC qsxExecutor::execCommit (
     IDE_TEST_RAISE( ((aQcStmt->spxEnv->mFlag & QSX_ENV_DURING_SELECT) ==
                      QSX_ENV_DURING_SELECT),
                     ERR_PSM_INSIDE_QUERY );
+
+    // TASK-7244 Check restrictions for Sharding
+    if ( SDU_SHARD_ENABLE == 1 )
+    {
+        IDE_TEST( checkRestrictionsForShard( aQcStmt ) != IDE_SUCCESS );
+    }
 
     IDE_TEST( qsxEnv::commit( QC_QSX_ENV( aQcStmt ) )
               != IDE_SUCCESS );
@@ -2713,6 +3116,12 @@ IDE_RC qsxExecutor::execRollback (
     IDE_TEST_RAISE( ((aQcStmt->spxEnv->mFlag & QSX_ENV_DURING_SELECT) ==
                      QSX_ENV_DURING_SELECT),
                     ERR_PSM_INSIDE_QUERY );
+
+    // TASK-7244 Check restrictions for Sharding
+    if ( SDU_SHARD_ENABLE == 1 )
+    {
+        IDE_TEST( checkRestrictionsForShard( aQcStmt ) != IDE_SUCCESS );
+    }
 
     sProcSql    = (qsProcStmtSql *)aProcSql;
     sTransParse = (qdTransParseTree *)sProcSql->parseTree;
@@ -2762,8 +3171,9 @@ IDE_RC qsxExecutor::execIf (
     idBool             sIsFirst    = ID_TRUE;
     idBool             sIsNeedFree = ID_FALSE;
     qcStatement      * sExecQcStmt = NULL;
-
-    qsxStmtList      * sStmtList = aQcStmt->spvEnv->mStmtList;
+    UInt               sPoolCount  = 0;
+    qsxStmtList      * sStmtList  = aQcStmt->spvEnv->mStmtList;
+    qsxStmtList2     * sStmtList2 = aQcStmt->spvEnv->mStmtList2;
 
     IDE_TEST( QC_QMX_MEM(aQcStmt)->getStatus( &sQmxMemStatus )
               != IDE_SUCCESS );
@@ -2790,26 +3200,50 @@ IDE_RC qsxExecutor::execIf (
         qcd::initStmt(&sHstmt);
 
         // BUG-36203 PSM Optimize
-        if ( sStmtList != NULL )
+        if ( ( sStmtList != NULL ) || ( sStmtList2 != NULL ) )
         {
-            // BUG-43158 Enhance statement list caching in PSM
-            if ( QSX_STMT_LIST_IS_UNUSED( sStmtList->mStmtPoolStatus, sProcSql->sqlIdx)
-                 == ID_TRUE )
+            IDU_FIT_POINT_RAISE( "qsxExecutor::execIf::is_unused", err_sql_index );
+            sPoolCount = aQcStmt->session->mQPSpecific.mStmtListInfo.mStmtPoolCount;
+            IDE_TEST_RAISE( sProcSql->sqlIdx >= sPoolCount, err_sql_index );
+
+            if ( sStmtList != NULL )
             {
-                // stmt alloc
-                IDE_TEST( qcd::allocStmt( aQcStmt,
-                                          &sHstmt )
-                          != IDE_SUCCESS );
+                // BUG-43158 Enhance statement list caching in PSM
+                if ( QSX_STMT_LIST_IS_UNUSED( sStmtList->mStmtPoolStatus, sProcSql->sqlIdx)
+                     == ID_TRUE )
+                {
+                    // stmt alloc
+                    IDE_TEST( qcd::allocStmt( aQcStmt, &sHstmt )
+                              != IDE_SUCCESS );
 
-                sIsNeedFree = ID_TRUE;
-
-                sStmtList->mStmtPool[sProcSql->sqlIdx]= sHstmt;
+                    sIsNeedFree = ID_TRUE;
+                    sStmtList->mStmtPool[sProcSql->sqlIdx]= sHstmt;
+                }
+                else
+                {
+                    sHstmt = (void*)sStmtList->mStmtPool[sProcSql->sqlIdx];
+                    sIsFirst = ID_FALSE;
+                }
             }
-            else
-            {
-                sHstmt = (void*)sStmtList->mStmtPool[sProcSql->sqlIdx];
 
-                sIsFirst = ID_FALSE;
+            if ( sStmtList2 != NULL )
+            {
+                // BUG-43158 Enhance statement list caching in PSM
+                if ( QSX_STMT_LIST_IS_UNUSED( sStmtList2->mStmtPoolStatus, sProcSql->sqlIdx)
+                     == ID_TRUE )
+                {
+                    // stmt alloc
+                    IDE_TEST( qcd::allocStmt( aQcStmt, &sHstmt )
+                              != IDE_SUCCESS );
+
+                    sIsNeedFree = ID_TRUE;
+                    sStmtList2->mStmtPool[sProcSql->sqlIdx]= sHstmt;
+                }
+                else
+                {
+                    sHstmt = (void*)sStmtList2->mStmtPool[sProcSql->sqlIdx];
+                    sIsFirst = ID_FALSE;
+                }
             }
         }
         else
@@ -2824,10 +3258,10 @@ IDE_RC qsxExecutor::execIf (
         sStage = 2;
 
         /* PROJ-2197 PSM Renewal
-         * 1. mmStmtÏóêÏÑú qcStmtÎ•º ÏñªÏñ¥ÏôÄÏÑú
-         * 2. callDepthÎ•º ÏÑ§Ï†ïÌïúÎã§.
-         * qcdÎ•º ÌÜµÌï¥ Ïã§ÌñâÌïòÎ©¥ qcStmtÏùò ÏÉÅÏÜçÍ¥ÄÍ≥ÑÍ∞Ä ÏóÜÍ∏∞ ÎïåÎ¨∏Ïóê
-         * stack overflowÎ°ú serverÍ∞Ä ÎπÑÏ†ïÏÉÅ Ï¢ÖÎ£åÌï† Ïàò ÏûàÎã§. */
+         * 1. mmStmtø°º≠ qcStmt∏¶ æÚæÓøÕº≠
+         * 2. callDepth∏¶ º≥¡§«—¥Ÿ.
+         * qcd∏¶ ≈Î«ÿ Ω««‡«œ∏È qcStmt¿« ªÛº”∞¸∞Ë∞° æ¯±‚ ∂ßπÆø°
+         * stack overflow∑Œ server∞° ∫Ò¡§ªÛ ¡æ∑·«“ ºˆ ¿÷¥Ÿ. */
         IDE_TEST( qcd::getQcStmt( sHstmt,
                                   &sExecQcStmt )
                   != IDE_SUCCESS );
@@ -2835,13 +3269,13 @@ IDE_RC qsxExecutor::execIf (
         // BUG-36203 PSM Optimize
         if( sIsFirst == ID_TRUE )
         {
-            sExecQcStmt->spxEnv->mCallDepth = aQcStmt->spxEnv->mCallDepth;
-
             // stmt prepare
             IDE_TEST( qcd::prepare( sHstmt,
+                                    aQcStmt,
+                                    sExecQcStmt,
+                                    &sStmtType,
                                     sProcSql->sqlText,
                                     sProcSql->sqlTextLen,
-                                    &sStmtType,
                                     ID_FALSE )
                       != IDE_SUCCESS );
 
@@ -2850,11 +3284,20 @@ IDE_RC qsxExecutor::execIf (
                       != IDE_SUCCESS );
 
             // BUG-43158 Enhance statement list caching in PSM
-            if ( ( sStmtList != NULL ) &&
+            if ( ( ( sStmtList != NULL ) || ( sStmtList2 != NULL ) )&&
                  ( sIsNeedFree == ID_TRUE ) )
             {
+                IDU_FIT_POINT_RAISE( "qsxExecutor::execIf::set_used", err_sql_index );
+                IDE_TEST_RAISE( sProcSql->sqlIdx >= sPoolCount, err_sql_index );
                 sIsNeedFree = ID_FALSE;
-                QSX_STMT_LIST_SET_USED( sStmtList->mStmtPoolStatus, sProcSql->sqlIdx);
+                if ( sStmtList != NULL )
+                {
+                    QSX_STMT_LIST_SET_USED( sStmtList->mStmtPoolStatus, sProcSql->sqlIdx);
+                }
+                if ( sStmtList2 != NULL )
+                {
+                    QSX_STMT_LIST_SET_USED( sStmtList2->mStmtPoolStatus, sProcSql->sqlIdx);
+                }
             }
             else
             {
@@ -2872,14 +3315,6 @@ IDE_RC qsxExecutor::execIf (
                                           NULL,
                                           sIsFirst )
                   != IDE_SUCCESS );
-
-        /* PROJ-2197 PSM Renewal
-         * prepare Ïù¥ÌõÑÏóê stmtÎ•º Ï¥àÍ∏∞ÌôîÌïòÎØÄÎ°ú
-         * executeÏ†ÑÏóê call depthÎ•º Îã§Ïãú Î≥ÄÍ≤ΩÌïúÎã§. */
-        sExecQcStmt->spxEnv->mCallDepth = aQcStmt->spxEnv->mCallDepth;
-        // BUG-41279
-        // Prevent parallel execution while executing 'select for update' clause.
-        sExecQcStmt->spxEnv->mFlag      = aQcStmt->spxEnv->mFlag;
 
         IDE_TEST( qcd::execute( sHstmt,
                                 aQcStmt,
@@ -2944,7 +3379,7 @@ IDE_RC qsxExecutor::execIf (
         }
         else
         {
-            // else Íµ¨Î¨∏ÏùÄ ÏóÜÏùÑ ÏàòÎèÑ ÏûàÎã§.
+            // else ±∏πÆ¿∫ æ¯¿ª ºˆµµ ¿÷¥Ÿ.
         }
     }
 
@@ -2961,6 +3396,11 @@ IDE_RC qsxExecutor::execIf (
                                            aProcIf,
                                            &sSqlInfo,
                                            ID_FALSE );
+    }
+    IDE_EXCEPTION(err_sql_index)
+    {
+        IDE_SET(ideSetErrorCode( qpERR_ABORT_QSX_INTERNAL_SERVER_ERROR_ARG,
+                                 "[qsxExecutor::execIf_sql_index_is_wrong]"));
     }
     IDE_EXCEPTION_END;
 
@@ -3169,20 +3609,20 @@ IDE_RC qsxExecutor::execFor (
 {
 /***********************************************************************
  *
- * Description : For loopÏùò execution ( fix BUG-11391 )
+ * Description : For loop¿« execution ( fix BUG-11391 )
  *
  * Implementation :
  *    (1) lowerVar := lowerNode
  *    (2) upperVar := upperNode
  *    (3) stepVar := stepNode
- *    (4) counterVar := lowerVar( or upperVar reverseÏùºÎïå)
- *    (5) stepVarÍ∞Ä 0Î≥¥Îã§ ÌÅ∞ÏßÄ Ï≤¥ÌÅ¨(isStepOkNode)
- *    (6) lowerVar <= upperVarÏù∏ÏßÄ Ï≤¥ÌÅ¨(isIntervalOkNode)
+ *    (4) counterVar := lowerVar( or upperVar reverse¿œ∂ß)
+ *    (5) stepVar∞° 0∫∏¥Ÿ ≈´¡ˆ √º≈©(isStepOkNode)
+ *    (6) lowerVar <= upperVar¿Œ¡ˆ √º≈©(isIntervalOkNode)
  *    (7) loop
- *    (7.1) lower <= counterVar <= upperVarÏù∏ÏßÄ Ï≤¥ÌÅ¨(conditionNode)
+ *    (7.1) lower <= counterVar <= upperVar¿Œ¡ˆ √º≈©(conditionNode)
  *    (7.2) execStmtList
  *    (7.3) counterVar := counterVar + stepVar (newCounterNode)
- *    (7.3) flow Ï≤¥ÌÅ¨
+ *    (7.3) flow √º≈©
  *    (8) end loop
  *
  ***********************************************************************/
@@ -3419,12 +3859,12 @@ IDE_RC qsxExecutor::execCursorFor (
 
     if( sProcCursorFor->openCursorSpecNode->node.objectID != QS_EMPTY_OID )
     {
-        // objectIDÏùò pkgInfoÎ•º Í∞ÄÏ†∏Ïò®Îã§.
+        // objectID¿« pkgInfo∏¶ ∞°¡Æø¬¥Ÿ.
         IDE_TEST( qsxPkg::getPkgInfo( sProcCursorFor->openCursorSpecNode->node.objectID,
                                       &sPkgInfo )
                   != IDE_SUCCESS );
 
-        // objectIDÏùò templateÏùÑ Í∞ÄÏ†∏Ïò®Îã§.
+        // objectID¿« template¿ª ∞°¡Æø¬¥Ÿ.
         IDE_TEST( qcuSessionPkg::searchPkgInfoFromSession( 
                      aQcStmt,
                      sPkgInfo,
@@ -3654,11 +4094,11 @@ IDE_RC qsxExecutor::execOpen (
 
     if( sProcOpen->openCursorSpecNode->node.objectID != QS_EMPTY_OID )
     {
-        // objectIDÏùò pkgInfoÎ•º Í∞ÄÏ†∏Ïò®Îã§.
+        // objectID¿« pkgInfo∏¶ ∞°¡Æø¬¥Ÿ.
         IDE_TEST( qsxPkg::getPkgInfo( sProcOpen->openCursorSpecNode->node.objectID,
                                       &sPkgInfo )
                   != IDE_SUCCESS );
-        // objectIDÏùò templateÏùÑ Í∞ÄÏ†∏Ïò®Îã§.
+        // objectID¿« template¿ª ∞°¡Æø¬¥Ÿ.
         IDE_TEST( qcuSessionPkg::searchPkgInfoFromSession( aQcStmt,
                                                            sPkgInfo,
                                                            QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.stack,
@@ -3708,11 +4148,11 @@ IDE_RC qsxExecutor::execFetch (
 
     if ( sProcStmtFetch->cursorNode->node.objectID != QS_EMPTY_OID )
     {
-        // objectIDÏùò pkgInfoÎ•º Í∞ÄÏ†∏Ïò®Îã§.
+        // objectID¿« pkgInfo∏¶ ∞°¡Æø¬¥Ÿ.
         IDE_TEST( qsxPkg::getPkgInfo( sProcStmtFetch->cursorNode->node.objectID,
                                       &sPkgInfo )
                   != IDE_SUCCESS );
-        // objectIDÏùò templateÏùÑ Í∞ÄÏ†∏Ïò®Îã§.
+        // objectID¿« template¿ª ∞°¡Æø¬¥Ÿ.
         IDE_TEST( qcuSessionPkg::searchPkgInfoFromSession( aQcStmt,
                                                            sPkgInfo,
                                                            QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.stack,
@@ -3785,11 +4225,11 @@ IDE_RC qsxExecutor::execClose (
 
     if( sProcStmtClose->cursorNode->node.objectID != QS_EMPTY_OID )
     {
-        // objectIDÏùò pkgInfoÎ•º Í∞ÄÏ†∏Ïò®Îã§.
+        // objectID¿« pkgInfo∏¶ ∞°¡Æø¬¥Ÿ.
         IDE_TEST( qsxPkg::getPkgInfo( sProcStmtClose->cursorNode->node.objectID,
                                       &sPkgInfo )
                   != IDE_SUCCESS );
-        // objectIDÏùò templateÏùÑ Í∞ÄÏ†∏Ïò®Îã§.
+        // objectID¿« template¿ª ∞°¡Æø¬¥Ÿ.
         IDE_TEST( qcuSessionPkg::searchPkgInfoFromSession( aQcStmt,
                                                            sPkgInfo,
                                                            QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.stack,
@@ -3856,13 +4296,13 @@ IDE_RC qsxExecutor::execAssign (
     }
     else
     {
-        // stackÏùò ÎëêÎ≤àÏß∏ Î∂ÄÎ∂ÑÏóê rightNodeÏùò Í≤∞Í≥ºÍ∞í ÏÑ∏ÌåÖ
+        // stack¿« µŒπ¯¬∞ ∫Œ∫–ø° rightNode¿« ∞·∞˙∞™ ºº∆√
         sAssignStack[1].column = QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.stack[0].column;
         sAssignStack[1].value = QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.stack[0].value;
     }
 
     // PROJ-1075
-    // array typeÏùò indexÏ∞∏Ï°∞Î•º ÏúÑÌï¥ left nodeÎèÑ calculateÌï¥Ïïº Ìï®.
+    // array type¿« index¬¸¡∂∏¶ ¿ß«ÿ left nodeµµ calculate«ÿæﬂ «‘.
     if( qtc::calculate( sProcAssign->leftNode,
                         QC_PRIVATE_TMPLATE(aQcStmt) )
         != IDE_SUCCESS )
@@ -3871,7 +4311,7 @@ IDE_RC qsxExecutor::execAssign (
     }
     else
     {
-        // stackÏùò Ï≤´Î≤àÏß∏ Î∂ÄÎ∂ÑÏóê leftNodeÏùò Í≤∞Í≥ºÍ∞í ÏÑ∏ÌåÖ
+        // stack¿« √ππ¯¬∞ ∫Œ∫–ø° leftNode¿« ∞·∞˙∞™ ºº∆√
         sAssignStack[0].column = QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.stack[0].column;
         sAssignStack[0].value = QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.stack[0].value;
     }
@@ -3929,19 +4369,20 @@ IDE_RC qsxExecutor::execRaise (
 {
 /***********************************************************************
  *
- * Description : RAISE exception_name; Î∞è RAISE; Ïùò executeÌï®Ïàò
+ * Description : RAISE exception_name; π◊ RAISE; ¿« execute«‘ºˆ
  *
  * Implementation :
- *    (1) RAISE exception_name;ÏùÄ Îã§Ïùå ÎëêÍ∞ÄÏßÄ Í≤ΩÏö∞Î°ú ÎÇòÎàî
+ *    (1) RAISE exception_name;¿∫ ¥Ÿ¿Ω µŒ∞°¡ˆ ∞ÊøÏ∑Œ ≥™¥Æ
  *    (1.1) RAISE use-defined-exception_name;
  *    (1.2) RAISE system-defined-exception_name;
- *    (2) RAISE;ÏùÄ Îã§Ïùå ÎëêÍ∞ÄÏßÄ Í≤ΩÏö∞Î°ú ÎÇòÎàî
- *    (2.1) user-defined-exceptionÏùÑ re-raiseÌïòÎäî Í≤ΩÏö∞
- *    (2.2) system-defined-exceptionÏùÑ re-raiseÌïòÎäî Í≤ΩÏö∞
+ *    (2) RAISE;¿∫ ¥Ÿ¿Ω µŒ∞°¡ˆ ∞ÊøÏ∑Œ ≥™¥Æ
+ *    (2.1) user-defined-exception¿ª re-raise«œ¥¬ ∞ÊøÏ
+ *    (2.2) system-defined-exception¿ª re-raise«œ¥¬ ∞ÊøÏ
  *
  ***********************************************************************/
 
 #define QSX_RAISE ( ( qsProcStmtRaise * ) aProcRaise )
+    ideErrorCollection   * sErrors;
 
     if( QSX_RAISE->exception != NULL )
     {
@@ -3961,9 +4402,9 @@ IDE_RC qsxExecutor::execRaise (
 
             if ( QSX_RAISE->exception->errorCode == 0 )
             {
-                // user-defined exceptionÏù∏ Í≤ΩÏö∞
-                // Ïã§Ï†ú ÏóêÎü¨Í∞Ä Î∞úÏÉùÌïòÏßÑ ÏïäÍ≥† sqlcode, sqlerrmÏóêÎßå
-                // user-defined exceptionÏù¥ÎùºÍ≥† ÏóêÎü¨ ÏÑ∏ÌåÖ
+                // user-defined exception¿Œ ∞ÊøÏ
+                // Ω«¡¶ ø°∑Ø∞° πﬂª˝«œ¡¯ æ ∞Ì sqlcode, sqlerrmø°∏∏
+                // user-defined exception¿Ã∂Û∞Ì ø°∑Ø ºº∆√
                 IDE_SET( ideSetErrorCode(qpERR_ABORT_QSX_USER_DEFINED_EXCEPTION) );
             }
             else
@@ -3979,18 +4420,18 @@ IDE_RC qsxExecutor::execRaise (
     }
     else
     {
-        // re-raiseÌïòÎäî Í≤ΩÏö∞.
+        // re-raise«œ¥¬ ∞ÊøÏ.
         if( QSX_ENV_ERROR_CODE(aQcStmt->spxEnv) ==
             qpERR_ABORT_QSX_USER_DEFINED_EXCEPTION )
         {
-            // User-defined ExceptionÏù∏ Í≤ΩÏö∞ flowÏôÄ flowIdÎßå Î∞îÍøà.
+            // User-defined Exception¿Œ ∞ÊøÏ flowøÕ flowId∏∏ πŸ≤ﬁ.
             aExecInfo->mFlow = QSX_FLOW_RAISE;
             aExecInfo->mFlowId = QSX_USER_DEFINED_EXCEPTION_NO;
         }
         else
         {
-            // qcStatementÏùò qsxEnvÏóêÏÑú errorCode, errorMsgÎ•º Í∞ÄÏ†∏ÏôÄÏÑú
-            // raiseÎ•º Ìï¥Ïïº Ìï®
+            // qcStatement¿« qsxEnvø°º≠ errorCode, errorMsg∏¶ ∞°¡ÆøÕº≠
+            // raise∏¶ «ÿæﬂ «‘
             IDE_RAISE(RAISE_CURRENT_ERROR);
         }
     }
@@ -4006,6 +4447,20 @@ IDE_RC qsxExecutor::execRaise (
         IDE_SET(ideSetErrorCodeAndMsg(
                 QSX_ENV_ERROR_CODE(aQcStmt->spxEnv),
                 QSX_ENV_ERROR_MESSAGE(aQcStmt->spxEnv) ) );
+
+        if ( SDU_SHARD_ENABLE == 1 )
+        {
+            sErrors = &(ideGetErrorMgr()->mErrors);
+
+            if ( sErrors->mErrorListCnt == 0 )
+            {
+                sErrors->mErrorListCnt = aQcStmt->spxEnv->mErrorListCount;
+                IDU_LIST_JOIN_LIST( &(sErrors->mErrorList), &(aQcStmt->spxEnv->mErrorList) );
+
+                aQcStmt->spxEnv->mErrorListCount = 0;
+                IDU_LIST_INIT( &(aQcStmt->spxEnv->mErrorList) );
+            }
+        }
     }
     IDE_EXCEPTION_END;
 
@@ -4172,9 +4627,9 @@ IDE_RC qsxExecutor::execGoto (
 #define QSX_GOTO ( ( qsProcStmtGoto * ) aProcGoto )
 
     // PROJ-1335, To fix BUG-12475
-    // GOTOÎäî QSX_FLOW_GOTOÎ•º Î∞úÏÉù.
-    // aExecInfo->mFlowIdÎäî labelID
-    // parent statementÏùò labelÍ≥º Í∞ôÏùÄÏßÄ Í≤ÄÏÇ¨ÌïòÍ∏∞ ÏúÑÌï®
+    // GOTO¥¬ QSX_FLOW_GOTO∏¶ πﬂª˝.
+    // aExecInfo->mFlowId¥¬ labelID
+    // parent statement¿« label∞˙ ∞∞¿∫¡ˆ ∞ÀªÁ«œ±‚ ¿ß«‘
 
     aExecInfo->mFlow = QSX_FLOW_GOTO;
     aExecInfo->mFlowId = QSX_GOTO->labelID;
@@ -4196,19 +4651,21 @@ IDE_RC qsxExecutor::execExecImm (
     qcuSqlSourceInfo    sSqlInfo;
     QCD_HSTMT           sHstmt;
     qsProcStmtExecImm * sExecImm;
-    qciStmtType         sStmtType;
     qciBindData       * sOutBindParamDataList = NULL;
+    qciStmtType         sStmtType;
 
-    vSLong              sAffectedRowCount;
     idBool              sResultSetExist;
     idBool              sRecordExist;
     SInt                sStage = 0;
+    vSLong              sAffectedRowCount;
+
+    qcStatement       * sExecQcStmt = NULL;
 
     sExecImm = (qsProcStmtExecImm*)aProcExecImm;
 
     QSX_CURSOR_SET_ROWCOUNT_NULL( aExecInfo->mSqlCursorInfo );
 
-    // stmtÏ¥àÍ∏∞Ìôî
+    // stmt√ ±‚»≠
     qcd::initStmt(&sHstmt);
 
     IDE_TEST( QC_QMX_MEM(aQcStmt)->getStatus( &sQmxMemStatus )
@@ -4228,19 +4685,35 @@ IDE_RC qsxExecutor::execExecImm (
 
     sStage = 2;
 
+    IDE_TEST( qcd::getQcStmt( sHstmt,
+                              &sExecQcStmt )
+              != IDE_SUCCESS );
+
     // stmt prepare
     IDE_TEST( qcd::prepare( sHstmt,
+                            aQcStmt,
+                            sExecQcStmt,
+                            &sStmtType,
                             (SChar*)sCharData->value,
                             sCharData->length,
-                            &sStmtType,
                             ID_TRUE )
               != IDE_SUCCESS );
 
     /* BUG-45678
-     * Select Ï§ëÏóê non select dmlÏùÑ ÏàòÌñâÌï† Ïàò ÏóÜÎã§. */
+     * Select ¡ﬂø° non select dml¿ª ºˆ«‡«“ ºˆ æ¯¥Ÿ. */
     IDE_TEST_RAISE( ((aQcStmt->spxEnv->mFlag & QSX_ENV_DURING_SELECT) == QSX_ENV_DURING_SELECT) &&
-                    ((sStmtType & QCI_STMT_MASK_DCL) == QCI_STMT_MASK_DCL) ,
+                    ((sStmtType & QCI_STMT_MASK_MASK) == QCI_STMT_MASK_DCL) ,
                     ERR_PSM_INSIDE_QUERY );
+
+    // TASK-7244 Check restrictions for Sharding
+    if ( SDU_SHARD_ENABLE == 1 )
+    {
+        if ( ((sStmtType & QCI_STMT_MASK_MASK) == QCI_STMT_MASK_DCL) ||
+             ((sStmtType & QCI_STMT_MASK_MASK) == QCI_STMT_MASK_DDL) )
+        {
+            IDE_TEST( checkRestrictionsForShard( aQcStmt ) != IDE_SUCCESS );
+        }
+    }
 
     aExecInfo->mSqlCursorInfo->mStmtType = sStmtType;
 
@@ -4265,8 +4738,8 @@ IDE_RC qsxExecutor::execExecImm (
         }
 
         /* BUG-43415
-           execute immediateÏóêÏÑú Ïã§ÌñâÌïòÍ≥†Ïûê ÌïòÎäî queryÍ∞Ä fetch typeÏù¥ ÏïÑÎãå Í≤ΩÏö∞ÏóêÎäî
-           intoÏ†à ÎòêÎäî bulk collect intoÏ†àÏù¥ ÏûàÏúºÎ©¥ ÏóêÎü¨Î•º Î∞úÏÉù Ìï¥ Ï§ÄÎã§. */
+           execute immediateø°º≠ Ω««‡«œ∞Ì¿⁄ «œ¥¬ query∞° fetch type¿Ã æ∆¥— ∞ÊøÏø°¥¬
+           into¿˝ ∂«¥¬ bulk collect into¿˝¿Ã ¿÷¿∏∏È ø°∑Ø∏¶ πﬂª˝ «ÿ ¡ÿ¥Ÿ. */
         if ( (sStmtType == QCI_STMT_SELECT) || 
              (sStmtType == QCI_STMT_SELECT_FOR_UPDATE) ||
              (sStmtType == QCI_STMT_DEQUEUE) ||
@@ -4385,7 +4858,7 @@ IDE_RC qsxExecutor::execOpenFor (
 /***********************************************************************
  *
  *  Description : PROJ-1386 Dynamic-SQL
- *                ref cursor variableÏóê ÎåÄÌï¥ open
+ *                ref cursor variableø° ¥Î«ÿ open
  *
  *  Implementation :
  *
@@ -4407,11 +4880,11 @@ IDE_RC qsxExecutor::execOpenFor (
 
     if( sOpenFor->refCursorVarNode->node.objectID != QS_EMPTY_OID )
     {
-        // objectIDÏùò pkgInfoÎ•º Í∞ÄÏ†∏Ïò®Îã§.
+        // objectID¿« pkgInfo∏¶ ∞°¡Æø¬¥Ÿ.
         IDE_TEST( qsxPkg::getPkgInfo( sOpenFor->refCursorVarNode->node.objectID,
                                       &sPkgInfo )
                   != IDE_SUCCESS );
-        // objectIDÏùò templateÏùÑ Í∞ÄÏ†∏Ïò®Îã§.
+        // objectID¿« template¿ª ∞°¡Æø¬¥Ÿ.
         IDE_TEST( qcuSessionPkg::searchPkgInfoFromSession( aQcStmt,
                                                            sPkgInfo,
                                                            QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.stack,
@@ -4476,7 +4949,7 @@ IDE_RC qsxExecutor::execOpenFor (
                   != IDE_SUCCESS );
     }
 
-    // package subprogramÏùº ÎïåÎßå ÏõêÎ≥µÌïúÎã§.
+    // package subprogram¿œ ∂ß∏∏ ø¯∫π«—¥Ÿ.
     if( sOpenFor->refCursorVarNode->node.objectID != QS_EMPTY_OID ) 
     {
         sStage = 0;
@@ -4484,7 +4957,7 @@ IDE_RC qsxExecutor::execOpenFor (
         sTemplate->stmt = NULL;
 
         /* QC_PRIVATE_TMPLATE(aQcStmt)->
-                 template.stackBuffer/stack/stackCount/stackRemain ÏõêÎ≥µ */
+                 template.stackBuffer/stack/stackCount/stackRemain ø¯∫π */
         QC_CONNECT_TEMPLATE_STACK(
             QC_PRIVATE_TMPLATE(aQcStmt),
             sOriStackBuffer,
@@ -4503,7 +4976,7 @@ IDE_RC qsxExecutor::execOpenFor (
         sTemplate->stmt = NULL;
 
         /* QC_PRIVATE_TMPLATE(aQcStmt)->
-           template.stackBuffer/stack/stackCount/stackRemain ÏõêÎ≥µ */
+           template.stackBuffer/stack/stackCount/stackRemain ø¯∫π */
         QC_CONNECT_TEMPLATE_STACK(
             QC_PRIVATE_TMPLATE(aQcStmt),
             sOriStackBuffer,
@@ -4573,7 +5046,7 @@ idBool qsxExecutor::findLabel( qsProcStmts *  aProcStmt,
 /***********************************************************************
  *
  * Description : PROJ-1335, To fix BUG-12475
- *               statementÏóê aLabelIDÏôÄ ÎèôÏùºÌïú labelÏù¥ Ï°¥Ïû¨ÌïòÎäîÏßÄ Í≤ÄÏÇ¨
+ *               statementø° aLabelIDøÕ µø¿œ«— label¿Ã ¡∏¿Á«œ¥¬¡ˆ ∞ÀªÁ
  * Implementation :
  *
  ***********************************************************************/
@@ -4621,13 +5094,13 @@ qsxExecutor::execExtproc( qsxExecutorInfo * aExecInfo,
               != IDE_SUCCESS );
 
     // Message initialization
-    qsxExtProc::initializeMsg( sMsg );
+    QSX_EXTPROC_INIT_MSG( sMsg );
 
     // LibName, FuncName
     idlOS::strcpy( sMsg->mLibName,
                    sParseTree->expCallSpec->fileSpec );
 
-    QC_STR_COPY( sMsg->mFuncName, sParseTree->expCallSpec->procNamePos );
+    idlOS::strcpy( sMsg->mFuncName, sParseTree->expCallSpec->functionName );
 
     // paramCount
     sMsg->mParamCount = sParseTree->expCallSpec->paramCount;
@@ -4647,7 +5120,8 @@ qsxExecutor::execExtproc( qsxExecutorInfo * aExecInfo,
                                                  sParam,
                                                  sTmplate,
                                                  &sMsg->mParamInfos[sIndex],
-                                                 sIndex )
+                                                 sIndex,
+                                                 sParseTree->expCallSpec->procType )
                       != IDE_SUCCESS );
 
             sParam = sParam->next;
@@ -4658,17 +5132,18 @@ qsxExecutor::execExtproc( qsxExecutorInfo * aExecInfo,
     // returnInfo
     if( sParseTree->returnTypeVar != NULL )
     {
-        // sParseTree->returnTypeVar->common Ïóê table/column
+        // sParseTree->returnTypeVar->common ø° table/column
         IDE_TEST( qsxExtProc::fillReturnInfo( aQcStmt->qmxMem,
                                               sParseTree->returnTypeVar->common,
                                               sTmplate,
-                                              &sMsg->mReturnInfo )
+                                              &sMsg->mReturnInfo,
+                                              sParseTree->expCallSpec->procType )
                   != IDE_SUCCESS );
     }
     else
     {
         /* intialize return info */
-        qsxExtProc::initializeParamInfo( &sMsg->mReturnInfo );
+        QSX_EXTPROC_INIT_PARAM_INFO( &sMsg->mReturnInfo );
 
         /* set data area to zero */
         idlOS::memset( &sMsg->mReturnInfo.mD, 0, ID_SIZEOF(sMsg->mReturnInfo.mD) );
@@ -4691,6 +5166,165 @@ qsxExecutor::execExtproc( qsxExecutorInfo * aExecInfo,
     return IDE_FAILURE;
 }
 
+IDE_RC qsxExecutor::execIntproc( qsxExecutorInfo * aExecInfo,
+                                 qcStatement     * aQcStmt )
+{
+    qsCallSpecParam   * sParam      = NULL;
+    idxIntProcMsg       sMsg;
+
+    qsProcParseTree   * sParseTree;
+    qcTemplate        * sTmplate;
+
+    UInt                sIndex = 0;
+
+    intProcUtilFuncArg sArg;
+
+    // Preparation
+    sParseTree = aExecInfo->mProcPlanTree;
+    sTmplate   = QC_PRIVATE_TMPLATE(aQcStmt);
+
+    // Message initialization
+    sMsg.mParamCount = 0;
+
+    // LibName, FuncName
+    sMsg.mLibName = sParseTree->expCallSpec->fileSpec;
+
+    IDE_TEST_RAISE( sParseTree->expCallSpec->libraryNode == NULL,
+                    ERR_LIB_NOT_FOUND );
+
+    sMsg.mFuncName = sParseTree->expCallSpec->functionName;
+    sMsg.mHandle = sParseTree->expCallSpec->libraryNode->mHandle;
+    sMsg.mFuncPtr = sParseTree->expCallSpec->libraryNode->mFunctionPtr;
+
+    // paramCount
+    sMsg.mParamCount = sParseTree->expCallSpec->paramCount;
+
+    IDE_TEST_RAISE( sMsg.mHandle == PDL_SHLIB_INVALID_HANDLE,
+                    ERR_LIB_NOT_FOUND );
+
+    IDE_TEST_RAISE( sParseTree->expCallSpec->functionPtr == NULL,
+                    ERR_ENTRY_FUNCTION_NOT_FOUND );
+
+    IDE_TEST_RAISE( sMsg.mFuncPtr == NULL,
+                    ERR_FUNCTION_NOT_FOUND );
+
+    // paramInfo
+    if( sMsg.mParamCount > 0 )
+    {
+        IDE_TEST( aQcStmt->qmxMem->alloc( ( ID_SIZEOF(idxParamInfo) * sMsg.mParamCount ),
+                                          (void **)&sMsg.mParamInfos )
+                  != IDE_SUCCESS );
+
+        sParam = sParseTree->expCallSpec->param;
+
+        while( sParam != NULL )
+        {
+            IDE_TEST( qsxExtProc::fillParamInfo( aQcStmt->qmxMem,
+                                                 sParam,
+                                                 sTmplate,
+                                                 &sMsg.mParamInfos[sIndex],
+                                                 sIndex,
+                                                 sParseTree->expCallSpec->procType )
+                      != IDE_SUCCESS );
+
+            sParam = sParam->next;
+            sIndex++;
+        }
+    }
+
+    // returnInfo
+    if( sParseTree->returnTypeVar != NULL )
+    {
+        // sParseTree->returnTypeVar->common ø° table/column
+        IDE_TEST( qsxExtProc::fillReturnInfo( aQcStmt->qmxMem,
+                                              sParseTree->returnTypeVar->common,
+                                              sTmplate,
+                                              &sMsg.mReturnInfo,
+                                              sParseTree->expCallSpec->procType )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* intialize return info */
+        QSX_EXTPROC_INIT_PARAM_INFO( &sMsg.mReturnInfo );
+
+        /* set data area to zero */
+        idlOS::memset( &sMsg.mReturnInfo.mD, 0, ID_SIZEOF(sMsg.mReturnInfo.mD) );
+    }
+
+    sArg.mOption     = ID_UINT_MAX;
+    sArg.mResult     = 0;
+    sArg.mMemory     = aQcStmt->qixMem;
+    sArg.mFunction   = (void*)qsxExecutor::utilFunc4IntProc;
+
+    // call external procedure/function
+    IDE_TEST( qsxLibrary::callintProc( aQcStmt->qmxMem,
+                                       &sMsg,
+                                       &sArg ) != IDE_SUCCESS );
+
+    // return result value(s) to tmplate
+    IDE_TEST( qsxExtProc::returnAllParams4IntProc( aQcStmt->qmxMem,
+                                                   &sMsg,
+                                                   sTmplate ) != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_LIB_NOT_FOUND )
+    {
+        ideSetErrorCode( idERR_ABORT_IDX_LIBRARY_NOT_FOUND,
+                         idxLocalSock::mHomePath,
+                         IDX_LIB_DEFAULT_DIR,
+                         sParseTree->expCallSpec->libraryNode->mLibPath );
+    }
+    IDE_EXCEPTION( ERR_ENTRY_FUNCTION_NOT_FOUND )
+    {
+        ideSetErrorCode( idERR_ABORT_IDX_ENTRY_FUNCTION_NOT_FOUND );
+    }
+    IDE_EXCEPTION( ERR_FUNCTION_NOT_FOUND )
+    {
+        ideSetErrorCode( idERR_ABORT_IDX_FUNCTION_NOT_FOUND );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qsxExecutor::utilFunc4IntProc( intProcUtilFuncArg * aArg )
+{
+    IDE_TEST( aArg == NULL );
+
+    switch (aArg->mOption)
+    {
+    case 1: // malloc
+        {
+            IDE_TEST( ((iduVarMemList*)aArg->mMemory)->alloc(*((int*)(aArg->mArgument1)),
+                                                             (void**)(aArg->mArgument3))
+                      != IDE_SUCCESS );
+        }
+        break;
+    case 2: // free
+        {
+            IDE_TEST( ((iduVarMemList*)aArg->mMemory)->free(aArg->mArgument1)
+                      != IDE_SUCCESS );
+        }
+        break;
+    default: // invalid option
+        {
+            IDE_TEST(1);
+        }
+    }
+
+    aArg->mResult = 0;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    aArg->mResult = -1;
+
+    return IDE_FAILURE;
+}
+
 IDE_RC qsxExecutor::execPkgPlan( qsxExecutorInfo * aExecInfo,
                                  qcStatement     * aQcStmt,
                                  mtcStack        * aStack,
@@ -4700,15 +5334,17 @@ IDE_RC qsxExecutor::execPkgPlan( qsxExecutorInfo * aExecInfo,
     qsxPkgInfo        * sPkgInfo;
     iduMemoryStatus     sQmxMemStatus;
     qcTemplate        * sSourceTemplate = NULL;
-    UInt                sStage          = 0;
     SChar             * sOriStmtText    = NULL;
     SInt                sOriStmtTextLen = 0;
     UInt                sTopExec     = 0;
     qsxPkgInfo        * sPkgSpecInfo = NULL;
+    UInt                sStage          = 0;
     idBool              sOrgPSMFlag  = ID_FALSE;
-    UInt                sUserID      = QCG_GET_SESSION_USER_ID( aQcStmt );      /* BUG-45306 PSM AUTHID */
+    SChar             * sOrgInvokeUserName = QCG_GET_SESSION_INVOKE_USER_NAME(aQcStmt);
+    UInt                sUserID            = QCG_GET_SESSION_USER_ID( aQcStmt );      /* BUG-45306 PSM AUTHID */
     UInt                sVarStage    = 0;
-    qsxStmtList       * sOrgStmtList = NULL;
+    qsxStmtList       * sOrgStmtList  = NULL;
+    qsxStmtList2      * sOrgStmtList2 = NULL;
 
     sParseTree  = aExecInfo->mPkgPlanTree;
     sPkgInfo    = sParseTree->pkgInfo;
@@ -4716,11 +5352,14 @@ IDE_RC qsxExecutor::execPkgPlan( qsxExecutorInfo * aExecInfo,
     sOrgPSMFlag = aQcStmt->calledByPSMFlag;
 
     // BUG-43158 Enhance statement list caching in PSM
-    sOrgStmtList = aQcStmt->spvEnv->mStmtList;
+    sOrgStmtList  = aQcStmt->spvEnv->mStmtList;
+    sOrgStmtList2 = aQcStmt->spvEnv->mStmtList2;
+
     aQcStmt->spvEnv->mStmtList = NULL;
+    aQcStmt->spvEnv->mStmtList2 = NULL;
 
     // BUG-17489
-    // ÏµúÏÉÅÏúÑ PSMÌò∏Ï∂úÏù∏ Í≤ΩÏö∞ planTreeFlagÎ•º FALSEÎ°ú Î∞îÍæºÎã§.
+    // √÷ªÛ¿ß PSM»£√‚¿Œ ∞ÊøÏ planTreeFlag∏¶ FALSE∑Œ πŸ≤€¥Ÿ.
     qcg::lock( aQcStmt );
     if ( aQcStmt->planTreeFlag == ID_TRUE )
     {
@@ -4741,6 +5380,19 @@ IDE_RC qsxExecutor::execPkgPlan( qsxExecutorInfo * aExecInfo,
     if ( aExecInfo->mIsDefiner == ID_TRUE )
     {
         QCG_SET_SESSION_USER_ID( aQcStmt, aExecInfo->mDefinerUserID );
+        // BUG-47861 INVOKE_USER_ID, INVOKE_USER_NAME function
+        QCG_SET_SESSION_INVOKE_USER_NAME( aQcStmt, sParseTree->objectNameInfo.userName );
+
+        if ( SDU_SHARD_ENABLE == 1 )
+        {
+            IDE_TEST( qci::mSessionCallback.mSetInvokeUserPropertyInternal(
+                        aQcStmt->session->mMmSession,
+                        (SChar*)"INVOKE_USER",
+                        11,
+                        sParseTree->objectNameInfo.userName,
+                        idlOS::strlen(sParseTree->objectNameInfo.userName) )
+                      != IDE_SUCCESS );
+        }
     }
     else
     {
@@ -4750,8 +5402,8 @@ IDE_RC qsxExecutor::execPkgPlan( qsxExecutorInfo * aExecInfo,
     sSourceTemplate = QC_PRIVATE_TMPLATE(aQcStmt);
     sStage = 2;
 
-    /* Í∞Å ÏÑ∏ÏÖòÏóêÏÑú packageÎ•º Ï≤òÏùå Ïã§Ìñâ Ïãú ÌÉÄÎäî Ìï®ÏàòÏù¥Îã§.
-       Îî∞ÎùºÏÑú, packageÏùò templateÏùÄ Î¨¥Ï°∞Í±¥ Ï°¥Ïû¨ÌïúÎã§. */
+    /* ∞¢ ººº«ø°º≠ package∏¶ √≥¿Ω Ω««‡ Ω√ ≈∏¥¬ «‘ºˆ¿Ã¥Ÿ.
+       µ˚∂Ûº≠, package¿« template¿∫ π´¡∂∞« ¡∏¿Á«—¥Ÿ. */
     QC_PRIVATE_TMPLATE(aQcStmt) = aExecInfo->mPkgTemplate;
 
     // set stack buffer PR2475
@@ -4764,9 +5416,9 @@ IDE_RC qsxExecutor::execPkgPlan( qsxExecutorInfo * aExecInfo,
         aStackRemain,
         aStackRemain );
     QC_PRIVATE_TMPLATE(aQcStmt)->stmt = aQcStmt;
-    // BUG-11192 date format session property Ï∂îÍ∞Ä
-    // cloneÎêú templateÏùò dateFormatÏùÄ Îã§Î•∏ ÏÑ∏ÏÖòÏùò Í∞íÏù¥ÎØÄÎ°ú
-    // ÏÉàÎ°úÏù¥ assignÌï¥Ï£ºÏñ¥Ïïº ÌïúÎã§.
+    // BUG-11192 date format session property √ﬂ∞°
+    // cloneµ» template¿« dateFormat¿∫ ¥Ÿ∏• ººº«¿« ∞™¿Ãπ«∑Œ
+    // ªı∑Œ¿Ã assign«ÿ¡÷æÓæﬂ «—¥Ÿ.
     QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.dateFormat  = sSourceTemplate->tmplate.dateFormat;
     /* PROJ-2208 Multi Currency */
     QC_PRIVATE_TMPLATE(aQcStmt)->tmplate.nlsCurrency = sSourceTemplate->tmplate.nlsCurrency;
@@ -4860,6 +5512,9 @@ IDE_RC qsxExecutor::execPkgPlan( qsxExecutorInfo * aExecInfo,
                     case QSX_ACCESS_DENIED_NO:
                     case QSX_DELETE_FAILED_NO:
                     case QSX_RENAME_FAILED_NO:
+
+                        // TASK-7218 Handling Shard Multiple Errors
+                    case QSX_SHARD_MULTIPLE_ERRORS_NO:
                     case QSX_OTHER_SYSTEM_ERROR_NO :
                         unsetFlowControl(aExecInfo, ID_FALSE);
                         // error code and message is already set.
@@ -4901,6 +5556,19 @@ IDE_RC qsxExecutor::execPkgPlan( qsxExecutorInfo * aExecInfo,
 
     /* BUG-45306 PSM AUTHID */
     QCG_SET_SESSION_USER_ID( aQcStmt, sUserID );
+    // BUG-47861 INVOKE_USER_ID, INVOKE_USER_NAME function
+    QCG_SET_SESSION_INVOKE_USER_NAME( aQcStmt, sOrgInvokeUserName );
+
+    if ( SDU_SHARD_ENABLE == 1 )
+    {
+        IDE_TEST( qci::mSessionCallback.mSetInvokeUserPropertyInternal(
+                    aQcStmt->session->mMmSession,
+                    (SChar*)"INVOKE_USER",
+                    11,
+                    sOrgInvokeUserName,
+                    idlOS::strlen(sOrgInvokeUserName) )
+                  != IDE_SUCCESS );
+    }
 
     sStage = 0;
     IDE_TEST( QC_QMX_MEM(aQcStmt)->setStatus( &sQmxMemStatus )
@@ -4915,7 +5583,8 @@ IDE_RC qsxExecutor::execPkgPlan( qsxExecutorInfo * aExecInfo,
     aQcStmt->calledByPSMFlag = sOrgPSMFlag;
 
     // BUG-43158 Enhance statement list caching in PSM
-    aQcStmt->spvEnv->mStmtList = sOrgStmtList;
+    aQcStmt->spvEnv->mStmtList  = sOrgStmtList;
+    aQcStmt->spvEnv->mStmtList2 = sOrgStmtList2;
 
     return IDE_SUCCESS;
 
@@ -5029,9 +5698,22 @@ IDE_RC qsxExecutor::execPkgPlan( qsxExecutorInfo * aExecInfo,
 
     /* BUG-45306 PSM AUTHID */
     QCG_SET_SESSION_USER_ID( aQcStmt, sUserID );
+    // BUG-47861 INVOKE_USER_ID, INVOKE_USER_NAME function
+    QCG_SET_SESSION_INVOKE_USER_NAME( aQcStmt, sOrgInvokeUserName );
+
+    if ( SDU_SHARD_ENABLE == 1 )
+    {
+        (void)qci::mSessionCallback.mSetInvokeUserPropertyInternal(
+                aQcStmt->session->mMmSession,
+                (SChar*)"INVOKE_USER",
+                11,
+                sOrgInvokeUserName,
+                idlOS::strlen(sOrgInvokeUserName) );
+    }
 
     // BUG-43158 Enhance statement list caching in PSM
-    aQcStmt->spvEnv->mStmtList = sOrgStmtList;
+    aQcStmt->spvEnv->mStmtList  = sOrgStmtList;
+    aQcStmt->spvEnv->mStmtList2 = sOrgStmtList2;
 
     return IDE_FAILURE;
 }
@@ -5053,10 +5735,10 @@ IDE_RC qsxExecutor::execPkgBlock( qsxExecutorInfo * aExecInfo,
               != IDE_SUCCESS);
     sStage=1;
 
-    // PROJ-1335 RAISE ÏßÄÏõê
+    // PROJ-1335 RAISE ¡ˆø¯
     // To fix BUG-12642
-    // exception handlingÏù¥ Ïù¥Î£®Ïñ¥ÏßÄÎ©¥ Î∏îÎ°ù ÏãúÏûë Ïù¥Ï†ÑÏùò
-    // ÏóêÎü¨ÏΩîÎìúÎ°ú ÎèåÏïÑÍ∞ÄÏïº Ìï®
+    // exception handling¿Ã ¿Ã∑ÁæÓ¡ˆ∏È ∫Ì∑œ Ω√¿€ ¿Ã¿¸¿«
+    // ø°∑Øƒ⁄µÂ∑Œ µπæ∆∞°æﬂ «‘
     IDE_TEST( QC_QMX_MEM(aQcStmt)->alloc(
             MAX_ERROR_MSG_LEN + 1,
             (void**) & sOriSqlErrorMsg )
@@ -5091,9 +5773,9 @@ IDE_RC qsxExecutor::execPkgBlock( qsxExecutorInfo * aExecInfo,
         // Nothing to do.
     }
 
-    // PROJ-1335 RAISE ÏßÄÏõê
+    // PROJ-1335 RAISE ¡ˆø¯
     // To fix BUG-12642
-    // re-raiseÎêòÏßÄ ÏïäÏïòÎã§Î©¥ Ïù¥Ï†Ñ ÏóêÎü¨ÏΩîÎìúÎ°ú Î≥µÍ∑Ä.
+    // re-raiseµ«¡ˆ æ æ“¥Ÿ∏È ¿Ã¿¸ ø°∑Øƒ⁄µÂ∑Œ ∫π±Õ.
     if( aExecInfo->mFlow != QSX_FLOW_RAISE )
     {
         QC_QSX_ENV(aQcStmt)->mSqlCode = sOriSqlCode;
@@ -5146,15 +5828,16 @@ IDE_RC qsxExecutor::bindParam( qcStatement   * aQcStmt,
     void         * sValue;
     UInt           sValueSize;
     mtcColumn    * sMtcColumn;
+    idBool         sExist = ID_FALSE;
 
     /* BUG-36907
-     * Ï≤òÏùå Ïã§ÌñâÌïòÎäî Í≤ΩÏö∞ÏóêÎßå bindParmaInfoSet Ìï®ÏàòÎ•º Ìò∏Ï∂úÌïúÎã§. */
+     * √≥¿Ω Ω««‡«œ¥¬ ∞ÊøÏø°∏∏ bindParmaInfoSet «‘ºˆ∏¶ »£√‚«—¥Ÿ. */
     if( aIsFirst == ID_TRUE )
     {
         // param info bind
-        for( sUsingParam = aUsingParam;
-             sUsingParam != NULL;
-             sUsingParam = sUsingParam->next )
+        for ( sUsingParam = aUsingParam;
+              sUsingParam != NULL;
+              sUsingParam = sUsingParam->next )
         {
             sMtcColumn = QTC_TMPL_COLUMN( QC_PRIVATE_TMPLATE(aQcStmt),
                                           sUsingParam->paramNode );
@@ -5167,18 +5850,61 @@ IDE_RC qsxExecutor::bindParam( qcStatement   * aQcStmt,
 
             sBindParamId++;
         }
-
-        sBindParamId = 0;
     }
     else
     {
-        // Nothing to do.
+        if ( QCU_PSM_PARAM_AND_RETURN_WITHOUT_PRECISION_ENABLE > 0 )
+        {
+            /* BUG-47959 procedure ø°º≠ ¿ﬂ∏¯µ» ∏ﬁ∏∏Æ ƒßπ¸¿∏∑Œ¿Œ«—  FATAL πﬂª˝*/
+            for ( sUsingParam = aUsingParam;
+                  sUsingParam != NULL;
+                  sUsingParam = sUsingParam->next )
+            {
+                sMtcColumn = QTC_TMPL_COLUMN( QC_PRIVATE_TMPLATE(aQcStmt),
+                                              sUsingParam->paramNode );
+
+                if ( ( sMtcColumn->flag & MTC_COLUMN_SP_SET_PRECISION_MASK )
+                     == MTC_COLUMN_SP_SET_PRECISION_TRUE )
+                {
+                    sExist = ID_TRUE;
+                    break;
+                }
+            }
+           
+            /* precision¿Ã æ¯¥¬ bind param¿Ã ¡∏¿Á«“∞ÊøÏ bindParamInfo∏¶
+             * ¥ŸΩ√ º≥¡§«ÿ¡ÿ¥Ÿ
+             */
+            if ( sExist == ID_TRUE )
+            {
+                for ( sUsingParam = aUsingParam;
+                      sUsingParam != NULL;
+                      sUsingParam = sUsingParam->next )
+                {
+                    sMtcColumn = QTC_TMPL_COLUMN( QC_PRIVATE_TMPLATE(aQcStmt),
+                                                  sUsingParam->paramNode );
+
+                    IDE_TEST( qcd::bindParamInfoSet( aHstmt,
+                                                     sMtcColumn,
+                                                     sBindParamId,
+                                                     sUsingParam->inOutType )
+                              != IDE_SUCCESS );
+
+                    sBindParamId++;
+                }
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
     }
 
+    sBindParamId = 0;
+
     // param data bind
-    for( sUsingParam = aUsingParam;
-         sUsingParam != NULL;
-         sUsingParam = sUsingParam->next )
+    for ( sUsingParam = aUsingParam;
+          sUsingParam != NULL;
+          sUsingParam = sUsingParam->next )
     {
         IDE_TEST( qtc::calculate( sUsingParam->paramNode,
                                   QC_PRIVATE_TMPLATE(aQcStmt) )
@@ -5192,57 +5918,14 @@ IDE_RC qsxExecutor::bindParam( qcStatement   * aQcStmt,
         sValueSize = sMtcColumn->module->actualSize( sMtcColumn,
                                                      sValue );
 
-        // fix BUG-41291
-        switch( sUsingParam->inOutType )
-        {
-            case QS_IN:
-            {
-                IDE_TEST( qcd::bindParamData( aHstmt,
-                                              sValue,
-                                              sValueSize,
-                                              sBindParamId )
-                          != IDE_SUCCESS );
-            }
-            break;
-
-            case QS_OUT:
-            {
-                if( aOutBindParamDataList != NULL )
-                {
-                    IDE_TEST( qcd::addBindDataList(
+        IDE_TEST( qcd::bindParamData( aHstmt,
+                                      sValue,
+                                      sValueSize,
+                                      sBindParamId,
                                       aQcStmt->qmxMem,
                                       aOutBindParamDataList,
-                                      sValue,
-                                      sBindParamId )
-                                  != IDE_SUCCESS );
-                }
-            }
-            break;
-
-            case QS_INOUT:
-            {
-                IDE_TEST( qcd::bindParamData( aHstmt,
-                                              sValue,
-                                              sValueSize,
-                                              sBindParamId )
-                          != IDE_SUCCESS );
-
-                if( aOutBindParamDataList != NULL )
-                {
-                    IDE_TEST( qcd::addBindDataList(
-                                      aQcStmt->qmxMem,
-                                      aOutBindParamDataList,
-                                      sValue,
-                                      sBindParamId )
-                                  != IDE_SUCCESS );
-                }
-            }
-            break;
-
-            default:
-                IDE_DASSERT( 0 );
-                break;
-        }
+                                      sUsingParam->inOutType )
+                  != IDE_SUCCESS );
 
         sBindParamId++;
     }
@@ -5273,7 +5956,7 @@ void qsxExecutor::adjustErrorMsg( qsxExecutorInfo  * aExecInfo,
     qsxEnv::setErrorCode( QC_QSX_ENV(aQcStmt) );
 
     // To fix BUG-13208
-    // system_Ïú†Ï†ÄÍ∞Ä ÎßåÎì† ÌîÑÎ°úÏãúÏ†∏Îäî ÎÇ¥Î∂ÄÍ≥µÍ∞ú ÏïàÌï®.
+    // system_¿Ø¿˙∞° ∏∏µÁ «¡∑ŒΩ√¡Æ¥¬ ≥ª∫Œ∞¯∞≥ æ»«‘.
     if( ( aExecInfo->mDefinerUserID == QC_SYSTEM_USER_ID ) ||
         ( QCU_PSM_SHOW_ERROR_STACK == 2 ) )
     {
@@ -5332,8 +6015,8 @@ IDE_RC qsxExecutor::processIntoClause( qsxExecutorInfo * aExecInfo,
  *
  * Description : 
  *    BUG-37273
- *    select into Íµ¨Î¨∏ ÎòêÎäî execute immediateÏóêÏÑú ÏÇ¨Ïö©ÎêòÎäî into Íµ¨Î¨∏ÏùÑ
- *    Ï≤òÎ¶¨ÌïòÍ∏∞ ÏúÑÌïú Ìï®Ïàò.
+ *    select into ±∏πÆ ∂«¥¬ execute immediateø°º≠ ªÁøÎµ«¥¬ into ±∏πÆ¿ª
+ *    √≥∏Æ«œ±‚ ¿ß«— «‘ºˆ.
  *
  * Implementation :
  *
@@ -5374,8 +6057,8 @@ IDE_RC qsxExecutor::processIntoClause( qsxExecutorInfo * aExecInfo,
              sIntoNode = (qtcNode*)sIntoNode->node.next )
         {
             /* BUG-37273
-               Ï≤´Î≤àÏß∏ ÎÖ∏ÎìúÏóêÏÑúÎßå size Í≥ÑÏÇ∞,
-               Í∑∏ Îã§ÏùåÎ∂ÄÌÑ∞Îäî ÎèôÏùºÌïòÍ∏∞ ÎïåÎ¨∏Ïóê sizeÎ•º Í≥ÑÏÇ∞Ìï† ÌïÑÏöîÍ∞Ä ÏóÜÎã§.*/
+               √ππ¯¬∞ ≥ÎµÂø°º≠∏∏ size ∞ËªÍ,
+               ±◊ ¥Ÿ¿Ω∫Œ≈Õ¥¬ µø¿œ«œ±‚ ∂ßπÆø° size∏¶ ∞ËªÍ«“ « ø‰∞° æ¯¥Ÿ.*/
             if( sRowCount == 0 )
             {
                 sPos.size = sIntoNode->position.offset + 
@@ -5412,7 +6095,7 @@ IDE_RC qsxExecutor::processIntoClause( qsxExecutorInfo * aExecInfo,
         sBindColumnId = 0;
         sBindColumnDataList = NULL;
 
-        // bindColumnDataListÏÉùÏÑ±
+        // bindColumnDataListª˝º∫
         if( aIsIntoVarRecordType == ID_TRUE )
         {
             IDE_DASSERT( aIntoVariables->intoNodes != NULL );
@@ -5600,3 +6283,52 @@ void qsxExecutor::setRaisedExcpErrorMsg( qsxExecutorInfo  * aExecInfo,
 
     (void)aSqlInfo->fini();
 } 
+
+// TASK-7244 Global PSM - commit/rollback/savepoint/DDL ¡§√•
+IDE_RC qsxExecutor::checkRestrictionsForShard( qcStatement * aQcStmt )
+{
+    UShort sClientTouchNodeCount;
+
+    if ( (QCG_GET_SESSION_IS_SHARD_INTERNAL_LOCAL_OPERATION( aQcStmt ) == ID_FALSE) &&
+         (QCG_GET_SESSION_GTX_LEVEL( aQcStmt ) != 0) &&
+         (SDU_SHARD_ENABLE == 1) )
+    {
+        switch ( QCG_GET_SESSION_SHARD_SESSION_TYPE( aQcStmt ) )
+        {
+            case SDI_SESSION_TYPE_USER:
+                sClientTouchNodeCount = QCG_GET_SESSION_SHARD_CLIENT_TOUCH_NODE_COUNT( aQcStmt );
+
+                // Global procedureø°º≠¥¬ touch«— node∞° ¿÷∞Ì, multi node transaction¿Ã∏È ∫“∞°¥…
+                IDE_TEST_RAISE( (sClientTouchNodeCount > 0) &&
+                                (QCG_GET_SESSION_GTX_LEVEL( aQcStmt ) == 1),
+                                ERR_BY_USER_SESSION );
+                break;
+            case SDI_SESSION_TYPE_COORD:
+            case SDI_SESSION_TYPE_LIB:
+                // sharded procedureø°º≠¥¬ π´¡∂∞« ∫“∞°¥… (clone, solo ∆˜«‘)
+                IDE_TEST_RAISE( (aQcStmt->spxEnv->mFlag & QSX_ENV_SHARD_FLAG) != QSX_ENV_FLAG_INIT,
+                                ERR_BY_SHARD_PROCEDURE );
+                break;
+            default:
+                break;
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_BY_USER_SESSION )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
+                                  "DCL/DDL restrictions in Multiple Node Transaction.",
+                                  "" ) );
+    }
+    IDE_EXCEPTION( ERR_BY_SHARD_PROCEDURE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
+                                  "DCL/DDL in shard procedure.",
+                                  "" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}

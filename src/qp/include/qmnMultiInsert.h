@@ -21,11 +21,11 @@
  * Description :
  *     MTIT(MulTi-InserT) Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ insertë¥¼ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     °ü°èÇü ¸ğµ¨¿¡¼­ insert¸¦ ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -56,7 +56,7 @@
 typedef struct qmncMTIT  
 {
     //---------------------------------
-    // Code ì˜ì—­ ê³µí†µ ì •ë³´
+    // Code ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmnPlan               plan;
@@ -68,7 +68,7 @@ typedef struct qmncMTIT
 typedef struct qmndMTIT
 {
     //---------------------------------
-    // Data ì˜ì—­ ê³µí†µ ì •ë³´
+    // Data ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmndPlan              plan;
@@ -76,7 +76,7 @@ typedef struct qmndMTIT
     UInt                * flag;        
 
     //---------------------------------
-    // MTIT ê³ ìœ  ì •ë³´
+    // MTIT °íÀ¯ Á¤º¸
     //---------------------------------
 
 } qmndMTIT;
@@ -89,11 +89,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ìˆ˜í–‰ í•¨ìˆ˜
+    // ¼öÇà ÇÔ¼ö
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -102,7 +102,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
     
-    // Plan ì •ë³´ ì¶œë ¥
+    // Plan Á¤º¸ Ãâ·Â
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -113,7 +113,7 @@ public:
     // mapping by doIt() function pointer
     //------------------------
 
-    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨
+    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
@@ -121,10 +121,10 @@ public:
 private:    
 
     //------------------------
-    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
+    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
     //------------------------
 
-    // ìµœì´ˆ ì´ˆê¸°í™”
+    // ÃÖÃÊ ÃÊ±âÈ­
     static IDE_RC firstInit( qmndMTIT   * aDataPlan );
 
 };

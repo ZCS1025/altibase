@@ -101,6 +101,8 @@ class idvSQL;
 
 #define IDT_THREAD_MAX_SLEEP_SEC (10)
 
+IDTHREAD idtContainer * gContainer = NULL;
+
 idBool              idtContainer::mInitialized = ID_FALSE;
 iduPeerType         idtContainer::mThreadType  = IDU_CLIENT_TYPE;
 idtContainer        idtContainer::mMainThread;
@@ -125,9 +127,104 @@ SChar* idtContainer::mThreadStatusString[IDT_MAX] =
     (SChar*)"FINISHING"
 };
 
+void initTempContainer( SChar       * aObjectString,
+                        UInt          aChkFlag,
+                        ideLogModule  aModule,
+                        UInt          aLevel )
+{
+    SInt i;
+
+    if ( gContainer == NULL )
+    {
+        gContainer = (idtContainer*)iduMemMgr::mallocRaw(ID_SIZEOF(idtContainer));
+    }
+
+    /* mallocRaw°¡ ½ÇÆĞÇÑ °æ¿ì */
+    if( gContainer == NULL )
+    {
+        ideLog::log( aChkFlag, aModule, aLevel, "%s Thread Container Initialize failed", aObjectString );
+    }
+    else
+    {
+        gContainer->mThreadID   = idlOS::thr_self();
+#ifdef ALTI_CFG_OS_LINUX
+#include <unistd.h>
+#include <sys/syscall.h>
+#define gettid() syscall(SYS_gettid)   /* due to glibc bug */
+        gContainer->mLWPID      = syscall(SYS_gettid);
+#endif
+        gContainer->mThread     = NULL;
+        gContainer->mThreadNo   = 0;
+
+        (void)idlOS::snprintf(gContainer->mIDString,
+                              16,
+                              "%"ID_XPOINTER_FMT,
+                              gContainer->mThreadID);
+        idlOS::strcpy(gContainer->mObjectString, aObjectString );
+        idlOS::strcpy(gContainer->mIDParent, "N/A");
+
+        idlOS::memcpy((void*)gContainer->mMemInfo,
+                      (void*)iduMemMgr::mClientInfo,
+                      ID_SIZEOF(iduMemClientInfo)*IDU_MEM_UPPERLIMIT);
+
+        idlOS::memset( (void*)&(gContainer->mErrorStruct),
+                       0,
+                       ID_SIZEOF( ideErrorMgr ) );
+
+        for(i = (SInt)IDU_MIN_CLIENT_COUNT; i < (SInt)IDU_MEM_UPPERLIMIT; i++)
+        {
+            idlOS::snprintf(gContainer->mMemInfo[i].mOwner,
+                            ID_SIZEOF(gContainer->mMemInfo[i].mOwner),
+                            "LIBC_THREAD_%s", gContainer->mIDString);
+            gContainer->mMemInfo[i].mClientIndex = (iduMemoryClientIndex)i;
+        }
+        idlOS::strcpy(gContainer->mMemInfo[IDU_MEM_RESERVED].mName, "RESERVED");
+
+        gContainer->mCPUNo      = 0;
+        gContainer->mIsCPUSet   = ID_FALSE;
+        gContainer->mNUMANo     = 0;
+        gContainer->mIsNUMASet  = ID_FALSE;
+
+        gContainer->mThreadStatus     = IDT_RUNNING;
+
+        gContainer->mIdleLink  = NULL;
+        gContainer->mFreeLink  = NULL;
+        gContainer->mInfoPrev   = NULL;
+        gContainer->mInfoNext   = NULL;
+
+        gContainer->mInitialized = ID_TRUE;
+        gContainer->mThreadType = IDU_SERVER_TYPE;
+        gContainer->mNoThreads = 1;
+        gContainer->mStackSize  = IDU_DEFAULT_THREAD_STACK_SIZE;
+
+        gContainer->mSmallAlloc = NULL;
+        gContainer->mTlsfAlloc  = NULL;
+
+        IDE_ASSERT( gContainer->mContainerMutex.initialize( "THREAD_SYNC",
+                                                            IDU_MUTEX_KIND_POSIX,
+                                                            IDV_WAIT_ID_SYSTEM ) == IDE_SUCCESS );
+
+        IDE_ASSERT( gContainer->mContainerCV.initialize() == IDE_SUCCESS );
+
+        ideLog::log( aChkFlag, aModule, aLevel, "%s Thread Container Initialized", aObjectString );
+    }
+}
+
+void destroyTempContainer()
+{
+    if ( gContainer != NULL )
+    {
+        gContainer->destroyContainer();
+
+        iduMemMgr::freeRaw( gContainer );
+        gContainer = NULL;
+    }
+}
+
 void* idtContainer::staticRunner(void* aParam)
 {
     idtContainer*   sContainer = (idtContainer*)aParam;
+
     idtBaseThread*  sThread;
 
 #ifdef ALTI_CFG_OS_LINUX
@@ -173,6 +270,7 @@ void* idtContainer::staticRunner(void* aParam)
     {
         /* Do nothing */
     }
+    ideErrorCollectionInit();
 
     while( sContainer->mThreadStatus < IDT_FINALIZING )
     {
@@ -256,6 +354,7 @@ void* idtContainer::staticRunner(void* aParam)
 
     IDE_EXCEPTION_CONT( NORMAL_EXIT );
 
+    ideErrorCollectionDestroy();
     sContainer->mThreadStatus = IDT_FINISHING;
 
     return NULL;
@@ -425,7 +524,7 @@ IDE_RC idtContainer::pop( idtContainer** aNewThread )
     idtContainer*   sCurrent;
 
     /*
-     * initializeStatic ì´ì „ì— ì„œë²„ ìŠ¤ë ˆë“œë¥¼ ìƒì„±í•  ìˆ˜ ì—†ìŒ
+     * initializeStatic ÀÌÀü¿¡ ¼­¹ö ½º·¹µå¸¦ »ı¼ºÇÒ ¼ö ¾øÀ½
      */
     IDE_ASSERT(mInitialized == ID_TRUE || mThreadType == IDU_CLIENT_TYPE);
 
@@ -479,9 +578,17 @@ IDE_RC idtContainer::pop( idtContainer** aNewThread )
         {
             /* do nothing */
         }
-        
-        sNewThread->mParentNo = sCurrent->getThreadNo();
-        sNewThread->mParentID = sCurrent->getTid();
+
+        if ( sCurrent != NULL )
+        { 
+            sNewThread->mParentNo = sCurrent->getThreadNo();
+            sNewThread->mParentID = sCurrent->getTid();
+        }
+        else
+        {
+            sNewThread->mParentNo = 0;
+            sNewThread->mParentID = 0;
+        }
 
         (void)idlOS::snprintf( sNewThread->mIDParent,
                                IDT_STRLEN,
@@ -781,7 +888,7 @@ void idtContainer::addIdleList( idtContainer* aContainer )
 }
 IDE_RC idtContainer::cleanIdleList()
 {
-    /* IdleListì˜ containerë“¤ì„ joinì‹œí‚¤ê³  ë©”ëª¨ë¦¬ë¥¼ ì •ë¦¬í•œë‹¤. */
+    /* IdleListÀÇ containerµéÀ» join½ÃÅ°°í ¸Ş¸ğ¸®¸¦ Á¤¸®ÇÑ´Ù. */
     idtContainer* sContainer = NULL;
     idtContainer* sNextContainer = NULL;
     idBool        sIsLocked = ID_FALSE;
@@ -845,7 +952,7 @@ void idtContainer::addFreeList( idtContainer* aContainer )
 
 IDE_RC idtContainer::cleanFreeList()
 {
-    /* FreeListì˜ containerë“¤ì„ joinì‹œí‚¤ê³  ë©”ëª¨ë¦¬ë¥¼ ì •ë¦¬í•œë‹¤. */
+    /* FreeListÀÇ containerµéÀ» join½ÃÅ°°í ¸Ş¸ğ¸®¸¦ Á¤¸®ÇÑ´Ù. */
     idtContainer* sContainer = NULL;
     idtContainer* sNextContainer = NULL;
     idBool        sIsLocked = ID_FALSE;
@@ -996,6 +1103,11 @@ idtContainer* idtContainer::getThreadContainer(void)
     else
     {
         sContainer = &(mMainThread);
+    }
+
+    if ( sContainer == NULL )
+    {
+        sContainer = gContainer;
     }
 
     return sContainer;

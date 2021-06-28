@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * ë³¸ íŒŒì¼ì€ Common-DataPort Layerì˜ Fixed Table êµ¬í˜„íŒŒì¼ ì…ë‹ˆë‹¤.
+ * º» ÆÄÀÏÀº Common-DataPort LayerÀÇ Fixed Table ±¸ÇöÆÄÀÏ ÀÔ´Ï´Ù.
  *
  **********************************************************************/
 
@@ -47,7 +47,7 @@ typedef struct scpHandleRow
 
 
 /***********************************************************************
- * Description : X$DATAPORTì˜ ë ˆì½”ë“œë¥¼ êµ¬ì„±í•œë‹¤.
+ * Description : X$DATAPORTÀÇ ·¹ÄÚµå¸¦ ±¸¼ºÇÑ´Ù.
  ***********************************************************************/
 
 IDE_RC scpFT::buildRecord4DataPort( idvSQL              * /*aStatistics*/,

@@ -16,7 +16,7 @@
  
  
 /*****************************************************************************
- * $Id: mtuProperty.cpp 83585 2018-07-30 09:50:39Z andrew.shin $
+ * $Id: mtuProperty.cpp 87881 2020-06-29 08:04:01Z kclee $
  ****************************************************************************/
 #include <idl.h>
 #include <ide.h>
@@ -26,7 +26,6 @@
 #include <mtlTerritory.h>
 #include <mte.h>
 #include <mtz.h>
-#include <idwPMMgr.h>
 
 #ifdef ALTIBASE_PRODUCT_XDB
 mtuProperties  * mtuProperty::mSharedProperty;
@@ -47,7 +46,7 @@ IDE_RC mtuProperty::initProperty( idvSQL *aStatistics )
     }
     else
     {
-        // DAEMON ì´ ì•„ë‹Œ ê²½ìš°ì—ëŠ” load ë¥¼ í•´ì„œëŠ” ì•ˆë¨
+        // DAEMON ÀÌ ¾Æ´Ñ °æ¿ì¿¡´Â load ¸¦ ÇØ¼­´Â ¾ÈµÊ
         IDE_TEST( setupUpdateCallback() != IDE_SUCCESS );
     }
 
@@ -238,8 +237,8 @@ mtuProperty::load()
         /* Nothing to do */
     }
 
-    /* PROJ-2208 NLS_CURRENCYì˜ Default ì„¤ì •ì€ ìºë¦­í„° ì…‹ ë¬¸ì œë¡œ
-     * ì¶”í›„ì— loadNLSCurrencyProperty ì—ì„œ ì„¤ì •í•œë‹¤.
+    /* PROJ-2208 NLS_CURRENCYÀÇ Default ¼³Á¤Àº Ä³¸¯ÅÍ ¼Â ¹®Á¦·Î
+     * ÃßÈÄ¿¡ loadNLSCurrencyProperty ¿¡¼­ ¼³Á¤ÇÑ´Ù.
      */
     IDE_ASSERT(idp::read("NLS_CURRENCY", MTU_PROPERTY(mNlsCurrency) )
                == IDE_SUCCESS );
@@ -265,7 +264,7 @@ mtuProperty::load()
         /* Nothing to do */
     }
     
-    /* PROJ-2209 DBTIMEZONE sysdate ë¥¼ ìœ„í•œ ì„œë²„ì˜ OS timezoneì„ êµ¬í•œë‹¤. */
+    /* PROJ-2209 DBTIMEZONE sysdate ¸¦ À§ÇÑ ¼­¹öÀÇ OS timezoneÀ» ±¸ÇÑ´Ù. */
     MTU_PROPERTY(mOSTimezoneSecond) = mtc::getSystemTimezoneSecond();
     (void)mtc::getSystemTimezoneString( MTU_PROPERTY(mOSTimezoneString) );
 
@@ -294,7 +293,7 @@ mtuProperty::load()
                          &MTU_PROPERTY(mCountColumnToCountAStar) )
                == IDE_SUCCESS );
 
-    /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+    /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
     IDE_ASSERT( idp::read( (const SChar*) "LOB_OBJECT_BUFFER_SIZE",
                            & MTU_PROPERTY(mLOBObjectBufSize) ) == IDE_SUCCESS );
 
@@ -405,10 +404,10 @@ mtuProperty::changeDEFAULT_DATE_FORMAT(  idvSQL * /* aStatistics */,
 /***********************************************************************
  *
  * Description :
- *    DATE_FORMAT ì„ ìœ„í•œ CallBack í•¨ìˆ˜
+ *    DATE_FORMAT À» À§ÇÑ CallBack ÇÔ¼ö
  *
  * Implementation :
- *    Atomic Operationì´ë¯€ë¡œ ë™ì‹œì„± ì œì–´ì— ë¬¸ì œê°€ ì—†ë‹¤.
+ *    Atomic OperationÀÌ¹Ç·Î µ¿½Ã¼º Á¦¾î¿¡ ¹®Á¦°¡ ¾ø´Ù.
  *
  ***********************************************************************/
     idlOS::strcpy(MTU_PROPERTY(mDateFormat), (SChar*)aNewValue);
@@ -427,10 +426,10 @@ mtuProperty::changeNLS_NCHAR_CONV_EXCP(  idvSQL * /* aStatistics */,
  *
  * Description :
  *    PROJ-1579 NCHAR
- *    NLS_NCHAR_CONV_EXCPì˜ ë³€ê²½ì„ ìœ„í•œ CallBack í•¨ìˆ˜
+ *    NLS_NCHAR_CONV_EXCPÀÇ º¯°æÀ» À§ÇÑ CallBack ÇÔ¼ö
  *
  * Implementation :
- *    Atomic Operationì´ë¯€ë¡œ ë™ì‹œì„± ì œì–´ì— ë¬¸ì œê°€ ì—†ë‹¤.
+ *    Atomic OperationÀÌ¹Ç·Î µ¿½Ã¼º Á¦¾î¿¡ ¹®Á¦°¡ ¾ø´Ù.
  *
  ***********************************************************************/
     idlOS::memcpy( &MTU_PROPERTY(mNlsNcharConvExcp),
@@ -443,8 +442,8 @@ mtuProperty::changeNLS_NCHAR_CONV_EXCP(  idvSQL * /* aStatistics */,
 /**
  * PROJ-2208 loadNLSCurrencyProperty
  *
- *  DBê°€ mtuProperty:loadê°€ í˜¸ì¶œë  ë•ŒëŠ” í˜„ì œ chararchter setì„ ì•Œ ìˆ˜ ì—†ê¸° ë•Œë¬¸ì—
- *  ì¶”í›„ì— í˜„ì œ character setì´ ì•Œìˆ˜ ìˆëŠ” ì‹œì ì—ì„œ í˜¸ì¶œëœë‹¤.
+ *  DB°¡ mtuProperty:load°¡ È£ÃâµÉ ¶§´Â ÇöÁ¦ chararchter setÀ» ¾Ë ¼ö ¾ø±â ¶§¹®¿¡
+ *  ÃßÈÄ¿¡ ÇöÁ¦ character setÀÌ ¾Ë¼ö ÀÖ´Â ½ÃÁ¡¿¡¼­ È£ÃâµÈ´Ù.
  */
 IDE_RC mtuProperty::loadNLSCurrencyProperty( void )
 {
@@ -480,8 +479,8 @@ IDE_RC mtuProperty::loadNLSCurrencyProperty( void )
 /**
  * PROJ-2208 changeNLS_TERRITORY
  *
- *  alter systemìœ¼ë¡œ ì¸í•´ Property ê°’ì´ ë³€ê²½ ë  ê²½ìš° Territory ê°’ì´ ë³€ê²½ ê°€ëŠ¥í•  ê²½ìš°
- *  Property ê°’ì„ ë³€ê²½í•œë‹¤.
+ *  alter systemÀ¸·Î ÀÎÇØ Property °ªÀÌ º¯°æ µÉ °æ¿ì Territory °ªÀÌ º¯°æ °¡´ÉÇÒ °æ¿ì
+ *  Property °ªÀ» º¯°æÇÑ´Ù.
  */
 IDE_RC mtuProperty::changeNLS_TERRITORY( idvSQL * /* aStatistics */,
                                          SChar *,
@@ -517,9 +516,9 @@ IDE_RC mtuProperty::changeNLS_TERRITORY( idvSQL * /* aStatistics */,
 /**
  * PROJ-2208 changeNLS_ISO_CURRENCY
  *
- *  alter systemìœ¼ë¡œ ì¸í•´ Property ê°’ì´ ë³€ê²½ ë  ê²½ìš° ISO Currency ê°’ì´ ë³€ê²½
- *  ê°€ëŠ¥í•  ê²½ìš° Property ê°’ì„ ë³€ê²½í•œë‹¤. ISO Currencyì˜ ê²½ìš° ë³€ê²½ì„ territory value
- *  ê°’ìœ¼ë¡œ ë³€ê²½ì„ í•œë‹¤.
+ *  alter systemÀ¸·Î ÀÎÇØ Property °ªÀÌ º¯°æ µÉ °æ¿ì ISO Currency °ªÀÌ º¯°æ
+ *  °¡´ÉÇÒ °æ¿ì Property °ªÀ» º¯°æÇÑ´Ù. ISO CurrencyÀÇ °æ¿ì º¯°æÀ» territory value
+ *  °ªÀ¸·Î º¯°æÀ» ÇÑ´Ù.
  */
 IDE_RC mtuProperty::changeNLS_ISO_CURRENCY( idvSQL * /* aStatistics */,
                                             SChar *,
@@ -556,8 +555,8 @@ IDE_RC mtuProperty::changeNLS_ISO_CURRENCY( idvSQL * /* aStatistics */,
 /**
  * PROJ-2208 changeNLS_CURRENCY
  *
- *  alter systemìœ¼ë¡œ ì¸í•´ Property ê°’ì´ ë³€ê²½ ë  ê²½ìš° Currency ê°’ì´ ë³€ê²½
- *  ê°€ëŠ¥í•  ê²½ìš° Property ê°’ì„ ë³€ê²½í•œë‹¤.
+ *  alter systemÀ¸·Î ÀÎÇØ Property °ªÀÌ º¯°æ µÉ °æ¿ì Currency °ªÀÌ º¯°æ
+ *  °¡´ÉÇÒ °æ¿ì Property °ªÀ» º¯°æÇÑ´Ù.
  */
 IDE_RC mtuProperty::changeNLS_CURRENCY(  idvSQL * /* aStatistics */, SChar *, 
                                         void  *,
@@ -594,8 +593,8 @@ IDE_RC mtuProperty::changeNLS_CURRENCY(  idvSQL * /* aStatistics */, SChar *,
 /**
  * PROJ-2208 changeNLS_NUMERIC_CHARACTERS
  *
- *  alter systemìœ¼ë¡œ ì¸í•´ Property ê°’ì´ ë³€ê²½ ë  ê²½ìš° NLS_NUMERIC_CHARACTERS ê°’ì´ ë³€ê²½
- *  ê°€ëŠ¥í•  ê²½ìš° Property ê°’ì„ ë³€ê²½í•œë‹¤.
+ *  alter systemÀ¸·Î ÀÎÇØ Property °ªÀÌ º¯°æ µÉ °æ¿ì NLS_NUMERIC_CHARACTERS °ªÀÌ º¯°æ
+ *  °¡´ÉÇÒ °æ¿ì Property °ªÀ» º¯°æÇÑ´Ù.
  */
 IDE_RC mtuProperty::changeNLS_NUMERIC_CHARACTERS( idvSQL * /* aStatistics */,
                                                   SChar *,

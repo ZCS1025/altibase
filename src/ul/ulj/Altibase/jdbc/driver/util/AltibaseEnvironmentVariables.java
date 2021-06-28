@@ -32,6 +32,7 @@ public final class AltibaseEnvironmentVariables
     public static final String ENV_HOME                             = "HOME";
     public static final String ENV_ALTIBASE_JDBC_TRACE              = "ALTIBASE_JDBC_TRACE";
     public static final String ENV_SOCK_RCVBUF_BLOCK_RATIO          = "ALTIBASE_SOCK_RCVBUF_BLOCK_RATIO"; // PROJ-2625
+    public static final String ENV_SHARD_JDBC_DISTTXINFO_VERIFY     = "SHARD_JDBC_DISTTXINFO_VERIFY";     // PROJ-2733
 
     private AltibaseEnvironmentVariables()
     {
@@ -124,10 +125,15 @@ public final class AltibaseEnvironmentVariables
     }
 
     /**
-     * ALTIBASE_SOCK_RCVBUF_BLOCK_RATIO ÌôòÍ≤ΩÎ≥ÄÏàòÎ•º ÏùΩÎäîÎã§.
+     * ALTIBASE_SOCK_RCVBUF_BLOCK_RATIO »Ø∞Ê∫Øºˆ∏¶ ¿–¥¬¥Ÿ.
      */
     public static int getSockRcvBufBlockRatio()
     {
         return RuntimeEnvironmentVariables.getIntVariable(ENV_SOCK_RCVBUF_BLOCK_RATIO);
+    }
+
+    public static boolean getShardJdbcDisttxinfoVerify()
+    {
+        return RuntimeEnvironmentVariables.getBooleanVariable(ENV_SHARD_JDBC_DISTTXINFO_VERIFY);
     }
 }

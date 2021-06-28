@@ -31,7 +31,7 @@ public class BindRemoteVariableTask extends Task
 {
     protected long   mRemoteStatementId  = 0;
     protected int    mBindVariableIndex  = 0;
-    protected int    mBindVariableType   = SQLType.SQL_VARCHAR;
+    protected int    mBindVariableType   = AltibaseSQLType.SQL_VARCHAR;
     protected String mBindVariableString = null;
     
     public BindRemoteVariableTask()
@@ -183,7 +183,7 @@ public class BindRemoteVariableTask extends Task
                 
                 try
                 {
-                    if (mBindVariableType == SQLType.SQL_VARCHAR)
+                    if (mBindVariableType == AltibaseSQLType.SQL_VARCHAR)
                     {
                         sPreparedStatement.setString(mBindVariableIndex, // 1-based index
                                                      mBindVariableString);

@@ -22,7 +22,7 @@
 
 #include <idvTime.h>
 /* ------------------------------------------------
- *  ê²½ê³¼ì‹œê°„ ì¸¡ì •í•  ì—°ì‚° íƒ€ì…
+ *  °æ°ú½Ã°£ ÃøÁ¤ÇÒ ¿¬»ê Å¸ÀÔ
  * ----------------------------------------------*/
 typedef enum idvOperTimeIndex
 {
@@ -107,7 +107,7 @@ typedef enum idvOperTimeIndex
 
 
 /* ------------------------------------------------
- *  Wait Eventì˜ Wait Class
+ *  Wait EventÀÇ Wait Class
  * ----------------------------------------------*/
 typedef enum idvWaitClassIndex
 {
@@ -129,7 +129,7 @@ typedef enum idvWaitClassIndex
 
 
 /* ------------------------------------------------
- *  í•˜ë‚˜ì˜ Sessionì— ëŒ€í•œ í†µê³„ ì •ë³´
+ *  ÇÏ³ªÀÇ Session¿¡ ´ëÇÑ Åë°è Á¤º¸
  * ----------------------------------------------*/
 
 typedef enum idvStatIndex
@@ -163,8 +163,8 @@ typedef enum idvStatIndex
     IDV_STAT_INDEX_DDL_SYNC_TIMEOUT_COUNT,
 
 
-    /* BUG-24151: [SC] Update Retry, Delete Retry, Statement Rebuild Countë¥¼
-     *            AWIë¡œ ì¶”ê°€í•´ì•¼ í•©ë‹ˆë‹¤.*/
+    /* BUG-24151: [SC] Update Retry, Delete Retry, Statement Rebuild Count¸¦
+     *            AWI·Î Ãß°¡ÇØ¾ß ÇÕ´Ï´Ù.*/
     IDV_STAT_INDEX_STMT_REBUILD_COUNT,
     IDV_STAT_INDEX_UNIQUE_VIOLATION_COUNT,
     IDV_STAT_INDEX_UPDATE_RETRY_COUNT,
@@ -229,8 +229,8 @@ typedef enum idvStatIndex
     IDV_STAT_INDEX_RECV_IB_BYTE,
     IDV_STAT_INDEX_SEND_IB_BYTE,
 
-    // stmtì—ì„œ session ìœ¼ë¡œ ëˆ„ì ë˜ëŠ” í†µê³„ì •ë³´ ì¶”ê°€
-    // ë¬¼ë¡ , system í†µê³„ì •ë³´ì—ë„ ëˆ„ì ëœë‹¤.
+    // stmt¿¡¼­ session À¸·Î ´©ÀûµÇ´Â Åë°èÁ¤º¸ Ãß°¡
+    // ¹°·Ğ, system Åë°èÁ¤º¸¿¡µµ ´©ÀûµÈ´Ù.
     IDV_STAT_INDEX_BEGIN_STMT_TO_SESS,
 
     IDV_STAT_INDEX_OPTM_QUERY_PARSE = IDV_STAT_INDEX_BEGIN_STMT_TO_SESS,
@@ -312,7 +312,7 @@ typedef enum idvStatIndex
 
 
 /* ------------------------------------------------
- *  Wait Event ì •ì˜
+ *  Wait Event Á¤ÀÇ
  * ----------------------------------------------*/
 typedef enum idvWaitIndex
 {
@@ -379,7 +379,7 @@ typedef enum idvWaitIndex
 
 } idvWaitIndex;
 
-/* ì—°ì‚° ì†Œìš”ì‹œê°„ ì¸¡ì •ì„ ìœ„í•œ Switch */
+/* ¿¬»ê ¼Ò¿ä½Ã°£ ÃøÁ¤À» À§ÇÑ Switch */
 typedef enum idvTimeSwitch
 {
     IDV_TIME_SWITCH_OFF = 0,
@@ -390,7 +390,7 @@ typedef enum idvTimeSwitch
 
 } idvTimeSwitch;
 
-/* ì—°ì‚° ì†Œìš”ì‹œê°„ ì¸¡ì •ì„ ìœ„í•œ Switch */
+/* ¿¬»ê ¼Ò¿ä½Ã°£ ÃøÁ¤À» À§ÇÑ Switch */
 typedef enum idvOwner
 {
     IDV_OWNER_UNKNOWN = 0,
@@ -408,10 +408,10 @@ typedef enum idvOwner
  * ----------------------------------------------*/
 typedef struct idvAccumTime
 {
-    /* ê²½ê³¼ì‹œê°„ ( ëˆ„ì ì¹˜ ) */
+    /* °æ°ú½Ã°£ ( ´©ÀûÄ¡ ) */
     ULong            mAccumTime;
     ULong            mElaTime;
-    /* ì¸¡ì •ì‹œì‘/ì™„ë£Œ/ë°˜ì˜ ì—¬ë¶€ */
+    /* ÃøÁ¤½ÃÀÛ/¿Ï·á/¹İ¿µ ¿©ºÎ */
     idvTimeSwitch    mTimeSwitch;
 
 } idvAccumTime;
@@ -422,9 +422,9 @@ typedef struct idvAccumTime
  * ----------------------------------------------*/
 typedef struct idvTimeBox
 {
-    /* ì¸¡ì •ì‹œì‘ì‹œê° */
+    /* ÃøÁ¤½ÃÀÛ½Ã°¢ */
     idvTime          mBegin;
-    /* ì¸¡ì •ì™„ë£Œì‹œê° */
+    /* ÃøÁ¤¿Ï·á½Ã°¢ */
     idvTime          mEnd;
 
     idvAccumTime     mATD;
@@ -432,32 +432,32 @@ typedef struct idvTimeBox
 } idvTimeBox;
 
 /* ------------------------------------------------
- *  Wait Event ë³„ í†µê³„ë°ì´íƒ€
+ *  Wait Event º° Åë°èµ¥ÀÌÅ¸
  * ----------------------------------------------*/
 typedef struct idvWaitEvent
 {
     /* Wait Event ID */
     idvWaitIndex mEventID;
 
-    /* ì´ ëŒ€ê¸° íšŸìˆ˜ ( session or sessions )*/
+    /* ÃÑ ´ë±â È½¼ö ( session or sessions )*/
     ULong        mTotalWaits;
 
-    /* ì§€ì •ëœ ëŒ€ê¸°ì‹œê°„ ì´í›„ì—ë„ ìš”ì²­í•œ ë¦¬ì†ŒìŠ¤ íšë“ ì‹¤íŒ¨ íšŸìˆ˜  */
+    /* ÁöÁ¤µÈ ´ë±â½Ã°£ ÀÌÈÄ¿¡µµ ¿äÃ»ÇÑ ¸®¼Ò½º È¹µæ ½ÇÆĞ È½¼ö  */
     ULong        mTotalTimeOuts;
 
-    /* ì´ ëŒ€ê¸°ì‹œê°„ (mili sec. ë‹¨ìœ„) */
+    /* ÃÑ ´ë±â½Ã°£ (mili sec. ´ÜÀ§) */
 //    ULong        mTimeWaited;
 
-    /* í‰ê· ëŒ€ê¸°ì‹œê°„ */
+    /* Æò±Õ´ë±â½Ã°£ */
 //    ULong        mAverageWait;
 
-    /* ìµœëŒ€ëŒ€ê¸°ì‹œê°„ */
+    /* ÃÖ´ë´ë±â½Ã°£ */
     ULong        mMaxWait;
 
-    /* ì´ëŒ€ê¸°ì‹œê°„ (micro sec. ë‹¨ìœ„) */
+    /* ÃÑ´ë±â½Ã°£ (micro sec. ´ÜÀ§) */
     ULong        mTimeWaitedMicro;
 
-    /* ì¸¡ì •ì‹œì‘/ì™„ë£Œ/ë°˜ì˜ ì—¬ë¶€ */
+    /* ÃøÁ¤½ÃÀÛ/¿Ï·á/¹İ¿µ ¿©ºÎ */
     idvTimeSwitch mTimeSwitch;
 
 } idvWaitEvent;
@@ -471,7 +471,7 @@ typedef struct idvStatEvent
 
 
 /* ------------------------------------------------
- * Wait Eventì˜ Wait Parameters
+ * Wait EventÀÇ Wait Parameters
  * ----------------------------------------------*/
 
 typedef enum idvWaitParamType
@@ -484,15 +484,15 @@ typedef enum idvWaitParamType
 
 typedef struct idvWeArgs
 {
-    /* statmenetì˜ í˜„ì¬ ëŒ€ê¸°ì¤‘ì¸ Wait Event ID */
+    /* statmenetÀÇ ÇöÀç ´ë±âÁßÀÎ Wait Event ID */
     idvWaitIndex   mWaitEventID;
-    /* í˜„ì¬ ëŒ€ê¸°ì¤‘ì¸ Wait Eventì™€ Wait Parameter */
+    /* ÇöÀç ´ë±âÁßÀÎ Wait Event¿Í Wait Parameter */
     ULong          mWaitParam[ IDV_WAIT_PARAM_COUNT ];
 } idvWeArgs;
 
 typedef struct idvSQL
 {
-    struct idvSession *mSess; /* ì†í•œ ì„¸ì…˜ */
+    struct idvSession *mSess; /* ¼ÓÇÑ ¼¼¼Ç */
 
     ULong    *mSessionEvent;  /* Session Event */
     UInt     *mCurrStmtID;    /* Current Statement ID for TIMEOUT Event */
@@ -572,11 +572,11 @@ typedef struct idvSQL
     idvTimeBox     mOpTime[ IDV_OPTM_INDEX_MAX ];
 
 
-    /* í˜„ì¬ ëŒ€ê¸°ì¤‘ì¸ ì´ë²¤íŠ¸ì— ëŒ€í•´ì„œ Wait Time ì¸¡ì •í• ë•Œ ì‚¬ìš©
-     * ì¸¡ì •ì™„ë£Œì‹œ ë°”ë¡œ Sessionì˜ í•´ë‹¹ Eventì— ë°˜ì˜ëœë‹¤. */
+    /* ÇöÀç ´ë±âÁßÀÎ ÀÌº¥Æ®¿¡ ´ëÇØ¼­ Wait Time ÃøÁ¤ÇÒ¶§ »ç¿ë
+     * ÃøÁ¤¿Ï·á½Ã ¹Ù·Î SessionÀÇ ÇØ´ç Event¿¡ ¹İ¿µµÈ´Ù. */
     idvTimeBox     mTimedWait;
 
-    /* WaitEvent ê¸°ìˆ ì ( id ë° parameters ) */
+    /* WaitEvent ±â¼úÀÚ ( id ¹× parameters ) */
     idvWeArgs      mWeArgs;
 
     /* Process Monitoring */
@@ -588,16 +588,16 @@ typedef struct idvSQL
 
 
 /* ------------------------------------------------
- * í†µê³„ ì •ë³´ì—ì„œ ì•„ë˜ëŠ” í•˜ë‚˜ì˜ ë©¤ë²„ì— ëŒ€í•œ ì†ì„±
+ * Åë°è Á¤º¸¿¡¼­ ¾Æ·¡´Â ÇÏ³ªÀÇ ¸â¹ö¿¡ ´ëÇÑ ¼Ó¼º
  * ----------------------------------------------*/
 
-#define IDV_ATTR_ACCUM   1 // ì„¸ì…˜ìœ¼ë¡œ ë¶€í„° í†µê³„ ìˆ˜ì§‘í•¨.
-#define IDV_ATTR_SETUP   2 // ë©”ëª¨ë¦¬ êµ¬ì¡°ë¡œ ë¶€í„° ì§ì ‘ ì‹œìŠ¤í…œìœ¼ë¡œ ì„¤ì •ë¨.
+#define IDV_ATTR_ACCUM   1 // ¼¼¼ÇÀ¸·Î ºÎÅÍ Åë°è ¼öÁıÇÔ.
+#define IDV_ATTR_SETUP   2 // ¸Ş¸ğ¸® ±¸Á¶·Î ºÎÅÍ Á÷Á¢ ½Ã½ºÅÛÀ¸·Î ¼³Á¤µÊ.
 
- // SMì—ì„œì˜ Page íƒ€ì… ê°œìˆ˜ì™€ ì¼ì¹˜í•˜ì—¬ì•¼ ì •í™•í•œ í†µê³„ë¥¼ êµ¬í• ìˆ˜ ìˆë‹¤.
+ // SM¿¡¼­ÀÇ Page Å¸ÀÔ °³¼ö¿Í ÀÏÄ¡ÇÏ¿©¾ß Á¤È®ÇÑ Åë°è¸¦ ±¸ÇÒ¼ö ÀÖ´Ù.
 #define IDV_SM_PAGE_TYPE_MAX  26  
 
-// X$SYSTEM_CONFLICT_PAGEì„ ìœ„í•œ ì¶œë ¥ êµ¬ì¡°ì²´ 
+// X$SYSTEM_CONFLICT_PAGEÀ» À§ÇÑ Ãâ·Â ±¸Á¶Ã¼ 
 typedef struct idvSysConflictPageFT
 {
     UInt     mPageType;
@@ -606,27 +606,27 @@ typedef struct idvSysConflictPageFT
 } idvSysConflictPageFT;
 
 /* ------------------------------------------------
- * ì„¸ì…˜ë³„ í†µê³„ë°ì´íƒ€
+ * ¼¼¼Çº° Åë°èµ¥ÀÌÅ¸
  * ----------------------------------------------*/
 typedef struct idvSession
 {
-    // ì„¸ì…˜ ID
+    // ¼¼¼Ç ID
     UInt mSID;
-    // ì„¸ì…˜ Stat Event ì •ë³´
+    // ¼¼¼Ç Stat Event Á¤º¸
     idvStatEvent mStatEvent[ IDV_STAT_INDEX_MAX ];
-    // ì„¸ì…˜ Wait Event ì •ë³´
+    // ¼¼¼Ç Wait Event Á¤º¸
     idvWaitEvent mWaitEvent[ IDV_WAIT_INDEX_MAX ];
 
-    // ì„¸ì…˜ì˜ Page Miss Count ëˆ„ì 
+    // ¼¼¼ÇÀÇ Page Miss Count ´©Àû
     ULong        mMissCnt[ IDV_SM_PAGE_TYPE_MAX ];
     ULong        mMissTime[ IDV_SM_PAGE_TYPE_MAX ];
 
-    /* BUG-19080: Old Versionì˜ ì–‘ì´ ì¼ì •ì´ìƒì´ ë˜ë©´ í•´ë‹¹
-     * Transactionì„ Abortí•˜ëŠ” ê¸°ëŠ¥ì´ í•„ìš”í•©ë‹ˆë‹¤.
+    /* BUG-19080: Old VersionÀÇ ¾çÀÌ ÀÏÁ¤ÀÌ»óÀÌ µÇ¸é ÇØ´ç
+     * TransactionÀ» AbortÇÏ´Â ±â´ÉÀÌ ÇÊ¿äÇÕ´Ï´Ù.
      *
-     * MMì˜ Sessionì˜ mmcSessionì„ ê°€ë¦¬í‚¤ê³  ìˆë‹¤.
-     * SMì—ì„œ MMì˜ Callback Functionì„ ì´ìš©í•´ì„œ
-     * í˜„ì¬ Sessionì˜ Pointerë¥¼ ê°€ì§„ë‹¤.
+     * MMÀÇ SessionÀÇ mmcSessionÀ» °¡¸®Å°°í ÀÖ´Ù.
+     * SM¿¡¼­ MMÀÇ Callback FunctionÀ» ÀÌ¿ëÇØ¼­
+     * ÇöÀç SessionÀÇ Pointer¸¦ °¡Áø´Ù.
      **/
     void*     mSession;
 } idvSession;
@@ -641,7 +641,7 @@ typedef struct idvStatName
     UInt         mSeqNum;
     const SChar *mName;
     UInt         mAttr;
-    UInt         mWaitClassID; /* Wait Nameì—ì„œë§Œ ì‚¬ìš©í•œë‹¤. */
+    UInt         mWaitClassID; /* Wait Name¿¡¼­¸¸ »ç¿ëÇÑ´Ù. */
 
 } idvStatName;
 

@@ -17,10 +17,10 @@
 
 /***********************************************************************
  *
- * $Id: sdpscSegDDL.cpp 83020 2018-05-11 06:34:58Z seulki $
+ * $Id: sdpscSegDDL.cpp 85837 2019-07-14 23:44:48Z emlee $
  *
- * ë³¸ íŒŒì¼ì€ Circular-List Managed Segmentì˜ Create/Drop/Alter/Reset ì—°ì‚°ì˜
- * STATIC ì¸í„°í˜ì´ìŠ¤ë“¤ì„ ê´€ë¦¬í•œë‹¤.
+ * º» ÆÄÀÏÀº Circular-List Managed SegmentÀÇ Create/Drop/Alter/Reset ¿¬»êÀÇ
+ * STATIC ÀÎÅÍÆäÀÌ½ºµéÀ» °ü¸®ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -38,13 +38,13 @@
 
 /***********************************************************************
  *
- * Description : [ INTERFACE ] Segment í• ë‹¹ ë° Segment Header ì´ˆê¸°í™”
+ * Description : [ INTERFACE ] Segment ÇÒ´ç ¹× Segment Header ÃÊ±âÈ­
  *
- * aStatistics - [IN]  í†µê³„ì •ë³´
- * aSpaceID    - [IN]  Tablespaceì˜ ID
- * aSegType    - [IN]  Segmentì˜ Type
- * aMtx        - [IN]  Mini Transactionì˜ Pointer
- * aSegHandle  - [IN]  Segmentì˜ Handle
+ * aStatistics - [IN]  Åë°èÁ¤º¸
+ * aSpaceID    - [IN]  TablespaceÀÇ ID
+ * aSegType    - [IN]  SegmentÀÇ Type
+ * aMtx        - [IN]  Mini TransactionÀÇ Pointer
+ * aSegHandle  - [IN]  SegmentÀÇ Handle
  *
  ***********************************************************************/
 IDE_RC sdpscSegDDL::createSegment( idvSQL                * aStatistics,
@@ -80,16 +80,16 @@ IDE_RC sdpscSegDDL::createSegment( idvSQL                * aStatistics,
 }
 
 /***********************************************************************
- * Description : Segmentë¥¼ í• ë‹¹í•œë‹¤.
+ * Description : Segment¸¦ ÇÒ´çÇÑ´Ù.
  *
- * segment ìƒì„±ì‹œ ì´ˆê¸° extent ê°œìˆ˜ë¥¼ í• ë‹¹í•œë‹¤. ë§Œì•½, ìƒì„±í•˜ë‹¤ê°€ ë¶€ì¡±í•˜ë‹¤ë©´
- * exception ì²˜ë¦¬í•œë‹¤.
+ * segment »ı¼º½Ã ÃÊ±â extent °³¼ö¸¦ ÇÒ´çÇÑ´Ù. ¸¸¾à, »ı¼ºÇÏ´Ù°¡ ºÎÁ·ÇÏ´Ù¸é
+ * exception Ã³¸®ÇÑ´Ù.
  *
- * aStatistics - [IN]  í†µê³„ì •ë³´
- * aSpaceID    - [IN]  Tablespaceì˜ ID
- * aSegHandle  - [IN]  Segmentì˜ Handle
- * aSegType    - [IN]  Segmentì˜ Type
- * aMtx        - [IN]  Mini Transactionì˜ Pointer
+ * aStatistics - [IN]  Åë°èÁ¤º¸
+ * aSpaceID    - [IN]  TablespaceÀÇ ID
+ * aSegHandle  - [IN]  SegmentÀÇ Handle
+ * aSegType    - [IN]  SegmentÀÇ Type
+ * aMtx        - [IN]  Mini TransactionÀÇ Pointer
  *
  ***********************************************************************/
 IDE_RC sdpscSegDDL::allocateSegment( idvSQL       * aStatistics,
@@ -112,8 +112,8 @@ IDE_RC sdpscSegDDL::allocateSegment( idvSQL       * aStatistics,
 
     sdrMiniTrans::makeStartInfo( aMtx, &sStartInfo );
 
-    /* Undo TablespaceëŠ” ì‹œìŠ¤í…œì— ì˜í•´ì„œ ìë™ìœ¼ë¡œ ê´€ë¦¬ë˜ë¯€ë¡œ
-     * Segment Storage Parameter ë“¤ì„ ëª¨ë‘ ë¬´ì‹œí•œë‹¤ */
+    /* Undo Tablespace´Â ½Ã½ºÅÛ¿¡ ÀÇÇØ¼­ ÀÚµ¿À¸·Î °ü¸®µÇ¹Ç·Î
+     * Segment Storage Parameter µéÀ» ¸ğµÎ ¹«½ÃÇÑ´Ù */
 
     IDE_TEST( sdrMiniTrans::begin( aStatistics,
                                    &sMtx,
@@ -128,7 +128,7 @@ IDE_RC sdpscSegDDL::allocateSegment( idvSQL       * aStatistics,
     IDE_TEST( sdptbExtent::allocExts( aStatistics,
                                       &sStartInfo,
                                       aSpaceID,
-                                      1,       // Extent ê°œìˆ˜
+                                      1,       // Extent °³¼ö
                                       (sdpExtDesc*)&sExtDesc )
               != IDE_SUCCESS );
 
@@ -150,8 +150,8 @@ IDE_RC sdpscSegDDL::allocateSegment( idvSQL       * aStatistics,
                                sCurExtDirInfo.mMaxExtCnt )
               != IDE_SUCCESS );
 
-    // Extent ë‹¨ìœ„ë¡œ Segment Header í˜ì´ì§€ì˜ ExtDir í˜ì´ì§€ì—
-    // ê¸°ë¡í•˜ê³ , Segment Header í˜ì´ì§€ë¥¼ ì„¤ì •í•œë‹¤.
+    // Extent ´ÜÀ§·Î Segment Header ÆäÀÌÁöÀÇ ExtDir ÆäÀÌÁö¿¡
+    // ±â·ÏÇÏ°í, Segment Header ÆäÀÌÁö¸¦ ¼³Á¤ÇÑ´Ù.
     IDE_TEST( addAllocExtDesc( aStatistics,
                                &sMtx,
                                aSpaceID,
@@ -182,18 +182,18 @@ IDE_RC sdpscSegDDL::allocateSegment( idvSQL       * aStatistics,
 }
 
 /***********************************************************************
- * Description : Segmentì— 1ê°œì´ìƒì˜ Extentë¥¼ í• ë‹¹í•œë‹¤.
+ * Description : Segment¿¡ 1°³ÀÌ»óÀÇ Extent¸¦ ÇÒ´çÇÑ´Ù.
  *
- * Segmentì— ì—°ê²°ëœ í• ë‹¹ëœ Extent í˜¹ì€ Extent Dir.ëŠ” Undo ë˜ì§€ ì•ŠëŠ”ë‹¤.
+ * Segment¿¡ ¿¬°áµÈ ÇÒ´çµÈ Extent È¤Àº Extent Dir.´Â Undo µÇÁö ¾Ê´Â´Ù.
  *
- * aStatistics     - [IN]  í†µê³„ì •ë³´
- * aSpaceID        - [IN]  Segmentì˜ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤
- * aCurExtDir      - [IN]  í˜„ì¬ ExtDirì˜ PID
- * aStartInfo      - [IN]  Mtx ì‹œì‘ì •ë³´
- * aFreeListIdx    - [IN]  í• ë‹¹ë°›ì„ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ExtDir FreeList íƒ€ì…
- * aAllocExtRID    - [OUT] í• ë‹¹ë°›ì€ Extent RID
- * aFstPIDOfExt    - [OUT] í• ë‹¹ë°›ì€ Extentì˜ ì²«ë²ˆì§¸ í˜ì´ì§€ ID
- * aFstDataPIDOfExt- [OUT] í• ë‹¹ë°›ì€ Extentì˜ ì²«ë²ˆì§¸ ë°ì´íƒ€ í˜ì´ì§€ ID
+ * aStatistics     - [IN]  Åë°èÁ¤º¸
+ * aSpaceID        - [IN]  SegmentÀÇ Å×ÀÌºí½ºÆäÀÌ½º
+ * aCurExtDir      - [IN]  ÇöÀç ExtDirÀÇ PID
+ * aStartInfo      - [IN]  Mtx ½ÃÀÛÁ¤º¸
+ * aFreeListIdx    - [IN]  ÇÒ´ç¹ŞÀ» Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ExtDir FreeList Å¸ÀÔ
+ * aAllocExtRID    - [OUT] ÇÒ´ç¹ŞÀº Extent RID
+ * aFstPIDOfExt    - [OUT] ÇÒ´ç¹ŞÀº ExtentÀÇ Ã¹¹øÂ° ÆäÀÌÁö ID
+ * aFstDataPIDOfExt- [OUT] ÇÒ´ç¹ŞÀº ExtentÀÇ Ã¹¹øÂ° µ¥ÀÌÅ¸ ÆäÀÌÁö ID
  *
  ***********************************************************************/
 IDE_RC sdpscSegDDL::allocNewExts( idvSQL           * aStatistics,
@@ -225,7 +225,7 @@ IDE_RC sdpscSegDDL::allocNewExts( idvSQL           * aStatistics,
     IDE_ASSERT( aFstPIDOfExt        != NULL );
     IDE_ASSERT( aFstDataPIDOfExt    != NULL );
 
-    /* BUG-46036 codesonar warning ì œê±° */
+    /* BUG-46036 codesonar warning Á¦°Å */
     sAllocExtDirInfo.mIsAllocNewExtDir = ID_FALSE;
 
 retry:
@@ -253,10 +253,10 @@ retry:
 
     if ( sCurExtDirInfo.mIsFull == ID_TRUE )
     {
-        // ExtDir í˜ì´ì§€ë¥¼ ìƒì„±í•´ì•¼í•œë‹¤ëŠ” ê²ƒì€ ê¸°ì¡´ LstExtDir í˜ì´ì§€ê°€
-        // ëª¨ë‘ ExtDescë¡œ ì±„ì›Œì¡Œë‹¤ëŠ” ê²ƒì´ë‹¤. ê·¸ëŸ¬ë¯€ë¡œ í˜„ì¬ ìƒˆë¡œìš´
-        // Extent Dir. í˜ì´ì§€ëŠ” í• ë‹¹ë˜ì–´ì ¸ì•¼í•œë‹¤ëŠ” ì˜ë¯¸ë¡œ SD_NULL_PIDë¡œ
-        // ì„¤ì •í•´ë‘”ë‹¤.
+        // ExtDir ÆäÀÌÁö¸¦ »ı¼ºÇØ¾ßÇÑ´Ù´Â °ÍÀº ±âÁ¸ LstExtDir ÆäÀÌÁö°¡
+        // ¸ğµÎ ExtDesc·Î Ã¤¿öÁ³´Ù´Â °ÍÀÌ´Ù. ±×·¯¹Ç·Î ÇöÀç »õ·Î¿î
+        // Extent Dir. ÆäÀÌÁö´Â ÇÒ´çµÇ¾îÁ®¾ßÇÑ´Ù´Â ÀÇ¹Ì·Î SD_NULL_PID·Î
+        // ¼³Á¤ÇØµĞ´Ù.
         IDE_TEST( sdpscExtDir::tryAllocExtDir( aStatistics,
                                                aStartInfo,
                                                aSpaceID,
@@ -285,8 +285,8 @@ retry:
             }
             else
             {
-                // Shrink ì—†ì´ ì¬ì‚¬ìš©ë˜ëŠ” ê²½ìš° í˜¹ì€ prepareNewPage4Appendì— ì˜í•´ì„œ
-                // NxtExtDirì´ ìƒì„±ëœ ê²½ìš°ëŠ” ì„¸ê·¸ë¨¼íŠ¸í—¤ë”ì— ì•„ë¬´ëŸ° ì‘ì—…ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                // Shrink ¾øÀÌ Àç»ç¿ëµÇ´Â °æ¿ì È¤Àº prepareNewPage4Append¿¡ ÀÇÇØ¼­
+                // NxtExtDirÀÌ »ı¼ºµÈ °æ¿ì´Â ¼¼±×¸ÕÆ®Çì´õ¿¡ ¾Æ¹«·± ÀÛ¾÷À» ÇÏÁö ¾Ê´Â´Ù.
             }
         }
 
@@ -297,8 +297,8 @@ retry:
 
     if ( sExtDescRID == SD_NULL_RID )
     {
-        // ìœ„ì˜ ì¬ì‚¬ìš©ì´ë‚˜ ExtDirë¥¼ í• ë‹¹ë°›ì§€ ëª»í•˜ì˜€ë‹¤ë©´,
-        // ë§ˆì§€ë§‰ìœ¼ë¡œ TBSë¡œë¶€í„° Extentë¥¼ í• ë‹¹í•œë‹¤.
+        // À§ÀÇ Àç»ç¿ëÀÌ³ª ExtDir¸¦ ÇÒ´ç¹ŞÁö ¸øÇÏ¿´´Ù¸é,
+        // ¸¶Áö¸·À¸·Î TBS·ÎºÎÅÍ Extent¸¦ ÇÒ´çÇÑ´Ù.
         if ( sdptbExtent::allocExts( aStatistics,
                                      aStartInfo,
                                      aSpaceID,
@@ -314,9 +314,9 @@ retry:
             IDE_TEST( sdrMiniTrans::commit( &sMtx ) != IDE_SUCCESS );
 
             /*
-             * BUG-27288 [5.3.3] Undo Full í›„ ì˜¤ëœì‹œê°„ì´ ì§€ë‚˜ë„ í•´ì†Œë˜ì§€ ì•ŠìŒ.
-             * : TBS í• ë‹¹ì´ ì‹¤íŒ¨í•œ ê²½ìš°ëŠ” ExtDirë¥¼ ê°•ì œì ìœ¼ë¡œ FULLì„ ë§Œë“¤ì–´
-             *   ë‹¤ì‹œ í•œë²ˆ ExtDir ì¬ì‚¬ìš©ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤.
+             * BUG-27288 [5.3.3] Undo Full ÈÄ ¿À·£½Ã°£ÀÌ Áö³ªµµ ÇØ¼ÒµÇÁö ¾ÊÀ½.
+             * : TBS ÇÒ´çÀÌ ½ÇÆĞÇÑ °æ¿ì´Â ExtDir¸¦ °­Á¦ÀûÀ¸·Î FULLÀ» ¸¸µé¾î
+             *   ´Ù½Ã ÇÑ¹ø ExtDir Àç»ç¿ë¿©ºÎ¸¦ È®ÀÎÇÑ´Ù.
              */
             IDE_TEST( sdrMiniTrans::begin( aStatistics,
                                            &sMtx,
@@ -345,9 +345,9 @@ retry:
             /* nothing  to do */
         }
 
-        /* Extent ë‹¨ìœ„ë¡œ Segment Header í˜ì´ì§€ì˜ í˜„ì¬ ExtDir í˜ì´ì§€ì—
-         * ê¸°ë¡í•˜ê±°ë‚˜, í•„ìš”í•˜ë‹¤ë©´ ExtDirë¥¼ ìƒì„±í•˜ì—¬ ê¸°ë¡í•˜ê³ 
-         * Segment Header í˜ì´ì§€ë¥¼ ì„¤ì •í•œë‹¤. */
+        /* Extent ´ÜÀ§·Î Segment Header ÆäÀÌÁöÀÇ ÇöÀç ExtDir ÆäÀÌÁö¿¡
+         * ±â·ÏÇÏ°Å³ª, ÇÊ¿äÇÏ´Ù¸é ExtDir¸¦ »ı¼ºÇÏ¿© ±â·ÏÇÏ°í
+         * Segment Header ÆäÀÌÁö¸¦ ¼³Á¤ÇÑ´Ù. */
         IDE_TEST( addAllocExtDesc( aStatistics,
                                    &sMtx,
                                    aSpaceID,
@@ -375,11 +375,10 @@ retry:
     }
     else
     {
-        // Shrink ì—†ì´ ì¬ì‚¬ìš©ë˜ëŠ” ê²½ìš° í˜¹ì€ prepareNewPage4Appendì— ì˜í•´ì„œ
-        // NxtExtDirì´ ìƒì„±ëœ ê²½ìš°ëŠ” ì„¸ê·¸ë¨¼íŠ¸í—¤ë”ì— ì•„ë¬´ëŸ° ì‘ì—…ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
-        IDE_ASSERT(
-            (sAllocExtDirInfo.mIsAllocNewExtDir == ID_FALSE) ||
-            (sAllocExtDirInfo.mNewExtDirPID     == sCurExtDirInfo.mNxtExtDirPID) );
+        // Shrink ¾øÀÌ Àç»ç¿ëµÇ´Â °æ¿ì È¤Àº prepareNewPage4Append¿¡ ÀÇÇØ¼­
+        // NxtExtDirÀÌ »ı¼ºµÈ °æ¿ì´Â ¼¼±×¸ÕÆ®Çì´õ¿¡ ¾Æ¹«·± ÀÛ¾÷À» ÇÏÁö ¾Ê´Â´Ù.
+        IDE_ASSERT( (sAllocExtDirInfo.mIsAllocNewExtDir == ID_FALSE) ||
+                    (sAllocExtDirInfo.mNewExtDirPID     == sCurExtDirInfo.mNxtExtDirPID) );
     }
 
     *aFstPIDOfExt     = sExtDesc.mExtFstPID;
@@ -408,19 +407,19 @@ retry:
 
 /***********************************************************************
  *
- * Description : ìƒˆë¡œìš´ í•˜ë‚˜ì˜ Extentë¥¼ Segmentì— í• ë‹¹í•˜ëŠ” ì—°ì‚°ì„ ì™„ë£Œ
+ * Description : »õ·Î¿î ÇÏ³ªÀÇ Extent¸¦ Segment¿¡ ÇÒ´çÇÏ´Â ¿¬»êÀ» ¿Ï·á
  *
- * Segmentì— í™•ì¥ëœ Extent Desc.ì— ëŒ€í•´ì„œ í•„ìš”í•˜ë‹¤ë©´ Extent Dir. í˜ì´ì§€ë¥¼
- * ìƒì„±í•˜ì—¬ Extent Descë¥¼ ê¸°ë¡í•˜ê±°ë‚˜ ê¸°ì¡´ Extent Dir. í˜ì´ì§€ì— ê¸°ë¡í•œë‹¤.
+ * Segment¿¡ È®ÀåµÈ Extent Desc.¿¡ ´ëÇØ¼­ ÇÊ¿äÇÏ´Ù¸é Extent Dir. ÆäÀÌÁö¸¦
+ * »ı¼ºÇÏ¿© Extent Desc¸¦ ±â·ÏÇÏ°Å³ª ±âÁ¸ Extent Dir. ÆäÀÌÁö¿¡ ±â·ÏÇÑ´Ù.
  *
- * aStatistics     - [IN]  í†µê³„ì •ë³´
- * aMtx            - [IN]  Mtxì˜ Pointer
- * aSpaceID        - [IN]  Tablespaceì˜ ID
- * aSegPID         - [IN]  ì„¸ê·¸ë¨¼íŠ¸ í—¤ë” PID
- * aCurExtDirInfo  - [IN]  í˜„ì¬ ExtDir ì •ë³´
- * aAllocExtRID    - [OUT] í• ë‹¹ë°›ì€ ExtDesc ì˜ RID
- * aExtDesc        - [OUT] ExtDesc ì •ë³´
- * sTotExtDescCnt  - [OUT] í™•ì¥ì´í›„ì— ì´ ExtDesc ê°œìˆ˜
+ * aStatistics     - [IN]  Åë°èÁ¤º¸
+ * aMtx            - [IN]  MtxÀÇ Pointer
+ * aSpaceID        - [IN]  TablespaceÀÇ ID
+ * aSegPID         - [IN]  ¼¼±×¸ÕÆ® Çì´õ PID
+ * aCurExtDirInfo  - [IN]  ÇöÀç ExtDir Á¤º¸
+ * aAllocExtRID    - [OUT] ÇÒ´ç¹ŞÀº ExtDesc ÀÇ RID
+ * aExtDesc        - [OUT] ExtDesc Á¤º¸
+ * sTotExtDescCnt  - [OUT] È®ÀåÀÌÈÄ¿¡ ÃÑ ExtDesc °³¼ö
  *
  ***********************************************************************/
 IDE_RC sdpscSegDDL::addAllocExtDesc( idvSQL             * aStatistics,
@@ -475,19 +474,19 @@ IDE_RC sdpscSegDDL::addAllocExtDesc( idvSQL             * aStatistics,
 
     IDE_ASSERT( aCurExtDirInfo->mTotExtCnt == sCurExtDirCntlHdr->mExtCnt );
 
-    // ë§Œì•½, extentì— pageê°€ ìƒì„±ë˜ì–´ ìˆì„ ìˆ˜ë„ ìˆìœ¼ë‹ˆê¹Œ
-    // ì²«ë²ˆì§¸ data í˜ì´ì§€ë¥¼ ExtDir í˜ì´ì§€ë¡œ ìƒì„±í•˜ê³ ,
-    // ì²«ë²ˆì¬ data í˜ì´ì§€ë¥¼ ê°±ì‹ í•œë‹¤.
+    // ¸¸¾à, extent¿¡ page°¡ »ı¼ºµÇ¾î ÀÖÀ» ¼öµµ ÀÖÀ¸´Ï±î
+    // Ã¹¹øÂ° data ÆäÀÌÁö¸¦ ExtDir ÆäÀÌÁö·Î »ı¼ºÇÏ°í,
+    // Ã¹¹øÀç data ÆäÀÌÁö¸¦ °»½ÅÇÑ´Ù.
     if ( aCurExtDirInfo->mIsFull == ID_TRUE )
     {
         IDE_ASSERT( sdpscExtDir::getFreeDescCnt( sCurExtDirCntlHdr ) == 0 );
 
-        /* makeExtDirFull() ë¥¼ í˜¸ì¶œí•˜ê²Œ ë˜ë©´, í•´ë‹¹ ExtDirì˜ mMaxExtCntë¥¼
-         * mExtCntë¡œ ë³€ê²½í•˜ì—¬ ê°•ì œë¡œ Full ìƒíƒœë¡œ ë§Œë“ ë‹¤.
-         * ì´ë ‡ê²Œ mMaxExtCntê°€ ë³€ê²½ëœ ExtDirì˜ CurExtDirInfoì—ì„œ mMaxExtCntë¥¼
-         * ê°€ì ¸ì˜¤ë©´ ë³€ê²½ëœ Maxê°’ì´ ì„¤ì •ë˜ê³ , ë³€ê²½ëœ Maxê°’ì´ ê³„ì†í•´ì„œ ë‹¤ìŒ
-         * ExtDirì— ë°˜ì˜ë˜ê²Œ ëœë‹¤. ë”°ë¼ì„œ Maxê°’ì„ í”„ë¡œí¼í‹°ì—ì„œ ê°€ì ¸ì˜¤ë„ë¡
-         * ìˆ˜ì •í•œë‹¤. */
+        /* makeExtDirFull() ¸¦ È£ÃâÇÏ°Ô µÇ¸é, ÇØ´ç ExtDirÀÇ mMaxExtCnt¸¦
+         * mExtCnt·Î º¯°æÇÏ¿© °­Á¦·Î Full »óÅÂ·Î ¸¸µç´Ù.
+         * ÀÌ·¸°Ô mMaxExtCnt°¡ º¯°æµÈ ExtDirÀÇ CurExtDirInfo¿¡¼­ mMaxExtCnt¸¦
+         * °¡Á®¿À¸é º¯°æµÈ Max°ªÀÌ ¼³Á¤µÇ°í, º¯°æµÈ Max°ªÀÌ °è¼ÓÇØ¼­ ´ÙÀ½
+         * ExtDir¿¡ ¹İ¿µµÇ°Ô µÈ´Ù. µû¶ó¼­ Max°ªÀ» ÇÁ·ÎÆÛÆ¼¿¡¼­ °¡Á®¿Àµµ·Ï
+         * ¼öÁ¤ÇÑ´Ù. */
         IDE_TEST( sdpscExtDir::createAndInitPage(
                                aStatistics,
                                aMtx,
@@ -514,12 +513,12 @@ IDE_RC sdpscSegDDL::addAllocExtDesc( idvSQL             * aStatistics,
         sCurExtDirPID = aCurExtDirInfo->mExtDirPID;
     }
 
-    /* To Fix BUG-23271 [SD] UDS/TSS í™•ì¥ì‹œ ì²«ë²ˆì§¸ Extent Dir.ì—
-     * í¬í•¨ëœ Extentì˜ First Data PageIDê°€ ì˜ëª»ê²°ì •ë¨
+    /* To Fix BUG-23271 [SD] UDS/TSS È®Àå½Ã Ã¹¹øÂ° Extent Dir.¿¡
+     * Æ÷ÇÔµÈ ExtentÀÇ First Data PageID°¡ Àß¸ø°áÁ¤µÊ
      *
-     * mIsNeedExtDirì´ Trueì´ ê²½ìš°ì™€ (Extent Dir.í˜ì´ì§€ì— ë”ì´ìƒ
-     * Extent Desc.ë¥¼ ê¸°ë¡í•  ìˆ˜ ì—†ëŠ” Overflowìƒí™©) Extent Desc.ì˜
-     * FstPIDê°€ SegPIDì¸ ê²½ìš°ëŠ” Extentì˜ FstPIDì™€ FstDataPIDê°€ ë‹¤ë¥´ë‹¤.
+     * mIsNeedExtDirÀÌ TrueÀÌ °æ¿ì¿Í (Extent Dir.ÆäÀÌÁö¿¡ ´õÀÌ»ó
+     * Extent Desc.¸¦ ±â·ÏÇÒ ¼ö ¾ø´Â Overflow»óÈ²) Extent Desc.ÀÇ
+     * FstPID°¡ SegPIDÀÎ °æ¿ì´Â ExtentÀÇ FstPID¿Í FstDataPID°¡ ´Ù¸£´Ù.
      */
     if ( (aCurExtDirInfo->mIsFull == ID_TRUE) ||
          (aExtDesc->mExtFstPID    == aSegPID) )
@@ -565,20 +564,20 @@ IDE_RC sdpscSegDDL::addAllocExtDesc( idvSQL             * aStatistics,
 
 /***********************************************************************
  *
- * Description : ìƒˆë¡œìš´ í•˜ë‚˜ì˜ ExtDirë¥¼ Segmentì— ì—°ê²°í•˜ëŠ” ì—°ì‚°
+ * Description : »õ·Î¿î ÇÏ³ªÀÇ ExtDir¸¦ Segment¿¡ ¿¬°áÇÏ´Â ¿¬»ê
  *
- * Extent Dir. í˜ì´ì§€ ë‹¨ìœ„ë¡œ Extentë¥¼ í• ë‹¹í•´ì™”ë‹¤ë©´, ì„¸ê·¸ë¨¼íŠ¸ì˜ í˜„ì¬ Extent Dir.
- * í˜ì´ì§€ ì•ì—ë‹¤ ì¶”ê°€í•œë‹¤.
- * ë§Œì•½, Nxt Extent Dir.ê°€ Shrink ê°€ ê°€ëŠ¥í•˜ë‹¤ê³  íŒë‹¨ë˜ì—ˆë‹¤ë©´,
- * Undo TBSì˜ ExtDir. FreeListì— ì¶”ê°€í•œë‹¤.
+ * Extent Dir. ÆäÀÌÁö ´ÜÀ§·Î Extent¸¦ ÇÒ´çÇØ¿Ô´Ù¸é, ¼¼±×¸ÕÆ®ÀÇ ÇöÀç Extent Dir.
+ * ÆäÀÌÁö ¾Õ¿¡´Ù Ãß°¡ÇÑ´Ù.
+ * ¸¸¾à, Nxt Extent Dir.°¡ Shrink °¡ °¡´ÉÇÏ´Ù°í ÆÇ´ÜµÇ¾ú´Ù¸é,
+ * Undo TBSÀÇ ExtDir. FreeList¿¡ Ãß°¡ÇÑ´Ù.
  *
- * aStatistics      - [IN] í†µê³„ì •ë³´
- * aMtx             - [IN] Mtxì˜ Pointer
- * aSpaceID         - [IN] Tablespaceì˜ ID
- * aSegPID          - [IN] ì„¸ê·¸ë¨¼íŠ¸ í—¤ë” PID
- * aFreeListIdx     - [IN] í• ë‹¹ë°›ì„ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ExtDir FreeList íƒ€ì…
- * aCurExtDirInfo   - [IN] í˜„ì¬ ExtDir ì •ë³´
- * aAllocExtDirInfo - [IN] ìƒˆë¡œìš´ ExtDir í• ë‹¹ ì •ë³´
+ * aStatistics      - [IN] Åë°èÁ¤º¸
+ * aMtx             - [IN] MtxÀÇ Pointer
+ * aSpaceID         - [IN] TablespaceÀÇ ID
+ * aSegPID          - [IN] ¼¼±×¸ÕÆ® Çì´õ PID
+ * aFreeListIdx     - [IN] ÇÒ´ç¹ŞÀ» Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ExtDir FreeList Å¸ÀÔ
+ * aCurExtDirInfo   - [IN] ÇöÀç ExtDir Á¤º¸
+ * aAllocExtDirInfo - [IN] »õ·Î¿î ExtDir ÇÒ´ç Á¤º¸
  *
  ***********************************************************************/
 IDE_RC sdpscSegDDL::addOrShrinkAllocExtDir(
@@ -631,38 +630,38 @@ IDE_RC sdpscSegDDL::addOrShrinkAllocExtDir(
                                   &sNewExtDirCntlHdr )
                   != IDE_SUCCESS );
 
-        // ì¬ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” ê²½ìš°ì—ëŠ” Shrink í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // Àç»ç¿ëÇÏÁö ¾Ê´Â °æ¿ì¿¡´Â Shrink ÇÏÁö ¾Ê´Â´Ù.
         IDE_ASSERT( aAllocExtDirInfo->mShrinkExtDirPID == SD_NULL_PID );
 
-        /* Extent Dir. ë‹¨ìœ„ í• ë‹¹ì´ ë°œìƒí• ë•Œì—ëŠ” ë‹¤ë¥¸ ì„¸ê·¸ë¨¼íŠ¸ì—ì„œ ì‚¬ìš©í•˜ë˜
-         * Extent Dir. í˜ì´ì§€ë¥¼ í• ë‹¹í•´ì˜¤ëŠ” ê²ƒì´ë‹¤. ê·¸ëŸ¬ë¯€ë¡œ ë§Œì•½ UndoTBSê°€
-         * ì¬êµ¬ë™ì‹œ ë¦¬ì…‹ì´ ë˜ì§€ ì•Šì€ ê²½ìš°ì—ëŠ” ì´ì „ êµ¬ë™ì‹œì— MaxExtInExtDir
-         * í”„ë¡œí¼í‹°ì— ì˜í•´ ìƒì„±ëœ Extent Dir.ë¡œ ì¡´ì¬í•  ìˆ˜ ìˆë‹¤.
-         * ì¼ë°˜ì ìœ¼ë¡œëŠ” ì¬êµ¬ë™ì‹œ UndoTBSë¥¼ ë¦¬ì…‹í•˜ê¸° ë•Œë¬¸ì— ë‹¤ë¥´ì§€ ì•Šë‹¤. */
+        /* Extent Dir. ´ÜÀ§ ÇÒ´çÀÌ ¹ß»ıÇÒ¶§¿¡´Â ´Ù¸¥ ¼¼±×¸ÕÆ®¿¡¼­ »ç¿ëÇÏ´ø
+         * Extent Dir. ÆäÀÌÁö¸¦ ÇÒ´çÇØ¿À´Â °ÍÀÌ´Ù. ±×·¯¹Ç·Î ¸¸¾à UndoTBS°¡
+         * Àç±¸µ¿½Ã ¸®¼ÂÀÌ µÇÁö ¾ÊÀº °æ¿ì¿¡´Â ÀÌÀü ±¸µ¿½Ã¿¡ MaxExtInExtDir
+         * ÇÁ·ÎÆÛÆ¼¿¡ ÀÇÇØ »ı¼ºµÈ Extent Dir.·Î Á¸ÀçÇÒ ¼ö ÀÖ´Ù.
+         * ÀÏ¹İÀûÀ¸·Î´Â Àç±¸µ¿½Ã UndoTBS¸¦ ¸®¼ÂÇÏ±â ¶§¹®¿¡ ´Ù¸£Áö ¾Ê´Ù. */
         IDE_TEST( sdpscSegHdr::addNewExtDir( aMtx,
                                              sSegHdr,
                                              sCurExtDirCntlHdr,
                                              sNewExtDirCntlHdr ) 
                   != IDE_SUCCESS );
 
-        /* BUG-29709 undo segmentì˜ total extent countê°€ ì˜ëª» ê´€ë¦¬ë˜ê³  ìˆìŠµë‹ˆë‹¤.
+        /* BUG-29709 undo segmentÀÇ total extent count°¡ Àß¸ø °ü¸®µÇ°í ÀÖ½À´Ï´Ù.
          *
-         * Segmentì— ì¶”ê°€ëœ ExtDirì˜ í—¤ë”(sNewExtDirCntlHdr)ì—ì„œ Extent ê°œìˆ˜ë¥¼
-         * ê°€ì ¸ì˜¨ë‹¤. */
+         * Segment¿¡ Ãß°¡µÈ ExtDirÀÇ Çì´õ(sNewExtDirCntlHdr)¿¡¼­ Extent °³¼ö¸¦
+         * °¡Á®¿Â´Ù. */
         sTotExtCntOfSeg += sNewExtDirCntlHdr->mExtCnt;
     }
     else
     {
-        // Nxt ExtDirì„ ì¬ì‚¬ìš©í•˜ëŠ” ê²½ìš°ì—ëŠ” ExtDir Listì— ì—°ê²°ì´
-        // ì´ë¯¸ ë˜ì–´ ìˆë‹¤. ì´ ê²½ìš°ì—ëŠ” ShrinkExtDirë§Œ ê³ ë ¤í•´ì£¼ë©´ ëœë‹¤.
+        // Nxt ExtDirÀ» Àç»ç¿ëÇÏ´Â °æ¿ì¿¡´Â ExtDir List¿¡ ¿¬°áÀÌ
+        // ÀÌ¹Ì µÇ¾î ÀÖ´Ù. ÀÌ °æ¿ì¿¡´Â ShrinkExtDir¸¸ °í·ÁÇØÁÖ¸é µÈ´Ù.
     }
 
     if ( aAllocExtDirInfo->mShrinkExtDirPID != SD_NULL_PID )
     {
         IDE_ASSERT( sCurExtDirCntlHdr == NULL );
 
-        // Shrink ì—°ì‚°ì´ ê°€ëŠ¥í•˜ë‹¤ëŠ” ê²ƒì€ Nxt Nxtë¥¼
-        // ì¬ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì—, ìƒˆë¡œìš´ Extent í˜¹ì€ Ext Dir. í• ë‹¹ì´ ì—†ë‹¤.
+        // Shrink ¿¬»êÀÌ °¡´ÉÇÏ´Ù´Â °ÍÀº Nxt Nxt¸¦
+        // Àç»ç¿ëÇÏ±â ¶§¹®¿¡, »õ·Î¿î Extent È¤Àº Ext Dir. ÇÒ´çÀÌ ¾ø´Ù.
         IDE_ASSERT( aAllocExtDirInfo->mIsAllocNewExtDir == ID_FALSE );
         IDE_ASSERT( aAllocExtDirInfo->mShrinkExtDirPID  != aSegPID );
 
@@ -690,22 +689,22 @@ IDE_RC sdpscSegDDL::addOrShrinkAllocExtDir(
                                   aAllocExtDirInfo->mShrinkExtDirPID )
                   != IDE_SUCCESS );
 
-        /* BUG-29709 undo segmentì˜ total extent countê°€ ì˜ëª» ê´€ë¦¬ë˜ê³  ìˆìŠµë‹ˆë‹¤.
+        /* BUG-29709 undo segmentÀÇ total extent count°¡ Àß¸ø °ü¸®µÇ°í ÀÖ½À´Ï´Ù.
          *
-         * Segmentì—ì„œ ì‚­ì œëœ Extent Dirì— í¬í•¨ëœ Extent ê°œìˆ˜ë¥¼ ë¹¼ì£¼ì–´ì•¼ í•œë‹¤.
+         * Segment¿¡¼­ »èÁ¦µÈ Extent Dir¿¡ Æ÷ÇÔµÈ Extent °³¼ö¸¦ »©ÁÖ¾î¾ß ÇÑ´Ù.
          *
-         * mExtCntInShrinkExtDirì€ sdpscExtDir::tryAllocExtDir()ì—ì„œ
-         * Next ExtDirê³¼ Next Next ExtDir ì´ ì¬ì‚¬ìš© ê°€ëŠ¥í• ë•Œ,
-         * Next ExtDirì„ shrinkí•˜ê³ , Next Next ExtDirì„ ì¬ì‚¬ìš©í•˜ëŠ”ë°,
-         * shrinkí•  Next ExtDir PIDë¥¼ AllocExtDirInfoì— ì„¤ì •í• ë•Œ í•¨ê»˜
-         * ì„¤ì •í•œë‹¤. */
+         * mExtCntInShrinkExtDirÀº sdpscExtDir::tryAllocExtDir()¿¡¼­
+         * Next ExtDir°ú Next Next ExtDir ÀÌ Àç»ç¿ë °¡´ÉÇÒ¶§,
+         * Next ExtDirÀ» shrinkÇÏ°í, Next Next ExtDirÀ» Àç»ç¿ëÇÏ´Âµ¥,
+         * shrinkÇÒ Next ExtDir PID¸¦ AllocExtDirInfo¿¡ ¼³Á¤ÇÒ¶§ ÇÔ²²
+         * ¼³Á¤ÇÑ´Ù. */
         IDE_ASSERT( sTotExtCntOfSeg > aAllocExtDirInfo->mExtCntInShrinkExtDir );
         sTotExtCntOfSeg -= aAllocExtDirInfo->mExtCntInShrinkExtDir;
     }
     else
     {
-        // ìƒˆë¡œ ì¶”ê°€ë„ Shrink ë„ ì—†ì´ ì¬ì‚¬ìš©í•˜ëŠ” ê²½ìš°ì—ëŠ”
-        // ExtDesc ê°œìˆ˜ì˜ ë³€í•¨ì´ ì—†ë‹¤.
+        // »õ·Î Ãß°¡µµ Shrink µµ ¾øÀÌ Àç»ç¿ëÇÏ´Â °æ¿ì¿¡´Â
+        // ExtDesc °³¼öÀÇ º¯ÇÔÀÌ ¾ø´Ù.
     }
 
     if ( sExtCntlHdr->mTotExtCnt != sTotExtCntOfSeg )
@@ -729,19 +728,19 @@ IDE_RC sdpscSegDDL::addOrShrinkAllocExtDir(
 
 /***********************************************************************
  *
- * Description : [INTERFACE] From ì„¸ê·¸ë¨¼íŠ¸ì—ì„œ To ì„¸ê·¸ë¨¼íŠ¸ë¡œ
- *               Extent Dirë¥¼ ì˜®ê¸´ë‹¤
+ * Description : [INTERFACE] From ¼¼±×¸ÕÆ®¿¡¼­ To ¼¼±×¸ÕÆ®·Î
+ *               Extent Dir¸¦ ¿Å±ä´Ù
  *
- * aStatistics  - [IN] í†µê³„ì •ë³´
- * aStartInfo   - [IN] Mtx ì‹œì‘ì •ë³´
- * aSpaceID     - [IN] í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID
- * aFrSegHandle - [IN] From ì„¸ê·¸ë¨¼íŠ¸ì˜ í•¸ë“¤
- * aFrSegPID    - [IN] From ì„¸ê·¸ë¨¼íŠ¸ì˜ PID
- * aFrCurExtDir - [IN] From ì„¸ê·¸ë¨¼íŠ¸ì˜ í˜„ì¬ ExtDir í˜ì´ì§€ì˜ PID
- * aToSegHandle - [IN] To ì„¸ê·¸ë¨¼íŠ¸ì˜ í•¸ë“¤
- * aToSegPID    - [IN] To ì„¸ê·¸ë¨¼íŠ¸ì˜ PID
- * aToCurExtDir - [IN] To ì„¸ê·¸ë¨¼íŠ¸ì˜ í˜„ì¬ ExtDir í˜ì´ì§€ì˜ PID
- * aTrySuccess  - [OUT] Stealì—°ì‚°ì˜ ì„±ê³µì—¬ë¶€ ë°˜í™˜
+ * aStatistics  - [IN] Åë°èÁ¤º¸
+ * aStartInfo   - [IN] Mtx ½ÃÀÛÁ¤º¸
+ * aSpaceID     - [IN] Å×ÀÌºí½ºÆäÀÌ½º ID
+ * aFrSegHandle - [IN] From ¼¼±×¸ÕÆ®ÀÇ ÇÚµé
+ * aFrSegPID    - [IN] From ¼¼±×¸ÕÆ®ÀÇ PID
+ * aFrCurExtDir - [IN] From ¼¼±×¸ÕÆ®ÀÇ ÇöÀç ExtDir ÆäÀÌÁöÀÇ PID
+ * aToSegHandle - [IN] To ¼¼±×¸ÕÆ®ÀÇ ÇÚµé
+ * aToSegPID    - [IN] To ¼¼±×¸ÕÆ®ÀÇ PID
+ * aToCurExtDir - [IN] To ¼¼±×¸ÕÆ®ÀÇ ÇöÀç ExtDir ÆäÀÌÁöÀÇ PID
+ * aTrySuccess  - [OUT] Steal¿¬»êÀÇ ¼º°ø¿©ºÎ ¹İÈ¯
  *
  ***********************************************************************/
 IDE_RC sdpscSegDDL::tryStealExts( idvSQL          * aStatistics,
@@ -773,8 +772,8 @@ IDE_RC sdpscSegDDL::tryStealExts( idvSQL          * aStatistics,
 
     *aTrySuccess = ID_FALSE;
     /*
-     * (1) From Segmentì˜ Current Extent Dirì˜
-     *     Next Extent Dirì´ ì¬ì‚¬ìš© ê°€ëŠ¥í•œì§€ ì²´í¬í•´ë³¸ë‹¤.
+     * (1) From SegmentÀÇ Current Extent DirÀÇ
+     *     Next Extent DirÀÌ Àç»ç¿ë °¡´ÉÇÑÁö Ã¼Å©ÇØº»´Ù.
      */
     IDE_TEST( sdpscExtDir::getCurExtDirInfo( aStatistics,
                                              aSpaceID,
@@ -785,11 +784,11 @@ IDE_RC sdpscSegDDL::tryStealExts( idvSQL          * aStatistics,
 
     /* BUG-30897 When the CurAllocExt locates in the Segment Header Page, 
      *           An UndoSegemnt can not steal an Extent from other Segment.
-     * Next Extend Directoryê°€ SegHdrì¼ ê²½ìš°, ìƒëŒ€ì˜ SegmentHeaderê°€ ë“¤ì–´ê°„
-     * ExtentDirectoryëŠ” ì¬í™œìš© í•  ìˆ˜ ì—†ê¸° ë•Œë¬¸ì— ë‹¤ìŒ Extentë¥¼ ì„ íƒí•œë‹¤. */
+     * Next Extend Directory°¡ SegHdrÀÏ °æ¿ì, »ó´ëÀÇ SegmentHeader°¡ µé¾î°£
+     * ExtentDirectory´Â ÀçÈ°¿ë ÇÒ ¼ö ¾ø±â ¶§¹®¿¡ ´ÙÀ½ Extent¸¦ ¼±ÅÃÇÑ´Ù. */
     if( aFrSegPID == sCurExtDirInfo.mNxtExtDirPID )
     {
-        /* ìê¸° í˜¼ìë°–ì— ë‚¨ì§€ì•Šì•˜ìœ¼ë©´ ë³¼ í•„ìš” ì—†ë‹¤.*/
+        /* ÀÚ±â È¥ÀÚ¹Û¿¡ ³²Áö¾Ê¾ÒÀ¸¸é º¼ ÇÊ¿ä ¾ø´Ù.*/
         IDE_TEST_CONT( sCurExtDirInfo.mExtDirPID == 
                              sCurExtDirInfo.mNxtExtDirPID,
                         CONT_CANT_STEAL );
@@ -798,7 +797,7 @@ IDE_RC sdpscSegDDL::tryStealExts( idvSQL          * aStatistics,
                        (void*)&sCurExtDirInfo, 
                        ID_SIZEOF( sdpscExtDirInfo ) );
 
-        /* ë‹¤ìŒ ExtentDirectoryë¥¼ ì–»ëŠ”ë‹¤. */
+        /* ´ÙÀ½ ExtentDirectory¸¦ ¾ò´Â´Ù. */
         aFrCurExtDir = sCurExtDirInfo.mNxtExtDirPID;
 
         IDE_TEST( sdpscExtDir::getCurExtDirInfo( aStatistics,
@@ -810,13 +809,13 @@ IDE_RC sdpscSegDDL::tryStealExts( idvSQL          * aStatistics,
                   != IDE_SUCCESS );       
 
 
-        /* NextOfNextê°€ Old(ì›ë˜ì˜ ED)ì¼ ê²½ìš°, í•œë°”í€´ ëŒì•˜ë‹¤ëŠ” ëœ»ìœ¼ë¡œ
-         * ì‚¬ìš©ì¤‘ì¸ EDë‹¤. ë”°ë¼ì„œ, ë³¼ í•„ìš”ê°€ ì—†ë‹¤. */
+        /* NextOfNext°¡ Old(¿ø·¡ÀÇ ED)ÀÏ °æ¿ì, ÇÑ¹ÙÄû µ¹¾Ò´Ù´Â ¶æÀ¸·Î
+         * »ç¿ëÁßÀÎ ED´Ù. µû¶ó¼­, º¼ ÇÊ¿ä°¡ ¾ø´Ù. */
         IDE_TEST_CONT( sCurExtDirInfo.mNxtExtDirPID == sOldExtDirInfo.mExtDirPID,
                        CONT_CANT_STEAL );
     }
 
-    /* NxtExt ê°€ steal ê°€ëŠ¥í•œì§€ í™•ì¸í•œë‹¤ */
+    /* NxtExt °¡ steal °¡´ÉÇÑÁö È®ÀÎÇÑ´Ù */
     IDE_TEST( sdpscExtDir::checkNxtExtDir4Steal( aStatistics,
                                                  aStartInfo,
                                                  aSpaceID,
@@ -829,9 +828,9 @@ IDE_RC sdpscSegDDL::tryStealExts( idvSQL          * aStatistics,
                     CONT_CANT_STEAL );
 
     /*
-     * BUG-29709 undo segmentì˜ total extent countê°€ ì˜ëª» ê´€ë¦¬ë˜ê³  ìˆìŠµë‹ˆë‹¤.
+     * BUG-29709 undo segmentÀÇ total extent count°¡ Àß¸ø °ü¸®µÇ°í ÀÖ½À´Ï´Ù.
      *
-     * (2) From Segmentì—ì„œ steal ê°€ëŠ¥í•œ(NxtExt)ExtDirInfoë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+     * (2) From Segment¿¡¼­ steal °¡´ÉÇÑ(NxtExt)ExtDirInfo¸¦ °¡Á®¿Â´Ù.
      */
     IDE_TEST( sdpscExtDir::getCurExtDirInfo( aStatistics,
                                              aSpaceID,
@@ -841,9 +840,9 @@ IDE_RC sdpscSegDDL::tryStealExts( idvSQL          * aStatistics,
               != IDE_SUCCESS );
 
     /*
-     * (3) From Segmentë¡œë¶€í„° ì°¾ì€ Extent Dir í˜ì´ì§€ë¥¼ ë–¼ì–´ë‚´ê³ ,
-     *     To Segmentì— Current Extent Dirì˜ Nextì— ì¶”ê°€í•œë‹¤.
-     *     ì—°ì‚°ì´ ì‹¤íŒ¨í•´ë„ ê·¸ë§Œì´ë‹¤.
+     * (3) From Segment·ÎºÎÅÍ Ã£Àº Extent Dir ÆäÀÌÁö¸¦ ¶¼¾î³»°í,
+     *     To Segment¿¡ Current Extent DirÀÇ Next¿¡ Ãß°¡ÇÑ´Ù.
+     *     ¿¬»êÀÌ ½ÇÆĞÇØµµ ±×¸¸ÀÌ´Ù.
      */
     IDE_TEST( sdrMiniTrans::begin( aStatistics,
                                    &sMtx,
@@ -859,7 +858,7 @@ IDE_RC sdpscSegDDL::tryStealExts( idvSQL          * aStatistics,
     IDE_ERROR( sNxtExtDirInfo.mExtDirPID == sAllocExtDirInfo.mNewExtDirPID );
     IDE_ERROR( sNxtExtDirInfo.mNxtExtDirPID == sAllocExtDirInfo.mNxtPIDOfNewExtDir );
 
-    /* From Segmentì—ì„œ NxtExtë¥¼ (steal ê°€ëŠ¥í•œ) ì œê±°  */
+    /* From Segment¿¡¼­ NxtExt¸¦ (steal °¡´ÉÇÑ) Á¦°Å  */
     IDE_TEST( sdpscSegHdr::removeExtDir( 
                          aStatistics,
                          &sMtx,
@@ -872,8 +871,8 @@ IDE_RC sdpscSegDDL::tryStealExts( idvSQL          * aStatistics,
                          &sTotExtCntOfFrSeg )
               != IDE_SUCCESS );
 
-    /* stealí•œ ExtCntë³´ë‹¤ To Segmentì—ì„œ ê´€ë¦¬í•˜ëŠ” MaxExtCntê°€ ë§ë‹¤ë©´
-       ë‚˜ë¨¸ì§€ ë¶€ë¶„ì„ free */
+    /* stealÇÑ ExtCntº¸´Ù To Segment¿¡¼­ °ü¸®ÇÏ´Â MaxExtCnt°¡ ¸¹´Ù¸é
+       ³ª¸ÓÁö ºÎºĞÀ» free */
     IDE_TEST( sdpscExtDir::shrinkExtDir( aStatistics,
                                          &sMtx,
                                          aSpaceID,
@@ -881,7 +880,7 @@ IDE_RC sdpscSegDDL::tryStealExts( idvSQL          * aStatistics,
                                          &sAllocExtDirInfo )
               != IDE_SUCCESS ); 
 
-    /* To Segmentì— NxtExtë¥¼ (steal ê°€ëŠ¥í•œ) add */
+    /* To Segment¿¡ NxtExt¸¦ (steal °¡´ÉÇÑ) add */
     IDE_TEST( sdpscSegHdr::addNewExtDir( 
                              aStatistics,
                              &sMtx,

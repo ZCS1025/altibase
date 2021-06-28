@@ -19,7 +19,7 @@
  * $Id: stdUtils.h 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * Geometry ì—°ì‚°ì— í•„ìš”í•œ ê¸°ë³¸ ì—°ì‚°ìë“¤
+ * Geometry ¿¬»ê¿¡ ÇÊ¿äÇÑ ±âº» ¿¬»êÀÚµé
  **********************************************************************/
 
 #ifndef _O_STD_UTILS_H_
@@ -177,6 +177,7 @@ public:
 
     static idBool isValidType(UShort aType, idBool bIncludeNull);
     static idBool is2DType(UShort aType);
+    static idBool isExtendedType( UShort aType );
 
     static SInt getDimension( stdGeometryHeader*  aObj );
 

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsfUpdating.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qsfUpdating.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <qsf.h>
@@ -51,7 +51,7 @@ IDE_RC qsfUpdatingCalculate1Arg(mtcNode*     aNode,
 mtfModule qsfUpdatingModule = {
     1|MTC_NODE_OPERATOR_FUNCTION|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     qsfUpdatingFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -204,8 +204,8 @@ IDE_RC qsfUpdatingCalculate1Arg(mtcNode*     aNode,
                                   sUptColumn->namePos.stmtText + sUptColumn->namePos.offset,
                                   sUptColumn->namePos.size ) == 0 )
             {
-                // offsetì´ 0ì¸ columnì€ triggerì—ì„œ ë³€ê²½í•œ columnì„ ì¶”ê°€í•œ ê²ƒì´ë‹¤.
-                // ë”°ë¼ì„œ offsetì´ 0ì¸ ê²½ìš°ëŠ” ì œì™¸í•œë‹¤.
+                // offsetÀÌ 0ÀÎ columnÀº trigger¿¡¼­ º¯°æÇÑ columnÀ» Ãß°¡ÇÑ °ÍÀÌ´Ù.
+                // µû¶ó¼­ offsetÀÌ 0ÀÎ °æ¿ì´Â Á¦¿ÜÇÑ´Ù.
                 if ( sUptColumn->namePos.offset != 0 )
                 {
                     sRet = MTD_BOOLEAN_TRUE;

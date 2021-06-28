@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: aexport.cpp 82975 2018-05-04 03:50:15Z bethy $
+ * $Id: aexport.cpp 88494 2020-09-04 04:29:31Z chkim $
  **********************************************************************/
 
 #include <idl.h>
@@ -47,6 +47,9 @@ utmProgOption  gProgOption;
 uteErrorMgr    gErrorMgr;
 FileStream     gFileStream;
 
+/* BUG-47159 Using DBMS_METADATA package in aexport */
+utmDbmsMeta       *gMeta;
+
 extern ObjectModeInfo *gObjectModeInfo;
 
 static void show_copyright();
@@ -62,16 +65,17 @@ static IDE_RC hasEnoughPriv4Analysis( SChar *UserName );
 
 int main(int argc, char** argv)
 {
-//    SChar     *s_pw_pos;
+    gMeta = new utmDbmsMeta();
 
     IDE_TEST(gProgOption.ParsingCommandLine(argc, argv) != IDE_SUCCESS);
 
     show_copyright();
 
-    // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
-    gProgOption.ReadEnvironment();
+    /* BUG-47652 Set file permission */
+    // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
+    IDE_TEST_RAISE( gProgOption.ReadEnvironment() != IDE_SUCCESS, env_var_error );
 
-    // BUG-26287: ìˆìœ¼ë©´ altibase.propertiesë„ ì°¸ì¡° (for server)
+    // BUG-26287: ÀÖÀ¸¸é altibase.propertiesµµ ÂüÁ¶ (for server)
     gProgOption.ReadServerProperties();
 
     IDE_TEST(gProgOption.getProperties() != IDE_SUCCESS);
@@ -86,6 +90,9 @@ int main(int argc, char** argv)
 
         IDE_TEST_RAISE(init_handle() != SQL_SUCCESS,
                        init_error);
+
+        /* BUG-47159 Using DBMS_METADATA package in aexport */
+        IDE_TEST_RAISE(gMeta->initialize(m_hdbc), init_error);
 
         if ( gProgOption.m_bExist_OBJECT == ID_TRUE )
         {
@@ -115,6 +122,11 @@ int main(int argc, char** argv)
         printError();
     }
     IDE_EXCEPTION(fini_error);
+    {
+        printError();
+    }
+    /* BUG-47652 Set file permission */
+    IDE_EXCEPTION(env_var_error);
     {
         printError();
     }
@@ -261,7 +273,7 @@ static IDE_RC createFile( SChar *aUserName)
                                   != SQL_SUCCESS, openError );
     }
     
-    /* import ë¥¼ ìœ„í•œ ì‹¤í–‰ ìŠ¤í¬ë¦½íŠ¸ ìƒì„± run_is_*.sh */
+    /* import ¸¦ À§ÇÑ ½ÇÇà ½ºÅ©¸³Æ® »ı¼º run_is_*.sh */
     IDE_TEST_RAISE( open_file( gProgOption.mScriptIsql, &gFileStream.mIsFp )
                                != SQL_SUCCESS, openError);
 
@@ -563,7 +575,7 @@ static IDE_RC doExport()
     SChar      sPasswd[50];
     SChar     *sObjName = NULL;
 
-    /* BUG-36593: like BUG-17563(iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°) */
+    /* BUG-36593: like BUG-17563(iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å) */
     idlOS::strcpy( sUserName, gProgOption.GetUserNameInSQL() );
     idlOS::strcpy( sPasswd, gProgOption.GetPassword() );
 
@@ -592,7 +604,7 @@ static IDE_RC doExport()
                                        != SQL_SUCCESS,
                                        table_error );
     
-        //BUG-22708 directoryì˜ ì†Œìœ ìëŠ” SYSì´ë¯€ë¡œ, ì´ ê²½ìš°ì—ë§Œ ì²˜ë¦¬ë˜ì–´ì•¼ í•¨..
+        //BUG-22708 directoryÀÇ ¼ÒÀ¯ÀÚ´Â SYSÀÌ¹Ç·Î, ÀÌ °æ¿ì¿¡¸¸ Ã³¸®µÇ¾î¾ß ÇÔ..
         IDE_TEST_RAISE( getDirectoryAll( gFileStream.mDirFp )
                                          != SQL_SUCCESS, table_error );
     }
@@ -924,7 +936,7 @@ static IDE_RC doMakeRunScript()
     idBool sNeedQuote4Pwd = ID_FALSE;
     idBool sNeedQuote4File   = ID_FALSE;
 
-    /* BUG-36593: like BUG-17563(iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°) */
+    /* BUG-36593: like BUG-17563(iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å) */
     idlOS::strcpy(sUserName, gProgOption.GetUserNameInSQL());
     idlOS::strcpy(sPasswd, gProgOption.GetPassword());
 

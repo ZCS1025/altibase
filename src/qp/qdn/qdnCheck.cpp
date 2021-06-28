@@ -39,14 +39,14 @@ IDE_RC qdnCheck::makeColumnNameListFromExpression(
 /***********************************************************************
  *
  * Description :
- *  Parsing ë‹¨ê³„ì˜ expressionì„ ëŒ€ìƒìœ¼ë¡œ, íŠ¹ì • ì»¬ëŸ¼ì˜ Column Name Listë¥¼ ë§Œë“ ë‹¤.
- *      - subqueryë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *  Parsing ´Ü°èÀÇ expressionÀ» ´ë»óÀ¸·Î, Æ¯Á¤ ÄÃ·³ÀÇ Column Name List¸¦ ¸¸µç´Ù.
+ *      - subquery¸¦ Áö¿øÇÏÁö ¾Ê´Â´Ù.
  *
  * Implementation :
- *  (1) qtc::makeColumn()ì—ì„œ ì§€ì •í•œ í•­ëª©ìœ¼ë¡œ Columnì¸ì§€ í™•ì¸í•˜ê³ ,
- *      Column Nameì´ ì¼ì¹˜í•˜ë©´ Column Name Listë¥¼ êµ¬ì„±í•œë‹¤.
- *  (2) argumentsë¥¼ Recursive Call
- *  (3) nextë¥¼ Recursive Call
+ *  (1) qtc::makeColumn()¿¡¼­ ÁöÁ¤ÇÑ Ç×¸ñÀ¸·Î ColumnÀÎÁö È®ÀÎÇÏ°í,
+ *      Column NameÀÌ ÀÏÄ¡ÇÏ¸é Column Name List¸¦ ±¸¼ºÇÑ´Ù.
+ *  (2) arguments¸¦ Recursive Call
+ *  (3) next¸¦ Recursive Call
  *
  ***********************************************************************/
 
@@ -54,11 +54,11 @@ IDE_RC qdnCheck::makeColumnNameListFromExpression(
     qcNamePosList * sLastColumnName = NULL;
     qcNamePosList * sNewColumnName  = NULL;
 
-    /* qtc::makeColumn()ì—ì„œ ì§€ì •í•œ í•­ëª©ìœ¼ë¡œ Columnì¸ì§€ í™•ì¸í•˜ê³  */
+    /* qtc::makeColumn()¿¡¼­ ÁöÁ¤ÇÑ Ç×¸ñÀ¸·Î ColumnÀÎÁö È®ÀÎÇÏ°í */
     if ( (QC_IS_NULL_NAME( aNode->columnName ) == ID_FALSE) &&
          (aNode->node.module == &qtc::columnModule) )
     {
-        /* Column Nameì´ ì¼ì¹˜í•˜ë©´ Column Name Listë¥¼ êµ¬ì„±í•œë‹¤. */
+        /* Column NameÀÌ ÀÏÄ¡ÇÏ¸é Column Name List¸¦ ±¸¼ºÇÑ´Ù. */
         if ( QC_IS_NAME_MATCHED( aNode->columnName, aColumnName ) )
         {
             IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement), qcNamePosList, &sNewColumnName )
@@ -91,7 +91,7 @@ IDE_RC qdnCheck::makeColumnNameListFromExpression(
         /* Nothing to do */
     }
 
-    /* argumentsë¥¼ Recursive Call */
+    /* arguments¸¦ Recursive Call */
     if ( aNode->node.arguments != NULL )
     {
         IDE_TEST( makeColumnNameListFromExpression(
@@ -106,7 +106,7 @@ IDE_RC qdnCheck::makeColumnNameListFromExpression(
         /* Nothing to do */
     }
 
-    /* nextë¥¼ Recursive Call */
+    /* next¸¦ Recursive Call */
     if ( aNode->node.next != NULL )
     {
         IDE_TEST( makeColumnNameListFromExpression(
@@ -138,19 +138,19 @@ IDE_RC qdnCheck::renameColumnInExpression(
 /***********************************************************************
  *
  * Description :
- *  expression ë‚´ì˜ ì»¬ëŸ¼ ì´ë¦„ì„ ë³€ê²½í•˜ì—¬, ìƒˆë¡œìš´ expression ë¬¸ìì—´ì„ ë§Œë“ ë‹¤.
- *      - ë”°ì˜´í‘œë¥¼ ì´ìš©í•œ ì»¬ëŸ¼ ì´ë¦„ì„ ì§€ì›í•œë‹¤.
- *      - subqueryë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *  expression ³»ÀÇ ÄÃ·³ ÀÌ¸§À» º¯°æÇÏ¿©, »õ·Î¿î expression ¹®ÀÚ¿­À» ¸¸µç´Ù.
+ *      - µû¿ÈÇ¥¸¦ ÀÌ¿ëÇÑ ÄÃ·³ ÀÌ¸§À» Áö¿øÇÑ´Ù.
+ *      - subquery¸¦ Áö¿øÇÏÁö ¾Ê´Â´Ù.
  *
  * Implementation :
- *  (1) ë”°ì˜´í‘œë¥¼ ê³ ë ¤í•˜ì—¬, ìƒˆë¡œìš´ ì»¬ëŸ¼ ì´ë¦„ì˜ Offsetê³¼ Sizeë¥¼ êµ¬í•œë‹¤.
- *  (2) ì´ì „ ì»¬ëŸ¼ ì´ë¦„ìœ¼ë¡œ expressionì—ì„œ Column Name Listë¥¼ ì–»ëŠ”ë‹¤.
- *  (3) ìƒˆë¡œìš´ expression ë¬¸ìì—´ì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê³  ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•œë‹¤.
- *  (4) ìƒˆë¡œìš´ expressionì„ ë§Œë“ ë‹¤. (ì•„ë˜ ë°˜ë³µ)
- *    a. ë”°ì˜´í‘œë¥¼ ê³ ë ¤í•˜ì—¬, ì´ì „ ì»¬ëŸ¼ ì´ë¦„ì˜ Offsetê³¼ Sizeë¥¼ êµ¬í•œë‹¤.
- *    b. ì´ì „ ì§€ì ë¶€í„° í˜„ì¬ ì§€ì ê¹Œì§€ ë³µì‚¬í•œë‹¤.
- *    c. ìƒˆë¡œìš´ ì»¬ëŸ¼ ì´ë¦„ì„ ë³µì‚¬í•œë‹¤.
- *  (5) ë§ˆì§€ë§‰ ì»¬ëŸ¼ ì´ë¦„ ì´í›„ì˜, ë‚¨ì€ expression ë¬¸ìì—´ì„ ë³µì‚¬í•œë‹¤.
+ *  (1) µû¿ÈÇ¥¸¦ °í·ÁÇÏ¿©, »õ·Î¿î ÄÃ·³ ÀÌ¸§ÀÇ Offset°ú Size¸¦ ±¸ÇÑ´Ù.
+ *  (2) ÀÌÀü ÄÃ·³ ÀÌ¸§À¸·Î expression¿¡¼­ Column Name List¸¦ ¾ò´Â´Ù.
+ *  (3) »õ·Î¿î expression ¹®ÀÚ¿­ÀÇ Å©±â¸¦ ±¸ÇÏ°í ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÑ´Ù.
+ *  (4) »õ·Î¿î expressionÀ» ¸¸µç´Ù. (¾Æ·¡ ¹İº¹)
+ *    a. µû¿ÈÇ¥¸¦ °í·ÁÇÏ¿©, ÀÌÀü ÄÃ·³ ÀÌ¸§ÀÇ Offset°ú Size¸¦ ±¸ÇÑ´Ù.
+ *    b. ÀÌÀü ÁöÁ¡ºÎÅÍ ÇöÀç ÁöÁ¡±îÁö º¹»çÇÑ´Ù.
+ *    c. »õ·Î¿î ÄÃ·³ ÀÌ¸§À» º¹»çÇÑ´Ù.
+ *  (5) ¸¶Áö¸· ÄÃ·³ ÀÌ¸§ ÀÌÈÄÀÇ, ³²Àº expression ¹®ÀÚ¿­À» º¹»çÇÑ´Ù.
  ***********************************************************************/
 
     qcNamePosList * sColumnNameList = NULL;
@@ -163,7 +163,7 @@ IDE_RC qdnCheck::renameColumnInExpression(
     SInt            sNewColumnNameOffset;
     SInt            sNewColumnNameSize;
 
-    /* ë”°ì˜´í‘œë¥¼ ê³ ë ¤í•˜ì—¬, ìƒˆë¡œìš´ ì»¬ëŸ¼ ì´ë¦„ì˜ Offsetê³¼ Sizeë¥¼ êµ¬í•œë‹¤. */
+    /* µû¿ÈÇ¥¸¦ °í·ÁÇÏ¿©, »õ·Î¿î ÄÃ·³ ÀÌ¸§ÀÇ Offset°ú Size¸¦ ±¸ÇÑ´Ù. */
     if ( (aNewColumnName.offset > 0) &&
          (aNewColumnName.size > 0) )
     {
@@ -184,7 +184,7 @@ IDE_RC qdnCheck::renameColumnInExpression(
         sNewColumnNameSize   = aNewColumnName.size;
     }
 
-    /* ì´ì „ ì»¬ëŸ¼ ì´ë¦„ìœ¼ë¡œ expressionì—ì„œ Column Name Listë¥¼ ì–»ëŠ”ë‹¤. */
+    /* ÀÌÀü ÄÃ·³ ÀÌ¸§À¸·Î expression¿¡¼­ Column Name List¸¦ ¾ò´Â´Ù. */
     IDE_TEST( makeColumnNameListFromExpression( aStatement,
                                                 &sColumnNameList,
                                                 aNode,
@@ -193,7 +193,7 @@ IDE_RC qdnCheck::renameColumnInExpression(
 
     if ( sColumnNameList != NULL )
     {
-        /* ìƒˆë¡œìš´ expression ë¬¸ìì—´ì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê³  ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•œë‹¤. (NULL í¬í•¨) */
+        /* »õ·Î¿î expression ¹®ÀÚ¿­ÀÇ Å©±â¸¦ ±¸ÇÏ°í ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÑ´Ù. (NULL Æ÷ÇÔ) */
         sNewExpressionStrSize = aNode->position.size;
         for ( sColumnName = sColumnNameList;
               sColumnName != NULL;
@@ -225,13 +225,13 @@ IDE_RC qdnCheck::renameColumnInExpression(
                   != IDE_SUCCESS );
         idlOS::memset( sNewExpressionStr, 0x00, sNewExpressionStrSize );
 
-        /* ìƒˆë¡œìš´ expressionì„ ë§Œë“ ë‹¤. */
+        /* »õ·Î¿î expressionÀ» ¸¸µç´Ù. */
         sNextCopyOffset = aNode->position.offset;
         for ( sColumnName = sColumnNameList;
               sColumnName != NULL;
               sColumnName = sColumnName->next )
         {
-            /* ë”°ì˜´í‘œë¥¼ ê³ ë ¤í•˜ì—¬, ì´ì „ ì»¬ëŸ¼ ì´ë¦„ì˜ Offsetê³¼ Sizeë¥¼ êµ¬í•œë‹¤. */
+            /* µû¿ÈÇ¥¸¦ °í·ÁÇÏ¿©, ÀÌÀü ÄÃ·³ ÀÌ¸§ÀÇ Offset°ú Size¸¦ ±¸ÇÑ´Ù. */
             if ( (sColumnName->namePos.offset > 0) &&
                  (sColumnName->namePos.size > 0) )
             {
@@ -252,7 +252,7 @@ IDE_RC qdnCheck::renameColumnInExpression(
                 sOldColumnNameSize   = sColumnName->namePos.size;
             }
 
-            /* ì´ì „ ì§€ì ë¶€í„° í˜„ì¬ ì§€ì ê¹Œì§€ ë³µì‚¬í•˜ê³ , ë‹¤ìŒì— ë³µì‚¬í•  ì§€ì ì„ ì„¤ì •í•œë‹¤. */
+            /* ÀÌÀü ÁöÁ¡ºÎÅÍ ÇöÀç ÁöÁ¡±îÁö º¹»çÇÏ°í, ´ÙÀ½¿¡ º¹»çÇÒ ÁöÁ¡À» ¼³Á¤ÇÑ´Ù. */
             if ( sNextCopyOffset < sOldColumnNameOffset )
             {
                 (void)idlVA::appendString( sNewExpressionStr,
@@ -266,14 +266,14 @@ IDE_RC qdnCheck::renameColumnInExpression(
             }
             sNextCopyOffset = sOldColumnNameOffset + sOldColumnNameSize;
 
-            /* ìƒˆë¡œìš´ ì»¬ëŸ¼ ì´ë¦„ì„ ë³µì‚¬í•œë‹¤. */
+            /* »õ·Î¿î ÄÃ·³ ÀÌ¸§À» º¹»çÇÑ´Ù. */
             (void)idlVA::appendString( sNewExpressionStr,
                                        sNewExpressionStrSize,
                                        &(aNewColumnName.stmtText[sNewColumnNameOffset]),
                                        (UInt)sNewColumnNameSize );
         }
 
-        /* ë§ˆì§€ë§‰ ì»¬ëŸ¼ ì´ë¦„ ì´í›„ì˜, ë‚¨ì€ expression ë¬¸ìì—´ì„ ë³µì‚¬í•œë‹¤. */
+        /* ¸¶Áö¸· ÄÃ·³ ÀÌ¸§ ÀÌÈÄÀÇ, ³²Àº expression ¹®ÀÚ¿­À» º¹»çÇÑ´Ù. */
         if ( sNextCopyOffset < (aNode->position.offset + aNode->position.size) )
         {
             (void)idlVA::appendString( sNewExpressionStr,
@@ -312,13 +312,13 @@ IDE_RC qdnCheck::addCheckConstrSpecRelatedToColumn(
 /***********************************************************************
  *
  * Description :
- *  íŠ¹ì • Columnê³¼ ê´€ë ¨ëœ Check Constraint Spec Listë¥¼ ì–»ëŠ”ë‹¤.
+ *  Æ¯Á¤ Column°ú °ü·ÃµÈ Check Constraint Spec List¸¦ ¾ò´Â´Ù.
  *
  * Implementation :
- *  ê° Check Constraintì— ëŒ€í•´ ì•„ë˜ë¥¼ ë°˜ë³µí•œë‹¤.
- *  1. Check Constraintì— íŠ¹ì • Columnì´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
- *  2. Check Constraint Spec Listì— ì´ë¯¸ ìˆëŠ” Check Constraintì¸ì§€ í™•ì¸í•œë‹¤.
- *  3. Check Constraint Spec Listì˜ ë§ˆì§€ë§‰ì— ì¶”ê°€í•œë‹¤.
+ *  °¢ Check Constraint¿¡ ´ëÇØ ¾Æ·¡¸¦ ¹İº¹ÇÑ´Ù.
+ *  1. Check Constraint¿¡ Æ¯Á¤ ColumnÀÌ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+ *  2. Check Constraint Spec List¿¡ ÀÌ¹Ì ÀÖ´Â Check ConstraintÀÎÁö È®ÀÎÇÑ´Ù.
+ *  3. Check Constraint Spec ListÀÇ ¸¶Áö¸·¿¡ Ãß°¡ÇÑ´Ù.
  ***********************************************************************/
 
     qcmCheck         * sCheck;
@@ -345,7 +345,7 @@ IDE_RC qdnCheck::addCheckConstrSpecRelatedToColumn(
             /* Nothing to do */
         }
 
-        /* ì¤‘ë³µì„ í™•ì¸í•œë‹¤. */
+        /* Áßº¹À» È®ÀÎÇÑ´Ù. */
         sLastConstrSpec = NULL;
         for ( sCurrConstrSpec = *aConstrSpec;
               sCurrConstrSpec != NULL;
@@ -385,8 +385,8 @@ IDE_RC qdnCheck::addCheckConstrSpecRelatedToColumn(
         sNewConstrSpec->constrType          = QD_CHECK;
         sNewConstrSpec->constrColumnCount   = sCheck->constraintColumnCount;
 
-        /* get_condition_statementê°€ DEFAULTë¥¼ ê¸°ì¤€ìœ¼ë¡œ ì‘ì„±ë˜ì–´ ìˆìœ¼ë¯€ë¡œ,
-         * DEFAULTì˜ expressionì„ ì–»ëŠ” í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
+        /* get_condition_statement°¡ DEFAULT¸¦ ±âÁØÀ¸·Î ÀÛ¼ºµÇ¾î ÀÖÀ¸¹Ç·Î,
+         * DEFAULTÀÇ expressionÀ» ¾ò´Â ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
          */
         IDE_TEST( qcpUtil::makeDefaultExpression(
                                 aStatement,
@@ -433,10 +433,10 @@ IDE_RC qdnCheck::makeCheckConstrSpecRelatedToTable(
 /***********************************************************************
  *
  * Description :
- *  Tableê³¼ ê´€ë ¨ëœ Check Constraint Spec Listë¥¼ ì–»ëŠ”ë‹¤.
+ *  Table°ú °ü·ÃµÈ Check Constraint Spec List¸¦ ¾ò´Â´Ù.
  *
  * Implementation :
- *  1. qcmCheck ë°°ì—´ì„ qdConstraintSpec Listë¡œ ë³€í™˜í•œë‹¤.
+ *  1. qcmCheck ¹è¿­À» qdConstraintSpec List·Î º¯È¯ÇÑ´Ù.
  ***********************************************************************/
 
     qcmCheck         * sCheck;
@@ -463,8 +463,8 @@ IDE_RC qdnCheck::makeCheckConstrSpecRelatedToTable(
         sNewConstrSpec->constrType          = QD_CHECK;
         sNewConstrSpec->constrColumnCount   = sCheck->constraintColumnCount;
 
-        /* get_condition_statementê°€ DEFAULTë¥¼ ê¸°ì¤€ìœ¼ë¡œ ì‘ì„±ë˜ì–´ ìˆìœ¼ë¯€ë¡œ,
-         * DEFAULTì˜ expressionì„ ì–»ëŠ” í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
+        /* get_condition_statement°¡ DEFAULT¸¦ ±âÁØÀ¸·Î ÀÛ¼ºµÇ¾î ÀÖÀ¸¹Ç·Î,
+         * DEFAULTÀÇ expressionÀ» ¾ò´Â ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
          */
         IDE_TEST( qcpUtil::makeDefaultExpression(
                                 aStatement,
@@ -514,12 +514,12 @@ IDE_RC qdnCheck::renameColumnInCheckConstraint(
 /***********************************************************************
  *
  * Description :
- *  ëª¨ë“  Check Constraintì˜ Column Nameì„ ë³€ê²½í•œë‹¤.
+ *  ¸ğµç Check ConstraintÀÇ Column NameÀ» º¯°æÇÑ´Ù.
  *
  * Implementation :
- *  ê° Check Constraintì— ëŒ€í•´ ì•„ë˜ë¥¼ ë°˜ë³µí•œë‹¤.
- *  (1) ìƒˆë¡œìš´ Column Nameìœ¼ë¡œ ë³€ê²½í•œ Check Conditionì„ êµ¬í•œë‹¤.
- *  (2) SYS_CONSTRAINTS_ ë©”íƒ€ í…Œì´ë¸”ì˜ CHECK_CONDITION ì»¬ëŸ¼ì„ ë³€ê²½í•œë‹¤.
+ *  °¢ Check Constraint¿¡ ´ëÇØ ¾Æ·¡¸¦ ¹İº¹ÇÑ´Ù.
+ *  (1) »õ·Î¿î Column NameÀ¸·Î º¯°æÇÑ Check ConditionÀ» ±¸ÇÑ´Ù.
+ *  (2) SYS_CONSTRAINTS_ ¸ŞÅ¸ Å×ÀÌºíÀÇ CHECK_CONDITION ÄÃ·³À» º¯°æÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -585,11 +585,11 @@ IDE_RC qdnCheck::setMtcColumnToCheckConstrList(
 /***********************************************************************
  *
  * Description :
- *  Check Constraint Listì˜ Constraint Columnì— mtcColumnë¥¼ ì„¤ì •í•œë‹¤.
+ *  Check Constraint ListÀÇ Constraint Column¿¡ mtcColumn¸¦ ¼³Á¤ÇÑ´Ù.
  *
  * Implementation :
- *  ê° Constraintì— ëŒ€í•´ ì•„ë˜ë¥¼ ë°˜ë³µí•œë‹¤.
- *  1. Check Constraintì´ë©´, Constraint Columnì— mtcColumnë¥¼ ì„¤ì •í•œë‹¤.
+ *  °¢ Constraint¿¡ ´ëÇØ ¾Æ·¡¸¦ ¹İº¹ÇÑ´Ù.
+ *  1. Check ConstraintÀÌ¸é, Constraint Column¿¡ mtcColumn¸¦ ¼³Á¤ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -636,12 +636,12 @@ IDE_RC qdnCheck::verifyCheckConstraintList(
 /***********************************************************************
  *
  * Description :
- *  ë°ì´í„°ê°€ Check Constraint ì œì•½ ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+ *  µ¥ÀÌÅÍ°¡ Check Constraint Á¦¾à Á¶°ÇÀ» ¸¸Á·ÇÏ´ÂÁö °Ë»çÇÑ´Ù.
  *
  * Implementation :
- *  ê° Check Constraintì— ëŒ€í•´ ì•„ë˜ë¥¼ ë°˜ë³µí•œë‹¤.
+ *  °¢ Check Constraint¿¡ ´ëÇØ ¾Æ·¡¸¦ ¹İº¹ÇÑ´Ù.
  *  1. qtc::calculate()
- *  2. NULL ë˜ëŠ” TRUEì´ë©´ ì„±ê³µ, FALSEì´ë©´ ì‹¤íŒ¨
+ *  2. NULL ¶Ç´Â TRUEÀÌ¸é ¼º°ø, FALSEÀÌ¸é ½ÇÆĞ
  *
  ***********************************************************************/
 
@@ -727,19 +727,19 @@ IDE_RC qdnCheck::verifyCheckConstraintListWithFullTableScan(
 {
 /***********************************************************************
  *
- * Description : PROJ-1107 Check Constraint ì§€ì›
- *  ì´ë¯¸ ìƒì„±ëœ Tableì— Check Constraint ì œì•½ ì¡°ê±´ì„ ì¶”ê°€í•  ë•Œ,
- *  ê¸°ì¡´ì˜ Dataì— ëŒ€í•˜ì—¬ check conditionì„ ê²€ì‚¬í•´ì•¼ í•œë‹¤.
+ * Description : PROJ-1107 Check Constraint Áö¿ø
+ *  ÀÌ¹Ì »ı¼ºµÈ Table¿¡ Check Constraint Á¦¾à Á¶°ÇÀ» Ãß°¡ÇÒ ¶§,
+ *  ±âÁ¸ÀÇ Data¿¡ ´ëÇÏ¿© check conditionÀ» °Ë»çÇØ¾ß ÇÑ´Ù.
  *
  * Implementation :
- *  1. ì‚¬ì „ ì‘ì—…
- *      - íŒŒë¼ë¯¸í„° í™•ì¸
- *      - ë³€ìˆ˜ ì´ˆê¸°í™”
- *      - ì»¤ì„œ ì´ˆê¸°í™”
- *      - Record ê³µê°„ í™•ë³´ ë° fetch column list êµ¬ì„± (Disk Table)
- *  2. ê° íŒŒí‹°ì…˜ì— ëŒ€í•´ Check Constraint ê²€ì‚¬
+ *  1. »çÀü ÀÛ¾÷
+ *      - ÆÄ¶ó¹ÌÅÍ È®ÀÎ
+ *      - º¯¼ö ÃÊ±âÈ­
+ *      - Ä¿¼­ ÃÊ±âÈ­
+ *      - Record °ø°£ È®º¸ ¹× fetch column list ±¸¼º (Disk Table)
+ *  2. °¢ ÆÄÆ¼¼Ç¿¡ ´ëÇØ Check Constraint °Ë»ç
  *      - Table Full Scan
- *      - Check Condition ì—°ì‚° ë° ê²°ê³¼ í™•ì¸
+ *      - Check Condition ¿¬»ê ¹× °á°ú È®ÀÎ
  *
  ***********************************************************************/
 
@@ -749,14 +749,14 @@ IDE_RC qdnCheck::verifyCheckConstraintListWithFullTableScan(
     mtcTuple               sCopyTuple;
     iduMemoryStatus        sQmxMemStatus;
 
-    // Cursorë¥¼ ìœ„í•œ ì§€ì—­ë³€ìˆ˜
+    // Cursor¸¦ À§ÇÑ Áö¿ªº¯¼ö
     smiTableCursor         sReadCursor;
     smiCursorProperties    sCursorProperty;
     idBool                 sCursorOpen = ID_FALSE;
 
     idBool                 sNeedToRecoverTuple = ID_FALSE;
 
-    // Record ê²€ìƒ‰ì„ ìœ„í•œ ì§€ì—­ ë³€ìˆ˜
+    // Record °Ë»öÀ» À§ÇÑ Áö¿ª º¯¼ö
     UInt                   sPartType = 0;
     UInt                   sRowSize  = 0;
     void                 * sTupleRow = NULL;
@@ -770,7 +770,7 @@ IDE_RC qdnCheck::verifyCheckConstraintListWithFullTableScan(
     smiFetchColumnList   * sFetchColumnList;
 
     //---------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -780,7 +780,7 @@ IDE_RC qdnCheck::verifyCheckConstraintListWithFullTableScan(
     IDE_DASSERT( aCheckConstrList->checkCondition != NULL );
 
     //---------------------------------------------
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     //---------------------------------------------
 
     sTemplate = QC_PRIVATE_TMPLATE(aStatement);
@@ -801,18 +801,18 @@ IDE_RC qdnCheck::verifyCheckConstraintListWithFullTableScan(
     }
 
     //---------------------------------------------
-    // Check Condition ì œì•½ ì¡°ê±´ ê²€ì‚¬
+    // Check Condition Á¦¾à Á¶°Ç °Ë»ç
     //---------------------------------------------
 
     //----------------------------
-    // ì»¤ì„œ ì´ˆê¸°í™”
+    // Ä¿¼­ ÃÊ±âÈ­
     //----------------------------
 
     // To fix BUG-14818
     sReadCursor.initialize();
 
     //----------------------------
-    // Record ê³µê°„ í™•ë³´
+    // Record °ø°£ È®º¸
     //----------------------------
 
     for ( sPartitionRefNode = sPartitionRefList;
@@ -835,25 +835,25 @@ IDE_RC qdnCheck::verifyCheckConstraintListWithFullTableScan(
 
     if ( sDiskPartInfo != NULL )
     {
-        // Disk Tableì¸ ê²½ìš°
-        // Record Readë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹í•œë‹¤.
-        // To Fix BUG-12977 : parentì˜ rowsizeê°€ ì•„ë‹Œ, ìì‹ ì˜ rowsizeë¥¼
-        //                    ê°€ì§€ê³  ì™€ì•¼í•¨
+        // Disk TableÀÎ °æ¿ì
+        // Record Read¸¦ À§ÇÑ °ø°£À» ÇÒ´çÇÑ´Ù.
+        // To Fix BUG-12977 : parentÀÇ rowsize°¡ ¾Æ´Ñ, ÀÚ½ÅÀÇ rowsize¸¦
+        //                    °¡Áö°í ¿Í¾ßÇÔ
         IDE_TEST( qdbCommon::getDiskRowSize( sDiskPartInfo,
                                              & sRowSize )
                   != IDE_SUCCESS );
 
         // To fix BUG-14820
-        // Disk-variable ì»¬ëŸ¼ì˜ ridë¹„êµë¥¼ ìœ„í•´ ì´ˆê¸°í™” í•´ì•¼ í•¨.
+        // Disk-variable ÄÃ·³ÀÇ ridºñ±³¸¦ À§ÇØ ÃÊ±âÈ­ ÇØ¾ß ÇÔ.
         IDE_TEST( aStatement->qmxMem->cralloc( sRowSize,
                                                (void **) & sDiskRow )
                   != IDE_SUCCESS );
 
         //--------------------------------------
-        // PROJ-1705 fetch column list êµ¬ì„±
+        // PROJ-1705 fetch column list ±¸¼º
         //--------------------------------------
 
-        // fetch column listë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+        // fetch column list¸¦ ÃÊ±âÈ­ÇÑ´Ù.
         qdbCommon::initFetchColumnList( & sFetchColumnList );
 
         IDE_TEST( qdbCommon::addCheckConstrListToFetchColumnList(
@@ -865,11 +865,11 @@ IDE_RC qdnCheck::verifyCheckConstraintListWithFullTableScan(
     }
     else
     {
-        // Memory Tableì¸ ê²½ìš°
+        // Memory TableÀÎ °æ¿ì
         // Nothing to do.
     }
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     qmx::copyMtcTupleForPartitionDML( &sCopyTuple, sTableTuple );
     sNeedToRecoverTuple = ID_TRUE;
 
@@ -882,7 +882,7 @@ IDE_RC qdnCheck::verifyCheckConstraintListWithFullTableScan(
         sPartInfo = sPartitionRefNode->partitionInfo;
         sPartType = sPartInfo->tableFlag & SMI_TABLE_TYPE_MASK;
 
-        /* PROJ-2464 hybrid partitioned table ì§€ì› */
+        /* PROJ-2464 hybrid partitioned table Áö¿ø */
         sPartitionTuple = &(sTemplate->tmplate.rows[sPartitionRefNode->table]);
 
         qmx::adjustMtcTupleForPartitionDML( sTableTuple, sPartitionTuple );
@@ -919,7 +919,7 @@ IDE_RC qdnCheck::verifyCheckConstraintListWithFullTableScan(
         IDE_TEST( sReadCursor.beforeFirst() != IDE_SUCCESS );
 
         //----------------------------
-        // ë°˜ë³µ ê²€ì‚¬
+        // ¹İº¹ °Ë»ç
         //----------------------------
 
         IDE_TEST( sReadCursor.readRow( (const void**) & (sTableTuple->row),
@@ -929,14 +929,14 @@ IDE_RC qdnCheck::verifyCheckConstraintListWithFullTableScan(
 
         while ( sTableTuple->row != NULL )
         {
-            // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
+            // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
             IDE_TEST_RAISE( aStatement->qmxMem->getStatus( & sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
 
-            // Check Condition ì—°ì‚° ë° ê²°ê³¼ í™•ì¸
+            // Check Condition ¿¬»ê ¹× °á°ú È®ÀÎ
             IDE_TEST( verifyCheckConstraintList( sTemplate, aCheckConstrList )
                       != IDE_SUCCESS );
 
-            // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
+            // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
             IDE_TEST_RAISE( aStatement->qmxMem->setStatus( & sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
 
             IDE_TEST( sReadCursor.readRow( (const void**) & (sTableTuple->row),
@@ -950,7 +950,7 @@ IDE_RC qdnCheck::verifyCheckConstraintListWithFullTableScan(
         IDE_TEST( sReadCursor.close() != IDE_SUCCESS );
     }
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     sNeedToRecoverTuple = ID_FALSE;
     qmx::copyMtcTupleForPartitionDML( sTableTuple, &sCopyTuple );
 
@@ -976,7 +976,7 @@ IDE_RC qdnCheck::verifyCheckConstraintListWithFullTableScan(
         /* Nothing to do */
     }
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     if ( sNeedToRecoverTuple == ID_TRUE )
     {
         qmx::copyMtcTupleForPartitionDML( sTableTuple, &sCopyTuple );

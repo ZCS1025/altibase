@@ -17,15 +17,12 @@
 
 package Altibase.jdbc.driver.sharding.core;
 
-import Altibase.jdbc.driver.ex.ShardFailoverIsNotAvailableException;
 import Altibase.jdbc.driver.sharding.executor.*;
-import Altibase.jdbc.driver.sharding.routing.SQLExecutionUnit;
 
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Set;
 
 public class DataNodeShardingCallableStatement extends DataNodeShardingPreparedStatement
         implements InternalShardingCallableStatement
@@ -51,21 +48,12 @@ public class DataNodeShardingCallableStatement extends DataNodeShardingPreparedS
     private DataNode getRoutedNode()
     {
         DataNode sResult = null;
-        Set<SQLExecutionUnit> sSqlExecutionUnits = mRouteResult.getExecutionUnits();
-        if (sSqlExecutionUnits != null && sSqlExecutionUnits.size() > 0)
+        if (mRouteResult != null && mRouteResult.size() > 0)
         {
-            SQLExecutionUnit sRouteResult = sSqlExecutionUnits.iterator().next();
-            sResult = sRouteResult.getNode();
+            sResult = mRouteResult.get(0);
         }
         
         return sResult;
-    }
-
-    void createStatementForLazyConnectOff(Connection aNodeConn, DataNode aNode, String aSql) throws SQLException
-    {
-        CallableStatement sCstmt = aNodeConn.prepareCall(aSql, mResultSetType, mResultSetConcurrency,
-                                                         mResultSetHoldability);
-        mRoutedStatementMap.put(aNode, sCstmt);
     }
 
     public boolean getBoolean(int aParameterIndex) throws SQLException
@@ -258,52 +246,36 @@ public class DataNodeShardingCallableStatement extends DataNodeShardingPreparedS
         return ((CallableStatement)mRoutedStatementMap.get(getRoutedNode())).getTimestamp(aParameterName, aCal);
     }
 
-    protected List<? extends BaseStatementUnit> route() throws SQLException
+    protected List<Statement> route() throws SQLException
     {
         mRouteResult = mRoutingEngine.route(mSql, mParameters);
 
         ExecutorEngine sExecutorEngine = mMetaConn.getExecutorEngine();
         return sExecutorEngine.generateStatement(
-                mRouteResult.getExecutionUnits(),
-                new GenerateCallback<CallableStatementUnit >()
+                mRouteResult,
+                new GenerateCallback<Statement>()
                 {
-                    public CallableStatementUnit generate(SQLExecutionUnit aSqlExecutionUnit) throws SQLException
+                    public Statement generate(DataNode aNode) throws SQLException
                     {
-                        Connection sNodeCon = mMetaConn.getNodeConnection(aSqlExecutionUnit.getNode());
-                        CallableStatement sStmt = getCallableStatement(aSqlExecutionUnit, sNodeCon);
+                        Connection sNodeCon = mMetaConn.getNodeConnection(aNode);
+                        CallableStatement sStmt = getNodeStatement(aNode, sNodeCon);
                         mShardStmt.replayMethodsInvocation(sStmt);  // CallableStatement method replay
                         mShardStmt.replaySetParameter(sStmt);
-                        mRoutedStatementMap.put(aSqlExecutionUnit.getNode(), sStmt);
-                        return new CallableStatementUnit(aSqlExecutionUnit, sStmt, mParameters);
+                        mRoutedStatementMap.put(aNode, sStmt);
+                        return sStmt;
                     }
                 }
         );
     }
 
-    private CallableStatement getCallableStatement(SQLExecutionUnit aSqlExecutionUnit,
-                                                   Connection aConn) throws SQLException
+    CallableStatement getNodeStatement(DataNode aNode, Connection aConn) throws SQLException
     {
-        CallableStatement sStmt = (CallableStatement)mRoutedStatementMap.get(aSqlExecutionUnit.getNode());
+        CallableStatement sStmt = (CallableStatement)mRoutedStatementMap.get(aNode);
         if (sStmt != null) return sStmt;
 
-        try
-        {
-            sStmt = aConn.prepareCall(aSqlExecutionUnit.getSql(), mResultSetType, mResultSetConcurrency,
-                                      mResultSetHoldability);
-            // BUG-46513 Meta 커넥션에 있는 SMN값을 셋팅한다.
-            mShardStmt.setShardMetaNumber(mMetaConn.getShardMetaNumber());
-        }
-        catch (SQLException aEx)
-        {
-            /*
-             * PROJ-2690 ShardRetryAvailableException이 발생한 경우에는 해당
-             * 커넥션을 cached map에서 제거해 준다.
-             */
-            if (aEx instanceof ShardFailoverIsNotAvailableException)
-            {
-                mMetaConn.getCachedConnections().remove(aSqlExecutionUnit.getNode());
-            }
-        }
+        sStmt = aConn.prepareCall(mSql, mResultSetType, mResultSetConcurrency, mResultSetHoldability);
+        // BUG-46513 Meta Ŀ�ؼǿ� �ִ� SMN���� �����Ѵ�.
+        mShardStmt.setShardMetaNumber(mMetaConn.getShardMetaNumber());
 
         return  sStmt;
     }

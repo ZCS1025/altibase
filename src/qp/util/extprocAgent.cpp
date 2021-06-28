@@ -16,11 +16,11 @@
  
 
 /***********************************************************************
- * $Id: extprocAgent.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: extprocAgent.cpp 86373 2019-11-19 23:12:16Z khkwak $
  **********************************************************************/
 
 #include <idx.h>
-#include <smm.h>
+#include <idp.h>
 #include <mmErrorCode.h>
 
 /* For message log of extproc agent processes */
@@ -106,68 +106,6 @@ agentErrorLog( ideMsgLog * aMsgLog, SChar * aSockName, const SChar * aForm, ... 
     (void) aMsgLog->close();
 
     va_end( sVaList );
-}
-
-/* Backup original property values of each parameters */ 
-void
-backupParamProperty( idxParamInfo *aDestParams,
-                     idxParamInfo *aSrcParams,
-                     UInt          aParamCount )
-{
-    UInt i = 0;
-
-    for( i = 0; i < aParamCount; i++ )
-    {
-        idlOS::memcpy( &aDestParams[i],
-                       &aSrcParams[i],
-                       ID_SIZEOF(idxParamInfo) );
-    }
-}
-
-/* Set pointers of each parameters (by its type) */
-IDE_RC
-setParamPtr( idxParamInfo *aParam, void ** aOutPtr )
-{
-    switch( aParam->mType )
-    {
-        case IDX_TYPE_BOOL:
-            *aOutPtr = &aParam->mD.mBool;
-            break;
-        case IDX_TYPE_SHORT:
-            *aOutPtr = &aParam->mD.mShort;
-            break;
-        case IDX_TYPE_INT:
-            *aOutPtr = &aParam->mD.mInt;
-            break;
-        case IDX_TYPE_INT64:
-            *aOutPtr = &aParam->mD.mLong;
-            break;
-        case IDX_TYPE_FLOAT:
-            *aOutPtr = &aParam->mD.mFloat;
-            break;
-        case IDX_TYPE_DOUBLE:
-        case IDX_TYPE_NUMERIC:
-            *aOutPtr = &aParam->mD.mDouble;
-            break;
-        case IDX_TYPE_TIMESTAMP:
-            *aOutPtr = &aParam->mD.mTimestamp;
-            break;
-        case IDX_TYPE_CHAR:
-        case IDX_TYPE_LOB:   // BUG-39814 IN mode LOB Parameter in Extproc
-            *aOutPtr =  aParam->mD.mPointer;
-            break;
-        default:
-            break;
-    }
-
-    if( *aOutPtr == NULL )
-    {
-        return IDE_FAILURE;
-    }
-    else
-    {
-        return IDE_SUCCESS;
-    }
 }
 
 /* Close inherited handle (only for Unix/Linux) */
@@ -454,9 +392,9 @@ main( int aArgc, char **aArgv )
                                            (void **)&sOriginalParams ) != IDE_SUCCESS,
                         err_memory_problem ); 
 
-            backupParamProperty( sOriginalParams,
-                                 sReturnMsg->mParamInfos,
-                                 sReturnMsg->mParamCount );
+            idxProc::backupParamProperty( sOriginalParams,
+                                          sReturnMsg->mParamInfos,
+                                          sReturnMsg->mParamCount );
         }
         else
         {
@@ -520,8 +458,8 @@ main( int aArgc, char **aArgv )
             {
                 if( sReturnMsg->mParamInfos[i].mPropType == IDX_TYPE_PROP_NONE )
                 {
-                    IDE_TEST_RAISE( setParamPtr( &sReturnMsg->mParamInfos[i], &sFuncArgs[i] ) 
-                                        != IDE_SUCCESS,
+                    IDE_TEST_RAISE( idxProc::setParamPtr( &sReturnMsg->mParamInfos[i], &sFuncArgs[i] ) 
+                                    != IDE_SUCCESS,
                                     err_set_paramptr_failure );
                 }
                 else
@@ -552,7 +490,7 @@ main( int aArgc, char **aArgv )
         {
             if( sReturnMsg->mReturnInfo.mType != IDX_TYPE_CHAR )
             {
-                setParamPtr( &sReturnMsg->mReturnInfo, &sReturnOtherArg );
+                idxProc::setParamPtr( &sReturnMsg->mReturnInfo, &sReturnOtherArg );
                 sReturnArgPtr = &sReturnOtherArg;
             }
             else
@@ -632,6 +570,7 @@ main( int aArgc, char **aArgv )
             // BUG-39814 IN Mode CHAR/LOB don't have to re-send
             if ( ( sReturnMsg->mParamInfos[i].mMode == IDX_MODE_IN ) && 
                  ( ( sReturnMsg->mParamInfos[i].mType == IDX_TYPE_CHAR ) ||
+                   ( sReturnMsg->mParamInfos[i].mType == IDX_TYPE_BYTE ) ||
                    ( sReturnMsg->mParamInfos[i].mType == IDX_TYPE_LOB ) ) )
             {
                 // 1 byte for padding

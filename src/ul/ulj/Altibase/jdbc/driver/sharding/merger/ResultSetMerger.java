@@ -21,14 +21,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * ResultSet ë³‘í•© ì¸í„°í˜ì´ìŠ¤
+ * ResultSet º´ÇÕ ÀÎÅÍÆäÀÌ½º
  */
 public interface ResultSetMerger
 {
     /**
-     * ë‹¤ìŒ ë°ì´í„°ë¥¼ ë°˜ë³µí•œë‹¤.
+     * ´ÙÀ½ µ¥ÀÌÅÍ¸¦ ¹İº¹ÇÑ´Ù.
      *
-     * @return ë‹¤ìŒ ë°ì´í„°
+     * @return ´ÙÀ½ µ¥ÀÌÅÍ
      * @throws SQLException SQL Exception
      */
     boolean next() throws SQLException;

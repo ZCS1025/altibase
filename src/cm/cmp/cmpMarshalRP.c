@@ -2308,9 +2308,9 @@ ACI_RC cmpWriteRPSyncStart(cmbBlock *aBlock, cmpProtocol *aProtocol, cmpMarshalS
     return ACI_FAILURE;
 }
 
-ACI_RC cmpWriteRPSyncRebuildIndex(cmbBlock *aBlock, cmpProtocol *aProtocol, cmpMarshalState *aMarshalState)
+ACI_RC cmpWriteRPSyncEnd(cmbBlock *aBlock, cmpProtocol *aProtocol, cmpMarshalState *aMarshalState)
 {
-    cmpArgRPSyncRebuildIndex *sArg = CMI_PROTOCOL_GET_ARG( *aProtocol, RP, SyncRebuildIndex );
+    cmpArgRPSyncEnd *sArg = CMI_PROTOCOL_GET_ARG( *aProtocol, RP, SyncEnd );
 
     CMP_MARSHAL_BEGIN( 1 );
     CMP_MARSHAL_WRITE_UINT( sArg->mXLogType );
@@ -2324,9 +2324,9 @@ ACI_RC cmpWriteRPSyncRebuildIndex(cmbBlock *aBlock, cmpProtocol *aProtocol, cmpM
     return ACI_FAILURE;
 }
 
-ACI_RC cmpReadRPSyncRebuildIndex(cmbBlock *aBlock, cmpProtocol *aProtocol, cmpMarshalState *aMarshalState)
+ACI_RC cmpReadRPSyncEnd(cmbBlock *aBlock, cmpProtocol *aProtocol, cmpMarshalState *aMarshalState)
 {
-    cmpArgRPSyncRebuildIndex *sArg = CMI_PROTOCOL_GET_ARG( *aProtocol, RP, SyncRebuildIndex );
+    cmpArgRPSyncEnd *sArg = CMI_PROTOCOL_GET_ARG( *aProtocol, RP, SyncEnd );
 
     CMP_MARSHAL_BEGIN( 1 );
     CMP_MARSHAL_READ_UINT( sArg->mXLogType );
@@ -2412,7 +2412,7 @@ cmpMarshalFunction gCmpReadFunctionRPClient[CMP_OP_RP_MAX] =
     cmpReadRPFailbackEnd,
     cmpReadRPSyncTableNumber,
     cmpReadRPSyncStart,
-    cmpReadRPSyncRebuildIndex,
+    cmpReadRPSyncEnd,
     cmpReadRPLobTrim,
     cmpReadRPDummy,
     cmpReadRPDummy,/* BUG-38759 */
@@ -2427,7 +2427,19 @@ cmpMarshalFunction gCmpReadFunctionRPClient[CMP_OP_RP_MAX] =
     cmpReadRPDummy,
     cmpReadRPDummy,
     cmpReadRPDummy,  //BUG-46120
-    cmpReadRPDummy
+    cmpReadRPDummy,
+    cmpReadRPDummy,
+    cmpReadRPDummy,
+    cmpReadRPDummy, 
+    cmpReadRPDummy, 
+    cmpReadRPDummy, 
+    cmpReadRPDummy, 
+    cmpReadRPDummy,
+    cmpReadRPDummy, /* CMP_OP_RP_XA_START_REQ */
+    cmpReadRPDummy,
+    cmpReadRPDummy,
+    cmpReadRPDummy,
+    cmpReadRPDummy  
 };
 
 cmpMarshalFunction gCmpWriteFunctionRPClient[CMP_OP_RP_MAX] =
@@ -2472,7 +2484,7 @@ cmpMarshalFunction gCmpWriteFunctionRPClient[CMP_OP_RP_MAX] =
     cmpWriteRPFailbackEnd,
     cmpWriteRPSyncTableNumber,
     cmpWriteRPSyncStart,
-    cmpWriteRPSyncRebuildIndex,
+    cmpWriteRPSyncEnd,
     cmpWriteRPLobTrim,
     cmpWriteRPDummy,
     cmpWriteRPDummy,/* BUG-38759 */
@@ -2487,5 +2499,17 @@ cmpMarshalFunction gCmpWriteFunctionRPClient[CMP_OP_RP_MAX] =
     cmpWriteRPDummy,
     cmpWriteRPDummy,
     cmpWriteRPDummy,  //BUG-46120
-    cmpWriteRPDummy
+    cmpWriteRPDummy,
+    cmpWriteRPDummy,
+    cmpWriteRPDummy,
+    cmpWriteRPDummy,
+    cmpWriteRPDummy,
+    cmpWriteRPDummy,
+    cmpWriteRPDummy,
+    cmpWriteRPDummy,
+    cmpWriteRPDummy, /* CMP_OP_RP_XA_START_REQ */
+    cmpWriteRPDummy,
+    cmpWriteRPDummy,
+    cmpWriteRPDummy,
+    cmpWriteRPDummy  
 };

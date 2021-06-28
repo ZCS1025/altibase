@@ -75,9 +75,9 @@ private:
     iduMutex         mMutex;
     mmcChildPCO     *mChildPCO;
     mmcParentPCO    *mParentPCO;
-    //LRU Listì—ì„œ node 
+    //LRU List¿¡¼­ node 
     iduListNode      mLRuListNode;
-    //Parent PCOì—ì„œ child PCO listì— ì‚¬ìš©ëœë‹¤.
+    //Parent PCO¿¡¼­ child PCO list¿¡ »ç¿ëµÈ´Ù.
     iduListNode      mChildLstNode;
 };
 

@@ -51,14 +51,14 @@ typedef enum
     DATATYPE_SLONG,
     DATATYPE_ULONG,
     DATATYPE_VOID,
-    DATATYPE_TYPEDEF // ìƒì„±ëœ ë°ì´íƒ€ íƒ€ì…
+    DATATYPE_TYPEDEF // »ı¼ºµÈ µ¥ÀÌÅ¸ Å¸ÀÔ
     
 } SYMBOL_DATATYPE;
 
 typedef struct
 {
-    idBool isArgument; // ì¸ì ì¡´ì¬?
-    SChar *target_pattern; // íŒ¨í„´ ë¦¬ìŠ¤íŠ¸ 
+    idBool isArgument; // ÀÎÀÚ Á¸Àç?
+    SChar *target_pattern; // ÆĞÅÏ ¸®½ºÆ® 
 } MacroData;
 
 typedef struct

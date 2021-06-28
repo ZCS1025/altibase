@@ -18,11 +18,31 @@
 #include <mmm.h>
 
 
-static IDE_RC mmmPhaseActionInitREPL(mmmPhase         /*aPhase*/,
+static IDE_RC mmmPhaseActionInitREPL(mmmPhase         aPhase,
                                      UInt             /*aOptionflag*/,
                                      mmmPhaseAction * /*aAction*/)
 {
-    IDE_TEST(rpi::initREPLICATION() != IDE_SUCCESS);
+    switch( aPhase )
+    {
+        case MMM_STARTUP_PRE_PROCESS:
+            IDE_TEST(rpi::initRPProperty() != IDE_SUCCESS);
+            break;
+        case MMM_STARTUP_PROCESS:
+            break;
+        case MMM_STARTUP_CONTROL:
+            break;
+        case MMM_STARTUP_META:
+            break;
+        case MMM_STARTUP_DOWNGRADE:
+            break;
+        case MMM_STARTUP_SERVICE:
+            IDE_TEST(rpi::initREPLICATION() != IDE_SUCCESS);
+            break;
+        case MMM_STARTUP_SHUTDOWN:
+        default:
+            IDE_CALLBACK_FATAL( "invalid startup phase" );
+            break;
+    }
 
     return IDE_SUCCESS;
 

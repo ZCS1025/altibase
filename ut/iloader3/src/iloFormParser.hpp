@@ -85,7 +85,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 48 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 48 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
 
 SInt          num;
 SChar        *str;
@@ -94,7 +94,7 @@ iloTableNode *pNode;
 
 
 /* Line 1676 of yacc.c  */
-#line 98 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.hpp"
+#line 98 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.hpp"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

@@ -16,15 +16,15 @@
  
 
 /***********************************************************************
- * $Id: smiTable.cpp 83725 2018-08-19 23:15:49Z emlee $
+ * $Id: smiTable.cpp 90302 2021-03-24 01:21:41Z emlee $
  **********************************************************************/
 /**************************************************************
  * FILE DESCRIPTION : smiTable.cpp                            *
  * -----------------------------------------------------------*
  *  PROJ-2201 Innovation in sorting and hashing(temp)
- *  ìœ„ Projectë¥¼ í†µí•´ DiskTemporary Tableì´ smiTempTableë¡œ ë¶„ë¦¬ë˜ì—ˆë‹¤.
- *  Lock/Latch/MVCC ê´€ë¦¬ë“±ì„ TempTableì€ ì‚¬ìš©í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì—, ì´ë¥¼ ë¶„ë¦¬í•˜ì—¬
- *  ì„±ëŠ¥ ë° ì‚¬ìš©ì„± ë“±ì„ ë†’ì¸ë‹¤.
+ *  À§ Project¸¦ ÅëÇØ DiskTemporary TableÀÌ smiTempTable·Î ºĞ¸®µÇ¾ú´Ù.
+ *  Lock/Latch/MVCC °ü¸®µîÀ» TempTableÀº »ç¿ëÇÏÁö ¾Ê±â ¶§¹®¿¡, ÀÌ¸¦ ºĞ¸®ÇÏ¿©
+ *  ¼º´É ¹× »ç¿ë¼º µîÀ» ³ôÀÎ´Ù.
  **************************************************************/
 #include <idl.h>
 #include <ide.h>
@@ -55,7 +55,7 @@
 #include <svpFreePageList.h>
 #include <sdnnModule.h>
 
-// smiTableì—ì„œ ì‚¬ìš©í•˜ëŠ” callbackí•¨ìˆ˜ list.
+// smiTable¿¡¼­ »ç¿ëÇÏ´Â callbackÇÔ¼ö list.
 
 typedef IDE_RC (*smiCreateTableFunc)(idvSQL               * aStatistics,
                                      void*                  aTrans,
@@ -157,20 +157,20 @@ static smiCreateIndexFunc smiCreateIndexFuncs[(SMI_TABLE_TYPE_MASK >> 12)+1] =
   function description: createTable
 
     FOR A4 :
-     -  aTableSpaceIDì¸ìê°€ ì¶”ê°€ë©
-     -  disk temp tableì„ createí• ë•Œ,tableí—¤ë”ë¥¼ SYS_TEMP_TABLEì´ë€
-        ë³„ë„ì˜ catalog tableì˜ fixed slotë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.
-        logginìµœì†Œí™” , no-lockì„ ìœ„í•˜ì—¬ smcTableì˜ createTempTable
-        ì„ í˜¸ì¶œí•œë‹¤.
+     -  aTableSpaceIDÀÎÀÚ°¡ Ãß°¡µË
+     -  disk temp tableÀ» createÇÒ¶§,tableÇì´õ¸¦ SYS_TEMP_TABLEÀÌ¶õ
+        º°µµÀÇ catalog tableÀÇ fixed slot¸¦ ÇÒ´ç¹Ş´Â´Ù.
+        logginÃÖ¼ÒÈ­ , no-lockÀ» À§ÇÏ¿© smcTableÀÇ createTempTable
+        À» È£ÃâÇÑ´Ù.
 
      ___________________________________          _________________
     | catalog table for disk temp table |         |smcTableHeader |
     | (SYS_TEMP_TABLE)                  |         -----------------
     -------------------------------------          ^
              |                 |                   |
-             |                 ã…                  SYS_TEMP_TABLEì˜ fixed slot.
+             |                 ¤±                  SYS_TEMP_TABLEÀÇ fixed slot.
              o                 |
-             |                 ã… var
+             |                 ¤± var
              o fixed              page list
                page list entry    entry
 
@@ -201,40 +201,40 @@ IDE_RC smiTable::createTable( idvSQL*               aStatistics,
 
     sTableTypeFlag = aFlag & SMI_TABLE_TYPE_MASK;
 
-    if( sctTableSpaceMgr::isMemTableSpace( aTableSpaceID ) == ID_TRUE )
+    switch( sctTableSpaceMgr::getTBSLocation( aTableSpaceID ) )
     {
-        // TableSpaceê°€ ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë¼ë©´
-        // aFlagì˜ table typeì´ diskê°€ ì•„ë‹˜ì„ ì²´í¬
-        IDE_DASSERT( sTableTypeFlag != SMI_TABLE_DISK );
+        case SMI_TBS_MEMORY:
+            // TableSpace°¡ ¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½º ¶ó¸é
+            // aFlagÀÇ table typeÀÌ disk°¡ ¾Æ´ÔÀ» Ã¼Å©
+            IDE_DASSERT( sTableTypeFlag != SMI_TABLE_DISK );
+            break;
+        case SMI_TBS_VOLATILE:
+            IDE_DASSERT( sTableTypeFlag == SMI_TABLE_VOLATILE );
+            break;
+        case SMI_TBS_DISK:
+            // aFlagÀÇ table typeÀÌ meta, È¤Àº memory°¡ ¾Æ´ÔÀ» Ã¼Å©
+            IDE_DASSERT( (sTableTypeFlag != SMI_TABLE_META) &&
+                         (sTableTypeFlag != SMI_TABLE_MEMORY) );
+            break;
+        default:
+            IDE_ASSERT(0);
+            break;
     }
-    else if( sctTableSpaceMgr::isVolatileTableSpace( aTableSpaceID ) == ID_TRUE )
-    {
-        IDE_DASSERT( sTableTypeFlag == SMI_TABLE_VOLATILE );
-    }
-    else if( sctTableSpaceMgr::isDiskTableSpace( aTableSpaceID ) == ID_TRUE )
-    {
-        // aFlagì˜ table typeì´ meta, í˜¹ì€ memoryê°€ ì•„ë‹˜ì„ ì²´í¬
-        IDE_DASSERT( (sTableTypeFlag != SMI_TABLE_META) &&
-                     (sTableTypeFlag != SMI_TABLE_MEMORY) );
-    }
-    else
-    {
-        IDE_ASSERT(0);
-    }
+ 
 
     IDE_TEST( aStatement->prepareDDL((smiTrans*)aStatement->mTrans)
               != IDE_SUCCESS );
 
     // PRJ-1548 User Memory Tablespace
-    // íŠ¸ëœì­ì…˜ì´ ì™„ë£Œë ë•Œ(commit or abort) TableSpace ì ê¸ˆì„ í•´ì œí•œë‹¤.
-    // ëª¨ë“  DMLê³¼ DDLì‹œì—ëŠ” QP Validation Codeì—ì„œ ì ê¸ˆì„ ìš”ì²­í•˜ê³ 
-    // ì‹¤ì œ ì‹¤í–‰ì‹œì—ë„ ì ê¸ˆì„ ìš”ì²­í•˜ë„ë¡ ë˜ì–´ ìˆì§€ë§Œ, ì˜ˆì™¸ì ìœ¼ë¡œ
-    // CREATE TABLE ì‹œì—ëŠ” ê·¸ë ‡ì§€ ì•Šìœ¼ë¯€ë¡œ ë³¸ í•¨ìˆ˜ì—ì„œ Tableì˜ TableSpaceë¥¼
-    // IX íšë“í•œë‹¤.
+    // Æ®·£Àè¼ÇÀÌ ¿Ï·áµÉ¶§(commit or abort) TableSpace Àá±İÀ» ÇØÁ¦ÇÑ´Ù.
+    // ¸ğµç DML°ú DDL½Ã¿¡´Â QP Validation Code¿¡¼­ Àá±İÀ» ¿äÃ»ÇÏ°í
+    // ½ÇÁ¦ ½ÇÇà½Ã¿¡µµ Àá±İÀ» ¿äÃ»ÇÏµµ·Ï µÇ¾î ÀÖÁö¸¸, ¿¹¿ÜÀûÀ¸·Î
+    // CREATE TABLE ½Ã¿¡´Â ±×·¸Áö ¾ÊÀ¸¹Ç·Î º» ÇÔ¼ö¿¡¼­ TableÀÇ TableSpace¸¦
+    // IX È¹µæÇÑ´Ù.
 
     // fix BUG-17121
-    // ë˜í•œ, ë‹¤ë¥¸ DDLê³¼ëŠ” ë‹¤ë¥´ê²Œ Tableì„ LockValidateí•  í•„ìš”ì—†ì´
-    // Index,lob ê´€ë ¨ TableSpaceì— IXë¥¼ íšë“í•œë‹¤.
+    // ¶ÇÇÑ, ´Ù¸¥ DDL°ú´Â ´Ù¸£°Ô TableÀ» LockValidateÇÒ ÇÊ¿ä¾øÀÌ
+    // Index,lob °ü·Ã TableSpace¿¡ IX¸¦ È¹µæÇÑ´Ù.
 
     // -------------- TBS Node (IX) ------------------ //
     IDE_TEST( sctTableSpaceMgr::lockTBSNodeByID(
@@ -250,9 +250,9 @@ IDE_RC smiTable::createTable( idvSQL*               aStatistics,
 
     if ( sTableTypeFlag == SMI_TABLE_DISK )
     {
-        // ë˜í•œ, CREATE Disk TABLE ìˆ˜í–‰ì‹œ LOB Columnì´ í¬í•¨ë˜ì–´ ìˆë‹¤ë©´
-        // ê´€ë ¨ TableSpaceë„ IXë¥¼ íšë“í•´ì•¼ í•œë‹¤.
-        // í•¨ìˆ˜ë‚´ì—ì„œ íšë“ëœë‹¤.
+        // ¶ÇÇÑ, CREATE Disk TABLE ¼öÇà½Ã LOB ColumnÀÌ Æ÷ÇÔµÇ¾î ÀÖ´Ù¸é
+        // °ü·Ã TableSpaceµµ IX¸¦ È¹µæÇØ¾ß ÇÑ´Ù.
+        // ÇÔ¼ö³»¿¡¼­ È¹µæµÈ´Ù.
 
         sLockedTBSID = aTableSpaceID;
         sColumnList = (smiColumnList *)aColumns;
@@ -267,11 +267,11 @@ IDE_RC smiTable::createTable( idvSQL*               aStatistics,
             if ( ( sColumn->flag & SMI_COLUMN_TYPE_MASK )
                    == SMI_COLUMN_TYPE_LOB )
             {
-                // LOB Columnì¸ ê²½ìš°
+                // LOB ColumnÀÎ °æ¿ì
                 sLobTBSID = sColumn->colSpace;
 
-                // ì¼ë‹¨, ì—°ì†ì ìœ¼ë¡œ ì¤‘ë³µëœ ê²½ìš°ì— ëŒ€í•´ì„œ ì ê¸ˆì„ íšŒí”¼í•˜ë„ë¡
-                // ê°„ë‹¨íˆ ì²˜ë¦¬í•˜ê¸°í•œë‹¤. (ì„±ëŠ¥ì´ìŠˆ)
+                // ÀÏ´Ü, ¿¬¼ÓÀûÀ¸·Î Áßº¹µÈ °æ¿ì¿¡ ´ëÇØ¼­ Àá±İÀ» È¸ÇÇÇÏµµ·Ï
+                // °£´ÜÈ÷ Ã³¸®ÇÏ±âÇÑ´Ù. (¼º´ÉÀÌ½´)
 
                 if ( sLockedTBSID != sLobTBSID )
                 {
@@ -290,7 +290,7 @@ IDE_RC smiTable::createTable( idvSQL*               aStatistics,
             }
             else
             {
-                // ê·¸ì™¸ Column Type
+                // ±×¿Ü Column Type
             }
 
             sColumnList = sColumnList->next;
@@ -298,11 +298,11 @@ IDE_RC smiTable::createTable( idvSQL*               aStatistics,
     }
     else
     {
-        // ê·¸ì™¸ Table Typeì€ LOB Columnì„ ê³ ë ¤í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // ±×¿Ü Table TypeÀº LOB ColumnÀ» °í·ÁÇÏÁö ¾Ê´Â´Ù.
     }
 
-    //BUGBUG smiDef.hì—ì„œ SMI_TABLE_TYPE_MASKê°€ ë³€ê²½ë˜ë©´
-    // ì´ì½”ë“œë„ ë³€ê²½ë˜ì–´ì•¼í•¨.
+    //BUGBUG smiDef.h¿¡¼­ SMI_TABLE_TYPE_MASK°¡ º¯°æµÇ¸é
+    // ÀÌÄÚµåµµ º¯°æµÇ¾î¾ßÇÔ.
     sTableTypeFlag  = sTableTypeFlag >> SMI_SHIFT_TO_TABLE_TYPE;
 
     IDE_TEST(smiCreateTableFuncs[sTableTypeFlag](
@@ -333,16 +333,16 @@ IDE_RC smiTable::createTable( idvSQL*               aStatistics,
 }
 
 /*
- * META/MEMORY/DISK/TEMP/FIXED/VOLATILE TABLEì„ Drop í•œë‹¤.
+ * META/MEMORY/DISK/TEMP/FIXED/VOLATILE TABLEÀ» Drop ÇÑ´Ù.
  *
- * disk temp tableì„ dropí• ë•Œ no-loggingì„
- * í•˜ê¸° ìœ„í•˜ì—¬, smcTable::dropTempTableì„ ë¶€ë¥¸ë‹¤.
+ * disk temp tableÀ» dropÇÒ¶§ no-loggingÀ»
+ * ÇÏ±â À§ÇÏ¿©, smcTable::dropTempTableÀ» ºÎ¸¥´Ù.
  *
- * [ ì¸ì ]
+ * [ ÀÎÀÚ ]
  * [IN] aStatement - Statement
- * [IN] aTable     - Drop í•  Table Handle
- * [IN] aTBSLvType - Table ê´€ë ¨ëœ TBS(table/index/lob)ë“¤ì— ëŒ€í•œ
- *                   Lock Validation íƒ€ì…
+ * [IN] aTable     - Drop ÇÒ Table Handle
+ * [IN] aTBSLvType - Table °ü·ÃµÈ TBS(table/index/lob)µé¿¡ ´ëÇÑ
+ *                   Lock Validation Å¸ÀÔ
  */
 IDE_RC smiTable::dropTable( smiStatement       * aStatement,
                             const  void        * aTable,
@@ -359,25 +359,26 @@ IDE_RC smiTable::dropTable( smiStatement       * aStatement,
     IDE_TEST( aStatement->prepareDDL((smiTrans*)aStatement->mTrans)
               != IDE_SUCCESS );
 
-    //BUGBUG smiDef.hì—ì„œ SMI_TABLE_TYPE_MASKê°€ ë³€ê²½ë˜ë©´
-    // ì´ì½”ë“œë„ ë³€ê²½ë˜ì–´ì•¼í•¨.
+    //BUGBUG smiDef.h¿¡¼­ SMI_TABLE_TYPE_MASK°¡ º¯°æµÇ¸é
+    // ÀÌÄÚµåµµ º¯°æµÇ¾î¾ßÇÔ.
     //sTableTypeFlag  = sTableTypeFlag >> 12;
-    // table type flagë¥¼ ì–»ê¸°ìœ„í•´ 12 bit shift rightí•¨
+    // table type flag¸¦ ¾ò±âÀ§ÇØ 12 bit shift rightÇÔ
     sTableTypeFlag  = sTableTypeFlag >> SMI_SHIFT_TO_TABLE_TYPE;
 
-    // PRJ-1548 User Memory TableSpace ê°œë…ë„ì…
-    // Validate Table ì—ì„œ ë‹¤ìŒê³¼ ê°™ì´ Lockì„ íšë“í•œë‹¤.
-    // [1] Tableì˜ TableSpaceì— ëŒ€í•´ IX
-    // [2] Tableì— ëŒ€í•´ X
-    // [3] Tableì˜ Index, Lob Column TableSpaceì— ëŒ€í•´ IX
-    // Tableì˜ ìƒìœ„ëŠ” Tableì˜ TableSpaceì´ë©° ê·¸ì— ëŒ€í•´ IXë¥¼
-    // íšë“í•œë‹¤.
+    // PRJ-1548 User Memory TableSpace °³³äµµÀÔ
+    // Validate Table ¿¡¼­ ´ÙÀ½°ú °°ÀÌ LockÀ» È¹µæÇÑ´Ù.
+    // [1] TableÀÇ TableSpace¿¡ ´ëÇØ IX
+    // [2] Table¿¡ ´ëÇØ X
+    // [3] TableÀÇ Index, Lob Column TableSpace¿¡ ´ëÇØ IX
+    // TableÀÇ »óÀ§´Â TableÀÇ TableSpaceÀÌ¸ç ±×¿¡ ´ëÇØ IX¸¦
+    // È¹µæÇÑ´Ù.
 
     IDE_TEST( smiDropTableFuncs[sTableTypeFlag](
-              (smxTrans*)aStatement->mTrans->mTrans,
-              ((UChar*)aTable+SMP_SLOT_HEADER_SIZE),
-              sctTableSpaceMgr::getTBSLvType2Opt( aTBSLvType ),
-              SMC_LOCK_TABLE ) != IDE_SUCCESS);
+                          (smxTrans*)aStatement->mTrans->mTrans,
+                          ((UChar*)aTable+SMP_SLOT_HEADER_SIZE),
+                          sctTableSpaceMgr::getTBSLvType2Opt( aTBSLvType ),
+                          SMC_LOCK_TABLE ) 
+              != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -387,17 +388,17 @@ IDE_RC smiTable::dropTable( smiStatement       * aStatement,
 
 }
 /*********************************************************
- * Description : table info ë³€ê²½í•˜ëŠ” í•¨ìˆ˜
+ * Description : table info º¯°æÇÏ´Â ÇÔ¼ö
  * Implementation :
  *    - Input
  *      aStatistics : statistics
  *      aTable      : table header
  *      aColumns    : column list
  *      aColumnSize : column size
- *      aInfo       : ìƒˆë¡œìš´ table info
+ *      aInfo       : »õ·Î¿î table info
  *      aInfoSize   : info size
- *      aFlag       : ìƒˆë¡œìš´ table flag
- *                    ( ë˜ëŠ” table_flag ë³€ê²½ì´ ì—†ìŒì„ ì•Œë¦¬ëŠ” ì •ë³´ )
+ *      aFlag       : »õ·Î¿î table flag
+ *                    ( ¶Ç´Â table_flag º¯°æÀÌ ¾øÀ½À» ¾Ë¸®´Â Á¤º¸ )
  *      aTBSLvType  : tablespace validation option
  *    - Output
 ***********************************************************/
@@ -420,7 +421,7 @@ IDE_RC smiTable::modifyTableInfo( smiStatement*        aStatement,
                                aFlag,
                                aTBSLvType,
                                0,  // max row
-                               0,  // parallel degree ì„¤ì •ì•ˆë¨ì„ ì˜ë¯¸
+                               0,  // parallel degree ¼³Á¤¾ÈµÊÀ» ÀÇ¹Ì
                                ID_TRUE ) // aIsInitRowTemplate
               != IDE_SUCCESS );
 
@@ -446,13 +447,13 @@ IDE_RC smiTable::modifyTableInfo( smiStatement*        aStatement,
     IDE_TEST( aStatement->prepareDDL((smiTrans*)aStatement->mTrans)
               != IDE_SUCCESS );
 
-    // PRJ-1548 User Memory TableSpace ê°œë…ë„ì…
-    // Validate Table ì—ì„œ ë‹¤ìŒê³¼ ê°™ì´ Lockì„ íšë“í•œë‹¤.
-    // [1] Tableì˜ TableSpaceì— ëŒ€í•´ IX
-    // [2] Tableì— ëŒ€í•´ X
-    // [3] Tableì˜ Index, Lob Column TableSpaceì— ëŒ€í•´ IX
-    // Tableì˜ ìƒìœ„ëŠ” Tableì˜ TableSpaceì´ë©° ê·¸ì— ëŒ€í•´ IXë¥¼
-    // íšë“í•œë‹¤.
+    // PRJ-1548 User Memory TableSpace °³³äµµÀÔ
+    // Validate Table ¿¡¼­ ´ÙÀ½°ú °°ÀÌ LockÀ» È¹µæÇÑ´Ù.
+    // [1] TableÀÇ TableSpace¿¡ ´ëÇØ IX
+    // [2] Table¿¡ ´ëÇØ X
+    // [3] TableÀÇ Index, Lob Column TableSpace¿¡ ´ëÇØ IX
+    // TableÀÇ »óÀ§´Â TableÀÇ TableSpaceÀÌ¸ç ±×¿¡ ´ëÇØ IX¸¦
+    // È¹µæÇÑ´Ù.
     IDE_TEST( smcTable::modifyTableInfo(
                  (smxTrans*)aStatement->mTrans->mTrans,
                  (smcTableHeader*)((UChar*)aTable+SMP_SLOT_HEADER_SIZE),
@@ -478,32 +479,32 @@ IDE_RC smiTable::modifyTableInfo( smiStatement*        aStatement,
 /*********************************************************
   function description: createIndex
     FOR A4 :
-    - disk temporary tableì˜ ì¸ë±ìŠ¤ í—¤ë”ëŠ”
-    disk temporary tableì˜ catalog í…Œì´ë¸”ì¸
-    SYS_TEMP_TABLEì—ì„œ variable slotí• ë‹¹ì„ ë°›ê³ ,
-    no loggingì„ ìœ„í•˜ì—¬ smcTable::createTempIndexì„ ë¶€ë¥¸ë‹¤.
-    ì¸ë±ìŠ¤ í—¤ë”ë¥¼ í• ë‹¹ë°›ì€í›„ snap shotì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
+    - disk temporary tableÀÇ ÀÎµ¦½º Çì´õ´Â
+    disk temporary tableÀÇ catalog Å×ÀÌºíÀÎ
+    SYS_TEMP_TABLE¿¡¼­ variable slotÇÒ´çÀ» ¹Ş°í,
+    no loggingÀ» À§ÇÏ¿© smcTable::createTempIndexÀ» ºÎ¸¥´Ù.
+    ÀÎµ¦½º Çì´õ¸¦ ÇÒ´ç¹ŞÀºÈÄ snap shotÀº ´ÙÀ½°ú °°´Ù.
      ___________________________________          _________  ______
     | catalog table for disk temp table |       - |smcTableHeader |
     | (SYS_TEMP_TABLE)                  |       |  -----------------
     -------------------------------------       |   ^
              |                 |                |   |
-             |                 ã…               |   SYS_TEMP_TABLEì˜ fixed slot.
+             |                 ¤±               |   SYS_TEMP_TABLEÀÇ fixed slot.
              o                 |                |
-             |                 ã… var           |
+             |                 ¤± var           |
              o fixed              page list     |_ ----------------
                page list entry    entry            |smnIndexHeader |
                                                    ----------------
-                                             SYS_TEMP_TABLEì˜ variable slot.
+                                             SYS_TEMP_TABLEÀÇ variable slot.
 
-   ìƒˆë¡­ê²Œ í• ë‹¹ëœ ì¸ë±ìŠ¤ í—¤ë”ì˜
-   smnInsertFunc,smnDeleteFunc, smnClusterFuncëŠ” ì¸ë±ìŠ¤ ì´ˆê¸°í™”ê³¼ì •ì—ì„œ
-   í•´ë‹¹ indexëª¨ë“ˆì˜ createí•¨ìˆ˜ê°€ ë¶ˆë¦¬ê²Œë˜ì–´  assignëœë‹¤.
+   »õ·Ó°Ô ÇÒ´çµÈ ÀÎµ¦½º Çì´õÀÇ
+   smnInsertFunc,smnDeleteFunc, smnClusterFunc´Â ÀÎµ¦½º ÃÊ±âÈ­°úÁ¤¿¡¼­
+   ÇØ´ç index¸ğµâÀÇ createÇÔ¼ö°¡ ºÒ¸®°ÔµÇ¾î  assignµÈ´Ù.
 
-   % memory table indexì—ì„œëŠ” aKeyColumnsê°€ rowì—ì„œ
-    ì¸ë±ìŠ¤ key column offsetì •ë³´ë¥¼ ë‹´ê³ ,
-    disk table indexì—ì„œëŠ” aKeyColumnsê°€ key slot ì—ì„œ
-    ì¸ë±ìŠ¤ key column offsetì •ë³´ë¥¼ ë‹´ëŠ”ë‹¤.
+   % memory table index¿¡¼­´Â aKeyColumns°¡ row¿¡¼­
+    ÀÎµ¦½º key column offsetÁ¤º¸¸¦ ´ã°í,
+    disk table index¿¡¼­´Â aKeyColumns°¡ key slot ¿¡¼­
+    ÀÎµ¦½º key column offsetÁ¤º¸¸¦ ´ã´Â´Ù.
 
 ***********************************************************/
 IDE_RC smiTable::createIndex(idvSQL*              aStatistics,
@@ -530,7 +531,7 @@ IDE_RC smiTable::createIndex(idvSQL*              aStatistics,
     sTableTypeFlag = SMI_GET_TABLE_TYPE( sTable );
 
     // PRJ-1548 User Memory Tablespace
-    // CREATE INDEX ê´€ë ¨ TableSpaceì— ëŒ€í•˜ì—¬ ë³„ë„ë¡œ IXë¥¼ íšë“í•œë‹¤.
+    // CREATE INDEX °ü·Ã TableSpace¿¡ ´ëÇÏ¿© º°µµ·Î IX¸¦ È¹µæÇÑ´Ù.
     // -------------- TBS Node (IX) ------------------ //
     IDE_TEST( sctTableSpaceMgr::lockTBSNodeByID(
                       (void*)aStatement->mTrans->mTrans,
@@ -542,30 +543,30 @@ IDE_RC smiTable::createIndex(idvSQL*              aStatistics,
                       NULL,
                       NULL ) != IDE_SUCCESS );
 
-    // BUGBUG smiDef.hì—ì„œ SMI_TABLE_TYPE_MASKê°€ ë³€ê²½ë˜ë©´
-    // ì´ì½”ë“œë„ ë³€ê²½ë˜ì–´ì•¼í•¨.
+    // BUGBUG smiDef.h¿¡¼­ SMI_TABLE_TYPE_MASK°¡ º¯°æµÇ¸é
+    // ÀÌÄÚµåµµ º¯°æµÇ¾î¾ßÇÔ.
     sTableTypeFlag  = sTableTypeFlag >> SMI_SHIFT_TO_TABLE_TYPE;
 
-    // PRJ-1548 User Memory TableSpace ê°œë…ë„ì…
-    // Validate Table ì—ì„œ ë‹¤ìŒê³¼ ê°™ì´ Lockì„ íšë“í•œë‹¤.
-    // [1] Tableì˜ TableSpaceì— ëŒ€í•´ IX
-    // [2] Tableì— ëŒ€í•´ X
-    // [3] ì´ë¯¸ ìƒì„±ë˜ì–´ ìˆëŠ” Tableì˜ Index, Lob Column TableSpaceì— ëŒ€í•´ IX
-    // Tableì˜ ìƒìœ„ëŠ” Tableì˜ TableSpaceì´ë©° ê·¸ì— ëŒ€í•´ IXë¥¼
-    // íšë“í•œë‹¤.
+    // PRJ-1548 User Memory TableSpace °³³äµµÀÔ
+    // Validate Table ¿¡¼­ ´ÙÀ½°ú °°ÀÌ LockÀ» È¹µæÇÑ´Ù.
+    // [1] TableÀÇ TableSpace¿¡ ´ëÇØ IX
+    // [2] Table¿¡ ´ëÇØ X
+    // [3] ÀÌ¹Ì »ı¼ºµÇ¾î ÀÖ´Â TableÀÇ Index, Lob Column TableSpace¿¡ ´ëÇØ IX
+    // TableÀÇ »óÀ§´Â TableÀÇ TableSpaceÀÌ¸ç ±×¿¡ ´ëÇØ IX¸¦
+    // È¹µæÇÑ´Ù.
 
-    /* BUG-24025: [SC] Index Createì‹œ Statement View SCNì´ ìœ ì§€ë˜ì–´ Index Buildê°€
-     * ì¢…ë£Œë ë•Œê¹Œì§€ Agerê°€ ë™ì‘í•˜ì§€ ëª»í•¨.
+    /* BUG-24025: [SC] Index Create½Ã Statement View SCNÀÌ À¯ÁöµÇ¾î Index Build°¡
+     * Á¾·áµÉ¶§±îÁö Ager°¡ µ¿ÀÛÇÏÁö ¸øÇÔ.
      *
-     * Index Buildì „ì— Transactionì˜ ëª¨ë“  Statementì˜ ViewSCNì„ Clearí•˜ê³  Create
-     * Indexí›„ì— ë‹¤ì‹œ ìƒˆë¡œìš´ ViewSCNì„ ë”°ì¤€ë‹¤.
+     * Index BuildÀü¿¡ TransactionÀÇ ¸ğµç StatementÀÇ ViewSCNÀ» ClearÇÏ°í Create
+     * IndexÈÄ¿¡ ´Ù½Ã »õ·Î¿î ViewSCNÀ» µûÁØ´Ù.
      * */
     /* BUG-31993 [sm_interface] The server does not reset Iterator ViewSCN 
      * after building index for Temp Table
-     * TempTableì¼ ê²½ìš°ì—ëŠ” ë‚´ë¶€ì— ì´ë¯¸ ì—´ì–´ë²„ë¦° ì»¤ì„œ ë° Iteratorê°€ ì¡´ì¬í•˜ê¸°
-     * ë•Œë¬¸ì—, SCNì„ ë³€ê²½í•˜ë©´ ì•ˆëœë‹¤. */
+     * TempTableÀÏ °æ¿ì¿¡´Â ³»ºÎ¿¡ ÀÌ¹Ì ¿­¾î¹ö¸° Ä¿¼­ ¹× Iterator°¡ Á¸ÀçÇÏ±â
+     * ¶§¹®¿¡, SCNÀ» º¯°æÇÏ¸é ¾ÈµÈ´Ù. */
 
-    /* TempTable Typeì€ ì´ì œ ì—†ë‹¤. */
+    /* TempTable TypeÀº ÀÌÁ¦ ¾ø´Ù. */
     IDE_ERROR( sTableTypeFlag != 
                ( SMI_TABLE_TEMP_LEGACY >> SMI_SHIFT_TO_TABLE_TYPE ) );
 
@@ -612,7 +613,7 @@ IDE_RC smiTable::createIndex(idvSQL*              aStatistics,
 
 /*********************************************************
   function description: createMemIndex
-  memory tableì˜ indexë¥¼ ìƒì„±í•œë‹¤.
+  memory tableÀÇ index¸¦ »ı¼ºÇÑ´Ù.
   -added for A4
 ***********************************************************/
 IDE_RC smiTable::createMemIndex(idvSQL              *aStatistics,
@@ -632,11 +633,8 @@ IDE_RC smiTable::createMemIndex(idvSQL              *aStatistics,
                                 const void**         aIndex)
 {
     smxTrans* sTrans;
-    smSCN     sCommitSCN;
 
-    SM_INIT_SCN( &sCommitSCN );
-
-    // index typeì— ëŒ€í•œ validation
+    // index type¿¡ ´ëÇÑ validation
     IDE_ASSERT( aType != SMI_BUILTIN_SEQUENTIAL_INDEXTYPE_ID );
     IDE_TEST( aStatement->prepareDDL((smiTrans*)aStatement->mTrans)
               != IDE_SUCCESS);
@@ -660,19 +658,18 @@ IDE_RC smiTable::createMemIndex(idvSQL              *aStatistics,
 
     /* BUG-32655 [sm-mem-index] The MMDB Ager must not ignore the failure 
      * of index aging. 
-     * IndexBuilding ì´ì „ì— Agingí•  Jobì´ ìˆì„ ê²½ìš°, IndexBuilding ì‹œì ì—ëŠ”
-     * ìê¸° ì‹œì ì—ì„œ ìœ íš¨í•œ Rowë§Œ ì½ì–´ì„œ Buildí•˜ê¸° ë•Œë¬¸ì— ê·¸ ì´ì „ Aging
-     * Jobì—ì„œ ë“±ë¡ëœ Rowë“¤ì´ Indexì—ëŠ” ì—†ê²Œ ëœë‹¤. ì´ê²ƒì´ ì¼ê´€ì„±ì—
-     * í° ë¬¸ì œë¥¼ ì¤„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ, IndexBuilding ì „ì— ë¯¸ë¦¬ Agingí•œë‹¤.
+     * IndexBuilding ÀÌÀü¿¡ AgingÇÒ JobÀÌ ÀÖÀ» °æ¿ì, IndexBuilding ½ÃÁ¡¿¡´Â
+     * ÀÚ±â ½ÃÁ¡¿¡¼­ À¯È¿ÇÑ Row¸¸ ÀĞ¾î¼­ BuildÇÏ±â ¶§¹®¿¡ ±× ÀÌÀü Aging
+     * Job¿¡¼­ µî·ÏµÈ RowµéÀÌ Index¿¡´Â ¾ø°Ô µÈ´Ù. ÀÌ°ÍÀÌ ÀÏ°ü¼º¿¡
+     * Å« ¹®Á¦¸¦ ÁÙ ¼ö ÀÖÀ¸¹Ç·Î, IndexBuilding Àü¿¡ ¹Ì¸® AgingÇÑ´Ù.
      * 
-     * ì´ë•Œ Tableì— XLockì„ ì¡ì•˜ê¸° ë•Œë¬¸ì— ìˆ˜í–‰í•  ìˆ˜ ìˆëŠ” ê²ƒ*/
+     * ÀÌ¶§ Table¿¡ XLockÀ» Àâ¾Ò±â ¶§¹®¿¡ ¼öÇàÇÒ ¼ö ÀÖ´Â °Í*/
     IDE_TEST(smaLogicalAger::doInstantAgingWithTable( aTable->mSelfOID )
              != IDE_SUCCESS);
 
-    /* Indexì˜ Headerë¥¼ ìƒì„±í•œë‹¤. */
+    /* IndexÀÇ Header¸¦ »ı¼ºÇÑ´Ù. */
     IDE_TEST( smcTable::createIndex(aStatistics,
                                     sTrans,
-                                    sCommitSCN,
                                     aTableSpaceID,
                                     aTable,
                                     aName,
@@ -689,7 +686,7 @@ IDE_RC smiTable::createMemIndex(idvSQL              *aStatistics,
 
     if( (aFlag & SMI_INDEX_USE_MASK) == SMI_INDEX_USE_ENABLE )
     {
-        // ì‹¤ì œ Indexë¥¼ ìƒì„±í•œë‹¤.
+        // ½ÇÁ¦ Index¸¦ »ı¼ºÇÑ´Ù.
         IDE_TEST( smnManager::buildIndex(aStatistics,
                                          sTrans,
                                          aTable,
@@ -711,7 +708,7 @@ IDE_RC smiTable::createMemIndex(idvSQL              *aStatistics,
 
 /*********************************************************
   function description: createVolIndex
-  volatile tableì˜ indexë¥¼ ìƒì„±í•œë‹¤.
+  volatile tableÀÇ index¸¦ »ı¼ºÇÑ´Ù.
   -added for A4
 ***********************************************************/
 IDE_RC smiTable::createVolIndex(idvSQL              *aStatistics,
@@ -731,11 +728,8 @@ IDE_RC smiTable::createVolIndex(idvSQL              *aStatistics,
                                 const void**         aIndex)
 {
     smxTrans* sTrans;
-    smSCN     sCommitSCN;
 
-    SM_INIT_SCN( &sCommitSCN );
-
-    // index typeì— ëŒ€í•œ validation
+    // index type¿¡ ´ëÇÑ validation
     IDE_ASSERT( aType != SMI_BUILTIN_SEQUENTIAL_INDEXTYPE_ID );
     IDE_TEST( aStatement->prepareDDL((smiTrans*)aStatement->mTrans)
               != IDE_SUCCESS);
@@ -759,19 +753,18 @@ IDE_RC smiTable::createVolIndex(idvSQL              *aStatistics,
 
     /* BUG-32655 [sm-mem-index] The MMDB Ager must not ignore the failure 
      * of index aging. 
-     * IndexBuilding ì´ì „ì— Agingí•  Jobì´ ìˆì„ ê²½ìš°, IndexBuilding ì‹œì ì—ëŠ”
-     * ìê¸° ì‹œì ì—ì„œ ìœ íš¨í•œ Rowë§Œ ì½ì–´ì„œ Buildí•˜ê¸° ë•Œë¬¸ì— ê·¸ ì´ì „ Aging
-     * Jobì—ì„œ ë“±ë¡ëœ Rowë“¤ì´ Indexì—ëŠ” ì—†ê²Œ ëœë‹¤. ì´ê²ƒì´ ì¼ê´€ì„±ì—
-     * í° ë¬¸ì œë¥¼ ì¤„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ, IndexBuilding ì „ì— ë¯¸ë¦¬ Agingí•œë‹¤.
+     * IndexBuilding ÀÌÀü¿¡ AgingÇÒ JobÀÌ ÀÖÀ» °æ¿ì, IndexBuilding ½ÃÁ¡¿¡´Â
+     * ÀÚ±â ½ÃÁ¡¿¡¼­ À¯È¿ÇÑ Row¸¸ ÀĞ¾î¼­ BuildÇÏ±â ¶§¹®¿¡ ±× ÀÌÀü Aging
+     * Job¿¡¼­ µî·ÏµÈ RowµéÀÌ Index¿¡´Â ¾ø°Ô µÈ´Ù. ÀÌ°ÍÀÌ ÀÏ°ü¼º¿¡
+     * Å« ¹®Á¦¸¦ ÁÙ ¼ö ÀÖÀ¸¹Ç·Î, IndexBuilding Àü¿¡ ¹Ì¸® AgingÇÑ´Ù.
      * 
-     * ì´ë•Œ Tableì— XLockì„ ì¡ì•˜ê¸° ë•Œë¬¸ì— ìˆ˜í–‰í•  ìˆ˜ ìˆëŠ” ê²ƒ*/
+     * ÀÌ¶§ Table¿¡ XLockÀ» Àâ¾Ò±â ¶§¹®¿¡ ¼öÇàÇÒ ¼ö ÀÖ´Â °Í*/
     IDE_TEST(smaLogicalAger::doInstantAgingWithTable( aTable->mSelfOID )
              != IDE_SUCCESS);
 
-    /* Indexì˜ Headerë¥¼ ìƒì„±í•œë‹¤. */
+    /* IndexÀÇ Header¸¦ »ı¼ºÇÑ´Ù. */
     IDE_TEST( smcTable::createIndex(aStatistics,
                                     sTrans,
-                                    sCommitSCN,
                                     aTableSpaceID,
                                     aTable,
                                     aName,
@@ -788,7 +781,7 @@ IDE_RC smiTable::createVolIndex(idvSQL              *aStatistics,
 
     if( (aFlag & SMI_INDEX_USE_MASK) == SMI_INDEX_USE_ENABLE )
     {
-        // ì‹¤ì œ Indexë¥¼ ìƒì„±í•œë‹¤.
+        // ½ÇÁ¦ Index¸¦ »ı¼ºÇÑ´Ù.
         IDE_TEST( smnManager::buildIndex(aStatistics,
                                          sTrans,
                                          aTable,
@@ -810,7 +803,7 @@ IDE_RC smiTable::createVolIndex(idvSQL              *aStatistics,
 
 /*********************************************************
   function description: createDiskIndex
-  memory tableì˜ indexë¥¼ ìƒì„±í•œë‹¤.
+  memory tableÀÇ index¸¦ »ı¼ºÇÑ´Ù.
   -added for A4
 ***********************************************************/
 IDE_RC smiTable::createDiskIndex(idvSQL               * aStatistics,
@@ -833,15 +826,13 @@ IDE_RC smiTable::createDiskIndex(idvSQL               * aStatistics,
     smxTrans*       sTrans;
     ULong           sTotalRecCnt = 0;
     UInt            sBUBuildThreshold;
-    smSCN         * sCommitSCN;
 
-
-    // index typeì— ëŒ€í•œ validation
+    // index type¿¡ ´ëÇÑ validation
     IDE_ASSERT( (aType == SMI_BUILTIN_B_TREE_INDEXTYPE_ID) ||
                 (aType == SMI_ADDITIONAL_RTREE_INDEXTYPE_ID) );
 
-    /* BUG-33803 Tableì´ ALL INDEX ENABLE ìƒíƒœì¼ ê²½ìš° indexë„ ENALBE ìƒíƒœë¡œ
-     * ìƒì„±í•˜ê³ , ALL INDEX DISABLE ìƒíƒœì¼ ê²½ìš° indexë„ DISABLE ìƒíƒœë¡œ ìƒì„±í•¨. */
+    /* BUG-33803 TableÀÌ ALL INDEX ENABLE »óÅÂÀÏ °æ¿ì indexµµ ENALBE »óÅÂ·Î
+     * »ı¼ºÇÏ°í, ALL INDEX DISABLE »óÅÂÀÏ °æ¿ì indexµµ DISABLE »óÅÂ·Î »ı¼ºÇÔ. */
     if( (aTable->mFlag & SMI_TABLE_DISABLE_ALL_INDEX_MASK)
         == SMI_TABLE_ENABLE_ALL_INDEX )
     {
@@ -871,17 +862,17 @@ IDE_RC smiTable::createDiskIndex(idvSQL               * aStatistics,
     sBUBuildThreshold = smuProperty::getIndexBuildBottomUpThreshold();
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // ì»¤ë°‹ë˜ì§€ ì•Šì€ ROW(SMI_INDEX_BUILD_UNCOMMITTED_ROW_ENABLE)ì— ëŒ€í•´ì„œ
-    // ì¸ë±ìŠ¤ ì‚½ì…ì„ ìœ ë„í•˜ê¸° ìœ„í•´ì„œëŠ” __DISK_INDEX_BOTTOM_UP_BUILD_THRESHOLD 
-    // í”„ë¡œí¼í‹°ë¥¼ ë¬´ì‹œí•´ì•¼ë§Œ í•œë‹¤.
+    // Ä¿¹ÔµÇÁö ¾ÊÀº ROW(SMI_INDEX_BUILD_UNCOMMITTED_ROW_ENABLE)¿¡ ´ëÇØ¼­
+    // ÀÎµ¦½º »ğÀÔÀ» À¯µµÇÏ±â À§ÇØ¼­´Â __DISK_INDEX_BOTTOM_UP_BUILD_THRESHOLD 
+    // ÇÁ·ÎÆÛÆ¼¸¦ ¹«½ÃÇØ¾ß¸¸ ÇÑ´Ù.
     if ( (aBuildFlag & SMI_INDEX_BUILD_UNCOMMITTED_ROW_MASK) ==
          SMI_INDEX_BUILD_UNCOMMITTED_ROW_ENABLE )
     {
         sTotalRecCnt = ID_ULONG_MAX;
     }
 
-    // To fix BUG-17994 : Top-downìœ¼ë¡œ index buildí•  ê²½ìš°
-    //                    ë¬´ì¡°ê±´ LOGGING & NOFORCE option
+    // To fix BUG-17994 : Top-downÀ¸·Î index buildÇÒ °æ¿ì
+    //                    ¹«Á¶°Ç LOGGING & NOFORCE option
     if( sTotalRecCnt < sBUBuildThreshold )
     {
         aBuildFlag &= ~(SMI_INDEX_BUILD_LOGGING_MASK);
@@ -892,22 +883,15 @@ IDE_RC smiTable::createDiskIndex(idvSQL               * aStatistics,
     }
 
 
-    /* DDL ì¤€ë¹„ */
+    /* DDL ÁØºñ */
     IDE_TEST( aStatement->prepareDDL((smiTrans*)aStatement->mTrans)
               != IDE_SUCCESS );
 
     sTrans = (smxTrans*)aStatement->mTrans->mTrans;
 
-    IDE_TEST( smmDatabase::getCommitSCN( NULL,     /* aTrans */
-                                         ID_FALSE, /* aIsLegacyTrans */
-                                         NULL )    /* aStatus */
-              != IDE_SUCCESS );
-    sCommitSCN = smmDatabase::getLstSystemSCN();
-
-    /* Indexì˜ Headerë¥¼ ìƒì„±í•œë‹¤. */
+    /* IndexÀÇ Header¸¦ »ı¼ºÇÑ´Ù. */
     IDE_TEST( smcTable::createIndex(aStatistics,
                                     sTrans,
-                                    *sCommitSCN,
                                     aTableSpaceID,
                                     aTable,
                                     aName,
@@ -924,7 +908,7 @@ IDE_RC smiTable::createDiskIndex(idvSQL               * aStatistics,
 
     if( (aFlag & SMI_INDEX_USE_MASK) == SMI_INDEX_USE_ENABLE )
     {
-        // ì‹¤ì œ Indexë¥¼ ìƒì„±í•œë‹¤.
+        // ½ÇÁ¦ Index¸¦ »ı¼ºÇÑ´Ù.
         IDE_TEST( smnManager::buildIndex(aStatistics,
                                          sTrans,
                                          aTable,
@@ -945,19 +929,19 @@ IDE_RC smiTable::createDiskIndex(idvSQL               * aStatistics,
 }
 
 /*
- * MEMORY/DISK TABLEì˜ Indexë¥¼  Drop í•œë‹¤.
+ * MEMORY/DISK TABLEÀÇ Index¸¦  Drop ÇÑ´Ù.
  *
- * [ ì˜ˆì™¸ ]
+ * [ ¿¹¿Ü ]
  *
- * disk temp tableì˜ ëŒ€í•œ index dropëŠ” ë°˜ë“œì‹œ
- * drop tableì„ í†µí•´ì„œ ë¶ˆë ¤ì•¼ í•œë‹¤.
+ * disk temp tableÀÇ ´ëÇÑ index drop´Â ¹İµå½Ã
+ * drop tableÀ» ÅëÇØ¼­ ºÒ·Á¾ß ÇÑ´Ù.
  *
- * [ ì¸ì ]
+ * [ ÀÎÀÚ ]
  * [IN] aStatement - Statement
- * [IN] aTable     - Drop í•  Table Handle
- * [IN] aIndex     - Drop í•  Index Handle
- * [IN] aTBSLvType - Table ê´€ë ¨ëœ TBS(table/index/lob)ë“¤ì— ëŒ€í•œ
- *                   Lock Validation íƒ€ì…
+ * [IN] aTable     - Drop ÇÒ Table Handle
+ * [IN] aIndex     - Drop ÇÒ Index Handle
+ * [IN] aTBSLvType - Table °ü·ÃµÈ TBS(table/index/lob)µé¿¡ ´ëÇÑ
+ *                   Lock Validation Å¸ÀÔ
  */
 IDE_RC smiTable::dropIndex( smiStatement      * aStatement,
                             const void        * aTable,
@@ -975,13 +959,13 @@ IDE_RC smiTable::dropIndex( smiStatement      * aStatement,
 
     sTrans = (smxTrans*)aStatement->mTrans->mTrans;
 
-    // PRJ-1548 User Memory TableSpace ê°œë…ë„ì…
-    // Validate Table ì—ì„œ ë‹¤ìŒê³¼ ê°™ì´ Lockì„ íšë“í•œë‹¤.
-    // [1] Tableì˜ TableSpaceì— ëŒ€í•´ IX
-    // [2] Tableì— ëŒ€í•´ X
-    // [3] Tableì˜ Index, Lob Column TableSpaceì— ëŒ€í•´ IX
-    // Tableì˜ ìƒìœ„ëŠ” Tableì˜ TableSpaceì´ë©° ê·¸ì— ëŒ€í•´ IXë¥¼
-    // íšë“í•œë‹¤.
+    // PRJ-1548 User Memory TableSpace °³³äµµÀÔ
+    // Validate Table ¿¡¼­ ´ÙÀ½°ú °°ÀÌ LockÀ» È¹µæÇÑ´Ù.
+    // [1] TableÀÇ TableSpace¿¡ ´ëÇØ IX
+    // [2] Table¿¡ ´ëÇØ X
+    // [3] TableÀÇ Index, Lob Column TableSpace¿¡ ´ëÇØ IX
+    // TableÀÇ »óÀ§´Â TableÀÇ TableSpaceÀÌ¸ç ±×¿¡ ´ëÇØ IX¸¦
+    // È¹µæÇÑ´Ù.
     IDE_TEST( smcTable::dropIndex( sTrans,
                                    sTable,
                                    (void*)aIndex,
@@ -1009,13 +993,13 @@ IDE_RC smiTable::alterIndexInfo(smiStatement* aStatement,
     sTable = (smcTableHeader*)((UChar*)aTable+SMP_SLOT_HEADER_SIZE);
     sTrans = (smxTrans*)aStatement->mTrans->mTrans;
 
-    // PRJ-1548 User Memory TableSpace ê°œë…ë„ì…
-    // Validate Table ì—ì„œ ë‹¤ìŒê³¼ ê°™ì´ Lockì„ íšë“í•œë‹¤.
-    // [1] Tableì˜ TableSpaceì— ëŒ€í•´ IX
-    // [2] Tableì— ëŒ€í•´ X
-    // [3] Tableì˜ Index, Lob Column TableSpaceì— ëŒ€í•´ IX
-    // Tableì˜ ìƒìœ„ëŠ” Tableì˜ TableSpaceì´ë©° ê·¸ì— ëŒ€í•´ IXë¥¼
-    // íšë“í•œë‹¤.
+    // PRJ-1548 User Memory TableSpace °³³äµµÀÔ
+    // Validate Table ¿¡¼­ ´ÙÀ½°ú °°ÀÌ LockÀ» È¹µæÇÑ´Ù.
+    // [1] TableÀÇ TableSpace¿¡ ´ëÇØ IX
+    // [2] Table¿¡ ´ëÇØ X
+    // [3] TableÀÇ Index, Lob Column TableSpace¿¡ ´ëÇØ IX
+    // TableÀÇ »óÀ§´Â TableÀÇ TableSpaceÀÌ¸ç ±×¿¡ ´ëÇØ IX¸¦
+    // È¹µæÇÑ´Ù.
     IDE_TEST( smcTable::alterIndexInfo( sTrans,
                                         sTable,
                                         (smnIndexHeader*)aIndex,
@@ -1087,7 +1071,7 @@ IDE_RC smiTable::backupMemTable(smiStatement * aStatement,
     sState = 0;
     IDE_TEST(sTableBackup.destroy() != IDE_SUCCESS);
 
-    /* BUG-31881 ì´í›„ Restoreë¥¼ ëŒ€ë¹„í•´ PageReservation ì‹œì‘ */
+    /* BUG-31881 ÀÌÈÄ Restore¸¦ ´ëºñÇØ PageReservation ½ÃÀÛ */
     sTable = (smcTableHeader*)((UChar*)aTable+SMP_SLOT_HEADER_SIZE);
     IDE_TEST( sctTableSpaceMgr::findSpaceNodeBySpaceID( sTable->mSpaceID,
                                                         (void**)&sTBSNode )
@@ -1112,7 +1096,7 @@ IDE_RC smiTable::backupMemTable(smiStatement * aStatement,
 }
 
 /*******************************************************************
- * Description : Volatile Tableì„ ë°±ì—…í•œë‹¤.
+ * Description : Volatile TableÀ» ¹é¾÷ÇÑ´Ù.
  *******************************************************************/
 IDE_RC smiTable::backupVolatileTable(smiStatement * aStatement,
                                      const void   * aTable,
@@ -1135,7 +1119,7 @@ IDE_RC smiTable::backupVolatileTable(smiStatement * aStatement,
     sState = 0;
     IDE_TEST(sTableBackup.destroy() != IDE_SUCCESS);
 
-    /* BUG-31881 ì´í›„ Restoreë¥¼ ëŒ€ë¹„í•´ PageReservation ì‹œì‘ */
+    /* BUG-31881 ÀÌÈÄ Restore¸¦ ´ëºñÇØ PageReservation ½ÃÀÛ */
     sTable = (smcTableHeader*)((UChar*)aTable+SMP_SLOT_HEADER_SIZE);
     IDE_TEST( sctTableSpaceMgr::findSpaceNodeBySpaceID( sTable->mSpaceID,
                                                         (void**)&sTBSNode )
@@ -1191,10 +1175,10 @@ IDE_RC smiTable::backupTableForAlterTable( smiStatement* aStatement,
 
     IDL_MEM_BARRIER;
 
-    //BUG-15627 Alter Add Columnì‹œ Abortí•  ê²½ìš° Tableì˜ SCNì„ ë³€ê²½í•´ì•¼ í•¨.
-    //smaLogicalAger::doInstantAgingWithTable ì˜ abortë¡œ ì¸í•´ ë°œìƒí•  ìˆ˜ ìˆëŠ”
-    //ì˜ëª»ëœ viewë¥¼ ë³´ê²Œë˜ëŠ” í˜„ìƒì„ ë°©ì§€ í•˜ê¸° ìœ„í•´ abortì‹œì— tableì˜ scnì„ ë°”ê¾¸ì–´
-    //ì´ tableì„ ë³´ë ¤ê³  ì‹œë„í•˜ê³  ìˆë˜ íŠ¸ëœì­ì…˜ì„ rebuildì‹œí‚¨ë‹¤.
+    //BUG-15627 Alter Add Column½Ã AbortÇÒ °æ¿ì TableÀÇ SCNÀ» º¯°æÇØ¾ß ÇÔ.
+    //smaLogicalAger::doInstantAgingWithTable ÀÇ abort·Î ÀÎÇØ ¹ß»ıÇÒ ¼ö ÀÖ´Â
+    //Àß¸øµÈ view¸¦ º¸°ÔµÇ´Â Çö»óÀ» ¹æÁö ÇÏ±â À§ÇØ abort½Ã¿¡ tableÀÇ scnÀ» ¹Ù²Ù¾î
+    //ÀÌ tableÀ» º¸·Á°í ½ÃµµÇÏ°í ÀÖ´ø Æ®·£Àè¼ÇÀ» rebuild½ÃÅ²´Ù.
     IDE_TEST(
         smrLogMgr::writeNTALogRec(NULL, /* idvSQL* */
                                   sTrans,
@@ -1210,7 +1194,7 @@ IDE_RC smiTable::backupTableForAlterTable( smiStatement* aStatement,
     sRemoveBackupFile = ID_TRUE;
 
     /* PROJ-1594 Volatile TBS */
-    /* Table typeì— ë”°ë¼ backupTable í•¨ìˆ˜ê°€ ë‹¤ë¥´ë‹¤.*/
+    /* Table type¿¡ µû¶ó backupTable ÇÔ¼ö°¡ ´Ù¸£´Ù.*/
     if( SMI_TABLE_TYPE_IS_VOLATILE( sSrcTable ) == ID_TRUE )
     {
         IDE_TEST( backupVolatileTable( aStatement, 
@@ -1221,7 +1205,7 @@ IDE_RC smiTable::backupTableForAlterTable( smiStatement* aStatement,
     }
     else
     {
-        /* Volatile Tableì´ ì•„ë‹ˆë©´ ë°˜ë“œì‹œ Memory í…Œì´ë¸”ì´ë‹¤. */
+        /* Volatile TableÀÌ ¾Æ´Ï¸é ¹İµå½Ã Memory Å×ÀÌºíÀÌ´Ù. */
         IDE_DASSERT( SMI_TABLE_TYPE_IS_MEMORY( sSrcTable ) == ID_TRUE );
 
         IDE_TEST( backupMemTable( aStatement, 
@@ -1231,23 +1215,23 @@ IDE_RC smiTable::backupTableForAlterTable( smiStatement* aStatement,
                   != IDE_SUCCESS );
     }
 
-    /* BUG-31881 backupMem/VolTableì„ í•˜ë©´ì„œ pageReservation ì‹œì‘ */
+    /* BUG-31881 backupMem/VolTableÀ» ÇÏ¸é¼­ pageReservation ½ÃÀÛ */
     sState = 1;
 
     IDU_FIT_POINT( "1.BUG-34262@smiTable::backupTableForAlterTable" );
 
-    /* BUG-17954 : Add Column êµ¬ë¬¸ ìˆ˜í–‰ì‹œ, Unable to open a backup fileë¡œ ì„œë²„
-     * ë¹„ì •ìƒ ì¢…ë£Œ
+    /* BUG-17954 : Add Column ±¸¹® ¼öÇà½Ã, Unable to open a backup file·Î ¼­¹ö
+     * ºñÁ¤»ó Á¾·á
      *
-     * íŒŒì¼ì´ ìƒì„±ëœ í›„ Transaction OID Listì— Transactionì´ ëë‚œí›„ Fileì„
-     * ì§€ìš°ë„ë¡ OID ì •ë³´ë¥¼ Addí•œë‹¤. ë§Œì•½ backupTable ì „ì— í•˜ê²Œ ë˜ê³  backupì—ì„œ
-     * ì—ëŸ¬ê°€ ë°œìƒí•œë‹¤ë©´ backupTableì€ ë‚´ë¶€ì ìœ¼ë¡œ ì—ëŸ¬ë°œìƒì‹œ ìƒì„±í•œ backup
-     * fileì„
-     * ì‚­ì œí•œë‹¤. ë•Œë¬¸ì— ì—†ëŠ” Fileì— ëŒ€í•´ì„œ ì‚­ì œ ìš”ì²­ì„ í•˜ê²Œ ëœë‹¤.
-     * ê·¸ëŸ°ë° ê°™ì€ Tableì— Alter Add Columnì„ ë’¤ì´ì–´ì„œ ë‹¤ë¥¸ Transactionì´ 
-     * ìˆ˜í–‰í• ë•Œ Alterë¥¼ ìœ„í•´ì„œ backupTableì—ì„œ backup fileì„ ë§Œë“¤ì—ˆëŠ”ë° ì´ì „
-     * Transactionì´ ì˜ëª» ìš”ì²­í•œ Delete Backup Fileì„ LFThreadê°€ ìˆ˜í–‰í•˜ì—¬ 
-     * í˜„ì¬ Alterì˜ ìˆ˜í–‰ì„ ìœ„í•´ í•„ìš”í•œ íŒŒì¼ì„ ì§€ìš°ëŠ” ê²½ìš°ê°€ ë°œìƒí•œë‹¤. */
+     * ÆÄÀÏÀÌ »ı¼ºµÈ ÈÄ Transaction OID List¿¡ TransactionÀÌ ³¡³­ÈÄ FileÀ»
+     * Áö¿ìµµ·Ï OID Á¤º¸¸¦ AddÇÑ´Ù. ¸¸¾à backupTable Àü¿¡ ÇÏ°Ô µÇ°í backup¿¡¼­
+     * ¿¡·¯°¡ ¹ß»ıÇÑ´Ù¸é backupTableÀº ³»ºÎÀûÀ¸·Î ¿¡·¯¹ß»ı½Ã »ı¼ºÇÑ backup
+     * fileÀ»
+     * »èÁ¦ÇÑ´Ù. ¶§¹®¿¡ ¾ø´Â File¿¡ ´ëÇØ¼­ »èÁ¦ ¿äÃ»À» ÇÏ°Ô µÈ´Ù.
+     * ±×·±µ¥ °°Àº Table¿¡ Alter Add ColumnÀ» µÚÀÌ¾î¼­ ´Ù¸¥ TransactionÀÌ 
+     * ¼öÇàÇÒ¶§ Alter¸¦ À§ÇØ¼­ backupTable¿¡¼­ backup fileÀ» ¸¸µé¾ú´Âµ¥ ÀÌÀü
+     * TransactionÀÌ Àß¸ø ¿äÃ»ÇÑ Delete Backup FileÀ» LFThread°¡ ¼öÇàÇÏ¿© 
+     * ÇöÀç AlterÀÇ ¼öÇàÀ» À§ÇØ ÇÊ¿äÇÑ ÆÄÀÏÀ» Áö¿ì´Â °æ¿ì°¡ ¹ß»ıÇÑ´Ù. */
     IDE_TEST(sTrans->addOID(sSrcTable->mSelfOID,
                             ID_UINT_MAX,
                             sSrcTable->mSpaceID,
@@ -1257,9 +1241,9 @@ IDE_RC smiTable::backupTableForAlterTable( smiStatement* aStatement,
 
     /* BUG-34438  if server is killed when alter table(memory table) before
      * logging SMR_OP_ALTER_TABLE log, all rows are deleted 
-     * ì˜ˆì™¸ ë°œìƒê°€ ë°œìƒ í•˜ë©´ dest Table Restoreìˆ˜í–‰ ì‹œ ì‚¬ìš©í•œ
-     * Pageë“¤ì„ DBë¡œ ëŒë ¤ì¤„ ìˆ˜ ìˆë„ë¡, ìƒˆ Table(aDstHeader)ë¥¼ Loggingí•œë‹¤. 
-     * smcTable::dropTablePageListPending()í•¨ìˆ˜ì—ì„œ í•˜ë˜ ì‘ì—…ì„ ì´ë™ì‹œí‚¨ ê²ƒ*/
+     * ¿¹¿Ü ¹ß»ı°¡ ¹ß»ı ÇÏ¸é dest Table Restore¼öÇà ½Ã »ç¿ëÇÑ
+     * PageµéÀ» DB·Î µ¹·ÁÁÙ ¼ö ÀÖµµ·Ï, »õ Table(aDstHeader)¸¦ LoggingÇÑ´Ù. 
+     * smcTable::dropTablePageListPending()ÇÔ¼ö¿¡¼­ ÇÏ´ø ÀÛ¾÷À» ÀÌµ¿½ÃÅ² °Í*/
     sSrcOID = sSrcTable->mSelfOID;
     sDstOID = sDstTable->mSelfOID;
 
@@ -1313,9 +1297,9 @@ IDE_RC smiTable::backupTableForAlterTable( smiStatement* aStatement,
      * When alter table add/modify/drop column, backup file cannot be
      * deleted. 
      */
-    /* BUG-38254 alter table xxx ì—ì„œ hangì´ ê±¸ë¦´ìˆ˜ ìˆìŠµë‹ˆë‹¤.
-     * ê¸°ì¡´ì˜ ë™ì¼í•œ ì´ë¦„ì˜ tbk íŒŒì¼ì´ ìˆëŠ” exception ìƒí™©ì´ë©´ 
-     * íŒŒì¼ì„ ì§€ìš°ì§€ ì•ŠìŠµë‹ˆë‹¤. 
+    /* BUG-38254 alter table xxx ¿¡¼­ hangÀÌ °É¸±¼ö ÀÖ½À´Ï´Ù.
+     * ±âÁ¸ÀÇ µ¿ÀÏÇÑ ÀÌ¸§ÀÇ tbk ÆÄÀÏÀÌ ÀÖ´Â exception »óÈ²ÀÌ¸é 
+     * ÆÄÀÏÀ» Áö¿ìÁö ¾Ê½À´Ï´Ù. 
      */
     if( (sRemoveBackupFile == ID_TRUE) &&
         (idlOS::access( sBackupFileName, F_OK ) == 0) &&
@@ -1358,11 +1342,11 @@ IDE_RC smiTable::restoreMemTable(void                  * aTrans,
     smcTableHeader * sTable;
     smmTBSNode     * sTBSNode;
     
-    // ì›ë³¸ í…Œì´ë¸”ì´ ì €ì¥ëœ íŒŒì¼ì„ ì°¾ì•„ì„œ
+    // ¿øº» Å×ÀÌºíÀÌ ÀúÀåµÈ ÆÄÀÏÀ» Ã£¾Æ¼­
     IDE_TEST(sTableBackup.initialize(aSrcTable, NULL) != IDE_SUCCESS);
     sState = 1;
 
-    // ëŒ€ìƒ í…Œì´ë¸”ì— ë³µêµ¬ì‹œí‚¨ë‹¤.
+    // ´ë»ó Å×ÀÌºí¿¡ º¹±¸½ÃÅ²´Ù.
     IDU_FIT_POINT( "1.BUG-17955@smi:table:restoretable" );
     IDE_TEST(sTableBackup.restore(aTrans,
                                   aDstTable,
@@ -1378,7 +1362,7 @@ IDE_RC smiTable::restoreMemTable(void                  * aTrans,
     sState = 0;
     IDE_TEST(sTableBackup.destroy() != IDE_SUCCESS);
 
-    /* BUG-31881 ì´í›„ PageReservation ì¢…ë£Œ */
+    /* BUG-31881 ÀÌÈÄ PageReservation Á¾·á */
     sTable = (smcTableHeader*)((UChar*)aSrcTable+SMP_SLOT_HEADER_SIZE);
     IDE_TEST( sctTableSpaceMgr::findSpaceNodeBySpaceID( sTable->mSpaceID,
                                                         (void**)&sTBSNode )
@@ -1415,11 +1399,11 @@ IDE_RC smiTable::restoreVolTable(void                  * aTrans,
     smcTableHeader    * sTable;
     svmTBSNode        * sTBSNode;
 
-    // ì›ë³¸ í…Œì´ë¸”ì´ ì €ì¥ëœ íŒŒì¼ì„ ì°¾ì•„ì„œ
+    // ¿øº» Å×ÀÌºíÀÌ ÀúÀåµÈ ÆÄÀÏÀ» Ã£¾Æ¼­
     IDE_TEST(sTableBackup.initialize(aSrcTable, NULL) != IDE_SUCCESS);
     sState = 1;
 
-    // ëŒ€ìƒ í…Œì´ë¸”ì— ë³µêµ¬ì‹œí‚¨ë‹¤.
+    // ´ë»ó Å×ÀÌºí¿¡ º¹±¸½ÃÅ²´Ù.
     IDE_TEST(sTableBackup.restore(aTrans,
                                   aDstTable,
                                   aTableOID,
@@ -1433,7 +1417,7 @@ IDE_RC smiTable::restoreVolTable(void                  * aTrans,
     sState = 0;
     IDE_TEST(sTableBackup.destroy() != IDE_SUCCESS);
 
-    /* BUG-31881 ì´í›„ PageReservation ì¢…ë£Œ */
+    /* BUG-31881 ÀÌÈÄ PageReservation Á¾·á */
     sTable = (smcTableHeader*)((UChar*)aSrcTable+SMP_SLOT_HEADER_SIZE);
     IDE_TEST( sctTableSpaceMgr::findSpaceNodeBySpaceID( sTable->mSpaceID,
                                                         (void**)&sTBSNode )
@@ -1470,7 +1454,7 @@ IDE_RC smiTable::restoreTableForAlterTable(
 
     IDU_FIT_POINT( "1.BUG-42411@smiTable::restoreTableForAlterTable" ); 
     /* PROJ-1594 Volatile TBS */
-    /* Volatile Tableì¸ ê²½ìš° smiVolTableBackupì„ ì‚¬ìš©í•´ì•¼ í•œë‹¤. */
+    /* Volatile TableÀÎ °æ¿ì smiVolTableBackupÀ» »ç¿ëÇØ¾ß ÇÑ´Ù. */
     if( SMI_TABLE_TYPE_IS_VOLATILE( sDstTableHeader ) == ID_TRUE )
     {
         IDE_TEST(restoreVolTable(aStatement->mTrans->mTrans,
@@ -1486,7 +1470,7 @@ IDE_RC smiTable::restoreTableForAlterTable(
     }
     else
     {
-        /* Volatile Tableì´ ì•„ë‹ˆë©´ Memory Tableì´ì–´ì•¼ í•œë‹¤.*/
+        /* Volatile TableÀÌ ¾Æ´Ï¸é Memory TableÀÌ¾î¾ß ÇÑ´Ù.*/
         IDE_DASSERT( SMI_TABLE_TYPE_IS_MEMORY( sDstTableHeader ) == ID_TRUE );
 
         IDE_TEST(restoreMemTable(aStatement->mTrans->mTrans,  
@@ -1509,8 +1493,8 @@ IDE_RC smiTable::restoreTableForAlterTable(
 }
 
 /***********************************************************************
- * Description : alter table ê³¼ì •ì—ì„œ exceptionë°œìƒìœ¼ë¡œ ì¸í•œ undo
- * í•˜ëŠ” ë£¨í‹´ì´ë‹¤. disk tableì—ì„œëŠ” ê³ ë ¤í•  í•„ìš”ì—†ë‹¤.
+ * Description : alter table °úÁ¤¿¡¼­ exception¹ß»ıÀ¸·Î ÀÎÇÑ undo
+ * ÇÏ´Â ·çÆ¾ÀÌ´Ù. disk table¿¡¼­´Â °í·ÁÇÒ ÇÊ¿ä¾ø´Ù.
  ***********************************************************************/
 IDE_RC  smiTable::restoreTableByAbort( void         * aTrans,
                                        smOID          aSrcOID,
@@ -1528,13 +1512,13 @@ IDE_RC  smiTable::restoreTableByAbort( void         * aTrans,
     UInt             i;
 
     /* BUG-30457
-     * AlterTableì´ ì‹¤íŒ¨í–ˆìœ¼ë©´, ì´ì „ í…Œì´ë¸” ë³µêµ¬ë¥¼ ìœ„í•´
-     * ìƒˆ í…Œì´ë¸” ìƒì„±ì„ ìœ„í•´ ì‚¬ìš©í•œ í˜ì´ì§€ë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤. 
+     * AlterTableÀÌ ½ÇÆĞÇßÀ¸¸é, ÀÌÀü Å×ÀÌºí º¹±¸¸¦ À§ÇØ
+     * »õ Å×ÀÌºí »ı¼ºÀ» À§ÇØ »ç¿ëÇÑ ÆäÀÌÁö¸¦ ¹İÈ¯ÇÕ´Ï´Ù. 
      * 
-     * ê·¸ëŸ°ë° í˜„ì¬ëŠ” Old/new TableOidë¥¼ ëª¨ë‘ Loggingí•˜ì§€ë§Œ 
-     * ê³¼ê±°ì—ëŠ” NewTableì˜ OIDë¥¼ Loggingí•˜ì§€ ì•Šì•˜ê¸°ì—, NewTableì˜ OID(aDstOID)
-     * ë¥¼ ëª¨ë¥´ê¸°ì—, skipí•©ë‹ˆë‹¤. (í˜ì´ì§€ ì‚¬ìš©ëŸ‰ì„ ì¤„ì´ëŠ” ì—°ì‚°ì´ê¸°ì— í•´ì£¼ì§€ ì•Š
-     * ì•„ë„ ì¹˜ëª…ì €ì ì¸ ë¬¸ì œëŠ” ì—†ìŠµë‹ˆë‹¤. */
+     * ±×·±µ¥ ÇöÀç´Â Old/new TableOid¸¦ ¸ğµÎ LoggingÇÏÁö¸¸ 
+     * °ú°Å¿¡´Â NewTableÀÇ OID¸¦ LoggingÇÏÁö ¾Ê¾Ò±â¿¡, NewTableÀÇ OID(aDstOID)
+     * ¸¦ ¸ğ¸£±â¿¡, skipÇÕ´Ï´Ù. (ÆäÀÌÁö »ç¿ë·®À» ÁÙÀÌ´Â ¿¬»êÀÌ±â¿¡ ÇØÁÖÁö ¾Ê
+     * ¾Æµµ Ä¡¸íÀúÀûÀÎ ¹®Á¦´Â ¾ø½À´Ï´Ù. */
     if( aDstOID != 0 )
     {
         IDE_ASSERT( smmManager::getOIDPtr( 
@@ -1543,8 +1527,8 @@ IDE_RC  smiTable::restoreTableByAbort( void         * aTrans,
                         (void**)&sDstHeader )
                     == IDE_SUCCESS );
 
-        /* RestartRecoveryì‹œì—ëŠ” Runtimeêµ¬ì¡°ì²´ê°€ ì—†ìŠµë‹ˆë‹¤.
-         * ìƒì„± í›„ ì²˜ë¦¬ ëë‚˜ë©´ ì œê±°í•´ì¤˜ì•¼ í•©ë‹ˆë‹¤. */
+        /* RestartRecovery½Ã¿¡´Â Runtime±¸Á¶Ã¼°¡ ¾ø½À´Ï´Ù.
+         * »ı¼º ÈÄ Ã³¸® ³¡³ª¸é Á¦°ÅÇØÁà¾ß ÇÕ´Ï´Ù. */
         if( aDoRestart == ID_TRUE )
         {
             IDE_TEST( smcTable::prepare4LogicalUndo( sDstHeader )
@@ -1576,8 +1560,8 @@ IDE_RC  smiTable::restoreTableByAbort( void         * aTrans,
     IDE_ASSERT( sColumnCnt > 0 );
 
 
-    /* RestartRecoveryì‹œì—ëŠ” Runtimeêµ¬ì¡°ì²´ê°€ ì—†ìŠµë‹ˆë‹¤.
-     * ìƒì„± í›„ ì²˜ë¦¬ ëë‚˜ë©´ ì œê±°í•´ì¤˜ì•¼ í•©ë‹ˆë‹¤. */
+    /* RestartRecovery½Ã¿¡´Â Runtime±¸Á¶Ã¼°¡ ¾ø½À´Ï´Ù.
+     * »ı¼º ÈÄ Ã³¸® ³¡³ª¸é Á¦°ÅÇØÁà¾ß ÇÕ´Ï´Ù. */
     if( aDoRestart == ID_TRUE)
     {
         IDE_TEST( smcTable::prepare4LogicalUndo( sSrcHeader )
@@ -1588,18 +1572,18 @@ IDE_RC  smiTable::restoreTableByAbort( void         * aTrans,
     /* BUG-34438  if server is killed when alter 
      * table(memory table) before logging SMR_OP_ALTER_TABLE log, 
      * all rows are deleted
-     * ì›ë³¸í…Œì´ë¸”ì— pageë“¤ì´ ë§¤ë‹¬ë ¤ ìˆëŠ” ìƒíƒœì—ì„œ tableì„ restoreí•˜ë©´
-     * ê¸°ì¡´ì— ìˆë˜ rowë¿ë§Œ ì•„ë‹ˆë¼ í…Œì´ë¸” ë°±ì—… íŒŒì¼ë¡œë¶€í„° ë³µì›ëœ rowê°€
-     * í…Œì´ë¸”ì— ì‚½ì…ëœë‹¤. í™•ì‹¤í•˜ê²Œ ì›ë³¸í…Œì´ë¸”ì— pageê°€ ì¡´ì¬í•˜ì§€
-     * ì•ŠëŠ”ê²ƒì„ ë³´ì¥í•˜ê¸°ìœ„í•´ ì¶”ê°€ëœ ì½”ë“œì´ë‹¤. */
+     * ¿øº»Å×ÀÌºí¿¡ pageµéÀÌ ¸Å´Ş·Á ÀÖ´Â »óÅÂ¿¡¼­ tableÀ» restoreÇÏ¸é
+     * ±âÁ¸¿¡ ÀÖ´ø row»Ó¸¸ ¾Æ´Ï¶ó Å×ÀÌºí ¹é¾÷ ÆÄÀÏ·ÎºÎÅÍ º¹¿øµÈ row°¡
+     * Å×ÀÌºí¿¡ »ğÀÔµÈ´Ù. È®½ÇÇÏ°Ô ¿øº»Å×ÀÌºí¿¡ page°¡ Á¸ÀçÇÏÁö
+     * ¾Ê´Â°ÍÀ» º¸ÀåÇÏ±âÀ§ÇØ Ãß°¡µÈ ÄÚµåÀÌ´Ù. */
     IDE_TEST( smcTable::dropTablePageListPending(aTrans,
                                                  sSrcHeader,
                                                  ID_TRUE)   // aUndo
               != IDE_SUCCESS);
 
     IDU_FIT_POINT( "smiTable::restoreTableByAbort::malloc" );
-    /* Abortì‹œì—ëŠ” Column ì •ë³´ ë° Valueë¥¼ ì €ì¥í•  Arrayê°€ ì—†ê¸°ì—
-     * í• ë‹¹í•´ì¤ë‹ˆë‹¤. */
+    /* Abort½Ã¿¡´Â Column Á¤º¸ ¹× Value¸¦ ÀúÀåÇÒ Array°¡ ¾ø±â¿¡
+     * ÇÒ´çÇØÁİ´Ï´Ù. */
     sArrValue = NULL;
     IDE_TEST( iduMemMgr::malloc(IDU_MEM_SM_SMI,
                                 (ULong)ID_SIZEOF(smiValue) * sColumnCnt,
@@ -1624,8 +1608,8 @@ IDE_RC  smiTable::restoreTableByAbort( void         * aTrans,
     }
     sColumnList[i - 1].next = NULL;
 
-    /* Abortì´ê¸° ë•Œë¬¸ì— OldTableì˜ ë‚´ìš©ì„ OldTableë¡œ Restoreí•œë‹¤.
-     * ê·¸ë˜ì„œ Src/Dst ëª¨ë‘ ë™ì¼í•˜ë‹¤. */
+    /* AbortÀÌ±â ¶§¹®¿¡ OldTableÀÇ ³»¿ëÀ» OldTable·Î RestoreÇÑ´Ù.
+     * ±×·¡¼­ Src/Dst ¸ğµÎ µ¿ÀÏÇÏ´Ù. */
     if ( SMI_TABLE_TYPE_IS_MEMORY( sSrcHeader ) == ID_TRUE )
     {
         IDE_TEST( restoreMemTable( aTrans,
@@ -1646,10 +1630,10 @@ IDE_RC  smiTable::restoreTableByAbort( void         * aTrans,
 
         /* BUG-34438  if server is killed when alter table(memory table) before
          * logging SMR_OP_ALTER_TABLE log, all rows are deleted
-         * volatile tableì€ ì˜ˆì™¸ ì²˜ë¦¬ì‹œì—ë§Œ restoreë¥¼ ìˆ˜í–‰í•œë‹¤.
-         * restart recoveryì‹œì—ëŠ” ì„œë²„ê°€ ì¢…ë£Œë˜ì—ˆë‹¤ ë‹¤ì‹œ ì‹œì‘í•¨ìœ¼ë¡œ volatile
-         * tableì˜ ë ˆì½”ë“œë“¤ì„ ìœ ì§€í•  í•„ìš”ê°€ ì—†ê¸°ë•Œë¬¸ì´ë‹¤. 
-         * server startupì‹œ smaRefineDB::initAllVolatileTables()ì—ì„œ ì´ˆê¸°í™”ë¨*/
+         * volatile tableÀº ¿¹¿Ü Ã³¸®½Ã¿¡¸¸ restore¸¦ ¼öÇàÇÑ´Ù.
+         * restart recovery½Ã¿¡´Â ¼­¹ö°¡ Á¾·áµÇ¾ú´Ù ´Ù½Ã ½ÃÀÛÇÔÀ¸·Î volatile
+         * tableÀÇ ·¹ÄÚµåµéÀ» À¯ÁöÇÒ ÇÊ¿ä°¡ ¾ø±â¶§¹®ÀÌ´Ù. 
+         * server startup½Ã smaRefineDB::initAllVolatileTables()¿¡¼­ ÃÊ±âÈ­µÊ*/
         if( aDoRestart == ID_FALSE )
         {
             IDE_TEST( restoreVolTable( aTrans,
@@ -1746,6 +1730,8 @@ IDE_RC smiTable::alterSequence(smiStatement    * aStatement,
                                SLong             aMaxSequence,
                                SLong             aMinSequence,
                                UInt              aFlag,
+                               idBool            aIsRestart,
+                               SLong             aStartSequence,
                                SLong           * aLastSyncSeq)
 {
 
@@ -1765,6 +1751,8 @@ IDE_RC smiTable::alterSequence(smiStatement    * aStatement,
                                         aMaxSequence,
                                         aMinSequence,
                                         aFlag,
+                                        aIsRestart,
+                                        aStartSequence,
                                         aLastSyncSeq)
              != IDE_SUCCESS);
 
@@ -2087,13 +2075,13 @@ IDE_RC smiTable::disableIndex( smiStatement* aStatement,
              != IDE_SUCCESS);
 
     // fix BUG-8672
-    // ìì‹ ì´ ë“±ë¡í•œ oidê°€ ì²˜ë¦¬ë ë•Œê¹Œì§€ waití•˜ê¸° ë•Œë¬¸ì—
-    // statement beginë§Œ í•˜ê³ , cursorë¥¼ opení•˜ì§€ ì•Šê¸° ë•Œë¬¸ì—
-    // memory gcê°€ skipí•˜ë„ë¡ í•œë‹¤.
+    // ÀÚ½ÅÀÌ µî·ÏÇÑ oid°¡ Ã³¸®µÉ¶§±îÁö waitÇÏ±â ¶§¹®¿¡
+    // statement begin¸¸ ÇÏ°í, cursor¸¦ openÇÏÁö ¾Ê±â ¶§¹®¿¡
+    // memory gc°¡ skipÇÏµµ·Ï ÇÑ´Ù.
    ((smxTrans*)(aStatement->mTrans->mTrans))->mDoSkipCheckSCN = ID_TRUE;
     IDL_MEM_BARRIER;
 
-    // Instant Agingì‹¤ì‹œ
+    // Instant Aging½Ç½Ã
     IDE_TEST(smaLogicalAger::doInstantAgingWithTable( sTableHeader->mSelfOID )
              != IDE_SUCCESS);
 
@@ -2104,13 +2092,13 @@ IDE_RC smiTable::disableIndex( smiStatement* aStatement,
 
     sFlag = sIndexHeader->mFlag & ~SMI_INDEX_PERSISTENT_MASK;
 
-    // PRJ-1548 User Memory TableSpace ê°œë…ë„ì…
-    // Validate Table ì—ì„œ ë‹¤ìŒê³¼ ê°™ì´ Lockì„ íšë“í•œë‹¤.
-    // [1] Tableì˜ TableSpaceì— ëŒ€í•´ IX
-    // [2] Tableì— ëŒ€í•´ X
-    // [3] Tableì˜ Index, Lob Column TableSpaceì— ëŒ€í•´ IX
-    // Tableì˜ ìƒìœ„ëŠ” Tableì˜ TableSpaceì´ë©° ê·¸ì— ëŒ€í•´ IXë¥¼ íšë“í•œë‹¤.
-    // ë‹¨, ë©”ëª¨ë¦¬ Tableì€ [3] ì‚¬í•­ì— ëŒ€í•´ì„œ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // PRJ-1548 User Memory TableSpace °³³äµµÀÔ
+    // Validate Table ¿¡¼­ ´ÙÀ½°ú °°ÀÌ LockÀ» È¹µæÇÑ´Ù.
+    // [1] TableÀÇ TableSpace¿¡ ´ëÇØ IX
+    // [2] Table¿¡ ´ëÇØ X
+    // [3] TableÀÇ Index, Lob Column TableSpace¿¡ ´ëÇØ IX
+    // TableÀÇ »óÀ§´Â TableÀÇ TableSpaceÀÌ¸ç ±×¿¡ ´ëÇØ IX¸¦ È¹µæÇÑ´Ù.
+    // ´Ü, ¸Ş¸ğ¸® TableÀº [3] »çÇ×¿¡ ´ëÇØ¼­ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
     IDE_TEST(smcTable::alterIndexInfo((smxTrans*)aStatement->mTrans->mTrans,
                                       sTableHeader,
                                       sIndexHeader,
@@ -2144,13 +2132,13 @@ IDE_RC smiTable::disableIndex( smiStatement* aStatement,
 }
 
 /*******************************************************************************
- * Description: ëŒ€ìƒ tableì˜ ëª¨ë“  indexë¥¼ disable í•œë‹¤.
+ * Description: ´ë»ó tableÀÇ ¸ğµç index¸¦ disable ÇÑ´Ù.
  *
  * Related Issues:
- *      PROJ-2184 RP Sync ì„±ëŠ¥ í–¥ìƒ
+ *      PROJ-2184 RP Sync ¼º´É Çâ»ó
  *
  * aStatement       - [IN] smiStatement
- * aTable           - [IN] ëŒ€ìƒ tableì˜ smcTableHeader
+ * aTable           - [IN] ´ë»ó tableÀÇ smcTableHeader
  ******************************************************************************/
 IDE_RC smiTable::disableAllIndex( smiStatement  * aStatement,
                                   const void    * aTable )
@@ -2167,7 +2155,7 @@ IDE_RC smiTable::disableAllIndex( smiStatement  * aStatement,
     IDE_TEST_CONT( (sTableHeader->mFlag & SMI_TABLE_DISABLE_ALL_INDEX_MASK)
                     == SMI_TABLE_DISABLE_ALL_INDEX, already_disabled );
 
-    // disk temp tableì— ëŒ€í•´ì„œëŠ” disable all indexí—ˆìš©í•˜ì§€ ì•ŠìŒ.
+    // disk temp table¿¡ ´ëÇØ¼­´Â disable all indexÇã¿ëÇÏÁö ¾ÊÀ½.
     // fix BUG-21965
     sTableTypeFlag = sTableHeader->mFlag & SMI_TABLE_TYPE_MASK;
     IDE_ASSERT( (sTableTypeFlag == SMI_TABLE_MEMORY) ||
@@ -2177,13 +2165,13 @@ IDE_RC smiTable::disableAllIndex( smiStatement  * aStatement,
     IDE_TEST(aStatement->prepareDDL((smiTrans*)aStatement->mTrans)
              != IDE_SUCCESS);
 
-    // PRJ-1548 User Memory TableSpace ê°œë…ë„ì…
-    // Validate Table ì—ì„œ ë‹¤ìŒê³¼ ê°™ì´ Lockì„ íšë“í•œë‹¤.
-    // [1] Tableì˜ TableSpaceì— ëŒ€í•´ IX
-    // [2] Tableì— ëŒ€í•´ X
-    // [3] Tableì˜ Index, Lob Column TableSpaceì— ëŒ€í•´ IX
-    // Tableì˜ ìƒìœ„ëŠ” Tableì˜ TableSpaceì´ë©° ê·¸ì— ëŒ€í•´ IXë¥¼ íšë“í•œë‹¤.
-    // ë‹¨, ë©”ëª¨ë¦¬ Tableì€ [3] ì‚¬í•­ì— ëŒ€í•´ì„œ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // PRJ-1548 User Memory TableSpace °³³äµµÀÔ
+    // Validate Table ¿¡¼­ ´ÙÀ½°ú °°ÀÌ LockÀ» È¹µæÇÑ´Ù.
+    // [1] TableÀÇ TableSpace¿¡ ´ëÇØ IX
+    // [2] Table¿¡ ´ëÇØ X
+    // [3] TableÀÇ Index, Lob Column TableSpace¿¡ ´ëÇØ IX
+    // TableÀÇ »óÀ§´Â TableÀÇ TableSpaceÀÌ¸ç ±×¿¡ ´ëÇØ IX¸¦ È¹µæÇÑ´Ù.
+    // ´Ü, ¸Ş¸ğ¸® TableÀº [3] »çÇ×¿¡ ´ëÇØ¼­ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
     IDE_TEST( smcTable::validateTable( sTrans,
                                        sTableHeader,
                                        SCT_VAL_DDL_DML )
@@ -2226,13 +2214,13 @@ IDE_RC smiTable::disableAllIndex( smiStatement  * aStatement,
 }
 
 /*******************************************************************************
- * Description: ëŒ€ìƒ tableì˜ ëª¨ë“  indexë¥¼ enable í•œë‹¤.
+ * Description: ´ë»ó tableÀÇ ¸ğµç index¸¦ enable ÇÑ´Ù.
  *
  * Related Issues:
- *      PROJ-2184 RP Sync ì„±ëŠ¥ í–¥ìƒ
+ *      PROJ-2184 RP Sync ¼º´É Çâ»ó
  *
  * aStatement       - [IN] smiStatement
- * aTable           - [IN] ëŒ€ìƒ tableì˜ smcTableHeader
+ * aTable           - [IN] ´ë»ó tableÀÇ smcTableHeader
  ******************************************************************************/
 IDE_RC smiTable::enableAllIndex( smiStatement  * aStatement,
                                  const void    * aTable )
@@ -2249,7 +2237,7 @@ IDE_RC smiTable::enableAllIndex( smiStatement  * aStatement,
     IDE_TEST_CONT( (sTableHeader->mFlag & SMI_TABLE_DISABLE_ALL_INDEX_MASK)
                     == SMI_TABLE_ENABLE_ALL_INDEX, already_enabled );
 
-    // disk temp tableì— ëŒ€í•´ì„œëŠ” enable  all indexí—ˆìš©í•˜ì§€ ì•ŠìŒ.
+    // disk temp table¿¡ ´ëÇØ¼­´Â enable  all indexÇã¿ëÇÏÁö ¾ÊÀ½.
     sTableTypeFlag = sTableHeader->mFlag & SMI_TABLE_TYPE_MASK;
     IDE_ASSERT( (sTableTypeFlag == SMI_TABLE_MEMORY) ||
                 (sTableTypeFlag == SMI_TABLE_DISK)   ||
@@ -2261,13 +2249,13 @@ IDE_RC smiTable::enableAllIndex( smiStatement  * aStatement,
     if( sTableTypeFlag != SMI_TABLE_DISK )
     {
         // fix BUG-8672
-        // ìì‹ ì´ ë“±ë¡í•œ oidê°€ ì²˜ë¦¬ë ë•Œê¹Œì§€ waití•˜ê¸° ë•Œë¬¸ì—
-        // statement beginë§Œ í•˜ê³ , cursorë¥¼ opení•˜ì§€ ì•Šê¸° ë•Œë¬¸ì—
-        // memory gcê°€ skipí•˜ë„ë¡ í•œë‹¤.
+        // ÀÚ½ÅÀÌ µî·ÏÇÑ oid°¡ Ã³¸®µÉ¶§±îÁö waitÇÏ±â ¶§¹®¿¡
+        // statement begin¸¸ ÇÏ°í, cursor¸¦ openÇÏÁö ¾Ê±â ¶§¹®¿¡
+        // memory gc°¡ skipÇÏµµ·Ï ÇÑ´Ù.
         sTrans->mDoSkipCheckSCN = ID_TRUE;
         IDL_MEM_BARRIER;
 
-        // Instant Agingì‹¤ì‹œ
+        // Instant Aging½Ç½Ã
         IDE_TEST( smaLogicalAger::doInstantAgingWithTable(
                                                 sTableHeader->mSelfOID )
                   != IDE_SUCCESS);
@@ -2276,16 +2264,16 @@ IDE_RC smiTable::enableAllIndex( smiStatement  * aStatement,
     }
     else
     {
-        /* Disk tableì€ aging ì²˜ë¦¬ë¥¼ í•˜ì§€ ì•Šì•„ë„ ëœë‹¤. */
+        /* Disk tableÀº aging Ã³¸®¸¦ ÇÏÁö ¾Ê¾Æµµ µÈ´Ù. */
     }
 
-    // PRJ-1548 User Memory TableSpace ê°œë…ë„ì…
-    // Validate Table ì—ì„œ ë‹¤ìŒê³¼ ê°™ì´ Lockì„ íšë“í•œë‹¤.
-    // [1] Tableì˜ TableSpaceì— ëŒ€í•´ IX
-    // [2] Tableì— ëŒ€í•´ X
-    // [3] Tableì˜ Index, Lob Column TableSpaceì— ëŒ€í•´ IX
-    // Tableì˜ ìƒìœ„ëŠ” Tableì˜ TableSpaceì´ë©° ê·¸ì— ëŒ€í•´ IXë¥¼ íšë“í•œë‹¤.
-    // ë‹¨, ë©”ëª¨ë¦¬ Tableì€ [3] ì‚¬í•­ì— ëŒ€í•´ì„œ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // PRJ-1548 User Memory TableSpace °³³äµµÀÔ
+    // Validate Table ¿¡¼­ ´ÙÀ½°ú °°ÀÌ LockÀ» È¹µæÇÑ´Ù.
+    // [1] TableÀÇ TableSpace¿¡ ´ëÇØ IX
+    // [2] Table¿¡ ´ëÇØ X
+    // [3] TableÀÇ Index, Lob Column TableSpace¿¡ ´ëÇØ IX
+    // TableÀÇ »óÀ§´Â TableÀÇ TableSpaceÀÌ¸ç ±×¿¡ ´ëÇØ IX¸¦ È¹µæÇÑ´Ù.
+    // ´Ü, ¸Ş¸ğ¸® TableÀº [3] »çÇ×¿¡ ´ëÇØ¼­ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
     IDE_TEST( smcTable::validateTable( sTrans,
                                        sTableHeader,
                                        SCT_VAL_DDL_DML )
@@ -2326,13 +2314,13 @@ IDE_RC smiTable::enableAllIndex( smiStatement  * aStatement,
 }
 
 /******************************************************************************
- * Description: ëŒ€ìƒ tableì˜ ëª¨ë“  indexë¥¼ rebuild í•œë‹¤.
+ * Description: ´ë»ó tableÀÇ ¸ğµç index¸¦ rebuild ÇÑ´Ù.
  *
  * Related Issues:
- *      PROJ-2184 RP Sync ì„±ëŠ¥ í–¥ìƒ
+ *      PROJ-2184 RP Sync ¼º´É Çâ»ó
  * 
  * aStatement   - [IN] smiStatement
- * aTable       - [IN] ëŒ€ìƒ tableì˜ slot pointer
+ * aTable       - [IN] ´ë»ó tableÀÇ slot pointer
  *****************************************************************************/
 IDE_RC smiTable::rebuildAllIndex( smiStatement  * aStatement,
                                   const void    * aTable )
@@ -2358,7 +2346,7 @@ IDE_RC smiTable::rebuildAllIndex( smiStatement  * aStatement,
     IDE_TEST_RAISE( (sTableHeader->mFlag & SMI_TABLE_DISABLE_ALL_INDEX_MASK)
                     == SMI_TABLE_DISABLE_ALL_INDEX, all_index_disabled );
 
-    // disk temp tableì— ëŒ€í•´ì„œëŠ” disable all indexí—ˆìš©í•˜ì§€ ì•ŠìŒ.
+    // disk temp table¿¡ ´ëÇØ¼­´Â disable all indexÇã¿ëÇÏÁö ¾ÊÀ½.
     // fix BUG-21965
     sTableTypeFlag = sTableHeader->mFlag & SMI_TABLE_TYPE_MASK;
     IDE_ASSERT( (sTableTypeFlag == SMI_TABLE_MEMORY) ||
@@ -2375,7 +2363,7 @@ IDE_RC smiTable::rebuildAllIndex( smiStatement  * aStatement,
               != IDE_SUCCESS );
     sState = 1;
 
-    /* Index ì •ë³´ ë³´ê´€ */
+    /* Index Á¤º¸ º¸°ü */
     for( sIndexIdx = 0; sIndexIdx < sIndexCnt; sIndexIdx++ )
     {
         sIndexHeader = (smnIndexHeader*)smcTable::getTableIndex( sTableHeader,
@@ -2389,11 +2377,11 @@ IDE_RC smiTable::rebuildAllIndex( smiStatement  * aStatement,
                        sIndexHeaderSize );
     }
 
-    /* ëª¨ë“  indexë¥¼ drop */
+    /* ¸ğµç index¸¦ drop */
     for( sIndexIdx = 0; sIndexIdx < sIndexCnt; sIndexIdx++ )
     {
-        /* indexë¥¼ drop í•  ë•Œ ë§ˆë‹¤ indexê°€ í•˜ë‚˜ì”© ì œê±°ë˜ê¸° ë•Œë¬¸ì— ë§¤ë²ˆ aIdxê°€
-         * 0ì¸ index, ì¦‰ ì²« ë²ˆì§¸ ë°œê²¬í•˜ëŠ” indexë¥¼ ê°€ì ¸ì™€ì„œ drop í•´ì•¼ í•œë‹¤. */
+        /* index¸¦ drop ÇÒ ¶§ ¸¶´Ù index°¡ ÇÏ³ª¾¿ Á¦°ÅµÇ±â ¶§¹®¿¡ ¸Å¹ø aIdx°¡
+         * 0ÀÎ index, Áï Ã¹ ¹øÂ° ¹ß°ßÇÏ´Â index¸¦ °¡Á®¿Í¼­ drop ÇØ¾ß ÇÑ´Ù. */
         sIndexHeader = (smnIndexHeader*)smcTable::getTableIndex( sTableHeader,
                                                                  0 ); /*aIdx*/
 
@@ -2406,7 +2394,7 @@ IDE_RC smiTable::rebuildAllIndex( smiStatement  * aStatement,
 
     IDE_ERROR( sIndexIdx == sIndexCnt );
 
-    /* ëª¨ë“  indexë¥¼ create */
+    /* ¸ğµç index¸¦ create */
     for( sIndexIdx = 0; sIndexIdx < sIndexCnt; sIndexIdx++ )
     {
         sIndexHeader = &sIndexHeaderList[sIndexIdx];
@@ -2462,17 +2450,17 @@ IDE_RC smiTable::rebuildAllIndex( smiStatement  * aStatement,
 
 
 /*******************************************************************************
- * Description: index rebuild ê³¼ì •ì—ì„œ create indexë¥¼ í˜¸ì¶œí•  ë•Œ ì¸ìë¡œ ë„˜ê²¨ì¤„
- *      key column listë¥¼ êµ¬ì„±í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ * Description: index rebuild °úÁ¤¿¡¼­ create index¸¦ È£ÃâÇÒ ¶§ ÀÎÀÚ·Î ³Ñ°ÜÁÙ
+ *      key column list¸¦ ±¸¼ºÇÏ´Â ÇÔ¼öÀÌ´Ù.
  *
  * Related Issues:
- *      PROJ-2184 RP Sync ì„±ëŠ¥ í–¥ìƒ
+ *      PROJ-2184 RP Sync ¼º´É Çâ»ó
  *
  * Parameters:
  *  aTableHeader    - [IN] smcTableHeader
  *  aIndexHeader    - [IN] smnIndexHeader
- *  aColumnList     - [IN] ìƒˆë¡œ êµ¬ì„±í•œ key column ì •ë³´ë¥¼ ê¸°ë¡í•  column list ê³µê°„
- *  aColumns        - [IN] smiColumn ì •ë³´ë¥¼ ì„ì‹œë¡œ ê¸°ë¡í•  ê³µê°„
+ *  aColumnList     - [IN] »õ·Î ±¸¼ºÇÑ key column Á¤º¸¸¦ ±â·ÏÇÒ column list °ø°£
+ *  aColumns        - [IN] smiColumn Á¤º¸¸¦ ÀÓ½Ã·Î ±â·ÏÇÒ °ø°£
  ******************************************************************************/
 IDE_RC smiTable::makeKeyColumnList( void            * aTableHeader,
                                     void            * aIndexHeader,
@@ -2512,14 +2500,14 @@ IDE_RC smiTable::makeKeyColumnList( void            * aTableHeader,
 
 
 /*
- * MEMORY/DISK TABLEì˜ ë³€ê²½ì— ëŒ€í•œ DDL ìˆ˜í–‰ì‹œ SCN ë³€ê²½ì„
- * ë“±ë¡í•˜ë ¤ê³  í˜¸ì¶œí•œë‹¤.
+ * MEMORY/DISK TABLEÀÇ º¯°æ¿¡ ´ëÇÑ DDL ¼öÇà½Ã SCN º¯°æÀ»
+ * µî·ÏÇÏ·Á°í È£ÃâÇÑ´Ù.
  *
- * [ ì¸ì ]
+ * [ ÀÎÀÚ ]
  * [IN] aStatement - Statement
- * [IN] aTable     - ë³€ê²½í•  Table Handle
- * [IN] aTBSLvType - Table ê´€ë ¨ëœ TBS(table/index/lob)ë“¤ì— ëŒ€í•œ
- *                   Lock Validation íƒ€ì…
+ * [IN] aTable     - º¯°æÇÒ Table Handle
+ * [IN] aTBSLvType - Table °ü·ÃµÈ TBS(table/index/lob)µé¿¡ ´ëÇÑ
+ *                   Lock Validation Å¸ÀÔ
  */
 IDE_RC smiTable::touchTable( smiStatement        * aStatement,
                              const void          * aTable,
@@ -2529,14 +2517,14 @@ IDE_RC smiTable::touchTable( smiStatement        * aStatement,
     return smiTable::modifyTableInfo(
                      aStatement,
                      aTable,
-                     NULL,
-                     0,
-                     NULL,
-                     0,
+                     NULL,   // *aColumns
+                     0,      // aColumnSize
+                     NULL,   // *aInfo
+                     0,      // aInfoSize
                      SMI_TABLE_FLAG_UNCHANGE,
-                     aTBSLvType ,
-                     0,
-                     0,
+                     aTBSLvType,
+                     0,      // aMaxRow
+                     0,      // aParallelDegree
                      ID_FALSE ); //aIsInitRowTemplate
 
 }
@@ -2547,8 +2535,8 @@ void smiTable::getTableInfo( const void * aTable,
     smcTableHeader    *sTable;
     smVCDesc          *sColumnVCDesc;
 
-    /* Table infoë¥¼ ì €ì¥í•˜ê¸° ìœ„í•œ aTableInfoì— ëŒ€í•œ ë©”ëª¨ë¦¬ ê³µê°„ì€
-     * qp ë‹¨ì—ì„œ í• ë‹¹ë°›ì•„ì•¼ í•¨ */
+    /* Table info¸¦ ÀúÀåÇÏ±â À§ÇÑ aTableInfo¿¡ ´ëÇÑ ¸Ş¸ğ¸® °ø°£Àº
+     * qp ´Ü¿¡¼­ ÇÒ´ç¹Ş¾Æ¾ß ÇÔ */
     IDE_ASSERT(*aTableInfo != NULL);
 
     sTable = (smcTableHeader*)((UChar*)aTable+SMP_SLOT_HEADER_SIZE);
@@ -2577,11 +2565,11 @@ void smiTable::getTableInfoSize( const void *aTable,
 }
 
 /***********************************************************************
- * Description : MEMORY TABLEì— FREE PAGEë“¤ì„ DBì— ë°˜ë‚©í•œë‹¤.
+ * Description : MEMORY TABLE¿¡ FREE PAGEµéÀ» DB¿¡ ¹İ³³ÇÑ´Ù.
  *
- * aStatement [IN] ì‘ì—… STATEMENT ê°ì²´
- * aTable     [IN] COMPACTí•  TABLEì˜ í—¤ë”
- * aPages	  [IN] COMPACTí•  Page ê°œìˆ˜ (0, UINT_MAX : all)
+ * aStatement [IN] ÀÛ¾÷ STATEMENT °´Ã¼
+ * aTable     [IN] COMPACTÇÒ TABLEÀÇ Çì´õ
+ * aPages	  [IN] COMPACTÇÒ Page °³¼ö (0, UINT_MAX : all)
  **********************************************************************/
 IDE_RC smiTable::compactTable( smiStatement * aStatement,
                                const void   * aTable,
@@ -2595,7 +2583,7 @@ IDE_RC smiTable::compactTable( smiStatement * aStatement,
 
     sTable = (smcTableHeader*)((UChar*)aTable + SMP_SLOT_HEADER_SIZE);
 
-    /* BUG-43464 UINT ë³´ë‹¤ í¬ë©´ ID_UINT_MAX ë§Œí¼ë§Œ compact ìˆ˜í–‰ */
+    /* BUG-43464 UINT º¸´Ù Å©¸é ID_UINT_MAX ¸¸Å­¸¸ compact ¼öÇà */
     if ( aPages > (ULong)SC_MAX_PAGE_COUNT )
     {  
         sPages = SC_MAX_PAGE_COUNT; 
@@ -2618,7 +2606,7 @@ IDE_RC smiTable::compactTable( smiStatement * aStatement,
 }
 
 /*
-   tsmì—ì„œë§Œ í˜¸ì¶œí•œë‹¤.
+   tsm¿¡¼­¸¸ È£ÃâÇÑ´Ù.
 */
 IDE_RC smiTable::lockTable(smiTrans*        aTrans,
                            const void*      aTable,
@@ -2633,16 +2621,16 @@ IDE_RC smiTable::lockTable(smiTrans*        aTrans,
 
     sTable = (smcTableHeader*)((UChar*)aTable+SMP_SLOT_HEADER_SIZE);
 
-    // í…Œì´ë¸”ì˜ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë“¤ì— ëŒ€í•˜ì—¬ INTENTION ì ê¸ˆì„ íšë“í•œë‹¤.
+    // Å×ÀÌºíÀÇ Å×ÀÌºí½ºÆäÀÌ½ºµé¿¡ ´ëÇÏ¿© INTENTION Àá±İÀ» È¹µæÇÑ´Ù.
     IDE_TEST( sctTableSpaceMgr::lockAndValidateTBS(
                   (void*)((smxTrans*)aTrans->getTrans()), /* smxTrans* */
                   smcTable::getTableSpaceID((void*)sTable),/* smcTableHeader */
                   SCT_VAL_DDL_DML,
-                  ID_TRUE,                     /* intent lock  ì—¬ë¶€ */
-                  smlLockMgr::isNotISorS((smlLockMode)aLockMode),  /* exclusive lock ì—¬ë¶€ */
+                  ID_TRUE,                     /* intent lock  ¿©ºÎ */
+                  smlLockMgr::isNotISorS((smlLockMode)aLockMode),  /* exclusive lock ¿©ºÎ */
                   aLockWaitMicroSec ) != IDE_SUCCESS );
 
-    // í…Œì´ë¸” ëŒ€í•˜ì—¬ ì ê¸ˆì„ íšë“í•œë‹¤.
+    // Å×ÀÌºí ´ëÇÏ¿© Àá±İÀ» È¹µæÇÑ´Ù.
     IDE_TEST( smlLockMgr::lockTable(((smxTrans*)aTrans->getTrans())->mSlotN,
                                      (smlLockItem *)(SMC_TABLE_LOCK( sTable )),
                                      (smlLockMode)aLockMode,
@@ -2662,7 +2650,7 @@ IDE_RC smiTable::lockTable(smiTrans*        aTrans,
 }
 
 /*
-    tsmì—ì„œë§Œ í˜¸ì¶œí•œë‹¤.
+    tsm¿¡¼­¸¸ È£ÃâÇÑ´Ù.
 */
 IDE_RC smiTable::lockTable( smiTrans*   aTrans,
                             const void* aTable )
@@ -2671,7 +2659,7 @@ IDE_RC smiTable::lockTable( smiTrans*   aTrans,
     IDE_DASSERT( aTable != NULL );
 
     // PROJ-1548
-    // smiTable::lockTableì„ í˜¸ì¶œí•˜ë„ë¡ ìˆ˜ì •
+    // smiTable::lockTableÀ» È£ÃâÇÏµµ·Ï ¼öÁ¤
     IDE_TEST( lockTable( aTrans,
                          aTable,
                          (smiTableLockMode)SML_ISLOCK,
@@ -2685,7 +2673,7 @@ IDE_RC smiTable::lockTable( smiTrans*   aTrans,
 
 }
 
-// BUG-17477 : rpì—ì„œ í•„ìš”í•œ í•¨ìˆ˜
+// BUG-17477 : rp¿¡¼­ ÇÊ¿äÇÑ ÇÔ¼ö
 IDE_RC smiTable::lockTable( SInt          aSlot,
                             smlLockItem  *aLockItem,
                             smlLockMode   aLockMode,
@@ -2713,12 +2701,12 @@ IDE_RC smiTable::lockTable( SInt          aSlot,
 }
 
 /***********************************************************************
- * Description : Tableì˜ Flagë¥¼ ë³€ê²½í•œë‹¤.
+ * Description : TableÀÇ Flag¸¦ º¯°æÇÑ´Ù.
  *
- * aStatement [IN] ì‘ì—… STATEMENT ê°ì²´
- * aTable     [IN] Flagë¥¼ ë³€ê²½í•  Table
- * aFlagMask  [IN] ë³€ê²½í•  Table Flagì˜ Mask
- * aFlagValue [IN] ë³€ê²½í•  Table Flagì˜ Value
+ * aStatement [IN] ÀÛ¾÷ STATEMENT °´Ã¼
+ * aTable     [IN] Flag¸¦ º¯°æÇÒ Table
+ * aFlagMask  [IN] º¯°æÇÒ Table FlagÀÇ Mask
+ * aFlagValue [IN] º¯°æÇÒ Table FlagÀÇ Value
  **********************************************************************/
 IDE_RC smiTable::alterTableFlag( smiStatement *aStatement,
                                  const void   *aTable,
@@ -2728,7 +2716,7 @@ IDE_RC smiTable::alterTableFlag( smiStatement *aStatement,
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aTable != NULL );
     IDE_DASSERT( aFlagMask != 0);
-    // Maskì™¸ì˜ Bitë¥¼ Valueê°€ ì‚¬ìš©í•´ì„œëŠ” ì•ˆëœë‹¤.
+    // Mask¿ÜÀÇ Bit¸¦ Value°¡ »ç¿ëÇØ¼­´Â ¾ÈµÈ´Ù.
     IDE_DASSERT( (~aFlagMask & aFlagValue) == 0 );
 
     smxTrans * sSmxTrans = (smxTrans*)aStatement->mTrans->mTrans;
@@ -2750,12 +2738,12 @@ IDE_RC smiTable::alterTableFlag( smiStatement *aStatement,
 }
 
 /*******************************************************************************
- * Description : Replicationì„ ìœ„í•´ì„œ Table Metaë¥¼ ê¸°ë¡í•œë‹¤.
+ * Description : ReplicationÀ» À§ÇØ¼­ Table Meta¸¦ ±â·ÏÇÑ´Ù.
  *
- * [IN] aTrans      - Log Bufferë¥¼ í¬í•¨í•œ Transaction
- * [IN] aTableMeta  - ê¸°ë¡í•  Table Metaì˜ í—¤ë”
- * [IN] aLogBody    - ê¸°ë¡í•  Log Body
- * [IN] aLogBodyLen - ê¸°ë¡í•  Log Bodyì˜ ê¸¸ì´
+ * [IN] aTrans      - Log Buffer¸¦ Æ÷ÇÔÇÑ Transaction
+ * [IN] aTableMeta  - ±â·ÏÇÒ Table MetaÀÇ Çì´õ
+ * [IN] aLogBody    - ±â·ÏÇÒ Log Body
+ * [IN] aLogBodyLen - ±â·ÏÇÒ Log BodyÀÇ ±æÀÌ
  ******************************************************************************/
 IDE_RC smiTable::writeTableMetaLog(smiTrans     * aTrans,
                                    smiTableMeta * aTableMeta,
@@ -2770,11 +2758,11 @@ IDE_RC smiTable::writeTableMetaLog(smiTrans     * aTrans,
 
 
 /***********************************************************************
- * Description : Tableì˜ Insert Limitì„ ë³€ê²½í•œë‹¤.
+ * Description : TableÀÇ Insert LimitÀ» º¯°æÇÑ´Ù.
  *
- * aStatement [IN] ì‘ì—… STATEMENT ê°ì²´
- * aTable     [IN] Flagë¥¼ ë³€ê²½í•  Table
- * aSegAttr   [IN] ë³€ê²½í•  Table Insert Limit
+ * aStatement [IN] ÀÛ¾÷ STATEMENT °´Ã¼
+ * aTable     [IN] Flag¸¦ º¯°æÇÒ Table
+ * aSegAttr   [IN] º¯°æÇÒ Table Insert Limit
  *
  **********************************************************************/
 IDE_RC smiTable::alterTableSegAttr( smiStatement *aStatement,
@@ -2808,11 +2796,11 @@ IDE_RC smiTable::alterTableSegAttr( smiStatement *aStatement,
 }
 
 /***********************************************************************
- * Description : Tableì˜ Storage Attrì„ ë³€ê²½í•œë‹¤.
+ * Description : TableÀÇ Storage AttrÀ» º¯°æÇÑ´Ù.
  *
- * aStatement [IN] ì‘ì—… STATEMENT ê°ì²´
- * aTable     [IN] Flagë¥¼ ë³€ê²½í•  Table
- * aSegStoAttr   [IN] ë³€ê²½í•  Table Storage Attr
+ * aStatement [IN] ÀÛ¾÷ STATEMENT °´Ã¼
+ * aTable     [IN] Flag¸¦ º¯°æÇÒ Table
+ * aSegStoAttr   [IN] º¯°æÇÒ Table Storage Attr
  *
  **********************************************************************/
 IDE_RC smiTable::alterTableSegStoAttr( smiStatement        *aStatement,
@@ -2846,11 +2834,11 @@ IDE_RC smiTable::alterTableSegStoAttr( smiStatement        *aStatement,
 }
 
 /***********************************************************************
- * Description : Indexì˜ INIT/MAX TRANSë¥¼ ë³€ê²½í•œë‹¤.
+ * Description : IndexÀÇ INIT/MAX TRANS¸¦ º¯°æÇÑ´Ù.
  *
- * aStatement [IN] ì‘ì—… STATEMENT ê°ì²´
- * aTable     [IN] Flagë¥¼ ë³€ê²½í•  Table
- * aSegAttr   [IN] ë³€ê²½í•  INDEX INIT/MAX TRANS
+ * aStatement [IN] ÀÛ¾÷ STATEMENT °´Ã¼
+ * aTable     [IN] Flag¸¦ º¯°æÇÒ Table
+ * aSegAttr   [IN] º¯°æÇÒ INDEX INIT/MAX TRANS
  *
  **********************************************************************/
 IDE_RC smiTable::alterIndexSegAttr( smiStatement *aStatement,
@@ -2886,12 +2874,12 @@ IDE_RC smiTable::alterIndexSegAttr( smiStatement *aStatement,
 }
 
 /***********************************************************************
- * Description : Index ì˜ Storage Attrì„ ë³€ê²½í•œë‹¤.
+ * Description : Index ÀÇ Storage AttrÀ» º¯°æÇÑ´Ù.
  *
- * aStatement    [IN] ì‘ì—… STATEMENT ê°ì²´
- * aTable        [IN] Flagë¥¼ ë³€ê²½í•  Table
- * aIndex        [IN] Flagë¥¼ ë³€ê²½í•  Index
- * aSegStoAttr   [IN] ë³€ê²½í•  Table Storage Attr
+ * aStatement    [IN] ÀÛ¾÷ STATEMENT °´Ã¼
+ * aTable        [IN] Flag¸¦ º¯°æÇÒ Table
+ * aIndex        [IN] Flag¸¦ º¯°æÇÒ Index
+ * aSegStoAttr   [IN] º¯°æÇÒ Table Storage Attr
  *
  **********************************************************************/
 IDE_RC smiTable::alterIndexSegStoAttr( smiStatement        *aStatement,
@@ -3027,10 +3015,10 @@ IDE_RC smiTable::alterIndexName( idvSQL              *aStatistics,
 }
 
 /***********************************************************************
- * Description : ì§€ì •ëœ Tableë¥¼ Agingí•œë‹¤.
+ * Description : ÁöÁ¤µÈ Table¸¦ AgingÇÑ´Ù.
  *
- * aStatement    [IN] ì‘ì—… STATEMENT ê°ì²´
- * aTable        [IN] Agingë  Table
+ * aStatement    [IN] ÀÛ¾÷ STATEMENT °´Ã¼
+ * aTable        [IN] AgingµÉ Table
  *
  **********************************************************************/
 IDE_RC smiTable::agingTable( smiStatement  * aStatement,
@@ -3043,10 +3031,8 @@ IDE_RC smiTable::agingTable( smiStatement  * aStatement,
     IDE_ASSERT( aStatement != NULL );
     IDE_ASSERT( aTable     != NULL );
 
-    sSmxTrans    =
-        (smxTrans*)aStatement->mTrans->getTrans();
-    sTableHeader =
-        (smcTableHeader*)((UChar*)aTable+SMP_SLOT_HEADER_SIZE);
+    sSmxTrans    = (smxTrans*)aStatement->mTrans->getTrans();
+    sTableHeader = (smcTableHeader*)((UChar*)aTable+SMP_SLOT_HEADER_SIZE);
 
     IDE_TEST( aStatement->prepareDDL((smiTrans*)aStatement->mTrans)
               != IDE_SUCCESS );
@@ -3068,11 +3054,10 @@ IDE_RC smiTable::agingTable( smiStatement  * aStatement,
 
 
 /***********************************************************************
- * Description : ì§€ì •ëœ Indexë¥¼ Agingí•œë‹¤.
+ * Description : ÁöÁ¤µÈ Index¸¦ AgingÇÑ´Ù.
  *
- * aStatement    [IN] ì‘ì—… STATEMENT ê°ì²´
- * aTable        [IN] Aging Indexë¥¼ ì†Œìœ í•œ Table
- * aIndex        [IN] Agingë  Index
+ * aStatement    [IN] ÀÛ¾÷ STATEMENT °´Ã¼
+ * aIndex        [IN] AgingµÉ Index
  *
  **********************************************************************/
 IDE_RC smiTable::agingIndex( smiStatement  * aStatement,
@@ -3104,29 +3089,9 @@ IDE_RC smiTable::agingIndex( smiStatement  * aStatement,
 }
 
 /***********************************************************************
- * Description : BUG-33982 session temporary tableì„ ì†Œìœ í•œ Sessionì€
- *               Temporary Tableì„ í•­ ìƒ ë³¼ ìˆ˜ ìˆì–´ì•¼ í•©ë‹ˆë‹¤.
- *               Table SCNì„ Inití•˜ì—¬ í•­ìƒ ë³¼ ìˆ˜ ìˆê²Œ í•œë‹¤.
- *               Table SCNì„ Init í•˜ëŠ” í•¨ìˆ˜ì˜ Rappingí•¨ìˆ˜ ì…ë‹ˆë‹¤.
- *               QPì—ì„œ Temporary Tableìƒì„± ì‹œ ì‚¬ìš©ë©ë‹ˆë‹¤.
- ***********************************************************************/
-IDE_RC smiTable::initTableSCN4TempTable( const void * aSlotHeader )
-{
-    IDE_ERROR( aSlotHeader != NULL );
-
-    smcTable::initTableSCN4TempTable( aSlotHeader );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-/***********************************************************************
  * Description : PROJ-2399 row template
- *               alter tableì‹œ ë³€ê²½ëœ ì»¬ëŸ¼ ì •ë³´ë¥¼ ë°”íƒ•ìœ¼ë¡œ row templateë¥¼
- *               ë‹¤ì‹œ ë§Œë“ ë‹¤.
+ *               alter table½Ã º¯°æµÈ ÄÃ·³ Á¤º¸¸¦ ¹ÙÅÁÀ¸·Î row template¸¦
+ *               ´Ù½Ã ¸¸µç´Ù.
  ***********************************************************************/
 IDE_RC smiTable::modifyRowTemplate( smiStatement * aStatement,
                                     const void   * aTable )
@@ -3137,7 +3102,7 @@ IDE_RC smiTable::modifyRowTemplate( smiStatement * aStatement,
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aTable     != NULL );
 
-    /* ì´ë¯¸ DDLë¡œ ìˆ˜í–‰ì¤‘ì¸ Txì— ì˜í•´ì„œë§Œ ë¶ˆë¦´ìˆ˜ ìˆë‹¤. */
+    /* ÀÌ¹Ì DDL·Î ¼öÇàÁßÀÎ Tx¿¡ ÀÇÇØ¼­¸¸ ºÒ¸±¼ö ÀÖ´Ù. */
     sSmxTrans = (smxTrans*)aStatement->mTrans->mTrans;
     IDE_ASSERT( sSmxTrans->mIsDDL == ID_TRUE );
 
@@ -3160,7 +3125,7 @@ IDE_RC smiTable::modifyRowTemplate( smiStatement * aStatement,
 
 /***********************************************************************
  * Description : PROJ-2614 Memory Index Reorganization
- *               íŠ¹ì • ì¸ë±ìŠ¤ì— ëŒ€í•´ reorganizationì„ ìˆ˜í–‰í•œë‹¤.
+ *               Æ¯Á¤ ÀÎµ¦½º¿¡ ´ëÇØ reorganizationÀ» ¼öÇàÇÑ´Ù.
  ***********************************************************************/
 IDE_RC smiTable::indexReorganization( void    * aHeader )
 {
@@ -3173,8 +3138,8 @@ IDE_RC smiTable::indexReorganization( void    * aHeader )
     return IDE_FAILURE;
 }
 
-/* BUG-45853 : partiton table swap ì§€ì›(BUG-45745) ìœ„í•´ì„œ ì¶”ê°€.
-               index headerì˜ index idë¥¼ ë³€ê²½í• ìˆ˜ ìˆëŠ” ì¸í„°í˜ì´ìŠ¤ */
+/* BUG-45853 : partiton table swap Áö¿ø(BUG-45745) À§ÇØ¼­ Ãß°¡.
+               index headerÀÇ index id¸¦ º¯°æÇÒ¼ö ÀÖ´Â ÀÎÅÍÆäÀÌ½º */
 IDE_RC smiTable::swapIndexID( smiStatement * aStatement,
                               void         * aTable1,
                               void         * aIndex1,
@@ -3244,7 +3209,7 @@ IDE_RC smiTable::modifyIndexID( smiStatement * aStatement,
     if ( ( sTable->mFlag & SMI_TABLE_TYPE_MASK ) == SMI_TABLE_DISK )
     {
         sIndex->mId = aIndexID;
-        /* diskê²½ìš° runtime headerì˜ index idë„ ìˆ˜ì • */
+        /* disk°æ¿ì runtime headerÀÇ index idµµ ¼öÁ¤ */
         ((sdnbHeader *)(sIndex->mHeader))->mIndexID = aIndexID;
     }
     else
@@ -3320,7 +3285,7 @@ IDE_RC smiTable::modifyIndexColumns( smiStatement  * aStatement,
                                          sOffset,
                                          (SChar *)&sIndex->mColumns, /* OLD */
                                          ID_SIZEOF( UInt ) * sIndex->mColumnCount,
-                                         (SChar *)&aColumns, /* NEW */
+                                         (SChar *)aColumns, /* NEW */
                                          ID_SIZEOF( UInt ) * sIndex->mColumnCount,
                                          NULL,
                                          0 )

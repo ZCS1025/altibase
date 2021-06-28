@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smnfModule.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smnfModule.cpp 89495 2020-12-14 05:19:22Z emlee $
  **********************************************************************/
 
 #include <ide.h>
@@ -35,21 +35,21 @@
 #include <smiFixedTable.h>
 
 
-static IDE_RC smnfInit( idvSQL*             aStatistics,
-                        smnfIterator*       aIterator,
-                        smxTrans*           aTrans,
-                        smcTableHeader*     aTable,
-                        smnIndexHeader*     aIndex,
-                        void*               aDumpObject,
-                        const smiRange*     aRange,
-                        const smiRange *      /* aKeyFilter */,
-                        const smiCallBack*  aFilter,
-                        UInt                aFlag,
-                        smSCN               aSCN,
-                        smSCN               aInfinite,
-                        idBool                aUntouchable,
+static IDE_RC smnfInit( smnfIterator        * aIterator,
+                        smxTrans            * aTrans,
+                        smcTableHeader      * aTable,
+                        smnIndexHeader      * /* aIndex */,
+                        void                * aDumpObject,
+                        const smiRange      * /* aRange */,
+                        const smiRange      * /* aKeyFilter */,
+                        const smiCallBack   * aFilter,
+                        UInt                  /* aFlag */,
+                        smSCN                 aSCN,
+                        smSCN                 aInfinite,
+                        idBool                /* aUntouchable */,
                         smiCursorProperties * aProperties,
-                        const smSeekFunc **  aSeekFunc );
+                        const smSeekFunc   ** aSeekFunc, 
+                        smiStatement        * aStatement );
 
 static IDE_RC smnfDest( smnfIterator* aIterator );
 
@@ -90,7 +90,6 @@ smnIndexModule smnfModule = {
     (smTableCursorLockRowFunc) NULL,
     (smnDeleteFunc) NULL,
     (smnFreeFunc)   NULL,
-    (smnExistKeyFunc)          NULL,
     (smnInsertRollbackFunc)    NULL,
     (smnDeleteRollbackFunc)    NULL,
     (smnAgingFunc)             NULL,
@@ -214,7 +213,7 @@ void smnfCheckLimitAndMovePos( void   * aIterator,
                     &sFirstLimitResult,
                     &sLastLimitResult );
 
-    if( sFirstLimitResult == ID_FALSE ) // ì½ì–´ì•¼ ë  ìœ„ì¹˜ë³´ë‹¤ ì•žì— ìžˆëŠ” ê²½ìš°.
+    if( sFirstLimitResult == ID_FALSE ) // ÀÐ¾î¾ß µÉ À§Ä¡º¸´Ù ¾Õ¿¡ ÀÖ´Â °æ¿ì.
     {
         /*
          *         first           last
@@ -224,7 +223,7 @@ void smnfCheckLimitAndMovePos( void   * aIterator,
     }
     else
     {
-        if( sLastLimitResult == ID_TRUE ) // ì½ì–´ì•¼ ë  ë²”ìœ„ ì•ˆì— ìžˆëŠ” ê²½ìš°.
+        if( sLastLimitResult == ID_TRUE ) // ÀÐ¾î¾ß µÉ ¹üÀ§ ¾È¿¡ ÀÖ´Â °æ¿ì.
         {
             /*
              *         first           last
@@ -233,7 +232,7 @@ void smnfCheckLimitAndMovePos( void   * aIterator,
              */
             *aLimitResult = ID_TRUE;
         }
-        else // ì½ì–´ì•¼ ë  ìœ„ì¹˜ë³´ë‹¤ ë’¤ì— ìžˆëŠ” ê²½ìš°.
+        else // ÀÐ¾î¾ß µÉ À§Ä¡º¸´Ù µÚ¿¡ ÀÖ´Â °æ¿ì.
         {
             /*
              *         first           last
@@ -257,7 +256,7 @@ IDE_RC smnfCheckLastLimit( void   * aIterator,
 
     sIterator = (smnfIterator*)aIterator;
 
-    // Session Eventë¥¼ ê²€ì‚¬í•œë‹¤.
+    // Session Event¸¦ °Ë»çÇÑ´Ù.
     IDE_TEST(iduCheckSessionEvent(sIterator->mProperties->mStatistics) != IDE_SUCCESS);
 
     if( (sIterator->mProperties->mFirstReadRecordPos +
@@ -268,7 +267,7 @@ IDE_RC smnfCheckLastLimit( void   * aIterator,
     }
     else
     {
-        // ì½ì–´ì•¼ ë  ìœ„ì¹˜ë³´ë‹¤ ë’¤ì— ìžˆëŠ” ê²½ìš°.
+        // ÀÐ¾î¾ß µÉ À§Ä¡º¸´Ù µÚ¿¡ ÀÖ´Â °æ¿ì.
         /*
          *         first           last
          * ----------*---------------*---------->
@@ -284,21 +283,21 @@ IDE_RC smnfCheckLastLimit( void   * aIterator,
     return IDE_FAILURE;
 }
 
-static IDE_RC smnfInit( idvSQL*             aStatistics,
-                        smnfIterator*       aIterator,
-                        smxTrans*           aTrans,
-                        smcTableHeader*     aTable,
-                        smnIndexHeader*,
-                        void *              aDumpObject,
-                        const smiRange*,
-                        const smiRange*,
-                        const smiCallBack*  aFilter,
-                        UInt                /* aFlag */,
-                        smSCN               aSCN,
-                        smSCN               aInfinite,
-                        idBool,
+static IDE_RC smnfInit( smnfIterator        * aIterator,
+                        smxTrans            * aTrans,
+                        smcTableHeader      * aTable,
+                        smnIndexHeader      * ,
+                        void                * aDumpObject,
+                        const smiRange      * ,
+                        const smiRange      * ,
+                        const smiCallBack   * aFilter,
+                        UInt                  ,
+                        smSCN                 aSCN,
+                        smSCN                 aInfinite,
+                        idBool                ,
                         smiCursorProperties * aProperties,
-                        const smSeekFunc** aSeekFunc )
+                        const smSeekFunc   ** aSeekFunc,
+                        smiStatement        * aStatement )
 
 {
 
@@ -309,16 +308,16 @@ static IDE_RC smnfInit( idvSQL*             aStatistics,
     SInt                   sState = 0;
 
     // BUG-39503
-    // Fixed Tableì´ ì°¸ì¡°ë˜ëŠ” ì¿¼ë¦¬ëŠ”, ê²°ê³¼ ì •í•©ì„±ì„ ì§€í‚¤ì§€ ì•Šì•„ë„ ëœë‹¤.
-    // Openëœ ìƒíƒœì—ì„œ ê²°ê³¼ê°€ ë°”ë€Œì—ˆë”ë¼ë„ Cursorë¥¼ Restart í•  ìˆ˜ ìžˆì–´ì•¼ í•œë‹¤.
+    // Fixed TableÀÌ ÂüÁ¶µÇ´Â Äõ¸®´Â, °á°ú Á¤ÇÕ¼ºÀ» ÁöÅ°Áö ¾Ê¾Æµµ µÈ´Ù.
+    // OpenµÈ »óÅÂ¿¡¼­ °á°ú°¡ ¹Ù²î¾ú´õ¶óµµ Cursor¸¦ Restart ÇÒ ¼ö ÀÖ¾î¾ß ÇÑ´Ù.
 
     // PROJ-2083 DUAL Table
     if( (aTable->mFlag & SMI_TABLE_DUAL_MASK) == SMI_TABLE_DUAL_TRUE &&
         (aIterator->mRecBuffer != NULL) )
     {
         // Restart
-        // DUAL tableì€ Restartì‹œ recordë¥¼ ìƒˆë¡œ êµ¬ì„±í•˜ì§€ ì•Šê³ 
-        // ê¸°ì¡´ì— ì½ì€ ë ˆì½”ë“œë¥¼ ë‹¤ì‹œ íƒìƒ‰í•˜ë„ë¡ í•œë‹¤.
+        // DUAL tableÀº Restart½Ã record¸¦ »õ·Î ±¸¼ºÇÏÁö ¾Ê°í
+        // ±âÁ¸¿¡ ÀÐÀº ·¹ÄÚµå¸¦ ´Ù½Ã Å½»öÇÏµµ·Ï ÇÑ´Ù.
         aIterator->mIsMemoryInit   = ID_FALSE;    
         aIterator->mTraversePtr    = aIterator->mRecBuffer;
     }
@@ -337,9 +336,10 @@ static IDE_RC smnfInit( idvSQL*             aStatistics,
         aIterator->mProperties     = aProperties;
         aIterator->mTraversePtr    = NULL;
         aIterator->mReadRecordPos  = 0;
+        aIterator->mStatement      = aStatement;
 
         // To Test BUG-13919
-        // Memory Alloc ê³¼ì • ì¤‘ ì‹¤íŒ¨ë¥¼ ê°€ì •í•¨.
+        // Memory Alloc °úÁ¤ Áß ½ÇÆÐ¸¦ °¡Á¤ÇÔ.
         IDU_FIT_POINT( "1.BUG-13919@smnfModule::smnfInit" );
 
         // BUG-41560
@@ -347,7 +347,7 @@ static IDE_RC smnfInit( idvSQL*             aStatistics,
         {
             IDE_TEST( aIterator->mMemory.initialize( NULL ) != IDE_SUCCESS );
 
-            /* BUG-41305 ë©”ëª¨ë¦¬ ì¤‘ë³µ ì´ˆê¸°í™” ë°©ì§€ */
+            /* BUG-41305 ¸Þ¸ð¸® Áßº¹ ÃÊ±âÈ­ ¹æÁö */
             aIterator->mIsMemoryInit = ID_TRUE;
         }
         else
@@ -362,10 +362,10 @@ static IDE_RC smnfInit( idvSQL*             aStatistics,
         *aSeekFunc = smnfSeekFunctions;
 
         // PROJ-1618
-        IDE_TEST(sBuildFunc(aStatistics,
-                            aTable,
-                            aDumpObject,
-                            &(aIterator->mMemory)) != IDE_SUCCESS);
+        IDE_TEST( sBuildFunc( NULL, /* aStatistics */
+                              aTable,
+                              aDumpObject,
+                              &(aIterator->mMemory) ) != IDE_SUCCESS );
 
         aIterator->mRecBuffer = aIterator->mMemory.getBeginRecord();
 
@@ -405,8 +405,8 @@ static IDE_RC smnfInit( idvSQL*             aStatistics,
 
 static IDE_RC smnfDest( smnfIterator* aIterator )
 {
-    /* BUG-41305, BUG-41377 dualì„ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” fixed tableì˜ ê²½ìš° ìž¬ì‚¬ìš©ì„ ëŒ€ë¹„í•˜ì—¬
-     * í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¥¼ ë°˜í™˜í•´ì•¼ í•œë‹¤. */
+    /* BUG-41305, BUG-41377 dualÀ» »ç¿ëÇÏÁö ¾Ê´Â fixed tableÀÇ °æ¿ì Àç»ç¿ëÀ» ´ëºñÇÏ¿©
+     * ÇÒ´çµÈ ¸Þ¸ð¸®¸¦ ¹ÝÈ¯ÇØ¾ß ÇÑ´Ù. */
     if( ( ( aIterator->table->mFlag & SMI_TABLE_DUAL_MASK ) == SMI_TABLE_DUAL_FALSE )
         && ( aIterator->mIsMemoryInit == ID_TRUE ) ) 
     {

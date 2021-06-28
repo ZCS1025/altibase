@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: stndrModule.h 82075 2018-01-17 06:39:52Z jina.kim $ 
+ * $Id: stndrModule.h 89495 2020-12-14 05:19:22Z emlee $ 
  **********************************************************************/
 
 #ifndef _O_STNDR_MODULE_H_
@@ -38,69 +38,15 @@ public:
     
     static IDE_RC softKeyStamping( sdrMtx        * aMtx,
                                    sdpPhyPageHdr * aNode,
-                                   UChar           aTTSlotNum,
+                                   UChar           aCTSlotNum,
                                    UChar         * aContext );
     
     static IDE_RC hardKeyStamping( idvSQL        * aStatistics,
                                    sdrMtx        * aMtx,
                                    sdpPhyPageHdr * aNode,
-                                   UChar           aTTSlotNum,
+                                   UChar           aCTSlotNum,
                                    UChar         * aContext,
                                    idBool        * aSuccess );
-    
-    static IDE_RC logAndMakeChainedKeys( sdrMtx        * aMtx,
-                                         sdpPhyPageHdr * aNode,
-                                         UChar           aTTSlotNum,
-                                         UChar         * aContext,
-                                         UChar         * aKeyList,
-                                         UShort        * aKeyListSize,
-                                         UShort        * aChainedKeyCount );
-
-    static IDE_RC writeChainedKeysLog( sdrMtx        * aMtx,
-                                       sdpPhyPageHdr * aNode,
-                                       UChar           aTTSlotNum );
-
-    static IDE_RC makeChainedKeys( sdpPhyPageHdr * aNode,
-                                   UChar           aTTSlotNum,
-                                   UChar         * aContext,
-                                   UChar         * aKeyList,
-                                   UShort        * aKeyListSize,
-                                   UShort        * aChainedKeyCount );
-
-    static IDE_RC logAndMakeUnchainedKeys( idvSQL         * aStatistics,
-                                           sdrMtx         * aMtx,
-                                           sdpPhyPageHdr  * aNode,
-                                           sdnCTS         * aCTS,
-                                           UChar            aTTSlotNum,
-                                           UChar          * aChainedKeyList,
-                                           UShort           aChainedKeySize,
-                                           UShort         * aUnchainedKeyCount,
-                                           UChar          * aContext );
-
-    static IDE_RC writeUnchainedKeysLog( sdrMtx         * aMtx,
-                                         sdpPhyPageHdr  * aNode,
-                                         UShort           aUnchainedKeyCount,
-                                         UChar          * aUnchainedKey,
-                                         UInt             aUnchainedKeySize );
-
-    static IDE_RC makeUnchainedKeys( idvSQL         * aStatistics,
-                                     sdpPhyPageHdr  * aNode,
-                                     sdnCTS         * aCTS,
-                                     UChar            aTTSlotNum,
-                                     UChar          * aChainedKeyList,
-                                     UShort           aChainedKeySize,
-                                     UChar          * aContext,
-                                     UChar          * aUnchainedKey,
-                                     UInt           * aUnchainedKeySize,
-                                     UShort         * aUnchainedKeyCount );
-
-    static idBool findChainedKey( idvSQL * aStatistics,
-                                  sdnCTS * aCTS,
-                                  UChar  * aChainedKeyList,
-                                  UShort   aChainedKeySize,
-                                  UChar  * aChainedCTTS,
-                                  UChar  * aChainedLTTS,
-                                  UChar  * aContext );
 
     /* ------------------------------------------------
      * smnIndexModule
@@ -150,8 +96,7 @@ public:
                          smcTableHeader * aHeader,
                          smnIndexHeader * aIndex );
 
-    static IDE_RC init( idvSQL               * /* aStatistics */,
-                        stndrIterator        * aIterator,
+    static IDE_RC init( stndrIterator        * aIterator,
                         void                 * aTrans,
                         smcTableHeader       * aTable,
                         smnIndexHeader       * aIndex,
@@ -164,7 +109,8 @@ public:
                         smSCN                  aInfinite,
                         idBool                 aUntouchable,
                         smiCursorProperties  * aProperties,
-                        const smSeekFunc    ** aSeekFunc );
+                        const smSeekFunc    ** aSeekFunc,
+                        smiStatement         * aStatement );
 
     static IDE_RC dest( stndrIterator * /*aIterator*/ );
 
@@ -212,33 +158,33 @@ public:
                                     ULong          aSmoNo );
     
     static IDE_RC makeKeyValueFromRow(
-        idvSQL                  * aStatistics,
-        sdrMtx                  * aMtx,
-        sdrSavePoint            * aSP,
-        void                    * aTrans,
-        void                    * aTableHeader,
-        const smnIndexHeader    * aIndex,
-        const UChar             * aRow,
-        sdbPageReadMode           aPageReadMode,
-        scSpaceID                 aTableSpaceID,
-        smFetchVersion            aFetchVersion,
-        sdRID                     aTssRID,
-        const smSCN             * aSCN,
-        const smSCN             * aInfiniteSCN,
-        UChar                   * aDestBuf,
-        idBool                  * aIsRowDeleted,
-        idBool                  * aIsPageLatchReleased );
+                                idvSQL                  * aStatistics,
+                                sdrMtx                  * aMtx,
+                                sdrSavePoint            * aSP,
+                                void                    * aTrans,
+                                void                    * aTableHeader,
+                                const smnIndexHeader    * aIndex,
+                                const UChar             * aRow,
+                                sdbPageReadMode           aPageReadMode,
+                                scSpaceID                 aTableSpaceID,
+                                smFetchVersion            aFetchVersion,
+                                sdRID                     aTssRID,
+                                const smSCN             * aSCN,
+                                const smSCN             * aInfiniteSCN,
+                                UChar                   * aDestBuf,
+                                idBool                  * aIsRowDeleted,
+                                idBool                  * aIsPageLatchReleased );
 
     static IDE_RC makeSmiValueListInFetch(
-        const smiColumn             * aIndexColumn,
-        UInt                          aCopyOffset,
-        const smiValue              * aColumnValue,
-        void                        * aIndexInfo );
+                                const smiColumn             * aIndexColumn,
+                                UInt                          aCopyOffset,
+                                const smiValue              * aColumnValue,
+                                void                        * aIndexInfo );
 
     static IDE_RC makeKeyValueFromSmiValueList(
-        const smnIndexHeader    * aIndex,
-        const smiValue          * aSmiValueList,
-        UChar                   * aDestBuf );
+                                const smnIndexHeader    * aIndex,
+                                const smiValue          * aSmiValueList,
+                                UChar                   * aDestBuf );
 
 
     static IDE_RC rebuildIndexColumn( smnIndexHeader    * aIndex,
@@ -300,35 +246,27 @@ public:
                              SChar  * aKeyValue,
                              SChar  * /* aNullRow */,
                              idBool   aUniqueCheck,
-                             smSCN    aStmtSCN,
+                             smSCN    aStmtViewSCN,
                              void   * aRowSID,
                              SChar ** aExistUniqueRow,
-                             ULong    aInsertWaitTime );
+                             ULong    aInsertWaitTime,
+                             idBool   aForbiddenToRetry );
 
     static IDE_RC softKeyStamping( stndrHeader      * aIndex,
                                    sdrMtx           * aMtx,
                                    sdpPhyPageHdr    * aNode,
-                                   UChar              aTTSlotNum );
+                                   UChar              aCTSlotNum );
     
     static IDE_RC hardKeyStamping( idvSQL           * aStatistics,
                                    stndrHeader      * aIndex,
                                    sdrMtx           * aMtx,
                                    sdpPhyPageHdr    * aNode,
-                                   UChar              aTTSlotNum,
+                                   UChar              aCTSlotNum,
                                    idBool           * aSuccess );
     
-    static IDE_RC allocTTS( idvSQL              * aStatistics,
-                            stndrHeader         * aIndex,
-                            sdrMtx              * aMtx,
-                            sdpPhyPageHdr       * aNode,
-                            UChar               * aTTSlotNum,
-                            sdnCallbackFuncs    * aCallbackFunc,
-                            UChar               * aContext,
-                            SShort              * aKeySeq );
-
     static IDE_RC makeFetchColumnList4Index(
-        void        * aTableHeader,
-        stndrHeader * aIndexHeader );
+                                void        * aTableHeader,
+                                stndrHeader * aIndexHeader );
 
     static IDE_RC setConsistent( smnIndexHeader * aIndex,
                                  idBool      aIsConsistent );
@@ -403,7 +341,7 @@ public:
                             stndrHeader         * aIndex,
                             sdrMtx              * aMtx,
                             sdpPhyPageHdr       * aNode,
-                            UChar               * aTTSlotNum,
+                            UChar               * aCTSlotNum,
                             sdnCallbackFuncs    * aCallbackFunc,
                             UChar               * aContext,
                             SShort              * aKeySeq );
@@ -442,14 +380,12 @@ public:
     static UShort getKeyLength( UChar  * aKey,
                                 idBool   aIsLeaf );
 
-    static IDE_RC insertKeyIntoLeafNode( idvSQL                * aStatistics,
-                                         sdrMtx                * aMtx,
+    static IDE_RC insertKeyIntoLeafNode( sdrMtx                * aMtx,
                                          stndrHeader           * aIndex,
                                          smSCN                 * aInfiniteSCN,
                                          sdpPhyPageHdr         * aLeafNode,
                                          SShort                * aLeafKeySeq,
                                          stndrKeyInfo          * aKeyInfo,
-                                         stndrCallbackContext  * sContext,
                                          UChar                   aCTSlotNum,
                                          idBool                * aIsSuccess );
 
@@ -505,20 +441,17 @@ public:
                              UChar          * aAgedCount );
 
     
-    static IDE_RC insertLeafKeyWithTBT( idvSQL                  * aStatistics,
-                                        sdrMtx                  * aMtx,
+    static IDE_RC insertLeafKeyWithTBT( sdrMtx                  * aMtx,
                                         stndrHeader             * aIndex,
                                         UChar                     aCTSlotNum,
                                         smSCN                   * aInfiniteSCN,
                                         sdpPhyPageHdr           * aLeafNode,
-                                        stndrCallbackContext    * aContext,
                                         stndrKeyInfo            * aKeyInfo,
                                         UShort                    aKeyValueLen,
                                         SShort                    aKeySeq );
 
     
-    static IDE_RC insertLeafKeyWithTBK( idvSQL          * aStatistics,
-                                        sdrMtx          * aMtx,
+    static IDE_RC insertLeafKeyWithTBK( sdrMtx          * aMtx,
                                         stndrHeader     * aIndex,
                                         smSCN           * aInfiniteSCN,
                                         sdpPhyPageHdr   * aLeafNode,
@@ -659,11 +592,9 @@ public:
 
     static IDE_RC tranLevelVisibility( idvSQL           * aStatistics,
                                        void             * aTrans,
-                                       stndrHeader      * aIndex,
-                                       stndrStatistic   * aIndexStat,
                                        UChar            * aNode,
                                        UChar            * aLeafKey,
-                                       smSCN            * aStmtSCN,
+                                       smSCN            * aStmtViewSCN,
                                        idBool           * aIsVisible,
                                        idBool           * aIsUnknown );
 
@@ -804,9 +735,7 @@ public:
                           stndrKeyArray * aKey,
                           UShort        * aSeed );
     
-    static IDE_RC moveSlots( idvSQL         * aStatistics,
-                             stndrStatistic * aIndexStat,
-                             sdrMtx         * aMtx,
+    static IDE_RC moveSlots( sdrMtx         * aMtx,
                              stndrHeader    * aIndex,
                              sdpPhyPageHdr  * aSrcNode,
                              stndrKeyArray  * sKeyArray,
@@ -843,10 +772,12 @@ public:
                               idBool          aLogging );
 
     static IDE_RC getCommitSCN( idvSQL          * aStatistics,
+                                void            * aTrans,
                                 sdpPhyPageHdr   * aNode,
                                 stndrLKeyEx     * aLeafKeyEx,
                                 idBool            aIsLimit,
-                                smSCN*            aCommitSCN );
+                                smSCN             aStmtViewSCN,
+                                smSCN           * aCommitSCN );
 
     static idBool isMyTransaction( void     * aTrans,
                                    smSCN      aBeginSCN,
@@ -883,9 +814,7 @@ public:
                                          SShort         * aLeafKeySeq ,
                                          idBool         * aIsSuccess );
 
-    static IDE_RC deleteLeafKeyWithTBT( idvSQL          * aStatistics,
-                                        stndrStatistic  * aIndexStat,
-                                        sdrMtx          * aMtx,
+    static IDE_RC deleteLeafKeyWithTBT( sdrMtx          * aMtx,
                                         stndrHeader     * aIndex,
                                         smSCN           * aInfiniteSCN,
                                         UChar             aCTSlotNum,
@@ -968,7 +897,7 @@ public:
                                     UShort          aFromIdx,
                                     UShort          aToIdx );
 
-    // BUG-29538 splitì‹œ TBK countë¥¼ ì¡°ì •í•˜ì§€ ì•Šê³  ìžˆìŠµë‹ˆë‹¤.
+    // BUG-29538 split½Ã TBK count¸¦ Á¶Á¤ÇÏÁö ¾Ê°í ÀÖ½À´Ï´Ù.
     static IDE_RC freeKeysLeaf( sdpPhyPageHdr * aPage,
                                 stndrKeyArray * aKeyArray,
                                 UShort          aFromIdx,

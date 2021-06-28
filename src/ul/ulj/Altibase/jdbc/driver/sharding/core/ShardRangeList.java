@@ -23,8 +23,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * ìƒ¤ë“œ ë²”ìœ„ê°ì²´ë¥¼ í¬í•¨í•˜ê³  ìˆëŠ” í´ë˜ìŠ¤. <br>
- *     mIsPrimaryRangeChangedëŠ” ì»´í¬ì§€íŠ¸ ìƒ¤ë“œí‚¤ë¥¼ ìœ„í•œ í”Œë˜ê·¸ì´ë‹¤.
+ * »şµå ¹üÀ§°´Ã¼¸¦ Æ÷ÇÔÇÏ°í ÀÖ´Â Å¬·¡½º. <br>
+ *     mIsPrimaryRangeChanged´Â ÄÄÆ÷ÁöÆ® »şµåÅ°¸¦ À§ÇÑ ÇÃ·¡±×ÀÌ´Ù.
  */
 public class ShardRangeList
 {

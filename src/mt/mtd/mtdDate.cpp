@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtdDate.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtdDate.cpp 88554 2020-09-11 06:44:49Z donovan.seo $
  **********************************************************************/
 
 #include <mte.h>
@@ -30,6 +30,101 @@
 
 #define MTD_DATE_ALIGN (ID_SIZEOF(UInt))
 #define MTD_DATE_SIZE  (ID_SIZEOF(mtdDateType))
+
+/* BUG-48113 DATE conversion malloc free remove */
+#define MTD_YYGUTS_T_SIZE (160)
+#define MTD_FORMAT_SIZE (96)
+#define MTD_YYBUFFER_STATE_SIZE (64)
+#define MTD_YY_BUFFER_NEW (0)
+
+/* BUG-48113
+ * src/mt/mtd/mtddl.cpp ¿¡ Á¸ÀçÇÏ´Â ±¸Á¶Ã¼ÀÌ´Ù.
+ * malloc / free / memset À» ÇÏÁö ¾Ê±â À§ÇØ¼­
+ * ÀÌ ±¸Á¶Ã¼¸¦ Á÷Á¢ Á¢±ÙÇÒ ÇÊ¿ä°¡ ÀÖ¾î¼­ mtddl.cpp ¿¡¼­ º¹»çÇØ¿Ô´Ù.
+ * ¸¸¾à Lexer°¡ º¯°æµÇ°Å³ª UpdateµÇ¾î¼­ ÇØ´ç ±¸Á¶Ã¼°¡ º¯°æµÇ¸é
+ * ¾Æ·¡ ±¸Á¶Ã¼ ¿ª½Ã º¯°æÇØÁÖ¾î¾ßÇÑ´Ù.
+ */
+typedef struct yyguts_t
+{
+    /* User-defined. Not touched by flex. */
+    YY_EXTRA_TYPE yyextra_r;
+    FILE *yyin_r, *yyout_r;
+    size_t yy_buffer_stack_top; /**< index of top of stack. */
+    size_t yy_buffer_stack_max; /**< capacity of stack. */
+    YY_BUFFER_STATE * yy_buffer_stack; /**< Stack as an array. */
+    char yy_hold_char;
+    int yy_n_chars;
+    int yyleng_r;
+    char *yy_c_buf_p;
+    int yy_init;
+    int yy_start;
+    int yy_did_buffer_switch_on_eof;
+    int yy_start_stack_ptr;
+    int yy_start_stack_depth;
+    int *yy_start_stack;
+    int  yy_last_accepting_state;
+    char* yy_last_accepting_cpos;
+    int yylineno_r;
+    int yy_flex_debug_r;
+    char *yytext_r;
+    int yy_more_flag;
+    int yy_more_len;
+} mtddl_yyguts_t; /* end struct yyguts_t */
+
+#define MTDDL_YYGUTS_T_INIT( yyg )  \
+{                                   \
+    yyg->yyextra_r = NULL;          \
+    yyg->yyin_r = (FILE *) 0;       \
+    yyg->yyout_r = (FILE *) 0;      \
+    yyg->yy_buffer_stack_top = 0;   \
+    yyg->yy_buffer_stack_max = 0;   \
+    yyg->yy_buffer_stack = 0;       \
+    yyg->yy_hold_char = 0;          \
+    yyg->yy_n_chars = 0;            \
+    yyg->yyleng_r = 0;              \
+    yyg->yy_c_buf_p = (char *) 0;   \
+    yyg->yy_init = 0;               \
+    yyg->yy_start = 0;              \
+    yyg->yy_did_buffer_switch_on_eof = 0; \
+    yyg->yy_start_stack_ptr = 0;          \
+    yyg->yy_start_stack_depth = 0;        \
+    yyg->yy_start_stack =  NULL;          \
+    yyg->yy_last_accepting_state = 0;     \
+    yyg->yy_last_accepting_cpos = NULL;   \
+    yyg->yylineno_r = 0;                  \
+    yyg->yy_flex_debug_r = 0;             \
+    yyg->yytext_r = NULL;                 \
+    yyg->yy_more_flag = 0;                \
+    yyg->yy_more_len = 0;                 \
+}
+
+#define MTDDL_YYSTATE_INIT( b )     \
+{                                   \
+    b->yy_input_file = 0;           \
+    b->yy_buf_pos = NULL ;          \
+    b->yy_ch_buf  = NULL ;          \
+    b->yy_buf_size = 0;             \
+    b->yy_is_our_buffer = 0;        \
+    b->yy_is_interactive = 0;       \
+    b->yy_at_bol = 1;               \
+    b->yy_bs_lineno = 0;            \
+    b->yy_bs_column = 0;            \
+    b->yy_fill_buffer = 0;          \
+    b->yy_n_chars = 0;              \
+    b->yy_buffer_status = MTD_YY_BUFFER_NEW;\
+}
+
+#define MTDDL_SET_BUFFER( b, yyg )          \
+{                                           \
+    yyg->yy_buffer_stack_max = 1;           \
+    yyg->yy_buffer_stack_top = 0;           \
+    yyg->yy_buffer_stack[yyg->yy_buffer_stack_top] = b; \
+    yyg->yy_n_chars   = b->yy_n_chars;      \
+    yyg->yy_c_buf_p   = b->yy_buf_pos;      \
+    yyg->yytext_r     = b->yy_buf_pos;      \
+    yyg->yy_hold_char = *yyg->yy_c_buf_p;   \
+    yyg->yy_did_buffer_switch_on_eof = 1;   \
+}
 
 static
     const char* gMONTHName[12] = {
@@ -180,12 +275,12 @@ const UChar mtdDateInterface::mInputST[256] = {
 
 const UChar mtdDateInterface::mDaysOfMonth[2][13] = {
     { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 } ,  // 
-    { 0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }    // ìœ¤ë…„
+    { 0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }    // À±³â
 };
 
 const UInt mtdDateInterface::mAccDaysOfMonth[2][13] = {
     { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 }, // 
-    { 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }  // ìœ¤ë…„
+    { 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }  // À±³â
 };
 
 const UInt mtdDateInterface::mHashMonth[12] = {
@@ -364,37 +459,37 @@ mtdModule mtdDate = {
     {
         // Key Comparison
         {
-            // mt valueë“¤ ê°„ì˜ compare
+            // mt valueµé °£ÀÇ compare
             mtdDateFixedMtdFixedMtdKeyAscComp, // Ascending Key Comparison
             mtdDateFixedMtdFixedMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt valueë“¤ ê°„ì˜ compare
+            // mt valueµé °£ÀÇ compare
             mtdDateMtdMtdKeyAscComp, // Ascending Key Comparison
             mtdDateMtdMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt valueì™€ stored valueê°„ì˜ compare
+            // mt value¿Í stored value°£ÀÇ compare
             mtdDateStoredMtdKeyAscComp, // Ascending Key Comparison
             mtdDateStoredMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // stored valueë“¤ ê°„ì˜ compare
+            // stored valueµé °£ÀÇ compare
             mtdDateStoredStoredKeyAscComp, // Ascending Key Comparison
             mtdDateStoredStoredKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            /* PROJ-2433 : index Direct keyì™€ fixed mt valueë“¤ ê°„ì˜ compare */
+            /* PROJ-2433 : index Direct key¿Í fixed mt valueµé °£ÀÇ compare */
             mtdDateFixedMtdFixedMtdKeyAscComp,
             mtdDateFixedMtdFixedMtdKeyDescComp
         }
         ,
         {
-            /* PROJ-2433 : index Direct keyì™€ mt valueë“¤ ê°„ì˜ compare */
+            /* PROJ-2433 : index Direct key¿Í mt valueµé °£ÀÇ compare */
             mtdDateMtdMtdKeyAscComp,
             mtdDateMtdMtdKeyDescComp
         }
@@ -430,7 +525,7 @@ IDE_RC mtdInitialize( UInt aNo )
 {
     IDE_TEST( mtd::initializeModule( &mtdDate, aNo ) != IDE_SUCCESS );
 
-    // mtdColumnì˜ ì´ˆê¸°í™”
+    // mtdColumnÀÇ ÃÊ±âÈ­
     IDE_TEST( mtc::initializeColumn( & mtdColumn,
                                      & mtdDate,
                                      0,   // arguments
@@ -501,7 +596,7 @@ IDE_RC mtdValue( mtcTemplate* aTemplate,
                       != IDE_SUCCESS );
 
             // PROJ-1436
-            // dateFormatì„ ì°¸ì¡°í–ˆìŒì„ í‘œì‹œí•œë‹¤.
+            // dateFormatÀ» ÂüÁ¶ÇßÀ½À» Ç¥½ÃÇÑ´Ù.
             aTemplate->dateFormatRef = ID_TRUE;
         }
         
@@ -599,7 +694,7 @@ SInt mtdDateLogicalAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -628,14 +723,14 @@ SInt mtdDateLogicalAscComp( mtdValueInfo * aValueInfo1,
     
     if( !sNull1 && !sNull2 )
     {
-        // Enhancement-13065 Date ë¹„êµ ì„±ëŠ¥ ê°œì„ 
-        // mtdDateInterfaceì— compare í•¨ìˆ˜ë¥¼ êµ¬í˜„í•´ì„œ
-        // ë¹„êµ ì—°ì‚°ì˜ ì±…ì„ì„ mtdDateInterfaceì— ìœ„ì„í•¨.
+        // Enhancement-13065 Date ºñ±³ ¼º´É °³¼±
+        // mtdDateInterface¿¡ compare ÇÔ¼ö¸¦ ±¸ÇöÇØ¼­
+        // ºñ±³ ¿¬»êÀÇ Ã¥ÀÓÀ» mtdDateInterface¿¡ À§ÀÓÇÔ.
         //
-        // nullì— ëŒ€í•œ ë¹„êµ ì •ì±…ì€ mtdDateModuleì´ ê°€ì§€ê³  ìˆëŠ”ë‹¤.
-        // mtdDateInterface::compareëŠ” ë‹¨ìˆœíˆ ê°’ì˜ í¬ê¸°ë¥¼ ë¹„êµí•  ë¿,
-        // nullì— ëŒ€í•œ ë¹„êµ ì •ì±…ì€ ê°€ì§€ê³  ìˆì§€ ì•Šê¸° ë•Œë¬¸ì—
-        // null ì²´í¬ëŠ” mtdDateì—ì„œ í•´ì¤€ë‹¤.
+        // null¿¡ ´ëÇÑ ºñ±³ Á¤Ã¥Àº mtdDateModuleÀÌ °¡Áö°í ÀÖ´Â´Ù.
+        // mtdDateInterface::compare´Â ´Ü¼øÈ÷ °ªÀÇ Å©±â¸¦ ºñ±³ÇÒ »Ó,
+        // null¿¡ ´ëÇÑ ºñ±³ Á¤Ã¥Àº °¡Áö°í ÀÖÁö ¾Ê±â ¶§¹®¿¡
+        // null Ã¼Å©´Â mtdDate¿¡¼­ ÇØÁØ´Ù.
 
         return mtdDateInterface::compare( sValue1, sValue2 );
     }
@@ -655,7 +750,7 @@ SInt mtdDateLogicalDescComp( mtdValueInfo * aValueInfo1,
 {
  /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -702,7 +797,7 @@ SInt mtdDateFixedMtdFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -731,14 +826,14 @@ SInt mtdDateFixedMtdFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
     
     if( !sNull1 && !sNull2 )
     {
-        // Enhancement-13065 Date ë¹„êµ ì„±ëŠ¥ ê°œì„ 
-        // mtdDateInterfaceì— compare í•¨ìˆ˜ë¥¼ êµ¬í˜„í•´ì„œ
-        // ë¹„êµ ì—°ì‚°ì˜ ì±…ì„ì„ mtdDateInterfaceì— ìœ„ì„í•¨.
+        // Enhancement-13065 Date ºñ±³ ¼º´É °³¼±
+        // mtdDateInterface¿¡ compare ÇÔ¼ö¸¦ ±¸ÇöÇØ¼­
+        // ºñ±³ ¿¬»êÀÇ Ã¥ÀÓÀ» mtdDateInterface¿¡ À§ÀÓÇÔ.
         //
-        // nullì— ëŒ€í•œ ë¹„êµ ì •ì±…ì€ mtdDateModuleì´ ê°€ì§€ê³  ìˆëŠ”ë‹¤.
-        // mtdDateInterface::compareëŠ” ë‹¨ìˆœíˆ ê°’ì˜ í¬ê¸°ë¥¼ ë¹„êµí•  ë¿,
-        // nullì— ëŒ€í•œ ë¹„êµ ì •ì±…ì€ ê°€ì§€ê³  ìˆì§€ ì•Šê¸° ë•Œë¬¸ì—
-        // null ì²´í¬ëŠ” mtdDateì—ì„œ í•´ì¤€ë‹¤.
+        // null¿¡ ´ëÇÑ ºñ±³ Á¤Ã¥Àº mtdDateModuleÀÌ °¡Áö°í ÀÖ´Â´Ù.
+        // mtdDateInterface::compare´Â ´Ü¼øÈ÷ °ªÀÇ Å©±â¸¦ ºñ±³ÇÒ »Ó,
+        // null¿¡ ´ëÇÑ ºñ±³ Á¤Ã¥Àº °¡Áö°í ÀÖÁö ¾Ê±â ¶§¹®¿¡
+        // null Ã¼Å©´Â mtdDate¿¡¼­ ÇØÁØ´Ù.
 
         return mtdDateInterface::compare( sValue1, sValue2 );
     }
@@ -758,7 +853,7 @@ SInt mtdDateFixedMtdFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
  /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -805,7 +900,7 @@ SInt mtdDateMtdMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -844,14 +939,14 @@ SInt mtdDateMtdMtdKeyAscComp( mtdValueInfo * aValueInfo1,
     
     if( !sNull1 && !sNull2 )
     {
-        // Enhancement-13065 Date ë¹„êµ ì„±ëŠ¥ ê°œì„ 
-        // mtdDateInterfaceì— compare í•¨ìˆ˜ë¥¼ êµ¬í˜„í•´ì„œ
-        // ë¹„êµ ì—°ì‚°ì˜ ì±…ì„ì„ mtdDateInterfaceì— ìœ„ì„í•¨.
+        // Enhancement-13065 Date ºñ±³ ¼º´É °³¼±
+        // mtdDateInterface¿¡ compare ÇÔ¼ö¸¦ ±¸ÇöÇØ¼­
+        // ºñ±³ ¿¬»êÀÇ Ã¥ÀÓÀ» mtdDateInterface¿¡ À§ÀÓÇÔ.
         //
-        // nullì— ëŒ€í•œ ë¹„êµ ì •ì±…ì€ mtdDateModuleì´ ê°€ì§€ê³  ìˆëŠ”ë‹¤.
-        // mtdDateInterface::compareëŠ” ë‹¨ìˆœíˆ ê°’ì˜ í¬ê¸°ë¥¼ ë¹„êµí•  ë¿,
-        // nullì— ëŒ€í•œ ë¹„êµ ì •ì±…ì€ ê°€ì§€ê³  ìˆì§€ ì•Šê¸° ë•Œë¬¸ì—
-        // null ì²´í¬ëŠ” mtdDateì—ì„œ í•´ì¤€ë‹¤.
+        // null¿¡ ´ëÇÑ ºñ±³ Á¤Ã¥Àº mtdDateModuleÀÌ °¡Áö°í ÀÖ´Â´Ù.
+        // mtdDateInterface::compare´Â ´Ü¼øÈ÷ °ªÀÇ Å©±â¸¦ ºñ±³ÇÒ »Ó,
+        // null¿¡ ´ëÇÑ ºñ±³ Á¤Ã¥Àº °¡Áö°í ÀÖÁö ¾Ê±â ¶§¹®¿¡
+        // null Ã¼Å©´Â mtdDate¿¡¼­ ÇØÁØ´Ù.
 
         return mtdDateInterface::compare( sValue1, sValue2 );
     }
@@ -871,7 +966,7 @@ SInt mtdDateMtdMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
  /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -928,7 +1023,7 @@ SInt mtdDateStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -945,8 +1040,8 @@ SInt mtdDateStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
     // value1
     //---------    
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // Dictionary compression columnì¸ ê²½ìš° store typeì„mt typeìœ¼ë¡œ
-    // ë³€í™˜í•´ì„œ ì‹¤ì œ ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+    // Dictionary compression columnÀÎ °æ¿ì store typeÀ»mt typeÀ¸·Î
+    // º¯È¯ÇØ¼­ ½ÇÁ¦ µ¥ÀÌÅÍ¸¦ °¡Á®¿Â´Ù.
     if ( (((smiColumn*)aValueInfo1->column)->flag & SMI_COLUMN_COMPRESSION_MASK) !=
          SMI_COLUMN_COMPRESSION_TRUE )
     {
@@ -996,14 +1091,14 @@ SInt mtdDateStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 
     if( !sNull1 && !sNull2 )
     {
-        // Enhancement-13065 Date ë¹„êµ ì„±ëŠ¥ ê°œì„ 
-        // mtdDateInterfaceì— compare í•¨ìˆ˜ë¥¼ êµ¬í˜„í•´ì„œ
-        // ë¹„êµ ì—°ì‚°ì˜ ì±…ì„ì„ mtdDateInterfaceì— ìœ„ì„í•¨.
+        // Enhancement-13065 Date ºñ±³ ¼º´É °³¼±
+        // mtdDateInterface¿¡ compare ÇÔ¼ö¸¦ ±¸ÇöÇØ¼­
+        // ºñ±³ ¿¬»êÀÇ Ã¥ÀÓÀ» mtdDateInterface¿¡ À§ÀÓÇÔ.
         //
-        // nullì— ëŒ€í•œ ë¹„êµ ì •ì±…ì€ mtdDateModuleì´ ê°€ì§€ê³  ìˆëŠ”ë‹¤.
-        // mtdDateInterface::compareëŠ” ë‹¨ìˆœíˆ ê°’ì˜ í¬ê¸°ë¥¼ ë¹„êµí•  ë¿,
-        // nullì— ëŒ€í•œ ë¹„êµ ì •ì±…ì€ ê°€ì§€ê³  ìˆì§€ ì•Šê¸° ë•Œë¬¸ì—
-        // null ì²´í¬ëŠ” mtdDateì—ì„œ í•´ì¤€ë‹¤.
+        // null¿¡ ´ëÇÑ ºñ±³ Á¤Ã¥Àº mtdDateModuleÀÌ °¡Áö°í ÀÖ´Â´Ù.
+        // mtdDateInterface::compare´Â ´Ü¼øÈ÷ °ªÀÇ Å©±â¸¦ ºñ±³ÇÒ »Ó,
+        // null¿¡ ´ëÇÑ ºñ±³ Á¤Ã¥Àº °¡Áö°í ÀÖÁö ¾Ê±â ¶§¹®¿¡
+        // null Ã¼Å©´Â mtdDate¿¡¼­ ÇØÁØ´Ù.
 
         return mtdDateInterface::compare( sValue1Ptr, sValue2 );
     }
@@ -1023,7 +1118,7 @@ SInt mtdDateStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
  /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -1040,8 +1135,8 @@ SInt mtdDateStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
     // value1
     //---------    
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // Dictionary compression columnì¸ ê²½ìš° store typeì„mt typeìœ¼ë¡œ
-    // ë³€í™˜í•´ì„œ ì‹¤ì œ ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+    // Dictionary compression columnÀÎ °æ¿ì store typeÀ»mt typeÀ¸·Î
+    // º¯È¯ÇØ¼­ ½ÇÁ¦ µ¥ÀÌÅÍ¸¦ °¡Á®¿Â´Ù.
     if ( (((smiColumn*)aValueInfo1->column)->flag & SMI_COLUMN_COMPRESSION_MASK) !=
          SMI_COLUMN_COMPRESSION_TRUE )
     {
@@ -1109,7 +1204,7 @@ SInt mtdDateStoredStoredKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -1127,8 +1222,8 @@ SInt mtdDateStoredStoredKeyAscComp( mtdValueInfo * aValueInfo1,
     // value1
     //---------    
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // Dictionary compression columnì¸ ê²½ìš° store typeì„mt typeìœ¼ë¡œ
-    // ë³€í™˜í•´ì„œ ì‹¤ì œ ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+    // Dictionary compression columnÀÎ °æ¿ì store typeÀ»mt typeÀ¸·Î
+    // º¯È¯ÇØ¼­ ½ÇÁ¦ µ¥ÀÌÅÍ¸¦ °¡Á®¿Â´Ù.
     if ( (((smiColumn*)aValueInfo1->column)->flag & SMI_COLUMN_COMPRESSION_MASK) !=
          SMI_COLUMN_COMPRESSION_TRUE )
     {
@@ -1203,14 +1298,14 @@ SInt mtdDateStoredStoredKeyAscComp( mtdValueInfo * aValueInfo1,
 
     if( !sNull1 && !sNull2 )
     {
-        // Enhancement-13065 Date ë¹„êµ ì„±ëŠ¥ ê°œì„ 
-        // mtdDateInterfaceì— compare í•¨ìˆ˜ë¥¼ êµ¬í˜„í•´ì„œ
-        // ë¹„êµ ì—°ì‚°ì˜ ì±…ì„ì„ mtdDateInterfaceì— ìœ„ì„í•¨.
+        // Enhancement-13065 Date ºñ±³ ¼º´É °³¼±
+        // mtdDateInterface¿¡ compare ÇÔ¼ö¸¦ ±¸ÇöÇØ¼­
+        // ºñ±³ ¿¬»êÀÇ Ã¥ÀÓÀ» mtdDateInterface¿¡ À§ÀÓÇÔ.
         //
-        // nullì— ëŒ€í•œ ë¹„êµ ì •ì±…ì€ mtdDateModuleì´ ê°€ì§€ê³  ìˆëŠ”ë‹¤.
-        // mtdDateInterface::compareëŠ” ë‹¨ìˆœíˆ ê°’ì˜ í¬ê¸°ë¥¼ ë¹„êµí•  ë¿,
-        // nullì— ëŒ€í•œ ë¹„êµ ì •ì±…ì€ ê°€ì§€ê³  ìˆì§€ ì•Šê¸° ë•Œë¬¸ì—
-        // null ì²´í¬ëŠ” mtdDateì—ì„œ í•´ì¤€ë‹¤.
+        // null¿¡ ´ëÇÑ ºñ±³ Á¤Ã¥Àº mtdDateModuleÀÌ °¡Áö°í ÀÖ´Â´Ù.
+        // mtdDateInterface::compare´Â ´Ü¼øÈ÷ °ªÀÇ Å©±â¸¦ ºñ±³ÇÒ »Ó,
+        // null¿¡ ´ëÇÑ ºñ±³ Á¤Ã¥Àº °¡Áö°í ÀÖÁö ¾Ê±â ¶§¹®¿¡
+        // null Ã¼Å©´Â mtdDate¿¡¼­ ÇØÁØ´Ù.
 
         return mtdDateInterface::compare( sValue1Ptr, sValue2Ptr );
     }
@@ -1230,7 +1325,7 @@ SInt mtdDateStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
 {
  /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -1248,8 +1343,8 @@ SInt mtdDateStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
     // value1
     //---------    
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // Dictionary compression columnì¸ ê²½ìš° store typeì„mt typeìœ¼ë¡œ
-    // ë³€í™˜í•´ì„œ ì‹¤ì œ ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+    // Dictionary compression columnÀÎ °æ¿ì store typeÀ»mt typeÀ¸·Î
+    // º¯È¯ÇØ¼­ ½ÇÁ¦ µ¥ÀÌÅÍ¸¦ °¡Á®¿Â´Ù.
     if ( (((smiColumn*)aValueInfo1->column)->flag & SMI_COLUMN_COMPRESSION_MASK) !=
          SMI_COLUMN_COMPRESSION_TRUE )
     {
@@ -1372,7 +1467,7 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
 {
 /***********************************************************************
  *
- * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColum ì´ˆê¸°í™”
+ * Description : valueÀÇ semantic °Ë»ç ¹× mtcColum ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -1384,9 +1479,9 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
     
     IDE_TEST_RAISE( aValueSize != ID_SIZEOF(mtdDateType), ERR_INVALID_LENGTH );
 
-    // ì´ˆê¸°í™”ëœ aColumnì€ cannonize() ì‹œì— ì‚¬ìš©
-    // ì´ë•Œ, data type moduleì˜ precision ì •ë³´ë§Œì„ ì‚¬ìš©í•˜ë¯€ë¡œ,
-    // language ì •ë³´ ì„¤ì •í•  í•„ìš”ì—†ìŒ
+    // ÃÊ±âÈ­µÈ aColumnÀº cannonize() ½Ã¿¡ »ç¿ë
+    // ÀÌ¶§, data type moduleÀÇ precision Á¤º¸¸¸À» »ç¿ëÇÏ¹Ç·Î,
+    // language Á¤º¸ ¼³Á¤ÇÒ ÇÊ¿ä¾øÀ½
     IDE_TEST( mtc::initializeColumn( aColumn,
                                      & mtdDate,
                                      0,   // arguments
@@ -1427,7 +1522,7 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
             }
         }
 
-        /* BUG-36296 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
+        /* BUG-36296 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±İ)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
         IDE_TEST_RAISE( ( mtdDateInterface::year( sVal ) == 1582 ) &&
                         ( mtdDateInterface::month( sVal ) == 10 ) &&
                         ( 4 < mtdDateInterface::day( sVal ) ) && ( mtdDateInterface::day( sVal ) < 15 ),
@@ -1463,24 +1558,24 @@ SDouble mtdSelectivityDate( void     * aColumnMax,
 /***********************************************************************
  *
  * Description :
- *    DATE ì˜ Selectivity ì¶”ì¶œ í•¨ìˆ˜
+ *    DATE ÀÇ Selectivity ÃßÃâ ÇÔ¼ö
  *
  * Implementation :
  *
- *      1. NULL ê²€ì‚¬ : S = DS
- *      2. ColumnMin > ValueMax ë˜ëŠ” ColumnMax < ValueMin ê²€ì¦ :
+ *      1. NULL °Ë»ç : S = DS
+ *      2. ColumnMin > ValueMax ¶Ç´Â ColumnMax < ValueMin °ËÁõ :
  *         S = 1 / totalRecordCnt
- *      3. ValueMin, ValueMax ë³´ì •
- *       - ValueMin < ColumnMin ê²€ì¦ : ValueMin = ColumnMin (ë³´ì •)
- *       - ValueMax > ColumnMax ê²€ì¦ : ValueMax = ColumnMax (ë³´ì •)
- *      4. ColumnMin > ColumnMax ê²€ì¦ (DASSERT)
- *      5. ColumnMax == ColumnMin ê²€ì¦ (ë¶„ëª¨ê°’) : S = 1
- *      6. ValueMax <= ValueMin ê²€ì¦ (ë¶„ìê°’) : S = 1 / totalRecordCnt
+ *      3. ValueMin, ValueMax º¸Á¤
+ *       - ValueMin < ColumnMin °ËÁõ : ValueMin = ColumnMin (º¸Á¤)
+ *       - ValueMax > ColumnMax °ËÁõ : ValueMax = ColumnMax (º¸Á¤)
+ *      4. ColumnMin > ColumnMax °ËÁõ (DASSERT)
+ *      5. ColumnMax == ColumnMin °ËÁõ (ºĞ¸ğ°ª) : S = 1
+ *      6. ValueMax <= ValueMin °ËÁõ (ºĞÀÚ°ª) : S = 1 / totalRecordCnt
  *         ex) i1 < 1 and i1 > 3  -> ValueMax:1, ValueMin:3
  *      7. Etc : S = (ValueMax - ValueMin) / (ColumnMax - ColumnMin)
- *       - <=, >=, BETWEEN ì— ëŒ€í•´ ê²½ê³„ê°’ ë³´ì •
+ *       - <=, >=, BETWEEN ¿¡ ´ëÇØ °æ°è°ª º¸Á¤
  *
- *    cf) 3 ë²ˆì´í›„ ë¶„ëª¨ê°’ íšë“ ì‹¤íŒ¨ì‹œ : S = DS
+ *    cf) 3 ¹øÀÌÈÄ ºĞ¸ğ°ª È¹µæ ½ÇÆĞ½Ã : S = DS
  *
  ***********************************************************************/
     
@@ -1497,8 +1592,8 @@ SDouble mtdSelectivityDate( void     * aColumnMax,
     mtdValueInfo    sValueMaxInfo;
     mtdValueInfo    sValueMinInfo;
 
-    SDouble       sDenominator;  // ë¶„ëª¨ê°’
-    SDouble       sNumerator;    // ë¶„ìê°’
+    SDouble       sDenominator;  // ºĞ¸ğ°ª
+    SDouble       sNumerator;    // ºĞÀÚ°ª
     SDouble       sSelectivity;
 
     sColumnMax = (mtdDateType*) aColumnMax;
@@ -1508,7 +1603,7 @@ SDouble mtdSelectivityDate( void     * aColumnMax,
     sSelectivity = MTD_DEFAULT_SELECTIVITY;
 
     //------------------------------------------------------
-    // Selectivity ê³„ì‚°
+    // Selectivity °è»ê
     //------------------------------------------------------
 
     if ( ( mtdIsNull( NULL, aColumnMax ) == ID_TRUE ) ||
@@ -1517,7 +1612,7 @@ SDouble mtdSelectivityDate( void     * aColumnMax,
          ( mtdIsNull( NULL, aValueMin  ) == ID_TRUE ) )
     {
         //------------------------------------------------------
-        // 1. NULL ê²€ì‚¬ : ê³„ì‚°í•  ìˆ˜ ì—†ìŒ
+        // 1. NULL °Ë»ç : °è»êÇÒ ¼ö ¾øÀ½
         //------------------------------------------------------
 
         // MTD_DEFAULT_SELECTIVITY;
@@ -1548,7 +1643,7 @@ SDouble mtdSelectivityDate( void     * aColumnMax,
                                       &sValueMinInfo ) < 0 ) )
         {
             //------------------------------------------------------
-            // 2. ColumnMin > ValueMax ë˜ëŠ” ColumnMax < ValueMin ê²€ì¦
+            // 2. ColumnMin > ValueMax ¶Ç´Â ColumnMax < ValueMin °ËÁõ
             //------------------------------------------------------
 
             sSelectivity = 1 / aTotalRecordCnt;
@@ -1556,9 +1651,9 @@ SDouble mtdSelectivityDate( void     * aColumnMax,
         else
         {
             //------------------------------------------------------
-            // 3. ë³´ì •
-            //  - ValueMin < ColumnMin ê²€ì¦ : ValueMin = ColumnMin
-            //  - ValueMax > ColumnMax ê²€ì¦ : ValueMax = ColumnMax
+            // 3. º¸Á¤
+            //  - ValueMin < ColumnMin °ËÁõ : ValueMin = ColumnMin
+            //  - ValueMax > ColumnMax °ËÁõ : ValueMax = ColumnMax
             //------------------------------------------------------
 
             sValueMin = ( mtdDateLogicalAscComp(
@@ -1572,13 +1667,13 @@ SDouble mtdSelectivityDate( void     * aColumnMax,
                 sColumnMax: sValueMax;
 
             //------------------------------------------------------
-            // ë¶„ëª¨ê°’ (ColumnMax - ColumnMin) ê°’ íšë“
+            // ºĞ¸ğ°ª (ColumnMax - ColumnMin) °ª È¹µæ
             //------------------------------------------------------
 
-            // Date(aColumnMax) -> interval1 ë¡œ ì „í™˜
-            // Date(aColumnMin) -> interval2 ë¡œ ì „í™˜
-            // Date(aValueMax) -> interval1 ë¡œ ì „í™˜
-            // Date(aValueMin) -> interval2 ë¡œ ì „í™˜
+            // Date(aColumnMax) -> interval1 ·Î ÀüÈ¯
+            // Date(aColumnMin) -> interval2 ·Î ÀüÈ¯
+            // Date(aValueMax) -> interval1 ·Î ÀüÈ¯
+            // Date(aValueMin) -> interval2 ·Î ÀüÈ¯
 
             if ( ( mtdDateInterface::convertDate2Interval( sColumnMax,
                                                            &sInterval1 )
@@ -1593,7 +1688,7 @@ SDouble mtdSelectivityDate( void     * aColumnMax,
                                                            &sInterval4 )
                    == IDE_SUCCESS ) )
             {
-                // ë¶„ëª¨ì˜ Interval ê³„ì‚°
+                // ºĞ¸ğÀÇ Interval °è»ê
                 sInterval1.second      -= sInterval2.second;
                 sInterval1.microsecond -= sInterval2.microsecond;
         
@@ -1608,14 +1703,14 @@ SDouble mtdSelectivityDate( void     * aColumnMax,
                     sInterval1.microsecond -= 1000000;
                 }
 
-                // Double Typeìœ¼ë¡œ ì „í™˜
+                // Double TypeÀ¸·Î ÀüÈ¯
                 sDenominator = (SDouble) sInterval1.second/864e2 +
                     (SDouble) sInterval1.microsecond/864e8;
         
                 if ( sDenominator < 0.0 )
                 {
                     //------------------------------------------------------
-                    // 4. ColumnMin > ColumnMax ê²€ì¦ (ì˜ëª»ëœ í†µê³„ ì •ë³´)
+                    // 4. ColumnMin > ColumnMax °ËÁõ (Àß¸øµÈ Åë°è Á¤º¸)
                     //------------------------------------------------------
 
                     IDE_DASSERT_MSG( sDenominator >= 0.0,
@@ -1625,7 +1720,7 @@ SDouble mtdSelectivityDate( void     * aColumnMax,
                 else if ( sDenominator == 0.0 )
                 {
                     //------------------------------------------------------
-                    // 5. ColumnMax == ColumnMin ê²€ì¦ (ë¶„ëª¨ê°’)
+                    // 5. ColumnMax == ColumnMin °ËÁõ (ºĞ¸ğ°ª)
                     //------------------------------------------------------
 
                     sSelectivity = 1;
@@ -1633,10 +1728,10 @@ SDouble mtdSelectivityDate( void     * aColumnMax,
                 else
                 {
                     //------------------------------------------------------
-                    // ë¶„ìê°’ (ValueMax - ValueMin) ê°’ íšë“
+                    // ºĞÀÚ°ª (ValueMax - ValueMin) °ª È¹µæ
                     //------------------------------------------------------
 
-                    // ë¶„ìì˜ Interval ê³„ì‚°
+                    // ºĞÀÚÀÇ Interval °è»ê
                     sInterval3.second      -= sInterval4.second;
                     sInterval3.microsecond -= sInterval4.microsecond;
             
@@ -1651,7 +1746,7 @@ SDouble mtdSelectivityDate( void     * aColumnMax,
                         sInterval3.microsecond -= 1000000;
                     }
             
-                    // Double Typeìœ¼ë¡œ ì „í™˜
+                    // Double TypeÀ¸·Î ÀüÈ¯
                     sNumerator =
                         (SDouble) sInterval3.second/864e2 +
                         (SDouble) sInterval3.microsecond/864e8;
@@ -1659,7 +1754,7 @@ SDouble mtdSelectivityDate( void     * aColumnMax,
                     if ( sNumerator <= 0.0 )
                     {
                         //------------------------------------------------------
-                        // 6. ValueMax <= ValueMin ê²€ì¦ (ë¶„ìê°’)
+                        // 6. ValueMax <= ValueMin °ËÁõ (ºĞÀÚ°ª)
                         //------------------------------------------------------
 
                         sSelectivity = 1 / aTotalRecordCnt;
@@ -1678,7 +1773,7 @@ SDouble mtdSelectivityDate( void     * aColumnMax,
             }
             else
             {
-                // Date -> Intervalì´ ì—ëŸ¬ê°€ ë‚œë‹¤ë©´
+                // Date -> IntervalÀÌ ¿¡·¯°¡ ³­´Ù¸é
                 sSelectivity = MTD_DEFAULT_SELECTIVITY;
             }
         }
@@ -1772,8 +1867,8 @@ IDE_RC mtdDecode( mtcTemplate * /* aTemplate */,
 {
     mtdDateType* sValue;
 
-    // BUG-40290 SET_COLUMN_STATS min, max ì§€ì›
-    // char íƒ€ì…ì„ date íƒ€ì…ìœ¼ë¡œ ì»¨ë²„ì ¼ í•¨ìˆ˜
+    // BUG-40290 SET_COLUMN_STATS min, max Áö¿ø
+    // char Å¸ÀÔÀ» date Å¸ÀÔÀ¸·Î ÄÁ¹öÁ¯ ÇÔ¼ö
     if( MTD_DATE_SIZE <= *aValueSize )
     {
         sValue = (mtdDateType*)aValue;
@@ -2111,7 +2206,7 @@ IDE_RC mtdDateInterface::setHour(mtdDateType* aDate, UChar aHour)
 
     IDE_ASSERT( aDate != NULL );
 
-    // UCharì´ë¯€ë¡œ lower boundëŠ” ê²€ì‚¬í•˜ì§€ ì•ŠìŒ
+    // UCharÀÌ¹Ç·Î lower bound´Â °Ë»çÇÏÁö ¾ÊÀ½
     IDE_TEST_RAISE( sHour > 23,
                     ERR_INVALID_HOUR24 );
 
@@ -2134,7 +2229,7 @@ IDE_RC mtdDateInterface::setMinute(mtdDateType* aDate, UChar aMinute)
 
     IDE_ASSERT( aDate != NULL );
 
-    // UCharì´ë¯€ë¡œ lower boundëŠ” ê²€ì‚¬í•˜ì§€ ì•ŠìŒ
+    // UCharÀÌ¹Ç·Î lower bound´Â °Ë»çÇÏÁö ¾ÊÀ½
     IDE_TEST_RAISE( sMinute > 59,
                     ERR_INVALID_MINUTE );
 
@@ -2157,7 +2252,7 @@ IDE_RC mtdDateInterface::setSecond(mtdDateType* aDate, UChar aSec)
 
     IDE_ASSERT( aDate != NULL );
 
-    // UCharì´ë¯€ë¡œ lower boundëŠ” ê²€ì‚¬í•˜ì§€ ì•ŠìŒ
+    // UCharÀÌ¹Ç·Î lower bound´Â °Ë»çÇÏÁö ¾ÊÀ½
     IDE_TEST_RAISE( sSec > 59,
                     ERR_INVALID_SECOND );
 
@@ -2178,7 +2273,7 @@ IDE_RC mtdDateInterface::setMicroSecond(mtdDateType* aDate, UInt aMicroSec)
 {
     IDE_ASSERT( aDate != NULL );
 
-    // UIntì´ë¯€ë¡œ lower boundëŠ” ê²€ì‚¬í•˜ì§€ ì•ŠìŒ
+    // UIntÀÌ¹Ç·Î lower bound´Â °Ë»çÇÏÁö ¾ÊÀ½
     IDE_TEST_RAISE( aMicroSec > 999999,
                     ERR_INVALID_MICROSECOND );
 
@@ -2278,7 +2373,7 @@ IDE_RC mtdDateInterface::addMonth( mtdDateType* aResult, mtdDateType* aDate, SLo
     }
     else
     {
-        /* BUG-36296 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
+        /* BUG-36296 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±İ)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
         if ( ( sEndYear == 1582 ) &&
              ( sEndMonth == 10 ) &&
              ( 4 < sStartDay ) && ( sStartDay < 15 ) )
@@ -2320,7 +2415,7 @@ IDE_RC mtdDateInterface::addDay( mtdDateType* aResult, mtdDateType* aDate, SLong
 {
     mtdIntervalType sInterval = { ID_LONG(0), ID_LONG(0) };
 
-    /* BUG-36296 Dateë¥¼ Intervalë¡œ ë³€í™˜í•˜ì—¬ ì‘ì—…í•˜ê³ , ë‹¤ì‹œ Dateë¡œ ë³€í™˜í•œë‹¤. */
+    /* BUG-36296 Date¸¦ Interval·Î º¯È¯ÇÏ¿© ÀÛ¾÷ÇÏ°í, ´Ù½Ã Date·Î º¯È¯ÇÑ´Ù. */
     IDE_TEST( mtdDateInterface::convertDate2Interval( aDate,
                                                       &sInterval )
               != IDE_SUCCESS );
@@ -2359,7 +2454,7 @@ IDE_RC mtdDateInterface::addSecond( mtdDateType* aResult,
 {
     mtdIntervalType sInterval = { ID_LONG(0), ID_LONG(0) };
 
-    /* BUG-36296 Dateë¥¼ Intervalë¡œ ë³€í™˜í•˜ì—¬ ì‘ì—…í•˜ê³ , ë‹¤ì‹œ Dateë¡œ ë³€í™˜í•œë‹¤. */
+    /* BUG-36296 Date¸¦ Interval·Î º¯È¯ÇÏ¿© ÀÛ¾÷ÇÏ°í, ´Ù½Ã Date·Î º¯È¯ÇÑ´Ù. */
     IDE_TEST( mtdDateInterface::convertDate2Interval( aDate,
                                                       &sInterval )
               != IDE_SUCCESS );
@@ -2396,7 +2491,7 @@ IDE_RC mtdDateInterface::addMicroSecond( mtdDateType* aResult, mtdDateType* aDat
 {
     mtdIntervalType sInterval = { ID_LONG(0), ID_LONG(0) };
 
-    /* BUG-36296 Dateë¥¼ Intervalë¡œ ë³€í™˜í•˜ì—¬ ì‘ì—…í•˜ê³ , ë‹¤ì‹œ Dateë¡œ ë³€í™˜í•œë‹¤. */
+    /* BUG-36296 Date¸¦ Interval·Î º¯È¯ÇÏ¿© ÀÛ¾÷ÇÏ°í, ´Ù½Ã Date·Î º¯È¯ÇÑ´Ù. */
     IDE_TEST( mtdDateInterface::convertDate2Interval( aDate,
                                                       &sInterval )
               != IDE_SUCCESS );
@@ -2492,7 +2587,7 @@ IDE_RC mtdDateInterface::dateDiff( mtdBigintType * aResult,
     sEndSecond      = mtdDateInterface::second(sEndDate);
     sEndMicroSecond = mtdDateInterface::microSecond(sEndDate);
 
-	// ëª¨ë“  fmtì— ëŒ€í•´ì„œ enddate - startdate ë¥¼ êµ¬í•œë‹¤.
+	// ¸ğµç fmt¿¡ ´ëÇØ¼­ enddate - startdate ¸¦ ±¸ÇÑ´Ù.
     sDiffYear  = sEndYear - sStartYear;
     sDiffMonth = sEndMonth - sStartMonth + ( 12 * sDiffYear );
 
@@ -2519,9 +2614,9 @@ IDE_RC mtdDateInterface::dateDiff( mtdBigintType * aResult,
                 sDiffDay -= mtc::dayOfYear( i, 12, 31 );
                 sDiffWeek -= mtc::weekOfYear( i, 12, 31 );
 
-                /* 1ì›”1ì¼ì´ ì¼ìš”ì¼ì´ ì•„ë‹ˆë©´ ì£¼ê°€ ë°”ë€Œì§€ ì•ŠëŠ”ë‹¤.
-                 * BUG-36052 EndYear ê°€ ì‘ì€ ê²½ìš°ëŠ” EndYear ë‹¤ìŒ í•´ì˜ 1ì›” 1ì¼ì„
-                 * ì²´í¬ í•´ì•¼í•œë‹¤.
+                /* 1¿ù1ÀÏÀÌ ÀÏ¿äÀÏÀÌ ¾Æ´Ï¸é ÁÖ°¡ ¹Ù²îÁö ¾Ê´Â´Ù.
+                 * BUG-36052 EndYear °¡ ÀÛÀº °æ¿ì´Â EndYear ´ÙÀ½ ÇØÀÇ 1¿ù 1ÀÏÀ»
+                 * Ã¼Å© ÇØ¾ßÇÑ´Ù.
                  */
                 if ( mtc::dayOfWeek( i + 1, 1, 1 ) != 0 )
                 {
@@ -2540,7 +2635,7 @@ IDE_RC mtdDateInterface::dateDiff( mtdBigintType * aResult,
                 sDiffDay += mtc::dayOfYear ( i, 12, 31 );
                 sDiffWeek += mtc::weekOfYear ( i, 12, 31 );
 
-                // 12ì›” 31ì¼ì´ í† ìš”ì¼ì´ ì•„ë‹ˆë©´ ì£¼ê°€ ë°”ë€Œì§€ ì•ŠëŠ”ë‹¤.
+                // 12¿ù 31ÀÏÀÌ Åä¿äÀÏÀÌ ¾Æ´Ï¸é ÁÖ°¡ ¹Ù²îÁö ¾Ê´Â´Ù.
                 if ( mtc::dayOfWeek( i, 12, 31 ) != 6 ) 
                 {
                     sDiffWeek--;
@@ -2549,7 +2644,7 @@ IDE_RC mtdDateInterface::dateDiff( mtdBigintType * aResult,
         }
     }
 
-    /* BUG-36296 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
+    /* BUG-36296 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±İ)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
     if ( ( ( sStartYear < 1582 ) ||
            ( ( sStartYear == 1582 ) && ( ( sStartMonth < 10 ) ||
                                          ( ( sStartMonth == 10 ) && ( sStartDay <= 4 ) ) ) ) ) &&
@@ -2686,14 +2781,14 @@ mtdDateInterface::makeDate( mtdDateType* aDate,
                             UInt         aMicroSec )
 {
     // Bug-10600 UMR error
-    // aDateì˜ ê° ë§´ë²„ë¥¼ ì´ˆê¸°í™” í•´ì•¼ í•œë‹¤.
+    // aDateÀÇ °¢ ¸É¹ö¸¦ ÃÊ±âÈ­ ÇØ¾ß ÇÑ´Ù.
     // by kumdory, 2005-03-04
     aDate->mon_day_hour = 0;
     aDate->min_sec_mic = 0;
 
     // BUG-31389
-    // ë‚ ì§œì˜ ìœ íš¨ì„±ì„ ì²´í¬ í•˜ê¸° ìœ„í•´ì„  ë…„/ì›”/ì¼ì´ í•„ìš” í•˜ë‹¤.
-    // ì´ì— ë°˜í•´ ì‹œ/ë¶„/ì´ˆë“±ì€ ë‹¨ë…ìœ¼ë¡œ ê²€ì‚¬ ê°€ëŠ¥í•˜ë‹¤.
+    // ³¯Â¥ÀÇ À¯È¿¼ºÀ» Ã¼Å© ÇÏ±â À§ÇØ¼± ³â/¿ù/ÀÏÀÌ ÇÊ¿ä ÇÏ´Ù.
+    // ÀÌ¿¡ ¹İÇØ ½Ã/ºĞ/ÃÊµîÀº ´Üµ¶À¸·Î °Ë»ç °¡´ÉÇÏ´Ù.
     
     IDE_TEST( checkYearMonthDayAndSetDateValue( aDate,
                                                 aYear,
@@ -2718,13 +2813,13 @@ IDE_RC mtdDateInterface::convertDate2Interval( mtdDateType*     aDate,
 /***********************************************************************
  *
  * Description :
- *    Date ì—°ì‚°ì„ ìœ„í•´ Date -> Intervalë¡œ ë³€í™˜í•˜ëŠ” í•¨ìˆ˜
+ *    Date ¿¬»êÀ» À§ÇØ Date -> Interval·Î º¯È¯ÇÏ´Â ÇÔ¼ö
  *
  * Implementation :
- *    1) í•´ë‹¹ ì¼ ì „ë‚ ê¹Œì§€ ì´ ì¼ìˆ˜ë¥¼ êµ¬í•˜ì—¬ í•˜ë£¨ë‹¹ ì´ˆìˆ˜(86400ì´ˆ)ë¡œ ê³±í•˜ì—¬ êµ¬í•œë‹¤.
- *    2) ì‹œê°„ë‹¨ìœ„ëŠ” ê°ê° ë‹¨ìœ„ë‹¹ ì´ˆìˆ˜ë¡œ ê³±í•˜ì—¬ êµ¬í•œë‹¤.
- *    3) ìœ„ì—ì„œ êµ¬í•œê²ƒë“¤ì„ ì „ë¶€ ë”í•´ì¤€ë‹¤.
- *    4) ê·¸ë ˆê³ ë¦¬ë ¥ë§Œ ì‚¬ìš©í•œë‹¤ëŠ” ê°€ì •í•˜ì— ê³„ì‚°í•œë‹¤.
+ *    1) ÇØ´ç ÀÏ Àü³¯±îÁö ÃÑ ÀÏ¼ö¸¦ ±¸ÇÏ¿© ÇÏ·ç´ç ÃÊ¼ö(86400ÃÊ)·Î °öÇÏ¿© ±¸ÇÑ´Ù.
+ *    2) ½Ã°£´ÜÀ§´Â °¢°¢ ´ÜÀ§´ç ÃÊ¼ö·Î °öÇÏ¿© ±¸ÇÑ´Ù.
+ *    3) À§¿¡¼­ ±¸ÇÑ°ÍµéÀ» ÀüºÎ ´õÇØÁØ´Ù.
+ *    4) ±×·¹°í¸®·Â¸¸ »ç¿ëÇÑ´Ù´Â °¡Á¤ÇÏ¿¡ °è»êÇÑ´Ù.
  ***********************************************************************/
 {
 
@@ -2738,7 +2833,7 @@ IDE_RC mtdDateInterface::convertDate2Interval( mtdDateType*     aDate,
         + second(aDate);
     aInterval->microsecond = microSecond(aDate);
 
-    /* DATEì˜ MicroSecondëŠ” í•­ìƒ 0 ì´ìƒì´ë‹¤. Secondê°€ ìŒìˆ˜ì´ë©´, MicroSecondë„ ìŒìˆ˜ë¡œ ë§Œë“ ë‹¤. */
+    /* DATEÀÇ MicroSecond´Â Ç×»ó 0 ÀÌ»óÀÌ´Ù. Second°¡ À½¼öÀÌ¸é, MicroSecondµµ À½¼ö·Î ¸¸µç´Ù. */
     if ( ( aInterval->second < 0 ) && ( aInterval->microsecond > 0 ) )
     {
         aInterval->second++;
@@ -2773,15 +2868,15 @@ IDE_RC mtdDateInterface::convertInterval2Date( mtdIntervalType* aInterval,
 /***********************************************************************
  *
  * Description :
- *    Date ì—°ì‚° í›„ Dateë¡œ ë‹¤ì‹œ ë³€í™˜ì„ ìœ„í•´ Interval -> Dateë¡œ ë³€í™˜í•˜ëŠ” í•¨ìˆ˜
+ *    Date ¿¬»ê ÈÄ Date·Î ´Ù½Ã º¯È¯À» À§ÇØ Interval -> Date·Î º¯È¯ÇÏ´Â ÇÔ¼ö
  *
  * Implementation :
- *    1) BCì¸ì§€ ADì¸ì§€ êµ¬ë¶„í•œë‹¤.
- *      - Intervalì´ ìŒìˆ˜ì´ë©´, BCì´ë‹¤.
- *      - Intervalì´ 0ì´ë©´, AD 0001ë…„ 1ì›” 1ì¼ 0ì‹œ 0ì´ˆì´ë‹¤.
+ *    1) BCÀÎÁö ADÀÎÁö ±¸ºĞÇÑ´Ù.
+ *      - IntervalÀÌ À½¼öÀÌ¸é, BCÀÌ´Ù.
+ *      - IntervalÀÌ 0ÀÌ¸é, AD 0001³â 1¿ù 1ÀÏ 0½Ã 0ÃÊÀÌ´Ù.
  *
- *    2) 1582ë…„ 10ì›” 4ì¼ ì´ì „ì€ ìœ¨ë¦¬ìš°ìŠ¤ë ¥ì„ ì ìš©í•˜ê³ , 1582ë…„ 10ì›” 15ì¼ ì´í›„ëŠ” ê·¸ë ˆê³ ë¦¬ë ¥ì„ ì ìš©í•œë‹¤.
- *      - 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤.
+ *    2) 1582³â 10¿ù 4ÀÏ ÀÌÀüÀº À²¸®¿ì½º·ÂÀ» Àû¿ëÇÏ°í, 1582³â 10¿ù 15ÀÏ ÀÌÈÄ´Â ±×·¹°í¸®·ÂÀ» Àû¿ëÇÑ´Ù.
+ *      - 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±İ)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù.
  ***********************************************************************/
 {
 #define DAY_PER_SECOND      86400
@@ -2819,7 +2914,7 @@ IDE_RC mtdDateInterface::convertInterval2Date( mtdIntervalType* aInterval,
                       ( aInterval->microsecond < 0 ) ),
                     ERR_INVALID_YEAR );
 
-    // ì¼ë‹¨ìœ„ì™€ ì´ˆë‹¨ìœ„ë¡œ ë‚˜ëˆ ì¤€ë‹¤.
+    // ÀÏ´ÜÀ§¿Í ÃÊ´ÜÀ§·Î ³ª´²ÁØ´Ù.
     sDays    = aInterval->second / DAY_PER_SECOND;
     sSeconds = aInterval->second % DAY_PER_SECOND;
 
@@ -2832,7 +2927,7 @@ IDE_RC mtdDateInterface::convertInterval2Date( mtdIntervalType* aInterval,
         IDE_DASSERT( sSeconds <= 0 );
         IDE_DASSERT( sMicroSecond <= 0 );
 
-        /* DATEì—ì„œ ì—°ë„ë§Œ ìŒìˆ˜ê°€ ê°€ëŠ¥í•˜ë‹¤. Secondì™€ Microsecondë¥¼ ì–‘ìˆ˜ë¡œ ë³´ì •í•œë‹¤. */
+        /* DATE¿¡¼­ ¿¬µµ¸¸ À½¼ö°¡ °¡´ÉÇÏ´Ù. Second¿Í Microsecond¸¦ ¾ç¼ö·Î º¸Á¤ÇÑ´Ù. */
         if ( sMicroSecond < 0 )
         {
             sSeconds--;
@@ -2853,13 +2948,13 @@ IDE_RC mtdDateInterface::convertInterval2Date( mtdIntervalType* aInterval,
             /* Nothing to do */
         }
 
-        /* BUG-36296 ê¸°ì›ì „ì—ëŠ” 4ë…„ë§ˆë‹¤ ìœ¤ë…„ì´ë¼ê³  ê°€ì •í•œë‹¤.
-         *  - ê³ ëŒ€ ë¡œë§ˆì˜ ì •ì¹˜ê°€ ìœ¨ë¦¬ìš°ìŠ¤ ì¹´ì´ì‚¬ë¥´ê°€ ê¸°ì›ì „ 45ë…„ë¶€í„° ìœ¨ë¦¬ìš°ìŠ¤ë ¥ì„ ì‹œí–‰í•˜ì˜€ë‹¤.
-         *  - ì´ˆê¸°ì˜ ìœ¨ë¦¬ìš°ìŠ¤ë ¥(ê¸°ì›ì „ 45ë…„ ~ ê¸°ì›ì „ 8ë…„)ì—ì„œëŠ” ìœ¤ë…„ì„ 3ë…„ì— í•œ ë²ˆ ì‹¤ì‹œí•˜ì˜€ë‹¤. (Oracle 11g ë¯¸ì ìš©)
-         *  - BC 4713ë…„ë¶€í„° ìœ¨ë¦¬ìš°ìŠ¤ì¼ì„ ê³„ì‚°í•œë‹¤. ì²œë¬¸í•™ìë“¤ì´ ìœ¨ë¦¬ìš°ìŠ¤ì¼ì„ ì‚¬ìš©í•œë‹¤. 4ë…„ë§ˆë‹¤ ìœ¤ë…„ì´ë‹¤.
+        /* BUG-36296 ±â¿øÀü¿¡´Â 4³â¸¶´Ù À±³âÀÌ¶ó°í °¡Á¤ÇÑ´Ù.
+         *  - °í´ë ·Î¸¶ÀÇ Á¤Ä¡°¡ À²¸®¿ì½º Ä«ÀÌ»ç¸£°¡ ±â¿øÀü 45³âºÎÅÍ À²¸®¿ì½º·ÂÀ» ½ÃÇàÇÏ¿´´Ù.
+         *  - ÃÊ±âÀÇ À²¸®¿ì½º·Â(±â¿øÀü 45³â ~ ±â¿øÀü 8³â)¿¡¼­´Â À±³âÀ» 3³â¿¡ ÇÑ ¹ø ½Ç½ÃÇÏ¿´´Ù. (Oracle 11g ¹ÌÀû¿ë)
+         *  - BC 4713³âºÎÅÍ À²¸®¿ì½ºÀÏÀ» °è»êÇÑ´Ù. Ãµ¹®ÇĞÀÚµéÀÌ À²¸®¿ì½ºÀÏÀ» »ç¿ëÇÑ´Ù. 4³â¸¶´Ù À±³âÀÌ´Ù.
          *
-         *  AD 0ë…„ì€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤. DATEì˜ ì—°ë„ê°€ 0ì´ë©´, BC 1ë…„ì´ë‹¤. ì¦‰, BC 1ë…„ì˜ ë‹¤ìŒì€ AD 1ë…„ì´ë‹¤.
-         *  BC 0001ë…„ 12ì›” 31ì¼ì€ Day -1 ì´ë‹¤. ê·¸ë¦¬ê³ , BC 1ë…„(aYear == 0)ì´ ìœ¤ë…„ì´ë‹¤.
+         *  AD 0³âÀº Á¸ÀçÇÏÁö ¾Ê´Â´Ù. DATEÀÇ ¿¬µµ°¡ 0ÀÌ¸é, BC 1³âÀÌ´Ù. Áï, BC 1³âÀÇ ´ÙÀ½Àº AD 1³âÀÌ´Ù.
+         *  BC 0001³â 12¿ù 31ÀÏÀº Day -1 ÀÌ´Ù. ±×¸®°í, BC 1³â(aYear == 0)ÀÌ À±³âÀÌ´Ù.
          */
         s4Years = sDays / YEAR4_PER_DAY;
         sDays   = sDays % YEAR4_PER_DAY;
@@ -2877,28 +2972,28 @@ IDE_RC mtdDateInterface::convertInterval2Date( mtdIntervalType* aInterval,
         {
             s1Years = -3;
 
-            /* DATEì—ì„œ ì—°ë„ë§Œ ìŒìˆ˜ê°€ ê°€ëŠ¥í•˜ë‹¤. Daysë¥¼ ì–‘ìˆ˜ë¡œ ë³´ì •í•œë‹¤. */
+            /* DATE¿¡¼­ ¿¬µµ¸¸ À½¼ö°¡ °¡´ÉÇÏ´Ù. Days¸¦ ¾ç¼ö·Î º¸Á¤ÇÑ´Ù. */
             sDays = sDays + 1461;
         }
         else if ( sDays < -731 ) // && sDays >= -1096
         {
             s1Years = -2;
 
-            /* DATEì—ì„œ ì—°ë„ë§Œ ìŒìˆ˜ê°€ ê°€ëŠ¥í•˜ë‹¤. Daysë¥¼ ì–‘ìˆ˜ë¡œ ë³´ì •í•œë‹¤. */
+            /* DATE¿¡¼­ ¿¬µµ¸¸ À½¼ö°¡ °¡´ÉÇÏ´Ù. Days¸¦ ¾ç¼ö·Î º¸Á¤ÇÑ´Ù. */
             sDays = sDays + 1096;
         }
         else if ( sDays < -366 ) // && sDays >= -731
         {
             s1Years = -1;
 
-            /* DATEì—ì„œ ì—°ë„ë§Œ ìŒìˆ˜ê°€ ê°€ëŠ¥í•˜ë‹¤. Daysë¥¼ ì–‘ìˆ˜ë¡œ ë³´ì •í•œë‹¤. */
+            /* DATE¿¡¼­ ¿¬µµ¸¸ À½¼ö°¡ °¡´ÉÇÏ´Ù. Days¸¦ ¾ç¼ö·Î º¸Á¤ÇÑ´Ù. */
             sDays = sDays + 731;
         }
         else                     // sDays >= -366
         {
             s1Years = 0;
 
-            /* DATEì—ì„œ ì—°ë„ë§Œ ìŒìˆ˜ê°€ ê°€ëŠ¥í•˜ë‹¤. Daysë¥¼ ì–‘ìˆ˜ë¡œ ë³´ì •í•œë‹¤. */
+            /* DATE¿¡¼­ ¿¬µµ¸¸ À½¼ö°¡ °¡´ÉÇÏ´Ù. Days¸¦ ¾ç¼ö·Î º¸Á¤ÇÑ´Ù. */
             sDays = sDays + 366;
         }
 
@@ -2913,17 +3008,17 @@ IDE_RC mtdDateInterface::convertInterval2Date( mtdIntervalType* aInterval,
 
         if ( sDays < FIRST_GREGORIAN_DAY )
         {
-            /* BUG-36296 ê·¸ë ˆê³ ë¦¬ë ¥ì˜ ìœ¤ë…„ ê·œì¹™ì€ 1583ë…„ë¶€í„° ì ìš©í•œë‹¤. 1582ë…„ ì´ì „ì—ëŠ” 4ë…„ë§ˆë‹¤ ìœ¤ë…„ì´ë‹¤. */
+            /* BUG-36296 ±×·¹°í¸®·ÂÀÇ À±³â ±ÔÄ¢Àº 1583³âºÎÅÍ Àû¿ëÇÑ´Ù. 1582³â ÀÌÀü¿¡´Â 4³â¸¶´Ù À±³âÀÌ´Ù. */
             s4Years = sDays / YEAR4_PER_DAY;
             sDays   = sDays % YEAR4_PER_DAY;
         }
-        /* BUG-36296 ê·¸ë ˆê³ ë¦¬ë ¥ì€ 1582ë…„ 10ì›” 15ì¼ë¶€í„° ì‹œì‘í•œë‹¤. */
+        /* BUG-36296 ±×·¹°í¸®·ÂÀº 1582³â 10¿ù 15ÀÏºÎÅÍ ½ÃÀÛÇÑ´Ù. */
         else
         {
-            /* 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
+            /* 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±İ)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
             sDays += 10;
 
-            /* BUG-36296 1600ë…„ ì´ì „ì€ ìœ¨ë¦¬ìš°ìŠ¤ë ¥ê³¼ ê·¸ë ˆê³ ë¦¬ë ¥ì˜ ìœ¤ë…„ì´ ê°™ë‹¤. */
+            /* BUG-36296 1600³â ÀÌÀüÀº À²¸®¿ì½º·Â°ú ±×·¹°í¸®·ÂÀÇ À±³âÀÌ °°´Ù. */
             if ( sDays <= ( 400 * YEAR4_PER_DAY ) )
             {
                 s4Years = sDays / YEAR4_PER_DAY;
@@ -2931,7 +3026,7 @@ IDE_RC mtdDateInterface::convertInterval2Date( mtdIntervalType* aInterval,
             }
             else
             {
-                /* BUG-36296 ê·¸ë ˆê³ ë¦¬ë ¥ì˜ ìœ¤ë…„ ê·œì¹™ì€ 1583ë…„ë¶€í„° ì ìš©í•œë‹¤. 1582ë…„ ì´ì „ì—ëŠ” 4ë…„ë§ˆë‹¤ ìœ¤ë…„ì´ë‹¤. */
+                /* BUG-36296 ±×·¹°í¸®·ÂÀÇ À±³â ±ÔÄ¢Àº 1583³âºÎÅÍ Àû¿ëÇÑ´Ù. 1582³â ÀÌÀü¿¡´Â 4³â¸¶´Ù À±³âÀÌ´Ù. */
                 s4Years = 400;
                 sDays  -= ( 400 * YEAR4_PER_DAY );
 
@@ -2942,7 +3037,7 @@ IDE_RC mtdDateInterface::convertInterval2Date( mtdIntervalType* aInterval,
                 sDays     = sDays % YEAR100_PER_DAY;
                 if ( s100Years == 4 )
                 {
-                    /* 400ë…„ ì£¼ê¸° > (100ë…„ ì£¼ê¸° * 4)ì´ë¯€ë¡œ, 100ë…„ ì£¼ê¸° íšŸìˆ˜ë¥¼ ì¡°ì •í•œë‹¤. */
+                    /* 400³â ÁÖ±â > (100³â ÁÖ±â * 4)ÀÌ¹Ç·Î, 100³â ÁÖ±â È½¼ö¸¦ Á¶Á¤ÇÑ´Ù. */
                     s100Years = 3;
                     sDays    += YEAR100_PER_DAY;
                 }
@@ -2980,12 +3075,12 @@ IDE_RC mtdDateInterface::convertInterval2Date( mtdIntervalType* aInterval,
               + s100Years * 100
               + s4Years   * 4
               + s1Years
-              + 1; /* AD 0001ë…„ë¶€í„° ì‹œì‘í•œë‹¤. */
+              + 1; /* AD 0001³âºÎÅÍ ½ÃÀÛÇÑ´Ù. */
     }
 
-    sDays++;    /* 0ì¼ì€ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ, +1ë¡œ ë³´ì •í•œë‹¤. */
+    sDays++;    /* 0ÀÏÀº Á¸ÀçÇÏÁö ¾ÊÀ¸¹Ç·Î, +1·Î º¸Á¤ÇÑ´Ù. */
 
-    // ë‹¬, ì¼ êµ¬í•˜ê¸°
+    // ´Ş, ÀÏ ±¸ÇÏ±â
     if ( isLeapYear( sYear ) == ID_TRUE )
     {
         sLeap = 1;
@@ -3005,7 +3100,7 @@ IDE_RC mtdDateInterface::convertInterval2Date( mtdIntervalType* aInterval,
 
     sDay = sDays - sStartDayOfMonth[sLeap][sMonth - 1];
     
-    // ì‹œê°„ êµ¬í•˜ê¸°
+    // ½Ã°£ ±¸ÇÏ±â
     sHour = sSeconds / 3600;
     sSeconds %= 3600;
     sMinute = sSeconds / 60;
@@ -3039,14 +3134,14 @@ mtdDateInterface::toDateGetInteger( UChar** aString,
 /***********************************************************************
  *
  * Description :
- *    string->numberë¡œ ë³€í™˜(format lengthë³´ë‹¤ ì§§ì•„ë„ í—ˆìš©)
- *    YYYY, RRRR, DD, MM ë“± ê°€ë³€ê¸¸ì´ í—ˆìš©í•˜ëŠ” formatì„ ìœ„í•´ ì‚¬ìš©
+ *    string->number·Î º¯È¯(format lengthº¸´Ù Âª¾Æµµ Çã¿ë)
+ *    YYYY, RRRR, DD, MM µî °¡º¯±æÀÌ Çã¿ëÇÏ´Â formatÀ» À§ÇØ »ç¿ë
  *
  * Implementation :
- *    1) ìˆ«ìë¡œ ëœ ë¬¸ìë¥¼ ë§Œë‚˜ë©´ UInt valueë¡œ ë³€í™˜.
- *       ìˆ«ìë¡œ ë³€í™˜ëœ ë¶€ë¶„ ë§Œí¼ ë¬¸ìì—´ í¬ì¸í„° ì´ë™ ë° ê¸¸ì´ ì¡°ì •
- *    2) ìˆ«ìê°€ ì•„ë‹Œ ë¬¸ìë¥¼ ë§Œë‚˜ë©´ break
- *    3) ë§Œì•½ í•œ ë¬¸ìë„ ë³€í™˜ì´ ë˜ì§€ ì•Šì•˜ë‹¤ë©´ error
+ *    1) ¼ıÀÚ·Î µÈ ¹®ÀÚ¸¦ ¸¸³ª¸é UInt value·Î º¯È¯.
+ *       ¼ıÀÚ·Î º¯È¯µÈ ºÎºĞ ¸¸Å­ ¹®ÀÚ¿­ Æ÷ÀÎÅÍ ÀÌµ¿ ¹× ±æÀÌ Á¶Á¤
+ *    2) ¼ıÀÚ°¡ ¾Æ´Ñ ¹®ÀÚ¸¦ ¸¸³ª¸é break
+ *    3) ¸¸¾à ÇÑ ¹®ÀÚµµ º¯È¯ÀÌ µÇÁö ¾Ê¾Ò´Ù¸é error
  ***********************************************************************/
     UChar* sInitStr;
 
@@ -3059,11 +3154,11 @@ mtdDateInterface::toDateGetInteger( UChar** aString,
 
     sInitStr = *aString;
     
-    // ì‚¬ìš©ìê°€ ì˜ˆìƒí•œ ìµœëŒ€ ê°’ê³¼ í˜„ì¬ ë¬¸ìì—´ì˜ ê¸¸ì´ì™€ ë¹„êµí•˜ì—¬ ì‘ì€
-    // ê²ƒì„ ì €ì¥í•¨
+    // »ç¿ëÀÚ°¡ ¿¹»óÇÑ ÃÖ´ë °ª°ú ÇöÀç ¹®ÀÚ¿­ÀÇ ±æÀÌ¿Í ºñ±³ÇÏ¿© ÀÛÀº
+    // °ÍÀ» ÀúÀåÇÔ
     aMax = ( *aLength < aMax ) ? *aLength : aMax;
     
-    // ìˆ«ìë¡œ ëœ ë¬¸ìë¥¼ ë§Œë‚˜ë©´ UInt valueë¡œ ë³€í™˜.
+    // ¼ıÀÚ·Î µÈ ¹®ÀÚ¸¦ ¸¸³ª¸é UInt value·Î º¯È¯.
     for( *aValue = 0;
          aMax    > 0;
          aMax--, (*aString)++, (*aLength)-- )
@@ -3074,12 +3169,12 @@ mtdDateInterface::toDateGetInteger( UChar** aString,
         }
         else
         {
-            // ìˆ«ìê°€ ì•„ë‹Œ ë¬¸ìë¥¼ ë§Œë‚˜ë©´ break
+            // ¼ıÀÚ°¡ ¾Æ´Ñ ¹®ÀÚ¸¦ ¸¸³ª¸é break
             break;
         }
     }
 
-    // ë§Œì•½ í•œ ë¬¸ìë„ ë³€í™˜ì´ ë˜ì§€ ì•Šì•˜ë‹¤ë©´ error
+    // ¸¸¾à ÇÑ ¹®ÀÚµµ º¯È¯ÀÌ µÇÁö ¾Ê¾Ò´Ù¸é error
     IDE_TEST_RAISE( *aString == sInitStr,
                     ERR_NON_NUMERIC_INPUT );
 
@@ -3102,35 +3197,35 @@ mtdDateInterface::toDateGetMonth( UChar** aString,
                                   UInt*   aMonth )
 { 
 /***********************************************************************
- * Description : 'ì›”'ì— í•´ë‹¹í•˜ëŠ” ë¬¸ìì—´ì„ ì½ê³ , aMonthì— ì ì ˆí•œ ê°’ì„ ë¦¬í„´(1~12)
- *                ì˜ë¯¸ ìˆëŠ” 'ì›”'ì„ ì˜ë¯¸í•˜ëŠ” ë¬¸ìì—´ì¸ ê²½ìš° ê·¸ ê¸¸ì´ ë§Œí¼
- *                aStringê³¼ aLengthë¥¼ ì¡°ì •
- * Implementation : 'ì›”'ì„ ì˜ë¯¸í•˜ëŠ” ê° ë¬¸ìì—´ì— ëŒ€í•´ ì•ìª½ 3ìë¥¼ ë¯¸ë¦¬ í•´ì‹œí•˜ì—¬
- *                  ê·¸ ê°’ì„ ë¯¸ë¦¬ ë°°ì—´ì— ì €ì¥í•˜ì—¬ í•´ì‹œê°’ì„ ë¹„êµí•œ ë’¤, ë¬¸ìì—´ ë¹„êµ
- *                  êµ¬í˜„ ìš©ì´ë¥¼ ìœ„í•´ í•´ì‹œ í…Œì´ë¸”ì„ êµ¬ì„±í•˜ì§€ ì•Šê³ , ëª¨ë“  ê²½ìš°ë¥¼ ë¹„êµ
+ * Description : '¿ù'¿¡ ÇØ´çÇÏ´Â ¹®ÀÚ¿­À» ÀĞ°í, aMonth¿¡ ÀûÀıÇÑ °ªÀ» ¸®ÅÏ(1~12)
+ *                ÀÇ¹Ì ÀÖ´Â '¿ù'À» ÀÇ¹ÌÇÏ´Â ¹®ÀÚ¿­ÀÎ °æ¿ì ±× ±æÀÌ ¸¸Å­
+ *                aString°ú aLength¸¦ Á¶Á¤
+ * Implementation : '¿ù'À» ÀÇ¹ÌÇÏ´Â °¢ ¹®ÀÚ¿­¿¡ ´ëÇØ ¾ÕÂÊ 3ÀÚ¸¦ ¹Ì¸® ÇØ½ÃÇÏ¿©
+ *                  ±× °ªÀ» ¹Ì¸® ¹è¿­¿¡ ÀúÀåÇÏ¿© ÇØ½Ã°ªÀ» ºñ±³ÇÑ µÚ, ¹®ÀÚ¿­ ºñ±³
+ *                  ±¸Çö ¿ëÀÌ¸¦ À§ÇØ ÇØ½Ã Å×ÀÌºíÀ» ±¸¼ºÇÏÁö ¾Ê°í, ¸ğµç °æ¿ì¸¦ ºñ±³
  ***********************************************************************/
     SInt       sIdx;
     SInt       sMax;
     UInt       sHashVal;
     UChar      sString[10] = {0};
     SInt       sLength;
-    UInt       sMonthLength[12] = { 7, 8, 5, 5, 3, 4,   // í•´ë‹¹ 'ì›”'ì„ ì˜ë¯¸í•˜ëŠ”
-                                    4, 6, 9, 7, 8, 8 }; // ë¬¸ìì—´ì˜ ê¸¸ì´
+    UInt       sMonthLength[12] = { 7, 8, 5, 5, 3, 4,   // ÇØ´ç '¿ù'À» ÀÇ¹ÌÇÏ´Â
+                                    4, 6, 9, 7, 8, 8 }; // ¹®ÀÚ¿­ÀÇ ±æÀÌ
 
     IDE_ASSERT( aString != NULL );
     IDE_ASSERT( aLength != NULL );
     IDE_ASSERT( aMonth  != NULL );
 
-    // ì›”ì„ ì˜ë¯¸í•˜ëŠ” ë¬¸ìì—´ì„ ìµœì†Œ 3ì ì´ìƒì´ì–´ì•¼ í•¨
+    // ¿ùÀ» ÀÇ¹ÌÇÏ´Â ¹®ÀÚ¿­À» ÃÖ¼Ò 3ÀÚ ÀÌ»óÀÌ¾î¾ß ÇÔ
     IDE_TEST_RAISE( *aLength < 3,
                     ERR_NOT_ENOUGH_INPUT );
 
 
-    // ì›”ì„ ì˜ë¯¸í•˜ëŠ” ë¬¸ìì—´ ì¤‘ ê°€ì¥ ê¸´ ê²ƒì´ 9ì = september
-    // í˜„ì¬ ë¬¸ìì—´ì˜ ê¸¸ì´ì™€ ë¹„êµí•˜ì—¬ ì‘ì€ ê²ƒì„ ì €ì¥í•¨
+    // ¿ùÀ» ÀÇ¹ÌÇÏ´Â ¹®ÀÚ¿­ Áß °¡Àå ±ä °ÍÀÌ 9ÀÚ = september
+    // ÇöÀç ¹®ÀÚ¿­ÀÇ ±æÀÌ¿Í ºñ±³ÇÏ¿© ÀÛÀº °ÍÀ» ÀúÀåÇÔ
     sMax = IDL_MIN(*aLength, 9);
         
-    // ë¬¸ìì—´ì˜ ìµœëŒ€ ê¸¸ì´ë¥¼ ê³„ì‚°
+    // ¹®ÀÚ¿­ÀÇ ÃÖ´ë ±æÀÌ¸¦ °è»ê
     for( sLength = 0;
          sLength < sMax;
          sLength++)
@@ -3141,11 +3236,11 @@ mtdDateInterface::toDateGetMonth( UChar** aString,
         }
     }
 
-    // ë¬¸ìì—´ì„ ë³µì‚¬í•˜ê³ , ëª¨ë‘ ëŒ€ë¬¸ìë¡œ ë³€í™˜
+    // ¹®ÀÚ¿­À» º¹»çÇÏ°í, ¸ğµÎ ´ë¹®ÀÚ·Î º¯È¯
     idlOS::memcpy( sString, *aString, sLength );
     idlOS::strUpper( sString, sLength );
 
-    // ì•ìë¦¬ 3ìë¦¬ë§Œì„ ì´ìš©í•˜ì—¬ í•´ì‹œ ê°’ ìƒì„±
+    // ¾ÕÀÚ¸® 3ÀÚ¸®¸¸À» ÀÌ¿ëÇÏ¿© ÇØ½Ã °ª »ı¼º
     sHashVal = mtc::hash(mtc::hashInitialValue,
                          sString,
                          3);
@@ -3159,9 +3254,9 @@ mtdDateInterface::toDateGetMonth( UChar** aString,
                                  gMONName[sIdx],
                                  3 ) == 0 )
             {
-                // ì¼ë‹¨ ì• 3ìê°€ ì¼ì¹˜í•˜ë¯€ë¡œ í•´ë‹¹ ë‹¬ë¡œ ì¸ì‹í•  ìˆ˜ ìˆìŒ
-                // í•˜ì§€ë§Œ, ì•½ìê°€ ì•„ë‹Œ 'ì›”'ì´ë¦„ìœ¼ë¡œ ì…ë ¥í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
-                // ê°€ëŠ¥í•˜ë©´, ëª¨ë“  ì…ë ¥ ë¬¸ìë¥¼ ì†Œë¹„í•´ì•¼ í•¨
+                // ÀÏ´Ü ¾Õ 3ÀÚ°¡ ÀÏÄ¡ÇÏ¹Ç·Î ÇØ´ç ´Ş·Î ÀÎ½ÄÇÒ ¼ö ÀÖÀ½
+                // ÇÏÁö¸¸, ¾àÀÚ°¡ ¾Æ´Ñ '¿ù'ÀÌ¸§À¸·Î ÀÔ·ÂÇÒ ¼ö ÀÖÀ¸¹Ç·Î
+                // °¡´ÉÇÏ¸é, ¸ğµç ÀÔ·Â ¹®ÀÚ¸¦ ¼ÒºñÇØ¾ß ÇÔ
                 if( sLength >= (SInt) sMonthLength[sIdx] )
                 {
                     if( idlOS::strMatch( sString,
@@ -3169,24 +3264,24 @@ mtdDateInterface::toDateGetMonth( UChar** aString,
                                          gMONTHName[sIdx],
                                          sMonthLength[sIdx] ) == 0 )
                     {
-                        // ì¤„ì´ì§€ ì•Šì€ ì›ë˜ ì´ë¦„ìœ¼ë¡œ ë§¤ì¹­ì´ ì„±ê³µí•œ ê²½ìš°
+                        // ÁÙÀÌÁö ¾ÊÀº ¿ø·¡ ÀÌ¸§À¸·Î ¸ÅÄªÀÌ ¼º°øÇÑ °æ¿ì
                         sLength = sMonthLength[sIdx];
                     }
                     else
                     {
-                        // ì¤„ì—¬ì“´ ì´ë¦„ìœ¼ë¡œ ë§¤ì¹­ì´ ì„±ê³µí•œ ê²½ìš°
+                        // ÁÙ¿©¾´ ÀÌ¸§À¸·Î ¸ÅÄªÀÌ ¼º°øÇÑ °æ¿ì
                         sLength = 3;
                     }
                 }
                 else
                 {
-                    // 'ì›”'ì›ë˜ ì›”ì˜ ê¸¸ì´ì´ê±°ë‚˜ 3ì´ì–´ì•¼ í•œë‹¤.
-                    // ì˜ˆë¥¼ ë“¤ì–´ to_date( 'SEPMON','MONDAY' )ê³¼ ê°™ì€
-                    // ì…ë ¥ì´ ìˆì„ ìˆ˜ ìˆìŒ
+                    // '¿ù'¿ø·¡ ¿ùÀÇ ±æÀÌÀÌ°Å³ª 3ÀÌ¾î¾ß ÇÑ´Ù.
+                    // ¿¹¸¦ µé¾î to_date( 'SEPMON','MONDAY' )°ú °°Àº
+                    // ÀÔ·ÂÀÌ ÀÖÀ» ¼ö ÀÖÀ½
                     sLength = 3;
                 }
 
-                // ë§¤ì¹­ì´ ì„±ê³µí–ˆìœ¼ë¯€ë¡œ ì›”ì„ ì„¤ì •í•˜ê³  ë°˜ë³µë¬¸ ì¢…ë£Œ
+                // ¸ÅÄªÀÌ ¼º°øÇßÀ¸¹Ç·Î ¿ùÀ» ¼³Á¤ÇÏ°í ¹İº¹¹® Á¾·á
                 *aMonth = sIdx + 1;
                 *aString += sLength;
                 *aLength -= sLength;
@@ -3194,12 +3289,12 @@ mtdDateInterface::toDateGetMonth( UChar** aString,
             }
             else
             {
-                // ë‹¤ìŒ 'ì›”'ì— ëŒ€í•œ ê°’ ë¹„êµ
+                // ´ÙÀ½ '¿ù'¿¡ ´ëÇÑ °ª ºñ±³
             }
         }
     }
 
-    // ëª¨ë“  ê²½ìš°ë¥¼ ê²€ì‚¬í•˜ë„ê³  ë§¤ì¹­ë˜ëŠ” ë¬¸ìì—´ì„ ì°¾ì§€ ëª»í•˜ë©´ ì—ëŸ¬
+    // ¸ğµç °æ¿ì¸¦ °Ë»çÇÏµµ°í ¸ÅÄªµÇ´Â ¹®ÀÚ¿­À» Ã£Áö ¸øÇÏ¸é ¿¡·¯
     IDE_TEST_RAISE( sIdx == 12, ERR_INVALID_DATE );                    
 
     return IDE_SUCCESS;
@@ -3221,10 +3316,10 @@ mtdDateInterface::toDateGetRMMonth( UChar** aString,
                                     UInt*   aMonth )
 { 
 /***********************************************************************
- * Description : 'ì›”'ì— í•´ë‹¹í•˜ëŠ” ë¡œë§ˆì ë¬¸ìì—´ì„ ì½ê³ , aMonthì— ì ì ˆí•œ
- *                ê°’ì„ ë¦¬í„´(1~12) ì˜ë¯¸ ìˆëŠ” 'ì›”'ì„ ì˜ë¯¸í•˜ëŠ” ë¬¸ìì—´ì¸
- *                ê²½ìš° ê·¸ ê¸¸ì´ ë§Œí¼ aStringê³¼ aLengthë¥¼ ì¡°ì •
- * Implementation : ë‚˜ì˜¬ ìˆ˜ ìˆëŠ” ë¬¸ìì˜ ê²½ìš°ê°€ 3ê°œì´ë¯€ë¡œ ë°˜ë³µë¬¸ìœ¼ë¡œ ê³„ì‚°
+ * Description : '¿ù'¿¡ ÇØ´çÇÏ´Â ·Î¸¶ÀÚ ¹®ÀÚ¿­À» ÀĞ°í, aMonth¿¡ ÀûÀıÇÑ
+ *                °ªÀ» ¸®ÅÏ(1~12) ÀÇ¹Ì ÀÖ´Â '¿ù'À» ÀÇ¹ÌÇÏ´Â ¹®ÀÚ¿­ÀÎ
+ *                °æ¿ì ±× ±æÀÌ ¸¸Å­ aString°ú aLength¸¦ Á¶Á¤
+ * Implementation : ³ª¿Ã ¼ö ÀÖ´Â ¹®ÀÚÀÇ °æ¿ì°¡ 3°³ÀÌ¹Ç·Î ¹İº¹¹®À¸·Î °è»ê
  ***********************************************************************/
     SInt       sIdx       = 0;
     SInt       sMax;
@@ -3242,16 +3337,16 @@ mtdDateInterface::toDateGetRMMonth( UChar** aString,
     IDE_ASSERT( aLength != NULL );
     IDE_ASSERT( aMonth  != NULL );
 
-    // ì›”ì„ ì˜ë¯¸í•˜ëŠ” ë¬¸ìì—´ì„ ìµœì†Œ 1ì ì´ìƒì´ì–´ì•¼ í•¨
+    // ¿ùÀ» ÀÇ¹ÌÇÏ´Â ¹®ÀÚ¿­À» ÃÖ¼Ò 1ÀÚ ÀÌ»óÀÌ¾î¾ß ÇÔ
     IDE_TEST_RAISE( *aLength < 1,
                     ERR_NOT_ENOUGH_INPUT );
 
 
-    // ì›”ì„ ì˜ë¯¸í•˜ëŠ” ë¬¸ìì—´ ì¤‘ ê°€ì¥ ê¸´ ê²ƒì´ 4ì = VIII
-    // í˜„ì¬ ë¬¸ìì—´ì˜ ê¸¸ì´ì™€ ë¹„êµí•˜ì—¬ ì‘ì€ ê²ƒì„ ì €ì¥í•¨
+    // ¿ùÀ» ÀÇ¹ÌÇÏ´Â ¹®ÀÚ¿­ Áß °¡Àå ±ä °ÍÀÌ 4ÀÚ = VIII
+    // ÇöÀç ¹®ÀÚ¿­ÀÇ ±æÀÌ¿Í ºñ±³ÇÏ¿© ÀÛÀº °ÍÀ» ÀúÀåÇÔ
     sMax = IDL_MIN(*aLength, 4);
         
-    // ë¬¸ìì—´ì˜ ìµœëŒ€ ê¸¸ì´ë¥¼ ê³„ì‚°
+    // ¹®ÀÚ¿­ÀÇ ÃÖ´ë ±æÀÌ¸¦ °è»ê
     for( sLength = 0;
          sLength < sMax;
          sLength++)
@@ -3262,7 +3357,7 @@ mtdDateInterface::toDateGetRMMonth( UChar** aString,
         }
     }
 
-    // ë¬¸ìì—´ì„ ë³µì‚¬í•˜ê³ , ëª¨ë‘ ëŒ€ë¬¸ìë¡œ ë³€í™˜
+    // ¹®ÀÚ¿­À» º¹»çÇÏ°í, ¸ğµÎ ´ë¹®ÀÚ·Î º¯È¯
     idlOS::memcpy( sString, *aString, sLength );
     idlOS::strUpper( sString, sLength );
     
@@ -3347,36 +3442,35 @@ mtdDateInterface::toDateGetRMMonth( UChar** aString,
     return IDE_FAILURE;
 }
 
-IDE_RC
-mtdDateInterface::toDate( mtdDateType* aDate,
-                          UChar*       aString,
-                          UInt         aStringLen,
-                          UChar*       aFormat,
-                          UInt         aFormatLen )
+IDE_RC mtdDateInterface::toDateInternal( mtdDateType * aDate,
+                                         UChar       * aString,
+                                         UInt          aStringLen,
+                                         UChar       * aFormat,
+                                         UInt          aFormatLen,
+                                         void        * aScanner )
 {
     // Variables for mtldl lexer (scanner)
     UInt         sToken;
     yyscan_t     sScanner;
-    idBool       sInitScanner = ID_FALSE;
 
     // Local Variable
     SInt         sIdx;
-    SInt         sLeap         = 0;         // 0:ì¼ë°˜, 1:ìœ¤ë…„
+    SInt         sLeap         = 0;         // 0:ÀÏ¹İ, 1:À±³â
     UInt         sNumber;
     UInt         sFormatLen;
-    idBool       sIsAM         = ID_TRUE;   // ê¸°ë³¸ì€ AM
-    idBool       sPrecededWHSP = ID_FALSE;  // ì…ë ¥ ë¬¸ìì—´ì—
-                                            // ê³µë°±,íƒ­,ì¤„ë°”ê¿ˆì´
-                                            // ìˆì—ˆëŠ”ì§€ ê²€ì‚¬
-    UInt         sOldLen;                   // ë¬¸ìì—´ ê¸¸ì´ ë¹„êµ ê²€ì‚¬ ë“±ì„ ìœ„í•´
+    idBool       sIsAM         = ID_TRUE;   // ±âº»Àº AM
+    idBool       sPrecededWHSP = ID_FALSE;  // ÀÔ·Â ¹®ÀÚ¿­¿¡
+                                            // °ø¹é,ÅÇ,ÁÙ¹Ù²ŞÀÌ
+                                            // ÀÖ¾ú´ÂÁö °Ë»ç
+    UInt         sOldLen;                   // ¹®ÀÚ¿­ ±æÀÌ ºñ±³ °Ë»ç µîÀ» À§ÇØ
     UChar       *sString;
     UInt         sStringLen;
-    UChar       *sFormat;                   // í˜„ì¬ ì²˜ë¦¬í•˜ê³  ìˆëŠ” í¬ë§·ì˜ ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚´
+    UChar       *sFormat;                   // ÇöÀç Ã³¸®ÇÏ°í ÀÖ´Â Æ÷¸ËÀÇ À§Ä¡¸¦ °¡¸®Å´
     UChar        sErrorFormat[MTC_TO_CHAR_MAX_PRECISION+1];
 
-    // ê°™ì€ ê°’ì— ëŒ€í•´ ì¤‘ë³µëœ ì…ë ¥ì´ ìˆëŠ” ê²½ìš°ë¥¼ ëŒ€ë¹„í•˜ì—¬
-    // aDateì— ê°’ì„ ì§ì ‘ ì ìš©í•˜ì§€ ì•Šê³ , ë³´ê´€í•˜ê¸° ìœ„í•œ ë³€ìˆ˜
-    // ê°€ëŠ¥í•œ í¬ë§·ë“¤: 'SSSSS', 'DDD', 'DAY'
+    // °°Àº °ª¿¡ ´ëÇØ Áßº¹µÈ ÀÔ·ÂÀÌ ÀÖ´Â °æ¿ì¸¦ ´ëºñÇÏ¿©
+    // aDate¿¡ °ªÀ» Á÷Á¢ Àû¿ëÇÏÁö ¾Ê°í, º¸°üÇÏ±â À§ÇÑ º¯¼ö
+    // °¡´ÉÇÑ Æ÷¸Ëµé: 'SSSSS', 'DDD', 'DAY'
     UInt         sHour         = 0;
     UInt         sMinute       = 0;
     UInt         sSecond       = 0;
@@ -3384,7 +3478,7 @@ mtdDateInterface::toDate( mtdDateType* aDate,
     UChar        sDay          = 0;
     UInt         sDayOfYear    = 0;         // Day of year (1-366)
 
-    // Date format elementê°€ ì¤‘ë³µìœ¼ë¡œ ì¶œí˜„í•˜ëŠ” ê²ƒì„ ë§‰ê¸° ìœ„í•œ ë³€ìˆ˜
+    // Date format element°¡ Áßº¹À¸·Î ÃâÇöÇÏ´Â °ÍÀ» ¸·±â À§ÇÑ º¯¼ö
     // To fix BUG-14516
     idBool       sSetYY        = ID_FALSE;
     idBool       sSetMM        = ID_FALSE;
@@ -3396,16 +3490,16 @@ mtdDateInterface::toDate( mtdDateType* aDate,
     idBool       sSetSS        = ID_FALSE;
     idBool       sSetMS        = ID_FALSE;  // microsecond
     idBool       sSetSID       = ID_FALSE;  // seconds in day
-//  idBool       sSetDOW       = ID_FALSE;  // day of week (êµ¬í˜„ë³´ë¥˜)
+//  idBool       sSetDOW       = ID_FALSE;  // day of week (±¸Çöº¸·ù)
     idBool       sSetDDD       = ID_FALSE;  // day of year
 
     IDE_ASSERT( aDate   != NULL );
     IDE_ASSERT( aString != NULL );
     IDE_ASSERT( aFormat != NULL );
 
-    // aStringê³¼ aFormatì˜ ì–‘ìª½ ê³µë°±ì„ ì œê±°í•œë‹¤.
+    // aString°ú aFormatÀÇ ¾çÂÊ °ø¹éÀ» Á¦°ÅÇÑ´Ù.
     // To fix BUG-15087
-    // ì•ìª½ ê³µë°±ì€ while loopì•ˆì—ì„œ ì²˜ë¦¬í•œë‹¤.
+    // ¾ÕÂÊ °ø¹éÀº while loop¾È¿¡¼­ Ã³¸®ÇÑ´Ù.
     while( aStringLen > 0 )
     {
         if( mInputST[aString[aStringLen-1]] == mWHSP )
@@ -3433,20 +3527,17 @@ mtdDateInterface::toDate( mtdDateType* aDate,
     sFormat       = aFormat;
     sString       = aString;
     sStringLen    = aStringLen;
-    
-    IDE_TEST_RAISE( mtddllex_init ( &sScanner ) != 0, ERR_LEX_INIT_FAILED );
-    sInitScanner = ID_TRUE;
-
-    mtddl_scan_bytes( (const char*)aFormat, aFormatLen, sScanner );
+    sScanner      = aScanner;
 
     // get first token
     sToken = mtddllex( sScanner );
+
     while( sToken != 0 )
     {
         
-        // ê³µë°±, íƒ­, ì¤„ë°”ê¿ˆë“±ì´ ìˆë‹¤ë©´ ë¬´ì‹œ
+        // °ø¹é, ÅÇ, ÁÙ¹Ù²ŞµîÀÌ ÀÖ´Ù¸é ¹«½Ã
         sPrecededWHSP = ID_FALSE;
-        // BUG-18788 sStringLenì„ ê²€ì‚¬í•´ì•¼ í•¨
+        // BUG-18788 sStringLenÀ» °Ë»çÇØ¾ß ÇÔ
         while( sStringLen > 0 )
         {
             if ( mInputST[*sString] == mWHSP )
@@ -3464,13 +3555,13 @@ mtdDateInterface::toDate( mtdDateType* aDate,
         switch( sToken )
         {
             /***********************************
-             * ì •ìˆ˜ ì…ë ¥ì„ ë°›ëŠ” ê²½ìš°
+             * Á¤¼ö ÀÔ·ÂÀ» ¹Ş´Â °æ¿ì
              ***********************************/
             // Year: YCYYY, RRRR, RR, SYYYY, YYYY, YYY, YY, Y
             case MTD_DATE_FORMAT_YCYYY:
             {
-                // YCYYYì¼ë•Œ : YYYYì™€ ë™ì¼í•˜ë‚˜
-                //            ì„¸ë²ˆì©¨ ìë¦¬ì— ì‰¼í‘œ(,)ë¥¼ í¬í•¨í•œ ì—°ë„ë„ ì…ë ¥ ê°€ëŠ¥
+                // YCYYYÀÏ¶§ : YYYY¿Í µ¿ÀÏÇÏ³ª
+                //            ¼¼¹øÂÅ ÀÚ¸®¿¡ ½°Ç¥(,)¸¦ Æ÷ÇÔÇÑ ¿¬µµµµ ÀÔ·Â °¡´É
                 IDE_TEST_RAISE( sSetYY != ID_FALSE,
                                 ERR_CONFLICT_FORMAT );
                 sSetYY = ID_TRUE;
@@ -3484,21 +3575,21 @@ mtdDateInterface::toDate( mtdDateType* aDate,
 
                 if( ( ( sOldLen - sStringLen ) == 1 ) && ( sStringLen > 0 ) )
                 {
-                    // í•œ ìë¦¬ ìˆ«ìë§Œ ë‚˜ì˜¨ ê²½ìš° ì¼ë°˜ì ìœ¼ë¡œ ','ê°€ ì˜ˆìƒëœë‹¤
+                    // ÇÑ ÀÚ¸® ¼ıÀÚ¸¸ ³ª¿Â °æ¿ì ÀÏ¹İÀûÀ¸·Î ','°¡ ¿¹»óµÈ´Ù
                     if( *sString == ',' )
                     {
-                        // ìˆ«ìê°€ ë‚˜ì˜¤ê³  ì‰¼í‘œ(,)ê°€ ìˆë‹¤ë©´ ë¬´ì¡°ê±´ 4ìë¦¬
-                        // ì—°ë„ ì…ë ¥ìœ¼ë¡œ ê°€ì •í•œë‹¤. ë¬¼ë¡  ë‹¤ë¥¸ í¬ë§·ì„
-                        // ìœ„í•œ êµ¬ë¶„ìì¼ ìˆ˜ ìˆì§€ë§Œ, YCYYYì™€ í•¨ê»˜ ì‰¼í‘œë¥¼
-                        // êµ¬ë¶„ìë¡œ ì‚¬ìš©í•˜ë©´ì„œ ë” ë¶ˆì–´ í•œìë¦¬ì˜ ì—°ë„ë¥¼
-                        // ì…ë ¥í•˜ëŠ” ë¹„ì–‘ì‹¬ì ì¸ ì…ë ¥ ê°’ì€ ì—ëŸ¬ë¡œ ê°„ì£¼í•¨
-                        // ì˜ˆ) to_date( '9,9,9', 'YCYYY,MM,DD' )
+                        // ¼ıÀÚ°¡ ³ª¿À°í ½°Ç¥(,)°¡ ÀÖ´Ù¸é ¹«Á¶°Ç 4ÀÚ¸®
+                        // ¿¬µµ ÀÔ·ÂÀ¸·Î °¡Á¤ÇÑ´Ù. ¹°·Ğ ´Ù¸¥ Æ÷¸ËÀ»
+                        // À§ÇÑ ±¸ºĞÀÚÀÏ ¼ö ÀÖÁö¸¸, YCYYY¿Í ÇÔ²² ½°Ç¥¸¦
+                        // ±¸ºĞÀÚ·Î »ç¿ëÇÏ¸é¼­ ´õ ºÒ¾î ÇÑÀÚ¸®ÀÇ ¿¬µµ¸¦
+                        // ÀÔ·ÂÇÏ´Â ºñ¾ç½ÉÀûÀÎ ÀÔ·Â °ªÀº ¿¡·¯·Î °£ÁÖÇÔ
+                        // ¿¹) to_date( '9,9,9', 'YCYYY,MM,DD' )
                         
-                        // ì²œì˜ ìë¦¬ ì…ë ¥
+                        // ÃµÀÇ ÀÚ¸® ÀÔ·Â
                         IDE_TEST( setYear( aDate, sNumber * 1000 )
                                   != IDE_SUCCESS );                        
                         
-                        // ','ê°€ ìˆìœ¼ë©´ ë‚˜ë¨¸ì§€ 3ìë¦¬(ê³ ì •) ì½ì–´ì„œ ì™„ì„±
+                        // ','°¡ ÀÖÀ¸¸é ³ª¸ÓÁö 3ÀÚ¸®(°íÁ¤) ÀĞ¾î¼­ ¿Ï¼º
                         sOldLen = sStringLen;
                         IDE_TEST( toDateGetInteger( &sString,
                                                     &sStringLen,
@@ -3510,21 +3601,21 @@ mtdDateInterface::toDate( mtdDateType* aDate,
                             ( sOldLen - sStringLen ) != 3,
                             ERR_NOT_ENOUGH_INPUT );
 
-                        // ë‚˜ë¨¸ì§€ ì„¸ ìë¦¬ ì¶”ê°€
+                        // ³ª¸ÓÁö ¼¼ ÀÚ¸® Ãß°¡
                         IDE_TEST( setYear( aDate, year(aDate) + sNumber )
                                   != IDE_SUCCESS );                        
                         
                     }
                     else
                     {
-                        // ì—†ìœ¼ë©´ ê·¸ëŒ€ë¡œ ì €ì¥ (1ìë¦¬ ìˆ˜ì˜ ì—°ë„ë¥¼ ì˜ë¯¸)
+                        // ¾øÀ¸¸é ±×´ë·Î ÀúÀå (1ÀÚ¸® ¼öÀÇ ¿¬µµ¸¦ ÀÇ¹Ì)
                         IDE_TEST( setYear( aDate, sNumber )
                                   != IDE_SUCCESS );                    
                     }
                 }
                 else
                 {
-                    // ê·¸ ì™¸ì˜ ê²½ìš° ì‚¬ìš©ìê°€ ì…ë ¥í•œ ê·¸ëŒ€ë¡œ ì €ì¥
+                    // ±× ¿ÜÀÇ °æ¿ì »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ ±×´ë·Î ÀúÀå
                     IDE_TEST( setYear( aDate, sNumber )
                               != IDE_SUCCESS );                    
                 }
@@ -3534,20 +3625,20 @@ mtdDateInterface::toDate( mtdDateType* aDate,
 
             case MTD_DATE_FORMAT_RRRR:
             {
-                // RRRRì¼ë•Œ : 4ìë¦¬ ì¼ ë•ŒëŠ” ì•¡ë©´ ê·¸ëŒ€ë¡œ
-                //           4ìë¦¬ê°€ ì•„ë‹ ê²½ìš° ì•„ë˜ì˜ ê·œì¹™ì„ ë”°ë¦„
-                //            RRRR < 50  ì´ë©´ 2000ì„ ë”í•œë‹¤.
-                //            RRRR < 100 ì´ë©´ 1900ì„ ë”í•œë‹¤.
-                //            RRRR >=100 ì´ë©´ ì•¡ë©´ ê·¸ëŒ€ë¡œ
-                //     '2005' : 2005ë…„
-                //     '0005' : 5ë…„
-                //     '005'  : 2005ë…„
-                //     '05'   : 2005ë…„
-                //     '5'    : 2005ë…„
-                //     '100'  : 0100ë…„
-                //     '99'   : 1999ë…„
-                //     '50'   : 1950ë…„
-                //     '49'   : 2049ë…„
+                // RRRRÀÏ¶§ : 4ÀÚ¸® ÀÏ ¶§´Â ¾×¸é ±×´ë·Î
+                //           4ÀÚ¸®°¡ ¾Æ´Ò °æ¿ì ¾Æ·¡ÀÇ ±ÔÄ¢À» µû¸§
+                //            RRRR < 50  ÀÌ¸é 2000À» ´õÇÑ´Ù.
+                //            RRRR < 100 ÀÌ¸é 1900À» ´õÇÑ´Ù.
+                //            RRRR >=100 ÀÌ¸é ¾×¸é ±×´ë·Î
+                //     '2005' : 2005³â
+                //     '0005' : 5³â
+                //     '005'  : 2005³â
+                //     '05'   : 2005³â
+                //     '5'    : 2005³â
+                //     '100'  : 0100³â
+                //     '99'   : 1999³â
+                //     '50'   : 1950³â
+                //     '49'   : 2049³â
                 IDE_TEST_RAISE( sSetYY != ID_FALSE,
                                 ERR_CONFLICT_FORMAT );
                 sSetYY = ID_TRUE;
@@ -3561,7 +3652,7 @@ mtdDateInterface::toDate( mtdDateType* aDate,
 
                 if( sOldLen - sStringLen < 4 )
                 {
-                    // 4ìë¦¬ê°€ ì•„ë‹Œ ê²½ìš° ì•„ë˜ì™€ ê°™ì´
+                    // 4ÀÚ¸®°¡ ¾Æ´Ñ °æ¿ì ¾Æ·¡¿Í °°ÀÌ
                     if( sNumber < 50 )
                     {
                         sNumber += 2000;
@@ -3573,7 +3664,7 @@ mtdDateInterface::toDate( mtdDateType* aDate,
                 }
                 else
                 {
-                    // 4ìë¦¬ ì¼ ë•ŒëŠ” ì…ë ¥ê°’ ê·¸ëŒ€ë¡œ
+                    // 4ÀÚ¸® ÀÏ ¶§´Â ÀÔ·Â°ª ±×´ë·Î
                     // do nothing
                 }
 
@@ -3585,16 +3676,16 @@ mtdDateInterface::toDate( mtdDateType* aDate,
 
             case MTD_DATE_FORMAT_RR:
             {
-                // RRì¼ë•Œ   : RR < 50  ì´ë©´ 2000ì„ ë”í•œë‹¤.
-                //           RR < 100 ì´ë©´ 1900ì„ ë”í•œë‹¤.
-                //     '2005' : ì—ëŸ¬
-                //     '005'  : ì—ëŸ¬
-                //     '05'   : 2005ë…„
-                //     '5'    : 2005ë…„
-                //     '100'  : ì—ëŸ¬
-                //     '99'   : 1999ë…„
-                //     '50    : 1950ë…„
-                //     '49'   : 2049ë…„
+                // RRÀÏ¶§   : RR < 50  ÀÌ¸é 2000À» ´õÇÑ´Ù.
+                //           RR < 100 ÀÌ¸é 1900À» ´õÇÑ´Ù.
+                //     '2005' : ¿¡·¯
+                //     '005'  : ¿¡·¯
+                //     '05'   : 2005³â
+                //     '5'    : 2005³â
+                //     '100'  : ¿¡·¯
+                //     '99'   : 1999³â
+                //     '50    : 1950³â
+                //     '49'   : 2049³â
                 IDE_TEST_RAISE( sSetYY != ID_FALSE,
                                 ERR_CONFLICT_FORMAT );
                 sSetYY = ID_TRUE;
@@ -3619,30 +3710,30 @@ mtdDateInterface::toDate( mtdDateType* aDate,
                 break;
             }
 
-            case MTD_DATE_FORMAT_SYYYY :    /* BUG-36296 SYYYY Format ì§€ì› */
+            case MTD_DATE_FORMAT_SYYYY :    /* BUG-36296 SYYYY Format Áö¿ø */
             {
-                // SYYYYì¼ ë•Œ : '-'ê°€ ë¨¼ì € ì˜¤ë©´ ìŒìˆ˜ì´ê³ , '+'/''ì´ë©´ ì–‘ìˆ˜ì´ë‹¤.
-                //     '-2005' : -2006ë…„
-                //     '-0005' : -6ë…„
-                //     '-005'  : -6ë…„
-                //     '-05'   : -6ë…„
-                //     '-5'    : -6ë…„
-                //     '2005'  : 2005ë…„
-                //     '0005'  : 5ë…„
-                //     '005'   : 5ë…„
-                //     '05'    : 5ë…„
-                //     '5'     : 5ë…„
-                //     '1970'  : 1970ë…„
-                //     '70'    : 70ë…„
-                //     '170'   : 170ë…„
-                //     '7'     : 7ë…„
+                // SYYYYÀÏ ¶§ : '-'°¡ ¸ÕÀú ¿À¸é À½¼öÀÌ°í, '+'/''ÀÌ¸é ¾ç¼öÀÌ´Ù.
+                //     '-2005' : -2006³â
+                //     '-0005' : -6³â
+                //     '-005'  : -6³â
+                //     '-05'   : -6³â
+                //     '-5'    : -6³â
+                //     '2005'  : 2005³â
+                //     '0005'  : 5³â
+                //     '005'   : 5³â
+                //     '05'    : 5³â
+                //     '5'     : 5³â
+                //     '1970'  : 1970³â
+                //     '70'    : 70³â
+                //     '170'   : 170³â
+                //     '7'     : 7³â
                 IDE_TEST_RAISE( sSetYY != ID_FALSE,
                                 ERR_CONFLICT_FORMAT );
                 sSetYY = ID_TRUE;
 
                 if ( *sString == '-' )
                 {
-                    // ë¶€í˜¸ ê¸¸ì´ë§Œí¼ ì…ë ¥ ë¬¸ìì—´ ì¤„ì„
+                    // ºÎÈ£ ±æÀÌ¸¸Å­ ÀÔ·Â ¹®ÀÚ¿­ ÁÙÀÓ
                     sString++;
                     sStringLen--;
 
@@ -3658,7 +3749,7 @@ mtdDateInterface::toDate( mtdDateType* aDate,
                 {
                     if ( *sString == '+' )
                     {
-                        // ë¶€í˜¸ ê¸¸ì´ë§Œí¼ ì…ë ¥ ë¬¸ìì—´ ì¤„ì„
+                        // ºÎÈ£ ±æÀÌ¸¸Å­ ÀÔ·Â ¹®ÀÚ¿­ ÁÙÀÓ
                         sString++;
                         sStringLen--;
                     }
@@ -3681,16 +3772,16 @@ mtdDateInterface::toDate( mtdDateType* aDate,
 
             case MTD_DATE_FORMAT_YYYY:
             {
-                // YYYYì¼ë•Œ : ì…ë ¥ê°’ì„ ê·¸ëŒ€ë¡œ ìˆ«ìë¡œ ë°”ê¾¼ë‹¤.
-                //     '2005' : 2005ë…„
-                //     '0005' : 5ë…„
-                //     '005'  : 5ë…„
-                //     '05'   : 5ë…„
-                //     '5'    : 5ë…„
-                //     '1970' : 1970ë…„
-                //     '70'   : 70ë…„
-                //     '170'  : 170ë…„
-                //     '7'    : 7ë…„
+                // YYYYÀÏ¶§ : ÀÔ·Â°ªÀ» ±×´ë·Î ¼ıÀÚ·Î ¹Ù²Û´Ù.
+                //     '2005' : 2005³â
+                //     '0005' : 5³â
+                //     '005'  : 5³â
+                //     '05'   : 5³â
+                //     '5'    : 5³â
+                //     '1970' : 1970³â
+                //     '70'   : 70³â
+                //     '170'  : 170³â
+                //     '7'    : 7³â
                 IDE_TEST_RAISE( sSetYY != ID_FALSE,
                                 ERR_CONFLICT_FORMAT );
                 sSetYY = ID_TRUE;
@@ -3709,13 +3800,13 @@ mtdDateInterface::toDate( mtdDateType* aDate,
 
             case MTD_DATE_FORMAT_YYY:
             {
-                // YYYì¼ë•Œ   : ê°’ì— 2000ì„ ë”í•œë‹¤.
-                //     '005'  : 2005ë…„
-                //     '05'   : 2005ë…„
-                //     '5'    : 2005ë…„
-                //     '70'   : 2070ë…„
-                //     '170'  : 2170ë…„
-                //     '7'    : 2007ë…„
+                // YYYÀÏ¶§   : °ª¿¡ 2000À» ´õÇÑ´Ù.
+                //     '005'  : 2005³â
+                //     '05'   : 2005³â
+                //     '5'    : 2005³â
+                //     '70'   : 2070³â
+                //     '170'  : 2170³â
+                //     '7'    : 2007³â
                 IDE_TEST_RAISE( sSetYY != ID_FALSE,
                                 ERR_CONFLICT_FORMAT );
                 sSetYY = ID_TRUE;
@@ -3734,12 +3825,12 @@ mtdDateInterface::toDate( mtdDateType* aDate,
 
             case MTD_DATE_FORMAT_YY:
             {
-                // YYì¼ë•Œ   : ê°’ì— 2000ì„ ë”í•œë‹¤.
-                //     '05'   : 2005ë…„
-                //     '5'    : 2005ë…„
-                //     '99'   : 2099ë…„
-                //     '50    : 2050ë…„
-                //     '49'   : 2049ë…„
+                // YYÀÏ¶§   : °ª¿¡ 2000À» ´õÇÑ´Ù.
+                //     '05'   : 2005³â
+                //     '5'    : 2005³â
+                //     '99'   : 2099³â
+                //     '50    : 2050³â
+                //     '49'   : 2049³â
                 IDE_TEST_RAISE( sSetYY != ID_FALSE,
                                 ERR_CONFLICT_FORMAT );
                 sSetYY = ID_TRUE;
@@ -3758,8 +3849,8 @@ mtdDateInterface::toDate( mtdDateType* aDate,
 
             case MTD_DATE_FORMAT_Y:
             {
-                // Yì¼ë•Œ   : ê°’ì— 2000ì„ ë”í•œë‹¤.
-                //     '5'    : 2005ë…„
+                // YÀÏ¶§   : °ª¿¡ 2000À» ´õÇÑ´Ù.
+                //     '5'    : 2005³â
                 IDE_TEST_RAISE( sSetYY != ID_FALSE,
                                 ERR_CONFLICT_FORMAT );
                 sSetYY = ID_TRUE;
@@ -3776,7 +3867,7 @@ mtdDateInterface::toDate( mtdDateType* aDate,
                 break;
             }
             
-            // Month: MM (ì •ìˆ˜ë¡œ ì…ë ¥í•˜ëŠ” 'ì›”'ì„ ì˜ë¯¸í•˜ëŠ” format)
+            // Month: MM (Á¤¼ö·Î ÀÔ·ÂÇÏ´Â '¿ù'À» ÀÇ¹ÌÇÏ´Â format)
             case MTD_DATE_FORMAT_MM:
             {
                 IDE_TEST_RAISE( sSetMM != ID_FALSE,
@@ -3828,8 +3919,8 @@ mtdDateInterface::toDate( mtdDateType* aDate,
                                             &sDayOfYear )
                           != IDE_SUCCESS );
                 
-                // ë‹¤ë¥¸ ì…ë ¥ ê°’(ë…„,ì›”,ì¼)ì— ë”°ë¼ ë‹¤ë¥¸ ì¡°ê±´ì„ ê²€ì‚¬í•´ì•¼
-                // í•˜ë¯€ë¡œ, ëª¨ë“  ì…ë ¥ì´ ì¢…ë£Œëœ í›„ ì‹¤ì œ ê°’ì„ ì…ë ¥
+                // ´Ù¸¥ ÀÔ·Â °ª(³â,¿ù,ÀÏ)¿¡ µû¶ó ´Ù¸¥ Á¶°ÇÀ» °Ë»çÇØ¾ß
+                // ÇÏ¹Ç·Î, ¸ğµç ÀÔ·ÂÀÌ Á¾·áµÈ ÈÄ ½ÇÁ¦ °ªÀ» ÀÔ·Â
 
                 break;
             }
@@ -3837,7 +3928,7 @@ mtdDateInterface::toDate( mtdDateType* aDate,
             // Hour: HH, HH12, HH24
             case MTD_DATE_FORMAT_HH12:
             {
-                // 12ì‹œê°„ ë‹¨ìœ„
+                // 12½Ã°£ ´ÜÀ§
                 IDE_TEST_RAISE( ( sSetHH12 != ID_FALSE ) ||
                                 ( sSetHH24 != ID_FALSE ),
                                 ERR_CONFLICT_FORMAT );
@@ -3856,8 +3947,8 @@ mtdDateInterface::toDate( mtdDateType* aDate,
                                                 &sNumber )
                               != IDE_SUCCESS );
                 
-                    // aDateì— ì…ë ¥ë˜ëŠ” ë²”ìœ„ëŠ” 1~24 ì´ì§€ë§Œ,
-                    // ë§Œì•½ PMì´ ëª…ì‹œëœ ê²½ìš° í•¨ìˆ˜ ì¢…ë£Œ ì „ì— +12
+                    // aDate¿¡ ÀÔ·ÂµÇ´Â ¹üÀ§´Â 1~24 ÀÌÁö¸¸,
+                    // ¸¸¾à PMÀÌ ¸í½ÃµÈ °æ¿ì ÇÔ¼ö Á¾·á Àü¿¡ +12
                     IDE_TEST_RAISE( sNumber > 12 || sNumber < 1,
                                     ERR_INVALID_HOUR );
                 }
@@ -3871,7 +3962,7 @@ mtdDateInterface::toDate( mtdDateType* aDate,
             case MTD_DATE_FORMAT_HH:
             case MTD_DATE_FORMAT_HH24:
             {
-                // 24ì‹œê°„ ë‹¨ìœ„
+                // 24½Ã°£ ´ÜÀ§
                 IDE_TEST_RAISE( ( sSetHH24 != ID_FALSE ) ||
                                 ( sSetHH12 != ID_FALSE ) ||
                                 ( sSetAMPM != ID_FALSE ),
@@ -4005,7 +4096,7 @@ mtdDateInterface::toDate( mtdDateType* aDate,
                                     ERR_NOT_ENOUGH_INPUT );
                 }
                 
-                // microsecondë¥¼ ì €ì¥í•˜ëŠ” ê³³ì— millisecondì €ì¥
+                // microsecond¸¦ ÀúÀåÇÏ´Â °÷¿¡ millisecondÀúÀå
                 IDE_TEST( setMicroSecond( aDate, sNumber * 100000 )
                           != IDE_SUCCESS );
                 
@@ -4039,7 +4130,7 @@ mtdDateInterface::toDate( mtdDateType* aDate,
                                     ERR_NOT_ENOUGH_INPUT );
                 }
                 
-                // microsecondë¥¼ ì €ì¥í•˜ëŠ” ê³³ì— millisecondì €ì¥
+                // microsecond¸¦ ÀúÀåÇÏ´Â °÷¿¡ millisecondÀúÀå
                 IDE_TEST( setMicroSecond( aDate, sNumber * 10000 )
                           != IDE_SUCCESS );
                 
@@ -4073,7 +4164,7 @@ mtdDateInterface::toDate( mtdDateType* aDate,
                                     ERR_NOT_ENOUGH_INPUT );
                 }
                 
-                // microsecondë¥¼ ì €ì¥í•˜ëŠ” ê³³ì— millisecondì €ì¥
+                // microsecond¸¦ ÀúÀåÇÏ´Â °÷¿¡ millisecondÀúÀå
                 IDE_TEST( setMicroSecond( aDate, sNumber * 1000 )
                           != IDE_SUCCESS );
                 
@@ -4107,7 +4198,7 @@ mtdDateInterface::toDate( mtdDateType* aDate,
                                     ERR_NOT_ENOUGH_INPUT );
                 }
                 
-                // microsecondë¥¼ ì €ì¥í•˜ëŠ” ê³³ì— millisecondì €ì¥
+                // microsecond¸¦ ÀúÀåÇÏ´Â °÷¿¡ millisecondÀúÀå
                 IDE_TEST( setMicroSecond( aDate, sNumber * 100 )
                           != IDE_SUCCESS );
                 
@@ -4141,7 +4232,7 @@ mtdDateInterface::toDate( mtdDateType* aDate,
                                     ERR_NOT_ENOUGH_INPUT );
                 }
                 
-                // microsecondë¥¼ ì €ì¥í•˜ëŠ” ê³³ì— millisecondì €ì¥
+                // microsecond¸¦ ÀúÀåÇÏ´Â °÷¿¡ millisecondÀúÀå
                 IDE_TEST( setMicroSecond( aDate, sNumber * 10 )
                           != IDE_SUCCESS );
                 
@@ -4250,14 +4341,14 @@ mtdDateInterface::toDate( mtdDateType* aDate,
                 sMinute = ( sNumber - sHour * 3600 ) / 60;
                 sSecond = sNumber % 60;
                 
-                // switchë¬¸ì´ ì¢…ë£Œëœ ì´í›„ì—
-                // ê¸°ì¡´ì— ì„¤ì •ëœ ì‹œê°„/ë¶„/ì´ˆê°€ ìˆë‹¤ë©´ ì¶©ëŒí•˜ëŠ”ì§€ ê²€ì‚¬
+                // switch¹®ÀÌ Á¾·áµÈ ÀÌÈÄ¿¡
+                // ±âÁ¸¿¡ ¼³Á¤µÈ ½Ã°£/ºĞ/ÃÊ°¡ ÀÖ´Ù¸é Ãæµ¹ÇÏ´ÂÁö °Ë»ç
                 
                 break;
             }
 
             /***********************************
-             * ì˜¤ì „/ì˜¤í›„ë¥¼ ë‚˜íƒ€ë‚´ëŠ” FORMAT
+             * ¿ÀÀü/¿ÀÈÄ¸¦ ³ªÅ¸³»´Â FORMAT
              ***********************************/
             case MTD_DATE_FORMAT_AM_U:
             case MTD_DATE_FORMAT_AM_UL:
@@ -4297,12 +4388,12 @@ mtdDateInterface::toDate( mtdDateType* aDate,
                     // nothing to do
                 }
                                     
-                // ì‹¤ì œ aDateì— ë°˜ì˜ì€ loop ì¢…ë£Œ í›„
+                // ½ÇÁ¦ aDate¿¡ ¹İ¿µÀº loop Á¾·á ÈÄ
                 break;
             }
             
             /***********************************
-             * ì˜ë¬¸ìœ¼ë¡œ ì…ë ¥ëœ 'ì›”'ì„ ë‚˜íƒ€ë‚´ëŠ” ë¬¸ìì—´
+             * ¿µ¹®À¸·Î ÀÔ·ÂµÈ '¿ù'À» ³ªÅ¸³»´Â ¹®ÀÚ¿­
              ***********************************/
             case MTD_DATE_FORMAT_MON_U:
             case MTD_DATE_FORMAT_MON_UL:
@@ -4327,7 +4418,7 @@ mtdDateInterface::toDate( mtdDateType* aDate,
                 break;
             }
             
-            // ë¡œë§ˆìë¡œ ëœ ì›”
+            // ·Î¸¶ÀÚ·Î µÈ ¿ù
             case MTD_DATE_FORMAT_RM_U:
             case MTD_DATE_FORMAT_RM_L:
             {
@@ -4347,15 +4438,15 @@ mtdDateInterface::toDate( mtdDateType* aDate,
             }
             
             /***********************************
-             * ""ë¡œ ë¬¶ì¸ ë¬¸ìì—´
+             * ""·Î ¹­ÀÎ ¹®ÀÚ¿­
              ***********************************/
             case MTD_DATE_FORMAT_DOUBLE_QUOTE_STRING:
             {
-                // ì–‘ìª½ ìŒ ë”°ì˜´í‘œëŠ” ì œì™¸í•˜ê³  ë¬¸ìì—´ì„ ë¹„êµí•´ì•¼ í•œë‹¤
-                // ë”°ë¼ì„œ ê¸¸ì´ëŠ” -2ë§Œí¼ ì¤„ì´ê³ 
-                // í† í°ì˜ ì‹œì‘ì€ +1ë§Œí¼ ê±´ë„ˆë›°ì–´ ì‹œì‘í•˜ë©´ ëœë‹¤
+                // ¾çÂÊ ½Ö µû¿ÈÇ¥´Â Á¦¿ÜÇÏ°í ¹®ÀÚ¿­À» ºñ±³ÇØ¾ß ÇÑ´Ù
+                // µû¶ó¼­ ±æÀÌ´Â -2¸¸Å­ ÁÙÀÌ°í
+                // ÅäÅ«ÀÇ ½ÃÀÛÀº +1¸¸Å­ °Ç³Ê¶Ù¾î ½ÃÀÛÇÏ¸é µÈ´Ù
 
-                // double quote stringì˜ ê¸¸ì´ ê³„ì‚°
+                // double quote stringÀÇ ±æÀÌ °è»ê
                 sFormatLen = (UInt) mtddlget_leng( sScanner ) - 2;
 
                 IDE_TEST_RAISE( sStringLen < sFormatLen,
@@ -4368,7 +4459,7 @@ mtdDateInterface::toDate( mtdDateType* aDate,
                                      sFormatLen ),
                     ERR_LITERAL_MISMATCH );
 
-                // ë¬¸ìì—´ì˜ ê¸¸ì´ë§Œí¼ ì…ë ¥ ë¬¸ìì—´ ì¤„ì„
+                // ¹®ÀÚ¿­ÀÇ ±æÀÌ¸¸Å­ ÀÔ·Â ¹®ÀÚ¿­ ÁÙÀÓ
                 sString    += sFormatLen;
                 sStringLen -= sFormatLen;
                 
@@ -4376,22 +4467,22 @@ mtdDateInterface::toDate( mtdDateType* aDate,
             }
             
             /***********************************
-             * êµ¬ë¶„ì -/,.:;'
+             * ±¸ºĞÀÚ -/,.:;'
              ***********************************/
             case MTD_DATE_FORMAT_SEPARATOR:
             {
-                // FORMATì— separatorê°€ ë“±ì¥í•˜ë©´,
-                // input stringì— seperatorë‚˜ white spaceê°€ ê¼­ ë‚˜ì™€ì•¼ í•¨
-                // BUG-18788 sStringLenì„ ê²€ì‚¬í•´ì•¼ í•¨
+                // FORMAT¿¡ separator°¡ µîÀåÇÏ¸é,
+                // input string¿¡ seperator³ª white space°¡ ²À ³ª¿Í¾ß ÇÔ
+                // BUG-18788 sStringLenÀ» °Ë»çÇØ¾ß ÇÔ
                 if ( sStringLen > 0 )
                 {
                     if ( ( mInputST[*sString] == mSEPAR ) || ( sPrecededWHSP == ID_TRUE ) )
                     {
-                        // white spaceê°€ êµ¬ë¶„ìë¡œ ì‚¬ìš©ëœ ê²½ìš°ëŠ” ì´ë¯¸ switchë¬¸ ì´ì „ì— ì œê±°ë˜ì—ˆì„ ê²ƒì´ë¯€ë¡œ
-                        // êµ¬ë¶„ìì¸ ê²½ìš°ì—ë§Œ ì…ë ¥ ë¬¸ìì—´ ìœ„ì¹˜ë¥¼ ë³€ê²½í•˜ê³ , ê¸¸ì´ë¥¼ ì¡°ì •í•¨
-                        // êµ¬ë¶„ìê°€ ì—¬ëŸ¬ ë¬¸ìë¡œ êµ¬ì„±ëœ ê²½ìš°, í•´ë‹¹ ë¬¸ìì—´ ê¸¸ì´ ë§Œí¼ ì¤„ì„
+                        // white space°¡ ±¸ºĞÀÚ·Î »ç¿ëµÈ °æ¿ì´Â ÀÌ¹Ì switch¹® ÀÌÀü¿¡ Á¦°ÅµÇ¾úÀ» °ÍÀÌ¹Ç·Î
+                        // ±¸ºĞÀÚÀÎ °æ¿ì¿¡¸¸ ÀÔ·Â ¹®ÀÚ¿­ À§Ä¡¸¦ º¯°æÇÏ°í, ±æÀÌ¸¦ Á¶Á¤ÇÔ
+                        // ±¸ºĞÀÚ°¡ ¿©·¯ ¹®ÀÚ·Î ±¸¼ºµÈ °æ¿ì, ÇØ´ç ¹®ÀÚ¿­ ±æÀÌ ¸¸Å­ ÁÙÀÓ
                         sFormatLen = (UInt) mtddlget_leng( sScanner );
-                        // BUG-18788 sStringLenì„ ê²€ì‚¬í•´ì•¼ í•¨
+                        // BUG-18788 sStringLenÀ» °Ë»çÇØ¾ß ÇÔ
                         for ( sIdx=0;
                               ( sIdx < (SInt)sFormatLen ) && ( sStringLen > 0 );
                               sIdx++ )
@@ -4421,7 +4512,7 @@ mtdDateInterface::toDate( mtdDateType* aDate,
             }
             
             /***********************************
-             * ì´ë„ ì €ë„ ì•„ë‹ˆë©´ ì¸ì‹í•  ìˆ˜ ì—†ëŠ” í¬ë§·
+             * ÀÌµµ Àúµµ ¾Æ´Ï¸é ÀÎ½ÄÇÒ ¼ö ¾ø´Â Æ÷¸Ë
              ***********************************/
             default:
             {
@@ -4437,23 +4528,19 @@ mtdDateInterface::toDate( mtdDateType* aDate,
             
         }
 
-        // ë‹¤ìŒ í¬ë§·ì˜ ì‹œì‘ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚´
+        // ´ÙÀ½ Æ÷¸ËÀÇ ½ÃÀÛÀ§Ä¡¸¦ °¡¸®Å´
         sFormat += mtddlget_leng( sScanner );
         
         // get next token
         sToken = mtddllex( sScanner );
     }
-    
-    mtddllex_destroy ( sScanner );
-    sInitScanner = ID_FALSE;
 
-
-    // ìŠ¤ìº”ì„ ëª¨ë‘ ëëƒˆëŠ”ë°, stringì´ ë‚¨ì•„ ìˆë‹¤ë©´ ì—ëŸ¬
+    // ½ºÄµÀ» ¸ğµÎ ³¡³Â´Âµ¥, stringÀÌ ³²¾Æ ÀÖ´Ù¸é ¿¡·¯
     IDE_TEST_RAISE( sStringLen != 0,
                     ERR_NOT_ENOUGH_FORMAT );
 
     //-----------------------------------------------------------
-    // ë…„/ì›”/ì¼ ê´€ë ¨ ê²€ì¦
+    // ³â/¿ù/ÀÏ °ü·Ã °ËÁõ
     //-----------------------------------------------------------
 
     if( isLeapYear( year(aDate) ) == ID_TRUE )
@@ -4465,22 +4552,22 @@ mtdDateInterface::toDate( mtdDateType* aDate,
         sLeap = 0;
     }
 
-    // Day of yearê°€ ì…ë ¥ë˜ì–´ ìˆëŠ” ê²½ìš° í™•ì¸í•˜ì—¬ ì ì ˆí•˜ê²Œ ì…ë ¥í•¨
-    // DDDëŠ” ì•„ë˜ì™€ ê°™ì€ ê²½ìš°ì— ë¬¸ì œê°€ ìˆìŒ.
-    // TO_DATE( '366-2004', 'DDD-YYYY' ) => ì˜¬ë°”ë¥¸ ê²°ê³¼ëŠ” 2004ë…„ 12ì›” 31ì¼
-    // í•˜ì§€ë§Œ í˜„ì¬ ë‚ ì§œê°€ 2005ë…„ë„ì´ê¸° ë•Œë¬¸ì— 366ì´ ë“¤ì–´ê°€ë©´ 12ì›”
-    // 31ì¼ì„ ë„˜ê¸° ë•Œë¬¸ì— INVALID_DAY ì—ëŸ¬ ë°œìƒí•¨.  ë¬¸ì œì˜ ì›ì¸ì€ date
-    // format modelì„ ì•ì—ì„œë¶€í„° ìˆœì„œëŒ€ë¡œ ì½ê¸° ë•Œë¬¸ì„.
-    // => ë”°ë¼ì„œ ëª¨ë“  ì…ë ¥ì„ ì²˜ë¦¬í•œë’¤, ë§ˆì§€ë§‰ìœ¼ë¡œ ì í•©ì„±ì„ ê²€ì‚¬í•˜ì—¬ ê°’ì„ ì…ë ¥
+    // Day of year°¡ ÀÔ·ÂµÇ¾î ÀÖ´Â °æ¿ì È®ÀÎÇÏ¿© ÀûÀıÇÏ°Ô ÀÔ·ÂÇÔ
+    // DDD´Â ¾Æ·¡¿Í °°Àº °æ¿ì¿¡ ¹®Á¦°¡ ÀÖÀ½.
+    // TO_DATE( '366-2004', 'DDD-YYYY' ) => ¿Ã¹Ù¸¥ °á°ú´Â 2004³â 12¿ù 31ÀÏ
+    // ÇÏÁö¸¸ ÇöÀç ³¯Â¥°¡ 2005³âµµÀÌ±â ¶§¹®¿¡ 366ÀÌ µé¾î°¡¸é 12¿ù
+    // 31ÀÏÀ» ³Ñ±â ¶§¹®¿¡ INVALID_DAY ¿¡·¯ ¹ß»ıÇÔ.  ¹®Á¦ÀÇ ¿øÀÎÀº date
+    // format modelÀ» ¾Õ¿¡¼­ºÎÅÍ ¼ø¼­´ë·Î ÀĞ±â ¶§¹®ÀÓ.
+    // => µû¶ó¼­ ¸ğµç ÀÔ·ÂÀ» Ã³¸®ÇÑµÚ, ¸¶Áö¸·À¸·Î ÀûÇÕ¼ºÀ» °Ë»çÇÏ¿© °ªÀ» ÀÔ·Â
     if( sSetDDD == ID_TRUE )
     {
 
         IDE_TEST_RAISE( (sDayOfYear < 1 ) || ( sDayOfYear > (UInt)(365+sLeap) ),
                         ERR_INVALID_DAY_OF_YEAR );
 
-        // 'ì›”'ì„ ê³„ì‚°
-        // day of yearë¥¼ 30ìœ¼ë¡œ ë‚˜ëˆˆ ê°’ì€ í•­ìƒ í•´ë‹¹ 'ì›”'ì´ê±°ë‚˜
-        // í•´ë‹¹ 'ì›”'ë³´ë‹¤ 1ì‘ì€ 'ì›”'ì´ ë‚˜ì˜¤ë¯€ë¡œ ì•„ë˜ì™€ ê°™ì´ ê³„ì‚° ê°€ëŠ¥
+        // '¿ù'À» °è»ê
+        // day of year¸¦ 30À¸·Î ³ª´« °ªÀº Ç×»ó ÇØ´ç '¿ù'ÀÌ°Å³ª
+        // ÇØ´ç '¿ù'º¸´Ù 1ÀÛÀº '¿ù'ÀÌ ³ª¿À¹Ç·Î ¾Æ·¡¿Í °°ÀÌ °è»ê °¡´É
         sMonth = (UChar)(sDayOfYear/30);
         if( sDayOfYear > mAccDaysOfMonth[sLeap][sMonth] )
         {
@@ -4494,20 +4581,20 @@ mtdDateInterface::toDate( mtdDateType* aDate,
         IDE_TEST_RAISE( sMonth == 0,
                         ERR_INVALID_DAY_OF_YEAR );
 
-        // 'ì¼'ì„ ê³„ì‚°
+        // 'ÀÏ'À» °è»ê
         sDay = sDayOfYear - mAccDaysOfMonth[sLeap][sMonth-1];
         
-        // ì´ë¯¸ 'ì›”'ì´ ì…ë ¥ë˜ì—ˆë‹¤ë©´, day of yearë¡œ ì§€ì •í•œ 'ì›”'ê³¼ ì¼ì¹˜í•˜ì—¬ì•¼ í•¨
+        // ÀÌ¹Ì '¿ù'ÀÌ ÀÔ·ÂµÇ¾ú´Ù¸é, day of year·Î ÁöÁ¤ÇÑ '¿ù'°ú ÀÏÄ¡ÇÏ¿©¾ß ÇÔ
         IDE_TEST_RAISE( ( sSetMM == ID_TRUE ) &&
                         ( sMonth != month(aDate) ),
                         ERR_DDD_CONFLICT_MM );
         
-        // ì´ë¯¸ 'ì¼'ì´ ì…ë ¥ë˜ì—ˆë‹¤ë©´, day of yearë¡œ ì§€ì •ëœ 'ì¼'ê³¼ ì¼ì¹˜í•˜ì—¬ì•¼ í•¨
+        // ÀÌ¹Ì 'ÀÏ'ÀÌ ÀÔ·ÂµÇ¾ú´Ù¸é, day of year·Î ÁöÁ¤µÈ 'ÀÏ'°ú ÀÏÄ¡ÇÏ¿©¾ß ÇÔ
         IDE_TEST_RAISE( ( sSetDD == ID_TRUE ) &&
                         ( sDay != day(aDate) ),
                         ERR_DDD_CONFLICT_DD );
 
-        // ìœ„ì˜ ì—ëŸ¬ ê²€ì‚¬ë¥¼ ëª¨ë‘ í†µê³¼í•˜ë©´ ê°’ì„ ì…ë ¥
+        // À§ÀÇ ¿¡·¯ °Ë»ç¸¦ ¸ğµÎ Åë°úÇÏ¸é °ªÀ» ÀÔ·Â
         IDE_TEST( setMonth( aDate, sMonth ) != IDE_SUCCESS );
         IDE_TEST( setDay( aDate, sDay ) != IDE_SUCCESS );
 
@@ -4516,11 +4603,11 @@ mtdDateInterface::toDate( mtdDateType* aDate,
     }
     else
     {
-        // 'DDD'í¬ë§·ì„ ì´ìš©í•˜ì—¬ day of yearê°€ ì…ë ¥ë˜ì§€ ì•Šì€ ê²½ìš°
+        // 'DDD'Æ÷¸ËÀ» ÀÌ¿ëÇÏ¿© day of year°¡ ÀÔ·ÂµÇÁö ¾ÊÀº °æ¿ì
         // do nothing
     }
 
-    /* BUG-36296 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
+    /* BUG-36296 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±İ)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
     if ( ( year( aDate ) == 1582 ) &&
          ( month( aDate ) == 10 ) &&
          ( 4 < day( aDate ) ) && ( day( aDate ) < 15 ) )
@@ -4533,13 +4620,13 @@ mtdDateInterface::toDate( mtdDateType* aDate,
     }
 
     // fix BUG-18787
-    // year ë˜ëŠ” monthê°€ ì„¸íŒ…ì´ ì•ˆë˜ì–´ìˆì„ ê²½ìš°ì—ëŠ”
-    // ë‚˜ì¤‘ì— ì²´í¬í•œë‹¤.
+    // year ¶Ç´Â month°¡ ¼¼ÆÃÀÌ ¾ÈµÇ¾îÀÖÀ» °æ¿ì¿¡´Â
+    // ³ªÁß¿¡ Ã¼Å©ÇÑ´Ù.
     if ( ( year( aDate ) != ID_SSHORT_MAX ) &&
          ( month( aDate ) != 0 ) )
     {
-        // 'ì¼'ì´ ì œëŒ€ë¡œ (ìœ¤ë…„ë“±ì„ ê³ ë ¤í•˜ì—¬) ì„¤ì •ë˜ì—ˆëŠ”ì§€ ê²€ì‚¬
-        // lower boundëŠ” setDayì—ì„œ ê²€ì‚¬í–ˆìœ¼ë¯€ë¡œ upper boundë§Œ ê²€ì‚¬
+        // 'ÀÏ'ÀÌ Á¦´ë·Î (À±³âµîÀ» °í·ÁÇÏ¿©) ¼³Á¤µÇ¾ú´ÂÁö °Ë»ç
+        // lower bound´Â setDay¿¡¼­ °Ë»çÇßÀ¸¹Ç·Î upper bound¸¸ °Ë»ç
         IDE_TEST_RAISE( day(aDate) > mDaysOfMonth[sLeap][month(aDate)],
                         ERR_INVALID_DAY );
     }
@@ -4549,12 +4636,12 @@ mtdDateInterface::toDate( mtdDateType* aDate,
     }
     
     //-----------------------------------------------------------
-    // ì‹œ/ë¶„/ì´ˆ ê´€ë ¨ ê²€ì¦
+    // ½Ã/ºĞ/ÃÊ °ü·Ã °ËÁõ
     //-----------------------------------------------------------    
     // To fix BUG-14516
-    // am/pm formatì„ ì‚¬ìš©í•œ ê²½ìš° HHë‚˜ HH24ë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
-    // -> sSetXXXX ë¥¼ ì´ìš©í•˜ì—¬ ëª¨ë“  í¬ë§· ì‚¬ìš©ì˜ ì¤‘ë³µì„ ê²€ì‚¬í•˜ë¯€ë¡œ
-    // ì´ ë‹¨ê³„ì—ì„œ ë”°ë¡œ ê²€ì‚¬ë¥¼ ìˆ˜í–‰í•  í•„ìš”ê°€ ì—†ë‹¤.
+    // am/pm formatÀ» »ç¿ëÇÑ °æ¿ì HH³ª HH24¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù.
+    // -> sSetXXXX ¸¦ ÀÌ¿ëÇÏ¿© ¸ğµç Æ÷¸Ë »ç¿ëÀÇ Áßº¹À» °Ë»çÇÏ¹Ç·Î
+    // ÀÌ ´Ü°è¿¡¼­ µû·Î °Ë»ç¸¦ ¼öÇàÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
     if( ( sSetHH12 == ID_TRUE ) ||
         ( sSetAMPM == ID_TRUE ) )
     {
@@ -4563,7 +4650,7 @@ mtdDateInterface::toDate( mtdDateType* aDate,
             if( hour(aDate) == 12 )
             {
                 // BUG-15640
-                // 12AMì€ 00AMì´ë‹¤.
+                // 12AMÀº 00AMÀÌ´Ù.
                 setHour( aDate, 0 );
             }
             else
@@ -4576,7 +4663,7 @@ mtdDateInterface::toDate( mtdDateType* aDate,
             if( hour(aDate) == 12 )
             {
                 // BUG-15640
-                // 12PMì€ 12PMì´ë‹¤.
+                // 12PMÀº 12PMÀÌ´Ù.
                 // Nothing to do.
             }
             else
@@ -4587,49 +4674,49 @@ mtdDateInterface::toDate( mtdDateType* aDate,
     }
     else
     {
-        // 24ì‹œê°„ ë‹¨ìœ„ì˜ ì…ë ¥ì¸ ê²½ìš°
+        // 24½Ã°£ ´ÜÀ§ÀÇ ÀÔ·ÂÀÎ °æ¿ì
         // do nothing
     }    
     
-    // 'SSSSS' í¬ë§·ì„ í†µí•´ ê°’ì´ ì…ë ¥ëœ ê²½ìš°, HH[12|24]?, MI, SSë¡œ
-    // ì…ë ¥ëœ ê°’ì´ ìˆë‹¤ë©´ ì¼ì¹˜í•´ì•¼ í•¨
+    // 'SSSSS' Æ÷¸ËÀ» ÅëÇØ °ªÀÌ ÀÔ·ÂµÈ °æ¿ì, HH[12|24]?, MI, SS·Î
+    // ÀÔ·ÂµÈ °ªÀÌ ÀÖ´Ù¸é ÀÏÄ¡ÇØ¾ß ÇÔ
     if( sSetSID == ID_TRUE )
     {
-        // ì´ë¯¸ 'ì‹œ'ê°€ ì…ë ¥ ë˜ì—ˆë‹¤ë©´, seconds in dayë¡œ ì…ë ¥ëœ ê°’ê³¼ ì¼ì¹˜í•˜ì—¬ì•¼ í•¨
+        // ÀÌ¹Ì '½Ã'°¡ ÀÔ·Â µÇ¾ú´Ù¸é, seconds in day·Î ÀÔ·ÂµÈ °ª°ú ÀÏÄ¡ÇÏ¿©¾ß ÇÔ
         IDE_TEST_RAISE( ( ( sSetHH12 == ID_TRUE ) || ( sSetHH24 == ID_TRUE ) ) &&
                         ( sHour != hour(aDate) ),
                         ERR_SSSSS_CONFLICT_HH );
         
-        // ì´ë¯¸ 'ë¶„'ì´ ì…ë ¥ ë˜ì—ˆë‹¤ë©´, seconds in dayë¡œ ì…ë ¥ëœ ê°’ê³¼ ì¼ì¹˜í•˜ì—¬ì•¼ í•¨
+        // ÀÌ¹Ì 'ºĞ'ÀÌ ÀÔ·Â µÇ¾ú´Ù¸é, seconds in day·Î ÀÔ·ÂµÈ °ª°ú ÀÏÄ¡ÇÏ¿©¾ß ÇÔ
         IDE_TEST_RAISE( ( sSetMI == ID_TRUE ) &&
                         ( sMinute != minute(aDate) ),
                         ERR_SSSSS_CONFLICT_MI );
 
-        // ì´ë¯¸ 'ì´ˆ'ê°€ ì…ë ¥ ë˜ì—ˆë‹¤ë©´, seconds in dayë¡œ ì…ë ¥ëœ ê°’ê³¼ ì¼ì¹˜í•˜ì—¬ì•¼ í•¨
+        // ÀÌ¹Ì 'ÃÊ'°¡ ÀÔ·Â µÇ¾ú´Ù¸é, seconds in day·Î ÀÔ·ÂµÈ °ª°ú ÀÏÄ¡ÇÏ¿©¾ß ÇÔ
         IDE_TEST_RAISE( ( sSetSS == ID_TRUE ) &&
                         ( sSecond != second(aDate) ),
                         ERR_SSSSS_CONFLICT_SS );
 
-        // ìœ„ì˜ ì—ëŸ¬ ê²€ì‚¬ë¥¼ ëª¨ë‘ í†µê³¼í•˜ë©´ ê°’ì„ ì…ë ¥
+        // À§ÀÇ ¿¡·¯ °Ë»ç¸¦ ¸ğµÎ Åë°úÇÏ¸é °ªÀ» ÀÔ·Â
         IDE_TEST( setHour( aDate, sHour ) != IDE_SUCCESS );        
         IDE_TEST( setMinute( aDate, sMinute ) != IDE_SUCCESS );
         IDE_TEST( setSecond( aDate, sSecond ) != IDE_SUCCESS );
     }
     else
     {
-        // 'SSSSS'í¬ë§·ì„ ì´ìš©í•˜ì—¬ seconds in dayê°€ ì…ë ¥ë˜ì§€ ì•Šì€ ê²½ìš°
+        // 'SSSSS'Æ÷¸ËÀ» ÀÌ¿ëÇÏ¿© seconds in day°¡ ÀÔ·ÂµÇÁö ¾ÊÀº °æ¿ì
         // do nothing        
     }
     
     
-//  // dat of weekë„ day of yearì™€ ê°™ì€ ì´ìœ ë¡œ ì—¬ê¸°ì„œ ì…ë ¥ë˜ì–´ì•¼ í•¨
+//  // dat of weekµµ day of year¿Í °°Àº ÀÌÀ¯·Î ¿©±â¼­ ÀÔ·ÂµÇ¾î¾ß ÇÔ
 //  // day of week
 //  if( sSetDOW == ID_TRUE )
 //  {
 //  }
 
 
-    // format ì´ë‚˜ inputì´ ë‚¨ëŠ” ê²½ìš° ê²€ì‚¬
+    // format ÀÌ³ª inputÀÌ ³²´Â °æ¿ì °Ë»ç
     
     return IDE_SUCCESS;
 
@@ -4690,30 +4777,19 @@ mtdDateInterface::toDate( mtdDateType* aDate,
     {
         IDE_SET(ideSetErrorCode(mtERR_ABORT_INVALID_DAY));
     }
-    IDE_EXCEPTION( ERR_LEX_INIT_FAILED )
-    {
-        IDE_SET( ideSetErrorCode( mtERR_ABORT_UNEXPECTED_ERROR,
-                                  "mtdDateInterface::toDate",
-                                  "Lex init failed" ));
-    }
     IDE_EXCEPTION_END;
 
-    if ( sInitScanner == ID_TRUE )
-    {
-        mtddllex_destroy ( sScanner );
-    }
-    
     return IDE_FAILURE;
     
 }
 
-IDE_RC
-mtdDateInterface::toChar( mtdDateType* aDate,
-                          UChar*       aString,
-                          UInt*        aStringLen,    // ì‹¤ì œ ê¸°ë¡ëœ ê¸¸ì´ ì €ì¥
-                          SInt         aStringMaxLen,
-                          UChar*       aFormat,
-                          UInt         aFormatLen )
+IDE_RC mtdDateInterface::toCharInternal( mtdDateType * aDate,
+                                         UChar       * aString,
+                                         UInt        * aStringLen,    // ½ÇÁ¦ ±â·ÏµÈ ±æÀÌ ÀúÀå
+                                         SInt          aStringMaxLen,
+                                         UChar       * aFormat,
+                                         UInt          aFormatLen,
+                                         void        * aScanner )
 {
     UInt    sToken;
 
@@ -4729,14 +4805,13 @@ mtdDateInterface::toChar( mtdDateType* aDate,
     UShort       sWeekOfMonth;
     SShort       sAbsYear      = 0;
     yyscan_t     sScanner;
-    idBool       sInitScanner  = ID_FALSE;
     idBool       sIsFillMode   = ID_FALSE;
     UChar       *sString       = aString;
     SInt         sStringMaxLen = aStringMaxLen;
     UInt         sLength       = 0;
 
     // for error msg
-    UChar       *sFormat;     // í˜„ì¬ ì²˜ë¦¬í•˜ê³  ìˆëŠ” í¬ë§·ì˜ ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚´
+    UChar       *sFormat;     // ÇöÀç Ã³¸®ÇÏ°í ÀÖ´Â Æ÷¸ËÀÇ À§Ä¡¸¦ °¡¸®Å´
     UChar        sErrorFormat[MTC_TO_CHAR_MAX_PRECISION+1];
     UInt         sFormatLen;    
 
@@ -4749,29 +4824,26 @@ mtdDateInterface::toChar( mtdDateType* aDate,
         sAbsYear = sYear;
     }
 
-    // terminate characterë¥¼ ê³ ë ¤í•˜ì—¬ ì‹¤ì œë¡œ ë¬¸ìë¥¼ ì €ì¥í•  ìˆ˜ ìˆëŠ” ìµœëŒ€
-    // ê¸¸ì´ëŠ” í•˜ë‚˜ ì¤„ì„
+    // terminate character¸¦ °í·ÁÇÏ¿© ½ÇÁ¦·Î ¹®ÀÚ¸¦ ÀúÀåÇÒ ¼ö ÀÖ´Â ÃÖ´ë
+    // ±æÀÌ´Â ÇÏ³ª ÁÙÀÓ
     sStringMaxLen--;
-    
-    IDE_TEST_RAISE( mtddllex_init ( &sScanner ) != 0, ERR_LEX_INIT_FAILED );
-    sInitScanner = ID_TRUE;
-    
-    sFormat = aFormat;
-    mtddl_scan_bytes( (const char*)aFormat, aFormatLen, sScanner );
+
+    sFormat         = aFormat;
+    sScanner        = aScanner;
 
     // get first token
     sToken = mtddllex( sScanner );
     while( sToken != 0 )
     {
-        /* BUG-36296 FMì€ ê³µê°„ì„ ì°¨ì§€í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+        /* BUG-36296 FMÀº °ø°£À» Â÷ÁöÇÏÁö ¾Ê´Â´Ù. */
         sLength = 0;
 
         switch ( sToken )
         {
-            // ë°˜ë³µì ìœ¼ë¡œ appendFORMATì„ í˜¸ì¶œí•¨ì— ë”°ë¼
-            // 'ëŸ¬ì‹œì•„ í˜ì¸íŠ¸ê³µ ì•Œê³ ë¦¬ì¦˜'ì˜ ë¬¸ì œê°€ ë°œìƒí•¨
-            // ë”°ë¼ì„œ appendFORMATì„ snprintfë¡œ ë°”ê¾¸ê³ ,
-            // ì¶œë ¥ë˜ëŠ” ê¸¸ì´ì—ë”°ë¼ ë¬¸ìì—´ í¬ì¸í„°ë¥¼ ì¡°ì •
+            // ¹İº¹ÀûÀ¸·Î appendFORMATÀ» È£ÃâÇÔ¿¡ µû¶ó
+            // '·¯½Ã¾Æ ÆäÀÎÆ®°ø ¾Ë°í¸®Áò'ÀÇ ¹®Á¦°¡ ¹ß»ıÇÔ
+            // µû¶ó¼­ appendFORMATÀ» snprintf·Î ¹Ù²Ù°í,
+            // Ãâ·ÂµÇ´Â ±æÀÌ¿¡µû¶ó ¹®ÀÚ¿­ Æ÷ÀÎÅÍ¸¦ Á¶Á¤
             case MTD_DATE_FORMAT_SEPARATOR :
                 sLength = IDL_MIN( sStringMaxLen, mtddlget_leng(sScanner) );
                 idlOS::memcpy( sString,
@@ -4824,7 +4896,7 @@ mtdDateInterface::toChar( mtdDateType* aDate,
             case MTD_DATE_FORMAT_SCC :
                 if ( sYear <= 0 )
                 {
-                    /* Year 0ì€ BC -1ë…„ì´ë‹¤. ì ˆëŒ€ê°’ì„ êµ¬í•˜ê¸° ì „ì— ë³´ì •í•œë‹¤. */
+                    /* Year 0Àº BC -1³âÀÌ´Ù. Àı´ë°ªÀ» ±¸ÇÏ±â Àü¿¡ º¸Á¤ÇÑ´Ù. */
                     if ( sIsFillMode == ID_FALSE )
                     {
                         sLength = idlOS::snprintf( (SChar *)sString,
@@ -4862,8 +4934,8 @@ mtdDateInterface::toChar( mtdDateType* aDate,
             case MTD_DATE_FORMAT_CC :
                 if ( sYear <= 0 )
                 {
-                    /* Year 0ì€ BC -1ë…„ì´ë‹¤. ì ˆëŒ€ê°’ì„ êµ¬í•˜ê¸° ì „ì— ë³´ì •í•œë‹¤.
-                     * ìŒìˆ˜ì¼ ë•Œ, ë¶€í˜¸ë¥¼ ì œê±°í•œë‹¤. (Oracle)
+                    /* Year 0Àº BC -1³âÀÌ´Ù. Àı´ë°ªÀ» ±¸ÇÏ±â Àü¿¡ º¸Á¤ÇÑ´Ù.
+                     * À½¼öÀÏ ¶§, ºÎÈ£¸¦ Á¦°ÅÇÑ´Ù. (Oracle)
                      */
                     if ( sIsFillMode == ID_FALSE )
                     {
@@ -5353,7 +5425,7 @@ mtdDateInterface::toChar( mtdDateType* aDate,
                 }
                 break;
 
-            case MTD_DATE_FORMAT_IW :   /* BUG-42926 TO_CHAR()ì— IW ì¶”ê°€ */
+            case MTD_DATE_FORMAT_IW :   /* BUG-42926 TO_CHAR()¿¡ IW Ãß°¡ */
                 if ( sIsFillMode == ID_FALSE )
                 {
                     sLength = idlOS::snprintf( (SChar *) sString,
@@ -5370,7 +5442,7 @@ mtdDateInterface::toChar( mtdDateType* aDate,
                 }
                 break;
 
-            case MTD_DATE_FORMAT_IYYY :   /* BUG-46727 TO_CHAR()ì— IYYY ì¶”ê°€ */
+            case MTD_DATE_FORMAT_IYYY :   /* BUG-46727 TO_CHAR()¿¡ IYYY Ãß°¡ */
                 if ( sIsFillMode == ID_FALSE )
                 {
                     sLength = idlOS::snprintf( (SChar *) sString,
@@ -5387,7 +5459,7 @@ mtdDateInterface::toChar( mtdDateType* aDate,
                 }
                 break;
 
-            case MTD_DATE_FORMAT_IYY :   /* BUG-46727 TO_CHAR()ì— IYY ì¶”ê°€ */
+            case MTD_DATE_FORMAT_IYY :   /* BUG-46727 TO_CHAR()¿¡ IYY Ãß°¡ */
                 if ( sIsFillMode == ID_FALSE )
                 {
                     sLength = idlOS::snprintf( (SChar *) sString,
@@ -5404,7 +5476,7 @@ mtdDateInterface::toChar( mtdDateType* aDate,
                 }
                 break;
 
-            case MTD_DATE_FORMAT_IY :   /* BUG-46727 TO_CHAR()ì— IY ì¶”ê°€ */
+            case MTD_DATE_FORMAT_IY :   /* BUG-46727 TO_CHAR()¿¡ IY Ãß°¡ */
                 if ( sIsFillMode == ID_FALSE )
                 {
                     sLength = idlOS::snprintf( (SChar *) sString,
@@ -5421,7 +5493,7 @@ mtdDateInterface::toChar( mtdDateType* aDate,
                 }
                 break;
 
-            case MTD_DATE_FORMAT_I :   /* BUG-46727 TO_CHAR()ì— I ì¶”ê°€ */
+            case MTD_DATE_FORMAT_I :   /* BUG-46727 TO_CHAR()¿¡ I Ãß°¡ */
                 if ( sIsFillMode == ID_FALSE )
                 {
                     sLength = idlOS::snprintf( (SChar *) sString,
@@ -5438,7 +5510,7 @@ mtdDateInterface::toChar( mtdDateType* aDate,
                 }
                 break;
 
-            case MTD_DATE_FORMAT_WW2 :  /* BUG-42941 TO_CHAR()ì— WW2(Oracle Version WW) ì¶”ê°€ */
+            case MTD_DATE_FORMAT_WW2 :  /* BUG-42941 TO_CHAR()¿¡ WW2(Oracle Version WW) Ãß°¡ */
                 if ( sIsFillMode == ID_FALSE )
                 {
                     sLength = idlOS::snprintf( (SChar *) sString,
@@ -5465,7 +5537,7 @@ mtdDateInterface::toChar( mtdDateType* aDate,
                 break;
 
             case MTD_DATE_FORMAT_YCYYY :
-                /* ìŒìˆ˜ì¼ ë•Œ, ë¶€í˜¸ë¥¼ ì œê±°í•œë‹¤. (Oracle) */
+                /* À½¼öÀÏ ¶§, ºÎÈ£¸¦ Á¦°ÅÇÑ´Ù. (Oracle) */
                 if ( sIsFillMode == ID_FALSE )
                 {
                     sLength = idlOS::snprintf( (SChar *)sString,
@@ -5494,7 +5566,7 @@ mtdDateInterface::toChar( mtdDateType* aDate,
                 }
                 break;
 
-            case MTD_DATE_FORMAT_SYYYY :    /* BUG-36296 SYYYY Format ì§€ì› */
+            case MTD_DATE_FORMAT_SYYYY :    /* BUG-36296 SYYYY Format Áö¿ø */
                 if ( sYear < 0 )
                 {
                     if ( sIsFillMode == ID_FALSE )
@@ -5607,8 +5679,8 @@ mtdDateInterface::toChar( mtdDateType* aDate,
                     idlOS::snprintf( (SChar*) sString, sStringMaxLen,
                                      "%s", mtddlget_text(sScanner) + 1 );
                 // BUG-27290
-                // ë¹ˆ double-quoted stringì´ë¼í•˜ë”ë¼ë„ ì ì–´ë„ '"'ëŠ”
-                // ë³µì‚¬ë˜ë¯€ë¡œ sLengthëŠ” 1ë³´ë‹¤ ì‘ì„ ìˆ˜ ì—†ë‹¤.
+                // ºó double-quoted stringÀÌ¶óÇÏ´õ¶óµµ Àû¾îµµ '"'´Â
+                // º¹»çµÇ¹Ç·Î sLength´Â 1º¸´Ù ÀÛÀ» ¼ö ¾ø´Ù.
                 sLength--;
                 break;
 
@@ -5627,18 +5699,15 @@ mtdDateInterface::toChar( mtdDateType* aDate,
         sString       += sLength;
         sStringMaxLen -= sLength;
         
-        // ë‹¤ìŒ í¬ë§·ì˜ ì‹œì‘ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚´
+        // ´ÙÀ½ Æ÷¸ËÀÇ ½ÃÀÛÀ§Ä¡¸¦ °¡¸®Å´
         sFormat += mtddlget_leng( sScanner );
         
         // get next token
         sToken = mtddllex( sScanner );
     }
 
-    // snprintfì—ì„œ '\0' terminationì„ ì•ˆ í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
+    // snprintf¿¡¼­ '\0' terminationÀ» ¾È ÇÒ ¼ö ÀÖÀ¸¹Ç·Î
     sString[0] = '\0';
-
-    mtddllex_destroy ( sScanner );
-    sInitScanner = ID_FALSE;
 
     *aStringLen = sString - aString;
 
@@ -5649,18 +5718,7 @@ mtdDateInterface::toChar( mtdDateType* aDate,
         IDE_SET( ideSetErrorCode(mtERR_ABORT_DATE_NOT_RECOGNIZED_FORMAT,
                                  sErrorFormat ) );
     }
-    IDE_EXCEPTION( ERR_LEX_INIT_FAILED )
-    {
-        IDE_SET( ideSetErrorCode( mtERR_ABORT_UNEXPECTED_ERROR,
-                                  "mtdDateInterface::toChar",
-                                  "Lex init failed" ));
-    }
     IDE_EXCEPTION_END;
-
-    if ( sInitScanner == ID_TRUE )
-    {
-        mtddllex_destroy ( sScanner );
-    }
 
     return IDE_FAILURE;
 }
@@ -5874,7 +5932,7 @@ mtdDateInterface::checkYearMonthDayAndSetDateValue(
     IDE_TEST( setYear( aDate, aYear ) != IDE_SUCCESS );
     IDE_TEST( setMonth( aDate, aMonth ) != IDE_SUCCESS );
 
-    /* BUG-36296 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
+    /* BUG-36296 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±İ)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
     if ( ( aYear == 1582 ) &&
          ( aMonth == 10 ) &&
          ( 4 < aDay ) && ( aDay < 15 ) )
@@ -5913,20 +5971,20 @@ static IDE_RC mtdStoredValue2MtdValue( UInt              aColumnSize,
 {
 /******************************************************************
  * PROJ-1705
- * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
- * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
+ * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
+ * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
  *******************************************************************/
 
     mtdDateType  * sDateValue;
 
-    // ê³ ì •ê¸¸ì´ ë°ì´íƒ€ íƒ€ì…ì˜ ê²½ìš°
-    // í•˜ë‚˜ì˜ ì»¬ëŸ¼ ë°ì´íƒ€ê°€ ì—¬ëŸ¬í˜ì´ì§€ì— ë‚˜ëˆ„ì–´ ì €ì¥ë˜ëŠ” ê²½ìš°ëŠ” ì—†ë‹¤.
+    // °íÁ¤±æÀÌ µ¥ÀÌÅ¸ Å¸ÀÔÀÇ °æ¿ì
+    // ÇÏ³ªÀÇ ÄÃ·³ µ¥ÀÌÅ¸°¡ ¿©·¯ÆäÀÌÁö¿¡ ³ª´©¾î ÀúÀåµÇ´Â °æ¿ì´Â ¾ø´Ù.
 
     sDateValue = (mtdDateType*)aDestValue;
     
     if( aLength == 0 )
     {
-        // NULL ë°ì´íƒ€
+        // NULL µ¥ÀÌÅ¸
         *sDateValue = mtdDateNull;
     }
     else
@@ -5953,8 +6011,260 @@ UInt mtdNullValueSize()
 {
 /*******************************************************************
  * PROJ-1705
- * ê° ë°ì´íƒ€íƒ€ì…ì˜ null Valueì˜ í¬ê¸° ë°˜í™˜
+ * °¢ µ¥ÀÌÅ¸Å¸ÀÔÀÇ null ValueÀÇ Å©±â ¹İÈ¯
  *******************************************************************/
     return mtdActualSize( NULL, &mtdDateNull );
 }
+
+#if defined(HP_HPUX) || defined(IA64_HP_HPUX)		   
+IDE_RC mtdDateInterface::toDate( mtdDateType * aDate,
+                                 UChar       * aString,
+                                 UInt          aStringLen,
+                                 UChar       * aFormat,
+                                 UInt          aFormatLen )
+{
+    idBool   sInitScanner = ID_FALSE;
+    yyscan_t sScanner;
+
+    IDE_TEST_RAISE( mtddllex_init ( &sScanner ) != 0, ERR_LEX_INIT_FAILED );
+    sInitScanner = ID_TRUE;
+
+    mtddl_scan_bytes( (const char*)aFormat, aFormatLen, sScanner );
+
+    IDE_TEST( mtdDateInterface::toDateInternal( aDate,
+                                                aString,
+                                                aStringLen,
+                                                aFormat,
+                                                aFormatLen,
+                                                sScanner )
+              != IDE_SUCCESS );
+
+    mtddllex_destroy ( sScanner );
+    sInitScanner = ID_FALSE;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_LEX_INIT_FAILED )
+    {
+        IDE_SET( ideSetErrorCode( mtERR_ABORT_UNEXPECTED_ERROR,
+                                  "mtdDateInterface::toDate",
+                                  "Lex init failed" ));
+    }
+    IDE_EXCEPTION_END;
+
+    if ( sInitScanner == ID_TRUE )
+    {
+        mtddllex_destroy ( sScanner );
+    }
+    
+    return IDE_FAILURE;
+}
+#else
+IDE_RC mtdDateInterface::toDate( mtdDateType * aDate,
+                                 UChar       * aString,
+                                 UInt          aStringLen,
+                                 UChar       * aFormat,
+                                 UInt          aFormatLen )
+{
+    UInt                     i;
+    yyscan_t                 sScanner;
+    struct yy_buffer_state * sBufferState[2];
+    mtddl_yyguts_t         * sYYGuts;
+    SChar                  * sBase;
+    UChar                    sFormatBuffer[MTD_FORMAT_SIZE];
+    UChar                    sYYBuffer[MTD_YYGUTS_T_SIZE];
+    UChar                    sYYBufferState[MTD_YYBUFFER_STATE_SIZE];
+    UChar                    sErrorFormat[2];
+    YY_BUFFER_STATE          b;
+
+    /* BUG-48113 to_date to_char malloc free Á¦°Å */
+    sErrorFormat[0] = '\0';
+    IDE_TEST_RAISE( aFormatLen  > ( MTD_FORMAT_SIZE - 2 ), ERR_NOT_RECONGNIZED_FORMAT );
+
+    /* mtddllex_init  */
+    sScanner = sYYBuffer;
+    sYYGuts = (struct yyguts_t*)sScanner;
+    MTDDL_YYGUTS_T_INIT( sYYGuts );
+    sYYGuts->yy_init = 1;
+    sYYGuts->yy_start = 1;
+    sYYGuts->yy_buffer_stack = sBufferState;
+
+    /* mtddl_scan_bytes */
+    for ( i = 0; i < aFormatLen + 2; i++ )
+    {
+        if ( i < aFormatLen )
+        {
+            sFormatBuffer[i] = aFormat[i];
+        }
+        else
+        {
+            sFormatBuffer[i] = '\0';
+        }
+    }
+
+    sBase = (SChar *)sFormatBuffer;
+
+    /* mtddl_scan_buffer */
+    b = (YY_BUFFER_STATE)sYYBufferState;
+
+    MTDDL_YYSTATE_INIT( b );
+    b->yy_buf_pos = sBase;
+    b->yy_ch_buf  = sBase;
+    b->yy_buf_size = aFormatLen;
+    b->yy_n_chars = b->yy_buf_size;
+    b->yy_is_our_buffer = 1;
+
+    /* mtddl_switch_to_buffer */
+    MTDDL_SET_BUFFER( b, sYYGuts );
+
+    IDE_TEST( mtdDateInterface::toDateInternal( aDate,
+                                                aString,
+                                                aStringLen,
+                                                aFormat,
+                                                aFormatLen,
+                                                sScanner )
+              != IDE_SUCCESS );
+
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NOT_RECONGNIZED_FORMAT );
+    {
+        IDE_SET( ideSetErrorCode(mtERR_ABORT_DATE_NOT_RECOGNIZED_FORMAT,
+                                 sErrorFormat ) );
+    }
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+#endif
+
+#if defined(HP_HPUX) || defined(IA64_HP_HPUX)		   
+IDE_RC mtdDateInterface::toChar( mtdDateType * aDate,
+                                 UChar       * aString,
+                                 UInt        * aStringLen,
+                                 SInt          aStringMaxLen,
+                                 UChar       * aFormat,
+                                 UInt          aFormatLen )
+{
+    idBool   sInitScanner = ID_FALSE;
+    yyscan_t sScanner;
+
+    IDE_TEST_RAISE( mtddllex_init ( &sScanner ) != 0, ERR_LEX_INIT_FAILED );
+    sInitScanner = ID_TRUE;
+
+    mtddl_scan_bytes( (const char*)aFormat, aFormatLen, sScanner );
+
+    IDE_TEST( mtdDateInterface::toCharInternal( aDate,
+                                                aString,
+                                                aStringLen,
+                                                aStringMaxLen,
+                                                aFormat,
+                                                aFormatLen,
+                                                sScanner )
+              != IDE_SUCCESS );
+
+    mtddllex_destroy ( sScanner );
+    sInitScanner = ID_FALSE;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_LEX_INIT_FAILED )
+    {
+        IDE_SET( ideSetErrorCode( mtERR_ABORT_UNEXPECTED_ERROR,
+                                  "mtdDateInterface::toDate",
+                                  "Lex init failed" ));
+    }
+    IDE_EXCEPTION_END;
+
+    if ( sInitScanner == ID_TRUE )
+    {
+        mtddllex_destroy ( sScanner );
+    }
+    
+    return IDE_FAILURE;
+}
+#else
+IDE_RC mtdDateInterface::toChar( mtdDateType * aDate,
+                                 UChar       * aString,
+                                 UInt        * aStringLen,
+                                 SInt          aStringMaxLen,
+                                 UChar       * aFormat,
+                                 UInt          aFormatLen )
+{
+    UInt                     i;
+    yyscan_t                 sScanner;
+    struct yy_buffer_state * sBufferState[2];
+    mtddl_yyguts_t         * sYYGuts;
+    SChar                  * sBase;
+    UChar                    sFormatBuffer[MTD_FORMAT_SIZE];
+    UChar                    sYYBuffer[MTD_YYGUTS_T_SIZE];
+    UChar                    sYYBufferState[MTD_YYBUFFER_STATE_SIZE];
+    UChar                    sErrorFormat[2];
+    YY_BUFFER_STATE          b;
+
+    /* BUG-48113 to_date to_char malloc free Á¦°Å */
+    sErrorFormat[0] = '\0';
+    IDE_TEST_RAISE( aFormatLen  > ( MTD_FORMAT_SIZE - 2 ), ERR_NOT_RECONGNIZED_FORMAT );
+
+    /* mtddllex_init  */
+    sScanner = sYYBuffer;
+    sYYGuts = (struct yyguts_t*)sScanner;
+    MTDDL_YYGUTS_T_INIT( sYYGuts );
+    sYYGuts->yy_init = 1;
+    sYYGuts->yy_start = 1;
+    sYYGuts->yy_buffer_stack = sBufferState;
+
+    /* mtddl_scan_bytes */
+    for ( i = 0; i < aFormatLen + 2; i++ )
+    {
+        if ( i < aFormatLen )
+        {
+            sFormatBuffer[i] = aFormat[i];
+        }
+        else
+        {
+            sFormatBuffer[i] = '\0';
+        }
+    }
+
+    sBase = (SChar *)sFormatBuffer;
+
+    /* mtddl_scan_buffer */
+    b = (YY_BUFFER_STATE)sYYBufferState;
+
+    MTDDL_YYSTATE_INIT( b );
+    b->yy_buf_pos = sBase;
+    b->yy_ch_buf  = sBase;
+    b->yy_buf_size = aFormatLen;
+    b->yy_n_chars = b->yy_buf_size;
+    b->yy_is_our_buffer = 1;
+
+    /* mtddl_switch_to_buffer */
+    MTDDL_SET_BUFFER( b, sYYGuts );
+
+    IDE_TEST( mtdDateInterface::toCharInternal( aDate,
+                                                aString,
+                                                aStringLen,
+                                                aStringMaxLen,
+                                                aFormat,
+                                                aFormatLen,
+                                                sScanner )
+              != IDE_SUCCESS );
+
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NOT_RECONGNIZED_FORMAT );
+    {
+        IDE_SET( ideSetErrorCode(mtERR_ABORT_DATE_NOT_RECOGNIZED_FORMAT,
+                                 sErrorFormat ) );
+    }
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+#endif
 

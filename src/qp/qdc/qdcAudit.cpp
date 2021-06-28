@@ -850,7 +850,7 @@ IDE_RC qdcAudit::start( qcStatement * aStatement )
     
     IDE_TEST_RAISE( sRowCnt != 1, ERR_META_CRASH );
 
-    // ë” ì´ìƒ ì‹¤íŒ¨í•˜ì§€ ì•ŠëŠ” ì‹œì ì— í˜¸ì¶œí•œë‹¤.
+    // ´õ ÀÌ»ó ½ÇÆĞÇÏÁö ¾Ê´Â ½ÃÁ¡¿¡ È£ÃâÇÑ´Ù.
     /* Call a callback function of AuditManager to set the audit status */
     qci::mAuditManagerCallback.mReloadAuditCond( sObjectOptions,
                                                  sObjectOptionCount,
@@ -1289,6 +1289,7 @@ void qdcAudit::getOperation( qcStatement     * aStatement,
 
                 case QCI_STMT_ROLLBACK:
                 case QCI_STMT_ROLLBACK_FORCE:
+                case QCI_STMT_ROLLBACK_TO_SAVEPOINT:  /* BUG-48216 */
                     sOper = QCI_AUDIT_OPER_ROLLBACK;
                     break;
 
@@ -1337,7 +1338,7 @@ void qdcAudit::getOperation( qcStatement     * aStatement,
                 case QCI_STMT_ALT_DATAFILE_ONOFF:
                 case QCI_STMT_ALT_RENAME_DATAFILE:
                 case QCI_STMT_ALT_TABLESPACE_BACKUP:
-                    // dclì´ì§€ë§Œ ddlë¡œ ì·¨ê¸‰í•œë‹¤.
+                    // dclÀÌÁö¸¸ ddl·Î Ãë±ŞÇÑ´Ù.
                     sOper = QCI_AUDIT_OPER_DDL;
                     break;
                     

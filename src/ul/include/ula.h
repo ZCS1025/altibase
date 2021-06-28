@@ -44,7 +44,12 @@ typedef struct ulaValue                // smiValue
 
 #define REPLICATION_MAJOR_VERSION   (7)
 #define REPLICATION_MINOR_VERSION   (4)
-#define REPLICATION_FIX_VERSION     (3)
+#define REPLICATION_FIX_VERSION     (6)
+
+#define RP_CURRENT_VERSION ( RP_MAKE_VERSION( REPLICATION_MAJOR_VERSION, \
+                                              REPLICATION_MINOR_VERSION, \
+                                              REPLICATION_FIX_VERSION, \
+                                              REPLICATION_ENDIAN_64BIT ) )
 
 #define ULA_NAME_LEN                (40 + 1)
 #define ULA_LOG_FILENAME_LEN        (1024)
@@ -147,14 +152,14 @@ typedef struct ulaXLog              /* XLog */
 
 /* Mutex Information
  *- Module -          - Mutex -   - Info -
- * ulaComm              No        í˜¸ì¶œí•˜ëŠ” ê³³ì—ì„œ ë™ê¸°í™”í•´ì•¼ í•¨
- * ulaErrorMgr          No        Threadì— ì„¤ì •í•˜ë¯€ë¡œ ë¶ˆí•„ìš”
- * ulaLog               Yes       ë‚´ë¶€ì ìœ¼ë¡œ ì´ë¯¸ Mutex ì§€ì›
- * ulaMeta              No        Handshake ì¤‘ì—ë§Œ ë³€ê²½
+ * ulaComm              No        È£ÃâÇÏ´Â °÷¿¡¼­ µ¿±âÈ­ÇØ¾ß ÇÔ
+ * ulaErrorMgr          No        Thread¿¡ ¼³Á¤ÇÏ¹Ç·Î ºÒÇÊ¿ä
+ * ulaLog               Yes       ³»ºÎÀûÀ¸·Î ÀÌ¹Ì Mutex Áö¿ø
+ * ulaMeta              No        Handshake Áß¿¡¸¸ º¯°æ
  * ulaTransTbl          Yes       Transaction Table, Collection List
  * ulaXLogCollection    Yes       Network Send/Receive,
  *                                XLog Pool, Authentication Information, ACK Info
- * ulaXLogLinkedLit     Support   XLog Queueì—ì„œ í•„ìš”
+ * ulaXLogLinkedLit     Support   XLog Queue¿¡¼­ ÇÊ¿ä
  */
 
 #endif /* _O_ULA_COMMON_H_ */

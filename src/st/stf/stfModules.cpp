@@ -63,6 +63,7 @@ extern mtfModule stfGeomFromText;
 extern mtfModule stfPointFromText;
 extern mtfModule stfLineFromText;
 extern mtfModule stfPolyFromText;
+extern mtfModule stfPolygonFromText;
 extern mtfModule stfRectFromText;
 extern mtfModule stfMPointFromText;
 extern mtfModule stfMLineFromText;
@@ -71,6 +72,7 @@ extern mtfModule stfGeoCollectionFromText;
 extern mtfModule stfGeomFromWKB;
 extern mtfModule stfPointFromWKB;
 extern mtfModule stfLineFromWKB;
+extern mtfModule stfLinestringFromWKB;
 extern mtfModule stfPolyFromWKB;
 extern mtfModule stfRectFromWKB;
 extern mtfModule stfMPointFromWKB;
@@ -78,6 +80,12 @@ extern mtfModule stfMLineFromWKB;
 extern mtfModule stfMPolyFromWKB;
 extern mtfModule stfGeoCollectionFromWKB;
 
+// PROJ-2422 srid Áö¿ø
+extern mtfModule stfAsEWKT;
+extern mtfModule stfAsEWKB;
+extern mtfModule stfGeomFromEWKT;
+extern mtfModule stfSRID;
+extern mtfModule stfSetSRID;
 
 extern mtfModule stfStartPoint;
 extern mtfModule stfEndPoint;
@@ -109,9 +117,28 @@ extern mtfModule stfIsMBRIntersects;
 extern mtfModule stfIsMBRContains;
 extern mtfModule stfIsMBRWithin;
 
-/* BUG-45645 ST_Reverse, ST_MakeEnvelope í•¨ìˆ˜ ì§€ì› */
+/* BUG-45645 ST_Reverse, ST_MakeEnvelope ÇÔ¼ö Áö¿ø */
 extern mtfModule stfReverse;
 extern mtfModule stfMakeEnvelope;
+
+/* BUG-47857 ST_MakePoint, ST_Point ÇÔ¼ö Áö¿ø */
+extern mtfModule stfMakePoint;
+
+/* BUG-45883 ST_MakeLine ÇÔ¼ö Áö¿ø */
+extern mtfModule stfMakeLine;
+
+/* BUG-47816 ST_Transform ÇÔ¼ö Áö¿ø */
+extern mtfModule stfTransform;
+
+/* BUG-47931 ST_MakePolygon, ST_Polygon ÇÔ¼ö Áö¿ø */ 
+extern mtfModule stfMakePolygon;
+extern mtfModule stfPolygon;
+
+/* BUG-48014 ST_Collect ÇÔ¼öÁö¿ø */
+extern mtfModule stfCollect;
+
+/* BUG-48038 ST_IsCollection ÇÔ¼ö Áö¿ø */ 
+extern mtfModule stfIsCollection;
 
 mtfModule* stfModules[] = {
     &stfSt_Geometry,
@@ -155,6 +182,7 @@ mtfModule* stfModules[] = {
     &stfPointFromText,
     &stfLineFromText,
     &stfPolyFromText,
+    &stfPolygonFromText,
     &stfRectFromText,
     &stfMPointFromText,
     &stfMLineFromText,
@@ -163,12 +191,20 @@ mtfModule* stfModules[] = {
     &stfGeomFromWKB,
     &stfPointFromWKB,
     &stfLineFromWKB,
+    &stfLinestringFromWKB,
     &stfPolyFromWKB,
     &stfRectFromWKB,
     &stfMPointFromWKB,
     &stfMLineFromWKB,
     &stfMPolyFromWKB,
     &stfGeoCollectionFromWKB,
+
+    // PROJ-2422 srid Áö¿ø
+    &stfAsEWKT,
+    &stfAsEWKB,
+    &stfGeomFromEWKT,
+    &stfSRID,
+    &stfSetSRID,
     
     &stfStartPoint,
     &stfEndPoint,
@@ -196,8 +232,23 @@ mtfModule* stfModules[] = {
     &stfIsMBRIntersects,
     &stfIsMBRContains,
     &stfIsMBRWithin,
-    /* BUG-45645 ST_Reverse, ST_MakeEnvelope í•¨ìˆ˜ ì§€ì› */
+    /* BUG-45645 ST_Reverse, ST_MakeEnvelope ÇÔ¼ö Áö¿ø */
     &stfReverse,
     &stfMakeEnvelope,
+    /* BUG-47857 ST_MakePoint, ST_Point ÇÔ¼ö Áö¿ø */
+    &stfMakePoint,
+    /* BUG-47883 ST_MakeLine ÇÔ¼ö Áö¿ø */
+    &stfMakeLine,
+    /* BUG-47816 ST_Transform ÇÔ¼ö Áö¿ø */
+#if defined(ST_ENABLE_PROJ4_LIBRARY)
+    &stfTransform,
+#endif /* ST_ENABLE_PROJ4_LIBRARY */
+    /* BUG-47931 ST_MakePolygon, ST_Polygon ÇÔ¼ö Áö¿ø */ 
+    &stfMakePolygon,
+    &stfPolygon,
+    /* BUG-48014 ST_Collect ÇÔ¼öÁö¿ø */
+    &stfCollect,
+    /* BUG-48038 ST_IsCollection ÇÔ¼ö Áö¿ø */ 
+    &stfIsCollection,
     NULL
 };

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smmDirtyPageList.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smmDirtyPageList.h 90083 2021-02-26 00:58:48Z et16 $
  **********************************************************************/
 
 #ifndef _O_SMM_DIRTY_PAGE_LIST_H_
@@ -51,9 +51,9 @@ public:
     IDE_RC destroy();
     IDE_RC clear();
 
-    // FOR CheckPoint API but, smmDirtyPageMgrëŠ” ì•„ë˜ APIë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
+    // FOR CheckPoint API but, smmDirtyPageMgr´Â ¾Æ·¡ API¸¦ »ç¿ëÇÏÁö ¾ÊÀ½
     IDE_RC open();
-    IDE_RC read(smmPCH **a_pch); // auto memory release, in case NULL-end;
+    IDE_RC read(smPCSlot **a_pch); // auto memory release, in case NULL-end;
     IDE_RC close();
     vULong getCount() { return m_count; }
     

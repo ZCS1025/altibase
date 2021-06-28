@@ -49,7 +49,7 @@ static IDE_RC sdfEstimate( mtcNode*        aNode,
 mtfModule sdfExecImmediateModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     sdfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -194,7 +194,7 @@ IDE_RC sdfCalculate_ExecImmediate( mtcNode*     aNode,
         {
             sNodeName = (mtdCharType*)aStack[2].value;
 
-            IDE_TEST_RAISE( sNodeName->length > SDI_NODE_NAME_MAX_SIZE,
+            IDE_TEST_RAISE( sNodeName->length > SDI_CHECK_NODE_NAME_MAX_SIZE,
                             ERR_SHARD_NODE_NAME_TOO_LONG );
             idlOS::strncpy( sNodeNameStr,
                             (SChar*)sNodeName->value,
@@ -206,14 +206,19 @@ IDE_RC sdfCalculate_ExecImmediate( mtcNode*     aNode,
         // Execute
         //---------------------------------
 
-        // shard linker ê²€ì‚¬ & ì´ˆê¸°í™”
+        // shard linker °Ë»ç & ÃÊ±âÈ­
         IDE_TEST( sdi::checkShardLinker( sStatement ) != IDE_SUCCESS );
 
         IDE_TEST( sdi::shardExecDirect( sStatement,
                                         sNodeNameStr,
                                         (SChar*)sQuery->value,
                                         (UInt)sQuery->length,
-                                        &sExecCount )
+                                        (sdiInternalOperation)QCG_GET_SESSION_SHARD_INTERNAL_LOCAL_OPERATION( sStatement ),
+                                        &sExecCount,
+                                        NULL,
+                                        NULL,
+                                        0,
+                                        NULL )
                   != IDE_SUCCESS );
 
         IDE_TEST_RAISE( sExecCount == 0,

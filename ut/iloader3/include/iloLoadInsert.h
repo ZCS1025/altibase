@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iloLoadInsert.h 84290 2018-11-05 07:37:51Z bethy $
+ * $Id: iloLoadInsert.h 88170 2020-07-23 23:32:06Z chkim $
  **********************************************************************/
 
 /***********************************************************************
@@ -40,7 +40,7 @@
 #define FAIL_BREAK                                                \
     (ECODE == 0x3b032 ||                                          \
      ECODE == 0x5003b || /* buffer full */                        \
-     ECODE == 0x51043 || /* í†µì‹  ìž¥ì•     */                       \
+     ECODE == 0x51043 || /* Åë½Å Àå¾Ö    */                       \
      ECODE == 0x91044 || /* Data file IO error */                 \
      ECODE == 0x91045)   /* LOB file IO error */
 
@@ -61,8 +61,8 @@ inline IDE_RC iloLoad::InitContextData(iloLoadInsertContext *aData)
 
     iloMutexLock( sHandle, &(sHandle->mParallel.mLoadInsMutex) );
     /* PROJ-1714
-     * sConnIndexëŠ” í˜„ìž¬ Threadì—ì„œ ì‚¬ìš©í•˜ê²Œë  Identifier ê°™ì€ ì—­í• ì„ í•œë‹¤.
-     * Connectionê³¼ TableInfoë¥¼ êµ¬ë¶„í•  ìˆ˜ ìžˆë„ë¡ í•œë‹¤.
+     * sConnIndex´Â ÇöÀç Thread¿¡¼­ »ç¿ëÇÏ°ÔµÉ Identifier °°Àº ¿ªÇÒÀ» ÇÑ´Ù.
+     * Connection°ú TableInfo¸¦ ±¸ºÐÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
      */
     aData->mConnIndex = mConnIndex++;          
     aData->mLOBColExist = IsLOBColExist( sHandle, &m_pTableInfo[aData->mConnIndex] );
@@ -81,8 +81,8 @@ inline IDE_RC iloLoad::InitContextData(iloLoadInsertContext *aData)
     IDE_TEST_RAISE(aData->mRecordNumber == NULL, MAllocError);
     
     /* BUG-24583
-     * -lob 'use_separate_files=yes' ì˜µì…˜ì„ ì‚¬ìš©í•  ê²½ìš°ì— 
-     * Bad Fileì— FilePath + FileNameì„ ì €ìž¥í•œë‹¤.
+     * -lob 'use_separate_files=yes' ¿É¼ÇÀ» »ç¿ëÇÒ °æ¿ì¿¡ 
+     * Bad File¿¡ FilePath + FileNameÀ» ÀúÀåÇÑ´Ù.
      */
     if ( aData->mLOBColExist == ILO_TRUE &&
          m_pProgOption->mUseSeparateFiles == ILO_TRUE )
@@ -147,7 +147,7 @@ inline IDE_RC iloLoad::FiniContextData(iloLoadInsertContext *aData)
 }
 
 /* BUG-46486 Improve lock wait
- * ë ˆì½”ë“œ ë‹¨ìœ„ ë½í‚¹ì—ì„œ array ë‹¨ìœ„ ë½í‚¹ìœ¼ë¡œ ë³€ê²½
+ * ·¹ÄÚµå ´ÜÀ§ ¶ôÅ·¿¡¼­ array ´ÜÀ§ ¶ôÅ·À¸·Î º¯°æ
  */
 inline SInt iloLoad::ReadRecord(iloLoadInsertContext *aData)
 {
@@ -167,8 +167,8 @@ inline SInt iloLoad::ReadRecord(iloLoadInsertContext *aData)
     {
         aData->mNextAction = NONE;
 
-        // BUG-24898 iloader íŒŒì‹±ì—ëŸ¬ ìƒì„¸í™”
-        // ì—ëŸ¬ë©”ì‹œì§€ë¥¼ clear í•œë‹¤.
+        // BUG-24898 iloader ÆÄ½Ì¿¡·¯ »ó¼¼È­
+        // ¿¡·¯¸Þ½ÃÁö¸¦ clear ÇÑ´Ù.
         if (uteGetErrorCODE(sHandle->mErrorMgr) != 0x00000)
         {
             uteClearError(sHandle->mErrorMgr);
@@ -183,14 +183,14 @@ inline SInt iloLoad::ReadRecord(iloLoadInsertContext *aData)
             idlOS::memcpy(sErrorMgr, sHandle->mErrorMgr, ID_SIZEOF(uteErrorMgr));
         }
 
-        // BUG-24879 errors ì˜µì…˜ ì§€ì›
-        // recordcount ë¥¼ ì •í™•ížˆ ì¶œë ¥í•˜ê¸° ìœ„í•´ì„œ eof ì¼ë•ŒëŠ” count í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // BUG-24879 errors ¿É¼Ç Áö¿ø
+        // recordcount ¸¦ Á¤È®È÷ Ãâ·ÂÇÏ±â À§ÇØ¼­ eof ÀÏ¶§´Â count ÇÏÁö ¾Ê´Â´Ù.
         if (sRet != END_OF_FILE)
         {
-            aData->mRecordNumber[aData->mRealCount] = mReadRecCount += 1; //ì½ì€ Record ìˆ˜
+            aData->mRecordNumber[aData->mRealCount] = mReadRecCount += 1; //ÀÐÀº Record ¼ö
         }
 
-        // BUG-28208: malloc ë“±ì— ì‹¤íŒ¨í–ˆì„ ë•Œ iloader ë°”ë¡œ ì¢…ë£Œ 
+        // BUG-28208: malloc µî¿¡ ½ÇÆÐÇßÀ» ¶§ iloader ¹Ù·Î Á¾·á 
         if ( (sRet == SYS_ERROR) ||
              (m_pProgOption->m_bExist_L &&
               (aData->mRecordNumber[aData->mRealCount] > m_pProgOption->m_LastRow)) )
@@ -220,8 +220,8 @@ inline SInt iloLoad::ReadRecord(iloLoadInsertContext *aData)
             aData->mTotal ++;
             mLoadCount++;   // for progress
 
-            //ì§„í–‰ ìƒí™© í‘œì‹œ
-            // BUG-27938: ì¤‘ê°„ì— continue, breakë¥¼ í•˜ëŠ” ê²½ìš°ê°€ ìžˆìœ¼ë¯€ë¡œ ì—¬ê¸°ì„œ ì°ì–´ì¤˜ì•¼í•œë‹¤.
+            //ÁøÇà »óÈ² Ç¥½Ã
+            // BUG-27938: Áß°£¿¡ continue, break¸¦ ÇÏ´Â °æ¿ì°¡ ÀÖÀ¸¹Ç·Î ¿©±â¼­ Âï¾îÁà¾ßÇÑ´Ù.
             if ( sHandle->mUseApi != SQL_TRUE )
             {
                 if ((mLoadCount % 100) == 0)
@@ -239,8 +239,8 @@ inline SInt iloLoad::ReadRecord(iloLoadInsertContext *aData)
 
         if (sRet == END_OF_FILE) break;
 
-        // BUG-24890 error ê°€ ë°œìƒí•˜ë©´ sRealCountë¥¼ ì¦ê°€í•˜ë©´ ì•ˆëœë‹¤.
-        // sRealCount ëŠ” array ì˜ ê°¯ìˆ˜ì´ë‹¤. ë”°ë¼ì„œ ìž˜ëª»ëœ ë©”ëª¨ë¦¬ë¥¼ ì½ê²Œëœë‹¤.
+        // BUG-24890 error °¡ ¹ß»ýÇÏ¸é sRealCount¸¦ Áõ°¡ÇÏ¸é ¾ÈµÈ´Ù.
+        // sRealCount ´Â array ÀÇ °¹¼öÀÌ´Ù. µû¶ó¼­ Àß¸øµÈ ¸Þ¸ð¸®¸¦ ÀÐ°ÔµÈ´Ù.
         aData->mRealCount++;
 
         aData->mLoad4Sleep++; // for sleep, BUG-18707
@@ -270,12 +270,12 @@ inline IDE_RC iloLoad::LogError(iloLoadInsertContext *aData,
 
     ADD_ERROR_COUNT(1);
 
-    // BUG-21640 iloaderì—ì„œ ì—ëŸ¬ë©”ì‹œì§€ë¥¼ ì•Œì•„ë³´ê¸° íŽ¸í•˜ê²Œ ì¶œë ¥í•˜ê¸°
-    // log íŒŒì¼ì— rowcount ë¥¼ ì¶œë ¥í•œë‹¤.
+    // BUG-21640 iloader¿¡¼­ ¿¡·¯¸Þ½ÃÁö¸¦ ¾Ë¾Æº¸±â ÆíÇÏ°Ô Ãâ·ÂÇÏ±â
+    // log ÆÄÀÏ¿¡ rowcount ¸¦ Ãâ·ÂÇÑ´Ù.
     PRINT_RECORD(aArrayIndex);
 
-    // BUG-21640 iloaderì—ì„œ ì—ëŸ¬ë©”ì‹œì§€ë¥¼ ì•Œì•„ë³´ê¸° íŽ¸í•˜ê²Œ ì¶œë ¥í•˜ê¸°
-    // ê¸°ì¡´ ì—ëŸ¬ë©”ì‹œì§€ì™€ ë™ì¼í•œ í˜•ì‹ìœ¼ë¡œ ì¶œë ¥í•˜ëŠ” í•¨ìˆ˜ì¶”ê°€   
+    // BUG-21640 iloader¿¡¼­ ¿¡·¯¸Þ½ÃÁö¸¦ ¾Ë¾Æº¸±â ÆíÇÏ°Ô Ãâ·ÂÇÏ±â
+    // ±âÁ¸ ¿¡·¯¸Þ½ÃÁö¿Í µ¿ÀÏÇÑ Çü½ÄÀ¸·Î Ãâ·ÂÇÏ´Â ÇÔ¼öÃß°¡   
     m_LogFile.PrintLogErr(sErrorMgr);
 
     ILO_CALLBACK;
@@ -293,7 +293,7 @@ inline void iloLoad::Sleep(iloLoadInsertContext *aData)
             (m_pProgOption->mExistWaitCycle == SQL_TRUE))
     {
         /* BUG-46486 Improve lock wait, record lock -> array lock
-         * array ë‹¨ìœ„ë¡œ ì²´í¬í•˜ê²Œ ë˜ì–´ % ì—°ì‚°ìž ì‚¬ìš© ë¶ˆê°€
+         * array ´ÜÀ§·Î Ã¼Å©ÇÏ°Ô µÇ¾î % ¿¬»êÀÚ »ç¿ë ºÒ°¡
          */
         if ( aData->mLoad4Sleep >= m_pProgOption->mWaitCycle )
         {
@@ -322,7 +322,7 @@ inline IDE_RC iloLoad::Callback4Api(iloLoadInsertContext *aData)
     }
 
     /* BUG-30413
-     * mCBFrequencyCnt ê°’ê³¼ arrayCount ì˜ ê°’ì„ ë¹„êµ í•˜ì—¬ ì½œë°±ì„ í˜¸ì¶œ í•œë‹¤.  
+     * mCBFrequencyCnt °ª°ú arrayCount ÀÇ °ªÀ» ºñ±³ ÇÏ¿© ÄÝ¹éÀ» È£Ãâ ÇÑ´Ù.  
      */
     if ( sRealCount == aData->mArrayCount ) 
     {
@@ -406,10 +406,20 @@ inline IDE_RC iloLoad::ExecuteInsertSQL(iloLoadInsertContext *aData)
     uteErrorMgr   *sErrorMgr  = aData->mErrorMgr;
     SQLUSMALLINT  *sStatusPtr = NULL;
     SChar          szMsg[4096];
+    SInt           sInsertFailedCount = 0;
 
     aData->mNextAction = NONE;
 
     IDE_TEST(m_pISPApiUp[sConnIndex].Execute() == SQL_FALSE);
+
+    /* BUG-48016 Fix skipped commit */
+    if (sHandle->mProgOption->m_bExist_ShowCommit == ID_TRUE)
+    {
+        idlOS::fprintf( stderr, 
+                "%sTotal success [%d]\n", 
+                DEV_SHOW_COMMIT_PREFIX,
+                sRealCount );
+    }
 
     return IDE_SUCCESS;
 
@@ -454,8 +464,8 @@ inline IDE_RC iloLoad::ExecuteInsertSQL(iloLoadInsertContext *aData)
                 {
                     ADD_ERROR_COUNT(1);
 
-                    // array ì—ëŸ¬ë¥¼ ì¶œë ¥í• ë•Œ ì •í™•í•œ rowcount ë¥¼ ì¶œë ¥í•˜ê¸°ìœ„í•´ì„œ
-                    // array ì˜ ê°¯ìˆ˜ë¥¼ ëº€í›„ +1 í•œë‹¤.
+                    // array ¿¡·¯¸¦ Ãâ·ÂÇÒ¶§ Á¤È®ÇÑ rowcount ¸¦ Ãâ·ÂÇÏ±âÀ§ÇØ¼­
+                    // array ÀÇ °¹¼ö¸¦ »«ÈÄ +1 ÇÑ´Ù.
                     PRINT_RECORD(i);
 
                     if (sStatusPtr[i] == SQL_PARAM_ERROR)
@@ -476,9 +486,48 @@ inline IDE_RC iloLoad::ExecuteInsertSQL(iloLoadInsertContext *aData)
                         idlOS::sprintf(szMsg, "Insert Error : unused\n");
                         m_LogFile.PrintLogMsg(szMsg);
                     }
+
+                    sInsertFailedCount++;
+                }
+                else
+                {
+                    aData->mUncommitInsertCount++;
                 }
             }
-            aData->mNextAction = CONTINUE;
+   
+            /* BUG-48016 Fix skipped commit */
+            if (sHandle->mProgOption->m_bExist_ShowCommit == ID_TRUE)
+            {
+                idlOS::fprintf( stderr, 
+                        "%sPartial success [%d] failed [%d]\n", 
+                        DEV_SHOW_COMMIT_PREFIX,
+                        sRealCount - sInsertFailedCount, 
+                        sInsertFailedCount );
+            }
+
+            /* 
+             * BUG-48016 Fix skipped commit 
+             * Commit candidate when accumulated of insert success record count 
+             * equal or over array count.
+             */
+            if ( aData->mUncommitInsertCount >= aData->mArrayCount )
+            {
+                aData->mNextAction = NONE;
+    
+                if (sHandle->mProgOption->m_bExist_ShowCommit == ID_TRUE)
+                {
+                    idlOS::fprintf( stderr, 
+                            "%sAccumulated partial success count [%d] >= array count [%d]\n",
+                            DEV_SHOW_COMMIT_PREFIX,
+                            aData->mUncommitInsertCount,
+                            aData->mArrayCount );
+                }
+            }
+            else
+            {
+                aData->mNextAction = CONTINUE;
+            }
+
         }
     }
     iloMutexUnLock( sHandle, &(sHandle->mParallel.mLoadFIOMutex) );
@@ -501,7 +550,7 @@ inline IDE_RC iloLoad::ExecuteInsertLOB(iloLoadInsertContext *aData)
     {
         for (i = 0; i < sRealCount; i++)
         {
-            /* LOB ë°ì´í„°ë¥¼ íŒŒì¼ë¡œë¶€í„° ì½ì–´ ì„œë²„ë¡œ ì „ì†¡. */
+            /* LOB µ¥ÀÌÅÍ¸¦ ÆÄÀÏ·ÎºÎÅÍ ÀÐ¾î ¼­¹ö·Î Àü¼Û. */
             iloMutexLock( sHandle, &(sHandle->mParallel.mLoadLOBMutex) );
             sRC = m_DataFile.LoadOneRecordLOBCols( sHandle,
                     aData->mRecordNumber[i],
@@ -512,9 +561,9 @@ inline IDE_RC iloLoad::ExecuteInsertLOB(iloLoadInsertContext *aData)
 
             if (sRC != IDE_SUCCESS)
             {
-                /* ì˜¤ë¥˜ê°€ ë°œìƒí•œ ë ˆì½”ë“œì˜ ì‚½ìž…ì„ ì·¨ì†Œí•œë‹¤.
-                 * m_ArrayCountì™€ m_CommitUnitì´ 1ì´ë¼ëŠ”
-                 * ê°€ì •ì´ ê¹”ë ¤ ìžˆë‹¤. */
+                /* ¿À·ù°¡ ¹ß»ýÇÑ ·¹ÄÚµåÀÇ »ðÀÔÀ» Ãë¼ÒÇÑ´Ù.
+                 * m_ArrayCount¿Í m_CommitUnitÀÌ 1ÀÌ¶ó´Â
+                 * °¡Á¤ÀÌ ±ò·Á ÀÖ´Ù. */
 
                 (void)m_pISPApiUp[sConnIndex].EndTran(ILO_FALSE);
 
@@ -529,7 +578,7 @@ inline IDE_RC iloLoad::ExecuteInsertLOB(iloLoadInsertContext *aData)
                     ILO_CALLBACK;
 
                     m_LogFile.PrintLogErr(sErrorMgr);
-                    //goto AFTER_MAIN_LOOP_LABEL;       //!!! ì²˜ë¦¬í•´ì•¼í•¨
+                    //goto AFTER_MAIN_LOOP_LABEL;       //!!! Ã³¸®ÇØ¾ßÇÔ
                     iloMutexUnLock( sHandle, &(sHandle->mParallel.mLoadFIOMutex) );
 
                     break;
@@ -553,6 +602,8 @@ inline IDE_RC iloLoad::ExecuteInsertLOB(iloLoadInsertContext *aData)
 inline IDE_RC iloLoad::Commit4Dryrun(iloLoadInsertContext *aData)
 {
     aData->mPrevCommitRecCnt = aData->mTotal - aData->mErrorCount;
+    /* BUG-48016 Fix skipped commit */
+    aData->mUncommitInsertCount = 0;
 
     return IDE_SUCCESS;
 }
@@ -568,6 +619,8 @@ inline IDE_RC iloLoad::Commit(iloLoadInsertContext *aData)
                     fail_commit );
 
     aData->mPrevCommitRecCnt = aData->mTotal - aData->mErrorCount;
+    /* BUG-48016 Fix skipped commit */
+    aData->mUncommitInsertCount = 0;
 
     return IDE_SUCCESS;
 
@@ -604,7 +657,7 @@ void iloLoad::PrintProgress( ALTIBASE_ILOADER_HANDLE aHandle,
     if ((aLoadCount % 5000) == 0)
     {
        /* BUG-32114 aexport must support the import/export of partition tables.
-        * ILOADER IN/OUT TABLE NAMEì´ PARTITION ì¼ê²½ìš° PARTITION NAMEìœ¼ë¡œ ë³€ê²½ */
+        * ILOADER IN/OUT TABLE NAMEÀÌ PARTITION ÀÏ°æ¿ì PARTITION NAMEÀ¸·Î º¯°æ */
         if( sHandle->mProgOption->mPartition == ILO_TRUE )
         {
             idlOS::printf("\n%d record load(%s / %s)\n\n", 

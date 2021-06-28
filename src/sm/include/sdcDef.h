@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdcDef.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdcDef.h 88545 2020-09-10 09:14:02Z emlee $
  **********************************************************************/
 #ifndef  _O_SDC_DEF_H_
 #define  _O_SDC_DEF_H_  1
@@ -26,11 +26,6 @@
 #include <smrDef.h>
 #include <sdbDef.h>
 
-/* TSS Meta Offset */
-#define SDC_TSS_META_OFFSET ID_SIZEOF( sdpPhyPageHdr )
-
-/* Undo Segment Meta Offset */
-#define SDC_UDS_META_OFFSET ID_SIZEOF( sdpPhyPageHdr )
 
 #define SDC_MOVE_PTR_TRIPLE(a1stPtr, a2ndPtr, a3rdPtr, aSize)   \
     IDE_DASSERT((a1stPtr) != NULL);                             \
@@ -47,13 +42,13 @@
 
 typedef enum sdcTSState
 {
-    SDC_TSS_STATE_ACTIVE,   // TSSê°€ íŠ¸ëœì­ì…˜ì— Bindingëœ ìƒíƒœ
-    SDC_TSS_STATE_COMMIT,   // íŠ¸ëœì­ì…˜ì´ ì»¤ë°‹í•œ ìƒíƒœ
-    SDC_TSS_STATE_ABORT     // íŠ¸ëœì­ì…˜ì´ ë¡¤ë°±í•œ ìƒíƒœ
+    SDC_TSS_STATE_ACTIVE,   // TSS°¡ Æ®·£Àè¼Ç¿¡ BindingµÈ »óÅÂ
+    SDC_TSS_STATE_COMMIT,   // Æ®·£Àè¼ÇÀÌ Ä¿¹ÔÇÑ »óÅÂ
+    SDC_TSS_STATE_ABORT     // Æ®·£Àè¼ÇÀÌ ·Ñ¹éÇÑ »óÅÂ
 } sdcTSState;
 
 /**********************************************************************
- * undo recordì˜ íƒ€ì… ì •ì˜
+ * undo recordÀÇ Å¸ÀÔ Á¤ÀÇ
  **********************************************************************/
 # define SDC_UNDO_INSERT_ROW_PIECE             (0x00)
 # define SDC_UNDO_INSERT_ROW_PIECE_FOR_UPDATE  (0x01)
@@ -68,42 +63,42 @@ typedef enum sdcTSState
 # define SDC_UNDO_UPDATE_LOB_LEAF_KEY          (0x0a) // PROJ-2047 Strengthening LOB
 
 /**********************************************************************
- * Transaction Status Slot ì •ì˜
+ * Transaction Status Slot Á¤ÀÇ
  *
- * TSSë¥¼ ì†Œìœ í•œ íŠ¸ëœì­ì…˜ì˜ ìƒíƒœ ë° CommitSCNì„ ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ í™•ì¸í•  ìˆ˜ ìˆë‹¤.
- * ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ Row Time-Stamping ìˆ˜í–‰ì‹œ TSSë¡œë¶€í„° íŒë…í•œ CommitSCNì„
- * ê´€ë ¨ ìˆëŠ” Row Piece Headerë“¤ì— ì„¤ì •í•œë‹¤.
- * íŠ¸ëœì­ì…˜ì´ í• ë‹¹í–ˆì„ ë•Œì—ëŠ” Infinite SCN(0x8000000000000000)ì´ ì„¤ì •ë˜ë©°,
- * Commitì‹œì—ëŠ” CommitSCN, Rollbackì‹œì—ëŠ” Init SCN(0x0000000000000000)ì´
- * ì„¤ì •ëœë‹¤.
- * ë§Œì•½ Commitì´í›„ì— CommitSCNì„ ì„¤ì •í•˜ì§€ ëª»í•œ ê²½ìš°ì—ëŠ” ì„œë²„ê°€ ë¹„ì •ìƒ ì¢…ë£Œí•œ
- * ê²½ìš° ì„œë²„ Restart Recovery ê³¼ì •ì—ì„œ Commit Logì— ì˜í•´ì„œ Init SCN
- * (0x0000000000000000)ì„ ì„¤ì •í•˜ì—¬ ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ ê°±ì‹ í•˜ê±°ë‚˜ ë³¼ìˆ˜ ìˆê²Œ í•œë‹¤.
+ * TSS¸¦ ¼ÒÀ¯ÇÑ Æ®·£Àè¼ÇÀÇ »óÅÂ ¹× CommitSCNÀ» ´Ù¸¥ Æ®·£Àè¼ÇÀÌ È®ÀÎÇÒ ¼ö ÀÖ´Ù.
+ * ´Ù¸¥ Æ®·£Àè¼ÇÀÌ Row Time-Stamping ¼öÇà½Ã TSS·ÎºÎÅÍ ÆÇµ¶ÇÑ CommitSCNÀ»
+ * °ü·Ã ÀÖ´Â Row Piece Headerµé¿¡ ¼³Á¤ÇÑ´Ù.
+ * Æ®·£Àè¼ÇÀÌ ÇÒ´çÇßÀ» ¶§¿¡´Â Infinite SCN(0x8000000000000000)ÀÌ ¼³Á¤µÇ¸ç,
+ * Commit½Ã¿¡´Â CommitSCN, Rollback½Ã¿¡´Â Init SCN(0x0000000000000000)ÀÌ
+ * ¼³Á¤µÈ´Ù.
+ * ¸¸¾à CommitÀÌÈÄ¿¡ CommitSCNÀ» ¼³Á¤ÇÏÁö ¸øÇÑ °æ¿ì¿¡´Â ¼­¹ö°¡ ºñÁ¤»ó Á¾·áÇÑ
+ * °æ¿ì ¼­¹ö Restart Recovery °úÁ¤¿¡¼­ Commit Log¿¡ ÀÇÇØ¼­ Init SCN
+ * (0x0000000000000000)À» ¼³Á¤ÇÏ¿© ´Ù¸¥ Æ®·£Àè¼ÇÀÌ °»½ÅÇÏ°Å³ª º¼¼ö ÀÖ°Ô ÇÑ´Ù.
  **********************************************************************/
 typedef struct sdcTSS
 {
-    smTID             mTransID;      // íŠ¸ëœì­ì…˜ ID
+    smTID             mTransID;      // Æ®·£Àè¼Ç ID
     sdcTSState        mState;        // Active/Commit/Rollback
-    smSCN             mCommitSCN;    // InfiniteSCN í˜¹ì€ CommitSCN
+    smSCN             mCommitSCN;    // InfiniteSCN È¤Àº CommitSCN
 } sdcTSS;
 
 /**********************************************************************
  * TSS Page Control Header
  *
- * TSS í˜ì´ì§€ë¥¼ í• ë‹¹í•œ í˜¹ì€ ë°”ë¡œ ì§ì „ì— ì‚¬ìš©í–ˆë˜ íŠ¸ëœì­ì…˜ì˜ ì •ë³´ë¥¼ ê¸°ë¡í•˜ì—¬ TSSì˜
- * ì¬ì‚¬ìš©ì—¬ë¶€ë¥¼ íŒë‹¨í•  ìˆ˜ ìˆë„ë¡ í•œë‹¤.
+ * TSS ÆäÀÌÁö¸¦ ÇÒ´çÇÑ È¤Àº ¹Ù·Î Á÷Àü¿¡ »ç¿ëÇß´ø Æ®·£Àè¼ÇÀÇ Á¤º¸¸¦ ±â·ÏÇÏ¿© TSSÀÇ
+ * Àç»ç¿ë¿©ºÎ¸¦ ÆÇ´ÜÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
  *
- * TSSPage.TxBeginSCN > Pageì˜ Commit ë˜ì§€ ì•Šì€ CTS.TxBeginSCN
- * ì„ ë§Œì¡±í•˜ë©´ ì¬ì‚¬ìš©ëœ ê²ƒìœ¼ë¡œ íŒë‹¨í•  ìˆ˜ ìˆë‹¤.
+ * TSSPage.TxBeginSCN > PageÀÇ Commit µÇÁö ¾ÊÀº CTS.TxBeginSCN
+ * À» ¸¸Á·ÇÏ¸é Àç»ç¿ëµÈ °ÍÀ¸·Î ÆÇ´ÜÇÒ ¼ö ÀÖ´Ù.
  **********************************************************************/
 typedef struct sdcTSSPageCntlHdr
 {
-    smTID       mTransID;       // Undo Recordë¥¼ ê¸°ë¡í•œ íŠ¸ëœì­ì…˜ ID
-    smSCN       mFstDskViewSCN; // TSSë¥¼ í• ë‹¹í•´ê°„ íŠ¸ëœì­ì…˜ì˜ Begin SCN
+    smTID       mTransID;       // Undo Record¸¦ ±â·ÏÇÑ Æ®·£Àè¼Ç ID
+    smSCN       mFstDskViewSCN; // TSS¸¦ ÇÒ´çÇØ°£ Æ®·£Àè¼ÇÀÇ Begin SCN
 } sdcTSSPageCntlHdr;
 
 /* ------------------------------------------------
- * undo record header ì •ì˜
+ * undo record header Á¤ÀÇ
  * ----------------------------------------------*/
 
 typedef UChar sdcUndoRecType;
@@ -124,15 +119,15 @@ typedef UChar sdcUndoRecFlag;
       SDC_UNDOREC_HDR_TABLEOID_SIZE )
 
 /*
- * undo record headerì—ëŠ” tableoid í•„ë“œ(smOID type)ê°€ ìˆëŠ”ë°
- * smOID(vULong) typeì€ ëª‡ bit ì¥ë¹„ì¸ì§€ì— ë”°ë¼ í¬ê¸°ê°€ ê°€ë³€ì ì´ë‹¤.
- * (32bit ì¥ë¹„ : 4byte,  64bit ì¥ë¹„ : 8byte)
- * ì´ë¡œ ì¸í•´ SDC_MAX_ROWPIECE_SIZEì˜ í¬ê¸°ë„
- * ëª‡ ë¹„íŠ¸ ì¥ë¹„ì¸ì§€ì— ë”°ë¼ ê°€ë³€ì ì´ ëœë‹¤.
- * ì´ë ‡ê²Œ ë˜ë©´ PROJ-1705ì—ì„œ ì¶”ê°€í•œ í…ŒìŠ¤íŠ¸ì¼€ì´ìŠ¤ì—ì„œ
- * diffê°€ ë°œìƒí•˜ëŠ”ë°(dumpë¥¼ ì°ê¸° ë•Œë¬¸), lstë¥¼ ë‘ê°œ(32bit, 64bit) ë§Œë“œëŠ” ê²ƒì€
- * ë„ˆë¬´ ë²ˆê±°ë¡­ë‹¤ê³  ìƒê°í–ˆë‹¤. ê·¸ë˜ì„œ SDC_UNDOREC_HDR_MAX_SIZE ë§¤í¬ë¡œë¥¼
- * ì •ì˜í•˜ê³  tableoidì˜ í¬ê¸°ë¥¼ 8byteë¡œ ê³„ì‚°í•˜ë„ë¡ í•˜ì˜€ë‹¤.
+ * undo record header¿¡´Â tableoid ÇÊµå(smOID type)°¡ ÀÖ´Âµ¥
+ * smOID(vULong) typeÀº ¸î bit ÀåºñÀÎÁö¿¡ µû¶ó Å©±â°¡ °¡º¯ÀûÀÌ´Ù.
+ * (32bit Àåºñ : 4byte,  64bit Àåºñ : 8byte)
+ * ÀÌ·Î ÀÎÇØ SDC_MAX_ROWPIECE_SIZEÀÇ Å©±âµµ
+ * ¸î ºñÆ® ÀåºñÀÎÁö¿¡ µû¶ó °¡º¯ÀûÀÌ µÈ´Ù.
+ * ÀÌ·¸°Ô µÇ¸é PROJ-1705¿¡¼­ Ãß°¡ÇÑ Å×½ºÆ®ÄÉÀÌ½º¿¡¼­
+ * diff°¡ ¹ß»ıÇÏ´Âµ¥(dump¸¦ Âï±â ¶§¹®), lst¸¦ µÎ°³(32bit, 64bit) ¸¸µå´Â °ÍÀº
+ * ³Ê¹« ¹ø°Å·Ó´Ù°í »ı°¢Çß´Ù. ±×·¡¼­ SDC_UNDOREC_HDR_MAX_SIZE ¸ÅÅ©·Î¸¦
+ * Á¤ÀÇÇÏ°í tableoidÀÇ Å©±â¸¦ 8byte·Î °è»êÇÏµµ·Ï ÇÏ¿´´Ù.
  * */
 #define SDC_UNDOREC_HDR_MAX_SIZE        \
     ( SDC_UNDOREC_HDR_TYPE_SIZE +       \
@@ -174,7 +169,7 @@ typedef UChar sdcUndoRecFlag;
     ((set) &= ~(f))
 
 
-/* Undo Record Headerì˜ Flagì •ë³´ */
+/* Undo Record HeaderÀÇ FlagÁ¤º¸ */
 #define SDC_UNDOREC_FLAG_IS_VALID_MASK  (0x01)
 #define SDC_UNDOREC_FLAG_IS_VALID_TRUE  (0x01)
 #define SDC_UNDOREC_FLAG_IS_VALID_FALSE (0x00)
@@ -208,12 +203,12 @@ typedef struct sdcVarColHdr
     UShort    length;
 } sdcVarColHdr;
 
-/* BUG-25624 ë””ìŠ¤í¬í…Œì´ë¸”ì—ì„œ CTSí• ë‹¹ ì‹¤íŒ¨ë¡œ ì¸í•´ ì´ì¤‘í™” ADIì˜
- *           Resource Deadlockì œê±°
- * RowHdrì˜ í™•ì¥ì˜ì—­ì— ê¸°ë¡í•˜ëŠ” íŠ¸ëœì­ì…˜ ì •ë³´ ì •ì˜
- * ë””ìŠ¤í¬ í…Œì´ë¸” í˜ì´ì§€ì—ì„œ ê°±ì‹ íŠ¸ëœì­ì…˜ì´ CTSë¥¼
- * í• ë‹¹ëª»í•œ ê²½ìš° RowPiece í—¤ë”ì˜ í™•ì¥ì˜ì—­ì— íŠ¸ëœì­ì…˜ì˜
- * ê°±ì‹ ì •ë³´ë¥¼ ê¸°ë¡í•œë‹¤. */
+/* BUG-25624 µğ½ºÅ©Å×ÀÌºí¿¡¼­ CTSÇÒ´ç ½ÇÆĞ·Î ÀÎÇØ ÀÌÁßÈ­ ADIÀÇ
+ *           Resource DeadlockÁ¦°Å
+ * RowHdrÀÇ È®Àå¿µ¿ª¿¡ ±â·ÏÇÏ´Â Æ®·£Àè¼Ç Á¤º¸ Á¤ÀÇ
+ * µğ½ºÅ© Å×ÀÌºí ÆäÀÌÁö¿¡¼­ °»½ÅÆ®·£Àè¼ÇÀÌ CTS¸¦
+ * ÇÒ´ç¸øÇÑ °æ¿ì RowPiece Çì´õÀÇ È®Àå¿µ¿ª¿¡ Æ®·£Àè¼ÇÀÇ
+ * °»½ÅÁ¤º¸¸¦ ±â·ÏÇÑ´Ù. */
 typedef struct sdcRowHdrExInfo
 {
     scPageID   mTSSPageID;
@@ -246,19 +241,19 @@ typedef enum sdcColInOutMode
     SDC_COLUMN_OUT_MODE_LOB = SMI_COLUMN_MODE_OUT
 } sdcColInOutMode;
 
-// Valueë¥¼ ê°€ë¦¬í‚¤ëŠ” Pointer
-// ì§ì ‘ ê°€ë¦¬ì¼œì•¼ í•  ë•Œ ì‚¬ìš©
+// Value¸¦ °¡¸®Å°´Â Pointer
+// Á÷Á¢ °¡¸®ÄÑ¾ß ÇÒ ¶§ »ç¿ë
 typedef struct sdcValue
 {
     smiValue          mValue;
     smiValue          mOutValue;
-    sdcColInOutMode   mInOutMode; // Valueì˜ In Out Mode
+    sdcColInOutMode   mInOutMode; // ValueÀÇ In Out Mode
 } sdcValue;
 
-// PROJ-2399 rowTemplate fetchì‹œ ì‚¬ìš©í•  colum value êµ¬ì¡°ì²´
+// PROJ-2399 rowTemplate fetch½Ã »ç¿ëÇÒ colum value ±¸Á¶Ã¼
 typedef struct sdcValue4Fetch
 {
-    sdcColInOutMode mInOutMode; // Valueì˜ In Out Mode
+    sdcColInOutMode mInOutMode; // ValueÀÇ In Out Mode
     UShort          mColLenStoreSize;
     smiValue        mValue;
 } sdcValue4Fetch;
@@ -266,59 +261,55 @@ typedef struct sdcValue4Fetch
 typedef struct sdcColumnInfo4Insert
 {
     const smiColumn * mColumn;
-    idBool            mIsUptCol;    // Insert Row Piece For Updateì—ì„œ
-                                    // ì‚¬ìš©í•˜ë©° Update Columnì¸ì§€
-                                    // ì•„ë‹Œì§€ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
+    idBool            mIsUptCol;    // Insert Row Piece For Update¿¡¼­
+                                    // »ç¿ëÇÏ¸ç Update ColumnÀÎÁö
+                                    // ¾Æ´ÑÁö¸¦ ³ªÅ¸³½´Ù.
     sdcValue          mValueInfo;
 } sdcColumnInfo4Insert;
 
 
-/* insert rowpiece ì—°ì‚°ì‹œì— ì‚¬ìš©í•˜ëŠ” ìë£Œêµ¬ì¡°ì´ë‹¤. */
+/* insert rowpiece ¿¬»ê½Ã¿¡ »ç¿ëÇÏ´Â ÀÚ·á±¸Á¶ÀÌ´Ù. */
 typedef struct sdcRowPieceInsertInfo
 {
-    /* ì»¬ëŸ¼ì •ë³´ ë°°ì—´ */
-    sdcColumnInfo4Insert   mColInfoList[SMI_COLUMN_ID_MAXIMUM];
-
-    UShort                 mStartColSeq;
     UInt                   mStartColOffset;
+    UShort                 mStartColSeq;
 
     UShort                 mEndColSeq;
     UInt                   mEndColOffset;
 
-    UShort                 mRowPieceSize;   /* ì €ì¥í•˜ë ¤ëŠ” rowpieceì˜ í¬ê¸° */
+    UShort                 mRowPieceSize;   /* ÀúÀåÇÏ·Á´Â rowpieceÀÇ Å©±â */
     UShort                 mColCount;       /* total column count in rowpiece */
     
-    idBool                 mIsInsert4Upt;   /* insert rowpiece for update ì—°ì‚°ì¸ì§€ ì—¬ë¶€ */
-    idBool                 mIsUptLobByAPI;  /* APIì— ì˜í•œ LOB Updateì¸ì§€ì˜ ì—¬ë¶€ */
+    idBool                 mIsInsert4Upt;   /* insert rowpiece for update ¿¬»êÀÎÁö ¿©ºÎ */
+    idBool                 mIsUptLobByAPI;  /* API¿¡ ÀÇÇÑ LOB UpdateÀÎÁöÀÇ ¿©ºÎ */
 
     UShort                 mLobDescCnt;
+
+    /* ÄÃ·³Á¤º¸ ¹è¿­ */
+    sdcColumnInfo4Insert   mColInfoList[SMI_COLUMN_ID_MAXIMUM];
+
 } sdcRowPieceInsertInfo;
 
 typedef struct sdcColumnInfo4Update
 {
-    /* mColumnì˜ ê°’ì„ ë³´ê³  update ì»¬ëŸ¼ì¸ì§€ ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
-     * mColumn == NULL : update ì»¬ëŸ¼ X
-     * mColumn != NULL : update ì»¬ëŸ¼ O */
+    /* mColumnÀÇ °ªÀ» º¸°í update ÄÃ·³ÀÎÁö ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
+     * mColumn == NULL : update ÄÃ·³ X
+     * mColumn != NULL : update ÄÃ·³ O */
     const smiColumn * mColumn;
-    sdcValue          mNewValueInfo; // Updateí•˜ë ¤ëŠ” New Value
-    sdcValue          mOldValueInfo; // ì €ì¥ë˜ì–´ìˆë˜ Old Value
+    sdcValue          mNewValueInfo; // UpdateÇÏ·Á´Â New Value
+    sdcValue          mOldValueInfo; // ÀúÀåµÇ¾îÀÖ´ø Old Value
 
 } sdcColumnInfo4Update;
 
 typedef struct sdcRowPieceUpdateInfo
 {
-    /* ì»¬ëŸ¼ì •ë³´ ë°°ì—´ */
-    sdcColumnInfo4Update   mColInfoList[SMI_COLUMN_ID_MAXIMUM];
-    /* rowpieceì— ì €ì¥ëœ ì»¬ëŸ¼ë“¤ì˜ old valueë¥¼ ë³µì‚¬í•˜ê¸° ìœ„í•œ 8K buffer */
-    UChar                  mSpace4CopyOldValue[SD_PAGE_SIZE];
-
+    sdcRowHdrInfo         *mNewRowHdrInfo;
     const sdcRowHdrInfo   *mOldRowHdrInfo;
+
+    UInt                   mNewRowPieceSize;
     UShort                 mOldRowPieceSize;
 
-    sdcRowHdrInfo         *mNewRowHdrInfo;
-    UInt                   mNewRowPieceSize;
-
-    /* In Mode LOBì„ í¬í•¨í•˜ì—¬ In Modeì¸ Update Columnì˜ Cnt */
+    /* In Mode LOBÀ» Æ÷ÇÔÇÏ¿© In ModeÀÎ Update ColumnÀÇ Cnt */
     UShort                 mUptBfrInModeColCnt;
     UShort                 mUptAftInModeColCnt;
     UShort                 mUptAftLobDescCnt;
@@ -326,29 +317,35 @@ typedef struct sdcRowPieceUpdateInfo
     
     UShort                 mTrailingNullUptCount;
 
-    /* delete first column piece ì—°ì‚°ì„ ìˆ˜í–‰í• ì§€ ì—¬ë¶€ */
+    /* delete first column piece ¿¬»êÀ» ¼öÇàÇÒÁö ¿©ºÎ */
     idBool                 mIsDeleteFstColumnPiece;
-    /* update inplace ì—°ì‚°ì´ ê°€ëŠ¥í•œì§€ ì—¬ë¶€ */
+    /* update inplace ¿¬»êÀÌ °¡´ÉÇÑÁö ¿©ºÎ */
     idBool                 mIsUpdateInplace;
-    /* trailing nullì„ update í•˜ë ¤ëŠ”ì§€ ì—¬ë¶€ */
+    /* trailing nullÀ» update ÇÏ·Á´ÂÁö ¿©ºÎ */
     idBool                 mIsTrailingNullUpdate;
-    /* APIì— ì˜í•œ LOB Updateì¸ì§€ì˜ ì—¬ë¶€ */
+    /* API¿¡ ÀÇÇÑ LOB UpdateÀÎÁöÀÇ ¿©ºÎ */
     idBool                 mIsUptLobByAPI; 
     
     sdSID                  mRowPieceSID;
+
+    /* ÄÃ·³Á¤º¸ ¹è¿­ */
+    sdcColumnInfo4Update   mColInfoList[SMI_COLUMN_ID_MAXIMUM];
+    /* rowpiece¿¡ ÀúÀåµÈ ÄÃ·³µéÀÇ old value¸¦ º¹»çÇÏ±â À§ÇÑ 8K buffer */
+    UChar                  mSpace4CopyOldValue[SD_PAGE_SIZE];
+
 } sdcRowPieceUpdateInfo;
 
 typedef struct sdcRowPieceOverwriteInfo
 {
-    /* sdcRowPieceUpdateInfo ìë£Œêµ¬ì¡°ì˜
-     * mColInfoList ë°°ì—´ì„ ê°€ë¦¬í‚¤ëŠ” pointerì´ë‹¤. */
+    /* sdcRowPieceUpdateInfo ÀÚ·á±¸Á¶ÀÇ
+     * mColInfoList ¹è¿­À» °¡¸®Å°´Â pointerÀÌ´Ù. */
     const sdcColumnInfo4Update  *mColInfoList;
 
-    const sdcRowHdrInfo         *mOldRowHdrInfo;
-    UShort                       mOldRowPieceSize;
-
     sdcRowHdrInfo               *mNewRowHdrInfo;
+    const sdcRowHdrInfo         *mOldRowHdrInfo;
+
     UInt                         mNewRowPieceSize;
+    UShort                       mOldRowPieceSize;
 
     UShort                       mUptAftInModeColCnt;
     UShort                       mUptAftLobDescCnt;
@@ -358,33 +355,33 @@ typedef struct sdcRowPieceOverwriteInfo
     
     UShort                       mTrailingNullUptCount;
 
-    /* overwrite rowpiece ì—°ì‚°ì˜ ê²½ìš°
-     * splitì´ ë°œìƒí–ˆì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì—, last columnì„ ì €ì¥í• ë•Œ
-     * ì˜ë ¤ì§„ í¬ê¸°(mLstColumnOverwriteSize)ë§Œí¼ë§Œ ì €ì¥í•´ì•¼ í•œë‹¤. */
+    /* overwrite rowpiece ¿¬»êÀÇ °æ¿ì
+     * splitÀÌ ¹ß»ıÇßÀ» ¼ö ÀÖ±â ¶§¹®¿¡, last columnÀ» ÀúÀåÇÒ¶§
+     * Àß·ÁÁø Å©±â(mLstColumnOverwriteSize)¸¸Å­¸¸ ÀúÀåÇØ¾ß ÇÑ´Ù. */
     UShort                       mLstColumnOverwriteSize;
 
-    /* APIì— ì˜í•œ LOB Updateì¸ì§€ì˜ ì—¬ë¶€ */
+    /* API¿¡ ÀÇÇÑ LOB UpdateÀÎÁöÀÇ ¿©ºÎ */
     idBool                       mIsUptLobByAPI;
 
     sdSID                        mRowPieceSID;
 } sdcRowPieceOverwriteInfo;
 
-/* update ì—°ì‚°ì˜ ì§„í–‰ìƒíƒœì— ê´€í•œ ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ìë£Œêµ¬ì¡°ì´ë‹¤. */
+/* update ¿¬»êÀÇ ÁøÇà»óÅÂ¿¡ °üÇÑ Á¤º¸¸¦ ÀúÀåÇÏ´Â ÀÚ·á±¸Á¶ÀÌ´Ù. */
 typedef struct sdcRowUpdateStatus
 {
-    UShort    mTotalUpdateColCount;    /* updateë¥¼ ìˆ˜í–‰í•´ì•¼ í•  columnì˜ ê°¯ìˆ˜ */
-    UShort    mUpdateDoneColCount;     /* update ìˆ˜í–‰ì„ ì™„ë£Œí•œ columnì˜ ê°¯ìˆ˜ */
+    UShort    mTotalUpdateColCount;    /* update¸¦ ¼öÇàÇØ¾ß ÇÒ columnÀÇ °¹¼ö */
+    UShort    mUpdateDoneColCount;     /* update ¼öÇàÀ» ¿Ï·áÇÑ columnÀÇ °¹¼ö */
 
-    UShort    mFstColumnSeq;           /* row pieceì—ì„œ ì²«ë²ˆì§¸ column pieceì˜
+    UShort    mFstColumnSeq;           /* row piece¿¡¼­ Ã¹¹øÂ° column pieceÀÇ
                                         * sequence */
 
-    UShort    mLstUptColumnSeq;        /* ë§ˆì§€ë§‰ update columnì˜ sequence
-                                        * trailing null update ì²˜ë¦¬ì‹œì—
-                                        * ì´ ì •ë³´ë¥¼ ì´ìš©í•œë‹¤. */
+    UShort    mLstUptColumnSeq;        /* ¸¶Áö¸· update columnÀÇ sequence
+                                        * trailing null update Ã³¸®½Ã¿¡
+                                        * ÀÌ Á¤º¸¸¦ ÀÌ¿ëÇÑ´Ù. */
 
-    UChar     mPrevRowPieceRowFlag;    /* BUG-32278: ì´ì „ row pieceì˜ row flag
-                                        * ë¥¼ ì €ì¥í•œë‹¤. row flagì˜ ê²€ì¦ìš©ìœ¼ë¡œ
-                                        * ì‚¬ìš©ëœë‹¤. */ 
+    UChar     mPrevRowPieceRowFlag;    /* BUG-32278: ÀÌÀü row pieceÀÇ row flag
+                                        * ¸¦ ÀúÀåÇÑ´Ù. row flagÀÇ °ËÁõ¿ëÀ¸·Î
+                                        * »ç¿ëµÈ´Ù. */ 
 } sdcRowUpdateStatus;
 
 #define SDC_SUPPLEMENT_JOB_NONE                             (0x00000000)
@@ -395,30 +392,30 @@ typedef struct sdcRowUpdateStatus
 
 typedef struct sdcSupplementJobInfo
 {
-    // Supplement Jobì˜ ì¢…ë¥˜ê°€ ì €ì¥ë˜ì–´ ìˆë‹¤.
+    // Supplement JobÀÇ Á¾·ù°¡ ÀúÀåµÇ¾î ÀÖ´Ù.
     UInt                    mJobType;
 
-    /* change rowpiece link ì—°ì‚°ì‹œì—,
-     * ì•„ë˜ ë³€ìˆ˜ì— ì €ì¥í•´ë‘” next rowpiece sid ê°’ì„ ì´ìš©í•œë‹¤. */
+    /* change rowpiece link ¿¬»ê½Ã¿¡,
+     * ¾Æ·¡ º¯¼ö¿¡ ÀúÀåÇØµĞ next rowpiece sid °ªÀ» ÀÌ¿ëÇÑ´Ù. */
     sdSID                   mNextRowPieceSID;
 } sdcSupplementJobInfo;
 
 typedef struct sdcColumnInfo4Fetch
 {
-    /* mColumnì˜ ê°’ì„ ë³´ê³  fetch ì»¬ëŸ¼ì¸ì§€ ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
-     * mColumn == NULL : fetch ì»¬ëŸ¼ X
-     * mColumn != NULL : fetch ì»¬ëŸ¼ O */
+    /* mColumnÀÇ °ªÀ» º¸°í fetch ÄÃ·³ÀÎÁö ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
+     * mColumn == NULL : fetch ÄÃ·³ X
+     * mColumn != NULL : fetch ÄÃ·³ O */
     const smiColumn              *mColumn;
     sdcValue                      mValueInfo;
 
-    /* ë°ì´í„°ë¥¼ ì €ì¥í• ë•Œ, MT datatype formatìœ¼ë¡œ ì €ì¥í•˜ì§€ ì•Šê³ 
-     * raw valueë§Œ ì €ì¥í•œë‹¤.(ì €ì¥ ê³µê°„ì„ ì¤„ì´ê¸° ìœ„í•´ì„œì´ë‹¤.)
-     * ê·¸ë˜ì„œ ì €ì¥ëœ dataë¥¼ QPì—ê²Œ ë³´ë‚´ì¤„ ë•Œ,
-     * memcpyë¥¼ í•˜ë©´ ì•ˆë˜ê³ , QPê°€ ë‚´ë ¤ì¤€ callback í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•´ì•¼ í•œë‹¤.
-     * QPê°€ ë‚´ë ¤ì¤€ callback function pointerë¥¼ mCallbackì— ì €ì¥í•œë‹¤. */
+    /* µ¥ÀÌÅÍ¸¦ ÀúÀåÇÒ¶§, MT datatype formatÀ¸·Î ÀúÀåÇÏÁö ¾Ê°í
+     * raw value¸¸ ÀúÀåÇÑ´Ù.(ÀúÀå °ø°£À» ÁÙÀÌ±â À§ÇØ¼­ÀÌ´Ù.)
+     * ±×·¡¼­ ÀúÀåµÈ data¸¦ QP¿¡°Ô º¸³»ÁÙ ¶§,
+     * memcpy¸¦ ÇÏ¸é ¾ÈµÇ°í, QP°¡ ³»·ÁÁØ callback ÇÔ¼ö¸¦ È£ÃâÇØ¾ß ÇÑ´Ù.
+     * QP°¡ ³»·ÁÁØ callback function pointer¸¦ mCallback¿¡ ÀúÀåÇÑ´Ù. */
     smiCopyDiskColumnValueFunc    mCopyDiskColumn;
 
-    /* MT datatype formatì˜ sizeë¥¼ êµ¬í• ë•Œ ì‚¬ìš©í•˜ëŠ” callback í•¨ìˆ˜ */
+    /* MT datatype formatÀÇ size¸¦ ±¸ÇÒ¶§ »ç¿ëÇÏ´Â callback ÇÔ¼ö */
     smiActualSizeFunc             mActualSize;
 
     UShort                        mColSeqInRowPiece;
@@ -426,7 +423,7 @@ typedef struct sdcColumnInfo4Fetch
 
 typedef struct sdcRowPieceFetchInfo
 {
-    /* ì»¬ëŸ¼ì •ë³´ ë°°ì—´ */
+    /* ÄÃ·³Á¤º¸ ¹è¿­ */
     sdcColumnInfo4Fetch   mColInfoList[SMI_COLUMN_ID_MAXIMUM];
 
     UShort                mFetchColCount;
@@ -434,26 +431,26 @@ typedef struct sdcRowPieceFetchInfo
 
 typedef struct sdcRowFetchStatus
 {
-    UShort    mTotalFetchColCount;    /* fetchë¥¼ ìˆ˜í–‰í•´ì•¼ í•  columnì˜ ê°¯ìˆ˜ */
-    UShort    mFetchDoneColCount;     /* fetch ìˆ˜í–‰ì„ ì™„ë£Œí•œ columnì˜ ê°¯ìˆ˜ */
+    UShort    mTotalFetchColCount;    /* fetch¸¦ ¼öÇàÇØ¾ß ÇÒ columnÀÇ °¹¼ö */
+    UShort    mFetchDoneColCount;     /* fetch ¼öÇàÀ» ¿Ï·áÇÑ columnÀÇ °¹¼ö */
 
-    UShort    mFstColumnSeq;          /* row pieceì—ì„œ ì²«ë²ˆì§¸ column pieceì˜
+    UShort    mFstColumnSeq;          /* row piece¿¡¼­ Ã¹¹øÂ° column pieceÀÇ
                                        * sequence */
 
-    UInt      mAlreadyCopyedSize;     /* ì—¬ëŸ¬ rowpieceì— ë‚˜ëˆ„ì–´ ì €ì¥ëœ ì»¬ëŸ¼ì„
-                                       * fetchí•˜ëŠ” ê²½ìš°, copy offset ì •ë³´ë¥¼
-                                       * ì €ì¥í•œë‹¤. */
-    const smiFetchColumnList * mFstFetchConlumn; /* row pieceì—ì„œ ì°¾ì•„ì•¼í•  ì²«ë²ˆì§¸
-                                                  * fetch ëŒ€ìƒ column */
+    UInt      mAlreadyCopyedSize;     /* ¿©·¯ rowpiece¿¡ ³ª´©¾î ÀúÀåµÈ ÄÃ·³À»
+                                       * fetchÇÏ´Â °æ¿ì, copy offset Á¤º¸¸¦
+                                       * ÀúÀåÇÑ´Ù. */
+    const smiFetchColumnList * mFstFetchConlumn; /* row piece¿¡¼­ Ã£¾Æ¾ßÇÒ Ã¹¹øÂ°
+                                                  * fetch ´ë»ó column */
 } sdcRowFetchStatus;
 
-/* BUG-22943 index bottom up build ì„±ëŠ¥ê°œì„  */
+/* BUG-22943 index bottom up build ¼º´É°³¼± */
 typedef IDE_RC (*sdcCallbackFunc4Index)( const smiColumn * aIndexVRowColumn,
                                          UInt              aCopyOffset,
                                          const smiValue  * aColumnValue,
                                          void            * aIndexInfo );
 
-/* BUG-22943 index bottom up build ì„±ëŠ¥ê°œì„  */
+/* BUG-22943 index bottom up build ¼º´É°³¼± */
 typedef struct sdcIndexInfo4Fetch
 {
     const void                *mTableHeader;
@@ -464,8 +461,8 @@ typedef struct sdcIndexInfo4Fetch
     UChar                     *mBufferCursor;
 
     /* BUG-24091
-     * [SD-ê¸°ëŠ¥ì¶”ê°€] vrow column ë§Œë“¤ë•Œ ì›í•˜ëŠ” í¬ê¸°ë§Œí¼ë§Œ ë³µì‚¬í•˜ëŠ” ê¸°ëŠ¥ ì¶”ê°€ */
-    /* vrow column ë§Œë“¤ë•Œ fetchSize í¬ê¸° ì´ìƒì€ ë³µì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+     * [SD-±â´ÉÃß°¡] vrow column ¸¸µé¶§ ¿øÇÏ´Â Å©±â¸¸Å­¸¸ º¹»çÇÏ´Â ±â´É Ãß°¡ */
+    /* vrow column ¸¸µé¶§ fetchSize Å©±â ÀÌ»óÀº º¹»çÇÏÁö ¾Ê´Â´Ù. */
     UInt                      mFetchSize;
 } sdcIndexInfo4Fetch;
 
@@ -476,139 +473,74 @@ typedef struct sdcColumnInfo4PK
     sdcColInOutMode     mInOutMode;
 } sdcColumnInfo4PK;
 
-/* pk ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ìë£Œêµ¬ì¡°ì´ë‹¤. */
+/* pk Á¤º¸¸¦ ÀúÀåÇÏ´Â ÀÚ·á±¸Á¶ÀÌ´Ù. */
 typedef struct sdcPKInfo
 {
-    /* ì»¬ëŸ¼ì •ë³´ ë°°ì—´ */
+    /* ÄÃ·³Á¤º¸ ¹è¿­ */
     sdcColumnInfo4PK    mColInfoList[SMI_MAX_IDX_COLUMNS];
-    /* PK valueë¥¼ ë³µì‚¬í•˜ê¸° ìœ„í•œ 4K buffer */
+    /* PK value¸¦ º¹»çÇÏ±â À§ÇÑ 4K buffer */
     UChar               mSpace4CopyPKValue[SD_PAGE_SIZE/2];
 
-    /* primary key indexì— ì§€ì •ë˜ì–´ ìˆëŠ” columnì˜ ê°¯ìˆ˜  */
+    /* primary key index¿¡ ÁöÁ¤µÇ¾î ÀÖ´Â columnÀÇ °¹¼ö  */
     UShort              mTotalPKColCount;
-    /* ë³µì‚¬ë¥¼ ì™„ë£Œí•œ pk columnì˜ ê°¯ìˆ˜ */
+    /* º¹»ç¸¦ ¿Ï·áÇÑ pk columnÀÇ °¹¼ö */
     UShort              mCopyDonePKColCount;
 
-    /* row pieceì—ì„œ ì²«ë²ˆì§¸ column pieceì˜ sequence */
+    /* row piece¿¡¼­ Ã¹¹øÂ° column pieceÀÇ sequence */
     UShort              mFstColumnSeq;
 } sdcPKInfo;
 
 
 /* ------------------------------------------------
- * updatable check ìƒíƒœê°’
+ * updatable check »óÅÂ°ª
  * ----------------------------------------------*/
 typedef enum sdcUpdateState
 {
     SDC_UPTSTATE_NULL,
 
-    // update ê°€ëŠ¥ ìƒíƒœ
+    // update °¡´É »óÅÂ
     SDC_UPTSTATE_UPDATABLE,
 
-    // delete ëœ ìƒíƒœ
+    // delete µÈ »óÅÂ
     SDC_UPTSTATE_ALREADY_DELETED,
 
-    // ì´ë¯¸ ìì‹ ì˜ statementì— ì˜í•´ ê°±ì‹ ë¨
+    // ÀÌ¹Ì ÀÚ½ÅÀÇ statement¿¡ ÀÇÇØ °»½ÅµÊ
     SDC_UPTSTATE_INVISIBLE_MYUPTVERSION,
 
-    // ë‹¤ë¥¸ Txê°€ ë³€ê²½í–ˆìœ¼ë‚˜ ì•„ì§ commitë˜ì§€ ì•Šì•˜ì„ë•Œ
-    // commitë˜ê¸°ë¥¼ ê¸°ë‹¤ë ¤ retryí•œë‹¤.
+    // ´Ù¸¥ Tx°¡ º¯°æÇßÀ¸³ª ¾ÆÁ÷ commitµÇÁö ¾Ê¾ÒÀ»¶§
+    // commitµÇ±â¸¦ ±â´Ù·Á retryÇÑ´Ù.
     SDC_UPTSTATE_UPDATE_BYOTHER,
 
-    // ì´ë¯¸ ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ ë‚´ StmtSCNë³´ë‹¤ í° CSCN
-    // ìœ¼ë¡œ ê°±ì‹ í•œ ê²½ìš°
+    // ÀÌ¹Ì ´Ù¸¥ Æ®·£Àè¼ÇÀÌ ³» StmtSCNº¸´Ù Å« CSCN
+    // À¸·Î °»½ÅÇÑ °æ¿ì
     SDC_UPTSTATE_REBUILD_ALREADY_MODIFIED,
 
-    // ì¸ë±ìŠ¤ì—ì„œ Unique Vilolation ë‚œ ê²½ìš°
+    // ÀÎµ¦½º¿¡¼­ Unique Vilolation ³­ °æ¿ì
     SDC_UPTSTATE_UNIQUE_VIOLATION,
 
-    // Row Retry ê°€ í•„ìš”í•œ ê²½ìš°
+    // Row Retry °¡ ÇÊ¿äÇÑ °æ¿ì
     SDC_UPTSTATE_ROW_RETRY,
 } sdcUpdateState;
 
-/* --------------------------------------------------------------------
- * í•˜ë‚˜ì˜ undo recordì˜ ì»¬ëŸ¼ì„ ì²˜ë¦¬í•˜ëŠ” í•¨ìˆ˜
- * ----------------------------------------------------------------- */
-typedef IDE_RC (*sdcUndoColHandleFunc)( UInt   aColID,
-                                        UInt   aColOffset,
-                                        UInt   aColType,
-                                        sdRID  aPrevColRID,
-                                        UInt   aColSize,
-                                        UChar *aColValue,
-                                        UChar *aOrgRecSlotPtr,
-                                        void  *aSpecificDataPtr,
-                                        sdrMtx * ); //aMtx
-
-/* --------------------------------------------------------------------
- * undo recordì˜ column IDë¥¼ ìˆ˜ì§‘í•˜ê¸° ìœ„í•œ êµ¬ì¡°ì²´
- *
- * ----------------------------------------------------------------- */
-typedef struct sdcUndoColInfo
-{
-    // id array
-    UInt   *mColIDArray;
-    // undo recordì˜ column ê°œìˆ˜
-    UInt    mCount;
-    // var colì¤‘ undo recordì˜ RIDì™€ í˜„ recordì˜ RIDê°€
-    // ê°™ì€ ì»¬ëŸ¼ì˜ ê°œìˆ˜
-    UInt    mNotUpdateColCount;
-
-} sdcUndoColInfo;
-
-// cluster indexì˜ ë°ì´íƒ€ í˜ì´ê°€ splitë˜ì–´ì„œ
-// ìƒˆë¡œìš´ í˜ì´ì§€ë¡œ ê°€ê±°ë‚˜ , ê¸°ì¡´ í˜ì´ì§€ê°€ re-orgë˜ëŠ” ê²½ìš°
-// ì¸ë±ìŠ¤ì—ì„œ RIDë¥¼ ê°±ì‹ í•´ì•¼ í•œë‹¤. ì´ë¥¼ ìœ„í•˜ì—¬
-//  ì•„ë˜ì˜ êµ¬ì¡°ê°€ í•„ìš”í–ˆë‹¤.
-#define SDC_MOVED_ROW_MAX_STACK_DEPTH     (128)
-typedef struct sdcMovedRowNode
-{
-    SInt mDepth;
-    struct sdcMovedRowNode* mNext;
-    struct sdcMovedRowNode* mTail;
-    sdRID  mStack[SDC_MOVED_ROW_MAX_STACK_DEPTH];
-}sdcMovedRowNode;
-
-
-/* ------------------------------------------------
- * version no 65535ì¸ ê²ƒì€ íŠ¹ë³„í•œ ìš©ë„ë¡œ ì‚¬ìš©ëœë‹¤.
- * ----------------------------------------------*/
-#define SDC_VERSION_NO_INFINITE   ((UShort)0xFFFF)
-
-// BUG-15564
-// X$UNDO_TBSë¥¼ ìœ„í•œ ìë£Œêµ¬ì¡°
-typedef struct sdcUndoTBSInfo
-{
-    // tablespace ì „ì²´ í˜ì´ì§€ ìˆ˜
-    SChar   mSegType[20];
-
-    // í™•ì¥ëœ extentë“¤ì˜ ì „ì²´ í˜ì´ì§€ ìˆ˜
-    // ì¦‰, í• ë‹¹ëœ í˜ì´ì§€ ìˆ˜ë¥¼ ì˜ë¯¸í•œë‹¤.
-    // í•œë²ˆ ëŠ˜ë©´ ì¤„ì–´ë“¤ì§€ ì•ŠëŠ”ë‹¤.
-    ULong   mAllocPageCnt;
-
-    // ì‹¤ì œ ë°ì´í„°ê°€ ì°¨ì§€í•˜ê³  ìˆëŠ” í˜ì´ì§€ ìˆ˜
-    // DDL, DML ë°œìƒì‹œ ëŠ˜ë‹¤ê°€ agingë˜ë©´ ë‹¤ì‹œ ì¤€ë‹¤.
-    ULong   mUsedPageCnt;
-} sdcUndoTBSInfo;
-
-/* X$TSSEG ì •ë³´ì¶œë ¥ ìë£Œêµ¬ì¡° */
+/* X$TSSEG Á¤º¸Ãâ·Â ÀÚ·á±¸Á¶ */
 typedef struct sdcTSSegInfo
 {
     UInt          mSpaceID;        // TBSID
-    scPageID      mSegPID;         // ì„¸ê·¸ë¨¼íŠ¸ PID
-    UShort        mType;           // ì„¸ê·¸ë¨¼íŠ¸ íƒ€ì…
-    UShort        mState;          // ì„¸ê·¸ë¨¼íŠ¸ ìƒíƒœ
-    UInt          mTXSegID;        // íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ID
-    ULong         mTotExtCnt;      // ì´ ExtDesc ê°œìˆ˜
-    ULong         mTotExtDirCnt;   // ì´ ExtDir ê°œìˆ˜
-    sdRID         mCurAllocExtRID; // í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ ExtDesc RID
-    scPageID      mCurAllocPID;    // í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ í˜ì´ì§€ì˜ PID
-    UInt          mPageCntInExt;   // ExtDesc ë‹¹ í˜ì´ì§€ ê°œìˆ˜
+    scPageID      mSegPID;         // ¼¼±×¸ÕÆ® PID
+    UShort        mType;           // ¼¼±×¸ÕÆ® Å¸ÀÔ
+    UShort        mState;          // ¼¼±×¸ÕÆ® »óÅÂ
+    UInt          mTXSegID;        // Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ID
+    ULong         mTotExtCnt;      // ÃÑ ExtDesc °³¼ö
+    ULong         mTotExtDirCnt;   // ÃÑ ExtDir °³¼ö
+    sdRID         mCurAllocExtRID; // ÇöÀç »ç¿ëÁßÀÎ ExtDesc RID
+    scPageID      mCurAllocPID;    // ÇöÀç »ç¿ëÁßÀÎ ÆäÀÌÁöÀÇ PID
+    UInt          mPageCntInExt;   // ExtDesc ´ç ÆäÀÌÁö °³¼ö
 } sdcTSSegInfo;
 
 typedef sdcTSSegInfo sdcUDSegInfo;
 
 /*
- * X$DISK_UNDO_RECORDS êµ¬ì¡°ì²´
+ * X$DISK_UNDO_RECORDS ±¸Á¶Ã¼
  */
 typedef struct sdcUndoRec4FT
 {
@@ -624,7 +556,7 @@ typedef struct sdcUndoRec4FT
 } sdcUndoRec4FT;
 
 /*
- * X$DISK_TSS_RECORDS êµ¬ì¡°ì²´
+ * X$DISK_TSS_RECORDS ±¸Á¶Ã¼
  */
 typedef struct sdcTSS4FT
 {
@@ -638,30 +570,13 @@ typedef struct sdcTSS4FT
     sdcTSState mState;           // STATE
 } sdcTSS4FT;
 
-typedef  void (*sdcParseUpdateColFunc)( UChar      * aUndoRecPtr,
-                                        UInt       * aColID,
-                                        UInt       * aColType,
-                                        sdRID      * aColRID ,
-                                        UInt       * aColSize,
-                                        UChar     ** aColValuePtr );
-
-typedef struct sdcUpdateColInfo
-{
-    UInt       mColID;
-    UInt       mColType;
-    sdRID      mColRID;
-    UInt       mColSize;
-    UChar     *mColValuePtr;
-    sdRID      mVarRefRID;
-} sdcUpdateColInfo;
-
 /*
  * ROJ-1704 Disk MVCC Renewal
  *
- * íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ì˜ ìƒíƒœê°’ì„ ì •ì˜í•œë‹¤.
+ * Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸®ÀÇ »óÅÂ°ªÀ» Á¤ÀÇÇÑ´Ù.
  *
- * OFFLINE - íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ê°€ í• ë‹¹ë˜ì§€ ì•Šì€ ìƒíƒœ
- * ONLINE  - íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ê°€ íŠ¸ëœì­ì…˜ì— í• ë‹¹ëœ ìƒíƒœ
+ * OFFLINE - Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸®°¡ ÇÒ´çµÇÁö ¾ÊÀº »óÅÂ
+ * ONLINE  - Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸®°¡ Æ®·£Àè¼Ç¿¡ ÇÒ´çµÈ »óÅÂ
  */
 typedef enum sdcTXSegStatus
 {
@@ -669,133 +584,7 @@ typedef enum sdcTXSegStatus
     SDC_TXSEG_ONLINE
 } sdcTXSegStatus;
 
-///* PROJ-1597 Temp table record ì‚¬ì´ì¦ˆ ì œì•½ ì œê±° */
-//
-//#define SDC_TEMP_PAGE_MIN_ROW_SIZE  (3) // 1(min slot header len) + 2(slot dir)
-//#define SDC_TEMP_PAGE_MAX_ROW_COUNT (SD_PAGE_SIZE / SDC_TEMP_PAGE_MIN_ROW_SIZE)
-//
-//typedef struct sdcTempIDList
-//{
-//    UInt           mID;
-//    sdcTempIDList *mNext;
-//} sdcTempIDList;
-//
-//typedef struct sdcTempRuntimeColumn
-//{
-//    smiColumn                   mColumn;
-//
-//    smiCopyDiskColumnValueFunc  mConvertToCalcForm;
-//
-//    // key columnë§Œ ì •ë³´ë¥¼ ê°€ì§. ë‚˜ë¨¸ì§€ ì»¬ëŸ¼ë“¤ì€ NULLì´ë‹¤.
-//    smiCompareFunc              mCompare;
-//
-//    UShort                      mOrgOrder;
-//    UInt                        mValExtent;
-//
-//    // ì¤‘ë³µëœ key columnë“¤ì´ ìˆìœ¼ë©´ ëŒ€í‘œ columnì˜ ë‹¤ìŒ ë§´ë²„ì— ë‹¬ë¦°ë‹¤.
-//    // ì¦‰, key columnì´ i1, i1ì´ê³  column idê°€ ê°ê° 3,4ì´ë©´
-//    // 3ë²ˆ columnì˜ mRedundantsì— 4ë²ˆì´ ë‹¬ë¦°ë‹¤.
-//    // ì´ë•Œ 4ë²ˆ columnì€ key column countì— í¬í•¨ë˜ì§€ ì•ŠëŠ”ë‹¤.
-//    sdcTempIDList              *mRedundants;
-//} sdcTempRuntimeColumn;
-//
-//typedef struct sdcTempRuntimeHdr
-//{
-//    // row column ì •ë³´
-//    sdcTempRuntimeColumn       *mColumns;
-//
-//    UShort                      mKeyColumnCount;      // key column ê°œìˆ˜
-//    UShort                      mMainColumnCount;     // data pageì— ì €ì¥ë˜ì–´ì•¼ í•  ì»¬ëŸ¼ë“¤
-//    UShort                      mColumnCount;         // ì´ column ê°œìˆ˜
-//
-//    scPageID                    mCurrentExtraPID;
-//
-//    UChar                      *mCompRowBuf;          // filter ì ìš©ì„ ìœ„í•´ MT í˜•íƒœë¡œ ë³€í™˜í•  ê³µê°„
-//    UChar                      *mColumnMergeBuf;      // spanned columnì„ í•©ì¹˜ê¸° ìœ„í•œ ë©”ëª¨ë¦¬ ê³µê°„
-//    smiValue                   *mCompKeyValue;        // key filter ì ìš©ì„ ìœ„í•´ smiValue í˜•íƒœë¡œ ë³€í™˜í•  ê³µê°„
-//
-//
-//    // ì˜ˆë¥¼ ë“¤ì–´ c1, c2, c3, c4, c5 7ê°œì˜ ì»¬ëŸ¼ìœ¼ë¡œ temp tableì´ ìƒì„±ë  ê²½ìš°
-//    // ì €ì¥ ìˆœì„œê°€ c2, c3, c1, c5, c4ë¼ í•´ë³´ì.
-//    //
-//    // mColumns              : c2-c3-c1-c5-c4
-//    // mOrgOrders            : 1-2-0-4-3
-//    // key column            : c2, c3
-//    // hit flag column       : c1
-//    // aggregation column    : c5
-//    // main column           : c2, c3, c1, c5
-//    // non main column       : c4
-//
-//    // main columnì´ë€ spanned rowì¼ ê²½ìš° data pageì— ì €ì¥ë˜ëŠ” ì»¬ëŸ¼ë“¤ì„ ë§í•œë‹¤.
-//    // non main columnë“¤ì€ spanned rowì¼ ê²½ìš° extra pageì— ì €ì¥ëœë‹¤.
-//
-//    idBool                     mIsConsistent;
-//
-//    // BUG-31997: When using temporary tables by RID, RID refers to
-//    // the invalid row.
-//    idBool                     mIsForcedIndirectRow;
-//} sdcTempRuntimeHdr;
-//
-//typedef enum sdcTempPageType
-//{
-//    SDC_TEMP_PAGE_NORMAL = 1,
-//    SDC_TEMP_PAGE_HASH_VALUE,
-//    SDC_TEMP_PAGE_EXTRA,
-//    SDC_TEMP_PAGE_RUN    /* BUG-32612 build temp indexì‹œ merge sortë¥¼ ìœ„í•œ runì— ì‚¬ìš©ëœ page */
-//} sdcTempPageType;
-//
-//typedef struct sdcTempPageHdr
-//{
-//    sdcTempPageType mType;
-//} sdcTempPageHdr;
-//
-//
-//typedef struct sdcTempVSlot
-//{
-//    idvSQL         *mStatistics;
-//    UChar          *mPos;
-//    UChar          *mCurSlot;
-//    UChar          *mCurSlotFence;
-//    UChar          *mHeadSlot;
-//    scSpaceID       mTBSID;
-//} sdcTempVSlot;
-//
-//typedef struct sdcTempVSlotW
-//{
-//    // sdcTempVSlot
-//    idvSQL         *mStatistics;
-//    UChar          *mPos;
-//    UChar          *mCurSlot;
-//    UChar          *mCurSlotFence;
-//    UChar          *mHeadSlot;
-//    scSpaceID       mTBSID;
-//
-//    // sdcTempVSlotW specific
-//    scPageID       *mCurExtraPIDPtr;
-//    sdpSegmentDesc *mSegDesc;
-//    idBool          mSomePageGot;
-//    UInt            mRemainSize;
-//
-//    // BUG-31997: When using temporary tables by RID, RID refers to
-//    // the invalid row.
-//    UChar          *mHeadExtraSlot;
-//} sdcTempVSlotW;
-//
-//typedef struct sdcTempVSlotR
-//{
-//    // sdcTempVSlot
-//    idvSQL         *mStatistics;
-//    UChar          *mPos;
-//    UChar          *mCurSlot;
-//    UChar          *mCurSlotFence;
-//    UChar          *mHeadSlot;
-//    scSpaceID       mTBSID;
-//
-//    // sdcTempVSlotR specific
-//    idBool          mExtraFixed;
-//} sdcTempVSlotR;
-
-/* Row Versionì— ëŒ€í•œ ì—°ì‚° ì¢…ë¥˜ ì •ì˜ */
+/* Row Version¿¡ ´ëÇÑ ¿¬»ê Á¾·ù Á¤ÀÇ */
 typedef enum sdcOperToMakeRowVer
 {
     SDC_MVCC_MAKE_VALROW,
@@ -803,7 +592,7 @@ typedef enum sdcOperToMakeRowVer
     SDC_UNDO_MAKE_OLDROW
 } sdcOperToMakeRowVer;
 
-/* CTSì˜ FSCOrCSCNì— ëŒ€í•œ COMMIT SCN ì—¬ë¶€ë§Œì„ í™•ì¸í•œë‹¤ */
+/* CTSÀÇ FSCOrCSCN¿¡ ´ëÇÑ COMMIT SCN ¿©ºÎ¸¸À» È®ÀÎÇÑ´Ù */
 #ifdef COMPILE_64BIT
 #define SDC_CTS_SCN_IS_COMMITTED( SCN )        \
     ( ( ( SCN ) & SM_SCN_COMMIT_PARITY_BIT ) != SM_SCN_COMMIT_PARITY_BIT )
@@ -824,15 +613,15 @@ typedef enum sdcOperToMakeRowVer
     ( ((SCN).mLow & SM_SCN_COMMIT_LEGACY_BIT ) != SM_SCN_COMMIT_LEGACY_BIT )
 #endif
 
-// Direct-Path INSERTë¥¼ ìœ„í•œ ìë£Œ êµ¬ì¡°
-// Transaction ë‹¨ìœ„ë¡œ ìƒì„±ëœë‹¤.
+// Direct-Path INSERT¸¦ À§ÇÑ ÀÚ·á ±¸Á¶
+// Transaction ´ÜÀ§·Î »ı¼ºµÈ´Ù.
 typedef struct sdcDPathEntry
 {
     sdbDPathBuffInfo    mDPathBuffInfo;
     sdpDPathInfo        mDPathInfo;
 } sdcDPathEntry;
 
-// X$DIRECT_PATH_INSERTì˜ ì¶œë ¥ì„ ìœ„í•œ í†µê³„ ê°’ì„ ì €ì¥
+// X$DIRECT_PATH_INSERTÀÇ Ãâ·ÂÀ» À§ÇÑ Åë°è °ªÀ» ÀúÀå
 typedef struct sdcDPathStat
 {
     ULong   mCommitTXCnt;
@@ -846,7 +635,7 @@ typedef struct sdcDPathStat
 
 
 /**********************************************************************
- * Disk LOB ìë£Œ êµ¬ì¡°
+ * Disk LOB ÀÚ·á ±¸Á¶
  **********************************************************************/
 
 #define SDC_LOB_INVALID_KEY_SEQ     (-1)
@@ -939,7 +728,7 @@ typedef struct sdcLobInfo4Fetch
 {
     /* LobCursor open mode(read or read write) */
     smiLobCursorMode    mOpenMode;  // LOB Cursor Open Mode
-    sdcColInOutMode     mInOutMode; // LOB Dataì˜ In Out ìœ ë¬´
+    sdcColInOutMode     mInOutMode; // LOB DataÀÇ In Out À¯¹«
 } sdcLobInfo4Fetch;
 
 typedef struct sdcColumnInfo4Lob

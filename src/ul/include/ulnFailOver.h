@@ -34,6 +34,12 @@ typedef enum
     ULN_FAILOVER_CALLBACK_IN_STATE
 } ulnFailoverCallbackState;
 
+typedef enum
+{
+    ULN_FAILOVER_SUSPEND_OFF_STATE = 0,
+    ULN_FAILOVER_SUSPEND_ON_STATE
+} ulnFailoverSuspendState;                  /* BUG-47131 샤드 All meta 환경에서 Client failover 시 hang 발생 */
+
 typedef struct ulnFailoverServerInfo
 {
     acp_char_t       *mHost;

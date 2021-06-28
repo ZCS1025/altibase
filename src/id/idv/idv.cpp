@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: idv.cpp 83365 2018-06-27 04:23:48Z emlee $
+ * $Id: idv.cpp 83362 2018-06-27 04:15:04Z emlee $
  **********************************************************************/
 
 #include <idl.h>
@@ -33,7 +33,7 @@ ULong        idvManager::mClock;
 ULong        idvManager::mTimeSec;
 idvResource *idvManager::mResource;
 idvHandler  *idvManager::mHandler;
-// Time Serviceì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€
+// Time Service»ç¿ë °¡´É ¿©ºÎ
 idBool       idvManager::mIsServiceAvail = ID_FALSE;
 
 idvTimeFunc *idvManager::mOPArray[] =
@@ -63,9 +63,9 @@ idvBaseTimeCallback  idvManager::mBaseTimeCallback;
  *
  *  !!!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!!!!
  *
- *    ë“±ë¡ë˜ëŠ” ìˆœì„œê°€ 0ë¶€í„° ë§ˆì§€ë§‰ê¹Œì§€
- *    ìˆœì°¨ì ìœ¼ë¡œ ì¦ê°€í•˜ëŠ” í˜•íƒœë¡œ ë˜ì–´ì•¼ í•œë‹¤.
- *    [0, 2, 1] í˜•íƒœë¡œ ë“±ë¡ë˜ë©´ êµ¬ë™ì‹œ ì—ëŸ¬ê°€ ë°œìƒí•œë‹¤.
+ *    µî·ÏµÇ´Â ¼ø¼­°¡ 0ºÎÅÍ ¸¶Áö¸·±îÁö
+ *    ¼øÂ÷ÀûÀ¸·Î Áõ°¡ÇÏ´Â ÇüÅÂ·Î µÇ¾î¾ß ÇÑ´Ù.
+ *    [0, 2, 1] ÇüÅÂ·Î µî·ÏµÇ¸é ±¸µ¿½Ã ¿¡·¯°¡ ¹ß»ıÇÑ´Ù.
  *
  * ----------------------------------------------*/
 
@@ -115,8 +115,8 @@ idvStatName idvManager::mStatName[IDV_STAT_INDEX_MAX] =
     { IDV_STAT_INDEX_DDL_SYNC_TIMEOUT_COUNT,   "ddl sync timeout",
       IDV_ATTR_ACCUM , 0 },
 
-    /* BUG-24151: [SC] Update Retry, Delete Retry, Statement Rebuild Countë¥¼
-     *            AWIë¡œ ì¶”ê°€í•´ì•¼ í•©ë‹ˆë‹¤.*/
+    /* BUG-24151: [SC] Update Retry, Delete Retry, Statement Rebuild Count¸¦
+     *            AWI·Î Ãß°¡ÇØ¾ß ÇÕ´Ï´Ù.*/
     { IDV_STAT_INDEX_STMT_REBUILD_COUNT,       "statement rebuild count",
       IDV_ATTR_ACCUM , 0 },
     { IDV_STAT_INDEX_UNIQUE_VIOLATION_COUNT,   "unique violation count",
@@ -473,7 +473,7 @@ idvStatName idvManager::mStatName[IDV_STAT_INDEX_MAX] =
      "elapsed time: receiver(s) trim LOB(s)",
      IDV_ATTR_ACCUM , 0 },
 
-    /* bug-35395: task schedule time ì„ sysstatì— ì¶”ê°€ */
+    /* bug-35395: task schedule time À» sysstat¿¡ Ãß°¡ */
     { IDV_STAT_INDEX_OPTM_TASK_SCHEDULE,
       "elapsed time: task schedule",
       IDV_ATTR_ACCUM , 0 },
@@ -484,7 +484,7 @@ idvStatName idvManager::mStatName[IDV_STAT_INDEX_MAX] =
 };
 
 /* ------------------------------------------------
- *  ì„¸ì…˜ Wait Event ì¢…ë¥˜
+ *  ¼¼¼Ç Wait Event Á¾·ù
  * ----------------------------------------------*/
 
 idvWaitEventName idvManager::mWaitEventName[ IDV_WAIT_INDEX_MAX + 1 ] =
@@ -645,7 +645,7 @@ idvWaitEventName idvManager::mWaitEventName[ IDV_WAIT_INDEX_MAX + 1 ] =
       IDV_WCLASS_INDEX_CONCURRENCY },
 
     { IDV_WAIT_INDEX_LATCH_FREE_DRDB_SECONDARY_READIO_MUTEX,
-      "latch free: drdb secondary read io mutex ",
+      "latch free: drdb secondary read io mutex",
       IDV_ATTR_ACCUM,
       IDV_WCLASS_INDEX_CONCURRENCY },
 
@@ -722,17 +722,17 @@ idvWaitClassName idvManager::mWaitClassName[ IDV_WCLASS_INDEX_MAX ] =
 
 
 /* ------------------------------------------------
- *  ì‹œìŠ¤í…œ ì˜ì—­.
- *  ë™ì ìœ¼ë¡œ í• ë‹¹ì„ ë°›ì•„ í¬ì¸í„°ë¥¼ í†µí•´ ì ‘ê·¼í•˜ëŠ” ê²ƒë³´ë‹¤,
- *  ì „ì—­ìœ¼ë¡œ ë†“ê³ , ì§ì ‘ ì ‘ê·¼í•˜ëŠ” ê²ƒì´ ì„±ëŠ¥ì— ì‡ì ì´ ìˆë‹¤.
- *  ì´ëŸ° ì´ìœ ë¡œ ì „ì—­ìœ¼ë¡œ ì •ì˜í•œë‹¤.
+ *  ½Ã½ºÅÛ ¿µ¿ª.
+ *  µ¿ÀûÀ¸·Î ÇÒ´çÀ» ¹Ş¾Æ Æ÷ÀÎÅÍ¸¦ ÅëÇØ Á¢±ÙÇÏ´Â °Íº¸´Ù,
+ *  Àü¿ªÀ¸·Î ³õ°í, Á÷Á¢ Á¢±ÙÇÏ´Â °ÍÀÌ ¼º´É¿¡ ÀÕÁ¡ÀÌ ÀÖ´Ù.
+ *  ÀÌ·± ÀÌÀ¯·Î Àü¿ªÀ¸·Î Á¤ÀÇÇÑ´Ù.
  * ----------------------------------------------*/
 
 idvSystem gSystemInfo;
 
 
 /* ------------------------------------------------
- *  idv ëª¨ë“ˆì„ ì´ˆê¸°í™” í•œë‹¤.
+ *  idv ¸ğµâÀ» ÃÊ±âÈ­ ÇÑ´Ù.
  * ----------------------------------------------*/
 
 void idvManager::initSQL(idvSQL     *aSQL,
@@ -784,7 +784,7 @@ void idvManager::resetSQL(idvSQL *aSQL)
 }
 
 /* ------------------------------------------------
- *  idvSQLì˜ ëˆ„ì ì‹œê°„ì„ prepare ì‹œ ì´ˆê¸°í™” í•œë‹¤
+ *  idvSQLÀÇ ´©Àû½Ã°£À» prepare ½Ã ÃÊ±âÈ­ ÇÑ´Ù
  * ----------------------------------------------*/
 
 void idvManager::initPrepareAccumTime( idvSQL * aStatSQL )
@@ -857,7 +857,7 @@ void idvManager::initPrepareAccumTime( idvSQL * aStatSQL )
 }
 
 /* ------------------------------------------------
- *  idvSQLì˜ ëˆ„ì ì‹œê°„ì„ beginStmt ì‹œ ì´ˆê¸°í™” í•œë‹¤
+ *  idvSQLÀÇ ´©Àû½Ã°£À» beginStmt ½Ã ÃÊ±âÈ­ ÇÑ´Ù
  * ----------------------------------------------*/
 
 void idvManager::initBeginStmtAccumTime( idvSQL * aStatSQL )
@@ -1045,10 +1045,10 @@ void idvManager::initStat4Session( idvSession * aSession )
     }
 
     /* ------------------------------------------------
-     *  latch: buffer busy wait ëŒ€ê¸° ì´ë²¤íŠ¸ì˜
-     *  page íƒ€ì…ë³„ latch miss í†µê³„ì •ë³´ ì´ˆê¸°í™”
+     *  latch: buffer busy wait ´ë±â ÀÌº¥Æ®ÀÇ
+     *  page Å¸ÀÔº° latch miss Åë°èÁ¤º¸ ÃÊ±âÈ­
      * ----------------------------------------------*/
-    // BUG-21155 : session ì´ˆê¸°í™”
+    // BUG-21155 : session ÃÊ±âÈ­
     idlOS::memset(aSession->mMissCnt, 0x00, (ID_SIZEOF(ULong) * IDV_SM_PAGE_TYPE_MAX) );
     idlOS::memset(aSession->mMissTime, 0x00, (ID_SIZEOF(ULong) * IDV_SM_PAGE_TYPE_MAX) );
 }
@@ -1170,15 +1170,15 @@ IDE_RC idvManager::destroyStatic()
 }
 
 /* ------------------------------------------------
- *  session ì— ìˆëŠ” í†µê³„ ì •ë³´ì˜ ì°¨ì´ë¥¼ ì‹œìŠ¤í…œìœ¼ë¡œ ë³µì‚¬í•œë‹¤.
- *  ë³µì‚¬í›„ì—ëŠ” oldì˜ ê°’ì„ newë¡œ ë³µì‚¬í•˜ì—¬, ê·¸ ì°¨ì´ë¥¼
- *  0ìœ¼ë¡œ ë§Œë“ ë‹¤.
+ *  session ¿¡ ÀÖ´Â Åë°è Á¤º¸ÀÇ Â÷ÀÌ¸¦ ½Ã½ºÅÛÀ¸·Î º¹»çÇÑ´Ù.
+ *  º¹»çÈÄ¿¡´Â oldÀÇ °ªÀ» new·Î º¹»çÇÏ¿©, ±× Â÷ÀÌ¸¦
+ *  0À¸·Î ¸¸µç´Ù.
  *
- *  ì´ë ‡ê²Œ ë²ˆê±°ë¡œìš´ ì‘ì—…ì„ í•˜ëŠ” ì´ìœ ëŠ”
- *  ë§Œì¼ ë§ì€ ì“°ë ˆë“œë“¤ì´ ë™ì‹œì— ì‹œìŠ¤í…œì˜ í†µê³„ì •ë³´ë¥¼
- *  updateí•  ê²½ìš°ì— BUS-Saturationì´ ë°œìƒí•˜ì—¬
- *  ì‹œìŠ¤í…œì˜ ì„±ëŠ¥ì„ ë–¨ì–´ëœ¨ë¦´ ê°€ëŠ¥ì„±ì´ ìˆê¸° ë•Œë¬¸ì—
- *  ì£¼ê¸°ì ìœ¼ë¡œ ë°˜ì˜í•˜ëŠ” ê²ƒì´ë‹¤. by sjkim
+ *  ÀÌ·¸°Ô ¹ø°Å·Î¿î ÀÛ¾÷À» ÇÏ´Â ÀÌÀ¯´Â
+ *  ¸¸ÀÏ ¸¹Àº ¾²·¹µåµéÀÌ µ¿½Ã¿¡ ½Ã½ºÅÛÀÇ Åë°èÁ¤º¸¸¦
+ *  updateÇÒ °æ¿ì¿¡ BUS-SaturationÀÌ ¹ß»ıÇÏ¿©
+ *  ½Ã½ºÅÛÀÇ ¼º´ÉÀ» ¶³¾î¶ß¸± °¡´É¼ºÀÌ ÀÖ±â ¶§¹®¿¡
+ *  ÁÖ±âÀûÀ¸·Î ¹İ¿µÇÏ´Â °ÍÀÌ´Ù. by sjkim
  * ----------------------------------------------*/
 
 void   idvManager::applyStatisticsToSystem(idvSession *aCurr, idvSession *aOld)
@@ -1207,7 +1207,7 @@ void   idvManager::applyStatisticsToSystem(idvSession *aCurr, idvSession *aOld)
         }
     }
 
-    // TIMED_STATISTICSê°€ ONì¸ ê²½ìš°
+    // TIMED_STATISTICS°¡ ONÀÎ °æ¿ì
     if ( iduProperty::getTimedStatistics() == IDV_TIMED_STATISTICS_ON )
     {
         for (i = IDV_WAIT_INDEX_BEGIN;
@@ -1225,8 +1225,8 @@ void   idvManager::applyStatisticsToSystem(idvSession *aCurr, idvSession *aOld)
             }
         }
 
-        // 'latch: buffer busy wait'ì— ì˜í•´
-        // page latchê°€ missëœ í†µê³„ ì •ë³´ ëˆ„ì 
+        // 'latch: buffer busy wait'¿¡ ÀÇÇØ
+        // page latch°¡ missµÈ Åë°è Á¤º¸ ´©Àû
         for (i = 0;
              i < IDV_SM_PAGE_TYPE_MAX;
              i ++)
@@ -1248,10 +1248,10 @@ void   idvManager::applyStatisticsToSystem(idvSession *aCurr, idvSession *aOld)
 }
 
 /*
- * stmt endì‹œì— í†µê³„ì •ë³´ë¥¼ ìì‹ ì˜ Session ê²½ê³¼ì‹œê°„
- * í†µê³„ì •ë³´ì— ëˆ„ì ì‹œí‚¨ë‹¤. ê²½ê³¼ì‹œê°„ ì™¸ì˜ ë‹¤ë¥¸ ëª‡ëª‡
- * stmt í†µê³„ì •ë³´ëŠ” stmtì™€ sessì— ì§ì ‘ ì¦ê°ì‹œí‚¤ë„ë¡
- * êµ¬í˜„ë˜ì–´ ìˆë‹¤.
+ * stmt end½Ã¿¡ Åë°èÁ¤º¸¸¦ ÀÚ½ÅÀÇ Session °æ°ú½Ã°£
+ * Åë°èÁ¤º¸¿¡ ´©Àû½ÃÅ²´Ù. °æ°ú½Ã°£ ¿ÜÀÇ ´Ù¸¥ ¸î¸î
+ * stmt Åë°èÁ¤º¸´Â stmt¿Í sess¿¡ Á÷Á¢ Áõ°¨½ÃÅ°µµ·Ï
+ * ±¸ÇöµÇ¾î ÀÖ´Ù.
  */
 void idvManager::applyOpTimeToSession(
                           idvSession  *aCurrSess,
@@ -1259,7 +1259,7 @@ void idvManager::applyOpTimeToSession(
 {
     UInt  i;
 
-    // TIMED_STATISTICSê°€ ONì¸ ê²½ìš°
+    // TIMED_STATISTICS°¡ ONÀÎ °æ¿ì
     if ( iduProperty::getTimedStatistics() == IDV_TIMED_STATISTICS_ON )
     {
         for (i = IDV_STAT_INDEX_BEGIN_STMT_TO_SESS;
@@ -1548,7 +1548,7 @@ void idvManager::addOpTimeToSession(
                  == IDV_TIME_SWITCH_OFF))
         {
             /*
-             * ì´ë¯¸ ê³„ì‚°ë˜ì–´ ìˆìœ¼ë¯€ë¡œ ê²½ê³¼ì‹œê°„ì„ ëˆ„ì ë§Œ í•˜ë©´ ëœë‹¤.
+             * ÀÌ¹Ì °è»êµÇ¾î ÀÖÀ¸¹Ç·Î °æ°ú½Ã°£À» ´©Àû¸¸ ÇÏ¸é µÈ´Ù.
              */
             IDV_SESS_ADD( aCurrSess,
                     aStatIdx,
@@ -1561,11 +1561,11 @@ void idvManager::addOpTimeToSession(
 }
 
 /*
- * ê³„ì† ì¦ê°€í•˜ëŠ” ê°’ì˜ ì†ì„±ì„ ê°–ëŠ” í†µê³„ì •ë³´ë¥¼ ëˆ„ì ì‹œí‚¨ë‹¤.
- * ì˜ˆë¥¼ë“¤ì–´, OAread page count, write page countì™€ ê°™ì€
- * í†µê³„ì •ë³´ë“±ì´ ìˆë‹¤.
- * ê²½ê³¼ì‹œê°„ì— ëŒ€í•œ ìƒëŒ€ì  ì¦ê°ì„ í†µê³„ì •ë³´ëŠ” ë³¸ í•¨ìˆ˜ë¥¼
- * ì‚¬ìš©í•´ì„œëŠ” ì•ˆëœë‹¤.
+ * °è¼Ó Áõ°¡ÇÏ´Â °ªÀÇ ¼Ó¼ºÀ» °®´Â Åë°èÁ¤º¸¸¦ ´©Àû½ÃÅ²´Ù.
+ * ¿¹¸¦µé¾î, OAread page count, write page count¿Í °°Àº
+ * Åë°èÁ¤º¸µîÀÌ ÀÖ´Ù.
+ * °æ°ú½Ã°£¿¡ ´ëÇÑ »ó´ëÀû Áõ°¨À» Åë°èÁ¤º¸´Â º» ÇÔ¼ö¸¦
+ * »ç¿ëÇØ¼­´Â ¾ÈµÈ´Ù.
  */
 void idvManager::applyStatEventToSystem( idvStatIndex  aStatIdx,
                                          idvStatEvent *aCurr,
@@ -1677,8 +1677,8 @@ void idvManager::beginWaitEvent( void      * aStatSQL,
     if ( sStatSQL->mSess != NULL )
     {
         /*
-         * [1] Session í†µê³„ì •ë³´ ì²˜ë¦¬
-         * a. ì´ ëŒ€ê¸°íšŒìˆ˜ 1 ì¦ê°€
+         * [1] Session Åë°èÁ¤º¸ Ã³¸®
+         * a. ÃÑ ´ë±âÈ¸¼ö 1 Áõ°¡
          */
         IDE_DASSERT( ((idvWeArgs*)aWeArgs)->mWaitEventID
                 == *(idvWaitIndex*)aWeArgs );
@@ -1689,16 +1689,16 @@ void idvManager::beginWaitEvent( void      * aStatSQL,
     }
     else
     {
-        /* system threadì™€ ê°™ì´ sessionì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°ì—ëŠ”
-         * ë³¸ í•¨ìˆ˜ì—ì„œ í†µê³„ì •ë³´ë¥¼ ëˆ„ì ì‹œí‚¤ì§€ ì•ŠëŠ”ë‹¤ */
+        /* system thread¿Í °°ÀÌ sessionÀÌ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì¿¡´Â
+         * º» ÇÔ¼ö¿¡¼­ Åë°èÁ¤º¸¸¦ ´©Àû½ÃÅ°Áö ¾Ê´Â´Ù */
     }
     /*
-     * [2] SQL í†µê³„ì •ë³´ ì²˜ë¦¬
-     * a. ëŒ€ê¸°ì´ë²¤íŠ¸ íŒŒë¼ë¯¸í„° ì„¤ì •
+     * [2] SQL Åë°èÁ¤º¸ Ã³¸®
+     * a. ´ë±âÀÌº¥Æ® ÆÄ¶ó¹ÌÅÍ ¼³Á¤
      */
     IDV_SQL_SET( sStatSQL, mWeArgs, *(idvWeArgs*)aWeArgs );
 
-    // SQLì— ëŒ€ê¸°ì´ë²¤íŠ¸ ëŒ€ê¸°ì‹œê°„ ì¸¡ì •ì‹œì‘
+    // SQL¿¡ ´ë±âÀÌº¥Æ® ´ë±â½Ã°£ ÃøÁ¤½ÃÀÛ
     IDV_TIMEBOX_BEGIN(
             IDV_SQL_WAIT_TIME_DIRECT( sStatSQL ));
 
@@ -1721,7 +1721,7 @@ void idvManager::endWaitEvent( void   * aStatSQL,
                    cont_finish );
     IDE_TEST_RAISE( iduProperty::getTimedStatistics() == 0, cont_finish );
 
-    // SQLì— ëŒ€ê¸°ì´ë²¤íŠ¸ ëŒ€ê¸°ì‹œê°„ì˜ ì¸¡ì •ì„ ì™„ë£Œí•œë‹¤.
+    // SQL¿¡ ´ë±âÀÌº¥Æ® ´ë±â½Ã°£ÀÇ ÃøÁ¤À» ¿Ï·áÇÑ´Ù.
     IDV_TIMEBOX_END(
             IDV_SQL_WAIT_TIME_DIRECT( sStatSQL ));
 
@@ -1734,10 +1734,10 @@ void idvManager::endWaitEvent( void   * aStatSQL,
             IDV_TIMEBOX_GET_ELA_TIME(
                     IDV_SQL_WAIT_TIME_DIRECT( sStatSQL ));
 
-        // ì´ ëŒ€ê¸°ì‹œê°„ ( micro sec. ë‹¨ìœ„ )
+        // ÃÑ ´ë±â½Ã°£ ( micro sec. ´ÜÀ§ )
         sWePtr->mTimeWaitedMicro += sElaTime;
 
-        // ìµœëŒ€ëŒ€ê¸°ì‹œê°„
+        // ÃÖ´ë´ë±â½Ã°£
         if ( ( sElaTime / 1000 ) > sWePtr->mMaxWait )
         {
             sWePtr->mMaxWait = ( sElaTime / 1000 );
@@ -1752,10 +1752,10 @@ void idvManager::endWaitEvent( void   * aStatSQL,
             sPageTypeIndex =
                 sStatSQL->mWeArgs.mWaitParam[IDV_WAIT_PARAM_3];
 
-            /* BUG-24092: [SD] BufferMgrì—ì„œ BCBì˜ Latch Statì„ ê°±ì‹ ì‹œ Page Typeì´
-             * Invalidí•˜ì—¬ ì„œë²„ê°€ ì£½ìŠµë‹ˆë‹¤.
+            /* BUG-24092: [SD] BufferMgr¿¡¼­ BCBÀÇ Latch StatÀ» °»½Å½Ã Page TypeÀÌ
+             * InvalidÇÏ¿© ¼­¹ö°¡ Á×½À´Ï´Ù.
              *
-             * sPageTypeIndexê°€ Invalidí•  ê²½ìš° Warning Msgë¥¼ ì°ê³  ë„˜ì–´ê°„ë‹¤. */
+             * sPageTypeIndex°¡ InvalidÇÒ °æ¿ì Warning Msg¸¦ Âï°í ³Ñ¾î°£´Ù. */
             if( sPageTypeIndex < IDV_SM_PAGE_TYPE_MAX  )
             {
                 sStatSQL->mSess->mMissCnt[sPageTypeIndex]++;
@@ -1773,15 +1773,15 @@ void idvManager::endWaitEvent( void   * aStatSQL,
     }
     else
     {
-        /* system threadì™€ ê°™ì´ sessionì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°ì—ëŠ”
-         * ë³¸ í•¨ìˆ˜ì—ì„œ í†µê³„ì •ë³´ë¥¼ ëˆ„ì ì‹œí‚¤ì§€ ì•ŠëŠ”ë‹¤ */
+        /* system thread¿Í °°ÀÌ sessionÀÌ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì¿¡´Â
+         * º» ÇÔ¼ö¿¡¼­ Åë°èÁ¤º¸¸¦ ´©Àû½ÃÅ°Áö ¾Ê´Â´Ù */
     }
 
     IDE_EXCEPTION_CONT( cont_finish );
 }
 
 /*
- * ì—°ì‚°ì˜ ê²½ê³¼ì‹œê°„ì„ ì¸¡ì •ì‹œì‘í•œë‹¤.
+ * ¿¬»êÀÇ °æ°ú½Ã°£À» ÃøÁ¤½ÃÀÛÇÑ´Ù.
  */
 void idvManager::beginOpTime( idvSQL       * aStatSQL,
                               idvOperTimeIndex   aOpIdx )
@@ -1797,7 +1797,7 @@ void idvManager::beginOpTime( idvSQL       * aStatSQL,
 }
 
 /*
- * ì—°ì‚°ì˜ ê²½ê³¼ì‹œê°„ì„ ì¸¡ì •ì™„ë£Œí•œë‹¤.
+ * ¿¬»êÀÇ °æ°ú½Ã°£À» ÃøÁ¤¿Ï·áÇÑ´Ù.
  */
 void idvManager::endOpTime( idvSQL              * aStatSQL,
                             idvOperTimeIndex   aOpIdx )
@@ -1812,9 +1812,9 @@ void idvManager::endOpTime( idvSQL              * aStatSQL,
     }
 }
 
-/* BUG-29005 - Fullscan ì„±ëŠ¥ ë¬¸ì œ
- * idvSQLì—ì„œ Session IDë¥¼ ê°€ì ¸ì˜¤ëŠ” í•¨ìˆ˜ ì¶”ê°€í•¨.
- * SMì—ì„œ callbackìœ¼ë¡œ ì‚¬ìš© */
+/* BUG-29005 - Fullscan ¼º´É ¹®Á¦
+ * idvSQL¿¡¼­ Session ID¸¦ °¡Á®¿À´Â ÇÔ¼ö Ãß°¡ÇÔ.
+ * SM¿¡¼­ callbackÀ¸·Î »ç¿ë */
 UInt idvManager::getSessionID( idvSQL  *aStatSQL )
 {
     UInt sSID = 0;
@@ -1842,12 +1842,12 @@ IDE_RC idvManager::buildRecordForStatName(idvSQL              */*aStatistics*/,
     for (i = 0; i < sNeedRecCount; i++)
     {
         /* BUG-43006 FixedTable Indexing Filter
-         * Indexing Filterë¥¼ ì‚¬ìš©í•´ì„œ ì „ì²´ Recordë¥¼ ìƒì„±í•˜ì§€ì•Šê³ 
-         * ë¶€ë¶„ë§Œ ìƒì„±í•´ Filtering í•œë‹¤.
-         * 1. void * ë°°ì—´ì— IDU_FT_COLUMN_INDEX ë¡œ ì§€ì •ëœ ì»¬ëŸ¼ì—
-         * í•´ë‹¹í•˜ëŠ” ê°’ì„ ìˆœì„œëŒ€ë¡œ ë„£ì–´ì£¼ì–´ì•¼ í•œë‹¤.
-         * 2. IDU_FT_COLUMN_INDEXì˜ ì»¬ëŸ¼ì— í•´ë‹¹í•˜ëŠ” ê°’ì„ ëª¨ë‘ ë„£
-         * ì–´ ì£¼ì–´ì•¼í•œë‹¤.
+         * Indexing Filter¸¦ »ç¿ëÇØ¼­ ÀüÃ¼ Record¸¦ »ı¼ºÇÏÁö¾Ê°í
+         * ºÎºĞ¸¸ »ı¼ºÇØ Filtering ÇÑ´Ù.
+         * 1. void * ¹è¿­¿¡ IDU_FT_COLUMN_INDEX ·Î ÁöÁ¤µÈ ÄÃ·³¿¡
+         * ÇØ´çÇÏ´Â °ªÀ» ¼ø¼­´ë·Î ³Ö¾îÁÖ¾î¾ß ÇÑ´Ù.
+         * 2. IDU_FT_COLUMN_INDEXÀÇ ÄÃ·³¿¡ ÇØ´çÇÏ´Â °ªÀ» ¸ğµÎ ³Ö
+         * ¾î ÁÖ¾î¾ßÇÑ´Ù.
          */
         sIndexValues[0] = &mStatName[i].mName;
         if ( iduFixedTable::checkKeyRange( aMemory,
@@ -1947,12 +1947,12 @@ IDE_RC idvManager::buildRecordForWaitEventName(
     for (i = 0; i <= sNeedRecCount; i++)
     {
         /* BUG-43006 FixedTable Indexing Filter
-         * Indexing Filterë¥¼ ì‚¬ìš©í•´ì„œ ì „ì²´ Recordë¥¼ ìƒì„±í•˜ì§€ì•Šê³ 
-         * ë¶€ë¶„ë§Œ ìƒì„±í•´ Filtering í•œë‹¤.
-         * 1. void * ë°°ì—´ì— IDU_FT_COLUMN_INDEX ë¡œ ì§€ì •ëœ ì»¬ëŸ¼ì—
-         * í•´ë‹¹í•˜ëŠ” ê°’ì„ ìˆœì„œëŒ€ë¡œ ë„£ì–´ì£¼ì–´ì•¼ í•œë‹¤.
-         * 2. IDU_FT_COLUMN_INDEXì˜ ì»¬ëŸ¼ì— í•´ë‹¹í•˜ëŠ” ê°’ì„ ëª¨ë‘ ë„£
-         * ì–´ ì£¼ì–´ì•¼í•œë‹¤.
+         * Indexing Filter¸¦ »ç¿ëÇØ¼­ ÀüÃ¼ Record¸¦ »ı¼ºÇÏÁö¾Ê°í
+         * ºÎºĞ¸¸ »ı¼ºÇØ Filtering ÇÑ´Ù.
+         * 1. void * ¹è¿­¿¡ IDU_FT_COLUMN_INDEX ·Î ÁöÁ¤µÈ ÄÃ·³¿¡
+         * ÇØ´çÇÏ´Â °ªÀ» ¼ø¼­´ë·Î ³Ö¾îÁÖ¾î¾ß ÇÑ´Ù.
+         * 2. IDU_FT_COLUMN_INDEXÀÇ ÄÃ·³¿¡ ÇØ´çÇÏ´Â °ªÀ» ¸ğµÎ ³Ö
+         * ¾î ÁÖ¾î¾ßÇÑ´Ù.
          */
         sIndexValues[0] = &mWaitEventName[i].mName;
         if ( iduFixedTable::checkKeyRange( aMemory,

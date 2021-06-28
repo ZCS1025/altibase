@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxReceiverApply.cpp 85244 2019-04-16 05:09:21Z donghyun1 $
+ * $Id: rpxReceiverApply.cpp 90444 2021-04-02 10:15:58Z minku.kang $
  **********************************************************************/
 
 #include <idl.h>
@@ -63,7 +63,7 @@ rpxApplyFunc rpxReceiverApply::mApplyFunc[] =
     applyIgnore,                       // Keep Alive
     applyNA,                           // ACK
     applyIgnore,                       // Replication Stop
-    applyNA,                           // Replication Flush
+    applyIgnore,                           // Replication Flush
     applyNA,                           // Replication Flush ACK
     applyNA,                           // Stop ACK
     applyIgnore,                       // Handshake
@@ -73,7 +73,7 @@ rpxApplyFunc rpxReceiverApply::mApplyFunc[] =
     applySyncPKEnd,                    // Incremental Sync Primary Key End
     applyFailbackEnd,                  // Failback End
     applySyncStart,                    // Sync Start
-    applyRebuildIndices,               // Rebuild indices
+    applySyncEnd,                      // Sync End 
     applySyncInsert,                   // Sync Insert
     applyNA,                           // Ack End Rebuild index for RP Sync    
     applyLobTrim,                      // LOB Trim
@@ -82,7 +82,15 @@ rpxApplyFunc rpxReceiverApply::mApplyFunc[] =
     applyIgnore,                       // DDL Replicate Handshake
     applyNA,                           // DDL Replicate Handshake Ack
     applyNA,                           // DDL Replicate Execute
-    applyNA                            // DDL Replicate Execute Ack
+    applyNA,                           // DDL Replicate Execute Ack
+    applyTruncate,                     // Truncate 
+    applyNA,                           // Truncate Ack
+    applyIgnore,                       // XA_START_REQ
+    applyIgnore,                       // XA_START_REQ_ACK
+    applyIgnore,                       // XA_PREPARE_REQ
+    applyIgnore,                       // XA_PREPARE
+    applyTrCommit,                     // XA_COMMIT
+    applyIgnore                        // XA_END
 };
 
 
@@ -104,8 +112,8 @@ IDE_RC rpxReceiverApply::initialize( rpxReceiver        * aReceiver,
     mLastCommitSN       = 0;    // BUG-17634
     mIsBegunSyncStmt = ID_FALSE;
     mIsOpenedSyncCursor = ID_FALSE;
-    /* disk tableÏóê ÎåÄÌï¥ rp syncÎ•º ÌïòÎ©¥, dpath insertÎ•º ÏúÑÌï¥ Ïù∏Îç±Ïä§ ÏÉÅÌÉúÍ∞Ä invalidÌïòÍ≤å Î≥ÄÍ≤ΩÎê®.
-     * syncÏûëÏóÖÏùÑ Ïã§Ìå® ÎòêÎäî ÏôÑÎ£åÌïòÎ©¥ rebuild indexÌïòÏó¨ validÌïú ÏÉÅÌÉúÎ°ú Î≥ÄÍ≤ΩÌï¥ÏïºÌïúÎã§. */
+    /* disk tableø° ¥Î«ÿ rp sync∏¶ «œ∏È, dpath insert∏¶ ¿ß«ÿ ¿Œµ¶Ω∫ ªÛ≈¬∞° invalid«œ∞‘ ∫Ø∞Êµ .
+     * sync¿€æ˜¿ª Ω«∆– ∂«¥¬ øœ∑·«œ∏È rebuild index«œø© valid«— ªÛ≈¬∑Œ ∫Ø∞Ê«ÿæﬂ«—¥Ÿ. */
     mRemoteTable = NULL;
     mSyncTableNumber = 0;
     mSQLBuffer = NULL;
@@ -161,11 +169,11 @@ IDE_RC rpxReceiverApply::initializeInLocalMemory( void )
     UInt        sStage                   = 0;
     idBool      sIsConflictWhenNotEnoughSpace;
 
-    /* ThreadÏùò run()ÏóêÏÑúÎßå ÏÇ¨Ïö©ÌïòÎäî Î©îÎ™®Î¶¨Î•º Ìï†ÎãπÌïúÎã§. */
+    /* Thread¿« run()ø°º≠∏∏ ªÁøÎ«œ¥¬ ∏ﬁ∏∏Æ∏¶ «“¥Á«—¥Ÿ. */
 
     IDU_FIT_POINT_RAISE( "rpxReceiverApply::initializeThread::calloc::TransTbl",
                           ERR_MEMORY_ALLOC_TRANS_TABLE );
-    // Replication Transaction TableÏùÑ ÏÉùÏÑ±ÌïúÎã§.
+    // Replication Transaction Table¿ª ª˝º∫«—¥Ÿ.
     IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPX_RECEIVER,
                                        1,
                                        ID_SIZEOF( rpdTransTbl ),
@@ -182,9 +190,19 @@ IDE_RC rpxReceiverApply::initializeInLocalMemory( void )
     {
         sTransactionPoolInitSize = RPU_REPLICATION_TRANSACTION_POOL_SIZE;
     }
-    IDE_TEST( mTransTbl->initialize( RPD_TRANSTBL_USE_RECEIVER,
-                                     sTransactionPoolInitSize )
-              != IDE_SUCCESS );
+
+    if ( mReceiver->mStartMode != RP_RECEIVER_FAILOVER_USING_XLOGFILE )
+    {
+        IDE_TEST( mTransTbl->initialize( RPD_TRANSTBL_USING_TRANS_POOL,
+                                         sTransactionPoolInitSize )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        IDE_TEST( mTransTbl->initialize( RPD_TRANSTBL_USING_MEMORY_ALLOC,
+                                         sTransactionPoolInitSize )
+                  != IDE_SUCCESS );
+    }
     sStage = 1;
 
     IDU_FIT_POINT_RAISE( "rpxReceiverApply::initializeThread::calloc::AbortTxList",
@@ -255,7 +273,7 @@ IDE_RC rpxReceiverApply::initializeInLocalMemory( void )
     }
     IDE_EXCEPTION_END;
 
-    /* TODO : ÎÇòÏ§ëÏóê Î≥ÑÎèÑ ThreadÎ°ú Íµ¨ÌòÑÌïòÎ©¥, Ïã§Ìå® Î°úÍ∑∏Î•º ÎÇ®Í≤®Ïïº ÌïúÎã§.
+    /* TODO : ≥™¡ﬂø° ∫∞µµ Thread∑Œ ±∏«ˆ«œ∏È, Ω«∆– ∑Œ±◊∏¶ ≥≤∞‹æﬂ «—¥Ÿ.
      * IDE_ERRLOG( IDE_RP_0 );
      */
 
@@ -321,42 +339,42 @@ void rpxReceiverApply::finalizeInLocalMemory( void )
 {
     if ( mTransTbl != NULL )
     {
-		mTransTbl->destroy();
+        mTransTbl->destroy();
 
-		(void)iduMemMgr::free( mTransTbl );
-		mTransTbl = NULL;
+        (void)iduMemMgr::free( mTransTbl );
+        mTransTbl = NULL;
 
-		mSmExecutor.destroy();
+        mSmExecutor.destroy();
 
-		if ( mAbortTxList != NULL )
-		{
-		    (void)iduMemMgr::free( mAbortTxList );
-		    mAbortTxList = NULL;
-		}
-		else
-		{
-		    /* Nothing to do */
-		}
+        if ( mAbortTxList != NULL )
+        {
+            (void)iduMemMgr::free( mAbortTxList );
+            mAbortTxList = NULL;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
 
-		if ( mClearTxList != NULL )
-		{
-		    (void)iduMemMgr::free( mClearTxList );
-		    mClearTxList = NULL;
-		}
-		else
-		{
-		    /* Nothing to do */
-		}
+        if ( mClearTxList != NULL )
+        {
+            (void)iduMemMgr::free( mClearTxList );
+            mClearTxList = NULL;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
 
-		if ( mSQLBuffer != NULL )
-		{
-		    (void)iduMemMgr::free( mSQLBuffer );
-		    mSQLBuffer = NULL;
-		}
-		else
-		{
-		    /* do nothing */
-		}
+        if ( mSQLBuffer != NULL )
+        {
+            (void)iduMemMgr::free( mSQLBuffer );
+            mSQLBuffer = NULL;
+        }
+        else
+        {
+            /* do nothing */
+        }
     }
 
     return;
@@ -377,7 +395,7 @@ void rpxReceiverApply::shutdown() // call by executor
     return;
 }
 
-//ÎÇ®ÏïÑÏûàÎäî Ìä∏ÎûúÏû≠ÏÖò Î°§Î∞±ÏùÄ Ïä§Ïä§Î°ú Ï≤òÎ¶¨ÎêòÏñ¥Ïïº Ìï®
+//≥≤æ∆¿÷¥¬ ∆Æ∑£¿Ëº« ∑—πÈ¿∫ Ω∫Ω∫∑Œ √≥∏Æµ«æÓæﬂ «‘
 void rpxReceiverApply::finalize() // call by receiver itself
 {
     if ( mIsOpenedSyncCursor == ID_TRUE )
@@ -390,17 +408,17 @@ void rpxReceiverApply::finalize() // call by receiver itself
     }
     if( mTransTbl != NULL )
     {
-        /* Î™®Îì† Active Replication TransactionÏùÑ RollbackÏãúÌÇ®Îã§.*/
+        /* ∏µÁ Active Replication Transaction¿ª RollbackΩ√≈≤¥Ÿ.*/
         mTransTbl->rollbackAllATrans();
     }
 
     if ( rpdMeta::isUseV6Protocol( &( mReceiver->mMeta.mReplication ) ) != ID_TRUE )
     {
-        /* BUG-40557 sync Í∞Ä ÏïÑÎãàÎ©¥ RebuildIndices Î•º ÌïòÏßÄ ÏïäÏïÑÎèÑ ÎêúÎã§. */
+        /* BUG-40557 sync ∞° æ∆¥œ∏È RebuildIndices ∏¶ «œ¡ˆ æ æ∆µµ µ»¥Ÿ. */
         if ( ( mStartMode == RP_RECEIVER_SYNC ) || 
              ( mSyncTableNumber != 0 ) )
         {
-            if ( applyRebuildIndices ( this, NULL ) != IDE_SUCCESS )
+            if ( applyRebuildIndices ( this ) != IDE_SUCCESS )
             {
                 IDE_SET( ideSetErrorCode( rpERR_ABORT_REBUILD_INDEX ) );
             }
@@ -412,6 +430,11 @@ void rpxReceiverApply::finalize() // call by receiver itself
         else
         {
             /* nothing to do */
+        }
+
+        if( mStartMode == RP_RECEIVER_SYNC_CONDITIONAL )
+        {
+            (void)mReceiver->recoveryCondition( ID_FALSE );
         }
     }
     else
@@ -445,9 +468,22 @@ IDE_RC rpxReceiverApply::execXLog(rpdXLog *aXLog)
     {
         switch(aXLog->mType)
         {
-            case RP_X_BEGIN:
             case RP_X_COMMIT:
+            case RP_X_XA_COMMIT:
             case RP_X_ABORT:
+                if ( mTransTbl->isGTrans( aXLog->mTID ) != ID_TRUE )
+                {
+                    /* BUG-48391 */
+                    IDE_CONT( NORMAL_EXIT );
+                    //                  IDE_RAISE(ERR_TX_NOT_BEGIN);
+                }
+                else
+                {
+                    IDE_CONT( NORMAL_EXIT );
+                }
+                break;
+
+            case RP_X_BEGIN:
             case RP_X_IMPL_SP_SET:
             case RP_X_SP_ABORT:
             case RP_X_LOB_CURSOR_CLOSE:
@@ -475,8 +511,22 @@ IDE_RC rpxReceiverApply::execXLog(rpdXLog *aXLog)
             case RP_X_SYNC_PK_END:
             case RP_X_FAILBACK_END:
             case RP_X_SYNC_START:
-            case RP_X_REBUILD_INDEX:
+            case RP_X_SYNC_END:
+            case RP_X_FLUSH:
             case RP_X_ACK_ON_DML:
+            case RP_X_TRUNCATE:
+                break;
+
+            case RP_X_XA_START_REQ:
+                mTransTbl->setGTrans( aXLog->mTID );
+                break;
+
+            case RP_X_XA_PREPARE:
+                mTransTbl->setGTrans( aXLog->mTID );
+                break;
+
+            case RP_X_XA_PREPARE_REQ:
+            case RP_X_XA_END:
                 break;
 
             default:
@@ -484,7 +534,7 @@ IDE_RC rpxReceiverApply::execXLog(rpdXLog *aXLog)
         }
     }
 
-    //BUG-21858 : LOB Î°úÍ∑∏ Î¨¥Ïãú ÌîåÎ†àÍ∑∏Î•º Ïñ∏ÏÖã ÌïúÎã§.
+    //BUG-21858 : LOB ∑Œ±◊ π´Ω√ «√∑π±◊∏¶ æº¬ «—¥Ÿ.
     switch(aXLog->mType)
     {
         case RP_X_LOB_CURSOR_CLOSE:
@@ -502,9 +552,11 @@ IDE_RC rpxReceiverApply::execXLog(rpdXLog *aXLog)
         case RP_X_SYNC_PK_END:
         case RP_X_FAILBACK_END:
         case RP_X_ACK_ON_DML:
+        case RP_X_FLUSH:
             break;
 
         case RP_X_COMMIT:
+        case RP_X_XA_COMMIT:
         case RP_X_ABORT:
             break;
 
@@ -516,6 +568,8 @@ IDE_RC rpxReceiverApply::execXLog(rpdXLog *aXLog)
     IDE_TEST(rpxReceiverApply::mApplyFunc[aXLog->mType](this,
                                                         aXLog)
              != IDE_SUCCESS);
+
+    RP_LABEL( NORMAL_EXIT );
 
     return IDE_SUCCESS;
 
@@ -571,6 +625,7 @@ IDE_RC rpxReceiverApply::begin( smiTrans *aSmiTrans, idBool aIsConflictResolutio
 {
     smiStatement     *spRootStmt = NULL;
     UInt              sFlag = mTransactionFlag;
+    idvSQL           *sStatistics = NULL;
     PDL_Time_Value    sWaitTime;
     UInt              sCnt;
     UInt              i;
@@ -578,8 +633,8 @@ IDE_RC rpxReceiverApply::begin( smiTrans *aSmiTrans, idBool aIsConflictResolutio
     IDE_ASSERT(aSmiTrans != NULL);
 
     /* BUG-33539
-     * standbyÏóêÏÑú LOCK_ESCALATION_MEMORY_SIZEÍ∞Ä active Î≥¥Îã§ ÏûëÏùÑ Îïå
-     * receiverÏóêÏÑú lock escalationÏù¥ Î∞úÏÉùÌïòÎ©¥ receiverÍ∞Ä self deadlock ÏÉÅÌÉúÍ∞Ä Îê©ÎãàÎã§. */
+     * standbyø°º≠ LOCK_ESCALATION_MEMORY_SIZE∞° active ∫∏¥Ÿ ¿€¿ª ∂ß
+     * receiverø°º≠ lock escalation¿Ã πﬂª˝«œ∏È receiver∞° self deadlock ªÛ≈¬∞° µÀ¥œ¥Ÿ. */
     if ( qci::getInplaceUpdateDisable() == ID_FALSE )
     {
         sFlag = (sFlag & ~SMI_TRANS_INPLACE_UPDATE_MASK) | SMI_TRANS_INPLACE_UPDATE_TRY;
@@ -587,20 +642,20 @@ IDE_RC rpxReceiverApply::begin( smiTrans *aSmiTrans, idBool aIsConflictResolutio
     else
     {
         /* PROJ-2626 Snapshot Export
-         * Snapshot Ïù¥ begin Ï§ë Ïù¥ÎùºÎ©¥ Ïù¥Ï†Ñ RowÎ•º ÏùΩÏñ¥ÏïºÌïòÎäîÎç∞
-         * Inplace UpdateÍ∞Ä ÎêòÎ©¥ Ïù¥Ï†Ñ RowÎ•º Î≥º Ïàò ÏóàÍ∏∞ÎïåÎ¨∏Ïóê Disable  ÏãúÌÇµÎãàÎã§.
+         * Snapshot ¿Ã begin ¡ﬂ ¿Ã∂Û∏È ¿Ã¿¸ Row∏¶ ¿–æÓæﬂ«œ¥¬µ•
+         * Inplace Update∞° µ«∏È ¿Ã¿¸ Row∏¶ ∫º ºˆ æ˙±‚∂ßπÆø° Disable  Ω√≈µ¥œ¥Ÿ.
          */
         sFlag = (sFlag & ~SMI_TRANS_INPLACE_UPDATE_MASK) | SMI_TRANS_INPLACE_UPDATE_DISABLE;
     }
 
-    sWaitTime.set(0, 100000);                   // 0.1Ï¥à
-    /* Îã§ÏùåÏùò sCntÎ•º Íµ¨ÌïòÎäî ÏãùÏùÄ waitTimeÏù¥ 100000microsecÎ°ú Í≥†Ï†ïÎêòÏñ¥ ÏûàÏúºÎØÄÎ°ú Íµ¨Ìï¥ÏßÄÎäî Í∞íÏù¥Îã§ */
+    sWaitTime.set(0, 100000);                   // 0.1√ 
+    /* ¥Ÿ¿Ω¿« sCnt∏¶ ±∏«œ¥¬ Ωƒ¿∫ waitTime¿Ã 100000microsec∑Œ ∞Ì¡§µ«æÓ ¿÷¿∏π«∑Œ ±∏«ÿ¡ˆ¥¬ ∞™¿Ã¥Ÿ */
     sCnt = RPU_REPLICATION_TX_VICTIM_TIMEOUT * 10;
 
     if ( mRole == RP_ROLE_PROPAGABLE_LOGGING )
     {
-        /* propagationÏù¥ ÏÑ§Ï†ïÎêú Í≤ÉÏùÄ receciverÏóêÏùòÌï¥ ÏàòÌñâÎêòÏóàÎã§ ÌïòÎçîÎùºÎèÑ
-         * Îã§Ïãú Ï†ÑÏÜ°Ìï¥Ïïº ÌïòÍ∏∞ ÎïåÎ¨∏Ïóê replicatedÍ∞Ä ÏïÑÎãå Í≤ÉÏúºÎ°ú Ìä∏ÎûúÏû≠ÏÖò Ïã§Ìñâ
+        /* propagation¿Ã º≥¡§µ» ∞Õ¿∫ receciverø°¿««ÿ ºˆ«‡µ«æ˙¥Ÿ «œ¥ı∂Ûµµ
+         * ¥ŸΩ√ ¿¸º€«ÿæﬂ «œ±‚ ∂ßπÆø° replicated∞° æ∆¥— ∞Õ¿∏∑Œ ∆Æ∑£¿Ëº« Ω««‡
          */
         sFlag = (sFlag & ~SMI_TRANSACTION_REPL_MASK)
                         | SMI_TRANSACTION_REPL_PROPAGATION;
@@ -612,8 +667,8 @@ IDE_RC rpxReceiverApply::begin( smiTrans *aSmiTrans, idBool aIsConflictResolutio
 
     if ( RPU_REPLICATION_COMMIT_WRITE_WAIT_MODE != 0 )
     {
-        // Î≥µÍµ¨Îêú Ìä∏ÎûúÏû≠ÏÖòÏù¥ Îã§Ïãú ÏÇ¨ÎùºÏßÄÎäî Í≤ÉÏùÑ Î∞©ÏßÄÌïòÍ∏∞ ÏúÑÌï¥ commit write waitÏúºÎ°ú ÏàòÌñâ Ìï®
-        // ReceiverÍ∞Ä Commit Ïãú Disk Sync ÎåÄÍ∏∞Î•º Ìï† Ïàò ÏûàÎèÑÎ°ù Ìï®
+        // ∫π±∏µ» ∆Æ∑£¿Ëº«¿Ã ¥ŸΩ√ ªÁ∂Û¡ˆ¥¬ ∞Õ¿ª πÊ¡ˆ«œ±‚ ¿ß«ÿ commit write wait¿∏∑Œ ºˆ«‡ «‘
+        // Receiver∞° Commit Ω√ Disk Sync ¥Î±‚∏¶ «“ ºˆ ¿÷µµ∑œ «‘
         sFlag = (sFlag & ~SMI_COMMIT_WRITE_MASK)
                         | SMI_COMMIT_WRITE_WAIT;
     }
@@ -633,11 +688,21 @@ IDE_RC rpxReceiverApply::begin( smiTrans *aSmiTrans, idBool aIsConflictResolutio
         /* nothing to do */
     }
 
-    /* BUG-27709 receiverÏóê ÏùòÌïú Î∞òÏòÅ Ï§ë, Ìä∏ÎûúÏû≠ÏÖò allocÏã§Ìå® Ïãú Ìï¥Îãπ receiverÏ¢ÖÎ£å. */
+    if ( mReceiver->mStartMode == RP_RECEIVER_FAILOVER_USING_XLOGFILE )
+    {
+        sFlag = (sFlag & ~SMI_TRANS_GCTX_MASK) | SMI_TRANS_GCTX_ON;
+        sStatistics = NULL;
+    }
+    else
+    {
+        sStatistics = mStatistics;
+    }
+
+    /* BUG-27709 receiverø° ¿««— π›øµ ¡ﬂ, ∆Æ∑£¿Ëº« allocΩ«∆– Ω√ «ÿ¥Á receiver¡æ∑·. */
     for(i = 0; i <= sCnt; i++)
     {
         if( aSmiTrans->begin(&spRootStmt,
-                             mStatistics,
+                             sStatistics,
                              sFlag,
                              mReceiver->mReplID, // PROJ-1553 Self Deadlock
                              ID_TRUE)
@@ -797,45 +862,54 @@ IDE_RC rpxReceiverApply::insertSyncXLog( smiTrans       * aSmiTrans,
     {
         IDE_TEST( sFailType == RP_APPLY_FAIL_INTERNAL );
 
-        IDE_TEST_RAISE( mSyncTupleSuccessCount > 0, ERR_SYNC_FAILED_BY_CONFLICT );
-
-        IDE_TEST( getKeyRange( aMetaItem, &sKeyRange, aXLog->mACols, ID_FALSE )
-                  != IDE_SUCCESS );
-
-        IDE_TEST( getCheckRowExistenceAndResolutionNeed( aSmiTrans,
-                                                         aMetaItem,
-                                                         &sKeyRange,
-                                                         aXLog,
-                                                         &sCheckRowExistence,
-                                                         &sIsResolutionNeed )
-                  != IDE_SUCCESS );
-
-
-        if(sIsResolutionNeed == ID_TRUE)
+        if ( (sFailType == RP_APPLY_FAIL_BY_CONFLICT) || 
+             (sFailType == RP_APPLY_FAIL_BY_CONFLICT_RESOLUTION_TX) )
         {
-            IDE_TEST( insertReplace( aXLog,
-                                     aMetaItem,
-                                     &sFailType,
-                                     sCheckRowExistence,
-                                     NULL )
+            IDE_TEST_RAISE( mSyncTupleSuccessCount > 0, ERR_SYNC_FAILED_BY_CONFLICT );
+
+            IDE_TEST( getKeyRange( aMetaItem, &sKeyRange, aXLog->mACols, ID_FALSE )
                       != IDE_SUCCESS );
+
+            IDE_TEST( getCheckRowExistenceAndResolutionNeed( aSmiTrans,
+                                                             aMetaItem,
+                                                             &sKeyRange,
+                                                             aXLog,
+                                                             &sCheckRowExistence,
+                                                             &sIsResolutionNeed,
+                                                             &sFailType )
+                      != IDE_SUCCESS );
+
+
+            if ( sIsResolutionNeed == ID_TRUE )  
+            {
+                IDE_TEST( insertReplace( aXLog,
+                                         aMetaItem,
+                                         &sFailType,
+                                         sCheckRowExistence,
+                                         NULL )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
         }
         else
         {
-            /* Nothing to do */
+            IDE_DASSERT( sFailType == RP_APPLY_FAIL_BY_CORRUPTED_PAGE );
         }
 
     }
 
-    /* RP_APPLY_FAIL_BY_CONFLICT || RP_APPLY_FAIL_BY_CONFLICT_RESOLUTION_TX */
+    /* RP_APPLY_FAIL_BY_CONFLICT || RP_APPLY_FAIL_BY_CONFLICT_RESOLUTION_TX || RP_APPLY_FAIL_BY_CORRUPTED_PAGE */
     if ( sFailType != RP_APPLY_FAIL_NONE )
     {
-        printInsertErrLog( aMetaItem, aMetaItem, aXLog );
+        printInsertErrLog( aMetaItem, aMetaItem, aXLog, sFailType );
 
         // Increase INSERT_FAILURE_COUNT in V$REPRECEIVER
         mInsertFailureCount++;
 
-        //BUG-21858 : insert, update Ïã§Ìå®Ïãú Îã§ÏùåÏóê LOBÍ¥ÄÎ†® Î°úÍ∑∏Î•º ÏàòÌñâÌïòÎ©¥ Î¨∏Ï†úÍ∞Ä Î∞úÏÉù LOBÎ°úÍ∑∏Î•º Î¨¥ÏãúÌïòÎèÑÎ°ù ÏÑ∏ÌåÖ
+        //BUG-21858 : insert, update Ω«∆–Ω√ ¥Ÿ¿Ωø° LOB∞¸∑√ ∑Œ±◊∏¶ ºˆ«‡«œ∏È πÆ¡¶∞° πﬂª˝ LOB∑Œ±◊∏¶ π´Ω√«œµµ∑œ ºº∆√
         mTransTbl->setSkipLobLogFlag(aXLog->mTID, ID_TRUE);
     }
     else
@@ -849,7 +923,7 @@ IDE_RC rpxReceiverApply::insertSyncXLog( smiTrans       * aSmiTrans,
 
     IDE_EXCEPTION( ERR_SYNC_FAILED_BY_CONFLICT );
     {
-        printInsertErrLog( aMetaItem, aMetaItem, aXLog );
+        printInsertErrLog( aMetaItem, aMetaItem, aXLog, sFailType );
 
         IDE_ERRLOG( IDE_RP_0 );
         IDE_SET( ideSetErrorCode( rpERR_ABORT_SYNC_FAILED_BY_BULK_INSERT ) );
@@ -859,7 +933,7 @@ IDE_RC rpxReceiverApply::insertSyncXLog( smiTrans       * aSmiTrans,
     // Increase INSERT_FAILURE_COUNT in V$REPRECEIVER
     mInsertFailureCount++;
 
-    //BUG-21858 : insert, update Ïã§Ìå®Ïãú Îã§ÏùåÏóê LOBÍ¥ÄÎ†® Î°úÍ∑∏Î•º ÏàòÌñâÌïòÎ©¥ Î¨∏Ï†úÍ∞Ä Î∞úÏÉù LOBÎ°úÍ∑∏Î•º Î¨¥ÏãúÌïòÎèÑÎ°ù ÏÑ∏ÌåÖ
+    //BUG-21858 : insert, update Ω«∆–Ω√ ¥Ÿ¿Ωø° LOB∞¸∑√ ∑Œ±◊∏¶ ºˆ«‡«œ∏È πÆ¡¶∞° πﬂª˝ LOB∑Œ±◊∏¶ π´Ω√«œµµ∑œ ºº∆√
     mTransTbl->setSkipLobLogFlag(aXLog->mTID, ID_TRUE);
 
     return IDE_FAILURE;
@@ -901,10 +975,11 @@ IDE_RC rpxReceiverApply::insertXLog( smiTrans       * aSmiTrans,
                                                              &sKeyRange,
                                                              aXLog,
                                                              &sCheckRowExistence,
-                                                             &sIsResolutionNeed )
+                                                             &sIsResolutionNeed,
+                                                             &sFailType )
                       != IDE_SUCCESS );
-
-            if(sIsResolutionNeed == ID_TRUE)
+            
+            if ( sIsResolutionNeed == ID_TRUE )  
             {
                 IDE_TEST( insertReplace( aXLog,
                                          aMetaItem,
@@ -918,9 +993,8 @@ IDE_RC rpxReceiverApply::insertXLog( smiTrans       * aSmiTrans,
                 /* Nothing to do */
             }
         }
-        else
+        else if ( sFailType ==  RP_APPLY_FAIL_BY_CONFLICT_RESOLUTION_TX )
         {   /* TASK-6548 unique key duplication */
-            IDE_DASSERT( sFailType == RP_APPLY_FAIL_BY_CONFLICT_RESOLUTION_TX );
 
             sConflictResolutionTrans = mTransTbl->getSmiTransForConflictResolution( aXLog->mTID );
 
@@ -946,18 +1020,22 @@ IDE_RC rpxReceiverApply::insertXLog( smiTrans       * aSmiTrans,
                 /* Nothing to do */
             }
         }
+        else
+        {
+            IDE_DASSERT( sFailType == RP_APPLY_FAIL_BY_CORRUPTED_PAGE );
+        }
     }
 
-    /* RP_APPLY_FAIL_BY_CONFLICT || RP_APPLY_FAIL_BY_CONFLICT_RESOLUTION_TX */
+    /* RP_APPLY_FAIL_BY_CONFLICT || RP_APPLY_FAIL_BY_CONFLICT_RESOLUTION_TX || RP_APPLY_FAIL_BY_CORRUPTED_PAGE */
     if ( sFailType != RP_APPLY_FAIL_NONE )
     {
-        printInsertErrLog( aMetaItem, aMetaItem, aXLog );
+        printInsertErrLog( aMetaItem, aMetaItem, aXLog, sFailType );
 
         // Increase INSERT_FAILURE_COUNT in V$REPRECEIVER
         mInsertFailureCount++;
         addAbortTx(aXLog->mTID, aXLog->mSN);
 
-        //BUG-21858 : insert, update Ïã§Ìå®Ïãú Îã§ÏùåÏóê LOBÍ¥ÄÎ†® Î°úÍ∑∏Î•º ÏàòÌñâÌïòÎ©¥ Î¨∏Ï†úÍ∞Ä Î∞úÏÉù LOBÎ°úÍ∑∏Î•º Î¨¥ÏãúÌïòÎèÑÎ°ù ÏÑ∏ÌåÖ
+        //BUG-21858 : insert, update Ω«∆–Ω√ ¥Ÿ¿Ωø° LOB∞¸∑√ ∑Œ±◊∏¶ ºˆ«‡«œ∏È πÆ¡¶∞° πﬂª˝ LOB∑Œ±◊∏¶ π´Ω√«œµµ∑œ ºº∆√
         mTransTbl->setSkipLobLogFlag(aXLog->mTID, ID_TRUE);
     }
     else
@@ -973,8 +1051,8 @@ IDE_RC rpxReceiverApply::insertXLog( smiTrans       * aSmiTrans,
 
     if ( sFailType == RP_APPLY_FAIL_INTERNAL )
     {
-        ideLogEntry sLog(IDE_RP_0); // insertErrLogÏóêÏÑú Î≥µÏû°ÌïòÍ∏∞ ÎïåÎ¨∏Ïóê ÏÉÅÏúÑÏóêÏÑú open,closeÎ•º Ìï®. more safe
-        (void)insertErrLog(sLog, aMetaItem, aXLog);
+        ideLogEntry sLog(IDE_RP_0); // insertErrLogø°º≠ ∫π¿‚«œ±‚ ∂ßπÆø° ªÛ¿ßø°º≠ open,close∏¶ «‘. more safe
+        (void)insertErrLog(sLog, aMetaItem, aXLog, sFailType );
         sLog.write();
     }
     else
@@ -984,8 +1062,8 @@ IDE_RC rpxReceiverApply::insertXLog( smiTrans       * aSmiTrans,
     // Increase INSERT_FAILURE_COUNT in V$REPRECEIVER
     mInsertFailureCount++;
     addAbortTx(aXLog->mTID, aXLog->mSN);
-
-    //BUG-21858 : insert, update Ïã§Ìå®Ïãú Îã§ÏùåÏóê LOBÍ¥ÄÎ†® Î°úÍ∑∏Î•º ÏàòÌñâÌïòÎ©¥ Î¨∏Ï†úÍ∞Ä Î∞úÏÉù LOBÎ°úÍ∑∏Î•º Î¨¥ÏãúÌïòÎèÑÎ°ù ÏÑ∏ÌåÖ
+    
+    //BUG-21858 : insert, update Ω«∆–Ω√ ¥Ÿ¿Ωø° LOB∞¸∑√ ∑Œ±◊∏¶ ºˆ«‡«œ∏È πÆ¡¶∞° πﬂª˝ LOB∑Œ±◊∏¶ π´Ω√«œµµ∑œ ºº∆√
     mTransTbl->setSkipLobLogFlag(aXLog->mTID, ID_TRUE);
 
     return IDE_FAILURE;
@@ -1016,7 +1094,7 @@ IDE_RC rpxReceiverApply::insertReplace( rpdXLog          * aXLog,
                            ID_FALSE )
               != IDE_SUCCESS );
 
-    /* Delete + InsertÎ•º Ï†ÅÏö©ÌïòÍ∏∞ Ï†ÑÏóê SavepointÎ•º Îëê Í∞ú ÏÑ§Ï†ïÌïúÎã§. */
+    /* Delete + Insert∏¶ ¿˚øÎ«œ±‚ ¿¸ø° Savepoint∏¶ µŒ ∞≥ º≥¡§«—¥Ÿ. */
     if ( aSPName != NULL )
     {
         IDE_TEST_RAISE( sTrans->savepoint( aSPName ) != IDE_SUCCESS, ERR_SET_SVP );
@@ -1031,8 +1109,8 @@ IDE_RC rpxReceiverApply::insertReplace( rpdXLog          * aXLog,
     sIsSetSVP = ID_TRUE;
 
     // PROJ-1705
-    // insert xlogÏ†ïÎ≥¥Î°ú deleteÎ•º ÌïòÍ∏∞ ÏúÑÌïú fetch column listÎ•º ÎßåÎì§Í∏∞
-    // ÏúÑÌï¥ÏÑúÎäî pk Ï†ïÎ≥¥Í∞Ä ÌïÑÏöîÌïòÎã§.
+    // insert xlog¡§∫∏∑Œ delete∏¶ «œ±‚ ¿ß«— fetch column list∏¶ ∏∏µÈ±‚
+    // ¿ß«ÿº≠¥¬ pk ¡§∫∏∞° « ø‰«œ¥Ÿ.
     sColCnt = aXLog->mColCnt;
     aXLog->mPKColCnt = aMetaItem->mPKColCount;
     aXLog->mColCnt = 0;
@@ -1046,7 +1124,7 @@ IDE_RC rpxReceiverApply::insertReplace( rpdXLog          * aXLog,
                                     aCheckRowExistence )
          != IDE_SUCCESS )
     {
-        /* mPKColCntÏôÄ mColCntÎ•º Î≥µÏõêÌïúÎã§. */
+        /* mPKColCntøÕ mColCnt∏¶ ∫πø¯«—¥Ÿ. */
         aXLog->mPKColCnt = 0;
         aXLog->mColCnt   = sColCnt;
 
@@ -1057,7 +1135,7 @@ IDE_RC rpxReceiverApply::insertReplace( rpdXLog          * aXLog,
     {
         /* nothing to do */
     }
-
+    
     // PROJ-1705
     aXLog->mPKColCnt = 0;
     aXLog->mColCnt   = sColCnt;
@@ -1081,7 +1159,7 @@ IDE_RC rpxReceiverApply::insertReplace( rpdXLog          * aXLog,
 
     RP_LABEL( ERR_PASS );
 
-    /* Conflict ResolutionÏù¥ Ïã§ Ìå®ÌïòÎ©¥, Delete + InsertÎ•º Ï∑®ÏÜåÌïúÎã§. */
+    /* Conflict Resolution¿Ã Ω« ∆–«œ∏È, Delete + Insert∏¶ √Îº“«—¥Ÿ. */
     if ( sIsSetSVP == ID_TRUE )
     {
         sIsSetSVP = ID_FALSE;
@@ -1155,7 +1233,6 @@ IDE_RC rpxReceiverApply::updateXLog( smiTrans       * aSmiTrans,
             sCompareBeforeImage = ID_FALSE;
             break;
     }
-
     IDE_TEST( getKeyRange( aMetaItem, &sKeyRange, aXLog->mPKCols, ID_TRUE )
              != IDE_SUCCESS);
 
@@ -1217,13 +1294,13 @@ IDE_RC rpxReceiverApply::updateXLog( smiTrans       * aSmiTrans,
 
     if ( sFailType != RP_APPLY_FAIL_NONE )
     {
-        printUpdateErrLog( aMetaItem, aMetaItem, aXLog, sCompareBeforeImage );
+        printUpdateErrLog( aMetaItem, aMetaItem, aXLog, sCompareBeforeImage, sFailType );
 
         // Increase UPDATE_FAILURE_COUNT in V$REPRECEIVER
         mUpdateFailureCount++;
         addAbortTx(aXLog->mTID, aXLog->mSN);
 
-        //BUG-21858 : insert, update Ïã§Ìå®Ïãú Îã§ÏùåÏóê LOBÍ¥ÄÎ†® Î°úÍ∑∏Î•º ÏàòÌñâÌïòÎ©¥ Î¨∏Ï†úÍ∞Ä Î∞úÏÉù LOBÎ°úÍ∑∏Î•º Î¨¥ÏãúÌïòÎèÑÎ°ù ÏÑ∏ÌåÖ
+        //BUG-21858 : insert, update Ω«∆–Ω√ ¥Ÿ¿Ωø° LOB∞¸∑√ ∑Œ±◊∏¶ ºˆ«‡«œ∏È πÆ¡¶∞° πﬂª˝ LOB∑Œ±◊∏¶ π´Ω√«œµµ∑œ ºº∆√
         mTransTbl->setSkipLobLogFlag(aXLog->mTID, ID_TRUE);
     }
     else
@@ -1239,13 +1316,14 @@ IDE_RC rpxReceiverApply::updateXLog( smiTrans       * aSmiTrans,
 
     if ( sFailType == RP_APPLY_FAIL_INTERNAL )
     {
-        ideLogEntry sLog(IDE_RP_0); // insertErrLogÏóêÏÑú Î≥µÏû°ÌïòÍ∏∞ ÎïåÎ¨∏Ïóê ÏÉÅÏúÑÏóêÏÑú open,closeÎ•º Ìï®. more safe
+        ideLogEntry sLog(IDE_RP_0); // insertErrLogø°º≠ ∫π¿‚«œ±‚ ∂ßπÆø° ªÛ¿ßø°º≠ open,close∏¶ «‘. more safe
         /* BUG-36555 : Before image logging */
         (void)updateErrLog( sLog,
                             aMetaItem, 
                             aMetaItem,
                             aXLog, 
-                            sCompareBeforeImage );
+                            sCompareBeforeImage,
+                            sFailType );
         sLog.write();
     }
     else
@@ -1256,7 +1334,7 @@ IDE_RC rpxReceiverApply::updateXLog( smiTrans       * aSmiTrans,
     mUpdateFailureCount++;
     addAbortTx(aXLog->mTID, aXLog->mSN);
 
-    //BUG-21858 : insert, update Ïã§Ìå®Ïãú Îã§ÏùåÏóê LOBÍ¥ÄÎ†® Î°úÍ∑∏Î•º ÏàòÌñâÌïòÎ©¥ Î¨∏Ï†úÍ∞Ä Î∞úÏÉù LOBÎ°úÍ∑∏Î•º Î¨¥ÏãúÌïòÎèÑÎ°ù ÏÑ∏ÌåÖ
+    //BUG-21858 : insert, update Ω«∆–Ω√ ¥Ÿ¿Ωø° LOB∞¸∑√ ∑Œ±◊∏¶ ºˆ«‡«œ∏È πÆ¡¶∞° πﬂª˝ LOB∑Œ±◊∏¶ π´Ω√«œµµ∑œ ºº∆√
     mTransTbl->setSkipLobLogFlag(aXLog->mTID, ID_TRUE);
 
     return IDE_FAILURE;
@@ -1348,7 +1426,7 @@ IDE_RC rpxReceiverApply::deleteXLog(smiTrans *aSmiTrans,
 
     if ( sFailType != RP_APPLY_FAIL_NONE )
     {
-        printDeleteErrLog( sMetaItem, aXLog );
+        printDeleteErrLog( sMetaItem, aXLog, sFailType );
 
         // Increase DELETE_FAILURE_COUNT in V$REPRECEIVER
         mDeleteFailureCount++;
@@ -1378,8 +1456,8 @@ IDE_RC rpxReceiverApply::deleteXLog(smiTrans *aSmiTrans,
     if ( sFailType == RP_APPLY_FAIL_INTERNAL )
     {
         ideLog::log( IDE_RP_0, " delete XLog error occur " );
-        ideLogEntry sLog(IDE_RP_0); // insertErrLogÏóêÏÑú Î≥µÏû°ÌïòÍ∏∞ ÎïåÎ¨∏Ïóê ÏÉÅÏúÑÏóêÏÑú open,closeÎ•º Ìï®. more safe
-        (void)deleteErrLog(sLog, sMetaItem, aXLog);
+        ideLogEntry sLog(IDE_RP_0); // insertErrLogø°º≠ ∫π¿‚«œ±‚ ∂ßπÆø° ªÛ¿ßø°º≠ open,close∏¶ «‘. more safe
+        (void)deleteErrLog(sLog, sMetaItem, aXLog, sFailType);
         sLog.write();
     }
     else
@@ -1407,9 +1485,9 @@ IDE_RC rpxReceiverApply::getKeyRange(rpdMetaItem *aMetaItem,
     IDE_ASSERT(aMetaItem->mPKIndex.keyColumns != NULL);
     IDE_ASSERT(aMetaItem->mPKIndex.keyColsFlag != NULL);
 
-    /* Proj-1872 DiskIndex ÏµúÏ†ÅÌôî
-     * RangeÎ•º Ï†ÅÏö©ÌïòÎäî ÎåÄÏÉÅÏù¥ DiskIndexÏùº Í≤ΩÏö∞, Stored ÌÉÄÏûÖÏùÑ Í≥†Î†§Ìïú
-     * RangeÍ∞Ä Ï†ÅÏö© ÎêòÏñ¥Ïïº ÌïúÎã§. */
+    /* Proj-1872 DiskIndex √÷¿˚»≠
+     * Range∏¶ ¿˚øÎ«œ¥¬ ¥ÎªÛ¿Ã DiskIndex¿œ ∞ÊøÏ, Stored ≈∏¿‘¿ª ∞Ì∑¡«—
+     * Range∞° ¿˚øÎ µ«æÓæﬂ «—¥Ÿ. */
     sFlag = (aMetaItem->mPKIndex.keyColumns)->column.flag;
     if(  ( ( sFlag & SMI_COLUMN_STORAGE_MASK ) == SMI_COLUMN_STORAGE_DISK ) &&
          ( ( sFlag & SMI_COLUMN_USAGE_MASK   ) == SMI_COLUMN_USAGE_INDEX  ) )
@@ -1460,14 +1538,14 @@ IDE_RC rpxReceiverApply::openLOBCursor(smiTrans        *aSmiTrans,
     smiRange      sKeyRange;
     idBool        sIsSync = ID_FALSE;
     idBool        sIsLOBOperationException = ID_FALSE;
-    idBool        sIsConflict = ID_FALSE;
     smiTrans    * sTrans = NULL;
     UInt          sReplLockTimeout = 0;
     UInt          sConFlictReplLockTimeout = 0;
     idBool        sIsBegunSyncStmt;
+    rpApplyFailType sFailType = RP_APPLY_FAIL_NONE;
     
     IDE_ASSERT(aSmiTrans != NULL);
-        
+       
     // check existence of TABLE
     IDE_TEST( mReceiver->searchRemoteTable( &sMetaItem, aXLog->mTableOID )
               != IDE_SUCCESS );
@@ -1516,10 +1594,10 @@ IDE_RC rpxReceiverApply::openLOBCursor(smiTrans        *aSmiTrans,
                                     &sKeyRange,
                                     aTransTbl,
                                     &sIsLOBOperationException,
-                                    &sIsConflict )
+                                    &sFailType )
          != IDE_SUCCESS )
     {
-        if ( sIsConflict == ID_TRUE )
+        if ( sFailType == RP_APPLY_FAIL_BY_CONFLICT )
         {            
             IDE_TEST( getConfictResolutionTransaction( aXLog->mTID,
                                                        &sTrans )
@@ -1534,10 +1612,12 @@ IDE_RC rpxReceiverApply::openLOBCursor(smiTrans        *aSmiTrans,
                                             &sKeyRange,
                                             aTransTbl,
                                             &sIsLOBOperationException,
-                                            &sIsConflict )
+                                            &sFailType )
                  != IDE_SUCCESS )
-            {                
-                IDE_TEST_RAISE( sIsLOBOperationException != ID_TRUE, ERR_LOB_EXCEPTION );
+            {
+                IDE_TEST_RAISE( (sIsLOBOperationException != ID_TRUE) &&
+                                (sFailType == RP_APPLY_FAIL_INTERNAL),
+                                ERR_LOB_EXCEPTION );  
                 
                 addAbortTx(aXLog->mTID, aXLog->mSN);
             }
@@ -1550,7 +1630,9 @@ IDE_RC rpxReceiverApply::openLOBCursor(smiTrans        *aSmiTrans,
         }
         else
         {
-            IDE_TEST_RAISE( sIsLOBOperationException != ID_TRUE, ERR_LOB_EXCEPTION );     
+            IDE_TEST_RAISE( (sIsLOBOperationException != ID_TRUE) &&
+                            (sFailType == RP_APPLY_FAIL_INTERNAL),
+                            ERR_LOB_EXCEPTION );  
 
             addAbortTx(aXLog->mTID, aXLog->mSN);
         }
@@ -1577,6 +1659,10 @@ IDE_RC rpxReceiverApply::openLOBCursor(smiTrans        *aSmiTrans,
 
     IDE_TEST( aSmiTrans->setReplTransLockTimeout( sReplLockTimeout ) != IDE_SUCCESS );    
 
+    if ( sFailType != RP_APPLY_FAIL_NONE ) 
+    {
+        printLobErrLog( sMetaItem, aXLog, sFailType );
+    }
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(ERR_NOT_EXIST_TABLE);
@@ -1797,7 +1883,8 @@ IDE_RC rpxReceiverApply::closeAllLOBCursor( smiTrans        *aSmiTrans,
     {
         mTransTbl->removeLocator(aTID, sRemoteLL);
 
-        IDE_TEST_RAISE( smiLob::closeLobCursor(sLocalLL)
+        IDE_TEST_RAISE( smiLob::closeLobCursor(NULL, /* idvSQL* */
+                                               sLocalLL)
                         != IDE_SUCCESS, ERR_LOB_CURSOR_CLOSE );
 
         IDE_TEST_RAISE( mTransTbl->getFirstLocator( aTID,
@@ -1840,7 +1927,7 @@ IDE_RC rpxReceiverApply::closeAllLOBCursor( smiTrans        *aSmiTrans,
 // Called By:
 //
 // Description:
-//   Begin Transaction LogÏù¥Îã§. ÏÉàÎ°úÏö¥ Replication TransactionÏùÑ ÏãúÏûëÌïúÎã§.
+//   Begin Transaction Log¿Ã¥Ÿ. ªı∑ŒøÓ Replication Transaction¿ª Ω√¿€«—¥Ÿ.
 //
 //===================================================================
 IDE_RC rpxReceiverApply::applyTrBegin(rpxReceiverApply *aApply, rpdXLog *aXLog)
@@ -1857,7 +1944,7 @@ IDE_RC rpxReceiverApply::applyTrBegin(rpxReceiverApply *aApply, rpdXLog *aXLog)
 
     if(aApply->mTransTbl->isATrans(aXLog->mTID) == ID_FALSE)
     {
-        /* ÏÉàÎ°úÏö¥ TransactionÏùÑ Replication Transaction TblÏóê Ï∂îÍ∞ÄÌïúÎã§. */
+        /* ªı∑ŒøÓ Transaction¿ª Replication Transaction Tblø° √ﬂ∞°«—¥Ÿ. */
 //        IDE_TEST_RAISE(aApply->mTransTbl->insertTrans(NULL, /* memory allocator : not used */
         IDU_FIT_POINT_RAISE( "rpxReceiverApply::applyTrBegin::Erratic::rpERR_ABORT_PROTOCOL_RUN",
                              ERR_INSERT,
@@ -1871,18 +1958,20 @@ IDE_RC rpxReceiverApply::applyTrBegin(rpxReceiverApply *aApply, rpdXLog *aXLog)
                        != IDE_SUCCESS, ERR_INSERT);
         sStage = 1;
 
-       /* aXLog->mTIDÏóê Ìï¥ÎãπÌïòÎäî SMI Transaction Í∞ùÏ≤¥Î•º Replication
-        * Transaction TableÏóêÏÑú Íµ¨ÌïúÎã§.
+       /* aXLog->mTIDø° «ÿ¥Á«œ¥¬ SMI Transaction ∞¥√º∏¶ Replication
+        * Transaction Tableø°º≠ ±∏«—¥Ÿ.
         */
         sSmiTrans = aApply->mTransTbl->getSMITrans(aXLog->mTID);
         IDE_TEST_RAISE( aApply->begin( sSmiTrans, ID_FALSE )
                        != IDE_SUCCESS, ERR_BEGIN);
+        aApply->mTransTbl->setMyTID(aXLog->mTID);
+
         sStage = 2;
 
         if ( ( aApply->mSNMapMgr != NULL ) && ( aXLog->mSN != SM_SN_NULL ) )
         {
-            /* recovery optionÏù¥ setÎêú Normal receiverÏóê ÏùòÌï¥ Ïã§ÌñâÎêú Ìä∏ÎûúÏû≠ÏÖòÏùÄ
-             * sn mapÏóê ÏÇΩÏûÖÌïúÎã§.
+            /* recovery option¿Ã setµ» Normal receiverø° ¿««ÿ Ω««‡µ» ∆Æ∑£¿Ëº«¿∫
+             * sn mapø° ª¿‘«—¥Ÿ.
              */
             IDE_TEST(aApply->mSNMapMgr->insertNewTx(aXLog->mSN, &sNewEntry)
                      != IDE_SUCCESS);
@@ -1895,7 +1984,7 @@ IDE_RC rpxReceiverApply::applyTrBegin(rpxReceiverApply *aApply, rpdXLog *aXLog)
     }
     else
     {
-        /* Begin LogÍ∞Ä ÏôîÎäîÎç∞ Ïù¥ÎØ∏ BeginÎêú TransactionÏù¥Îã§. */
+        /* Begin Log∞° ø‘¥¬µ• ¿ÃπÃ Beginµ» Transaction¿Ã¥Ÿ. */
         IDE_RAISE(ERR_PROTOCOL);
     }
 
@@ -1908,7 +1997,7 @@ IDE_RC rpxReceiverApply::applyTrBegin(rpxReceiverApply *aApply, rpdXLog *aXLog)
                              ERR_NOT_EXIST_TABLE );
         IDE_TEST_RAISE( sMetaItem == NULL, ERR_NOT_EXIST_TABLE);
         
-        if ( sMetaItem->needConvertSQL() == ID_FALSE )
+        if ( sMetaItem->getApplyMode() == RP_APPLY_XLOG )
         {
             IDE_TEST( aApply->mSmExecutor.stmtBeginAndCursorOpen( sSmiTrans,
                                                                   &(aApply->mSmiStmt),
@@ -2001,7 +2090,7 @@ IDE_RC rpxReceiverApply::applyTrBegin(rpxReceiverApply *aApply, rpdXLog *aXLog)
 // Called By:
 //
 // Description:
-//   Transaction Commit LogÏù¥Îã§. TransactionÏùÑ CommitÏãúÌÇ®Îã§.
+//   Transaction Commit Log¿Ã¥Ÿ. Transaction¿ª CommitΩ√≈≤¥Ÿ.
 //
 //===================================================================
 IDE_RC rpxReceiverApply::applyTrCommit(rpxReceiverApply *aApply, rpdXLog *aXLog)
@@ -2026,15 +2115,15 @@ IDE_RC rpxReceiverApply::applyTrCommit(rpxReceiverApply *aApply, rpdXLog *aXLog)
                   != IDE_SUCCESS );
     }
 
-    /* aXLog->mTIDÏóê Ìï¥ÎãπÌïòÎäî SMI Transaction Í∞ùÏ≤¥Î•º Replication
-     * Transaction TableÏóêÏÑú Íµ¨ÌïúÎã§.
+    /* aXLog->mTIDø° «ÿ¥Á«œ¥¬ SMI Transaction ∞¥√º∏¶ Replication
+     * Transaction Tableø°º≠ ±∏«—¥Ÿ.
      */
     sSmiTrans = aApply->mTransTbl->getSMITrans(aXLog->mTID);
 
     if(aApply->mTransTbl->isATrans(aXLog->mTID) == ID_TRUE)
     {
-        /* Transaction Ï¢ÖÎ£å ÏãúÏ†êÏóê ÎÇ®ÏïÑÏûàÎäî LOB CursorÍ∞Ä ÏûàÎã§Î©¥
-         * Î™®Îëê Close ÏãúÌÇ®Îã§.
+        /* Transaction ¡æ∑· Ω√¡°ø° ≥≤æ∆¿÷¥¬ LOB Cursor∞° ¿÷¥Ÿ∏È
+         * ∏µŒ Close Ω√≈≤¥Ÿ.
          */
         sStage = 2;
 
@@ -2063,8 +2152,8 @@ IDE_RC rpxReceiverApply::applyTrCommit(rpxReceiverApply *aApply, rpdXLog *aXLog)
             /* nothing to do */
         }
 
-        /* Replication Transaction TableÏóêÏÑú aXLog->mTIDÏóê Ìï¥ÎãπÌïòÎäî
-         * Transaction SlotÏùÑ Ï†úÍ±∞ÌïúÎã§.
+        /* Replication Transaction Tableø°º≠ aXLog->mTIDø° «ÿ¥Á«œ¥¬
+         * Transaction Slot¿ª ¡¶∞≈«—¥Ÿ.
          */
         sStage = 0;
         aApply->mTransTbl->removeTrans(aXLog->mTID);
@@ -2147,7 +2236,7 @@ IDE_RC rpxReceiverApply::applyTrCommit(rpxReceiverApply *aApply, rpdXLog *aXLog)
 // Called By:
 //
 // Description:
-//   Transaction ABORT logÏù¥Îã§. BeginÎêú ReplicationÏùÑ AbortÏãúÌÇ®Îã§.
+//   Transaction ABORT log¿Ã¥Ÿ. Beginµ» Replication¿ª AbortΩ√≈≤¥Ÿ.
 //
 //===================================================================
 IDE_RC rpxReceiverApply::applyTrAbort(rpxReceiverApply *aApply, rpdXLog *aXLog)
@@ -2170,15 +2259,15 @@ IDE_RC rpxReceiverApply::applyTrAbort(rpxReceiverApply *aApply, rpdXLog *aXLog)
                   != IDE_SUCCESS );
     }
 
-    /* aXLog->mTIDÏóê Ìï¥ÎãπÌïòÎäî SMI Transaction Í∞ùÏ≤¥Î•º Replication
-     * Transaction TableÏóêÏÑú Íµ¨ÌïúÎã§.
+    /* aXLog->mTIDø° «ÿ¥Á«œ¥¬ SMI Transaction ∞¥√º∏¶ Replication
+     * Transaction Tableø°º≠ ±∏«—¥Ÿ.
      */
     sSmiTrans = aApply->mTransTbl->getSMITrans(aXLog->mTID);
 
     if(aApply->mTransTbl->isATrans( aXLog->mTID ) == ID_TRUE)
     {
-        /* Transaction Ï¢ÖÎ£å ÏãúÏ†êÏóê ÎÇ®ÏïÑÏûàÎäî LOB CursorÍ∞Ä ÏûàÎã§Î©¥
-         * Î™®Îëê Close ÏãúÌÇ®Îã§.
+        /* Transaction ¡æ∑· Ω√¡°ø° ≥≤æ∆¿÷¥¬ LOB Cursor∞° ¿÷¥Ÿ∏È
+         * ∏µŒ Close Ω√≈≤¥Ÿ.
          */
         sStage = 2;
         IDE_TEST_RAISE( aApply->closeAllLOBCursor(sSmiTrans, aXLog->mTID)
@@ -2189,8 +2278,8 @@ IDE_RC rpxReceiverApply::applyTrAbort(rpxReceiverApply *aApply, rpdXLog *aXLog)
                         ERR_ABORT );
         (aApply->mAbortCount)++;
 
-        /* Replication Transaction TableÏóêÏÑú aXLog->mTIDÏóê Ìï¥ÎãπÌïòÎäî
-         * Transaction SlotÏùÑ Ï†úÍ±∞ÌïúÎã§.
+        /* Replication Transaction Tableø°º≠ aXLog->mTIDø° «ÿ¥Á«œ¥¬
+         * Transaction Slot¿ª ¡¶∞≈«—¥Ÿ.
          */
         sStage = 0;
         aApply->mTransTbl->removeTrans(aXLog->mTID);
@@ -2243,18 +2332,17 @@ IDE_RC rpxReceiverApply::applyTrAbort(rpxReceiverApply *aApply, rpdXLog *aXLog)
 // Called By:
 //
 // Description:
-//   DML Insert LogÏù¥Îã§. recordÎ•º InsertÏãúÌÇ®Îã§.
+//   DML Insert Log¿Ã¥Ÿ. record∏¶ InsertΩ√≈≤¥Ÿ.
 //
 //===================================================================
 IDE_RC rpxReceiverApply::applyInsert(rpxReceiverApply *aApply, rpdXLog *aXLog)
 {
     smiTrans       * sSmiTrans = NULL;
     SChar          * sSpName   = NULL;
-    rpdMetaItem    * sMetaItem = NULL;
     rpdTransTblNode * sTblNode = NULL;
 
-    /* aXLog->mTIDÏóê Ìï¥ÎãπÌïòÎäî SMI Transaction Í∞ùÏ≤¥Î•º Replication
-     * Transaction TableÏóêÏÑú Íµ¨ÌïúÎã§.
+    /* aXLog->mTIDø° «ÿ¥Á«œ¥¬ SMI Transaction ∞¥√º∏¶ Replication
+     * Transaction Tableø°º≠ ±∏«—¥Ÿ.
      */
     sSmiTrans = aApply->mTransTbl->getSMITrans( aXLog->mTID );
 
@@ -2273,7 +2361,7 @@ IDE_RC rpxReceiverApply::applyInsert(rpxReceiverApply *aApply, rpdXLog *aXLog)
                                                        sSpName )
                         != IDE_SUCCESS, ERR_SET_SVP );
 
-        /* BUG-18028 Eager ModeÏóêÏÑú Partial Rollback ÏßÄÏõê */
+        /* BUG-18028 Eager Modeø°º≠ Partial Rollback ¡ˆø¯ */
         IDE_TEST_RAISE(aApply->mTransTbl->addLastSvpEntry(aXLog->mTID,
                                                           aXLog->mSN,
                                                           RP_SAVEPOINT_IMPLICIT,
@@ -2283,37 +2371,16 @@ IDE_RC rpxReceiverApply::applyInsert(rpxReceiverApply *aApply, rpdXLog *aXLog)
 
     }
 
-    IDE_TEST( aApply->mReceiver->searchRemoteTable( &sMetaItem, aXLog->mTableOID )
-              != IDE_SUCCESS );
-    IDU_FIT_POINT_RAISE( "rpxReceiverApply::insertXLog::Erratic::rpERR_ABORT_NOT_EXIST_TABLE_INS",
-                         ERR_NOT_EXIST_TABLE ); 
-    IDE_TEST_RAISE( sMetaItem == NULL, ERR_NOT_EXIST_TABLE );
-
-    if ( sMetaItem->needConvertSQL() == ID_FALSE )
-    {
-        IDE_TEST( aApply->insertXLog( sSmiTrans, sMetaItem, aXLog, sSpName ) != IDE_SUCCESS );
-    }
-    else
-    {
-        IDE_TEST( aApply->insertSQL( sSmiTrans, sMetaItem, aXLog, sSpName ) != IDE_SUCCESS );
-    }
-
+    IDE_TEST( aApply->executeInsert( sSmiTrans,
+                                     aXLog,
+                                     sSpName ) != IDE_SUCCESS );
+    
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(ERR_SET_SVP);
     {
         IDE_ERRLOG(IDE_RP_0);
         IDE_SET(ideSetErrorCode(rpERR_ABORT_RP_SET_SAVEPOINT_ERROR_IN_RUN));
-    }
-    IDE_EXCEPTION( ERR_NOT_EXIST_TABLE );
-    {
-        ideLog::log( IDE_RP_0, RP_TRC_RA_ERR_INVALID_XLOG,
-                     aXLog->mType,
-                     aXLog->mTID,
-                     aXLog->mSN,
-                     aXLog->mTableOID );
-
-        IDE_SET( ideSetErrorCode( rpERR_ABORT_NOT_EXIST_TABLE ) );
     }
     IDE_EXCEPTION_END;
 
@@ -2330,47 +2397,16 @@ IDE_RC rpxReceiverApply::applyInsert(rpxReceiverApply *aApply, rpdXLog *aXLog)
 IDE_RC rpxReceiverApply::applySyncInsert( rpxReceiverApply * aApply, rpdXLog * aXLog )
 {
     smiTrans        * sSmiTrans = NULL;
-    rpdMetaItem     * sMetaItem = NULL;
     rpdTransTblNode * sTblNode = NULL;
 
     sSmiTrans = aApply->mTransTbl->getSMITrans( aXLog->mTID );
 
     IDE_DASSERT( aApply->mTransTbl->isATrans(aXLog->mTID) == ID_TRUE );
 
-    IDE_TEST( aApply->mReceiver->searchRemoteTable( &sMetaItem, aXLog->mTableOID ) 
-              != IDE_SUCCESS );
-
-    IDE_TEST_RAISE( sMetaItem == NULL, ERR_NOT_EXIST_TABLE );
-
-    if ( sMetaItem->needConvertSQL() == ID_FALSE )
-    {
-        IDE_TEST( aApply->insertSyncXLog( sSmiTrans,
-                                          sMetaItem,
-                                          aXLog )
-                  != IDE_SUCCESS );
-    }
-    else
-    {
-        IDE_TEST( aApply->insertSQL( sSmiTrans, 
-                                     sMetaItem, 
-                                     aXLog,
-                                     NULL ) 
-                      != IDE_SUCCESS );
-    }
+    IDE_TEST( aApply->executeSyncInsert( sSmiTrans, aXLog ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION( ERR_NOT_EXIST_TABLE );
-    {
-        ideLog::log( IDE_RP_0, RP_TRC_RA_ERR_INVALID_XLOG,
-                              aXLog->mType,
-                              aXLog->mTID,
-                              aXLog->mSN,
-                              aXLog->mTableOID );
-
-        IDE_SET( ideSetErrorCode( rpERR_ABORT_NOT_EXIST_TABLE_INS ) );
-        IDE_ERRLOG( IDE_RP_0 );
-    }
     IDE_EXCEPTION_END;
 
     (void) aApply->mSmExecutor.stmtEndAndCursorClose( &(aApply->mSmiStmt),
@@ -2399,17 +2435,16 @@ IDE_RC rpxReceiverApply::applySyncInsert( rpxReceiverApply * aApply, rpdXLog * a
 // Called By:
 //
 // Description:
-//   DML Update LogÏù¥Îã§. recordÎ•º Update ÏãúÌÇ®Îã§.
+//   DML Update Log¿Ã¥Ÿ. record∏¶ Update Ω√≈≤¥Ÿ.
 //
 //===================================================================
 IDE_RC rpxReceiverApply::applyUpdate(rpxReceiverApply *aApply, rpdXLog *aXLog)
 {
     smiTrans       * sSmiTrans = NULL;
     SChar          * sSpName   = NULL;
-    rpdMetaItem    * sMetaItem = NULL;
 
-    /* aXLog->mTIDÏóê Ìï¥ÎãπÌïòÎäî SMI Transaction Í∞ùÏ≤¥Î•º Replication
-     * Transaction TableÏóêÏÑú Íµ¨ÌïúÎã§.
+    /* aXLog->mTIDø° «ÿ¥Á«œ¥¬ SMI Transaction ∞¥√º∏¶ Replication
+     * Transaction Tableø°º≠ ±∏«—¥Ÿ.
      */
     sSmiTrans = aApply->mTransTbl->getSMITrans(aXLog->mTID);
 
@@ -2424,7 +2459,7 @@ IDE_RC rpxReceiverApply::applyUpdate(rpxReceiverApply *aApply, rpdXLog *aXLog)
         IDE_TEST_RAISE(sSmiTrans->savepoint(sSpName)
                        != IDE_SUCCESS, ERR_SET_SVP);
 
-        /* BUG-18028 Eager ModeÏóêÏÑú Partial Rollback ÏßÄÏõê */
+        /* BUG-18028 Eager Modeø°º≠ Partial Rollback ¡ˆø¯ */
         IDE_TEST_RAISE(aApply->mTransTbl->addLastSvpEntry(aXLog->mTID,
                                                           aXLog->mSN,
                                                           RP_SAVEPOINT_IMPLICIT,
@@ -2433,41 +2468,15 @@ IDE_RC rpxReceiverApply::applyUpdate(rpxReceiverApply *aApply, rpdXLog *aXLog)
                        != IDE_SUCCESS, ERR_SET_SVP);
     }
 
-    /* PROJ-1442 Replication Online Ï§ë DDL ÌóàÏö©
-     * UpdateÎêú Column Ï§ëÏóê Replication ÎåÄÏÉÅÏù¥ ÏóÜÏùÑ Ïàò ÏûàÎã§.
-     */
-    if(aXLog->mColCnt > 0)
-    {
-        IDE_TEST( aApply->mReceiver->searchRemoteTable( &sMetaItem, aXLog->mTableOID )
-                  != IDE_SUCCESS );
-        IDE_TEST_RAISE(sMetaItem == NULL, ERR_NOT_EXIST_TABLE);
-        if ( sMetaItem->needConvertSQL() == ID_FALSE )
-        {
-            IDE_TEST(aApply->updateXLog( sSmiTrans, sMetaItem, aXLog ) != IDE_SUCCESS );
-        }
-        else
-        {
-            IDE_TEST( aApply->updateSQL( sSmiTrans, sMetaItem, aXLog ) != IDE_SUCCESS );
-        }
-    }
-
+    IDE_TEST( aApply->executeUpdate( sSmiTrans,
+                                     aXLog ) != IDE_SUCCESS );
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION( ERR_NOT_EXIST_TABLE );
-    {
-        ideLog::log( IDE_RP_0, RP_TRC_RA_ERR_INVALID_XLOG,
-                     aXLog->mType,
-                     aXLog->mTID,
-                     aXLog->mSN,
-                     aXLog->mTableOID );
-
-        IDE_SET( ideSetErrorCode( rpERR_ABORT_NOT_EXIST_TABLE ) );
-    }
     IDE_EXCEPTION(ERR_SET_SVP);
     {
         IDE_ERRLOG(IDE_RP_0);
         IDE_SET(ideSetErrorCode(rpERR_ABORT_RP_SET_SAVEPOINT_ERROR_IN_RUN));
-    }
+    } 
     IDE_EXCEPTION_END;
     IDE_ERRLOG(IDE_RP_0);
 
@@ -2487,7 +2496,7 @@ IDE_RC rpxReceiverApply::applyUpdate(rpxReceiverApply *aApply, rpdXLog *aXLog)
 // Called By:
 //
 // Description:
-//   DML Delete Î°úÍ∑∏Ïù¥Îã§. recordÎ•º DeleteÌïúÎã§.
+//   DML Delete ∑Œ±◊¿Ã¥Ÿ. record∏¶ Delete«—¥Ÿ.
 //
 //===================================================================
 IDE_RC rpxReceiverApply::applyDelete(rpxReceiverApply *aApply, rpdXLog *aXLog)
@@ -2495,8 +2504,8 @@ IDE_RC rpxReceiverApply::applyDelete(rpxReceiverApply *aApply, rpdXLog *aXLog)
     smiTrans *sSmiTrans = NULL;
     SChar    *sSpName   = NULL;
 
-    /* aXLog->mTIDÏóê Ìï¥ÎãπÌïòÎäî SMI Transaction Í∞ùÏ≤¥Î•º Replication
-     * Transaction TableÏóêÏÑú Íµ¨ÌïúÎã§.
+    /* aXLog->mTIDø° «ÿ¥Á«œ¥¬ SMI Transaction ∞¥√º∏¶ Replication
+     * Transaction Tableø°º≠ ±∏«—¥Ÿ.
      */
     sSmiTrans = aApply->mTransTbl->getSMITrans(aXLog->mTID);
 
@@ -2511,7 +2520,7 @@ IDE_RC rpxReceiverApply::applyDelete(rpxReceiverApply *aApply, rpdXLog *aXLog)
         IDE_TEST_RAISE(sSmiTrans->savepoint(sSpName)
                        != IDE_SUCCESS, ERR_SET_SVP);
 
-        /* BUG-18028 Eager ModeÏóêÏÑú Partial Rollback ÏßÄÏõê */
+        /* BUG-18028 Eager Modeø°º≠ Partial Rollback ¡ˆø¯ */
         IDE_TEST_RAISE(aApply->mTransTbl->addLastSvpEntry(aXLog->mTID,
                                                           aXLog->mSN,
                                                           RP_SAVEPOINT_IMPLICIT,
@@ -2548,7 +2557,7 @@ IDE_RC rpxReceiverApply::applyDelete(rpxReceiverApply *aApply, rpdXLog *aXLog)
 // Called By:
 //
 // Description:
-//   Explicit Savepoint Set LogÏù¥Îã§. ÏßÄÏ†ïÎêú Ïù¥Î¶ÑÏúºÎ°ú SavepointÎ•º SetÌïúÎã§.
+//   Explicit Savepoint Set Log¿Ã¥Ÿ. ¡ˆ¡§µ» ¿Ã∏ß¿∏∑Œ Savepoint∏¶ Set«—¥Ÿ.
 //
 //===================================================================
 IDE_RC rpxReceiverApply::applySPSet(rpxReceiverApply *aApply, rpdXLog *aXLog)
@@ -2570,7 +2579,7 @@ IDE_RC rpxReceiverApply::applySPSet(rpxReceiverApply *aApply, rpdXLog *aXLog)
     IDE_TEST_RAISE( sTblNode->mTrans.setSavepoint( aXLog->mTID, sType, sSavepointName )
                     != IDE_SUCCESS, ERR_SET_SVP );
 
-    /* BUG-18028 Eager ModeÏóêÏÑú Partial Rollback ÏßÄÏõê */
+    /* BUG-18028 Eager Modeø°º≠ Partial Rollback ¡ˆø¯ */
     IDE_TEST_RAISE(aApply->mTransTbl->addLastSvpEntry(aXLog->mTID,
                                                       aXLog->mSN,
                                                       sType,
@@ -2685,7 +2694,7 @@ SChar* rpxReceiverApply::getSvpName( UInt aDepth, SChar * aImplSvpName )
 // Called By:
 //
 // Description:
-//   Savepoint Abort LogÏù¥Îã§. SavepointÍπåÏßÄ AbortÌïúÎã§.
+//   Savepoint Abort Log¿Ã¥Ÿ. Savepoint±Ó¡ˆ Abort«—¥Ÿ.
 //
 //===================================================================
 IDE_RC rpxReceiverApply::applySPAbort(rpxReceiverApply *aApply, rpdXLog *aXLog)
@@ -2725,14 +2734,14 @@ IDE_RC rpxReceiverApply::applySPAbort(rpxReceiverApply *aApply, rpdXLog *aXLog)
                 /* Nothing to do */
             }
 
-            /* Ìä∏ÎûúÏû≠ÏÖò Ï†ÑÏ≤¥ Ï∑®ÏÜåÍ∞Ä ÏïÑÎãàÎØÄÎ°ú conflictTIDListÏóêÏÑú ÎÖ∏ÎìúÎ•º ÏßÄÏö∞ÏßÄ ÏïäÎäîÎã§. */
+            /* ∆Æ∑£¿Ëº« ¿¸√º √Îº“∞° æ∆¥œπ«∑Œ conflictTIDListø°º≠ ≥ÎµÂ∏¶ ¡ˆøÏ¡ˆ æ ¥¬¥Ÿ. */
         }
         else
         {
             /* Nothing to do */
         }
 
-        /* BUG-18028 Eager ModeÏóêÏÑú Partial Rollback ÏßÄÏõê */
+        /* BUG-18028 Eager Modeø°º≠ Partial Rollback ¡ˆø¯ */
         aApply->mTransTbl->applySvpAbort(aXLog->mTID, sSavepointName, &sSN);
         if(sSN <= aApply->mTransTbl->getAbortSN(aXLog->mTID))
         {
@@ -2765,26 +2774,26 @@ IDE_RC rpxReceiverApply::applySPAbort(rpxReceiverApply *aApply, rpdXLog *aXLog)
 // Called By:
 //
 // Description:
-//   LOB CursorÎ•º openÌïúÎã§.
+//   LOB Cursor∏¶ open«—¥Ÿ.
 //
 //===================================================================
 IDE_RC rpxReceiverApply::applyLobCursorOpen(rpxReceiverApply *aApply, rpdXLog *aXLog)
 {
     smiTrans*    sSmiTrans = NULL;
 
-    /* aXLog->mTIDÏóê Ìï¥ÎãπÌïòÎäî SMI Transaction Í∞ùÏ≤¥Î•º Replication
-     * Transaction TableÏóêÏÑú Íµ¨ÌïúÎã§.
+    /* aXLog->mTIDø° «ÿ¥Á«œ¥¬ SMI Transaction ∞¥√º∏¶ Replication
+     * Transaction Tableø°º≠ ±∏«—¥Ÿ.
      */
     sSmiTrans = aApply->mTransTbl->getSMITrans(aXLog->mTID);
 
     IDE_DASSERT( aApply->mTransTbl->isATrans(aXLog->mTID) == ID_TRUE );
 
-    /* PROJ-1442 Replication Online Ï§ë DDL ÌóàÏö©
-     * Lob ColumnÏù¥ Replication ÎåÄÏÉÅÏùº ÎïåÎßå LOB CursorÎ•º OpenÌïúÎã§.
+    /* PROJ-1442 Replication Online ¡ﬂ DDL «„øÎ
+     * Lob Column¿Ã Replication ¥ÎªÛ¿œ ∂ß∏∏ LOB Cursor∏¶ Open«—¥Ÿ.
      */
     if(aXLog->mLobPtr->mLobColumnID != RP_INVALID_COLUMN_ID)
     {
-        //BUG-21858 : insert, update Ïã§Ìå®Í∞Ä ÎêòÏñ¥ ÌîåÎ†àÍ∑∏Í∞Ä ÏÑ∏ÌåÖ ÎêòÎ©¥ LOB Î°úÍ∑∏Î•º Î¨¥Ïãú ÌïúÎã§.
+        //BUG-21858 : insert, update Ω«∆–∞° µ«æÓ «√∑π±◊∞° ºº∆√ µ«∏È LOB ∑Œ±◊∏¶ π´Ω√ «—¥Ÿ.
         if(aApply->mTransTbl->getSkipLobLogFlag(aXLog->mTID) != ID_TRUE)
         {
             IDE_TEST( aApply->openLOBCursor( sSmiTrans, aXLog, aApply->mTransTbl )
@@ -2818,15 +2827,15 @@ IDE_RC rpxReceiverApply::applyLobCursorOpen(rpxReceiverApply *aApply, rpdXLog *a
 // Called By:
 //
 // Description:
-//   LOB CursorÎ•º closeÌïúÎã§.
+//   LOB Cursor∏¶ close«—¥Ÿ.
 //
 //===================================================================
 IDE_RC rpxReceiverApply::applyLobCursorClose(rpxReceiverApply *aApply, rpdXLog *aXLog)
 {
     smiTrans*    sSmiTrans = NULL;
 
-    /* aXLog->mTIDÏóê Ìï¥ÎãπÌïòÎäî SMI Transaction Í∞ùÏ≤¥Î•º Replication
-     * Transaction TableÏóêÏÑú Íµ¨ÌïúÎã§.
+    /* aXLog->mTIDø° «ÿ¥Á«œ¥¬ SMI Transaction ∞¥√º∏¶ Replication
+     * Transaction Tableø°º≠ ±∏«—¥Ÿ.
      */
     sSmiTrans = aApply->mTransTbl->getSMITrans(aXLog->mTID);
 
@@ -2858,15 +2867,15 @@ IDE_RC rpxReceiverApply::applyLobCursorClose(rpxReceiverApply *aApply, rpdXLog *
 // Called By:
 //
 // Description:
-//   LOB column valueÎ•º writeÌïòÍ∏∞ ÏúÑÌïú prepareÎ•º ÏàòÌñâÌïúÎã§.
+//   LOB column value∏¶ write«œ±‚ ¿ß«— prepare∏¶ ºˆ«‡«—¥Ÿ.
 //
 //===================================================================
 IDE_RC rpxReceiverApply::applyLobPrepareWrite(rpxReceiverApply *aApply, rpdXLog *aXLog)
 {
     smiTrans*    sSmiTrans = NULL;
 
-    /* aXLog->mTIDÏóê Ìï¥ÎãπÌïòÎäî SMI Transaction Í∞ùÏ≤¥Î•º Replication
-     * Transaction TableÏóêÏÑú Íµ¨ÌïúÎã§.
+    /* aXLog->mTIDø° «ÿ¥Á«œ¥¬ SMI Transaction ∞¥√º∏¶ Replication
+     * Transaction Tableø°º≠ ±∏«—¥Ÿ.
      */
     sSmiTrans = aApply->mTransTbl->getSMITrans(aXLog->mTID);
 
@@ -2898,15 +2907,15 @@ IDE_RC rpxReceiverApply::applyLobPrepareWrite(rpxReceiverApply *aApply, rpdXLog 
 // Called By:
 //
 // Description:
-//   LOB PieceÎ•º writeÌïúÎã§.
+//   LOB Piece∏¶ write«—¥Ÿ.
 //
 //===================================================================
 IDE_RC rpxReceiverApply::applyLobPartialWrite(rpxReceiverApply *aApply, rpdXLog *aXLog)
 {
     smiTrans*    sSmiTrans = NULL;
 
-    /* aXLog->mTIDÏóê Ìï¥ÎãπÌïòÎäî SMI Transaction Í∞ùÏ≤¥Î•º Replication
-     * Transaction TableÏóêÏÑú Íµ¨ÌïúÎã§.
+    /* aXLog->mTIDø° «ÿ¥Á«œ¥¬ SMI Transaction ∞¥√º∏¶ Replication
+     * Transaction Tableø°º≠ ±∏«—¥Ÿ.
      */
     sSmiTrans = aApply->mTransTbl->getSMITrans(aXLog->mTID);
 
@@ -2938,15 +2947,15 @@ IDE_RC rpxReceiverApply::applyLobPartialWrite(rpxReceiverApply *aApply, rpdXLog 
 // Called By:
 //
 // Description:
-//   LOB Partial writeÎ•º ÎßàÏπú Ïù¥ÌõÑÏóê, Write ÏûëÏóÖÏùÑ Ï¢ÖÎ£åÌïúÎã§.
+//   LOB Partial write∏¶ ∏∂ƒ£ ¿Ã»ƒø°, Write ¿€æ˜¿ª ¡æ∑·«—¥Ÿ.
 //
 //===================================================================
 IDE_RC rpxReceiverApply::applyLobFinishWrite(rpxReceiverApply *aApply, rpdXLog *aXLog)
 {
     smiTrans*    sSmiTrans = NULL;
 
-    /* aXLog->mTIDÏóê Ìï¥ÎãπÌïòÎäî SMI Transaction Í∞ùÏ≤¥Î•º Replication
-     * Transaction TableÏóêÏÑú Íµ¨ÌïúÎã§.
+    /* aXLog->mTIDø° «ÿ¥Á«œ¥¬ SMI Transaction ∞¥√º∏¶ Replication
+     * Transaction Tableø°º≠ ±∏«—¥Ÿ.
      */
     sSmiTrans = aApply->mTransTbl->getSMITrans(aXLog->mTID);
 
@@ -2978,15 +2987,15 @@ IDE_RC rpxReceiverApply::applyLobFinishWrite(rpxReceiverApply *aApply, rpdXLog *
 // Called By:
 //
 // Description:
-//   LOB column valueÎ•º trimÌïúÎã§.
+//   LOB column value∏¶ trim«—¥Ÿ.
 //
 //===================================================================
 IDE_RC rpxReceiverApply::applyLobTrim(rpxReceiverApply *aApply, rpdXLog *aXLog)
 {
     smiTrans*    sSmiTrans = NULL;
 
-    /* aXLog->mTIDÏóê Ìï¥ÎãπÌïòÎäî SMI Transaction Í∞ùÏ≤¥Î•º Replication
-     * Transaction TableÏóêÏÑú Íµ¨ÌïúÎã§.
+    /* aXLog->mTIDø° «ÿ¥Á«œ¥¬ SMI Transaction ∞¥√º∏¶ Replication
+     * Transaction Tableø°º≠ ±∏«—¥Ÿ.
      */
     sSmiTrans = aApply->mTransTbl->getSMITrans(aXLog->mTID);
 
@@ -3008,7 +3017,7 @@ IDE_RC rpxReceiverApply::applyLobTrim(rpxReceiverApply *aApply, rpdXLog *aXLog)
 }
 
 /******************************************************************************
- * Description : Incremental SyncÎ•º ÏúÑÌïú Primary KeyÍ∞Ä Ïù¥ÌõÑÏóê ÏàòÏã†Îê† Í≤ÉÏù¥Îã§.
+ * Description : Incremental Sync∏¶ ¿ß«— Primary Key∞° ¿Ã»ƒø° ºˆΩ≈µ… ∞Õ¿Ã¥Ÿ.
  *               (Failback Slave -> Failback Master)
  *
  ******************************************************************************/
@@ -3022,8 +3031,8 @@ IDE_RC rpxReceiverApply::applySyncPKBegin(rpxReceiverApply *aApply, rpdXLog */*a
 
     IDE_WARNING(IDE_RP_0, RP_TRC_RA_NTC_SYNC_PK_BEGIN);
 
-    // SenderÎ•º Í≤ÄÏÉâÌïòÏó¨ SenderInfoÎ•º ÏñªÎäîÎã§.
-    // Failback MasterÍ∞Ä ÏóÜÏúºÎ©¥, Îã§Ïãú Failback Ï†àÏ∞®Î•º ÏàòÌñâÌï¥Ïïº ÌïúÎã§.
+    // Sender∏¶ ∞Àªˆ«œø© SenderInfo∏¶ æÚ¥¬¥Ÿ.
+    // Failback Master∞° æ¯¿∏∏È, ¥ŸΩ√ Failback ¿˝¬˜∏¶ ºˆ«‡«ÿæﬂ «—¥Ÿ.
     IDU_FIT_POINT_RAISE( "rpxReceiverApply::applySyncPKBegin::Erratic::rpERR_ABORT_FAILBACK_SENDER_NOT_EXIST",
                         ERR_FAILBACK_SENDER_NOT_EXIST ); 
     IDE_TEST_RAISE( rpcManager::isAliveSender( aApply->mRepName ) != ID_TRUE,
@@ -3036,7 +3045,7 @@ IDE_RC rpxReceiverApply::applySyncPKBegin(rpxReceiverApply *aApply, rpdXLog */*a
 
     IDE_TEST( aApply->mSenderInfo->initSyncPKPool( aApply->mRepName ) != IDE_SUCCESS );
 
-    // Incremental Sync Primary Key BeginÎ•º QueueÏóê Ï∂îÍ∞ÄÌïúÎã§.
+    // Incremental Sync Primary Key Begin∏¶ Queueø° √ﬂ∞°«—¥Ÿ.
     while(sSecond < RPU_REPLICATION_FAILBACK_PK_QUEUE_TIMEOUT)
     {
         IDE_TEST(aApply->mSenderInfo->addLastSyncPK(RP_SYNC_PK_BEGIN,
@@ -3082,7 +3091,7 @@ IDE_RC rpxReceiverApply::applySyncPKBegin(rpxReceiverApply *aApply, rpdXLog */*a
 }
 
 /******************************************************************************
- * Description : Incremental Sync Primary KeyÎ•º Ï≤òÎ¶¨ÌïúÎã§.
+ * Description : Incremental Sync Primary Key∏¶ √≥∏Æ«—¥Ÿ.
  *               (Failback Slave -> Failback Master)
  *
  ******************************************************************************/
@@ -3118,7 +3127,7 @@ IDE_RC rpxReceiverApply::applySyncPK(rpxReceiverApply *aApply, rpdXLog *aXLog)
     IDE_TEST_RAISE(aXLog->mPKColCnt != sMetaItem->mPKIndex.keyColCount,
                    ERR_COL_COUNT_MISMATCH);
 
-    // PK Ï†ïÎ≥¥Î•º Î°úÍ∑∏Ïóê Í∏∞Î°ùÌïúÎã§.
+    // PK ¡§∫∏∏¶ ∑Œ±◊ø° ±‚∑œ«—¥Ÿ.
     sLog.append(RP_TRC_RA_NTC_SYNC_PK);
     sLog.appendFormat(" User Name=%s, Table Name=%s, PK=[",
                       sMetaItem->mItem.mLocalUsername,
@@ -3147,7 +3156,7 @@ IDE_RC rpxReceiverApply::applySyncPK(rpxReceiverApply *aApply, rpdXLog *aXLog)
     (void)sLog.append("]\n");
     (void)sLog.write();
 
-    // Incremental Sync Primary KeyÎ•º QueueÏóê Ï∂îÍ∞ÄÌïúÎã§.
+    // Incremental Sync Primary Key∏¶ Queueø° √ﬂ∞°«—¥Ÿ.
     while(sSecond < RPU_REPLICATION_FAILBACK_PK_QUEUE_TIMEOUT)
     {
         IDE_TEST(aApply->mSenderInfo->addLastSyncPK(RP_SYNC_PK,
@@ -3201,7 +3210,7 @@ IDE_RC rpxReceiverApply::applySyncPK(rpxReceiverApply *aApply, rpdXLog *aXLog)
 }
 
 /******************************************************************************
- * Description : Incremental SyncÎ•º ÏúÑÌïú Primary KeyÍ∞Ä Îçî Ïù¥ÏÉÅ ÏàòÏã†ÎêòÏßÄ ÏïäÎäîÎã§.
+ * Description : Incremental Sync∏¶ ¿ß«— Primary Key∞° ¥ı ¿ÃªÛ ºˆΩ≈µ«¡ˆ æ ¥¬¥Ÿ.
  *               (Failback Slave -> Failback Master)
  *
  ******************************************************************************/
@@ -3217,7 +3226,7 @@ IDE_RC rpxReceiverApply::applySyncPKEnd(rpxReceiverApply *aApply, rpdXLog */*aXL
 
     IDE_WARNING(IDE_RP_0, RP_TRC_RA_NTC_SYNC_PK_END);
 
-    // Incremental Sync Primary Key EndÎ•º QueueÏóê Ï∂îÍ∞ÄÌïúÎã§.
+    // Incremental Sync Primary Key End∏¶ Queueø° √ﬂ∞°«—¥Ÿ.
     while(sSecond < RPU_REPLICATION_FAILBACK_PK_QUEUE_TIMEOUT)
     {
         IDE_TEST(aApply->mSenderInfo->addLastSyncPK(RP_SYNC_PK_END,
@@ -3239,7 +3248,7 @@ IDE_RC rpxReceiverApply::applySyncPKEnd(rpxReceiverApply *aApply, rpdXLog */*aXL
     IDE_TEST_RAISE(sSecond >= RPU_REPLICATION_FAILBACK_PK_QUEUE_TIMEOUT,
                    ERR_FAILBACK_PK_QUEUE_TIMEOUT_EXCEED);
 
-    // SenderInfoÍ∞Ä Îçî Ïù¥ÏÉÅ ÌïÑÏöîÌïòÏßÄ ÏïäÎã§.
+    // SenderInfo∞° ¥ı ¿ÃªÛ « ø‰«œ¡ˆ æ ¥Ÿ.
     aApply->mSenderInfo = NULL;
 
     return IDE_SUCCESS;
@@ -3255,7 +3264,7 @@ IDE_RC rpxReceiverApply::applySyncPKEnd(rpxReceiverApply *aApply, rpdXLog */*aXL
 }
 
 /******************************************************************************
- * Description : FailbackÏù¥ ÏôÑÎ£åÎêòÏóàÎã§.
+ * Description : Failback¿Ã øœ∑·µ«æ˙¥Ÿ.
  *               (Failback Master -> Failback Slave)
  *
  ******************************************************************************/
@@ -3265,8 +3274,8 @@ IDE_RC rpxReceiverApply::applyFailbackEnd(rpxReceiverApply *aApply, rpdXLog */*a
 
     IDE_WARNING(IDE_RP_0, RP_TRC_RA_NTC_FAILBACK_END);
 
-    // SenderÎ•º Í≤ÄÏÉâÌïòÏó¨ SenderInfoÎ•º ÏñªÎäîÎã§.
-    // Failback SlaveÍ∞Ä ÏóÜÏúºÎ©¥, Îã§Ïãú Failback Ï†àÏ∞®Î•º ÏàòÌñâÌï¥Ïïº ÌïúÎã§.
+    // Sender∏¶ ∞Àªˆ«œø© SenderInfo∏¶ æÚ¥¬¥Ÿ.
+    // Failback Slave∞° æ¯¿∏∏È, ¥ŸΩ√ Failback ¿˝¬˜∏¶ ºˆ«‡«ÿæﬂ «—¥Ÿ.
     IDU_FIT_POINT_RAISE( "rpxReceiverApply::applyFailbackEnd::Erratic::rpERR_ABORT_FAILBACK_SENDER_NOT_EXIST",
                          ERR_FAILBACK_SENDER_NOT_EXIST );
     IDE_TEST_RAISE( rpcManager::isAliveSender( aApply->mRepName ) != ID_TRUE,
@@ -3277,7 +3286,7 @@ IDE_RC rpxReceiverApply::applyFailbackEnd(rpxReceiverApply *aApply, rpdXLog */*a
     sSndrInfo = rpcManager::getSenderInfo(aApply->mRepName);
     IDE_TEST_RAISE( sSndrInfo == NULL, ERR_SENDER_INFO_NOT_EXIST );
 
-    // Failback SlaveÍ∞Ä ÏûàÏúºÎ©¥, SenderInfoÏóê Failback ÏôÑÎ£åÎ•º ÏÑ§Ï†ïÌïúÎã§.
+    // Failback Slave∞° ¿÷¿∏∏È, SenderInfoø° Failback øœ∑·∏¶ º≥¡§«—¥Ÿ.
     sSndrInfo->setPeerFailbackEnd(ID_TRUE);
 
     return IDE_SUCCESS;
@@ -3308,7 +3317,7 @@ IDE_RC rpxReceiverApply::applyFailbackEnd(rpxReceiverApply *aApply, rpdXLog */*a
 // Called By:
 //
 // Description:
-//    AckOnDML ÌîÑÎ°úÌÜ†ÏΩúÏùÑ Î∞õÏïòÏùÑ Í≤ΩÏö∞ 
+//    AckOnDML «¡∑Œ≈‰ƒ›¿ª πﬁæ“¿ª ∞ÊøÏ 
 //
 //===================================================================
 IDE_RC rpxReceiverApply::applyAckOnDML(rpxReceiverApply * aApply, rpdXLog * /*aXLog*/ )
@@ -3328,7 +3337,7 @@ IDE_RC rpxReceiverApply::applyAckOnDML(rpxReceiverApply * aApply, rpdXLog * /*aX
 // Called By:
 //
 // Description:
-//   Î¨¥ÏãúÌï¥ÎèÑ ÎêòÎäî XLog TypeÏù¥ ÎèÑÏ∞©Ìïú Í≤ΩÏö∞
+//   π´Ω√«ÿµµ µ«¥¬ XLog Type¿Ã µµ¬¯«— ∞ÊøÏ
 //
 //===================================================================
 IDE_RC rpxReceiverApply::applyIgnore(rpxReceiverApply */*aApply*/, rpdXLog */*aXLog*/ )
@@ -3350,8 +3359,8 @@ IDE_RC rpxReceiverApply::applyIgnore(rpxReceiverApply */*aApply*/, rpdXLog */*aX
 // Called By:
 //
 // Description:
-//   Ï≤òÎ¶¨Ìï† Ïàò ÏóÜÎäî TypeÏùò XLogÍ∞Ä ÎèÑÏ∞©Ìïú Í≤ΩÏö∞ ÏóêÎü¨Î•º ÏÑ§Ï†ïÌïòÍ≥†
-//   ÌõÑÏÜç ÎåÄÏ±ÖÏùÑ Ï≤òÎ¶¨ÌïúÎã§. (ÏûÑÏãúÎ°ú Ï£ΩÍ≤å ÎßåÎì§ÏóàÏùå - ÏàòÏ†ïÌï¥Ïïº Ìï®)
+//   √≥∏Æ«“ ºˆ æ¯¥¬ Type¿« XLog∞° µµ¬¯«— ∞ÊøÏ ø°∑Ø∏¶ º≥¡§«œ∞Ì
+//   »ƒº” ¥Î√•¿ª √≥∏Æ«—¥Ÿ. (¿”Ω√∑Œ ¡◊∞‘ ∏∏µÈæ˙¿Ω - ºˆ¡§«ÿæﬂ «‘)
 //
 //===================================================================
 IDE_RC rpxReceiverApply::applyNA(rpxReceiverApply */* aApply */, rpdXLog *aXLog)
@@ -3363,15 +3372,15 @@ IDE_RC rpxReceiverApply::applyNA(rpxReceiverApply */* aApply */, rpdXLog *aXLog)
 }
 
 /*
- *  Eager Repliaction ÏóêÏÑú receiver ÏóêÏÑú ÏûëÏóÖÏù¥ Ïã§Ìå® Ìï† Í≤ΩÏö∞Ïóê
- *  Ìï¥Îãπ transaction ÏùÑ commit ÏùÑ Î™ªÌïòÎèÑÎ°ù ÌïúÎã§.
- *  Í∑∏ Í¥ÄÎ†® Ï†ïÎ≥¥Îì§ÏùÑ receiver ÏóêÏÑú Ï†ÄÏû• ÌïòÍ≥† ÏûàÎã§Í∞Ä
- *  ack Î°ú Ìï¥Îãπ Ï†ïÎ≥¥Îì§ÏùÑ Ï†ÑÎã¨ÌïòÏó¨ Ï§ÄÎã§.
+ *  Eager Repliaction ø°º≠ receiver ø°º≠ ¿€æ˜¿Ã Ω«∆– «“ ∞ÊøÏø°
+ *  «ÿ¥Á transaction ¿ª commit ¿ª ∏¯«œµµ∑œ «—¥Ÿ.
+ *  ±◊ ∞¸∑√ ¡§∫∏µÈ¿ª receiver ø°º≠ ¿˙¿Â «œ∞Ì ¿÷¥Ÿ∞°
+ *  ack ∑Œ «ÿ¥Á ¡§∫∏µÈ¿ª ¿¸¥ﬁ«œø© ¡ÿ¥Ÿ.
  *
- *  - sync mode ÎèôÏûëÏãúÏóêÎäî Ïù¥ Ìï®ÏàòÍ∞Ä Ìò∏Ï∂úÎêòÏñ¥ÏÑúÎäî ÏïàÎêúÎã§.
- *    Ìï¥Îãπ transaction Ïù¥ ÌòÑÏû¨ ÏÇ¥ÏïÑ ÏûàÎäî TransactionÏù¥ ÏïÑÎãàÎØÄÎ°ú
- *    ( Ïù¥ÎØ∏ commit Îêú Îç∞Ïù¥ÌÑ∞Î•º Ï†ÅÏö© )
- *    Transaction Commit ÏùÑ Î™ªÌïòÎèÑÎ°ù ÌïòÎäîÍ≤ÉÏù¥ ÏùòÎØ∏Í∞Ä ÏóÜÎã§.
+ *  - sync mode µø¿€Ω√ø°¥¬ ¿Ã «‘ºˆ∞° »£√‚µ«æÓº≠¥¬ æ»µ»¥Ÿ.
+ *    «ÿ¥Á transaction ¿Ã «ˆ¿Á ªÏæ∆ ¿÷¥¬ Transaction¿Ã æ∆¥œπ«∑Œ
+ *    ( ¿ÃπÃ commit µ» µ•¿Ã≈Õ∏¶ ¿˚øÎ )
+ *    Transaction Commit ¿ª ∏¯«œµµ∑œ «œ¥¬∞Õ¿Ã ¿«πÃ∞° æ¯¥Ÿ.
  */
 void rpxReceiverApply::addAbortTx(smTID aTID, smSN aSN)
 {
@@ -3381,12 +3390,12 @@ void rpxReceiverApply::addAbortTx(smTID aTID, smSN aSN)
          ( aSN != SM_SN_NULL ) &&
          ( mReceiver->isEagerReceiver() == ID_TRUE ) )
     {
-        /* Clear Tx ListÏóêÏÑú Ìï¥Îãπ TIDÎ•º Ï†úÍ±∞ÌïúÎã§. */
+        /* Clear Tx Listø°º≠ «ÿ¥Á TID∏¶ ¡¶∞≈«—¥Ÿ. */
         sTxListIdx = mTransTbl->getTxListIdx(aTID);
         if(sTxListIdx < mClearTxCount)
         {
-            /* ACKÎ•º Ï†ÑÏÜ°Ìïú ÌõÑÏóêÎäî sTxListIdxÏùò Í∞íÏù¥ Ïú†Ìö®ÌïòÏßÄ ÏïäÏúºÎØÄÎ°ú,
-             * Transaction IDÎ•º Î∞òÎìúÏãú ÌôïÏù∏Ìï¥Ïïº ÌïúÎã§.
+            /* ACK∏¶ ¿¸º€«— »ƒø°¥¬ sTxListIdx¿« ∞™¿Ã ¿Ø»ø«œ¡ˆ æ ¿∏π«∑Œ,
+             * Transaction ID∏¶ π›µÂΩ√ »Æ¿Œ«ÿæﬂ «—¥Ÿ.
              */
             if(aTID == mClearTxList[sTxListIdx].mTID)
             {
@@ -3396,7 +3405,7 @@ void rpxReceiverApply::addAbortTx(smTID aTID, smSN aSN)
             }
         }
 
-        /* Abort TxÎ°ú ÏÑ§Ï†ïÌïòÍ≥†, Abort Tx ListÏóê Ï∂îÍ∞ÄÌïúÎã§. */
+        /* Abort Tx∑Œ º≥¡§«œ∞Ì, Abort Tx Listø° √ﬂ∞°«—¥Ÿ. */
         mTransTbl->setAbortInfo(aTID, ID_TRUE, aSN);
         mTransTbl->setTxListIdx(aTID, mAbortTxCount);
         mAbortTxList[mAbortTxCount].mTID = aTID;
@@ -3419,12 +3428,12 @@ void rpxReceiverApply::addClearTx(smTID aTID, smSN aSN)
     if ( ( mTransTbl->getAbortFlag(aTID) == ID_TRUE ) &&
          ( mReceiver->isEagerReceiver() == ID_TRUE ) )
     {
-        /* Abort Tx ListÏóêÏÑú Ìï¥Îãπ TIDÎ•º Ï†úÍ±∞ÌïúÎã§. */
+        /* Abort Tx Listø°º≠ «ÿ¥Á TID∏¶ ¡¶∞≈«—¥Ÿ. */
         sTxListIdx = mTransTbl->getTxListIdx(aTID);
         if(sTxListIdx < mAbortTxCount)
         {
-            /* ACKÎ•º Ï†ÑÏÜ°Ìïú ÌõÑÏóêÎäî sTxListIdxÏùò Í∞íÏù¥ Ïú†Ìö®ÌïòÏßÄ ÏïäÏúºÎØÄÎ°ú,
-             * Transaction IDÎ•º Î∞òÎìúÏãú ÌôïÏù∏Ìï¥Ïïº ÌïúÎã§.
+            /* ACK∏¶ ¿¸º€«— »ƒø°¥¬ sTxListIdx¿« ∞™¿Ã ¿Ø»ø«œ¡ˆ æ ¿∏π«∑Œ,
+             * Transaction ID∏¶ π›µÂΩ√ »Æ¿Œ«ÿæﬂ «—¥Ÿ.
              */
             if(aTID == mAbortTxList[sTxListIdx].mTID)
             {
@@ -3434,7 +3443,7 @@ void rpxReceiverApply::addClearTx(smTID aTID, smSN aSN)
             }
         }
 
-        /* Clear TxÎ°ú ÏÑ§Ï†ïÌïòÍ≥†, Clear Tx ListÏóê Ï∂îÍ∞ÄÌïúÎã§. */
+        /* Clear Tx∑Œ º≥¡§«œ∞Ì, Clear Tx Listø° √ﬂ∞°«—¥Ÿ. */
         mTransTbl->setAbortInfo(aTID, ID_FALSE, SM_SN_NULL);
         mTransTbl->setTxListIdx(aTID, mClearTxCount);
         mClearTxList[mClearTxCount].mTID = aTID;
@@ -3500,7 +3509,7 @@ IDE_RC rpxReceiverApply::buildXLogAck( rpdXLog * aXLog, rpXLogAck * aAck )
 
     switch ( aXLog->mType )
     {
-        case RP_X_HANDSHAKE:   // PROJ-1442 Replication Online Ï§ë DDL ÌóàÏö©
+        case RP_X_HANDSHAKE:   // PROJ-1442 Replication Online ¡ﬂ DDL «„øÎ
             IDE_WARNING( IDE_RP_0, RP_TRC_RA_NTC_HANDSHAKE_XLOG );
             aAck->mAckType = RP_X_HANDSHAKE_ACK;
             break;
@@ -3514,10 +3523,45 @@ IDE_RC rpxReceiverApply::buildXLogAck( rpdXLog * aXLog, rpXLogAck * aAck )
             aAck->mAckType = RP_X_DDL_REPLICATE_HANDSHAKE_ACK;
             break;
 
+        case RP_X_SYNC_END:
+            aAck->mAckType = RP_X_SYNC_END_ACK;
+            aAck->mAbortTxCount      = 0;
+            aAck->mClearTxCount      = 0;
+            aAck->mRestartSN         = SM_SN_NULL;
+            aAck->mLastCommitSN      = SM_SN_NULL;
+            aAck->mLastArrivedSN     = SM_SN_NULL;
+            aAck->mLastProcessedSN   = SM_SN_NULL;
+            aAck->mAbortTxList       = NULL;
+            aAck->mClearTxList       = NULL;
+            aAck->mFlushSN           = SM_SN_NULL;
+            IDE_CONT( NORMAL_EXIT );
+
+        case RP_X_TRUNCATE:
+            aAck->mAckType = RP_X_TRUNCATE_ACK;
+            aAck->mAbortTxCount      = 0;
+            aAck->mClearTxCount      = 0;
+            aAck->mRestartSN         = SM_SN_NULL;
+            aAck->mLastCommitSN      = SM_SN_NULL;
+            aAck->mLastArrivedSN     = SM_SN_NULL;
+            aAck->mLastProcessedSN   = SM_SN_NULL;
+            aAck->mAbortTxList       = NULL;
+            aAck->mClearTxList       = NULL;
+            aAck->mFlushSN           = SM_SN_NULL;
+            IDE_CONT( NORMAL_EXIT );
+
+        case RP_X_XA_START_REQ:
+            aAck->mAckType = RP_X_XA_START_REQ_ACK;
+            break;
+
+        case RP_X_XA_PREPARE_REQ:
+        case RP_X_XA_PREPARE:
+            aAck->mAckType = RP_X_ACK_WITH_TID;
+            break;
+
         default :
             if ( mReceiver->isEagerReceiver() == ID_TRUE )
             {
-                aAck->mAckType = RP_X_ACK_EAGER;
+                aAck->mAckType = RP_X_ACK_WITH_TID;
             }
             else
             {
@@ -3549,8 +3593,8 @@ IDE_RC rpxReceiverApply::buildXLogAck( rpdXLog * aXLog, rpXLogAck * aAck )
     aAck->mAbortTxList       = mAbortTxList;
     aAck->mClearTxList       = mClearTxList;
     aAck->mFlushSN           = sLocalFlushedRemoteSN;
-    
-    // Incremental Sync ÏãúÏóê aXLog->mSNÏù¥ 0Ïù¥ Îê† Ïàò ÏûàÎäîÎç∞, Î°úÍ∑∏Ïùò SNÏù¥ ÏïÑÎãàÎØÄÎ°ú Î¨¥ÏùòÎØ∏ÌïòÎã§.
+
+    // Incremental Sync Ω√ø° aXLog->mSN¿Ã 0¿Ã µ… ºˆ ¿÷¥¬µ•, ∑Œ±◊¿« SN¿Ã æ∆¥œπ«∑Œ π´¿«πÃ«œ¥Ÿ.
     if ( aXLog->mSN == 0 )
     {
         aAck->mLastArrivedSN   = SM_SN_NULL;
@@ -3561,8 +3605,10 @@ IDE_RC rpxReceiverApply::buildXLogAck( rpdXLog * aXLog, rpXLogAck * aAck )
         aAck->mLastArrivedSN     = aXLog->mSN;
         aAck->mLastProcessedSN   = aXLog->mSN;
     }
-    
+
     aAck->mTID = aXLog->mTID;
+
+    RP_LABEL(NORMAL_EXIT);
 
     return IDE_SUCCESS;
 
@@ -3617,8 +3663,8 @@ void rpxReceiverApply::checkAndResetCounter( void )
     }
 }
 
-/*BUG-16807 ÎïåÎ¨∏Ïóê Ïä§Î†àÎìú ÌïòÎÇòÎ°ú ÏàòÌñâÌïòÍ≤å ÌïòÍ∏∞ÏúÑÌï¥ applyÎ•º ÎßåÎì§ÏóàÏùå*/
-/* PROJ-1915 aXLog->mSkip == ID_TRUE off-line ÏÑºÎçîÍ∞Ä Ïù¥ÎØ∏ Î∞òÏòÅÌïú Î°úÍ∑∏Î•º Ïä§ÌÇµ ÌïúÎã§. */
+/*BUG-16807 ∂ßπÆø° Ω∫∑πµÂ «œ≥™∑Œ ºˆ«‡«œ∞‘ «œ±‚¿ß«ÿ apply∏¶ ∏∏µÈæ˙¿Ω*/
+/* PROJ-1915 aXLog->mSkip == ID_TRUE off-line ºæ¥ı∞° ¿ÃπÃ π›øµ«— ∑Œ±◊∏¶ Ω∫≈µ «—¥Ÿ. */
 IDE_RC rpxReceiverApply::apply( rpdXLog * aXLog )
 {
     IDE_DASSERT(aXLog->mType != RP_X_ACK);
@@ -3633,9 +3679,9 @@ IDE_RC rpxReceiverApply::apply( rpdXLog * aXLog )
     else
     {
         /*
-         * ÏÑ±Îä•Ï∏°Ï†ï Ïä§ÌÅ¨Î¶ΩÌä∏ AT-P26ÏóêÏÑú receiverÏùò Î∞òÏòÅÏóÜÏù¥
-         * Î°úÍ∑∏Î∂ÑÏÑù ÏãúÍ∞ÑÍ≥º ÎÑ§Ìä∏ÏõåÌÅ¨ Ï†ÑÏÜ° ÏãúÍ∞ÑÎßåÏùÑ Ï∏°Ï†ïÌï† Îïå,
-         * receiverÏóê Î∞òÏòÅÏù¥ Îêú Í≤ÉÏúºÎ°ú Ï∑®Í∏âÌïòÍ∏∞ ÏúÑÌï¥ Ï¶ùÍ∞ÄÏãúÌÇ®Îã§.
+         * º∫¥…√¯¡§ Ω∫≈©∏≥∆Æ AT-P26ø°º≠ receiver¿« π›øµæ¯¿Ã
+         * ∑Œ±◊∫–ºÆ Ω√∞£∞˙ ≥◊∆Æøˆ≈© ¿¸º€ Ω√∞£∏∏¿ª √¯¡§«“ ∂ß,
+         * receiverø° π›øµ¿Ã µ» ∞Õ¿∏∑Œ √Î±ﬁ«œ±‚ ¿ß«ÿ ¡ı∞°Ω√≈≤¥Ÿ.
          */
         if ( ( aXLog->mType == RP_X_INSERT ) || ( aXLog->mType == RP_X_SYNC_INSERT ) )
         {
@@ -3654,6 +3700,7 @@ IDE_RC rpxReceiverApply::apply( rpdXLog * aXLog )
     switch ( aXLog->mType )
     {
         case RP_X_COMMIT:
+        case RP_X_XA_COMMIT:
         case RP_X_ABORT:
             mLastCommitSN = aXLog->mSN;
             break;
@@ -3791,6 +3838,11 @@ IDE_RC rpxReceiverApply::applySyncStart( rpxReceiverApply * aApply,
                                                      &(aApply->mRemoteTable) )
               != IDE_SUCCESS);
 
+    if ( aApply->mReceiver->mStartMode == RP_RECEIVER_SYNC_CONDITIONAL )
+    {
+        IDE_TEST ( aApply->applyUpdateConditionAct( aApply, ID_TRUE ) != IDE_SUCCESS );
+    }
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -3798,13 +3850,120 @@ IDE_RC rpxReceiverApply::applySyncStart( rpxReceiverApply * aApply,
     return IDE_FAILURE;
 }
 
-IDE_RC rpxReceiverApply::applyRebuildIndices( rpxReceiverApply * aApply,
-                                              rpdXLog * /*aXLog*/ )
+IDE_RC rpxReceiverApply::applySyncEnd( rpxReceiverApply * aApply, 
+                                       rpdXLog * /*aXLog*/ )
+{
+    IDE_TEST ( aApply->applyRebuildIndices( aApply ) != IDE_SUCCESS );
+
+    if ( aApply->mReceiver->mStartMode == RP_RECEIVER_SYNC_CONDITIONAL )
+    {
+        IDE_TEST ( aApply->applyUpdateConditionAct( aApply, ID_FALSE ) != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+IDE_RC rpxReceiverApply::applyUpdateConditionAct( rpxReceiverApply    * aApply, 
+                                                  idBool                aIsConditionSynced )
 {
     smiTrans sTrans;
     smiStatement sStmt;
     smiStatement * sRootStmt;
     smSCN sDummySCN = SM_SCN_INIT;
+    UInt sStage = 0;
+    rpdMetaItem * sMetaItem = NULL;
+    SInt i;
+    UInt j;
+    rpdMeta       * sMeta = &(aApply->mReceiver->mMeta);
+
+    IDE_TEST( sTrans.initialize() != IDE_SUCCESS );
+    sStage = 1;
+
+    IDE_TEST( sTrans.begin( &sRootStmt,
+                                  aApply->mStatistics,
+                                  ( SMI_ISOLATION_NO_PHANTOM     |
+                                    SMI_TRANSACTION_NORMAL       |
+                                    SMI_TRANSACTION_REPL_NONE |
+                                    SMI_COMMIT_WRITE_WAIT ) )
+                    != IDE_SUCCESS );
+    sStage = 2;
+
+    IDE_TEST( sStmt.begin( sTrans.getStatistics(),
+                           sRootStmt,
+                           SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR ) != IDE_SUCCESS );
+    sStage = 3;
+
+    IDU_FIT_POINT( "rpxReceiverApply::applyUpdateConditionAct::stage3" );
+    
+    for ( i = 0; i < sMeta->mReplication.mItemCount; i++ )
+    {
+        for ( j = 0; j < aApply->mSyncTableNumber; j++ )
+        {
+            IDE_TEST( aApply->mReceiver->searchRemoteTable( &sMetaItem, 
+                                                            aApply->mRemoteTable[j].mItem.mTableOID )
+                      != IDE_SUCCESS );
+            IDE_TEST_RAISE( sMetaItem == NULL, ERR_NOT_EXIST_TABLE);
+
+            if ( sMeta->mItemsOrderByTableOID[i]->mItem.mTableOID == sMetaItem->mItem.mTableOID )
+            {
+                sMetaItem->mItem.mIsConditionSynced = aIsConditionSynced;
+                IDE_TEST( rpdCatalog::updateConditionalSyncedWithOID( &sStmt,
+                                                                      aApply->mRepName,
+                                                                      sMetaItem->mItem.mTableOID,
+                                                                      aIsConditionSynced )
+                          != IDE_SUCCESS);
+                break;
+            }
+        }
+    }
+
+    IDE_TEST( sStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    sStage = 2;
+
+    IDE_TEST( sTrans.commit( &sDummySCN ) != IDE_SUCCESS );
+    sStage = 1;
+
+    sStage = 0;
+    IDE_TEST( sTrans.destroy( NULL ) != IDE_SUCCESS );
+
+
+    return IDE_SUCCESS;
+    IDE_EXCEPTION(ERR_NOT_EXIST_TABLE);
+    {
+        IDE_SET(ideSetErrorCode(rpERR_ABORT_NOT_EXIST_TABLE));
+    }
+    IDE_EXCEPTION_END;
+
+    IDE_ERRLOG(IDE_RP_0);
+    IDE_PUSH();
+
+    switch ( sStage )
+    {
+        case 3:
+            (void)sStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+            /* fall through */
+        case 2:
+            IDE_ASSERT( sTrans.rollback() == IDE_SUCCESS );
+            /* fall through */
+        case 1:
+            (void)sTrans.destroy( NULL );
+        default:
+            break;
+    }
+
+    IDE_POP();
+
+    return IDE_FAILURE;   
+}
+
+IDE_RC rpxReceiverApply::applyRebuildIndices( rpxReceiverApply * aApply )
+{
+    smiTrans sTrans;
+    smiStatement sStmt;
+    smiStatement * sRootStmt;
     UInt sStage = 0;
     rpdMetaItem * sLocalTable = NULL;
     const void  * sTable = NULL;
@@ -3893,10 +4052,8 @@ IDE_RC rpxReceiverApply::applyRebuildIndices( rpxReceiverApply * aApply,
                                                      sSCN,
                                                      SMI_TBSLV_DDL_DML,
                                                      SMI_TABLE_LOCK_IX,
-                                                     ((smiGetDDLLockTimeOut() == -1) ?
-                                                      ID_ULONG_MAX :
-                                                      smiGetDDLLockTimeOut()*1000000),                           
-                                                      ID_FALSE )
+                                                     smiGetDDLLockTimeOut(sStmt.getTrans()),
+                                                     ID_FALSE )
                           != IDE_SUCCESS );
             }
             else
@@ -3910,9 +4067,7 @@ IDE_RC rpxReceiverApply::applyRebuildIndices( rpxReceiverApply * aApply,
                                                  sSCN,
                                                  SMI_TBSLV_DDL_DML,
                                                  SMI_TABLE_LOCK_X,
-                                                 ((smiGetDDLLockTimeOut() == -1) ?
-                                                  ID_ULONG_MAX :
-                                                  smiGetDDLLockTimeOut()*1000000),
+                                                 smiGetDDLLockTimeOut(sStmt.getTrans()),
                                                  ID_FALSE )
                       != IDE_SUCCESS );
             
@@ -3937,11 +4092,11 @@ IDE_RC rpxReceiverApply::applyRebuildIndices( rpxReceiverApply * aApply,
             else
             {
                 IDE_TEST( qciMisc::makeAndSetQcmPartitionInfo(
-                                                              &sStmt,
-                                                              sTableInfo[sNewCachedMetaCount]->partitionID,
-                                                              (smOID)sLocalTable->mItem.mTableOID,
-                                                              (qciTableInfo *)rpdCatalog::rpdGetTableTempInfo( sTableHandle ) )
-                          != IDE_SUCCESS );
+                        &sStmt,
+                        sTableInfo[sNewCachedMetaCount]->partitionID,
+                        (smOID)sLocalTable->mItem.mTableOID,
+                        (qciTableInfo *)rpdCatalog::rpdGetTableTempInfo( sTableHandle ) )
+                    != IDE_SUCCESS );
 
             }
             ideLog::log(IDE_RP_0, "Table OID: %"ID_INT64_FMT" End rebuild index", sMetaItem->mItem.mTableOID );
@@ -3954,12 +4109,12 @@ IDE_RC rpxReceiverApply::applyRebuildIndices( rpxReceiverApply * aApply,
             /* nothing to do */
         }
     }
-
-    sStage = 2;
+    
     IDE_TEST( sStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    sStage = 2;
 
     sStage = 1;
-    IDE_TEST( sTrans.commit( &sDummySCN ) != IDE_SUCCESS );
+    IDE_TEST( sTrans.commit() != IDE_SUCCESS );
 
     sStage = 0;
     IDE_TEST( sTrans.destroy( NULL ) != IDE_SUCCESS );
@@ -4038,6 +4193,34 @@ IDE_RC rpxReceiverApply::applyRebuildIndices( rpxReceiverApply * aApply,
         default:
             break;
     }
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpxReceiverApply::applyTruncate( rpxReceiverApply * aApply, rpdXLog * aXLog )
+{
+    rpdMetaItem    * sMetaItem = NULL;
+    
+    IDE_TEST( aApply->mReceiver->searchRemoteTable( &sMetaItem, aXLog->mTableOID )
+              != IDE_SUCCESS );
+    IDE_TEST_RAISE( sMetaItem == NULL, ERR_NOT_EXIST_TABLE );
+
+    IDE_TEST( executeTruncate( aApply->mReceiver, sMetaItem, ID_FALSE ) != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NOT_EXIST_TABLE );
+    {
+        ideLog::log( IDE_RP_0, RP_TRC_RA_ERR_INVALID_XLOG,
+                     aXLog->mType,
+                     aXLog->mTID,
+                     aXLog->mSN,
+                     aXLog->mTableOID );
+
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_NOT_EXIST_TABLE ) );
+    }
+
+    IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 }
@@ -4129,8 +4312,6 @@ IDE_RC rpxReceiverApply::runDML( smiStatement       * aRootSmiStmt,
                                  SLong              * aRowCount,
                                  rpApplyFailType    * aFailType )
 {
-    smiStatement        sSmiStmt;
-    idBool              sIsBeginStmt = ID_FALSE;
     SLong               sRowCount = 0;
 
     *aFailType = RP_APPLY_FAIL_NONE;
@@ -4151,21 +4332,14 @@ IDE_RC rpxReceiverApply::runDML( smiStatement       * aRootSmiStmt,
 
     IDE_EXCEPTION_END;
 
-    IDE_PUSH();
-
-    if ( sIsBeginStmt == ID_TRUE )
-    {
-        (void)sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
-    }
-    else
-    {
-        /* do nothing */
-    }
-
     if ( ( ideGetErrorCode() == smERR_ABORT_NOT_ENOUGH_SPACE ) &&
          ( mReceiver->isEagerReceiver() == ID_FALSE ) )
     {
         *aFailType = RP_APPLY_FAIL_INTERNAL;
+    }
+    else if ( RP_IS_CORRUPTED_PAGE() == ID_TRUE )
+    {
+        *aFailType = RP_APPLY_FAIL_BY_CORRUPTED_PAGE;
     }
     else
     {
@@ -4173,10 +4347,10 @@ IDE_RC rpxReceiverApply::runDML( smiStatement       * aRootSmiStmt,
              ( ideGetErrorCode() == smERR_ABORT_smcExceedLockTimeWait ) )
         {
             /* 
-             * conflict resolution txÏù¥ Î®ºÏ†Ä lockÏùÑ Ïû°ÏïÑ Ïã§Ìå®ÌñàÎã§Î©¥,
-             * ÏúÑÏóêÏÑú Îã§ÏùåÏùò ÏûëÏóÖÏùÑ ÌïúÎã§.
-             * 1. conflict resolution txÏù¥ ÏûàÏùÑ Í≤ΩÏö∞, Ïù¥ ÏûëÏóÖÏùÑ conflict resolution txÏóê ÎÑ£Í≥† Ïû¨ÏãúÎèÑ
-             * 2. conflict  resolution txÏù¥ ÏóÜÏúºÎ©¥, Îã§Î•∏ txÍ∞Ä conflict resolutionÏ≤òÎ¶¨Ï§ëÏù∏Í≤ÉÏù¥ÎØÄÎ°ú Ïã§Ìå®Ï≤òÎ¶¨
+             * conflict resolution tx¿Ã ∏’¿˙ lock¿ª ¿‚æ∆ Ω«∆–«ﬂ¥Ÿ∏È,
+             * ¿ßø°º≠ ¥Ÿ¿Ω¿« ¿€æ˜¿ª «—¥Ÿ.
+             * 1. conflict resolution tx¿Ã ¿÷¿ª ∞ÊøÏ, ¿Ã ¿€æ˜¿ª conflict resolution txø° ≥÷∞Ì ¿ÁΩ√µµ
+             * 2. conflict  resolution tx¿Ã æ¯¿∏∏È, ¥Ÿ∏• tx∞° conflict resolution√≥∏Æ¡ﬂ¿Œ∞Õ¿Ãπ«∑Œ Ω«∆–√≥∏Æ
              */
             *aFailType = RP_APPLY_FAIL_BY_CONFLICT_RESOLUTION_TX;
         }
@@ -4186,8 +4360,6 @@ IDE_RC rpxReceiverApply::runDML( smiStatement       * aRootSmiStmt,
         }
     }
 
-    IDE_POP();
-
     return IDE_FAILURE;
 }
 
@@ -4196,7 +4368,8 @@ IDE_RC rpxReceiverApply::getCheckRowExistenceAndResolutionNeed( smiTrans        
                                                                 smiRange        * aKeyRange,
                                                                 rpdXLog         * aXLog,
                                                                 idBool          * aCheckRowExistence,
-                                                                idBool          * aIsResolutionNeed )
+                                                                idBool          * aIsResolutionNeed,
+                                                                rpApplyFailType * aFailType )
 {
     idBool      sIsConflict = ID_FALSE;
     idBool      sCheckRowExistence = ID_FALSE;
@@ -4229,21 +4402,28 @@ IDE_RC rpxReceiverApply::getCheckRowExistenceAndResolutionNeed( smiTrans        
 
     if ( aMetaItem->mTsFlag != NULL )
     {
-        IDE_TEST( mSmExecutor.compareInsertImage( aSmiTrans,
-                                                  aXLog,
-                                                  aMetaItem,
-                                                  aKeyRange,
-                                                  &sIsConflict,
-                                                  aMetaItem->mTsFlag )
-                  != IDE_SUCCESS);
-
-        if ( sIsConflict != ID_TRUE )
+        if ( mSmExecutor.compareInsertImage( aSmiTrans,
+                                              aXLog,
+                                              aMetaItem,
+                                              aKeyRange,
+                                              &sIsConflict,
+                                              aMetaItem->mTsFlag,
+                                              aFailType )
+             != IDE_SUCCESS )
         {
-            sIsResolutionNeed = ID_TRUE;
+          
+            IDE_TEST( *aFailType != RP_APPLY_FAIL_BY_CORRUPTED_PAGE ) ;
         }
         else
         {
-            IDE_SET( ideSetErrorCode( rpERR_IGNORE_TIMESTAMP_INSERT_CONFLICT ) );
+            if ( sIsConflict != ID_TRUE )
+            {
+                sIsResolutionNeed = ID_TRUE;
+            }
+            else
+            {
+                IDE_SET( ideSetErrorCode( rpERR_IGNORE_TIMESTAMP_INSERT_CONFLICT ) );
+            }
         }
     }
     else
@@ -4290,7 +4470,7 @@ IDE_RC rpxReceiverApply::insertReplaceSQL( rpdMetaItem      * aLocalMetaItem,
     sReplLockTimeout = sTrans->getReplTransLockTimeout();
     IDE_TEST( sTrans->setReplTransLockTimeout( 0 ) != IDE_SUCCESS );
 
-    /* Delete + InsertÎ•º Ï†ÅÏö©ÌïòÍ∏∞ Ï†ÑÏóê SavepointÎ•º Îëê Í∞ú ÏÑ§Ï†ïÌïúÎã§. */
+    /* Delete + Insert∏¶ ¿˚øÎ«œ±‚ ¿¸ø° Savepoint∏¶ µŒ ∞≥ º≥¡§«—¥Ÿ. */
     if ( aSPName != NULL )
     {
         IDE_TEST_RAISE( sTrans->savepoint( aSPName ) != IDE_SUCCESS, ERR_SET_SVP );
@@ -4309,7 +4489,7 @@ IDE_RC rpxReceiverApply::insertReplaceSQL( rpdMetaItem      * aLocalMetaItem,
     sColCnt = aXLog->mColCnt;
     aXLog->mPKColCnt = aLocalMetaItem->mPKColCount;
     aXLog->mColCnt   = 0;
-
+          
     if ( mSmExecutor.executeDelete( sTrans,
                                     aXLog,
                                     aLocalMetaItem,
@@ -4319,11 +4499,11 @@ IDE_RC rpxReceiverApply::insertReplaceSQL( rpdMetaItem      * aLocalMetaItem,
                                     aCheckRowExistence )
          != IDE_SUCCESS )
     {
-        /* mPKColCntÏôÄ mColCntÎ•º Î≥µÏõêÌïúÎã§. */
+        /* mPKColCntøÕ mColCnt∏¶ ∫πø¯«—¥Ÿ. */
         aXLog->mPKColCnt = 0;
         aXLog->mColCnt   = sColCnt;
 
-        IDE_TEST( *aFailType == RP_APPLY_FAIL_INTERNAL );
+        IDE_TEST( *aFailType == RP_APPLY_FAIL_INTERNAL ); 
         IDE_CONT( ERR_PASS );
     }
     else
@@ -4345,7 +4525,7 @@ IDE_RC rpxReceiverApply::insertReplaceSQL( rpdMetaItem      * aLocalMetaItem,
                  aFailType )
          != IDE_SUCCESS )
     {
-        IDE_TEST( *aFailType == RP_APPLY_FAIL_INTERNAL );
+        IDE_TEST( *aFailType == RP_APPLY_FAIL_INTERNAL ); 
     }
     else
     {
@@ -4403,14 +4583,15 @@ IDE_RC rpxReceiverApply::insertReplaceSQL( rpdMetaItem      * aLocalMetaItem,
 
 void rpxReceiverApply::printInsertErrLog( rpdMetaItem   * aMetaItem,
                                           rpdMetaItem   * aMetaItemForPK,
-                                          rpdXLog       * aXLog )
+                                          rpdXLog       * aXLog,
+                                          rpApplyFailType aFailType )
 {
     RP_CONFLICT_ERRLOG2();
 
     if ( IDE_TRC_RP_3 != 0 )
     {
-        ideLogEntry sLog( IDE_RP_3 ); // insertErrLogÏóêÏÑú Î≥µÏû°ÌïòÍ∏∞ ÎïåÎ¨∏Ïóê ÏÉÅÏúÑÏóêÏÑú open,closeÎ•º Ìï®. more safe
-        (void)insertErrLog( sLog, aMetaItem, aXLog );
+        ideLogEntry sLog( IDE_RP_3 ); // insertErrLogø°º≠ ∫π¿‚«œ±‚ ∂ßπÆø° ªÛ¿ßø°º≠ open,close∏¶ «‘. more safe
+        (void)insertErrLog( sLog, aMetaItem, aXLog, aFailType );
         (void)sLog.write();
     }
     else
@@ -4421,7 +4602,7 @@ void rpxReceiverApply::printInsertErrLog( rpdMetaItem   * aMetaItem,
     if ( IDE_TRC_RP_CONFLICT_3 != 0 )
     {
         ideLogEntry sLog( IDE_RP_CONFLICT_3 );
-        (void)insertErrLog( sLog, aMetaItem, aXLog );
+        (void)insertErrLog( sLog, aMetaItem, aXLog, aFailType );
         (void)sLog.write();
 
         mTransTbl->setIsConflictFlag( aXLog->mTID, ID_TRUE );
@@ -4463,20 +4644,22 @@ void rpxReceiverApply::printInsertErrLog( rpdMetaItem   * aMetaItem,
 void rpxReceiverApply::printUpdateErrLog( rpdMetaItem   * aMetaItem,
                                           rpdMetaItem   * aMetaItemForPK,
                                           rpdXLog       * aXLog,
-                                          idBool          aCompareBeforeImage )
+                                          idBool          aCompareBeforeImage,
+                                          rpApplyFailType aFailType )
 {
     RP_CONFLICT_ERRLOG2();
 
     if ( IDE_TRC_RP_3 != 0 )
     {
-        ideLogEntry sLog( IDE_RP_3 ); // insertErrLogÏóêÏÑú Î≥µÏû°ÌïòÍ∏∞ ÎïåÎ¨∏Ïóê ÏÉÅÏúÑÏóêÏÑú open,closeÎ•º Ìï®. more safe
+        ideLogEntry sLog( IDE_RP_3 ); // insertErrLogø°º≠ ∫π¿‚«œ±‚ ∂ßπÆø° ªÛ¿ßø°º≠ open,close∏¶ «‘. more safe
 
         /* BUG-36555 : Before image logging */
         (void)updateErrLog( sLog,
                             aMetaItem, 
                             aMetaItemForPK,
                             aXLog, 
-                            aCompareBeforeImage );
+                            aCompareBeforeImage,
+                            aFailType );
         (void)sLog.write();
     }
     else
@@ -4492,7 +4675,8 @@ void rpxReceiverApply::printUpdateErrLog( rpdMetaItem   * aMetaItem,
                             aMetaItem, 
                             aMetaItemForPK,
                             aXLog, 
-                            aCompareBeforeImage );
+                            aCompareBeforeImage,
+                            aFailType );
         (void)sLog.write();
 
         mTransTbl->setIsConflictFlag( aXLog->mTID, ID_TRUE );
@@ -4532,7 +4716,8 @@ void rpxReceiverApply::printUpdateErrLog( rpdMetaItem   * aMetaItem,
 }
 
 void rpxReceiverApply::printDeleteErrLog( rpdMetaItem    * aMetaItem,
-                                          rpdXLog        * aXLog )
+                                          rpdXLog        * aXLog,
+                                          rpApplyFailType  aFailType )
 {
     if ( mSmExecutor.getDeleteRowCount() <= 1 )
     {
@@ -4540,8 +4725,8 @@ void rpxReceiverApply::printDeleteErrLog( rpdMetaItem    * aMetaItem,
 
         if ( IDE_TRC_RP_3 != 0 )
         {
-            ideLogEntry sLog( IDE_RP_3 ); // insertErrLogÏóêÏÑú Î≥µÏû°ÌïòÍ∏∞ ÎïåÎ¨∏Ïóê ÏÉÅÏúÑÏóêÏÑú open,closeÎ•º Ìï®. more safe
-            (void)deleteErrLog( sLog, aMetaItem, aXLog );
+            ideLogEntry sLog( IDE_RP_3 ); // insertErrLogø°º≠ ∫π¿‚«œ±‚ ∂ßπÆø° ªÛ¿ßø°º≠ open,close∏¶ «‘. more safe
+            (void)deleteErrLog( sLog, aMetaItem, aXLog, aFailType );
             (void)sLog.write();
         }
         else
@@ -4552,7 +4737,7 @@ void rpxReceiverApply::printDeleteErrLog( rpdMetaItem    * aMetaItem,
         if ( IDE_TRC_RP_CONFLICT_3 != 0 )
         {
             ideLogEntry sLog( IDE_RP_CONFLICT_3 );
-            (void)deleteErrLog( sLog, aMetaItem, aXLog );
+            (void)deleteErrLog( sLog, aMetaItem, aXLog, aFailType );
             (void)sLog.write();
 
             mTransTbl->setIsConflictFlag( aXLog->mTID, ID_TRUE );
@@ -4601,6 +4786,36 @@ void rpxReceiverApply::printDeleteErrLog( rpdMetaItem    * aMetaItem,
         (void)sLog.write();
     }
 
+}
+void rpxReceiverApply::printLobErrLog( rpdMetaItem   * aMetaItem,
+                                       rpdXLog       * aXLog,
+                                       rpApplyFailType aFailType )
+{
+    RP_CONFLICT_ERRLOG2();
+
+    if ( IDE_TRC_RP_3 != 0 )
+    {
+        ideLogEntry sLog( IDE_RP_3 ); // ªÛ¿ßø°º≠ open,close∏¶ «‘. more safe
+        (void)lobErrLog( sLog, aMetaItem, aXLog, aFailType );
+        (void)sLog.write();
+    }
+    else
+    {
+        /* do nothing */
+    }
+
+    if ( IDE_TRC_RP_CONFLICT_3 != 0 )
+    {
+        ideLogEntry sLog( IDE_RP_CONFLICT_3 );
+        (void)lobErrLog( sLog, aMetaItem, aXLog, aFailType );
+        (void)sLog.write();
+
+        mTransTbl->setIsConflictFlag( aXLog->mTID, ID_TRUE );
+    }
+    else
+    {
+        /* do nothing */
+    }
 }
 
 IDE_RC rpxReceiverApply::insertSQL( smiTrans    * aSmiTrans,
@@ -4653,22 +4868,24 @@ IDE_RC rpxReceiverApply::insertSQL( smiTrans    * aSmiTrans,
 
             if ( sFailType == RP_APPLY_FAIL_BY_CONFLICT )
             {
-                /* conflict Ï≤òÎ¶¨ */
+                /* conflict √≥∏Æ */
                 IDE_TEST( getKeyRange( aMetaItem, 
                                        &sKeyRange, 
                                        aXLog->mACols, 
                                        ID_FALSE )
                           != IDE_SUCCESS ); 
 
-                IDE_TEST( getCheckRowExistenceAndResolutionNeed( aSmiTrans,
+                IDU_FIT_POINT( "rpxReceiverApply::insertSQL::corrupt");
+                IDE_TEST( getCheckRowExistenceAndResolutionNeed( aSmiTrans, 
                                                                  aMetaItem,
                                                                  &sKeyRange,
                                                                  aXLog,
                                                                  &sCheckRowExistence,
-                                                                 &sIsResolutionNeed )
+                                                                 &sIsResolutionNeed,
+                                                                 &sFailType )
                           != IDE_SUCCESS );
 
-                if ( sIsResolutionNeed == ID_TRUE )
+                if ( sIsResolutionNeed == ID_TRUE ) 
                 {
                     IDE_TEST( insertReplaceSQL( aMetaItem,
                                                 sRemoteMetaItem,
@@ -4685,10 +4902,8 @@ IDE_RC rpxReceiverApply::insertSQL( smiTrans    * aSmiTrans,
                     /* do noting */
                 }
             }
-            else
+            else if ( sFailType == RP_APPLY_FAIL_BY_CONFLICT_RESOLUTION_TX )
             {
-                 IDE_DASSERT( sFailType == RP_APPLY_FAIL_BY_CONFLICT_RESOLUTION_TX );
-
                  sConflictResolutionTrans = mTransTbl->getSmiTransForConflictResolution( aXLog->mTID );
 
                  if ( sConflictResolutionTrans != NULL )
@@ -4716,18 +4931,22 @@ IDE_RC rpxReceiverApply::insertSQL( smiTrans    * aSmiTrans,
                      /* do nothing */
                  }
             }
+            else
+            {
+                IDE_DASSERT( sFailType == RP_APPLY_FAIL_BY_CORRUPTED_PAGE );
+            }
         }
     }
 
     if ( sFailType != RP_APPLY_FAIL_NONE )
     {
-        printInsertErrLog( sRemoteMetaItem, aMetaItem, aXLog );
+        printInsertErrLog( sRemoteMetaItem, aMetaItem, aXLog, sFailType );
 
         // Increase INSERT_FAILURE_COUNT in V$REPRECEIVER
         mInsertFailureCount++;
         addAbortTx(aXLog->mTID, aXLog->mSN);
 
-        //BUG-21858 : insert, update Ïã§Ìå®Ïãú Îã§ÏùåÏóê LOBÍ¥ÄÎ†® Î°úÍ∑∏Î•º ÏàòÌñâÌïòÎ©¥ Î¨∏Ï†úÍ∞Ä Î∞úÏÉù LOBÎ°úÍ∑∏Î•º Î¨¥ÏãúÌïòÎèÑÎ°ù ÏÑ∏ÌåÖ
+        //BUG-21858 : insert, update Ω«∆–Ω√ ¥Ÿ¿Ωø° LOB∞¸∑√ ∑Œ±◊∏¶ ºˆ«‡«œ∏È πÆ¡¶∞° πﬂª˝ LOB∑Œ±◊∏¶ π´Ω√«œµµ∑œ ºº∆√
         mTransTbl->setSkipLobLogFlag(aXLog->mTID, ID_TRUE);
     }
     else
@@ -4742,8 +4961,8 @@ IDE_RC rpxReceiverApply::insertSQL( smiTrans    * aSmiTrans,
 
     if ( sFailType == RP_APPLY_FAIL_INTERNAL )
     {
-        ideLogEntry sLog( IDE_RP_0) ; // insertErrLogÏóêÏÑú Î≥µÏû°ÌïòÍ∏∞ ÎïåÎ¨∏Ïóê ÏÉÅÏúÑÏóêÏÑú open,closeÎ•º Ìï®. more safe
-        (void)insertErrLog( sLog, sRemoteMetaItem, aXLog );
+        ideLogEntry sLog( IDE_RP_0) ; // insertErrLogø°º≠ ∫π¿‚«œ±‚ ∂ßπÆø° ªÛ¿ßø°º≠ open,close∏¶ «‘. more safe
+        (void)insertErrLog( sLog, sRemoteMetaItem, aXLog, sFailType );
         sLog.write();
     }
     else
@@ -4757,7 +4976,7 @@ IDE_RC rpxReceiverApply::insertSQL( smiTrans    * aSmiTrans,
     // Increase INSERT_FAILURE_COUNT in V$REPRECEIVER
     mInsertFailureCount++;
 
-    //BUG-21858 : insert, update Ïã§Ìå®Ïãú Îã§ÏùåÏóê LOBÍ¥ÄÎ†® Î°úÍ∑∏Î•º ÏàòÌñâÌïòÎ©¥ Î¨∏Ï†úÍ∞Ä Î∞úÏÉù LOBÎ°úÍ∑∏Î•º Î¨¥ÏãúÌïòÎèÑÎ°ù ÏÑ∏ÌåÖ
+    //BUG-21858 : insert, update Ω«∆–Ω√ ¥Ÿ¿Ωø° LOB∞¸∑√ ∑Œ±◊∏¶ ºˆ«‡«œ∏È πÆ¡¶∞° πﬂª˝ LOB∑Œ±◊∏¶ π´Ω√«œµµ∑œ ºº∆√
     mTransTbl->setSkipLobLogFlag(aXLog->mTID, ID_TRUE);
 
     return IDE_FAILURE;
@@ -4805,7 +5024,7 @@ IDE_RC rpxReceiverApply::updateSQL( smiTrans    * aSmiTrans,
                                                     aXLog->mTableOID )
               != IDE_SUCCESS );
 
-    /* before Ïù¥ÎØ∏ÏßÄ Í≤ÄÏÇ¨ Ìï¥Ïïº ÌïòÎ©¥ where Ï†àÏóê before Ïù¥ÎØ∏ÏßÄ Í∞í Î™®Îëê Ìè¨Ìï® */
+    /* before ¿ÃπÃ¡ˆ ∞ÀªÁ «ÿæﬂ «œ∏È where ¿˝ø° before ¿ÃπÃ¡ˆ ∞™ ∏µŒ ∆˜«‘ */
     if ( rpdConvertSQL::getUpdateSQL( sRemoteMetaItem,
                                       aMetaItem,
                                       aXLog,
@@ -4868,7 +5087,7 @@ IDE_RC rpxReceiverApply::updateSQL( smiTrans    * aSmiTrans,
         }
         else
         {
-            /* update Îêú row Í∞Ä Ï°¥Ïû¨ÌïòÏßÄ ÏïäÏùå */
+            /* update µ» row ∞° ¡∏¿Á«œ¡ˆ æ ¿Ω */
             if ( sRowCount == 0 )
             {
                 sFailType = RP_APPLY_FAIL_BY_CONFLICT;
@@ -4885,7 +5104,8 @@ IDE_RC rpxReceiverApply::updateSQL( smiTrans    * aSmiTrans,
         printUpdateErrLog( sRemoteMetaItem,
                            aMetaItem,
                            aXLog,
-                           sCompareBeforeImage );
+                           sCompareBeforeImage,
+                           sFailType );
 
         mUpdateFailureCount++;
         addAbortTx(aXLog->mTID, aXLog->mSN);
@@ -4938,7 +5158,7 @@ IDE_RC rpxReceiverApply::getConfictResolutionTransaction( smTID        aTID,
 
         if ( mTransTbl->isSetPSMSavepoint( aTID ) == ID_TRUE )
         {
-            sTrans->reservePsmSvp();
+            sTrans->reservePsmSvp( ID_FALSE );
         }
         else
         {
@@ -4986,3 +5206,356 @@ IDE_RC rpxReceiverApply::getConfictResolutionTransaction( smTID        aTID,
 
     return IDE_FAILURE;
 }
+
+IDE_RC rpxReceiverApply::executeTruncate( rpxReceiver      * aReceiver,
+                                          rpdMetaItem      * aMetaItem,
+                                          idBool             aIsConditionSynced )
+{
+    smiTrans         sSmiTrans;
+    smiStatement   * sRootStmt = NULL;
+    smiStatement     sSmiStmt;
+    UInt             sStage = 0;
+    SChar            sSqlStr[QD_MAX_SQL_LENGTH];
+
+    UInt sReplLockTimeoutOrig = 0;
+
+    /* ¿Ã «‘ºˆ¿« øÎµµ
+     *   1. Sync Conditional ø°º≠ ¡∂∞«¿Ã trucnate ¿Œ ∞ÊøÏ            ( aIsConditionSynced == ID_FALSE )
+     *   2. Sync Conditional ø°º≠ ¡∂∞«¿∫ sync. µµ¡ﬂ Ω«∆–∑Œ ¿Œ«— ø¯∫π ( aIsConditionSynced == ID_TRUE )
+     * */
+    if ( aMetaItem->mItem.mIsPartition[0] == 'N' ) 
+    {
+        idlOS::snprintf( sSqlStr, ID_SIZEOF(sSqlStr),
+                         "TRUNCATE TABLE %s.%s", 
+                         aMetaItem->mItem.mLocalUsername,
+                         aMetaItem->mItem.mLocalTablename );
+    }
+    else
+    {
+        idlOS::snprintf( sSqlStr, ID_SIZEOF(sSqlStr),
+                         "ALTER TABLE %s.%s TRUNCATE PARTITION %s",
+                         aMetaItem->mItem.mLocalUsername,
+                         aMetaItem->mItem.mLocalTablename,
+                         aMetaItem->mItem.mLocalPartname );
+    }
+
+    IDE_TEST( sSmiTrans.initialize() != IDE_SUCCESS );
+    sStage = 1;
+
+    IDE_TEST( sSmiTrans.begin( &sRootStmt,
+                               NULL,//aApply->mReceiver->getStatistics(),
+                               ( SMI_ISOLATION_NO_PHANTOM     |
+                                 SMI_TRANSACTION_NORMAL       |
+                                 SMI_TRANSACTION_REPL_DEFAULT |
+                                 SMI_COMMIT_WRITE_WAIT ),
+                               aReceiver->mReplID )
+              != IDE_SUCCESS );
+    sStage = 2;
+
+    aReceiver->setSelfExecuteDDLTransID( sSmiTrans.getTransID() );
+
+    IDE_TEST( sSmiStmt.begin( NULL,//sSmiTrans.getStatistics(),
+                              sSmiTrans.getStatement(),
+                              SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR )
+              != IDE_SUCCESS );
+    sStage = 3;
+
+    sReplLockTimeoutOrig = sSmiTrans.getReplTransLockTimeout();
+    sSmiTrans.setReplTransLockTimeout( 5 ); 
+
+    IDE_TEST( qciMisc::runDDLforInternal( sSmiTrans.getStatistics(),
+                                          &sSmiStmt,
+                                          QCI_EMPTY_USER_ID,
+                                          QCI_SESSION_INTERNAL_DDL_TRUE,
+                                          sSqlStr )
+              != IDE_SUCCESS );
+
+    sSmiTrans.setReplTransLockTimeout( sReplLockTimeoutOrig ); 
+   
+    if ( aIsConditionSynced == ID_TRUE )
+    {
+        IDE_TEST( rpdCatalog::updateConditionalSyncedWithItem( &sSmiStmt,
+                                                               &aMetaItem->mItem,
+                                                               ID_FALSE )
+                  != IDE_SUCCESS);
+        IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+        sStage = 2;
+    }
+    else
+    {
+        IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+        sStage = 2;
+
+        IDE_TEST( aReceiver->metaRebuild( &sSmiTrans ) != IDE_SUCCESS );
+    }
+
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
+    sStage = 1;
+
+    aReceiver->setSelfExecuteDDLTransID( SM_NULL_TID );
+
+    sStage = 0;
+    IDE_TEST( sSmiTrans.destroy( NULL ) != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    IDE_ERRLOG(IDE_RP_0);
+    IDE_PUSH();
+
+    aReceiver->setSelfExecuteDDLTransID( SM_NULL_TID );
+
+    switch(sStage)
+    {
+        case 3:
+            (void)sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+            /* fall through */
+        case 2:
+            IDE_ASSERT(sSmiTrans.rollback() == IDE_SUCCESS);
+            /* fall through */
+        case 1:
+            (void)sSmiTrans.destroy( NULL );
+        default:
+            break;
+    }
+
+    IDE_POP();
+
+    return IDE_FAILURE;
+}
+
+
+IDE_RC rpxReceiverApply::executeInsert( smiTrans         * aSmiTrans,
+                                        rpdXLog          * aXLog,
+                                        SChar            * aSpName ) 
+{
+    rpdMetaItem      * sMetaItem = NULL;
+    
+    IDE_TEST( mReceiver->searchRemoteTable( &sMetaItem, aXLog->mTableOID )
+              != IDE_SUCCESS );
+    IDU_FIT_POINT_RAISE( "rpxReceiverApply::insertXLog::Erratic::rpERR_ABORT_NOT_EXIST_TABLE_INS",
+                         ERR_NOT_EXIST_TABLE ); 
+    IDE_TEST_RAISE( sMetaItem == NULL, ERR_NOT_EXIST_TABLE );
+    
+    switch ( sMetaItem->getApplyMode() )
+    {
+        case RP_APPLY_XLOG :
+            IDE_TEST( insertXLog( aSmiTrans, 
+                                  sMetaItem, 
+                                  aXLog, 
+                                  aSpName ) != IDE_SUCCESS );
+            break;
+            
+        case RP_APPLY_SQL :
+            IDE_TEST( insertSQL( aSmiTrans, 
+                                 sMetaItem, 
+                                 aXLog, 
+                                 aSpName ) != IDE_SUCCESS );
+            break;
+            
+        case RP_APPLY_SKIP :
+            insertSkip( sMetaItem,
+                        aXLog );
+            break;
+            
+        default :
+            IDE_DASSERT( 0 );
+            IDE_RAISE( ERR_INVALID_APPLY_MODE );
+            break;
+    }
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NOT_EXIST_TABLE );
+    {
+        ideLog::log( IDE_RP_0, RP_TRC_RA_ERR_INVALID_XLOG,
+                     aXLog->mType,
+                     aXLog->mTID,
+                     aXLog->mSN,
+                     aXLog->mTableOID );
+
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_NOT_EXIST_TABLE ) );
+    }
+    IDE_EXCEPTION( ERR_INVALID_APPLY_MODE );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG, "Invalid Apply Mode" ) )
+    }    
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpxReceiverApply::executeSyncInsert( smiTrans    * aSmiTrans,
+                                            rpdXLog     * aXLog ) 
+{
+    rpdMetaItem      * sMetaItem = NULL;
+    
+    IDE_TEST( mReceiver->searchRemoteTable( &sMetaItem, aXLog->mTableOID ) 
+              != IDE_SUCCESS );
+    
+    IDE_TEST_RAISE( sMetaItem == NULL, ERR_NOT_EXIST_TABLE );
+    
+    switch ( sMetaItem->getApplyMode() )
+    {
+        case RP_APPLY_XLOG :
+            IDE_TEST( insertSyncXLog( aSmiTrans,
+                                      sMetaItem,
+                                      aXLog )
+                      != IDE_SUCCESS );
+            break;
+            
+        case RP_APPLY_SQL :
+            IDE_TEST( insertSQL( aSmiTrans, 
+                                 sMetaItem, 
+                                 aXLog,
+                                 NULL ) 
+                      != IDE_SUCCESS );
+            break;
+            
+        case RP_APPLY_SKIP :
+            insertSkip( sMetaItem, 
+                        aXLog );
+            break;
+            
+        default :
+            IDE_DASSERT( 0 );
+            IDE_RAISE( ERR_INVALID_APPLY_MODE );
+            break;
+    }
+    
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION( ERR_NOT_EXIST_TABLE );
+    {
+        ideLog::log( IDE_RP_0, RP_TRC_RA_ERR_INVALID_XLOG,
+                              aXLog->mType,
+                              aXLog->mTID,
+                              aXLog->mSN,
+                              aXLog->mTableOID );
+    
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_NOT_EXIST_TABLE_INS ) );
+        IDE_ERRLOG( IDE_RP_0 );
+    }
+    IDE_EXCEPTION( ERR_INVALID_APPLY_MODE );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG, "Invalid Apply Mode" ) )
+    }    
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpxReceiverApply::executeUpdate( smiTrans         * aSmiTrans,
+                                        rpdXLog          * aXLog ) 
+{
+    rpdMetaItem      * sMetaItem = NULL;
+    
+    /* PROJ-1442 Replication Online ¡ﬂ DDL «„øÎ
+     * Updateµ» Column ¡ﬂø° Replication ¥ÎªÛ¿Ã æ¯¿ª ºˆ ¿÷¥Ÿ.
+     */
+    if ( aXLog->mColCnt > 0 )
+    {
+        IDE_TEST( mReceiver->searchRemoteTable( &sMetaItem, aXLog->mTableOID )
+                  != IDE_SUCCESS );
+        IDE_TEST_RAISE(sMetaItem == NULL, ERR_NOT_EXIST_TABLE);
+        
+        switch ( sMetaItem->getApplyMode() )
+        {
+            case RP_APPLY_XLOG :
+                IDE_TEST( updateXLog( aSmiTrans,
+                                      sMetaItem,
+                                      aXLog ) != IDE_SUCCESS );
+                break;
+                
+            case RP_APPLY_SQL :
+                IDE_TEST( updateSQL( aSmiTrans,
+                                     sMetaItem,
+                                     aXLog ) != IDE_SUCCESS );
+                break;
+                
+            case RP_APPLY_SKIP :
+                updateSkip( sMetaItem,
+                            aXLog );
+                break;
+                
+            default :
+                IDE_DASSERT( 0 );
+                IDE_RAISE( ERR_INVALID_APPLY_MODE );
+                break;
+        }
+    }
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NOT_EXIST_TABLE );
+    {
+        ideLog::log( IDE_RP_0, RP_TRC_RA_ERR_INVALID_XLOG,
+                     aXLog->mType,
+                     aXLog->mTID,
+                     aXLog->mSN,
+                     aXLog->mTableOID );
+
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_NOT_EXIST_TABLE ) );
+    }
+    IDE_EXCEPTION( ERR_INVALID_APPLY_MODE );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG, "Invalid Apply Mode" ) )
+    }       
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+void rpxReceiverApply::insertSkip( rpdMetaItem    * aMetaItem,
+                                   rpdXLog        * aXLog )
+{    
+    printInsertErrLog( aMetaItem, aMetaItem, aXLog, RP_APPLY_FAIL_SKIP );
+    
+    // Increase INSERT_FAILURE_COUNT in V$REPRECEIVER
+    mInsertFailureCount++;
+    addAbortTx( aXLog->mTID, aXLog->mSN );
+    
+    //BUG-21858 : insert, update Ω«∆–Ω√ ¥Ÿ¿Ωø° LOB∞¸∑√ ∑Œ±◊∏¶ ºˆ«‡«œ∏È πÆ¡¶∞° πﬂª˝ LOB∑Œ±◊∏¶ π´Ω√«œµµ∑œ ºº∆√
+    mTransTbl->setSkipLobLogFlag( aXLog->mTID, ID_TRUE );
+}
+
+void rpxReceiverApply::updateSkip( rpdMetaItem    * aMetaItem,
+                                   rpdXLog        * aXLog )
+{
+    idBool              sCompareBeforeImage = ID_TRUE;
+    
+    switch ( mPolicy )
+    {
+        case  RPX_APPLY_POLICY_BY_PROPERTY:
+            if ( RPU_REPLICATION_UPDATE_REPLACE == 1 )
+            {
+                sCompareBeforeImage = ID_FALSE;
+            }
+            else
+            {
+                sCompareBeforeImage = ID_TRUE;
+            }
+            break;
+
+        case RPX_APPLY_POLICY_CHECK:
+            sCompareBeforeImage = ID_TRUE;
+            break;
+
+        case RPX_APPLY_POLICY_FORCE:
+            sCompareBeforeImage = ID_FALSE;
+            break;
+    }
+    
+    printUpdateErrLog( aMetaItem,
+                       aMetaItem,
+                       aXLog,
+                       sCompareBeforeImage,
+                       RP_APPLY_FAIL_SKIP );
+
+    mUpdateFailureCount++;
+    addAbortTx( aXLog->mTID, aXLog->mSN );
+
+    mTransTbl->setSkipLobLogFlag( aXLog->mTID, ID_TRUE );
+}
+

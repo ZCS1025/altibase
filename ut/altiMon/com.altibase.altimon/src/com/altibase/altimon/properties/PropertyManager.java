@@ -89,6 +89,7 @@ public class PropertyManager {
     private final String XML_DBNAME = "DbName";
     private final String XML_NLS = "NLS";
     private final String XML_IPV6 = "IPv6";
+    private final String XML_CON_PROPS = "ConnectionProperties"; // BUG-47436
 
     private final String XML_METRICS = "Metrics";
     private final String XML_OSMETRIC = "OSMetric";
@@ -746,6 +747,7 @@ public class PropertyManager {
         String dbName = new String("mydb");
         String nls = new String();
         String isIpv6 = new String("FALSE");
+        String sConProps = new String("");
         DatabaseType dbType = DatabaseType.HDB;		
 
         final String regexForUserId = "[\\w]{1,}";
@@ -825,6 +827,10 @@ public class PropertyManager {
             }
             else if (XML_IPV6.equals(elemName)) {
                 isIpv6 = node.getTextContent().trim();
+            }
+            /* BUG-47436 Need a function to specify additional connection properties */
+            else if (XML_CON_PROPS.equals(elemName)) {
+                sConProps = node.getTextContent().trim();
             }
         }
 
@@ -912,6 +918,7 @@ public class PropertyManager {
         props[DbConnectionProperty.ADDRESS] = host;
         //props[DbConnectionProperty.ADDRESS] = loadIpAddress(isIpv6);
         props[DbConnectionProperty.DBTYPE] = targetType;//MonitoredDb.MONITORED_DB_TYPE;
+        props[DbConnectionProperty.ADDITIONALPROPS] = sConProps; // BUG-47436
 
         MonitoredDb.getInstance().setDbConnProps(props);
         MonitoredDb.getInstance().setHomeDirectory(homedir, dbType.getExecutionFilePath());

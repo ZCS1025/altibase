@@ -1,6 +1,6 @@
 # Makefile for ID library
 #
-# CVS Info : $Id: id_objs.mk 84587 2018-12-12 03:47:17Z kclee $
+# CVS Info : $Id: id_objs.mk 87881 2020-06-29 08:04:01Z kclee $
 #
 
 # NORMAL LIBRARY
@@ -97,6 +97,7 @@ IDU_SRCS   =   $(ID_DIR)/idu/iduVersion.cpp    \
                $(ID_DIR)/idu/iduFixedTable.cpp \
                $(ID_DIR)/idu/iduLimitManager.cpp \
                $(ID_DIR)/idu/iduCompression.cpp \
+               $(ID_DIR)/idu/iduLZ4.cpp \
                $(ID_DIR)/idu/iduLatch.cpp \
                $(ID_DIR)/idu/iduLatchFT.cpp \
                $(ID_DIR)/idu/iduLatchTypePosix.cpp \
@@ -124,37 +125,6 @@ IDU_SRCS   =   $(ID_DIR)/idu/iduVersion.cpp    \
                $(ID_DIR)/idu/iduShmProcType.cpp
 #              $(ID_DIR)/idu/iduQueueLockFree.cpp
 #              $(ID_DIR)/idu/iduSema.cpp
-
-ifeq "$(ALTIBASE_PRODUCT)" "xdb"
-IDU_SRCS +=    $(ID_DIR)/idu/iduShmChunkMgr.cpp    \
-               $(ID_DIR)/idu/iduShmKeyMgr.cpp      \
-               $(ID_DIR)/idu/iduShmMgr.cpp         \
-               $(ID_DIR)/idu/iduShmPersMgr.cpp     \
-               $(ID_DIR)/idu/iduShmLatch.cpp       \
-               $(ID_DIR)/idu/iduShmMemList.cpp     \
-               $(ID_DIR)/idu/iduShmMemPool.cpp     \
-               $(ID_DIR)/idu/iduShmPersList.cpp    \
-               $(ID_DIR)/idu/iduShmPersPool.cpp    \
-               $(ID_DIR)/idu/iduShmSXLatch.cpp     \
-               $(ID_DIR)/idu/iduShmList.cpp        \
-               $(ID_DIR)/idu/iduShmHash.cpp        \
-               $(ID_DIR)/idu/iduVLogShmLatch.cpp   \
-               $(ID_DIR)/idu/iduVLogShmMgr.cpp     \
-               $(ID_DIR)/idu/iduVLogShmMemList.cpp \
-               $(ID_DIR)/idu/iduVLogShmHash.cpp    \
-               $(ID_DIR)/idu/iduVLogShmMemPool.cpp \
-               $(ID_DIR)/idu/iduVLogShmPersList.cpp \
-               $(ID_DIR)/idu/iduVLogShmPersPool.cpp \
-               $(ID_DIR)/idu/iduVLogShmList.cpp    \
-               $(ID_DIR)/idu/iduShmMsgMgr.cpp      \
-               $(ID_DIR)/idu/iduShmDump.cpp        \
-               $(ID_DIR)/idu/iduISQLTermInfoMgr.cpp\
-               $(ID_DIR)/idu/iduProcess.cpp        \
-               $(ID_DIR)/idu/iduShmMgrFT.cpp       \
-               $(ID_DIR)/idu/iduSXLatch.cpp        \
-               $(ID_DIR)/idu/iduShmSet4SXLatch.cpp \
-               $(ID_DIR)/idu/iduShmKeyFile.cpp
-endif
 
 ifeq "$(OS_TARGET)" "X86_SOLARIS"
 ifeq "$(compile64)" "1"
@@ -224,14 +194,6 @@ IDS_SRCS   =   $(ID_DIR)/ids/idsCrypt.cpp    \
                $(ID_DIR)/ids/idsBase64.cpp   \
                $(ID_DIR)/ids/idsAltiWrap.cpp
 
-ifeq "$(ALTIBASE_PRODUCT)" "xdb"
-IDR_SRCS   =   $(ID_DIR)/idr/idrLogMgr.cpp         \
-               $(ID_DIR)/idr/idrRecProcess.cpp     \
-               $(ID_DIR)/idr/idrVLogUpdate.cpp     \
-               $(ID_DIR)/idr/idrShmTxPendingOp.cpp \
-               $(ID_DIR)/idr/idrRecThread.cpp
-endif
-
 IDP_SRCS   =   $(ID_DIR)/idp/idp.cpp     \
                $(ID_DIR)/idp/idpBase.cpp \
                $(ID_DIR)/idp/idpUInt.cpp \
@@ -265,15 +227,6 @@ IDD_SRCS 	=  $(ID_DIR)/idd/iddRBTree.cpp			\
                $(ID_DIR)/idd/iddTRBTree.cpp			\
                $(ID_DIR)/idd/iddRBHash.cpp
 
-
-ifeq "$(ALTIBASE_PRODUCT)" "xdb"
-IDW_SRCS   +=  $(ID_DIR)/idw/idwPMMgr.cpp	\
-               $(ID_DIR)/idw/idwVLogPMMgr.cpp	\
-               $(ID_DIR)/idw/idwPMMgrFT.cpp	\
-               $(ID_DIR)/idw/idwWatchDog.cpp    \
-               $(ID_DIR)/idw/idwWatchDogFT.cpp
-endif
-
 IDCORE_SRCS = $(ID_DIR)/idCore/idCore.cpp
 
 # PROJ-1685
@@ -301,10 +254,6 @@ ID_SRCS    =   $(IDL_SRCS) $(IDT_SRCS) $(IDP_SRCS) \
                $(IDV_SRCS) $(ID_FIXEDTABLE_SRCS) $(ID_STACKTRACE) \
                $(IDW_SRCS) $(IDF_SRCS) $(IDCORE_SRCS) $(IDX_SRCS) \
 			   $(IDD_SRCS)
-
-ifeq "$(ALTIBASE_PRODUCT)" "xdb"
-ID_SRCS   +=   $(IDR_SRCS)
-endif
 
 ##################################################################
 # server libs

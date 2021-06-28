@@ -50,22 +50,25 @@ public:
 
     UInt getListCount();
 
-    // sdbBCBListStatì„ ìœ„í•œ í•¨ìˆ˜ë“¤
+    // sdbBCBListStatÀ» À§ÇÑ ÇÔ¼öµé
     UInt getLength(UInt aListNo);
     void* getFirst(UInt aListNo);
     void* getLast(UInt aListNo);
 
 private:
-    /* ìœ ì§€í•˜ëŠ” list ê°¯ìˆ˜ */
+    /* À¯ÁöÇÏ´Â list °¹¼ö */
     UInt        mListCount;
+
+    /* BUG-47945 cp list µğ¹ö±ë Á¤º¸ º¸°­ */
+    sdLayerState mLayerType;
     
-    /* ë¦¬ìŠ¤íŠ¸ë“¤ì˜ base. ë°°ì—´í˜•íƒœë¡œ ë˜ì–´ìˆë‹¤.*/
+    /* ¸®½ºÆ®µéÀÇ base. ¹è¿­ÇüÅÂ·Î µÇ¾îÀÖ´Ù.*/
     smuList    *mBase;
     
-    /* ë¦¬ìŠ¤íŠ¸ë“¤ì˜ ê¸¸ì´. ë°°ì—´í˜•íƒœë¡œ ë˜ì–´ìˆë‹¤.*/
+    /* ¸®½ºÆ®µéÀÇ ±æÀÌ. ¹è¿­ÇüÅÂ·Î µÇ¾îÀÖ´Ù.*/
     UInt       *mListLength;
     
-    /* ë¦¬ìŠ¤íŠ¸ë“¤ì˜ ë®¤í…ìŠ¤. ë°°ì—´í˜•íƒœë¡œ ë˜ì–´ìˆë‹¤.*/
+    /* ¸®½ºÆ®µéÀÇ ¹ÂÅØ½º. ¹è¿­ÇüÅÂ·Î µÇ¾îÀÖ´Ù.*/
     iduMutex   *mListMutex;
 };  
 

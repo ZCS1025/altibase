@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmnConnectBy.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qmnConnectBy.cpp 89364 2020-11-27 02:03:38Z donovan.seo $
  **********************************************************************/
 
 #include <idl.h>
@@ -36,10 +36,10 @@ typedef enum qmnConnectBystartWithFilter {
 } qmnConnectBystartWithFilter;
 
 /**
- * Sort Temp Table êµ¬ì„±
+ * Sort Temp Table ±¸¼º
  *
- *  BaseTableë¡œ ë¶€í„° Row í¬ì¸í„°ë¥¼ ì–»ì–´ Sort Temp Tableì„ êµ¬ì„±í•œë‹¤.
- *  ì—¬ê¸°ì„œ BaseTableì€ HMTRë¡œ ë·°ë¡œ ë¶€í„° ìƒì„±ëœ í…Œì´ë¸”ì´ë‹¤.
+ *  BaseTable·Î ºÎÅÍ Row Æ÷ÀÎÅÍ¸¦ ¾ò¾î Sort Temp TableÀ» ±¸¼ºÇÑ´Ù.
+ *  ¿©±â¼­ BaseTableÀº HMTR·Î ºä·Î ºÎÅÍ »ý¼ºµÈ Å×ÀÌºíÀÌ´Ù.
  */
 IDE_RC qmnCNBY::makeSortTemp( qcTemplate * aTemplate,
                               qmndCNBY   * aDataPlan )
@@ -120,7 +120,7 @@ IDE_RC qmnCNBY::makeSortTemp( qcTemplate * aTemplate,
 /**
  * Restore Tuple Set
  *
- *  Sort Tempì—ì„œ ì°¾ì€ Row í¬ì¸í„°ì—ì„œ ì£¼ì†Œ ê°’ì„ ì½ì–´ ë³¸ëž˜ BaseTableì˜ RowPtrë¡œ ë³µì›í•œë‹¤.
+ *  Sort Temp¿¡¼­ Ã£Àº Row Æ÷ÀÎÅÍ¿¡¼­ ÁÖ¼Ò °ªÀ» ÀÐ¾î º»·¡ BaseTableÀÇ RowPtr·Î º¹¿øÇÑ´Ù.
  */
 IDE_RC qmnCNBY::restoreTupleSet( qcTemplate * aTemplate,
                                  qmdMtrNode * aMtrNode,
@@ -143,7 +143,7 @@ IDE_RC qmnCNBY::restoreTupleSet( qcTemplate * aTemplate,
 
 /**
  * Initialize CNBYInfo
- *   CNBYInfo êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ *   CNBYInfo ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÑ´Ù.
  */
 IDE_RC qmnCNBY::initCNBYItem( qmnCNBYItem * aItem )
 {
@@ -158,9 +158,9 @@ IDE_RC qmnCNBY::initCNBYItem( qmnCNBYItem * aItem )
 /**
  * Set Current Row
  *
- *  í•œ ë²ˆì— í•˜ë‚˜ì˜ Rowë¥¼ ìƒìœ„ Planìœ¼ë¡œ ì˜¬ë ¤ì£¼ëŠ”ë° CONNECT_BY_ISLEAF ê°’ì„ ì•Œê¸° ìœ„í•´ì„œëŠ”
- *  ë‹¤ìŒ Rowë¥¼ ì½ì–´ì•¼ í•  í•„ìš”ê°€ ìžˆë‹¤. ë”°ë¼ì„œ CNBYStackì— í˜„ì œ ì €ìž¥ëœ ê°’ê³¼ ìƒìœ„ë¡œ ì˜¬ë ¤ì¤„
- *  ê°’ì´ ë‹¤ë¥´ê²Œ ëœë‹¤. ì´ í•¨ìˆ˜ë¥¼ í†µí•´ì„œ ëª‡ ë²ˆì§¸ ì „ ê°’ì„ ì˜¬ë ¤ì¤„ì§€ ê²°ì •í•œë‹¤.
+ *  ÇÑ ¹ø¿¡ ÇÏ³ªÀÇ Row¸¦ »óÀ§ PlanÀ¸·Î ¿Ã·ÁÁÖ´Âµ¥ CONNECT_BY_ISLEAF °ªÀ» ¾Ë±â À§ÇØ¼­´Â
+ *  ´ÙÀ½ Row¸¦ ÀÐ¾î¾ß ÇÒ ÇÊ¿ä°¡ ÀÖ´Ù. µû¶ó¼­ CNBYStack¿¡ ÇöÁ¦ ÀúÀåµÈ °ª°ú »óÀ§·Î ¿Ã·ÁÁÙ
+ *  °ªÀÌ ´Ù¸£°Ô µÈ´Ù. ÀÌ ÇÔ¼ö¸¦ ÅëÇØ¼­ ¸î ¹øÂ° Àü °ªÀ» ¿Ã·ÁÁÙÁö °áÁ¤ÇÑ´Ù.
  */
 IDE_RC qmnCNBY::setCurrentRow( qcTemplate * aTemplate,
                                qmncCNBY   * aCodePlan,
@@ -230,7 +230,7 @@ IDE_RC qmnCNBY::setCurrentRow( qcTemplate * aTemplate,
         {
             aDataPlan->priorTuple->row = aDataPlan->nullRow;
 
-            // PROJ-2362 memory temp ì €ìž¥ íš¨ìœ¨ì„± ê°œì„ 
+            // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
             sColumn = aDataPlan->priorTuple->columns;
             for ( i = 0; i < aDataPlan->priorTuple->columnCount; i++, sColumn++ )
             {
@@ -274,16 +274,16 @@ IDE_RC qmnCNBY::setCurrentRow( qcTemplate * aTemplate,
 /**
  * Do It First
  *
- *  ê°€ìž¥ ì²˜ìŒ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ë¡œ START WITH ì²˜ë¦¬ ë° CONNECT BY ì²˜ë¦¬
+ *  °¡Àå Ã³À½ È£ÃâµÇ´Â ÇÔ¼ö·Î START WITH Ã³¸® ¹× CONNECT BY Ã³¸®
  *
- *  START WITHëŠ” BaseTable( HMTR ) ì—ì„œ ìˆœì„œëŒ€ë¡œ ì°¨ë¡€ë¡œ ì½ì–´ì„œ ì¡°ê±´ì„ ë¹„êµí•˜ë©° ì²˜ë¦¬ëœë‹¤.
- *  1. START WITHì˜ Constant FilterëŠ” Initê³¼ì •ì—ì„œ Flagì— ì˜í•´ ì„¸íŒ…ë˜ì–´ ì²˜ë¦¬ëœë‹¤.
- *  2. START WITH Filter ê²€ì‚¬.
- *  3. START WITH SubQuery Filter ê²€ì‚¬.
- *  4. START WITH ì¡°ê±´ì´ ë§Œì¡±í•˜ë©´ ë ˆë²¨ 1ì´ ë˜ë¯€ë¡œ CNBYStackì˜ ê°€ìž¥ ì²˜ìŒì— ë„£ëŠ”ë‹¤.
- *  5. ì´ Rowì—ëŒ€í•´ CONNECT BY CONSTANT FILTER ê²€ì‚¬ë¥¼ ìˆ˜í–‰í•œë‹¤.
- *  6. ì¡°ê±´ì— ë§Œì¡±í•˜ë©´ CONNECT_BY_ISLEAFë¥¼ ì•Œê¸°ìœ„í•´ ë‹¤ìŒë ˆë²¨ì˜ ìžë£Œê°€ ìžˆëŠ”ì§€ ì°¾ì•„ë³¸ë‹¤.
- *     ë‹¤ìŒë ˆë²¨ ìžë£Œê°€ ìžˆë‹¤ë©´ doItNextë¥¼ í˜¸ì¶œí•˜ë„ë¡ í•¨ìˆ˜í¬ì¸í„°ë¥¼ ìˆ˜ì •í•´ì¤€ë‹¤.
+ *  START WITH´Â BaseTable( HMTR ) ¿¡¼­ ¼ø¼­´ë·Î Â÷·Ê·Î ÀÐ¾î¼­ Á¶°ÇÀ» ºñ±³ÇÏ¸ç Ã³¸®µÈ´Ù.
+ *  1. START WITHÀÇ Constant Filter´Â Init°úÁ¤¿¡¼­ Flag¿¡ ÀÇÇØ ¼¼ÆÃµÇ¾î Ã³¸®µÈ´Ù.
+ *  2. START WITH Filter °Ë»ç.
+ *  3. START WITH SubQuery Filter °Ë»ç.
+ *  4. START WITH Á¶°ÇÀÌ ¸¸Á·ÇÏ¸é ·¹º§ 1ÀÌ µÇ¹Ç·Î CNBYStackÀÇ °¡Àå Ã³À½¿¡ ³Ö´Â´Ù.
+ *  5. ÀÌ Row¿¡´ëÇØ CONNECT BY CONSTANT FILTER °Ë»ç¸¦ ¼öÇàÇÑ´Ù.
+ *  6. Á¶°Ç¿¡ ¸¸Á·ÇÏ¸é CONNECT_BY_ISLEAF¸¦ ¾Ë±âÀ§ÇØ ´ÙÀ½·¹º§ÀÇ ÀÚ·á°¡ ÀÖ´ÂÁö Ã£¾Æº»´Ù.
+ *     ´ÙÀ½·¹º§ ÀÚ·á°¡ ÀÖ´Ù¸é doItNext¸¦ È£ÃâÇÏµµ·Ï ÇÔ¼öÆ÷ÀÎÅÍ¸¦ ¼öÁ¤ÇØÁØ´Ù.
  */
 IDE_RC qmnCNBY::doItFirst( qcTemplate * aTemplate,
                            qmnPlan    * aPlan,
@@ -305,6 +305,9 @@ IDE_RC qmnCNBY::doItFirst( qcTemplate * aTemplate,
     IDE_TEST( initCNBYItem( &sReturnItem) != IDE_SUCCESS );
 
     *aFlag = QMC_ROW_DATA_NONE;
+    /* BUG-47820 start with ±¸¹®¿¡ level pseudo columnÀÌ »ç¿ëµÉ °æ¿ì °á°ú¿À·ù. */
+    sDataPlan->levelValue = 0;
+    *sDataPlan->levelPtr = 0;
 
     sFilters[START_WITH_FILTER]   = sCodePlan->startWithFilter;
     sFilters[START_WITH_SUBQUERY] = sCodePlan->startWithSubquery;
@@ -489,9 +492,9 @@ IDE_RC qmnCNBY::doItAllFalse( qcTemplate * aTemplate,
 /**
  * Initialize
  *
- *  CNBY Planì˜ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *  CNBY PlanÀÇ ÃÊ±âÈ­¸¦ ¼öÇàÇÑ´Ù.
  *
- *  1. ì´ˆê¸°í™” ìˆ˜í–‰í›„ START WITH CONSTANT FILTERë¥¼ ê²€ì‚¬í•˜ë©° Flagë¥¼ ì„¸íŒ…í•´ì¤€ë‹¤.
+ *  1. ÃÊ±âÈ­ ¼öÇàÈÄ START WITH CONSTANT FILTER¸¦ °Ë»çÇÏ¸ç Flag¸¦ ¼¼ÆÃÇØÁØ´Ù.
  */
 IDE_RC qmnCNBY::init( qcTemplate * aTemplate,
                       qmnPlan    * aPlan )
@@ -620,7 +623,7 @@ IDE_RC qmnCNBY::init( qcTemplate * aTemplate,
 
 /**
  * Do It
- *  Do It ë¡œ ìƒí™©ì— ë”°ë¼ doItFirstë‚˜ doItNextê°€ í˜¸ì¶œëœë‹¤.
+ *  Do It ·Î »óÈ²¿¡ µû¶ó doItFirst³ª doItNext°¡ È£ÃâµÈ´Ù.
  */
 IDE_RC qmnCNBY::doIt( qcTemplate * aTemplate,
                       qmnPlan    * aPlan,
@@ -666,7 +669,7 @@ IDE_RC qmnCNBY::padNull( qcTemplate * aTemplate,
     {
         sDataPlan->plan.myTuple->row = sDataPlan->nullRow;
 
-        // PROJ-2362 memory temp ì €ìž¥ íš¨ìœ¨ì„± ê°œì„ 
+        // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
         sColumn = sDataPlan->plan.myTuple->columns;
         for ( i = 0; i < sDataPlan->plan.myTuple->columnCount; i++, sColumn++ )
         {
@@ -699,7 +702,7 @@ IDE_RC qmnCNBY::padNull( qcTemplate * aTemplate,
         }
     }
 
-    // Null Paddingë„ recordê°€ ë³€í•œ ê²ƒìž„
+    // Null Paddingµµ record°¡ º¯ÇÑ °ÍÀÓ
     sDataPlan->plan.myTuple->modify++;
 
     return IDE_SUCCESS;
@@ -719,11 +722,11 @@ IDE_RC qmnCNBY::doItDefault( qcTemplate * /* aTemplate */,
 /**
  * Check HIER LOOP
  *
- *  ìŠ¤íƒì„ ê²€ì‚¬í•˜ì—¬ ê°™ì€ Rowê°€ ìžˆëŠ” ì§€ë¥¼ íŒë³„í•œë‹¤.
- *  IGNORE LOOPë‚˜ NOCYCLE í‚¤ì›Œë“œê°€ ì—†ë‹¤ë©´ ì—ëŸ¬ë¥¼ ë‚´ë³´ë‚¸ë‹¤.
+ *  ½ºÅÃÀ» °Ë»çÇÏ¿© °°Àº Row°¡ ÀÖ´Â Áö¸¦ ÆÇº°ÇÑ´Ù.
+ *  IGNORE LOOP³ª NOCYCLE Å°¿öµå°¡ ¾ø´Ù¸é ¿¡·¯¸¦ ³»º¸³½´Ù.
  *
- *  connect by level < 10 ì™€ ê°™ì€ êµ¬ë¬¸ì¸ ê²½ìš° ì¦‰
- *  connectByFilter ëŠ” NULLì¸ë° levelFilterëŠ” ì¡´ìž¬í• ê²½ìš° ë£¨í”„ ê²€ì‚¬ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *  connect by level < 10 ¿Í °°Àº ±¸¹®ÀÎ °æ¿ì Áï
+ *  connectByFilter ´Â NULLÀÎµ¥ levelFilter´Â Á¸ÀçÇÒ°æ¿ì ·çÇÁ °Ë»ç¸¦ ÇÏÁö ¾Ê´Â´Ù.
  */
 IDE_RC qmnCNBY::checkLoop( qmncCNBY * aCodePlan,
                            qmndCNBY * aDataPlan,
@@ -830,8 +833,7 @@ IDE_RC qmnCNBY::checkLoopDisk( qmncCNBY * aCodePlan,
                  == QMNC_CNBY_IGNORE_LOOP_TRUE )
             {
                 if ( SC_GRID_IS_EQUAL( sStack->items[i].mRid,
-                                       aDataPlan->plan.myTuple->rid )
-                     == ID_TRUE )
+                                       aDataPlan->plan.myTuple->rid ) )
                 {
                     sLoop = ID_TRUE;
                     break;
@@ -844,8 +846,8 @@ IDE_RC qmnCNBY::checkLoopDisk( qmncCNBY * aCodePlan,
             else
             {
                 IDE_TEST_RAISE( SC_GRID_IS_EQUAL( sStack->items[i].mRid,
-                                                  aDataPlan->plan.myTuple->rid )
-                                == ID_TRUE, err_loop_detected );
+                                                  aDataPlan->plan.myTuple->rid ),
+                                err_loop_detected );
             }
         }
 
@@ -876,22 +878,22 @@ IDE_RC qmnCNBY::checkLoopDisk( qmncCNBY * aCodePlan,
 /**
  * Search Sequence Row
  *
- *  Connect By êµ¬ë¬¸ì—ì„œ KeyRangeê°€ ì—†ì„ ê²½ìš° baseMTRë¡œ ë¶€í„° ì°¨ë¡€ë¡œ ì°¾ëŠ”ë‹¤.
- *  1. aHierì¸ìžê°€ ì—†ëŠ” ê²½ìš°ëŠ” ë‹¤ìŒ ë ˆë²¨ì„ ì°¾ëŠ” ê²½ìš° ì´ë¯€ë¡œ ì²˜ìŒë¶€í„° ì°¾ëŠ”ë‹¤.
- *     aHierì¸ìžê°€ ìžˆë‹¤ë©´ í¬ì§€ì…˜ì„ Resotreí•˜ê³  ë‹¤ìŒ ê°’ì„ ì½ëŠ”ë‹¤.
- *  2. ì°¾ì€ ê°’ì´ PriorTupleì˜ ê°’ê³¼ ê°™ë‹¤ë©´ ë‹¤ìŒ ê°’ì„ ì½ëŠ”ë‹¤.
- *      1)Prior rowì™€ ì°¾ëŠ” Rowê°€ ê°™ì„ ë•Œ Skip í•˜ì§€ ì•Šìœ¼ë©´ í•­ìƒ Loopê°€ ë°œìƒí•˜ê²Œ ëœë‹¤.
- *      2)ì˜¤ë¼í´ì˜ ê²½ìš° constant filterë§Œìœ¼ë¡œ ì´ë£¨ì–´ì§„ ê²½ìš°ì—ëŠ” íŠ¹ë³„í•œ loop ì²´í¬ë¥¼ ì•Ší•´ì„œ
- *        loopì— ë¹ ì§„ë‹¤ í•˜ì§€ë§Œ ctrl+cë¡œ ë‚˜ì˜¬ ìˆ˜ ìžˆë‹¤. í•˜ì§€ë§Œ ì•Œí‹°ë² ì´ìŠ¤ëŠ” ì´ë ‡ê²Œ ë ê²½ìš°
- *        ì„œë²„ë¥¼ ì£½ì—¬ì•¼ë§Œ í•˜ëŠ” ìƒí™©ì— ë¹ ì§„ë‹¤. ë”°ë¼ì„œ ê¸°ë³¸ì ìœ¼ë¡œ contant filterë§Œìœ¼ë¡œ
- *        ì´ë£¨ì–´ì§„ ê²½ìš°ì—ë„ loop ì²´í¬ë¥¼ í•´ì¤€ë‹¤.
- *      3) ë£¨í”„ë¥¼ í—ˆìš©í•˜ëŠ” ë‹¨í•˜ë‚˜ì˜ ì˜ˆì™¸ëŠ” connect by level < 10 ê³¼ ê°™ì´ ë ˆë²¨ì´ ë‹¨ë…ìœ¼ë¡œ
- *        ì“°ì˜€ì„ ê²½ìš°ì— ë£¨í”„ë¥¼ í—ˆìš©í•œë‹¤. ë”°ë¼ì„œ prior rowì™€ search row ê°€ ê°™ì€ ê²½ìš°ë„
- *        skipí•˜ì§€ ì•ŠëŠ”ë‹¤. ë”°ë¼ì„œ constantfilter != NULl ê³  prior ì™€ search rowê°€
- *        ê°™ì€ ê²½ìš°ì—ë§Œ skip ì„ í•˜ê²Œëœë‹¤.
- *  3. Filterë¥¼ ê²€ì‚¬í•´ì„œ ì˜¬ë°”ë¥¸ ê°’ì¸ì¹˜ ì²´í¬í•œë‹¤.
- *  4. ì¤‘ë³µëœ ê°’ì¸ì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
- *  5. ì˜¬ë°”ë¥¸ ê°’ì´ ë‚˜ì˜¬ë•Œ ê¹Œì§€ ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤.
+ *  Connect By ±¸¹®¿¡¼­ KeyRange°¡ ¾øÀ» °æ¿ì baseMTR·Î ºÎÅÍ Â÷·Ê·Î Ã£´Â´Ù.
+ *  1. aHierÀÎÀÚ°¡ ¾ø´Â °æ¿ì´Â ´ÙÀ½ ·¹º§À» Ã£´Â °æ¿ì ÀÌ¹Ç·Î Ã³À½ºÎÅÍ Ã£´Â´Ù.
+ *     aHierÀÎÀÚ°¡ ÀÖ´Ù¸é Æ÷Áö¼ÇÀ» ResotreÇÏ°í ´ÙÀ½ °ªÀ» ÀÐ´Â´Ù.
+ *  2. Ã£Àº °ªÀÌ PriorTupleÀÇ °ª°ú °°´Ù¸é ´ÙÀ½ °ªÀ» ÀÐ´Â´Ù.
+ *      1)Prior row¿Í Ã£´Â Row°¡ °°À» ¶§ Skip ÇÏÁö ¾ÊÀ¸¸é Ç×»ó Loop°¡ ¹ß»ýÇÏ°Ô µÈ´Ù.
+ *      2)¿À¶óÅ¬ÀÇ °æ¿ì constant filter¸¸À¸·Î ÀÌ·ç¾îÁø °æ¿ì¿¡´Â Æ¯º°ÇÑ loop Ã¼Å©¸¦ ¾ÊÇØ¼­
+ *        loop¿¡ ºüÁø´Ù ÇÏÁö¸¸ ctrl+c·Î ³ª¿Ã ¼ö ÀÖ´Ù. ÇÏÁö¸¸ ¾ËÆ¼º£ÀÌ½º´Â ÀÌ·¸°Ô µÉ°æ¿ì
+ *        ¼­¹ö¸¦ Á×¿©¾ß¸¸ ÇÏ´Â »óÈ²¿¡ ºüÁø´Ù. µû¶ó¼­ ±âº»ÀûÀ¸·Î contant filter¸¸À¸·Î
+ *        ÀÌ·ç¾îÁø °æ¿ì¿¡µµ loop Ã¼Å©¸¦ ÇØÁØ´Ù.
+ *      3) ·çÇÁ¸¦ Çã¿ëÇÏ´Â ´ÜÇÏ³ªÀÇ ¿¹¿Ü´Â connect by level < 10 °ú °°ÀÌ ·¹º§ÀÌ ´Üµ¶À¸·Î
+ *        ¾²¿´À» °æ¿ì¿¡ ·çÇÁ¸¦ Çã¿ëÇÑ´Ù. µû¶ó¼­ prior row¿Í search row °¡ °°Àº °æ¿ìµµ
+ *        skipÇÏÁö ¾Ê´Â´Ù. µû¶ó¼­ constantfilter != NULl °í prior ¿Í search row°¡
+ *        °°Àº °æ¿ì¿¡¸¸ skip À» ÇÏ°ÔµÈ´Ù.
+ *  3. Filter¸¦ °Ë»çÇØ¼­ ¿Ã¹Ù¸¥ °ªÀÎÄ¡ Ã¼Å©ÇÑ´Ù.
+ *  4. Áßº¹µÈ °ªÀÎÁö¸¦ °Ë»çÇÑ´Ù.
+ *  5. ¿Ã¹Ù¸¥ °ªÀÌ ³ª¿Ã¶§ ±îÁö ´ÙÀ½ Row¸¦ ÀÐ´Â´Ù.
  */
 IDE_RC qmnCNBY::searchSequnceRow( qcTemplate  * aTemplate,
                                   qmncCNBY    * aCodePlan,
@@ -931,7 +933,7 @@ IDE_RC qmnCNBY::searchSequnceRow( qcTemplate  * aTemplate,
 
     while ( sSearchRow != NULL )
     {
-        /* ë¹„ì •ìƒ ì¢…ë£Œ ê²€ì‚¬ */
+        /* ºñÁ¤»ó Á¾·á °Ë»ç */
         IDE_TEST( iduCheckSessionEvent( aTemplate->stmt->mStatistics )
                   != IDE_SUCCESS );
 
@@ -1111,17 +1113,17 @@ IDE_RC qmnCNBY::searchSequnceRow( qcTemplate  * aTemplate,
 /**
  * Search Key Range Row
  *
- *   ë ˆë²¨ì´ ì¦ê°€í•  ë•Œë§ˆë‹¤ Key Rangeë¥¼ ìƒì„±í•´ Rowë¥¼ Search í•˜ëŠ” í•¨ìˆ˜.
- *   1. aHier ì¸ìˆ˜ê°€ ì—†ë‹¤ë©´ Key Rangeë¥¼ ìƒì„±í•˜ê³  ê°€ìž¥ ì²˜ìŒ Rowë¥¼ ê°€ì ¸ì˜¨ë‹¤.
- *   2. aHier ì¸ìˆ˜ê°€ ìžˆë‹¤ë©´ Last Key ë¥¼ ì„¤ì •í•˜ê³  ê¸°ì¡´ ë°ì´íƒ€ì˜ í¬ì§€ì…˜ìœ¼ë¡œ ì´ë™ í›„ ë‹¤ìŒ
- *      Rowë¥¼ ê°€ì ¸ì˜¨ë‹¤.
- *   3. ê°€ì ¸ì˜¨ SearchRowëŠ” sortMTRì˜ í¬ì¸í„°ì´ë¯€ë¡œ ì´ë¥¼ baseMTRì˜ SearchRowë¡œ ë³µì›í•´ì¤€ë‹¤.
- *   4. Connect By Filterë¥¼ ì ìš©í•´ ë§žëŠ”ì§€ íŒë‹¨í•´ ë³¸ë‹¤.
- *   5. Prior column1 = column2 ì—ì„œ Priorì˜ Row í¬ì¸í„°ì˜ column1ê³¼ SearchRowì˜ column1
- *      ì´ ê°™ì€ ì§€ ë³¸ë‹¤ ë§Œì•½ ê°™ë‹¤ë©´ Loopê°€ ìžˆë‹¤ê³  íŒë‹¨í•œë’¤ì— ë‹¤ìŒ NextRowë¥¼ ì½ëŠ”ë‹¤.
- *   6. SearchRowê°€ Loopê°€ ìžˆëŠ”ì§€ í™•ì¸í•´ ë³¸ë‹¤.
- *   7. Loopê°€ ì—†ë‹¤ë©´ Position, Last Key, Row Pointer  ì €ìž¥í•œë‹¤.
- *   8. Filterì— ì˜í•´ ê±¸ëŸ¬ì§€ê±°ë‚˜ Loopê°€ ìžˆë‹¤ê³  íŒë‹¨ë˜ë©´ ë‹¤ìŒ ê°’ì„ ì½ë„ë¡ í•œë‹¤.
+ *   ·¹º§ÀÌ Áõ°¡ÇÒ ¶§¸¶´Ù Key Range¸¦ »ý¼ºÇØ Row¸¦ Search ÇÏ´Â ÇÔ¼ö.
+ *   1. aHier ÀÎ¼ö°¡ ¾ø´Ù¸é Key Range¸¦ »ý¼ºÇÏ°í °¡Àå Ã³À½ Row¸¦ °¡Á®¿Â´Ù.
+ *   2. aHier ÀÎ¼ö°¡ ÀÖ´Ù¸é Last Key ¸¦ ¼³Á¤ÇÏ°í ±âÁ¸ µ¥ÀÌÅ¸ÀÇ Æ÷Áö¼ÇÀ¸·Î ÀÌµ¿ ÈÄ ´ÙÀ½
+ *      Row¸¦ °¡Á®¿Â´Ù.
+ *   3. °¡Á®¿Â SearchRow´Â sortMTRÀÇ Æ÷ÀÎÅÍÀÌ¹Ç·Î ÀÌ¸¦ baseMTRÀÇ SearchRow·Î º¹¿øÇØÁØ´Ù.
+ *   4. Connect By Filter¸¦ Àû¿ëÇØ ¸Â´ÂÁö ÆÇ´ÜÇØ º»´Ù.
+ *   5. Prior column1 = column2 ¿¡¼­ PriorÀÇ Row Æ÷ÀÎÅÍÀÇ column1°ú SearchRowÀÇ column1
+ *      ÀÌ °°Àº Áö º»´Ù ¸¸¾à °°´Ù¸é Loop°¡ ÀÖ´Ù°í ÆÇ´ÜÇÑµÚ¿¡ ´ÙÀ½ NextRow¸¦ ÀÐ´Â´Ù.
+ *   6. SearchRow°¡ Loop°¡ ÀÖ´ÂÁö È®ÀÎÇØ º»´Ù.
+ *   7. Loop°¡ ¾ø´Ù¸é Position, Last Key, Row Pointer  ÀúÀåÇÑ´Ù.
+ *   8. Filter¿¡ ÀÇÇØ °É·¯Áö°Å³ª Loop°¡ ÀÖ´Ù°í ÆÇ´ÜµÇ¸é ´ÙÀ½ °ªÀ» ÀÐµµ·Ï ÇÑ´Ù.
  */
 IDE_RC qmnCNBY::searchKeyRangeRow( qcTemplate  * aTemplate,
                                    qmncCNBY    * aCodePlan,
@@ -1169,7 +1171,7 @@ IDE_RC qmnCNBY::searchKeyRangeRow( qcTemplate  * aTemplate,
 
     while ( sSearchRow != NULL )
     {
-        /* ë¹„ì •ìƒ ì¢…ë£Œ ê²€ì‚¬ */
+        /* ºñÁ¤»ó Á¾·á °Ë»ç */
         IDE_TEST( iduCheckSessionEvent( aTemplate->stmt->mStatistics )
                   != IDE_SUCCESS );
 
@@ -1334,7 +1336,7 @@ IDE_RC qmnCNBY::searchKeyRangeRow( qcTemplate  * aTemplate,
 /**
  * Allocate Stack Block
  *
- *   CNBYStack Blackì„ ìƒˆë¡œ í• ë‹¹í•œë‹¤.
+ *   CNBYStack BlackÀ» »õ·Î ÇÒ´çÇÑ´Ù.
  */
 IDE_RC qmnCNBY::allocStackBlock( qcTemplate * aTemplate,
                                  qmndCNBY   * aDataPlan )
@@ -1371,9 +1373,9 @@ IDE_RC qmnCNBY::allocStackBlock( qcTemplate * aTemplate,
 /**
  * Push Stack
  *
- *   1. Stackì— ì°¾ì€ Rowë¥¼ nextPosìœ„ì¹˜ì— ì €ìž¥í•œë‹¤.
- *   2. ë‹¤ìŒ ë ˆë²¨ì„ ì°¾ì„ ìˆ˜ ìžˆë„ë¡ priorTupleì— ì°¾ì€ Row í¬ì¸í„°ë¥¼ ì§€ì •í•œë‹¤.
- *   3. nextPosì˜ ìœ„ì¹˜ë¥¼ ì¦ê°€ì‹œì¼œ ë†“ëŠ”ë‹¤.
+ *   1. Stack¿¡ Ã£Àº Row¸¦ nextPosÀ§Ä¡¿¡ ÀúÀåÇÑ´Ù.
+ *   2. ´ÙÀ½ ·¹º§À» Ã£À» ¼ö ÀÖµµ·Ï priorTuple¿¡ Ã£Àº Row Æ÷ÀÎÅÍ¸¦ ÁöÁ¤ÇÑ´Ù.
+ *   3. nextPosÀÇ À§Ä¡¸¦ Áõ°¡½ÃÄÑ ³õ´Â´Ù.
  */
 IDE_RC qmnCNBY::pushStack( qcTemplate  * aTemplate,
                            qmncCNBY    * aCodePlan,
@@ -1428,9 +1430,9 @@ IDE_RC qmnCNBY::pushStack( qcTemplate  * aTemplate,
 /**
  * Search Next Level Data
  *  This funcion search data using key range or filter.
- *  1. Level Filter ê²€ì‚¬ë¥¼ ìˆ˜í–‰í•œë‹¤.
- *  2. Key Ragneì˜ ìœ ë¬´ì— ë”°ë¼ Key Range Searchë‚˜ Sequence Search ë¥¼ í•œë‹¤.
- *  3. ë°ì´í„°ê°€ ìžˆë‹¤ë©´ ìŠ¤íƒì— ë°ì´í„°ë¥¼ ë„£ëŠ”ë‹¤.
+ *  1. Level Filter °Ë»ç¸¦ ¼öÇàÇÑ´Ù.
+ *  2. Key RagneÀÇ À¯¹«¿¡ µû¶ó Key Range Search³ª Sequence Search ¸¦ ÇÑ´Ù.
+ *  3. µ¥ÀÌÅÍ°¡ ÀÖ´Ù¸é ½ºÅÃ¿¡ µ¥ÀÌÅÍ¸¦ ³Ö´Â´Ù.
  */
 IDE_RC qmnCNBY::searchNextLevelData( qcTemplate  * aTemplate,
                                      qmncCNBY    * aCodePlan,
@@ -1457,9 +1459,9 @@ IDE_RC qmnCNBY::searchNextLevelData( qcTemplate  * aTemplate,
     }
 
     /* BUG-39434 The connect by need rownum pseudo column.
-     * Next Levelì„ ì°¾ì„ ë•Œì—ëŠ” Rownumì„ í•˜ë‚˜ ì¦ê°€ì‹œì¼œ ê²€ì‚¬í•´ì•¼í•œë‹¤.
-     * ì™œëƒí•˜ë©´ í•­ìƒ isLeaf ê²€ì‚¬ë¡œ ë‹¤ìŒ í•˜ìœ„ ê°€ ìžˆëŠ”ì§€ ê²€ì‚¬í•˜ê¸° ë•Œë¬¸ì´ë‹¤
-     * ê·¸ëž˜ì„œ rownum ì„ í•˜ë‚˜ ì¦ê°€ì‹œì¼œì„œ ê²€ì‚¬í•´ì•¼í•œë‹¤.
+     * Next LevelÀ» Ã£À» ¶§¿¡´Â RownumÀ» ÇÏ³ª Áõ°¡½ÃÄÑ °Ë»çÇØ¾ßÇÑ´Ù.
+     * ¿Ö³ÄÇÏ¸é Ç×»ó isLeaf °Ë»ç·Î ´ÙÀ½ ÇÏÀ§ °¡ ÀÖ´ÂÁö °Ë»çÇÏ±â ¶§¹®ÀÌ´Ù
+     * ±×·¡¼­ rownum À» ÇÏ³ª Áõ°¡½ÃÄÑ¼­ °Ë»çÇØ¾ßÇÑ´Ù.
      */
     if ( aCodePlan->rownumFilter != NULL )
     {
@@ -1539,16 +1541,16 @@ IDE_RC qmnCNBY::searchNextLevelData( qcTemplate  * aTemplate,
 
 /**
  * Search Sibling Data
- *  í•˜ìœ„ ë ˆë²¨ì˜ ë°ì´í„°ë¥¼ ë°œê²¬í• ìˆ˜ ì—†ì„ì‹œ ê°™ì€ ë ˆë²¨ì˜ ë°ì´í„°ë¥¼ ì°¾ëŠ”ë‹¤.
- *  Prior Rowë¥¼ ì „ì „ ë°ì´í„°ë¡œ ì˜®ê²¨ë†“ê³  Stackì˜ nextPosë„ ì˜®ê²¨ë†“ì•„ì•¼í•œë‹¤.
- *   1. nextPosëŠ” í•­ìƒ ë‹¤ìŒ ë„£ì„ ê³µê°„ì„ ê°ˆìœ¼í‚¤ëŠ”ë° ì´ë¥¼ ì´ì „ìœ¼ë¡œ ì˜®ê²¨ë†“ëŠ”ë‹¤.
- *      nextPosê°€ 0 ì¸ê²½ìš°ëŠ” ë‹¤ë¥¸ ìŠ¤íƒ ë¸”ëŸ­ì— ìžˆë‹¤ëŠ” ëœ»ì´ë‹¤. ì²˜ìŒ ì‹œìž‘ì‹œì—ëŠ” 1
- *   2. Prior RowëŠ” nextPosì˜ ì´ì „ ê°’ì´ í•„ìš”í•˜ë‹¤.
- *   3. ê° ë ˆë²¨ ë§ˆë‹¤ ë‹¤ë¥¸ Key Rangeê°€ ìƒì„±ë˜ì–´ ìžˆìœ¼ë‹ˆ í˜„ìž¬ CNBYInfoë„ í•„ìš”í•˜ë‹¤.
- *   4. í˜„ì œ CNBYInfoë¥¼ ì¸ìžë¡œ ë„£ì–´ì„œ Searchë¥¼ í•˜ë©´ ë‹¤ìŒ í˜•ì œ ë°ì´í„°ë¥¼ ì–»ê²Œëœë‹¤.
- *   5. ë°ì´í„°ê°€ ìžˆë‹¤ë©´ ì´ë¥¼ Stackì— ë„£ê³  isLeafë¥¼ ìœ„í•´ ë‹¤ì‹œ ë‹¤ìŒ ë ˆë²¨ ë°ì´í„°ë¥¼ ì°¾ëŠ”ë‹¤.
- *   6. ë°ì´í„°ê°€ ì—†ë‹¤ë©´ í˜„ì œ isLeafê°€ ë¨¼ì§€ë¥¼ ë³´ê³  ë§Œì•½ 0ì´ë¼ë©´ ì´ë¥¼ 1ë¡œ ë°”ê¾¸ê³ 
- *      setCurrentRow ë¥¼ í˜„ì œ Stackë¡œ ì„¸íŒ…í•œë‹¤. ë§Œì•½ ì•„ë‹ˆë¼ë©´ ìƒìœ„ ë…¸ë“œë¥¼ ì°¾ë„ë¡ í•œë‹¤.
+ *  ÇÏÀ§ ·¹º§ÀÇ µ¥ÀÌÅÍ¸¦ ¹ß°ßÇÒ¼ö ¾øÀ»½Ã °°Àº ·¹º§ÀÇ µ¥ÀÌÅÍ¸¦ Ã£´Â´Ù.
+ *  Prior Row¸¦ ÀüÀü µ¥ÀÌÅÍ·Î ¿Å°Ü³õ°í StackÀÇ nextPosµµ ¿Å°Ü³õ¾Æ¾ßÇÑ´Ù.
+ *   1. nextPos´Â Ç×»ó ´ÙÀ½ ³ÖÀ» °ø°£À» °¥À¸Å°´Âµ¥ ÀÌ¸¦ ÀÌÀüÀ¸·Î ¿Å°Ü³õ´Â´Ù.
+ *      nextPos°¡ 0 ÀÎ°æ¿ì´Â ´Ù¸¥ ½ºÅÃ ºí·°¿¡ ÀÖ´Ù´Â ¶æÀÌ´Ù. Ã³À½ ½ÃÀÛ½Ã¿¡´Â 1
+ *   2. Prior Row´Â nextPosÀÇ ÀÌÀü °ªÀÌ ÇÊ¿äÇÏ´Ù.
+ *   3. °¢ ·¹º§ ¸¶´Ù ´Ù¸¥ Key Range°¡ »ý¼ºµÇ¾î ÀÖÀ¸´Ï ÇöÀç CNBYInfoµµ ÇÊ¿äÇÏ´Ù.
+ *   4. ÇöÁ¦ CNBYInfo¸¦ ÀÎÀÚ·Î ³Ö¾î¼­ Search¸¦ ÇÏ¸é ´ÙÀ½ ÇüÁ¦ µ¥ÀÌÅÍ¸¦ ¾ò°ÔµÈ´Ù.
+ *   5. µ¥ÀÌÅÍ°¡ ÀÖ´Ù¸é ÀÌ¸¦ Stack¿¡ ³Ö°í isLeaf¸¦ À§ÇØ ´Ù½Ã ´ÙÀ½ ·¹º§ µ¥ÀÌÅÍ¸¦ Ã£´Â´Ù.
+ *   6. µ¥ÀÌÅÍ°¡ ¾ø´Ù¸é ÇöÁ¦ isLeaf°¡ ¸ÕÁö¸¦ º¸°í ¸¸¾à 0ÀÌ¶ó¸é ÀÌ¸¦ 1·Î ¹Ù²Ù°í
+ *      setCurrentRow ¸¦ ÇöÁ¦ Stack·Î ¼¼ÆÃÇÑ´Ù. ¸¸¾à ¾Æ´Ï¶ó¸é »óÀ§ ³ëµå¸¦ Ã£µµ·Ï ÇÑ´Ù.
  */
 IDE_RC qmnCNBY::searchSiblingData( qcTemplate * aTemplate,
                                    qmncCNBY   * aCodePlan,
@@ -1577,7 +1579,7 @@ IDE_RC qmnCNBY::searchSiblingData( qcTemplate * aTemplate,
         /* Nothing to do */
     }
 
-    /* 1. nextPosëŠ” í•­ìƒ ë‹¤ìŒ Stackì„ ê°€ë¥´í‚¤ë¯€ë¡œ ì´ë¥¼ ê°ì†Œ ì‹œì¼œë†“ëŠ”ë‹¤. */
+    /* 1. nextPos´Â Ç×»ó ´ÙÀ½ StackÀ» °¡¸£Å°¹Ç·Î ÀÌ¸¦ °¨¼Ò ½ÃÄÑ³õ´Â´Ù. */
     --sStack->nextPos;
 
     if ( sStack->nextPos <= 0 )
@@ -1633,7 +1635,7 @@ IDE_RC qmnCNBY::searchSiblingData( qcTemplate * aTemplate,
     {
 
         /* BUG-39434 The connect by need rownum pseudo column.
-         * Siblings ë¥¼ ì°¾ì„ ë•ŒëŠ” ìŠ¤íƒì— ë„£ê¸° ì „ì— rownumì„ ê²€ì‚¬í•´ì•¼í•œë‹¤.
+         * Siblings ¸¦ Ã£À» ¶§´Â ½ºÅÃ¿¡ ³Ö±â Àü¿¡ rownumÀ» °Ë»çÇØ¾ßÇÑ´Ù.
          */
         if ( aCodePlan->rownumFilter != NULL )
         {
@@ -1715,17 +1717,17 @@ IDE_RC qmnCNBY::searchSiblingData( qcTemplate * aTemplate,
 /**
  * doItNext
  *
- *   CONNECT_BY_ISLEAFì˜ ê°’ì„ ì•Œê¸°ìœ„í•´ í˜„ì œ ë…¸ë“œì™¸ì— ë‹¤ìŒ ë…¸ë“œê°€ ìžˆëŠ”ì§€ë„ ë³¸ë‹¤.
- *   1. doItNextì—ì„œëŠ” í•­ìƒ Dataê°€ Exist ì¡´ìž¬í•˜ë„ë¡ flag ì„¸íŒ…ì„ í•œë‹¤.
- *      doItFirstì—ì„œ ë°ì´íƒ€ì˜ ì¡´ìž¬ ì—¬ë¶€ë¥¼ ê°€ë¦°ë‹¤. ì„ íƒí•œë‹¤.
- *   2. PriorTupleì˜ Rowí¬ì¸í„°ë¥¼ ê·¸ì „ì— ì°¾ë˜ Row í¬ì¸í„°ë¡œ ë°”ê¿”ì¤€ë‹¤.
- *   3. í˜„ì œê°€ Leaf ë…¸ë“œê°€ ì•„ë‹ˆë¼ë©´ NextLevelì„ ì°¾ëŠ”ë‹¤.
- *   4. ë‹¤ìŒ ë…¸ë“œë¥¼ ì°¾ì¹˜ ëª»í•œ ê²½ìš° isLeafì´ 0ì´ë¼ë©´ Leafì„ 1 í‘œì‹œí•œë’¤ì— í˜„ì œ ë…¸ë“œë¥¼ ë°”ë¡œ
- *      ì „ ë…¸ë“œë¡œ ì§€ì •í•´ì¤€ë‹¤.
- *   5. ë§ˆì§€ë§‰ ë…¸ë“œ ì¦‰ isLeafì´ 1ì¸ë°ë„ ë°ì´í„°ê°€ ì—†ëŠ”ê²½ìš°ë¼ë©´ í˜„ì œ ë…¸ë“œë¥¼ ì°¾ì•„ì¤€ë‹¤
- *   6. ë ˆë²¨ 1ê¹Œì§€ ìŠ¤íƒì„ ê±°ìŠ¬ëŸ¬ ì˜¬ë¼ ê°ˆë•Œ ê¹Œì§€ ë°ì´í„°ê°€ ì—†ë‹¤ë©´ doItFirstë¥¼ í†µí•´ ë‹¤ìŒ
- *      Startë¥¼ ì§€ì •í•œë‹¤.
- *   7. isLeafPtrì´ 0 ì´ê³  ë°ì´í„°ê°€ ìžˆìœ¼ë¯€ë¡œ ì „ì „ ê°’ì„ í˜„ì œ ê°’ìœ¼ë¡œ ì„¸íŒ…í•´ì¤€ë‹¤.
+ *   CONNECT_BY_ISLEAFÀÇ °ªÀ» ¾Ë±âÀ§ÇØ ÇöÁ¦ ³ëµå¿Ü¿¡ ´ÙÀ½ ³ëµå°¡ ÀÖ´ÂÁöµµ º»´Ù.
+ *   1. doItNext¿¡¼­´Â Ç×»ó Data°¡ Exist Á¸ÀçÇÏµµ·Ï flag ¼¼ÆÃÀ» ÇÑ´Ù.
+ *      doItFirst¿¡¼­ µ¥ÀÌÅ¸ÀÇ Á¸Àç ¿©ºÎ¸¦ °¡¸°´Ù. ¼±ÅÃÇÑ´Ù.
+ *   2. PriorTupleÀÇ RowÆ÷ÀÎÅÍ¸¦ ±×Àü¿¡ Ã£´ø Row Æ÷ÀÎÅÍ·Î ¹Ù²ãÁØ´Ù.
+ *   3. ÇöÁ¦°¡ Leaf ³ëµå°¡ ¾Æ´Ï¶ó¸é NextLevelÀ» Ã£´Â´Ù.
+ *   4. ´ÙÀ½ ³ëµå¸¦ Ã£Ä¡ ¸øÇÑ °æ¿ì isLeafÀÌ 0ÀÌ¶ó¸é LeafÀ» 1 Ç¥½ÃÇÑµÚ¿¡ ÇöÁ¦ ³ëµå¸¦ ¹Ù·Î
+ *      Àü ³ëµå·Î ÁöÁ¤ÇØÁØ´Ù.
+ *   5. ¸¶Áö¸· ³ëµå Áï isLeafÀÌ 1ÀÎµ¥µµ µ¥ÀÌÅÍ°¡ ¾ø´Â°æ¿ì¶ó¸é ÇöÁ¦ ³ëµå¸¦ Ã£¾ÆÁØ´Ù
+ *   6. ·¹º§ 1±îÁö ½ºÅÃÀ» °Å½½·¯ ¿Ã¶ó °¥¶§ ±îÁö µ¥ÀÌÅÍ°¡ ¾ø´Ù¸é doItFirst¸¦ ÅëÇØ ´ÙÀ½
+ *      Start¸¦ ÁöÁ¤ÇÑ´Ù.
+ *   7. isLeafPtrÀÌ 0 ÀÌ°í µ¥ÀÌÅÍ°¡ ÀÖÀ¸¹Ç·Î ÀüÀü °ªÀ» ÇöÁ¦ °ªÀ¸·Î ¼¼ÆÃÇØÁØ´Ù.
  */
 IDE_RC qmnCNBY::doItNext( qcTemplate * aTemplate,
                           qmnPlan    * aPlan,
@@ -1859,8 +1861,8 @@ IDE_RC qmnCNBY::refineOffset( qcTemplate * aTemplate,
                                      & sCMTRTuple )
                   != IDE_SUCCESS );
 
-        // PROJ-2362 memory temp ì €ìž¥ íš¨ìœ¨ì„± ê°œì„ 
-        // CMTRì˜ columnsë¥¼ ë³µì‚¬í•œë‹¤.
+        // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
+        // CMTRÀÇ columns¸¦ º¹»çÇÑ´Ù.
         IDE_DASSERT( aTuple->columnCount == sCMTRTuple->columnCount );
 
         idlOS::memcpy( (void*)aTuple->columns,
@@ -1882,9 +1884,9 @@ IDE_RC qmnCNBY::refineOffset( qcTemplate * aTemplate,
 /**
  * Initialize Sort Mtr Node
  *
- *   connect by êµ¬ë¬¸ì— ì˜í•´ ì¶”ì¶œë˜ëŠ” Sort Mtr Node Initialize
- *   ì˜ˆë¥¼ ë“¤ë©´ ) connect by prior id = pid;
- *   ì—ì„œ pidê°€ sort mtr nodeê°€ ëœë‹¤.
+ *   connect by ±¸¹®¿¡ ÀÇÇØ ÃßÃâµÇ´Â Sort Mtr Node Initialize
+ *   ¿¹¸¦ µé¸é ) connect by prior id = pid;
+ *   ¿¡¼­ pid°¡ sort mtr node°¡ µÈ´Ù.
  */
 IDE_RC qmnCNBY::initSortMtrNode( qcTemplate * aTemplate,
                                  qmncCNBY   * /*aCodePlan*/,
@@ -1920,12 +1922,12 @@ IDE_RC qmnCNBY::initSortMtrNode( qcTemplate * aTemplate,
 
 /**
  *  First Initialize
- *    1. Child Planì„ ì‹¤í–‰ì‹œí‚¨ë‹¤.
- *    2. CNBY ê´€ë ¨ ì •ë³´ ì´ˆê¸°í™”ë¥¼ í•œë‹¤.
- *    3. NULL ROWë¥¼ ì´ˆê¸°í™” í•œë‹¤.
- *    4. CNBYStack ì„ í• ë‹¹í•˜ê³  ì´ˆê¸°í™” í•œë‹¤.
- *    5. Order siblings by columnì´ ìžˆë‹¤ë©´ base Tableì„ Sort ì‹œí‚¨ë‹¤.
- *    6. Key Rangeê°€ ìžˆë‹¤ë©´ Sort Tempë¥¼ ìƒì„±í•œë‹¤.
+ *    1. Child PlanÀ» ½ÇÇà½ÃÅ²´Ù.
+ *    2. CNBY °ü·Ã Á¤º¸ ÃÊ±âÈ­¸¦ ÇÑ´Ù.
+ *    3. NULL ROW¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+ *    4. CNBYStack À» ÇÒ´çÇÏ°í ÃÊ±âÈ­ ÇÑ´Ù.
+ *    5. Order siblings by columnÀÌ ÀÖ´Ù¸é base TableÀ» Sort ½ÃÅ²´Ù.
+ *    6. Key Range°¡ ÀÖ´Ù¸é Sort Temp¸¦ »ý¼ºÇÑ´Ù.
  */
 IDE_RC qmnCNBY::firstInit( qcTemplate * aTemplate,
                            qmncCNBY   * aCodePlan,
@@ -1946,17 +1948,47 @@ IDE_RC qmnCNBY::firstInit( qcTemplate * aTemplate,
     IDE_TEST( execChild( aTemplate, aCodePlan, aDataPlan )
               != IDE_SUCCESS );
 
-    /* 2. HIER ê³ ìœ  ì •ë³´ì˜ ì´ˆê¸°í™” */
+    /* 2. HIER °íÀ¯ Á¤º¸ÀÇ ÃÊ±âÈ­ */
     aDataPlan->plan.myTuple = &aTemplate->tmplate.rows[aCodePlan->myRowID];
     aDataPlan->childTuple   = &aTemplate->tmplate.rows[aCodePlan->baseRowID];
     aDataPlan->priorTuple   = &aTemplate->tmplate.rows[aCodePlan->priorRowID];
-    sTuple                  = &aTemplate->tmplate.rows[aCodePlan->levelRowID];
-    aDataPlan->levelPtr     = (SLong *)sTuple->row;
-    aDataPlan->levelValue   = *(aDataPlan->levelPtr);
-    sTuple                  = &aTemplate->tmplate.rows[aCodePlan->isLeafRowID];
-    aDataPlan->isLeafPtr    = (SLong *)sTuple->row;
-    sTuple                  = &aTemplate->tmplate.rows[aCodePlan->stackRowID];
-    aDataPlan->stackPtr     = (SLong *)sTuple->row;
+
+
+    /* BUG-48300 */
+    if ( ( aCodePlan->flag & QMNC_CNBY_LEVEL_MASK )
+         == QMNC_CNBY_LEVEL_TRUE )
+    {
+        sTuple                  = &aTemplate->tmplate.rows[aCodePlan->levelRowID];
+        aDataPlan->levelPtr     = (SLong *)sTuple->row;
+        aDataPlan->levelValue   = *(aDataPlan->levelPtr);
+    }
+    else
+    {
+        aDataPlan->levelDummy = 0;
+        aDataPlan->levelPtr   = &aDataPlan->levelDummy;
+        aDataPlan->levelValue = 0;
+    }
+
+    /* BUG-48300 */
+    if ( ( aCodePlan->flag & QMNC_CNBY_ISLEAF_MASK )
+         == QMNC_CNBY_ISLEAF_TRUE )
+    {
+        sTuple                  = &aTemplate->tmplate.rows[aCodePlan->isLeafRowID];
+        aDataPlan->isLeafPtr    = (SLong *)sTuple->row;
+    }
+    else
+    {
+        aDataPlan->isLeafDummy = 0;
+        aDataPlan->isLeafPtr = &aDataPlan->isLeafDummy;
+    }
+
+    /* BUG-48300 */
+    if ( ( aCodePlan->flag & QMNC_CNBY_FUNCTION_MASK )
+         == QMNC_CNBY_FUNCTION_TRUE )
+    {
+        sTuple                  = &aTemplate->tmplate.rows[aCodePlan->stackRowID];
+        aDataPlan->stackPtr     = (SLong *)sTuple->row;
+    }
 
     if ( aCodePlan->rownumFilter != NULL )
     {
@@ -1988,7 +2020,7 @@ IDE_RC qmnCNBY::firstInit( qcTemplate * aTemplate,
                                aCodePlan->priorRowID )
               != IDE_SUCCESS );
 
-    /* 3. Null Row ì´ˆê¸°í™” */
+    /* 3. Null Row ÃÊ±âÈ­ */
     IDE_TEST( getNullRow( aTemplate, aCodePlan, aDataPlan )
               != IDE_SUCCESS );
 
@@ -2012,13 +2044,18 @@ IDE_RC qmnCNBY::firstInit( qcTemplate * aTemplate,
 
     aDataPlan->mtrNode = (qmdMtrNode *)( aTemplate->tmplate.data +
                                          aCodePlan->mtrNodeOffset );
-    /* 4.1 Set Connect By Stack Address */
-    *aDataPlan->stackPtr = (SLong)(aDataPlan->firstStack);
+    /* BUG-48300 */
+    if ( ( aCodePlan->flag & QMNC_CNBY_FUNCTION_MASK )
+         == QMNC_CNBY_FUNCTION_TRUE )
+    {
+        /* 4.1 Set Connect By Stack Address */
+        *aDataPlan->stackPtr = (SLong)(aDataPlan->firstStack);
+    }
 
     if ( ( aCodePlan->flag & QMNC_CNBY_CHILD_VIEW_MASK )
          == QMNC_CNBY_CHILD_VIEW_TRUE )
     {
-        /* 5. Order siblings by columnì´ ìžˆë‹¤ë©´ base Tableì„ Sort ì‹œí‚¨ë‹¤. */
+        /* 5. Order siblings by columnÀÌ ÀÖ´Ù¸é base TableÀ» Sort ½ÃÅ²´Ù. */
         if ( aCodePlan->baseSortNode != NULL )
         {
             sBaseNode = ( qmdMtrNode * )( aTemplate->tmplate.data +
@@ -2103,7 +2140,7 @@ IDE_RC qmnCNBY::firstInit( qcTemplate * aTemplate,
             /* Nothing to do */
         }
 
-        /* 6. Key Rangeê°€ ìžˆë‹¤ë©´ Sort Tempë¥¼ ìƒì„±í•œë‹¤ */
+        /* 6. Key Range°¡ ÀÖ´Ù¸é Sort Temp¸¦ »ý¼ºÇÑ´Ù */
         if ( aCodePlan->connectByKeyRange != NULL )
         {
             aDataPlan->sortTuple = &aTemplate->tmplate.rows[aCodePlan->sortRowID];
@@ -2269,7 +2306,9 @@ IDE_RC qmnCNBY::initForTable( qcTemplate * aTemplate,
     }
 
     if ( ( aCodePlan->connectByKeyRange != NULL ) &&
-         ( aCodePlan->mIndex == NULL ) )
+         ( aCodePlan->mIndex == NULL ) &&
+         ( ( aCodePlan->flag & QMNC_CNBY_FROM_DUAL_MASK )
+           == QMNC_CNBY_FROM_DUAL_FALSE ) )
     {
         aDataPlan->sortTuple = &aTemplate->tmplate.rows[aCodePlan->sortRowID];
 
@@ -2367,7 +2406,7 @@ IDE_RC qmnCNBY::getNullRow( qcTemplate * aTemplate,
         if ( ( aCodePlan->flag & QMNC_CNBY_CHILD_VIEW_MASK )
              == QMNC_CNBY_CHILD_VIEW_TRUE )
         {
-            /* Row Size íšë“ */
+            /* Row Size È¹µæ */
             IDE_TEST( qmnCMTR::getNullRowSize( aTemplate,
                                                aCodePlan->plan.left,
                                                &sNullRowSize )
@@ -2375,7 +2414,7 @@ IDE_RC qmnCNBY::getNullRow( qcTemplate * aTemplate,
 
             IDE_TEST_RAISE( sNullRowSize <= 0, ERR_WRONG_ROW_SIZE );
 
-            // Null Rowë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
+            // Null Row¸¦ À§ÇÑ °ø°£ ÇÒ´ç
             IDU_LIMITPOINT("qmnCNBY::getNullRow::malloc");
             IDE_TEST( sMemory->cralloc( sNullRowSize,
                                         &aDataPlan->nullRow )
@@ -2504,7 +2543,7 @@ IDE_RC qmnCNBY::printPlan( qcTemplate   * aTemplate,
         /* Nothing to do */
     }
 
-    /* Access ì •ë³´ì˜ ì¶œë ¥ */
+    /* Access Á¤º¸ÀÇ Ãâ·Â */
     if ( aMode == QMN_DISPLAY_ALL )
     {
         if ( (*sDataPlan->flag & QMND_CNBY_INIT_DONE_MASK)
@@ -2553,7 +2592,7 @@ IDE_RC qmnCNBY::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Cost ì¶œë ¥
+    // Cost Ãâ·Â
     //----------------------------
     qmn::printCost( aString,
                     sCodePlan->plan.qmgAllCost );
@@ -2926,7 +2965,7 @@ IDE_RC qmnCNBY::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
+    // Operatorº° °á°ú Á¤º¸ Ãâ·Â
     //----------------------------
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
     {
@@ -2941,7 +2980,7 @@ IDE_RC qmnCNBY::printPlan( qcTemplate   * aTemplate,
         // Nothing to do.
     }
 
-    /* Child Planì˜ ì¶œë ¥ */
+    /* Child PlanÀÇ Ãâ·Â */
     IDE_TEST( aPlan->left->printPlan( aTemplate,
                                       aPlan->left,
                                       aDepth + 1,
@@ -2955,7 +2994,7 @@ IDE_RC qmnCNBY::printPlan( qcTemplate   * aTemplate,
     return IDE_FAILURE;
 }
 
-// baseMTR tuple ë³µì›
+// baseMTR tuple º¹¿ø
 IDE_RC qmnCNBY::setBaseTupleSet( qcTemplate * aTemplate,
                                  qmndCNBY   * aDataPlan,
                                  const void * aRow )
@@ -2979,7 +3018,7 @@ IDE_RC qmnCNBY::setBaseTupleSet( qcTemplate * aTemplate,
     return IDE_FAILURE;
 }
 
-// baseMTR tupleë¡œ ë¶€í„° plan.myTuple ë³µì›
+// baseMTR tuple·Î ºÎÅÍ plan.myTuple º¹¿ø
 IDE_RC qmnCNBY::copyTupleSet( qcTemplate * aTemplate,
                               qmncCNBY   * aCodePlan,
                               mtcTuple   * aDstTuple )
@@ -3046,6 +3085,9 @@ IDE_RC qmnCNBY::doItFirstDual( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     *aFlag = QMC_ROW_DATA_NONE;
+    /* BUG-47820 start with ±¸¹®¿¡ level pseudo columnÀÌ »ç¿ëµÉ °æ¿ì °á°ú¿À·ù. */
+    sDataPlan->levelValue = 0;
+    *sDataPlan->levelPtr = 0;
 
     IDE_TEST( aPlan->left->doIt( aTemplate, aPlan->left, aFlag )
               != IDE_SUCCESS );
@@ -3056,6 +3098,9 @@ IDE_RC qmnCNBY::doItFirstDual( qcTemplate * aTemplate,
 
     if ( ( *aFlag & QMC_ROW_DATA_MASK ) != QMC_ROW_DATA_NONE )
     {
+        sDataPlan->lastStack->items[0].rowPtr = sDataPlan->plan.myTuple->row;
+        sDataPlan->lastStack->items[0].level = 1;
+        sDataPlan->lastStack->nextPos = 1;
         sDataPlan->plan.myTuple->modify++;
 
         if ( sCodePlan->connectByConstant != NULL )
@@ -3320,6 +3365,9 @@ IDE_RC qmnCNBY::doItFirstTable( qcTemplate * aTemplate,
     *aFlag = QMC_ROW_DATA_NONE;
 
     sDataPlan->priorTuple->row = sDataPlan->nullRow;
+    /* BUG-47820 start with ±¸¹®¿¡ level pseudo columnÀÌ »ç¿ëµÉ °æ¿ì °á°ú¿À·ù. */
+    sDataPlan->levelValue = 0;
+    *sDataPlan->levelPtr = 0;
 
     IDE_TEST( aPlan->left->doIt( aTemplate, aPlan->left, aFlag )
               != IDE_SUCCESS );
@@ -3508,7 +3556,7 @@ IDE_RC qmnCNBY::doItNextTable( qcTemplate * aTemplate,
     return IDE_FAILURE;
 }
 
-/* ìŠ¤íƒì—ì„œ ìƒìœ„ Planì— ì˜¬ë ¤ì¤„ item ì§€ì • */
+/* ½ºÅÃ¿¡¼­ »óÀ§ Plan¿¡ ¿Ã·ÁÁÙ item ÁöÁ¤ */
 IDE_RC qmnCNBY::setCurrentRowTable( qmndCNBY   * aDataPlan,
                                     UInt         aPrev )
 {
@@ -3555,7 +3603,7 @@ IDE_RC qmnCNBY::setCurrentRowTable( qmndCNBY   * aDataPlan,
         {
             aDataPlan->priorTuple->row = aDataPlan->nullRow;
 
-            // PROJ-2362 memory temp ì €ìž¥ íš¨ìœ¨ì„± ê°œì„ 
+            // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
             sColumn = aDataPlan->priorTuple->columns;
             for ( i = 0; i < aDataPlan->priorTuple->columnCount; i++, sColumn++ )
             {
@@ -3611,7 +3659,7 @@ IDE_RC qmnCNBY::searchSiblingDataTable( qcTemplate * aTemplate,
         /* Nothing to do */
     }
 
-    /* 1. nextPosëŠ” í•­ìƒ ë‹¤ìŒ Stackì„ ê°€ë¥´í‚¤ë¯€ë¡œ ì´ë¥¼ ê°ì†Œ ì‹œì¼œë†“ëŠ”ë‹¤. */
+    /* 1. nextPos´Â Ç×»ó ´ÙÀ½ StackÀ» °¡¸£Å°¹Ç·Î ÀÌ¸¦ °¨¼Ò ½ÃÄÑ³õ´Â´Ù. */
     --sStack->nextPos;
 
     if ( sStack->nextPos <= 0 )
@@ -3664,7 +3712,7 @@ IDE_RC qmnCNBY::searchSiblingDataTable( qcTemplate * aTemplate,
     {
 
         /* BUG-39434 The connect by need rownum pseudo column.
-         * Siblings ë¥¼ ì°¾ì„ ë•ŒëŠ” ìŠ¤íƒì— ë„£ê¸° ì „ì— rownumì„ ê²€ì‚¬í•´ì•¼í•œë‹¤.
+         * Siblings ¸¦ Ã£À» ¶§´Â ½ºÅÃ¿¡ ³Ö±â Àü¿¡ rownumÀ» °Ë»çÇØ¾ßÇÑ´Ù.
          */
         if ( aCodePlan->rownumFilter != NULL )
         {
@@ -3742,7 +3790,7 @@ IDE_RC qmnCNBY::searchSiblingDataTable( qcTemplate * aTemplate,
     return IDE_FAILURE;
 }
 
-/* ë‹¤ìŒ ë ˆë²¨ì˜ ìžë£Œ Search */
+/* ´ÙÀ½ ·¹º§ÀÇ ÀÚ·á Search */
 IDE_RC qmnCNBY::searchNextLevelDataTable( qcTemplate  * aTemplate,
                                           qmncCNBY    * aCodePlan,
                                           qmndCNBY    * aDataPlan,
@@ -3773,9 +3821,9 @@ IDE_RC qmnCNBY::searchNextLevelDataTable( qcTemplate  * aTemplate,
     }
 
     /* BUG-39434 The connect by need rownum pseudo column.
-     * Next Levelì„ ì°¾ì„ ë•Œì—ëŠ” Rownumì„ í•˜ë‚˜ ì¦ê°€ì‹œì¼œ ê²€ì‚¬í•´ì•¼í•œë‹¤.
-     * ì™œëƒí•˜ë©´ í•­ìƒ isLeaf ê²€ì‚¬ë¡œ ë‹¤ìŒ í•˜ìœ„ ê°€ ìžˆëŠ”ì§€ ê²€ì‚¬í•˜ê¸° ë•Œë¬¸ì´ë‹¤
-     * ê·¸ëž˜ì„œ rownum ì„ í•˜ë‚˜ ì¦ê°€ì‹œì¼œì„œ ê²€ì‚¬í•´ì•¼í•œë‹¤.
+     * Next LevelÀ» Ã£À» ¶§¿¡´Â RownumÀ» ÇÏ³ª Áõ°¡½ÃÄÑ °Ë»çÇØ¾ßÇÑ´Ù.
+     * ¿Ö³ÄÇÏ¸é Ç×»ó isLeaf °Ë»ç·Î ´ÙÀ½ ÇÏÀ§ °¡ ÀÖ´ÂÁö °Ë»çÇÏ±â ¶§¹®ÀÌ´Ù
+     * ±×·¡¼­ rownum À» ÇÏ³ª Áõ°¡½ÃÄÑ¼­ °Ë»çÇØ¾ßÇÑ´Ù.
      */
     if ( aCodePlan->rownumFilter != NULL )
     {
@@ -3847,7 +3895,8 @@ IDE_RC qmnCNBY::searchNextLevelDataTable( qcTemplate  * aTemplate,
                                        aDataPlan->mKeyRange,
                                        aDataPlan->mKeyFilter,
                                        &aDataPlan->mCallBack,
-                                       SMI_LOCK_READ | SMI_TRAVERSE_FORWARD | SMI_PREVIOUS_DISABLE,
+                                       SMI_LOCK_READ | SMI_TRAVERSE_FORWARD |
+                                       SMI_PREVIOUS_DISABLE | SMI_TRANS_ISOLATION_IGNORE,
                                        SMI_SELECT_CURSOR,
                                        &aDataPlan->mCursorProperty )
                   != IDE_SUCCESS );
@@ -3941,7 +3990,7 @@ IDE_RC qmnCNBY::searchSequnceRowTable( qcTemplate  * aTemplate,
     {
         aDataPlan->plan.myTuple->row = sSearchRow;
 
-        /* ë¹„ì •ìƒ ì¢…ë£Œ ê²€ì‚¬ */
+        /* ºñÁ¤»ó Á¾·á °Ë»ç */
         IDE_TEST( iduCheckSessionEvent( aTemplate->stmt->mStatistics )
                   != IDE_SUCCESS );
 
@@ -4089,38 +4138,42 @@ IDE_RC qmnCNBY::makeKeyRangeAndFilter( qcTemplate * aTemplate,
     qmnCursorPredicate  sPredicateInfo;
 
     //-------------------------------------
-    // Predicate ì •ë³´ì˜ êµ¬ì„±
+    // Predicate Á¤º¸ÀÇ ±¸¼º
     //-------------------------------------
 
     sPredicateInfo.index      = aCodePlan->mIndex;
     sPredicateInfo.tupleRowID = aCodePlan->myRowID;
 
-    // Fixed Key Range ì •ë³´ì˜ êµ¬ì„±
+    // Fixed Key Range Á¤º¸ÀÇ ±¸¼º
     sPredicateInfo.fixKeyRangeArea = aDataPlan->mFixKeyRangeArea;
     sPredicateInfo.fixKeyRange     = aDataPlan->mFixKeyRange;
     sPredicateInfo.fixKeyRangeOrg  = aCodePlan->mFixKeyRange;
+    sPredicateInfo.fixKeyRangeSize = aDataPlan->mFixKeyRangeSize;
 
-    // Variable Key Range ì •ë³´ì˜ êµ¬ì„±
+    // Variable Key Range Á¤º¸ÀÇ ±¸¼º
     sPredicateInfo.varKeyRangeArea = aDataPlan->mVarKeyRangeArea;
     sPredicateInfo.varKeyRange     = aDataPlan->mVarKeyRange;
     sPredicateInfo.varKeyRangeOrg  = aCodePlan->mVarKeyRange;
     sPredicateInfo.varKeyRange4FilterOrg = aCodePlan->mVarKeyRange4Filter;
+    sPredicateInfo.varKeyRangeSize = aDataPlan->mVarKeyRangeSize;
 
-    // Fixed Key Filter ì •ë³´ì˜ êµ¬ì„±
+    // Fixed Key Filter Á¤º¸ÀÇ ±¸¼º
     sPredicateInfo.fixKeyFilterArea = aDataPlan->mFixKeyFilterArea;
     sPredicateInfo.fixKeyFilter     = aDataPlan->mFixKeyFilter;
     sPredicateInfo.fixKeyFilterOrg  = aCodePlan->mFixKeyFilter;
+    sPredicateInfo.fixKeyFilterSize = aDataPlan->mFixKeyFilterSize;
 
-    // Variable Key Filter ì •ë³´ì˜ êµ¬ì„±
+    // Variable Key Filter Á¤º¸ÀÇ ±¸¼º
     sPredicateInfo.varKeyFilterArea = aDataPlan->mVarKeyFilterArea;
     sPredicateInfo.varKeyFilter     = aDataPlan->mVarKeyFilter;
     sPredicateInfo.varKeyFilterOrg  = aCodePlan->mVarKeyFilter;
     sPredicateInfo.varKeyFilter4FilterOrg = aCodePlan->mVarKeyFilter4Filter;
+    sPredicateInfo.varKeyFilterSize = aDataPlan->mVarKeyFilterSize;
 
-    // Not Null Key Range ì •ë³´ì˜ êµ¬ì„±
+    // Not Null Key Range Á¤º¸ÀÇ ±¸¼º
     sPredicateInfo.notNullKeyRange = NULL;
 
-    // Filter ì •ë³´ì˜ êµ¬ì„±
+    // Filter Á¤º¸ÀÇ ±¸¼º
     sPredicateInfo.filter = aCodePlan->connectByFilter;
 
     sPredicateInfo.filterCallBack  = &aDataPlan->mCallBack;
@@ -4132,7 +4185,7 @@ IDE_RC qmnCNBY::makeKeyRangeAndFilter( qcTemplate * aTemplate,
     sPredicateInfo.mSerialExecuteData = NULL;
 
     //-------------------------------------
-    // Key Range, Key Filter, Filterì˜ ìƒì„±
+    // Key Range, Key Filter, FilterÀÇ »ý¼º
     //-------------------------------------
 
     IDE_TEST( qmn::makeKeyRangeAndFilter( aTemplate,
@@ -4249,7 +4302,8 @@ IDE_RC qmnCNBY::makeSortTempTable( qcTemplate * aTemplate,
                                     smiGetDefaultKeyRange(),
                                     smiGetDefaultKeyRange(),
                                     smiGetDefaultFilter(),
-                                    SMI_LOCK_READ | SMI_TRAVERSE_FORWARD | SMI_PREVIOUS_DISABLE,
+                                    SMI_LOCK_READ | SMI_TRAVERSE_FORWARD |
+                                    SMI_PREVIOUS_DISABLE | SMI_TRANS_ISOLATION_IGNORE,
                                     SMI_SELECT_CURSOR,
                                     &aDataPlan->mCursorProperty )
               != IDE_SUCCESS );
@@ -4275,7 +4329,7 @@ IDE_RC qmnCNBY::makeSortTempTable( qcTemplate * aTemplate,
     {
         aDataPlan->plan.myTuple->row = sSearchRow;
 
-        /* ë¹„ì •ìƒ ì¢…ë£Œ ê²€ì‚¬ */
+        /* ºñÁ¤»ó Á¾·á °Ë»ç */
         IDE_TEST( iduCheckSessionEvent( aTemplate->stmt->mStatistics )
                   != IDE_SUCCESS );
 
@@ -4352,9 +4406,9 @@ IDE_RC qmnCNBY::searchNextLevelDataSortTemp( qcTemplate  * aTemplate,
     }
 
     /* BUG-39434 The connect by need rownum pseudo column.
-     * Next Levelì„ ì°¾ì„ ë•Œì—ëŠ” Rownumì„ í•˜ë‚˜ ì¦ê°€ì‹œì¼œ ê²€ì‚¬í•´ì•¼í•œë‹¤.
-     * ì™œëƒí•˜ë©´ í•­ìƒ isLeaf ê²€ì‚¬ë¡œ ë‹¤ìŒ í•˜ìœ„ ê°€ ìžˆëŠ”ì§€ ê²€ì‚¬í•˜ê¸° ë•Œë¬¸ì´ë‹¤
-     * ê·¸ëž˜ì„œ rownum ì„ í•˜ë‚˜ ì¦ê°€ì‹œì¼œì„œ ê²€ì‚¬í•´ì•¼í•œë‹¤.
+     * Next LevelÀ» Ã£À» ¶§¿¡´Â RownumÀ» ÇÏ³ª Áõ°¡½ÃÄÑ °Ë»çÇØ¾ßÇÑ´Ù.
+     * ¿Ö³ÄÇÏ¸é Ç×»ó isLeaf °Ë»ç·Î ´ÙÀ½ ÇÏÀ§ °¡ ÀÖ´ÂÁö °Ë»çÇÏ±â ¶§¹®ÀÌ´Ù
+     * ±×·¡¼­ rownum À» ÇÏ³ª Áõ°¡½ÃÄÑ¼­ °Ë»çÇØ¾ßÇÑ´Ù.
      */
     if ( aCodePlan->rownumFilter != NULL )
     {
@@ -4462,7 +4516,7 @@ IDE_RC qmnCNBY::searchKeyRangeRowTable( qcTemplate  * aTemplate,
 
     while ( sSearchRow != NULL )
     {
-        /* ë¹„ì •ìƒ ì¢…ë£Œ ê²€ì‚¬ */
+        /* ºñÁ¤»ó Á¾·á °Ë»ç */
         IDE_TEST( iduCheckSessionEvent( aTemplate->stmt->mStatistics )
                   != IDE_SUCCESS );
 
@@ -4605,6 +4659,9 @@ IDE_RC qmnCNBY::doItFirstTableDisk( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     *aFlag = QMC_ROW_DATA_NONE;
+    /* BUG-47820 start with ±¸¹®¿¡ level pseudo columnÀÌ »ç¿ëµÉ °æ¿ì °á°ú¿À·ù. */
+    sDataPlan->levelValue = 0;
+    *sDataPlan->levelPtr = 0;
 
     idlOS::memcpy( sDataPlan->priorTuple->row,
                    sDataPlan->nullRow, sDataPlan->priorTuple->rowOffset );
@@ -4905,7 +4962,7 @@ IDE_RC qmnCNBY::searchSequnceRowTableDisk( qcTemplate  * aTemplate,
     {
         aDataPlan->plan.myTuple->row = sSearchRow;
 
-        /* ë¹„ì •ìƒ ì¢…ë£Œ ê²€ì‚¬ */
+        /* ºñÁ¤»ó Á¾·á °Ë»ç */
         IDE_TEST( iduCheckSessionEvent( aTemplate->stmt->mStatistics )
                   != IDE_SUCCESS );
 
@@ -5072,7 +5129,7 @@ IDE_RC qmnCNBY::searchSiblingDataTableDisk( qcTemplate * aTemplate,
         /* Nothing to do */
     }
 
-    /* 1. nextPosëŠ” í•­ìƒ ë‹¤ìŒ Stackì„ ê°€ë¥´í‚¤ë¯€ë¡œ ì´ë¥¼ ê°ì†Œ ì‹œì¼œë†“ëŠ”ë‹¤. */
+    /* 1. nextPos´Â Ç×»ó ´ÙÀ½ StackÀ» °¡¸£Å°¹Ç·Î ÀÌ¸¦ °¨¼Ò ½ÃÄÑ³õ´Â´Ù. */
     --sStack->nextPos;
 
     if ( sStack->nextPos <= 0 )
@@ -5127,7 +5184,7 @@ IDE_RC qmnCNBY::searchSiblingDataTableDisk( qcTemplate * aTemplate,
     {
 
         /* BUG-39434 The connect by need rownum pseudo column.
-         * Siblings ë¥¼ ì°¾ì„ ë•ŒëŠ” ìŠ¤íƒì— ë„£ê¸° ì „ì— rownumì„ ê²€ì‚¬í•´ì•¼í•œë‹¤.
+         * Siblings ¸¦ Ã£À» ¶§´Â ½ºÅÃ¿¡ ³Ö±â Àü¿¡ rownumÀ» °Ë»çÇØ¾ßÇÑ´Ù.
          */
         if ( aCodePlan->rownumFilter != NULL )
         {
@@ -5251,7 +5308,7 @@ IDE_RC qmnCNBY::searchKeyRangeRowTableDisk( qcTemplate  * aTemplate,
 
     while ( sSearchRow != NULL )
     {
-        /* ë¹„ì •ìƒ ì¢…ë£Œ ê²€ì‚¬ */
+        /* ºñÁ¤»ó Á¾·á °Ë»ç */
         IDE_TEST( iduCheckSessionEvent( aTemplate->stmt->mStatistics )
                   != IDE_SUCCESS );
 
@@ -5413,9 +5470,9 @@ IDE_RC qmnCNBY::searchNextLevelDataTableDisk( qcTemplate  * aTemplate,
     }
 
     /* BUG-39434 The connect by need rownum pseudo column.
-     * Next Levelì„ ì°¾ì„ ë•Œì—ëŠ” Rownumì„ í•˜ë‚˜ ì¦ê°€ì‹œì¼œ ê²€ì‚¬í•´ì•¼í•œë‹¤.
-     * ì™œëƒí•˜ë©´ í•­ìƒ isLeaf ê²€ì‚¬ë¡œ ë‹¤ìŒ í•˜ìœ„ ê°€ ìžˆëŠ”ì§€ ê²€ì‚¬í•˜ê¸° ë•Œë¬¸ì´ë‹¤
-     * ê·¸ëž˜ì„œ rownum ì„ í•˜ë‚˜ ì¦ê°€ì‹œì¼œì„œ ê²€ì‚¬í•´ì•¼í•œë‹¤.
+     * Next LevelÀ» Ã£À» ¶§¿¡´Â RownumÀ» ÇÏ³ª Áõ°¡½ÃÄÑ °Ë»çÇØ¾ßÇÑ´Ù.
+     * ¿Ö³ÄÇÏ¸é Ç×»ó isLeaf °Ë»ç·Î ´ÙÀ½ ÇÏÀ§ °¡ ÀÖ´ÂÁö °Ë»çÇÏ±â ¶§¹®ÀÌ´Ù
+     * ±×·¡¼­ rownum À» ÇÏ³ª Áõ°¡½ÃÄÑ¼­ °Ë»çÇØ¾ßÇÑ´Ù.
      */
     if ( aCodePlan->rownumFilter != NULL )
     {
@@ -5504,7 +5561,8 @@ IDE_RC qmnCNBY::searchNextLevelDataTableDisk( qcTemplate  * aTemplate,
                                        aDataPlan->mKeyRange,
                                        aDataPlan->mKeyFilter,
                                        &aDataPlan->mCallBack,
-                                       SMI_LOCK_READ | SMI_TRAVERSE_FORWARD | SMI_PREVIOUS_DISABLE,
+                                       SMI_LOCK_READ | SMI_TRAVERSE_FORWARD |
+                                       SMI_PREVIOUS_DISABLE | SMI_TRANS_ISOLATION_IGNORE,
                                        SMI_SELECT_CURSOR,
                                        &aDataPlan->mCursorProperty )
                   != IDE_SUCCESS );
@@ -5595,9 +5653,9 @@ IDE_RC qmnCNBY::searchNextLevelDataSortTempDisk( qcTemplate  * aTemplate,
     }
 
     /* BUG-39434 The connect by need rownum pseudo column.
-     * Next Levelì„ ì°¾ì„ ë•Œì—ëŠ” Rownumì„ í•˜ë‚˜ ì¦ê°€ì‹œì¼œ ê²€ì‚¬í•´ì•¼í•œë‹¤.
-     * ì™œëƒí•˜ë©´ í•­ìƒ isLeaf ê²€ì‚¬ë¡œ ë‹¤ìŒ í•˜ìœ„ ê°€ ìžˆëŠ”ì§€ ê²€ì‚¬í•˜ê¸° ë•Œë¬¸ì´ë‹¤
-     * ê·¸ëž˜ì„œ rownum ì„ í•˜ë‚˜ ì¦ê°€ì‹œì¼œì„œ ê²€ì‚¬í•´ì•¼í•œë‹¤.
+     * Next LevelÀ» Ã£À» ¶§¿¡´Â RownumÀ» ÇÏ³ª Áõ°¡½ÃÄÑ °Ë»çÇØ¾ßÇÑ´Ù.
+     * ¿Ö³ÄÇÏ¸é Ç×»ó isLeaf °Ë»ç·Î ´ÙÀ½ ÇÏÀ§ °¡ ÀÖ´ÂÁö °Ë»çÇÏ±â ¶§¹®ÀÌ´Ù
+     * ±×·¡¼­ rownum À» ÇÏ³ª Áõ°¡½ÃÄÑ¼­ °Ë»çÇØ¾ßÇÑ´Ù.
      */
     if ( aCodePlan->rownumFilter != NULL )
     {
@@ -5738,13 +5796,42 @@ IDE_RC qmnCNBY::firstInitForJoin( qcTemplate * aTemplate,
     aDataPlan->plan.myTuple = &aTemplate->tmplate.rows[aCodePlan->myRowID];
     aDataPlan->childTuple   = &aTemplate->tmplate.rows[aCodePlan->baseRowID];
     aDataPlan->priorTuple   = &aTemplate->tmplate.rows[aCodePlan->priorRowID];
-    sTuple                  = &aTemplate->tmplate.rows[aCodePlan->levelRowID];
-    aDataPlan->levelPtr     = (SLong *)sTuple->row;
-    aDataPlan->levelValue   = *(aDataPlan->levelPtr);
-    sTuple                  = &aTemplate->tmplate.rows[aCodePlan->isLeafRowID];
-    aDataPlan->isLeafPtr    = (SLong *)sTuple->row;
-    sTuple                  = &aTemplate->tmplate.rows[aCodePlan->stackRowID];
-    aDataPlan->stackPtr     = (SLong *)sTuple->row;
+
+    /* BUG-48300 */
+    if ( ( aCodePlan->flag & QMNC_CNBY_LEVEL_MASK )
+         == QMNC_CNBY_LEVEL_TRUE )
+    {
+        sTuple                  = &aTemplate->tmplate.rows[aCodePlan->levelRowID];
+        aDataPlan->levelPtr     = (SLong *)sTuple->row;
+        aDataPlan->levelValue   = *(aDataPlan->levelPtr);
+    }
+    else
+    {
+        aDataPlan->levelDummy = 0;
+        aDataPlan->levelPtr   = &aDataPlan->levelDummy;
+        aDataPlan->levelValue = 0;
+    }
+
+    /* BUG-48300 */
+    if ( ( aCodePlan->flag & QMNC_CNBY_ISLEAF_MASK )
+         == QMNC_CNBY_ISLEAF_TRUE )
+    {
+        sTuple                  = &aTemplate->tmplate.rows[aCodePlan->isLeafRowID];
+        aDataPlan->isLeafPtr    = (SLong *)sTuple->row;
+    }
+    else
+    {
+        aDataPlan->isLeafDummy = 0;
+        aDataPlan->isLeafPtr = &aDataPlan->isLeafDummy;
+    }
+
+    /* BUG-48300 */
+    if ( ( aCodePlan->flag & QMNC_CNBY_FUNCTION_MASK )
+         == QMNC_CNBY_FUNCTION_TRUE )
+    {
+        sTuple                  = &aTemplate->tmplate.rows[aCodePlan->stackRowID];
+        aDataPlan->stackPtr     = (SLong *)sTuple->row;
+    }
 
     if ( aCodePlan->rownumFilter != NULL )
     {
@@ -5790,8 +5877,13 @@ IDE_RC qmnCNBY::firstInitForJoin( qcTemplate * aTemplate,
 
     aDataPlan->mBaseMtrNode = (qmdMtrNode *)( aTemplate->tmplate.data +
                                               aCodePlan->mtrNodeOffset );
-    /* 4.1 Set Connect By Stack Address */
-    *aDataPlan->stackPtr = (SLong)(aDataPlan->firstStack);
+    /* BUG-48300 */
+    if ( ( aCodePlan->flag & QMNC_CNBY_FUNCTION_MASK )
+         == QMNC_CNBY_FUNCTION_TRUE )
+    {
+        /* 4.1 Set Connect By Stack Address */
+        *aDataPlan->stackPtr = (SLong)(aDataPlan->firstStack);
+    }
 
     aDataPlan->baseMTR = (qmcdSortTemp *)( aTemplate->tmplate.data +
                                            aCodePlan->mBaseSortMTROffset );
@@ -5876,7 +5968,7 @@ IDE_RC qmnCNBY::firstInitForJoin( qcTemplate * aTemplate,
                                aDataPlan->mBaseMtrNode->dstNode->node.table )
               != IDE_SUCCESS );
 
-    /* Temp Tableì˜ ì´ˆê¸°í™” */
+    /* Temp TableÀÇ ÃÊ±âÈ­ */
     IDE_TEST( qmcSortTemp::init( aDataPlan->baseMTR,
                                  aTemplate,
                                  ID_UINT_MAX,
@@ -5915,12 +6007,12 @@ IDE_RC qmnCNBY::firstInitForJoin( qcTemplate * aTemplate,
                                           sRow )
                       != IDE_SUCCESS );
         }
-        // Temp Tableì— ì‚½ìž…
+        // Temp Table¿¡ »ðÀÔ
         IDE_TEST( qmcSortTemp::addRow( aDataPlan->baseMTR,
                                        sRow )
                   != IDE_SUCCESS );
 
-        // Left Childì˜ ìˆ˜í–‰
+        // Left ChildÀÇ ¼öÇà
         IDE_TEST( aCodePlan->plan.left->doIt( aTemplate,
                                               aCodePlan->plan.left,
                                               &sRowFlag )
@@ -5993,6 +6085,9 @@ IDE_RC qmnCNBY::doItFirstJoin( qcTemplate * aTemplate,
     IDE_TEST( initCNBYItem( &sReturnItem) != IDE_SUCCESS );
 
     *aFlag = QMC_ROW_DATA_NONE;
+    /* BUG-47820 start with ±¸¹®¿¡ level pseudo columnÀÌ »ç¿ëµÉ °æ¿ì °á°ú¿À·ù. */
+    sDataPlan->levelValue = 0;
+    *sDataPlan->levelPtr = 0;
 
     sFilters[START_WITH_FILTER]   = sCodePlan->startWithFilter;
     sFilters[START_WITH_SUBQUERY] = sCodePlan->startWithSubquery;
@@ -6280,9 +6375,9 @@ IDE_RC qmnCNBY::searchNextLevelDataForJoin( qcTemplate  * aTemplate,
     }
 
     /* BUG-39434 The connect by need rownum pseudo column.
-     * Next Levelì„ ì°¾ì„ ë•Œì—ëŠ” Rownumì„ í•˜ë‚˜ ì¦ê°€ì‹œì¼œ ê²€ì‚¬í•´ì•¼í•œë‹¤.
-     * ì™œëƒí•˜ë©´ í•­ìƒ isLeaf ê²€ì‚¬ë¡œ ë‹¤ìŒ í•˜ìœ„ ê°€ ìžˆëŠ”ì§€ ê²€ì‚¬í•˜ê¸° ë•Œë¬¸ì´ë‹¤
-     * ê·¸ëž˜ì„œ rownum ì„ í•˜ë‚˜ ì¦ê°€ì‹œì¼œì„œ ê²€ì‚¬í•´ì•¼í•œë‹¤.
+     * Next LevelÀ» Ã£À» ¶§¿¡´Â RownumÀ» ÇÏ³ª Áõ°¡½ÃÄÑ °Ë»çÇØ¾ßÇÑ´Ù.
+     * ¿Ö³ÄÇÏ¸é Ç×»ó isLeaf °Ë»ç·Î ´ÙÀ½ ÇÏÀ§ °¡ ÀÖ´ÂÁö °Ë»çÇÏ±â ¶§¹®ÀÌ´Ù
+     * ±×·¡¼­ rownum À» ÇÏ³ª Áõ°¡½ÃÄÑ¼­ °Ë»çÇØ¾ßÇÑ´Ù.
      */
     if ( aCodePlan->rownumFilter != NULL )
     {
@@ -6374,7 +6469,7 @@ IDE_RC qmnCNBY::searchSiblingDataForJoin( qcTemplate * aTemplate,
         /* Nothing to do */
     }
 
-    /* 1. nextPosëŠ” í•­ìƒ ë‹¤ìŒ Stackì„ ê°€ë¥´í‚¤ë¯€ë¡œ ì´ë¥¼ ê°ì†Œ ì‹œì¼œë†“ëŠ”ë‹¤. */
+    /* 1. nextPos´Â Ç×»ó ´ÙÀ½ StackÀ» °¡¸£Å°¹Ç·Î ÀÌ¸¦ °¨¼Ò ½ÃÄÑ³õ´Â´Ù. */
     --sStack->nextPos;
 
     if ( sStack->nextPos <= 0 )
@@ -6411,7 +6506,7 @@ IDE_RC qmnCNBY::searchSiblingDataForJoin( qcTemplate * aTemplate,
     if ( sNewItem.rowPtr != NULL )
     {
         /* BUG-39434 The connect by need rownum pseudo column.
-         * Siblings ë¥¼ ì°¾ì„ ë•ŒëŠ” ìŠ¤íƒì— ë„£ê¸° ì „ì— rownumì„ ê²€ì‚¬í•´ì•¼í•œë‹¤.
+         * Siblings ¸¦ Ã£À» ¶§´Â ½ºÅÃ¿¡ ³Ö±â Àü¿¡ rownumÀ» °Ë»çÇØ¾ßÇÑ´Ù.
          */
         if ( aCodePlan->rownumFilter != NULL )
         {
@@ -6536,7 +6631,7 @@ IDE_RC qmnCNBY::searchKeyRangeRowForJoin( qcTemplate  * aTemplate,
 
     while ( sSearchRow != NULL )
     {
-        /* ë¹„ì •ìƒ ì¢…ë£Œ ê²€ì‚¬ */
+        /* ºñÁ¤»ó Á¾·á °Ë»ç */
         IDE_TEST( iduCheckSessionEvent( aTemplate->stmt->mStatistics )
                   != IDE_SUCCESS );
 

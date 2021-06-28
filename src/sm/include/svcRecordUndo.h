@@ -20,7 +20,7 @@
 #include <smDef.h>
 #include <svrLogMgr.h>
 
-/* ÏµúÎåÄ 8Î∞îÏù¥Ìä∏ÍπåÏßÄ physical loggingÏùÑ Ìï† Ïàò ÏûàÎã§. */
+/* √÷¥Î 8πŸ¿Ã∆Æ±Ó¡ˆ physical logging¿ª «“ ºˆ ¿÷¥Ÿ. */
 typedef struct svcPhysical8Log
 {
     svrUndoFunc mUndo;
@@ -48,12 +48,13 @@ class svcRecordUndo
                             SChar      *aNewFixedRow,
                             ULong      aBeforeNext);
 
-    static IDE_RC logUpdateInplace(svrLogEnv           *aEnv,
-                                   void                *aTrans,
-                                   scSpaceID            aSpaceID,
-                                   smOID                aTableOID,
-                                   SChar               *aFixedRowPtr,
-                                   const smiColumnList *aColumnList);
+    static IDE_RC logUpdateInplace( svrLogEnv           *aEnv,
+                                    void                *aTrans,
+                                    scSpaceID            aSpaceID,
+                                    smOID                aTableOID,
+                                    SChar               *aFixedRowPtr,
+                                    const smiColumnList *aColumnList,
+                                    ULong                aModifyIdxBit );
 
     static IDE_RC logDelete(svrLogEnv *aLogEnv,
                             void      *aTransPtr,
@@ -72,7 +73,7 @@ class svcRecordUndo
 
 /******************************************************************************
  * Description:
- *     physical logÎ•º Í∏∞Î°ùÌïúÎã§.
+ *     physical log∏¶ ±‚∑œ«—¥Ÿ.
  ******************************************************************************/
 inline IDE_RC svcRecordUndo::logPhysical8( svrLogEnv  * aEnv,
                                            SChar      * aRow,
@@ -96,7 +97,7 @@ inline IDE_RC svcRecordUndo::logPhysical8( svrLogEnv  * aEnv,
 
 /******************************************************************************
  * Description:
- *    physical logÎ°ú undoÎ•º ÏàòÌñâÌïúÎã§. Îç∞Ïù¥ÌÑ∞Ïùò Í∏∏Ïù¥Îäî 8Ïù¥ÌïòÏù¥Îã§.
+ *    physical log∑Œ undo∏¶ ºˆ«‡«—¥Ÿ. µ•¿Ã≈Õ¿« ±Ê¿Ã¥¬ 8¿Ã«œ¿Ã¥Ÿ.
  ******************************************************************************/
 inline IDE_RC svcRecordUndo::undoPhysical8( svrLogEnv * /*aLogEnv*/,
                                             svrLog    * aPhyLog,

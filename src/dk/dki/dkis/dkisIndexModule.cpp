@@ -199,8 +199,7 @@ static const smSeekFunc dkisSeekFunctions[12] =
 /*
  *
  */ 
-static IDE_RC dkisInit( idvSQL                * /* aStatistics */,
-                        dkisIterator          * aIterator,
+static IDE_RC dkisInit( dkisIterator          * aIterator,
                         void                  * aTrans,
                         void                  * aTable,
                         smnIndexHeader        * /*aIndex*/,
@@ -213,7 +212,8 @@ static IDE_RC dkisInit( idvSQL                * /* aStatistics */,
                         smSCN                   aInfinite,
                         idBool                  /*aUntouchable*/,
                         smiCursorProperties   * aProperties,
-                        const smSeekFunc     ** aSeekFunc )
+                        const smSeekFunc     ** aSeekFunc,
+                        smiStatement          * aStatement )
 {
     aIterator->mIterator.SCN = aSCN;
     aIterator->mIterator.infinite = aInfinite;
@@ -223,6 +223,7 @@ static IDE_RC dkisInit( idvSQL                * /* aStatistics */,
     aIterator->mIterator.lstFetchRecPtr = NULL;
     aIterator->mIterator.tid = SM_NULL_TID;
     aIterator->mIterator.properties = aProperties;
+    aIterator->mIterator.mStatement = aStatement; 
     
     SC_MAKE_GRID( aIterator->mIterator.mRowGRID,
                   SC_NULL_SPACEID,
@@ -320,7 +321,7 @@ static smnIndexModule gRemoteTableIndexModule = {
     (smnInsertFunc) NULL,
     (smnDeleteFunc) NULL,
     (smnFreeFunc)   NULL,
-    (smnExistKeyFunc) NULL,          // slotì´ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸.    
+    (smnExistKeyFunc) NULL,          // slotÀÌ Á¸ÀçÇÏ´ÂÁö È®ÀÎ.    
     (smnInsertRollbackFunc)    NULL,
     (smnDeleteRollbackFunc)    NULL,
     (smnAgingFunc)             NULL,
@@ -365,7 +366,6 @@ static smnIndexModule gRemoteTableIndexModule = {
     (smTableCursorLockRowFunc) NULL,
     (smnDeleteFunc) NULL,
     (smnFreeFunc)   NULL,
-    (smnExistKeyFunc) NULL,          // slotì´ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸.    
     (smnInsertRollbackFunc)    NULL,
     (smnDeleteRollbackFunc)    NULL,
     (smnAgingFunc)             NULL,

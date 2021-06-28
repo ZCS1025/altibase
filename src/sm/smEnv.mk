@@ -1,8 +1,8 @@
 include $(dir $(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST)))/../../env.mk
 include $(SM_DIR)/lib/sm_objs.mk
 
-# SMìš© ë¶€ê°€ì˜µì…˜ ì²˜ë¦¬ 
-INCLUDES += $(foreach i,$(MT_DIR)/include $(ST_DIR)/include $(SM_DIR)/include $(SM_DIR)/smu,$(IDROPT)$(i))
+# SM¿ë ºÎ°¡¿É¼Ç Ã³¸® 
+INCLUDES += $(foreach i,$(MT_DIR)/include $(CORE_EXT_DIR)/include $(ST_DIR)/include $(SM_DIR)/include $(SM_DIR)/smu,$(IDROPT)$(i))
 LFLAGS   += $(foreach i,$(ALTI_HOME)/lib $(PD_DIR)/lib $(ID_DIR)/lib $(SM_DIR)/lib $(MT_DIR)/lib,$(LDROPT)$(i))
 
 #SMLIB = $(LIBOPT)sm$(LIBAFT)

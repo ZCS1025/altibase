@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfRaw_to_integer.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfRaw_to_integer.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -44,7 +44,7 @@ static IDE_RC mtfRaw_to_integerEstimate( mtcNode*     aNode,
 mtfModule mtfRaw_to_integer = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfRaw_to_integerFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -151,7 +151,7 @@ IDE_RC mtfRaw_to_integerCalculate( mtcNode*     aNode,
     if ( sModule->isNull( aStack[1].column,
                           aStack[1].value ) == ID_TRUE )
     {
-        // ìž…ë ¥ëœ ìžë£Œê°€ NULLì¸ ê²½ìš°
+        // ÀÔ·ÂµÈ ÀÚ·á°¡ NULLÀÎ °æ¿ì
         aStack[0].column->module->null( aStack[0].column,
                                         aStack[0].value );
     }

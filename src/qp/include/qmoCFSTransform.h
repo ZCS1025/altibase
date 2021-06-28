@@ -19,14 +19,14 @@
  *
  * Description : PROJ-2242 Filter Subsumption Transformation
  *
- *       - TRUE, FALSE ì— ëŒ€í•œ AND, OR ë¥¼ ì ìš©í•˜ì—¬ subsumption ìˆ˜í–‰
- *       - QTC_NODE_JOIN_OPERATOR_EXIST ì¼ ê²½ìš° ìˆ˜í–‰ ì•ˆí•¨
- *       - subquery, host variable, GEOMETRY type arguments ì œì™¸
- *       - __OPTIMIZER_CONSTANT_FILTER_SUBSUMPTION property ë¡œ ë™ì‘
+ *       - TRUE, FALSE ¿¡ ´ëÇÑ AND, OR ¸¦ Àû¿ëÇÏ¿© subsumption ¼öÇà
+ *       - QTC_NODE_JOIN_OPERATOR_EXIST ÀÏ °æ¿ì ¼öÇà ¾ÈÇÔ
+ *       - subquery, host variable, GEOMETRY type arguments Á¦¿Ü
+ *       - __OPTIMIZER_CONSTANT_FILTER_SUBSUMPTION property ·Î µ¿ÀÛ
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ : CFS (Constant Filter Subsumption)
+ * ¾à¾î : CFS (Constant Filter Subsumption)
  *
  *****************************************************************************/
 
@@ -45,28 +45,28 @@ typedef enum qmoCFSCompareResult
 } qmoCFSCompareResult;
 
 //-----------------------------------------------------------
-// CFS Transform ê´€ë¦¬ í•¨ìˆ˜
+// CFS Transform °ü¸® ÇÔ¼ö
 //-----------------------------------------------------------
 
 class qmoCFSTransform
 {
 public:
 
-    // ìµœì´ˆ NNF í˜•íƒœì˜ ëª¨ë“  ì¡°ê±´ì ˆì— ëŒ€í•œ CFS transformation
+    // ÃÖÃÊ NNF ÇüÅÂÀÇ ¸ğµç Á¶°ÇÀı¿¡ ´ëÇÑ CFS transformation
     static IDE_RC doTransform4NNF( qcStatement * aStatement,
                                    qmsQuerySet * aQuerySet );
 
 private:
 
-    // From ì ˆì˜ onCondition ì— ëŒ€í•œ CFS transformation (ì¬ê·€)
+    // From ÀıÀÇ onCondition ¿¡ ´ëÇÑ CFS transformation (Àç±Í)
     static IDE_RC doTransform4From( qcStatement * aStatement,
                                     qmsFrom     * aFrom );
 
-    // NNF í˜•íƒœì˜ predicate list ì— ëŒ€í•œ CFS transformation
+    // NNF ÇüÅÂÀÇ predicate list ¿¡ ´ëÇÑ CFS transformation
     static IDE_RC doTransform( qcStatement * aStatement,
                                qtcNode    ** aNode );
 
-    // NNF í˜•íƒœì˜ constant predicate ì— ëŒ€í•œ CFS transformation
+    // NNF ÇüÅÂÀÇ constant predicate ¿¡ ´ëÇÑ CFS transformation
     static IDE_RC constantFilterSubsumption( qcStatement * aStatement,
                                              qtcNode    ** aNode,
                                              idBool        aIsRoot );

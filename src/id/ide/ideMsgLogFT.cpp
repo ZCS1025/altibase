@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: ideMsgLogFT.cpp 83474 2018-07-13 08:21:28Z hykim $
+ * $Id: ideMsgLogFT.cpp 91010 2021-06-17 01:33:11Z hykim $
  **********************************************************************/
 #include <idl.h>
 #include <ide.h>
@@ -73,10 +73,10 @@ static SChar *gQpTrcDesc[32] =
                          //0123456789012345678901234567890123456789012345678901234567890123
     /*  1 bit */ (SChar *)"PSM Error Line Trace Log",
     /*  2 bit */ (SChar *)"DDL Trace Log",
-    /*  3 bit */ (SChar *)"---",
-    /*  4 bit */ (SChar *)"---",
-    /*  5 bit */ (SChar *)"---",
-    /*  6 bit */ (SChar *)"---",
+    /*  3 bit */ (SChar *)"Job Scheduler Trace Log",
+    /*  4 bit */ (SChar *)"DCL Trace Log",
+    /*  5 bit */ (SChar *)"Query in PSM Trace Log",
+    /*  6 bit */ (SChar *)"Query Plan in PSM Trace Log",
     /*  7 bit */ (SChar *)"---",
     /*  8 bit */ (SChar *)"---",
     /*  9 bit */ (SChar *)"---",
@@ -102,7 +102,7 @@ static SChar *gQpTrcDesc[32] =
     /* 29 bit */ (SChar *)"---",
     /* 30 bit */ (SChar *)"---",
     /* 31 bit */ (SChar *)"---",
-    /* 32 bit */ (SChar *)"---"
+    /* 32 bit */ (SChar *)"Debug"
 };
 
 // BUG-46138 SERVER : WARNING!!!! << under 64 characters >>
@@ -110,10 +110,10 @@ static SChar *gSdTrcDesc[32] =
 {
                          //0123456789012345678901234567890123456789012345678901234567890123
     /*  1 bit */ (SChar *)"Shard Meta Error Trace Log",
-    /*  2 bit */ (SChar *)"---",
+    /*  2 bit */ (SChar *)"Global Transaction Error Log",
     /*  3 bit */ (SChar *)"---",
-    /*  4 bit */ (SChar *)"---",
-    /*  5 bit */ (SChar *)"---",
+    /*  4 bit */ (SChar *)"Cluster Error Log",
+    /*  5 bit */ (SChar *)"Shard Failover Error Log",
     /*  6 bit */ (SChar *)"---",
     /*  7 bit */ (SChar *)"---",
     /*  8 bit */ (SChar *)"---",
@@ -125,11 +125,11 @@ static SChar *gSdTrcDesc[32] =
     /* 14 bit */ (SChar *)"---",
     /* 15 bit */ (SChar *)"---",
     /* 16 bit */ (SChar *)"---",
-    /* 17 bit */ (SChar *)"---",
-    /* 18 bit */ (SChar *)"---",
-    /* 19 bit */ (SChar *)"---",
-    /* 20 bit */ (SChar *)"---",
-    /* 21 bit */ (SChar *)"---",
+    /* 17 bit */ (SChar *)"Shard Meta Change Trace Log",
+    /* 18 bit */ (SChar *)"Global Consistent Transaction DistTxInfo Trace Log",
+    /* 19 bit */ (SChar *)"Global Consistent Transaction SM module Trace Log",
+    /* 20 bit */ (SChar *)"Cluster Trace Log",
+    /* 21 bit */ (SChar *)"Shard Failover Trace Log",
     /* 22 bit */ (SChar *)"---",
     /* 23 bit */ (SChar *)"---",
     /* 24 bit */ (SChar *)"---",
@@ -139,8 +139,8 @@ static SChar *gSdTrcDesc[32] =
     /* 28 bit */ (SChar *)"---",
     /* 29 bit */ (SChar *)"---",
     /* 30 bit */ (SChar *)"---",
-    /* 31 bit */ (SChar *)"---",
-    /* 32 bit */ (SChar *)"---"
+    /* 31 bit */ (SChar *)"Shard debug log",
+    /* 32 bit */ (SChar *)"Shared transaction debug log",
 };
 
 // SERVER : WARNING!!!! << under 64 characters >>
@@ -190,7 +190,7 @@ static SChar *gRpTrcDesc[32] =
     /*  3 bit */ (SChar *)"Conflict SQL Trace Log",
     /*  4 bit */ (SChar *)"Replication Log Buffer Log",
     /*  5 bit */ (SChar *)"Conflict Primary Key Trace Log",
-    /*  6 bit */ (SChar *)"---",
+    /*  6 bit */ (SChar *)"Consistent Replication File Operation Log",
     /*  7 bit */ (SChar *)"---",
     /*  8 bit */ (SChar *)"---",
     /*  9 bit */ (SChar *)"---",

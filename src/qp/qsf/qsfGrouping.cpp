@@ -16,13 +16,13 @@
  
 
 /***********************************************************************
- * $Id: qsfGrouping.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qsfGrouping.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  *
  * GROUPING ( Expression )
- *  Group By Ïóê Ìï¥ÎãπÌïòÎäî  Expression
- *  GROUP By ROLLUP, CUBE Íµ¨Î¨∏Ïù¥ Ìï≠ÏÉÅ ÎÇòÏôÄÏïºÌïúÎã§.
- *  sSFWGH->groupingDataAddr Ïùò Pseudo ColumnÏóê RollupÏù¥ÎÇò CubeÏùò
- *  Ìè¨Ïù∏ÌÑ∞Í∞Ä ÏûàÎã§. Ïù¥Î•º ÌÜµÌï¥ÏÑú Ï∞∏Ï°∞ Îç∞Ïù¥ÌÑ∞Î•º ÏñªÏñ¥ÏÑú Í≥ÑÏÇ∞ÌïúÎã§.
+ *  Group By ø° «ÿ¥Á«œ¥¬  Expression
+ *  GROUP By ROLLUP, CUBE ±∏πÆ¿Ã «◊ªÛ ≥™øÕæﬂ«—¥Ÿ.
+ *  sSFWGH->groupingDataAddr ¿« Pseudo Columnø° Rollup¿Ã≥™ Cube¿«
+ *  ∆˜¿Œ≈Õ∞° ¿÷¥Ÿ. ¿Ã∏¶ ≈Î«ÿº≠ ¬¸¡∂ µ•¿Ã≈Õ∏¶ æÚæÓº≠ ∞ËªÍ«—¥Ÿ.
  ***********************************************************************/
 
 #include <qsf.h>
@@ -178,9 +178,9 @@ static IDE_RC qsfGroupingMakeInfo( mtcNode     * aNode,
             if ( ( sIsTrueTmp == ID_TRUE ) && ( sIsTrue == ID_FALSE ) )
             {
                 sIsTrue = ID_TRUE;
-                // Grouping Sets Transform Ïóê ÏùòÌï¥ ÏÜåÎ©∏ Îê† GroupÏùÄ locationÏù¥ -1 Î°ú ÏÑ∏ÌåÖ ÌïúÎã§.
-                // QMS_GROUPBY_NORMAL TypeÏùò GroupÏù¥
-                // Ï°¥Ïû¨ Ìï† Í≤ΩÏö∞ QMS_GROUPBY_NULLÎ≥¥Îã§ Ïö∞ÏÑ†ÌïòÍ∏∞ ÎïåÎ¨∏Ïóê break ÌïòÏßÄ ÏïäÎäîÎã§.                    
+                // Grouping Sets Transform ø° ¿««ÿ º“∏Í µ… Group¿∫ location¿Ã -1 ∑Œ ºº∆√ «—¥Ÿ.
+                // QMS_GROUPBY_NORMAL Type¿« Group¿Ã
+                // ¡∏¿Á «“ ∞ÊøÏ QMS_GROUPBY_NULL∫∏¥Ÿ øÏº±«œ±‚ ∂ßπÆø° break «œ¡ˆ æ ¥¬¥Ÿ.                    
                 sLocation = -1;
             }
             else
@@ -369,12 +369,12 @@ IDE_RC qsfGroupingFinalize( mtcNode     * aNode,
     {
         if ( sGroupingInfo->location == -2 )
         {
-            // QMS_GROUPBY_NORMAL Ïùº Í≤ΩÏö∞
+            // QMS_GROUPBY_NORMAL ¿œ ∞ÊøÏ
             *( mtdIntegerType *)aStack[0].value = 0;
         }
         else if ( sGroupingInfo->location == -1 )
         {    
-            // Grouping Sets TransformÏóê ÏùòÌï¥ ÏÜåÎ©∏ Îêú Group
+            // Grouping Sets Transformø° ¿««ÿ º“∏Í µ» Group
             *( mtdIntegerType *)aStack[0].value = 1;
         }
         else
@@ -400,17 +400,17 @@ IDE_RC qsfGroupingFinalize( mtcNode     * aNode,
 
                     if ( sGroupingInfo->location == -1 )
                     {
-                        // Grouping Sets TransformÏóê ÏùòÌï¥ ÏÜåÎ©∏ Îêú Group
+                        // Grouping Sets Transformø° ¿««ÿ º“∏Í µ» Group
                         *( mtdIntegerType *)aStack[0].value = 1;
                     }
                     else if ( sGroupingInfo->location == -2 )
                     {
-                        // QMS_GROUPBY_NORMAL TypeÏùò Group
+                        // QMS_GROUPBY_NORMAL Type¿« Group
                         *( mtdIntegerType *)aStack[0].value = 0;
                     }
                     else
                     {
-                        // ÏùºÎ∞òÏ†ÅÏù∏ ROLLUPÏùò Group ExpressionÏùÑ Grouping()Ïùò Ïù∏ÏûêÎ°ú Í∞ÄÏßà Í≤ΩÏö∞
+                        // ¿œπ›¿˚¿Œ ROLLUP¿« Group Expression¿ª Grouping()¿« ¿Œ¿⁄∑Œ ∞°¡˙ ∞ÊøÏ
                         if ( ( *sRollGrouping->info.index ) >=
                              ( sRollGrouping->count - sGroupingInfo->location ) )
                         {
@@ -438,12 +438,12 @@ IDE_RC qsfGroupingFinalize( mtcNode     * aNode,
 
                         if ( sGroupingInfo->location == -1 )
                         {
-                            // Grouping Sets TransformÏóê ÏùòÌï¥ ÏÜåÎ©∏ Îêú Group
+                            // Grouping Sets Transformø° ¿««ÿ º“∏Í µ» Group
                             *( mtdIntegerType *)aStack[0].value = 1;
                         }
                         else if ( sGroupingInfo->location == -2 )
                         {
-                            // QMS_GROUPBY_NORMAL TypeÏùò Group
+                            // QMS_GROUPBY_NORMAL Type¿« Group
                             *( mtdIntegerType *)aStack[0].value = 0;
                         }
                         else

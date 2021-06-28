@@ -956,7 +956,8 @@ WHERE U.USER_ID = T.USER_ID           AND
       U.USER_ID = P.USER_ID           AND
       T.TABLE_ID = P.TABLE_ID         AND
       U.USER_NAME = aUser_name        AND
-      T.TABLE_NAME = aTable_name
+      T.TABLE_NAME = aTable_name      AND
+      P.PARTITION_NAME IS NOT NULL
 ORDER BY P.PARTITION_MAX_VALUE;
 
 CURSOR shard_key_value_cursor IS

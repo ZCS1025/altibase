@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qsxUtil.cpp 83113 2018-05-29 02:04:30Z ahra.cho $
+ * $Id: qsxUtil.cpp 89096 2020-10-29 23:09:57Z bethy $
  **********************************************************************/
 
 /*
@@ -163,7 +163,7 @@ IDE_RC qsxUtil::assignValue (
     sDestColumn = QTC_TMPL_COLUMN( aDestTemplate, aDestNode );
 
     /* PROJ-2586 PSM Parameters and return without precision
-       aDestNodeê°€ parameterì¼ ë•Œ mtcColumn ì •ë³´ ì¡°ì ˆ */
+       aDestNode°¡ parameterÀÏ ¶§ mtcColumn Á¤º¸ Á¶Àý */
     if ( (aDestNode->lflag & QTC_NODE_SP_PARAM_OR_RETURN_MASK) == QTC_NODE_SP_PARAM_OR_RETURN_TRUE )
     {
         IDE_TEST( qsxUtil::adjustParamAndReturnColumnInfo( aMemory,
@@ -200,8 +200,8 @@ IDE_RC qsxUtil::assignValue (
 }
 
 // BUG-11192 date_format session property
-// mtv::executeConvert()ì‹œ mtcTemplateì´ í•„ìš”í•¨
-// aDestTemplate ì¸ìž ì¶”ê°€.
+// mtv::executeConvert()½Ã mtcTemplateÀÌ ÇÊ¿äÇÔ
+// aDestTemplate ÀÎÀÚ Ãß°¡.
 // by kumdory, 2005-04-08
 IDE_RC qsxUtil::assignValue (
     iduMemory    * aMemory,
@@ -220,7 +220,7 @@ IDE_RC qsxUtil::assignValue (
     sSourceColumn = QTC_TMPL_COLUMN( aSourceTemplate, aSourceNode );
 
     /* PROJ-2586 PSM Parameters and return without precision
-       aDestNodeê°€ parameterì¼ ë•Œ mtcColumn ì •ë³´ ì¡°ì ˆ */
+       aDestNode°¡ parameterÀÏ ¶§ mtcColumn Á¤º¸ Á¶Àý */
     if ( aParamOrReturn == ID_TRUE )
     {
         IDE_TEST( qsxUtil::adjustParamAndReturnColumnInfo( aMemory,
@@ -268,15 +268,15 @@ IDE_RC qsxUtil::assignValue (
 /***********************************************************************
  *
  * Description : PROJ-1075 assign.
- *               row/record/array typeì— ëŒ€í•´ ë¶„ë¥˜í•˜ì—¬ assigní•œë‹¤.
+ *               row/record/array type¿¡ ´ëÇØ ºÐ·ùÇÏ¿© assignÇÑ´Ù.
  *
- * Implementation : assignì˜ ì¢…ë¥˜ë¥¼ ë‹¤ìŒê³¼ ê°™ì´ êµ¬ë¶„í•œë‹¤.
- * (1) ë‘˜ë‹¤ primitive ê°€ ì•„ë‹Œê²½ìš°
+ * Implementation : assignÀÇ Á¾·ù¸¦ ´ÙÀ½°ú °°ÀÌ ±¸ºÐÇÑ´Ù.
+ * (1) µÑ´Ù primitive °¡ ¾Æ´Ñ°æ¿ì
  *     : assignNonPrimitiveValue
- * (2) ë‘˜ë‹¤ primitive ì¸ ê²½ìš°
+ * (2) µÑ´Ù primitive ÀÎ °æ¿ì
  *     : assignPrimitiveValue
- * (3) í•˜ë‚˜ëŠ” primitive, í•˜ë‚˜ëŠ” udtì¸ ê²½ìš°
- *     : conversionë¶ˆê°€. ì—ëŸ¬
+ * (3) ÇÏ³ª´Â primitive, ÇÏ³ª´Â udtÀÎ °æ¿ì
+ *     : conversionºÒ°¡. ¿¡·¯
  *
  ***********************************************************************/
 
@@ -310,7 +310,7 @@ IDE_RC qsxUtil::assignValue (
     UInt                   i;
     SInt                   j;
 
-    // right nodeê°€ NULLì¸ ê²½ìš°
+    // right node°¡ NULLÀÎ °æ¿ì
     if ( aSourceColumn->type.dataTypeId == MTD_NULL_ID )
     {
         if ( (aDestColumn->type.dataTypeId >= MTD_UDT_ID_MIN) && 
@@ -326,7 +326,7 @@ IDE_RC qsxUtil::assignValue (
             aDestColumn->module->null( aDestColumn, aDestValue );
         }
     }
-    // ë‘˜ë‹¤ primitiveê°€ ì•„ë‹Œ ê²½ìš°
+    // µÑ´Ù primitive°¡ ¾Æ´Ñ °æ¿ì
     else if( ( aDestColumn->type.dataTypeId >= MTD_UDT_ID_MIN ) &&
              ( aDestColumn->type.dataTypeId <= MTD_UDT_ID_MAX ) &&
              ( aSourceColumn->type.dataTypeId >= MTD_UDT_ID_MIN ) &&
@@ -341,13 +341,13 @@ IDE_RC qsxUtil::assignValue (
                                            aCopyRef )
                   != IDE_SUCCESS );
     }
-    // ë‘˜ë‹¤ primitiveì¸ ê²½ìš°
+    // µÑ´Ù primitiveÀÎ °æ¿ì
     else if ( ( ( aDestColumn->type.dataTypeId < MTD_UDT_ID_MIN ) ||
                 ( aDestColumn->type.dataTypeId > MTD_UDT_ID_MAX ) ) &&
               ( ( aSourceColumn->type.dataTypeId < MTD_UDT_ID_MIN ) ||
                 ( aSourceColumn->type.dataTypeId > MTD_UDT_ID_MAX ) ) )
     {
-        // ì¼ë°˜ì ì¸ primitive valueì˜ assigní•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
+        // ÀÏ¹ÝÀûÀÎ primitive valueÀÇ assignÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
         IDE_TEST( assignPrimitiveValue( aMemory,
                                         aSourceColumn,
                                         aSourceValue,
@@ -673,23 +673,23 @@ IDE_RC qsxUtil::assignNonPrimitiveValue (
 /***********************************************************************
  *
  * Description : PROJ-1075 assign.
- *               ë‘˜ë‹¤ primitive ê°€ ì•„ë‹Œê²½ìš°ì— ëŒ€í•´ ë¶„ë¥˜í•˜ì—¬ assigní•œë‹¤.
+ *               µÑ´Ù primitive °¡ ¾Æ´Ñ°æ¿ì¿¡ ´ëÇØ ºÐ·ùÇÏ¿© assignÇÑ´Ù.
  *
- * Implementation : assignì˜ ì¢…ë¥˜ë¥¼ ë‹¤ìŒê³¼ ê°™ì´ êµ¬ë¶„í•œë‹¤.
- * 1) record := record (typeidë™ì¼)
- *  - typeInfoê°€ ë™ì¼ : assignPrimitiveValue
- *  - typeInfoê°€ ë‹¤ë¦„ : assignRowValue
+ * Implementation : assignÀÇ Á¾·ù¸¦ ´ÙÀ½°ú °°ÀÌ ±¸ºÐÇÑ´Ù.
+ * 1) record := record (typeidµ¿ÀÏ)
+ *  - typeInfo°¡ µ¿ÀÏ : assignPrimitiveValue
+ *  - typeInfo°¡ ´Ù¸§ : assignRowValue
  * 2) record := row  OR  row := record
  *  - assignRowValue
- * 3) row := row (typeid ë™ì¼)
- *  - assignRowValue   BUGBUG. ë§Œì•½ executionì‹œ tableInfoê°€
- *  - ë¯¿ì„ë§Œí•œ? tableInfoë¼ë©´ ì´ë¥¼ ê°€ì§€ê³  ë™ì¼rowtypeìž„ì„
- *    í™•ì‹¤ížˆ ì•Œ ìˆ˜ ìžˆë‹¤. ì´ë•ŒëŠ” ê·¸ëƒ¥ assignPrimitiveValueë¥¼
- *    í˜¸ì¶œí•´ë„ ë ê±°ê°™ì€ë°..
- * 4) array := array (typeid ë™ì¼)
+ * 3) row := row (typeid µ¿ÀÏ)
+ *  - assignRowValue   BUGBUG. ¸¸¾à execution½Ã tableInfo°¡
+ *  - ¹ÏÀ»¸¸ÇÑ? tableInfo¶ó¸é ÀÌ¸¦ °¡Áö°í µ¿ÀÏrowtypeÀÓÀ»
+ *    È®½ÇÈ÷ ¾Ë ¼ö ÀÖ´Ù. ÀÌ¶§´Â ±×³É assignPrimitiveValue¸¦
+ *    È£ÃâÇØµµ µÉ°Å°°Àºµ¥..
+ * 4) array := array (typeid µ¿ÀÏ)
  *  - assignArrayValue
- *  - BUGBUG. ì¶”í›„ nested table, varrayí™•ìž¥ì‹œ ë‚´ìš© ë°”ë€Œì–´ì•¼ í•¨.
- * 5) ë‚˜ë¨¸ì§€ê²½ìš° : ì—ëŸ¬
+ *  - BUGBUG. ÃßÈÄ nested table, varrayÈ®Àå½Ã ³»¿ë ¹Ù²î¾î¾ß ÇÔ.
+ * 5) ³ª¸ÓÁö°æ¿ì : ¿¡·¯
  *
  ***********************************************************************/
 #define IDE_FN "qsxUtil::assignNonPrimitiveValue"
@@ -698,10 +698,10 @@ IDE_RC qsxUtil::assignNonPrimitiveValue (
     qtcModule* sSrcModule;
     qtcModule* sDestModule;
 
-    // typeIDê°€ ë™ì¼í•œ ê²½ìš°
+    // typeID°¡ µ¿ÀÏÇÑ °æ¿ì
     if( aDestColumn->type.dataTypeId == aSourceColumn->type.dataTypeId )
     {
-        // ë‘˜ë‹¤ rowtypeì¸ ê²½ìš° assignRow
+        // µÑ´Ù rowtypeÀÎ °æ¿ì assignRow
         if( aDestColumn->type.dataTypeId == MTD_ROWTYPE_ID )
         {
             IDE_TEST( assignRowValue( aMemory,
@@ -713,22 +713,22 @@ IDE_RC qsxUtil::assignNonPrimitiveValue (
                                       aCopyRef )
                       != IDE_SUCCESS );
         }
-        // ë‘˜ë‹¤ recordtypeì¸ ê²½ìš°
+        // µÑ´Ù recordtypeÀÎ °æ¿ì
         else if ( aDestColumn->type.dataTypeId == MTD_RECORDTYPE_ID )
         {
             sSrcModule = (qtcModule*)aSourceColumn->module;
             sDestModule = (qtcModule*)aDestColumn->module;
 
-            // recordtypeì€ ë°˜ë“œì‹œ ë™ì¼íƒ€ìž…ì´ì–´ì•¼ë§Œ í•¨.
+            // recordtypeÀº ¹Ýµå½Ã µ¿ÀÏÅ¸ÀÔÀÌ¾î¾ß¸¸ ÇÔ.
             if( sSrcModule->typeInfo == sDestModule->typeInfo )
             {
-                // ì í•©ì„± ê²€ì‚¬.
-                // ë™ì¼ typeì´ë¯€ë¡œ typesizeëŠ” ë™ì¼í•˜ë‹¤.
+                // ÀûÇÕ¼º °Ë»ç.
+                // µ¿ÀÏ typeÀÌ¹Ç·Î typesize´Â µ¿ÀÏÇÏ´Ù.
                 IDE_DASSERT( sSrcModule->typeInfo->typeSize ==
                              sDestModule->typeInfo->typeSize );
 
-                // ì í•©ì„± ê²€ì‚¬.
-                // ë™ì¼ typeì´ë¯€ë¡œ columnCountëŠ” ë™ì¼í•˜ë‹¤.
+                // ÀûÇÕ¼º °Ë»ç.
+                // µ¿ÀÏ typeÀÌ¹Ç·Î columnCount´Â µ¿ÀÏÇÏ´Ù.
                 IDE_DASSERT( sSrcModule->typeInfo->columnCount ==
                              sDestModule->typeInfo->columnCount );
 
@@ -762,13 +762,13 @@ IDE_RC qsxUtil::assignNonPrimitiveValue (
                 IDE_RAISE( ERR_CONVERSION_NOT_APPLICABLE );
             }
         }
-        // ë‘˜ë‹¤ arrayì¸ ê²½ìš°
+        // µÑ´Ù arrayÀÎ °æ¿ì
         else if ( aDestColumn->type.dataTypeId == MTD_ASSOCIATIVE_ARRAY_ID )
         {
             sSrcModule = (qtcModule*)aSourceColumn->module;
             sDestModule = (qtcModule*)aDestColumn->module;
 
-            // arraytypeì€ ë°˜ë“œì‹œ ë™ì¼íƒ€ìž…ì´ì–´ì•¼ë§Œ í•¨.
+            // arraytypeÀº ¹Ýµå½Ã µ¿ÀÏÅ¸ÀÔÀÌ¾î¾ß¸¸ ÇÔ.
             if( sSrcModule->typeInfo == sDestModule->typeInfo )
             {
                 if( aCopyRef == ID_TRUE )
@@ -778,7 +778,7 @@ IDE_RC qsxUtil::assignNonPrimitiveValue (
 
                     IDE_TEST_RAISE( *((qsxArrayInfo**)aSourceValue) == NULL, ERR_INVALID_ARRAY );
 
-                    // reference copyì¸ ê²½ìš°
+                    // reference copyÀÎ °æ¿ì
                     IDE_TEST( assignPrimitiveValue( aMemory,
                                                     aSourceColumn,
                                                     aSourceValue,
@@ -791,8 +791,8 @@ IDE_RC qsxUtil::assignNonPrimitiveValue (
                 }
                 else
                 {
-                    // reference copyê°€ ì•„ë‹Œ ê²½ìš°
-                    // arrayì˜ dataë„ ì „ë¶€ copy
+                    // reference copy°¡ ¾Æ´Ñ °æ¿ì
+                    // arrayÀÇ dataµµ ÀüºÎ copy
                     IDE_TEST( assignArrayValue( aSourceValue,
                                                 aDestValue,
                                                 aDestTemplate )
@@ -810,10 +810,10 @@ IDE_RC qsxUtil::assignNonPrimitiveValue (
             sSrcModule = (qtcModule*)aSourceColumn->module;
             sDestModule = (qtcModule*)aDestColumn->module;
 
-            // ref cursor typeì€ ë°˜ë“œì‹œ ë™ì¼íƒ€ìž…ì´ì–´ì•¼ë§Œ í•¨.
+            // ref cursor typeÀº ¹Ýµå½Ã µ¿ÀÏÅ¸ÀÔÀÌ¾î¾ß¸¸ ÇÔ.
             if( sSrcModule->typeInfo == sDestModule->typeInfo )
             {
-                // reference copyì¸ ê²½ìš°
+                // reference copyÀÎ °æ¿ì
                 IDE_TEST( assignPrimitiveValue( aMemory,
                                                 aSourceColumn,
                                                 aSourceValue,
@@ -835,11 +835,11 @@ IDE_RC qsxUtil::assignNonPrimitiveValue (
             IDE_RAISE( ERR_CONVERSION_NOT_APPLICABLE );
         }
     }
-    // typeì´ ì„œë¡œ ë‹¤ë¥¸ ê²½ìš°
+    // typeÀÌ ¼­·Î ´Ù¸¥ °æ¿ì
     else
     {
-        // ë‘˜ì¤‘ í•˜ë‚˜ë¼ë„ array typeì´ ìžˆìœ¼ë©´ ì ˆëŒ€ í˜¸í™˜ë¶ˆê°€.
-        // record-row, row-recordëŠ” í˜¸í™˜ê°€ëŠ¥.
+        // µÑÁß ÇÏ³ª¶óµµ array typeÀÌ ÀÖÀ¸¸é Àý´ë È£È¯ºÒ°¡.
+        // record-row, row-record´Â È£È¯°¡´É.
         if( ( aDestColumn->type.dataTypeId == MTD_ASSOCIATIVE_ARRAY_ID ) ||
             ( aSourceColumn->type.dataTypeId == MTD_ASSOCIATIVE_ARRAY_ID ) )
         {
@@ -888,19 +888,19 @@ IDE_RC qsxUtil::assignRowValue (
 /***********************************************************************
  *
  * Description : PROJ-1075
- *               rowtypeì— ëŒ€í•´ assigní•œë‹¤.
+ *               rowtype¿¡ ´ëÇØ assignÇÑ´Ù.
  *
  * Implementation :
- *    (1) source, dest columnì˜ moduleì„ ì°¸ì¡°í•˜ì—¬
- *        columnCountê°€ ì¼ì¹˜í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
-          ì¼ì¹˜í•˜ì§€ ì•Šìœ¼ë©´ conversion not applicable.
- *    (2) columnCountë¥¼ ì¦ê°€ì‹œí‚¤ë©´ì„œ Columnì˜ ì£¼ì†Œë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
- *        ->row/record typeì€ ë™ì¼ templateì— ë‚´ë¶€ ì»¬ëŸ¼ì´ ìˆœì„œëŒ€ë¡œ ìžë¦¬ìž¡ê³ 
- *          ìžˆë‹¤.
- *    (3) ì–»ì–´ì˜¨ columnì„ ì´ìš©í•˜ì—¬ mtc::valueí•¨ìˆ˜ë¥¼ í˜¸ì¶œí•´ì„œ ìƒˆë¡œìš´
- *        valueìœ„ì¹˜ë¥¼ source, dest ëª¨ë‘ ì–»ì–´ë‚¸ë‹¤.
- *    (4) ìƒˆë¡­ê²Œ ì–»ì–´ì˜¨ column, valueë¥¼ ê°€ì§€ê³  assignPrimitiveValueí˜¸ì¶œ.
- *    (5) column ê°œìˆ˜ë§Œí¼ (2) ~ (4) ë°˜ë³µ.
+ *    (1) source, dest columnÀÇ moduleÀ» ÂüÁ¶ÇÏ¿©
+ *        columnCount°¡ ÀÏÄ¡ÇÏ´ÂÁö °Ë»çÇÑ´Ù.
+          ÀÏÄ¡ÇÏÁö ¾ÊÀ¸¸é conversion not applicable.
+ *    (2) columnCount¸¦ Áõ°¡½ÃÅ°¸é¼­ ColumnÀÇ ÁÖ¼Ò¸¦ Áõ°¡½ÃÅ²´Ù.
+ *        ->row/record typeÀº µ¿ÀÏ template¿¡ ³»ºÎ ÄÃ·³ÀÌ ¼ø¼­´ë·Î ÀÚ¸®Àâ°í
+ *          ÀÖ´Ù.
+ *    (3) ¾ò¾î¿Â columnÀ» ÀÌ¿ëÇÏ¿© mtc::valueÇÔ¼ö¸¦ È£ÃâÇØ¼­ »õ·Î¿î
+ *        valueÀ§Ä¡¸¦ source, dest ¸ðµÎ ¾ò¾î³½´Ù.
+ *    (4) »õ·Ó°Ô ¾ò¾î¿Â column, value¸¦ °¡Áö°í assignPrimitiveValueÈ£Ãâ.
+ *    (5) column °³¼ö¸¸Å­ (2) ~ (4) ¹Ýº¹.
  *
  ***********************************************************************/
 #define IDE_FN "qsxUtil::assignRowValue"
@@ -917,15 +917,15 @@ IDE_RC qsxUtil::assignRowValue (
     void*      sSrcColumnValue;
     void*      sDestColumnValue;
 
-    // row/record typeì€ ì‚¬ìš©ìž ì •ì˜ ëª¨ë“ˆ(qtcModule)ë¡œ í™•ìž¥.
+    // row/record typeÀº »ç¿ëÀÚ Á¤ÀÇ ¸ðµâ(qtcModule)·Î È®Àå.
     sSrcModule = (qtcModule*)aSourceColumn->module;
     sDestModule = (qtcModule*)aDestColumn->module;
 
-    // module->typeInfo->columnCountë¥¼ ì–»ì–´ì˜´.
+    // module->typeInfo->columnCount¸¦ ¾ò¾î¿È.
     sSrcColumnCount = sSrcModule->typeInfo->columnCount;
     sDestColumnCount = sDestModule->typeInfo->columnCount;
 
-    // column countê°€ ì„œë¡œ ë‹¤ë¥´ë‹¤ë©´ conversion ë¶ˆê°€ëŠ¥. ì—ëŸ¬.
+    // column count°¡ ¼­·Î ´Ù¸£´Ù¸é conversion ºÒ°¡´É. ¿¡·¯.
     IDE_TEST_RAISE( sSrcColumnCount != sDestColumnCount,
                     ERR_CONVERSION_NOT_APPLICABLE );
 
@@ -936,8 +936,8 @@ IDE_RC qsxUtil::assignRowValue (
          sSrcRowColumn = sSrcRowColumn->next,
              sDestRowColumn = sDestRowColumn->next)
     {
-        // row/record typeë³€ìˆ˜ì˜ ê°’ì—ì„œ ë‚´ë¶€ ì»¬ëŸ¼ì˜
-        // ê°’ì„ ì–»ì–´ëƒ„.
+        // row/record typeº¯¼öÀÇ °ª¿¡¼­ ³»ºÎ ÄÃ·³ÀÇ
+        // °ªÀ» ¾ò¾î³¿.
         sSrcColumnValue = (void*)mtc::value( sSrcRowColumn->basicInfo,
                                              aSourceValue,
                                              MTD_OFFSET_USE );
@@ -1005,7 +1005,7 @@ IDE_RC qsxUtil::assignRowValueFromStack(
 
     sDestColumn = QTC_TMPL_COLUMN( aDestTemplate, aDestNode );
     sDestModule = (qtcModule*)sDestColumn->module;
-    // row/record typeì€ ì‚¬ìš©ìž ì •ì˜ ëª¨ë“ˆ(qtcModule)ë¡œ í™•ìž¥.
+    // row/record typeÀº »ç¿ëÀÚ Á¤ÀÇ ¸ðµâ(qtcModule)·Î È®Àå.
 
     sDestStack  = aDestTemplate->tmplate.stack;
     sDestValue  = sDestStack->value;
@@ -1023,12 +1023,12 @@ IDE_RC qsxUtil::assignRowValueFromStack(
     {
         IDE_TEST_RAISE( sRemain < 1, ERR_STACK_OVERFLOW );
 
-        // row/record typeë³€ìˆ˜ì˜ ê°’ì—ì„œ ë‚´ë¶€ ì»¬ëŸ¼ì˜ ê°’ì„ ì–»ì–´ëƒ„.
+        // row/record typeº¯¼öÀÇ °ª¿¡¼­ ³»ºÎ ÄÃ·³ÀÇ °ªÀ» ¾ò¾î³¿.
         sDestColumnValue = (void*)mtc::value( sDestRowColumn->basicInfo,
                                               sDestValue,
                                               MTD_OFFSET_USE );
 
-        // ê°ê°ì˜ ë‚´ë¶€ ì»¬ëŸ¼ë“¤ì€ primitive typeìž„.
+        // °¢°¢ÀÇ ³»ºÎ ÄÃ·³µéÀº primitive typeÀÓ.
         IDE_TEST( assignPrimitiveValue( aMemory,
                                         sStack->column,
                                         sStack->value,
@@ -1069,10 +1069,10 @@ IDE_RC qsxUtil::assignArrayValue (
 /***********************************************************************
  *
  * Description : PROJ-1075
- *               arraytypeì— ëŒ€í•´ assigní•œë‹¤.
+ *               arraytype¿¡ ´ëÇØ assignÇÑ´Ù.
  *
  * Implementation :
- *    (1) qsxArray::assigní•¨ìˆ˜ í˜¸ì¶œ.
+ *    (1) qsxArray::assignÇÔ¼ö È£Ãâ.
  *
  ***********************************************************************/
 #define IDE_FN "qsxUtil::assignArrayValue"
@@ -1104,13 +1104,13 @@ IDE_RC qsxUtil::assignArrayValue (
 
 
 // BUG-11192 date_format session property
-// mtv::executeConvert()ì‹œ mtcTemplateì´ í•„ìš”í•¨
-// aDestTemplate ì¸ìž ì¶”ê°€.
+// mtv::executeConvert()½Ã mtcTemplateÀÌ ÇÊ¿äÇÔ
+// aDestTemplate ÀÎÀÚ Ãß°¡.
 // by kumdory, 2005-04-08
 
-// PROJ-1075 assignPrimitiveValueë¡œ ë³€ê²½.
-// ì´ í•¨ìˆ˜ëŠ” primitive valueë˜ëŠ” ë™ì¼ recordtype value
-// assignì‹œì—ë§Œ í˜¸ì¶œë¨.
+// PROJ-1075 assignPrimitiveValue·Î º¯°æ.
+// ÀÌ ÇÔ¼ö´Â primitive value¶Ç´Â µ¿ÀÏ recordtype value
+// assign½Ã¿¡¸¸ È£ÃâµÊ.
 IDE_RC qsxUtil::assignPrimitiveValue (
     iduMemory    * aMemory,
     mtcColumn    * aSourceColumn,
@@ -1129,7 +1129,7 @@ IDE_RC qsxUtil::assignPrimitiveValue (
     UInt                 sStage = 0;
 
     // PROJ-2002 Column Security
-    // PSMì—ì„œëŠ” ì•”í˜¸ ì»¬ëŸ¼ íƒ€ìž…ì„ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+    // PSM¿¡¼­´Â ¾ÏÈ£ ÄÃ·³ Å¸ÀÔÀ» »ç¿ëÇÒ ¼ö ¾ø´Ù.
     IDE_DASSERT( (aSourceColumn->type.dataTypeId != MTD_ECHAR_ID) &&
                  (aSourceColumn->type.dataTypeId != MTD_EVARCHAR_ID) );
 
@@ -1140,7 +1140,7 @@ IDE_RC qsxUtil::assignPrimitiveValue (
     sStage = 1;
 
     // check conversion
-    /* PROJ-1361 : data moduleê³¼ language module ë¶„ë¦¬í–ˆìŒ 
+    /* PROJ-1361 : data module°ú language module ºÐ¸®ÇßÀ½ 
     if (aDestColumn->type.type     == aSourceColumn->type.type &&
         aDestColumn->type.language == aSourceColumn->type.language)
     */
@@ -1306,8 +1306,8 @@ IDE_RC qsxUtil::calculateAndAssign (
     return IDE_FAILURE;
 }
 
-// PROJ-1335 RAISE ì§€ì›
-// RAISE system_defined_exception;ì˜ ê²½ìš° ì ì ˆí•œ ì—ëŸ¬ì½”ë“œê°€ ì„¤ì •ë˜ì–´ì•¼ í•œë‹¤.
+// PROJ-1335 RAISE Áö¿ø
+// RAISE system_defined_exception;ÀÇ °æ¿ì ÀûÀýÇÑ ¿¡·¯ÄÚµå°¡ ¼³Á¤µÇ¾î¾ß ÇÑ´Ù.
 typedef struct qsxIdNameMap
 {
     SInt  id;
@@ -1315,8 +1315,8 @@ typedef struct qsxIdNameMap
     UInt  errorCode;
 } qsxIdNameMap;
 
-// PROJ-1335 RAISE ì§€ì›
-// ê°ê°ì˜ system_defined_exceptionì— ì•Œë§žì€ ëŒ€í‘œ ì—ëŸ¬ì½”ë“œë¥¼ í¬í•¨ì‹œí‚´.
+// PROJ-1335 RAISE Áö¿ø
+// °¢°¢ÀÇ system_defined_exception¿¡ ¾Ë¸ÂÀº ´ëÇ¥ ¿¡·¯ÄÚµå¸¦ Æ÷ÇÔ½ÃÅ´.
 qsxIdNameMap excpIdNameMap[] =
 {
     { 
@@ -1378,6 +1378,9 @@ qsxIdNameMap excpIdNameMap[] =
     },
     {
         QSX_RENAME_FAILED_NO, "RENAME_FAILED", qpERR_ABORT_QSX_FILE_RENAME_FAILED
+    },
+    {
+        QSX_SHARD_MULTIPLE_ERRORS_NO, "SHARD_MULTIPLE_ERRORS", sdERR_ABORT_SHARD_MULTIPLE_ERRORS
     },
     {
         0, "", 0
@@ -1455,16 +1458,16 @@ qsxUtil::arrayReturnToInto( qcTemplate         * aTemplate,
 /***********************************************************************
  *
  * Description : PROJ-1584 DML Return Clause 
- *  PSM Array Type RETURN Clause (Column Value) -> INTO Clause (Column Value)ì„
- *  ë³µì‚¬ í•˜ì—¬ ì¤€ë‹¤.
+ *  PSM Array Type RETURN Clause (Column Value) -> INTO Clause (Column Value)À»
+ *  º¹»ç ÇÏ¿© ÁØ´Ù.
  * 
  * Implementation :
  *      (1) Return Clause -> INTO Clause value copy.
  *
  * BUG-45157 fix
- *   - ì¸ìžì˜ qmmReturnIntoë¥¼ qmmReturnValue, qmmReturnIntoValueë¡œ ë‚˜ëˆ”.
- *    - aReturnValueì™€ aTemplateì´ í•œìŒì´ê³ 
- *    - aReturnIntoValueì™€ aDestTemplateê°€ í•œìŒì´ë‹¤.
+ *   - ÀÎÀÚÀÇ qmmReturnInto¸¦ qmmReturnValue, qmmReturnIntoValue·Î ³ª´®.
+ *    - aReturnValue¿Í aTemplateÀÌ ÇÑ½ÖÀÌ°í
+ *    - aReturnIntoValue¿Í aDestTemplate°¡ ÇÑ½ÖÀÌ´Ù.
  *
  ***********************************************************************/
 
@@ -1479,7 +1482,7 @@ qsxUtil::arrayReturnToInto( qcTemplate         * aTemplate,
     sReturnValue     = aReturnValue;
     sReturnIntoValue = aReturnIntoValue;
 
-    // DMLì„ ì„±ê³µí–ˆì„ ë•Œ return intoë¥¼ ì²˜ë¦¬í•˜ë¯€ë¡œ aRowCntê°€ 0ì¼ ìˆ˜ ì—†ë‹¤.
+    // DMLÀ» ¼º°øÇßÀ» ¶§ return into¸¦ Ã³¸®ÇÏ¹Ç·Î aRowCnt°¡ 0ÀÏ ¼ö ¾ø´Ù.
     IDE_DASSERT( aRowCnt != 0 );
 
     // index overflow
@@ -1498,20 +1501,20 @@ qsxUtil::arrayReturnToInto( qcTemplate         * aTemplate,
         sSrcColumn = aTemplate->tmplate.stack->column;
         sSrcValue  = aTemplate->tmplate.stack->value;
 
-        // decryptí•¨ìˆ˜ë¥¼ ë¶™ì˜€ìœ¼ë¯€ë¡œ ì•”í˜¸ì»¬ëŸ¼ì´ ë‚˜ì˜¬ ìˆ˜ ì—†ë‹¤.
+        // decryptÇÔ¼ö¸¦ ºÙ¿´À¸¹Ç·Î ¾ÏÈ£ÄÃ·³ÀÌ ³ª¿Ã ¼ö ¾ø´Ù.
         IDE_DASSERT( (sSrcColumn->module->flag & MTD_ENCRYPT_TYPE_MASK)
                      == MTD_ENCRYPT_TYPE_FALSE );
 
-        // Associative Arrayì˜ index nodeê°€ nodeì˜ argumentsì´ê¸° ë•Œë¬¸ì—
-        // ë°˜ë“œì‹œ nodeì— argumentsê°€ ìžˆì–´ì•¼ í•œë‹¤.
+        // Associative ArrayÀÇ index node°¡ nodeÀÇ argumentsÀÌ±â ¶§¹®¿¡
+        // ¹Ýµå½Ã node¿¡ arguments°¡ ÀÖ¾î¾ß ÇÑ´Ù.
         // ARRAY_NODE[1]
-        // ^ NODE     ^ INDEX NODE(ARRAY_NODEì˜ arguments)
+        // ^ NODE     ^ INDEX NODE(ARRAY_NODEÀÇ arguments)
         IDE_DASSERT( sReturnIntoValue->returningInto->node.arguments != NULL );
 
         // BUG-42715
-        // Arrayì— ì²˜ìŒ return valueë¥¼ ë„£ì„ ë•ŒëŠ” arrayë¥¼ ì´ˆê¸°í™” í•œë‹¤.
-        // package ë³€ìˆ˜ë¥¼ ì§ì ‘ ì‚¬ìš©í•˜ë©´ aTemplateì™€ aDestTemplateê°€ ë™ì¼í•˜ë©°,
-        // ì´ ê²½ìš°ì—ë§Œ arrayë¥¼ truncate í•œë‹¤.
+        // Array¿¡ Ã³À½ return value¸¦ ³ÖÀ» ¶§´Â array¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+        // package º¯¼ö¸¦ Á÷Á¢ »ç¿ëÇÏ¸é aTemplate¿Í aDestTemplate°¡ µ¿ÀÏÇÏ¸ç,
+        // ÀÌ °æ¿ì¿¡¸¸ array¸¦ truncate ÇÑ´Ù.
         if ( ( aRowCnt == 1 ) && ( aTemplate == aDestTemplate ) )
         {
             IDE_TEST( truncateArray( aTemplate->stmt,
@@ -1563,16 +1566,16 @@ qsxUtil::recordReturnToInto( qcTemplate         * aTemplate,
 /***********************************************************************
  *
  * Description : PROJ-1584 DML Return Clause 
- *  PSM record/row Type RETURN Clause (Column Value) -> INTO Clause (Column Value)ì„
- *  ë³µì‚¬ í•˜ì—¬ ì¤€ë‹¤.
+ *  PSM record/row Type RETURN Clause (Column Value) -> INTO Clause (Column Value)À»
+ *  º¹»ç ÇÏ¿© ÁØ´Ù.
  * 
  * Implementation :
  *      (1) Return Clause -> INTO Clause value copy.
  *
  * BUG-45157 fix
- *   - ì¸ìžì˜ qmmReturnIntoë¥¼ qmmReturnValue, qmmReturnIntoValueë¡œ ë‚˜ëˆ”.
- *    - aReturnValueì™€ aTemplateì´ í•œìŒì´ê³ 
- *    - aReturnIntoValueì™€ aDestTemplateê°€ í•œìŒì´ë‹¤.
+ *   - ÀÎÀÚÀÇ qmmReturnInto¸¦ qmmReturnValue, qmmReturnIntoValue·Î ³ª´®.
+ *    - aReturnValue¿Í aTemplateÀÌ ÇÑ½ÖÀÌ°í
+ *    - aReturnIntoValue¿Í aDestTemplate°¡ ÇÑ½ÖÀÌ´Ù.
  *
  ***********************************************************************/
 
@@ -1592,7 +1595,7 @@ qsxUtil::recordReturnToInto( qcTemplate         * aTemplate,
     IDE_DASSERT( aReturnValue != NULL );
     IDE_DASSERT( aReturnIntoValue != NULL );
 
-    // DMLì„ ì„±ê³µí–ˆì„ ë•Œ return intoë¥¼ ì²˜ë¦¬í•˜ë¯€ë¡œ aRowCntê°€ 0ì¼ ìˆ˜ ì—†ë‹¤.
+    // DMLÀ» ¼º°øÇßÀ» ¶§ return into¸¦ Ã³¸®ÇÏ¹Ç·Î aRowCnt°¡ 0ÀÏ ¼ö ¾ø´Ù.
     IDE_DASSERT( aRowCnt != 0 );
 
     // index overflow
@@ -1610,7 +1613,7 @@ qsxUtil::recordReturnToInto( qcTemplate         * aTemplate,
 
         sSrcColumn = aTemplate->tmplate.stack->column;
 
-        // decryptí•¨ìˆ˜ë¥¼ ë¶™ì˜€ìœ¼ë¯€ë¡œ ì•”í˜¸ì»¬ëŸ¼ì´ ë‚˜ì˜¬ ìˆ˜ ì—†ë‹¤.
+        // decryptÇÔ¼ö¸¦ ºÙ¿´À¸¹Ç·Î ¾ÏÈ£ÄÃ·³ÀÌ ³ª¿Ã ¼ö ¾ø´Ù.
         IDE_DASSERT( (sSrcColumn->module->flag & MTD_ENCRYPT_TYPE_MASK)
                      == MTD_ENCRYPT_TYPE_FALSE );
 
@@ -1637,9 +1640,9 @@ qsxUtil::recordReturnToInto( qcTemplate         * aTemplate,
         *(mtdIntegerType*)sIndexValue = (mtdIntegerType)(aRowCnt);
 
         // BUG-42715
-        // Arrayì— ì²˜ìŒ return valueë¥¼ ë„£ì„ ë•ŒëŠ” arrayë¥¼ ì´ˆê¸°í™” í•œë‹¤.
-        // package ë³€ìˆ˜ë¥¼ ì§ì ‘ ì‚¬ìš©í•˜ë©´ aTemplateì™€ aDestTemplateê°€ ë™ì¼í•˜ë©°,
-        // ì´ ê²½ìš°ì—ë§Œ arrayë¥¼ truncate í•œë‹¤.
+        // Array¿¡ Ã³À½ return value¸¦ ³ÖÀ» ¶§´Â array¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+        // package º¯¼ö¸¦ Á÷Á¢ »ç¿ëÇÏ¸é aTemplate¿Í aDestTemplate°¡ µ¿ÀÏÇÏ¸ç,
+        // ÀÌ °æ¿ì¿¡¸¸ array¸¦ truncate ÇÑ´Ù.
         if ( ( aRowCnt == 1 ) && ( aTemplate == aDestTemplate ) )
         {
             IDE_TEST( truncateArray( aTemplate->stmt,
@@ -1653,16 +1656,16 @@ qsxUtil::recordReturnToInto( qcTemplate         * aTemplate,
     }
 
     /* RETURNING i1, i2 INTO r1;
-     * i1, i2ëŠ”   aTemplate->tmplate.stack ìœ¼ë¡œ ê³„ì‚°í•˜ê³ ,
-     * r1ì€ aDestTemplate->tmplate.stack ìœ¼ë¡œ ê³„ì‚°í•œë‹¤. */
+     * i1, i2´Â   aTemplate->tmplate.stack À¸·Î °è»êÇÏ°í,
+     * r1Àº aDestTemplate->tmplate.stack À¸·Î °è»êÇÑ´Ù. */
     IDE_TEST( qtc::calculate( sReturnIntoNode,
                               aDestTemplate )
               != IDE_SUCCESS );
 
     // BUG-42715
-    // return valueê°€ original stackì— ìžˆìœ¼ë¯€ë¡œ
-    // assignRowValueFromStackì„ í˜¸ì¶œí•  ë•Œ original stackì„ ë„˜ê¸´ë‹¤.
-    // aTemplateì˜ stackë„ assignì´ ëë‚œ í›„ì— ë³µêµ¬í•œë‹¤.
+    // return value°¡ original stack¿¡ ÀÖÀ¸¹Ç·Î
+    // assignRowValueFromStackÀ» È£ÃâÇÒ ¶§ original stackÀ» ³Ñ±ä´Ù.
+    // aTemplateÀÇ stackµµ assignÀÌ ³¡³­ ÈÄ¿¡ º¹±¸ÇÑ´Ù.
     IDE_TEST( qsxUtil::assignRowValueFromStack( QC_QMX_MEM(aDestTemplate->stmt),
                                                 sOriStack,
                                                 sOriRemain,
@@ -1697,16 +1700,16 @@ qsxUtil::primitiveReturnToInto( qcTemplate         * aTemplate,
 /***********************************************************************
  *
  * Description : BUG-36131
- *  PSM primitive Type RETURN Clause (Column Value) -> INTO Clause (Column Value)ì„
- *  ë³µì‚¬ í•˜ì—¬ ì¤€ë‹¤.
+ *  PSM primitive Type RETURN Clause (Column Value) -> INTO Clause (Column Value)À»
+ *  º¹»ç ÇÏ¿© ÁØ´Ù.
  * 
  * Implementation :
  *      (1) Return Clause -> INTO Clause value copy.
  *
  * BUG-45157 fix
- *   - ì¸ìžì˜ qmmReturnIntoë¥¼ qmmReturnValue, qmmReturnIntoValueë¡œ ë‚˜ëˆ”.
- *    - aReturnValueì™€ aTemplateì´ í•œìŒì´ê³ 
- *    - aReturnIntoValueì™€ aDestTemplateê°€ í•œìŒì´ë‹¤.
+ *   - ÀÎÀÚÀÇ qmmReturnInto¸¦ qmmReturnValue, qmmReturnIntoValue·Î ³ª´®.
+ *    - aReturnValue¿Í aTemplateÀÌ ÇÑ½ÖÀÌ°í
+ *    - aReturnIntoValue¿Í aDestTemplate°¡ ÇÑ½ÖÀÌ´Ù.
  *
  ***********************************************************************/
 
@@ -1730,7 +1733,7 @@ qsxUtil::primitiveReturnToInto( qcTemplate         * aTemplate,
         sSrcColumn = aTemplate->tmplate.stack->column;
         sSrcValue  = aTemplate->tmplate.stack->value;
 
-        // decryptí•¨ìˆ˜ë¥¼ ë¶™ì˜€ìœ¼ë¯€ë¡œ ì•”í˜¸ì»¬ëŸ¼ì´ ë‚˜ì˜¬ ìˆ˜ ì—†ë‹¤.
+        // decryptÇÔ¼ö¸¦ ºÙ¿´À¸¹Ç·Î ¾ÏÈ£ÄÃ·³ÀÌ ³ª¿Ã ¼ö ¾ø´Ù.
         IDE_DASSERT( (sSrcColumn->module->flag & MTD_ENCRYPT_TYPE_MASK)
                      == MTD_ENCRYPT_TYPE_FALSE );
 
@@ -1778,12 +1781,12 @@ qsxUtil::truncateArray ( qcStatement * aQcStmt,
         IDE_DASSERT( sQtcNode->node.arguments != NULL );
 
         /* BUG-38292
-           array type variableê°€ package specì— ì„ ì–¸ëœ ê²½ìš°,
-           indirect calculate ë°©ì‹ìœ¼ë¡œ ì„¤ì •ëœë‹¤.
-           indirect caclulate ë°©ì‹ì¼ ì‹œ calculateInfoì—
-           array type variableì˜ ì‹¤ì œ ì •ë³´ê°€ ì…‹íŒ…ë˜ì–´ ìžˆë‹¤. 
-           ë”°ë¼ì„œ, sQtcNode->node.objectIDë¥¼ ë³´ê³  íŒë‹¨í•´ì„œ
-           array type variableì˜ ì •ë³´ë¥¼ ê°€ì ¸ì™€ì•¼ í•œë‹¤.*/
+           array type variable°¡ package spec¿¡ ¼±¾ðµÈ °æ¿ì,
+           indirect calculate ¹æ½ÄÀ¸·Î ¼³Á¤µÈ´Ù.
+           indirect caclulate ¹æ½ÄÀÏ ½Ã calculateInfo¿¡
+           array type variableÀÇ ½ÇÁ¦ Á¤º¸°¡ ¼ÂÆÃµÇ¾î ÀÖ´Ù. 
+           µû¶ó¼­, sQtcNode->node.objectID¸¦ º¸°í ÆÇ´ÜÇØ¼­
+           array type variableÀÇ Á¤º¸¸¦ °¡Á®¿Í¾ß ÇÑ´Ù.*/
         sInfo = QTC_TMPL_EXECUTE(QC_PRIVATE_TMPLATE(aQcStmt),
                                  sQtcNode)->calculateInfo;
 
@@ -1817,7 +1820,7 @@ qsxUtil::truncateArray ( qcStatement * aQcStmt,
             sNode.node.objectID = sRealNode[1].objectID;
         }
 
-        // arrayë³€ìˆ˜ì˜ column, valueë¥¼ ì–»ì–´ì˜¨ë‹¤.
+        // arrayº¯¼öÀÇ column, value¸¦ ¾ò¾î¿Â´Ù.
         sArrayInfo = *((qsxArrayInfo **)QTC_TMPL_FIXEDDATA( sTemplate, &sNode ));
 
         IDE_TEST_RAISE( sArrayInfo == NULL, ERR_INVALID_ARRAY );
@@ -1839,12 +1842,12 @@ qsxUtil::truncateArray ( qcStatement * aQcStmt,
 /***********************************************************************
  *
  * Description : PROJ-1094 Extend UDT
- *               qsxArrayInfoë¥¼ ìƒì„±í•œë‹¤.
+ *               qsxArrayInfo¸¦ »ý¼ºÇÑ´Ù.
  *
  * Implementation : 
- *   * aQcStmt->session->mQPSpecific->mArrMemMgrëŠ”
- *     qsxArrayInfoë¥¼ ìƒì„±í•˜ê¸° ìœ„í•œ memory managerì´ë‹¤.
- *   * ìƒì„±í•œ qsxArrayInfoë¥¼ listì˜ ì²« ë²ˆì§¸ì— ì—°ê²°í•œë‹¤.
+ *   * aQcStmt->session->mQPSpecific->mArrMemMgr´Â
+ *     qsxArrayInfo¸¦ »ý¼ºÇÏ±â À§ÇÑ memory managerÀÌ´Ù.
+ *   * »ý¼ºÇÑ qsxArrayInfo¸¦ listÀÇ Ã¹ ¹øÂ°¿¡ ¿¬°áÇÑ´Ù.
  *
  ***********************************************************************/
 IDE_RC qsxUtil::allocArrayInfo( qcStatement   * aQcStmt,
@@ -1885,8 +1888,8 @@ IDE_RC qsxUtil::allocArrayInfo( qcStatement   * aQcStmt,
 /***********************************************************************
  *
  * Description : PROJ-1094 Extend UDT
- *               aNodeSizeì— ë§žëŠ” qsxArrayMemMgrì„ ìƒì„±í•˜ê±°ë‚˜
- *               ì°¾ì•„ì„œ qsxArrayInfoì— ì—°ê²°í•œë‹¤.
+ *               aNodeSize¿¡ ¸Â´Â qsxArrayMemMgrÀ» »ý¼ºÇÏ°Å³ª
+ *               Ã£¾Æ¼­ qsxArrayInfo¿¡ ¿¬°áÇÑ´Ù.
  *
  * Implementation : 
  *
@@ -2008,7 +2011,7 @@ IDE_RC qsxUtil::allocArrayMemMgr( qcStatement  * aQcStmt,
 /***********************************************************************
  *
  * Description : PROJ-1094 Extend UDT
- *               ì‚¬ìš©ì„ ì™„ë£Œí•œ qsxArrayInfoë¥¼ ì œê±°í•œë‹¤.
+ *               »ç¿ëÀ» ¿Ï·áÇÑ qsxArrayInfo¸¦ Á¦°ÅÇÑ´Ù.
  *
  * Implementation : 
  *
@@ -2047,7 +2050,7 @@ IDE_RC qsxUtil::freeArrayInfo( qsxArrayInfo * aArrayInfo )
     }
 
     // PROJ-1904 Extend UDT
-    // ë°˜ë“œì‹œ ì°¾ì•„ì•¼ í•œë‹¤.
+    // ¹Ýµå½Ã Ã£¾Æ¾ß ÇÑ´Ù.
     IDE_DASSERT ( sCurrArrayInfo != NULL );
 
     IDE_DASSERT( aArrayInfo->avlTree.refCount == 0 );
@@ -2080,11 +2083,11 @@ IDE_RC qsxUtil::freeArrayInfo( qsxArrayInfo * aArrayInfo )
 /***********************************************************************
  *
  * Description : PROJ-1094 Extend UDT
- *               ì‚¬ìš©ì„ ì™„ë£Œí•œ qsxArrayMemMgrì„ ëª¨ë‘ ì œê±°í•œë‹¤.
- *               Session ì¢…ë£Œ ì‹œì ì— í˜¸ì¶œí•œë‹¤.
+ *               »ç¿ëÀ» ¿Ï·áÇÑ qsxArrayMemMgrÀ» ¸ðµÎ Á¦°ÅÇÑ´Ù.
+ *               Session Á¾·á ½ÃÁ¡¿¡ È£ÃâÇÑ´Ù.
  *
  * Implementation : 
- *   (1) loopì„ ëŒë©´ì„œ sessionì— ì—°ê²°í•œ memory managerë¥¼ ëª¨ë‘ ì œê±°í•œë‹¤.
+ *   (1) loopÀ» µ¹¸é¼­ session¿¡ ¿¬°áÇÑ memory manager¸¦ ¸ðµÎ Á¦°ÅÇÑ´Ù.
  *
  ***********************************************************************/
 IDE_RC qsxUtil::destroyArrayMemMgr( qcSessionSpecific * aQPSpecific )
@@ -2117,7 +2120,7 @@ IDE_RC qsxUtil::destroyArrayMemMgr( qcSessionSpecific * aQPSpecific )
 /***********************************************************************
  *
  * Description : PROJ-1094 Extend UDT
- *               Record type ë³€ìˆ˜ë¥¼ ì´ˆê¸°í™” í•œë‹¤.
+ *               Record type º¯¼ö¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
  *
  * Implementation : 
  *
@@ -2162,12 +2165,12 @@ IDE_RC qsxUtil::initRecordVar( qcStatement * aQcStmt,
 /***********************************************************************
  *
  * Description : PROJ-1094 Extend UDT
- *               Record type ë³€ìˆ˜ë¥¼ ì´ˆê¸°í™” í•œë‹¤.
+ *               Record type º¯¼ö¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
  *
  * Implementation : 
- *   * Record type ë³€ìˆ˜ì˜ ê° columnì˜ typeì— ë§žê²Œ ë™ìž‘í•œë‹¤.
- *     (1) AA type        : array ì´ˆê¸°í™”
- *     (2) Record type    : qsxUtil::initRecordVar(ìž¬ê·€í˜¸ì¶œ)
+ *   * Record type º¯¼öÀÇ °¢ columnÀÇ type¿¡ ¸Â°Ô µ¿ÀÛÇÑ´Ù.
+ *     (1) AA type        : array ÃÊ±âÈ­
+ *     (2) Record type    : qsxUtil::initRecordVar(Àç±ÍÈ£Ãâ)
  *     (3) primitive type : mtdSetNull
  *
  ***********************************************************************/
@@ -2250,7 +2253,7 @@ IDE_RC qsxUtil::initRecordVar( qcStatement     * aQcStmt,
 /***********************************************************************
  *
  * Description : PROJ-1094 Extend UDT
- *               Record type ë³€ìˆ˜ë¥¼ ì •ë¦¬ í•œë‹¤.
+ *               Record type º¯¼ö¸¦ Á¤¸® ÇÑ´Ù.
  *
  * Implementation : 
  *
@@ -2291,12 +2294,12 @@ IDE_RC qsxUtil::finalizeRecordVar( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description : PROJ-1094 Extend UDT
- *               Record type ë³€ìˆ˜ë¥¼ ì •ë¦¬ í•œë‹¤.
+ *               Record type º¯¼ö¸¦ Á¤¸® ÇÑ´Ù.
  *
  * Implementation : 
- *   * Record type ë³€ìˆ˜ì˜ ê° columnì˜ typeì— ë§žê²Œ ë™ìž‘í•œë‹¤.
+ *   * Record type º¯¼öÀÇ °¢ columnÀÇ type¿¡ ¸Â°Ô µ¿ÀÛÇÑ´Ù.
  *     (1) AA type        : qsxArray::finalizeArray
- *     (2) Record type    : qsxUtil::finalizeRecordVar(ìž¬ê·€í˜¸ì¶œ)
+ *     (2) Record type    : qsxUtil::finalizeRecordVar(Àç±ÍÈ£Ãâ)
  *     (3) primitive type : Nothing to do.
  *
  ***********************************************************************/
@@ -2367,7 +2370,7 @@ IDE_RC qsxUtil::adjustParamAndReturnColumnInfo( iduMemory   * aQmxMem,
  * Description :
  *     PROJ-2586 PSM Parameters and return without precision
  *
- *     aDestColumnì´ ì•„ëž˜ì˜ datatypeì— í•´ë‹¹ë  ë•Œ, mtcColumn ì •ë³´ë¥¼ aSourceColumnì— ë§žì¶° ì¡°ì •
+ *     aDestColumnÀÌ ¾Æ·¡ÀÇ datatype¿¡ ÇØ´çµÉ ¶§, mtcColumn Á¤º¸¸¦ aSourceColumn¿¡ ¸ÂÃç Á¶Á¤
  *         - CHAR( M )
  *         - VARCHAR( M )
  *         - NCHAR( M )
@@ -2381,7 +2384,7 @@ IDE_RC qsxUtil::adjustParamAndReturnColumnInfo( iduMemory   * aQmxMem,
  *         - NUMBER[ ( P [ , S ] ) ]
  *         - NUMERIC[ ( P [ , S ] ) ]
  *         - DECIMAL[ ( P [ , S ] ) ]
- *             ã„´NUMERICê³¼ ë™ì¼
+ *             ¤¤NUMERIC°ú µ¿ÀÏ
  **********************************************************************************************/
 
     mtvConvert         * sConvert        = NULL;
@@ -2394,7 +2397,7 @@ IDE_RC qsxUtil::adjustParamAndReturnColumnInfo( iduMemory   * aQmxMem,
     IDE_DASSERT( aDestColumn != NULL );
     IDE_DASSERT( aDestTemplate != NULL );
 
-    // PSMì—ì„œëŠ” ì•”í˜¸ ì»¬ëŸ¼ íƒ€ìž…ì„ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+    // PSM¿¡¼­´Â ¾ÏÈ£ ÄÃ·³ Å¸ÀÔÀ» »ç¿ëÇÒ ¼ö ¾ø´Ù.
     IDE_DASSERT( (aSourceColumn->type.dataTypeId != MTD_ECHAR_ID) &&
                  (aSourceColumn->type.dataTypeId != MTD_EVARCHAR_ID) );
 
@@ -2408,7 +2411,7 @@ IDE_RC qsxUtil::adjustParamAndReturnColumnInfo( iduMemory   * aQmxMem,
                    == MTC_COLUMN_SP_ADJUST_PRECISION_TRUE,
                    SKIP_ADJUSTMENT );
 
-    // aDestColumnì˜ datatypeì— ë”°ë¼ ê²°ì •ë¨.
+    // aDestColumnÀÇ datatype¿¡ µû¶ó °áÁ¤µÊ.
     switch ( aDestColumn->type.dataTypeId )
     {
         case MTD_CHAR_ID :
@@ -2432,13 +2435,13 @@ IDE_RC qsxUtil::adjustParamAndReturnColumnInfo( iduMemory   * aQmxMem,
     IDE_TEST( aQmxMem->getStatus( &sMemStatus ) != IDE_SUCCESS );
     sStage = 1;
 
-    // aSourceColumnì˜ datatypeê³¼ aDestColumnì˜ datatypeì´ ë™ì¼í•˜ë©´ ë°”ë¡œ ëŒ€ìž…
-    // ì•„ë‹ˆë©´, convertioní•´ì„œ ëŒ€ìž…
+    // aSourceColumnÀÇ datatype°ú aDestColumnÀÇ datatypeÀÌ µ¿ÀÏÇÏ¸é ¹Ù·Î ´ëÀÔ
+    // ¾Æ´Ï¸é, convertionÇØ¼­ ´ëÀÔ
     if ( aSourceColumn->type.dataTypeId == aDestColumn->type.dataTypeId )
     {
         IDE_TEST_RAISE( aDestColumn->precision < aSourceColumn->precision, ERR_INVALID_LENGTH );
 
-        // aSourceColumnì˜ precision, scale, size ì •ë³´ë¥¼ aDestColumnì— ì…‹íŒ…í•œë‹¤.
+        // aSourceColumnÀÇ precision, scale, size Á¤º¸¸¦ aDestColumn¿¡ ¼ÂÆÃÇÑ´Ù.
         aDestColumn->precision   = aSourceColumn->precision;
         aDestColumn->scale       = aSourceColumn->scale;
         aDestColumn->column.size = aSourceColumn->column.size;
@@ -2459,13 +2462,13 @@ IDE_RC qsxUtil::adjustParamAndReturnColumnInfo( iduMemory   * aQmxMem,
 
         IDE_TEST_RAISE( aDestColumn->precision < sConvert->stack[0].column->precision, ERR_INVALID_LENGTH );
 
-        // convertionëœ aSourceColumnì˜ precision, scale, size ì •ë³´ë¥¼ aDestColumnì— ì…‹íŒ…í•œë‹¤.
+        // convertionµÈ aSourceColumnÀÇ precision, scale, size Á¤º¸¸¦ aDestColumn¿¡ ¼ÂÆÃÇÑ´Ù.
         aDestColumn->precision   = sConvert->stack[0].column->precision;
         aDestColumn->scale       = sConvert->stack[0].column->scale;
         aDestColumn->column.size = sConvert->stack[0].column->column.size;
     }
 
-    // ì…‹íŒ… ì™„ë£Œí–ˆë‹¤ê³  í‘œì‹œí•œë‹¤.
+    // ¼ÂÆÃ ¿Ï·áÇß´Ù°í Ç¥½ÃÇÑ´Ù.
     aDestColumn->flag &= ~MTC_COLUMN_SP_ADJUST_PRECISION_MASK;
     aDestColumn->flag |= MTC_COLUMN_SP_ADJUST_PRECISION_TRUE;
 
@@ -2507,9 +2510,9 @@ IDE_RC qsxUtil::finalizeParamAndReturnColumnInfo( mtcColumn   * aColumn )
  * Description :
  *     PROJ-2586 PSM Parameters and return without precision
  *
- *     parameter ë° returnì˜ mtcColumn ì •ë³´ë¥¼ ì›ìƒë³µê·€ì‹œí‚¨ë‹¤.
- *         - ë‹¨ì¼ Procedure ë° Function ê²½ìš°ëŠ” ë³µêµ¬ì‹œí‚¤ì§€ ì•Šì•„ë„ ë˜ë‚˜( ê·¸ëƒ¥ ì›ë³µì‹œí‚¨ë‹¤ ),
- *         - Packageì˜ ê²½ìš°, session ë‚´ì—ì„œ templateì´ ê³µìœ ë˜ê¸° ë•Œë¬¸ì— ì›ë³µì‹œì¼œì¤˜ì•¼ í•œë‹¤.
+ *     parameter ¹× returnÀÇ mtcColumn Á¤º¸¸¦ ¿ø»óº¹±Í½ÃÅ²´Ù.
+ *         - ´ÜÀÏ Procedure ¹× Function °æ¿ì´Â º¹±¸½ÃÅ°Áö ¾Ê¾Æµµ µÇ³ª( ±×³É ¿øº¹½ÃÅ²´Ù ),
+ *         - PackageÀÇ °æ¿ì, session ³»¿¡¼­ templateÀÌ °øÀ¯µÇ±â ¶§¹®¿¡ ¿øº¹½ÃÄÑÁà¾ß ÇÑ´Ù.
  **********************************************************************************************/
 
     if ( (aColumn->flag & MTC_COLUMN_SP_ADJUST_PRECISION_MASK) == MTC_COLUMN_SP_ADJUST_PRECISION_TRUE )
@@ -2534,8 +2537,8 @@ IDE_RC qsxUtil::finalizeParamAndReturnColumnInfo( mtcColumn   * aColumn )
                 }
                 else /* UTF8 */
                 {
-                    /* ê²€ì¦ìš© ì½”ë“œ  
-                       mtdEstimateì—ì„œ UTF16 ë˜ëŠ” UTF8ì´ ì•„ë‹ˆë©´ ì—ëŸ¬ ë°œìƒí•¨. */
+                    /* °ËÁõ¿ë ÄÚµå  
+                       mtdEstimate¿¡¼­ UTF16 ¶Ç´Â UTF8ÀÌ ¾Æ´Ï¸é ¿¡·¯ ¹ß»ýÇÔ. */
                     IDE_DASSERT( mtl::mNationalCharSet->id == MTL_UTF8_ID );
 
                     aColumn->precision = QCU_PSM_NCHAR_UTF8_DEFAULT_PRECISION; 
@@ -2550,8 +2553,8 @@ IDE_RC qsxUtil::finalizeParamAndReturnColumnInfo( mtcColumn   * aColumn )
                 }
                 else /* UTF8 */
                 {
-                    /* ê²€ì¦ìš© ì½”ë“œ  
-                       mtdEstimateì—ì„œ UTF16 ë˜ëŠ” UTF8ì´ ì•„ë‹ˆë©´ ì—ëŸ¬ ë°œìƒí•¨. */
+                    /* °ËÁõ¿ë ÄÚµå  
+                       mtdEstimate¿¡¼­ UTF16 ¶Ç´Â UTF8ÀÌ ¾Æ´Ï¸é ¿¡·¯ ¹ß»ýÇÔ. */
                     IDE_DASSERT( mtl::mNationalCharSet->id == MTL_UTF8_ID );
 
                     aColumn->precision = QCU_PSM_NVARCHAR_UTF8_DEFAULT_PRECISION; 
@@ -2584,7 +2587,7 @@ IDE_RC qsxUtil::finalizeParamAndReturnColumnInfo( mtcColumn   * aColumn )
                 break;
             case MTD_NUMBER_ID :
             case MTD_NUMERIC_ID :
-                // DECIMAL typeì€ NUMERIC typeê³¼ ë™ì¼
+                // DECIMAL typeÀº NUMERIC type°ú µ¿ÀÏ
                 aColumn->precision = MTD_NUMERIC_PRECISION_MAXIMUM; 
                 aColumn->column.size = MTD_NUMERIC_SIZE( aColumn->precision, aColumn->scale);
                 break;

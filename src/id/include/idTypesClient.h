@@ -28,13 +28,18 @@
  * XA XID
  */
 /* BUG-18981 */
-#define ID_XIDDATASIZE    128      /* size in bytes */
+#define ID_MAXXIDDATASIZE  128      /* size in bytes */
 #define ID_MAXGTRIDSIZE    64      /* maximum size in bytes of gtrid */
 #define ID_MAXBQUALSIZE    64      /* maximum size in bytes of bqual */
 
+#define ID_XID_DATA_MAX_LEN 256
+#define ID_GTRIDSIZE    18      
+#define ID_BQUALSIZE    4      
+#define ID_XIDDATASIZE  (ID_GTRIDSIZE + ID_BQUALSIZE)
+
 /*
- * fix BUG-23656 session,xid ,transactionì„ ì—°ê³„í•œ performance viewë¥¼ ì œê³µí•˜ê³ ,
- * ê·¸ë“¤ê°„ì˜ ê´€ê³„ë¥¼ ì •í™•íˆ ìœ ì§€í•´ì•¼ í•¨.
+ * fix BUG-23656 session,xid ,transactionÀ» ¿¬°èÇÑ performance view¸¦ Á¦°øÇÏ°í,
+ * ±×µé°£ÀÇ °ü°è¸¦ Á¤È®È÷ À¯ÁöÇØ¾ß ÇÔ.
  */
 #define ID_NULL_SESSION_ID  ACP_UINT32_MAX
 #define ID_NULL_TRANS_ID    ACP_UINT32_MAX
@@ -43,7 +48,7 @@ struct id_xid_t
     acp_slong_t formatID;            /* format identifier */
     acp_slong_t gtrid_length;        /* value from 1 through 64 */
     acp_slong_t bqual_length;        /* value from 1 through 64 */
-    acp_sint8_t data[ID_XIDDATASIZE];
+    acp_sint8_t data[ID_MAXXIDDATASIZE];
 };
 
 typedef struct id_xid_t ID_XID;

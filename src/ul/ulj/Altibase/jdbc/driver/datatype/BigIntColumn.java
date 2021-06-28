@@ -106,6 +106,11 @@ public class BigIntColumn extends AbstractColumn
         ((LongDynamicArray) aArray).put(mLongValue);
     }
 
+    public void storeTo()
+    {
+        mValues.add(mLongValue);
+    }
+
     protected void readFromSub(CmChannel aChannel) throws SQLException
     {
         mLongValue = aChannel.readLong();
@@ -116,9 +121,19 @@ public class BigIntColumn extends AbstractColumn
         ((LongDynamicArray)aArray).put(aChannel.readLong());
     }
 
+    protected void readAndStoreValue(CmChannel aChannel) throws SQLException
+    {
+        mValues.add(aChannel.readLong());
+    }
+
     protected void loadFromSub(DynamicArray aArray)
     {
         mLongValue = ((LongDynamicArray) aArray).get();
+    }
+
+    protected void loadFromSub(int aLoadIndex)
+    {
+        mLongValue = (Long)mValues.get(aLoadIndex);
     }
 
     protected void setNullValue()

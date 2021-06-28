@@ -40,7 +40,7 @@ public class CmShardAnalyzeResult extends CmStatementIdResult
     private             List<ShardValueInfo> mShardValueInfoList    = new ArrayList<ShardValueInfo>();
     private             List<ShardValueInfo> mShardSubValueInfoList = new ArrayList<ShardValueInfo>();
     private             ShardRangeList       mShardRangeList;
-    private             boolean              mIsCoordQuery;         // coordinate ì¿¼ë¦¬ ì—¬ë¶€
+    private             boolean              mIsCoordQuery;         // coordinate Äõ¸® ¿©ºÎ
 
     protected byte getResultOp()
     {

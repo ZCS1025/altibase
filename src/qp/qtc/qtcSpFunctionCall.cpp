@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qtcSpFunctionCall.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qtcSpFunctionCall.cpp 90527 2021-04-09 04:25:41Z jayce.park $
  **********************************************************************/
 
 #include <idl.h>
@@ -61,7 +61,7 @@ static IDE_RC qtcCalculateStoredProcedure( mtcNode*,
 mtfModule qtc::spFunctionCallModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_EAT_NULL_TRUE,
     ~0,
-    1.0,              // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
+    1.0,              // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     qtcFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -106,8 +106,8 @@ IDE_RC qtcEstimate( mtcNode     * aNode,
                        (sStatement->myPlan->parseTree))->paramModules) != IDE_SUCCESS );
     }
 
-    /* BUG-44382 clone tuple ì„±ëŠ¥ê°œì„  */
-    // ë³µì‚¬ì™€ ì´ˆê¸°í™”ê°€ í•„ìš”í•¨
+    /* BUG-44382 clone tuple ¼º´É°³¼± */
+    // º¹»ç¿Í ÃÊ±âÈ­°¡ ÇÊ¿äÇÔ
     qtc::setTupleColumnFlag( &(aTemplate->rows[aNode->table]),
                              ID_TRUE,
                              ID_TRUE );
@@ -186,7 +186,7 @@ IDE_RC qtcCalculateStoredProcedure( mtcNode*     aNode,
     sOriFlag = sStatement->spxEnv->mFlag;
 
     // BUG-45990
-    // ìµœìƒìœ„ statementì¸ ê²½ìš°ì—ë§Œ statement flagë¥¼ ì„¤ì •í•œë‹¤.
+    // ÃÖ»óÀ§ statementÀÎ °æ¿ì¿¡¸¸ statement flag¸¦ ¼³Á¤ÇÑ´Ù.
     if ( sStatement->spxEnv->mCallDepth == 0 )
     {
         QSX_ENV_SET_STMT_FLAG( sStatement );
@@ -225,14 +225,15 @@ IDE_RC qtcCalculateStoredProcedure( mtcNode*     aNode,
                                                   aStack,
                                                   sCacheObj,
                                                   ((qcTemplate *)aTemplate)->cacheBucketCnt,
-                                                  sState )
+                                                  sState,
+                                                  ((qcTemplate *)aTemplate)->mSubqueryMode )
                           != IDE_SUCCESS );
             }
             else
             {
                 // BUG-35713
-                // sqlë¡œ ë¶€í„° invokeë˜ëŠ” functionì—ì„œ ë°œìƒí•˜ëŠ” no_data_found ì—ëŸ¬ëŠ”
-                // ì—ëŸ¬ì²˜ë¦¬í•˜ì§€ ì•Šê³  nullì„ ë°˜í™˜í•œë‹¤.
+                // sql·Î ºÎÅÍ invokeµÇ´Â function¿¡¼­ ¹ß»ýÇÏ´Â no_data_found ¿¡·¯´Â
+                // ¿¡·¯Ã³¸®ÇÏÁö ¾Ê°í nullÀ» ¹ÝÈ¯ÇÑ´Ù.
                 if ( ( ideGetErrorCode() == qpERR_ABORT_QSX_NO_DATA_FOUND ) &&
                      ( sStatement->spxEnv->mCallDepth == 0 ) &&
                      ( QCU_PSM_IGNORE_NO_DATA_FOUND_ERROR == 1 ) )
@@ -242,7 +243,7 @@ IDE_RC qtcCalculateStoredProcedure( mtcNode*     aNode,
                     sColumn = QTC_TMPL_COLUMN( QC_PRIVATE_TMPLATE(sStatement),
                                                sCallSpecNode );
                     
-                    // sqlì—ì„œ ìˆ˜í–‰í•˜ëŠ” functionì€ primitive typeë§Œ ë¦¬í„´í•œë‹¤.
+                    // sql¿¡¼­ ¼öÇàÇÏ´Â functionÀº primitive type¸¸ ¸®ÅÏÇÑ´Ù.
                     IDE_TEST_RAISE( ( sColumn->module->id >= MTD_UDT_ID_MIN ) &&
                                     ( sColumn->module->id <= MTD_UDT_ID_MAX ),
                                     ERR_RETURN_TYPE );
@@ -263,7 +264,8 @@ IDE_RC qtcCalculateStoredProcedure( mtcNode*     aNode,
 
             IDE_TEST( qtcCache::getCacheValue( aNode,
                                                aStack,
-                                               sCacheObj )
+                                               sCacheObj,
+                                               ((qcTemplate *)aTemplate)->mSubqueryMode )
                       != IDE_SUCCESS );
             break;
 

@@ -37,20 +37,24 @@ static smLSN dkisGetMinLSNFunc( void )
     return dktGlobalTxMgr::getDtxMinLSN();
 }
 
-static IDE_RC dkisManageDtxInfoFunc( UInt    aLocalTxId,
-                                     UInt    aGlobalTxId,
-                                     UInt    aBranchTxSize,
-                                     UChar * aBranchTxInfo,
-                                     smLSN * aPrepareLSN,
-                                     UChar   aType )
+static IDE_RC dkisManageDtxInfoFunc( ID_XID * aXID,
+                                     UInt     aLocalTxId,
+                                     UInt     aGlobalTxId,
+                                     UInt     aBranchTxSize,
+                                     UChar  * aBranchTxInfo,
+                                     smLSN  * aPrepareLSN,
+                                     smSCN  * aGlobalCommitSCN,
+                                     UChar    aType )
 {
     dktNotifier * sNotifier = dktGlobalTxMgr::getNotifier();
 
-    IDE_TEST( sNotifier->manageDtxInfoListByLog( aLocalTxId,
+    IDE_TEST( sNotifier->manageDtxInfoListByLog( aXID,
+                                                 aLocalTxId,
                                                  aGlobalTxId,
                                                  aBranchTxSize,
                                                  aBranchTxInfo,
                                                  aPrepareLSN,
+                                                 aGlobalCommitSCN,
                                                  aType )
               != IDE_SUCCESS );
 
@@ -61,14 +65,14 @@ static IDE_RC dkisManageDtxInfoFunc( UInt    aLocalTxId,
     return IDE_FAILURE;
 }
 
-static UInt dkisGetDtxGlobalTxIdFunc( UInt aLocalTxId )
-{
-    return dktGlobalTxMgr::getDtxGlobalTxId( aLocalTxId );
-}
-
 IDE_RC dkis2PCCallback( void )
 {
     return smiSet2PCCallbackFunction( dkisGetMinLSNFunc,
-                                      dkisManageDtxInfoFunc,
-                                      dkisGetDtxGlobalTxIdFunc );
+                                      dkisManageDtxInfoFunc );
+}
+
+IDE_RC dkis2PCNullCallback( void )
+{
+    return smiSet2PCCallbackFunction( NULL,
+                                      NULL );
 }

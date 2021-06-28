@@ -567,6 +567,47 @@ The patch installation will be terminated.</text>
         <if>
             <explanation>FULL : make propery file</explanation>
             <actionList>
+		<!-- BUG-48619 uncompress Zookeeper.tar.gz only linux package -->
+		<if>	
+		    <explanation> Uncompress ZookeeperServer.tar.gz </explanation>
+		    <ruleEvaluationLogic>or</ruleEvaluationLogic>
+		    <ruleList>
+		     	<platformTest type="linux"/>
+		     	<platformTest type="linux-x64"/>
+		     	<platformTest type="linux-ppc"/>
+		    </ruleList>
+		    <actionList>
+		    	<locate>
+		 	    <command>tar</command>
+		 	    <variable>tar_found</variable>
+		 	</locate>	
+		 	<if>
+		            <conditionRuleList>
+                                <stringTest>
+                                    <text>${tar_found}</text>
+                                    <type>empty</type>
+                                </stringTest>
+                            </conditionRuleList>
+		 	    <actionList> 
+				<showWarning>
+				    <text>There is no uncompress utility(tar) on this platform.
+
+You must execute below command to start Zookeeper after installation.
+
+tar -xzf ${installdir}/ZookeeperServer.tar.gz -C ${installdir} </text>
+				</showWarning>
+			    </actionList>
+			    <elseActionList>
+			    	<runProgram>
+                        	    <abortOnError>0</abortOnError>
+                           	    <program>${tar_found}</program>
+                            	    <programArguments>-xzf ${installdir}/ZookeeperServer.tar.gz -C ${installdir}</programArguments>
+				</runProgram> 
+			    </elseActionList>
+			</if>
+		    </actionList>
+		</if>
+
                 <actionGroup>
                     <explanation>set post_install.sh file</explanation>
                     <actionList>
@@ -587,11 +628,12 @@ The patch installation will be terminated.</text>
                                         <substitution>
                                             <pattern># create DB code</pattern>
                                             <value>ADMIN="${'${ALTIBASE_HOME}'}/bin/isql -u sys -p manager -sysdba -noprompt"
+DBNAME='${altibase_user_dbname}'
 
 ${'${ADMIN}'} &lt;&lt; EOF
 startup process;
-create database ${altibase_user_dbname} INITSIZE=${init_db_size} ${archivelog_values} character set ${db_char_set} national character set ${national_char_set};
-alter database mydb service;
+create database ${'${DBNAME}'} INITSIZE=${init_db_size} ${archivelog_values} character set ${db_char_set} national character set ${national_char_set};
+alter database ${'${DBNAME}'} service;
 start ?/packages/catproc.sql;
 shutdown abort;
 quit;
@@ -614,15 +656,34 @@ EOF</value>
                         </if>
                     </actionList>
                 </actionGroup>
-                <actionGroup>
+                <!-- BUG-48619 cp altibase.properties.shard to altibase.properties if Shard Option is on-->
+                <if>
+		    <conditionRuleList>
+			<compareText>
+			    <logic>equals</logic>
+			    <text>yes</text>
+	 		    <value>${shard_option}</value>
+	 		</compareText>
+		    </conditionRuleList>
+		    <actionList>
+                        <copyFile>
+                            <destination>${installdir}/conf/altibase.properties</destination>
+                            <origin>${installdir}/conf/altibase.properties.shard</origin>
+                        </copyFile>
+		    </actionList>
+                    <elseActionList>
+                        <copyFile>
+                            <destination>${installdir}/conf/altibase.properties</destination>
+                            <origin>${installdir}/conf/altibase.properties.sample</origin>
+                        </copyFile>
+		    </elseActionList>
+		</if>
+
+		<actionGroup>
                     <actionList>
                         <copyFile>
                             <destination>${installdir}/conf/aexport.properties</destination>
                             <origin>${installdir}/conf/aexport.properties.sample</origin>
-                        </copyFile>
-                        <copyFile>
-                            <destination>${installdir}/conf/altibase.properties</destination>
-                            <origin>${installdir}/conf/altibase.properties.sample</origin>
                         </copyFile>
                         <substitute>
                             <encoding>utf-8</encoding>
@@ -1111,7 +1172,7 @@ cp -rf ${patch_dir}/rollback-p${altibase_patch_version}/*  /</text>
     <disableSplashScreen>1</disableSplashScreen>
     <enableRollback>1</enableRollback>
     <enableTimestamp>1</enableTimestamp>
-    <height>600</height>
+    <height>640</height>
     <installationLogFile>${installdir}/APatch/altibase_base_install.log</installationLogFile>
     <licenseFileEncoding>utf-8</licenseFileEncoding>
     <outputDirectory>${build_project_directory}</outputDirectory>
@@ -1131,6 +1192,18 @@ cp -rf ${patch_dir}/rollback-p${altibase_patch_version}/*  /</text>
             <selected>1</selected>
             <show>1</show>
             <folderList>
+                <!-- BUG-48619 add ZookeeperServer.tar.gz to linux package-->
+                <folder>
+                   <description>Program Files</description>
+                   <destination>${installdir}</destination>
+                   <name>programfilesForLinux</name>
+                   <platforms>linux linux-x64 linux-ppc</platforms>
+                    <distributionFileList>
+                        <distributionFile>
+                            <origin>altipkgdir_server_patch/ZookeeperServer.tar.gz</origin>
+                        </distributionFile>
+                    </distributionFileList>
+                </folder>
                 <folder>
                     <description>Program Files</description>
                     <destination>${installdir}</destination>
@@ -1193,6 +1266,9 @@ cp -rf ${patch_dir}/rollback-p${altibase_patch_version}/*  /</text>
                         </distributionDirectory>
                         <distributionDirectory>
                             <origin>altipkgdir_server_patch/packages</origin>
+                        </distributionDirectory>
+                        <distributionDirectory>
+                            <origin>altipkgdir_server_patch/xlogs</origin>
                         </distributionDirectory>
                     </distributionFileList>
                     <shortcutList>
@@ -1831,6 +1907,50 @@ Step 1: Basic Database Operation Properties${altibase_dist_type}</title>
             <value></value>
             <default></default>
             <parameterList>
+                <!-- BUG-48619 Shard Option Check-->
+                <choiceParameter>
+                    <name>shard_option</name>
+                    <description>Do you want to create a database for shard?</description>
+                    <explanation></explanation>
+                    <value></value>
+                    <default></default>
+                    <allowEmptyValue>0</allowEmptyValue>
+                    <displayType>combobox</displayType>
+                    <ordering>default</ordering>
+                    <width>10</width>
+                    <optionList>
+                        <option>
+                            <description></description>
+                            <image></image>
+                            <text>NO</text>
+                            <value>no</value>
+                        </option>
+                        <option>
+                            <description></description>
+                            <image></image>
+                            <text>YES</text>
+                            <value>yes</value>
+                        </option>
+                    </optionList>
+                    <ruleEvaluationLogic>or</ruleEvaluationLogic>
+                    <ruleList>
+		        <platformTest type="linux"/>
+		    	<platformTest type="linux-x64"/>
+		    	<platformTest type="linux-ppc"/>
+                    </ruleList>
+                </choiceParameter>	
+                <labelParameter>
+                    <name>free_space00</name>
+                    <description></description>
+                    <explanation></explanation>
+                    <image></image>
+                    <ruleEvaluationLogic>or</ruleEvaluationLogic>
+                    <ruleList>
+                        <platformTest type="linux"/>
+		        <platformTest type="linux-x64"/>
+		        <platformTest type="linux-ppc"/>
+                    </ruleList>
+                </labelParameter>
                 <stringParameter>
                     <name>altibase_user_dbname</name>
                     <description>Database name</description>
@@ -1844,14 +1964,11 @@ Step 1: Basic Database Operation Properties${altibase_dist_type}</title>
                             <ruleEvaluationLogic>or</ruleEvaluationLogic>
                             <text>DB Name is invalid</text>
                             <ruleList>
-                                <stringTest>
-                                    <text>${altibase_user_dbname}</text>
-                                    <type>not_alphanumeric</type>
-                                </stringTest>
-                                <stringTest>
-                                    <text>${altibase_user_dbname}</text>
-                                    <type>empty</type>
-                                </stringTest>
+                            	<regExMatch>
+                            	    <logic>does_not_match</logic>
+                            	    <pattern>(^((?!(V\$|X\$|D\$))([a-zA-Z]|_))[a-zA-Z0-9|_|$|#]*$)|(^"[^"]+"$)</pattern>
+                            	    <text>${altibase_user_dbname}</text>	
+                            	</regExMatch>
                             </ruleList>
                         </throwError>
                     </validationActionList>

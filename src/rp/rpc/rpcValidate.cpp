@@ -27,7 +27,9 @@
 #include <qci.h>
 #include <rpcValidate.h>
 #include <rpdCatalog.h>
+#include <rpdLockTableManager.h>
 #include <rpcManager.h>
+#include <sdi.h>
 
 /***********************************************************************
  * VALIDATE
@@ -49,6 +51,7 @@ qciValidateReplicationCallback rpcValidate::mCallback =
         rpcValidate::validateQuickStart,
         rpcValidate::validateSync,
         rpcValidate::validateSyncTbl,
+        rpcValidate::validateTempSync,
         rpcValidate::validateReset,
         rpcValidate::validateAlterSetRecovery,
         rpcValidate::validateAlterSetOffline,
@@ -57,19 +60,54 @@ qciValidateReplicationCallback rpcValidate::mCallback =
         rpcValidate::validateAlterSetParallel,
         rpcValidate::validateAlterSetGrouping,
         rpcValidate::validateAlterSetDDLReplicate,
-        rpcValidate::validateAlterPartition
+        rpcValidate::validateAlterPartition,
+        rpcValidate::validateDeleteItemReplaceHistory,
+        rpcValidate::validateFailback,
+        rpcValidate::validateFailover
 };
+
+IDE_RC rpcValidate::allocAndBuildLockTable( idvSQL               * aStatistics,
+                                            iduVarMemList        * aMemory,
+                                            smiStatement         * aSmiStatement,
+                                            SChar                * aRepName,
+                                            RP_META_BUILD_TYPE     aMetaBuildType,
+                                            void                ** aLockTable )
+{
+    rpdLockTableManager     * sLockTable = NULL;
+
+    IDE_TEST( aMemory->cralloc( ID_SIZEOF(rpdLockTableManager),
+                                (void**)&sLockTable )
+              != IDE_SUCCESS );
+
+    IDE_TEST( sLockTable->build( aStatistics,
+                                 aMemory,
+                                 aSmiStatement,
+                                 aRepName,
+                                 aMetaBuildType )
+              != IDE_SUCCESS );
+
+    *aLockTable = sLockTable;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
 
 IDE_RC rpcValidate::validateCreate(void * aQcStatement )
 {
 
     qriParseTree     * sParseTree;
+    UInt               sReplItemCount    = 0;
     UInt               sReplicationCount = 0;
     qriReplHost      * sReplHost;
     SChar              sHostIP[QC_MAX_IP_LEN + 1];
     qriReplItem      * sReplItem;
     idBool             sIsExist;
     SInt               sNetworkCount = 0;
+    UInt               sTableOIDCount = 0;
+    smOID            * sTableOIDArray = NULL;
     SInt               sUnixDomainCount = 0;
     idBool             sIsRecoveryOpt = ID_FALSE;
     idBool             sIsGroupingOpt = ID_FALSE;
@@ -77,6 +115,8 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
     idBool             sIsDDLReplicateOpt = ID_FALSE;
     idBool             sIsGaplessReplOpt  = ID_FALSE;
     idBool             sIsLocalReplOpt = ID_FALSE;
+    ULong              sAllSetOptionsFlag = 0;
+    ULong              sOptionsFlagForCheck = 0;
     SChar              sReplName[ QCI_MAX_NAME_LEN + 1 ]     = { 0, };
     SChar              sPeerReplName[ QCI_MAX_NAME_LEN + 1 ] = { 0, };
 
@@ -104,6 +144,7 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
             IDE_TEST_RAISE( sIsRecoveryOpt == ID_TRUE,
                             ERR_DUPLICATE_OPTION );
             sIsRecoveryOpt = ID_TRUE;
+            sAllSetOptionsFlag |= RP_OPTION_RECOVERY_SET;
         }
 
         /* PROJ-1915 */
@@ -112,6 +153,7 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
             IDE_TEST_RAISE( sIsOfflineReplOpt == ID_TRUE,
                             ERR_DUPLICATE_OPTION );
             sIsOfflineReplOpt = ID_TRUE;
+            sAllSetOptionsFlag |= RP_OPTION_OFFLINE_SET;
         }
 
         /* PROJ-1969 Gapless */
@@ -120,6 +162,7 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
             IDE_TEST_RAISE( sIsGaplessReplOpt == ID_TRUE,
                             ERR_DUPLICATE_OPTION );
             sIsGaplessReplOpt = ID_TRUE;
+            sAllSetOptionsFlag |= RP_OPTION_GAPLESS_SET;
         }
         else
         {
@@ -132,6 +175,7 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
                             ERR_DUPLICATE_OPTION );
 
             sIsGroupingOpt = ID_TRUE;
+            sAllSetOptionsFlag |= RP_OPTION_GROUPING_SET;
         }
         else
         {
@@ -144,6 +188,7 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
                             ERR_DUPLICATE_OPTION );
 
             sIsParallelOpt = ID_TRUE;
+            sAllSetOptionsFlag |= RP_OPTION_PARALLEL_RECEIVER_APPLY_SET;
 
             IDE_TEST_RAISE( sReplOptions->parallelReceiverApplyCount > RP_PARALLEL_APPLIER_MAX_COUNT,
                             ERR_NOT_PROPER_APPLY_COUNT );
@@ -163,18 +208,20 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
                             ERR_DUPLICATE_OPTION );
             
             sIsDDLReplicateOpt = ID_TRUE;
+            sAllSetOptionsFlag |= RP_OPTION_DDL_REPLICATE_SET;
         }
         else
         {
             /* do nothing */
         }
 
-        /* BUG-45236 Local Replication ì§€ì› */
+        /* BUG-45236 Local Replication Áö¿ø */
         if ( sReplOptions->optionsFlag == RP_OPTION_LOCAL_SET )
         {
             IDE_TEST_RAISE( sIsLocalReplOpt == ID_TRUE,
                             ERR_DUPLICATE_OPTION );
             sIsLocalReplOpt = ID_TRUE;
+            sAllSetOptionsFlag |= RP_OPTION_LOCAL_SET;
 
             QCI_STR_COPY( sReplName, sParseTree->replName );
             QCI_STR_COPY( sPeerReplName, sReplOptions->peerReplName );
@@ -193,19 +240,19 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
                     ( sIsRecoveryOpt == ID_TRUE ),
                     ERR_ROLE_NOT_SUPPORT_REPL_OPTION );
 
-    /* PROJ-1915 : RP_ROLE_ALNALYSIS ì™€ OFFLINE ì˜µì…˜ ì‚¬ìš© ë¶ˆê°€  */
+    /* PROJ-1915 : RP_ROLE_ALNALYSIS ¿Í OFFLINE ¿É¼Ç »ç¿ë ºÒ°¡  */
     IDU_FIT_POINT_RAISE( "rpcValidate::validateCreate::Erratic::rpERR_ABORT_RPC_ROLE_NOT_SUPPORT_REPL_OFFLINE",
                         ERR_ROLE_NOT_SUPPORT_REPL_OPTION_OFFLINE ); 
     IDE_TEST_RAISE((sParseTree->role == RP_ROLE_ANALYSIS) &&
                    (sIsOfflineReplOpt == ID_TRUE),
                    ERR_ROLE_NOT_SUPPORT_REPL_OPTION_OFFLINE);
 
-    /* PROJ-1915 OFFLINE ì˜µì…˜ RECOVERY ì˜µì…˜ ë™ì‹œ ì‚¬ìš© ë¶ˆê°€ */
+    /* PROJ-1915 OFFLINE ¿É¼Ç RECOVERY ¿É¼Ç µ¿½Ã »ç¿ë ºÒ°¡ */
     IDE_TEST_RAISE((sIsRecoveryOpt == ID_TRUE) &&
                    (sIsOfflineReplOpt == ID_TRUE),
                    ERR_OPTION_OFFLINE_AND_RECOVERY);
 
-    /* PROJ-1915 OFFLINE ì˜µì…˜ EAGER replication ë™ì‹œ ì‚¬ìš© ë¶ˆê°€ */
+    /* PROJ-1915 OFFLINE ¿É¼Ç EAGER replication µ¿½Ã »ç¿ë ºÒ°¡ */
     IDE_TEST_RAISE((sParseTree->replMode == RP_EAGER_MODE) &&
                    (sIsOfflineReplOpt == ID_TRUE),
                    ERR_OPTION_OFFLINE_AND_EAGER);
@@ -218,6 +265,10 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
     IDE_TEST_RAISE( ( sIsParallelOpt == ID_TRUE ) &&
                     ( sIsDDLReplicateOpt == ID_TRUE ), 
                     ERR_NOT_SUPPORT_PARALLEL_WITH_DDL_REPLICATE );
+
+    IDE_TEST_RAISE( ( qciMisc::getTransactionalDDL( aQcStatement ) == ID_TRUE ) &&
+                    ( sIsDDLReplicateOpt == ID_TRUE ), 
+                    ERR_TRANSACTIONAL_DDL_NOT_SUPPORT_DDL_REPLICATE_OPTION ); 
 
     IDE_TEST_RAISE( ( sParseTree->replMode == RP_EAGER_MODE ) &&
                     ( sIsDDLReplicateOpt == ID_TRUE ),
@@ -232,7 +283,7 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
                    (sParseTree->replModeSelected != ID_FALSE),
                    ERR_ROLE_NOT_SUPPORT_DEFAULT_REPL_MODE);
 
-    /* GAPLESS ì˜µì…˜ EAGER replication ë™ì‹œ ì‚¬ìš© ë¶ˆê°€ */
+    /* GAPLESS ¿É¼Ç EAGER replication µ¿½Ã »ç¿ë ºÒ°¡ */
     IDE_TEST_RAISE( ( sParseTree->replMode == RP_EAGER_MODE ) &&
                     ( sIsGaplessReplOpt == ID_TRUE ),
                     ERR_OPTION_GAPLESS_AND_EAGER );
@@ -245,18 +296,47 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
                     ( sIsParallelOpt == ID_TRUE ),
                     ERR_CANNOT_SET_BOTH_EAGER_AND_PARALLEL_APPLY );
 
-    /* BUG-45236 Local Replication ì§€ì›
-     *  Eager Replicationì—ì„œ LOCAL ì˜µì…˜ì„ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    IDE_TEST_RAISE( ( qciMisc::getTransactionalDDL( aQcStatement ) == ID_TRUE ) &&
+                    ( sParseTree->replMode == RP_EAGER_MODE ), 
+                    ERR_TRANSACTIONAL_DDL_NOT_SUPPORT_EAGER ); 
+
+    IDE_TEST_RAISE( ( qciMisc::getGlobalDDL( aQcStatement ) == ID_TRUE ) &&
+                    ( sParseTree->replMode == RP_EAGER_MODE ), 
+                    ERR_GLOBAL_DDL_NOT_SUPPORT_EAGER ); 
+
+    /* BUG-45236 Local Replication Áö¿ø
+     *  Eager Replication¿¡¼­ LOCAL ¿É¼ÇÀ» Áö¿øÇÏÁö ¾Ê´Â´Ù.
      */
     IDE_TEST_RAISE( ( sParseTree->replMode == RP_EAGER_MODE ) &&
                     ( sIsLocalReplOpt == ID_TRUE ),
                     ERR_OPTION_LOCAL_AND_EAGER );
+
+
+    /* PROJ-2725 Consistent Replication
+     * Parallel Option ¿Ü¿¡ ¾î¶°ÇÑ Role, OptionsÀ» Çã¿ëÇÏÁö ¾Ê´Â´Ù.
+     */
+    if( sParseTree->replMode == RP_CONSISTENT_MODE )
+    {
+        IDE_TEST_RAISE( sParseTree->role != RP_ROLE_REPLICATION,
+                ERR_UNAVAILABE_SET_ROLE_WITH_CONSISTENT_MODE );
+
+        IDE_TEST_RAISE( sIsParallelOpt != ID_TRUE,
+                ERR_MUST_BE_SET_PARALLEL_APPLIER_WITH_CONSISTENT );
+
+        sOptionsFlagForCheck = RP_OPTION_ALL_FLAGS_MASK & ~RP_OPTION_PARALLEL_RECEIVER_APPLY_SET;
+
+        IDE_TEST_RAISE( (sAllSetOptionsFlag & sOptionsFlagForCheck) != 0,
+                ERR_UNAVAILABE_SET_OPTION_WITH_CONSISTENT_MODE );
+    }
+
 
     // PROJ-1537
     for(sReplHost = sParseTree->hosts;
         sReplHost != NULL;
         sReplHost = sReplHost->next)
     {
+        IDE_TEST_RAISE( sReplHost->hostIp.size == 0, ERR_INVALID_HOST_IP_PORT );
+
         if(idlOS::strMatch(RP_SOCKET_UNIX_DOMAIN_STR, RP_SOCKET_UNIX_DOMAIN_LEN,
                            sReplHost->hostIp.stmtText + sReplHost->hostIp.offset,
                            sReplHost->hostIp.size) == 0)
@@ -319,12 +399,32 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
          sReplItem != NULL;
          sReplItem = sReplItem->next)
     {
+        sReplItemCount += 1;
+
         IDE_TEST(validateOneReplItem(aQcStatement,
                                      sReplItem,
                                      sParseTree->role,
                                      sIsRecoveryOpt,
                                      sParseTree->replMode)
                  != IDE_SUCCESS);
+    }
+
+    
+    if ( qciMisc::getTransactionalDDL( aQcStatement ) == ID_TRUE )
+    {
+        IDE_TEST( makeTableOIDArray( aQcStatement, 
+                                     sReplItemCount,
+                                     sParseTree->replItems,
+                                     &sTableOIDCount,
+                                     &sTableOIDArray )
+                  != IDE_SUCCESS );
+
+        qciMisc::setDDLSrcInfo( aQcStatement,
+                                ID_TRUE,
+                                sTableOIDCount,
+                                sTableOIDArray,
+                                0,
+                                NULL );
     }
 
     return IDE_SUCCESS;
@@ -356,6 +456,21 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
     {
         IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG,
                                "DDL replication option not supported in this role." ) )
+    }
+    IDE_EXCEPTION( ERR_TRANSACTIONAL_DDL_NOT_SUPPORT_DDL_REPLICATE_OPTION )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG,
+                               "DDL replication not supported transactional ddl." ) )
+    }
+    IDE_EXCEPTION( ERR_TRANSACTIONAL_DDL_NOT_SUPPORT_EAGER )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG,
+                               "Transactional DDL not supported with eager mode." ) )
+    }
+    IDE_EXCEPTION( ERR_GLOBAL_DDL_NOT_SUPPORT_EAGER )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG,
+                               "Global DDL is not supported with eager mode." ) )
     }
     IDE_EXCEPTION(ERR_MAX_REPLICATION_COUNT)
     {
@@ -429,6 +544,18 @@ IDE_RC rpcValidate::validateCreate(void * aQcStatement )
     {
         IDE_SET( ideSetErrorCode( rpERR_ABORT_SELF_REPLICATION_NAME,
                                   sPeerReplName ) );
+    }
+    IDE_EXCEPTION( ERR_UNAVAILABE_SET_ROLE_WITH_CONSISTENT_MODE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RPC_NOT_COMPATIBLE_ROLE_OPTION_IN_CONSISTENT_MODE ) )
+    }
+    IDE_EXCEPTION( ERR_MUST_BE_SET_PARALLEL_APPLIER_WITH_CONSISTENT )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RPC_CONSISTENT_MODE_MUST_HAVE_PARALLEL ) )
+   }
+    IDE_EXCEPTION( ERR_UNAVAILABE_SET_OPTION_WITH_CONSISTENT_MODE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RPC_CONSISTENT_DO_NOT_HAVE_ANY_OTHER_OPTIONS ) )
     }
     IDE_EXCEPTION_END;
 
@@ -551,7 +678,7 @@ IDE_RC rpcValidate::validateOneReplItem(void        * aQcStatement,
                             ( aIsRecoveryOpt == ID_TRUE ),
                             ERR_RECOVERY_COUNT );
 
-            // fix BUG-26741 Volatile Tableì€ ì´ì¤‘í™” ê°ì²´ê°€ ì•„ë‹˜
+            // fix BUG-26741 Volatile TableÀº ÀÌÁßÈ­ °´Ã¼°¡ ¾Æ´Ô
             IDE_TEST_RAISE( sTempPartInfoList->partitionInfo->TBSType == SMI_VOLATILE_USER_DATA,
                             ERR_CANNOT_USE_VOLATILE_TABLE );
         }
@@ -561,12 +688,12 @@ IDE_RC rpcValidate::validateOneReplItem(void        * aQcStatement,
                   sTempPartInfoList != NULL;
                   sTempPartInfoList = sTempPartInfoList->next )
             {
-                // fix BUG-26741 Volatile Tableì€ ì´ì¤‘í™” ê°ì²´ê°€ ì•„ë‹˜
+                // fix BUG-26741 Volatile TableÀº ÀÌÁßÈ­ °´Ã¼°¡ ¾Æ´Ô
                 IDE_TEST_RAISE( sTempPartInfoList->partitionInfo->TBSType == SMI_VOLATILE_USER_DATA,
                                 ERR_CANNOT_USE_VOLATILE_TABLE );
             }
 
-            // proj-1608 ì´ë¯¸ ë‹¤ë¥¸ replicationì— ì˜í•´ì„œ recoveryê°€ ì§€ì›ë˜ëŠ”ì§€ ê²€ì‚¬
+            // proj-1608 ÀÌ¹Ì ´Ù¸¥ replication¿¡ ÀÇÇØ¼­ recovery°¡ Áö¿øµÇ´ÂÁö °Ë»ç
             IDE_TEST_RAISE( ( sInfo->replicationRecoveryCount > 0 ) &&
                             ( aIsRecoveryOpt == ID_TRUE ),
                             ERR_RECOVERY_COUNT );
@@ -574,7 +701,7 @@ IDE_RC rpcValidate::validateOneReplItem(void        * aQcStatement,
     }
     else
     {
-        // proj-1608 ì´ë¯¸ ë‹¤ë¥¸ replicationì— ì˜í•´ì„œ recoveryê°€ ì§€ì›ë˜ëŠ”ì§€ ê²€ì‚¬
+        // proj-1608 ÀÌ¹Ì ´Ù¸¥ replication¿¡ ÀÇÇØ¼­ recovery°¡ Áö¿øµÇ´ÂÁö °Ë»ç
         IDE_TEST_RAISE( ( sInfo->replicationRecoveryCount > 0 ) &&
                         ( aIsRecoveryOpt == ID_TRUE ),
                         ERR_RECOVERY_COUNT );
@@ -583,11 +710,11 @@ IDE_RC rpcValidate::validateOneReplItem(void        * aQcStatement,
 
 
     // PROJ-1407 Temporary Table
-    // temporary tableì€ replicationí•  ìˆ˜ ì—†ìŒ
+    // temporary tableÀº replicationÇÒ ¼ö ¾øÀ½
     IDE_TEST_RAISE( qciMisc::isTemporaryTable( sInfo ) == ID_TRUE,
                     ERR_CANNOT_USE_TEMPORARY_TABLE );
 
-    // fix BUG-26741 Volatile Tableì€ ì´ì¤‘í™” ê°ì²´ê°€ ì•„ë‹˜
+    // fix BUG-26741 Volatile TableÀº ÀÌÁßÈ­ °´Ã¼°¡ ¾Æ´Ô
     IDE_TEST_RAISE(sInfo->TBSType == SMI_VOLATILE_USER_DATA,
                    ERR_CANNOT_USE_VOLATILE_TABLE);
 
@@ -621,8 +748,8 @@ IDE_RC rpcValidate::validateOneReplItem(void        * aQcStatement,
         else
         {
             // Nothing to do.
-            // CHECK_FK_IN_CREATE_REPL_DISABLE í”„ë¡œí¼í‹°ì˜ ê°’ì´ 1ì¸ ê²½ìš°ì—ëŠ”
-            // ì´ì¤‘í™” ìƒì„± ì‹œ, FKì œì•½ì´ ìˆëŠ”ì§€ ì²´í¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // CHECK_FK_IN_CREATE_REPL_DISABLE ÇÁ·ÎÆÛÆ¼ÀÇ °ªÀÌ 1ÀÎ °æ¿ì¿¡´Â
+            // ÀÌÁßÈ­ »ı¼º ½Ã, FKÁ¦¾àÀÌ ÀÖ´ÂÁö Ã¼Å©ÇÏÁö ¾Ê´Â´Ù.
         }
     }
 
@@ -633,7 +760,7 @@ IDE_RC rpcValidate::validateOneReplItem(void        * aQcStatement,
                    ERR_REPLICATED_TABLE_WITHOUT_PRIMARY);
 
     // PROJ-2002 Column Security
-    // primary keyì—ëŠ” salt ì˜µì…˜ì˜ policyë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+    // primary key¿¡´Â salt ¿É¼ÇÀÇ policy¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù.
     for ( i = 0; i < sInfo->columnCount; i++ )
     {
         sColumn = sInfo->columns[i].basicInfo;
@@ -641,13 +768,13 @@ IDE_RC rpcValidate::validateOneReplItem(void        * aQcStatement,
         if ( (sColumn->module->flag & MTD_ENCRYPT_TYPE_MASK)
              == MTD_ENCRYPT_TYPE_TRUE )
         {
-            IDE_DASSERT(sColumn->policy[0] != '\0');
+            IDE_DASSERT( sColumn->mColumnAttr.mEncAttr.mPolicy[0] != '\0' );
             
-            IDE_TEST(qciMisc::getPolicyInfo(sColumn->policy,
-                                            &sIsExist,
-                                            &sIsSalt,
-                                            &sIsEncodeECC)
-                     != IDE_SUCCESS);
+            IDE_TEST( qciMisc::getPolicyInfo( sColumn->mColumnAttr.mEncAttr.mPolicy,
+                                              &sIsExist,
+                                              &sIsSalt,
+                                              &sIsEncodeECC )
+                     != IDE_SUCCESS );
 
             IDE_DASSERT(sIsExist == ID_TRUE);
 
@@ -656,9 +783,8 @@ IDE_RC rpcValidate::validateOneReplItem(void        * aQcStatement,
         }
         else
         {
-            // Nothing to do.
+            // Nothing to do
         }
-
     }
 
     return IDE_SUCCESS;
@@ -703,10 +829,10 @@ IDE_RC rpcValidate::validateOneReplItem(void        * aQcStatement,
     {
         IDE_SET(ideSetErrorCode(rpERR_ABORT_RPC_REPL_RECOVERY_COUNT));
     }
-    IDE_EXCEPTION(ERR_NOT_APPLICABLE_POLICY)
+    IDE_EXCEPTION( ERR_NOT_APPLICABLE_POLICY )
     {
-        IDE_SET(ideSetErrorCode(rpERR_ABORT_RPC_NOT_APPLICABLE_POLICY,
-                                sColumn->policy));
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RPC_NOT_APPLICABLE_POLICY,
+                                  sColumn->mColumnAttr.mEncAttr.mPolicy ) );
     }
     IDE_EXCEPTION(ERR_CANNOT_USE_VOLATILE_TABLE)
     {
@@ -733,6 +859,12 @@ IDE_RC rpcValidate::validateAlterAddTbl(void * aQcStatement)
     smiStatement    * sSmiStmt;
     rpdReplications   sReplications;
 
+    qcmTableInfo    * sInfo = NULL;
+    smSCN             sSCN = SM_SCN_INIT;
+    void            * sTableHandle = NULL;
+    SChar             sLocalUserName[QC_MAX_OBJECT_NAME_LEN + 1]      = { 0, };
+    SChar             sLocalTableName[QC_MAX_OBJECT_NAME_LEN + 1]     = { 0, };
+
     sParseTree = (qriParseTree *)QCI_PARSETREE( aQcStatement );
     sSmiStmt = QCI_SMI_STMT(aQcStatement);
 
@@ -748,7 +880,7 @@ IDE_RC rpcValidate::validateAlterAddTbl(void * aQcStatement)
                                  ID_FALSE)
              != IDE_SUCCESS);
 
-    //Recovery Optionsì´ set ìƒíƒœì¼ ë•Œ add tableì„ í•  ìˆ˜ ì—†ë‹¤.
+    //Recovery OptionsÀÌ set »óÅÂÀÏ ¶§ add tableÀ» ÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE((sReplications.mOptions & RP_OPTION_RECOVERY_MASK) ==
                     RP_OPTION_RECOVERY_SET, ERR_NOT_ALLOW_ADD_TABLE)
 
@@ -762,8 +894,56 @@ IDE_RC rpcValidate::validateAlterAddTbl(void * aQcStatement)
                                  sReplications.mReplMode)
              != IDE_SUCCESS);
 
+    /* BUG-48290 */
+    IDE_TEST( sdi::checkShardReplication( (qcStatement*)aQcStatement ) != IDE_SUCCESS );
+ 
+    if ( qciMisc::getTransactionalDDL( aQcStatement ) == ID_TRUE )
+    {
+        QCI_STR_COPY( sLocalUserName, sReplItem->localUserName );
+        QCI_STR_COPY( sLocalTableName, sReplItem->localTableName );
+
+        IDE_TEST_RAISE(qciMisc::getUserID(aQcStatement,
+                                          sReplItem->localUserName,
+                                          &(sReplItem->localUserID))
+                       != IDE_SUCCESS, ERR_NOT_EXIST_USER);
+
+        // check existence of localTableName
+        IDE_TEST_RAISE(qciMisc::getTableInfo(aQcStatement,
+                                             sReplItem->localUserID,
+                                             sReplItem->localTableName,
+                                             &sInfo,
+                                             &sSCN,
+                                             &sTableHandle)
+                       != IDE_SUCCESS, ERR_NOT_EXIST_TABLE);
+
+        qciMisc::setDDLSrcInfo( aQcStatement,
+                                ID_TRUE,
+                                1,
+                                &(sInfo->tableOID),
+                                0,
+                                NULL );
+    }
+
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION(ERR_NOT_EXIST_USER)
+    {
+        // BUG-12774
+        if(ideGetErrorCode() == qpERR_ABORT_QCM_NOT_EXIST_USER)
+        {
+            IDE_SET(ideSetErrorCode(rpERR_ABORT_RPC_NOT_EXISTS_USER,
+                                    sLocalUserName));
+        }
+    }
+    IDE_EXCEPTION(ERR_NOT_EXIST_TABLE)
+    {
+        // BUG-12774
+        if(ideGetErrorCode() == qpERR_ABORT_QCM_NOT_EXIST_TABLE)
+        {
+            IDE_SET(ideSetErrorCode(rpERR_ABORT_RPC_NOT_EXISTS_TABLE,
+                                    sLocalTableName));
+        }
+    }
     IDE_EXCEPTION(ERR_NOT_ALLOW_ADD_TABLE)
     {
         IDE_SET(ideSetErrorCode(rpERR_ABORT_RPC_NOT_ALLOW_ADD_TABLE));
@@ -809,7 +989,10 @@ IDE_RC rpcValidate::validateAlterDropTbl(void * aQcStatement)
                                  ID_FALSE)
              != IDE_SUCCESS);
 
-    //Recovery Optionsì´ set ìƒíƒœì¼ ë•Œ drop tableì„ í•  ìˆ˜ ì—†ë‹¤.
+    /* BUG-48290 */
+    IDE_TEST( sdi::checkShardReplication( (qcStatement*)aQcStatement ) != IDE_SUCCESS );
+
+    //Recovery OptionsÀÌ set »óÅÂÀÏ ¶§ drop tableÀ» ÇÒ ¼ö ¾ø´Ù.
     if((sReplications.mOptions & RP_OPTION_RECOVERY_MASK) == RP_OPTION_RECOVERY_SET)
     {
         IDE_RAISE(ERR_NOT_ALLOW_DROP_TABLE);
@@ -850,7 +1033,7 @@ IDE_RC rpcValidate::validateAlterDropTbl(void * aQcStatement)
         if ( sReplItem->replication_unit == RP_REPLICATION_TABLE_UNIT )
         {
             /*
-             * ê° repl_itemsë“¤ì˜ unitì´ Tì¸ì§€ í™•ì¸í•´ì•¼ í•œë‹¤.
+             * °¢ repl_itemsµéÀÇ unitÀÌ TÀÎÁö È®ÀÎÇØ¾ß ÇÑ´Ù.
              */
             idlOS::strncpy( sLocalReplicationUnit,
                             RP_TABLE_UNIT,
@@ -895,7 +1078,7 @@ IDE_RC rpcValidate::validateAlterDropTbl(void * aQcStatement)
         else
         {
             /*
-             * ê° repl_itemsë“¤ì˜ unitì´ Pì¸ì§€ í™•ì¸í•´ì•¼ í•œë‹¤.
+             * °¢ repl_itemsµéÀÇ unitÀÌ PÀÎÁö È®ÀÎÇØ¾ß ÇÑ´Ù.
              */
             idlOS::strncpy( sLocalReplicationUnit,
                             RP_PARTITION_UNIT,
@@ -932,6 +1115,16 @@ IDE_RC rpcValidate::validateAlterDropTbl(void * aQcStatement)
                                                         &sIsExist )
                   != IDE_SUCCESS );
         IDE_TEST_RAISE(sIsExist != ID_TRUE, ERR_NOT_EXIST_REPL_ITEM);
+    }
+
+    if ( qciMisc::getTransactionalDDL( aQcStatement ) == ID_TRUE )
+    {
+        qciMisc::setDDLSrcInfo( aQcStatement,
+                                ID_TRUE,
+                                1,
+                                &(sInfo->tableOID),
+                                0,
+                                NULL );
     }
 
     return IDE_SUCCESS;
@@ -1000,7 +1193,12 @@ IDE_RC rpcValidate::validateAlterAddHost(void * aQcStatement)
                                  ID_FALSE)
              != IDE_SUCCESS);
 
+    /* BUG-48290 */
+    IDE_TEST( sdi::checkShardReplication( (qcStatement*)aQcStatement ) != IDE_SUCCESS );
+
     sReplHost = sParseTree->hosts;
+    IDE_TEST_RAISE( sReplHost->hostIp.size == 0, ERR_INVALID_HOST_IP_PORT );
+
     if( ( sReplications.mRole == RP_ROLE_ANALYSIS ) ||
         ( sReplications.mRole == RP_ROLE_ANALYSIS_PROPAGATION ) )
     {
@@ -1086,6 +1284,16 @@ IDE_RC rpcValidate::validateAlterAddHost(void * aQcStatement)
                        ERR_INVALID_HOST_IP_PORT);
     }
 
+    if ( qciMisc::getTransactionalDDL( aQcStatement ) == ID_TRUE )
+    {
+        qciMisc::setDDLSrcInfo( aQcStatement,
+                                ID_TRUE,
+                                0,
+                                NULL,
+                                0,
+                                NULL );
+    }
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(ERR_ROLE_NOT_SUPPORT_UNIX_DOMAIN)
@@ -1133,6 +1341,8 @@ IDE_RC rpcValidate::validateAlterDropHost(void * aQcStatement)
                  aQcStatement, sParseTree->replName, &sIsExist) != IDE_SUCCESS);
     IDE_TEST_RAISE(sIsExist != ID_TRUE, ERR_NOT_EXIST_REPLICATION);
 
+    IDE_TEST_RAISE( sParseTree->hosts->hostIp.size == 0, ERR_INVALID_HOST_IP_PORT );
+
     IDE_TEST(rpdCatalog::checkReplicationExistByAddr(
                 aQcStatement,
                 sParseTree->hosts->hostIp,
@@ -1140,6 +1350,19 @@ IDE_RC rpcValidate::validateAlterDropHost(void * aQcStatement)
                 &sIsExist)
              != IDE_SUCCESS);
     IDE_TEST_RAISE(sIsExist != ID_TRUE, ERR_NOT_EXIST_REPL_HOST);
+
+    /* BUG-48290 */
+    IDE_TEST( sdi::checkShardReplication( (qcStatement*)aQcStatement ) != IDE_SUCCESS );
+
+    if ( qciMisc::getTransactionalDDL( aQcStatement ) == ID_TRUE )
+    {
+        qciMisc::setDDLSrcInfo( aQcStatement,
+                                ID_TRUE,
+                                0,
+                                NULL,
+                                0,
+                                NULL );
+    }
 
     return IDE_SUCCESS;
 
@@ -1150,6 +1373,10 @@ IDE_RC rpcValidate::validateAlterDropHost(void * aQcStatement)
     IDE_EXCEPTION(ERR_NOT_EXIST_REPL_HOST)
     {
         IDE_SET(ideSetErrorCode(rpERR_ABORT_RPC_NOT_EXIST_REPL_HOST));
+    }
+    IDE_EXCEPTION(ERR_INVALID_HOST_IP_PORT)
+    {
+        IDE_SET(ideSetErrorCode(rpERR_ABORT_RPC_INVALID_HOST_IP_PORT));
     }
     IDE_EXCEPTION_END;
 
@@ -1179,6 +1406,9 @@ IDE_RC rpcValidate::validateAlterSetHost(void * aQcStatement)
              != IDE_SUCCESS);
     IDE_TEST_RAISE(sIsExist != ID_TRUE, ERR_NOT_EXIST_REPL_HOST);
 
+    /* BUG-48290 */
+    IDE_TEST( sdi::checkShardReplication( (qcStatement*)aQcStatement ) != IDE_SUCCESS );
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(ERR_NOT_EXIST_REPLICATION)
@@ -1205,6 +1435,15 @@ IDE_RC rpcValidate::validateDrop(void * aQcStatement)
 {
     qriParseTree    * sParseTree;
     idBool            sIsExist;
+    SInt              sTableOIDCount = 0;
+    smOID           * sTableOIDArray = NULL;
+    SChar             sRepName[QCI_MAX_NAME_LEN + 1] = { 0, };
+    idBool            sMetaInit       = ID_FALSE;
+    rpdMeta           sMeta;
+    smiStatement    * sSmiStmt        = QCI_SMI_STMT( aQcStatement );
+    SInt              i               = 0;
+    qciTableInfo   ** sTableInfoArray = NULL;
+    SInt            * sDummyCount     = NULL;
 
     sParseTree = (qriParseTree *)QCI_PARSETREE( aQcStatement );
 
@@ -1216,6 +1455,84 @@ IDE_RC rpcValidate::validateDrop(void * aQcStatement)
                  aQcStatement, sParseTree->replName, &sIsExist) != IDE_SUCCESS);
     IDE_TEST_RAISE(sIsExist != ID_TRUE, ERR_NOT_EXIST_REPLICATION);
 
+    QCI_STR_COPY( sRepName, sParseTree->replName );
+
+    IDE_TEST( allocAndBuildLockTable( QCI_STATISTIC(aQcStatement),
+                                      QCI_QMP_MEM(aQcStatement),
+                                      sSmiStmt,
+                                      sRepName,
+                                      RP_META_BUILD_LAST,
+                                      &(sParseTree->lockTable) )
+              != IDE_SUCCESS );
+
+    /* BUG-48290 */
+    IDE_TEST( sdi::checkShardReplication( (qcStatement*)aQcStatement ) != IDE_SUCCESS );
+
+    if ( qciMisc::getTransactionalDDL( aQcStatement ) == ID_TRUE )
+    { 
+        sMeta.initialize();
+        sMetaInit = ID_TRUE;
+
+        IDE_TEST( sMeta.build( sSmiStmt,
+                               sRepName,
+                               ID_FALSE,
+                               RP_META_BUILD_LAST,
+                               SMI_TBSLV_DROP_TBS )
+                  != IDE_SUCCESS );
+        
+        if ( sMeta.mReplication.mItemCount > 0 )
+        {
+            IDE_TEST( ( ( iduMemory * )QCI_QMX_MEM( aQcStatement ) )
+                      ->alloc( ID_SIZEOF(qciTableInfo*)
+                               * sMeta.mReplication.mItemCount,
+                               (void**)&sTableInfoArray )
+                      != IDE_SUCCESS);
+            idlOS::memset( sTableInfoArray,
+                           0x00,
+                           ID_SIZEOF( qciTableInfo* ) * sMeta.mReplication.mItemCount );
+
+            IDE_TEST( ( ( iduMemory *)QCI_QMX_MEM( aQcStatement ) )
+                      ->alloc( ID_SIZEOF(SInt) * sMeta.mReplication.mItemCount,
+                               (void**)&sDummyCount )
+                      != IDE_SUCCESS );
+
+            idlOS::memset( sDummyCount, 0, ID_SIZEOF(SInt) * sMeta.mReplication.mItemCount );
+            
+            IDE_TEST( rpcManager::lockTables( aQcStatement, &sMeta, SMI_TBSLV_DROP_TBS ) != IDE_SUCCESS );
+
+            IDE_TEST( rpcManager::getTableInfoArrAndRefCount( sSmiStmt,
+                                                              &sMeta,
+                                                              sTableInfoArray,
+                                                              sDummyCount,
+                                                              &sTableOIDCount )
+                      != IDE_SUCCESS );
+        }
+
+        if ( sTableOIDCount > 0 )
+        {
+            IDE_TEST( ( ( iduMemory * )QCI_QMX_MEM( aQcStatement ) )
+                      ->alloc( ID_SIZEOF(qciTableInfo*)
+                               * sTableOIDCount,
+                               (void**)&sTableOIDArray )
+                      != IDE_SUCCESS);
+
+            for ( i = 0; i < sTableOIDCount; i++ )
+            {
+               sTableOIDArray[i] = sTableInfoArray[i]->tableOID;         
+            }
+        }
+
+        qciMisc::setDDLSrcInfo( aQcStatement,
+                                ID_TRUE,
+                                sTableOIDCount,
+                                sTableOIDArray,
+                                0,
+                                NULL );
+
+        sMetaInit = ID_FALSE;
+        sMeta.finalize();
+    }
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(ERR_NOT_EXIST_REPLICATION)
@@ -1223,6 +1540,11 @@ IDE_RC rpcValidate::validateDrop(void * aQcStatement)
         IDE_SET(ideSetErrorCode(rpERR_ABORT_RPC_NOT_EXIST_REPLICATION));
     }
     IDE_EXCEPTION_END;
+
+    if ( sMetaInit == ID_TRUE )
+    {
+        sMeta.finalize();
+    }
 
     return IDE_FAILURE;
 }
@@ -1233,6 +1555,7 @@ IDE_RC rpcValidate::validateStart(void * aQcStatement)
     idBool            sIsExist;
     smiStatement    * sSmiStmt = QCI_SMI_STMT(aQcStatement);
     rpdReplications   sReplications;
+    RP_META_BUILD_TYPE  sMetaBuildType = RP_META_BUILD_AUTO;
 
     sParseTree = (qriParseTree *)QCI_PARSETREE( aQcStatement );
 
@@ -1244,7 +1567,19 @@ IDE_RC rpcValidate::validateStart(void * aQcStatement)
                  aQcStatement, sParseTree->replName, &sIsExist) != IDE_SUCCESS);
     IDE_TEST_RAISE(sIsExist != ID_TRUE, ERR_NOT_EXIST_REPLICATION);
 
+    /* BUG-48290 */
+    IDE_TEST( sdi::checkShardReplication( (qcStatement*)aQcStatement ) != IDE_SUCCESS );
+
     QCI_STR_COPY( sReplications.mRepName, sParseTree->replName );
+
+    sMetaBuildType = rpxSender::getMetaBuildType( sParseTree->startType, RP_PARALLEL_PARENT_ID );
+    IDE_TEST( allocAndBuildLockTable( QCI_STATISTIC(aQcStatement),
+                                      QCI_QMP_MEM(aQcStatement),
+                                      sSmiStmt,
+                                      sReplications.mRepName,
+                                      sMetaBuildType,
+                                      &(sParseTree->lockTable) )
+              != IDE_SUCCESS );
 
     IDE_TEST( rpdCatalog::selectRepl( sSmiStmt,
                                    sReplications.mRepName,
@@ -1261,12 +1596,16 @@ IDE_RC rpcValidate::validateStart(void * aQcStatement)
                         ERR_NOT_SUPPORT_AT_SN_CLAUSE );
     }
 
-    /* BUG-31678 IS_STARTED ì»¬ëŸ¼ ê°’ì€ Failback ì¢…ë¥˜ë¥¼ ê²°ì •í•˜ëŠ”ë° ì˜í–¥ì„ ì£¼ë¯€ë¡œ,
-     *           Eager Replicationì—ì„œ RETRY ê¸°ëŠ¥ì„ ë§‰ëŠ”ë‹¤.
+    /* BUG-31678 IS_STARTED ÄÃ·³ °ªÀº Failback Á¾·ù¸¦ °áÁ¤ÇÏ´Âµ¥ ¿µÇâÀ» ÁÖ¹Ç·Î,
+     *           Eager Replication¿¡¼­ RETRY ±â´ÉÀ» ¸·´Â´Ù.
      */
     IDE_TEST_RAISE( ( sReplications.mReplMode == RP_EAGER_MODE ) &&
                     ( sParseTree->startOption == RP_START_OPTION_RETRY ),
                     ERR_NOT_SUPPORT_RETRY_AND_EAGER );
+
+    IDE_TEST_RAISE( ( sReplications.mReplMode == RP_EAGER_MODE ) &&
+                    ( sParseTree->startType == RP_START_CONDITIONAL ),
+                    ERR_NOT_SUPPORT_CONDITIONAL_ACTION_AND_EAGER );
 
     return IDE_SUCCESS;
 
@@ -1282,13 +1621,17 @@ IDE_RC rpcValidate::validateStart(void * aQcStatement)
     {
         IDE_SET( ideSetErrorCode( rpERR_ABORT_RPC_NOT_SUPPORT_RETRY_AND_EAGER ) );
     }
+    IDE_EXCEPTION( ERR_NOT_SUPPORT_CONDITIONAL_ACTION_AND_EAGER )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RPC_NOT_SUPPORT_REPL_CONDITIONAL_START_AND_EAGER ) );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 }
 
 /* PROJ-1915 
- * SYS_REPL_OFFLINE_DIR_ ê°€ ìˆëŠ”ì§€ ì¡°íšŒ í•œë‹¤.
+ * SYS_REPL_OFFLINE_DIR_ °¡ ÀÖ´ÂÁö Á¶È¸ ÇÑ´Ù.
  */
 IDE_RC rpcValidate::validateOfflineStart(void * aQcStatement)
 {
@@ -1296,6 +1639,7 @@ IDE_RC rpcValidate::validateOfflineStart(void * aQcStatement)
     idBool            sIsExist;
     UInt              sDirCount;
     SChar             sReplName[QC_MAX_OBJECT_NAME_LEN + 1];
+    RP_META_BUILD_TYPE  sMetaBuildType = RP_META_BUILD_AUTO;
 
     sParseTree = (qriParseTree *)QCI_PARSETREE( aQcStatement );
 
@@ -1309,8 +1653,20 @@ IDE_RC rpcValidate::validateOfflineStart(void * aQcStatement)
              aQcStatement, sParseTree->replName, &sIsExist) != IDE_SUCCESS);
     IDE_TEST_RAISE(sIsExist != ID_TRUE, ERR_NOT_EXIST_REPLICATION);
 
+    /* BUG-48290 */
+    IDE_TEST( sdi::checkShardReplication( (qcStatement*)aQcStatement ) != IDE_SUCCESS );
+
     IDE_TEST(rpdCatalog::getReplOfflineDirCount(QCI_SMI_STMT( aQcStatement ), sReplName, &sDirCount) != IDE_SUCCESS);
     IDE_TEST_RAISE(sDirCount == 0, ERR_NOT_EXIST_OFFLINE_PATH);
+
+    sMetaBuildType = rpxSender::getMetaBuildType( sParseTree->startType, RP_PARALLEL_PARENT_ID );
+    IDE_TEST( allocAndBuildLockTable( QCI_STATISTIC(aQcStatement),
+                                      QCI_QMP_MEM(aQcStatement),
+                                      QCI_SMI_STMT(aQcStatement),
+                                      sReplName,
+                                      sMetaBuildType,
+                                      &(sParseTree->lockTable) )
+              != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -1334,6 +1690,7 @@ IDE_RC rpcValidate::validateQuickStart(void * aQcStatement)
     idBool            sIsExist;
     smiStatement    * sSmiStmt = QCI_SMI_STMT(aQcStatement);
     rpdReplications   sReplications;
+    RP_META_BUILD_TYPE  sMetaBuildType = RP_META_BUILD_AUTO;
 
     sParseTree = (qriParseTree *)QCI_PARSETREE( aQcStatement );
 
@@ -1347,18 +1704,30 @@ IDE_RC rpcValidate::validateQuickStart(void * aQcStatement)
 
     QCI_STR_COPY( sReplications.mRepName, sParseTree->replName );
 
+    sMetaBuildType = rpxSender::getMetaBuildType( sParseTree->startType, RP_PARALLEL_PARENT_ID );
+    IDE_TEST( allocAndBuildLockTable( QCI_STATISTIC(aQcStatement),
+                                      QCI_QMP_MEM(aQcStatement),
+                                      sSmiStmt,
+                                      sReplications.mRepName,
+                                      sMetaBuildType,
+                                      &(sParseTree->lockTable) )
+              != IDE_SUCCESS );
+
     IDE_TEST( rpdCatalog::selectRepl( sSmiStmt,
                                    sReplications.mRepName,
                                    &sReplications,
                                    ID_FALSE )
               != IDE_SUCCESS );
 
-    /* BUG-31678 IS_STARTED ì»¬ëŸ¼ ê°’ì€ Failback ì¢…ë¥˜ë¥¼ ê²°ì •í•˜ëŠ”ë° ì˜í–¥ì„ ì£¼ë¯€ë¡œ,
-     *           Eager Replicationì—ì„œ RETRY ê¸°ëŠ¥ì„ ë§‰ëŠ”ë‹¤.
+    /* BUG-31678 IS_STARTED ÄÃ·³ °ªÀº Failback Á¾·ù¸¦ °áÁ¤ÇÏ´Âµ¥ ¿µÇâÀ» ÁÖ¹Ç·Î,
+     *           Eager Replication¿¡¼­ RETRY ±â´ÉÀ» ¸·´Â´Ù.
      */
     IDE_TEST_RAISE( ( sReplications.mReplMode == RP_EAGER_MODE ) &&
                     ( sParseTree->startOption == RP_START_OPTION_RETRY ),
                     ERR_NOT_SUPPORT_RETRY_AND_EAGER );
+
+    /* BUG-48290 */
+    IDE_TEST( sdi::checkShardReplication( (qcStatement*)aQcStatement ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -1370,6 +1739,7 @@ IDE_RC rpcValidate::validateQuickStart(void * aQcStatement)
     {
         IDE_SET( ideSetErrorCode( rpERR_ABORT_RPC_NOT_SUPPORT_RETRY_AND_EAGER ) );
     }
+
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -1380,6 +1750,7 @@ IDE_RC rpcValidate::validateSync(void * aQcStatement)
     qriParseTree    * sParseTree;
     smiStatement    * sSmiStmt = QCI_SMI_STMT(aQcStatement);
     rpdReplications   sReplications;
+    RP_META_BUILD_TYPE  sMetaBuildType = RP_META_BUILD_AUTO;
     
     sParseTree = (qriParseTree *)QCI_PARSETREE( aQcStatement );
 
@@ -1389,6 +1760,15 @@ IDE_RC rpcValidate::validateSync(void * aQcStatement)
 
     // PROJ-1537
     QCI_STR_COPY( sReplications.mRepName, sParseTree->replName );
+
+    sMetaBuildType = rpxSender::getMetaBuildType( sParseTree->startType, RP_PARALLEL_PARENT_ID );
+    IDE_TEST( allocAndBuildLockTable( QCI_STATISTIC(aQcStatement),
+                                      QCI_QMP_MEM(aQcStatement),
+                                      sSmiStmt,
+                                      sReplications.mRepName,
+                                      sMetaBuildType,
+                                      &(sParseTree->lockTable) )
+              != IDE_SUCCESS );
     
     IDE_TEST(rpdCatalog::selectRepl(sSmiStmt,
                                  sReplications.mRepName,
@@ -1396,7 +1776,18 @@ IDE_RC rpcValidate::validateSync(void * aQcStatement)
                                  ID_FALSE)
              != IDE_SUCCESS);
 
+    IDE_TEST_RAISE( ( sReplications.mReplMode == RP_EAGER_MODE ) &&
+                    ( sParseTree->startType == RP_SYNC_CONDITIONAL ),
+                    ERR_NOT_SUPPORT_CONDITIONAL_ACTION_AND_EAGER );
+
+    /* BUG-48290 */
+    IDE_TEST( sdi::checkShardReplication( (qcStatement*)aQcStatement ) != IDE_SUCCESS );
+
     return IDE_SUCCESS;
+    IDE_EXCEPTION( ERR_NOT_SUPPORT_CONDITIONAL_ACTION_AND_EAGER )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RPC_NOT_SUPPORT_REPL_CONDITIONAL_START_AND_EAGER ) );
+    }
 
     IDE_EXCEPTION_END;
 
@@ -1414,6 +1805,7 @@ IDE_RC rpcValidate::validateSyncTbl(void * aQcStatement)
     SChar             sLocalUserName[QC_MAX_OBJECT_NAME_LEN + 1];
     SChar             sLocalTableName[QC_MAX_OBJECT_NAME_LEN + 1];
     SChar             sLocalPartitionName[QC_MAX_OBJECT_NAME_LEN + 1];
+    SChar             sRepName[QC_MAX_OBJECT_NAME_LEN + 1] = { 0, };
 
     smiStatement         * sSmiStmt = QCI_SMI_STMT( aQcStatement );
     qcmPartitionInfoList * sPartInfoList = NULL;
@@ -1421,6 +1813,8 @@ IDE_RC rpcValidate::validateSyncTbl(void * aQcStatement)
     qcmTableInfo         * sPartInfo;
 
     SChar             sLocalReplicationUnit[2];
+
+    RP_META_BUILD_TYPE     sMetaBuildType = RP_META_BUILD_AUTO;
 
     IDE_TEST(validateSync(aQcStatement) != IDE_SUCCESS);
 
@@ -1430,6 +1824,20 @@ IDE_RC rpcValidate::validateSyncTbl(void * aQcStatement)
                 aQcStatement, sParseTree->replName, &sIsExist) != IDE_SUCCESS);
 
     IDE_TEST_RAISE(sIsExist != ID_TRUE, ERR_NOT_EXIST_REPLICATION);
+
+    QCI_STR_COPY( sRepName, sParseTree->replName );
+    sMetaBuildType = rpxSender::getMetaBuildType( sParseTree->startType, RP_PARALLEL_PARENT_ID );
+
+    IDE_TEST( allocAndBuildLockTable( QCI_STATISTIC(aQcStatement),
+                                      QCI_QMP_MEM(aQcStatement),
+                                      sSmiStmt,
+                                      sRepName,
+                                      sMetaBuildType,
+                                      &(sParseTree->lockTable) )
+              != IDE_SUCCESS );
+
+    /* BUG-48290 */
+    IDE_TEST( sdi::checkShardReplication( (qcStatement*)aQcStatement ) != IDE_SUCCESS );
 
     for(sSyncItem = sParseTree->replItems; sSyncItem != NULL; sSyncItem = sSyncItem->next)
     {
@@ -1467,7 +1875,7 @@ IDE_RC rpcValidate::validateSyncTbl(void * aQcStatement)
             {
 
                 /*
-                 * ê° repl_itemsë“¤ì˜ unitì´ Tì¸ì§€ í™•ì¸í•´ì•¼ í•œë‹¤.
+                 * °¢ repl_itemsµéÀÇ unitÀÌ TÀÎÁö È®ÀÎÇØ¾ß ÇÑ´Ù.
                  */
                 idlOS::strncpy( sLocalReplicationUnit,
                                 RP_TABLE_UNIT,
@@ -1500,7 +1908,7 @@ IDE_RC rpcValidate::validateSyncTbl(void * aQcStatement)
 
                     /*
                      * PROJ-2336
-                     * if T ì¸ì§€ í™•ì¸
+                     * if T ÀÎÁö È®ÀÎ
                      */
                     IDE_TEST( rpdCatalog::checkReplItemUnitByName( aQcStatement,
                                                                     sParseTree->replName,
@@ -1516,7 +1924,7 @@ IDE_RC rpcValidate::validateSyncTbl(void * aQcStatement)
             else
             {
                 /*
-                 * ê° repl_itemsë“¤ì˜ unitì´ Pì¸ì§€ í™•ì¸í•´ì•¼ í•œë‹¤.
+                 * °¢ repl_itemsµéÀÇ unitÀÌ PÀÎÁö È®ÀÎÇØ¾ß ÇÑ´Ù.
                  */
                 idlOS::strncpy( sLocalReplicationUnit,
                                 RP_PARTITION_UNIT,
@@ -1533,7 +1941,7 @@ IDE_RC rpcValidate::validateSyncTbl(void * aQcStatement)
 
                 /*
                  * PROJ-2336
-                 * if P ì¸ì§€ í™•ì¸
+                 * if P ÀÎÁö È®ÀÎ
                  */
                 IDE_TEST( rpdCatalog::checkReplItemUnitByName( aQcStatement,
                                                                 sParseTree->replName,
@@ -1600,6 +2008,69 @@ IDE_RC rpcValidate::validateSyncTbl(void * aQcStatement)
     return IDE_FAILURE;
 }
 
+IDE_RC rpcValidate::validateTempSync(void * aQcStatement)
+{
+    qriParseTree    * sParseTree;
+    qriReplItem     * sSyncItem;
+
+    qriReplHost      * sRemoteHost;
+
+    SChar             sRemoteIP[QC_MAX_IP_LEN + 1];
+    idBool            sIsRecoveryOpt = ID_FALSE;
+
+    sParseTree = (qriParseTree *)QCI_PARSETREE( aQcStatement );
+
+    // check grant
+    IDE_TEST(qciMisc::checkDDLReplicationPriv( aQcStatement )
+             != IDE_SUCCESS);
+
+    IDE_TEST_RAISE( rpuProperty::isUseV6Protocol() == ID_TRUE,
+                    ERR_NOT_SUPPORT_SYNC_WITH_V6_PROTOCOL );
+
+    sRemoteHost = sParseTree->hosts;
+
+    IDE_TEST_RAISE( sRemoteHost->connOpt->connType != RP_SOCKET_TYPE_TCP, 
+                    ERR_NOT_SUPPORT_CONNECTION_TYPE )
+
+    QCI_STR_COPY( sRemoteIP, sRemoteHost->hostIp );
+    IDE_TEST_RAISE(isValidIPFormat(sRemoteIP) != ID_TRUE,
+                   ERR_INVALID_HOST_IP_PORT);
+    IDE_TEST_RAISE(sRemoteHost->portNumber > 0xFFFF,
+                   ERR_INVALID_HOST_IP_PORT);
+
+    for (sSyncItem = sParseTree->replItems;
+         sSyncItem != NULL;
+         sSyncItem = sSyncItem->next)
+    {
+        IDE_TEST(validateOneReplItem(aQcStatement,
+                                     sSyncItem,
+                                     sParseTree->role,
+                                     sIsRecoveryOpt,
+                                     sParseTree->replMode)
+                 != IDE_SUCCESS);
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(ERR_NOT_SUPPORT_SYNC_WITH_V6_PROTOCOL)
+    {
+        IDE_SET(ideSetErrorCode(rpERR_ABORT_NOT_SUPPORT_FEATURE_WITH_V6_PROTOCOL,
+                                "Replication Temporary Sync"));
+    }
+    IDE_EXCEPTION(ERR_NOT_SUPPORT_CONNECTION_TYPE)
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG, "Infiniband is not supported" ) );
+    }
+    IDE_EXCEPTION(ERR_INVALID_HOST_IP_PORT)
+    {
+        IDE_SET(ideSetErrorCode(rpERR_ABORT_RPC_INVALID_HOST_IP_PORT));
+    }
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 IDE_RC rpcValidate::validateReset(void * aQcStatement)
 {
     qriParseTree    * sParseTree;
@@ -1614,6 +2085,19 @@ IDE_RC rpcValidate::validateReset(void * aQcStatement)
     IDE_TEST(rpdCatalog::checkReplicationExistByName(
                  aQcStatement, sParseTree->replName, &sIsExist) != IDE_SUCCESS);
     IDE_TEST_RAISE(sIsExist != ID_TRUE, ERR_NOT_EXIST_REPLICATION);
+
+    if ( qciMisc::getTransactionalDDL( aQcStatement ) == ID_TRUE )
+    {
+        qciMisc::setDDLSrcInfo( aQcStatement,
+                                ID_TRUE,
+                                0,
+                                NULL,
+                                0,
+                                NULL );
+    }
+
+    /* BUG-48290 */
+    IDE_TEST( sdi::checkShardReplication( (qcStatement*)aQcStatement ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -1638,6 +2122,7 @@ IDE_RC rpcValidate::validateAlterSetRecovery(void * aQcStatement)
     SInt              sRecoveryFlag = 0;
     idBool            sIsOfflineReplOpt = ID_FALSE;
     smiStatement    * sSmiStmt = QCI_SMI_STMT(aQcStatement);
+    SChar             sRepName[QC_MAX_OBJECT_NAME_LEN + 1] = { 0, };
     rpdReplications   sReplications;
 
     sParseTree = (qriParseTree *)QCI_PARSETREE( aQcStatement );
@@ -1647,37 +2132,47 @@ IDE_RC rpcValidate::validateAlterSetRecovery(void * aQcStatement)
     IDE_TEST(qciMisc::checkDDLReplicationPriv(aQcStatement)
              != IDE_SUCCESS);
 
-    QCI_STR_COPY( sReplications.mRepName, sParseTree->replName );
-    
+    QCI_STR_COPY( sRepName, sParseTree->replName );
+
+    IDE_TEST( allocAndBuildLockTable( QCI_STATISTIC(aQcStatement),
+                                      QCI_QMP_MEM(aQcStatement),
+                                      sSmiStmt,
+                                      sRepName,
+                                      RP_META_BUILD_LAST,
+                                      &(sParseTree->lockTable) )
+              != IDE_SUCCESS );
+
     IDE_TEST(rpdCatalog::selectRepl(sSmiStmt,
-                                 sReplications.mRepName,
-                                 &sReplications,
-                                 ID_FALSE)
+                                    sRepName,
+                                    &sReplications,
+                                    ID_FALSE)
              != IDE_SUCCESS);
 
-    //replication role í™•ì¸
+    IDE_TEST_RAISE( sReplications.mReplMode == RP_CONSISTENT_MODE, ERR_COMPATIBLE_CONSISTENT );
+
+    //replication role È®ÀÎ
     IDU_FIT_POINT_RAISE( "rpcValidate::validateAlterSetRecovery::Erratic::rpERR_ABORT_RPC_ROLE_NOT_SUPPORT_REPL_OFFLINE",
                         ERR_ROLE ); 
     IDE_TEST_RAISE( ( sReplications.mRole == RP_ROLE_ANALYSIS ) ||
                     ( sReplications.mRole == RP_ROLE_ANALYSIS_PROPAGATION ), ERR_ROLE );
-    //recovery option í™•ì¸
+    //recovery option È®ÀÎ
     //alter replication replication_name RECOVERY = 1
     if(sParseTree->replOptions->optionsFlag == RP_OPTION_RECOVERY_SET)
     {
-        //Recovery Optionsì„ SET ì‹œí‚¤ë ¤ê³  í•˜ì§€ë§Œ, ì´ë¯¸ SET ìƒíƒœì„
+        //Recovery OptionsÀ» SET ½ÃÅ°·Á°í ÇÏÁö¸¸, ÀÌ¹Ì SET »óÅÂÀÓ
         IDE_TEST_RAISE((sReplications.mOptions & RP_OPTION_RECOVERY_MASK) ==
                        RP_OPTION_RECOVERY_SET, ERR_ALEADY_SET);
         sRecoveryFlag = RP_OPTION_RECOVERY_SET;
     }
     else //alter replication replication_name RECOVERY = 0
     {
-        //Recovery Optionsì„ UNSET ì‹œí‚¤ë ¤ê³  í•˜ì§€ë§Œ, ì´ë¯¸ UNSET ìƒíƒœì„
+        //Recovery OptionsÀ» UNSET ½ÃÅ°·Á°í ÇÏÁö¸¸, ÀÌ¹Ì UNSET »óÅÂÀÓ
         IDE_TEST_RAISE((sReplications.mOptions & RP_OPTION_RECOVERY_MASK) ==
                        RP_OPTION_RECOVERY_UNSET, ERR_ALEADY_UNSET);
         sRecoveryFlag = RP_OPTION_RECOVERY_UNSET;
     }
 
-    /* PROJ-1915 RECOVERY option ê³¼ OFFLINE ì˜µì…˜ì„ ë™ì‹œ ì‚¬ìš©í•  ìˆ˜ ì—†ìŒ */
+    /* PROJ-1915 RECOVERY option °ú OFFLINE ¿É¼ÇÀ» µ¿½Ã »ç¿ëÇÒ ¼ö ¾øÀ½ */
     if((sReplications.mOptions & RP_OPTION_OFFLINE_MASK)
        == RP_OPTION_OFFLINE_SET)
     {
@@ -1693,6 +2188,10 @@ IDE_RC rpcValidate::validateAlterSetRecovery(void * aQcStatement)
              != IDE_SUCCESS);
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_COMPATIBLE_CONSISTENT )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RPC_CONSISTENT_DO_NOT_HAVE_ANY_OTHER_OPTIONS) );
+    }
     IDE_EXCEPTION(ERR_ROLE)
     {
         IDE_SET(ideSetErrorCode(rpERR_ABORT_RPC_ROLE_NOT_SUPPORT_REPL_RECOVERY));
@@ -1714,9 +2213,8 @@ IDE_RC rpcValidate::validateAlterSetRecovery(void * aQcStatement)
     return IDE_FAILURE;
 }
 
-
 /* PROJ-1915 off-line replicator
- * ALTER REPLICATION replicatoin_name SET OFFLINE ENABLE WITH ê²½ë¡œ ... ê²½ë¡œ ...
+ * ALTER REPLICATION replicatoin_name SET OFFLINE ENABLE WITH °æ·Î ... °æ·Î ...
  */
 IDE_RC rpcValidate::validateAlterSetOffline(void * aQcStatement)
 {
@@ -1733,6 +2231,7 @@ IDE_RC rpcValidate::validateAlterSetOffline(void * aQcStatement)
     SChar             sTableColumnName[QC_MAX_OBJECT_NAME_LEN + 1] = { 0, };
     qriReplDirPath  * sReplDirPath;
     SInt              sReplDirCount = 0;
+    SChar             sRepName[QC_MAX_OBJECT_NAME_LEN + 1] = { 0, };
 
     sParseTree = (qriParseTree *)QCI_PARSETREE( aQcStatement );
     IDE_ASSERT( sParseTree->replOptions != NULL );
@@ -1741,13 +2240,23 @@ IDE_RC rpcValidate::validateAlterSetOffline(void * aQcStatement)
     IDE_TEST(qciMisc::checkDDLReplicationPriv(aQcStatement)
              != IDE_SUCCESS);
 
-    QCI_STR_COPY( sReplications.mRepName, sParseTree->replName );
+    QCI_STR_COPY( sRepName, sParseTree->replName );
     
+    IDE_TEST( allocAndBuildLockTable( QCI_STATISTIC(aQcStatement),
+                                      QCI_QMP_MEM(aQcStatement),
+                                      sSmiStmt,
+                                      sRepName,
+                                      RP_META_BUILD_LAST,
+                                      &(sParseTree->lockTable) )
+              != IDE_SUCCESS );
+
     IDE_TEST(rpdCatalog::selectRepl(sSmiStmt,
-                                 sReplications.mRepName,
-                                 &sReplications,
-                                 ID_FALSE)
+                                    sRepName,
+                                    &sReplications,
+                                    ID_FALSE)
              != IDE_SUCCESS);
+
+    IDE_TEST_RAISE( sReplications.mReplMode == RP_CONSISTENT_MODE, ERR_COMPATIBLE_CONSISTENT );
 
     IDE_TEST_RAISE( ( sReplications.mRole == RP_ROLE_ANALYSIS ) || 
                     ( sReplications.mRole == RP_ROLE_ANALYSIS_PROPAGATION ), ERR_ROLE );
@@ -1764,24 +2273,24 @@ IDE_RC rpcValidate::validateAlterSetOffline(void * aQcStatement)
 
     if(sParseTree->replOptions->optionsFlag == RP_OPTION_OFFLINE_SET)
     {
-        //Offline Optionsì„ SET ì‹œí‚¤ë ¤ê³  í•˜ì§€ë§Œ, ì´ë¯¸ SET ìƒíƒœì„
+        //Offline OptionsÀ» SET ½ÃÅ°·Á°í ÇÏÁö¸¸, ÀÌ¹Ì SET »óÅÂÀÓ
         IDE_TEST_RAISE((sReplications.mOptions & RP_OPTION_OFFLINE_MASK) ==
                         RP_OPTION_OFFLINE_SET, ERR_ALEADY_SET);
         sIsOfflineReplOpt = ID_TRUE;
     }
     else
     {
-        //Offline Optionsì„ UNSET ì‹œí‚¤ë ¤ê³  í•˜ì§€ë§Œ, ì´ë¯¸ UNSET ìƒíƒœì„
+        //Offline OptionsÀ» UNSET ½ÃÅ°·Á°í ÇÏÁö¸¸, ÀÌ¹Ì UNSET »óÅÂÀÓ
         IDE_TEST_RAISE((sReplications.mOptions & RP_OPTION_OFFLINE_MASK) ==
                         RP_OPTION_OFFLINE_UNSET, ERR_ALEADY_UNSET);
     }
 
-    /* PROJ-1915 OFFLINE ì˜µì…˜ RECOVERY ì˜µì…˜ ë™ì‹œ ì‚¬ìš© ë¶ˆê°€ */
+    /* PROJ-1915 OFFLINE ¿É¼Ç RECOVERY ¿É¼Ç µ¿½Ã »ç¿ë ºÒ°¡ */
     IDE_TEST_RAISE((sIsRecoveryOpt == ID_TRUE) &&
                    (sIsOfflineReplOpt == ID_TRUE),
                    ERR_OPTION_OFFLINE_AND_RECOVERY);
 
-    /* PROJ-1915 OFFLINE ì˜µì…˜ EAGER replication ë™ì‹œ ì‚¬ìš© ë¶ˆê°€ */
+    /* PROJ-1915 OFFLINE ¿É¼Ç EAGER replication µ¿½Ã »ç¿ë ºÒ°¡ */
     IDE_TEST_RAISE((sReplications.mReplMode == RP_EAGER_MODE) &&
                    (sIsOfflineReplOpt == ID_TRUE),
                    ERR_OPTION_OFFLINE_AND_EAGER);
@@ -1807,7 +2316,8 @@ IDE_RC rpcValidate::validateAlterSetOffline(void * aQcStatement)
     IDE_TEST(rpdCatalog::selectReplItems( sSmiStmt,
                                           sReplications.mRepName,
                                           sReplItems,
-                                          sReplications.mItemCount)
+                                          sReplications.mItemCount,
+                                          ID_FALSE )
              != IDE_SUCCESS);
 
     for ( sItemIndex = 0;
@@ -1841,6 +2351,10 @@ IDE_RC rpcValidate::validateAlterSetOffline(void * aQcStatement)
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_COMPATIBLE_CONSISTENT )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RPC_CONSISTENT_DO_NOT_HAVE_ANY_OTHER_OPTIONS ) );
+    }
     IDE_EXCEPTION( ERR_NOT_SUPPORT_DDL_REPLICATE )
     {
         IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG, 
@@ -1907,6 +2421,7 @@ IDE_RC rpcValidate::validateAlterSetGapless(void * aQcStatement)
     SInt              sGaplessFlag = 0;
     smiStatement    * sSmiStmt = QCI_SMI_STMT(aQcStatement);
     rpdReplications   sReplications;
+    SChar             sRepName[QC_MAX_OBJECT_NAME_LEN + 1] = { 0, };
 
     sParseTree = (qriParseTree *)QCI_PARSETREE( aQcStatement );
     IDE_DASSERT( sParseTree->replOptions != NULL );
@@ -1915,13 +2430,23 @@ IDE_RC rpcValidate::validateAlterSetGapless(void * aQcStatement)
     IDE_TEST( qciMisc::checkDDLReplicationPriv( aQcStatement )
               != IDE_SUCCESS);
 
-    QCI_STR_COPY( sReplications.mRepName, sParseTree->replName );
+    QCI_STR_COPY( sRepName, sParseTree->replName );
+
+    IDE_TEST( allocAndBuildLockTable( QCI_STATISTIC(aQcStatement),
+                                      QCI_QMP_MEM(aQcStatement),
+                                      sSmiStmt,
+                                      sRepName,
+                                      RP_META_BUILD_LAST,
+                                      &(sParseTree->lockTable) )
+              != IDE_SUCCESS );
 
     IDE_TEST( rpdCatalog::selectRepl( sSmiStmt,
-                                      sReplications.mRepName,
+                                      sRepName,
                                       &sReplications,
                                       ID_FALSE )
               != IDE_SUCCESS );
+
+    IDE_TEST_RAISE( sReplications.mReplMode == RP_CONSISTENT_MODE, ERR_COMPATIBLE_CONSISTENT );
 
     /* alter replication replication_name GAPLESS ENABLE */
     if ( sParseTree->replOptions->optionsFlag == RP_OPTION_GAPLESS_SET )
@@ -1937,13 +2462,17 @@ IDE_RC rpcValidate::validateAlterSetGapless(void * aQcStatement)
         sGaplessFlag = RP_OPTION_GAPLESS_UNSET;
     }
 
-    /* GAPLESS ì˜µì…˜ EAGER replication ë™ì‹œ ì‚¬ìš© ë¶ˆê°€ */
+    /* GAPLESS ¿É¼Ç EAGER replication µ¿½Ã »ç¿ë ºÒ°¡ */
     IDE_TEST_RAISE( ( sReplications.mReplMode == RP_EAGER_MODE ) &&
                     ( sGaplessFlag == RP_OPTION_GAPLESS_SET ),
                     ERR_OPTION_GAPLESS_AND_EAGER );
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_COMPATIBLE_CONSISTENT )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RPC_CONSISTENT_DO_NOT_HAVE_ANY_OTHER_OPTIONS ) );
+    }
     IDE_EXCEPTION( ERR_ALEADY_SET )
     {
         IDE_SET( ideSetErrorCode( rpERR_ABORT_RPC_ALREADY_GAPLESS_SET ) );
@@ -1972,6 +2501,7 @@ IDE_RC rpcValidate::validateAlterSetParallel(void * aQcStatement)
     smiStatement    * sSmiStmt = QCI_SMI_STMT(aQcStatement);
     rpdReplications   sReplications;
     SInt              sParallelApplierCount = 0;
+    SChar             sRepName[QC_MAX_OBJECT_NAME_LEN + 1] = { 0, };
 
     sParseTree = (qriParseTree *)QCI_PARSETREE( aQcStatement );
     IDE_DASSERT( sParseTree->replOptions != NULL );
@@ -1980,10 +2510,18 @@ IDE_RC rpcValidate::validateAlterSetParallel(void * aQcStatement)
     IDE_TEST( qciMisc::checkDDLReplicationPriv( aQcStatement )
               != IDE_SUCCESS);
 
-    QCI_STR_COPY( sReplications.mRepName, sParseTree->replName );
+    QCI_STR_COPY( sRepName, sParseTree->replName );
+
+    IDE_TEST( allocAndBuildLockTable( QCI_STATISTIC(aQcStatement),
+                                      QCI_QMP_MEM(aQcStatement),
+                                      sSmiStmt,
+                                      sRepName,
+                                      RP_META_BUILD_LAST,
+                                      &(sParseTree->lockTable) )
+              != IDE_SUCCESS );
 
     IDE_TEST( rpdCatalog::selectRepl( sSmiStmt,
-                                      sReplications.mRepName,
+                                      sRepName,
                                       &sReplications,
                                       ID_FALSE )
               != IDE_SUCCESS);
@@ -2019,7 +2557,7 @@ IDE_RC rpcValidate::validateAlterSetParallel(void * aQcStatement)
                                       sParseTree->replOptions->applierBuffer->size  )
                       != IDE_SUCCESS );
 
-    /* PARALLE ì˜µì…˜ EAGER replication ë™ì‹œ ì‚¬ìš© ë¶ˆê°€ */
+    /* PARALLE ¿É¼Ç EAGER replication µ¿½Ã »ç¿ë ºÒ°¡ */
     IDE_TEST_RAISE( ( sReplications.mReplMode == RP_EAGER_MODE ) &&
                     ( sParallelFlag == RP_OPTION_PARALLEL_RECEIVER_APPLY_SET ),
                     ERR_OPTION_PARALLE_AND_EAGER );
@@ -2062,6 +2600,7 @@ IDE_RC rpcValidate::validateAlterSetGrouping(void * aQcStatement)
     SInt              sGroupingFlag = 0;
     smiStatement    * sSmiStmt = QCI_SMI_STMT(aQcStatement);
     rpdReplications   sReplications;
+    SChar             sRepName[QC_MAX_OBJECT_NAME_LEN + 1] ={ 0, };
 
     sParseTree = (qriParseTree *)QCI_PARSETREE( aQcStatement );
     IDE_DASSERT( sParseTree->replOptions != NULL );
@@ -2070,13 +2609,23 @@ IDE_RC rpcValidate::validateAlterSetGrouping(void * aQcStatement)
     IDE_TEST( qciMisc::checkDDLReplicationPriv( aQcStatement )
               != IDE_SUCCESS);
 
-    QCI_STR_COPY( sReplications.mRepName, sParseTree->replName );
+    QCI_STR_COPY( sRepName, sParseTree->replName );
+
+    IDE_TEST( allocAndBuildLockTable( QCI_STATISTIC(aQcStatement),
+                                      QCI_QMP_MEM(aQcStatement),
+                                      sSmiStmt,
+                                      sRepName,
+                                      RP_META_BUILD_LAST,
+                                      &(sParseTree->lockTable) )
+              != IDE_SUCCESS );
 
     IDE_TEST( rpdCatalog::selectRepl( sSmiStmt,
-                                      sReplications.mRepName,
+                                      sRepName,
                                       &sReplications,
                                       ID_FALSE )
               != IDE_SUCCESS );
+
+    IDE_TEST_RAISE( sReplications.mReplMode == RP_CONSISTENT_MODE, ERR_COMPATIBLE_CONSISTENT );
 
     /* ALTER REPLICATION replication_name GROUPING ENABLE */
     if ( sParseTree->replOptions->optionsFlag == RP_OPTION_GROUPING_SET )
@@ -2092,13 +2641,17 @@ IDE_RC rpcValidate::validateAlterSetGrouping(void * aQcStatement)
         sGroupingFlag = RP_OPTION_GROUPING_UNSET;
     }
 
-    /* GAPLESS ì˜µì…˜ EAGER replication ë™ì‹œ ì‚¬ìš© ë¶ˆê°€ */
+    /* GAPLESS ¿É¼Ç EAGER replication µ¿½Ã »ç¿ë ºÒ°¡ */
     IDE_TEST_RAISE( ( sReplications.mReplMode == RP_EAGER_MODE ) &&
                     ( sGroupingFlag == RP_OPTION_GROUPING_SET ),
                     ERR_OPTION_GROUPING_AND_EAGER );
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_COMPATIBLE_CONSISTENT )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RPC_CONSISTENT_DO_NOT_HAVE_ANY_OTHER_OPTIONS ) );
+    }
     IDE_EXCEPTION( ERR_ALEADY_SET )
     {
         IDE_SET( ideSetErrorCode( rpERR_ABORT_RPC_ALREADY_GROUPING_SET ) );
@@ -2138,6 +2691,8 @@ IDE_RC rpcValidate::validateAlterSetDDLReplicate( void * aQcStatement )
                                       ID_FALSE )
               != IDE_SUCCESS);
 
+    IDE_TEST_RAISE( sReplications.mReplMode == RP_CONSISTENT_MODE, ERR_COMPATIBLE_CONSISTENT );
+
     IDE_TEST_RAISE( ( sReplications.mRole == RP_ROLE_ANALYSIS ) || 
                     ( sReplications.mRole == RP_ROLE_ANALYSIS_PROPAGATION ), ERR_ROLE );
 
@@ -2146,6 +2701,9 @@ IDE_RC rpcValidate::validateAlterSetDDLReplicate( void * aQcStatement )
 
     IDE_TEST_RAISE( ( sReplications.mOptions & RP_OPTION_OFFLINE_MASK ) ==
                     RP_OPTION_OFFLINE_SET, ERR_NOT_SUPPORT_OFFLINE );
+
+    IDE_TEST_RAISE( qciMisc::getTransactionalDDL( aQcStatement ) == ID_TRUE, 
+                    ERR_TRANSACTIONAL_DDL_NOT_SUPPORT_DDL_REPLICATE_OPTION ); 
 
     /* ALTER REPLICATION repl_name SET DDL_REPLICATE */
     if ( sParseTree->replOptions->optionsFlag == RP_OPTION_DDL_REPLICATE_SET )
@@ -2161,13 +2719,22 @@ IDE_RC rpcValidate::validateAlterSetDDLReplicate( void * aQcStatement )
         sDDLReplicateFlag = RP_OPTION_DDL_REPLICATE_UNSET;
     }
 
-    /* GAPLESS ì˜µì…˜ EAGER replication ë™ì‹œ ì‚¬ìš© ë¶ˆê°€ */
+    /* GAPLESS ¿É¼Ç EAGER replication µ¿½Ã »ç¿ë ºÒ°¡ */
     IDE_TEST_RAISE( ( sReplications.mReplMode == RP_EAGER_MODE ) &&
                     ( sDDLReplicateFlag == RP_OPTION_DDL_REPLICATE_SET ),
                     ERR_OPTION_DDL_REPLICATE_AND_EAGER );
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_COMPATIBLE_CONSISTENT )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RPC_CONSISTENT_DO_NOT_HAVE_ANY_OTHER_OPTIONS ) );
+    }
+    IDE_EXCEPTION( ERR_TRANSACTIONAL_DDL_NOT_SUPPORT_DDL_REPLICATE_OPTION )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG,
+                               "DDL replication not supported transactional ddl." ) )
+    }
     IDE_EXCEPTION( ERR_NOT_SUPPORT_PARALLEL )
     {
         IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG, 
@@ -2221,8 +2788,8 @@ IDE_RC rpcValidate::validateAlterPartition( void         * aQcStatement,
               != IDE_SUCCESS );
 
     /*
-     * RPU_REPLICATION_MAX_COUNT ì˜ ìµœëŒ€ê°’ : 10240
-     * rpdReplications ì˜ í¬ê¸°ëŠ” : ì•½ 1500 ì •ë„
+     * RPU_REPLICATION_MAX_COUNT ÀÇ ÃÖ´ë°ª : 10240
+     * rpdReplications ÀÇ Å©±â´Â : ¾à 1500 Á¤µµ
      */
     IDE_TEST( ( ( iduMemory * )QCI_QMX_MEM( aQcStatement ) )->alloc(
                                             ID_SIZEOF(rpdReplications) * RPU_REPLICATION_MAX_COUNT,
@@ -2251,7 +2818,8 @@ IDE_RC rpcValidate::validateAlterPartition( void         * aQcStatement,
         IDE_TEST( rpdCatalog::selectReplItems( sSmiStmt,
                                                sReplications[i].mRepName,
                                                sReplMetaItems,
-                                               sReplications[i].mItemCount )
+                                               sReplications[i].mItemCount,
+                                               ID_FALSE )
                   != IDE_SUCCESS );
 
         sSrcReplItem = rpcManager::searchReplItem( sReplMetaItems,
@@ -2331,6 +2899,84 @@ IDE_RC rpcValidate::validateAlterPartition( void         * aQcStatement,
     return IDE_FAILURE;
 }
 
+IDE_RC rpcValidate::makeTableOIDArray( void         * aQcStatement,
+                                       UInt           aReplItemCount,
+                                       qriReplItem  * aReplItems,
+                                       UInt         * aTableOIDCount,
+                                       smOID       ** aTableOIDArray )
+{
+    SInt           i = 0;
+    SInt           j = 0;
+    UInt           sTableOIDCount = 0;
+    SInt         * sTableInfoIdx  = NULL;
+    smSCN          sSCN           = SM_SCN_INIT;
+    qriReplItem  * sReplItem      = NULL;
+    qciTableInfo * sTableInfo     = NULL;
+    void         * sTableHandle   = NULL;
+    smOID        * sTableOIDArray = NULL;
+
+    IDE_TEST_CONT( aReplItemCount == 0, NORMAL_EXIT );
+
+    IDE_TEST( ( ( iduMemory * )QCI_QMX_MEM( aQcStatement ) )
+              ->alloc( ID_SIZEOF(UInt) * aReplItemCount,
+                       (void**)&sTableInfoIdx ) );
+
+    idlOS::memset( sTableInfoIdx, 0, ID_SIZEOF(SInt) * aReplItemCount );
+
+    IDE_TEST( rpcManager::makeTableInfoIndex( aQcStatement,
+                                              aReplItemCount,
+                                              sTableInfoIdx,
+                                              &sTableOIDCount )
+              != IDE_SUCCESS );
+
+    IDE_TEST( ( ( iduMemory * )QCI_QMX_MEM( aQcStatement ) )
+              ->alloc( ID_SIZEOF(smOID) * sTableOIDCount,
+                       (void**)&sTableOIDArray )
+              != IDE_SUCCESS);
+    idlOS::memset( sTableOIDArray,
+                   0x00,
+                   ID_SIZEOF( smOID ) * sTableOIDCount );
+
+    for ( i = 0; i < (SInt)sTableOIDCount; i++ )
+    {
+        for ( j = 0, sReplItem = aReplItems; sReplItem != NULL; j++, sReplItem = sReplItem->next )
+        {
+            if ( sTableInfoIdx[j] == i )
+            {
+                IDE_TEST_RAISE( qciMisc::getTableInfo( aQcStatement,
+                                                       sReplItem->localUserID,
+                                                       sReplItem->localTableName,
+                                                       &sTableInfo,
+                                                       &sSCN,
+                                                       &sTableHandle )
+                                != IDE_SUCCESS, ERR_NOT_EXIST_TABLE );
+				sTableOIDArray[i] = sTableInfo->tableOID;
+                break;
+            }
+        }
+    }
+
+    RP_LABEL( NORMAL_EXIT );
+
+    *aTableOIDCount = sTableOIDCount;
+    *aTableOIDArray = sTableOIDArray;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NOT_EXIST_TABLE )
+    {
+        if ( ideGetErrorCode() == qpERR_ABORT_QCM_NOT_EXIST_TABLE )
+        {
+            IDE_SET( ideSetErrorCode( rpERR_ABORT_RPC_NOT_EXISTS_TABLE,
+                                      sReplItem->localTableName ) );
+        }
+    }
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 IDE_RC rpcValidate::lockAllPartitionForDDLValidation( void                 * aQcStatement,
                                                       qcmPartitionInfoList * aPartInfoList )
 {
@@ -2351,6 +2997,50 @@ IDE_RC rpcValidate::lockAllPartitionForDDLValidation( void                 * aQc
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
+}
+
+IDE_RC rpcValidate::validateFailover( void * aQcStatement )
+{
+    qriParseTree    * sParseTree;
+    smiStatement    * sSmiStmt;
+    rpdReplications   sReplications;
+
+    sParseTree = (qriParseTree *)QCI_PARSETREE( aQcStatement );
+    sSmiStmt = QCI_SMI_STMT( aQcStatement );
+
+
+    IDE_TEST_RAISE( sdi::isShardEnable() != ID_TRUE, ERR_SHARD_DISABLE );
+
+    // check grant
+    IDE_TEST( qciMisc::checkDDLReplicationPriv( aQcStatement )
+              != IDE_SUCCESS );
+
+    QCI_STR_COPY( sReplications.mRepName, sParseTree->replName );
+
+    IDE_TEST(rpdCatalog::selectRepl(sSmiStmt,
+                                    sReplications.mRepName,
+                                    &sReplications,
+                                    ID_FALSE)
+             != IDE_SUCCESS);
+
+    IDE_TEST_RAISE( sReplications.mReplMode != RP_CONSISTENT_MODE, 
+                    ERR_ONLY_CONSISTENT );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_SHARD_DISABLE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RPC_FAILOVER_ONLY_SUPPORT_SHARD_SYSTEM ) );
+    }
+    IDE_EXCEPTION( ERR_ONLY_CONSISTENT )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RPC_FAILOVER_ONLY_SUPPORT_CONSISTENT_MODE ) );
+    }
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+
 }
 
 IDE_RC rpcValidate::applierBufferSizeCheck( UChar aType, ULong aSize )
@@ -2393,3 +3083,75 @@ IDE_RC rpcValidate::applierBufferSizeCheck( UChar aType, ULong aSize )
     return IDE_FAILURE;
 }
 
+IDE_RC rpcValidate::validateDeleteItemReplaceHistory(void * aQcStatement)
+{
+    qriParseTree    * sParseTree;
+    smiStatement    * sSmiStmt;
+    rpdReplications   sReplications;
+
+    sParseTree = (qriParseTree *)QCI_PARSETREE( aQcStatement );
+    sSmiStmt = QCI_SMI_STMT(aQcStatement);
+    QCI_STR_COPY( sReplications.mRepName, sParseTree->replName );
+
+    // check grant
+    IDE_TEST(qciMisc::checkDDLReplicationPriv(aQcStatement)
+             != IDE_SUCCESS);
+
+    IDE_TEST( rpdCatalog::selectRepl( sSmiStmt,
+                                      sReplications.mRepName,
+                                      &sReplications,
+                                      ID_FALSE )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpcValidate::validateFailback(void * aQcStatement)
+{
+    qriParseTree    * sParseTree;
+    smiStatement    * sSmiStmt;
+    rpdReplications   sReplications;
+    SChar             sReplName[QC_MAX_OBJECT_NAME_LEN + 1] = { 0, };
+    RP_META_BUILD_TYPE  sMetaBuildType = RP_META_BUILD_AUTO;
+
+    sParseTree = (qriParseTree *)QCI_PARSETREE( aQcStatement );
+    sSmiStmt = QCI_SMI_STMT(aQcStatement);
+    QCI_STR_COPY( sReplName, sParseTree->replName );
+
+    // check grant
+    IDE_TEST(qciMisc::checkDDLReplicationPriv(aQcStatement)
+             != IDE_SUCCESS);
+
+    IDE_TEST( rpdCatalog::selectRepl( sSmiStmt,
+                                      sReplName,
+                                      &sReplications,
+                                      ID_FALSE )
+              != IDE_SUCCESS );
+
+    IDE_TEST_RAISE( sReplications.mReplMode != RP_CONSISTENT_MODE,
+                    ERR_NOT_CONSISTENT_MODE ); 
+
+    sMetaBuildType = rpxSender::getMetaBuildType( sParseTree->startType, RP_PARALLEL_PARENT_ID );
+    IDE_TEST( allocAndBuildLockTable( QCI_STATISTIC(aQcStatement),
+                                      QCI_QMP_MEM(aQcStatement),
+                                      QCI_SMI_STMT(aQcStatement),
+                                      sReplName,
+                                      sMetaBuildType,
+                                      &(sParseTree->lockTable) )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NOT_CONSISTENT_MODE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RPC_NOT_SUPPORT_FAILBACK_THIS_MODE ) );
+    }
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}

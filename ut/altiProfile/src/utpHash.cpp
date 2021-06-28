@@ -27,7 +27,7 @@ extern uteErrorMgr  gErrorMgr;
 
 /* Description:
  *
- * hashmapê³¼ bucketsì„ ìƒì„±í•œë‹¤.
+ * hashmap°ú bucketsÀ» »ı¼ºÇÑ´Ù.
  */
 IDE_RC utpHash::create(utpHashmap** aHashmap,
                        utpKeyType   aType,
@@ -83,7 +83,7 @@ IDE_RC utpHash::create(utpHashmap** aHashmap,
 
 /* Description:
  *
- * hashmapê³¼ buckets, bucket ë¦¬ìŠ¤íŠ¸ë¥¼ í•´ì œí•œë‹¤.
+ * hashmap°ú buckets, bucket ¸®½ºÆ®¸¦ ÇØÁ¦ÇÑ´Ù.
  */
 IDE_RC utpHash::destroy(utpHashmap* aHashmap)
 {
@@ -178,7 +178,7 @@ UInt utpHash::hashInt(utpHashmap *  aHashmap, utpHashmapKey aKey)
 
 /* Description:
  *
- * hashmapì— ìƒˆë¡œìš´ keyì™€ valueë¥¼ ì¶”ê°€í•œë‹¤
+ * hashmap¿¡ »õ·Î¿î key¿Í value¸¦ Ãß°¡ÇÑ´Ù
  */
 IDE_RC utpHash::put(utpHashmap* aHashmap,
                     SChar*      aKey,
@@ -208,7 +208,7 @@ IDE_RC utpHash::putInternal(utpHashmap*     aHashmap,
     /* search bucket number using hash function */
     sBucketNum = aHashmap->mHashFunc(aHashmap, aKey);
 
-    /* í•´ë‹¹ bucketì´ ë¯¸ì‚¬ìš©ì¤‘ì´ë©´ */
+    /* ÇØ´ç bucketÀÌ ¹Ì»ç¿ëÁßÀÌ¸é */
     if (aHashmap->mBuckets[sBucketNum].mInUse == 0)
     {
         aHashmap->mBuckets[sBucketNum].mInUse = 1;
@@ -217,7 +217,7 @@ IDE_RC utpHash::putInternal(utpHashmap*     aHashmap,
         aHashmap->mBuckets[sBucketNum].mNext  = NULL;
         aHashmap->mNodeCount++; 
     }
-    /* í•´ë‹¹ bucketì´ ì‚¬ìš©ì¤‘ì´ë©´, ìƒˆë¡œìš´ ë…¸ë“œë¥¼ ë§Œë“¤ì–´ ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€ */
+    /* ÇØ´ç bucketÀÌ »ç¿ëÁßÀÌ¸é, »õ·Î¿î ³ëµå¸¦ ¸¸µé¾î ¸®½ºÆ®¿¡ Ãß°¡ */
     else
     {
 #if DEBUG
@@ -226,7 +226,7 @@ IDE_RC utpHash::putInternal(utpHashmap*     aHashmap,
         sNewNode = (utpHashmapNode *)idlOS::malloc(ID_SIZEOF(utpHashmapNode));
         IDE_TEST_RAISE(sNewNode == NULL, err_memory);
 
-        /* sNewNode->mInUse = 1; node listëŠ” mInUseë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠìŒ */
+        /* sNewNode->mInUse = 1; node list´Â mInUse¸¦ »ç¿ëÇÏÁö ¾ÊÀ½ */
         sNewNode->mKey = aKey;
         sNewNode->mValue = aValue;
         sNewNode->mNext = aHashmap->mBuckets[sBucketNum].mNext;
@@ -250,8 +250,8 @@ IDE_RC utpHash::putInternal(utpHashmap*     aHashmap,
 
 /* Description:
  *
- * hashmapì—ì„œ ì…ë ¥ keyë¥¼ ê°€ì§€ëŠ” ë…¸ë“œë¥¼ ì°¾ì•„ì„œ ë°˜í™˜í•œë‹¤.
- * ì—†ìœ¼ë©´ NULLì„ ë°˜í™˜í•œë‹¤.
+ * hashmap¿¡¼­ ÀÔ·Â key¸¦ °¡Áö´Â ³ëµå¸¦ Ã£¾Æ¼­ ¹İÈ¯ÇÑ´Ù.
+ * ¾øÀ¸¸é NULLÀ» ¹İÈ¯ÇÑ´Ù.
  */
 IDE_RC utpHash::get(utpHashmap*   aHashmap,
                     SChar*        aKey,
@@ -285,10 +285,10 @@ IDE_RC utpHash::getInternal(utpHashmap*     aHashmap,
 
     sNode = &(aHashmap->mBuckets[sBucketNum]);
 
-    /* bucketì´ ì‚¬ìš©ì¤‘ì´ ì•„ë‹ˆë©´ NULLì„ ë°˜í™˜í•œë‹¤ */
+    /* bucketÀÌ »ç¿ëÁßÀÌ ¾Æ´Ï¸é NULLÀ» ¹İÈ¯ÇÑ´Ù */
     IDE_TEST_CONT(sNode->mInUse == 0, not_found_value);
 
-    /* bucket ë¦¬ìŠ¤íŠ¸ì—ì„œ ì¼ì¹˜í•˜ëŠ” keyë¥¼ ê°€ì§„ ë…¸ë“œë¥¼ ì°¾ëŠ”ë‹¤ */
+    /* bucket ¸®½ºÆ®¿¡¼­ ÀÏÄ¡ÇÏ´Â key¸¦ °¡Áø ³ëµå¸¦ Ã£´Â´Ù */
     while ( sNode != NULL )
     {
         if (aHashmap->mCompareFunc(sNode->mKey, aKey) == ID_TRUE)
@@ -334,8 +334,8 @@ idBool utpHash::compareInt(utpHashmapKey aKey1,
 
 /* Description:
  *
- * hashmapì˜ bucketsê³¼ bucketì˜ ë¦¬ìŠ¤íŠ¸ ê° ë…¸ë“œì— ëŒ€í•´
- * ì…ë ¥ ì¸ìë¡œ ì „ë‹¬ëœ aFuncì„ ì‹¤í–‰í•œë‹¤.
+ * hashmapÀÇ buckets°ú bucketÀÇ ¸®½ºÆ® °¢ ³ëµå¿¡ ´ëÇØ
+ * ÀÔ·Â ÀÎÀÚ·Î Àü´ŞµÈ aFuncÀ» ½ÇÇàÇÑ´Ù.
  */
 IDE_RC utpHash::traverse(utpHashmap*          aHashmap,
                          utpHashmapVisitNode  aFuncVisitNode,
@@ -352,10 +352,10 @@ IDE_RC utpHash::traverse(utpHashmap*          aHashmap,
     {
         sNode = &(aHashmap->mBuckets[i]);
 
-        /* bucketì´ ì‚¬ìš©ì¤‘ì´ë©´ ë°©ë¬¸ */
+        /* bucketÀÌ »ç¿ëÁßÀÌ¸é ¹æ¹® */
         if (sNode->mInUse == 1)
         {
-            /* bucketì— listê°€ ë‹¬ë ¤ìˆìœ¼ë©´ ëª¨ë‘ ë°©ë¬¸ */
+            /* bucket¿¡ list°¡ ´Ş·ÁÀÖÀ¸¸é ¸ğµÎ ¹æ¹® */
             while ( sNode != NULL )
             {
                 sValue = sNode->mValue;
@@ -376,7 +376,7 @@ IDE_RC utpHash::traverse(utpHashmap*          aHashmap,
 
 /* Description:
  *
- * ì‚¬ìš©ì¤‘ì´ bucketì˜ ê°¯ìˆ˜ë¥¼ ë°˜í™˜í•œë‹¤.
+ * »ç¿ëÁßÀÌ bucketÀÇ °¹¼ö¸¦ ¹İÈ¯ÇÑ´Ù.
  */
 UInt utpHash::size(utpHashmap* aHashmap)
 {

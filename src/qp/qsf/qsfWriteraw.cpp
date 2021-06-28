@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsfWriteraw.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qsfWriteraw.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <idl.h>
@@ -48,7 +48,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfWriterawModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -111,7 +111,7 @@ IDE_RC qsfEstimate( mtcNode*     aNode,
 
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
-    // returnê°’ì€ Integer
+    // return°ªÀº Integer
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      sModule,
                                      0,
@@ -212,7 +212,7 @@ IDE_RC qsfCalculate_Writeraw( mtcNode*     aNode,
         {
             *sReturnValue = -1;
 
-            /* PROJ-2657 UTL_STMP ì§€ì› */
+            /* PROJ-2657 UTL_STMP Áö¿ø */
             qcuSessionObj::setConnectionState( (qcSessionObjInfo*)(sSession->mQPSpecific.mSessionObj),
                                                sConnectType->connectionNodeKey,
                                                QC_CONNECTION_STATE_NOCONNECT );

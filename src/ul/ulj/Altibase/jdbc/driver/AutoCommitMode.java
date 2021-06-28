@@ -17,25 +17,11 @@
 package Altibase.jdbc.driver;
 
 /**
- * PROJ-2190 ClientSide Autocommit ëª¨ë“œê°€ ì¶”ê°€ë˜ì—ˆê¸° ë•Œë¬¸ì— autoCommit ê°’ì„ booleanì´ ì•„ë‹Œ enum typeìœ¼ë¡œ í‘œí˜„í•œë‹¤.
+ * PROJ-2190 ClientSide Autocommit ¸ğµå°¡ Ãß°¡µÇ¾ú±â ¶§¹®¿¡ autoCommit °ªÀ» booleanÀÌ ¾Æ´Ñ enum typeÀ¸·Î Ç¥ÇöÇÑ´Ù.
  * 
  * @author yjpark
  */
-public class AutoCommitMode
+public enum AutoCommitMode
 {
-    private final String               mName;
-
-    public static final AutoCommitMode SERVER_SIDE_AUTOCOMMIT_ON  = new AutoCommitMode("server_side_autocommit_on");
-    public static final AutoCommitMode SERVER_SIDE_AUTOCOMMIT_OFF = new AutoCommitMode("server_side_autocommit_off");
-    public static final AutoCommitMode CLIENT_SIDE_AUTOCOMMIT_ON  = new AutoCommitMode("client_side_autocommit_on");
-
-    private AutoCommitMode(String aName)
-    {
-        this.mName = aName;
-    }
-
-    public String toString()
-    {
-        return mName;
-    }
+    SERVER_SIDE_AUTOCOMMIT_ON, SERVER_SIDE_AUTOCOMMIT_OFF, CLIENT_SIDE_AUTOCOMMIT_ON;
 }

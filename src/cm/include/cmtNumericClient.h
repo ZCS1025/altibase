@@ -19,7 +19,7 @@
 
 /*
  * BUG-20652
- * ì—°ì‚°ì˜ ê²°ê³¼ë¡œ MT numeric typeì˜ ìµœëŒ€ precisionì€ 40ê¹Œì§€ ìƒì„±ë  ìˆ˜ ìžˆë‹¤.
+ * ¿¬»êÀÇ °á°ú·Î MT numeric typeÀÇ ÃÖ´ë precisionÀº 40±îÁö »ý¼ºµÉ ¼ö ÀÖ´Ù.
  */
 #define CMT_NUMERIC_DATA_SIZE (17)
 

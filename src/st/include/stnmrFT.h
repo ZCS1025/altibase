@@ -18,7 +18,7 @@
 /***********************************************************************
  * $Id: stnmrFT.h 19550 2007-02-07 03:09:40Z kimmkeun $
  *
- * Memory RTree IndexÏùò DUMPÎ•º ÏúÑÌïú Ìï®Ïàò
+ * Memory RTree Index¿« DUMP∏¶ ¿ß«— «‘ºˆ
  *
  **********************************************************************/
 
@@ -30,7 +30,7 @@
 # include <stnmrDef.h>
 
 //-------------------------------
-// D$MEM_INDEX_RTREE_STRUCTUREÏùò Íµ¨Ï°∞
+// D$MEM_INDEX_RTREE_STRUCTURE¿« ±∏¡∂
 //-------------------------------
 
 typedef struct stnmrDumpTreePage
@@ -43,7 +43,7 @@ typedef struct stnmrDumpTreePage
 } stnmrDumpTreePage;
 
 //-------------------------------
-// D$MEM_INDEX_RTREE_KEY Ïùò Íµ¨Ï°∞
+// D$MEM_INDEX_RTREE_KEY ¿« ±∏¡∂
 //-------------------------------
 
 typedef struct stnmrDumpKey  

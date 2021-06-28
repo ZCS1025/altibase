@@ -33,4 +33,7 @@ extern SChar   m_collectDbStatsStr[1024*1024]; // BUG-40174
 extern SChar   m_revokeStr[1024*1024];  //BUG-22769
 extern SChar   m_alterStr[1024*1024];   /* PROJ-2359 Table/Partition Access Option */
 
+/* BUG-47159 Using DBMS_METADATA package in aexport */
+extern utmDbmsMeta   *gMeta;
+
 #endif /* _O_UTM_EXTERN_H_ */

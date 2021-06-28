@@ -20,21 +20,41 @@ package Altibase.jdbc.driver.ex;
 import java.sql.SQLException;
 
 /**
- * ì ‘ì† ì¥ì•  ìƒí™©ì—ì„œ ë°œìƒí•˜ëŠ” Shard jdbc exception <br>
- * ë‚´ë¶€ì ìœ¼ë¡œ node nameì„ ê°€ì§€ê³  ìˆìœ¼ë©° ì—ëŸ¬ë©”ì„¸ì§€ì— node nameì„ ì¶”ê°€í•´ì„œ ëŒë ¤ì¤€ë‹¤.
+ * Á¢¼Ó Àå¾Ö »óÈ²¿¡¼­ ¹ß»ıÇÏ´Â Shard jdbc exception <br>
+ * ³»ºÎÀûÀ¸·Î node nameÀ» °¡Áö°í ÀÖÀ¸¸ç ³ëµåÄ¿³Ø¼Ç¿¡¼­ ¹ß»ıÇÑ ¿¡·¯¸Ş¼¼Áö¿¡ ´ëÇØ¼­´Â <br>
+ * node name, ip address, port¸¦ Ãß°¡ÇØ¼­ µ¹·ÁÁØ´Ù.
  */
 public class ShardJdbcException extends SQLException
 {
     private String mNodeName;
 
-    public ShardJdbcException(String aErrorMsg, int aErrorCode, String aNodeName)
+    public ShardJdbcException(String aErrorMsg, int aErrorCode, String aNodeName, String aIpAddress,
+                              int aPortNo)
     {
-        super("[" + aNodeName + "] " + aErrorMsg, ErrorDef.getErrorState(aErrorCode), aErrorCode);
+        super(makeString(aErrorMsg, aNodeName, aIpAddress, aPortNo),
+              ErrorDef.getErrorState(aErrorCode), aErrorCode);
         mNodeName = aNodeName;
+    }
+
+    private static String makeString(String aErrorMsg, String aNodeName, String aIpAddress,
+                                     int aPortNo)
+    {
+        StringBuilder sSb = new StringBuilder();
+        // BUG-46790 meta¿¡¼­ ¹ß»ıÇÑ failover exceptionÀÎ °æ¿ì¿¡´Â node Á¤º¸¸¦ Ç¥½ÃÇÏÁö ¾Ê´Â´Ù.
+        if (aNodeName != null)
+        {
+            sSb.append("[").append(aNodeName);
+            sSb.append(",").append(aIpAddress).append(":").append(aPortNo);
+            sSb.append("] ");
+        }
+        sSb.append(aErrorMsg);
+
+        return sSb.toString();
     }
 
     public String getNodeName()
     {
         return mNodeName;
     }
+
 }

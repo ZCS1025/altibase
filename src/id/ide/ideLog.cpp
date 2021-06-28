@@ -41,13 +41,15 @@
 #include <iduStack.h>
 #include <idtContainer.h>
 
+extern UInt ideNoErrorYet(); /* BUG-47586 */
+
 /* ----------------------------------------------------------------------
  *  BootLog Function (altibase_boot.log)
  * ----------------------------------------------------------------------*/
 
 /*
- * BOOT ëª¨ë“ˆì— ëŒ€í•œ ë©”ì‹œì§€ ë¡œê¹…ì„ ìœ„í•´ ideLogMsg ê°ì²´ë¥¼ ì´ˆê¸°í™” í•œë‹¤.
- * í”„ë¡œí¼í‹° ë¡œë”© ì´ì „ì— í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
+ * BOOT ¸ğµâ¿¡ ´ëÇÑ ¸Ş½ÃÁö ·Î±ëÀ» À§ÇØ ideLogMsg °´Ã¼¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+ * ÇÁ·ÎÆÛÆ¼ ·Îµù ÀÌÀü¿¡ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
  */
 
 ideMsgLog       ideLog::mLogObj[IDE_LOG_MAX_MODULE];
@@ -154,7 +156,7 @@ IDE_RC ideLog::initializeStaticBoot( iduShmProcType aProcType, idBool aDebug )
     UInt        sLogReserveSize = 0;
 
     /*
-     * BOOT ì´ì „ ë¹„ì •ìƒ ì—ëŸ¬ ë¡œê¹…ìš© : $ALTIBASE_HOME/trc/altibase_error.log ë¡œ ê°•ì œì§€ì •í•¨.
+     * BOOT ÀÌÀü ºñÁ¤»ó ¿¡·¯ ·Î±ë¿ë : $ALTIBASE_HOME/trc/altibase_error.log ·Î °­Á¦ÁöÁ¤ÇÔ.
      */
 
     idlOS::umask(0);
@@ -258,21 +260,21 @@ IDE_RC ideLog::initializeStaticBoot( iduShmProcType aProcType, idBool aDebug )
 
 IDE_RC ideLog::destroyStaticBoot()
 {
-    // IDE_ERRì— ëŒ€í•´ì„œ ì¢…ë£Œí•˜ê³ , SERVERë¥¼ ì‚¬ìš©í•œë‹¤.
+    // IDE_ERR¿¡ ´ëÇØ¼­ Á¾·áÇÏ°í, SERVER¸¦ »ç¿ëÇÑ´Ù.
     IDE_TEST(mLogObj[IDE_ERR].close() != IDE_SUCCESS);
     IDE_TEST(mLogObj[IDE_ERR].destroy() != IDE_SUCCESS);
 
-    // IDE_BOOTì— ëŒ€í•´ì„œ ì¢…ë£Œí•˜ê³ , SERVERë¥¼ ì‚¬ìš©í•œë‹¤.
+    // IDE_BOOT¿¡ ´ëÇØ¼­ Á¾·áÇÏ°í, SERVER¸¦ »ç¿ëÇÑ´Ù.
     IDE_TEST(mLogObj[IDE_SERVER].close() != IDE_SUCCESS);
     IDE_TEST(mLogObj[IDE_SERVER].destroy() != IDE_SUCCESS);
 
-    // IDE_DUMPì— ëŒ€í•´ì„œ ì¢…ë£Œí•˜ê³ , SERVERë¥¼ ì‚¬ìš©í•œë‹¤.
+    // IDE_DUMP¿¡ ´ëÇØ¼­ Á¾·áÇÏ°í, SERVER¸¦ »ç¿ëÇÑ´Ù.
     IDE_TEST(mLogObj[IDE_DUMP].close() != IDE_SUCCESS);
     IDE_TEST(mLogObj[IDE_DUMP].destroy() != IDE_SUCCESS);
 
 #if defined(ALTIBASE_FIT_CHECK)
 
-    // IDE_FITì— ëŒ€í•´ì„œ ì¢…ë£Œí•˜ê³ , SERVERë¥¼ ì‚¬ìš©í•œë‹¤.
+    // IDE_FIT¿¡ ´ëÇØ¼­ Á¾·áÇÏ°í, SERVER¸¦ »ç¿ëÇÑ´Ù.
     IDE_TEST(mLogObj[IDE_FIT].close() != IDE_SUCCESS);
     IDE_TEST(mLogObj[IDE_FIT].destroy() != IDE_SUCCESS);
 
@@ -284,7 +286,7 @@ IDE_RC ideLog::destroyStaticBoot()
 }
 
 /*
- * ëª¨ë“  ëª¨ë“ˆì— ëŒ€í•œ ë©”ì‹œì§€ ë¡œê¹… ê°ì²´ë¥¼ í”„ë¡œí¼í‹°ì— ê·¼ê±°í•˜ì—¬ ì´ˆê¸°í™”í•œë‹¤.
+ * ¸ğµç ¸ğµâ¿¡ ´ëÇÑ ¸Ş½ÃÁö ·Î±ë °´Ã¼¸¦ ÇÁ·ÎÆÛÆ¼¿¡ ±Ù°ÅÇÏ¿© ÃÊ±âÈ­ÇÑ´Ù.
  */
 
 IDE_RC ideLog::initializeStaticModule(idBool aDebug)
@@ -309,8 +311,8 @@ IDE_RC ideLog::initializeStaticModule(idBool aDebug)
     mPID = (ULong)idlOS::getpid();
 
     /* PROJ-2118 BUG Reporting
-     * ê° trace file ë³„ë¡œ ê°œë³„ì ìœ¼ë¡œ ê²½ë¡œ ì§€ì • ê°€ëŠ¥í–ˆë˜ ê²ƒì„
-     * í•˜ë‚˜ì˜ ê²½ë¡œ SERVER_MSGLOG_DIRë¥¼ ê³µë™ìœ¼ë¡œ ì‚¬ìš©í•˜ë„ë¡ ìˆ˜ì •
+     * °¢ trace file º°·Î °³º°ÀûÀ¸·Î °æ·Î ÁöÁ¤ °¡´ÉÇß´ø °ÍÀ»
+     * ÇÏ³ªÀÇ °æ·Î SERVER_MSGLOG_DIR¸¦ °øµ¿À¸·Î »ç¿ëÇÏµµ·Ï ¼öÁ¤
      * */
     IDE_TEST_RAISE(idp::readPtr( "SERVER_MSGLOG_DIR",
                                  (void **)&sDir)
@@ -326,14 +328,14 @@ IDE_RC ideLog::initializeStaticModule(idBool aDebug)
                    property_error);
 
     /*
-     * altibase_error.logë¥¼ ì—´ì–´ ì´ˆê¸°í™”í•˜ê³ 
-     * stdout, stderrë¥¼ ê²¹ì³ ì“°ê²Œ í•œë‹¤.
+     * altibase_error.log¸¦ ¿­¾î ÃÊ±âÈ­ÇÏ°í
+     * stdout, stderr¸¦ °ãÃÄ ¾²°Ô ÇÑ´Ù.
      */
     idlOS::memset(sPath, 0, ID_SIZEOF(sPath));
     idlOS::memset(sFileName, 0, ID_SIZEOF(sFileName));
 
     /*
-     * ì„œë¹„ìŠ¤ ì—ëŸ¬ ë¡œê¹…ìš©
+     * ¼­ºñ½º ¿¡·¯ ·Î±ë¿ë
      */
     for (i = IDE_ERR; i < IDE_LOG_MAX_MODULE; i++)
     {
@@ -426,7 +428,7 @@ IDE_RC ideLog::initializeStaticModule(idBool aDebug)
 }
 
 // BUG-40916
-// extprocAgentì—ì„œ msg logë¥¼ ì´ˆê¸°í™” í•  ë•Œ ì‚¬ìš©í•œë‹¤.
+// extprocAgent¿¡¼­ msg log¸¦ ÃÊ±âÈ­ ÇÒ ¶§ »ç¿ëÇÑ´Ù.
 IDE_RC ideLog::initializeStaticForUtil()
 {
     mPID = (ULong)idlOS::getpid();
@@ -460,7 +462,7 @@ IDE_RC ideLog::destroyStaticModule()
     UInt  i;
 
     /*
-     * ì„œë¹„ìŠ¤ ì—ëŸ¬ ë¡œê¹…ìš©
+     * ¼­ºñ½º ¿¡·¯ ·Î±ë¿ë
      */
     for (i = IDE_SERVER; i < IDE_LOG_MAX_MODULE; i++)
     {
@@ -477,7 +479,7 @@ IDE_RC ideLog::destroyStaticError()
 {
     /*
      * BUG-34491
-     * altibase_error.logê°€ ë‹«íˆëŠ” ê²½ìš°ê°€ ì—†ë„ë¡ ë”°ë¡œ ì²˜ë¦¬
+     * altibase_error.log°¡ ´İÈ÷´Â °æ¿ì°¡ ¾øµµ·Ï µû·Î Ã³¸®
      */
     IDE_TEST(mLogObj[IDE_ERR].close() != IDE_SUCCESS);
     IDE_TEST(mLogObj[IDE_ERR].destroy() != IDE_SUCCESS);
@@ -613,8 +615,8 @@ IDE_RC ideLog::logInternal(ideLogModule aModule, UInt aLevel, const SChar *aForm
 }
 
 // bug-24840 divide xa log
-// XA logë¥¼ í•œì¤„ë¡œ ë‚¨ê¸°ê¸° ìœ„í•´ ì¶”ê°€ëœ í•¨ìˆ˜
-// logOpen -> logOpenLine ë¡œ í˜¸ì¶œí•¨ìˆ˜ ë³€ê²½
+// XA log¸¦ ÇÑÁÙ·Î ³²±â±â À§ÇØ Ãß°¡µÈ ÇÔ¼ö
+// logOpen -> logOpenLine ·Î È£ÃâÇÔ¼ö º¯°æ
 IDE_RC ideLog::logInternalLine(ideLogModule aModule, UInt aLevel, const SChar *aFormat, va_list aList)
 {
     ideLogEntry sLog(1, aModule, aLevel, ACP_FALSE);
@@ -641,7 +643,7 @@ void  ideLog::logErrorMsgInternal(ideLogEntry &aLog)
     else
     {
         /* ------------------------------------------------
-         *  ì†ŒìŠ¤ì½”ë“œ ì •ë³´ë¥¼ í•¨ê»˜ ì¶œë ¥.
+         *  ¼Ò½ºÄÚµå Á¤º¸¸¦ ÇÔ²² Ãâ·Â.
          * ----------------------------------------------*/
         aLog.appendFormat(   "ERR-%05x"
                              " (%s:%x"
@@ -678,7 +680,7 @@ void  ideLog::logWriteErrorMsgInternal(SInt aFD, UInt /*aLevel*/)
     else
     {
         /* ------------------------------------------------
-         *  ì†ŒìŠ¤ì½”ë“œ ì •ë³´ë¥¼ í•¨ê»˜ ì¶œë ¥.
+         *  ¼Ò½ºÄÚµå Á¤º¸¸¦ ÇÔ²² Ãâ·Â.
          * ----------------------------------------------*/
         ideLog::logWrite(aFD, "ERR-");
         ideLog::itoa(E_ERROR_CODE(errorCode), sBuffer, IDE_MESSAGE_SIZE, 10, 5);
@@ -697,7 +699,6 @@ void  ideLog::logWriteErrorMsgInternal(SInt aFD, UInt /*aLevel*/)
     }
 }
 
-
 void  ideLog::logCallStackInternal()
 {
     //fix PROJ-1749
@@ -707,17 +708,62 @@ void  ideLog::logCallStackInternal()
     }
 }
 
+void  ideLog::logErrorMgrStackInternalForDebug(UInt aChkFlag, ideLogModule aModule, UInt aLevel)
+{
+#ifdef DEBUG
+    UInt                 sErrorCode;
+    ideErrorMgr         *sErrorMgr  = ideGetErrorMgr();
+    SChar                sMessage[8192];
+    UInt i;
+
+    sErrorCode = ideGetErrorCode();
+    idlOS::snprintf(sMessage,
+                    ID_SIZEOF(sMessage),
+                    "===================== ERROR STACK FOR ERR-%05X ======================\n",
+                    E_ERROR_CODE(sErrorCode));
+
+    (void)ideLog::logLine(aChkFlag, aModule, aLevel, sMessage );
+    for (i = 0; i < sErrorMgr->ErrorIndex; i++)
+    {
+        idlOS::snprintf(sMessage,
+                        ID_SIZEOF(sMessage),
+                        " %" ID_INT32_FMT ": %s:%" ID_INT32_FMT,
+                        i,
+                        sErrorMgr->ErrorFile[i],
+                        sErrorMgr->ErrorLine[i]);
+
+        idlVA::appendFormat(sMessage, ID_SIZEOF(sMessage), "                                        ");
+
+        idlVA::appendFormat(sMessage,
+                            ID_SIZEOF(sMessage),
+                            " %s\n",
+                            sErrorMgr->ErrorTestLine[i]);
+        (void)ideLog::logLine(aChkFlag, aModule, aLevel, sMessage );
+    }
+
+    idlOS::snprintf(sMessage,
+                    ID_SIZEOF(sMessage),
+                    "======================================================================\n");
+    (void)ideLog::logLine(aChkFlag, aModule, aLevel, sMessage );
+#else
+    PDL_UNUSED_ARG(aChkFlag);
+    PDL_UNUSED_ARG(aModule);
+    PDL_UNUSED_ARG(aLevel);
+#endif
+
+}
+
 /* ---------------------------------------------
- * TASK-4007 [SM]PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
+ * TASK-4007 [SM]PBT¸¦ À§ÇÑ ±â´É Ãß°¡
  *
- * í¬ì¸í„°ì˜ ê°’ì„ Hexí˜•íƒœì˜ Stringìœ¼ë¡œ ë³€í™˜
- * aSrcPtr      [in]    ì¶œë ¥í•  ì›ë³¸ ë©”ëª¨ë¦¬ ìœ„ì¹˜
- * aSrcSize     [in]    Dumpë  ì›ë³¸ ë©”ëª¨ë¦¬ í¬ê¸° (Byte)
- * aFormatFlag  [in]    ì¶œë ¥ë¬¼ì— ëŒ€í•œ Format
- * aDstPtr      [out]   ê²°ê³¼ë¬¼ì´ ì €ì¥ë  ë²„í¼
- * aDstSize     [out]   ë²„í¼ì˜ í¬ê¸° (Byte)
+ * Æ÷ÀÎÅÍÀÇ °ªÀ» HexÇüÅÂÀÇ StringÀ¸·Î º¯È¯
+ * aSrcPtr      [in]    Ãâ·ÂÇÒ ¿øº» ¸Ş¸ğ¸® À§Ä¡
+ * aSrcSize     [in]    DumpµÉ ¿øº» ¸Ş¸ğ¸® Å©±â (Byte)
+ * aFormatFlag  [in]    Ãâ·Â¹°¿¡ ´ëÇÑ Format
+ * aDstPtr      [out]   °á°ú¹°ÀÌ ÀúÀåµÉ ¹öÆÛ
+ * aDstSize     [out]   ¹öÆÛÀÇ Å©±â (Byte)
  *
- * ì¶œë ¥ì˜ˆ)
+ * Ãâ·Â¿¹)
  *     Abso  Rela            Body                        Character
  *
  * ff0000a4: 0000| 8f044547 00000000 00000000 6c080000 ; ..EG........l...
@@ -744,14 +790,14 @@ IDE_RC ideLog::ideMemToHexStr( const UChar  * aSrcPtr,
     IDE_TEST( aSrcPtr             == NULL );
     IDE_TEST( aDstPtr             == NULL );
     IDE_TEST( IDE_DUMP_DEST_LIMIT <  aDstSize );
-     /* aDstSizeê°€ ì§€ë‚˜ì¹˜ê²Œ í´ ê²½ìš°, Bufferì— writeí•´ë„ ë˜ëŠ”ì§€ ì˜ì‹¬ìŠ¤ëŸ½ê¸°
-      * ë•Œë¬¸ì— Bufferì— writeí•˜ì§€ ë§ê³  failureë¡œ ë°”ë¡œ ì§í–‰í•œë‹¤. */
+     /* aDstSize°¡ Áö³ªÄ¡°Ô Å¬ °æ¿ì, Buffer¿¡ writeÇØµµ µÇ´ÂÁö ÀÇ½É½º·´±â
+      * ¶§¹®¿¡ Buffer¿¡ writeÇÏÁö ¸»°í failure·Î ¹Ù·Î Á÷ÇàÇÑ´Ù. */
 
     if ( IDE_DUMP_SRC_LIMIT < aSrcSize )
     {
-        // aSrcSize ì¸ìê°€ ì œí•œê°’ì„ ë„˜ê¸°ëŠ” ê²½ìš°ëŠ” ê·¹íˆ ì˜ˆì™¸ì ì¸ ê²½ìš°
-        // (memory scratch)ì¼ í™•ìœ¨ì´ ë†’ë‹¤. ë”°ë¼ì„œ ì„œë²„ë¥¼ ì¢…ë£Œì‹œí‚¤ì§€
-        // ë§ê³ , í¬ê¸°ë¥¼ ì œí•œ ì‹œì¼œ ì¶œë ¥í•œë‹¤.
+        // aSrcSize ÀÎÀÚ°¡ Á¦ÇÑ°ªÀ» ³Ñ±â´Â °æ¿ì´Â ±ØÈ÷ ¿¹¿ÜÀûÀÎ °æ¿ì
+        // (memory scratch)ÀÏ È®À²ÀÌ ³ô´Ù. µû¶ó¼­ ¼­¹ö¸¦ Á¾·á½ÃÅ°Áö
+        // ¸»°í, Å©±â¸¦ Á¦ÇÑ ½ÃÄÑ Ãâ·ÂÇÑ´Ù.
         aSrcSize = IDE_DUMP_SRC_LIMIT;
     }
 
@@ -779,7 +825,7 @@ IDE_RC ideLog::ideMemToHexStr( const UChar  * aSrcPtr,
     /* ==========================================
      * Converting
      * ========================================== */
-    // Loopë¥¼ ëŒë©° í•œì¤„ì”© ì¶œë ¥í•´ì¤€ë‹¤. í•œì¤„ë‹¹ LineSizeë§Œí¼ ì¶œë ¥í•œë‹¤.
+    // Loop¸¦ µ¹¸ç ÇÑÁÙ¾¿ Ãâ·ÂÇØÁØ´Ù. ÇÑÁÙ´ç LineSize¸¸Å­ Ãâ·ÂÇÑ´Ù.
     for( i = 0 ; i < aSrcSize; i += sLineSize )
     {
         /* ==========================================
@@ -822,8 +868,8 @@ IDE_RC ideLog::ideMemToHexStr( const UChar  * aSrcPtr,
         case IDE_DUMP_FORMAT_BODY_HEX:
             for( j = 0 ; ( j < sLineSize ) && ( i + j < aSrcSize ) ; j += sBlockSize )
             {
-                //Blockë‚´ ê°’ë“¤ì„ í•˜ë‚˜í•˜ë‚˜ ì¶œë ¥í•œë‹¤. ì „ë‹¬ë°›ì€ ë©”ëª¨ë¦¬ ì£¼ì†Œê°€
-                //Align ë§ëŠ”ë‹¤ëŠ” ë³´ì¥ì´ ì—†ê¸° ë•Œë¬¸ì— í•œë°”ì´íŠ¸ì”© ì°ì–´ì¤€ë‹¤.
+                //Block³» °ªµéÀ» ÇÏ³ªÇÏ³ª Ãâ·ÂÇÑ´Ù. Àü´Ş¹ŞÀº ¸Ş¸ğ¸® ÁÖ¼Ò°¡
+                //Align ¸Â´Â´Ù´Â º¸ÀåÀÌ ¾ø±â ¶§¹®¿¡ ÇÑ¹ÙÀÌÆ®¾¿ Âï¾îÁØ´Ù.
                 for( k = 0 ;
                      ( k < sBlockSize ) &&
                      ( j < sLineSize )  &&
@@ -836,8 +882,8 @@ IDE_RC ideLog::ideMemToHexStr( const UChar  * aSrcPtr,
                                          aSrcPtr[ i + j + k] );
                 }
 
-                // BlockSizeë§Œí¼ HexStrì„ ì¶œë ¥í–ˆìœ¼ë©°,
-                // Lineì˜ ë§ˆì§€ë§‰ì´ ì•„ë‹ ê²½ìš°, ê³µë°± ì¶œë ¥
+                // BlockSize¸¸Å­ HexStrÀ» Ãâ·ÂÇßÀ¸¸ç,
+                // LineÀÇ ¸¶Áö¸·ÀÌ ¾Æ´Ò °æ¿ì, °ø¹é Ãâ·Â
                 if ( ( k == sBlockSize ) && ( j != sLineSize ) )
                 {
                     idlVA::appendFormat( aDstPtr, aDstSize, " " );
@@ -862,8 +908,8 @@ IDE_RC ideLog::ideMemToHexStr( const UChar  * aSrcPtr,
                                  "; " );
             for( j = 0 ; ( j < sLineSize ) && ( i + j < aSrcSize ) ; j ++ )
             {
-                //ê³µë°±(32)ì™€ ~(126)ì‚¬ì´ì˜ ê°’ë“¤ì€ Asciië¡œ ì¶œë ¥ê°€ëŠ¥í•œ ê²ƒë“¤
-                //ì´ë‹¤. ê·¸ëŸ° ê²ƒë“¤ë§Œ ì°ì–´ì¤€ë‹¤.
+                //°ø¹é(32)¿Í ~(126)»çÀÌÀÇ °ªµéÀº Ascii·Î Ãâ·Â°¡´ÉÇÑ °Íµé
+                //ÀÌ´Ù. ±×·± °Íµé¸¸ Âï¾îÁØ´Ù.
                 idlVA::appendFormat( aDstPtr,
                                      aDstSize,
                                      "%c",
@@ -878,11 +924,11 @@ IDE_RC ideLog::ideMemToHexStr( const UChar  * aSrcPtr,
         }
 
         /*
-         * [BUG-29740] [SM] dumplfì—ì„œ ë¡œê·¸ ì‚¬ì´ì¦ˆê°€ 0ì¸ ê²½ìš°
-         *             ì¶œë ¥ í¬ë§·ì— ë¬¸ì œê°€ ìˆìŠµë‹ˆë‹¤
+         * [BUG-29740] [SM] dumplf¿¡¼­ ·Î±× »çÀÌÁî°¡ 0ÀÎ °æ¿ì
+         *             Ãâ·Â Æ÷¸Ë¿¡ ¹®Á¦°¡ ÀÖ½À´Ï´Ù
          */
 
-        // aSrcì˜ ë§ˆì§€ë§‰ì´ ì•„ë‹ ê²½ìš°, ê°œí–‰í•¨
+        // aSrcÀÇ ¸¶Áö¸·ÀÌ ¾Æ´Ò °æ¿ì, °³ÇàÇÔ
         if ( (i + sLineSize) < aSrcSize )
         {
             idlVA::appendFormat( aDstPtr,
@@ -922,18 +968,18 @@ IDE_RC ideLog::logMem( UInt           aChkFlag,
 /* ---------------------------------------------
  * PROJ-2118 BUG Reporting
  *
- * í¬ì¸í„°ë¥¼ ì«“ì•„ê°€ ë©”ëª¨ë¦¬ ì˜ì—­ì˜ Binaryë¥¼
- * Hexë¡œ ë³€í™˜í•˜ì—¬ TRC Logë¡œ ì¶œë ¥í•´ì¤€ë‹¤.
+ * Æ÷ÀÎÅÍ¸¦ ÂÑ¾Æ°¡ ¸Ş¸ğ¸® ¿µ¿ªÀÇ Binary¸¦
+ * Hex·Î º¯È¯ÇÏ¿© TRC Log·Î Ãâ·ÂÇØÁØ´Ù.
  *
- * ì¶œë ¥í•˜ë ¤ëŠ” Hexa Dataê°€ ë¬´ì—‡ì¸ì§€ ì•Œ ìˆ˜ ìˆë„ë¡
- * ì¶”ê°€ ë¬¸ìì—´ì„ ì¶œë ¥í•˜ëŠ” ê¸°ëŠ¥ ì¶”ê°€
+ * Ãâ·ÂÇÏ·Á´Â Hexa Data°¡ ¹«¾ùÀÎÁö ¾Ë ¼ö ÀÖµµ·Ï
+ * Ãß°¡ ¹®ÀÚ¿­À» Ãâ·ÂÇÏ´Â ±â´É Ãß°¡
  *
  * aChkFlag     [in]    ChkFlag
- * aModule      [in]    Logë¥¼ ë‚¨ê¸¸ Module
+ * aModule      [in]    Log¸¦ ³²±æ Module
  * aLevel       [in]    LogLevel
- * aPtr         [in]    ì¶œë ¥í•  ë©”ëª¨ë¦¬ ìœ„ì¹˜
- * aSize        [in]    Dumpë  ë©”ëª¨ë¦¬ í¬ê¸° (Byte)
- * aFormat      [in]    ì¶”ê°€ ì¶œë ¥í•  ë¬¸ìì—´ì— ëŒ€í•œ Format
+ * aPtr         [in]    Ãâ·ÂÇÒ ¸Ş¸ğ¸® À§Ä¡
+ * aSize        [in]    DumpµÉ ¸Ş¸ğ¸® Å©±â (Byte)
+ * aFormat      [in]    Ãß°¡ Ãâ·ÂÇÒ ¹®ÀÚ¿­¿¡ ´ëÇÑ Format
  * ...
  * --------------------------------------------- */
 IDE_RC ideLog::logMem( UInt           aChkFlag,
@@ -972,20 +1018,20 @@ IDE_RC ideLog::logMem( UInt           aChkFlag,
 /***************************************************************************
  * PROJ-2118 BUG Reporting
  *
- * ì„¤ì •ëœ Propertyì— ë”°ë¼ ì˜ˆì™¸ì²˜ë¦¬ í˜¹ì€ Assertë¡œ ì²˜ë¦¬í•œë‹¤.
- * Assertì¼ ê²½ìš° Dumpì—, ì˜ˆì™¸ ì²˜ë¦¬ í•  ê²½ìš° Error.logì— ê¸°ë¡í•œë‹¤.
+ * ¼³Á¤µÈ Property¿¡ µû¶ó ¿¹¿ÜÃ³¸® È¤Àº Assert·Î Ã³¸®ÇÑ´Ù.
+ * AssertÀÏ °æ¿ì Dump¿¡, ¿¹¿Ü Ã³¸® ÇÒ °æ¿ì Error.log¿¡ ±â·ÏÇÑ´Ù.
  *
- * __ERROR_VALIDATION_LEVEL = 0 : ì˜ˆì™¸ë¡œ ì²˜ë¦¬, Error Message ê¸°ë¡ ìœ ë¬´ëŠ”
- *                                __WRITE_ERROR_TRACE Propertyì— ë”°ë¥¸ë‹¤.
- * __ERROR_VALIDATION_LEVEL = 1 : Messageë¥¼ ê¸°ë¡í•˜ê³  Assertë¡œ ì²˜ë¦¬ (default)
- * __WRITE_ERROR_TRACE = 0 : Error Messageë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
- * __WRITE_ERROR_TRACE = 1 : Error Messageë¥¼ ê¸°ë¡í•œë‹¤. (default)
+ * __ERROR_VALIDATION_LEVEL = 0 : ¿¹¿Ü·Î Ã³¸®, Error Message ±â·Ï À¯¹«´Â
+ *                                __WRITE_ERROR_TRACE Property¿¡ µû¸¥´Ù.
+ * __ERROR_VALIDATION_LEVEL = 1 : Message¸¦ ±â·ÏÇÏ°í Assert·Î Ã³¸® (default)
+ * __WRITE_ERROR_TRACE = 0 : Error Message¸¦ ÇÏÁö ¾Ê´Â´Ù.
+ * __WRITE_ERROR_TRACE = 1 : Error Message¸¦ ±â·ÏÇÑ´Ù. (default)
  *
- *    aErrInfo     [in] ì˜¤ë¥˜ë¥¼ ì°¾ì•„ë‚¸ ìˆ˜ì‹
- *    aFileName    [in] ì˜¤ë¥˜ ë°œìƒ íŒŒì¼
- *    aLineNum     [in] ì˜¤ë¥˜ ë¹Œìƒ ìœ„ì¹˜
- *    aFormat      [in] ì¶”ê°€ ê¸°ë¡ í•  Messageì˜ Format
- *    ...          [in] ì¶”ê°€ ê¸°ë¡ í•  Messageì˜ ì¸ì
+ *    aErrInfo     [in] ¿À·ù¸¦ Ã£¾Æ³½ ¼ö½Ä
+ *    aFileName    [in] ¿À·ù ¹ß»ı ÆÄÀÏ
+ *    aLineNum     [in] ¿À·ù ºô»ı À§Ä¡
+ *    aFormat      [in] Ãß°¡ ±â·Ï ÇÒ MessageÀÇ Format
+ *    ...          [in] Ãß°¡ ±â·Ï ÇÒ MessageÀÇ ÀÎÀÚ
  ****************************************************************************/
 void ideLog::writeErrorTrace( const SChar * aErrInfo,
                               const idBool  aAcceptFaultTolerance, /* PROJ-2617 */
@@ -1029,14 +1075,21 @@ void ideLog::writeErrorTrace( const SChar * aErrInfo,
                                      aFormat,
                                      ap );
         }
-        IDE_SET( ideSetErrorCode( idERR_ABORT_InternalServerError ));
+
+        /* BUG-47586 */
+        /* it means nobody set the error code yet.*/
+        if( ideNoErrorYet() == ID_TRUE )
+        {
+            IDE_SET( ideSetErrorCode( idERR_ABORT_InternalServerError )); 
+        }
+        
     }
 }
 
 /***************************************************************************
  * PROJ-2118 BUG Reporting
  *
- * Error Messageë¥¼ ê¸°ë¡í•˜ëŠ” ideLog::writeErrorTrace ì˜ ë‚´ë¶€ í•¨ìˆ˜.
+ * Error Message¸¦ ±â·ÏÇÏ´Â ideLog::writeErrorTrace ÀÇ ³»ºÎ ÇÔ¼ö.
  *
  ****************************************************************************/
 void ideLog::writeErrorTraceInternal( UInt          aChkFlag,
@@ -1060,7 +1113,7 @@ void ideLog::writeErrorTraceInternal( UInt          aChkFlag,
 
     if ( aFormat != NULL )
     {
-        /* va_list ì „ìš© logMessageí•¨ìˆ˜, Ceck Flag ë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+        /* va_list Àü¿ë logMessageÇÔ¼ö, Ceck Flag ¸¦ »ç¿ëÇÏÁö ¾Ê´Â´Ù. */
         sLog.appendArgs( aFormat,
                          ap );
 

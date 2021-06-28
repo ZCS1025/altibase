@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: ideLogEntry.h 83474 2018-07-13 08:21:28Z hykim $
+ * $Id: ideLogEntry.h 89495 2020-12-14 05:19:22Z emlee $
  **********************************************************************/
 
 /***********************************************************************
@@ -492,9 +492,10 @@
 
 
 #define IDE_SD_0    IDE_TRC_SD_0,  IDE_SD, 0
-#define IDE_SD_1    IDE_TRC_SD_1,  IDE_SD, 1
-#define IDE_SD_2    IDE_TRC_SD_2,  IDE_SD, 2
-#define IDE_SD_3    IDE_TRC_SD_3,  IDE_SD, 3
+/* error º∫ ∑Œ±◊¥¬ 1 ~ 16 ¿ª ªÁøÎ«’¥œ¥Ÿ. */
+#define IDE_SD_1    IDE_TRC_SD_1,  IDE_SD, 1    /* shard meta error logging */
+#define IDE_SD_2    IDE_TRC_SD_2,  IDE_SD, 2    /* global transaction error */
+#define IDE_SD_3    IDE_TRC_SD_3,  IDE_SD, 3    
 #define IDE_SD_4    IDE_TRC_SD_4,  IDE_SD, 4
 #define IDE_SD_5    IDE_TRC_SD_5,  IDE_SD, 5
 #define IDE_SD_6    IDE_TRC_SD_6,  IDE_SD, 6
@@ -508,9 +509,10 @@
 #define IDE_SD_14   IDE_TRC_SD_14, IDE_SD, 14
 #define IDE_SD_15   IDE_TRC_SD_15, IDE_SD, 15
 #define IDE_SD_16   IDE_TRC_SD_16, IDE_SD, 16
-#define IDE_SD_17   IDE_TRC_SD_17, IDE_SD, 17
-#define IDE_SD_18   IDE_TRC_SD_18, IDE_SD, 18
-#define IDE_SD_19   IDE_TRC_SD_19, IDE_SD, 19
+/* trace º∫ ∑Œ±◊¥¬ 17 ~ 32 ¿ª ªÁøÎ«’¥œ¥Ÿ. */
+#define IDE_SD_17   IDE_TRC_SD_17, IDE_SD, 17   /* shard meta change trace */
+#define IDE_SD_18   IDE_TRC_SD_18, IDE_SD, 18   /* PROJ-2733 SCN and DistTxInfo */
+#define IDE_SD_19   IDE_TRC_SD_19, IDE_SD, 19   /* PROJ-2733 SM module trace log */
 #define IDE_SD_20   IDE_TRC_SD_20, IDE_SD, 20
 #define IDE_SD_21   IDE_TRC_SD_21, IDE_SD, 21
 #define IDE_SD_22   IDE_TRC_SD_22, IDE_SD, 22
@@ -656,7 +658,7 @@
 #define IDE_ERR_0    IDE_TRC_ERR_0,  IDE_ERR, 0
 
 
-/* PROJ-2473 SNMP ÏßÄÏõê */
+/* PROJ-2473 SNMP ¡ˆø¯ */
 /* ------------------------------------------------
  *  SNMP
  * ----------------------------------------------*/
@@ -764,7 +766,7 @@ public:
         return acpAtomicInc64(&mLogSerial);
     }
 
-    /* write()Î•º Ìò∏Ï∂úÌïòÏßÄ ÏïäÏùÑ Í≤ΩÏö∞ ÌååÏùºÏóê Í∏∞Î°ùÎêòÏßÄ ÏïäÎäîÎã§. */
+    /* write()∏¶ »£√‚«œ¡ˆ æ ¿ª ∞ÊøÏ ∆ƒ¿œø° ±‚∑œµ«¡ˆ æ ¥¬¥Ÿ. */
     IDE_RC write()
     {
         return logClose();
@@ -792,6 +794,8 @@ public:
 private:
     void   logOpen();
     IDE_RC logClose();
+
+    IDE_RC appendForce( const acp_char_t *aStr );
 
 private:
     ideMsgLog *mMsgLog;

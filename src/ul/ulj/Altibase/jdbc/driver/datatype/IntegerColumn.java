@@ -96,6 +96,11 @@ public class IntegerColumn extends AbstractColumn
         aColumnInfo.modifyColumnInfo(getDBColumnType(), (byte)0, 0, 0);
     }
 
+    public void storeTo()
+    {
+        mValues.add(mIntValue);
+    }
+
     public void storeTo(DynamicArray aArray)
     {
         ((IntDynamicArray) aArray).put(mIntValue);
@@ -106,6 +111,11 @@ public class IntegerColumn extends AbstractColumn
         mIntValue = aChannel.readInt();
     }
 
+    protected void readAndStoreValue(CmChannel aChannel) throws SQLException
+    {
+        mValues.add(aChannel.readInt());
+    }
+
     protected void readFromSub(CmChannel aChannel, DynamicArray aArray) throws SQLException
     {
         ((IntDynamicArray)aArray).put(aChannel.readInt());
@@ -114,6 +124,11 @@ public class IntegerColumn extends AbstractColumn
     protected void loadFromSub(DynamicArray aArray)
     {
         mIntValue = ((IntDynamicArray) aArray).get();
+    }
+
+    protected void loadFromSub(int aLoadIndex)
+    {
+        mIntValue = (Integer)mValues.get(aLoadIndex);
     }
 
     protected void setNullValue()

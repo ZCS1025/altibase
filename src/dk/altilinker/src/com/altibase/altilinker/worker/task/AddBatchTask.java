@@ -190,7 +190,7 @@ public class AddBatchTask extends Task
                 {
                 	for (int i = 0; i < mBindVariableCount; i++)
                 	{
-                		if (mBindVariables[i].mBindVariableType == SQLType.SQL_VARCHAR)
+                		if (mBindVariables[i].mBindVariableType == AltibaseSQLType.SQL_VARCHAR)
                 		{
                 			sPreparedStatement.setString(mBindVariables[i].mBindVariableIndex, // 1-based index
                 					mBindVariables[i].mBindVariableString);

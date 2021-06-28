@@ -21,12 +21,12 @@
  * Description :
  *     SDIF(Set DIFference) Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ hash-based set difference ì—°ì‚°ì„
- *     ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     °ü°èÇü ¸ğµ¨¿¡¼­ hash-based set difference ¿¬»êÀ»
+ *     ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -55,7 +55,7 @@
 typedef struct qmncSDIF
 {
     //---------------------------------
-    // Code ì˜ì—­ ê³µí†µ ì •ë³´
+    // Code ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmnPlan        plan;
@@ -63,29 +63,29 @@ typedef struct qmncSDIF
     UInt           planID;
 
     //---------------------------------
-    // SDIF ê³ ìœ  ì •ë³´
+    // SDIF °íÀ¯ Á¤º¸
     //---------------------------------
 
-    qmcMtrNode   * myNode;             // ì €ì¥ Columnì˜ ì •ë³´
+    qmcMtrNode   * myNode;             // ÀúÀå ColumnÀÇ Á¤º¸
 
     UShort         leftDepTupleRowID;  // Left Dependent Tuple
     UShort         rightDepTupleRowID; // Right Dependent Tuple
 
-    UInt           bucketCnt;          // Hash Bucketì˜ ê°œìˆ˜
+    UInt           bucketCnt;          // Hash BucketÀÇ °³¼ö
 
     qcComponentInfo * componentInfo; // PROJ-2462 Result Cache
     //---------------------------------
-    // Data ì˜ì—­ ì •ë³´
+    // Data ¿µ¿ª Á¤º¸
     //---------------------------------
     
-    UInt           mtrNodeOffset;      // ì €ì¥ Columnì˜ ìœ„ì¹˜
+    UInt           mtrNodeOffset;      // ÀúÀå ColumnÀÇ À§Ä¡
     
 } qmncSDIF;
 
 typedef struct qmndSDIF
 {
     //---------------------------------
-    // Data ì˜ì—­ ê³µí†µ ì •ë³´
+    // Data ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmndPlan            plan;
@@ -93,19 +93,19 @@ typedef struct qmndSDIF
     UInt              * flag;
 
     //---------------------------------
-    // SDIF ê³ ìœ  ì •ë³´
+    // SDIF °íÀ¯ Á¤º¸
     //---------------------------------
     
-    UInt                mtrRowSize;    // ì €ì¥ Rowì˜ í¬ê¸°
+    UInt                mtrRowSize;    // ÀúÀå RowÀÇ Å©±â
 
-    qmdMtrNode        * mtrNode;       // ì €ì¥ Columnì˜ ì •ë³´
+    qmdMtrNode        * mtrNode;       // ÀúÀå ColumnÀÇ Á¤º¸
 
     void              * temporaryRightRow;  // temporary right-side row
     
-    mtcTuple          * leftDepTuple;  // Left Dependent Tupleì˜ ìœ„ì¹˜
+    mtcTuple          * leftDepTuple;  // Left Dependent TupleÀÇ À§Ä¡
     UInt                leftDepValue;  // Left Dependent Value
 
-    mtcTuple          * rightDepTuple; // Right Dependent Tupleì˜ ìœ„ì¹˜
+    mtcTuple          * rightDepTuple; // Right Dependent TupleÀÇ À§Ä¡
     UInt                rightDepValue; // Right Dependent Value
 
     qmcdHashTemp      * hashMgr;       // Hash Temp Table
@@ -121,11 +121,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ìˆ˜í–‰ í•¨ìˆ˜
+    // ¼öÇà ÇÔ¼ö
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -134,7 +134,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan ì •ë³´ ì¶œë ¥
+    // Plan Á¤º¸ Ãâ·Â
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -145,17 +145,17 @@ public:
     // mapping by doIt() function pointer
     //------------------------
 
-    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨
+    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
+    // ÃÖÃÊ ¼öÇà ÇÔ¼ö
     static IDE_RC doItFirst( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              qmcRowFlag * aFlag );
 
-    // ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
+    // ´ÙÀ½ ¼öÇà ÇÔ¼ö
     static IDE_RC doItNext( qcTemplate * aTemplate,
                             qmnPlan    * aPlan,
                             qmcRowFlag * aFlag );
@@ -163,53 +163,53 @@ public:
 private:
 
     //-----------------------------
-    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
+    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
     //-----------------------------
 
-    // ìµœì´ˆ ì´ˆê¸°í™”
+    // ÃÖÃÊ ÃÊ±âÈ­
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncSDIF   * aCodePlan,
                              qmndSDIF   * aDataPlan );
 
-    // ì €ì¥ Columnì˜ ì´ˆê¸°í™”
+    // ÀúÀå ColumnÀÇ ÃÊ±âÈ­
     static IDE_RC initMtrNode( qcTemplate * aTemplate,
                                qmncSDIF   * aCodePlan,
                                qmndSDIF   * aDataPlan );
 
-    // Temp Table ì´ˆê¸°í™”
+    // Temp Table ÃÊ±âÈ­
     static IDE_RC initTempTable( qcTemplate * aTemplate,
                                  qmncSDIF   * aCodePlan,
                                  qmndSDIF   * aDataPlan );
     
-    // Left Dependent Tupleì˜ ë³€ê²½ ì—¬ë¶€ ê²€ì‚¬
+    // Left Dependent TupleÀÇ º¯°æ ¿©ºÎ °Ë»ç
     static IDE_RC checkLeftDependency( qmndSDIF   * aDataPlan,
                                        idBool     * aDependent );
 
-    // Right Dependent Tupleì˜ ë³€ê²½ ì—¬ë¶€ ê²€ì‚¬
+    // Right Dependent TupleÀÇ º¯°æ ¿©ºÎ °Ë»ç
     static IDE_RC checkRightDependency( qmndSDIF   * aDataPlan,
                                         idBool     * aDependent );
 
     //-----------------------------
-    // ì €ì¥ ê´€ë ¨ í•¨ìˆ˜
+    // ÀúÀå °ü·Ã ÇÔ¼ö
     //-----------------------------
     
-    // Leftë¥¼ ìˆ˜í–‰í•˜ì—¬ distinct hashing ìœ¼ë¡œ ì €ì¥
+    // Left¸¦ ¼öÇàÇÏ¿© distinct hashing À¸·Î ÀúÀå
     static IDE_RC storeLeft( qcTemplate * aTemplate,
                              qmncSDIF   * aCodePlan,
                              qmndSDIF   * aDataPlan );
 
-    // Childì˜ ê²°ê³¼ë¥¼ Stackì„ ì´ìš©í•˜ì—¬ ì €ì¥ Rowë¥¼ êµ¬ì„±
+    // ChildÀÇ °á°ú¸¦ StackÀ» ÀÌ¿ëÇÏ¿© ÀúÀå Row¸¦ ±¸¼º
     static IDE_RC setMtrRow( qcTemplate * aTemplate,
                              qmndSDIF   * aDataPlan );
 
-    // Differenced Rowë“¤ì„ ëª¨ë‘ ì„¤ì •
+    // Differenced RowµéÀ» ¸ğµÎ ¼³Á¤
     static IDE_RC setDifferencedRows( qcTemplate * aTemplate,
                                       qmncSDIF   * aCodePlan,
                                       qmndSDIF   * aDataPlan );
 
     // PR-24190
     // select i1(varchar(30)) from t1 minus select i1(varchar(250)) from t2;
-    // ìˆ˜í–‰ì‹œ ì„œë²„ ë¹„ì •ìƒì¢…ë£Œ
+    // ¼öÇà½Ã ¼­¹ö ºñÁ¤»óÁ¾·á
     static IDE_RC setRightChildMtrRow( qcTemplate * aTemplate,
                                        qmndSDIF   * aDataPlan,
                                        idBool     * aIsSetMtrRow );

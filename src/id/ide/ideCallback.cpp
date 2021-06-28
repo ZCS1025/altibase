@@ -78,7 +78,7 @@ IDE_RC ideNullCallbackFuncForNChar()
 }
 
 // Message Callback Function
-// Assertë¥¼ ìœ„í•œ callback í•¨ìˆ˜ ì¶”ê°€.    by kumdory, 2004-03-11
+// Assert¸¦ À§ÇÑ callback ÇÔ¼ö Ãß°¡.    by kumdory, 2004-03-11
 
 ideCallbackForMessage   gCallbackForMessage   = ideNullCallbackFuncForMessage;
 ideCallbackForFatal     gCallbackForFatal     = ideNullCallbackFuncForFatal;
@@ -178,7 +178,7 @@ void ideAssert( const SChar * aSource,
 }
 
 /* PROJ-2118 BUG Reporting
- * Message ê¸°ë¡ Assert ë§¤í¬ë¡œ ì¶”ê°€ */
+ * Message ±â·Ï Assert ¸ÅÅ©·Î Ãß°¡ */
 void ideAssertMsg( const SChar * aSource,
                    idBool        aAcceptFaultTolerance, /* PROJ-2617 */
                    const SChar * aFile,

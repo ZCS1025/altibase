@@ -79,7 +79,7 @@ static acp_sint32_t mtlAsciiExtract_MatchSecond( acp_uint8_t* aSource,
 static acp_sint32_t mtlAsciiExtract_MatchMicroSec( acp_uint8_t* aSource,
                                                    acp_uint32_t aSourceLen );
 
-/* BUG-45730 ROUND, TRUNC í•¨ìˆ˜ì—ì„œ DATE í¬ë§· IW ì¶”ê°€ ì§€ì› */
+/* BUG-45730 ROUND, TRUNC ÇÔ¼ö¿¡¼­ DATE Æ÷¸Ë IW Ãß°¡ Áö¿ø */
 static acp_sint32_t mtlAsciiExtract_MatchISOWeek( acp_uint8_t  * aSource,
                                                   acp_uint32_t   aSourceLen );
 
@@ -97,7 +97,7 @@ mtlExtractFuncSet mtclAsciiExtractSet = {
     mtlAsciiExtract_MatchMinute,
     mtlAsciiExtract_MatchSecond,
     mtlAsciiExtract_MatchMicroSec,
-    /* BUG-45730 ROUND, TRUNC í•¨ìˆ˜ì—ì„œ DATE í¬ë§· IW ì¶”ê°€ ì§€ì› */
+    /* BUG-45730 ROUND, TRUNC ÇÔ¼ö¿¡¼­ DATE Æ÷¸Ë IW Ãß°¡ Áö¿ø */
     mtlAsciiExtract_MatchISOWeek
 };
 
@@ -148,10 +148,10 @@ mtlNCRet mtlAsciiNextChar( acp_uint8_t ** aSource, acp_uint8_t * aTemp )
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 Next Char ìµœì í™”
+ * Description : PROJ-1755 Next Char ÃÖÀûÈ­
  *
  * Implementation :
- *    ë‹¤ìŒ ë¬¸ì ìœ„ì¹˜ë¡œ pointer ì´ë™
+ *    ´ÙÀ½ ¹®ÀÚ À§Ä¡·Î pointer ÀÌµ¿
  *
  ***********************************************************************/
 
@@ -177,14 +177,14 @@ static acp_sint32_t mtlAsciiMaxPrecision( acp_sint32_t aLength )
 {
 /***********************************************************************
 x *
- * Description : ë¬¸ìê°¯ìˆ˜(aLength)ì˜ ASCIIì˜ ìµœëŒ€ precision ê³„ì‚°
+ * Description : ¹®ÀÚ°¹¼ö(aLength)ÀÇ ASCIIÀÇ ÃÖ´ë precision °è»ê
  *
  * Implementation :
  *
- *    ì¸ìë¡œ ë°›ì€ aLengthì—
- *    ascii í•œë¬¸ìì˜ ìµœëŒ€ í¬ê¸°ë¥¼ ê³±í•œ ê°’ì„ ë¦¬í„´í•¨.
+ *    ÀÎÀÚ·Î ¹ŞÀº aLength¿¡
+ *    ascii ÇÑ¹®ÀÚÀÇ ÃÖ´ë Å©±â¸¦ °öÇÑ °ªÀ» ¸®ÅÏÇÔ.
  *
- *    aLengthëŠ” ë¬¸ìê°¯ìˆ˜ì˜ ì˜ë¯¸ê°€ ìˆìŒ.
+ *    aLength´Â ¹®ÀÚ°¹¼öÀÇ ÀÇ¹Ì°¡ ÀÖÀ½.
  *
  ***********************************************************************/
 
@@ -346,7 +346,7 @@ static acp_sint32_t mtlAsciiNextDay_MatchSatDay( acp_uint8_t* aSource,
     return 1;
 }
 
-/* BUG-45730 ROUND, TRUNC í•¨ìˆ˜ì—ì„œ DATE í¬ë§· IW ì¶”ê°€ ì§€ì› */
+/* BUG-45730 ROUND, TRUNC ÇÔ¼ö¿¡¼­ DATE Æ÷¸Ë IW Ãß°¡ Áö¿ø */
 static acp_sint32_t mtlAsciiExtract_MatchISOWeek( acp_uint8_t  * aSource,
                                                   acp_uint32_t   aSourceLen )
 {

@@ -20,10 +20,10 @@ import javax.transaction.xa.XAException;
 
 public class ErrorDef
 {
-    // #region ì„œë²„ì—ì„œ ë°›ëŠ” ì—ëŸ¬ ì½”ë“œ
+    // #region ¼­¹ö¿¡¼­ ¹Ş´Â ¿¡·¯ ÄÚµå
 
-    /* ì„œë²„ì—ì„œ ë°›ëŠ” ì—ëŸ¬ ì½”ë“œë„ ì—¬ê¸° ë†“ì•„ë‘ì.
-     * ì´ ê°’ì€ mmErrorCode.ih ë“±ì— ìˆëŠ”ê±¸ ê·¸ëŒ€ë¡œ ê°€ì ¸ì˜¨ê±°ë‹¤. */
+    /* ¼­¹ö¿¡¼­ ¹Ş´Â ¿¡·¯ ÄÚµåµµ ¿©±â ³õ¾ÆµÎÀÚ.
+     * ÀÌ °ªÀº mmErrorCode.ih µî¿¡ ÀÖ´Â°É ±×´ë·Î °¡Á®¿Â°Å´Ù. */
     public static final int       IGNORE_NO_ERROR                                   = 0x42000;
     public static final int       IGNORE_NO_COLUMN                                  = 0x420A4;
     public static final int       IGNORE_NO_CURSOR                                  = 0x420A7;
@@ -51,18 +51,31 @@ public class ErrorDef
     public static final int       FAILURE_TO_FIND_STATEMENT                         = 0x41098;
     public static final int       INVALID_LOB_RANGE                                 = 0x4109E;
     public static final int       SHARD_META_NUMBER_INVALID                         = 0x410FA;
+
+    // BUG-46790 serverside failover °ü·Ã ¿¡·¯ÄÚµå
+    public static final int       SHARD_LIBRARY_LINK_FAILURE                        = 0xE1132;
+    public static final int       SHARD_LIBRARY_FAILOVER_SUCCESS                    = 0xE1139;
+    public static final int       SHARD_LIBRARY_FAILOVER_IS_NOT_AVAILABLE           = 0xE113B;
+
+    // BUG-48762 TASK-7218 Handling Multiple Errors - ¹İ¿µ
+    // BUG-48921 [R2-FUNC2] sd, ul ÀÇ Multiple Error ÄÚµå ´ÜÀÏÈ­ 
+    public static final int       SHARD_MULTIPLE_ERRORS                             = 0xE113F;
+
     // BUG-38496 Notify users when their password expiry date is approaching.
     public static final int       PASSWORD_GRACE_PERIOD                             = 0x420E1;
 
     /* BUG-41908 Add processing the error 'mmERR_IGNORE_UNSUPPORTED_PROPERTY' in JDBC
-     * Serverì—ì„œ ì§€ì›í•˜ì§€ ì•ŠëŠ” Propertyì— ëŒ€í•œ ìš”ì²­ì´ ì™”ì„ ê²½ìš° ServerëŠ” í•´ë‹¹ ì—ëŸ¬ë¥¼ ë¦¬í„´í•œë‹¤. */
+     * Server¿¡¼­ Áö¿øÇÏÁö ¾Ê´Â Property¿¡ ´ëÇÑ ¿äÃ»ÀÌ ¿ÔÀ» °æ¿ì Server´Â ÇØ´ç ¿¡·¯¸¦ ¸®ÅÏÇÑ´Ù. */
     public static final int       UNSUPPORTED_PROPERTY                              = 0x420DB;
+
+    // PROJ-2733 For stmt retry
+    public static final int       STATEMENT_TOO_OLD                                 = 0x111B7;
 
     // #endregion
 
-    // #region JDBC ì „ìš© ì—ëŸ¬ ì½”ë“œ
+    // #region JDBC Àü¿ë ¿¡·¯ ÄÚµå
 
-    /* JDBCì—ì„œì˜ ì—ëŸ¬ ì½”ë“œëŠ” 0x51A01 ~ 0x51AFFë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤. */
+    /* JDBC¿¡¼­ÀÇ ¿¡·¯ ÄÚµå´Â 0x51A01 ~ 0x51AFF¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù. */
 
     private static final int      FIRST_ERROR_CODE                                  = 0x51A01;
 
@@ -174,7 +187,7 @@ public class ErrorDef
     public static final int       VALUE_LENGTH_EXCEEDS                              = 0x51A78;
     public static final int       PASSWORD_EXPIRATION_DATE_IS_COMING                = 0x51A79;
 
-    /* PROJ-2474 SSL ê´€ë ¨ ì—ëŸ¬ì½”ë“œ */
+    /* PROJ-2474 SSL °ü·Ã ¿¡·¯ÄÚµå */
     public static final int       UNSUPPORTED_KEYSTORE_ALGORITHM                    = 0x51A7A;
     public static final int       CAN_NOT_CREATE_KEYSTORE_INSTANCE                  = 0x51A7B;
     public static final int       CAN_NOT_LOAD_KEYSTORE                             = 0x51A7C;
@@ -185,7 +198,7 @@ public class ErrorDef
     public static final int       DEFAULT_ALGORITHM_DEFINITION_INVALID              = 0x51A81;
 
     /* BUG-41908 Add processing the error 'mmERR_IGNORE_UNSUPPORTED_PROPERTY' in JDBC
-      * ë°˜ë“œì‹œ í•„ìš”í•œ Propertyë¥¼ Serverì—ì„œ ì§€ì›í•˜ì§€ ëª»í•  ê²½ìš° í•´ë‹¹ ì—ëŸ¬ë¥¼ ë¦¬í„´í•œë‹¤. ë˜í•œ ì ‘ì†ë„ í•´ì œí•œë‹¤. */
+      * ¹İµå½Ã ÇÊ¿äÇÑ Property¸¦ Server¿¡¼­ Áö¿øÇÏÁö ¸øÇÒ °æ¿ì ÇØ´ç ¿¡·¯¸¦ ¸®ÅÏÇÑ´Ù. ¶ÇÇÑ Á¢¼Óµµ ÇØÁ¦ÇÑ´Ù. */
     public static final int       NOT_SUPPORTED_MANDATORY_PROPERTY                  = 0x51A82;
 
     public static final int       OPENED_CONNECTION                                 = 0x51A83;
@@ -193,23 +206,31 @@ public class ErrorDef
     // PROJ-2681
     public static final int       UNKNOWN_CONNTYPE                                  = 0x51A84;
 
-    /* PROJ-2690 shardingê³¼ë ¨ ì—ëŸ¬ì½”ë“œ */
+    /* PROJ-2690 sharding°ü·Ã ¿¡·¯ÄÚµå */
     public static final int       SHARD_INVALID_TEST_MARK                           = 0x51A85;
     public static final int       SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE              = 0x51A86;
     public static final int       SHARD_NODE_NOT_FOUNDED                            = 0x51A87;
-    public static final int       SHARD_SINGLE_NODE_TOUCH_ERROR                     = 0x51A88;
-    public static final int       SHARD_BIND_PARAMETER_MISSING                      = 0x51A89;
-    public static final int       SHARD_MULTINODE_TRANSACTION_REQUIRED              = 0x51A8A;
-    public static final int       SHARD_INVALID_NODE_TOUCH                          = 0x51A8B;
-    public static final int       SHARD_SERVERSIDE_NODE_TOUCH_ERROR                 = 0x51A8C;
-    public static final int       SHARD_JDBC_METHOD_INVOKE_ERROR                    = 0x51A8D;
-    public static final int       SHARD_NODE_EXECUTE_ERROR                          = 0x51A8E;
-    public static final int       SHARD_SPLIT_METHOD_NOT_SUPPORTED                  = 0x51A8F;
-    public static final int       SHARD_RANGE_NOT_FOUNDED                           = 0x51A9A;
-    public static final int       SHARD_NO_NODES                                    = 0x51A9B;
-    public static final int       SHARD_OPERATION_FAILED                            = 0x51A9C;
-    public static final int       SHARD_PIN_CHANGED                                 = 0x51A9D;
-    private static final int      LAST_ERROR_CODE                                   = 0x51A9D;
+    // BUG-47314 »şµåÅ° ÆÄ¶ó¸ŞÅÍ°¡ ¼ÂÆÃµÇÁö ¾Ê¾ÒÀ»¶§ ¹ß»ıÇÏ´Â ¿¡·¯
+    public static final int       SHARD_BIND_PARAMETER_MISSING                      = 0x51A88;
+    public static final int       SHARD_MULTINODE_TRANSACTION_REQUIRED              = 0x51A89;
+    public static final int       SHARD_INVALID_NODE_TOUCH                          = 0x51A8A;
+    public static final int       SHARD_SERVERSIDE_SINGLE_NODE_TOUCH_ERROR          = 0x51A8B;
+    public static final int       SHARD_JDBC_METHOD_INVOKE_ERROR                    = 0x51A8C;
+    public static final int       SHARD_SPLIT_METHOD_NOT_SUPPORTED                  = 0x51A8D;
+    public static final int       SHARD_RANGE_NOT_FOUNDED                           = 0x51A8E;
+    public static final int       SHARD_NO_NODES                                    = 0x51A8F;
+    public static final int       SHARD_SMN_OPERATION_FAILED                        = 0x51A90;
+    public static final int       SHARD_PIN_CHANGED                                 = 0x51A91;
+    public static final int       SHARD_MULTIPLE_LOB_OPERATION_NOT_SUPPORTED        = 0x51A92;
+    // BUG-47228 shard value encoding ½ÇÆĞ½Ã ¹ß»ıÇÏ´Â ¿¡·¯
+    public static final int       SHARD_CHARSET_ENCODE_ERROR                        = 0x51A93;
+    public static final int       EXECUTOR_CANNOT_BE_NULL                           = 0x51A94;
+    public static final int       TYPE_PARAMETER_CANNOT_BE_NULL                     = 0x51A95;
+    public static final int       TYPE_CONVERSION_NOT_SUPPORTED                     = 0x51A96;
+    public static final int       CANNOT_BE_UNWRAPPED                               = 0x51A97;
+    public static final int       SHARD_NEED_ROLLBACK                               = 0x51A98;
+    public static final int       SHARD_INTERNAL_ERROR                              = 0x51A99;
+    private static final int      LAST_ERROR_CODE                                   = 0x51A99;
 
     // #endregion
 
@@ -244,7 +265,7 @@ public class ErrorDef
         register(READONLY_CONNECTION_NOT_SUPPORTED                 , "0AC02" , "setReadOnly: Read-only connections are not supported." );
         register(INVALID_PROPERTY_VALUE                            , "01S00" , "Invalid property value: <%s> expected, but <%s>" );
         register(CLOSED_STATEMENT                                  , "01C01" , "Statement already closed." );
-        register(NO_BATCH_JOB                                      , "01B01" , "executeBatch: no batch job to execute." ); // oracleì€ ì˜ˆì™¸ë¥¼ ë°œìƒí•˜ì§€ ì•ŠìŒ?
+        register(NO_BATCH_JOB                                      , "01B01" , "executeBatch: no batch job to execute." ); // oracleÀº ¿¹¿Ü¸¦ ¹ß»ıÇÏÁö ¾ÊÀ½?
         register(SOME_BATCH_JOB                                    , "01B02" , "%s: Cannot execute the method because some batch jobs were added." );
         register(SOME_RESULTSET_RETURNED                           , "07R01" , "The given SQL statement returns some ResultSet" );
         register(NOT_SUPPORTED_OPERATION_ON_FORWARD_ONLY           , "0AT01" , "Not supported operation on the forward-only ResultSet." );
@@ -276,12 +297,12 @@ public class ErrorDef
         register(UNKNOWN_HOST                                      , "08H01" , "Unknown host: %s" );
         register(UNKNOWN_CONNTYPE                                  , "08H02" , "Unknown conntype: %s");
         register(CLIENT_UNABLE_ESTABLISH_CONNECTION                , "08001" , "Communication link failure: Cannot establish connection to server" );
-        register(THREAD_INTERRUPTED						   	   	   , "JID04" , "Connection thread interrupted." );
-        register(EXCEED_PRIMITIVE_DATA_SIZE						   , "JID05" , "The maximum buffer length was exceeded." );
+        register(THREAD_INTERRUPTED                                , "JID04" , "Connection thread interrupted." );
+        register(EXCEED_PRIMITIVE_DATA_SIZE                        , "JID05" , "The maximum buffer length was exceeded." );
         register(EXPLAIN_PLAN_TURNED_OFF                           , "EPS01" , "EXPLAIN PLAN is set to OFF");
         register(STATEMENT_IS_NOT_PREPARED                         , "HY007" , "The associated statement has not been prepared.");
         register(STMT_ID_MISMATCH                                  , "22V01" , "Invalid statement id: <%s> expected, but <%s>");
-        register(PACKET_TWISTED									   , "JIP01" , "Unexpected packet received.");
+        register(PACKET_TWISTED                                    , "JIP01" , "Unexpected packet received.");
         register(INVALID_QUERY_STRING                              , "07Q01" , "Invalid query string");
         register(DOES_NOT_MATCH_COLUMN_LIST                        , "21S01" , "The INSERT value list does not match the column list.");
         register(OPTION_VALUE_CHANGED                              , "01S02" , "Option value changed: %s");
@@ -329,18 +350,24 @@ public class ErrorDef
         register(SHARD_INVALID_TEST_MARK                           , "HY000" , "Invalid test mark" );
         register(SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE              , "HY000" , "Failover is not available." );
         register(SHARD_NODE_NOT_FOUNDED                            , "HY000" , "No shard node founded by shard key value." );
-        register(SHARD_SINGLE_NODE_TOUCH_ERROR                     , "HY000" , "Server-side query can not be performed in single-node transaction" );
-        register(SHARD_BIND_PARAMETER_MISSING                      , "HY000" , "bind parameter is missing." );
+        register(SHARD_BIND_PARAMETER_MISSING                      , "HY000" , "Shard parameter is not set at index: %s" );
         register(SHARD_MULTINODE_TRANSACTION_REQUIRED              , "HY000" , "Multi-node transaction required." );
         register(SHARD_INVALID_NODE_TOUCH                          , "HY000" , "Invalid node touch." );
-        register(SHARD_SERVERSIDE_NODE_TOUCH_ERROR                 , "HY000" , "Server-side query can not be performed in single-node transaction" );
+        register(SHARD_SERVERSIDE_SINGLE_NODE_TOUCH_ERROR          , "HY000" , "Server-side query can not be performed in single-node transaction" );
         register(SHARD_JDBC_METHOD_INVOKE_ERROR                    , "HY000" , "shard jdbc method invoke error : %s" );
-        register(SHARD_NODE_EXECUTE_ERROR                          , "HY000" , "shard node execution error : %s" );
         register(SHARD_SPLIT_METHOD_NOT_SUPPORTED                  , "HY000" , "shard split method type %s not supported." );
         register(SHARD_RANGE_NOT_FOUNDED                           , "HY000" , "No shard range was founded" );
         register(SHARD_NO_NODES                                    , "HY000" , "No shard nodes" );
-        register(SHARD_OPERATION_FAILED                            , "HY000" , "%s of client-side sharding failed. : %s" );
+        register(SHARD_SMN_OPERATION_FAILED                        , "HY000" , "%s of client-side sharding failed. : %s" );
         register(SHARD_PIN_CHANGED                                 , "HY000" , "Shard pin was changed." );
+        register(SHARD_MULTIPLE_LOB_OPERATION_NOT_SUPPORTED        , "HY000" , "Shard multiple lob operation is not supported." );
+        register(SHARD_CHARSET_ENCODE_ERROR                        , "HY000" , "Cannot encode '%s' to %s charset." );
+        register(EXECUTOR_CANNOT_BE_NULL                           , "HY000" , "Executor cannot be null." );
+        register(TYPE_PARAMETER_CANNOT_BE_NULL                     , "22P06" , "Type parameter cannot be null." );
+        register(TYPE_CONVERSION_NOT_SUPPORTED                     , "22P06" , "Conversion not supported for type %s" );
+        register(CANNOT_BE_UNWRAPPED                               , "22023" , "%s cannot be unwrapped as %s" );
+        register(SHARD_NEED_ROLLBACK                               , "HYC00" , "Failed to execute the statement, because the global transaction has been terminated." );
+        register(SHARD_INTERNAL_ERROR                              , "HY000" , "Shard internal error: %s" );
     }
 
     private static void register(int aErrorCode, String aSQLState, String aMessageForm)
@@ -363,7 +390,7 @@ public class ErrorDef
     {
         if (aErrorCode < FIRST_ERROR_CODE || aErrorCode > LAST_ERROR_CODE)
         {
-            // ì •ì˜ëœ JDBC ì—ëŸ¬ê°€ ì•„ë‹ˆë©´ 08000ì„ ì¤€ë‹¤.
+            // Á¤ÀÇµÈ JDBC ¿¡·¯°¡ ¾Æ´Ï¸é 08000À» ÁØ´Ù.
             return "08000";
         }
         return ERROR_MAP_SQLSTATE[aErrorCode - FIRST_ERROR_CODE];

@@ -19,11 +19,11 @@
  * $Id: qmgWindowing.h 29304 2008-11-14 08:17:42Z jakim $
  *
  * Description :
- *     Windowing Graphë¥¼ ìœ„í•œ ì •ì˜
+ *     Windowing Graph¸¦ À§ÇÑ Á¤ÀÇ
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -34,16 +34,16 @@
 #include <qmgDef.h>
 
 //---------------------------------------------------
-// Windowing Graphì˜ Define ìƒìˆ˜
+// Windowing GraphÀÇ Define »ó¼ö
 //---------------------------------------------------
 
 //---------------------------------------------------
-// Windowing Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+// Windowing Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
 //---------------------------------------------------
 
 typedef struct qmgWINDOW
 {
-    qmgGraph              graph;      // ê³µí†µ Graph ì •ë³´
+    qmgGraph              graph;      // °øÅë Graph Á¤º¸
 
     qmoDistAggArg       * distAggArg;    
     qmsAnalyticFunc     * analyticFuncList;
@@ -54,44 +54,44 @@ typedef struct qmgWINDOW
 } qmgWINDOW;
 
 //---------------------------------------------------
-// Windowing Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+// Windowing Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
 //---------------------------------------------------
 
 class qmgWindowing
 {
 public:
-    // Graph ì˜ ì´ˆê¸°í™”
+    // Graph ÀÇ ÃÊ±âÈ­
     static IDE_RC  init( qcStatement * aStatement,
                          qmsQuerySet * aQuerySet,
                          qmgGraph    * aChildGraph,
                          qmgGraph   ** aGraph );
 
-    // Graphì˜ ìµœì í™” ìˆ˜í–‰
+    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
     static IDE_RC  optimize( qcStatement * aStatement, qmgGraph * aGraph );
 
-    // Graphì˜ Plan Tree ìƒì„±
+    // GraphÀÇ Plan Tree »ı¼º
     static IDE_RC  makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph * aGraph );
 
-    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
+    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
     static IDE_RC  printGraph( qcStatement  * aStatement,
                                qmgGraph     * aGraph,
                                ULong          aDepth,
                                iduVarString * aString );
 
-    // sorting keyë“¤ ì¤‘ì—ì„œ want orderì™€ ë™ì¼í•œ key ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬ 
+    // sorting keyµé Áß¿¡¼­ want order¿Í µ¿ÀÏÇÑ key °¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç 
     static
     IDE_RC existWantOrderInSortingKey( qmgGraph          * aGraph,
                                        qmgPreservedOrder * aWantOrder,
                                        idBool            * aFind,
                                        UInt              * aSameKeyPosition );
 
-    // want orderë¡œ sorting key ë³€ê²½ 
+    // want order·Î sorting key º¯°æ 
     static IDE_RC alterSortingOrder( qcStatement       * aStatement,
                                      qmgGraph          * aGraph,
                                      qmgPreservedOrder * aWantOrder,
                                      idBool              aAlterFirstOrder );
 
-    // planì‹œ ë³€ê²½ëœ sorting key ì •ë³´ ì¬ì„¤ì • 
+    // plan½Ã º¯°æµÈ sorting key Á¤º¸ Àç¼³Á¤ 
     static IDE_RC resetSortingKey( qmgPreservedOrder ** aSortingKeyPtrArr,
                                    UInt                 aSortingKeyCount,
                                    qmsAnalyticFunc   ** aAnalyticFuncListPtrArr);
@@ -99,11 +99,11 @@ public:
     static IDE_RC finalizePreservedOrder( qmgGraph * aGraph );
 
 private:
-    // sorting keyì™€ analytic function ë¶„ë¥˜ 
+    // sorting key¿Í analytic function ºĞ·ù 
     static IDE_RC classifySortingKeyNAnalFunc( qcStatement     * aStatement,
                                                qmgWINDOW       * aMyGraph );
 
-    // partition by, order byì™€ ë™ì¼í•œ sorting key, directionì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬ 
+    // partition by, order by¿Í µ¿ÀÏÇÑ sorting key, directionÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç 
     static IDE_RC existSameSortingKeyAndDirection(
         UInt                 aSortingKeyCount,
         qmgPreservedOrder ** aSortingKeyPtrArr,
@@ -113,7 +113,7 @@ private:
         UInt               * aSortingKeyPosition );
     
     // BUG-33663 Ranking Function
-    // sorting key arrayì—ì„œ ì œê±°ê°€ëŠ¥í•œ sorting keyë¥¼ ì œê±°
+    // sorting key array¿¡¼­ Á¦°Å°¡´ÉÇÑ sorting key¸¦ Á¦°Å
     static IDE_RC compactSortingKeyArr( UInt                 aFlag,
                                         qmgPreservedOrder ** aSortingKeyPtrArr,
                                         UInt               * aSortingKeyCount,

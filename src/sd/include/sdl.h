@@ -23,6 +23,8 @@
 #define _O_SDL_H_ 1
 
 #include <sdi.h>
+#include <sdSql.h>
+#include <sdlStatement.h>
 #include <sdlSqlConnAttrType.h>
 
 #define SQL_FALSE               0
@@ -50,7 +52,6 @@
 
 #define SQL_NTS                 (-3)
 
-#define MAX_ODBC_ERROR_CNT       4
 #define MAX_ODBC_ERROR_MSG_LEN   1024
 #define MAX_ODBC_MSG_LEN         512
 
@@ -95,9 +96,10 @@ public:
     static IDE_RC freeConnect( sdiConnectInfo * aConnectInfo,
                                idBool         * aIsLinkFailure = NULL);
 
-    static IDE_RC allocStmt( sdiConnectInfo * aConnectInfo,
-                             sdlRemoteStmt  * aRemoteStmt,
-                             idBool         * aIsLinkFailure = NULL );
+    static IDE_RC allocStmt( sdiConnectInfo          * aConnectInfo,
+                             sdlRemoteStmt           * aRemoteStmt,
+                             sdiShardPartialExecType   aPartialExecType,
+                             idBool                  * aIsLinkFailure = NULL );
 
     static IDE_RC freeStmt( sdiConnectInfo * aConnectInfo,
                             sdlRemoteStmt  * aRemoteStmt,
@@ -138,6 +140,7 @@ public:
                              SInt             aBufferLen,
                              SInt             aPrecision,
                              SInt             aScale,
+                             SInt           * aIndicator,
                              idBool         * aIsLinkFailure = NULL );
 
     static IDE_RC bindCol( sdiConnectInfo * aConnectInfo,
@@ -145,7 +148,9 @@ public:
                            UInt             aColNo,
                            UInt             aColType,
                            UInt             aColSize,
-                           void           * aBuffer,
+                           void           * aValueBuffer,
+                           UInt             aValueBufferMaxLen,
+                           SInt           * aValueLen,
                            idBool         * aIsLinkFailure = NULL );
 
     static IDE_RC execDirect( sdiConnectInfo * aConnectInfo,
@@ -154,6 +159,14 @@ public:
                               SInt             aQueryLen,
                               sdiClientInfo  * aClientInfo,
                               idBool         * aIsLinkFailure = NULL );
+
+    static IDE_RC addExecDirectCallback( void           ** aCallback,
+                                         UInt              aNodeIndex,
+                                         sdiConnectInfo  * aConnectInfo,
+                                         sdlRemoteStmt   * aRemoteStmt,
+                                         SChar           * aQuery,
+                                         SInt              aLength,
+                                         idBool          * aIsLinkFailure = NULL );
 
     static IDE_RC addExecuteCallback( void           ** aCallback,
                                       UInt              aNodeIndex,
@@ -167,6 +180,13 @@ public:
                                           ID_XID         * aXID,
                                           UChar          * aReadOnly,
                                           idBool         * aIsLinkFailure = NULL );
+
+    static IDE_RC addEndPendingTranCallback( void           ** aCallback,
+                                             UInt              aNodeIndex,
+                                             sdiConnectInfo  * aConnectInfo,
+                                             ID_XID          * aXID,
+                                             idBool            aIsCommit,
+                                             idBool          * aIsLinkFailure );
 
     static IDE_RC addEndTranCallback( void          ** aCallback,
                                       UInt             aNodeIndex,
@@ -187,6 +207,10 @@ public:
                                   idBool         * aIsLinkFailure = NULL );
 
     static void removeCallback( void * aCallback );
+
+    static IDE_RC setFailoverSuspend( sdiConnectInfo         * aConnectInfo,
+                                     sdiFailoverSuspendType   aSuspendOnType,
+                                     UInt                     aNewErrorCode );
 
     static IDE_RC fetch( sdiConnectInfo * aConnectInfo,
                          sdlRemoteStmt  * aRemoteStmt,
@@ -210,6 +234,7 @@ public:
     static IDE_RC setConnAttr( sdiConnectInfo * aConnectInfo,
                                UShort           aAttrType,
                                ULong            aValue,
+                               SChar          * aValueStr,                               
                                idBool         * aIsLinkFailure = NULL );
 
     static IDE_RC getConnAttr( sdiConnectInfo * aConnectInfo,
@@ -279,6 +304,91 @@ public:
     static void appendResultInfoToErrorMessage( sdiConnectInfo    * aConnectInfo,
                                                 qciStmtType         aStmtKind );
 
+    /* PROJ-2728 Sharding LOB */
+    static IDE_RC getLob( sdiConnectInfo * aConnectInfo,
+                          sdlRemoteStmt  * aRemoteStmt,
+                          SShort           aLocatorCType,
+                          ULong            aLocator,
+                          UInt             aStartOffset,
+                          UInt             aSizeToGet,
+                          SShort           aTargetCType,
+                          void           * aBufferToStoreData,
+                          UInt             aSizeBuffer,
+                          UInt           * aSizeReadPtr,
+                          idBool         * aIsLinkFailure );
+
+    static IDE_RC putLob( sdiConnectInfo * aConnectInfo,
+                          sdlRemoteStmt  * aRemoteStmt,
+                          SShort           aLocatorCType,
+                          ULong            aLocator,
+                          SShort           aSourceCType,
+                          void           * aValue,
+                          SLong            aLength,
+                          idBool         * aIsLinkFailure );
+
+    static IDE_RC putEmptyLob( sdiConnectInfo * aConnectInfo,
+                               sdlRemoteStmt  * aRemoteStmt,
+                               SShort           aLocatorCType,
+                               ULong            aLocator,
+                               SShort           aSourceCType,
+                               void           * aValue,
+                               idBool         * aIsLinkFailure );
+
+    static IDE_RC lobWrite( sdiConnectInfo * aConnectInfo,
+                            sdlRemoteStmt  * aRemoteStmt,
+                            SShort           aLocatorCType,
+                            ULong            aLocator,
+                            SShort           aTargetCType,
+                            void           * aDataToPut,
+                            UInt             aSizeDataToPut,
+                            idBool         * aIsLinkFailure );
+
+    static IDE_RC lobPrepare4Write( sdiConnectInfo * aConnectInfo,
+                                    sdlRemoteStmt  * aRemoteStmt,
+                                    SShort           aLocatorCType,
+                                    ULong            aLocator,
+                                    UInt             aStartOffset,
+                                    UInt             aNewSize,
+                                    idBool         * aIsLinkFailure );
+
+    static IDE_RC lobFinishWrite( sdiConnectInfo * aConnectInfo,
+                                  sdlRemoteStmt  * aRemoteStmt,
+                                  SShort           aLocatorCType,
+                                  ULong            aLocator,
+                                  idBool         * aIsLinkFailure );
+
+    static IDE_RC getLobLength( sdiConnectInfo * aConnectInfo,
+                                sdlRemoteStmt  * aRemoteStmt,
+                                SShort           aLocatorCType,
+                                ULong            aLocator,
+                                UInt           * aLobLengthPtr,
+                                idBool         * aIsNullLob,
+                                idBool         * aIsLinkFailure );
+
+    static IDE_RC freeLob( sdiConnectInfo * aConnectInfo,
+                           sdlRemoteStmt  * aRemoteStmt,
+                           ULong            aLocator,
+                           idBool         * aIsLinkFailure );
+
+    static IDE_RC trimLob( sdiConnectInfo * aConnectInfo,
+                           sdlRemoteStmt  * aRemoteStmt,
+                           SShort           aLocatorCType,
+                           ULong            aLocator,
+                           UInt             aStartOffset,
+                           idBool         * aIsLinkFailure );
+
+    /* PROJ-2733-DistTxInfo */
+    static IDE_RC getSCN( sdiConnectInfo * aConnectInfo, smSCN * aSCN );
+    static IDE_RC setSCN( sdiConnectInfo * aConnectInfo, smSCN * aSCN );
+    static IDE_RC setTxFirstStmtSCN( sdiConnectInfo * aConnectInfo, smSCN * aTxFirstStmtSCN );
+    static IDE_RC setTxFirstStmtTime( sdiConnectInfo * aConnectInfo, SLong aTxFirstStmtTime );
+    static IDE_RC setDistLevel( sdiConnectInfo * aConnectInfo, sdiDistLevel aDistLevel );
+
+    static IDE_RC setTargetShardMetaNumber( sdiClientInfo * aClientInfo, sdiConnectInfo * aConnectInfo );
+
+    /* TASK-7219 Non-shard DML */
+    static IDE_RC setStmtExecSeq( sdiConnectInfo * aConnectInfo, UInt aStmtExecSequence );
+
 private:
     static IDE_RC getConnectedLinkFullAddress( sdiConnectInfo * aConnectInfo );
 
@@ -288,7 +398,9 @@ private:
                               sdiConnectInfo * aConnectInfo,
                               idBool         * aIsLinkFailure = NULL );
 
-    static void appendFootPrintToErrorMessage( sdiConnectInfo * aConnectInfo );
+    static void appendFootPrintToErrorMessage( sdiConnectInfo * aConnectInfo,
+                                               UInt             aErrorCode, 
+                                               SChar          * aErrorMsgPtr );
 
     static void makeIdeErrorBackup( sdlNestedErrorMgr * aMgr );
 
@@ -302,10 +414,84 @@ private:
 
     static IDE_RC loadLibrary();
 
+    static idBool isFatalError( SShort           aHandleType,
+                                void            *aHandle,
+                                sdiConnectInfo  *aConnectInfo );
+
+    /* PROJ-2728 Sharding LOB */
+    static IDE_RC lobEnter( sdiConnectInfo * aConnectInfo,
+                            sdlRemoteStmt  * aRemoteStmt,
+                            const SChar    * aSdlFuncName,
+                            SShort         * aHandleType,
+                            SQLHANDLE      * aHandle );
+
+    /* TASK-7218 Multi-Error Handling */
+    static void addShardError( UInt             aErrorCode,
+                               UInt             aNodeErrorCode,
+                               SChar          * aErrorMessage,
+                               SChar          * aCallFncName,
+                               SChar          * aNodeName,
+                               sdiConnectInfo * aConnectInfo );
+
 private:
     static LIBRARY_HANDLE mOdbcLibHandle;
     static idBool         mInitialized;
 };
+
+#define IS_SUCCEEDED( aRET ) {\
+    ( ( aRET == SQL_SUCCESS ) || ( aRET == SQL_SUCCESS_WITH_INFO ) || ( aRet == SQL_NO_DATA ) )
+
+#define LOAD_LIBRARY(aName, aHandle)\
+        {\
+            aHandle = idlOS::dlopen( aName, RTLD_LAZY|RTLD_GLOBAL );\
+            IDE_TEST_RAISE( aHandle == NULL, errInitOdbcLibrary );\
+        }
+
+#define ODBC_FUNC_DEF( aType )\
+        {\
+            SQL##aType = (ODBC##aType)idlOS::dlsym( sdl::mOdbcLibHandle, STR_SQL##aType );\
+            IDE_TEST_RAISE( SQL##aType == NULL, errInitOdbcLibrary );\
+        }
+
+#define IDE_EXCEPTION_UNINIT_LIBRARY( aConnectionInfo, aFunctionName )\
+        IDE_EXCEPTION( UnInitializedError )\
+        {\
+            IDE_SET( ideSetErrorCode( sdERR_ABORT_UNINITIALIZED_LIBRARY, \
+                                      ( (aConnectionInfo == NULL) ? (SChar*)"" : \
+                                                                    (SChar*)aConnectionInfo->mNodeName ), \
+                                      aFunctionName ) );\
+        }
+
+#define IDE_EXCEPTION_NULL_DBC( aConnectionInfo, aFunctionName )\
+        IDE_EXCEPTION( ErrorNullDbc )\
+        {\
+            IDE_SET( ideSetErrorCode( sdERR_ABORT_EXECUTE_NULL_DBC, \
+                                      ( (aConnectionInfo == NULL) ? (SChar*)"" : \
+                                                                    (SChar*)aConnectionInfo->mNodeName ), \
+                                      aFunctionName ) );\
+        }
+
+#define IDE_EXCEPTION_NULL_STMT( aConnectionInfo, aFunctionName )\
+        IDE_EXCEPTION( ErrorNullStmt )\
+        {\
+            IDE_SET( ideSetErrorCode( sdERR_ABORT_EXECUTE_NULL_STMT, \
+                                      ( (aConnectionInfo == NULL) ? (SChar*)"" : \
+                                                                    (SChar*)aConnectionInfo->mNodeName ), \
+                                      aFunctionName ) );\
+        }
+
+#define IDE_EXCEPTION_NULL_SD_STMT( aConnectionInfo, aFunctionName )\
+        IDE_EXCEPTION( ErrorNullSdStmt )\
+        {\
+            IDE_SET( ideSetErrorCode( sdERR_ABORT_EXECUTE_NULL_SD_STMT, \
+                                      ( (aConnectionInfo == NULL) ? (SChar*)"" : \
+                                                                    (SChar*)aConnectionInfo->mNodeName ), \
+                                      aFunctionName ) );\
+        }
+
+#define SET_LINK_FAILURE_FLAG( aFlagPtr, aValue )\
+        if ( aFlagPtr != NULL ){ *aFlagPtr = aValue; }\
+        else { /* Do Nothing. */ }
 
 inline idBool sdl::hasNodeAlternate( sdiNode * aNode )
 {
@@ -314,4 +500,42 @@ inline idBool sdl::hasNodeAlternate( sdiNode * aNode )
              ID_TRUE :
              ID_FALSE );
 }
+
+inline IDE_RC sdl::lobEnter( sdiConnectInfo * aConnectInfo,
+                             sdlRemoteStmt  * aRemoteStmt,
+                             const SChar    * aSdlFuncName,
+                             SShort         * aHandleType,
+                             SQLHANDLE      * aHandle )
+{
+    IDE_TEST_RAISE( mInitialized == ID_FALSE, UnInitializedError );
+
+    if ( aRemoteStmt != NULL && aRemoteStmt->mStmt != NULL )
+    {
+        *aHandleType   = SQL_HANDLE_STMT;
+        *aHandle = (SQLHANDLE) aRemoteStmt->mStmt;
+    }
+    else if ( aConnectInfo != NULL && aConnectInfo->mDbc != NULL )
+    {
+        *aHandleType   = SQL_HANDLE_DBC;
+        *aHandle = (SQLHANDLE) aConnectInfo->mDbc;
+    }
+    else
+    {
+        IDE_TEST_RAISE( aRemoteStmt == NULL, ErrorNullSdStmt );
+        IDE_TEST_RAISE( aConnectInfo == NULL, ErrorNullSdStmt );
+        IDE_TEST_RAISE( aRemoteStmt->mStmt == NULL, ErrorNullStmt );
+        IDE_TEST_RAISE( aConnectInfo->mDbc == NULL, ErrorNullDbc );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_UNINIT_LIBRARY( aConnectInfo, aSdlFuncName )
+    IDE_EXCEPTION_NULL_SD_STMT( aConnectInfo, aSdlFuncName )
+    IDE_EXCEPTION_NULL_DBC( aConnectInfo, aSdlFuncName )
+    IDE_EXCEPTION_NULL_STMT( aConnectInfo, aSdlFuncName )
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 #endif /* _O_SDL_H_ */

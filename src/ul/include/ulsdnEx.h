@@ -18,7 +18,8 @@
 #define _O_ULSDN_EX_H_ 1
 
 SQLRETURN ulsdFetch(ulnStmt *aStmt);
-SQLRETURN ulsdExecute(ulnStmt *aStmt);
+SQLRETURN ulsdExecute( ulnFnContext * aFnContext,
+                       ulnStmt      * aStmt );
 SQLRETURN ulsdDriverConnect(ulnDbc       *aDbc,
                            acp_char_t   *aConnString,
                            acp_sint16_t  aConnStringLength,
@@ -26,4 +27,6 @@ SQLRETURN ulsdDriverConnect(ulnDbc       *aDbc,
                            acp_sint16_t  aOutBufferLength,
                            acp_sint16_t *aOutConnectionStringLength);
 SQLRETURN ulsdDisconnect(ulnDbc *aDbc);
+SQLRETURN ulsdExecuteAndRetry(ulnFnContext *aFnContext,
+                              ulnStmt      *aStmt);
 #endif /* _O_ULSDN_EX_H_ */

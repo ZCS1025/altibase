@@ -4,7 +4,7 @@
 
 include ../dkEnv.mk
 
-# NLS ì¤‘ ì˜ì–´ ì—ëŸ¬ ë©”ì‹œì§€ í™”ì¼ ì •ì˜ 
+# NLS Áß ¿µ¾î ¿¡·¯ ¸Þ½ÃÁö È­ÀÏ Á¤ÀÇ 
 E_DK_US_MSG    = E_DK_US7ASCII.msg
 ALLMSG         = $(E_DK_US_MSG)
 
@@ -26,6 +26,7 @@ compile:  $(ALLMSB)
 $(E_DK_US_MSB) : $(E_DK_US_MSG) $(GENERRMSG)
 	$(GENERRMSG) -i $(E_DK_US_MSG) -o $(E_DK_HEADER)
 	cp -f DK_TRC_CODE.ih DK_TRC_CODE.ic $(E_DK_HEADER) ../include
+	sync
 
 $(ALLMSB): $(E_DK_US_MSB)
 	$(COPY) $^ $@

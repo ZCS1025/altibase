@@ -31,9 +31,9 @@ qsxRefCursor::initialize( qsxRefCursorInfo * aRefCurInfo,
 {
 /***********************************************************************
  *
- *  Description : Reference Cursor ì´ˆê¸°í™”
+ *  Description : Reference Cursor ÃÊ±âÈ­
  *
- *  Implementation : qsxRefCursorInfoêµ¬ì¡°ì²´ì˜ ë©¤ë²„ë¥¼ ëª¨ë‘ ì´ˆê¸°í™”í•¨
+ *  Implementation : qsxRefCursorInfo±¸Á¶Ã¼ÀÇ ¸â¹ö¸¦ ¸ðµÎ ÃÊ±âÈ­ÇÔ
  *
  ***********************************************************************/
 
@@ -57,7 +57,7 @@ qsxRefCursor::finalize( qsxRefCursorInfo * aRefCurInfo )
  *
  *  Description : Reference Cursor finalize
  *
- *  Implementation : initializeì™€ ê±°ì˜ë™ì¼í•˜ë‚˜, idë¥¼ 0ìœ¼ë¡œ ì´ˆê¸°í™”
+ *  Implementation : initialize¿Í °ÅÀÇµ¿ÀÏÇÏ³ª, id¸¦ 0À¸·Î ÃÊ±âÈ­
  *
  ***********************************************************************/
 
@@ -101,16 +101,16 @@ qsxRefCursor::openFor( qsxRefCursorInfo * aRefCurInfo,
 {
 /***********************************************************************
  *
- *  Description : ì£¼ì–´ì§„ query stringê³¼ parameterë¡œ prepare-execute
+ *  Description : ÁÖ¾îÁø query string°ú parameter·Î prepare-execute
  *
  *  Implementation :
- *             (1) statement í• ë‹¹
- *             (2) prepareí›„, selectì¸ì§€ ê²€ì‚¬
+ *             (1) statement ÇÒ´ç
+ *             (2) prepareÈÄ, selectÀÎÁö °Ë»ç
  *             (3) parameter info bind
  *             (4) parameter data bind
  *             (5) execute
- *             (6) executeì‹œ í•œê±´ fetchë¥¼ ë‚´ë¶€ì ìœ¼ë¡œ ì‹œë„í•´ë³´ê¸° ë•Œë¬¸ì—
- *                 recordì¡´ìž¬í•˜ëŠ”ì§€ ì €ìž¥
+ *             (6) execute½Ã ÇÑ°Ç fetch¸¦ ³»ºÎÀûÀ¸·Î ½ÃµµÇØº¸±â ¶§¹®¿¡
+ *                 recordÁ¸ÀçÇÏ´ÂÁö ÀúÀå
  *
  ***********************************************************************/
 
@@ -119,37 +119,66 @@ qsxRefCursor::openFor( qsxRefCursorInfo * aRefCurInfo,
     mtcColumn      * sMtcColumn;
     void           * sValue;
     UInt             sValueSize;
-    vSLong           sAffectedRowCount;
     idBool           sResultSetExist;
     qciStmtType      sStmtType;
-
-    qsxStmtList    * sStmtList = aQcStmt->spvEnv->mStmtList;
+    UInt             sPoolCount = 0;
+    vSLong           sAffectedRowCount;
+    qcStatement    * sExecQcStmt   = NULL;
+    qsxStmtList    * sStmtList  = aQcStmt->spvEnv->mStmtList;
+    qsxStmtList2   * sStmtList2 = aQcStmt->spvEnv->mStmtList2;
 
     if( aRefCurInfo->hStmt == NULL )
     {
         // BUG-38767
-        if( aQcStmt->spvEnv->mStmtList != NULL )
+        if ( ( sStmtList != NULL ) || ( sStmtList2 != NULL ) )
         {
             // BUG-43158 Enhance statement list caching in PSM
             IDE_ERROR( aSqlIdx != ID_UINT_MAX );
 
-            if ( QSX_STMT_LIST_IS_UNUSED( sStmtList->mStmtPoolStatus, aSqlIdx )
-                 == ID_TRUE )
+            IDU_FIT_POINT_RAISE( "qsxRefCursor::openFor::is_unused", err_sql_index );
+            sPoolCount = aQcStmt->session->mQPSpecific.mStmtListInfo.mStmtPoolCount;
+            IDE_TEST_RAISE( aSqlIdx >= sPoolCount, err_sql_index );
+
+            if ( sStmtList != NULL )
             {
-                IDE_TEST( qcd::allocStmt( aQcStmt,
-                                          &aRefCurInfo->hStmt )
-                          != IDE_SUCCESS );
+                if ( QSX_STMT_LIST_IS_UNUSED( sStmtList->mStmtPoolStatus, aSqlIdx )
+                     == ID_TRUE )
+                {
+                    IDE_TEST( qcd::allocStmt( aQcStmt,
+                                              &aRefCurInfo->hStmt )
+                              != IDE_SUCCESS );
 
-                aRefCurInfo->isNeedStmtFree = ID_TRUE;
+                    aRefCurInfo->isNeedStmtFree = ID_TRUE;
 
-                sStmtList->mStmtPool[aSqlIdx] = aRefCurInfo->hStmt;
+                    sStmtList->mStmtPool[aSqlIdx] = aRefCurInfo->hStmt;
+                }
+                else
+                {
+                    aRefCurInfo->hStmt = (void*)sStmtList->mStmtPool[aSqlIdx];
+                    IDE_TEST( qcd::freeStmt( aRefCurInfo->hStmt, ID_FALSE )
+                              != IDE_SUCCESS );
+                }
             }
-            else
+
+            if ( sStmtList2 != NULL )
             {
-                aRefCurInfo->hStmt = (void*)sStmtList->mStmtPool[aSqlIdx];
-                IDE_TEST( qcd::freeStmt( aRefCurInfo->hStmt,
-                                         ID_FALSE )
-                          != IDE_SUCCESS );
+                if ( QSX_STMT_LIST_IS_UNUSED( sStmtList2->mStmtPoolStatus, aSqlIdx )
+                     == ID_TRUE )
+                {
+                    IDE_TEST( qcd::allocStmt( aQcStmt,
+                                              &aRefCurInfo->hStmt )
+                              != IDE_SUCCESS );
+
+                    aRefCurInfo->isNeedStmtFree = ID_TRUE;
+
+                    sStmtList2->mStmtPool[aSqlIdx] = aRefCurInfo->hStmt;
+                }
+                else
+                {
+                    aRefCurInfo->hStmt = (void*)sStmtList2->mStmtPool[aSqlIdx];
+                    IDE_TEST( qcd::freeStmt( aRefCurInfo->hStmt, ID_FALSE )
+                              != IDE_SUCCESS );
+                }
             }
         }
         else
@@ -172,18 +201,33 @@ qsxRefCursor::openFor( qsxRefCursorInfo * aRefCurInfo,
     aRefCurInfo->rowCountIsNull = ID_FALSE;
     aRefCurInfo->isOpen         = ID_FALSE;
 
+    IDE_TEST( qcd::getQcStmt( aRefCurInfo->hStmt,
+                              &sExecQcStmt )
+              != IDE_SUCCESS );
+
     IDE_TEST( qcd::prepare( aRefCurInfo->hStmt,
+                            aQcStmt,
+                            sExecQcStmt,
+                            &sStmtType,
                             aQueryString,
                             aQueryLen,
-                            &sStmtType,
                             ID_TRUE )
               != IDE_SUCCESS );
 
-    if ( ( aQcStmt->spvEnv->mStmtList  != NULL ) &&
+    if ( ( ( sStmtList  != NULL ) || ( sStmtList2 != NULL ) ) &&
          ( aRefCurInfo->isNeedStmtFree == ID_TRUE ) )
     {
+        IDU_FIT_POINT_RAISE( "qsxRefCursor::openFor::set_used", err_sql_index );
+        IDE_TEST_RAISE( aSqlIdx >= sPoolCount, err_sql_index );
         aRefCurInfo->isNeedStmtFree = ID_FALSE;
-        QSX_STMT_LIST_SET_USED( sStmtList->mStmtPoolStatus, aSqlIdx );
+        if ( sStmtList != NULL )
+        {
+            QSX_STMT_LIST_SET_USED( sStmtList->mStmtPoolStatus, aSqlIdx );
+        }
+        if ( sStmtList2 != NULL )
+        {
+            QSX_STMT_LIST_SET_USED( sStmtList2->mStmtPoolStatus, aSqlIdx );
+        }
     }
     else
     {
@@ -233,26 +277,14 @@ qsxRefCursor::openFor( qsxRefCursorInfo * aRefCurInfo,
             sMtcColumn,
             sValue );
 
-        switch( sUsingParam->inOutType )
-        {
-            case QS_IN:
-            case QS_INOUT:
-            {
-                IDE_TEST( qcd::bindParamData( aRefCurInfo->hStmt,
-                                              sValue,
-                                              sValueSize,
-                                              sBindParamId )
-                          != IDE_SUCCESS );
-            }
-            break;
-
-            case QS_OUT:
-                break;
-
-            default:
-                IDE_DASSERT(0);
-                break;
-        }
+        IDE_TEST( qcd::bindParamData( aRefCurInfo->hStmt,
+                                      sValue,
+                                      sValueSize,
+                                      sBindParamId,
+                                      aQcStmt->qmxMem,
+                                      NULL,
+                                      sUsingParam->inOutType )
+                  != IDE_SUCCESS );
 
         sBindParamId++;
     }
@@ -274,6 +306,11 @@ qsxRefCursor::openFor( qsxRefCursorInfo * aRefCurInfo,
     {
         IDE_SET(ideSetErrorCode(qpERR_ABORT_QSX_NOT_QUERY));
     }
+    IDE_EXCEPTION(err_sql_index)
+    {
+        IDE_SET(ideSetErrorCode( qpERR_ABORT_QSX_INTERNAL_SERVER_ERROR_ARG,
+                                 "[qsxRefCursor::openFor_sql_index_is_wrong]"));
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -286,8 +323,8 @@ qsxRefCursor::close( qsxRefCursorInfo * aRefCurInfo )
  *
  *  Description : close ref cursor
  *
- *  Implementation : cursorì— ë‹¬ë ¤ ìžˆëŠ” statementë¥¼ freeí•˜ê³ ,
- *                   ë³€ìˆ˜ ì´ˆê¸°í™”
+ *  Implementation : cursor¿¡ ´Þ·Á ÀÖ´Â statement¸¦ freeÇÏ°í,
+ *                   º¯¼ö ÃÊ±âÈ­
  *
  ***********************************************************************/
 
@@ -321,13 +358,13 @@ qsxRefCursor::fetchInto( qsxRefCursorInfo  * aRefCurInfo,
 {
 /*****************************************************************************
  *
- *  Description : ë ˆì½”ë“œ í•œê±´ì„ fetchí•˜ì—¬ into(bulk collection)ì ˆ ë³€ìˆ˜ì— ëŒ€ìž…
+ *  Description : ·¹ÄÚµå ÇÑ°ÇÀ» fetchÇÏ¿© into(bulk collection)Àý º¯¼ö¿¡ ´ëÀÔ
  *
  *  Implementation :
- *              (1) intoì ˆ ë³€ìˆ˜ì˜ ë°ì´í„° íƒ€ìž…ìœ¼ë¡œ bindColumnInfo
- *              (2) intoì ˆ ë³€ìˆ˜ì˜ ê°’ì„ bindColumnData
- *              (3) í•œê±´ fetch, rowcountì¦ê°€
- *              (4) ë”ì´ìƒ ë ˆì½”ë“œê°€ ì—†ëŠ”ì§€ ì—¬ë¶€ ì €ìž¥
+ *              (1) intoÀý º¯¼öÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀ¸·Î bindColumnInfo
+ *              (2) intoÀý º¯¼öÀÇ °ªÀ» bindColumnData
+ *              (3) ÇÑ°Ç fetch, rowcountÁõ°¡
+ *              (4) ´õÀÌ»ó ·¹ÄÚµå°¡ ¾ø´ÂÁö ¿©ºÎ ÀúÀå
  *
  *****************************************************************************/
 
@@ -374,7 +411,7 @@ qsxRefCursor::fetchInto( qsxRefCursorInfo  * aRefCurInfo,
               != IDE_SUCCESS );
 
     /* BUG-41707 */
-    // limitì ˆì˜ count ê°’ì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
+    // limitÀýÀÇ count °ªÀ» °¡Á®¿É´Ï´Ù.
     if ( sIntoVarNodes->bulkCollect == ID_TRUE )
     {
         if ( sLimit != NULL )
@@ -388,7 +425,7 @@ qsxRefCursor::fetchInto( qsxRefCursorInfo  * aRefCurInfo,
         else
         {
             // Nothing to do.
-            // ì´ ê²½ìš°ì—ëŠ” sLimit = MTD_INTEGER_MAXIMUM
+            // ÀÌ °æ¿ì¿¡´Â sLimit = MTD_INTEGER_MAXIMUM
         }
     }
     else
@@ -410,11 +447,11 @@ qsxRefCursor::fetchInto( qsxRefCursorInfo  * aRefCurInfo,
                 sIndexValue  = QTC_TMPL_FIXEDDATA( QC_PRIVATE_TMPLATE(aQcStmt),
                                                    sIndexNode );
 
-                // bulk collect intoì—ì„œ ì‚¬ìš©ë˜ëŠ” arrayì˜ indexëŠ” integer typeì´ì—¬ì•¼ í•œë‹¤.
+                // bulk collect into¿¡¼­ »ç¿ëµÇ´Â arrayÀÇ index´Â integer typeÀÌ¿©¾ß ÇÑ´Ù.
                 IDE_DASSERT( QTC_TMPL_COLUMN( QC_PRIVATE_TMPLATE(aQcStmt),
                                               sIndexNode )->module->id  == MTD_INTEGER_ID );
 
-                // arrayì˜ indexë¥¼ ì´ì „ index ê°’ì— +1
+                // arrayÀÇ index¸¦ ÀÌÀü index °ª¿¡ +1
                 *(mtdIntegerType*)sIndexValue =
                     (mtdIntegerType)(sRowCount + 1);
             }
@@ -427,7 +464,7 @@ qsxRefCursor::fetchInto( qsxRefCursorInfo  * aRefCurInfo,
         sBindColumnId = 0;
         sBindColumnDataList = NULL;
 
-        // bindColumnDataListìƒì„±
+        // bindColumnDataList»ý¼º
         if( aFetch->isIntoVarRecordType == ID_TRUE )
         {
             IDE_DASSERT( sIntoVarNodes->intoNodes != NULL );
@@ -499,9 +536,9 @@ qsxRefCursor::fetchInto( qsxRefCursorInfo  * aRefCurInfo,
         sRowCount++;
         sLimitCount--;
 
-        // bulk collect intoì ˆê³¼ í•¨ê»˜ì˜¨ limit ì ˆì˜ count ìˆ˜ì™€ fetchí•œ ë ˆì½”ë“œ ìˆ˜ê°€ ê°™ì€ ê²½ìš°
-        // ë”ì´ìƒ ë°ì´í„°ê°€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
-        // fetchë¥¼ ìˆ˜í–‰í•  í•„ìš”ê°€ ì—†ë‹¤.
+        // bulk collect intoÀý°ú ÇÔ²²¿Â limit ÀýÀÇ count ¼ö¿Í fetchÇÑ ·¹ÄÚµå ¼ö°¡ °°Àº °æ¿ì
+        // ´õÀÌ»ó µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
+        // fetch¸¦ ¼öÇàÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
         if ( ( sLimitCount == 0 ) || ( aRefCurInfo->nextRecordExist == ID_FALSE ) )
         {
             break;

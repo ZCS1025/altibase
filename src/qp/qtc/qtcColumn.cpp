@@ -16,16 +16,16 @@
  
 
 /***********************************************************************
- * $Id: qtcColumn.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qtcColumn.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  *
  * Description :
  *
- *     Columnì„ ì˜ë¯¸í•˜ëŠ” Node
+ *     ColumnÀ» ÀÇ¹ÌÇÏ´Â Node
  *     Ex) T1.i1
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -43,7 +43,7 @@ extern mtdModule mtdList;
 extern mtxModule mtxColumn; /* PROJ-2632 */
 
 //-----------------------------------------
-// Column ì—°ì‚°ìì˜ ì´ë¦„ì— ëŒ€í•œ ì •ë³´
+// Column ¿¬»êÀÚÀÇ ÀÌ¸§¿¡ ´ëÇÑ Á¤º¸
 //-----------------------------------------
 
 static mtcName qtcNames[1] = {
@@ -51,7 +51,7 @@ static mtcName qtcNames[1] = {
 };
 
 //-----------------------------------------
-// Column ì—°ì‚°ìì˜ Module ì— ëŒ€í•œ ì •ë³´
+// Column ¿¬»êÀÚÀÇ Module ¿¡ ´ëÇÑ Á¤º¸
 //-----------------------------------------
 
 static IDE_RC qtcColumnEstimate( mtcNode*     aNode,
@@ -61,20 +61,20 @@ static IDE_RC qtcColumnEstimate( mtcNode*     aNode,
                                  mtcCallBack* aCallBack );
 
 mtfModule qtc::columnModule = {
-    1|                      // í•˜ë‚˜ì˜ Column ê³µê°„
-    MTC_NODE_INDEX_USABLE|  // Indexë¥¼ ì‚¬ìš©í•  ìˆ˜ ìˆìŒ
-    MTC_NODE_OPERATOR_MISC, // ê¸°íƒ€ ì—°ì‚°ì
-    ~0,                     // Indexable Mask : ì˜ë¯¸ ì—†ìŒ
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
-    qtcNames,               // ì´ë¦„ ì •ë³´
-    NULL,                   // Counter ì—°ì‚°ì ì—†ìŒ
-    mtf::initializeDefault, // ì„œë²„ êµ¬ë™ì‹œ ì´ˆê¸°í™” í•¨ìˆ˜, ì—†ìŒ
-    mtf::finalizeDefault,   // ì„œë²„ ì¢…ë£Œì‹œ ì¢…ë£Œ í•¨ìˆ˜, ì—†ìŒ
-    qtcColumnEstimate       // Estimate í•  í•¨ìˆ˜
+    1|                      // ÇÏ³ªÀÇ Column °ø°£
+    MTC_NODE_INDEX_USABLE|  // Index¸¦ »ç¿ëÇÒ ¼ö ÀÖÀ½
+    MTC_NODE_OPERATOR_MISC, // ±âÅ¸ ¿¬»êÀÚ
+    ~0,                     // Indexable Mask : ÀÇ¹Ì ¾øÀ½
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    qtcNames,               // ÀÌ¸§ Á¤º¸
+    NULL,                   // Counter ¿¬»êÀÚ ¾øÀ½
+    mtf::initializeDefault, // ¼­¹ö ±¸µ¿½Ã ÃÊ±âÈ­ ÇÔ¼ö, ¾øÀ½
+    mtf::finalizeDefault,   // ¼­¹ö Á¾·á½Ã Á¾·á ÇÔ¼ö, ¾øÀ½
+    qtcColumnEstimate       // Estimate ÇÒ ÇÔ¼ö
 };
 
 //-----------------------------------------
-// Column ì—°ì‚°ìì˜ ìˆ˜í–‰ í•¨ìˆ˜ì˜ ì •ì˜
+// Column ¿¬»êÀÚÀÇ ¼öÇà ÇÔ¼öÀÇ Á¤ÀÇ
 //-----------------------------------------
 
 IDE_RC qtcCalculate_Column( mtcNode*  aNode,
@@ -103,51 +103,51 @@ IDE_RC qtcCalculate_IndirectColumn( mtcNode*  aNode,
                                     mtcTemplate* aTemplate );
 
 static const mtcExecute qtcExecute = {
-    mtf::calculateNA,     // Aggregation ì´ˆê¸°í™” í•¨ìˆ˜, ì—†ìŒ
-    mtf::calculateNA,     // Aggregation ìˆ˜í–‰ í•¨ìˆ˜, ì—†ìŒ
+    mtf::calculateNA,     // Aggregation ÃÊ±âÈ­ ÇÔ¼ö, ¾øÀ½
+    mtf::calculateNA,     // Aggregation ¼öÇà ÇÔ¼ö, ¾øÀ½
     mtf::calculateNA,
-    mtf::calculateNA,     // Aggregation ì¢…ë£Œ í•¨ìˆ˜, ì—†ìŒ
-    qtcCalculate_Column,  // COLUMN ì—°ì‚° í•¨ìˆ˜
-    NULL,                 // ì—°ì‚°ì„ ìœ„í•œ ë¶€ê°€ ì •ë³´, ì—†ìŒ
+    mtf::calculateNA,     // Aggregation Á¾·á ÇÔ¼ö, ¾øÀ½
+    qtcCalculate_Column,  // COLUMN ¿¬»ê ÇÔ¼ö
+    NULL,                 // ¿¬»êÀ» À§ÇÑ ºÎ°¡ Á¤º¸, ¾øÀ½
     mtxColumn.mCommon,
-    mtk::estimateRangeNA, // Key Range í¬ê¸° ì¶”ì¶œ í•¨ìˆ˜, ì—†ìŒ
-    mtk::extractRangeNA   // Key Range ìƒì„± í•¨ìˆ˜, ì—†ìŒ
+    mtk::estimateRangeNA, // Key Range Å©±â ÃßÃâ ÇÔ¼ö, ¾øÀ½
+    mtk::extractRangeNA   // Key Range »ı¼º ÇÔ¼ö, ¾øÀ½
 };
 
 static const mtcExecute qtcExecuteArrayColumn = {
-    mtf::calculateNA,     // Aggregation ì´ˆê¸°í™” í•¨ìˆ˜, ì—†ìŒ
-    mtf::calculateNA,     // Aggregation ìˆ˜í–‰ í•¨ìˆ˜, ì—†ìŒ
+    mtf::calculateNA,     // Aggregation ÃÊ±âÈ­ ÇÔ¼ö, ¾øÀ½
+    mtf::calculateNA,     // Aggregation ¼öÇà ÇÔ¼ö, ¾øÀ½
     mtf::calculateNA,
-    mtf::calculateNA,     // Aggregation ì¢…ë£Œ í•¨ìˆ˜, ì—†ìŒ
-    qtcCalculate_ArrayColumn,  // COLUMN ì—°ì‚° í•¨ìˆ˜
-    NULL,                 // ì—°ì‚°ì„ ìœ„í•œ ë¶€ê°€ ì •ë³´, ì—†ìŒ
+    mtf::calculateNA,     // Aggregation Á¾·á ÇÔ¼ö, ¾øÀ½
+    qtcCalculate_ArrayColumn,  // COLUMN ¿¬»ê ÇÔ¼ö
+    NULL,                 // ¿¬»êÀ» À§ÇÑ ºÎ°¡ Á¤º¸, ¾øÀ½
     mtx::calculateNA,
-    mtk::estimateRangeNA, // Key Range í¬ê¸° ì¶”ì¶œ í•¨ìˆ˜, ì—†ìŒ
-    mtk::extractRangeNA   // Key Range ìƒì„± í•¨ìˆ˜, ì—†ìŒ
+    mtk::estimateRangeNA, // Key Range Å©±â ÃßÃâ ÇÔ¼ö, ¾øÀ½
+    mtk::extractRangeNA   // Key Range »ı¼º ÇÔ¼ö, ¾øÀ½
 };
 
 static const mtcExecute qtcExecuteIndirectArrayColumn = {
-    mtf::calculateNA,     // Aggregation ì´ˆê¸°í™” í•¨ìˆ˜, ì—†ìŒ
-    mtf::calculateNA,     // Aggregation ìˆ˜í–‰ í•¨ìˆ˜, ì—†ìŒ
+    mtf::calculateNA,     // Aggregation ÃÊ±âÈ­ ÇÔ¼ö, ¾øÀ½
+    mtf::calculateNA,     // Aggregation ¼öÇà ÇÔ¼ö, ¾øÀ½
     mtf::calculateNA,
-    mtf::calculateNA,     // Aggregation ì¢…ë£Œ í•¨ìˆ˜, ì—†ìŒ
-    qtcCalculate_IndirectArrayColumn,  // COLUMN ì—°ì‚° í•¨ìˆ˜
-    NULL,                 // ì—°ì‚°ì„ ìœ„í•œ ë¶€ê°€ ì •ë³´, ì—†ìŒ
+    mtf::calculateNA,     // Aggregation Á¾·á ÇÔ¼ö, ¾øÀ½
+    qtcCalculate_IndirectArrayColumn,  // COLUMN ¿¬»ê ÇÔ¼ö
+    NULL,                 // ¿¬»êÀ» À§ÇÑ ºÎ°¡ Á¤º¸, ¾øÀ½
     mtx::calculateNA,
-    mtk::estimateRangeNA, // Key Range í¬ê¸° ì¶”ì¶œ í•¨ìˆ˜, ì—†ìŒ
-    mtk::extractRangeNA   // Key Range ìƒì„± í•¨ìˆ˜, ì—†ìŒ
+    mtk::estimateRangeNA, // Key Range Å©±â ÃßÃâ ÇÔ¼ö, ¾øÀ½
+    mtk::extractRangeNA   // Key Range »ı¼º ÇÔ¼ö, ¾øÀ½
 };
 
 static const mtcExecute qtcExecuteIndirectColumn = {
-    mtf::calculateNA,     // Aggregation ì´ˆê¸°í™” í•¨ìˆ˜, ì—†ìŒ
-    mtf::calculateNA,     // Aggregation ìˆ˜í–‰ í•¨ìˆ˜, ì—†ìŒ
+    mtf::calculateNA,     // Aggregation ÃÊ±âÈ­ ÇÔ¼ö, ¾øÀ½
+    mtf::calculateNA,     // Aggregation ¼öÇà ÇÔ¼ö, ¾øÀ½
     mtf::calculateNA,
-    mtf::calculateNA,     // Aggregation ì¢…ë£Œ í•¨ìˆ˜, ì—†ìŒ
-    qtcCalculate_IndirectColumn,  // COLUMN ì—°ì‚° í•¨ìˆ˜
-    NULL,                 // ì—°ì‚°ì„ ìœ„í•œ ë¶€ê°€ ì •ë³´, ì—†ìŒ
+    mtf::calculateNA,     // Aggregation Á¾·á ÇÔ¼ö, ¾øÀ½
+    qtcCalculate_IndirectColumn,  // COLUMN ¿¬»ê ÇÔ¼ö
+    NULL,                 // ¿¬»êÀ» À§ÇÑ ºÎ°¡ Á¤º¸, ¾øÀ½
     mtx::calculateNA,
-    mtk::estimateRangeNA, // Key Range í¬ê¸° ì¶”ì¶œ í•¨ìˆ˜, ì—†ìŒ
-    mtk::extractRangeNA   // Key Range ìƒì„± í•¨ìˆ˜, ì—†ìŒ
+    mtk::estimateRangeNA, // Key Range Å©±â ÃßÃâ ÇÔ¼ö, ¾øÀ½
+    mtk::extractRangeNA   // Key Range »ı¼º ÇÔ¼ö, ¾øÀ½
 };
 
 IDE_RC qtcColumnEstimate( mtcNode*     aNode,
@@ -159,12 +159,12 @@ IDE_RC qtcColumnEstimate( mtcNode*     aNode,
 /***********************************************************************
  *
  * Description :
- *    Column ì—°ì‚°ìì— ëŒ€í•˜ì—¬ Estimate ìˆ˜í–‰í•¨.
- *    Column Nodeì— ëŒ€í•œ Column ì •ë³´ ë° Execute ì •ë³´ë¥¼ Settingí•œë‹¤.
+ *    Column ¿¬»êÀÚ¿¡ ´ëÇÏ¿© Estimate ¼öÇàÇÔ.
+ *    Column Node¿¡ ´ëÇÑ Column Á¤º¸ ¹× Execute Á¤º¸¸¦ SettingÇÑ´Ù.
  *
  * Implementation :
  *
- *    Columnì˜ IDë¥¼ í• ë‹¹ë°›ê³ , dependencies ë° execute ì •ë³´ë¥¼ Settingí•œë‹¤.
+ *    ColumnÀÇ ID¸¦ ÇÒ´ç¹Ş°í, dependencies ¹× execute Á¤º¸¸¦ SettingÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -193,27 +193,27 @@ IDE_RC qtcColumnEstimate( mtcNode*     aNode,
 
     sSFWGH = sCallBackInfo->SFWGH;
 
-    // ìµœì´ˆ estimate ì‹œì—ë§Œ Column IDë¥¼ í• ë‹¹ë°›ê²Œ í•˜ê³ ,
-    // ì´í›„ì˜ estimate í˜¸ì¶œì‹œì—ëŠ” Column IDë¥¼ í• ë‹¹ë°›ì§€ ì•Šë„ë¡ í•œë‹¤.
-    // ë”°ë¼ì„œ, estimate() ì—ì„œë§Œ CallBackInfoì— statementë¥¼ ì„¤ì •í•œë‹¤.
+    // ÃÖÃÊ estimate ½Ã¿¡¸¸ Column ID¸¦ ÇÒ´ç¹Ş°Ô ÇÏ°í,
+    // ÀÌÈÄÀÇ estimate È£Ãâ½Ã¿¡´Â Column ID¸¦ ÇÒ´ç¹ŞÁö ¾Êµµ·Ï ÇÑ´Ù.
+    // µû¶ó¼­, estimate() ¿¡¼­¸¸ CallBackInfo¿¡ statement¸¦ ¼³Á¤ÇÑ´Ù.
     if (sCallBackInfo->statement != NULL)
     {
-        // ì‹¤ì œ Columnì¸ ê²½ìš° Column IDë¥¼ Settingí•œë‹¤.
-        // Columnì´ ì•„ë‹Œ ê²½ìš°ì—ëŠ” í•´ë‹¹ Nodeì— ì í•©í•œ Moduleë¡œ ë³€ê²½ëœë‹¤.
-        // ì˜ˆë¥¼ ë“¤ì–´, ë‹¤ìŒê³¼ ê°™ì€ ì§ˆì˜ë¥¼ ì‚´í´ ë³´ì.
+        // ½ÇÁ¦ ColumnÀÎ °æ¿ì Column ID¸¦ SettingÇÑ´Ù.
+        // ColumnÀÌ ¾Æ´Ñ °æ¿ì¿¡´Â ÇØ´ç Node¿¡ ÀûÇÕÇÑ Module·Î º¯°æµÈ´Ù.
+        // ¿¹¸¦ µé¾î, ´ÙÀ½°ú °°Àº ÁúÀÇ¸¦ »ìÆì º¸ÀÚ.
         //     SELECT f1 FROM T1;
-        // Parsing ë‹¨ê³„ì—ì„œëŠ” [f1]ì„ Columnìœ¼ë¡œ íŒë‹¨í•˜ì§€ë§Œ,
-        // ì´ëŠ” Columnì¼ìˆ˜ë„ Functionì¼ ìˆ˜ë„ ìˆë‹¤.
-        // ë§Œì•½ Moduleì´ ë³€ê²½ëœ ê²½ìš°ë¼ë©´, ë‚´ë¶€ì—ì„œ estimateê°€ ìˆ˜í–‰ëœë‹¤.
+        // Parsing ´Ü°è¿¡¼­´Â [f1]À» ColumnÀ¸·Î ÆÇ´ÜÇÏÁö¸¸,
+        // ÀÌ´Â ColumnÀÏ¼öµµ FunctionÀÏ ¼öµµ ÀÖ´Ù.
+        // ¸¸¾à ModuleÀÌ º¯°æµÈ °æ¿ì¶ó¸é, ³»ºÎ¿¡¼­ estimate°¡ ¼öÇàµÈ´Ù.
 
         if( ( ( sNode->lflag & QTC_NODE_COLUMN_ESTIMATE_MASK ) ==
               QTC_NODE_COLUMN_ESTIMATE_TRUE )  ||
             ( ( sNode->lflag & QTC_NODE_PROC_VAR_ESTIMATE_MASK ) ==
               QTC_NODE_PROC_VAR_ESTIMATE_TRUE ) )
         {
-            // procedureë³€ìˆ˜ì˜ estimateë¥¼ ì´ë¯¸ í–ˆê±°ë‚˜,
-            // partition column idë¥¼ ì§€ì •í•˜ì˜€ìœ¼ë¯€ë¡œ column idë¥¼ ìƒˆë¡œ êµ¬í•˜ëŠ” ê²ƒì€
-            // í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // procedureº¯¼öÀÇ estimate¸¦ ÀÌ¹Ì Çß°Å³ª,
+            // partition column id¸¦ ÁöÁ¤ÇÏ¿´À¸¹Ç·Î column id¸¦ »õ·Î ±¸ÇÏ´Â °ÍÀº
+            // ÇÏÁö ¾Ê´Â´Ù.
         }
         else
         {
@@ -237,16 +237,16 @@ IDE_RC qtcColumnEstimate( mtcNode*     aNode,
         {
             //---------------------------------------------------------------
             // [PR-7108]
-            // LEVEL, SEQUENCE, SYSDATE ë“±ì€ Column Moduleì´ê¸°ëŠ” í•˜ë‚˜
-            // Dependencyì™€ ì§ì ‘ ê´€ë ¨ëœ Columnì´ ì•„ë‹ˆë‹¤.
-            // ë˜í•œ, PRIOR Columnì€ ì‹¤ì œ Columnì´ê¸°ëŠ” í•˜ë‚˜, ì´ ë˜í•œ
-            // Dependencyì™€ ê´€ë ¨ì´ ì—†ë‹¤.
-            // ë”°ë¼ì„œ, Dependenciesë¥¼ ê²°ì •í•˜ëŠ” Columnì€ ì‹¤ì œ Table Columnì´ê±°ë‚˜
-            // Viewì˜ Columnìœ¼ë¡œ ì œí•œí•œë‹¤.  ê·¸ë¦¬ê³ , PRIOR Columnì´ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
-            // ì´ë ‡ê²Œ í•˜ëŠ” ì´ìœ ëŠ” Plan Nodeì˜ ëŒ€í‘œ Dependencyê²°ì •ê³¼
-            // Indexable Predicateì˜ ë¶„ë¥˜ë¥¼ ìš©ì´í•˜ê²Œ í•˜ê¸° ìœ„í•¨ì´ë‹¤.
-            // (ì£¼ì˜) Store And Searchë“±ê³¼ ê°™ì´ Optimization ê³¼ì • ì¤‘ì— ìƒê¸°ëŠ”
-            //        VIEWì˜ Columnì€ ì ˆëŒ€ Dependenciesë¥¼ ê°€ì ¸ì„œëŠ” ì•ˆëœë‹¤.
+            // LEVEL, SEQUENCE, SYSDATE µîÀº Column ModuleÀÌ±â´Â ÇÏ³ª
+            // Dependency¿Í Á÷Á¢ °ü·ÃµÈ ColumnÀÌ ¾Æ´Ï´Ù.
+            // ¶ÇÇÑ, PRIOR ColumnÀº ½ÇÁ¦ ColumnÀÌ±â´Â ÇÏ³ª, ÀÌ ¶ÇÇÑ
+            // Dependency¿Í °ü·ÃÀÌ ¾ø´Ù.
+            // µû¶ó¼­, Dependencies¸¦ °áÁ¤ÇÏ´Â ColumnÀº ½ÇÁ¦ Table ColumnÀÌ°Å³ª
+            // ViewÀÇ ColumnÀ¸·Î Á¦ÇÑÇÑ´Ù.  ±×¸®°í, PRIOR ColumnÀÌ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
+            // ÀÌ·¸°Ô ÇÏ´Â ÀÌÀ¯´Â Plan NodeÀÇ ´ëÇ¥ Dependency°áÁ¤°ú
+            // Indexable PredicateÀÇ ºĞ·ù¸¦ ¿ëÀÌÇÏ°Ô ÇÏ±â À§ÇÔÀÌ´Ù.
+            // (ÁÖÀÇ) Store And Searchµî°ú °°ÀÌ Optimization °úÁ¤ Áß¿¡ »ı±â´Â
+            //        VIEWÀÇ ColumnÀº Àı´ë Dependencies¸¦ °¡Á®¼­´Â ¾ÈµÈ´Ù.
             //---------------------------------------------------------------
 
             if ( ( (aTemplate->rows[aNode->table].lflag & MTC_TUPLE_TYPE_MASK)
@@ -257,9 +257,9 @@ IDE_RC qtcColumnEstimate( mtcNode*     aNode,
             {
                 //-----------------------------------------------
                 // PROJ-1473
-                // ì§ˆì˜ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì •ë³´ë¥¼ ìˆ˜ì§‘í•œë‹¤.
-                // ë ˆì½”ë“œì €ì¥ë°©ì‹ì˜ ì²˜ë¦¬ì¸ ê²½ìš°,
-                // ë””ìŠ¤í¬í…Œì´ë¸”ê³¼ ë·°ì˜ ì§ˆì˜ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì •ë³´ ìˆ˜ì§‘.
+                // ÁúÀÇ¿¡ »ç¿ëµÈ ÄÃ·³Á¤º¸¸¦ ¼öÁıÇÑ´Ù.
+                // ·¹ÄÚµåÀúÀå¹æ½ÄÀÇ Ã³¸®ÀÎ °æ¿ì,
+                // µğ½ºÅ©Å×ÀÌºí°ú ºäÀÇ ÁúÀÇ¿¡ »ç¿ëµÈ ÄÃ·³Á¤º¸ ¼öÁı.
                 //-----------------------------------------------
 
                 IDE_TEST( qtc::setColumnExecutionPosition( aTemplate,
@@ -272,7 +272,7 @@ IDE_RC qtcColumnEstimate( mtcNode*     aNode,
                 qtc::checkLobAndEncryptColumn( aTemplate, aNode );
 
                 // To Fix PR-9050
-                // PRIOR Columnì˜ ì¡´ì¬ ì—¬ë¶€ëŠ” qtcNode->flagìœ¼ë¡œ ê²€ì‚¬í•´ì•¼ í•¨.
+                // PRIOR ColumnÀÇ Á¸Àç ¿©ºÎ´Â qtcNode->flagÀ¸·Î °Ë»çÇØ¾ß ÇÔ.
                 if ( (sNode->lflag & QTC_NODE_PRIOR_MASK)
                      == QTC_NODE_PRIOR_ABSENT )
                 {
@@ -289,30 +289,30 @@ IDE_RC qtcColumnEstimate( mtcNode*     aNode,
             }
 
             //---------------------------------------------------------------
-            // [ORDER BYêµ¬ë¬¸ì—ì„œì˜ Column]
-            // ORDER BY êµ¬ë¬¸ì— ë‚˜íƒ€ë‚˜ëŠ” Column ì¤‘ ì‹¤ì œ Columnì´ ì•„ë‹Œ ê²½ìš°ê°€
-            // ì¡´ì¬í•œë‹¤.
-            // ë‹¤ìŒê³¼ ê°™ì€ ì˜ˆë¥¼ í†µí•´ ì‚´í´ ë³´ì.
+            // [ORDER BY±¸¹®¿¡¼­ÀÇ Column]
+            // ORDER BY ±¸¹®¿¡ ³ªÅ¸³ª´Â Column Áß ½ÇÁ¦ ColumnÀÌ ¾Æ´Ñ °æ¿ì°¡
+            // Á¸ÀçÇÑ´Ù.
+            // ´ÙÀ½°ú °°Àº ¿¹¸¦ ÅëÇØ »ìÆì º¸ÀÚ.
             //    SELECT i1 a1, i1 + 1 a2, sum(i1) a3, count(*) a4 FROM T1
             //        ORDER BY a1, a2, a3, a4;
-            // ìœ„ì™€ ê°™ì´ ORDER BYì ˆì˜ columnì˜ ê²½ìš°,
-            //     a1 ì€ ì‹¤ì œ Columnì´ë©°,
-            //     a2, a3ëŠ” argumentsê°€ ì¡´ì¬í•˜ë¯€ë¡œ ì‹¤ì œ Columnì´ ì•„ë‹ˆë©°,
-            //     a3, a4ëŠ” aggregation ì—°ì‚°ì´ê¸° ë•Œë¬¸ì— ì‹¤ì œ Columnì´ ì•„ë‹ˆë‹¤.
-            // ë”°ë¼ì„œ, a2, a3, a4ì™€ ê°™ì€ ê²½ìš°ëŠ” column moduleì˜ executeë¥¼
-            // ì…‹íŒ…í•´ì„œëŠ” ì•ˆëœë‹¤.
+            // À§¿Í °°ÀÌ ORDER BYÀıÀÇ columnÀÇ °æ¿ì,
+            //     a1 Àº ½ÇÁ¦ ColumnÀÌ¸ç,
+            //     a2, a3´Â arguments°¡ Á¸ÀçÇÏ¹Ç·Î ½ÇÁ¦ ColumnÀÌ ¾Æ´Ï¸ç,
+            //     a3, a4´Â aggregation ¿¬»êÀÌ±â ¶§¹®¿¡ ½ÇÁ¦ ColumnÀÌ ¾Æ´Ï´Ù.
+            // µû¶ó¼­, a2, a3, a4¿Í °°Àº °æ¿ì´Â column moduleÀÇ execute¸¦
+            // ¼ÂÆÃÇØ¼­´Â ¾ÈµÈ´Ù.
             //---------------------------------------------------------------
 
 
             // PROJ-1075
-            // array ë³€ìˆ˜ë¥¼ ì°¸ì¡°í•˜ëŠ” columnì¸ ê²½ìš°
+            // array º¯¼ö¸¦ ÂüÁ¶ÇÏ´Â columnÀÎ °æ¿ì
             // ex) V1[1].I1
-            // V1ì˜ table, columnì„ mtcExecute->infoì •ë³´ì— ì„¸íŒ…í•œë‹¤.
+            // V1ÀÇ table, columnÀ» mtcExecute->infoÁ¤º¸¿¡ ¼¼ÆÃÇÑ´Ù.
 
             if( ( sNode->lflag & QTC_NODE_PROC_VAR_ESTIMATE_MASK ) ==
                 QTC_NODE_PROC_VAR_ESTIMATE_FALSE )
             {
-                // PROJ-2533 array() ì¸ ê²½ìš° indexê°€ í•„ìš”í•©ë‹ˆë‹¤.
+                // PROJ-2533 array() ÀÎ °æ¿ì index°¡ ÇÊ¿äÇÕ´Ï´Ù.
                 IDE_TEST_RAISE( ( sNode->node.arguments == NULL ) &&
                                 ( ( (sNode->lflag) & QTC_NODE_SP_ARRAY_INDEX_VAR_MASK ) ==
                                   QTC_NODE_SP_ARRAY_INDEX_VAR_EXIST ),
@@ -324,7 +324,7 @@ IDE_RC qtcColumnEstimate( mtcNode*     aNode,
                     IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) != 1,
                                     ERR_INVALID_FUNCTION_ARGUMENT );
 
-                    // typeInfoì˜ ì²«ë²ˆì§¸ ì»¬ëŸ¼ì´ index columnì„.
+                    // typeInfoÀÇ Ã¹¹øÂ° ÄÃ·³ÀÌ index columnÀÓ.
                     sModule = sArrayVariable->typeInfo->columns->basicInfo->module;
 
                     IDE_TEST( mtf::makeConversionNodes( aNode,
@@ -337,8 +337,8 @@ IDE_RC qtcColumnEstimate( mtcNode*     aNode,
 
                     aTemplate->rows[aNode->table].execute[aNode->column] = qtcExecuteArrayColumn;
 
-                    // arrayVariableì˜ index columnê³¼ ë™ì¼í•œ typeìœ¼ë¡œ argumentì— conversion nodeë¥¼ ë‹¬ì•„ì¤€ë‹¤.
-                    // executeì˜ infoì— í•´ë‹¹ array ë³€ìˆ˜ì˜ table, columnì •ë³´ë¥¼ ë„˜ê²¨ì¤€ë‹¤.
+                    // arrayVariableÀÇ index column°ú µ¿ÀÏÇÑ typeÀ¸·Î argument¿¡ conversion node¸¦ ´Ş¾ÆÁØ´Ù.
+                    // executeÀÇ info¿¡ ÇØ´ç array º¯¼öÀÇ table, columnÁ¤º¸¸¦ ³Ñ°ÜÁØ´Ù.
                     IDU_FIT_POINT( "qtcColumn::qtcColumnEstimate::alloc::ColumnInfo" );
                     IDE_TEST( aCallBack->alloc( aCallBack->info,
                                                 ID_SIZEOF( qtcColumnInfo ),
@@ -360,9 +360,9 @@ IDE_RC qtcColumnEstimate( mtcNode*     aNode,
                         QTC_IS_AGGREGATE(sNode) == ID_FALSE)
                     {
                         /* BUG-37981
-                           sIdcFlag == ID_FALSEì¸ë°, sNode->nonde.objectID != 0ì¼ ë•Œê°€ ìˆë‹¤.
-                           ê·¸ëŸ° ê²½ìš°ëŠ” ì´ë¯¸ estimateí•œ ìƒíƒœë¡œ ì´ë‹¤. ê·¸ëŸ¬ë¯€ë¡œ, executeì •ë³´ ì„¤ì •ì´ ë˜ì–´ìˆë‹¤.
-                           ë”°ë¼ì„œ, objectID != 0ì´ë©´, ì•„ë¬´ê²ƒë„ ì•ˆí•´ë„ ëœë‹¤. */
+                           sIdcFlag == ID_FALSEÀÎµ¥, sNode->nonde.objectID != 0ÀÏ ¶§°¡ ÀÖ´Ù.
+                           ±×·± °æ¿ì´Â ÀÌ¹Ì estimateÇÑ »óÅÂ·Î ÀÌ´Ù. ±×·¯¹Ç·Î, executeÁ¤º¸ ¼³Á¤ÀÌ µÇ¾îÀÖ´Ù.
+                           µû¶ó¼­, objectID != 0ÀÌ¸é, ¾Æ¹«°Íµµ ¾ÈÇØµµ µÈ´Ù. */
                         if( sNode->node.objectID == QS_EMPTY_OID)
                         {
                             aTemplate->rows[aNode->table].execute[aNode->column] = qtcExecute;
@@ -385,10 +385,10 @@ IDE_RC qtcColumnEstimate( mtcNode*     aNode,
         }
         else
         {
-            // array ë³€ìˆ˜ë¥¼ ì°¸ì¡°í•˜ëŠ” columnì¸ ê²½ìš°
+            // array º¯¼ö¸¦ ÂüÁ¶ÇÏ´Â columnÀÎ °æ¿ì
 
             // PROJ-1073 Package
-            /* Package specì˜ templateë¥¼ ê°€ì ¸ì˜¨ë‹¤. */
+            /* Package specÀÇ template¸¦ °¡Á®¿Â´Ù. */
             IDE_TEST( qsxPkg::getPkgInfo( aNode->objectID,
                                           &sPkgInfo )
                       != IDE_SUCCESS );
@@ -402,7 +402,7 @@ IDE_RC qtcColumnEstimate( mtcNode*     aNode,
             if( ( sNode->lflag & QTC_NODE_PROC_VAR_ESTIMATE_MASK ) ==
                 QTC_NODE_PROC_VAR_ESTIMATE_FALSE )
             {
-                // PROJ-2533 array() ì¸ ê²½ìš° indexê°€ í•„ìš”í•©ë‹ˆë‹¤.
+                // PROJ-2533 array() ÀÎ °æ¿ì index°¡ ÇÊ¿äÇÕ´Ï´Ù.
                 IDE_TEST_RAISE( ( sNode->node.arguments == NULL ) &&
                                 ( ( (sNode->lflag) & QTC_NODE_SP_ARRAY_INDEX_VAR_MASK ) ==
                                   QTC_NODE_SP_ARRAY_INDEX_VAR_EXIST ),
@@ -413,7 +413,7 @@ IDE_RC qtcColumnEstimate( mtcNode*     aNode,
                     IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) != 1,
                                     ERR_INVALID_FUNCTION_ARGUMENT );
 
-                    // typeInfoì˜ ì²«ë²ˆì§¸ ì»¬ëŸ¼ì´ index columnì„.
+                    // typeInfoÀÇ Ã¹¹øÂ° ÄÃ·³ÀÌ index columnÀÓ.
                     sModule = sArrayVariable->typeInfo->columns->basicInfo->module;
 
                     IDE_TEST( mtf::makeConversionNodes( aNode,
@@ -501,9 +501,9 @@ IDE_RC qtcColumnEstimate( mtcNode*     aNode,
                     QTC_STMT_EXECUTE( sStatement, (qtcNode*)aNode )->calculateInfo
                                                  = (void*)sRealNode;
                     /* BUG-39340
-                       UDTypeí˜• ë³€ìˆ˜ì˜ ê²½ìš°, ë³€ìˆ˜ê°€ ì„ ì–¸ëœ packageì˜ QMP_MEMì—ì„œ í• ë‹¹ë°›ì•„ ìƒì„±ëœë‹¤.
-                       ë”°ë¼ì„œ, í•´ë‹¹ë³€ìˆ˜ê°€ ì„ ì–¸ëœ packageê°€ recompile ë  ê²½ìš°, memoryëŠ” freeëœë‹¤.
-                       ê·¸ë ‡ê¸° ë•Œë¬¸ì— í˜„ QMP_MEMì—ì„œ í• ë‹¹ë°›ì•„ì„œ ì •ë³´ë¥¼ êµ¬ì„±í•´ì•¼í•œë‹¤.  */
+                       UDTypeÇü º¯¼öÀÇ °æ¿ì, º¯¼ö°¡ ¼±¾ğµÈ packageÀÇ QMP_MEM¿¡¼­ ÇÒ´ç¹Ş¾Æ »ı¼ºµÈ´Ù.
+                       µû¶ó¼­, ÇØ´çº¯¼ö°¡ ¼±¾ğµÈ package°¡ recompile µÉ °æ¿ì, memory´Â freeµÈ´Ù.
+                       ±×·¸±â ¶§¹®¿¡ Çö QMP_MEM¿¡¼­ ÇÒ´ç¹Ş¾Æ¼­ Á¤º¸¸¦ ±¸¼ºÇØ¾ßÇÑ´Ù.  */
                     if( ( sRealColumn.module->id >= MTD_UDT_ID_MIN ) &&
                         ( sRealColumn.module->id <= MTD_UDT_ID_MAX ) )
                     {
@@ -574,9 +574,9 @@ IDE_RC qtcColumnEstimate( mtcNode*     aNode,
     {
         //--------------------------------------------------------
         // BUG-25839
-        // order byì ˆì—ì„œ ì°¸ì¡°í•œ target aliasê°€ subqueryì¸ ê²½ìš°
-        // columnì •ë³´ê°€ stackì— ì˜¬ë¼ì˜¤ì§€ ì•Šì•„ subqueryì˜ targetì •ë³´ë¥¼
-        // ì§ì ‘ stackì— ì˜¬ë¦°ë‹¤.
+        // order byÀı¿¡¼­ ÂüÁ¶ÇÑ target alias°¡ subqueryÀÎ °æ¿ì
+        // columnÁ¤º¸°¡ stack¿¡ ¿Ã¶ó¿ÀÁö ¾Ê¾Æ subqueryÀÇ targetÁ¤º¸¸¦
+        // Á÷Á¢ stack¿¡ ¿Ã¸°´Ù.
         //--------------------------------------------------------
 
         sConvertedNode = mtf::convertedNode( sNode->node.arguments,
@@ -586,22 +586,22 @@ IDE_RC qtcColumnEstimate( mtcNode*     aNode,
             + sConvertedNode->column;
 
         //--------------------------------------------------------
-        // target aliasê°€ subqueryì¸ ê²½ìš° expressionì— ì˜í•´ conversion
-        // nodeê°€ ìƒì„±ë˜ëŠ” ê²½ìš°ê°€ ìˆìœ¼ë¯€ë¡œ assign nodeë¥¼ ìƒì„±í•˜ì—¬
-        // ì—°ê²°ì •ë³´ëŠ” ê·¸ëŒ€ë¡œ ìœ ì§€í•˜ë©´ì„œ conversion nodeê°€ ìƒì„±ë  ìˆ˜
-        // ìˆê²Œ í•œë‹¤.
+        // target alias°¡ subqueryÀÎ °æ¿ì expression¿¡ ÀÇÇØ conversion
+        // node°¡ »ı¼ºµÇ´Â °æ¿ì°¡ ÀÖÀ¸¹Ç·Î assign node¸¦ »ı¼ºÇÏ¿©
+        // ¿¬°áÁ¤º¸´Â ±×´ë·Î À¯ÁöÇÏ¸é¼­ conversion node°¡ »ı¼ºµÉ ¼ö
+        // ÀÖ°Ô ÇÑ´Ù.
         //--------------------------------------------------------
 
-        // ìƒˆë¡œìš´ subquery node ìƒì„±
+        // »õ·Î¿î subquery node »ı¼º
         IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(sStatement),
                                 qtcNode,
                                 & sSubQNode )
                   != IDE_SUCCESS);
 
-        // sNodeë¥¼ ê·¸ëŒ€ë¡œ ë³µì‚¬
+        // sNode¸¦ ±×´ë·Î º¹»ç
         idlOS::memcpy( sSubQNode, sNode, ID_SIZEOF(qtcNode) );
 
-        // sNodeë¥¼ assign nodeë¡œ ë³€ê²½í•œë‹¤.
+        // sNode¸¦ assign node·Î º¯°æÇÑ´Ù.
         IDE_TEST( qtc::makeAssign( sStatement,
                                    sNode,
                                    sSubQNode )
@@ -614,8 +614,8 @@ IDE_RC qtcColumnEstimate( mtcNode*     aNode,
     }
 
     // PROJ-2394
-    // viewì˜ target columnìœ¼ë¡œ list typeì´ ì˜¬ ìˆ˜ ìˆë‹¤.
-    // list typeì¸ ê²½ìš° stackì˜ valueê°€ í•„ìš”í•˜ì—¬ smiColumn.valueì— ê¸°ë¡í•´ë‘ì—ˆë‹¤.
+    // viewÀÇ target columnÀ¸·Î list typeÀÌ ¿Ã ¼ö ÀÖ´Ù.
+    // list typeÀÎ °æ¿ì stackÀÇ value°¡ ÇÊ¿äÇÏ¿© smiColumn.value¿¡ ±â·ÏÇØµÎ¾ú´Ù.
     if ( aStack->column->module == &mtdList )
     {
         aStack->value = aStack->column->column.value;
@@ -671,11 +671,11 @@ IDE_RC qtcCalculate_Column(
  *
  * Description :
  *
- *    Columnì˜ ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
+ *    ColumnÀÇ ¿¬»êÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
  *
- *    Stackì— columnì •ë³´ì™€ Value ì •ë³´ë¥¼ Settingí•œë‹¤.
+ *    Stack¿¡ columnÁ¤º¸¿Í Value Á¤º¸¸¦ SettingÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -687,8 +687,8 @@ IDE_RC qtcCalculate_Column(
     aStack->column = aTemplate->rows[aNode->table].columns + aNode->column;
 
     /* PROJ-2180
-       qp ì—ì„œëŠ” mtc::value ë¥¼ ì‚¬ìš©í•œë‹¤.
-       ë‹¤ë§Œ ì—¬ê¸°ì—ì„œëŠ” ì„±ëŠ¥ì„ ìœ„í•´ì„œ valueForModule ë¥¼ ì‚¬ìš©í•œë‹¤. */
+       qp ¿¡¼­´Â mtc::value ¸¦ »ç¿ëÇÑ´Ù.
+       ´Ù¸¸ ¿©±â¿¡¼­´Â ¼º´ÉÀ» À§ÇØ¼­ valueForModule ¸¦ »ç¿ëÇÑ´Ù. */
     aStack->value  = (void*)mtd::valueForModule(
                                         (smiColumn*)aStack->column,
                                         aTemplate->rows[aNode->table].row,
@@ -719,11 +719,11 @@ IDE_RC qtcCalculate_ArrayColumn(
  *
  * Description :
  *    PROJ-1075
- *    Arrayë³€ìˆ˜ì˜ indexì—°ì‚°ì„ ìˆ˜í–‰í•œ í›„ Column ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
+ *    Arrayº¯¼öÀÇ index¿¬»êÀ» ¼öÇàÇÑ ÈÄ Column ¿¬»êÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *    searchì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤. ë§Œì•½ lvalueì´ë©´ search-insertë¥¼ ìˆ˜í–‰í•œë‹¤.
- *    Stackì— columnì •ë³´ì™€ Value ì •ë³´ë¥¼ Settingí•œë‹¤.
+ *    search¿¬»êÀ» ¼öÇàÇÑ´Ù. ¸¸¾à lvalueÀÌ¸é search-insert¸¦ ¼öÇàÇÑ´Ù.
+ *    Stack¿¡ columnÁ¤º¸¿Í Value Á¤º¸¸¦ SettingÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -743,7 +743,7 @@ IDE_RC qtcCalculate_ArrayColumn(
 
     IDE_TEST_RAISE( aRemain < 1, ERR_STACK_OVERFLOW );
 
-    // argumentì˜ ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
+    // argumentÀÇ ¿¬»êÀ» ¼öÇàÇÑ´Ù.
     IDE_TEST( mtf::postfixCalculate( aNode,
                                      aStack,
                                      aRemain,
@@ -761,7 +761,7 @@ IDE_RC qtcCalculate_ArrayColumn(
     {
         sTmplate = aTemplate;
 
-        // arrayë³€ìˆ˜ì˜ column, valueë¥¼ ì–»ì–´ì˜¨ë‹¤.
+        // arrayº¯¼öÀÇ column, value¸¦ ¾ò¾î¿Â´Ù.
         sArrayColumn = sTmplate->rows[sColumnInfo->table].columns + sColumnInfo->column;
 
         sArrayInfo = *((qsxArrayInfo **)( (UChar*) sTmplate->rows[sColumnInfo->table].row
@@ -771,7 +771,7 @@ IDE_RC qtcCalculate_ArrayColumn(
 
         if( ( sNode->lflag & QTC_NODE_LVALUE_MASK ) == QTC_NODE_LVALUE_ENABLE )
         {
-            // lvalueì´ë¯€ë¡œ search-insertë¥¼ í•˜ê¸° ìœ„í•´ ID_TRUEë¥¼ ë„˜ê¹€
+            // lvalueÀÌ¹Ç·Î search-insert¸¦ ÇÏ±â À§ÇØ ID_TRUE¸¦ ³Ñ±è
             IDE_TEST( qsxArray::searchKey( ((qcTemplate*)aTemplate)->stmt,
                                            sArrayInfo,
                                            aStack[1].column,
@@ -782,7 +782,7 @@ IDE_RC qtcCalculate_ArrayColumn(
         }
         else
         {
-            // rvalueì´ë¯€ë¡œ searchë¥¼ í•˜ê¸° ìœ„í•´ ID_FALSEë¥¼ ë„˜ê¹€
+            // rvalueÀÌ¹Ç·Î search¸¦ ÇÏ±â À§ÇØ ID_FALSE¸¦ ³Ñ±è
             IDE_TEST( qsxArray::searchKey( ((qcTemplate*)aTemplate)->stmt,
                                            sArrayInfo,
                                            aStack[1].column,
@@ -852,7 +852,7 @@ IDE_RC qtcCalculate_IndirectColumn(
                                                (qtcNode *)aNode )->calculateInfo;
 
     // PROJ-1073 Package
-    /* Package specì˜ templateë¥¼ ê°€ì ¸ì˜¨ë‹¤. */
+    /* Package specÀÇ template¸¦ °¡Á®¿Â´Ù. */
     IDE_TEST( qcuSessionPkg::getTmplate( sStatement,
                                          sRealNode->objectID,
                                          aStack,
@@ -860,7 +860,7 @@ IDE_RC qtcCalculate_IndirectColumn(
                                          &sTmplate )
               != IDE_SUCCESS );
 
-    // packageì˜ variable ì´ˆê¸°í™” ì‹œí‚¬ ë•Œ ì´ë©´ nullì´ ê°€ëŠ¥í•˜ë‹¤
+    // packageÀÇ variable ÃÊ±âÈ­ ½ÃÅ³ ¶§ ÀÌ¸é nullÀÌ °¡´ÉÇÏ´Ù
     IDE_TEST( sTmplate == NULL );
 
     aStack->column = sTmplate->rows[sRealNode->table].columns + sRealNode->column;
@@ -896,11 +896,11 @@ IDE_RC qtcCalculate_IndirectArrayColumn(
  *
  * Description :
  *    PROJ-1075
- *    Arrayë³€ìˆ˜ì˜ indexì—°ì‚°ì„ ìˆ˜í–‰í•œ í›„ Column ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
+ *    Arrayº¯¼öÀÇ index¿¬»êÀ» ¼öÇàÇÑ ÈÄ Column ¿¬»êÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *    searchì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤. ë§Œì•½ lvalueì´ë©´ search-insertë¥¼ ìˆ˜í–‰í•œë‹¤.
- *    Stackì— columnì •ë³´ì™€ Value ì •ë³´ë¥¼ Settingí•œë‹¤.
+ *    search¿¬»êÀ» ¼öÇàÇÑ´Ù. ¸¸¾à lvalueÀÌ¸é search-insert¸¦ ¼öÇàÇÑ´Ù.
+ *    Stack¿¡ columnÁ¤º¸¿Í Value Á¤º¸¸¦ SettingÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -928,7 +928,7 @@ IDE_RC qtcCalculate_IndirectArrayColumn(
                                      aTemplate->rows[aNode->table].row,
                                      MTD_OFFSET_USE );
 
-    // argumentì˜ ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
+    // argumentÀÇ ¿¬»êÀ» ¼öÇàÇÑ´Ù.
     IDE_TEST( mtf::postfixCalculate( aNode,
                                      aStack,
                                      aRemain,
@@ -952,7 +952,7 @@ IDE_RC qtcCalculate_IndirectArrayColumn(
                                              &sTmplate )
                   != IDE_SUCCESS );
 
-        // arrayë³€ìˆ˜ì˜ column, valueë¥¼ ì–»ì–´ì˜¨ë‹¤.
+        // arrayº¯¼öÀÇ column, value¸¦ ¾ò¾î¿Â´Ù.
         sArrayColumn = sTmplate->rows[sRealNode[1].table].columns + sRealNode[1].column;
 
         sArrayInfo = *((qsxArrayInfo **)( (UChar*) sTmplate->rows[sRealNode[1].table].row
@@ -962,7 +962,7 @@ IDE_RC qtcCalculate_IndirectArrayColumn(
 
         if( ( sNode->lflag & QTC_NODE_LVALUE_MASK ) == QTC_NODE_LVALUE_ENABLE )
         {
-            // lvalueì´ë¯€ë¡œ search-insertë¥¼ í•˜ê¸° ìœ„í•´ ID_TRUEë¥¼ ë„˜ê¹€
+            // lvalueÀÌ¹Ç·Î search-insert¸¦ ÇÏ±â À§ÇØ ID_TRUE¸¦ ³Ñ±è
             IDE_TEST( qsxArray::searchKey( ((qcTemplate*)aTemplate)->stmt,
                                            sArrayInfo,
                                            aStack[1].column,
@@ -973,7 +973,7 @@ IDE_RC qtcCalculate_IndirectArrayColumn(
         }
         else
         {
-            // rvalueì´ë¯€ë¡œ searchë¥¼ í•˜ê¸° ìœ„í•´ ID_FALSEë¥¼ ë„˜ê¹€
+            // rvalueÀÌ¹Ç·Î search¸¦ ÇÏ±â À§ÇØ ID_FALSE¸¦ ³Ñ±è
             IDE_TEST( qsxArray::searchKey(((qcTemplate*)aTemplate)->stmt,
                                            sArrayInfo,
                                            aStack[1].column,

@@ -158,19 +158,19 @@ mtdModule mtcdByte = {
     {
         // Key Comparison
         {
-            // mt valueë“¤ ê°„ì˜ compare 
+            // mt valueµé °£ÀÇ compare 
             mtdByteMtdMtdKeyAscComp, // Ascending Key Comparison
             mtdByteMtdMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt valueì™€ stored valueê°„ì˜ compare 
+            // mt value¿Í stored value°£ÀÇ compare 
             mtdByteStoredMtdKeyAscComp, // Ascending Key Comparison
             mtdByteStoredMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // stored valueë“¤ ê°„ì˜ compare 
+            // stored valueµé °£ÀÇ compare 
             mtdByteStoredStoredKeyAscComp, // Ascending Key Comparison
             mtdByteStoredStoredKeyDescComp // Descending Key Comparison
         }
@@ -195,7 +195,7 @@ ACI_RC mtdInitializeByte( acp_uint32_t aNo )
 {
     ACI_TEST( mtdInitializeModule( &mtcdByte, aNo ) != ACI_SUCCESS );
 
-    // mtdColumnì˜ ì´ˆê¸°í™”
+    // mtdColumnÀÇ ÃÊ±âÈ­
     ACI_TEST( mtcInitializeColumn( & mtdColumn,
                                    & mtcdByte,
                                    0,   // arguments
@@ -272,7 +272,7 @@ ACI_RC mtdValue( mtcTemplate*  aTemplate,
                                aTokenLength )
                   != ACI_SUCCESS );
 
-        // precision, scale ì¬ ì„¤ì • í›„, estimateë¡œ semantic ê²€ì‚¬
+        // precision, scale Àç ¼³Á¤ ÈÄ, estimate·Î semantic °Ë»ç
         aColumn->flag            = 1;
         aColumn->precision       = sValue->length;
         aColumn->scale           = 0;
@@ -407,7 +407,7 @@ mtdByteMtdMtdKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Key ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Key °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -512,7 +512,7 @@ mtdByteMtdMtdKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Key ê°„ì˜ descending compare
+ * Description : Mtd Å¸ÀÔÀÇ Key °£ÀÇ descending compare
  *
  * Implementation :
  *
@@ -617,7 +617,7 @@ mtdByteStoredMtdKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Key ì™€ Stored Key ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Key ¿Í Stored Key °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -716,7 +716,7 @@ mtdByteStoredMtdKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Key ì™€ Stored Key ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Key ¿Í Stored Key °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -815,7 +815,7 @@ mtdByteStoredStoredKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyë“¤ ê°„ì˜ ascending compare
+ * Description : Stored Keyµé °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -907,7 +907,7 @@ mtdByteStoredStoredKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description :  Stored Keyë“¤ ê°„ì˜ ascending compare
+ * Description :  Stored Keyµé °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -1065,7 +1065,7 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
 {
 /***********************************************************************
  *
- * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColum ì´ˆê¸°í™”
+ * Description : valueÀÇ semantic °Ë»ç ¹× mtcColum ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -1081,9 +1081,9 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
 
     ACI_TEST_RAISE( sVal->length > aColumn->column.size, ERR_INVALID_VALUE );
 
-    // ì´ˆê¸°í™”ëœ aColumnì€ cannonize() ì‹œì— ì‚¬ìš©
-    // ì´ë•Œ, data type moduleì˜ precision ì •ë³´ë§Œì„ ì‚¬ìš©í•˜ë¯€ë¡œ,
-    // language ì •ë³´ ì„¤ì •í•  í•„ìš”ì—†ìŒ 
+    // ÃÊ±âÈ­µÈ aColumnÀº cannonize() ½Ã¿¡ »ç¿ë
+    // ÀÌ¶§, data type moduleÀÇ precision Á¤º¸¸¸À» »ç¿ëÇÏ¹Ç·Î,
+    // language Á¤º¸ ¼³Á¤ÇÒ ÇÊ¿ä¾øÀ½ 
     ACI_TEST( mtcInitializeColumn( aColumn,
                                    & mtcdByte,
                                    1,              // arguments
@@ -1119,8 +1119,8 @@ static ACI_RC mtdStoredValue2MtdValue( acp_uint32_t      aColumnSize,
 {
 /*******************************************************************
  * PROJ-1705
- * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
- * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
+ * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
+ * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
  *******************************************************************/
 
     mtdByteType* sByteValue;
@@ -1129,7 +1129,7 @@ static ACI_RC mtdStoredValue2MtdValue( acp_uint32_t      aColumnSize,
     
     if( ( aDestValueOffset == 0 ) && ( aLength == 0 ) )
     {
-        // NULL ë°ì´íƒ€
+        // NULL µ¥ÀÌÅ¸
         sByteValue->length = 0;
     }
     else
@@ -1157,9 +1157,9 @@ acp_uint32_t mtdNullValueSize()
 {
 /*******************************************************************
  * PROJ-1705
- * ê° ë°ì´íƒ€íƒ€ì…ì˜ null Valueì˜ í¬ê¸° ë°˜í™˜    
- * ì˜ˆ ) mtdByteType( acp_uint16_t length; acp_uint16_t value[1] ) ì—ì„œ
- *      lengthíƒ€ì…ì˜ acp_uint16_tì˜ í¬ê¸°ë¥¼ ë°˜í™˜
+ * °¢ µ¥ÀÌÅ¸Å¸ÀÔÀÇ null ValueÀÇ Å©±â ¹İÈ¯    
+ * ¿¹ ) mtdByteType( acp_uint16_t length; acp_uint16_t value[1] ) ¿¡¼­
+ *      lengthÅ¸ÀÔÀÇ acp_uint16_tÀÇ Å©±â¸¦ ¹İÈ¯
  *******************************************************************/
 
     return mtdActualSize( NULL,
@@ -1171,10 +1171,10 @@ static acp_uint32_t mtdHeaderSize()
 {
 /***********************************************************************
  * PROJ-1705
- * lengthë¥¼ ê°€ì§€ëŠ” ë°ì´íƒ€íƒ€ì…ì˜ length ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ë³€ìˆ˜ì˜ í¬ê¸° ë°˜í™˜
- * ì˜ˆ ) mtdByteType( acp_uint16_t length; acp_uint16_t value[1] ) ì—ì„œ
- *      lengthíƒ€ì…ì˜ acp_uint16_tì˜ í¬ê¸°ë¥¼ ë°˜í™˜
- *  integerì™€ ê°™ì€ ê³ ì •ê¸¸ì´ ë°ì´íƒ€íƒ€ì…ì€ 0 ë°˜í™˜
+ * length¸¦ °¡Áö´Â µ¥ÀÌÅ¸Å¸ÀÔÀÇ length Á¤º¸¸¦ ÀúÀåÇÏ´Â º¯¼öÀÇ Å©±â ¹İÈ¯
+ * ¿¹ ) mtdByteType( acp_uint16_t length; acp_uint16_t value[1] ) ¿¡¼­
+ *      lengthÅ¸ÀÔÀÇ acp_uint16_tÀÇ Å©±â¸¦ ¹İÈ¯
+ *  integer¿Í °°Àº °íÁ¤±æÀÌ µ¥ÀÌÅ¸Å¸ÀÔÀº 0 ¹İÈ¯
  **********************************************************************/
 
     return sizeof(acp_uint16_t);

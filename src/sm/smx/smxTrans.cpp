@@ -21,15 +21,12 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: smxTrans.cpp 84865 2019-02-07 05:10:33Z et16 $
+ * $Id: smxTrans.cpp 90936 2021-06-02 06:02:46Z emlee $
  **********************************************************************/
 
-#include <idl.h>
-#include <idErrorCode.h>
-#include <ideErrorMgr.h>
+#include <ida.h>
 #include <smErrorCode.h>
 #include <smr.h>
-#include <smm.h>
 #include <smp.h>
 #include <svp.h>
 #include <smc.h>
@@ -37,20 +34,28 @@
 #include <smx.h>
 #include <smxReq.h>
 #include <sdr.h>
-#include <sct.h>
 #include <svrRecoveryMgr.h>
-#include <sdpPageList.h>
 #include <svcLob.h>
 #include <smlLockMgr.h>
 
 extern smLobModule sdcLobModule;
+extern smLobModule sdiLobModule; // PROJ-2728
 
 UInt           smxTrans::mAllocRSIdx = 0;
 iduMemPool     smxTrans::mLobCursorPool;
 iduMemPool     smxTrans::mLobColBufPool;
 iduMemPool     smxTrans::mMutexListNodePool;
 smrCompResPool smxTrans::mCompResPool;
-smGetDtxGlobalTxId smxTrans::mGetDtxGlobalTxIdFunc;
+
+iduMutex * smxTrans::mGCMutex;
+smTID   ** smxTrans::mGCTIDArray;
+smSCN   ** smxTrans::mGCCommitSCNArray;
+UInt     * smxTrans::mGCCnt;
+UInt     * smxTrans::mGCListID;
+UInt       smxTrans::mGCList;
+UInt       smxTrans::mGroupCnt;
+UInt       smxTrans::mGCListCnt;
+UInt     * smxTrans::mGCFlag;
 
 static smxTrySetupViewSCNFuncs gSmxTrySetupViewSCNFuncs[SMI_STATEMENT_CURSOR_MASK+1]=
 {
@@ -62,6 +67,8 @@ static smxTrySetupViewSCNFuncs gSmxTrySetupViewSCNFuncs[SMI_STATEMENT_CURSOR_MAS
 
 IDE_RC smxTrans::initializeStatic()
 {
+    UInt i = 0;
+    UInt j = 0;
     IDE_TEST( mCompResPool.initialize(
                   (SChar*)"TRANS_LOG_COMP_RESOURCE_POOL",
                   16, // aInitialResourceCount
@@ -117,8 +124,80 @@ IDE_RC smxTrans::initializeStatic()
     smcLob::initializeFixedTableArea();
     sdcLob::initializeFixedTableArea();
 
+    mGroupCnt  = smuProperty::getGroupCommitCnt();
+    mGCListCnt = smuProperty::getGroupCommitListCnt();
+
+    if ( mGroupCnt != 0 )
+    {
+        IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMX,
+                                           ID_SIZEOF(iduMutex) * mGCListCnt,
+                                           (void**)&mGCMutex ) != IDE_SUCCESS,
+                        insufficient_memory );
+
+        IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMX,
+                                           ID_SIZEOF(UInt) * mGCListCnt,
+                                           (void**)&mGCCnt ) != IDE_SUCCESS,
+                        insufficient_memory );
+
+        IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMX,
+                                           ID_SIZEOF(UInt) * mGCListCnt,
+                                           (void**)&mGCListID ) != IDE_SUCCESS,
+                        insufficient_memory );
+
+        IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMX,
+                                           ID_SIZEOF(UInt*) * mGCListCnt,
+                                           (void**)&mGCTIDArray ) != IDE_SUCCESS,
+                        insufficient_memory );
+
+        IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMX,
+                                           ID_SIZEOF(UInt*) * mGCListCnt,
+                                           (void**)&mGCCommitSCNArray ) != IDE_SUCCESS,
+                        insufficient_memory );
+
+        IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMX,
+                                           ID_SIZEOF(UInt) * mGCListCnt,
+                                           (void**)&mGCFlag ) != IDE_SUCCESS,
+                        insufficient_memory );
+
+        for ( j = 0 ; j < mGCListCnt; j++ )
+        {
+            IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMX,
+                                               ID_SIZEOF(smTID) * mGroupCnt,
+                                               (void**)&mGCTIDArray[j] ) != IDE_SUCCESS,
+                            insufficient_memory );
+
+            IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMX,
+                                               ID_SIZEOF(smSCN) * mGroupCnt,
+                                               (void**)&mGCCommitSCNArray[j] ) != IDE_SUCCESS,
+                            insufficient_memory );
+
+            IDE_TEST( mGCMutex[j].initialize( (SChar*)"GROUP_COMMIT_MUTEX",
+                                                  IDU_MUTEX_KIND_NATIVE,
+                                                  IDV_WAIT_INDEX_NULL ) != IDE_SUCCESS );
+
+            mGCCnt[j]    = 0;
+            mGCListID[j] = j; /* GCListID´Â °¢ SlotNumÀ» ±âÁØÀ¸·Î ½ÃÀÛÇØ¼­ SlotNum ¾¿ Áõ°¡ÇÔ */
+
+            /* ±âº»ÀûÀ¸·Î ºñRP ·Î±×·Î ÆÇ´Ü. ¸ğÀÎ °Í Áß¿¡ ÇÏ³ª¶óµµ RP·Î±×ÀÌ¸é RP·Î±×·Î ÆÇ´ÜÇÔ. */
+            /* ±âº»ÀûÀ¸·Î COMMITSCNÀÌ ¾ø´Â ·Î±×·Î ÆÇ´Ü.
+               ¸ğÀÎ °Í Áß¿¡ ÇÏ³ª¶óµµ COMMITSCNÀ» ÀúÀåÇßÀ¸¸é COMMITSCN ÀÌ ÀÖ´Â°ÍÀ¸·Î ÆÇ´ÜÇÔ. */
+            mGCFlag[j] = SMR_LOG_TYPE_REPLICATED | SMR_LOG_COMMITSCN_NO ;
+
+            for ( i = 0 ; i < mGroupCnt ; i++ )
+            {
+                mGCTIDArray[j][i] = SM_NULL_TID;
+                mGCCommitSCNArray[j][i] = SM_SCN_INIT; 
+            }
+        }
+    }
+    mGCList = 0;
+
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( insufficient_memory );
+    {
+        IDE_SET(ideSetErrorCode(idERR_ABORT_InsufficientMemory));
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -126,6 +205,40 @@ IDE_RC smxTrans::initializeStatic()
 
 IDE_RC smxTrans::destroyStatic()
 {
+    UInt i = 0;
+
+    if ( mGroupCnt != 0 )
+    {
+        for( i = 0 ; i < mGCListCnt ; i++ )
+        {
+            IDE_TEST( mGCMutex[i].destroy() != IDE_SUCCESS );
+
+            IDE_TEST( iduMemMgr::free( mGCCommitSCNArray[i] ) != IDE_SUCCESS );
+            mGCCommitSCNArray[i] = NULL;
+
+            IDE_TEST( iduMemMgr::free( mGCTIDArray[i] ) != IDE_SUCCESS );
+            mGCTIDArray[i] = NULL;
+        }
+
+        IDE_TEST( iduMemMgr::free( mGCFlag ) != IDE_SUCCESS );
+        mGCFlag = NULL;
+
+        IDE_TEST( iduMemMgr::free( mGCCommitSCNArray ) != IDE_SUCCESS );
+        mGCCommitSCNArray = NULL;
+
+        IDE_TEST( iduMemMgr::free( mGCTIDArray ) != IDE_SUCCESS );
+        mGCTIDArray = NULL;
+
+        IDE_TEST( iduMemMgr::free( mGCListID ) != IDE_SUCCESS );
+        mGCListID = NULL;
+
+        IDE_TEST( iduMemMgr::free( mGCCnt ) != IDE_SUCCESS );
+        mGCCnt = NULL;
+
+        IDE_TEST( iduMemMgr::free( mGCMutex ) != IDE_SUCCESS );
+        mGCMutex = NULL;
+    }
+
     IDE_TEST( mMutexListNodePool.destroy() != IDE_SUCCESS );
 
     IDE_TEST( mCompResPool.destroy() != IDE_SUCCESS );
@@ -146,7 +259,6 @@ IDE_RC smxTrans::initialize(smTID aTransID, UInt aSlotMask)
     idlOS::memset(sBuffer, 0, 128);
     idlOS::snprintf(sBuffer, 128, "TRANS_MUTEX_%"ID_UINT32_FMT, (UInt)aTransID);
 
-    // ë¡œê·¸ ì••ì¶• ë¦¬ì†ŒìŠ¤ ì´ˆê¸°í™” (ìµœì´ˆ ë¡œê¹…ì‹œ Poolì—ì„œ ê°€ì ¸ì˜¨ë‹¤ )
     mCompRes        = NULL;
 
     mTransID        = aTransID;
@@ -167,6 +279,9 @@ IDE_RC smxTrans::initialize(smTID aTransID, UInt aSlotMask)
     mLogBuffer           = NULL;
     mCacheOIDNode4Insert = NULL;
     mReplLockTimeout     = smuProperty::getReplLockTimeOut();
+
+    mConnectDeleteThread = NULL;
+    
     //PRJ-1476
     /* smxTrans_initialize_alloc_CacheOIDNode4Insert.tc */
     IDU_FIT_POINT("smxTrans::initialize::alloc::CacheOIDNode4Insert");
@@ -195,8 +310,8 @@ IDE_RC smxTrans::initialize(smTID aTransID, UInt aSlotMask)
                                            &smxOIDList::addOID )
               != IDE_SUCCESS );
 
-    /* BUG-27122 Restart Recovery ì‹œ Undo Transê°€ ì ‘ê·¼í•˜ëŠ” ì¸ë±ìŠ¤ì— ëŒ€í•œ
-     * Integrity ì²´í¬ê¸°ëŠ¥ ì¶”ê°€ (__SM_CHECK_DISK_INDEX_INTEGRITY=2) */
+    /* BUG-27122 Restart Recovery ½Ã Undo Trans°¡ Á¢±ÙÇÏ´Â ÀÎµ¦½º¿¡ ´ëÇÑ
+     * Integrity Ã¼Å©±â´É Ãß°¡ (__SM_CHECK_DISK_INDEX_INTEGRITY=2) */
     if ( smuProperty::getCheckDiskIndexIntegrity()
                       == SMU_CHECK_DSKINDEX_INTEGRITY_LEVEL2 )
     {
@@ -222,7 +337,7 @@ IDE_RC smxTrans::initialize(smTID aTransID, UInt aSlotMask)
     IDE_TEST( mTableInfoMgr.initialize() != IDE_SUCCESS );
     IDE_TEST( init() != IDE_SUCCESS );
 
-    /* smxTransFreeList::alloc, freeì‹œì— ID_TRUE, ID_FALSEë¡œ ì„¤ì •ë©ë‹ˆë‹¤. */
+    /* smxTransFreeList::alloc, free½Ã¿¡ ID_TRUE, ID_FALSE·Î ¼³Á¤µË´Ï´Ù. */
     mIsFree = ID_TRUE;
 
     IDE_TEST( mMutex.initialize( sBuffer,
@@ -238,7 +353,7 @@ IDE_RC smxTrans::initialize(smTID aTransID, UInt aSlotMask)
 
     SMU_LIST_INIT_BASE(&mMutexList);
 
-    // ë¡œê·¸ ë²„í¼ ê´€ë ¨ ë©¤ë²„ ì´ˆê¸°í™”
+    // ·Î±× ¹öÆÛ °ü·Ã ¸â¹ö ÃÊ±âÈ­
     mLogBufferSize = SMX_TRANSACTION_LOG_BUFFER_INIT_SIZE;
 
     IDE_ASSERT( SMR_LOGREC_SIZE(smrUpdateLog) < mLogBufferSize );
@@ -253,7 +368,14 @@ IDE_RC smxTrans::initialize(smTID aTransID, UInt aSlotMask)
                     insufficient_memory );
     sState = 4;
 
-    // PrivatePageList ê´€ë ¨ ë©¤ë²„ ì´ˆê¸°í™”
+    if ( smuProperty::getLogCompResourceReuse() == 1 )
+    {
+        /* BUG-47365 ·Î±× ¾ĞÃà ¸®¼Ò½º¸¦ ¹Ì¸® ¹Ş¾ÆµĞ´Ù. */
+        IDE_TEST( mCompResPool.allocCompRes( & mCompRes ) != IDE_SUCCESS );
+        sState = 5;
+    }
+
+    // PrivatePageList °ü·Ã ¸â¹ö ÃÊ±âÈ­
     mPrivatePageListCachePtr = NULL;
     mVolPrivatePageListCachePtr = NULL;
 
@@ -317,16 +439,24 @@ IDE_RC smxTrans::initialize(smTID aTransID, UInt aSlotMask)
                                    compareFunc )
              != IDE_SUCCESS );
 
+    IDE_TEST( smuHash::initialize( &mShardLobCursorHash,
+                                   1,
+                                   smuProperty::getLobCursorHashBucketCount(),
+                                   ID_SIZEOF(smLobCursorID),
+                                   ID_FALSE,
+                                   genHashValueFunc,
+                                   compareFunc )
+             != IDE_SUCCESS );
+
     /* PROJ-1594 Volatile TBS */
-    /* ë©¤ë²„ì¸ mVolatileLogEnvë¥¼ ì´ˆê¸°í™”í•œë‹¤. ID_TRUEëŠ” align force ì„. */
+    /* ¸â¹öÀÎ mVolatileLogEnv¸¦ ÃÊ±âÈ­ÇÑ´Ù. ID_TRUE´Â align force ÀÓ. */
     IDE_TEST( svrLogMgr::initEnv(&mVolatileLogEnv, ID_TRUE ) != IDE_SUCCESS );
 
-    mDiskTBSAccessed   = ID_FALSE;
-    mMemoryTBSAccessed = ID_FALSE;
-    mMetaTableModified = ID_FALSE;
 
     /* PROJ-2162 RestartRiskReduction */
     smrRecoveryMgr::initRTOI( & mRTOI4UndoFailure );
+    /* BUG-45711 */
+    mIsUncompletedLogWait = smuProperty::isFastUnlockLogAllocMutex();
 
     return IDE_SUCCESS;
 
@@ -344,6 +474,12 @@ IDE_RC smxTrans::initialize(smTID aTransID, UInt aSlotMask)
     {
         switch( sState )
         {
+        case 5:
+            if ( mCompRes != NULL )
+            {
+                IDE_ASSERT( mCompResPool.freeCompRes( mCompRes ) == IDE_SUCCESS );
+                mCompRes = NULL;
+            }
         case 4:
             if ( mLogBuffer != NULL )
             {
@@ -386,6 +522,13 @@ IDE_RC smxTrans::destroy()
 {
     IDE_ASSERT( mStatus == SMX_TX_END );
 
+    /* BUG-47365 ÇÒ´ç ¹ŞÀº ¾ĞÃà ¸®¼Ò½º¸¦ ¹İÈ¯ÇÑ´Ù. */
+    if ( mCompRes != NULL )
+    {
+        IDE_TEST( mCompResPool.freeCompRes( mCompRes ) != IDE_SUCCESS );
+        mCompRes = NULL;
+    }
+
     if ( mOIDToVerify != NULL )
     {
         IDE_TEST( mOIDToVerify->destroy() != IDE_SUCCESS );
@@ -394,8 +537,8 @@ IDE_RC smxTrans::destroy()
     }
 
     /* PROJ-1381 Fetch Across Commits
-     * smxTrans::destroy í•¨ìˆ˜ê°€ ì—¬ëŸ¬ ë²ˆ í˜¸ì¶œ ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
-     * mOIDListê°€ NULLì´ ì•„ë‹ ë•Œë§Œ OID Listë¥¼ ì •ë¦¬í•˜ë„ë¡ í•œë‹¤. */
+     * smxTrans::destroy ÇÔ¼ö°¡ ¿©·¯ ¹ø È£Ãâ µÉ ¼ö ÀÖÀ¸¹Ç·Î
+     * mOIDList°¡ NULLÀÌ ¾Æ´Ò ¶§¸¸ OID List¸¦ Á¤¸®ÇÏµµ·Ï ÇÑ´Ù. */
     if ( mOIDList != NULL )
     {
         IDE_TEST( mOIDList->destroy() != IDE_SUCCESS );
@@ -407,8 +550,9 @@ IDE_RC smxTrans::destroy()
 
     /* PROJ-1362 */
     IDE_TEST( smuHash::destroy(&mLobCursorHash) != IDE_SUCCESS );
+    IDE_TEST( smuHash::destroy(&mShardLobCursorHash) != IDE_SUCCESS );
 
-    /* PrivatePageListê´€ë ¨ ë©¤ë²„ ì œê±° */
+    /* PrivatePageList°ü·Ã ¸â¹ö Á¦°Å */
     IDE_DASSERT( mPrivatePageListCachePtr == NULL );
     IDE_DASSERT( mVolPrivatePageListCachePtr == NULL );
 
@@ -451,16 +595,16 @@ IDE_RC smxTrans::destroy()
 
 }
 
-/* TASK-2398 ë¡œê·¸ì••ì¶•
-   íŠ¸ëœì­ì…˜ì˜ ë¡œê·¸ ì••ì¶•/ì••ì¶•í•´ì œì— ì‚¬ìš©í•  ë¦¬ì†ŒìŠ¤ë¥¼ ë¦¬í„´í•œë‹¤
+/* TASK-2398 ·Î±×¾ĞÃà
+   Æ®·£Àè¼ÇÀÇ ·Î±× ¾ĞÃà/¾ĞÃàÇØÁ¦¿¡ »ç¿ëÇÒ ¸®¼Ò½º¸¦ ¸®ÅÏÇÑ´Ù
 
-   [OUT] aCompRes - ë¡œê·¸ ì••ì¶• ë¦¬ì†ŒìŠ¤
+   [OUT] aCompRes - ·Î±× ¾ĞÃà ¸®¼Ò½º
 */
 IDE_RC smxTrans::getCompRes(smrCompRes ** aCompRes)
 {
-    if ( mCompRes == NULL ) // Transaction Beginì´í›„ ì²˜ìŒ í˜¸ì¶œëœ ê²½ìš°
+    if ( mCompRes == NULL ) // Transaction BeginÀÌÈÄ Ã³À½ È£ÃâµÈ °æ¿ì
     {
-        // Log ì••ì¶• ë¦¬ì†ŒìŠ¤ë¥¼ Poolì—ì„œ ê°€ì ¸ì˜¨ë‹¤.
+        // Log ¾ĞÃà ¸®¼Ò½º¸¦ Pool¿¡¼­ °¡Á®¿Â´Ù.
         IDE_TEST( mCompResPool.allocCompRes( & mCompRes )
                   != IDE_SUCCESS );
     }
@@ -476,10 +620,10 @@ IDE_RC smxTrans::getCompRes(smrCompRes ** aCompRes)
     return IDE_FAILURE;
 }
 
-/* íŠ¸ëœì­ì…˜ì˜ ë¡œê·¸ ì••ì¶•/ì••ì¶•í•´ì œì— ì‚¬ìš©í•  ë¦¬ì†ŒìŠ¤ë¥¼ ë¦¬í„´í•œë‹¤
+/* Æ®·£Àè¼ÇÀÇ ·Î±× ¾ĞÃà/¾ĞÃàÇØÁ¦¿¡ »ç¿ëÇÒ ¸®¼Ò½º¸¦ ¸®ÅÏÇÑ´Ù
 
-   [IN] aTrans - íŠ¸ëœì­ì…˜
-   [OUT] aCompRes - ë¡œê·¸ ì••ì¶• ë¦¬ì†ŒìŠ¤
+   [IN] aTrans - Æ®·£Àè¼Ç
+   [OUT] aCompRes - ·Î±× ¾ĞÃà ¸®¼Ò½º
  */
 IDE_RC smxTrans::getCompRes4Callback( void *aTrans, smrCompRes ** aCompRes )
 {
@@ -503,14 +647,13 @@ IDE_RC smxTrans::init()
     mIsUpdate        = ID_FALSE;
 
     /*PROJ-1541 Eager Replication
-     *mReplModeëŠ” Sessionë³„ Eager,Acked,Lazyë¥¼ ì§€ì •í•  ìˆ˜ ìˆë„ë¡
-     *í•˜ê¸° ìœ„í•´ ì¡´ì¬í•˜ë©°, DEFAULT ê°’ì„ ê°–ëŠ”ë‹¤.
+     *mReplMode´Â Sessionº° Eager,Acked,Lazy¸¦ ÁöÁ¤ÇÒ ¼ö ÀÖµµ·Ï
+     *ÇÏ±â À§ÇØ Á¸ÀçÇÏ¸ç, DEFAULT °ªÀ» °®´Â´Ù.
      */
 
     mFlag = 0;
     mFlag = SMX_REPL_DEFAULT | SMX_COMMIT_WRITE_NOWAIT;
 
-    SM_LSN_MAX( mLastWritedLSN );
     // For Global Transaction
     initXID();
 
@@ -522,11 +665,22 @@ IDE_RC smxTrans::init()
 
     mUpdateSize           = 0;
 
+    /* TASK-7219 Non-shard DML */
+    mIsPartialStmt = ID_FALSE;
+    mStmtSeq       = 0;
+
+    /* PROJ-2734 */
+    clearDistTxInfo();
+
+    mDistDeadlock4FT.mDetection   = SMX_DIST_DEADLOCK_DETECTION_NONE;
+    mDistDeadlock4FT.mDieWaitTime = 0;
+    mDistDeadlock4FT.mElapsedTime = 0;
+
     /* PROJ-1381 Fetch Across Commits
-     * Legacy Transê°€ ìˆìœ¼ë©´ ì•„ë˜ì˜ ë©¤ë²„ë¥¼ ì´ˆê¸°í™” í•˜ì§€ ì•ŠëŠ”ë‹¤.
-     * MinViewSCNs       : aging ë°©ì§€
-     * mFstUndoNxtLSN    : ë¹„ì •ìƒ ì¢…ë£Œì‹œ redoì‹œì ì„ ìœ ì§€
-     * initTransLockList : IS Lock ìœ ì§€ */
+     * Legacy Trans°¡ ÀÖÀ¸¸é ¾Æ·¡ÀÇ ¸â¹ö¸¦ ÃÊ±âÈ­ ÇÏÁö ¾Ê´Â´Ù.
+     * MinViewSCNs       : aging ¹æÁö
+     * mFstUndoNxtLSN    : ºñÁ¤»ó Á¾·á½Ã redo½ÃÁ¡À» À¯Áö
+     * initTransLockList : IS Lock À¯Áö */
     if ( mLegacyTransCnt == 0 )
     {
         mStatus    = SMX_TX_END;
@@ -536,11 +690,13 @@ IDE_RC smxTrans::init()
         SM_SET_SCN_INFINITE( &mMinDskViewSCN );
         SM_SET_SCN_INFINITE( &mFstDskViewSCN );
 
-        /* í•´ë‹¹ Txì—ì„œ holdable cursorê°€ ì—´ë ¸ì„ë•Œì˜ infinite SCN */
+        /* ÇØ´ç Tx¿¡¼­ holdable cursor°¡ ¿­·ÈÀ»¶§ÀÇ infinite SCN */
         SM_INIT_SCN( &mCursorOpenInfSCN ); 
 
-        // BUG-26881 ì˜ëª»ëœ CTS stampingìœ¼ë¡œ accessí•  ìˆ˜ ì—†ëŠ” rowë¥¼ ì ‘ê·¼í•¨
+        // BUG-26881 Àß¸øµÈ CTS stampingÀ¸·Î accessÇÒ ¼ö ¾ø´Â row¸¦ Á¢±ÙÇÔ
         SM_SET_SCN_INFINITE( &mOldestFstViewSCN );
+
+        SM_SET_SCN_INFINITE( &mLastRequestSCN );
 
         SM_LSN_MAX(mFstUndoNxtLSN);
 
@@ -548,15 +704,16 @@ IDE_RC smxTrans::init()
         smLayerCallback::initTransLockList( mSlotN );
     }
 
+    SM_SET_SCN_INFINITE( &mPrepareSCN );
     SM_SET_SCN_INFINITE( &mCommitSCN );
 
     mLogTypeFlag = SMR_LOG_TYPE_NORMAL;
 
-    SM_LSN_MAX(mLstUndoNxtLSN);
+    SM_LSN_MAX( mLstUndoNxtLSN );
+    SM_LSN_MAX( mCurUndoNxtLSN );
 
     mLSLockFlag = SMX_TRANS_UNLOCKED;
     mDoSkipCheckSCN = ID_FALSE;
-    mAbleToRollback = ID_TRUE;
 
     //For Session Management
     mFstUpdateTime       = 0;
@@ -565,15 +722,12 @@ IDE_RC smxTrans::init()
     /* BUG-33895 [sm_recovery] add the estimate function 
      * the time of transaction undoing. */
     mUndoBeginTime         = 0;
-    mTotalLogCount     = 0;
+    mTotalLogCount         = 0;
     mProcessedUndoLogCount = 0;
     // PROJ-1362 QP Large Record & Internal LOB
     mCurLobCursorID = 0;
-    //fix BUG-21311
-    mMemLCL.initialize();
-    mDiskLCL.initialize();
+    mCurShardLobCursorID = 0; // PROJ-2728
 
-    mTableInfoPtr  = NULL;
     mDoSkipCheck   = ID_FALSE;
     mIsDDL         = ID_FALSE;
     mIsFirstLog    = ID_TRUE;
@@ -582,17 +736,25 @@ IDE_RC smxTrans::init()
     mTXSegEntryIdx = ID_UINT_MAX;
     mTXSegEntry    = NULL;
 
+    IDE_TEST( mTableInfoMgr.init() != IDE_SUCCESS );
+    mTableInfoPtr  = NULL;
+
+    SM_LSN_MAX( mLastWritedLSN );
+
     // initialize PageListID
     mRSGroupID = SMP_PAGELISTID_NULL;
 
-    IDE_TEST( mTableInfoMgr.init() != IDE_SUCCESS );
+    //fix BUG-21311
+    mMemLCL.initialize();
+    mDiskLCL.initialize();
+    mShardLCL.initialize();   // PROJ-2728
 
-    /* Disk Insert Rollback (Partial Rollback í¬í•¨)ì‹œ Flagë¥¼ FALSEë¡œ
-       í•˜ì—¬, Commit ì´ë‚˜ Abortì‹œì— Aging Listì— ì¶”ê°€í• ìˆ˜ ìˆê²Œ í•œë‹¤. */
+    /* Disk Insert Rollback (Partial Rollback Æ÷ÇÔ)½Ã Flag¸¦ FALSE·Î
+       ÇÏ¿©, Commit ÀÌ³ª Abort½Ã¿¡ Aging List¿¡ Ãß°¡ÇÒ¼ö ÀÖ°Ô ÇÑ´Ù. */
     mFreeInsUndoSegFlag = ID_TRUE;
 
-    /* TASK-2401 MMAP Loggingí™˜ê²½ì—ì„œ Disk/Memory Logì˜ ë¶„ë¦¬
-       Disk/Memory Tableì— ì ‘ê·¼í–ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ ì´ˆê¸°í™”
+    /* TASK-2401 MMAP LoggingÈ¯°æ¿¡¼­ Disk/Memory LogÀÇ ºĞ¸®
+       Disk/Memory Table¿¡ Á¢±ÙÇß´ÂÁö ¿©ºÎ¸¦ ÃÊ±âÈ­
      */
     mDiskTBSAccessed   = ID_FALSE;
     mMemoryTBSAccessed = ID_FALSE;
@@ -604,6 +766,17 @@ IDE_RC smxTrans::init()
     // PROJ-2068
     mDPathEntry = NULL;
 
+    mIsGCTx = ID_FALSE;
+
+    mIndoubtFetchTimeout = (UInt)IDP_SHARD_PROPERTY_INDOUBT_FETCH_TIMEOUT_DEFAULT;
+    mIndoubtFetchMethod  = (UInt)IDP_SHARD_PROPERTY_INDOUBT_FETCH_METHOD_DEFAULT;
+    
+    mGlobalSMNChangeFunc = NULL;
+ 
+    mInternalTableSwap   = ID_FALSE;
+
+    mGlobalTxId          = SM_INIT_GTX_ID;
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -612,36 +785,69 @@ IDE_RC smxTrans::init()
 
 }
 
+IDE_RC smxTrans::suspend( smxTrans * aWaitTrans,
+                          iduMutex * aMutex,
+                          ULong      aTotalWaitMicroSec )
+{
+    return suspend( aWaitTrans,
+                    aMutex,
+                    &aTotalWaitMicroSec,
+                    NULL,
+                    ID_FALSE,
+                    SMX_DIST_DEADLOCK_DETECTION_NONE,
+                    NULL,
+                    NULL );
+}
+
 /***********************************************************************
  * Description: 1. aWaitTrans != NULL
- *                 aWaitTrans ê°€ ì¡ê³  ìˆëŠ” Resourceê°€ Freeë ë•Œê¹Œì§€ ê¸°ë‹¤ë¦°ë‹¤.
- *                 í•˜ì§€ë§Œ Transactionì„ ë‹¤ë¥¸ event(query timeout, session
- *                 timeout)ì— ì˜í•´ì„œ ì¤‘ì§€ë˜ì§€ ì•ŠëŠ” ì´ìƒ aWaitMicroSecë§Œí¼
- *                 ëŒ€ê¸°í•œë‹¤.
+ *                 aWaitTrans °¡ Àâ°í ÀÖ´Â Resource°¡ FreeµÉ¶§±îÁö ±â´Ù¸°´Ù.
+ *                 ÇÏÁö¸¸ TransactionÀ» ´Ù¸¥ event(query timeout, session
+ *                 timeout)¿¡ ÀÇÇØ¼­ ÁßÁöµÇÁö ¾Ê´Â ÀÌ»ó aWaitMicroSec¸¸Å­
+ *                 ´ë±âÇÑ´Ù.
  *
  *              2. aMutex != NULL
- *                 Record Lockê°™ì€ ê²½ìš°ëŠ” Page Mutexë¥¼ ì¡ê³  Lock Validationì„
- *                 ìˆ˜í–‰í•œë‹¤. ê·¸ Mutexë¥¼ Waitingí•˜ê¸°ì „ì— í’€ì–´ì•¼ í•œë‹¤. ì—¬ê¸°ì„œ
- *                 í’€ê³  ë‹¤ì‹œ Transactionì´ ê¹¨ì–´ë‚¬ì„ ê²½ìš°ì— ë‹¤ì‹œ Mutexë¥¼ ì¡ê³ 
- *                 ì‹¤ì œë¡œ í•´ë‹¹ Recordê°€ Lockì„ í’€ë ¸ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+ *                 Record Lock°°Àº °æ¿ì´Â Page Mutex¸¦ Àâ°í Lock ValidationÀ»
+ *                 ¼öÇàÇÑ´Ù. ±× Mutex¸¦ WaitingÇÏ±âÀü¿¡ Ç®¾î¾ß ÇÑ´Ù. ¿©±â¼­
+ *                 Ç®°í ´Ù½Ã TransactionÀÌ ±ú¾î³µÀ» °æ¿ì¿¡ ´Ù½Ã Mutex¸¦ Àâ°í
+ *                 ½ÇÁ¦·Î ÇØ´ç Record°¡ LockÀ» Ç®·È´ÂÁö °Ë»çÇÑ´Ù.
  *
- * aWaitTrans    - [IN] í•´ë‹¹ Resourceë¥¼ ê°€ì§€ê³  ìˆëŠ” Transaction
- * aMutex        - [IN] í•´ë‹¹ Resource( ex: Record)ë¥¼ ì—¬ëŸ¬ê°œì˜ íŠ¸ëœì­ì…˜ì´ ë™ì‹œì—
- *                      ì ‘ê·¼í•˜ëŠ”ê²ƒìœ¼ë¡œë¶€í„° ë³´í˜¸í•˜ëŠ” Mutex
- * aWaitMicroSec - [IN] ì–¼ë§ˆë‚˜ ê¸°ë‹¤ë ¤ì•¼ í• ì§€ë¥¼ ê²°ì •.
- * */
-IDE_RC smxTrans::suspendMutex(smxTrans * aWaitTrans,
-                              iduMutex * aMutex,
-                              ULong      aWaitMicroSec)
+ * aWaitTrans              - [IN] ÇØ´ç Resource¸¦ °¡Áö°í ÀÖ´Â Transaction
+ * aMutex                  - [IN] ÇØ´ç Resource( ex: Record)¸¦ ¿©·¯°³ÀÇ Æ®·£Àè¼ÇÀÌ µ¿½Ã¿¡
+ *                                Á¢±ÙÇÏ´Â°ÍÀ¸·ÎºÎÅÍ º¸È£ÇÏ´Â Mutex
+ * aTotalWaitMicroSec      - [IN/OUT] WAIT ÇÒ ÀüÃ¼½Ã°£.
+ * aElapsedMicroSec        - [IN/OUT] ÀüÃ¼½Ã°£ Áß °æ°úµÈ ½Ã°£.
+ * aCheckDistDeadlock      - [IN] WAIT Áß¿¡ ÁÖ±âÀûÀ¸·Î ºĞ»êµ¥µå¶ôÀ» Ã¼Å©ÇÒÁö ¿©ºÎ.
+ * aDistDeadlock           - [IN] suspend µé¾î¿À±â ÀÌÀü¿¡ ºĞ»êµ¥µå¶ôÀÌ Å½ÁöµÇ¾ú´ÂÁö.
+ * aIsReleasedDistDeadlock - [OUT] WAIT Áß¿¡ ºĞ»êµ¥µå¶ô »óÈ²ÀÌ ÇØÁ¦µÇ¾ú´ÂÁö ¿©ºÎ.
+ * aNewDistDeadlock        - [OUT] WAIT Áß¿¡ ºĞ»êµ¥µå¶ôÀÌ »õ·Î Å½ÁöµÇ¾ú´ÂÁö.
+ ***********************************************************************/
+IDE_RC smxTrans::suspend( smxTrans                 * aWaitTrans,
+                          iduMutex                 * aMutex,
+                          ULong                    * aTotalWaitMicroSec,
+                          ULong                    * aElapsedMicroSec,
+                          idBool                     aCheckDistDeadlock,
+                          smxDistDeadlockDetection   aDistDeadlock,
+                          idBool                   * aIsReleasedDistDeadlock,
+                          smxDistDeadlockDetection * aNewDistDeadlock )
 {
     idBool            sWaited          = ID_FALSE;
     idBool            sMyMutexLocked   = ID_FALSE;
     idBool            sTxMutexUnlocked = ID_FALSE;
-    ULong             sWaitSec         = 0;
-    ULong             sMustWaitSec     = 0;
-    PDL_Time_Value    sTimeVal;
 
-    IDE_DASSERT(smuProperty::getLockMgrType() == 0);
+    ULong             sSleepMicroSec        = 0; /* Loop ÇÑ¹ø¿¡ ´ë±âÇÏ´Â ½Ã°£ */
+    ULong             sTotalWaitMicroSec    = 0; /* ±â´Ù·Á¾ß ÀüÃ¼½Ã°£ */
+    ULong             sElapsedMicroSec      = 0; /* °æ°úµÈ ½Ã°£ */
+    ULong             sNewTotalWaitMicroSec = 0;
+    ULong             sIntervalMicroSec     = 0;
+    idBool            sDumped               = ID_FALSE;
+
+    PDL_Time_Value    sTimeVal;
+    PDL_Time_Value    sTimeWait;
+    
+    idBool                   sIsReleasedDistDeadlock = ID_FALSE;
+    smxDistDeadlockDetection sDetection              = SMX_DIST_DEADLOCK_DETECTION_NONE;
+    smxDistDeadlockDetection sNewDistDeadlock        = SMX_DIST_DEADLOCK_DETECTION_NONE;
 
     /*
      * Check whether this TX is waiting for itself
@@ -658,20 +864,25 @@ IDE_RC smxTrans::suspendMutex(smxTrans * aWaitTrans,
         /* fall through */
     }
 
-    if( aWaitMicroSec != 0 )
+    if( aTotalWaitMicroSec != NULL )
     {
-        /* Microë¥¼ Secë¡œ ë³€í™˜í•œë‹¤. */
-        sMustWaitSec = aWaitMicroSec / 1000000;
+        sTotalWaitMicroSec = *aTotalWaitMicroSec;
     }
     else
     {
         idlOS::thr_yield();
     }
 
-    IDE_TEST( lock() != IDE_SUCCESS );
+    if( aElapsedMicroSec != NULL )
+    {
+        sElapsedMicroSec = *aElapsedMicroSec;
+    }
+
+    /* always return true */
+    lock();
     sMyMutexLocked = ID_TRUE;
 
-    if ( aWaitTrans != NULL )
+    if ( aWaitTrans != NULL ) /* RECORD LOCK ÀÌ¶ó¸é */
     {
         IDE_ASSERT( aMutex == NULL );
 
@@ -679,7 +890,8 @@ IDE_RC smxTrans::suspendMutex(smxTrans * aWaitTrans,
              == ID_TRUE )
         {
             sMyMutexLocked = ID_FALSE;
-            IDE_TEST( mMutex.unlock() != IDE_SUCCESS );
+            /* always return true */
+            unlock();
 
             return IDE_SUCCESS;
         }
@@ -693,36 +905,150 @@ IDE_RC smxTrans::suspendMutex(smxTrans * aWaitTrans,
 
     if ( mStatus == SMX_TX_BLOCKED )
     {
-        IDE_TEST( smLayerCallback::lockWaitFunc( aWaitMicroSec, &sWaited )
+        IDE_TEST( smLayerCallback::lockWaitFunc( *aTotalWaitMicroSec, &sWaited )
                   != IDE_SUCCESS );
+    }
+
+    if ( aCheckDistDeadlock == ID_TRUE )
+    {
+        sIntervalMicroSec = (1 * 1000 * 100); /* 0.1 sec */
+    }
+    else
+    {
+        /* ºĞ»êµ¥µå¶ô Å½Áö·Î È£ÃâµÈ°ÍÀÌ ¾Æ´Ï¶ó¸é, 
+           ±âÁ¸°ú µ¿ÀÏÇÏ°Ô ´ë±â intervalÀ» 3ÃÊ·Î ¼³Á¤ÇÑ´Ù. */
+        sIntervalMicroSec = (3 * 1000 * 1000); /* 3 sec */
     }
 
     while( mStatus == SMX_TX_BLOCKED )
     {
-        /* BUG-18965: LOCK TABLEêµ¬ë¬¸ì—ì„œ QUERY_TIMEOUTì´ ë™ì‘í•˜ì§€
-         * ì•ŠìŠµë‹ˆë‹¤.
+        /* BUG-18965: LOCK TABLE±¸¹®¿¡¼­ QUERY_TIMEOUTÀÌ µ¿ÀÛÇÏÁö
+         * ¾Ê½À´Ï´Ù.
          *
-         * ì‚¬ìš©ìê°€ LOCK TIME OUTì„ ì§€ì •í•˜ê²Œ ë˜ë©´ ë¬´ì¡°ê±´ LOCK TIME
-         * OUTë•Œê¹Œì§€ ë¬´ì¡°ê±´ ê¸°ë‹¤ë ¸ë‹¤. í•˜ì§€ë§Œ QUERY TIMEOUT, SESSION
-         * TIMEOUTì„ ì²´í¬í•˜ì§€ ì•Šì•„ì„œ ì œë•Œ ì—ëŸ¬ë¥¼ ë‚´ì§€ ëª»í•˜ê³  LOCK
-         * TIMEOUTë•Œê¹Œì§€ ê¸°ë‹¤ë ¤ì•¼ í•œë‹¤. ì´ëŸ° ë¬¸ì œë¥¼ í•´ê²°í•˜ê¸° ìœ„í•´ì„œ
-         * ì£¼ê¸°ì ìœ¼ë¡œ ê¹¨ì„œ mStatisticsì™€ ê¸°ë‹¤ë¦° ì‹œê°„ì´ LOCK_TIMEOUTì„
-         * ë„˜ì—ˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+         * »ç¿ëÀÚ°¡ LOCK TIME OUTÀ» ÁöÁ¤ÇÏ°Ô µÇ¸é ¹«Á¶°Ç LOCK TIME
+         * OUT¶§±îÁö ¹«Á¶°Ç ±â´Ù·È´Ù. ÇÏÁö¸¸ QUERY TIMEOUT, SESSION
+         * TIMEOUTÀ» Ã¼Å©ÇÏÁö ¾Ê¾Æ¼­ Á¦¶§ ¿¡·¯¸¦ ³»Áö ¸øÇÏ°í LOCK
+         * TIMEOUT¶§±îÁö ±â´Ù·Á¾ß ÇÑ´Ù. ÀÌ·± ¹®Á¦¸¦ ÇØ°áÇÏ±â À§ÇØ¼­
+         * ÁÖ±âÀûÀ¸·Î ±ú¼­ mStatistics¿Í ±â´Ù¸° ½Ã°£ÀÌ LOCK_TIMEOUTÀ»
+         * ³Ñ¾ú´ÂÁö °Ë»çÇÑ´Ù.
          * */
-        if ( sMustWaitSec == 0 )
+        if ( sTotalWaitMicroSec <= sElapsedMicroSec )
         {
             break;
         }
 
-        sWaitSec = sMustWaitSec < 3 ? sMustWaitSec : 3;
-        sMustWaitSec -= sWaitSec;
+        sSleepMicroSec = ( ( ( sTotalWaitMicroSec - sElapsedMicroSec ) < sIntervalMicroSec )
+                           ? ( sTotalWaitMicroSec - sElapsedMicroSec ) : sIntervalMicroSec );
 
-        sTimeVal.set( idlOS::time(NULL) + sWaitSec, 0 );
+        sElapsedMicroSec += sSleepMicroSec;
+
+        sTimeWait.microsec( sSleepMicroSec );
+        sTimeVal = idlOS::gettimeofday();
+        sTimeVal += sTimeWait;
 
         IDE_TEST_RAISE(mCondV.timedwait(&mMutex, &sTimeVal, IDU_IGNORE_TIMEDOUT)
                        != IDE_SUCCESS, err_cond_wait);
+
+        /*******************************
+         * PROJ-2734 
+         * ºĞ»êµ¥µå¶ôÀ» Ã¼Å©ÇÑ´Ù.
+         ******************************/
+        if ( aCheckDistDeadlock == ID_TRUE )
+        {
+            /* isCycle() ÀçÈ£ÃâÇÏ±âÀü¿¡ WaitForTableÀÇ ÀÚ½ÅÀÇ ÇàÀ» Á¤¸®ÇØÁØ´Ù. */
+            smlLockMgr::revertWaitItemColsOfTrans( mSlotN );
+
+            if ( smLayerCallback::isCycle( mSlotN, ID_TRUE ) == ID_FALSE )
+            {
+                sDetection = smlLockMgr::detectDistDeadlock( mSlotN, &sNewTotalWaitMicroSec );
+
+                /*************************************************/
+                /* CASE 1 : ºĞ»êµ¥µå¶ô ¹ÌÅ½Áö -> ºĞ»êµ¥µå¶ô Å½Áö */
+                /*************************************************/
+                if ( SMX_DIST_DEADLOCK_IS_NOT_DETECTED( aDistDeadlock ) &&
+                     SMX_DIST_DEADLOCK_IS_DETECTED( sDetection ) )
+                {
+                    /* LOCK WAITÁß¿¡ ºĞ»êµ¥µå¶ôÀ» »õ·Ó°Ô Å½Áö */
+                    sNewDistDeadlock   = sDetection;
+                    sTotalWaitMicroSec = sNewTotalWaitMicroSec;
+                    break;
+                }
+
+                /*************************************************/
+                /* CASE 2 : ºĞ»êµ¥µå¶ô Å½Áö -> ºĞ»êµ¥µå¶ô Å½Áö */
+                /*************************************************/
+                else if ( SMX_DIST_DEADLOCK_IS_DETECTED( aDistDeadlock ) &&
+                          SMX_DIST_DEADLOCK_IS_DETECTED( sDetection ) )
+                {
+                    /* ºĞ»ê·¹º§ÀÌ º¯°æµÇ¾ú´Ù¸é, TIMEOUT ½Ã°£ÀÌ º¯°æµÉ¼öÀÖ´Ù. */
+                    if ( sNewTotalWaitMicroSec != sTotalWaitMicroSec )
+                    {
+                        #ifdef DEBUG
+                        ideLog::log( IDE_SD_19,
+                                     "\n<Detected Distribution Deadlock : Change Die Timeout >\n"
+                                     "WaiterTx(%"ID_UINT32_FMT") WaitTime : "
+                                     "%"ID_UINT64_FMT"us -> %"ID_UINT64_FMT"us (elapsed %"ID_UINT64_FMT"us) \n",
+                                     mTransID,
+                                     sTotalWaitMicroSec,
+                                     sNewTotalWaitMicroSec,
+                                     sElapsedMicroSec );
+                        #endif
+
+                        /* »õ·Î¿î TOTAL WAIT ½Ã°£À¸·Î º¯°æ */
+                        sTotalWaitMicroSec = sNewTotalWaitMicroSec;
+                        /* Performance View¸¦ À§ÇÑ Á¤º¸ °»½Å
+                           (Å½Áö¿øÀÎÀº º¯°æÇÏÁö ¾Ê´Â´Ù.) */
+                        mDistDeadlock4FT.mDieWaitTime = sNewTotalWaitMicroSec;
+                    }
+
+                    mDistDeadlock4FT.mElapsedTime = sElapsedMicroSec;
+                }
+
+                /*************************************************/
+                /* CASE 3 : ºĞ»êµ¥µå¶ô Å½Áö -> ºĞ»êµ¥µå¶ô ¹ÌÅ½Áö */
+                /*************************************************/
+                else if ( SMX_DIST_DEADLOCK_IS_DETECTED( aDistDeadlock ) &&
+                          SMX_DIST_DEADLOCK_IS_NOT_DETECTED( sDetection ) )
+                {
+                    /* ºĞ»êµ¥µå¶ôÀÌ Ç®·È´Ù */
+                    sIsReleasedDistDeadlock = ID_TRUE;
+
+                    /* Performance View¸¦ À§ÇÑ Á¤º¸ °»½Å */
+                    mDistDeadlock4FT.mDetection = SMX_DIST_DEADLOCK_DETECTION_NONE;
+
+                    break;
+                }
+
+                /*************************************************/
+                /* CASE 4 : ºĞ»êµ¥µå¶ô ¹ÌÅ½Áö -> ºĞ»êµ¥µå¶ô ¹ÌÅ½Áö */
+                /*************************************************/
+                else
+                {
+                    /* nothing to do */
+                }
+            }
+            else
+            {
+                /* ·ÎÄÃµ¥µå¶ôÀÌ Å½ÁöµÇ¾ú´Ù.
+                   ÀÌ°æ¿ì´Â ·ÎÄÃµ¥µå¶ôÀ» »õ·Î ¹ß»ı½ÃÅ² TX°¡ Ã³¸®ÇÒ°ÍÀÌ¹Ç·Î,
+                   ³» TX´Â ¾Æ¹«°Íµµ ÇÏÁö¾Ê¾Æµµ µÈ´Ù. */
+            }
+        } /* if ( aCheckDistDeadlokc == ID_TRUE ) */
+        
         IDE_TEST( iduCheckSessionEvent( mStatistics )
                   != IDE_SUCCESS );
+
+        /* BUG-47472 DBHang Çö»ó °ü·Ã µğ¹ö±× ÄÚµå Ãß°¡ */
+        if( SMI_IS_LOCK_DEBUG_INFO_ENABLE(mFlag) )
+        {
+            if ( sDumped == ID_FALSE )
+            {
+                sDumped = ID_TRUE;
+
+                smlLockMgr::dumpLockWait();
+                smlLockMgr::dumpLockTBL();
+            }
+        }
     }
 
     if ( sWaited == ID_TRUE )
@@ -731,7 +1057,28 @@ IDE_RC smxTrans::suspendMutex(smxTrans * aWaitTrans,
     }
 
     sMyMutexLocked = ID_FALSE;
-    IDE_TEST( mMutex.unlock() != IDE_SUCCESS );
+    /* always return true */
+    unlock();
+
+    if( aTotalWaitMicroSec != NULL )
+    {
+        *aTotalWaitMicroSec = sTotalWaitMicroSec;
+    }
+
+    if( aElapsedMicroSec != NULL )
+    {
+        *aElapsedMicroSec = sElapsedMicroSec;
+    }
+
+    if ( aNewDistDeadlock != NULL )
+    {
+        *aNewDistDeadlock = sNewDistDeadlock;
+    }
+
+    if ( aIsReleasedDistDeadlock != NULL )
+    {
+        *aIsReleasedDistDeadlock = sIsReleasedDistDeadlock;
+    }
 
     if ( sTxMutexUnlocked == ID_TRUE )
     {
@@ -763,7 +1110,8 @@ IDE_RC smxTrans::suspendMutex(smxTrans * aWaitTrans,
 
     if ( sMyMutexLocked ==  ID_TRUE )
     {
-        IDE_ASSERT( mMutex.unlock() == IDE_SUCCESS );
+        /* always return true */
+        unlock();
     }
 
     if ( sTxMutexUnlocked == ID_TRUE )
@@ -780,87 +1128,12 @@ IDE_RC smxTrans::suspendMutex(smxTrans * aWaitTrans,
     return IDE_FAILURE;
 }
 
-/***********************************************************************
- * Description: 1. aWaitTrans != NULL
- *                 aWaitTrans ê°€ ì¡ê³  ìˆëŠ” Resourceê°€ Freeë ë•Œê¹Œì§€ ê¸°ë‹¤ë¦°ë‹¤.
- *                 í•˜ì§€ë§Œ Transactionì„ ë‹¤ë¥¸ event(query timeout, session
- *                 timeout)ì— ì˜í•´ì„œ ì¤‘ì§€ë˜ì§€ ì•ŠëŠ” ì´ìƒ aWaitMicroSecë§Œí¼
- *                 ëŒ€ê¸°í•œë‹¤.
- *
- *              2. aMutex != NULL
- *                 Record Lockê°™ì€ ê²½ìš°ëŠ” Page Mutexë¥¼ ì¡ê³  Lock Validationì„
- *                 ìˆ˜í–‰í•œë‹¤. ê·¸ Mutexë¥¼ Waitingí•˜ê¸°ì „ì— í’€ì–´ì•¼ í•œë‹¤. ì—¬ê¸°ì„œ
- *                 í’€ê³  ë‹¤ì‹œ Transactionì´ ê¹¨ì–´ë‚¬ì„ ê²½ìš°ì— ë‹¤ì‹œ Mutexë¥¼ ì¡ê³ 
- *                 ì‹¤ì œë¡œ í•´ë‹¹ Recordê°€ Lockì„ í’€ë ¸ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
- *
- * aWaitTrans    - [IN] í•´ë‹¹ Resourceë¥¼ ê°€ì§€ê³  ìˆëŠ” Transaction
- * aWaitMicroSec - [IN] ì–¼ë§ˆë‚˜ ê¸°ë‹¤ë ¤ì•¼ í• ì§€ë¥¼ ê²°ì •.
- * */
-IDE_RC smxTrans::suspendSpin(smxTrans * aWaitTrans,
-                             smTID      aWaitTransID,
-                             ULong      aWaitMicroSec)
-{
-    acp_time_t sBeginTime = acpTimeNow();
-    acp_time_t sCurTime;
-    IDE_DASSERT(smuProperty::getLockMgrType() == 1);
-
-    /*
-     * Check whether this TX is waiting for itself
-     * ASSERT in debug mode
-     * Deadlock warning in release mode
-     */
-    IDE_DASSERT( mSlotN != aWaitTrans->mSlotN );
-    IDE_TEST_RAISE( mSlotN == aWaitTrans->mSlotN , err_selflock );
-
-    smlLockMgr::beginPending(mSlotN);
-    smlLockMgr::incTXPendCount();
-
-    do
-    {
-        if ( ( smLayerCallback::didLockReleased( mSlotN, aWaitTrans->mSlotN ) == ID_TRUE ) ||
-             ( aWaitTrans->mTransID != aWaitTransID ) ||
-             ( aWaitTrans->mStatus  == SMX_TX_END ) )
-        {
-            mStatus     = SMX_TX_BEGIN;
-            mStatus4FT  = SMX_TX_BEGIN;
-            break;
-        }
-        else
-        {
-            /* fall through */
-        }
-
-        IDE_TEST_RAISE( smlLockMgr::isCycle(mSlotN) == ID_TRUE, err_deadlock );
-        IDE_TEST( iduCheckSessionEvent( mStatistics ) != IDE_SUCCESS );
-        idlOS::thr_yield();
-        sCurTime = acpTimeNow();
-    } while( (ULong)(sCurTime - sBeginTime) < aWaitMicroSec );
-
-    smlLockMgr::decTXPendCount();
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION(err_selflock);
-    {
-        ideLog::log(IDE_SM_0, SM_TRC_WAIT_SELF_WARNING, mSlotN);
-        IDE_SET(ideSetErrorCode(smERR_ABORT_Aborted));
-    }
-
-    IDE_EXCEPTION(err_deadlock);
-    {
-        IDE_SET(ideSetErrorCode(smERR_ABORT_Aborted));
-    }
-
-    IDE_EXCEPTION_END;
-    smlLockMgr::decTXPendCount();
-    return IDE_FAILURE;
-}
-
 IDE_RC smxTrans::resume()
 {
-
     UInt sState = 0;
 
-    IDE_TEST( lock() != IDE_SUCCESS );
+    /* always return true */
+    lock();
     sState = 1;
 
     if( mStatus == SMX_TX_BLOCKED )
@@ -873,8 +1146,8 @@ IDE_RC smxTrans::resume()
     }
     else
     {
-        /* BUG-43595 ìƒˆë¡œ allocí•œ transaction ê°ì²´ì˜ stateê°€
-         * beginì¸ ê²½ìš°ê°€ ìˆìŠµë‹ˆë‹¤. ë¡œ ì¸í•œ ë””ë²„ê¹… ì •ë³´ ì¶œë ¥ ì¶”ê°€*/
+        /* BUG-43595 »õ·Î allocÇÑ transaction °´Ã¼ÀÇ state°¡
+         * beginÀÎ °æ¿ì°¡ ÀÖ½À´Ï´Ù. ·Î ÀÎÇÑ µğ¹ö±ë Á¤º¸ Ãâ·Â Ãß°¡*/
         ideLog::log(IDE_ERR_0,"Resume error, Transaction is not blocked.\n");
         dumpTransInfo();
         ideLog::logCallStack(IDE_ERR_0);
@@ -882,7 +1155,8 @@ IDE_RC smxTrans::resume()
     }
 
     sState = 0;
-    IDE_TEST( unlock() != IDE_SUCCESS );
+    /* always return true */
+    unlock();
 
     return IDE_SUCCESS;
 
@@ -894,7 +1168,8 @@ IDE_RC smxTrans::resume()
 
     if ( sState != 0 )
     {
-        IDE_ASSERT( unlock() == IDE_SUCCESS );
+        /* always return true */
+        unlock();
     }
 
     return IDE_FAILURE;
@@ -904,16 +1179,17 @@ IDE_RC smxTrans::resume()
 
 IDE_RC smxTrans::begin( idvSQL * aStatistics,
                         UInt     aFlag,
-                        UInt     aReplID )
+                        UInt     aReplID,
+                        idBool   aIsServiceTX )
 {
     UInt sState = 0;
     UInt sFlag  = 0;
 
     mReplLockTimeout = smuProperty::getReplLockTimeOut();
-    /* mBeginLogLSNê³¼ CommitLogLSNì€ recovery from replicationì—ì„œ
-     * ì‚¬ìš©í•˜ë©°, commitì´ í˜¸ì¶œëœ ì´í›„ì— ì‚¬ìš©ë˜ë¯€ë¡œ, ë°˜ë“œì‹œ
-     * beginì—ì„œ ì´ˆê¸°í™” í•˜ì—¬ì•¼ í•˜ë©°, inití•¨ìˆ˜ëŠ” commití•  ë•Œ
-     * í˜¸ì¶œë˜ë¯€ë¡œ initì—ì„œ ì´ˆê¸°í™” í•˜ë©´ ì•ˆëœë‹¤.
+    /* mBeginLogLSN°ú CommitLogLSNÀº recovery from replication¿¡¼­
+     * »ç¿ëÇÏ¸ç, commitÀÌ È£ÃâµÈ ÀÌÈÄ¿¡ »ç¿ëµÇ¹Ç·Î, ¹İµå½Ã
+     * begin¿¡¼­ ÃÊ±âÈ­ ÇÏ¿©¾ß ÇÏ¸ç, initÇÔ¼ö´Â commitÇÒ ¶§
+     * È£ÃâµÇ¹Ç·Î init¿¡¼­ ÃÊ±âÈ­ ÇÏ¸é ¾ÈµÈ´Ù.
      */
     SM_LSN_MAX( mBeginLogLSN );
     SM_LSN_MAX( mCommitLogLSN );
@@ -923,25 +1199,25 @@ IDE_RC smxTrans::begin( idvSQL * aStatistics,
     IDE_TEST( mCommitState != SMX_XA_COMPLETE );
 
     /* PROJ-1381 Fetch Across Commits
-     * SMX_TX_ENDê°€ ì•„ë‹Œ TXì˜ MinViewSCN ì¤‘ ê°€ì¥ ì‘ì€ ê°’ìœ¼ë¡œ agingí•˜ë¯€ë¡œ,
-     * Legacy Transê°€ ìˆìœ¼ë©´ mStatusë¥¼ SMX_TX_ENDë¡œ ë³€ê²½í•´ì„œëŠ” ì•ˆëœë‹¤.
-     * SMX_TX_END ìƒíƒœë¡œ ë³€ê²½í•˜ë©´ ìˆœê°„ì ìœ¼ë¡œ cursorì˜ viewì— ì†í•œ rowê°€
-     * aging ëŒ€ìƒì´ ë˜ì–´ ì‚¬ë¼ì§ˆ ìˆ˜ ìˆë‹¤. */
+     * SMX_TX_END°¡ ¾Æ´Ñ TXÀÇ MinViewSCN Áß °¡Àå ÀÛÀº °ªÀ¸·Î agingÇÏ¹Ç·Î,
+     * Legacy Trans°¡ ÀÖÀ¸¸é mStatus¸¦ SMX_TX_END·Î º¯°æÇØ¼­´Â ¾ÈµÈ´Ù.
+     * SMX_TX_END »óÅÂ·Î º¯°æÇÏ¸é ¼ø°£ÀûÀ¸·Î cursorÀÇ view¿¡ ¼ÓÇÑ row°¡
+     * aging ´ë»óÀÌ µÇ¾î »ç¶óÁú ¼ö ÀÖ´Ù. */
     if ( mLegacyTransCnt == 0 )
     {
         IDE_TEST( mStatus != SMX_TX_END );
     }
 #ifdef DEBUG
-    // PROJ-2068 Beginì‹œ DPathEntryëŠ” NULLì´ì–´ì•¼ í•œë‹¤.
+    // PROJ-2068 Begin½Ã DPathEntry´Â NULLÀÌ¾î¾ß ÇÑ´Ù.
     IDE_TEST( mDPathEntry != NULL );
 #endif
     /*
      * BUG-42927
-     * mEnabledTransBegin == ID_FALSE ì´ë©´, smxTrans::begin()ë„ ëŒ€ê¸°í•˜ë„ë¡ í•œë‹¤.
+     * mEnabledTransBegin == ID_FALSE ÀÌ¸é, smxTrans::begin()µµ ´ë±âÇÏµµ·Ï ÇÑ´Ù.
      *
-     * ì™œëƒí•˜ë©´,
-     * non-autocommit íŠ¸ëœì ì…˜ì˜ ê²½ìš°ëŠ” statement ì‹œì‘ì‹œ
-     * smxTransMgr::alloc()ì„ í˜¸ì¶œí•˜ì§€ ì•Šê³ , smxTrans::begin()ë§Œ í˜¸ì¶œí•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+     * ¿Ö³ÄÇÏ¸é,
+     * non-autocommit Æ®·£Á§¼ÇÀÇ °æ¿ì´Â statement ½ÃÀÛ½Ã
+     * smxTransMgr::alloc()À» È£ÃâÇÏÁö ¾Ê°í, smxTrans::begin()¸¸ È£ÃâÇÏ±â ¶§¹®ÀÌ´Ù.
      */
     while ( 1 )
     {
@@ -960,9 +1236,9 @@ IDE_RC smxTrans::begin( idvSQL * aStatistics,
 
     mSvpMgr.initialize( this );
     mStatistics = aStatistics;
-    //fix BUG-23656 session,xid ,transactionì„ ì—°ê³„í•œ performance viewë¥¼ ì œê³µí•˜ê³ ,
-    //ê·¸ë“¤ê°„ì˜ ê´€ê³„ë¥¼ ì •í™•íˆ ìœ ì§€í•´ì•¼ í•¨.
-    // transaction beginì‹œ session idë¥¼ ì„¤ì •í•¨.
+    //fix BUG-23656 session,xid ,transactionÀ» ¿¬°èÇÑ performance view¸¦ Á¦°øÇÏ°í,
+    //±×µé°£ÀÇ °ü°è¸¦ Á¤È®È÷ À¯ÁöÇØ¾ß ÇÔ.
+    // transaction begin½Ã session id¸¦ ¼³Á¤ÇÔ.
     if ( aStatistics != NULL )
     {
         if ( aStatistics->mSess != NULL )
@@ -979,17 +1255,19 @@ IDE_RC smxTrans::begin( idvSQL * aStatistics,
         mSessionID = ID_NULL_SESSION_ID;
     }
 
-    // Disk íŠ¸ëœì­ì…˜ì„ ìœ„í•œ Touch Page List ì´ˆê¸°í™”
+    // Disk Æ®·£Àè¼ÇÀ» À§ÇÑ Touch Page List ÃÊ±âÈ­
     mTouchPageList.init( aStatistics );
 
-    IDE_TEST( lock() != IDE_SUCCESS );
+
+    /* always return true */
+    lock();
     sState = 1;
 
     mStatus    = SMX_TX_BEGIN;
     mStatus4FT = SMX_TX_BEGIN;
 
     // To Fix BUG-15396
-    // mFlagì—ëŠ” ë‹¤ìŒ ì„¸ê°€ì§€ ì •ë³´ê°€ ì„¤ì •ë¨
+    // mFlag¿¡´Â ´ÙÀ½ ¼¼°¡Áö Á¤º¸°¡ ¼³Á¤µÊ
     // (1) transaction replication mode
     // (2) commit write wait mode
     mFlag = aFlag;
@@ -997,14 +1275,17 @@ IDE_RC smxTrans::begin( idvSQL * aStatistics,
     // For XA: There is no sense for local transaction
     mCommitState = SMX_XA_START;
 
+    /* BUG-47223 */
+    mIsServiceTX = aIsServiceTX;
+
     //PROJ-1541 eager replication Flag Set
     /* PROJ-1608 Recovery From Replication
-     * SMX_REPL_NONE(replicationí•˜ì§€ ì•ŠëŠ” íŠ¸ëœì­ì…˜-system íŠ¸ëœì­ì…˜) OR
-     * SMX_REPL_REPLICATED(recoveryë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ” receiverê°€ ìˆ˜í–‰í•œ íŠ¸ëœì­ì…˜)ì¸ ê²½ìš°ì—
-     * ë¡œê·¸ë¥¼ Normal Senderê°€ ë³¼ í•„ìš”ê°€ ì—†ìœ¼ë¯€ë¡œ, SMR_LOG_TYPE_REPLICATEDë¡œ ì„¤ì •
-     * ê·¸ë ‡ì§€ ì•Šê³  SMX_REPL_RECOVERY(repl recoveryë¥¼ ì§€ì›í•˜ëŠ” receiverê°€ ìˆ˜í–‰í•œ íŠ¸ëœì­ì…˜)ì¸
-     * ê²½ìš° SMR_LOG_TYPE_REPL_RECOVERYë¡œ ì„¤ì •í•˜ì—¬ ë¡œê·¸ë¥¼ ë‚¨ê¸¸ ë•Œ,
-     * Recovery Senderê°€ ë³¼ ìˆ˜ ìˆë„ë¡ RPë¥¼ ìœ„í•œ ì •ë³´ë¥¼ ë‚¨ê¸¸ ìˆ˜ ìˆë„ë¡ í•œë‹¤.
+     * SMX_REPL_NONE(replicationÇÏÁö ¾Ê´Â Æ®·£Àè¼Ç-system Æ®·£Àè¼Ç) OR
+     * SMX_REPL_REPLICATED(recovery¸¦ Áö¿øÇÏÁö ¾Ê´Â receiver°¡ ¼öÇàÇÑ Æ®·£Àè¼Ç)ÀÎ °æ¿ì¿¡
+     * ·Î±×¸¦ Normal Sender°¡ º¼ ÇÊ¿ä°¡ ¾øÀ¸¹Ç·Î, SMR_LOG_TYPE_REPLICATED·Î ¼³Á¤
+     * ±×·¸Áö ¾Ê°í SMX_REPL_RECOVERY(repl recovery¸¦ Áö¿øÇÏ´Â receiver°¡ ¼öÇàÇÑ Æ®·£Àè¼Ç)ÀÎ
+     * °æ¿ì SMR_LOG_TYPE_REPL_RECOVERY·Î ¼³Á¤ÇÏ¿© ·Î±×¸¦ ³²±æ ¶§,
+     * Recovery Sender°¡ º¼ ¼ö ÀÖµµ·Ï RP¸¦ À§ÇÑ Á¤º¸¸¦ ³²±æ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
      */
     sFlag = mFlag & SMX_REPL_MASK;
 
@@ -1024,21 +1305,46 @@ IDE_RC smxTrans::begin( idvSQL * aStatistics,
         }
     }
     // PROJ-1553 Replication self-deadlock
-    // txë¥¼ beginí•  ë•Œ, replicationì— ì˜í•œ txì¼ ê²½ìš°
-    // mReplIDë¥¼ ë°›ëŠ”ë‹¤.
+    // tx¸¦ beginÇÒ ¶§, replication¿¡ ÀÇÇÑ txÀÏ °æ¿ì
+    // mReplID¸¦ ¹Ş´Â´Ù.
     mReplID = aReplID;
     //PROJ-1541 Eager/Acked replication
     SM_LSN_MAX( mLastWritedLSN );
+    
+    if ( SMI_IS_GCTX_ON( mFlag ) )
+    {
+        mIsGCTx = ID_TRUE;
+    }
+
+    /* BUG-48250 */
+    if ( mIsGCTx == ID_TRUE )
+    {
+        mIndoubtFetchTimeout = smxTransMgr::getSessIndoubtFetchTimeout( aStatistics );
+        mIndoubtFetchMethod  = smxTransMgr::getSessIndoubtFetchMethod( aStatistics );
+    }
+    else
+    {
+        /* GCTx°¡ ¾Æ´Ñ°æ¿ì »ç¿ëµÇÁö ¾ÊÁö¸¸, DEFAULT °ªÀ¸·Î ³Ö¾îµĞ´Ù. */
+        mIndoubtFetchTimeout = (UInt)IDP_SHARD_PROPERTY_INDOUBT_FETCH_TIMEOUT_DEFAULT;
+        mIndoubtFetchMethod  = (UInt)IDP_SHARD_PROPERTY_INDOUBT_FETCH_METHOD_DEFAULT;
+    }
+
+#ifdef DEBUG
+    ideLog::log( IDE_SD_19,
+                 "\n<smxTrans(%"ID_XINT64_FMT"-%"ID_UINT32_FMT")::begin>\n",
+                 this, mTransID );
+#endif
 
     sState = 0;
-    IDE_TEST( unlock() != IDE_SUCCESS );
+    /* always return true */
+    unlock();
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
-    /* BUG-46782 Begin transaction ë””ë²„ê¹… ì •ë³´ ì¶”ê°€.
-     * ê¸°ì¡´ì— ASSERT ì˜€ë˜ ê²€ì¦ ê°’ì„ TESTë¡œ ì˜¬ë¦¬ê³ 
-     * ìƒìœ„ì—ì„œ ASSERT ì—¬ë¶€ë¥¼ íŒë‹¨í•˜ë„ë¡ ìˆ˜ì •*/
+    /* BUG-46782 Begin transaction µğ¹ö±ë Á¤º¸ Ãß°¡.
+     * ±âÁ¸¿¡ ASSERT ¿´´ø °ËÁõ °ªÀ» TEST·Î ¿Ã¸®°í
+     * »óÀ§¿¡¼­ ASSERT ¿©ºÎ¸¦ ÆÇ´ÜÇÏµµ·Ï ¼öÁ¤*/
     smxTrans::dumpTransInfo();
 
     ideLog::log( IDE_ERR_0,
@@ -1054,7 +1360,8 @@ IDE_RC smxTrans::begin( idvSQL * aStatistics,
 
     if ( sState != 0 )
     {
-        IDE_ASSERT( unlock() == IDE_SUCCESS );
+        /* always return true */
+        unlock();
     }
 
     return IDE_FAILURE;
@@ -1067,20 +1374,45 @@ IDE_RC smxTrans::commit( smSCN  * aCommitSCN,
     smLSN           sCommitEndLSN   = {0, 0};
     sdcTSSegment  * sCTSegPtr;
     idBool          sWriteCommitLog = ID_FALSE;
-    smxOIDList    * sOIDList        =  NULL;
+    smxOIDList    * sOIDList        = NULL;
     UInt            sState          = 0;
     idBool          sNeedWaitTransForRepl = ID_FALSE;
     idvSQL        * sTempStatistics       = NULL;
     smTID           sTempTransID          = SM_NULL_TID;
     smLSN           sTempLastWritedLSN;
-    
+    UInt            sGCList = 0;
+    //fux BUG-27468 ,Code-Sonar mmqQueueInfo::wakeup¿¡¼­ aCommitSCN UMR
+    smSCN           sCommitSCN = SM_SCN_INIT;
+#ifdef DEBUG
+    smSCN           sLstSystemSCN;
+    smSCN           sDebugCommitSCN;
+#endif 
+
     IDU_FIT_POINT("1.smxTrans::smxTrans:commit");
 
-    IDE_DASSERT( aCommitSCN != NULL );
+    IDE_DASSERT( mStatus    != SMX_TX_END );
+    IDE_DASSERT( mStatus4FT == SMX_TX_BEGIN );
 
     mStatus4FT = SMX_TX_COMMIT;
+    sState = 1;
 
-    // PROJ-2068 Direct-Path INSERTë¥¼ ìˆ˜í–‰í–ˆì„ ê²½ìš° commit ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+
+    /* PROJ-2733 °øÀ¯µÈ CommitSCNÀ¸·Î Ä¿¹ÔÀ» ½Ãµµ ÇÑ´Ù. */
+    if ( (aCommitSCN != NULL) && SM_SCN_IS_NOT_INIT(*aCommitSCN) )
+    {
+        IDE_DASSERT( mIsGCTx == ID_TRUE );
+        IDE_DASSERT( SM_SCN_IS_VIEWSCN( *aCommitSCN ) == ID_FALSE );
+        IDE_DASSERT( SM_SCN_IS_SYSTEMSCN( *aCommitSCN ) == ID_TRUE );
+
+        SM_SET_SCN( &sCommitSCN, aCommitSCN );
+    }
+    else
+    {
+        /* Global Consistent Transactionµµ commitSCN À» º¸³»Áö ¾ÊÀ»¼ö ÀÖ´Ù.
+         * e.g. ³»ºÎ¿¡¼­ »ç¿ëÇÏ´Â°Å¶ó´ø°¡.. */
+    }
+
+    // PROJ-2068 Direct-Path INSERT¸¦ ¼öÇàÇßÀ» °æ¿ì commit ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
     if ( mDPathEntry != NULL )
     {
         IDE_TEST( sdcDPathInsertMgr::commit( mStatistics,
@@ -1095,8 +1427,8 @@ IDE_RC smxTrans::commit( smSCN  * aCommitSCN,
     {
         IDU_FIT_POINT( "1.BUG-23648@smxTrans::commit" );
 
-        /* ê°±ì‹ ì„ ìˆ˜í–‰í•œ Transactionì¼ ê²½ìš° */
-        /* BUG-26482 ëŒ€ê¸° í•¨ìˆ˜ë¥¼ CommitLog ê¸°ë¡ ì „í›„ë¡œ ë¶„ë¦¬í•˜ì—¬ í˜¸ì¶œí•©ë‹ˆë‹¤. */
+        /* °»½ÅÀ» ¼öÇàÇÑ TransactionÀÏ °æ¿ì */
+        /* BUG-26482 ´ë±â ÇÔ¼ö¸¦ CommitLog ±â·Ï ÀüÈÄ·Î ºĞ¸®ÇÏ¿© È£ÃâÇÕ´Ï´Ù. */
         if ( ( mIsTransWaitRepl == ID_TRUE ) && ( isReplTrans() == ID_FALSE ) )
         {
             if (smrRecoveryMgr::mIsReplCompleteBeforeCommitFunc != NULL )
@@ -1119,35 +1451,69 @@ IDE_RC smxTrans::commit( smSCN  * aCommitSCN,
         {
             /* do nothing */
         }
-        
+
+        IDU_FIT_POINT_RAISE("9.TASK-7220@smxTrans::commit",err_internal_server_error);
+        IDU_FIT_POINT_RAISE("5.TASK-7220@smxTrans::commit",err_internal_server_error);
+
         /* FIT PROJ-2569 before commit logging and communicate */
         IDU_FIT_POINT( "smxTrans::commit::writeCommitLog::BEFORE_WRITE_COMMIT_LOG" );
+
+        if ( ( mTXSegEntry == NULL ) && 
+             ( hasPendingOp() == ID_FALSE ) && 
+             ( mIsDDL  == ID_FALSE ) &&
+             ( mGroupCnt != 0 ) &&
+             ( sNeedWaitTransForRepl == ID_FALSE ) )
+        {
+            IDE_TEST( addTID4GroupCommit( &sGCList, 
+                                          &sWriteCommitLog,
+                                          sCommitSCN ) 
+                      != IDE_SUCCESS );
+
+            if ( sWriteCommitLog == ID_TRUE )
+            {
+                /* PROJ-1608 recovery from replication Commit Log LSN Set
+                 * BUG-47865 ³»°¡ ±â·Ï Çß´Ù¸é µ¿ÀÏÇØ¾ß ÇÑ´Ù. */
+                IDE_ASSERT( smrCompareLSN::isEQ( &mCommitLogLSN,
+                                                 &mLastWritedLSN ) == ID_TRUE );
+
+                /* addTID4GroupCommit¿¡¼­ writeCommitLog°¡ ±â·ÏµÇ¾ú´Ù¸é Á÷Á¢ ±â·ÏÇÑ °æ¿ìÀÌ´Ù.
+                 * TxÀÇ LastWritedLSNÀÌ CommitLog°¡ ±â·ÏµÈ LSN ÀÌ´Ù. */
+                SM_GET_LSN( sCommitEndLSN, mCommitLogLSN );
         
-        /* Commit Logë¥¼ ê¸°ë¡í•œë‹¤ */
-        /* BUG-32576  [sm_transaction] The server does not unlock
-         * PageListMutex if the commit log writing occurs an exception.
-         * CommitLogë¥¼ ì“°ë˜ ì¤‘ ì˜ˆì™¸ê°€ ë°œìƒí•˜ë©´ PageListMutexê°€ í’€ë¦¬ì§€ ì•Š
-         * ìŠµë‹ˆë‹¤. ê·¸ ì™¸ì—ë„ CommitLogë¥¼ ì“°ë‹¤ê°€ ì˜ˆì™¸ê°€ ë°œìƒí•˜ë©´ DBê°€
-         * ì˜ëª»ë  ìˆ˜ ìˆëŠ” ìœ„í—˜ì´ ìˆìŠµë‹ˆë‹¤. */
-        IDE_TEST( writeCommitLog( &sCommitEndLSN ) != IDE_SUCCESS );
-        sWriteCommitLog = ID_TRUE;
-        
+                /* Commit Log°¡ FlushµÉ¶§±îÁö ±â´Ù¸®Áö ¾ÊÀº °æ¿ì */
+                IDE_TEST( flushLog( &sCommitEndLSN, ID_TRUE /* When Commit */ )
+                          != IDE_SUCCESS );
+            }
+        }
+        else
+        {
+            /* Commit Log¸¦ ±â·ÏÇÑ´Ù */
+            /* BUG-32576  [sm_transaction] The server does not unlock
+             * PageListMutex if the commit log writing occurs an exception.
+             * CommitLog¸¦ ¾²´ø Áß ¿¹¿Ü°¡ ¹ß»ıÇÏ¸é PageListMutex°¡ Ç®¸®Áö ¾Ê
+             * ½À´Ï´Ù. ±× ¿Ü¿¡µµ CommitLog¸¦ ¾²´Ù°¡ ¿¹¿Ü°¡ ¹ß»ıÇÏ¸é DB°¡
+             * Àß¸øµÉ ¼ö ÀÖ´Â À§ÇèÀÌ ÀÖ½À´Ï´Ù. */
+            IDE_TEST( writeCommitLog( &sCommitEndLSN, sCommitSCN ) != IDE_SUCCESS );
+            sWriteCommitLog = ID_TRUE;
+            
+            /* PROJ-1608 recovery from replication Commit Log LSN Set */
+            SM_GET_LSN( mCommitLogLSN, mLastWritedLSN );
+
+            /* Commit Log°¡ FlushµÉ¶§±îÁö ±â´Ù¸®Áö ¾ÊÀº °æ¿ì */
+            IDE_TEST( flushLog( &sCommitEndLSN, ID_TRUE /* When Commit */ )
+                      != IDE_SUCCESS );
+
+        }
+
         /* FIT PROJ-2569 After commit logging and communicate */
         IDU_FIT_POINT( "smxTrans::commit::writeCommitLog::AFTER_WRITE_COMMIT_LOG" );
-        
-        /* PROJ-1608 recovery from replication Commit Log LSN Set */
-        SM_GET_LSN( mCommitLogLSN, mLastWritedLSN );
-    
-        /* Commit Logê°€ Flushë ë•Œê¹Œì§€ ê¸°ë‹¤ë¦¬ì§€ ì•Šì€ ê²½ìš° */
-        IDE_TEST( flushLog( &sCommitEndLSN, ID_TRUE /* When Commit */ )
-                  != IDE_SUCCESS );
     }
     else
     {
         if ( svrLogMgr::isOnceUpdated(&mVolatileLogEnv) == ID_TRUE )
         {
-            /* ë‹¤ë¥¸ TBSì— ê°±ì‹ ì´ ì—†ê³  Volatile TBSì—ë§Œ ê°±ì‹ ì´ ìˆëŠ” ê²½ìš°
-               ë ˆì½”ë“œ ì¹´ìš´íŠ¸ë¥¼ ì¦ê°€ì‹œì¼œì•¼ í•œë‹¤. */
+            /* ´Ù¸¥ TBS¿¡ °»½ÅÀÌ ¾ø°í Volatile TBS¿¡¸¸ °»½ÅÀÌ ÀÖ´Â °æ¿ì
+               ·¹ÄÚµå Ä«¿îÆ®¸¦ Áõ°¡½ÃÄÑ¾ß ÇÑ´Ù. */
             IDE_TEST( mTableInfoMgr.requestAllEntryForCheckMaxRow()
                       != IDE_SUCCESS );
 
@@ -1156,24 +1522,51 @@ IDE_RC smxTrans::commit( smSCN  * aCommitSCN,
         }
     }
 
-    /* Tx's PrivatePageListë¥¼ ì •ë¦¬í•œë‹¤.
-       ë°˜ë“œì‹œ ìœ„ì—ì„œ ë¨¼ì € commitë¡œê·¸ë¥¼ writeí•˜ê³  ì‘ì—…í•œë‹¤. */
+    /* Tx's PrivatePageList¸¦ Á¤¸®ÇÑ´Ù.
+       ¹İµå½Ã À§¿¡¼­ ¸ÕÀú commit·Î±×¸¦ writeÇÏ°í ÀÛ¾÷ÇÑ´Ù. */
     IDE_TEST( finAndInitPrivatePageList() != IDE_SUCCESS );
 
     /* PROJ-1594 Volatile TBS */
-    /* Volatile TBSì˜ private page listë„ ì •ë¦¬í•œë‹¤. */
+    /* Volatile TBSÀÇ private page listµµ Á¤¸®ÇÑ´Ù. */
     IDE_TEST( finAndInitVolPrivatePageList() != IDE_SUCCESS );
 
-    /* BUG-14093 Ager Txê°€ FreeSlotí•œ ê²ƒë“¤ì„ ì‹¤ì œ FreeSlotListì—
-     * ë§¤ë‹¨ë‹¤. */
+    /* BUG-14093 Ager Tx°¡ FreeSlotÇÑ °ÍµéÀ» ½ÇÁ¦ FreeSlotList¿¡
+     * ¸Å´Ü´Ù. */
     IDE_TEST( smLayerCallback::processFreeSlotPending( this,
                                                        &mOIDFreeSlotList )
               != IDE_SUCCESS );
+
+    /* BUG-47525 GroupCommit ÀÌ È°¼ºÈ­ µÇ¾î ÀÖ¾î¾ß¸¸
+     * mIsUpdate°¡ TrueÀÏ¶§ sWriteCommitLog°¡ False·Î ³Ñ¾î¿Ã¼ö ÀÖ´Ù.
+     * sWriteCommitLog°¡ False ÀÏ °æ¿ì.
+     * ´Ù¸¥ÂÊ¿¡¼­ Write°¡ µÇ¾ú´ÂÁö È®ÀÎÇÏ°í µÇ¾ú´Ù¸é Write Ç¥½ÃÇÏ°í ³Ñ¾î°¡°í
+     * ¾ÆÁ÷ ¾ÈµÇ¾ú´Ù¸é Á÷Á¢ Write ÇÏ°Å³ª writeµÇ±æ ±â´Ù·È´Ù°¡ ³Ñ¾î°¡µµ·Ï ÇÑ´Ù. */
+    if ( (mIsUpdate == ID_TRUE) && (sWriteCommitLog == ID_FALSE) )
+    {
+        IDE_TEST( waitGroupCommit( sGCList ) != IDE_SUCCESS );
+
+        /* ¿©±â±îÁö ¿ÔÀ¸¸é Á÷Á¢ write¸¦ ÇÏ´ø°¡ write°¡ µÈ°É È®ÀÎÇß´Ù. */
+        sWriteCommitLog = ID_TRUE;
+
+        /* BUG-47865 group commit log write ÇÏ´Â trans°¡
+         * ³ªÀÇ CommitLogLSNÀ» °»½ÅÇØ µÎ¾ú´Ù.
+         * ³»°¡ ¸¸¾à Á÷Á¢ Çß¾îµµ ¸¶Âù°¡Áö ÀÌ´Ù.*/
+        SM_GET_LSN( sCommitEndLSN, mCommitLogLSN );
+
+        /* PROJ-1608 recovery from replication Commit Log LSN Set
+         * BUG-47865 Last Writed LSNµµ °»½ÅÇÑ´Ù.
+         * ¸¸¾à ³»°¡ Á÷Á¢ Çß´Ù¸é ÀÌ¹Ì °»½ÅµÇ¾î ÀÖÀ»°ÍÀÌ´Ù. */
+        SM_GET_LSN( mLastWritedLSN, mCommitLogLSN );
+        
+        /* Commit Log°¡ FlushµÉ¶§±îÁö ±â´Ù¸®Áö ¾ÊÀº °æ¿ì */
+        IDE_TEST( flushLog( &sCommitEndLSN, ID_TRUE /* When Commit */ )
+                  != IDE_SUCCESS );
+    }
     
-    /* ê°±ì‹ ì„ ìˆ˜í–‰í•œ Transactionì¼ ê²½ìš° */
-    /* BUG-26482 ëŒ€ê¸° í•¨ìˆ˜ë¥¼ CommitLog ê¸°ë¡ ì „í›„ë¡œ ë¶„ë¦¬í•˜ì—¬ í˜¸ì¶œí•©ë‹ˆë‹¤.
-     * BUG-35452 lock ì „ì— commit logê°€ standbyì— ë°˜ì˜ëœ ê²ƒì„ í™•ì¸í•´ì•¼í•œë‹¤. */
-    /* BUG-42736 Loose Replication ì—­ì‹œ Remote ì„œë²„ì˜ ë°˜ì˜ì„ ëŒ€ê¸° í•˜ì—¬ì•¼ í•©ë‹ˆë‹¤. */
+    /* °»½ÅÀ» ¼öÇàÇÑ TransactionÀÏ °æ¿ì */
+    /* BUG-26482 ´ë±â ÇÔ¼ö¸¦ CommitLog ±â·Ï ÀüÈÄ·Î ºĞ¸®ÇÏ¿© È£ÃâÇÕ´Ï´Ù.
+     * BUG-35452 lock Àü¿¡ commit log°¡ standby¿¡ ¹İ¿µµÈ °ÍÀ» È®ÀÎÇØ¾ßÇÑ´Ù. */
+    /* BUG-42736 Loose Replication ¿ª½Ã Remote ¼­¹öÀÇ ¹İ¿µÀ» ´ë±â ÇÏ¿©¾ß ÇÕ´Ï´Ù. */
     if ( sNeedWaitTransForRepl == ID_TRUE )
     {
         if ( smrRecoveryMgr::mIsReplCompleteAfterCommitFunc != NULL )
@@ -1181,6 +1574,7 @@ IDE_RC smxTrans::commit( smSCN  * aCommitSCN,
             smrRecoveryMgr::mIsReplCompleteAfterCommitFunc(
                                                     mStatistics,
                                                     mTransID,
+                                                    SM_MAKE_SN(mFstUndoNxtLSN),
                                                     SM_MAKE_SN(mLastWritedLSN),
                                                     ( mFlag & SMX_REPL_MASK ),
                                                     SMI_BEFORE_LOCK_RELEASE);
@@ -1190,67 +1584,97 @@ IDE_RC smxTrans::commit( smSCN  * aCommitSCN,
     {
         /* do nothing */
     }
-    
-    /* ovlì— ìˆëŠ” OIDë¦¬ìŠ¤íŠ¸ì˜ lockê³¼ SCNì„ ê°±ì‹ í•˜ê³ 
-     * polê³¼ ovlì„ logical agerì—ê²Œ ë„˜ê¸´ë‹¤. */
+
+    if ( mGlobalSMNChangeFunc != NULL )
+    {
+        IDE_DASSERT(mStatistics != NULL);
+        IDE_DASSERT(mStatistics->mSess != NULL);
+        IDE_DASSERT(mStatistics->mSess->mSession != NULL);
+
+        mGlobalSMNChangeFunc( mStatistics->mSess->mSession );
+    }
+
+    /* ovl¿¡ ÀÖ´Â OID¸®½ºÆ®ÀÇ lock°ú SCNÀ» °»½ÅÇÏ°í
+     * pol°ú ovlÀ» logical ager¿¡°Ô ³Ñ±ä´Ù. */
     if ( (mTXSegEntry != NULL ) ||
          (mOIDList->isEmpty() == ID_FALSE) )
     {
         /* PROJ-1381 Fetch Across Commits
-         * Legacy Transì´ë©´ OID Listë¥¼ Logical Agerì— ì¶”ê°€ë§Œ í•˜ê³ ,
-         * Commit ê´€ë ¨ ì—°ì‚°ì€ Legacy Transë¥¼ ë‹«ì„ ë•Œ ì²˜ë¦¬í•œë‹¤. */
+         * Legacy TransÀÌ¸é OID List¸¦ Logical Ager¿¡ Ãß°¡¸¸ ÇÏ°í,
+         * Commit °ü·Ã ¿¬»êÀº Legacy Trans¸¦ ´İÀ» ¶§ Ã³¸®ÇÑ´Ù. */
         IDE_TEST( addOIDList2AgingList( SM_OID_ACT_AGING_COMMIT,
                                         SMX_TX_COMMIT,
                                         &sCommitEndLSN,
-                                        aCommitSCN,
+                                        &sCommitSCN,
                                         aIsLegacyTrans )
                   != IDE_SUCCESS );
+#ifdef DEBUG
+        /* ÀÌ ÇÔ¼ö°¡ È£ÃâµÇ±âÀü¿¡ aCommitSCNÀ¸·Î SCN sync µÇ¾î ÀÖ´Â »óÅÂ. 
+         * ±×»çÀÌ LstSystemSCN ÀÌ Áõ°¡ÇÒ¼ö´Â ÀÖÁö¸¸ aCommitSCNº¸´Ù ÀÛÀ»¼ö´Â ¾øÀ½ */
+        sLstSystemSCN = smmDatabase::getLstSystemSCN();
+        SM_GET_SCN( &sDebugCommitSCN, &sCommitSCN );
+        if ( aIsLegacyTrans == ID_TRUE )
+        {
+            SM_CLEAR_SCN_LEGACY_BIT( &sDebugCommitSCN );
+        }
+        IDE_DASSERT( SM_SCN_IS_GE( &sLstSystemSCN, &sDebugCommitSCN ) );
+        IDE_DASSERT( SM_SCN_IS_EQ( &sCommitSCN, &mCommitSCN ) ); 
+#endif
     }
     else
     {
         mStatus = SMX_TX_COMMIT;
-        //fux BUG-27468 ,Code-Sonar mmqQueueInfo::wakeupì—ì„œ aCommitSCN UMR
-        SM_INIT_SCN(aCommitSCN);
+    }
+
+    /* BUG-48586
+     * CommitSCNÀÌ ±¸ÇØÁø ´ÙÀ½¿¡ È£ÃâµÇ¾ß ÇÕ´Ï´Ù. 
+     * Partition Swap Àº X LockÀ» Àâ°í ¼öÇàµÇ´Ï TX.commitSCNÀÌ ¼³Á¤ <-(a)-> AccessSCNÀÌ ¼³Á¤
+     * À§ (a) ±¸°£¿¡¼­ begin stmt °¡ µÇ´Â°ÍÀº °í·ÁÇÏÁö ¾Ê¾Æµµ µË´Ï´Ù. */
+    if ( mInternalTableSwap == ID_TRUE )
+    {
+        smxTransMgr::setGlobalConsistentSCNAsSystemSCN();
     }
 
     /* PRJ-1704 Disk MVCC Renewal */
     if ( mTXSegEntry != NULL )
     {
         /*
-         * [BUG-27542] [SD] TSS Page Allocation ê´€ë ¨ í•¨ìˆ˜(smxTrans::allocTXSegEntry,
-         *             sdcTSSegment::bindTSS)ë“¤ì˜ Exceptionì²˜ë¦¬ê°€ ì˜ëª»ë˜ì—ˆìŠµë‹ˆë‹¤.
+         * [BUG-27542] [SD] TSS Page Allocation °ü·Ã ÇÔ¼ö(smxTrans::allocTXSegEntry,
+         *             sdcTSSegment::bindTSS)µéÀÇ ExceptionÃ³¸®°¡ Àß¸øµÇ¾ú½À´Ï´Ù.
          */
         if ( mTXSegEntry->mTSSlotSID != SD_NULL_SID )
         {
+            IDE_DASSERT( SM_SCN_IS_NOT_INIT(sCommitSCN) );
+
             sCTSegPtr = sdcTXSegMgr::getTSSegPtr( mTXSegEntry );
 
             IDE_TEST( sCTSegPtr->unbindTSS4Commit( mStatistics,
                                                    mTXSegEntry->mTSSlotSID,
-                                                   &mCommitSCN )
+                                                   &sCommitSCN )
                       != IDE_SUCCESS );
 
-            /* BUG-29280 - non-auto commit D-Path Insert ê³¼ì •ì¤‘
-             *             rollback ë°œìƒí•œ ê²½ìš° commit ì‹œ ì„œë²„ ì£½ëŠ” ë¬¸ì œ
+            /* BUG-29280 - non-auto commit D-Path Insert °úÁ¤Áß
+             *             rollback ¹ß»ıÇÑ °æ¿ì commit ½Ã ¼­¹ö Á×´Â ¹®Á¦
              *
-             * DPath INSERT ì—ì„œëŠ” Fast Stampingì„ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+             * DPath INSERT ¿¡¼­´Â Fast StampingÀ» ¼öÇàÇÏÁö ¾Ê´Â´Ù. */
             if ( mDPathEntry == NULL )
             {
-                IDE_TEST( mTouchPageList.runFastStamping( aCommitSCN )
+                IDE_TEST( mTouchPageList.runFastStamping( &sCommitSCN )
                           != IDE_SUCCESS );
             }
 
             /*
-             * íŠ¸ëœì­ì…˜ Commitì€ CommitSCNì„ ì‹œìŠ¤í…œìœ¼ë¡œë¶€í„° ë”°ì•¼í•˜ê¸° ë•Œë¬¸ì—
-             * Commitë¡œê·¸ì™€ UnbindTSS ì—°ì‚°ì„ atomicí•˜ê²Œ ì²˜ë¦¬í•  ìˆ˜ ì—†ë‹¤.
-             * ê·¸ëŸ¬ë¯€ë¡œ, Commit ë¡œê¹…í›„ì— unbindTSSë¥¼ ìˆ˜í–‰í•´ì•¼í•œë‹¤.
-             * ì£¼ì˜í•  ì ì€ Commit ë¡œê¹…ì‹œì— TSSì— ëŒ€í•´ì„œ ë³€ê²½ì—†ì´
-             * initSCNì„ ì„¤ì •í•˜ëŠ” ë¡œê·¸ë¥¼ ë‚¨ê²¨ì£¼ì–´ì•¼ ì„œë²„ Restartì‹œì—
-             * Commitëœ TSSê°€ InfinteSCNì„ ê°€ì§€ëŠ” ë¬¸ì œê°€ ë°œìƒí•˜ì§€ ì•ŠëŠ”ë‹¤.
+             * Æ®·£Àè¼Ç CommitÀº CommitSCNÀ» ½Ã½ºÅÛÀ¸·ÎºÎÅÍ µû¾ßÇÏ±â ¶§¹®¿¡
+             * Commit·Î±×¿Í UnbindTSS ¿¬»êÀ» atomicÇÏ°Ô Ã³¸®ÇÒ ¼ö ¾ø´Ù.
+             * ±×·¯¹Ç·Î, Commit ·Î±ëÈÄ¿¡ unbindTSS¸¦ ¼öÇàÇØ¾ßÇÑ´Ù.
+             * ÁÖÀÇÇÒ Á¡Àº Commit ·Î±ë½Ã¿¡ TSS¿¡ ´ëÇØ¼­ º¯°æ¾øÀÌ
+             * initSCNÀ» ¼³Á¤ÇÏ´Â ·Î±×¸¦ ³²°ÜÁÖ¾î¾ß ¼­¹ö Restart½Ã¿¡
+             * CommitµÈ TSS°¡ InfinteSCNÀ» °¡Áö´Â ¹®Á¦°¡ ¹ß»ıÇÏÁö ¾Ê´Â´Ù.
              */
-            IDE_TEST( sdcTXSegMgr::markSCN(
-                          mStatistics,
-                          mTXSegEntry,
-                          aCommitSCN ) != IDE_SUCCESS );
+            IDE_TEST( sdcTXSegMgr::markSCN( mStatistics,
+                                            mTXSegEntry,
+                                            &sCommitSCN ) 
+                      != IDE_SUCCESS );
         }
 
         sdcTXSegMgr::freeEntry( mTXSegEntry,
@@ -1258,7 +1682,7 @@ IDE_RC smxTrans::commit( smSCN  * aCommitSCN,
         mTXSegEntry = NULL;
     }
 
-    /* ë””ìŠ¤í¬ ê´€ë¦¬ìë¥¼ ìœ„í•œ pending operationë“¤ì„ ìˆ˜í–‰ */
+    /* µğ½ºÅ© °ü¸®ÀÚ¸¦ À§ÇÑ pending operationµéÀ» ¼öÇà */
     IDU_FIT_POINT( "2.PROJ-1548@smxTrans::commit" );
 
     IDE_TEST( executePendingList( ID_TRUE ) != IDE_SUCCESS );
@@ -1270,12 +1694,11 @@ IDE_RC smxTrans::commit( smSCN  * aCommitSCN,
         ( svrLogMgr::isOnceUpdated( &mVolatileLogEnv )
           == ID_TRUE ))
     {
-        IDE_TEST( mTableInfoMgr.updateMemTableInfoForDel()
-                  != IDE_SUCCESS );
+        mTableInfoMgr.updateMemTableInfoForDel();
     }
 
     /* PROJ-1594 Volatile TBS */
-    /* commitì‹œì— ë¡œê¹…í•œ ëª¨ë“  ë¡œê·¸ë“¤ì„ ì§€ìš´ë‹¤. */
+    /* commit½Ã¿¡ ·Î±ëÇÑ ¸ğµç ·Î±×µéÀ» Áö¿î´Ù. */
     if ( svrLogMgr::isOnceUpdated( &mVolatileLogEnv ) == ID_TRUE )
     {
         IDE_TEST( svrLogMgr::removeLogHereafter(
@@ -1284,7 +1707,7 @@ IDE_RC smxTrans::commit( smSCN  * aCommitSCN,
                   != IDE_SUCCESS );
     }
 
-    /* PROJ-1381 Fetch Across Commits - Legacy Transë¥¼ Listì— ì¶”ê°€í•œë‹¤. */
+    /* PROJ-1381 Fetch Across Commits - Legacy Trans¸¦ List¿¡ Ãß°¡ÇÑ´Ù. */
     if ( aIsLegacyTrans == ID_TRUE )
     {
         IDE_TEST( smxLegacyTransMgr::addLegacyTrans( this,  
@@ -1294,18 +1717,18 @@ IDE_RC smxTrans::commit( smSCN  * aCommitSCN,
                   != IDE_SUCCESS );
 
         /* PROJ-1381 Fetch Across Commits
-         * smxOIDListë¥¼ Legacy Transì— ë‹¬ì•„ì£¼ì—ˆìœ¼ë¯€ë¡œ,
-         * ìƒˆë¡œìš´ smxOIDListë¥¼ íŠ¸ëœì ì…˜ì— í• ë‹¹í•œë‹¤.
+         * smxOIDList¸¦ Legacy Trans¿¡ ´Ş¾ÆÁÖ¾úÀ¸¹Ç·Î,
+         * »õ·Î¿î smxOIDList¸¦ Æ®·£Á§¼Ç¿¡ ÇÒ´çÇÑ´Ù.
          *
-         * Memory í• ë‹¹ì— ì‹¤íŒ¨í•˜ë©´ ê·¸ëƒ¥ ì˜ˆì™¸ ì²˜ë¦¬í•œë‹¤.
-         * trunkì—ì„œëŠ” ì˜ˆì™¸ ì²˜ë¦¬ì‹œ ë°”ë¡œ ASSERTë¡œ ì¢…ë£Œí•œë‹¤. */
+         * Memory ÇÒ´ç¿¡ ½ÇÆĞÇÏ¸é ±×³É ¿¹¿Ü Ã³¸®ÇÑ´Ù.
+         * trunk¿¡¼­´Â ¿¹¿Ü Ã³¸®½Ã ¹Ù·Î ASSERT·Î Á¾·áÇÑ´Ù. */
         /* smxTrans_commit_malloc_OIDList.tc */
         IDU_FIT_POINT("smxTrans::commit::malloc::OIDList");
         IDE_TEST( iduMemMgr::malloc( IDU_MEM_SM_SMX,
                                      ID_SIZEOF(smxOIDList),
                                      (void**)&sOIDList )
                   != IDE_SUCCESS );
-        sState = 1;
+        sState = 2;
 
         IDE_TEST( sOIDList->initialize( this,
                                         mCacheOIDNode4Insert,
@@ -1322,14 +1745,14 @@ IDE_RC smxTrans::commit( smSCN  * aCommitSCN,
     sTempTransID      = mTransID;
     SM_GET_LSN( sTempLastWritedLSN, mLastWritedLSN );
 
-    /* íŠ¸ëœì­ì…˜ì´ íšë“í•œ ëª¨ë“  lockì„ í•´ì œí•˜ê³  íŠ¸ëœì­ì…˜ ì—”íŠ¸ë¦¬ë¥¼
-     * ì´ˆê¸°í™”í•œ í›„ ë°˜í™˜í•œë‹¤. */
+    /* Æ®·£Àè¼ÇÀÌ È¹µæÇÑ ¸ğµç lockÀ» ÇØÁ¦ÇÏ°í Æ®·£Àè¼Ç ¿£Æ®¸®¸¦
+     * ÃÊ±âÈ­ÇÑ ÈÄ ¹İÈ¯ÇÑ´Ù. */
     IDE_TEST( end() != IDE_SUCCESS );
 
-    /* ê°±ì‹ ì„ ìˆ˜í–‰í•œ Transactionì¼ ê²½ìš° */
-    /* BUG-26482 ëŒ€ê¸° í•¨ìˆ˜ë¥¼ CommitLog ê¸°ë¡ ì „í›„ë¡œ ë¶„ë¦¬í•˜ì—¬ í˜¸ì¶œí•©ë‹ˆë‹¤.
-     * BUG-35452 lock ì „ì— commit logê°€ standbyì— ë°˜ì˜ëœ ê²ƒì„ í™•ì¸í•´ì•¼í•œë‹¤.*/
-    /* BUG-42736 Loose Replication ì—­ì‹œ Remote ì„œë²„ì˜ ë°˜ì˜ì„ ëŒ€ê¸° í•˜ì—¬ì•¼ í•©ë‹ˆë‹¤. */
+    /* °»½ÅÀ» ¼öÇàÇÑ TransactionÀÏ °æ¿ì */
+    /* BUG-26482 ´ë±â ÇÔ¼ö¸¦ CommitLog ±â·Ï ÀüÈÄ·Î ºĞ¸®ÇÏ¿© È£ÃâÇÕ´Ï´Ù.
+     * BUG-35452 lock Àü¿¡ commit log°¡ standby¿¡ ¹İ¿µµÈ °ÍÀ» È®ÀÎÇØ¾ßÇÑ´Ù.*/
+    /* BUG-42736 Loose Replication ¿ª½Ã Remote ¼­¹öÀÇ ¹İ¿µÀ» ´ë±â ÇÏ¿©¾ß ÇÕ´Ï´Ù. */
     if ( sNeedWaitTransForRepl == ID_TRUE )
     {
         if (smrRecoveryMgr::mIsReplCompleteAfterCommitFunc != NULL )
@@ -1337,6 +1760,7 @@ IDE_RC smxTrans::commit( smSCN  * aCommitSCN,
             smrRecoveryMgr::mIsReplCompleteAfterCommitFunc(
                                                 sTempStatistics,
                                                 sTempTransID,
+                                                SM_MAKE_SN( mFstUndoNxtLSN ),
                                                 SM_MAKE_SN( sTempLastWritedLSN ),
                                                 ( mFlag & SMX_REPL_MASK ),
                                                 SMI_AFTER_LOCK_RELEASE);
@@ -1346,38 +1770,72 @@ IDE_RC smxTrans::commit( smSCN  * aCommitSCN,
     {
         /* do nothing */
     }
+
+    if ( aCommitSCN != NULL )
+    {
+        if ( aIsLegacyTrans == ID_TRUE )
+        {
+            SM_CLEAR_SCN_LEGACY_BIT( &sCommitSCN );
+        }
+        SM_SET_SCN( aCommitSCN, &sCommitSCN );
+        IDE_DASSERT( SM_SCN_IS_SYSTEMSCN( *aCommitSCN ) )
+    }
     
     return IDE_SUCCESS;
 
+#ifdef ALTIBASE_FIT_CHECK
+    IDE_EXCEPTION( err_internal_server_error )
+    {
+        IDE_SET( ideSetErrorCode(smERR_ABORT_INTERNAL) );
+    }
+#endif
     IDE_EXCEPTION_END;
+
+#ifdef DEBUG
+    extern UInt ideNoErrorYet();
+    
+    if( ideNoErrorYet() == ID_TRUE )
+    {
+        /* ¿¡·¯¸Ş½ÃÁö¸¦ ¼³Á¤ÇÏÁö ¾ÊÀ¸¸é ¿¡·¯¸¦ ¹«½ÃÇÒ ¼ö ÀÖ½À´Ï´Ù. 
+         * ¾îµğ¼­ ¼³Á¤ÇÏÁö ¾Ê´ÂÁö È®ÀÎÀÌ ÇÊ¿äÇÕ´Ï´Ù. */
+        IDE_DASSERT(0);
+    }
+#endif
 
     switch( sState )
     {
-        case 1:
+        case 2:
             IDE_ASSERT( iduMemMgr::free( sOIDList ) == IDE_SUCCESS );
             sOIDList = NULL;
+        case 1:
+            mStatus4FT = SMX_TX_BEGIN; 
         default:
             break;
     }
 
-    /* Commit Logë¥¼ ë‚¨ê¸´ í›„ì—ëŠ” ì˜ˆì™¸ì²˜ë¦¬í•˜ë©´ ì•ˆëœë‹¤. */
+    /* Commit Log¸¦ ³²±ä ÈÄ¿¡´Â ¿¹¿ÜÃ³¸®ÇÏ¸é ¾ÈµÈ´Ù. */
     IDE_ASSERT( sWriteCommitLog == ID_FALSE );
 
     return IDE_FAILURE;
 }
 
 /*
-    TASK-2401 MMAP Loggingí™˜ê²½ì—ì„œ Disk/Memory Logì˜ ë¶„ë¦¬
+    TASK-2401 MMAP LoggingÈ¯°æ¿¡¼­ Disk/Memory LogÀÇ ºĞ¸®
 
-    Disk ì— ì†í•œ Transactionì´ Memory Tableì„ ì°¸ì¡°í•œ ê²½ìš°
-    Disk ì˜ Logë¥¼ Flush
+    Disk ¿¡ ¼ÓÇÑ TransactionÀÌ Memory TableÀ» ÂüÁ¶ÇÑ °æ¿ì
+    Disk ÀÇ Log¸¦ Flush
 
-    aLSN - [IN] Syncë¥¼ ì–´ë””ê¹Œì§€ í• ê²ƒì¸ê°€?
+    aLSN - [IN] Sync¸¦ ¾îµğ±îÁö ÇÒ°ÍÀÎ°¡?
 */
 IDE_RC smxTrans::flushLog( smLSN *aLSN, idBool aIsCommit )
 {
-    /* BUG-21626 : COMMIT WRITE WAIT MODEê°€ ì •ìƒë™ì‘í•˜ê³  ìˆì§€ ì•ŠìŠµë‹ˆë‹¤. */
-    if ( ( ( mFlag & SMX_COMMIT_WRITE_MASK ) == SMX_COMMIT_WRITE_WAIT ) &&
+    smLSN           sLstLSN;
+    PDL_Time_Value  sSleep; 
+    UInt            sSleepNSec = 0;
+
+
+    /* BUG-21626 : COMMIT WRITE WAIT MODE°¡ Á¤»óµ¿ÀÛÇÏ°í ÀÖÁö ¾Ê½À´Ï´Ù. */
+    if ( ( IDL_LIKELY_FALSE( ( mFlag & SMX_COMMIT_WRITE_MASK ) == SMX_COMMIT_WRITE_WAIT ) )&&
          ( aIsCommit == ID_TRUE ) && 
          ( !( SM_IS_LSN_MAX(*aLSN) ) ) )
     {
@@ -1385,6 +1843,43 @@ IDE_RC smxTrans::flushLog( smLSN *aLSN, idBool aIsCommit )
                                            aLSN )
                   != IDE_SUCCESS );
     }
+    else
+    {
+        /* BUG-45711 commit ÀÌÀü¿¡ dummy°¡ ¾ø¾î¾ß ÇÑ´Ù. */
+        if ( ( IDL_LIKELY_TRUE( mIsUncompletedLogWait == ID_TRUE ) )  &&
+             ( IDL_LIKELY_TRUE( !SM_IS_LSN_MAX(*aLSN) ) ) )
+        {
+            smrLogMgr::getUncompletedLstLSN( &sLstLSN );
+
+            if (smrCompareLSN::isGT( aLSN, &sLstLSN ) )
+            {
+                /* UncompletedLstLSN À» °»½ÅÇØÁØ´Ù. */
+                smrLogMgr::rebuildMinUCSN();
+                smrLogMgr::getUncompletedLstLSN( &sLstLSN );
+
+                while ( smrCompareLSN::isGT( aLSN, &sLstLSN ) )
+                {
+                    /* ÀÜ´Ù. */
+                    sSleep.set( 0, sSleepNSec );
+                    idlOS::sleep( sSleep );
+
+                    if ( sSleepNSec == 0 )
+                    {
+                        sSleepNSec++;
+                    }
+                
+                    /* ´Ù½Ã È®ÀÎ */
+                    smrLogMgr::rebuildMinUCSN();
+                    smrLogMgr::getUncompletedLstLSN( &sLstLSN );
+                } // while 
+            } //if
+        } // if
+        else
+        {
+            /* nothing to do */
+        }
+
+    }//else 
 
     return IDE_SUCCESS;
 
@@ -1396,19 +1891,19 @@ IDE_RC smxTrans::flushLog( smLSN *aLSN, idBool aIsCommit )
 /*****************************************************************
  *
  * BUG-22576
- *  transactionì´ partial rollbackë  ë•Œ DBë¡œë¶€í„° í• ë‹¹í•œ
- *  í˜ì´ì§€ë“¤ì´ ìˆë‹¤ë©´ ì´ë“¤ì„ tableì— ë¯¸ë¦¬ ë§¤ë‹¬ì•„ì•¼ í•œë‹¤.
- *  ì™œëƒí•˜ë©´ partial rollbackë  ë•Œ ê°ì²´ì— ëŒ€í•œ lockì„ í’€ ê²½ìš°ê°€
- *  ìˆëŠ”ë°, ê·¸ëŸ¬ë©´ ê·¸ ê°ì²´ê°€ ì–´ë–»ê²Œ ë ì§€ ëª¨ë¥´ê¸° ë•Œë¬¸ì—
- *  ë¯¸ë¦¬ pageë“¤ì„ tableì— ë§¤ë‹¬ì•„ë†”ì•¼ í•œë‹¤.
+ *  transactionÀÌ partial rollbackµÉ ¶§ DB·ÎºÎÅÍ ÇÒ´çÇÑ
+ *  ÆäÀÌÁöµéÀÌ ÀÖ´Ù¸é ÀÌµéÀ» table¿¡ ¹Ì¸® ¸Å´Ş¾Æ¾ß ÇÑ´Ù.
+ *  ¿Ö³ÄÇÏ¸é partial rollbackµÉ ¶§ °´Ã¼¿¡ ´ëÇÑ lockÀ» Ç® °æ¿ì°¡
+ *  ÀÖ´Âµ¥, ±×·¯¸é ±× °´Ã¼°¡ ¾î¶»°Ô µÉÁö ¸ğ¸£±â ¶§¹®¿¡
+ *  ¹Ì¸® pageµéÀ» table¿¡ ¸Å´Ş¾Æ³ö¾ß ÇÑ´Ù.
  *
- *  ì´ í•¨ìˆ˜ëŠ” partial abortì‹œ lockì„ í’€ê¸° ì „ì—
- *  ë°˜ë“œì‹œ ë¶ˆë ¤ì•¼ í•œë‹¤.
+ *  ÀÌ ÇÔ¼ö´Â partial abort½Ã lockÀ» Ç®±â Àü¿¡
+ *  ¹İµå½Ã ºÒ·Á¾ß ÇÑ´Ù.
  *****************************************************************/
 IDE_RC smxTrans::addPrivatePageListToTableOnPartialAbort()
 {
-    // private page listë¥¼ tableì— ë‹¬ê¸° ì „ì—
-    // ë°˜ë“œì‹œ logë¥¼ syncí•´ì•¼ í•œë‹¤.
+    // private page list¸¦ table¿¡ ´Ş±â Àü¿¡
+    // ¹İµå½Ã log¸¦ syncÇØ¾ß ÇÑ´Ù.
     IDE_TEST( flushLog(&mLstUndoNxtLSN, ID_FALSE /*not commit*/)
               != IDE_SUCCESS );
 
@@ -1434,32 +1929,34 @@ IDE_RC smxTrans::abort( idBool    aIsLegacyTrans,
     smTID      sTempTransID          = SM_NULL_TID;
     smLSN      sTempLastWritedLSN;
     
-    IDE_TEST_RAISE( mAbleToRollback == ID_FALSE,
-                    err_no_log );
+    IDE_DASSERT( mStatus    != SMX_TX_END );
+    IDE_DASSERT( mStatus4FT == SMX_TX_BEGIN );
 
     mStatus4FT = SMX_TX_ABORT;
+    mStatus    = SMX_TX_ABORT;
 
-    // PROJ-2068 Direct-Path INSERTë¥¼ ìˆ˜í–‰í•˜ì˜€ì„ ê²½ìš° abort ì‘ì—…ì„ ìˆ˜í–‰í•´ ì¤€ë‹¤.
+    // PROJ-2068 Direct-Path INSERT¸¦ ¼öÇàÇÏ¿´À» °æ¿ì abort ÀÛ¾÷À» ¼öÇàÇØ ÁØ´Ù.
     if ( mDPathEntry != NULL )
     {
         IDE_TEST( sdcDPathInsertMgr::abort( mDPathEntry )
                   != IDE_SUCCESS );
     }
 
-    /* Transaction Undoì‹œí‚¤ê³  Abort logë¥¼ ê¸°ë¡. */
+    IDU_FIT_POINT("2.TASK-7220@smxTrans::abort::writeAbortLogAndUndoTrans");
+    /* Transaction Undo½ÃÅ°°í Abort log¸¦ ±â·Ï. */
     IDE_TEST( writeAbortLogAndUndoTrans( &sAbortEndLSN )
               != IDE_SUCCESS );
 
-    // Tx's PrivatePageListë¥¼ ì •ë¦¬í•œë‹¤.
-    // ë°˜ë“œì‹œ ìœ„ì—ì„œ ë¨¼ì € abortë¡œê·¸ë¥¼ writeí•˜ê³  ì‘ì—…í•œë‹¤.
-    // BUGBUG : ë¡œê·¸ writeí• ë•Œ flushë„ ë°˜ë“œì‹œ í•„ìš”í•˜ë‹¤.
+    // Tx's PrivatePageList¸¦ Á¤¸®ÇÑ´Ù.
+    // ¹İµå½Ã À§¿¡¼­ ¸ÕÀú abort·Î±×¸¦ writeÇÏ°í ÀÛ¾÷ÇÑ´Ù.
+    // BUGBUG : ·Î±× writeÇÒ¶§ flushµµ ¹İµå½Ã ÇÊ¿äÇÏ´Ù.
     IDE_TEST( finAndInitPrivatePageList() != IDE_SUCCESS );
 
     /* PROJ-1594 Volatile TBS */
-    /* Volatile TBSì˜ private page listë„ ì •ë¦¬í•œë‹¤. */
+    /* Volatile TBSÀÇ private page listµµ Á¤¸®ÇÑ´Ù. */
     IDE_TEST( finAndInitVolPrivatePageList() != IDE_SUCCESS );
 
-    // BUG-14093 Ager Txê°€ FreeSlotí•œ ê²ƒë“¤ì„ ì‹¤ì œ FreeSlotListì— ë§¤ë‹¨ë‹¤.
+    // BUG-14093 Ager Tx°¡ FreeSlotÇÑ °ÍµéÀ» ½ÇÁ¦ FreeSlotList¿¡ ¸Å´Ü´Ù.
     IDE_TEST( smLayerCallback::processFreeSlotPending(
                                              this,
                                              &mOIDFreeSlotList )
@@ -1474,6 +1971,7 @@ IDE_RC smxTrans::abort( idBool    aIsLegacyTrans,
             smrRecoveryMgr::mIsReplCompleteAfterCommitFunc(
                                             mStatistics,
                                             mTransID,
+                                            SM_MAKE_SN(mFstUndoNxtLSN),
                                             SM_MAKE_SN(mLastWritedLSN),
                                             ( mFlag & SMX_REPL_MASK ),
                                             SMI_BEFORE_LOCK_RELEASE);
@@ -1490,12 +1988,11 @@ IDE_RC smxTrans::abort( idBool    aIsLegacyTrans,
         /* Nothing to do */
     }
 
-    /* ovlì— ìˆëŠ” OID ë¦¬ìŠ¤íŠ¸ì˜ lockê³¼ SCNì„ ê°±ì‹ í•˜ê³ 
-     * polê³¼ ovlì„ logical agerì—ê²Œ ë„˜ê¸´ë‹¤. */
+    /* ovl¿¡ ÀÖ´Â OID ¸®½ºÆ®ÀÇ lock°ú SCNÀ» °»½ÅÇÏ°í
+     * pol°ú ovlÀ» logical ager¿¡°Ô ³Ñ±ä´Ù. */
     if ( ( mTXSegEntry != NULL ) ||
          ( mOIDList->isEmpty() == ID_FALSE ) )
     {
-        SM_INIT_SCN( &sDummySCN );
         IDE_TEST( addOIDList2AgingList( SM_OID_ACT_AGING_ROLLBACK,
                                         SMX_TX_ABORT,
                                         &sAbortEndLSN,
@@ -1513,17 +2010,17 @@ IDE_RC smxTrans::abort( idBool    aIsLegacyTrans,
         if (smrRecoveryMgr::isRestart() == ID_FALSE )
         {
             /*
-             * [BUG-27542] [SD] TSS Page Allocation ê´€ë ¨ í•¨ìˆ˜(smxTrans::allocTXSegEntry,
-             *             sdcTSSegment::bindTSS)ë“¤ì˜ Exceptionì²˜ë¦¬ê°€ ì˜ëª»ë˜ì—ˆìŠµë‹ˆë‹¤.
+             * [BUG-27542] [SD] TSS Page Allocation °ü·Ã ÇÔ¼ö(smxTrans::allocTXSegEntry,
+             *             sdcTSSegment::bindTSS)µéÀÇ ExceptionÃ³¸®°¡ Àß¸øµÇ¾ú½À´Ï´Ù.
              */
             if ( mTXSegEntry->mTSSlotSID != SD_NULL_SID )
             {
-                /* BUG-29918 - txì˜ abortì‹œ ì‚¬ìš©í–ˆë˜ undo extent dirì—
-                 *             ì˜ëª»ëœ SCNì„ ì¨ì„œ ì¬ì‚¬ìš©ë˜ì§€ ëª»í•  ext dirì„
-                 *             ì¬ì‚¬ìš©í•˜ê³  ìˆìŠµë‹ˆë‹¤.
+                /* BUG-29918 - txÀÇ abort½Ã »ç¿ëÇß´ø undo extent dir¿¡
+                 *             Àß¸øµÈ SCNÀ» ½á¼­ Àç»ç¿ëµÇÁö ¸øÇÒ ext dirÀ»
+                 *             Àç»ç¿ëÇÏ°í ÀÖ½À´Ï´Ù.
                  *
-                 * markSCN()ì— INITSCNì„ ë„˜ê²¨ì£¼ëŠ” ê²ƒì´ ì•„ë‹ˆë¼ GSCNì„ ë„˜ê²¨ì£¼ë„ë¡
-                 * ìˆ˜ì •í•œë‹¤. */
+                 * markSCN()¿¡ INITSCNÀ» ³Ñ°ÜÁÖ´Â °ÍÀÌ ¾Æ´Ï¶ó GSCNÀ» ³Ñ°ÜÁÖµµ·Ï
+                 * ¼öÁ¤ÇÑ´Ù. */
                 smxTransMgr::mGetSmmViewSCN( &sSysSCN );
 
                 IDE_TEST( sdcTXSegMgr::markSCN(
@@ -1534,7 +2031,7 @@ IDE_RC smxTrans::abort( idBool    aIsLegacyTrans,
 
                 /* BUG-31055 Can not reuse undo pages immediately after 
                  * it is used to aborted transaction 
-                 * ì¦‰ì‹œ ì¬í™œìš© í•  ìˆ˜ ìˆë„ë¡, EDë“¤ì„ Shrinkí•œë‹¤. */
+                 * Áï½Ã ÀçÈ°¿ë ÇÒ ¼ö ÀÖµµ·Ï, EDµéÀ» ShrinkÇÑ´Ù. */
                 IDE_TEST( sdcTXSegMgr::shrinkExts( mStatistics,
                                                    this,
                                                    mTXSegEntry )
@@ -1548,14 +2045,17 @@ IDE_RC smxTrans::abort( idBool    aIsLegacyTrans,
     }
 
     /* ================================================================
-     * [3] ë””ìŠ¤í¬ ê´€ë¦¬ìë¥¼ ìœ„í•œ pending operationë“¤ì„ ìˆ˜í–‰
+     * [3] µğ½ºÅ© °ü¸®ÀÚ¸¦ À§ÇÑ pending operationµéÀ» ¼öÇà
      * ================================================================ */
     IDE_TEST( executePendingList( ID_FALSE ) != IDE_SUCCESS );
 
     /* PROJ-2694 Fetch Across Rollback */
+
+    rollbackDDLTargetTableInfo();
+
     if ( aIsLegacyTrans == ID_TRUE )
     {
-        /* rollbackì‹œì—ëŠ” OID listë¥¼ ëª¨ë‘ ì •ë¦¬í•˜ë¯€ë¡œ OID listë¥¼ ë‹¬ì•„ì¤„ í•„ìš”ê°€ ì—†ë‹¤. */
+        /* rollback½Ã¿¡´Â OID list¸¦ ¸ğµÎ Á¤¸®ÇÏ¹Ç·Î OID list¸¦ ´Ş¾ÆÁÙ ÇÊ¿ä°¡ ¾ø´Ù. */
         IDE_TEST( smxLegacyTransMgr::addLegacyTrans( this,
                                                      sAbortEndLSN,
                                                      aLegacyTrans,
@@ -1576,7 +2076,7 @@ IDE_RC smxTrans::abort( idBool    aIsLegacyTrans,
     IDE_TEST( end() != IDE_SUCCESS );
 
     /* 
-     * BUG-42736 Loose Replication ì—­ì‹œ Remote ì„œë²„ì˜ ë°˜ì˜ì„ ëŒ€ê¸° í•˜ì—¬ì•¼ í•©ë‹ˆë‹¤.
+     * BUG-42736 Loose Replication ¿ª½Ã Remote ¼­¹öÀÇ ¹İ¿µÀ» ´ë±â ÇÏ¿©¾ß ÇÕ´Ï´Ù.
      */
     if ( sNeedWaitTransForRepl == ID_TRUE )
     {
@@ -1585,6 +2085,7 @@ IDE_RC smxTrans::abort( idBool    aIsLegacyTrans,
             smrRecoveryMgr::mIsReplCompleteAfterCommitFunc(
                                                 sTempStatistics,
                                                 sTempTransID,
+                                                SM_MAKE_SN( mFstUndoNxtLSN ),
                                                 SM_MAKE_SN( sTempLastWritedLSN ),
                                                 ( mFlag & SMX_REPL_MASK ),
                                                 SMI_AFTER_LOCK_RELEASE);
@@ -1597,10 +2098,6 @@ IDE_RC smxTrans::abort( idBool    aIsLegacyTrans,
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(err_no_log);
-    {
-        IDE_SET(ideSetErrorCode( smERR_FATAL_DISABLED_ABORT_IN_LOGGING_LEVEL_0 ));
-    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -1609,19 +2106,25 @@ IDE_RC smxTrans::abort( idBool    aIsLegacyTrans,
 
 IDE_RC smxTrans::end()
 {
-
     UInt  sState = 0;
     smTID sNxtTransID;
     smTID sOldTransID;
 
-    //fix BUG-23656 session,xid ,transactionì„ ì—°ê³„í•œ performance viewë¥¼ ì œê³µí•˜ê³ ,
-    //ê·¸ë“¤ê°„ì˜ ê´€ê³„ë¥¼ ì •í™•íˆ ìœ ì§€í•´ì•¼ í•¨.
-    // transaction endì‹œ session idë¥¼ nullë¡œ ì„¤ì •.
+#ifdef DEBUG
+    ideLog::log( IDE_SD_19,
+                 "\n<smxTrans(%"ID_XINT64_FMT"-%"ID_UINT32_FMT")::end>\n",
+                 this, mTransID );
+#endif
+
+    IDU_FIT_POINT_RAISE("5.TASK-7220@smxTrans::end", err_internal_server_error);
+    //fix BUG-23656 session,xid ,transactionÀ» ¿¬°èÇÑ performance view¸¦ Á¦°øÇÏ°í,
+    //±×µé°£ÀÇ °ü°è¸¦ Á¤È®È÷ À¯ÁöÇØ¾ß ÇÔ.
+    // transaction end½Ã session id¸¦ null·Î ¼³Á¤.
     mSessionID = ID_NULL_SESSION_ID;
 
     /* PROJ-1381 Fetch Across Commits
-     * TXë¥¼ ì¢…ë£Œí•  ë•Œ ëª¨ë“  table lockì„ í•´ì œí•´ì•¼ í•œë‹¤.
-     * í•˜ì§€ë§Œ Legacy Transê°€ ë‚¨ì•„ìˆë‹¤ë©´ IS Lockì„ ìœ ì§€í•´ì•¼ í•œë‹¤. */
+     * TX¸¦ Á¾·áÇÒ ¶§ ¸ğµç table lockÀ» ÇØÁ¦ÇØ¾ß ÇÑ´Ù.
+     * ÇÏÁö¸¸ Legacy Trans°¡ ³²¾ÆÀÖ´Ù¸é IS LockÀ» À¯ÁöÇØ¾ß ÇÑ´Ù. */
     if ( mLegacyTransCnt == 0 )
     {
         IDE_TEST( smLayerCallback::freeAllItemLock( mSlotN )
@@ -1634,15 +2137,16 @@ IDE_RC smxTrans::end()
     }
 
     //Free All Record Lock
-    IDE_TEST( lock() != IDE_SUCCESS );
+    /* always return true */
+    lock();
     sState = 1;
 
     (void)smLayerCallback::freeAllRecordLock( mSlotN );
 
-    // PROJ-1362 lob curor hash, listì—ì„œ ë…¸ë“œë¥¼ ì‚­ì œí•œë‹¤.
+    // PROJ-1362 lob curor hash, list¿¡¼­ ³ëµå¸¦ »èÁ¦ÇÑ´Ù.
     IDE_TEST( closeAllLobCursors() != IDE_SUCCESS );
 
-    // PROJ-2068 Direct-Path INSERTë¥¼ ìˆ˜í–‰í•œ ì ì´ ìˆìœ¼ë©´ ê´€ë ¨ ê°ì²´ë¥¼ íŒŒê´´í•œë‹¤.
+    // PROJ-2068 Direct-Path INSERT¸¦ ¼öÇàÇÑ ÀûÀÌ ÀÖÀ¸¸é °ü·Ã °´Ã¼¸¦ ÆÄ±«ÇÑ´Ù.
     if ( mDPathEntry != NULL )
     {
         IDE_TEST( sdcDPathInsertMgr::destDPathEntry( mDPathEntry )
@@ -1669,13 +2173,20 @@ IDE_RC smxTrans::end()
     {
         sNxtTransID = sNxtTransID + smxTransMgr::mTransCnt;
 
+        /*
+         * PROJ-2728 Sharding LOB
+         *   [ Shard flag | TransactionID ] = TransID
+         *      1bit      |  31bit          =  32bit.
+         */
+        sNxtTransID &= ~(SMI_LOB_LOCATOR_SHARD_MASK);
+
         /* PROJ-1381 Fetch Across Commits
-         * smxTransì— Legacy Transê°€ ìˆìœ¼ë©´ smxTransì™€ Legacy Transì˜ TransIDê°€
-         * ê°™ì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ, í•´ë‹¹ TransIDê°€ Legacy Transì™€ ê°™ì§€ ì•Šë„ë¡ í•œë‹¤. */
+         * smxTrans¿¡ Legacy Trans°¡ ÀÖÀ¸¸é smxTrans¿Í Legacy TransÀÇ TransID°¡
+         * °°À» ¼ö ÀÖÀ¸¹Ç·Î, ÇØ´ç TransID°¡ Legacy Trans¿Í °°Áö ¾Êµµ·Ï ÇÑ´Ù. */
         if ( mLegacyTransCnt != 0 )
         {
-            /* TransID ì¬ì‚¬ìš© ì£¼ê¸°ì™€ TX ë‚´ ë™ì‹œ ì‚¬ìš©ê°€ëŠ¥í•œ Statement ê°œìˆ˜ë¥¼
-             * ê³ ë ¤í•˜ë©´ ê°™ì€ TransIDë¥¼ ì‚¬ìš©í•  ë¦¬ê°€ ì—†ë‹¤. */
+            /* TransID Àç»ç¿ë ÁÖ±â¿Í TX ³» µ¿½Ã »ç¿ë°¡´ÉÇÑ Statement °³¼ö¸¦
+             * °í·ÁÇÏ¸é °°Àº TransID¸¦ »ç¿ëÇÒ ¸®°¡ ¾ø´Ù. */
             if ( sOldTransID == sNxtTransID )
             {
                 ideLog::log( IDE_SM_0,
@@ -1720,49 +2231,55 @@ IDE_RC smxTrans::end()
 
     IDL_MEM_BARRIER;
 
-    IDE_TEST( init() != IDE_SUCCESS ); //checkpoint thread ê³ ë ¤..
+    IDE_TEST( init() != IDE_SUCCESS ); //checkpoint thread °í·Á..
 
     sState = 0;
-    IDE_TEST( unlock() != IDE_SUCCESS );
+    /* always return true */
+    unlock();
 
-    //Savepoint Resourceë¥¼ ë°˜í™˜í•œë‹¤.
-    IDE_TEST( mSvpMgr.destroy() != IDE_SUCCESS );
+    //Savepoint Resource¸¦ ¹İÈ¯ÇÑ´Ù.
+    IDE_TEST( mSvpMgr.destroy( this->mSmiTransPtr ) != IDE_SUCCESS );
     IDE_TEST( removeAllAndReleaseMutex() != IDE_SUCCESS );
 
     mStatistics = NULL;
 
-    if ( mCompRes != NULL )
+    if ( smuProperty::getLogCompResourceReuse() == 1 )
     {
-        // Log ì••ì¶• ë¦¬ì†ŒìŠ¤ë¥¼ Poolì— ë°˜ë‚©í•œë‹¤.
-        IDE_TEST( mCompResPool.freeCompRes( mCompRes )
+        /* BUG-47365 CompRes¸¦ Àç»ç¿ëÇÒ¼ö ÀÖµµ·Ï ÇÑ´Ù.
+         * ³Ê¹« Å« Size¸¦ °¡Áö°í ÀÖÀ¸¸é ³¶ºñÀÌ±â ¶§¹®¿¡ Á¶ÀıÇÒ¼ö ÀÖÀ¸¸é Á¶ÀıÇÑ´Ù. */
+        IDE_TEST( mCompResPool.tuneCompRes( mCompRes, smuProperty::getCompResTuneSize() )
                   != IDE_SUCCESS );
-        mCompRes = NULL;
     }
     else
     {
-        // Transactionì´ ë¡œê¹…ì„ í•œë²ˆë„ í•˜ì§€ ì•Šì€ ê²½ìš°
-        // ì••ì¶• ë¦¬ì†ŒìŠ¤ë¥¼ Poolë¡œë¶€í„° ê°€ì ¸ì˜¨ì ë„ ì—†ë‹¤.
-        // Do Nothing!
+        /* CompRes¸¦ Àç»ç¿ë ÇÏÁö ¾Ê´Â´Ù¸é ¹İ³³ÇØ¾ßÇÑ´Ù. */
+        if ( mCompRes != NULL )
+        {
+           // Log ¾ĞÃà ¸®¼Ò½º¸¦ Pool¿¡ ¹İ³³ÇÑ´Ù.
+            IDE_TEST( mCompResPool.freeCompRes( mCompRes )
+                      != IDE_SUCCESS );
+            mCompRes = NULL;
+        }
     }
 
-    /* TASK-2401 MMAP Loggingí™˜ê²½ì—ì„œ Disk/Memory Logì˜ ë¶„ë¦¬
-       Disk/Memory Tableì— ì ‘ê·¼í–ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ ì´ˆê¸°í™”
-     */
-    mDiskTBSAccessed = ID_FALSE;
-    mMemoryTBSAccessed = ID_FALSE;
-    mMetaTableModified = ID_FALSE;
-
-    // íŠ¸ëœì­ì…˜ì´ ì‚¬ìš©í•œ Touch Page Listë¥¼ í•´ì œí•œë‹¤.
+    // Æ®·£Àè¼ÇÀÌ »ç¿ëÇÑ Touch Page List¸¦ ÇØÁ¦ÇÑ´Ù.
     IDE_ASSERT( mTouchPageList.reset() == IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
+#ifdef ALTIBASE_FIT_CHECK
+    IDE_EXCEPTION( err_internal_server_error )
+    {
+        IDE_SET( ideSetErrorCode(smERR_ABORT_INTERNAL) );
+    }
+#endif
     IDE_EXCEPTION_END;
 
     if ( sState != 0 )
     {
         IDE_PUSH();
-        IDE_ASSERT( unlock() == IDE_SUCCESS );
+        /* always return true */
+        unlock();
         IDE_POP();
     }
 
@@ -1770,16 +2287,17 @@ IDE_RC smxTrans::end()
 
 }
 
-IDE_RC smxTrans::setLstUndoNxtLSN( smLSN aLSN )
+void smxTrans::setLstUndoNxtLSN( smLSN aLSN )
 {
-    IDE_TEST( lock() != IDE_SUCCESS );
+    /* always return true */
+    lock();
 
     if ( mIsUpdate == ID_FALSE )
     {
-        /* Txì˜ ì²« ë¡œê·¸ë¥¼ ê¸°ë¡í• ë•Œë§Œ mIsUpdate == ID_FALSE */
+        /* TxÀÇ Ã¹ ·Î±×¸¦ ±â·ÏÇÒ¶§¸¸ mIsUpdate == ID_FALSE */
         mIsUpdate = ID_TRUE;
 
-        /* ì¼ë°˜ì ì¸ Txì˜ ê²½ìš°, mFstUndoNxtLSNì´ SM_LSN_MAX ì´ë‹¤. */
+        /* ÀÏ¹İÀûÀÎ TxÀÇ °æ¿ì, mFstUndoNxtLSNÀÌ SM_LSN_MAX ÀÌ´Ù. */
         if ( SM_IS_LSN_MAX( mFstUndoNxtLSN ) )
         {
             SM_GET_LSN( mFstUndoNxtLSN, aLSN );
@@ -1787,8 +2305,8 @@ IDE_RC smxTrans::setLstUndoNxtLSN( smLSN aLSN )
         else
         {
             /* BUG-39404
-             * Legacy Txë¥¼ ê°€ì§„ Txì˜ ê²½ìš°, mFstUndoNxtLSNì„
-             * ìµœì´ˆ Legacy Txì˜ mFstUndoNxtLSN ì„ ìœ ì§€í•´ì•¼ í•¨ */
+             * Legacy Tx¸¦ °¡Áø TxÀÇ °æ¿ì, mFstUndoNxtLSNÀ»
+             * ÃÖÃÊ Legacy TxÀÇ mFstUndoNxtLSN À» À¯ÁöÇØ¾ß ÇÔ */
         }
 
         mFstUpdateTime = smLayerCallback::smiGetCurrentTime();
@@ -1799,10 +2317,10 @@ IDE_RC smxTrans::setLstUndoNxtLSN( smLSN aLSN )
         /* nothing to do */
     }
 
-    /* mBeginLogLSNì€ recovery from replicationì—ì„œ ì‚¬ìš©í•˜ë©° 
-     * beginì—ì„œ ì´ˆê¸°í™” í•˜ë©°, 
-     * Active Transaction List ì— ë“±ë¡ë ë•Œ ê°’ì„ ì„¤ì •í•œë‹¤.
-     * FAC ë•Œë¬¸ì— mFstUndoNxtLSN <= mBeginLogLSN ì„.
+    /* mBeginLogLSNÀº recovery from replication¿¡¼­ »ç¿ëÇÏ¸ç 
+     * begin¿¡¼­ ÃÊ±âÈ­ ÇÏ¸ç, 
+     * Active Transaction List ¿¡ µî·ÏµÉ¶§ °ªÀ» ¼³Á¤ÇÑ´Ù.
+     * FAC ¶§¹®¿¡ mFstUndoNxtLSN <= mBeginLogLSN ÀÓ.
      */
     if ( SM_IS_LSN_MAX( mBeginLogLSN ) )
     {
@@ -1819,30 +2337,29 @@ IDE_RC smxTrans::setLstUndoNxtLSN( smLSN aLSN )
     mLstUndoNxtLSN = aLSN;
     SM_GET_LSN( mLastWritedLSN, aLSN );
     
-    IDE_TEST( unlock() != IDE_SUCCESS );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
+    /* always return true */
+    unlock();
 }
 
 /*******************************************************************
- * BUG-16368ì„ ìœ„í•´ ìƒì„±í•œ í•¨ìˆ˜
+ * BUG-16368À» À§ÇØ »ı¼ºÇÑ ÇÔ¼ö
  * Description:
- *              smxTrans::addListToAgerAtCommit ë˜ëŠ”
- *              smxTrans::addListToAgerAtABort ì—ì„œ ë¶ˆë¦¬ìš°ëŠ” í•¨ìˆ˜.
- * aLSN             [IN]    - ìƒì„±ë˜ëŠ” OidListì˜ SCNì„ ê²°ì •
+ *              smxTrans::addListToAgerAtCommit ¶Ç´Â
+ *              smxTrans::addListToAgerAtABort ¿¡¼­ ºÒ¸®¿ì´Â ÇÔ¼ö.
+ * aCommitSCN       [IN]    - »ı¼ºµÇ´Â OidListÀÇ SCNÀ» °áÁ¤
  * aAgingState      [IN]    - SMX_TX_COMMT OR SMX_TX_ABORT
- * aAgerNormalList  [OUT]   - Listì— addí•œ ê²°ê³¼ ë¦¬í„´
+ * aAgerNormalList  [OUT]   - List¿¡ addÇÑ °á°ú ¸®ÅÏ
  *******************************************************************/
-IDE_RC smxTrans::addOIDList2LogicalAger( smLSN        * aLSN,
-                                         SInt           aAgingState,
+IDE_RC smxTrans::addOIDList2LogicalAger( smSCN        * aCommitSCN,
+                                         UInt           aAgingState,
                                          void        ** aAgerNormalList )
 {
+    IDE_DASSERT( SM_SCN_IS_EQ(aCommitSCN,&mCommitSCN) ); 
+    IDE_DASSERT( (aAgingState == SM_OID_ACT_AGING_COMMIT)   ||
+                 (aAgingState == SM_OID_ACT_AGING_ROLLBACK) );
+
     // PRJ-1476
-    // cached insert oidëŠ” memory agerì—ê²Œ ë„˜ì–´ê°€ì§€ ì•Šë„ë¡ ì¡°ì¹˜ë¥¼ ì·¨í•œë‹¤.
+    // cached insert oid´Â memory ager¿¡°Ô ³Ñ¾î°¡Áö ¾Êµµ·Ï Á¶Ä¡¸¦ ÃëÇÑ´Ù.
     IDE_TEST( mOIDList->cloneInsertCachedOID() != IDE_SUCCESS );
 
     mOIDList->mOIDNodeListHead.mPrvNode->mNxtNode = NULL;
@@ -1850,8 +2367,7 @@ IDE_RC smxTrans::addOIDList2LogicalAger( smLSN        * aLSN,
 
     IDE_TEST( smLayerCallback::addList2LogicalAger( mTransID,
                                                     mIsDDL,
-                                                    &mCommitSCN,
-                                                    aLSN,
+                                                    aCommitSCN,
                                                     aAgingState,
                                                     mOIDList,
                                                     aAgerNormalList )
@@ -1864,51 +2380,51 @@ IDE_RC smxTrans::addOIDList2LogicalAger( smLSN        * aLSN,
 }
 
 
-/*
- * Transactionì˜ Commitë¡œê·¸ë¥¼ ê¸°ë¡í•œë‹¤.
+/***********************************************************************
+ * TransactionÀÇ Commit·Î±×¸¦ ±â·ÏÇÑ´Ù.
  *
- * aEndLSN - [OUT] ê¸°ë¡ëœ Commit Logì˜ LSN
- *
- */
-IDE_RC smxTrans::writeCommitLog( smLSN* aEndLSN )
+ * aEndLSN    - [OUT] ±â·ÏµÈ Commit LogÀÇ LSN
+ * aCommitSCN - [IN] TransactionÀÇ CommitSCN
+ **********************************************************************/
+IDE_RC smxTrans::writeCommitLog( smLSN* aEndLSN, smSCN aCommitSCN )
 {
     /* =======================
      * [1] write precommit log
      * ======================= */
     /* ------------------------------------------------
-     * 1) tssì™€ ê´€ë ¨ì—†ëŠ” txë¼ë©´ commit ë¡œê¹…ì„ í•˜ê³  addListToAgerë¥¼ ì²˜ë¦¬í•œë‹¤.
-     * commit ë¡œê¹…í›„ì— tx ìƒíƒœ(commit ìƒíƒœ)ë¥¼ ë³€ê²½í•œë‹¤.
-     * -> commit ë¡œê¹… -> commit ìƒíƒœë¡œ ë³€ê²½ -> commit SCN ì„¤ì • -> tx end
+     * 1) tss¿Í °ü·Ã¾ø´Â tx¶ó¸é commit ·Î±ëÀ» ÇÏ°í addListToAger¸¦ Ã³¸®ÇÑ´Ù.
+     * commit ·Î±ëÈÄ¿¡ tx »óÅÂ(commit »óÅÂ)¸¦ º¯°æÇÑ´Ù.
+     * -> commit ·Î±ë -> commit »óÅÂ·Î º¯°æ -> commit SCN ¼³Á¤ -> tx end
      *
-     * 2) tssì™€ ê´€ë ¨ëœ tx(disk tx)ëŠ” addListToAgerì—ì„œ commit SCNì„ í• ë‹¹í•œí›„
-     * tss ê´€ë ¨ ì‘ì—…ì„ í•œí›„ì— commit ë¡œê¹…ì„ í•œ ë‹¤ìŒ, commit SCNì„ ì„¤ì •í•œë‹¤.
-     * add TSS commit list -> commit ë¡œê¹… -> commitìƒíƒœë¡œë³€ê²½->commit SCN ì„¤ì •
-     * tssì— commitSCNì„¤ì • -> tx end
+     * 2) tss¿Í °ü·ÃµÈ tx(disk tx)´Â addListToAger¿¡¼­ commit SCNÀ» ÇÒ´çÇÑÈÄ
+     * tss °ü·Ã ÀÛ¾÷À» ÇÑÈÄ¿¡ commit ·Î±ëÀ» ÇÑ ´ÙÀ½, commit SCNÀ» ¼³Á¤ÇÑ´Ù.
+     * add TSS commit list -> commit ·Î±ë -> commit»óÅÂ·Îº¯°æ->commit SCN ¼³Á¤
+     * tss¿¡ commitSCN¼³Á¤ -> tx end
      * ----------------------------------------------*/
     if ( mTXSegEntry == NULL  )
     {
-        IDE_TEST( writeCommitLog4Memory( aEndLSN ) != IDE_SUCCESS );
+        IDE_TEST( writeCommitLog4Memory( aEndLSN, aCommitSCN ) != IDE_SUCCESS );
     }
     else
     {
-        IDE_TEST( writeCommitLog4Disk( aEndLSN ) != IDE_SUCCESS );
+        IDE_TEST( writeCommitLog4Disk( aEndLSN, aCommitSCN ) != IDE_SUCCESS );
 
         IDU_FIT_POINT( "1.PROJ-1548@smxTrans::writeCommitLog" );
     }
 
-    /* BUG-19503: DRDBì˜ smcTableHeaderì˜ mFixed:.Mutexì˜ Duration Timeì´ ê¹ë‹ˆë‹¤.
+    /* BUG-19503: DRDBÀÇ smcTableHeaderÀÇ mFixed:.MutexÀÇ Duration TimeÀÌ ±é´Ï´Ù.
      *
-     *            RecordCount ê°±ì‹ ì„ ìœ„í•´ì„œ Mutex Lockì„ ì¡ì€ ìƒíƒœì—ì„œ RecordCount
-     *            ì •ë³´ë¥¼ ê°±ì‹ í•˜ê³  ìˆìŠµë‹ˆë‹¤. ê·¸ ë¡œê·¸ê°€ Commitë¡œê·¸ì¸ë° ë¬¸ì œëŠ”
-     *            Transactionì˜ Durabilityë¥¼ ë³´ì¥í•œë‹¤ë©´ Commitë¡œê·¸ê°€ ë””ìŠ¤í¬ì— sync
-     *            ë ë•Œê¹Œì§€ ê¸°ë‹¤ë ¤ì•¼ í•˜ê³  íƒ€ Transactionë˜í•œ ì´ë¥¼ ê¸°ë‹¤ë¦¬ëŠ” ë¬¸ì œê°€
-     *            ìˆìŠµë‹ˆë‹¤. í•˜ì—¬ Commitë¡œê·¸ ê¸°ë¡ì‹œì— Flushí•˜ëŠ” ê²ƒì´ ì•„ë‹ˆë¼ ì¶”í›„ì—
-     *            Commitë¡œê·¸ê°€ Flushê°€ í•„ìš”ìˆì„ì‹œ Flushí•˜ëŠ”ê²ƒìœ¼ë¡œ ìˆ˜ì •í–ˆìŠµë‹ˆë‹¤.*/
+     *            RecordCount °»½ÅÀ» À§ÇØ¼­ Mutex LockÀ» ÀâÀº »óÅÂ¿¡¼­ RecordCount
+     *            Á¤º¸¸¦ °»½ÅÇÏ°í ÀÖ½À´Ï´Ù. ±× ·Î±×°¡ Commit·Î±×ÀÎµ¥ ¹®Á¦´Â
+     *            TransactionÀÇ Durability¸¦ º¸ÀåÇÑ´Ù¸é Commit·Î±×°¡ µğ½ºÅ©¿¡ sync
+     *            µÉ¶§±îÁö ±â´Ù·Á¾ß ÇÏ°í Å¸ Transaction¶ÇÇÑ ÀÌ¸¦ ±â´Ù¸®´Â ¹®Á¦°¡
+     *            ÀÖ½À´Ï´Ù. ÇÏ¿© Commit·Î±× ±â·Ï½Ã¿¡ FlushÇÏ´Â °ÍÀÌ ¾Æ´Ï¶ó ÃßÈÄ¿¡
+     *            Commit·Î±×°¡ Flush°¡ ÇÊ¿äÀÖÀ»½Ã FlushÇÏ´Â°ÍÀ¸·Î ¼öÁ¤Çß½À´Ï´Ù.*/
 
-    /* Durability levelì— ë”°ë¼ commit ë¡œê·¸ëŠ” syncë¥¼ ë³´ì¥í•˜ê¸°ë„ í•œë‹¤.
-     * í•¨ìˆ˜ì•ˆì—ì„œ Flushê°€ í•„ìš”í•˜ëŠ”ì§€ë¥¼ Checkí•©ë‹ˆë‹¤. */
+    /* Durability level¿¡ µû¶ó commit ·Î±×´Â sync¸¦ º¸ÀåÇÏ±âµµ ÇÑ´Ù.
+     * ÇÔ¼ö¾È¿¡¼­ Flush°¡ ÇÊ¿äÇÏ´ÂÁö¸¦ CheckÇÕ´Ï´Ù. */
 
-    // logê°€ diskì— ê¸°ë¡ë ë•Œê¹Œì§€ ê¸°ë‹¤ë¦´ì§€ì— ëŒ€í•œ ì •ë³´ íšë“
+    // log°¡ disk¿¡ ±â·ÏµÉ¶§±îÁö ±â´Ù¸±Áö¿¡ ´ëÇÑ Á¤º¸ È¹µæ
     if ( ( hasPendingOp() == ID_TRUE ) ||
          ( isCommitWriteWait() == ID_TRUE ) )
     {
@@ -1926,17 +2442,17 @@ IDE_RC smxTrans::writeCommitLog( smLSN* aEndLSN )
     return IDE_FAILURE;
 }
 
-/*
- * ë§Œì•½ Tranasctionì´ ê°±ì‹ ì—°ì‚°ì„ ìˆ˜í–‰í•œ Transactionì´ë¼ë©´
- *   1. Abort Prepare Logë¥¼ ê¸°ë¡í•œë‹¤.
- *   2. Undoë¥¼ ìˆ˜í–‰í•œë‹¤.
- *   3. Abort Logë¥¼ ê¸°ë¡í•œë‹¤.
- *   4. Volatile Tableì— ëŒ€í•œ ê°±ì‹  ì—°ì‚°ì´ ìˆì—ˆë‹¤ë©´ Volatileì—
- *      ëŒ€í•´ì„œ Undoì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+/***********************************************************************
+ * ¸¸¾à TranasctionÀÌ °»½Å¿¬»êÀ» ¼öÇàÇÑ TransactionÀÌ¶ó¸é
+ *   1. Abort Prepare Log¸¦ ±â·ÏÇÑ´Ù.
+ *   2. Undo¸¦ ¼öÇàÇÑ´Ù.
+ *   3. Abort Log¸¦ ±â·ÏÇÑ´Ù.
+ *   4. Volatile Table¿¡ ´ëÇÑ °»½Å ¿¬»êÀÌ ÀÖ¾ú´Ù¸é Volatile¿¡
+ *      ´ëÇØ¼­ UndoÀÛ¾÷À» ¼öÇàÇÑ´Ù.
  *
- * aEndLSN - [OUT] Abort Logì˜ End LSN.
+ * aEndLSN - [OUT] Abort LogÀÇ End LSN.
  *
- */
+ **********************************************************************/
 IDE_RC smxTrans::writeAbortLogAndUndoTrans( smLSN* aEndLSN )
 {
     // PROJ-1553 Replication self-deadlock
@@ -1953,7 +2469,7 @@ IDE_RC smxTrans::writeAbortLogAndUndoTrans( smLSN* aEndLSN )
     idBool               sIsDiskTrans = ID_FALSE;
 
     /* PROJ-1594 Volatile TBS */
-    /* Volatile TBSì— ëŒ€í•œ ê°±ì‹  ì—°ì‚°ì„ ëª¨ë‘ undoí•œë‹¤. */
+    /* Volatile TBS¿¡ ´ëÇÑ °»½Å ¿¬»êÀ» ¸ğµÎ undoÇÑ´Ù. */
     if ( svrLogMgr::isOnceUpdated( &mVolatileLogEnv ) == ID_TRUE )
     {
         IDE_TEST( svrRecoveryMgr::undoTrans( &mVolatileLogEnv,
@@ -1968,12 +2484,12 @@ IDE_RC smxTrans::writeAbortLogAndUndoTrans( smLSN* aEndLSN )
     if ( mIsUpdate == ID_TRUE )
     {
         // PROJ-1553 Replication self-deadlock
-        // undo ì‘ì—…ì„ ìˆ˜í–‰í•˜ê¸° ì „ì— pre-abort logë¥¼ ì°ëŠ”ë‹¤.
-        // ì™¸ë¶€ì—ì„œ ì§ì ‘ undoTrans()ë¥¼ í˜¸ì¶œí•˜ëŠ” ê²ƒì— ëŒ€í•´ì„œëŠ”
-        // ì‹ ê²½ì“°ì§€ ì•Šì•„ë„ ëœë‹¤.
-        // ì™œëƒí•˜ë©´ SM ìì²´ì ìœ¼ë¡œ undoë¥¼ ìˆ˜í–‰í•˜ëŠ” ê²ƒì— ëŒ€í•´ì„œëŠ”
-        // replicationì˜ receiverìª½ì—ì„œ self-deadlockì˜ ìš”ì¸ì´
-        // ì•ˆë˜ê¸° ë•Œë¬¸ì´ë‹¤.
+        // undo ÀÛ¾÷À» ¼öÇàÇÏ±â Àü¿¡ pre-abort log¸¦ Âï´Â´Ù.
+        // ¿ÜºÎ¿¡¼­ Á÷Á¢ undoTrans()¸¦ È£ÃâÇÏ´Â °Í¿¡ ´ëÇØ¼­´Â
+        // ½Å°æ¾²Áö ¾Ê¾Æµµ µÈ´Ù.
+        // ¿Ö³ÄÇÏ¸é SM ÀÚÃ¼ÀûÀ¸·Î undo¸¦ ¼öÇàÇÏ´Â °Í¿¡ ´ëÇØ¼­´Â
+        // replicationÀÇ receiverÂÊ¿¡¼­ self-deadlockÀÇ ¿äÀÎÀÌ
+        // ¾ÈµÇ±â ¶§¹®ÀÌ´Ù.
         initPreAbortLog( &sTransPreAbortLog );
 
         // write pre-abort log
@@ -1982,34 +2498,35 @@ IDE_RC smxTrans::writeAbortLogAndUndoTrans( smLSN* aEndLSN )
                                        (SChar*)&sTransPreAbortLog,
                                        NULL,  // Previous LSN Ptr
                                        NULL,  // Log LSN Ptr
-                                       &sEndLSNofAbortLog ) // End LSN Ptr
+                                       &sEndLSNofAbortLog, // End LSN Ptr
+                                       SM_NULL_OID )
                   != IDE_SUCCESS );
 
-        // Hybrid Tx : ìì‹ ì´ ê¸°ë¡í•œ Logë¥¼ Flush
+        // Hybrid Tx : ÀÚ½ÅÀÌ ±â·ÏÇÑ Log¸¦ Flush
         IDE_TEST( flushLog( &sEndLSNofAbortLog,
                             ID_FALSE /* When Abort */ ) != IDE_SUCCESS );
 
-        // pre-abort logë¥¼ ì°ì€ í›„ undo ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+        // pre-abort log¸¦ ÂïÀº ÈÄ undo ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
         SM_LSN_MAX( sLSN );
         IDE_TEST( smrRecoveryMgr::undoTrans( mStatistics,
                                              this,
                                              &sLSN) != IDE_SUCCESS );
 
         /* ------------------------------------------------
-         * 1) tssì™€ ê´€ë ¨ì—†ëŠ” txë¼ë©´ abort ë¡œê¹…ì„ í•˜ê³  addListToAgerë¥¼ ì²˜ë¦¬í•œë‹¤.
-         * abort ë¡œê¹…í›„ì— tx ìƒíƒœ(in-memory abort ìƒíƒœ)ë¥¼ ë³€ê²½í•œë‹¤.
-         * -> abort ë¡œê¹… -> tx in-memory abort ìƒíƒœë¡œ ë³€ê²½ -> tx end
+         * 1) tss¿Í °ü·Ã¾ø´Â tx¶ó¸é abort ·Î±ëÀ» ÇÏ°í addListToAger¸¦ Ã³¸®ÇÑ´Ù.
+         * abort ·Î±ëÈÄ¿¡ tx »óÅÂ(in-memory abort »óÅÂ)¸¦ º¯°æÇÑ´Ù.
+         * -> abort ·Î±ë -> tx in-memory abort »óÅÂ·Î º¯°æ -> tx end
          *
-         * 2) í•˜ì§€ë§Œ tssì™€ ê´€ë ¨ëœ txëŠ” addListToAgerì—ì„œ freeTSS
-         * tss ê´€ë ¨ ì‘ì—…ì„ í•œí›„ì— abort ë¡œê¹…ì„ í•œë‹¤.
-         * -> tx in-memory abort ìƒíƒœë¡œ ë³€ê²½ -> abort ë¡œê¹… -> tx end
+         * 2) ÇÏÁö¸¸ tss¿Í °ü·ÃµÈ tx´Â addListToAger¿¡¼­ freeTSS
+         * tss °ü·Ã ÀÛ¾÷À» ÇÑÈÄ¿¡ abort ·Î±ëÀ» ÇÑ´Ù.
+         * -> tx in-memory abort »óÅÂ·Î º¯°æ -> abort ·Î±ë -> tx end
          * ----------------------------------------------*/
-        // BUG-29262 TSS í• ë‹¹ì— ì‹¤íŒ¨í•œ íŠ¸ëœì­ì…˜ì˜ COMMIT ë¡œê·¸ë¥¼ ê¸°ë¡í•´ì•¼ í•©ë‹ˆë‹¤.
-        // log buffer ì´ˆê¸°í™”
+        // BUG-29262 TSS ÇÒ´ç¿¡ ½ÇÆĞÇÑ Æ®·£Àè¼ÇÀÇ COMMIT ·Î±×¸¦ ±â·ÏÇØ¾ß ÇÕ´Ï´Ù.
+        // log buffer ÃÊ±âÈ­
         initLogBuffer();
 
         // BUG-27542 : (mTXSegEntry != NULL) &&
-        // (mTXSegEntry->mTSSlotSID != SD_NULL_SID) ì´ë¼ì•¼ Disk Txì´ë‹¤
+        // (mTXSegEntry->mTSSlotSID != SD_NULL_SID) ÀÌ¶ó¾ß Disk TxÀÌ´Ù
         if ( mTXSegEntry != NULL )
         {
             if ( mTXSegEntry->mTSSlotSID != SD_NULL_SID )
@@ -2022,14 +2539,14 @@ IDE_RC smxTrans::writeAbortLogAndUndoTrans( smLSN* aEndLSN )
         {
             initAbortLog( &sAbortLog, SMR_LT_DSKTRANS_ABORT );
 
-            // BUG-29262 TSS í• ë‹¹ì— ì‹¤íŒ¨í•œ íŠ¸ëœì­ì…˜ì˜ COMMIT ë¡œê·¸ë¥¼ ê¸°ë¡í•´ì•¼ í•©ë‹ˆë‹¤.
-            // abort ë¡œê·¸ ê¸°ë¡
+            // BUG-29262 TSS ÇÒ´ç¿¡ ½ÇÆĞÇÑ Æ®·£Àè¼ÇÀÇ COMMIT ·Î±×¸¦ ±â·ÏÇØ¾ß ÇÕ´Ï´Ù.
+            // abort ·Î±× ±â·Ï
             IDE_TEST( writeLogToBuffer(
                           &sAbortLog,
                           SMR_LOGREC_SIZE(smrTransAbortLog) ) != IDE_SUCCESS );
 
             // BUG-31504: During the cached row's rollback, it can be read.
-            // abort ì¤‘ì¸ rowëŠ” ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì— ì˜í•´ ì½í˜€ì§€ë©´ ì•ˆëœë‹¤.
+            // abort ÁßÀÎ row´Â ´Ù¸¥ Æ®·£Àè¼Ç¿¡ ÀÇÇØ ÀĞÇôÁö¸é ¾ÈµÈ´Ù.
             SM_SET_SCN_INFINITE( &sDummySCN );
 
 
@@ -2043,8 +2560,8 @@ IDE_RC smxTrans::writeAbortLogAndUndoTrans( smLSN* aEndLSN )
                       != IDE_SUCCESS );
 
             /*
-             * íŠ¸ëœì­ì…˜ Abortì‹œì—ëŠ” CommitSCNì„ ì‹œìŠ¤í…œìœ¼ë¡œë¶€í„° ë”°ì˜¬ í•„ìš”ê°€
-             * ì—†ê¸° ë•Œë¬¸ì— Abortë¡œê·¸ë¡œ Unbind TSSë¥¼ ë°”ë¡œ ìˆ˜í–‰í•œë‹¤.
+             * Æ®·£Àè¼Ç Abort½Ã¿¡´Â CommitSCNÀ» ½Ã½ºÅÛÀ¸·ÎºÎÅÍ µû¿Ã ÇÊ¿ä°¡
+             * ¾ø±â ¶§¹®¿¡ Abort·Î±×·Î Unbind TSS¸¦ ¹Ù·Î ¼öÇàÇÑ´Ù.
              */
             sCTSegPtr = sdcTXSegMgr::getTSSegPtr( mTXSegEntry );
 
@@ -2061,14 +2578,14 @@ IDE_RC smxTrans::writeAbortLogAndUndoTrans( smLSN* aEndLSN )
                                           sDynArrayPtr,
                                           sDskRedoSize ) != IDE_SUCCESS );
 
-            // BUG-29262 TSS í• ë‹¹ì— ì‹¤íŒ¨í•œ íŠ¸ëœì­ì…˜ì˜ COMMIT ë¡œê·¸ë¥¼ ê¸°ë¡í•´ì•¼ í•©ë‹ˆë‹¤.
-            // abort ë¡œê·¸ì˜ tail ê¸°ë¡
+            // BUG-29262 TSS ÇÒ´ç¿¡ ½ÇÆĞÇÑ Æ®·£Àè¼ÇÀÇ COMMIT ·Î±×¸¦ ±â·ÏÇØ¾ß ÇÕ´Ï´Ù.
+            // abort ·Î±×ÀÇ tail ±â·Ï
             IDE_TEST( writeLogToBuffer( &(sAbortLog.mHead.mType),
                                         ID_SIZEOF( smrLogType ) )
                       != IDE_SUCCESS );
 
-            // BUG-29262 TSS í• ë‹¹ì— ì‹¤íŒ¨í•œ íŠ¸ëœì­ì…˜ì˜ COMMIT ë¡œê·¸ë¥¼ ê¸°ë¡í•´ì•¼ í•©ë‹ˆë‹¤.
-            // abort ë¡œê·¸ì˜ logHeadì— disk redo log sizeë¥¼ ê¸°ë¡
+            // BUG-29262 TSS ÇÒ´ç¿¡ ½ÇÆĞÇÑ Æ®·£Àè¼ÇÀÇ COMMIT ·Î±×¸¦ ±â·ÏÇØ¾ß ÇÕ´Ï´Ù.
+            // abort ·Î±×ÀÇ logHead¿¡ disk redo log size¸¦ ±â·Ï
             sAbortLogHead = (smrTransAbortLog*)mLogBuffer;
 
             smrLogHeadI::setSize( &sAbortLogHead->mHead, mLogOffset );
@@ -2077,22 +2594,21 @@ IDE_RC smxTrans::writeAbortLogAndUndoTrans( smLSN* aEndLSN )
             IDE_TEST( sdrMiniTrans::commit( &sMtx,
                                             SMR_CT_END,
                                             aEndLSN,
-                                            SMR_RT_DISKONLY,
-                                            NULL )  /* aBeginLSN */
+                                            SMR_RT_DISKONLY )
                       != IDE_SUCCESS );
         }
         else
-        {
+        { 
             initAbortLog( &sAbortLog, SMR_LT_MEMTRANS_ABORT );
 
-            // BUG-29262 TSS í• ë‹¹ì— ì‹¤íŒ¨í•œ íŠ¸ëœì­ì…˜ì˜ COMMIT ë¡œê·¸ë¥¼ ê¸°ë¡í•´ì•¼ í•©ë‹ˆë‹¤.
-            // abort ë¡œê·¸ ê¸°ë¡
+            // BUG-29262 TSS ÇÒ´ç¿¡ ½ÇÆĞÇÑ Æ®·£Àè¼ÇÀÇ COMMIT ·Î±×¸¦ ±â·ÏÇØ¾ß ÇÕ´Ï´Ù.
+            // abort ·Î±× ±â·Ï
             IDE_TEST( writeLogToBuffer(
                           &sAbortLog,
                           SMR_LOGREC_SIZE(smrTransAbortLog) ) != IDE_SUCCESS );
 
-            // BUG-29262 TSS í• ë‹¹ì— ì‹¤íŒ¨í•œ íŠ¸ëœì­ì…˜ì˜ COMMIT ë¡œê·¸ë¥¼ ê¸°ë¡í•´ì•¼ í•©ë‹ˆë‹¤.
-            // abort ë¡œê·¸ì˜ tail ê¸°ë¡
+            // BUG-29262 TSS ÇÒ´ç¿¡ ½ÇÆĞÇÑ Æ®·£Àè¼ÇÀÇ COMMIT ·Î±×¸¦ ±â·ÏÇØ¾ß ÇÕ´Ï´Ù.
+            // abort ·Î±×ÀÇ tail ±â·Ï
             IDE_TEST( writeLogToBuffer( &(sAbortLog.mHead.mType),
                                         ID_SIZEOF(smrLogType) ) 
                       != IDE_SUCCESS );
@@ -2100,13 +2616,14 @@ IDE_RC smxTrans::writeAbortLogAndUndoTrans( smLSN* aEndLSN )
             IDE_TEST( smrLogMgr::writeLog( mStatistics, /* idvSQL* */
                                            this,
                                            (SChar*)mLogBuffer,
-                                           NULL,  // Previous LSN Ptr
-                                           NULL,  // Log LSN Ptr
-                                           aEndLSN ) // End LSN Ptr
+                                           NULL,   // Previous LSN Ptr
+                                           NULL,   // Log LSN Ptr
+                                           aEndLSN,// End LSN Ptr
+                                           SM_NULL_OID )
                       != IDE_SUCCESS );
         }
 
-        /* LogFileì„ syncí•´ì•¼ ë˜ëŠ”ì§€ ì—¬ë¶€ë¥¼ í™•ì¸ í›„ í•„ìš”í•˜ë‹¤ë©´ sync í•œë‹¤. */
+        /* LogFileÀ» syncÇØ¾ß µÇ´ÂÁö ¿©ºÎ¸¦ È®ÀÎ ÈÄ ÇÊ¿äÇÏ´Ù¸é sync ÇÑ´Ù. */
         if ( hasPendingOp() == ID_TRUE )
         {
             IDE_TEST( smrLogMgr::syncLFThread( SMR_LOG_SYNC_BY_TRX,
@@ -2129,14 +2646,23 @@ IDE_RC smxTrans::writeAbortLogAndUndoTrans( smLSN* aEndLSN )
 }
 
 /***********************************************************************
- * Description : MMDB(Main Memory DB)ì— ëŒ€í•´ ê°±ì‹ ì„ ì‘ì—…ì„ ìˆ˜í–‰í•œ Transaction
- *               ì˜ Commit Logë¥¼ ê¸°ë¡í•œë‹¤.
+ * Description : MMDB(Main Memory DB)¿¡ ´ëÇØ °»½ÅÀ» ÀÛ¾÷À» ¼öÇàÇÑ Transaction
+ *               ÀÇ Commit Log¸¦ ±â·ÏÇÑ´Ù.
  *
- * aEndLSN - [OUT] Commit Logì˜ EndLSN
+ * aEndLSN    - [OUT] Commit LogÀÇ EndLSN
+ * aCommitSCN - [IN] TransactionÀÇ CommitSCN
  **********************************************************************/
-IDE_RC smxTrans::writeCommitLog4Memory( smLSN* aEndLSN )
+IDE_RC smxTrans::writeCommitLog4Memory( smLSN * aEndLSN, smSCN aCommitSCN )
 {
-    smrTransCommitLog *sTransCommitLog;
+    smrTransMemCommitLog sCommitLog;
+
+#ifdef DEBUG
+    // ³Ñ¾î¿Íµµ ¹«½ÃÇÏ¸é µÇ´Ï µğ¹ö±×¿¡¼­¸¸ ASSERT
+    if ( SM_SCN_IS_NOT_INIT(aCommitSCN) )
+    {
+        IDE_ASSERT( mIsGCTx == ID_TRUE );
+    }
+#endif
 
     IDE_TEST( mTableInfoMgr.requestAllEntryForCheckMaxRow()
               != IDE_SUCCESS );
@@ -2144,15 +2670,24 @@ IDE_RC smxTrans::writeCommitLog4Memory( smLSN* aEndLSN )
     IDE_TEST( mTableInfoMgr.releaseEntryAndUpdateMemTableInfoForIns()
               != IDE_SUCCESS );
 
-    sTransCommitLog = (smrTransCommitLog*)getLogBuffer();
-    initCommitLog( sTransCommitLog, SMR_LT_MEMTRANS_COMMIT );
+    sCommitLog.mHead.mFlag = mLogTypeFlag;
+    sCommitLog.mHead.mSize = SMR_LOGREC_SIZE(smrTransMemCommitLog);
+    sCommitLog.mHead.mType = SMR_LT_MEMTRANS_COMMIT;
+    sCommitLog.mHead.mTransID = mTransID;
+
+    sCommitLog.mDskRedoSize=0;
+
+    sCommitLog.mGlobalTxId = mGlobalTxId;
+    sCommitLog.mCommitSCN  = aCommitSCN;
+    sCommitLog.mTail       = SMR_LT_MEMTRANS_COMMIT;    
 
     IDE_TEST( smrLogMgr::writeLog( NULL, /* idvSQL* */
                                    this,
-                                   (SChar*)sTransCommitLog,
-                                   NULL, // Previous LSN Ptr
-                                   NULL, // Log Begin LSN
-                                   aEndLSN ) // End LSN Ptr
+                                   (SChar*)&sCommitLog,
+                                   NULL,    // Previous LSN Ptr
+                                   NULL,    // Log Begin LSN
+                                   aEndLSN, // End LSN Ptr
+                                   SM_NULL_OID )
               != IDE_SUCCESS );
 
     IDU_FIT_POINT( "1.PROJ-1548@smxTrans::writeCommitLog4Memory" );
@@ -2165,26 +2700,25 @@ IDE_RC smxTrans::writeCommitLog4Memory( smLSN* aEndLSN )
 }
 
 /***********************************************************************
- * Description : DRDB(Disk Resident DB)ì— ëŒ€í•´ ê°±ì‹ ì„ ì‘ì—…ì„ ìˆ˜í–‰í•œ Transaction
- *               ì˜ Commit Logë¥¼ ê¸°ë¡í•œë‹¤.
+ * Description : DRDB(Disk Resident DB)¿¡ ´ëÇØ °»½ÅÀ» ÀÛ¾÷À» ¼öÇàÇÑ Transaction
+ *               ÀÇ Commit Log¸¦ ±â·ÏÇÑ´Ù.
  *
- * aEndLSN - [OUT] Commit Logì˜ EndLSN
+ * aEndLSN    - [OUT] Commit LogÀÇ EndLSN
+ * aCommitSCN - [IN] TransactionÀÇ CommitSCN
  **********************************************************************/
-IDE_RC smxTrans::writeCommitLog4Disk( smLSN* aEndLSN )
+IDE_RC smxTrans::writeCommitLog4Disk( smLSN * aEndLSN, smSCN aCommitSCN )
 {
-
-
     IDE_TEST( mTableInfoMgr.requestAllEntryForCheckMaxRow()
               != IDE_SUCCESS );
 
     IDE_TEST( mTableInfoMgr.releaseEntryAndUpdateMemTableInfoForIns()
               != IDE_SUCCESS );
 
-    /* Table Headerì˜ Record Countë¥¼ ê°±ì‹ í•œí›„ì— Commitë¡œê·¸ë¥¼ ê¸°ë¡í•œë‹¤.*/
+    /* Table HeaderÀÇ Record Count¸¦ °»½ÅÇÑÈÄ¿¡ Commit·Î±×¸¦ ±â·ÏÇÑ´Ù.*/
     IDE_TEST( mTableInfoMgr.releaseEntryAndUpdateDiskTableInfoWithCommit(
                                                       mStatistics,
                                                       this,     /* aTransPtr */
-                                                      NULL,     /* aBeginLSN */
+                                                      aCommitSCN,
                                                       aEndLSN ) /* aEndLSN   */
               != IDE_SUCCESS );
 
@@ -2197,77 +2731,332 @@ IDE_RC smxTrans::writeCommitLog4Disk( smLSN* aEndLSN )
 }
 
 /*********************************************************
-  function description: Aging Listì— Transactionì˜ OID List
-  ë¥¼ ì¶”ê°€í•œë‹¤.
-   -  ë‹¤ìŒê³¼ ê°™ì€ ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” ê²½ìš° Commit SCNì„ í• ë‹¹í•œë‹¤.
-     1. OID List or Delete OID Listê°€ ë¹„ì–´ìˆì§€ ì•Šì€ ê²½ìš°
-     2. Diskê´€ë ¨ DMLì„ ìˆ˜í–‰í•œ ê²½ìš°
+ * BUG-47525 Group Commit
+ * ÀÚ½ÅÀÇ TID¸¦ Group Commit¿¡ µî·ÏÇÑÈÄ
+ * ¾î´À List¿¡ µî·ÏµÇ¾ú´ÂÁö¸¦ return ¹Ş´Â´Ù.
+ * Group ÃÖ´ëÄ¡¿¡ µµ´ŞÇÏ¿´´Ù¸é writeLog¸¦ ¼öÇà ÇÑ´Ù.
+ **********************************************************/
+IDE_RC smxTrans::addTID4GroupCommit( UInt    * aGCList, 
+                                     idBool  * aWriteCommitLog, 
+                                     smSCN     aCommitSCN )
+{
+    UInt   sListNumber;
+    UInt   sGCCnt;
+    UInt   sGCList;
+    idBool sWriteCommitLog = ID_FALSE;
+
+    IDE_TEST( mTableInfoMgr.requestAllEntryForCheckMaxRow()
+              != IDE_SUCCESS );
+
+    IDE_TEST( mTableInfoMgr.releaseEntryAndUpdateMemTableInfoForIns()
+              != IDE_SUCCESS );
+
+    /* GCList´Â DirtyRead¸¦ ÇÏ¿©µµ Å©°Ô »ó°ü¾ø±â¿¡
+     * AtomicGetÀ» »ç¿ëÇÏÁö ¾Êµµ·Ï ÇÏ¿´´Ù. */
+    sGCList = mGCList;
+    sListNumber = sGCList % mGCListCnt;
+
+    mGCMutex[sListNumber].lock(NULL);
+
+    /* lockÀ» È¹µæÇÏ´Â µ¿¾È ÇØ´ç ListÀÇ ID°¡ º¯°æµÇ¾úÀ»¼ö ÀÖ±â ¶§¹®¿¡
+     * lockÀ» ÀâÀºÈÄ¿¡ Á¤È®ÇÑ ID¸¦ °¡Á®°¡¾ßÇÑ´Ù. */
+    sGCList = mGCListID[sListNumber];
+    sGCCnt  = mGCCnt[sListNumber]; 
+
+    mGCTIDArray[sListNumber][sGCCnt] = mTransID;
+    mGCCnt[sListNumber]++;
+
+    if ( ( mLogTypeFlag & SMR_LOG_TYPE_MASK ) != SMR_LOG_TYPE_REPLICATED )
+    {
+        mGCFlag[sListNumber] &= ~(SMR_LOG_TYPE_MASK);
+    }
+
+    if ( SM_SCN_IS_NOT_INIT(aCommitSCN) ) 
+    {
+        IDE_DASSERT( mIsGCTx == ID_TRUE );
+
+        mGCFlag[sListNumber] |= SMR_LOG_COMMITSCN_OK; 
+        mGCCommitSCNArray[sListNumber][sGCCnt] = aCommitSCN;     
+    }
+
+    if ( mGCCnt[sListNumber] == mGroupCnt )
+    {
+        mGCList++;
+        writeGroupCommitLog( sListNumber );
+        /* Write°¡ ³¡³µÀ¸¸é GCListNumber¸¦ ³ô¿©¼­ wait ÁßÀÎ Tx°¡ ¾Ë°Ô ÇÑ´Ù. */
+        mGCListID[sListNumber] += mGCListCnt;
+        sWriteCommitLog = ID_TRUE;
+    }
+    mGCMutex[sListNumber].unlock();
+
+    *aWriteCommitLog = sWriteCommitLog;
+    *aGCList = sGCList;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/*********************************************************
+ * BUG-47525 Group Commit
+ * Group Commit Log¸¦ ±â·ÏÇÏ´Â ÇÔ¼ö 
+ * ÇÔ¼ö¸¦ È£ÃâÇÏ±â Àü¿¡ Ç×»ó aListNumber¿¡ ÇØ´çÇÏ´Â ListÀÇ lockÀ» È¹µæÇÏ¿©¾ß ÇÑ´Ù.
+ **********************************************************/
+IDE_RC smxTrans::writeGroupCommitLog( UInt aListNumber )
+{
+    UInt       sLogSize    = 0;
+    UInt       sOffset     = 0;
+    UInt       i           = 0;
+    smTID      sLocalTxID  = SM_NULL_TID;
+    smTID      sGlobalTxID = SM_NULL_TID;
+    smrLogType sLogType;
+    smSCN      sCommitSCN;
+
+    smrTransGroupCommitLog sCommitLog;
+
+    /* Size °è»ê LogHead + LogBody( TID Array ) + LogTail
+     * TID Array´Â LocalTID¿Í GlobalTID °¡ ÀúÀåµÇ¹Ç·Î Size °è»ê¿¡ 2¹è Àû¿ë */
+    sLogSize = SMR_LOGREC_SIZE(smrTransGroupCommitLog) +
+               ( mGCCnt[aListNumber] * ID_SIZEOF( smTID ) * 2 ) +
+               ID_SIZEOF(smrLogTail); 
+
+    if ( ( mGCFlag[aListNumber] & SMR_LOG_COMMITSCN_MASK ) == SMR_LOG_COMMITSCN_OK )
+    {
+        /* ´Ù½Ã Size °è»ê LogHead + LogBody( TID Array + CommitSCN ) + LogTail 
+         * commitSCN ±â·ÏÀÌ ÇÊ¿äÇÏ¸é Size °è»ê¿¡ CommitSCN À» ±â·ÏÇÒ ¸¸Å­ÀÇ Å©±â¸¦ ´õÇÔ */ 
+        sLogSize += mGCCnt[aListNumber] * ID_SIZEOF(smSCN) ;
+    }
+
+    /* GroupCommit Log Header¸¦ ÃÊ±âÈ­ */
+    smrLogHeadI::setType( &sCommitLog.mHead, SMR_LT_MEMTRANS_GROUPCOMMIT );
+    smrLogHeadI::setSize( &sCommitLog.mHead, sLogSize );
+    smrLogHeadI::setTransID( &sCommitLog.mHead, mTransID );
+
+    if ( ( mGCFlag[aListNumber] & SMR_LOG_TYPE_MASK ) == SMR_LOG_TYPE_NORMAL )
+    {
+        /* BUG-47525 GroupÈ­µÈ LogÁß 1°³¶óµµ RP´ë»óÀÌ ÀÖ´Ù¸é FLAG¸¦ Normal·Î º¯°æ.
+         * SMR_LOG_TYPE_NORMAL = 0x00000000 */
+        mLogTypeFlag &= ~(SMR_LOG_TYPE_MASK); 
+    }
+
+    smrLogHeadI::setFlag( &sCommitLog.mHead, mLogTypeFlag );
+
+    sCommitLog.mGroupCnt = mGCCnt[aListNumber];
+
+    sOffset = 0;
+    /* Log Header¸¦ Transaction Log Buffer¿¡ ±â·Ï */
+    IDE_TEST( writeLogToBuffer( &sCommitLog, /* Group Commit Log Header */
+                                sOffset,
+                                SMR_LOGREC_SIZE(smrTransGroupCommitLog) )
+              != IDE_SUCCESS );
+    sOffset += SMR_LOGREC_SIZE(smrTransGroupCommitLog);
+
+    /* GroupÈ­µÈ TID¸¦ ¸ğµÎ ¸ğ¾Æ ÀúÀå. */
+    for ( i = 0 ; i < mGCCnt[aListNumber] ; i++ )
+    {
+        sLocalTxID  = mGCTIDArray[aListNumber][i];
+        sGlobalTxID = (smTID)(smxTransMgr::getTransByTID( sLocalTxID )->mGlobalTxId);
+       
+        IDE_TEST( writeLogToBuffer( &sLocalTxID, 
+                                    sOffset,
+                                    ID_SIZEOF(smTID) )
+                  != IDE_SUCCESS );
+        sOffset += ID_SIZEOF(smTID);
+
+        IDE_TEST( writeLogToBuffer( &sGlobalTxID, 
+                                    sOffset,
+                                    ID_SIZEOF(smTID) )
+                  != IDE_SUCCESS );
+        sOffset += ID_SIZEOF(smTID);
+    }
+
+    /* GroupÈ­µÈ LogÁß 1°³¶óµµ CommitSCNÀÌ ±â·ÏµÇ¾îÀÖ´Ù¸é SCN À» ±â·ÏÇØ¾ß ÇÑ´Ù. */
+    if ( ( mGCFlag[aListNumber] & SMR_LOG_COMMITSCN_MASK ) == SMR_LOG_COMMITSCN_OK )
+    {
+        for ( i = 0 ; i < mGCCnt[aListNumber] ; i++ )
+        {
+            sCommitSCN = mGCCommitSCNArray[aListNumber][i];
+
+            IDE_TEST( writeLogToBuffer( &sCommitSCN, 
+                                        sOffset,
+                                        ID_SIZEOF(smSCN) )
+                      != IDE_SUCCESS );
+            sOffset += ID_SIZEOF(smSCN);
+        }
+    }
+   
+    /* Log TailÀ» Transaciton Log Buffer¿¡ ±â·Ï */
+    sLogType = smrLogHeadI::getType(&sCommitLog.mHead);
+    IDE_TEST( writeLogToBuffer( &sLogType,
+                                sOffset,
+                                ID_SIZEOF(smrLogType) )
+              != IDE_SUCCESS );
+
+    // Æ®·£Àè¼Ç ·Î±× ¹öÆÛÀÇ ·Î±×¸¦ ÆÄÀÏ·Î ±â·ÏÇÑ´Ù.
+    IDE_TEST( smrLogMgr::writeLog( NULL,
+                                   this,
+                                   mLogBuffer,
+                                   NULL,  // Previous LSN Ptr
+                                   NULL,  // Log LSN Ptr
+                                   NULL,  // End LSN Ptr
+                                   SM_NULL_OID )
+              != IDE_SUCCESS );
+
+    IDE_DASSERT( SM_IS_LSN_MAX( mCommitLogLSN ) );
+
+    /* BUG-47865 mCommitLogLSNÀ» Á¤È®ÇÑ °ªÀ¸·Î °»½Å ÇÏ¿©¾ß ÇÏ´Ù. */
+    for ( i = 0 ; i < mGCCnt[aListNumber] ; i++ )
+    {
+        smxTransMgr::setCommitLogLSN( mGCTIDArray[aListNumber][i],
+                                      mLastWritedLSN );
+
+        mGCTIDArray[aListNumber][i] = SM_NULL_TID;
+        mGCCommitSCNArray[aListNumber][i] = SM_SCN_INIT;
+    }
+
+    /* BUG-47865 ³ªÀÇ mCommitLogLSN µµ °»½Å µÇ¾úÀ» °ÍÀÌ´Ù. */
+    IDE_ASSERT( smrCompareLSN::isEQ( &mCommitLogLSN,
+                                     &mLastWritedLSN ) == ID_TRUE );
+
+    mGCCnt[aListNumber]  = 0;
+                          /* 0x00000001            | 0x00000000             */
+    mGCFlag[aListNumber] = SMR_LOG_TYPE_REPLICATED | SMR_LOG_COMMITSCN_NO ;
+   
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/*********************************************************
+ * BUG-47525 Group Commit
+ * ³»°¡ addÇÑ Group Commit List°¡ writeµÇ¾ú´ÂÁö È®ÀÎ ¹× ´ë±âÇÏ´Â ÇÔ¼ö.
+ * writeµÈ °É º¸ÀåÇÏ¿©¾ß ÇÑ´Ù.
+ * ¾Æ¹«µµ Write ÇÏÁö ¾Ê¾Ò´Ù¸é Á÷Á¢ Write ÇÑ´Ù.
+ *
+ * aGCList    [IN] add ½Ã¿¡ ¹Ş¾Ò´ø ³» ListID 
+ **********************************************************/
+IDE_RC smxTrans::waitGroupCommit( UInt aGCList )
+{
+    UInt sListNumber;
+
+    sListNumber = aGCList % mGCListCnt;
+
+    /* ListID°¡ ³» ID¿Í °°´Ù¸é ¾ÆÁ÷ write°¡ µÇÁö ¾Ê¾Ò´Ù. */
+    if ( aGCList == mGCListID[sListNumber] )
+    {
+        mGCMutex[sListNumber].lock(NULL);
+
+        /* lockÀ» È¹µæÇÏ´Â µ¿¾È write°¡ ÀÏ¾î³µÀ»¼ö ÀÖ´Ù.
+         * ListID°¡ ³» ID¿Í °°ÀºÁö È®ÀÎÇÑ´Ù. */
+        if ( aGCList == mGCListID[sListNumber] )
+        {
+            mGCList++;
+            writeGroupCommitLog( sListNumber );
+            /* Write°¡ ³¡³µÀ¸¸é GCListID¸¦ ³ô¿©¼­ wait ÁßÀÎ Tx°¡ ¾Ë°Ô ÇÑ´Ù. */
+            mGCListID[sListNumber] += mGCListCnt;
+        }
+
+        mGCMutex[sListNumber].unlock();
+    }
+
+    return IDE_SUCCESS;
+}
+
+/*********************************************************
+  function description: Aging List¿¡ TransactionÀÇ OID List
+  ¸¦ Ãß°¡ÇÑ´Ù.
+   -  ´ÙÀ½°ú °°Àº Á¶°ÇÀ» ¸¸Á·ÇÏ´Â °æ¿ì Commit SCNÀ» ÇÒ´çÇÑ´Ù.
+     1. OID List or Delete OID List°¡ ºñ¾îÀÖÁö ¾ÊÀº °æ¿ì
+     2. Disk°ü·Ã DMLÀ» ¼öÇàÇÑ °æ¿ì
 
    - For MMDB
-     1. If commit, í• ë‹¹ëœ Commit SCNì„ Row Header, Table Header
-        ì— Settingí•œë‹¤.
+     1. If commit, ÇÒ´çµÈ Commit SCNÀ» Row Header, Table Header
+        ¿¡ SettingÇÑ´Ù.
 
    - For DRDB
-     1. Transactionì´ ë””ìŠ¤í¬ í…Œì´ë¸”ì— ëŒ€í•˜ì—¬ DMLì„ í•œê²½ìš°ì—ëŠ”
-        TSS slotì— commitSCNì„ settingí•˜ê³  tss slot listì˜ head
-        ì— ë‹¨ë‹¤.
+     1. TransactionÀÌ µğ½ºÅ© Å×ÀÌºí¿¡ ´ëÇÏ¿© DMLÀ» ÇÑ°æ¿ì¿¡´Â
+        TSS slot¿¡ commitSCNÀ» settingÇÏ°í tss slot listÀÇ head
+        ¿¡ ´Ü´Ù.
 
-        * ìœ„ì˜ ë‘ê°€ì§€ Actionì„ í•˜ë‚˜ì˜ Mini Transactionìœ¼ë¡œ ì²˜ë¦¬í•˜ê³ 
-          Loggingì„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        * À§ÀÇ µÎ°¡Áö ActionÀ» ÇÏ³ªÀÇ Mini TransactionÀ¸·Î Ã³¸®ÇÏ°í
+          LoggingÀ» ÇÏÁö ¾Ê´Â´Ù.
 
    - For Exception
-     1. ë§Œì•½ ìœ„ì— mini transaction ìˆ˜í–‰ì¤‘ì— crashë˜ë©´,
-        restart recoveryê³¼ì •ì—ì„œ,íŠ¸ëœì­ì…˜ì´  tss slotì„
-        í• ë‹¹ë°›ì•˜ê³ , commit logë¥¼ ì°ì—ˆëŠ”ë°,
-        TSS slotì˜ commitSCNì´ infiniteì´ë©´ ë‹¤ìŒê³¼ ê°™ì´
-        redoë¥¼ í•œë‹¤.
-        -  TSS slotì— commitSCNì„  0ìœ¼ë¡œ settingí•˜ê³ , í•´ë‹¹
-           TSS slotì„ tss listì— ë§¤ë‹¬ì•„ì„œ GCê°€ ì´ë£¨ì–´ì§€ë„ë¡
-           í•œë‹¤.
+     1. ¸¸¾à À§¿¡ mini transaction ¼öÇàÁß¿¡ crashµÇ¸é,
+        restart recovery°úÁ¤¿¡¼­,Æ®·£Àè¼ÇÀÌ  tss slotÀ»
+        ÇÒ´ç¹Ş¾Ò°í, commit log¸¦ Âï¾ú´Âµ¥,
+        TSS slotÀÇ commitSCNÀÌ infiniteÀÌ¸é ´ÙÀ½°ú °°ÀÌ
+        redo¸¦ ÇÑ´Ù.
+        -  TSS slot¿¡ commitSCNÀ»  0À¸·Î settingÇÏ°í, ÇØ´ç
+           TSS slotÀ» tss list¿¡ ¸Å´Ş¾Æ¼­ GC°¡ ÀÌ·ç¾îÁöµµ·Ï
+           ÇÑ´Ù.
 ***********************************************************/
 IDE_RC smxTrans::addOIDList2AgingList( SInt       aAgingState,
                                        smxStatus  aStatus,
-                                       smLSN*     aEndLSN,
-                                       smSCN*     aCommitSCN,
+                                       smLSN    * aEndLSN,
+                                       smSCN    * aCommitSCN,
                                        idBool     aIsLegacyTrans )
 {
-    // oid listê°€ ë¹„ì–´ ìˆëŠ”ê°€?
-    smSCN                sDummySCN;
+    // oid list°¡ ºñ¾î ÀÖ´Â°¡?
     smxProcessOIDListOpt sProcessOIDOpt;
     void               * sAgerNormalList = NULL;
     ULong                sAgingOIDCnt;
-    UInt                 sState = 0;
+
+    IDE_DASSERT( aCommitSCN != NULL );
 
     /* PROJ-1381 */
     IDE_DASSERT( ( aIsLegacyTrans == ID_TRUE  ) ||
                  ( aIsLegacyTrans == ID_FALSE ) );
 
-    // tss commit listê°€ commitSCNìˆœìœ¼ë¡œ ì •ë ¬ë˜ì–´ insertëœë‹¤.
-    // -> smxTransMgr::mMutexê°€ ì¡íŒ ìƒíƒœì´ê¸°ë•Œë¬¸ì—.
-    IDE_TEST( smxTransMgr::lock() != IDE_SUCCESS );
-    sState = 1;
+    // tss commit list°¡ commitSCN¼øÀ¸·Î Á¤·ÄµÇ¾î insertµÈ´Ù.
+    // -> smxTransMgr::mMutex°¡ ÀâÈù »óÅÂÀÌ±â¶§¹®¿¡.
+    /* BUG-47367 ´õÀÌ»ó TransMgrÀÇ lockÀ» È¹µæÇÏÁö ¾Ê±â ¶§¹®¿¡
+     * commitSCN ¼ø¼­´ë·Î List¿¡ µî·ÏµÇÁö´Â ¾Ê´Â´Ù.
+     */
 
     if ( aStatus == SMX_TX_COMMIT )
     {
-        /*  íŠ¸ëœì­ì…˜ì˜ oid listë˜ëŠ”  deleted oid listê°€ ë¹„ì–´ ìˆì§€ ì•Šìœ¼ë©´,
-            commitSCNì„ systemìœ¼ë¡œ ë¶€í„° í• ë‹¹ë°›ëŠ”ë‹¤.
-            %íŠ¸ëœì­ì…˜ì˜ statementê°€ ëª¨ë‘ disk ê´€ë ¨ DMLì´ì—ˆìœ¼ë©´
-            oid listê°€ ë¹„ì–´ìˆì„ ìˆ˜ ìˆë‹¤.
-            --> ì´ë•Œë„ commitSCNì„ ë”°ì•¼ í•œë‹¤. */
+        /*  Æ®·£Àè¼ÇÀÇ oid list¶Ç´Â  deleted oid list°¡ ºñ¾î ÀÖÁö ¾ÊÀ¸¸é,
+            commitSCNÀ» systemÀ¸·Î ºÎÅÍ ÇÒ´ç¹Ş´Â´Ù.
+            Æ®·£Àè¼ÇÀÇ statement°¡ ¸ğµÎ disk °ü·Ã DMLÀÌ¾úÀ¸¸é
+            oid list°¡ ºñ¾îÀÖÀ» ¼ö ÀÖ´Ù.
+            --> ÀÌ¶§µµ commitSCNÀ» µû¾ß ÇÑ´Ù. */
 
-        //commit SCNì„ í• ë‹¹ë°›ëŠ”ë‹¤. ì•ˆì—ì„œ transaction ìƒíƒœ ë³€ê²½
-        //txì˜ in-memory COMMIT or ABORT ìƒíƒœ
-        IDE_TEST( smxTransMgr::mGetSmmCommitSCN( this,
-                                                 aIsLegacyTrans,
-                                                 (void *)&aStatus )
-                 != IDE_SUCCESS );
-        SM_SET_SCN(aCommitSCN,&mCommitSCN);
+        if ( SM_SCN_IS_INIT(*aCommitSCN) )
+        { 
+            /* Global Consistent Transactionµµ aCommitSCN À» º¸³»Áö ¾ÊÀ»¼ö ÀÖ´Ù. 
+             * e.g. ³»ºÎ¿¡¼­ »ç¿ëÇÏ´Â°Å¶ó´ø°¡, prepare¶ó´ø°¡.. */
+
+            //commit SCNÀ» ÇÒ´ç¹Ş´Â´Ù. ¾È¿¡¼­ transaction »óÅÂ º¯°æ
+            //txÀÇ in-memory COMMIT or ABORT »óÅÂ
+            /* smmDatabase::getCommitSCN ÀÌ È£ÃâµÈ´Ù. */
+            IDE_TEST( smxTransMgr::mGetSmmCommitSCN( this,
+                                                     aIsLegacyTrans,
+                                                     (void *)&aStatus )
+                     != IDE_SUCCESS );
+
+            SM_SET_SCN( aCommitSCN, &mCommitSCN );  
+        }
+        else
+        {
+            /* °øÀ¯µÈ CommitSCNÀ¸·Î Ä¿¹ÔÀ» ½Ãµµ ÇÑ´Ù.
+             * Global Consistent TransactionÀÌ aCommitSCN À» º¸³»Áö ¾Ê´Â °æ¿ì´Â ¾ø´Ù.
+             * ºĞ»ê·¹º§°ú »ó°ü¾ø´Ù. */
+            IDE_DASSERT( mIsGCTx == ID_TRUE );
+
+            // transaction »óÅÂ º¯°æ
+            setTransSCNnStatus( this, aIsLegacyTrans, aCommitSCN, (void *)&aStatus );
+        }
 
         /* BUG-41814
-         * Fetch Cursorë¥¼ ì—° ë©”ëª¨ë¦¬ Stmtë¥¼ ê°€ì§€ì§€ ì•Šì€ íŠ¸ëœì­ì…˜ì€ commit ê³¼ì •ì—ì„œ
-         * ì—´ë ¤ìˆëŠ” ë©”ëª¨ë¦¬ Stmtê°€ 0ê°œ ì´ë©°, ë”°ë¼ì„œ mMinMemViewSCN ì´ ë¬´í•œëŒ€ ì´ë‹¤.
-         * mMinMemViewSCNì´ ë¬´í•œëŒ€ì¸ íŠ¸ëœì­ì…˜ì€ Agerê°€ ì „ì²´ íŠ¸ëœì­ì…˜ì˜ minMemViewSCNì„
-         * ê³„ì‚°í• ë•Œ ë¬´ì‹œí•˜ê²Œ ë˜ëŠ”ë°, ë¬´ì‹œ í•˜ì§€ ì•Šë„ë¡ commitSCNì„ ì„ì‹œë¡œ ë°•ì•„ë‘”ë‹¤. */
+         * Fetch Cursor¸¦ ¿¬ ¸Ş¸ğ¸® Stmt¸¦ °¡ÁöÁö ¾ÊÀº Æ®·£Àè¼ÇÀº commit °úÁ¤¿¡¼­
+         * ¿­·ÁÀÖ´Â ¸Ş¸ğ¸® Stmt°¡ 0°³ ÀÌ¸ç, µû¶ó¼­ mMinMemViewSCN ÀÌ ¹«ÇÑ´ë ÀÌ´Ù.
+         * mMinMemViewSCNÀÌ ¹«ÇÑ´ëÀÎ Æ®·£Àè¼ÇÀº Ager°¡ ÀüÃ¼ Æ®·£Àè¼ÇÀÇ minMemViewSCNÀ»
+         * °è»êÇÒ¶§ ¹«½ÃÇÏ°Ô µÇ´Âµ¥, ¹«½Ã ÇÏÁö ¾Êµµ·Ï commitSCNÀ» ÀÓ½Ã·Î ¹Ú¾ÆµĞ´Ù. */
         if ( SM_SCN_IS_INFINITE( ((smxTrans *)this)->mMinMemViewSCN ) )
         {
             SM_SET_SCN( &(((smxTrans *)this)->mMinMemViewSCN), aCommitSCN );
@@ -2281,10 +3070,16 @@ IDE_RC smxTrans::addOIDList2AgingList( SInt       aAgingState,
     }
     else
     {
-        /* fix BUG-9734, rollbackì‹œì— system scnì„ ì¦ê°€ì‹œí‚¤ëŠ”ê²ƒì„
-         * ë§‰ê¸° ìœ„í•˜ì—¬ ê·¸ëƒ¥ 0ì„ settingí•œë‹¤. */
-        SM_INIT_SCN(&sDummySCN);
-        setTransCommitSCN( this, sDummySCN, &aStatus );
+        /* fix BUG-9734, rollback½Ã¿¡ system scnÀ» Áõ°¡½ÃÅ°´Â°ÍÀ»
+         * ¸·±â À§ÇÏ¿© ±×³É 0À» settingÇÑ´Ù. */
+        /* BUG-47367 Ager¿¡¼­ OIDHeadÀÇ SCNÀ¸·Î drop ¿©ºÎ¸¦ È®ÀÎÇÏ°í ÀÖ´Ù.
+         * rollback¿¡¼­ 0À¸·Î ³Ñ±â°Ô µÇ¸é Ç×»ó dropÀ¸·Î Ãë±ŞµÇ°Ô µÈ´Ù. 
+         * system scnÀ» Áõ°¡½ÃÅ³ ÇÊ¿ä´Â ¾ø°í ÇöÀç ½ÃÁ¡ÀÇ scn Á¤º¸¸¦ ³Ñ°ÜÁÖ¸é µÈ´Ù.
+         * getLstSystemSCNÀº lockÀ» ÀâÁö ¾Ê°í °ª¸¸ °¡Á®¿À´Â ÇÔ¼öÀÌ´Ù. */
+        IDE_DASSERT( aStatus == SMX_TX_ABORT);
+
+        *aCommitSCN = smmDatabase::getLstSystemSCN();
+        setTransCommitSCN( this, aCommitSCN, &aStatus );
     }
 
     /* PROJ-2462 ResultCache */
@@ -2297,77 +3092,64 @@ IDE_RC smxTrans::addOIDList2AgingList( SInt       aAgingState,
              ( aStatus == SMX_TX_COMMIT ) )
         {
             /* PROJ-1381 Fetch Across Commits
-             * Insertë§Œ ìˆ˜í–‰í•˜ë©´ addOIDList2LogicalAgerë¥¼ í˜¸ì¶œí•˜ì§€ ì•Šì•„ì„œ
-             * OIDListë‚´ì˜ mCacheOIDNode4Insertë¥¼ ë³µì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
-             * FACëŠ” Commit ì´í›„ì—ë„ OIDListë¥¼ ì‚¬ìš©í•˜ë¯€ë¡œ ë³µì‚¬í•˜ë„ë¡ í•œë‹¤. */
+             * Insert¸¸ ¼öÇàÇÏ¸é addOIDList2LogicalAger¸¦ È£ÃâÇÏÁö ¾Ê¾Æ¼­
+             * OIDList³»ÀÇ mCacheOIDNode4Insert¸¦ º¹»çÇÏÁö ¾Ê´Â´Ù.
+             * FAC´Â Commit ÀÌÈÄ¿¡µµ OIDList¸¦ »ç¿ëÇÏ¹Ç·Î º¹»çÇÏµµ·Ï ÇÑ´Ù. */
             if ( aIsLegacyTrans == ID_TRUE )
             {
                 IDE_TEST( mOIDList->cloneInsertCachedOID()
                           != IDE_SUCCESS );
             }
 
-            /* Aging Listì— OID Listë¥¼ ì¶”ê°€í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´ Transactionì´
-               ì§ì ‘ OID Listë¥¼ Freeì‹œí‚¨ë‹¤. */
+            /* Aging List¿¡ OID List¸¦ Ãß°¡ÇÏÁö ¾Ê´Â´Ù¸é TransactionÀÌ
+               Á÷Á¢ OID List¸¦ Free½ÃÅ²´Ù. */
             sProcessOIDOpt = SMX_OIDLIST_DEST;
         }
         else
         {
-            IDE_TEST( addOIDList2LogicalAger( aEndLSN,
+            IDE_TEST( addOIDList2LogicalAger( aCommitSCN,
                                               aAgingState,
                                               &sAgerNormalList )
                       != IDE_SUCCESS );
 
-            /* Aging Listì— OID Listë¥¼ ì¶”ê°€í•œë‹¤ë©´ Ager Threadê°€
-               OID Listë¥¼ Freeì‹œí‚¨ë‹¤. */
+            /* Aging List¿¡ OID List¸¦ Ãß°¡ÇÑ´Ù¸é Ager Thread°¡
+               OID List¸¦ Free½ÃÅ²´Ù. */
             sProcessOIDOpt = SMX_OIDLIST_INIT;
         }
-
-        sState = 0;
-        IDE_TEST( smxTransMgr::unlock() != IDE_SUCCESS );
 
         IDU_FIT_POINT( "BUG-45654@smxTrans::addOIDList2AgingList::beforeProcessOIDList" );
 
         IDE_TEST( mOIDList->processOIDList( aAgingState,
                                             aEndLSN,
-                                            mCommitSCN,
+                                            *aCommitSCN,
                                             sProcessOIDOpt,
                                             &sAgingOIDCnt,
                                             aIsLegacyTrans )
                   != IDE_SUCCESS );
 
 
-        /* BUG-17417 V$Agerì •ë³´ì˜ Add OIDê°¯ìˆ˜ëŠ” ì‹¤ì œ Agerê°€
-         *                     í•´ì•¼í•  ì‘ì—…ì˜ ê°¯ìˆ˜ê°€ ì•„ë‹ˆë‹¤.
+        /* BUG-17417 V$AgerÁ¤º¸ÀÇ Add OID°¹¼ö´Â ½ÇÁ¦ Ager°¡
+         *                     ÇØ¾ßÇÒ ÀÛ¾÷ÀÇ °¹¼ö°¡ ¾Æ´Ï´Ù.
          *
-         * Aging OIDê°¯ìˆ˜ë¥¼ ë”í•´ì¤€ë‹¤. */
+         * Aging OID°¹¼ö¸¦ ´õÇØÁØ´Ù. */
         if ( sAgingOIDCnt != 0 )
         {
             smLayerCallback::addAgingRequestCnt( sAgingOIDCnt );
         }
-
+        
         if ( sAgerNormalList != NULL )
         {
             smLayerCallback::setOIDListFinished( sAgerNormalList,
                                                  ID_TRUE );
         }
     }
-    else
-    {
-        sState = 0;
-        IDE_TEST( smxTransMgr::unlock() != IDE_SUCCESS );
-    }
 
-    // TSSì—ì„œ commitSCNìœ¼ë¡œ settingí•œë‹¤.
+    // TSS¿¡¼­ commitSCNÀ¸·Î settingÇÑ´Ù.
     IDU_FIT_POINT( "8.PROJ-1552@smxTrans::addOIDList2AgingList" );
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
-
-    if ( sState != 0 )
-    {
-        IDE_ASSERT( smxTransMgr::unlock() == IDE_SUCCESS );
-    }
 
     return IDE_FAILURE;
 }
@@ -2407,16 +3189,20 @@ IDE_RC smxTrans::removeAllAndReleaseMutex()
 
 /* ------------------------------------------------
              For Global Transaction
-    xa_commit, xa_rollback, xa_startëŠ”
-    local transactionì˜ ì¸í„°í˜ì´ìŠ¤ë¥¼ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•¨.
+    xa_commit, xa_rollback, xa_start´Â
+    local transactionÀÇ ÀÎÅÍÆäÀÌ½º¸¦ ±×´ë·Î »ç¿ëÇÔ.
    ------------------------------------------------ */
 /* BUG-18981 */
-IDE_RC smxTrans::prepare(ID_XID *aXID)
+IDE_RC smxTrans::prepare( ID_XID *aXID, smSCN * aPrepareSCN, idBool aLogging )
 {
 
     PDL_Time_Value    sTmVal;
+    smxStatus         sStatus = SMX_TX_PREPARED;
 
-    if ( mIsUpdate == ID_TRUE )
+    IDU_FIT_POINT_RAISE("9.TASK-7220@smxTrans::prepare",err_internal_server_error);
+    IDU_FIT_POINT_RAISE("5.TASK-7220@smxTrans::prepare",err_internal_server_error);
+
+    if ( ( mIsUpdate == ID_TRUE ) && ( aLogging == ID_TRUE ) )
     {
         if ( mTXSegEntry != NULL )
         {
@@ -2436,37 +3222,76 @@ IDE_RC smxTrans::prepare(ID_XID *aXID)
         }
 
         /* ---------------------------------------------------------
-           table lockì„ prepare logì˜ ë°ì´íƒ€ë¡œ ë¡œê¹…
-           record lockê³¼ OID ì •ë³´ëŠ” ì¬ì‹œì‘ íšŒë³µì˜ ì¬ìˆ˜í–‰ ë‹¨ê³„ì—ì„œ ìˆ˜ì§‘í•´ì•¼ í•¨
+           table lockÀ» prepare logÀÇ µ¥ÀÌÅ¸·Î ·Î±ë
+           record lock°ú OID Á¤º¸´Â Àç½ÃÀÛ È¸º¹ÀÇ Àç¼öÇà ´Ü°è¿¡¼­ ¼öÁıÇØ¾ß ÇÔ
            ---------------------------------------------------------*/
-        IDE_TEST( smLayerCallback::logLock( (void*)this,
-                                            mTransID,
-                                            mLogTypeFlag,
-                                            aXID,
-                                            mLogBuffer,
-                                            mSlotN,
-                                            &mFstDskViewSCN )
+        IDE_TEST( smlLockMgr::logLocks( this, aXID )
                   != IDE_SUCCESS );
 
     }
 
     /* ----------------------------------------------------------
-       íŠ¸ëœì­ì…˜ commit ìƒíƒœ ë³€ê²½ ë° Gloabl Transaction ID setting
+       Æ®·£Àè¼Ç commit »óÅÂ º¯°æ ¹× Gloabl Transaction ID setting
        ---------------------------------------------------------- */
     sTmVal = idlOS::gettimeofday();
 
-    IDE_TEST( lock() != IDE_SUCCESS );
-    mCommitState = SMX_XA_PREPARED;
-    mPreparedTime = (timeval)sTmVal;
-    mXaTransID =  *aXID;
+    /* always return true */
+    lock();
 
-    IDE_TEST( unlock() != IDE_SUCCESS );
+    IDE_DASSERT( mStatus == SMX_TX_BEGIN );
+    IDE_DASSERT( mCommitState == SMX_XA_START );
+
+    mCommitState  = SMX_XA_PREPARED;
+    mPreparedTime = (timeval)sTmVal;
+    mXaTransID    = *aXID;
+
+    /* always return true */
+    unlock();
+
+    if( mIsGCTx == ID_TRUE )
+    {
+        if ( aPrepareSCN != NULL )
+        {
+            /* smmDatabase::getCommitSCN À» È£ÃâÇÑ´Ù */
+            smxTransMgr::mGetSmmCommitSCN( this,
+                                           ID_FALSE,           /* aIsLegacyTrans */
+                                           (void *)&sStatus ); /* aStatus */
+
+            SM_GET_SCN( aPrepareSCN, &mPrepareSCN );
+        }
+    }
+    else
+    {
+        if ( aPrepareSCN != NULL )
+        {
+            SM_INIT_SCN( aPrepareSCN );
+        }
+    }
+
+    IDU_FIT_POINT_RAISE("2.TASK-7220@smxTrans::prepare",err_internal_server_error);
 
     return IDE_SUCCESS;
-
+    
+#ifdef ALTIBASE_FIT_CHECK
+    IDE_EXCEPTION( err_internal_server_error )
+    {
+        IDE_SET( ideSetErrorCode(smERR_ABORT_INTERNAL) );
+    }
+#endif
     IDE_EXCEPTION_END;
-    return IDE_FAILURE;
 
+#ifdef DEBUG
+    extern UInt ideNoErrorYet();
+    
+    if( ideNoErrorYet() == ID_TRUE )
+    {
+        /* ¿¡·¯¸Ş½ÃÁö¸¦ ¼³Á¤ÇÏÁö ¾ÊÀ¸¸é ¿¡·¯¸¦ ¹«½ÃÇÒ ¼ö ÀÖ½À´Ï´Ù. 
+         * ¾îµğ¼­ ¼³Á¤ÇÏÁö ¾Ê´ÂÁö È®ÀÎÀÌ ÇÊ¿äÇÕ´Ï´Ù. */
+        IDE_DASSERT(0);
+    }
+#endif
+
+    return IDE_FAILURE;
 }
 
 /*
@@ -2475,14 +3300,14 @@ IDE_RC smxTrans::forget(XID *aXID, idBool a_isRecovery)
 
     smrXaForgetLog s_forgetLog;
 
-    if (mIsUpdate == ID_TRUE && a_isRecovery != ID_TRUE )
+    if ( (mIsUpdate == ID_TRUE) && (a_isRecovery != ID_TRUE ) )
     {
-        s_forgetLog.mHead.mTransID   = mTransID;
-        s_forgetLog.mHead.mType      = SMR_LT_XA_FORGET;
+        s_forgetLog.mHead.mTransID  = mTransID;
+        s_forgetLog.mHead.mType     = SMR_LT_XA_FORGET;
         s_forgetLog.mHead.mSize     = SMR_LOGREC_SIZE(smrXaForgetLog);
         s_forgetLog.mHead.mFlag     = mLogTypeFlag;
-        s_forgetLog.mXaTransID        = mXaTransID;
-        s_forgetLog.mTail             = SMR_LT_XA_FORGET;
+        s_forgetLog.mXaTransID      = mXaTransID;
+        s_forgetLog.mTail           = SMR_LT_XA_FORGET;
 
         IDE_TEST( smrLogMgr::writeLog(this, (SChar*)&s_forgetLog) != IDE_SUCCESS );
     }
@@ -2590,8 +3415,8 @@ IDE_RC smxTrans::writeLogToBufferUsingDynArr(smuDynArrayBase* aLogBuffer,
 
         mLogBuffer = sLogBuffer;
 
-        // ì••ì¶• ë¡œê·¸ë²„í¼ë¥¼ ì´ìš©í•˜ì—¬  ì••ì¶•ë˜ëŠ” ë¡œê·¸ì˜ í¬ê¸°ì˜ ë²”ìœ„ëŠ”
-        // ì´ë¯¸ ì •í•´ì ¸ìˆê¸° ë•Œë¬¸ì— ì••ì¶•ë¡œê·¸ ë²„í¼ì˜ í¬ê¸°ëŠ” ë³€ê²½í•  í•„ìš”ê°€ ì—†ë‹¤.
+        // ¾ĞÃà ·Î±×¹öÆÛ¸¦ ÀÌ¿ëÇÏ¿©  ¾ĞÃàµÇ´Â ·Î±×ÀÇ Å©±âÀÇ ¹üÀ§´Â
+        // ÀÌ¹Ì Á¤ÇØÁ®ÀÖ±â ¶§¹®¿¡ ¾ĞÃà·Î±× ¹öÆÛÀÇ Å©±â´Â º¯°æÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
     }
 
     smuDynArray::load( aLogBuffer, 
@@ -2702,20 +3527,20 @@ smLSN smxTrans::getTransLstUndoNxtLSN(void* aTrans)
     return ((smxTrans*)aTrans)->mLstUndoNxtLSN;
 }
 
-/* Transactionì˜ í˜„ì¬ UndoNxtLSNì„ return */
+/* TransactionÀÇ ÇöÀç UndoNxtLSNÀ» return */
 smLSN smxTrans::getTransCurUndoNxtLSN(void* aTrans)
 {
     return ((smxTrans*)aTrans)->mCurUndoNxtLSN;
 }
 
-/* Transactionì˜ í˜„ì¬ UndoNxtLSNì„ Set */
+/* TransactionÀÇ ÇöÀç UndoNxtLSNÀ» Set */
 void smxTrans::setTransCurUndoNxtLSN(void* aTrans, smLSN *aLSN)
 {
     /* BUG-33895 [sm_recovery] add the estimate function 
      * the time of transaction undoing. */
     if ( ((smxTrans*)aTrans)->mProcessedUndoLogCount == 0 )
     {
-        /* ìµœì´ˆ ê°±ì‹  */
+        /* ÃÖÃÊ °»½Å */
         ((smxTrans*)aTrans)->mUndoBeginTime = 
             smLayerCallback::smiGetCurrentTime();
     }
@@ -2728,10 +3553,10 @@ smLSN* smxTrans::getTransLstUndoNxtLSNPtr(void* aTrans)
     return &( ((smxTrans*)aTrans)->mLstUndoNxtLSN );
 }
 
-IDE_RC smxTrans::setTransLstUndoNxtLSN( void   * aTrans, 
-                                        smLSN    aLSN )
+void smxTrans::setTransLstUndoNxtLSN( void   * aTrans, 
+                                      smLSN    aLSN )
 {
-    return ((smxTrans*)aTrans)->setLstUndoNxtLSN( aLSN );
+    ((smxTrans*)aTrans)->setLstUndoNxtLSN( aLSN );
 }
 
 void smxTrans::getTxIDAnLogType( void    * aTrans, 
@@ -2742,11 +3567,6 @@ void smxTrans::getTxIDAnLogType( void    * aTrans,
 
     *aTID =  sTrans->mTransID;
     *aLogType = sTrans->mLogTypeFlag;
-}
-
-idBool smxTrans::getTransAbleToRollback( void  * aTrans )
-{
-    return ((smxTrans*)aTrans)->mAbleToRollback ;
 }
 
 idBool smxTrans::isTxBeginStatus( void  * aTrans )
@@ -2763,12 +3583,12 @@ idBool smxTrans::isTxBeginStatus( void  * aTrans )
 
 /***************************************************************************
  *
- * Description: Startup ê³¼ì •ì—ì„œ Verifyí•  IndexOIDë¥¼ ì¶”ê°€í•œë‹¤.
+ * Description: Startup °úÁ¤¿¡¼­ VerifyÇÒ IndexOID¸¦ Ãß°¡ÇÑ´Ù.
  *
- * aTrans    [IN] - íŠ¸ëœì­ì…˜
+ * aTrans    [IN] - Æ®·£Àè¼Ç
  * aTableOID [IN] - aTableOID
- * aIndexOID [IN] - Verifyí•  aIndexOID
- * aSpaceID  [IN] - í•´ë‹¹ Tablespace ID
+ * aIndexOID [IN] - VerifyÇÒ aIndexOID
+ * aSpaceID  [IN] - ÇØ´ç Tablespace ID
  *
  ***************************************************************************/
 IDE_RC smxTrans::addOIDToVerify( void *    aTrans,
@@ -2801,8 +3621,8 @@ IDE_RC  smxTrans::addOIDByTID( smTID     aTID,
 
     sCurTrans = smxTransMgr::getTransByTID(aTID);
 
-    /* BUG-14558:OID Listì— ëŒ€í•œ AddëŠ” Transaction Beginë˜ì—ˆì„ ë•Œë§Œ
-       ìˆ˜í–‰ë˜ì–´ì•¼ í•œë‹¤.*/
+    /* BUG-14558:OID List¿¡ ´ëÇÑ Add´Â Transaction BeginµÇ¾úÀ» ¶§¸¸
+       ¼öÇàµÇ¾î¾ß ÇÑ´Ù.*/
     if (sCurTrans->mStatus == SMX_TX_BEGIN )
     {
         return sCurTrans->addOID(aTblOID,aRecordOID,aSpaceID,aFlag);
@@ -2813,22 +3633,15 @@ IDE_RC  smxTrans::addOIDByTID( smTID     aTID,
 
 idBool  smxTrans::isXAPreparedCommitState( void  * aTrans )
 {
-    if ( ((smxTrans*) aTrans)->mCommitState == SMX_XA_PREPARED )
-    {
-        return ID_TRUE;
-    }
-    else
-    {
-        return ID_FALSE;
-    }
+    return ( ((smxTrans*)aTrans)->mCommitState == SMX_XA_PREPARED ? ID_TRUE : ID_FALSE);
 }
 
 void smxTrans::addMutexToTrans (void *aTrans, void* aMutex)
 {
-    /* BUG-17569 SM ë®¤í…ìŠ¤ ê°œìˆ˜ ì œí•œìœ¼ë¡œ ì¸í•œ ì„œë²„ ì‚¬ë§:
-       ê¸°ì¡´ì—ëŠ” SMX_MUTEX_COUNT(=10) ê°œì˜ ì—”íŠ¸ë¦¬ë¥¼ ê°–ëŠ” ë°°ì—´ì„ ì‚¬ìš©í•˜ì—¬,
-       ë®¤í…ìŠ¤ ê°œìˆ˜ê°€ SMX_MUTEX_COUNTë¥¼ ë„˜ì–´ì„œë©´ ì„œë²„ê°€ ì‚¬ë§í–ˆë‹¤.
-       ì´ ì œí•œì„ ì—†ì• ê³ ì ë°°ì—´ì„ ë§í¬ë“œë¦¬ìŠ¤íŠ¸ë¡œ ë³€ê²½í•˜ì˜€ë‹¤. */
+    /* BUG-17569 SM ¹ÂÅØ½º °³¼ö Á¦ÇÑÀ¸·Î ÀÎÇÑ ¼­¹ö »ç¸Á:
+       ±âÁ¸¿¡´Â SMX_MUTEX_COUNT(=10) °³ÀÇ ¿£Æ®¸®¸¦ °®´Â ¹è¿­À» »ç¿ëÇÏ¿©,
+       ¹ÂÅØ½º °³¼ö°¡ SMX_MUTEX_COUNT¸¦ ³Ñ¾î¼­¸é ¼­¹ö°¡ »ç¸ÁÇß´Ù.
+       ÀÌ Á¦ÇÑÀ» ¾ø¾Ö°íÀÚ ¹è¿­À» ¸µÅ©µå¸®½ºÆ®·Î º¯°æÇÏ¿´´Ù. */
     smxTrans *sTrans = (smxTrans*)aTrans;
     smuList  *sNode  = NULL;
 
@@ -2837,8 +3650,9 @@ void smxTrans::addMutexToTrans (void *aTrans, void* aMutex)
     SMU_LIST_ADD_LAST(&sTrans->mMutexList, sNode);
 }
 
-IDE_RC smxTrans::writeLogBufferWithOutOffset(void *aTrans, const void *aLog,
-                                             UInt aLogSize)
+IDE_RC smxTrans::writeLogBufferWithOutOffset( void       * aTrans, 
+                                              const void * aLog,
+                                              UInt         aLogSize )
 {
     return ((smxTrans*)aTrans)->writeLogToBuffer(aLog,aLogSize);
 }
@@ -2871,29 +3685,29 @@ IDE_RC smxTrans::resumeTrans(void * aTrans)
 }
 
 /*******************************************************************************
- * Description: ì´ í•¨ìˆ˜ëŠ” ì–´ë–¤ íŠ¸ëœì­ì…˜ì´ Tupleì˜ SCNì„ ì½ì—ˆì„ ë•Œ,
- *      ê·¸ ê°’ì´ ë¬´í•œëŒ€ì¼ ê²½ìš° ì´ Tupleì— ëŒ€í•´ ì—°ì‚°ì„ ìˆ˜í–‰í•œ íŠ¸ëœì­ì…˜ì´
- *      commit ìƒíƒœì¸ì§€ íŒë‹¨í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
- *      ì¦‰, Tupleì˜ SCNì´ ë¬´í•œëŒ€ì´ë”ë¼ë„ ì½ì–´ì•¼ë§Œ í•˜ëŠ” ê²½ìš°ë¥¼ ê²€ì‚¬í•˜ê¸° ìœ„í•¨ì´ë‹¤.
+ * Description: ÀÌ ÇÔ¼ö´Â ¾î¶² Æ®·£Àè¼ÇÀÌ TupleÀÇ SCNÀ» ÀĞ¾úÀ» ¶§,
+ *      ±× °ªÀÌ ¹«ÇÑ´ëÀÏ °æ¿ì ÀÌ Tuple¿¡ ´ëÇØ ¿¬»êÀ» ¼öÇàÇÑ Æ®·£Àè¼ÇÀÌ
+ *      commit »óÅÂÀÎÁö ÆÇ´ÜÇÏ´Â ÇÔ¼öÀÌ´Ù.
+ *      Áï, TupleÀÇ SCNÀÌ ¹«ÇÑ´ëÀÌ´õ¶óµµ ÀĞ¾î¾ß¸¸ ÇÏ´Â °æ¿ì¸¦ °Ë»çÇÏ±â À§ÇÔÀÌ´Ù.
  *
  * MMDB:
- *  í˜„ì¬ slotHeaderì˜ mSCNê°’ì´ ì •í™•í•œ ê°’ì¸ì§€ ì•Œê¸° ìœ„í•´ ì´í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
- * slotHeaderì—ëŒ€í•´ íŠ¸ëœì­ì…˜ì´ ì—°ì‚°ì„ ìˆ˜í–‰í•˜ë©´, ê·¸ íŠ¸ëœì­ì…˜ì´ ì¢…ë£Œí•˜ê¸° ì „ì—ëŠ”
- * slotHeaderì˜ mSCNì€ ë¬´í•œëŒ€ê°’ìœ¼ë¡œ ì„¤ì •ë˜ê³ , ê·¸ íŠ¸ëœì­ì…˜ì´ commití•˜ê²Œ ë˜ë©´ ê·¸
- * commitSCNì´ slotHeaderì— ì €ì¥ë˜ê²Œ ëœë‹¤.
- *  ì´ë•Œ íŠ¸ëœì­ì…˜ì€ ë¨¼ì € ìì‹ ì˜ commitSCNì„ ì„¤ì •í•˜ê³ , ìì‹ ì´ ì—°ì‚°ì„ ìˆ˜í–‰í•œ
- * slotHeaderì— ëŒ€í•´ mSCNê°’ì„ ë³€ê²½í•˜ê²Œ ëœë‹¤. ë§Œì•½ ì´ ì‚¬ì´ì— slotì˜ mSCNê°’ì„
- * ê°€ì ¸ì˜¤ê²Œ ë˜ë©´ ë¬¸ì œê°€ ë°œìƒí•  ìˆ˜ ìˆë‹¤.
- *  ê·¸ë ‡ê¸° ë•Œë¬¸ì— slotì˜ mSCNê°’ì„ ê°€ì ¸ì˜¨ ì´í›„ì—ëŠ” ì´ í•¨ìˆ˜ë¥¼ ìˆ˜í–‰í•˜ì—¬ ì •í™•í•œ ê°’ì„
- * ì–»ì–´ì˜¨ë‹¤.
- *  ë§Œì•½ slotHeaderì˜ mSCNê°’ì´ ë¬´í•œëŒ€ë¼ë©´, íŠ¸ëœì­ì…˜ì´ commitë˜ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ ë³´ê³ 
- * commitë˜ì—ˆë‹¤ë©´ ê·¸ commitSCNì„ í˜„ì¬ slotì˜ mSCNì´ë¼ê³  ë¦¬í„´í•œë‹¤.
+ *  ÇöÀç slotHeaderÀÇ mSCN°ªÀÌ Á¤È®ÇÑ °ªÀÎÁö ¾Ë±â À§ÇØ ÀÌÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+ * slotHeader¿¡´ëÇØ Æ®·£Àè¼ÇÀÌ ¿¬»êÀ» ¼öÇàÇÏ¸é, ±× Æ®·£Àè¼ÇÀÌ Á¾·áÇÏ±â Àü¿¡´Â
+ * slotHeaderÀÇ mSCNÀº ¹«ÇÑ´ë°ªÀ¸·Î ¼³Á¤µÇ°í, ±× Æ®·£Àè¼ÇÀÌ commitÇÏ°Ô µÇ¸é ±×
+ * commitSCNÀÌ slotHeader¿¡ ÀúÀåµÇ°Ô µÈ´Ù.
+ *  ÀÌ¶§ Æ®·£Àè¼ÇÀº ¸ÕÀú ÀÚ½ÅÀÇ commitSCNÀ» ¼³Á¤ÇÏ°í, ÀÚ½ÅÀÌ ¿¬»êÀ» ¼öÇàÇÑ
+ * slotHeader¿¡ ´ëÇØ mSCN°ªÀ» º¯°æÇÏ°Ô µÈ´Ù. ¸¸¾à ÀÌ »çÀÌ¿¡ slotÀÇ mSCN°ªÀ»
+ * °¡Á®¿À°Ô µÇ¸é ¹®Á¦°¡ ¹ß»ıÇÒ ¼ö ÀÖ´Ù.
+ *  ±×·¸±â ¶§¹®¿¡ slotÀÇ mSCN°ªÀ» °¡Á®¿Â ÀÌÈÄ¿¡´Â ÀÌ ÇÔ¼ö¸¦ ¼öÇàÇÏ¿© Á¤È®ÇÑ °ªÀ»
+ * ¾ò¾î¿Â´Ù.
+ *  ¸¸¾à slotHeaderÀÇ mSCN°ªÀÌ ¹«ÇÑ´ë¶ó¸é, Æ®·£Àè¼ÇÀÌ commitµÇ¾ú´ÂÁö ¿©ºÎ¸¦ º¸°í
+ * commitµÇ¾ú´Ù¸é ±× commitSCNÀ» ÇöÀç slotÀÇ mSCNÀÌ¶ó°í ¸®ÅÏÇÑ´Ù.
  *
  * DRDB:
- *  MMDBì™€ ìœ ì‚¬í•˜ê²Œ Txê°€ Commitëœ ì´í›„ì— TSSì— CommitSCNì´ ì„¤ì •ë˜ëŠ” ì‚¬ì´ì—
- * Recordì˜ CommitSCNì„ í™•ì¸í•˜ë ¤ í–ˆì„ ë•Œ TSSì— ì•„ì§ CommitSCNì´ ì„¤ì •ë˜ì–´ ìˆì§€
- * ì•Šì„ ìˆ˜ ìˆë‹¤. ë”°ë¼ì„œ TSSì˜ CSCNì´ ë¬´í•œëŒ€ì¼ ë•Œ ë³¸ í•¨ìˆ˜ë¥¼ í•œë²ˆ ë” í˜¸ì¶œí•´ì„œ
- * Txë¡œë¶€í„° í˜„ì¬ì˜ ì •í™•í•œ CommitSCNì„ ë‹¤ì‹œ í™•ì¸í•œë‹¤.
+ *  MMDB¿Í À¯»çÇÏ°Ô Tx°¡ CommitµÈ ÀÌÈÄ¿¡ TSS¿¡ CommitSCNÀÌ ¼³Á¤µÇ´Â »çÀÌ¿¡
+ * RecordÀÇ CommitSCNÀ» È®ÀÎÇÏ·Á ÇßÀ» ¶§ TSS¿¡ ¾ÆÁ÷ CommitSCNÀÌ ¼³Á¤µÇ¾î ÀÖÁö
+ * ¾ÊÀ» ¼ö ÀÖ´Ù. µû¶ó¼­ TSSÀÇ CSCNÀÌ ¹«ÇÑ´ëÀÏ ¶§ º» ÇÔ¼ö¸¦ ÇÑ¹ø ´õ È£ÃâÇØ¼­
+ * Tx·ÎºÎÅÍ ÇöÀçÀÇ Á¤È®ÇÑ CommitSCNÀ» ´Ù½Ã È®ÀÎÇÑ´Ù.
  *
  * Parameters:
  *  aRecTID        - [IN]  TID on Tuple: read only
@@ -2904,11 +3718,11 @@ void smxTrans::getTransCommitSCN( smTID         aRecTID,
                                   const smSCN * aRecSCN,
                                   smSCN       * aOutSCN )
 {
-    smxTrans  *sTrans   = NULL;
-    smTID      sObjTID  = 0;
-    smxStatus  sStatus  = SMX_TX_BEGIN;
-    smSCN      sCommitSCN;
-    smSCN      sLegacyTransCommitSCN;
+    smxTrans     * sTrans   = NULL;
+    smTID          sObjTID  = SM_NULL_TID;
+    smxStatus      sStatus  = SMX_TX_BEGIN;
+    smSCN          sCommitSCN;
+    smSCN          sLegacyTransCommitSCN;
 
     if ( SM_SCN_IS_NOT_INFINITE( *aRecSCN ) )
     {
@@ -2919,6 +3733,10 @@ void smxTrans::getTransCommitSCN( smTID         aRecTID,
 
     SM_MAX_SCN( &sCommitSCN );
     SM_MAX_SCN( &sLegacyTransCommitSCN );
+
+    /* BUG-47367 recheck¸¦ ¼öÇàÇÏ´Â µµÁß Tx°¡ ÀÌ¹Ì end µÉ¼ö ÀÖ´Ù.
+     * TxÀÇ Á¤º¸¸¦ ´Ù½Ã ¼öÁıÇØ¾ßÇÑ´Ù. */
+    IDE_EXCEPTION_CONT( recheck_commitscn );
 
     /* BUG-45147 */
     ID_SERIAL_BEGIN(sTrans = smxTransMgr::getTransByTID(aRecTID));
@@ -2931,9 +3749,9 @@ void smxTrans::getTransCommitSCN( smTID         aRecTID,
 
     if ( aRecTID == sObjTID )
     {
-        /* bug-9750 sStatusë¥¼ copyí• ë•ŒëŠ”  commitìƒíƒœì˜€ì§€ë§Œ
-         * sCommitSCNì„ copyí•˜ê¸°ì „ì— txê°€ endë ìˆ˜ ìˆë‹¤(endì´ë©´
-         * commitSCNì´ inifiniteê°€ ëœë‹¤. */
+        /* bug-9750 sStatus¸¦ copyÇÒ¶§´Â  commit»óÅÂ¿´Áö¸¸
+         * sCommitSCNÀ» copyÇÏ±âÀü¿¡ tx°¡ endµÉ¼ö ÀÖ´Ù(endÀÌ¸é
+         * commitSCNÀÌ inifinite°¡ µÈ´Ù. */
         if ( (sStatus == SMX_TX_COMMIT) &&
              SM_SCN_IS_NOT_INFINITE(sCommitSCN) )
         {
@@ -2951,14 +3769,26 @@ void smxTrans::getTransCommitSCN( smTID         aRecTID,
         }
         else
         {
-            /* Txê°€ COMMIT ìƒíƒœê°€ ì•„ë‹ˆë©´ aRecSCNì˜ infinite SCNì„ ë„˜ê²¨ì¤€ë‹¤. */
-            SM_GET_SCN( aOutSCN, aRecSCN );
+            /* BUG-47367 PreCommitÀº ¸Å¿ì ÂªÀº ½Ã°£ À¯ÁöµÈ´Ù.
+             * ´ëºÎºĞÀÇ °æ¿ì PreCommitÀº ¾Æ´Ò°ÍÀÌ´Ù. */
+            if ( sStatus != SMX_TX_PRECOMMIT )
+            {
+                /* Tx°¡ COMMIT »óÅÂ°¡ ¾Æ´Ï¸é aRecSCNÀÇ infinite SCNÀ» ³Ñ°ÜÁØ´Ù. */
+                SM_GET_SCN( aOutSCN, aRecSCN );
+            }
+            else
+            {
+                /* BUG-47367 TxÀÇ Status°¡ PreCommit ÀÌ¶ó¸é
+                 * °ğ Á¤»óÀûÀÎ CommitSCNÀÌ Tx¿¡ ¼³Á¤µÉ °ÍÀÌ´Ù.
+                 * TxÀÇ CommitSCNÀ» ´Ù½Ã ÇÑ¹ø È®ÀÎÇØ º»´Ù. */
+                IDE_CONT( recheck_commitscn );
+            }
         }
     }
     else
     {
-        /* Legacy Transì¸ì§€ í™•ì¸í•˜ê³  Legacy Transactionì´ë©´
-         * Legacy Trans Listì—ì„œ í™•ì¸í•´ì„œ commit SCNì„ ë°˜í™˜í•œë‹¤. */
+        /* Legacy TransÀÎÁö È®ÀÎÇÏ°í Legacy TransactionÀÌ¸é
+         * Legacy Trans List¿¡¼­ È®ÀÎÇØ¼­ commit SCNÀ» ¹İÈ¯ÇÑ´Ù. */
         if ( sTrans->mLegacyTransCnt != 0 )
         {
             sLegacyTransCommitSCN = smxLegacyTransMgr::getCommitSCN( aRecTID );
@@ -2991,40 +3821,44 @@ void smxTrans::getTransCommitSCN( smTID         aRecTID,
 
 /*
  * =============================================================================
- *  í˜„ì¬ statementì˜ DBì ‘ê·¼ í˜•íƒœ ì¦‰,
- *  Disk only, memory only, disk /memoryì•  ë”°ë¼  í˜„ì¬ ì„¤ì •ëœ transactionì˜
- *  memory viewSCN, disk viewSCNê³¼ ë¹„êµí•˜ì—¬  ë” ì‘ì€ SCNìœ¼ë¡œ ë³€ê²½í•œë‹¤.
+ *  ÇöÀç statementÀÇ DBÁ¢±Ù ÇüÅÂ Áï,
+ *  Disk only, memory only, disk /memory¾Ö µû¶ó  ÇöÀç ¼³Á¤µÈ transactionÀÇ
+ *  memory viewSCN, disk viewSCN°ú ºñ±³ÇÏ¿©  ´õ ÀÛÀº SCNÀ¸·Î º¯°æÇÑ´Ù.
  * =============================================================================
  *                        !!!!!!!!!!! WARNING  !!!!!!!!!!!!!1
  * -----------------------------------------------------------------------------
- *  ì•„ë˜ì˜ getViewSCN() í•¨ìˆ˜ëŠ” ë°˜ë“œì‹œ SMX_TRANS_LOCKED, SMX_TRANS_UNLOCKED
- *  ë²”ìœ„ ë‚´ë¶€ì—ì„œ ìˆ˜í–‰ë˜ì–´ì•¼ í•œë‹¤. ê·¸ë ‡ì§€ ì•Šìœ¼ë©´,
- *  smxTransMgr::getSysMinMemViewSCN()ì—ì„œ ì´ í• ë‹¹ë°›ì€ SCNê°’ì„ SKIPí•˜ëŠ” ê²½ìš°ê°€
- *  ë°œìƒí•˜ê³ , ì´ ê²½ìš° Agerì˜ ë¹„ì •ìƒ ë™ì‘ì„ ì´ˆë˜í•˜ê²Œ ëœë‹¤.
- *  (ì½ê¸° ëŒ€ìƒ Tupleì˜ Aging ë°œìƒ!!!)
+ *  ¾Æ·¡ÀÇ getViewSCN() ÇÔ¼ö´Â ¹İµå½Ã SMX_TRANS_LOCKED, SMX_TRANS_UNLOCKED
+ *  ¹üÀ§ ³»ºÎ¿¡¼­ ¼öÇàµÇ¾î¾ß ÇÑ´Ù. ±×·¸Áö ¾ÊÀ¸¸é,
+ *  smxTransMgr::getMinMemViewSCNofAll()¿¡¼­ ÀÌ ÇÒ´ç¹ŞÀº SCN°ªÀ» SKIPÇÏ´Â °æ¿ì°¡
+ *  ¹ß»ıÇÏ°í, ÀÌ °æ¿ì AgerÀÇ ºñÁ¤»ó µ¿ÀÛÀ» ÃÊ·¡ÇÏ°Ô µÈ´Ù.
+ *  (ÀĞ±â ´ë»ó TupleÀÇ Aging ¹ß»ı!!!)
  * =============================================================================
  */
-IDE_RC smxTrans::allocViewSCN( UInt    aStmtFlag, smSCN * aStmtSCN )
+IDE_RC smxTrans::allocViewSCN( UInt aStmtFlag, smSCN * aStmtViewSCN, smSCN aRequestSCN )
 {
     UInt     sStmtFlag;
+    smSCN    sAccessSCN;
+    smSCN    sLstSystemSCN;
+    SM_MAX_SCN( &sAccessSCN );
 
     mLSLockFlag = SMX_TRANS_LOCKED;
 
     IDL_MEM_BARRIER;
 
     sStmtFlag = aStmtFlag & SMI_STATEMENT_CURSOR_MASK;
-    IDE_ASSERT( (sStmtFlag == SMI_STATEMENT_ALL_CURSOR)  ||
-                (sStmtFlag == SMI_STATEMENT_DISK_CURSOR) ||
-                (sStmtFlag == SMI_STATEMENT_MEMORY_CURSOR) );
+    IDE_DASSERT( (sStmtFlag == SMI_STATEMENT_ALL_CURSOR)  ||
+                 (sStmtFlag == SMI_STATEMENT_DISK_CURSOR) ||
+                 (sStmtFlag == SMI_STATEMENT_MEMORY_CURSOR) );
 
-    // BUG-26881 ì˜ëª»ëœ CTS stampingìœ¼ë¡œ accesí•  ìˆ˜ ì—†ëŠ” rowë¥¼ ì ‘ê·¼í•¨
-    // íŠ¸ëœì­ì…˜ beginì‹œ active íŠ¸ëœì­ì…˜ ì¤‘ oldestFstViewSCNì„ ì„¤ì •í•¨
+    // BUG-26881 Àß¸øµÈ CTS stampingÀ¸·Î accesÇÒ ¼ö ¾ø´Â row¸¦ Á¢±ÙÇÔ
+    // Æ®·£Àè¼Ç begin½Ã active Æ®·£Àè¼Ç Áß oldestFstViewSCNÀ» ¼³Á¤ÇÔ
     if ( SM_SCN_IS_INFINITE( mOldestFstViewSCN ) )
     {
         if ( (sStmtFlag == SMI_STATEMENT_ALL_CURSOR) ||
              (sStmtFlag == SMI_STATEMENT_DISK_CURSOR) )
         {
             smxTransMgr::getSysMinDskFstViewSCN( &mOldestFstViewSCN );
+
         }
         else
         {
@@ -3036,25 +3870,114 @@ IDE_RC smxTrans::allocViewSCN( UInt    aStmtFlag, smSCN * aStmtSCN )
         /* nothing to do */
     }
 
-    smxTransMgr::mGetSmmViewSCN( aStmtSCN );
+    // 1.Statement ´Â °¢ÀÚ ´Ù¸¥ viewSCN¸¦ °¡Áú¼ö ÀÖ´Ù
+    // 2.ºĞ»ê·¹º§ multi ÀÌÇÏ¿¡¼­´Â ÃÖ½Å View¸¦ ¿ä±¸ ÇÑ´Ù.
+    // 3.ÇÏ³ªÀÇ Statement°¡ 2°³ÀÌ»óÀ¸·Î ÂÉ°³Á®¼­ ¼öÇàµÇ´Â°æ¿ì ÀÌÀü Statement¿Í View°¡ µ¿ÀÏÇØ¾ß ÇÑ´Ù. 
+    //   2¶û 3ÀÌ¶û ±¸ºĞÀÌ ¾ÈµÇ¹Ç·Î ¿ä±¸ÀÚ viewSCN ÀÖÀ¸¸é ±×³É ¾´´Ù. 
 
-    gSmxTrySetupViewSCNFuncs[sStmtFlag]( this, aStmtSCN );
+    if ( SM_SCN_IS_INIT(aRequestSCN) )
+    {
+        /* Global Consistent Transactionµµ RequestSCN º¸³»Áö ¾ÊÀ»¼ö ÀÖ´Ù. 
+         * e.g. ³»ºÎ¿¡¼­ »ç¿ëÇÏ´Â°Å¶ó´ø°¡, prepare¶ó´ø°¡.. */
+
+        /* smmDatabase::getViewSCN */
+        smxTransMgr::mGetSmmViewSCN( aStmtViewSCN );
+    }
+    else
+    {
+        /* Single node Á¤ÇÕ¼º
+           -> ÇÏ³ªÀÇ statement °¡ ºĞ¸®µÇ¾î¼­ µÎ°³ ÀÌ»óÀÇ statement ·Î µ¿ÀÛÇÏ´Â °æ¿ì
+              ¿ä±¸ÀÚ viewSCNÀÌ ¿Ã¼ö ÀÖ´Ù : ºĞ»ê·¹º§À» È®ÀÎÇÒ¼ö ¾ø´Ù. */
+        IDE_DASSERT( mIsGCTx == ID_TRUE );   
+        IDE_DASSERT( smiGetStartupPhase() == SMI_STARTUP_SERVICE );
+        IDE_DASSERT( SM_SCN_IS_NOT_INIT(aRequestSCN) );
+        IDE_DASSERT( smuProperty::getShardEnable() == ID_TRUE );
+        IDE_DASSERT( SMI_STATEMENT_VIEWSCN_IS_REQUESTED( aStmtFlag ) );
+
+        /* ÀÌ ÇÔ¼ö°¡ È£ÃâµÇ±âÀü¿¡ aRequestSCNÀ¸·Î SCN sync µÇ¾î ÀÖ´Â »óÅÂ. 
+         * ±×»çÀÌ LstSystemSCN ÀÌ Áõ°¡ÇÒ¼ö´Â ÀÖÁö¸¸ aRequestSCNº¸´Ù ÀÛÀ»¼ö´Â ¾øÀ½  */
+        sLstSystemSCN = smmDatabase::getLstSystemSCN();
+        IDE_TEST_RAISE( SM_SCN_IS_LT( &sLstSystemSCN, &aRequestSCN ), err_invaild_SCN );
+        IDE_TEST_RAISE( SM_SCN_IS_SYSTEMSCN(aRequestSCN) != ID_TRUE, err_invaild_SCN );
+
+        SM_SET_SCN_VIEW_BIT(&aRequestSCN);
+
+        if ( mIsServiceTX == ID_TRUE )
+        {
+            /* 1.Ã¹¹øÂ° stmt´Â accessSCNº¸´Ù ÀÛÀº viewSCN À» Çã¿ëÇÏÁö ¾Ê´Â´Ù. */
+            if ( SM_SCN_IS_INFINITE( mLastRequestSCN ) )
+            {
+                smxTransMgr::getAccessSCN( &sAccessSCN );
+                IDE_TEST_RAISE( SM_SCN_IS_LT( &aRequestSCN, &sAccessSCN ), err_StatementTooOld );
+            }
+            else
+            {
+                /* 2.stmt ¸¶´Ù ´Ù¸¥ ViewSCN À» °¡Áú¼ö ÀÖÁö¸¸
+                   ±âÁ¸¿¡ ¼öÇàµÈ stmt º¸´Ù ÀÛÀº viewSCN À» Çã¿ëÇÏÁö ¾Ê´Â´Ù. */
+                IDE_TEST_RAISE( SM_SCN_IS_LT( &aRequestSCN, &mLastRequestSCN ), err_StatementTooOld );
+            }
+        }
+
+        /* 32ºñÆ®¸¦ Áö¿øÇØ¾ß ÇÏ´Â °æ¿ì´Â smmDatabase::getViewSCN À» Âü°íÇØ¼­ ¼öÁ¤µÇ¾î¾ß ÇÑ´Ù. */
+        *aStmtViewSCN = aRequestSCN;
+
+        IDE_DASSERT( SM_SCN_IS_VIEWSCN( *aStmtViewSCN ) );
+    }
+
+    if ( SMI_STATEMENT_VIEWSCN_IS_REQUESTED( aStmtFlag ) )
+    {
+        IDE_DASSERT( mIsGCTx == ID_TRUE );   
+
+        /* LastRequestSCN Àº ¸Ş¸ğ¸®/µğ½ºÅ© °øÅë. 
+         * Æ®·£Àè¼ÇÀÇ ¿ä±¸ÀÚ SCN À» °»½ÅÇÑ´Ù. */
+        SM_SET_SCN( &mLastRequestSCN, aStmtViewSCN );
+
+        IDE_DASSERT( SM_SCN_IS_VIEWSCN( mLastRequestSCN ) );
+    }
+
+    gSmxTrySetupViewSCNFuncs[sStmtFlag]( this, aStmtViewSCN );
 
     IDL_MEM_BARRIER;
 
     mLSLockFlag = SMX_TRANS_UNLOCKED;
 
     return IDE_SUCCESS;
+
+    IDE_EXCEPTION( err_invaild_SCN )
+    {
+        IDE_SET( ideSetErrorCode( smERR_ABORT_INVALID_SCN, aRequestSCN ) )
+    }
+    IDE_EXCEPTION( err_StatementTooOld )
+    {
+        SChar sMsgBuf[SMI_MAX_ERR_MSG_LEN];
+        idlOS::snprintf( sMsgBuf,
+                         SMI_MAX_ERR_MSG_LEN,
+                         "[VIEW VALIDATION] "
+                         "StatementViewSCN:%"ID_UINT64_FMT", "
+                         "AccessSCN:%"ID_UINT64_FMT", "
+                         "LastRequestSCN:%"ID_UINT64_FMT,
+                         SM_SCN_TO_LONG(aRequestSCN),
+                         SM_SCN_TO_LONG(sAccessSCN),
+                         SM_SCN_TO_LONG(mLastRequestSCN) );
+
+        IDE_SET( ideSetErrorCode( smERR_ABORT_StatementTooOld, sMsgBuf ) )
+
+        IDE_ERRLOG( IDE_SD_19 );
+    }
+    IDE_EXCEPTION_END;
+
+    mLSLockFlag = SMX_TRANS_UNLOCKED;
+
+    return IDE_FAILURE;
 }
 
 /*****************************************************************
  *
- * Description: íŠ¸ëœì­ì…˜ì˜ MinDskViewSCN í˜¹ì€ MinMemViewSCN í˜¹ì€ ë‘˜ë‹¤
- *              ê°±ì‹  ì‹œë„í•œë‹¤.
+ * Description: Æ®·£Àè¼ÇÀÇ MinDskViewSCN È¤Àº MinMemViewSCN È¤Àº µÑ´Ù
+ *              °»½Å ½ÃµµÇÑ´Ù.
  *
- * aTrans   - [IN] íŠ¸ëœì­ì…˜ í¬ì¸í„°
- * aViewSCN - [IN] Stmtì˜ ViewSCN
- *
+ * aTrans        - [IN] Æ®·£Àè¼Ç Æ÷ÀÎÅÍ
+ * aViewSCN      - [IN] StmtÀÇ ViewSCN
  *****************************************************************/
 void smxTrans::trySetupMinAllViewSCN( void   * aTrans,
                                       smSCN  * aViewSCN )
@@ -3067,43 +3990,41 @@ void smxTrans::trySetupMinAllViewSCN( void   * aTrans,
 
 /*****************************************************************
  *
- * Description: íŠ¸ëœì­ì…˜ì˜ ìœ ì¼í•œ DskStmtë¼ë©´ íŠ¸ëœì­ì…˜ì˜ MinDskViewSCNì„
- *              ê°±ì‹ ì‹œë„í•œë‹¤.
+ * Description: Æ®·£Àè¼ÇÀÇ À¯ÀÏÇÑ DskStmt¶ó¸é Æ®·£Àè¼ÇÀÇ MinDskViewSCNÀ»
+ *              °»½Å½ÃµµÇÑ´Ù.
  *
- * ë§Œì•½ íŠ¸ëœì­ì…˜ì— MinDskViewSCNì´ INFINITE ì„¤ì •ë˜ì–´ ìˆë‹¤ëŠ” ê²ƒì€ ë‹¤ë¥¸ DskStmt
- * ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤ëŠ” ê²ƒì„ ì˜ë¯¸í•˜ë©° ì´ë•Œ, MinDskViewSCNì„ ì„¤ì •í•œë‹¤.
- * ë‹¨ FstDskViewSCNì€ íŠ¸ëœì­ì…˜ì˜ ì²«ë²ˆì§¸ DskStmtì˜ SCNìœ¼ë¡œ ì„¤ì •í•´ì£¼ì–´ì•¼ í•œë‹¤.
+ * ¸¸¾à Æ®·£Àè¼Ç¿¡ MinDskViewSCNÀÌ INFINITE ¼³Á¤µÇ¾î ÀÖ´Ù´Â °ÍÀº ´Ù¸¥ DskStmt
+ * °¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù´Â °ÍÀ» ÀÇ¹ÌÇÏ¸ç ÀÌ¶§, MinDskViewSCNÀ» ¼³Á¤ÇÑ´Ù.
+ * ´Ü FstDskViewSCNÀº Æ®·£Àè¼ÇÀÇ Ã¹¹øÂ° DskStmtÀÇ SCNÀ¸·Î ¼³Á¤ÇØÁÖ¾î¾ß ÇÑ´Ù.
  *
- * ì´ë¯¸ ë‹¤ë¥¸ DskStmtê°€ ì¡´ì¬í•œë‹¤.
- *
- * aTrans      - [IN] íŠ¸ëœì­ì…˜ í¬ì¸í„°
- * aDskViewSCN - [IN] DskViewSCN
- *
+ * aTrans        - [IN] Æ®·£Àè¼Ç Æ÷ÀÎÅÍ
+ * aDskViewSCN   - [IN] DskViewSCN
  *********************************************************************/
 void smxTrans::trySetupMinDskViewSCN( void   * aTrans,
                                       smSCN  * aDskViewSCN )
 {
     smxTrans* sTrans = (smxTrans*)aTrans;
 
-    IDE_ASSERT( SM_SCN_IS_NOT_INFINITE( *aDskViewSCN ) );
+    IDE_ASSERT( SM_SCN_IS_VIEWSCN( *aDskViewSCN ) ||
+                SM_SCN_IS_INIT(*aDskViewSCN) );
 
-    /* DskViewSCNê°’ì„ ì„¤ì •í•œë‹¤. ì´ë¯¸ ì´í•¨ìˆ˜ë¥¼ callí•˜ëŠ” ìµœìƒìœ„ í•¨ìˆ˜ì¸
-     * smxTrans::allocViewSCNì—ì„œ mLSLockFlagë¥¼ SMX_TRANS_LOCKEDë¡œ ì„¤ì •í•˜ì˜€ê¸°
-     * setSCNëŒ€ì‹ ì— ë°”ë¡œ SM_SET_SCNì„ ì´ìš©í•œë‹¤. */
+    /* DskViewSCN°ªÀ» ¼³Á¤ÇÑ´Ù. ÀÌ¹Ì ÀÌÇÔ¼ö¸¦ callÇÏ´Â ÃÖ»óÀ§ ÇÔ¼öÀÎ
+     * smxTrans::allocViewSCN¿¡¼­ mLSLockFlag¸¦ SMX_TRANS_LOCKED·Î ¼³Á¤ÇÏ¿´±â
+     * setSCN´ë½Å¿¡ ¹Ù·Î SM_SET_SCNÀ» ÀÌ¿ëÇÑ´Ù. */
     if ( SM_SCN_IS_INFINITE(sTrans->mMinDskViewSCN) )
     {
         SM_SET_SCN( &sTrans->mMinDskViewSCN, aDskViewSCN );
 
         if ( SM_SCN_IS_INFINITE( sTrans->mFstDskViewSCN ) )
         {
-            /* íŠ¸ëœì­ì…˜ì˜ ì²«ë²ˆì§¸ Disk Stmtì˜ SCNì„ ì„¤ì •í•œë‹¤. */
+            /* Æ®·£Àè¼ÇÀÇ Ã¹¹øÂ° Disk StmtÀÇ SCNÀ» ¼³Á¤ÇÑ´Ù. */
             SM_SET_SCN( &sTrans->mFstDskViewSCN, aDskViewSCN );
         }
     }
     else
     {
-        /* ì´ë¯¸ ë‹¤ë¥¸ DskStmtê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°ì´ê³  í˜„ì¬ SCNì´ ê·¸ DskStmtì˜
-         * SCNë³´ë‹¤ ê°™ê±°ë‚˜ í° ê²½ìš°ë§Œ ì¡´ì¬í•œë‹¤. */
+        /* ÀÌ¹Ì ´Ù¸¥ DskStmt°¡ Á¸ÀçÇÏ´Â °æ¿ìÀÌ°í ÇöÀç SCNÀÌ ±× DskStmtÀÇ
+         * SCNº¸´Ù °°°Å³ª Å« °æ¿ì¸¸ Á¸ÀçÇÑ´Ù. */
         IDE_ASSERT( SM_SCN_IS_GE( aDskViewSCN,
                                   &sTrans->mMinDskViewSCN ) );
     }
@@ -3111,66 +4032,144 @@ void smxTrans::trySetupMinDskViewSCN( void   * aTrans,
 
 /*****************************************************************
  *
- * Description: íŠ¸ëœì­ì…˜ì˜ ìœ ì¼í•œ MemStmtë¼ë©´ íŠ¸ëœì­ì…˜ì˜ MinMemViewSCNì„
- *              ê°±ì‹ ì‹œë„í•œë‹¤.
+ * Description: Æ®·£Àè¼ÇÀÇ À¯ÀÏÇÑ MemStmt¶ó¸é Æ®·£Àè¼ÇÀÇ MinMemViewSCNÀ»
+ *              °»½Å½ÃµµÇÑ´Ù.
  *
- * ë§Œì•½ íŠ¸ëœì­ì…˜ì— MinMemViewSCNì´ INFINITE ì„¤ì •ë˜ì–´ ìˆë‹¤ëŠ” ê²ƒì€ ë‹¤ë¥¸ MemStmt
- * ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤ëŠ” ê²ƒì„ ì˜ë¯¸í•˜ë©° ì´ë•Œ, MinMemViewSCNì„ ì„¤ì •í•œë‹¤.
- * ë‹¨ FstMemViewSCNì€ íŠ¸ëœì­ì…˜ì˜ ì²«ë²ˆì§¸ MemStmtì˜ SCNìœ¼ë¡œ ì„¤ì •í•´ì£¼ì–´ì•¼ í•œë‹¤.
+ * ¸¸¾à Æ®·£Àè¼Ç¿¡ MinMemViewSCNÀÌ INFINITE ¼³Á¤µÇ¾î ÀÖ´Ù´Â °ÍÀº ´Ù¸¥ MemStmt
+ * °¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù´Â °ÍÀ» ÀÇ¹ÌÇÏ¸ç ÀÌ¶§, MinMemViewSCNÀ» ¼³Á¤ÇÑ´Ù.
  *
- * ì´ë¯¸ ë‹¤ë¥¸ MemStmtê°€ ì¡´ì¬í•œë‹¤.
- *
- * aTrans      - [IN] íŠ¸ëœì­ì…˜ í¬ì¸í„°
- * aMemViewSCN - [IN] MemViewSCN
- *
+ * aTrans        - [IN] Æ®·£Àè¼Ç Æ÷ÀÎÅÍ
+ * aMemViewSCN   - [IN] MemViewSCN
  *****************************************************************/
 void smxTrans::trySetupMinMemViewSCN( void  * aTrans,
                                       smSCN * aMemViewSCN )
 {
     smxTrans* sTrans = (smxTrans*) aTrans;
 
-    IDE_ASSERT( SM_SCN_IS_NOT_INFINITE( *aMemViewSCN ) );
+    IDE_ASSERT( SM_SCN_IS_VIEWSCN( *aMemViewSCN ) ||
+                SM_SCN_IS_INIT(*aMemViewSCN) );
 
-    /* MemViewSCNê°’ì„ ì„¤ì •í•œë‹¤. ì´ë¯¸ ì´í•¨ìˆ˜ë¥¼ callí•˜ëŠ” ìµœìƒìœ„ í•¨ìˆ˜ì¸
-     * smxTrans::allocViewSCNì—ì„œ mLSLockFlagë¥¼ SMX_TRANS_LOCKEDë¡œ
-     * ì„¤ì •í•˜ì˜€ê¸° setSCNëŒ€ì‹ ì— ë°”ë¡œ SM_SET_SCNì„ ì´ìš©í•œë‹¤. */
+    /* MemViewSCN°ªÀ» ¼³Á¤ÇÑ´Ù. ÀÌ¹Ì ÀÌÇÔ¼ö¸¦ callÇÏ´Â ÃÖ»óÀ§ ÇÔ¼öÀÎ
+     * smxTrans::allocViewSCN¿¡¼­ mLSLockFlag¸¦ SMX_TRANS_LOCKED·Î
+     * ¼³Á¤ÇÏ¿´±â setSCN´ë½Å¿¡ ¹Ù·Î SM_SET_SCNÀ» ÀÌ¿ëÇÑ´Ù. */
     if ( SM_SCN_IS_INFINITE( sTrans->mMinMemViewSCN) )
     {
         SM_SET_SCN( &sTrans->mMinMemViewSCN, aMemViewSCN );
     }
     else
     {
-        /* ì´ë¯¸ ë‹¤ë¥¸ MemStmtê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°ì´ê³  í˜„ì¬ SCNì´ ê·¸ MemStmtì˜
-         * SCNë³´ë‹¤ ê°™ê±°ë‚˜ í° ê²½ìš°ë§Œ ì¡´ì¬í•œë‹¤. */
-        IDE_ASSERT( SM_SCN_IS_GE( aMemViewSCN,
-                                  &sTrans->mMinMemViewSCN ) );
+        /* ÀÌ¹Ì ´Ù¸¥ MemStmt°¡ Á¸ÀçÇÏ´Â °æ¿ìÀÌ°í ÇöÀç SCNÀÌ ±× MemStmtÀÇ
+         * SCNº¸´Ù °°°Å³ª Å« °æ¿ì¸¸ Á¸ÀçÇÑ´Ù. */
+        IDE_ASSERT( SM_SCN_IS_GE( aMemViewSCN, &sTrans->mMinMemViewSCN ) );
     }
 }
 
 
 /* <<CALLBACK FUNCTION>>
- * ì˜ë„ : commitì„ ìˆ˜í–‰í•˜ëŠ” íŠ¸ëœì­ì…˜ì€ CommitSCNì„ í• ë‹¹ë°›ì€ í›„ì—
- *        ìì‹ ì˜ ìƒíƒœë¥¼ ì•„ë˜ì™€ ê°™ì€ ìˆœì„œë¡œ ë³€ê²½í•´ì•¼ í•˜ë©°, ì´ë¥¼ ìœ„í•´
- *        í•¨ìˆ˜ smmManager::getCommitSCN()ì—ì„œ callbackìœ¼ë¡œ í˜¸ì¶œëœë‹¤.
+ * ÀÇµµ : commitÀ» ¼öÇàÇÏ´Â Æ®·£Àè¼ÇÀº CommitSCNÀ» ÇÒ´ç¹ŞÀº ÈÄ¿¡
+ *        ÀÚ½ÅÀÇ »óÅÂ¸¦ ¾Æ·¡¿Í °°Àº ¼ø¼­·Î º¯°æÇØ¾ß ÇÑ´Ù. 
  */
 
-void smxTrans::setTransCommitSCN(void      *aTrans,
-                                 smSCN      aSCN,
-                                 void      *aStatus)
+void smxTrans::setTransCommitSCN( void      * aTrans,
+                                  smSCN     * aSCN,
+                                  void      * aStatus )
 {
-    smxTrans *sTrans = (smxTrans *)aTrans;
+    smxTrans *sTrans = NULL;
 
-    SM_SET_SCN(&(sTrans->mCommitSCN), &aSCN);
-    IDL_MEM_BARRIER;
-    sTrans->mStatus = *(smxStatus *)aStatus;
+    IDE_DASSERT( ( *(smxStatus *)aStatus == SMX_TX_COMMIT ) ||
+                 ( *(smxStatus *)aStatus == SMX_TX_ABORT ) );
+
+    ID_SERIAL_BEGIN( sTrans = (smxTrans *)aTrans );
+    ID_SERIAL_EXEC( SM_SET_SCN(&(sTrans->mCommitSCN), aSCN), 1 );
+    ID_SERIAL_END( sTrans->mStatus = *(smxStatus *)aStatus );
+}
+/***********************************************************************
+ * Description : PROJ-2733 ºĞ»ê Æ®·£Àè¼Ç Á¤ÇÕ¼º
+ *
+ * ÁÖÀÇÁÖÀÇ: aStatus ´Â SMX_TX_PREPARED Áö¸¸ ¼³Á¤µÇ´Â sTrans->mStatus ´Â SMX_TX_BEGIN.
+ *           rp.sd°¡ prepared ¶ó´Â°É ¸ğ¸£´Â °æ¿ì°¡ ÀÖ´Ù. 
+ **********************************************************************/
+void smxTrans::setTransPrepareSCN( void      * aTrans,
+                                   smSCN     * aSCN,
+                                   void      * aStatus )
+{
+    smxTrans *sTrans = NULL;
+
+#ifdef DEBUG
+    IDE_ASSERT( ((smxTrans *)aTrans)->mStatus == SMX_TX_PRECOMMIT );
+    IDE_ASSERT( *(smxStatus *)aStatus == SMX_TX_PREPARED );
+    IDE_ASSERT( SM_SCN_IS_INFINITE( ((smxTrans *)aTrans)->mPrepareSCN) );
+    IDE_ASSERT( SM_SCN_IS_INFINITE( ((smxTrans *)aTrans)->mCommitSCN) );
+#else
+    ACP_UNUSED( aStatus );
+#endif
+
+    ID_SERIAL_BEGIN( sTrans = (smxTrans *)aTrans );
+    ID_SERIAL_EXEC( SM_SET_SCN(&(sTrans->mPrepareSCN), aSCN), 1 );
+    ID_SERIAL_END( sTrans->mStatus = SMX_TX_BEGIN );
+}
+
+void smxTrans::setTransStatus( void      *aTrans,
+                               UInt       aStatus )
+{
+    smxTrans *sTrans = (smxTrans*) aTrans;
+    sTrans->mStatus  = (smxStatus) aStatus;
+}
+
+/******************************************************************************
+ * 4. Callback for strict ordered setting of Tx SCN & Status
+ *
+ * aTrans == NULLÀÎ °æ¿ì´Â System SCNÀ» Áõ°¡¸¸ ½ÃÅ³°æ¿ìÀÌ´Ù.
+ * Delete Thread¿¡¼­ ³²¾Æ ÀÖ´Â Aging´ë»ó OIDµéÀ» Ã³¸®ÇÏ±âÀ§ÇØ
+ * Commit SCNÀ» Áõ°¡½ÃÅ²´Ù.
+ *
+ * BUG-30911 - 2 rows can be selected during executing index scan
+ *             on unique index.
+ *
+ * LstSystemSCNÀ» ¸ÕÀú Áõ°¡½ÃÅ°°í Æ®·£Àè¼Ç¿¡ CommitSCNÀ» ¼³Á¤ÇØ¾ß ÇÑ´Ù.
+ * ·Î ¼öÁ¤Çß¾ú´Âµ¥, BUG-31248 ·Î ÀÎÇØ ´Ù½Ã ¿øº¹ ÇÕ´Ï´Ù.
+ *******************************************************************************/
+void smxTrans::setTransSCNnStatus( void     * aTrans,
+                                   idBool     aIsLegacyTrans,
+                                   smSCN    * aSCN,
+                                   void     * aStatus )
+{
+    IDE_DASSERT( aTrans != NULL );
+
+    if( aIsLegacyTrans == ID_TRUE )
+    {
+        SM_SET_SCN_LEGACY_BIT( aSCN );
+    }
+    else
+    {
+        /* do nothing */
+    }
+
+    if ( ( *(smxStatus *)aStatus == SMX_TX_COMMIT ) ||
+         ( *(smxStatus *)aStatus == SMX_TX_ABORT  ) )
+    {
+        setTransCommitSCN( aTrans,
+                           aSCN,
+                           aStatus );
+
+    }
+    else
+    {
+        IDE_DASSERT( *(smxStatus *)aStatus == SMX_TX_PREPARED );
+        IDE_DASSERT( ((smxTrans *)aTrans)->mCommitState == SMX_XA_PREPARED );
+
+        setTransPrepareSCN( aTrans,
+                            aSCN,
+                            aStatus );
+    }
 }
 
 /**********************************************************************
  *
- * Description : ì²«ë²ˆì§¸ Disk Stmtì˜ ViewSCNì„ ì„¤ì •í•œë‹¤.
+ * Description : Ã¹¹øÂ° Disk StmtÀÇ ViewSCNÀ» ¼³Á¤ÇÑ´Ù.
  *
- * aTrans         - [IN] íŠ¸ëœì­ì…˜ í¬ì¸í„°
- * aFstDskViewSCN - [IN] ì²«ë²ˆì§¸ Disk Stmtì˜ ViewSCN
+ * aTrans         - [IN] Æ®·£Àè¼Ç Æ÷ÀÎÅÍ
+ * aFstDskViewSCN - [IN] Ã¹¹øÂ° Disk StmtÀÇ ViewSCN
  *
  **********************************************************************/
 void smxTrans::setFstDskViewSCN( void  * aTrans,
@@ -3182,11 +4181,11 @@ void smxTrans::setFstDskViewSCN( void  * aTrans,
 
 /**********************************************************************
  *
- * Description : systemì—ì„œ ëª¨ë“  active íŠ¸ëœì­ì…˜ë“¤ì˜
- *               oldestFstViewSCNì„ ë°˜í™˜
- *     BY  BUG-26881 ì˜ëª»ëœ CTS stampingìœ¼ë¡œ accesí•  ìˆ˜ ì—†ëŠ” rowë¥¼ ì ‘ê·¼í•¨
+ * Description : system¿¡¼­ ¸ğµç active Æ®·£Àè¼ÇµéÀÇ
+ *               oldestFstViewSCNÀ» ¹İÈ¯
+ *     BY  BUG-26881 Àß¸øµÈ CTS stampingÀ¸·Î accesÇÒ ¼ö ¾ø´Â row¸¦ Á¢±ÙÇÔ
  *
- * aTrans - [IN] íŠ¸ëœì­ì…˜ í¬ì¸í„°
+ * aTrans - [IN] Æ®·£Àè¼Ç Æ÷ÀÎÅÍ
  *
  **********************************************************************/
 smSCN smxTrans::getOldestFstViewSCN( void * aTrans )
@@ -3222,17 +4221,15 @@ IDE_RC smxTrans::abort4LayerCall(void* aTrans)
 // for  fix bug-8084.
 IDE_RC smxTrans::commit4LayerCall(void* aTrans)
 {
-
-    smSCN  sDummySCN;
     IDE_ASSERT( aTrans != NULL );
 
-    return  ((smxTrans*)aTrans)->commit(&sDummySCN);
+    return  ((smxTrans*)aTrans)->commit();
 }
 
 /***********************************************************************
  *
- * Description : Implicit Savepointë¥¼ ê¸°ë¡í•œë‹¤. Implicit SVPì— sStamtDepth
- *               ë¥¼ ê°™ì´ ê¸°ë¡í•œë‹¤.
+ * Description : Implicit Savepoint¸¦ ±â·ÏÇÑ´Ù. Implicit SVP¿¡ sStamtDepth
+ *               ¸¦ °°ÀÌ ±â·ÏÇÑ´Ù.
  *
  * aSavepoint     - [IN] Savepoint
  * aStmtDepth     - [IN] Statement Depth
@@ -3250,8 +4247,8 @@ IDE_RC smxTrans::setImpSavepoint( smxSavepoint **aSavepoint,
 }
 
 /***********************************************************************
- * Description : Statementê°€ ì¢…ë£Œì‹œ ì„¤ì •í–ˆë˜ Implicit SVPë¥¼ Implici SVP
- *               Listì—ì„œ ì œê±°í•œë‹¤.
+ * Description : Statement°¡ Á¾·á½Ã ¼³Á¤Çß´ø Implicit SVP¸¦ Implici SVP
+ *               List¿¡¼­ Á¦°ÅÇÑ´Ù.
  *
  * aSavepoint     - [IN] Savepoint
  * aStmtDepth     - [IN] Statement Depth
@@ -3265,35 +4262,74 @@ IDE_RC smxTrans::setExpSavepoint(const SChar *aExpSVPName)
 {
     return mSvpMgr.setExpSavepoint( this,
                                     aExpSVPName,
+                                    SM_OID_NULL,
+                                    0,
+                                    NULL,
+                                    SM_OID_NULL,
+                                    0,
+                                    NULL,
                                     mOIDList->mOIDNodeListHead.mPrvNode,
                                     &mLstUndoNxtLSN,
                                     svrLogMgr::getLastLSN( &mVolatileLogEnv ),
                                     smLayerCallback::getLastLockSequence( mSlotN ) );
 }
 
-void smxTrans::reservePsmSvp( )
+void smxTrans::reservePsmSvp( idBool aIsShard )
 {
     mSvpMgr.reservePsmSvp( mOIDList->mOIDNodeListHead.mPrvNode,
                            &mLstUndoNxtLSN,
                            svrLogMgr::getLastLSN( &mVolatileLogEnv ),
-                           smLayerCallback::getLastLockSequence( mSlotN ) );
+                           smLayerCallback::getLastLockSequence( mSlotN ),
+                           aIsShard );
 };
 
+/* BUG-48489 */
+idBool smxTrans::isExistExpSavepoint(const SChar *aSavepointName)
+{
+    return mSvpMgr.isExistExpSavepoint(aSavepointName);
+}
+
+IDE_RC smxTrans::setExpSvpForBackupDDLTargetTableInfo( smOID   aOldTableOID, 
+                                                       UInt    aOldPartOIDCount,
+                                                       smOID * aOldPartOIDArray,
+                                                       smOID   aNewTableOID,
+                                                       UInt    aNewPartOIDCount,
+                                                       smOID * aNewPartOIDArray )
+{
+    return mSvpMgr.setExpSavepoint( this,
+                                    SM_DDL_INFO_SAVEPOINT,
+                                    aOldTableOID,
+                                    aOldPartOIDCount,
+                                    aOldPartOIDArray,
+                                    aNewTableOID,
+                                    aNewPartOIDCount,
+                                    aNewPartOIDArray,
+                                    mOIDList->mOIDNodeListHead.mPrvNode,
+                                    &mLstUndoNxtLSN,
+                                    svrLogMgr::getLastLSN( &mVolatileLogEnv ),
+                                    smLayerCallback::getLastLockSequence( mSlotN ) );
+}
+
+void smxTrans::rollbackDDLTargetTableInfo()
+{
+    mSvpMgr.rollbackDDLTargetTableInfo( NULL );
+}
+
 /*****************************************************************
- * Description: Transaction Status Slot í• ë‹¹
+ * Description: Transaction Status Slot ÇÒ´ç
  *
- * [ ì„¤ëª… ]
+ * [ ¼³¸í ]
  *
- * ë””ìŠ¤í¬ ê°±ì‹  íŠ¸ëœì­ì…˜ì´ TSSë„ í•„ìš”í•˜ê³ , UndoRowë¥¼ ê¸°ë¡í•˜ê¸°ë„
- * í•´ì•¼í•˜ê¸° ë•Œë¬¸ì— íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ë¥¼ í• ë‹¹í•˜ì—¬ TSSì„¸ê·¸ë¨¼íŠ¸ì™€
- * ì–¸ë‘ ì„¸ê·¸ë¨¼íŠ¸ë¥¼ í™•ë³´í•´ì•¼ í•œë‹¤.
+ * µğ½ºÅ© °»½Å Æ®·£Àè¼ÇÀÌ TSSµµ ÇÊ¿äÇÏ°í, UndoRow¸¦ ±â·ÏÇÏ±âµµ
+ * ÇØ¾ßÇÏ±â ¶§¹®¿¡ Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸®¸¦ ÇÒ´çÇÏ¿© TSS¼¼±×¸ÕÆ®¿Í
+ * ¾ğµÎ ¼¼±×¸ÕÆ®¸¦ È®º¸ÇØ¾ß ÇÑ´Ù.
  *
- * í™•ë³´ëœ TSS ì„¸ê·¸ë¨¼íŠ¸ë¡œë¶€í„° TSSë¥¼ í• ë‹¹í•˜ì—¬ íŠ¸ëœì­ì…˜ì— ì„¤ì •í•œë‹¤.
+ * È®º¸µÈ TSS ¼¼±×¸ÕÆ®·ÎºÎÅÍ TSS¸¦ ÇÒ´çÇÏ¿© Æ®·£Àè¼Ç¿¡ ¼³Á¤ÇÑ´Ù.
  *
- * [ ì¸ì ]
+ * [ ÀÎÀÚ ]
  *
- * aStatistics      - [IN] í†µê³„ì •ë³´
- * aStartInfo       - [IN] íŠ¸ëœì­ì…˜ ë° ë¡œê¹…ì •ë³´
+ * aStatistics      - [IN] Åë°èÁ¤º¸
+ * aStartInfo       - [IN] Æ®·£Àè¼Ç ¹× ·Î±ëÁ¤º¸
  *
  *****************************************************************/
 IDE_RC smxTrans::allocTXSegEntry( idvSQL          * aStatistics,
@@ -3313,8 +4349,8 @@ IDE_RC smxTrans::allocTXSegEntry( idvSQL          * aStatistics,
 
         sManualBindingTxSegByEntryID = smuProperty::getManualBindingTXSegByEntryID();
 
-        // BUG-29839 ì¬ì‚¬ìš©ëœ undo pageì—ì„œ ì´ì „ CTSë¥¼ ë³´ë ¤ê³  í•  ìˆ˜ ìˆìŒ.
-        // ì¬í˜„í•˜ê¸° ìœ„í•´ transactionì— íŠ¹ì • segment entryë¥¼ bindingí•˜ëŠ” ê¸°ëŠ¥ ì¶”ê°€
+        // BUG-29839 Àç»ç¿ëµÈ undo page¿¡¼­ ÀÌÀü CTS¸¦ º¸·Á°í ÇÒ ¼ö ÀÖÀ½.
+        // ÀçÇöÇÏ±â À§ÇØ transaction¿¡ Æ¯Á¤ segment entry¸¦ bindingÇÏ´Â ±â´É Ãß°¡
         if ( sManualBindingTxSegByEntryID ==
              SMX_AUTO_BINDING_TRANSACTION_SEGMENT_ENTRY )
         {
@@ -3335,8 +4371,8 @@ IDE_RC smxTrans::allocTXSegEntry( idvSQL          * aStatistics,
         sTrans->mTXSegEntry    = sTXSegEntry;
 
         /*
-         * [BUG-27542] [SD] TSS Page Allocation ê´€ë ¨ í•¨ìˆ˜(smxTrans::allocTXSegEntry,
-         *             sdcTSSegment::bindTSS)ë“¤ì˜ Exceptionì²˜ë¦¬ê°€ ì˜ëª»ë˜ì—ˆìŠµë‹ˆë‹¤.
+         * [BUG-27542] [SD] TSS Page Allocation °ü·Ã ÇÔ¼ö(smxTrans::allocTXSegEntry,
+         *             sdcTSSegment::bindTSS)µéÀÇ ExceptionÃ³¸®°¡ Àß¸øµÇ¾ú½À´Ï´Ù.
          */
         IDU_FIT_POINT( "1.BUG-27542@smxTrans::allocTXSegEntry" );
     }
@@ -3346,7 +4382,7 @@ IDE_RC smxTrans::allocTXSegEntry( idvSQL          * aStatistics,
     }
 
     /*
-     * í•´ë‹¹ íŠ¸ëœì­ì…˜ì´ í•œë²ˆë„ Bindëœ ì ì´ ì—†ë‹¤ë©´ bindTSSë¥¼ ìˆ˜í–‰í•œë‹¤.
+     * ÇØ´ç Æ®·£Àè¼ÇÀÌ ÇÑ¹øµµ BindµÈ ÀûÀÌ ¾ø´Ù¸é bindTSS¸¦ ¼öÇàÇÑ´Ù.
      */
     if ( sTXSegEntry->mTSSlotSID == SD_NULL_SID )
     {
@@ -3401,7 +4437,7 @@ IDE_RC smxTrans::executePendingList( idBool aIsCommit )
 }
 
 /******************************************************
- * Description: pending operationì„ pending listì— ì¶”ê°€
+ * Description: pending operationÀ» pending list¿¡ Ãß°¡
  *******************************************************/
 void  smxTrans::addPendingOperation( void*    aTrans,
                                      smuList* aPendingOp )
@@ -3420,11 +4456,11 @@ void  smxTrans::addPendingOperation( void*    aTrans,
 }
 
 /**********************************************************************
- * Tx's PrivatePageListë¥¼ ë°˜í™˜í•œë‹¤.
+ * Tx's PrivatePageList¸¦ ¹İÈ¯ÇÑ´Ù.
  *
- * aTrans           : ì‘ì—…ëŒ€ìƒ íŠ¸ëœì­ì…˜ ê°ì²´
- * aTableOID        : ì‘ì—…ëŒ€ìƒ í…Œì´ë¸” OID
- * aPrivatePageList : ë°˜í™˜í•˜ë ¤ëŠ” PrivatePageList í¬ì¸í„°
+ * aTrans           : ÀÛ¾÷´ë»ó Æ®·£Àè¼Ç °´Ã¼
+ * aTableOID        : ÀÛ¾÷´ë»ó Å×ÀÌºí OID
+ * aPrivatePageList : ¹İÈ¯ÇÏ·Á´Â PrivatePageList Æ÷ÀÎÅÍ
  **********************************************************************/
 IDE_RC smxTrans::findPrivatePageList(
                             void*                     aTrans,
@@ -3440,7 +4476,7 @@ IDE_RC smxTrans::findPrivatePageList(
 #ifdef DEBUG
     if ( sTrans->mPrivatePageListCachePtr == NULL )
     {
-        // Cacheëœ PrivatePageListê°€ ë¹„ì—ˆë‹¤ë©´ HashTableì—ë„ ì—†ì–´ì•¼ í•œë‹¤.
+        // CacheµÈ PrivatePageList°¡ ºñ¾ú´Ù¸é HashTable¿¡µµ ¾ø¾î¾ß ÇÑ´Ù.
         IDE_TEST( smuHash::findNode( &(sTrans->mPrivatePageListHashTable),
                                      &aTableOID,
                                      (void**)aPrivatePageList )
@@ -3452,14 +4488,14 @@ IDE_RC smxTrans::findPrivatePageList(
 
     if ( sTrans->mPrivatePageListCachePtr != NULL )
     {
-        // cacheëœ PrivatePageListì—ì„œ ê²€ì‚¬í•œë‹¤.
+        // cacheµÈ PrivatePageList¿¡¼­ °Ë»çÇÑ´Ù.
         if ( sTrans->mPrivatePageListCachePtr->mTableOID == aTableOID )
         {
             *aPrivatePageList = sTrans->mPrivatePageListCachePtr;
         }
         else
         {
-            // cacheëœ PrivatePageListê°€ ì•„ë‹ˆë¼ë©´ HashTableì„ ê²€ì‚¬í•œë‹¤.
+            // cacheµÈ PrivatePageList°¡ ¾Æ´Ï¶ó¸é HashTableÀ» °Ë»çÇÑ´Ù.
             IDE_TEST( smuHash::findNode( &(sTrans->mPrivatePageListHashTable),
                                          &aTableOID,
                                          (void**)aPrivatePageList )
@@ -3467,7 +4503,7 @@ IDE_RC smxTrans::findPrivatePageList(
 
             if ( *aPrivatePageList != NULL )
             {
-                // ìƒˆë¡œ ì°¾ì€ PrivatePageListë¥¼ cacheí•œë‹¤.
+                // »õ·Î Ã£Àº PrivatePageList¸¦ cacheÇÑ´Ù.
                 sTrans->mPrivatePageListCachePtr = *aPrivatePageList;
             }
         }
@@ -3482,11 +4518,11 @@ IDE_RC smxTrans::findPrivatePageList(
 }
 
 /**********************************************************************
- * Tx's PrivatePageListë¥¼ ë°˜í™˜í•œë‹¤.
+ * Tx's PrivatePageList¸¦ ¹İÈ¯ÇÑ´Ù.
  *
- * aTrans           : ì‘ì—…ëŒ€ìƒ íŠ¸ëœì­ì…˜ ê°ì²´
- * aTableOID        : ì‘ì—…ëŒ€ìƒ í…Œì´ë¸” OID
- * aPrivatePageList : ë°˜í™˜í•˜ë ¤ëŠ” PrivatePageList í¬ì¸í„°
+ * aTrans           : ÀÛ¾÷´ë»ó Æ®·£Àè¼Ç °´Ã¼
+ * aTableOID        : ÀÛ¾÷´ë»ó Å×ÀÌºí OID
+ * aPrivatePageList : ¹İÈ¯ÇÏ·Á´Â PrivatePageList Æ÷ÀÎÅÍ
  **********************************************************************/
 IDE_RC smxTrans::findVolPrivatePageList(
                             void*                     aTrans,
@@ -3502,7 +4538,7 @@ IDE_RC smxTrans::findVolPrivatePageList(
 #ifdef DEBUG
     if ( sTrans->mVolPrivatePageListCachePtr == NULL )
     {
-        // Cacheëœ PrivatePageListê°€ ë¹„ì—ˆë‹¤ë©´ HashTableì—ë„ ì—†ì–´ì•¼ í•œë‹¤.
+        // CacheµÈ PrivatePageList°¡ ºñ¾ú´Ù¸é HashTable¿¡µµ ¾ø¾î¾ß ÇÑ´Ù.
         IDE_TEST( smuHash::findNode( &(sTrans->mVolPrivatePageListHashTable),
                                      &aTableOID,
                                      (void**)aPrivatePageList )
@@ -3514,14 +4550,14 @@ IDE_RC smxTrans::findVolPrivatePageList(
 
     if ( sTrans->mVolPrivatePageListCachePtr != NULL )
     {
-        // cacheëœ PrivatePageListì—ì„œ ê²€ì‚¬í•œë‹¤.
+        // cacheµÈ PrivatePageList¿¡¼­ °Ë»çÇÑ´Ù.
         if ( sTrans->mVolPrivatePageListCachePtr->mTableOID == aTableOID )
         {
             *aPrivatePageList = sTrans->mVolPrivatePageListCachePtr;
         }
         else
         {
-            // cacheëœ PrivatePageListê°€ ì•„ë‹ˆë¼ë©´ HashTableì„ ê²€ì‚¬í•œë‹¤.
+            // cacheµÈ PrivatePageList°¡ ¾Æ´Ï¶ó¸é HashTableÀ» °Ë»çÇÑ´Ù.
             IDE_TEST( smuHash::findNode( &(sTrans->mVolPrivatePageListHashTable),
                                          &aTableOID,
                                          (void**)aPrivatePageList )
@@ -3529,7 +4565,7 @@ IDE_RC smxTrans::findVolPrivatePageList(
 
             if ( *aPrivatePageList != NULL )
             {
-                // ìƒˆë¡œ ì°¾ì€ PrivatePageListë¥¼ cacheí•œë‹¤.
+                // »õ·Î Ã£Àº PrivatePageList¸¦ cacheÇÑ´Ù.
                 sTrans->mVolPrivatePageListCachePtr = *aPrivatePageList;
             }
         }
@@ -3543,11 +4579,11 @@ IDE_RC smxTrans::findVolPrivatePageList(
 }
 
 /**********************************************************************
- * Tx's PrivatePageListë¥¼ ì¶”ê°€í•œë‹¤.
+ * Tx's PrivatePageList¸¦ Ãß°¡ÇÑ´Ù.
  *
- * aTrans           : ì‘ì—…ëŒ€ìƒ íŠ¸ëœì­ì…˜ ê°ì²´
- * aTableOID        : ì‘ì—…ëŒ€ìƒ í…Œì´ë¸” OID
- * aPrivatePageList : ì¶”ê°€í•˜ë ¤ëŠ” PrivatePageList
+ * aTrans           : ÀÛ¾÷´ë»ó Æ®·£Àè¼Ç °´Ã¼
+ * aTableOID        : ÀÛ¾÷´ë»ó Å×ÀÌºí OID
+ * aPrivatePageList : Ãß°¡ÇÏ·Á´Â PrivatePageList
  **********************************************************************/
 
 IDE_RC smxTrans::addPrivatePageList(
@@ -3566,7 +4602,7 @@ IDE_RC smxTrans::addPrivatePageList(
                                    aPrivatePageList)
               != IDE_SUCCESS );
 
-    // ìƒˆë¡œ ì…ë ¥ëœ PrivatePageListë¥¼ cacheí•œë‹¤.
+    // »õ·Î ÀÔ·ÂµÈ PrivatePageList¸¦ cacheÇÑ´Ù.
     sTrans->mPrivatePageListCachePtr = aPrivatePageList;
 
 
@@ -3578,11 +4614,11 @@ IDE_RC smxTrans::addPrivatePageList(
 }
 
 /**********************************************************************
- * Tx's PrivatePageListë¥¼ ì¶”ê°€í•œë‹¤.
+ * Tx's PrivatePageList¸¦ Ãß°¡ÇÑ´Ù.
  *
- * aTrans           : ì‘ì—…ëŒ€ìƒ íŠ¸ëœì­ì…˜ ê°ì²´
- * aTableOID        : ì‘ì—…ëŒ€ìƒ í…Œì´ë¸” OID
- * aPrivatePageList : ì¶”ê°€í•˜ë ¤ëŠ” PrivatePageList
+ * aTrans           : ÀÛ¾÷´ë»ó Æ®·£Àè¼Ç °´Ã¼
+ * aTableOID        : ÀÛ¾÷´ë»ó Å×ÀÌºí OID
+ * aPrivatePageList : Ãß°¡ÇÏ·Á´Â PrivatePageList
  **********************************************************************/
 IDE_RC smxTrans::addVolPrivatePageList(
                                 void*                    aTrans,
@@ -3600,7 +4636,7 @@ IDE_RC smxTrans::addVolPrivatePageList(
                                    aPrivatePageList)
               != IDE_SUCCESS );
 
-    // ìƒˆë¡œ ì…ë ¥ëœ PrivatePageListë¥¼ cacheí•œë‹¤.
+    // »õ·Î ÀÔ·ÂµÈ PrivatePageList¸¦ cacheÇÑ´Ù.
     sTrans->mVolPrivatePageListCachePtr = aPrivatePageList;
 
     return IDE_SUCCESS;
@@ -3611,11 +4647,11 @@ IDE_RC smxTrans::addVolPrivatePageList(
 }
 
 /**********************************************************************
- * PrivatePageList ìƒì„±
+ * PrivatePageList »ı¼º
  *
- * aTrans           : ì¶”ê°€í•˜ë ¤ëŠ” íŠ¸ëœì­ì…˜
- * aTableOID        : ì¶”ê°€í•˜ë ¤ëŠ” PrivatePageListì˜ í…Œì´ë¸” OID
- * aPrivatePageList : ì¶”ê°€í•˜ë ¤ëŠ” PrivateFreePageListì˜ í¬ì¸í„°
+ * aTrans           : Ãß°¡ÇÏ·Á´Â Æ®·£Àè¼Ç
+ * aTableOID        : Ãß°¡ÇÏ·Á´Â PrivatePageListÀÇ Å×ÀÌºí OID
+ * aPrivatePageList : Ãß°¡ÇÏ·Á´Â PrivateFreePageListÀÇ Æ÷ÀÎÅÍ
  **********************************************************************/
 IDE_RC smxTrans::createPrivatePageList(
                             void                      * aTrans,
@@ -3660,11 +4696,11 @@ IDE_RC smxTrans::createPrivatePageList(
 }
 
 /**********************************************************************
- * PrivatePageList ìƒì„±
+ * PrivatePageList »ı¼º
  *
- * aTrans           : ì¶”ê°€í•˜ë ¤ëŠ” íŠ¸ëœì­ì…˜
- * aTableOID        : ì¶”ê°€í•˜ë ¤ëŠ” PrivatePageListì˜ í…Œì´ë¸” OID
- * aPrivatePageList : ì¶”ê°€í•˜ë ¤ëŠ” PrivateFreePageListì˜ í¬ì¸í„°
+ * aTrans           : Ãß°¡ÇÏ·Á´Â Æ®·£Àè¼Ç
+ * aTableOID        : Ãß°¡ÇÏ·Á´Â PrivatePageListÀÇ Å×ÀÌºí OID
+ * aPrivatePageList : Ãß°¡ÇÏ·Á´Â PrivateFreePageListÀÇ Æ÷ÀÎÅÍ
  **********************************************************************/
 IDE_RC smxTrans::createVolPrivatePageList(
                             void                      * aTrans,
@@ -3708,8 +4744,8 @@ IDE_RC smxTrans::createVolPrivatePageList(
 }
 
 /**********************************************************************
- * Tx's PrivatePageListì˜ ëª¨ë“  FreePageë“¤ì„ í…Œì´ë¸”ì— ë³´ë‚´ê³ ,
- * PrivatePageListë¥¼ ì œê±°í•œë‹¤.
+ * Tx's PrivatePageListÀÇ ¸ğµç FreePageµéÀ» Å×ÀÌºí¿¡ º¸³»°í,
+ * PrivatePageList¸¦ Á¦°ÅÇÑ´Ù.
  **********************************************************************/
 IDE_RC smxTrans::finAndInitPrivatePageList()
 {
@@ -3717,7 +4753,7 @@ IDE_RC smxTrans::finAndInitPrivatePageList()
     UInt                     sVarIdx;
     smpPrivatePageListEntry* sPrivatePageList = NULL;
 
-    // PrivatePageListì˜ HashTableì—ì„œ í•˜ë‚˜ì”© ì „ë¶€ ê°€ì ¸ì˜¨ë‹¤.
+    // PrivatePageListÀÇ HashTable¿¡¼­ ÇÏ³ª¾¿ ÀüºÎ °¡Á®¿Â´Ù.
     IDE_TEST( smuHash::open(&mPrivatePageListHashTable) != IDE_SUCCESS );
     IDE_TEST( smuHash::cutNode( &mPrivatePageListHashTable,
                                 (void**)&sPrivatePageList )
@@ -3764,13 +4800,13 @@ IDE_RC smxTrans::finAndInitPrivatePageList()
         IDE_TEST( mPrivatePageListMemPool.memfree(sPrivatePageList)
                   != IDE_SUCCESS );
 
-        // PrivatePageListì˜ HashTableì—ì„œ ë‹¤ìŒ ê²ƒì„ ê°€ì ¸ì˜¨ë‹¤.
+        // PrivatePageListÀÇ HashTable¿¡¼­ ´ÙÀ½ °ÍÀ» °¡Á®¿Â´Ù.
         IDE_TEST( smuHash::cutNode( &mPrivatePageListHashTable,
                                     (void**)&sPrivatePageList )
                   != IDE_SUCCESS );
     }
 
-    // PrivatePageListì˜ HashTableì´ ì‚¬ìš©ëë‹¤ë©´ ì œê±°í•œë‹¤.
+    // PrivatePageListÀÇ HashTableÀÌ »ç¿ëµÆ´Ù¸é Á¦°ÅÇÑ´Ù.
     IDE_TEST( smuHash::close(&mPrivatePageListHashTable) != IDE_SUCCESS );
 
     mPrivatePageListCachePtr = NULL;
@@ -3785,8 +4821,8 @@ IDE_RC smxTrans::finAndInitPrivatePageList()
 }
 
 /**********************************************************************
- * Tx's PrivatePageListì˜ ëª¨ë“  FreePageë“¤ì„ í…Œì´ë¸”ì— ë³´ë‚´ê³ ,
- * PrivatePageListë¥¼ ì œê±°í•œë‹¤.
+ * Tx's PrivatePageListÀÇ ¸ğµç FreePageµéÀ» Å×ÀÌºí¿¡ º¸³»°í,
+ * PrivatePageList¸¦ Á¦°ÅÇÑ´Ù.
  **********************************************************************/
 IDE_RC smxTrans::finAndInitVolPrivatePageList()
 {
@@ -3794,7 +4830,7 @@ IDE_RC smxTrans::finAndInitVolPrivatePageList()
     UInt                     sVarIdx;
     smpPrivatePageListEntry* sPrivatePageList = NULL;
 
-    // PrivatePageListì˜ HashTableì—ì„œ í•˜ë‚˜ì”© ì „ë¶€ ê°€ì ¸ì˜¨ë‹¤.
+    // PrivatePageListÀÇ HashTable¿¡¼­ ÇÏ³ª¾¿ ÀüºÎ °¡Á®¿Â´Ù.
     IDE_TEST( smuHash::open(&mVolPrivatePageListHashTable) != IDE_SUCCESS );
     IDE_TEST( smuHash::cutNode( &mVolPrivatePageListHashTable,
                                 (void**)&sPrivatePageList )
@@ -3841,13 +4877,13 @@ IDE_RC smxTrans::finAndInitVolPrivatePageList()
         IDE_TEST( mVolPrivatePageListMemPool.memfree(sPrivatePageList)
                   != IDE_SUCCESS );
 
-        // PrivatePageListì˜ HashTableì—ì„œ ë‹¤ìŒ ê²ƒì„ ê°€ì ¸ì˜¨ë‹¤.
+        // PrivatePageListÀÇ HashTable¿¡¼­ ´ÙÀ½ °ÍÀ» °¡Á®¿Â´Ù.
         IDE_TEST( smuHash::cutNode( &mVolPrivatePageListHashTable,
                                    (void**)&sPrivatePageList )
                  != IDE_SUCCESS );
     }
 
-    // PrivatePageListì˜ HashTableì´ ì‚¬ìš©ëë‹¤ë©´ ì œê±°í•œë‹¤.
+    // PrivatePageListÀÇ HashTableÀÌ »ç¿ëµÆ´Ù¸é Á¦°ÅÇÑ´Ù.
     IDE_TEST( smuHash::close(&mVolPrivatePageListHashTable) != IDE_SUCCESS );
 
     mVolPrivatePageListCachePtr = NULL;
@@ -3865,9 +4901,9 @@ IDE_RC smxTrans::finAndInitVolPrivatePageList()
 /**********************************************************************
  * BUG-30871 When excuting ALTER TABLE in MRDB, the Private Page Lists of
  * new and old table are registered twice.
- * PrivatePageListë¥¼ ë•Œì–´ëƒ…ë‹ˆë‹¤.
- * ì´ ì‹œì ì—ì„œ ì´ë¯¸ í•´ë‹¹ Pageë“¤ì€ TableSpaceë¡œ ë°˜í™˜í•œ ìƒíƒœì´ê¸° ë•Œë¬¸ì—
- * Pageì— ë‹¬ì§€ ì•ŠìŠµë‹ˆë‹¤.
+ * PrivatePageList¸¦ ¶§¾î³À´Ï´Ù.
+ * ÀÌ ½ÃÁ¡¿¡¼­ ÀÌ¹Ì ÇØ´ç PageµéÀº TableSpace·Î ¹İÈ¯ÇÑ »óÅÂÀÌ±â ¶§¹®¿¡
+ * Page¿¡ ´ŞÁö ¾Ê½À´Ï´Ù.
  **********************************************************************/
 IDE_RC smxTrans::dropMemAndVolPrivatePageList(void           * aTrans,
                                               smcTableHeader * aSrcHeader )
@@ -3957,16 +4993,16 @@ void smxTrans::updateSkipCheckSCN(void * aTrans,idBool aDoSkipCheckSCN)
     ((smxTrans*)aTrans)->mDoSkipCheckSCN  = aDoSkipCheckSCN;
 }
 
-// íŠ¹ì • Transactionì˜ RSIDë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+// Æ¯Á¤ TransactionÀÇ RSID¸¦ °¡Á®¿Â´Ù.
 UInt smxTrans::getRSGroupID(void* aTrans)
 {
     smxTrans *sTrans  = (smxTrans*)aTrans;
     UInt sRSGroupID ;
 
-    // SCNë¡œê·¸, Temp table ë¡œê·¸, ë“±ë“±ì˜ ê²½ìš° aTransê°€ NULLì¼ ìˆ˜ ìˆë‹¤.
+    // SCN·Î±×, Temp table ·Î±×, µîµîÀÇ °æ¿ì aTrans°¡ NULLÀÏ ¼ö ÀÖ´Ù.
     if ( sTrans == NULL )
     {
-        // 0ë²ˆ RSIDë¥¼ ì‚¬ìš©
+        // 0¹ø RSID¸¦ »ç¿ë
         sRSGroupID = 0 ;
     }
     else
@@ -3978,9 +5014,9 @@ UInt smxTrans::getRSGroupID(void* aTrans)
 }
 
 /*
- * íŠ¹ì • Transactionì— RSIDë¥¼ aIdxë¡œ ë°”ê¾¼ë‹¤.
+ * Æ¯Á¤ Transaction¿¡ RSID¸¦ aIdx·Î ¹Ù²Û´Ù.
  *
- * aTrans       [IN]  íŠ¸ëœì­ì…˜ ê°ì²´
+ * aTrans       [IN]  Æ®·£Àè¼Ç °´Ã¼
  * aIdx         [IN]  Resource ID
  */
 void smxTrans:: setRSGroupID(void* aTrans, UInt aIdx)
@@ -3990,12 +5026,12 @@ void smxTrans:: setRSGroupID(void* aTrans, UInt aIdx)
 }
 
 /*
- * íŠ¹ì • Transactionì— RSIDë¥¼ ë¶€ì—¬í•œë‹¤.
+ * Æ¯Á¤ Transaction¿¡ RSID¸¦ ºÎ¿©ÇÑ´Ù.
  *
- * 0 < ë¦¬ìŠ¤íŠ¸ ID < Page List Countë¡œ ë¶€ì—¬ëœë‹¤.
+ * 0 < ¸®½ºÆ® ID < Page List Count·Î ºÎ¿©µÈ´Ù.
  *
- * aTrans       [IN]  íŠ¸ëœì­ì…˜ ê°ì²´
- * aPageListIdx [OUT] íŠ¸ëœì­ì…˜ì—ê²Œ í• ë‹¹ëœ Page List ID
+ * aTrans       [IN]  Æ®·£Àè¼Ç °´Ã¼
+ * aPageListIdx [OUT] Æ®·£Àè¼Ç¿¡°Ô ÇÒ´çµÈ Page List ID
  */
 void smxTrans::allocRSGroupID(void             *aTrans,
                               UInt             *aPageListIdx)
@@ -4006,7 +5042,7 @@ void smxTrans::allocRSGroupID(void             *aTrans,
 
     if ( aTrans == NULL )
     {
-        // Temp TABLEì¼ ê²½ìš° aTransê°€ NULLì´ë‹¤.
+        // Temp TABLEÀÏ °æ¿ì aTrans°¡ NULLÀÌ´Ù.
         sAllocPageListID = 0;
     }
     else
@@ -4034,26 +5070,26 @@ void smxTrans::allocRSGroupID(void             *aTrans,
 
 
 /*
- * íŠ¹ì • Transactionì˜ ë¡œê·¸ ë²„í¼ì˜ ë‚´ìš©ì„ ë¡œê·¸íŒŒì¼ì— ê¸°ë¡í•œë‹¤.
+ * Æ¯Á¤ TransactionÀÇ ·Î±× ¹öÆÛÀÇ ³»¿ëÀ» ·Î±×ÆÄÀÏ¿¡ ±â·ÏÇÑ´Ù.
  *
- * aTrans  [IN] íŠ¸ëœì­ì…˜ ê°ì²´
+ * aTrans  [IN] Æ®·£Àè¼Ç °´Ã¼
  */
-IDE_RC smxTrans::writeTransLog(void *aTrans )
+IDE_RC smxTrans::writeTransLog(void *aTrans, smOID aTableOID )
 {
     smxTrans     *sTrans;
 
     IDE_DASSERT( aTrans != NULL );
-    // IDE_DASSERT( aHeader != NULL );
 
     sTrans     = (smxTrans*)aTrans;
 
-    // íŠ¸ëœì­ì…˜ ë¡œê·¸ ë²„í¼ì˜ ë¡œê·¸ë¥¼ íŒŒì¼ë¡œ ê¸°ë¡í•œë‹¤.
+    // Æ®·£Àè¼Ç ·Î±× ¹öÆÛÀÇ ·Î±×¸¦ ÆÄÀÏ·Î ±â·ÏÇÑ´Ù.
     IDE_TEST( smrLogMgr::writeLog( smxTrans::getStatistics( aTrans ),
                                    aTrans,
                                    sTrans->mLogBuffer,
                                    NULL,  // Previous LSN Ptr
                                    NULL,  // Log LSN Ptr
-                                   NULL ) // End LSN Ptr
+                                   NULL,  // End LSN Ptr
+                                   aTableOID )
               != IDE_SUCCESS );
 
 
@@ -4065,13 +5101,12 @@ IDE_RC smxTrans::writeTransLog(void *aTrans )
 }
 
 /*
-   callbackìœ¼ë¡œ ì‚¬ìš©ë   isReadOnly í•¨ìˆ˜
+   callbackÀ¸·Î »ç¿ëµÉ  isReadOnly ÇÔ¼ö
 
-   aTrans [IN] - Read Only ì¸ì§€  ê²€ì‚¬í•   Transaction ê°ì²´.
+   aTrans [IN] - Read Only ÀÎÁö  °Ë»çÇÒ  Transaction °´Ã¼.
 */
 idBool smxTrans::isReadOnly4Callback(void * aTrans)
 {
-
     smxTrans * sTrans = (smxTrans*) aTrans;
     return sTrans->isReadOnly();
 }
@@ -4094,14 +5129,20 @@ IDE_RC  smxTrans::openLobCursor(idvSQL            * aStatistics,
     smLobCursor   * sLobCursor;
     smcLobDesc    * sLobDesc;
 
+    /* TASK-7219 Non-shard DML */
+    idBool          sMutexLocked = ID_FALSE;
+
     IDE_ASSERT( aRow    != NULL );
     IDE_ASSERT( aTable  != NULL );
 
     /* PROJ-2174 Supporting LOB in the volatile tablespace 
-     * memory tablespace ë¿ë§Œì•„ë‹ˆë¼ volatile tablespaceë„ ê°€ëŠ¥í•˜ë‹¤. */
+     * memory tablespace »Ó¸¸¾Æ´Ï¶ó volatile tablespaceµµ °¡´ÉÇÏ´Ù. */
     IDE_ASSERT( (SMI_TABLE_TYPE_IS_MEMORY(   (smcTableHeader*)aTable ) == ID_TRUE ) ||
                 (SMI_TABLE_TYPE_IS_VOLATILE( (smcTableHeader*)aTable ) == ID_TRUE ) );
-
+    /*
+     * alloc Lob Cursor
+     */
+ 
     IDE_TEST_RAISE( mCurLobCursorID == ID_UINT_MAX, overflowLobCursorID);
 
     /* TC/FIT/Limit/sm/smx/smxTrans_openLobCursor1_malloc.sql */
@@ -4112,35 +5153,38 @@ IDE_RC  smxTrans::openLobCursor(idvSQL            * aStatistics,
                     insufficient_memory );
     sState = 1;
 
+    /*
+     * Set Lob Cursor
+     */
+
+    /* TASK-7219 Non-shard DML */
+    lock();
+    sMutexLocked = ID_TRUE;
+
     sLobCursor->mLobCursorID          = mCurLobCursorID;
+
+    /*
+     * Set Lob View Env
+     */
+ 
     sLobCursor->mLobViewEnv.mTable    = aTable;
+
     sLobCursor->mLobViewEnv.mRow      = aRow;
     idlOS::memcpy( &sLobCursor->mLobViewEnv.mLobCol, aColumn, ID_SIZEOF( smiColumn ) );
 
     sLobCursor->mLobViewEnv.mTID      = mTransID;
-    sLobCursor->mLobViewEnv.mInfinite = aInfinite;
-
     sLobCursor->mLobViewEnv.mSCN      = aLobViewSCN;
+    sLobCursor->mLobViewEnv.mInfinite = aInfinite;
     sLobCursor->mLobViewEnv.mOpenMode = aOpenMode;
 
     sLobCursor->mLobViewEnv.mWriteOffset = 0;
-
     sLobCursor->mLobViewEnv.mWritePhase = SM_LOB_WRITE_PHASE_NONE;
     sLobCursor->mLobViewEnv.mWriteError = ID_FALSE;
-    
-    /* PROJ-2174 Supporting LOB in the volatile tablespace 
-     * memory tbsì™€ volatile tbsë¥¼ ë¶„ë¦¬í•´ì„œ ì²˜ë¦¬í•œë‹¤. */
-    if ( SMI_TABLE_TYPE_IS_MEMORY( (smcTableHeader*)aTable ) )
-    {
-        sLobCursor->mModule = &smcLobModule;
-    }
-    else /* SMI_TABLE_VOLATILE */
-    {
-        sLobCursor->mModule = &svcLobModule;
-    }
-    
-    sLobCursor->mInfo = aInfo;
 
+  
+    /* 
+     * set version
+     */
     sLobDesc = (smcLobDesc*)( (SChar*)aRow + aColumn->offset );
 
     if ( (sLobDesc->flag & SM_VCDESC_MODE_MASK) == SM_VCDESC_MODE_OUT )
@@ -4165,10 +5209,36 @@ IDE_RC  smxTrans::openLobCursor(idvSQL            * aStatistics,
         sLobCursor->mLobViewEnv.mLobVersion = 0;
     }
 
-    // PROJ-1862 Disk In Mode LOB ì—ì„œ ì¶”ê°€, ë©”ëª¨ë¦¬ì—ì„œëŠ” ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
+    // PROJ-1862 Disk In Mode LOB ¿¡¼­ Ãß°¡, ¸Ş¸ğ¸®¿¡¼­´Â »ç¿ëÇÏÁö ¾ÊÀ½
     sLobCursor->mLobViewEnv.mLobColBuf = NULL;
+ 
+    sLobCursor->mInfo                 = aInfo;
 
-    // hashì— ë“±ë¡.
+    /* PROJ-2174 Supporting LOB in the volatile tablespace 
+     * memory tbs¿Í volatile tbs¸¦ ºĞ¸®ÇØ¼­ Ã³¸®ÇÑ´Ù. */
+    if ( SMI_TABLE_TYPE_IS_MEMORY( (smcTableHeader*)aTable ) )
+    {
+        sLobCursor->mModule = &smcLobModule;
+    }
+    else /* SMI_TABLE_VOLATILE */
+    {
+        sLobCursor->mModule = &svcLobModule;
+    }
+
+    /* TASK-7219 Non-shard DML */
+    if ( aStatistics != NULL )
+    {
+        sLobCursor->mShardLobCursor.mMmSessId = aStatistics->mSess->mSID;
+    }
+    else
+    {
+        // Initial value
+        sLobCursor->mShardLobCursor.mMmSessId = 0;
+    }
+
+    /*
+     * hash¿¡ µî·Ï
+     */
     IDE_TEST( smuHash::insertNode( &mLobCursorHash,
                                    &(sLobCursor->mLobCursorID),
                                    sLobCursor )
@@ -4176,12 +5246,19 @@ IDE_RC  smxTrans::openLobCursor(idvSQL            * aStatistics,
 
     *aLobLocator = SMI_MAKE_LOB_LOCATOR(mTransID, mCurLobCursorID);
 
-    //memory lob cursor listì— ë“±ë¡.
+    /*
+     * memory lob cursor list¿¡ µî·Ï.
+     */
+    
     mMemLCL.insert(sLobCursor);
+
+    /* TASK-7219 Non-shard DML */
+    sMutexLocked = ID_FALSE;
+    unlock();
 
     //for replication
     /* PROJ-2174 Supporting LOB in the volatile tablespace 
-     * volatile tablespaceëŠ” replicationì´ ì•ˆëœë‹¤. */
+     * volatile tablespace´Â replicationÀÌ ¾ÈµÈ´Ù. */
     if ( (sLobCursor->mLobViewEnv.mOpenMode == SMI_LOB_READ_WRITE_MODE) &&
          (smcTable::needReplicate((smcTableHeader*)sLobCursor->mLobViewEnv.mTable,
                                  this) == ID_TRUE ) )
@@ -4229,6 +5306,10 @@ IDE_RC  smxTrans::openLobCursor(idvSQL            * aStatistics,
             IDE_POP();
         }
 
+        if ( sMutexLocked == ID_TRUE )
+        {
+            unlock();
+        }
     }
     return IDE_FAILURE;
 }
@@ -4237,35 +5318,38 @@ IDE_RC  smxTrans::openLobCursor(idvSQL            * aStatistics,
  * Description : disk lob cursor-open
  * Implementation :
  *
- *  aStatistics    - [IN]  í†µê³„ì •ë³´
- *  aTable         - [IN]  LOB Columnì´ ìœ„ì¹˜í•œ Tableì˜ Table Header
+ *  aStatistics    - [IN]  Åë°èÁ¤º¸
+ *  aTable         - [IN]  LOB ColumnÀÌ À§Ä¡ÇÑ TableÀÇ Table Header
  *  aOpenMode      - [IN]  LOB Cursor Open Mode
- *  aLobViewSCN    - [IN]  ë´ì•¼ í•  SCN
+ *  aLobViewSCN    - [IN]  ºÁ¾ß ÇÒ SCN
  *  aInfinite4Disk - [IN]  Infinite SCN
- *  aRowGRID       - [IN]  í•´ë‹¹ Rowì˜ ìœ„ì¹˜
- *  aColumn        - [IN]  LOB Columnì˜ Column ì •ë³´
- *  aInfo          - [IN]  not null ì œì•½ë“± QPì—ì„œ ì‚¬ìš©í•¨.
- *  aLobLocator    - [OUT] Open í•œ LOB Cursorì— ëŒ€í•œ LOB Locator
+ *  aRowGRID       - [IN]  ÇØ´ç RowÀÇ À§Ä¡
+ *  aColumn        - [IN]  LOB ColumnÀÇ Column Á¤º¸
+ *  aInfo          - [IN]  not null Á¦¾àµî QP¿¡¼­ »ç¿ëÇÔ.
+ *  aLobLocator    - [OUT] Open ÇÑ LOB Cursor¿¡ ´ëÇÑ LOB Locator
  **********************************************************************/
-IDE_RC smxTrans::openLobCursor(idvSQL*             aStatistics,
-                               void*               aTable,
+IDE_RC smxTrans::openLobCursor(idvSQL            * aStatistics,
+                               void              * aTable,
                                smiLobCursorMode    aOpenMode,
                                smSCN               aLobViewSCN,
                                smSCN               aInfinite4Disk,
                                scGRID              aRowGRID,
-                               smiColumn*          aColumn,
+                               smiColumn         * aColumn,
                                UInt                aInfo,
-                               smLobLocator*       aLobLocator)
+                               smLobLocator      * aLobLocator)
 {
     UInt              sState = 0;
     smLobCursor     * sLobCursor;
     smLobViewEnv    * sLobViewEnv;
     sdcLobColBuffer * sLobColBuf;
 
-    IDE_ASSERT( !SC_GRID_IS_NULL(aRowGRID) );
+    IDE_ASSERT( SC_GRID_IS_NOT_NULL(aRowGRID) );
     IDE_ASSERT( aTable != NULL );
 
-    //disk tableì´ì–´ì•¼ í•œë‹¤.
+    /* TASK-7219 Non-shard DML */
+    idBool          sMutexLocked = ID_FALSE;
+
+    //disk tableÀÌ¾î¾ß ÇÑ´Ù.
     IDE_ASSERT( SMI_TABLE_TYPE_IS_DISK( (smcTableHeader*)aTable ) == ID_TRUE );
 
     IDE_TEST_RAISE( mCurLobCursorID == ID_UINT_MAX, overflowLobCursorID);
@@ -4289,6 +5373,10 @@ IDE_RC smxTrans::openLobCursor(idvSQL*             aStatistics,
     IDE_TEST_RAISE( mLobColBufPool.alloc((void**)&sLobColBuf) != IDE_SUCCESS,
                     insufficient_memory );
     sState = 2;
+    
+    /* TASK-7219 Non-shard DML */
+    lock();
+    sMutexLocked = ID_TRUE;
 
     sLobColBuf->mBuffer     = NULL;
     sLobColBuf->mInOutMode  = SDC_COLUMN_IN_MODE;
@@ -4300,9 +5388,7 @@ IDE_RC smxTrans::openLobCursor(idvSQL*             aStatistics,
      */
     
     sLobCursor->mLobCursorID = mCurLobCursorID;
-    sLobCursor->mInfo        = aInfo;
-    sLobCursor->mModule      = &sdcLobModule;
-    
+   
     /*
      * Set Lob View Env
      */
@@ -4312,14 +5398,34 @@ IDE_RC smxTrans::openLobCursor(idvSQL*             aStatistics,
     sdcLob::initLobViewEnv( sLobViewEnv );
 
     sLobViewEnv->mTable          = aTable;
+
+    SC_COPY_GRID( aRowGRID, sLobCursor->mLobViewEnv.mGRID );
+
+    /* TASK-7219 Non-shard DML */
+    if ( aStatistics != NULL )
+    {
+        sLobCursor->mShardLobCursor.mMmSessId = aStatistics->mSess->mSID;
+    }
+    else
+    {
+        // Initial value
+        sLobCursor->mShardLobCursor.mMmSessId = 0;
+    }
+    
+    idlOS::memcpy( &sLobViewEnv->mLobCol, aColumn, ID_SIZEOF(smiColumn) );
+
     sLobViewEnv->mTID            = mTransID;
     sLobViewEnv->mSCN            = aLobViewSCN;
     sLobViewEnv->mInfinite       = aInfinite4Disk;
     sLobViewEnv->mOpenMode       = aOpenMode;
-    sLobViewEnv->mLobColBuf      = (void*)sLobColBuf;
+
     sLobViewEnv->mWriteOffset    = 0;
     sLobViewEnv->mWritePhase     = SM_LOB_WRITE_PHASE_NONE;
     sLobViewEnv->mWriteError     = ID_FALSE;
+    
+    /*
+     * For Disk LOB
+     */
 
     sLobViewEnv->mLastReadOffset  = 0;
     sLobViewEnv->mLastReadLeafNodePID = SD_NULL_PID;
@@ -4327,22 +5433,26 @@ IDE_RC smxTrans::openLobCursor(idvSQL*             aStatistics,
     sLobViewEnv->mLastWriteOffset = 0;
     sLobViewEnv->mLastWriteLeafNodePID = SD_NULL_PID;
 
-    SC_COPY_GRID( aRowGRID, sLobCursor->mLobViewEnv.mGRID );
+    /*
+     * set version
+     */
 
-    idlOS::memcpy( &sLobViewEnv->mLobCol, aColumn, ID_SIZEOF(smiColumn) );
 
+    sLobViewEnv->mLobColBuf      = (void*)sLobColBuf;
     IDE_TEST( sdcLob::readLobColBuf( aStatistics,
                                      this,
                                      sLobViewEnv )
               != IDE_SUCCESS );
 
-    /* set version */
     IDE_TEST( sdcLob::adjustLobVersion(sLobViewEnv) != IDE_SUCCESS );
 
+    sLobCursor->mInfo        = aInfo;
+    sLobCursor->mModule      = &sdcLobModule;
+ 
     /*
-     * hashì— ë“±ë¡
+     * hash¿¡ µî·Ï
      */
-    
+
     IDE_TEST( smuHash::insertNode( &mLobCursorHash,
                                    &(sLobCursor->mLobCursorID),
                                    sLobCursor )
@@ -4351,10 +5461,14 @@ IDE_RC smxTrans::openLobCursor(idvSQL*             aStatistics,
     *aLobLocator = SMI_MAKE_LOB_LOCATOR(mTransID, mCurLobCursorID);
 
     /*
-     * disk lob cursor listì— ë“±ë¡.
+     * disk lob cursor list¿¡ µî·Ï.
      */
     
     mDiskLCL.insert(sLobCursor);
+
+    /* TASK-7219 Non-shard DML */
+    sMutexLocked = ID_FALSE;
+    unlock();
 
     /*
      * for replication
@@ -4403,6 +5517,12 @@ IDE_RC smxTrans::openLobCursor(idvSQL*             aStatistics,
         }
         
         IDE_POP();
+
+        /* TASK-7219 Non-shard DML */
+        if ( sMutexLocked == ID_TRUE )
+        {
+            unlock();
+        }
     }
     
     return IDE_FAILURE;
@@ -4412,29 +5532,52 @@ IDE_RC smxTrans::openLobCursor(idvSQL*             aStatistics,
  * Description : close lob cursor
  * Implementation :
  *
- *  aLobLocator - [IN] ë‹«ì„ LOB Cursorì˜ ID
+ *  aLobLocator - [IN] ´İÀ» LOB CursorÀÇ ID
  **********************************************************************/
-IDE_RC smxTrans::closeLobCursor(smLobCursorID aLobCursorID)
+IDE_RC smxTrans::closeLobCursor(idvSQL*       aStatistics,
+                                smLobCursorID aLobCursorID,
+                                idBool        aIsShardLobCursor )
 {
     smLobCursor   * sLobCursor  = NULL;
+    smuHashBase   * sLobCursorHash = NULL;
+
+    /* TASK-7219 Non-shard DML */
+    idBool          sMutexLocked = ID_FALSE;
+
+    lock();
+    sMutexLocked = ID_TRUE;
+
+    if ( aIsShardLobCursor == ID_TRUE )
+    {
+        sLobCursorHash =  &mShardLobCursorHash;
+    }
+    else
+    {
+        sLobCursorHash =  &mLobCursorHash;
+    }
 
     /* BUG-40084 */
-    IDE_TEST( smuHash::findNode( &mLobCursorHash,
+    IDE_TEST( smuHash::findNode( sLobCursorHash,
                                  &aLobCursorID,
                                  (void **)&sLobCursor ) != IDE_SUCCESS );
 
     if ( sLobCursor != NULL )
     {
-        // hashì—ì„œ ì°¾ê³ , hashì—ì„œ ì œê±°.
-        IDE_TEST( smuHash::deleteNode( &mLobCursorHash,
+        // hash¿¡¼­ Ã£°í, hash¿¡¼­ Á¦°Å.
+        IDE_TEST( smuHash::deleteNode( sLobCursorHash,
                                        &aLobCursorID,
                                        (void **)&sLobCursor )
                   != IDE_SUCCESS );
 
+        /* TASK-7219 Non-shard DML */
+        sMutexLocked = ID_FALSE;
+        unlock();
+
         // for Replication
         /* PROJ-2174 Supporting LOB in the volatile tablespace 
-         * volatile tablespaceëŠ” replicationì´ ì•ˆëœë‹¤. */
-        if ( ( sLobCursor->mLobViewEnv.mOpenMode == SMI_LOB_READ_WRITE_MODE ) &&
+         * volatile tablespace´Â replicationÀÌ ¾ÈµÈ´Ù. */
+        if ( ( aIsShardLobCursor == ID_FALSE ) &&
+             ( sLobCursor->mLobViewEnv.mOpenMode == SMI_LOB_READ_WRITE_MODE ) &&
              ( smcTable::needReplicate((smcTableHeader*)sLobCursor->mLobViewEnv.mTable,
                                       this ) == ID_TRUE ) )
         {
@@ -4445,7 +5588,8 @@ IDE_RC smxTrans::closeLobCursor(smLobCursorID aLobCursorID)
             IDE_TEST( smrLogMgr::writeLobCursorCloseLogRec(
                                         NULL, /* idvSQL* */
                                         this,
-                                        SMI_MAKE_LOB_LOCATOR(mTransID, aLobCursorID))
+                                        SMI_MAKE_LOB_LOCATOR(mTransID, aLobCursorID),
+                                        ( (smcTableHeader *)sLobCursor->mLobViewEnv.mTable )->mSelfOID )
                       != IDE_SUCCESS ) ;
         }
         else
@@ -4453,48 +5597,68 @@ IDE_RC smxTrans::closeLobCursor(smLobCursorID aLobCursorID)
             /* do nothing */
         }
 
-        IDE_TEST( closeLobCursorInternal( sLobCursor ) 
+        IDE_TEST( closeLobCursorInternal( aStatistics, sLobCursor ) 
                   != IDE_SUCCESS );
+    }
+    else
+    {
+        /* TASK-7219 Non-shard DML */
+        sMutexLocked = ID_FALSE;
+        unlock();
     }
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+    {
+        /* TASK-7219 Non-shard DML */
+        if ( sMutexLocked == ID_TRUE )
+        {
+            unlock();
+        }
+    }
 
     return IDE_FAILURE;
 }
 
 /***********************************************************************
- * Description : LobCursorë¥¼ ì‹¤ì§ˆì ìœ¼ë¡œ ë‹«ëŠ” í•¨ìˆ˜
+ * Description : LobCursor¸¦ ½ÇÁúÀûÀ¸·Î ´İ´Â ÇÔ¼ö
  *
- *  aLobCursor  - [IN]  ë‹«ì„ LobCursor
+ *  aLobCursor  - [IN]  ´İÀ» LobCursor
  **********************************************************************/
-IDE_RC smxTrans::closeLobCursorInternal(smLobCursor * aLobCursor)
+IDE_RC smxTrans::closeLobCursorInternal(idvSQL      * aStatistics,
+                                        smLobCursor * aLobCursor)
 {
     smSCN             sMemLobSCN;
     smSCN             sDiskLobSCN;
     sdcLobColBuffer * sLobColBuf;
 
-    /* memoryì´ë©´, memory lob cursor listì—ì„œ ì œê±°. */
+    /* memoryÀÌ¸é, memory lob cursor list¿¡¼­ Á¦°Å. */
     /* PROJ-2174 Supporting LOB in the volatile tablespace
-     * volatileì€ memoryì™€ ë™ì¼í•˜ê²Œ ì²˜ë¦¬ */
+     * volatileÀº memory¿Í µ¿ÀÏÇÏ°Ô Ã³¸® */
     if ( (aLobCursor->mModule == &smcLobModule) ||
          (aLobCursor->mModule == &svcLobModule) )
     {
         mMemLCL.remove(aLobCursor);
     }
+    else if ( aLobCursor->mModule == &sdcLobModule )
+    {
+        // disk lob cursor list¿¡¼­ Á¦°Å.
+        mDiskLCL.remove(aLobCursor);
+    }
     else
     {
-        // disk lob cursor listì—ì„œ ì œê±°.
-        // DISK LOBì´ì–´ì•¼ í•œë‹¤.
-        IDE_ASSERT( aLobCursor->mModule == &sdcLobModule );
-        mDiskLCL.remove(aLobCursor);
+        /* PROJ-2728 Sharding LOB */
+        // shard lob cursor list¿¡¼­ Á¦°Å.
+        // Sharding LOBÀÌ¾î¾ß ÇÑ´Ù.
+        IDE_ASSERT( aLobCursor->mModule == &sdiLobModule );
+        mShardLCL.remove(aLobCursor);
     }
 
     // fix BUG-19687
     /* BUG-31315 [sm_resource] Change allocation disk in mode LOB buffer, 
      * from Open disk LOB cursor to prepare for write 
-     * LobBuffer ì‚­ì œ */
+     * LobBuffer »èÁ¦ */
     sLobColBuf = (sdcLobColBuffer*) aLobCursor->mLobViewEnv.mLobColBuf;
     if ( sLobColBuf != NULL )
     {
@@ -4504,18 +5668,26 @@ IDE_RC smxTrans::closeLobCursorInternal(smLobCursor * aLobCursor)
         sLobColBuf = NULL;
     }
 
-    IDE_TEST( aLobCursor->mModule->mClose() != IDE_SUCCESS );
+    (void) aLobCursor->mModule->mClose( aStatistics,
+                                        this,
+                                        &(aLobCursor->mLobViewEnv) );
 
-    // memory í•´ì œ.
+    // memory ÇØÁ¦.
     IDE_TEST( mLobCursorPool.memfree((void*)aLobCursor) != IDE_SUCCESS );
 
-    // ëª¨ë“  lob cursorê°€ ë‹«í˜”ë‹¤ë©´ ,í˜„ì¬ lob cursor idë¥¼ 0ìœ¼ë¡œ í•œë‹¤.
+    // ¸ğµç lob cursor°¡ ´İÇû´Ù¸é ,ÇöÀç lob cursor id¸¦ 0À¸·Î ÇÑ´Ù.
     mDiskLCL.getOldestSCN(&sDiskLobSCN);
     mMemLCL.getOldestSCN(&sMemLobSCN);
 
-    if ( (SM_SCN_IS_INFINITE(sDiskLobSCN)) && (SM_SCN_IS_INFINITE(sMemLobSCN)) )
+    if ( (SM_SCN_IS_INFINITE(sDiskLobSCN)) &&
+         (SM_SCN_IS_INFINITE(sMemLobSCN)) )
     {
         mCurLobCursorID = 0;
+    }
+    // PROJ-2728 shard lob cursor´Â SCNÀÌ ¾øÀ¸¹Ç·Î °¹¼ö·Î °Ë»çÇÑ´Ù.
+    if ( mShardLCL.getLobCursorCnt(0, NULL) == 0 )
+    {
+        mCurShardLobCursorID = 0;
     }
 
     return IDE_SUCCESS;
@@ -4525,30 +5697,58 @@ IDE_RC smxTrans::closeLobCursorInternal(smLobCursor * aLobCursor)
     return IDE_FAILURE;
 }
 /***********************************************************************
- * Description : LobCursorIDì— í•´ë‹¹í•˜ëŠ” LobCursor objectë¥¼ returní•œë‹¤.
+ * Description : LobCursorID¿¡ ÇØ´çÇÏ´Â LobCursor object¸¦ returnÇÑ´Ù.
  * Implementation :
  *
  *  aLobLocator - [IN]  LOB Cursor ID
  *  aLobLocator - [OUT] LOB Cursor
  **********************************************************************/
 IDE_RC smxTrans::getLobCursor( smLobCursorID  aLobCursorID,
-                               smLobCursor**  aLobCursor )
+                               smLobCursor**  aLobCursor,
+                               idBool         aIsShardLobCursor )
 {
-    IDE_TEST( smuHash::findNode(&mLobCursorHash,
+    smuHashBase   * sLobCursorHash = NULL;
+
+    /* TASK-7219 Non-shard DML */
+    idBool          sMutexLocked = ID_FALSE;
+
+    /* TASK-7219 Non-shard DML */
+    lock();
+    sMutexLocked = ID_TRUE;
+
+    if ( aIsShardLobCursor == ID_TRUE )
+    {
+        sLobCursorHash = &mShardLobCursorHash;
+    }
+    else
+    {
+        sLobCursorHash = &mLobCursorHash;
+    }
+    IDE_TEST( smuHash::findNode(sLobCursorHash,
                                 &aLobCursorID,
                                 (void **)aLobCursor)
               != IDE_SUCCESS );
 
+    /* TASK-7219 Non-shard DML */
+    sMutexLocked = ID_FALSE;
+    unlock();
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+    {
+        if ( sMutexLocked == ID_TRUE )
+        {
+            unlock();
+        }
+    }
 
     return IDE_FAILURE;
 }
 
 
 /***********************************************************************
- * Description : ëª¨ë“  LOB Cursorë¥¼ Closeí•œë‹¤.
+ * Description : ¸ğµç LOB Cursor¸¦ CloseÇÑ´Ù.
  * Implementation :
  **********************************************************************/
 IDE_RC smxTrans::closeAllLobCursors()
@@ -4557,6 +5757,9 @@ IDE_RC smxTrans::closeAllLobCursors()
     smSCN                  sDiskLobSCN;
     smSCN                  sMemLobSCN;
     UInt                   sState = 0;
+
+    /* PROJ-2728 Sharding LOB */
+    (void) closeAllShardLobCursors();
 
     //fix BUG-21311
     if ( mCurLobCursorID  != 0 )
@@ -4569,7 +5772,9 @@ IDE_RC smxTrans::closeAllLobCursors()
  
         while ( sLobCursor != NULL )
         {
-            IDE_TEST( closeLobCursorInternal( sLobCursor ) != IDE_SUCCESS );
+            IDE_TEST( closeLobCursorInternal( NULL, /* idvSQL* */
+                                              sLobCursor )
+                      != IDE_SUCCESS );
             IDE_TEST( smuHash::cutNode( &mLobCursorHash,
                                         (void **)&sLobCursor)
                      != IDE_SUCCESS );
@@ -4604,7 +5809,7 @@ IDE_RC smxTrans::closeAllLobCursors()
 }
 
 /***********************************************************************
- * Description : ëª¨ë“  LOB Cursorë¥¼ Closeí•œë‹¤.
+ * Description : ¸ğµç LOB Cursor¸¦ CloseÇÑ´Ù.
  * Implementation :
  **********************************************************************/
 IDE_RC smxTrans::closeAllLobCursorsWithRPLog()
@@ -4627,7 +5832,7 @@ IDE_RC smxTrans::closeAllLobCursorsWithRPLog()
         {
             // for Replication
             /* PROJ-2174 Supporting LOB in the volatile tablespace 
-             * volatile tablespaceëŠ” replicationì´ ì•ˆëœë‹¤. */
+             * volatile tablespace´Â replicationÀÌ ¾ÈµÈ´Ù. */
             if ( ( sLobCursor->mLobViewEnv.mOpenMode == SMI_LOB_READ_WRITE_MODE ) &&
                  ( smcTable::needReplicate( ( smcTableHeader* )sLobCursor->mLobViewEnv.mTable,
                                             this ) == ID_TRUE ) )
@@ -4639,7 +5844,8 @@ IDE_RC smxTrans::closeAllLobCursorsWithRPLog()
                 IDE_TEST( smrLogMgr::writeLobCursorCloseLogRec(
                         NULL, /* idvSQL* */
                         this,
-                        SMI_MAKE_LOB_LOCATOR( mTransID, sLobCursor->mLobCursorID ) )
+                        SMI_MAKE_LOB_LOCATOR( mTransID, sLobCursor->mLobCursorID ),
+                        ( ( smcTableHeader* )sLobCursor->mLobViewEnv.mTable )->mSelfOID )
                     != IDE_SUCCESS ) ;
             }
             else
@@ -4647,7 +5853,8 @@ IDE_RC smxTrans::closeAllLobCursorsWithRPLog()
                 /* do nothing */
             }
 
-            IDE_TEST( closeLobCursorInternal( sLobCursor ) 
+            IDE_TEST( closeLobCursorInternal( NULL, /* idvSQL* */
+                                              sLobCursor ) 
                       != IDE_SUCCESS );
             IDE_TEST( smuHash::cutNode( &mLobCursorHash,
                                         (void **)&sLobCursor )
@@ -4682,10 +5889,131 @@ IDE_RC smxTrans::closeAllLobCursorsWithRPLog()
     return IDE_FAILURE;
 }
 
-IDE_RC smxTrans::closeAllLobCursors( UInt  aInfo )
+IDE_RC smxTrans::closeAllLobCursors( idvSQL *aStatistics,
+                                     UInt    aInfo,
+                                     idBool  aIsClosingShardLobCursors )
+{
+    /* TASK-7219 Non-shard DML */
+    idBool          sMutexLocked = ID_FALSE;
+
+    /* TASK-7219 Non-shard DML */
+    lock();
+    sMutexLocked = ID_TRUE;
+
+    if ( aIsClosingShardLobCursors == ID_TRUE )
+    {
+        (void) closeAllShardLobCursors( aStatistics, aInfo );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    IDE_TEST( closeAllLobCursors( aStatistics, aInfo ) != IDE_SUCCESS );
+
+    /* TASK-7219 Non-shard DML */
+    sMutexLocked = ID_FALSE;
+    unlock();
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+    {
+        if ( sMutexLocked == ID_TRUE )
+        {
+            unlock();
+        }
+    }
+
+    return IDE_FAILURE;
+}
+
+IDE_RC smxTrans::closeAllShardLobCursors( idvSQL *aStatistics,
+                                          UInt    aInfo )
 {
     smLobCursor          * sLobCursor;
     UInt                   sState = 0;
+    UInt                   sSessID = 0;
+
+    /* TASK-7219 Non-shard DML */
+    if ( aStatistics != NULL )
+    {
+        sSessID = aStatistics->mSess->mSID;
+    }
+    else
+    {
+        // Initial value
+        sSessID = 0;
+    }
+
+    //fix BUG-21311
+    if ( mCurShardLobCursorID  != 0 )
+    {
+        IDE_TEST( smuHash::open( &mShardLobCursorHash ) != IDE_SUCCESS );
+        sState = 1;
+
+        IDE_TEST( smuHash::getCurNode( &mShardLobCursorHash,
+                                       (void **)&sLobCursor ) != IDE_SUCCESS );
+        while( sLobCursor != NULL )
+        {
+            /* BUG-48034 ÀÚ±â(session)°¡ »ı¼ºÇÑ shard lob cursor¸¸ ´İµµ·Ï ÇÔ */
+            // BUG-40427 
+            // Client¿¡¼­ »ç¿ëÇÏ´Â LOB Cursor°¡ ¾Æ´Ñ Cursor¸¦ ¸ğµÎ ´İ´Â´Ù.
+            // aInfo´Â CLIENT_TRUE ÀÌ´Ù.
+            if ( ( sLobCursor->mShardLobCursor.mMmSessId == sSessID ) &&
+                 ( ( sLobCursor->mInfo & aInfo ) != aInfo ) )
+            {
+                IDE_TEST( closeLobCursorInternal( aStatistics, sLobCursor )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( smuHash::delCurNode( &mShardLobCursorHash,
+                                               (void **)&sLobCursor ) != IDE_SUCCESS );
+            }
+            else
+            {
+                IDE_TEST( smuHash::getNxtNode( &mShardLobCursorHash,
+                                               (void **)&sLobCursor ) != IDE_SUCCESS );
+            }
+        }
+
+        IDE_TEST( smuHash::close(&mShardLobCursorHash) != IDE_SUCCESS );
+    }
+    else
+    {
+        /* do nothing */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+    {
+        if ( sState != 0 )
+        {
+            IDE_PUSH();
+            IDE_ASSERT( smuHash::close( &mShardLobCursorHash ) == IDE_SUCCESS );
+            IDE_POP();
+        }
+    }
+
+    return IDE_FAILURE;
+}
+
+IDE_RC smxTrans::closeAllLobCursors( idvSQL *aStatistics,
+                                     UInt    aInfo )
+{
+    smLobCursor          * sLobCursor;
+    UInt                   sState = 0;
+    UInt                   sSessID = 0;
+
+    if ( aStatistics != NULL )
+    {
+        sSessID = aStatistics->mSess->mSID;
+    }
+    else
+    {
+        // Initial value
+        sSessID = 0;
+    }
 
     //fix BUG-21311
     if ( mCurLobCursorID  != 0 )
@@ -4698,13 +6026,14 @@ IDE_RC smxTrans::closeAllLobCursors( UInt  aInfo )
         while( sLobCursor != NULL )
         {
             // BUG-40427 
-            // Clientì—ì„œ ì‚¬ìš©í•˜ëŠ” LOB Cursorê°€ ì•„ë‹Œ Cursorë¥¼ ëª¨ë‘ ë‹«ëŠ”ë‹¤.
-            // aInfoëŠ” CLIENT_TRUE ì´ë‹¤.
-            if ( ( sLobCursor->mInfo & aInfo ) != aInfo )
+            // Client¿¡¼­ »ç¿ëÇÏ´Â LOB Cursor°¡ ¾Æ´Ñ Cursor¸¦ ¸ğµÎ ´İ´Â´Ù.
+            // aInfo´Â CLIENT_TRUE ÀÌ´Ù.
+            if ( ( sLobCursor->mShardLobCursor.mMmSessId == sSessID ) &&
+                 ( ( sLobCursor->mInfo & aInfo ) != aInfo ) )
             {
                 // for Replication
                 /* PROJ-2174 Supporting LOB in the volatile tablespace 
-                 * volatile tablespaceëŠ” replicationì´ ì•ˆëœë‹¤. */
+                 * volatile tablespace´Â replicationÀÌ ¾ÈµÈ´Ù. */
                 if ( ( sLobCursor->mLobViewEnv.mOpenMode == SMI_LOB_READ_WRITE_MODE ) &&
                      ( smcTable::needReplicate( ( smcTableHeader* )sLobCursor->mLobViewEnv.mTable,
                                                  this ) == ID_TRUE ) )
@@ -4717,14 +6046,16 @@ IDE_RC smxTrans::closeAllLobCursors( UInt  aInfo )
                                                         NULL, /* idvSQL* */
                                                         this,
                                                         SMI_MAKE_LOB_LOCATOR( mTransID, 
-                                                                              sLobCursor->mLobCursorID ) )
+                                                                              sLobCursor->mLobCursorID ),
+                                                        ( ( smcTableHeader* )sLobCursor->mLobViewEnv.mTable )->mSelfOID )
                               != IDE_SUCCESS ) ;
                 }
                 else
                 {
                     /* do nothing */
                 }
-                IDE_TEST( closeLobCursorInternal( sLobCursor )
+                IDE_TEST( closeLobCursorInternal( NULL, /* idvSQL* */
+                                                  sLobCursor )
                           != IDE_SUCCESS );
 
                 IDE_TEST( smuHash::delCurNode( &mLobCursorHash,
@@ -4759,6 +6090,195 @@ IDE_RC smxTrans::closeAllLobCursors( UInt  aInfo )
     return IDE_FAILURE;
 }
 
+IDE_RC smxTrans::closeAllShardLobCursors()
+{
+    smLobCursor          * sLobCursor;
+    UInt                   sState = 0;
+
+    if ( mCurShardLobCursorID  != 0 )
+    {
+        IDE_TEST( smuHash::open( &mShardLobCursorHash ) != IDE_SUCCESS );
+        sState = 1;
+
+        IDE_TEST( smuHash::cutNode( &mShardLobCursorHash,
+                                    (void **)&sLobCursor ) != IDE_SUCCESS );
+ 
+        while ( sLobCursor != NULL )
+        {
+            /* shard lob cursor´Â °¢ ³ëµå¿¡¼­ close µÉ °ÍÀÌ¹Ç·Î
+             * ¿©±â¿¡¼­´Â hash, list·ÎºÎÅÍ Á¦°Å¸¸ ÇÑ´Ù.*/
+            (void) deleteShardLobCursor( sLobCursor );
+
+            IDE_TEST( smuHash::cutNode( &mShardLobCursorHash,
+                                        (void **)&sLobCursor)
+                     != IDE_SUCCESS );
+        }
+
+        IDE_TEST( smuHash::close(&mShardLobCursorHash) != IDE_SUCCESS );
+
+        IDE_ASSERT( mShardLCL.getLobCursorCnt(0, NULL) == 0 );
+        IDE_ASSERT( mCurShardLobCursorID == 0 );
+    }
+    else
+    {
+        // zero
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+    {
+        if ( sState != 0 )
+        {
+            IDE_PUSH();
+            IDE_ASSERT( smuHash::close( &mShardLobCursorHash ) == IDE_SUCCESS );
+            IDE_POP();
+        }
+    }
+
+    return IDE_FAILURE;
+}
+
+// PROJ-2728 Sharding LOB
+// shard lob cursor open function.
+IDE_RC  smxTrans::openShardLobCursor(
+                                idvSQL            * aStatistics,
+                                UInt                aMmSessId,
+                                UInt                aMmStmtId,
+                                UInt                aRemoteStmtId,
+                                UInt                aNodeId,
+                                SShort              aLobLocatorType,
+                                smLobLocator        aRemoteLobLocator,
+                                UInt                aInfo,
+                                smiLobCursorMode    aOpenMode,
+                                smLobLocator      * aLobLocator )
+{
+    UInt            sState  = 0;
+    smLobCursor   * sLobCursor;
+
+    /* TASK-7219 Non-shard DML */
+    idBool          sMutexLocked = ID_FALSE;
+
+    ACP_UNUSED( aStatistics );
+
+    IDE_TEST_RAISE( mCurShardLobCursorID == ID_UINT_MAX, overflowLobCursorID);
+
+    IDE_TEST_RAISE( mLobCursorPool.alloc((void**)&sLobCursor) != IDE_SUCCESS,
+                    insufficient_memory );
+    sState = 1;
+
+    /* TASK-7219 Non-shard DML */
+    lock();
+    sMutexLocked = ID_TRUE;
+
+    /*
+     * Set Lob Cursor
+     */
+
+    sLobCursor->mLobCursorID          = mCurShardLobCursorID;
+
+    /*
+     * Set Lob View Env
+     */
+ 
+    sLobCursor->mLobViewEnv.mTable    = NULL;
+    sLobCursor->mLobViewEnv.mRow      = NULL;
+
+    sLobCursor->mLobViewEnv.mTID      = mTransID;
+    sLobCursor->mLobViewEnv.mSCN      = 0;
+    sLobCursor->mLobViewEnv.mInfinite = 0;
+    sLobCursor->mLobViewEnv.mOpenMode = aOpenMode;
+
+    sLobCursor->mLobViewEnv.mWriteOffset = 0;
+    sLobCursor->mLobViewEnv.mWritePhase = SM_LOB_WRITE_PHASE_NONE;
+    sLobCursor->mLobViewEnv.mWriteError = ID_FALSE;
+
+    sLobCursor->mLobViewEnv.mLobVersion = 0;
+    // PROJ-1862 Disk In Mode LOB ¿¡¼­ Ãß°¡, ¸Ş¸ğ¸®¿¡¼­´Â »ç¿ëÇÏÁö ¾ÊÀ½
+    sLobCursor->mLobViewEnv.mLobColBuf = NULL;
+
+    sLobCursor->mInfo = aInfo;
+
+    // set shard node info
+    sLobCursor->mShardLobCursor.mLobLocatorType   = aLobLocatorType;
+    sLobCursor->mShardLobCursor.mMmSessId         = aMmSessId;
+    sLobCursor->mShardLobCursor.mMmStmtId         = aMmStmtId;
+    sLobCursor->mShardLobCursor.mRemoteStmtId     = aRemoteStmtId;
+    sLobCursor->mShardLobCursor.mNodeId           = aNodeId;
+    sLobCursor->mShardLobCursor.mRemoteLobLocator = aRemoteLobLocator;
+    sLobCursor->mLobViewEnv.mShardLobCursor = &(sLobCursor->mShardLobCursor);
+
+    sLobCursor->mModule = &sdiLobModule;
+
+    // hash¿¡ µî·Ï.
+    IDE_TEST( smuHash::insertNode( &mShardLobCursorHash,
+                                   &(sLobCursor->mLobCursorID),
+                                   sLobCursor )
+              != IDE_SUCCESS );
+
+    *aLobLocator = SMI_MAKE_SHARD_LOB_LOCATOR(mTransID, sLobCursor->mLobCursorID);
+
+    //shard lob cursor list¿¡ µî·Ï.
+    mShardLCL.insert(sLobCursor);
+
+    // open¿¡¼­ ÇÏ´Â °ÍÀÌ ¾øÀ½.
+    //IDE_TEST( sLobCursor->mModule->mOpen() != IDE_SUCCESS );
+
+    mCurShardLobCursorID++;
+
+    /* TASK-7219 Non-shard DML */
+    sMutexLocked = ID_FALSE;
+    unlock();
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(overflowLobCursorID);
+    {
+        IDE_SET(ideSetErrorCode(smERR_ABORT_overflowLobCursorID));
+    }
+    IDE_EXCEPTION( insufficient_memory );
+    {
+        IDE_SET(ideSetErrorCode(idERR_ABORT_InsufficientMemory));
+    }
+    IDE_EXCEPTION_END;
+    {
+        if ( sState == 1 )
+        {
+            IDE_PUSH();
+            IDE_ASSERT( mLobCursorPool.memfree((void*)sLobCursor)
+                        == IDE_SUCCESS );
+            IDE_POP();
+        }
+
+        if ( sMutexLocked == ID_TRUE )
+        {
+            unlock();
+        }
+    }
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description : Shard Lob Cursor¸¦ »èÁ¦ÇÑ´Ù.
+ * Implementation :
+ *   °¢ ³ëµå¿¡¼­ close µÉ °ÍÀÌ¹Ç·Î ¿©±â¿¡¼­´Â List·ÎºÎÅÍ Á¦°Å¸¸ ÇÑ´Ù.
+ **********************************************************************/
+IDE_RC smxTrans::deleteShardLobCursor( smLobCursor *aLobCursor )
+{
+    mShardLCL.remove(aLobCursor);
+
+    // memory ÇØÁ¦.
+    (void) mLobCursorPool.memfree((void*)aLobCursor);
+
+    // PROJ-2728 shard lob cursor´Â SCNÀÌ ¾øÀ¸¹Ç·Î °¹¼ö·Î °Ë»çÇÑ´Ù.
+    if ( mShardLCL.getLobCursorCnt(0, NULL) == 0 )
+    {
+        mCurShardLobCursorID = 0;
+    }
+
+    return IDE_SUCCESS;
+}
+
 UInt smxTrans::getMemLobCursorCnt(void  *aTrans, UInt aColumnID, void *aRow)
 {
     smxTrans* sTrans;
@@ -4769,10 +6289,10 @@ UInt smxTrans::getMemLobCursorCnt(void  *aTrans, UInt aColumnID, void *aRow)
 }
 
 /***********************************************************************
- * Description : í˜„ì¬ Transactionì—ì„œ ìµœê·¼ì— Beginí•œ Normal Statmentì—
- *               Replicationì„ ìœ„í•œ Savepointê°€ ì„¤ì •ë˜ì—ˆëŠ”ì§€ Checkí•˜ê³ 
- *               ì„¤ì •ì´ ì•ˆë˜ì–´ ìˆë‹¤ë©´ Replicationì„ ìœ„í•´ì„œ Savepointë¥¼
- *               ì„¤ì •í•œë‹¤. ì„¤ì •ë˜ì–´ ìˆìœ¼ë©´ ID_TRUE, else ID_FALSE
+ * Description : ÇöÀç Transaction¿¡¼­ ÃÖ±Ù¿¡ BeginÇÑ Normal Statment¿¡
+ *               ReplicationÀ» À§ÇÑ Savepoint°¡ ¼³Á¤µÇ¾ú´ÂÁö CheckÇÏ°í
+ *               ¼³Á¤ÀÌ ¾ÈµÇ¾î ÀÖ´Ù¸é ReplicationÀ» À§ÇØ¼­ Savepoint¸¦
+ *               ¼³Á¤ÇÑ´Ù. ¼³Á¤µÇ¾î ÀÖÀ¸¸é ID_TRUE, else ID_FALSE
  *
  * aTrans - [IN]  Transaction Pointer
  ***********************************************************************/
@@ -4784,7 +6304,7 @@ idBool smxTrans::checkAndSetImplSVPStmtDepth4Repl(void* aTrans)
 }
 
 /***********************************************************************
- * Description : Transaction log bufferì˜ í¬ê¸°ë¥¼ returní•œë‹¤.
+ * Description : Transaction log bufferÀÇ Å©±â¸¦ returnÇÑ´Ù.
  *
  * aTrans - [IN]  Transaction Pointer
  ***********************************************************************/
@@ -4796,13 +6316,13 @@ SInt smxTrans::getLogBufferSize(void* aTrans)
 }
 
 /***********************************************************************
- * Description : Transaction log bufferì˜ í¬ê¸°ë¥¼ Need Size ì´ìƒìœ¼ë¡œ ì„¤ì •
+ * Description : Transaction log bufferÀÇ Å©±â¸¦ Need Size ÀÌ»óÀ¸·Î ¼³Á¤
  *
  * Implementation :
- *    Transaction Log Buffer Sizeê°€ Need Size ë³´ë‹¤ í¬ê±°ë‚˜ ê°™ì€ ê²½ìš°,
+ *    Transaction Log Buffer Size°¡ Need Size º¸´Ù Å©°Å³ª °°Àº °æ¿ì,
  *        nothing to do
- *    Transaction Log Buffer Sizeê°€ Need Size ë³´ë‹¤ ì‘ì€ ê²½ìš°,
- *        log buffer í™•ì¥
+ *    Transaction Log Buffer Size°¡ Need Size º¸´Ù ÀÛÀº °æ¿ì,
+ *        log buffer È®Àå
  *
  * aNeedSize - [IN]  Need Log Buffer Size
  *
@@ -4842,8 +6362,8 @@ IDE_RC smxTrans::setLogBufferSize( UInt  aNeedSize )
 
         mLogBuffer = sLogBuffer;
 
-        // ì••ì¶• ë¡œê·¸ë²„í¼ë¥¼ ì´ìš©í•˜ì—¬  ì••ì¶•ë˜ëŠ” ë¡œê·¸ì˜ í¬ê¸°ì˜ ë²”ìœ„ëŠ”
-        // ì´ë¯¸ ì •í•´ì ¸ìˆê¸° ë•Œë¬¸ì— ì••ì¶•ë¡œê·¸ ë²„í¼ì˜ í¬ê¸°ëŠ” ë³€ê²½í•  í•„ìš”ê°€ ì—†ë‹¤.
+        // ¾ĞÃà ·Î±×¹öÆÛ¸¦ ÀÌ¿ëÇÏ¿©  ¾ĞÃàµÇ´Â ·Î±×ÀÇ Å©±âÀÇ ¹üÀ§´Â
+        // ÀÌ¹Ì Á¤ÇØÁ®ÀÖ±â ¶§¹®¿¡ ¾ĞÃà·Î±× ¹öÆÛÀÇ Å©±â´Â º¯°æÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
     }
 
     return IDE_SUCCESS;
@@ -4863,7 +6383,7 @@ IDE_RC smxTrans::setLogBufferSize( UInt  aNeedSize )
 }
 
 /***********************************************************************
- * Description : Transaction log bufferì˜ í¬ê¸°ë¥¼ Need Size ì´ìƒìœ¼ë¡œ ì„¤ì •
+ * Description : Transaction log bufferÀÇ Å©±â¸¦ Need Size ÀÌ»óÀ¸·Î ¼³Á¤
  *
  * aTrans    - [IN]  Transaction Pointer
  * aNeedSize - [IN]  Need Log Buffer Size
@@ -4902,7 +6422,7 @@ void smxTrans::setMemoryTBSAccessed4Callback(void * aTrans)
 }
 
 /***********************************************************************
- * Description : ì„œë²„ ë³µêµ¬ì‹œ Prepare íŠ¸ëœì­ì…˜ì˜ íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì •ë³´ ë³µì›
+ * Description : ¼­¹ö º¹±¸½Ã Prepare Æ®·£Àè¼ÇÀÇ Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® Á¤º¸ º¹¿ø
  ***********************************************************************/
 void smxTrans::setXaSegsInfo( void    * aTrans,
                               UInt      aTxSegEntryIdx,
@@ -4950,7 +6470,7 @@ void smxTrans::setXaSegsInfo( void    * aTrans,
 }
 
 
-/* TableInfoë¥¼ ê²€ìƒ‰í•˜ì—¬ HintDataPIDë¥¼ ë°˜í™˜í•œë‹¤. */
+/* TableInfo¸¦ °Ë»öÇÏ¿© HintDataPID¸¦ ¹İÈ¯ÇÑ´Ù. */
 void smxTrans::getHintDataPIDofTableInfo( void       *aTableInfo,
                                           scPageID   *aHintDataPID )
 {
@@ -4966,7 +6486,7 @@ void smxTrans::getHintDataPIDofTableInfo( void       *aTableInfo,
     }
 }
 
-/* TableInfoë¥¼ ê²€ìƒ‰í•˜ì—¬ HintDataPIDë¥¼ ì„¤ì •í•œë‹¤.. */
+/* TableInfo¸¦ °Ë»öÇÏ¿© HintDataPID¸¦ ¼³Á¤ÇÑ´Ù.. */
 void smxTrans::setHintDataPIDofTableInfo( void       *aTableInfo,
                                           scPageID    aHintDataPID )
 {
@@ -4985,7 +6505,7 @@ idBool smxTrans::isNeedLogFlushAtCommitAPrepare( void * aTrans )
 }
 
 /*******************************************************************************
- * Description : DDL Transactionì„ì„ ë‚˜íƒ€ë‚´ëŠ” Log Recordë¥¼ ê¸°ë¡í•œë‹¤.
+ * Description : DDL TransactionÀÓÀ» ³ªÅ¸³»´Â Log Record¸¦ ±â·ÏÇÑ´Ù.
  ******************************************************************************/
 IDE_RC smxTrans::writeDDLLog()
 {
@@ -4994,7 +6514,7 @@ IDE_RC smxTrans::writeDDLLog()
 
     initLogBuffer();
 
-    /* Log headerë¥¼ êµ¬ì„±í•œë‹¤. */
+    /* Log header¸¦ ±¸¼ºÇÑ´Ù. */
     idlOS::memset(&sLogHeader, 0, ID_SIZEOF(smrDDLLog));
 
     smrLogHeadI::setType(&sLogHeader.mHead, sLogType);
@@ -5007,13 +6527,13 @@ IDE_RC smxTrans::writeDDLLog()
 
     smrLogHeadI::setPrevLSN(&sLogHeader.mHead, mLstUndoNxtLSN);
 
-    // BUG-23045 [RP] SMR_LT_DDLì˜ Log Type FlagëŠ”
-    //           Transaction Beginì—ì„œ ê²°ì •ëœ ê²ƒì„ ì‚¬ìš©í•´ì•¼ í•©ë‹ˆë‹¤
+    // BUG-23045 [RP] SMR_LT_DDLÀÇ Log Type Flag´Â
+    //           Transaction Begin¿¡¼­ °áÁ¤µÈ °ÍÀ» »ç¿ëÇØ¾ß ÇÕ´Ï´Ù
     smrLogHeadI::setFlag(&sLogHeader.mHead, mLogTypeFlag);
 
     /* BUG-24866
-     * [valgrind] SMR_SMC_PERS_WRITE_LOB_PIECE ë¡œê·¸ì— ëŒ€í•´ì„œ
-     * Implicit Savepointë¥¼ ì„¤ì •í•˜ëŠ”ë°, mReplSvPNumberë„ ì„¤ì •í•´ì•¼ í•©ë‹ˆë‹¤. */
+     * [valgrind] SMR_SMC_PERS_WRITE_LOB_PIECE ·Î±×¿¡ ´ëÇØ¼­
+     * Implicit Savepoint¸¦ ¼³Á¤ÇÏ´Âµ¥, mReplSvPNumberµµ ¼³Á¤ÇØ¾ß ÇÕ´Ï´Ù. */
     smrLogHeadI::setReplStmtDepth( &sLogHeader.mHead,
                                    SMI_STATEMENT_DEPTH_NULL );
 
@@ -5027,7 +6547,7 @@ IDE_RC smxTrans::writeDDLLog()
                                 ID_SIZEOF(smrLogType) )
              != IDE_SUCCESS );
 
-    IDE_TEST( writeTransLog(this) != IDE_SUCCESS );
+    IDE_TEST( writeTransLog( this, SM_NULL_OID ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -5040,7 +6560,7 @@ IDE_RC smxTrans::addTouchedPage( scSpaceID   aSpaceID,
                                  scPageID    aPageID,
                                  SShort      aCTSlotNum )
 {
-    /* BUG-34446 DPath INSERTë¥¼ ìˆ˜í–‰í• ë•ŒëŠ” TPHì„ êµ¬ì„±í•˜ë©´ ì•ˆë©ë‹ˆë‹¤. */
+    /* BUG-34446 DPath INSERT¸¦ ¼öÇàÇÒ¶§´Â TPHÀ» ±¸¼ºÇÏ¸é ¾ÈµË´Ï´Ù. */
     if ( mDPathEntry == NULL )
     {
         IDE_TEST( mTouchPageList.add( aSpaceID,
@@ -5057,17 +6577,17 @@ IDE_RC smxTrans::addTouchedPage( scSpaceID   aSpaceID,
 }
 
 /*******************************************************************************
- * Description : Staticsticsë¥¼ ì„¸íŠ¸í•œë‹¤.
+ * Description : Staticstics¸¦ ¼¼Æ®ÇÑ´Ù.
  *
- *  BUG-22651  smrLogMgr::updateTransLSNInfoì—ì„œ
- *             ë¹„ì •ìƒì¢…ë£Œë˜ëŠ” ê²½ìš°ê°€ ì¢…ì¢…ìˆìŠµë‹ˆë‹¤.
+ *  BUG-22651  smrLogMgr::updateTransLSNInfo¿¡¼­
+ *             ºñÁ¤»óÁ¾·áµÇ´Â °æ¿ì°¡ Á¾Á¾ÀÖ½À´Ï´Ù.
  ******************************************************************************/
 void smxTrans::setStatistics( idvSQL * aStatistics )
 {
     mStatistics = aStatistics;
-    //fix BUG-23656 session,xid ,transactionì„ ì—°ê³„í•œ performance viewë¥¼ ì œê³µí•˜ê³ ,
-    //ê·¸ë“¤ê°„ì˜ ê´€ê³„ë¥¼ ì •í™•íˆ ìœ ì§€í•´ì•¼ í•¨.
-    // transactionì„ ì‚¬ìš©í•˜ëŠ” sessionì˜ ë³€ê²½.
+    //fix BUG-23656 session,xid ,transactionÀ» ¿¬°èÇÑ performance view¸¦ Á¦°øÇÏ°í,
+    //±×µé°£ÀÇ °ü°è¸¦ Á¤È®È÷ À¯ÁöÇØ¾ß ÇÔ.
+    // transactionÀ» »ç¿ëÇÏ´Â sessionÀÇ º¯°æ.
     if ( aStatistics != NULL )
     {
         if ( aStatistics->mSess != NULL )
@@ -5088,18 +6608,18 @@ void smxTrans::setStatistics( idvSQL * aStatistics )
 /***********************************************************************
  *
  * Description :
- *  infinite scnê°’ì„ ì¦ê°€ì‹œí‚¤ê³ ,
- *  output parameterë¡œ ì¦ê°€ëœ infinite scnê°’ì„ ë°˜í™˜í•œë‹¤.
+ *  infinite scn°ªÀ» Áõ°¡½ÃÅ°°í,
+ *  output parameter·Î Áõ°¡µÈ infinite scn°ªÀ» ¹İÈ¯ÇÑ´Ù.
  *
- *  aSCN    - [OUT] ì¦ê°€ëœ infinite scn ê°’
+ *  aSCN    - [OUT] Áõ°¡µÈ infinite scn °ª
  *
  **********************************************************************/
 IDE_RC smxTrans::incInfiniteSCNAndGet(smSCN *aSCN)
 {
-    smSCN sTempScn = mInfinite;
+    smSCN sTempSCN = mInfinite;
 
-    SM_ADD_INF_SCN( &sTempScn );
-    IDE_TEST_RAISE( SM_SCN_IS_LT(&sTempScn, &mInfinite) == ID_TRUE,
+    SM_ADD_INF_SCN( &sTempSCN );
+    IDE_TEST_RAISE( SM_SCN_IS_LT(&sTempSCN, &mInfinite) == ID_TRUE,
                     ERR_OVERFLOW );
 
     SM_ADD_INF_SCN( &mInfinite );
@@ -5119,9 +6639,9 @@ ULong smxTrans::getLockTimeoutByUSec( )
     return getLockTimeoutByUSec ( smuProperty::getLockTimeOut() );
 }
 /*
- * BUG-20589 Receiverë§Œ REPLICATION_LOCK_TIMEOUT ì ìš©
+ * BUG-20589 Receiver¸¸ REPLICATION_LOCK_TIMEOUT Àû¿ë
  * BUG-33539
- * receiverì—ì„œ lock escalationì´ ë°œìƒí•˜ë©´ receiverê°€ self deadlock ìƒíƒœê°€ ë©ë‹ˆë‹¤
+ * receiver¿¡¼­ lock escalationÀÌ ¹ß»ıÇÏ¸é receiver°¡ self deadlock »óÅÂ°¡ µË´Ï´Ù
  */
 ULong smxTrans::getLockTimeoutByUSec( ULong aLockWaitMicroSec )
 {
@@ -5156,7 +6676,7 @@ IDE_RC smxTrans::setReplLockTimeout( UInt aReplLockTimeout )
     return IDE_FAILURE;
 }
 /***********************************************************************
- * Description : BUG-43595 ë¡œ ì¸í•˜ì—¬ transaction ë§´ë²„ ë³€ìˆ˜ ì¶œë ¥
+ * Description : BUG-43595 ·Î ÀÎÇÏ¿© transaction ¸É¹ö º¯¼ö Ãâ·Â
  *
  **********************************************************************/
 void smxTrans::dumpTransInfo()
@@ -5172,6 +6692,8 @@ void smxTrans::dumpTransInfo()
                 "FstDskViewSCN   : 0x%"ID_XINT64_FMT"\n"
                 "OldestFstViewSCN: 0x%"ID_XINT64_FMT"\n"
                 "CursorOpenSCN   : 0x%"ID_XINT64_FMT"\n"
+                "LastRequestSCN  : 0x%"ID_XINT64_FMT"\n"
+                "PrepareSCN      : 0x%"ID_XINT64_FMT"\n"
                 "CommitSCN       : 0x%"ID_XINT64_FMT"\n"
                 "Infinite        : 0x%"ID_XINT64_FMT"\n"
                 "Status          : 0x%"ID_XINT32_FMT"\n"
@@ -5181,7 +6703,6 @@ void smxTrans::dumpTransInfo()
                 "IsTransWaitRepl : %"ID_UINT32_FMT"\n"
                 "IsFree          : %"ID_UINT32_FMT"\n"
                 "ReplID          : %"ID_UINT32_FMT"\n"
-                "IsWriteImpLog   : %"ID_UINT32_FMT"\n"
                 "LogTypeFlag     : %"ID_UINT32_FMT"\n"
                 "CommitState     : %"ID_XINT32_FMT"\n"
                 "TransFreeList   : 0x%"ID_XPOINTER_FMT"\n"
@@ -5191,7 +6712,6 @@ void smxTrans::dumpTransInfo()
                 "ProcessedUndoLogCount : %"ID_UINT32_FMT"\n"
                 "UndoBeginTime   : %"ID_UINT32_FMT"\n"
                 "UpdateSize      : %"ID_UINT64_FMT"\n"
-                "AbleToRollback  : %"ID_UINT32_FMT"\n"
                 "FstUpdateTime   : %"ID_UINT32_FMT"\n"
                 "LogBufferSize   : %"ID_UINT32_FMT"\n"
                 "LogOffset       : %"ID_UINT32_FMT"\n"
@@ -5223,6 +6743,8 @@ void smxTrans::dumpTransInfo()
                 mFstDskViewSCN,
                 mOldestFstViewSCN,
                 mCursorOpenInfSCN,
+                mLastRequestSCN,
+                mPrepareSCN,
                 mCommitSCN,
                 mInfinite,
                 mStatus,
@@ -5232,7 +6754,6 @@ void smxTrans::dumpTransInfo()
                 mIsTransWaitRepl,
                 mIsFree,
                 mReplID,
-                mIsWriteImpLog,
                 mLogTypeFlag,
                 mCommitState,
                 mTransFreeList, // pointer
@@ -5244,7 +6765,6 @@ void smxTrans::dumpTransInfo()
                 mProcessedUndoLogCount,
                 mUndoBeginTime,
                 mUpdateSize,
-                mAbleToRollback,
                 mFstUpdateTime,
                 mLogBufferSize,
                 mLogOffset,
@@ -5269,4 +6789,311 @@ void smxTrans::dumpTransInfo()
                 mMemoryTBSAccessed,
                 mMetaTableModified,
                 mIsReusableRollback );
+}
+
+/* BUG-48282 */
+typedef enum smxDistInfoType
+{
+    SMX_DIST_INFO_TYPE_INIT,  /* ÃÊ±â°ª */
+    SMX_DIST_INFO_TYPE_DUMMY, /* DUMMY ºĞ»êÁ¤º¸ */
+    SMX_DIST_INFO_TYPE_SET    /* NORMAL ºĞ»êÁ¤º¸ */
+} smxDistInfoType;
+
+smxDistInfoType getSmxDistType( smiDistTxInfo * aInfo )
+{
+    if ( aInfo->mDistLevel == SMI_DIST_LEVEL_INIT )
+    {
+        return SMX_DIST_INFO_TYPE_INIT;
+    }
+    else if ( ( aInfo->mDistLevel != SMI_DIST_LEVEL_INIT ) &&
+              SM_SCN_IS_INIT( aInfo->mFirstStmtViewSCN ) )
+    {
+        return SMX_DIST_INFO_TYPE_DUMMY;
+    }
+    else /* ( ( aInfo->mDistLevel != SMI_DIST_LEVEL_INIT ) &&
+              ( aInfo->mFirstStmtViewSCN > 0 ) ) */
+    {
+        return SMX_DIST_INFO_TYPE_SET;
+    }
+}
+
+/* BUG-48282
+   ºĞ»êµ¥µå¶ô Å½Áö¸¦ À§ÇØ TX¿¡ ºĞ»êÁ¤º¸°¡ ¼³Á¤µÈ´Ù.
+   DUMMYºĞ»êÁ¤º¸°¡ ¼³Á¤µÇ¸é ÀÌÈÄ NORMAL ºĞ»êÁ¤º¸·Î º¯°æµÉ¼öÀÖ´Ù (¹İ´ë·Î´Â ºÒ°¡) */
+void smxTrans::setDistTxInfo( smiDistTxInfo * aNewInfo )
+{
+    smxDistInfoType sCurInfoType = getSmxDistType( &mDistTxInfo );
+    smxDistInfoType sNewInfoType = getSmxDistType( aNewInfo );
+
+    switch ( sCurInfoType )
+    {
+        case SMX_DIST_INFO_TYPE_INIT:
+
+            /* ÀúÀåµÈ ºĞ»êÁ¤º¸°¡ ¾ø´Ù. »õ·Î ÀúÀåÇÑ´Ù.  */
+            SMI_SET_SMI_DIST_TX_INFO( &mDistTxInfo,
+                                      aNewInfo->mFirstStmtViewSCN, /* mFirstStmtViewSCN */
+                                      aNewInfo->mFirstStmtTime,    /* mFirstStmtTime */
+                                      aNewInfo->mShardPin,         /* mShardPin */
+                                      aNewInfo->mDistLevel );      /* mDistLevel */
+
+            break;
+
+        case SMX_DIST_INFO_TYPE_DUMMY:
+
+            /* DUMMY ºĞ»êÁ¤º¸ ÀÌÈÄ NORMAL ºĞ»êÁ¤º¸°¡ µé¾î¿Â °æ¿ì »õ·Î¿î Á¤º¸·Î µ¤¾î¾´´Ù. */
+            if ( sNewInfoType == SMX_DIST_INFO_TYPE_SET )
+            {
+                SMI_SET_SMI_DIST_TX_INFO( &mDistTxInfo,
+                                          aNewInfo->mFirstStmtViewSCN, /* mFirstStmtViewSCN */
+                                          aNewInfo->mFirstStmtTime,    /* mFirstStmtTime */
+                                          aNewInfo->mShardPin,         /* mShardPin */
+                                          aNewInfo->mDistLevel );      /* mDistLevel */
+            }
+
+            break;
+
+        case SMX_DIST_INFO_TYPE_SET:
+
+            if ( sNewInfoType == SMX_DIST_INFO_TYPE_SET )
+            {
+                /* ÀúÀåµÈ ºĞ»êÁ¤º¸°¡ ÀÖ´Ù¸é, »õ·Î¿î ºĞ»êÁ¤º¸µµ µ¿ÀÏÇÑ °ªÀÌ¾î¾ß ÇÑ´Ù.
+                   ´Ü, ºĞ»ê·¹º§Àº º¯°æµÉ¼öÀÖ´Ù. */
+                /* BUG-48829  
+                 * GTx Level ÀÌ º¯°æµÉ¶§ mFirstStmtViewSCN ÀÌ º¯°æµÉ¼ö ÀÖ´Ù. 
+                 * ºĞ»êÁ¤º¸°¡ º¯°æµÇ¾îµµ ÀÌÀü °ªÀ» »ç¿ëÇÏ¸éµÈ´Ù. 
+                IDE_DASSERT( aNewInfo->mFirstStmtViewSCN == mDistTxInfo.mFirstStmtViewSCN );
+                */
+                IDE_DASSERT( aNewInfo->mFirstStmtTime    == mDistTxInfo.mFirstStmtTime );
+                IDE_DASSERT( aNewInfo->mShardPin         == mDistTxInfo.mShardPin );
+
+                mDistTxInfo.mDistLevel = aNewInfo->mDistLevel;
+            }
+
+            break;
+
+        default:
+            IDE_DASSERT(0);
+    }
+}
+
+/* PROJ-2734 */
+/* smxTrans initialize¿Í end½Ã init() ÇÔ¼ö È£ÃâµÈ´Ù. */
+void smxTrans::clearDistTxInfo()
+{
+    SM_INIT_SCN( &mDistTxInfo.mFirstStmtViewSCN );
+    mDistTxInfo.mFirstStmtTime.initialize();
+    mDistTxInfo.mShardPin  = SMI_SHARD_PIN_INVALID;
+    mDistTxInfo.mDistLevel = SMI_DIST_LEVEL_INIT;
+}
+
+/***********************************************************************
+ * Description : PROJ-2733 ºĞ»ê Æ®·£Àè¼Ç Á¤ÇÕ¼º
+ *  PrepareSCN ¶§¹®¿¡ ´ë±â°¡ ¹ß»ıÇÏ´Â °æ¿ì¸¦ »ı°¢ÇØ º¾´Ï´Ù.
+
+    1. insert
+     a.viewSCN < PrepareSCN : CreateSCNÀº PrepareSCNº¸´Ù ´Ã °°°Å³ª Å­. ¾ÆÁ÷ »ğÀÔÀü => visible = FALSE 
+       => PrepareSCN °ü°è¾øÀÌ viewSCN < CreateSCN ÀÌ¹Ç·Î ´ë±âÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+     b.PrepareSCN < viewSCN ÀÎ °æ¿ì
+      PrepareSCN < CreateSCN < viewSCN : »ğÀÔ ¿Ï·á => visible = TRUE
+      PrepareSCN < viewSCN < CreateSCN : ¾ÆÁ÷ »ğÀÔÀü => visible = FALSE
+       => µÑÁß¿¡ ¾î¶² °æ¿ì°¡ µÉÁö ¸ğ¸£´Ï ´ë±â ÇÒ ÇÊ¿ä ÀÖÀ½. 
+
+    2. delete
+     a.viewSCN < PrepareSCN : limitSCN Àº PrepareSCN º¸´Ù °°°Å³ª Å­. ¾ÆÁ÷ »èÁ¦ Àü => visible = TRUE 
+      => PrepareSCN °ü°è¾øÀÌ viewSCN < limitSCN ÀÌ¹Ç·Î ´ë±âÇÒ ÇÊ¿ä°¡ ¾ø´Ù.  
+     b.PrepareSCN < viewSCN ÀÇ °æ¿ì
+      PrepareSCN < limitSCN < viewSCN : ÀÌ¹Ì »èÁ¦ µÊ => visible = FALSE
+      PrepareSCN < viewSCN < limitSCN : ¾ÆÁ÷ »èÁ¦ Àü => visible = TRUE 
+      => µÑÁß¿¡ ¾î¶² °æ¿ì°¡ µÉÁö ¸ğ¸£´Ï ´ë±â ÇÒ ÇÊ¿ä ÀÖÀ½  
+
+
+     °¡´ÉÇÑ Tx »óÅÂ Á¤¸® 
+     »óÅÂ,           sCommitState,    sRowTransStatus, sRowTID,     sPrepareSCN,     sCommitSCN
+     prepare ¾È¿È,   SMX_XA_START,    SMX_TX_BEGIN,    sTransID,     SM_SCN_INFINITE, SM_SCN_INFINITE,
+
+     prepare ¼³Á¤Áß, SMX_XA_PREPARED, SMX_TX_BEGIN,    sTransID,     SM_SCN_INFINITE, SM_SCN_INFINITE,
+                                      SMX_TX_PRECOMMIT
+
+     pending »óÅÂ : prepare µÇ°í commit ÀÌ ¾ÆÁ÷ ¾È¿È
+                     SMX_XA_PREPARED, SMX_TX_BEGIN,    sTransID,     aSCN,            SM_SCN_INFINITE,
+
+     commit ¼³Á¤Áß,  SMX_XA_PREPARED, SMX_TX_BEGIN,    sTransID,     aSCN,            SM_SCN_INFINITE,
+                                      SMX_TX_PRECOMMIT,
+
+     commit/abort/end µÊ. ÀçÈ°¿ë±îÁöµÊ
+                     SMX_XA_COMPLETE, SMX_TX_COMMIT    sTransID,     aSCN,            aSCN, 
+                                      SMX_TX_ABORT      != sTransID, SM_SCN_INFINITE, SM_SCN_INFINITE,
+                                      SMX_TX_END
+                                      SMX_TX_BEGIN,  
+
+ **********************************************************************/
+IDE_RC smxTrans::waitPendingTx( smxTrans * aTrans, 
+                                smSCN      aRowSCN,
+                                smSCN      aViewSCN )
+{
+    smxTrans  * sRowTrans;
+    smSCN       sPrepareSCN;
+    smxStatus   sRowTransStatus;
+    smTID       sRowTransID = SM_NULL_TID;
+    smTID       sRowTID     = SMP_GET_TID( aRowSCN );
+#ifdef DEBUG
+    smSCN           sCommitSCN;
+    smiCommitState  sCommitState;
+#endif
+    UShort          sTransSlotN;    
+    UShort          sRowTransSlotN; 
+    UInt            sState = 0;
+    PDL_Time_Value  sCurrentTime;
+    PDL_Time_Value  sFetchTimeout;
+    PDL_Time_Value  sTimeoutVal;
+    UInt            sLoop;
+    UInt            sIndoubtFetchTimeout;
+    UInt            sIndoubtFetchMethod;
+
+    /* ÀÌ¹Ì GCTx ÀÎ°Å È®ÀÎÇÏ°í ¿ÔÀ¸´Ï µğ¹ö±× ¿¡¼­¸¸ Á×ÀÌÀÚ. */
+    IDE_DASSERT( aTrans->mIsGCTx == ID_TRUE );
+    /* ÀÌ¹Ì INFINITE ÀÎ°Å È®ÀÎÇÏ°í ¿ÔÀ¸´Ï µğ¹ö±× ¿¡¼­¸¸ Á×ÀÌÀÚ. */
+    IDE_DASSERT( SM_SCN_IS_INFINITE( aRowSCN ) );
+  
+    /* ³»°¡ Global Consistent Transaction ÀÌ ¾Æ´Ï¸é ³¡. */
+    IDE_TEST_CONT( aTrans->mIsGCTx == ID_FALSE, return_immediately );
+    /* target Row °¡ Commit µÇ¾úÀ¸¸é ³¡. */
+    IDE_TEST_CONT( SM_SCN_IS_NOT_INFINITE( aRowSCN ), return_immediately );
+
+    sRowTrans = smxTransMgr::getTransByTID(sRowTID);
+
+    /* target Row °¡ Global Consistent TransactionÀÌ ¼öÁ¤ÇÑ ·¹ÄÚµå°¡ ¾Æ´Ï¸é ³¡. */
+    IDE_TEST_CONT( sRowTrans->mIsGCTx == ID_FALSE, return_immediately );
+
+    /* XA_PREPARED µÈ tx ¸¸ Commit ´ë±â */
+    IDE_TEST_CONT( sRowTrans->mCommitState != SMX_XA_PREPARED, return_immediately );
+
+    /* BUG-48244 */
+    IDE_DASSERT( sRowTID != aTrans->mTransID );
+    IDE_TEST_CONT( sRowTID == aTrans->mTransID, return_immediately );
+
+    IDU_FIT_POINT("3.TASK-7220@smxTrans::waitPendingTx");
+
+    /* Row¸¦ ¼öÁ¤ÇÑ Tx°¡ Á¤È®ÇÑ PrepareSCN À» ¼³Á¤ÇÒ¶§±îÁö ´ë±â
+       Àá±ñ µ¿¾ÈÀÏ°ÍÀÌ¹Ç·Î sleep ÇÏÁö ¾Ê´Â´Ù. */
+    sLoop = 0;
+    do
+    {
+        if ( (++sLoop % SMX_INDOUBT_FETCH_SLEEP_COUNT ) == 0 )
+        {
+            idlOS::thr_yield();
+        } 
+
+        ID_SERIAL_BEGIN( sRowTrans = smxTransMgr::getTransByTID(sRowTID) );
+        ID_SERIAL_EXEC( sRowTransStatus = sRowTrans->mStatus, 1);
+        ID_SERIAL_EXEC( SM_GET_SCN( &sPrepareSCN, &(sRowTrans->mPrepareSCN) ), 2 );
+#ifdef DEBUG
+        ID_SERIAL_EXEC( SM_GET_SCN( &sCommitSCN, &(sRowTrans->mCommitSCN) ), 3 );
+        ID_SERIAL_EXEC( SM_GET_SCN( &sCommitState, &(sRowTrans->mCommitState) ), 4 );
+#endif
+        ID_SERIAL_END( sRowTransID = sRowTrans->mTransID );
+
+    } while( SM_SCN_IS_INFINITE(sPrepareSCN) && (sRowTID == sRowTransID) );
+    
+    /* Row¸¦ ¼öÁ¤ÁßÀÌ´ø TX °¡ Commit ÇÏ°í ³ª°¬À¸¸é ³¡. */
+    IDE_TEST_CONT( (sRowTransStatus != SMX_TX_BEGIN) || (sRowTID != sRowTransID ), return_immediately );
+
+    IDE_DASSERT( sRowTransStatus == SMX_TX_BEGIN );
+    IDE_DASSERT( sCommitState == SMX_XA_PREPARED );
+    IDE_DASSERT( SM_SCN_IS_SYSTEMSCN(sPrepareSCN) );
+    IDE_DASSERT( SM_SCN_IS_VIEWSCN(aViewSCN) );
+
+    /* PrepareSCN > viewSCN ¸é ³¡.  */
+    IDE_TEST_CONT( SM_SCN_IS_GT( &sPrepareSCN, &aViewSCN ), return_immediately );
+
+    sTransSlotN          = aTrans->getSlotID();
+    sRowTransSlotN       = sRowTrans->getSlotID();
+
+    /* BUG-48250 */
+    sIndoubtFetchTimeout = aTrans->mIndoubtFetchTimeout;
+    sIndoubtFetchMethod  = aTrans->mIndoubtFetchMethod;
+
+    sFetchTimeout = idlOS::gettimeofday();
+    sTimeoutVal.initialize( sIndoubtFetchTimeout, 0 );
+    sFetchTimeout += sTimeoutVal;
+    
+    // X$PendingWait 
+    smxTransMgr::registPendingTable( sTransSlotN, sRowTransSlotN );
+    sState = 1;
+
+    sLoop = 0;
+    do
+    { 
+        if ( (++sLoop % SMX_INDOUBT_FETCH_SLEEP_COUNT ) == 0 )
+        {
+            sCurrentTime = idlOS::gettimeofday();
+ 
+            /* INDOUBT_FETCH_TIMEOUT : 0 ÀÌ¸é ¹«ÇÑ´ë±â */
+            if ( sIndoubtFetchTimeout != 0 )
+            {
+                if ( sCurrentTime > sFetchTimeout )
+                {
+                    /* INDOUBT_FETCH_METHOD °¡ 0 (skip)ÀÌ ¾Æ´Ï¸é ¿¹¿ÜÃ³¸® */
+                    IDE_TEST_RAISE( sIndoubtFetchMethod != 0, err_IndoubtFetchTimeout );
+                    break;
+                }
+            }
+
+            if( aTrans->mStatistics != NULL )
+            {
+                /* SessionEvent ¿¡ ÀÇÇÑ ¿¡·¯´Â INDOUBT_FETCH_METHOD ¸¦ º¸Áö ¾Ê´Â´Ù. */
+                IDE_TEST( iduCheckSessionEvent(aTrans->mStatistics)
+                          != IDE_SUCCESS );
+            }
+
+            idlOS::thr_yield();
+        }
+
+        ID_SERIAL_BEGIN( sRowTrans = smxTransMgr::getTransByTID(sRowTID) );
+        ID_SERIAL_EXEC( sRowTransStatus = sRowTrans->mStatus, 1);
+        ID_SERIAL_END( sRowTransID = sRowTrans->mTransID );
+
+    }while( (sRowTransStatus == SMX_TX_BEGIN) && (sRowTID == sRowTransID) );
+
+    sState = 0;
+    smxTransMgr::clearPendingTable( sTransSlotN, sRowTransSlotN ); 
+
+    IDE_EXCEPTION_CONT( return_immediately );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( err_IndoubtFetchTimeout )
+    {
+        UChar   sXidString[SMI_XID_STRING_LEN];
+        ID_XID  sXID;
+        initXID( &sXID );
+        sRowTrans->getXID( &sXID );
+        (void)idaXaConvertXIDToString( NULL,
+                                       &sXID,
+                                       sXidString,
+                                       SMI_XID_STRING_LEN );
+
+        IDE_SET( ideSetErrorCode( smERR_ABORT_INDOUBT_FETCH_TIMEOUT, sXidString ) )
+
+        IDE_ERRLOG( IDE_SD_19 );
+    }
+    IDE_EXCEPTION_END;
+    
+    switch ( sState )
+    {
+    case 1:
+        smxTransMgr::clearPendingTable( sTransSlotN, sRowTransSlotN );
+    default:
+        break;
+    } 
+
+    return IDE_FAILURE;
+}
+
+void smxTrans::initXID( ID_XID * aXID )
+{
+    aXID->formatID     = (vULong)-1;
+    aXID->gtrid_length = (vULong)-1;
+    aXID->bqual_length = (vULong)-1;
+    idlOS::memset( aXID->data, 0x00, ID_MAXXIDDATASIZE );
 }

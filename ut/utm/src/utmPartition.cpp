@@ -48,25 +48,31 @@
     "WHERE A.INDEX_ID = %"ID_INT32_FMT" "                            \
     "      AND A.TABLE_PARTITION_ID = B.PARTITION_ID "               \
     "      AND A.TBS_ID = C.ID "                                     \
+    "      AND PARTITION_NAME IS NOT NULL"                           \
     "ORDER BY A.INDEX_PARTITION_ID "
 
+/* BUG-48023 Regain v.6 performance due to changed plan */
 #define GET_LOBSTORAGE_QUERY                                         \
-    "SELECT /*+ USE_HASH(C, D) */ B.COLUMN_NAME , D.NAME "           \
-    "FROM SYSTEM_.SYS_TABLES_ A, "                                   \
-    "     SYSTEM_.SYS_COLUMNS_ B, "                                  \
-    "     SYSTEM_.SYS_LOBS_ C, "                                     \
-    "     V$TABLESPACES D, "                                         \
-    "     SYSTEM_.SYS_USERS_ E "                                     \
-    "WHERE A.TABLE_NAME = '%s' "                                     \
-    "      AND A.TABLE_ID = B.TABLE_ID "                             \
-    "      AND B.TABLE_ID = C.TABLE_ID "                             \
-    "      AND B.COLUMN_ID = C.COLUMN_ID "                           \
-    "      AND C.TBS_ID = D.ID "                                     \
-    "      AND E.USER_NAME = '%s' "                                  \
-    "      AND E.USER_ID = A.USER_ID "                               \
-    "      AND C.IS_DEFAULT_TBS ='T' "                               \
-    "      AND B.IS_HIDDEN = 'F' "                                   \
-    "ORDER BY C.COLUMN_ID "
+    " SELECT UTC.COLUMN_NAME , D.NAME"                               \
+    " FROM ( "                                                       \
+        " SELECT /*+ no_merge use_index_nl(E A) */"                  \
+        "   B.TABLE_ID, B.COLUMN_ID, B.COLUMN_NAME"                  \
+        " FROM SYSTEM_.SYS_TABLES_ A,"                               \
+        "      SYSTEM_.SYS_COLUMNS_ B,"                              \
+        "      SYSTEM_.SYS_USERS_ E"                                 \
+        " WHERE  E.USER_NAME =?"                                     \
+        "        AND A.TABLE_ID = B.TABLE_ID"                        \
+        "        AND A.TABLE_NAME =?"                                \
+        "        AND E.USER_ID = A.USER_ID"                          \
+        "        AND B.IS_HIDDEN = 'F'"                              \
+     " ) as UTC,"                                                    \
+       " SYSTEM_.SYS_LOBS_ C,"                                       \
+       " V$TABLESPACES D"                                            \
+     " WHERE UTC.TABLE_ID = C.TABLE_ID"                              \
+        " AND UTC.COLUMN_ID = C.COLUMN_ID"                           \
+        " AND C.TBS_ID = D.ID"                                       \
+        " AND C.IS_DEFAULT_TBS ='T'"                                 \
+     " ORDER BY C.COLUMN_ID"
 
 #define GET_TABLEPART_QUERY                                          \
     "SELECT /*+ USE_HASH(B, C) */ A.COLUMN_NAME , C.NAME "           \
@@ -131,11 +137,12 @@
     " V$TABLESPACES d "                                                 \
     " where a.user_id=b.user_id and "                                   \
     " a.table_id=c.table_id and a.tbs_id=d.ID and "                     \
-    " b.user_name='%s' and c.table_name='%s' "                          \
+    " b.user_name='%s' and c.table_name='%s' and"                       \
+    " a.partition_name is not null"                                     \
     " order by a.partition_id "
 
-//fix BUG-17481 aexportê°€ partion disk tableì„ ì§€ì›í•´ì•¼ í•œë‹¤.
-// partion index typeì„ êµ¬í•œë‹¤.
+//fix BUG-17481 aexport°¡ partion disk tableÀ» Áö¿øÇØ¾ß ÇÑ´Ù.
+// partion index typeÀ» ±¸ÇÑ´Ù.
 IDE_RC   getPartIndexType(SInt   aIndexID,
                           SInt   *aPartIndexType)
 {
@@ -205,7 +212,7 @@ IDE_RC   getPartIndexLocalUnique(SInt   aIndexID,
     IDE_TEST_RAISE(SQLExecDirect(sStmt, (SQLCHAR *)sQuery, SQL_NTS)
                    != SQL_SUCCESS, inx_error);
     
-    //fix BUG-17481 aexportê°€ partion disk tableì„ ì§€ì›í•´ì•¼ í•œë‹¤.
+    //fix BUG-17481 aexport°¡ partion disk tableÀ» Áö¿øÇØ¾ß ÇÑ´Ù.
     IDE_TEST_RAISE(
         SQLBindCol(sStmt, 1, SQL_C_CHAR, (SQLPOINTER)sIsLocalUnique,
                    2, &sIsLocalUniqueInd)
@@ -247,8 +254,8 @@ IDE_RC   getPartIndexLocalUnique(SInt   aIndexID,
     return IDE_FAILURE;    
 }
 
-//fix BUG-17481 aexportê°€ partion disk tableì„ ì§€ì›í•´ì•¼ í•œë‹¤.
-// partion index item ì •ë³´ë¥¼ ìƒì„±í•œë‹¤.
+//fix BUG-17481 aexport°¡ partion disk tableÀ» Áö¿øÇØ¾ß ÇÑ´Ù.
+// partion index item Á¤º¸¸¦ »ı¼ºÇÑ´Ù.
 IDE_RC genPartIndexItems( SInt    aIndexID,
                           SChar * aDdl,
                           SInt  * aDdlPos )
@@ -331,10 +338,10 @@ IDE_RC genPartIndexItems( SInt    aIndexID,
 }
 
 
-//fix BUG-24274 aexportì—ì„œ LOB Tablespaceë¥¼ ê³ ë ¤í•˜ì§€ ì•ŠìŒ.
+//fix BUG-24274 aexport¿¡¼­ LOB Tablespace¸¦ °í·ÁÇÏÁö ¾ÊÀ½.
 /*
 
-ë‹¤ìŒ ì§ˆì˜ë¥¼ ìˆ˜í–‰í•˜ì—¬,
+´ÙÀ½ ÁúÀÇ¸¦ ¼öÇàÇÏ¿©,
 
 SELECT B._COLUMN_NAME ,
        D.NAME
@@ -350,7 +357,7 @@ WHERE
   B.COLUMN_ID = C.COLUMN_ID AND 
   C.TBS_ID    = D.ID;
   
-ë‹¤ìŒê³¼ê°™ì€ êµ¬ë¬¸ì„ ìƒì„±í•œë‹¤.
+´ÙÀ½°ú°°Àº ±¸¹®À» »ı¼ºÇÑ´Ù.
 
 LOB (c1) store as (TABLESPACE BLOB_SPACE1)
 LOB (c2) store as (TABLESPACE BLOB_SPACE2);
@@ -374,30 +381,56 @@ IDE_RC genLobStorageClaues( SChar * aUser,
     IDE_TEST_RAISE(SQLAllocStmt(m_hdbc, &sStmt) != SQL_SUCCESS,
                    alloc_error);
 
-    // BUG-24762 aexportì—ì„œ create table ì‹œ ë‹¤ë¥¸ìœ ì €ì˜ LOB store as ì˜µì…˜ì´ ì‚½ì…ë¨
-    // ìœ ì €ëª…ë„ ì²´í¬í•˜ë„ë¡ ìˆ˜ì •í•¨ ë˜í•œ IS_DEFAULT_TBS ê°€ F ì¼ë•Œë§Œ ì¶œë ¥í•˜ë„ë¡ í•©ë‹ˆë‹¤.
-    idlOS::sprintf(sQuery, GET_LOBSTORAGE_QUERY, aTableName, aUser);
-
-    IDE_TEST_RAISE(SQLExecDirect(sStmt, (SQLCHAR *)sQuery, SQL_NTS)
-                   != SQL_SUCCESS, inx_error);
+    /* BUG-48023 Regain v.6 performance due to changed plan */    
+    // BUG-24762 aexport¿¡¼­ create table ½Ã ´Ù¸¥À¯ÀúÀÇ LOB store as ¿É¼ÇÀÌ »ğÀÔµÊ
+    // À¯Àú¸íµµ Ã¼Å©ÇÏµµ·Ï ¼öÁ¤ÇÔ ¶ÇÇÑ IS_DEFAULT_TBS °¡ F ÀÏ¶§¸¸ Ãâ·ÂÇÏµµ·Ï ÇÕ´Ï´Ù.
+    idlOS::sprintf( sQuery, GET_LOBSTORAGE_QUERY );
     
+    IDE_TEST( Prepare( sQuery, sStmt ) != SQL_SUCCESS );
+    
+    IDE_TEST_RAISE( SQLBindParameter( sStmt,
+                                      1,
+                                      SQL_PARAM_INPUT,
+                                      SQL_C_CHAR,
+                                      SQL_VARCHAR,
+                                      UTM_NAME_LEN,
+                                      0,
+                                      aUser,
+                                      UTM_NAME_LEN+1,
+                                      NULL )
+                    != SQL_SUCCESS, stmt_error );
+
+    IDE_TEST_RAISE( SQLBindParameter( sStmt,
+                                      2,
+                                      SQL_PARAM_INPUT,
+                                      SQL_C_CHAR,
+                                      SQL_VARCHAR,
+                                      UTM_NAME_LEN,
+                                      0,
+                                      aTableName,
+                                      UTM_NAME_LEN+1,
+                                      NULL )
+                    != SQL_SUCCESS, stmt_error );
+
 
     IDE_TEST_RAISE(
         SQLBindCol(sStmt, 1, SQL_C_CHAR, (SQLPOINTER)sLobColName,
-                   UTM_NAME_LEN, &sLobColumnNameInd)
-        != SQL_SUCCESS, inx_error);    
+                   (SQLLEN) ID_SIZEOF(sLobColName), &sLobColumnNameInd)
+        != SQL_SUCCESS, stmt_error);    
     IDE_TEST_RAISE(
         SQLBindCol(sStmt, 2, SQL_C_CHAR, (SQLPOINTER)sTbsName,
                    UTM_NAME_LEN, &sTableSpaceNameInd)
-        != SQL_SUCCESS, inx_error);    
+        != SQL_SUCCESS, stmt_error);    
 
-     /*ë‹¤ìŒê³¼ê°™ì€ êµ¬ë¬¸ì„ ìƒì„±í•œë‹¤.
+    IDE_TEST( Execute( sStmt ) != SQL_SUCCESS );
+
+     /*´ÙÀ½°ú°°Àº ±¸¹®À» »ı¼ºÇÑ´Ù.
        LOB (c1) store as (TABLESPACE BLOB_SPACE1)
        LOB (c2) store as (TABLESPACE BLOB_SPACE2); */
     
     while ((sRet = SQLFetch(sStmt)) != SQL_NO_DATA)
     {
-        IDE_TEST_RAISE(sRet != SQL_SUCCESS, StmtError);
+        IDE_TEST_RAISE(sRet != SQL_SUCCESS, stmt_error);
         *aDdlPos += idlOS::sprintf( aDdl + *aDdlPos,
                                     "\n LOB ( \"%s\" ) STORE AS ( TABLESPACE \"%s\" ) \n",
                                     sLobColName,
@@ -417,7 +450,7 @@ IDE_RC genLobStorageClaues( SChar * aUser,
     {
         utmSetErrorMsgWithHandle(SQL_HANDLE_DBC, (SQLHANDLE)m_hdbc);
     }
-    IDE_EXCEPTION(StmtError);
+    IDE_EXCEPTION(stmt_error);
     {
         utmSetErrorMsgWithHandle(SQL_HANDLE_STMT, (SQLHANDLE)sStmt);
     }
@@ -432,9 +465,9 @@ IDE_RC genLobStorageClaues( SChar * aUser,
     return IDE_FAILURE;    
 }
 
-//fix BUG-24274 aexportì—ì„œ LOB Tablespaceë¥¼ ê³ ë ¤í•˜ì§€ ì•ŠìŒ.
+//fix BUG-24274 aexport¿¡¼­ LOB Tablespace¸¦ °í·ÁÇÏÁö ¾ÊÀ½.
 /*
-partitionì— ìˆëŠ” LOBì„ ê³ ë ¤í•œë‹¤.
+partition¿¡ ÀÖ´Â LOBÀ» °í·ÁÇÑ´Ù.
 
 SELECT A.COLUMN_NAME ,
        C.NAME
@@ -483,7 +516,7 @@ IDE_RC genPartitionLobStorageClaues( UInt    aTableID,
                    UTM_NAME_LEN, &sTableSpaceNameInd)
         != SQL_SUCCESS, inx_error);        
 
-     /*ë‹¤ìŒê³¼ê°™ì€ êµ¬ë¬¸ì„ ìƒì„±í•œë‹¤.
+     /*´ÙÀ½°ú°°Àº ±¸¹®À» »ı¼ºÇÑ´Ù.
        LOB (c1) store as (TABLESPACE BLOB_SPACE1)
        LOB (c2) store as (TABLESPACE BLOB_SPACE2); */
     
@@ -632,7 +665,7 @@ SQLRETURN getPartTablesInfo(SChar* aTableName,
     SQLHSTMT sPartTablesInfoStmt = SQL_NULL_HSTMT;
     SQLRETURN sRet;
 
-    // partition method ì–»ì–´ì˜¤ê¸°.
+    // partition method ¾ò¾î¿À±â.
     idlOS::sprintf( sQuery, GET_PARTMETHOD_QUERY, aTableName, aUserName);
 
     // allocate statement
@@ -717,7 +750,7 @@ SQLRETURN getPartitionKeyColumnStr(SChar* aTableName,
     SChar sColumnList[1024];
     idBool sIsFirstRow = ID_TRUE;
 
-    // partition key column ì–»ì–´ì˜¤ê¸°.
+    // partition key column ¾ò¾î¿À±â.
     idlOS::sprintf( sQuery, GET_PARTKEYCOLUMN_QUERY, aUserName, aTableName);
 
     // allocate statement
@@ -797,7 +830,7 @@ SQLRETURN getPartitionColumnStats ( SChar* aUserName,
     SQLHSTMT sStmt = SQL_NULL_HSTMT;
     SQLRETURN sRet;
 
-    // partition key column ì–»ì–´ì˜¤ê¸°.
+    // partition key column ¾ò¾î¿À±â.
     idlOS::sprintf( sQuery, GET_PARTKEYCOLUMN_QUERY, aUserName, aTableName);
 
     // allocate statement
@@ -866,7 +899,7 @@ SQLRETURN writePartitionElementsQuery( utmPartTables * aPartTablesInfo,
     SChar sPartitionMaxValue[4000+1];
     SChar sTableSpaceName[STR_LEN+1];
     SChar sPartitionAccess[STR_LEN + 1];    /* PROJ-2359 Table/Partition Access Option */
-    //fix BUG-24274 aexportì—ì„œ LOB Tablespaceë¥¼ ê³ ë ¤í•˜ì§€ ì•ŠìŒ. 
+    //fix BUG-24274 aexport¿¡¼­ LOB Tablespace¸¦ °í·ÁÇÏÁö ¾ÊÀ½. 
     UInt   sTableID     = 0;
     UInt   sPartitionID = 0;
 
@@ -901,7 +934,7 @@ SQLRETURN writePartitionElementsQuery( utmPartTables * aPartTablesInfo,
             break;
     }
 
-    //fix BUG-24274 aexportì—ì„œ LOB Tablespaceë¥¼ ê³ ë ¤í•˜ì§€ ì•ŠìŒ.
+    //fix BUG-24274 aexport¿¡¼­ LOB Tablespace¸¦ °í·ÁÇÏÁö ¾ÊÀ½.
     idlOS::sprintf( sQuery, GET_PARTTBS_QUERY, aUserName, aTableName);
 
     // allocate statement
@@ -912,7 +945,7 @@ SQLRETURN writePartitionElementsQuery( utmPartTables * aPartTablesInfo,
                    != SQL_SUCCESS, StmtError);
 
     // binding
-    //fix BUG-24274 aexportì—ì„œ LOB Tablespaceë¥¼ ê³ ë ¤í•˜ì§€ ì•ŠìŒ.
+    //fix BUG-24274 aexport¿¡¼­ LOB Tablespace¸¦ °í·ÁÇÏÁö ¾ÊÀ½.
     IDE_TEST_RAISE(SQLBindCol(sStmt, 1, SQL_C_SLONG,&sPartitionID , 0, NULL)
                    != SQL_SUCCESS, StmtError);
     
@@ -952,7 +985,7 @@ SQLRETURN writePartitionElementsQuery( utmPartTables * aPartTablesInfo,
             sDdlPos += idlOS::sprintf( aDdl + sDdlPos, ",\n" );
         }
 
-        // Range ì´ê³  DEFAULT ì¸ ê²½ìš° : ë§ˆì§€ë§‰ì— MAX_VALUE ê°€ null.
+        // Range ÀÌ°í DEFAULT ÀÎ °æ¿ì : ¸¶Áö¸·¿¡ MAX_VALUE °¡ null.
         switch (aPartTablesInfo->m_partitionMethod)
         {
             case UTM_PARTITION_METHOD_RANGE:
@@ -985,20 +1018,20 @@ SQLRETURN writePartitionElementsQuery( utmPartTables * aPartTablesInfo,
                 break;
         }
 
-        // tablespace ì§€ì •ì‹œ í•´ë‹¹ ì§ˆì˜ ìŠ¤íŠ¸ë§ ì¶”ê°€.
-        // default tablespace ë¥¼ ì´ìš©í•˜ëŠ” ê²½ìš° sTableSpaceName ì€ null
+        // tablespace ÁöÁ¤½Ã ÇØ´ç ÁúÀÇ ½ºÆ®¸µ Ãß°¡.
+        // default tablespace ¸¦ ÀÌ¿ëÇÏ´Â °æ¿ì sTableSpaceName Àº null
         if (sTableSpaceNameInd != SQL_NULL_DATA)
         {
-            // tablespace ê°€ assign ëœ ê²½ìš°
+            // tablespace °¡ assign µÈ °æ¿ì
             sDdlPos += idlOS::sprintf( aDdl + sDdlPos, 
                                        " TABLESPACE \"%s\"",
                                        sTableSpaceName );
         }
         else
         {
-            // default tablespace ë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš°. skip.
+            // default tablespace ¸¦ »ç¿ëÇÏ´Â °æ¿ì. skip.
         }
-        //fix BUG-24274 aexportì—ì„œ LOB Tablespaceë¥¼ ê³ ë ¤í•˜ì§€ ì•ŠìŒ.
+        //fix BUG-24274 aexport¿¡¼­ LOB Tablespace¸¦ °í·ÁÇÏÁö ¾ÊÀ½.
         IDE_TEST( genPartitionLobStorageClaues( sTableID,
                                                 sPartitionID,
                                                 aDdl,
@@ -1089,13 +1122,13 @@ SQLRETURN writePartitionQuery( SChar  * aTableName,
 
     if (*aIsPartitioned == ID_FALSE)
     {
-        // partitioned table ì´ ì•„ë‹ˆë¯€ë¡œ skip.
+        // partitioned table ÀÌ ¾Æ´Ï¹Ç·Î skip.
     }
     else 
     {
-        // partitioned table ì¸ ê²½ìš°, ê´€ë ¨ query ì˜ ì¶”ê°€.
+        // partitioned table ÀÎ °æ¿ì, °ü·Ã query ÀÇ Ãß°¡.
 
-        // partition key column string ì–»ì–´ì˜¤ê¸°. 
+        // partition key column string ¾ò¾î¿À±â. 
         idlOS::memset(sPartitionKeyStr, 0, ID_SIZEOF(sPartitionKeyStr));
         sRet = getPartitionKeyColumnStr(
                                         aTableName,
@@ -1104,14 +1137,14 @@ SQLRETURN writePartitionQuery( SChar  * aTableName,
                                         1024);
         IDE_TEST(sRet != SQL_SUCCESS);
  
-        // partition method ì–»ì–´ì˜¤ê¸° ê´€ë ¨ : system_.sys_part_tables ë¥¼
+        // partition method ¾ò¾î¿À±â °ü·Ã : system_.sys_part_tables ¸¦
         // lookup.
         sRet = getPartTablesInfo(aTableName, aUserName, &sPartTableInfo);
         IDE_TEST(sRet != SQL_SUCCESS);
 
-        // partition query ê´€ë ¨
+        // partition query °ü·Ã
         sDdlPos = (*aRetPos);
-        // partition method ì— ë”°ë¼ì„œ Range, Hash, List
+        // partition method ¿¡ µû¶ó¼­ Range, Hash, List
         toPartitionMethodStr(&sPartTableInfo, sPartitionMethodName);
     
         sDdlPos += idlOS::sprintf( aDdl + sDdlPos, "\n" );
@@ -1122,8 +1155,8 @@ SQLRETURN writePartitionQuery( SChar  * aTableName,
     
         sDdlPos += idlOS::sprintf( aDdl + sDdlPos, " (\n" );
 
-        // partition ë“¤ lookup & ì§ˆì˜ ì¶”ê°€.
-        // partition name, min, max ì–»ì–´ì˜¤ê¸° 
+        // partition µé lookup & ÁúÀÇ Ãß°¡.
+        // partition name, min, max ¾ò¾î¿À±â 
         sRet = writePartitionElementsQuery( &sPartTableInfo, 
                                             aTableName,
                                             aUserName,
@@ -1134,7 +1167,7 @@ SQLRETURN writePartitionQuery( SChar  * aTableName,
 
         sDdlPos += idlOS::sprintf( aDdl + sDdlPos, " )" );
 
-        // row movement ê´€ë ¨ ì¶”ê°€
+        // row movement °ü·Ã Ãß°¡
         if (sPartTableInfo.m_isEnabledRowMovement == ID_TRUE)
         {
             // 'enable row movement'
@@ -1143,11 +1176,11 @@ SQLRETURN writePartitionQuery( SChar  * aTableName,
         }
         else
         {
-            // 'disable row movement' : default ì´ë¯€ë¡œ ìƒëµ. 
+            // 'disable row movement' : default ÀÌ¹Ç·Î »ı·«. 
         }
 
-        // last : sDdlPos ì„¤ì •. aDdl ë’¤ì— ì¿¼ë¦¬ë¬¸ì„ ê³„ì† 
-        // append ê°€ëŠ¥í•˜ê²Œë” ì¬ì„¤ì •.
+        // last : sDdlPos ¼³Á¤. aDdl µÚ¿¡ Äõ¸®¹®À» °è¼Ó 
+        // append °¡´ÉÇÏ°Ô²û Àç¼³Á¤.
         (*aRetPos) = sDdlPos;
    }
 

@@ -45,7 +45,7 @@ static IDE_RC stfSt_GeometryEstimate(
 mtfModule stfSt_Geometry = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     stfSt_GeometryFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -168,19 +168,21 @@ IDE_RC stfSt_GeometryCalculate(
                                      aInfo,
                                      aTemplate )
               != IDE_SUCCESS );
-    // Memory ìž¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ìž¬ ìœ„ì¹˜ ê¸°ë¡
+    // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
     IDE_TEST( sQmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS);
     sStage = 1;
     
-    IDE_TEST( stfWKT::geomFromText(
-                  sQmxMem,
-                  aStack[1].value,
-                  aStack[0].value,
-                  (SChar*)(aStack[0].value) + aStack[0].column->column.size,
-                  &rc,
-                  STU_VALIDATION_ENABLE ) != IDE_SUCCESS);
+    IDE_TEST( stfWKT::geomFromText( sQmxMem,
+                                    aStack[1].value,
+                                    aStack[0].value,
+                                    (SChar*)(aStack[0].value) + aStack[0].column->column.size,
+                                    &rc,
+                                    STU_VALIDATION_ENABLE,
+                                    ID_FALSE,
+                                    ST_SRID_INIT )
+              != IDE_SUCCESS );
     
-    // Memory ìž¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
+    // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
     sStage = 0;
     IDE_TEST( sQmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS);
     

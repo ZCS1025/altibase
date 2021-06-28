@@ -32,15 +32,14 @@ import Altibase.jdbc.driver.util.SocketUtils;
 
 class CmTcpSocket implements CmSocket
 {
-    private Socket mSocket;
-    private int mSocketFD = INVALID_SOCKTFD; // PROJ-2625
-
-    private int mSockSndBufSize = CmChannel.CM_DEFAULT_SNDBUF_SIZE;
-    private int mSockRcvBufSize = CmChannel.CM_DEFAULT_RCVBUF_SIZE;
+    Socket                      mSocket;
+    private int                 mSocketFD       = INVALID_SOCKTFD; // PROJ-2625
+    private int                 mSockSndBufSize = CmChannel.CM_DEFAULT_SNDBUF_SIZE;
+    private int                 mSockRcvBufSize = CmChannel.CM_DEFAULT_RCVBUF_SIZE;
     private WritableByteChannel mWriteChannel;
     private ReadableByteChannel mReadChannel;
 
-    public CmTcpSocket()
+    CmTcpSocket()
     {
     }
 
@@ -51,39 +50,44 @@ class CmTcpSocket implements CmSocket
 
     public void open(SocketAddress aSockAddr,
                      String        aBindAddr,
-                     int           aLoginTimeout,
-                     int           aResponseTimeout) throws SQLException
+                     int           aLoginTimeout) throws SQLException
     {
         try
         {
             mSocket = new Socket();
 
-            if (aBindAddr != null)
-            {
-                mSocket.bind(new InetSocketAddress(aBindAddr, 0));
-            }
-
-            if (aResponseTimeout > 0)
-            {
-                mSocket.setSoTimeout(aResponseTimeout * 1000);
-            }
-
-            mSocket.setKeepAlive(true);
-            mSocket.setReceiveBufferSize(mSockRcvBufSize); // PROJ-2625
-            mSocket.setSendBufferSize(mSockSndBufSize);
-            mSocket.setTcpNoDelay(true);  // BUG-45275 disable nagle algorithm
-
-            mSocket.connect(aSockAddr, aLoginTimeout * 1000);
-
-            mWriteChannel = Channels.newChannel(mSocket.getOutputStream());
-            mReadChannel = Channels.newChannel(mSocket.getInputStream());
+            connectTcpSocket(aSockAddr, aBindAddr, aLoginTimeout);
         }
-        // connect ì‹¤íŒ¨ì‹œ ë‚  ìˆ˜ ìžˆëŠ” ì˜ˆì™¸ê°€ í•œì¢…ë¥˜ê°€ ì•„ë‹ˆë¯€ë¡œ ëª¨ë“  ì˜ˆì™¸ë¥¼ ìž¡ì•„ ì—°ê²° ì‹¤íŒ¨ë¡œ ì²˜ë¦¬í•œë‹¤.
-        // ì˜ˆë¥¼ë“¤ì–´, AIX 6.1ì—ì„œëŠ” ClosedSelectorExceptionê°€ ë‚˜ëŠ”ë° ì´ëŠ” RuntimeExceptionì´ë‹¤. (ref. BUG-33341)
+        // connect ½ÇÆÐ½Ã ³¯ ¼ö ÀÖ´Â ¿¹¿Ü°¡ ÇÑÁ¾·ù°¡ ¾Æ´Ï¹Ç·Î ¸ðµç ¿¹¿Ü¸¦ Àâ¾Æ ¿¬°á ½ÇÆÐ·Î Ã³¸®ÇÑ´Ù.
+        // ¿¹¸¦µé¾î, AIX 6.1¿¡¼­´Â ClosedSelectorException°¡ ³ª´Âµ¥ ÀÌ´Â RuntimeExceptionÀÌ´Ù. (ref. BUG-33341)
         catch (Exception e)
         {
             Error.throwCommunicationErrorException(e);
         }
+    }
+
+    void connectTcpSocket(SocketAddress aSockAddr, String aBindAddr, int aLoginTimeout) throws IOException
+    {
+        if (aBindAddr != null)
+        {
+            mSocket.bind(new InetSocketAddress(aBindAddr, 0));
+        }
+
+        // BUG-47492 ÃÖÃÊ socket Á¢¼Ó½Ã¿¡´Â login_timeoutÀ¸·Î socket so timeoutÀ» ¼³Á¤ÇÑ´Ù.
+        if (aLoginTimeout > 0)
+        {
+            mSocket.setSoTimeout(aLoginTimeout * 1000);
+        }
+
+        mSocket.setKeepAlive(true);
+        mSocket.setReceiveBufferSize(mSockRcvBufSize); // PROJ-2625
+        mSocket.setSendBufferSize(mSockSndBufSize);
+        mSocket.setTcpNoDelay(true);  // BUG-45275 disable nagle algorithm
+
+        mSocket.connect(aSockAddr, aLoginTimeout * 1000);
+
+        mWriteChannel = Channels.newChannel(mSocket.getOutputStream());
+        mReadChannel = Channels.newChannel(mSocket.getInputStream());
     }
 
     public void close() throws IOException
@@ -165,4 +169,17 @@ class CmTcpSocket implements CmSocket
 
         return mSocketFD;
     }
+
+    public void setResponseTimeout(int aResponseTimeout) throws SQLException
+    {
+        try
+        {
+            mSocket.setSoTimeout(aResponseTimeout * 1000);
+        }
+        catch (Exception aEx)
+        {
+            Error.throwCommunicationErrorException(aEx);
+        }
+    }
+
 }

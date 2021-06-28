@@ -16,62 +16,62 @@
  
 
 /***********************************************************************
- * $Id: smiReadLogByOrder.cpp 83020 2018-05-11 06:34:58Z seulki $
+ * $Id: smiReadLogByOrder.cpp 85722 2019-06-25 06:18:05Z minku.kang $
  **********************************************************************/
 
-#include <idl.h>
-#include <idu.h>
-#include <ideErrorMgr.h>
-#include <smErrorCode.h>
 #include <smDef.h>
 #include <smr.h>
 #include <smi.h>
 
 /*
-  ì´ ClassëŠ” Parallel Loggingí™˜ê²½ì—ì„œ Replication Senderê°€ ë¡œê·¸ë¥¼ ì½ì–´ì„œ
-  ë³´ë‚¼ ê²½ìš° Log Headerì˜ Sequence Numberìˆœìœ¼ë¡œ ë¡œê·¸ë¥¼ ë³´ë‚´ê¸° ìœ„í•´ì„œ ìž‘ì„±ëœ
-  Classì´ë‹¤. smiReadInfoë¥¼ ìœ ì§€í•˜ì—¬ ë³´ë‚´ì–´ì•¼ í•  ë¡œê·¸ì˜
-  ë¬¼ë¦¬ì , ë…¼ë¦¬ì  ìœ„ì¹˜ì •ë³´ë¥¼ êµ¬ì¶•í•˜ê³  Readê°€ í˜¸ì¶œë ë•Œ ë§ˆë‹¤
-  smiReadInfoë¥¼ ë¶„ì„í•˜ì—¬ ë³´ë‚´ì–´ì•¼í•  ë¡œê·¸ë¥¼ ì„ íƒí•œë‹¤. ì„ íƒí•˜ëŠ” ê¸°ì¤€ì€
-  ë‹¤ìŒê³¼ ê°™ë‹¤.
+  ÀÌ Class´Â Parallel LoggingÈ¯°æ¿¡¼­ Replication Sender°¡ ·Î±×¸¦ ÀÐ¾î¼­
+  º¸³¾ °æ¿ì Log HeaderÀÇ Sequence Number¼øÀ¸·Î ·Î±×¸¦ º¸³»±â À§ÇØ¼­ ÀÛ¼ºµÈ
+  ClassÀÌ´Ù. smiReadInfo¸¦ À¯ÁöÇÏ¿© º¸³»¾î¾ß ÇÒ ·Î±×ÀÇ
+  ¹°¸®Àû, ³í¸®Àû À§Ä¡Á¤º¸¸¦ ±¸ÃàÇÏ°í Read°¡ È£ÃâµÉ¶§ ¸¶´Ù
+  smiReadInfo¸¦ ºÐ¼®ÇÏ¿© º¸³»¾î¾ßÇÒ ·Î±×¸¦ ¼±ÅÃÇÑ´Ù. ¼±ÅÃÇÏ´Â ±âÁØÀº
+  ´ÙÀ½°ú °°´Ù.
 
-      - ë¬´ì¡°ê±´ ë¡œê·¸ë¥¼ ì½ìœ¼ë©´ ëœë‹¤. ì™œëƒí•˜ë©´ ë¬¼ë¦¬ì ì¸ ìœ„ì¹˜ì™€ Log Headerì˜ Sequence
-        Numberì˜ ìˆœì„œê°€ ë™ì¼í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+      - ¹«Á¶°Ç ·Î±×¸¦ ÀÐÀ¸¸é µÈ´Ù. ¿Ö³ÄÇÏ¸é ¹°¸®ÀûÀÎ À§Ä¡¿Í Log HeaderÀÇ Sequence
+        NumberÀÇ ¼ø¼­°¡ µ¿ÀÏÇÏ±â ¶§¹®ÀÌ´Ù.
 */
 
 /***********************************************************************
- * Description : aInitLSNë³´ë‹¤ í¬ê±°ë‚˜ ê°™ì€ LSNê°’ì„ ê°€ì§„ ë¡œê·¸ì¤‘
- *               ê°€ìž¥ ìž‘ì€ LSNê°’ì„ ê°€ì§„ logì˜ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤. ë§Œì•½ì—†ìœ¼ë©´
- *               endLSNìœ¼ë¡œ reading positionì„ settingí•œë‹¤.
+ * Description : aInitLSNº¸´Ù Å©°Å³ª °°Àº LSN°ªÀ» °¡Áø ·Î±×Áß
+ *               °¡Àå ÀÛÀº LSN°ªÀ» °¡Áø logÀÇ À§Ä¡¸¦ Ã£´Â´Ù. ¸¸¾à¾øÀ¸¸é
+ *               endLSNÀ¸·Î reading positionÀ» settingÇÑ´Ù.
  *               
  *
- * aInitSN         - [IN] ì²«ë²ˆì§¸ ì½ì–´ì•¼í•  ë¡œê·¸ì˜ SN
- * aPreOpenFileCnt - [IN] PreReadí•  ë¡œê·¸íŒŒì¼ì˜ ê°¯ìˆ˜
- * 
+ * aInitSN         - [IN] Ã¹¹øÂ° ÀÐ¾î¾ßÇÒ ·Î±×ÀÇ SN
+ * aPreOpenFileCnt - [IN] PreReadÇÒ ·Î±×ÆÄÀÏÀÇ °¹¼ö
+ * aNotDecomp      - [IN] ¾ÐÃàµÈ ·Î±×ÆÄÀÏÀÇ °æ¿ì ¾ÐÃàÀ» Ç®Áö¾Ê°í ¹ÝÈ¯ÇÒÁö ¿©ºÎ (¾ÐÃàµÈ ÇüÅÂ·Î ¹ÝÈ¯)
  */
 IDE_RC smiReadLogByOrder::initialize( smSN     aInitSN,
                                       UInt     aPreOpenFileCnt,
                                       idBool   aIsRemoteLog,
                                       ULong    aLogFileSize,
-                                      SChar ** aLogDirPath )
+                                      SChar ** aLogDirPath,
+                                      idBool   aNotDecomp )
 {
     UInt   j;
     UInt   sFileNo;
     idBool sIsRemoteLogMgrInit = ID_FALSE;
     smLSN  sInitLSN;
 
+    mNotDecomp = aNotDecomp;
+
     IDE_DASSERT( (aInitSN != SM_SN_NULL) && (aInitSN < SM_SN_MAX) );
 
     SM_MAKE_LSN( sInitLSN, aInitSN );
 
-    /* PROJ-1915 : ID_FALSE :local ë¡œê·¸, ID_TRUE : Remote Log */
+    /* PROJ-1915 : ID_FALSE :local ·Î±×, ID_TRUE : Remote Log */
     mIsRemoteLog    = aIsRemoteLog;
 
     if ( mIsRemoteLog == ID_TRUE )
     {
-        /* PROJ-1915 : off-line ë¡œê·¸ ì²˜ë¦¬ë¥¼ ìœ„í•œ smrRemoteLogMgrì´ˆê¸°í™” */
+        /* PROJ-1915 : off-line ·Î±× Ã³¸®¸¦ À§ÇÑ smrRemoteLogMgrÃÊ±âÈ­ */
         IDE_TEST( mRemoteLogMgr.initialize( aLogFileSize, 
-                                            aLogDirPath )
+                                            aLogDirPath,
+                                            mNotDecomp )
                   != IDE_SUCCESS );
         sIsRemoteLogMgrInit = ID_TRUE;
     }
@@ -88,20 +88,20 @@ IDE_RC smiReadLogByOrder::initialize( smSN     aInitSN,
                                           compare )
              != IDE_SUCCESS );
 
-    /* ì²«ë²ˆì§¸ ì½ì–´ì•¼ ë  ë¡œê·¸íŒŒì¼ì˜ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.*/
+    /* Ã¹¹øÂ° ÀÐ¾î¾ß µÉ ·Î±×ÆÄÀÏÀÇ À§Ä¡¸¦ Ã£´Â´Ù.*/
     IDE_TEST( setFirstReadLogFile( sInitLSN ) != IDE_SUCCESS );
 
-    /* ì²«ë²ˆì§¸ ì½ì–´ì•¼ ë  ë¡œê·¸ë ˆì½”ë“œì˜ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.*/
+    /* Ã¹¹øÂ° ÀÐ¾î¾ß µÉ ·Î±×·¹ÄÚµåÀÇ À§Ä¡¸¦ Ã£´Â´Ù.*/
     IDE_TEST( setFirstReadLogPos( sInitLSN ) != IDE_SUCCESS );
 
-    /* mPreReadFileCnt > 0ì¼ë•Œë§Œ PreRead Threadë¥¼ ë›°ìš´ë‹¤.*/
+    /* mPreReadFileCnt > 0ÀÏ¶§¸¸ PreRead Thread¸¦ ¶Ù¿î´Ù.*/
     if ( mPreReadFileCnt != 0 )
     {
         IDE_TEST( mPreReadLFThread.initialize() != IDE_SUCCESS );
 
         sFileNo = mReadInfo.mReadLSN.mFileNo + 1;
-        /* mReadInfo[i].mReadLSN.mFileNoê°€ ê°€ë¦¬í‚¤ëŠ” íŒŒì¼ì€
-           ì´ë¯¸ Openë˜ì–´ìžˆë‹¤.*/
+        /* mReadInfo[i].mReadLSN.mFileNo°¡ °¡¸®Å°´Â ÆÄÀÏÀº
+           ÀÌ¹Ì OpenµÇ¾îÀÖ´Ù.*/
         for ( j = 0 ; j < mPreReadFileCnt ; j++ )
         {
             IDE_TEST( mPreReadLFThread.addOpenLFRequest( sFileNo )
@@ -109,7 +109,7 @@ IDE_RC smiReadLogByOrder::initialize( smSN     aInitSN,
             sFileNo++;
         }
 
-        /* PreRead LogFile Threadë¥¼ Startì‹œí‚¨ë‹¤. */
+        /* PreRead LogFile Thread¸¦ Start½ÃÅ²´Ù. */
         IDE_TEST( mPreReadLFThread.start() != IDE_SUCCESS );
         IDE_TEST( mPreReadLFThread.waitToStart(0) != IDE_SUCCESS );
     }
@@ -129,9 +129,9 @@ IDE_RC smiReadLogByOrder::initialize( smSN     aInitSN,
 }
 
 /***********************************************************************
- * Description : smiReadLogByOrderë¥¼ í•´ì œí•œë‹¤.
+ * Description : smiReadLogByOrder¸¦ ÇØÁ¦ÇÑ´Ù.
  *
- * í• ë‹¹ëœ Resourceë¥¼ í•´ì œí•œë‹¤.
+ * ÇÒ´çµÈ Resource¸¦ ÇØÁ¦ÇÑ´Ù.
  */
 IDE_RC smiReadLogByOrder::destroy()
 {
@@ -159,9 +159,9 @@ IDE_RC smiReadLogByOrder::destroy()
 }
 
 /*
-    Read Infoë¥¼ ì´ˆê¸°í™” í•œë‹¤.
+    Read Info¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
 
-    [IN] aReadInfo - ì´ˆê¸°í™”í•  Read Info
+    [IN] aReadInfo - ÃÊ±âÈ­ÇÒ Read Info
  */
 IDE_RC smiReadLogByOrder::initializeReadInfo( smiReadInfo * aReadInfo )
 {
@@ -171,7 +171,7 @@ IDE_RC smiReadLogByOrder::initializeReadInfo( smiReadInfo * aReadInfo )
     
     aReadInfo->mLogFilePtr = NULL;
 
-    // ë¡œê·¸ ì••ì¶•í•´ì œ ë²„í¼ í•¸ë“¤ì˜ ì´ˆê¸°í™”
+    // ·Î±× ¾ÐÃàÇØÁ¦ ¹öÆÛ ÇÚµéÀÇ ÃÊ±âÈ­
     IDE_TEST( aReadInfo->mDecompBufferHandle.initialize( IDU_MEM_SM_SMR )
               != IDE_SUCCESS );
     
@@ -183,15 +183,15 @@ IDE_RC smiReadLogByOrder::initializeReadInfo( smiReadInfo * aReadInfo )
 }
 
 /*
-    Read Infoë¥¼ íŒŒê´´í•œë‹¤.
+    Read Info¸¦ ÆÄ±«ÇÑ´Ù.
     
-    [IN] aReadInfo - íŒŒê´´í•  Read Info
+    [IN] aReadInfo - ÆÄ±«ÇÒ Read Info
  */
 IDE_RC smiReadLogByOrder::destroyReadInfo( smiReadInfo * aReadInfo )
 {
     IDE_DASSERT( aReadInfo != NULL );
 
-    // ë¡œê·¸ ì••ì¶•í•´ì œ ë²„í¼ í•¸ë“¤ì˜ íŒŒê´´
+    // ·Î±× ¾ÐÃàÇØÁ¦ ¹öÆÛ ÇÚµéÀÇ ÆÄ±«
     IDE_TEST( aReadInfo->mDecompBufferHandle.destroy()
               != IDE_SUCCESS );
     
@@ -220,11 +220,11 @@ IDE_RC smiReadLogByOrder::destroyReadInfo( smiReadInfo * aReadInfo )
 
 
 /***********************************************************************
- * Description : iduPriorityQueueì—ì„œ Itemë“¤ì„ Compareí•  ë•Œ ì‚¬ìš©í•˜ëŠ”
- *               Callback Functionìž„. iduPriorityQueueì˜ initializeí• ë•Œ ë„˜ê²¨ì§
+ * Description : iduPriorityQueue¿¡¼­ ItemµéÀ» CompareÇÒ ¶§ »ç¿ëÇÏ´Â
+ *               Callback FunctionÀÓ. iduPriorityQueueÀÇ initializeÇÒ¶§ ³Ñ°ÜÁü
  *
- * arg1  - [IN] compareí•  smiReadInfo 1
- * arg2  - [IN] compareí•  smiReadInfo 2
+ * arg1  - [IN] compareÇÒ smiReadInfo 1
+ * arg2  - [IN] compareÇÒ smiReadInfo 2
 */
 SInt smiReadLogByOrder::compare(const void *arg1,const void *arg2)
 {
@@ -255,16 +255,16 @@ SInt smiReadLogByOrder::compare(const void *arg1,const void *arg2)
 }
 
 /***********************************************************************
- * Description : ë§ˆì§€ë§‰ìœ¼ë¡œ ì½ì€ ë¡œê·¸ ë‹¤ìŒì— ê¸°ë¡ëœ Logë¥¼ ì½ì–´ì„œ ì¤€ë‹¤.
+ * Description : ¸¶Áö¸·À¸·Î ÀÐÀº ·Î±× ´ÙÀ½¿¡ ±â·ÏµÈ Log¸¦ ÀÐ¾î¼­ ÁØ´Ù.
 
-  mSortRedoInfoì— ë“¤ì–´ìžˆëŠ” smiReadInfoì¤‘ì—ì„œ ê°€ìž¥ ìž‘ì€ mLSNê°’ì„
-  ê°€ì§„ Logë¥¼ ì½ì–´ë“¤ì¸ë‹¤.
+  mSortRedoInfo¿¡ µé¾îÀÖ´Â smiReadInfoÁß¿¡¼­ °¡Àå ÀÛÀº mLSN°ªÀ»
+  °¡Áø Log¸¦ ÀÐ¾îµéÀÎ´Ù.
   
-  aSN           - [OUT] Logì˜ SN
-  aLSN          - [OUT] Logì˜ LSN
-  aLogHeadPtr   - [OUT] aLSNì´ ê°€ë¦¬í‚¤ëŠ” logì˜ Log Header Ptr
-  aLogPtr       - [OUT] aLSNì´ ê°€ë¦¬í‚¤ëŠ” logì˜ Log Buffr Ptr
-  aIsValid  - [OUT] aLSNì´ ê°€ë¦¬í‚¤ëŠ” logê°€ Validí•˜ë©´ ID_TRUEì•„ë‹ˆë©´ ID_FALSE
+  aSN           - [OUT] LogÀÇ SN
+  aLSN          - [OUT] LogÀÇ LSN
+  aLogHeadPtr   - [OUT] aLSNÀÌ °¡¸®Å°´Â logÀÇ Log Header Ptr
+  aLogPtr       - [OUT] aLSNÀÌ °¡¸®Å°´Â logÀÇ Log Buffr Ptr
+  aIsValid  - [OUT] aLSNÀÌ °¡¸®Å°´Â log°¡ ValidÇÏ¸é ID_TRUE¾Æ´Ï¸é ID_FALSE
  **********************************************************************/
 IDE_RC smiReadLogByOrder::readLog( smSN    * aSN,
                                    smLSN   * aLSN,
@@ -288,27 +288,36 @@ IDE_RC smiReadLogByOrder::readLog( smSN    * aSN,
     {
         if ( mCurReadInfoPtr->mIsValid == ID_TRUE )
         {
-            /* ë§ˆì§€ë§‰ìœ¼ë¡œ Redoì—°ì‚°ì„ í•œ smiReadInfoì˜ mReadLSNì€
-               smrRecoveryMgrì˜ Redoì—ì„œ updateê°€ ëœë‹¤. ë”°ë¼ì„œ ë‹¤ì‹œ
-               mReadLSNì´ ê°€ë¦¬í‚¤ëŠ” ë¡œê·¸ë¥¼ ì½ì–´ì„œ smiReadInfoë¥¼ ê°±ì‹ í•˜ê³ 
-               ë‹¤ì‹œ mSortArrRedoInfoì— ë„£ì–´ì•¼ í•œë‹¤. */
-            if ( smrLogHeadI::getType( &mCurReadInfoPtr->mLogHead )
-                 == SMR_LT_FILE_END )
+
+            if ( ( ( mCurReadInfoPtr->mLogHead.mFlag ) & SMR_LOG_COMPRESSED_MASK )
+                 == SMR_LOG_COMPRESSED_OK )
             {
-                mCurReadInfoPtr->mReadLSN.mFileNo++;
-                mCurReadInfoPtr->mReadLSN.mOffset = 0;
-                mCurReadInfoPtr->mIsLogSwitch = ID_TRUE;
-            }
+                // Comp ·Î±×¸é FILE END°¡ ¾ø´Ù.
+                mCurReadInfoPtr->mReadLSN.mOffset += mCurReadInfoPtr->mLogSizeAtDisk;
+            } 
             else
             {
-                mCurReadInfoPtr->mReadLSN.mOffset += mCurReadInfoPtr->mLogSizeAtDisk;
+                /* ¸¶Áö¸·À¸·Î Redo¿¬»êÀ» ÇÑ smiReadInfoÀÇ mReadLSNÀº
+                   smrRecoveryMgrÀÇ Redo¿¡¼­ update°¡ µÈ´Ù. µû¶ó¼­ ´Ù½Ã
+                   mReadLSNÀÌ °¡¸®Å°´Â ·Î±×¸¦ ÀÐ¾î¼­ smiReadInfo¸¦ °»½ÅÇÏ°í
+                   ´Ù½Ã mSortArrRedoInfo¿¡ ³Ö¾î¾ß ÇÑ´Ù. */
+                if ( smrLogHeadI::getType( &mCurReadInfoPtr->mLogHead )
+                     == SMR_LT_FILE_END )
+                {
+                    mCurReadInfoPtr->mReadLSN.mFileNo++;
+                    mCurReadInfoPtr->mReadLSN.mOffset = 0;
+                    mCurReadInfoPtr->mIsLogSwitch = ID_TRUE;
+                }
+                else
+                {
+                    mCurReadInfoPtr->mReadLSN.mOffset += mCurReadInfoPtr->mLogSizeAtDisk;
+                }
             }
-
             mCurReadInfoPtr->mIsValid = ID_FALSE;
         }
     }
 
-    /* ë¡œê·¸ë¥¼ ì½ì–´ì„œ Validí•œ ë¡œê·¸ë¥¼ ì°¾ëŠ”ë‹¤ */
+    /* ·Î±×¸¦ ÀÐ¾î¼­ ValidÇÑ ·Î±×¸¦ Ã£´Â´Ù */
     IDE_TEST( searchValidLog( &sIsExistLogTail ) != IDE_SUCCESS );
 
     mPQueueRedoInfo.dequeue( (void*)&mCurReadInfoPtr, &sUnderflow );
@@ -316,35 +325,35 @@ IDE_RC smiReadLogByOrder::readLog( smSN    * aSN,
     if ( sUnderflow == ID_FALSE )
     {
         /* BUG-26717 CodeSonar Null Pointer Dereference
-         * sUnderflowê°€ ID_FALSEì¸ ê²½ìš° mCurReadInfoPtrëŠ” Nullì´ ì•„ë‹˜ */
+         * sUnderflow°¡ ID_FALSEÀÎ °æ¿ì mCurReadInfoPtr´Â NullÀÌ ¾Æ´Ô */
         IDE_ASSERT( mCurReadInfoPtr != NULL );
 
         *aIsValid = mCurReadInfoPtr->mIsValid;
 
-        /* ì½ì–´ì•¼í•  ë¡œê·¸ê°€ ì—†ëŠ”ê²½ìš° */
+        /* ÀÐ¾î¾ßÇÒ ·Î±×°¡ ¾ø´Â°æ¿ì */
         if ( sIsExistLogTail == ID_TRUE )
         {
             IDE_DASSERT( mCurReadInfoPtr->mIsValid == ID_TRUE );
             
-            /* Readì „ì— ì²«ë²ˆì§¸ readì‹œ sIsExistLogTailì´ Trueê²½ìš°ëŠ”
-               ì—†ë‹¤. ë”°ë¼ì„œ mLstReadLogLSNì€ SM_SN_NULLì´ ë ìˆ˜ ì—†ë‹¤. */
+            /* ReadÀü¿¡ Ã¹¹øÂ° read½Ã sIsExistLogTailÀÌ True°æ¿ì´Â
+               ¾ø´Ù. µû¶ó¼­ mLstReadLogLSNÀº SM_SN_NULLÀÌ µÉ¼ö ¾ø´Ù. */
             IDE_ASSERT( !SM_IS_LSN_MAX( mLstReadLogLSN ) );           
 
             /* 
-               LSNë²ˆí˜¸ìˆœìœ¼ë¡œ ë³´ë‚´ëŠ” ê²ƒì„ ë³´ìž¥ë˜ê¸° ë˜ê¸° ë•Œë¬¸ì— ë§ˆì§€ë§‰ìœ¼ë¡œ ë³´ë‚¸
-               ë¡œê·¸ì˜ LSNê°’ê³¼ í˜„ìž¬ ë¡œê·¸ì˜ LSNê°’ì„ ë¹„êµí•´ì„œ ë³´ë‚´ì§€
-               ì•Šì€ ë¡œê·¸ê°€ ìžˆëŠ”ì§€ ì¡°ì‚¬í•œë‹¤.ì´ë¥¼ ìœ„í•´ ë§ˆì§€ë§‰ìœ¼ë¡œ ë³´ë‚´ ë¡œê·¸ì˜
-               LSNê°’ê³¼ í˜„ìž¬ ë¡œê·¸ì˜ LSNê°’ì´ ìž‘ì€ì§€ ì¡°ì‚¬í•˜ì—¬
-               ì´ë¯¸ ë³´ë‚¸ LSNë³´ë‹¤ ìž‘ì€ LSNì„ ê°€ì§€ëŠ” ë¡œê·¸ê°€ ë°œê²¬ë˜ë©´ ì¤‘ê°„ì— ë¹ ì§„ LSNê°’ì„ ê°€ì§€ê³ 
-               ë¡œê·¸ë¥¼ ê¸°ë¡í•˜ëŠ” Transactionì´ ìžˆëŠ” ê²ƒìœ¼ë¡œ íŒë‹¨í•œë‹¤.
-               ë°œê²¬ëœ ì¤‘ê°„ì— ë¹ ì§„ LSNì€ queueì— ë‹¤ì‹œ ë„£ì§€ ì•Šì•˜ìœ¼ë¯€ë¡œ replication ì—ì„œ ì œì™¸ë ë“¯. 
-               ì—ëŸ¬ë¥¼ ì˜¬ë ¤ì„œ Senderê°€ ë‹¤ì‹œ retry í• ì§€ íŒë‹¨í•˜ê²Œ í•œë‹¤.  
+               LSN¹øÈ£¼øÀ¸·Î º¸³»´Â °ÍÀ» º¸ÀåµÇ±â µÇ±â ¶§¹®¿¡ ¸¶Áö¸·À¸·Î º¸³½
+               ·Î±×ÀÇ LSN°ª°ú ÇöÀç ·Î±×ÀÇ LSN°ªÀ» ºñ±³ÇØ¼­ º¸³»Áö
+               ¾ÊÀº ·Î±×°¡ ÀÖ´ÂÁö Á¶»çÇÑ´Ù.ÀÌ¸¦ À§ÇØ ¸¶Áö¸·À¸·Î º¸³» ·Î±×ÀÇ
+               LSN°ª°ú ÇöÀç ·Î±×ÀÇ LSN°ªÀÌ ÀÛÀºÁö Á¶»çÇÏ¿©
+               ÀÌ¹Ì º¸³½ LSNº¸´Ù ÀÛÀº LSNÀ» °¡Áö´Â ·Î±×°¡ ¹ß°ßµÇ¸é Áß°£¿¡ ºüÁø LSN°ªÀ» °¡Áö°í
+               ·Î±×¸¦ ±â·ÏÇÏ´Â TransactionÀÌ ÀÖ´Â °ÍÀ¸·Î ÆÇ´ÜÇÑ´Ù.
+               ¹ß°ßµÈ Áß°£¿¡ ºüÁø LSNÀº queue¿¡ ´Ù½Ã ³ÖÁö ¾Ê¾ÒÀ¸¹Ç·Î replication ¿¡¼­ Á¦¿ÜµÉµí. 
+               ¿¡·¯¸¦ ¿Ã·Á¼­ Sender°¡ ´Ù½Ã retry ÇÒÁö ÆÇ´ÜÇÏ°Ô ÇÑ´Ù.  
             */
 #ifdef DEBUG
             sReadLSN = smrLogHeadI::getLSN( &mCurReadInfoPtr->mLogHead ); 
             IDE_DASSERT( smrCompareLSN::isEQ( &mCurReadInfoPtr->mReadLSN, &sReadLSN ) );
 #endif
-            //[TASK-6757]LFG,SN ì œê±°
+            //[TASK-6757]LFG,SN Á¦°Å
             if ( smrCompareLSN::isLT( &mCurReadInfoPtr->mReadLSN, &mLstReadLogLSN ) )
             {
                 ideLog::log( IDE_ERR_0,
@@ -369,7 +378,7 @@ IDE_RC smiReadLogByOrder::readLog( smSN    * aSN,
         
         if ( *aIsValid == ID_TRUE )
         {
-            /* ë§ˆì§€ë§‰ìœ¼ë¡œ ì½ì€ Logì˜ LSNê°’ì„ ì €ìž¥í•œë‹¤.*/
+            /* ¸¶Áö¸·À¸·Î ÀÐÀº LogÀÇ LSN°ªÀ» ÀúÀåÇÑ´Ù.*/
 #ifdef DEBUG
             sReadLSN = smrLogHeadI::getLSN( &mCurReadInfoPtr->mLogHead ); 
             IDE_DASSERT( smrCompareLSN::isEQ( &mCurReadInfoPtr->mReadLSN, &sReadLSN ) );
@@ -400,11 +409,11 @@ IDE_RC smiReadLogByOrder::readLog( smSN    * aSN,
 }
 
 /***********************************************************************
- * Description : aInitLSNë³´ë‹¤ í° SNì¤‘ ê°€ìž¥ ìž‘ì€ SNê°’ì„
- *               ê°€ì§„ ë¡œê·¸íŒŒì¼ì„ ì°¾ëŠ”ë‹¤.
- * [TASK-6757]LFG,SN ì œê±°  BUGBUG : LSNì„ ì•Œê³  ìžˆë‹¤.-> ê°„ë‹¨ížˆ ì°¾ì„ìˆ˜ ìžˆë‹¤. 
+ * Description : aInitLSNº¸´Ù Å« SNÁß °¡Àå ÀÛÀº SN°ªÀ»
+ *               °¡Áø ·Î±×ÆÄÀÏÀ» Ã£´Â´Ù.
+ * [TASK-6757]LFG,SN Á¦°Å  BUGBUG : LSNÀ» ¾Ë°í ÀÖ´Ù.-> °£´ÜÈ÷ Ã£À»¼ö ÀÖ´Ù. 
  *
- * aInitLSN    - [IN] ì²«ë²ˆì§¸ ì½ì–´ì•¼ í•  ë¡œê·¸ì˜ LSNê°’
+ * aInitLSN    - [IN] Ã¹¹øÂ° ÀÐ¾î¾ß ÇÒ ·Î±×ÀÇ LSN°ª
  ***********************************************************************/
 IDE_RC smiReadLogByOrder::setFirstReadLogFile( smLSN aInitLSN )
 {
@@ -419,16 +428,16 @@ IDE_RC smiReadLogByOrder::setFirstReadLogFile( smLSN aInitLSN )
 #ifdef DEBUG
     smLSN       sReadLSN;
 #endif
-    /* LSNì„ ì§€ì •í•˜ì—¬ Replicationì„ ì‹œìž‘ í•  ê²½ìš° 
+    /* LSNÀ» ÁöÁ¤ÇÏ¿© ReplicationÀ» ½ÃÀÛ ÇÒ °æ¿ì 
      * ex) ALTER REPLICATION ALA1 START AT SN(0)
-     * LSN ì´ INIT ì„  ê°€ì§ˆìˆ˜ ìžˆì–´ì„œ ASSERT ë¡œ ê²€ì‚¬í•˜ë©´ ì•ˆëœë‹¤. */
+     * LSN ÀÌ INIT À»  °¡Áú¼ö ÀÖ¾î¼­ ASSERT ·Î °Ë»çÇÏ¸é ¾ÈµÈ´Ù. */
     IDE_DASSERT( !SM_IS_LSN_MAX( aInitLSN ) );
  
     // BUG-27725
     SM_LSN_INIT( sEndLSN );
  
-    /* Fileì„ Checkí•˜ëŠ” ë„ì¤‘ Checkí¬ì¸íŠ¸ê°€ ë°œìƒí•˜ì—¬ Log Fileì´ ì§€ì›Œì§ˆ
-       ìˆ˜ ìžˆë‹¤. ì´ë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•´ì„œ Lockì„ ìˆ˜í–‰í•œë‹¤.*/
+    /* FileÀ» CheckÇÏ´Â µµÁß CheckÆ÷ÀÎÆ®°¡ ¹ß»ýÇÏ¿© Log FileÀÌ Áö¿öÁú
+       ¼ö ÀÖ´Ù. ÀÌ¸¦ ¹æÁöÇÏ±â À§ÇØ¼­ LockÀ» ¼öÇàÇÑ´Ù.*/
     if ( mIsRemoteLog == ID_FALSE )
     {
         IDE_TEST( smrRecoveryMgr::lockDeleteLogFileMtx()
@@ -444,11 +453,11 @@ IDE_RC smiReadLogByOrder::setFirstReadLogFile( smLSN aInitLSN )
     
     if ( mIsRemoteLog == ID_FALSE )
     {
-        (void)smrLogMgr::getLstLSN( &sEndLSN );
+        smrLogMgr::getLstLSN( &sEndLSN );
     }
     else
     {
-        (void)mRemoteLogMgr.getLstLSN( &sEndLSN );
+        mRemoteLogMgr.getLstLSN( &sEndLSN );
     }
     
     sEndChkFileNo = sEndLSN.mFileNo;
@@ -476,8 +485,8 @@ IDE_RC smiReadLogByOrder::setFirstReadLogFile( smLSN aInitLSN )
     }
 
     /*
-       sENDLSNì˜ mFileNoë³´ë‹¤ ìž‘ì€ ë¡œê·¸ íŒŒì¼ë“¤ì—
-       ëŒ€í•´ì„œ aInitLSNë³´ë‹¤ í° LSNì¤‘ ê°€ìž¥ ìž‘ì€ LSNì„ ê°€ì§„ ë¡œê·¸íŒŒì¼ì„ ì°¾ëŠ”ë‹¤.
+       sENDLSNÀÇ mFileNoº¸´Ù ÀÛÀº ·Î±× ÆÄÀÏµé¿¡
+       ´ëÇØ¼­ aInitLSNº¸´Ù Å« LSNÁß °¡Àå ÀÛÀº LSNÀ» °¡Áø ·Î±×ÆÄÀÏÀ» Ã£´Â´Ù.
     */
     SM_SET_LSN( mReadInfo.mReadLSN,
                 sFstReadFileNo,
@@ -488,20 +497,20 @@ IDE_RC smiReadLogByOrder::setFirstReadLogFile( smLSN aInitLSN )
     SM_LSN_INIT( mReadInfo.mLstLogLSN );
     mReadInfo.mIsLogSwitch = ID_FALSE;
 
-    /* mReadLSNì´ ê°€ë¦¬í‚¤ëŠ” Logë¥¼ ì½ì–´ì„œ mReadInfoì— ì‚½ìž…í•œë‹¤. */
+    /* mReadLSNÀÌ °¡¸®Å°´Â Log¸¦ ÀÐ¾î¼­ mReadInfo¿¡ »ðÀÔÇÑ´Ù. */
     if ( mIsRemoteLog == ID_FALSE )
     {
         IDE_TEST( smrLogMgr::readFirstLogHead( &(mReadInfo.mReadLSN),
                                                &(mReadInfo.mLogHead) )
                   != IDE_SUCCESS );
-        /* MagicNumberë¡œ ìµœì†Œì˜ valid  ê²€ì‚¬ë¥¼ í•œë‹¤. */
+        /* MagicNumber·Î ÃÖ¼ÒÀÇ valid  °Ë»ç¸¦ ÇÑ´Ù. */
         sIsValid = smrLogFile::isValidMagicNumber( &(mReadInfo.mReadLSN), 
                                                    &(mReadInfo.mLogHead) );
     }
     else
     {
         /*
-         *  Offline replicator ì—ì„œ ì‚¬ìš©ë˜ë©´ Log íŒŒì¼ì˜ ìœ íš¨ì„±ì„ í™•ì¸í•œë‹¤.
+         *  Offline replicator ¿¡¼­ »ç¿ëµÇ¸é Log ÆÄÀÏÀÇ À¯È¿¼ºÀ» È®ÀÎÇÑ´Ù.
          */
         IDE_TEST( mRemoteLogMgr.readFirstLogHead( &(mReadInfo.mReadLSN),
                                                   &(mReadInfo.mLogHead),
@@ -516,14 +525,14 @@ IDE_RC smiReadLogByOrder::setFirstReadLogFile( smLSN aInitLSN )
         IDE_DASSERT( smrCompareLSN::isEQ( &mReadInfo.mReadLSN, &sReadLSN ) );
 #endif
 
-        /* MagicNumberë¡œ ìµœì†Œì˜ valid ê²€ì‚¬ë§Œ í•´ì„œ ë„˜ê¸´ë‹¤. 
-         * offset ì½ì„ë•Œ ë˜ valid ê²€ì‚¬ë¥¼ í•œë‹¤.  */
+        /* MagicNumber·Î ÃÖ¼ÒÀÇ valid °Ë»ç¸¸ ÇØ¼­ ³Ñ±ä´Ù. 
+         * offset ÀÐÀ»¶§ ¶Ç valid °Ë»ç¸¦ ÇÑ´Ù.  */
     
         mReadInfo.mIsValid = ID_TRUE;
         SM_GET_LSN( mReadInfo.mLstLogLSN, mReadInfo.mReadLSN );
 
         // BUG-29115
-        // ì ì–´ë„ í•˜ë‚˜ëŠ” aInitLSNì„ í¬í•¨í•´ì•¼ í•œë‹¤.
+        // Àû¾îµµ ÇÏ³ª´Â aInitLSNÀ» Æ÷ÇÔÇØ¾ß ÇÑ´Ù.
         if ( smrCompareLSN::isLTE( &mReadInfo.mLstLogLSN, &aInitLSN ) )
         {
             sIsFound = ID_TRUE;
@@ -571,15 +580,15 @@ IDE_RC smiReadLogByOrder::setFirstReadLogFile( smLSN aInitLSN )
 }
 
 /***********************************************************************
- * Description : aInitLSNë³´ë‹¤ í° SNì¤‘ ê°€ìž¥ ìž‘ì€ SNê°’ì„
- *               ê°€ì§„ ë¡œê·¸íŒŒì¼ì—ì„œ ì‹¤ì œ ë¡œê·¸ì˜ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.
- * [TASK-6757]LFG,SN ì œê±°  BUGBUG : LSNì„ ì•Œê³  ìžˆë‹¤.-> ê°„ë‹¨ížˆ ì°¾ì„ìˆ˜ ìžˆë‹¤. 
+ * Description : aInitLSNº¸´Ù Å« SNÁß °¡Àå ÀÛÀº SN°ªÀ»
+ *               °¡Áø ·Î±×ÆÄÀÏ¿¡¼­ ½ÇÁ¦ ·Î±×ÀÇ À§Ä¡¸¦ Ã£´Â´Ù.
+ * [TASK-6757]LFG,SN Á¦°Å  BUGBUG : LSNÀ» ¾Ë°í ÀÖ´Ù.-> °£´ÜÈ÷ Ã£À»¼ö ÀÖ´Ù. 
  *
- * [BUG-44571] aInitLSNì´ íŒŒì¼ì˜ ë§ˆì§€ë§‰ ë¡œê·¸(SMR_LT_FILE_END)ì´ê±°ë‚˜
- *             ê·¸ë³´ë‹¤ í° OFFSETì„ ê°–ëŠ” ê²½ìš° ë¡œê·¸ë¥¼ ì°¾ì§€ëª»í•œë‹¤.
- *             ì´ê²½ìš°, ë‹¤ìŒíŒŒì¼ì˜ ì²«ë¡œê·¸(offset:0)ë¥¼ ë¦¬í„´í•˜ë„ë¡ í•œë‹¤. 
+ * [BUG-44571] aInitLSNÀÌ ÆÄÀÏÀÇ ¸¶Áö¸· ·Î±×(SMR_LT_FILE_END)ÀÌ°Å³ª
+ *             ±×º¸´Ù Å« OFFSETÀ» °®´Â °æ¿ì ·Î±×¸¦ Ã£Áö¸øÇÑ´Ù.
+ *             ÀÌ°æ¿ì, ´ÙÀ½ÆÄÀÏÀÇ Ã¹·Î±×(offset:0)¸¦ ¸®ÅÏÇÏµµ·Ï ÇÑ´Ù. 
  *
- * aInitLSN    - [IN] ì²«ë²ˆì§¸ ì½ì–´ì•¼ í•  ë¡œê·¸ì˜ LSNê°’
+ * aInitLSN    - [IN] Ã¹¹øÂ° ÀÐ¾î¾ß ÇÒ ·Î±×ÀÇ LSN°ª
  **********************************************************************/
 IDE_RC smiReadLogByOrder::setFirstReadLogPos( smLSN aInitLSN )
 {
@@ -594,26 +603,26 @@ IDE_RC smiReadLogByOrder::setFirstReadLogPos( smLSN aInitLSN )
 
     if ( mIsRemoteLog == ID_FALSE )
     {
-        (void)smrLogMgr::getLstLSN( &sEndLSN );
+        smrLogMgr::getLstLSN( &sEndLSN );
     }
     else
     {
-        (void)mRemoteLogMgr.getLstLSN( &sEndLSN );
+        mRemoteLogMgr.getLstLSN( &sEndLSN );
     }
 
-    /* LSNì„ ì§€ì •í•˜ì—¬ Replicationì„ ì‹œìž‘ í•  ê²½ìš° 
+    /* LSNÀ» ÁöÁ¤ÇÏ¿© ReplicationÀ» ½ÃÀÛ ÇÒ °æ¿ì 
      * ex) ALTER REPLICATION ALA1 START AT SN(0)
-     * LSN ì´ INITì„ ê°€ì§ˆìˆ˜ ìžˆì–´ì„œ ASSERT ë¡œ ê²€ì‚¬í•˜ë©´ ì•ˆëœë‹¤. */
+     * LSN ÀÌ INITÀ» °¡Áú¼ö ÀÖ¾î¼­ ASSERT ·Î °Ë»çÇÏ¸é ¾ÈµÈ´Ù. */
     IDE_DASSERT( !SM_IS_LSN_MAX( aInitLSN ) );
  
-    /* mReadInfoì˜ ì •í•´ì§„ ë¡œê·¸íŒŒì¼ë‚´ì—ì„œ
-     * aInitLSNë³´ë‹¤ í¬ê±°ë‚˜ ê°™ì€ LSNì„ ê°€ì§„ ë¡œê·¸ì¤‘ì—ì„œ ê°€ìž¥ ìž‘ì€
-     * LSNì„ ê°€ì§„ ë¡œê·¸ì˜ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤. */
+    /* mReadInfoÀÇ Á¤ÇØÁø ·Î±×ÆÄÀÏ³»¿¡¼­
+     * aInitLSNº¸´Ù Å©°Å³ª °°Àº LSNÀ» °¡Áø ·Î±×Áß¿¡¼­ °¡Àå ÀÛÀº
+     * LSNÀ» °¡Áø ·Î±×ÀÇ À§Ä¡¸¦ Ã£´Â´Ù. */
     while ( mReadInfo.mIsValid == ID_TRUE )
     {
-        /* í˜„ìž¬ ì½ëŠ” ë¡œê·¸ì˜ LSNê°’ì´ aInitLSNê°’ë³´ë‹¤ ì²«ë²ˆì§¸ë¡œ í¬ê±°ë‚˜ ê°™ë‹¤ë©´
-         * ì´ë¡œê·¸ê°€ aInitLSNê³¼ ê°€ìž¥ ê°€ê¹Œìš´ ê°’ì´ë‹¤.ì™œëƒí•˜ë©´ ë¡œê·¸ëŠ” ìˆœì„œëŒ€ë¡œ
-         * ê¸°ë¡ë˜ê¸°ë•Œë¬¸ì´ë‹¤. */
+        /* ÇöÀç ÀÐ´Â ·Î±×ÀÇ LSN°ªÀÌ aInitLSN°ªº¸´Ù Ã¹¹øÂ°·Î Å©°Å³ª °°´Ù¸é
+         * ÀÌ·Î±×°¡ aInitLSN°ú °¡Àå °¡±î¿î °ªÀÌ´Ù.¿Ö³ÄÇÏ¸é ·Î±×´Â ¼ø¼­´ë·Î
+         * ±â·ÏµÇ±â¶§¹®ÀÌ´Ù. */
 
 #ifdef DEBUG
         sReadLSN = smrLogHeadI::getLSN( &mReadInfo.mLogHead ); 
@@ -624,19 +633,36 @@ IDE_RC smiReadLogByOrder::setFirstReadLogPos( smLSN aInitLSN )
             /* BUG-21726 */
             if ( mReadInfo.mLogPtr == NULL )
             {
-                /* mReadLSNì´ ê°€ë¦¬í‚¤ëŠ” Logë¥¼ ì½ì–´ì„œ mReadInfoì— ì‚½ìž…í•œë‹¤.*/
+                /* mReadLSNÀÌ °¡¸®Å°´Â Log¸¦ ÀÐ¾î¼­ mReadInfo¿¡ »ðÀÔÇÑ´Ù.*/
                 if ( mIsRemoteLog == ID_FALSE )
                 {
-                    IDE_TEST( smrLogMgr::readLog(
-                                            &(mReadInfo.mDecompBufferHandle ),
-                                            &(mReadInfo.mReadLSN),
-                                            ID_TRUE, /* Close Log File When aLogFile doesn't include aLSN */
-                                            &(mReadInfo.mLogFilePtr),
-                                            &(mReadInfo.mLogHead),
-                                            &(mReadInfo.mLogPtr),
-                                            &(mReadInfo.mIsValid),
-                                            &(mReadInfo.mLogSizeAtDisk) )
-                              != IDE_SUCCESS );
+                    if ( mNotDecomp == ID_FALSE )
+                    {
+                        /* ¾ÐÃàµÈ ·Î±×ÆÄÀÏÀÇ °æ¿ì ¾ÐÃàÀ» Ç®¾î¼­ ·¹ÄÚµå¸¦ ÀÐ¾î¿Â´Ù. */
+                        IDE_TEST( smrLogMgr::readLog(
+                                                &(mReadInfo.mDecompBufferHandle ),
+                                                &(mReadInfo.mReadLSN),
+                                                ID_TRUE, /* Close Log File When aLogFile doesn't include aLSN */
+                                                &(mReadInfo.mLogFilePtr),
+                                                &(mReadInfo.mLogHead),
+                                                &(mReadInfo.mLogPtr),
+                                                &(mReadInfo.mIsValid),
+                                                &(mReadInfo.mLogSizeAtDisk) )
+                                  != IDE_SUCCESS );
+                    }
+                    else
+                    {
+                        /* ¾ÐÃàµÈ ·Î±×ÆÄÀÏÀÇ °æ¿ì ¾ÐÃàÀ» Ç®Áö¾Ê°í ¹ÝÈ¯ÇÑ´Ù. */
+                        IDE_TEST( smrLogMgr::readLog4RP(
+                                                &(mReadInfo.mReadLSN),
+                                                ID_TRUE, /* Close Log File When aLogFile doesn't include aLSN */
+                                                &(mReadInfo.mLogFilePtr),
+                                                &(mReadInfo.mLogHead),
+                                                &(mReadInfo.mLogPtr),
+                                                &(mReadInfo.mIsValid),
+                                                &(mReadInfo.mLogSizeAtDisk) )
+                                  != IDE_SUCCESS );
+                    }
                 }
                 else
                 {
@@ -670,41 +696,67 @@ IDE_RC smiReadLogByOrder::setFirstReadLogPos( smLSN aInitLSN )
 
         IDU_FIT_POINT_RAISE( "smiReadLogByOrder::setFirstReadLogPos:smrLogHeadI::getType::mReadLSN.mFileNo",
                              ERR_NOT_FOUND_LOG );
-        if ( smrLogHeadI::getType( &mReadInfo.mLogHead ) == SMR_LT_FILE_END )
+
+        if ( ( smrLogHeadI::getFlag( &mReadInfo.mLogHead ) & SMR_LOG_COMPRESSED_MASK )
+               == SMR_LOG_COMPRESSED_OK )
         {
-            if ( mReadInfo.mReadLSN.mFileNo < sEndLSN.mFileNo )
-            {
-                /* BUG-44571
-                 * ë°œê²¬ëœ ë¡œê·¸ê°€ íŒŒì¼ì˜ ë§ˆì§€ë§‰ ë¡œê·¸(SMR_LT_FILE_END)ì¸ê²½ìš° 
-                 * ë‹¤ìŒíŒŒì¼ì˜ ì²«ë¡œê·¸(offset:0)ë¥¼ ì½ëŠ”ë‹¤. */
-                SM_SET_LSN( mReadInfo.mReadLSN,
-                            mReadInfo.mReadLSN.mFileNo + 1, /* next file no. */
-                            0 );
-            }
-            else
-            {
-                /* ë‹¤ìŒ ë¡œê·¸íŒŒì¼ì´ ì—†ë‹¤. */
-                IDE_RAISE( ERR_NOT_FOUND_LOG );
-            }
+            /* ´ÙÀ½ ·Î±×¸¦ ÀÐ±â À§ÇØ */
+            mReadInfo.mReadLSN.mOffset += mReadInfo.mLogSizeAtDisk;
         }
         else
         {
-            /* ë‹¤ìŒ ë¡œê·¸ë¥¼ ì½ê¸° ìœ„í•´ */
-            mReadInfo.mReadLSN.mOffset += mReadInfo.mLogSizeAtDisk;
+            if ( smrLogHeadI::getType( &mReadInfo.mLogHead ) == SMR_LT_FILE_END )
+            {
+                if ( mReadInfo.mReadLSN.mFileNo < sEndLSN.mFileNo )
+                {
+                    /* BUG-44571
+                     * ¹ß°ßµÈ ·Î±×°¡ ÆÄÀÏÀÇ ¸¶Áö¸· ·Î±×(SMR_LT_FILE_END)ÀÎ°æ¿ì 
+                     * ´ÙÀ½ÆÄÀÏÀÇ Ã¹·Î±×(offset:0)¸¦ ÀÐ´Â´Ù. */
+                    SM_SET_LSN( mReadInfo.mReadLSN,
+                                mReadInfo.mReadLSN.mFileNo + 1, /* next file no. */
+                                0 );
+                }
+                else
+                {
+                    /* ´ÙÀ½ ·Î±×ÆÄÀÏÀÌ ¾ø´Ù. */
+                    IDE_RAISE( ERR_NOT_FOUND_LOG );
+                }
+            }
+            else
+            {
+                /* ´ÙÀ½ ·Î±×¸¦ ÀÐ±â À§ÇØ */
+                mReadInfo.mReadLSN.mOffset += mReadInfo.mLogSizeAtDisk;
+            }
         }
-
-        /* mReadLSNì´ ê°€ë¦¬í‚¤ëŠ” Logë¥¼ ì½ì–´ì„œ mReadInfoì— ì‚½ìž…í•œë‹¤.*/
+        
+        /* mReadLSNÀÌ °¡¸®Å°´Â Log¸¦ ÀÐ¾î¼­ mReadInfo¿¡ »ðÀÔÇÑ´Ù.*/
         if ( mIsRemoteLog == ID_FALSE )
         {
-            IDE_TEST( smrLogMgr::readLog( &(mReadInfo.mDecompBufferHandle ),
-                                          &(mReadInfo.mReadLSN),
-                                          ID_TRUE, /* Close Log File When aLogFile doesn't include aLSN */
-                                          &(mReadInfo.mLogFilePtr),
-                                          &(mReadInfo.mLogHead),
-                                          &(mReadInfo.mLogPtr),
-                                          &(mReadInfo.mIsValid),
-                                          &(mReadInfo.mLogSizeAtDisk) )
-                      != IDE_SUCCESS );
+            if ( mNotDecomp == ID_FALSE )
+            {
+                /* ¾ÐÃàµÈ ·Î±×ÆÄÀÏÀÇ °æ¿ì ¾ÐÃàÀ» Ç®¾î¼­ ·¹ÄÚµå¸¦ ÀÐ¾î¿Â´Ù. */
+                IDE_TEST( smrLogMgr::readLog( &(mReadInfo.mDecompBufferHandle ),
+                                              &(mReadInfo.mReadLSN),
+                                              ID_TRUE, /* Close Log File When aLogFile doesn't include aLSN */
+                                              &(mReadInfo.mLogFilePtr),
+                                              &(mReadInfo.mLogHead),
+                                              &(mReadInfo.mLogPtr),
+                                              &(mReadInfo.mIsValid),
+                                              &(mReadInfo.mLogSizeAtDisk) )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* ¾ÐÃàµÈ ·Î±×ÆÄÀÏÀÇ °æ¿ì ¾ÐÃàÀ» Ç®Áö¾Ê°í ¹ÝÈ¯ÇÑ´Ù. */
+                IDE_TEST( smrLogMgr::readLog4RP( &(mReadInfo.mReadLSN),
+                                                 ID_TRUE, /* Close Log File When aLogFile doesn't include aLSN */
+                                                 &(mReadInfo.mLogFilePtr),
+                                                 &(mReadInfo.mLogHead),
+                                                 &(mReadInfo.mLogPtr),
+                                                 &(mReadInfo.mIsValid),
+                                                 &(mReadInfo.mLogSizeAtDisk) )
+                          != IDE_SUCCESS );
+            }
         }
         else
         {
@@ -720,9 +772,9 @@ IDE_RC smiReadLogByOrder::setFirstReadLogPos( smLSN aInitLSN )
                     != IDE_SUCCESS );
 
             /* BUG-26768 */
-            /* initLSNë³´ë‹¤ í° SNìœ¼ë¡œ ê¸°ë¡ëœ ë¡œê·¸ê°€ ì—†ëŠ” ê²½ìš°
-             * mIsValidë¥¼ ID_TRUEë¡œ í•˜ê³  ë‚˜ì˜¨ë‹¤. */
-            (void)mRemoteLogMgr.getLstLSN( &sLstWriteLSN );
+            /* initLSNº¸´Ù Å« SNÀ¸·Î ±â·ÏµÈ ·Î±×°¡ ¾ø´Â °æ¿ì
+             * mIsValid¸¦ ID_TRUE·Î ÇÏ°í ³ª¿Â´Ù. */
+            mRemoteLogMgr.getLstLSN( &sLstWriteLSN );
             if ( ( mReadInfo.mIsValid == ID_FALSE ) &&
                  ( smrCompareLSN::isLT( &sLstWriteLSN, &aInitLSN ) ) )           
             {
@@ -754,12 +806,12 @@ IDE_RC smiReadLogByOrder::setFirstReadLogPos( smLSN aInitLSN )
 }
 
 /***********************************************************************
- * Description : ìƒˆë¡œìš´ ì½ì„ ë¡œê·¸ê°€
- *               ê¸°ë¡ë˜ì—ˆëŠ”ì§€ ì²´í¬í•˜ê³  ìžˆë‹¤ë©´ ì½ì–´ë“¤ì¸ë‹¤.
+ * Description : »õ·Î¿î ÀÐÀ» ·Î±×°¡
+ *               ±â·ÏµÇ¾ú´ÂÁö Ã¼Å©ÇÏ°í ÀÖ´Ù¸é ÀÐ¾îµéÀÎ´Ù.
  *
- * aIsExistLogTail - [OUT] mReadInfoê°€ ê°€ë¦¬í‚¤ëŠ”
- *                        ë¡œê·¸ê°€ Invalidí•œ ë¡œê·¸ë¼ë©´
- *                        ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE.
+ * aIsExistLogTail - [OUT] mReadInfo°¡ °¡¸®Å°´Â
+ *                        ·Î±×°¡ InvalidÇÑ ·Î±×¶ó¸é
+ *                        ID_TRUE, ¾Æ´Ï¸é ID_FALSE.
  *
  */
 IDE_RC smiReadLogByOrder::searchValidLog( idBool *aIsExistLogTail )
@@ -773,31 +825,48 @@ IDE_RC smiReadLogByOrder::searchValidLog( idBool *aIsExistLogTail )
     IDE_DASSERT( aIsExistLogTail != NULL );
 
     *aIsExistLogTail = ID_TRUE;
- 
-    //ì½ì„ ë¡œê·¸ê°€ ì—†ì—ˆë‹¤ë©´ ë‹¤ì‹œ ìƒˆë¡œìš´ ë¡œê·¸ê°€ ê¸°ë¡ë˜ì—ˆëŠ”ì§€
-    //ì²´í¬í•´ì•¼í•œë‹¤.
+
+    //ÀÐÀ» ·Î±×°¡ ¾ø¾ú´Ù¸é ´Ù½Ã »õ·Î¿î ·Î±×°¡ ±â·ÏµÇ¾ú´ÂÁö
+    //Ã¼Å©ÇØ¾ßÇÑ´Ù.
     if ( mReadInfo.mIsValid == ID_FALSE )
     {
         if ( mIsRemoteLog == ID_FALSE )
         {
             /* BUG-42739
-             * getlstWriteSN ì´ ì•„ë‹Œ smiGetValidLSNì„ ì´ìš©í•´ì„œ
-             * Dummyë¥¼ í¬í•¨í•˜ì§€ ì•ŠëŠ” last Used LSN ì„ ë°›ì•„ì™€ì•¼ í•œë‹¤. */
+             * getlstWriteSN ÀÌ ¾Æ´Ñ smiGetValidLSNÀ» ÀÌ¿ëÇØ¼­
+             * Dummy¸¦ Æ÷ÇÔÇÏÁö ¾Ê´Â last Used LSN À» ¹Þ¾Æ¿Í¾ß ÇÑ´Ù. */
             IDE_TEST( smiGetLastValidLSN( &sLastLogLSN ) != IDE_SUCCESS );
 
             if ( !(smrCompareLSN::isEQ( &sLastLogLSN, &mReadInfo.mLstLogLSN ) ) )
             {
-                /*mReadLSNì´ ê°€ë¦¬í‚¤ëŠ” Logë¥¼ ì½ì–´ì„œ mReadInfoì— ì‚½ìž…í•œë‹¤.*/
-                IDE_TEST( smrLogMgr::readLog(
-                                         &(mReadInfo.mDecompBufferHandle ),
-                                         &(mReadInfo.mReadLSN),
-                                         ID_TRUE, /* Close Log File When aLogFile doesn't include aLSN */
-                                         &(mReadInfo.mLogFilePtr),
-                                         &(mReadInfo.mLogHead),
-                                         &(mReadInfo.mLogPtr),
-                                         &(mReadInfo.mIsValid),
-                                         &(mReadInfo.mLogSizeAtDisk) )
-                         != IDE_SUCCESS );
+                if ( mNotDecomp == ID_FALSE )
+                {
+                    /*mReadLSNÀÌ °¡¸®Å°´Â Log¸¦ ÀÐ¾î¼­ mReadInfo¿¡ »ðÀÔÇÑ´Ù.*/
+                    IDE_TEST( smrLogMgr::readLog(
+                                             &(mReadInfo.mDecompBufferHandle ),
+                                             &(mReadInfo.mReadLSN),
+                                             ID_TRUE, /* Close Log File When aLogFile doesn't include aLSN */
+                                             &(mReadInfo.mLogFilePtr),
+                                             &(mReadInfo.mLogHead),
+                                             &(mReadInfo.mLogPtr),
+                                             &(mReadInfo.mIsValid),
+                                             &(mReadInfo.mLogSizeAtDisk) )
+                             != IDE_SUCCESS );
+                }
+                else
+                {
+                    /* mReadLSNÀÌ °¡¸®Å°´Â Log¸¦ ÀÐ¾î¼­ mReadInfo¿¡ »ðÀÔÇÑ´Ù
+                       ¾ÐÃàµÈ ·Î±×ÆÄÀÏÀÇ °æ¿ì ¾ÐÃàÀ» Ç®Áö¾Ê°í ¹ÝÈ¯ÇÑ´Ù. */
+                    IDE_TEST( smrLogMgr::readLog4RP(
+                                             &(mReadInfo.mReadLSN),
+                                             ID_TRUE, /* Close Log File When aLogFile doesn't include aLSN */
+                                             &(mReadInfo.mLogFilePtr),
+                                             &(mReadInfo.mLogHead),
+                                             &(mReadInfo.mLogPtr),
+                                             &(mReadInfo.mIsValid),
+                                             &(mReadInfo.mLogSizeAtDisk) )
+                             != IDE_SUCCESS );
+                }
 
             /* BUG-37931 
              ------------------------------------------------     /  --------------------
@@ -805,18 +874,18 @@ IDE_RC smiReadLogByOrder::searchValidLog( idBool *aIsExistLogTail )
              Status | ok  | ok  | dummy | ok  | dummy | ok  |     /    | ok  | dummy| ok
              ------------ A ------------------------- B ----     /   - C ---------- D ---
                                                                 server restart
-             case 1) service ìƒíƒœ
-                     dummy ë¡œê·¸ë¥¼ í¬í•¨í•œ ìµœëŒ€ LSN (B)
-                     ë§ˆì§€ë§‰ìœ¼ë¡œ valid í•œ ë¡œê·¸ë¥¼ ì €ìž¥í•œ ì‹œì  (A)
-                     101( A ) ê¹Œì§€ë§Œ ì½ì–´ì•¼ í•˜ëŠ”ë° 102ë¥¼ ì½ì—ˆë‹¤ë©´ retry
+             case 1) service »óÅÂ
+                     dummy ·Î±×¸¦ Æ÷ÇÔÇÑ ÃÖ´ë LSN (B)
+                     ¸¶Áö¸·À¸·Î valid ÇÑ ·Î±×¸¦ ÀúÀåÇÑ ½ÃÁ¡ (A)
+                     101( A ) ±îÁö¸¸ ÀÐ¾î¾ß ÇÏ´Âµ¥ 102¸¦ ÀÐ¾ú´Ù¸é retry
 
              case 2) server restart
-                     restart í›„ dummy ë¡œê·¸ë¥¼ í¬í•¨í•œ ìµœëŒ€ LSN (D)
-                     restart í›„ valid í•œ ë¡œê·¸ë¥¼ ì €ìž¥í•œ ì‹œì  (C)
+                     restart ÈÄ dummy ·Î±×¸¦ Æ÷ÇÔÇÑ ÃÖ´ë LSN (D)
+                     restart ÈÄ valid ÇÑ ·Î±×¸¦ ÀúÀåÇÑ ½ÃÁ¡ (C)
 
-                     dummyë§Œ ë‚¨ê¸°ê³  ì£½ì€ ë…€ì„ì´ ìžˆë‹¤ë©´..
-                     getLstWriteLSNì´ (C) ê¹Œì§€ ì¦ê°€í–ˆì„ê²ƒìž„
-                     rpì—ì„œ ì²˜ë¦¬í•œë‹¤. */
+                     dummy¸¸ ³²±â°í Á×Àº ³à¼®ÀÌ ÀÖ´Ù¸é..
+                     getLstWriteLSNÀÌ (C) ±îÁö Áõ°¡ÇßÀ»°ÍÀÓ
+                     rp¿¡¼­ Ã³¸®ÇÑ´Ù. */
 
 #ifdef DEBUG 
                 sReadLSN = smrLogHeadI::getLSN( &mReadInfo.mLogHead ); 
@@ -838,7 +907,7 @@ IDE_RC smiReadLogByOrder::searchValidLog( idBool *aIsExistLogTail )
                     IDE_TEST( mPreReadLFThread.closeLogFile( mReadInfo.mReadLSN.mFileNo )
                               != IDE_SUCCESS );
 
-                    /* Prefetch Threadë¥¼ ê¹¨ì›Œì„œ ë¯¸ë¦¬ ë¡œê·¸íŒŒì¼ì„ ì½ì–´ë“¤ì¸ë‹¤.*/
+                    /* Prefetch Thread¸¦ ±ú¿ö¼­ ¹Ì¸® ·Î±×ÆÄÀÏÀ» ÀÐ¾îµéÀÎ´Ù.*/
                     IDE_TEST( mPreReadLFThread.addOpenLFRequest(
                                                          mReadInfo.mReadLSN.mFileNo +
                                                          sPreReadFileCnt )
@@ -872,18 +941,18 @@ IDE_RC smiReadLogByOrder::searchValidLog( idBool *aIsExistLogTail )
             else
             {
 
-                /* ìƒˆë¡œìš´ ë¡œê·¸ê°€ ì—†ë‹¤ */ 
+                /* »õ·Î¿î ·Î±×°¡ ¾ø´Ù */ 
                 /* nothing to do ... */
                  
 
             }
         }
-        else //remote logì¼ ê²½ìš°
+        else //remote logÀÏ °æ¿ì
         {
-            (void)mRemoteLogMgr.getLstLSN( &sLastLogLSN ); 
+            mRemoteLogMgr.getLstLSN( &sLastLogLSN ); 
             if ( !(smrCompareLSN::isEQ( &sLastLogLSN, &mReadInfo.mLstLogLSN ) ) )
             {
-                /*mReadLSNì´ ê°€ë¦¬í‚¤ëŠ” Logë¥¼ ì½ì–´ì„œ mArrReadInfoì— ì‚½ìž…í•œë‹¤.*/
+                /*mReadLSNÀÌ °¡¸®Å°´Â Log¸¦ ÀÐ¾î¼­ mArrReadInfo¿¡ »ðÀÔÇÑ´Ù.*/
                 IDE_TEST( mRemoteLogMgr.readLogAndValid(
                                          &(mReadInfo.mDecompBufferHandle ),
                                          &(mReadInfo.mReadLSN),
@@ -901,7 +970,7 @@ IDE_RC smiReadLogByOrder::searchValidLog( idBool *aIsExistLogTail )
                     IDE_TEST( mPreReadLFThread.closeLogFile( mReadInfo.mReadLSN.mFileNo )
                               != IDE_SUCCESS );
 
-                    /* Prefetch Threadë¥¼ ê¹¨ì›Œì„œ ë¯¸ë¦¬ ë¡œê·¸íŒŒì¼ì„ ì½ì–´ë“¤ì¸ë‹¤.*/
+                    /* Prefetch Thread¸¦ ±ú¿ö¼­ ¹Ì¸® ·Î±×ÆÄÀÏÀ» ÀÐ¾îµéÀÎ´Ù.*/
                     IDE_TEST( mPreReadLFThread.addOpenLFRequest(
                                                      mReadInfo.mReadLSN.mFileNo +
                                                      sPreReadFileCnt)
@@ -951,10 +1020,10 @@ IDE_RC smiReadLogByOrder::searchValidLog( idBool *aIsExistLogTail )
 }
 
 /***********************************************************************
- * Description : ë§ˆì§€ë§‰ìœ¼ë¡œ ì½ì€ì‹œì ê¹Œì§€ ì½ì—ˆë˜ ë¡œê·¸ê°€ ëª¨ë‘ syncë˜ì—ˆëŠ”ì§€
- *               Check í•œë‹¤.
+ * Description : ¸¶Áö¸·À¸·Î ÀÐÀº½ÃÁ¡±îÁö ÀÐ¾ú´ø ·Î±×°¡ ¸ðµÎ syncµÇ¾ú´ÂÁö
+ *               Check ÇÑ´Ù.
  *
- * aIsSynced - [OUT] ëª¨ë‘ Syncê°€ ë˜ë©´ ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE
+ * aIsSynced - [OUT] ¸ðµÎ Sync°¡ µÇ¸é ID_TRUE, ¾Æ´Ï¸é ID_FALSE
  ***********************************************************************/
 IDE_RC smiReadLogByOrder::isAllReadLogSynced( idBool *aIsSynced )
 {
@@ -974,7 +1043,7 @@ IDE_RC smiReadLogByOrder::isAllReadLogSynced( idBool *aIsSynced )
     {
         if ( mCurReadInfoPtr->mIsValid == ID_TRUE )
         {
-            /* BUGBUG: Senderê°€ ë³´ë‚¸ ë¡œê·¸ì´ê¸°ë•Œë¬¸ì— */
+            /* BUGBUG: Sender°¡ º¸³½ ·Î±×ÀÌ±â¶§¹®¿¡ */
             sSyncLSN.mOffset +=  mCurReadInfoPtr->mLogSizeAtDisk;
         }
         else
@@ -1005,16 +1074,16 @@ IDE_RC smiReadLogByOrder::isAllReadLogSynced( idBool *aIsSynced )
     return IDE_FAILURE;
 }
 /***********************************************************************
- * Description : ë§ˆì§€ë§‰ìœ¼ë¡œ ì½ì€ì‹œì LSNì„ ë°›ì•„ì„œ ë‹¤ìŒ ë¡œê·¸ë¶€í„°
- *               ì½ì„ ìˆ˜ ìžˆë„ë¡ ì´ˆê¸°í™” í•œë‹¤.
- *               PROJ-1670 replication log bufferì—ì„œ ë¡œê·¸ë¥¼ ì½ì„ ë•Œ
- *               ì´ í´ëž˜ìŠ¤ê°€ ì•„ë‹Œ rpdLogBufferMgr í´ëž˜ìŠ¤ë¥¼ í†µí•´
- *               senderê°€ ë¡œê·¸ë¥¼ ì½ì„ ìˆ˜ ìžˆê²Œë˜ì—ˆë‹¤.
- *              ê·¸ëŸ¬ë‚˜, rpdLogBufferMgrì—ëŠ” ëª¨ë“  ë¡œê·¸ê°€ ì¡´ìž¬í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì—
- *               bufferMgrì— ì—†ëŠ” ë¡œê·¸ì¸ ê²½ìš° ì´ í´ëž˜ìŠ¤ë¥¼ í†µí•´ ì½ì–´ì•¼ í•œë‹¤.
- *               ê·¸ëž˜ì„œ ë§ˆì§€ë§‰ìœ¼ë¡œ ì½ì€ LSNì„ í†µí•´ ì½ì„ ìˆ˜ ìžˆëŠ”
- *               í•¨ìˆ˜ë¥¼ ì¶”ê°€í•˜ê²Œ ë˜ì—ˆë‹¤.
- * aLstReadLSN - [IN] ë§ˆì§€ë§‰ìœ¼ë¡œ ì½ì€ LSN
+ * Description : ¸¶Áö¸·À¸·Î ÀÐÀº½ÃÁ¡LSNÀ» ¹Þ¾Æ¼­ ´ÙÀ½ ·Î±×ºÎÅÍ
+ *               ÀÐÀ» ¼ö ÀÖµµ·Ï ÃÊ±âÈ­ ÇÑ´Ù.
+ *               PROJ-1670 replication log buffer¿¡¼­ ·Î±×¸¦ ÀÐÀ» ¶§
+ *               ÀÌ Å¬·¡½º°¡ ¾Æ´Ñ rpdLogBufferMgr Å¬·¡½º¸¦ ÅëÇØ
+ *               sender°¡ ·Î±×¸¦ ÀÐÀ» ¼ö ÀÖ°ÔµÇ¾ú´Ù.
+ *              ±×·¯³ª, rpdLogBufferMgr¿¡´Â ¸ðµç ·Î±×°¡ Á¸ÀçÇÏÁö ¾Ê±â ¶§¹®¿¡
+ *               bufferMgr¿¡ ¾ø´Â ·Î±×ÀÎ °æ¿ì ÀÌ Å¬·¡½º¸¦ ÅëÇØ ÀÐ¾î¾ß ÇÑ´Ù.
+ *               ±×·¡¼­ ¸¶Áö¸·À¸·Î ÀÐÀº LSNÀ» ÅëÇØ ÀÐÀ» ¼ö ÀÖ´Â
+ *               ÇÔ¼ö¸¦ Ãß°¡ÇÏ°Ô µÇ¾ú´Ù.
+ * aLstReadLSN - [IN] ¸¶Áö¸·À¸·Î ÀÐÀº LSN
  ***********************************************************************/
 IDE_RC smiReadLogByOrder::startByLSN( smLSN aLstReadLSN )
 {
@@ -1030,18 +1099,37 @@ IDE_RC smiReadLogByOrder::startByLSN( smLSN aLstReadLSN )
     SM_LSN_MAX( mReadInfo.mLstLogLSN );
     mReadInfo.mIsLogSwitch = ID_FALSE;
 
-    /* ê°€ìž¥ ë§ˆì§€ë§‰ìœ¼ë¡œ ì½ì€ ë¡œê·¸ì˜ LSN(mReadLSN)ì—
-     * í•´ë‹¹í•˜ëŠ” íŒŒì¼ì„ ì—´ì–´ ë¡œê·¸ë¥¼ ì½ëŠ”ë‹¤.
-     * ì½ì–´ì•¼ í•˜ëŠ” ë¡œê·¸ëŠ” ë‹¤ìŒ ë¡œê·¸ì´ë‹¤.*/
-    IDE_TEST( smrLogMgr::readLog( &(mReadInfo.mDecompBufferHandle ),
-                                  &(mReadInfo.mReadLSN),
-                                  ID_TRUE, /* Close Log File When aLogFile doesn't include aLSN */
-                                  &(mReadInfo.mLogFilePtr),
-                                  &(mReadInfo.mLogHead),
-                                  &(mReadInfo.mLogPtr),
-                                  &(mReadInfo.mIsValid),
-                                  &(mReadInfo.mLogSizeAtDisk) )
-              != IDE_SUCCESS );
+    if ( mNotDecomp == ID_FALSE )
+    {
+        /* °¡Àå ¸¶Áö¸·À¸·Î ÀÐÀº ·Î±×ÀÇ LSN(mReadLSN)¿¡
+         * ÇØ´çÇÏ´Â ÆÄÀÏÀ» ¿­¾î ·Î±×¸¦ ÀÐ´Â´Ù.
+         * ÀÐ¾î¾ß ÇÏ´Â ·Î±×´Â ´ÙÀ½ ·Î±×ÀÌ´Ù.*/
+        IDE_TEST( smrLogMgr::readLog( &(mReadInfo.mDecompBufferHandle ),
+                                      &(mReadInfo.mReadLSN),
+                                      ID_TRUE, /* Close Log File When aLogFile doesn't include aLSN */
+                                      &(mReadInfo.mLogFilePtr),
+                                      &(mReadInfo.mLogHead),
+                                      &(mReadInfo.mLogPtr),
+                                      &(mReadInfo.mIsValid),
+                                      &(mReadInfo.mLogSizeAtDisk) )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* °¡Àå ¸¶Áö¸·À¸·Î ÀÐÀº ·Î±×ÀÇ LSN(mReadLSN)¿¡
+         * ÇØ´çÇÏ´Â ÆÄÀÏÀ» ¿­¾î ·Î±×¸¦ ÀÐ´Â´Ù.
+         * ÀÐ¾î¾ß ÇÏ´Â ·Î±×´Â ´ÙÀ½ ·Î±×ÀÌ´Ù.
+         * ¾ÐÃàµÈ ·Î±×ÆÄÀÏÀÇ °æ¿ì ¾ÐÃàÀ» Ç®Áö¾Ê°í ¹ÝÈ¯ÇÑ´Ù. */
+
+        IDE_TEST( smrLogMgr::readLog4RP( &(mReadInfo.mReadLSN),
+                                         ID_TRUE, /* Close Log File When aLogFile doesn't include aLSN */
+                                         &(mReadInfo.mLogFilePtr),
+                                         &(mReadInfo.mLogHead),
+                                         &(mReadInfo.mLogPtr),
+                                         &(mReadInfo.mIsValid),
+                                         &(mReadInfo.mLogSizeAtDisk) )
+                  != IDE_SUCCESS );
+    }
 
 #ifdef DEBUG
     sReadLSN = smrLogHeadI::getLSN( &mReadInfo.mLogHead ); 
@@ -1070,9 +1158,9 @@ IDE_RC smiReadLogByOrder::startByLSN( smLSN aLstReadLSN )
     return IDE_FAILURE;
 }
 /***********************************************************************
- * Description : ëª¨ë“  ì—´ë¦° ë¡œê·¸íŒŒì¼ì„ close í•œë‹¤.
- *               senderê°€ ë¡œê·¸íŒŒì¼ ì½ëŠ” ê²ƒì„ ì¤‘ë‹¨í•  ë•Œ ì‚¬ìš©í•œë‹¤.
- *               PROJ-1670 replication log buffer-- startByLSNì°¸ê³ 
+ * Description : ¸ðµç ¿­¸° ·Î±×ÆÄÀÏÀ» close ÇÑ´Ù.
+ *               sender°¡ ·Î±×ÆÄÀÏ ÀÐ´Â °ÍÀ» Áß´ÜÇÒ ¶§ »ç¿ëÇÑ´Ù.
+ *               PROJ-1670 replication log buffer-- startByLSNÂü°í
  ***********************************************************************/
 IDE_RC smiReadLogByOrder::stop()
 {
@@ -1081,7 +1169,7 @@ IDE_RC smiReadLogByOrder::stop()
     void  * sQueueData;
     idBool  sUnderflow  = ID_FALSE;
 
-    /* PROJ-1670 replication log bufferë¥¼ ì‚¬ìš©í•  ë•Œë§Œ í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤. */
+    /* PROJ-1670 replication log buffer¸¦ »ç¿ëÇÒ ¶§¸¸ È£ÃâµÇ¾î¾ß ÇÑ´Ù. */
     mPQueueRedoInfo.dequeue( (void*)&sQueueData, &sUnderflow );
 
     if ( mReadInfo.mLogFilePtr != NULL )
@@ -1114,9 +1202,9 @@ IDE_RC smiReadLogByOrder::stop()
 }
 
 /***********************************************************************
- * Description : Read ì •ë³´ë¥¼ ì œê³µí•œë‹¤.
+ * Description : Read Á¤º¸¸¦ Á¦°øÇÑ´Ù.
  *
- * aReadLSN    - [OUT] Read LSNì„ ì €ìž¥í•  ë©”ëª¨ë¦¬
+ * aReadLSN    - [OUT] Read LSNÀ» ÀúÀåÇÒ ¸Þ¸ð¸®
  */
 void smiReadLogByOrder::getReadLSN( smLSN     * aReadLSN )
 {
@@ -1127,7 +1215,7 @@ void smiReadLogByOrder::getReadLSN( smLSN     * aReadLSN )
 
 /**********************************************************************
  * PROJ-1915 
- * Description : ì˜¤í”„ë¼ì¸ ë¡œê·¸ì—ì„œ ë§ˆì§€ë§‰ìœ¼ë¡œ Logë¥¼ ê¸°ë¡í•˜ê¸° ìœ„í•´ ì‚¬ìš©ëœ SNê°’ì„ ë¦¬í„´í•œë‹¤.
+ * Description : ¿ÀÇÁ¶óÀÎ ·Î±×¿¡¼­ ¸¶Áö¸·À¸·Î Log¸¦ ±â·ÏÇÏ±â À§ÇØ »ç¿ëµÈ SN°ªÀ» ¸®ÅÏÇÑ´Ù.
  *
  * aSN  - [OUT] output parameter
  **********************************************************************/
@@ -1136,9 +1224,9 @@ IDE_RC smiReadLogByOrder::getRemoteLastUsedGSN( smSN * aSN )
     smSN  sRetSN = 0;
     smLSN sTmpLSN;
 
-    IDE_ASSERT( mIsRemoteLog == ID_TRUE ); //remote logì—¬ì•¼ í•œë‹¤.
+    IDE_ASSERT( mIsRemoteLog == ID_TRUE ); //remote log¿©¾ß ÇÑ´Ù.
 
-    (void)mRemoteLogMgr.getLstLSN( &sTmpLSN );
+    mRemoteLogMgr.getLstLSN( &sTmpLSN );
     if ( !SM_IS_LSN_INIT( sTmpLSN ) )
     {
         sRetSN = SM_MAKE_SN( sTmpLSN );
@@ -1150,4 +1238,38 @@ IDE_RC smiReadLogByOrder::getRemoteLastUsedGSN( smSN * aSN )
     *aSN = sRetSN;
 
     return IDE_SUCCESS;
+}
+
+idBool smiReadLogByOrder::isCompressedLog( SChar * aRawLog )
+{
+    return smrLogComp::isCompressedLog( aRawLog );
+}
+
+smOID smiReadLogByOrder::getTableOID( SChar * aRawLog )
+{
+    return smrLogComp::getTableOID( aRawLog );
+}
+
+IDE_RC smiReadLogByOrder::decompressLog( SChar      * aCompLog,
+                                         smLSN      * aReadLSN,
+                                         smiLogHdr  * aLogHead,
+                                         SChar     ** aLogPtr )
+{
+    UInt sDummySize = 0;
+
+    IDE_TEST( smrLogComp::decompressCompLog( &( mReadInfo.mDecompBufferHandle ),
+                                             aReadLSN->mOffset,
+                                             aCompLog,
+                                             smrLogFile::makeMagicNumber( aReadLSN->mFileNo,
+                                                                          aReadLSN->mOffset ),
+                                             aLogHead,
+                                             aLogPtr,
+                                             &sDummySize )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }

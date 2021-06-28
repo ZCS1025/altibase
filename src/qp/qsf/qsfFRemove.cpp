@@ -16,11 +16,11 @@
  
 
 /***********************************************************************
- * $Id: qsfFRemove.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qsfFRemove.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  *
  * Description :
  *     PROJ-1371 PSM File Handling
- *     FILEì„ ì‚­ì œí•˜ëŠ” í•¨ìˆ˜
+ *     FILEÀ» »èÁ¦ÇÏ´Â ÇÔ¼ö
  *
  * Syntax :
  *     FILE_REMOVE( path VARCHAR, filename VARCHAR );
@@ -50,7 +50,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfFRemoveModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -147,13 +147,13 @@ IDE_RC qsfCalculate_FRemove( mtcNode*     aNode,
  *     file_remove calculate
  *
  * Implementation :
- *     1. argumentê°€ nullì¸ ê²½ìš°  error
- *     2. directory pathë¥¼ metaì—ì„œ ì–»ì–´ì˜´
- *     3. write ê¶Œí•œì´ ìˆëŠ”ì§€ ê²€ì‚¬
- *     4. open modeê°€ w, aê°€ ì•„ë‹Œ ê²½ìš° error
- *     5. path, filename, directory indicatorë¥¼ ì¡°í•©í•˜ì—¬ pathìƒì„±
- *     6. removeí•¨ìˆ˜ í˜¸ì¶œ
- *     7. return valueëŠ” dummyë¡œ, TRUEë¡œ ì„¸íŒ…
+ *     1. argument°¡ nullÀÎ °æ¿ì  error
+ *     2. directory path¸¦ meta¿¡¼­ ¾ò¾î¿È
+ *     3. write ±ÇÇÑÀÌ ÀÖ´ÂÁö °Ë»ç
+ *     4. open mode°¡ w, a°¡ ¾Æ´Ñ °æ¿ì error
+ *     5. path, filename, directory indicator¸¦ Á¶ÇÕÇÏ¿© path»ı¼º
+ *     6. removeÇÔ¼ö È£Ãâ
+ *     7. return value´Â dummy·Î, TRUE·Î ¼¼ÆÃ
  *
  ***********************************************************************/
     
@@ -201,7 +201,7 @@ IDE_RC qsfCalculate_FRemove( mtcNode*     aNode,
     // path
     sPathValue = (mtdCharType*)aStack[1].value;
         
-    // ë©”íƒ€ì—ì„œ ì‹¤ì œ pathë¥¼ ì–»ì–´ì˜´
+    // ¸ŞÅ¸¿¡¼­ ½ÇÁ¦ path¸¦ ¾ò¾î¿È
     sDummyStmt = QC_SMI_STMT(sStatement);
 
     sSmiStmtFlag &= ~SMI_STATEMENT_MASK;
@@ -250,7 +250,7 @@ IDE_RC qsfCalculate_FRemove( mtcNode*     aNode,
                                  sFilenameValue )
               != IDE_SUCCESS );
             
-    // iduFileStream::removefileí˜¸ì¶œ
+    // iduFileStream::removefileÈ£Ãâ
     IDE_TEST( iduFileStream::removeFile( sFilePath )
               != IDE_SUCCESS );
          

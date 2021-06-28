@@ -13,22 +13,22 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
- 
 
 /***********************************************************************
- * $Id: sdt.h 40703 2010-07-22 07:18:32Z eerien $
+ * $Id: $
  **********************************************************************/
 
 # ifndef _O_SDT_H_
 # define _O_SDT_H_ 1
 
 # include <sdtDef.h>
-# include <sdtTempDef.h>
+# include <sdtSortDef.h>
+# include <sdtHashDef.h>
 # include <sdtTempRow.h>
 # include <sdtTempPage.h>
-# include <sdtWAMap.h>
-# include <sdtWorkArea.h>
-# include <sdtUniqueHashModule.h>
+# include <sdtWASortMap.h>
+# include <sdtWAExtentMgr.h>
 # include <sdtHashModule.h>
 # include <sdtSortModule.h>
+# include <sdtSortSegment.h>
 # endif /* _O_SDT_H_ */

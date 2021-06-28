@@ -16,12 +16,9 @@
  
 
 /***********************************************************************
- * $Id: smuHash.cpp 84032 2018-09-19 05:32:05Z kclee $
+ * $Id: smuHash.cpp 83870 2018-09-03 04:32:39Z kclee $
  **********************************************************************/
 
-#include <idl.h>
-#include <idu.h>
-#include <iduProperty.h>
 #include <smDef.h>
 #include <smErrorCode.h>
 #include <smuHash.h>
@@ -50,8 +47,8 @@ smuHashLatchFunc smuHash::mLatchVector[2] =
 IDE_RC smuHash::allocChain(smuHashBase *aBase, smuHashChain **aChain)
 {
 /*
- *  Chain ê°ì²´ë¥¼  mempoolë¡œ ë¶€í„° í• ë‹¹ë°›ì•„ ë˜ëŒë¦°ë‹¤. 
- *  aBase ê°ì²´ì— ë“±ë¡ëœ MemoryMgrë¡œ ë¶€í„° í• ë‹¹ë°›ëŠ”ë‹¤.
+ *  Chain °´Ã¼¸¦  mempool·Î ºÎÅÍ ÇÒ´ç¹Ş¾Æ µÇµ¹¸°´Ù. 
+ *  aBase °´Ã¼¿¡ µî·ÏµÈ MemoryMgr·Î ºÎÅÍ ÇÒ´ç¹Ş´Â´Ù.
  */
     /* smuHash_allocChain_alloc_Chain.tc */
     IDU_FIT_POINT("smuHash::allocChain::alloc::Chain");
@@ -67,7 +64,7 @@ IDE_RC smuHash::allocChain(smuHashBase *aBase, smuHashChain **aChain)
 IDE_RC smuHash::freeChain(smuHashBase *aBase, smuHashChain *aChain)
 {
 /*
- *  Chain ê°ì²´ë¥¼  mempoolë¡œ í•´ì œí•œë‹¤. 
+ *  Chain °´Ã¼¸¦  mempool·Î ÇØÁ¦ÇÑ´Ù. 
  */
     IDE_TEST(((iduMemPool *)(aBase->mMemPool))->memfree((void *)aChain) != IDE_SUCCESS);
     
@@ -88,14 +85,14 @@ IDE_RC smuHash::initialize(smuHashBase    *aBase,
                            smuHashCompFunc aCompFunc)
 {
 /*
- *  í˜¸ì¶œìëŠ” ê°ì²´ smuHashBaseë¥¼ ë¯¸ë¦¬ í• ë‹¹ë°›ì•„ í˜¸ì¶œí•œë‹¤.
- *  aConcurrencyLevelì— ë”°ë¼ mempool ì´ˆê¸°í™”ì‹œ ê³ ë ¤í•´ì„œ ì¸ìë¡œ ë„˜ê¸´ë‹¤.
- *  aBucketCount ë§Œí¼ callocí•´ì„œ aBaseì— ë§¤ë‹¨ë‹¤.
- *  aKeyLengthë¥¼ ì´ìš©í•˜ì—¬, smuHashChainì˜ ì‹¤ì œ alignëœ í¬ê¸°ë¥¼ ê³„ì‚°í•˜ê³ ,
- *  [ (ID_SIZEOF(smuHashChain) + aKeyLength)ì˜ 8ì˜ align ]
- *  ì´ ê°’ì„ mempool ì´ˆê¸°í™”ì‹œì— ì¸ìë¡œ ë„˜ê¸´ë‹¤.
- *  Hash, Comp Callback í•¨ìˆ˜ë¥¼ ì„¤ì •í•œë‹¤. 
- *  aUseLatchë¥¼ ì´ìš©í•˜ì—¬, í•¨ìˆ˜ í¬ì¸í„° Array vectorë¥¼ ì„¤ì •í•œë‹¤. 
+ *  È£ÃâÀÚ´Â °´Ã¼ smuHashBase¸¦ ¹Ì¸® ÇÒ´ç¹Ş¾Æ È£ÃâÇÑ´Ù.
+ *  aConcurrencyLevel¿¡ µû¶ó mempool ÃÊ±âÈ­½Ã °í·ÁÇØ¼­ ÀÎÀÚ·Î ³Ñ±ä´Ù.
+ *  aBucketCount ¸¸Å­ callocÇØ¼­ aBase¿¡ ¸Å´Ü´Ù.
+ *  aKeyLength¸¦ ÀÌ¿ëÇÏ¿©, smuHashChainÀÇ ½ÇÁ¦ alignµÈ Å©±â¸¦ °è»êÇÏ°í,
+ *  [ (ID_SIZEOF(smuHashChain) + aKeyLength)ÀÇ 8ÀÇ align ]
+ *  ÀÌ °ªÀ» mempool ÃÊ±âÈ­½Ã¿¡ ÀÎÀÚ·Î ³Ñ±ä´Ù.
+ *  Hash, Comp Callback ÇÔ¼ö¸¦ ¼³Á¤ÇÑ´Ù. 
+ *  aUseLatch¸¦ ÀÌ¿ëÇÏ¿©, ÇÔ¼ö Æ÷ÀÎÅÍ Array vector¸¦ ¼³Á¤ÇÑ´Ù. 
  */
     UInt            i;
     UInt            sChainSize;
@@ -172,9 +169,9 @@ IDE_RC smuHash::initialize(smuHashBase    *aBase,
     {
         sBucket = aBase->mBucket + i;
 
-        /* To Fix BUG-24135 [SD] smxTouchPageListì˜ Hash Bucket ì´ˆê¸°ê°œìˆ˜ë¡œ
-         *                   ì¸í•´ ë©”ëª¨ë¦¬ë¥¼ ë§ì´ ì°¨ì§€í•¨
-         * Hashì˜ Latch ì‚¬ìš©ì—¬ë¶€ì— ë”°ë¼ iduLatchObjë¥¼ í• ë‹¹í•˜ë„ë¡ ì²˜ë¦¬í•¨ */
+        /* To Fix BUG-24135 [SD] smxTouchPageListÀÇ Hash Bucket ÃÊ±â°³¼ö·Î
+         *                   ÀÎÇØ ¸Ş¸ğ¸®¸¦ ¸¹ÀÌ Â÷ÁöÇÔ
+         * HashÀÇ Latch »ç¿ë¿©ºÎ¿¡ µû¶ó iduLatchObj¸¦ ÇÒ´çÇÏµµ·Ï Ã³¸®ÇÔ */
         if ( aUseLatch == ID_TRUE )
         {
             /* TC/FIT/Limit/sm/smu/smuHash_initialize_malloc3.sql */
@@ -276,8 +273,8 @@ IDE_RC smuHash::destroy(smuHashBase  *aBase)
     UInt           i;
     smuHashChain*  sCurChain;
     
-    /*  mempoolì„ í•´ì œí•œë‹¤. 
-     *  ë‹¨, í˜„ì¬ ë§¤ë‹¬ë¦° chainì´ 0ì´ì–´ì•¼ í•œë‹¤. ì•„ë‹ ê²½ìš° ASSERT!!*/
+    /*  mempoolÀ» ÇØÁ¦ÇÑ´Ù. 
+     *  ´Ü, ÇöÀç ¸Å´Ş¸° chainÀÌ 0ÀÌ¾î¾ß ÇÑ´Ù. ¾Æ´Ò °æ¿ì ASSERT!!*/
     sCurChain = NULL;
     
     IDE_TEST(open(aBase) != IDE_SUCCESS);
@@ -341,7 +338,7 @@ IDE_RC smuHash::findNode(smuHashBase  *aBase, void *aKeyPtr, void **aNode)
 {
     UInt aHashValue;
 
-    // Vector í˜¸ì¶œ 
+    // Vector È£Ãâ 
     aHashValue = aBase->mHashFunc(aKeyPtr) % aBase->mBucketCount;
     return (*aBase->mLatchVector->findNode)(aBase, 
                                             &(aBase->mBucket[aHashValue]),
@@ -354,7 +351,7 @@ IDE_RC smuHash::insertNode(smuHashBase  *aBase, void *aKeyPtr, void *aNode)
 {
     UInt aHashValue;
 
-    // Vector í˜¸ì¶œ 
+    // Vector È£Ãâ 
     aHashValue = aBase->mHashFunc(aKeyPtr) % aBase->mBucketCount;
     return (*aBase->mLatchVector->insertNode)(aBase, 
                                             &(aBase->mBucket[aHashValue]),
@@ -366,7 +363,7 @@ IDE_RC smuHash::deleteNode(smuHashBase  *aBase, void *aKeyPtr, void **aNode)
 {
     UInt aHashValue;
 
-    // Vector í˜¸ì¶œ 
+    // Vector È£Ãâ 
     aHashValue = aBase->mHashFunc(aKeyPtr) % aBase->mBucketCount;
     return (*aBase->mLatchVector->deleteNode)( aBase, 
                                               &(aBase->mBucket[aHashValue]),
@@ -406,8 +403,8 @@ IDE_RC smuHash::findNodeNoLatch(smuHashBase   *aBase,
                                 void         **aNode)
 {
 /* 
- *  Chainì„ ë”°ë¼ê°€ë©´ì„œ, ë™ì¼í•œ key ê°’ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
- *  ìˆë‹¤ë©´ í•´ë‹¹ í¬ì¸í„°, ì—†ìœ¼ë©´ NULLì„ ì„¤ì •í•œë‹¤.
+ *  ChainÀ» µû¶ó°¡¸é¼­, µ¿ÀÏÇÑ key °ªÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù.
+ *  ÀÖ´Ù¸é ÇØ´ç Æ÷ÀÎÅÍ, ¾øÀ¸¸é NULLÀ» ¼³Á¤ÇÑ´Ù.
  */
     smuHashChain *sChain;
     
@@ -426,9 +423,9 @@ IDE_RC smuHash::insertNodeNoLatch(smuHashBase   *aBase,
                                   void          *aNode)
 {
 /*
- *  HashCahinì„ mempoolë¡œ ë¶€í„° í• ë‹¹ë°›ê³ , í‚¤ë¥¼ ë³µì‚¬í•˜ê³ , 
- *  ë…¸ë“œ í¬ì¸í„°ë¥¼ assigní•œë‹¤.
- *  ì´ Chainì„ í•´ë‹¹ Bucket ë¦¬ìŠ¤íŠ¸ í—¤ë”ì— ì‚½ì…í•œë‹¤. 
+ *  HashCahinÀ» mempool·Î ºÎÅÍ ÇÒ´ç¹Ş°í, Å°¸¦ º¹»çÇÏ°í, 
+ *  ³ëµå Æ÷ÀÎÅÍ¸¦ assignÇÑ´Ù.
+ *  ÀÌ ChainÀ» ÇØ´ç Bucket ¸®½ºÆ® Çì´õ¿¡ »ğÀÔÇÑ´Ù. 
  */
     UInt            sState  = 0;
     smuHashChain  * sChain;
@@ -476,10 +473,10 @@ IDE_RC smuHash::deleteNodeNoLatch(smuHashBase   *aBase,
                                   void         **aNode)
 {
 /*
- *  Chainì„ ë”°ë¼ê°€ë©´ì„œ, ë™ì¼í•œ key ê°’ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
- *  ì°¾ì„  Chainì„ í•´ë‹¹ Bucket ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°í•œë‹¤.
- *  *aNodeì— í•´ë‹¹ Nodeê°’ì„ ì„¤ì •í•œë‹¤.
- *  HashChainì„ mempoolë¡œ í•´ì œí•œë‹¤. 
+ *  ChainÀ» µû¶ó°¡¸é¼­, µ¿ÀÏÇÑ key °ªÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù.
+ *  Ã£À»  ChainÀ» ÇØ´ç Bucket ¸®½ºÆ®¿¡¼­ Á¦°ÅÇÑ´Ù.
+ *  *aNode¿¡ ÇØ´ç Node°ªÀ» ¼³Á¤ÇÑ´Ù.
+ *  HashChainÀ» mempool·Î ÇØÁ¦ÇÑ´Ù. 
  */
     smuHashChain *sChain;
 
@@ -513,8 +510,8 @@ IDE_RC smuHash::findNodeLatch(smuHashBase   *aBase,
                               void          *aKeyPtr, 
                               void         **aNode)
 {
-/* Lockì„ ì¡ëŠ”ë‹¤. 
- * findNodeNoLatch() í˜¸ì¶œ 
+/* LockÀ» Àâ´Â´Ù. 
+ * findNodeNoLatch() È£Ãâ 
  * UnLock();
  */
     IDE_TEST( aBucket->mLock->lockRead( NULL, /* idvSQL * */
@@ -536,8 +533,8 @@ IDE_RC smuHash::insertNodeLatch(smuHashBase  *aBase,
                                 void *aKeyPtr, 
                                 void *aNode)
 {
-/* Lockì„ ì¡ëŠ”ë‹¤. 
- * insertNodeNoLatch() í˜¸ì¶œ 
+/* LockÀ» Àâ´Â´Ù. 
+ * insertNodeNoLatch() È£Ãâ 
  * UnLock();
  */
     IDE_TEST( aBucket->mLock->lockWrite( NULL, /*idvSQL* */
@@ -558,8 +555,8 @@ IDE_RC smuHash::deleteNodeLatch(smuHashBase  *aBase,
                                 void *aKeyPtr, 
                                 void **aNode)
 {
-/* Lockì„ ì¡ëŠ”ë‹¤. 
- * deleteNodeNoLatch() í˜¸ì¶œ 
+/* LockÀ» Àâ´Â´Ù. 
+ * deleteNodeNoLatch() È£Ãâ 
  * UnLock();
  */
     IDE_TEST( aBucket->mLock->lockWrite( NULL, /* idvSQL* */
@@ -580,7 +577,7 @@ IDE_RC smuHash::deleteNodeLatch(smuHashBase  *aBase,
 IDE_RC smuHash::lock(smuHashBase  *aBase)
 {
 /*
- * Hash ë§¤ë‹ˆì €ì— ëŒ€í•œ mutexë¥¼ ì¡ëŠ”ë‹¤.
+ * Hash ¸Å´ÏÀú¿¡ ´ëÇÑ mutex¸¦ Àâ´Â´Ù.
  */
     IDE_TEST_RAISE(aBase->mMutex.lock(NULL) != IDE_SUCCESS, lock_error);
     return IDE_SUCCESS;
@@ -597,7 +594,7 @@ IDE_RC smuHash::lock(smuHashBase  *aBase)
 IDE_RC smuHash::unlock(smuHashBase  *aBase)
 {
 /*
- * Hash ë§¤ë‹ˆì €ì— ëŒ€í•œ mutexë¥¼ í‘¼ë‹¤. 
+ * Hash ¸Å´ÏÀú¿¡ ´ëÇÑ mutex¸¦ Ç¬´Ù. 
  */
     IDE_TEST_RAISE(aBase->mMutex.unlock() != IDE_SUCCESS, unlock_error);
     return IDE_SUCCESS;
@@ -617,7 +614,7 @@ IDE_RC smuHash::unlock(smuHashBase  *aBase)
 
 
 /*
- *  Openì‹œì— í˜¸ì¶œë˜ë©°,  ì²«ë²ˆì§¸ HashNodeë¥¼ ì°¾ì•„ ë†“ëŠ”ë‹¤.
+ *  Open½Ã¿¡ È£ÃâµÇ¸ç,  Ã¹¹øÂ° HashNode¸¦ Ã£¾Æ ³õ´Â´Ù.
  */
 
 smuHashChain *smuHash::searchFirstNode(smuHashBase *aBase)

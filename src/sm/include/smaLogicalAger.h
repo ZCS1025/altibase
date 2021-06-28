@@ -16,19 +16,18 @@
  
 
 /***********************************************************************
- * $Id: smaLogicalAger.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smaLogicalAger.h 88423 2020-08-26 04:06:55Z emlee $
  **********************************************************************/
 
 #ifndef _O_SMA_LOGICAL_AGER_H_
 # define _O_SMA_LOGICAL_AGER_H_ 1
 
 
+# include <idu.h>
 # include <idtBaseThread.h>
 
 # include <smDef.h>
-
 # include <smm.h>
-# include <idu.h>
 # include <smaDef.h>
 
 class smaLogicalAger : public idtBaseThread
@@ -39,80 +38,74 @@ class smaLogicalAger : public idtBaseThread
  private:
     idBool       mContinue;
     UInt         mTimeOut;
+    UInt         mThreadID;
 
-    static smmSlotList* mSlotList[3];
+    static smmSlotList* mSlotList;
     static iduMutex     mBlock;
     static iduMutex     mCheckMutex;
-    static smaOidList*  mHead;
-    static smaOidList*  mTailLogicalAger;
-    static smaOidList*  mTailDeleteThread;
+    static smaOidList** mHead;
+    static smaOidList** mTailLogicalAger;
+    static smaOidList** mTailDeleteThread;
+    static iduMutex  *  mListLock;
 
     static smaLogicalAger *mLogicalAgerList;
-    // ìƒì„±ëœ Logical Ager Threadì˜ ê°¯ìˆ˜
+    // »ı¼ºµÈ Logical Ager ThreadÀÇ °¹¼ö
     static UInt            mCreatedThreadCount;
     
-    // í˜„ì¬ ìˆ˜í–‰ì¤‘ì¸ Logical Ager Threadì˜ ê°¯ìˆ˜
+    // ÇöÀç ¼öÇàÁßÀÎ Logical Ager ThreadÀÇ °¹¼ö
     static UInt            mRunningThreadCount;
 
-    /* BUG-17417 V$Agerì •ë³´ì˜ Add OIDê°¯ìˆ˜ëŠ” ì‹¤ì œ Agerê°€
-     *           í•´ì•¼í•  ì‘ì—…ì˜ ê°¯ìˆ˜ê°€ ì•„ë‹ˆë‹¤.
-     *
-     * mMetaMtxë¥¼ ì¶”ê°€í•¨. mAgingRequestOIDCntfë¥¼ ë™ì‹œì—
-     * Transactionì´ ê°±ì‹ í•˜ëŠ” ê²ƒì„ ë°©ì§€í•˜ê¸° ìœ„í•¨. */
-    static iduMutex        mMetaMtxForAddRequest;
-
-    /* mMetaMtxë¥¼ ì¶”ê°€í•¨. mAgingProcessOIDCntfë¥¼ ë™ì‹œì—
-     * Transactionì´ ê°±ì‹ í•˜ëŠ” ê²ƒì„ ë°©ì§€í•˜ê¸° ìœ„í•¨. */
-    static iduMutex        mMetaMtxForAddProcess;
-
-    // Agerê°€ ì´ˆê¸°í™” ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€
+    // Ager°¡ ÃÊ±âÈ­ µÇ¾ú´ÂÁö ¿©ºÎ
     static idBool          mIsInitialized;
 
-    //BUG-17371 [MMDB] Agingì´ ë°€ë¦´ê²½ìš° Systemì— ê³¼ë¶€í™” ë° Agingì´
-    //                 ë°€ë¦¬ëŠ” í˜„ìƒì´ ë” ì‹¬í™”ë¨
-    // getMinSCN í–ˆì„ë•Œ, MinSCN ë•Œë¬¸ì— ì‘ì—…í•˜ì§€ ëª»í•œ íšŸìˆ˜
+    //BUG-17371 [MMDB] AgingÀÌ ¹Ğ¸±°æ¿ì System¿¡ °úºÎÈ­ ¹× AgingÀÌ
+    //                 ¹Ğ¸®´Â Çö»óÀÌ ´õ ½ÉÈ­µÊ
+    // getMinSCN ÇßÀ»¶§, MinSCN ¶§¹®¿¡ ÀÛ¾÷ÇÏÁö ¸øÇÑ È½¼ö
     static ULong           mSleepCountOnAgingCondition;
 
-    /* Logical Ager Threadê°¯ìˆ˜ë¥¼ ë³€ê²½í•˜ë ¤ëŠ” Threadê°€
-     * íšë“í•´ì•¼ í•˜ëŠ” Mutex
+    /* Logical Ager Thread°¹¼ö¸¦ º¯°æÇÏ·Á´Â Thread°¡
+     * È¹µæÇØ¾ß ÇÏ´Â Mutex
      */
     static iduMutex        mAgerCountChangeMutex;
 
-    /* BUG-17474 Index Free Node Listì— ëŒ€í•œ ë™ì‹œì„± ì œì–´ê°€ ë˜ê³  ìˆì§€
-     *           ì•ŠìŠµë‹ˆë‹¤. */
+    /* BUG-17474 Index Free Node List¿¡ ´ëÇÑ µ¿½Ã¼º Á¦¾î°¡ µÇ°í ÀÖÁö
+     *           ¾Ê½À´Ï´Ù. */
     static iduMutex        mFreeNodeListMutex;
     /* TASK-4990 changing the method of collecting index statistics
-     * FreeNodeë¥¼ ë§‰ëŠ”ë‹¤. Nodeì¬í™œìš©ì„ ë§‰ì•„ì„œ Scanì„ í¸ë¦¬í•˜ê²Œ í•˜ê¸° ìœ„í•¨ì´ë‹¤.*/
+     * FreeNode¸¦ ¸·´Â´Ù. NodeÀçÈ°¿ëÀ» ¸·¾Æ¼­ ScanÀ» Æí¸®ÇÏ°Ô ÇÏ±â À§ÇÔÀÌ´Ù.*/
     static SInt            mBlockFreeNodeCount;
 
     /* BUG-35179 Add property for parallel logical ager */
     static UInt            mIsParallelMode;
 
     /* BUG-35179 Add property for parallel logical ager 
-     * drop table, drop tablespaceì™€ì˜ ë™ì‹œì„± ë¬¸ì œë¥¼ í•´ê²°í•˜ê¸° ìœ„í•´ ê° threadë³„ë¡œ
-     * lockì„ ì¶”ê°€í•œë‹¤. */
+     * drop table, drop tablespace¿ÍÀÇ µ¿½Ã¼º ¹®Á¦¸¦ ÇØ°áÇÏ±â À§ÇØ °¢ threadº°·Î
+     * lockÀ» Ãß°¡ÇÑ´Ù. */
     iduMutex               mWaitForNoAccessAftDropTblLock;
 
     smSCN                  mViewSCN;
 
 public:
-    /* Transactionì´ Commmit/Abortì‹œ Aging Listë¥¼ ë„˜ê¸°ëŠ”ë°
-     * ì´ë•Œ 1ì‹ì¦ê°€ */
+
+    static UInt         mListCnt;
+
+    /* TransactionÀÌ Commmit/Abort½Ã Aging List¸¦ ³Ñ±â´Âµ¥
+     * ÀÌ¶§ 1½ÄÁõ°¡ */
     static ULong  mAddCount;
-    /* Agerê°€ Listë¥¼ í•˜ë‚˜ì”© ì²˜ë¦¬í•˜ëŠ”ë° ì´ë•Œ 1ì‹ì¦ê°€ */
+    /* Ager°¡ List¸¦ ÇÏ³ª¾¿ Ã³¸®ÇÏ´Âµ¥ ÀÌ¶§ 1½ÄÁõ°¡ */
     static ULong  mHandledCount;
 
-    /* BUG-17417 V$Agerì •ë³´ì˜ Add OIDê°¯ìˆ˜ëŠ” ì‹¤ì œ Agerê°€
-     *           í•´ì•¼í•  ì‘ì—…ì˜ ê°¯ìˆ˜ê°€ ì•„ë‹ˆë‹¤.
+    /* BUG-17417 V$AgerÁ¤º¸ÀÇ Add OID°¹¼ö´Â ½ÇÁ¦ Ager°¡
+     *           ÇØ¾ßÇÒ ÀÛ¾÷ÀÇ °¹¼ö°¡ ¾Æ´Ï´Ù.
      *
      * mAgingRequestOIDCnt, mAgingProcessedOIDCnt
-     * ì¶”ê°€í•¨.  */
+     * Ãß°¡ÇÔ.  */
 
-    /* Transactionì´ Commmit/Abortì‹œ OID Listì— Agingì„ ìˆ˜í–‰í•´ì•¼í• 
-     * OIDê°¯ìˆ˜ê°€ ë”í•´ì§„ë‹¤.*/
+    /* TransactionÀÌ Commmit/Abort½Ã OID List¿¡ AgingÀ» ¼öÇàÇØ¾ßÇÒ
+     * OID°¹¼ö°¡ ´õÇØÁø´Ù.*/
     static ULong  mAgingRequestOIDCnt;
 
-    /* Agerê°€ OID Listì˜ OIDë¥¼ í•˜ë‚˜ì”© ì²˜ë¦¬í•˜ëŠ”ë° ì´ë•Œ 1ì‹ì¦ê°€ */
+    /* Ager°¡ OID ListÀÇ OID¸¦ ÇÏ³ª¾¿ Ã³¸®ÇÏ´Âµ¥ ÀÌ¶§ 1½ÄÁõ°¡ */
     static ULong  mAgingProcessedOIDCnt;
 
 public:
@@ -130,7 +123,7 @@ public:
     
     static IDE_RC setAger( idBool aValue);
 
-    // Agerê°€ ì´ˆê¸°í™”ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ ë¦¬í„´í•œë‹¤.
+    // Ager°¡ ÃÊ±âÈ­µÇ¾ú´ÂÁö ¿©ºÎ¸¦ ¸®ÅÏÇÑ´Ù.
     static idBool isInitialized( void );
     
     static IDE_RC block( void );
@@ -139,57 +132,48 @@ public:
     static IDE_RC lock() { return mBlock.lock( NULL /* idvSQL* */); }
     static IDE_RC unlock() { return mBlock.unlock(); }
     
-    static IDE_RC lockCheckMtx( void ) { return mCheckMutex.lock( NULL /* idvSQL* */); }
-    static IDE_RC unlockCheckMtx( void ) { return mCheckMutex.unlock(); }
-
-    static IDE_RC lockMetaAddReqMtx() { return mMetaMtxForAddRequest.lock( NULL /* idvSQL* */); }
-    static IDE_RC unlockMetaAddReqMtx() { return mMetaMtxForAddRequest.unlock(); }
-
-    static IDE_RC lockMetaAddProcMtx() { return mMetaMtxForAddProcess.lock( NULL /* idvSQL* */); }
-    static IDE_RC unlockMetaAddProcMtx() { return mMetaMtxForAddProcess.unlock(); }
-    
     static IDE_RC lockChangeMtx() { return mAgerCountChangeMutex.lock( NULL /* idvSQL* */); }
     static IDE_RC unlockChangeMtx() { return mAgerCountChangeMutex.unlock(); }
 
-    
-    static IDE_RC addList(smTID         aTID,
-                          idBool        aIsDDL,
-                          smSCN         *aSCN,
-                          smLSN         *aLSN,
-                          UInt          aCondition,
-                          smxOIDList*   aList,
-                          void**        aAgerListPtr);
+    static IDE_RC addList( smTID         aTID,
+                           idBool        aIsDDL,
+                           smSCN       * aSCN,
+                           UInt          aCondition,
+                           smxOIDList  * aList,
+                           void       ** aAgerListPtr );
 
     static void setOIDListFinished( void* aOIDList, idBool aFlag);
 
-    // Agingí•  OIDë¥¼ ê°€ë¦¬í‚¤ëŠ” Index Slotì„ ì œê±°í•œë‹¤.
-    static IDE_RC deleteIndex(smaOidList            * aOIDList,
-                              smaInstantAgingFilter * aAgingFilter,
-                              UInt                  * aDidDelOldKey );
+    // AgingÇÒ OID¸¦ °¡¸®Å°´Â Index SlotÀ» Á¦°ÅÇÑ´Ù.
+    static IDE_RC deleteIndex( smaOidList            * aOIDList,
+                               UInt                  * aDidDelOldKey );
+    static IDE_RC deleteIndexInstantly( smaOidList            * aOIDList,
+                                        smaInstantAgingFilter * aAgingFilter,
+                                        UInt                  * aDidDelOldKey );
 
-    // Instant Aging Filterë¥¼ ì´ˆê¸°í™”í•œë‹¤ ( smaDef.h ì°¸ê³  )
+    // Instant Aging Filter¸¦ ÃÊ±âÈ­ÇÑ´Ù ( smaDef.h Âü°í )
     static void initInstantAgingFilter( smaInstantAgingFilter * sAgingFilter );
 
-    // Aging Filterì¡°ê±´ì— ë¶€í•©í•˜ëŠ”ì§€ ì²´í¬
+    // Aging FilterÁ¶°Ç¿¡ ºÎÇÕÇÏ´ÂÁö Ã¼Å©
     static idBool isAgingFilterTrue( smaInstantAgingFilter * aAgingFilter,
                                      scSpaceID               aTBSID,
                                      smOID                   aTableOID );
     
     
-    // íŠ¹ì • Tablespaceì— ì†í•œ OIDì— ëŒ€í•´ì„œ ì¦‰ì‹œ Agingì‹¤ì‹œ
+    // Æ¯Á¤ Tablespace¿¡ ¼ÓÇÑ OID¿¡ ´ëÇØ¼­ Áï½Ã Aging½Ç½Ã
     static IDE_RC doInstantAgingWithTBS( scSpaceID aTBSID );
     
-    // íŠ¹ì • Tableì— ì†í•œ OIDì— ëŒ€í•´ì„œ ì¦‰ì‹œ Agingì‹¤ì‹œ
+    // Æ¯Á¤ Table¿¡ ¼ÓÇÑ OID¿¡ ´ëÇØ¼­ Áï½Ã Aging½Ç½Ã
     static IDE_RC doInstantAgingWithTable( smOID aTableOID );
     
-    // smaPhysicalAgerì œê±°ì— ë”°ë¥¸ ì¶”ê°€í•¨ìˆ˜ë“¤.
+    // smaPhysicalAgerÁ¦°Å¿¡ µû¸¥ Ãß°¡ÇÔ¼öµé.
     static void addFreeNodes(void*      aFreeNodeList,
                              smnNode*   aFreeNodes);
     /* TASK-4990 changing the method of collecting index statistics
-     * FreeNodeë¥¼ ë§‰ëŠ”ë‹¤. Nodeì¬í™œìš©ì„ ë§‰ì•„ì„œ TreeLatch ì—†ì´
-     * Nodeë¥¼ FullScan í•˜ê¸° ìœ„í•¨ì´ë‹¤. 
-     * ë‹¤ë§Œ ë™ì‹œì— RebuildStatì´ ì—¬ëŸ¿ ìˆ˜í–‰ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
-     * Block ì—¬ë¶€ë¥¼ Countë¡œ ì¡°íšŒí•œë‹¤. */
+     * FreeNode¸¦ ¸·´Â´Ù. NodeÀçÈ°¿ëÀ» ¸·¾Æ¼­ TreeLatch ¾øÀÌ
+     * Node¸¦ FullScan ÇÏ±â À§ÇÔÀÌ´Ù. 
+     * ´Ù¸¸ µ¿½Ã¿¡ RebuildStatÀÌ ¿©·µ ¼öÇàµÉ ¼ö ÀÖÀ¸¹Ç·Î,
+     * Block ¿©ºÎ¸¦ Count·Î Á¶È¸ÇÑ´Ù. */
     static void blockFreeNode()
     {
         IDE_ASSERT( mBlockFreeNodeCount >= 0 );
@@ -214,54 +198,72 @@ public:
                                         UInt*            aDidDelOldKey);
     
     static IDE_RC checkOldKeyFromIndexes(smcTableHeader * aTableHeader,
-                                         smOID            aOldVersionRowOID,
-                                         idBool         * aExistKey );
+                                         smOID            aOldVersionRowOID );
     
     static void waitForNoAccessAftDropTbl();
     
     virtual void run();
 
     /*********************************************************************
-     * Description : aOIDê°€ dummy OIDì¸ì§€ ë¬»ëŠ”ë‹¤.
+     * Description : aOID°¡ dummy OIDÀÎÁö ¹¯´Â´Ù.
      *
-     *     BUG-15306ì„ ìœ„í•´ ì¶”ê°€ëœ í•¨ìˆ˜ì„
+     *     BUG-15306À» À§ÇØ Ãß°¡µÈ ÇÔ¼öÀÓ
      *********************************************************************/
     static inline idBool isDummyOID( smaOidList* aOID )
     {
-        if( ( aOID->mTransID   == 0 ) &&
-            ( aOID->mCondition == 0 ) &&
-            ( SM_SCN_IS_INIT( aOID->mSCN ) ) &&
-            ( SM_IS_LSN_INIT( aOID->mLSN ) ) )
+#ifdef DEBUG
+        if( aOID->mCondition == 0 ) 
         {
-            return ID_TRUE;
+            IDE_DASSERT( SM_SCN_IS_INIT( aOID->mSCN ) );
         }
         else
         {
-            return ID_FALSE;
+            IDE_DASSERT( (aOID->mCondition == SM_OID_ACT_AGING_COMMIT)   ||
+                         (aOID->mCondition == SM_OID_ACT_AGING_ROLLBACK) ); 
+            IDE_DASSERT( SM_SCN_IS_NOT_INIT( aOID->mSCN ) );
         }
+#endif
+        return ( (aOID->mCondition == 0) ? ID_TRUE : ID_FALSE );
     };
 
-    static void addAgingRequestCnt( ULong aAgingRequestCnt );
+    static void addAgingRequestCnt( ULong aAgingRequestCnt )
+    {
+        (void)idCore::acpAtomicAdd64( &mAgingRequestOIDCnt,
+                                      aAgingRequestCnt );
+    };
 
-    // Ager Threadì˜ ê°¯ìˆ˜ë¥¼ íŠ¹ì • ê°¯ìˆ˜ê°€ ë˜ë„ë¡ ìƒì„±,ì œê±°í•œë‹¤.
+#ifdef DEBUG
+    static idBool checkAgingProcessedCnt()
+    {
+        /* ¼ø¼­°¡ Áß¿ä, µÑ ´Ù Áõ°¡ÇÏ´Â °ªÀÌ¹Ç·Î, Request Count¸¦ ¸ÕÀú ÀĞ¾î¹ö¸®¸é
+         * ÀÌ ÈÄ Áõ°¡ÇØ¹ö¸° Processed Count ¸¦ ÀĞ°Ô µÉ ¼ö ÀÖ´Ù.
+         * Processed Count¸¦ ¸ÕÀú ÀĞ¾î¾ß ÇÑ´Ù.*/
+        ULong sProcessCnt = idCore::acpAtomicGet64( &mAgingProcessedOIDCnt );
+        ULong sRequestCnt = idCore::acpAtomicGet64( &mAgingRequestOIDCnt );
+
+        return ( sProcessCnt <= sRequestCnt ) ? ID_TRUE : ID_FALSE ;
+    }
+#endif
+
+    // Ager ThreadÀÇ °¹¼ö¸¦ Æ¯Á¤ °¹¼ö°¡ µÇµµ·Ï »ı¼º,Á¦°ÅÇÑ´Ù.
     static IDE_RC changeAgerCount( UInt aAgerCount );
 
 private:
-    // Ager Threadë¥¼ í•˜ë‚˜ ì¶”ê°€í•œë‹¤.
+    // Ager Thread¸¦ ÇÏ³ª Ãß°¡ÇÑ´Ù.
     static IDE_RC addOneAger();
     
-    // Ager Threadë¥¼ í•˜ë‚˜ ì œê±°í•œë‹¤.
+    // Ager Thread¸¦ ÇÏ³ª Á¦°ÅÇÑ´Ù.
     static IDE_RC removeOneAger();
 
-    static IDE_RC addDummyOID( void );
+    static IDE_RC addDummyOID( SInt aListN );
 
-    // íŠ¹ì • Tableì•ˆì˜ OIDë‚˜ íŠ¹ì • Tablespaceì•ˆì˜ OIDì— ëŒ€í•´
-    // ì¦‰ì‹œ Agingì„ ì‹¤ì‹œí•œë‹¤.
+    // Æ¯Á¤ Table¾ÈÀÇ OID³ª Æ¯Á¤ Tablespace¾ÈÀÇ OID¿¡ ´ëÇØ
+    // Áï½Ã AgingÀ» ½Ç½ÃÇÑ´Ù.
     static IDE_RC agingInstantly( smaInstantAgingFilter * aAgingFilter );
 
     /* BUG-35179 Add property for parallel logical ager 
-     * drop table, drop tablespaceì™€ì˜ ë™ì‹œì„± ë¬¸ì œë¥¼ í•´ê²°í•˜ê¸° ìœ„í•´ ê° threadë³„ë¡œ
-     * lockì„ ì¶”ê°€í•œë‹¤. */
+     * drop table, drop tablespace¿ÍÀÇ µ¿½Ã¼º ¹®Á¦¸¦ ÇØ°áÇÏ±â À§ÇØ °¢ threadº°·Î
+     * lockÀ» Ãß°¡ÇÑ´Ù. */
 
     inline IDE_RC lockWaitForNoAccessAftDropTbl()
     {

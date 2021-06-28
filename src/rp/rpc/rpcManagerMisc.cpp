@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpcManagerMisc.cpp 85186 2019-04-09 07:37:00Z jayce.park $
+ * $Id: rpcManagerMisc.cpp 90112 2021-03-03 09:37:19Z yoonhee.kim $
  **********************************************************************/
 
 #include <idl.h>
@@ -32,9 +32,9 @@
 
 /**********************************************************************
  *
- * BUG-6093 DB File Signature ìƒì„±. smuMakeUniqueDBString()ë¥¼ ë³µì œ
+ * BUG-6093 DB File Signature »ý¼º. smuMakeUniqueDBString()¸¦ º¹Á¦
  *
- * aUnique - [OUT] IDU_SYSTEM_INFO_LENGTH + 1 í¬ê¸°ì˜ ë²„í¼
+ * aUnique - [OUT] IDU_SYSTEM_INFO_LENGTH + 1 Å©±âÀÇ ¹öÆÛ
  *
  **********************************************************************/
 void rpcMakeUniqueDBString(SChar *aUnique)
@@ -65,7 +65,7 @@ void rpcMakeUniqueDBString(SChar *aUnique)
 
 /**********************************************************************
  *
- * BUG-31374 Implicit Savepoint ì´ë¦„ì˜ ë°°ì—´ì„ ìƒì„±í•œë‹¤.
+ * BUG-31374 Implicit Savepoint ÀÌ¸§ÀÇ ¹è¿­À» »ý¼ºÇÑ´Ù.
  *
  **********************************************************************/
 void rpcManager::makeImplSPNameArr()
@@ -84,3 +84,63 @@ void rpcManager::makeImplSPNameArr()
                         i + 1);
     }
 }
+
+/*
+ *
+ */
+IDE_RC rpcManager::addLastSNEntry( iduMemPool * aSNPool,
+                                   smSN         aSN,
+                                   iduList    * aSNList )
+{
+    rpxSNEntry * sSNEntry = NULL;
+
+    IDU_FIT_POINT( "rpcManager::addLastSNEntry::alloc::SNEntry" );
+    IDE_TEST( aSNPool->alloc( (void **)&sSNEntry ) != IDE_SUCCESS );
+
+    sSNEntry->mSN = aSN;
+
+    IDU_LIST_INIT_OBJ( &(sSNEntry->mNode), sSNEntry );
+    IDU_LIST_ADD_LAST( aSNList, &(sSNEntry->mNode) );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/*
+ *
+ */
+rpxSNEntry * rpcManager::searchSNEntry( iduList * aSNList, smSN aSN )
+{
+    iduListNode * sNode    = NULL;
+    rpxSNEntry  * sSNEntry = NULL;
+    rpxSNEntry  * sReturn  = NULL;
+
+    IDU_LIST_ITERATE( aSNList, sNode )
+    {
+        sSNEntry = (rpxSNEntry *)sNode->mObj;
+
+        if ( sSNEntry->mSN == aSN )
+        {
+            sReturn = sSNEntry;
+            break;
+        }
+    }
+
+    return sReturn;
+}
+
+/*
+ *
+ */
+void rpcManager::removeSNEntry( iduMemPool * aSNPool,
+                                   rpxSNEntry * aSNEntry )
+{
+    IDU_LIST_REMOVE( &aSNEntry->mNode );
+    (void)aSNPool->memfree( aSNEntry );
+
+    return;
+}
+

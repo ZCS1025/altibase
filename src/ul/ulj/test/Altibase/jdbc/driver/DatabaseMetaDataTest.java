@@ -6,6 +6,10 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class DatabaseMetaDataTest extends AltibaseTestCase
 {
@@ -70,7 +74,7 @@ public class DatabaseMetaDataTest extends AltibaseTestCase
         assertEquals("NEWJDBC_TESTUSER", sRS.getString("TABLE_SCHEM"));
         assertEquals("mydb", sRS.getString("TABLE_CATALOG"));
         assertEquals(true, sRS.next());
-//      assertEquals("PUBLIC", sRS.getString("TABLE_SCHEM"));  // BUG-45071 usernameÎßå Ìè¨Ìï®ÏãúÌÇ§Í∏∞ ÎïåÎ¨∏Ïóê roleÏùÄ Îπ†ÏßÑÎã§.
+//      assertEquals("PUBLIC", sRS.getString("TABLE_SCHEM"));  // BUG-45071 username∏∏ ∆˜«‘Ω√≈∞±‚ ∂ßπÆø° role¿∫ ∫¸¡¯¥Ÿ.
 //      assertEquals(true, sRS.next());
         assertEquals("SYS", sRS.getString("TABLE_SCHEM"));
         assertEquals(true, sRS.next());
@@ -101,7 +105,7 @@ public class DatabaseMetaDataTest extends AltibaseTestCase
         sRS.close();
     }
 
-    public void testGetAllTables() throws SQLException
+    public void _IGNORE_testGetAllTables() throws SQLException
     {
         DatabaseMetaData sMetaData = connection().getMetaData();
         ResultSet sRS;
@@ -110,13 +114,13 @@ public class DatabaseMetaDataTest extends AltibaseTestCase
         sRS = sMetaData.getTables("mydb", null, null, null);
         for (sCount = 0; sRS.next(); sCount++)
             ;
-        assertEquals(137, sCount);
+        assertEquals(132, sCount);
         sRS.close();
 
         sRS = sMetaData.getTables("mydb", null, null, new String[] { "SYSTEM TABLE" });
         for (sCount = 0; sRS.next(); sCount++)
             ;
-        assertEquals(74, sCount);
+        assertEquals(66, sCount);
         sRS.close();
 
         sRS = sMetaData.getTables("mydb", null, null, new String[] { "TABLE" });
@@ -128,7 +132,7 @@ public class DatabaseMetaDataTest extends AltibaseTestCase
         sRS = sMetaData.getTables("mydb", null, null, new String[] { "SYSTEM VIEW" });
         for (sCount = 0; sRS.next(); sCount++)
             ;
-        assertEquals(5, sCount);
+        assertEquals(6, sCount);
         sRS.close();
 
         sRS = sMetaData.getTables("mydb", null, null, new String[] { "VIEW" });
@@ -153,7 +157,7 @@ public class DatabaseMetaDataTest extends AltibaseTestCase
         sRS = sMetaData.getTables("mydb", null, null, new String[] { "SYNONYM" });
         for (sCount = 0; sRS.next(); sCount++)
             ;
-        assertEquals(51, sCount);
+        assertEquals(53, sCount);
         sRS.close();
 
         sRS = sMetaData.getTables("mydb", null, null, new String[] { "SEQUENCE" });
@@ -467,7 +471,7 @@ public class DatabaseMetaDataTest extends AltibaseTestCase
         sRS.close();
     }
 
-    private static final String[] TYPE_NAMES = { "VARBIT", "NCHAR", "NVARCHAR", "BIT", "BIGINT", "BINARY", "CHAR", "NUMERIC", "INTEGER", "SMALLINT", "FLOAT", "REAL", "DOUBLE", "VARCHAR", "DATE", "BLOB", "CLOB", "NUMBER", "GEOMETRY", "BYTE", "NIBBLE", "VARBYTE" };
+    private static final String[] TYPE_NAMES   = { "VARBIT", "NCHAR", "NVARCHAR", "BIT", "BIGINT", "BINARY", "CHAR", "NUMERIC", "INTEGER", "SMALLINT", "FLOAT", "REAL", "DOUBLE", "VARCHAR", "DATE", "BLOB", "CLOB", "NUMBER", "GEOMETRY", "BYTE", "NIBBLE", "VARBYTE" };
     private static final int[]    DATA_TYPES = { -100, -15, -9, -7, -5, -2, 1, 2, 4, 5, 6, 7, 8, 12, 93, 2004, 2005, 10002, 10003, 20001, 20002, 20003 };
 
     public void testGetTypeInfo() throws SQLException
@@ -523,6 +527,25 @@ public class DatabaseMetaDataTest extends AltibaseTestCase
         catch (SQLException sEx)
         {
             assertEquals(ErrorDef.UNSUPPORTED_FEATURE, sEx.getErrorCode());
+        }
+    }
+
+    public void testGetSQLKeywords()
+    {
+        try
+        {
+            String sKeywordsFromMetaData = connection().getMetaData().getSQLKeywords();
+            List<String> sKeywordsList = new ArrayList<String>(Arrays.asList(
+                                                sKeywordsFromMetaData.split("\\s*,\\s*")));
+            List<String> sKeywordsFromQp = new ArrayList<String>(Keywords.mKeywordsList);
+            sKeywordsFromQp.removeAll(AltibaseDatabaseMetaData.getSql92Keywords());
+            Collections.sort(sKeywordsList);
+            assertEquals(sKeywordsList, sKeywordsFromQp);
+        }
+        catch (SQLException sEx)
+        {
+            sEx.printStackTrace();
+            fail();
         }
     }
 }

@@ -16,12 +16,12 @@
  
 
 /***********************************************************************
- * $Id: stndrFT.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: stndrFT.cpp 88717 2020-09-24 08:12:20Z et16 $
  *
  * Description
  *
  *   PROJ-1618
- *   Disk RTree Index ì˜ FTë¥¼ ìœ„í•œ í•¨ìˆ˜
+ *   Disk RTree Index ÀÇ FT¸¦ À§ÇÑ ÇÔ¼ö
  *
  **********************************************************************/
 
@@ -46,13 +46,13 @@
  * Description
  *
  *   D$DISK_INDEX_RTREE_CTS
- *   : Disk RTREE INDEXì˜ CTSì„ ì¶œë ¥
+ *   : Disk RTREE INDEXÀÇ CTSÀ» Ãâ·Â
  *
  *
  **********************************************************************/
 
 //------------------------------------------------------
-// D$DISK_INDEX_RTREE_CTS Dump Tableì˜ Column Description
+// D$DISK_INDEX_RTREE_CTS Dump TableÀÇ Column Description
 //------------------------------------------------------
 
 static iduFixedTableColDesc gDumpDiskIndexRTreeCTSlotColDesc[]=
@@ -178,14 +178,6 @@ static iduFixedTableColDesc gDumpDiskIndexRTreeCTSlotColDesc[]=
         0, 0,NULL
     },
     {
-        (SChar*)"REF_KEY4",
-        offsetof(sdnDumpCTS, mRefKey4 ),
-        IDU_FT_SIZEOF(sdnDumpCTS, mRefKey4 ),
-        IDU_FT_TYPE_USMALLINT,
-        NULL,
-        0, 0,NULL
-    },
-    {
         NULL,
         0,
         0,
@@ -196,7 +188,7 @@ static iduFixedTableColDesc gDumpDiskIndexRTreeCTSlotColDesc[]=
 };
 
 //------------------------------------------------------
-// D$DISK_INDEX_RTREE_CTS Dump Tableì˜ Table Description
+// D$DISK_INDEX_RTREE_CTS Dump TableÀÇ Table Description
 //------------------------------------------------------
 
 iduFixedTableDesc  gDumpDiskIndexRTreeCTSlotTableDesc =
@@ -212,7 +204,7 @@ iduFixedTableDesc  gDumpDiskIndexRTreeCTSlotTableDesc =
 };
 
 //------------------------------------------------------
-// D$DISK_INDEX_RTREE_CTS Dump Tableì˜ ë ˆì½”ë“œ Build
+// D$DISK_INDEX_RTREE_CTS Dump TableÀÇ ·¹ÄÚµå Build
 //------------------------------------------------------
 IDE_RC stndrFT::buildRecordCTS( idvSQL              * /*aStatistics*/,
                                 void                * aHeader,
@@ -419,7 +411,7 @@ IDE_RC stndrFT::traverseBuildCTS( idvSQL              * aStatistics,
 
         if( sdpPhyPage::getIndexSMONo(sPageHdr) > sStackSlot.mSmoNo )
         {
-            // Rootê°€ ë³€ê²½ë˜ì—ˆì„ ê²½ìš° ì¬ì‹œë„
+            // Root°¡ º¯°æµÇ¾úÀ» °æ¿ì Àç½Ãµµ
             if( sStackSlot.mNodePID == sRootPID )
             {
                 sIsFixed = ID_FALSE;
@@ -474,24 +466,9 @@ IDE_RC stndrFT::traverseBuildCTS( idvSQL              * aStatistics,
 #endif
                 sDumpCTS.mCommitSCN = sStrCommitSCN;
                 idlOS::memset( sStrNxtCommitSCN, 0x00, SM_SCN_STRING_LENGTH + 1 );
-#ifdef COMPILE_64BIT
-                idlOS::sprintf( (SChar*)sStrNxtCommitSCN, "%"ID_XINT64_FMT, sCTS->mNxtCommitSCN );
-#else
-                sSCN  = (ULong)sCTS->mNxtCommitSCN.mHigh << 32;
-                sSCN |= (ULong)sCTS->mNxtCommitSCN.mLow;
-                idlOS::snprintf( (SChar*)sStrNxtCommitSCN, SM_SCN_STRING_LENGTH,
-                                 "%"ID_XINT64_FMT, sSCN );
-#endif
+                idlOS::sprintf( (SChar*)sStrNxtCommitSCN, "%"ID_XINT64_FMT, SM_SCN_INIT );
                 sDumpCTS.mNxtCommitSCN = sStrNxtCommitSCN;
-
-                if( sdnIndexCTL::hasChainedCTS( sCTS ) == ID_FALSE )
-                {
-                    sDumpCTS.mChained = 'N';
-                }
-                else
-                {
-                    sDumpCTS.mChained = 'Y';
-                }
+                sDumpCTS.mChained = 'N';
 
                 switch( sCTS->mState )
                 {
@@ -514,16 +491,13 @@ IDE_RC stndrFT::traverseBuildCTS( idvSQL              * aStatistics,
 
                 sDumpCTS.mTSSlotPID   = sCTS->mTSSlotPID;
                 sDumpCTS.mTSSlotNum   = sCTS->mTSSlotNum;
-                sDumpCTS.mUndoPID     = sCTS->mUndoPID;
-                sDumpCTS.mUndoSlotNum = sCTS->mUndoSlotNum;
                 sDumpCTS.mRefCnt      = sCTS->mRefCnt;
                 sDumpCTS.mRefKey1     = sCTS->mRefKey[0];
                 sDumpCTS.mRefKey2     = sCTS->mRefKey[1];
                 sDumpCTS.mRefKey3     = sCTS->mRefKey[2];
-                sDumpCTS.mRefKey4     = sCTS->mRefKey[3];
 
-                // KEY CACHEì˜ í¬ê¸°ê°€ ì»¤ì§€ë©´ ìœ„ì˜ ì½”ë“œë„ ìˆ˜ì •ë˜ì–´ì•¼ í•¨.
-                IDE_ASSERT( SDN_CTS_MAX_KEY_CACHE == 4 );
+                // KEY CACHEÀÇ Å©±â°¡ Ä¿Áö¸é À§ÀÇ ÄÚµåµµ ¼öÁ¤µÇ¾î¾ß ÇÔ.
+                IDE_ASSERT( SDN_CTS_MAX_KEY_CACHE == 3 );
             
                 IDE_TEST( iduFixedTable::buildRecord( aHeader,
                                                       aMemory,
@@ -585,13 +559,13 @@ IDE_RC stndrFT::traverseBuildCTS( idvSQL              * aStatistics,
  * Description
  *
  *   D$DISK_INDEX_RTREE_STRUCTURE
- *   : Disk RTREE INDEXì˜ Page Tree êµ¬ì¡° ì¶œë ¥
+ *   : Disk RTREE INDEXÀÇ Page Tree ±¸Á¶ Ãâ·Â
  *
  *
  **********************************************************************/
 
 //------------------------------------------------------
-// D$DISK_INDEX_RTREE_STRUCTURE Dump Tableì˜ Column Description
+// D$DISK_INDEX_RTREE_STRUCTURE Dump TableÀÇ Column Description
 //------------------------------------------------------
 
 static iduFixedTableColDesc gDumpDiskRTreeStructureColDesc[]=
@@ -767,7 +741,7 @@ static iduFixedTableColDesc gDumpDiskRTreeStructureColDesc[]=
 };
 
 //------------------------------------------------------
-// D$DISK_INDEX_RTREE_KEY Dump Tableì˜ Table Description
+// D$DISK_INDEX_RTREE_KEY Dump TableÀÇ Table Description
 //------------------------------------------------------
 
 iduFixedTableDesc  gDumpDiskRTreeStructureTableDesc =
@@ -783,7 +757,7 @@ iduFixedTableDesc  gDumpDiskRTreeStructureTableDesc =
 };
 
 //------------------------------------------------------
-// D$DISK_INDEX_RTREE_HEADER Dump Tableì˜ ë ˆì½”ë“œ Build
+// D$DISK_INDEX_RTREE_HEADER Dump TableÀÇ ·¹ÄÚµå Build
 //------------------------------------------------------
 
 IDE_RC stndrFT::buildRecordTreeStructure( idvSQL              * /*aStatistics*/,
@@ -976,7 +950,7 @@ IDE_RC stndrFT::traverseBuildTreePage( idvSQL              * aStatistics,
 
         if( sdpPhyPage::getIndexSMONo(sPageHdr) > sStackSlot.mSmoNo )
         {
-            // Rootê°€ ë³€ê²½ë˜ì—ˆì„ ê²½ìš° ì¬ì‹œë„
+            // Root°¡ º¯°æµÇ¾úÀ» °æ¿ì Àç½Ãµµ
             if( sStackSlot.mNodePID == sRootPID )
             {
                 sIsFixed = ID_FALSE;
@@ -1115,13 +1089,13 @@ IDE_RC stndrFT::traverseBuildTreePage( idvSQL              * aStatistics,
  * Description
  *
  *   D$DISK_INDEX_RTREE_KEY
- *   : Disk RTREE INDEXì˜ KEY ì¶œë ¥
+ *   : Disk RTREE INDEXÀÇ KEY Ãâ·Â
  *
  *
  **********************************************************************/
 
 //------------------------------------------------------
-// D$DISK_INDEX_RTREE_KEY Dump Tableì˜ Column Description
+// D$DISK_INDEX_RTREE_KEY Dump TableÀÇ Column Description
 //------------------------------------------------------
 
 static iduFixedTableColDesc gDumpDiskRTreeKeyColDesc[]=
@@ -1345,7 +1319,7 @@ static iduFixedTableColDesc gDumpDiskRTreeKeyColDesc[]=
 };
 
 //------------------------------------------------------
-// D$DISK_INDEX_RTREE_KEY Dump Tableì˜ Table Description
+// D$DISK_INDEX_RTREE_KEY Dump TableÀÇ Table Description
 //------------------------------------------------------
 
 iduFixedTableDesc  gDumpDiskRTreeKeyTableDesc =
@@ -1361,7 +1335,7 @@ iduFixedTableDesc  gDumpDiskRTreeKeyTableDesc =
 };
 
 //------------------------------------------------------
-// D$DISK_INDEX_RTREE_HEADER Dump Tableì˜ ë ˆì½”ë“œ Build
+// D$DISK_INDEX_RTREE_HEADER Dump TableÀÇ ·¹ÄÚµå Build
 //------------------------------------------------------
 
 IDE_RC stndrFT::buildRecordKey( idvSQL              * /*aStatistics*/,
@@ -1578,7 +1552,7 @@ IDE_RC stndrFT::traverseBuildKey( idvSQL              * aStatistics,
 
         if( sdpPhyPage::getIndexSMONo(sPageHdr) > sStackSlot.mSmoNo )
         {
-            // Rootê°€ ë³€ê²½ë˜ì—ˆì„ ê²½ìš° ì¬ì‹œë„
+            // Root°¡ º¯°æµÇ¾úÀ» °æ¿ì Àç½Ãµµ
             if( sStackSlot.mNodePID == sRootPID )
             {
                 sIsFixed = ID_FALSE;
@@ -1652,11 +1626,9 @@ IDE_RC stndrFT::traverseBuildKey( idvSQL              * aStatistics,
                 }
 
                 sDumpKey.mCreateCTS  = STNDR_GET_CCTS_NO( sLKey );
-                sDumpKey.mCreateChained =
-                    (STNDR_GET_CHAINED_CCTS( sLKey ) == SDN_CHAINED_YES) ? 'Y' : 'N';
+                sDumpKey.mCreateChained = 'N';
                 sDumpKey.mLimitCTS  = STNDR_GET_LCTS_NO( sLKey );
-                sDumpKey.mLimitChained =
-                    (STNDR_GET_CHAINED_LCTS( sLKey ) == SDN_CHAINED_YES) ? 'Y' : 'N';
+                sDumpKey.mLimitChained = 'N';
             
                 sDumpKey.mTxBoundType =
                     (STNDR_GET_TB_TYPE( sLKey ) == STNDR_KEY_TB_CTS) ? 'T' : 'K';
@@ -1771,7 +1743,7 @@ IDE_RC stndrFT::traverseBuildKey( idvSQL              * aStatistics,
         
 
             //------------------------------
-            // BUG-16805 Columnë³„ Value String ìƒì„±
+            // BUG-16805 Columnº° Value String »ı¼º
             //------------------------------
 
             idlOS::memcpy( (UChar*)&sDumpKey.mMBR, (UChar*)sKeyPtr, ID_SIZEOF(stdMBR) );
@@ -1868,7 +1840,7 @@ IDE_RC stndrFT::convertMBR2String( UChar * sSrcKeyPtr,
                                    
 //======================================================================
 //  X$DISK_RTREE_HEADER
-//  disk indexì˜ run-time headerë¥¼ ë³´ì—¬ì£¼ëŠ” peformance view
+//  disk indexÀÇ run-time header¸¦ º¸¿©ÁÖ´Â peformance view
 //======================================================================
 
 IDE_RC stndrFT::buildRecordForDiskRTreeHeader(idvSQL              * /*aStatistics*/,
@@ -1893,7 +1865,9 @@ IDE_RC stndrFT::buildRecordForDiskRTreeHeader(idvSQL              * /*aStatistic
 #ifndef COMPILE_64BIT
     ULong               sSCN;
 #endif
-
+    void              * sISavepoint = NULL;
+    UInt                sDummy = 0;
+    UInt                sState = 0;
     
     sCatTblHdr = (smcTableHeader*)SMC_CAT_TABLE;
     sCurPtr = NULL;
@@ -1907,8 +1881,8 @@ IDE_RC stndrFT::buildRecordForDiskRTreeHeader(idvSQL              * /*aStatistic
     {
         /* BUG-32292 [sm-util] Self deadlock occur since fixed-table building
          * operation uses another transaction. 
-         * NestedTransactionì„ ì‚¬ìš©í•˜ë©´ Self-deadlock ìš°ë ¤ê°€ ìˆë‹¤.
-         * ë”°ë¼ì„œ id Memory ì˜ì—­ìœ¼ë¡œë¶€í„° Iteratorë¥¼ ì–»ì–´ Transactionì„ ì–»ì–´ë‚¸ë‹¤. */
+         * NestedTransactionÀ» »ç¿ëÇÏ¸é Self-deadlock ¿ì·Á°¡ ÀÖ´Ù.
+         * µû¶ó¼­ id Memory ¿µ¿ªÀ¸·ÎºÎÅÍ Iterator¸¦ ¾ò¾î TransactionÀ» ¾ò¾î³½´Ù. */
         sTrans = ((smiIterator*)aMemory->getContext())->trans;
     }
 
@@ -1924,7 +1898,7 @@ IDE_RC stndrFT::buildRecordForDiskRTreeHeader(idvSQL              * /*aStatistic
         // To fix BUG-14681
         if( SM_SCN_IS_INFINITE(sPtr->mCreateSCN) == ID_TRUE )
         {
-            /* BUG-14974: ë¬´í•œ Loopë°œìƒ.*/
+            /* BUG-14974: ¹«ÇÑ Loop¹ß»ı.*/
             sCurPtr = sNxtPtr;
             continue;
         }
@@ -1949,144 +1923,183 @@ IDE_RC stndrFT::buildRecordForDiskRTreeHeader(idvSQL              * /*aStatistic
 
         if( sIndexCnt != 0  )
         {
-            //DDL ì„ ë°©ì§€.
-            IDE_TEST(smLayerCallback::lockTableModeIS(sTrans,
-                                                      SMC_TABLE_LOCK( sTableHeader ))
-                     != IDE_SUCCESS);
+            //DDL À» ¹æÁö.
+            sState = 1;
+            IDE_TEST( smLayerCallback::setImpSavepoint( sTrans, 
+                                                        &sISavepoint,
+                                                        sDummy )
+                      != IDE_SUCCESS );
 
-            //lockì„ ì¡ì•˜ì§€ë§Œ tableì´ dropëœ ê²½ìš°ì—ëŠ” skip;
-            if( smcTable::isDropedTable(sTableHeader) == ID_TRUE )
+            /* BUG-48160 lock ÀâÈù table Àº Á¦¿ÜÇÏ°í Ãâ·ÂÇÏ´Â ±â´É Ãß°¡.
+             * Property : __SKIP_LOCKED_TABLE_AT_FIXED_TABLE */
+            if ( smLayerCallback::lockTableModeIS4FixedTable( sTrans,
+                                                              SMC_TABLE_LOCK( sTableHeader ))
+                     == IDE_SUCCESS )
             {
-                sCurPtr = sNxtPtr;
-                continue;
-            }//if
-
-            // lockì„ ëŒ€ê¸°í•˜ëŠ” ë™ì•ˆ indexê°€ dropë˜ì—ˆê±°ë‚˜, ìƒˆë¡œìš´ indexê°€
-            // ìƒì„±ë˜ì—ˆì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì •í™•í•œ index ìˆ˜ë¥¼ ë‹¤ì‹œ êµ¬í•œë‹¤.
-            // ë¿ë§Œ ì•„ë‹ˆë¼, index cntë¥¼ ì¦ê°€ì‹œí‚¨ í›„ indexë¥¼ ìƒì„±í•˜ë¯€ë¡œ
-            // indexê°€ ì™„ë£Œë˜ì§€ ëª»í•˜ë©´ index cntê°€ ê°ì†Œí•˜ë¯€ë¡œ ë‹¤ì‹œ êµ¬í•´ì•¼ í•¨.
-            sIndexCnt = smcTable::getIndexCount(sTableHeader);
-
-            for( i = 0; i < sIndexCnt; i++ )
-            {
-                sIndexCursor = (smnIndexHeader*)smcTable::getTableIndex( sTableHeader, i );
-                IDE_TEST( sIndexCursor == NULL );
-
-                if( sIndexCursor->mType != SMI_ADDITIONAL_RTREE_INDEXTYPE_ID )
+                sState = 2;
+                //lockÀ» Àâ¾ÒÁö¸¸ tableÀÌ dropµÈ °æ¿ì¿¡´Â skip;
+                if( smcTable::isDropedTable(sTableHeader) == ID_TRUE )
                 {
+                    sState = 1;
+                    IDE_TEST( smLayerCallback::abortToImpSavepoint( sTrans, 
+                                                                    sISavepoint )
+                              != IDE_SUCCESS );
+                    sState = 0;
+                    IDE_TEST( smLayerCallback::unsetImpSavepoint( sTrans, 
+                                                                  sISavepoint )
+                              != IDE_SUCCESS );
+
+                    sCurPtr = sNxtPtr;
                     continue;
-                }
+                }//if
 
-                // BUG-30867 Discard ëœ Tablespaceì— ì†í•œ IndexëŠ” Skipë˜ì–´ì•¼ í•¨
-                if( sctTableSpaceMgr::hasState( sIndexCursor->mIndexSegDesc.mSpaceID,
-                                                SCT_SS_INVALID_DISK_TBS ) == ID_TRUE )
+                // lockÀ» ´ë±âÇÏ´Â µ¿¾È index°¡ dropµÇ¾ú°Å³ª, »õ·Î¿î index°¡
+                // »ı¼ºµÇ¾úÀ» ¼ö ÀÖÀ¸¹Ç·Î Á¤È®ÇÑ index ¼ö¸¦ ´Ù½Ã ±¸ÇÑ´Ù.
+                // »Ó¸¸ ¾Æ´Ï¶ó, index cnt¸¦ Áõ°¡½ÃÅ² ÈÄ index¸¦ »ı¼ºÇÏ¹Ç·Î
+                // index°¡ ¿Ï·áµÇÁö ¸øÇÏ¸é index cnt°¡ °¨¼ÒÇÏ¹Ç·Î ´Ù½Ã ±¸ÇØ¾ß ÇÔ.
+                sIndexCnt = smcTable::getIndexCount(sTableHeader);
+
+                for( i = 0; i < sIndexCnt; i++ )
                 {
-                    continue;
-                }
+                    sIndexCursor = (smnIndexHeader*)smcTable::getTableIndex( sTableHeader, i );
+                    IDE_TEST( sIndexCursor == NULL );
 
-                sIndexHeader = (stndrHeader*)(sIndexCursor->mHeader);
-                if( sIndexHeader == NULL )
-                {
-                    idlOS::memset( &sIndexHeader4PerfV,
-                                   0x00,
-                                   ID_SIZEOF(stndrHeader4PerfV) );
+                    if( sIndexCursor->mType != SMI_ADDITIONAL_RTREE_INDEXTYPE_ID )
+                    {
+                        continue;
+                    }
 
-                    idlOS::memcpy( &sIndexHeader4PerfV.mName,
-                                   &sIndexCursor->mName,
-                                   SMN_MAX_INDEX_NAME_SIZE+8);
-                    sIndexHeader4PerfV.mIndexID = sIndexCursor->mId;
+                    // BUG-30867 Discard µÈ Tablespace¿¡ ¼ÓÇÑ Index´Â SkipµÇ¾î¾ß ÇÔ
+                    if( sctTableSpaceMgr::hasState( sIndexCursor->mIndexSegDesc.mSpaceID,
+                                                    SCT_SS_INVALID_DISK_TBS ) == ID_TRUE )
+                    {
+                        continue;
+                    }
 
-                    sIndexHeader4PerfV.mIsConsistent = 'F';
-                }
-                else
-                {
-                    idlOS::memset( &sIndexHeader4PerfV,
-                                   0x00,
-                                   ID_SIZEOF(stndrHeader4PerfV) );
+                    sIndexHeader = (stndrHeader*)(sIndexCursor->mHeader);
+                    if( sIndexHeader == NULL )
+                    {
+                        idlOS::memset( &sIndexHeader4PerfV,
+                                       0x00,
+                                       ID_SIZEOF(stndrHeader4PerfV) );
 
-                    idlOS::memcpy( &sIndexHeader4PerfV.mName,
-                                   &sIndexCursor->mName,
-                                   SMN_MAX_INDEX_NAME_SIZE+8 );
-                    sIndexHeader4PerfV.mIndexID = sIndexCursor->mId;
+                        idlOS::memcpy( &sIndexHeader4PerfV.mName,
+                                       &sIndexCursor->mName,
+                                       SMN_MAX_INDEX_NAME_SIZE+8);
+                        sIndexHeader4PerfV.mIndexID = sIndexCursor->mId;
 
-                    sIndexHeader4PerfV.mTreeMBR    = sIndexHeader->mTreeMBR;
-                    sIndexHeader4PerfV.mIndexTSID  =
-                        sIndexHeader->mSdnHeader.mIndexTSID;
-                    sIndexHeader4PerfV.mTableTSID  =
-                        sIndexHeader->mSdnHeader.mTableTSID;
-                    sIndexHeader4PerfV.mSegHdrPID  = sdpSegDescMgr::getSegPID(
-                        &sIndexHeader->mSdnHeader.mSegmentDesc);
-                    sIndexHeader4PerfV.mRootNode      = sIndexHeader->mRootNode;
-                    sIndexHeader4PerfV.mEmptyNodeHead =
-                        sIndexHeader->mEmptyNodeHead;
-                    sIndexHeader4PerfV.mEmptyNodeTail =
-                        sIndexHeader->mEmptyNodeTail;
-                    stndrRTree::getSmoNo( (void*)sIndexHeader,
-                                          &sIndexHeader4PerfV.mSmoNo );
+                        sIndexHeader4PerfV.mIsConsistent = 'F';
+                    }
+                    else
+                    {
+                        idlOS::memset( &sIndexHeader4PerfV,
+                                       0x00,
+                                       ID_SIZEOF(stndrHeader4PerfV) );
 
-                    sIndexHeader4PerfV.mFreeNodeHead =
-                        sIndexHeader->mFreeNodeHead;
-                    sIndexHeader4PerfV.mFreeNodeCnt =
-                        sIndexHeader->mFreeNodeCnt;
+                        idlOS::memcpy( &sIndexHeader4PerfV.mName,
+                                       &sIndexCursor->mName,
+                                       SMN_MAX_INDEX_NAME_SIZE+8 );
+                        sIndexHeader4PerfV.mIndexID = sIndexCursor->mId;
 
-                    SM_SET_SCN( &sFreeNodeSCN, &sIndexHeader->mFreeNodeSCN );
-                    idlOS::memset( sStrFreeNodeSCN,
-                                   0x00,
-                                   sizeof(sStrFreeNodeSCN) );
+                        sIndexHeader4PerfV.mTreeMBR    = sIndexHeader->mTreeMBR;
+                        sIndexHeader4PerfV.mIndexTSID  =
+                            sIndexHeader->mSdnHeader.mIndexTSID;
+                        sIndexHeader4PerfV.mTableTSID  =
+                            sIndexHeader->mSdnHeader.mTableTSID;
+                        sIndexHeader4PerfV.mSegHdrPID  = sdpSegDescMgr::getSegPID(
+                            &sIndexHeader->mSdnHeader.mSegmentDesc);
+                        sIndexHeader4PerfV.mRootNode      = sIndexHeader->mRootNode;
+                        sIndexHeader4PerfV.mEmptyNodeHead =
+                            sIndexHeader->mEmptyNodeHead;
+                        sIndexHeader4PerfV.mEmptyNodeTail =
+                            sIndexHeader->mEmptyNodeTail;
+                        stndrRTree::getSmoNo( (void*)sIndexHeader,
+                                              &sIndexHeader4PerfV.mSmoNo );
+
+                        sIndexHeader4PerfV.mFreeNodeHead =
+                            sIndexHeader->mFreeNodeHead;
+                        sIndexHeader4PerfV.mFreeNodeCnt =
+                            sIndexHeader->mFreeNodeCnt;
+
+                        SM_SET_SCN( &sFreeNodeSCN, &sIndexHeader->mFreeNodeSCN );
+                        idlOS::memset( sStrFreeNodeSCN,
+                                       0x00,
+                                       sizeof(sStrFreeNodeSCN) );
                     
 #ifdef COMPILE_64BIT
-                    idlOS::sprintf( (SChar*)sStrFreeNodeSCN,
-                                    "%"ID_XINT64_FMT,
-                                    sFreeNodeSCN );
+                        idlOS::sprintf( (SChar*)sStrFreeNodeSCN,
+                                        "%"ID_XINT64_FMT,
+                                        sFreeNodeSCN );
 #else
-                    sSCN  = (ULong)sFreeNodeSCN.mHigh << 32;
-                    sSCN |= (ULong)sFreeNodeSCN.mLow;
-                    idlOS::snprintf( (SChar*)sStrFreeNodeSCN,
-                                     SM_SCN_STRING_LENGTH,
-                                     "%"ID_XINT64_FMT, sSCN );
+                        sSCN  = (ULong)sFreeNodeSCN.mHigh << 32;
+                        sSCN |= (ULong)sFreeNodeSCN.mLow;
+                        idlOS::snprintf( (SChar*)sStrFreeNodeSCN,
+                                         SM_SCN_STRING_LENGTH,
+                                         "%"ID_XINT64_FMT, sSCN );
 #endif
-                    /* BUG-32764 [st-disk-index] The RTree module writes 
-                    * the invalid log of FreeNodeSCN */
-                    sIndexHeader4PerfV.mFreeNodeSCN = sStrFreeNodeSCN;
+                        /* BUG-32764 [st-disk-index] The RTree module writes 
+                         * the invalid log of FreeNodeSCN */
+                        sIndexHeader4PerfV.mFreeNodeSCN = sStrFreeNodeSCN;
                     
-                    sIndexHeader4PerfV.mCompletionLSN =
-                        sIndexHeader->mSdnHeader.mCompletionLSN;
+                        sIndexHeader4PerfV.mCompletionLSN =
+                            sIndexHeader->mSdnHeader.mCompletionLSN;
 
-                    sIndexHeader4PerfV.mIsConsistent =
-                        ( sIndexHeader->mSdnHeader.mIsConsistent
-                          == ID_TRUE ) ? 'T' : 'F';
+                        sIndexHeader4PerfV.mIsConsistent =
+                            ( sIndexHeader->mSdnHeader.mIsConsistent
+                              == ID_TRUE ) ? 'T' : 'F';
 
-                    // BUG-17957
-                    // X$DISK_RTREE_HEADERì— creation option(logging, force) ì¶”ê°€
-                    sIndexHeader4PerfV.mIsCreatedWithLogging =
-                        ( sIndexHeader->mSdnHeader.mIsCreatedWithLogging
-                          == ID_TRUE ) ? 'T' : 'F';
+                        // BUG-17957
+                        // X$DISK_RTREE_HEADER¿¡ creation option(logging, force) Ãß°¡
+                        sIndexHeader4PerfV.mIsCreatedWithLogging =
+                            ( sIndexHeader->mSdnHeader.mIsCreatedWithLogging
+                              == ID_TRUE ) ? 'T' : 'F';
                     
-                    sIndexHeader4PerfV.mIsCreatedWithForce =
-                        ( sIndexHeader->mSdnHeader.mIsCreatedWithForce
-                          == ID_TRUE ) ? 'T' : 'F';
+                        sIndexHeader4PerfV.mIsCreatedWithForce =
+                            ( sIndexHeader->mSdnHeader.mIsCreatedWithForce
+                              == ID_TRUE ) ? 'T' : 'F';
 
-                    // PROJ-1704
-                    sIndexHeader4PerfV.mSegAttr =
-                        sIndexHeader->mSdnHeader.mSegmentDesc.mSegHandle.mSegAttr;
+                        // PROJ-1704
+                        sIndexHeader4PerfV.mSegAttr =
+                            sIndexHeader->mSdnHeader.mSegmentDesc.mSegHandle.mSegAttr;
                     
-                    // PROJ-1671
-                    sIndexHeader4PerfV.mSegStoAttr =
-                        sIndexHeader->mSdnHeader.mSegmentDesc.mSegHandle.mSegStoAttr;
-                }
+                        // PROJ-1671
+                        sIndexHeader4PerfV.mSegStoAttr =
+                            sIndexHeader->mSdnHeader.mSegmentDesc.mSegHandle.mSegStoAttr;
+                    }
 
-                IDE_TEST( iduFixedTable::buildRecord( aHeader,
-                                                      aMemory,
-                                                      (void *)&sIndexHeader4PerfV )
-                     != IDE_SUCCESS);
-            }//for
-        }// if ì¸ë±ìŠ¤ê°€ ìˆìœ¼ë©´
+                    IDE_TEST( iduFixedTable::buildRecord( aHeader,
+                                                          aMemory,
+                                                          (void *)&sIndexHeader4PerfV )
+                              != IDE_SUCCESS);
+                }//for
+                sState = 1;
+                IDE_TEST( smLayerCallback::abortToImpSavepoint( sTrans, 
+                                                                sISavepoint )
+                          != IDE_SUCCESS );
+            }
+            sState = 0;
+            IDE_TEST( smLayerCallback::unsetImpSavepoint( sTrans, 
+                                                          sISavepoint )
+                      != IDE_SUCCESS );
+        }// if ÀÎµ¦½º°¡ ÀÖÀ¸¸é
         sCurPtr = sNxtPtr;
     }// while
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    switch ( sState )
+    {
+        case 2:
+            IDE_ASSERT( smLayerCallback::abortToImpSavepoint( sTrans, sISavepoint )
+                        == IDE_SUCCESS );
+        case 1:
+            IDE_ASSERT( smLayerCallback::unsetImpSavepoint( sTrans, sISavepoint )
+                        == IDE_SUCCESS );
+        default:
+            break;
+    }
 
     return IDE_FAILURE;
 }
@@ -2181,7 +2194,7 @@ static iduFixedTableColDesc  gDiskRTreeHeaderColDesc[]=
         NULL,
         0, 0,NULL
     },
-    // TEST CASE: FreeNodeSCN í™•ì¸í•˜ê¸°
+    // TEST CASE: FreeNodeSCN È®ÀÎÇÏ±â
     {
         (SChar*)"FREE_NODE_SCN",
         offsetof(stndrHeader4PerfV, mFreeNodeSCN ),
@@ -2340,7 +2353,7 @@ iduFixedTableDesc  gDiskRTreeHeaderDesc=
 
 //======================================================================
 //  X$DISK_RTREE_STAT
-//  disk indexì˜ run-time statistic informationì„ ìœ„í•œ peformance view
+//  disk indexÀÇ run-time statistic informationÀ» À§ÇÑ peformance view
 //======================================================================
 
 IDE_RC stndrFT::buildRecordForDiskRTreeStat(idvSQL              * /*aStatistics*/,
@@ -2360,6 +2373,9 @@ IDE_RC stndrFT::buildRecordForDiskRTreeStat(idvSQL              * /*aStatistics*
     void             * sTrans;
     UInt               sIndexCnt;
     UInt               i;
+    void             * sISavepoint = NULL;
+    UInt               sDummy = 0;
+    UInt               sState = 0;
 
     sCatTblHdr = (smcTableHeader*)SMC_CAT_TABLE;
     sCurPtr = NULL;
@@ -2373,8 +2389,8 @@ IDE_RC stndrFT::buildRecordForDiskRTreeStat(idvSQL              * /*aStatistics*
     {
         /* BUG-32292 [sm-util] Self deadlock occur since fixed-table building
          * operation uses another transaction. 
-         * NestedTransactionì„ ì‚¬ìš©í•˜ë©´ Self-deadlock ìš°ë ¤ê°€ ìˆë‹¤.
-         * ë”°ë¼ì„œ id Memory ì˜ì—­ìœ¼ë¡œë¶€í„° Iteratorë¥¼ ì–»ì–´ Transactionì„ ì–»ì–´ë‚¸ë‹¤. */
+         * NestedTransactionÀ» »ç¿ëÇÏ¸é Self-deadlock ¿ì·Á°¡ ÀÖ´Ù.
+         * µû¶ó¼­ id Memory ¿µ¿ªÀ¸·ÎºÎÅÍ Iterator¸¦ ¾ò¾î TransactionÀ» ¾ò¾î³½´Ù. */
         sTrans = ((smiIterator*)aMemory->getContext())->trans;
     }
 
@@ -2390,7 +2406,7 @@ IDE_RC stndrFT::buildRecordForDiskRTreeStat(idvSQL              * /*aStatistics*
         // To fix BUG-14681
         if( SM_SCN_IS_INFINITE(sPtr->mCreateSCN) == ID_TRUE )
         {
-            /* BUG-14974: ë¬´í•œ Loopë°œìƒ.*/
+            /* BUG-14974: ¹«ÇÑ Loop¹ß»ı.*/
             sCurPtr = sNxtPtr;
             continue;
         }
@@ -2415,80 +2431,119 @@ IDE_RC stndrFT::buildRecordForDiskRTreeStat(idvSQL              * /*aStatistics*
 
         if( sIndexCnt != 0  )
         {
-            //DDL ì„ ë°©ì§€.
-            IDE_TEST(smLayerCallback::lockTableModeIS(sTrans,
-                                                      SMC_TABLE_LOCK( sTableHeader ))
-                     != IDE_SUCCESS);
+            //DDL À» ¹æÁö.
+            sState = 1;
+            IDE_TEST( smLayerCallback::setImpSavepoint( sTrans, 
+                                                        &sISavepoint,
+                                                        sDummy )
+                      != IDE_SUCCESS );
 
-            //lockì„ ì¡ì•˜ì§€ë§Œ tableì´ dropëœ ê²½ìš°ì—ëŠ” skip;
-            if( smcTable::isDropedTable(sTableHeader) == ID_TRUE )
+            /* BUG-48160 lock ÀâÈù table Àº Á¦¿ÜÇÏ°í Ãâ·ÂÇÏ´Â ±â´É Ãß°¡.
+             * Property : __SKIP_LOCKED_TABLE_AT_FIXED_TABLE */
+            if ( smLayerCallback::lockTableModeIS4FixedTable( sTrans,
+                                                              SMC_TABLE_LOCK( sTableHeader ))
+                == IDE_SUCCESS )
             {
-                sCurPtr = sNxtPtr;
-                continue;
-            }//if
-
-            // lockì„ ëŒ€ê¸°í•˜ëŠ” ë™ì•ˆ indexê°€ dropë˜ì—ˆê±°ë‚˜, ìƒˆë¡œìš´ indexê°€
-            // ìƒì„±ë˜ì—ˆì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì •í™•í•œ index ìˆ˜ë¥¼ ë‹¤ì‹œ êµ¬í•œë‹¤.
-            // ë¿ë§Œ ì•„ë‹ˆë¼, index cntë¥¼ ì¦ê°€ì‹œí‚¨ í›„ indexë¥¼ ìƒì„±í•˜ë¯€ë¡œ
-            // indexê°€ ì™„ë£Œë˜ì§€ ëª»í•˜ë©´ index cntê°€ ê°ì†Œí•˜ë¯€ë¡œ ë‹¤ì‹œ êµ¬í•´ì•¼ í•¨.
-            sIndexCnt = smcTable::getIndexCount(sTableHeader);
-
-            for( i = 0; i < sIndexCnt; i++ )
-            {
-                sIndexCursor = (smnIndexHeader*)smcTable::getTableIndex( sTableHeader, i );
-                IDE_TEST( sIndexCursor == NULL );
-
-                if( sIndexCursor->mType != SMI_ADDITIONAL_RTREE_INDEXTYPE_ID )
+                sState = 2;
+                //lockÀ» Àâ¾ÒÁö¸¸ tableÀÌ dropµÈ °æ¿ì¿¡´Â skip;
+                if( smcTable::isDropedTable(sTableHeader) == ID_TRUE )
                 {
-                    continue;
-                }
+                    sState = 1;
+                    IDE_TEST( smLayerCallback::abortToImpSavepoint( sTrans, 
+                                                                    sISavepoint )
+                              != IDE_SUCCESS );
+                    sState = 0;
+                    IDE_TEST( smLayerCallback::unsetImpSavepoint( sTrans, 
+                                                                  sISavepoint )
+                              != IDE_SUCCESS );
 
-                // BUG-30867 Discard ëœ Tablespaceì— ì†í•œ IndexëŠ” Skipë˜ì–´ì•¼ í•¨
-                if( sctTableSpaceMgr::hasState( sIndexCursor->mIndexSegDesc.mSpaceID,
-                                                SCT_SS_INVALID_DISK_TBS ) == ID_TRUE )
+                    sCurPtr = sNxtPtr;
+                    continue;
+                }//if
+
+                // lockÀ» ´ë±âÇÏ´Â µ¿¾È index°¡ dropµÇ¾ú°Å³ª, »õ·Î¿î index°¡
+                // »ı¼ºµÇ¾úÀ» ¼ö ÀÖÀ¸¹Ç·Î Á¤È®ÇÑ index ¼ö¸¦ ´Ù½Ã ±¸ÇÑ´Ù.
+                // »Ó¸¸ ¾Æ´Ï¶ó, index cnt¸¦ Áõ°¡½ÃÅ² ÈÄ index¸¦ »ı¼ºÇÏ¹Ç·Î
+                // index°¡ ¿Ï·áµÇÁö ¸øÇÏ¸é index cnt°¡ °¨¼ÒÇÏ¹Ç·Î ´Ù½Ã ±¸ÇØ¾ß ÇÔ.
+                sIndexCnt = smcTable::getIndexCount(sTableHeader);
+
+                for( i = 0; i < sIndexCnt; i++ )
                 {
-                    continue;
-                }
+                    sIndexCursor = (smnIndexHeader*)smcTable::getTableIndex( sTableHeader, i );
+                    IDE_TEST( sIndexCursor == NULL );
 
-                sIndexHeader = (stndrHeader*)(sIndexCursor->mHeader);
-                if( sIndexHeader == NULL )
-                {
-                    continue;
-                }
+                    if( sIndexCursor->mType != SMI_ADDITIONAL_RTREE_INDEXTYPE_ID )
+                    {
+                        continue;
+                    }
 
-                idlOS::memset( &sIndexStat4PerfV, 0x00, ID_SIZEOF(stndrStat4PerfV) );
+                    // BUG-30867 Discard µÈ Tablespace¿¡ ¼ÓÇÑ Index´Â SkipµÇ¾î¾ß ÇÔ
+                    if( sctTableSpaceMgr::hasState( sIndexCursor->mIndexSegDesc.mSpaceID,
+                                                    SCT_SS_INVALID_DISK_TBS ) == ID_TRUE )
+                    {
+                        continue;
+                    }
 
-                idlOS::memcpy( &sIndexStat4PerfV.mName,
-                               &sIndexCursor->mName,
-                               SMN_MAX_INDEX_NAME_SIZE+8);
-                sIndexStat4PerfV.mIndexID = sIndexCursor->mId;
+                    sIndexHeader = (stndrHeader*)(sIndexCursor->mHeader);
+                    if( sIndexHeader == NULL )
+                    {
+                        continue;
+                    }
+
+                    idlOS::memset( &sIndexStat4PerfV, 0x00, ID_SIZEOF(stndrStat4PerfV) );
+
+                    idlOS::memcpy( &sIndexStat4PerfV.mName,
+                                   &sIndexCursor->mName,
+                                   SMN_MAX_INDEX_NAME_SIZE+8);
+                    sIndexStat4PerfV.mIndexID = sIndexCursor->mId;
                 
-                sIndexStat4PerfV.mTreeLatchReadCount =
-                    sIndexHeader->mSdnHeader.mLatch.getReadCount();
-                sIndexStat4PerfV.mTreeLatchWriteCount =
-                    sIndexHeader->mSdnHeader.mLatch.getWriteCount();
-                sIndexStat4PerfV.mTreeLatchReadMissCount =
-                    sIndexHeader->mSdnHeader.mLatch.getReadMisses();
-                sIndexStat4PerfV.mTreeLatchWriteMissCount =
-                    sIndexHeader->mSdnHeader.mLatch.getWriteMisses();
-                sIndexStat4PerfV.mKeyCount    = sIndexHeader->mKeyCount;
-                sIndexStat4PerfV.mDMLStat     = sIndexHeader->mDMLStat;
-                sIndexStat4PerfV.mQueryStat   = sIndexHeader->mQueryStat;
+                    sIndexStat4PerfV.mTreeLatchReadCount =
+                        sIndexHeader->mSdnHeader.mLatch.getReadCount();
+                    sIndexStat4PerfV.mTreeLatchWriteCount =
+                        sIndexHeader->mSdnHeader.mLatch.getWriteCount();
+                    sIndexStat4PerfV.mTreeLatchReadMissCount =
+                        sIndexHeader->mSdnHeader.mLatch.getReadMisses();
+                    sIndexStat4PerfV.mTreeLatchWriteMissCount =
+                        sIndexHeader->mSdnHeader.mLatch.getWriteMisses();
+                    sIndexStat4PerfV.mKeyCount    = sIndexHeader->mKeyCount;
+                    sIndexStat4PerfV.mDMLStat     = sIndexHeader->mDMLStat;
+                    sIndexStat4PerfV.mQueryStat   = sIndexHeader->mQueryStat;
 
-                sIndexStat4PerfV.mTreeMBR     = sIndexHeader->mTreeMBR;
+                    sIndexStat4PerfV.mTreeMBR     = sIndexHeader->mTreeMBR;
 
-                IDE_TEST( iduFixedTable::buildRecord( aHeader,
-                                                      aMemory,
-                                                      (void *)&sIndexStat4PerfV )
-                          != IDE_SUCCESS);
-            }//for
-        }// if ì¸ë±ìŠ¤ê°€ ìˆìœ¼ë©´
+                    IDE_TEST( iduFixedTable::buildRecord( aHeader,
+                                                          aMemory,
+                                                          (void *)&sIndexStat4PerfV )
+                              != IDE_SUCCESS);
+                }//for
+                sState = 1;
+                IDE_TEST( smLayerCallback::abortToImpSavepoint( sTrans, 
+                                                                sISavepoint )
+                          != IDE_SUCCESS );
+            }
+            sState = 0;
+            IDE_TEST( smLayerCallback::unsetImpSavepoint( sTrans, 
+                                                          sISavepoint )
+                      != IDE_SUCCESS );
+        }// if ÀÎµ¦½º°¡ ÀÖÀ¸¸é
         sCurPtr = sNxtPtr;
     }// while
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    switch ( sState )
+    {
+        case 2:
+            IDE_ASSERT( smLayerCallback::abortToImpSavepoint( sTrans, sISavepoint )
+                        == IDE_SUCCESS );
+        case 1:
+            IDE_ASSERT( smLayerCallback::unsetImpSavepoint( sTrans, sISavepoint )
+                        == IDE_SUCCESS );
+        default:
+            break;
+    }
 
     return IDE_FAILURE;
 }

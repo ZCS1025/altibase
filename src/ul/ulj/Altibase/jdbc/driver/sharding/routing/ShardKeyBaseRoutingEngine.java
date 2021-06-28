@@ -19,6 +19,7 @@ package Altibase.jdbc.driver.sharding.routing;
 
 import Altibase.jdbc.driver.cm.CmProtocolContextShardConnect;
 import Altibase.jdbc.driver.cm.CmProtocolContextShardStmt;
+import Altibase.jdbc.driver.cm.CmShardAnalyzeResult;
 import Altibase.jdbc.driver.datatype.Column;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
@@ -26,11 +27,11 @@ import Altibase.jdbc.driver.sharding.algorithm.HashGenerator;
 import Altibase.jdbc.driver.sharding.core.*;
 import Altibase.jdbc.driver.sharding.strategy.ShardingStrategy;
 
-import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
+import static Altibase.jdbc.driver.sharding.core.ShardValueType.*;
 import static Altibase.jdbc.driver.sharding.util.ShardingTraceLogger.shard_log;
 
 public abstract class ShardKeyBaseRoutingEngine implements RoutingEngine
@@ -42,16 +43,21 @@ public abstract class ShardKeyBaseRoutingEngine implements RoutingEngine
     ShardRangeList                       mShardRangeList;
     int                                  mShardParamIdx;
     int                                  mShardSubParamIdx;
+    int                                  mShardValueCnt;
+    int                                  mShardSubValueCnt;
     private String                       mServerCharSet;
 
     ShardKeyBaseRoutingEngine(CmProtocolContextShardStmt aShardStmtCtx)
     {
         mShardStmtCtx = aShardStmtCtx;
-        mShardSplitMethod = mShardStmtCtx.getShardAnalyzeResult().getShardSplitMethod();
-        mShardKeyDataType = mShardStmtCtx.getShardAnalyzeResult().getShardKeyDataType();
-        mShardRangeList = mShardStmtCtx.getShardAnalyzeResult().getShardRangeList();
+        CmShardAnalyzeResult sAnalyzeResult = mShardStmtCtx.getShardAnalyzeResult();
+        mShardSplitMethod = sAnalyzeResult.getShardSplitMethod();
+        mShardKeyDataType = sAnalyzeResult.getShardKeyDataType();
+        mShardRangeList = sAnalyzeResult.getShardRangeList();
         CmProtocolContextShardConnect sShardContextConn = aShardStmtCtx.getShardContextConnect();
         mServerCharSet = sShardContextConn.getServerCharSet();
+        mShardValueCnt = sAnalyzeResult.getShardValueCount();
+        mShardSubValueCnt = sAnalyzeResult.getShardSubValueCount();
     }
 
     List<Comparable<?>> getShardValues(List<Column> aParameters,
@@ -64,6 +70,12 @@ public abstract class ShardKeyBaseRoutingEngine implements RoutingEngine
         for (ShardValueInfo sShardValueInfo : aShardValueInfoList)
         {
             Column sParameter = getShardParameterInfo(aParameters, aIsSub, sShardValueInfo);
+            // BUG-47314 »şµåÆÄ¶ó¸ŞÅÍ°¡ ¼ÂÆÃµÇÁö ¾ÊÀº °æ¿ì ¿¹¿Ü¸¦ ¿Ã¸°´Ù.
+            if (sParameter == null)
+            {
+                Error.throwSQLException(ErrorDef.SHARD_BIND_PARAMETER_MISSING,
+                                        String.valueOf(sShardValueInfo.getBindParamId() + 1));
+            }
             if (aShardSplitMethod == ShardSplitMethod.HASH)
             {
                 long sHashValue = HashGenerator.getInstance().doHash(sParameter, aShardKeyDataType,
@@ -93,20 +105,7 @@ public abstract class ShardKeyBaseRoutingEngine implements RoutingEngine
                             break;
                         case CHAR:
                         case VARCHAR:
-                            String sOriginalStr = sParameter.getString();
-                            String sEncodedStr = null;
-                            try
-                            {
-                                // client ìºë¦­í„°ì…‹ìœ¼ë¡œ ë“¤ì–´ì˜¨ Stringì„ ì„œë²„ ìºë¦­í„°ì…‹ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
-                                byte[] sOriginalArry = sOriginalStr.getBytes(mServerCharSet);
-                                sEncodedStr = new String(sOriginalArry, mServerCharSet);
-                            }
-                            catch (UnsupportedEncodingException aException)
-                            {
-                                // ì„œë²„ì˜ ìºë¦­í„°ì…‹ìœ¼ë¡œ encodingì´ ë˜ì§€ ì•Šì„ ê²½ìš°ì—ëŠ” ì˜ˆì™¸ë¥¼ ë˜ì§„ë‹¤.
-                                Error.throwSQLException(ErrorDef.INVALID_DATA_CONVERSION);
-                            }
-                            sResult.add(sEncodedStr);
+                            sResult.add(sParameter.getString());
                     }
                 }            
             }
@@ -118,8 +117,8 @@ public abstract class ShardKeyBaseRoutingEngine implements RoutingEngine
     private Column getShardParameterInfo(List<Column> aParameters, boolean aIsSub, 
                                          ShardValueInfo aShardValueInfo)
     {
-        Column sParameter;
-        if (aShardValueInfo.getType() == 0)        // prepared execute
+        Column sParameter = null;
+        if (aShardValueInfo.getType() == HOST_VAR)
         {
             int sBindParamId = aShardValueInfo.getBindParamId();
             if (aIsSub)
@@ -130,9 +129,13 @@ public abstract class ShardKeyBaseRoutingEngine implements RoutingEngine
             {
                 mShardParamIdx = sBindParamId;
             }
-            sParameter = aParameters.get(sBindParamId);
+            // BUG-47314 »şµåÆÄ¶ó¸ŞÅÍ°¡ ¼ÂÆÃµÈ °æ¿ì¿¡¸¸ °ªÀ» °¡Á®¿Â´Ù.
+            if (aParameters.size() >= sBindParamId + 1)
+            {
+                sParameter = aParameters.get(sBindParamId);
+            }
         }
-        else     // bindê°€ ì•„ë‹ê²½ìš°
+        else     // bind°¡ ¾Æ´Ò°æ¿ì
         {
             sParameter = aShardValueInfo.getValue();
         }

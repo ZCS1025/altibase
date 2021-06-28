@@ -27,7 +27,9 @@
  *                    remote_host           VARCHAR,
  *                    remote_port           integer,
  *                    alternate_remote_host VARCHAR,
- *                    alternate_remote_port integer )
+ *                    alternate_remote_port integer,
+ *                    conn_type             integer,
+ *                    node_id               integer )
  *    RETURN 0
  *
  **********************************************************************/
@@ -53,7 +55,7 @@ static IDE_RC sdfEstimate( mtcNode*        aNode,
 mtfModule sdfSetNodeModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     sdfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -86,14 +88,15 @@ IDE_RC sdfEstimate( mtcNode*     aNode,
                     SInt      /* aRemain */,
                     mtcCallBack* aCallBack )
 {
-    const mtdModule* sModules[6] =
+    const mtdModule* sModules[7] =
     {
         &mtdVarchar, // node name
         &mtdVarchar, // host ip
         &mtdInteger, // port
         &mtdVarchar, // alternate host ip
         &mtdInteger, // alternate port
-        &mtdInteger  // conn type
+        &mtdInteger, // conn type
+        &mtdInteger  // node id
     };
     const mtdModule* sModule = &mtdInteger;
 
@@ -101,7 +104,7 @@ IDE_RC sdfEstimate( mtcNode*     aNode,
                     MTC_NODE_QUANTIFIER_TRUE,
                     ERR_NOT_AGGREGATION );
 
-    IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) != 6,
+    IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) != 7,
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
     IDE_TEST( mtf::makeConversionNodes( aNode,
@@ -156,6 +159,7 @@ IDE_RC sdfCalculate_SetNode( mtcNode*     aNode,
  ***********************************************************************/
 
     qcStatement             * sStatement;
+    UInt                      sNodeID;
     mtdCharType             * sNodeName;
     SChar                     sNodeNameStr[SDI_NODE_NAME_MAX_SIZE + 1];
     mtdCharType             * sRemoteHost;
@@ -164,14 +168,27 @@ IDE_RC sdfCalculate_SetNode( mtcNode*     aNode,
     mtdCharType             * sAlternateRemoteHost;
     SChar                     sAlternateRemoteHostStr[IDL_IP_ADDR_MAX_LEN + 1];
     mtdIntegerType            sAlternatePort;
-    mtdIntegerType            sConnType = SDI_DATA_NODE_CONNECT_TYPE_DEFAULT;
+    mtdIntegerType            sConnType = SDI_NODE_CONNECT_TYPE_DEFAULT;
     UInt                      sRowCnt = 0;
     smiStatement            * sOldStmt;
     smiStatement              sSmiStmt;
     UInt                      sSmiStmtFlag;
     SInt                      sState = 0;
+    idBool                    sIsOldSessionShardMetaTouched = ID_FALSE;
+
+    sdiInternalOperation      sInternalOP = SDI_INTERNAL_OP_NOT;
 
     sStatement   = ((qcTemplate*)aTemplate)->stmt;
+
+    sStatement->mFlag &= ~QC_STMT_SHARD_META_CHANGE_MASK;
+    sStatement->mFlag |= QC_STMT_SHARD_META_CHANGE_TRUE;
+
+    /* BUG-47623 »þµå ¸ÞÅ¸ º¯°æ¿¡ ´ëÇÑ trc ·Î±×Áß commit ·Î±×¸¦ ÀÛ¼ºÇÏ±âÀü¿¡ DASSERT ·Î Á×´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù. */
+    if ( ( sStatement->session->mQPSpecific.mFlag & QC_SESSION_SHARD_META_TOUCH_MASK ) ==
+         QC_SESSION_SHARD_META_TOUCH_TRUE )
+    {
+        sIsOldSessionShardMetaTouched = ID_TRUE;
+    }
 
     // BUG-46366
     IDE_TEST_RAISE( ( QC_SMI_STMT(sStatement)->getTrans() == NULL ) ||
@@ -267,7 +284,7 @@ IDE_RC sdfCalculate_SetNode( mtcNode*     aNode,
         if ( aStack[6].column->module->isNull( aStack[6].column,
                                                aStack[6].value ) == ID_TRUE )
         {
-            sConnType = SDI_DATA_NODE_CONNECT_TYPE_TCP;
+            sConnType = SDI_NODE_CONNECT_TYPE_TCP;
         }
         else
         {
@@ -275,8 +292,8 @@ IDE_RC sdfCalculate_SetNode( mtcNode*     aNode,
 
             switch ( sConnType )
             {
-                case SDI_DATA_NODE_CONNECT_TYPE_TCP :
-                case SDI_DATA_NODE_CONNECT_TYPE_IB  :
+                case SDI_NODE_CONNECT_TYPE_TCP :
+                case SDI_NODE_CONNECT_TYPE_IB  :
                     /* Nothing to do */
                     break;
 
@@ -285,6 +302,23 @@ IDE_RC sdfCalculate_SetNode( mtcNode*     aNode,
                     break;
             }
         }
+
+        // node_id
+        if ( aStack[7].column->module->isNull( aStack[7].column,
+                                               aStack[7].value ) == ID_TRUE )
+        {
+            sNodeID = SDI_NODE_NULL_ID;
+        }
+        else
+        {
+            sNodeID = *(mtdIntegerType*)aStack[7].value;
+            IDE_TEST_RAISE( ( sNodeID > 9999 ) ||
+                            ( sNodeID < 1 ),
+                            ERR_ARGUMENT_NOT_APPLICABLE );
+        }
+
+        // Internal Option
+        sInternalOP = (sdiInternalOperation)QCG_GET_SESSION_SHARD_INTERNAL_LOCAL_OPERATION( sStatement );
 
         //---------------------------------
         // Begin Statement for meta
@@ -302,10 +336,11 @@ IDE_RC sdfCalculate_SetNode( mtcNode*     aNode,
         sState = 2;
 
         //---------------------------------
-        // Insert Meta
+        // Insert Nodes Meta
         //---------------------------------
 
         IDE_TEST( sdm::insertNode( sStatement,
+                                   &sNodeID,
                                    (SChar*)sNodeNameStr,
                                    (UInt)sPort,
                                    (SChar*)sRemoteHostStr,
@@ -314,6 +349,38 @@ IDE_RC sdfCalculate_SetNode( mtcNode*     aNode,
                                    (UInt)sConnType,
                                    &sRowCnt )
                   != IDE_SUCCESS );
+
+        IDE_TEST_RAISE( sRowCnt == 0,
+                        ERR_EXIST_SHARD_NODE );
+        //---------------------------------
+        // Insert Replica Sets Meta And Reorganize
+        //---------------------------------
+        /* Failback ¼öÇà½Ã ReplicaSetÀº Ãß°¡µÇÁö ¾Ê°í ÀÚµ¿À¸·Î Á¶Á¤µÈ´Ù. */
+        switch ( sInternalOP )
+        {
+            case SDI_INTERNAL_OP_NOT:
+            case SDI_INTERNAL_OP_NORMAL:
+                IDE_TEST( sdm::insertReplicaSet( sStatement,
+                                                 sNodeID,
+                                                 (SChar*)sNodeNameStr,
+                                                 &sRowCnt )
+                          != IDE_SUCCESS );
+
+                IDE_TEST_RAISE( sRowCnt == 0,
+                                ERR_INSERT_REPLICA_SETS );
+
+                IDE_TEST( sdm::reorganizeReplicaSet( sStatement,
+                                                    (SChar*)sNodeNameStr,
+                                                    &sRowCnt )
+                          != IDE_SUCCESS );
+                break;
+            case SDI_INTERNAL_OP_FAILOVER:
+            case SDI_INTERNAL_OP_FAILBACK:
+                break;
+            default:
+                IDE_DASSERT( 0 );
+                break;
+        }
 
         //---------------------------------
         // End Statement
@@ -324,9 +391,6 @@ IDE_RC sdfCalculate_SetNode( mtcNode*     aNode,
 
         sState = 0;
         QC_SMI_STMT(sStatement) = sOldStmt;
-
-        IDE_TEST_RAISE( sRowCnt == 0,
-                        ERR_EXIST_SHARD_NODE );
     }
 
     *(mtdIntegerType*)aStack[0].value = 0;
@@ -361,12 +425,18 @@ IDE_RC sdfCalculate_SetNode( mtcNode*     aNode,
     {
         IDE_SET(ideSetErrorCode(sdERR_ABORT_SDF_AREADY_EXIST_SHARD_NODE));
     }
+    IDE_EXCEPTION( ERR_INSERT_REPLICA_SETS );
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR , "sdfSetShardNode", "replica set insert error") );
+    }
     IDE_EXCEPTION( ERR_NO_GRANT )
     {
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QRC_NO_GRANT ) );
     }
     IDE_EXCEPTION_END;
 
+    IDE_PUSH();
+    
     switch ( sState )
     {
         case 2:
@@ -384,5 +454,17 @@ IDE_RC sdfCalculate_SetNode( mtcNode*     aNode,
             break;
     }
 
+    /* BUG-47623 »þµå ¸ÞÅ¸ º¯°æ¿¡ ´ëÇÑ trc ·Î±×Áß commit ·Î±×¸¦ ÀÛ¼ºÇÏ±âÀü¿¡ DASSERT ·Î Á×´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù. */
+    if ( sIsOldSessionShardMetaTouched == ID_TRUE )
+    {
+        sdi::setShardMetaTouched( sStatement->session );
+    }
+    else
+    {
+        sdi::unsetShardMetaTouched( sStatement->session );
+    }
+    
+    IDE_POP();
+    
     return IDE_FAILURE;
 }

@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLExecutor.cpp 85120 2019-04-02 01:27:30Z khkwak $
+ * $Id: iSQLExecutor.cpp 86554 2020-01-21 05:05:40Z bethy $
  **********************************************************************/
 
 /* ====================================================================
@@ -25,16 +25,16 @@
    DESCRIPTION
     BUG-42811 code refactoring using fuction pointer.
 
-    main í•¨ìˆ˜ ë‚´ì—ì„œ ì»¤ë§¨ë“œ ì¢…ë¥˜ì— ë”°ë¼ switch case ë¬¸ìœ¼ë¡œ
-    ë¶„ê¸°í•˜ëŠ” ë¶€ë¶„ì„ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ í†µí•´ì„œ í˜¸ì¶œí•˜ëŠ” ë°©ì‹ìœ¼ë¡œ ë³€ê²½.
+    main ÇÔ¼ö ³»¿¡¼­ Ä¿¸Çµå Á¾·ù¿¡ µû¶ó switch case ¹®À¸·Î
+    ºÐ±âÇÏ´Â ºÎºÐÀ» ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ÅëÇØ¼­ È£ÃâÇÏ´Â ¹æ½ÄÀ¸·Î º¯°æ.
 
-    í–¥í›„, ì»¤ë§¨ë“œ ì¶”ê°€ì‹œ iSQLCommand í´ëž˜ìŠ¤ì— static í•¨ìˆ˜ë¥¼ ì¶”ê°€í•˜ê³ 
-    parserì—ì„œ í•¨ìˆ˜ í¬ì¸í„°ì— í•´ë‹¹ í•¨ìˆ˜ì˜ addressë¥¼ í• ë‹¹í•´ì•¼ í•¨.
+    ÇâÈÄ, Ä¿¸Çµå Ãß°¡½Ã iSQLCommand Å¬·¡½º¿¡ static ÇÔ¼ö¸¦ Ãß°¡ÇÏ°í
+    parser¿¡¼­ ÇÔ¼ö Æ÷ÀÎÅÍ¿¡ ÇØ´ç ÇÔ¼öÀÇ address¸¦ ÇÒ´çÇØ¾ß ÇÔ.
     ex) gCommand->mExecutor = iSQLCommand::executeDDL
 
-    cf) BUG-42811ì—ì„œ ì¼ê´„ ìˆ˜ì •ì˜ íŽ¸ì´ë¥¼ ìœ„í•´ iSQLCommand í´ëž˜ìŠ¤ì— ì»¤ë§¨ë“œ
-        ìˆ˜í–‰ì„ ìœ„í•œ static í•¨ìˆ˜ë¥¼ ì¼ê´„ ì¶”ê°€í•˜ì˜€ìœ¼ë‚˜, í–¥í›„ ì¶”ê°€ì‹œì—ëŠ” 
-        ë‹¤ë¥¸ ì ì ˆí•œ í´ëž˜ìŠ¤ì— static í•¨ìˆ˜ë¥¼ ì¶”ê°€í•˜ì—¬ë„ ë¬´ë°©í•¨.
+    cf) BUG-42811¿¡¼­ ÀÏ°ý ¼öÁ¤ÀÇ ÆíÀÌ¸¦ À§ÇØ iSQLCommand Å¬·¡½º¿¡ Ä¿¸Çµå
+        ¼öÇàÀ» À§ÇÑ static ÇÔ¼ö¸¦ ÀÏ°ý Ãß°¡ÇÏ¿´À¸³ª, ÇâÈÄ Ãß°¡½Ã¿¡´Â 
+        ´Ù¸¥ ÀûÀýÇÑ Å¬·¡½º¿¡ static ÇÔ¼ö¸¦ Ãß°¡ÇÏ¿©µµ ¹«¹æÇÔ.
 
  ==================================================================== */
 
@@ -77,15 +77,14 @@ extern IDE_RC gExecuteLogin();
 IDE_RC iSQLCommand::executeAlter()
 {
     IDE_TEST( gExecuteCommand->ExecuteDDLStmt(
-                  gCommand->GetCommandStr(),
                   gCommand->GetQuery(),
                   gCommand->GetCommandKind()) != IDE_SUCCESS);
 
     if ( gCommand->GetiSQLOptionKind() == iSQL_CURRENCY )
     {
         /* BUG-34447 SET NUMF[ORMAT]
-         * alter session set NLS_TERRITORY ë“±ì„ í†µí•´ì„œ ì„¸ì…˜ì˜ currencyë¥¼ 
-         * ë³€ê²½í•˜ëŠ” ê²½ìš° V$SESSIONì—ì„œ currencyë¥¼ ë‹¤ì‹œ ê°€ì ¸ì™€ì•¼ í•¨
+         * alter session set NLS_TERRITORY µîÀ» ÅëÇØ¼­ ¼¼¼ÇÀÇ currency¸¦ 
+         * º¯°æÇÏ´Â °æ¿ì V$SESSION¿¡¼­ currency¸¦ ´Ù½Ã °¡Á®¿Í¾ß ÇÔ
          */ 
         gExecuteCommand->SetNlsCurrency();
     }
@@ -99,7 +98,6 @@ IDE_RC iSQLCommand::executeAlter()
 IDE_RC iSQLCommand::executeDDL()
 {
     return gExecuteCommand->ExecuteDDLStmt(
-                  gCommand->GetCommandStr(),
                   gCommand->GetQuery(),
                   gCommand->GetCommandKind());
 }
@@ -115,7 +113,7 @@ IDE_RC iSQLCommand::executeConnect()
 {
     if (gProperty.IsConnToRealInstance() == ID_FALSE)
     {
-        (void)gExecuteCommand->ExecuteDisconnectStmt("DISCONNECT;\n",
+        (void)gExecuteCommand->ExecuteDisconnectStmt(
                                                      (SChar *)"DISCONNECT",
                                                      ID_FALSE);
     }
@@ -124,7 +122,7 @@ IDE_RC iSQLCommand::executeConnect()
     { // bypass user check if atc mode is true
 
         // bug-26749 windows isql filename parse error
-        // sysdbaë¡œ ì ‘ì†í•œ ê²½ìš°ë§Œ exefile userid ê²€ì‚¬
+        // sysdba·Î Á¢¼ÓÇÑ °æ¿ì¸¸ exefile userid °Ë»ç
         if (gCommand->IsSysdba() == ID_TRUE)
         {
             IDE_TEST(checkUser() != IDE_SUCCESS);
@@ -133,7 +131,6 @@ IDE_RC iSQLCommand::executeConnect()
     }
 
     IDE_TEST_RAISE(gExecuteCommand->ExecuteConnectStmt(
-                                        gCommand->GetCommandStr(),
                                         gCommand->GetQuery(),
                                         gCommand->GetUserName(),
                                         gCommand->GetPasswd(),
@@ -152,7 +149,8 @@ IDE_RC iSQLCommand::executeConnect()
     /* BUG-41163 SET SQLPROMPT */
     gProperty.ResetSqlPrompt();
 
-    if ( gCommand->IsSysdba() == ID_FALSE )
+    if ( ( gCommand->IsSysdba() == ID_FALSE ) &&
+         ( gProgOption.IsATAF() == ID_FALSE ) )  // BUG-47644
     {
         g_glogin = ID_TRUE;
         g_login  = ID_TRUE;
@@ -196,7 +194,7 @@ IDE_RC iSQLCommand::executeConnect()
 
 IDE_RC iSQLCommand::executeDisconnect()
 {
-    return gExecuteCommand->ExecuteDisconnectStmt(gCommand->GetCommandStr(),
+    return gExecuteCommand->ExecuteDisconnectStmt(
                                                   gCommand->GetQuery(),
                                                   ID_TRUE);
 }
@@ -211,7 +209,6 @@ IDE_RC iSQLCommand::executeDML()
 IDE_RC iSQLCommand::executeSelect()
 {
     return gExecuteCommand->ExecuteSelectOrDMLStmt(
-                                gCommand->GetCommandStr(),
                                 gCommand->GetQuery(),
                                 gCommand->GetCommandKind());
 }
@@ -219,7 +216,6 @@ IDE_RC iSQLCommand::executeSelect()
 IDE_RC iSQLCommand::executeDescTable()
 {
     return gExecuteCommand->DisplayAttributeList(
-                                gCommand->GetCommandStr(),
                                 gCommand->GetUserName(),
                                 gCommand->GetTableName());
 }
@@ -227,7 +223,6 @@ IDE_RC iSQLCommand::executeDescTable()
 IDE_RC iSQLCommand::executeDescDollarTable()
 {
     return gExecuteCommand->DisplayAttributeList4FTnPV(
-                                gCommand->GetCommandStr(),
                                 gCommand->GetUserName(),
                                 gCommand->GetTableName());
 }
@@ -250,7 +245,7 @@ IDE_RC iSQLCommand::executeProc()
                 gProperty.GetCommandLen() ) != IDE_SUCCESS );
 
     /* BUG-37002 isql cannot parse package as a assigned variable */
-    IDE_TEST( gExecuteCommand->ExecutePSMStmt( gCommand->GetCommandStr(),
+    IDE_TEST( gExecuteCommand->ExecutePSMStmt(
                   gCommand->GetQuery(),
                   gCommand->GetUserName(),
                   gCommand->GetPkgName(),
@@ -276,8 +271,7 @@ IDE_RC iSQLCommand::executeAnonymBlock()
 
 IDE_RC iSQLCommand::executeHelp()
 {
-    gExecuteCommand->PrintHelpString(gCommand->GetCommandStr(),
-                                     gCommand->GetHelpKind());
+    gExecuteCommand->PrintHelpString(gCommand->GetHelpKind());
     return IDE_SUCCESS;
 }
 
@@ -445,20 +439,18 @@ IDE_RC iSQLCommand::executeDCL()
     QueryLogging(gCommand->GetQuery());
 
     return gExecuteCommand->ExecuteOtherCommandStmt(
-                  gCommand->GetCommandStr(),
                   gCommand->GetQuery());
 }
 
 IDE_RC iSQLCommand::executePrintVar()
 {
-    gExecuteCommand->ShowHostVar(gCommand->GetCommandStr(),
-                                 gCommand->GetHostVarName());
+    gExecuteCommand->ShowHostVar(gCommand->GetHostVarName());
     return IDE_SUCCESS;
 }
 
 IDE_RC iSQLCommand::executePrintVars()
 {
-    gExecuteCommand->ShowHostVar(gCommand->GetCommandStr());
+    gExecuteCommand->ShowHostVar();
     return IDE_SUCCESS;
 }
 
@@ -483,7 +475,6 @@ IDE_RC iSQLCommand::executeSelectWithPrepare()
                 gProperty.GetCommandLen()) != IDE_SUCCESS );
 
     IDE_TEST( gExecuteCommand->PrepareSelectOrDMLStmt(
-                  gCommand->GetCommandStr(),
                   gCommand->GetQuery(),
                   gCommand->GetCommandKind())
               != IDE_SUCCESS );
@@ -498,7 +489,6 @@ IDE_RC iSQLCommand::executeSelectWithPrepare()
 IDE_RC iSQLCommand::executeShowTablesWithPrepare()
 {
     return gExecuteCommand->DisplayTableListOrPrepare(
-                                gCommand->GetCommandStr(),
                                 gCommand->GetQuery(),
                                 gProperty.GetCommandLen());
 }
@@ -547,73 +537,56 @@ IDE_RC iSQLCommand::executeSet()
     {
     case iSQL_NON       :
         gExecuteCommand->ExecuteOtherCommandStmt(
-                gCommand->GetCommandStr(),
                 gCommand->GetQuery());
         break;
     case iSQL_HEADING   :
-        gProperty.SetHeading(gCommand->GetCommandStr(),
-                gCommand->GetOnOff());
+        gProperty.SetHeading(gCommand->GetOnOff());
         break;
-    case iSQL_CHECKCONSTRAINTS : /* PROJ-1107 Check Constraint ì§€ì› */
-        gProperty.SetCheckConstraints( gCommand->GetCommandStr(),
-                gCommand->GetOnOff() );
+    case iSQL_CHECKCONSTRAINTS : /* PROJ-1107 Check Constraint Áö¿ø */
+        gProperty.SetCheckConstraints( gCommand->GetOnOff() );
         break;
     case iSQL_FOREIGNKEYS   :
-        gProperty.SetForeignKeys(gCommand->GetCommandStr(),
-                gCommand->GetOnOff());
+        gProperty.SetForeignKeys(gCommand->GetOnOff());
         break;
     case iSQL_PLANCOMMIT   :
-        gProperty.SetPlanCommit(gCommand->GetCommandStr(),
-                gCommand->GetOnOff());
+        gProperty.SetPlanCommit(gCommand->GetOnOff());
         break;
     case iSQL_QUERYLOGGING   :
-        gProperty.SetQueryLogging(gCommand->GetCommandStr(),
-                gCommand->GetOnOff());
+        gProperty.SetQueryLogging(gCommand->GetOnOff());
         break;
     case iSQL_COLSIZE  :
-        gProperty.SetColSize(gCommand->GetCommandStr(),
-                gCommand->GetColsize());
+        gProperty.SetColSize(gCommand->GetColsize());
         break;
     case iSQL_LINESIZE  :
-        gProperty.SetLineSize(gCommand->GetCommandStr(),
-                gCommand->GetLinesize());
+        gProperty.SetLineSize(gCommand->GetLinesize());
         break;
     case iSQL_LOBOFFSET  :
-        gProperty.SetLobOffset(gCommand->GetCommandStr(),
-                gCommand->GetLoboffset());
+        gProperty.SetLobOffset(gCommand->GetLoboffset());
         break;
     case iSQL_LOBSIZE  :
-        gProperty.SetLobSize(gCommand->GetCommandStr(),
-                gCommand->GetLobsize());
+        gProperty.SetLobSize(gCommand->GetLobsize());
         break;
     case iSQL_NUMWIDTH  :   /* BUG-39213 Need to support SET NUMWIDTH in isql */
-        gProperty.SetNumWidth(gCommand->GetCommandStr(),
-                gCommand->GetNumWidth());
+        gProperty.SetNumWidth(gCommand->GetNumWidth());
         break;
     case iSQL_PAGESIZE  :
-        gProperty.SetPageSize(gCommand->GetCommandStr(),
-                gCommand->GetPagesize());
+        gProperty.SetPageSize(gCommand->GetPagesize());
         break;
     case iSQL_TERM    :
-        gProperty.SetTerm(gCommand->GetCommandStr(),
-                gCommand->GetOnOff());
+        gProperty.SetTerm(gCommand->GetOnOff());
         break;
     case iSQL_TIMING    :
-        gProperty.SetTiming(gCommand->GetCommandStr(),
-                gCommand->GetOnOff());
+        gProperty.SetTiming(gCommand->GetOnOff());
         break;
-        // BUG-22685
+    // BUG-22685
     case iSQL_VERTICAL  :
-        gProperty.SetVertical(gCommand->GetCommandStr(),
-                gCommand->GetOnOff());
+        gProperty.SetVertical(gCommand->GetOnOff());
         break;
     case iSQL_TIMESCALE :
-        gProperty.SetTimeScale(gCommand->GetCommandStr(),
-                gCommand->GetTimescale());
+        gProperty.SetTimeScale(gCommand->GetTimescale());
         break;
     case iSQL_FEEDBACK   :
-        gProperty.SetFeedback(gCommand->GetCommandStr(),
-                gCommand->GetFeedback());
+        gProperty.SetFeedback(gCommand->GetFeedback());
         break;
     case iSQL_EXPLAINPLAN :
         gProperty.SetExplainPlan(gCommand->GetCommandStr(),
@@ -621,44 +594,39 @@ IDE_RC iSQLCommand::executeSet()
         gExecuteCommand->m_ISPApi->SetPlanMode(
                 gCommand->GetExplainPlan());
         break;
-        /* BUG-37772 */
+    /* BUG-37772 */
     case iSQL_ECHO:
-        gProperty.SetEcho( gCommand->GetCommandStr(),
-                gCommand->GetOnOff() );
+        gProperty.SetEcho( gCommand->GetOnOff() );
         break;
-        /* BUG-39620 */
+    /* BUG-39620 */
     case iSQL_FULLNAME:
-        gProperty.SetFullName( gCommand->GetCommandStr(),
-                gCommand->GetOnOff() );
+        gProperty.SetFullName( gCommand->GetOnOff() );
         break;
-        /* BUG-41163 SET SQLP[ROMPT] */
+    /* BUG-41163 SET SQLP[ROMPT] */
     case iSQL_SQLPROMPT:
-        gProperty.SetSqlPrompt( gCommand->GetCommandStr(),
-                gCommand->GetSqlPrompt() );
+        gProperty.SetSqlPrompt( gCommand->GetSqlPrompt() );
         break;
     case iSQL_DEFINE:
-        gProperty.SetDefine(gCommand->GetCommandStr(),
-                gCommand->GetOnOff());
+        gProperty.SetDefine(gCommand->GetOnOff());
         break;
-        /* BUG-34447 SET NUMMF[ORMAT] */
+    /* BUG-34447 SET NUMMF[ORMAT] */
     case iSQL_NUMFORMAT:
         gProperty.SetNumFormat();
         break;
     case iSQL_PARTITIONS: /* BUG-43516 */
-        gProperty.SetPartitions(gCommand->GetCommandStr(),
-                gCommand->GetOnOff());
+        gProperty.SetPartitions(gCommand->GetOnOff());
         break;
     case iSQL_VERIFY: /* BUG-43599 */
-        gProperty.SetVerify(gCommand->GetCommandStr(),
-                gCommand->GetOnOff());
+        gProperty.SetVerify(gCommand->GetOnOff());
         break;
     case iSQL_PREFETCHROWS: /* BUG-44613 */
-        gProperty.SetPrefetchRows(gCommand->GetCommandStr(),
-                gCommand->GetPrefetchRows());
+        gProperty.SetPrefetchRows(gCommand->GetPrefetchRows());
         break;
     case iSQL_ASYNCPREFETCH: /* BUG-44613 */
-        gProperty.SetAsyncPrefetch(gCommand->GetCommandStr(),
-                gCommand->GetAsyncPrefetch());
+        gProperty.SetAsyncPrefetch(gCommand->GetAsyncPrefetch());
+        break;
+    case iSQL_MULTIERROR: /* BUG-47627 */
+        gProperty.SetMultiError(gCommand->GetOnOff());
         break;
     default :
         break;
@@ -674,8 +642,7 @@ IDE_RC iSQLCommand::executeShell()
 
 IDE_RC iSQLCommand::executeShow()
 {
-    gProperty.ShowStmt(gCommand->GetCommandStr(),
-                       gCommand->GetiSQLOptionKind());
+    gProperty.ShowStmt(gCommand->GetiSQLOptionKind());
     return IDE_SUCCESS;
 }
 
@@ -695,14 +662,12 @@ IDE_RC iSQLCommand::executeSpoolOff()
 IDE_RC iSQLCommand::executeShowTables()
 {
     return gExecuteCommand->DisplayTableListOrSelect(
-                                gCommand->GetCommandStr(),
                                 gCommand->GetQuery());
 }
 
 IDE_RC iSQLCommand::executeShowFixedTables()
 {
     return gExecuteCommand->DisplayFixedTableList(
-                                gCommand->GetCommandStr(),
                                 "X$",
                                 "FIXED TABLE");
 }
@@ -710,7 +675,6 @@ IDE_RC iSQLCommand::executeShowFixedTables()
 IDE_RC iSQLCommand::executeShowDumpTables()
 {
     return gExecuteCommand->DisplayFixedTableList(
-                                gCommand->GetCommandStr(),
                                 "D$", 	 
                                 "DUMP TABLE"); 	 
 }
@@ -718,7 +682,6 @@ IDE_RC iSQLCommand::executeShowDumpTables()
 IDE_RC iSQLCommand::executeShowPerfViews()
 {
     return gExecuteCommand->DisplayFixedTableList(
-                                gCommand->GetCommandStr(),
                                 "V$", 	 
                                 "PERFORMANCE VIEW");
 }
@@ -727,14 +690,13 @@ IDE_RC iSQLCommand::executeShowPerfViews()
 IDE_RC iSQLCommand::executeShowShardPerfViews()
 {
     return gExecuteCommand->DisplayFixedTableList(
-                                gCommand->GetCommandStr(),
                                 "S$", 	 
                                 "SHARD PERFORMANCE VIEW");
 }
 
 IDE_RC iSQLCommand::executeShowSequences()
 {
-    return gExecuteCommand->DisplaySequenceList(gCommand->GetCommandStr());
+    return gExecuteCommand->DisplaySequenceList();
 }
 
 IDE_RC iSQLCommand::executeDeclareVar()
@@ -753,6 +715,7 @@ IDE_RC iSQLCommand::executeAssignVar()
     /* BUG-41817 Assign Value to Host Variable */
     gHostVarMgr.setValue(gCommand->GetHostVarName(),
                          gCommand->GetHostVarValue());
+    gCommand->FreeHostVarValue();
     return IDE_SUCCESS;
 }
 
@@ -760,8 +723,7 @@ IDE_RC iSQLCommand::executeStartup()
 {
     IDE_TEST( gProperty.IsSysDBA() != ID_TRUE );
 
-    return gExecuteCommand->Startup(gCommand->GetCommandStr(),
-                                    gCommand->GetCommandKind(),
+    return gExecuteCommand->Startup(gCommand->GetCommandKind(),
                                     FORKONLYDAEMON);
 
     IDE_EXCEPTION_END;
@@ -777,8 +739,7 @@ IDE_RC iSQLCommand::executeShutdown()
 {
     IDE_TEST( gProperty.IsSysDBA() != ID_TRUE );
 
-    return gExecuteCommand->Shutdown(gCommand->GetCommandStr(),
-                                     gCommand->GetCommandKind());
+    return gExecuteCommand->Shutdown(gCommand->GetCommandKind());
 
     IDE_EXCEPTION_END;
 

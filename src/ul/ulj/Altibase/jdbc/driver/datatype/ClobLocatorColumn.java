@@ -115,9 +115,23 @@ public class ClobLocatorColumn extends LobLocatorColumn
         ((ObjectDynamicArray)aArray).put(new LocatorInfo(mLocatorId, mLength, mLobByteCache, mLobCharCache));
     }
 
+    public void storeTo()
+    {
+        mValues.add(new LocatorInfo(mLocatorId, mLength, mLobByteCache, mLobCharCache));
+    }
+
     protected void loadFromSub(DynamicArray aArray)
     {
         LocatorInfo sLocatorInfo = (LocatorInfo)((ObjectDynamicArray)aArray).get();
+        mLocatorId = sLocatorInfo.mLocatorId;
+        mLength = sLocatorInfo.mLobLength;
+        mLobByteCache = sLocatorInfo.mLobByteCache;
+        mLobCharCache = sLocatorInfo.mLobCharCache;
+    }
+
+    protected void loadFromSub(int aLoadIndex)
+    {
+        LocatorInfo sLocatorInfo = (LocatorInfo)(mValues.get(aLoadIndex));
         mLocatorId = sLocatorInfo.mLocatorId;
         mLength = sLocatorInfo.mLobLength;
         mLobByteCache = sLocatorInfo.mLobByteCache;
@@ -183,7 +197,12 @@ public class ClobLocatorColumn extends LobLocatorColumn
         ((ObjectDynamicArray)aArray).put(readLocatorInfo(aChannel));
     }
 
-    //BUG-37584 java.sql.SQLException: The table structure has been modified.  
+    protected void readAndStoreValue(CmChannel aChannel) throws SQLException
+    {
+        mValues.add(readLocatorInfo(aChannel));
+    }
+
+    //BUG-37584 java.sql.SQLException: The table structure has been modified.
     protected String getStringSub() throws SQLException
     {
         if (mLobCharCache != null)

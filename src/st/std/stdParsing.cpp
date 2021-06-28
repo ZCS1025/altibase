@@ -23,8 +23,8 @@
  * $Id: stdParsing.cpp 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * ÏûÖÎ†• Î≤ÑÌçºÎ°ú Î∂ÄÌÑ∞ WKT(Well Known Text) ÎòêÎäî WKB(Well Known Binary)Î•º ÏùΩÏñ¥
- * Geometry Í∞ùÏ≤¥Î°ú Ï†ÄÏû•ÌïòÎäî Î™®Îìà Íµ¨ÌòÑ
+ * ¿‘∑¬ πˆ∆€∑Œ ∫Œ≈Õ WKT(Well Known Text) ∂«¥¬ WKB(Well Known Binary)∏¶ ¿–æÓ
+ * Geometry ∞¥√º∑Œ ¿˙¿Â«œ¥¬ ∏µ‚ ±∏«ˆ
  **********************************************************************/
 
 #include <idl.h>
@@ -48,25 +48,25 @@ extern mtdModule mtdDouble;
 
 /***********************************************************************
  * Description:
- * Îã§ÏùåÏóê ÏùΩÏñ¥Îì§Ïùº ÌÜ†ÌÅ∞Ïù¥ Ïñ¥Îñ§ Ïú†ÌòïÏù∏ÏßÄ ÌåêÎ≥ÑÌïúÎã§.
+ * ¥Ÿ¿Ωø° ¿–æÓµÈ¿œ ≈‰≈´¿Ã æÓ∂≤ ¿Ø«¸¿Œ¡ˆ ∆«∫∞«—¥Ÿ.
  *
- * STT_NUM_TOKEN: Ïà´Ïûê
- * STT_LPAREN_TOKEN: Ï¢åÏÜåÍ¥ÑÌò∏
- * STT_RPAREN_TOKEN: Ïö∞ÏÜåÍ¥ÑÌò∏
- * STT_COMMA_TOKEN: ÏâºÌëú
- * STT_SPACE_TOKEN: Í≥µÎ∞± Î¨∏Ïûê
- * STT_CHAR_TOKEN: Î¨∏Ïûê
+ * STT_NUM_TOKEN: º˝¿⁄
+ * STT_LPAREN_TOKEN: ¡¬º“∞˝»£
+ * STT_RPAREN_TOKEN: øÏº“∞˝»£
+ * STT_COMMA_TOKEN: Ω∞«•
+ * STT_SPACE_TOKEN: ∞¯πÈ πÆ¿⁄
+ * STT_CHAR_TOKEN: πÆ¿⁄
  *
- * UChar **aPtr(In): ÏùΩÏñ¥Îì§Ïùº Î¨∏ÏûêÏó¥ ÏúÑÏπò.
- * UChar *aWKTFence(In): Î¨∏ÏûêÏó¥ Î≤ÑÌçºÏùò Fence
+ * UChar **aPtr(In): ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°.
+ * UChar *aWKTFence(In): πÆ¿⁄ø≠ πˆ∆€¿« Fence
  **********************************************************************/
 STT_TOKEN stdParsing::testNextToken(UChar **aPtr, UChar *aWKTFence)
 {
     STT_TOKEN sRet = STT_SPACE_TOKEN;    
     IDE_TEST(skipSpace(aPtr, aWKTFence) != IDE_SUCCESS);
 
-    // To Fix : BUG-15954  3D PointÏãú ZÍ∞Ä ÏùåÏàòÏùº Îïå ÏóêÎü¨ÎÇ®.
-    //          '-' Ï≤¥ÌÅ¨Î•º Ï∂îÍ∞ÄÌï®
+    // To Fix : BUG-15954  3D PointΩ√ Z∞° ¿Ωºˆ¿œ ∂ß ø°∑Ø≥≤.
+    //          '-' √º≈©∏¶ √ﬂ∞°«‘
     if( ((**aPtr >= '0') && (**aPtr <= '9')) || (**aPtr == '-' ) )
     {
         sRet = STT_NUM_TOKEN;
@@ -82,6 +82,14 @@ STT_TOKEN stdParsing::testNextToken(UChar **aPtr, UChar *aWKTFence)
     else if(**aPtr == ',')
     {
         sRet = STT_COMMA_TOKEN;
+    }
+    else if( **aPtr == ';' )
+    {
+        sRet = STT_SEMICOLON_TOKEN;
+    }
+    else if( **aPtr == '=' )
+    {
+        sRet = STT_EQUAL_TOKEN;
     }
     else if(isSpace(**aPtr)==ID_TRUE)
     {
@@ -101,10 +109,10 @@ STT_TOKEN stdParsing::testNextToken(UChar **aPtr, UChar *aWKTFence)
 
 /***********************************************************************
  * Description:
- * Í≥µÎ∞± Î¨∏ÏûêÎ•º Í±¥ÎÑà Îõ¥Îã§
+ * ∞¯πÈ πÆ¿⁄∏¶ ∞«≥  ∂⁄¥Ÿ
  *
- * UChar **aPtr(InOut): ÏùΩÏñ¥Îì§Ïùº Î¨∏ÏûêÏó¥ ÏúÑÏπò, ÏùΩÏùÄ Îã§Ïùå Í∑∏ ÎßåÌÅº Ï¶ùÍ∞ÄÌïúÎã§.
- * UChar *aWKTFence(In): Î¨∏ÏûêÏó¥ Î≤ÑÌçºÏùò Fence
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): πÆ¿⁄ø≠ πˆ∆€¿« Fence
  **********************************************************************/
 IDE_RC stdParsing::skipSpace(UChar **aPtr, UChar *aWKTFence)
 {
@@ -134,10 +142,10 @@ IDE_RC stdParsing::skipSpace(UChar **aPtr, UChar *aWKTFence)
 /***********************************************************************
  * Description:
  * BUG-32531 Consider for GIS EMPTY
- * EMPTY Ïù¥ÌõÑÏùò Í≥µÎ∞± Î¨∏ÏûêÎ•º Í±¥ÎÑà Îõ¥Îã§
+ * EMPTY ¿Ã»ƒ¿« ∞¯πÈ πÆ¿⁄∏¶ ∞«≥  ∂⁄¥Ÿ
  *
- * UChar **aPtr(InOut): ÏùΩÏñ¥Îì§Ïùº Î¨∏ÏûêÏó¥ ÏúÑÏπò, ÏùΩÏùÄ Îã§Ïùå Í∑∏ ÎßåÌÅº Ï¶ùÍ∞ÄÌïúÎã§.
- * UChar *aWKTFence(In): Î¨∏ÏûêÏó¥ Î≤ÑÌçºÏùò Fence
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): πÆ¿⁄ø≠ πˆ∆€¿« Fence
  **********************************************************************/
 IDE_RC stdParsing::emptyCheckSpace(UChar **aPtr, UChar *aWKTFence)
 {
@@ -168,11 +176,11 @@ IDE_RC stdParsing::emptyCheckSpace(UChar **aPtr, UChar *aWKTFence)
 /***********************************************************************
  * Description:
  * BUG-32531 Consider for GIS EMPTY
- * empty Ïù∏ÏßÄ Ï≤¥ÌÅ¨ ÌïòÏó¨ emptyÏù∏ Í≤ΩÏö∞ retrun IDE_SUCCESS.
- * empty Íµ¨Î¨∏ Ï≤¥ÌÅ¨ Ïù¥ÏÉÅÏãú error
+ * empty ¿Œ¡ˆ √º≈© «œø© empty¿Œ ∞ÊøÏ retrun IDE_SUCCESS.
+ * empty ±∏πÆ √º≈© ¿ÃªÛΩ√ error
  *
- * UChar **aPtr(In): ÎπÑÍµê Ìï† Î¨∏Ïûê
- * UChar *aWKTFence(In): Î¨∏ÏûêÏó¥ Î≤ÑÌçºÏùò Fence
+ * UChar **aPtr(In): ∫Ò±≥ «“ πÆ¿⁄
+ * UChar *aWKTFence(In): πÆ¿⁄ø≠ πˆ∆€¿« Fence
  **********************************************************************/
 IDE_RC stdParsing::checkValidEmpty(UChar** aPtr, UChar *aWKTFence)
 {
@@ -202,10 +210,10 @@ IDE_RC stdParsing::checkValidEmpty(UChar** aPtr, UChar *aWKTFence)
 
 /***********************************************************************
  * Description:
- * Ï¢åÏÜåÍ¥ÑÌò∏Î•º Í±¥ÎÑà Îõ¥Îã§
+ * ¡¬º“∞˝»£∏¶ ∞«≥  ∂⁄¥Ÿ
  *
- * UChar **aPtr(InOut): ÏùΩÏñ¥Îì§Ïùº Î¨∏ÏûêÏó¥ ÏúÑÏπò, ÏùΩÏùÄ Îã§Ïùå Í∑∏ ÎßåÌÅº Ï¶ùÍ∞ÄÌïúÎã§.
- * UChar *aWKTFence(In): Î¨∏ÏûêÏó¥ Î≤ÑÌçºÏùò Fence
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): πÆ¿⁄ø≠ πˆ∆€¿« Fence
  **********************************************************************/
 IDE_RC stdParsing::skipLParen(UChar** aPtr, UChar *aWKTFence)
 {
@@ -226,10 +234,10 @@ IDE_RC stdParsing::skipLParen(UChar** aPtr, UChar *aWKTFence)
 
 /***********************************************************************
  * Description:
- * Ïö∞ÏÜåÍ¥ÑÌò∏Î•º Í±¥ÎÑà Îõ¥Îã§
+ * øÏº“∞˝»£∏¶ ∞«≥  ∂⁄¥Ÿ
  *
- * UChar **aPtr(InOut): ÏùΩÏñ¥Îì§Ïùº Î¨∏ÏûêÏó¥ ÏúÑÏπò, ÏùΩÏùÄ Îã§Ïùå Í∑∏ ÎßåÌÅº Ï¶ùÍ∞ÄÌïúÎã§.
- * UChar *aWKTFence(In): Î¨∏ÏûêÏó¥ Î≤ÑÌçºÏùò Fence
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): πÆ¿⁄ø≠ πˆ∆€¿« Fence
  **********************************************************************/
 IDE_RC stdParsing::skipRParen(UChar** aPtr, UChar *aWKTFence)
 {
@@ -252,10 +260,10 @@ IDE_RC stdParsing::skipRParen(UChar** aPtr, UChar *aWKTFence)
 
 /***********************************************************************
  * Description:
- * Î¨∏Ïû•Ïùò ÎÅùÍπåÏßÄ Í≥µÎ∞±ÏúºÎ°ú ÎÅùÎÇòÎäîÏßÄ ÌåêÎ≥ÑÌïúÎã§.
+ * πÆ¿Â¿« ≥°±Ó¡ˆ ∞¯πÈ¿∏∑Œ ≥°≥™¥¬¡ˆ ∆«∫∞«—¥Ÿ.
  *
- * UChar **aPtr(InOut): ÏùΩÏñ¥Îì§Ïùº Î¨∏ÏûêÏó¥ ÏúÑÏπò, ÏùΩÏùÄ Îã§Ïùå Í∑∏ ÎßåÌÅº Ï¶ùÍ∞ÄÌïúÎã§.
- * UChar *aWKTFence(In): Î¨∏ÏûêÏó¥ Î≤ÑÌçºÏùò Fence
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): πÆ¿⁄ø≠ πˆ∆€¿« Fence
  **********************************************************************/
 IDE_RC stdParsing::skipToLast(UChar** aPtr, UChar *aWKTFence)
 {
@@ -274,11 +282,11 @@ IDE_RC stdParsing::skipToLast(UChar** aPtr, UChar *aWKTFence)
 
 /***********************************************************************
  * Description:
- * Collection ÎÇ¥Î∂Ä Í∞ùÏ≤¥Ïùò Îã§Ïùå Í∞ùÏ≤¥Í∞Ä ÏûàÎäîÏßÄ ÌåêÎ≥ÑÌïòÍ∏∞ ÏúÑÌï¥ ÏÇ¨Ïö©ÌïúÎã§.
- * Îã§Ïùå Í∞ùÏ≤¥Í∞Ä ÏûàÏúºÎ©¥ Ìï¥Îãπ Î¨∏ÏûêÍπåÏßÄÏùò Ï£ºÏÜåÎ•º ÏóÜÏúºÎ©¥ aWKTFenceÏùÑ Î¶¨ÌÑ¥ÌïúÎã§.
+ * Collection ≥ª∫Œ ∞¥√º¿« ¥Ÿ¿Ω ∞¥√º∞° ¿÷¥¬¡ˆ ∆«∫∞«œ±‚ ¿ß«ÿ ªÁøÎ«—¥Ÿ.
+ * ¥Ÿ¿Ω ∞¥√º∞° ¿÷¿∏∏È «ÿ¥Á πÆ¿⁄±Ó¡ˆ¿« ¡÷º“∏¶ æ¯¿∏∏È aWKTFence¿ª ∏Æ≈œ«—¥Ÿ.
  *
- * UChar **aPtr(In): ÏùΩÏñ¥Îì§Ïùº Î¨∏ÏûêÏó¥ ÏúÑÏπò
- * UChar *aWKTFence(In): Î¨∏ÏûêÏó¥ Î≤ÑÌçºÏùò Fence
+ * UChar **aPtr(In): ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°
+ * UChar *aWKTFence(In): πÆ¿⁄ø≠ πˆ∆€¿« Fence
  **********************************************************************/
 UChar* stdParsing::findSubObjFence(UChar** aPtr, UChar* aWKTFence)
 {
@@ -401,10 +409,10 @@ UChar* stdParsing::findSubObjFence(UChar** aPtr, UChar* aWKTFence)
 
 /***********************************************************************
  * Description:
- * ÏâºÌëúÎ•º Í±¥ÎÑà Îõ¥Îã§
+ * Ω∞«•∏¶ ∞«≥  ∂⁄¥Ÿ
  *
- * UChar **aPtr(InOut): ÏùΩÏñ¥Îì§Ïùº Î¨∏ÏûêÏó¥ ÏúÑÏπò, ÏùΩÏùÄ Îã§Ïùå Í∑∏ ÎßåÌÅº Ï¶ùÍ∞ÄÌïúÎã§.
- * UChar *aWKTFence(In): Î¨∏ÏûêÏó¥ Î≤ÑÌçºÏùò Fence
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): πÆ¿⁄ø≠ πˆ∆€¿« Fence
  **********************************************************************/
 IDE_RC stdParsing::skipComma(UChar** aPtr, UChar *aWKTFence)
 {
@@ -425,10 +433,58 @@ IDE_RC stdParsing::skipComma(UChar** aPtr, UChar *aWKTFence)
 
 /***********************************************************************
  * Description:
- * Ïà´Ïûê Í∞íÏùÑ Í±¥ÎÑà Îõ¥Îã§
+ * ;¿ª ∞«≥  ∂⁄¥Ÿ
  *
- * UChar **aPtr(InOut): ÏùΩÏñ¥Îì§Ïùº Î¨∏ÏûêÏó¥ ÏúÑÏπò, ÏùΩÏùÄ Îã§Ïùå Í∑∏ ÎßåÌÅº Ï¶ùÍ∞ÄÌïúÎã§.
- * UChar *aWKTFence(In): Î¨∏ÏûêÏó¥ Î≤ÑÌçºÏùò Fence
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): πÆ¿⁄ø≠ πˆ∆€¿« Fence
+ **********************************************************************/
+IDE_RC stdParsing::skipSemicolon( UChar** aPtr, UChar *aWKTFence )
+{
+    IDE_TEST( skipSpace( aPtr, aWKTFence ) != IDE_SUCCESS );
+    IDE_TEST_RAISE( **aPtr != ';', err_parsing );
+    (*aPtr)++;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( err_parsing );
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_WKT ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description:
+ * =¿ª ∞«≥  ∂⁄¥Ÿ
+ *
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): πÆ¿⁄ø≠ πˆ∆€¿« Fence
+ **********************************************************************/
+IDE_RC stdParsing::skipEqual( UChar** aPtr, UChar *aWKTFence )
+{
+    IDE_TEST( skipSpace( aPtr, aWKTFence ) != IDE_SUCCESS );
+    IDE_TEST_RAISE( **aPtr != '=', err_parsing );
+    (*aPtr)++;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( err_parsing );
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_WKT ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description:
+ * º˝¿⁄ ∞™¿ª ∞«≥  ∂⁄¥Ÿ
+ *
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): πÆ¿⁄ø≠ πˆ∆€¿« Fence
  **********************************************************************/
 IDE_RC stdParsing::skipNumber(UChar** aPtr, UChar *aWKTFence)
 {
@@ -457,7 +513,7 @@ IDE_RC stdParsing::skipNumber(UChar** aPtr, UChar *aWKTFence)
     sPtr = NULL;
     sD = idlOS::strtod((SChar*)*aPtr, (SChar**)&sPtr);
 
-    // underfloawÏãú ÏóêÎü¨Ï≤òÎ¶¨Î∂ÄÎ∂ÑÏùÄ Ï†úÍ±∞Ìï®. Í∑∏ÎÉ• ÏàòÌñâ
+    // underfloawΩ√ ø°∑Ø√≥∏Æ∫Œ∫–¿∫ ¡¶∞≈«‘. ±◊≥… ºˆ«‡
     IDE_TEST_RAISE((*aPtr == sPtr) || // no conversion is performed
              ((sD == HUGE_VAL) && (errno == ERANGE)), err_parsing); // range err
 
@@ -476,11 +532,11 @@ IDE_RC stdParsing::skipNumber(UChar** aPtr, UChar *aWKTFence)
 }
 
 /***********************************************************************
- * Description:
- * Ïà´Ïûê Í∞íÏùÑ ÏùΩÏñ¥ÏÑú aDÏóê Ï†ÄÏû•ÌïúÎã§.
+ * Description: PROJ-2422 SRID
+ * º˝¿⁄ ∞™¿ª ¿–æÓº≠ aDø° ¿˙¿Â«—¥Ÿ.
  *
- * UChar **aPtr(InOut): ÏùΩÏñ¥Îì§Ïùº Î¨∏ÏûêÏó¥ ÏúÑÏπò, ÏùΩÏùÄ Îã§Ïùå Í∑∏ ÎßåÌÅº Ï¶ùÍ∞ÄÌïúÎã§.
- * UChar *aWKTFence(In): Î¨∏ÏûêÏó¥ Î≤ÑÌçºÏùò Fence
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): πÆ¿⁄ø≠ πˆ∆€¿« Fence
  * SDouble* aD(Out): DateTime
  **********************************************************************/
 IDE_RC stdParsing::getNumber(UChar** aPtr, UChar *aWKTFence, SDouble* aD)
@@ -495,11 +551,8 @@ IDE_RC stdParsing::getNumber(UChar** aPtr, UChar *aWKTFence, SDouble* aD)
         // end of WKT
         IDE_TEST_RAISE( sPtr == aWKTFence, err_parsing );
         
-        if(*sPtr == '\0' )
-        {
-            break;
-        }
-        else if(isSpace(*sPtr)==ID_TRUE)
+        if ( ( *sPtr == '\0' ) || ( isSpace( *sPtr ) == ID_TRUE ) || 
+             ( isSymbol( *sPtr ) == ID_TRUE ) )
         {
             break;
         }
@@ -510,11 +563,116 @@ IDE_RC stdParsing::getNumber(UChar** aPtr, UChar *aWKTFence, SDouble* aD)
     }
     
     sPtr = NULL;    
-    *aD = idlOS::strtod((SChar*)*aPtr, (SChar**)&sPtr);
+    *aD = idlOS::strtod( (SChar*)*aPtr, (SChar**)&sPtr );
 
-    // underfloawÏãú ÏóêÎü¨Ï≤òÎ¶¨Î∂ÄÎ∂ÑÏùÄ Ï†úÍ±∞Ìï®. Í∑∏ÎÉ• ÏàòÌñâ
-    IDE_TEST_RAISE((*aPtr == sPtr) || // no conversion is performed
-                   ((*aD == HUGE_VAL) && (errno == ERANGE)), err_parsing);
+    // underfloawΩ√ ø°∑Ø√≥∏Æ∫Œ∫–¿∫ ¡¶∞≈«‘. ±◊≥… ºˆ«‡
+    IDE_TEST_RAISE( ( *aPtr == sPtr ) || // no conversion is performed
+                    ( ( *aD == HUGE_VAL ) && ( errno == ERANGE ) ), err_parsing );
+    // range err
+    *aPtr = sPtr;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( err_parsing );
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_WKT ) );
+    }
+    
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description: PROJ-2422 SRID
+ * º˝¿⁄ ∞™¿ª ∞«≥  ∂⁄¥Ÿ
+ *
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): πÆ¿⁄ø≠ πˆ∆€¿« Fence
+ **********************************************************************/
+IDE_RC stdParsing::skipLong( UChar** aPtr, UChar *aWKTFence )
+{
+    UChar*      sPtr = *aPtr;
+
+    IDE_TEST( skipSpace( aPtr, aWKTFence ) != IDE_SUCCESS );
+    
+    // prepare strtol (find NULL termination)
+    while ( 1 )
+    {
+        IDE_TEST_RAISE( sPtr == aWKTFence, err_parsing )  // end of WKT
+        
+        // To fix BUG-15413
+        if ( ( *sPtr == '\0' ) || ( isSpace( *sPtr ) == ID_TRUE ) || 
+             ( isSymbol( *sPtr ) == ID_TRUE ) )
+        {
+            break;
+        }
+        else
+        {
+            (sPtr)++;
+        }
+    }
+    
+    sPtr = NULL;
+    (void)idlOS::strtol( (SChar*)*aPtr, (SChar**)&sPtr, 10 );
+
+    // underfloawΩ√ ø°∑Ø√≥∏Æ∫Œ∫–¿∫ ¡¶∞≈«‘. ±◊≥… ºˆ«‡
+    IDE_TEST_RAISE( ( *aPtr == sPtr ) || // no conversion is performed
+                    ( errno == ERANGE ), err_parsing ); // range err
+
+    *aPtr = sPtr;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( err_parsing );
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_WKT ) );
+    }
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description: PROJ-2422 SRID
+ * º˝¿⁄ ∞™¿ª ¿–æÓº≠ aLø° ¿˙¿Â«—¥Ÿ.
+ *
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): πÆ¿⁄ø≠ πˆ∆€¿« Fence
+ * SDouble* aD(Out): DateTime
+ **********************************************************************/
+IDE_RC stdParsing::getLong( UChar** aPtr, UChar *aWKTFence, SLong* aL )
+{
+    UChar*      sPtr = *aPtr;
+
+    IDE_TEST_RAISE( skipSpace( aPtr, aWKTFence ) != IDE_SUCCESS, err_parsing );
+    
+    // prepare strtod (find NULL termination)
+    while ( 1 )
+    {
+        if ( sPtr == aWKTFence )  // end of WKT
+        {
+            return IDE_FAILURE;
+        }
+        
+        if ( (*sPtr == '\0') || (isSpace(*sPtr) == ID_TRUE) || 
+            (isSymbol(*sPtr) == ID_TRUE) )
+        {
+            break;
+        }
+        else
+        {
+            (sPtr)++;
+        }
+    }
+    
+    sPtr = NULL;    
+    *aL = idlOS::strtol( (SChar*)*aPtr, (SChar**)&sPtr, 10 );
+
+    // underfloawΩ√ ø°∑Ø√≥∏Æ∫Œ∫–¿∫ ¡¶∞≈«‘. ±◊≥… ºˆ«‡
+    IDE_TEST_RAISE( ( *aPtr == sPtr ) || // no conversion is performed
+                    ( errno == ERANGE ), err_parsing );
     // range err
     *aPtr = sPtr;
 
@@ -531,25 +689,111 @@ IDE_RC stdParsing::getNumber(UChar** aPtr, UChar *aWKTFence, SDouble* aD)
 }
 
 /***********************************************************************
- * Description:
- * WKT(Well Known Text)Î•º ÏùΩÏñ¥Îì§Ïó¨ 
- * stdPoint2DTypeÏù¥ÎÇò stdPoint3DType Í∞ùÏ≤¥Î°ú Ï†ÄÏû•ÌïúÎã§.
- * 3Ï∞®Ïõê Ï¢åÌëúÍ∞Ä Îì§Ïñ¥ÏûàÏúºÎ©¥ 3Ï∞®ÏõêÏúºÎ°ú Í∞ÑÏ£ºÌïòÎ©∞, 2Ï∞®Ïõê 3Ï∞®Ïõê Í∞íÏùÑ ÌòºÌï© ÏûÖÎ†•ÌïòÎäî Í≤ÉÏùÑ 
- * ÌóàÏö©ÌïòÏßÄ ÏïäÎäîÎã§.
+ * Description: PROJ-2422 SRID
+ * EWKT(Extended Well Known Text)∏¶ ¿–æÓµÈø© SRID∏¶ ∞°¡Æø¬¥Ÿ.
  *
- * UChar **aPtr(InOut): ÏùΩÏñ¥Îì§Ïùº Î¨∏ÏûêÏó¥ ÏúÑÏπò, ÏùΩÏùÄ Îã§Ïùå Í∑∏ ÎßåÌÅº Ï¶ùÍ∞ÄÌïúÎã§.
- * UChar *aWKTFence(In): Î¨∏ÏûêÏó¥ Î≤ÑÌçºÏùò Fence
- * stdGeometryHeader* aGeom(Out): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)
- * void* aFence(In): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)Ïùò Fence
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): πÆ¿⁄ø≠ πˆ∆€¿« Fence
+ * stdGeometryHeader* aGeom(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void* aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
-IDE_RC stdParsing::getPoint(
-                    UChar**                    aPtr,
-                    UChar*                     aWKTFence,
-                    stdGeometryHeader*         aGeom,
-                    void*                      aFence,
-                    IDE_RC*                    aResult,
-                    UInt                       aValidateOption)
+IDE_RC stdParsing::skipSRID( UChar**    aPtr,
+                             UChar*     aWKTFence )
+{
+    UChar*       sPtr = *aPtr;
+    STT_TOKEN    sTokenType;
+
+    // =4326;
+    sTokenType = testNextToken( &sPtr, aWKTFence );
+    IDE_TEST_RAISE( sTokenType != STT_EQUAL_TOKEN, err_parsing );
+    IDE_TEST( skipEqual( &sPtr, aWKTFence ) != IDE_SUCCESS );
+    
+    IDE_TEST( skipLong( &sPtr, aWKTFence ) != IDE_SUCCESS );
+    
+    sTokenType = testNextToken( &sPtr, aWKTFence );
+    IDE_TEST_RAISE( sTokenType != STT_SEMICOLON_TOKEN, err_parsing );
+    IDE_TEST( skipSemicolon( &sPtr, aWKTFence ) != IDE_SUCCESS );
+
+    *aPtr = sPtr;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( err_parsing );
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_WKT ) );
+    }
+    
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description: PROJ-2422 SRID
+ * EWKT(Extended Well Known Text)∏¶ ¿–æÓµÈø© SRID∏¶ ∞°¡Æø¬¥Ÿ.
+ *
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): πÆ¿⁄ø≠ πˆ∆€¿« Fence
+ * stdGeometryHeader* aGeom(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void* aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
+ * IDE_RC* aResult(Out): Error Code
+ **********************************************************************/
+IDE_RC stdParsing::getSRID( UChar**    aPtr,
+                            UChar*     aWKTFence,
+                            SInt*      aSRID )
+{
+    UChar*   sPtr = *aPtr;
+    SLong    sSRID;
+
+    // »Æ¿Œ
+    IDE_TEST( skipSRID( &sPtr, aWKTFence ) != IDE_SUCCESS );
+
+    sPtr = *aPtr;
+
+    // ∫Ø»Ø
+    IDE_TEST( skipEqual( &sPtr, aWKTFence ) != IDE_SUCCESS );
+    IDE_TEST( getLong( &sPtr, aWKTFence, &sSRID ) != IDE_SUCCESS );
+    IDE_TEST( skipSemicolon( &sPtr, aWKTFence ) != IDE_SUCCESS );
+
+    IDE_TEST_RAISE( ( sSRID < ST_SRID_MIN ) || ( sSRID > ST_SRID_MAX ),
+                    err_overflow );
+    
+    *aSRID = (SInt)sSRID;
+    
+    *aPtr = sPtr;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( err_overflow );
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_VALUE_OVERFLOW ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description:
+ * WKT(Well Known Text)∏¶ ¿–æÓµÈø© 
+ * stdPoint2DType¿Ã≥™ stdPoint3DType ∞¥√º∑Œ ¿˙¿Â«—¥Ÿ.
+ * 3¬˜ø¯ ¡¬«•∞° µÈæÓ¿÷¿∏∏È 3¬˜ø¯¿∏∑Œ ∞£¡÷«œ∏Á, 2¬˜ø¯ 3¬˜ø¯ ∞™¿ª »•«’ ¿‘∑¬«œ¥¬ ∞Õ¿ª 
+ * «„øÎ«œ¡ˆ æ ¥¬¥Ÿ.
+ *
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): πÆ¿⁄ø≠ πˆ∆€¿« Fence
+ * stdGeometryHeader* aGeom(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void* aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
+ * IDE_RC* aResult(Out): Error Code
+ **********************************************************************/
+IDE_RC stdParsing::getPoint( UChar**                    aPtr,
+                             UChar*                     aWKTFence,
+                             stdGeometryHeader*         aGeom,
+                             void*                      aFence,
+                             IDE_RC*                    aResult,
+                             UInt                       aValidateOption,
+                             SInt                       aSRID )
 {
     // 1.
     UChar*          sPtr = *aPtr;
@@ -557,8 +801,9 @@ IDE_RC stdParsing::getPoint(
     stdGeoTypes     sCurrentType = STD_NULL_TYPE;
     STT_TOKEN       sTokenType;
     // 2
-    stdPoint2DType* sGeom2D = NULL;
-    idBool          sIsValid = ID_TRUE;
+    stdPoint2DType*    sGeom2D = NULL;
+    stdPoint2DExtType* sGeom2DExt = NULL;
+    idBool             sIsValid = ID_TRUE;
 
     /* BUG-32531 Consider for GIS EMPTY */
  	IDE_TEST(skipSpace(aPtr, aWKTFence) != IDE_SUCCESS);
@@ -580,8 +825,17 @@ IDE_RC stdParsing::getPoint(
         sTokenType = testNextToken(&sPtr, aWKTFence);
         if(sTokenType == STT_RPAREN_TOKEN)
         {
-            sCurrentType = STD_POINT_2D_TYPE;
-            sTotalSize = STD_POINT2D_SIZE;
+            if ( aSRID == ST_SRID_INIT )
+            {
+                sCurrentType = STD_POINT_2D_TYPE;
+                sTotalSize = STD_POINT2D_SIZE;
+            }
+            else
+            {
+                // srid∞° √ﬂ∞°µ» »Æ¿Â≈∏¿‘
+                sCurrentType = STD_POINT_2D_EXT_TYPE;
+                sTotalSize = STD_POINT2D_EXT_SIZE;
+            }
         }
         else 
         {
@@ -603,7 +857,8 @@ IDE_RC stdParsing::getPoint(
         aGeom->mType = sCurrentType;
         aGeom->mSize = sTotalSize;    
         sPtr = *aPtr;
-        if(sCurrentType == STD_POINT_2D_TYPE) 
+        if ( ( sCurrentType == STD_POINT_2D_TYPE ) ||
+             ( sCurrentType == STD_POINT_2D_EXT_TYPE ) ) 
         {
             sGeom2D = (stdPoint2DType*)aGeom;
 
@@ -636,6 +891,19 @@ IDE_RC stdParsing::getPoint(
         {
             IDE_RAISE(err_parsing);
         }
+
+        // PROJ-2422 srid ¡ˆø¯
+        if ( sCurrentType == STD_POINT_2D_EXT_TYPE )
+        {
+            sGeom2DExt = (stdPoint2DExtType*)aGeom;
+
+            // set srid
+            sGeom2DExt->mSRID = aSRID;
+        }
+        else
+        {
+            // Nothing to do.
+        }
     }
     
     *aPtr = sPtr;
@@ -660,24 +928,24 @@ IDE_RC stdParsing::getPoint(
 
 /***********************************************************************
  * Description:
- * WKT(Well Known Text)Î•º ÏùΩÏñ¥Îì§Ïó¨ 
- * stdLineString2DTypeÏù¥ÎÇò stdLineString3DType Í∞ùÏ≤¥Î°ú Ï†ÄÏû•ÌïúÎã§.
- * 3Ï∞®Ïõê Ï¢åÌëúÍ∞Ä Îì§Ïñ¥ÏûàÏúºÎ©¥ 3Ï∞®ÏõêÏúºÎ°ú Í∞ÑÏ£ºÌïòÎ©∞, 2Ï∞®Ïõê 3Ï∞®Ïõê Í∞íÏùÑ ÌòºÌï© ÏûÖÎ†•ÌïòÎäî Í≤ÉÏùÑ 
- * ÌóàÏö©ÌïòÏßÄ ÏïäÎäîÎã§.
+ * WKT(Well Known Text)∏¶ ¿–æÓµÈø© 
+ * stdLineString2DType¿Ã≥™ stdLineString3DType ∞¥√º∑Œ ¿˙¿Â«—¥Ÿ.
+ * 3¬˜ø¯ ¡¬«•∞° µÈæÓ¿÷¿∏∏È 3¬˜ø¯¿∏∑Œ ∞£¡÷«œ∏Á, 2¬˜ø¯ 3¬˜ø¯ ∞™¿ª »•«’ ¿‘∑¬«œ¥¬ ∞Õ¿ª 
+ * «„øÎ«œ¡ˆ æ ¥¬¥Ÿ.
  *
- * UChar **aPtr(InOut): ÏùΩÏñ¥Îì§Ïùº Î¨∏ÏûêÏó¥ ÏúÑÏπò, ÏùΩÏùÄ Îã§Ïùå Í∑∏ ÎßåÌÅº Ï¶ùÍ∞ÄÌïúÎã§.
- * UChar *aWKTFence(In): Î¨∏ÏûêÏó¥ Î≤ÑÌçºÏùò Fence
- * stdGeometryHeader* aGeom(Out): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)
- * void* aFence(In): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)Ïùò Fence
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): πÆ¿⁄ø≠ πˆ∆€¿« Fence
+ * stdGeometryHeader* aGeom(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void* aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
-IDE_RC stdParsing::getLineString(
-                    UChar**                    aPtr,
-                    UChar*                     aWKTFence,
-                    stdGeometryHeader*         aGeom,
-                    void*                      aFence,
-                    IDE_RC*                    aResult,
-                    UInt                       aValidateOption)
+IDE_RC stdParsing::getLineString( UChar**                    aPtr,
+                                  UChar*                     aWKTFence,
+                                  stdGeometryHeader*         aGeom,
+                                  void*                      aFence,
+                                  IDE_RC*                    aResult,
+                                  UInt                       aValidateOption,
+                                  SInt                       aSRID )
 {
     // 1.
     UChar*                  sPtr = *aPtr;
@@ -688,6 +956,7 @@ IDE_RC stdParsing::getLineString(
     // 2.
     idBool                  sIsValid = ID_TRUE;
     stdLineString2DType*    sGeom2D = NULL;
+    stdLineString2DExtType* sGeom2DExt = NULL;
     stdPoint2D*             sPt2D = NULL;
     UInt                    i;
 
@@ -715,7 +984,16 @@ IDE_RC stdParsing::getLineString(
             {
                 if(sTokenType == STT_COMMA_TOKEN)
                 {
-                    sCurrentType = STD_LINESTRING_2D_TYPE;
+                    if ( aSRID == ST_SRID_INIT )
+                    {
+                        sCurrentType = STD_LINESTRING_2D_TYPE;
+                    }
+                    else
+                    {
+                        // srid∞° √ﬂ∞°µ» »Æ¿Â≈∏¿‘
+                        sCurrentType = STD_LINESTRING_2D_EXT_TYPE;
+                    }
+                    
                     sTotalSize += STD_PT2D_SIZE;
                 }
                 else if(sTokenType == STT_NUM_TOKEN)
@@ -729,7 +1007,8 @@ IDE_RC stdParsing::getLineString(
             }
             else
             {
-                if( sCurrentType == STD_LINESTRING_2D_TYPE )
+                if ( ( sCurrentType == STD_LINESTRING_2D_TYPE ) ||
+                     ( sCurrentType == STD_LINESTRING_2D_EXT_TYPE ) )
                 {            
                     sTotalSize += STD_PT2D_SIZE;
                 }
@@ -762,6 +1041,10 @@ IDE_RC stdParsing::getLineString(
         {
             sTotalSize += STD_LINE2D_SIZE;
         }
+        else if ( sCurrentType == STD_LINESTRING_2D_EXT_TYPE )
+        {
+            sTotalSize += STD_LINE2D_EXT_SIZE;
+        }
         else
         {
             IDE_RAISE(err_parsing);
@@ -777,7 +1060,8 @@ IDE_RC stdParsing::getLineString(
         aGeom->mType = sCurrentType;
         aGeom->mSize = sTotalSize;    
         sPtr = *aPtr;
-        if(sCurrentType == STD_LINESTRING_2D_TYPE)
+        if ( ( sCurrentType == STD_LINESTRING_2D_TYPE ) ||
+             ( sCurrentType == STD_LINESTRING_2D_EXT_TYPE ) )
         {
             sGeom2D = (stdLineString2DType*)aGeom;
             sGeom2D->mNumPoints = sPtCnt;
@@ -827,6 +1111,19 @@ IDE_RC stdParsing::getLineString(
         {
             IDE_RAISE(err_parsing);
         }
+        
+        // PROJ-2422 srid ¡ˆø¯
+        if ( sCurrentType == STD_LINESTRING_2D_EXT_TYPE )
+        {
+            sGeom2DExt = (stdLineString2DExtType*)aGeom;
+
+            // set srid
+            sGeom2DExt->mSRID = aSRID;
+        }
+        else
+        {
+            // Nothing to do.
+        }
     }
     
     *aPtr = sPtr;
@@ -855,25 +1152,25 @@ IDE_RC stdParsing::getLineString(
 
 /***********************************************************************
  * Description:
- * WKT(Well Known Text)Î•º ÏùΩÏñ¥Îì§Ïó¨ 
- * stdPolygon2DTypeÏù¥ÎÇò stdPolygon3DType Í∞ùÏ≤¥Î°ú Ï†ÄÏû•ÌïúÎã§.
- * 3Ï∞®Ïõê Ï¢åÌëúÍ∞Ä Îì§Ïñ¥ÏûàÏúºÎ©¥ 3Ï∞®ÏõêÏúºÎ°ú Í∞ÑÏ£ºÌïòÎ©∞, 2Ï∞®Ïõê 3Ï∞®Ïõê Í∞íÏùÑ ÌòºÌï© ÏûÖÎ†•ÌïòÎäî Í≤ÉÏùÑ 
- * ÌóàÏö©ÌïòÏßÄ ÏïäÎäîÎã§.
+ * WKT(Well Known Text)∏¶ ¿–æÓµÈø© 
+ * stdPolygon2DType¿Ã≥™ stdPolygon3DType ∞¥√º∑Œ ¿˙¿Â«—¥Ÿ.
+ * 3¬˜ø¯ ¡¬«•∞° µÈæÓ¿÷¿∏∏È 3¬˜ø¯¿∏∑Œ ∞£¡÷«œ∏Á, 2¬˜ø¯ 3¬˜ø¯ ∞™¿ª »•«’ ¿‘∑¬«œ¥¬ ∞Õ¿ª 
+ * «„øÎ«œ¡ˆ æ ¥¬¥Ÿ.
  *
- * UChar **aPtr(InOut): ÏùΩÏñ¥Îì§Ïùº Î¨∏ÏûêÏó¥ ÏúÑÏπò, ÏùΩÏùÄ Îã§Ïùå Í∑∏ ÎßåÌÅº Ï¶ùÍ∞ÄÌïúÎã§.
- * UChar *aWKTFence(In): Î¨∏ÏûêÏó¥ Î≤ÑÌçºÏùò Fence
- * stdGeometryHeader* aGeom(Out): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)
- * void* aFence(In): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)Ïùò Fence
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): πÆ¿⁄ø≠ πˆ∆€¿« Fence
+ * stdGeometryHeader* aGeom(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void* aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
-IDE_RC stdParsing::getPolygon(
-                    iduMemory*                 aQmxMem,
-                    UChar**                    aPtr,
-                    UChar*                     aWKTFence,
-                    stdGeometryHeader*         aGeom,
-                    void*                      aFence,
-                    IDE_RC*                    aResult,
-                    UInt                       aValidateOption )
+IDE_RC stdParsing::getPolygon( iduMemory*                 aQmxMem,
+                               UChar**                    aPtr,
+                               UChar*                     aWKTFence,
+                               stdGeometryHeader*         aGeom,
+                               void*                      aFence,
+                               IDE_RC*                    aResult,
+                               UInt                       aValidateOption,
+                               SInt                       aSRID )
 {
     // 1.
     UChar*              sPtr = *aPtr;
@@ -883,11 +1180,12 @@ IDE_RC stdParsing::getPolygon(
     stdGeoTypes         sCurrentType = STD_NULL_TYPE;
     STT_TOKEN           sTokenType = STT_SPACE_TOKEN;
     // 2.
-    idBool              sIsValid = ID_TRUE;
-    stdPolygon2DType*   sGeom2D = NULL;
-    stdLinearRing2D*    sRing2D = NULL;
-    stdPoint2D*         sPt2D = NULL;
-    UInt                i;
+    idBool               sIsValid = ID_TRUE;
+    stdPolygon2DType*    sGeom2D = NULL;
+    stdPolygon2DExtType* sGeom2DExt = NULL;
+    stdLinearRing2D*     sRing2D = NULL;
+    stdPoint2D*          sPt2D = NULL;
+    UInt                 i;
 
     /* BUG-32531 Consider for GIS EMPTY */
     IDE_TEST(skipSpace(aPtr, aWKTFence) != IDE_SUCCESS);
@@ -918,7 +1216,16 @@ IDE_RC stdParsing::getPolygon(
                 {
                     if(sTokenType == STT_COMMA_TOKEN)
                     {
-                        sCurrentType = STD_POLYGON_2D_TYPE;
+                        if ( aSRID == ST_SRID_INIT )
+                        {
+                            sCurrentType = STD_POLYGON_2D_TYPE;
+                        }
+                        else
+                        {
+                            // srid∞° √ﬂ∞°µ» »Æ¿Â≈∏¿‘
+                            sCurrentType = STD_POLYGON_2D_EXT_TYPE;
+                        }
+                        
                         sTotalSize += STD_PT2D_SIZE;
                     }
                     else if(sTokenType == STT_NUM_TOKEN)
@@ -932,7 +1239,8 @@ IDE_RC stdParsing::getPolygon(
                 }
                 else
                 {
-                    if(sCurrentType == STD_POLYGON_2D_TYPE)
+                    if ( ( sCurrentType == STD_POLYGON_2D_TYPE ) ||
+                         ( sCurrentType == STD_POLYGON_2D_EXT_TYPE ) )
                     {            
                         sTotalSize += STD_PT2D_SIZE;
                     }
@@ -956,7 +1264,8 @@ IDE_RC stdParsing::getPolygon(
             IDE_TEST_RAISE(sRingCnt == ID_UINT_MAX, err_parsing);
             sRingCnt++;
 
-            if(sCurrentType == STD_POLYGON_2D_TYPE)
+            if ( ( sCurrentType == STD_POLYGON_2D_TYPE ) ||
+                 ( sCurrentType == STD_POLYGON_2D_EXT_TYPE ) )
             {
                 sTotalSize += STD_RN2D_SIZE;
             }
@@ -985,6 +1294,10 @@ IDE_RC stdParsing::getPolygon(
         {
             sTotalSize += STD_POLY2D_SIZE;
         }
+        else if ( sCurrentType == STD_POLYGON_2D_EXT_TYPE )
+        {
+            sTotalSize += STD_POLY2D_EXT_SIZE;
+        }
         else
         {
             IDE_RAISE(err_parsing);
@@ -999,7 +1312,8 @@ IDE_RC stdParsing::getPolygon(
 
         aGeom->mType = sCurrentType;
         sPtr = *aPtr;
-        if(sCurrentType == STD_POLYGON_2D_TYPE)
+        if ( ( sCurrentType == STD_POLYGON_2D_TYPE ) ||
+             ( sCurrentType == STD_POLYGON_2D_EXT_TYPE ) )
         {
             sGeom2D = (stdPolygon2DType*)aGeom;
             sGeom2D->mNumRings = sRingCnt;
@@ -1097,6 +1411,19 @@ IDE_RC stdParsing::getPolygon(
             IDE_RAISE(err_parsing);
         }
 
+        // PROJ-2422 srid ¡ˆø¯
+        if ( sCurrentType == STD_POLYGON_2D_EXT_TYPE )
+        {
+            sGeom2DExt = (stdPolygon2DExtType*)aGeom;
+
+            // set srid
+            sGeom2DExt->mSRID = aSRID;
+        }
+        else
+        {
+            // Nothing to do.
+        }
+        
         aGeom->mSize = sTotalSize;
     }
         
@@ -1128,16 +1455,16 @@ IDE_RC stdParsing::getPolygon(
 
 /***********************************************************************
  * Description:
- *  WKT(Well Known Text)Î•º ÏùΩÏñ¥Îì§Ïó¨ stdPolygon2DTypeÏù¥ÎÇò stdPolygon3DType Í∞ùÏ≤¥Î°ú Ï†ÄÏû•ÌïúÎã§.
- *  3Ï∞®Ïõê Ï¢åÌëúÍ∞Ä Îì§Ïñ¥ÏûàÏúºÎ©¥ 3Ï∞®ÏõêÏúºÎ°ú Í∞ÑÏ£ºÌïòÎ©∞, 2Ï∞®Ïõê 3Ï∞®Ïõê Í∞íÏùÑ ÌòºÌï© ÏûÖÎ†•ÌïòÎäî Í≤ÉÏùÑ ÌóàÏö©ÌïòÏßÄ ÏïäÎäîÎã§.
+ *  WKT(Well Known Text)∏¶ ¿–æÓµÈø© stdPolygon2DType¿Ã≥™ stdPolygon3DType ∞¥√º∑Œ ¿˙¿Â«—¥Ÿ.
+ *  3¬˜ø¯ ¡¬«•∞° µÈæÓ¿÷¿∏∏È 3¬˜ø¯¿∏∑Œ ∞£¡÷«œ∏Á, 2¬˜ø¯ 3¬˜ø¯ ∞™¿ª »•«’ ¿‘∑¬«œ¥¬ ∞Õ¿ª «„øÎ«œ¡ˆ æ ¥¬¥Ÿ.
  *
- *  ST_RECTANGLEÏùÄ Îëê Ï†ê(Ï¢åÌïòÎã®, Ïö∞ÏÉÅÎã®)ÏúºÎ°ú Ïù¥Î£®Ïñ¥ÏßÄÎäî ÏßÅÏÇ¨Í∞ÅÌòïÏùÑ ÌëúÌòÑÌïúÎã§.
+ *  ST_RECTANGLE¿∫ µŒ ¡°(¡¬«œ¥‹, øÏªÛ¥‹)¿∏∑Œ ¿Ã∑ÁæÓ¡ˆ¥¬ ¡˜ªÁ∞¢«¸¿ª «•«ˆ«—¥Ÿ.
  *  RECTANGLE(x1 y1, x2 y2) -> POLYGON((x1 y1, x2 y1, x2 y2, x1 y2, x1 y1))
  *
- *  UChar             ** aPtr(InOut)   : ÏùΩÏñ¥Îì§Ïùº Î¨∏ÏûêÏó¥ ÏúÑÏπò, ÏùΩÏùÄ Îã§Ïùå Í∑∏ÎßåÌÅº Ï¶ùÍ∞ÄÌïúÎã§.
- *  UChar              * aWKTFence(In) : Î¨∏ÏûêÏó¥ Î≤ÑÌçºÏùò Fence
- *  stdGeometryHeader  * aGeom(Out)    : Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)
- *  void               * aFence(In)    : Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)Ïùò Fence
+ *  UChar             ** aPtr(InOut)   : ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ *  UChar              * aWKTFence(In) : πÆ¿⁄ø≠ πˆ∆€¿« Fence
+ *  stdGeometryHeader  * aGeom(Out)    : ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ *  void               * aFence(In)    : ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
  *  IDE_RC             * aResult(Out)  : Error Code
  **********************************************************************/
 IDE_RC stdParsing::getRectangle( iduMemory          * aQmxMem,
@@ -1282,24 +1609,24 @@ IDE_RC stdParsing::getRectangle( iduMemory          * aQmxMem,
 
 /***********************************************************************
  * Description:
- * WKT(Well Known Text)Î•º ÏùΩÏñ¥Îì§Ïó¨ 
- * stdMultiPoint2DTypeÏù¥ÎÇò stdMultiPoint3DType Í∞ùÏ≤¥Î°ú Ï†ÄÏû•ÌïúÎã§.
- * 3Ï∞®Ïõê Ï¢åÌëúÍ∞Ä Îì§Ïñ¥ÏûàÏúºÎ©¥ 3Ï∞®ÏõêÏúºÎ°ú Í∞ÑÏ£ºÌïòÎ©∞, 2Ï∞®Ïõê 3Ï∞®Ïõê Í∞íÏùÑ ÌòºÌï© ÏûÖÎ†•ÌïòÎäî Í≤ÉÏùÑ 
- * ÌóàÏö©ÌïòÏßÄ ÏïäÎäîÎã§.
+ * WKT(Well Known Text)∏¶ ¿–æÓµÈø© 
+ * stdMultiPoint2DType¿Ã≥™ stdMultiPoint3DType ∞¥√º∑Œ ¿˙¿Â«—¥Ÿ.
+ * 3¬˜ø¯ ¡¬«•∞° µÈæÓ¿÷¿∏∏È 3¬˜ø¯¿∏∑Œ ∞£¡÷«œ∏Á, 2¬˜ø¯ 3¬˜ø¯ ∞™¿ª »•«’ ¿‘∑¬«œ¥¬ ∞Õ¿ª 
+ * «„øÎ«œ¡ˆ æ ¥¬¥Ÿ.
  *
- * UChar **aPtr(InOut): ÏùΩÏñ¥Îì§Ïùº Î¨∏ÏûêÏó¥ ÏúÑÏπò, ÏùΩÏùÄ Îã§Ïùå Í∑∏ ÎßåÌÅº Ï¶ùÍ∞ÄÌïúÎã§.
- * UChar *aWKTFence(In): Î¨∏ÏûêÏó¥ Î≤ÑÌçºÏùò Fence
- * stdGeometryHeader* aGeom(Out): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)
- * void* aFence(In): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)Ïùò Fence
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): πÆ¿⁄ø≠ πˆ∆€¿« Fence
+ * stdGeometryHeader* aGeom(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void* aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
-IDE_RC stdParsing::getMultiPoint(
-                    UChar**                    aPtr,
-                    UChar*                     aWKTFence,
-                    stdGeometryHeader*         aGeom,
-                    void*                      aFence,
-                    IDE_RC*                    aResult,
-                    UInt                       aValidateOption)
+IDE_RC stdParsing::getMultiPoint( UChar**                    aPtr,
+                                  UChar*                     aWKTFence,
+                                  stdGeometryHeader*         aGeom,
+                                  void*                      aFence,
+                                  IDE_RC*                    aResult,
+                                  UInt                       aValidateOption,
+                                  SInt                       aSRID )
 {
     // 1.
     UChar*                  sPtr = *aPtr;
@@ -1310,6 +1637,7 @@ IDE_RC stdParsing::getMultiPoint(
     // 2.
     idBool                  sIsValid = ID_TRUE;
     stdMultiPoint2DType*    sGeom2D = NULL;
+    stdMultiPoint2DExtType* sGeom2DExt = NULL;
     stdPoint2DType*         sPt2D = NULL;
     UInt                    i;
 
@@ -1337,17 +1665,34 @@ IDE_RC stdParsing::getMultiPoint(
             {
                 if(sTokenType == STT_COMMA_TOKEN)
                 {
-                    sCurrentType = STD_MULTIPOINT_2D_TYPE;
+                    if ( aSRID == ST_SRID_INIT )
+                    {
+                        sCurrentType = STD_MULTIPOINT_2D_TYPE;
+                    }
+                    else
+                    {
+                        // srid∞° √ﬂ∞°µ» »Æ¿Â≈∏¿‘
+                        sCurrentType = STD_MULTIPOINT_2D_EXT_TYPE;
+                    }
+                    
                     sTotalSize += STD_POINT2D_SIZE;
                 }
                 else if(sTokenType == STT_NUM_TOKEN)
                 {
                     // bugbug praring error
                 }
-                // To Fix BUG-15954 : MultiPointÏóêÏÑú 2D PointÍ∞Ä ÌïòÎÇòÏùº Îïå Ï≤òÎ¶¨
+                // To Fix BUG-15954 : MultiPointø°º≠ 2D Point∞° «œ≥™¿œ ∂ß √≥∏Æ
                 else if( sTokenType == STT_RPAREN_TOKEN )
                 {
-                    sCurrentType = STD_MULTIPOINT_2D_TYPE;
+                    if ( aSRID == ST_SRID_INIT )
+                    {
+                        sCurrentType = STD_MULTIPOINT_2D_TYPE;
+                    }
+                    else
+                    {
+                        sCurrentType = STD_MULTIPOINT_2D_EXT_TYPE;
+                    }
+                    
                     sTotalSize += STD_POINT2D_SIZE;
                     sPtCnt++;
                     break;    // Means that Geom has One Point!
@@ -1358,7 +1703,8 @@ IDE_RC stdParsing::getMultiPoint(
             }
             else
             {
-                if(sCurrentType == STD_MULTIPOINT_2D_TYPE)
+                if ( ( sCurrentType == STD_MULTIPOINT_2D_TYPE ) ||
+                     ( sCurrentType == STD_MULTIPOINT_2D_EXT_TYPE ) )
                 {            
                     sTotalSize += STD_POINT2D_SIZE;
                 }
@@ -1386,7 +1732,8 @@ IDE_RC stdParsing::getMultiPoint(
         // Fix BUG-15980
         IDE_TEST(skipToLast(&sPtr, aWKTFence) != IDE_SUCCESS);
     
-        if(sCurrentType == STD_MULTIPOINT_2D_TYPE) 
+        if ( ( sCurrentType == STD_MULTIPOINT_2D_TYPE ) ||
+             ( sCurrentType == STD_MULTIPOINT_2D_EXT_TYPE ) )
         {
             sTotalSize += STD_MPOINT2D_SIZE;
         }
@@ -1405,7 +1752,8 @@ IDE_RC stdParsing::getMultiPoint(
         aGeom->mType = sCurrentType;
         aGeom->mSize = sTotalSize;    
         sPtr = *aPtr;
-        if(sCurrentType == STD_MULTIPOINT_2D_TYPE)
+        if ( ( sCurrentType == STD_MULTIPOINT_2D_TYPE ) ||
+             ( sCurrentType == STD_MULTIPOINT_2D_EXT_TYPE ) )
         {
             sGeom2D = (stdMultiPoint2DType*)aGeom;
             sGeom2D->mNumObjects = sPtCnt;
@@ -1463,6 +1811,19 @@ IDE_RC stdParsing::getMultiPoint(
         {
             IDE_RAISE(err_parsing);
         }
+
+        // PROJ-2422 srid ¡ˆø¯
+        if ( sCurrentType == STD_MULTIPOINT_2D_EXT_TYPE )
+        {
+            sGeom2DExt = (stdMultiPoint2DExtType*)aGeom;
+
+            // set srid
+            sGeom2DExt->mSRID = aSRID;
+        }
+        else
+        {
+            // Nothing to do.
+        }
     }
     
     *aPtr = sPtr;
@@ -1486,24 +1847,24 @@ IDE_RC stdParsing::getMultiPoint(
 
 /***********************************************************************
  * Description:
- * WKT(Well Known Text)Î•º ÏùΩÏñ¥Îì§Ïó¨ 
- * stdMultiLineString2DTypeÏù¥ÎÇò stdMultiLineString3DType Í∞ùÏ≤¥Î°ú Ï†ÄÏû•ÌïúÎã§.
- * 3Ï∞®Ïõê Ï¢åÌëúÍ∞Ä Îì§Ïñ¥ÏûàÏúºÎ©¥ 3Ï∞®ÏõêÏúºÎ°ú Í∞ÑÏ£ºÌïòÎ©∞, 2Ï∞®Ïõê 3Ï∞®Ïõê Í∞íÏùÑ ÌòºÌï© ÏûÖÎ†•ÌïòÎäî Í≤ÉÏùÑ 
- * ÌóàÏö©ÌïòÏßÄ ÏïäÎäîÎã§.
+ * WKT(Well Known Text)∏¶ ¿–æÓµÈø© 
+ * stdMultiLineString2DType¿Ã≥™ stdMultiLineString3DType ∞¥√º∑Œ ¿˙¿Â«—¥Ÿ.
+ * 3¬˜ø¯ ¡¬«•∞° µÈæÓ¿÷¿∏∏È 3¬˜ø¯¿∏∑Œ ∞£¡÷«œ∏Á, 2¬˜ø¯ 3¬˜ø¯ ∞™¿ª »•«’ ¿‘∑¬«œ¥¬ ∞Õ¿ª 
+ * «„øÎ«œ¡ˆ æ ¥¬¥Ÿ.
  *
- * UChar **aPtr(InOut): ÏùΩÏñ¥Îì§Ïùº Î¨∏ÏûêÏó¥ ÏúÑÏπò, ÏùΩÏùÄ Îã§Ïùå Í∑∏ ÎßåÌÅº Ï¶ùÍ∞ÄÌïúÎã§.
- * UChar *aWKTFence(In): Î¨∏ÏûêÏó¥ Î≤ÑÌçºÏùò Fence
- * stdGeometryHeader* aGeom(Out): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)
- * void* aFence(In): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)Ïùò Fence
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): πÆ¿⁄ø≠ πˆ∆€¿« Fence
+ * stdGeometryHeader* aGeom(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void* aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
-IDE_RC stdParsing::getMultiLineString(
-                    UChar**                    aPtr,
-                    UChar*                     aWKTFence,
-                    stdGeometryHeader*         aGeom,
-                    void*                      aFence,
-                    IDE_RC*                    aResult,
-                    UInt                       aValidateOption )
+IDE_RC stdParsing::getMultiLineString( UChar**                    aPtr,
+                                       UChar*                     aWKTFence,
+                                       stdGeometryHeader*         aGeom,
+                                       void*                      aFence,
+                                       IDE_RC*                    aResult,
+                                       UInt                       aValidateOption,
+                                       SInt                       aSRID )
 {
     // 1.
     UChar*                      sPtr = *aPtr;
@@ -1515,6 +1876,7 @@ IDE_RC stdParsing::getMultiLineString(
     // 2.
     idBool                       sIsValid = ID_TRUE;
     stdMultiLineString2DType*    sGeom2D = NULL;
+    stdMultiLineString2DExtType* sGeom2DExt = NULL;
     stdLineString2DType*         sLine2D = NULL;
     stdPoint2D*                  sPt2D = NULL;
     UInt                         i;
@@ -1548,7 +1910,16 @@ IDE_RC stdParsing::getMultiLineString(
                 {
                     if(sTokenType == STT_COMMA_TOKEN)
                     {
-                        sCurrentType = STD_MULTILINESTRING_2D_TYPE;
+                        if ( aSRID == ST_SRID_INIT )
+                        {
+                            sCurrentType = STD_MULTILINESTRING_2D_TYPE;
+                        }
+                        else
+                        {
+                            // srid∞° √ﬂ∞°µ» »Æ¿Â≈∏¿‘
+                            sCurrentType = STD_MULTILINESTRING_2D_EXT_TYPE;
+                        }
+                        
                         sTotalSize += STD_PT2D_SIZE;
                     }
                     else if(sTokenType == STT_NUM_TOKEN)
@@ -1562,7 +1933,8 @@ IDE_RC stdParsing::getMultiLineString(
                 }
                 else
                 {
-                    if(sCurrentType == STD_MULTILINESTRING_2D_TYPE)
+                    if ( ( sCurrentType == STD_MULTILINESTRING_2D_TYPE ) ||
+                         ( sCurrentType == STD_MULTILINESTRING_2D_EXT_TYPE ) )
                     {            
                         sTotalSize += STD_PT2D_SIZE;
                     }
@@ -1586,7 +1958,8 @@ IDE_RC stdParsing::getMultiLineString(
             IDE_TEST_RAISE(sLineCnt == ID_UINT_MAX, err_parsing);
             sLineCnt++;
 
-            if(sCurrentType == STD_MULTILINESTRING_2D_TYPE) 
+            if ( ( sCurrentType == STD_MULTILINESTRING_2D_TYPE ) ||
+                 ( sCurrentType == STD_MULTILINESTRING_2D_EXT_TYPE ) )
             {
                 sTotalSize += STD_LINE2D_SIZE;
             }
@@ -1616,6 +1989,10 @@ IDE_RC stdParsing::getMultiLineString(
         {
             sTotalSize += STD_MLINE2D_SIZE;
         }
+        else if ( sCurrentType == STD_MULTILINESTRING_2D_EXT_TYPE )
+        {
+            sTotalSize += STD_MLINE2D_EXT_SIZE;
+        }
         else
         {
             IDE_RAISE(err_parsing);
@@ -1631,7 +2008,8 @@ IDE_RC stdParsing::getMultiLineString(
         aGeom->mType = sCurrentType;
         aGeom->mSize = sTotalSize;    
         sPtr = *aPtr;
-        if(sCurrentType == STD_MULTILINESTRING_2D_TYPE)
+        if ( ( sCurrentType == STD_MULTILINESTRING_2D_TYPE ) ||
+             ( sCurrentType == STD_MULTILINESTRING_2D_EXT_TYPE ) )
         {
             sGeom2D = (stdMultiLineString2DType*)aGeom;
             sGeom2D->mNumObjects = sLineCnt;
@@ -1714,6 +2092,19 @@ IDE_RC stdParsing::getMultiLineString(
         {
             IDE_RAISE(err_parsing);
         }
+
+        // PROJ-2422 srid ¡ˆø¯
+        if ( sCurrentType == STD_MULTILINESTRING_2D_EXT_TYPE )
+        {
+            sGeom2DExt = (stdMultiLineString2DExtType*)aGeom;
+
+            // set srid
+            sGeom2DExt->mSRID = aSRID;
+        }
+        else
+        {
+            // Nothing to do.
+        }
     }
     
     *aPtr = sPtr;
@@ -1737,25 +2128,25 @@ IDE_RC stdParsing::getMultiLineString(
 
 /***********************************************************************
  * Description:
- * WKT(Well Known Text)Î•º ÏùΩÏñ¥Îì§Ïó¨ 
- * stdMultiPolygon2DTypeÏù¥ÎÇò stdMultiPolygon3DType Í∞ùÏ≤¥Î°ú Ï†ÄÏû•ÌïúÎã§.
- * 3Ï∞®Ïõê Ï¢åÌëúÍ∞Ä Îì§Ïñ¥ÏûàÏúºÎ©¥ 3Ï∞®ÏõêÏúºÎ°ú Í∞ÑÏ£ºÌïòÎ©∞, 2Ï∞®Ïõê 3Ï∞®Ïõê Í∞íÏùÑ ÌòºÌï© ÏûÖÎ†•ÌïòÎäî Í≤ÉÏùÑ 
- * ÌóàÏö©ÌïòÏßÄ ÏïäÎäîÎã§.
+ * WKT(Well Known Text)∏¶ ¿–æÓµÈø© 
+ * stdMultiPolygon2DType¿Ã≥™ stdMultiPolygon3DType ∞¥√º∑Œ ¿˙¿Â«—¥Ÿ.
+ * 3¬˜ø¯ ¡¬«•∞° µÈæÓ¿÷¿∏∏È 3¬˜ø¯¿∏∑Œ ∞£¡÷«œ∏Á, 2¬˜ø¯ 3¬˜ø¯ ∞™¿ª »•«’ ¿‘∑¬«œ¥¬ ∞Õ¿ª 
+ * «„øÎ«œ¡ˆ æ ¥¬¥Ÿ.
  *
- * UChar **aPtr(InOut): ÏùΩÏñ¥Îì§Ïùº Î¨∏ÏûêÏó¥ ÏúÑÏπò, ÏùΩÏùÄ Îã§Ïùå Í∑∏ ÎßåÌÅº Ï¶ùÍ∞ÄÌïúÎã§.
- * UChar *aWKTFence(In): Î¨∏ÏûêÏó¥ Î≤ÑÌçºÏùò Fence
- * stdGeometryHeader* aGeom(Out): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)
- * void* aFence(In): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)Ïùò Fence
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): πÆ¿⁄ø≠ πˆ∆€¿« Fence
+ * stdGeometryHeader* aGeom(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void* aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
-IDE_RC stdParsing::getMultiPolygon(
-                    iduMemory*                 aQmxMem,
-                    UChar**                    aPtr,
-                    UChar*                     aWKTFence,
-                    stdGeometryHeader*         aGeom,
-                    void*                      aFence,
-                    IDE_RC*                    aResult,
-                    UInt                       aValidateOption)
+IDE_RC stdParsing::getMultiPolygon( iduMemory*                 aQmxMem,
+                                    UChar**                    aPtr,
+                                    UChar*                     aWKTFence,
+                                    stdGeometryHeader*         aGeom,
+                                    void*                      aFence,
+                                    IDE_RC*                    aResult,
+                                    UInt                       aValidateOption,
+                                    SInt                       aSRID )
 {
     // 1.
     UChar*                  sPtr = *aPtr;
@@ -1766,12 +2157,13 @@ IDE_RC stdParsing::getMultiPolygon(
     stdGeoTypes             sCurrentType = STD_NULL_TYPE;
     STT_TOKEN               sTokenType = STT_SPACE_TOKEN;
     // 2.
-    idBool                   sIsValid = ID_TRUE;
-    stdMultiPolygon2DType*   sGeom2D = NULL;
-    stdPolygon2DType*        sPoly2D = NULL;
-    stdLinearRing2D*         sRing2D = NULL;
-    stdPoint2D*              sPt2D = NULL;
-    UInt                     i;
+    idBool                    sIsValid = ID_TRUE;
+    stdMultiPolygon2DType*    sGeom2D = NULL;
+    stdMultiPolygon2DExtType* sGeom2DExt = NULL;
+    stdPolygon2DType*         sPoly2D = NULL;
+    stdLinearRing2D*          sRing2D = NULL;
+    stdPoint2D*               sPt2D = NULL;
+    UInt                      i;
 
     /* BUG-32531 Consider for GIS EMPTY */
     IDE_TEST(skipSpace(aPtr, aWKTFence) != IDE_SUCCESS);
@@ -1807,7 +2199,16 @@ IDE_RC stdParsing::getMultiPolygon(
                     {
                         if(sTokenType == STT_COMMA_TOKEN)
                         {
-                            sCurrentType = STD_MULTIPOLYGON_2D_TYPE;
+                            if ( aSRID == ST_SRID_INIT )
+                            {
+                                sCurrentType = STD_MULTIPOLYGON_2D_TYPE;
+                            }
+                            else
+                            {
+                                // srid∞° √ﬂ∞°µ» »Æ¿Â≈∏¿‘
+                                sCurrentType = STD_MULTIPOLYGON_2D_EXT_TYPE;
+                            }
+                            
                             sTotalSize += STD_PT2D_SIZE;
                         }
                         else if(sTokenType == STT_NUM_TOKEN)
@@ -1821,7 +2222,8 @@ IDE_RC stdParsing::getMultiPolygon(
                     }
                     else
                     {
-                        if(sCurrentType == STD_MULTIPOLYGON_2D_TYPE)
+                        if ( ( sCurrentType == STD_MULTIPOLYGON_2D_TYPE ) ||
+                             ( sCurrentType == STD_MULTIPOLYGON_2D_EXT_TYPE ) )
                         {            
                             sTotalSize += STD_PT2D_SIZE;
                         }
@@ -1846,7 +2248,8 @@ IDE_RC stdParsing::getMultiPolygon(
                 IDE_TEST_RAISE(sRingCnt == ID_UINT_MAX, err_parsing);
                 sRingCnt++;
 
-                if(sCurrentType == STD_MULTIPOLYGON_2D_TYPE) 
+                if ( ( sCurrentType == STD_MULTIPOLYGON_2D_TYPE ) ||
+                     ( sCurrentType == STD_MULTIPOLYGON_2D_EXT_TYPE ) )
                 {
                     sTotalSize += STD_RN2D_SIZE;
                 }
@@ -1869,7 +2272,8 @@ IDE_RC stdParsing::getMultiPolygon(
             IDE_TEST_RAISE(sPolyCnt == ID_UINT_MAX, err_parsing);
             sPolyCnt++;
 
-            if(sCurrentType == STD_MULTIPOLYGON_2D_TYPE) 
+            if ( ( sCurrentType == STD_MULTIPOLYGON_2D_TYPE ) ||
+                 ( sCurrentType == STD_MULTIPOLYGON_2D_EXT_TYPE ) )
             {
                 sTotalSize += STD_POLY2D_SIZE;
             }
@@ -1897,6 +2301,10 @@ IDE_RC stdParsing::getMultiPolygon(
         {
             sTotalSize += STD_MPOLY2D_SIZE;
         }
+        else if ( sCurrentType == STD_MULTIPOLYGON_2D_EXT_TYPE )
+        {
+            sTotalSize += STD_MPOLY2D_EXT_SIZE;
+        }
         else
         {
             IDE_RAISE(err_parsing);
@@ -1911,7 +2319,8 @@ IDE_RC stdParsing::getMultiPolygon(
 
         aGeom->mType = sCurrentType;
         sPtr = *aPtr;
-        if(sCurrentType == STD_MULTIPOLYGON_2D_TYPE)
+        if ( ( sCurrentType == STD_MULTIPOLYGON_2D_TYPE ) ||
+             ( sCurrentType == STD_MULTIPOLYGON_2D_EXT_TYPE ) )
         {
             sGeom2D = (stdMultiPolygon2DType*)aGeom;
             sGeom2D->mNumObjects = sPolyCnt;
@@ -2042,6 +2451,20 @@ IDE_RC stdParsing::getMultiPolygon(
         {
             IDE_RAISE(err_parsing);
         }
+
+        // PROJ-2422 srid ¡ˆø¯
+        if ( sCurrentType == STD_MULTIPOLYGON_2D_EXT_TYPE )
+        {
+            sGeom2DExt = (stdMultiPolygon2DExtType*)aGeom;
+
+            // set srid
+            sGeom2DExt->mSRID = aSRID;
+        }
+        else
+        {
+            // Nothing to do.
+        }
+        
         aGeom->mSize = sTotalSize;    
     }
     
@@ -2067,36 +2490,37 @@ IDE_RC stdParsing::getMultiPolygon(
 
 /***********************************************************************
  * Description:
- * WKT(Well Known Text)Î•º ÏùΩÏñ¥Îì§Ïó¨ 
- * stdGeoCollection2DTypeÏù¥ÎÇò stdGeoCollection3DType Í∞ùÏ≤¥Î°ú Ï†ÄÏû•ÌïúÎã§.
- * 3Ï∞®Ïõê Ï¢åÌëúÍ∞Ä Îì§Ïñ¥ÏûàÏúºÎ©¥ 3Ï∞®ÏõêÏúºÎ°ú Í∞ÑÏ£ºÌïòÎ©∞, 2Ï∞®Ïõê 3Ï∞®Ïõê Í∞íÏùÑ ÌòºÌï© ÏûÖÎ†•ÌïòÎäî Í≤ÉÏùÑ 
- * ÌóàÏö©ÌïòÏßÄ ÏïäÎäîÎã§.
+ * WKT(Well Known Text)∏¶ ¿–æÓµÈø© 
+ * stdGeoCollection2DType¿Ã≥™ stdGeoCollection3DType ∞¥√º∑Œ ¿˙¿Â«—¥Ÿ.
+ * 3¬˜ø¯ ¡¬«•∞° µÈæÓ¿÷¿∏∏È 3¬˜ø¯¿∏∑Œ ∞£¡÷«œ∏Á, 2¬˜ø¯ 3¬˜ø¯ ∞™¿ª »•«’ ¿‘∑¬«œ¥¬ ∞Õ¿ª 
+ * «„øÎ«œ¡ˆ æ ¥¬¥Ÿ.
  *
- * UChar **aPtr(InOut): ÏùΩÏñ¥Îì§Ïùº Î¨∏ÏûêÏó¥ ÏúÑÏπò, ÏùΩÏùÄ Îã§Ïùå Í∑∏ ÎßåÌÅº Ï¶ùÍ∞ÄÌïúÎã§.
- * UChar *aWKTFence(In): Î¨∏ÏûêÏó¥ Î≤ÑÌçºÏùò Fence
- * stdGeometryHeader* aGeom(Out): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)
- * void* aFence(In): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)Ïùò Fence
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): πÆ¿⁄ø≠ πˆ∆€¿« Fence
+ * stdGeometryHeader* aGeom(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void* aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
-IDE_RC stdParsing::getGeoCollection(
-                    iduMemory*                 aQmxMem,
-                    UChar**                    aPtr,
-                    UChar*                     aWKTFence,
-                    stdGeometryHeader*         aGeom,
-                    void*                      aFence,
-                    IDE_RC*                    aResult,
-                    UInt                       aValidateOption)
+IDE_RC stdParsing::getGeoCollection( iduMemory*                 aQmxMem,
+                                     UChar**                    aPtr,
+                                     UChar*                     aWKTFence,
+                                     stdGeometryHeader*         aGeom,
+                                     void*                      aFence,
+                                     IDE_RC*                    aResult,
+                                     UInt                       aValidateOption,
+                                     SInt                       aSRID )
 {
     // 1.
     UChar*             sPtr = *aPtr;
     UChar*             sSubWKTFence;
-    stdGeometryHeader* sCurrObj = (stdGeometryHeader*)STD_FIRST_COLL2D(aGeom); // 2D 3D ÌÅ¨Í∏∞ Í∞ôÎã§.
+    stdGeometryHeader* sCurrObj = (stdGeometryHeader*)STD_FIRST_COLL2D(aGeom); // 2D 3D ≈©±‚ ∞∞¥Ÿ.
     UInt               sObjectCnt = 0;
     UInt               sTotalSize = 0;
     stdGeoTypes        sCurrentType = STD_NULL_TYPE;
     STT_TOKEN          sTokenType = STT_SPACE_TOKEN;
     // 2.
     stdGeoCollection2DType*    sGeom2D = NULL;
+    stdGeoCollection2DExtType* sGeom2DExt = NULL;
     idBool                     sIsValid = ID_FALSE;
 
     /* BUG-32531 Consider for GIS EMPTY */
@@ -2132,8 +2556,14 @@ IDE_RC stdParsing::getGeoCollection(
                         IDE_TEST_RAISE(sPtr + STD_POINT_NAME_LEN >= sSubWKTFence, err_parsing);
                         sPtr += STD_POINT_NAME_LEN;
                         // BUG-27002
-                        IDE_TEST( getPoint(
-                                      &sPtr, sSubWKTFence, sCurrObj, aFence, aResult, aValidateOption) != IDE_SUCCESS );
+                        IDE_TEST( getPoint( &sPtr,
+                                            sSubWKTFence,
+                                            sCurrObj,
+                                            aFence,
+                                            aResult,
+                                            aValidateOption,
+                                            aSRID )
+                                  != IDE_SUCCESS );
 
                         IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
                     }
@@ -2143,7 +2573,14 @@ IDE_RC stdParsing::getGeoCollection(
                         IDE_TEST_RAISE(sPtr + STD_POLYGON_NAME_LEN >= sSubWKTFence, err_parsing);
                         sPtr += STD_POLYGON_NAME_LEN;
                         // BUG-27002                
-                        IDE_TEST( getPolygon( aQmxMem, &sPtr, sSubWKTFence, sCurrObj, aFence, aResult, aValidateOption )
+                        IDE_TEST( getPolygon( aQmxMem,
+                                              &sPtr,
+                                              sSubWKTFence,
+                                              sCurrObj,
+                                              aFence,
+                                              aResult,
+                                              aValidateOption,
+                                              aSRID )
                                   != IDE_SUCCESS );
 
                         IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
@@ -2161,8 +2598,13 @@ IDE_RC stdParsing::getGeoCollection(
                         IDE_TEST_RAISE(sPtr + STD_LINESTRING_NAME_LEN >= sSubWKTFence, err_parsing);
                         sPtr += STD_LINESTRING_NAME_LEN;
                         // BUG-27002                
-                        IDE_TEST( getLineString(
-                                      &sPtr, sSubWKTFence, sCurrObj, aFence, aResult, aValidateOption)
+                        IDE_TEST( getLineString( &sPtr,
+                                                 sSubWKTFence,
+                                                 sCurrObj,
+                                                 aFence,
+                                                 aResult,
+                                                 aValidateOption,
+                                                 aSRID )
                                   != IDE_SUCCESS );
 
                         IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
@@ -2180,8 +2622,13 @@ IDE_RC stdParsing::getGeoCollection(
                         IDE_TEST_RAISE(sPtr + STD_MULTIPOINT_NAME_LEN >= sSubWKTFence, err_parsing);
                         sPtr += STD_MULTIPOINT_NAME_LEN;
                         // BUG-27002                
-                        IDE_TEST( getMultiPoint(
-                                      &sPtr, sSubWKTFence, sCurrObj, aFence, aResult, aValidateOption)
+                        IDE_TEST( getMultiPoint( &sPtr,
+                                                 sSubWKTFence,
+                                                 sCurrObj,
+                                                 aFence,
+                                                 aResult,
+                                                 aValidateOption,
+                                                 aSRID )
                                   != IDE_SUCCESS );
 
                         IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
@@ -2192,8 +2639,13 @@ IDE_RC stdParsing::getGeoCollection(
                         IDE_TEST_RAISE(sPtr + STD_MULTILINESTRING_NAME_LEN >= sSubWKTFence, err_parsing);
                         sPtr += STD_MULTILINESTRING_NAME_LEN;
                         // BUG-27002                
-                        IDE_TEST( getMultiLineString(
-                                      &sPtr, sSubWKTFence, sCurrObj, aFence, aResult, aValidateOption)
+                        IDE_TEST( getMultiLineString( &sPtr,
+                                                      sSubWKTFence,
+                                                      sCurrObj,
+                                                      aFence,
+                                                      aResult,
+                                                      aValidateOption,
+                                                      aSRID )
                                   != IDE_SUCCESS );
 
                         IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
@@ -2204,7 +2656,14 @@ IDE_RC stdParsing::getGeoCollection(
                         IDE_TEST_RAISE(sPtr + STD_MULTIPOLYGON_NAME_LEN >= sSubWKTFence, err_parsing);
                         sPtr += STD_MULTIPOLYGON_NAME_LEN;
                         // BUG-27002                
-                        IDE_TEST( getMultiPolygon( aQmxMem, &sPtr, sSubWKTFence, sCurrObj, aFence, aResult, aValidateOption )
+                        IDE_TEST( getMultiPolygon( aQmxMem,
+                                                   &sPtr,
+                                                   sSubWKTFence,
+                                                   sCurrObj,
+                                                   aFence,
+                                                   aResult,
+                                                   aValidateOption,
+                                                   aSRID )
                                   != IDE_SUCCESS );
 
                         IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
@@ -2220,20 +2679,26 @@ IDE_RC stdParsing::getGeoCollection(
         
             if(sCurrentType == STD_NULL_TYPE)
             {
-                if( stdUtils::is2DType(sCurrObj->mType) == ID_TRUE )
+                IDE_TEST_RAISE( stdUtils::is2DType(sCurrObj->mType) == ID_FALSE,
+                                err_parsing );
+                
+                if ( aSRID == ST_SRID_INIT )
                 {
                     sCurrentType = STD_GEOCOLLECTION_2D_TYPE;
                 }
                 else
                 {
-                    IDE_RAISE(err_parsing);
+                    // srid∞° √ﬂ∞°µ» »Æ¿Â≈∏¿‘
+                    sCurrentType = STD_GEOCOLLECTION_2D_EXT_TYPE;
                 }
             }
             else
             {
-                if( sCurrentType == STD_GEOCOLLECTION_2D_TYPE )
+                if ( ( sCurrentType == STD_GEOCOLLECTION_2D_TYPE ) ||
+                     ( sCurrentType == STD_GEOCOLLECTION_2D_EXT_TYPE ) )
                 {
-                    IDE_TEST( stdUtils::is2DType(sCurrObj->mType) == ID_FALSE );
+                    IDE_TEST_RAISE( stdUtils::is2DType( sCurrObj->mType ) == ID_FALSE,
+                                    err_parsing );
                 }
                 else
                 {
@@ -2263,13 +2728,26 @@ IDE_RC stdParsing::getGeoCollection(
         // Fix BUG-15980
         IDE_TEST(skipToLast(&sPtr, aWKTFence) != IDE_SUCCESS);    
     
-        // 2. Storing Data =========================================================
-        if(stdUtils::is2DType(sCurrentType) == ID_TRUE)
+        if ( sCurrentType == STD_GEOCOLLECTION_2D_TYPE )
         {
             sTotalSize += STD_COLL2D_SIZE;
+        }
+        else if ( sCurrentType == STD_GEOCOLLECTION_2D_EXT_TYPE )
+        {
+            sTotalSize += STD_COLL2D_EXT_SIZE;
+        }
+        else
+        {
+            IDE_RAISE( err_parsing );
+        }
         
+        IDE_TEST_RAISE( ( (UChar*)aGeom ) + sTotalSize > (UChar*)aFence, retry_memory );
+        
+        // 2. Storing Data =========================================================
+        if ( stdUtils::is2DType( sCurrentType ) == ID_TRUE )
+        {
             sGeom2D = (stdGeoCollection2DType*)aGeom;
-            sGeom2D->mType = STD_GEOCOLLECTION_2D_TYPE;
+            sGeom2D->mType = sCurrentType;
             sGeom2D->mSize = sTotalSize;
             sGeom2D->mNumGeometries = sObjectCnt;
 
@@ -2296,6 +2774,19 @@ IDE_RC stdParsing::getGeoCollection(
         {
             IDE_RAISE(err_parsing);
         }
+        
+        // PROJ-2422 srid ¡ˆø¯
+        if ( sCurrentType == STD_GEOCOLLECTION_2D_EXT_TYPE )
+        {
+            sGeom2DExt = (stdGeoCollection2DExtType*)aGeom;
+
+            // set srid
+            sGeom2DExt->mSRID = aSRID;
+        }
+        else
+        {
+            // Nothing to do.
+        }
     }
     
     *aPtr = sPtr;
@@ -2321,15 +2812,15 @@ IDE_RC stdParsing::getGeoCollection(
 /***********************************************************************
  * Description:
  * BUG-32531 Consider for GIS EMPTY
- * WKT(Well Known Text)Î•º ÏùΩÏñ¥Îì§Ïó¨
- * stdMultiPoint2DTypeÏù¥ÎÇò stdMultiPoint3DType Í∞ùÏ≤¥Î°ú Ï†ÄÏû•ÌïúÎã§.
- * 3Ï∞®Ïõê Ï¢åÌëúÍ∞Ä Îì§Ïñ¥ÏûàÏúºÎ©¥ 3Ï∞®ÏõêÏúºÎ°ú Í∞ÑÏ£ºÌïòÎ©∞, 2Ï∞®Ïõê 3Ï∞®Ïõê Í∞íÏùÑ ÌòºÌï© ÏûÖÎ†•ÌïòÎäî Í≤ÉÏùÑ
- * ÌóàÏö©ÌïòÏßÄ ÏïäÎäîÎã§.
+ * WKT(Well Known Text)∏¶ ¿–æÓµÈø©
+ * stdMultiPoint2DType¿Ã≥™ stdMultiPoint3DType ∞¥√º∑Œ ¿˙¿Â«—¥Ÿ.
+ * 3¬˜ø¯ ¡¬«•∞° µÈæÓ¿÷¿∏∏È 3¬˜ø¯¿∏∑Œ ∞£¡÷«œ∏Á, 2¬˜ø¯ 3¬˜ø¯ ∞™¿ª »•«’ ¿‘∑¬«œ¥¬ ∞Õ¿ª
+ * «„øÎ«œ¡ˆ æ ¥¬¥Ÿ.
  *
- * UChar **aPtr(InOut): ÏùΩÏñ¥Îì§Ïùº Î¨∏ÏûêÏó¥ ÏúÑÏπò, ÏùΩÏùÄ Îã§Ïùå Í∑∏ ÎßåÌÅº Ï¶ùÍ∞ÄÌïúÎã§.
- * UChar *aWKTFence(In): Î¨∏ÏûêÏó¥ Î≤ÑÌçºÏùò Fence
- * stdGeometryHeader* aGeom(Out): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)
- * void* aFence(In): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)Ïùò Fence
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): πÆ¿⁄ø≠ πˆ∆€¿« Fence
+ * stdGeometryHeader* aGeom(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void* aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::getEmpty( stdGeometryHeader* aGeom,
@@ -2364,7 +2855,7 @@ IDE_RC stdParsing::getEmpty( stdGeometryHeader* aGeom,
 }
 
 
-// WKB Ìï®Ïàò ////////////////////////////////////////////////////////////////////
+// WKB «‘ºˆ ////////////////////////////////////////////////////////////////////
 
 UChar *stdParsing::readWKB_Char( UChar *aBuf, UChar *aVal, UInt *aOffset )
 {
@@ -2372,9 +2863,9 @@ UChar *stdParsing::readWKB_Char( UChar *aBuf, UChar *aVal, UInt *aOffset )
     
     IDE_DASSERT( (aBuf!=NULL) && (aVal!=NULL) && (aOffset!=NULL) );
     
-    sNext = aBuf + 1;
-    idlOS::memcpy( aVal, aBuf, 1 );
-    *aOffset += 1;
+    sNext = aBuf + WKB_UCHAR_SIZE;
+    idlOS::memcpy( aVal, aBuf, WKB_UCHAR_SIZE );
+    *aOffset += WKB_UCHAR_SIZE;
 
     return sNext;
 }
@@ -2399,6 +2890,28 @@ UChar *stdParsing::readWKB_UInt( UChar *aBuf, UInt *aVal, UInt *aOffset,
     return sNext;
 }
 
+UChar *stdParsing::readWKB_SInt( UChar *aBuf,
+                                 SInt *aVal,
+                                 UInt *aOffset,
+                                 idBool aEquiEndian )
+{
+    UChar *sNext;
+    
+    IDE_DASSERT( ( aBuf!=NULL ) && ( aVal!=NULL ) && ( aOffset!=NULL ) );
+    
+    sNext = aBuf + WKB_INT32_SIZE;
+    idlOS::memcpy( aVal, aBuf, WKB_INT32_SIZE );
+
+    // BUG-24357 WKB Endian
+    if ( aEquiEndian == ID_FALSE )
+    {
+        mtdInteger.endian( aVal );
+    }    
+    *aOffset += WKB_INT32_SIZE;
+
+    return sNext;
+}
+
 UChar *stdParsing::readWKB_SDouble( UChar *aBuf, SDouble *aVal, UInt *aOffset,
                                     idBool aEquiEndian)
 {
@@ -2406,8 +2919,8 @@ UChar *stdParsing::readWKB_SDouble( UChar *aBuf, SDouble *aVal, UInt *aOffset,
     
     IDE_DASSERT( (aBuf!=NULL) && (aVal!=NULL) && (aOffset!=NULL) );
     
-    sNext = aBuf + 8;
-    idlOS::memcpy( aVal, aBuf, 8 );
+    sNext = aBuf + WKB_DOUBLE_SIZE;
+    idlOS::memcpy( aVal, aBuf, WKB_DOUBLE_SIZE );
     
     // BUG-24357 WKB Endian    
     if (aEquiEndian == ID_FALSE)
@@ -2415,7 +2928,7 @@ UChar *stdParsing::readWKB_SDouble( UChar *aBuf, SDouble *aVal, UInt *aOffset,
         mtdDouble.endian(aVal);
     }
     
-    *aOffset += 8;
+    *aOffset += WKB_DOUBLE_SIZE;
 
     return sNext;
 }
@@ -2426,7 +2939,7 @@ IDE_RC stdParsing::readWKB_Header( UChar *aBuf, idBool *aIsEquiEndian, UInt *aTy
     
     IDE_DASSERT( (aBuf!=NULL) && (aType!=NULL) && (aOffset!=NULL) );
     
-    sNext = aBuf + 5;
+    sNext = aBuf + WKB_GEOHEAD_SIZE;
 
     // BUG-24357 WKB Endian
     IDE_TEST( stdUtils::compareEndian(*aBuf, aIsEquiEndian) != IDE_SUCCESS );
@@ -2438,7 +2951,7 @@ IDE_RC stdParsing::readWKB_Header( UChar *aBuf, idBool *aIsEquiEndian, UInt *aTy
         mtdInteger.endian(aType);
     }
     
-    *aOffset += 5;
+    *aOffset += WKB_GEOHEAD_SIZE;
 
     if ( aNext != NULL )
     {
@@ -2467,13 +2980,13 @@ UChar *stdParsing::readWKB_Point( UChar *aBuf, stdPoint2D *aPoint, UInt *aOffset
 
 /***********************************************************************
  * Description:
- * WKB(Well Known Binary)Î•º ÏùΩÏñ¥Îì§Ïó¨ stdPoint2DType Í∞ùÏ≤¥Î°ú Ï†ÄÏû•ÌïúÎã§.
- * WKBÏóêÎäî 3Ï∞®Ïõê Îç∞Ïù¥ÌÑ∞Í∞Ä Ï°¥Ïû¨ÌïòÏßÄ ÏïäÎäîÎã§.
+ * WKB(Well Known Binary)∏¶ ¿–æÓµÈø© stdPoint2DType ∞¥√º∑Œ ¿˙¿Â«—¥Ÿ.
+ * WKBø°¥¬ 3¬˜ø¯ µ•¿Ã≈Õ∞° ¡∏¿Á«œ¡ˆ æ ¥¬¥Ÿ.
  *
- * UChar **aPtr(InOut): ÏùΩÏñ¥Îì§Ïùº WKB Î≤ÑÌçº ÏúÑÏπò, ÏùΩÏùÄ Îã§Ïùå Í∑∏ ÎßåÌÅº Ï¶ùÍ∞ÄÌïúÎã§.
- * UChar *aWKTFence(In): WKB Î≤ÑÌçºÏùò Fence
- * stdGeometryHeader* aGeom(Out): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)
- * void* aFence(In): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)Ïùò Fence
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ WKB πˆ∆€ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): WKB πˆ∆€¿« Fence
+ * stdGeometryHeader* aGeom(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void* aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::getWKBPoint(
@@ -2539,13 +3052,13 @@ IDE_RC stdParsing::getWKBPoint(
 
 /***********************************************************************
  * Description:
- * WKB(Well Known Binary)Î•º ÏùΩÏñ¥Îì§Ïó¨ stdLineString2DType Í∞ùÏ≤¥Î°ú Ï†ÄÏû•ÌïúÎã§.
- * WKBÏóêÎäî 3Ï∞®Ïõê Îç∞Ïù¥ÌÑ∞Í∞Ä Ï°¥Ïû¨ÌïòÏßÄ ÏïäÎäîÎã§.
+ * WKB(Well Known Binary)∏¶ ¿–æÓµÈø© stdLineString2DType ∞¥√º∑Œ ¿˙¿Â«—¥Ÿ.
+ * WKBø°¥¬ 3¬˜ø¯ µ•¿Ã≈Õ∞° ¡∏¿Á«œ¡ˆ æ ¥¬¥Ÿ.
  *
- * UChar **aPtr(InOut): ÏùΩÏñ¥Îì§Ïùº WKB Î≤ÑÌçº ÏúÑÏπò, ÏùΩÏùÄ Îã§Ïùå Í∑∏ ÎßåÌÅº Ï¶ùÍ∞ÄÌïúÎã§.
- * UChar *aWKTFence(In): WKB Î≤ÑÌçºÏùò Fence
- * stdGeometryHeader* aGeom(Out): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)
- * void* aFence(In): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)Ïùò Fence
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ WKB πˆ∆€ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): WKB πˆ∆€¿« Fence
+ * stdGeometryHeader* aGeom(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void* aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::getWKBLineString(
@@ -2569,7 +3082,7 @@ IDE_RC stdParsing::getWKBLineString(
     // BUG-24357 WKB Endian
     idBool          sEquiEndian = ID_FALSE;
 
-    IDE_TEST_RAISE( (sPtr + WKB_GEOHEAD_SIZE + WKB_INT32_SIZE) > aWKBFence, 
+    IDE_TEST_RAISE( (sPtr + WKB_LINE_SIZE) > aWKBFence, 
 		    err_parsing);
     // { Calc WKB Size
     IDE_TEST( readWKB_Header( (UChar*)sBLine, &sEquiEndian, &sWkbType, &sWkbOffset, NULL )
@@ -2643,13 +3156,13 @@ IDE_RC stdParsing::getWKBLineString(
 
 /***********************************************************************
  * Description:
- * WKB(Well Known Binary)Î•º ÏùΩÏñ¥Îì§Ïó¨ stdPolygon2DType Í∞ùÏ≤¥Î°ú Ï†ÄÏû•ÌïúÎã§.
- * WKBÏóêÎäî 3Ï∞®Ïõê Îç∞Ïù¥ÌÑ∞Í∞Ä Ï°¥Ïû¨ÌïòÏßÄ ÏïäÎäîÎã§.
+ * WKB(Well Known Binary)∏¶ ¿–æÓµÈø© stdPolygon2DType ∞¥√º∑Œ ¿˙¿Â«—¥Ÿ.
+ * WKBø°¥¬ 3¬˜ø¯ µ•¿Ã≈Õ∞° ¡∏¿Á«œ¡ˆ æ ¥¬¥Ÿ.
  *
- * UChar **aPtr(InOut): ÏùΩÏñ¥Îì§Ïùº WKB Î≤ÑÌçº ÏúÑÏπò, ÏùΩÏùÄ Îã§Ïùå Í∑∏ ÎßåÌÅº Ï¶ùÍ∞ÄÌïúÎã§.
- * UChar *aWKTFence(In): WKB Î≤ÑÌçºÏùò Fence
- * stdGeometryHeader* aGeom(Out): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)
- * void* aFence(In): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)Ïùò Fence
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ WKB πˆ∆€ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): WKB πˆ∆€¿« Fence
+ * stdGeometryHeader* aGeom(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void* aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::getWKBPolygon(
@@ -2677,8 +3190,8 @@ IDE_RC stdParsing::getWKBPolygon(
     // BUG-24357 WKB Endian
     idBool          sEquiEndian = ID_FALSE;
 
-    IDE_TEST_RAISE( (sPtr + WKB_GEOHEAD_SIZE + WKB_INT32_SIZE) > aWKBFence,
-	      err_parsing);
+    IDE_TEST_RAISE( ( sPtr + WKB_POLY_SIZE ) > aWKBFence, err_parsing );
+    
     // { Calc WKB Size
     IDE_TEST( readWKB_Header( (UChar*)sBPolygon, &sEquiEndian, &sWkbType, &sWkbOffset, NULL )
               != IDE_SUCCESS );
@@ -2728,8 +3241,6 @@ IDE_RC stdParsing::getWKBPolygon(
     {
         aGeom->mType = STD_POLYGON_2D_TYPE;
     }
-
-    aGeom->mSize = sTotalSize;    
 
     IDE_TEST( readWKB_Header( (UChar*)sBPolygon, &sEquiEndian, &sWkbType, &sWkbOffset, NULL )
               != IDE_SUCCESS );
@@ -2789,6 +3300,9 @@ IDE_RC stdParsing::getWKBPolygon(
         IDE_TEST_RAISE((UChar*) sBRing > aWKBFence, err_parsing);
     }
 
+    // BUG-48051
+    aGeom->mSize = sTotalSize;    
+
     IDE_TEST_RAISE( sWkbOffset != sWKBSize, err_parsing );
     
     *aPtr    = sPtr + sWKBSize;
@@ -2813,16 +3327,16 @@ IDE_RC stdParsing::getWKBPolygon(
 
 /***********************************************************************
  * Description:
- *  WKB(Well Known Binary)Î•º ÏùΩÏñ¥Îì§Ïó¨ stdPolygon2DType Í∞ùÏ≤¥Î°ú Ï†ÄÏû•ÌïúÎã§.
- *  WKBÏóêÎäî 3Ï∞®Ïõê Îç∞Ïù¥ÌÑ∞Í∞Ä Ï°¥Ïû¨ÌïòÏßÄ ÏïäÎäîÎã§.
+ *  WKB(Well Known Binary)∏¶ ¿–æÓµÈø© stdPolygon2DType ∞¥√º∑Œ ¿˙¿Â«—¥Ÿ.
+ *  WKBø°¥¬ 3¬˜ø¯ µ•¿Ã≈Õ∞° ¡∏¿Á«œ¡ˆ æ ¥¬¥Ÿ.
  *
- *  ST_RECTANGLEÏùÄ Îëê Ï†ê(Ï¢åÌïòÎã®, Ïö∞ÏÉÅÎã®)ÏúºÎ°ú Ïù¥Î£®Ïñ¥ÏßÄÎäî ÏßÅÏÇ¨Í∞ÅÌòïÏùÑ ÌëúÌòÑÌïúÎã§.
+ *  ST_RECTANGLE¿∫ µŒ ¡°(¡¬«œ¥‹, øÏªÛ¥‹)¿∏∑Œ ¿Ã∑ÁæÓ¡ˆ¥¬ ¡˜ªÁ∞¢«¸¿ª «•«ˆ«—¥Ÿ.
  *  RECTANGLE(x1 y1, x2 y2) -> POLYGON((x1 y1, x2 y1, x2 y2, x1 y2, x1 y1))
  *
- *  UChar             ** aPtr(InOut)   : ÏùΩÏñ¥Îì§Ïùº WKB Î≤ÑÌçº ÏúÑÏπò, ÏùΩÏùÄ Îã§Ïùå Í∑∏ÎßåÌÅº Ï¶ùÍ∞ÄÌïúÎã§.
- *  UChar              * aWKTFence(In) : WKB Î≤ÑÌçºÏùò Fence
- *  stdGeometryHeader  * aGeom(Out)    : Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)
- *  void               * aFence(In)    : Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)Ïùò Fence
+ *  UChar             ** aPtr(InOut)   : ¿–æÓµÈ¿œ WKB πˆ∆€ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ *  UChar              * aWKTFence(In) : WKB πˆ∆€¿« Fence
+ *  stdGeometryHeader  * aGeom(Out)    : ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ *  void               * aFence(In)    : ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
  *  IDE_RC             * aResult(Out)  : Error Code
  **********************************************************************/
 IDE_RC stdParsing::getWKBRectangle( UChar             ** aPtr,
@@ -2938,13 +3452,13 @@ IDE_RC stdParsing::getWKBRectangle( UChar             ** aPtr,
 
 /***********************************************************************
  * Description:
- * WKB(Well Known Binary)Î•º ÏùΩÏñ¥Îì§Ïó¨ stdMultiPoint2DType Í∞ùÏ≤¥Î°ú Ï†ÄÏû•ÌïúÎã§.
- * WKBÏóêÎäî 3Ï∞®Ïõê Îç∞Ïù¥ÌÑ∞Í∞Ä Ï°¥Ïû¨ÌïòÏßÄ ÏïäÎäîÎã§.
+ * WKB(Well Known Binary)∏¶ ¿–æÓµÈø© stdMultiPoint2DType ∞¥√º∑Œ ¿˙¿Â«—¥Ÿ.
+ * WKBø°¥¬ 3¬˜ø¯ µ•¿Ã≈Õ∞° ¡∏¿Á«œ¡ˆ æ ¥¬¥Ÿ.
  *
- * UChar **aPtr(InOut): ÏùΩÏñ¥Îì§Ïùº WKB Î≤ÑÌçº ÏúÑÏπò, ÏùΩÏùÄ Îã§Ïùå Í∑∏ ÎßåÌÅº Ï¶ùÍ∞ÄÌïúÎã§.
- * UChar *aWKTFence(In): WKB Î≤ÑÌçºÏùò Fence
- * stdGeometryHeader* aGeom(Out): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)
- * void* aFence(In): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)Ïùò Fence
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ WKB πˆ∆€ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): WKB πˆ∆€¿« Fence
+ * stdGeometryHeader* aGeom(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void* aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::getWKBMultiPoint(
@@ -2969,8 +3483,8 @@ IDE_RC stdParsing::getWKBMultiPoint(
     idBool          sEquiEndian = ID_FALSE;
     
     // { Calc WKB Size
-    IDE_TEST_RAISE( (sPtr + WKB_GEOHEAD_SIZE + WKB_INT32_SIZE) > aWKBFence,
-                         err_parsing );
+    IDE_TEST_RAISE( ( sPtr + WKB_MPOINT_SIZE ) > aWKBFence, err_parsing );
+    
     IDE_TEST( readWKB_Header( (UChar*)sBMpoint, &sEquiEndian, &sWkbType, &sWkbOffset, NULL )
               != IDE_SUCCESS );
     IDE_TEST_RAISE( sWkbType != WKB_MULTIPOINT_TYPE , err_parsing);
@@ -3051,13 +3565,13 @@ IDE_RC stdParsing::getWKBMultiPoint(
 
 /***********************************************************************
  * Description:
- * WKB(Well Known Binary)Î•º ÏùΩÏñ¥Îì§Ïó¨ stdMultiLineString2DType Í∞ùÏ≤¥Î°ú Ï†ÄÏû•ÌïúÎã§.
- * WKBÏóêÎäî 3Ï∞®Ïõê Îç∞Ïù¥ÌÑ∞Í∞Ä Ï°¥Ïû¨ÌïòÏßÄ ÏïäÎäîÎã§.
+ * WKB(Well Known Binary)∏¶ ¿–æÓµÈø© stdMultiLineString2DType ∞¥√º∑Œ ¿˙¿Â«—¥Ÿ.
+ * WKBø°¥¬ 3¬˜ø¯ µ•¿Ã≈Õ∞° ¡∏¿Á«œ¡ˆ æ ¥¬¥Ÿ.
  *
- * UChar **aPtr(InOut): ÏùΩÏñ¥Îì§Ïùº WKB Î≤ÑÌçº ÏúÑÏπò, ÏùΩÏùÄ Îã§Ïùå Í∑∏ ÎßåÌÅº Ï¶ùÍ∞ÄÌïúÎã§.
- * UChar *aWKTFence(In): WKB Î≤ÑÌçºÏùò Fence
- * stdGeometryHeader* aGeom(Out): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)
- * void* aFence(In): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)Ïùò Fence
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ WKB πˆ∆€ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): WKB πˆ∆€¿« Fence
+ * stdGeometryHeader* aGeom(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void* aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::getWKBMultiLineString(
@@ -3084,8 +3598,8 @@ IDE_RC stdParsing::getWKBMultiLineString(
     
     stdUtils::nullify(aGeom);
 
-    IDE_TEST_RAISE( (sPtr + WKB_GEOHEAD_SIZE + WKB_INT32_SIZE) > aWKBFence, 
-                    err_parsing);
+    IDE_TEST_RAISE( ( sPtr + WKB_MLINE_SIZE ) > aWKBFence, err_parsing );
+    
     IDE_TEST( readWKB_Header( (UChar*)sBMLine, &sEquiEndian, &sWkbType, &sWkbOffset, NULL )
               != IDE_SUCCESS );
     IDE_TEST_RAISE( sWkbType != WKB_MULTILINESTRING_TYPE, err_parsing );
@@ -3160,13 +3674,13 @@ IDE_RC stdParsing::getWKBMultiLineString(
 
 /***********************************************************************
  * Description:
- * WKB(Well Known Binary)Î•º ÏùΩÏñ¥Îì§Ïó¨ stdMultiPolygon2DType Í∞ùÏ≤¥Î°ú Ï†ÄÏû•ÌïúÎã§.
- * WKBÏóêÎäî 3Ï∞®Ïõê Îç∞Ïù¥ÌÑ∞Í∞Ä Ï°¥Ïû¨ÌïòÏßÄ ÏïäÎäîÎã§.
+ * WKB(Well Known Binary)∏¶ ¿–æÓµÈø© stdMultiPolygon2DType ∞¥√º∑Œ ¿˙¿Â«—¥Ÿ.
+ * WKBø°¥¬ 3¬˜ø¯ µ•¿Ã≈Õ∞° ¡∏¿Á«œ¡ˆ æ ¥¬¥Ÿ.
  *
- * UChar **aPtr(InOut): ÏùΩÏñ¥Îì§Ïùº WKB Î≤ÑÌçº ÏúÑÏπò, ÏùΩÏùÄ Îã§Ïùå Í∑∏ ÎßåÌÅº Ï¶ùÍ∞ÄÌïúÎã§.
- * UChar *aWKTFence(In): WKB Î≤ÑÌçºÏùò Fence
- * stdGeometryHeader* aGeom(Out): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)
- * void* aFence(In): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)Ïùò Fence
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ WKB πˆ∆€ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): WKB πˆ∆€¿« Fence
+ * stdGeometryHeader* aGeom(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void* aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::getWKBMultiPolygon(
@@ -3194,8 +3708,8 @@ IDE_RC stdParsing::getWKBMultiPolygon(
     
     stdUtils::nullify(aGeom);
 
-    IDE_TEST_RAISE( (sPtr + WKB_GEOHEAD_SIZE + WKB_INT32_SIZE) > aWKBFence, 
-                    err_parsing);
+    IDE_TEST_RAISE( ( sPtr + WKB_MPOLY_SIZE ) > aWKBFence, err_parsing );
+    
     IDE_TEST( readWKB_Header( (UChar*)sBMPolygon, &sEquiEndian, &sWkbType, &sWkbOffset, NULL )
               != IDE_SUCCESS );
     IDE_TEST_RAISE( sWkbType != WKB_MULTIPOLYGON_TYPE, err_parsing );
@@ -3271,13 +3785,13 @@ IDE_RC stdParsing::getWKBMultiPolygon(
 
 /***********************************************************************
  * Description:
- * WKB(Well Known Binary)Î•º ÏùΩÏñ¥Îì§Ïó¨ stdGeoCollection2DType Í∞ùÏ≤¥Î°ú Ï†ÄÏû•ÌïúÎã§.
- * WKBÏóêÎäî 3Ï∞®Ïõê Îç∞Ïù¥ÌÑ∞Í∞Ä Ï°¥Ïû¨ÌïòÏßÄ ÏïäÎäîÎã§.
+ * WKB(Well Known Binary)∏¶ ¿–æÓµÈø© stdGeoCollection2DType ∞¥√º∑Œ ¿˙¿Â«—¥Ÿ.
+ * WKBø°¥¬ 3¬˜ø¯ µ•¿Ã≈Õ∞° ¡∏¿Á«œ¡ˆ æ ¥¬¥Ÿ.
  *
- * UChar **aPtr(InOut): ÏùΩÏñ¥Îì§Ïùº WKB Î≤ÑÌçº ÏúÑÏπò, ÏùΩÏùÄ Îã§Ïùå Í∑∏ ÎßåÌÅº Ï¶ùÍ∞ÄÌïúÎã§.
- * UChar *aWKTFence(In): WKB Î≤ÑÌçºÏùò Fence
- * stdGeometryHeader* aGeom(Out): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)
- * void* aFence(In): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)Ïùò Fence
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ WKB πˆ∆€ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): WKB πˆ∆€¿« Fence
+ * stdGeometryHeader* aGeom(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void* aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::getWKBGeoCollection(
@@ -3304,7 +3818,8 @@ IDE_RC stdParsing::getWKBGeoCollection(
     
     stdUtils::nullify(aGeom);
 
-    IDE_TEST_RAISE( (sPtr + WKB_GEOHEAD_SIZE + WKB_INT32_SIZE) > aWKBFence, err_parsing);
+    IDE_TEST_RAISE( ( sPtr + WKB_COLL_SIZE ) > aWKBFence, err_parsing );
+    
     IDE_TEST( readWKB_Header( (UChar*)sBColl, &sEquiEndian, &sWkbType, &sWkbOffset, NULL )
               != IDE_SUCCESS );
     IDE_TEST_RAISE( sWkbType != WKB_COLLECTION_TYPE, err_parsing );
@@ -3397,14 +3912,14 @@ IDE_RC stdParsing::getWKBGeoCollection(
 
 /***********************************************************************
  * Description :
- * WKT(Well Known Text)Î•º ÏùΩÏñ¥Îì§Ïó¨ Geometry Í∞ùÏ≤¥Î•º ÏÉùÏÑ±ÌïòÎäî Core Ìï®Ïàò.
- * 3Ï∞®Ïõê Ï¢åÌëúÍ∞Ä Îì§Ïñ¥ÏûàÏúºÎ©¥ 3Ï∞®ÏõêÏúºÎ°ú Í∞ÑÏ£ºÌïòÎ©∞, 2Ï∞®Ïõê 3Ï∞®Ïõê Í∞íÏùÑ ÌòºÌï© ÏûÖÎ†•ÌïòÎäî Í≤ÉÏùÑ 
- * ÌóàÏö©ÌïòÏßÄ ÏïäÎäîÎã§.
+ * WKT(Well Known Text)∏¶ ¿–æÓµÈø© Geometry ∞¥√º∏¶ ª˝º∫«œ¥¬ Core «‘ºˆ.
+ * 3¬˜ø¯ ¡¬«•∞° µÈæÓ¿÷¿∏∏È 3¬˜ø¯¿∏∑Œ ∞£¡÷«œ∏Á, 2¬˜ø¯ 3¬˜ø¯ ∞™¿ª »•«’ ¿‘∑¬«œ¥¬ ∞Õ¿ª 
+ * «„øÎ«œ¡ˆ æ ¥¬¥Ÿ.
  *
- * UChar **aPtr(In): ÏùΩÏñ¥Îì§Ïùº Î¨∏ÏûêÏó¥ ÏúÑÏπò
- * UInt aWKTLength(In): Î¨∏ÏûêÏó¥ Î≤ÑÌçºÏùò Í∏∏Ïù¥
- * void* aBuf(Out): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)
- * void* aFence(In): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)Ïùò Fence
+ * UChar **aPtr(In): ¿–æÓµÈ¿œ πÆ¿⁄ø≠ ¿ßƒ°
+ * UInt aWKTLength(In): πÆ¿⁄ø≠ πˆ∆€¿« ±Ê¿Ã
+ * void* aBuf(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void* aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
  * IDE_RC* aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::stdValue( iduMemory*   aQmxMem,
@@ -3413,12 +3928,15 @@ IDE_RC stdParsing::stdValue( iduMemory*   aQmxMem,
                              void*        aBuf,
                              void*        aFence,
                              IDE_RC*      aResult,
-                             UInt         aValidateOption )
+                             UInt         aValidateOption,
+                             idBool       aSRIDOption,
+                             SInt         aSRID )
 {
     stdGeometryHeader * sGeom = (stdGeometryHeader*)aBuf;
     UChar* sPtr = aWKT;
     UChar* sWKTFence = aWKT + aWKTLength;
     UInt   sSize = STD_GEOHEAD_SIZE;
+    SInt   sSRID = ST_SRID_INIT;
 
     IDE_TEST_RAISE(((UChar*)sGeom) + sSize > (UChar*)aFence, retry_memory);
 
@@ -3437,24 +3955,68 @@ IDE_RC stdParsing::stdValue( iduMemory*   aQmxMem,
     */
 
     IDE_TEST(stdParsing::skipSpace(&sPtr, sWKTFence) != IDE_SUCCESS);
+
+    // PROJ-2422 srid ¡ˆø¯
+    // SRID=4326;POINT(1 1)
+    if ( aSRIDOption == ID_TRUE )
+    {
+        if ( sPtr + STD_SRID_NAME_LEN < sWKTFence )
+        {
+            if ( idlOS::strncasecmp( (SChar*)sPtr, STD_SRID_NAME, STD_SRID_NAME_LEN ) == 0 )
+            {
+                sPtr += STD_SRID_NAME_LEN;
+                IDE_TEST( getSRID( &sPtr, sWKTFence, &sSRID ) != IDE_SUCCESS );
+                IDE_TEST( stdParsing::skipSpace( &sPtr, sWKTFence ) != IDE_SUCCESS );
+            }
+            else
+            {
+                // Nothing to do.
+            }
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
+        if ( aSRID != ST_SRID_INIT )
+        {
+            // ªÛ¿ßø°º≠ ≥ª∑¡¡ÿ srid∞° øÏº±«—¥Ÿ.
+            sSRID = aSRID;
+        }
+        else
+        {
+            // Nothing to do.
+        }
+    }
+    else
+    {
+        // Nothing to do.
+    }
+    
     switch(*sPtr)
     {
     case 'p' :
     case 'P' :        
         if(idlOS::strncasecmp((SChar*)sPtr, STD_POINT_NAME, 
-            STD_POINT_NAME_LEN) == 0)
+                              STD_POINT_NAME_LEN) == 0)
         {
-            IDE_TEST_RAISE(sPtr + STD_POINT_NAME_LEN >= sWKTFence, err_parsing);
+            IDE_TEST_RAISE( sPtr + STD_POINT_NAME_LEN >= sWKTFence,
+                            err_parsing );
             sPtr += STD_POINT_NAME_LEN;
-            IDE_TEST( stdParsing::getPoint(
-                          &sPtr, sWKTFence, sGeom, aFence, aResult,
-                          aValidateOption ) != IDE_SUCCESS);
+            IDE_TEST( stdParsing::getPoint( &sPtr,
+                                            sWKTFence,
+                                            sGeom,
+                                            aFence,
+                                            aResult,
+                                            aValidateOption,
+                                            sSRID )
+                      != IDE_SUCCESS );
         }
         else if(idlOS::strncasecmp((SChar*)sPtr, STD_POLYGON_NAME, 
-            STD_POLYGON_NAME_LEN) == 0)
+                                   STD_POLYGON_NAME_LEN) == 0)
         {
-            IDE_TEST_RAISE(sPtr + STD_POLYGON_NAME_LEN >= sWKTFence, 
-                err_parsing);
+            IDE_TEST_RAISE(sPtr + STD_POLYGON_NAME_LEN >= sWKTFence,
+                           err_parsing);
             sPtr += STD_POLYGON_NAME_LEN;
             IDE_TEST( stdParsing::getPolygon( aQmxMem,
                                               &sPtr,
@@ -3462,15 +4024,16 @@ IDE_RC stdParsing::stdValue( iduMemory*   aQmxMem,
                                               sGeom,
                                               aFence,
                                               aResult,
-                                              aValidateOption )
-                      != IDE_SUCCESS);
+                                              aValidateOption,
+                                              sSRID )
+                      != IDE_SUCCESS );
         }
         else
         {
             IDE_RAISE(err_parsing);
         }
         break;
-    case 'r' : /* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()Î•º ÏßÄÏõêÌï¥Ïïº Ìï©ÎãàÎã§. */
+    case 'r' : /* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()∏¶ ¡ˆø¯«ÿæﬂ «’¥œ¥Ÿ. */
     case 'R' :
         if ( idlOS::strncasecmp( (SChar *)sPtr,
                                  STD_RECTANGLE_NAME,
@@ -3496,14 +4059,19 @@ IDE_RC stdParsing::stdValue( iduMemory*   aQmxMem,
     case 'l' :
     case 'L' :
         if(idlOS::strncasecmp((SChar*)sPtr, STD_LINESTRING_NAME, 
-            STD_LINESTRING_NAME_LEN) == 0)
+                              STD_LINESTRING_NAME_LEN) == 0)
         {
-            IDE_TEST_RAISE(sPtr + STD_LINESTRING_NAME_LEN >= 
-                sWKTFence, err_parsing);
+            IDE_TEST_RAISE( sPtr + STD_LINESTRING_NAME_LEN >= sWKTFence,
+                            err_parsing );
             sPtr += STD_LINESTRING_NAME_LEN;
-            IDE_TEST( stdParsing::getLineString(
-                &sPtr, sWKTFence, sGeom, aFence, aResult,
-                aValidateOption) != IDE_SUCCESS);
+            IDE_TEST( stdParsing::getLineString( &sPtr,
+                                                 sWKTFence,
+                                                 sGeom,
+                                                 aFence,
+                                                 aResult,
+                                                 aValidateOption,
+                                                 sSRID )
+                      != IDE_SUCCESS );
         }            
         else
         {
@@ -3513,30 +4081,40 @@ IDE_RC stdParsing::stdValue( iduMemory*   aQmxMem,
     case 'm' :
     case 'M' :
         if(idlOS::strncasecmp((SChar*)sPtr, STD_MULTIPOINT_NAME, 
-            STD_MULTIPOINT_NAME_LEN) == 0)
+                              STD_MULTIPOINT_NAME_LEN) == 0)
         {
-            IDE_TEST_RAISE(sPtr + STD_MULTIPOINT_NAME_LEN >= sWKTFence, 
-                err_parsing);
+            IDE_TEST_RAISE(sPtr + STD_MULTIPOINT_NAME_LEN >= sWKTFence,
+                           err_parsing);
             sPtr += STD_MULTIPOINT_NAME_LEN;
-            IDE_TEST( stdParsing::getMultiPoint(
-                &sPtr, sWKTFence, sGeom, aFence, aResult,
-                aValidateOption) != IDE_SUCCESS);
+            IDE_TEST( stdParsing::getMultiPoint( &sPtr,
+                                                 sWKTFence,
+                                                 sGeom,
+                                                 aFence,
+                                                 aResult,
+                                                 aValidateOption,
+                                                 sSRID )
+                      != IDE_SUCCESS );
         }            
         else if(idlOS::strncasecmp((SChar*)sPtr, STD_MULTILINESTRING_NAME, 
-            STD_MULTILINESTRING_NAME_LEN) == 0)
+                                   STD_MULTILINESTRING_NAME_LEN) == 0)
         {
-            IDE_TEST_RAISE(sPtr + STD_MULTILINESTRING_NAME_LEN >= sWKTFence, 
-                err_parsing);
+            IDE_TEST_RAISE(sPtr + STD_MULTILINESTRING_NAME_LEN >= sWKTFence,
+                           err_parsing);
             sPtr += STD_MULTILINESTRING_NAME_LEN;
-            IDE_TEST( stdParsing::getMultiLineString(
-                &sPtr, sWKTFence, sGeom, aFence, aResult,
-                aValidateOption) != IDE_SUCCESS);
+            IDE_TEST( stdParsing::getMultiLineString( &sPtr,
+                                                      sWKTFence,
+                                                      sGeom,
+                                                      aFence,
+                                                      aResult,
+                                                      aValidateOption,
+                                                      sSRID )
+                      != IDE_SUCCESS );
         }            
         else if(idlOS::strncasecmp((SChar*)sPtr, STD_MULTIPOLYGON_NAME, 
-            STD_MULTIPOLYGON_NAME_LEN) == 0)
+                                   STD_MULTIPOLYGON_NAME_LEN) == 0)
         {
-            IDE_TEST_RAISE(sPtr + STD_MULTIPOLYGON_NAME_LEN >= sWKTFence, 
-                err_parsing);
+            IDE_TEST_RAISE(sPtr + STD_MULTIPOLYGON_NAME_LEN >= sWKTFence,
+                           err_parsing);
             sPtr += STD_MULTIPOLYGON_NAME_LEN;
             IDE_TEST( stdParsing::getMultiPolygon( aQmxMem,
                                                    &sPtr,
@@ -3544,8 +4122,9 @@ IDE_RC stdParsing::stdValue( iduMemory*   aQmxMem,
                                                    sGeom,
                                                    aFence,
                                                    aResult,
-                                                   aValidateOption )
-                      != IDE_SUCCESS);
+                                                   aValidateOption,
+                                                   sSRID )
+                      != IDE_SUCCESS );
         }
         else
         {
@@ -3555,10 +4134,10 @@ IDE_RC stdParsing::stdValue( iduMemory*   aQmxMem,
     case 'g' :
     case 'G' :        
         if(idlOS::strncasecmp((SChar*)sPtr, STD_GEOCOLLECTION_NAME, 
-            STD_GEOCOLLECTION_NAME_LEN) == 0)
+                              STD_GEOCOLLECTION_NAME_LEN) == 0)
         {
-            IDE_TEST_RAISE(sPtr + STD_GEOCOLLECTION_NAME_LEN >= sWKTFence, 
-                err_parsing);
+            IDE_TEST_RAISE(sPtr + STD_GEOCOLLECTION_NAME_LEN >= sWKTFence,
+                           err_parsing);
             sPtr += STD_GEOCOLLECTION_NAME_LEN;
             IDE_TEST( stdParsing::getGeoCollection( aQmxMem,
                                                     &sPtr,
@@ -3566,8 +4145,9 @@ IDE_RC stdParsing::stdValue( iduMemory*   aQmxMem,
                                                     sGeom,
                                                     aFence,
                                                     aResult,
-                                                    aValidateOption )
-                      != IDE_SUCCESS);
+                                                    aValidateOption,
+                                                    sSRID )
+                      != IDE_SUCCESS );
         }
         else
         {
@@ -3605,13 +4185,13 @@ IDE_RC stdParsing::stdValue( iduMemory*   aQmxMem,
 
 /***********************************************************************
  * Description :
- * WKB(Well Known Binary)Î•º ÏùΩÏñ¥Îì§Ïó¨ Geometry Í∞ùÏ≤¥Î•º ÏÉùÏÑ±ÌïòÎäî Core Ìï®Ïàò.
- * WKBÏóêÎäî 3Ï∞®Ïõê Îç∞Ïù¥ÌÑ∞Í∞Ä Ï°¥Ïû¨ÌïòÏßÄ ÏïäÎäîÎã§.
+ * WKB(Well Known Binary)∏¶ ¿–æÓµÈø© Geometry ∞¥√º∏¶ ª˝º∫«œ¥¬ Core «‘ºˆ.
+ * WKBø°¥¬ 3¬˜ø¯ µ•¿Ã≈Õ∞° ¡∏¿Á«œ¡ˆ æ ¥¬¥Ÿ.
  *
- * UChar  *aWKB(In): ÏùΩÏñ¥Îì§Ïùº WKB Î≤ÑÌçº ÏúÑÏπò
- * UInt    aWKBLength(In): WKB Î≤ÑÌçºÏùò Í∏∏Ïù¥
- * void   *aBuf(Out): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)
- * void   *aFence(In): Ï†ÄÏû•Îê† Î≤ÑÌçº(Geometry Í∞ùÏ≤¥)Ïùò Fence
+ * UChar  *aWKB(In): ¿–æÓµÈ¿œ WKB πˆ∆€ ¿ßƒ°
+ * UInt    aWKBLength(In): WKB πˆ∆€¿« ±Ê¿Ã
+ * void   *aBuf(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void   *aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
  * IDE_RC *aResult(Out): Error Code
  **********************************************************************/
 IDE_RC stdParsing::stdBinValue( iduMemory*   aQmxMem,
@@ -3668,11 +4248,25 @@ IDE_RC stdParsing::stdBinValue( iduMemory*   aQmxMem,
                                 aResult) != IDE_SUCCESS, err_parsing);
             IDE_TEST_RAISE(*aResult != IDE_SUCCESS, retry_memory);    
             break;
+        case EWKB_POINT_TYPE :
+        /* PROJ-2422 srid */
+            IDE_TEST_RAISE( stdParsing::getEWKBPoint(
+                                &sPtr, sWKBFence, sGeom, aFence,
+                                aResult ) != IDE_SUCCESS, err_parsing );
+            IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
+            break;
         case WKB_LINESTRING_TYPE :
             IDE_TEST_RAISE( stdParsing::getWKBLineString(
                                 &sPtr, sWKBFence, sGeom, aFence,
                                 aResult) != IDE_SUCCESS, err_parsing);
             IDE_TEST_RAISE(*aResult != IDE_SUCCESS, retry_memory);    
+            break;
+        case EWKB_LINESTRING_TYPE :
+        /* PROJ-2422 srid */
+            IDE_TEST_RAISE( stdParsing::getEWKBLineString(
+                                &sPtr, sWKBFence, sGeom, aFence,
+                                aResult ) != IDE_SUCCESS, err_parsing );
+            IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
             break;
         case WKB_POLYGON_TYPE :
             IDE_TEST_RAISE( stdParsing::getWKBPolygon(
@@ -3680,11 +4274,25 @@ IDE_RC stdParsing::stdBinValue( iduMemory*   aQmxMem,
                                 aResult) != IDE_SUCCESS, err_parsing);
             IDE_TEST_RAISE(*aResult != IDE_SUCCESS, retry_memory);    
             break;
+        case EWKB_POLYGON_TYPE :
+        /* PROJ-2422 srid */
+            IDE_TEST_RAISE( stdParsing::getEWKBPolygon(
+                                &sPtr, sWKBFence, sGeom, aFence,
+                                aResult ) != IDE_SUCCESS, err_parsing );
+            IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
+            break;
         case WKB_MULTIPOINT_TYPE :
             IDE_TEST_RAISE( stdParsing::getWKBMultiPoint(
                                 &sPtr, sWKBFence, sGeom, aFence,
                                 aResult) != IDE_SUCCESS, err_parsing);
             IDE_TEST_RAISE(*aResult != IDE_SUCCESS, retry_memory);    
+            break;
+        case EWKB_MULTIPOINT_TYPE :
+        /* PROJ-2422 srid */
+            IDE_TEST_RAISE( stdParsing::getEWKBMultiPoint(
+                                &sPtr, sWKBFence, sGeom, aFence,
+                                aResult ) != IDE_SUCCESS, err_parsing );
+            IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
             break;
         case WKB_MULTILINESTRING_TYPE :
             IDE_TEST_RAISE( stdParsing::getWKBMultiLineString(
@@ -3692,11 +4300,25 @@ IDE_RC stdParsing::stdBinValue( iduMemory*   aQmxMem,
                                 aResult) != IDE_SUCCESS, err_parsing);
             IDE_TEST_RAISE(*aResult != IDE_SUCCESS, retry_memory);    
             break;
+        case EWKB_MULTILINESTRING_TYPE :
+        /* PROJ-2422 srid */
+            IDE_TEST_RAISE( stdParsing::getEWKBMultiLineString(
+                                &sPtr, sWKBFence, sGeom, aFence,
+                                aResult ) != IDE_SUCCESS, err_parsing );
+            IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
+            break;
         case WKB_MULTIPOLYGON_TYPE :
             IDE_TEST_RAISE( stdParsing::getWKBMultiPolygon(
                                 &sPtr, sWKBFence, sGeom, aFence,
                                 aResult) != IDE_SUCCESS, err_parsing);
             IDE_TEST_RAISE(*aResult != IDE_SUCCESS, retry_memory);    
+            break;
+        case EWKB_MULTIPOLYGON_TYPE :
+        /* PROJ-2422 srid */
+            IDE_TEST_RAISE( stdParsing::getEWKBMultiPolygon(
+                                &sPtr, sWKBFence, sGeom, aFence,
+                                aResult ) != IDE_SUCCESS, err_parsing );
+            IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
             break;
         case WKB_COLLECTION_TYPE :
             IDE_TEST_RAISE( stdParsing::getWKBGeoCollection(
@@ -3704,7 +4326,14 @@ IDE_RC stdParsing::stdBinValue( iduMemory*   aQmxMem,
                                 aResult) != IDE_SUCCESS, err_parsing);
             IDE_TEST_RAISE(*aResult != IDE_SUCCESS, retry_memory);    
             break;
-        case WKB_RECTANGLE_TYPE :   /* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()Î•º ÏßÄÏõêÌï¥Ïïº Ìï©ÎãàÎã§. */
+        case EWKB_COLLECTION_TYPE :
+        /* PROJ-2422 srid */
+            IDE_TEST_RAISE( stdParsing::getEWKBGeoCollection(
+                                &sPtr, sWKBFence, sGeom, aFence,
+                                aResult ) != IDE_SUCCESS, err_parsing );
+            IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
+            break;
+        case WKB_RECTANGLE_TYPE :   /* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()∏¶ ¡ˆø¯«ÿæﬂ «’¥œ¥Ÿ. */
             IDE_TEST_RAISE( stdParsing::getWKBRectangle( &sPtr,
                                                          sWKBFence,
                                                          sGeom,
@@ -3769,8 +4398,8 @@ void stdParsing::setValidHeader( stdGeometryHeader * aGeom,
 {
     if (aValidateOption == STU_VALIDATION_ENABLE_FALSE)
     {
-        // validate disableÏù∏ Í≤ΩÏö∞ validationÏù¥ Î¨¥ÏãúÎêòÎäî Í≤ÉÎì§Ïù¥ ÎßéÏïÑ
-        // validÌïòÎã§Í≥† ÌïòÎçîÎùºÎèÑ unknownÏúºÎ°ú Í∏∞Î°ùÌïúÎã§.
+        // validate disable¿Œ ∞ÊøÏ validation¿Ã π´Ω√µ«¥¬ ∞ÕµÈ¿Ã ∏πæ∆
+        // valid«œ¥Ÿ∞Ì «œ¥ı∂Ûµµ unknown¿∏∑Œ ±‚∑œ«—¥Ÿ.
         if (aIsValid == ID_TRUE)
         {
             aGeom->mIsValid = ST_UNKNOWN;
@@ -3791,4 +4420,906 @@ void stdParsing::setValidHeader( stdGeometryHeader * aGeom,
             aGeom->mIsValid = ST_INVALID;
         }
     }
+}
+
+/***********************************************************************
+ * Description: PROJ-2422 SRID
+ * EWKB(Extended Well Known Binary)∏¶ ¿–æÓµÈø© stdPoint2DExtType ∞¥√º∑Œ ¿˙¿Â«—¥Ÿ.
+ * EWKBø°¥¬ 3¬˜ø¯ µ•¿Ã≈Õ∞° ¡∏¿Á«œ¡ˆ æ ¥¬¥Ÿ.
+ *
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ WKB πˆ∆€ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): WKB πˆ∆€¿« Fence
+ * stdGeometryHeader* aGeom(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void* aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
+ * IDE_RC* aResult(Out): Error Code
+ **********************************************************************/
+IDE_RC stdParsing::getEWKBPoint( UChar**                    aPtr,
+                                 UChar*                     aWKBFence,
+                                 stdGeometryHeader*         aGeom,
+                                 void*                      aFence,
+                                 IDE_RC*                    aResult )
+{
+    UChar*             sPtr       = *aPtr;
+    UInt               sWKBSize   = EWKB_POINT_SIZE; // Fix BUG-15523
+    UInt               sTotalSize = STD_POINT2D_EXT_SIZE;
+    stdPoint2DExtType* sGeom2D    = (stdPoint2DExtType*)aGeom;
+    EWKBPoint*         sBPoint    = (EWKBPoint*)*aPtr;
+    UInt               sWkbOffset = 0;
+    UInt               sWkbType;
+
+    // BUG-24357 WKB Endian
+    idBool             sEquiEndian = ID_FALSE;
+    
+    // To Fix BUG-20892
+    // BUGBUG : wkb parsing error.
+    IDE_TEST_RAISE( sPtr + sWKBSize > aWKBFence, err_parsing );
+    IDE_TEST_RAISE( ( (UChar*)aGeom ) + sTotalSize > (UChar*)aFence, retry_memory );
+
+    idlOS::memset( aGeom, 0x00, sTotalSize );
+    // Fix BUG-15290
+    stdUtils::nullify( aGeom );
+
+    aGeom->mType = STD_POINT_2D_EXT_TYPE;
+    aGeom->mSize = sTotalSize;
+
+    IDE_TEST( readWKB_Header( (UChar*)sBPoint, &sEquiEndian, &sWkbType, &sWkbOffset, NULL )
+              != IDE_SUCCESS );
+
+    IDE_TEST_RAISE( sWkbType != EWKB_POINT_TYPE, err_parsing );
+    
+    readWKB_SInt( (UChar*)sBPoint->mSRID, &sGeom2D->mSRID, &sWkbOffset,
+                   sEquiEndian );
+    readWKB_Point( (UChar*)&sBPoint->mPoint, &sGeom2D->mPoint, &sWkbOffset,
+                   sEquiEndian );
+    IDE_TEST_RAISE( sWkbOffset != sWKBSize, err_parsing);
+    
+    IDE_TEST( stdUtils::mergeMBRFromPoint2D( aGeom, &sGeom2D->mPoint)
+               != IDE_SUCCESS );
+    
+    *aPtr = sPtr + sWKBSize;
+    *aResult = IDE_SUCCESS;
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( retry_memory );
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_LENGTH ) );
+    }
+    IDE_EXCEPTION( err_parsing );
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_WKB ) );
+    }      
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description: PROJ-2422 SRID
+ * EWKB(Extended Well Known Binary)∏¶ ¿–æÓµÈø© stdLineString2DExtType ∞¥√º∑Œ ¿˙¿Â«—¥Ÿ.
+ * EWKBø°¥¬ 3¬˜ø¯ µ•¿Ã≈Õ∞° ¡∏¿Á«œ¡ˆ æ ¥¬¥Ÿ.
+ *
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ WKB πˆ∆€ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): WKB πˆ∆€¿« Fence
+ * stdGeometryHeader* aGeom(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void* aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
+ * IDE_RC* aResult(Out): Error Code
+ **********************************************************************/
+IDE_RC stdParsing::getEWKBLineString( UChar**                    aPtr,
+                                      UChar*                     aWKBFence,
+                                      stdGeometryHeader*         aGeom,
+                                      void*                      aFence,
+                                      IDE_RC*                    aResult )
+{
+    UChar*                  sPtr = *aPtr;
+    UInt                    sPtCnt = 0;
+    UInt                    sWKBSize = 0; // Fix BUG-15523
+    UInt                    sTotalSize = 0;
+    stdLineString2DExtType* sGeom2D = (stdLineString2DExtType*)aGeom;
+    stdPoint2D*             sPt2D = STD_FIRST_PT2D( sGeom2D );
+    UInt                    i;
+    EWKBLineString*         sBLine = (EWKBLineString*)*aPtr;
+    wkbPoint*               sBPoint = EWKB_FIRST_PTL( sBLine );
+    UInt                    sWkbOffset = 0;
+    UInt                    sWkbType;
+    SInt                    sSRID;
+    // BUG-24357 WKB Endian
+    idBool          sEquiEndian = ID_FALSE;
+
+    IDE_TEST_RAISE( (sPtr + EWKB_LINE_SIZE) > aWKBFence, 
+                    err_parsing );
+    // { Calc WKB Size
+    IDE_TEST( readWKB_Header( (UChar*)sBLine, &sEquiEndian, &sWkbType, &sWkbOffset, NULL )
+              != IDE_SUCCESS );
+    IDE_TEST_RAISE( sWkbType != EWKB_LINESTRING_TYPE , err_parsing );
+
+    readWKB_SInt( sBLine->mSRID, &sSRID, &sWkbOffset,
+                  sEquiEndian );
+    readWKB_UInt( sBLine->mNumPoints, &sPtCnt, &sWkbOffset,
+                  sEquiEndian);
+    sWKBSize = EWKB_LINE_SIZE + WKB_PT_SIZE*sPtCnt;
+    // } Calc WKB Size
+    
+    // Calc Geometry  Size
+    sTotalSize = STD_LINE2D_EXT_SIZE + STD_PT2D_SIZE*sPtCnt;
+
+    IDE_TEST_RAISE( sPtr + sWKBSize > aWKBFence, err_parsing );
+    IDE_TEST_RAISE( ( (UChar*)aGeom ) + sTotalSize > (UChar*)aFence, retry_memory );
+    
+    sWkbOffset = 0;
+    idlOS::memset( aGeom, 0x00, sTotalSize );
+    // Fix BUG-15290
+    stdUtils::nullify( aGeom );
+
+    IDE_TEST( readWKB_Header( (UChar*)sBLine, &sEquiEndian, &sWkbType, &sWkbOffset, NULL )
+              != IDE_SUCCESS );
+    readWKB_SInt( sBLine->mSRID, &sSRID, &sWkbOffset, sEquiEndian );
+    readWKB_UInt( sBLine->mNumPoints, &sPtCnt, &sWkbOffset, sEquiEndian );
+
+    /* BUG-32531 Consider for GIS EMPTY */
+    if ( sPtCnt == 0 )
+    {
+        aGeom->mType = STD_EMPTY_TYPE;
+    }
+    else
+    {
+        aGeom->mType = STD_LINESTRING_2D_EXT_TYPE; 
+    }
+
+    aGeom->mSize = sTotalSize;    
+    
+    sGeom2D->mSRID = sSRID;
+    sGeom2D->mNumPoints = sPtCnt;
+    for ( i = 0; i < sPtCnt; i++ )
+    {
+        readWKB_Point( (UChar*)sBPoint, sPt2D, &sWkbOffset, sEquiEndian );
+        
+        IDE_TEST( stdUtils::mergeMBRFromPoint2D( aGeom, sPt2D )
+                  != IDE_SUCCESS );
+        
+        sPt2D = STD_NEXT_PT2D( sPt2D );
+        sBPoint = WKB_NEXT_PT( sBPoint );
+    }
+
+    IDE_TEST_RAISE( sWkbOffset != sWKBSize, err_parsing );
+    
+    *aPtr    = (*aPtr) + sWKBSize;
+    *aResult = IDE_SUCCESS;
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( retry_memory );
+    {
+        *aResult = IDE_FAILURE;
+        return IDE_SUCCESS;
+    }
+    IDE_EXCEPTION( err_parsing );
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_WKB ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description: PROJ-2422 SRID
+ * EWKB(Extended Well Known Binary)∏¶ ¿–æÓµÈø© stdPolygon2DExtType ∞¥√º∑Œ ¿˙¿Â«—¥Ÿ.
+ * EWKBø°¥¬ 3¬˜ø¯ µ•¿Ã≈Õ∞° ¡∏¿Á«œ¡ˆ æ ¥¬¥Ÿ.
+ *
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ WKB πˆ∆€ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): WKB πˆ∆€¿« Fence
+ * stdGeometryHeader* aGeom(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void* aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
+ * IDE_RC* aResult(Out): Error Code
+ **********************************************************************/
+IDE_RC stdParsing::getEWKBPolygon( UChar**                    aPtr,
+                                   UChar*                     aWKBFence,
+                                   stdGeometryHeader*         aGeom,
+                                   void*                      aFence,
+                                   IDE_RC*                    aResult )
+{
+    UChar*                sPtr = *aPtr;
+    UInt                  sPtCnt = 0;
+    UInt                  sRingCnt = 0;
+    UInt                  sWKBSize = 0; // Fix BUG-15523
+    UInt                  sTotalSize = 0;
+    stdPolygon2DExtType*  sGeom2D = (stdPolygon2DExtType*)aGeom;
+    stdLinearRing2D*      sRing2D = NULL;
+    stdPoint2D*           sPt2D = NULL;
+    UInt                  i, j;
+    EWKBPolygon*          sBPolygon = (EWKBPolygon*)*aPtr;
+    wkbLinearRing*        sBRing = NULL;
+    wkbPoint*             sBPoint = NULL;
+    UInt                  sWkbOffset = 0;
+    UInt                  sWkbType;
+    UInt                  sNumPoints;
+    SInt                  sSRID;
+    // BUG-24357 WKB Endian
+    idBool          sEquiEndian = ID_FALSE;
+
+    IDE_TEST_RAISE( ( sPtr + EWKB_POLY_SIZE ) > aWKBFence, err_parsing );
+    
+    // { Calc WKB Size
+    IDE_TEST( readWKB_Header( (UChar*)sBPolygon, &sEquiEndian, &sWkbType, &sWkbOffset, NULL )
+              != IDE_SUCCESS );
+    IDE_TEST_RAISE( sWkbType != EWKB_POLYGON_TYPE, err_parsing );
+
+    readWKB_SInt( sBPolygon->mSRID, &sSRID, &sWkbOffset, sEquiEndian );
+    readWKB_UInt( sBPolygon->mNumRings, &sRingCnt, &sWkbOffset, sEquiEndian );
+    
+    sBRing = EWKB_FIRST_RN( sBPolygon );
+    IDE_TEST_RAISE( (UChar*)sBRing > aWKBFence, err_parsing );
+
+    for ( i = 0; i < sRingCnt; i++ )
+    {
+        // check valid position of numpoints
+        IDE_TEST_RAISE( sBRing->mNumPoints > aWKBFence, err_parsing );
+                       
+        readWKB_UInt( sBRing->mNumPoints, &sNumPoints, &sWkbOffset, sEquiEndian );
+        
+        IDE_TEST_RAISE( sNumPoints == 1 , err_parsing );
+        
+        sPtCnt += sNumPoints;
+        // check valid postion of next ring.
+        IDE_TEST_RAISE( ( sPtr + sWkbOffset + WKB_PT_SIZE*sNumPoints ) > aWKBFence,
+                        err_parsing );
+        sBRing = (wkbLinearRing*)( (UChar*)( sBRing ) + 
+                                   WKB_RN_SIZE + WKB_PT_SIZE*sNumPoints );
+    }
+    
+    sWKBSize = EWKB_POLY_SIZE + WKB_INT32_SIZE*sRingCnt + WKB_PT_SIZE*sPtCnt;
+    // } Calc WKB Size
+
+    // Calc Geometry Size
+    sTotalSize = STD_POLY2D_EXT_SIZE + STD_RN2D_SIZE*sRingCnt + STD_PT2D_SIZE*sPtCnt;
+
+    IDE_TEST_RAISE( sPtr + sWKBSize > aWKBFence, err_parsing );
+    IDE_TEST_RAISE( ( (UChar*)aGeom ) + sTotalSize > (UChar*)aFence, retry_memory );
+
+    sWkbOffset = 0;    
+    idlOS::memset( aGeom, 0x00, sTotalSize );
+    // Fix BUG-15290
+    stdUtils::nullify( aGeom );
+
+    /* BUG-32531 Consider for GIS EMPTY */
+    if ( sRingCnt == 0 )
+    {
+        aGeom->mType = STD_EMPTY_TYPE;
+    }
+    else
+    {
+        aGeom->mType = STD_POLYGON_2D_EXT_TYPE;
+    }
+
+    IDE_TEST( readWKB_Header( (UChar*)sBPolygon, &sEquiEndian, &sWkbType, &sWkbOffset, NULL )
+              != IDE_SUCCESS );
+
+    readWKB_SInt( sBPolygon->mSRID, &sSRID, &sWkbOffset, sEquiEndian );
+    readWKB_UInt( sBPolygon->mNumRings, &sRingCnt, &sWkbOffset, sEquiEndian );
+    
+    sGeom2D->mSRID = sSRID;
+    sGeom2D->mNumRings = sRingCnt;
+        
+    sRing2D = STD_FIRST_RN2D( sGeom2D );    // Move First Ring
+    sBRing = EWKB_FIRST_RN( sBPolygon );
+
+    for ( i = 0; i < sRingCnt; i++ )
+    {
+        sPt2D = STD_FIRST_PT2D( sRing2D );    // Move First Point,
+        readWKB_UInt( sBRing->mNumPoints, &sPtCnt, &sWkbOffset, sEquiEndian );
+
+        sBPoint = WKB_FIRST_PTR( sBRing );
+        sRing2D->mNumPoints = sPtCnt;
+        
+        for ( j = 0; j < sPtCnt; j++ )
+        {
+            IDE_TEST_RAISE( (UChar *)sBPoint > aWKBFence, err_parsing );
+            readWKB_Point( (UChar*)sBPoint, sPt2D, &sWkbOffset, sEquiEndian );
+            
+            IDE_TEST( stdUtils::mergeMBRFromPoint2D( aGeom, sPt2D )
+                      != IDE_SUCCESS );            
+        
+            sPt2D = STD_NEXT_PT2D( sPt2D );
+            sBPoint = WKB_NEXT_PT( sBPoint );
+        }
+
+        if ( stdUtils::isSamePoints2D( STD_FIRST_PT2D( sRing2D ),
+                                       STD_PREV_PT2D( sPt2D ) ) == ID_FALSE )
+        {
+            sTotalSize += STD_PT2D_SIZE;
+            IDE_TEST_RAISE( ( (UChar*)aGeom ) + sTotalSize > (UChar*)aFence,
+                            retry_memory );
+
+            // To fix BUG-33472 CodeSonar warining
+
+            if ( sPt2D != STD_FIRST_PT2D( sRing2D ) )
+            {                        
+                idlOS::memcpy( sPt2D, STD_FIRST_PT2D( sRing2D ), STD_PT2D_SIZE );
+            }
+            else
+            {
+                // nothing to do   
+            }
+                
+            sPt2D = STD_NEXT_PT2D( sPt2D );
+            sRing2D->mNumPoints++;
+        }       
+        
+        // Move Next Ring
+        sRing2D = (stdLinearRing2D*)sPt2D;
+        sBRing = (wkbLinearRing*)sBPoint;
+        IDE_TEST_RAISE( (UChar*) sBRing > aWKBFence, err_parsing );
+    }
+
+    // BUG-48051
+    aGeom->mSize = sTotalSize;    
+
+    IDE_TEST_RAISE( sWkbOffset != sWKBSize, err_parsing );
+    
+    *aPtr    = sPtr + sWKBSize;
+    *aResult = IDE_SUCCESS;
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( retry_memory );
+    {
+        *aResult = IDE_FAILURE;
+        return IDE_SUCCESS;
+    }
+    IDE_EXCEPTION( err_parsing );
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_WKB ) );
+    }      
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description: PROJ-2422 SRID
+ * EWKB(Extended Well Known Binary)∏¶ ¿–æÓµÈø© stdMultiPoint2DExtType ∞¥√º∑Œ ¿˙¿Â«—¥Ÿ.
+ * EWKBø°¥¬ 3¬˜ø¯ µ•¿Ã≈Õ∞° ¡∏¿Á«œ¡ˆ æ ¥¬¥Ÿ.
+ *
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ WKB πˆ∆€ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): WKB πˆ∆€¿« Fence
+ * stdGeometryHeader* aGeom(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void* aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
+ * IDE_RC* aResult(Out): Error Code
+ **********************************************************************/
+IDE_RC stdParsing::getEWKBMultiPoint( UChar**                    aPtr,
+                                      UChar*                     aWKBFence,
+                                      stdGeometryHeader*         aGeom,
+                                      void*                      aFence,
+                                      IDE_RC*                    aResult )
+{
+    UChar*                  sPtr = *aPtr;
+    UInt                    sPtCnt = 0;
+    UInt                    sWKBSize = 0; // Fix BUG-15523
+    UInt                    sTotalSize = 0;
+    stdMultiPoint2DExtType* sGeom2D = (stdMultiPoint2DExtType*)aGeom;
+    stdPoint2DType*         sPt2D = NULL;
+    UInt                    i;
+    EWKBMultiPoint*         sBMpoint = (EWKBMultiPoint*)*aPtr;
+    WKBPoint*               sBPoint = NULL;
+    UInt                    sWkbOffset = 0;
+    UInt                    sWkbType;
+    SInt                    sSRID;
+    // BUG-24357 WKB Endian
+    idBool          sEquiEndian = ID_FALSE;
+    
+    // { Calc WKB Size
+    IDE_TEST_RAISE( (sPtr + EWKB_MPOINT_SIZE) > aWKBFence, err_parsing );
+    
+    IDE_TEST( readWKB_Header( (UChar*)sBMpoint, &sEquiEndian, &sWkbType, &sWkbOffset, NULL )
+              != IDE_SUCCESS );
+    IDE_TEST_RAISE( sWkbType != EWKB_MULTIPOINT_TYPE , err_parsing );
+
+    readWKB_SInt( sBMpoint->mSRID, &sSRID, &sWkbOffset, sEquiEndian );
+    readWKB_UInt( sBMpoint->mNumWKBPoints, &sPtCnt, &sWkbOffset, sEquiEndian );
+    
+    sWKBSize = EWKB_MPOINT_SIZE + WKB_POINT_SIZE*sPtCnt;
+    // } Calc WKB Size
+    
+    // Calc Geometry Size
+    sTotalSize = STD_MPOINT2D_EXT_SIZE + STD_POINT2D_SIZE*sPtCnt;
+
+    IDE_TEST_RAISE( sPtr + sWKBSize > aWKBFence, err_parsing );
+    IDE_TEST_RAISE( ( (UChar*)aGeom ) + sTotalSize > (UChar*)aFence, retry_memory );
+
+    sWkbOffset = 0;
+    idlOS::memset( aGeom, 0x00, sTotalSize );
+    // Fix BUG-15290
+    stdUtils::nullify( aGeom );
+
+    /* BUG-32531 Consider for GIS EMPTY */
+    if ( sPtCnt == 0 )
+    {
+        aGeom->mType = STD_EMPTY_TYPE;
+    }
+    else
+    {
+        aGeom->mType = STD_MULTIPOINT_2D_EXT_TYPE;
+    }
+    aGeom->mSize = sTotalSize;
+    
+    IDE_TEST( readWKB_Header( (UChar*)sBMpoint, &sEquiEndian, &sWkbType, &sWkbOffset, NULL )
+              != IDE_SUCCESS );
+    readWKB_SInt( sBMpoint->mSRID, &sSRID, &sWkbOffset, sEquiEndian );
+    readWKB_UInt( sBMpoint->mNumWKBPoints, &sPtCnt, &sWkbOffset, sEquiEndian );
+    
+    sGeom2D->mSRID = sSRID;
+    sGeom2D->mNumObjects = sPtCnt;
+        
+    sPt2D = STD_FIRST_POINT2D( sGeom2D );    // Move First Point
+    sBPoint = EWKB_FIRST_POINT( sBMpoint );
+    for ( i = 0; i < sPtCnt; i++ )
+    {
+        IDE_TEST( readWKB_Header( (UChar*)sBPoint, &sEquiEndian, &sWkbType, &sWkbOffset, NULL )
+                  != IDE_SUCCESS );
+        IDE_TEST_RAISE( sWkbType != WKB_POINT_TYPE , err_parsing );
+        readWKB_Point( (UChar*)&sBPoint->mPoint, &sPt2D->mPoint, &sWkbOffset,
+                       sEquiEndian );
+        
+        sPt2D->mType = STD_POINT_2D_TYPE;
+        sPt2D->mSize = STD_POINT2D_SIZE;
+        stdUtils::mergeMBRFromPoint2D( (stdGeometryHeader*)sPt2D, 
+                                        &sPt2D->mPoint );
+        stdUtils::mergeMBRFromPoint2D( aGeom, &sPt2D->mPoint );
+        
+        // Move Next Point
+        sPt2D = STD_NEXT_POINT2D( sPt2D );
+        sBPoint = WKB_NEXT_POINT( sBPoint );
+    }
+
+    IDE_TEST_RAISE( sWkbOffset != sWKBSize, err_parsing );
+    
+    *aPtr    = sPtr + sWKBSize;
+    *aResult = IDE_SUCCESS;
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( retry_memory );
+    {
+        *aResult = IDE_FAILURE;
+        return IDE_SUCCESS;
+    }
+    IDE_EXCEPTION( err_parsing );
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_WKB ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description: PROJ-2422 SRID
+ * EWKB(Extended Well Known Binary)∏¶ ¿–æÓµÈø© stdMultiLineString2DExtType ∞¥√º∑Œ ¿˙¿Â«—¥Ÿ.
+ * EWKBø°¥¬ 3¬˜ø¯ µ•¿Ã≈Õ∞° ¡∏¿Á«œ¡ˆ æ ¥¬¥Ÿ.
+ *
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ WKB πˆ∆€ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): WKB πˆ∆€¿« Fence
+ * stdGeometryHeader* aGeom(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void* aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
+ * IDE_RC* aResult(Out): Error Code
+ **********************************************************************/
+IDE_RC stdParsing::getEWKBMultiLineString( UChar**                    aPtr,
+                                           UChar*                     aWKBFence,
+                                           stdGeometryHeader*         aGeom,
+                                           void*                      aFence,
+                                           IDE_RC*                    aResult )
+{
+    stdMultiLineString2DExtType*  sGeom2D = (stdMultiLineString2DExtType*)aGeom;
+    stdLineString2DType*          sLine2D = NULL;
+    UChar*                        sPtr = *aPtr;
+    UInt                          sObjectCnt;
+    UInt                          sTotalSize = 0;
+    UInt                          i;
+    
+    EWKBMultiLineString*          sBMLine = (EWKBMultiLineString*)*aPtr;
+    WKBLineString*                sBLine;    
+    UInt                          sWkbOffset = 0;
+    UInt                          sWkbSize;
+    UInt                          sWkbType;
+    SInt                          sSRID;
+    // BUG-24357 WKB Endian
+    idBool          sEquiEndian = ID_FALSE;
+    
+    stdUtils::nullify( aGeom );
+
+    IDE_TEST_RAISE( ( sPtr + EWKB_MLINE_SIZE ) > aWKBFence, err_parsing );
+    
+    IDE_TEST( readWKB_Header( (UChar*)sBMLine, &sEquiEndian, &sWkbType, &sWkbOffset, NULL )
+              != IDE_SUCCESS );
+    IDE_TEST_RAISE( sWkbType != EWKB_MULTILINESTRING_TYPE, err_parsing );
+
+    readWKB_SInt( sBMLine->mSRID, &sSRID, &sWkbOffset, sEquiEndian );
+    readWKB_UInt( sBMLine->mNumWKBLineStrings, &sObjectCnt, &sWkbOffset,
+                  sEquiEndian );
+
+    sLine2D = STD_FIRST_LINE2D( sGeom2D );    // Move First Line
+    sBLine = EWKB_FIRST_LINE( sBMLine );
+    for ( i = 0; i < sObjectCnt; i++ )
+    {
+        IDE_TEST_RAISE( ( sPtr + sWkbOffset + WKB_GEOHEAD_SIZE ) > aWKBFence, 
+                        err_parsing);
+        IDE_TEST( readWKB_Header( (UChar*)sBLine, &sEquiEndian, &sWkbType, &sWkbOffset, NULL )
+                  != IDE_SUCCESS );
+        IDE_TEST_RAISE( sWkbType != WKB_LINESTRING_TYPE, err_parsing );
+
+        sWkbOffset -= WKB_GEOHEAD_SIZE;
+       
+        switch( sWkbType )
+        {
+        case WKB_LINESTRING_TYPE :
+            IDE_TEST( getWKBLineString( (UChar**)&sBLine,
+                                        aWKBFence, 
+                                        (stdGeometryHeader*)sLine2D,
+                                        aFence,
+                                        aResult ) != IDE_SUCCESS );
+            IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
+            break;
+        default :
+            IDE_RAISE( IDE_EXCEPTION_END_LABEL );
+        } // switch
+        
+        IDE_TEST( stdUtils::mergeMBRFromHeader( aGeom, (stdGeometryHeader*)sLine2D )
+                  != IDE_SUCCESS );
+        sTotalSize += sLine2D->mSize;
+        
+        sLine2D = STD_NEXT_LINE2D( sLine2D );
+    } // while
+
+    sWkbSize   = ( ((SChar*)sBLine) - ((SChar*)sBMLine) ); // Fix BUG-16445
+    sTotalSize += STD_MLINE2D_EXT_SIZE;
+
+    /* BUG-32531 Consider for GIS EMPTY */
+    if ( sObjectCnt == 0 )
+    {
+        aGeom->mType = STD_EMPTY_TYPE;
+    }
+    else
+    {
+        sGeom2D->mType = STD_MULTILINESTRING_2D_EXT_TYPE;
+    }
+
+    sGeom2D->mSize = sTotalSize;
+    sGeom2D->mSRID = sSRID;
+    sGeom2D->mNumObjects = sObjectCnt;
+
+    IDE_TEST( (sPtr + sWkbSize) > aWKBFence );
+    *aPtr = sPtr + sWkbSize;  // Fix BUG-16445
+    *aResult = IDE_SUCCESS;
+    
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION( retry_memory );
+    {
+        *aResult = IDE_FAILURE;
+        return IDE_SUCCESS;
+    }
+    IDE_EXCEPTION( err_parsing );
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_WKB ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description: PROJ-2422 SRID
+ * EWKB(Extended Well Known Binary)∏¶ ¿–æÓµÈø© stdMultiPolygon2DExtType ∞¥√º∑Œ ¿˙¿Â«—¥Ÿ.
+ * EWKBø°¥¬ 3¬˜ø¯ µ•¿Ã≈Õ∞° ¡∏¿Á«œ¡ˆ æ ¥¬¥Ÿ.
+ *
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ WKB πˆ∆€ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): WKB πˆ∆€¿« Fence
+ * stdGeometryHeader* aGeom(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void* aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
+ * IDE_RC* aResult(Out): Error Code
+ **********************************************************************/
+IDE_RC stdParsing::getEWKBMultiPolygon( UChar**                    aPtr,
+                                        UChar*                     aWKBFence,
+                                        stdGeometryHeader*         aGeom,
+                                        void*                      aFence,
+                                        IDE_RC*                    aResult )
+{
+    stdMultiPolygon2DExtType*  sGeom2D = (stdMultiPolygon2DExtType*)aGeom;
+    stdPolygon2DType*          sPoly2D = NULL;
+    UChar*                     sPtr = *aPtr;
+    UInt                       sObjectCnt;
+    UInt                       sTotalSize = 0;
+    UInt                       i;
+    UInt                       sWkbSize;
+    
+    EWKBMultiPolygon*          sBMPolygon = (EWKBMultiPolygon*)*aPtr;
+    WKBPolygon*                sBPolygon;
+    UInt                       sWkbOffset = 0;
+    UInt                       sWkbType;
+    SInt                       sSRID;
+
+    // BUG-24357 WKB Endian
+    idBool          sEquiEndian = ID_FALSE;
+    
+    stdUtils::nullify( aGeom );
+
+    IDE_TEST_RAISE( ( sPtr + EWKB_MPOLY_SIZE ) > aWKBFence, err_parsing );
+    
+    IDE_TEST( readWKB_Header( (UChar*)sBMPolygon, &sEquiEndian, &sWkbType, &sWkbOffset, NULL )
+              != IDE_SUCCESS );
+    IDE_TEST_RAISE( sWkbType != EWKB_MULTIPOLYGON_TYPE, err_parsing );
+
+    readWKB_SInt( sBMPolygon->mSRID, &sSRID, &sWkbOffset,
+                  sEquiEndian );
+    readWKB_UInt( sBMPolygon->mNumWKBPolygons, &sObjectCnt, &sWkbOffset,
+                  sEquiEndian );
+    
+    sPoly2D = STD_FIRST_POLY2D( sGeom2D );    // Move First Polygon
+    sBPolygon = EWKB_FIRST_POLY( sBMPolygon );
+    for ( i = 0; i < sObjectCnt; i++ )
+    {
+        IDE_TEST_RAISE( ( sPtr + sWkbOffset + WKB_GEOHEAD_SIZE ) > aWKBFence, 
+                        err_parsing );
+        IDE_TEST( readWKB_Header( (UChar*)sBPolygon, &sEquiEndian, &sWkbType, &sWkbOffset, NULL )
+                  != IDE_SUCCESS );
+        IDE_TEST_RAISE( sWkbType != WKB_POLYGON_TYPE, err_parsing );
+        sWkbOffset -= WKB_GEOHEAD_SIZE;
+       
+        switch( sWkbType )
+        {
+        case WKB_POLYGON_TYPE :
+            IDE_TEST( getWKBPolygon( (UChar**)&sBPolygon,
+                                     aWKBFence,
+                                     (stdGeometryHeader*)sPoly2D,
+                                     aFence,
+                                     aResult )!= IDE_SUCCESS );
+            IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
+            break;
+        default :
+            IDE_RAISE( IDE_EXCEPTION_END_LABEL );
+        } // switch
+        
+        IDE_TEST( stdUtils::mergeMBRFromHeader( aGeom, (stdGeometryHeader*)sPoly2D )
+                  != IDE_SUCCESS );
+        sTotalSize += sPoly2D->mSize;
+        
+        sPoly2D = STD_NEXT_POLY2D( sPoly2D );
+    } // while
+    
+    sWkbSize   = ( ( (SChar*)sBPolygon ) - ( (SChar*)sBMPolygon ) ); // Fix BUG-16445
+    sTotalSize += STD_MPOLY2D_EXT_SIZE;
+
+    /* BUG-32531 Consider for GIS EMPTY */
+    if ( sObjectCnt == 0 )
+    {
+        aGeom->mType = STD_EMPTY_TYPE;
+    }
+    else
+    {
+        sGeom2D->mType = STD_MULTIPOLYGON_2D_EXT_TYPE;
+    }
+
+    sGeom2D->mSize = sTotalSize;
+    sGeom2D->mSRID = sSRID;
+    sGeom2D->mNumObjects = sObjectCnt;
+
+    IDE_TEST( ( sPtr + sWkbSize ) > aWKBFence );
+    
+    *aPtr = sPtr + sWkbSize; // Fix BUG-16445
+    *aResult = IDE_SUCCESS;
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( retry_memory );
+    {
+        *aResult = IDE_FAILURE;
+        return IDE_SUCCESS;
+    }
+    IDE_EXCEPTION( err_parsing );
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_WKB ) );
+    }
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description: PROJ-2422 SRID
+ * EWKB(Extended Well Known Binary)∏¶ ¿–æÓµÈø© stdGeoCollection2DExtType ∞¥√º∑Œ ¿˙¿Â«—¥Ÿ.
+ * EWKBø°¥¬ 3¬˜ø¯ µ•¿Ã≈Õ∞° ¡∏¿Á«œ¡ˆ æ ¥¬¥Ÿ.
+ *
+ * UChar **aPtr(InOut): ¿–æÓµÈ¿œ WKB πˆ∆€ ¿ßƒ°, ¿–¿∫ ¥Ÿ¿Ω ±◊ ∏∏≈≠ ¡ı∞°«—¥Ÿ.
+ * UChar *aWKTFence(In): WKB πˆ∆€¿« Fence
+ * stdGeometryHeader* aGeom(Out): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)
+ * void* aFence(In): ¿˙¿Âµ… πˆ∆€(Geometry ∞¥√º)¿« Fence
+ * IDE_RC* aResult(Out): Error Code
+ **********************************************************************/
+IDE_RC stdParsing::getEWKBGeoCollection( UChar**                    aPtr,
+                                         UChar*                     aWKBFence,
+                                         stdGeometryHeader*         aGeom,
+                                         void*                      aFence,
+                                         IDE_RC*                    aResult )
+{
+    stdGeoCollection2DExtType* sGeom2D = (stdGeoCollection2DExtType*)aGeom;
+    stdGeometryHeader*         sCurrObj;
+    UChar*                     sPtr = *aPtr;
+    UInt                       sObjectCnt;
+    UInt                       sTotalSize = 0;
+    UInt                       i;
+    
+    EWKBGeometryCollection*    sBColl = (EWKBGeometryCollection*)*aPtr;
+    WKBGeometry*               sBCurrObj;
+    UInt                       sWkbOffset = 0;
+    UInt                       sWkbType;
+    SInt                       sSRID;
+
+    // BUG-24357 WKB Endian
+    idBool          sEquiEndian = ID_FALSE;
+    
+    stdUtils::nullify( aGeom );
+
+    IDE_TEST_RAISE( ( sPtr + EWKB_COLL_SIZE ) > aWKBFence, err_parsing );
+    
+    IDE_TEST( readWKB_Header( (UChar*)sBColl, &sEquiEndian, &sWkbType, &sWkbOffset, NULL )
+              != IDE_SUCCESS );
+    IDE_TEST_RAISE( sWkbType != EWKB_COLLECTION_TYPE, err_parsing );
+
+    readWKB_SInt( sBColl->mSRID, &sSRID, &sWkbOffset, sEquiEndian );
+    readWKB_UInt( sBColl->mNumWKBGeometries, &sObjectCnt, &sWkbOffset, sEquiEndian );
+    
+    sBCurrObj = EWKB_FIRST_COLL( sBColl );
+    sCurrObj = (stdGeometryHeader*)STD_FIRST_COLL2D( sGeom2D );
+    for ( i = 0; i < sObjectCnt; i++ )
+    {
+        IDE_TEST( readWKB_Header( (UChar*)sBCurrObj, &sEquiEndian, &sWkbType, &sWkbOffset, NULL )
+                  != IDE_SUCCESS );
+        sWkbOffset -= WKB_GEOHEAD_SIZE;
+       
+        switch( sWkbType )
+        {
+        case WKB_POINT_TYPE :
+            IDE_TEST( getWKBPoint( (UChar**)&sBCurrObj,
+                                   aWKBFence,
+                                   sCurrObj,
+                                   aFence,
+                                   aResult) != IDE_SUCCESS );
+            IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
+            break;
+        case EWKB_POINT_TYPE :
+            IDE_TEST( getEWKBPoint( (UChar**)&sBCurrObj,
+                                    aWKBFence,
+                                    sCurrObj,
+                                    aFence,
+                                    aResult ) != IDE_SUCCESS );
+            IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
+            break;
+        case WKB_LINESTRING_TYPE :
+            IDE_TEST( getWKBLineString( (UChar**)&sBCurrObj,
+                                        aWKBFence,
+                                        sCurrObj,
+                                        aFence,
+                                        aResult ) != IDE_SUCCESS );
+            IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
+            break;
+        case EWKB_LINESTRING_TYPE :
+            IDE_TEST( getEWKBLineString( (UChar**)&sBCurrObj,
+                                         aWKBFence,
+                                         sCurrObj,
+                                         aFence,
+                                         aResult ) != IDE_SUCCESS );
+            IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
+            break;
+        case WKB_POLYGON_TYPE :
+            IDE_TEST( getWKBPolygon( (UChar**)&sBCurrObj,
+                                     aWKBFence,
+                                     sCurrObj,
+                                     aFence,
+                                     aResult ) != IDE_SUCCESS );
+            IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
+            break;
+        case EWKB_POLYGON_TYPE :
+            IDE_TEST( getEWKBPolygon( (UChar**)&sBCurrObj,
+                                      aWKBFence,
+                                      sCurrObj,
+                                      aFence,
+                                      aResult ) != IDE_SUCCESS );
+            IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
+            break;
+        case WKB_MULTIPOINT_TYPE :
+            IDE_TEST( getWKBMultiPoint( (UChar**)&sBCurrObj,
+                                        aWKBFence,
+                                        sCurrObj,
+                                        aFence,
+                                        aResult ) != IDE_SUCCESS );
+            IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
+            break;
+        case EWKB_MULTIPOINT_TYPE :
+            IDE_TEST( getEWKBMultiPoint( (UChar**)&sBCurrObj,
+                                         aWKBFence,
+                                         sCurrObj,
+                                         aFence,
+                                         aResult ) != IDE_SUCCESS );
+            IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
+            break;
+        case WKB_MULTILINESTRING_TYPE :
+            IDE_TEST( getWKBMultiLineString( (UChar**)&sBCurrObj,
+                                             aWKBFence,
+                                             sCurrObj,
+                                             aFence,
+                                             aResult ) != IDE_SUCCESS );
+            IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
+            break;
+        case EWKB_MULTILINESTRING_TYPE :
+            IDE_TEST( getEWKBMultiLineString( (UChar**)&sBCurrObj,
+                                              aWKBFence,
+                                              sCurrObj,
+                                              aFence,
+                                              aResult ) != IDE_SUCCESS );
+            IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
+            break;
+        case WKB_MULTIPOLYGON_TYPE :
+            IDE_TEST( getWKBMultiPolygon( (UChar**)&sBCurrObj,
+                                          aWKBFence,
+                                          sCurrObj,
+                                          aFence,
+                                          aResult ) != IDE_SUCCESS );
+            IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
+            break;
+        case EWKB_MULTIPOLYGON_TYPE :
+            IDE_TEST( getEWKBMultiPolygon( (UChar**)&sBCurrObj,
+                                           aWKBFence,
+                                           sCurrObj,
+                                           aFence,
+                                           aResult ) != IDE_SUCCESS );
+            IDE_TEST_RAISE( *aResult != IDE_SUCCESS, retry_memory );
+            break;
+        default :
+            IDE_RAISE( IDE_EXCEPTION_END_LABEL );
+        } // switch
+        
+        IDE_TEST( stdUtils::mergeMBRFromHeader( aGeom, sCurrObj )
+                  != IDE_SUCCESS );
+        sTotalSize += sCurrObj->mSize;
+        
+        sCurrObj = (stdGeometryHeader*)STD_NEXT_GEOM( sCurrObj );
+    } // while
+    
+    sTotalSize += STD_COLL2D_EXT_SIZE;
+
+    /* BUG-32531 Consider for GIS EMPTY */
+    if ( sObjectCnt == 0 )
+    {
+        aGeom->mType = STD_EMPTY_TYPE;
+    }
+    else
+    {
+        sGeom2D->mType = STD_GEOCOLLECTION_2D_EXT_TYPE;
+    }
+
+    sGeom2D->mSize = sTotalSize;
+    sGeom2D->mSRID = sSRID;
+    sGeom2D->mNumGeometries = sObjectCnt;
+
+    *aPtr = sPtr;
+    *aResult = IDE_SUCCESS;
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( retry_memory );
+    {
+        *aResult = IDE_FAILURE;
+        return IDE_SUCCESS;
+    }
+    IDE_EXCEPTION( err_parsing );
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_WKB ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }

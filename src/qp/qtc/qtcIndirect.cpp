@@ -16,20 +16,20 @@
  
 
 /***********************************************************************
- * $Id: qtcIndirect.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qtcIndirect.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  *
  * Description :
  *
- *     Indirection ì—°ì‚°ì„ ìˆ˜í–‰í•˜ëŠ” Node
+ *     Indirection ¿¬»êÀ» ¼öÇàÇÏ´Â Node
  *
- *     ê¸°ì¡´ì˜ ì—°ê²° ì •ë³´ë¥¼ í•´ì¹˜ì§€ ì•Šê³ , ìƒˆë¡œìš´ ì—°ê²° ê´€ê³„ë¥¼ ë§Œë“¤ê¸° ìœ„í•´
- *     ì‚¬ìš©í•œë‹¤.
+ *     ±âÁ¸ÀÇ ¿¬°á Á¤º¸¸¦ ÇØÄ¡Áö ¾Ê°í, »õ·Î¿î ¿¬°á °ü°è¸¦ ¸¸µé±â À§ÇØ
+ *     »ç¿ëÇÑ´Ù.
  *
- *     ì˜ˆë¥¼ ë“¤ì–´ ë‹¤ìŒê³¼ ê°™ì€ ì§ˆì˜ê°€ ìˆë‹¤ê³  í•˜ì.
+ *     ¿¹¸¦ µé¾î ´ÙÀ½°ú °°Àº ÁúÀÇ°¡ ÀÖ´Ù°í ÇÏÀÚ.
  *     WHERE (I1, I2) IN ( SELECT A1, A2 FROM ... );
  *
- *     ì—¬ê¸°ì— (I1 = A1) AND (I2 = A2)ì™€ ê°™ì€ ì •ë³´ë¥¼ êµ¬ì„±í•  ë•Œ,
- *     ë‹¤ìŒ ê·¸ë¦¼ê³¼ ê°™ì´ ì—°ê²° ê´€ê³„ë¥¼ ìœ ì§€í•˜ë©´ì„œ ê·¸ ì •ë³´ë¥¼ êµ¬ì„±í•  ìˆ˜ ìˆë‹¤.
+ *     ¿©±â¿¡ (I1 = A1) AND (I2 = A2)¿Í °°Àº Á¤º¸¸¦ ±¸¼ºÇÒ ¶§,
+ *     ´ÙÀ½ ±×¸²°ú °°ÀÌ ¿¬°á °ü°è¸¦ À¯ÁöÇÏ¸é¼­ ±× Á¤º¸¸¦ ±¸¼ºÇÒ ¼ö ÀÖ´Ù.
  *
  *                    [IN]
  *                     |
@@ -43,11 +43,11 @@
  *                    [Indirect] ---------> [Indirect]
  *                     ^                      
  *                     |                      
- *                    [ = ]   : (I1 = A1)ì˜ êµ¬ì„±
+ *                    [ = ]   : (I1 = A1)ÀÇ ±¸¼º
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -56,7 +56,7 @@
 #include <ide.h>
 
 //-----------------------------------------
-// INDIRECT ì—°ì‚°ìì˜ ì´ë¦„ì— ëŒ€í•œ ì •ë³´
+// INDIRECT ¿¬»êÀÚÀÇ ÀÌ¸§¿¡ ´ëÇÑ Á¤º¸
 //-----------------------------------------
 
 static mtcName qtcNames[1] = {
@@ -64,7 +64,7 @@ static mtcName qtcNames[1] = {
 };
 
 //-----------------------------------------
-// INDIRECT ì—°ì‚°ìì˜ Module ì— ëŒ€í•œ ì •ë³´
+// INDIRECT ¿¬»êÀÚÀÇ Module ¿¡ ´ëÇÑ Á¤º¸
 //-----------------------------------------
 
 static IDE_RC qtcEstimate( mtcNode*     aNode,
@@ -74,20 +74,20 @@ static IDE_RC qtcEstimate( mtcNode*     aNode,
                            mtcCallBack* aCallBack );
 
 mtfModule qtc::indirectModule = {
-    1 |                      // í•˜ë‚˜ì˜ Column ê³µê°„
-    MTC_NODE_OPERATOR_MISC | // ê¸°íƒ€ ì—°ì‚°ì
-    MTC_NODE_INDIRECT_TRUE,  // Indirectionì„ ìˆ˜í–‰í•¨
-    ~0,                      // Indexable Mask : ì˜ë¯¸ ì—†ìŒ
-    1.0,                     // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
-    qtcNames,                // ì´ë¦„ ì •ë³´
-    NULL,                    // Counter ì—°ì‚°ì ì—†ìŒ
-    mtf::initializeDefault,  // ì„œë²„ êµ¬ë™ì‹œ ì´ˆê¸°í™” í•¨ìˆ˜, ì—†ìŒ
-    mtf::finalizeDefault,    // ì„œë²„ ì¢…ë£Œì‹œ ì¢…ë£Œ í•¨ìˆ˜, ì—†ìŒ
-    qtcEstimate              // Estimate í•  í•¨ìˆ˜
+    1 |                      // ÇÏ³ªÀÇ Column °ø°£
+    MTC_NODE_OPERATOR_MISC | // ±âÅ¸ ¿¬»êÀÚ
+    MTC_NODE_INDIRECT_TRUE,  // IndirectionÀ» ¼öÇàÇÔ
+    ~0,                      // Indexable Mask : ÀÇ¹Ì ¾øÀ½
+    1.0,                     // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    qtcNames,                // ÀÌ¸§ Á¤º¸
+    NULL,                    // Counter ¿¬»êÀÚ ¾øÀ½
+    mtf::initializeDefault,  // ¼­¹ö ±¸µ¿½Ã ÃÊ±âÈ­ ÇÔ¼ö, ¾øÀ½
+    mtf::finalizeDefault,    // ¼­¹ö Á¾·á½Ã Á¾·á ÇÔ¼ö, ¾øÀ½
+    qtcEstimate              // Estimate ÇÒ ÇÔ¼ö
 };
 
 //-----------------------------------------
-// INDIRECT ì—°ì‚°ìì˜ ìˆ˜í–‰ í•¨ìˆ˜ì˜ ì •ì˜
+// INDIRECT ¿¬»êÀÚÀÇ ¼öÇà ÇÔ¼öÀÇ Á¤ÀÇ
 //-----------------------------------------
 
 IDE_RC qtcCalculate_Indirect( mtcNode*     aNode,
@@ -97,15 +97,15 @@ IDE_RC qtcCalculate_Indirect( mtcNode*     aNode,
                               mtcTemplate* aTemplate );
 
 static const mtcExecute qtcExecute = {
-    mtf::calculateNA,      // Aggregation ì´ˆê¸°í™” í•¨ìˆ˜, ì—†ìŒ
-    mtf::calculateNA,      // Aggregation ìˆ˜í–‰ í•¨ìˆ˜, ì—†ìŒ
+    mtf::calculateNA,      // Aggregation ÃÊ±âÈ­ ÇÔ¼ö, ¾øÀ½
+    mtf::calculateNA,      // Aggregation ¼öÇà ÇÔ¼ö, ¾øÀ½
     mtf::calculateNA,
-    mtf::calculateNA,      // Aggregation ì¢…ë£Œ í•¨ìˆ˜, ì—†ìŒ
-    qtcCalculate_Indirect, // INDIRECTë¥¼ ìœ„í•œ ì—°ì‚° í•¨ìˆ˜
-    NULL,                  // ì—°ì‚°ì„ ìœ„í•œ ë¶€ê°€ ì •ë³´, ì—†ìŒ
+    mtf::calculateNA,      // Aggregation Á¾·á ÇÔ¼ö, ¾øÀ½
+    qtcCalculate_Indirect, // INDIRECT¸¦ À§ÇÑ ¿¬»ê ÇÔ¼ö
+    NULL,                  // ¿¬»êÀ» À§ÇÑ ºÎ°¡ Á¤º¸, ¾øÀ½
     mtx::calculateNA,
-    mtk::estimateRangeNA,  // Key Range í¬ê¸° ì¶”ì¶œ í•¨ìˆ˜, ì—†ìŒ 
-    mtk::extractRangeNA    // Key Range ìƒì„± í•¨ìˆ˜, ì—†ìŒ
+    mtk::estimateRangeNA,  // Key Range Å©±â ÃßÃâ ÇÔ¼ö, ¾øÀ½ 
+    mtk::extractRangeNA    // Key Range »ı¼º ÇÔ¼ö, ¾øÀ½
 };
 
 IDE_RC qtcEstimate( mtcNode*     aNode,
@@ -117,17 +117,17 @@ IDE_RC qtcEstimate( mtcNode*     aNode,
 /***********************************************************************
  *
  * Description :
- *    INDIRECT ì—°ì‚°ìì— ëŒ€í•˜ì—¬ Estimate ë¥¼ ìˆ˜í–‰í•¨.
- *    Indirect Nodeì— ëŒ€í•œ Column ì •ë³´ ë° Execute ì •ë³´ë¥¼ Settingí•œë‹¤.
+ *    INDIRECT ¿¬»êÀÚ¿¡ ´ëÇÏ¿© Estimate ¸¦ ¼öÇàÇÔ.
+ *    Indirect Node¿¡ ´ëÇÑ Column Á¤º¸ ¹× Execute Á¤º¸¸¦ SettingÇÑ´Ù.
  *
  * Implementation :
  *
- *    PROJ-1492ë¡œ CASTì—°ì‚°ìê°€ ì¶”ê°€ë˜ì–´ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë¥¼ ì‚¬ìš©í•˜ë”ë¼ë„
- *    ê·¸ íƒ€ì…ì´ ì •ì˜ë˜ì–´ Validationì‹œ Estimate ë¥¼ í˜¸ì¶œí•  ìˆ˜ ìˆë‹¤.
+ *    PROJ-1492·Î CAST¿¬»êÀÚ°¡ Ãß°¡µÇ¾î È£½ºÆ® º¯¼ö¸¦ »ç¿ëÇÏ´õ¶óµµ
+ *    ±× Å¸ÀÔÀÌ Á¤ÀÇµÇ¾î Validation½Ã Estimate ¸¦ È£ÃâÇÒ ¼ö ÀÖ´Ù.
  *
- *    Indirect ë…¸ë“œëŠ” ë³„ë„ì˜ Column ì •ë³´ê°€ í•„ìš”ì—†ìœ¼ë¯€ë¡œ,
- *    Skip Moduleë¡œ estimationì„ í•˜ë©°, ìƒìœ„ Nodeì—ì„œì˜ estimate ë¥¼
- *    ìœ„í•˜ì—¬ í•˜ìœ„ Nodeì˜ ì •ë³´ë¥¼ Stackì— ì„¤ì •í•˜ì—¬ ì¤€ë‹¤.
+ *    Indirect ³ëµå´Â º°µµÀÇ Column Á¤º¸°¡ ÇÊ¿ä¾øÀ¸¹Ç·Î,
+ *    Skip Module·Î estimationÀ» ÇÏ¸ç, »óÀ§ Node¿¡¼­ÀÇ estimate ¸¦
+ *    À§ÇÏ¿© ÇÏÀ§ NodeÀÇ Á¤º¸¸¦ Stack¿¡ ¼³Á¤ÇÏ¿© ÁØ´Ù.
  *
  ***********************************************************************/
 #define IDE_FN "IDE_RC qtcEstimate"
@@ -141,7 +141,7 @@ IDE_RC qtcEstimate( mtcNode*     aNode,
     sCallBackInfo = (qtcCallBackInfo *) aCallBack->info;
     sTemplate = & sCallBackInfo->tmplate->tmplate;
 
-    // Column ì •ë³´ë¥¼ skipModuleë¡œ ì„¤ì •í•˜ê³ , Execute í•¨ìˆ˜ë¥¼ ì§€ì •í•œë‹¤.
+    // Column Á¤º¸¸¦ skipModule·Î ¼³Á¤ÇÏ°í, Execute ÇÔ¼ö¸¦ ÁöÁ¤ÇÑ´Ù.
     sColumn = aTemplate->rows[aNode->table].columns + aNode->column;
     aTemplate->rows[aNode->table].execute[aNode->column] = qtcExecute;
 
@@ -150,8 +150,8 @@ IDE_RC qtcEstimate( mtcNode*     aNode,
               != IDE_SUCCESS );
     */
 
-    // Argumentë¥¼ ì–»ì–´ ì´ ì •ë³´ë¥¼ ìƒìœ„ Nodeì—ì„œ ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡
-    // Stackì— ì„¤ì •í•œë‹¤.
+    // Argument¸¦ ¾ò¾î ÀÌ Á¤º¸¸¦ »óÀ§ Node¿¡¼­ »ç¿ëÇÒ ¼ö ÀÖµµ·Ï
+    // Stack¿¡ ¼³Á¤ÇÑ´Ù.
     sNode = aNode->arguments;
 
     IDE_TEST( mtc::initializeColumn( sColumn,
@@ -184,12 +184,12 @@ IDE_RC qtcCalculate_Indirect( mtcNode*     aNode,
  *
  * Description :
  *
- *    Indirectioní•˜ì—¬ argumentë¥¼ ìˆ˜í–‰í•˜ê³ , ì´ì— ëŒ€í•œ Conversionì„ ìˆ˜í–‰í•œë‹¤.
+ *    IndirectionÇÏ¿© argument¸¦ ¼öÇàÇÏ°í, ÀÌ¿¡ ´ëÇÑ ConversionÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
  *
- *    Argumentë¥¼ ìˆ˜í–‰í•˜ê³  Argumentì˜ Conversionì„ ìˆ˜í–‰í•œë‹¤.
- *    ì¦‰, ìì‹ ë§Œì˜ ë³„ë„ì˜ ì‘ì—…ì„ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *    Argument¸¦ ¼öÇàÇÏ°í ArgumentÀÇ ConversionÀ» ¼öÇàÇÑ´Ù.
+ *    Áï, ÀÚ½Å¸¸ÀÇ º°µµÀÇ ÀÛ¾÷À» ¼öÇàÇÏÁö ¾Ê´Â´Ù.
  *
  ***********************************************************************/
 

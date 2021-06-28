@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtdChar.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtdChar.cpp 86985 2020-03-23 02:02:28Z donovan.seo $
  **********************************************************************/
 
 #include <mte.h>
@@ -33,7 +33,7 @@ extern mtdModule mtdDouble;
 
 
 //------------------------------------------------------
-// mtdSelectivityChar()Î•º ÏúÑÌïú Îß§ÌÅ¨Î°ú ÏãúÏûë
+// mtdSelectivityChar()∏¶ ¿ß«— ∏≈≈©∑Œ Ω√¿€
 //------------------------------------------------------
 
 // numeric type of string
@@ -222,37 +222,37 @@ mtdModule mtdChar = {
     {
         // Key Comparison
         {
-            // mt valueÎì§ Í∞ÑÏùò compare
+            // mt valueµÈ ∞£¿« compare
             mtdCharFixedMtdFixedMtdKeyAscComp, // Ascending Key Comparison
             mtdCharFixedMtdFixedMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt valueÎì§ Í∞ÑÏùò compare
+            // mt valueµÈ ∞£¿« compare
             mtdCharMtdMtdKeyAscComp, // Ascending Key Comparison
             mtdCharMtdMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt valueÏôÄ stored valueÍ∞ÑÏùò compare
+            // mt valueøÕ stored value∞£¿« compare
             mtdCharStoredMtdKeyAscComp, // Ascending Key Comparison
             mtdCharStoredMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // stored valueÎì§ Í∞ÑÏùò compare
+            // stored valueµÈ ∞£¿« compare
             mtdCharStoredStoredKeyAscComp, // Ascending Key Comparison
             mtdCharStoredStoredKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            /* PROJ-2433 : index Direct keyÏôÄ fixed mt valueÎì§ Í∞ÑÏùò compare */
+            /* PROJ-2433 : index Direct keyøÕ fixed mt valueµÈ ∞£¿« compare */
             mtdCharIndexKeyFixedMtdKeyAscComp,
             mtdCharIndexKeyFixedMtdKeyDescComp
         }
         ,
         {
-            /* PROJ-2433 : index Direct keyÏôÄ mt valueÎì§ Í∞ÑÏùò compare */
+            /* PROJ-2433 : index Direct keyøÕ mt valueµÈ ∞£¿« compare */
             mtdCharIndexKeyMtdKeyAscComp,
             mtdCharIndexKeyMtdKeyDescComp
         }
@@ -288,7 +288,7 @@ IDE_RC mtdInitialize( UInt aNo )
 {
     IDE_TEST( mtd::initializeModule( &mtdChar, aNo ) != IDE_SUCCESS );
 
-    // mtdColumnÏùò Ï¥àÍ∏∞Ìôî
+    // mtdColumn¿« √ ±‚»≠
     IDE_TEST( mtc::initializeColumn( & mtdColumn,
                                      & mtdChar,
                                      0,   // arguments
@@ -358,8 +358,8 @@ IDE_RC mtdValue( mtcTemplate* /* aTemplate */,
     *aResult = IDE_SUCCESS;
 
     // To fix BUG-13444
-    // tokenFenceÏôÄ RowFenceÎäî Î≥ÑÍ∞úÏùò Í≤ÄÏÇ¨Í≥ºÏ†ïÏù¥ÎØÄÎ°ú,
-    // Î®ºÏ†Ä RowFenceÍ≤ÄÏÇ¨ ÌõÑ TokenFenceÍ≤ÄÏÇ¨Î•º Ìï¥Ïïº ÌïúÎã§.
+    // tokenFenceøÕ RowFence¥¬ ∫∞∞≥¿« ∞ÀªÁ∞˙¡§¿Ãπ«∑Œ,
+    // ∏’¿˙ RowFence∞ÀªÁ »ƒ TokenFence∞ÀªÁ∏¶ «ÿæﬂ «—¥Ÿ.
     sIterator = sValue->value;
     sFence    = (UChar*)aValue + aValueSize;
     if( sIterator >= sFence )
@@ -388,13 +388,13 @@ IDE_RC mtdValue( mtcTemplate* /* aTemplate */,
         }
 
         // BUG-40290
-        // Î≤ÑÌçºÍ∞Ä Î™®ÏûòÎùºÏÑú ÏûòÎ†§ÎèÑ length Î•º Í∏∞Î°ùÌï¥Ï£ºÎ©¥ Ï¢ãÎã§.
+        // πˆ∆€∞° ∏¿ﬂ∂Ûº≠ ¿ﬂ∑¡µµ length ∏¶ ±‚∑œ«ÿ¡÷∏È ¡¡¥Ÿ.
         sValue->length = sIterator - sValue->value;
     }
 
     if( *aResult == IDE_SUCCESS )
     {
-        // precision, scale Ïû¨ ÏÑ§Ï†ï ÌõÑ, estimateÎ°ú semantic Í≤ÄÏÇ¨
+        // precision, scale ¿Á º≥¡§ »ƒ, estimate∑Œ semantic ∞ÀªÁ
         aColumn->flag            = 1;
         aColumn->precision       = sValue->length != 0 ? sValue->length : 1;
         aColumn->scale           = 0;
@@ -464,7 +464,7 @@ SInt mtdCharLogicalAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd ÌÉÄÏûÖÏùò KeyÎì§ Í∞ÑÏùò ascending compare
+ * Description : Mtd ≈∏¿‘¿« KeyµÈ ∞£¿« ascending compare
  *
  * Implementation :
  *
@@ -476,7 +476,7 @@ SInt mtdCharLogicalAscComp( mtdValueInfo * aValueInfo1,
     UShort               sLength2;
     const UChar        * sValue1;
     const UChar        * sValue2;    
-    
+    idBool               sExist;
     SInt                 sCompared;
     const UChar        * sIterator;
     const UChar        * sFence;
@@ -509,13 +509,25 @@ SInt mtdCharLogicalAscComp( mtdValueInfo * aValueInfo1,
             {
                 return sCompared;
             }
+            sExist = ID_FALSE;
             for( sIterator = sValue1 + sLength2, sFence = sValue1 + sLength1;
                  sIterator < sFence;
                  sIterator++ )
             {
-                if( *sIterator > 0x20 )
+                if ( *sIterator > 0x20 )
                 {
-                    return 1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
+                }
+                else if ( *sIterator < 0x20 )
+                {
+                    sExist = ID_TRUE;
                 }
             }
             return 0;
@@ -525,13 +537,25 @@ SInt mtdCharLogicalAscComp( mtdValueInfo * aValueInfo1,
         {
             return sCompared;
         }
+        sExist = ID_FALSE;
         for( sIterator = sValue2 + sLength1, sFence = sValue2 + sLength2;
              sIterator < sFence;
              sIterator++ )
         {
-            if( *sIterator > 0x20 )
+            if ( *sIterator > 0x20 )
             {
-                return -1;
+                if ( sExist == ID_FALSE )
+                {
+                    return -1;
+                }
+                else
+                {
+                    return 1;
+                }
+            }
+            else if ( *sIterator < 0x20 )
+            {
+                sExist = ID_TRUE;
             }
         }
         return 0;
@@ -553,7 +577,7 @@ SInt mtdCharLogicalDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd ÌÉÄÏûÖÏùò KeyÎì§ Í∞ÑÏùò descending compare
+ * Description : Mtd ≈∏¿‘¿« KeyµÈ ∞£¿« descending compare
  *
  * Implementation :
  *
@@ -565,7 +589,7 @@ SInt mtdCharLogicalDescComp( mtdValueInfo * aValueInfo1,
     UShort               sLength2;
     const UChar        * sValue1;
     const UChar        * sValue2;    
-    
+    idBool               sExist;
     SInt                 sCompared;
     const UChar        * sIterator;
     const UChar        * sFence;
@@ -598,13 +622,25 @@ SInt mtdCharLogicalDescComp( mtdValueInfo * aValueInfo1,
             {
                 return sCompared;
             }
+            sExist = ID_FALSE;
             for( sIterator = sValue2 + sLength1, sFence = sValue2 + sLength2;
                  sIterator < sFence;
                  sIterator++ )
             {
-                if( *sIterator > 0x20 )
+                if ( *sIterator > 0x20 )
                 {
-                    return 1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
+                }
+                else if ( *sIterator < 0x20 )
+                {
+                    sExist = ID_TRUE;
                 }
             }
             return 0;
@@ -614,13 +650,25 @@ SInt mtdCharLogicalDescComp( mtdValueInfo * aValueInfo1,
         {
             return sCompared;
         }
+        sExist = ID_FALSE;
         for( sIterator = sValue1 + sLength2, sFence = sValue1 + sLength1;
              sIterator < sFence;
              sIterator++ )
         {
-            if( *sIterator > 0x20 )
+            if ( *sIterator > 0x20 )
             {
-                return -1;
+                if ( sExist == ID_FALSE )
+                {
+                    return -1;
+                }
+                else
+                {
+                    return 1;
+                }
+            }
+            else if ( *sIterator < 0x20 )
+            {
+                sExist = ID_TRUE;
             }
         }
         return 0;
@@ -642,7 +690,7 @@ SInt mtdCharFixedMtdFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd ÌÉÄÏûÖÏùò KeyÎì§ Í∞ÑÏùò ascending compare
+ * Description : Mtd ≈∏¿‘¿« KeyµÈ ∞£¿« ascending compare
  *
  * Implementation :
  *
@@ -654,7 +702,7 @@ SInt mtdCharFixedMtdFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
     UShort               sLength2;
     const UChar        * sValue1;
     const UChar        * sValue2;    
-    
+    idBool               sExist;
     SInt                 sCompared;
     const UChar        * sIterator;
     const UChar        * sFence;
@@ -687,13 +735,25 @@ SInt mtdCharFixedMtdFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
             {
                 return sCompared;
             }
+            sExist = ID_FALSE;
             for( sIterator = sValue1 + sLength2, sFence = sValue1 + sLength1;
                  sIterator < sFence;
                  sIterator++ )
             {
-                if( *sIterator > 0x20 )
+                if ( *sIterator > 0x20 )
                 {
-                    return 1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
+                }
+                else if ( *sIterator < 0x20 )
+                {
+                    sExist = ID_TRUE;
                 }
             }
             return 0;
@@ -703,13 +763,25 @@ SInt mtdCharFixedMtdFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
         {
             return sCompared;
         }
+        sExist = ID_FALSE;
         for( sIterator = sValue2 + sLength1, sFence = sValue2 + sLength2;
              sIterator < sFence;
              sIterator++ )
         {
-            if( *sIterator > 0x20 )
+            if ( *sIterator > 0x20 )
             {
-                return -1;
+                if ( sExist == ID_FALSE )
+                {
+                    return -1;
+                }
+                else
+                {
+                    return 1;
+                }
+            }
+            else if ( *sIterator < 0x20 )
+            {
+                sExist = ID_TRUE;
             }
         }
         return 0;
@@ -731,7 +803,7 @@ SInt mtdCharFixedMtdFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd ÌÉÄÏûÖÏùò KeyÎì§ Í∞ÑÏùò descending compare
+ * Description : Mtd ≈∏¿‘¿« KeyµÈ ∞£¿« descending compare
  *
  * Implementation :
  *
@@ -743,7 +815,7 @@ SInt mtdCharFixedMtdFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
     UShort               sLength2;
     const UChar        * sValue1;
     const UChar        * sValue2;    
-    
+    idBool               sExist;
     SInt                 sCompared;
     const UChar        * sIterator;
     const UChar        * sFence;
@@ -776,13 +848,25 @@ SInt mtdCharFixedMtdFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
             {
                 return sCompared;
             }
+            sExist = ID_FALSE;
             for( sIterator = sValue2 + sLength1, sFence = sValue2 + sLength2;
                  sIterator < sFence;
                  sIterator++ )
             {
-                if( *sIterator > 0x20 )
+                if ( *sIterator > 0x20 )
                 {
-                    return 1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
+                }
+                else if ( *sIterator < 0x20 )
+                {
+                    sExist = ID_TRUE;
                 }
             }
             return 0;
@@ -792,13 +876,25 @@ SInt mtdCharFixedMtdFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
         {
             return sCompared;
         }
+        sExist = ID_FALSE;
         for( sIterator = sValue1 + sLength2, sFence = sValue1 + sLength1;
              sIterator < sFence;
              sIterator++ )
         {
-            if( *sIterator > 0x20 )
+            if ( *sIterator > 0x20 )
             {
-                return -1;
+                if ( sExist == ID_FALSE )
+                {
+                    return -1;
+                }
+                else
+                {
+                    return 1;
+                }
+            }
+            else if ( *sIterator < 0x20 )
+            {
+                sExist = ID_TRUE;
             }
         }
         return 0;
@@ -820,7 +916,7 @@ SInt mtdCharMtdMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd ÌÉÄÏûÖÏùò KeyÎì§ Í∞ÑÏùò ascending compare
+ * Description : Mtd ≈∏¿‘¿« KeyµÈ ∞£¿« ascending compare
  *
  * Implementation :
  *
@@ -832,7 +928,7 @@ SInt mtdCharMtdMtdKeyAscComp( mtdValueInfo * aValueInfo1,
     UShort               sLength2;
     const UChar        * sValue1;
     const UChar        * sValue2;    
-    
+    idBool               sExist;
     SInt                 sCompared;
     const UChar        * sIterator;
     const UChar        * sFence;
@@ -875,13 +971,25 @@ SInt mtdCharMtdMtdKeyAscComp( mtdValueInfo * aValueInfo1,
             {
                 return sCompared;
             }
+            sExist = ID_FALSE;
             for( sIterator = sValue1 + sLength2, sFence = sValue1 + sLength1;
                  sIterator < sFence;
                  sIterator++ )
             {
-                if( *sIterator > 0x20 )
+                if ( *sIterator > 0x20 )
                 {
-                    return 1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
+                }
+                else if ( *sIterator < 0x20 )
+                {
+                    sExist = ID_TRUE;
                 }
             }
             return 0;
@@ -891,13 +999,25 @@ SInt mtdCharMtdMtdKeyAscComp( mtdValueInfo * aValueInfo1,
         {
             return sCompared;
         }
+        sExist = ID_FALSE;
         for( sIterator = sValue2 + sLength1, sFence = sValue2 + sLength2;
              sIterator < sFence;
              sIterator++ )
         {
-            if( *sIterator > 0x20 )
+            if ( *sIterator > 0x20 )
             {
-                return -1;
+                if ( sExist == ID_FALSE )
+                {
+                    return -1;
+                }
+                else
+                {
+                    return 1;
+                }
+            }
+            else if ( *sIterator < 0x20 )
+            {
+                sExist = ID_TRUE;
             }
         }
         return 0;
@@ -919,7 +1039,7 @@ SInt mtdCharMtdMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd ÌÉÄÏûÖÏùò KeyÎì§ Í∞ÑÏùò descending compare
+ * Description : Mtd ≈∏¿‘¿« KeyµÈ ∞£¿« descending compare
  *
  * Implementation :
  *
@@ -931,7 +1051,7 @@ SInt mtdCharMtdMtdKeyDescComp( mtdValueInfo * aValueInfo1,
     UShort               sLength2;
     const UChar        * sValue1;
     const UChar        * sValue2;    
-    
+    idBool               sExist;
     SInt                 sCompared;
     const UChar        * sIterator;
     const UChar        * sFence;
@@ -974,13 +1094,25 @@ SInt mtdCharMtdMtdKeyDescComp( mtdValueInfo * aValueInfo1,
             {
                 return sCompared;
             }
+            sExist = ID_FALSE;
             for( sIterator = sValue2 + sLength1, sFence = sValue2 + sLength2;
                  sIterator < sFence;
                  sIterator++ )
             {
-                if( *sIterator > 0x20 )
+                if ( *sIterator > 0x20 )
                 {
-                    return 1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
+                }
+                else if ( *sIterator < 0x20 )
+                {
+                    sExist = ID_TRUE;
                 }
             }
             return 0;
@@ -990,13 +1122,25 @@ SInt mtdCharMtdMtdKeyDescComp( mtdValueInfo * aValueInfo1,
         {
             return sCompared;
         }
+        sExist = ID_FALSE;
         for( sIterator = sValue1 + sLength2, sFence = sValue1 + sLength1;
              sIterator < sFence;
              sIterator++ )
         {
-            if( *sIterator > 0x20 )
+            if ( *sIterator > 0x20 )
             {
-                return -1;
+                if ( sExist == ID_FALSE )
+                {
+                    return -1;
+                }
+                else
+                {
+                    return 1;
+                }
+            }
+            else if ( *sIterator < 0x20 )
+            {
+                sExist = ID_TRUE;
             }
         }
         return 0;
@@ -1018,7 +1162,7 @@ SInt mtdCharStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd ÌÉÄÏûÖÏùò KeyÏôÄ Stored Key Í∞ÑÏùò ascending compare
+ * Description : Mtd ≈∏¿‘¿« KeyøÕ Stored Key ∞£¿« ascending compare
  *
  * Implementation :
  *
@@ -1030,7 +1174,7 @@ SInt mtdCharStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
     UShort               sLength2;
     const UChar        * sValue1;
     const UChar        * sValue2;    
-    
+    idBool               sExist;
     SInt                 sCompared;
     const UChar        * sIterator;
     const UChar        * sFence;
@@ -1040,8 +1184,8 @@ SInt mtdCharStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
     // value1
     //---------    
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // Dictionary compression columnÏù∏ Í≤ΩÏö∞ store typeÏùÑmt typeÏúºÎ°ú
-    // Î≥ÄÌôòÌï¥ÏÑú Ïã§Ï†ú Îç∞Ïù¥ÌÑ∞Î•º Í∞ÄÏ†∏Ïò®Îã§.
+    // Dictionary compression column¿Œ ∞ÊøÏ store type¿ªmt type¿∏∑Œ
+    // ∫Ø»Ø«ÿº≠ Ω«¡¶ µ•¿Ã≈Õ∏¶ ∞°¡Æø¬¥Ÿ.
     if ( (((smiColumn*)aValueInfo1->column)->flag & SMI_COLUMN_COMPRESSION_MASK) !=
          SMI_COLUMN_COMPRESSION_TRUE )
     {
@@ -1086,13 +1230,25 @@ SInt mtdCharStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
             {
                 return sCompared;
             }
+            sExist = ID_FALSE;
             for( sIterator = sValue1 + sLength2, sFence = sValue1 + sLength1;
                  sIterator < sFence;
                  sIterator++ )
             {
-                if( *sIterator > 0x20 )
+                if ( *sIterator > 0x20 )
                 {
-                    return 1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
+                }
+                else if ( *sIterator < 0x20 )
+                {
+                    sExist = ID_TRUE;
                 }
             }
             return 0;
@@ -1102,13 +1258,25 @@ SInt mtdCharStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
         {
             return sCompared;
         }
+        sExist = ID_FALSE;
         for( sIterator = sValue2 + sLength1, sFence = sValue2 + sLength2;
              sIterator < sFence;
              sIterator++ )
         {
-            if( *sIterator > 0x20 )
+            if ( *sIterator > 0x20 )
             {
-                return -1;
+                if ( sExist == ID_FALSE )
+                {
+                    return -1;
+                }
+                else
+                {
+                    return 1;
+                }
+            }
+            else if ( *sIterator < 0x20 )
+            {
+                sExist = ID_TRUE;
             }
         }
         return 0;
@@ -1130,7 +1298,7 @@ SInt mtdCharStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd ÌÉÄÏûÖÏùò KeyÏôÄ Stored Key Í∞ÑÏùò descending compare
+ * Description : Mtd ≈∏¿‘¿« KeyøÕ Stored Key ∞£¿« descending compare
  *
  * Implementation :
  *
@@ -1142,7 +1310,7 @@ SInt mtdCharStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
     UShort               sLength2;
     const UChar        * sValue1;
     const UChar        * sValue2;    
-    
+    idBool               sExist;
     SInt                 sCompared;
     const UChar        * sIterator;
     const UChar        * sFence;
@@ -1152,8 +1320,8 @@ SInt mtdCharStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
     // value1
     //---------    
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // Dictionary compression columnÏù∏ Í≤ΩÏö∞ store typeÏùÑmt typeÏúºÎ°ú
-    // Î≥ÄÌôòÌï¥ÏÑú Ïã§Ï†ú Îç∞Ïù¥ÌÑ∞Î•º Í∞ÄÏ†∏Ïò®Îã§.
+    // Dictionary compression column¿Œ ∞ÊøÏ store type¿ªmt type¿∏∑Œ
+    // ∫Ø»Ø«ÿº≠ Ω«¡¶ µ•¿Ã≈Õ∏¶ ∞°¡Æø¬¥Ÿ.
     if ( (((smiColumn*)aValueInfo1->column)->flag & SMI_COLUMN_COMPRESSION_MASK) !=
          SMI_COLUMN_COMPRESSION_TRUE )
     {
@@ -1198,13 +1366,25 @@ SInt mtdCharStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
             {
                 return sCompared;
             }
+            sExist = ID_FALSE;
             for( sIterator = sValue2 + sLength1, sFence = sValue2 + sLength2;
                  sIterator < sFence;
                  sIterator++ )
             {
-                if( *sIterator > 0x20 )
+                if ( *sIterator > 0x20 )
                 {
-                    return 1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
+                }
+                else if ( *sIterator < 0x20 )
+                {
+                    sExist = ID_TRUE;
                 }
             }
             return 0;
@@ -1214,13 +1394,25 @@ SInt mtdCharStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
         {
             return sCompared;
         }
+        sExist = ID_FALSE;
         for( sIterator = sValue1 + sLength2, sFence = sValue1 + sLength1;
              sIterator < sFence;
              sIterator++ )
         {
-            if( *sIterator > 0x20 )
+            if ( *sIterator > 0x20 )
             {
-                return -1;
+                if ( sExist == ID_FALSE )
+                {
+                    return -1;
+                }
+                else
+                {
+                    return 1;
+                }
+            }
+            else if ( *sIterator < 0x20 )
+            {
+                sExist = ID_TRUE;
             }
         }
         return 0;
@@ -1242,7 +1434,7 @@ SInt mtdCharStoredStoredKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored KeyÎì§ Í∞ÑÏùò ascending compare
+ * Description : Stored KeyµÈ ∞£¿« ascending compare
  *
  * Implementation :
  *
@@ -1254,7 +1446,7 @@ SInt mtdCharStoredStoredKeyAscComp( mtdValueInfo * aValueInfo1,
     UShort               sLength2;
     const UChar        * sValue1;
     const UChar        * sValue2;    
-    
+    idBool               sExist;
     SInt                 sCompared;
     const UChar        * sIterator;
     const UChar        * sFence;
@@ -1319,13 +1511,25 @@ SInt mtdCharStoredStoredKeyAscComp( mtdValueInfo * aValueInfo1,
             {
                 return sCompared;
             }
+            sExist = ID_FALSE;
             for( sIterator = sValue1 + sLength2, sFence = sValue1 + sLength1;
                  sIterator < sFence;
                  sIterator++ )
             {
-                if( *sIterator > 0x20 )
+                if ( *sIterator > 0x20 )
                 {
-                    return 1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
+                }
+                else if ( *sIterator < 0x20 )
+                {
+                    sExist = ID_TRUE;
                 }
             }
             return 0;
@@ -1335,13 +1539,25 @@ SInt mtdCharStoredStoredKeyAscComp( mtdValueInfo * aValueInfo1,
         {
             return sCompared;
         }
+        sExist = ID_FALSE;
         for( sIterator = sValue2 + sLength1, sFence = sValue2 + sLength2;
              sIterator < sFence;
              sIterator++ )
         {
-            if( *sIterator > 0x20 )
+            if ( *sIterator > 0x20 )
             {
-                return -1;
+                if ( sExist == ID_FALSE )
+                {
+                    return -1;
+                }
+                else
+                {
+                    return 1;
+                }
+            }
+            else if ( *sIterator < 0x20 )
+            {
+                sExist = ID_TRUE;
             }
         }
         return 0;
@@ -1363,7 +1579,7 @@ SInt mtdCharStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored KeyÎì§ Í∞ÑÏùò descending compare
+ * Description : Stored KeyµÈ ∞£¿« descending compare
  *
  * Implementation :
  *
@@ -1375,7 +1591,7 @@ SInt mtdCharStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
     UShort               sLength2;
     const UChar        * sValue1;
     const UChar        * sValue2;    
-    
+    idBool               sExist;
     SInt                 sCompared;
     const UChar        * sIterator;
     const UChar        * sFence;
@@ -1440,13 +1656,25 @@ SInt mtdCharStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
             {
                 return sCompared;
             }
+            sExist = ID_FALSE;
             for( sIterator = sValue2 + sLength1, sFence = sValue2 + sLength2;
                  sIterator < sFence;
                  sIterator++ )
             {
-                if( *sIterator > 0x20 )
+                if ( *sIterator > 0x20 )
                 {
-                    return 1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
+                }
+                else if ( *sIterator < 0x20 )
+                {
+                    sExist = ID_TRUE;
                 }
             }
             return 0;
@@ -1456,13 +1684,25 @@ SInt mtdCharStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
         {
             return sCompared;
         }
+        sExist = ID_FALSE;
         for( sIterator = sValue1 + sLength2, sFence = sValue1 + sLength1;
              sIterator < sFence;
              sIterator++ )
         {
-            if( *sIterator > 0x20 )
+            if ( *sIterator > 0x20 )
             {
-                return -1;
+                if ( sExist == ID_FALSE )
+                {
+                    return -1;
+                }
+                else
+                {
+                    return 1;
+                }
+            }
+            else if ( *sIterator < 0x20 )
+            {
+                sExist = ID_TRUE;
             }
         }
         return 0;
@@ -1480,8 +1720,8 @@ SInt mtdCharStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
 }
 
 /* PROJ-2433
- * Direct key IndexÏùò direct keyÏôÄ mtdÏùò compare Ìï®Ïàò
- * - partial direct keyÎ•º Ï≤òÎ¶¨ÌïòÎäîÎ∂ÄÎ∂Ñ Ï∂îÍ∞Ä */
+ * Direct key Index¿« direct keyøÕ mtd¿« compare «‘ºˆ
+ * - partial direct key∏¶ √≥∏Æ«œ¥¬∫Œ∫– √ﬂ∞° */
 SInt mtdCharIndexKeyFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
                                         mtdValueInfo * aValueInfo2 )
 {
@@ -1492,7 +1732,7 @@ SInt mtdCharIndexKeyFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
     const UChar        * sValue1;
     const UChar        * sValue2;    
     UInt                 sDirectKeyPartialSize;
-    
+    idBool               sExist;
     SInt                 sCompared;
     const UChar        * sIterator;
     const UChar        * sFence;
@@ -1511,19 +1751,19 @@ SInt mtdCharIndexKeyFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 
     /*
      * PROJ-2433 Direct Key Index
-     * Partial Direct Key Ï≤òÎ¶¨
+     * Partial Direct Key √≥∏Æ
      * 
-     * - Direct KeyÍ∞Ä partial direct keyÏù∏ Í≤ΩÏö∞
-     *   partialÎêú Í∏∏Ïù¥ÎßåÌÅºÎßå ÎπÑÍµêÌïòÎèÑÎ°ù lengthÎ•º ÏàòÏ†ïÌïúÎã§
+     * - Direct Key∞° partial direct key¿Œ ∞ÊøÏ
+     *   partialµ» ±Ê¿Ã∏∏≈≠∏∏ ∫Ò±≥«œµµ∑œ length∏¶ ºˆ¡§«—¥Ÿ
      */ 
     if ( ( aValueInfo1->flag & MTD_PARTIAL_KEY_MASK ) == MTD_PARTIAL_KEY_ON )
     {
         sDirectKeyPartialSize = aValueInfo1->length;
 
-        /* partail key Ïù¥Î©¥ */
+        /* partail key ¿Ã∏È */
         if ( sDirectKeyPartialSize != 0 )
         {
-            /* direct key Í∏∏Ïù¥Î≥¥Ï†ï*/
+            /* direct key ±Ê¿Ã∫∏¡§*/
             if ( ( sLength1 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength1 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -1533,7 +1773,7 @@ SInt mtdCharIndexKeyFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
                 /* nothing todo */
             }
 
-            /* search key ÎèÑ partial Í∏∏Ïù¥ÎßåÌÅº Î≥¥Ï†ï*/
+            /* search key µµ partial ±Ê¿Ã∏∏≈≠ ∫∏¡§*/
             if ( ( sLength2 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength2 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -1576,17 +1816,25 @@ SInt mtdCharIndexKeyFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
                 /* nothing to do */
             }
 
+            sExist = ID_FALSE;
             for ( sIterator = ( sValue1 + sLength2 ), sFence = ( sValue1 + sLength1 ) ;
                   ( sIterator < sFence ) ;
                   sIterator++ )
             {
                 if ( *sIterator > 0x20 )
                 {
-                    return 1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
                 }
-                else
+                else if ( *sIterator < 0x20 )
                 {
-                    /* nothing to do */
+                    sExist = ID_TRUE;
                 }
             }
             return 0;
@@ -1602,17 +1850,25 @@ SInt mtdCharIndexKeyFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
         {
             /* nothing to do */
         }
+        sExist = ID_FALSE;
         for ( sIterator = ( sValue2 + sLength1 ), sFence = ( sValue2 + sLength2 ) ;
               ( sIterator < sFence ) ;
               sIterator++ )
         {
             if ( *sIterator > 0x20 )
             {
-                return -1;
+                if ( sExist == ID_FALSE )
+                {
+                    return -1;
+                }
+                else
+                {
+                    return 1;
+                }
             }
-            else
+            else if ( *sIterator < 0x20 )
             {
-                /* nothing to do */
+                sExist = ID_TRUE;
             }
         }
         return 0;
@@ -1649,7 +1905,7 @@ SInt mtdCharIndexKeyFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
     const UChar        * sValue1;
     const UChar        * sValue2;    
     UInt                 sDirectKeyPartialSize;
-    
+    idBool               sExist;
     SInt                 sCompared;
     const UChar        * sIterator;
     const UChar        * sFence;
@@ -1668,19 +1924,19 @@ SInt mtdCharIndexKeyFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 
     /*
      * PROJ-2433 Direct Key Index
-     * Partial Direct Key Ï≤òÎ¶¨
+     * Partial Direct Key √≥∏Æ
      * 
-     * - Direct KeyÍ∞Ä partial direct keyÏù∏ Í≤ΩÏö∞
-     *   partialÎêú Í∏∏Ïù¥ÎßåÌÅºÎßå ÎπÑÍµêÌïòÎèÑÎ°ù lengthÎ•º ÏàòÏ†ïÌïúÎã§
+     * - Direct Key∞° partial direct key¿Œ ∞ÊøÏ
+     *   partialµ» ±Ê¿Ã∏∏≈≠∏∏ ∫Ò±≥«œµµ∑œ length∏¶ ºˆ¡§«—¥Ÿ
      */ 
     if ( ( aValueInfo1->flag & MTD_PARTIAL_KEY_MASK ) == MTD_PARTIAL_KEY_ON )
     {
         sDirectKeyPartialSize = aValueInfo1->length;
 
-        /* partail key Ïù¥Î©¥ */
+        /* partail key ¿Ã∏È */
         if ( sDirectKeyPartialSize != 0 )
         {
-            /* direct key Í∏∏Ïù¥Î≥¥Ï†ï*/
+            /* direct key ±Ê¿Ã∫∏¡§*/
             if ( ( sLength1 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength1 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -1690,7 +1946,7 @@ SInt mtdCharIndexKeyFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
                 /* nothing todo */
             }
 
-            /* search key ÎèÑ partial Í∏∏Ïù¥ÎßåÌÅº Î≥¥Ï†ï*/
+            /* search key µµ partial ±Ê¿Ã∏∏≈≠ ∫∏¡§*/
             if ( ( sLength2 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength2 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -1732,17 +1988,25 @@ SInt mtdCharIndexKeyFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
             {
                 /* nothing to do */
             }
+            sExist = ID_FALSE;
             for ( sIterator = ( sValue2 + sLength1 ), sFence = ( sValue2 + sLength2 ) ;
                   ( sIterator < sFence ) ;
                   sIterator++ )
             {
                 if ( *sIterator > 0x20 )
                 {
-                    return 1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
                 }
-                else
+                else if ( *sIterator < 0x20 )
                 {
-                    /* nothing to do */
+                    sExist = ID_TRUE;
                 }
             }
             return 0;
@@ -1754,17 +2018,25 @@ SInt mtdCharIndexKeyFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
         {
             return sCompared;
         }
+        sExist = ID_FALSE;
         for ( sIterator = ( sValue1 + sLength2 ), sFence = ( sValue1 + sLength1 ) ;
               ( sIterator < sFence ) ;
               sIterator++ )
         {
             if ( *sIterator > 0x20 )
             {
-                return -1;
+                if ( sExist == ID_FALSE )
+                {
+                    return -1;
+                }
+                else
+                {
+                    return 1;
+                }
             }
-            else
+            else if ( *sIterator < 0x20 )
             {
-                /* nothing to do */
+                sExist = ID_TRUE;
             }
         }
         return 0;
@@ -1799,7 +2071,7 @@ SInt mtdCharIndexKeyMtdKeyAscComp( mtdValueInfo * aValueInfo1,
     const UChar        * sValue1;
     const UChar        * sValue2;    
     UInt                 sDirectKeyPartialSize;
-    
+    idBool               sExist;
     SInt                 sCompared;
     const UChar        * sIterator;
     const UChar        * sFence;
@@ -1826,19 +2098,19 @@ SInt mtdCharIndexKeyMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 
     /*
      * PROJ-2433 Direct Key Index
-     * Partial Direct Key Ï≤òÎ¶¨
+     * Partial Direct Key √≥∏Æ
      * 
-     * - Direct KeyÍ∞Ä partial direct keyÏù∏ Í≤ΩÏö∞
-     *   partialÎêú Í∏∏Ïù¥ÎßåÌÅºÎßå ÎπÑÍµêÌïòÎèÑÎ°ù lengthÎ•º ÏàòÏ†ïÌïúÎã§
+     * - Direct Key∞° partial direct key¿Œ ∞ÊøÏ
+     *   partialµ» ±Ê¿Ã∏∏≈≠∏∏ ∫Ò±≥«œµµ∑œ length∏¶ ºˆ¡§«—¥Ÿ
      */ 
     if ( ( aValueInfo1->flag & MTD_PARTIAL_KEY_MASK ) == MTD_PARTIAL_KEY_ON )
     {
         sDirectKeyPartialSize = aValueInfo1->length;
 
-        /* partail key Ïù¥Î©¥ */
+        /* partail key ¿Ã∏È */
         if ( sDirectKeyPartialSize != 0 )
         {
-            /* direct key Í∏∏Ïù¥Î≥¥Ï†ï*/
+            /* direct key ±Ê¿Ã∫∏¡§*/
             if ( ( sLength1 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength1 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -1848,7 +2120,7 @@ SInt mtdCharIndexKeyMtdKeyAscComp( mtdValueInfo * aValueInfo1,
                 /* nothing todo */
             }
 
-            /* search key ÎèÑ partial Í∏∏Ïù¥ÎßåÌÅº Î≥¥Ï†ï*/
+            /* search key µµ partial ±Ê¿Ã∏∏≈≠ ∫∏¡§*/
             if ( ( sLength2 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength2 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -1890,17 +2162,25 @@ SInt mtdCharIndexKeyMtdKeyAscComp( mtdValueInfo * aValueInfo1,
             {
                 /* nothing to do */
             }
+            sExist = ID_FALSE;
             for ( sIterator = ( sValue1 + sLength2 ), sFence = ( sValue1 + sLength1 ) ;
                   ( sIterator < sFence ) ;
                   sIterator++ )
             {
                 if ( *sIterator > 0x20 )
                 {
-                    return 1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
                 }
-                else
+                else if ( *sIterator < 0x20 )
                 {
-                    /* nothing to do */
+                    sExist = ID_TRUE;
                 }
             }
             return 0;
@@ -1912,17 +2192,25 @@ SInt mtdCharIndexKeyMtdKeyAscComp( mtdValueInfo * aValueInfo1,
         {
             return sCompared;
         }
+        sExist = ID_FALSE;
         for ( sIterator = ( sValue2 + sLength1 ), sFence = ( sValue2 + sLength2 ) ;
               ( sIterator < sFence ) ;
               sIterator++ )
         {
             if ( *sIterator > 0x20 )
             {
-                return -1;
+                if ( sExist == ID_FALSE )
+                {
+                    return -1;
+                }
+                else
+                {
+                    return 1;
+                }
             }
-            else
+            else if ( *sIterator < 0x20 )
             {
-                /* nothing to do */
+                sExist = ID_TRUE;
             }
         }
         return 0;
@@ -1957,7 +2245,7 @@ SInt mtdCharIndexKeyMtdKeyDescComp( mtdValueInfo * aValueInfo1,
     const UChar        * sValue1;
     const UChar        * sValue2;    
     UInt                 sDirectKeyPartialSize;
-    
+    idBool               sExist;
     SInt                 sCompared;
     const UChar        * sIterator;
     const UChar        * sFence;
@@ -1984,19 +2272,19 @@ SInt mtdCharIndexKeyMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 
     /*
      * PROJ-2433 Direct Key Index
-     * Partial Direct Key Ï≤òÎ¶¨
+     * Partial Direct Key √≥∏Æ
      * 
-     * - Direct KeyÍ∞Ä partial direct keyÏù∏ Í≤ΩÏö∞
-     *   partialÎêú Í∏∏Ïù¥ÎßåÌÅºÎßå ÎπÑÍµêÌïòÎèÑÎ°ù lengthÎ•º ÏàòÏ†ïÌïúÎã§
+     * - Direct Key∞° partial direct key¿Œ ∞ÊøÏ
+     *   partialµ» ±Ê¿Ã∏∏≈≠∏∏ ∫Ò±≥«œµµ∑œ length∏¶ ºˆ¡§«—¥Ÿ
      */ 
     if ( ( aValueInfo1->flag & MTD_PARTIAL_KEY_MASK ) == MTD_PARTIAL_KEY_ON )
     {
         sDirectKeyPartialSize = aValueInfo1->length;
 
-        /* partail key Ïù¥Î©¥ */
+        /* partail key ¿Ã∏È */
         if ( sDirectKeyPartialSize != 0 )
         {
-            /* direct key Í∏∏Ïù¥Î≥¥Ï†ï*/
+            /* direct key ±Ê¿Ã∫∏¡§*/
             if ( ( sLength1 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength1 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -2006,7 +2294,7 @@ SInt mtdCharIndexKeyMtdKeyDescComp( mtdValueInfo * aValueInfo1,
                 /* nothing todo */
             }
 
-            /* search key ÎèÑ partial Í∏∏Ïù¥ÎßåÌÅº Î≥¥Ï†ï*/
+            /* search key µµ partial ±Ê¿Ã∏∏≈≠ ∫∏¡§*/
             if ( ( sLength2 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength2 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -2048,17 +2336,25 @@ SInt mtdCharIndexKeyMtdKeyDescComp( mtdValueInfo * aValueInfo1,
             {
                 /* nothing to do */
             }
+            sExist = ID_FALSE;
             for ( sIterator = ( sValue2 + sLength1 ), sFence = ( sValue2 + sLength2 ) ;
                   ( sIterator < sFence ) ;
                   sIterator++ )
             {
                 if ( *sIterator > 0x20 )
                 {
-                    return 1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
                 }
-                else
+                else if ( *sIterator < 0x20 )
                 {
-                    /* nothing to do */
+                    sExist = ID_TRUE;
                 }
             }
             return 0;
@@ -2074,17 +2370,25 @@ SInt mtdCharIndexKeyMtdKeyDescComp( mtdValueInfo * aValueInfo1,
         {
             /* nothing to do */
         }
+        sExist = ID_FALSE;
         for ( sIterator = ( sValue1 + sLength2 ), sFence = ( sValue1 + sLength1 ) ;
               ( sIterator < sFence ) ;
               sIterator++ )
         {
             if ( *sIterator > 0x20 )
             {
-                return -1;
+                if ( sExist == ID_FALSE )
+                {
+                    return -1;
+                }
+                else
+                {
+                    return 1;
+                }
             }
-            else
+            else if ( *sIterator < 0x20 )
             {
-                /* nothing to do */
+                sExist = ID_TRUE;
             }
         }
         return 0;
@@ -2170,7 +2474,7 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
 {
 /***********************************************************************
  *
- * Description : valueÏùò semantic Í≤ÄÏÇ¨ Î∞è mtcColum Ï¥àÍ∏∞Ìôî
+ * Description : value¿« semantic ∞ÀªÁ π◊ mtcColum √ ±‚»≠
  *
  * Implementation :
  *
@@ -2183,9 +2487,9 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
     IDE_TEST_RAISE( sCharVal->length + ID_SIZEOF(UShort) != aValueSize,
                     ERR_INVALID_LENGTH );
 
-    // Ï¥àÍ∏∞ÌôîÎêú aColumnÏùÄ cannonize() ÏãúÏóê ÏÇ¨Ïö©
-    // Ïù¥Îïå, data type moduleÏùò precision Ï†ïÎ≥¥ÎßåÏùÑ ÏÇ¨Ïö©ÌïòÎØÄÎ°ú,
-    // language Ï†ïÎ≥¥ ÏÑ§Ï†ïÌï† ÌïÑÏöîÏóÜÏùå
+    // √ ±‚»≠µ» aColumn¿∫ cannonize() Ω√ø° ªÁøÎ
+    // ¿Ã∂ß, data type module¿« precision ¡§∫∏∏∏¿ª ªÁøÎ«œπ«∑Œ,
+    // language ¡§∫∏ º≥¡§«“ « ø‰æ¯¿Ω
     IDE_TEST( mtc::initializeColumn( aColumn,
                                      & mtdChar,
                                      1,                // arguments
@@ -2219,36 +2523,36 @@ SDouble mtdSelectivityChar( void     * aColumnMax,
 /*----------------------------------------------------------------------
   Name:
   mtdSelectivityChar()
-  -- ÏµúÎåÄ, ÏµúÏÜå Í∞íÏùÑ Ïù¥Ïö©ÌïòÏó¨ Î≤îÏúÑ Í∞íÏóê ÎåÄÌïú ÏÑ†ÌÉùÎèÑÎ•º Ï∂îÏ†ï,
+  -- √÷¥Î, √÷º“ ∞™¿ª ¿ÃøÎ«œø© π¸¿ß ∞™ø° ¥Î«— º±≈√µµ∏¶ √ﬂ¡§,
   -- CHAR(n),VARCHAR(n)
 
   Arguments:
-  aColumnMax  -- ÏπºÎüºÏùò ÏµúÎåÄ Í∞í (MAX)
-  aColumnMin  -- ÏπºÎüºÏùò ÏµúÏÜå Í∞í (MIN)
-  aValueMax   -- Î≤îÏúÑ ÏµúÏÜå Í∞í   (Y)
-  aValueMin   -- Î≤îÏúÑ ÏµúÎåÄ Í∞í   (X)
+  aColumnMax  -- ƒÆ∑≥¿« √÷¥Î ∞™ (MAX)
+  aColumnMin  -- ƒÆ∑≥¿« √÷º“ ∞™ (MIN)
+  aValueMax   -- π¸¿ß √÷º“ ∞™   (Y)
+  aValueMin   -- π¸¿ß √÷¥Î ∞™   (X)
 
-  Description: ÏµúÎåÄ, ÏµúÏÜåÍ∞íÏùÑ Ïù¥Ïö©ÌïòÏó¨ Î≤îÏúÑ Í∞íÏóê ÎåÄÌïú ÏÑ†ÌÉùÎèÑÎ•º Ï∂îÏ†ïÌïúÎã§.
-  <, >, <=, >=, BETWEEN, NOT BETWEEN PredicateÍ∞Ä Ìï¥ÎãπÎêòÎ©∞,
-  LIKE, NOT LIKEÏùò Í≤ΩÏö∞ÏóêÎèÑ prefix matchÏù∏ Í≤ΩÏö∞ Ïù¥Ïóê Ìï¥ÎãπÌïúÎã§.
+  Description: √÷¥Î, √÷º“∞™¿ª ¿ÃøÎ«œø© π¸¿ß ∞™ø° ¥Î«— º±≈√µµ∏¶ √ﬂ¡§«—¥Ÿ.
+  <, >, <=, >=, BETWEEN, NOT BETWEEN Predicate∞° «ÿ¥Áµ«∏Á,
+  LIKE, NOT LIKE¿« ∞ÊøÏø°µµ prefix match¿Œ ∞ÊøÏ ¿Ãø° «ÿ¥Á«—¥Ÿ.
 
-  Ïòà: i1 between X and Y
+  øπ: i1 between X and Y
   ==> selectivity = ( Y - X ) / ( MAX - MIN )
 
-  ÏÑ†ÌÉùÎèÑÎ•º Í≥ÑÏÇ∞ÌïòÎäî Í≥ºÏ†ïÏóêÏÑú Î¨∏ÏûêÏó¥ÏùÑ DOUBLEÌòïÏúºÎ°ú Î≥ÄÌôòÌï¥Ïïº ÌïúÎã§.
-  Ïù¥ Îïå, 4Í∞úÏùò Ïù∏ÏûêÍ∞Ä Î™®Îëê 10ÏßÑÏàòÎ°ú ÌåêÎã®ÎêòÎ©¥ 10ÏßÑÏàòÎ°ú
-  16ÏßÑÏàòÎ°ú ÌåêÎã®ÎêòÎ©¥ 16ÏßÑÏàòÎ°ú Î≥ÄÌôòÌïúÎã§.
-  Í∑∏Î†áÏßÄ ÏïäÏùÄ Í≤ΩÏö∞ Î¨∏ÏûêÏó¥ 52ÎπÑÌä∏Í∞Ä Ìè¨Ìï®ÌïòÎäî Í∞íÏùÑ Î≥ÄÌôòÌïúÎã§.
+  º±≈√µµ∏¶ ∞ËªÍ«œ¥¬ ∞˙¡§ø°º≠ πÆ¿⁄ø≠¿ª DOUBLE«¸¿∏∑Œ ∫Ø»Ø«ÿæﬂ «—¥Ÿ.
+  ¿Ã ∂ß, 4∞≥¿« ¿Œ¿⁄∞° ∏µŒ 10¡¯ºˆ∑Œ ∆«¥‹µ«∏È 10¡¯ºˆ∑Œ
+  16¡¯ºˆ∑Œ ∆«¥‹µ«∏È 16¡¯ºˆ∑Œ ∫Ø»Ø«—¥Ÿ.
+  ±◊∑∏¡ˆ æ ¿∫ ∞ÊøÏ πÆ¿⁄ø≠ 52∫Ò∆Æ∞° ∆˜«‘«œ¥¬ ∞™¿ª ∫Ø»Ø«—¥Ÿ.
 
   *----------------------------------------------------------------------*/
 
-    // Í∞ÅÍ∞ÅÏùò Í∞íÏóê ÎåÄÌïú mtdCharType
+    // ∞¢∞¢¿« ∞™ø° ¥Î«— mtdCharType
     const mtdCharType *    sColumnMax;
     const mtdCharType *    sColumnMin;
     const mtdCharType *    sValueMax;
     const mtdCharType *    sValueMin;
 
-    // Í∞ÅÍ∞ÅÏùò Í∞íÏóê ÎåÄÌïú SDouble Î≥ÄÏàò
+    // ∞¢∞¢¿« ∞™ø° ¥Î«— SDouble ∫Øºˆ
     SDouble          sColMaxDouble;
     SDouble          sColMinDouble;
     SDouble          sValMaxDouble;
@@ -2257,10 +2561,10 @@ SDouble mtdSelectivityChar( void     * aColumnMax,
     // Selectivity
     SDouble          sSelectivity;
 
-    // 10ÏßÑÏàò, 16ÏßÑÏàò, ÏùºÎ∞òÎ¨∏ÏûêÏó¥ Ïó¨Î∂ÄÎ•º ÌëúÏãúÌïòÎäî Î≥ÄÏàò
+    // 10¡¯ºˆ, 16¡¯ºˆ, ¿œπ›πÆ¿⁄ø≠ ø©∫Œ∏¶ «•Ω√«œ¥¬ ∫Øºˆ
     vSLong           sStringType;
 
-    // Î≥ÄÏàò Ï¥àÍ∏∞Ìôî
+    // ∫Øºˆ √ ±‚»≠
     sStringType = 0;
     sColumnMax = (mtdCharType*) aColumnMax;
     sColumnMin = (mtdCharType*) aColumnMin;
@@ -2268,8 +2572,8 @@ SDouble mtdSelectivityChar( void     * aColumnMax,
     sValueMin  = (mtdCharType*) aValueMin;
 
     //------------------------------------------------------
-    // DataÏùò Ïú†Ìö®ÏÑ± Í≤ÄÏÇ¨
-    //     NULL Í≤ÄÏÇ¨ : Í≥ÑÏÇ∞Ìï† Ïàò ÏóÜÏùå
+    // Data¿« ¿Ø»øº∫ ∞ÀªÁ
+    //     NULL ∞ÀªÁ : ∞ËªÍ«“ ºˆ æ¯¿Ω
     //------------------------------------------------------
     
     // BUG-22064
@@ -2283,15 +2587,15 @@ SDouble mtdSelectivityChar( void     * aColumnMax,
          ( mtdIsNull( NULL, aValueMax  ) == ID_TRUE ) ||
          ( mtdIsNull( NULL, aValueMin  ) == ID_TRUE ) )
     {
-        // DataÏ§ë NULL Ïù¥ ÏûàÏùÑ Í≤ΩÏö∞
-        // Î∂ÄÎì±Ìò∏Ïùò Default SelectivityÏù∏ 1/3ÏùÑ SettingÌï®
+        // Data¡ﬂ NULL ¿Ã ¿÷¿ª ∞ÊøÏ
+        // ∫ŒµÓ»£¿« Default Selectivity¿Œ 1/3¿ª Setting«‘
         sSelectivity = MTD_DEFAULT_SELECTIVITY;
     }
     else
     {
         //------------------------------------------------------------
-        // Ïà´ÏûêÎ•º ÏùòÎØ∏ÌïòÎäî Î¨∏ÏûêÏó¥Ïù∏ÏßÄ ÌåêÎã®
-        //  sStringTypeÏóê Ï†ÅÏ†àÌïú ÌîåÎûòÍ∑∏ ÏÑ§Ï†ï
+        // º˝¿⁄∏¶ ¿«πÃ«œ¥¬ πÆ¿⁄ø≠¿Œ¡ˆ ∆«¥‹
+        //  sStringTypeø° ¿˚¿˝«— «√∑°±◊ º≥¡§
         //------------------------------------------------------------
         sStringType |= mtdStringType(sColumnMax);
         sStringType |= mtdStringType(sColumnMin);
@@ -2299,10 +2603,10 @@ SDouble mtdSelectivityChar( void     * aColumnMax,
         sStringType |= mtdStringType(sValueMin);
 
         //---------------------------------------------------
-        // 10ÏßÑÏàòÏùò ÌåêÎã®
-        //   Ïñ¥Îñ†Ìïú ÌîåÎûòÍ∑∏Î°ú ÏÑ§Ï†ïÎêòÏñ¥ ÏûàÏßÄ ÏïäÏïÑÏïº ÌïúÎã§.
-        // 10ÏßÑÏàòÏùò Î≥ÄÌôò
-        //   mtdDigitsToDoubleÌï®ÏàòÎ•º Ïù¥Ïö©ÌïòÏó¨ 10ÏßÑÏàòÎ°ú Î≥ÄÌôòÌïúÎã§.
+        // 10¡¯ºˆ¿« ∆«¥‹
+        //   æÓ∂∞«— «√∑°±◊∑Œ º≥¡§µ«æÓ ¿÷¡ˆ æ æ∆æﬂ «—¥Ÿ.
+        // 10¡¯ºˆ¿« ∫Ø»Ø
+        //   mtdDigitsToDouble«‘ºˆ∏¶ ¿ÃøÎ«œø© 10¡¯ºˆ∑Œ ∫Ø»Ø«—¥Ÿ.
         //---------------------------------------------------
         if( sStringType == MTD_DECIMAL )
         {
@@ -2312,12 +2616,12 @@ SDouble mtdSelectivityChar( void     * aColumnMax,
             sValMinDouble = mtdDigitsToDouble( sValueMin, 10 );
         }
         //---------------------------------------------------
-        // 16ÏßÑÏàòÏùò ÌåêÎã®
-        //   MTD_HEXA_LOWER Ïù¥Í±∞ÎÇò MTD_HEXA_UPPER Ïù∏ Í≤ΩÏö∞
-        //   Îëò Ï§ëÏùò Ìïú ÌîåÎûòÍ∑∏ Í∞íÍ≥º ÏùºÏπòÌï¥ÏïºÌïòÎ©∞,
-        //   Îëê ÌîåÎûòÍ∑∏Í∞Ä Ìï®Íªò ÏÑ§Ï†ïÎêú Í≤ΩÏö∞Îäî ÏùºÎ∞ò Î¨∏ÏûêÏó¥Î°ú ÌåêÎã®
-        // 16ÏßÑÏàòÏùò Î≥ÄÌôò
-        //   mtdDigitsToDoubleÌï®ÏàòÎ•º Ïù¥Ïö©ÌïòÏó¨ 16ÏßÑÏàòÎ°ú Î≥ÄÌôòÌïúÎã§.
+        // 16¡¯ºˆ¿« ∆«¥‹
+        //   MTD_HEXA_LOWER ¿Ã∞≈≥™ MTD_HEXA_UPPER ¿Œ ∞ÊøÏ
+        //   µ— ¡ﬂ¿« «— «√∑°±◊ ∞™∞˙ ¿œƒ°«ÿæﬂ«œ∏Á,
+        //   µŒ «√∑°±◊∞° «‘≤≤ º≥¡§µ» ∞ÊøÏ¥¬ ¿œπ› πÆ¿⁄ø≠∑Œ ∆«¥‹
+        // 16¡¯ºˆ¿« ∫Ø»Ø
+        //   mtdDigitsToDouble«‘ºˆ∏¶ ¿ÃøÎ«œø© 16¡¯ºˆ∑Œ ∫Ø»Ø«—¥Ÿ.
         //---------------------------------------------------
         else if( ( sStringType == MTD_HEXA_LOWER ) ||
                  ( sStringType == MTD_HEXA_UPPER ) )
@@ -2328,7 +2632,7 @@ SDouble mtdSelectivityChar( void     * aColumnMax,
             sValMinDouble = mtdDigitsToDouble( sValueMin, 16 );
         }
         //------------------------------------------------------------
-        // ÏùºÎ∞ò Î¨∏ÏûêÏó¥Ïù∏ Í≤ΩÏö∞ Î≥ÄÌôò
+        // ¿œπ› πÆ¿⁄ø≠¿Œ ∞ÊøÏ ∫Ø»Ø
         //------------------------------------------------------------
         else
         {
@@ -2339,7 +2643,7 @@ SDouble mtdSelectivityChar( void     * aColumnMax,
         }
 
         //---------------------------------------------------------
-        // selectivity Í≥ÑÏÇ∞
+        // selectivity ∞ËªÍ
         //--------------------------------------------------------
         sSelectivity = mtdDouble.selectivity( (void *)&sColMaxDouble,
                                               (void *)&sColMinDouble,
@@ -2363,13 +2667,13 @@ vSLong mtdStringType( const mtdCharType * aValue )
 /*----------------------------------------------------------------------
   Name:
   mtdStringType()
-  -- Ìï¥Îãπ Î¨∏ÏûêÏó¥Ïùò ÌÉÄÏûÖÏùÑ ÌåêÎã®ÌïúÎã§.
-  10ÏßÑÏàò     : MTD_DECIMAL
-  16ÏßÑÏàò     : MTD_HEXA_LOWER, MTD_HEXA_UPPER
-  ÏùºÎ∞ò Î¨∏ÏûêÏó¥ : MTD_ORDINARY
+  -- «ÿ¥Á πÆ¿⁄ø≠¿« ≈∏¿‘¿ª ∆«¥‹«—¥Ÿ.
+  10¡¯ºˆ     : MTD_DECIMAL
+  16¡¯ºˆ     : MTD_HEXA_LOWER, MTD_HEXA_UPPER
+  ¿œπ› πÆ¿⁄ø≠ : MTD_ORDINARY
 
   Arguments:
-  aValue  -- ÌÉÄÏûÖÏùÑ ÌåêÎã®Ìï† Î¨∏ÏûêÏó¥
+  aValue  -- ≈∏¿‘¿ª ∆«¥‹«“ πÆ¿⁄ø≠
 
   *----------------------------------------------------------------------*/
     vSLong sLength;
@@ -2412,12 +2716,12 @@ SDouble mtdDigitsToDouble( const mtdCharType * aValue, UInt aBase )
   Name:
   BUG-16401
   mtdDigitsToDouble()
-  -- Ìï¥Îãπ Î¨∏ÏûêÏó¥ÏùÑ 15ÏûêÎ¶¨ Î¨∏ÏûêÏó¥Î°ú Í≥†Ï†ïÌõÑ
-  -- SDboubleÌÉÄÏûÖÏúºÎ°ú Î≥ÄÌôòÌïúÎã§.
+  -- «ÿ¥Á πÆ¿⁄ø≠¿ª 15¿⁄∏Æ πÆ¿⁄ø≠∑Œ ∞Ì¡§»ƒ
+  -- SDbouble≈∏¿‘¿∏∑Œ ∫Ø»Ø«—¥Ÿ.
 
   Arguments:
-  aValue  -- Î≥ÄÌôòÌï† Î¨∏ÏûêÏó¥
-  aBase   -- ÏßÑÎ≤ï
+  aValue  -- ∫Ø»Ø«“ πÆ¿⁄ø≠
+  aBase   -- ¡¯π˝
 
   *----------------------------------------------------------------------*/
 
@@ -2511,28 +2815,28 @@ SDouble mtdConvertToDouble( const mtdCharType * aValue )
 /*----------------------------------------------------------------------
   Name:
   mtdConvertToDouble()
-  -- Ìï¥Îãπ Î¨∏ÏûêÏó¥ÏùÑ SDboubleÌÉÄÏûÖÏúºÎ°ú Î≥ÄÌôòÌïúÎã§.
+  -- «ÿ¥Á πÆ¿⁄ø≠¿ª SDbouble≈∏¿‘¿∏∑Œ ∫Ø»Ø«—¥Ÿ.
 
   Arguments:
-  aValue  -- Î≥ÄÌôòÌï† Î¨∏ÏûêÏó¥
+  aValue  -- ∫Ø»Ø«“ πÆ¿⁄ø≠
 
   *----------------------------------------------------------------------*/
 
 #if defined(ENDIAN_IS_BIG_ENDIAN)
     //----------------------------------------------------
-    // Big endian Ïù∏ Í≤ΩÏö∞
+    // Big endian ¿Œ ∞ÊøÏ
     //----------------------------------------------------
-    SDouble    sDoubleVal;       // Î≥ÄÌôòÎê† Double Í∞í
-    ULong      sLongVal;         // ULongÏúºÎ°ú Î≥ÄÌôò Ïãú ÏÇ¨Ïö©Ìï† Î≥ÄÏàò
+    SDouble    sDoubleVal;       // ∫Ø»Øµ… Double ∞™
+    ULong      sLongVal;         // ULong¿∏∑Œ ∫Ø»Ø Ω√ ªÁøÎ«“ ∫Øºˆ
 
-    sLongVal = 0;                // Ï¥àÍ∏∞Ìôî
+    sLongVal = 0;                // √ ±‚»≠
 
-    // mtdCharTypeÏùÑ ULongÏúºÎ°ú Î≥ÄÌôò
+    // mtdCharType¿ª ULong¿∏∑Œ ∫Ø»Ø
     idlOS::memcpy( (UChar*)&sLongVal,
                    aValue->value,
                    MTD_MIN( aValue->length, ID_SIZEOF(sLongVal) ) );
 
-    // ÏïûÎ∂ÄÎ∂Ñ 52ÎπÑÌä∏Îßå ÎçîÎ∏îÎ°ú Î≥ÄÌôò
+    // æ’∫Œ∫– 52∫Ò∆Æ∏∏ ¥ı∫Ì∑Œ ∫Ø»Ø
     sLongVal   = sLongVal >> 12;
     sDoubleVal = ID_ULTODB( sLongVal );
 
@@ -2540,22 +2844,22 @@ SDouble mtdConvertToDouble( const mtdCharType * aValue )
 
 #else
     //----------------------------------------------------
-    // Little endian Ïù∏ Í≤ΩÏö∞
+    // Little endian ¿Œ ∞ÊøÏ
     //----------------------------------------------------
-    SDouble    sDoubleVal;       // Î≥ÄÌôòÎê† Double Í∞í
-    ULong      sLongVal;         // ULongÏúºÎ°ú Î≥ÄÌôò Ïãú ÏÇ¨Ïö©Ìï† Î≥ÄÏàò
-    ULong      sEndian;          // byte ordering Î≥ÄÌôòÏãú ÏÇ¨Ïö©Ìï† ÏûÑÏãú Î≥ÄÏàò
-    UChar    * sSrc;             // byte ordering Î≥ÄÌôòÏùÑ ÏúÑÌïú Ìè¨Ïù∏ÌÑ∞
-    UChar    * sDest;            // byte ordering Î≥ÄÌôòÏùÑ ÏúÑÌïú Ìè¨Ïù∏ÌÑ∞
+    SDouble    sDoubleVal;       // ∫Ø»Øµ… Double ∞™
+    ULong      sLongVal;         // ULong¿∏∑Œ ∫Ø»Ø Ω√ ªÁøÎ«“ ∫Øºˆ
+    ULong      sEndian;          // byte ordering ∫Ø»ØΩ√ ªÁøÎ«“ ¿”Ω√ ∫Øºˆ
+    UChar    * sSrc;             // byte ordering ∫Ø»Ø¿ª ¿ß«— ∆˜¿Œ≈Õ
+    UChar    * sDest;            // byte ordering ∫Ø»Ø¿ª ¿ß«— ∆˜¿Œ≈Õ
 
-    sLongVal = 0;                // Ï¥àÍ∏∞Ìôî
+    sLongVal = 0;                // √ ±‚»≠
 
-    // mtdCharTypeÏùÑ ULongÏúºÎ°ú Î≥ÄÌôò
+    // mtdCharType¿ª ULong¿∏∑Œ ∫Ø»Ø
     idlOS::memcpy( (UChar*)&sLongVal,
                    aValue->value,
                    MTD_MIN( aValue->length, ID_SIZEOF(sLongVal) ) );
 
-    // byte ordering Ï°∞Ï†ï
+    // byte ordering ¡∂¡§
     sSrc     = (UChar*)&sLongVal;
     sDest    = (UChar*)&sEndian;
     sDest[0] = sSrc[7];
@@ -2567,7 +2871,7 @@ SDouble mtdConvertToDouble( const mtdCharType * aValue )
     sDest[6] = sSrc[1];
     sDest[7] = sSrc[0];
 
-    // ÏïûÎ∂ÄÎ∂Ñ 52ÎπÑÌä∏Îßå ÎçîÎ∏îÎ°ú Î≥ÄÌôò
+    // æ’∫Œ∫– 52∫Ò∆Æ∏∏ ¥ı∫Ì∑Œ ∫Ø»Ø
     sEndian    = sEndian >> 12;
     sDoubleVal = ID_ULTODB( sEndian );
 
@@ -2597,7 +2901,7 @@ IDE_RC mtdValueFromOracle( mtcColumn*  aColumn,
         aOracleLength = 0;
     }
 
-    // aColumnÏùò Ï¥àÍ∏∞Ìôî
+    // aColumn¿« √ ±‚»≠
     IDE_TEST( mtc::initializeColumn( aColumn,
                                      & mtdChar,
                                      1,
@@ -2640,8 +2944,8 @@ static IDE_RC mtdStoredValue2MtdValue( UInt              aColumnSize,
 {
 /*******************************************************************
  * PROJ-1705
- * ÎîîÏä§ÌÅ¨ÌÖåÏù¥Î∏îÏª¨ÎüºÏùò Îç∞Ïù¥ÌÉÄÎ•º
- * qp Î†àÏΩîÎìúÏ≤òÎ¶¨ÏòÅÏó≠Ïùò Ìï¥Îãπ Ïª¨ÎüºÏúÑÏπòÏóê Î≥µÏÇ¨
+ * µΩ∫≈©≈◊¿Ã∫Ìƒ√∑≥¿« µ•¿Ã≈∏∏¶
+ * qp ∑πƒ⁄µÂ√≥∏Æøµø™¿« «ÿ¥Á ƒ√∑≥¿ßƒ°ø° ∫πªÁ
  *******************************************************************/
 
     mtdCharType* sCharValue;
@@ -2650,7 +2954,7 @@ static IDE_RC mtdStoredValue2MtdValue( UInt              aColumnSize,
     
     if( ( aDestValueOffset == 0 ) && ( aLength == 0 ) )
     {
-        // NULL Îç∞Ïù¥ÌÉÄ
+        // NULL µ•¿Ã≈∏
         sCharValue->length = 0;
     }
     else
@@ -2678,9 +2982,9 @@ UInt mtdNullValueSize()
 {
 /*******************************************************************
  * PROJ-1705
- * Í∞Å Îç∞Ïù¥ÌÉÄÌÉÄÏûÖÏùò null ValueÏùò ÌÅ¨Í∏∞ Î∞òÌôò
- * Ïòà ) mtdCharType( UShort length; UChar value[1] ) ÏóêÏÑú
- *      lengthÌÉÄÏûÖÏù∏ UShortÏùò ÌÅ¨Í∏∞Î•º Î∞òÌôò
+ * ∞¢ µ•¿Ã≈∏≈∏¿‘¿« null Value¿« ≈©±‚ π›»Ø
+ * øπ ) mtdCharType( UShort length; UChar value[1] ) ø°º≠
+ *      length≈∏¿‘¿Œ UShort¿« ≈©±‚∏¶ π›»Ø
  *******************************************************************/
     return mtdActualSize( NULL, &mtdCharNull );
 }
@@ -2689,10 +2993,10 @@ static UInt mtdHeaderSize()
 {
 /***********************************************************************
  * PROJ-1705
- * lengthÎ•º Í∞ÄÏßÄÎäî Îç∞Ïù¥ÌÉÄÌÉÄÏûÖÏùò length Ï†ïÎ≥¥Î•º Ï†ÄÏû•ÌïòÎäî Î≥ÄÏàòÏùò ÌÅ¨Í∏∞ Î∞òÌôò
- * Ïòà ) mtdCharType( UShort length; UChar value[1] ) ÏóêÏÑú
- *      lengthÌÉÄÏûÖÏù∏ UShortÏùò ÌÅ¨Í∏∞Î•º Î∞òÌôò
- *  integerÏôÄ Í∞ôÏùÄ Í≥†Ï†ïÍ∏∏Ïù¥ Îç∞Ïù¥ÌÉÄÌÉÄÏûÖÏùÄ 0 Î∞òÌôò
+ * length∏¶ ∞°¡ˆ¥¬ µ•¿Ã≈∏≈∏¿‘¿« length ¡§∫∏∏¶ ¿˙¿Â«œ¥¬ ∫Øºˆ¿« ≈©±‚ π›»Ø
+ * øπ ) mtdCharType( UShort length; UChar value[1] ) ø°º≠
+ *      length≈∏¿‘¿Œ UShort¿« ≈©±‚∏¶ π›»Ø
+ *  integerøÕ ∞∞¿∫ ∞Ì¡§±Ê¿Ã µ•¿Ã≈∏≈∏¿‘¿∫ 0 π›»Ø
  **********************************************************************/
 
     return ID_SIZEOF(UShort);
@@ -2702,9 +3006,9 @@ static UInt mtdStoreSize( const smiColumn * aColumn )
 {
 /***********************************************************************
  * PROJ-2399 row tmaplate 
- * smÏóê Ï†ÄÏû•ÎêòÎäî Îç∞Ïù¥ÌÑ∞Ïùò ÌÅ¨Í∏∞Î•º Î∞òÌôòÌïúÎã§.
- * variable ÌÉÄÏûÖÏùò Îç∞Ïù¥ÌÑ∞ ÌÉÄÏûÖÏùÄ ID_UINT_MAXÎ•º Î∞òÌôò
- * mtheaderÍ∞Ä smÏóê Ï†ÄÏû•ÎêúÍ≤ΩÏö∞Í∞Ä ÏïÑÎãàÎ©¥ mtheaderÌÅ¨Í∏∞Î•º ÎπºÏÑú Î∞òÌôò
+ * smø° ¿˙¿Âµ«¥¬ µ•¿Ã≈Õ¿« ≈©±‚∏¶ π›»Ø«—¥Ÿ.
+ * variable ≈∏¿‘¿« µ•¿Ã≈Õ ≈∏¿‘¿∫ ID_UINT_MAX∏¶ π›»Ø
+ * mtheader∞° smø° ¿˙¿Âµ»∞ÊøÏ∞° æ∆¥œ∏È mtheader≈©±‚∏¶ ª©º≠ π›»Ø
  **********************************************************************/
 
     return aColumn->size - mtdHeaderSize();

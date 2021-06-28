@@ -21,7 +21,7 @@
 #include <ulnString.h>
 
 /*
- * Note : gULN_CM_PROTOCOL ÏùÄ url ÌååÏã±Ìï† ÎïåÎßå Ïì¥Îã§.
+ * Note : gULN_CM_PROTOCOL ¿∫ url ∆ƒΩÃ«“ ∂ß∏∏ æ¥¥Ÿ.
  */
 const ulnKeyLinkImpl gULN_CM_PROTOCOL[]=
 {
@@ -35,8 +35,8 @@ const ulnKeyLinkImpl gULN_CM_PROTOCOL[]=
 };
 
 /*
- * Note : Altibase property ÌååÏùºÏùò Î™®Îì† Ïà´ÏûêÏóêÎäî K, M, G Îì±Ïùò metric Ïù¥ Î∂ôÏùÑ Ïàò ÏûàÎã§.
- *        ul ÎèÑ Îî∞ÎùºÌïòÏûê.
+ * Note : Altibase property ∆ƒ¿œ¿« ∏µÁ º˝¿⁄ø°¥¬ K, M, G µÓ¿« metric ¿Ã ∫Ÿ¿ª ºˆ ¿÷¥Ÿ.
+ *        ul µµ µ˚∂Û«œ¿⁄.
  */
 
 const ulnMetricPrefixInt gULN_MUL[]=
@@ -66,14 +66,14 @@ const ulnMetricPrefixInt gULN_MUL_TIME[]=
 };
 
 /*
- * Î™áÍ∞ÄÏßÄ ÌäπÏ†ï Í∞íÎßå Í∞ÄÏßÄÎäî ÏÜçÏÑ±Îì§
+ * ∏Ó∞°¡ˆ ∆Ø¡§ ∞™∏∏ ∞°¡ˆ¥¬ º”º∫µÈ
  */
 
 const ulnDiscreteInt gULN_BOOL[]=
 {
     /*
-     * Ïù¥Í±∞, output connection string ÎßåÎì§ Îïå gULN_BOOL[SQL_TRUE]->mKey Ï≤òÎüº Ï∞∏Ï°∞ÌïúÎã§ -0-;;
-     * Í±∞Í∏∞Ïùò Í≤ÉÏùÑ ÏàòÏ†ïÌïòÏßÄ ÏïäÏúºÎ©¥ ÏµúÏ¥àÏùò on, off Îäî Î∞îÍæ∏Î©¥ ÏïàÎêúÎã§.
+     * ¿Ã∞≈, output connection string ∏∏µÈ ∂ß gULN_BOOL[SQL_TRUE]->mKey √≥∑≥ ¬¸¡∂«—¥Ÿ -0-;;
+     * ∞≈±‚¿« ∞Õ¿ª ºˆ¡§«œ¡ˆ æ ¿∏∏È √÷√ ¿« on, off ¥¬ πŸ≤Ÿ∏È æ»µ»¥Ÿ.
      */
     { "OFF",    SQL_FALSE },
     { "ON",     SQL_TRUE },
@@ -134,16 +134,14 @@ const ulnDiscreteInt gULN_CONNTYPE[] =
 
 const ulnDiscreteInt gULN_SHARD_CONNTYPE[] = 
 {
-    { "DEFAULT" , ULN_CONNTYPE_INVALID },
-    { "0"       , ULN_CONNTYPE_INVALID },
-    { "TCP"     , ULN_CONNTYPE_TCP },
-    { "1"       , ULN_CONNTYPE_TCP },
-    { "SSL"     , ULN_CONNTYPE_SSL },
-    { "6"       , ULN_CONNTYPE_SSL },
-    { "IB"      , ULN_CONNTYPE_IB },
-    { "8"       , ULN_CONNTYPE_IB },
+    { "TCP", ULN_CONNTYPE_TCP },
+    { "1"  , ULN_CONNTYPE_TCP },
+    { "SSL", ULN_CONNTYPE_SSL },
+    { "6"  , ULN_CONNTYPE_SSL },
+    { "IB" , ULN_CONNTYPE_IB },
+    { "8"  , ULN_CONNTYPE_IB },
 
-    { NULL      , ULN_CONN_ATTR_INVALID_VALUE }
+    { NULL , ULN_CONN_ATTR_INVALID_VALUE }
 };
 
 const ulnDiscreteInt gULN_POOL[] =
@@ -186,7 +184,7 @@ const ulnDiscreteInt gULN_ACCESS_MODE[] =
 
 
 /*
- * ÌäπÏ†ï Î¨∏ÏûêÏó¥Ïù¥Î©¥ Ï†ïÌï¥ÏßÑ Í∞íÏúºÎ°ú ÏπòÌôòÌïòÎäî ÏÜçÏÑ±Îì§
+ * ∆Ø¡§ πÆ¿⁄ø≠¿Ã∏È ¡§«ÿ¡¯ ∞™¿∏∑Œ ƒ°»Ø«œ¥¬ º”º∫µÈ
  */
 
 const ulnReservedString gSQL_DATE[]=
@@ -215,7 +213,7 @@ const ulnDiscreteInt gULN_PRIVILEGE[] =
 
 /* bug-31468: adding conn-attr for trace logging */
 /* bug-35142 cli trace log
-   TraceLog Ïó∞Í≤∞ÏÜçÏÑ±ÏùÄ ÎçîÏù¥ÏÉÅ ÏÇ¨Ïö©ÌïòÏßÄ ÏïäÎäîÎã§ */
+   TraceLog ø¨∞·º”º∫¿∫ ¥ı¿ÃªÛ ªÁøÎ«œ¡ˆ æ ¥¬¥Ÿ */
 const ulnDiscreteInt gULN_TRACELOG[] =
 {
     { "off",     ULN_TRACELOG_OFF },
@@ -235,11 +233,11 @@ const ulnDiscreteInt gULN_TRACELOG[] =
 
 /*
  * ==============================================================================
- * BUGBUG : ÏÜçÏÑ±Ïù¥ ÏÑ∏ÌåÖÎê† Ïàò ÏûàÎäî ÏãúÏ†êÎèÑ Ïù¥ ÌëúÏóê Ìï®Í≤å ÎÑ£Ïñ¥Ïïº ÌïúÎã§. Before, Either
+ * BUGBUG : º”º∫¿Ã ºº∆√µ… ºˆ ¿÷¥¬ Ω√¡°µµ ¿Ã «•ø° «‘∞‘ ≥÷æÓæﬂ «—¥Ÿ. Before, Either
  * ==============================================================================
  */
 
-/* ulnConnAttribute.hÏùò ulnConnAttrIDÍ≥º ÏàúÏÑúÍ∞Ä ÎèôÏùºÌï¥Ïïº ÌïúÎã§. */
+/* ulnConnAttribute.h¿« ulnConnAttrID∞˙ º¯º≠∞° µø¿œ«ÿæﬂ «—¥Ÿ. */
 const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
 {
     { /* ConnAttrID  */ ULN_CONN_ATTR_DSN,
@@ -249,7 +247,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST 
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_UID,
       /* Keyword     */ "UID",
@@ -258,7 +258,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST 
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_PWD,
       /* Keyword     */ "PWD",
@@ -267,7 +269,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST 
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_URL,
       /* Keyword     */ "URL",
@@ -276,7 +280,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ NULL 
+      /* Check       */ NULL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     /* PROJ-1579 NCHAR */
     { /* ConnAttrID  */ ULN_CONN_ATTR_NLS_NCHAR_LITERAL_REPLACE,
@@ -286,7 +292,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ SQL_FALSE,
       /* Default     */ SQL_FALSE,
       /* Max         */ SQL_TRUE,
-      /* Check       */ gULN_BOOL
+      /* Check       */ gULN_BOOL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_NLS_CHARACTERSET_VALIDATION,
       /* Keyword     */ "NLS_CHARACTERSET_VALIDATION",
@@ -295,7 +303,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ SQL_FALSE,
       /* Default     */ SQL_TRUE,
       /* Max         */ SQL_TRUE,
-      /* Check       */ gULN_BOOL
+      /* Check       */ gULN_BOOL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_NLS_USE,
       /* Keyword     */ "NLS_USE",
@@ -304,7 +314,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 1,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_DATE_FORMAT,
       /* Keyword     */ "DATE_FORMAT",
@@ -313,7 +325,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 1,
       /* Default     */ 0,
       /* Max         */ 64,
-      /* Check       */ gSQL_DATE 
+      /* Check       */ gSQL_DATE,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_QUERY_TIMEOUT,
       /* Keyword     */ "QUERY_TIMEOUT",
@@ -322,7 +336,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ ULN_TMOUT_MIN,
       /* Default     */ ULN_QUERY_TMOUT_DEFAULT,
       /* Max         */ ULN_TMOUT_MAX,
-      /* Check       */ gULN_MUL_TIME  
+      /* Check       */ gULN_MUL_TIME,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_AUTOCOMMIT,
       /* Keyword     */ "AUTOCOMMIT",
@@ -331,7 +347,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ SQL_AUTOCOMMIT_OFF,
       /* Default     */ SQL_AUTOCOMMIT_ON,
       /* Max         */ SQL_AUTOCOMMIT_ON,
-      /* Check       */ gULN_BOOL 
+      /* Check       */ gULN_BOOL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_LOGIN_TIMEOUT,
       /* Keyword     */ "LOGIN_TIMEOUT",
@@ -340,7 +358,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ ULN_TMOUT_MIN,
       /* Default     */ ULN_LOGIN_TMOUT_DEFAULT,
       /* Max         */ ULN_TMOUT_MAX,
-      /* Check       */ gULN_MUL_TIME 
+      /* Check       */ gULN_MUL_TIME,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_CONNECTION_TIMEOUT,
       /* Keyword     */ "CONNECTION_TIMEOUT",
@@ -349,7 +369,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ ULN_TMOUT_MIN,
       /* Default     */ ULN_CONN_TMOUT_DEFAULT,
       /* Max         */ ULN_TMOUT_MAX,
-      /* Check       */ gULN_MUL_TIME 
+      /* Check       */ gULN_MUL_TIME,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_PACKET_SIZE,
       /* Keyword     */ "PACKET_SIZE",
@@ -358,7 +380,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ ULN_PACKET_SIZE_MIN,
       /* Default     */ ULN_PACKET_SIZE_DEFAULT,
       /* Max         */ ULN_PACKET_SIZE_MAX,
-      /* Check       */ gULN_MUL
+      /* Check       */ gULN_MUL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_TXN_ISOLATION,
       /* Keyword     */ "TXN_ISOLATION",
@@ -367,7 +391,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ SQL_TXN_READ_UNCOMMITTED,
       /* Default     */ ULN_ISOLATION_LEVEL_DEFAULT,
       /* Max         */ SQL_TXN_SERIALIZABLE,
-      /* Check       */ gULN_SQL_TXN 
+      /* Check       */ gULN_SQL_TXN,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_ODBC_VERSION,
       /* Keyword     */ "ODBC_VERSION",
@@ -376,7 +402,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ SQL_OV_ODBC2,
       /* Default     */ SQL_OV_ODBC2,
       /* Max         */ SQL_OV_ODBC3,
-      /* Check       */ gSQL_OV_ODBC 
+      /* Check       */ gSQL_OV_ODBC,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_DISCONNECT_BEHAVIOR,
       /* Keyword     */ "DISCONNECT_BEHAVIOR",
@@ -385,7 +413,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ SQL_DB_RETURN_TO_POOL,
       /* Default     */ SQL_DB_DISCONNECT,
       /* Max         */ SQL_DB_DISCONNECT,
-      /* Check       */ gULN_POOL 
+      /* Check       */ gULN_POOL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_CONNECTION_POOLING,
       /* Keyword     */ "CONNECTION_POOLING",
@@ -394,7 +424,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ SQL_FALSE,
       /* Default     */ SQL_FALSE,
       /* Max         */ SQL_TRUE,
-      /* Check       */ gULN_BOOL 
+      /* Check       */ gULN_BOOL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     /* DSN=192.168.1.11;UID=SYS;PWD=MANAGER;CONNTYPE=1;NLS_USE=US7ASCII;NLS_NCHAR_LITERAL_REPLACE=0;PORT_NO=20545" */
     { /* ConnAttrID  */ ULN_CONN_ATTR_CONNTYPE,
@@ -404,7 +436,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ ULN_CONNTYPE_TCP,
       /* Default     */ ULN_CONNTYPE_TCP,
       /* Max         */ ULN_CONNTYPE_IB,    /* PROJ-2681 */
-      /* Check       */ gULN_CONNTYPE 
+      /* Check       */ gULN_CONNTYPE,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_PORT_NO,
       /* Keyword     */ "PORT_NO",
@@ -413,7 +447,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 20300,
       /* Max         */ 65535,
-      /* Check       */ gULN_MUL 
+      /* Check       */ gULN_MUL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_ASYNC_ENABLE,
       /* Keyword     */ "ASYNC_ENABLE",
@@ -422,7 +458,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ SQL_FALSE,
       /* Default     */ SQL_FALSE,
       /* Max         */ SQL_TRUE,
-      /* Check       */ gULN_BOOL 
+      /* Check       */ gULN_BOOL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_METADATA_ID,
       /* Keyword     */ "METADATA_ID",
@@ -431,7 +469,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ NULL 
+      /* Check       */ NULL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_EXPLAIN_PLAN,
       /* Keyword     */ "EXPLAIN_PLAN",
@@ -440,7 +480,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ ALTIBASE_EXPLAIN_PLAN_OFF,
       /* Default     */ ALTIBASE_EXPLAIN_PLAN_OFF,
       /* Max         */ ALTIBASE_EXPLAIN_PLAN_ONLY,
-      /* Check       */ gULN_EXPLAIN_PLAN 
+      /* Check       */ gULN_EXPLAIN_PLAN,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_STACK_SIZE,
       /* Keyword     */ "STACK_SIZE",
@@ -449,7 +491,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ ULN_STACK_SIZE_MIN,
       /* Default     */ ULN_STACK_SIZE_DEFAULT,
       /* Max         */ ULN_STACK_SIZE_MAX,
-      /* Check       */ gULN_MUL
+      /* Check       */ gULN_MUL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_ACCESS_MODE,
       /* Keyword     */ "ACCESS_MODE",
@@ -458,9 +502,11 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ SQL_MODE_READ_WRITE,
       /* Default     */ SQL_MODE_DEFAULT,
       /* Max         */ SQL_MODE_READ_ONLY,
-      /* Check       */ gULN_ACCESS_MODE 
+      /* Check       */ gULN_ACCESS_MODE,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
-    /* Optimizer Mode Í∞Ä Î≠êÏßÄ? */
+    /* Optimizer Mode ∞° ππ¡ˆ? */
     { /* ConnAttrID  */ ULN_CONN_ATTR_OPTIMIZER_MODE,
       /* Keyword     */ "OPTIMIZER_MODE",
       /* SQL_ATTR_ID */ ALTIBASE_OPTIMIZER_MODE,
@@ -468,7 +514,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ ALTIBASE_OPTIMIZER_MODE_COST,
       /* Default     */ ALTIBASE_OPTIMIZER_MODE_RULE,
       /* Max         */ ALTIBASE_OPTIMIZER_MODE_RULE,
-      /* Check       */ gULN_OPTIMIZER_MODE 
+      /* Check       */ gULN_OPTIMIZER_MODE,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     /* default ID_UITN_MAX mean server side default do get */
     { /* ConnAttrID  */ ULN_CONN_ATTR_UTRANS_TIMEOUT,
@@ -478,7 +526,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ ULN_TMOUT_MIN,
       /* Default     */ ACP_SINT32_MAX,
       /* Max         */ ULN_TMOUT_MAX,
-      /* Check       */ gULN_MUL_TIME
+      /* Check       */ gULN_MUL_TIME,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_FETCH_TIMEOUT,
       /* Keyword     */ "FETCH_TIMEOUT",
@@ -487,7 +537,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ ULN_TMOUT_MIN,
       /* Default     */ ACP_SINT32_MAX,
       /* Max         */ ULN_TMOUT_MAX,
-      /* Check       */ gULN_MUL_TIME
+      /* Check       */ gULN_MUL_TIME,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_IDLE_TIMEOUT,
       /* Keyword     */ "IDLE_TIMEOUT",
@@ -496,7 +548,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ ULN_TMOUT_MIN,
       /* Default     */ ACP_SINT32_MAX,
       /* Max         */ ULN_TMOUT_MAX,
-      /* Check       */ gULN_MUL_TIME 
+      /* Check       */ gULN_MUL_TIME,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_HEADER_DISPLAY_MODE,
       /* Keyword     */ "HEADER_DISPLAY_MODE",
@@ -505,7 +559,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ ACP_SINT32_MAX,
       /* Max         */ ACP_SINT32_MAX,
-      /* Check       */ gULN_MUL 
+      /* Check       */ gULN_MUL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_APP_INFO,
       /* Keyword     */ "APP_INFO",
@@ -514,7 +570,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 1,
       /* Default     */ 0,
       /* Max         */ 128,
-      /* Check       */ gNULL_LIST 
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_LONGDATA_COMPAT,
       /* Keyword     */ "LONGDATA_COMPTAT",
@@ -523,7 +581,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ SQL_FALSE,
       /* Default     */ SQL_FALSE,
       /* Max         */ SQL_TRUE,
-      /* Check       */ gULN_BOOL  
+      /* Check       */ gULN_BOOL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_HOSTNAME,
       /* Keyword     */ "Server",
@@ -532,7 +592,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST 
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_MESSAGE_CALLBACK,
       /* Keyword     */ "",
@@ -541,7 +603,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ NULL
+      /* Check       */ NULL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_CURRENT_CATALOG,
       /* Keyword     */ "Database",
@@ -550,10 +614,12 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST 
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
-    /* BUGBUG : Íµ¨ÌòÑÎèÑ ÏïàÌï¥ÎÜ®ÏúºÎ©¥ÏÑú Í∑∏ÎÉ• ÏÑ∏ÌåÖÎßå ÌïòÍ≥† Î™®Î•∏Ï≤ô ÌïòÎäîÍ±¥ Ï∞ùÏ∞ùÌïúÎç∞... HYC00 ÎÇ¥ Ï§òÏïº Ìï† Í≤É Í∞ôÏùÄÎç∞... Ïù¥ ÏïÑÎû´Ï™ΩÏóê Ï†ÑÎ∂ÄÎã§ Í∑∏Îü∞Îç∞...
-     * Note   : Íµ¨ÌòÑ ÏïàÌïòÍ≥† Í∑∏ÎÉ• ÏÑ∏ÌåÖÌïòÎ†§Îãà Ïñ¥Îñ§ Í∞íÎèÑ Î∞õÏïÑÏ£ºÍ∏∞ ÏúÑÌï¥ÏÑú tDINT Ïù∏Îç∞ÎèÑ tINT-gULN_MULÏßùÏùÑ, tSTR Ïù¥Î©¥ gNULL_LIST Î•º ÏîÄ */
+    /* BUGBUG : ±∏«ˆµµ æ»«ÿ≥˘¿∏∏Èº≠ ±◊≥… ºº∆√∏∏ «œ∞Ì ∏∏•√¥ «œ¥¬∞« ¬Û¬Û«—µ•... HYC00 ≥ª ¡‡æﬂ «“ ∞Õ ∞∞¿∫µ•... ¿Ã æ∆∑ß¬ ø° ¿¸∫Œ¥Ÿ ±◊∑±µ•...
+     * Note   : ±∏«ˆ æ»«œ∞Ì ±◊≥… ºº∆√«œ∑¡¥œ æÓ∂≤ ∞™µµ πﬁæ∆¡÷±‚ ¿ß«ÿº≠ tDINT ¿Œµ•µµ tINT-gULN_MUL¬¶¿ª, tSTR ¿Ã∏È gNULL_LIST ∏¶ æ∏ */
     { /* ConnAttrID  */ ULN_CONN_ATTR_ODBC_CURSORS,
       /* Keyword     */ "",
       /* SQL_ATTR_ID */ SQL_ATTR_ODBC_CURSORS,
@@ -561,7 +627,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ ACP_SINT32_MAX,
-      /* Check       */ gULN_MUL 
+      /* Check       */ gULN_MUL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_ENLIST_IN_DTC,
       /* Keyword     */ "",
@@ -570,7 +638,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ ACP_SINT32_MAX,
-      /* Check       */ gULN_MUL
+      /* Check       */ gULN_MUL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_ENLIST_IN_XA,
       /* Keyword     */ "",
@@ -579,7 +649,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ ACP_SINT32_MAX,
-      /* Check       */ gULN_MUL 
+      /* Check       */ gULN_MUL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_TRACEFILE,
       /* Keyword     */ "",
@@ -588,7 +660,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST 
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_TRANSLATE_LIB,
       /* Keyword     */ "",
@@ -597,7 +671,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_TRANSLATE_OPTION,
       /* Keyword     */ "",
@@ -606,7 +682,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ ACP_SINT32_MAX,
-      /* Check       */ gULN_MUL 
+      /* Check       */ gULN_MUL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_TRACE,
       /* Keyword     */ "",
@@ -615,7 +693,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ ACP_SINT32_MAX,
-      /* Check       */ gULN_MUL 
+      /* Check       */ gULN_MUL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_QUIET_MODE,
       /* Keyword     */ "",
@@ -624,7 +704,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ ACP_SINT32_MAX,
-      /* Check       */ gULN_MUL
+      /* Check       */ gULN_MUL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_GPKIWORKDIR,
       /* Keyword     */ "GPKIWORKDIR",
@@ -633,7 +715,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_GPKICONFDIR,
       /* Keyword     */ "GPKICONFDIR",
@@ -642,7 +726,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_USERCERT,
       /* Keyword     */ "USERCERT",
@@ -651,7 +737,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST 
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_USERKEY,
       /* Keyword     */ "USERKEY",
@@ -660,7 +748,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST 
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_USERAID,
       /* Keyword     */ "USERAID",
@@ -669,7 +759,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST          
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_USERPASSWD,
       /* Keyword     */ "USERPASSWD",
@@ -678,7 +770,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_XA_RMID,
       /* Keyword     */ "",
@@ -687,7 +781,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ ACP_SINT32_MAX,
-      /* Check       */ gULN_MUL 
+      /* Check       */ gULN_MUL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_XA_NAME,
       /* Keyword     */ "XA_NAME",
@@ -696,7 +792,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST 
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_XA_LOG_DIR,
       /* Keyword     */ "XA_LOG_DIR",
@@ -705,7 +803,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST 
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_UNIXDOMAIN_FILEPATH,
       /* Keyword     */ "UNIXDOMAIN_FILEPATH",
@@ -714,7 +814,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST 
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_IPC_FILEPATH,
       /* Keyword     */ "IPC_FILEPATH",
@@ -723,7 +825,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST 
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_NLS_CHARACTERSET,
       /* Keyword     */ "NLS_CHARACTERSET",
@@ -732,7 +836,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 1,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_NLS_NCHAR_CHARACTERSET,
       /* Keyword     */ "NLS_NCHAR_CHARACTERSET",
@@ -741,7 +847,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 1,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST 
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_ANSI_APP,
       /* Keyword     */ "",
@@ -750,7 +858,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ SQL_FALSE,
       /* Default     */ SQL_FALSE,
       /* Max         */ SQL_TRUE,
-      /* Check       */ gULN_BOOL                              
+      /* Check       */ gULN_BOOL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },                                      
     // bug-19279 remote sysdba enable
     { /* ConnAttrID  */ ULN_CONN_ATTR_PRIVILEGE,
@@ -760,7 +870,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gULN_PRIVILEGE 
+      /* Check       */ gULN_PRIVILEGE,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     //PROJ-1645 UL Fail-Over.
     { /* ConnAttrID  */ ULN_CONN_ATTR_ALTERNATE_SERVERS,
@@ -770,7 +882,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_LOAD_BALANCE,
       /* Keyword     */ "LOAD_BALANCE",
@@ -779,7 +893,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ SQL_FALSE,
       /* Default     */ SQL_FALSE,
       /* Max         */ SQL_TRUE,
-      /* Check       */ gULN_BOOL
+      /* Check       */ gULN_BOOL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_CONNECTION_RETRY_COUNT,
       /* Keyword     */ "CONNECTION_RETRY_COUNT",
@@ -788,7 +904,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ ULN_CONN_RETRY_COUNT_MIN,
       /* Default     */ ULN_CONN_RETRY_COUNT_DEFAULT,
       /* Max         */ ULN_CONN_RETRY_COUNT_MAX,
-      /* Check       */ gULN_MUL 
+      /* Check       */ gULN_MUL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_CONNECTION_RETRY_DELAY,
       /* Keyword     */ "CONNECTION_RETRY_DELAY",
@@ -797,7 +915,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ ULN_CONN_RETRY_DELAY_MIN,
       /* Default     */ ULN_CONN_RETRY_DELAY_DEFAULT,
       /* Max         */ ULN_CONN_RETRY_DELAY_MAX,
-      /* Check       */ gULN_MUL 
+      /* Check       */ gULN_MUL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_SESSION_FAILOVER,
       /* Keyword     */ "SESSION_FAILOVER",
@@ -806,7 +926,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ SQL_FALSE,
       /* Default     */ SQL_FALSE,
       /* Max         */ SQL_TRUE,
-      /* Check       */ gULN_BOOL
+      /* Check       */ gULN_BOOL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_FAILOVER_CALLBACK,
       /* Keyword     */ "",
@@ -815,7 +937,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ NULL
+      /* Check       */ NULL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_PREFER_IPV6,
       /* Keyword     */ "PREFER_IPV6",
@@ -824,7 +948,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ SQL_FALSE,
       /* Default     */ SQL_FALSE,
       /* Max         */ SQL_TRUE,
-      /* Check       */ gULN_BOOL
+      /* Check       */ gULN_BOOL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     /* BUG-31144 */
     { /* ConnAttrID  */ ULN_CONN_ATTR_MAX_STATEMENTS_PER_SESSION,
@@ -834,7 +960,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 1,
       /* Default     */ 1024,
       /* Max         */ ACP_SINT32_MAX,
-      /* Check       */ gULN_MUL
+      /* Check       */ gULN_MUL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_TRACELOG,
       /* Keyword     */ "TRACELOG",
@@ -843,7 +971,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ ULN_TRACELOG_OFF,
       /* Default     */ ULN_TRACELOG_OFF,
       /* Max         */ ULN_TRACELOG_HIGH,
-      /* Check       */ gULN_TRACELOG 
+      /* Check       */ gULN_TRACELOG,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     /* BUG-32885 Timeout for DDL must be distinct to query_timeout or utrans_timeout */
     { /* ConnAttrID  */ ULN_CONN_ATTR_DDL_TIMEOUT,
@@ -853,7 +983,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ ULN_TMOUT_MIN,
       /* Default     */ ULN_DDL_TMOUT_DEFAULT,
       /* Max         */ ULN_TMOUT_MAX,
-      /* Check       */ gULN_MUL_TIME
+      /* Check       */ gULN_MUL_TIME,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     /* PROJ-2209 DBTIMEZONE */
     { /* ConnAttrID  */ ULN_CONN_ATTR_TIME_ZONE,
@@ -863,7 +995,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 40,
-      /* Check       */ gNULL_LIST
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     /* PROJ-1891 Deferred Prepare */
     { /* ConnAttrID  */ ULN_CONN_ATTR_DEFERRED_PREPARE,
@@ -873,7 +1007,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ ULN_CONN_DEFERRED_PREPARE_OFF,
       /* Default     */ ULN_CONN_DEFERRED_PREPARE_DEFAULT,
       /* Max         */ ULN_CONN_DEFERRED_PREPARE_ON,
-      /* Check       */ gULN_BOOL 
+      /* Check       */ gULN_BOOL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     /* PROJ-2047 Strengthening LOB - LOBCACHE */
     { /* ConnAttrID  */ ULN_CONN_ATTR_LOB_CACHE_THRESHOLD,
@@ -883,7 +1019,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ ULN_LOB_CACHE_THRESHOLD_MIN,
       /* Default     */ ULN_LOB_CACHE_THRESHOLD_DEFAULT,
       /* Max         */ ULN_LOB_CACHE_THRESHOLD_MAX,
-      /* Check       */ gULN_MUL
+      /* Check       */ gULN_MUL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     /* BUG-36548 Return code of client functions should be differed by ODBC version */
     { /* ConnAttrID  */ ULN_CONN_ATTR_ODBC_COMPATIBILITY,
@@ -893,7 +1031,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 2,
       /* Default     */ 3,
       /* Max         */ 3,
-      /* Check       */ gULN_MUL
+      /* Check       */ gULN_MUL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     /* BUG-36729 Connection attribute will be added to unlock client mutex by force */
     { /* ConnAttrID  */ ULN_CONN_ATTR_FORCE_UNLOCK,
@@ -903,7 +1043,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 1,
-      /* Check       */ gULN_MUL
+      /* Check       */ gULN_MUL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     /* PROJ-2474 SSL/TLS */
     { /* ConnAttrID  */ ULN_CONN_ATTR_SSL_CA,
@@ -913,7 +1055,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     }, 
     { /* ConnAttrID  */ ULN_CONN_ATTR_SSL_CAPATH,
       /* Keyword     */ "SSL_CAPATH",
@@ -922,7 +1066,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_SSL_CERT,
       /* Keyword     */ "SSL_CERT",
@@ -931,7 +1077,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     }, 
     { /* ConnAttrID  */ ULN_CONN_ATTR_SSL_KEY,
       /* Keyword     */ "SSL_KEY",
@@ -940,7 +1088,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     }, 
     { /* ConnAttrID  */ ULN_CONN_ATTR_SSL_VERIFY,
       /* Keyword     */ "SSL_VERIFY",
@@ -949,7 +1099,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ ULN_CONN_SSL_VERIFY_OFF,
       /* Default     */ ULN_CONN_SSL_VERIFY_DEFAULT,
       /* Max         */ ULN_CONN_SSL_VERIFY_ON,
-      /* Check       */ gULN_BOOL
+      /* Check       */ gULN_BOOL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     }, 
     { /* ConnAttrID  */ ULN_CONN_ATTR_SSL_CIPHER,
       /* Keyword     */ "SSL_CIPHER",
@@ -958,7 +1110,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_IPCDA_FILEPATH,
         /* Keyword     */ "IPCDA_FILEPATH",
@@ -967,7 +1121,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
         /* Min         */ 0,
         /* Default     */ 0,
         /* Max         */ 0,
-        /* Check       */ gNULL_LIST
+        /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     /* PROJ-2625 Semi-async Prefetch, Prefetch Auto-tuning */
     { /* ConnAttrID  */ ULN_CONN_ATTR_SOCK_RCVBUF_BLOCK_RATIO,
@@ -977,7 +1133,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ ULN_CONN_SOCK_RCVBUF_BLOCK_RATIO_MIN,
       /* Default     */ ULN_CONN_SOCK_RCVBUF_BLOCK_RATIO_DEFAULT,
       /* Max         */ ULN_CONN_SOCK_RCVBUF_BLOCK_RATIO_MAX,
-      /* Check       */ gULN_MUL
+      /* Check       */ gULN_MUL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     /* BUG-44271 */
     { /* ConnAttrID  */ ULN_CONN_ATTR_SOCK_BIND_ADDR,
@@ -987,7 +1145,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_SHARD_LINKER_TYPE,
       /* Keyword     */ "SHARD_LINKER_TYPE",
@@ -996,7 +1156,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 1,
-      /* Check       */ gNULL_LIST
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_SHARD_NODE_NAME,
       /* Keyword     */ "SHARD_NODE_NAME",
@@ -1005,7 +1167,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_SHARD_PIN,
       /* Keyword     */ "SHARD_PIN",
@@ -1014,24 +1178,28 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ ACP_SINT64_MIN,
       /* Default     */ 0,
       /* Max         */ ACP_SINT64_MAX,
-      /* Check       */ gULN_MUL
+      /* Check       */ gULN_MUL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
-    /* BUG-46090 Meta Node SMN Ï†ÑÌåå */
+    /* BUG-46090 Meta Node SMN ¿¸∆ƒ */
     { /* ConnAttrID  */ ULN_CONN_ATTR_SHARD_META_NUMBER,
       /* Keyword     */ "SHARD_META_NUMBER",
-      /* SQL_ATTR_ID */ ACP_SINT32_MIN,
+      /* SQL_ATTR_ID */ ALTIBASE_UNUSED_07,
       /* AttrType    */ tINT,
-      /* Min         */ ACP_SINT64_MIN,
+      /* Min         */ ACP_UINT64_MIN,
       /* Default     */ 0,
-      /* Max         */ ACP_SINT64_MAX,
-      /* Check       */ gULN_MUL
+      /* Max         */ ACP_UINT64_MAX,
+      /* Check       */ gULN_MUL,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     /*
-     * BUG-45286 (http://nok.altibase.com/x/nRhrAg Ï∞∏Í≥†)
+     * BUG-45286 (http://nok.altibase.com/x/nRhrAg ¬¸∞Ì)
      *
-     * @0 : ÏßÄÏó∞ÏóÜÏùå, Default
-     * @1 : ParamInfoSetList, ParamDataIn ÏßÄÏó∞
-     * @2 : ParamInfoSetList, ParamDataIn, Free with Drop ÏßÄÏó∞
+     * @0 : ¡ˆø¨æ¯¿Ω, Default
+     * @1 : ParamInfoSetList, ParamDataIn ¡ˆø¨
+     * @2 : ParamInfoSetList, ParamDataIn, Free with Drop ¡ˆø¨
      */
     { /* ConnAttrID  */ ULN_CONN_ATTR_PDO_DEFER_PROTOCOLS,
       /* Keyword     */ "PDO_DEFER_PROTOCOLS",
@@ -1040,7 +1208,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 2,
-      /* Check       */ gNULL_LIST
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
     /* PROJ-2681 */
     { /* ConnAttrID  */ ULN_CONN_ATTR_IB_LATENCY,
@@ -1050,7 +1220,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ ALTIBASE_IB_LATENCY_NORMAL,
       /* Default     */ ALTIBASE_IB_LATENCY_NORMAL,
       /* Max         */ ALTIBASE_IB_LATENCY_PREFERRED,
-      /* Check       */ gNULL_LIST
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_IB_CONCHKSPIN,
       /* Keyword     */ "IB_CONCHKSPIN",
@@ -1059,7 +1231,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ ALTIBASE_IB_CONCHKSPIN_MIN,
       /* Default     */ ALTIBASE_IB_CONCHKSPIN_DEFAULT,
       /* Max         */ ALTIBASE_IB_CONCHKSPIN_MAX,
-      /* Check       */ gNULL_LIST
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     /* BUG-45998 Support Infiniband on the both of shardcli connections and meta (internal) connections. */
     { /* ConnAttrID  */ ULN_CONN_ATTR_SHARD_CONNTYPE,
@@ -1069,7 +1243,9 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ ULN_CONNTYPE_INVALID,
       /* Default     */ ULN_CONNTYPE_INVALID,
       /* Max         */ ULN_CONNTYPE_IB,
-      /* Check       */ gULN_SHARD_CONNTYPE 
+      /* Check       */ gULN_SHARD_CONNTYPE,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     /* BUG-45707 */
     { /* ConnAttrID  */ ULN_CONN_ATTR_SHARD_CLIENT,
@@ -1079,16 +1255,20 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 1,
-      /* Check       */ gNULL_LIST
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     { /* ConnAttrID  */ ULN_CONN_ATTR_SHARD_SESSION_TYPE,
       /* Keyword     */ "SHARD_SESSION_TYPE",
-      /* SQL_ATTR_ID */ ACP_SINT32_MIN,
+      /* SQL_ATTR_ID */ ALTIBASE_UNUSED_04,  /* PROJ-2733-DistTxInfo */
       /* AttrType    */ tINT,
       /* Min         */ 0,
       /* Default     */ 0,
-      /* Max         */ 1,
-      /* Check       */ gNULL_LIST
+      /* Max         */ 2,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
     },
     /* BUG-46092 */
     { /* ConnAttrID  */ ULN_CONN_ATTR_SHARD_CLIENT_CONNECTION_REPORT,
@@ -1098,8 +1278,518 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* Min         */ 0,
       /* Default     */ 0,
       /* Max         */ 0,
-      /* Check       */ gNULL_LIST
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
     },
+    /* BUG-47257 */
+    { /* ConnAttrID  */ ULN_CONN_ATTR_GLOBAL_TRANSACTION_LEVEL,
+      /* Keyword     */ "GLOBAL_TRANSACTION_LEVEL",
+      /* SQL_ATTR_ID */ ALTIBASE_GLOBAL_TRANSACTION_LEVEL,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 1,
+      /* Max         */ 3,  /* PROJ-2733-DistTxInfo */
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    // PROJ-2727 add connect attr
+    { /* ConnAttrID  */ ULN_CONN_ATTR_COMMIT_WRITE_WAIT_MODE,
+      /* Keyword     */ "COMMIT_WRITE_WAIT_MODE",
+      /* SQL_ATTR_ID */ ALTIBASE_COMMIT_WRITE_WAIT_MODE,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 0,
+      /* Max         */ 1,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    }, 
+    { /* ConnAttrID  */ ULN_CONN_ATTR_ST_OBJECT_BUFFER_SIZE,
+      /* Keyword     */ "ST_OBJECT_BUFFER_SIZE",
+      /* SQL_ATTR_ID */ ALTIBASE_ST_OBJECT_BUFFER_SIZE,
+      /* AttrType    */ tINT,
+      /* Min         */ 2000,
+      /* Default     */ 32000,
+      /* Max         */ 104857600,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_TRX_UPDATE_MAX_LOGSIZE,
+      /* Keyword     */ "TRX_UPDATE_MAX_LOGSIZE",
+      /* SQL_ATTR_ID */ ALTIBASE_TRX_UPDATE_MAX_LOGSIZE,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 10485760,
+      /* Max         */ ACP_UINT64_MAX,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_PARALLEL_DML_MODE,
+      /* Keyword     */ "PARALLEL_DML_MODE",
+      /* SQL_ATTR_ID */ ALTIBASE_PARALLEL_DML_MODE,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 0,
+      /* Max         */ ACP_UINT32_MAX,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_NLS_NCHAR_CONV_EXCP,
+      /* Keyword     */ "NLS_NCHAR_CONV_EXCP",
+      /* SQL_ATTR_ID */ ALTIBASE_NLS_NCHAR_CONV_EXCP,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 0,
+      /* Max         */ 1,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_AUTO_REMOTE_EXEC,
+      /* Keyword     */ "AUTO_REMOTE_EXEC",
+      /* SQL_ATTR_ID */ ALTIBASE_AUTO_REMOTE_EXEC,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 0,
+      /* Max         */ 1,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_TRCLOG_DETAIL_PREDICATE,
+      /* Keyword     */ "TRCLOG_DETAIL_PREDICATE",
+      /* SQL_ATTR_ID */ ALTIBASE_TRCLOG_DETAIL_PREDICATE,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 0,
+      /* Max         */ 1,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_OPTIMIZER_DISK_INDEX_COST_ADJ,
+      /* Keyword     */ "OPTIMIZER_DISK_INDEX_COST_ADJ",
+      /* SQL_ATTR_ID */ ALTIBASE_OPTIMIZER_DISK_INDEX_COST_ADJ,
+      /* AttrType    */ tINT,
+      /* Min         */ 1,
+      /* Default     */ 100,
+      /* Max         */ 10000,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_OPTIMIZER_MEMORY_INDEX_COST_ADJ,
+      /* Keyword     */ "OPTIMIZER_MEMORY_INDEX_COST_ADJ",
+      /* SQL_ATTR_ID */ ALTIBASE_OPTIMIZER_MEMORY_INDEX_COST_ADJ,
+      /* AttrType    */ tINT,
+      /* Min         */ 1,
+      /* Default     */ 100,
+      /* Max         */ 10000,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_NLS_TERRITORY,
+      /* Keyword     */ "NLS_TERRITORY",
+      /* SQL_ATTR_ID */ ALTIBASE_NLS_TERRITORY,
+      /* AttrType    */ tSTR,
+      /* Min         */ 1,
+      /* Default     */ 0,
+      /* Max         */ 64,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_NLS_ISO_CURRENCY,
+      /* Keyword     */ "NLS_ISO_CURRENCY",
+      /* SQL_ATTR_ID */ ALTIBASE_NLS_ISO_CURRENCY,
+      /* AttrType    */ tSTR,
+      /* Min         */ 1,
+      /* Default     */ 0,
+      /* Max         */ 64,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_NLS_CURRENCY,
+      /* Keyword     */ "NLS_CURRENCY",
+      /* SQL_ATTR_ID */ ALTIBASE_NLS_CURRENCY,
+      /* AttrType    */ tSTR,
+      /* Min         */ 1,
+      /* Default     */ 0,
+      /* Max         */ 64,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_NLS_NUMERIC_CHARACTERS,
+      /* Keyword     */ "NLS_NUMERIC_CHARACTERS",
+      /* SQL_ATTR_ID */ ALTIBASE_NLS_NUMERIC_CHARACTERS,
+      /* AttrType    */ tSTR,
+      /* Min         */ 1,
+      /* Default     */ 0,
+      /* Max         */ 64,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_QUERY_REWRITE_ENABLE,
+      /* Keyword     */ "QUERY_REWRITE_ENABLE",
+      /* SQL_ATTR_ID */ ALTIBASE_QUERY_REWRITE_ENABLE,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 0,
+      /* Max         */ 1,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_DBLINK_REMOTE_STATEMENT_AUTOCOMMIT,
+      /* Keyword     */ "DBLINK_REMOTE_STATEMENT_AUTOCOMMIT",
+      /* SQL_ATTR_ID */ ALTIBASE_DBLINK_REMOTE_STATEMENT_AUTOCOMMIT,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 0,
+      /* Max         */ 1,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_RECYCLEBIN_ENABLE,
+      /* Keyword     */ "RECYCLEBIN_ENABLE",
+      /* SQL_ATTR_ID */ ALTIBASE_RECYCLEBIN_ENABLE,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 0,
+      /* Max         */ 1,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },    
+    { /* ConnAttrID  */ ULN_CONN_ATTR___USE_OLD_SORT,
+      /* Keyword     */ "__USE_OLD_SORT",
+      /* SQL_ATTR_ID */ ALTIBASE___USE_OLD_SORT,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 0,
+      /* Max         */ 1,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },    
+    { /* ConnAttrID  */ ULN_CONN_ATTR_ARITHMETIC_OPERATION_MODE,
+      /* Keyword     */ "ARITHMETIC_OPERATION_MODE",
+      /* SQL_ATTR_ID */ ALTIBASE_ARITHMETIC_OPERATION_MODE,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 1,
+      /* Max         */ 3,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },    
+    { /* ConnAttrID  */ ULN_CONN_ATTR_RESULT_CACHE_ENABLE,
+      /* Keyword     */ "RESULT_CACHE_ENABLE",
+      /* SQL_ATTR_ID */ ALTIBASE_RESULT_CACHE_ENABLE,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 0,
+      /* Max         */ 1,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },    
+    { /* ConnAttrID  */ ULN_CONN_ATTR_TOP_RESULT_CACHE_MODE,
+      /* Keyword     */ "TOP_RESULT_CACHE_MODE",
+      /* SQL_ATTR_ID */ ALTIBASE_TOP_RESULT_CACHE_MODE,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 0,
+      /* Max         */ 3,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_OPTIMIZER_AUTO_STATS,
+      /* Keyword     */ "OPTIMIZER_AUTO_STATS",
+      /* SQL_ATTR_ID */ ALTIBASE_OPTIMIZER_AUTO_STATS,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 0,
+      /* Max         */ 10,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR___OPTIMIZER_TRANSITIVITY_OLD_RULE,
+      /* Keyword     */ "__OPTIMIZER_TRANSITIVITY_OLD_RULE",
+      /* SQL_ATTR_ID */ ALTIBASE___OPTIMIZER_TRANSITIVITY_OLD_RULE,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 0,
+      /* Max         */ 1,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_OPTIMIZER_PERFORMANCE_VIEW,
+      /* Keyword     */ "OPTIMIZER_PERFORMANCE_VIEW",
+      /* SQL_ATTR_ID */ ALTIBASE_OPTIMIZER_PERFORMANCE_VIEW,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 1,
+      /* Max         */ 1,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_REPLICATION_DDL_SYNC,
+      /* Keyword     */ "REPLICATION_DDL_SYNC",
+      /* SQL_ATTR_ID */ ALTIBASE_REPLICATION_DDL_SYNC,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 0,
+      /* Max         */ 1,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_REPLICATION_DDL_SYNC_TIMEOUT,
+      /* Keyword     */ "REPLICATION_DDL_SYNC_TIMEOUT",
+      /* SQL_ATTR_ID */ ALTIBASE_REPLICATION_DDL_SYNC_TIMEOUT,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 7200,
+      /* Max         */ ACP_UINT32_MAX,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR___PRINT_OUT_ENABLE,
+      /* Keyword     */ "__PRINT_OUT_ENABLE",
+      /* SQL_ATTR_ID */ ALTIBASE___PRINT_OUT_ENABLE,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 1,
+      /* Max         */ 1,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_TRCLOG_DETAIL_SHARD,
+      /* Keyword     */ "TRCLOG_DETAIL_SHARD",
+      /* SQL_ATTR_ID */ ALTIBASE_TRCLOG_DETAIL_SHARD,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 0,
+      /* Max         */ 1,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_SERIAL_EXECUTE_MODE,
+      /* Keyword     */ "SERIAL_EXECUTE_MODE",
+      /* SQL_ATTR_ID */ ALTIBASE_SERIAL_EXECUTE_MODE,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 1,
+      /* Max         */ 1,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_TRCLOG_DETAIL_INFORMATION,
+      /* Keyword     */ "TRCLOG_DETAIL_INFORMATION",
+      /* SQL_ATTR_ID */ ALTIBASE_TRCLOG_DETAIL_INFORMATION,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 0,
+      /* Max         */ 1,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR___OPTIMIZER_DEFAULT_TEMP_TBS_TYPE,
+      /* Keyword     */ "__OPTIMIZER_DEFAULT_TEMP_TBS_TYPE",
+      /* SQL_ATTR_ID */ ALTIBASE___OPTIMIZER_DEFAULT_TEMP_TBS_TYPE,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 0,
+      /* Max         */ 2,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_NORMALFORM_MAXIMUM,
+      /* Keyword     */ "NORMALFORM_MAXIMUM",
+      /* SQL_ATTR_ID */ ALTIBASE_NORMALFORM_MAXIMUM,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 2048,
+      /* Max         */ ACP_UINT32_MAX,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },    
+    { /* ConnAttrID  */ ULN_CONN_ATTR___REDUCE_PARTITION_PREPARE_MEMORY,
+      /* Keyword     */ "__REDUCE_PARTITION_PREPARE_MEMORY",
+      /* SQL_ATTR_ID */ ALTIBASE___REDUCE_PARTITION_PREPARE_MEMORY,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 1,
+      /* Max         */ 3,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_TRANSACTIONAL_DDL,
+      /* Keyword     */ "TRANSACTIONAL_DDL",
+      /* SQL_ATTR_ID */ ALTIBASE_TRANSACTIONAL_DDL,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 0,
+      /* Max         */ 1,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_SHARD_INTERNAL_LOCAL_OPERATION,
+      /* Keyword     */ "SHARD_INTERNAL_LOCAL_OPERATION",
+      /* SQL_ATTR_ID */ ALTIBASE_UNUSED_02,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 0,
+      /* Max         */ 3,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_FALSE,
+      /* Lib  Conn   */ ACP_FALSE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_INVOKE_USER,
+      /* Keyword     */ "INVOKE_USER",
+      /* SQL_ATTR_ID */ ALTIBASE_UNUSED_03,
+      /* AttrType    */ tSTR,
+      /* Min         */ 0,
+      /* Default     */ 0,
+      /* Max         */ 0,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_GLOBAL_DDL,
+      /* Keyword     */ "GLOBAL_DDL",
+      /* SQL_ATTR_ID */ ALTIBASE_GLOBAL_DDL,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 0,
+      /* Max         */ 1,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_FALSE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_SHARD_STATEMENT_RETRY,
+      /* Keyword     */ "SHARD_STATEMENT_RETRY",
+      /* SQL_ATTR_ID */ ALTIBASE_SHARD_STATEMENT_RETRY,
+      /* AttrType    */ tINT,
+      /* Min         */ ULN_SHARD_STATEMENT_RETRY_MIN,
+      /* Default     */ ULN_SHARD_STATEMENT_RETRY_DEFAULT,
+      /* Max         */ ULN_SHARD_STATEMENT_RETRY_MAX,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_INDOUBT_FETCH_TIMEOUT,
+      /* Keyword     */ "INDOUBT_FETCH_TIMEOUT",
+      /* SQL_ATTR_ID */ ALTIBASE_INDOUBT_FETCH_TIMEOUT,
+      /* AttrType    */ tINT,
+      /* Min         */ ULN_TMOUT_MIN,
+      /* Default     */ 6,
+      /* Max         */ 86400,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_INDOUBT_FETCH_METHOD,
+      /* Keyword     */ "INDOUBT_FETCH_METHOD",
+      /* SQL_ATTR_ID */ ALTIBASE_INDOUBT_FETCH_METHOD,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 1,
+      /* Max         */ 1,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+     },
+     { /* ConnAttrID  */ ULN_CONN_ATTR_SHARD_COORD_FIX_CTRL_CALLBACK,
+       /* Keyword     */ "SHARD_COORD_FIX_CTRL_CALLBACK",
+       /* SQL_ATTR_ID */ ALTIBASE_UNUSED_06,
+       /* AttrType    */ tCB,
+       /* Min         */ 0,
+       /* Default     */ 0,
+       /* Max         */ 0,
+       /* Check       */ NULL,
+       /* User Conn   */ ACP_TRUE,
+       /* Lib  Conn   */ ACP_FALSE
+     },
+     { /* ConnAttrID  */ ULN_CONN_ATTR___OPTIMIZER_PLAN_HASH_OR_SORT_METHOD,
+       /* Keyword     */ "__OPTIMIZER_PLAN_HASH_OR_SORT_METHOD",
+       /* SQL_ATTR_ID */ ALTIBASE___REDUCE_PARTITION_PREPARE_MEMORY,
+       /* AttrType    */ tINT,
+       /* Min         */ 0,
+       /* Default     */ 0,
+       /* Max         */ 2,
+       /* Check       */ gNULL_LIST,
+       /* User Conn   */ ACP_TRUE,
+       /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR___OPTIMIZER_BUCKET_COUNT_MAX,
+      /* Keyword     */ "__OPTIMIZER_BUCKET_COUNT_MAX",
+      /* SQL_ATTR_ID */ ALTIBASE___OPTIMIZER_BUCKET_COUNT_MAX,
+      /* AttrType    */ tINT,
+      /* Min         */ 1024,
+      /* Default     */ 102400000,
+      /* Max         */ 102400000,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR_DDL_LOCK_TIMEOUT,
+      /* Keyword     */ "DDL_LOCK_TIMEOUT",
+      /* SQL_ATTR_ID */ ALTIBASE_DDL_LOCK_TIMEOUT,
+      /* AttrType    */ tINT,
+      /* Min         */ ULN_TMOUT_MIN,
+      /* Default     */ 0,
+      /* Max         */ ULN_TMOUT_MAX,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+    { /* ConnAttrID  */ ULN_CONN_ATTR___OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION,
+      /* Keyword     */ "__OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION",
+      /* SQL_ATTR_ID */ ALTIBASE___OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION,
+      /* AttrType    */ tINT,
+      /* Min         */ 0,
+      /* Default     */ 1,
+      /* Max         */ 2,
+      /* Check       */ gNULL_LIST,
+      /* User Conn   */ ACP_TRUE,
+      /* Lib  Conn   */ ACP_TRUE
+    },
+     { /* ConnAttrID  */ ULN_CONN_ATTR_REBUILD_SHARD_META_NUMBER,
+       /* Keyword     */ "REBUILD_SHARD_META_NUMBER",
+       /* SQL_ATTR_ID */ ALTIBASE_UNUSED_08,
+       /* AttrType    */ tINT,
+       /* Min         */ ACP_UINT64_MIN,
+       /* Default     */ 0,
+       /* Max         */ ACP_UINT64_MAX,
+       /* Check       */ gULN_MUL,
+       /* User Conn   */ ACP_FALSE,
+       /* Lib  Conn   */ ACP_FALSE
+     },
 };
 
 #undef tINT
@@ -1134,10 +1824,11 @@ const ulnAttrNameIdPair gUlnConnAttrMap_PROFILE[] =
     { "QueryTimeOut"              , ULN_CONN_ATTR_QUERY_TIMEOUT             },
     { "Server"                    , ULN_CONN_ATTR_HOSTNAME                  }, /* CLI2 old style alias name*/
     { "SessionFailover"           , ULN_CONN_ATTR_SESSION_FAILOVER          },
+    { "ShardInternalLocalOperation", ULN_CONN_ATTR_SHARD_INTERNAL_LOCAL_OPERATION }, 
     { "ShardLinkerType"           , ULN_CONN_ATTR_SHARD_LINKER_TYPE         }, /* PROJ-2638 shard native linker */
     { "ShardNodeName"             , ULN_CONN_ATTR_SHARD_NODE_NAME           }, /* PROJ-2638 shard native linker */
     { "ShardPin"                  , ULN_CONN_ATTR_SHARD_PIN                 }, /* PROJ-2638 shard native linker */
-    { "ShardMetaNumber"           , ULN_CONN_ATTR_SHARD_META_NUMBER         }, /* BUG-46090 Meta Node SMN Ï†ÑÌåå */
+    { "ShardMetaNumber"           , ULN_CONN_ATTR_SHARD_META_NUMBER         }, /* BUG-46090 Meta Node SMN ¿¸∆ƒ */
     { "ShardClient"               , ULN_CONN_ATTR_SHARD_CLIENT              }, /* BUG-45707 */
     { "ShardSessionType"          , ULN_CONN_ATTR_SHARD_SESSION_TYPE        }, /* BUG-45707 */
     { "TimeOut"                   , ULN_CONN_ATTR_LOGIN_TIMEOUT             }, /* BUG-40769 */
@@ -1158,17 +1849,20 @@ const ulnAttrNameIdPair gUlnConnAttrMap_PROFILE[] =
     { NULL                        , ULN_CONN_ATTR_MAX                       }
 };
 
-// bug-20706 ÏïÑÎûò ÌÖåÏù¥Î∏îÏùÄ Î∞òÎìúÏãú ÏïÑÏä§ÌÇ§ ÏΩîÎìú ÏàúÏÑúÎ°ú ÎêòÏñ¥Ïïº ÌïúÎã§.
-// Connection Attribute Îäî case in-sensitiveÌïòÍ≤å Ï≤òÎ¶¨ÌïúÎã§.
-// Îî∞ÎùºÏÑú Ïó¨Í∏∞Îäî Ìé∏ÏùòÏÉÅ ÏÜåÎ¨∏ÏûêÎ°ú Í∏∞Ïà†Ìï¥ Ï£ºÏÑ∏Ïöî.
+// bug-20706 æ∆∑° ≈◊¿Ã∫Ì¿∫ π›µÂΩ√ æ∆Ω∫≈∞ ƒ⁄µÂ º¯º≠∑Œ µ«æÓæﬂ «—¥Ÿ.
+// Connection Attribute ¥¬ case in-sensitive«œ∞‘ √≥∏Æ«—¥Ÿ.
+// µ˚∂Ûº≠ ø©±‚¥¬ ∆Ì¿«ªÛ º“πÆ¿⁄∑Œ ±‚º˙«ÿ ¡÷ººø‰.
 const struct ulnAttrNameIdPair gUlnConnAttrMap_KEYWORD[] =
 {
     { "access_mode"               , ULN_CONN_ATTR_ACCESS_MODE               },
     { "alternate_servers"         , ULN_CONN_ATTR_ALTERNATE_SERVERS         }, /* PROJ-1645 */
     { "alternateservers"          , ULN_CONN_ATTR_ALTERNATE_SERVERS         }, /* PROJ-1645 */
     { "app_info"                  , ULN_CONN_ATTR_APP_INFO                  },
+    { "arithetic_operation_mode"  , ULN_CONN_ATTR_ARITHMETIC_OPERATION_MODE },
     { "async_enable"              , ULN_CONN_ATTR_ASYNC_ENABLE              },
-    { "autocommit"                , ULN_CONN_ATTR_AUTOCOMMIT                },
+    { "auto_remote_exec"          , ULN_CONN_ATTR_AUTO_REMOTE_EXEC          },
+    { "autocommit"                , ULN_CONN_ATTR_AUTOCOMMIT                },    
+    { "commit_write_wait_mode"    , ULN_CONN_ATTR_COMMIT_WRITE_WAIT_MODE    },
     { "connection_pooling"        , ULN_CONN_ATTR_CONNECTION_POOLING        },
     { "connection_timeout"        , ULN_CONN_ATTR_CONNECTION_TIMEOUT        },
     { "connectionretrycount"      , ULN_CONN_ATTR_CONNECTION_RETRY_COUNT    },
@@ -1179,8 +1873,11 @@ const struct ulnAttrNameIdPair gUlnConnAttrMap_KEYWORD[] =
     { "date_fmt"                  , ULN_CONN_ATTR_DATE_FORMAT               },
     { "date_format"               , ULN_CONN_ATTR_DATE_FORMAT               },
     { "dateformat"                , ULN_CONN_ATTR_DATE_FORMAT               },
+    { "dblink_remote_statement_autocommit" , ULN_CONN_ATTR_DBLINK_REMOTE_STATEMENT_AUTOCOMMIT },
     { "dbname"                    , ULN_CONN_ATTR_CURRENT_CATALOG           }, /* BUG-44132 */
+    { "ddl_lock_timeout"          , ULN_CONN_ATTR_DDL_LOCK_TIMEOUT          },
     { "ddl_timeout"               , ULN_CONN_ATTR_DDL_TIMEOUT               }, /* BUG-32885 */
+
     { "default_date_format"       , ULN_CONN_ATTR_DATE_FORMAT               },
     { "defer_prepares"            , ULN_CONN_ATTR_DEFERRED_PREPARE          }, /* PROJ-1891 */
     { "disconnect_behavior"       , ULN_CONN_ATTR_DISCONNECT_BEHAVIOR       },
@@ -1188,6 +1885,8 @@ const struct ulnAttrNameIdPair gUlnConnAttrMap_KEYWORD[] =
     { "explain_plan"              , ULN_CONN_ATTR_EXPLAIN_PLAN              },
     { "fetch_timeout"             , ULN_CONN_ATTR_FETCH_TIMEOUT             },
     { "force_unlock"              , ULN_CONN_ATTR_FORCE_UNLOCK              }, /* BUG-36729 */
+    { "global_ddl"                , ULN_CONN_ATTR_GLOBAL_DDL                }, /* PROJ-2736 */
+    { "global_transaction_level"  , ULN_CONN_ATTR_GLOBAL_TRANSACTION_LEVEL  }, /* BUG-47257 */
     { "gpkiconfdir"               , ULN_CONN_ATTR_GPKICONFDIR               },
     { "gpkiworkdir"               , ULN_CONN_ATTR_GPKIWORKDIR               },
     { "header_display_mode"       , ULN_CONN_ATTR_HEADER_DISPLAY_MODE       },
@@ -1197,6 +1896,8 @@ const struct ulnAttrNameIdPair gUlnConnAttrMap_KEYWORD[] =
     { "ib_latency"                , ULN_CONN_ATTR_IB_LATENCY                }, /* PROJ-2681 */
     { "idle_timeout"              , ULN_CONN_ATTR_IDLE_TIMEOUT              },
     { "idn_lang"                  , ULN_CONN_ATTR_NLS_USE                   },
+    { "indoubt_fetch_method"      , ULN_CONN_ATTR_INDOUBT_FETCH_METHOD     },
+    { "indoubt_fetch_timeout"     , ULN_CONN_ATTR_INDOUBT_FETCH_TIMEOUT     },
     { "ipc_filepath"              , ULN_CONN_ATTR_IPC_FILEPATH              },
     { "ipcdafilepath"             , ULN_CONN_ATTR_IPCDA_FILEPATH            },
     { "ipcfilepath"               , ULN_CONN_ATTR_IPC_FILEPATH              },
@@ -1208,13 +1909,24 @@ const struct ulnAttrNameIdPair gUlnConnAttrMap_KEYWORD[] =
     { "max_statements_per_session", ULN_CONN_ATTR_MAX_STATEMENTS_PER_SESSION}, /* BUG-31144 */
     { "metadata_id"               , ULN_CONN_ATTR_METADATA_ID               },
     { "nls_characterset"          , ULN_CONN_ATTR_NLS_CHARACTERSET          },
+    { "nls_currency"              , ULN_CONN_ATTR_NLS_CURRENCY              },
+    { "nls_iso_currency"          , ULN_CONN_ATTR_NLS_ISO_CURRENCY          },
     { "nls_nchar_characterset"    , ULN_CONN_ATTR_NLS_NCHAR_CHARACTERSET    },
+    { "nls_nchar_conv_excp"       , ULN_CONN_ATTR_NLS_NCHAR_CONV_EXCP       },
     { "nls_nchar_literal_replace" , ULN_CONN_ATTR_NLS_NCHAR_LITERAL_REPLACE },
+    { "nls_numeric_characters"    , ULN_CONN_ATTR_NLS_NUMERIC_CHARACTERS    },
+    { "nls_territory"             , ULN_CONN_ATTR_NLS_TERRITORY             },
     { "nls_use"                   , ULN_CONN_ATTR_NLS_USE                   },
+    { "normalform_maximum"        , ULN_CONN_ATTR_NORMALFORM_MAXIMUM        },    
     { "odbc_compatibility"        , ULN_CONN_ATTR_ODBC_COMPATIBILITY        }, /* BUG-36548 */
     { "odbc_version"              , ULN_CONN_ATTR_ODBC_VERSION              },
+    { "optimizer_auto_stats"      , ULN_CONN_ATTR_OPTIMIZER_AUTO_STATS      },
+    { "optimizer_disk_index_cost_adj"      , ULN_CONN_ATTR_OPTIMIZER_DISK_INDEX_COST_ADJ   },
+    { "optimizer_memory_index_cost_adj"    , ULN_CONN_ATTR_OPTIMIZER_MEMORY_INDEX_COST_ADJ },
     { "optimizer_mode"            , ULN_CONN_ATTR_OPTIMIZER_MODE            },
+    { "optimizer_performance_view"         , ULN_CONN_ATTR_OPTIMIZER_PERFORMANCE_VIEW        },
     { "packet_size"               , ULN_CONN_ATTR_PACKET_SIZE               },
+    { "parallel_dml_mode"         , ULN_CONN_ATTR_PARALLEL_DML_MODE         },
     { "password"                  , ULN_CONN_ATTR_PWD                       },
     { "pdo_defer_protocols"       , ULN_CONN_ATTR_PDO_DEFER_PROTOCOLS       }, /* BUG-45286 */
     { "port"                      , ULN_CONN_ATTR_PORT_NO                   },
@@ -1222,18 +1934,26 @@ const struct ulnAttrNameIdPair gUlnConnAttrMap_KEYWORD[] =
     { "prefer_ipv6"               , ULN_CONN_ATTR_PREFER_IPV6               },
     { "privilege"                 , ULN_CONN_ATTR_PRIVILEGE                 }, /* BUG-19279 */
     { "pwd"                       , ULN_CONN_ATTR_PWD                       },
-    { "query_timeout"             , ULN_CONN_ATTR_QUERY_TIMEOUT             },
+    { "query_rewrite_enable"      , ULN_CONN_ATTR_QUERY_REWRITE_ENABLE      },
+    { "query_timeout"             , ULN_CONN_ATTR_QUERY_TIMEOUT             },    
+    { "recyclebin_enable"         , ULN_CONN_ATTR_RECYCLEBIN_ENABLE         },
+    { "replication_ddl_sync"      , ULN_CONN_ATTR_REPLICATION_DDL_SYNC      },
+    { "replication_ddl_sync_timeout"       , ULN_CONN_ATTR_REPLICATION_DDL_SYNC_TIMEOUT      },
+    { "result_cache_enable"       , ULN_CONN_ATTR_RESULT_CACHE_ENABLE       },
+    { "serial_execute_mode"       , ULN_CONN_ATTR_SERIAL_EXECUTE_MODE       },
     { "server"                    , ULN_CONN_ATTR_HOSTNAME                  }, /* BUG-20809 4.3.9 style*/
     { "servername"                , ULN_CONN_ATTR_HOSTNAME                  }, /* BUG-20809 4.3.9 style*/
     { "session_failover"          , ULN_CONN_ATTR_SESSION_FAILOVER          },
     { "sessionfailover"           , ULN_CONN_ATTR_SESSION_FAILOVER          },
     { "shard_client"              , ULN_CONN_ATTR_SHARD_CLIENT              }, /* BUG-45707 */
     { "shard_conntype"            , ULN_CONN_ATTR_SHARD_CONNTYPE            }, /* BUG-45998 */
+    { "shard_internal_local_operation", ULN_CONN_ATTR_SHARD_INTERNAL_LOCAL_OPERATION }, 
     { "shard_linker_type"         , ULN_CONN_ATTR_SHARD_LINKER_TYPE         }, /* PROJ-2638 shard native linker */
-    { "shard_meta_number"         , ULN_CONN_ATTR_SHARD_META_NUMBER         }, /* BUG-46090 Meta Node SMN Ï†ÑÌåå */
+    { "shard_meta_number"         , ULN_CONN_ATTR_SHARD_META_NUMBER         }, /* BUG-46090 Meta Node SMN ¿¸∆ƒ */
     { "shard_node_name"           , ULN_CONN_ATTR_SHARD_NODE_NAME           }, /* PROJ-2638 shard native linker */
     { "shard_pin"                 , ULN_CONN_ATTR_SHARD_PIN                 }, /* PROJ-2660 shard native linker */
     { "shard_session_type"        , ULN_CONN_ATTR_SHARD_SESSION_TYPE        }, /* BUG-45707 */
+    { "shard_statement_retry"     , ULN_CONN_ATTR_SHARD_STATEMENT_RETRY     },
     { "sock_bind_addr"            , ULN_CONN_ATTR_SOCK_BIND_ADDR            }, /* BUG-44271 */
     { "sock_rcvbuf_block_ratio"   , ULN_CONN_ATTR_SOCK_RCVBUF_BLOCK_RATIO   }, /* PROJ-2625 */
     { "ssl_ca"                    , ULN_CONN_ATTR_SSL_CA                    }, /* PROJ-2474 SSL/TLS */
@@ -1242,10 +1962,17 @@ const struct ulnAttrNameIdPair gUlnConnAttrMap_KEYWORD[] =
     { "ssl_cipher"                , ULN_CONN_ATTR_SSL_CIPHER                }, /* PROJ-2474 SSL/TLS */
     { "ssl_key"                   , ULN_CONN_ATTR_SSL_KEY                   }, /* PROJ-2474 SSL/TLS */
     { "ssl_verify"                , ULN_CONN_ATTR_SSL_VERIFY                }, /* PROJ-2474 SSL/TLS */
-    { "stack_size"                , ULN_CONN_ATTR_STACK_SIZE                }, 
+    { "st_object_buffer_size"     , ULN_CONN_ATTR_ST_OBJECT_BUFFER_SIZE     },
+    { "stack_size"                , ULN_CONN_ATTR_STACK_SIZE                },
     { "time_zone"                 , ULN_CONN_ATTR_TIME_ZONE                 }, /* PROJ-2209 DBTIMEZONE */
     { "timeout"                   , ULN_CONN_ATTR_LOGIN_TIMEOUT             }, /* BUG-40769 */
+    { "top_result_cache_mode"     , ULN_CONN_ATTR_TOP_RESULT_CACHE_MODE     },
     { "tracelog"                  , ULN_CONN_ATTR_TRACELOG                  },
+    { "transactional_ddl"         , ULN_CONN_ATTR_TRANSACTIONAL_DDL         }, /* PROJ-2735 */
+    { "trclog_detail_information" , ULN_CONN_ATTR_TRCLOG_DETAIL_INFORMATION },
+    { "trclog_detail_predicate"   , ULN_CONN_ATTR_TRCLOG_DETAIL_PREDICATE   },  
+    { "trclog_detail_shard"       , ULN_CONN_ATTR_TRCLOG_DETAIL_SHARD       },
+    { "trx_update_max_logsize"    , ULN_CONN_ATTR_TRX_UPDATE_MAX_LOGSIZE    },
     { "txn_isolation"             , ULN_CONN_ATTR_TXN_ISOLATION             },
     { "uid"                       , ULN_CONN_ATTR_UID                       },
     { "unixdomain_filepath"       , ULN_CONN_ATTR_UNIXDOMAIN_FILEPATH       },
@@ -1262,7 +1989,7 @@ const struct ulnAttrNameIdPair gUlnConnAttrMap_KEYWORD[] =
     { "utrans_timeout"            , ULN_CONN_ATTR_UTRANS_TIMEOUT            },
     { "xa_log_dir"                , ULN_CONN_ATTR_XA_LOG_DIR                },
     { "xa_name"                   , ULN_CONN_ATTR_XA_NAME                   },
-    { NULL                        , ULN_CONN_ATTR_MAX                       }
+    { NULL                        , ULN_CONN_ATTR_MAX                       }    
 };
 
 ulnConnAttrID ulnGetConnAttrIDfromKEYWORD(const acp_char_t *aName, acp_sint32_t aNameLen)
@@ -1311,7 +2038,7 @@ ulnConnAttrID ulnGetConnAttrIDfromSQL_ATTR_ID(acp_sint32_t aSQL_ATTR_ID)
     acp_uint32_t i;
 
     /*
-     * switch - case Î•º Ïì∞ÎäîÍ≤å Îçî Îπ†Î•ºÍπå? Í∑∏ÎÉ• ÎèåÏûê.
+     * switch - case ∏¶ æ≤¥¬∞‘ ¥ı ∫¸∏¶±Ó? ±◊≥… µπ¿⁄.
      */
 
     for (i = 0; i < ULN_CONN_ATTR_MAX; i++)
@@ -1369,7 +2096,7 @@ void ulnConnAttrArrFinal(ulnConnAttrArr *aUnsupportedConnAttr)
 /**
  * ulnConnAttrArrAddId
  *
- * aIdÎ•º ulnConnAttrArrÏóê Ï†ÄÏû•ÌïúÎã§.
+ * aId∏¶ ulnConnAttrArrø° ¿˙¿Â«—¥Ÿ.
  */
 ACI_RC ulnConnAttrArrAddId(ulnConnAttrArr *aUnsupportedConnAttr,
                            ulnConnAttrID   aId)
@@ -1387,7 +2114,7 @@ ACI_RC ulnConnAttrArrAddId(ulnConnAttrArr *aUnsupportedConnAttr,
     }
     else
     {
-        /* Í≥µÍ∞ÑÏù¥ Î∂ÄÏ°±ÌïòÎ©¥ 2Î∞∞Î°ú ÎäòÎ¶¨Ïûê */
+        /* ∞¯∞£¿Ã ∫Œ¡∑«œ∏È 2πË∑Œ ¥√∏Æ¿⁄ */
         if (aUnsupportedConnAttr->mArrIndex *
             (acp_sint32_t)ACI_SIZEOF(ulnConnAttrID) == aUnsupportedConnAttr->mArrSize)
         {
@@ -1425,7 +2152,7 @@ ACI_RC ulnConnAttrArrAddId(ulnConnAttrArr *aUnsupportedConnAttr,
 /**
  * ulnConnAttrArrHasId
  *
- * ulnConnAttrArrÏóê aIdÍ∞Ä Ï†ÄÏû•ÎêòÏñ¥ ÏûàÎäîÏßÄ ÌôïÏù∏ÌïúÎã§.
+ * ulnConnAttrArrø° aId∞° ¿˙¿Âµ«æÓ ¿÷¥¬¡ˆ »Æ¿Œ«—¥Ÿ.
  */
 ACI_RC ulnConnAttrArrHasId(ulnConnAttrArr *aUnsupportedConnAttr,
                            ulnConnAttrID   aId)
@@ -1452,7 +2179,7 @@ ACI_RC ulnConnAttrArrHasId(ulnConnAttrArr *aUnsupportedConnAttr,
 /**
  * ulnGetConnAttrKEYWORDfromConnAttrId
  *
- * ConnAttrIdÎ•º Ïù¥Ïö©Ìï¥ KeywordÎ•º ÏïåÏïÑÏò®Îã§.
+ * ConnAttrId∏¶ ¿ÃøÎ«ÿ Keyword∏¶ æÀæ∆ø¬¥Ÿ.
  */
 acp_char_t *ulnGetConnAttrKEYWORDfromConnAttrId(ulnConnAttrID aConnAttrId)
 {

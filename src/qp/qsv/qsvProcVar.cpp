@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qsvProcVar.cpp 84499 2018-12-04 01:47:06Z ahra.cho $
+ * $Id: qsvProcVar.cpp 87967 2020-07-07 05:02:47Z khkwak $
  **********************************************************************/
 
 #include <idl.h>
@@ -89,13 +89,13 @@ IDE_RC qsvProcVar::validateParaDef(
         if ( sParaVar->variableType == QS_ROW_TYPE )
         {
             /* BUG-38146 
-               subprogramì—ì„œì˜ parameterì˜ datatypeì´
+               subprogram¿¡¼­ÀÇ parameterÀÇ datatypeÀÌ
                cursor%rowtype ,
                package_name.cursor_name%rowtype ,
-               user_name.package_name.cursor_name%rowtype ì¼ ê²½ìš°
-               procedureì—ì„œì˜ parameterì˜ datatypeì´
+               user_name.package_name.cursor_name%rowtype ÀÏ °æ¿ì
+               procedure¿¡¼­ÀÇ parameterÀÇ datatypeÀÌ
                package_name.cursor_name%rowtype ,
-               user_name.package_name.cursor_name%rowtype ì¼ ê²½ìš° */
+               user_name.package_name.cursor_name%rowtype ÀÏ °æ¿ì */
             IDE_TEST( searchCursor(
                           aStatement,
                           sParaVar->variableTypeNode,
@@ -108,8 +108,8 @@ IDE_RC qsvProcVar::validateParaDef(
                 if ( sCursor->tableInfo == NULL )
                 {
                     // To fix BUG-14279
-                    // tableInfoê°€ ìƒì„±ë˜ì–´ ìˆì§€ ì•Šìœ¼ë©´ ìƒì„±í•œ í›„
-                    // rowtype ìƒì„±.
+                    // tableInfo°¡ »ı¼ºµÇ¾î ÀÖÁö ¾ÊÀ¸¸é »ı¼ºÇÑ ÈÄ
+                    // rowtype »ı¼º.
                     IDE_TEST( qmvQuerySet::makeTableInfo(
                                   aStatement,
                                   ((qmsParseTree*)sCursor->mCursorSql->parseTree)->querySet,
@@ -140,7 +140,7 @@ IDE_RC qsvProcVar::validateParaDef(
             {
                 if ( QC_IS_NULL_NAME(sParaVar->variableTypeNode->userName) == ID_TRUE )
                 {
-                    // PROJ-1075 rowtype ìƒì„± í—ˆìš©.
+                    // PROJ-1075 rowtype »ı¼º Çã¿ë.
                     // (1) user_name.table_name%ROWTYPE
                     // (2) table_name%ROWTYPE
                     IDE_TEST( checkAttributeRowType( aStatement, sParaVar )
@@ -156,10 +156,10 @@ IDE_RC qsvProcVar::validateParaDef(
         }
         else if (sParaVar->variableType == QS_COL_TYPE)
         {
-            // parameterì—ì„œ column typeì„ í—ˆìš©í•˜ëŠ” ê²½ìš°
+            // parameter¿¡¼­ column typeÀ» Çã¿ëÇÏ´Â °æ¿ì
             // PROJ-1073 Package
-            // (1),(2)ì€ packageì˜ subprogramì¼ë•Œë§Œ í—ˆìš©ë˜ê³ ,
-            // ë‚˜ë¨¸ì§€ëŠ” ëª¨ë‘ í—ˆìš©
+            // (1),(2)Àº packageÀÇ subprogramÀÏ¶§¸¸ Çã¿ëµÇ°í,
+            // ³ª¸ÓÁö´Â ¸ğµÎ Çã¿ë
             // (1) variable%TYPE
             // (2) record.field%TYPE
 
@@ -188,8 +188,8 @@ IDE_RC qsvProcVar::validateParaDef(
                    procedure proc2(p1 v1.c1%type);  <-- (2)
                    end;
                    /
-                   packageì˜ subprogramì˜ parameterëŠ” ìœ„ì™€ ê°™ì´
-                   ë™ì¼í•œ packageì— ì¡´ì¬í•˜ëŠ” variableì„ %typeìœ¼ë¡œ ì‚¬ìš©ì´ ê°€ëŠ¥í•˜ë‹¤. */
+                   packageÀÇ subprogramÀÇ parameter´Â À§¿Í °°ÀÌ
+                   µ¿ÀÏÇÑ package¿¡ Á¸ÀçÇÏ´Â variableÀ» %typeÀ¸·Î »ç¿ëÀÌ °¡´ÉÇÏ´Ù. */
 
                 // PROC-1073 Package
                 if( sIsPkg == ID_TRUE )
@@ -204,11 +204,11 @@ IDE_RC qsvProcVar::validateParaDef(
                 else
                 {
                     // Nothing to do.
-                    // ì¼ë°˜ procedure/function
+                    // ÀÏ¹İ procedure/function
                 }
 
                 /* ex)
-                 * pkg1ì€ ìœ„ì˜ ì˜ˆì œ ì°¸ê³ 
+                 * pkg1Àº À§ÀÇ ¿¹Á¦ Âü°í
                  * create or replace procedure proc1( p1 pkg1.v1%type ) as
                  * begin
                  * null;
@@ -234,13 +234,13 @@ IDE_RC qsvProcVar::validateParaDef(
 
                 if( sValidPara == ID_TRUE )
                 {
-                    // primitive / record / rowtypeë³„ë¡œ ë§Œë“¤ì–´ì•¼ í•¨.
+                    // primitive / record / rowtypeº°·Î ¸¸µé¾î¾ß ÇÔ.
                     if( ( sColumn->type.dataTypeId >= MTD_UDT_ID_MIN ) &&
                         ( sColumn->type.dataTypeId <= MTD_UDT_ID_MAX ) )
                     {
                         sQtcModule = (qtcModule*)sColumn->module;
 
-                        // row / record / associative arrayì¸ ê²½ìš°.
+                        // row / record / associative arrayÀÎ °æ¿ì.
                         if( ( sColumn->type.dataTypeId == MTD_ROWTYPE_ID ) ||
                             ( sColumn->type.dataTypeId == MTD_RECORDTYPE_ID ) )
                         {
@@ -267,13 +267,13 @@ IDE_RC qsvProcVar::validateParaDef(
                         }
                         else
                         {
-                            // row, record, associative array, ref cursor ì´ì™¸ì˜ íƒ€ì…ì€ ì—ëŸ¬.
+                            // row, record, associative array, ref cursor ÀÌ¿ÜÀÇ Å¸ÀÔÀº ¿¡·¯.
                             IDE_DASSERT(0);
                         }
                     }
                     else
                     {
-                        // primitive typeì¸ ê²½ìš°.
+                        // primitive typeÀÎ °æ¿ì.
                         IDE_TEST( setPrimitiveDataType( aStatement,
                                                         sColumn,
                                                         sParaVar )
@@ -313,16 +313,16 @@ IDE_RC qsvProcVar::validateParaDef(
         }
 
         /* PROJ-2586 PSM Parameters and return without precision
-           ì•„ë˜ ì¡°ê±´ ì¤‘ í•˜ë‚˜ë§Œ ë§Œì¡±í•˜ë©´ precisionì„ ì¡°ì •í•˜ê¸° ìœ„í•œ í•¨ìˆ˜ í˜¸ì¶œ.
+           ¾Æ·¡ Á¶°Ç Áß ÇÏ³ª¸¸ ¸¸Á·ÇÏ¸é precisionÀ» Á¶Á¤ÇÏ±â À§ÇÑ ÇÔ¼ö È£Ãâ.
 
-           ì¡°ê±´ 1. QCU_PSM_PARAM_AND_RETURN_WITHOUT_PRECISION_ENABLE == 1ì´ë©´ì„œ
-           datatypeì˜ flagì— QTC_NODE_SP_PARAM_OR_RETURN_PRECISION_ABSENT ì¼ ê²ƒ.
-           ì¡°ê±´ 2. QCU_PSM_PARAM_AND_RETURN_WITHOUT_PRECISION_ENABLE == 2 */
+           Á¶°Ç 1. QCU_PSM_PARAM_AND_RETURN_WITHOUT_PRECISION_ENABLE == 1ÀÌ¸é¼­
+           datatypeÀÇ flag¿¡ QTC_NODE_SP_PARAM_OR_RETURN_PRECISION_ABSENT ÀÏ °Í.
+           Á¶°Ç 2. QCU_PSM_PARAM_AND_RETURN_WITHOUT_PRECISION_ENABLE == 2 */
 
         if( ((QCU_PSM_PARAM_AND_RETURN_WITHOUT_PRECISION_ENABLE == 1) &&
              (((sParaVar->variableTypeNode->lflag & QTC_NODE_SP_PARAM_OR_RETURN_PRECISION_MASK)
-               == QTC_NODE_SP_PARAM_OR_RETURN_PRECISION_ABSENT))) /* ì¡°ê±´1 */ ||
-            (QCU_PSM_PARAM_AND_RETURN_WITHOUT_PRECISION_ENABLE == 2) /* ì¡°ê±´2 */ )
+               == QTC_NODE_SP_PARAM_OR_RETURN_PRECISION_ABSENT))) /* Á¶°Ç1 */ ||
+            (QCU_PSM_PARAM_AND_RETURN_WITHOUT_PRECISION_ENABLE == 2) /* Á¶°Ç2 */ )
         {
             IDE_TEST( qsv::setPrecisionAndScale( aStatement,
                                                  sParaVar )
@@ -333,8 +333,8 @@ IDE_RC qsvProcVar::validateParaDef(
             // Nothing to do.
         }
         
-        /* BUG-44382 clone tuple ì„±ëŠ¥ê°œì„  */
-        // ë³µì‚¬ì™€ ì´ˆê¸°í™”ê°€ í•„ìš”í•¨
+        /* BUG-44382 clone tuple ¼º´É°³¼± */
+        // º¹»ç¿Í ÃÊ±âÈ­°¡ ÇÊ¿äÇÔ
         qtc::setTupleColumnFlag(
             QTC_STMT_TUPLE( aStatement, sParaVar->variableTypeNode ),
             ID_TRUE,
@@ -568,15 +568,15 @@ IDE_RC qsvProcVar::checkAttributeColType(
     if ( sTableType != SMI_TABLE_FIXED )
     {
         // BUG-34492
-        // create procedureì‹œ í˜¸ì¶œë˜ë©° ì°¸ì¡°ë§Œ í•˜ë¯€ë¡œ
-        // validation lockì´ë©´ ì¶©ë¶„í•˜ë‹¤.
+        // create procedure½Ã È£ÃâµÇ¸ç ÂüÁ¶¸¸ ÇÏ¹Ç·Î
+        // validation lockÀÌ¸é ÃæºĞÇÏ´Ù.
         IDE_TEST(qcm::lockTableForDDLValidation(
                      aStatement,
                      sTableHandle,
                      sTableSCN)
                  != IDE_SUCCESS);
 
-        // environmentì˜ ê¸°ë¡
+        // environmentÀÇ ±â·Ï
         IDE_TEST( qcgPlan::registerPlanTable(
                       aStatement,
                       sTableHandle,
@@ -585,7 +585,7 @@ IDE_RC qsvProcVar::checkAttributeColType(
                       sTableInfo->name )        /* BUG-45893 */
                   != IDE_SUCCESS );
 
-        // environmentì˜ ê¸°ë¡
+        // environmentÀÇ ±â·Ï
         IDE_TEST( qcgPlan::registerPlanSynonym(
                       aStatement,
                       & sSynonymInfo,
@@ -608,9 +608,9 @@ IDE_RC qsvProcVar::checkAttributeColType(
     else
     {
         // BUG-46214
-        // Fixed tableì´ë©´ synonymë§Œ ì²˜ë¦¬í•œë‹¤.
-        // Fixed tableì€ lockì„ ì¡ì§€ ì•Šê³ ,
-        // Related objectì— ì¶”ê°€í•˜ì§€ë„ ì•ŠëŠ”ë‹¤.
+        // Fixed tableÀÌ¸é synonym¸¸ Ã³¸®ÇÑ´Ù.
+        // Fixed tableÀº lockÀ» ÀâÁö ¾Ê°í,
+        // Related object¿¡ Ãß°¡ÇÏÁöµµ ¾Ê´Â´Ù.
         IDE_TEST( qcgPlan::registerPlanSynonym(
                       aStatement,
                       & sSynonymInfo,
@@ -653,13 +653,13 @@ IDE_RC qsvProcVar::checkAttributeColType(
         // Nothing to do.
     }
 
-    // column íƒ€ì… ë³€ìˆ˜ëŠ” ë³„ë„ì˜ INTERMEDIATE tupleì„ í• ë‹¹ ë°›ì•„ì•¼ í•œë‹¤.
+    // column Å¸ÀÔ º¯¼ö´Â º°µµÀÇ INTERMEDIATE tupleÀ» ÇÒ´ç ¹Ş¾Æ¾ß ÇÑ´Ù.
     QC_SHARED_TMPLATE(aStatement)->tmplate.currentRow[MTC_TUPLE_TYPE_INTERMEDIATE] = ID_USHORT_MAX;
 
     IDE_TEST(setPrimitiveDataType( aStatement, sColumn->basicInfo, aVariable )
              != IDE_SUCCESS);
 
-    // ë”ì´ìƒ ì»¬ëŸ¼ì´ í• ë‹¹ë˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
+    // ´õÀÌ»ó ÄÃ·³ÀÌ ÇÒ´çµÇÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
     QC_SHARED_TMPLATE(aStatement)->tmplate.currentRow[MTC_TUPLE_TYPE_INTERMEDIATE] = ID_USHORT_MAX;
 
     return IDE_SUCCESS;
@@ -708,11 +708,11 @@ IDE_RC qsvProcVar::setPrimitiveDataType(
     sTemplate = QC_SHARED_TMPLATE(aStatement);
     sNode = aVariable->variableTypeNode;
 
-    /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì›
-     * Intermediate Tuple Rowê°€ ìˆê³  ë¹„ì–´ ìˆì§€ ì•Šì€ ìƒíƒœì—ì„œ,
-     * Intermediate Tuple Rowì— Lob Columnì„ í• ë‹¹í•  ë•Œ,
-     * (Old Offset + New Size) > Property ì´ë©´,
-     * ìƒˆë¡œìš´ Intermediate Tuple Rowë¥¼ í• ë‹¹í•œë‹¤.
+    /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø
+     * Intermediate Tuple Row°¡ ÀÖ°í ºñ¾î ÀÖÁö ¾ÊÀº »óÅÂ¿¡¼­,
+     * Intermediate Tuple Row¿¡ Lob ColumnÀ» ÇÒ´çÇÒ ¶§,
+     * (Old Offset + New Size) > Property ÀÌ¸é,
+     * »õ·Î¿î Intermediate Tuple Row¸¦ ÇÒ´çÇÑ´Ù.
      */
     if( sTemplate->tmplate.currentRow[MTC_TUPLE_TYPE_INTERMEDIATE] != ID_USHORT_MAX )
     {
@@ -781,8 +781,8 @@ IDE_RC qsvProcVar::setPrimitiveDataType(
 
     mtc::copyColumn(sColumn, aColumn);
 
-    /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì›
-     * LOB Columnì„ LOB Valueë¡œ ë³€í™˜í•œë‹¤.
+    /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø
+     * LOB ColumnÀ» LOB Value·Î º¯È¯ÇÑ´Ù.
      */
     if ( ( aColumn->type.dataTypeId == MTD_BLOB_ID ) ||
          ( aColumn->type.dataTypeId == MTD_CLOB_ID ) )
@@ -870,15 +870,15 @@ IDE_RC qsvProcVar::checkAttributeRowType(
     if ( sTableType != SMI_TABLE_FIXED )
     {
         // BUG-34492
-        // create procedureì‹œ í˜¸ì¶œë˜ë©° ì°¸ì¡°ë§Œ í•˜ë¯€ë¡œ
-        // validation lockì´ë©´ ì¶©ë¶„í•˜ë‹¤.
+        // create procedure½Ã È£ÃâµÇ¸ç ÂüÁ¶¸¸ ÇÏ¹Ç·Î
+        // validation lockÀÌ¸é ÃæºĞÇÏ´Ù.
         IDE_TEST( qcm::lockTableForDDLValidation(
                       aStatement,
                       sTableHandle,
                       sTableSCN )
                   != IDE_SUCCESS );
 
-        // environmentì˜ ê¸°ë¡
+        // environmentÀÇ ±â·Ï
         IDE_TEST( qcgPlan::registerPlanTable(
                       aStatement,
                       sTableHandle,
@@ -887,7 +887,7 @@ IDE_RC qsvProcVar::checkAttributeRowType(
                       sTableInfo->name )        /* BUG-45893 */
                   != IDE_SUCCESS );
 
-        // environmentì˜ ê¸°ë¡
+        // environmentÀÇ ±â·Ï
         IDE_TEST( qcgPlan::registerPlanSynonym(
                       aStatement,
                       & sSynonymInfo,
@@ -910,9 +910,9 @@ IDE_RC qsvProcVar::checkAttributeRowType(
     else
     {
         // BUG-46214
-        // Fixed tableì´ë©´ synonymë§Œ ì²˜ë¦¬í•œë‹¤.
-        // Fixed tableì€ lockì„ ì¡ì§€ ì•Šê³ ,
-        // Related objectì— ì¶”ê°€í•˜ì§€ë„ ì•ŠëŠ”ë‹¤.
+        // Fixed tableÀÌ¸é synonym¸¸ Ã³¸®ÇÑ´Ù.
+        // Fixed tableÀº lockÀ» ÀâÁö ¾Ê°í,
+        // Related object¿¡ Ãß°¡ÇÏÁöµµ ¾Ê´Â´Ù.
         IDE_TEST( qcgPlan::registerPlanSynonym(
                       aStatement,
                       & sSynonymInfo,
@@ -951,9 +951,9 @@ IDE_RC qsvProcVar::checkAttributeRowType(
         case QS_TRIGGER_NEW_VARIABLE :
         case QS_TRIGGER_OLD_VARIABLE :
             // set data type
-            // PROJ-1075 trigger rowtypeì€ psm rowtypeê³¼
-            // í˜¸í™˜ì´ ë˜ì§€ ì•Šê¸° ë•Œë¬¸ì— í˜¸í™˜ì´ ë˜ë„ë¡
-            // rowtypeì„ ìƒì„±
+            // PROJ-1075 trigger rowtypeÀº psm rowtype°ú
+            // È£È¯ÀÌ µÇÁö ¾Ê±â ¶§¹®¿¡ È£È¯ÀÌ µÇµµ·Ï
+            // rowtypeÀ» »ı¼º
             IDE_TEST( makeTriggerRowTypeVariable(
                           aStatement,
                           sTableInfo,
@@ -990,12 +990,12 @@ IDE_RC qsvProcVar::makeRowTypeVariable(
 /***********************************************************************
  *
  * Description :
- *    rowtype ë³€ìˆ˜ì˜ ìƒì„±.
+ *    rowtype º¯¼öÀÇ »ı¼º.
  *
  * Implementation :
- *    1. tableInfoë¥¼ ì´ìš©í•˜ì—¬ íŒŒì‹±í›„ ë‹¨ê³„ì˜ qsTypesí•˜ë‚˜ ìƒì„±
- *    2. qsTypesë¥¼ validation
- *    3. ì´ typeì„ ê°€ì§€ê³  makeRecordVariableí˜¸ì¶œ.
+ *    1. tableInfo¸¦ ÀÌ¿ëÇÏ¿© ÆÄ½ÌÈÄ ´Ü°èÀÇ qsTypesÇÏ³ª »ı¼º
+ *    2. qsTypes¸¦ validation
+ *    3. ÀÌ typeÀ» °¡Áö°í makeRecordVariableÈ£Ãâ.
  *
  ***********************************************************************/
 
@@ -1018,8 +1018,8 @@ IDE_RC qsvProcVar::makeRowTypeVariable(
         sTriggerVariable = ID_FALSE;
     }
 
-    // typeì„ ìƒˆë¡œ í•˜ë‚˜ ìƒì„±.
-    // rowtypeì€ ë³„ë„ì˜ type referenceê³µê°„ì´ ì—†ë‹¤.
+    // typeÀ» »õ·Î ÇÏ³ª »ı¼º.
+    // rowtypeÀº º°µµÀÇ type reference°ø°£ÀÌ ¾ø´Ù.
     IDE_TEST( qsvProcType::makeRowType(
                   aStatement,
                   aTableInfo,
@@ -1088,21 +1088,21 @@ IDE_RC qsvProcVar::makeTriggerRowTypeVariable(
  * Description :
  *    PROJ-1359 Trigger
  *
- *    Trigger ì˜ Referencing Rowë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ ì„ì˜ë¡œ ì •ì˜ëœ
- *    ROW TYPEìœ¼ë¡œ ì •ì˜í•œ ì§€ì—­ ë³€ìˆ˜ì— ëŒ€í•´ ì²˜ë¦¬í•œë‹¤.
+ *    Trigger ÀÇ Referencing Row¸¦ Ã³¸®ÇÏ±â À§ÇØ ÀÓÀÇ·Î Á¤ÀÇµÈ
+ *    ROW TYPEÀ¸·Î Á¤ÀÇÇÑ Áö¿ª º¯¼ö¿¡ ´ëÇØ Ã³¸®ÇÑ´Ù.
  *
  * Implementation :
  *
- *    ì¼ë°˜ Tableì˜ Validationê³¼ ë™ì¼í•˜ê²Œ ì²˜ë¦¬í•˜ê³ ,
- *    PSMì˜ ë³€ìˆ˜ê°„ì˜ ì ‘ê·¼ì„ ìœ„í•œ Nodeê°„ì˜ ì •ë³´ë§Œì„ ìœ ì‚¬í•˜ê²Œ ì²˜ë¦¬í•œë‹¤.
+ *    ÀÏ¹İ TableÀÇ Validation°ú µ¿ÀÏÇÏ°Ô Ã³¸®ÇÏ°í,
+ *    PSMÀÇ º¯¼ö°£ÀÇ Á¢±ÙÀ» À§ÇÑ Node°£ÀÇ Á¤º¸¸¸À» À¯»çÇÏ°Ô Ã³¸®ÇÑ´Ù.
  *
  *    PROJ-1075
- *    triggerì˜ rowtypeì€ psm rowtypeê³¼ í˜¸í™˜ì´ ì•ˆë˜ë¯€ë¡œ
- *    psmí˜¸í™˜ìš© rowtypeì„ í•œë²Œ ë” ë§Œë“¤ê³  ì‹¤ì œë¡œëŠ” ì´ë¥¼ ì‚¬ìš©í•¨.
- *    * PROJ-1502ì—ì„œ ë°”ë€ ì .
- *      trigger rowtypeì˜ ë³€ìˆ˜ì— ê°’ì„ ë³µì‚¬í•  ë•Œ
- *      ë³µì‚¬ë¥¼ ìœ„í•œ table tupleì„ ë”ì´ìƒ í• ë‹¹í•˜ì§€ ì•ŠëŠ”ë‹¤.
- *      partitionì˜ rowê°€ ì˜¬ ìˆ˜ë„ ìˆê¸° ë•Œë¬¸ì„.
+ *    triggerÀÇ rowtypeÀº psm rowtype°ú È£È¯ÀÌ ¾ÈµÇ¹Ç·Î
+ *    psmÈ£È¯¿ë rowtypeÀ» ÇÑ¹ú ´õ ¸¸µé°í ½ÇÁ¦·Î´Â ÀÌ¸¦ »ç¿ëÇÔ.
+ *    * PROJ-1502¿¡¼­ ¹Ù²ï Á¡.
+ *      trigger rowtypeÀÇ º¯¼ö¿¡ °ªÀ» º¹»çÇÒ ¶§
+ *      º¹»ç¸¦ À§ÇÑ table tupleÀ» ´õÀÌ»ó ÇÒ´çÇÏÁö ¾Ê´Â´Ù.
+ *      partitionÀÇ row°¡ ¿Ã ¼öµµ ÀÖ±â ¶§¹®ÀÓ.
  *
  ***********************************************************************/
 #define IDE_FN "qsvProcVar::makeTriggerRowTypeVariable"
@@ -1110,7 +1110,7 @@ IDE_RC qsvProcVar::makeTriggerRowTypeVariable(
         IDE_MSGLOG_BODY(IDE_FN));
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // trigger row typeì€ ê¸°ì¡´ì˜ psm row typeê³¼ ë™ì¼í•œ ë£¨í‹´ì„ ì‚¬ìš©í•œë‹¤.
+    // trigger row typeÀº ±âÁ¸ÀÇ psm row type°ú µ¿ÀÏÇÑ ·çÆ¾À» »ç¿ëÇÑ´Ù.
 
     IDE_TEST( makeRowTypeVariable( aStatement,
                                    aTableInfo,
@@ -1219,13 +1219,13 @@ IDE_RC qsvProcVar::validateLocalVariable(
 
         if( sValidVariable == ID_TRUE )
         {
-            // primitive / record / rowtypeë³„ë¡œ ë§Œë“¤ì–´ì•¼ í•¨.
+            // primitive / record / rowtypeº°·Î ¸¸µé¾î¾ß ÇÔ.
             if( sColumn->type.dataTypeId >= MTD_UDT_ID_MIN &&
                 sColumn->type.dataTypeId <= MTD_UDT_ID_MAX )
             {
                 sQtcModule = (qtcModule*)sColumn->module;
 
-                // row / record / associative arrayì¸ ê²½ìš°.
+                // row / record / associative arrayÀÎ °æ¿ì.
                 if( sColumn->type.dataTypeId == MTD_ROWTYPE_ID ||
                     sColumn->type.dataTypeId == MTD_RECORDTYPE_ID )
                 {
@@ -1252,13 +1252,13 @@ IDE_RC qsvProcVar::validateLocalVariable(
                 }
                 else
                 {
-                    // row, record, associative array, ref cursor ì´ì™¸ì˜ íƒ€ì…ì€ ì—ëŸ¬.
+                    // row, record, associative array, ref cursor ÀÌ¿ÜÀÇ Å¸ÀÔÀº ¿¡·¯.
                     IDE_DASSERT(0);
                 }
             }
             else
             {
-                // primitive typeì¸ ê²½ìš°.
+                // primitive typeÀÎ °æ¿ì.
                 IDE_TEST( setPrimitiveDataType( aStatement,
                                                 sColumn,
                                                 aVariable )
@@ -1309,8 +1309,8 @@ IDE_RC qsvProcVar::validateLocalVariable(
             if ( sCursor->tableInfo == NULL )
             {
                 // To fix BUG-14279
-                // tableInfoê°€ ìƒì„±ë˜ì–´ ìˆì§€ ì•Šìœ¼ë©´ ìƒì„±í•œ í›„
-                // rowtype ìƒì„±.
+                // tableInfo°¡ »ı¼ºµÇ¾î ÀÖÁö ¾ÊÀ¸¸é »ı¼ºÇÑ ÈÄ
+                // rowtype »ı¼º.
                 IDE_TEST( qmvQuerySet::makeTableInfo(
                               aStatement,
                               ((qmsParseTree*)sCursor->mCursorSql->parseTree)->querySet,
@@ -1355,10 +1355,10 @@ IDE_RC qsvProcVar::validateLocalVariable(
         }
     }
     // PROJ-1075 UDT
-    // user-defined typeì€ ì´ˆê¸°ì— QS_UD_TYPEìœ¼ë¡œ ì„¤ì •ë˜ë©°,
-    // localë˜ëŠ” packageì—ì„œ ê²€ìƒ‰ì— ì„±ê³µí•˜ë©´
-    // QS_RECORD_TYPE ë˜ëŠ” QS_ASSOCIATIVE_ARRAY_TYPEìœ¼ë¡œ ë°”ë€ë‹¤.
-    // ì´ ë•Œ typenodeë„ ìƒˆë¡œ ì„¸íŒ…í•œë‹¤.
+    // user-defined typeÀº ÃÊ±â¿¡ QS_UD_TYPEÀ¸·Î ¼³Á¤µÇ¸ç,
+    // local¶Ç´Â package¿¡¼­ °Ë»ö¿¡ ¼º°øÇÏ¸é
+    // QS_RECORD_TYPE ¶Ç´Â QS_ASSOCIATIVE_ARRAY_TYPEÀ¸·Î ¹Ù²ï´Ù.
+    // ÀÌ ¶§ typenodeµµ »õ·Î ¼¼ÆÃÇÑ´Ù.
     else if( aVariable->variableType == QS_UD_TYPE )
     {
         IDE_TEST( makeUDTVariable( aStatement,
@@ -1377,7 +1377,7 @@ IDE_RC qsvProcVar::validateLocalVariable(
         }
 
         // PROJ-1075 UDT
-        // user-defined typeì€ constantê°€ ë  ìˆ˜ ì—†ë‹¤.
+        // user-defined typeÀº constant°¡ µÉ ¼ö ¾ø´Ù.
         if( ( aVariable->variableType == QS_ROW_TYPE ) ||
             ( aVariable->variableType == QS_RECORD_TYPE ) ||
             ( aVariable->variableType == QS_ASSOCIATIVE_ARRAY_TYPE ) )
@@ -1489,25 +1489,25 @@ IDE_RC qsvProcVar::searchVarAndPara(
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 structured data type ì§€ì›
- *               aVarNodeì— ë§ëŠ” psm variableì„ ê²€ìƒ‰í•˜ì—¬ table, columnì„
- *               ì„¸íŒ…í•œë‹¤.
+ * Description : PROJ-1075 structured data type Áö¿ø
+ *               aVarNode¿¡ ¸Â´Â psm variableÀ» °Ë»öÇÏ¿© table, columnÀ»
+ *               ¼¼ÆÃÇÑ´Ù.
  *
  * Implementation :
- *               qtcNodeì—ëŠ” ì´ 3ê°€ì§€ positionì„ ì…ë ¥ë°›ì„ ìˆ˜ ìˆë‹¤.
+ *               qtcNode¿¡´Â ÃÑ 3°¡Áö positionÀ» ÀÔ·Â¹ŞÀ» ¼ö ÀÖ´Ù.
  *               user_Name, table_Name, column_Name
  *
- *        (A). Argumentê°€ ì—†ëŠ” ê²½ìš°.(column/row/record/associative array typeì¸ ê²½ìš°)
+ *        (A). Argument°¡ ¾ø´Â °æ¿ì.(column/row/record/associative array typeÀÎ °æ¿ì)
  *             ex) V1 := ... ;
  *                 LABEL1.V1 := ... ;
  *                 V1.I1 := ... ;
- *        (B). Argumentê°€ ìˆëŠ” ê²½ìš°.(associative array typeì˜ indexë¥¼ ì“°ëŠ” ê²½ìš°)
+ *        (B). Argument°¡ ÀÖ´Â °æ¿ì.(associative array typeÀÇ index¸¦ ¾²´Â °æ¿ì)
  *             ex) V1[1] := ... ;
  *                 V1[1].I1 := ... ;
  *
  *         To fix BUG-12622
- *         aSearchForLValueê°€ trueì¸ ê²½ìš°ëŠ” output parameterë¥¼ ì°¾ëŠ” ê²ƒì´ë‹¤.
- *         trigger rowì—ì„œ ì–´ë–¤ ì»¬ëŸ¼ì´ outputìš©ìœ¼ë¡œ ì‚¬ìš©ë˜ì—ˆëŠ”ì§€ ì•Œê¸° ìœ„í•¨ì„.
+ *         aSearchForLValue°¡ trueÀÎ °æ¿ì´Â output parameter¸¦ Ã£´Â °ÍÀÌ´Ù.
+ *         trigger row¿¡¼­ ¾î¶² ÄÃ·³ÀÌ output¿ëÀ¸·Î »ç¿ëµÇ¾ú´ÂÁö ¾Ë±â À§ÇÔÀÓ.
  *
  ***********************************************************************/
 #define IDE_FN "qsvProcVar::searchVarAndPara"
@@ -1523,8 +1523,8 @@ IDE_RC qsvProcVar::searchVarAndPara(
          ( ( (aVarNode->lflag) & QTC_NODE_SP_ARRAY_INDEX_VAR_MASK ) ==
            QTC_NODE_SP_ARRAY_INDEX_VAR_ABSENT ) )
     {
-        // (A). Argumentê°€ ì—†ëŠ” ê²½ìš°.(column/row/record/associative array typeì¸ ê²½ìš°)
-        // array variable output ì´ í•„ìš”í•˜ì§€ ì•Šë‹¤.
+        // (A). Argument°¡ ¾ø´Â °æ¿ì.(column/row/record/associative array typeÀÎ °æ¿ì)
+        // array variable output ÀÌ ÇÊ¿äÇÏÁö ¾Ê´Ù.
         IDE_TEST( searchVariableNonArg( aStatement,
                                         aVarNode,
                                         aIsFound,
@@ -1558,10 +1558,10 @@ IDE_RC qsvProcVar::searchVarAndPara(
     }
     else
     {
-        // (B). Argumentê°€ ìˆëŠ” ê²½ìš°.(associative array typeì˜ indexë¥¼ ì“°ëŠ” ê²½ìš°
-        // array variable outputì´ í•„ìš”í•˜ë‹¤.
-        // column moduleì—ì„œ array variableì„ ì´ìš©í•˜ì—¬ indexì— í•´ë‹¹í•˜ëŠ” rowë¥¼
-        // ê°€ì ¸ì™€ì•¼ í•˜ê¸° ë•Œë¬¸.
+        // (B). Argument°¡ ÀÖ´Â °æ¿ì.(associative array typeÀÇ index¸¦ ¾²´Â °æ¿ì
+        // array variable outputÀÌ ÇÊ¿äÇÏ´Ù.
+        // column module¿¡¼­ array variableÀ» ÀÌ¿ëÇÏ¿© index¿¡ ÇØ´çÇÏ´Â row¸¦
+        // °¡Á®¿Í¾ß ÇÏ±â ¶§¹®.
         IDE_TEST( searchVariableWithArg( aStatement,
                                          aVarNode,
                                          aIsFound,
@@ -1612,16 +1612,16 @@ IDE_RC qsvProcVar::searchVariableNonArg(
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 structured data type ì§€ì›
- *               aVarNodeì— ë§ëŠ” psm variableì„ ê²€ìƒ‰í•˜ì—¬ table, columnì„
- *               ì„¸íŒ…í•œë‹¤.
- *               IN/OUTBINDING flagë„ ì„¸íŒ…í•´ ì£¼ì–´ì•¼ í•œë‹¤.
+ * Description : PROJ-1075 structured data type Áö¿ø
+ *               aVarNode¿¡ ¸Â´Â psm variableÀ» °Ë»öÇÏ¿© table, columnÀ»
+ *               ¼¼ÆÃÇÑ´Ù.
+ *               IN/OUTBINDING flagµµ ¼¼ÆÃÇØ ÁÖ¾î¾ß ÇÑ´Ù.
  *
  * Implementation :
- *               qtcNodeì—ëŠ” ì´ 3ê°€ì§€ positionì„ ì…ë ¥ë°›ì„ ìˆ˜ ìˆë‹¤.
+ *               qtcNode¿¡´Â ÃÑ 3°¡Áö positionÀ» ÀÔ·Â¹ŞÀ» ¼ö ÀÖ´Ù.
  *               user_Name, table_Name, column_Name
  *
- *        (A). Argumentê°€ ì—†ëŠ” ê²½ìš°.(column/row/record/associative array typeì¸ ê²½ìš°)
+ *        (A). Argument°¡ ¾ø´Â °æ¿ì.(column/row/record/associative array typeÀÎ °æ¿ì)
  *               1. column_name
  *                 1) variable_name
  *                 2) parameter_name
@@ -1645,7 +1645,7 @@ IDE_RC qsvProcVar::searchVariableNonArg(
     SChar               * sRealSQL = qsvProcVar::getValidSQL( aStatement );
 
     // To fix BUG-14129
-    // í˜„ì¬ validateì¤‘ì¸ declare item ì „ê¹Œì§€ë§Œ ê²€ìƒ‰ì„ í•´ì•¼ í•¨
+    // ÇöÀç validateÁßÀÎ declare item Àü±îÁö¸¸ °Ë»öÀ» ÇØ¾ß ÇÔ
     sCurrDeclItem = aStatement->spvEnv->currDeclItem;
 
     // initialize
@@ -1911,17 +1911,17 @@ IDE_RC qsvProcVar::searchParameterNonArg(
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 structured data type ì§€ì›
- *               aVarNodeì— ë§ëŠ” psm variableì„ ê²€ìƒ‰í•˜ì—¬ table, columnì„
- *               ì„¸íŒ…í•œë‹¤.
- *               IN/OUTBINDING flagë„ ì„¸íŒ…í•´ ì£¼ì–´ì•¼ í•œë‹¤.
+ * Description : PROJ-1075 structured data type Áö¿ø
+ *               aVarNode¿¡ ¸Â´Â psm variableÀ» °Ë»öÇÏ¿© table, columnÀ»
+ *               ¼¼ÆÃÇÑ´Ù.
+ *               IN/OUTBINDING flagµµ ¼¼ÆÃÇØ ÁÖ¾î¾ß ÇÑ´Ù.
  *
  * Implementation :
- *               qtcNodeì—ëŠ” ì´ 3ê°€ì§€ positionì„ ì…ë ¥ë°›ì„ ìˆ˜ ìˆë‹¤.
+ *               qtcNode¿¡´Â ÃÑ 3°¡Áö positionÀ» ÀÔ·Â¹ŞÀ» ¼ö ÀÖ´Ù.
  *               user_Name, table_Name, column_Name
  *
- *        (A). Argumentê°€ ì—†ëŠ” ê²½ìš°.(column/row/record/associative array typeì¸ ê²½ìš°)
- *             parameterë¥¼ ê²€ìƒ‰í•œë‹¤.
+ *        (A). Argument°¡ ¾ø´Â °æ¿ì.(column/row/record/associative array typeÀÎ °æ¿ì)
+ *             parameter¸¦ °Ë»öÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1933,7 +1933,7 @@ IDE_RC qsvProcVar::searchParameterNonArg(
     sParseTree = aStatement->spvEnv->createProc;
 
     // To fix BUG-14129
-    // í˜„ì¬ validateì¤‘ì¸ declare item ì „ê¹Œì§€ë§Œ ê²€ìƒ‰ì„ í•´ì•¼ í•¨
+    // ÇöÀç validateÁßÀÎ declare item Àü±îÁö¸¸ °Ë»öÀ» ÇØ¾ß ÇÔ
     sCurrDeclItem = aStatement->spvEnv->currDeclItem;
 
     // initialize
@@ -1946,7 +1946,7 @@ IDE_RC qsvProcVar::searchParameterNonArg(
     {
         if( QC_IS_NULL_NAME(aVarNode->tableName) == ID_TRUE )
         {
-            // procedureNameì´ ì—†ëŠ” ê²½ìš° ë¬´ì¡°ê±´ parameter ë¼ê³  ê°€ì •.
+            // procedureNameÀÌ ¾ø´Â °æ¿ì ¹«Á¶°Ç parameter ¶ó°í °¡Á¤.
             // 1. column_name
             //   2) parameter_name
             IDE_TEST( searchVariableItems( aStatement->spvEnv->allParaDecls,
@@ -1973,8 +1973,8 @@ IDE_RC qsvProcVar::searchParameterNonArg(
                         ( sFoundVariable->variableType == QS_ROW_TYPE ) )
                     {
                         // To fix BUG-12622
-                        // trigger rowí†µì§¸ë¡œ outputìœ¼ë¡œ ì‚¬ìš©í•œ ê²½ìš°ì„.
-                        // ê° ì»¬ëŸ¼ ëª¨ë‘ flagì„¸íŒ…
+                        // trigger rowÅëÂ°·Î outputÀ¸·Î »ç¿ëÇÑ °æ¿ìÀÓ.
+                        // °¢ ÄÃ·³ ¸ğµÎ flag¼¼ÆÃ
                         for( sNode = (qtcNode *)sFoundVariable->variableTypeNode->node.arguments;
                              sNode != NULL;
                              sNode = (qtcNode*)sNode->node.next )
@@ -2187,16 +2187,16 @@ IDE_RC qsvProcVar::searchVariableWithArg(
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 structured data type ì§€ì›
- *               aVarNodeì— ë§ëŠ” psm variableì„ ê²€ìƒ‰í•˜ì—¬ table, columnì„
- *               ì„¸íŒ…í•œë‹¤.
- *               IN/OUTBINDING flagë„ ì„¸íŒ…í•´ ì£¼ì–´ì•¼ í•œë‹¤.
+ * Description : PROJ-1075 structured data type Áö¿ø
+ *               aVarNode¿¡ ¸Â´Â psm variableÀ» °Ë»öÇÏ¿© table, columnÀ»
+ *               ¼¼ÆÃÇÑ´Ù.
+ *               IN/OUTBINDING flagµµ ¼¼ÆÃÇØ ÁÖ¾î¾ß ÇÑ´Ù.
  *
  * Implementation :
- *               qtcNodeì—ëŠ” ì´ 3ê°€ì§€ positionì„ ì…ë ¥ë°›ì„ ìˆ˜ ìˆë‹¤.
+ *               qtcNode¿¡´Â ÃÑ 3°¡Áö positionÀ» ÀÔ·Â¹ŞÀ» ¼ö ÀÖ´Ù.
  *               user_Name, table_Name, column_Name
  *
- *        (B). Argumentê°€ ìˆëŠ” ê²½ìš°.(associative array typeì˜ indexë¥¼ ì“°ëŠ” ê²½ìš°)
+ *        (B). Argument°¡ ÀÖ´Â °æ¿ì.(associative array typeÀÇ index¸¦ ¾²´Â °æ¿ì)
  *               1. column_name[ expression ]
  *                 1) variable_name[ index ]
  *                 2) parameter_name[ index ]
@@ -2225,7 +2225,7 @@ IDE_RC qsvProcVar::searchVariableWithArg(
     *aIsFound = ID_FALSE;
 
     // To fix BUG-14129
-    // í˜„ì¬ validateì¤‘ì¸ declare item ì „ê¹Œì§€ë§Œ ê²€ìƒ‰ì„ í•´ì•¼ í•¨
+    // ÇöÀç validateÁßÀÎ declare item Àü±îÁö¸¸ °Ë»öÀ» ÇØ¾ß ÇÔ
     sCurrDeclItem = aStatement->spvEnv->currDeclItem;
 
     // initialize
@@ -2462,8 +2462,8 @@ IDE_RC qsvProcVar::searchVariableWithArg(
                     {
                         if ( sFoundVariable->variableType == QS_ASSOCIATIVE_ARRAY_TYPE )
                         {
-                            // variableTypeNode->node.argumentsì— í•´ë‹¹í•˜ëŠ”
-                            // columnì˜ moduleì´ ë°˜ë“œì‹œ record typeì´ì–´ì•¼ í•¨.
+                            // variableTypeNode->node.arguments¿¡ ÇØ´çÇÏ´Â
+                            // columnÀÇ moduleÀÌ ¹İµå½Ã record typeÀÌ¾î¾ß ÇÔ.
                             sColumn = QTC_STMT_COLUMN(
                                 aStatement,
                                 (qtcNode*)sFoundVariable->variableTypeNode->node.arguments );
@@ -2554,16 +2554,16 @@ IDE_RC qsvProcVar::searchParameterWithArg(
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 structured data type ì§€ì›
- *               aVarNodeì— ë§ëŠ” psm variableì„ ê²€ìƒ‰í•˜ì—¬ table, columnì„
- *               ì„¸íŒ…í•œë‹¤.
- *               IN/OUTBINDING flagë„ ì„¸íŒ…í•´ ì£¼ì–´ì•¼ í•œë‹¤.
+ * Description : PROJ-1075 structured data type Áö¿ø
+ *               aVarNode¿¡ ¸Â´Â psm variableÀ» °Ë»öÇÏ¿© table, columnÀ»
+ *               ¼¼ÆÃÇÑ´Ù.
+ *               IN/OUTBINDING flagµµ ¼¼ÆÃÇØ ÁÖ¾î¾ß ÇÑ´Ù.
  *
  * Implementation :
- *               qtcNodeì—ëŠ” ì´ 3ê°€ì§€ positionì„ ì…ë ¥ë°›ì„ ìˆ˜ ìˆë‹¤.
+ *               qtcNode¿¡´Â ÃÑ 3°¡Áö positionÀ» ÀÔ·Â¹ŞÀ» ¼ö ÀÖ´Ù.
  *               user_Name, table_Name, column_Name
  *
- *        (B). Argumentê°€ ìˆëŠ” ê²½ìš°.(associative array typeì˜ indexë¥¼ ì“°ëŠ” ê²½ìš°)
+ *        (B). Argument°¡ ÀÖ´Â °æ¿ì.(associative array typeÀÇ index¸¦ ¾²´Â °æ¿ì)
  *               1. column_name[ expression ]
  *                 1) variable_name[ index ]
  *                 2) parameter_name[ index ]
@@ -2577,7 +2577,7 @@ IDE_RC qsvProcVar::searchParameterWithArg(
  *                 1) label_name.variable_name[ index ].column_name
  *                 2) proc_name.parameter_name[ index ].column_name
  *
- *         ìœ„ ìˆœì„œëŒ€ë¡œ psm variableì„ ê²€ìƒ‰í•œë‹¤. ë‹¨, parameterê²€ìƒ‰ì€ ë§¨ ë§ˆì§€ë§‰ì— í•œë‹¤.
+ *         À§ ¼ø¼­´ë·Î psm variableÀ» °Ë»öÇÑ´Ù. ´Ü, parameter°Ë»öÀº ¸Ç ¸¶Áö¸·¿¡ ÇÑ´Ù.
  *
  ***********************************************************************/
 #define IDE_FN "qsvProcVar::searchParameterWithArg"
@@ -2592,7 +2592,7 @@ IDE_RC qsvProcVar::searchParameterWithArg(
     sParseTree = aStatement->spvEnv->createProc;
 
     // To fix BUG-14129
-    // í˜„ì¬ validateì¤‘ì¸ declare item ì „ê¹Œì§€ë§Œ ê²€ìƒ‰ì„ í•´ì•¼ í•¨
+    // ÇöÀç validateÁßÀÎ declare item Àü±îÁö¸¸ °Ë»öÀ» ÇØ¾ß ÇÔ
     sCurrDeclItem = aStatement->spvEnv->currDeclItem;
 
     // initialize
@@ -2606,7 +2606,7 @@ IDE_RC qsvProcVar::searchParameterWithArg(
         {
             if ( QC_IS_NULL_NAME(aVarNode->pkgName) == ID_TRUE )
             {
-                // procedureNameì´ ì—†ëŠ” ê²½ìš° ë¬´ì¡°ê±´ parameterë¼ê³  ê°€ì •.
+                // procedureNameÀÌ ¾ø´Â °æ¿ì ¹«Á¶°Ç parameter¶ó°í °¡Á¤.
                 // 1. column_name[ expression ]
                 //   2) parameter_name[ index ]
                 IDE_TEST( searchVariableItems( aStatement->spvEnv->allParaDecls,
@@ -2654,7 +2654,7 @@ IDE_RC qsvProcVar::searchParameterWithArg(
             }// pkgName is null
             else
             {
-                // 3. column_name[ expression].pkg_name     : table_name ì—†ìŒ.
+                // 3. column_name[ expression].pkg_name     : table_name ¾øÀ½.
                 //   2) parameter_name[ index ].column_name
                 IDE_TEST( searchVariableItems( aStatement->spvEnv->allParaDecls,
                                                sCurrDeclItem,
@@ -2668,8 +2668,8 @@ IDE_RC qsvProcVar::searchParameterWithArg(
                     if ( sFoundVariable->variableType ==
                          QS_ASSOCIATIVE_ARRAY_TYPE )
                     {
-                        // variableTypeNode->node.argumentsì— í•´ë‹¹í•˜ëŠ”
-                        // columnì˜ moduleì´ ë°˜ë“œì‹œ record typeì´ì–´ì•¼ í•¨.
+                        // variableTypeNode->node.arguments¿¡ ÇØ´çÇÏ´Â
+                        // columnÀÇ moduleÀÌ ¹İµå½Ã record typeÀÌ¾î¾ß ÇÔ.
                         sColumn = QTC_STMT_COLUMN(
                             aStatement,
                             (qtcNode*)sFoundVariable->variableTypeNode->node.arguments );
@@ -2815,8 +2815,8 @@ IDE_RC qsvProcVar::searchParameterWithArg(
                     if ( sFoundVariable->variableType ==
                          QS_ASSOCIATIVE_ARRAY_TYPE )
                     {
-                        // variableTypeNode->node.argumentsì— í•´ë‹¹í•˜ëŠ”
-                        // columnì˜ moduleì´ ë°˜ë“œì‹œ record typeì´ì–´ì•¼ í•¨.
+                        // variableTypeNode->node.arguments¿¡ ÇØ´çÇÏ´Â
+                        // columnÀÇ moduleÀÌ ¹İµå½Ã record typeÀÌ¾î¾ß ÇÔ.
                         sColumn = QTC_STMT_COLUMN(
                             aStatement,
                             (qtcNode*)sFoundVariable->variableTypeNode->node.arguments );
@@ -2909,33 +2909,33 @@ IDE_RC qsvProcVar::searchVarType( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 variableì˜ typeì„ ê²€ìƒ‰.
- *               variable_name%TYPE ì˜ ë³€ìˆ˜ ì„ ì–¸ì´ ì™”ì„ ê²½ìš°
+ * Description : PROJ-1075 variableÀÇ typeÀ» °Ë»ö.
+ *               variable_name%TYPE ÀÇ º¯¼ö ¼±¾ğÀÌ ¿ÔÀ» °æ¿ì
  *
  * Implementation :
- *        ë‹¤ìŒê³¼ ê°™ì€ ìˆœì„œë¡œ ë³€ìˆ˜ë¥¼ ê²€ìƒ‰í•¨.
+ *        ´ÙÀ½°ú °°Àº ¼ø¼­·Î º¯¼ö¸¦ °Ë»öÇÔ.
  *        (1) variable_name
  *        (2) record_name.field_name
  *        (3) label_name.variable_name
  *        (4) label_name.record_name.field_name
  *
- *        ë³€ìˆ˜ì—ì„œ ëª»ì°¾ìœ¼ë©´ parameterì„.
+ *        º¯¼ö¿¡¼­ ¸øÃ£À¸¸é parameterÀÓ.
  *        (5) parameter_name
  *        (6) parameter_name.field_name
  *        (7) procedure_name.parameter_name
  *        (8) procedure_name.parameter_name.field_name
  *
- *        * array ë³€ìˆ˜ ê°™ì€ ê²½ìš° ë‹¤ìŒê³¼ ê°™ì€ ë°©ë²•ìœ¼ë¡œ íƒ€ì…ì„ ê°€ì ¸ì˜¬
- *         ìˆ˜ ì—†ìŒ.
+ *        * array º¯¼ö °°Àº °æ¿ì ´ÙÀ½°ú °°Àº ¹æ¹ıÀ¸·Î Å¸ÀÔÀ» °¡Á®¿Ã
+ *         ¼ö ¾øÀ½.
  *        ex) V1 arrvar[1]%TYPE;
  *            V2 arrvar[2].i1%TYPE;
- *         ìœ„ì™€ ê°™ì´ íƒ€ì…ì„ ì–¸ì´ ë¶ˆê°€ëŠ¥í•¨. ë”°ë¼ì„œ ì—¬ê¸°ì„œëŠ” ì˜¤ë¡œì§€
- *         record/rowtypeì— ëŒ€í•œ ê³ ë ¤ë§Œ í•´ì£¼ë©´ ë¨.
+ *         À§¿Í °°ÀÌ Å¸ÀÔ¼±¾ğÀÌ ºÒ°¡´ÉÇÔ. µû¶ó¼­ ¿©±â¼­´Â ¿À·ÎÁö
+ *         record/rowtype¿¡ ´ëÇÑ °í·Á¸¸ ÇØÁÖ¸é µÊ.
  *
- *        * ë³€ìˆ˜ ìê¸°ìì‹ ì˜ ì„ ì–¸ë¶€ë¶„ì„ ë„˜ì–´ì„œì„œ ê²€ìƒ‰í•˜ì§€ ì•Šë„ë¡
- *          í•´ì•¼ í•¨.
+ *        * º¯¼ö ÀÚ±âÀÚ½ÅÀÇ ¼±¾ğºÎºĞÀ» ³Ñ¾î¼­¼­ °Ë»öÇÏÁö ¾Êµµ·Ï
+ *          ÇØ¾ß ÇÔ.
  *        ex) V1 INTEGER;
- *            V2 V3%TYPE; -- ì—¬ê¸°ì„œëŠ” V1ê¹Œì§€ë°–ì— ë³¼ ìˆ˜ ì—†ìŒ. ì—ëŸ¬.
+ *            V2 V3%TYPE; -- ¿©±â¼­´Â V1±îÁö¹Û¿¡ º¼ ¼ö ¾øÀ½. ¿¡·¯.
  *            V3 INTEGER;
  *
  ***********************************************************************/
@@ -2961,26 +2961,26 @@ IDE_RC qsvProcVar::searchVarType( qcStatement * aStatement,
     }
 
     // To fix BUG-14129
-    // í˜„ì¬ validateì¤‘ì¸ declare item ì „ê¹Œì§€ë§Œ ê²€ìƒ‰ì„ í•´ì•¼ í•¨
+    // ÇöÀç validateÁßÀÎ declare item Àü±îÁö¸¸ °Ë»öÀ» ÇØ¾ß ÇÔ
     sCurrDeclItem = aStatement->spvEnv->currDeclItem;
 
     sNode      = aVariable->variableTypeNode;
 
     sFoundVariable = NULL;
 
-    // ì í•©ì„± ê²€ì‚¬. columnNameì€ ë°˜ë“œì‹œ ìˆì–´ì•¼ í•¨.
+    // ÀûÇÕ¼º °Ë»ç. columnNameÀº ¹İµå½Ã ÀÖ¾î¾ß ÇÔ.
     IDE_DASSERT( QC_IS_NULL_NAME(sNode->columnName) == ID_FALSE );
 
     if( QC_IS_NULL_NAME(sNode->userName) == ID_TRUE )
     {
-        // userNameì´ ì—†ìŒ
+        // userNameÀÌ ¾øÀ½
         // (1) variable_name / parameter name
         // (2) record_name.field_name
         // (3) label_name.variable_name
 
         if( QC_IS_NULL_NAME( sNode->tableName ) == ID_TRUE )
         {
-            // userName, tableNameì´ ì—†ìŒ.
+            // userName, tableNameÀÌ ¾øÀ½.
             // (1) variable_name / parameter name
             for( sCurrVar = aStatement->spvEnv->allVariables;
                  sCurrVar != NULL && *aIsFound == ID_FALSE;
@@ -3005,7 +3005,7 @@ IDE_RC qsvProcVar::searchVarType( qcStatement * aStatement,
         }
         else
         {
-            // userNameì€ ì—†ê³  tableNameì€ ìˆìŒ
+            // userNameÀº ¾ø°í tableNameÀº ÀÖÀ½
             for( sCurrVar = aStatement->spvEnv->allVariables;
                  sCurrVar != NULL && *aIsFound == ID_FALSE;
                  sCurrVar = sCurrVar->next )
@@ -3079,7 +3079,7 @@ IDE_RC qsvProcVar::searchVarType( qcStatement * aStatement,
     }
     else
     {
-        // userName, tableName, columnName ì…‹ë‹¤ ê°–ê³  ìˆìŒ.
+        // userName, tableName, columnName ¼Â´Ù °®°í ÀÖÀ½.
         //(4) label_name.record_name.field_name
         for( sCurrVar = aStatement->spvEnv->allVariables;
              sCurrVar != NULL && *aIsFound == ID_FALSE;
@@ -3131,14 +3131,14 @@ IDE_RC qsvProcVar::searchVarType( qcStatement * aStatement,
         }
     }
 
-    // ì—¬ê¸°ê¹Œì§€ ëª»ì°¾ì•˜ìœ¼ë©´ parameterê²€ìƒ‰
+    // ¿©±â±îÁö ¸øÃ£¾ÒÀ¸¸é parameter°Ë»ö
     if( *aIsFound == ID_FALSE )
     {
         if( QC_IS_NULL_NAME(sNode->userName) == ID_TRUE )
         {
             if( QC_IS_NULL_NAME(sNode->tableName) == ID_TRUE )
             {
-                // procedureNameì´ ì—†ëŠ” ê²½ìš° ë¬´ì¡°ê±´ parameter ë¼ê³  ê°€ì •.
+                // procedureNameÀÌ ¾ø´Â °æ¿ì ¹«Á¶°Ç parameter ¶ó°í °¡Á¤.
                 // (5) parameter_name
                 IDE_TEST( searchVariableItems( aStatement->spvEnv->allParaDecls,
                                                sCurrDeclItem,
@@ -3289,17 +3289,17 @@ IDE_RC qsvProcVar::searchArrayVar( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 Array Variable ê²€ìƒ‰.
- *               member function estimateì‹œ ì‚¬ìš©.
+ * Description : PROJ-1075 Array Variable °Ë»ö.
+ *               member function estimate½Ã »ç¿ë.
  *
  * Implementation :
- *               ë‹¤ìŒê³¼ ê°™ì€ ê²½ìš°ë§Œ ì¡´ì¬.
+ *               ´ÙÀ½°ú °°Àº °æ¿ì¸¸ Á¸Àç.
  *               (1) var_name
  *               (2) param_name
  *               (3) label_name.var_name
  *               (4) proc_name.param_name
- *               ë³€ìˆ˜ ê²€ìƒ‰ìœ¼ë¡œ ëì´ ì•„ë‹ˆë¼ ë°˜ë“œì‹œ array typeë³€ìˆ˜ì¸ì§€
- *               ì²´í¬í•´ ì£¼ì–´ì•¼ í•œë‹¤.
+ *               º¯¼ö °Ë»öÀ¸·Î ³¡ÀÌ ¾Æ´Ï¶ó ¹İµå½Ã array typeº¯¼öÀÎÁö
+ *               Ã¼Å©ÇØ ÁÖ¾î¾ß ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -3312,20 +3312,20 @@ IDE_RC qsvProcVar::searchArrayVar( qcStatement  * aStatement,
     sParseTree    = aStatement->spvEnv->createProc;
 
     // To fix BUG-14129
-    // í˜„ì¬ validateì¤‘ì¸ declare item ì „ê¹Œì§€ë§Œ ê²€ìƒ‰ì„ í•´ì•¼ í•¨
+    // ÇöÀç validateÁßÀÎ declare item Àü±îÁö¸¸ °Ë»öÀ» ÇØ¾ß ÇÔ
     sCurrDeclItem = aStatement->spvEnv->currDeclItem;
 
     *aIsFound = ID_FALSE;
     *aFoundVariable = NULL;
 
-    // ì í•©ì„± ê²€ì‚¬. varNameì€ ë°˜ë“œì‹œ ìˆì–´ì•¼ í•¨.
+    // ÀûÇÕ¼º °Ë»ç. varNameÀº ¹İµå½Ã ÀÖ¾î¾ß ÇÔ.
     IDE_DASSERT( QC_IS_NULL_NAME( aArrNode->tableName ) == ID_FALSE );
 
     if ( sParseTree != NULL )
     {
         if( QC_IS_NULL_NAME( aArrNode->userName ) == ID_TRUE )
         {
-            // (1) var_name ì˜ ê²½ìš°.
+            // (1) var_name ÀÇ °æ¿ì.
             for (sCurrVar = aStatement->spvEnv->allVariables;
                  sCurrVar != NULL && *aIsFound == ID_FALSE;
                  sCurrVar = sCurrVar->next)
@@ -3340,7 +3340,7 @@ IDE_RC qsvProcVar::searchArrayVar( qcStatement  * aStatement,
 
             if( *aIsFound == ID_FALSE )
             {
-                // (2) param_name ì˜ ê²½ìš°.
+                // (2) param_name ÀÇ °æ¿ì.
                 IDE_TEST( searchVariableItems( aStatement->spvEnv->allParaDecls,
                                                sCurrDeclItem,
                                                &aArrNode->tableName,
@@ -3355,7 +3355,7 @@ IDE_RC qsvProcVar::searchArrayVar( qcStatement  * aStatement,
         }
         else
         {
-            // (3) label_name.var_name ì˜ ê²½ìš°.
+            // (3) label_name.var_name ÀÇ °æ¿ì.
             for (sCurrVar = aStatement->spvEnv->allVariables;
                  sCurrVar != NULL && *aIsFound == ID_FALSE;
                  sCurrVar = sCurrVar->next)
@@ -3382,7 +3382,7 @@ IDE_RC qsvProcVar::searchArrayVar( qcStatement  * aStatement,
 
             if( *aIsFound == ID_FALSE )
             {
-                // (4) proc_name.param_name ì˜ ê²½ìš°.
+                // (4) proc_name.param_name ÀÇ °æ¿ì.
                 if (idlOS::strMatch(
                         sParseTree->procNamePos.stmtText + sParseTree->procNamePos.offset,
                         sParseTree->procNamePos.size,
@@ -3423,11 +3423,11 @@ IDE_RC qsvProcVar::searchArrayVar( qcStatement  * aStatement,
     }
 
     /* BUG-38243
-       subprogram ì—ì„œ array tpyeí˜• varirableì„ ì°¾ì§€ ëª» í–ˆìœ¼ë©´,
-       package localì—ì„œ array typeí˜• variableì„ ì°¾ì•„ë´ì•¼ í•œë‹¤.
-       packageì˜ ê²½ìš°, package bodyì—ì„œ ë¨¼ì € ì°¾ê³ , ê·¸ í›„ package specì—ì„œ ì°¾ëŠ”ë‹¤.
-       ë§Œì•½, localì—ì„œ ì°¾ì§€ ëª» í–ˆìœ¼ë©´,
-       ë‹¤ë¥¸ package specì— ìˆëŠ” array typeí˜• variableì„ ì°¾ëŠ”ë‹¤. */
+       subprogram ¿¡¼­ array tpyeÇü varirableÀ» Ã£Áö ¸ø ÇßÀ¸¸é,
+       package local¿¡¼­ array typeÇü variableÀ» Ã£¾ÆºÁ¾ß ÇÑ´Ù.
+       packageÀÇ °æ¿ì, package body¿¡¼­ ¸ÕÀú Ã£°í, ±× ÈÄ package spec¿¡¼­ Ã£´Â´Ù.
+       ¸¸¾à, local¿¡¼­ Ã£Áö ¸ø ÇßÀ¸¸é,
+       ´Ù¸¥ package spec¿¡ ÀÖ´Â array typeÇü variableÀ» Ã£´Â´Ù. */
     if ( (*aIsFound == ID_FALSE) &&
          (aStatement->spvEnv->createPkg != NULL) )
     {
@@ -3439,8 +3439,8 @@ IDE_RC qsvProcVar::searchArrayVar( qcStatement  * aStatement,
     }
     else
     {
-        /* procedure ê°ì²´ì¼ ê²½ìš°ëŠ”,
-           package localì— ëŒ€í•œ íƒìƒ‰ì„ í•  í•„ìš”ê°€ ì—†ë‹¤. */
+        /* procedure °´Ã¼ÀÏ °æ¿ì´Â,
+           package local¿¡ ´ëÇÑ Å½»öÀ» ÇÒ ÇÊ¿ä°¡ ¾ø´Ù. */
         // Nothing to do.
     }
 
@@ -3457,13 +3457,13 @@ IDE_RC qsvProcVar::searchArrayVar( qcStatement  * aStatement,
         // Nothing to do.
     }
 
-    // ë§ˆì§€ë§‰ìœ¼ë¡œ array type ë³€ìˆ˜ì¸ì§€ ê²€ì‚¬.
+    // ¸¶Áö¸·À¸·Î array type º¯¼öÀÎÁö °Ë»ç.
     if( *aIsFound == ID_TRUE )
     {
         if( (*aFoundVariable)->variableType !=
             QS_ASSOCIATIVE_ARRAY_TYPE )
         {
-            // ë§Œì•½ array typeì´ ì•„ë‹ˆë¼ë©´ ëª»ì°¾ì€ê±¸ë¡œ ë°”ê¾¼ë‹¤.
+            // ¸¸¾à array typeÀÌ ¾Æ´Ï¶ó¸é ¸øÃ£Àº°É·Î ¹Ù²Û´Ù.
             *aIsFound = ID_FALSE;
             *aFoundVariable = NULL;
         }
@@ -3496,12 +3496,12 @@ IDE_RC qsvProcVar::searchVariableItems(
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 variable ê²€ìƒ‰.
+ * Description : PROJ-1075 variable °Ë»ö.
  *
  * Implementation :
- *       (1) aVariableì€ NULLì´ ì˜¤ëŠ” ê²½ìš°ì™€ ì•„ë‹Œ ê²½ìš°ë¡œ ë‚˜ë‰¨
- *       (2) NULLì¸ ê²½ìš° : blockë‚´ ë³€ìˆ˜ ê²€ìƒ‰ìš©
- *       (3) NULLì´ ì•„ë‹Œ ê²½ìš° : ë³€ìˆ˜ ì„ ì–¸ì‹œ ë³€ìˆ˜ ê²€ìƒ‰ìš©
+ *       (1) aVariableÀº NULLÀÌ ¿À´Â °æ¿ì¿Í ¾Æ´Ñ °æ¿ì·Î ³ª´¸
+ *       (2) NULLÀÎ °æ¿ì : block³» º¯¼ö °Ë»ö¿ë
+ *       (3) NULLÀÌ ¾Æ´Ñ °æ¿ì : º¯¼ö ¼±¾ğ½Ã º¯¼ö °Ë»ö¿ë
  *
  ***********************************************************************/
 
@@ -3547,8 +3547,8 @@ IDE_RC qsvProcVar::searchFieldTypeOfRecord(
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 record variableì—ì„œ field typeì„ ì¶”ì¶œ.
- *               mtcColumnì„ ê°€ì ¸ì˜¨ë‹¤.
+ * Description : PROJ-1075 record variable¿¡¼­ field typeÀ» ÃßÃâ.
+ *               mtcColumnÀ» °¡Á®¿Â´Ù.
  *
  * Implementation :
  *
@@ -3576,8 +3576,8 @@ IDE_RC qsvProcVar::searchFieldTypeOfRecord(
         if ( QC_IS_STR_CASELESS_MATCHED( (*aFieldName), sCurrColumn->name ) )
         {
             // BUG-15414
-            // record variableì— ì¤‘ë³µëœ alias nameì´ ì¡´ì¬í•˜ë”ë¼ë„
-            // ì°¾ê³ ìí•˜ëŠ” column nameì—ë§Œ ì¤‘ë³µì´ ì—†ìœ¼ë©´ ëœë‹¤.
+            // record variable¿¡ Áßº¹µÈ alias nameÀÌ Á¸ÀçÇÏ´õ¶óµµ
+            // Ã£°íÀÚÇÏ´Â column name¿¡¸¸ Áßº¹ÀÌ ¾øÀ¸¸é µÈ´Ù.
             IDE_TEST_RAISE( *aIsFound == ID_TRUE,
                             ERR_DUP_ALIAS_NAME );
 
@@ -3632,10 +3632,10 @@ IDE_RC qsvProcVar::searchCursor(
     if (sRC == IDE_SUCCESS)
     {
         // To fix BUG-14279
-        // return valueê°€ IDE_SUCCESSë¼ë„ cursorDefê°€ ì—†ëŠ” ê²½ìš°ê°€ ì¡´ì¬.
-        // SQL% .. ì‹œë¦¬ì¦ˆë¥¼ ê²€ìƒ‰í•˜ëŠ” ê²½ìš°ëŠ” ê²°ê³¼ëŠ” SUCCESSì´ì§€ë§Œ cursorDef
-        // ëŠ” ì—†ëŠ” ìƒíƒœê°€ ë¨
-        // ex) SQL%ROWCOUNT , SQL% ... ì‹œë¦¬ì¦ˆë“¤
+        // return value°¡ IDE_SUCCESS¶óµµ cursorDef°¡ ¾ø´Â °æ¿ì°¡ Á¸Àç.
+        // SQL% .. ½Ã¸®Áî¸¦ °Ë»öÇÏ´Â °æ¿ì´Â °á°ú´Â SUCCESSÀÌÁö¸¸ cursorDef
+        // ´Â ¾ø´Â »óÅÂ°¡ µÊ
+        // ex) SQL%ROWCOUNT , SQL% ... ½Ã¸®Áîµé
         if( *aCursorDef == NULL )
         {
             *aIsFound = ID_FALSE;
@@ -3692,10 +3692,10 @@ IDE_RC qsvProcVar::searchFieldOfRecord(
      * (7) |          |    record |      field |
      * (8) |          |           |     record | field
      *
-     * ìœ„ì˜ í‘œì—ì„œ ë³´ë“¯, fieldì— ëŒ€í•œ ì •ë³´ëŠ”
-     * columnName, pkgNameì— ì¡´ì¬í•œë‹¤.
-     * ê·¸ ì¤‘ 4ê°œì˜ Nameì´ ëª¨ë‘ NULLì´ ì•„ë‹ ë•Œ pkgNameì€
-     * í™•ì‹¤íˆ fieldì˜ ì •ë³´ê°€ ì¡´ì¬í•œë‹¤.
+     * À§ÀÇ Ç¥¿¡¼­ º¸µí, field¿¡ ´ëÇÑ Á¤º¸´Â
+     * columnName, pkgName¿¡ Á¸ÀçÇÑ´Ù.
+     * ±× Áß 4°³ÀÇ NameÀÌ ¸ğµÎ NULLÀÌ ¾Æ´Ò ¶§ pkgNameÀº
+     * È®½ÇÈ÷ fieldÀÇ Á¤º¸°¡ Á¸ÀçÇÑ´Ù.
      *********************************************************/
 
     if( QC_IS_NULL_NAME( aVariable->pkgName ) == ID_TRUE )
@@ -3716,8 +3716,8 @@ IDE_RC qsvProcVar::searchFieldOfRecord(
         if ( QC_IS_STR_CASELESS_MATCHED( sFieldName, sCurrColumn->name ) )
         {
             // BUG-15414
-            // record variableì— ì¤‘ë³µëœ alias nameì´ ì¡´ì¬í•˜ë”ë¼ë„
-            // ì°¾ê³ ìí•˜ëŠ” column nameì—ë§Œ ì¤‘ë³µì´ ì—†ìœ¼ë©´ ëœë‹¤.
+            // record variable¿¡ Áßº¹µÈ alias nameÀÌ Á¸ÀçÇÏ´õ¶óµµ
+            // Ã£°íÀÚÇÏ´Â column name¿¡¸¸ Áßº¹ÀÌ ¾øÀ¸¸é µÈ´Ù.
             IDE_TEST_RAISE( *aIsFound == ID_TRUE,
                             ERR_DUP_ALIAS_NAME );
 
@@ -3735,7 +3735,7 @@ IDE_RC qsvProcVar::searchFieldOfRecord(
             sNode->lflag |= QTC_NODE_VALIDATE_TRUE;
 
             // To fix BUG-12622
-            // outputìœ¼ë¡œ ì‚¬ìš©ëœ ì»¬ëŸ¼ì— LVALUE MASKë¥¼ ì”Œì›€.
+            // outputÀ¸·Î »ç¿ëµÈ ÄÃ·³¿¡ LVALUE MASK¸¦ ¾º¿ò.
             if( aSearchForLValue == ID_TRUE )
             {
                 sNode->lflag &= ~QTC_NODE_LVALUE_MASK;
@@ -3755,9 +3755,9 @@ IDE_RC qsvProcVar::searchFieldOfRecord(
     }
 
     /* BUG-39194
-       table, record ë° array typeì˜ variableì€ ìˆìœ¼ë‚˜,
-       table, record ë° arrayì— ì†í•œ field(ë˜ëŠ” column)ë¥¼ ì°¾ì§€ ëª»í•˜ë©´
-       column not found errorë¥¼ ë‚´ì¤€ë‹¤. */
+       table, record ¹× array typeÀÇ variableÀº ÀÖÀ¸³ª,
+       table, record ¹× array¿¡ ¼ÓÇÑ field(¶Ç´Â column)¸¦ Ã£Áö ¸øÇÏ¸é
+       column not found error¸¦ ³»ÁØ´Ù. */
     if ( *aIsFound == ID_FALSE )
     {
         sqlInfo.setSourceInfo( aStatement,
@@ -3806,11 +3806,11 @@ IDE_RC qsvProcVar::makeUDTVariable( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 UDT variableì„ ìƒì„±
+ * Description : PROJ-1075 UDT variableÀ» »ı¼º
  *
  * Implementation :
  *         (1) type check.
- *         (2) ê²€ìƒ‰ëœ typeë¶„ë¥˜ë³„ë¡œ ë³€ìˆ˜ë¥¼ ìƒì„±.
+ *         (2) °Ë»öµÈ typeºĞ·ùº°·Î º¯¼ö¸¦ »ı¼º.
  *
  ***********************************************************************/
 #define IDE_FN "qsvProcVar::makeUDTVariable"
@@ -3891,11 +3891,11 @@ IDE_RC qsvProcVar::makeRecordVariable( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 record/row type ë³€ìˆ˜ë¥¼ typeì •ë³´ë¥¼ ì´ìš©í•˜ì—¬  ìƒì„±.
+ * Description : PROJ-1075 record/row type º¯¼ö¸¦ typeÁ¤º¸¸¦ ÀÌ¿ëÇÏ¿©  »ı¼º.
  *
  * Implementation :
- *        (1) makeArgumentsForRowTypeNodeí•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì—¬ ë³€ìˆ˜ ìƒì„±.
- *        (2) ë³€ìˆ˜ì˜ íƒ€ì… ì •ë³´ ë° table, column ì„¸íŒ….
+ *        (1) makeArgumentsForRowTypeNodeÇÔ¼ö¸¦ È£ÃâÇÏ¿© º¯¼ö »ı¼º.
+ *        (2) º¯¼öÀÇ Å¸ÀÔ Á¤º¸ ¹× table, column ¼¼ÆÃ.
  *
  ***********************************************************************/
 #define IDE_FN "qsvProcVar::makeRecordVariable"
@@ -3911,7 +3911,7 @@ IDE_RC qsvProcVar::makeRecordVariable( qcStatement * aStatement,
                                            aVariable->common.table )
               != IDE_SUCCESS );
 
-    //variableì •ë³´ ì¡°ì •
+    //variableÁ¤º¸ Á¶Á¤
     aVariable->typeInfo = aType;
     aVariable->variableType = aType->variableType;
 
@@ -3935,22 +3935,22 @@ IDE_RC qsvProcVar::makeArrayVariable(
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 array ë³€ìˆ˜ ìƒì„±
+ * Description : PROJ-1075 array º¯¼ö »ı¼º
  *
  * Implementation :
- *           (1) Lob Columnì´ ë„ˆë¬´ í¬ë©´ Row í• ë‹¹
- *           (2) arrayë³€ìˆ˜ ìƒì„±
- *           (3) ëŒ€ì‘ë˜ëŠ” row ë³€ìˆ˜ ìƒì„±
- *           (4) ë§Œì•½ rowë³€ìˆ˜ê°€ record typeì´ë¼ë©´ í™•ì¥
+ *           (1) Lob ColumnÀÌ ³Ê¹« Å©¸é Row ÇÒ´ç
+ *           (2) arrayº¯¼ö »ı¼º
+ *           (3) ´ëÀÀµÇ´Â row º¯¼ö »ı¼º
+ *           (4) ¸¸¾à rowº¯¼ö°¡ record typeÀÌ¶ó¸é È®Àå
  *
- *         * array type ë³€ìˆ˜ì˜ êµ¬ì„±.
+ *         * array type º¯¼öÀÇ ±¸¼º.
  *           (array)
  *             |
  *           (row)  [tuple_1]
- *             |                rowì™€ colì€ ë™ì¼ tupleë‚´ì— ìˆìŒ.
+ *             |                row¿Í colÀº µ¿ÀÏ tuple³»¿¡ ÀÖÀ½.
  *           (col1) - (col2) - (col3) [tuple_1]
  *
- *           ë§Œì•½ rowê°€ record typeì´ë¼ë©´ columnNodeê¹Œì§€ êµ¬ì„±í•¨.
+ *           ¸¸¾à row°¡ record typeÀÌ¶ó¸é columnNode±îÁö ±¸¼ºÇÔ.
  *
  ***********************************************************************/
 #define IDE_FN "qsvProcVar::makeArrayVariable"
@@ -3976,11 +3976,11 @@ IDE_RC qsvProcVar::makeArrayVariable(
     sMtcTemplate = &(sQcTemplate->tmplate);
     sTypeNode = aVariable->variableTypeNode;
 
-    /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì›
-     * Intermediate Tuple Rowê°€ ìˆê³  ë¹„ì–´ ìˆì§€ ì•Šì€ ìƒíƒœì—ì„œ,
-     * Intermediate Tuple Rowì— Lob Columnì„ í• ë‹¹í•  ë•Œ,
-     * (Old Offset + New Size) > Property ì´ë©´,
-     * ìƒˆë¡œìš´ Intermediate Tuple Rowë¥¼ í• ë‹¹í•œë‹¤.
+    /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø
+     * Intermediate Tuple Row°¡ ÀÖ°í ºñ¾î ÀÖÁö ¾ÊÀº »óÅÂ¿¡¼­,
+     * Intermediate Tuple Row¿¡ Lob ColumnÀ» ÇÒ´çÇÒ ¶§,
+     * (Old Offset + New Size) > Property ÀÌ¸é,
+     * »õ·Î¿î Intermediate Tuple Row¸¦ ÇÒ´çÇÑ´Ù.
      */
     if( sQcTemplate->tmplate.currentRow[MTC_TUPLE_TYPE_INTERMEDIATE] != ID_USHORT_MAX )
     {
@@ -4058,7 +4058,7 @@ IDE_RC qsvProcVar::makeArrayVariable(
         /* Nothing to do */
     }
 
-    // (2) array ë³€ìˆ˜ ìƒì„±
+    // (2) array º¯¼ö »ı¼º
     IDE_TEST( qtc::nextColumn( QC_QMP_MEM(aStatement),
                                sTypeNode,
                                aStatement,
@@ -4080,16 +4080,16 @@ IDE_RC qsvProcVar::makeArrayVariable(
                                                 sTypeNode )
               != IDE_SUCCESS );
 
-    // ì²«ë²ˆì§¸ ì»¬ëŸ¼ì€ index ì»¬ëŸ¼ì´ë¯€ë¡œ nextê°€ rowì»¬ëŸ¼ì´ë‹¤.
+    // Ã¹¹øÂ° ÄÃ·³Àº index ÄÃ·³ÀÌ¹Ç·Î next°¡ rowÄÃ·³ÀÌ´Ù.
     sRowColumn = aType->columns->next;
 
-    // (3) ëŒ€ì‘ë˜ëŠ” row ë³€ìˆ˜ ìƒì„±.
-    // array ì— ëŒ€ì‘ë˜ëŠ” rowNodeë¥¼ ìƒì„±.
+    // (3) ´ëÀÀµÇ´Â row º¯¼ö »ı¼º.
+    // array ¿¡ ´ëÀÀµÇ´Â rowNode¸¦ »ı¼º.
     IDE_TEST( qtc::makeInternalColumn(
                   aStatement, 0, 0, &sRowNode )
               != IDE_SUCCESS );
 
-    // rowNodeë¥¼ arrayNodeì˜ argumentsì— ì—°ê²°.
+    // rowNode¸¦ arrayNodeÀÇ arguments¿¡ ¿¬°á.
     // (array)
     //   |
     // (row)
@@ -4099,13 +4099,13 @@ IDE_RC qsvProcVar::makeArrayVariable(
     if( sRowColumn->basicInfo->module->id < MTD_UDT_ID_MIN ||
         sRowColumn->basicInfo->module->id > MTD_UDT_ID_MAX )
     {
-        // rowColumnì´ primitive data typeì¸ ê²½ìš°.
-        // primitive data typeì€ column Nodeê°€ ì—†ë‹¤.
+        // rowColumnÀÌ primitive data typeÀÎ °æ¿ì.
+        // primitive data typeÀº column Node°¡ ¾ø´Ù.
         // (array)
         //   |
-        // (row)     ì´ êµ¬ì¡°ê°€ ìµœì¢… ìƒíƒœ
+        // (row)     ÀÌ ±¸Á¶°¡ ÃÖÁ¾ »óÅÂ
 
-        // tupleì„ í†µì§¸ë¡œ í•˜ë‚˜ í• ë‹¹.
+        // tupleÀ» ÅëÂ°·Î ÇÏ³ª ÇÒ´ç.
         IDE_TEST( qtc::nextTable( &(sTable),
                                   aStatement,
                                   NULL,
@@ -4113,7 +4113,7 @@ IDE_RC qsvProcVar::makeArrayVariable(
                                   MTC_COLUMN_NOTNULL_TRUE )
                   != IDE_SUCCESS);
 
-        // í•´ë‹¹ tupleì˜ ì²«ë²ˆì§¸ ì»¬ëŸ¼ì´ rowColumnì´ë‹¤.
+        // ÇØ´ç tupleÀÇ Ã¹¹øÂ° ÄÃ·³ÀÌ rowColumnÀÌ´Ù.
         sRowNode->node.table = sTable;
         sRowNode->node.column = 0;
         sRowNode->node.objectID = sTypeNode->node.objectID; 
@@ -4128,8 +4128,8 @@ IDE_RC qsvProcVar::makeArrayVariable(
         mtc::copyColumn( &(sMtcTemplate->rows[sTable].columns[0]),
                          sRowColumn->basicInfo);
 
-        /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì›
-         * LOB Columnì„ LOB Valueë¡œ ë³€í™˜í•œë‹¤.
+        /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø
+         * LOB ColumnÀ» LOB Value·Î º¯È¯ÇÑ´Ù.
          */
         if ( ( sRowColumn->basicInfo->type.dataTypeId == MTD_BLOB_ID ) ||
              ( sRowColumn->basicInfo->type.dataTypeId == MTD_CLOB_ID ) )
@@ -4163,7 +4163,7 @@ IDE_RC qsvProcVar::makeArrayVariable(
                                                     sRowNode )
                   != IDE_SUCCESS );
 
-        // tuple offset ì¡°ì •.
+        // tuple offset Á¶Á¤.
         qtc::resetTupleOffset( sMtcTemplate,
                                sTable );
 
@@ -4173,13 +4173,13 @@ IDE_RC qsvProcVar::makeArrayVariable(
     }
     else
     {
-        // (4) ë§Œì•½ rowë³€ìˆ˜ê°€ record typeì´ë¼ë©´ í™•ì¥
-        // record typeì€ column Nodeê°€ ìˆë‹¤.
+        // (4) ¸¸¾à rowº¯¼ö°¡ record typeÀÌ¶ó¸é È®Àå
+        // record typeÀº column Node°¡ ÀÖ´Ù.
         // (array)
         //   |
         // (row)
         //   |
-        // (col1) - (col2) - (col3) - ... ì´ êµ¬ì¡°ê°€ ìµœì¢… ìƒíƒœ.
+        // (col1) - (col2) - (col3) - ... ÀÌ ±¸Á¶°¡ ÃÖÁ¾ »óÅÂ.
         IDE_TEST_RAISE( ( sRowColumn->basicInfo->module->id != MTD_RECORDTYPE_ID ) &&
                         ( sRowColumn->basicInfo->module->id != MTD_ROWTYPE_ID ) &&
                         ( sRowColumn->basicInfo->module->id != MTD_ASSOCIATIVE_ARRAY_ID ) ,
@@ -4187,8 +4187,8 @@ IDE_RC qsvProcVar::makeArrayVariable(
 
         sRowModule = (qtcModule*)sRowColumn->basicInfo->module;
 
-        // tupleì„ í• ë‹¹ë°›ê³  rowNodeì— columnNodeë¥¼ ë¶™ì´ê³ 
-        // column execute ì„¸íŒ….
+        // tupleÀ» ÇÒ´ç¹Ş°í rowNode¿¡ columnNode¸¦ ºÙÀÌ°í
+        // column execute ¼¼ÆÃ.
         IDE_TEST( makeArgumentsForRowTypeNode( aStatement,
                                                sRowModule->typeInfo,
                                                sRowNode,
@@ -4196,7 +4196,7 @@ IDE_RC qsvProcVar::makeArrayVariable(
                   != IDE_SUCCESS );
     }
 
-    // variable ì •ë³´ ì¡°ì •.
+    // variable Á¤º¸ Á¶Á¤.
     aVariable->typeInfo = aType;
     aVariable->variableType = aType->variableType;
 
@@ -4228,7 +4228,7 @@ IDE_RC qsvProcVar::makeRefCurVariable(
 {
 /***********************************************************************
  *
- * Description : PROJ-1386 ref cursor ë³€ìˆ˜ ìƒì„±
+ * Description : PROJ-1386 ref cursor º¯¼ö »ı¼º
  *
  * Implementation :
  *
@@ -4248,11 +4248,11 @@ IDE_RC qsvProcVar::makeRefCurVariable(
     sMtcTemplate = &(sQcTemplate->tmplate);
     sTypeNode = aVariable->variableTypeNode;
 
-    /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì›
-     * Intermediate Tuple Rowê°€ ìˆê³  ë¹„ì–´ ìˆì§€ ì•Šì€ ìƒíƒœì—ì„œ,
-     * Intermediate Tuple Rowì— Lob Columnì„ í• ë‹¹í•  ë•Œ,
-     * (Old Offset + New Size) > Property ì´ë©´,
-     * ìƒˆë¡œìš´ Intermediate Tuple Rowë¥¼ í• ë‹¹í•œë‹¤.
+    /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø
+     * Intermediate Tuple Row°¡ ÀÖ°í ºñ¾î ÀÖÁö ¾ÊÀº »óÅÂ¿¡¼­,
+     * Intermediate Tuple Row¿¡ Lob ColumnÀ» ÇÒ´çÇÒ ¶§,
+     * (Old Offset + New Size) > Property ÀÌ¸é,
+     * »õ·Î¿î Intermediate Tuple Row¸¦ ÇÒ´çÇÑ´Ù.
      */
     if( sQcTemplate->tmplate.currentRow[MTC_TUPLE_TYPE_INTERMEDIATE] != ID_USHORT_MAX )
     {
@@ -4351,7 +4351,7 @@ IDE_RC qsvProcVar::makeRefCurVariable(
                                                 sTypeNode )
               != IDE_SUCCESS );
 
-    // variable ì •ë³´ ì¡°ì •.
+    // variable Á¤º¸ Á¶Á¤.
     aVariable->typeInfo = aType;
     aVariable->variableType = aType->variableType;
 
@@ -4360,7 +4360,7 @@ IDE_RC qsvProcVar::makeRefCurVariable(
     aVariable->common.objectID = sTypeNode->node.objectID;
 
     // BUG-38767
-    // resIdxëŠ” array typeì—ì„œ ì‚¬ìš©í–ˆìœ¼ë‚˜, cursor typeì€ sqlIdxë¡œ ì‚¬ìš©í•œë‹¤.
+    // resIdx´Â array type¿¡¼­ »ç¿ëÇßÀ¸³ª, cursor typeÀº sqlIdx·Î »ç¿ëÇÑ´Ù.
     if ( aStatement->spvEnv->createProc != NULL )
     {
         aVariable->resIdx = aStatement->spvEnv->createProc->procSqlCount++;
@@ -4385,14 +4385,14 @@ IDE_RC qsvProcVar::makeArgumentsForRowTypeNode( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 record/row type nodeë¥¼ typeì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ ìƒì„±.
+ * Description : PROJ-1075 record/row type node¸¦ typeÁ¤º¸¸¦ ÀÌ¿ëÇÏ¿© »ı¼º.
  *
  * Implementation :
- *           (1) tupleì„ í•˜ë‚˜ í• ë‹¹ë°›ìŒ
- *           (2) ì²«ë²ˆì§¸ëŠ” ìê¸° ìì‹ , ë‘ë²ˆì§¸ì´í›„ë¡œ ë‚´ë¶€ì»¬ëŸ¼.
- *           (3) [rowtype][col1][col2][col3] í˜•íƒœë¡œ êµ¬ì„±.
+ *           (1) tupleÀ» ÇÏ³ª ÇÒ´ç¹ŞÀ½
+ *           (2) Ã¹¹øÂ°´Â ÀÚ±â ÀÚ½Å, µÎ¹øÂ°ÀÌÈÄ·Î ³»ºÎÄÃ·³.
+ *           (3) [rowtype][col1][col2][col3] ÇüÅÂ·Î ±¸¼º.
  *                  |
- *               col1,col2, col3ì˜ size, offetì„ í¬ê´„í•¨.
+ *               col1,col2, col3ÀÇ size, offetÀ» Æ÷°ıÇÔ.
  *
  ***********************************************************************/
 #define IDE_FN "qsvProcVar::makeArgumentsForRowTypeNode"
@@ -4407,10 +4407,10 @@ IDE_RC qsvProcVar::makeArgumentsForRowTypeNode( qcStatement * aStatement,
 
     sMtcTemplate = & QC_SHARED_TMPLATE(aStatement)->tmplate;
 
-    // row íƒ€ì… ë³€ìˆ˜ë¥¼ ë¦¬ë¹Œë“œ í•˜ëŠ” ê²½ìš° ê¸°ì¡´ì˜ tupleì„ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•´ì•¼ í•œë‹¤.
+    // row Å¸ÀÔ º¯¼ö¸¦ ¸®ºôµå ÇÏ´Â °æ¿ì ±âÁ¸ÀÇ tupleÀ» ±×´ë·Î »ç¿ëÇØ¾ß ÇÑ´Ù.
     if( aTable == ID_USHORT_MAX )
     {
-        // tupleì„ í†µì§¸ë¡œ í•˜ë‚˜ í• ë‹¹.
+        // tupleÀ» ÅëÂ°·Î ÇÏ³ª ÇÒ´ç.
         IDE_TEST( qtc::nextTable( &(sTable),
                                   aStatement,
                                   NULL,
@@ -4423,12 +4423,12 @@ IDE_RC qsvProcVar::makeArgumentsForRowTypeNode( qcStatement * aStatement,
         sTable = aRowNode->node.table;
     }
 
-    // í•´ë‹¹ tupleì˜ ì²«ë²ˆì§¸ ì»¬ëŸ¼ì´ record typeìì‹ ì´ ëœë‹¤.
+    // ÇØ´ç tupleÀÇ Ã¹¹øÂ° ÄÃ·³ÀÌ record typeÀÚ½ÅÀÌ µÈ´Ù.
     aRowNode->node.table = sTable;
     aRowNode->node.column = 0;
     aRowNode->node.objectID = aType->common.objectID; 
 
-    // ë‘ë²ˆì§¸ ì»¬ëŸ¼ë¶€í„°ëŠ” ë‚´ë¶€ ì»¬ëŸ¼ìœ¼ë¡œ ì„¸íŒ…
+    // µÎ¹øÂ° ÄÃ·³ºÎÅÍ´Â ³»ºÎ ÄÃ·³À¸·Î ¼¼ÆÃ
     for( sColumn = 1; sColumn < aType->columnCount + 1; sColumn++ )
     {
         // make node for one field
@@ -4465,8 +4465,8 @@ IDE_RC qsvProcVar::makeArgumentsForRowTypeNode( qcStatement * aStatement,
                   0 )
               != IDE_SUCCESS );
 
-    // row/record type variableì´ë¯€ë¡œ,
-    // offsetì„ 0ìœ¼ë¡œ ì´ˆê¸°í™” í•´ì¤€ë‹¤.
+    // row/record type variableÀÌ¹Ç·Î,
+    // offsetÀ» 0À¸·Î ÃÊ±âÈ­ ÇØÁØ´Ù.
     sMtcTemplate->rows[aRowNode->node.table].columns->column.offset = 0;
 
 
@@ -4487,8 +4487,8 @@ IDE_RC qsvProcVar::makeArgumentsForRowTypeNode( qcStatement * aStatement,
         mtc::copyColumn( &(sMtcTemplate->rows[sTable].columns[sColumn]),
                          sColumnDef->basicInfo);
 
-        /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì›
-         * LOB Columnì„ LOB Valueë¡œ ë³€í™˜í•œë‹¤.
+        /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø
+         * LOB ColumnÀ» LOB Value·Î º¯È¯ÇÑ´Ù.
          */
         if ( ( sColumnDef->basicInfo->type.dataTypeId == MTD_BLOB_ID ) ||
              ( sColumnDef->basicInfo->type.dataTypeId == MTD_CLOB_ID ) )
@@ -4523,8 +4523,8 @@ IDE_RC qsvProcVar::makeArgumentsForRowTypeNode( qcStatement * aStatement,
                   != IDE_SUCCESS );
     }
 
-    // rowoffset ì¡°ì •
-    // ì¶”í›„ cloneTemplateí• ë•Œ ê³µê°„ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
+    // rowoffset Á¶Á¤
+    // ÃßÈÄ cloneTemplateÇÒ¶§ °ø°£À» ÇÒ´ç¹Ş´Â´Ù.
     sMtcTemplate->rows[sTable].rowOffset =
         sMtcTemplate->rows[sTable].rowMaximum= aType->typeSize;
 
@@ -4641,7 +4641,7 @@ IDE_RC qsvProcVar::checkPkgVarType( qcStatement  * aStatement,
         // Nothing to do.
     }
 
-    // BUG-40727 ì˜¬ë°”ë¥¸ table, column, objectIDëŠ” ì´í›„ì— ì„¤ì •í•œë‹¤.
+    // BUG-40727 ¿Ã¹Ù¸¥ table, column, objectID´Â ÀÌÈÄ¿¡ ¼³Á¤ÇÑ´Ù.
     sNode->node.table    = 0;
     sNode->node.column   = 0;
     sNode->node.objectID = 0;
@@ -4785,7 +4785,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarTypeInternal( qcStatement     * aStatement,
                                                    &sFoundVariable )
                               != IDE_SUCCESS );
 
-                    // userName, tableNameì´ ì—†ìŒ.
+                    // userName, tableNameÀÌ ¾øÀ½.
                     // (1) variable_name / parameter name
                     if( *aIsFound == ID_TRUE )
                     {
@@ -5089,7 +5089,7 @@ IDE_RC qsvProcVar::searchNodeFromPkg(
                                   != IDE_SUCCESS );
                     } 
                     // BUG-40727
-                    // ë³€ìˆ˜ íƒ€ì…ì´ row/record íƒ€ì…ì´ ì•„ë‹ˆë©´ ì°¾ì§€ ëª»í•œ ê²ƒì´ë‹¤.
+                    // º¯¼ö Å¸ÀÔÀÌ row/record Å¸ÀÔÀÌ ¾Æ´Ï¸é Ã£Áö ¸øÇÑ °ÍÀÌ´Ù.
                     else
                     {
                         sIsFound = ID_FALSE;
@@ -5231,7 +5231,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarNonArg(
     }
     else
     {
-        // ì¼ë°˜ procedureì—ì„œ package ë³€ìˆ˜ë¥¼ ì‚¬ìš©í•œ ê²½ìš°
+        // ÀÏ¹İ procedure¿¡¼­ package º¯¼ö¸¦ »ç¿ëÇÑ °æ¿ì
         // Nothing to do.
     }
 
@@ -5279,9 +5279,9 @@ IDE_RC qsvProcVar::searchPkgLocalVarNonArg(
                 sColumnName = &aVarNode->columnName;
 
                 // variable
-                // 1. body ë³€ìˆ˜
-                // 2. spec ë³€ìˆ˜
-                // ë‹¤ë¥¸ package ì¸ì§€ í™•ì¸í•  í•„ìš”ê°€ ì—†ë‹¤.
+                // 1. body º¯¼ö
+                // 2. spec º¯¼ö
+                // ´Ù¸¥ package ÀÎÁö È®ÀÎÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
                 // ----------------------------------
                 // | USER | TABLE | COLUMN | PACKAGE
                 // ----------------------------------
@@ -5300,7 +5300,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarNonArg(
                 if( ( *aIsFound == ID_FALSE ) &&
                     ( sSpecParseTree != NULL ) )
                 {
-                    // Spec ë³€ìˆ˜ì¸ì§€ í™•ì¸í•œë‹¤.
+                    // Spec º¯¼öÀÎÁö È®ÀÎÇÑ´Ù.
                     IDE_TEST( searchVariableItems( sSpecParseTree->block->variableItems,
                                                    sCurrDeclItem,
                                                    sColumnName,
@@ -5310,7 +5310,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarNonArg(
 
                     if( *aIsFound == ID_TRUE )
                     {
-                        if( sBodyParseTree != NULL )  // ì¦‰, bodyê°€ ì¡´ì¬í•œë‹¤.
+                        if( sBodyParseTree != NULL )  // Áï, body°¡ Á¸ÀçÇÑ´Ù.
                         {
                             sPkgOID = sSpecParseTree->pkgOID;
                         }
@@ -5327,7 +5327,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarNonArg(
                 else
                 {
                     // Nothing to do.
-                    // package bodyì—ì„œ ì°¾ì•˜ë‹¤.
+                    // package body¿¡¼­ Ã£¾Ò´Ù.
                 }
             } // table name is null
             else
@@ -5374,7 +5374,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarNonArg(
                         else
                         {
                             // Nothing to do.
-                            // ì™¸ë¶€ packageì˜ ë³€ìˆ˜
+                            // ¿ÜºÎ packageÀÇ º¯¼ö
                         } 
                     }
                 } // body parse tree is not null
@@ -5384,7 +5384,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarNonArg(
                 {
                     sColumnName = &aVarNode->tableName;
 
-                    // Spec ë³€ìˆ˜ì¸ì§€ í™•ì¸í•œë‹¤.
+                    // Spec º¯¼öÀÎÁö È®ÀÎÇÑ´Ù.
                     IDE_TEST( searchVariableItems( sSpecParseTree->block->variableItems,
                                                    sCurrDeclItem,
                                                    sColumnName,
@@ -5394,7 +5394,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarNonArg(
 
                     if( *aIsFound == ID_TRUE )
                     {
-                        if(sBodyParseTree != NULL ) // ì¦‰, bodyëŠ” ì¡´ì¬í•œë‹¤.
+                        if(sBodyParseTree != NULL ) // Áï, body´Â Á¸ÀçÇÑ´Ù.
                         {
                             sPkgOID = sSpecParseTree->pkgOID;
                         }
@@ -5413,7 +5413,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarNonArg(
                         {
                             sColumnName = &aVarNode->columnName;
 
-                            // Spec ë³€ìˆ˜ì¸ì§€ í™•ì¸í•œë‹¤.
+                            // Spec º¯¼öÀÎÁö È®ÀÎÇÑ´Ù.
                             IDE_TEST( searchVariableItems( sSpecParseTree->block->variableItems,
                                                            sCurrDeclItem,
                                                            sColumnName,
@@ -5423,7 +5423,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarNonArg(
 
                             if( *aIsFound == ID_TRUE )
                             {
-                                if( sBodyParseTree != NULL )  // ì¦‰, bodyê°€ ì¡´ì¬í•œë‹¤.
+                                if( sBodyParseTree != NULL )  // Áï, body°¡ Á¸ÀçÇÑ´Ù.
                                 {
                                     sPkgOID = sSpecParseTree->pkgOID;
                                 }
@@ -5440,7 +5440,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarNonArg(
                         else
                         {
                             // Nothing to do.
-                            // ì™¸ë¶€ packageì˜ ë³€ìˆ˜
+                            // ¿ÜºÎ packageÀÇ º¯¼ö
                         }
                     }
                 } // spec parse tree is not null
@@ -5512,7 +5512,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarNonArg(
 
                     if( *aIsFound == ID_TRUE )
                     {
-                        if( sBodyParseTree != NULL ) // ì¦‰, bodyëŠ” ì¡´ì¬í•œë‹¤.
+                        if( sBodyParseTree != NULL ) // Áï, body´Â Á¸ÀçÇÑ´Ù.
                         {
                             sPkgOID = sSpecParseTree->pkgOID;
                         }
@@ -5542,7 +5542,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarNonArg(
 
                             if( *aIsFound == ID_TRUE )
                             {
-                                if( sBodyParseTree != NULL )  // ì¦‰, bodyê°€ ì¡´ì¬í•œë‹¤.
+                                if( sBodyParseTree != NULL )  // Áï, body°¡ Á¸ÀçÇÑ´Ù.
                                 {
                                     sPkgOID = sSpecParseTree->pkgOID;
                                 }
@@ -5560,13 +5560,13 @@ IDE_RC qsvProcVar::searchPkgLocalVarNonArg(
                         else
                         {
                             // Nothing to do.
-                            // ë‹¤ë¥¸ package ë³€ìˆ˜
+                            // ´Ù¸¥ package º¯¼ö
                         }
                     }
                     else
                     {
                         // Nothing to do.
-                        // ë‹¤ë¥¸ package ë³€ìˆ˜
+                        // ´Ù¸¥ package º¯¼ö
                     }
                 }
             } // spec parse tree is not null
@@ -5619,7 +5619,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarNonArg(
 
                     if( *aIsFound == ID_TRUE )
                     {
-                        if( sBodyParseTree != NULL ) // ì¦‰, bodyëŠ” ì¡´ì¬í•œë‹¤.
+                        if( sBodyParseTree != NULL ) // Áï, body´Â Á¸ÀçÇÑ´Ù.
                         {
                             sPkgOID = sSpecParseTree->pkgOID;
                         }
@@ -5634,13 +5634,13 @@ IDE_RC qsvProcVar::searchPkgLocalVarNonArg(
                 else
                 {
                     // Nothing to do.
-                    // ë‹¤ë¥¸ package ë³€ìˆ˜
+                    // ´Ù¸¥ package º¯¼ö
                 }
             }
             else
             {
                 // Nothing to do.
-                // ë‹¤ë¥¸ package ë³€ìˆ˜
+                // ´Ù¸¥ package º¯¼ö
             }
         } // spec parse tree is not null
     } // pkg name is not null
@@ -5671,8 +5671,8 @@ IDE_RC qsvProcVar::searchPkgLocalVarNonArg(
             aVarNode->node.objectID = sPkgOID;
         }
 
-        // searchFieldOfRecordì— ì˜í•´ì„œ aIsFoundê°€ ë³€ê²½ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
-        // aIsFoundë„ ë‹¤ì‹œ ê²€ì‚¬í•œë‹¤.
+        // searchFieldOfRecord¿¡ ÀÇÇØ¼­ aIsFound°¡ º¯°æµÉ ¼ö ÀÖÀ¸¹Ç·Î
+        // aIsFoundµµ ´Ù½Ã °Ë»çÇÑ´Ù.
         if ( *aIsFound == ID_TRUE )
         {
             aVarNode->lflag &= ~QTC_NODE_VALIDATE_MASK;
@@ -5700,6 +5700,18 @@ IDE_RC qsvProcVar::searchPkgLocalVarNonArg(
         /* BUG-39770 */
         aVarNode->lflag &= ~QTC_NODE_PKG_MEMBER_MASK;
         aVarNode->lflag |= QTC_NODE_PKG_MEMBER_EXIST;
+
+        // BUG-47971 Package global variableÀÇ ºĞ»ê ½ÇÇàÀ» Á¦ÇÑÇÕ´Ï´Ù.
+        if ( sFoundVariable->inOutType != QS_IN )
+        {
+            aStatement->spvEnv->flag &= ~QSV_ENV_PKG_VAR_EXIST_MASK;
+            aStatement->spvEnv->flag |= QSV_ENV_PKG_VAR_EXIST_TRUE;
+
+            if ( aStatement->spvEnv->createProc != NULL )
+            {
+                aStatement->spvEnv->createProc->referToPkgVar = ID_TRUE;
+            }
+        }
 
         *aVariable = sFoundVariable;
     }
@@ -6126,6 +6138,18 @@ IDE_RC qsvProcVar::searchPkgVarWithArg(
         aVarNode->lflag &= ~QTC_NODE_PKG_MEMBER_MASK;
         aVarNode->lflag |= QTC_NODE_PKG_MEMBER_EXIST;
 
+        // BUG-47971 Package global variableÀÇ ºĞ»ê ½ÇÇàÀ» Á¦ÇÑÇÕ´Ï´Ù.
+        if ( sFoundVariable->inOutType != QS_IN )
+        {
+            aStatement->spvEnv->flag &= ~QSV_ENV_PKG_VAR_EXIST_MASK;
+            aStatement->spvEnv->flag |= QSV_ENV_PKG_VAR_EXIST_TRUE;
+
+            if ( aStatement->spvEnv->createProc != NULL )
+            {
+                aStatement->spvEnv->createProc->referToPkgVar = ID_TRUE;
+            }
+        }
+
         *aVariable = sFoundVariable;
     }
 
@@ -6184,7 +6208,7 @@ IDE_RC qsvProcVar::searchVariableFromPkg(
 
     if( sExists == ID_TRUE )
     {
-        // synonymìœ¼ë¡œ ì°¸ì¡°ë˜ëŠ” procì˜ ê¸°ë¡
+        // synonymÀ¸·Î ÂüÁ¶µÇ´Â procÀÇ ±â·Ï
         IDE_TEST( qsvPkgStmts::makePkgSynonymList( aStatement,
                                                    &sSynonymInfo,
                                                    aVarNode->userName,
@@ -6231,7 +6255,7 @@ IDE_RC qsvProcVar::searchVariableFromPkg(
 
         /* BUG-39770 */
         if ( (*aIsFound == ID_TRUE) &&
-             (aStatement->spvEnv->createProc != NULL) && 
+             (aStatement->spvEnv->createProc != NULL) &&
              (aStatement->spvEnv->createPkg == NULL) )
         {
             aStatement->spvEnv->createProc->referToPkg = ID_TRUE;
@@ -6271,8 +6295,8 @@ IDE_RC qsvProcVar::searchPkgVariable( qcStatement  * aStatement,
          ( ( (aVarNode->lflag) & QTC_NODE_SP_ARRAY_INDEX_VAR_MASK ) ==
            QTC_NODE_SP_ARRAY_INDEX_VAR_ABSENT ) )
     {
-        // (A). ê´„í˜¸ ìŠ¤íƒ€ì¼ì´ ì•„ë‹ˆë©´ì„œ Argumentê°€ ì—†ëŠ” ë³€ìˆ˜ì¸ ê²½ìš°.
-        //      (column/row/record/associative array typeì¸ ê²½ìš°)
+        // (A). °ıÈ£ ½ºÅ¸ÀÏÀÌ ¾Æ´Ï¸é¼­ Argument°¡ ¾ø´Â º¯¼öÀÎ °æ¿ì.
+        //      (column/row/record/associative array typeÀÎ °æ¿ì)
         IDE_TEST( searchPkgVarNonArg( aStatement,
                                       aPkgInfo,
                                       aVarNode,
@@ -6282,7 +6306,7 @@ IDE_RC qsvProcVar::searchPkgVariable( qcStatement  * aStatement,
     }
     else
     {
-        // (B). ê´„í˜¸ ìŠ¤íƒ€ì¼ì˜ ë³€ìˆ˜ì¸ ê²½ìš°.(associative array typeì˜ indexë¥¼ ì“°ëŠ” ê²½ìš°)
+        // (B). °ıÈ£ ½ºÅ¸ÀÏÀÇ º¯¼öÀÎ °æ¿ì.(associative array typeÀÇ index¸¦ ¾²´Â °æ¿ì)
         IDE_TEST( searchPkgVarWithArg( aStatement,
                                        aPkgInfo,
                                        aVarNode,
@@ -6317,7 +6341,7 @@ IDE_RC qsvProcVar::searchPkgVarNonArg( qcStatement  * aStatement,
 
     sParseTree     = aPkgInfo->planTree ;
 
-    // ë‹¤ë¥¸ packageì˜ ë³€ìˆ˜ëŠ” specêº¼ë§Œ ì‚¬ìš©ê°€ëŠ¥í•˜ë‹¤.
+    // ´Ù¸¥ packageÀÇ º¯¼ö´Â spec²¨¸¸ »ç¿ë°¡´ÉÇÏ´Ù.
     IDE_DASSERT( aPkgInfo->objType == QS_PKG );
 
     sUserName[ QC_MAX_OBJECT_NAME_LEN ] = '\0';
@@ -6425,7 +6449,7 @@ IDE_RC qsvProcVar::searchPkgVarNonArg( qcStatement  * aStatement,
         // ----------------------------------
         // |  O   |   O   |   O    |   O
 
-        // USER, TABLE, COLUMN, PACKAGEê°€ ëª¨ë‘ ìˆìœ¼ë©´ ë°˜ë“œì‹œ fieldë¥¼ ê²€ì‚¬í•œë‹¤.
+        // USER, TABLE, COLUMN, PACKAGE°¡ ¸ğµÎ ÀÖÀ¸¸é ¹İµå½Ã field¸¦ °Ë»çÇÑ´Ù.
         sIsNeedChkField = ID_TRUE;
 
         sVarName = &aVarNode->columnName;
@@ -6477,8 +6501,8 @@ IDE_RC qsvProcVar::searchPkgVarNonArg( qcStatement  * aStatement,
             aVarNode->node.objectID = sPkgOID;
         }
 
-        // searchFieldOfRecordì— ì˜í•´ì„œ aIsFoundê°€ ë³€ê²½ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
-        // aIsFoundë„ ë‹¤ì‹œ ê²€ì‚¬í•œë‹¤.
+        // searchFieldOfRecord¿¡ ÀÇÇØ¼­ aIsFound°¡ º¯°æµÉ ¼ö ÀÖÀ¸¹Ç·Î
+        // aIsFoundµµ ´Ù½Ã °Ë»çÇÑ´Ù.
         if ( *aIsFound == ID_TRUE )
         {
             aVarNode->lflag &= ~QTC_NODE_VALIDATE_MASK;
@@ -6497,6 +6521,18 @@ IDE_RC qsvProcVar::searchPkgVarNonArg( qcStatement  * aStatement,
             /* BUG-39770 */
             aVarNode->lflag &= ~QTC_NODE_PKG_MEMBER_MASK;
             aVarNode->lflag |= QTC_NODE_PKG_MEMBER_EXIST;
+
+            // BUG-47971 Package global variableÀÇ ºĞ»ê ½ÇÇàÀ» Á¦ÇÑÇÕ´Ï´Ù.
+            if ( sFoundVariable->inOutType != QS_IN )
+            {
+                aStatement->spvEnv->flag &= ~QSV_ENV_PKG_VAR_EXIST_MASK;
+                aStatement->spvEnv->flag |= QSV_ENV_PKG_VAR_EXIST_TRUE;
+
+                if ( aStatement->spvEnv->createProc != NULL )
+                {
+                    aStatement->spvEnv->createProc->referToPkgVar = ID_TRUE;
+                }
+            }
         }
         else
         {
@@ -6568,7 +6604,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarWithArg(
     }
     else
     {
-        // ì¼ë°˜ procedureì—ì„œ package ë³€ìˆ˜ë¥¼ ì‚¬ìš©í•œ ê²½ìš°
+        // ÀÏ¹İ procedure¿¡¼­ package º¯¼ö¸¦ »ç¿ëÇÑ °æ¿ì
     }
 
 
@@ -6667,7 +6703,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarWithArg(
                 if( ( *aIsFound == ID_FALSE ) &&
                     ( sSpecParseTree != NULL ) )
                 {
-                    // Spec ë³€ìˆ˜ì¸ì§€ í™•ì¸í•œë‹¤.
+                    // Spec º¯¼öÀÎÁö È®ÀÎÇÑ´Ù.
                     for( sCurrVar = sSpecParseTree->block->variableItems;
                          ( sCurrVar != NULL ) && ( *aIsFound == ID_FALSE );
                          sCurrVar = sCurrVar->next )
@@ -6712,7 +6748,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarWithArg(
                 else
                 {
                     // Nothing to do.
-                    // bodyì—ì„œ variableì„ ì°¾ì•˜ë‹¤.
+                    // body¿¡¼­ variableÀ» Ã£¾Ò´Ù.
                 }
             } // tableName is null;
             else
@@ -7008,7 +7044,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarWithArg(
                                 }
                                 else
                                 {
-                                    // create package ì¤‘
+                                    // create package Áß
                                     sColumn = QTC_STMT_COLUMN( aStatement,
                                                                (qtcNode*)sFoundVariable->variableTypeNode->node.arguments );
                                 }
@@ -7076,7 +7112,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarWithArg(
                     {
                         if ( QC_IS_NAME_MATCHED( sSpecParseTree->pkgNamePos, aVarNode->tableName ) == ID_TRUE)
                         {
-                            // Spec ë³€ìˆ˜ì¸ì§€ í™•ì¸í•œë‹¤.
+                            // Spec º¯¼öÀÎÁö È®ÀÎÇÑ´Ù.
                             for ( sCurrVar = sSpecParseTree->block->variableItems;
                                   ( sCurrVar != NULL ) && ( *aIsFound == ID_FALSE );
                                   sCurrVar = sCurrVar->next )
@@ -7229,7 +7265,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarWithArg(
             if ( ( *aIsFound == ID_FALSE ) &&
                  ( sSpecParseTree != NULL ) )
             {
-                // Spec ë³€ìˆ˜ì¸ì§€ í™•ì¸í•œë‹¤.
+                // Spec º¯¼öÀÎÁö È®ÀÎÇÑ´Ù.
                 for ( sCurrVar = sSpecParseTree->block->variableItems;
                       ( sCurrVar != NULL ) && ( *aIsFound == ID_FALSE );
                       sCurrVar = sCurrVar->next )
@@ -7255,7 +7291,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarWithArg(
                             }
                             else
                             {
-                                // create package ì¤‘
+                                // create package Áß
                                 sColumn = QTC_STMT_COLUMN( aStatement,
                                                            (qtcNode*)sFoundVariable->variableTypeNode->node.arguments );
                             }
@@ -7429,7 +7465,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarWithArg(
                 {
                     if ( QC_IS_NAME_MATCHED( sSpecParseTree->pkgNamePos, aVarNode->tableName ) == ID_TRUE )
                     {
-                        // Spec ë³€ìˆ˜ì¸ì§€ í™•ì¸í•œë‹¤.
+                        // Spec º¯¼öÀÎÁö È®ÀÎÇÑ´Ù.
                         for ( sCurrVar = sSpecParseTree->block->variableItems;
                               ( sCurrVar != NULL ) && ( *aIsFound == ID_FALSE );
                               sCurrVar = sCurrVar->next )
@@ -7455,7 +7491,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarWithArg(
                                     }
                                     else
                                     {
-                                        // create package ì¤‘
+                                        // create package Áß
                                         sColumn = QTC_STMT_COLUMN( aStatement,
                                                                    (qtcNode*)sFoundVariable->variableTypeNode->node.arguments );
                                     }
@@ -7549,6 +7585,18 @@ IDE_RC qsvProcVar::searchPkgLocalVarWithArg(
         aVarNode->lflag &= ~QTC_NODE_PKG_MEMBER_MASK;
         aVarNode->lflag |= QTC_NODE_PKG_MEMBER_EXIST;
 
+        // BUG-47971 Package global variableÀÇ ºĞ»ê ½ÇÇàÀ» Á¦ÇÑÇÕ´Ï´Ù.
+        if ( sFoundVariable->inOutType != QS_IN )
+        {
+            aStatement->spvEnv->flag &= ~QSV_ENV_PKG_VAR_EXIST_MASK;
+            aStatement->spvEnv->flag |= QSV_ENV_PKG_VAR_EXIST_TRUE;
+
+            if ( aStatement->spvEnv->createProc != NULL )
+            {
+                aStatement->spvEnv->createProc->referToPkgVar = ID_TRUE;
+            }
+        }
+
         *aVariable = sFoundVariable;
     }
 
@@ -7570,14 +7618,14 @@ IDE_RC qsvProcVar::searchPkgLocalArrayVarInternal( qcStatement     * aStatement,
 {
 /********************************************************************************************
  * Description : BUG-38243 support array method at package.
- *               package localì— ì„ ì–¸ëœ array type variable ê²€ìƒ‰
+ *               package local¿¡ ¼±¾ğµÈ array type variable °Ë»ö
  *
  * Implementation : 
- *               ë‹¤ìŒê³¼ ê°™ì€ ê²½ìš°ë§Œ ì¡´ì¬                    ( qtcNodeì—ì„œ qcNamePosition )
+ *               ´ÙÀ½°ú °°Àº °æ¿ì¸¸ Á¸Àç                    ( qtcNode¿¡¼­ qcNamePosition )
  *               (1) arrayVar_name                        -- tableName
  *               (2) myPkg_name.arrayVar_name             -- userName.tableName
  *               (3) myUser_name.myPkg_name.arrayVar_name -- userName.tableName.columnName
- *      qsvProcVar::searchArrayVarì—ì„œ ì°¾ì€ ë³€ìˆ˜ì— ëŒ€í•´ array typeì¸ì§€ ë§ˆì§€ë§‰ìœ¼ë¡œ í™•ì¸.
+ *      qsvProcVar::searchArrayVar¿¡¼­ Ã£Àº º¯¼ö¿¡ ´ëÇØ array typeÀÎÁö ¸¶Áö¸·À¸·Î È®ÀÎ.
  ********************************************************************************************/
 
     qcNamePosition * sUserName;
@@ -7586,9 +7634,9 @@ IDE_RC qsvProcVar::searchPkgLocalArrayVarInternal( qcStatement     * aStatement,
     idBool           sIsFound  = ID_FALSE;
     UInt             sUserID   = 0;
 
-    /* pkgNameì´ nullì¼ ë•ŒëŠ” method function ì •ë³´ê°€ qtcNodeì˜ columnNameì— ì¡´ì¬í•˜ì§€ë§Œ,
-       ë°˜ëŒ€ì˜ ê²½ìš°, pkgNameì— method function ì •ë³´ê°€ ì¡´ì¬í•œë‹¤.
-       ë”°ë¼ì„œ pkgNameì— ëŒ€í•´ì„œ NULLì¸ì§€ ì•„ë‹Œì§€ êµ¬ë¶„í•´ì•¼ í•œë‹¤. */
+    /* pkgNameÀÌ nullÀÏ ¶§´Â method function Á¤º¸°¡ qtcNodeÀÇ columnName¿¡ Á¸ÀçÇÏÁö¸¸,
+       ¹İ´ëÀÇ °æ¿ì, pkgName¿¡ method function Á¤º¸°¡ Á¸ÀçÇÑ´Ù.
+       µû¶ó¼­ pkgName¿¡ ´ëÇØ¼­ NULLÀÎÁö ¾Æ´ÑÁö ±¸ºĞÇØ¾ß ÇÑ´Ù. */
     if ( QC_IS_NULL_NAME( aArrNode->pkgName ) == ID_TRUE )
     {
         sUserName = NULL;
@@ -7675,15 +7723,15 @@ IDE_RC qsvProcVar::searchPkgArrayVar( qcStatement  * aStatement,
 {
 /********************************************************************************************
  * Description : BUG-38243 support array method at package.
- *               ìì‹ ì´ ì†í•œ packageê°€ ì•„ë‹Œ
- *               ë‹¤ë¥¸ package ê°ì²´ì— ì„ ì–¸ëœ array type variable ê²€ìƒ‰
- *               qsvProcVarr::searchArrayVarì—ì„œ í˜¸ì¶œë¨.
+ *               ÀÚ½ÅÀÌ ¼ÓÇÑ package°¡ ¾Æ´Ñ
+ *               ´Ù¸¥ package °´Ã¼¿¡ ¼±¾ğµÈ array type variable °Ë»ö
+ *               qsvProcVarr::searchArrayVar¿¡¼­ È£ÃâµÊ.
  *
  * Implementation :
- *               ë‹¤ìŒê³¼ ê°™ì€ ê²½ìš°ë§Œ ì¡´ì¬                    ( qtcNodeì—ì„œ qcNamePosition )
+ *               ´ÙÀ½°ú °°Àº °æ¿ì¸¸ Á¸Àç                    ( qtcNode¿¡¼­ qcNamePosition )
  *               (1) pkg_name.arrayVar_name                   -- tableName
  *               (2) user_name.pkg_name.arrayVar_name         -- userName.tableName
- *      qsvProcVar::searchArrayVarì—ì„œ ì°¾ì€ ë³€ìˆ˜ì— ëŒ€í•´ array typeì¸ì§€ ë§ˆì§€ë§‰ìœ¼ë¡œ í™•ì¸.
+ *      qsvProcVar::searchArrayVar¿¡¼­ Ã£Àº º¯¼ö¿¡ ´ëÇØ array typeÀÎÁö ¸¶Áö¸·À¸·Î È®ÀÎ.
  ********************************************************************************************/
 
     qcNamePosition   sUserName;
@@ -7697,9 +7745,9 @@ IDE_RC qsvProcVar::searchPkgArrayVar( qcStatement  * aStatement,
     idBool           sIsFound        = ID_FALSE;
     qsVariables    * sFoundVariable  = NULL;
 
-    /* pkgNameì´ nullì¼ ë•ŒëŠ” method function ì •ë³´ê°€ qtcNodeì˜ columnNameì— ì¡´ì¬í•˜ì§€ë§Œ,
-       ë°˜ëŒ€ì˜ ê²½ìš°, pkgNameì— method function ì •ë³´ê°€ ì¡´ì¬í•œë‹¤.
-       ë”°ë¼ì„œ pkgNameì— ëŒ€í•´ì„œ NULLì¸ì§€ ì•„ë‹Œì§€ êµ¬ë¶„í•´ì•¼ í•œë‹¤. */
+    /* pkgNameÀÌ nullÀÏ ¶§´Â method function Á¤º¸°¡ qtcNodeÀÇ columnName¿¡ Á¸ÀçÇÏÁö¸¸,
+       ¹İ´ëÀÇ °æ¿ì, pkgName¿¡ method function Á¤º¸°¡ Á¸ÀçÇÑ´Ù.
+       µû¶ó¼­ pkgName¿¡ ´ëÇØ¼­ NULLÀÎÁö ¾Æ´ÑÁö ±¸ºĞÇØ¾ß ÇÑ´Ù. */
     if ( QC_IS_NULL_NAME( aArrNode->pkgName ) == ID_TRUE )
     {
         SET_EMPTY_POSITION( sUserName );
@@ -7810,16 +7858,16 @@ IDE_RC qsvProcVar::searchPkgLocalArrayVar( qcStatement     * aStatement,
 {
 /********************************************************************************************
  * Description : BUG-38243 support array method at package.
- *               package localì— ì„ ì–¸ëœ array type variable ê²€ìƒ‰
- *               qsvProcVarr::searchArrayVarì—ì„œ í˜¸ì¶œë¨.
+ *               package local¿¡ ¼±¾ğµÈ array type variable °Ë»ö
+ *               qsvProcVarr::searchArrayVar¿¡¼­ È£ÃâµÊ.
  *
  * Implementation :
  *              (1) create package spec
- *                     a. package specì—ì„œë§Œ íƒìƒ‰
+ *                     a. package spec¿¡¼­¸¸ Å½»ö
  *              (2) create package body
- *                     a. package body íƒìƒ‰
- *                     b. package spec íƒìƒ‰
- *      qsvProcVar::searchArrayVarì—ì„œ ì°¾ì€ ë³€ìˆ˜ì— ëŒ€í•´ array typeì¸ì§€ ë§ˆì§€ë§‰ìœ¼ë¡œ í™•ì¸.
+ *                     a. package body Å½»ö
+ *                     b. package spec Å½»ö
+ *      qsvProcVar::searchArrayVar¿¡¼­ Ã£Àº º¯¼ö¿¡ ´ëÇØ array typeÀÎÁö ¸¶Áö¸·À¸·Î È®ÀÎ.
  ********************************************************************************************/
 
     qsPkgParseTree * sPkgSpecParseTree;
@@ -7829,11 +7877,11 @@ IDE_RC qsvProcVar::searchPkgLocalArrayVar( qcStatement     * aStatement,
 
     if ( aStatement->spvEnv->pkgPlanTree == NULL ) 
     {
-        /* aStatement->spvEnv->pkgPlanTreeì€
-           create package body ì¤‘ì— package bodyì— ëŒ€ì‘í•˜ëŠ”
-           package spec ì •ë³´ë¥¼ ì…‹íŒ…í•´ ë†“ì€ ë³€ìˆ˜ì´ë‹¤.
-           ë”°ë¼ì„œ aStatement->spvEnv->pkgPlanTreeê°€ NULLì€
-           create packageì˜ validate ê³¼ì •ì´ë¼ëŠ” ì˜ë¯¸ì´ë‹¤.*/
+        /* aStatement->spvEnv->pkgPlanTreeÀº
+           create package body Áß¿¡ package body¿¡ ´ëÀÀÇÏ´Â
+           package spec Á¤º¸¸¦ ¼ÂÆÃÇØ ³õÀº º¯¼öÀÌ´Ù.
+           µû¶ó¼­ aStatement->spvEnv->pkgPlanTree°¡ NULLÀº
+           create packageÀÇ validate °úÁ¤ÀÌ¶ó´Â ÀÇ¹ÌÀÌ´Ù.*/
         IDE_DASSERT( aStatement->spvEnv->createPkg != NULL );
 
         sPkgSpecParseTree = aStatement->spvEnv->createPkg;
@@ -7934,13 +7982,13 @@ IDE_RC qsvProcVar::searchVarAndParaForArray( qcStatement      * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-2533
- *               aVarNodeì— ë§ëŠ” psm array variableì„ ê²€ìƒ‰í•œë‹¤.
+ *               aVarNode¿¡ ¸Â´Â psm array variableÀ» °Ë»öÇÑ´Ù.
  *
  * Implementation :
- *               qtcNodeì—ëŠ” ì´ 4ê°€ì§€ positionì„ ì…ë ¥ë°›ì„ ìˆ˜ ìˆë‹¤.
+ *               qtcNode¿¡´Â ÃÑ 4°¡Áö positionÀ» ÀÔ·Â¹ŞÀ» ¼ö ÀÖ´Ù.
  *               user_Name, table_Name, column_Name, pkg_Name
  *
- *         associative array typeì˜ indexë¥¼ ì“°ëŠ” ê²½ìš°
+ *         associative array typeÀÇ index¸¦ ¾²´Â °æ¿ì
  *             ex) V1[1] / V1(1)
  *
  ***********************************************************************/
@@ -7950,10 +7998,10 @@ IDE_RC qsvProcVar::searchVarAndParaForArray( qcStatement      * aStatement,
     *aVariable    = NULL;
     sPkgParseTree = aStatement->spvEnv->createPkg;
 
-    // Argumentê°€ ìˆëŠ” ê²½ìš°.(associative array typeì˜ indexë¥¼ ì“°ëŠ” ê²½ìš°
-    // array variable outputì´ í•„ìš”í•˜ë‹¤.
-    // column moduleì—ì„œ array variableì„ ì´ìš©í•˜ì—¬ indexì— í•´ë‹¹í•˜ëŠ” rowë¥¼
-    // ê°€ì ¸ì™€ì•¼ í•˜ê¸° ë•Œë¬¸.
+    // Argument°¡ ÀÖ´Â °æ¿ì.(associative array typeÀÇ index¸¦ ¾²´Â °æ¿ì
+    // array variable outputÀÌ ÇÊ¿äÇÏ´Ù.
+    // column module¿¡¼­ array variableÀ» ÀÌ¿ëÇÏ¿© index¿¡ ÇØ´çÇÏ´Â row¸¦
+    // °¡Á®¿Í¾ß ÇÏ±â ¶§¹®.
     IDE_TEST( searchVariableForArray( aStatement,
                                       aVarNode,
                                       aIsFound,
@@ -8006,19 +8054,19 @@ IDE_RC qsvProcVar::searchVariableForArray( qcStatement      * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-2533
- *               aVarNodeì— ë§ëŠ” psm array variableì„ ê²€ìƒ‰í•œë‹¤.
- *               ë§Œì•½, array typeì˜ member functionì¸ ê²½ìš° ëª¨ë“ˆ íƒìƒ‰í•œë‹¤.
+ *               aVarNode¿¡ ¸Â´Â psm array variableÀ» °Ë»öÇÑ´Ù.
+ *               ¸¸¾à, array typeÀÇ member functionÀÎ °æ¿ì ¸ğµâ Å½»öÇÑ´Ù.
  * Implementation :
- *        ì˜¬ ìˆ˜ ìˆëŠ” associative array type
- *               1. column_name( expression ) ë˜ëŠ” ()
+ *        ¿Ã ¼ö ÀÖ´Â associative array type
+ *               1. column_name( expression ) ¶Ç´Â ()
  *                 1) variable_name( index )
  *                 2) parameter_name( index )
- *               2. table_name.column_name( expression ) ë˜ëŠ” ()
+ *               2. table_name.column_name( expression ) ¶Ç´Â ()
  *                 1) label_name.variable_name( index )
  *                 2) proc_name.parameter_name( index )
  *                 3) variable_name.member_function( index )
  *                 4) parameter_name.member_function( index )
- *               3. user_name.table_name.column_name( index ) ë˜ëŠ” ()
+ *               3. user_name.table_name.column_name( index ) ¶Ç´Â ()
  *                  1) label_name.variable_name.member_function( index )
  *                  2) label_name.parameter_name.member_function( index )
  *
@@ -8033,7 +8081,7 @@ IDE_RC qsvProcVar::searchVariableForArray( qcStatement      * aStatement,
     idBool                sIsArrayMemFunc = ID_FALSE;
 
     // To fix BUG-14129
-    // í˜„ì¬ validateì¤‘ì¸ declare item ì „ê¹Œì§€ë§Œ ê²€ìƒ‰ì„ í•´ì•¼ í•¨
+    // ÇöÀç validateÁßÀÎ declare item Àü±îÁö¸¸ °Ë»öÀ» ÇØ¾ß ÇÔ
     sCurrDeclItem = aStatement->spvEnv->currDeclItem;
 
     // initialize
@@ -8267,19 +8315,19 @@ IDE_RC qsvProcVar::searchParameterForArray( qcStatement      * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-2533
- *               aVarNodeì— ë§ëŠ” psm array variableì„ ê²€ìƒ‰í•œë‹¤.
- *               ë§Œì•½, array typeì˜ member functionì¸ ê²½ìš° ëª¨ë“ˆ íƒìƒ‰í•œë‹¤.
+ *               aVarNode¿¡ ¸Â´Â psm array variableÀ» °Ë»öÇÑ´Ù.
+ *               ¸¸¾à, array typeÀÇ member functionÀÎ °æ¿ì ¸ğµâ Å½»öÇÑ´Ù.
  * Implementation :
- *        ì˜¬ ìˆ˜ ìˆëŠ” associative array type
- *               1. column_name( expression ) ë˜ëŠ” () 
+ *        ¿Ã ¼ö ÀÖ´Â associative array type
+ *               1. column_name( expression ) ¶Ç´Â () 
  *                 1) variable_name( index )
  *                 2) parameter_name( index )
- *               2. table_name.column_name( expression ) ë˜ëŠ” ()
+ *               2. table_name.column_name( expression ) ¶Ç´Â ()
  *                 1) label_name.variable_name( index )
  *                 2) proc_name.parameter_name( index )
  *                 3) variable_name.member_function( index )
  *                 4) parameter_name.member_function( index )
- *               3. user_name.table_name.column_name( index ) ë˜ëŠ” ()
+ *               3. user_name.table_name.column_name( index ) ¶Ç´Â ()
  *                  1) label_name.variable_name.member_function( index )
  *                  2) label_name.parameter_name.member_function( index )
  *
@@ -8294,7 +8342,7 @@ IDE_RC qsvProcVar::searchParameterForArray( qcStatement      * aStatement,
     sParseTree = aStatement->spvEnv->createProc;
 
     // To fix BUG-14129
-    // í˜„ì¬ validateì¤‘ì¸ declare item ì „ê¹Œì§€ë§Œ ê²€ìƒ‰ì„ í•´ì•¼ í•¨
+    // ÇöÀç validateÁßÀÎ declare item Àü±îÁö¸¸ °Ë»öÀ» ÇØ¾ß ÇÔ
     sCurrDeclItem = aStatement->spvEnv->currDeclItem;
 
     // initialize
@@ -8308,7 +8356,7 @@ IDE_RC qsvProcVar::searchParameterForArray( qcStatement      * aStatement,
         {
             if ( QC_IS_NULL_NAME(aVarNode->pkgName) == ID_TRUE )
             {
-                // procedureNameì´ ì—†ëŠ” ê²½ìš° ë¬´ì¡°ê±´ parameterë¼ê³  ê°€ì •.
+                // procedureNameÀÌ ¾ø´Â °æ¿ì ¹«Á¶°Ç parameter¶ó°í °¡Á¤.
                 // 1. column_name[ expression ]
                 //   2) parameter_name[ index ]
                 IDE_TEST( searchVariableItems( aStatement->spvEnv->allParaDecls,
@@ -8518,20 +8566,20 @@ IDE_RC qsvProcVar::searchPkgLocalVarForArray( qcStatement      * aStatement,
 /************************************************************
  *
  * Description : PROJ-2533
- *               aVarNodeì— ë§ëŠ” local packageì˜ array variableì„ ê²€ìƒ‰í•œë‹¤.
- *               ë§Œì•½, array typeì˜ member functionì¸ ê²½ìš° ëª¨ë“ˆ íƒìƒ‰í•œë‹¤. 
+ *               aVarNode¿¡ ¸Â´Â local packageÀÇ array variableÀ» °Ë»öÇÑ´Ù.
+ *               ¸¸¾à, array typeÀÇ member functionÀÎ °æ¿ì ¸ğµâ Å½»öÇÑ´Ù. 
  *
  * Implementation :
- *    ì´ í•¨ìˆ˜ì— ì˜¬ ìˆ˜ ìˆëŠ” ê²½ìš°
- *       1. column_name (list) ë˜ëŠ” ()
+ *    ÀÌ ÇÔ¼ö¿¡ ¿Ã ¼ö ÀÖ´Â °æ¿ì
+ *       1. column_name (list) ¶Ç´Â ()
  *           1) specVariable_name
  *           2) bodyVariable_name
- *       2. table_name.column_name (list) ë˜ëŠ” ()
+ *       2. table_name.column_name (list) ¶Ç´Â ()
  *           1) specVariable_name.member_function
  *           2) bodyVariable_name.member_function
  *           3) pkg_name.specVariable_name
  *           4) pkg_name.bodyVariable_name
- *       3. user_name.table_name.column_name (list) ë˜ëŠ” ()
+ *       3. user_name.table_name.column_name (list) ¶Ç´Â ()
  *           1) pkg_name.specVariable_name.member_function
  *           2) pkg_name.bodyVariable_name.member_function
  *           3) user_name.pkg_name.specVariable_name
@@ -8564,7 +8612,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarForArray( qcStatement      * aStatement,
     }
     else
     {
-        // ì¼ë°˜ procedureì—ì„œ package ë³€ìˆ˜ë¥¼ ì‚¬ìš©í•œ ê²½ìš°
+        // ÀÏ¹İ procedure¿¡¼­ package º¯¼ö¸¦ »ç¿ëÇÑ °æ¿ì
     }
 
 
@@ -8643,7 +8691,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarForArray( qcStatement      * aStatement,
                  ( sSpecParseTree != NULL ) )
             {
                 // 1-1) specVariable_name()
-                // Spec ë³€ìˆ˜ì¸ì§€ í™•ì¸í•œë‹¤.
+                // Spec º¯¼öÀÎÁö È®ÀÎÇÑ´Ù.
                 for ( sCurrVar = sSpecParseTree->block->variableItems;
                       ( sCurrVar != NULL ) && ( *aIsFound == ID_FALSE );
                       sCurrVar = sCurrVar->next )
@@ -8995,7 +9043,7 @@ IDE_RC qsvProcVar::searchPkgLocalVarForArray( qcStatement      * aStatement,
                 {
                     if ( QC_IS_NAME_MATCHED( sSpecParseTree->pkgNamePos, aVarNode->tableName ) == ID_TRUE )
                     {
-                        // Spec ë³€ìˆ˜ì¸ì§€ í™•ì¸í•œë‹¤.
+                        // Spec º¯¼öÀÎÁö È®ÀÎÇÑ´Ù.
                         for ( sCurrVar = sSpecParseTree->block->variableItems;
                               ( sCurrVar != NULL ) && ( *aIsFound == ID_FALSE );
                               sCurrVar = sCurrVar->next )
@@ -9117,7 +9165,7 @@ IDE_RC qsvProcVar::searchVariableFromPkgForArray( qcStatement      * aStatement,
 
         if ( sExists == ID_TRUE )
         {
-            // synonymìœ¼ë¡œ ì°¸ì¡°ë˜ëŠ” procì˜ ê¸°ë¡
+            // synonymÀ¸·Î ÂüÁ¶µÇ´Â procÀÇ ±â·Ï
             IDE_TEST( qsvPkgStmts::makePkgSynonymList( aStatement,
                                                        &sSynonymInfo,
                                                        aVarNode->userName,
@@ -9216,7 +9264,7 @@ IDE_RC qsvProcVar::makeInternalArrayVariable( qcStatement      * aStatement,
     sRowModule = (qtcModule *)aParentArray->typeInfo->columns->next->basicInfo->module;
     IDE_DASSERT( sRowModule->module.id == MTD_ASSOCIATIVE_ARRAY_ID );
 
-    // ë…¸ë“œ ìƒì„±
+    // ³ëµå »ı¼º
     IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                             qtcNode,
                             &sInnerNode )
@@ -9244,14 +9292,14 @@ IDE_RC qsvProcVar::makeInternalArrayVariable( qcStatement      * aStatement,
     aNode->lflag &= ~QTC_NODE_SP_ARRAY_INDEX_VAR_MASK;
     aNode->lflag |= QTC_NODE_SP_ARRAY_INDEX_VAR_ABSENT;
 
-    // ì¤‘ê°„ array variable ë§Œë“¤ê¸°
-    // qsTypes ìƒì„±
+    // Áß°£ array variable ¸¸µé±â
+    // qsTypes »ı¼º
     IDE_TEST( qsvProcType::makeArrayTypeColumnByModule( QC_QME_MEM(aStatement),
                                                         sRowModule,
                                                         &sType)
               != IDE_SUCCESS);
 
-    // qsVariables ìƒì„±
+    // qsVariables »ı¼º
     IDE_TEST(STRUCT_ALLOC(QC_QME_MEM(aStatement), qsVariables, &sVariable)
              != IDE_SUCCESS);
 
@@ -9299,7 +9347,7 @@ IDE_RC qsvProcVar::makeRecordColumnByName( qcStatement      * aStatement,
     /****************************************************************
      * BUG-46174
      *
-     * ì•„ë˜ì˜ ê·œì¹™ì— ë”°ë¼ ë ˆì½”ë“œì˜ í•„ë“œ ì´ë¦„ì„ ì±„ìš´ë‹¤.
+     * ¾Æ·¡ÀÇ ±ÔÄ¢¿¡ µû¶ó ·¹ÄÚµåÀÇ ÇÊµå ÀÌ¸§À» Ã¤¿î´Ù.
      *
      *  No | userName | tableName | columnName | pkgName | arguments
      * --------------------------------------------------------------
@@ -9332,7 +9380,7 @@ IDE_RC qsvProcVar::makeRecordColumnByName( qcStatement      * aStatement,
 
     if ( aRecord->node.arguments != NULL )
     {
-        // arrayì˜ index ì—°ê²°
+        // arrayÀÇ index ¿¬°á
         aColumn[0]->node.arguments = aRecord->node.arguments;
 
         aColumn[0]->lflag &= ~QTC_NODE_SP_ARRAY_INDEX_VAR_MASK;

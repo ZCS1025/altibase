@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 		return 0;
 
 
-    // DATA ìƒì„±
+    // DATA »ı¼º
     in_len = IN_LEN;
     switch((int)rand() % 1)
     {

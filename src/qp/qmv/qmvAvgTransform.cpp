@@ -93,14 +93,14 @@ IDE_RC qmvAvgTransform::transformAvg2SumDivCount( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *     AVG()í•¨ìˆ˜ë¥¼ SUM() / COUNT() ë…¸ë“œë¡œ ë³€ê²½í•œë‹¤.
+ *     AVG()ÇÔ¼ö¸¦ SUM() / COUNT() ³ëµå·Î º¯°æÇÑ´Ù.
  *
  * Implementation :
- *     AVG()í•¨ìˆ˜ì´ë©´ AVG()í•¨ìˆ˜ì˜ ì•„ê·œë¨¼íŠ¸ì™€ ê°™ì€ SUM() í•¨ìˆ˜ê°€ SELECT target,
- *     ë° havingì ˆì— ì¡´ìž¬ í•˜ëŠ”ì§€ ê²€ì‚¬í•˜ì—¬ ì¡´ìž¬ í•˜ë©´ AVG() ë¥¼ SUM() / COUNT()
- *     ë…¸ë“œë¡œ ë³€ê²½í•œë‹¤.
- *     ê¸°ì¡´ì— estimateëœ AVG()ë…¸ë“œë¥¼ ì œê±°í•œë‹¤.
- *     AVG()ê°€ ë‹¤ë¥¸ í•¨ìˆ˜ì— ì•„ê·œë¨¼íŠ¸ë¡œ ì‚¬ìš©í•˜ì˜€ì„ ê²½ìš° ë…¸ë“œì˜ ì•„ê·œë¨¼íŠ¸ë¡œ ìž¬ê·€ í˜¸ì¶œ í•œë‹¤.
+ *     AVG()ÇÔ¼öÀÌ¸é AVG()ÇÔ¼öÀÇ ¾Æ±Ô¸ÕÆ®¿Í °°Àº SUM() ÇÔ¼ö°¡ SELECT target,
+ *     ¹× havingÀý¿¡ Á¸Àç ÇÏ´ÂÁö °Ë»çÇÏ¿© Á¸Àç ÇÏ¸é AVG() ¸¦ SUM() / COUNT()
+ *     ³ëµå·Î º¯°æÇÑ´Ù.
+ *     ±âÁ¸¿¡ estimateµÈ AVG()³ëµå¸¦ Á¦°ÅÇÑ´Ù.
+ *     AVG()°¡ ´Ù¸¥ ÇÔ¼ö¿¡ ¾Æ±Ô¸ÕÆ®·Î »ç¿ëÇÏ¿´À» °æ¿ì ³ëµåÀÇ ¾Æ±Ô¸ÕÆ®·Î Àç±Í È£Ãâ ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -136,33 +136,33 @@ IDE_RC qmvAvgTransform::transformAvg2SumDivCount( qcStatement  * aStatement,
 
             if ( sCheckTransform == ID_TRUE )
             {
-                /* AVG()ì˜ ì•„ê·œë¨¼íŠ¸ ë…¸ë“œë¥¼ ë³µì‚¬í•œë‹¤ */
+                /* AVG()ÀÇ ¾Æ±Ô¸ÕÆ® ³ëµå¸¦ º¹»çÇÑ´Ù */
                 IDE_TEST( qtc::cloneQTCNodeTree( QC_QMP_MEM(aStatement),
                                                  (qtcNode *)sNode->node.arguments,
                                                  &sAvgArg1,
-                                                 ID_TRUE,   // rootì˜ nextëŠ” ë³µì‚¬ í•œë‹¤.
-                                                 ID_TRUE,   // conversionì„ ëŠëŠ”ë‹¤.
-                                                 ID_TRUE,   // constant nodeê¹Œì§€ ë³µì‚¬í•œë‹¤.
-                                                 ID_FALSE ) // constant nodeë¥¼ ì›ë³µí•˜ì§€ ì•ŠëŠ”ë‹¤.
+                                                 ID_TRUE,   // rootÀÇ next´Â º¹»ç ÇÑ´Ù.
+                                                 ID_TRUE,   // conversionÀ» ²÷´Â´Ù.
+                                                 ID_TRUE,   // constant node±îÁö º¹»çÇÑ´Ù.
+                                                 ID_FALSE ) // constant node¸¦ ¿øº¹ÇÏÁö ¾Ê´Â´Ù.
                           != IDE_SUCCESS );
 
                 IDE_TEST( qtc::cloneQTCNodeTree( QC_QMP_MEM(aStatement),
                                                  (qtcNode *)sNode->node.arguments,
                                                  &sAvgArg2,
-                                                 ID_TRUE,   // rootì˜ nextëŠ” ë³µì‚¬ í•œë‹¤.
-                                                 ID_TRUE,   // conversionì„ ëŠëŠ”ë‹¤.
-                                                 ID_TRUE,   // constant nodeê¹Œì§€ ë³µì‚¬í•œë‹¤.
-                                                 ID_FALSE ) // constant nodeë¥¼ ì›ë³µí•˜ì§€ ì•ŠëŠ”ë‹¤.
+                                                 ID_TRUE,   // rootÀÇ next´Â º¹»ç ÇÑ´Ù.
+                                                 ID_TRUE,   // conversionÀ» ²÷´Â´Ù.
+                                                 ID_TRUE,   // constant node±îÁö º¹»çÇÑ´Ù.
+                                                 ID_FALSE ) // constant node¸¦ ¿øº¹ÇÏÁö ¾Ê´Â´Ù.
                           != IDE_SUCCESS );
 
-                /* count í•¨ìˆ˜ë¥¼ ë§Œë“ ë‹¤. */
+                /* count ÇÔ¼ö¸¦ ¸¸µç´Ù. */
                 IDE_TEST( qtc::makeNode( aStatement,
                                          sCountNode,
                                          &sNode->position,
                                          &mtfCount )
                           != IDE_SUCCESS );
 
-                /* í•¨ìˆ˜ë¥¼ ì—°ê²°í•œë‹¤. */
+                /* ÇÔ¼ö¸¦ ¿¬°áÇÑ´Ù. */
                 sCountNode[0]->node.arguments = (mtcNode *)sAvgArg1;
                 sCountNode[0]->node.arguments->next = NULL;
                 sCountNode[0]->node.next = NULL;
@@ -170,14 +170,14 @@ IDE_RC qmvAvgTransform::transformAvg2SumDivCount( qcStatement  * aStatement,
                 sCountNode[0]->node.lflag &= ~MTC_NODE_ARGUMENT_COUNT_MASK;
                 sCountNode[0]->node.lflag |= 1;
 
-                /* sum í•¨ìˆ˜ë¥¼ ë§Œë“ ë‹¤. */
+                /* sum ÇÔ¼ö¸¦ ¸¸µç´Ù. */
                 IDE_TEST( qtc::makeNode( aStatement,
                                          sSumNode,
                                          &sNode->position,
                                          &mtfSum )
                           != IDE_SUCCESS );
 
-                /* í•¨ìˆ˜ë¥¼ ì—°ê²°í•œë‹¤. */
+                /* ÇÔ¼ö¸¦ ¿¬°áÇÑ´Ù. */
                 sSumNode[0]->node.arguments = (mtcNode *)sAvgArg2;
                 sSumNode[0]->node.arguments->next = NULL;
                 sSumNode[0]->node.next = NULL;
@@ -185,14 +185,14 @@ IDE_RC qmvAvgTransform::transformAvg2SumDivCount( qcStatement  * aStatement,
                 sSumNode[0]->node.lflag &= ~MTC_NODE_ARGUMENT_COUNT_MASK;
                 sSumNode[0]->node.lflag |= 1;
 
-                /* divide í•¨ìˆ˜ë¥¼ ë§Œë“ ë‹¤. */
+                /* divide ÇÔ¼ö¸¦ ¸¸µç´Ù. */
                 IDE_TEST( qtc::makeNode( aStatement,
                                          sDivNode,
                                          &sNode->position,
                                          &mtfDivide )
                           != IDE_SUCCESS );
 
-                /* í•¨ìˆ˜ë¥¼ ì—°ê²°í•œë‹¤. */
+                /* ÇÔ¼ö¸¦ ¿¬°áÇÑ´Ù. */
                 sDivNode[0]->node.arguments = (mtcNode *)sSumNode[0];
                 sSumNode[0]->node.next = (mtcNode *)sCountNode[0];
                 sCountNode[0]->node.next = NULL;
@@ -209,7 +209,7 @@ IDE_RC qmvAvgTransform::transformAvg2SumDivCount( qcStatement  * aStatement,
                                          NULL )
                           != IDE_SUCCESS );
 
-                /* ì´ë¯¸ estimateëœ aggr ë…¸ë“œë¥¼ ì œê±° í•œë‹¤. */
+                /* ÀÌ¹Ì estimateµÈ aggr ³ëµå¸¦ Á¦°Å ÇÑ´Ù. */
                 for ( sAggrNode =  sSFWGH->aggsDepth1;
                       sAggrNode != NULL;
                       sAggrNode =  sAggrNode->next )
@@ -250,7 +250,7 @@ IDE_RC qmvAvgTransform::transformAvg2SumDivCount( qcStatement  * aStatement,
         /* Nothing to do */
     }
 
-    /* Argumentsë¥¼ ì²˜ë¦¬í•œë‹¤. */
+    /* Arguments¸¦ Ã³¸®ÇÑ´Ù. */
     if ( sNode->node.arguments != NULL )
     {
         IDE_TEST( transformAvg2SumDivCount( aStatement,
@@ -276,7 +276,7 @@ IDE_RC qmvAvgTransform::transformAvg2SumDivCount( qcStatement  * aStatement,
         /* Nothing to do */
     }
 
-    /* Nextë¥¼ ì²˜ë¦¬í•œë‹¤. */
+    /* Next¸¦ Ã³¸®ÇÑ´Ù. */
     if ( sNode->node.next != NULL )
     {
         IDE_TEST( transformAvg2SumDivCount( aStatement,
@@ -308,14 +308,14 @@ IDE_RC qmvAvgTransform::checkTransform( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     avg()ì˜ ì•„ê·œë¨¼íŠ¸ì™€ ê°™ì€ ì•„ê·œë¨¼íŠ¸ë¥¼ ê°€ì§€ëŠ” sum()í•¨ìˆ˜ê°€ ìžˆëŠ”ì§€ ì°¾ëŠ”ë‹¤.
+ *     avg()ÀÇ ¾Æ±Ô¸ÕÆ®¿Í °°Àº ¾Æ±Ô¸ÕÆ®¸¦ °¡Áö´Â sum()ÇÔ¼ö°¡ ÀÖ´ÂÁö Ã£´Â´Ù.
  *
  * Implementation :
- *     DISTINCT ë³€í™˜ í•˜ì§€ ì•ŠëŠ”ë‹¤.
- *     PSM function ë³€í™˜ í•˜ì§€ ì•ŠëŠ”ë‹¤.
- *     variable built in functionì€ ë³€í™˜ í•˜ì§€ ì•ŠëŠ”ë‹¤.
- *     subquery ê°€ í¬í•¨ëœ ê²½ìš° ë³€í™˜ í•˜ì§€ ì•ŠëŠ”ë‹¤.
- *     view columnì¸ ê²½ìš° ì œì™¸ í•œë‹¤.
+ *     DISTINCT º¯È¯ ÇÏÁö ¾Ê´Â´Ù.
+ *     PSM function º¯È¯ ÇÏÁö ¾Ê´Â´Ù.
+ *     variable built in functionÀº º¯È¯ ÇÏÁö ¾Ê´Â´Ù.
+ *     subquery °¡ Æ÷ÇÔµÈ °æ¿ì º¯È¯ ÇÏÁö ¾Ê´Â´Ù.
+ *     view columnÀÎ °æ¿ì Á¦¿Ü ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -326,7 +326,7 @@ IDE_RC qmvAvgTransform::checkTransform( qcStatement * aStatement,
     
     IDU_FIT_POINT_FATAL( "qmvAvgTransform::checkTransform::__FT__" );
 
-    /* DISTINCT ë³€í™˜ í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+    /* DISTINCT º¯È¯ ÇÏÁö ¾Ê´Â´Ù. */
     if ( ( aAvgNode->node.lflag & MTC_NODE_DISTINCT_MASK )
          == MTC_NODE_DISTINCT_TRUE )
     {
@@ -337,7 +337,7 @@ IDE_RC qmvAvgTransform::checkTransform( qcStatement * aStatement,
         /* Nothing to do */
     }
 
-    /* PSM functionì€ ë³€í™˜ í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+    /* PSM functionÀº º¯È¯ ÇÏÁö ¾Ê´Â´Ù. */
     if ( ( aAvgNode->lflag & QTC_NODE_PROC_FUNCTION_MASK )
          == QTC_NODE_PROC_FUNCTION_TRUE )
     {
@@ -348,7 +348,7 @@ IDE_RC qmvAvgTransform::checkTransform( qcStatement * aStatement,
         /* Nothing to do */
     }
 
-    /* variable build-in functionì€ ë³€í™˜ í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+    /* variable build-in functionÀº º¯È¯ ÇÏÁö ¾Ê´Â´Ù. */
     if ( ( aAvgNode->lflag & QTC_NODE_VAR_FUNCTION_MASK )
          == QTC_NODE_VAR_FUNCTION_EXIST )
     {
@@ -359,7 +359,7 @@ IDE_RC qmvAvgTransform::checkTransform( qcStatement * aStatement,
         /* Nothing to do */
     }
 
-    /* subqueryë¥¼ í¬í•¨ì¸ ê²½ìš° ë³€í™˜ í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+    /* subquery¸¦ Æ÷ÇÔÀÎ °æ¿ì º¯È¯ ÇÏÁö ¾Ê´Â´Ù. */
     if ( ( aAvgNode->lflag & QTC_NODE_SUBQUERY_MASK )
          == QTC_NODE_SUBQUERY_EXIST )
     {
@@ -370,7 +370,7 @@ IDE_RC qmvAvgTransform::checkTransform( qcStatement * aStatement,
         /* Nothing to do */
     }
 
-    /* view columnì¸ ê²½ìš° ì œì™¸ í•œë‹¤.
+    /* view columnÀÎ °æ¿ì Á¦¿Ü ÇÑ´Ù.
      * select sum(a), avg(a) from
      * (
      *     select 1 a from dual
@@ -470,7 +470,7 @@ IDE_RC qmvAvgTransform::isExistSameArgSum( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     SUM() í•¨ìˆ˜ ì´ë©´ì„œ aArgì™€ ê°™ì€ ì•„ê·œë¨¼íŠ¸ë¥¼ ì‚¬ìš© í•˜ëŠ”ì§€ ê²€ì‚¬ í•œë‹¤.
+ *     SUM() ÇÔ¼ö ÀÌ¸é¼­ aArg¿Í °°Àº ¾Æ±Ô¸ÕÆ®¸¦ »ç¿ë ÇÏ´ÂÁö °Ë»ç ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -482,7 +482,7 @@ IDE_RC qmvAvgTransform::isExistSameArgSum( qcStatement * aStatement,
     
     if ( aNode->node.module == & mtfSum )
     {
-        /* SUMì˜  DISTINCT MASKê°€ ì—†ì–´ì•¼ í•œë‹¤. */
+        /* SUMÀÇ  DISTINCT MASK°¡ ¾ø¾î¾ß ÇÑ´Ù. */
         if ( ( aNode->node.lflag & MTC_NODE_DISTINCT_MASK )
              == MTC_NODE_DISTINCT_FALSE )
         {

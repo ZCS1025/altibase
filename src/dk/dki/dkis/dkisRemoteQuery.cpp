@@ -154,7 +154,7 @@ static IDE_RC dkisOpenRemoteQuery( smiTableCursor * aCursor,
 
     IDE_DASSERT( aCursor != NULL );
     /* BUG-43787 */
-    /* dblinkëŠ” parallel ížŒíŠ¸ë¥¼ ì§€ì›í•˜ì§€ ì•ŠìŒ. */
+    /* dblink´Â parallel ÈùÆ®¸¦ Áö¿øÇÏÁö ¾ÊÀ½. */
     IDE_TEST_RAISE( aCursor->mCursorProp.mParallelReadProperties.mThreadCnt > 1,
                     ERR_NOT_APPLY_PARALLEL );
 
@@ -185,23 +185,22 @@ static IDE_RC dkisOpenRemoteQuery( smiTableCursor * aCursor,
     sIterator->mSession = sSession;
     sIterator->mStatementId = sStatementId;
 
-    IDE_TEST( ((smnIndexModule *)aCursor->mIndexModule)->mInitIterator(
-                  NULL, // PROJ-2446 bugbug
-                  (void *)aCursor->mIterator,
-                  aCursor->mStatement->getTrans(),
-                  (void *)aCursor->mTable,
-                  NULL,
-                  NULL,
-                  NULL,
-                  NULL,
-                  NULL,
-                  0,
-                  aCursor->mSCN,
-                  aCursor->mInfinite,
-                  ID_TRUE,
-                  &aCursor->mCursorProp,
-                  &aCursor->mSeekFunc)
-             != IDE_SUCCESS);
+    IDE_TEST( ((smnIndexModule *)aCursor->mIndexModule)->mInitIterator( (void *)aCursor->mIterator,
+                                                                        aCursor->mStatement->getTrans(),
+                                                                        (void *)aCursor->mTable,
+                                                                        NULL,
+                                                                        NULL,
+                                                                        NULL,
+                                                                        NULL,
+                                                                        NULL,
+                                                                        0,
+                                                                        aCursor->mSCN,
+                                                                        aCursor->mInfinite,
+                                                                        ID_TRUE,
+                                                                        &aCursor->mCursorProp,
+                                                                        &aCursor->mSeekFunc,
+                                                                        aCursor->mStatement ) 
+              != IDE_SUCCESS );
     
     return IDE_SUCCESS;
 

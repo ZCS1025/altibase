@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfTo_oct.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfTo_oct.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -43,7 +43,7 @@ static IDE_RC mtfTo_octEstimate( mtcNode*     aNode,
 mtfModule mtfTo_oct = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfTo_octFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -137,7 +137,7 @@ IDE_RC mtfTo_octCalculate( mtcNode*     aNode,
  * Implementation :
  *    TO_HEX( integer )
  *
- *    aStack[0] : integerë¥¼ 8ì§„ìˆ˜ í˜•íƒœë¡œ ë³€í™˜í•œ ê°’
+ *    aStack[0] : integer¸¦ 8Áø¼ö ÇüÅÂ·Î º¯È¯ÇÑ °ª
  *    aStack[1] : integer
  *
  *    ex) TO_HEX( 1000 ) ==> 1750

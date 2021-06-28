@@ -210,7 +210,7 @@ typedef struct cmnLinkConnectArgIPCDA
 /* PROJ-2474 SSL/TLS */
 typedef struct cmnLinkConnectArgSSL
 {
-    /* BUG-44530 SSLì—ì„œ ALTIBASE_SOCK_BIND_ADDR ì§€ì› */
+    /* BUG-44530 SSL¿¡¼­ ALTIBASE_SOCK_BIND_ADDR Áö¿ø */
     acp_char_t   *mBindAddr;
     acp_char_t   *mAddr;
     acp_uint16_t  mPort;

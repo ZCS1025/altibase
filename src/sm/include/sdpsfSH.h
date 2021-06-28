@@ -35,17 +35,17 @@ class sdpsfSH
 {
 public:
 
-    /* [ INTERFACE ] Segment ëª¨ë“ˆ ì´ˆê¸°í™” */
+    /* [ INTERFACE ] Segment ¸ğµâ ÃÊ±âÈ­ */
     static IDE_RC initialize( sdpSegHandle * aSegHandle,
                               scSpaceID      aSpaceID,
                               sdpSegType     aSegType,
                               smOID          aObjectID,
                               UInt           aIndexID  );
 
-    /* [ INTERFACE ] Segment ëª¨ë“ˆ í•´ì œ */
+    /* [ INTERFACE ] Segment ¸ğµâ ÇØÁ¦ */
     static IDE_RC destroy( sdpSegHandle * aSegHandle );
 
-    /* Segment Descriptorë¥¼ ì´ˆê¸°í™”í•œë‹¤. */
+    /* Segment Descriptor¸¦ ÃÊ±âÈ­ÇÑ´Ù. */
     static IDE_RC init( idvSQL           * aStatistics,
                         sdrMtx           * aMtx,
                         scSpaceID          aSpaceID,
@@ -153,27 +153,27 @@ public:
 
 /* inline function */
 public:
-    /* Segment íƒ€ì…ì„ ë°˜í™˜í•œë‹¤. */
+    /* Segment Å¸ÀÔÀ» ¹İÈ¯ÇÑ´Ù. */
     inline static sdpSegType getType( sdpsfSegHdr *aSegHdr );
 
     inline static IDE_RC setSegHdrPID( sdrMtx       * aMtx,
                                        sdpsfSegHdr  * aSegHdr,
                                        scPageID       aSegHdrPID );
 
-    /* Segment íƒ€ì…ì„ ì„¤ì •í•œë‹¤. */
+    /* Segment Å¸ÀÔÀ» ¼³Á¤ÇÑ´Ù. */
     inline static IDE_RC setType( sdrMtx      *aMtx,
                                   sdpsfSegHdr *aSegHdr,
                                   sdpSegType   aType );
 
-    /* Segment ìƒíƒœë¥¼ ë°˜í™˜í•œë‹¤. */
+    /* Segment »óÅÂ¸¦ ¹İÈ¯ÇÑ´Ù. */
     inline static sdpSegState getState( sdpsfSegHdr *aSegHdr );
 
-    /* Segment ìƒíƒœë¥¼ ì„¤ì •í•œë‹¤. */
+    /* Segment »óÅÂ¸¦ ¼³Á¤ÇÑ´Ù. */
     inline static IDE_RC setState( sdrMtx      *aMtx,
                                    sdpsfSegHdr *aSegHdr,
                                    sdpSegState  aState );
 
-    /* Segmentì˜ Extent Used Listì˜ Base ë…¸ë“œë¥¼ ë°˜í™˜í•œë‹¤. */
+    /* SegmentÀÇ Extent Used ListÀÇ Base ³ëµå¸¦ ¹İÈ¯ÇÑ´Ù. */
     inline static sdpSglPIDListBase* getPvtFreePIDList( sdpsfSegHdr *aSegHdr );
     inline static sdpSglPIDListBase* getFreePIDList( sdpsfSegHdr *aSegHdr );
     inline static sdpSglPIDListBase* getUFmtPIDList( sdpsfSegHdr *aSegHdr );
@@ -221,7 +221,7 @@ public:
 
     inline static ULong getTotalPageCnt( sdpsfSegHdr * aSegHdr );
 
-    /*  Segment Descriptor ìë£Œêµ¬ì¡°ì˜ í¬ê¸°ë¥¼ ë°˜í™˜í•œë‹¤ */
+    /*  Segment Descriptor ÀÚ·á±¸Á¶ÀÇ Å©±â¸¦ ¹İÈ¯ÇÑ´Ù */
     inline static UInt getDescSize();
 
     inline static ULong getFreePageCnt( sdpsfSegHdr * aSegHdr );
@@ -231,7 +231,7 @@ public:
                                        ULong          aTotExtCnt );
 };
 
-/* Description: ì„ì˜ì˜ ptrì„ extent dir hdrë¡œ ë°˜í™˜ */
+/* Description: ÀÓÀÇÀÇ ptrÀ» extent dir hdr·Î ¹İÈ¯ */
 inline sdpsfSegHdr* sdpsfSH::getSegHdrFromPagePtr( UChar*  aPagePtr )
 {
     UChar*  sStartPtr;
@@ -244,49 +244,49 @@ inline sdpsfSegHdr* sdpsfSH::getSegHdrFromPagePtr( UChar*  aPagePtr )
 
 }
 
-/* Segment Descriptorì˜ Typeì„ ë°˜í™˜í•œë‹¤. */
+/* Segment DescriptorÀÇ TypeÀ» ¹İÈ¯ÇÑ´Ù. */
 sdpSegType sdpsfSH::getType( sdpsfSegHdr  *aSegHdr )
 {
     return (sdpSegType)(aSegHdr->mType);
 }
 
-/* Segment Descriptorì˜ ìƒíƒœë¥¼ ë°˜í™˜í•œë‹¤. */
+/* Segment DescriptorÀÇ »óÅÂ¸¦ ¹İÈ¯ÇÑ´Ù. */
 sdpSegState sdpsfSH::getState( sdpsfSegHdr     *aSegHdr )
 {
     return (sdpSegState)(aSegHdr->mState);
 }
 
-/* Segment Descriptorì˜ í¬ê¸°ë¥¼ ë°˜í™˜í•œë‹¤. */
+/* Segment DescriptorÀÇ Å©±â¸¦ ¹İÈ¯ÇÑ´Ù. */
 UInt sdpsfSH::getDescSize()
 {
     return idlOS::align8((UInt)ID_SIZEOF(sdpsfSegHdr));
 }
 
-/* Private Page Listë¥¼ ë°˜í™˜í•œë‹¤. */
+/* Private Page List¸¦ ¹İÈ¯ÇÑ´Ù. */
 inline sdpSglPIDListBase* sdpsfSH::getPvtFreePIDList( sdpsfSegHdr *aSegHdr )
 {
     return &aSegHdr->mPvtFreePIDList;
 }
 
-/* Free Page Listë¥¼ ë°˜í™˜í•œë‹¤. */
+/* Free Page List¸¦ ¹İÈ¯ÇÑ´Ù. */
 inline sdpSglPIDListBase* sdpsfSH::getFreePIDList( sdpsfSegHdr *aSegHdr )
 {
     return &aSegHdr->mFreePIDList;
 }
 
-/* UnFormat Page Listë¥¼ ë°˜í™˜í•œë‹¤. */
+/* UnFormat Page List¸¦ ¹İÈ¯ÇÑ´Ù. */
 inline sdpSglPIDListBase* sdpsfSH::getUFmtPIDList( sdpsfSegHdr *aSegHdr )
 {
     return &aSegHdr->mUFmtPIDList;
 }
 
-/* Alloc Pageê°¯ìˆ˜ë¥¼ ë°˜í™˜í•œë‹¤. */
+/* Alloc Page°¹¼ö¸¦ ¹İÈ¯ÇÑ´Ù. */
 inline ULong sdpsfSH::getFmtPageCnt( sdpsfSegHdr *aSegHdr )
 {
     return aSegHdr->mFmtPageCnt;
 }
 
-/* SegHdrì˜ HWMì„ ê°±ì‹ í•œë‹¤. */
+/* SegHdrÀÇ HWMÀ» °»½ÅÇÑ´Ù. */
 inline IDE_RC sdpsfSH::setHWM( sdrMtx       * aMtx,
                                sdpsfSegHdr  * aSegHdr,
                                scPageID       aPageID )
@@ -305,7 +305,7 @@ inline IDE_RC sdpsfSH::setHWM( sdrMtx       * aMtx,
     return IDE_FAILURE;
 }
 
-/* SegHdrì˜ META PIDë¥¼ ê°±ì‹ í•œë‹¤. */
+/* SegHdrÀÇ META PID¸¦ °»½ÅÇÑ´Ù. */
 inline IDE_RC sdpsfSH::setMetaPID( sdrMtx       * aMtx,
                                    sdpsfSegHdr  * aSegHdr,
                                    UInt           aIndex,
@@ -325,14 +325,14 @@ inline IDE_RC sdpsfSH::setMetaPID( sdrMtx       * aMtx,
     return IDE_FAILURE;
 }
 
-/* Meta PIDë¥¼ ë°˜í™˜í•œë‹¤. */
+/* Meta PID¸¦ ¹İÈ¯ÇÑ´Ù. */
 inline scPageID sdpsfSH::getMetaPID( sdpsfSegHdr * aSegHdr,
                                      UInt          aIndex )
 {
     return aSegHdr->mArrMetaPID[ aIndex ];
 }
 
-/* Extentì˜ í˜ì´ì§€ ê°¯ìˆ˜ê°€ ëª‡ê°œì¸ì§€ë¥¼ SegHdrì— ì„¤ì •í•œë‹¤. */
+/* ExtentÀÇ ÆäÀÌÁö °¹¼ö°¡ ¸î°³ÀÎÁö¸¦ SegHdr¿¡ ¼³Á¤ÇÑ´Ù. */
 inline IDE_RC sdpsfSH::setPageCntInExt( sdrMtx       * aMtx,
                                         sdpsfSegHdr  * aSegHdr,
                                         UInt           aPageCntInExt )
@@ -387,7 +387,7 @@ inline IDE_RC sdpsfSH::setMaxExtCntInExtDirPage( sdrMtx       * aMtx,
     return IDE_FAILURE;
 }
 
-/* ë§ˆì§€ë§‰ìœ¼ë¡œ Allocí•œ Extentì˜ RIDë¥¼ ë‚˜íƒ€ë‚¸ë‹¤ */
+/* ¸¶Áö¸·À¸·Î AllocÇÑ ExtentÀÇ RID¸¦ ³ªÅ¸³½´Ù */
 inline IDE_RC sdpsfSH::setAllocExtRID( sdrMtx       * aMtx,
                                        sdpsfSegHdr  * aSegHdr,
                                        sdRID          aExtRID )
@@ -424,7 +424,7 @@ inline IDE_RC sdpsfSH::setFstPIDOfAllocExt( sdrMtx       * aMtx,
     return IDE_FAILURE;
 }
 
-/* Allocí•œ í˜ì´ì§€ê°œìˆ˜ë¥¼ Returní•œë‹¤. */
+/* AllocÇÑ ÆäÀÌÁö°³¼ö¸¦ ReturnÇÑ´Ù. */
 inline IDE_RC sdpsfSH::setFmtPageCnt( sdrMtx       * aMtx,
                                       sdpsfSegHdr  * aSegHdr,
                                       ULong          aPageCnt )
@@ -443,7 +443,7 @@ inline IDE_RC sdpsfSH::setFmtPageCnt( sdrMtx       * aMtx,
     return IDE_FAILURE;
 }
 
-/* ì´ í˜ì´ì§€ ê°¯ìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤. */
+/* ÃÑ ÆäÀÌÁö °¹¼ö¸¦ ¸®ÅÏÇÑ´Ù. */
 inline ULong sdpsfSH::getTotalPageCnt( sdpsfSegHdr * aSegHdr )
 {
     return aSegHdr->mTotExtCnt * aSegHdr->mPageCntInExt;
@@ -468,7 +468,7 @@ inline IDE_RC sdpsfSH::setSegHdrPID( sdrMtx       * aMtx,
     return IDE_FAILURE;
 }
 
-/* Segment Descriptorì˜ Typeì„ ì„¤ì •í•œë‹¤. */
+/* Segment DescriptorÀÇ TypeÀ» ¼³Á¤ÇÑ´Ù. */
 inline IDE_RC sdpsfSH::setType( sdrMtx       * aMtx,
                                 sdpsfSegHdr  * aSegHdr,
                                 sdpSegType     aType )
@@ -490,7 +490,7 @@ inline IDE_RC sdpsfSH::setType( sdrMtx       * aMtx,
     return IDE_FAILURE;
 }
 
-/* Segment Descriptorì˜ ìƒíƒœë¥¼ ì„¤ì •í•œë‹¤. */
+/* Segment DescriptorÀÇ »óÅÂ¸¦ ¼³Á¤ÇÑ´Ù. */
 inline IDE_RC sdpsfSH::setState( sdrMtx      *aMtx,
                                  sdpsfSegHdr *aSegHdr,
                                  sdpSegState  aState )
@@ -514,7 +514,7 @@ inline IDE_RC sdpsfSH::setState( sdrMtx      *aMtx,
 
 }
 
-/* FreePageì˜ ê°¯ìˆ˜ë¥¼ êµ¬í•œë‹¤. */
+/* FreePageÀÇ °¹¼ö¸¦ ±¸ÇÑ´Ù. */
 inline ULong sdpsfSH::getFreePageCnt( sdpsfSegHdr * aSegHdr )
 {
     return sdpsfUFmtPIDList::getPageCnt( aSegHdr ) + sdpsfPvtFreePIDList::getPageCnt( aSegHdr ) ;

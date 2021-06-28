@@ -126,35 +126,35 @@ private:
     static void getReqJob( idvSQL   * aStatistics, sdbFlushJob  * aRetJob );
 
 private:
-    // Jobì„ ë“±ë¡í• ë•Œ ì‚¬ìš©í•˜ëŠ” ìë£Œêµ¬ì¡°
+    // JobÀ» µî·ÏÇÒ¶§ »ç¿ëÇÏ´Â ÀÚ·á±¸Á¶
     static sdbFlushJob      mReqJobQueue[SDB_FLUSH_JOB_MAX];
 
-    // Jobì„ ë“±ë¡í• ë•Œ ì‚¬ìš©í•˜ëŠ” ë³€ìˆ˜,
+    // JobÀ» µî·ÏÇÒ¶§ »ç¿ëÇÏ´Â º¯¼ö,
     static UInt             mReqJobAddPos;
 
-    // Jobì„ ê°€ì ¸ ì˜¬ë•Œ ì‚¬ìš©í•˜ëŠ” ë³€ìˆ˜,
+    // JobÀ» °¡Á® ¿Ã¶§ »ç¿ëÇÏ´Â º¯¼ö,
     static UInt             mReqJobGetPos;
 
-    // Jobì„ ë“±ë¡í•˜ê³  ê°€ì ¸ì˜¬ë•Œ ì‚¬ìš©í•˜ëŠ” mutex (flusher. service)
+    // JobÀ» µî·ÏÇÏ°í °¡Á®¿Ã¶§ »ç¿ëÇÏ´Â mutex (flusher. service)
     static iduMutex         mReqJobMutex;
 
     // BUG-26476
-    // checkpoint ìˆ˜í–‰ê³¼ flusher controlì„ ìœ„í•œ mutex
+    // checkpoint ¼öÇà°ú flusher controlÀ» À§ÇÑ mutex
     static iduLatch      mFCLatch; // flusher control latch
 
-    // flusherë¥¼ ë°°ì—´í˜•íƒœë¡œ ê°€ì§€ê³  ìˆë‹¤.
+    // flusher¸¦ ¹è¿­ÇüÅÂ·Î °¡Áö°í ÀÖ´Ù.
     static sdsFlusher     * mFlushers;
 
-    // sdsFlushMgrì´ ìµœëŒ€ë¡œ ê°€ì§ˆ ìˆ˜ ìˆëŠ” flusherê°¯ìˆ˜
+    // sdsFlushMgrÀÌ ÃÖ´ë·Î °¡Áú ¼ö ÀÖ´Â flusher°¹¼ö
     static UInt             mMaxFlusherCount;
 
-    // í˜„ì‹œì ì— checkpointFlushë¥¼ ìˆ˜í–‰í•˜ëŠ” Flusher ê°œìˆ˜
+    // Çö½ÃÁ¡¿¡ checkpointFlush¸¦ ¼öÇàÇÏ´Â Flusher °³¼ö
     static UInt             mActiveCPFlusherCount;
 
-    // ë§ˆì§€ë§‰ì— flushí•œ ì‹œê°„
+    // ¸¶Áö¸·¿¡ flushÇÑ ½Ã°£
     static idvTime          mLastFlushedTime;
 
-    // flush Mgrì´ ì‘ì—…í•´ì•¼í•   checkpoint list
+    // flush MgrÀÌ ÀÛ¾÷ÇØ¾ßÇÒ  checkpoint list
     static sdbCPListSet   * mCPListSet;
 
     static idBool          mServiceable; 

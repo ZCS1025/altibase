@@ -75,32 +75,32 @@ public:
 
     void            finalize();
 
-    /* Remote statement list ë¥¼ ì •ë¦¬í•œë‹¤. */
+    /* Remote statement list ¸¦ Á¤¸®ÇÑ´Ù. */
     void            destroyAllRemoteStmt(); 
 
-    /* Savepoint list ë¥¼ ì •ë¦¬í•œë‹¤. */
+    /* Savepoint list ¸¦ Á¤¸®ÇÑ´Ù. */
     void            deleteAllSavepoint();
     /* << BUG-37487 */
 
-    /* ìƒˆë¡œìš´ remote statement ë¥¼ í•˜ë‚˜ ìƒì„±í•˜ì—¬ list ì— ì¶”ê°€í•œë‹¤. */
+    /* »õ·Î¿î remote statement ¸¦ ÇÏ³ª »ý¼ºÇÏ¿© list ¿¡ Ãß°¡ÇÑ´Ù. */
     IDE_RC          createRemoteStmt( UInt             aStmtType,
                                       SChar           *aStmtStr,
                                       dktRemoteStmt  **aRemoteStmt );
 
-    /* í•´ë‹¹í•˜ëŠ” remote statement ë¥¼ remote statement list ë¡œë¶€í„° ì œê±°í•œë‹¤. */
+    /* ÇØ´çÇÏ´Â remote statement ¸¦ remote statement list ·ÎºÎÅÍ Á¦°ÅÇÑ´Ù. */
     /* BUG-37487 */
     void            destroyRemoteStmt( dktRemoteStmt   *aRemoteStmt ); 
 
-    /* list ì—ì„œ í•´ë‹¹ id ë¥¼ ê°–ëŠ” remote statement node ë¥¼ ì°¾ì•„ ë°˜í™˜í•œë‹¤. */
+    /* list ¿¡¼­ ÇØ´ç id ¸¦ °®´Â remote statement node ¸¦ Ã£¾Æ ¹ÝÈ¯ÇÑ´Ù. */
     dktRemoteStmt*  findRemoteStmt( SLong    aRemoteStmtId );
 
-    /* ì´ remote transaction object ì— remote statement ê°€ ì—†ëŠ”ì§€ ê²€ì‚¬í•œë‹¤. */
+    /* ÀÌ remote transaction object ¿¡ remote statement °¡ ¾ø´ÂÁö °Ë»çÇÑ´Ù. */
     idBool          isEmptyRemoteTx();
 
-    /* Remote statement id ë¥¼ ìƒì„±í•œë‹¤. */
+    /* Remote statement id ¸¦ »ý¼ºÇÑ´Ù. */
     SLong           generateRemoteStmtId();
 
-    /* Savepoint ì„¤ì • ë° ê²€ìƒ‰ */
+    /* Savepoint ¼³Á¤ ¹× °Ë»ö */
     IDE_RC          setSavepoint( const SChar   *aSavepointName );
 
     dktSavepoint*   findSavepoint( const SChar   *aSavepointName );
@@ -111,7 +111,7 @@ public:
     /* BUG-37512 */
     void            removeAllNextSavepoint( const SChar *aSavepointName );
 
-    /* PV: ì´ remote transaction ì˜ ì •ë³´ë¥¼ ì–»ëŠ”ë‹¤. */
+    /* PV: ÀÌ remote transaction ÀÇ Á¤º¸¸¦ ¾ò´Â´Ù. */
     IDE_RC          getRemoteTxInfo( dktRemoteTxInfo    *aInfo );
 
     IDE_RC          getRemoteStmtInfo( dktRemoteStmtInfo    *aInfo,
@@ -121,7 +121,7 @@ public:
     IDE_RC          freeAndDestroyAllRemoteStmt( dksSession *aSession, UInt  aSessionId );
     inline UInt     getRemoteStmtCount();
 
-    /* mIsPrepared ì˜ ê°’ì„ í™•ì¸í•œë‹¤. */
+    /* mIsPrepared ÀÇ °ªÀ» È®ÀÎÇÑ´Ù. */
     inline idBool   isPrepared();
 
     inline void     setRemoteTransactionStatus( UInt aStatus );

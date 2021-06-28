@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtdReal.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtdReal.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -168,37 +168,37 @@ mtdModule mtdReal = {
     {
         // Key Comparison
         {
-            // mt valueÎì§ Í∞ÑÏùò compare
+            // mt valueµÈ ∞£¿« compare
             mtdRealFixedMtdFixedMtdKeyAscComp, // Ascending Key Comparison
             mtdRealFixedMtdFixedMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt valueÎì§ Í∞ÑÏùò compare
+            // mt valueµÈ ∞£¿« compare
             mtdRealMtdMtdKeyAscComp, // Ascending Key Comparison
             mtdRealMtdMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt valueÏôÄ stored valueÍ∞ÑÏùò compare
+            // mt valueøÕ stored value∞£¿« compare
             mtdRealStoredMtdKeyAscComp, // Ascending Key Comparison
             mtdRealStoredMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // stored valueÎì§ Í∞ÑÏùò compare
+            // stored valueµÈ ∞£¿« compare
             mtdRealStoredStoredKeyAscComp, // Ascending Key Comparison
             mtdRealStoredStoredKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            /* PROJ-2433 : index Direct keyÏôÄ fixed mt valueÎì§ Í∞ÑÏùò compare */
+            /* PROJ-2433 : index Direct keyøÕ fixed mt valueµÈ ∞£¿« compare */
             mtdRealFixedMtdFixedMtdKeyAscComp,
             mtdRealFixedMtdFixedMtdKeyDescComp
         }
         ,
         {
-            /* PROJ-2433 : index Direct keyÏôÄ mt valueÎì§ Í∞ÑÏùò compare */
+            /* PROJ-2433 : index Direct keyøÕ mt valueµÈ ∞£¿« compare */
             mtdRealMtdMtdKeyAscComp,
             mtdRealMtdMtdKeyDescComp
         }
@@ -236,7 +236,7 @@ IDE_RC mtdInitialize( UInt aNo )
     
     IDE_TEST( mtd::initializeModule( &mtdReal, aNo ) != IDE_SUCCESS );    
 
-    // mtdColumnÏùò Ï¥àÍ∏∞Ìôî
+    // mtdColumn¿« √ ±‚»≠
     IDE_TEST( mtc::initializeColumn( & mtdColumn,
                                      & mtdReal,
                                      0,   // arguments
@@ -317,7 +317,7 @@ IDE_RC mtdValue( mtcTemplate* /* aTemplate */,
                             ERR_VALUE_OVERFLOW );
 
             // To fix BUG-12281
-            // underflow Í≤ÄÏÇ¨
+            // underflow ∞ÀªÁ
             if( ( idlOS::fabs(*sValue) < MTD_REAL_MINIMUM ) &&
                 ( *sValue != 0 ) )
             {
@@ -392,7 +392,7 @@ SInt mtdRealLogicalAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd ÌÉÄÏûÖÏùò KeyÎì§ Í∞ÑÏùò ascending compare
+ * Description : Mtd ≈∏¿‘¿« KeyµÈ ∞£¿« ascending compare
  *
  * Implementation :
  *
@@ -450,7 +450,7 @@ SInt mtdRealLogicalDescComp( mtdValueInfo * aValueInfo1,
 {
  /***********************************************************************
  *
- * Description : Mtd ÌÉÄÏûÖÏùò KeyÎì§ Í∞ÑÏùò descending compare
+ * Description : Mtd ≈∏¿‘¿« KeyµÈ ∞£¿« descending compare
  *
  * Implementation :
  *
@@ -508,7 +508,7 @@ SInt mtdRealFixedMtdFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd ÌÉÄÏûÖÏùò KeyÎì§ Í∞ÑÏùò ascending compare
+ * Description : Mtd ≈∏¿‘¿« KeyµÈ ∞£¿« ascending compare
  *
  * Implementation :
  *
@@ -566,7 +566,7 @@ SInt mtdRealFixedMtdFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
  /***********************************************************************
  *
- * Description : Mtd ÌÉÄÏûÖÏùò KeyÎì§ Í∞ÑÏùò descending compare
+ * Description : Mtd ≈∏¿‘¿« KeyµÈ ∞£¿« descending compare
  *
  * Implementation :
  *
@@ -624,7 +624,7 @@ SInt mtdRealMtdMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd ÌÉÄÏûÖÏùò KeyÎì§ Í∞ÑÏùò ascending compare
+ * Description : Mtd ≈∏¿‘¿« KeyµÈ ∞£¿« ascending compare
  *
  * Implementation :
  *
@@ -692,7 +692,7 @@ SInt mtdRealMtdMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
  /***********************************************************************
  *
- * Description : Mtd ÌÉÄÏûÖÏùò KeyÎì§ Í∞ÑÏùò descending compare
+ * Description : Mtd ≈∏¿‘¿« KeyµÈ ∞£¿« descending compare
  *
  * Implementation :
  *
@@ -760,7 +760,7 @@ SInt mtdRealStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
  /***********************************************************************
  *
- * Description : Mtd ÌÉÄÏûÖÏùò KeyÏôÄ Stored Key Í∞ÑÏùò ascending compare
+ * Description : Mtd ≈∏¿‘¿« KeyøÕ Stored Key ∞£¿« ascending compare
  *
  * Implementation :
  *
@@ -828,7 +828,7 @@ SInt mtdRealStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
  /***********************************************************************
  *
- * Description : Mtd ÌÉÄÏûÖÏùò KeyÏôÄ Stored Key Í∞ÑÏùò descending compare
+ * Description : Mtd ≈∏¿‘¿« KeyøÕ Stored Key ∞£¿« descending compare
  *
  * Implementation :
  *
@@ -896,7 +896,7 @@ SInt mtdRealStoredStoredKeyAscComp( mtdValueInfo * aValueInfo1,
 {
  /***********************************************************************
  *
- * Description : Stored KeyÎì§ Í∞ÑÏùò ascending compare
+ * Description : Stored KeyµÈ ∞£¿« ascending compare
  *
  * Implementation :
  *
@@ -964,7 +964,7 @@ SInt mtdRealStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
 {
  /***********************************************************************
  *
- * Description : Stored KeyÎì§ Í∞ÑÏùò descending compare
+ * Description : Stored KeyµÈ ∞£¿« descending compare
  *
  * Implementation :
  *
@@ -1051,7 +1051,7 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
 {
 /***********************************************************************
  *
- * Description : valueÏùò semantic Í≤ÄÏÇ¨ Î∞è mtcColum Ï¥àÍ∏∞Ìôî
+ * Description : value¿« semantic ∞ÀªÁ π◊ mtcColum √ ±‚»≠
  *
  * Implementation :
  *
@@ -1061,9 +1061,9 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
     
     IDE_TEST_RAISE( aValueSize != ID_SIZEOF(mtdRealType), ERR_INVALID_LENGTH );
 
-    // Ï¥àÍ∏∞ÌôîÎêú aColumnÏùÄ cannonize() ÏãúÏóê ÏÇ¨Ïö©
-    // Ïù¥Îïå, data type moduleÏùò precision Ï†ïÎ≥¥ÎßåÏùÑ ÏÇ¨Ïö©ÌïòÎØÄÎ°ú,
-    // language Ï†ïÎ≥¥ ÏÑ§Ï†ïÌï† ÌïÑÏöîÏóÜÏùå
+    // √ ±‚»≠µ» aColumn¿∫ cannonize() Ω√ø° ªÁøÎ
+    // ¿Ã∂ß, data type module¿« precision ¡§∫∏∏∏¿ª ªÁøÎ«œπ«∑Œ,
+    // language ¡§∫∏ º≥¡§«“ « ø‰æ¯¿Ω
     IDE_TEST( mtc::initializeColumn( aColumn,
                                      & mtdReal,
                                      0,   // arguments
@@ -1163,20 +1163,20 @@ static IDE_RC mtdStoredValue2MtdValue( UInt              aColumnSize,
 {
 /*******************************************************************
  * PROJ-1705
- * ÎîîÏä§ÌÅ¨ÌÖåÏù¥Î∏îÏª¨ÎüºÏùò Îç∞Ïù¥ÌÉÄÎ•º
- * qp Î†àÏΩîÎìúÏ≤òÎ¶¨ÏòÅÏó≠Ïùò Ìï¥Îãπ Ïª¨ÎüºÏúÑÏπòÏóê Î≥µÏÇ¨
+ * µΩ∫≈©≈◊¿Ã∫Ìƒ√∑≥¿« µ•¿Ã≈∏∏¶
+ * qp ∑πƒ⁄µÂ√≥∏Æøµø™¿« «ÿ¥Á ƒ√∑≥¿ßƒ°ø° ∫πªÁ
  *******************************************************************/
 
     mtdRealType  * sRealValue;
 
-    // Í≥†Ï†ïÍ∏∏Ïù¥ Îç∞Ïù¥ÌÉÄ ÌÉÄÏûÖÏùò Í≤ΩÏö∞
-    // ÌïòÎÇòÏùò Ïª¨Îüº Îç∞Ïù¥ÌÉÄÍ∞Ä Ïó¨Îü¨ÌéòÏù¥ÏßÄÏóê ÎÇòÎàÑÏñ¥ Ï†ÄÏû•ÎêòÎäî Í≤ΩÏö∞Îäî ÏóÜÎã§.
+    // ∞Ì¡§±Ê¿Ã µ•¿Ã≈∏ ≈∏¿‘¿« ∞ÊøÏ
+    // «œ≥™¿« ƒ√∑≥ µ•¿Ã≈∏∞° ø©∑Ø∆‰¿Ã¡ˆø° ≥™¥©æÓ ¿˙¿Âµ«¥¬ ∞ÊøÏ¥¬ æ¯¥Ÿ.
 
     sRealValue = (mtdRealType*) aDestVale;    
     
     if( aLength == 0 )
     {
-        // NULL Îç∞Ïù¥ÌÉÄ
+        // NULL µ•¿Ã≈∏
         *((UInt*)sRealValue) = mtdRealNull;
     }
     else
@@ -1204,7 +1204,7 @@ UInt mtdNullValueSize()
 {
 /*******************************************************************
  * PROJ-1705
- * Í∞Å Îç∞Ïù¥ÌÉÄÌÉÄÏûÖÏùò null ValueÏùò ÌÅ¨Í∏∞ Î∞òÌôò
+ * ∞¢ µ•¿Ã≈∏≈∏¿‘¿« null Value¿« ≈©±‚ π›»Ø
  *******************************************************************/
     return mtdActualSize( NULL, &mtdRealNull );
 }

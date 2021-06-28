@@ -16,11 +16,11 @@
  
 
 /***********************************************************************
- * $Id: sdcFT.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdcFT.cpp 85993 2019-08-07 04:59:34Z et16 $
  *
  * Description :
  *
- * ë³¸ íŒŒì¼ì€ Collection Layerì˜ Fixed Table êµ¬í˜„íŒŒì¼ ì…ë‹ˆë‹¤.
+ * º» ÆÄÀÏÀº Collection LayerÀÇ Fixed Table ±¸ÇöÆÄÀÏ ÀÔ´Ï´Ù.
  *
  **********************************************************************/
 
@@ -150,7 +150,7 @@ static iduFixedTableColDesc gTSSEGSDesc[]=
 };
 
 /***********************************************************************
- * Description : X$TSSEGSì˜ ë ˆì½”ë“œë¥¼ êµ¬ì„±í•œë‹¤.
+ * Description : X$TSSEGSÀÇ ·¹ÄÚµå¸¦ ±¸¼ºÇÑ´Ù.
  ***********************************************************************/
 IDE_RC sdcFT::buildRecord4TSSEGS( idvSQL              * /*aStatistics*/,
                                   void                *aHeader,
@@ -161,7 +161,7 @@ IDE_RC sdcFT::buildRecord4TSSEGS( idvSQL              * /*aStatistics*/,
     UInt              sTotEntryCnt;
     sdcTXSegEntry   * sEntry;
     UInt              sSpaceID;        // TBSID
-    scPageID          sSegPID;         // ì„¸ê·¸ë¨¼íŠ¸ PID
+    scPageID          sSegPID;         // ¼¼±×¸ÕÆ® PID
     void            * sIndexValues[2];
 
     sTotEntryCnt = sdcTXSegMgr::getTotEntryCnt();
@@ -174,12 +174,12 @@ IDE_RC sdcFT::buildRecord4TSSEGS( idvSQL              * /*aStatistics*/,
         sSegPID = sdcTXSegMgr::getTSSegPtr(sEntry)->getSegPID();
 
         /* BUG-43006 FixedTable Indexing Filter
-         * Column Index ë¥¼ ì‚¬ìš©í•´ì„œ ì „ì²´ Recordë¥¼ ìƒì„±í•˜ì§€ì•Šê³ 
-         * ë¶€ë¶„ë§Œ ìƒì„±í•´ Filtering í•œë‹¤.
-         * 1. void * ë°°ì—´ì— IDU_FT_COLUMN_INDEX ë¡œ ì§€ì •ëœ ì»¬ëŸ¼ì—
-         * í•´ë‹¹í•˜ëŠ” ê°’ì„ ìˆœì„œëŒ€ë¡œ ë„£ì–´ì£¼ì–´ì•¼ í•œë‹¤.
-         * 2. IDU_FT_COLUMN_INDEXì˜ ì»¬ëŸ¼ì— í•´ë‹¹í•˜ëŠ” ê°’ì„ ëª¨ë‘ ë„£
-         * ì–´ ì£¼ì–´ì•¼í•œë‹¤.
+         * Column Index ¸¦ »ç¿ëÇØ¼­ ÀüÃ¼ Record¸¦ »ı¼ºÇÏÁö¾Ê°í
+         * ºÎºĞ¸¸ »ı¼ºÇØ Filtering ÇÑ´Ù.
+         * 1. void * ¹è¿­¿¡ IDU_FT_COLUMN_INDEX ·Î ÁöÁ¤µÈ ÄÃ·³¿¡
+         * ÇØ´çÇÏ´Â °ªÀ» ¼ø¼­´ë·Î ³Ö¾îÁÖ¾î¾ß ÇÑ´Ù.
+         * 2. IDU_FT_COLUMN_INDEXÀÇ ÄÃ·³¿¡ ÇØ´çÇÏ´Â °ªÀ» ¸ğµÎ ³Ö
+         * ¾î ÁÖ¾î¾ßÇÑ´Ù.
          */
         sIndexValues[0] = &sSpaceID;
         sIndexValues[1] = &sSegPID;
@@ -268,7 +268,7 @@ static iduFixedTableColDesc gDiskTSSRecordsColDesc[]=
         (SChar*)"TID",
         offsetof(sdcTSS4FT, mTransID),
         IDU_FT_SIZEOF(sdcTSS4FT, mTransID),
-        IDU_FT_TYPE_UINTEGER,
+        IDU_FT_TYPE_UBIGINT, // BUG-47379 unsigned int -> big int
         NULL,
         0, 0,NULL // for internal use
     },
@@ -459,7 +459,7 @@ static iduFixedTableColDesc gUDSEGSDesc[]=
 };
 
 /***********************************************************************
- * Description : X$UDSEGSì˜ Recordë“¤ì„ ìƒì„±í•œë‹¤.
+ * Description : X$UDSEGSÀÇ RecordµéÀ» »ı¼ºÇÑ´Ù.
  ***********************************************************************/
 IDE_RC sdcFT::buildRecord4UDSEGS( idvSQL              * /*aStatistics*/,
                                   void                *aHeader,
@@ -470,7 +470,7 @@ IDE_RC sdcFT::buildRecord4UDSEGS( idvSQL              * /*aStatistics*/,
     UInt              sTotEntryCnt;
     sdcTXSegEntry   * sEntry;
     UInt              sSpaceID;        // TBSID
-    scPageID          sSegPID;         // ì„¸ê·¸ë¨¼íŠ¸ PID
+    scPageID          sSegPID;         // ¼¼±×¸ÕÆ® PID
     void            * sIndexValues[2];
 
     sTotEntryCnt = sdcTXSegMgr::getTotEntryCnt();
@@ -483,12 +483,12 @@ IDE_RC sdcFT::buildRecord4UDSEGS( idvSQL              * /*aStatistics*/,
         sSegPID = sdcTXSegMgr::getUDSegPtr(sEntry)->getSegPID();
 
         /* BUG-43006 FixedTable Indexing Filter
-         * Column Index ë¥¼ ì‚¬ìš©í•´ì„œ ì „ì²´ Recordë¥¼ ìƒì„±í•˜ì§€ì•Šê³ 
-         * ë¶€ë¶„ë§Œ ìƒì„±í•´ Filtering í•œë‹¤.
-         * 1. void * ë°°ì—´ì— IDU_FT_COLUMN_INDEX ë¡œ ì§€ì •ëœ ì»¬ëŸ¼ì—
-         * í•´ë‹¹í•˜ëŠ” ê°’ì„ ìˆœì„œëŒ€ë¡œ ë„£ì–´ì£¼ì–´ì•¼ í•œë‹¤.
-         * 2. IDU_FT_COLUMN_INDEXì˜ ì»¬ëŸ¼ì— í•´ë‹¹í•˜ëŠ” ê°’ì„ ëª¨ë‘ ë„£
-         * ì–´ ì£¼ì–´ì•¼í•œë‹¤.
+         * Column Index ¸¦ »ç¿ëÇØ¼­ ÀüÃ¼ Record¸¦ »ı¼ºÇÏÁö¾Ê°í
+         * ºÎºĞ¸¸ »ı¼ºÇØ Filtering ÇÑ´Ù.
+         * 1. void * ¹è¿­¿¡ IDU_FT_COLUMN_INDEX ·Î ÁöÁ¤µÈ ÄÃ·³¿¡
+         * ÇØ´çÇÏ´Â °ªÀ» ¼ø¼­´ë·Î ³Ö¾îÁÖ¾î¾ß ÇÑ´Ù.
+         * 2. IDU_FT_COLUMN_INDEXÀÇ ÄÃ·³¿¡ ÇØ´çÇÏ´Â °ªÀ» ¸ğµÎ ³Ö
+         * ¾î ÁÖ¾î¾ßÇÑ´Ù.
          */
         sIndexValues[0] = &sSpaceID;
         sIndexValues[1] = &sSegPID;
@@ -663,7 +663,7 @@ iduFixedTableDesc  gDiskUndoRecordsTableDesc =
 };
 
 //------------------------------------------------------
-// D$DISK_TABLE_RECORD Dump Tableì˜ Column Description
+// D$DISK_TABLE_RECORD Dump TableÀÇ Column Description
 //------------------------------------------------------
 
 static iduFixedTableColDesc gDumpDiskTableRecordColDesc[]=
@@ -824,7 +824,7 @@ static iduFixedTableColDesc gDumpDiskTableRecordColDesc[]=
 
 
 //------------------------------------------------------
-// D$DISK_TABLE_RECORD Dump Tableì˜ Table Description
+// D$DISK_TABLE_RECORD Dump TableÀÇ Table Description
 //------------------------------------------------------
 
 iduFixedTableDesc  gDumpDiskTableRecordTableDesc =
@@ -840,7 +840,7 @@ iduFixedTableDesc  gDumpDiskTableRecordTableDesc =
 };
 
 /*******************************************************
- * D$DISK_TABLE_RECORD Dump Tableì˜ ë ˆì½”ë“œ Build
+ * D$DISK_TABLE_RECORD Dump TableÀÇ ·¹ÄÚµå Build
  *******************************************************/
 
 IDE_RC sdcFT::buildRecordDiskTableRecord( idvSQL              * /*aStatistics*/,
@@ -1033,9 +1033,9 @@ IDE_RC sdcFT::buildRecordDiskTableRecord( idvSQL              * /*aStatistics*/,
                                                 SM_DUMP_VALUE_LENGTH,
                                                 &sDumpRow.mColumnLenInRowPiece );
 
-                        // ideMemToHexStr í•¨ìˆ˜ëŠ” Null termanted Stringì„ ê³ ë ¤í•˜ì—¬
-                        // ë§ˆì§€ë§‰ ë°”ì´íŠ¸ë¥¼ \0ìœ¼ë¡œ ì±„ìš°ì§€ë§Œ, mtdCharì˜ ê²½ìš° ë§ˆì§€ë§‰ì—
-                        // \0ì´ ë“¤ì–´ê°€ì§€ ì•Šê¸°ì— ì´ì ì„ ì£¼ì˜í•œë‹¤.
+                        // ideMemToHexStr ÇÔ¼ö´Â Null termanted StringÀ» °í·ÁÇÏ¿©
+                        // ¸¶Áö¸· ¹ÙÀÌÆ®¸¦ \0À¸·Î Ã¤¿ìÁö¸¸, mtdCharÀÇ °æ¿ì ¸¶Áö¸·¿¡
+                        // \0ÀÌ µé¾î°¡Áö ¾Ê±â¿¡ ÀÌÁ¡À» ÁÖÀÇÇÑ´Ù.
                         ideLog::ideMemToHexStr( sTempRowPieceBuf,
                                                 SM_DUMP_VALUE_LENGTH, 
                                                 IDE_DUMP_FORMAT_BINARY,
@@ -1102,13 +1102,13 @@ IDE_RC sdcFT::buildRecordDiskTableRecord( idvSQL              * /*aStatistics*/,
  * Description
  *
  *   D$DISK_TABLE_CTS
- *   : Disk Tableì˜ CTSì„ ì¶œë ¥
+ *   : Disk TableÀÇ CTSÀ» Ãâ·Â
  *
  *
  **********************************************************************/
 
 //------------------------------------------------------
-// D$DISK_TABLE_CTS Dump Tableì˜ Column Description
+// D$DISK_TABLE_CTS Dump TableÀÇ Column Description
 //------------------------------------------------------
 
 static iduFixedTableColDesc gDumpDiskTableCTSlotColDesc[]=
@@ -1204,7 +1204,7 @@ static iduFixedTableColDesc gDumpDiskTableCTSlotColDesc[]=
 };
 
 //------------------------------------------------------
-// D$DISK_TABLE_CTS Dump Tableì˜ Table Description
+// D$DISK_TABLE_CTS Dump TableÀÇ Table Description
 //------------------------------------------------------
 
 iduFixedTableDesc  gDumpDiskTableCTSlotTableDesc =
@@ -1220,7 +1220,7 @@ iduFixedTableDesc  gDumpDiskTableCTSlotTableDesc =
 };
 
 /*******************************************************
- * D$DISK_TABLE_CTS Dump Tableì˜ ë ˆì½”ë“œ Build
+ * D$DISK_TABLE_CTS Dump TableÀÇ ·¹ÄÚµå Build
  *******************************************************/
 
 IDE_RC sdcFT::buildRecordDiskTableCTS( idvSQL              * /*aStatistics*/,
@@ -1423,13 +1423,13 @@ IDE_RC sdcFT::buildRecordDiskTableCTS( idvSQL              * /*aStatistics*/,
  * Description
  *
  *   D$DISK_TABLE_CTL
- *   : Disk Tableì˜ CTLì„ ì¶œë ¥
+ *   : Disk TableÀÇ CTLÀ» Ãâ·Â
  *
  *
  **********************************************************************/
 
 //------------------------------------------------------
-// D$DISK_TABLE_CTL Dump Tableì˜ Column Description
+// D$DISK_TABLE_CTL Dump TableÀÇ Column Description
 //------------------------------------------------------
 
 static iduFixedTableColDesc gDumpDiskTableCTLColDesc[]=
@@ -1493,7 +1493,7 @@ static iduFixedTableColDesc gDumpDiskTableCTLColDesc[]=
 };
 
 //------------------------------------------------------
-// D$DISK_TABLE_CTL Dump Tableì˜ Table Description
+// D$DISK_TABLE_CTL Dump TableÀÇ Table Description
 //------------------------------------------------------
 
 iduFixedTableDesc  gDumpDiskTableCTLTableDesc =
@@ -1509,7 +1509,7 @@ iduFixedTableDesc  gDumpDiskTableCTLTableDesc =
 };
 
 /*******************************************************
- * D$DISK_TABLE_CTL Dump Tableì˜ ë ˆì½”ë“œ Build
+ * D$DISK_TABLE_CTL Dump TableÀÇ ·¹ÄÚµå Build
  *******************************************************/
 
 IDE_RC sdcFT::buildRecordDiskTableCTL( idvSQL              * /*aStatistics*/,
@@ -1677,7 +1677,7 @@ IDE_RC sdcFT::buildRecordDiskTableCTL( idvSQL              * /*aStatistics*/,
 
 
 //------------------------------------------------------
-// D$DISK_TABLE_SLOT Dump Tableì˜ Column Description
+// D$DISK_TABLE_SLOT Dump TableÀÇ Column Description
 //------------------------------------------------------
 
 static iduFixedTableColDesc gDumpDiskTableSlotDirColDesc[]=
@@ -1742,7 +1742,7 @@ static iduFixedTableColDesc gDumpDiskTableSlotDirColDesc[]=
 
 
 //------------------------------------------------------
-// D$DISK_TABLE_SLOT Dump Tableì˜ Table Description
+// D$DISK_TABLE_SLOT Dump TableÀÇ Table Description
 //------------------------------------------------------
 
 iduFixedTableDesc  gDumpDiskTableSlotDirTableDesc =
@@ -1758,7 +1758,7 @@ iduFixedTableDesc  gDumpDiskTableSlotDirTableDesc =
 };
 
 /*******************************************************
- * D$DISK_TABLE_SLOT Dump Tableì˜ ë ˆì½”ë“œ Build
+ * D$DISK_TABLE_SLOT Dump TableÀÇ ·¹ÄÚµå Build
  *******************************************************/
 
 IDE_RC sdcFT::buildRecordDiskTableSlotDir( idvSQL              * /*aStatistics*/,
@@ -1953,8 +1953,8 @@ IDE_RC sdcFT::buildRecordDiskTableSlotDir( idvSQL              * /*aStatistics*/
     return IDE_FAILURE;
 }
 
-/* TASK-4007 [SM]PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
- * SegTypeì„ ì˜ì–´ ë‹¨ë¬¸ìë¡œ í‘œí˜„
+/* TASK-4007 [SM]PBT¸¦ À§ÇÑ ±â´É Ãß°¡
+ * SegTypeÀ» ¿µ¾î ´Ü¹®ÀÚ·Î Ç¥Çö
  * T = Table Segment
  * I = Index Segment
  * L = Lob Segment
@@ -1982,8 +1982,8 @@ SChar sdcFT::convertSegTypeToChar( sdpSegType aSegType )
 }
 
 
-/* TASK-4007 [SM]PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
- * Tableë¡œë¶€í„° TblSeg, IdxSeg, LobSegì˜ SegHdrPIDë¥¼ ê°€ì ¸ì˜¨ë‹¤*/
+/* TASK-4007 [SM]PBT¸¦ À§ÇÑ ±â´É Ãß°¡
+ * Table·ÎºÎÅÍ TblSeg, IdxSeg, LobSegÀÇ SegHdrPID¸¦ °¡Á®¿Â´Ù*/
 IDE_RC sdcFT::doAction4EachSeg( void                * aTable,
                                 sdcSegDumpCallback    aSegDumpFunc,
                                 void                * aHeader,
@@ -2048,7 +2048,7 @@ IDE_RC sdcFT::doAction4EachSeg( void                * aTable,
 }
 
 /*------------------------------------------------------
- * D$DISK_TABLE_EXTLIST Dump Tableì˜ ë ˆì½”ë“œ Build
+ * D$DISK_TABLE_EXTLIST Dump TableÀÇ ·¹ÄÚµå Build
  *------------------------------------------------------*/
 IDE_RC sdcFT::buildRecord4ExtList(
     idvSQL              * /*aStatistics*/,
@@ -2179,7 +2179,7 @@ IDE_RC sdcFT::dumpExtList( scSpaceID             aSpaceID,
 }
 
 //------------------------------------------------------
-// D$DISK_TABLE_EXTLIST Dump Tableì˜ Column Description
+// D$DISK_TABLE_EXTLIST Dump TableÀÇ Column Description
 //------------------------------------------------------
 static iduFixedTableColDesc gDumpDiskTableEXTListColDesc[]=
 {
@@ -2250,7 +2250,7 @@ static iduFixedTableColDesc gDumpDiskTableEXTListColDesc[]=
 };
 
 //------------------------------------------------------
-// D$DISK_TABLE_EXTLIST Dump Tableì˜ Table Description
+// D$DISK_TABLE_EXTLIST Dump TableÀÇ Table Description
 //------------------------------------------------------
 iduFixedTableDesc  gDumpDiskTableEXTListTableDesc =
 {
@@ -2265,7 +2265,7 @@ iduFixedTableDesc  gDumpDiskTableEXTListTableDesc =
 };
 
 /*------------------------------------------------------
- * D$DISK_TABLE_PIDLIST Dump Tableì˜ ë ˆì½”ë“œ Build
+ * D$DISK_TABLE_PIDLIST Dump TableÀÇ ·¹ÄÚµå Build
  *------------------------------------------------------*/
 IDE_RC sdcFT::buildRecord4PIDList(
     idvSQL              * /*aStatistics*/,
@@ -2450,7 +2450,7 @@ IDE_RC sdcFT::dumpPidList( scSpaceID             aSpaceID,
 }
 
 //------------------------------------------------------
-// D$DISK_TABLE_PIDLIST Dump Tableì˜ Column Description
+// D$DISK_TABLE_PIDLIST Dump TableÀÇ Column Description
 //------------------------------------------------------
 
 static iduFixedTableColDesc gDumpDiskTablePIDListColDesc[]=
@@ -2554,7 +2554,7 @@ static iduFixedTableColDesc gDumpDiskTablePIDListColDesc[]=
 };
 
 //------------------------------------------------------
-// D$DISK_TABLE_PIDLIST Dump Tableì˜ Table Description
+// D$DISK_TABLE_PIDLIST Dump TableÀÇ Table Description
 //------------------------------------------------------
 iduFixedTableDesc  gDumpDiskTablePIDListTableDesc =
 {
@@ -2972,7 +2972,7 @@ IDE_RC sdcFT::dumpLobAgingList( scSpaceID             aSpaceID,
                   != IDE_SUCCESS );
     }
 
-    // Meta Page ì˜ S_Latchë¥¼ í•´ì œí•œë‹¤.
+    // Meta Page ÀÇ S_Latch¸¦ ÇØÁ¦ÇÑ´Ù.
     sState = 0;
     IDE_TEST( sdbBufferMgr::releasePage( NULL, /* idvSQL */
                                          sMetaPagePtr )
@@ -3173,7 +3173,7 @@ iduFixedTableDesc  gDumpDiskTableLobInfoTableDesc =
 };
 
 /*******************************************************
- * D$DISK_TABLE_LOBINFO Dump Tableì˜ ë ˆì½”ë“œ Build
+ * D$DISK_TABLE_LOBINFO Dump TableÀÇ ·¹ÄÚµå Build
  *******************************************************/
 IDE_RC sdcFT::buildRecordDiskTableLobInfo( idvSQL              * /*aStatistics*/,
                                            void                * aHeader,
@@ -3226,10 +3226,10 @@ IDE_RC sdcFT::buildRecordDiskTableLobInfo( idvSQL              * /*aStatistics*/
     }
 
 
-    // LOB Columnì— ëŒ€í•œ Columnì •ë³´ë¥¼ ë¯¸ë¦¬ ì¤€ë¹„í•´ ë‘”ë‹¤.
+    // LOB Column¿¡ ´ëÇÑ ColumnÁ¤º¸¸¦ ¹Ì¸® ÁØºñÇØ µĞ´Ù.
     (void)getLobColInfoLst( sTblHdr, sColumns, &sColumnCnt, &sLobColCnt );
 
-    // LOB Columnì´ ìµœì†Œí•œ í•˜ë‚˜ëŠ” ìˆì–´ì•¼ í•œë‹¤.
+    // LOB ColumnÀÌ ÃÖ¼ÒÇÑ ÇÏ³ª´Â ÀÖ¾î¾ß ÇÑ´Ù.
     IDE_TEST_RAISE( sLobColCnt == 0, ERR_INVALID_DUMP_OBJECT );
 
     IDE_TEST( sMPRMgr.initialize( NULL, // idvSQL
@@ -3243,9 +3243,9 @@ IDE_RC sdcFT::buildRecordDiskTableLobInfo( idvSQL              * /*aStatistics*/
     IDE_TEST( sMPRMgr.beforeFst() != IDE_SUCCESS );
 
     // [ Build Lob Column Info ]
-    // Tableì˜ Pageë¥¼ ìˆœì„œëŒ€ë¡œ ì½ì–´ì„œ Head Row Pieceë¥¼ íƒìƒ‰í•œë‹¤.
-    // Head Row Pieceë¥¼ ë°œê²¬í•˜ë©´ í•´ë‹¹ Recordì˜ Lob Columnì„
-    // í•˜ë‚˜ì”© Fetchí•˜ì—¬ ì–»ì€ ì •ë³´ë¥¼ Dump Tabe Recordì— Buildí•œë‹¤.
+    // TableÀÇ Page¸¦ ¼ø¼­´ë·Î ÀĞ¾î¼­ Head Row Piece¸¦ Å½»öÇÑ´Ù.
+    // Head Row Piece¸¦ ¹ß°ßÇÏ¸é ÇØ´ç RecordÀÇ Lob ColumnÀ»
+    // ÇÏ³ª¾¿ FetchÇÏ¿© ¾òÀº Á¤º¸¸¦ Dump Tabe Record¿¡ BuildÇÑ´Ù.
 
     while( 1 )
     {
@@ -3284,7 +3284,7 @@ IDE_RC sdcFT::buildRecordDiskTableLobInfo( idvSQL              * /*aStatistics*/
         sSlotDirPtr = sdpPhyPage::getSlotDirStartPtr( (UChar*)sPhyPageHdr );
         sSlotCount  = sdpSlotDirectory::getCount( sSlotDirPtr );
 
-        // [ Head Row Piece íƒìƒ‰ ]
+        // [ Head Row Piece Å½»ö ]
         for( sSlotNum = 0 ; sSlotNum < sSlotCount ; sSlotNum++ )
         {
             if( sdpSlotDirectory::isUnusedSlotEntry( sSlotDirPtr,
@@ -3306,8 +3306,8 @@ IDE_RC sdcFT::buildRecordDiskTableLobInfo( idvSQL              * /*aStatistics*/
             }
 
             // [ find Lob Column Info ]
-            // Head Row Pieceì¸ ê²½ìš°ì´ë‹¤.
-            // Lob Columnì„ Fetchí•´ ì˜¨ë‹¤.
+            // Head Row PieceÀÎ °æ¿ìÀÌ´Ù.
+            // Lob ColumnÀ» FetchÇØ ¿Â´Ù.
             IDE_TEST( buildLobInfoDumpRec( aHeader,
                                            aMemory,
                                            sTrans,
@@ -3322,8 +3322,8 @@ IDE_RC sdcFT::buildRecordDiskTableLobInfo( idvSQL              * /*aStatistics*/
                       != IDE_SUCCESS );
         }
 
-        // buildLobInfoDumpRec ì—ì„œ Latchê°€ í’€ë¦´ ê²½ìš° ë‹¤ì‹œ ì¡ìŠµë‹ˆë‹¤.
-        // ë³¸ ìœ„ì¹˜ì—ì„œëŠ” Latchê°€ ë°˜ë“œì‹œ ì¡í˜€ ìˆì–´ì•¼ í•©ë‹ˆë‹¤.
+        // buildLobInfoDumpRec ¿¡¼­ Latch°¡ Ç®¸± °æ¿ì ´Ù½Ã Àâ½À´Ï´Ù.
+        // º» À§Ä¡¿¡¼­´Â Latch°¡ ¹İµå½Ã ÀâÇô ÀÖ¾î¾ß ÇÕ´Ï´Ù.
         IDE_ASSERT( sIsPageLatchReleased != ID_TRUE );
 
         sIsPageLatchReleased = ID_TRUE;
@@ -3367,19 +3367,19 @@ IDE_RC sdcFT::buildRecordDiskTableLobInfo( idvSQL              * /*aStatistics*/
 }
 
 /****************************************************************
- * Description : Lob Columnì˜ Column Infoë¥¼ êµ¬í•˜ëŠ” í•¨ìˆ˜
- *               D$DISK_TABLE_LOBINFO Dump Tableì—ì„œë§Œ ì‚¬ìš©ëœë‹¤.
+ * Description : Lob ColumnÀÇ Column Info¸¦ ±¸ÇÏ´Â ÇÔ¼ö
+ *               D$DISK_TABLE_LOBINFO Dump Table¿¡¼­¸¸ »ç¿ëµÈ´Ù.
  *
  *    aHeader     - [IN]
  *    aMemory     - [IN] Fixed Table Memory
  *    aTrans      - [IN] Transaction
  *    aSpaceID    - [IN] TableSpace ID
- *    aCurPageID  - [IN] í˜„ì¬ Page ID
+ *    aCurPageID  - [IN] ÇöÀç Page ID
  *    aSlotNum    - [IN] Slot Number
- *    aColumns    - [IN] Lob Column ì •ë³´
- *    aLobColCnt  - [IN] Lob Columnì˜ ìˆ˜
- *    aCurPagePtr - [OUT] í˜„ì¬ Pageì˜ Ptr
- *    aIsPageLatchReleased - [OUT] Pageì— Latchë¥¼ ì¡í˜€ìˆëŠ”ì§€ ì—¬ë¶€
+ *    aColumns    - [IN] Lob Column Á¤º¸
+ *    aLobColCnt  - [IN] Lob ColumnÀÇ ¼ö
+ *    aCurPagePtr - [OUT] ÇöÀç PageÀÇ Ptr
+ *    aIsPageLatchReleased - [OUT] Page¿¡ Latch¸¦ ÀâÇôÀÖ´ÂÁö ¿©ºÎ
  ****************************************************************/
 IDE_RC sdcFT::buildLobInfoDumpRec( void                * aHeader,
                                    iduFixedTableMemory * aMemory ,
@@ -3430,7 +3430,7 @@ IDE_RC sdcFT::buildLobInfoDumpRec( void                * aHeader,
                                                        &sSlotPtr )
               != IDE_SUCCESS );
 
-    // í•´ë‹¹ Recordì˜ Lob Columnë“¤ì„ ì°¾ëŠ”ë‹¤.
+    // ÇØ´ç RecordÀÇ Lob ColumnµéÀ» Ã£´Â´Ù.
     sLobColIdx = 0;
     
     while( sLobColIdx < aLobColCnt )
@@ -3480,8 +3480,8 @@ IDE_RC sdcFT::buildLobInfoDumpRec( void                * aHeader,
 
         if( sIsPageLatchReleased == ID_TRUE )
         {
-            // fetchì‹œ Latchê°€ ì¡íŒ Head Row Pieceì˜ Pointerê°€
-            // í•„ìš”í•˜ë¯€ë¡œ Latchê°€ í’€ë ¸ìœ¼ë©´ ë‹¤ì‹œ ì¡ëŠ”ë‹¤.
+            // fetch½Ã Latch°¡ ÀâÈù Head Row PieceÀÇ Pointer°¡
+            // ÇÊ¿äÇÏ¹Ç·Î Latch°¡ Ç®·ÈÀ¸¸é ´Ù½Ã Àâ´Â´Ù.
             IDE_TEST( sdbBufferMgr::getPage( NULL, // Statistics,
                                              aSpaceID,
                                              aCurPageID,
@@ -3500,9 +3500,9 @@ IDE_RC sdcFT::buildLobInfoDumpRec( void                * aHeader,
                                                         &sSlotPtr )
                       != IDE_SUCCESS );
 
-            // page latchê°€ í’€ë¦° ì‚¬ì´ì— ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´
-            // ë™ì¼ í˜ì´ì§€ì— ì ‘ê·¼í•˜ì—¬ ë³€ê²½ ì—°ì‚°ì„ ìˆ˜í–‰í•  ìˆ˜ ìˆë‹¤.
-            // ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+            // page latch°¡ Ç®¸° »çÀÌ¿¡ ´Ù¸¥ Æ®·£Àè¼ÇÀÌ
+            // µ¿ÀÏ ÆäÀÌÁö¿¡ Á¢±ÙÇÏ¿© º¯°æ ¿¬»êÀ» ¼öÇàÇÒ ¼ö ÀÖ´Ù.
+            // ´Ù½Ã °¡Á®¿Â´Ù.
             if( sdpSlotDirectory::isUnusedSlotEntry( sSlotDirPtr,
                                                      aSlotNum )
                 == ID_TRUE )
@@ -3511,10 +3511,10 @@ IDE_RC sdcFT::buildLobInfoDumpRec( void                * aHeader,
             }
         }
 
-        // ì‚­ì œëœ ê²½ìš°ì—ëŠ” ë‹¤ìŒ Rowë¡œ ë„˜ì–´ê°„ë‹¤.
+        // »èÁ¦µÈ °æ¿ì¿¡´Â ´ÙÀ½ Row·Î ³Ñ¾î°£´Ù.
         IDE_TEST_CONT( sIsRowDeleted == ID_TRUE , CONT_SKIP_ROW);
 
-        // ì½ì–´ì˜¨ Column Data ë¡œ Dump Tableì˜ Recordë¥¼ Buildí•œë‹¤.
+        // ÀĞ¾î¿Â Column Data ·Î Dump TableÀÇ Record¸¦ BuildÇÑ´Ù.
 
         idlOS::memset( &sDumpLobInfo, 0, ID_SIZEOF(sDumpLobInfo) );
 
@@ -3595,13 +3595,13 @@ IDE_RC sdcFT::buildLobInfoDumpRec( void                * aHeader,
 }
 
 /*******************************************************
- * Description : Lob Columnì˜ Column Infoë¥¼ êµ¬í•˜ëŠ” í•¨ìˆ˜
- *               D$DISK_TABLE_LOBINFO Dump Tableì—ì„œë§Œ ì‚¬ìš©ëœë‹¤.
+ * Description : Lob ColumnÀÇ Column Info¸¦ ±¸ÇÏ´Â ÇÔ¼ö
+ *               D$DISK_TABLE_LOBINFO Dump Table¿¡¼­¸¸ »ç¿ëµÈ´Ù.
  *
  *   aTblHdr    - [IN]  Table Header
- *   aColumns   - [OUT] Lob Column Infoì˜ Array
- *   aColumnCnt - [OUT] Tableì˜ Columnì˜ ìˆ˜
- *   aLobColCnt - [OUT] Tableì˜ Lob Columnì˜ ìˆ˜
+ *   aColumns   - [OUT] Lob Column InfoÀÇ Array
+ *   aColumnCnt - [OUT] TableÀÇ ColumnÀÇ ¼ö
+ *   aLobColCnt - [OUT] TableÀÇ Lob ColumnÀÇ ¼ö
  *******************************************************/
 void sdcFT::getLobColInfoLst( smcTableHeader      * aTblHdr,
                               smiColumn           * aColumns,

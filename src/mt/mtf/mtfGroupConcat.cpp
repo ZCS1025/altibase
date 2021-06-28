@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfGroupConcat.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfGroupConcat.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -48,7 +48,7 @@ static IDE_RC mtfGroupConcatEstimate( mtcNode     * aNode,
 mtfModule mtfGroupConcat = {
     2 | MTC_NODE_OPERATOR_AGGREGATION | MTC_NODE_FUNCTION_WINDOWING_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfGroupConcatFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -241,7 +241,7 @@ IDE_RC mtfGroupConcatAggregate( mtcNode     * aNode,
         if ( *sIsFirst == MTD_BOOLEAN_NULL )
         {
             // BUG-38046
-            // max precisionì„ ë„˜ì€ ê²½ìš° ë”ì´ìƒ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // max precisionÀ» ³ÑÀº °æ¿ì ´õÀÌ»ó ¼öÇàÇÏÁö ¾Ê´Â´Ù.
             
             // Nothing to do.
         }
@@ -254,7 +254,7 @@ IDE_RC mtfGroupConcatAggregate( mtcNode     * aNode,
             else
             {
                 //-----------------------------------------
-                // ë‘ë²ˆì§¸ ì¸ìž ê³„ì‚° (seperator)
+                // µÎ¹øÂ° ÀÎÀÚ °è»ê (seperator)
                 //-----------------------------------------
                 sNode = sNode->next;
                 if ( sNode != NULL )

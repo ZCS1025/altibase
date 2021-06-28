@@ -13,15 +13,10 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
- 
 
 /***********************************************************************
  * $Id: sdtDef.h 79989 2017-05-15 09:58:46Z et16 $
- *
  * Description :
- *
- * - Dirty Page Buffer ìë£Œêµ¬ì¡°
- *
  **********************************************************************/
 
 #ifndef _O_SDT_DEF_H_
@@ -32,200 +27,110 @@
 #include <smuUtility.h>
 #include <iduMutex.h>
 
-
-/****************************************************************************
- * PROJ-2201 Innovation in sorting and hashing(temp)
- ****************************************************************************/
-#define SDT_WAGROUPID_MAX        (4)    /* ìµœëŒ€ ê·¸ë£¹ ê°¯ìˆ˜ */
-
-/*******************************
- * Group
- *****************************/
-/* Common */
-/* sdtTempRow::fetchì‹œ SDT_WAGROUPID_NONEì„ ì‚¬ìš©í•œë‹¤ëŠ” ê²ƒì€,
- * BufferMissì‹œ í•´ë‹¹ WAGroupì— ReadPageí•˜ì—¬ ì˜¬ë¦¬ì§€ ì•Šê² ë‹¤ëŠ” ê²ƒ */
-#define SDT_WAGROUPID_NONE     ID_UINT_MAX
-#define SDT_WAGROUPID_INIT     (0)
-/* Sort */
-#define SDT_WAGROUPID_SORT     (1)
-#define SDT_WAGROUPID_FLUSH    (2)
-#define SDT_WAGROUPID_SUBFLUSH (3)
-/* Sort IndexScan */
-#define SDT_WAGROUPID_INODE    (1)
-#define SDT_WAGROUPID_LNODE    (2)
-/* Hash */
-#define SDT_WAGROUPID_HASH     (1)
-#define SDT_WAGROUPID_SUB      (2)
-#define SDT_WAGROUPID_PARTMAP  (3)
-/* Scan*/
-#define SDT_WAGROUPID_SCAN     (1)
-
-typedef UInt sdtWAGroupID;
-
-/* INMEMORY -> DiscardPageë¥¼ í—ˆìš©í•˜ì§€ ì•ŠëŠ”ë‹¤. ë˜í•œ ë’¤ìª½ë¶€í„° í˜ì´ì§€ë¥¼ í• ë‹¹
- *             í•´ì¤€ë‹¤. WAMapê³¼ì˜ ì í•©ì„±ì„ ì˜¬ë¦¬ê¸° ìœ„í•¨ì´ë‹¤.
- * FIFO -> ì•ìª½ë¶€í„° ìˆœì„œëŒ€ë¡œ í• ë‹¹í•´ì¤€ë‹¤. ì „ë¶€ ì‚¬ìš©í•˜ë©´, ì•ìª½ë¶€í„° ì¬ì‚¬ìš©í•œë‹¤.
- * LRU  -> ì‚¬ìš©í•œì§€ ì˜¤ë˜ëœ í˜ì´ì§€ë¥¼ í• ë‹¹í•œë‹¤. getWAPageë¥¼ í•˜ë©´ Topìœ¼ë¡œ ì˜¬ë¦°ë‹¤.
- * */
 typedef enum
 {
-    SDT_WA_REUSE_NONE,
-    SDT_WA_REUSE_INMEMORY, /* REUSEë¥¼ í—ˆìš©í•˜ì§€ ì•Šìœ¼ë©°,ë’¤ì—ì„œë¶€í„° í˜ì´ì§€ í• ë‹¹*/
-    SDT_WA_REUSE_FIFO,     /* ìˆœì°¨ì ìœ¼ë¡œ í˜ì´ì§€ë¥¼ ì‚¬ìš©í•¨ */
-    SDT_WA_REUSE_LRU       /* LRUì— ë”°ë¼ í˜ì´ì§€ë¥¼ í• ë‹¹í•´ì¤Œ */
-} sdtWAReusePolicy;
-
-typedef enum
-{
-    SDT_WA_PAGESTATE_NONE,          /* Frameì´ ì´ˆê¸°í™”ë˜ì–´ìˆì§€ ì•ŠìŒ. */
-    SDT_WA_PAGESTATE_INIT,          /* PageFrameì´ ì´ˆê¸°í™”ë§Œ ë¨. */
-    SDT_WA_PAGESTATE_CLEAN,         /* Assignë¼ì—ˆìœ¼ë©° ë‚´ìš©ì´ ë™ì¼í•¨ */
-    SDT_WA_PAGESTATE_DIRTY,         /* ë‚´ìš©ì´ ë³€ê²½ë˜ì—ˆì§€ë§Œ, Flushì‹œë„ëŠ” ì—†ìŒ*/
-    SDT_WA_PAGESTATE_IN_FLUSHQUEUE, /* Flusherì—ê²Œ ì‘ì—…ì„ ë„˜ê²¼ìŒ */
-    SDT_WA_PAGESTATE_WRITING        /* Flusherê°€ ê¸°ë¡ì¤‘ì„ */
+    SDT_WA_PAGESTATE_INIT,          /* NPage°¡ ÇÒ´çµÇ¾î ÀÖÁö ¾ÊÀ½. */
+    SDT_WA_PAGESTATE_CLEAN,         /* AssignµÅ¾úÀ¸¸ç ³»¿ëÀÌ µ¿ÀÏÇÔ */
+    SDT_WA_PAGESTATE_DIRTY          /* ³»¿ëÀÌ º¯°æµÇ¾ú°í, ¾ÆÁ÷ WriteµÇÁö ¾Ê¾ÒÀ½*/
 } sdtWAPageState;
 
-typedef struct sdtWAGroup
-{
-    sdtWAReusePolicy mPolicy;
-
-    /* WAGroupì˜ ë²”ìœ„.
-     * ì—¬ê¸°ì„œ EndëŠ” ë§ˆì§€ë§‰ ì‚¬ìš©ê°€ëŠ¥í•œ PageID + 1 ì´ë‹¤. */
-    scPageID         mBeginWPID;
-    scPageID         mEndWPID;
-    /* Fifo ë˜ëŠ” LRU ì •ì±…ì„ í†µí•œ í˜ì´ì§€ ì¬í™œìš©ì„ ìœ„í•œ ë³€ìˆ˜.
-     * ë‹¤ìŒë²ˆì— í• ë‹¹í•  WPIDë¥¼ ê°€ì§„ë‹¤.
-     *ì´ ê°’ ì´í›„ì˜ í˜ì´ì§€ë“¤ì€ í•œë²ˆë„ ì¬í™œìš©ë˜ì§€ ì•Šì€ í˜ì´ì§€ì´ê¸° ë•Œë¬¸ì—,
-     * ì´ í˜ì´ì§€ë¥¼ ì¬í™œìš©í•˜ë©´ ëœë‹¤. */
-    scPageID         mReuseWPIDSeq;
-
-    /* LRUì¼ë•Œ LRU Listë¡œ ì‚¬ìš©ëœë‹¤ */
-    scPageID         mReuseWPID1; /* ìµœê·¼ì— ì‚¬ìš©í•œ í˜ì´ì§€ */
-    scPageID         mReuseWPID2; /* ì‚¬ìš©í•œì§€ ì˜¤ë˜ëœ ì¬í™œìš© ëŒ€ìƒ */
-
-    /* ì§ì „ì— ì‚½ì…ì„ ì‹œë„í•œ í˜ì´ì§€.
-     * WPIDë¡œ ì§€ì¹­ë˜ë©°, ë”°ë¼ì„œ Fixë˜ì–´ ê³ ì •ëœë‹¤. unassignë˜ì–´ ë‹¤ë¥¸ í˜ì´ì§€
-     * ë¡œ ëŒ€ì²´ë˜ë©´, ì‚½ì…í•˜ë˜ ë‚´ìš©ì´ ì¤‘ê°„ì— ëŠê¸°ê¸° ë•Œë¬¸ì´ë‹¤. */
-    scPageID         mHintWPID;
-
-    /* WAGroupì— Mapì´ ìˆìœ¼ë©´, ê·¸ê²ƒì€ Groupì „ì²´ë¥¼ í•˜ë‚˜ì˜ í° í˜ì´ì§€ë¡œ ë³´ì•„
-     * InMemoryì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤ëŠ” ì˜ë¯¸ì´ë‹¤. */
-    void           * mMapHdr;
-} sdtWAGroup;
-
-/* WAMapì˜ Slotì€ ì»¤ë´¤ì 16Byte */
-#define SDT_WAMAP_SLOT_MAX_SIZE  (16)
-
 typedef enum
 {
-    SDT_WM_TYPE_UINT,
-    SDT_WM_TYPE_GRID,
-    SDT_WM_TYPE_EXTDESC,
-    SDT_WM_TYPE_RUNINFO,
-    SDT_WM_TYPE_POINTER,
-    SDT_WM_TYPE_MAX
-} sdtWMType;
-
-typedef struct sdtWMTypeDesc
-{
-    sdtWMType     mWMType;
-    const SChar * mName;
-    UInt          mSlotSize;
-    smuDumpFunc   mDumpFunc;
-} sdtWMTypeDesc;
-
-typedef struct sdtWAMapHdr
-{
-    void         * mWASegment;
-    sdtWAGroupID   mWAGID;          /* Mapì„ ê°€ì§„ Group */
-    scPageID       mBeginWPID;      /* WAMapì´ ì‹œì‘ë˜ëŠ” PID */
-    UInt           mSlotCount;      /* Slot ê°œìˆ˜ */
-    UInt           mSlotSize;       /* Slot í•˜ë‚˜ì˜ í¬ê¸° */
-    UInt           mVersionCount;   /* Slotì˜ Versioning ê°œìˆ˜ */
-    UInt           mVersionIdx;     /* í˜„ì¬ì˜ Version Index */
-    sdtWMType      mWMType;         /* Map Slotì˜ ì¢…ë¥˜(Pointer, GRID ë“± )*/
-} sdtWAMapHdr;
+    SDT_WORK_TYPE_NONE,
+    SDT_WORK_TYPE_HASH,
+    SDT_WORK_TYPE_SORT,
+    SDT_WORK_TYPE_MAX
+} sdtWorkType;
 
 typedef struct sdtWCB
 {
     sdtWAPageState mWPState;
     SInt           mFix;
-    idBool         mBookedFree; /* Freeê°€ ì˜ˆì•½ë¨ */
 
-    /* ì´ WAPageì™€ ì—°ê²°ëœ NPage : ë””ìŠ¤í¬ì— ì¡´ì¬í•œë‹¤.  */
-    scSpaceID      mNSpaceID;
+    /* ÀÚ½ÅÀÇ Page Æ÷ÀÎÅÍ */
+    UChar        * mWAPagePtr;
+    idBool         mBookedFree; /* Free°¡ ¿¹¾àµÊ */
+    /* ÀÌ WAPage¿Í ¿¬°áµÈ NPage : µğ½ºÅ©¿¡ Á¸ÀçÇÑ´Ù.  */
     scPageID       mNPageID;
 
-    /* WorkAreaìƒì—ì„œì˜ PageID */
-    scPageID       mWPageID;
+    /* ÆäÀÌÁö Å½»ö¿ë Hash¸¦ À§ÇÑ LinkPID */
+    sdtWCB       * mNextWCB4Hash;
+    sdtWCB       * mNxtUsedWCBPtr;
 
-    /* LRUListê´€ë¦¬ìš© */
+    /* LRUList°ü¸®¿ë */
     scPageID       mLRUPrevPID;
     scPageID       mLRUNextPID;
-
-    /* í˜ì´ì§€ íƒìƒ‰ìš© Hashë¥¼ ìœ„í•œ LinkPID */
-    sdtWCB       * mNextWCB4Hash;
-
-    /* ìì‹ ì˜ Page í¬ì¸í„° */
-    UChar        * mWAPagePtr;
 } sdtWCB;
 
-/* Flushí•˜ë ¤ëŠ” Pageë¥¼ ë‹´ëŠ” Queue */
-typedef struct sdtWAFlushQueue
+/* INMEMORY -> DiscardPage¸¦ Çã¿ëÇÏÁö ¾Ê´Â´Ù. ¶ÇÇÑ µÚÂÊºÎÅÍ ÆäÀÌÁö¸¦ ÇÒ´ç
+ *             ÇØÁØ´Ù. WAMap°úÀÇ ÀûÇÕ¼ºÀ» ¿Ã¸®±â À§ÇÔÀÌ´Ù.
+ * FIFO -> ¾ÕÂÊºÎÅÍ ¼ø¼­´ë·Î ÇÒ´çÇØÁØ´Ù. ÀüºÎ »ç¿ëÇÏ¸é, ¾ÕÂÊºÎÅÍ Àç»ç¿ëÇÑ´Ù.
+ * LRU  -> »ç¿ëÇÑÁö ¿À·¡µÈ ÆäÀÌÁö¸¦ ÇÒ´çÇÑ´Ù. getWAPage¸¦ ÇÏ¸é TopÀ¸·Î ¿Ã¸°´Ù.
+ * */
+typedef enum
 {
-    SInt                 mFQBegin;  /* Queueì˜ Begin ì§€ì  */
-    SInt                 mFQEnd;    /* Queueì˜ Begin ì§€ì  */
-    idBool               mFQDone;   /* Flush ë™ì‘ì´ ì¢…ë£Œë˜ì–´ì•¼ í•˜ëŠ”ê°€? */
-    UInt                 mWAFlusherIdx; /* ë‹´ë‹¹í•œ Flusherì˜ ID */
-    smiTempTableStats ** mStatsPtr;
-    idvSQL             * mStatistics;
+    SDT_WA_REUSE_NONE,
+    SDT_WA_REUSE_INMEMORY, /* REUSE¸¦ Çã¿ëÇÏÁö ¾ÊÀ¸¸ç,µÚ¿¡¼­ºÎÅÍ ÆäÀÌÁö ÇÒ´ç*/
+    SDT_WA_REUSE_FIFO,     /* ¼øÂ÷ÀûÀ¸·Î ÆäÀÌÁö¸¦ »ç¿ëÇÔ */
+    SDT_WA_REUSE_LRU       /* LRU¿¡ µû¶ó ÆäÀÌÁö¸¦ ÇÒ´çÇØÁÜ */
+} sdtWAReusePolicy;
 
-    sdtWAFlushQueue    * mNextTarget;   /* Flusherì˜ Queue ê´€ë¦¬ */
+#define SDT_MAX_WAFLUSHER_COUNT (64)
 
-    void               * mWASegment;
+#define SDT_USED_PAGE_PTR_TERMINATED ((sdtWCB*)1)
 
-    ULong                mWriteCount;  /* í†µê³„ ì •ë³´ */
-    ULong                mWritePageCount;
-    ULong                mRedirtyCount;
-
-    scPageID             mSlotPtr[ 1 ]; /* Flushí•  ì‘ì—… Slot*/
-} sdtWAFlushQueue;
-
-typedef struct sdtWAFlusher
-{
-    UInt              mIdx;           /* Flusherì˜ ID */
-    idBool            mRun;
-    sdtWAFlushQueue * mTargetHead;    /* Flushí•  ëŒ€ìƒë“¤Listì˜ Head */
-    iduMutex          mMutex;
-} sdtWAFlusher;
-
-/* Extent í•˜ë‚˜ë‹¹ Pageê°œìˆ˜ 64ê°œë¡œ ì„¤ì • */
+/* Extent ÇÏ³ª´ç Page°³¼ö 64°³·Î ¼³Á¤ */
 #define SDT_WAEXTENT_PAGECOUNT      (64)
 #define SDT_WAEXTENT_PAGECOUNT_MASK (SDT_WAEXTENT_PAGECOUNT-1)
 
-/* WGRID, NGRID ë“±ì„ êµ¬ë³„í•˜ê¸° ìœ„í•´, SpaceIDë¥¼ ì‚¬ìš©í•¨ */
+/* WGRID, NGRID µîÀ» ±¸º°ÇÏ±â À§ÇØ, SpaceID¸¦ »ç¿ëÇÔ */
 #define SDT_SPACEID_WORKAREA  ( ID_USHORT_MAX )     /*InMemory,WGRID */
 #define SDT_SPACEID_WAMAP     ( ID_USHORT_MAX - 1 ) /*InMemory,WAMap Slot*/
-/* Slotì„ ì•„ì§ ì‚¬ìš©í•˜ì§€ ì•Šì€ ìƒíƒœ */
+/* SlotÀ» ¾ÆÁ÷ »ç¿ëÇÏÁö ¾ÊÀº »óÅÂ */
 #define SDT_WASLOT_UNUSED     ( ID_UINT_MAX )
 
-#define SDT_WAEXTENT_SIZE (((( ID_SIZEOF(sdtWCB) + SD_PAGE_SIZE ) * SDT_WAEXTENT_PAGECOUNT) + SD_PAGE_SIZE - 1 ) & \
-                           ~( SD_PAGE_SIZE - 1 ) )
+#define SDT_WAEXTENT_SIZE     (SD_PAGE_SIZE * SDT_WAEXTENT_PAGECOUNT)
 
-/* WorkArea ìì²´ì˜ ìƒíƒœ */
-typedef enum
+
+typedef struct sdtWAExtent
 {
-    SDT_WASTATE_SHUTDOWN,     /* ì¢…ë£Œë˜ì–´ìˆìŒ */
-    SDT_WASTATE_INITIALIZING, /* êµ¬ë™ì„ ì¤€ë¹„í•¨ */
-    SDT_WASTATE_RUNNING,      /* ë™ì‘ì¤‘ */
-    SDT_WASTATE_FINALIZING    /* êµ¬ë™ì„ ì¤€ë¹„í•¨ */
-} sdtWAState;
+    // Page¸¦ Flush ÇÏ±â À§ÇØ¼± alignÀ» ¸ÂÃç¾ß ÇÑ´Ù.
+    UChar         mPage[SDT_WAEXTENT_PAGECOUNT][SD_PAGE_SIZE];
+    // alignÀ» ½±°Ô ¸ÂÃß±â À§ÇØ Next Extent´Â Page µÚ¿¡ À§Ä¡
+    sdtWAExtent * mNextExtent;
+}sdtWAExtent;
 
+#define SDT_NEXTARR_EXTCOUNT (128)
 
+typedef struct sdtNExtentArr
+{
+    scPageID        mMap[SDT_NEXTARR_EXTCOUNT];
+    sdtNExtentArr * mNextArr;
+} sdtNExtentArr;
+
+typedef struct sdtNExtFstPIDList
+{
+    ULong      mCount;
+    UInt       mPageSeqInLFE;   /*LFE(LastFreeExtent)³»¿¡¼­ ÇÒ´çÇØ¼­ °Ç³»ÁØÆäÀÌÁö ¹øÈ£ */
+    scPageID   mLastFreeExtFstPID; /*NExtentArrayÀÇ ¸¶Áö¸·ÀÇ Extent*/
+    sdtNExtentArr  * mHead;
+    sdtNExtentArr  * mTail;
+} sdtNExtFstPIDList;
+
+typedef struct sdtWAExtentInfo
+{
+    sdtWAExtent   * mHead;
+    sdtWAExtent   * mTail;
+    UInt            mCount;
+} sdtWAExtentInfo;
+
+#define SDT_WORKAREA_IN_MEMORY      (1)
+#define SDT_WORKAREA_OUT_MEMORY     (0)
 
 #define SDT_TEMP_FREEOFFSET_BITSIZE (13)
 #define SDT_TEMP_FREEOFFSET_BITMASK (0x1FFF)
 #define SDT_TEMP_TYPE_SHIFT         (SDT_TEMP_FREEOFFSET_BITSIZE)
+#define SDT_TEMP_TYPE_BITMASK       (0xE000)
 
 #define SDT_TEMP_SLOT_UNUSED      (ID_USHORT_MAX)
 
@@ -237,125 +142,35 @@ typedef enum
     SDT_TEMP_PAGETYPE_LNODE,
     SDT_TEMP_PAGETYPE_INODE,
     SDT_TEMP_PAGETYPE_INDEX_EXTRA,
-    SDT_TEMP_PAGETYPE_HASHPARTITION,
-    SDT_TEMP_PAGETYPE_UNIQUEROWS,
-    SDT_TEMP_PAGETYPE_ROWPAGE,
+    SDT_TEMP_PAGETYPE_HASHROWS,
+    SDT_TEMP_PAGETYPE_SUBHASH,
     SDT_TEMP_PAGETYPE_MAX
 } sdtTempPageType;
 
 typedef struct sdtTempPageHdr
 {
-    /* í•˜ìœ„ 13bitë¥¼ FreeOffset, ìƒìœ„ 3bitë¥¼ Typeìœ¼ë¡œ ì‚¬ìš©í•¨ */
-    ULong    mTypeAndFreeOffset;
-    scPageID mPrevPID;
-    scPageID mSelfPID;
-    scPageID mNextPID;
-    UShort   mSlotCount;
+    /* ÇÏÀ§ 13bit¸¦ FreeOffset, »óÀ§ 3bit¸¦ TypeÀ¸·Î »ç¿ëÇÔ */
+    scPageID mSelfNPID;
+    UShort   mTypeAndFreeOffset;
+    UShort   mDummy;
 } sdtTempPageHdr;
-
 
 /*****************************************************************************
  * PROJ-2201 Innovation in sorting and hashing(temp)
  *****************************************************************************/
 
 #define SDT_TRFLAG_NULL              (0x00)
-#define SDT_TRFLAG_HEAD              (0x01) /*Head RowPieceì¸ì§€ ì—¬ë¶€.*/
-#define SDT_TRFLAG_NEXTGRID          (0x02) /*NextGRIDë¥¼ ì‚¬ìš©í•˜ëŠ”ê°€?*/
-#define SDT_TRFLAG_CHILDGRID         (0x04) /*ChildGRIDë¥¼ ì‚¬ìš©í•˜ëŠ”ê°€?*/
-#define SDT_TRFLAG_UNSPLIT           (0x10) /*ìª¼ê°œì§€ì§€ ì•Šë„ë¡ ì„¤ì •í•¨*/
-/* GRIDê°€ ì„¤ì •ë˜ì–´ ìˆëŠ”ê°€? */
+#define SDT_TRFLAG_HEAD              (0x01) /*Head RowPieceÀÎÁö ¿©ºÎ.*/
+#define SDT_TRFLAG_NEXTGRID          (0x02) /*NextGRID¸¦ »ç¿ëÇÏ´Â°¡?*/
+#define SDT_TRFLAG_CHILDGRID         (0x04) /*ChildGRID¸¦ »ç¿ëÇÏ´Â°¡?*/
+#define SDT_TRFLAG_UNSPLIT           (0x10) /*ÂÉ°³ÁöÁö ¾Êµµ·Ï ¼³Á¤ÇÔ*/
+/* GRID°¡ ¼³Á¤µÇ¾î ÀÖ´Â°¡? */
 #define SDT_TRFLAG_GRID     ( SDT_TRFLAG_NEXTGRID | SDT_TRFLAG_CHILDGRID )
 
-
-/**************************************************************************
- * TempRowPieceëŠ” ë‹¤ìŒê³¼ ê°™ì´ êµ¬ì„±ëœë‹¤.
- *
- * +-------------------------------+.+---------+--------+.-------------------------+
- * + RowPieceHeader                |.|GRID HEADER       |. ColumnValues.(mtdValues)|
- * +----+-----+------+---------+---+.+---------+--------+.-------------------------+
- * |flag|dummy|ValLen|HashValue|hit|.|ChildGRID|NextGRID|.ColumnValue|...
- * +----+-----+------+---------+---+.+---------+--------+.-------------------------+
- * <----------   BASE    ----------> <------Option------>
- *
- * BaseëŠ” ëª¨ë“  rowPieceê°€ ê°€ì§„ë‹¤.
- * NextGRIDì™€ ChildGRIDëŠ” í•„ìš”ì— ë”°ë¼ ê°€ì§ˆ ìˆ˜ ìˆë‹¤.
- * (í•˜ì§€ë§Œ ë…¼ë¦¬ì ì¸ ì´ìœ ë¡œ, ChildGRIDëŠ” FirstRowPieceë§Œ ì†Œìœ í•œë‹¤. *
- **************************************************************************/
-
-/* TRPInfo(TempRowPieceInfo)ëŠ” Runtimeêµ¬ì¡°ì²´ë¡œ Runtimeìƒí™©ì—ì„œ ì‚¬ìš©ë˜ë©°
- * ì‹¤ì œ Pageìƒì—ëŠ” sdtTRPHeader(TempRowPiece)ì™€ Valueê°€ ê¸°ë¡ëœë‹¤.  */
-typedef struct sdtTRPHeader
-{
-    /* Rowì— ëŒ€í•´ ì„¤ëª…í•´ì£¼ëŠ” TR(TempRow)Flag.
-     * (HashValueì‚¬ìš© ì—¬ë¶€, ì´ì „ë²ˆ ì‚½ì…ì‹œ ì„±ê³µ ì—¬ë¶€, Columnìª¼ê°œì§ ì—¬ë¶€ ) */
-    UChar       mTRFlag;
-    UChar       mDummy;
-    /* RowHeaderë¶€ë¶„ì„ ì œì™¸í•œ. Valueë¶€ë¶„ì˜ ê¸¸ì´ */
-    UShort      mValueLength;
-
-    /* hashValue */
-    UInt        mHashValue;
-
-    /* hitSequenceê°’ */
-    ULong       mHitSequence;
-
-    /******************************* Optional ****************************/
-    /* IndexInternalNodeë‚˜ UniqueTempHashìš©ìœ¼ë¡œ í•´ë‹¹ Slotì˜ ChildRIDê°€
-     * ì €ì¥ëœë‹¤. */
-    scGRID      mChildGRID;
-
-    /* ì´ì „ë²ˆì— ì‚½ì…ëœ RowPieceì˜ RIDì´ë‹¤. ê·¸ëŸ°ë° ì‚½ì…ì€ ì—­ìˆœìœ¼ë¡œ ì§„í–‰ë˜ê¸°
-     * ë•Œë¬¸ì— ê³µê°„ì ìœ¼ë¡œëŠ” ë‹¤ìŒë²ˆ RowPieceì˜ RIDì´ë‹¤.
-     * ì¦‰ FirstRowPiece í›„ ë’¤ìª½ RowPieceë“¤ì´ ì´ NextRIDë¡œ ì—°ê²°ë˜ì–´ìˆë‹¤. */
-    scGRID      mNextGRID;
-} sdtTRPHeader;
-
-typedef struct sdtTRPInfo4Insert
-{
-    sdtTRPHeader    mTRPHeader;
-
-    UInt            mColumnCount;  /* Columnê°œìˆ˜ */
-    smiTempColumn * mColumns;      /* Columnì •ë³´ */
-    UInt            mValueLength;  /* Valueì´ ê¸¸ì´ */
-    smiValue      * mValueList;    /* Valueë“¤ */
-} sdtTRPInfo4Insert;
-
-typedef struct sdtTRInsertResult
-{
-    scGRID   mHeadRowpieceGRID; /* ë¨¸ë¦¬ Rowpieceì˜ GRID */
-    UChar  * mHeadRowpiecePtr;  /* ë¨¸ë¦¬ Rowpieceì˜ Pointer */
-    scGRID   mTailRowpieceGRID; /* ê¼¬ë¦¬ Rowpieceì˜ Pointer */
-    UInt     mRowPageCount;     /* Rowì‚½ì…í•˜ëŠ”ë° ì‚¬ìš©í•œ pageê°œìˆ˜*/
-    idBool   mAllocNewPage;     /* ìƒˆ Pageë¥¼ í• ë‹¹í•˜ì˜€ëŠ”ê°€? */
-    idBool   mComplete;         /* ì‚½ì… ì„±ê³µí•˜ì˜€ëŠ”ê°€ */
-} sdtTRInsertResult;
-
-typedef struct sdtTRPInfo4Select
-{
-    sdtTRPHeader  * mSrcRowPtr;
-    sdtTRPHeader  * mTRPHeader;
-
-    scGRID          mTRPHGRID;    /* TRPHeaderRowPieceì˜ GRID */
-
-    UChar        *  mValuePtr;    /* Valueì˜ ì²« ìœ„ì¹˜*/
-    UInt            mValueLength; /* Valueì´ ê¸¸ì´ */
-} sdtTRPInfo4Select;
-
-
-/* ë°˜ë“œì‹œ ê¸°ë¡ë˜ì•¼ í•˜ëŠ” í•­ëª©ë“¤. ( sdtTRPHeader ì°¸ì¡° )
- * mTRFlag, mValueLength, mHashValue, mHitSequence,
- * (1) + (1) + (2) + (4) + (8) = 16 */
-#define SDT_TR_HEADER_SIZE_BASE ( 16 )
-
-/* ì¶”ê°€ë¡œ ì˜µì…”ë„í•œ í•­ëª©ë“¤ ( sdtTRPHeader ì°¸ì¡° )
- * Base + mNextGRID + mChildGRID
- * (16) + (8 + 8) */
-#define SDT_TR_HEADER_SIZE_FULL ( SDT_TR_HEADER_SIZE_BASE + 16 )
-
-/* RIDê°€ ìˆìœ¼ë©´ 32Byte */
-#define SDT_TR_HEADER_SIZE(aFlag)  ( ( aFlag & SDT_TRFLAG_GRID )  ?                             \
-                                     SDT_TR_HEADER_SIZE_FULL : SDT_TR_HEADER_SIZE_BASE )
-
-
+// ºÎºĞ %·Î ÀüÃ¼ 100%ÀÇ Å©±â¸¦ °è»êÇÑ´Ù. 1º¸´Ù ÀÛÀ¸¸é 1·Î °¡Á¤
+#define SDT_GET_FULL_SIZE( aPartSize, aPartRatio )                 \
+    (( (SInt)(aPartRatio) < 1 ) ?                                  \
+     ( (aPartSize) * 100 ) :                                       \
+     ( ((aPartSize) * 100 + (aPartRatio-1)) / (aPartRatio) ))
 
 #endif  // _O_SDT_DEF_H_

@@ -45,34 +45,34 @@ private:
     static const mtdCompareFunc compareNumberGroupDoubleFuncs[MTD_COMPARE_FUNC_MAX_CNT][2];
     static const mtdCompareFunc compareNumberGroupNumericFuncs[MTD_COMPARE_FUNC_MAX_CNT][2];
     
-    // PROJ-1364 ìˆ«ìí˜•ê³„ì—´ì˜ ì„œë¡œ ë‹¤ë¥¸ data typeì— ëŒ€í•œ ë¹„êµì‹œ
-    // ë¹„êµëŒ€ìƒ ê¸°ì¤€ì´ ë˜ëŠ” data typeì„ ì§€ì •
+    // PROJ-1364 ¼ıÀÚÇü°è¿­ÀÇ ¼­·Î ´Ù¸¥ data type¿¡ ´ëÇÑ ºñ±³½Ã
+    // ºñ±³´ë»ó ±âÁØÀÌ µÇ´Â data typeÀ» ÁöÁ¤
     static const UInt comparisonNumberType[4][4];
 
-    // PROJ-1346 numeric typeì„ double typeìœ¼ë¡œ converion
+    // PROJ-1346 numeric typeÀ» double typeÀ¸·Î converion
     static void convertNumeric2DoubleType(
                                   UChar            aNumericLength,
                                   UChar          * aSignExponentMantissa,
                                   mtdDoubleType  * aDoubleValue );
 
-    // PROJ-1364  bigint typeì„ numeric typeìœ¼ë¡œ conversion
+    // PROJ-1364  bigint typeÀ» numeric typeÀ¸·Î conversion
     static void convertBigint2NumericType( mtdBigintType  * aBigintValue,
                                            mtdNumericType * aNumericValue );
 
 public:
     
     //----------------------------------------------------------------
-    // PROJ-1364 í•´ë‹¹ valueë¥¼  bigint typeìœ¼ë¡œ converioní•˜ì—¬ compare 
+    // PROJ-1364 ÇØ´ç value¸¦  bigint typeÀ¸·Î converionÇÏ¿© compare 
     //----------------------------------------------------------------
     
-    // í•´ë‹¹ valueë¥¼  bigint typeìœ¼ë¡œ converion í•˜ëŠ” í•¨ìˆ˜ 
+    // ÇØ´ç value¸¦  bigint typeÀ¸·Î converion ÇÏ´Â ÇÔ¼ö 
     static void convertToBigintType4MtdValue( mtdValueInfo  * aValueInfo,
                                               mtdBigintType * aBigintValue );
     
     static void convertToBigintType4StoredValue( mtdValueInfo  * aValueInfo,
                                                  mtdBigintType * aBigintValue);
 
-    // bigint typeìœ¼ë¡œ conversioní•˜ì—¬ compare í•˜ëŠ” í•¨ìˆ˜ 
+    // bigint typeÀ¸·Î conversionÇÏ¿© compare ÇÏ´Â ÇÔ¼ö 
     static SInt compareNumberGroupBigintMtdMtdAsc( mtdValueInfo * aValueInfo1,
                                                    mtdValueInfo * aValueInfo2 );
 
@@ -93,20 +93,20 @@ public:
                                                           mtdValueInfo * aValueInfo2 );
 
     //----------------------------------------------------------------
-    // PROJ-1364 í•´ë‹¹ valueë¥¼  double typeìœ¼ë¡œ converioní•˜ì—¬ compare 
+    // PROJ-1364 ÇØ´ç value¸¦  double typeÀ¸·Î converionÇÏ¿© compare 
     //---------------------------------------------------------------
 
-    // í•´ë‹¹ valueë¥¼  double typeìœ¼ë¡œ converion í•˜ëŠ” í•¨ìˆ˜ 
-    // ì¸ìë¡œ ë°›ì€ data typeì„ double í˜•ìœ¼ë¡œ ë³€í™˜
-    // ë™ì¼ì»¬ëŸ¼ì— ëŒ€í•œ í†µí•© selectivity ê³„ì‚°ì‹œ,
-    // ë¹„êµëŒ€ìƒ data typeì„ doubleí˜•ìœ¼ë¡œ ë³€í™˜ì‹œì¼œì„œ selectivityë¥¼ êµ¬í•¨.
+    // ÇØ´ç value¸¦  double typeÀ¸·Î converion ÇÏ´Â ÇÔ¼ö 
+    // ÀÎÀÚ·Î ¹ŞÀº data typeÀ» double ÇüÀ¸·Î º¯È¯
+    // µ¿ÀÏÄÃ·³¿¡ ´ëÇÑ ÅëÇÕ selectivity °è»ê½Ã,
+    // ºñ±³´ë»ó data typeÀ» doubleÇüÀ¸·Î º¯È¯½ÃÄÑ¼­ selectivity¸¦ ±¸ÇÔ.
     static void convertToDoubleType4MtdValue( mtdValueInfo  * aValueInfo,
                                               mtdDoubleType * aDoubleValue );
     
     static void convertToDoubleType4StoredValue( mtdValueInfo  * aValueInfo,
                                                  mtdDoubleType * aDoubleValue);
   
-    // double typeìœ¼ë¡œ conversioní•˜ì—¬ compare í•˜ëŠ” í•¨ìˆ˜ 
+    // double typeÀ¸·Î conversionÇÏ¿© compare ÇÏ´Â ÇÔ¼ö 
     static SInt compareNumberGroupDoubleMtdMtdAsc( mtdValueInfo * aValueInfo1,
                                                    mtdValueInfo * aValueInfo2 );
 
@@ -126,10 +126,10 @@ public:
                                                           mtdValueInfo * aValueInfo2 );
 
     //----------------------------------------------------------------
-    // PROJ-1364 í•´ë‹¹ valueë¥¼  numeric typeìœ¼ë¡œ converioní•˜ì—¬ compare 
+    // PROJ-1364 ÇØ´ç value¸¦  numeric typeÀ¸·Î converionÇÏ¿© compare 
     //---------------------------------------------------------------
 
-    // í•´ë‹¹ valueë¥¼ numeric typeìœ¼ë¡œ conversion í•˜ëŠ” í•¨ìˆ˜ 
+    // ÇØ´ç value¸¦ numeric typeÀ¸·Î conversion ÇÏ´Â ÇÔ¼ö 
     static void convertToNumericType4MtdValue( mtdValueInfo    * aValueInfo,
                                                mtdNumericType ** aNumericValue);
     
@@ -139,7 +139,7 @@ public:
                                      UChar           * aLength,
                                      UChar          ** aSignExponentMantissa);
 
-    // numeric typeìœ¼ë¡œ conversioní•˜ì—¬ compare í•˜ëŠ” í•¨ìˆ˜ 
+    // numeric typeÀ¸·Î conversionÇÏ¿© compare ÇÏ´Â ÇÔ¼ö 
     static SInt compareNumberGroupNumericMtdMtdAsc( mtdValueInfo * aValueInfo1,
                                                     mtdValueInfo * aValueInfo2 );
 
@@ -183,8 +183,8 @@ public:
 
     static IDE_RC finalize( void );
 
-    // PROJ-1361 : mtdModuleê³¼ mtlModue ë¶„ë¦¬í–ˆìœ¼ë¯€ë¡œ
-    //             mtdModue ê²€ìƒ‰ì‹œ language ì •ë³´ ë°›ì§€ ì•ŠìŒ
+    // PROJ-1361 : mtdModule°ú mtlModue ºĞ¸®ÇßÀ¸¹Ç·Î
+    //             mtdModue °Ë»ö½Ã language Á¤º¸ ¹ŞÁö ¾ÊÀ½
     static IDE_RC moduleByName( const mtdModule** aModule,
                                 const void*       aName,
                                 UInt              aLength );
@@ -290,60 +290,60 @@ public:
                                        UInt             aFlag,
                                        const void*      aDefaultNull );
     
-    // Data Typeì˜ ê¸°ë³¸ ì¸ë±ìŠ¤ íƒ€ì…ì„ êµ¬í•œë‹¤.
+    // Data TypeÀÇ ±âº» ÀÎµ¦½º Å¸ÀÔÀ» ±¸ÇÑ´Ù.
     static UInt getDefaultIndexTypeID( const mtdModule * aModule );
 
-    // Data Typeì— ì‚¬ìš©ê°€ëŠ¥í•œ ì¸ë±ìŠ¤ì¸ì§€ íŒë‹¨í•¨.
+    // Data Type¿¡ »ç¿ë°¡´ÉÇÑ ÀÎµ¦½ºÀÎÁö ÆÇ´ÜÇÔ.
     static idBool isUsableIndexType( const mtdModule * aModule,
                                      UInt              aIndexType );
 
     // PROJ-1558
-    // MMì—ì„œ NULLê°’ì„ ì§€ì •í•œë‹¤.
+    // MM¿¡¼­ NULL°ªÀ» ÁöÁ¤ÇÑ´Ù.
     static IDE_RC assignNullValueById( UInt    aId,
                                        void ** aValue,
                                        UInt  * aSize );
 
     // PROJ-1558
-    // MMì—ì„œ NULLê°’ì¸ì§€ ê²€ì‚¬í•œë‹¤.
+    // MM¿¡¼­ NULL°ªÀÎÁö °Ë»çÇÑ´Ù.
     static IDE_RC checkNullValueById( UInt     aId,
                                       void   * aValue,
                                       idBool * aIsNull );
 
     // PROJ-1705
-    // ì €ì¥ë˜ì§€ ì•ŠëŠ” ë°ì´íƒ€íƒ€ì…ì— ëŒ€í•œ ì²˜ë¦¬     
+    // ÀúÀåµÇÁö ¾Ê´Â µ¥ÀÌÅ¸Å¸ÀÔ¿¡ ´ëÇÑ Ã³¸®     
     static IDE_RC mtdStoredValue2MtdValueNA( UInt              aColumnSize,
                                              void            * aRow,
                                              UInt              aOffset,
                                              UInt              aLength,
                                              const void      * aValue );
     // PROJ-1705
-    // ì €ì¥ë˜ì§€ ì•ŠëŠ” ë°ì´íƒ€íƒ€ì…ì— ëŒ€í•œ ì²˜ë¦¬     
+    // ÀúÀåµÇÁö ¾Ê´Â µ¥ÀÌÅ¸Å¸ÀÔ¿¡ ´ëÇÑ Ã³¸®     
     static UInt mtdNullValueSizeNA();
     
     // PROJ-1705
-    // ì €ì¥ë˜ì§€ ì•ŠëŠ” ë°ì´íƒ€íƒ€ì…ì— ëŒ€í•œ ì²˜ë¦¬         
+    // ÀúÀåµÇÁö ¾Ê´Â µ¥ÀÌÅ¸Å¸ÀÔ¿¡ ´ëÇÑ Ã³¸®         
     static UInt mtdHeaderSizeNA();
 
     // PROJ-1705
-    // lengthë¥¼ ê°€ì§€ëŠ” ë°ì´íƒ€íƒ€ì…ì˜ length ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ë³€ìˆ˜ì˜ í¬ê¸° ë°˜í™˜
-    // integerì™€ ê°™ì€ ê³ ì •ê¸¸ì´ ë°ì´íƒ€íƒ€ì…ì€ defaultë¡œ 0 ë°˜í™˜
+    // length¸¦ °¡Áö´Â µ¥ÀÌÅ¸Å¸ÀÔÀÇ length Á¤º¸¸¦ ÀúÀåÇÏ´Â º¯¼öÀÇ Å©±â ¹İÈ¯
+    // integer¿Í °°Àº °íÁ¤±æÀÌ µ¥ÀÌÅ¸Å¸ÀÔÀº default·Î 0 ¹İÈ¯
     static UInt mtdHeaderSizeDefault();
 
 
     // PROJ-2399 row tmaplate
-    // smì— ì €ì¥ë˜ëŠ” ë°ì´í„°ì˜ í¬ê¸°ë¥¼ ë°˜í™˜í•œë‹¤.
+    // sm¿¡ ÀúÀåµÇ´Â µ¥ÀÌÅÍÀÇ Å©±â¸¦ ¹İÈ¯ÇÑ´Ù.
     // VARCHAR, BLOB, CLOB, FLOAT, NUMBER, VARBIT, NUMERIC, NVARCHAR, 
-    // EVARCHAR, ECHAR, GEOMETRY, NIBBLE ê³¼ ê°™ì€ variable íƒ€ì…ì˜ ë°ì´í„° íƒ€ì…ì€ ID_UINT_MAXì„ ë°˜.
-    // mtheaderê°€ smì— ì €ì¥ëœê²½ìš°ê°€ ì•„ë‹ˆë©´ mtheaderí¬ê¸°ë¥¼ ë¹¼ì„œ ë°˜í™˜.
+    // EVARCHAR, ECHAR, GEOMETRY, NIBBLE °ú °°Àº variable Å¸ÀÔÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀº ID_UINT_MAXÀ» ¹İ.
+    // mtheader°¡ sm¿¡ ÀúÀåµÈ°æ¿ì°¡ ¾Æ´Ï¸é mtheaderÅ©±â¸¦ »©¼­ ¹İÈ¯.
     static UInt mtdStoreSizeDefault( const smiColumn * aColumn );
     
     // PROJ-1579 NCHAR
-    // META ë‹¨ê³„ì—ì„œ CHAR, VARCHAR, CLOB, CLOBLOCATOR, NCHAR, NVARCHAR 
-    // íƒ€ì…ì— ëŒ€í•´ì„œ languageë¥¼ ë‹¤ì‹œ ì„¸íŒ…í•´ì¤€ë‹¤.
+    // META ´Ü°è¿¡¼­ CHAR, VARCHAR, CLOB, CLOBLOCATOR, NCHAR, NVARCHAR 
+    // Å¸ÀÔ¿¡ ´ëÇØ¼­ language¸¦ ´Ù½Ã ¼¼ÆÃÇØÁØ´Ù.
     static IDE_RC modifyNls4MtdModule();
 
     // PROJ-1877
-    // ë°ì´í„°ì˜ ì‹¤ì œ precision, scale ê°’ì„ ë°˜í™˜í•œë‹¤.
+    // µ¥ÀÌÅÍÀÇ ½ÇÁ¦ precision, scale °ªÀ» ¹İÈ¯ÇÑ´Ù.
     static IDE_RC getPrecisionNA( const mtcColumn * aColumn,
                                   const void      * aRow,
                                   SInt            * aPrecision,
@@ -365,22 +365,22 @@ public:
     static IDE_RC setMtcColumnInfo( void * aColumn );
 
     /* PROJ-2433 Direct Key Index
-     * direct key indexë¥¼ ì‚¬ìš©í• ìˆ˜ìˆëŠ” data type ì¸ì§€ í™•ì¸ */
+     * direct key index¸¦ »ç¿ëÇÒ¼öÀÖ´Â data type ÀÎÁö È®ÀÎ */
     static inline idBool isUsableDirectKeyIndex( void *aColumn );
 
     /* PROJ-2433 Direct Key Index
-     * partial direct key indexë¥¼ ì‚¬ìš©í• ìˆ˜ìˆëŠ” data type ì¸ì§€ í™•ì¸ */
+     * partial direct key index¸¦ »ç¿ëÇÒ¼öÀÖ´Â data type ÀÎÁö È®ÀÎ */
     static inline idBool isUsablePartialDirectKeyIndex( void *aColumn );
 };
 
 /*******************************************************************
  * Definition
- *    mtdModuleì—ì„œ ì‚¬ìš©í•  value í•¨ìˆ˜
+ *    mtdModule¿¡¼­ »ç¿ëÇÒ value ÇÔ¼ö
  *
  * Description
- *    mtc::valueëŠ” ìƒìœ„ ë ˆì´ì–´(QP, MM)ì—ì„œ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” ë²”ìš© value í•¨ìˆ˜
- *    mtd::valueForModuleì€ mtdì—ì„œë§Œ ì‚¬ìš©í•œë‹¤.
- *    ë„¤ë²ˆì§¸ ì¸ìì¸ aDefaultNullì— mtdModule.staticNullì„ assigní•œë‹¤.
+ *    mtc::value´Â »óÀ§ ·¹ÀÌ¾î(QP, MM)¿¡¼­ »ç¿ëÇÒ ¼ö ÀÖ´Â ¹ü¿ë value ÇÔ¼ö
+ *    mtd::valueForModuleÀº mtd¿¡¼­¸¸ »ç¿ëÇÑ´Ù.
+ *    ³×¹øÂ° ÀÎÀÚÀÎ aDefaultNull¿¡ mtdModule.staticNullÀ» assignÇÑ´Ù.
  *
  * by kumdory, 2005-03-15
  *
@@ -439,7 +439,7 @@ inline const void* mtd::valueForModule( const smiColumn* aColumn,
                                          aColumn,
                                          &sLength );
                 
-                // sValueê°€ NULLì¼ ìˆ˜ ìˆë‹¤.
+                // sValue°¡ NULLÀÏ ¼ö ÀÖ´Ù.
                 if( sValue == NULL )
                 {
                     sValue = aDefaultNull;
@@ -451,7 +451,7 @@ inline const void* mtd::valueForModule( const smiColumn* aColumn,
                 // PROJ-1362
                 sValue = aDefaultNull;
             }
-            // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+            // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
             else if( SMI_COLUMN_TYPE_IS_TEMP( aColumn->flag )
                      == ID_TRUE )
             {
@@ -473,7 +473,7 @@ inline const void* mtd::valueForModule( const smiColumn* aColumn,
                                                 ID_TRUE, // aUseColumnOffset
                                                 &sLength );
             
-            // sValueê°€ NULLì¼ ìˆ˜ ìˆë‹¤.
+            // sValue°¡ NULLÀÏ ¼ö ÀÖ´Ù.
             if ( ( ( ( aColumn->flag & SMI_COLUMN_TYPE_MASK )
                      == SMI_COLUMN_TYPE_VARIABLE ) ||
                    ( ( aColumn->flag & SMI_COLUMN_TYPE_MASK )
@@ -492,9 +492,9 @@ inline const void* mtd::valueForModule( const smiColumn* aColumn,
  * FUNCTION DESCRIPTION : mtd::isUsableDirectKeyIndex                *
  * ------------------------------------------------------------------*
  * PROJ-2433 Direct Key Index
- * direct key indexê°€ ê°€ëŠ¥í•œ data typeì¸ì§€ í™•ì¸í•œë‹¤.
+ * direct key index°¡ °¡´ÉÇÑ data typeÀÎÁö È®ÀÎÇÑ´Ù.
  *
- * aColumn  - [IN]  ì»¬ëŸ¼ì •ë³´
+ * aColumn  - [IN]  ÄÃ·³Á¤º¸
  *********************************************************************/
 inline idBool mtd::isUsableDirectKeyIndex( void *aColumn )
 {
@@ -533,9 +533,9 @@ inline idBool mtd::isUsableDirectKeyIndex( void *aColumn )
  * FUNCTION DESCRIPTION : mtd::isUsablePartialDirectKeyIndex         *
  * ------------------------------------------------------------------*
  * PROJ-2433 Direct Key Index
- * partial direct key indexê°€ ê°€ëŠ¥í•œ data typeì¸ì§€ í™•ì¸í•œë‹¤.
+ * partial direct key index°¡ °¡´ÉÇÑ data typeÀÎÁö È®ÀÎÇÑ´Ù.
  *
- * aColumn  - [IN]  ì»¬ëŸ¼ì •ë³´
+ * aColumn  - [IN]  ÄÃ·³Á¤º¸
  *********************************************************************/
 inline idBool mtd::isUsablePartialDirectKeyIndex( void *aColumn )
 {

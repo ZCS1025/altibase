@@ -53,22 +53,22 @@ public:
     /* Stack Page Header */
     iduStackPage  mHead;
 
-    /* Popë  Itemì´ ìˆëŠ” Stack Page */
+    /* PopµÉ ItemÀÌ ÀÖ´Â Stack Page */
     iduStackPage* mCurPage;
 
     /* Item Size */
     ULong          mItemSize;
 
-    /* Stackì— ìˆëŠ” ì „ì²´ Itemì˜ ê°¯ìˆ˜ */
+    /* Stack¿¡ ÀÖ´Â ÀüÃ¼ ItemÀÇ °¹¼ö */
     ULong          mTotItemCnt;
 
     /* Stack Page Size( Byte ) */
     ULong          mPageSize;
 
-    /* í•˜ë‚˜ì˜ Stack Pageì— ë“¤ì–´ê°ˆ Itemê°¯ìˆ˜ */
+    /* ÇÏ³ªÀÇ Stack Page¿¡ µé¾î°¥ Item°¹¼ö */
     ULong          mMaxItemCntInPage;
 
-    /* mCurPageì˜ Item Count */
+    /* mCurPageÀÇ Item Count */
     ULong          mItemCntOfCurPage;
 
 private:

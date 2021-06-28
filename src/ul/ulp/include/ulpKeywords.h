@@ -17,7 +17,7 @@
 #ifndef _ULP_KEYWORDS_
 #define _ULP_KEYWORDS_ 1
 
-/* c 코드안에 id로 사용되어서는 안되는 keywords */
+/* c �ڵ�ȿ� id�� ���Ǿ�� �ȵǴ� keywords */
 const SChar gUlpKeywords4C[][MAX_KEYWORD_LEN] =
 {
     "MAX_CHAR_PTR",
@@ -53,11 +53,12 @@ const SChar gUlpKeywords4C[][MAX_KEYWORD_LEN] =
     "SQL_TIMESTAMP_STRUCT",
     "SQL_TIME_STRUCT",
     "SQL_DATE_STRUCT",
+    "SQL_NUMERIC_STRUCT",
     "VARCHAR",
     "APRE_BINARY2"  /* BUG-46418 */
 };
 
-/* 내장SQL구문안에 테이블명, 칼럼명으로 사용되면 안되는 keywords */
+/* ����SQL�����ȿ� ���̺���, Į�������� ���Ǹ� �ȵǴ� keywords */
 const SChar gUlpKeywords4Emsql[][MAX_KEYWORD_LEN] =
 {
     "MODE",

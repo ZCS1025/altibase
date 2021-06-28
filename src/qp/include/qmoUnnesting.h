@@ -21,9 +21,9 @@
  * Description :
  *     PROJ-1718 Subquery Unnesting
  *
- * Ïö©Ïñ¥ ÏÑ§Î™Ö :
+ * øÎæÓ º≥∏Ì :
  *
- * ÏïΩÏñ¥ :
+ * æ‡æÓ :
  *
  **********************************************************************/
 
@@ -34,7 +34,7 @@
 #include <qmsParseTree.h>
 #include <qmoDependency.h>
 
-// Subquery unnestingÍ≥º Í¥ÄÎ†®ÎêòÏñ¥ ÎÇ¥Î∂ÄÏ†ÅÏúºÎ°ú ÏÇ¨Ïö©Ìï† ÏûêÎ£åÍµ¨Ï°∞
+// Subquery unnesting∞˙ ∞¸∑√µ«æÓ ≥ª∫Œ¿˚¿∏∑Œ ªÁøÎ«“ ¿⁄∑·±∏¡∂
 typedef struct qmoPredList
 {
     qtcNode     * predicate;
@@ -47,7 +47,7 @@ class qmoUnnesting
 public:
 
     //------------------------------------------
-    // Subquery unnestingÏùò ÏàòÌñâ
+    // Subquery unnesting¿« ºˆ«‡
     //------------------------------------------
     
     static IDE_RC  doTransform( qcStatement  * aStatement,
@@ -69,7 +69,7 @@ private:
     static IDE_RC  findAndUnnestSubquery( qcStatement * aStatement,
                                           qmsSFWGH    * aSFWGH,
                                           idBool        aUnnestSubquery,
-                                          qtcNode     * aNode,
+                                          qtcNode     * aPredicate,
                                           idBool      * aChanged );
 
     static idBool  isExistsTransformable( qcStatement * aStatement,
@@ -86,13 +86,13 @@ private:
 
     static IDE_RC  unnestSubquery( qcStatement * aStatement,
                                    qmsSFWGH    * aSFWGH,
-                                   qtcNode     * aNode );
+                                   qtcNode     * aSQPredicate );
 
     static IDE_RC  setJoinMethodHint( qcStatement * aStatement,
                                       qmsSFWGH    * aSFWGH,
                                       qtcNode     * aJoinPred,
                                       qmsFrom     * aViewFrom,
-                                      idBool        aIsSemiJoin );
+                                      idBool        aIsAntiJoin );
 
     static void    setNoMergeHint( qmsFrom * aViewFrom );
 
@@ -124,10 +124,12 @@ private:
                                      qtcNode      * aPredicate,
                                      qtcNode      * aOperand1,
                                      qtcNode      * aOperand2,
+                                     idBool         aExistsTrans, /* BUG-46952 */
                                      qtcNode     ** aResult );
 
     static IDE_RC  genCorrPredicates( qcStatement  * aStatement,
                                       qtcNode      * aNode,
+                                      idBool         aExistsTrans, /* BUG-46952 */
                                       qtcNode     ** aResult );
 
     static mtfModule * toNonQuantifierModule( const mtfModule * aQuantifer );
@@ -320,6 +322,10 @@ private:
                                        qtcNode     * aNode );
 
     static void   removeDownSemiJoinFlag( qmsSFWGH * aSFWGH );
+
+    static void isAggrExistTransformable( qtcNode   * aNode,
+                                          qcDepInfo * aOuterDep,
+                                          idBool    * aIsTrue );
 };
 
 #endif /* _O_QMO_UNNESTING_H_ */

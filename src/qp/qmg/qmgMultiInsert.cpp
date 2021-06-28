@@ -19,11 +19,11 @@
  * $Id$
  *
  * Description :
- *     Multi-Insert Graphë¥¼ ìœ„í•œ ìˆ˜í–‰ í•¨ìˆ˜
+ *     Multi-Insert Graph¸¦ À§ÇÑ ¼öÇà ÇÔ¼ö
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -42,12 +42,12 @@ qmgMultiInsert::init( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgInsert Graphì˜ ì´ˆê¸°í™”
+ * Description : qmgInsert GraphÀÇ ÃÊ±âÈ­
  *
  * Implementation :
- *    (1) qmgInsertì„ ìœ„í•œ ê³µê°„ í• ë‹¹
- *    (2) graph( ëª¨ë“  Graphë¥¼ ìœ„í•œ ê³µí†µ ìë£Œ êµ¬ì¡°) ì´ˆê¸°í™”
- *    (3) out ì„¤ì •
+ *    (1) qmgInsertÀ» À§ÇÑ °ø°£ ÇÒ´ç
+ *    (2) graph( ¸ğµç Graph¸¦ À§ÇÑ °øÅë ÀÚ·á ±¸Á¶) ÃÊ±âÈ­
+ *    (3) out ¼³Á¤
  *
  ***********************************************************************/
 
@@ -61,27 +61,27 @@ qmgMultiInsert::init( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgMultiInsert::init::__FT__" );
 
     //---------------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aChildGraph != NULL );
 
     //---------------------------------------------------
-    // Multi-Insert Graphë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
+    // Multi-Insert Graph¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
     //---------------------------------------------------
     
-    // qmgInsertì„ ìœ„í•œ ê³µê°„ í• ë‹¹
+    // qmgInsertÀ» À§ÇÑ °ø°£ ÇÒ´ç
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmgMTIT ),
                                              (void**) &sMyGraph )
               != IDE_SUCCESS );
 
-    // Graph ê³µí†µ ì •ë³´ì˜ ì´ˆê¸°í™”
+    // Graph °øÅë Á¤º¸ÀÇ ÃÊ±âÈ­
     IDE_TEST( qmg::initGraph( & sMyGraph->graph ) != IDE_SUCCESS );
 
     sMyGraph->graph.type = QMG_MULTI_INSERT;
 
-    // insertëŠ” querySetì´ ì—†ìŒ
+    // insert´Â querySetÀÌ ¾øÀ½
     sMyGraph->graph.myQuerySet = NULL;
 
     sMyGraph->graph.optimize = qmgMultiInsert::optimize;
@@ -100,7 +100,7 @@ qmgMultiInsert::init( qcStatement * aStatement,
 
         sInsertTableRef = sParseTree->insertTableRef;
     
-        // Disk/Memory ì •ë³´ ì„¤ì •
+        // Disk/Memory Á¤º¸ ¼³Á¤
         if ( ( QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sInsertTableRef->table].lflag
                & MTC_TUPLE_STORAGE_MASK ) == MTC_TUPLE_STORAGE_DISK )
         {
@@ -117,16 +117,16 @@ qmgMultiInsert::init( qcStatement * aStatement,
     }
     
     //---------------------------------------------------------------
-    // child graphì˜ ìƒì„±
+    // child graphÀÇ »ı¼º
     //---------------------------------------------------------------
 
-    // graph->childrenêµ¬ì¡°ì²´ì˜ ë©”ëª¨ë¦¬ í• ë‹¹.
+    // graph->children±¸Á¶Ã¼ÀÇ ¸Ş¸ğ¸® ÇÒ´ç.
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc(
                   ID_SIZEOF(qmgChildren) * sInsertCount,
                   (void**) &sMyGraph->graph.children )
               != IDE_SUCCESS );
 
-    // child graph pointerì˜ ë©”ëª¨ë¦¬ í• ë‹¹.
+    // child graph pointerÀÇ ¸Ş¸ğ¸® ÇÒ´ç.
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc(
                   ID_SIZEOF(qmgGraph *) * sInsertCount,
                   (void**) &sChildGraph )
@@ -140,7 +140,7 @@ qmgMultiInsert::init( qcStatement * aStatement,
         
         if ( i == 0 )
         {
-            // ì²«ë²ˆì§¸ childì— subqueryë¥¼ ì „ë‹¬í•œë‹¤.
+            // Ã¹¹øÂ° child¿¡ subquery¸¦ Àü´ŞÇÑ´Ù.
             IDE_TEST( qmgInsert::init( aStatement,
                                        sParseTree,
                                        aChildGraph,
@@ -169,7 +169,7 @@ qmgMultiInsert::init( qcStatement * aStatement,
         }
     }
 
-    // out ì„¤ì •
+    // out ¼³Á¤
     *aGraph = (qmgGraph *)sMyGraph;
 
     return IDE_SUCCESS;
@@ -184,12 +184,12 @@ qmgMultiInsert::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- * Description : qmgInsertì˜ ìµœì í™”
+ * Description : qmgInsertÀÇ ÃÖÀûÈ­
  *
  * Implementation :
  *    (1) CASE 1 : INSERT...VALUE(...(subquery)...)
- *        qmoSubquery::optimizeExpr()ì˜ ìˆ˜í–‰
- *    (2) ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì •
+ *        qmoSubquery::optimizeExpr()ÀÇ ¼öÇà
+ *    (2) °øÅë ºñ¿ë Á¤º¸ ¼³Á¤
  *
  ***********************************************************************/
 
@@ -199,14 +199,14 @@ qmgMultiInsert::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     IDU_FIT_POINT_FATAL( "qmgMultiInsert::optimize::__FT__" );
 
     //---------------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //---------------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //---------------------------------------------------
 
     sMyGraph = (qmgMTIT*) aGraph;
@@ -225,7 +225,7 @@ qmgMultiInsert::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //---------------------------------------------------
-    // ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì •
+    // °øÅë ºñ¿ë Á¤º¸ ¼³Á¤
     //---------------------------------------------------
 
     // inputRecordCnt
@@ -251,7 +251,7 @@ qmgMultiInsert::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     sMyGraph->graph.costInfo.totalAllCost = 0;
 
     //---------------------------------------------------
-    // Preserved Order ì„¤ì •
+    // Preserved Order ¼³Á¤
     //---------------------------------------------------
 
     sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
@@ -270,10 +270,10 @@ qmgMultiInsert::makePlan( qcStatement     * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgInsertìœ¼ë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
+ * Description : qmgInsertÀ¸·Î ºÎÅÍ PlanÀ» »ı¼ºÇÑ´Ù.
  *
  * Implementation :
- *    - qmgInsertìœ¼ë¡œ ìƒì„±ê°€ëŠ¥í•œ Plan
+ *    - qmgInsertÀ¸·Î »ı¼º°¡´ÉÇÑ Plan
  *
  *           [INST]
  *
@@ -286,7 +286,7 @@ qmgMultiInsert::makePlan( qcStatement     * aStatement,
     IDU_FIT_POINT_FATAL( "qmgMultiInsert::makePlan::__FT__" );
 
     //---------------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -299,15 +299,15 @@ qmgMultiInsert::makePlan( qcStatement     * aStatement,
     aGraph->flag |= QMG_PARALLEL_IMPOSSIBLE_FALSE;
 
     // BUG-38410
-    // ìµœìƒìœ„ plan ì´ë¯€ë¡œ ê¸°ë³¸ê°’ì„ ì„¸íŒ…í•œë‹¤.
+    // ÃÖ»óÀ§ plan ÀÌ¹Ç·Î ±âº»°ªÀ» ¼¼ÆÃÇÑ´Ù.
     aGraph->flag &= ~QMG_PLAN_EXEC_REPEATED_MASK;
     aGraph->flag |= QMG_PLAN_EXEC_REPEATED_FALSE;
 
     //---------------------------
-    // Planì˜ ìƒì„±
+    // PlanÀÇ »ı¼º
     //---------------------------
 
-    // ìµœìƒìœ„ planì´ë‹¤.
+    // ÃÖ»óÀ§ planÀÌ´Ù.
     IDE_DASSERT( aParent == NULL );
     
     IDE_TEST( qmoMultiNonPlan::initMTIT( aStatement ,
@@ -316,7 +316,7 @@ qmgMultiInsert::makePlan( qcStatement     * aStatement,
     sMyGraph->graph.myPlan = sPlan;
     
     //---------------------------
-    // child planì˜ ìƒì„±
+    // child planÀÇ »ı¼º
     //---------------------------
     
     for( sChildren = sMyGraph->graph.children;
@@ -324,7 +324,7 @@ qmgMultiInsert::makePlan( qcStatement     * aStatement,
          sChildren = sChildren->next )
     {
         // BUG-38410
-        // SCAN parallel flag ë¥¼ ìì‹ ë…¸ë“œë¡œ ë¬¼ë ¤ì¤€ë‹¤.
+        // SCAN parallel flag ¸¦ ÀÚ½Ä ³ëµå·Î ¹°·ÁÁØ´Ù.
         sChildren->childGraph->flag |= (aGraph->flag & QMG_PLAN_EXEC_REPEATED_MASK);
 
         IDE_TEST( sChildren->childGraph->makePlan( aStatement,
@@ -334,7 +334,7 @@ qmgMultiInsert::makePlan( qcStatement     * aStatement,
     }
     
     //----------------------------
-    // MTITì˜ ìƒì„±
+    // MTITÀÇ »ı¼º
     //----------------------------
 
     IDE_TEST( qmoMultiNonPlan::makeMTIT( aStatement ,
@@ -359,7 +359,7 @@ qmgMultiInsert::printGraph( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Graphë¥¼ êµ¬ì„±í•˜ëŠ” ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *    Graph¸¦ ±¸¼ºÇÏ´Â °øÅë Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  *
  * Implementation :
@@ -372,7 +372,7 @@ qmgMultiInsert::printGraph( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgMultiInsert::printGraph::__FT__" );
 
     //-----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //-----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -380,7 +380,7 @@ qmgMultiInsert::printGraph( qcStatement  * aStatement,
     IDE_DASSERT( aString != NULL );
 
     //-----------------------------------
-    // Graphì˜ ì‹œì‘ ì¶œë ¥
+    // GraphÀÇ ½ÃÀÛ Ãâ·Â
     //-----------------------------------
 
     if ( aDepth == 0 )
@@ -395,7 +395,7 @@ qmgMultiInsert::printGraph( qcStatement  * aStatement,
     }
 
     //-----------------------------------
-    // Graph ê³µí†µ ì •ë³´ì˜ ì¶œë ¥
+    // Graph °øÅë Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
     IDE_TEST( qmg::printGraph( aStatement,
@@ -405,7 +405,7 @@ qmgMultiInsert::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Child Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
+    // Child Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
     for( sChildren = aGraph->children;
@@ -420,7 +420,7 @@ qmgMultiInsert::printGraph( qcStatement  * aStatement,
     }
 
     //-----------------------------------
-    // Graphì˜ ë§ˆì§€ë§‰ ì¶œë ¥
+    // GraphÀÇ ¸¶Áö¸· Ãâ·Â
     //-----------------------------------
 
     if ( aDepth == 0 )

@@ -43,17 +43,41 @@
 #define ULN_SHARD_SPLIT_SOLO               (5)
 
 /* PROJ-2660 */
-#define ULN_SHARD_TX_ONE_NODE              (0)
-#define ULN_SHARD_TX_MULTI_NODE            (1)
-#define ULN_SHARD_TX_GLOBAL                (2)
+/* ulnDbc -> mAttrGlobalTransactionLevel (acp_uint8_t) */
+typedef enum {
+    ULN_GLOBAL_TX_ONE_NODE    = 0,
+    ULN_GLOBAL_TX_MULTI_NODE  = 1,
+    ULN_GLOBAL_TX_GLOBAL      = 2,
+    ULN_GLOBAL_TX_GCTX        = 3,
+    ULN_GLOBAL_TX_NONE        = 255,
+} ulsdGlobalTxLevel;
+
+/* TASK-7219 Non-shard DML */
+/* sdiShardPartialCoordType∞˙ µø¿œ */
+typedef enum {
+    ULN_SHARD_PARTIAL_EXEC_TYPE_NONE  = 0,
+    ULN_SHARD_PARTIAL_EXEC_TYPE_COORD = 1,
+    ULN_SHARD_PARTIAL_EXEC_TYPE_QUERY = 2,
+} ulsdShardPartialExecType;
+
+ACP_INLINE acp_bool_t ulsdIsGTx( acp_uint8_t aLevel )
+{
+    return ( ( aLevel == ULN_GLOBAL_TX_GLOBAL ) || ( aLevel == ULN_GLOBAL_TX_GCTX ) )
+           ? ACP_TRUE : ACP_FALSE;
+}
+
+ACP_INLINE acp_bool_t ulsdIsGCTx( acp_uint8_t aLevel )
+{
+    return ( aLevel == ULN_GLOBAL_TX_GCTX ) ? ACP_TRUE : ACP_FALSE;
+}
 
 typedef acp_uint8_t ulsdShardConnType;
 
 typedef enum {
-    ULSD_OFFSET_VERSION      = 56,   /* << 7 byte, sdmShardPinInfo.mVersion                  */
-    ULSD_OFFSET_RESERVED     = 48,   /* << 6 byte, sdmShardPinInfo.mReserved                 */
-    ULSD_OFFSET_META_NODE_ID = 32,   /* << 4 byte, sdmShardPinInfo.mMetaNodeInfo.mMetaNodeId */
-    ULSD_OFFSET_SEQEUNCE     = 0,    /* << 0 byte, sdmShardPinInfo.mSeq                      */
+    ULSD_OFFSET_VERSION       = 56,   /* << 7 byte, sdmShardPinInfo.mVersion                  */
+    ULSD_OFFSET_RESERVED      = 48,   /* << 6 byte, sdmShardPinInfo.mReserved                 */
+    ULSD_OFFSET_SHARD_NODE_ID = 32,   /* << 4 byte, sdmShardPinInfo.mShardNodeInfo.mShardNodeId */
+    ULSD_OFFSET_SEQEUNCE      = 0,    /* << 0 byte, sdmShardPinInfo.mSeq                      */
 } ulsdShardPinFactorOffet;
 
 typedef enum {
@@ -63,7 +87,7 @@ typedef enum {
 #define ULSD_SHARD_PIN_FORMAT_STR   "%"ACI_UINT32_FMT"-%"ACI_UINT32_FMT"-%"ACI_UINT32_FMT
 #define ULSD_SHARD_PIN_FORMAT_ARG( __SHARD_PIN ) \
     ( __SHARD_PIN & ( (acp_uint64_t)0xff       << ULSD_OFFSET_VERSION      ) ) >> ULSD_OFFSET_VERSION, \
-    ( __SHARD_PIN & ( (acp_uint64_t)0xffff     << ULSD_OFFSET_META_NODE_ID ) ) >> ULSD_OFFSET_META_NODE_ID, \
+    ( __SHARD_PIN & ( (acp_uint64_t)0xffff     << ULSD_OFFSET_SHARD_NODE_ID ) ) >> ULSD_OFFSET_SHARD_NODE_ID, \
     ( __SHARD_PIN & ( (acp_uint64_t)0xffffffff << ULSD_OFFSET_SEQEUNCE     ) ) >> ULSD_OFFSET_SEQEUNCE
 
 typedef enum
@@ -74,8 +98,9 @@ typedef enum
 
 typedef enum
 {
-    ULSD_SESSION_TYPE_EXTERNAL = 0,
-    ULSD_SESSION_TYPE_INTERNAL = 1,
+    ULSD_SESSION_TYPE_USER  = 0,
+    ULSD_SESSION_TYPE_COORD = 1,
+    ULSD_SESSION_TYPE_LIB   = 2,
 } ulsdSessionType;                  /* = sdiSessionType */
 
 /* BUG-46092 */
@@ -101,12 +126,17 @@ typedef struct ulsdRangeIndex           ulsdRangeIndex;
 typedef struct ulsdPrepareArgs          ulsdPrepareArgs;
 typedef struct ulsdExecuteArgs          ulsdExecuteArgs;
 typedef struct ulsdPrepareTranArgs      ulsdPrepareTranArgs;
+typedef struct ulsdEndPendingTranArgs   ulsdEndPendingTranArgs;
 typedef struct ulsdEndTranArgs          ulsdEndTranArgs;
+typedef struct ulsdShardEndTranArgs     ulsdShardEndTranArgs;
 typedef struct ulsdFuncCallback         ulsdFuncCallback;
 typedef struct ulsdConnectAttrInfo      ulsdConnectAttrInfo;
 typedef struct ulsdStmtAttrInfo         ulsdStmtAttrInfo;
 typedef struct ulsdBindParameterInfo    ulsdBindParameterInfo;
 typedef struct ulsdBindColInfo          ulsdBindColInfo;
+typedef struct ulsdLobLocator           ulsdLobLocator;
+typedef struct ulsdPutLobArgs           ulsdPutLobArgs;
+typedef struct ulsdExecDirectArgs       ulsdExecDirectArgs;
 
 struct ulsdDbc
 {
@@ -121,6 +151,7 @@ struct ulsdDbc
 struct ulsdNodeInfo
 {
     /* connection info */
+    acp_uint64_t            mSMN;
     acp_uint32_t            mNodeId;
     acp_char_t              mNodeName[ULSD_MAX_NODE_NAME_LEN+1];
     acp_char_t              mServerIP[ULSD_MAX_SERVER_IP_LEN];
@@ -133,7 +164,7 @@ struct ulsdNodeInfo
     acp_bool_t              mTouched;
 };
 
-/* BUG-46257 shardcliÏóêÏÑú Node Ï∂îÍ∞Ä/Ï†úÍ±∞ ÏßÄÏõê */
+/* BUG-46257 shardcliø°º≠ Node √ﬂ∞°/¡¶∞≈ ¡ˆø¯ */
 struct ulsdConnectAttrInfo
 {
     acp_sint32_t    mAttribute;
@@ -177,8 +208,14 @@ struct ulsdAlignInfo
     acp_sint32_t        mMessageTextAllocLength;    /* Max is ULSD_ALIGN_INFO_MAX_TEXT_LENGTH */
 };
 
+typedef enum
+{
+    ULSD_2PC_NORMAL         = 0,
+    ULSD_2PC_COMMIT_FAIL    = 1,
+} ulsd2PhaseCommitState;
+
 /*
- * ulnDbcÏóêÏÑú ÏÉ§Îìú Ï≤òÎ¶¨Ïóê Í¥ÄÌïú Ï†ïÎ≥¥Î•º Ï†ïÏùòÌïú Íµ¨Ï°∞Ï≤¥
+ * ulnDbcø°º≠ ª˛µÂ √≥∏Æø° ∞¸«— ¡§∫∏∏¶ ¡§¿««— ±∏¡∂√º
  */
 struct ulsdDbcContext
 {
@@ -189,20 +226,20 @@ struct ulsdDbcContext
     acp_bool_t          mShardNeedNodeDbcRetryExecution;
     acp_bool_t          mShardIsNodeTransactionBegin;
     acp_uint16_t        mShardOnTransactionNodeIndex;
-    acp_uint8_t         mShardTransactionLevel;  /* 0:one-node, 1:multiple-node, 2:global */
 
     acp_char_t          mShardTargetDataNodeName[ULSD_MAX_NODE_NAME_LEN + 1];
     acp_uint8_t         mShardLinkerType;
     acp_uint64_t        mShardPin;
     acp_uint64_t        mShardMetaNumber;
-    acp_uint64_t        mSMNOfDataNode;     /* BUG-45967 Data NodeÏùò Shard Session Ï†ïÎ¶¨ */
-    acp_bool_t          mNeedToDisconnect;  /* BUG-46100 Session SMN Update */
+    acp_uint64_t        mSentShardMetaNumber;
+    acp_uint64_t        mSentRebuildShardMetaNumber;
+    acp_uint64_t        mTargetShardMetaNumber;
 
     /* BUG-45509 nested commit */
     ulsdFuncCallback   *mCallback;
 
     /* BUG-45411 */
-    acp_bool_t          mReadOnlyTx;  /* shard_prepare protocolÏùò result */
+    acp_bool_t          mReadOnlyTx;  /* shard_prepare protocol¿« result */
 
     ulsdShardConnType   mShardConnType;
 
@@ -210,12 +247,23 @@ struct ulsdDbcContext
     acp_uint8_t         mShardClient;
     acp_uint8_t         mShardSessionType;
 
-    /* BUG-46257 shardcliÏóêÏÑú Node Ï∂îÍ∞Ä/Ï†úÍ±∞ ÏßÄÏõê */
-    acp_char_t        * mNodeBaseConnString;
+    /* BUG-46257 shardcliø°º≠ Node √ﬂ∞°/¡¶∞≈ ¡ˆø¯ */
+    acp_char_t        * mOrgConnString;
     acp_list_t          mConnectAttrList;
 
     /* BUG-46092 */
     ulsdAlignInfo       mAlignInfo;
+
+    ulsd2PhaseCommitState m2PhaseCommitState;
+
+    /* PROJ-2733-DistTxInfo Meta DBC∏∏ ªÁøÎ«—¥Ÿ. */
+    acp_uint16_t        mBeforeExecutedNodeDbcIndex;
+
+    /* PROJ-2739 Client-side Sharding LOB */
+    acp_thr_mutex_t     mLock4LocatorList;
+    acp_list_t          mLobLocatorList;
+
+    ulsdFuncCallback   *mFuncCallback;  /* BUG-46814 */
 };
 
 union ulsdValue
@@ -237,8 +285,9 @@ union ulsdValue
 
 struct ulsdValueInfo
 {
-    acp_uint8_t mType;
-    ulsdValue   mValue;
+    acp_uint8_t     mType;
+    acp_uint32_t    mDataValueType;
+    ulsdValue       mValue;
 };
 
 struct ulsdRangeInfo
@@ -250,7 +299,7 @@ struct ulsdRangeInfo
 
 union ulsdKeyData
 {
-    acp_sint8_t   mValue[1];  /* ÎåÄÌëúÍ∞í */
+    acp_sint8_t   mValue[1];  /* ¥Î«•∞™ */
     acp_sint16_t  mSmallintValue;
     acp_sint32_t  mIntegerValue;
     acp_sint64_t  mBigintValue;
@@ -267,7 +316,7 @@ struct ulsdColumnMaxLenInfo
     acp_uint32_t mMaxByte[ULN_COLUMN_ID_MAXIMUM];
 };
 
-/* BUG-46257 shardcliÏóêÏÑú Node Ï∂îÍ∞Ä/Ï†úÍ±∞ ÏßÄÏõê */
+/* BUG-46257 shardcliø°º≠ Node √ﬂ∞°/¡¶∞≈ ¡ˆø¯ */
 struct ulsdStmtAttrInfo
 {
     acp_sint32_t    mAttribute;
@@ -277,10 +326,10 @@ struct ulsdStmtAttrInfo
     acp_list_node_t mListNode;
 };
 
-/* BUG-46257 shardcliÏóêÏÑú Node Ï∂îÍ∞Ä/Ï†úÍ±∞ ÏßÄÏõê */
+/* BUG-46257 shardcliø°º≠ Node √ﬂ∞°/¡¶∞≈ ¡ˆø¯ */
 struct ulsdBindParameterInfo
 {
-    acp_uint16_t    mParameterNumber;   // 1Î∂ÄÌÑ∞ ÏãúÏûë
+    acp_uint16_t    mParameterNumber;   // 1∫Œ≈Õ Ω√¿€
     acp_sint16_t    mInputOutputType;   // SQL_PARAM_INPUT, SQL_PARAM_OUTPUT, SQL_PARAM_INPUT_OUTPUT
     acp_sint16_t    mValueType;         // SQL_C_CHAR, ...
     acp_sint16_t    mParameterType;     // SQL_CHAR, SQL_VARCHAR, ...
@@ -290,17 +339,27 @@ struct ulsdBindParameterInfo
     ulvSLen         mBufferLength;      // Buffer Max Length
     ulvSLen       * mStrLenOrIndPtr;    // Indicator
 
+    /* PROJ-2739 Client-side Sharding LOB 
+     *   For SQLBindFileToParam */
+    ulvSLen       * mFileNameLengthArray;
+    acp_uint32_t  * mFileOptionPtr;
+
     acp_list_node_t mListNode;
 };
 
-/* BUG-46257 shardcliÏóêÏÑú Node Ï∂îÍ∞Ä/Ï†úÍ±∞ ÏßÄÏõê */
+/* BUG-46257 shardcliø°º≠ Node √ﬂ∞°/¡¶∞≈ ¡ˆø¯ */
 struct ulsdBindColInfo
 {
-    acp_uint16_t    mColumnNumber;      // 1Î∂ÄÌÑ∞ ÏãúÏûë
+    acp_uint16_t    mColumnNumber;      // 1∫Œ≈Õ Ω√¿€
     acp_sint16_t    mTargetType;        // SQL_C_CHAR, ...
-    void          * mTargetValuePtr;    // Buffer
+    void          * mTargetValuePtr;    // Buffer or FileName
     ulvSLen         mBufferLength;      // Buffer Max Length
     ulvSLen       * mStrLenOrIndPtr;    // Indicator
+
+    /* PROJ-2739 Client-side Sharding LOB
+     *   For SQLBindFileToCol */
+    ulvSLen       * mFileNameLengthArray;
+    acp_uint32_t  * mFileOptionPtr;
 
     acp_list_node_t mListNode;
 };
@@ -325,15 +384,15 @@ struct ulsdStmtContext
 
     /* PROJ-2646 New shard analyzer */
     acp_uint16_t            mShardValueCnt;
-    ulsdValueInfo          *mShardValueInfo;
-    acp_bool_t              mShardIsCanMerge;
+    ulsdValueInfo         **mShardValueInfoPtrArray;
+    acp_bool_t              mShardIsShardQuery;
 
     /* PROJ-2655 Composite shard key */
     acp_bool_t           mShardIsSubKeyExists;
     acp_uint8_t          mShardSubSplitMethod;
     acp_uint32_t         mShardSubKeyDataType;
     acp_uint16_t         mShardSubValueCnt;
-    ulsdValueInfo       *mShardSubValueInfo;
+    ulsdValueInfo      **mShardSubValueInfoPtrArray;
 
     /* PROJ-2670 nested execution */
     ulsdFuncCallback    *mCallback;
@@ -344,7 +403,7 @@ struct ulsdStmtContext
     /* BUG-45499 result merger */
     acp_uint16_t         mNodeDbcIndexArr[ULSD_SD_NODE_MAX_COUNT];
     acp_uint16_t         mNodeDbcIndexCount;
-    acp_sint16_t         mNodeDbcIndexCur;  /* ÌòÑÏû¨ fetchÏ§ëÏù∏ dbc index */
+    acp_sint16_t         mNodeDbcIndexCur;  /* «ˆ¿Á fetch¡ﬂ¿Œ dbc index */
 
     /* BUG-46100 Session SMN Update */
     acp_uint64_t         mShardMetaNumber;
@@ -352,11 +411,22 @@ struct ulsdStmtContext
     acp_sint32_t         mOrgPrepareTextBufMaxLen;
     acp_sint32_t         mOrgPrepareTextBufLen;
 
-    /* BUG-46257 shardcliÏóêÏÑú Node Ï∂îÍ∞Ä/Ï†úÍ±∞ ÏßÄÏõê */
+    /* BUG-46257 shardcliø°º≠ Node √ﬂ∞°/¡¶∞≈ ¡ˆø¯ */
     acp_list_t           mStmtAttrList;
     acp_list_t           mBindParameterList;
     acp_list_t           mBindColList;
     acp_sint64_t         mRowCount;
+
+    /* PROJ-2739 Client-side Sharding LOB */
+    ulnStmt             *mParentStmt; // meta-stmt of node stmt
+    acp_sint16_t         mMyNodeDbcIndexCur; /* for node Stmt, «ˆ¿Á ºˆ«‡¡ﬂ¿Œ dbc index */
+    /* C_LOCATOR∑Œ INPUT πŸ¿Œµ˘«— param¿Ã ¿÷¥¬¡ˆ ø©∫Œ */
+    acp_bool_t           mHasLocatorInBoundParam;
+    /* C_LOCATOR∑Œ INPUT πŸ¿Œµ˘«— param¿Ã OUTPUT¿∏∑Œ πŸ≤Ô ∞Õ¿Ã ¿÷¥¬¡ˆ ø©∫Œ */
+    acp_bool_t           mHasLocatorParamToCopy;
+
+    /* TASK-7219 Non-shard DML */
+    ulsdShardPartialExecType mPartialExecType;
 };
 
 struct ulsdRangeIndex
@@ -372,7 +442,11 @@ typedef enum
     ULSD_FUNC_EXECUTE_FOR_MT_DATA      = 3,
     ULSD_FUNC_EXECUTE                  = 4,
     ULSD_FUNC_PREPARE_TRAN             = 5,
-    ULSD_FUNC_END_TRAN                 = 6
+    ULSD_FUNC_END_PENDING_TRAN         = 6,
+    ULSD_FUNC_END_TRAN                 = 7,
+    ULSD_FUNC_SHARD_END_TRAN           = 8,
+    ULSD_FUNC_PUT_LOB                  = 9,
+    ULSD_FUNC_EXECUTE_DIRECT           = 10
 } ulsdFuncType;
 
 struct ulsdPrepareArgs
@@ -397,13 +471,44 @@ struct ulsdPrepareTranArgs
     acp_uint8_t   *mReadOnly;
 };
 
+struct ulsdEndPendingTranArgs
+{
+    acp_uint32_t   mXIDSize;
+    acp_uint8_t   *mXID;
+    acp_sint16_t   mCompletionType;
+};
+
 struct ulsdEndTranArgs
 {
     acp_sint16_t  mCompletionType;
 };
 
+struct ulsdShardEndTranArgs
+{
+    acp_sint16_t  mCompletionType;
+};
+
+struct ulsdExecDirectArgs
+{
+    acp_char_t   *mQuery;
+    acp_sint32_t  mQueryLen;
+};
+/* PROJ-2739 Client-side Sharding LOB */
+struct ulsdPutLobArgs
+{
+    acp_sint16_t  mLocatorCType;
+    acp_uint64_t  mLocator;
+    acp_uint32_t  mFromPosition;
+    acp_uint32_t  mForLength;
+    acp_sint16_t  mSourceCType;
+    void         *mBuffer;
+    acp_uint32_t  mBufferSize;
+};
+
 struct ulsdFuncCallback
 {
+    acp_bool_t    mInUse;  /* BUG-46814 */
+
     ulsdFuncType  mFuncType;
 
     acp_uint32_t  mCount;
@@ -414,15 +519,29 @@ struct ulsdFuncCallback
     ulnDbc       *mDbc;
     union
     {
-        ulsdPrepareArgs     mPrepare;
-        ulsdExecuteArgs     mExecute;
-        ulsdPrepareTranArgs mPrepareTran;
-        ulsdEndTranArgs     mEndTran;
+        ulsdPrepareArgs        mPrepare;
+        ulsdExecuteArgs        mExecute;
+        ulsdPrepareTranArgs    mPrepareTran;
+        ulsdEndTranArgs        mEndTran;
+        ulsdShardEndTranArgs   mShardEndTran;
+        ulsdEndPendingTranArgs mEndPendingTran;
+        ulsdPutLobArgs         mPutLob; // PROJ-2739
+        ulsdExecDirectArgs     mExecDirect;
     } mArg;
 
     struct ulsdFuncCallback *mNext;
 };
 
 #define ULSD_CALLBACK_DEPTH_MAX  10
+
+/* PROJ-2739 Client-side Sharding LOB */
+struct ulsdLobLocator
+{
+    acp_list_node_t mList;
+    acp_uint64_t    mLobLocator;
+    acp_sint16_t    mNodeDbcIndex;
+    acp_uint16_t    mArraySize; /* == ºˆ«‡ ≥ÎµÂ∞≥ºˆ */
+    ulsdLobLocator *mDestLobLocators;
+};
 
 #endif /* _O_ULSD_DEF_H_ */

@@ -21,9 +21,9 @@
  * Description :
  *     SDEX(Shard DML EXecutor) Node
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -33,6 +33,8 @@
 #include <mtv.h>
 #include <qcg.h>
 #include <qmnShardDML.h>
+#include <qmx.h>
+#include <qmxShard.h>
 
 IDE_RC qmnSDEX::init( qcTemplate * aTemplate,
                       qmnPlan    * aPlan )
@@ -40,7 +42,7 @@ IDE_RC qmnSDEX::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SDEX ë…¸ë“œì˜ ì´ˆê¸°í™”
+ *    SDEX ³ëµåÀÇ ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -51,11 +53,11 @@ IDE_RC qmnSDEX::init( qcTemplate * aTemplate,
     qmndSDEX      * sDataPlan = (qmndSDEX*)(aTemplate->tmplate.data + aPlan->offset);
 
     //-------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //-------------------------------
 
     //-------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //-------------------------------
 
     sDataPlan->flag = &aTemplate->planFlag[sCodePlan->planID];
@@ -68,11 +70,22 @@ IDE_RC qmnSDEX::init( qcTemplate * aTemplate,
     }
     else
     {
-        /* Nothing to do. */
+        //-----------------------------------
+        // init lob info
+        //-----------------------------------
+
+        if ( sDataPlan->lobInfo != NULL )
+        {
+            (void) qmxShard::initLobInfo( sDataPlan->lobInfo );
+        }
+        else
+        {
+            // Nothing to do.
+        }
     }
 
     //-------------------------------
-    // ìž¬ìˆ˜í–‰ì„ ìœ„í•œ ì´ˆê¸°í™”
+    // Àç¼öÇàÀ» À§ÇÑ ÃÊ±âÈ­
     //-------------------------------
 
     sClientInfo = aTemplate->stmt->session->mQPSpecific.mClientInfo;
@@ -80,7 +93,7 @@ IDE_RC qmnSDEX::init( qcTemplate * aTemplate,
     sdi::setDataNodePrepared( sClientInfo, sDataPlan->mDataInfo );
 
     //------------------------------------------------
-    // ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
+    // ¼öÇà ÇÔ¼ö °áÁ¤
     //------------------------------------------------
 
     sDataPlan->doIt = qmnSDEX::doIt;
@@ -99,22 +112,22 @@ IDE_RC qmnSDEX::firstInit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Data ì˜ì—­ì— ëŒ€í•œ ì´ˆê¸°í™”
+ *    Data ¿µ¿ª¿¡ ´ëÇÑ ÃÊ±âÈ­
  *
  * Implementation :
  *
  ***********************************************************************/
 
-    sdiClientInfo    * sClientInfo = NULL;
-    sdiBindParam     * sBindParams = NULL;
-    sdiDataNode        sDataNodeArg;
+    sdiClientInfo * sClientInfo = NULL;
+    sdiBindParam  * sBindParams = NULL;
+    sdiDataNode     sDataNodeArg;
+    sdiSVPStep      sSVPStep = SDI_SVP_STEP_DO_NOT_NEED_SAVEPOINT; /* BUG-47459 */
+
+    UInt            sLobBindCount = 0;
 
     //-------------------------------
-    // ìˆ˜í–‰ë…¸ë“œ ì´ˆê¸°í™”
+    // ¼öÇà³ëµå ÃÊ±âÈ­
     //-------------------------------
-
-    // shard linker ê²€ì‚¬ & ì´ˆê¸°í™”
-    IDE_TEST( sdi::checkShardLinker( aTemplate->stmt ) != IDE_SUCCESS );
 
     IDE_TEST_RAISE( aTemplate->shardExecData.execInfo == NULL,
                     ERR_NO_SHARD_INFO );
@@ -122,9 +135,26 @@ IDE_RC qmnSDEX::firstInit( qcTemplate * aTemplate,
     aDataPlan->mDataInfo = ((sdiDataNodes*)aTemplate->shardExecData.execInfo)
         + aCodePlan->shardDataIndex;
 
+    // shard linker °Ë»ç & ÃÊ±âÈ­
+    IDE_TEST( sdi::checkShardLinker( aTemplate->stmt ) != IDE_SUCCESS );
+
     //-------------------------------
-    // shard ìˆ˜í–‰ì„ ìœ„í•œ ì¤€ë¹„
+    // shard ¼öÇàÀ» À§ÇÑ ÁØºñ
     //-------------------------------
+
+    /* BUG-47459 */
+    if ( QCG_GET_SESSION_IS_AUTOCOMMIT( aTemplate->stmt ) == ID_TRUE )
+    {
+        sSVPStep = SDI_SVP_STEP_DO_NOT_NEED_SAVEPOINT;
+    }
+    else
+    {
+        if ( ( aCodePlan->shardAnalysis->mSplitMethod == SDI_SPLIT_CLONE ) &&
+             ( aTemplate->stmt->myPlan->parseTree->stmtKind == QCI_STMT_EXEC_PROC ) )
+        {
+            sSVPStep = SDI_SVP_STEP_PROCEDURE_SAVEPOINT;
+        }            
+    }
 
     sClientInfo = aTemplate->stmt->session->mQPSpecific.mClientInfo;
 
@@ -136,15 +166,23 @@ IDE_RC qmnSDEX::firstInit( qcTemplate * aTemplate,
         sDataNodeArg.mBindParams = (sdiBindParam*)
             ( aTemplate->shardExecData.data + aCodePlan->bindParam );
 
-        // ì´ˆê¸°í™”
+        /* PROJ-2728 Sharding LOB */
+        sDataNodeArg.mOutBindParams = (sdiOutBindParam*)
+            ( aTemplate->shardExecData.data + aCodePlan->outBindParam );
+        idlOS::memset( sDataNodeArg.mOutBindParams, 0x00,
+                ID_SIZEOF(sdiOutBindParam) * aCodePlan->shardParamCount );
+
+        // ÃÊ±âÈ­
         IDE_TEST( setParamInfo( aTemplate,
                                 aCodePlan,
-                                sDataNodeArg.mBindParams )
+                                sDataNodeArg.mBindParams,
+                                sDataNodeArg.mOutBindParams,
+                                &sLobBindCount )
                   != IDE_SUCCESS );
 
         sDataNodeArg.mRemoteStmt = NULL;
 
-        sDataNodeArg.mSVPStep = SDI_SVP_STEP_DO_NOT_NEED_SAVEPOINT;
+        sDataNodeArg.mSVPStep = sSVPStep;
 
         IDE_TEST( sdi::initShardDataInfo( aTemplate,
                                           aCodePlan->shardAnalysis,
@@ -164,7 +202,9 @@ IDE_RC qmnSDEX::firstInit( qcTemplate * aTemplate,
 
             IDE_TEST( setParamInfo( aTemplate,
                                     aCodePlan,
-                                    sBindParams )
+                                    sBindParams,
+                                    aDataPlan->mDataInfo->mNodes->mOutBindParams,
+                                    &sLobBindCount )
                       != IDE_SUCCESS );
         }
         else
@@ -181,6 +221,24 @@ IDE_RC qmnSDEX::firstInit( qcTemplate * aTemplate,
                   != IDE_SUCCESS );
     }
 
+    /*
+     * PROJ-2728 Sharding LOB
+     */
+    if ( sLobBindCount > 0 )
+    {
+        // PROJ-1362
+        IDE_TEST( qmxShard::initializeLobInfo(
+                    aTemplate->stmt,
+                    &(aDataPlan->lobInfo),
+                    sLobBindCount )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        aDataPlan->lobInfo = NULL;
+    }
+    aDataPlan->lobBindCount = sLobBindCount;
+
     *aDataPlan->flag &= ~QMND_SDEX_INIT_DONE_MASK;
     *aDataPlan->flag |= QMND_SDEX_INIT_DONE_TRUE;
 
@@ -194,24 +252,38 @@ IDE_RC qmnSDEX::firstInit( qcTemplate * aTemplate,
     }
     IDE_EXCEPTION_END;
 
+    if ( aDataPlan->lobInfo != NULL )
+    {
+        (void)qmx::finalizeLobInfo( aTemplate->stmt, aDataPlan->lobInfo );
+    }
+
     return IDE_FAILURE;
 }
 
-IDE_RC qmnSDEX::setParamInfo( qcTemplate   * aTemplate,
-                              qmncSDEX     * aCodePlan,
-                              sdiBindParam * aBindParams )
+IDE_RC qmnSDEX::setParamInfo( qcTemplate      * aTemplate,
+                              qmncSDEX        * aCodePlan,
+                              sdiBindParam    * aBindParams,
+                              sdiOutBindParam * aOutBindParams,
+                              UInt            * aLobBindCount )
 {
     qciBindParamInfo * sAllParamInfo = NULL;
-    qciBindParam     * sBindParam = NULL;
-    UInt               sBindOffset = 0;
-    UInt               i = 0;
+    qciBindParam     * sBindParam    = NULL;
+    UShort             sBindOffset   = 0; /* TASK-7219 */
+    UShort             i             = 0; /* TASK-7219 */
+
+    UInt               sClientCount  = 0;
+    UInt               sLobBindCount = 0;
+    idBool             sNeedShadowData = ID_FALSE;
+    mtdLobType       * sLobValue;
+
+    sClientCount = aTemplate->stmt->session->mQPSpecific.mClientInfo->mCount;
 
     // PROJ-2653
     sAllParamInfo  = aTemplate->stmt->pBindParam;
 
     for ( i = 0; i < aCodePlan->shardParamCount; i++ )
     {
-        sBindOffset = aCodePlan->shardParamOffset + i;
+        sBindOffset = ( aCodePlan->shardParamInfo + i )->mOffset; /* TASK-7219 Non-shard DML */
 
         IDE_DASSERT( sBindOffset < aTemplate->stmt->pBindParamCount );
 
@@ -228,6 +300,8 @@ IDE_RC qmnSDEX::setParamInfo( qcTemplate   * aTemplate,
             // Nothing to do.
         }
 
+        sNeedShadowData = ID_FALSE;
+
         aBindParams[i].mId        = i + 1;
         aBindParams[i].mInoutType = sBindParam->inoutType;
         aBindParams[i].mType      = sBindParam->type;
@@ -236,11 +310,112 @@ IDE_RC qmnSDEX::setParamInfo( qcTemplate   * aTemplate,
         aBindParams[i].mPrecision = sBindParam->precision;
         aBindParams[i].mScale     = sBindParam->scale;
 
-        /* BUG-46623 padding ë³€ìˆ˜ë¥¼ 0ìœ¼ë¡œ ì´ˆê¸°í™” í•´ì•¼ í•œë‹¤. */
+        /* BUG-46623 padding º¯¼ö¸¦ 0À¸·Î ÃÊ±âÈ­ ÇØ¾ß ÇÑ´Ù. */
         aBindParams[i].padding    = 0;
+
+        /* PROJ-2728 Sharding LOB */
+        if ( ( sBindParam->type == MTD_BLOB_LOCATOR_ID ) ||
+             ( sBindParam->type == MTD_CLOB_LOCATOR_ID ) )
+        {
+            sLobBindCount++;
+
+            /* app.¿¡¼­ DML ±¸¹® ½ÇÇà½Ã, ¿©±â·Î ÁøÀÔÇÑ´Ù. */
+            if ( sBindParam->inoutType == CMP_DB_PARAM_INPUT )
+            {
+                /* app.¿¡¼­ locator¸¦ IN bindingÇÑ °æ¿ì,
+                 * stand-alone¿¡¼­´Â ³»ºÎ locator°£ÀÇ copyÀÌÁö¸¸,
+                 * shard¿¡¼­´Â ´ë»ó node·ÎºÎÅÍ locator¸¦ ¹Þ¾Æ¿Í¾ß ÇÏ¹Ç·Î
+                 * OUTPUT À¸·Î ¹ÙÀÎµùÇØ¾ß ÇÑ´Ù.
+                 */
+                aBindParams[i].mInoutType = CMP_DB_PARAM_OUTPUT;
+            }
+            else
+            {
+                // Nothing to do.
+            }
+
+            sNeedShadowData = ID_TRUE;
+        }
+        else if ( ( sBindParam->type == MTD_BLOB_ID ) ||
+                  ( sBindParam->type == MTD_CLOB_ID ) )
+        {
+            sLobBindCount++;
+
+            // PSM ³»ºÎ¿¡¼­ LOB Å¸ÀÔ º¯¼ö¸¦ »ç¿ëÇÑ DML ¼öÇà½Ã, 
+            if ( sBindParam->inoutType == CMP_DB_PARAM_INPUT )
+            {
+                /* locator ¹ÙÀÎµùÀÌ ºÒ°¡´ÉÇÏ¹Ç·Î indicator¿Í ÇÔ²²
+                 * SQL_C_CHAR ¶Ç´Â SQL_C_BINARY ¹ÙÀÎµùÇÑ´Ù.
+                 * sdl::bindParam ÂüÁ¶.
+                 */
+                if ( sBindParam->type == MTD_CLOB_ID )
+                {
+                    aBindParams[i].mPrecision = IDL_MIN(
+                        aBindParams[i].mPrecision, MTD_CHAR_PRECISION_MAXIMUM);
+                }
+                else
+                {
+                    /* Nothing to do. */
+                }
+
+                sLobValue = (mtdLobType *) sBindParam->data;
+                aBindParams[i].mData = &sLobValue->value;
+            }
+            else // CMP_DB_PARAM_OUTPUT
+            {
+                /* LOB OUT bindingÀÌ ¿Ã ¼ö ÀÖ´Â °æ¿ì
+                 * 1. RETURN INTO Àý¿¡ LOB Å¸ÀÔ º¯¼ö°¡ ¿À´Â °æ¿ì, 
+                 *    ÀÌ ¶§ ´ë»ó ÄÃ·³ÀÇ Å¸ÀÔÀÌ LOBÀÌ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
+                 *    * return into ¿¡ LOB Å¸ÀÔ ÄÃ·³Àº ¹ÌÁö¿ø.
+                 * 2. PSM ³»¿¡¼­ OUT ÀÎÀÚ°¡ ÀÖ´Â shard procedure ½ÇÇà½Ã,
+                 *    locator ¹ÙÀÎµùÀº Áö¿øÇÏÁö ¾ÊÀ¸¹Ç·Î
+                 *    BINARY|CHAR·Î ¹ÙÀÎµùÇØ¼­ mtdBinaryType|mtdCharTypeÀ¸·Î
+                 *    °á°ú¸¦ ¹ÞÀº ÈÄ mtdLobTypeÀ¸·Î º¯È¯ÇÑ´Ù.
+                 */
+                if ( sBindParam->type == MTD_BLOB_ID )
+                {
+                    aBindParams[i].mType = MTD_BINARY_ID;
+                }
+                else
+                {
+                    aBindParams[i].mType = MTD_VARCHAR_ID;
+                }
+                sNeedShadowData = ID_TRUE;
+            }
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
+        if ( sNeedShadowData == ID_TRUE )
+        {
+            if ( aOutBindParams[i].mShadowData == NULL )
+            {
+                IDE_TEST( QC_QME_MEM( aTemplate->stmt)->alloc(
+                               aBindParams[i].mDataSize * sClientCount,
+                               (void**) &(aOutBindParams[i].mShadowData) )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                // Nothing to do.
+            }
+        }
+        else
+        {
+            // Nothing to do.
+            aOutBindParams[i].mShadowData = NULL;
+        }
     }
 
+    *aLobBindCount = sLobBindCount;
+
     return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
 IDE_RC qmnSDEX::doIt( qcTemplate * aTemplate,
@@ -252,8 +427,16 @@ IDE_RC qmnSDEX::doIt( qcTemplate * aTemplate,
     sdiClientInfo  * sClientInfo = aTemplate->stmt->session->mQPSpecific.mClientInfo;
     vSLong           sNumRows = 0;
 
+    if ( sDataPlan->lobBindCount > 0 &&
+         sCodePlan->shardParamCount > 0 )
+    {
+        IDE_TEST( setLobInfo( aTemplate,
+                              sCodePlan,
+                              sDataPlan->lobInfo )
+                  != IDE_SUCCESS );
+    }
     //-------------------------------
-    // ìˆ˜í–‰ë…¸ë“œ ê²°ì •
+    // ¼öÇà³ëµå °áÁ¤
     //-------------------------------
 
     IDE_TEST( sdi::decideShardDataInfo(
@@ -265,22 +448,46 @@ IDE_RC qmnSDEX::doIt( qcTemplate * aTemplate,
                   &(sCodePlan->shardQuery) )
               != IDE_SUCCESS );
 
+    /* PROJ-2733-DistTxInfo ºÐ»êÁ¤º¸¸¦ ¼³Á¤ÇÏÀÚ. */ 
+    sdi::calculateGCTxInfo( aTemplate,
+                            sDataPlan->mDataInfo,
+                            aTemplate->shardExecData.globalPSM,
+                            sCodePlan->shardDataIndex );
+
     //-------------------------------
-    // ìˆ˜í–‰
+    // ¼öÇà
     //-------------------------------
 
     IDE_TEST( sdi::executeDML( aTemplate->stmt,
                                sClientInfo,
                                sDataPlan->mDataInfo,
+                               sDataPlan->lobInfo,
                                & sNumRows )
               != IDE_SUCCESS );
 
     // result row count
     aTemplate->numRows += sNumRows;
 
+    //-----------------------------------
+    // clear lob info
+    //-----------------------------------
+    if ( sDataPlan->lobInfo != NULL )
+    {
+        (void) qmxShard::initLobInfo( sDataPlan->lobInfo );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    if ( sDataPlan->lobInfo != NULL )
+    {
+        (void)qmx::finalizeLobInfo( aTemplate->stmt, sDataPlan->lobInfo );
+    }
 
     return IDE_FAILURE;
 }
@@ -291,7 +498,7 @@ IDE_RC qmnSDEX::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Childì— ëŒ€í•˜ì—¬ padNull()ì„ í˜¸ì¶œí•œë‹¤.
+ *     Child¿¡ ´ëÇÏ¿© padNull()À» È£ÃâÇÑ´Ù.
  *
  * Implementation :
  *
@@ -304,7 +511,7 @@ IDE_RC qmnSDEX::padNull( qcTemplate * aTemplate,
     if ( (aTemplate->planFlag[sCodePlan->planID] & QMND_SDEX_INIT_DONE_MASK)
          == QMND_SDEX_INIT_DONE_FALSE )
     {
-        // ì´ˆê¸°í™”ë˜ì§€ ì•Šì€ ê²½ìš° ì´ˆê¸°í™” ìˆ˜í–‰
+        // ÃÊ±âÈ­µÇÁö ¾ÊÀº °æ¿ì ÃÊ±âÈ­ ¼öÇà
         IDE_TEST( aPlan->init( aTemplate, aPlan ) != IDE_SUCCESS );
     }
     else
@@ -312,7 +519,7 @@ IDE_RC qmnSDEX::padNull( qcTemplate * aTemplate,
         // Nothing To Do
     }
 
-    // Child Planì— ëŒ€í•˜ì—¬ Null Paddingìˆ˜í–‰
+    // Child Plan¿¡ ´ëÇÏ¿© Null Padding¼öÇà
     if ( aPlan->left != NULL )
     {
         IDE_TEST( aPlan->left->padNull( aTemplate, aPlan->left )
@@ -339,7 +546,7 @@ IDE_RC qmnSDEX::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SDEXë…¸ë“œì˜ ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *    SDEX³ëµåÀÇ ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  * Implementation :
  *
@@ -350,14 +557,14 @@ IDE_RC qmnSDEX::printPlan( qcTemplate   * aTemplate,
     sdiClientInfo * sClientInfo = aTemplate->stmt->session->mQPSpecific.mClientInfo;
 
     //----------------------------
-    // SDEX ë…¸ë“œ í‘œì‹œ
+    // SDEX ³ëµå Ç¥½Ã
     //----------------------------
 
     qmn::printSpaceDepth( aString, aDepth );
     iduVarStringAppend( aString, "SHARD-DML-EXECUTOR\n" );
 
     //----------------------------
-    // ìˆ˜í–‰ ì •ë³´ì˜ ìƒì„¸ ì¶œë ¥
+    // ¼öÇà Á¤º¸ÀÇ »ó¼¼ Ãâ·Â
     //----------------------------
 
     if ( ( ( QCG_GET_SESSION_TRCLOG_DETAIL_PREDICATE(aTemplate->stmt) == 1 ) ||
@@ -422,7 +629,7 @@ IDE_RC qmnSDEX::printDataInfo( qcTemplate    * /* aTemplate */,
         if ( aMode == QMN_DISPLAY_ALL )
         {
             //----------------------------
-            // explain plan = on; ì¸ ê²½ìš°
+            // explain plan = on; ÀÎ °æ¿ì
             //----------------------------
 
             if ( ( *aInitFlag & QMND_SDEX_INIT_DONE_MASK )
@@ -471,8 +678,54 @@ IDE_RC qmnSDEX::printDataInfo( qcTemplate    * /* aTemplate */,
                 else if ( sDataNode->mState == SDI_NODE_STATE_PREPARED )
                 {
                     qmn::printSpaceDepth( aString, aDepth );
-                    iduVarStringAppendFormat( aString, "%s (prepared)\n",
-                                              sConnectInfo->mNodeName );
+
+                    if ( sDataNode->mExecCount == 1 )
+                    {
+                        iduVarStringAppendFormat( aString, "%s (executed)\n",
+                                                  sConnectInfo->mNodeName );
+                    }
+                    else if ( sDataNode->mExecCount > 1 )
+                    {
+                        iduVarStringAppendFormat( aString, "%s (%"ID_UINT32_FMT" executed)\n",
+                                                  sConnectInfo->mNodeName,
+                                                  sDataNode->mExecCount );
+                    }
+                    else
+                    {
+                        iduVarStringAppendFormat( aString, "%s (prepared)\n",
+                                                  sConnectInfo->mNodeName );
+                    }
+
+                    if ( sDataNode->mExecCount >= 1 )
+                    {
+                        if ( sdi::getPlan( sConnectInfo, sDataNode ) == IDE_SUCCESS )
+                        {
+                            for ( sIndex = sPreIndex = sDataNode->mPlanText; *sIndex != '\0'; sIndex++ )
+                            {
+                                if ( *sIndex == '\n' )
+                                {
+                                    qmn::printSpaceDepth( aString, aDepth + 1 );
+                                    iduVarStringAppend( aString, "::" );
+                                    iduVarStringAppendLength( aString,
+                                                              sPreIndex,
+                                                              sIndex - sPreIndex + 1 );
+                                    sPreIndex = sIndex + 1;
+                                }
+                                else
+                                {
+                                    // Nothing to do.
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // Nothing to do.
+                        }
+                    }
+                    else
+                    {
+                        // Nothing to do.
+                    }
                 }
                 else
                 {
@@ -491,7 +744,7 @@ IDE_RC qmnSDEX::printDataInfo( qcTemplate    * /* aTemplate */,
         else
         {
             //----------------------------
-            // explain plan = only; ì¸ ê²½ìš°
+            // explain plan = only; ÀÎ °æ¿ì
             //----------------------------
 
             qmn::printSpaceDepth( aString, aDepth );
@@ -501,4 +754,93 @@ IDE_RC qmnSDEX::printDataInfo( qcTemplate    * /* aTemplate */,
     }
 
     return IDE_SUCCESS;
+}
+/* BUG-47459 */
+void qmnSDEX::shardStmtPartialRollbackUsingSavepoint( qcTemplate  * aTemplate,
+                                                      qmnPlan     * aPlan )
+{
+    qmndSDEX        * sDataPlan = (qmndSDEX*)(aTemplate->tmplate.data + aPlan->offset);
+    sdiClientInfo   * sClientInfo = aTemplate->stmt->session->mQPSpecific.mClientInfo;
+
+    if ( ( sDataPlan->mDataInfo != NULL ) &&
+         ( sDataPlan->mDataInfo->mInitialized == ID_TRUE ) )
+    {
+        sdi::shardStmtPartialRollbackUsingSavepoint( aTemplate->stmt,
+                                                     sClientInfo, 
+                                                     sDataPlan->mDataInfo );
+    }
+}
+
+/* PROJ-2728 Sharding LOB */
+IDE_RC qmnSDEX::setLobInfo( qcTemplate   * aTemplate,
+                            qmncSDEX     * aCodePlan,
+                            qmxLobInfo   * aLobInfo )
+{
+    sdiOutBindParam   * sOutBindParams = NULL;
+    qciBindParamInfo  * sAllParamInfo  = NULL;
+    qciBindParam      * sBindParam     = NULL;
+    mtdLobType        * sLobValue      = NULL;
+    UShort              sBindOffset    = 0; /* TASK-7219 */
+    UShort              i              = 0; /* TASK-7219 */
+
+    sAllParamInfo    = aTemplate->stmt->pBindParam;
+    sOutBindParams = (sdiOutBindParam*) ( aTemplate->shardExecData.data + aCodePlan->outBindParam );
+
+    for ( i = 0; i < aCodePlan->shardParamCount; i++ )
+    {
+        sBindOffset = ( aCodePlan->shardParamInfo + i )->mOffset; /* TASK-7219 Non-shard DML */
+        sBindParam  = &(sAllParamInfo[sBindOffset].param);
+
+        if ( ( sBindParam->type == MTD_BLOB_LOCATOR_ID ) ||
+             ( sBindParam->type == MTD_CLOB_LOCATOR_ID ) )
+        {
+            if ( sBindParam->inoutType == CMP_DB_PARAM_INPUT )
+            {
+                (void) qmxShard::addLobInfoForCopy(
+                              aLobInfo,
+                              *((smLobLocator*) (sBindParam->data)),
+                              i );
+            }
+            else // PARAM_OUTPUT
+            {
+                (void) qmxShard::addLobInfoForOutBind(
+                              aLobInfo,
+                              i );
+            }
+        }
+        else if ( ( sBindParam->type == MTD_BLOB_ID ) ||
+                  ( sBindParam->type == MTD_CLOB_ID ) )
+        {
+            if ( sBindParam->inoutType == CMP_DB_PARAM_INPUT )
+            {
+                sLobValue = (mtdLobType *) sBindParam->data;
+
+                IDE_TEST_RAISE( sBindParam->type == MTD_CLOB_ID &&
+                                sLobValue->length > MTD_CHAR_PRECISION_MAXIMUM,
+                                ERR_CONVERSION_NOT_APPLICABLE );
+
+                sOutBindParams[i].mIndicator = sLobValue->length;
+            }
+            else
+            {
+                (void) qmxShard::addLobInfoForOutBindNonLob(
+                              aLobInfo,
+                              i );
+            }
+        }
+        else
+        {
+            // Nothing to do.
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_CONVERSION_NOT_APPLICABLE );
+    {
+        IDE_SET(ideSetErrorCode(mtERR_ABORT_CONVERSION_NOT_APPLICABLE));
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }

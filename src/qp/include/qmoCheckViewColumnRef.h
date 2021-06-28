@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmoCheckViewColumnRef.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmoCheckViewColumnRef.h 89448 2020-12-07 04:24:14Z cory.chae $
  *
  * Description :
  *     PROJ-2469 Optimize View Materialization
@@ -38,6 +38,11 @@ public :
                                       qmsColumnRefList * aParentColumnRef,
                                       idBool             aAllColumnUsed );
 
+    /* TASK-7219 */
+    static IDE_RC checkUselessViewTarget( qmsTarget        * aTarget,
+                                          qmsColumnRefList * aParentColumnRef,
+                                          qmsSortColumns   * aOrderBy );
+
 private :    
     
     static IDE_RC checkQuerySet( qmsQuerySet      * sQuerySet,
@@ -50,13 +55,14 @@ private :
                                  qmsSortColumns   * aOrderBy,
                                  idBool             aAllColumnUsed );
 
-    static IDE_RC checkUselessViewTarget( qmsTarget        * aTarget,
-                                          qmsColumnRefList * aParentColumnRef,
-                                          qmsSortColumns   * aOrderBy );
-
     static IDE_RC checkUselessViewColumnRef( qmsTableRef      * aTableRef,
                                              qmsColumnRefList * aParentColumnRef,
                                              qmsSortColumns   * aOrderBy );
+    /* BUG-48090 */
+    static IDE_RC checkWithViewFlagFromQuerySet( qmsQuerySet  * aQuerySet,
+                                                 idBool       * aIsWithView );
+    static IDE_RC checkWithViewFlagFromFromTree( qmsFrom      * aFrom,
+                                                 idBool       * aIsWithView );
 };
     
 #endif /* _O_QMO_CHECK_VIEW_COLUMN_REF_H_ */

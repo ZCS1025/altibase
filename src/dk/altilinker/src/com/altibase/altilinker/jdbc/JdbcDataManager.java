@@ -78,28 +78,28 @@ public class JdbcDataManager
      */
     public static int toSQLType(int aJdbcSqlType)
     {
-        int sSQLType = SQLType.SQL_NONE;
+        int sSQLType = AltibaseSQLType.SQL_NONE;
 
         switch (aJdbcSqlType)
         {
-        case java.sql.Types.CHAR:      sSQLType = SQLType.SQL_CHAR;      break;
-        case java.sql.Types.VARCHAR:   sSQLType = SQLType.SQL_VARCHAR;   break;
-        case java.sql.Types.SMALLINT:  sSQLType = SQLType.SQL_SMALLINT;  break;
-        case java.sql.Types.TINYINT:   sSQLType = SQLType.SQL_TINYINT;   break;
-        case java.sql.Types.DECIMAL:   sSQLType = SQLType.SQL_DECIMAL;   break;
-        case java.sql.Types.NUMERIC:   sSQLType = SQLType.SQL_NUMERIC;   break;
-        case java.sql.Types.FLOAT:     sSQLType = SQLType.SQL_FLOAT;     break;
-        case java.sql.Types.INTEGER:   sSQLType = SQLType.SQL_INTEGER;   break;
-        case java.sql.Types.REAL:      sSQLType = SQLType.SQL_REAL;      break;
-        case java.sql.Types.DOUBLE:    sSQLType = SQLType.SQL_DOUBLE;    break;
-        case java.sql.Types.BIGINT:    sSQLType = SQLType.SQL_BIGINT;    break;
-        case java.sql.Types.DATE:      sSQLType = SQLType.SQL_DATE;      break;
-        case java.sql.Types.TIME:      sSQLType = SQLType.SQL_TIME;      break;
-        case java.sql.Types.TIMESTAMP: sSQLType = SQLType.SQL_TIMESTAMP; break;
-        case java.sql.Types.BINARY:    sSQLType = SQLType.SQL_BINARY;    break;
-        case java.sql.Types.BLOB:      sSQLType = SQLType.SQL_BLOB;      break;
-        case java.sql.Types.CLOB:      sSQLType = SQLType.SQL_CLOB;      break;
-        default:                       sSQLType = SQLType.SQL_NONE;      break;
+        case java.sql.Types.CHAR:      sSQLType = AltibaseSQLType.SQL_CHAR;      break;
+        case java.sql.Types.VARCHAR:   sSQLType = AltibaseSQLType.SQL_VARCHAR;   break;
+        case java.sql.Types.SMALLINT:  sSQLType = AltibaseSQLType.SQL_SMALLINT;  break;
+        case java.sql.Types.TINYINT:   sSQLType = AltibaseSQLType.SQL_TINYINT;   break;
+        case java.sql.Types.DECIMAL:   sSQLType = AltibaseSQLType.SQL_DECIMAL;   break;
+        case java.sql.Types.NUMERIC:   sSQLType = AltibaseSQLType.SQL_NUMERIC;   break;
+        case java.sql.Types.FLOAT:     sSQLType = AltibaseSQLType.SQL_FLOAT;     break;
+        case java.sql.Types.INTEGER:   sSQLType = AltibaseSQLType.SQL_INTEGER;   break;
+        case java.sql.Types.REAL:      sSQLType = AltibaseSQLType.SQL_REAL;      break;
+        case java.sql.Types.DOUBLE:    sSQLType = AltibaseSQLType.SQL_DOUBLE;    break;
+        case java.sql.Types.BIGINT:    sSQLType = AltibaseSQLType.SQL_BIGINT;    break;
+        case java.sql.Types.DATE:      sSQLType = AltibaseSQLType.SQL_DATE;      break;
+        case java.sql.Types.TIME:      sSQLType = AltibaseSQLType.SQL_TIME;      break;
+        case java.sql.Types.TIMESTAMP: sSQLType = AltibaseSQLType.SQL_TIMESTAMP; break;
+        case java.sql.Types.BINARY:    sSQLType = AltibaseSQLType.SQL_BINARY;    break;
+        case java.sql.Types.BLOB:      sSQLType = AltibaseSQLType.SQL_BLOB;      break;
+        case java.sql.Types.CLOB:      sSQLType = AltibaseSQLType.SQL_CLOB;      break;
+        default:                       sSQLType = AltibaseSQLType.SQL_NONE;      break;
         }
 
         return sSQLType;

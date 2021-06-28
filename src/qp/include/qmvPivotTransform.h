@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmvPivotTransform.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmvPivotTransform.h 89218 2020-11-12 01:36:24Z donovan.seo $
  **********************************************************************/
 
 #ifndef _Q_QMV_PIVOT_TRANSFORM_H_
@@ -30,6 +30,7 @@ class qmvPivotTransform
 public:
 
     static IDE_RC doTransform( qcStatement * aStatement,
+                               qmsSFWGH    * aSFWGH,
                                qmsTableRef * aTableRef );
 
     static IDE_RC expandPivotDummy( qcStatement   * aStatement,

@@ -23,10 +23,13 @@ IDE_RC dktNotifier::initialize()
     mSession = NULL;
     mSessionId = DKP_LINKER_NOTIFY_SESSION_ID;
     mDtxInfoCnt = 0;
-    mExit = ID_FALSE;
-    mPause = ID_TRUE;
+    mExit    = ID_FALSE;
+    mPause   = ID_TRUE;
+    mRestart = ID_FALSE;
+    mRunFailoverOneCycle = ID_FALSE;
 
     IDU_LIST_INIT( &mDtxInfo );
+    IDU_LIST_INIT( &mFailoverDtxInfo );
 
     IDE_TEST_RAISE( mNotifierDtxInfoMutex.initialize( (SChar *)"DKT_NOTIFIER_MUTEX", 
                                           IDU_MUTEX_KIND_POSIX, 
@@ -44,30 +47,188 @@ IDE_RC dktNotifier::initialize()
     return IDE_FAILURE;
 }
 
-void dktNotifier::addDtxInfo( dktDtxInfo * aDtxInfo )
+void dktNotifier::addDtxInfo( DK_NOTIFY_TYPE aType, dktDtxInfo * aDtxInfo )
 {
     IDE_ASSERT( mNotifierDtxInfoMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
 
     IDU_LIST_INIT_OBJ( &(aDtxInfo->mNode), aDtxInfo );
-    IDU_LIST_ADD_LAST( &mDtxInfo, &(aDtxInfo->mNode) );
-
-    mDtxInfoCnt++;
+    
+    if ( aType == DK_NOTIFY_NORMAL )
+    {
+        IDU_LIST_ADD_LAST( &mDtxInfo, &(aDtxInfo->mNode) );
+        mDtxInfoCnt++;
+    }
+    else if ( aType == DK_NOTIFY_FAILOVER )
+    {
+        IDU_LIST_ADD_LAST( &mFailoverDtxInfo, &(aDtxInfo->mNode) );
+        mFailoverDtxInfoCnt++;
+    }
+    else
+    {
+        IDE_DASSERT( 0 );
+    }
 
     IDE_ASSERT( mNotifierDtxInfoMutex.unlock() == IDE_SUCCESS );
 }
 
-void dktNotifier::removeDtxInfo( dktDtxInfo * aDtxInfo )
+void dktNotifier::removeDtxInfo( DK_NOTIFY_TYPE aType, dktDtxInfo * aDtxInfo )
 {
     IDE_ASSERT( mNotifierDtxInfoMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
 
     IDU_LIST_REMOVE( &(aDtxInfo->mNode) );
 
-    mDtxInfoCnt--;
+    aDtxInfo->removeAllBranchTx();
 
+    aDtxInfo->finalize();
     (void)iduMemMgr::free( aDtxInfo );
     aDtxInfo = NULL;
 
+    if ( aType == DK_NOTIFY_NORMAL )
+    {
+        mDtxInfoCnt--;
+    }
+    else if ( aType == DK_NOTIFY_FAILOVER )
+    {
+        mFailoverDtxInfoCnt--;
+    }
+    else
+    {
+        IDE_DASSERT( 0 );
+    }
+
     IDE_ASSERT( mNotifierDtxInfoMutex.unlock() == IDE_SUCCESS );
+}
+
+void dktNotifier::failoverNotify()
+{
+    UInt           sResultCode = DKP_RC_FAILED;
+    UInt           sCountFailXID = 0;
+    ID_XID       * sFailXIDs = NULL;
+    SInt         * sFailErrCodes = NULL;
+    iduListNode  * sDtxInfoIterator = NULL;
+    iduListNode  * sNext = NULL;
+    dktDtxInfo   * sDtxInfo = NULL;
+    UInt           sCountHeuristicXID = 0;
+    ID_XID       * sHeuristicXIDs = NULL;
+    dksSession   * sDummySession  = NULL;
+
+    IDE_TEST_CONT( IDU_LIST_IS_EMPTY( &mFailoverDtxInfo ) == ID_TRUE, EXIT_LABEL );
+
+    IDU_LIST_ITERATE_SAFE( &mFailoverDtxInfo, sDtxInfoIterator, sNext )
+    {
+        if ( ( mExit == ID_TRUE ) || ( mPause == ID_TRUE ) || ( mRestart == ID_TRUE ) )
+        {
+            break;
+        }
+
+        sDtxInfo = (dktDtxInfo *)sDtxInfoIterator->mObj;
+        if ( sDtxInfo->mIsFailoverRequestNode == ID_TRUE )
+        {
+            if ( notifyXaResultForShard( sDtxInfo,
+                                         sDummySession,
+                                         &sResultCode,
+                                         &sCountFailXID,
+                                         &sFailXIDs,
+                                         &sFailErrCodes,
+                                         &sCountHeuristicXID,
+                                         &sHeuristicXIDs )
+                 != IDE_SUCCESS )
+            {
+                IDE_SET( ideSetErrorCode( dkERR_ABORT_XA_APPLY_FAIL,
+                                          sDtxInfo->mResult,
+                                          sDtxInfo->mGlobalTxId ) );
+                continue;
+            }
+        }
+        else
+        {
+            if ( askResultToRequestNode( sDtxInfo, &sResultCode ) != IDE_SUCCESS )
+            {
+                IDE_SET( ideSetErrorCode( dkERR_ABORT_XA_APPLY_FAIL,
+                                          sDtxInfo->mResult,
+                                          sDtxInfo->mGlobalTxId ) );
+                continue;
+            }
+        }
+
+        if ( sResultCode == DKP_RC_SUCCESS )
+        {
+            (void)removeEndedDtxInfo( DK_NOTIFY_FAILOVER,
+                                      sDtxInfo->mLocalTxId,
+                                      sDtxInfo->mGlobalTxId );
+        }
+    }
+
+    mRunFailoverOneCycle = ID_TRUE;
+
+    EXIT_LABEL:
+
+    return;
+}
+
+IDE_RC dktNotifier::askResultToRequestNode( dktDtxInfo * aDtxInfo, UInt * aResultCode )
+{
+    idBool sIsCommit          = ID_FALSE;
+    idBool sIsFindRequestNode = ID_FALSE;
+    smSCN  sGlobalCommitSCN;
+
+    if ( ( aDtxInfo->mResult != SMI_DTX_COMMIT ) && 
+         ( aDtxInfo->mResult != SMI_DTX_ROLLBACK ) )
+    {
+        /* ¸ðµç ³ëµå¸¦ µ¹¸é¼­ request node ¸¦ Ã£´Â´Ù. 
+         * Ã£Áö ¸øÇÒ °æ¿ì prepare »óÅÂ·Î µÎ°í ³Ñ¾î°£´Ù. */
+        SMI_INIT_SCN( &sGlobalCommitSCN );
+        if ( sdi::findRequestNodeNGetResultWithoutSession( &(aDtxInfo->mXID), 
+                                                           &sIsFindRequestNode,
+                                                           &sIsCommit,
+                                                           &sGlobalCommitSCN ) 
+             != IDE_SUCCESS )
+        {
+            IDE_ERRLOG( IDE_DK_3 );
+        }
+
+        IDE_TEST_RAISE( sIsFindRequestNode != ID_TRUE, ERR_NOT_FIND_REQUEST_NODE );
+       
+        aDtxInfo->globalTxResultLock();
+
+        aDtxInfo->mResult = ( sIsCommit == ID_TRUE ) ? SMI_DTX_COMMIT : SMI_DTX_ROLLBACK;
+        SM_SET_SCN( &(aDtxInfo->mGlobalCommitSCN), &sGlobalCommitSCN );
+        
+        aDtxInfo->globalTxResultUnlock();
+    }
+
+    if ( aDtxInfo->mResult == SMI_DTX_COMMIT )
+    {
+        IDE_TEST( aDtxInfo->mFailoverTrans->mSmiTrans.commit( &(aDtxInfo->mGlobalCommitSCN) ) 
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        IDE_ASSERT( aDtxInfo->mFailoverTrans->mSmiTrans.rollback() == IDE_SUCCESS );
+    }
+
+
+    if ( aDtxInfo->mFailoverTrans->mSmiTrans.destroy( NULL ) != IDE_SUCCESS )
+    {
+        IDE_ERRLOG( IDE_DK_3 );
+    }
+    (void)iduMemMgr::free( aDtxInfo->mFailoverTrans );
+    aDtxInfo->mFailoverTrans = NULL;
+
+    *aResultCode = DKP_RC_SUCCESS;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NOT_FIND_REQUEST_NODE );
+    {
+        IDE_SET( ideSetErrorCode( dkERR_ABORT_DK_INTERNAL_ERROR ,
+                                  "[dktNotifier] askResultToRequestNode Request node not found" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    *aResultCode = DKP_RC_FAILED;
+
+    return IDE_FAILURE;
 }
 
 void dktNotifier::notify()
@@ -99,7 +260,7 @@ void dktNotifier::notify()
 
     IDU_LIST_ITERATE_SAFE( &mDtxInfo, sDtxInfoIterator, sNext )
     {
-        if ( ( mExit == ID_TRUE ) || ( mPause == ID_TRUE ) )
+        if ( ( mExit == ID_TRUE ) || ( mPause == ID_TRUE ) || ( mRestart == ID_TRUE ) )
         {
             break;
         }
@@ -118,7 +279,7 @@ void dktNotifier::notify()
                 if ( ( sDblinkStarted == ID_FALSE ) ||
                      ( mSession->mIsNeedToDisconnect == ID_TRUE ) )
                 {
-                    /* altilinkerê°€ stopì´ê±°ë‚˜, need to disconnectì¸ ê²½ìš° */
+                    /* altilinker°¡ stopÀÌ°Å³ª, need to disconnectÀÎ °æ¿ì */
                     continue;
                 }
                 else
@@ -128,13 +289,18 @@ void dktNotifier::notify()
             }
             else
             {
-                /* DKT_LINKER_TYPE_DBLINKì¸ ê²½ìš°, notifyXaResult()ì—ì„œ mSessionì„ ì‚¬ìš©í•œë‹¤. */
+                /* DKT_LINKER_TYPE_DBLINKÀÎ °æ¿ì, notifyXaResult()¿¡¼­ mSessionÀ» »ç¿ëÇÑ´Ù. */
                 continue;
             }
         }
         else
         {
-            /* DKT_LINKER_TYPE_SHARDì¸ ê²½ìš°, notifyXaResult()ì—ì„œ mSessionì„ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+            /* DKT_LINKER_TYPE_SHARDÀÎ °æ¿ì, notifyXaResult()¿¡¼­ mSessionÀ» »ç¿ëÇÏÁö ¾Ê´Â´Ù. */
+
+            if ( sDtxInfo->mIsPassivePending == ID_TRUE )
+            {
+                continue;
+            }
         }
 
         if ( notifyXaResult( sDtxInfo,
@@ -164,12 +330,13 @@ void dktNotifier::notify()
                                         sCountHeuristicXID,
                                         sHeuristicXIDs );
 
-            (void)removeEndedDtxInfo( sDtxInfo->mLocalTxId,
+            (void)removeEndedDtxInfo( DK_NOTIFY_NORMAL,
+                                      sDtxInfo->mLocalTxId,
                                       sDtxInfo->mGlobalTxId );
         }
         else
         {
-            /* ì›ê²©ìž¥ì•  ì‹œê°„ì´ ê¸´ ê²½ìš°, ì§€ë‚˜ì¹˜ê²Œ ë§Žì€ ë¡œê¹…ì´ ë°œìƒí•  ê²ƒìž„. */
+            /* ¿ø°ÝÀå¾Ö ½Ã°£ÀÌ ±ä °æ¿ì, Áö³ªÄ¡°Ô ¸¹Àº ·Î±ëÀÌ ¹ß»ýÇÒ °ÍÀÓ. */
             writeNotifyFailLog( sFailXIDs,
                                 sFailErrCodes,
                                 sDtxInfo );
@@ -328,6 +495,10 @@ IDE_RC dktNotifier::notifyXaResultForDBLink( dktDtxInfo  * aDtxInfo,
                   != IDE_SUCCESS );
     }
 
+    IDE_TEST( smiWriteXaEndLog( aDtxInfo->mLocalTxId,
+                                aDtxInfo->mGlobalTxId )
+              != IDE_SUCCESS );
+
     EXIT_LABEL:
 
     return IDE_SUCCESS;
@@ -348,8 +519,7 @@ IDE_RC dktNotifier::notifyXaResultForShard( dktDtxInfo    * aDtxInfo,
 {
     iduListNode         * sIter = NULL;
     dktDtxBranchTxInfo  * sDtxBranchTxInfo = NULL;
-    sdiConnectInfo        sDataNode;
-    UChar                 sXidString[DKT_2PC_XID_STRING_LEN];
+    idBool                sAllSuccess = ID_TRUE;
 
     DK_UNUSED( aSession );
     DK_UNUSED( aCountFailXID );
@@ -358,69 +528,33 @@ IDE_RC dktNotifier::notifyXaResultForShard( dktDtxInfo    * aDtxInfo,
     DK_UNUSED( aCountHeuristicXID );
     DK_UNUSED( aHeuristicXIDs );
 
+    IDU_FIT_POINT( "dktNotifier::notifyXaResultForShard::sendNotify" );
+
     IDU_LIST_ITERATE( &(aDtxInfo->mBranchTxInfo), sIter )
     {
-        sDtxBranchTxInfo = (dktDtxBranchTxInfo *)sIter->mObj;
-        IDE_DASSERT( sDtxBranchTxInfo->mLinkerType == 'S' );
-
-        idlOS::memset( &sDataNode, 0x00, ID_SIZEOF(sdiConnectInfo) );
-
-        /* set connect info */
-        idlOS::strncpy( sDataNode.mNodeName,
-                        sDtxBranchTxInfo->mData.mNode.mNodeName,
-                        SDI_NODE_NAME_MAX_SIZE );
-        sDataNode.mNodeName[ SDI_NODE_NAME_MAX_SIZE ] = '\0';
-
-        idlOS::strncpy( sDataNode.mUserName,
-                        sDtxBranchTxInfo->mData.mNode.mUserName,
-                        QCI_MAX_OBJECT_NAME_LEN );
-        sDataNode.mUserName[ QCI_MAX_OBJECT_NAME_LEN ] = '\0';
-
-        idlOS::strncpy( sDataNode.mUserPassword,
-                        sDtxBranchTxInfo->mData.mNode.mUserPassword,
-                        IDS_MAX_PASSWORD_LEN );
-        sDataNode.mUserPassword[ IDS_MAX_PASSWORD_LEN ] = '\0';
-
-        idlOS::strncpy( sDataNode.mNodeInfo.mNodeName,
-                        sDtxBranchTxInfo->mData.mNode.mNodeName,
-                        SDI_NODE_NAME_MAX_SIZE );
-        sDataNode.mNodeInfo.mNodeName[ SDI_NODE_NAME_MAX_SIZE ] = '\0';
-
-        idlOS::strncpy( sDataNode.mNodeInfo.mServerIP,
-                        sDtxBranchTxInfo->mData.mNode.mServerIP,
-                        SDI_SERVER_IP_SIZE - 1 );
-        sDataNode.mNodeInfo.mServerIP[ SDI_SERVER_IP_SIZE - 1 ] = '\0';
-
-        sDataNode.mNodeInfo.mPortNo = sDtxBranchTxInfo->mData.mNode.mPortNo;
-        sDataNode.mConnectType = sDtxBranchTxInfo->mData.mNode.mConnectType;
-
-        sDataNode.mFlag &= ~SDI_CONNECT_INITIAL_BY_NOTIFIER_MASK;
-        sDataNode.mFlag |= SDI_CONNECT_INITIAL_BY_NOTIFIER_TRUE;
-
-        sDataNode.mFlag &= ~SDI_CONNECT_USER_AUTOCOMMIT_MODE_MASK;
-        sDataNode.mFlag |= SDI_CONNECT_USER_AUTOCOMMIT_MODE_OFF;
-
-        sDataNode.mFlag &= ~SDI_CONNECT_COORD_AUTOCOMMIT_MODE_MASK;
-        sDataNode.mFlag |= SDI_CONNECT_COORD_AUTOCOMMIT_MODE_OFF;
-
-        // BUG-45411
-        IDE_TEST( sdi::allocConnect( &sDataNode ) != IDE_SUCCESS );
-
-        dktXid::copyXID( &(sDataNode.mXID),
-                         &(sDtxBranchTxInfo->mXID) );
-
-        if ( aDtxInfo->mResult == SMI_DTX_COMMIT )
+        sDtxBranchTxInfo = (dktDtxBranchTxInfo*)sIter->mObj;
+        if ( sDtxBranchTxInfo->mIsValid == ID_TRUE )
         {
-            IDE_TEST( sdi::endPendingTran( &sDataNode, ID_TRUE ) != IDE_SUCCESS );
+            if ( notifyOneBranchXaResultForShard( aDtxInfo, 
+                                                  sDtxBranchTxInfo,
+                                                  &(aDtxInfo->mXID)) 
+                 != IDE_SUCCESS )
+            {
+                IDE_ERRLOG(IDE_DK_3);
+                sAllSuccess = ID_FALSE;
+            }
+            else
+            {
+                sDtxBranchTxInfo->mIsValid = ID_FALSE;
+            }
         }
-        else
-        {
-            IDE_TEST( sdi::endPendingTran( &sDataNode, ID_FALSE ) != IDE_SUCCESS );
-        }
-
-        /* xaCloseí•˜ì§€ ì•Šê³  ë°”ë¡œ ëŠì–´ë²„ë¦°ë‹¤. */
-        sdi::freeConnectImmediately( &sDataNode );
     }
+
+    IDE_TEST( sAllSuccess != ID_TRUE );
+
+    IDE_TEST( smiWriteXaEndLog( aDtxInfo->mLocalTxId,
+                                aDtxInfo->mGlobalTxId )
+              != IDE_SUCCESS );
 
     *aResultCode = DKP_RC_SUCCESS;
 
@@ -428,10 +562,112 @@ IDE_RC dktNotifier::notifyXaResultForShard( dktDtxInfo    * aDtxInfo,
 
     IDE_EXCEPTION_END;
 
+    *aResultCode = DKP_RC_FAILED;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC dktNotifier::notifyOneBranchXaResultForShard( dktDtxInfo          * aDtxInfo,
+                                                     dktDtxBranchTxInfo  * aDtxBranchTxInfo,
+                                                     ID_XID              * aXID )
+{
+    sdiConnectInfo        sDataNode;
+    UChar                 sXidString[DKT_2PC_XID_STRING_LEN];
+
+    IDE_DASSERT( aDtxBranchTxInfo->mLinkerType == 'S' );
+
+    idlOS::memset( &sDataNode, 0x00, ID_SIZEOF(sdiConnectInfo) );
+
+    /* set connect info */
+    idlOS::strncpy( sDataNode.mNodeName,
+                    aDtxBranchTxInfo->mData.mNode.mNodeName,
+                    SDI_NODE_NAME_MAX_SIZE );
+    sDataNode.mNodeName[ SDI_NODE_NAME_MAX_SIZE ] = '\0';
+
+    idlOS::strncpy( sDataNode.mUserName,
+                    aDtxBranchTxInfo->mData.mNode.mUserName,
+                    QCI_MAX_OBJECT_NAME_LEN );
+    sDataNode.mUserName[ QCI_MAX_OBJECT_NAME_LEN ] = '\0';
+
+    idlOS::strncpy( sDataNode.mUserPassword,
+                    aDtxBranchTxInfo->mData.mNode.mUserPassword,
+                    IDS_MAX_PASSWORD_LEN );
+    sDataNode.mUserPassword[ IDS_MAX_PASSWORD_LEN ] = '\0';
+
+    idlOS::strncpy( sDataNode.mNodeInfo.mNodeName,
+                    aDtxBranchTxInfo->mData.mNode.mNodeName,
+                    SDI_NODE_NAME_MAX_SIZE );
+    sDataNode.mNodeInfo.mNodeName[ SDI_NODE_NAME_MAX_SIZE ] = '\0';
+
+    idlOS::strncpy( sDataNode.mNodeInfo.mServerIP,
+                    aDtxBranchTxInfo->mData.mNode.mServerIP,
+                    SDI_SERVER_IP_SIZE - 1 );
+    sDataNode.mNodeInfo.mServerIP[ SDI_SERVER_IP_SIZE - 1 ] = '\0';
+
+    sDataNode.mNodeInfo.mPortNo = aDtxBranchTxInfo->mData.mNode.mPortNo;
+    sDataNode.mConnectType = aDtxBranchTxInfo->mData.mNode.mConnectType;
+
+    sDataNode.mFlag &= ~SDI_CONNECT_INITIAL_BY_NOTIFIER_MASK;
+    sDataNode.mFlag |= SDI_CONNECT_INITIAL_BY_NOTIFIER_TRUE;
+
+    sDataNode.mFlag &= ~SDI_CONNECT_USER_AUTOCOMMIT_MODE_MASK;
+    sDataNode.mFlag |= SDI_CONNECT_USER_AUTOCOMMIT_MODE_OFF;
+
+    sDataNode.mFlag &= ~SDI_CONNECT_COORD_AUTOCOMMIT_MODE_MASK;
+    sDataNode.mFlag |= SDI_CONNECT_COORD_AUTOCOMMIT_MODE_OFF;
+
+    // BUG-45411
+    IDE_TEST( sdi::allocConnect( &sDataNode ) != IDE_SUCCESS );
+
+    dktXid::copyXID( &(sDataNode.mXID), aXID );
+
+    if ( aDtxInfo->mResult == SMI_DTX_COMMIT )
+    {
+        /* PROJ-2733-DistTxInfo */
+        if ( SM_SCN_IS_NOT_INIT( aDtxInfo->mGlobalCommitSCN ) )
+        {
+            IDE_TEST_RAISE( sdi::setSCN( &sDataNode, &aDtxInfo->mGlobalCommitSCN ) != IDE_SUCCESS,
+                            ERR_SET_SCN);
+        }
+        IDE_TEST( sdi::endPendingTran( &sDataNode, ID_TRUE ) != IDE_SUCCESS );
+    }
+    else
+    {
+        IDE_TEST( sdi::endPendingTran( &sDataNode, ID_FALSE ) != IDE_SUCCESS );
+    }
+
+     if ( IDL_LIKELY_FALSE( IDE_TRC_SD_32 != 0 ) )
+     {
+            (void)idaXaConvertXIDToString( NULL,
+                                           &(aDtxInfo->mXID),
+                                           sXidString,
+                                           DKT_2PC_XID_STRING_LEN );
+
+            ideLog::log( IDE_SD_32, "[SHARED_TX_NOTIFY] NODE NAME:%s|XID:%s Notify send success",
+                                    sDataNode.mNodeName, sXidString );
+    }
+
+    /* xaCloseÇÏÁö ¾Ê°í ¹Ù·Î ²÷¾î¹ö¸°´Ù. */
+    sdi::freeConnectImmediately( &sDataNode );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_SET_SCN )
+    {
+        /* already set error code */
+        ideLog::log( IDE_SD_0, "= [DKT] notifyXaResultForShard"
+                               ", %s: failure setSCN, GlobalCommitSCN : %"ID_UINT64_FMT
+                               ", %s",
+                     sDataNode.mNodeName,
+                     aDtxInfo->mGlobalCommitSCN,
+                     ideGetErrorMsg( ideGetErrorCode() ) );
+    }
+    IDE_EXCEPTION_END;
+
     if ( IDE_TRC_DK_3 )
     {
         (void)idaXaConvertXIDToString(NULL,
-                                      &(sDtxBranchTxInfo->mXID),
+                                      &(aDtxInfo->mXID),
                                       sXidString,
                                       DKT_2PC_XID_STRING_LEN);
 
@@ -456,23 +692,49 @@ IDE_RC dktNotifier::notifyXaResultForShard( dktDtxInfo    * aDtxInfo,
         /* Nothing to do */
     }
 
-    *aResultCode = DKP_RC_FAILED;
+    if ( IDL_LIKELY_FALSE( IDE_TRC_SD_32 != 0 ) )                                       \
+    {
+        (void)idaXaConvertXIDToString( NULL,
+                                       &(aDtxInfo->mXID),
+                                       sXidString,
+                                       DKT_2PC_XID_STRING_LEN );
+
+        ideLog::log( IDE_SD_32, "[SHARED_TX_NOTIFY] NODE NAME:%s|XID:%s Notify send fail",
+                                sDataNode.mNodeName, sXidString );
+    }
 
     return IDE_FAILURE;
 }
 
-idBool dktNotifier::findDtxInfo( UInt aLocalTxId, 
-                                 UInt  aGlobalTxId, 
+
+idBool dktNotifier::findDtxInfo( DK_NOTIFY_TYPE aType,
+                                 UInt aLocalTxId, 
+                                 UInt aGlobalTxId, 
                                  dktDtxInfo ** aDtxInfo )
 {
     iduListNode * sDtxInfoIterator = NULL;
     dktDtxInfo  * sDtxInfo         = NULL;
     idBool        sIsFind          = ID_FALSE;
+    iduList     * sDtxInfoList     = NULL;
 
     IDE_DASSERT( *aDtxInfo == NULL );
 
+    if ( aType == DK_NOTIFY_NORMAL )
+    {
+        sDtxInfoList = &mDtxInfo;
+    }
+    else if ( aType == DK_NOTIFY_FAILOVER )
+    {
+        sDtxInfoList = &mFailoverDtxInfo;
+    }
+    else
+    {
+        IDE_DASSERT( 0 );
+    }
+
+
     IDE_ASSERT( mNotifierDtxInfoMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
-    IDU_LIST_ITERATE( &mDtxInfo, sDtxInfoIterator )
+    IDU_LIST_ITERATE( sDtxInfoList, sDtxInfoIterator )
     {
         sDtxInfo = (dktDtxInfo *)sDtxInfoIterator->mObj;
         if ( ( sDtxInfo->mGlobalTxId == aGlobalTxId ) &&
@@ -492,16 +754,69 @@ idBool dktNotifier::findDtxInfo( UInt aLocalTxId,
     return sIsFind;
 }
 
-IDE_RC dktNotifier::removeEndedDtxInfo( UInt     aLocalTxId,
-                                        UInt    aGlobalTxId )
+idBool dktNotifier::findDtxInfoByXID( DK_NOTIFY_TYPE    aType,
+                                      idBool            aLocked,
+                                      ID_XID          * aXID,
+                                      dktDtxInfo     ** aDtxInfo )
+{
+    iduListNode * sDtxInfoIterator = NULL;
+    dktDtxInfo  * sDtxInfo         = NULL;
+    idBool        sIsFind          = ID_FALSE;
+    iduList     * sDtxInfoList     = NULL;
+
+    IDE_DASSERT( *aDtxInfo == NULL );
+
+    if ( aType == DK_NOTIFY_NORMAL )
+    {
+        sDtxInfoList = &mDtxInfo;
+    }
+    else if ( aType == DK_NOTIFY_FAILOVER )
+    {
+        sDtxInfoList = &mFailoverDtxInfo;
+    }
+    else
+    {
+        IDE_DASSERT( 0 );
+    }
+
+    if ( aLocked != ID_TRUE )
+    {
+        IDE_ASSERT( mNotifierDtxInfoMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
+    }
+
+    IDU_LIST_ITERATE( sDtxInfoList, sDtxInfoIterator )
+    {
+        sDtxInfo = (dktDtxInfo *)sDtxInfoIterator->mObj;
+        if ( dktXid::isEqualXID( &(sDtxInfo->mXID), aXID ) == ID_TRUE )
+        {
+            *aDtxInfo = sDtxInfo;
+            sIsFind = ID_TRUE;
+            break;
+        }
+    }
+    
+    if ( aLocked != ID_TRUE )
+    {
+        IDE_ASSERT( mNotifierDtxInfoMutex.unlock() == IDE_SUCCESS );
+    }
+
+    return sIsFind;
+}
+
+
+IDE_RC dktNotifier::removeEndedDtxInfo( DK_NOTIFY_TYPE aType,
+                                        UInt     aLocalTxId,
+                                        UInt     aGlobalTxId )
 {
     dktDtxInfo * sDtxInfo  = NULL;
 
-    IDE_TEST_RAISE( findDtxInfo( aLocalTxId, aGlobalTxId, &sDtxInfo )
+    IDE_TEST_RAISE( findDtxInfo( aType, 
+                                 aLocalTxId, 
+                                 aGlobalTxId, 
+                                 &sDtxInfo )
                     != ID_TRUE, ERR_NOT_EXIST_DTX_INFO );
 
-    sDtxInfo->removeAllBranchTx();
-    removeDtxInfo( sDtxInfo );
+    removeDtxInfo( aType, sDtxInfo );
     sDtxInfo = NULL;
 
     return IDE_SUCCESS;
@@ -515,6 +830,89 @@ IDE_RC dktNotifier::removeEndedDtxInfo( UInt     aLocalTxId,
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
+}
+
+idBool dktNotifier::setResultPassiveDtxInfo( ID_XID * aXID, idBool aCommit )
+{
+    dktDtxInfo  * sDtxInfo         = NULL;
+    iduListNode * sDtxInfoIterator = NULL;
+    idBool        sIsFind          = ID_FALSE;
+
+
+    IDE_ASSERT( mNotifierDtxInfoMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
+    IDU_LIST_ITERATE( &mDtxInfo, sDtxInfoIterator )
+    {
+        sDtxInfo = (dktDtxInfo *)sDtxInfoIterator->mObj;
+        if ( dktXid::isEqualXID( &sDtxInfo->mXID, aXID ) == ID_TRUE )
+        {
+            sIsFind = ID_TRUE;
+
+            if ( sDtxInfo->mIsPassivePending == ID_TRUE )
+            {
+                if ( aCommit == ID_TRUE )
+                {
+                    sDtxInfo->mResult = SMI_DTX_COMMIT;
+                }
+                else
+                {
+                    sDtxInfo->mResult = SMI_DTX_ROLLBACK;
+                }
+
+                sDtxInfo->mIsPassivePending = ID_FALSE;
+            }
+
+            /* continue to search more than one. */
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    
+    }
+    IDE_ASSERT( mNotifierDtxInfoMutex.unlock() == IDE_SUCCESS );
+
+    return sIsFind;
+}
+
+idBool dktNotifier::setResultFailoverDtxInfo( ID_XID * aXID, 
+                                              idBool   aCommit,
+                                              smSCN  * aGlobalCommitSCN )
+{
+    dktDtxInfo  * sDtxInfo         = NULL;
+    iduListNode * sDtxInfoIterator = NULL;
+    idBool        sIsFind          = ID_FALSE;
+
+    IDE_ASSERT( mNotifierDtxInfoMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
+    
+    IDU_LIST_ITERATE( &mFailoverDtxInfo, sDtxInfoIterator )
+    {
+        sDtxInfo = (dktDtxInfo *)sDtxInfoIterator->mObj;
+        if ( dktXid::isEqualGlobalXID( &sDtxInfo->mXID, aXID ) == ID_TRUE )
+        {
+            sDtxInfo->globalTxResultLock();
+
+            sIsFind = ID_TRUE;
+   
+            if ( aCommit == ID_TRUE )
+            {
+                sDtxInfo->mResult = SMI_DTX_COMMIT;
+                SM_SET_SCN( &(sDtxInfo->mGlobalCommitSCN), aGlobalCommitSCN );
+            }
+            else
+            {
+                sDtxInfo->mResult = SMI_DTX_ROLLBACK;
+            }
+
+            /* Failover DtxInfo ÀÇ ºü¸¥ Ã³¸®¸¦ À§ÇÏ¿© Restart ½ÃÅ²´Ù. */
+            mRestart = ID_TRUE;
+
+            sDtxInfo->globalTxResultUnlock();
+        }
+    }
+
+    IDE_ASSERT( mNotifierDtxInfoMutex.unlock() == IDE_SUCCESS );
+
+    return sIsFind;
 }
 
 void dktNotifier::writeNotifyHeuristicXIDLog( dktDtxInfo   * aDtxInfo,
@@ -581,16 +979,25 @@ void dktNotifier::writeNotifyFailLog( ID_XID       * aFailXIDs,
     }
 }
 
-IDE_RC dktNotifier::setResult( UInt    aLocalTxId,
-                               UInt   aGlobalTxId,
-                               UChar   aResult )
+IDE_RC dktNotifier::setResult( DK_NOTIFY_TYPE aType,
+                               UInt    aLocalTxId,
+                               UInt    aGlobalTxId,
+                               UChar   aResult,
+                               smSCN * aGlobalCommitSCN )
 {
     dktDtxInfo * sDtxInfo  = NULL;
 
-    IDE_TEST_RAISE( findDtxInfo( aLocalTxId, aGlobalTxId, &sDtxInfo )
+    IDE_TEST_RAISE( findDtxInfo( aType, 
+                                 aLocalTxId, 
+                                 aGlobalTxId, 
+                                 &sDtxInfo )
                     != ID_TRUE, ERR_NOT_EXIST_DTX_INFO );
 
     sDtxInfo->mResult = aResult;
+    if ( aGlobalCommitSCN != NULL )
+    {
+        SM_SET_SCN( &sDtxInfo->mGlobalCommitSCN, aGlobalCommitSCN );
+    }
 
     return IDE_SUCCESS;
 
@@ -630,11 +1037,14 @@ void dktNotifier::run()
         idlOS::sleep(1);
         if ( mPause == ID_FALSE )
         {
+            (void) failoverNotify();
             (void) notify();
+
+            mRestart = ID_FALSE;
         }
         else
         {
-            /* Nothing to do */
+            mRunFailoverOneCycle = ID_FALSE;
         }
 
     } /* while */
@@ -654,23 +1064,41 @@ void dktNotifier::destroyDtxInfoList()
     {
         sDtxInfo = (dktDtxInfo *) sIterator->mObj;
 
-        sDtxInfo->removeAllBranchTx();
-        removeDtxInfo( sDtxInfo );
+        removeDtxInfo( DK_NOTIFY_NORMAL, sDtxInfo );
         sDtxInfo = NULL;
     }
 
     IDE_DASSERT( mDtxInfoCnt == 0 );
 
+    IDU_LIST_ITERATE_SAFE( &mFailoverDtxInfo, sIterator, sNext )
+    {
+        sDtxInfo = (dktDtxInfo *) sIterator->mObj;
+
+        removeDtxInfo( DK_NOTIFY_FAILOVER, sDtxInfo );
+        sDtxInfo = NULL;
+    }
+
+    IDE_DASSERT( mFailoverDtxInfoCnt == 0 );
+
     return;
 }
 
-IDE_RC dktNotifier::createDtxInfo( UInt          aLocalTxId, 
-                                   UInt         aGlobalTxId, 
+IDE_RC dktNotifier::createDtxInfo( DK_NOTIFY_TYPE aType,
+                                   ID_XID      * aXID,
+                                   UInt          aLocalTxId, 
+                                   UInt          aGlobalTxId, 
+                                   idBool        aIsRequestNode,
                                    dktDtxInfo ** aDtxInfo )
 {
     dktDtxInfo * sDtxInfo = NULL;
 
-    if ( findDtxInfo( aLocalTxId, aGlobalTxId, &sDtxInfo ) == ID_FALSE )
+    IDE_DASSERT( aXID != NULL );
+
+    if ( findDtxInfo( aType,
+                      aLocalTxId, 
+                      aGlobalTxId, 
+                      &sDtxInfo ) 
+         == ID_FALSE )
     {
         IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_DK,
                                            ID_SIZEOF( dktDtxInfo ),
@@ -678,9 +1106,13 @@ IDE_RC dktNotifier::createDtxInfo( UInt          aLocalTxId,
                                            IDU_MEM_IMMEDIATE )
                         != IDE_SUCCESS, ERR_MEMORY_ALLOC_DTX_INFO_HEADER );
 
-        sDtxInfo->initialize( aLocalTxId, aGlobalTxId );
+        IDE_TEST( sDtxInfo->initialize( aXID, 
+                                        aLocalTxId, 
+                                        aGlobalTxId,
+                                        aIsRequestNode )
+                  != IDE_SUCCESS );
 
-        addDtxInfo( sDtxInfo );
+        addDtxInfo( aType, sDtxInfo );
     }
     else
     {
@@ -711,13 +1143,15 @@ IDE_RC dktNotifier::createDtxInfo( UInt          aLocalTxId,
     return IDE_FAILURE;
 }
 
-/* sm recovery redoì¤‘ì— dtx infoë¥¼ êµ¬ì„±í•˜ê³ , Service ì‹œìž‘ ë‹¨ê³„ì—ì„œ notifierì—ê²Œ ë„˜ê²¨ì¤€ë‹¤ */
-IDE_RC  dktNotifier::manageDtxInfoListByLog( UInt    aLocalTxId,
-                                             UInt    aGlobalTxId,
-                                             UInt    aBranchTxInfoSize,
-                                             UChar * aBranchTxInfo,
-                                             smLSN * aPrepareLSN,
-                                             UChar   aType )
+/* sm recovery redoÁß¿¡ dtx info¸¦ ±¸¼ºÇÏ°í, Service ½ÃÀÛ ´Ü°è¿¡¼­ notifier¿¡°Ô ³Ñ°ÜÁØ´Ù */
+IDE_RC  dktNotifier::manageDtxInfoListByLog( ID_XID * aXID, 
+                                             UInt     aLocalTxId,
+                                             UInt     aGlobalTxId,
+                                             UInt     aBranchTxInfoSize,
+                                             UChar  * aBranchTxInfo,
+                                             smLSN  * aPrepareLSN,
+                                             smSCN  * aGlobalCommitSCN,
+                                             UChar    aType )
 {
     dktDtxInfo * sDtxInfo = NULL;
 
@@ -725,7 +1159,13 @@ IDE_RC  dktNotifier::manageDtxInfoListByLog( UInt    aLocalTxId,
     {
         case SMI_DTX_PREPARE :
             IDE_DASSERT( aBranchTxInfoSize != 0 );
-            IDE_TEST( createDtxInfo( aLocalTxId, aGlobalTxId, &sDtxInfo ) != IDE_SUCCESS );
+            IDE_TEST( createDtxInfo( DK_NOTIFY_NORMAL,
+                                     aXID, 
+                                     aLocalTxId, 
+                                     aGlobalTxId, 
+                                     ID_FALSE,
+                                     &sDtxInfo ) 
+                      != IDE_SUCCESS );
             if ( sDtxInfo != NULL )
             {
                 IDE_TEST( sDtxInfo->unserializeAndAddDtxBranchTx( aBranchTxInfo,
@@ -740,10 +1180,16 @@ IDE_RC  dktNotifier::manageDtxInfoListByLog( UInt    aLocalTxId,
             break;
         case SMI_DTX_COMMIT :
         case SMI_DTX_ROLLBACK :
-            (void)setResult( aLocalTxId, aGlobalTxId, aType );
+            (void)setResult( DK_NOTIFY_NORMAL,
+                             aLocalTxId, 
+                             aGlobalTxId, 
+                             aType, 
+                             aGlobalCommitSCN );
             break;
         case SMI_DTX_END :
-            (void)removeEndedDtxInfo( aLocalTxId, aGlobalTxId );
+            (void)removeEndedDtxInfo( DK_NOTIFY_NORMAL, 
+                                      aLocalTxId, 
+                                      aGlobalTxId );
             break;
         default :
             IDE_RAISE( ERR_UNKNOWN_TYPE );
@@ -796,16 +1242,26 @@ IDE_RC dktNotifier::getNotifierTransactionInfo( dktNotifierTransactionInfo ** aI
 
             sInfo[sIndex].mGlobalTransactionId = sDtxInfo->mGlobalTxId;
             sInfo[sIndex].mLocalTransactionId = sDtxInfo->mLocalTxId;
-            if ( sDtxInfo->mResult == SMI_DTX_COMMIT )
+
+            if ( sDtxInfo->mIsPassivePending == ID_TRUE )
             {
-                idlOS::strncpy( sInfo[sIndex].mTransactionResult, "COMMIT", 7 );
+                idlOS::strncpy( sInfo[sIndex].mTransactionResult, "PASSIVE", 8 );
             }
             else
             {
-                idlOS::strncpy( sInfo[sIndex].mTransactionResult, "ROLLBACK", 9 );
+                if ( sDtxInfo->mResult == SMI_DTX_COMMIT )
+                {
+                    idlOS::strncpy( sInfo[sIndex].mTransactionResult, "COMMIT", 7 );
+                }
+                else
+                {
+                    idlOS::strncpy( sInfo[sIndex].mTransactionResult, "ROLLBACK", 9 );
+                }
             }
             dktXid::copyXID( &(sInfo[sIndex].mXID),
                              &(sBranchTxInfo->mXID) );
+            dktXid::copyXID( &(sInfo[sIndex].mSourceXID),
+                             &(sDtxInfo->mXID) );
             idlOS::memcpy( sInfo[sIndex].mTargetInfo,
                            sBranchTxInfo->mData.mTargetName,
                            DK_NAME_LEN + 1 );
@@ -813,6 +1269,7 @@ IDE_RC dktNotifier::getNotifierTransactionInfo( dktNotifierTransactionInfo ** aI
             sIndex++;
         }
     }
+
     IDE_ASSERT( mNotifierDtxInfoMutex.unlock() == IDE_SUCCESS );
 
     IDE_DASSERT( sAllBranchTxCnt == sIndex );
@@ -843,7 +1300,129 @@ IDE_RC dktNotifier::getNotifierTransactionInfo( dktNotifierTransactionInfo ** aI
     return IDE_FAILURE;
 }
 
-/* notifierê°€ ê°€ì§„ ëª¨ë“  branchTxì˜ ê°¯ìˆ˜ë¥¼ ë°˜í™˜. í˜¸ì¶œí•˜ëŠ” ê³³ì—ì„œ mutexë¥¼ ìž¡ì•„ì•¼í•œë‹¤. */
+IDE_RC dktNotifier::getShardNotifierTransactionInfo( dktNotifierTransactionInfo ** aInfo,
+                                                     UInt                        * aInfoCount )
+{
+    UInt                 sIndex = 0;
+    dktDtxBranchTxInfo * sBranchTxInfo = NULL;
+    dktDtxInfo         * sDtxInfo = NULL;
+    iduListNode        * sIterator       = NULL;
+    iduListNode        * sBranchIterator = NULL;
+    UInt                 sAllBranchTxCnt = 0;
+    dktNotifierTransactionInfo * sInfo = NULL;
+
+    IDE_ASSERT( mNotifierDtxInfoMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
+
+    sAllBranchTxCnt = getAllShardBranchTxCnt();
+
+    IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_DK,
+                                       sAllBranchTxCnt,
+                                       ID_SIZEOF( dktNotifierTransactionInfo ),
+                                       (void **)&sInfo,
+                                       IDU_MEM_IMMEDIATE )
+                    != IDE_SUCCESS, ERR_MEMORY_ALLOC );
+
+    IDU_LIST_ITERATE( &mDtxInfo, sIterator )
+    {
+        sDtxInfo = (dktDtxInfo *)sIterator->mObj;
+
+        IDU_LIST_ITERATE( &(sDtxInfo->mBranchTxInfo), sBranchIterator )
+        {
+            sBranchTxInfo = (dktDtxBranchTxInfo *)sBranchIterator->mObj;
+
+            sInfo[sIndex].mGlobalTransactionId = sDtxInfo->mGlobalTxId;
+            sInfo[sIndex].mLocalTransactionId = sDtxInfo->mLocalTxId;
+            sInfo[sIndex].mTransactionState = sDtxInfo->mResult;
+            sInfo[sIndex].mGlobalCommitSCN = sDtxInfo->mGlobalCommitSCN;
+            sInfo[sIndex].mIsRequestNode = 1;
+
+            if ( sDtxInfo->mIsPassivePending == ID_TRUE )
+            {
+                idlOS::strncpy( sInfo[sIndex].mTransactionResult, "PASSIVE", 8 );
+            }
+            else
+            {
+                if ( sDtxInfo->mResult == SMI_DTX_COMMIT )
+                {
+                    idlOS::strncpy( sInfo[sIndex].mTransactionResult, "COMMIT", 7 );
+                }
+                else
+                {
+                    idlOS::strncpy( sInfo[sIndex].mTransactionResult, "ROLLBACK", 9 );
+                }
+            }
+            dktXid::copyXID( &(sInfo[sIndex].mXID),
+                             &(sBranchTxInfo->mXID) );
+            dktXid::copyXID( &(sInfo[sIndex].mSourceXID),
+                             &(sDtxInfo->mXID) );
+            idlOS::memcpy( sInfo[sIndex].mTargetInfo,
+                           sBranchTxInfo->mData.mTargetName,
+                           DK_NAME_LEN + 1 );
+
+            sIndex++;
+        }
+    }
+
+    IDU_LIST_ITERATE( &mFailoverDtxInfo, sIterator )
+    {
+        sDtxInfo = (dktDtxInfo *)sIterator->mObj;
+
+        sInfo[sIndex].mGlobalTransactionId = sDtxInfo->mGlobalTxId;
+        sInfo[sIndex].mLocalTransactionId = sDtxInfo->mLocalTxId;
+        sInfo[sIndex].mTransactionState = sDtxInfo->mResult;
+        sInfo[sIndex].mGlobalCommitSCN = sDtxInfo->mGlobalCommitSCN;
+
+        sInfo[sIndex].mIsRequestNode = ( sDtxInfo->mIsFailoverRequestNode == ID_TRUE ) ? 1 : 0;
+        if ( sDtxInfo->mResult == SMI_DTX_COMMIT )
+        {
+            idlOS::strncpy( sInfo[sIndex].mTransactionResult, "COMMIT", 7 );
+        }
+        else if ( sDtxInfo->mResult == SMI_DTX_ROLLBACK )
+        {
+            idlOS::strncpy( sInfo[sIndex].mTransactionResult, "ROLLBACK", 9 );
+        }
+        else
+        {
+            idlOS::strncpy( sInfo[sIndex].mTransactionResult, "PENDING", 7 );
+        }
+
+        dktXid::copyXID( &(sInfo[sIndex].mXID),
+                         &(sDtxInfo->mXID) );
+
+        sIndex++;
+    }
+
+    IDE_ASSERT( mNotifierDtxInfoMutex.unlock() == IDE_SUCCESS );
+
+    IDE_DASSERT( sAllBranchTxCnt == sIndex );
+
+    *aInfo = sInfo;
+    *aInfoCount = sIndex;
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_MEMORY_ALLOC )
+    {
+        IDE_SET( ideSetErrorCode( dkERR_ABORT_MEMORY_ALLOCATION ) );
+    }
+    IDE_EXCEPTION_END;
+
+    if ( sInfo != NULL )
+    {
+        iduMemMgr::free( sInfo );
+        sInfo = NULL;
+    }
+    else
+    {
+        /* do nothing */
+    }
+
+    IDE_ASSERT( mNotifierDtxInfoMutex.unlock() == IDE_SUCCESS );
+
+    return IDE_FAILURE;
+}
+
+/* notifier°¡ °¡Áø ¸ðµç branchTxÀÇ °¹¼ö¸¦ ¹ÝÈ¯. È£ÃâÇÏ´Â °÷¿¡¼­ mutex¸¦ Àâ¾Æ¾ßÇÑ´Ù. */
 UInt dktNotifier::getAllBranchTxCnt()
 {
     dktDtxInfo         * sDtxInfo = NULL;
@@ -858,3 +1437,96 @@ UInt dktNotifier::getAllBranchTxCnt()
 
     return sAllBranchTxCnt;
 }
+ 
+UInt dktNotifier::getAllShardBranchTxCnt()
+{
+    dktDtxInfo  * sDtxInfo        = NULL;
+    iduListNode * sIterator       = NULL;
+    UInt          sAllBranchTxCnt = 0;
+
+    IDU_LIST_ITERATE( &mDtxInfo, sIterator )
+    {
+        sDtxInfo = (dktDtxInfo *)sIterator->mObj;
+        sAllBranchTxCnt += sDtxInfo->mBranchTxCount;
+    }
+
+    IDU_LIST_ITERATE( &mFailoverDtxInfo, sIterator )
+    {
+        sDtxInfo = (dktDtxInfo *)sIterator->mObj;
+        sAllBranchTxCnt += 1;
+    }
+
+    return sAllBranchTxCnt;
+}
+  
+IDE_RC dktNotifier::addUnCompleteGlobalTxList( iduList * aGlobalTxList )
+{
+    iduListNode * sNode    = NULL;
+    iduListNode * sDummy   = NULL;
+    dktDtxInfo  * sDtxInfo = NULL;
+    dkiUnCompleteGlobalTxInfo * sGlobalTxNode = NULL;
+
+    if ( IDU_LIST_IS_EMPTY( aGlobalTxList ) != ID_TRUE )
+    {
+        IDU_LIST_ITERATE_SAFE( aGlobalTxList, sNode, sDummy )
+        {
+            sGlobalTxNode = (dkiUnCompleteGlobalTxInfo*)sNode->mObj;
+           
+            /* Failover list ´Â xid ·Î ±¸ºÐÇÏ±â ¶§¹®¿¡globaltxid ³ª localtxid °¡ ÀÇ¹Ì°¡ ¾ø´Ù */
+            IDE_TEST( createDtxInfo( DK_NOTIFY_FAILOVER,
+                                     &(sGlobalTxNode->mXID),
+                                     dktXid::getLocalTxIDFromXID( &(sGlobalTxNode->mXID) ),
+                                     dktXid::getGlobalTxIDFromXID( &(sGlobalTxNode->mXID) ),
+                                     sGlobalTxNode->mIsRequestNode,
+                                     &sDtxInfo )
+                      != IDE_SUCCESS );
+
+            if ( sDtxInfo != NULL )
+            {
+                sDtxInfo->mResult = sGlobalTxNode->mResultType;
+                if ( sGlobalTxNode->mIsRequestNode == ID_TRUE )
+                {
+                    if ( sdi::getAllBranchWithoutSession( (void*)sDtxInfo ) != IDE_SUCCESS )
+                    {
+                        IDE_ERRLOG( IDE_SD_0 );
+                    }
+                }
+
+                if ( sDtxInfo->mResult == SMI_DTX_COMMIT )
+                {
+                    SM_SET_SCN( &sDtxInfo->mGlobalCommitSCN, &(sGlobalTxNode->mGlobalCommitSCN) );
+                }
+                sDtxInfo->mFailoverTrans = sGlobalTxNode->mTrans;
+                sGlobalTxNode->mTrans = NULL;
+            }
+            else
+            {
+                /* Already Created */
+            }
+            sDtxInfo = NULL;
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+void dktNotifier::waitUntilFailoverNotifierRunOneCycle()
+{
+    PDL_Time_Value  sTimeValue;
+    sTimeValue.initialize( 0, 1000 );
+
+    while ( mExit != ID_TRUE )
+    {
+        if ( ( mPause != ID_TRUE ) && ( mRunFailoverOneCycle == ID_TRUE ) )
+        {
+            break;
+        }
+
+        idlOS::sleep( sTimeValue );
+    }
+}
+

@@ -28,8 +28,6 @@ SQLRETURN getQueueInfo( SChar *a_user,
 
 SQLRETURN getQueueQuery( SChar *a_user,
                          SChar *a_table,
-                         SChar *a_tbsname,
-                         SInt  *a_tbstype,
                          FILE  *a_crt_fp);
 
 #endif /* _O_UTM_QUEUE_H_ */

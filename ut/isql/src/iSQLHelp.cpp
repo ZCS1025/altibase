@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLHelp.cpp 80544 2017-07-19 08:04:46Z daramix $
+ * $Id: iSQLHelp.cpp 86554 2020-01-21 05:05:40Z bethy $
  **********************************************************************/
 
 #include <iSQLHelp.h>
@@ -468,6 +468,16 @@ isqlHelp HelpStr[HELP_MSG_CNT] =
         "                 OFF disables asynchronous prefetch(Default);\n"
         "                 ex) set asyncprefetch [on | auto | off];\n",
         ASYNCPREFETCH_COM  // 53
+    },
+
+    /* BUG-47627 SET MULTIERROR ON|OFF */
+    {
+        (SChar*)
+        "multierror; - Determines whether or not to display all of the information\n"
+        "          about errors from the SQL statement.\n"
+        "          OFF displays only one error(Default); ON displays all errors.\n"
+        "          ex) set multierror [on | off];\n",
+        MULTIERROR_COM  // 54
     }
 };
 

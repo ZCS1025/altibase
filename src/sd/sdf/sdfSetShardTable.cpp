@@ -23,13 +23,13 @@
  *     ALTIBASE SHARD management function
  *
  * Syntax :
- *    SHARD_SET_SHARD_TABLE( user_name VARCHAR,
- *                           table_name VARCHAR,
- *                           split_method VARCHAR,
- *                           shard_key_column_name VARCHAR,
- *                           sub_split_method VARCHAR,
- *                           sub_shard_key_column_name VARCHAR,
- *                           default_node_name VARCHAR )
+ *    SHARD_SET_SHARD_TABLE_LOCAL( user_name VARCHAR,
+ *                                 table_name VARCHAR,
+ *                                 split_method VARCHAR,
+ *                                 shard_key_column_name VARCHAR,
+ *                                 sub_split_method VARCHAR,
+ *                                 sub_shard_key_column_name VARCHAR,
+ *                                 default_node_name VARCHAR )
  *    RETURN 0
  *
  **********************************************************************/
@@ -55,7 +55,7 @@ static IDE_RC sdfEstimate( mtcNode*        aNode,
 mtfModule sdfSetShardTableModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     sdfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -161,25 +161,45 @@ IDE_RC sdfCalculate_SetShardTable( mtcNode*     aNode,
     qcStatement             * sStatement;
     mtdCharType             * sUserName;
     SChar                     sUserNameStr[QC_MAX_OBJECT_NAME_LEN + 1];
-    mtdCharType             * sTableName;
+    mtdCharType             * sTableName = NULL;
     SChar                     sTableNameStr[QC_MAX_OBJECT_NAME_LEN + 1];
-    mtdCharType             * sKeyColumnName;
+    mtdCharType             * sKeyColumnName = NULL;
     SChar                     sKeyColumnNameStr[QC_MAX_OBJECT_NAME_LEN + 1];
-    mtdCharType             * sSplitMethod;
+    mtdCharType             * sSplitMethod = NULL;
     SChar                     sSplitMethodStr[1 + 1];
-    mtdCharType             * sSubKeyColumnName;
+    mtdCharType             * sSubKeyColumnName = NULL;
     SChar                     sSubKeyColumnNameStr[QC_MAX_OBJECT_NAME_LEN + 1];
-    mtdCharType             * sSubSplitMethod;
+    mtdCharType             * sSubSplitMethod = NULL;
     SChar                     sSubSplitMethodStr[1 + 1];
-    mtdCharType             * sDefaultNodeName;
+    mtdCharType             * sDefaultNodeName = NULL;
     SChar                     sDefaultNodeNameStr[SDI_NODE_NAME_MAX_SIZE + 1];
+    SChar                     sDefaultPartitionNameStr[QC_MAX_OBJECT_NAME_LEN + 1];
+    qcmTablePartitionType     sTablePartitionType = QCM_PARTITIONED_TABLE;
+
     UInt                      sRowCnt = 0;
-    smiStatement            * sOldStmt;
+    smiStatement            * sOldStmt = NULL;
     smiStatement              sSmiStmt;
     UInt                      sSmiStmtFlag;
     SInt                      sState = 0;
+    idBool                    sIsOldSessionShardMetaTouched = ID_FALSE;
+    sdiSplitMethod 			  sSdSplitMethod = SDI_SPLIT_NONE;
 
+    SChar                     sBackupTableNameStr[QC_MAX_OBJECT_NAME_LEN + 1];
+    sdiLocalMetaInfo          sLocalMetaInfo;
+    UInt                      sErrCode;
+    SChar                     sSqlStr[SDF_QUERY_LEN];
+    
     sStatement   = ((qcTemplate*)aTemplate)->stmt;
+
+    sStatement->mFlag &= ~QC_STMT_SHARD_META_CHANGE_MASK;
+    sStatement->mFlag |= QC_STMT_SHARD_META_CHANGE_TRUE;
+
+    /* BUG-47623 »þµå ¸ÞÅ¸ º¯°æ¿¡ ´ëÇÑ trc ·Î±×Áß commit ·Î±×¸¦ ÀÛ¼ºÇÏ±âÀü¿¡ DASSERT ·Î Á×´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù. */
+    if ( ( sStatement->session->mQPSpecific.mFlag & QC_SESSION_SHARD_META_TOUCH_MASK ) ==
+         QC_SESSION_SHARD_META_TOUCH_TRUE )
+    {
+        sIsOldSessionShardMetaTouched = ID_TRUE;
+    }
 
     // BUG-46366
     IDE_TEST_RAISE( ( QC_SMI_STMT(sStatement)->getTrans() == NULL ) ||
@@ -191,19 +211,26 @@ IDE_RC sdfCalculate_SetShardTable( mtcNode*     aNode,
     IDE_TEST_RAISE( QCG_GET_SESSION_USER_ID(sStatement) != QCI_SYS_USER_ID,
                     ERR_NO_GRANT );
 
+    if ( SDU_SHARD_LOCAL_FORCE != 1 )
+    {
+        /* Shard Local OperationÀº internal ¿¡¼­¸¸ ¼öÇàµÇ¾î¾ß ÇÑ´Ù.  */
+        IDE_TEST_RAISE( ( QCG_GET_SESSION_IS_SHARD_INTERNAL_LOCAL_OPERATION( sStatement ) != ID_TRUE ) &&
+                        ( ( sStatement->session->mQPSpecific.mFlag & QC_SESSION_ALTER_META_MASK )
+                             != QC_SESSION_ALTER_META_ENABLE),
+                        ERR_INTERNAL_OPERATION );
+    }
+
     IDE_TEST( mtf::postfixCalculate( aNode,
                                      aStack,
                                      aRemain,
                                      aInfo,
                                      aTemplate )
               != IDE_SUCCESS );
-
+    
     if ( ( aStack[1].column->module->isNull( aStack[1].column,
                                              aStack[1].value ) == ID_TRUE ) ||
          ( aStack[2].column->module->isNull( aStack[2].column,
-                                             aStack[2].value ) == ID_TRUE ) ||
-         ( aStack[3].column->module->isNull( aStack[3].column,
-                                             aStack[3].value ) == ID_TRUE ) )
+                                             aStack[2].value ) == ID_TRUE ) )
     {
         IDE_RAISE( ERR_ARGUMENT_NOT_APPLICABLE );
     }
@@ -233,49 +260,35 @@ IDE_RC sdfCalculate_SetShardTable( mtcNode*     aNode,
                         sTableName->length );
         sTableNameStr[sTableName->length] = '\0';
 
+        /* statement »ý¼ºÇØ¼­ ÇØ¾ßÇÔ ±×·¸Áö ¾ÊÀ¸¸é ¾Æ·¡ ÇÔ¼ö¿¡¼­ assert ¹ß»ý. */
+        IDE_TEST( sdm::getSplitMethodByPartition( QC_SMI_STMT( sStatement ),
+                                                  sUserNameStr, 
+                                                  sTableNameStr, 
+                                                  &sSdSplitMethod ) != IDE_SUCCESS );
+
         // split method
-        sSplitMethod = (mtdCharType*)aStack[3].value;
-        IDE_TEST_RAISE( sSplitMethod->length > 1,
-                        ERR_INVALID_SHARD_SPLIT_METHOD_NAME );
-        if ( idlOS::strMatch( (SChar*)sSplitMethod->value, sSplitMethod->length,
-                              "H", 1 ) == 0 )
+        if ( aStack[3].column->module->isNull( aStack[3].column,
+                                               aStack[3].value ) == ID_TRUE )
         {
-            sSplitMethodStr[0] = 'H';
-            sSplitMethodStr[1] = '\0';
-        }
-        else if ( idlOS::strMatch( (SChar*)sSplitMethod->value, sSplitMethod->length,
-                                   "R", 1 ) == 0 )
-        {
-            sSplitMethodStr[0] = 'R';
-            sSplitMethodStr[1] = '\0';
-        }
-        else if ( idlOS::strMatch( (SChar*)sSplitMethod->value, sSplitMethod->length,
-                                   "C", 1 ) == 0 )
-        {
-            sSplitMethodStr[0] = 'C';
-            sSplitMethodStr[1] = '\0';
-        }
-        else if ( idlOS::strMatch( (SChar*)sSplitMethod->value, sSplitMethod->length,
-                                   "L", 1 ) == 0 )
-        {
-            sSplitMethodStr[0] = 'L';
-            sSplitMethodStr[1] = '\0';
-        }
-        else if ( idlOS::strMatch( (SChar*)sSplitMethod->value, sSplitMethod->length,
-                                   "S", 1 ) == 0 )
-        {
-            sSplitMethodStr[0] = 'S';
+            /* TableÀÇ SplitMethod°¡ NONEÀÏ °æ¿ì split method´Â NULLÀÌ¸é ¾ÈµÈ´Ù. */
+            IDE_TEST_RAISE( sSdSplitMethod == SDI_SPLIT_NONE, ERR_DO_NOT_MATCH_SPLIT_METHOD );
+            /* NULL ÀÌ¸é partition Á¤º¸¸¦ °¡Á®¿Í¼­ ÀÚµ¿À¸·Î ¼³Á¤ÇÑ´Ù. */
+            IDE_TEST( sdi::getSplitMethodCharByType(sSdSplitMethod, &(sSplitMethodStr[0])) != IDE_SUCCESS );
             sSplitMethodStr[1] = '\0';
         }
         else
         {
-            IDE_RAISE( ERR_INVALID_SHARD_SPLIT_METHOD_NAME );
+            sSplitMethod = (mtdCharType*)aStack[3].value;
+            IDE_TEST_RAISE( sSplitMethod->length > 1,
+                            ERR_INVALID_SHARD_SPLIT_METHOD_NAME );
+            IDE_TEST( sdi::getSplitMethodCharByStr((SChar*)sSplitMethod->value, &(sSplitMethodStr[0])) != IDE_SUCCESS );
+            sSplitMethodStr[1] = '\0';
         }
 
         if ( ( sSplitMethodStr[0] == 'C' ) ||
              ( sSplitMethodStr[0] == 'S' ) )
         {
-            // clone ë° solo tableì€ shard keyì™€ sub split method, sub shard key ë° default nodeê°€ nullì´ì–´ì•¼ í•œë‹¤.
+            // clone ¹× solo tableÀº shard key¿Í sub split method, sub shard key ¹× default node°¡ nullÀÌ¾î¾ß ÇÑ´Ù.
             IDE_TEST_RAISE( ( ( aStack[4].column->module->isNull( aStack[4].column,
                                                                   aStack[4].value ) != ID_TRUE ) || // shard key
                               ( aStack[5].column->module->isNull( aStack[5].column,
@@ -285,24 +298,41 @@ IDE_RC sdfCalculate_SetShardTable( mtcNode*     aNode,
                               ( aStack[7].column->module->isNull( aStack[7].column,
                                                                   aStack[7].value ) != ID_TRUE ) ), // default node
                             ERR_ARGUMENT_NOT_APPLICABLE );
+            sKeyColumnNameStr[0] = '\0';
+            if ( sSplitMethodStr[0] == 'C' ) /* CLONE */
+            {
+                sSdSplitMethod = SDI_SPLIT_CLONE;
+            }
+            else /* SOLO */
+            {
+                sSdSplitMethod = SDI_SPLIT_SOLO;
+            }
         }
         else
         {
-            // default nodeëŠ” nullì¼ ìˆ˜ ìžˆë‹¤.
-            IDE_TEST_RAISE( aStack[4].column->module->isNull( aStack[4].column,
-                                                              aStack[4].value ) == ID_TRUE, // shard key
-                            ERR_ARGUMENT_NOT_APPLICABLE );
+            //shard key
+            if (aStack[4].column->module->isNull(aStack[4].column, aStack[4].value) == ID_TRUE)
+            {
+                /* NULL ÀÌ¸é partition Á¤º¸¸¦ °¡Á®¿Í¼­ ÀÚµ¿À¸·Î ¼³Á¤ÇÑ´Ù. */
+                IDE_TEST( sdm::getShardKeyStrByPartition( QC_SMI_STMT( sStatement ),
+                                                          sUserNameStr,
+                                                          sTableNameStr,
+                                                          QC_MAX_OBJECT_NAME_LEN + 1,
+                                                          sKeyColumnNameStr ) != IDE_SUCCESS );
+            }
+            else
+            {
+                // key column name
+                sKeyColumnName = (mtdCharType*)aStack[4].value;
+
+                IDE_TEST_RAISE( sKeyColumnName->length > QC_MAX_OBJECT_NAME_LEN,
+                                ERR_SHARD_KEYCOLUMN_NAME_TOO_LONG );
+                idlOS::strncpy( sKeyColumnNameStr,
+                                (SChar*)sKeyColumnName->value,
+                                sKeyColumnName->length );
+                sKeyColumnNameStr[sKeyColumnName->length] = '\0';
+            }
         }
-
-        // key column name
-        sKeyColumnName = (mtdCharType*)aStack[4].value;
-
-        IDE_TEST_RAISE( sKeyColumnName->length > QC_MAX_OBJECT_NAME_LEN,
-                        ERR_SHARD_KEYCOLUMN_NAME_TOO_LONG );
-        idlOS::strncpy( sKeyColumnNameStr,
-                        (SChar*)sKeyColumnName->value,
-                        sKeyColumnName->length );
-        sKeyColumnNameStr[sKeyColumnName->length] = '\0';
 
         /* PROJ-2655 Composite shard key */
         sSubSplitMethod = (mtdCharType*)aStack[5].value;
@@ -327,13 +357,13 @@ IDE_RC sdfCalculate_SetShardTable( mtcNode*     aNode,
             else if ( idlOS::strMatch( (SChar*)sSubSplitMethod->value, sSubSplitMethod->length,
                                        "C", 1 ) == 0 )
             {
-                /* Sub-shard keyì˜ split methodëŠ” cloneì¼ ìˆ˜ ì—†ë‹¤. */
+                /* Sub-shard keyÀÇ split method´Â cloneÀÏ ¼ö ¾ø´Ù. */
                 IDE_RAISE( ERR_UNSUPPORTED_SUB_SHARD_KEY_SPLIT_TYPE );
             }
             else if ( idlOS::strMatch( (SChar*)sSubSplitMethod->value, sSubSplitMethod->length,
                                        "S", 1 ) == 0 )
             {
-                /* Sub-shard keyì˜ split methodëŠ” soloì¼ ìˆ˜ ì—†ë‹¤. */
+                /* Sub-shard keyÀÇ split method´Â soloÀÏ ¼ö ¾ø´Ù. */
                 IDE_RAISE( ERR_UNSUPPORTED_SUB_SHARD_KEY_SPLIT_TYPE );
             }
             else if ( idlOS::strMatch( (SChar*)sSubSplitMethod->value, sSubSplitMethod->length,
@@ -347,7 +377,7 @@ IDE_RC sdfCalculate_SetShardTable( mtcNode*     aNode,
                 IDE_RAISE( ERR_INVALID_SHARD_SPLIT_METHOD_NAME );
             }
 
-            // sub-shard keyì˜ split methodê°€ nullì´ ì•„ë‹Œ ê²½ìš°ì—ëŠ” ë°˜ë“œì‹œ sub-shard keyê°€ ì„¸íŒ… ë˜ì–´ì•¼ í•œë‹¤.
+            // sub-shard keyÀÇ split method°¡ nullÀÌ ¾Æ´Ñ °æ¿ì¿¡´Â ¹Ýµå½Ã sub-shard key°¡ ¼¼ÆÃ µÇ¾î¾ß ÇÑ´Ù.
             IDE_TEST_RAISE( aStack[6].column->module->isNull( aStack[6].column,
                                                               aStack[6].value ) == ID_TRUE, // sub shard key
                             ERR_ARGUMENT_NOT_APPLICABLE );
@@ -369,7 +399,7 @@ IDE_RC sdfCalculate_SetShardTable( mtcNode*     aNode,
 
         if ( sSubKeyColumnName->length > 0 )
         {
-            // Shard keyì™€ sub-shard keyëŠ” ê°™ì€ columnì¼ ìˆ˜ ì—†ë‹¤.
+            // Shard key¿Í sub-shard key´Â °°Àº columnÀÏ ¼ö ¾ø´Ù.
             IDE_TEST_RAISE( idlOS::strMatch( (SChar*)sKeyColumnName->value, sKeyColumnName->length,
                                              (SChar*)sSubKeyColumnName->value, sSubKeyColumnName->length ) == 0,
                             ERR_DUPLICATED_SUB_SHARD_KEY_NAME );
@@ -384,12 +414,49 @@ IDE_RC sdfCalculate_SetShardTable( mtcNode*     aNode,
         // default node name
         sDefaultNodeName = (mtdCharType*)aStack[7].value;
 
-        IDE_TEST_RAISE( sDefaultNodeName->length > SDI_NODE_NAME_MAX_SIZE,
+        IDE_TEST_RAISE( sDefaultNodeName->length > SDI_CHECK_NODE_NAME_MAX_SIZE,
                         ERR_SHARD_GROUP_NAME_TOO_LONG );
         idlOS::strncpy( sDefaultNodeNameStr,
                         (SChar*)sDefaultNodeName->value,
                         sDefaultNodeName->length );
         sDefaultNodeNameStr[sDefaultNodeName->length] = '\0';
+
+        /* Null StringÀ» ÀÔ·ÂÇÏ¸é Default Partition Á¤º¸¸¦ Return ÇÑ´Ù */
+        IDE_TEST( sdm::getPartitionNameByValue( QC_SMI_STMT( sStatement ),
+                                                sUserNameStr,
+                                                sTableNameStr,
+                                                (SChar *)"",
+                                                &sTablePartitionType,
+                                                sDefaultPartitionNameStr ) != IDE_SUCCESS );
+
+        switch ( sTablePartitionType )
+        {
+            case QCM_PARTITIONED_TABLE:
+                // default partition nameÀ» °¡Á®¿Â °æ¿ì¿¡´Â ±æÀÌ¸¦ Á¡°ËÇÑ´Ù.
+                IDE_TEST_RAISE( (SInt)idlOS::strlen(sDefaultPartitionNameStr) > QC_MAX_OBJECT_NAME_LEN,
+                                ERR_SHARD_PARTITION_NAME_TOO_LONG );
+                break;
+            case QCM_TABLE_PARTITION:
+                IDE_RAISE(ERR_ARGUMENT_NOT_APPLICABLE);
+                break;
+            case QCM_NONE_PARTITIONED_TABLE:
+                // ÀÏ¹Ý Å×ÀÌºíÀÏ °æ¿ì¿¡´Â SDM_NA_STR°¡ ÀÔ·ÂµÈ´Ù.
+                IDE_TEST_RAISE( idlOS::strncmp( sDefaultPartitionNameStr, SDM_NA_STR,
+                                                IDL_MIN(QC_MAX_OBJECT_NAME_LEN, SDM_NA_STR_SIZE) ) != 0,
+                                ERR_DO_NOT_MATCH_SPLIT_METHOD )
+
+                break;
+            default:
+                IDE_DASSERT(0);
+        }
+
+        //---------------------------------
+        // Validation
+        //---------------------------------
+        IDE_TEST( sdm::getLocalMetaInfo( &sLocalMetaInfo ) != IDE_SUCCESS );
+        /* TableÀÇ SplitMethod°¡ NoneÀÌ°Å³ª Composite TypeÀÏ °æ¿ì  k-safety´Â 0 ÀÌ¾î¾ß ÇÑ´Ù. */
+        IDE_TEST_RAISE( (sLocalMetaInfo.mKSafety != 0) && ( sSdSplitMethod == SDI_SPLIT_NONE ) , ERR_KSAFETY_TABLE );
+        IDE_TEST_RAISE( (sLocalMetaInfo.mKSafety != 0) && ( sSubSplitMethod->length == 1 ) , ERR_KSAFETY_COMPOSITE );
 
         //---------------------------------
         // Begin Statement for meta
@@ -418,6 +485,7 @@ IDE_RC sdfCalculate_SetShardTable( mtcNode*     aNode,
                                     (SChar*)sSubSplitMethodStr,
                                     (SChar*)sSubKeyColumnNameStr,
                                     (SChar*)sDefaultNodeNameStr,
+                                    (SChar*)sDefaultPartitionNameStr,
                                     &sRowCnt )
                   != IDE_SUCCESS );
 
@@ -433,12 +501,141 @@ IDE_RC sdfCalculate_SetShardTable( mtcNode*     aNode,
 
         IDE_TEST_RAISE( sRowCnt == 0,
                         ERR_INVALID_SHARD_NODE );
-    }
 
+        if ( SDU_SHARD_LOCAL_FORCE != 1 )
+        {
+            
+            //---------------------------------
+            // Create _BAK_ Table
+            //---------------------------------
+            idlOS::snprintf( sBackupTableNameStr,
+                             QC_MAX_OBJECT_NAME_LEN+1,
+                             "%s%s",
+                             SDI_BACKUP_TABLE_PREFIX,
+                             sTableNameStr );
+
+            sSmiStmtFlag = SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR;
+            sOldStmt                = QC_SMI_STMT(sStatement);
+            QC_SMI_STMT(sStatement) = &sSmiStmt;
+            sState = 1;
+
+            IDE_TEST( sSmiStmt.begin( sStatement->mStatistics,
+                                      sOldStmt,
+                                      sSmiStmtFlag )
+                      != IDE_SUCCESS );
+            sState = 2;
+
+            // bak table drop
+            idlOS::snprintf( sSqlStr, SDF_QUERY_LEN,
+                             "drop table "QCM_SQL_STRING_SKIP_FMT"."QCM_SQL_STRING_SKIP_FMT" cascade ",
+                             sUserNameStr,
+                             sBackupTableNameStr );
+
+            ideLog::log(IDE_SD_17,"[SHARD INTERNAL SQL]: %s", sSqlStr);
+
+            if ( sdf::executeRemoteSQLWithNewTrans( sStatement,
+                                                    sLocalMetaInfo.mNodeName,
+                                                    sSqlStr,
+                                                    ID_TRUE )
+                      != IDE_SUCCESS )
+            {
+                sErrCode = ideGetErrorCode();
+
+                if ( sErrCode == qpERR_ABORT_QCV_NOT_EXISTS_TABLE )
+                {
+                    IDE_CLEAR();
+                }
+                else
+                {
+                    IDE_RAISE( ERR_ALREDAY_EXIST_ERROR_MSG );
+                }
+            }
+            
+            // bak table create
+            idlOS::snprintf( sSqlStr, SDF_QUERY_LEN,
+                             "create table "QCM_SQL_STRING_SKIP_FMT"."QCM_SQL_STRING_SKIP_FMT" "
+                             "from table schema "QCM_SQL_STRING_SKIP_FMT"."QCM_SQL_STRING_SKIP_FMT" "
+                             "using prefix "QCM_SQL_STRING_SKIP_FMT" shard backup",
+                             sUserNameStr,
+                             sBackupTableNameStr,
+                             sUserNameStr,
+                             sTableNameStr,
+                             SDI_BACKUP_TABLE_PREFIX );
+            
+            ideLog::log(IDE_SD_17,"[SHARD INTERNAL SQL]: %s", sSqlStr);
+
+            IDE_TEST( sdf::executeRemoteSQLWithNewTrans( sStatement,
+                                                         sLocalMetaInfo.mNodeName,
+                                                         sSqlStr,
+                                                         ID_TRUE )
+                      != IDE_SUCCESS );
+
+            sState = 1;
+            IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+
+            sState = 0;
+            QC_SMI_STMT(sStatement) = sOldStmt;
+        }
+
+        if ( ( SDU_SHARD_LOCAL_FORCE != 1 ) &&
+             ( sSdSplitMethod != SDI_SPLIT_NONE ) )
+        {
+            /* TASK-7307 DML Data Consistency in Shard
+             *   ALTER TABLE table SHARD SPLIT/CLONE/SOLO */
+            IDE_TEST( sdm::alterShardFlag( sStatement,
+                                           sUserNameStr,
+                                           sTableNameStr,
+                                           sSdSplitMethod,
+                                           ID_TRUE ) /* isNewTrans */
+                      != IDE_SUCCESS );
+
+            sState = 0;
+            QC_SMI_STMT(sStatement) = sOldStmt;
+
+            /* ÁöÁ¤µÈ default Node¿Í ³» NodeNameÀÌ ÀÏÄ¡ÇÏ¸é
+             * default partitionÀ» USABLE·Î ¼³Á¤ÇÑ´Ù */
+            if ( ( sSdSplitMethod != SDI_SPLIT_CLONE &&
+                   sSdSplitMethod != SDI_SPLIT_SOLO ) &&
+                 ( sTablePartitionType == QCM_PARTITIONED_TABLE ) &&
+                 ( idlOS::strncmp( sLocalMetaInfo.mNodeName, 
+                                   sDefaultNodeNameStr, 
+                                   SDI_NODE_NAME_MAX_SIZE + 1 ) == 0 ) )
+            {
+                IDE_TEST( sdm::alterUsable( sStatement,
+                                            sUserNameStr,
+                                            sTableNameStr,
+                                            sDefaultPartitionNameStr,
+                                            ID_TRUE, /* isUsable */
+                                            ID_TRUE  /* isNewTrans */ )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    
     *(mtdIntegerType*)aStack[0].value = 0;
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_KSAFETY_TABLE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDF_INVALID_TABLE_TYPE , sTableNameStr ) );
+    }
+    IDE_EXCEPTION( ERR_KSAFETY_COMPOSITE  )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDF_INVALID_COMPOSITE_TABLE ) );
+    }
+    IDE_EXCEPTION( ERR_DO_NOT_MATCH_SPLIT_METHOD )
+    {
+        IDE_SET( ideSetErrorCode(sdERR_ABORT_SDM_DO_NOT_MATCH_SPLIT_METHOD) );
+    }
     IDE_EXCEPTION( ERR_INSIDE_QUERY )
     {
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QSX_PSM_INSIDE_QUERY ) );
@@ -471,6 +668,10 @@ IDE_RC sdfCalculate_SetShardTable( mtcNode*     aNode,
     {
         IDE_SET( ideSetErrorCode( sdERR_ABORT_SDF_SHARD_NODE_NAME_TOO_LONG ) );
     }
+    IDE_EXCEPTION( ERR_SHARD_PARTITION_NAME_TOO_LONG );
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDF_SHARD_PARTITION_NAME_TOO_LONG ) );
+    }
     IDE_EXCEPTION( ERR_NO_GRANT )
     {
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QRC_NO_GRANT ) );
@@ -483,8 +684,20 @@ IDE_RC sdfCalculate_SetShardTable( mtcNode*     aNode,
     {
         IDE_SET( ideSetErrorCode( sdERR_ABORT_SDF_UNSUPPORTED_SUB_SHARD_KEY_SPLIT_TYPE ) );
     }
+    IDE_EXCEPTION( ERR_INTERNAL_OPERATION )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdfCalculate_SetShardTable",
+                                  "SHARD_INTERNAL_LOCAL_OPERATION is not 1" ) );
+    }
+    IDE_EXCEPTION( ERR_ALREDAY_EXIST_ERROR_MSG )
+    {
+        // nothing to do
+    }
     IDE_EXCEPTION_END;
 
+    IDE_PUSH();
+    
     switch ( sState )
     {
         case 2:
@@ -502,5 +715,17 @@ IDE_RC sdfCalculate_SetShardTable( mtcNode*     aNode,
             break;
     }
 
+    /* BUG-47623 »þµå ¸ÞÅ¸ º¯°æ¿¡ ´ëÇÑ trc ·Î±×Áß commit ·Î±×¸¦ ÀÛ¼ºÇÏ±âÀü¿¡ DASSERT ·Î Á×´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù. */
+    if ( sIsOldSessionShardMetaTouched == ID_TRUE )
+    {
+        sdi::setShardMetaTouched( sStatement->session );
+    }
+    else
+    {
+        sdi::unsetShardMetaTouched( sStatement->session );
+    }
+
+    IDE_POP();
+    
     return IDE_FAILURE;
 }

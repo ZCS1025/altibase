@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: utm.h 80542 2017-07-19 08:01:20Z daramix $
+ * $Id: utm.h 86068 2019-08-27 06:13:27Z bethy $
  **********************************************************************/
 
 #ifndef _O_UTM_H_
@@ -30,6 +30,7 @@
 #include <utmManager.h>
 #include <utmPropertyMgr.h>
 #include <utmProgOption.h>
+#include <utmDbmsMeta.h>
 #include <utString.h>
 
 extern uteErrorMgr  gErrorMgr;

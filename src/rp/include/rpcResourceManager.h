@@ -94,8 +94,8 @@ class rpcResourceManager
                               idvSQL        * aStatistics,
                               UInt            aFlag );
 
-        IDE_RC smiTransCommit( smiTrans * aTrans, smSCN * aCommitSCN );
-        void smiTransRollback( smiTrans *aTrans );
+        IDE_RC smiTransCommit( smiTrans * aTrans );
+        void smiTransRollback( smiTrans * aTrans );
         void smiTransRollbackAll();
 
         IDE_RC rpMalloc( ULong aSize, void **aBuffer );

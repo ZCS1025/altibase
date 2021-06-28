@@ -19,6 +19,7 @@
 
 #include <sqlcli.h>
 #include <stdbool.h>
+#include <sqltypes.h>
 
 #ifdef __cplusplus
 # define EXTERN_C        extern "C"
@@ -48,6 +49,8 @@
 #define APRE_LONG_IS_NULL(a)       (ulpLongIsNull(&(a)))
 #define APRE_FLOAT_IS_NULL(a)      (ulpFloatIsNull(&(a)))
 #define APRE_DOUBLE_IS_NULL(a)     (ulpDoubleIsNull(&(a)))
+#define APRE_NUMERIC_TO_LONG(a)    (ulpNumericToLong(&(a)))
+#define APRE_NUMERIC_TO_DOUBLE(a)  (ulpNumericToDouble(&(a)))
 
 typedef char APRE_BINARY;
 typedef char APRE_BINARY2;
@@ -105,6 +108,7 @@ typedef struct ulpHostVar
     short  mUnsign;
     short  mInOut;
     short  mType;
+    short  mDiagType;
     short  mIsDynAlloc;
     SQLLEN *mHostInd;
     SQLLEN *mVcInd;
@@ -207,5 +211,6 @@ EXTERN_C bool ulpIntIsNull( const int *aValue );
 EXTERN_C bool ulpLongIsNull( const long *aValue );
 EXTERN_C bool ulpFloatIsNull( const void *aValue );
 EXTERN_C bool ulpDoubleIsNull( const void *aValue );
-
+EXTERN_C long ulpNumericToLong( SQL_NUMERIC_STRUCT *aNumeric );
+EXTERN_C double ulpNumericToDouble( SQL_NUMERIC_STRUCT *aNumeric );
 #endif

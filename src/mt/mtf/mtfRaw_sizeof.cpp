@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfRaw_sizeof.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfRaw_sizeof.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -45,7 +45,7 @@ static IDE_RC mtfRaw_sizeofEstimate( mtcNode*     aNode,
 mtfModule mtfRaw_sizeof = {
     1|MTC_NODE_OPERATOR_FUNCTION|MTC_NODE_EAT_NULL_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞ÏûêÍ∞Ä ÏïÑÎãò)
+    1.0,  // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄∞° æ∆¥‘)
     mtfRaw_sizeofFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -121,7 +121,7 @@ IDE_RC mtfRaw_sizeofCalculate( mtcNode*     aNode,
  * Implementation :
  *    RAW_SIZEOF( param )
  *
- *    aStack[0] : ÏûÖÎ†•Îêú paramÏùò actual size
+ *    aStack[0] : ¿‘∑¬µ» param¿« actual size
  *
  ***********************************************************************/
 

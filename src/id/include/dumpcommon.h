@@ -22,4 +22,51 @@ typedef struct functions
     SChar   mName[MAXLEN];
 } functions;
 
+/* BUG-47888 */
+idBool getSimpleCRC(UInt * aOut)
+{
+    UInt    sTotal = 0;
+    FILE  * sF = NULL;
+    SChar   sPath[ID_MAX_FILE_NAME];
+    UInt    sSize;
+    UChar * sBuf;
+    UInt    i;
 
+    idlOS::snprintf(sPath, ID_SIZEOF(sPath), "%s%sbin%s%s",
+                    idlOS::getenv(IDP_HOME_ENV),
+                    IDL_FILE_SEPARATORS,
+                    IDL_FILE_SEPARATORS,
+                    "altibase");
+    sF = idlOS::fopen(sPath, "r");
+    if( sF == NULL )
+    {
+        idlOS::printf("Error : %s cannot be opened.\n",sPath);
+        return ID_FALSE;
+    }
+
+    idlOS::fseek(sF, 0, SEEK_END); 
+    sSize = idlOS::ftell(sF);      
+
+    sBuf = (UChar*)idlOS::malloc(sSize);   
+    if( sBuf == NULL )
+    {
+        idlOS::printf("Error : malloc failed.\n",sPath);
+        return ID_FALSE;
+    }
+
+    idlOS::fseek(sF, 0, SEEK_SET);          
+    (void)idlOS::fread(sBuf, sSize, 1, sF);    
+
+    idlOS::fclose(sF);   
+
+    for(i = 1; i < sSize ; i++)
+    {
+        sTotal += sBuf[i];
+    }
+
+    idlOS::free(sBuf);
+
+    *aOut = sTotal;
+
+    return ID_TRUE;
+}

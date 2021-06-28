@@ -17,40 +17,36 @@
 
 package Altibase.jdbc.driver.sharding.core;
 
-import Altibase.jdbc.driver.AltibaseFailover;
-import Altibase.jdbc.driver.AltibaseResultSet;
-import Altibase.jdbc.driver.AltibaseStatement;
-import Altibase.jdbc.driver.cm.CmProtocolContextShardConnect;
+import Altibase.jdbc.driver.*;
+import Altibase.jdbc.driver.cm.CmPrepareResult;
 import Altibase.jdbc.driver.cm.CmProtocolContextShardStmt;
-import Altibase.jdbc.driver.cm.CmShardProtocol;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
 
 import java.sql.*;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static Altibase.jdbc.driver.sharding.util.ShardingTraceLogger.shard_log;
 
-public class AltibaseShardingStatement extends JdbcMethodInvoker implements Statement
+public class AltibaseShardingStatement extends WrapperAdapter implements Statement
 {
     CmProtocolContextShardStmt                 mShardStmtCtx;
-    CmShardProtocol                            mShardProtocol;
     SQLWarning                                 mSqlwarning;
     AltibaseShardingConnection                 mMetaConn;
     String                                     mSql;
-    CmProtocolContextShardConnect              mShardContextConnect;
-    Map<DataNode, Statement>                   mRoutedStatementMap;
     Map<Integer, JdbcMethodInvocation>         mSetParamInvocationMap;
     InternalShardingStatement                  mInternalStmt;
-    protected Statement                        mServerSideStmt;
+    Statement                                  mServerSideStmt;
+    AltibaseStatement                          mStatementForAnalyze; // BUG-47274 analyze∏¶ ¿ß«— ≥ª∫Œ statement
     long                                       mShardMetaNumber;
     int                                        mResultSetType;
     int                                        mResultSetConcurrency;
     int                                        mResultSetHoldability;
     boolean                                    mIsCoordQuery;
+    boolean                                    mIsReshardEnabled;
     private static int                         DEFAULT_CURSOR_HOLDABILITY = ResultSet.CLOSE_CURSORS_AT_COMMIT;
     private Class<? extends Statement>         mTargetClass;
+    protected final JdbcMethodInvoker          mJdbcMethodInvoker = new JdbcMethodInvoker();
 
     AltibaseShardingStatement(AltibaseShardingConnection aConn) throws SQLException
     {
@@ -65,11 +61,14 @@ public class AltibaseShardingStatement extends JdbcMethodInvoker implements Stat
         mResultSetType = aResultSetType;
         mResultSetConcurrency = aResultSetConcurrency;
         mResultSetHoldability = aResultSetHoldability;
-        mShardContextConnect = aConn.getShardContext();
-        mShardStmtCtx = new CmProtocolContextShardStmt(mShardContextConnect);
-        mShardProtocol = aConn.getShardProtocol();
+        mIsReshardEnabled = aConn.isReshardEnabled();
+        // BUG-47274 AnalyzeøÎ statement∏¶ µ˚∑Œ ª˝º∫«—¥Ÿ.
+        mStatementForAnalyze = new AltibaseStatement(aConn.getMetaConnection(),
+                                                     aResultSetType,
+                                                     aResultSetConcurrency,
+                                                     aResultSetHoldability);
+        mShardStmtCtx = new CmProtocolContextShardStmt(aConn, mStatementForAnalyze);
         mTargetClass = Statement.class;
-        mRoutedStatementMap = new ConcurrentHashMap<DataNode, Statement>();
         if (aResultSetType == ResultSet.TYPE_SCROLL_SENSITIVE ||
                 aResultSetType == ResultSet.TYPE_SCROLL_INSENSITIVE)
         {
@@ -87,9 +86,32 @@ public class AltibaseShardingStatement extends JdbcMethodInvoker implements Stat
 
     public ResultSet executeQuery(String aSql) throws SQLException
     {
+        mMetaConn.checkCommitState();
         shardAnalyze(aSql);
-        ResultSet sResult = mInternalStmt.executeQuery(aSql);
-        updateShardMetaNumberIfNecessary();
+        ResultSet sResult;
+        short sRetryCount = mMetaConn.getShardStatementRetry();
+
+        try
+        {
+            while(true)
+            {
+                try
+                {
+                    sResult = mInternalStmt.executeQuery(aSql);
+                    break;
+                }
+                catch (SQLException aEx)
+                {
+                    // STATEMENT_TOO_OLD ¿Ã ø‹ ø°∑Ø∞° ¿÷¿ª ∞ÊøÏ¥¬ stmt retry «œ¡ˆ æ ¥¬¥Ÿ. 
+                    checkStmtTooOld(aEx, sRetryCount);
+                    --sRetryCount;
+                }
+            }
+        }
+        finally
+        {
+            updateShardMetaNumberIfNecessary();
+        }
         clearClosedResultSets(sResult);
 
         return sResult;
@@ -97,9 +119,32 @@ public class AltibaseShardingStatement extends JdbcMethodInvoker implements Stat
 
     public int executeUpdate(String aSql) throws SQLException
     {
+        mMetaConn.checkCommitState();
         shardAnalyze(aSql);
-        int sResult = mInternalStmt.executeUpdate(aSql);
-        updateShardMetaNumberIfNecessary();
+        int sResult;
+        short sRetryCount = mMetaConn.getShardStatementRetry();
+
+        try
+        {
+            while(true)
+            {
+                try
+                {
+                    sResult = mInternalStmt.executeUpdate(aSql);
+                    break;
+                }
+                catch (SQLException aEx)
+                {
+                    // STATEMENT_TOO_OLD ¿Ã ø‹ ø°∑Ø∞° ¿÷¿ª ∞ÊøÏ¥¬ stmt retry «œ¡ˆ æ ¥¬¥Ÿ. 
+                    checkStmtTooOld(aEx, sRetryCount);
+                    --sRetryCount;
+                }
+            }
+        }
+        finally
+        {
+            updateShardMetaNumberIfNecessary();
+        }
 
         return sResult;
     }
@@ -107,67 +152,125 @@ public class AltibaseShardingStatement extends JdbcMethodInvoker implements Stat
     public void close() throws SQLException
     {
         mMetaConn.unregisterStatement(this);
-        if (mInternalStmt != null)
+
+        SQLException sEx = null;
+        try
         {
-            mInternalStmt.close();
+            // BUG-47274 analyze∏¶ ¿ß«ÿ ª˝º∫«— statement∏¶ «ÿ¡¶«—¥Ÿ.
+            mStatementForAnalyze.close();
+        }
+        catch (SQLException aEx)
+        {
+            sEx = aEx;
+        }
+
+        try
+        {
+            if (mInternalStmt != null)
+            {
+                mInternalStmt.close();
+            }
+        }
+        catch (SQLException aEx)
+        {
+            if (sEx == null)
+            {
+                sEx = aEx;
+            }
+            else // BUG-47274 ¿ÃπÃ analyzeøÎ statementø°º≠ øπø‹∞° πﬂª˝«— ∞ÊøÏ chain¿∏∑Œ π≠¥¬¥Ÿ.
+            {
+                sEx.setNextException(aEx);
+            }
+        }
+        if (sEx != null)
+        {
+            throw sEx;
         }
     }
 
     public int getMaxFieldSize() throws SQLException
     {
-        return mInternalStmt.getMaxFieldSize();
+        return (mInternalStmt == null) ? 0 : mInternalStmt.getMaxFieldSize();
     }
 
     public void setMaxFieldSize(int aMax) throws SQLException
     {
-        recordMethodInvocation(mTargetClass, "setMaxFieldSize", new Class[] {int.class}, new Object[] {aMax});
-        mInternalStmt.setMaxFieldSize(aMax);
+        mJdbcMethodInvoker.recordMethodInvocation(mTargetClass,
+                                                  "setMaxFieldSize",
+                                                  new Class[] { int.class },
+                                                  new Object[] { aMax });
+        if (mInternalStmt != null)
+        {
+            mInternalStmt.setMaxFieldSize(aMax);
+        }
     }
 
     public int getMaxRows() throws SQLException
     {
-        return mInternalStmt.getMaxRows();
+        return (mInternalStmt == null) ? 0 : mInternalStmt.getMaxRows();
     }
 
     public void setMaxRows(int aMax) throws SQLException
     {
-        recordMethodInvocation(mTargetClass, "setMaxRows", new Class[] {int.class}, new Object[] {aMax});
-        mInternalStmt.setMaxRows(aMax);
+        mJdbcMethodInvoker.recordMethodInvocation(mTargetClass,
+                                                  "setMaxRows",
+                                                  new Class[] {int.class},
+                                                  new Object[] {aMax});
+        if (mInternalStmt != null)
+        {
+            mInternalStmt.setMaxRows(aMax);
+        }
     }
 
     public void setEscapeProcessing(boolean aEnable) throws SQLException
     {
-        recordMethodInvocation(mTargetClass, "setEscapeProcessing", new Class[] {boolean.class},
-                               new Object[] {aEnable});
-        mInternalStmt.setEscapeProcessing(aEnable);
+        mJdbcMethodInvoker.recordMethodInvocation(mTargetClass,
+                                                  "setEscapeProcessing",
+                                                  new Class[] { boolean.class },
+                                                  new Object[] { aEnable });
+        if (mInternalStmt != null)
+        {
+            mInternalStmt.setEscapeProcessing(aEnable);
+        }
     }
 
     public int getQueryTimeout() throws SQLException
     {
-        return mInternalStmt.getQueryTimeout();
+        return (mInternalStmt == null) ? 0 : mInternalStmt.getQueryTimeout();
     }
 
     public void setQueryTimeout(int aSeconds) throws SQLException
     {
-        recordMethodInvocation(mTargetClass, "setQueryTimeout", new Class[] {int.class},
-                               new Object[] {aSeconds});
-        mInternalStmt.setQueryTimeout(aSeconds);
+        mJdbcMethodInvoker.recordMethodInvocation(mTargetClass,
+                                                  "setQueryTimeout",
+                                                  new Class[] { int.class },
+                                                  new Object[] { aSeconds });
+        if (mInternalStmt != null)
+        {
+            mInternalStmt.setQueryTimeout(aSeconds);
+        }
     }
 
     public void cancel() throws SQLException
     {
-        mInternalStmt.cancel();
+        if (mInternalStmt != null)
+        {
+            mInternalStmt.cancel();
+        }
     }
 
     public SQLWarning getWarnings() throws SQLException
     {
-        if (mSqlwarning == null)
+        if (mInternalStmt != null)
         {
-            mSqlwarning = mInternalStmt.getWarnings();
-        }
-        else
-        {
-            mSqlwarning.setNextWarning(mInternalStmt.getWarnings());
+            if (mSqlwarning == null)
+            {
+                mSqlwarning = mInternalStmt.getWarnings();
+            }
+            else
+            {
+                mSqlwarning.setNextWarning(mInternalStmt.getWarnings());
+            }
         }
 
         return mSqlwarning;
@@ -175,36 +278,98 @@ public class AltibaseShardingStatement extends JdbcMethodInvoker implements Stat
 
     public void clearWarnings() throws SQLException
     {
-        mInternalStmt.clearWarnings();
+        if (mInternalStmt != null)
+        {
+            mInternalStmt.clearWarnings();
+        }
+
         mSqlwarning = null;
     }
 
     public void setCursorName(String aName) throws SQLException
     {
-        mInternalStmt.setCursorName(aName);
+        Error.throwSQLException(ErrorDef.UNSUPPORTED_FEATURE, "cursor name and positioned update");
     }
 
     public boolean execute(String aSql) throws SQLException
     {
+        mMetaConn.checkCommitState();
         shardAnalyze(aSql);
-        boolean sResult = mInternalStmt.execute(aSql);
-        updateShardMetaNumberIfNecessary();
+        boolean sResult;
+        short sRetryCount = mMetaConn.getShardStatementRetry();
+        
+        try
+        {
+            while(true)
+            {
+                try
+                {
+                    sResult = mInternalStmt.execute(aSql);
+                    break;
+                }
+                catch (SQLException aEx)
+                {
+                    // STATEMENT_TOO_OLD ¿Ã ø‹ ø°∑Ø∞° ¿÷¿ª ∞ÊøÏ¥¬ stmt retry «œ¡ˆ æ ¥¬¥Ÿ. 
+                    checkStmtTooOld(aEx, sRetryCount);
+                    --sRetryCount;
+                }
+            }
+        }
+        finally
+        {
+            updateShardMetaNumberIfNecessary();
+        }
 
         return sResult;
     }
 
+    protected void checkStmtTooOld(SQLException aEx, short aRetryCount) throws SQLException
+    {
+        SQLException sEx;
+        
+        if (mInternalStmt instanceof ServerSideShardingStatement ||
+            !mMetaConn.getGlobalTransactionLevel().equals(GlobalTransactionLevel.GCTX) ||
+            aRetryCount == 0)
+        {
+            throw aEx;
+        }
+
+        // ∏µÁ ≥ÎµÂø°º≠ ≥—æÓø¬ exception ¡ﬂø° STATEMENT_TOO_OLD∞° æ∆¥— ø°∑Ø∞° ¿÷¿∏∏È throw aEx
+        // ¡Ô, ∏µÁ exception¿Ã STATEMENT_TOO_OLD ¿œ∂ß∏∏ stmt retry ºˆ«‡
+        sEx = aEx;
+        while(sEx != null)
+        {
+            if (sEx.getErrorCode() != ErrorDef.STATEMENT_TOO_OLD)
+            {
+                throw aEx;
+            }
+            sEx = sEx.getNextException();
+        }
+    }
+    
     public ResultSet getResultSet() throws SQLException
     {
-        return mInternalStmt.getResultSet();
+        /* BUG-47127 æ∆¡˜ analyze ¿¸ ¿Ã∂Û∏È Statement Not Yet Executeøπø‹∏¶ ø√∑¡æﬂ «—¥Ÿ.  */
+        if (mInternalStmt == null)
+        {
+            Error.throwSQLException(ErrorDef.STATEMENT_NOT_YET_EXECUTED);
+        }
+
+        return  mInternalStmt.getResultSet();
     }
 
     public int getUpdateCount() throws SQLException
     {
-        return mInternalStmt.getUpdateCount();
+        return (mInternalStmt == null) ? AltibaseStatement.DEFAULT_UPDATE_COUNT :
+                                         mInternalStmt.getUpdateCount();
     }
 
     public boolean getMoreResults() throws SQLException
     {
+        if (mInternalStmt == null)
+        {
+            return false;
+        }
         boolean sResult = mInternalStmt.getMoreResults();
 
         if (mMetaConn.getAutoCommit() && !sResult && mMetaConn.shouldUpdateShardMetaNumber())
@@ -227,14 +392,19 @@ public class AltibaseShardingStatement extends JdbcMethodInvoker implements Stat
 
     public void setFetchSize(int aRows) throws SQLException
     {
-        recordMethodInvocation(mTargetClass, "setFetchSize", new Class[] {int.class},
-                               new Object[] {aRows});
-        mInternalStmt.setFetchSize(aRows);
+        mJdbcMethodInvoker.recordMethodInvocation(mTargetClass,
+                                                  "setFetchSize",
+                                                  new Class[] {int.class},
+                                                  new Object[] {aRows});
+        if (mInternalStmt != null)
+        {
+            mInternalStmt.setFetchSize(aRows);
+        }
     }
 
     public int getFetchSize() throws SQLException
     {
-        return mInternalStmt.getFetchSize();
+        return (mInternalStmt == null) ? 0 : mInternalStmt.getFetchSize();
     }
 
     public int getResultSetConcurrency()
@@ -262,92 +432,243 @@ public class AltibaseShardingStatement extends JdbcMethodInvoker implements Stat
         return null;
     }
 
-    public Connection getConnection() throws SQLException
+    public Connection getConnection()
     {
-        return mInternalStmt.getConnection();
+        // BUG-47127 internal statement±Ó¡ˆ ∞• « ø‰æ¯¿Ã πŸ∑Œ AltibaseShardingConnection¿ª ∏Æ≈œ«—¥Ÿ.
+        return mMetaConn;
     }
 
     public boolean getMoreResults(int aCurrent) throws SQLException
     {
-        return mInternalStmt.getMoreResults(aCurrent);
+        if (mInternalStmt != null)
+        {
+            return mInternalStmt.getMoreResults(aCurrent);
+        }
+
+        return false;
     }
 
     public ResultSet getGeneratedKeys() throws SQLException
     {
-        return mInternalStmt.getGeneratedKeys();
+        return (mInternalStmt == null) ? null : mInternalStmt.getGeneratedKeys();
     }
 
     public int executeUpdate(String aSql, int aAutoGeneratedKeys) throws SQLException
     {
+        mMetaConn.checkCommitState();
         shardAnalyze(aSql);
-        int sResult = mInternalStmt.executeUpdate(aSql, aAutoGeneratedKeys);
-        updateShardMetaNumberIfNecessary();
+        int sResult;
+        short sRetryCount = mMetaConn.getShardStatementRetry();
+        
+        try
+        {
+            while(true)
+            {
+                try
+                {
+                    sResult = mInternalStmt.executeUpdate(aSql, aAutoGeneratedKeys);
+                    break;
+                }
+                catch (SQLException aEx)
+                {
+                    // STATEMENT_TOO_OLD ¿Ã ø‹ ø°∑Ø∞° ¿÷¿ª ∞ÊøÏ¥¬ stmt retry «œ¡ˆ æ ¥¬¥Ÿ. 
+                    checkStmtTooOld(aEx, sRetryCount);
+                    --sRetryCount;
+                }
+            }
+        }
+        finally
+        {
+            updateShardMetaNumberIfNecessary();
+        }
 
         return sResult;
     }
 
     public int executeUpdate(String aSql, int[] aColumnIndexes) throws SQLException
     {
+        mMetaConn.checkCommitState();
         shardAnalyze(aSql);
-        int sResult = mInternalStmt.executeUpdate(aSql, aColumnIndexes);
-        updateShardMetaNumberIfNecessary();
+        int sResult;
+        short sRetryCount = mMetaConn.getShardStatementRetry();
+        
+        try
+        {
+            while(true)
+            {
+                try
+                {
+                    sResult = mInternalStmt.executeUpdate(aSql, aColumnIndexes);
+                    break;
+                }
+                catch (SQLException aEx)
+                {
+                    // STATEMENT_TOO_OLD ¿Ã ø‹ ø°∑Ø∞° ¿÷¿ª ∞ÊøÏ¥¬ stmt retry «œ¡ˆ æ ¥¬¥Ÿ. 
+                    checkStmtTooOld(aEx, sRetryCount);
+                    --sRetryCount;
+                }
+            }
+        }
+        finally
+        {
+            updateShardMetaNumberIfNecessary();
+        }
 
         return sResult;
     }
 
     public int executeUpdate(String aSql, String[] aColumnNames) throws SQLException
     {
+        mMetaConn.checkCommitState();
         shardAnalyze(aSql);
-        int sResult = mInternalStmt.executeUpdate(aSql, aColumnNames);
-        updateShardMetaNumberIfNecessary();
+        int sResult;
+        short sRetryCount = mMetaConn.getShardStatementRetry();
+        
+        try
+        {
+            while(true)
+            {
+                try
+                {
+                    sResult = mInternalStmt.executeUpdate(aSql, aColumnNames);
+                    break;
+                }
+                catch (SQLException aEx)
+                {
+                    // STATEMENT_TOO_OLD ¿Ã ø‹ ø°∑Ø∞° ¿÷¿ª ∞ÊøÏ¥¬ stmt retry «œ¡ˆ æ ¥¬¥Ÿ. 
+                    checkStmtTooOld(aEx, sRetryCount);
+                    --sRetryCount;
+                }
+            }
+        }
+        finally
+        {
+            updateShardMetaNumberIfNecessary();
+        }
 
         return sResult;
     }
 
     public boolean execute(String aSql, int aAutoGeneratedKeys) throws SQLException
     {
+        mMetaConn.checkCommitState();
         shardAnalyze(aSql);
-        boolean sResult = mInternalStmt.execute(aSql, aAutoGeneratedKeys);
-        updateShardMetaNumberIfNecessary();
+        boolean sResult;
+        short sRetryCount = mMetaConn.getShardStatementRetry();
+        
+        try
+        {
+            while(true)
+            {
+                try
+                {
+                    sResult = mInternalStmt.execute(aSql, aAutoGeneratedKeys);
+                    break;
+                }
+                catch (SQLException aEx)
+                {
+                    // STATEMENT_TOO_OLD ¿Ã ø‹ ø°∑Ø∞° ¿÷¿ª ∞ÊøÏ¥¬ stmt retry «œ¡ˆ æ ¥¬¥Ÿ. 
+                    checkStmtTooOld(aEx, sRetryCount);
+                    --sRetryCount;
+                }
+            }
+        }
+        finally
+        {
+            updateShardMetaNumberIfNecessary();
+        }
 
         return sResult;
     }
 
     /**
-     * Ïò§ÌÜ†Ïª§Î∞ã ON ÏÉÅÌÉúÏù¥Í≥† DataNodeÏùò SMN Í∞íÏù¥ Îçî ÎÜíÎã§Î©¥ SMNÍ∞íÏùÑ ÏóÖÎç∞Ïù¥Ìä∏ ÌïúÎã§.
-     * @throws SQLException shard meta number ÏóÖÎç∞Ïù¥Ìä∏ Ï§ë ÏóêÎü¨Í∞Ä Î∞úÏÉùÌñàÏùÑ Îïå
+     * ø¿≈‰ƒøπ‘ ON ªÛ≈¬¿Ã∞Ì DataNode¿« SMN ∞™¿Ã ¥ı ≥Ù¥Ÿ∏È SMN∞™¿ª æ˜µ•¿Ã∆Æ «—¥Ÿ.
+     * @throws SQLException shard meta number æ˜µ•¿Ã∆Æ ¡ﬂ ø°∑Ø∞° πﬂª˝«ﬂ¿ª ∂ß
      */
-    protected void updateShardMetaNumberIfNecessary() throws SQLException
+    void updateShardMetaNumberIfNecessary() throws SQLException
     {
-        if (mMetaConn.getAutoCommit() && mMetaConn.shouldUpdateShardMetaNumber())
+        // BUG-47460 resharding¿Ã »∞º∫»≠ µ«æÓ ¿÷¿ª ∂ß∏∏ meta numer update∏¶ ºˆ«‡«—¥Ÿ.
+        if (mIsReshardEnabled)
         {
-            mMetaConn.updateShardMetaNumber();
+            if (mMetaConn.getAutoCommit() && mMetaConn.shouldUpdateShardMetaNumber())
+            {
+                mMetaConn.updateShardMetaNumber();
+            }
         }
     }
 
-    protected void clearClosedResultSets(ResultSet aResultSet)
+    void clearClosedResultSets(ResultSet aResultSet)
     {
-        if (aResultSet instanceof AltibaseShardingResultSet)
+        if (mIsReshardEnabled)
         {
-            AltibaseShardingResultSet sShardingResultSet = (AltibaseShardingResultSet)aResultSet;
-            sShardingResultSet.clearClosedResultSets();
+            if (aResultSet instanceof AltibaseShardingResultSet)
+            {
+                AltibaseShardingResultSet sShardingResultSet = (AltibaseShardingResultSet)aResultSet;
+                sShardingResultSet.clearClosedResultSets();
+            }
         }
     }
 
     public boolean execute(String aSql, int[] aColumnIndexes) throws SQLException
     {
+        mMetaConn.checkCommitState();
         shardAnalyze(aSql);
-        boolean sResult = mInternalStmt.execute(aSql, aColumnIndexes);
-        updateShardMetaNumberIfNecessary();
+        boolean sResult;
+        short sRetryCount = mMetaConn.getShardStatementRetry();
+        
+        try
+        {
+            while(true)
+            {
+                try
+                {
+                    sResult = mInternalStmt.execute(aSql, aColumnIndexes);
+                    break;
+                }
+                catch (SQLException aEx)
+                {
+                    // STATEMENT_TOO_OLD ¿Ã ø‹ ø°∑Ø∞° ¿÷¿ª ∞ÊøÏ¥¬ stmt retry «œ¡ˆ æ ¥¬¥Ÿ. 
+                    checkStmtTooOld(aEx, sRetryCount);
+                    --sRetryCount;
+                }
+            }
+        }
+        finally
+        {
+            updateShardMetaNumberIfNecessary();
+        }
 
         return sResult;
     }
 
     public boolean execute(String aSql, String[] aColumnNames) throws SQLException
     {
+        mMetaConn.checkCommitState();
         shardAnalyze(aSql);
-        boolean sResult = mInternalStmt.execute(aSql, aColumnNames);
-        updateShardMetaNumberIfNecessary();
+        boolean sResult;
+        short sRetryCount = mMetaConn.getShardStatementRetry();
+        
+        try
+        {
+            while(true)
+            {
+                try
+                {
+                    sResult = mInternalStmt.execute(aSql, aColumnNames);
+                    break;
+                }
+                catch (SQLException aEx)
+                {
+                    // STATEMENT_TOO_OLD ¿Ã ø‹ ø°∑Ø∞° ¿÷¿ª ∞ÊøÏ¥¬ stmt retry «œ¡ˆ æ ¥¬¥Ÿ. 
+                    checkStmtTooOld(aEx, sRetryCount);
+                    --sRetryCount;
+                }
+            }
+        }
+        finally
+        {
+            updateShardMetaNumberIfNecessary();
+        }
 
         return sResult;
     }
@@ -359,10 +680,13 @@ public class AltibaseShardingStatement extends JdbcMethodInvoker implements Stat
 
     private void shardAnalyze(String aSql) throws SQLException
     {
-        mShardStmtCtx = new CmProtocolContextShardStmt(mMetaConn.getShardContext());
+        CmPrepareResult sPrepareResult = mShardStmtCtx.getShardPrepareResult();
+        // BUG-47274 ±‚¡∏ø° ¿÷¥¯ prepare result∏¶ ¿Á»∞øÎ«—¥Ÿ.
+        mShardStmtCtx = new CmProtocolContextShardStmt(mMetaConn, mStatementForAnalyze, sPrepareResult);
+
         try
         {
-            mShardProtocol.shardAnalyze(mShardStmtCtx, aSql);
+            mMetaConn.getShardProtocol().shardAnalyze(mShardStmtCtx, aSql, mStatementForAnalyze.getID());
         }
         catch (SQLException aEx)
         {
@@ -371,18 +695,22 @@ public class AltibaseShardingStatement extends JdbcMethodInvoker implements Stat
 
         if (mShardStmtCtx.getShardAnalyzeResult().isCoordQuery())
         {
-            // BUG-46513 ONENODEÏù¥Í≥† analyze Í≤∞Í≥ºÍ∞Ä ÏÑ±Í≥µÏù¥ ÏïÑÎãêÍ≤ΩÏö∞ÏóêÎäî ÏòàÏô∏Î•º ÎçòÏßÑÎã§.
-            if (mShardStmtCtx.getShardTransactionLevel() == ShardTransactionLevel.ONE_NODE)
+            // BUG-46513 ONENODE¿Ã∞Ì analyze ∞·∞˙∞° º∫∞¯¿Ã æ∆¥“∞ÊøÏø°¥¬ øπø‹∏¶ ¥¯¡¯¥Ÿ.
+            if (mShardStmtCtx.getGlobalTransactionLevel() == GlobalTransactionLevel.ONE_NODE)
             {
                 mSqlwarning = Error.processServerError(mSqlwarning, mShardStmtCtx.getError());
             }
             Connection sConn = mMetaConn.getMetaConnection();
-            mServerSideStmt = sConn.createStatement(mResultSetType, mResultSetConcurrency,
-                                                    mResultSetHoldability);
+            // BUG-46790 ¿ÃπÃ ª˝º∫«— serverside statement∞° ¿÷¥¬ ∞ÊøÏø°¥¬ ¿ÁªÁøÎ«—¥Ÿ.
+            if (mServerSideStmt == null)
+            {
+                mServerSideStmt = sConn.createStatement(mResultSetType, mResultSetConcurrency,
+                                                        mResultSetHoldability);
+            }
             mIsCoordQuery = true;
-            // BUG-46513 ÏÑúÎ≤ÑÏÇ¨Ïù¥ÎìúÏùºÎïåÎäî meta connectionÏùÑ AltibaseStatementÏóê Ï£ºÏûÖÌïúÎã§.
+            // BUG-46513 º≠πˆªÁ¿ÃµÂ¿œ∂ß¥¬ meta connection¿ª AltibaseStatementø° ¡÷¿‘«—¥Ÿ.
             ((AltibaseStatement)mServerSideStmt).setMetaConnection(mMetaConn);
-            mInternalStmt = new ServerSideShardingStatement(mServerSideStmt, mShardContextConnect);
+            mInternalStmt = new ServerSideShardingStatement(mServerSideStmt, mMetaConn);
         }
         else
         {
@@ -396,12 +724,22 @@ public class AltibaseShardingStatement extends JdbcMethodInvoker implements Stat
 
     public boolean isPrepared()
     {
-        return mInternalStmt.isPrepared();
+        if (mInternalStmt != null)
+        {
+            return mInternalStmt.isPrepared();
+        }
+
+        return false;
     }
 
     public boolean hasNoData()
     {
-        return mInternalStmt.hasNoData();
+        if (mInternalStmt != null)
+        {
+            return mInternalStmt.hasNoData();
+        }
+
+        return false;
     }
 
     public AltibaseShardingConnection getMetaConn()
@@ -427,11 +765,6 @@ public class AltibaseShardingStatement extends JdbcMethodInvoker implements Stat
         }
     }
 
-    public Map<DataNode, Statement> getRoutedStatementMap()
-    {
-        return mRoutedStatementMap;
-    }
-
     void replaySetParameter(PreparedStatement aPreparedStatement) throws SQLException
     {
         for (JdbcMethodInvocation sEach : mSetParamInvocationMap.values())
@@ -439,5 +772,52 @@ public class AltibaseShardingStatement extends JdbcMethodInvoker implements Stat
             sEach.invoke(aPreparedStatement);
             shard_log("(REPLAY SET PARAMETER) {0}", sEach);
         }
+    }
+
+    void makeQstrForGeneratedKeys(String aSql, int[] aColumnIndexes,
+                                  String[] aColumnNames) throws SQLException
+    {
+        mInternalStmt.makeQstrForGeneratedKeys(aSql, aColumnIndexes, aColumnNames);
+    }
+
+    void clearForGeneratedKeys() throws SQLException
+    {
+        mInternalStmt.clearForGeneratedKeys();
+    }
+
+    public void replayMethodsInvocation(Object aObj) throws SQLException
+    {
+        mJdbcMethodInvoker.replayMethodsInvocation(aObj);
+    }
+
+    @Override
+    public boolean isClosed() throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void closeOnCompletion() throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public boolean isCloseOnCompletion() throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    /* BUG-48892 AbstractStatement.java∏¶ ªË¡¶«œ∞Ì 4.2 ¿Œ≈Õ∆‰¿ÃΩ∫¿Œ setPoolable(), isPoolabe()¿ª ¡˜¡¢ ±∏«ˆ */
+    @Override
+    public void setPoolable(boolean aPoolable) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public boolean isPoolable() throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
     }
 }

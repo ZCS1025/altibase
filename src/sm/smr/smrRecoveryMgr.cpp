@@ -16,13 +16,9 @@
  
 
 /***********************************************************************
- * $Id: smrRecoveryMgr.cpp 85249 2019-04-16 07:15:00Z emlee $
+ * $Id: smrRecoveryMgr.cpp 90522 2021-04-09 01:29:20Z emlee $
  **********************************************************************/
 
-#include <idl.h>
-#include <ide.h>
-#include <idu.h>
-#include <iduCompression.h>
 #include <smErrorCode.h>
 #include <smDef.h>
 #include <smm.h>
@@ -70,7 +66,6 @@ idBool                     smrRecoveryMgr::mLogFileContinuity = ID_TRUE;
 SChar                      smrRecoveryMgr::mLostLogFile[SM_MAX_FILE_NAME];
 smLSN                      smrRecoveryMgr::mEndChkptLSN;
 smLSN                      smrRecoveryMgr::mLstDRDBRedoLSN;
-smLSN                      smrRecoveryMgr::mLstDRDBPageUpdateLSN;
 iduMutex                   smrRecoveryMgr::mIOLMutex;
 smrRTOI                    smrRecoveryMgr::mIOLHead;
 UInt                       smrRecoveryMgr::mIOLCount;
@@ -80,6 +75,8 @@ UInt        smrRecoveryMgr::mCurrMediaTime;
 SChar       smrRecoveryMgr::mLastRestoredTagName[ SMI_MAX_BACKUP_TAG_NAME_LEN ];
 
 smLSN       smrRecoveryMgr::mSkipRedoLSN       = { 0, 0 };
+
+UInt        smrRecoveryMgr::mLastRemovedFileNo;
 
 // * REPLICATION concern function where   * //
 // * stubs make not NULL function forever * //
@@ -93,6 +90,7 @@ IDE_RC stubIsReplCompleteBeforeCommitFunc( idvSQL *,
 
 void   stubIsReplCompleteAfterCommitFunc( idvSQL *, 
                                           const smTID, 
+                                          const smSN,
                                           const smSN, 
                                           const UInt, 
                                           const smiCallOrderInCommitFunc ) 
@@ -104,19 +102,30 @@ void   stubSendXLogFunc( const SChar* )
     return; 
 };
 
+IDE_RC stubIsReplWaitGlobalTxAfterPrepareFunc( idvSQL       * /* aStatistics */,
+                                               idBool         /* aIsRequestNode */,
+                                               const smTID    /* aTID */ ,
+                                               const smSN     /* aSN */ )
+{
+    return IDE_SUCCESS;
+};
+
 smIsReplCompleteBeforeCommit smrRecoveryMgr::mIsReplCompleteBeforeCommitFunc = stubIsReplCompleteBeforeCommitFunc;
 smIsReplCompleteAfterCommit  smrRecoveryMgr::mIsReplCompleteAfterCommitFunc = stubIsReplCompleteAfterCommitFunc;
 //PROJ-1670: Log Buffer for Replication
 smCopyToRPLogBuf smrRecoveryMgr::mCopyToRPLogBufFunc = stubCopyToRPLogBufFunc;
 /* PROJ-2453 Eager Replication performance enhancement */
 smSendXLog smrRecoveryMgr::mSendXLogFunc = stubSendXLogFunc;
+/* PROJ-2747 Global Tx Consistent */
+smIsReplWaitGlobalTxAfterPrepare smrRecoveryMgr::mIsReplWaitGlobalTxAfterPrepareFunc = stubIsReplWaitGlobalTxAfterPrepareFunc;
 
 void smrRecoveryMgr::setCallbackFunction(
                             smGetMinSN                   aGetMinSNFunc,
                             smIsReplCompleteBeforeCommit aIsReplCompleteBeforeCommitFunc,
                             smIsReplCompleteAfterCommit  aIsReplCompleteAfterCommitFunc,
                             smCopyToRPLogBuf             aCopyToRPLogBufFunc,
-                            smSendXLog                   aSendXLogFunc)
+                            smSendXLog                   aSendXLogFunc,
+                            smIsReplWaitGlobalTxAfterPrepare aIsReplWaitGlobalTxAfterPrepareFunc )
 {
     mGetMinSNFunc   = aGetMinSNFunc;
 
@@ -149,14 +158,23 @@ void smrRecoveryMgr::setCallbackFunction(
     {
         mSendXLogFunc = stubSendXLogFunc;
     }
+
+    if ( aIsReplWaitGlobalTxAfterPrepareFunc != NULL )
+    {
+        mIsReplWaitGlobalTxAfterPrepareFunc = aIsReplWaitGlobalTxAfterPrepareFunc;
+    }
+    else
+    {
+        mIsReplWaitGlobalTxAfterPrepareFunc = stubIsReplWaitGlobalTxAfterPrepareFunc;
+    }
 }
 
 /***********************************************************************
- * Description : createdbê³¼ì •ì—ì„œ ë¡œê·¸ ê´€ë ¨ ì‘ì—… ìˆ˜í–‰
+ * Description : createdb°úÁ¤¿¡¼­ ·Î±× °ü·Ã ÀÛ¾÷ ¼öÇà
  *
- * createdb ê³¼ì •ì—ì„œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ë¡œì¨ ë¡œê·¸ì•µì»¤ ìƒì„± ë°
- * ì²«ë²ˆì§¸ ë¡œê·¸íŒŒì¼(logfile0)ì„ ìƒì„±í•˜ê³ , ë³µêµ¬ ê´€ë¦¬ìë¥¼
- * ì´ˆê¸°í™”í•˜ë©°, ë¡œê·¸íŒŒì¼ ê´€ë¦¬ì threadë¥¼ ì‹œì‘í•œë‹¤.
+ * createdb °úÁ¤¿¡¼­ È£ÃâµÇ´Â ÇÔ¼ö·Î½á ·Î±×¾ŞÄ¿ »ı¼º ¹×
+ * Ã¹¹øÂ° ·Î±×ÆÄÀÏ(logfile0)À» »ı¼ºÇÏ°í, º¹±¸ °ü¸®ÀÚ¸¦
+ * ÃÊ±âÈ­ÇÏ¸ç, ·Î±×ÆÄÀÏ °ü¸®ÀÚ thread¸¦ ½ÃÀÛÇÑ´Ù.
  **********************************************************************/
 IDE_RC smrRecoveryMgr::create()
 {
@@ -173,21 +191,21 @@ IDE_RC smrRecoveryMgr::create()
 }
 
 /***********************************************************************
- * Description : ë³µêµ¬ ê´€ë¦¬ì ì´ˆê¸°í™”
+ * Description : º¹±¸ °ü¸®ÀÚ ÃÊ±âÈ­
  *
- * A4ì—ì„œëŠ” ë‹¤ì¤‘ ë¡œê·¸ì•µì»¤íŒŒì¼(3ê°œì˜ ë³µì‚¬ë³¸ìœ ì§€)ì„ ì§€ì›í•œë‹¤.
- * ê·¸ëŸ¬ë¯€ë¡œ, ë³µêµ¬ê´€ë¦¬ì ì´ˆê¸°í™”ê³¼ì •ì—ì„œ ë¡œê·¸ì•µì»¤ íŒŒì¼ì„
- * ì½ì–´ì„œ ë©”ëª¨ë¦¬ì— ì ì¬í•˜ëŠ” ê³¼ì •ì„ ì²˜ë¦¬í•˜ê¸° ì „ì— ì—¬ëŸ¬ ê°œì˜
- * ë¡œê·¸ì•µì»¤ íŒŒì¼ ì¤‘ ì‹œìŠ¤í…œ êµ¬ë™ì— ì‚¬ìš©í•  ìœ íš¨í•œ ë¡œê·¸ì•µì»¤
- * ë¥¼ ì„ íƒí•˜ëŠ” ê³¼ì •ì´ í•„ìš”í•˜ë‹¤.
+ * A4¿¡¼­´Â ´ÙÁß ·Î±×¾ŞÄ¿ÆÄÀÏ(3°³ÀÇ º¹»çº»À¯Áö)À» Áö¿øÇÑ´Ù.
+ * ±×·¯¹Ç·Î, º¹±¸°ü¸®ÀÚ ÃÊ±âÈ­°úÁ¤¿¡¼­ ·Î±×¾ŞÄ¿ ÆÄÀÏÀ»
+ * ÀĞ¾î¼­ ¸Ş¸ğ¸®¿¡ ÀûÀçÇÏ´Â °úÁ¤À» Ã³¸®ÇÏ±â Àü¿¡ ¿©·¯ °³ÀÇ
+ * ·Î±×¾ŞÄ¿ ÆÄÀÏ Áß ½Ã½ºÅÛ ±¸µ¿¿¡ »ç¿ëÇÒ À¯È¿ÇÑ ·Î±×¾ŞÄ¿
+ * ¸¦ ¼±ÅÃÇÏ´Â °úÁ¤ÀÌ ÇÊ¿äÇÏ´Ù.
  *
  * - 2nd. code design
- *   + MRDBì™€ DRDBì˜ redo/undo í•¨ìˆ˜ í¬ì¸í„° mapì„ ì´ˆê¸°í™”í•œë‹¤.
- *   + loganchor ê´€ë¦¬ìë¥¼ ì´ˆê¸°í™”í•œë‹¤.
- *   + ë¡œê·¸íŒŒì¼ì„ ì¤€ë¹„í•˜ê³ , ë¡œê·¸íŒŒì¼ ê´€ë¦¬ì(smrLogFileMgr) threadë¥¼
- *     ì‹œì‘í•œë‹¤.
- *   + ë¡œê·¸íŒŒì¼ Sync threadë¥¼ ì´ˆê¸°í™”í•˜ê³ , dirty page list
- *     (smrDirtyPageList)ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ *   + MRDB¿Í DRDBÀÇ redo/undo ÇÔ¼ö Æ÷ÀÎÅÍ mapÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ *   + loganchor °ü¸®ÀÚ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ *   + ·Î±×ÆÄÀÏÀ» ÁØºñÇÏ°í, ·Î±×ÆÄÀÏ °ü¸®ÀÚ(smrLogFileMgr) thread¸¦
+ *     ½ÃÀÛÇÑ´Ù.
+ *   + ·Î±×ÆÄÀÏ Sync thread¸¦ ÃÊ±âÈ­ÇÏ°í, dirty page list
+ *     (smrDirtyPageList)¸¦ ÃÊ±âÈ­ÇÑ´Ù.
  **********************************************************************/
 IDE_RC smrRecoveryMgr::initialize()
 {
@@ -199,12 +217,12 @@ IDE_RC smrRecoveryMgr::initialize()
                                              IDV_WAIT_INDEX_NULL )
              != IDE_SUCCESS );
 
-    /* BUG-42785 mOnlineDRDBRedoCntëŠ” í˜„ì¬ OnlineDRDBRedoë¥¼ ìˆ˜í–‰í•˜ê³  ìˆëŠ”
-     * íŠ¸ëœì­ì…˜ì˜ ìˆ˜ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤. */
+    /* BUG-42785 mOnlineDRDBRedoCnt´Â ÇöÀç OnlineDRDBRedo¸¦ ¼öÇàÇÏ°í ÀÖ´Â
+     * Æ®·£Àè¼ÇÀÇ ¼ö¸¦ ³ªÅ¸³½´Ù. */
     mOnlineDRDBRedoCnt = 0;
 
     /* ------------------------------------------------
-     * MRDBì™€ DRDBì˜ redo/undo í•¨ìˆ˜ í¬ì¸í„° map ì´ˆê¸°í™”
+     * MRDB¿Í DRDBÀÇ redo/undo ÇÔ¼ö Æ÷ÀÎÅÍ map ÃÊ±âÈ­
      * ----------------------------------------------*/
     smrUpdate::initialize();
     smLayerCallback::initRecFuncMap();
@@ -215,16 +233,15 @@ IDE_RC smrRecoveryMgr::initialize()
     mMRDBConsistency     = ID_TRUE;
     mLogFileContinuity   = ID_TRUE;
 
-    SM_SET_LSN( mEndChkptLSN,          0, 0 );
-    SM_SET_LSN( mLstRedoLSN,           0, 0 );
-    SM_SET_LSN( mLstDRDBPageUpdateLSN, 0, 0 );
+    SM_LSN_MAX( mEndChkptLSN ); // BUG-47404 ÀÌÈÄ WALÈ®ÀÎÀ» À§ÇØ UINT_MAX ·Î ¼³Á¤ÇÔ.
+    SM_LSN_INIT( mLstRedoLSN );
 
     IDE_TEST( initializeIOL() != IDE_SUCCESS );
 
     /* ------------------------------------------------
-     * loganchor ê´€ë¦¬ì ì´ˆê¸°í™”ê³¼ì •ì—ì„œ invalidí•œ
-     * loganchor íŒŒì¼(ë“¤)ì— ëŒ€í•´ì„œ validí•œ ì •ë³´ë¥¼
-     * flush í•œë‹¤.
+     * loganchor °ü¸®ÀÚ ÃÊ±âÈ­°úÁ¤¿¡¼­ invalidÇÑ
+     * loganchor ÆÄÀÏ(µé)¿¡ ´ëÇØ¼­ validÇÑ Á¤º¸¸¦
+     * flush ÇÑ´Ù.
      * ----------------------------------------------*/
     IDE_TEST( mAnchorMgr.initialize() != IDE_SUCCESS );
 
@@ -254,14 +271,16 @@ IDE_RC smrRecoveryMgr::initialize()
     mFinish               = ID_FALSE;
     mRestart              = ID_FALSE;
     mRedo                 = ID_FALSE;
-    mMediaRecoveryPhase   = ID_FALSE; /* ë¯¸ë””ì–´ ë³µêµ¬ ìˆ˜í–‰ì¤‘ì—ë§Œ TRUE */
+    mMediaRecoveryPhase   = ID_FALSE; /* ¹Ìµğ¾î º¹±¸ ¼öÇàÁß¿¡¸¸ TRUE */
     mRestartRecoveryPhase = ID_FALSE;
 
     mRefineDRDBIdx = ID_FALSE;
 
+    mLastRemovedFileNo = 0;
+
     SM_SET_LSN(mIdxSMOLSN, 0, 0);
 
-    // ê° Tablespaceë³„ dirty pageê´€ë¦¬ìë¥¼ ê´€ë¦¬í•˜ëŠ” ê°ì²´ ì´ˆê¸°í™”
+    // °¢ Tablespaceº° dirty page°ü¸®ÀÚ¸¦ °ü¸®ÇÏ´Â °´Ã¼ ÃÊ±âÈ­
     IDE_TEST( smrDPListMgr::initializeStatic() != IDE_SUCCESS );
 
     IDE_TEST( smLayerCallback::initializeCorruptPageMgr( sdbBufferMgr::getPageCount() )
@@ -277,10 +296,10 @@ IDE_RC smrRecoveryMgr::initialize()
 
 /***********************************************************************
  *
- * Description : Server Shutdownì‹œ ë³µêµ¬ê´€ë¦¬ì ì¢…ë£Œì‘ì—… ìˆ˜í–‰
+ * Description : Server Shutdown½Ã º¹±¸°ü¸®ÀÚ Á¾·áÀÛ¾÷ ¼öÇà
  *
- * ì„œë²„ì¢…ë£Œê³¼ì •ì—ì„œ ì§„í–‰ë˜ë˜ ë°±ì—…ì—°ì‚°ì´ ì¡´ì¬í•œë‹¤ë©´ ëª¨ë‘ ì·¨ì†Œì‹œí‚¤ê³ , ì¬ì‹œì‘ íšŒë³µì„
- * ë¹ ë¥´ê²Œ í•˜ê¸° ìœ„í•´ì„œ ëª¨ë“  Dirty í˜ì´ì§€ë¥¼ ëª¨ë‘ ë‚´ë¦¬ê³ , ì²´í¬í¬ì¸íŠ¸ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ * ¼­¹öÁ¾·á°úÁ¤¿¡¼­ ÁøÇàµÇ´ø ¹é¾÷¿¬»êÀÌ Á¸ÀçÇÑ´Ù¸é ¸ğµÎ Ãë¼Ò½ÃÅ°°í, Àç½ÃÀÛ È¸º¹À»
+ * ºü¸£°Ô ÇÏ±â À§ÇØ¼­ ¸ğµç Dirty ÆäÀÌÁö¸¦ ¸ğµÎ ³»¸®°í, Ã¼Å©Æ÷ÀÎÆ®¸¦ ¼öÇàÇÑ´Ù.
  *
  **********************************************************************/
 IDE_RC smrRecoveryMgr::finalize()
@@ -294,8 +313,7 @@ IDE_RC smrRecoveryMgr::finalize()
 
     if ( smrBackupMgr::getBackupState() != SMR_BACKUP_NONE )
     {
-        IDE_TEST( sddDiskMgr::abortBackupAllTableSpace( NULL /* idvSQL* */)
-                  != IDE_SUCCESS );
+        sddDiskMgr::abortBackupAllTableSpace( NULL /* idvSQL* */); 
     }
 
     if ( smrLogMgr::getLogFileMgr().isStarted() == ID_TRUE )
@@ -311,8 +329,8 @@ IDE_RC smrRecoveryMgr::finalize()
         IDE_TEST( sdbFlushMgr::turnOnAllflushers() != IDE_SUCCESS );
 
         // To fix BUG-17953
-        // checkpoint -> checkpoint -> flushì˜ ìˆœì„œë¥¼
-        // flush -> checkpoint -> checkpointë¡œ ë³€ê²½
+        // checkpoint -> checkpoint -> flushÀÇ ¼ø¼­¸¦
+        // flush -> checkpoint -> checkpoint·Î º¯°æ
         IDE_TEST( sdbBufferMgr::flushDirtyPagesInCPList(NULL,
                                                        ID_TRUE)// FLUSH ALL
                  != IDE_SUCCESS );
@@ -336,29 +354,29 @@ IDE_RC smrRecoveryMgr::finalize()
 
         /* BUG-40139 The server can`t realize that there is dirty pages in buffer 
          * when the server shutdown in normal 
-         * ì •ìƒì¢…ë£Œì¤‘ Checkpoint Listì— BCBê°€ ë‚¨ì•„ìˆë‹¤ë©´(dirty page)ê°€
-         * ì¡´ì¬í•œë‹¤ë©´ ë¹„ì •ìƒ ì¢…ë£Œ í•˜ì—¬ restart recoveryê°€ ë™ì‘í•˜ê²Œ í•œë‹¤.*/
+         * Á¤»óÁ¾·áÁß Checkpoint List¿¡ BCB°¡ ³²¾ÆÀÖ´Ù¸é(dirty page)°¡
+         * Á¸ÀçÇÑ´Ù¸é ºñÁ¤»ó Á¾·á ÇÏ¿© restart recovery°¡ µ¿ÀÛÇÏ°Ô ÇÑ´Ù.*/
         IDE_ASSERT_MSG( sBCBCount == 0,
                         "Forced shutdown due to remaining dirty pages in CPList(%"ID_UINT32_FMT")\n", 
                         sBCBCount);
 
-        IDE_TEST( smrLogMgr::getLstLSN(&sEndLSN) != IDE_SUCCESS );
+        smrLogMgr::getLstLSN( &sEndLSN );
 
-        // Loganchorì˜ EndLSNì€ checkpointì‹œì˜ Memory RedoLSN ë˜ëŠ”
-        // Shutdownì‹œì˜ EndLSNìœ¼ë¡œ ì‚¬ìš©ë˜ê¸°ë•Œë¬¸ì— Shutdownì‹œì—ë„
-        // ì²´í¬í¬ì¸íŠ¸ì´ë¯¸ì§€ ë©”íƒ€í—¤ë”ì— ì •ë³´ë¥¼ ê°±ì‹ í•´ì£¼ì–´ì•¼ í•œë‹¤.
+        // LoganchorÀÇ EndLSNÀº checkpoint½ÃÀÇ Memory RedoLSN ¶Ç´Â
+        // Shutdown½ÃÀÇ EndLSNÀ¸·Î »ç¿ëµÇ±â¶§¹®¿¡ Shutdown½Ã¿¡µµ
+        // Ã¼Å©Æ÷ÀÎÆ®ÀÌ¹ÌÁö ¸ŞÅ¸Çì´õ¿¡ Á¤º¸¸¦ °»½ÅÇØÁÖ¾î¾ß ÇÑ´Ù.
         sctTableSpaceMgr::setRedoLSN4DBFileMetaHdr( NULL,       // Disk Redo LSN
                                                     &sEndLSN ); // Mem Redo LSN
 
-        // ì²´í¬í¬ì¸íŠ¸ì´ë¯¸ì§€ì˜ ë©”íƒ€í—¤ë”ì— RedoLSNì„ ê¸°ë¡í•œë‹¤.
+        // Ã¼Å©Æ÷ÀÎÆ®ÀÌ¹ÌÁöÀÇ ¸ŞÅ¸Çì´õ¿¡ RedoLSNÀ» ±â·ÏÇÑ´Ù.
         IDE_TEST( smmTBSMediaRecovery::updateDBFileHdr4AllTBS()
                   != IDE_SUCCESS );
 
         /* ------------------------------------------------
-         * loganchor ê°±ì‹ 
-         * - ì„œë²„ shutdown ìƒíƒœ ë³€ê²½
-         * - last LSN ì„¤ì •
-         * - last create log ë²ˆí˜¸ ì„¤ì •
+         * loganchor °»½Å
+         * - ¼­¹ö shutdown »óÅÂ º¯°æ
+         * - last LSN ¼³Á¤
+         * - last create log ¹øÈ£ ¼³Á¤
          * ----------------------------------------------*/
         smrLogMgr::getLogFileMgr().getLstLogFileNo( &sLstCreatedLogFile );
 
@@ -384,9 +402,9 @@ IDE_RC smrRecoveryMgr::finalize()
 }
 
 /***********************************************************************
- * Description : ë³µêµ¬ ê´€ë¦¬ì í•´ì œ
+ * Description : º¹±¸ °ü¸®ÀÚ ÇØÁ¦
  *
- * ì„œë²„ì¢…ë£Œê³¼ì •ì—ì„œ ë¡œê·¸ ê´€ë ¨ ìì›ì„ í•´ì œí•˜ê³ , ë¡œê·¸ì•µì»¤ì— ì •ìƒì¢…ë£Œë¨ì„ ì„¤ì •í•œë‹¤.
+ * ¼­¹öÁ¾·á°úÁ¤¿¡¼­ ·Î±× °ü·Ã ÀÚ¿øÀ» ÇØÁ¦ÇÏ°í, ·Î±×¾ŞÄ¿¿¡ Á¤»óÁ¾·áµÊÀ» ¼³Á¤ÇÑ´Ù.
  *
  **********************************************************************/
 IDE_RC smrRecoveryMgr::destroy()
@@ -428,58 +446,58 @@ IDE_RC smrRecoveryMgr::destroy()
 }
 
 /***********************************************************************
- * Description : restart ìˆ˜í–‰
+ * Description : restart ¼öÇà
  *
- * restart í•¨ìˆ˜ ê¸°ëŠ¥ ë¶„ë¦¬ ë‹¤ìŒê³¼ ê°™ì´ 4ê°€ì§€ í•¨ìˆ˜ë¡œ ë¶„ë¦¬í•œë‹¤.
+ * restart ÇÔ¼ö ±â´É ºĞ¸® ´ÙÀ½°ú °°ÀÌ 4°¡Áö ÇÔ¼ö·Î ºĞ¸®ÇÑ´Ù.
  *
- * - initialize restart ê³¼ì •
- *   + restart ì²˜ë¦¬ì¤‘ í‘œì‹œ
- *   + í•„ìš”ì—†ëŠ” logfileë“¤ì„ ì‚­ì œ
- *   + stableDBì— ëŒ€í•˜ì—¬ prepareDB->restoreDB
- *   + ì´ì „ shutdown ìƒíƒœì— ë”°ë¼ recoveryê°€ í•„ìš”í•œê°€
- *     íŒë‹¨
- * - restart normal ê³¼ì •
- *   + ì´ì „ì— ì •ìƒì¢…ë£Œë¥¼ í•˜ì˜€ê¸°ë•Œë¬¸ì—, ë³µêµ¬ê°€ í•„ìš”ì—†ëŠ” ê²½ìš°ì„
- *   + ë¡œê·¸ì•µì»¤ ì„œë²„ìƒíƒœ updateFlush
- *   + log íŒŒì¼ ê´€ë¦¬ì ê¹¨ì›€
+ * - initialize restart °úÁ¤
+ *   + restart Ã³¸®Áß Ç¥½Ã
+ *   + ÇÊ¿ä¾ø´Â logfileµéÀ» »èÁ¦
+ *   + stableDB¿¡ ´ëÇÏ¿© prepareDB->restoreDB
+ *   + ÀÌÀü shutdown »óÅÂ¿¡ µû¶ó recovery°¡ ÇÊ¿äÇÑ°¡
+ *     ÆÇ´Ü
+ * - restart normal °úÁ¤
+ *   + ÀÌÀü¿¡ Á¤»óÁ¾·á¸¦ ÇÏ¿´±â¶§¹®¿¡, º¹±¸°¡ ÇÊ¿ä¾ø´Â °æ¿ìÀÓ
+ *   + ·Î±×¾ŞÄ¿ ¼­¹ö»óÅÂ updateFlush
+ *   + log ÆÄÀÏ °ü¸®ÀÚ ±ú¿ò
  *
- * - restart recovery ê³¼ì •
+ * - restart recovery °úÁ¤
  *   + active transaction list
- *   + redoAll ì²˜ë¦¬
- *   + DRDB tableì— ëŒ€í•˜ì—¬ index header ì´ˆê¸°í™”
- *   + undoAll ì²˜ë¦¬
+ *   + redoAll Ã³¸®
+ *   + DRDB table¿¡ ´ëÇÏ¿© index header ÃÊ±âÈ­
+ *   + undoAll Ã³¸®
  *
- * - finalize restart ê³¼ì •
- *   + flag ì„¤ì • ë° ë§ˆì§€ë§‰ ìƒì„± dbfile ê°œìˆ˜ ì„¤ì •
+ * - finalize restart °úÁ¤
+ *   + flag ¼³Á¤ ¹× ¸¶Áö¸· »ı¼º dbfile °³¼ö ¼³Á¤
  **********************************************************************/
 IDE_RC smrRecoveryMgr::restart( UInt aPolicy )
 {
     idBool                sNeedRecovery;
 
     // fix BUG-17158
-    // offline DBFì— writeê°€ ê°€ëŠ¥í•˜ë„ë¡ flag ë¥¼ ì„¤ì •í•œë‹¤.
+    // offline DBF¿¡ write°¡ °¡´ÉÇÏµµ·Ï flag ¸¦ ¼³Á¤ÇÑ´Ù.
     sddDiskMgr::setEnableWriteToOfflineDBF( ID_TRUE );
 
     /* ------------------------------------------------
-     * 1. restart ì¤€ë¹„ ê³¼ì • -> smrRecoveryMgr::initRestart()
+     * 1. restart ÁØºñ °úÁ¤ -> smrRecoveryMgr::initRestart()
      *
-     * - restart ì²˜ë¦¬ì¤‘ í‘œì‹œ
-     * - í•„ìš”ì—†ëŠ” logfileë“¤ì„ ì‚­ì œ
-     * - stableDBì— ëŒ€í•˜ì—¬ prepareDB->restoreDB
-     * - ì´ì „ shutdown ìƒíƒœì— ë”°ë¼ recoveryê°€ í•„ìš”í•œê°€
-     *   íŒë‹¨
+     * - restart Ã³¸®Áß Ç¥½Ã
+     * - ÇÊ¿ä¾ø´Â logfileµéÀ» »èÁ¦
+     * - stableDB¿¡ ´ëÇÏ¿© prepareDB->restoreDB
+     * - ÀÌÀü shutdown »óÅÂ¿¡ µû¶ó recovery°¡ ÇÊ¿äÇÑ°¡
+     *   ÆÇ´Ü
      * ----------------------------------------------*/
     IDE_TEST( initRestart( &sNeedRecovery ) != IDE_SUCCESS );
 
     /* ------------------------------------------------
-     * BUG-12246 ì„œë²„ êµ¬ë™ì‹œ ARCHIVEí•  ë¡œê·¸íŒŒì¼ì„ êµ¬í•´ì•¼í•¨
-     * 1) ì„œë²„ê°€ ë¹„ì •ìƒì¢…ë£Œí•œ ê²½ìš°
-     * lst delete logfile no ë¶€í„° recovery lsnê¹Œì§€ archive dirì„
-     * ê²€ì‚¬í•˜ì—¬ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ë¡œê·¸íŒŒì¼ë§Œ ë‹¤ì‹œ archive listì— ë“±ë¡í•œë‹¤.
-     * ê·¸ ì´í›„ëŠ” redoAll ë‹¨ê³„ì—ì„œ ë“±ë¡í•˜ë„ë¡ í•œë‹¤.
-     * 2) ì„œë²„ê°€ ì •ìƒì¢…ë£Œí•œ ê²½ìš°
-     * lst delete logfile noë¶€í„° end lsnê¹Œì§€ archive dirì„ ê²€ì‚¬í•˜ì—¬
-     * ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ë¡œê·¸íŒŒì¼ë§Œ ë‹¤ì‹œ archive listì— ë“±ë¡í•œë‹¤.
+     * BUG-12246 ¼­¹ö ±¸µ¿½Ã ARCHIVEÇÒ ·Î±×ÆÄÀÏÀ» ±¸ÇØ¾ßÇÔ
+     * 1) ¼­¹ö°¡ ºñÁ¤»óÁ¾·áÇÑ °æ¿ì
+     * lst delete logfile no ºÎÅÍ recovery lsn±îÁö archive dirÀ»
+     * °Ë»çÇÏ¿© Á¸ÀçÇÏÁö ¾Ê´Â ·Î±×ÆÄÀÏ¸¸ ´Ù½Ã archive list¿¡ µî·ÏÇÑ´Ù.
+     * ±× ÀÌÈÄ´Â redoAll ´Ü°è¿¡¼­ µî·ÏÇÏµµ·Ï ÇÑ´Ù.
+     * 2) ¼­¹ö°¡ Á¤»óÁ¾·áÇÑ °æ¿ì
+     * lst delete logfile noºÎÅÍ end lsn±îÁö archive dirÀ» °Ë»çÇÏ¿©
+     * Á¸ÀçÇÏÁö ¾Ê´Â ·Î±×ÆÄÀÏ¸¸ ´Ù½Ã archive list¿¡ µî·ÏÇÑ´Ù.
      * ----------------------------------------------*/
 
     /* PROJ-2162 RestartRiskReduction */
@@ -494,56 +512,56 @@ IDE_RC smrRecoveryMgr::restart( UInt aPolicy )
             "----------------------------------------"
             "----------------------------------------\n");
 
-        sNeedRecovery    = ID_FALSE; /* Recovery ì•ˆí•¨ */
+        sNeedRecovery    = ID_FALSE; /* Recovery ¾ÈÇÔ */
 
         IDE_TEST( prepare4DBInconsistencySetting() != IDE_SUCCESS );
-        mMRDBConsistency = ID_FALSE; /* DB Consistencyë“±ì´ ê¹¨ì§ */
+        mMRDBConsistency = ID_FALSE; /* DB ConsistencyµîÀÌ ±úÁü */
         mDRDBConsistency = ID_FALSE;
         mDurability      = ID_FALSE;
         IDE_TEST( finish4DBInconsistencySetting() != IDE_SUCCESS );
     }
     
-    /* PROJ-2102 Fast Secondary Buffer ì— ë”°ë¥¸ BCB ì¬êµ¬ì¶• */    
+    /* PROJ-2102 Fast Secondary Buffer ¿¡ µû¸¥ BCB Àç±¸Ãà */    
     IDE_TEST( sdsBufferMgr::restart( sNeedRecovery ) != IDE_SUCCESS );
 
-    if (sNeedRecovery != ID_TRUE) /* ë³µêµ¬ê°€ í•„ìš”ì—†ë‹¤ë©´ */
+    if (sNeedRecovery != ID_TRUE) /* º¹±¸°¡ ÇÊ¿ä¾ø´Ù¸é */
     {
         /* ------------------------------------------------
-         * 2-1. ì •ìƒ êµ¬ë™ -> smrRecoveryMgr::restartNormal()
+         * 2-1. Á¤»ó ±¸µ¿ -> smrRecoveryMgr::restartNormal()
          *
-         * - ì´ì „ì— ì •ìƒì¢…ë£Œë¥¼ í•˜ì˜€ê¸°ë•Œë¬¸ì—, ë³µêµ¬ê°€ í•„ìš”ì—†ëŠ” ê²½ìš°ì„
-         * - ë¡œê·¸ì•µì»¤ ì„œë²„ìƒíƒœ updateFlush
-         * - log íŒŒì¼ ê´€ë¦¬ì ê¹¨ì›€
-         * - DRDB tableì— ëŒ€í•˜ì—¬ index header ì´ˆê¸°í™”
+         * - ÀÌÀü¿¡ Á¤»óÁ¾·á¸¦ ÇÏ¿´±â¶§¹®¿¡, º¹±¸°¡ ÇÊ¿ä¾ø´Â °æ¿ìÀÓ
+         * - ·Î±×¾ŞÄ¿ ¼­¹ö»óÅÂ updateFlush
+         * - log ÆÄÀÏ °ü¸®ÀÚ ±ú¿ò
+         * - DRDB table¿¡ ´ëÇÏ¿© index header ÃÊ±âÈ­
          * ----------------------------------------------*/
         IDE_TEST( restartNormal() != IDE_SUCCESS );
     }
-    else /* ë³µêµ¬ê°€ í•„ìš”í•˜ë‹¤ë©´ */
+    else /* º¹±¸°¡ ÇÊ¿äÇÏ´Ù¸é */
     {
         /* ------------------------------------------------
          * 2-2. restart recovery ->smrRecoveryMgr::restartRecovery()
          * - active transaction list
-         * - redoAll ì²˜ë¦¬
-         * - DRDB tableì— ëŒ€í•˜ì—¬ index header ì´ˆê¸°í™”
-         * - undoAll ì²˜ë¦¬
+         * - redoAll Ã³¸®
+         * - DRDB table¿¡ ´ëÇÏ¿© index header ÃÊ±âÈ­
+         * - undoAll Ã³¸®
          * ----------------------------------------------*/
         IDE_TEST( restartRecovery() != IDE_SUCCESS );
     }
 
-    // fix BUG-17157 [PROJ-1548] Disk Tablespace Online/Offline ìˆ˜í–‰ì‹œ
-    // ì˜¬ë°”ë¥´ê²Œ Index Runtime Header í•´ì œí•˜ì§€ ì•ŠìŒ
-    // Restart REDO, UNDOëë‚œí›„ì— Offline ìƒíƒœì¸ Disk Tablespaceì˜
-    // Index Runtime Headerë¥¼ í•´ì œí•œë‹¤.
+    // fix BUG-17157 [PROJ-1548] Disk Tablespace Online/Offline ¼öÇà½Ã
+    // ¿Ã¹Ù¸£°Ô Index Runtime Header ÇØÁ¦ÇÏÁö ¾ÊÀ½
+    // Restart REDO, UNDO³¡³­ÈÄ¿¡ Offline »óÅÂÀÎ Disk TablespaceÀÇ
+    // Index Runtime Header¸¦ ÇØÁ¦ÇÑ´Ù.
     IDE_TEST( finiOfflineTBS(NULL /* idvSQL* */) != IDE_SUCCESS );
 
     /* ------------------------------------------------
      * 3. smrRecoveryMgr::finalRestart
-     * restart ê³¼ì • ë§ˆë¬´ë¦¬
-     * - flag ì„¤ì • ë° ë§ˆì§€ë§‰ ìƒì„± dbfile ê°œìˆ˜ ì„¤ì •
+     * restart °úÁ¤ ¸¶¹«¸®
+     * - flag ¼³Á¤ ¹× ¸¶Áö¸· »ı¼º dbfile °³¼ö ¼³Á¤
      * ----------------------------------------------*/
     (void)smrRecoveryMgr::finalRestart();
 
-    // offline DBFì— writeê°€ ë¶ˆê°€ëŠ¥í•˜ë„ë¡ flag ë¥¼ ì„¤ì •í•œë‹¤.
+    // offline DBF¿¡ write°¡ ºÒ°¡´ÉÇÏµµ·Ï flag ¸¦ ¼³Á¤ÇÑ´Ù.
     sddDiskMgr::setEnableWriteToOfflineDBF( ID_FALSE );
 
     return IDE_SUCCESS;
@@ -557,19 +575,19 @@ IDE_RC smrRecoveryMgr::restart( UInt aPolicy )
 }
 
 /***********************************************************************
- * Description : restart ì¤€ë¹„ ê³¼ì • ìˆ˜í–‰
+ * Description : restart ÁØºñ °úÁ¤ ¼öÇà
  *
- * ì‹œìŠ¤í…œ restart ì¤€ë¹„ ê³¼ì •ì˜ ì´ˆê¸°í™” ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
- * í•„ìš”ì—†ëŠ” ë¡œê·¸íŒŒì¼ì„ ì œê±°í•˜ê³ , checkpointê°€ ë°˜ì˜ëœ DBë¥¼ ë¡œë”©í•œ í›„,
- * ì‹œìŠ¤í…œì˜ ì´ì „ ì¢…ë£Œìƒíƒœì— ë”°ë¼ ë³µêµ¬ê³¼ì •ì´ í•„ìš”í•œì§€ ê²°ì •í•œë‹¤.
+ * ½Ã½ºÅÛ restart ÁØºñ °úÁ¤ÀÇ ÃÊ±âÈ­ ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+ * ÇÊ¿ä¾ø´Â ·Î±×ÆÄÀÏÀ» Á¦°ÅÇÏ°í, checkpoint°¡ ¹İ¿µµÈ DB¸¦ ·ÎµùÇÑ ÈÄ,
+ * ½Ã½ºÅÛÀÇ ÀÌÀü Á¾·á»óÅÂ¿¡ µû¶ó º¹±¸°úÁ¤ÀÌ ÇÊ¿äÇÑÁö °áÁ¤ÇÑ´Ù.
  *
  * - 2nd. code design
- *   + restart ì²˜ë¦¬ì¤‘ í‘œì‹œ
- *   + í•„ìš”ì—†ëŠ” logfileë“¤ì„ ì‚­ì œ
- *   + stableDBì— ëŒ€í•˜ì—¬ prepareDB,
- *   +  membaseì˜ timestampë¥¼ ê°±ì‹ 
- *   + checkpointê°€ ë°˜ì˜ëœ ì´ë¯¸ì§€ë¡œ restoreDB
- *   + ì´ì „ shutdown ìƒíƒœì— ë”°ë¼ recoveryê°€ í•„ìš”í•œê°€ ê²°ì •
+ *   + restart Ã³¸®Áß Ç¥½Ã
+ *   + ÇÊ¿ä¾ø´Â logfileµéÀ» »èÁ¦
+ *   + stableDB¿¡ ´ëÇÏ¿© prepareDB,
+ *   +  membaseÀÇ timestamp¸¦ °»½Å
+ *   + checkpoint°¡ ¹İ¿µµÈ ÀÌ¹ÌÁö·Î restoreDB
+ *   + ÀÌÀü shutdown »óÅÂ¿¡ µû¶ó recovery°¡ ÇÊ¿äÇÑ°¡ °áÁ¤
  **********************************************************************/
 IDE_RC smrRecoveryMgr::initRestart( idBool*  aIsNeedRecovery )
 {
@@ -583,14 +601,14 @@ IDE_RC smrRecoveryMgr::initRestart( idBool*  aIsNeedRecovery )
     mAnchorMgr.getLstDeleteLogFileNo( &sLstDeleteLogFile );
 
     /* BUG-40323 */
-    // ì‹¤ì œë¡œ ì‚­ì œí•  íŒŒì¼ì´ ìˆì„ë•Œë§Œ ì‚­ì œ ì‹œë„
+    // ½ÇÁ¦·Î »èÁ¦ÇÒ ÆÄÀÏÀÌ ÀÖÀ»¶§¸¸ »èÁ¦ ½Ãµµ
     if ( sFstDeleteLogFile != sLstDeleteLogFile )
     {
         (void)smrLogMgr::getLogFileMgr().removeLogFile( sFstDeleteLogFile,
                                                         sLstDeleteLogFile,
                                                         ID_FALSE /* Not Checkpoint */ );
 
-        // fix BUG-20241 : ì‚­ì œí•œ LogFileNoì™€ LogAnchor ë™ê¸°í™”
+        // fix BUG-20241 : »èÁ¦ÇÑ LogFileNo¿Í LogAnchor µ¿±âÈ­
         IDE_TEST( mAnchorMgr.updateFstDeleteFileAndFlush()
                   != IDE_SUCCESS );
     }
@@ -610,15 +628,15 @@ IDE_RC smrRecoveryMgr::initRestart( idBool*  aIsNeedRecovery )
              != IDE_SUCCESS );
 
     /* PROJ-1594 Volatile TBS */
-    /* Volatile Tablespaceë“¤ì„ ì´ˆê¸°í™”í•œë‹¤. */
+    /* Volatile TablespaceµéÀ» ÃÊ±âÈ­ÇÑ´Ù. */
     IDE_TEST( svmTBSStartupShutdown::prepareAllTBS() != IDE_SUCCESS );
 
     IDE_CALLBACK_SEND_MSG("  [SM] Recovery Phase - 2 : Loading Database ");
 
-    /*BUG-BUG-17697 Performance Center P-14 Startup ì„±ëŠ¥ì¸¡ì • ê²°ê³¼ê°€ ì´ìƒí•¨
+    /*BUG-BUG-17697 Performance Center P-14 Startup ¼º´ÉÃøÁ¤ °á°ú°¡ ÀÌ»óÇÔ
      *
-     *ì¸¡ì • ì½”ë“œì—ì„œ "BEGIN DATABASE RESTORATION" ì´ ë©”ì„¸ì§€ë¥¼ ì‚¬ìš©í•¨.
-     *ì—†ì• ë©´ ì•ˆë¨. */
+     *ÃøÁ¤ ÄÚµå¿¡¼­ "BEGIN DATABASE RESTORATION" ÀÌ ¸Ş¼¼Áö¸¦ »ç¿ëÇÔ.
+     *¾ø¾Ö¸é ¾ÈµÊ. */
     ideLog::log(IDE_SERVER_0, "     BEGIN DATABASE RESTORATION\n");
 
     IDE_TEST( smmManager::restoreDB( ( *aIsNeedRecovery == ID_TRUE ) ?
@@ -635,22 +653,22 @@ IDE_RC smrRecoveryMgr::initRestart( idBool*  aIsNeedRecovery )
 }
 
 /***********************************************************************
- * Description : ë³µêµ¬ê°€ í•„ìš”ì—†ëŠ” ì •ìƒ êµ¬ë™
+ * Description : º¹±¸°¡ ÇÊ¿ä¾ø´Â Á¤»ó ±¸µ¿
  *
- * system shutdown ì¢…ë¥˜ëŠ” normal, immediate, abortì˜ 3ê°€ì§€ë¡œ
- * ë‚˜ëˆ„ë©°, ì´ ì¤‘ì—ì„œ normalê³¼ immediate shutdownì— í•´ë‹¹í•˜ëŠ”
- * ì¢…ë£Œë°©ì‹ìœ¼ë¡œ ì´ì „ì— ì¢…ë£Œëœ ê²½ìš°ì— ì •ìƒêµ¬ë™í•œë‹¤.
- * ì™œëƒí•˜ë©´, ëª¨ë“  ì„¸ì…˜ì˜ íŠ¸ëœì­ì…˜ì„ ì™„ë£Œ(ê°•ì œ ì² íšŒë‚˜ ì¢…ë£ŒëŒ€ê¸°ë“ ì§€)
- * ë•Œë¬¸ì— active íŠ¸ëœì­ì…˜ì´ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©°, ë˜í•œ, ë§ˆì§€ë§‰ì— checkpointë¥¼
- * ìˆ˜í–‰í•˜ì—¬ ì¢…ë£Œí•˜ê¸° ë•Œë¬¸ì— dirty pageê°€ ëª¨ë‘ diskì— ë°˜ì˜ë˜ê¸° ë•Œë¬¸ì´ë‹¤.
- * ë§ˆì°¬ê°€ì§€ë¡œ DRDB ë˜í•œ ì •ìƒì¢…ë£Œì‹œì—ëŠ” ì„¸ì…˜ì™„ë£Œí›„ ë²„í¼ ê´€ë¦¬ìì˜
- * flush ëŒ€ìƒì˜ ëª¨ë“  pageë¥¼ ë””ìŠ¤í¬ì— ë°˜ì˜í•˜ì—¬ ì¢…ë£Œí•˜ë„ë¡ í•œë‹¤.
+ * system shutdown Á¾·ù´Â normal, immediate, abortÀÇ 3°¡Áö·Î
+ * ³ª´©¸ç, ÀÌ Áß¿¡¼­ normal°ú immediate shutdown¿¡ ÇØ´çÇÏ´Â
+ * Á¾·á¹æ½ÄÀ¸·Î ÀÌÀü¿¡ Á¾·áµÈ °æ¿ì¿¡ Á¤»ó±¸µ¿ÇÑ´Ù.
+ * ¿Ö³ÄÇÏ¸é, ¸ğµç ¼¼¼ÇÀÇ Æ®·£Àè¼ÇÀ» ¿Ï·á(°­Á¦ Ã¶È¸³ª Á¾·á´ë±âµçÁö)
+ * ¶§¹®¿¡ active Æ®·£Àè¼ÇÀÌ Á¸ÀçÇÏÁö ¾ÊÀ¸¸ç, ¶ÇÇÑ, ¸¶Áö¸·¿¡ checkpoint¸¦
+ * ¼öÇàÇÏ¿© Á¾·áÇÏ±â ¶§¹®¿¡ dirty page°¡ ¸ğµÎ disk¿¡ ¹İ¿µµÇ±â ¶§¹®ÀÌ´Ù.
+ * ¸¶Âù°¡Áö·Î DRDB ¶ÇÇÑ Á¤»óÁ¾·á½Ã¿¡´Â ¼¼¼Ç¿Ï·áÈÄ ¹öÆÛ °ü¸®ÀÚÀÇ
+ * flush ´ë»óÀÇ ¸ğµç page¸¦ µğ½ºÅ©¿¡ ¹İ¿µÇÏ¿© Á¾·áÇÏµµ·Ï ÇÑ´Ù.
  *
  * - 2nd. code design
- *   + ì´ì „ì— ì •ìƒì¢…ë£Œë¥¼ í•˜ì˜€ê¸°ë•Œë¬¸ì—, ë³µêµ¬ê°€ í•„ìš”ì—†ëŠ” ê²½ìš°ì„
- *   + ë¡œê·¸ì•µì»¤ ì„œë²„ìƒíƒœ updateFlush
- *   + log íŒŒì¼ ê´€ë¦¬ì ê¹¨ì›€
- *   + DRDB tableì— ëŒ€í•˜ì—¬ index header ì´ˆê¸°í™”
+ *   + ÀÌÀü¿¡ Á¤»óÁ¾·á¸¦ ÇÏ¿´±â¶§¹®¿¡, º¹±¸°¡ ÇÊ¿ä¾ø´Â °æ¿ìÀÓ
+ *   + ·Î±×¾ŞÄ¿ ¼­¹ö»óÅÂ updateFlush
+ *   + log ÆÄÀÏ °ü¸®ÀÚ ±ú¿ò
+ *   + DRDB table¿¡ ´ëÇÏ¿© index header ÃÊ±âÈ­
  **********************************************************************/
 IDE_RC smrRecoveryMgr::restartNormal()
 {
@@ -661,10 +679,10 @@ IDE_RC smrRecoveryMgr::restartNormal()
     mAnchorMgr.getEndLSN( &sEndLSN );
     mAnchorMgr.getLstCreatedLogFileNo( &sLstCreatedLogFileNo );
 
-    /* Transaction Free Listê°€ Validí•œì§€ ê²€ì‚¬í•œë‹¤. */
+    /* Transaction Free List°¡ ValidÇÑÁö °Ë»çÇÑ´Ù. */
     smLayerCallback::checkFreeTransList();
 
-    /* Archive ëŒ€ìƒ Logfileì„  Archive Listì— ì¶”ê°€í•œë‹¤. */
+    /* Archive ´ë»ó LogfileÀ»  Archive List¿¡ Ãß°¡ÇÑ´Ù. */
     if ( getArchiveMode() == SMI_LOG_ARCHIVE )
     {
         IDE_TEST( rebuildArchLogfileList( &sEndLSN )
@@ -679,9 +697,9 @@ IDE_RC smrRecoveryMgr::restartNormal()
              != IDE_SUCCESS );
 
     /* ------------------------------------------------
-     * pageì˜ index SMO No. ì´ˆê¸°í™”ì— ì‚¬ìš© [ì •ìƒêµ¬ë™ì‹œ]
-     * Index SMOëŠ” Diskì— ëŒ€í•´ì„œë§Œ ë¡œê·¸ê°€ ê¸°ë¡ëœë‹¤. ë”°ë¼ì„œ
-     * Diskì˜ Lst LSNì„ index SMO LSNìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+     * pageÀÇ index SMO No. ÃÊ±âÈ­¿¡ »ç¿ë [Á¤»ó±¸µ¿½Ã]
+     * Index SMO´Â Disk¿¡ ´ëÇØ¼­¸¸ ·Î±×°¡ ±â·ÏµÈ´Ù. µû¶ó¼­
+     * DiskÀÇ Lst LSNÀ» index SMO LSNÀ¸·Î ¼³Á¤ÇÑ´Ù.
      * ----------------------------------------------*/
     mIdxSMOLSN = sEndLSN;
 
@@ -694,7 +712,7 @@ IDE_RC smrRecoveryMgr::restartNormal()
 
     /*
      * PROJ-1671 Bitmap-based Tablespace And Segment Space Management
-     * space cacheì— ì •í™•í•œ ê°’ì„  ì„¸íŠ¸í•œë‹¤.
+     * space cache¿¡ Á¤È®ÇÑ °ªÀ»  ¼¼Æ®ÇÑ´Ù.
      */
     IDE_TEST( sdpTableSpace::refineDRDBSpaceCache() != IDE_SUCCESS );
 
@@ -702,8 +720,8 @@ IDE_RC smrRecoveryMgr::restartNormal()
     IDE_CALLBACK_SEND_MSG("                            Refining Disk Table ");
     IDE_TEST( smLayerCallback::refineDRDBTables() != IDE_SUCCESS );
 
-    /* BUG-27122 __SM_CHECK_DISK_INDEX_INTEGRITY í”„ë¡œí¼í‹° í™œì„±í™”ì‹œ
-     * ë””ìŠ¤í¬ ì¸ë±ìŠ¤ Integrity ì²´í¬ë¥¼ ìˆ˜í–‰í•œë‹¤. */
+    /* BUG-27122 __SM_CHECK_DISK_INDEX_INTEGRITY ÇÁ·ÎÆÛÆ¼ È°¼ºÈ­½Ã
+     * µğ½ºÅ© ÀÎµ¦½º Integrity Ã¼Å©¸¦ ¼öÇàÇÑ´Ù. */
     IDE_TEST( smLayerCallback::verifyIndexIntegrityAtStartUp()
               != IDE_SUCCESS );
     mRefineDRDBIdx = ID_TRUE;
@@ -712,12 +730,11 @@ IDE_RC smrRecoveryMgr::restartNormal()
     IDE_TEST( updateAnchorAllSB() != IDE_SUCCESS ); 
 
     /*
-      PRJ-1548 SM - User Memroy TableSpace ê°œë…ë„ì…
-      ì„œë²„êµ¬ë™ì‹œ ë³µêµ¬ì´í›„ì— ëª¨ë“  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜
-      DataFileCountì™€ TotalPageCountë¥¼ ê³„ì‚°í•˜ì—¬ ì„¤ì •í•œë‹¤.
+      PRJ-1548 SM - User Memroy TableSpace °³³äµµÀÔ
+      ¼­¹ö±¸µ¿½Ã º¹±¸ÀÌÈÄ¿¡ ¸ğµç Å×ÀÌºí½ºÆäÀÌ½ºÀÇ
+      DataFileCount¿Í TotalPageCount¸¦ °è»êÇÏ¿© ¼³Á¤ÇÑ´Ù.
     */
-    IDE_TEST( sddDiskMgr::calculateFileSizeOfAllTBS( NULL /* idvSQL* */)
-              != IDE_SUCCESS );
+    sddDiskMgr::calculateFileSizeOfAllTBS();
 
     return IDE_SUCCESS;
 
@@ -728,24 +745,24 @@ IDE_RC smrRecoveryMgr::restartNormal()
 }
 
 /***********************************************************************
- * Description : restart recovery ìˆ˜í–‰
+ * Description : restart recovery ¼öÇà
  *
- * ì‹œìŠ¤í…œ abort ë°œìƒì‹œ restart ê³¼ì •ì—ì„œ recoveryë¥¼ ìˆ˜í–‰í•˜ë©°,
- * ì´ì „ checkpoint ë°˜ì˜ì‹œì ë¶€í„° ë§ˆì§€ë§‰ ê¸°ë¡í•œ ë¡œê·¸LSNê¹Œì§€
- * íŠ¸ëœì­ì…˜ ì¬ìˆ˜í–‰ì„ í•˜ë©°, ì™„ë£Œë˜ì§€ ëª»í•œ íŠ¸ëœì­ì…˜ ëª©ë¡ì„ êµ¬í•˜ì—¬
- * íŠ¸ëœì­ì…˜ ì² íšŒë¥¼ ì²˜ë¦¬í•˜ë„ë¡ í•œë‹¤.
+ * ½Ã½ºÅÛ abort ¹ß»ı½Ã restart °úÁ¤¿¡¼­ recovery¸¦ ¼öÇàÇÏ¸ç,
+ * ÀÌÀü checkpoint ¹İ¿µ½ÃÁ¡ºÎÅÍ ¸¶Áö¸· ±â·ÏÇÑ ·Î±×LSN±îÁö
+ * Æ®·£Àè¼Ç Àç¼öÇàÀ» ÇÏ¸ç, ¿Ï·áµÇÁö ¸øÇÑ Æ®·£Àè¼Ç ¸ñ·ÏÀ» ±¸ÇÏ¿©
+ * Æ®·£Àè¼Ç Ã¶È¸¸¦ Ã³¸®ÇÏµµ·Ï ÇÑ´Ù.
  *
- * A3ë‚˜ A4ëŠ” memory tableì˜ indexëŠ” restart recovery í›„ì— indexë¥¼
- * ì¬ìƒì„±í•˜ê¸° ë•Œë¬¸ì— íŠ¸ëœì­ì…˜ ì² íšŒë‹¨ê³„ì—ì„œ ì ‘ê·¼í•  ì¼ì´ ì—†ë‹¤.
- * í•˜ì§€ë§Œ, disk tableì˜ persistent indexì— ëŒ€í•œ ì ‘ê·¼ì´ íŠ¸ëœì­ì…˜
- * ì² íšŒë‹¨ê³„ì—ì„œ ì ‘ê·¼í•˜ë„ë¡ í•´ì£¼ì–´ì•¼ í•˜ê¸° ë•Œë¬¸ì—, ì² íšŒë‹¨ê³„ ì „ì—
- * disk indexì˜ runtime indexì— ëŒ€í•´ì„œë§Œ ìƒì„±í•´ì£¼ì–´ì•¼ í•œë‹¤.
+ * A3³ª A4´Â memory tableÀÇ index´Â restart recovery ÈÄ¿¡ index¸¦
+ * Àç»ı¼ºÇÏ±â ¶§¹®¿¡ Æ®·£Àè¼Ç Ã¶È¸´Ü°è¿¡¼­ Á¢±ÙÇÒ ÀÏÀÌ ¾ø´Ù.
+ * ÇÏÁö¸¸, disk tableÀÇ persistent index¿¡ ´ëÇÑ Á¢±ÙÀÌ Æ®·£Àè¼Ç
+ * Ã¶È¸´Ü°è¿¡¼­ Á¢±ÙÇÏµµ·Ï ÇØÁÖ¾î¾ß ÇÏ±â ¶§¹®¿¡, Ã¶È¸´Ü°è Àü¿¡
+ * disk indexÀÇ runtime index¿¡ ´ëÇØ¼­¸¸ »ı¼ºÇØÁÖ¾î¾ß ÇÑ´Ù.
  *
  * - 2nd. code design
  *   + active transaction list
- *   + redoAll ì²˜ë¦¬
- *   + DRDB tableì— ëŒ€í•˜ì—¬ index header ì´ˆê¸°í™”
- *   + undoAll ì²˜ë¦¬
+ *   + redoAll Ã³¸®
+ *   + DRDB table¿¡ ´ëÇÏ¿© index header ÃÊ±âÈ­
+ *   + undoAll Ã³¸®
  **********************************************************************/
 IDE_RC smrRecoveryMgr::restartRecovery()
 {
@@ -754,14 +771,14 @@ IDE_RC smrRecoveryMgr::restartRecovery()
     IDE_CALLBACK_SEND_MSG("  [SM] Recovery Phase - 3 : Starting Recovery");
 
     /* PROJ-2162 RestartRiskReduction
-     * LogFileì´ ì—°ì†ì ì´ì§€ ëª»í•˜ë©´ LogFileì— ì†ìƒì´ ìˆë‹¤ëŠ” ë§ë¡œ, Durabilityê°€
-     * ê¹¨ì¡Œì„ ê°€ëŠ¥ì„±ì´ ìˆìŒ. */
+     * LogFileÀÌ ¿¬¼ÓÀûÀÌÁö ¸øÇÏ¸é LogFile¿¡ ¼Õ»óÀÌ ÀÖ´Ù´Â ¸»·Î, Durability°¡
+     * ±úÁ³À» °¡´É¼ºÀÌ ÀÖÀ½. */
     IDE_TEST_RAISE( ( mEmerRecovPolicy == SMR_RECOVERY_NORMAL ) &&
                     ( mLogFileContinuity == ID_FALSE ),
                     err_lost_logfile );
 
-    /* BUG-29633 Recoveryì „ ëª¨ë“  Transactionì´ Endìƒíƒœì¸ì§€ ì ê²€ì´ í•„ìš”í•©ë‹ˆë‹¤.
-     * Recoveryì‹œì— ë‹¤ë¥¸ê³³ì—ì„œ ì‚¬ìš©ë˜ëŠ” Active Transactionì´ ì¡´ì¬í•´ì„œëŠ” ì•ˆëœë‹¤. */
+    /* BUG-29633 RecoveryÀü ¸ğµç TransactionÀÌ End»óÅÂÀÎÁö Á¡°ËÀÌ ÇÊ¿äÇÕ´Ï´Ù.
+     * Recovery½Ã¿¡ ´Ù¸¥°÷¿¡¼­ »ç¿ëµÇ´Â Active TransactionÀÌ Á¸ÀçÇØ¼­´Â ¾ÈµÈ´Ù. */
     IDE_TEST_RAISE( smLayerCallback::existActiveTrans() == ID_TRUE,
                     err_exist_active_trans);
 
@@ -779,9 +796,7 @@ IDE_RC smrRecoveryMgr::restartRecovery()
     IDE_TEST( redoAll( NULL /* idvSQL* */) != IDE_SUCCESS );
     mRedo = ID_FALSE;
 
-    /* PROJ-2162 RestartRiskReduction ê²€ì¦ */
-    IDE_TEST( checkMemWAL() != IDE_SUCCESS );
-    IDE_TEST( checkDiskWAL() != IDE_SUCCESS );
+    /* PROJ-2162 RestartRiskReduction °ËÁõ */
     IDE_TEST_RAISE( ( mEmerRecovPolicy == SMR_RECOVERY_NORMAL ) &&
                     ( mDurability == ID_FALSE ),
                     err_durability );
@@ -794,26 +809,26 @@ IDE_RC smrRecoveryMgr::restartRecovery()
 
     /*
      * PROJ-1671 Bitmap-based Tablespace And Segment Space Management
-     * space cacheì— ì •í™•í•œ ê°’ì„  ì„¸íŠ¸í•œë‹¤.
+     * space cache¿¡ Á¤È®ÇÑ °ªÀ»  ¼¼Æ®ÇÑ´Ù.
      */
     IDE_TEST( sdpTableSpace::refineDRDBSpaceCache() != IDE_SUCCESS );
 
     // Init Disk Index Runtime Header
-    // fix BUG-17157 [PROJ-1548] Disk Tablespace Online/Offline ìˆ˜í–‰ì‹œ
-    // ì˜¬ë°”ë¥´ê²Œ Index Runtime Header í•´ì œí•˜ì§€ ì•ŠìŒ
-    // Refine DRDB ê³¼ì •ê³¼ Online ê³¼ì •ì—ì„œ í˜¸ì¶œë  ìˆ˜ ìˆëŠ”ë°,
-    // INVALID_DISK_TBS( DROPPED/DISCARDED ) ì¸ê²½ìš°ì—ëŠ”
-    // Skip í•˜ê³  ìˆë‹¤.
+    // fix BUG-17157 [PROJ-1548] Disk Tablespace Online/Offline ¼öÇà½Ã
+    // ¿Ã¹Ù¸£°Ô Index Runtime Header ÇØÁ¦ÇÏÁö ¾ÊÀ½
+    // Refine DRDB °úÁ¤°ú Online °úÁ¤¿¡¼­ È£ÃâµÉ ¼ö ÀÖ´Âµ¥,
+    // INVALID_DISK_TBS( DROPPED/DISCARDED ) ÀÎ°æ¿ì¿¡´Â
+    // Skip ÇÏ°í ÀÖ´Ù.
     IDE_CALLBACK_SEND_MSG("                            Refine Disk Table..");
     IDE_TEST( smLayerCallback::refineDRDBTables() != IDE_SUCCESS );
 
-    /* BUG-27122 __SM_CHECK_DISK_INDEX_INTEGRITY í”„ë¡œí¼í‹° í™œì„±í™”ì‹œ
-     * ë””ìŠ¤í¬ ì¸ë±ìŠ¤ Integrity ì²´í¬ë¥¼ ìˆ˜í–‰í•œë‹¤. */
+    /* BUG-27122 __SM_CHECK_DISK_INDEX_INTEGRITY ÇÁ·ÎÆÛÆ¼ È°¼ºÈ­½Ã
+     * µğ½ºÅ© ÀÎµ¦½º Integrity Ã¼Å©¸¦ ¼öÇàÇÑ´Ù. */
     IDE_TEST( smLayerCallback::verifyIndexIntegrityAtStartUp()
               != IDE_SUCCESS );
     mRefineDRDBIdx = ID_TRUE;
 
-    /* ë¯¸ë¤„ë‘” InconsistentFlag ì„¤ì • ì—…ë¬´ë¥¼ ìˆ˜í–‰í•¨ */
+    /* ¹Ì·ïµĞ InconsistentFlag ¼³Á¤ ¾÷¹«¸¦ ¼öÇàÇÔ */
     applyIOLAtRedoFinish();
 
     //Undo All
@@ -822,38 +837,37 @@ IDE_RC smrRecoveryMgr::restartRecovery()
     IDE_TEST( undoAll(NULL /* idvSQL* */) != IDE_SUCCESS );
 
     /* PROJ-2162 RestartRiskReduction
-     * Undo í›„ì— ë‹¤ì‹œ ê²€ì¦ */
+     * Undo ÈÄ¿¡ ´Ù½Ã °ËÁõ */
     IDE_TEST_RAISE( ( mEmerRecovPolicy == SMR_RECOVERY_NORMAL ) &&
                     ( mDurability == ID_FALSE ),
                     err_durability );
 
-    /* Transaction Free Listê°€ Validí•œì§€ ê²€ì‚¬í•œë‹¤. */
+    /* Transaction Free List°¡ ValidÇÑÁö °Ë»çÇÑ´Ù. */
     smLayerCallback::checkFreeTransList();
 
      //------------------------------------------------------------------
-    // PROJ-1665 : Corrupted Pageë“¤ì˜ ìƒíƒœë¥¼ ê²€ì‚¬
-    // Corrupted Pageê°€ Redo ìˆ˜í–‰ í›„ ì •ìƒì´ ëœ ê²½ìš°ì™€
-    // Corrupted Pageê°€ ì†í•œ Extentì˜ ìƒíƒœê°€ Freeì¸ ê²½ìš°ë¥¼ ì œì™¸í•˜ê³ 
-    // Corrupted pageê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°, fatal error ì²˜ë¦¬
+    // PROJ-1665 : Corrupted PageµéÀÇ »óÅÂ¸¦ °Ë»ç
+    // Corrupted Page°¡ Redo ¼öÇà ÈÄ Á¤»óÀÌ µÈ °æ¿ì¿Í
+    // Corrupted Page°¡ ¼ÓÇÑ ExtentÀÇ »óÅÂ°¡ FreeÀÎ °æ¿ì¸¦ Á¦¿ÜÇÏ°í
+    // Corrupted page°¡ Á¸ÀçÇÏ´Â °æ¿ì, fatal error Ã³¸®
     //------------------------------------------------------------------
     IDE_TEST( smLayerCallback::checkCorruptedPages() != IDE_SUCCESS );
 
-    // Restart REDO, UNDOëë‚œí›„ì— Offline ìƒíƒœì¸ Memory Tablespaceì˜
-    // ë©”ëª¨ë¦¬ë¥¼ í•´ì œ ìì„¸í•œ ì´ìœ ëŠ” finiOfflineTBSì˜ ì£¼ì„ì°¸ê³ 
+    // Restart REDO, UNDO³¡³­ÈÄ¿¡ Offline »óÅÂÀÎ Memory TablespaceÀÇ
+    // ¸Ş¸ğ¸®¸¦ ÇØÁ¦ ÀÚ¼¼ÇÑ ÀÌÀ¯´Â finiOfflineTBSÀÇ ÁÖ¼®Âü°í
     IDE_TEST( smLayerCallback::finiOfflineTBS() != IDE_SUCCESS );
-    // DiskëŠ” RestartNormalì´ê±´ Restart Recovery ì´ê±´ ëª¨ë‘ ì²˜ë¦¬í•´ì•¼í•˜ë¯€ë¡œ
-    // restart()ì—ì„œ ì¼ê´„ì²˜ë¦¬í•œë‹¤.
+    // Disk´Â RestartNormalÀÌ°Ç Restart Recovery ÀÌ°Ç ¸ğµÎ Ã³¸®ÇØ¾ßÇÏ¹Ç·Î
+    // restart()¿¡¼­ ÀÏ°ıÃ³¸®ÇÑ´Ù.
 
     IDE_TEST( updateAnchorAllTBS() != IDE_SUCCESS );
     IDE_TEST( updateAnchorAllSB() !=  IDE_SUCCESS ); 
 
     /*
-      PRJ-1548 SM - User Memroy TableSpace ê°œë…ë„ì…
-      ì„œë²„êµ¬ë™ì‹œ ë³µêµ¬ì´í›„ì— ëª¨ë“  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜
-      DataFileCountì™€ TotalPageCountë¥¼ ê³„ì‚°í•˜ì—¬ ì„¤ì •í•œë‹¤.
+      PRJ-1548 SM - User Memroy TableSpace °³³äµµÀÔ
+      ¼­¹ö±¸µ¿½Ã º¹±¸ÀÌÈÄ¿¡ ¸ğµç Å×ÀÌºí½ºÆäÀÌ½ºÀÇ
+      DataFileCount¿Í TotalPageCount¸¦ °è»êÇÏ¿© ¼³Á¤ÇÑ´Ù.
     */
-    IDE_TEST( sddDiskMgr::calculateFileSizeOfAllTBS( NULL /* idvSQL* */)
-              != IDE_SUCCESS );
+    sddDiskMgr::calculateFileSizeOfAllTBS();
 
     mRestartRecoveryPhase = ID_FALSE;
 
@@ -862,14 +876,14 @@ IDE_RC smrRecoveryMgr::restartRecovery()
     smmFPLManager::dumpAllFPLs();
 #endif
 
-    // ë°ì´í„°ë² ì´ìŠ¤ Pageê°€ Free Pageì¸ì§€ Allocated Pageì¸ì§€ë¥¼ Free List Info Pageë¥¼
-    // ë³´ê³  ì•Œ ìˆ˜ ìˆëŠ”ë°, ì´ ì˜ì—­ì´ Restart Recoveryê°€ ëë‚˜ì•¼ ë³µêµ¬ê°€ ì™„ë£Œë˜ë¯€ë¡œ,
-    // Restart Recoveryê°€ ì™„ë£Œëœ í›„ì— Free Pageì¸ì§€ ì—¬ë¶€ë¥¼ ë¶„ê°„í•  ìˆ˜ ìˆë‹¤.
+    // µ¥ÀÌÅÍº£ÀÌ½º Page°¡ Free PageÀÎÁö Allocated PageÀÎÁö¸¦ Free List Info Page¸¦
+    // º¸°í ¾Ë ¼ö ÀÖ´Âµ¥, ÀÌ ¿µ¿ªÀÌ Restart Recovery°¡ ³¡³ª¾ß º¹±¸°¡ ¿Ï·áµÇ¹Ç·Î,
+    // Restart Recovery°¡ ¿Ï·áµÈ ÈÄ¿¡ Free PageÀÎÁö ¿©ºÎ¸¦ ºĞ°£ÇÒ ¼ö ÀÖ´Ù.
 
-    // Restart Recoveryì „ì—ëŠ” Free Pageì¸ì§€, Allocated Pageì¸ì§€ êµ¬ë¶„í•˜ì§€ ì•Šê³ 
-    // ë¬´ì¡°ê±´ í˜ì´ì§€ë¥¼ ë””ìŠ¤í¬ë¡œë¶€í„° ë©”ëª¨ë¦¬ë¡œ ë¡œë“œí•œë‹¤.
-    // ê·¸ë¦¬ê³  Restart Recoveryê°€ ì™„ë£Œë˜ê³  ë‚˜ë©´, ë¶ˆí•„ìš”í•˜ê²Œ ë¡œë“œëœ Free Pageë“¤ì˜
-    // Page ë©”ëª¨ë¦¬ë¥¼ ë©”ëª¨ë¦¬ë¥¼ ë°˜ë‚©í•œë‹¤.
+    // Restart RecoveryÀü¿¡´Â Free PageÀÎÁö, Allocated PageÀÎÁö ±¸ºĞÇÏÁö ¾Ê°í
+    // ¹«Á¶°Ç ÆäÀÌÁö¸¦ µğ½ºÅ©·ÎºÎÅÍ ¸Ş¸ğ¸®·Î ·ÎµåÇÑ´Ù.
+    // ±×¸®°í Restart Recovery°¡ ¿Ï·áµÇ°í ³ª¸é, ºÒÇÊ¿äÇÏ°Ô ·ÎµåµÈ Free PageµéÀÇ
+    // Page ¸Ş¸ğ¸®¸¦ ¸Ş¸ğ¸®¸¦ ¹İ³³ÇÑ´Ù.
 
     IDE_TEST( smmManager::freeAllFreePageMemory() != IDE_SUCCESS );
 
@@ -905,9 +919,9 @@ IDE_RC smrRecoveryMgr::restartRecovery()
 }
 
 /***********************************************************************
- * Description : restart ê³¼ì • ë§ˆë¬´ë¦¬
+ * Description : restart °úÁ¤ ¸¶¹«¸®
  * - 2nd. code design
- *   + flag ì„¤ì • ë° ë§ˆì§€ë§‰ ìƒì„± dbfile ê°œìˆ˜ ì„¤ì •
+ *   + flag ¼³Á¤ ¹× ¸¶Áö¸· »ı¼º dbfile °³¼ö ¼³Á¤
  **********************************************************************/
 void smrRecoveryMgr::finalRestart()
 {
@@ -921,15 +935,15 @@ void smrRecoveryMgr::finalRestart()
 }
 
 /*
-  SKIPí•  REDOë¡œê·¸ì¸ì§€ ì—¬ë¶€ë¥¼ ë¦¬í„´í•œë‹¤.
+  SKIPÇÒ REDO·Î±×ÀÎÁö ¿©ºÎ¸¦ ¸®ÅÏÇÑ´Ù.
 
-  - MEDIA Recoveryì‹œ
-  - DISCARD, DROPëœ Tablespaceì— ëŒ€í•´ Redo Skipì‹¤ì‹œ
-  - Restart Recoveryì‹œ
-  - DISCARD, DROP, OFFLINEëœ Tablespaceì— ëŒ€í•´ Redo Skipì‹¤ì‹œ
+  - MEDIA Recovery½Ã
+  - DISCARD, DROPµÈ Tablespace¿¡ ´ëÇØ Redo Skip½Ç½Ã
+  - Restart Recovery½Ã
+  - DISCARD, DROP, OFFLINEµÈ Tablespace¿¡ ´ëÇØ Redo Skip½Ç½Ã
 
-  ë‹¨, Tablespace ìƒíƒœë³€ê²½ì— ëŒ€í•œ ë¡œê·¸ëŠ” Tablespaceì˜ ìƒíƒœì™€
-  ê´€ê³„ì—†ì´ REDOí•œë‹¤.
+  ´Ü, Tablespace »óÅÂº¯°æ¿¡ ´ëÇÑ ·Î±×´Â TablespaceÀÇ »óÅÂ¿Í
+  °ü°è¾øÀÌ REDOÇÑ´Ù.
 */
 idBool smrRecoveryMgr::isSkipRedo( scSpaceID aSpaceID,
                                    idBool    aUsingTBSAttr )
@@ -946,7 +960,7 @@ idBool smrRecoveryMgr::isSkipRedo( scSpaceID aSpaceID,
         sSSet4RedoSkip = SCT_SS_SKIP_REDO;
     }
 
-    // Redo SKIPí•  Tablespaceì— ê´€í•œ ë¡œê·¸ì¸ì§€ ì²´í¬
+    // Redo SKIPÇÒ Tablespace¿¡ °üÇÑ ·Î±×ÀÎÁö Ã¼Å©
     if ( sctTableSpaceMgr::hasState( aSpaceID,
                                      sSSet4RedoSkip,
                                      aUsingTBSAttr ) == ID_TRUE )
@@ -970,7 +984,7 @@ idBool smrRecoveryMgr::isSkipRedo( scSpaceID aSpaceID,
 
 /***********************************************************************
  * Description : redo a log
- * [IN] aLogSizeAtDisk - ë¡œê·¸íŒŒì¼ìƒì˜ ë¡œê·¸ í¬ê¸°
+ * [IN] aLogSizeAtDisk - ·Î±×ÆÄÀÏ»óÀÇ ·Î±× Å©±â
  **********************************************************************/
 IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
                              smLSN      * aCurLSN,
@@ -1013,6 +1027,11 @@ IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
     SChar             * sDummyPtr;
     idBool              sIsDiscarded;
 
+    /* BUG-47525 Group Commit */
+    void                   * sGCTrans = NULL;
+    UInt                     sGCCnt;
+    smTID                    sTID;
+ 
     IDE_DASSERT( aLogHead   != NULL );
     IDE_DASSERT( aLogPtr    != NULL );
 
@@ -1028,10 +1047,10 @@ IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
     switch( sLogType )
     {
         /* ------------------------------------------------
-         * ## drdb ë¡œê·¸ì˜ parsing ë° hashì— ì €ì¥
-         * disk ë¡œê·¸ë¥¼ íŒë…í•œ ê²½ìš° bodyì— ì €ì¥ë˜ì–´ ìˆëŠ”
-         * disk redoë¡œê·¸ë“¤ì„ íŒŒì‹±í•˜ì—¬ (space ID, pageID)ì—
-         * ë”°ë¼ í•´ì‹œí…Œì´ë¸”ì— ì €ì¥í•´ ë‘”ë‹¤.
+         * ## drdb ·Î±×ÀÇ parsing ¹× hash¿¡ ÀúÀå
+         * disk ·Î±×¸¦ ÆÇµ¶ÇÑ °æ¿ì body¿¡ ÀúÀåµÇ¾î ÀÖ´Â
+         * disk redo·Î±×µéÀ» ÆÄ½ÌÇÏ¿© (space ID, pageID)¿¡
+         * µû¶ó ÇØ½ÃÅ×ÀÌºí¿¡ ÀúÀåÇØ µĞ´Ù.
          * -> sdrRedoMgr::scanRedoLogRec()
          * ----------------------------------------------*/
         case SMR_DLT_REDOONLY:
@@ -1064,13 +1083,13 @@ IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
 
             idlOS::memcpy(&sTBSUptLog, aLogPtr, SMR_LOGREC_SIZE(smrTBSUptLog));
 
-            // Tablespace ë…¸ë“œ ìƒíƒœ ë³€ê²½ ë¡œê·¸ëŠ” SKIPí•˜ì§€ ì•ŠëŠ”ë‹¤.
-            // - Dropëœ Tablespaceì˜ ê²½ìš°
-            //   - Redo Functionì•ˆì—ì„œ SKIPí•œë‹¤.
-            // - Offlineëœ Tablespaceì˜ ê²½ìš°
-            //   - Onlineì´ë‚˜ Droppedë¡œ ì „ì´í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ SKIPí•´ì„œëŠ” ì•ˆëœë‹¤.
-            // - Discardëœ Tablespaceì˜ ê²½ìš°
-            //   - Droppedë¡œ ì „ì´í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ TBS DROP ë¡œê·¸ë§Œ redoí•œë‹¤.
+            // Tablespace ³ëµå »óÅÂ º¯°æ ·Î±×´Â SKIPÇÏÁö ¾Ê´Â´Ù.
+            // - DropµÈ TablespaceÀÇ °æ¿ì
+            //   - Redo Function¾È¿¡¼­ SKIPÇÑ´Ù.
+            // - OfflineµÈ TablespaceÀÇ °æ¿ì
+            //   - OnlineÀÌ³ª Dropped·Î ÀüÀÌÇÒ ¼ö ÀÖÀ¸¹Ç·Î SKIPÇØ¼­´Â ¾ÈµÈ´Ù.
+            // - DiscardµÈ TablespaceÀÇ °æ¿ì
+            //   - Dropped·Î ÀüÀÌÇÒ ¼ö ÀÖÀ¸¹Ç·Î TBS DROP ·Î±×¸¸ redoÇÑ´Ù.
             sRedoBuffer = aLogPtr 
                           + SMR_LOGREC_SIZE(smrTBSUptLog)
                           + sTBSUptLog.mBImgSize;
@@ -1079,7 +1098,7 @@ IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
                                      smrLogHeadI::getTransID( &sTBSUptLog.mHead ) );
 
             /* BUG-41689 A discarded tablespace is redone in recovery
-             * Discardëœ TBSì¸ì§€ í™•ì¸í•œë‹¤. */
+             * DiscardµÈ TBSÀÎÁö È®ÀÎÇÑ´Ù. */
             sIsDiscarded = sctTableSpaceMgr::hasState( sTBSUptLog.mSpaceID,
                                                        SCT_SS_SKIP_AGING_DISK_TBS,
                                                        ID_FALSE );
@@ -1091,13 +1110,13 @@ IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
             {
                 /*
                    PRJ-1548 User Memory Tablespace
-                   í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ UPDATE ë¡œê·¸ì— ëŒ€í•œ ì¬ìˆ˜í–‰ì„ ìˆ˜í–‰í•œë‹¤.
-                   ë¯¸ë””ì–´ ë³µêµ¬ ì¤‘ì—ëŠ” EXTEND_DBFì— ëŒ€í•œ redoê°€ ì¡´ì¬í•˜ë¯€ë¡œ
-                   Pending Operationì´ ë“±ë¡ë  ìˆ˜ ìˆë‹¤
+                   Å×ÀÌºí½ºÆäÀÌ½º UPDATE ·Î±×¿¡ ´ëÇÑ Àç¼öÇàÀ» ¼öÇàÇÑ´Ù.
+                   ¹Ìµğ¾î º¹±¸ Áß¿¡´Â EXTEND_DBF¿¡ ´ëÇÑ redo°¡ Á¸ÀçÇÏ¹Ç·Î
+                   Pending OperationÀÌ µî·ÏµÉ ¼ö ÀÖ´Ù
                    */
                 IDE_TEST( gSmrTBSUptRedoFunction[ sTBSUptLog.mTBSUptType ]( NULL,  /* idvSQL* */
                                                                             sTrans,
-                                                                            sCurLSN,  // redo ë¡œê·¸ì˜ LSN
+                                                                            sCurLSN,  // redo ·Î±×ÀÇ LSN
                                                                             sTBSUptLog.mSpaceID,
                                                                             sTBSUptLog.mFileID,
                                                                             sTBSUptLog.mAImgSize,
@@ -1108,7 +1127,7 @@ IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
             else
             {
                 /* Nothing to do 
-                 * discardëœ TBSì˜ redoëŠ” drop tbsë¥¼ ì œì™¸í•˜ê³  ë¬´ì‹œí•œë‹¤.*/
+                 * discardµÈ TBSÀÇ redo´Â drop tbs¸¦ Á¦¿ÜÇÏ°í ¹«½ÃÇÑ´Ù.*/
             }
             break;
 
@@ -1116,7 +1135,7 @@ IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
 
             idlOS::memcpy(&sUpdateLog, aLogPtr, SMR_LOGREC_SIZE(smrUpdateLog));
 
-            // Redo SKIPí•  Tablespaceì— ê´€í•œ ë¡œê·¸ì¸ì§€ ì²´í¬
+            // Redo SKIPÇÒ Tablespace¿¡ °üÇÑ ·Î±×ÀÎÁö Ã¼Å©
             if ( isSkipRedo( SC_MAKE_SPACE(sUpdateLog.mGRID) ) == ID_TRUE )
             {
                 break;
@@ -1129,8 +1148,8 @@ IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
             if ( isMediaRecoveryPhase() == ID_TRUE )
             {
                 // PRJ-1548 User Memory Tablespace
-                // Memory ë¡œê·¸ì¤‘ ìœ ì¼í•œ Logical Redo Logì— ëŒ€í•´ì„œëŠ”
-                // ë¯¸ë””ì–´ë³µêµ¬ì‹œì—ëŠ” íŠ¹ë³„í•˜ê²Œ ê³ ë ¤í•˜ì—¬ì•¼ í•œë‹¤.
+                // Memory ·Î±×Áß À¯ÀÏÇÑ Logical Redo Log¿¡ ´ëÇØ¼­´Â
+                // ¹Ìµğ¾îº¹±¸½Ã¿¡´Â Æ¯º°ÇÏ°Ô °í·ÁÇÏ¿©¾ß ÇÑ´Ù.
                 if ( sUpdateLog.mType ==
                      SMR_SMM_MEMBASE_ALLOC_EXPAND_CHUNK )
                 {
@@ -1144,11 +1163,11 @@ IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
                 }
                 else
                 {
-                    // update typeì— ë§ê²Œ redo ë¡œê·¸ë¥¼ í˜¸ì¶œí•œë‹¤.
+                    // update type¿¡ ¸Â°Ô redo ·Î±×¸¦ È£ÃâÇÑ´Ù.
                 }
             }
-            /* MediaRecoveryì‹œì—ë§Œ ë°˜ì˜í•˜ëŠ” Logì¸ì§€ëŠ” í•´ë‹¹ Updateí•¨ìˆ˜ì—ì„œ
-             * ì§ì ‘ íŒë‹¨í•˜ì—¬ ê³¨ë¼ëƒ„ */
+            /* MediaRecovery½Ã¿¡¸¸ ¹İ¿µÇÏ´Â LogÀÎÁö´Â ÇØ´ç UpdateÇÔ¼ö¿¡¼­
+             * Á÷Á¢ ÆÇ´ÜÇÏ¿© °ñ¶ó³¿ */
 
             if (gSmrRedoFunction[sUpdateLog.mType] != NULL)
             {
@@ -1183,15 +1202,15 @@ IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
                     sSpaceID = SC_MAKE_SPACE(sArrPageGRID[i]);
 
 
-                    // Redo SKIPí•  Tablespaceì— ê´€í•œ ë¡œê·¸ì¸ì§€ ì²´í¬
+                    // Redo SKIPÇÒ Tablespace¿¡ °üÇÑ ·Î±×ÀÎÁö Ã¼Å©
                     /*
                      * BUG-31423 [sm] the server shutdown abnormaly when
                      *           referencing unavalible tablespaces on redoing.
                      *
-                     * TBS nodeì˜ stateê°’ì€ ì²˜ìŒì— restoreê°€ ë¶ˆê°€ëŠ¥í•˜ë”ë¼ë„
-                     * SMM_UPDATE_MRDB_DROP_TBSë¥¼ redoì¤‘ì— ë§Œë‚˜ë©´  ì¼ì‹œì ìœ¼ë¡œ
-                     * restoreëœ ê²ƒìœ¼ë¡œ íŒë‹¬ë  ê°€ëŠ¥ì„±ì´ ìˆê¸° ë•Œë¬¸ì— ì‹ ë¢°í•  ìˆ˜
-                     * ì—†ë‹¤. ê·¸ëŸ¬ë¯€ë¡œ TBS attrì˜ stateë¥¼ ê°–ê³ ì„œ íŒë‹¨í•œë‹¤.
+                     * TBS nodeÀÇ state°ªÀº Ã³À½¿¡ restore°¡ ºÒ°¡´ÉÇÏ´õ¶óµµ
+                     * SMM_UPDATE_MRDB_DROP_TBS¸¦ redoÁß¿¡ ¸¸³ª¸é  ÀÏ½ÃÀûÀ¸·Î
+                     * restoreµÈ °ÍÀ¸·Î ÆÇ´ŞµÉ °¡´É¼ºÀÌ ÀÖ±â ¶§¹®¿¡ ½Å·ÚÇÒ ¼ö
+                     * ¾ø´Ù. ±×·¯¹Ç·Î TBS attrÀÇ state¸¦ °®°í¼­ ÆÇ´ÜÇÑ´Ù.
                      */
                     if ( isSkipRedo( sSpaceID,
                                      ID_TRUE ) == ID_TRUE ) //try TBS attribute
@@ -1203,8 +1222,8 @@ IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
 
                     if ( isMediaRecoveryPhase() == ID_TRUE )
                     {
-                        // ë¯¸ë””ì–´ ë³µêµ¬ê°€ í•„ìš”í•œ ë°ì´íƒ€íŒŒì¼ì˜
-                        // DIRTY Pageë§Œ ë“±ë¡í•˜ê¸° ìœ„í•´ í™•ì¸í•œë‹¤.
+                        // ¹Ìµğ¾î º¹±¸°¡ ÇÊ¿äÇÑ µ¥ÀÌÅ¸ÆÄÀÏÀÇ
+                        // DIRTY Page¸¸ µî·ÏÇÏ±â À§ÇØ È®ÀÎÇÑ´Ù.
                         IDE_TEST( smmTBSMediaRecovery::findMatchFailureDBF(
                                       sSpaceID,
                                       sPageID,
@@ -1214,8 +1233,8 @@ IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
                     }
                     else
                     {
-                        // Restart Recoveryì‹œì—ëŠ” ë¬´ì¡°ê±´
-                        // DIRTY pageë¡œ ë“±ë¡í•œë‹¤.
+                        // Restart Recovery½Ã¿¡´Â ¹«Á¶°Ç
+                        // DIRTY page·Î µî·ÏÇÑ´Ù.
                         sIsExistTBS   = ID_TRUE;
                         sIsFailureDBF = ID_TRUE;
                     }
@@ -1223,8 +1242,8 @@ IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
                     if ( (sIsExistTBS == ID_TRUE) &&
                          (sIsFailureDBF == ID_TRUE) )
                     {
-                        // SpaceIDì— í•´ë‹¹í•˜ëŠ” Tablespaceê°€ Restoreë˜ì§€ ì•Šì€ ê²½ìš°
-                        // SMM_PID_PTRì´ í•´ë‹¹ Pageë§Œ ì¼ë¶€ Restore ì‹¤ì‹œ
+                        // SpaceID¿¡ ÇØ´çÇÏ´Â Tablespace°¡ RestoreµÇÁö ¾ÊÀº °æ¿ì
+                        // SMM_PID_PTRÀÌ ÇØ´ç Page¸¸ ÀÏºÎ Restore ½Ç½Ã
                         IDE_TEST( smmManager::getPersPagePtr( sSpaceID,
                                                               sPageID,
                                                               (void**)&sDummyPtr )
@@ -1240,7 +1259,7 @@ IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
         case SMR_LT_NTA:
             idlOS::memcpy(&sNTALog, aLogPtr, SMR_LOGREC_SIZE(smrNTALog));
 
-            // Redo SKIPí•  Tablespaceì— ê´€í•œ ë¡œê·¸ì¸ì§€ ì²´í¬
+            // Redo SKIPÇÒ Tablespace¿¡ °üÇÑ ·Î±×ÀÎÁö Ã¼Å©
             if ( isSkipRedo( sNTALog.mSpaceID ) == ID_TRUE )
             {
                 break;
@@ -1250,8 +1269,8 @@ IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
             {
                 if ( smLayerCallback::IsBeginTrans( aCurTrans ) == ID_TRUE )
                 {
-                    // ë¯¸ë””ì–´ ë³µêµ¬ì‹œì—ëŠ” Transì˜ ìƒíƒœê°€ Beginì¼ ìˆ˜ ì—†ë‹¤.
-                    // Restart Recoveryì‹œì—ë§Œ OIDë¥¼ ë“±ë¡í•œë‹¤.
+                    // ¹Ìµğ¾î º¹±¸½Ã¿¡´Â TransÀÇ »óÅÂ°¡ BeginÀÏ ¼ö ¾ø´Ù.
+                    // Restart Recovery½Ã¿¡¸¸ OID¸¦ µî·ÏÇÑ´Ù.
                     IDE_ASSERT( isMediaRecoveryPhase() == ID_FALSE );
 
                 }
@@ -1262,21 +1281,21 @@ IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
             switch(sNTALog.mOPType)
             {
                 case SMR_OP_SMC_TABLEHEADER_ALLOC:
-                    /* BUG-19151: Disk Table ìƒì„±ë„ì¤‘ ì‚¬ë§ì‹œ Server Startupì´
-                     *           ì•ˆë©ë‹ˆë‹¤.
+                    /* BUG-19151: Disk Table »ı¼ºµµÁß »ç¸Á½Ã Server StartupÀÌ
+                     *           ¾ÈµË´Ï´Ù.
                      *
-                     * Create Tableì„ ìœ„í•´ì„œ Catalog Tableì—ì„œ Slotì„ Allocì‹œì—
-                     * ì´ ë¡œê·¸ê°€ ê¸°ë¡ëœë‹¤. SlotHeaderì˜ SCNì—ëŠ” Delete Bitê°€ ì—†ì§€ë§Œ
-                     * Redoì‹œì— Delete Bitë¥¼ Setttingí•˜ê³  smcTable::createTableì´
-                     * ì™„ë£Œë ë•Œ SMR_OP_CREATE_TABLEì´ë¼ëŠ” NTAë¡œê·¸ê°€ ì°íˆëŠ”ë° ì´
-                     * ë¡œê·¸ì˜ Redoì‹œì— Delete Bitë¥¼ Clearì‹œí‚¨ë‹¤.
+                     * Create TableÀ» À§ÇØ¼­ Catalog Table¿¡¼­ SlotÀ» Alloc½Ã¿¡
+                     * ÀÌ ·Î±×°¡ ±â·ÏµÈ´Ù. SlotHeaderÀÇ SCN¿¡´Â Delete Bit°¡ ¾øÁö¸¸
+                     * Redo½Ã¿¡ Delete Bit¸¦ SetttingÇÏ°í smcTable::createTableÀÌ
+                     * ¿Ï·áµÉ¶§ SMR_OP_CREATE_TABLEÀÌ¶ó´Â NTA·Î±×°¡ ÂïÈ÷´Âµ¥ ÀÌ
+                     * ·Î±×ÀÇ Redo½Ã¿¡ Delete Bit¸¦ Clear½ÃÅ²´Ù.
                      *
-                     * ì´ìœ : smcTable::createTableì´ ì™„ë£Œë˜ì§€ ëª»í•˜ê³  ì£½ëŠ”ê²½ìš°
-                     * refineDRDBTablesì‹œì— smcTableHeaderë¥¼ ì°¸ì¡°í•˜ëŠ” ê·¸ ì •ë³´ë“¤ì€
-                     * ì“°ë ˆê¸°ê°’ì´ë©ë‹ˆë‹¤. í•˜ì—¬ smcTable::createTableì´ SMR_OP_CREATE_TABLE
-                     * ì´ë¼ëŠ” NTAë¡œê·¸ë¥¼ ì°ê¸°ì „ì— ì£½ìœ¼ë©´ SlotHeaderì˜ SCNì´ DeleteBitê°€
-                     * ì„¤ì •ë˜ê³  ì´í›„ refineDBDBTablesì‹œ DeleteBitê°€ ì„¤ì •ë˜ì–´ ìˆìœ¼ë©´
-                     * ì´ Tableì€ Skipí•˜ë„ë¡ í•˜ê¸° ìœ„í•´ì„œ ì…ë‹ˆë‹¤.
+                     * ÀÌÀ¯: smcTable::createTableÀÌ ¿Ï·áµÇÁö ¸øÇÏ°í Á×´Â°æ¿ì
+                     * refineDRDBTables½Ã¿¡ smcTableHeader¸¦ ÂüÁ¶ÇÏ´Â ±× Á¤º¸µéÀº
+                     * ¾²·¹±â°ªÀÌµË´Ï´Ù. ÇÏ¿© smcTable::createTableÀÌ SMR_OP_CREATE_TABLE
+                     * ÀÌ¶ó´Â NTA·Î±×¸¦ Âï±âÀü¿¡ Á×À¸¸é SlotHeaderÀÇ SCNÀÌ DeleteBit°¡
+                     * ¼³Á¤µÇ°í ÀÌÈÄ refineDBDBTables½Ã DeleteBit°¡ ¼³Á¤µÇ¾î ÀÖÀ¸¸é
+                     * ÀÌ TableÀº SkipÇÏµµ·Ï ÇÏ±â À§ÇØ¼­ ÀÔ´Ï´Ù.
                      */
                     sIsDeleteBit = ID_TRUE;
                 case SMR_OP_SMC_FIXED_SLOT_ALLOC:
@@ -1314,23 +1333,23 @@ IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
 
             if ( (sctUpdateType)sCMPSLog.mTBSUptType != SCT_UPDATE_MAXMAX_TYPE )
             {
-                // ë¯¸ë””ì–´ ë³µêµ¬ì‹œì—ëŠ” TBS CLR ë¡œê·¸ê°€ ë“¤ì–´ì˜¤ì§€ ì•ŠëŠ”ë‹¤.
+                // ¹Ìµğ¾î º¹±¸½Ã¿¡´Â TBS CLR ·Î±×°¡ µé¾î¿ÀÁö ¾Ê´Â´Ù.
                 IDE_DASSERT( isMediaRecoveryPhase() == ID_FALSE );
 
-                // Tablespace ë…¸ë“œ ìƒíƒœ ë³€ê²½ ë¡œê·¸ëŠ” SKIPí•˜ì§€ ì•ŠëŠ”ë‹¤.
-                // ë‹¨, ì‹¤ì œ Undoìˆ˜í–‰ì¤‘ì— Undoê°€ ì™„ë£Œë˜ì—ˆëŠ”ì§€ ì²´í¬í•˜ê³  SKIP
+                // Tablespace ³ëµå »óÅÂ º¯°æ ·Î±×´Â SKIPÇÏÁö ¾Ê´Â´Ù.
+                // ´Ü, ½ÇÁ¦ Undo¼öÇàÁß¿¡ Undo°¡ ¿Ï·áµÇ¾ú´ÂÁö Ã¼Å©ÇÏ°í SKIP
                 //
-                // Undoë£¨í‹´ì´ CLR Redoì—ë„ ì“°ì´ê¸° ë•Œë¬¸ì—,
-                // ì—¬ëŸ¬ë²ˆ ì¬ì°¨ ìˆ˜í–‰ë˜ì–´ë„ ê²°ê³¼ê°€ ê°™ìŒì„ ë³´ì¥í•´ì•¼ í•œë‹¤.
+                // Undo·çÆ¾ÀÌ CLR Redo¿¡µµ ¾²ÀÌ±â ¶§¹®¿¡,
+                // ¿©·¯¹ø ÀçÂ÷ ¼öÇàµÇ¾îµµ °á°ú°¡ °°À½À» º¸ÀåÇØ¾ß ÇÑ´Ù.
                 //
-                // - Create Tablespaceì˜ Undo
-                //   - ì´ë¯¸ Undoê°€ ì™„ë£Œë˜ì–´ DROPPEDìƒíƒœì¼ ê²½ìš° SKIP
+                // - Create TablespaceÀÇ Undo
+                //   - ÀÌ¹Ì Undo°¡ ¿Ï·áµÇ¾î DROPPED»óÅÂÀÏ °æ¿ì SKIP
                 //
-                // - Alter Tablespace ì˜ Undo
-                //   - ì´ë¯¸ Alterì´ì „ì˜ ìƒíƒœë¡œ Undoëœ ê²½ìš° Skip
+                // - Alter Tablespace ÀÇ Undo
+                //   - ÀÌ¹Ì AlterÀÌÀüÀÇ »óÅÂ·Î UndoµÈ °æ¿ì Skip
                 //
-                // - Drop Tablespaceì˜ Undo
-                //   - ì´ë¯¸ Drop Tablespaceì˜ Undoê°€ ì™„ë£Œë˜ì—ˆëŠ”ì§€ ì²´í¬í›„
+                // - Drop TablespaceÀÇ Undo
+                //   - ÀÌ¹Ì Drop TablespaceÀÇ Undo°¡ ¿Ï·áµÇ¾ú´ÂÁö Ã¼Å©ÈÄ
                 //     SKIP
                 IDE_TEST( gSmrTBSUptUndoFunction[ sCMPSLog.mTBSUptType ](
                               NULL, /* idvSQL* */
@@ -1344,7 +1363,7 @@ IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
             }
             else
             {
-                // Redo SKIPí•  Tablespaceì— ê´€í•œ ë¡œê·¸ì¸ì§€ ì²´í¬
+                // Redo SKIPÇÒ Tablespace¿¡ °üÇÑ ·Î±×ÀÎÁö Ã¼Å©
                 if ( isSkipRedo( SC_MAKE_SPACE(sCMPSLog.mGRID) ) == ID_TRUE )
                 {
                     break;
@@ -1369,17 +1388,18 @@ IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
 
             if ( smLayerCallback::IsBeginTrans( aCurTrans ) == ID_TRUE )
             {
-                // ë¯¸ë””ì–´ ë³µêµ¬ì‹œì—ëŠ” Transì˜ ìƒíƒœê°€ Beginì¼ ìˆ˜ ì—†ë‹¤.
+                // ¹Ìµğ¾î º¹±¸½Ã¿¡´Â TransÀÇ »óÅÂ°¡ BeginÀÏ ¼ö ¾ø´Ù.
                 IDE_ASSERT( isMediaRecoveryPhase() == ID_FALSE );
                 idlOS::memcpy( &sXAPrepareLog,
                                aLogPtr,
                                SMR_LOGREC_SIZE(smrXaPrepareLog) );
 
-                /* - íŠ¸ëœì­ì…˜ ì—”íŠ¸ë¦¬ì— xa ê´€ë ¨ ì •ë³´ ë“±ë¡
-                   - Update Transactionìˆ˜ë¥¼ 1ì¦ê°€
+                /* - Æ®·£Àè¼Ç ¿£Æ®¸®¿¡ xa °ü·Ã Á¤º¸ µî·Ï
+                   - Update Transaction¼ö¸¦ 1Áõ°¡
                    - add trans to Prepared List */
                 IDE_TEST( smLayerCallback::setXAInfoAnAddPrepareLst(
                                               aCurTrans,
+                                              sXAPrepareLog.mIsGCTx,
                                               sXAPrepareLog.mPreparedTime,
                                               sXAPrepareLog.mXaTransID,
                                               &sXAPrepareLog.mFstDskViewSCN )
@@ -1420,8 +1440,8 @@ IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
                            sCommitLog.mDskRedoSize -
                            ID_SIZEOF(smrLogTail);
 
-            // Commit Logì˜ Bodyì—ëŠ” Disk Tableì˜ Record Countê°€ ë¡œê¹…ë˜ì–´ìˆë‹¤.
-            // Body Sizeê°€ ì •í™•íˆ ( TableOID, Record Count ) ì˜ ë°°ìˆ˜ì¸ì§€ ì²´í¬.
+            // Commit LogÀÇ Body¿¡´Â Disk TableÀÇ Record Count°¡ ·Î±ëµÇ¾îÀÖ´Ù.
+            // Body Size°¡ Á¤È®È÷ ( TableOID, Record Count ) ÀÇ ¹è¼öÀÎÁö Ã¼Å©.
             IDE_ASSERT( sMemRedoSize %
                         (ID_SIZEOF(scPageID) +
                          ID_SIZEOF(scOffset) +
@@ -1462,9 +1482,39 @@ IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
             }
             else
             {
-                /* Active Transactionì´ ì•„ë‹ˆì§€ë§Œ, Disk Redo ë²”ìœ„ì—
-                 * í•´ë‹¹í•˜ëŠ” Commit ë¡œê·¸ì¸ê²½ìš° makeTransEndí• í•„ìš”ì—†ë‹¤ */
+                /* Active TransactionÀÌ ¾Æ´ÏÁö¸¸, Disk Redo ¹üÀ§¿¡
+                 * ÇØ´çÇÏ´Â Commit ·Î±×ÀÎ°æ¿ì makeTransEndÇÒÇÊ¿ä¾ø´Ù */
                 IDE_ASSERT( sLogType == SMR_LT_DSKTRANS_COMMIT );
+            }
+
+            break;
+
+        case SMR_LT_MEMTRANS_GROUPCOMMIT:
+            /* BUG-48543 Recovery Failure in HPUX */
+            idlOS::memcpy( &sGCCnt,
+                           aLogPtr + SMR_LOG_GROUP_COMMIT_GROUPCNT_OFFSET,
+                           ID_SIZEOF( sGCCnt ) );   //BUG-48576: mGroupCnt -> sGCCnt 
+                           
+            sRedoBuffer = aLogPtr + SMR_LOGREC_SIZE( smrTransGroupCommitLog );
+
+            for ( i = 0 ; i < sGCCnt ; i++ )
+            {
+                sGCTrans = NULL;
+
+                idlOS::memcpy( &sTID,
+                               sRedoBuffer,
+                               ID_SIZEOF(smTID) );
+
+                sRedoBuffer += ( ID_SIZEOF(UInt) * 2 );
+
+                sGCTrans = smLayerCallback::getTransByTID( sTID );
+
+                if ( sGCTrans != NULL )
+                {
+                    IDE_TEST( smLayerCallback::makeTransEnd( sGCTrans,
+                                                             ID_TRUE ) /* COMMIT */
+                    != IDE_SUCCESS );
+                }
             }
 
             break;
@@ -1477,12 +1527,12 @@ IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
                            SMR_LOGREC_SIZE(smrTransAbortLog) );
 
             /* ------------------------------------------------
-             * FOR A4 : DRDB ê´€ë ¨ DML(select ì œì™¸)ì¸ ê²½ìš°ì— ëŒ€í•´
-             * commitë¡œê·¸ ê¸°ë¡í›„ì— ê³¼ì •ì„ ì œëŒ€ë¡œ ìˆ˜í–‰í•˜ì§€ ëª»í–ˆë˜
-             * íŠ¸ëœì­ì…˜ì˜ ê²½ìš° ë§ˆë¬´ë¦¬ë¥¼ í•´ì£¼ì–´ì•¼ í•œë‹¤.
-             * - ì‚¬ìš©í•˜ë˜ tssì˜ commit SCNì„ ì„¤ì •ë˜ì§€ ì•Šì•˜ë‹¤ë©´,
-             * tssì˜ commit list ì— ì¶”ê°€í•´ì„œ ì œëŒ€ë¡œ disk G.Cê°€
-             * garbage collectingì„ í•  ìˆ˜ ìˆë„ë¡ í•˜ì—¬ì•¼ í•œë‹¤.
+             * FOR A4 : DRDB °ü·Ã DML(select Á¦¿Ü)ÀÎ °æ¿ì¿¡ ´ëÇØ
+             * commit·Î±× ±â·ÏÈÄ¿¡ °úÁ¤À» Á¦´ë·Î ¼öÇàÇÏÁö ¸øÇß´ø
+             * Æ®·£Àè¼ÇÀÇ °æ¿ì ¸¶¹«¸®¸¦ ÇØÁÖ¾î¾ß ÇÑ´Ù.
+             * - »ç¿ëÇÏ´ø tssÀÇ commit SCNÀ» ¼³Á¤µÇÁö ¾Ê¾Ò´Ù¸é,
+             * tssÀÇ commit list ¿¡ Ãß°¡ÇØ¼­ Á¦´ë·Î disk G.C°¡
+             * garbage collectingÀ» ÇÒ ¼ö ÀÖµµ·Ï ÇÏ¿©¾ß ÇÑ´Ù.
              * ----------------------------------------------*/
             // destroy OID, tx end , remvoe Active Transaction list
             if ( sAbortLog.mDskRedoSize > 0 )
@@ -1517,9 +1567,9 @@ IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
             break;
 
         case SMR_LT_FILE_BEGIN:
-            /* SMR_LT_FILE_BEGIN ë¡œê·¸ì˜ ìš©ë„ì— ëŒ€í•´ì„œëŠ” smrDef.hë¥¼ ì°¸ê³ 
-             * ì´ ë¡œê·¸ì— ëŒ€í•œ ì²´í¬ëŠ” smrLogFile::openì—ì„œ ìˆ˜í–‰í•˜ê¸° ë•Œë¬¸ì—
-             * redoì¤‘ì—ëŠ” ì•„ë¬´ê²ƒë„ ì²˜ë¦¬í•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
+            /* SMR_LT_FILE_BEGIN ·Î±×ÀÇ ¿ëµµ¿¡ ´ëÇØ¼­´Â smrDef.h¸¦ Âü°í
+             * ÀÌ ·Î±×¿¡ ´ëÇÑ Ã¼Å©´Â smrLogFile::open¿¡¼­ ¼öÇàÇÏ±â ¶§¹®¿¡
+             * redoÁß¿¡´Â ¾Æ¹«°Íµµ Ã³¸®ÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
              * do nothing */
             break;
 
@@ -1533,7 +1583,7 @@ IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
             break;
     }
 
-    // ë‹¤ìŒ Checkí•  Log LSNì„ ì„¤ì •í•œë‹¤.
+    // ´ÙÀ½ CheckÇÒ Log LSNÀ» ¼³Á¤ÇÑ´Ù.
     SM_GET_LSN(*aCurLSN, sEndLSN);
 
     return IDE_SUCCESS;
@@ -1547,9 +1597,9 @@ IDE_RC smrRecoveryMgr::redo( void       * aCurTrans,
 /***********************************************************************
  * Description :
  *
- *    To Fix PR-13786 ë³µì¡ë„ ê°œì„ 
- *    smrRecoveryMgr::redo() í•¨ìˆ˜ì—ì„œ
- *    SMR_LT_FILE_END ë¡œê·¸ ì²˜ë¦¬ ë¶€ë¶„ì„ ë”°ë¡œ ë¶„ë¦¬í•´ëƒ„.
+ *    To Fix PR-13786 º¹Àâµµ °³¼±
+ *    smrRecoveryMgr::redo() ÇÔ¼ö¿¡¼­
+ *    SMR_LT_FILE_END ·Î±× Ã³¸® ºÎºĞÀ» µû·Î ºĞ¸®ÇØ³¿.
  *
  * Implementation :
  *
@@ -1615,7 +1665,7 @@ IDE_RC smrRecoveryMgr::redo_FILE_END( smLSN     * aCurLSN,
 
     if (idf::access(sLogFilename, F_OK) != 0)
     {
-        /* ë‹¤ìŒ LogFileì´ ì—†ìœ¼ë¯€ë¡œ ë”ì´ìƒ Redoí•  ë¡œê·¸ê°€ ì—†ë‹¤. */
+        /* ´ÙÀ½ LogFileÀÌ ¾øÀ¸¹Ç·Î ´õÀÌ»ó RedoÇÒ ·Î±×°¡ ¾ø´Ù. */
         smrRedoLSNMgr::setRedoLSNToBeInvalid();
     }
     else
@@ -1630,7 +1680,7 @@ IDE_RC smrRecoveryMgr::redo_FILE_END( smLSN     * aCurLSN,
             if ( sLogFileSize != smuProperty::getLogFileSize() )
             {
                 (void)idf::unlink(sLogFilename);
-                /* ë‹¤ìŒ LogFileì´ ì—†ìœ¼ë¯€ë¡œ ë”ì´ìƒ Redoí•  ë¡œê·¸ê°€ ì—†ë‹¤. */
+                /* ´ÙÀ½ LogFileÀÌ ¾øÀ¸¹Ç·Î ´õÀÌ»ó RedoÇÒ ·Î±×°¡ ¾ø´Ù. */
                 smrRedoLSNMgr::setRedoLSNToBeInvalid();
             }
         }
@@ -1642,7 +1692,7 @@ IDE_RC smrRecoveryMgr::redo_FILE_END( smLSN     * aCurLSN,
     (((sFileCount) % 5) == 0 ) ? IDE_CALLBACK_SEND_SYM("*") : IDE_CALLBACK_SEND_SYM(".");
 
     /*
-     * BUG-26350 [SD] startupì‹œì— redoì˜ ì§„í–‰ìƒí™©ì„ ë¡œê·¸íŒŒì¼ëª…ìœ¼ë¡œ sm logì— ì¶œë ¥
+     * BUG-26350 [SD] startup½Ã¿¡ redoÀÇ ÁøÇà»óÈ²À» ·Î±×ÆÄÀÏ¸íÀ¸·Î sm log¿¡ Ãâ·Â
      */
     ideLog::log( SM_TRC_LOG_LEVEL_MRECOV, "%s", sLogFilename );
 
@@ -1658,12 +1708,12 @@ IDE_RC smrRecoveryMgr::redo_FILE_END( smLSN     * aCurLSN,
 
 /***********************************************************************
  *
- * Description : Active íŠ¸ëœì­ì…˜ì˜ ë””ìŠ¤í¬ ë¡œê·¸ì¤‘ì— ë³µêµ¬ë¥¼ ìœ„í•œ ìœ ì§€í•˜ëŠ” ë©”ëª¨ë¦¬ìë£Œêµ¬ì¡°ì—
- *               ë°˜ì˜í•  ê²ƒì„ ì¦‰ì‹œ ë°˜ì˜í•œë‹¤.
+ * Description : Active Æ®·£Àè¼ÇÀÇ µğ½ºÅ© ·Î±×Áß¿¡ º¹±¸¸¦ À§ÇÑ À¯ÁöÇÏ´Â ¸Ş¸ğ¸®ÀÚ·á±¸Á¶¿¡
+ *               ¹İ¿µÇÒ °ÍÀ» Áï½Ã ¹İ¿µÇÑ´Ù.
  *
- * aLogType [IN]  - ë¡œê·¸íƒ€ì…
- * aLogPtr  [IN]  - SMR_DLT_REF_NTA ë¡œê·¸ì˜ RefOffset + ID_SIZEOF(sdrLogHdr)
- *                  í•´ë‹¹í•˜ëŠ” LogPtr
+ * aLogType [IN]  - ·Î±×Å¸ÀÔ
+ * aLogPtr  [IN]  - SMR_DLT_REF_NTA ·Î±×ÀÇ RefOffset + ID_SIZEOF(sdrLogHdr)
+ *                  ÇØ´çÇÏ´Â LogPtr
  * aContext [OUT] - RollbackContext
  *
  **********************************************************************/
@@ -1695,8 +1745,8 @@ IDE_RC smrRecoveryMgr::applyDskLogInstantly4ActiveTrans( void        * aCurTrans
                            aLogPtr,
                            SMR_LOGREC_SIZE(smrDiskLog) );
 
-            // BUG-7983 dml ì²˜ë¦¬ì‹œ undo segment commití›„ ì˜ˆì™¸, Shutdownì—
-            // ëŒ€í•œ undo ì²˜ë¦¬ê°€ í•„ìš”í•©ë‹ˆë‹¤.
+            // BUG-7983 dml Ã³¸®½Ã undo segment commitÈÄ ¿¹¿Ü, Shutdown¿¡
+            // ´ëÇÑ undo Ã³¸®°¡ ÇÊ¿äÇÕ´Ï´Ù.
             if ( sDiskLogRec.mRedoType == SMR_RT_WITHMEM )
             {
                 sLogBuffer = aLogPtr +
@@ -1803,53 +1853,53 @@ IDE_RC smrRecoveryMgr::addActiveTrans( smrLogHead    * aLogHeadPtr,
 
 
 /***********************************************************************
- * Description : ë³µêµ¬ê³¼ì •ì—ì„œì˜ íŠ¸ëœì­ì…˜ ì¬ìˆ˜í–‰ (redoall pass)
+ * Description : º¹±¸°úÁ¤¿¡¼­ÀÇ Æ®·£Àè¼Ç Àç¼öÇà (redoall pass)
  *
- * - MRDBì™€ DRDBì˜ checkpointì˜ í†µí•©ìœ¼ë¡œ
- *   redo ì‹œì‘ LSNì— ëŒ€í•˜ì—¬ ë‹¤ìŒê³¼ ê°™ì€ ê²½ìš°ê°€ ë°œìƒ
- *   ìœ„ì˜ ìƒí™©ì— ë”°ë¼ ê°ê¸° ë‹¤ë¥´ê²Œ ì²˜ë¦¬í•´ì•¼í•œë‹¤.
- *   + CASE 0 - active transì˜ recvLSN = DRDBì˜ RecvLSN
- *     : ì§€ê¸ˆê³¼ ë™ì¼í•˜ê²Œ ì²˜ë¦¬
- *   + CASE 1 - active transì˜ recvLSN > DRDBì˜ RecvLSN
- *     : DRDBì˜ RecvLSNë¶€í„° active transì˜ RecvLSNì„ ë§Œë‚ ë•Œê¹Œì§€
- *       drdb redo ë¡œê·¸ë§Œ ì ìš©í•œë‹¤.
- *       active transì˜ RecvLSNë¶€í„°ëŠ” ì§€ê¸ˆê³¼ ë™ì¼í•˜ê²Œ ì²˜ë¦¬
- *   + CASE 2 - active transì˜ recvLSN < DRDBì˜ RecvLSN
- *     : active transì˜ RecvLSNë¶€í„° DRDBì˜ RecvLSNì„ ë§Œë‚ ë•Œê¹Œì§€
- *       drdb redo ë¡œê·¸ëŠ” ì ìš©í•˜ì§€ ì•Šê³ ,
- *       ê·¸ ë‹¤ìŒ ì§€ê¸ˆê³¼ ë™ì¼í•˜ê²Œ ì²˜ë¦¬í•œë‹¤.
+ * - MRDB¿Í DRDBÀÇ checkpointÀÇ ÅëÇÕÀ¸·Î
+ *   redo ½ÃÀÛ LSN¿¡ ´ëÇÏ¿© ´ÙÀ½°ú °°Àº °æ¿ì°¡ ¹ß»ı
+ *   À§ÀÇ »óÈ²¿¡ µû¶ó °¢±â ´Ù¸£°Ô Ã³¸®ÇØ¾ßÇÑ´Ù.
+ *   + CASE 0 - active transÀÇ recvLSN = DRDBÀÇ RecvLSN
+ *     : Áö±İ°ú µ¿ÀÏÇÏ°Ô Ã³¸®
+ *   + CASE 1 - active transÀÇ recvLSN > DRDBÀÇ RecvLSN
+ *     : DRDBÀÇ RecvLSNºÎÅÍ active transÀÇ RecvLSNÀ» ¸¸³¯¶§±îÁö
+ *       drdb redo ·Î±×¸¸ Àû¿ëÇÑ´Ù.
+ *       active transÀÇ RecvLSNºÎÅÍ´Â Áö±İ°ú µ¿ÀÏÇÏ°Ô Ã³¸®
+ *   + CASE 2 - active transÀÇ recvLSN < DRDBÀÇ RecvLSN
+ *     : active transÀÇ RecvLSNºÎÅÍ DRDBÀÇ RecvLSNÀ» ¸¸³¯¶§±îÁö
+ *       drdb redo ·Î±×´Â Àû¿ëÇÏÁö ¾Ê°í,
+ *       ±× ´ÙÀ½ Áö±İ°ú µ¿ÀÏÇÏ°Ô Ã³¸®ÇÑ´Ù.
  *
- * - Redo ë¡œê·¸ ì ìš© ë°©ì‹
- *   + MRDBì˜ redoë¡œê·¸ë¥¼ íŒë…í•˜ë©´ ë°”ë¡œ redo í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì—¬
- *     ë°”ë¡œ ì ìš©í•œë‹¤.
- *   + DRDBì˜ redoë¡œê·¸ë¥¼ íŒë…í•˜ë©´ í•´ì‹œí…Œì´ë¸”ì— space ID, page ID
- *     ì— ë”°ë¼ redo ë¡œê·¸ë¥¼ ì €ì¥í•œ í›„, ëª¨ë“  redo ë¡œê·¸íŒë…ì´ ì™„ë£Œëœ
- *     í›„ì— í•´ì‹œì— ì €ì¥ëœ DRDBì˜ redoë¡œê·¸ë¥¼ diskì— ì ìš©í•œë‹¤.
+ * - Redo ·Î±× Àû¿ë ¹æ½Ä
+ *   + MRDBÀÇ redo·Î±×¸¦ ÆÇµ¶ÇÏ¸é ¹Ù·Î redo ÇÔ¼ö¸¦ È£ÃâÇÏ¿©
+ *     ¹Ù·Î Àû¿ëÇÑ´Ù.
+ *   + DRDBÀÇ redo·Î±×¸¦ ÆÇµ¶ÇÏ¸é ÇØ½ÃÅ×ÀÌºí¿¡ space ID, page ID
+ *     ¿¡ µû¶ó redo ·Î±×¸¦ ÀúÀåÇÑ ÈÄ, ¸ğµç redo ·Î±×ÆÇµ¶ÀÌ ¿Ï·áµÈ
+ *     ÈÄ¿¡ ÇØ½Ã¿¡ ÀúÀåµÈ DRDBÀÇ redo·Î±×¸¦ disk¿¡ Àû¿ëÇÑ´Ù.
  *
  * - 2nd. code design
- *   + ë¡œê·¸ì•µì»¤ë¡œë¶€í„° begin Checkpoint LSNì„ ì–»ìŒ
- *   + begin checkpoint ë¡œê·¸ë¥¼ íŒë…í•˜ì—¬  memory RecvLSNê³¼
- *     disk RecvLSNì„ ì–»ìŒ
- *   + ë‘ RecvLSN ì¤‘ì—ì„œ ì‘ì€ê²ƒìœ¼ë¡œ RecvLSNì„ ê²°ì •í•˜ì—¬, RecvLSNë¶€í„°
- *     ë§ˆì§€ë§‰ ë¡œê·¸ê¹Œì§€ íŒë…í•˜ë©´ì„œ ì¬ìˆ˜í–‰ì„ ì²˜ë¦¬í•œë‹¤.
- *     : ì¬ìˆ˜í–‰ ì²˜ë¦¬ì‹œì— ìœ„ì—ì„œë„ ì–¸ê¸‰í–ˆë“¯ì´ ì´ë¯¸ diskì— ë°˜ì˜ëœ
- *       ë¡œê·¸ì— ëŒ€í•´ì„œëŠ” skip í•˜ë„ë¡ í•œë‹¤.
- *   + ë‹¤ìŒìœ¼ë¡œ íŒë…í•  ë¡œê·¸ ê²°ì •
- *   + !!DRDBì˜ redo ê´€ë¦¬ì ì´ˆê¸°í™”
- *   + ê° ë¡œê·¸ íƒ€ì…ì— ë”°ë¼ redo ìˆ˜í–‰
- *   + loop - !! ë¡œê·¸ ì¬ìˆ˜í–‰
- *     : !!disk ë¡œê·¸ë¥¼ íŒë…í•œ ê²½ìš° bodyì— ì €ì¥ë˜ì–´ ìˆëŠ”
- *       disk redoë¡œê·¸ë“¤ì„ íŒŒì‹±í•˜ì—¬ (space ID, pageID)ì—
- *       ë”°ë¼ í•´ì‹œí…Œì´ë¸”ì— ì €ì¥í•´ ë‘”ë‹¤.
+ *   + ·Î±×¾ŞÄ¿·ÎºÎÅÍ begin Checkpoint LSNÀ» ¾òÀ½
+ *   + begin checkpoint ·Î±×¸¦ ÆÇµ¶ÇÏ¿©  memory RecvLSN°ú
+ *     disk RecvLSNÀ» ¾òÀ½
+ *   + µÎ RecvLSN Áß¿¡¼­ ÀÛÀº°ÍÀ¸·Î RecvLSNÀ» °áÁ¤ÇÏ¿©, RecvLSNºÎÅÍ
+ *     ¸¶Áö¸· ·Î±×±îÁö ÆÇµ¶ÇÏ¸é¼­ Àç¼öÇàÀ» Ã³¸®ÇÑ´Ù.
+ *     : Àç¼öÇà Ã³¸®½Ã¿¡ À§¿¡¼­µµ ¾ğ±ŞÇßµíÀÌ ÀÌ¹Ì disk¿¡ ¹İ¿µµÈ
+ *       ·Î±×¿¡ ´ëÇØ¼­´Â skip ÇÏµµ·Ï ÇÑ´Ù.
+ *   + ´ÙÀ½À¸·Î ÆÇµ¶ÇÒ ·Î±× °áÁ¤
+ *   + !!DRDBÀÇ redo °ü¸®ÀÚ ÃÊ±âÈ­
+ *   + °¢ ·Î±× Å¸ÀÔ¿¡ µû¶ó redo ¼öÇà
+ *   + loop - !! ·Î±× Àç¼öÇà
+ *     : !!disk ·Î±×¸¦ ÆÇµ¶ÇÑ °æ¿ì body¿¡ ÀúÀåµÇ¾î ÀÖ´Â
+ *       disk redo·Î±×µéÀ» ÆÄ½ÌÇÏ¿© (space ID, pageID)¿¡
+ *       µû¶ó ÇØ½ÃÅ×ÀÌºí¿¡ ÀúÀåÇØ µĞ´Ù.
  *        -> sdrRedoMgr::scanRedoLogRec()
- *     : mrdb ë¡œê·¸ëŠ” ê¸°ì¡´ê³¼ ë™ì¼í•˜ê²Œ ì²˜ë¦¬í•œë‹¤.
+ *     : mrdb ·Î±×´Â ±âÁ¸°ú µ¿ÀÏÇÏ°Ô Ã³¸®ÇÑ´Ù.
  *
- *   + !!í•´ì‹œ í…Œì´ë¸”ì— ì €ì¥í•´ ë‘”, DRDBì˜ redo ë¡œê·¸ë“¤ì„
- *       disk tablespaceì— ë°˜ì˜
+ *   + !!ÇØ½Ã Å×ÀÌºí¿¡ ÀúÀåÇØ µĞ, DRDBÀÇ redo ·Î±×µéÀ»
+ *       disk tablespace¿¡ ¹İ¿µ
  *       -> sdrRedoMgr::applyHashedLogRec()
- *   + !!DRDBì˜ redo ê´€ë¦¬ì í•´ì œ
- *   + ëª¨ë“  ë¡œê·¸íŒŒì¼ì„ close í•œë‹¤.
- *   + end of logë¥¼ ì´ìš©í•˜ì—¬ Log File Manager Thread ì‹¤í–‰ ë° ì´ˆê¸°í™”
+ *   + !!DRDBÀÇ redo °ü¸®ÀÚ ÇØÁ¦
+ *   + ¸ğµç ·Î±×ÆÄÀÏÀ» close ÇÑ´Ù.
+ *   + end of log¸¦ ÀÌ¿ëÇÏ¿© Log File Manager Thread ½ÇÇà ¹× ÃÊ±âÈ­
  **********************************************************************/
 IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
 {
@@ -1896,7 +1946,7 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
     }
 
     /* ------------------------------------------------
-     * 0. redo ê´€ë¦¬ìë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+     * 0. redo °ü¸®ÀÚ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
      * ----------------------------------------------*/
     sCapacityOfBufferMgr = sdbBufferMgr::getPageCount();
 
@@ -1905,15 +1955,15 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
               != IDE_SUCCESS );
 
     /* -----------------------------------------------------------------
-     * 1. begin checkpoint ë¡œê·¸ íŒë…
-     *    Checkpoint logëŠ” ë¬´ì¡°ê±´ Diskì— ê¸°ë¡ëœë‹¤.
+     * 1. begin checkpoint ·Î±× ÆÇµ¶
+     *    Checkpoint log´Â ¹«Á¶°Ç Disk¿¡ ±â·ÏµÈ´Ù.
      * ---------------------------------------------------------------- */
     sChkptBeginLSN  = mAnchorMgr.getBeginChkptLSN();
     sChkptEndLSN    = mAnchorMgr.getEndChkptLSN();
 
-    IDE_TEST( smrLogMgr::readLog( NULL, /* ì••ì¶• ë²„í¼ í•¸ë“¤ => NULL
-                                          Checkpoint Logì˜ ê²½ìš°
-                                          ì••ì¶•í•˜ì§€ ì•ŠëŠ”ë‹¤ */
+    IDE_TEST( smrLogMgr::readLog( NULL, /* ¾ĞÃà ¹öÆÛ ÇÚµé => NULL
+                                          Checkpoint LogÀÇ °æ¿ì
+                                          ¾ĞÃàÇÏÁö ¾Ê´Â´Ù */
                                  &sChkptBeginLSN,
                                  ID_TRUE, /* Close Log File When aLogFile doesn't include aLSN */
                                  &sLogFile,
@@ -1927,7 +1977,7 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
 
     idlOS::memcpy(&sBeginChkptLog, sLogPtr, SMR_LOGREC_SIZE(smrBeginChkptLog));
 
-    /* Checkpointë¥¼ ìœ„í•´ì„œ openëœ LogFileì„ Closeí•œë‹¤.
+    /* Checkpoint¸¦ À§ÇØ¼­ openµÈ LogFileÀ» CloseÇÑ´Ù.
      */
     IDE_TEST( smrLogMgr::closeLogFile(sLogFile) != IDE_SUCCESS );
     sLogFile = NULL;
@@ -1935,11 +1985,11 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
     IDE_ASSERT(smrLogHeadI::getType(&sBeginChkptLog.mHead) == SMR_LT_CHKPT_BEGIN);
 
     /* ------------------------------------------------
-     * 2. RecvLSN ê²°ì •
-     * DRDBì˜ oldest LSNì€ loganchorì— ì €ì¥ëœ ê²ƒê³¼ begin
-     * checkpoint ë¡œê·¸ì— ì €ì¥ëœ ê²ƒì¤‘ ê°€ì¥ í°ê²ƒìœ¼ë¡œ ê²°ì •í•œ í›„,
-     * Active íŠ¸ëœì­ì…˜ì˜ minimum LSNê³¼ oldest LSNì„ ë¹„êµí•´ì„œ
-     * ì‘ì€ê²ƒìœ¼ë¡œ RecvLSNì„ ê²°ì •
+     * 2. RecvLSN °áÁ¤
+     * DRDBÀÇ oldest LSNÀº loganchor¿¡ ÀúÀåµÈ °Í°ú begin
+     * checkpoint ·Î±×¿¡ ÀúÀåµÈ °ÍÁß °¡Àå Å«°ÍÀ¸·Î °áÁ¤ÇÑ ÈÄ,
+     * Active Æ®·£Àè¼ÇÀÇ minimum LSN°ú oldest LSNÀ» ºñ±³ÇØ¼­
+     * ÀÛÀº°ÍÀ¸·Î RecvLSNÀ» °áÁ¤
      * ----------------------------------------------*/
     sMemRecvLSNOfDisk = sBeginChkptLog.mEndLSN;
     sDiskRedoLSN      = sBeginChkptLog.mDiskRedoLSN;
@@ -1950,10 +2000,10 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
     }
 
     /*
-      Diskì— ëŒ€í•´ì„œ RecvLSNì„ ì¬ê²°ì •í•œë‹¤. Disk CheckpointëŠ” MMDBì™€
-      ë³„ë„ë¡œ ìˆ˜í–‰ì´ ë˜ê³  ê·¸ë•Œ RecvLSNì€ LogAnchorì— ê¸°ë¡ë˜ê¸°ë•Œë¬¸ì— LogAnchorì˜
-      oldestLSNì™€ ë¹„êµí•´ì„œ í° ê°’ì„ ê·¸ recv lsnìœ¼ë¡œ ê²°ì •í•˜ê³  ë‹¤ì‹œ Diskì˜ RecvLSNê³¼
-      ë¹„êµ í•´ì„œ ì‘ì€ ê°’ì„ recv lsnì„ ì„¤ì •í•œë‹¤.
+      Disk¿¡ ´ëÇØ¼­ RecvLSNÀ» Àç°áÁ¤ÇÑ´Ù. Disk Checkpoint´Â MMDB¿Í
+      º°µµ·Î ¼öÇàÀÌ µÇ°í ±×¶§ RecvLSNÀº LogAnchor¿¡ ±â·ÏµÇ±â¶§¹®¿¡ LogAnchorÀÇ
+      oldestLSN¿Í ºñ±³ÇØ¼­ Å« °ªÀ» ±× recv lsnÀ¸·Î °áÁ¤ÇÏ°í ´Ù½Ã DiskÀÇ RecvLSN°ú
+      ºñ±³ ÇØ¼­ ÀÛÀº °ªÀ» recv lsnÀ» ¼³Á¤ÇÑ´Ù.
     */
     if ( smrCompareLSN::isGTE(&sMemRecvLSNOfDisk, &sDiskRedoLSN)
          == ID_TRUE )
@@ -1966,8 +2016,8 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
         /* nothing to do */
     }
 
-    /* PROJ-2569 2pcë¥¼ ìœ„í•´ í•„ìš”í•œ LSNê³¼ recv lsnì¤‘ ë” ì‘ì€ ê°’ìœ¼ë¡œ recv lsnì„ ì„¤ì •.
-     * mSkipRedoLSNì— ê¸°ì¡´ LSNê°’ì„ ì €ì¥í•´ ë‘”ë‹¤. */
+    /* PROJ-2569 2pc¸¦ À§ÇØ ÇÊ¿äÇÑ LSN°ú recv lsnÁß ´õ ÀÛÀº °ªÀ¸·Î recv lsnÀ» ¼³Á¤.
+     * mSkipRedoLSN¿¡ ±âÁ¸ LSN°ªÀ» ÀúÀåÇØ µĞ´Ù. */
     if ( smrCompareLSN::isGT( &sBeginChkptLog.mEndLSN, &sBeginChkptLog.mDtxMinLSN )
          == ID_TRUE )
     {
@@ -1984,7 +2034,7 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
         /* Nothing to do */
     }
 
-    /* Archive ëŒ€ìƒ Logfileì„  Archive Listì— ì¶”ê°€í•œë‹¤. */
+    /* Archive ´ë»ó LogfileÀ»  Archive List¿¡ Ãß°¡ÇÑ´Ù. */
     if ( getArchiveMode() == SMI_LOG_ARCHIVE )
     {
         IDE_TEST( rebuildArchLogfileList( &sBeginChkptLog.mEndLSN )
@@ -1995,9 +2045,7 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
         /* nothing to do */
     }
 
-    SM_SET_LSN(mIdxSMOLSN,
-               ID_UINT_MAX,
-               ID_UINT_MAX);
+    SM_LSN_MAX( mIdxSMOLSN );
 
     ideLog::log(SM_TRC_LOG_LEVEL_MRECOV,
                 SM_TRC_MRECOVERY_RECOVERYMGR_REDOALL_START,
@@ -2005,20 +2053,20 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
                 sBeginChkptLog.mEndLSN.mOffset);
 
     /*
-      Redoí• ë•Œë§ˆë‹¤ RedoLSNì´ ê°€ë¦¬í‚¤ëŠ” Logì¤‘ì—ì„œ ê°€ì¥
-      ì‘ì€ mLSNê°’ì„ ê°€ì§„ ë¡œê·¸ë¥¼ ë¨¼ì € Redoí•œë‹¤. ì´ë ‡ê²Œ í•¨ìœ¼ë¡œì¨ Transactionì´
-      ê¸°ë¡í•œ ë¡œê·¸ìˆœìœ¼ë¡œ Redoë¥¼ ìˆ˜í–‰í•œë‹¤. ì´ë¥¼ ìœ„í•´ smrRedoLSNMgrì„ ì´ìš©í•œë‹¤.
+      RedoÇÒ¶§¸¶´Ù RedoLSNÀÌ °¡¸®Å°´Â LogÁß¿¡¼­ °¡Àå
+      ÀÛÀº mLSN°ªÀ» °¡Áø ·Î±×¸¦ ¸ÕÀú RedoÇÑ´Ù. ÀÌ·¸°Ô ÇÔÀ¸·Î½á TransactionÀÌ
+      ±â·ÏÇÑ ·Î±×¼øÀ¸·Î Redo¸¦ ¼öÇàÇÑ´Ù. ÀÌ¸¦ À§ÇØ smrRedoLSNMgrÀ» ÀÌ¿ëÇÑ´Ù.
     */
     IDE_TEST( smrRedoLSNMgr::initialize( &sBeginChkptLog.mEndLSN )
               != IDE_SUCCESS );
 
     /* -----------------------------------------------------------------
-     * recovery ì‹œì‘ ë¡œê·¸ë¶€í„° end of logê¹Œì§€ ê° ë¡œê·¸ì— ëŒ€í•´ redo ìˆ˜í–‰
+     * recovery ½ÃÀÛ ·Î±×ºÎÅÍ end of log±îÁö °¢ ·Î±×¿¡ ´ëÇØ redo ¼öÇà
      * ---------------------------------------------------------------- */
 
     while ( 1 )
     {
-        if ( sRedoFail == ID_TRUE ) /* Redoê´€ë ¨ ì´ìƒ ë°œê²¬ */
+        if ( sRedoFail == ID_TRUE ) /* Redo°ü·Ã ÀÌ»ó ¹ß°ß */
         {
             IDE_TEST( startupFailure( &sRTOI, ID_TRUE ) // isRedo
                       != IDE_SUCCESS );
@@ -2028,9 +2076,9 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
             /* nothing to do */
         }
 
-        if ( sRedoSkip == ID_TRUE ) /* ì´ì „ Loopì—ì„œ Redoë¥¼ ì•ˆí–ˆìœ¼ë©´ */
+        if ( sRedoSkip == ID_TRUE ) /* ÀÌÀü Loop¿¡¼­ Redo¸¦ ¾ÈÇßÀ¸¸é */
         {
-            sCurRedoLSNPtr->mOffset += sLogSizeAtDisk; /* ìˆ˜ë™ìœ¼ë¡œ ì˜®ê²¨ì¤Œ */
+            sCurRedoLSNPtr->mOffset += sLogSizeAtDisk; /* ¼öµ¿À¸·Î ¿Å°ÜÁÜ */
         }
         else
         {
@@ -2052,14 +2100,14 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
                          sCurRedoLSNPtr->mFileNo,
                          sCurRedoLSNPtr->mOffset );
 
-            break; /* Invalidí•œ ë¡œê·¸ë¥¼ íŒë…í•œ ê²½ìš° */
+            break; /* InvalidÇÑ ·Î±×¸¦ ÆÇµ¶ÇÑ °æ¿ì */
         }
         else
         {
             /* nothing to do */
         }
 
-        /* Debuging ì •ë³´ ì €ì¥ìš©ìœ¼ë¡œ Log ìœ„ì¹˜ ë°±ì—…í•´ë‘  */
+        /* Debuging Á¤º¸ ÀúÀå¿ëÀ¸·Î Log À§Ä¡ ¹é¾÷ÇØµÒ */
         SM_GET_LSN( mLstRedoLSN, *sCurRedoLSNPtr );
         mCurLogPtr     = sLogPtr;
         mCurLogHeadPtr = sLogHeadPtr;
@@ -2075,8 +2123,8 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
                                  &sRedoSkip )
                   != IDE_SUCCESS );  
 
-        /* ì´ë²ˆ Checkpointì™€ ì§ì´ ë˜ëŠ” DirtyPageList Logë¥¼ ì°¾ê¸° ìœ„í•´,
-         * í˜„ ìƒíƒœê°€ Checkpoint ì§í›„ì¸ì§€ í™•ì¸í•¨ */
+        /* ÀÌ¹ø Checkpoint¿Í Â¦ÀÌ µÇ´Â DirtyPageList Log¸¦ Ã£±â À§ÇØ,
+         * Çö »óÅÂ°¡ Checkpoint Á÷ÈÄÀÎÁö È®ÀÎÇÔ */
         if ( smrCompareLSN::isGTE( sCurRedoLSNPtr, &sChkptBeginLSN )
              == ID_TRUE )
         {
@@ -2088,21 +2136,22 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
         }
 
         /* -------------------------------------------------------------
-         * [3] ì½ì€ ë¡œê·¸ê°€ íŠ¸ëœì­ì…˜ì´ ê¸°ë¡í•œ ë¡œê·¸ì¸ ê²½ìš° ê·¸ íŠ¸ëœì­ì…˜ì„
-         * íŠ¸ëœì­ì…˜ Queueì— ë“±ë¡í•œë‹¤.
-         * - active íŠ¸ëœì­ì…˜ ë“±ë¡ì€ active trans recvLSNê³¼ ë™ì¼í•œ LSNë¶€í„°
-         *   ì²˜ë¦¬í•œë‹¤.
-         * - drdb íŠ¸ëœì­ì…˜ì˜ ê²½ìš°, í• ë‹¹ë˜ì—ˆë˜ tssê°€ ì¡´ì¬í•  ê²½ìš° assign
-         *   í•´ì£¼ì–´ì•¼ í•œë‹¤.
+         * [3] ÀĞÀº ·Î±×°¡ Æ®·£Àè¼ÇÀÌ ±â·ÏÇÑ ·Î±×ÀÎ °æ¿ì ±× Æ®·£Àè¼ÇÀ»
+         * Æ®·£Àè¼Ç Queue¿¡ µî·ÏÇÑ´Ù.
+         * - active Æ®·£Àè¼Ç µî·ÏÀº active trans recvLSN°ú µ¿ÀÏÇÑ LSNºÎÅÍ
+         *   Ã³¸®ÇÑ´Ù.
+         * - drdb Æ®·£Àè¼ÇÀÇ °æ¿ì, ÇÒ´çµÇ¾ú´ø tss°¡ Á¸ÀçÇÒ °æ¿ì assign
+         *   ÇØÁÖ¾î¾ß ÇÑ´Ù.
          * ------------------------------------------------------------ */
         sCurTrans = NULL;
         sTID = smrLogHeadI::getTransID(sLogHeadPtr);
 
-        /* ì¼ë°˜ì ì¸ Txì¼ë•Œë§Œ ActiveTxë¥¼ ë“±ë¡í•¨ */
-        /* MemRecvLSNì€ OldestTxLSNì´ê¸°ì—, ì´ë³´ë‹¤ ì´ì „ì´ë©´ ë¬´ì‹œí•¨  */
-        if ( ( sTID != ID_UINT_MAX ) &&
+        /* ÀÏ¹İÀûÀÎ TxÀÏ¶§¸¸ ActiveTx¸¦ µî·ÏÇÔ */
+        /* MemRecvLSNÀº OldestTxLSNÀÌ±â¿¡, ÀÌº¸´Ù ÀÌÀüÀÌ¸é ¹«½ÃÇÔ  */
+        if ( ( sTID != SM_NULL_TID ) &&
              ( smrCompareLSN::isLT( sCurRedoLSNPtr,
-                                    &sMemRecvLSNOfDisk) == ID_FALSE ) )
+                                    &sMemRecvLSNOfDisk) == ID_FALSE ) &&
+             ( sRedoSkip == ID_FALSE ) )
         {
             IDE_TEST( addActiveTrans( sLogHeadPtr,
                                       sLogPtr,
@@ -2112,18 +2161,18 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
         }
 
         /*
-         * [4] RecvLSNì— ë”°ë¼ ì„ ë³„ì ìœ¼ë¡œ ë¡œê·¸ë¥¼ ì¬ìˆ˜í–‰í•œë‹¤.
-         * BUG-25014 redoì‹œ ì„œë²„ ë¹„ì •ìƒì¢…ë£Œí•©ë‹ˆë‹¤. (by BUG-23919)
-         * í•˜ì§€ë§Œ, ë‹¤ìŒ ë¡œê·¸ë ˆì½”ë“œëŠ” ë¬´ì¡°ê±´ redo í•œë‹¤.
+         * [4] RecvLSN¿¡ µû¶ó ¼±º°ÀûÀ¸·Î ·Î±×¸¦ Àç¼öÇàÇÑ´Ù.
+         * BUG-25014 redo½Ã ¼­¹ö ºñÁ¤»óÁ¾·áÇÕ´Ï´Ù. (by BUG-23919)
+         * ÇÏÁö¸¸, ´ÙÀ½ ·Î±×·¹ÄÚµå´Â ¹«Á¶°Ç redo ÇÑ´Ù.
          * SMR_LT_FILE_END
-         * : ë‹¤ìŒ ë¡œê·¸íŒŒì¼ì„ Opení•´ì•¼í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
-         * SMR_LT_DSKTRANS_COMMITì™€ SMR_LT_DSKTRANS_ABORT
-         * : Active Transactionì´ ì•„ë‹Œ ê²½ìš°ì—ë„ Disk LogSlotì„ í¬í•¨í•˜ê¸°
-         *   ë•Œë¬¸ì— Redoí•´ì•¼ í•œë‹¤.
-         *   ë°˜ëŒ€ë¡œ Active Transactionì´ì§€ë§Œ, Disk Redoë²”ìœ„ì— í¬í•¨ë˜ì§€
-         *   ì•ŠëŠ”ë‹¤ë©´, Memory Redoì™€ MakeTransEndë¥¼ ìˆ˜í–‰í•´ì•¼í•˜ë¯€ë¡œ Redo
-         *   ë˜ì–´ì•¼í•œë‹¤. ì´ë•Œ Diskk LogSlotì€ Hashing ë˜ì–´ë„ ë°˜ì˜ì€ ë˜ì§€
-         *   ì•ŠëŠ”ë‹¤.
+         * : ´ÙÀ½ ·Î±×ÆÄÀÏÀ» OpenÇØ¾ßÇÏ±â ¶§¹®ÀÌ´Ù.
+         * SMR_LT_DSKTRANS_COMMIT¿Í SMR_LT_DSKTRANS_ABORT
+         * : Active TransactionÀÌ ¾Æ´Ñ °æ¿ì¿¡µµ Disk LogSlotÀ» Æ÷ÇÔÇÏ±â
+         *   ¶§¹®¿¡ RedoÇØ¾ß ÇÑ´Ù.
+         *   ¹İ´ë·Î Active TransactionÀÌÁö¸¸, Disk Redo¹üÀ§¿¡ Æ÷ÇÔµÇÁö
+         *   ¾Ê´Â´Ù¸é, Memory Redo¿Í MakeTransEnd¸¦ ¼öÇàÇØ¾ßÇÏ¹Ç·Î Redo
+         *   µÇ¾î¾ßÇÑ´Ù. ÀÌ¶§ Diskk LogSlotÀº Hashing µÇ¾îµµ ¹İ¿µÀº µÇÁö
+         *   ¾Ê´Â´Ù.
          */
         if ( ( sLogType != SMR_LT_DSKTRANS_COMMIT )      &&
              ( sLogType != SMR_LT_DSKTRANS_ABORT )       &&
@@ -2131,7 +2180,7 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
         {
             if ( smrLogMgr::isDiskLogType(sLogType) == ID_TRUE )
             {
-                /* DiskRedoLSN ë³´ë‹¤ ì‘ì€ LSNì„ ê°–ëŠ” Disk ë¡œê·¸ëŠ” Skip í•œë‹¤. */
+                /* DiskRedoLSN º¸´Ù ÀÛÀº LSNÀ» °®´Â Disk ·Î±×´Â Skip ÇÑ´Ù. */
                 if ( smrCompareLSN::isLT( sCurRedoLSNPtr, &sDiskRedoLSN ) == ID_TRUE )
                 {
                     IDE_ASSERT( SM_IS_LSN_MAX( sDiskBeginLSN ) );
@@ -2147,7 +2196,7 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
             }
             else
             {
-                /* MemRecvLSN ë³´ë‹¤ ì‘ì€ LSNì„ ê°–ëŠ” Mem ë¡œê·¸ëŠ” Skip í•œë‹¤. */
+                /* MemRecvLSN º¸´Ù ÀÛÀº LSNÀ» °®´Â Mem ·Î±×´Â Skip ÇÑ´Ù. */
                 if ( smrCompareLSN::isLT( sCurRedoLSNPtr, &sMemRecvLSNOfDisk ) == ID_TRUE )
                 {
                     IDE_ASSERT( SM_IS_LSN_MAX( sMemBeginLSN ) );
@@ -2198,10 +2247,10 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
          *******************************************************************/
         if ( smrCompareLSN::isEQ( sCurRedoLSNPtr, &sChkptEndLSN ) == ID_TRUE )
         {
-            SM_GET_LSN( mEndChkptLSN, sChkptEndLSN ); /* EndCheckpointLSN íšë“ */ 
+            SM_GET_LSN( mEndChkptLSN, sChkptEndLSN ); /* EndCheckpointLSN È¹µæ */ 
         }
 
-        /* Redo ì§„í–‰í•´ë„ ë˜ëŠ” ê°ì²´ì¸ì§€ í™•ì¸ */
+        /* Redo ÁøÇàÇØµµ µÇ´Â °´Ã¼ÀÎÁö È®ÀÎ */
         prepareRTOI( sLogPtr,
                      sLogHeadPtr,
                      sCurRedoLSNPtr,
@@ -2214,7 +2263,7 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
         if ( ( sLogType == SMR_LT_FILE_END ) &&
              ( sObjectConsistency == ID_FALSE ) )
         {
-            // LOGFILE END LogëŠ” ì ˆëŒ€ ì‹¤íŒ¨í•  ìˆ˜ ì—†ìŒ.
+            // LOGFILE END Log´Â Àı´ë ½ÇÆĞÇÒ ¼ö ¾øÀ½.
             IDE_DASSERT( 0 );
             sObjectConsistency = ID_TRUE;
         }
@@ -2223,15 +2272,15 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
         {
             sRedoSkip = ID_TRUE;
             sRedoFail = ID_TRUE;
-            continue; /* Redo ì•ˆí•¨ */
+            continue; /* Redo ¾ÈÇÔ */
         }
 
-        /* Redoí•˜ë©´ì„œ LSNì„ ì´ë™ì‹œí‚¤ê¸° ë•Œë¬¸ì—, ê²€ì¦ìš©ìœ¼ë¡œ Redoí•œë²ˆ ë”í•˜ê¸° ìœ„í•´
-         * LSNì„ ë³´ì¡´í•´ë‘  */
+        /* RedoÇÏ¸é¼­ LSNÀ» ÀÌµ¿½ÃÅ°±â ¶§¹®¿¡, °ËÁõ¿ëÀ¸·Î RedoÇÑ¹ø ´õÇÏ±â À§ÇØ
+         * LSNÀ» º¸Á¸ÇØµÒ */
         SM_GET_LSN( sDummyRedoLSN4Check, *sCurRedoLSNPtr );
 
         /* -------------------------------------------------------------
-         * [5] ê° ë¡œê·¸ íƒ€ì…ì— ë”°ë¼ redo ìˆ˜í–‰
+         * [5] °¢ ·Î±× Å¸ÀÔ¿¡ µû¶ó redo ¼öÇà
          * ------------------------------------------------------------ */
         if ( redo( sCurTrans,
                    sCurRedoLSNPtr,
@@ -2247,8 +2296,8 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
             if ( ( smuProperty::getSmEnableStartupBugDetector() == ID_TRUE ) &&
                  ( isIdempotentLog( sLogType ) == ID_TRUE ) )
             {
-                /* Idempotentí•œ Logì´ê¸° ë•Œë¬¸ì—, í•œë²ˆ ì„±ê³µí–ˆìœ¼ë©´ ë¬´ì¡°ê±´ ì„±ê³µ
-                 * í•´ì•¼ í•¨ */
+                /* IdempotentÇÑ LogÀÌ±â ¶§¹®¿¡, ÇÑ¹ø ¼º°øÇßÀ¸¸é ¹«Á¶°Ç ¼º°ø
+                 * ÇØ¾ß ÇÔ */
                 IDE_ASSERT( redo( sCurTrans,
                                   &sDummyRedoLSN4Check,
                                   &sFileCount,
@@ -2265,15 +2314,15 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
         }
         else
         {
-            /* Redo ì‹¤íŒ¨í•¨ */
+            /* Redo ½ÇÆĞÇÔ */
             sRedoSkip    = ID_TRUE;
             sRedoFail    = ID_TRUE;
             sRTOI.mCause = SMR_RTOI_CAUSE_REDO;
         }
 
-        // í•´ì‹±ëœ ë””ìŠ¤í¬ë¡œê·¸ë“¤ì˜ í¬ê¸°ì˜ ì´í•©ì´
-        // DISK_REDO_LOG_DECOMPRESS_BUFFER_SIZE ë¥¼ ë²—ì–´ë‚˜ë©´
-        // í•´ì‹±ëœ ë¡œê·¸ë“¤ì„ ëª¨ë‘ ë²„í¼ì— ì ìš©í•œë‹¤.
+        // ÇØ½ÌµÈ µğ½ºÅ©·Î±×µéÀÇ Å©±âÀÇ ÃÑÇÕÀÌ
+        // DISK_REDO_LOG_DECOMPRESS_BUFFER_SIZE ¸¦ ¹ş¾î³ª¸é
+        // ÇØ½ÌµÈ ·Î±×µéÀ» ¸ğµÎ ¹öÆÛ¿¡ Àû¿ëÇÑ´Ù.
         IDE_TEST( checkRedoDecompLogBufferSize() != IDE_SUCCESS );
     }//While
 
@@ -2288,15 +2337,15 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
                   sLstRedoLSN.mFileNo,
                   sLstRedoLSN.mOffset );
 
-    IDE_ASSERT ( !SM_IS_LSN_MAX ( sLstRedoLSN ) );
+    IDE_ASSERT( SM_IS_LSN_MAX( sLstRedoLSN ) == ID_FALSE );
     mCurLogPtr     = NULL;
     mCurLogHeadPtr = NULL;
     SM_GET_LSN( mLstRedoLSN, sLstRedoLSN );
 
     // PROJ-1867
-    // ë§Œì•½ Online Backupë°›ì•˜ë˜ DBFileë¡œ recoveryí•œ ê²½ìš°ì´ë©´
-    // sLstRedoLSNì´ endLSNê¹Œì§€ ì§„í–‰ í•˜ì˜€ëŠ”ì§€ë¥¼ í™•ì¸í•œë‹¤.
-    // Online Backup í•˜ì§€ ì•Šì•˜ë‹¤ë©´ sMustRedoToLSNëŠ” initìƒíƒœì´ë‹¤.
+    // ¸¸¾à Online Backup¹Ş¾Ò´ø DBFile·Î recoveryÇÑ °æ¿ìÀÌ¸é
+    // sLstRedoLSNÀÌ endLSN±îÁö ÁøÇà ÇÏ¿´´ÂÁö¸¦ È®ÀÎÇÑ´Ù.
+    // Online Backup ÇÏÁö ¾Ê¾Ò´Ù¸é sMustRedoToLSN´Â init»óÅÂÀÌ´Ù.
 
     IDE_TEST( getMaxMustRedoToLSN( aStatistics,
                                    &sMustRedoToLSN,
@@ -2317,11 +2366,11 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
         IDE_RAISE( err_need_more_log );
     }
 
-    /* redoê°€ ëë‚˜ê³ ë‚˜ë©´ ë§ˆì§€ë§‰ìœ¼ë¡œ redoí•œ ë¡œê·¸ì˜ SNì„ Repl Recovery LSNìœ¼ë¡œ ì„¤ì •í•œë‹¤.
-     * repl recoveryì—ì„œ ë°˜ë³µì ì¸ ì¥ì• ì‹œì—ëŠ” ì„œë¹„ìŠ¤ ì¤‘ ì œì¼ ì²˜ìŒì— ë°œìƒí•œ ì¥ì• ì‹œì—ë§Œ
-     * repl recovery LSNì„ ì„¤ì •í•´ì•¼ í•œë‹¤. ê·¸ëŸ¬ë¯€ë¡œ, ì´ì „ ìƒíƒœê°€ ì„œë¹„ìŠ¤ ì¤‘(SM_SN_NULL)
-     * ì¸ ê²½ìš°ì—ë§Œ ì„¤ì •í•œë‹¤. ê·¸ë¦¬ê³ , ë‹¤ì‹œ ì„œë¹„ìŠ¤ ë“¤ì–´ê°€ê¸° ì „(replication ì´ˆê¸°í™” ì¢…ë£Œ í›„)
-     * repl recovery LSNì„ SM_SN_NULLë¡œ ì„¤ì •í•œë‹¤. proj-1608
+    /* redo°¡ ³¡³ª°í³ª¸é ¸¶Áö¸·À¸·Î redoÇÑ ·Î±×ÀÇ SNÀ» Repl Recovery LSNÀ¸·Î ¼³Á¤ÇÑ´Ù.
+     * repl recovery¿¡¼­ ¹İº¹ÀûÀÎ Àå¾Ö½Ã¿¡´Â ¼­ºñ½º Áß Á¦ÀÏ Ã³À½¿¡ ¹ß»ıÇÑ Àå¾Ö½Ã¿¡¸¸
+     * repl recovery LSNÀ» ¼³Á¤ÇØ¾ß ÇÑ´Ù. ±×·¯¹Ç·Î, ÀÌÀü »óÅÂ°¡ ¼­ºñ½º Áß(SM_SN_NULL)
+     * ÀÎ °æ¿ì¿¡¸¸ ¼³Á¤ÇÑ´Ù. ±×¸®°í, ´Ù½Ã ¼­ºñ½º µé¾î°¡±â Àü(replication ÃÊ±âÈ­ Á¾·á ÈÄ)
+     * repl recovery LSNÀ» SM_SN_NULL·Î ¼³Á¤ÇÑ´Ù. proj-1608
      */
     if ( SM_IS_LSN_MAX( getReplRecoveryLSN() ) )
     {
@@ -2329,24 +2378,24 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
     }
 
     /* ------------------------------------------------
-     * í•´ì‹œ í…Œì´ë¸”ì— ì €ì¥í•´ ë‘”, DRDBì˜ redo ë¡œê·¸ë“¤ì„
-     * disk tablespaceì— ë°˜ì˜
-     * sdrRedoMgr::applyHashedLogRec() í•¨ìˆ˜ í˜¸ì¶œ
+     * ÇØ½Ã Å×ÀÌºí¿¡ ÀúÀåÇØ µĞ, DRDBÀÇ redo ·Î±×µéÀ»
+     * disk tablespace¿¡ ¹İ¿µ
+     * sdrRedoMgr::applyHashedLogRec() ÇÔ¼ö È£Ãâ
      * ----------------------------------------------*/
     IDE_TEST( applyHashedDiskLogRec( aStatistics) != IDE_SUCCESS );
 
-    /* redo ê´€ë¦¬ìë¥¼ í•´ì œí•œë‹¤. */
+    /* redo °ü¸®ÀÚ¸¦ ÇØÁ¦ÇÑ´Ù. */
     IDE_TEST( smLayerCallback::destroyRedoMgr() != IDE_SUCCESS );
 
     sLstRedoLSN = smrRedoLSNMgr::getNextLogLSNOfLstRedoLog();
 
-    /* Restart ì´í›„ì— ë²„í¼ìƒì— Index Pageë¥¼ ì ì¬í• ë•Œ, RedoLSN ë³´ë‹¤
-     * í° LSNì„ ê°€ì§„ ëª¨ë“  Index Pageì˜ SMO Noë¥¼ 0ìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
-     * ì™œëƒí•˜ë©´, SMO NoëŠ” Logging ëŒ€ìƒì´ ì•„ë‹Œ ìš´ì˜ì¤‘ì— ê³„ì† ì¦ê°€í•˜ëŠ”
-     * Runtime ì •ë³´ì´ë©°, ì´ê²ƒì€ SMO ì§„í–‰ì¤‘ì„ì„ íŒë‹¨í•˜ì—¬
-     * index traverseì˜ retry ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤. ì´ëŠ” ëª¨ë‘ index ê°€
-     * no-latch traverse scheme ì´ê¸° ë•Œë¬¸ì´ë‹¤.
-     * ê·¸ëŸ¬ë¯€ë¡œ ì—¬ê¸°ì„œëŠ” retryë¥¼ ì˜¤íŒí•˜ì§€ ì•Šë„ë¡ LSNì„ ì„ì‹œë¡œ ì €ì¥í•œë‹¤. */
+    /* Restart ÀÌÈÄ¿¡ ¹öÆÛ»ó¿¡ Index Page¸¦ ÀûÀçÇÒ¶§, RedoLSN º¸´Ù
+     * Å« LSNÀ» °¡Áø ¸ğµç Index PageÀÇ SMO No¸¦ 0À¸·Î ÃÊ±âÈ­ÇÑ´Ù.
+     * ¿Ö³ÄÇÏ¸é, SMO No´Â Logging ´ë»óÀÌ ¾Æ´Ñ ¿î¿µÁß¿¡ °è¼Ó Áõ°¡ÇÏ´Â
+     * Runtime Á¤º¸ÀÌ¸ç, ÀÌ°ÍÀº SMO ÁøÇàÁßÀÓÀ» ÆÇ´ÜÇÏ¿©
+     * index traverseÀÇ retry ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù. ÀÌ´Â ¸ğµÎ index °¡
+     * no-latch traverse scheme ÀÌ±â ¶§¹®ÀÌ´Ù.
+     * ±×·¯¹Ç·Î ¿©±â¼­´Â retry¸¦ ¿ÀÆÇÇÏÁö ¾Êµµ·Ï LSNÀ» ÀÓ½Ã·Î ÀúÀåÇÑ´Ù. */
     mIdxSMOLSN = smrRedoLSNMgr::getLstCheckLogLSN();
 
     ideLog::log( SM_TRC_LOG_LEVEL_MRECOV,
@@ -2355,20 +2404,26 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
                  sLstRedoLSN.mOffset);
 
     /* -----------------------------------------------------------------
-     * [8] smrLogMgrì˜ Prepare, Sync Threadë¥¼
-     *     ì‹œì‘ì‹œí‚¨ë‹¤.
+     * [8] smrLogMgrÀÇ Prepare, Sync Thread¸¦
+     *     ½ÃÀÛ½ÃÅ²´Ù.
      * ---------------------------------------------------------------- */
     sLstLSN = smrRedoLSNMgr::getLstCheckLogLSN();
     sCrtLogFileNo = sLstLSN.mFileNo;
 
-    /* Redoì‹œ ì‚¬ìš©í•œ ëª¨ë“  LogFileì„ Closeí•œë‹¤. */
+    /* Redo½Ã »ç¿ëÇÑ ¸ğµç LogFileÀ» CloseÇÑ´Ù. */
     IDE_TEST( smrLogMgr::getLogFileMgr().closeAllLogFile() != IDE_SUCCESS );
 
     /* ------------------------------------------------
-     * [9] ë”ì´ìƒ Redoí•  ë¡œê·¸ê°€ ì—†ê¸° ë•Œë¬¸ì— smrRedoLSNMgrì„
-     *     ì¢…ë£Œì‹œí‚¨ë‹¤.
+     * [9] ´õÀÌ»ó RedoÇÒ ·Î±×°¡ ¾ø±â ¶§¹®¿¡ smrRedoLSNMgrÀ»
+     *     Á¾·á½ÃÅ²´Ù.
      * ----------------------------------------------*/
     IDE_TEST( smrRedoLSNMgr::destroy() != IDE_SUCCESS );
+
+    // BUG-47404 Log Prepare Àü¿¡ WAL °Ë»ç¸¦ ÇØ¾ß ÇÑ´Ù.
+    // WALÀÌ ±ú¾îÁ³À¸¸é Consistency¸¦ ¼³Á¤ÇÏ¿©
+    // ÀÌÈÄ Log Prepare Thread¿¡¼­ logfile ÃÊ±âÈ­¸¦ ÇÏÁö ¾Ê´Â´Ù.
+    IDE_TEST( checkMemWAL()  != IDE_SUCCESS );
+    IDE_TEST( checkDiskWAL() != IDE_SUCCESS );
 
     ideLog::log(IDE_SERVER_0,"      [SM-PREPARE] Prepare Logfile Thread Start...");
     IDE_TEST( smrLogMgr::startupLogPrepareThread( &sLstLSN,
@@ -2376,7 +2431,7 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
                                                   ID_TRUE /* aIsRecovery */ )
              != IDE_SUCCESS );
     ideLog::log(IDE_SERVER_0,"[SUCCESS]\n");
-    
+
     IDU_FIT_POINT( "BUG-45283@smrRecoveryMgr::redoAll::unlockThreadMtx" );
 
     if ( getArchiveMode() == SMI_LOG_ARCHIVE )
@@ -2426,8 +2481,8 @@ IDE_RC smrRecoveryMgr::redoAll( idvSQL* aStatistics )
 }
 
 /*
-  Decompress Log Buffer í¬ê¸°ê°€
-  í”„ë¡œí¼í‹°ì— ì§€ì •ëœ ê°’ë³´ë‹¤ í´ ê²½ìš° Hashingëœ Disk Logë“¤ì„ ì ìš©
+  Decompress Log Buffer Å©±â°¡
+  ÇÁ·ÎÆÛÆ¼¿¡ ÁöÁ¤µÈ °ªº¸´Ù Å¬ °æ¿ì HashingµÈ Disk LogµéÀ» Àû¿ë
 */
 IDE_RC smrRecoveryMgr::checkRedoDecompLogBufferSize()
 {
@@ -2449,14 +2504,14 @@ IDE_RC smrRecoveryMgr::checkRedoDecompLogBufferSize()
 }
 
 /*
-    Hashingëœ Disk Logë“¤ì„ ì ìš©
+    HashingµÈ Disk LogµéÀ» Àû¿ë
  */
 IDE_RC smrRecoveryMgr::applyHashedDiskLogRec( idvSQL* aStatistics)
 {
     IDE_TEST( smLayerCallback::applyHashedLogRec( aStatistics )
               != IDE_SUCCESS );
 
-    // Decompress Log Bufferê°€ í• ë‹¹í•œ ëª¨ë“  ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤.
+    // Decompress Log Buffer°¡ ÇÒ´çÇÑ ¸ğµç ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÑ´Ù.
     IDE_TEST( smrRedoLSNMgr::clearDecompBuffer() != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -2469,19 +2524,19 @@ IDE_RC smrRecoveryMgr::applyHashedDiskLogRec( idvSQL* aStatistics)
 
 
 /***********************************************************************
- * Description : ë³µêµ¬ê³¼ì •ì—ì„œì˜ active íŠ¸ëœì­ì…˜ ì² íšŒ (undoall pass)
+ * Description : º¹±¸°úÁ¤¿¡¼­ÀÇ active Æ®·£Àè¼Ç Ã¶È¸ (undoall pass)
  *
- * íŠ¸ë˜ì­ì…˜ ì¬ìˆ˜í–‰ ê³¼ì •ì—ì„œ êµ¬ì„±í–ˆë˜ active íŠ¸ëœì­ì…˜ ëª©ë¡ì—
- * ìˆëŠ” ëª¨ë“  íŠ¸ëœì­ì…˜ë“¤ì— ëŒ€í•´ ë¡œê·¸ê°€ ìƒì„±ëœ ì—­ìˆœìœ¼ë¡œ ê°€ì¥
- * í° LSNì„ ê°€ì§€ëŠ” ë¡œê·¸ë¥¼ ê°€ì§„ íŠ¸ëœì­ì…˜ë¶€í„° ì² íšŒë¥¼ í•œë‹¤.
+ * Æ®·¡Àè¼Ç Àç¼öÇà °úÁ¤¿¡¼­ ±¸¼ºÇß´ø active Æ®·£Àè¼Ç ¸ñ·Ï¿¡
+ * ÀÖ´Â ¸ğµç Æ®·£Àè¼Çµé¿¡ ´ëÇØ ·Î±×°¡ »ı¼ºµÈ ¿ª¼øÀ¸·Î °¡Àå
+ * Å« LSNÀ» °¡Áö´Â ·Î±×¸¦ °¡Áø Æ®·£Àè¼ÇºÎÅÍ Ã¶È¸¸¦ ÇÑ´Ù.
  *
  * - 2nd. code design
- *   + ê° active íŠ¸ëœì­ì…˜ì´ ë§ˆì§€ë§‰ìœ¼ë¡œ ìƒì„±í•œ ë¡œê·¸ì˜
- *     LSNìœ¼ë¡œ queue êµ¬ì„±í•œë‹¤.
- *   + ê° active íŠ¸ëœì­ì…˜ì´ ìƒì„±í•œ ê° ë¡œê·¸ì— ëŒ€í•´
- *     íŠ¸ëœì­ì…˜ ì² íšŒë¥¼ ì§„í–‰í•œë‹¤.
- *   + ê° active íŠ¸ëœì­ì…˜ì— ëŒ€í•´ abort log ìƒì„±í•œë‹¤.
- *   + prepared listì— ìˆëŠ” ê° íŠ¸ëœì­ì…˜ì— ëŒ€í•´ record lock íšë“
+ *   + °¢ active Æ®·£Àè¼ÇÀÌ ¸¶Áö¸·À¸·Î »ı¼ºÇÑ ·Î±×ÀÇ
+ *     LSNÀ¸·Î queue ±¸¼ºÇÑ´Ù.
+ *   + °¢ active Æ®·£Àè¼ÇÀÌ »ı¼ºÇÑ °¢ ·Î±×¿¡ ´ëÇØ
+ *     Æ®·£Àè¼Ç Ã¶È¸¸¦ ÁøÇàÇÑ´Ù.
+ *   + °¢ active Æ®·£Àè¼Ç¿¡ ´ëÇØ abort log »ı¼ºÇÑ´Ù.
+ *   + prepared list¿¡ ÀÖ´Â °¢ Æ®·£Àè¼Ç¿¡ ´ëÇØ record lock È¹µæ
  **********************************************************************/
 IDE_RC smrRecoveryMgr::undoAll( idvSQL* /*aStatistics*/ )
 {
@@ -2495,9 +2550,9 @@ IDE_RC smrRecoveryMgr::undoAll( idvSQL* /*aStatistics*/ )
     sLogFile = NULL;
 
     /* ------------------------------------------------
-     * active listì— ìˆëŠ” ëª¨ë“  íŠ¸ëœì­ì…˜ë“¤ì— ëŒ€í•´
-     * ë¡œê·¸ê°€ ìƒì„±ëœ ì—­ìˆœìœ¼ë¡œ ê°€ì¥ í° LSNì„ ê°€ì§€ëŠ”
-     * ë¡œê·¸ë¶€í„° undoí•œë‹¤.
+     * active list¿¡ ÀÖ´Â ¸ğµç Æ®·£Àè¼Çµé¿¡ ´ëÇØ
+     * ·Î±×°¡ »ı¼ºµÈ ¿ª¼øÀ¸·Î °¡Àå Å« LSNÀ» °¡Áö´Â
+     * ·Î±×ºÎÅÍ undoÇÑ´Ù.
      * ----------------------------------------------*/
 
     ideLog::log(SM_TRC_LOG_LEVEL_MRECOV,
@@ -2509,25 +2564,25 @@ IDE_RC smrRecoveryMgr::undoAll( idvSQL* /*aStatistics*/ )
                   != IDE_SUCCESS );
 
         /* ------------------------------------------------
-         * [1] ê° active íŠ¸ëœì­ì…˜ì´ ë§ˆì§€ë§‰ìœ¼ë¡œ ìƒì„±í•œ ë¡œê·¸ì˜
-         * LSNìœ¼ë¡œ queue êµ¬ì„±í•œë‹¤.
+         * [1] °¢ active Æ®·£Àè¼ÇÀÌ ¸¶Áö¸·À¸·Î »ı¼ºÇÑ ·Î±×ÀÇ
+         * LSNÀ¸·Î queue ±¸¼ºÇÑ´Ù.
          * ----------------------------------------------*/
         IDE_TEST( smLayerCallback::insertUndoLSNs( &sTransQueue )
                   != IDE_SUCCESS );
 
         /* ------------------------------------------------
-         * [2] ê° active íŠ¸ëœì­ì…˜ì´ ìƒì„±í•œ ê° ë¡œê·¸ì— ëŒ€í•´ undo ìˆ˜í–‰
-         * - DRDB ë¡œê·¸ íƒ€ì…ì´ë“  MRDB ë¡œê·¸ íƒ€ì…ì´ë“  ì—¬ê¸°ì„œëŠ” ìƒê´€ì—†ìœ¼ë©°,
-         * undo() í•¨ìˆ˜ë‚´ë¶€ì—ì„œ êµ¬ë¶„í•˜ì—¬ ì²˜ë¦¬í•œë‹¤.
+         * [2] °¢ active Æ®·£Àè¼ÇÀÌ »ı¼ºÇÑ °¢ ·Î±×¿¡ ´ëÇØ undo ¼öÇà
+         * - DRDB ·Î±× Å¸ÀÔÀÌµç MRDB ·Î±× Å¸ÀÔÀÌµç ¿©±â¼­´Â »ó°ü¾øÀ¸¸ç,
+         * undo() ÇÔ¼ö³»ºÎ¿¡¼­ ±¸ºĞÇÏ¿© Ã³¸®ÇÑ´Ù.
          * ----------------------------------------------*/
         sTransInfo = sTransQueue.remove();
 
         // BUG-27574 klocwork SM
         IDE_ASSERT( sTransInfo != NULL );
 
-        /* For Parallel Logging: Active Transactionì˜ undoNxtLSNì¤‘ì—ì„œ
-           ê°€ì¥ í° LSNê°’ì„ ê°€ì§„ Transactionì˜ undoNextLSNì´ ê°€ë¦¬í‚¤ëŠ”
-           Logë¥¼ ë¨¼ì € Undoí•œë‹¤ */
+        /* For Parallel Logging: Active TransactionÀÇ undoNxtLSNÁß¿¡¼­
+           °¡Àå Å« LSN°ªÀ» °¡Áø TransactionÀÇ undoNextLSNÀÌ °¡¸®Å°´Â
+           Log¸¦ ¸ÕÀú UndoÇÑ´Ù */
         do
         {
             /*
@@ -2577,15 +2632,15 @@ IDE_RC smrRecoveryMgr::undoAll( idvSQL* /*aStatistics*/ )
         }
         while(sTransInfo != NULL);
 
-        sTransQueue.destroy(); //error ì²´í¬ê°€ í•„ìš”ì—†ìŒ...
+        sTransQueue.destroy(); //error Ã¼Å©°¡ ÇÊ¿ä¾øÀ½...
 
         /* -----------------------------------------------
-           [3] ê° active íŠ¸ëœì­ì…˜ì— ëŒ€í•´ abort log ìƒì„±
+           [3] °¢ active Æ®·£Àè¼Ç¿¡ ´ëÇØ abort log »ı¼º
            ----------------------------------------------- */
         IDE_TEST( smLayerCallback::abortAllActiveTrans() != IDE_SUCCESS );
 
         /* -----------------------------------------------
-           [4] Undoë¥¼ ìœ„í•´ì„œ ì—´ë ¤ì§„ ëª¨ë“  Log Fileì„ Closeí•œë‹¤.
+           [4] Undo¸¦ À§ÇØ¼­ ¿­·ÁÁø ¸ğµç Log FileÀ» CloseÇÑ´Ù.
            ----------------------------------------------- */
         if ( sLogFile != NULL )
         {
@@ -2606,15 +2661,15 @@ IDE_RC smrRecoveryMgr::undoAll( idvSQL* /*aStatistics*/ )
                 SM_TRC_MRECOVERY_RECOVERYMGR_UNDOALL_SUCCESS );
 
     /* ------------------------------------------------
-     * [5]prepared listì— ìˆëŠ” ê° íŠ¸ëœì­ì…˜ì— ëŒ€í•´ record lock íšë“
-     * - table lockì€ refineDB í›„ì— íšë“í•¨
-     * (ì™œëƒí•˜ë©´ table headerì˜ LockItemì„ ì´ˆê¸°í™”í•œ í›„ì—
-     * table lockì„ ì¡ì•„ì•¼ í•˜ê¸° ë•Œë¬¸ì„)
-     * => prepared transactionì´ accessí•œ oid list ì •ë³´ëŠ”
-     * redo ê³¼ì •ì—ì„œ ì´ë¯¸ êµ¬ì„±ë˜ì–´ ìˆìŒ)
-     * - recovery ì´í›„ íŠ¸ëœì­ì…˜ í…Œì´ë¸”ì˜ ëª¨ë“  ì—”íŠ¸ë¦¬ê°€
-     *  transaction free listì— ì—°ê²°ë˜ì–´ ìˆìœ¼ë¯€ë¡œ
-     *  prepare transactionì„ ìœ„í•´ ì´ë¥¼ ì¬êµ¬ì„±í•œë‹¤.
+     * [5]prepared list¿¡ ÀÖ´Â °¢ Æ®·£Àè¼Ç¿¡ ´ëÇØ record lock È¹µæ
+     * - table lockÀº refineDB ÈÄ¿¡ È¹µæÇÔ
+     * (¿Ö³ÄÇÏ¸é table headerÀÇ LockItemÀ» ÃÊ±âÈ­ÇÑ ÈÄ¿¡
+     * table lockÀ» Àâ¾Æ¾ß ÇÏ±â ¶§¹®ÀÓ)
+     * => prepared transactionÀÌ accessÇÑ oid list Á¤º¸´Â
+     * redo °úÁ¤¿¡¼­ ÀÌ¹Ì ±¸¼ºµÇ¾î ÀÖÀ½)
+     * - recovery ÀÌÈÄ Æ®·£Àè¼Ç Å×ÀÌºíÀÇ ¸ğµç ¿£Æ®¸®°¡
+     *  transaction free list¿¡ ¿¬°áµÇ¾î ÀÖÀ¸¹Ç·Î
+     *  prepare transactionÀ» À§ÇØ ÀÌ¸¦ Àç±¸¼ºÇÑ´Ù.
      * ----------------------------------------------*/
     IDE_TEST( smLayerCallback::setRowSCNForInDoubtTrans() != IDE_SUCCESS );
 
@@ -2636,21 +2691,21 @@ IDE_RC smrRecoveryMgr::undoAll( idvSQL* /*aStatistics*/ )
 }
 
 /***********************************************************************
- * Description : íŠ¸ëœì­ì…˜ ì² íšŒ
+ * Description : Æ®·£Àè¼Ç Ã¶È¸
  *
- * ë¡œê·¸ë¥¼ íŒë…í•˜ì—¬ undoê°€ ê°€ëŠ¥í•œ ë¡œê·¸ì— ëŒ€í•´ì„œ
- * ë¡œê·¸ íƒ€ì…ë³„ physical undo ë˜ëŠ” ì—°ì‚°ì— ëŒ€í•œ(NTA)
- * logical undoë¥¼ ìˆ˜í–‰í•˜ê¸°ë„ í•œë‹¤.
+ * ·Î±×¸¦ ÆÇµ¶ÇÏ¿© undo°¡ °¡´ÉÇÑ ·Î±×¿¡ ´ëÇØ¼­
+ * ·Î±× Å¸ÀÔº° physical undo ¶Ç´Â ¿¬»ê¿¡ ´ëÇÑ(NTA)
+ * logical undo¸¦ ¼öÇàÇÏ±âµµ ÇÑ´Ù.
  **********************************************************************/
 IDE_RC smrRecoveryMgr::undo( idvSQL          * aStatistics,
                              void            * aTrans,
                              smrLogFile     ** aLogFilePtr)
 {
 
-    smrDiskLog            sDiskLog;        // disk redoonly/undoable ë¡œê·¸
-    smrDiskNTALog         sDiskNTALog;     // disk NTA ë¡œê·¸
-    smrDiskRefNTALog      sDiskRefNTALog;  // Referenced NTA ë¡œê·¸
-    smrTBSUptLog          sTBSUptLog;      // file ì—°ì‚° ë¡œê·¸
+    smrDiskLog            sDiskLog;        // disk redoonly/undoable ·Î±×
+    smrDiskNTALog         sDiskNTALog;     // disk NTA ·Î±×
+    smrDiskRefNTALog      sDiskRefNTALog;  // Referenced NTA ·Î±×
+    smrTBSUptLog          sTBSUptLog;      // file ¿¬»ê ·Î±×
     smrUpdateLog          sUpdateLog;
     smrNTALog             sNTALog;
     smrLogHead            sLogHead;
@@ -2676,25 +2731,26 @@ IDE_RC smrRecoveryMgr::undo( idvSQL          * aStatistics,
     UInt                  sLogSizeAtDisk = 0;
     idBool                sIsDiscarded;
 
+    
     IDE_ASSERT(aTrans != NULL);
 
     SM_LSN_INIT( sCurLSN );     // dummy
 
     /* ------------------------------------------------
-     * [1] ë¡œê·¸ë¥¼ íŒë…í•œë‹¤.
+     * [1] ·Î±×¸¦ ÆÇµ¶ÇÑ´Ù.
      * ----------------------------------------------*/
     sCurUndoLSN = smLayerCallback::getCurUndoNxtLSN( aTrans );
 
-    // íŠ¸ëœì­ì…˜ì˜ ë¡œê·¸ ì••ì¶•/ì••ì¶•í•´ì œ ë¦¬ì†ŒìŠ¤ë¥¼ ê°€ì ¸ì˜¨ë‹¤
+    // Æ®·£Àè¼ÇÀÇ ·Î±× ¾ĞÃà/¾ĞÃàÇØÁ¦ ¸®¼Ò½º¸¦ °¡Á®¿Â´Ù
     IDE_TEST( smLayerCallback::getTransCompRes( aTrans, &sCompRes )
               != IDE_SUCCESS );
 
-    /* BUG-19150: [SKT Rating] íŠ¸ëœì­ì…˜ ë¡¤ë°±ì†ë„ê°€ ëŠë¦¼
+    /* BUG-19150: [SKT Rating] Æ®·£Àè¼Ç ·Ñ¹é¼Óµµ°¡ ´À¸²
      *
-     * mmapì€ ìˆœì°¨ë°©í–¥ìœ¼ë¡œ Fileì„ ì ‘ê·¼í–ˆì„ë•ŒëŠ” ì†ë„ê°€ ì˜ë‚˜ì˜¤ë‚˜
-     * ì—­ìœ¼ë¡œ íŒŒì¼ì„ ì ‘ê·¼í–ˆì„ë•ŒëŠ” Readí• ë•Œë§ˆë‹¤ IOê°€ ë°œìƒí•˜ì—¬ IOíšŸìˆ˜ê°€
-     * ë§ê²Œ ë˜ì—¬ ì„±ëŠ¥ì´ ì €í•˜ëœë‹¤. ë•Œë¬¸ì— Rollbackì‹œì—ëŠ” mmapì„ ì´ìš©í•´ì„œ
-     * LogFileì„ ì ‘ê·¼í•˜ì§€ ì•Šê³  Dynamic Memoryì— íŒŒì¼ì„ ì½ì–´ì„œ ì²˜ë¦¬í•œë‹¤.
+     * mmapÀº ¼øÂ÷¹æÇâÀ¸·Î FileÀ» Á¢±ÙÇßÀ»¶§´Â ¼Óµµ°¡ Àß³ª¿À³ª
+     * ¿ªÀ¸·Î ÆÄÀÏÀ» Á¢±ÙÇßÀ»¶§´Â ReadÇÒ¶§¸¶´Ù IO°¡ ¹ß»ıÇÏ¿© IOÈ½¼ö°¡
+     * ¸¹°Ô µÇ¿© ¼º´ÉÀÌ ÀúÇÏµÈ´Ù. ¶§¹®¿¡ Rollback½Ã¿¡´Â mmapÀ» ÀÌ¿ëÇØ¼­
+     * LogFileÀ» Á¢±ÙÇÏÁö ¾Ê°í Dynamic Memory¿¡ ÆÄÀÏÀ» ÀĞ¾î¼­ Ã³¸®ÇÑ´Ù.
      * */
     IDE_TEST( smrLogMgr::readLog( &sCompRes->mDecompBufferHandle,
                                   &sCurUndoLSN,
@@ -2714,7 +2770,7 @@ IDE_RC smrRecoveryMgr::undo( idvSQL          * aStatistics,
 
     sState = 1;
 
-    /* Undo ì§„í–‰í•´ë„ ë˜ëŠ” ê°ì²´ì¸ì§€ í™•ì¸ */
+    /* Undo ÁøÇàÇØµµ µÇ´Â °´Ã¼ÀÎÁö È®ÀÎ */
     prepareRTOI( (void*)sLogPtr,
                  &sLogHead,
                  &sCurUndoLSN,
@@ -2733,19 +2789,19 @@ IDE_RC smrRecoveryMgr::undo( idvSQL          * aStatistics,
     }
     else
     {
-        /* ì´í›„ ì‹¤íŒ¨í•œë‹¤ë©´, Undoì—°ì‚°ì— ë¬¸ì œê°€ ìˆëŠ” ê²ƒ */
+        /* ÀÌÈÄ ½ÇÆĞÇÑ´Ù¸é, Undo¿¬»ê¿¡ ¹®Á¦°¡ ÀÖ´Â °Í */
         sRTOI.mCause = SMR_RTOI_CAUSE_UNDO;
 
         /* ------------------------------------------------
-         * [2] MRDBì˜ update íƒ€ì…ì˜ ë¡œê·¸ì— ëŒ€í•œ ì² íšŒ
-         * - í•´ë‹¹ undo LSNì— ëŒ€í•œ CLR ë¡œê·¸ë¥¼ ê¸°ë¡í•œë‹¤.
-         * - í•´ë‹¹ ë¡œê·¸ íƒ€ì…ì— ëŒ€í•œ undoë¥¼ ìˆ˜í–‰í•œë‹¤.
+         * [2] MRDBÀÇ update Å¸ÀÔÀÇ ·Î±×¿¡ ´ëÇÑ Ã¶È¸
+         * - ÇØ´ç undo LSN¿¡ ´ëÇÑ CLR ·Î±×¸¦ ±â·ÏÇÑ´Ù.
+         * - ÇØ´ç ·Î±× Å¸ÀÔ¿¡ ´ëÇÑ undo¸¦ ¼öÇàÇÑ´Ù.
          * ----------------------------------------------*/
         if ( smrLogHeadI::getType(&sLogHead) == SMR_LT_UPDATE )
         {
             idlOS::memcpy(&sUpdateLog, sLogPtr, SMR_LOGREC_SIZE(smrUpdateLog));
 
-            // Undo SKIPí•  Tablespaceì— ê´€í•œ ë¡œê·¸ê°€ ì•„ë‹Œ ê²½ìš°
+            // Undo SKIPÇÒ Tablespace¿¡ °üÇÑ ·Î±×°¡ ¾Æ´Ñ °æ¿ì
             if ( sctTableSpaceMgr::hasState( SC_MAKE_SPACE(sUpdateLog.mGRID),
                                              SCT_SS_SKIP_UNDO ) == ID_FALSE )
             {
@@ -2755,15 +2811,16 @@ IDE_RC smrRecoveryMgr::undo( idvSQL          * aStatistics,
                 {
                     //append compensation log
                     sPrevUndoLSN = smrLogHeadI::getPrevLSN(&sLogHead);
+
                     IDE_TEST( smrLogMgr::writeCMPSLogRec( aStatistics,
                                                           aTrans,
                                                           SMR_LT_COMPENSATION,
                                                           &sPrevUndoLSN,
                                                           &sUpdateLog,
                                                           sBeforeImage )
-                             != IDE_SUCCESS );
-                    smrLogHeadI::setPrevLSN(&sLogHead, sPrevUndoLSN);
+                              != IDE_SUCCESS );
 
+                    smrLogHeadI::setPrevLSN(&sLogHead, sPrevUndoLSN);
 
                     IDE_TEST( gSmrUndoFunction[sUpdateLog.mType](
                                         smrLogHeadI::getTransID(&sUpdateLog.mHead),
@@ -2779,11 +2836,11 @@ IDE_RC smrRecoveryMgr::undo( idvSQL          * aStatistics,
                 else
                 {
                     // BUG-15474
-                    // undo functionì´ NULLì´ë¼ëŠ” ì˜ë¯¸ëŠ” undo ì‘ì—…ì„ ìˆ˜í–‰í•˜ì§€
-                    // ì•ŠëŠ” ë¡œê·¸ë¼ëŠ” ì˜ë¯¸ì´ë‹¤.
-                    // undo ì‘ì—…ì´ ì—†ë‹¤ëŠ” ê²ƒì€ í˜ì´ì§€ ë³€ê²½ ì‘ì—…ì´ ì—†ê¸° ë•Œë¬¸ì—
-                    // êµ³ì´ CLRì„ ê¸°ë¡í•  í•„ìš”ê°€ ì—†ì–´ì„œ dummy CLR ê¸°ë¡í•˜ëŠ” ë¶€ë¶„ì„
-                    // ì‚­ì œí•œë‹¤.
+                    // undo functionÀÌ NULLÀÌ¶ó´Â ÀÇ¹Ì´Â undo ÀÛ¾÷À» ¼öÇàÇÏÁö
+                    // ¾Ê´Â ·Î±×¶ó´Â ÀÇ¹ÌÀÌ´Ù.
+                    // undo ÀÛ¾÷ÀÌ ¾ø´Ù´Â °ÍÀº ÆäÀÌÁö º¯°æ ÀÛ¾÷ÀÌ ¾ø±â ¶§¹®¿¡
+                    // ±»ÀÌ CLRÀ» ±â·ÏÇÒ ÇÊ¿ä°¡ ¾ø¾î¼­ dummy CLR ±â·ÏÇÏ´Â ºÎºĞÀ»
+                    // »èÁ¦ÇÑ´Ù.
                     // Nothing to do...
                 }
             }
@@ -2793,13 +2850,13 @@ IDE_RC smrRecoveryMgr::undo( idvSQL          * aStatistics,
         {
             idlOS::memcpy(&sTBSUptLog, sLogPtr, SMR_LOGREC_SIZE(smrTBSUptLog));
 
-            // Tablespace ë…¸ë“œ ìƒíƒœ ë³€ê²½ ë¡œê·¸ëŠ” SKIPí•˜ì§€ ì•ŠëŠ”ë‹¤.
-            // - Dropëœ Tablespaceì˜ ê²½ìš°
-            //   - Undo Functionì•ˆì—ì„œ SKIPí•œë‹¤.
-            // - Offlineëœ Tablespaceì˜ ê²½ìš°
-            //   - Onlineìƒíƒœë¡œ ì „ì´í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ SKIPí•´ì„œëŠ” ì•ˆëœë‹¤.
-            // - Discardëœ Tablespaceì˜ ê²½ìš°
-            //   - Drop Tablespaceì˜ Undoê°€ ì˜¬ ìˆ˜ ìˆë‹¤.
+            // Tablespace ³ëµå »óÅÂ º¯°æ ·Î±×´Â SKIPÇÏÁö ¾Ê´Â´Ù.
+            // - DropµÈ TablespaceÀÇ °æ¿ì
+            //   - Undo Function¾È¿¡¼­ SKIPÇÑ´Ù.
+            // - OfflineµÈ TablespaceÀÇ °æ¿ì
+            //   - Online»óÅÂ·Î ÀüÀÌÇÒ ¼ö ÀÖÀ¸¹Ç·Î SKIPÇØ¼­´Â ¾ÈµÈ´Ù.
+            // - DiscardµÈ TablespaceÀÇ °æ¿ì
+            //   - Drop TablespaceÀÇ Undo°¡ ¿Ã ¼ö ÀÖ´Ù.
 
             sBeforeImage = sLogPtr + SMR_LOGREC_SIZE(smrTBSUptLog);
 
@@ -2817,7 +2874,7 @@ IDE_RC smrRecoveryMgr::undo( idvSQL          * aStatistics,
 
 
             /* BUG-41689 A discarded tablespace is redone in recovery
-             * Discardëœ TBSì¸ì§€ í™•ì¸í•œë‹¤. */
+             * DiscardµÈ TBSÀÎÁö È®ÀÎÇÑ´Ù. */
             sIsDiscarded = sctTableSpaceMgr::hasState( sTBSUptLog.mSpaceID,
                                                        SCT_SS_SKIP_AGING_DISK_TBS,
                                                        ID_FALSE );
@@ -2841,21 +2898,21 @@ IDE_RC smrRecoveryMgr::undo( idvSQL          * aStatistics,
             else
             {
                 /* Nothing to do 
-                 * discardëœ TBSì˜ undoëŠ” drop tbsë¥¼ ì œì™¸í•˜ê³  ë¬´ì‹œí•œë‹¤.*/
+                 * discardµÈ TBSÀÇ undo´Â drop tbs¸¦ Á¦¿ÜÇÏ°í ¹«½ÃÇÑ´Ù.*/
             }
         }
         else if (smrLogHeadI::getType(&sLogHead) == SMR_DLT_UNDOABLE)
         {
             idlOS::memcpy(&sDiskLog, sLogPtr, SMR_LOGREC_SIZE(smrDiskLog));
 
-            // BUGBUG-1548 Disk Undoableë¡œê·¸ Tablespaceë³„ SKIPì—¬ë¶€ ê²°ì •í•˜ì—¬ ì²˜ë¦¬í•´ì•¼í•¨
+            // BUGBUG-1548 Disk Undoable·Î±× Tablespaceº° SKIP¿©ºÎ °áÁ¤ÇÏ¿© Ã³¸®ÇØ¾ßÇÔ
 
             /* ------------------------------------------------
-             * DRDBì˜ SMR_DLT_UNDOABLE íƒ€ì…ì— ëŒ€í•œ undo
-             * - undoí•˜ê¸°ì „ì— compensation logë¥¼ ê¸°ë¡í•¨
-             * - DRDBì˜ undosegmentê´€ë ¨ redo ë¡œê·¸íƒ€ì…ì„ íŒë…í•œ ê²ƒì´ë©°,
-             *   ê° layerì˜ undo log íƒ€ì…ì— ë”°ë¼ ì •í•´ì§„ undo í•¨ìˆ˜ë¥¼
-             *   í˜¸ì¶œí•˜ì—¬ í˜„ ë¡œê·¸ì— ëŒ€í•´ì„œ undo ì²˜ë¦¬
+             * DRDBÀÇ SMR_DLT_UNDOABLE Å¸ÀÔ¿¡ ´ëÇÑ undo
+             * - undoÇÏ±âÀü¿¡ compensation log¸¦ ±â·ÏÇÔ
+             * - DRDBÀÇ undosegment°ü·Ã redo ·Î±×Å¸ÀÔÀ» ÆÇµ¶ÇÑ °ÍÀÌ¸ç,
+             *   °¢ layerÀÇ undo log Å¸ÀÔ¿¡ µû¶ó Á¤ÇØÁø undo ÇÔ¼ö¸¦
+             *   È£ÃâÇÏ¿© Çö ·Î±×¿¡ ´ëÇØ¼­ undo Ã³¸®
              * ----------------------------------------------*/
             sBeforeImage = sLogPtr + SMR_LOGREC_SIZE(smrDiskLog) + sDiskLog.mRefOffset;
 
@@ -2874,13 +2931,13 @@ IDE_RC smrRecoveryMgr::undo( idvSQL          * aStatistics,
         else if ( smrLogHeadI::getType(&sLogHead) == SMR_DLT_NTA)
         {
             idlOS::memcpy(&sDiskNTALog, sLogPtr, SMR_LOGREC_SIZE(smrDiskNTALog));
-            // BUGBUG-1548 Disk NTAë¡œê·¸ Tablespaceë³„ SKIPì—¬ë¶€ ê²°ì •í•˜ì—¬ ì²˜ë¦¬í•´ì•¼í•¨
+            // BUGBUG-1548 Disk NTA·Î±× Tablespaceº° SKIP¿©ºÎ °áÁ¤ÇÏ¿© Ã³¸®ÇØ¾ßÇÔ
 
             /* ------------------------------------------------
-             * DRDBì˜ SMR_DLT_NTA íƒ€ì…ì— ëŒ€í•œ Logical UNDO
-             * - DRDBì˜ redo ë¡œê·¸ì¤‘ì— operation NTA ë¡œê·¸ì— ëŒ€í•˜ì—¬
-             *   ì •í•´ì§„ logical undo ì²˜ë¦¬
-             * - dummy compensation ë¡œê·¸ ê¸°ë¡
+             * DRDBÀÇ SMR_DLT_NTA Å¸ÀÔ¿¡ ´ëÇÑ Logical UNDO
+             * - DRDBÀÇ redo ·Î±×Áß¿¡ operation NTA ·Î±×¿¡ ´ëÇÏ¿©
+             *   Á¤ÇØÁø logical undo Ã³¸®
+             * - dummy compensation ·Î±× ±â·Ï
              * ----------------------------------------------*/
             sPrevUndoLSN = smrLogHeadI::getPrevLSN(&sLogHead);
             IDE_TEST( smLayerCallback::doNTAUndoFunction( aStatistics,
@@ -2899,8 +2956,8 @@ IDE_RC smrRecoveryMgr::undo( idvSQL          * aStatistics,
             idlOS::memcpy(&sDiskRefNTALog, sLogPtr, SMR_LOGREC_SIZE(smrDiskRefNTALog));
 
             sBeforeImage = sLogPtr +
-                SMR_LOGREC_SIZE(smrDiskRefNTALog) +
-                sDiskRefNTALog.mRefOffset;
+                           SMR_LOGREC_SIZE(smrDiskRefNTALog) +
+                           sDiskRefNTALog.mRefOffset;
 
             sPrevUndoLSN = smrLogHeadI::getPrevLSN(&sLogHead);
 
@@ -2922,7 +2979,7 @@ IDE_RC smrRecoveryMgr::undo( idvSQL          * aStatistics,
                 switch(sNTALog.mOPType)
                 {
                 case SMR_OP_SMM_PERS_LIST_ALLOC:
-                    // Undo SKIPí•  Tablespaceì— ê´€í•œ ë¡œê·¸ê°€ ì•„ë‹Œ ê²½ìš°
+                    // Undo SKIPÇÒ Tablespace¿¡ °üÇÑ ·Î±×°¡ ¾Æ´Ñ °æ¿ì
                     if ( sctTableSpaceMgr::hasState( sNTALog.mSpaceID,
                                                      SCT_SS_SKIP_UNDO )
                          == ID_FALSE )
@@ -2955,8 +3012,7 @@ IDE_RC smrRecoveryMgr::undo( idvSQL          * aStatistics,
                                                      SCT_SS_SKIP_UNDO )
                          == ID_FALSE )
                     {
-                        sctTableSpaceMgr::findSpaceNodeWithoutException( sNTALog.mSpaceID,
-                                                                         (void**)&sSpaceNode );
+                       sSpaceNode = sctTableSpaceMgr::findSpaceNodeWithoutException( sNTALog.mSpaceID );
 
                         IDE_TEST( smmTBSDrop::doDropTableSpace( sSpaceNode,
                                                                 SMI_ALL_TOUCH )
@@ -2965,13 +3021,13 @@ IDE_RC smrRecoveryMgr::undo( idvSQL          * aStatistics,
                     break;
 
                 case SMR_OP_SMC_FIXED_SLOT_ALLOC:
-                    // Undo SKIPí•  Tablespaceì— ê´€í•œ ë¡œê·¸ê°€ ì•„ë‹Œ ê²½ìš°
+                    // Undo SKIPÇÒ Tablespace¿¡ °üÇÑ ·Î±×°¡ ¾Æ´Ñ °æ¿ì
                     if ( sctTableSpaceMgr::hasState( sNTALog.mSpaceID,
                                                      SCT_SS_SKIP_UNDO )
                          == ID_FALSE )
                     {
-                        // SMR_OP_SMC_LOCK_ROW_ALLOCì— ëŒ€í•œ undoì‹œì—ëŠ”
-                        // Delete Bitë¥¼ ì„¸íŒ…í•˜ì§€ ì•ŠëŠ”ë‹¤.(BUG-14596)
+                        // SMR_OP_SMC_LOCK_ROW_ALLOC¿¡ ´ëÇÑ undo½Ã¿¡´Â
+                        // Delete Bit¸¦ ¼¼ÆÃÇÏÁö ¾Ê´Â´Ù.(BUG-14596)
                         sOID = (smOID)(sNTALog.mData1);
                         IDE_ASSERT( smmManager::getOIDPtr( sNTALog.mSpaceID,
                                                            sOID,
@@ -2987,10 +3043,10 @@ IDE_RC smrRecoveryMgr::undo( idvSQL          * aStatistics,
                     break;
 
                 case SMR_OP_CREATE_TABLE:
-                    // BUGBUG-1548 DISCARD/DROPëœ Tablespaceì˜ ê²½ìš° SKIPì—¬ë¶€
-                    // ê²°ì •í•˜ê³  IFë¶„ê¸°í•´ì•¼í•¨
+                    // BUGBUG-1548 DISCARD/DROPµÈ TablespaceÀÇ °æ¿ì SKIP¿©ºÎ
+                    // °áÁ¤ÇÏ°í IFºĞ±âÇØ¾ßÇÔ
                     sOID = (smOID)(sNTALog.mData1);
-                    /*  í•´ë‹¹ tableì´ disk tableì¸ ê²½ìš°ì—ëŠ” ìƒì„±í–ˆë˜ segmentë„ free í•œë‹¤ */
+                    /*  ÇØ´ç tableÀÌ disk tableÀÎ °æ¿ì¿¡´Â »ı¼ºÇß´ø segmentµµ free ÇÑ´Ù */
                     IDE_ASSERT( smmManager::getOIDPtr( sNTALog.mSpaceID,
                                                        sOID,
                                                        (void**)&sTargetObject )
@@ -3018,17 +3074,17 @@ IDE_RC smrRecoveryMgr::undo( idvSQL          * aStatistics,
                     break;
 
                 case SMR_OP_DROP_INDEX:
-                    // BUGBUG-1548 DISCARD/DROPëœ Tablespaceì˜ ê²½ìš° SKIPì—¬ë¶€
-                    // ê²°ì •í•˜ê³  IFë¶„ê¸°í•´ì•¼í•¨
+                    // BUGBUG-1548 DISCARD/DROPµÈ TablespaceÀÇ °æ¿ì SKIP¿©ºÎ
+                    // °áÁ¤ÇÏ°í IFºĞ±âÇØ¾ßÇÔ
                     IDE_TEST( smLayerCallback::clearDropIndexList( sNTALog.mData1 )
                               != IDE_SUCCESS );
                     break;
 
                 case SMR_OP_INIT_INDEX:
-                    /* PROJ-2184 RP Sync ì„±ëŠ¥ ê°œì„ 
-                     * Index init í›„ì— abort ëœ ê²½ìš° index runtime headerë¥¼
-                     * drop í•œë‹¤. */
-                    /* BUG-42460 runtimeì‹œì—ë§Œ ì‹¤í–‰í•˜ë„ë¡ í•¨. */
+                    /* PROJ-2184 RP Sync ¼º´É °³¼±
+                     * Index init ÈÄ¿¡ abort µÈ °æ¿ì index runtime header¸¦
+                     * drop ÇÑ´Ù. */
+                    /* BUG-42460 runtime½Ã¿¡¸¸ ½ÇÇàÇÏµµ·Ï ÇÔ. */
                     if ( mRestart == ID_FALSE )
                     {
                         IDE_TEST( smLayerCallback::dropIndexRuntimeByAbort( (smOID)sNTALog.mData1,
@@ -3042,8 +3098,8 @@ IDE_RC smrRecoveryMgr::undo( idvSQL          * aStatistics,
                     break;
 
                 case SMR_OP_ALTER_TABLE:
-                    // BUGBUG-1548 DISCARD/DROPëœ Tablespaceì˜ ê²½ìš° SKIPì—¬ë¶€
-                    // ê²°ì •í•˜ê³  IFë¶„ê¸°í•´ì•¼í•¨
+                    // BUGBUG-1548 DISCARD/DROPµÈ TablespaceÀÇ °æ¿ì SKIP¿©ºÎ
+                    // °áÁ¤ÇÏ°í IFºĞ±âÇØ¾ßÇÔ
                     sOID      = (smOID)(sNTALog.mData1);
                     sTableOID = (smOID)(sNTALog.mData2);
                     IDE_ASSERT( smLayerCallback::restoreTableByAbort( aTrans,
@@ -3054,18 +3110,18 @@ IDE_RC smrRecoveryMgr::undo( idvSQL          * aStatistics,
                     break;
 
                 case SMR_OP_INSTANT_AGING_AT_ALTER_TABLE:
-                    //BUG-15627 Alter Add Columnì‹œ Abortí•  ê²½ìš° Tableì˜ SCNì„ ë³€ê²½í•´ì•¼ í•¨.
+                    //BUG-15627 Alter Add Column½Ã AbortÇÒ °æ¿ì TableÀÇ SCNÀ» º¯°æÇØ¾ß ÇÔ.
                     if ( mRestart == ID_FALSE )
                     {
                         sOID = (smOID)(sNTALog.mData1);
-                        smLayerCallback::changeTableScnForRebuild( sOID );
+                        smLayerCallback::changeTableSCNForRebuild( sOID );
                     }
 
                     break;
 
                 case SMR_OP_DIRECT_PATH_INSERT:
-                    /* Direct-Path INSERTê°€ rollback ëœ ê²½ìš°, table infoì—
-                     * ì„¤ì •í•´ë‘” DPathIns ì„¤ì •ì„ í•´ì œí•´ì£¼ì–´ì•¼ í•œë‹¤. */
+                    /* Direct-Path INSERT°¡ rollback µÈ °æ¿ì, table info¿¡
+                     * ¼³Á¤ÇØµĞ DPathIns ¼³Á¤À» ÇØÁ¦ÇØÁÖ¾î¾ß ÇÑ´Ù. */
                     if ( mRestart == ID_FALSE )
                     {
                         IDE_TEST( smLayerCallback::setExistDPathIns(
@@ -3095,7 +3151,7 @@ IDE_RC smrRecoveryMgr::undo( idvSQL          * aStatistics,
     }
 
     /*
-      Transactionì˜ Cur Undo Next LSNì„ ì„¤ì •í•œë‹¤.
+      TransactionÀÇ Cur Undo Next LSNÀ» ¼³Á¤ÇÑ´Ù.
     */
 
     sPrevUndoLSN = smrLogHeadI::getPrevLSN(&sLogHead);
@@ -3127,9 +3183,9 @@ IDE_RC smrRecoveryMgr::undo( idvSQL          * aStatistics,
 }
 
 /***********************************************************************
- * Description : íŠ¸ëœì­ì…˜ ì² íšŒ
- * aLSN [IN]   - rollbackì„ ìˆ˜í–‰í•  LSN 
-                 (ì—¬ê¸°ê¹Œì§€ undoí•¨ íŠ¹ì • LSN , í˜¹ì€ init ê°’ì´ ë„˜ì–´ì˜´ ) 
+ * Description : Æ®·£Àè¼Ç Ã¶È¸
+ * aLSN [IN]   - rollbackÀ» ¼öÇàÇÒ LSN 
+                 (¿©±â±îÁö undoÇÔ Æ¯Á¤ LSN , È¤Àº init °ªÀÌ ³Ñ¾î¿È ) 
  **********************************************************************/
 IDE_RC smrRecoveryMgr::undoTrans( idvSQL   * aStatistics,
                                   void     * aTrans,
@@ -3139,15 +3195,12 @@ IDE_RC smrRecoveryMgr::undoTrans( idvSQL   * aStatistics,
     smrLogFile*   sLogFilePtr = NULL;
     SInt          sState      = 1;
 
-    IDE_TEST_RAISE( smLayerCallback::getTransAbleToRollback( aTrans ) == ID_FALSE,
-                    err_no_log );
-
     sCurUndoLSN = smLayerCallback::getLstUndoNxtLSN( aTrans );
 
     smLayerCallback::setCurUndoNxtLSN( aTrans, &sCurUndoLSN );
 
-    /* BUG-21620: PSMë‚´ì— Explicit Savepointê°€ ìˆìœ¼ë©´, PSMì‹¤íŒ¨í›„ Explicit
-     * Savepointë¡œ Partial Rollbackí•˜ë©´ ì„œë²„ê°€ ë¹„ì •ìƒ ì¢…ë£Œí•©ë‹ˆë‹¤. */
+    /* BUG-21620: PSM³»¿¡ Explicit Savepoint°¡ ÀÖÀ¸¸é, PSM½ÇÆĞÈÄ Explicit
+     * Savepoint·Î Partial RollbackÇÏ¸é ¼­¹ö°¡ ºñÁ¤»ó Á¾·áÇÕ´Ï´Ù. */
     while ( 1 )
     {
         if( ( !SM_IS_LSN_MAX( *aLSN ) ) &&
@@ -3157,9 +3210,9 @@ IDE_RC smrRecoveryMgr::undoTrans( idvSQL   * aStatistics,
             break;
         }
 
-        /* Transactionì˜ ì²«ë²ˆì§¸ ë¡œê·¸ì˜ Prev LSNê³¼ Transactionì˜ ëª¨ë“ 
-         * ë¡œê·¸ë¥¼ Rolbackí–ˆì„ë•Œ Transactionì˜ ë§ˆì§€ë§‰ CLRë¡œê·¸ì˜ PrevLsNë˜í•œ
-         * < -1, -1>ê°’ì„ ê°€ì§€ê²Œ ëœë‹¤. */
+        /* TransactionÀÇ Ã¹¹øÂ° ·Î±×ÀÇ Prev LSN°ú TransactionÀÇ ¸ğµç
+         * ·Î±×¸¦ RolbackÇßÀ»¶§ TransactionÀÇ ¸¶Áö¸· CLR·Î±×ÀÇ PrevLsN¶ÇÇÑ
+         * < -1, -1>°ªÀ» °¡Áö°Ô µÈ´Ù. */
         if ( ( sCurUndoLSN.mFileNo == ID_UINT_MAX  ) ||
              ( sCurUndoLSN.mOffset == ID_UINT_MAX  ) )
         {
@@ -3184,10 +3237,6 @@ IDE_RC smrRecoveryMgr::undoTrans( idvSQL   * aStatistics,
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(err_no_log);
-    {
-        IDE_SET(ideSetErrorCode(smERR_FATAL_DISABLED_ABORT_IN_LOGGING_LEVEL_0));
-    }
     IDE_EXCEPTION_END;
 
     if ( ( sLogFilePtr != NULL ) && ( sState != 0 ) )
@@ -3202,7 +3251,7 @@ IDE_RC smrRecoveryMgr::undoTrans( idvSQL   * aStatistics,
 }
 
 /***********************************************************************
- * Description : prepare íŠ¸ëœì­ì…˜ì„ ìœ„í•œ table lock íšë“
+ * Description : prepare Æ®·£Àè¼ÇÀ» À§ÇÑ table lock È¹µæ
  **********************************************************************/
 IDE_RC smrRecoveryMgr::acquireLockForInDoubt()
 {
@@ -3228,8 +3277,8 @@ IDE_RC smrRecoveryMgr::acquireLockForInDoubt()
         {
             sOffset = 0;
             /* ----------------------------------------
-               heuristic completeí•œ íŠ¸ëœì­ì…˜ì— ëŒ€í•´ì„œëŠ”
-               table lockì„ íšë“í•˜ì§€ ì•ŠìŒ
+               heuristic completeÇÑ Æ®·£Àè¼Ç¿¡ ´ëÇØ¼­´Â
+               table lockÀ» È¹µæÇÏÁö ¾ÊÀ½
                ---------------------------------------- */
             IDE_ASSERT( smLayerCallback::isXAPreparedCommitState( sTrans ) );
 
@@ -3238,7 +3287,7 @@ IDE_RC smrRecoveryMgr::acquireLockForInDoubt()
                         sTrxLstUndoNxtLSN.mFileNo,
                         sTrxLstUndoNxtLSN.mOffset );
 
-            // íŠ¸ëœì­ì…˜ì˜ ë¡œê·¸ ì••ì¶•/ì••ì¶•í•´ì œ ë¦¬ì†ŒìŠ¤ë¥¼ ê°€ì ¸ì˜¨ë‹¤
+            // Æ®·£Àè¼ÇÀÇ ·Î±× ¾ĞÃà/¾ĞÃàÇØÁ¦ ¸®¼Ò½º¸¦ °¡Á®¿Â´Ù
             IDE_TEST( smLayerCallback::getTransCompRes( sTrans, &sCompRes )
                       != IDE_SUCCESS );
 
@@ -3255,9 +3304,9 @@ IDE_RC smrRecoveryMgr::acquireLockForInDoubt()
             IDE_TEST_RAISE( sIsValid == ID_FALSE, err_invalid_log )
 
             /* ----------------------------------------------------------------
-               prepared transactionì´ ë§ˆì§€ë§‰ìœ¼ë¡œ ê¸°ë¡í•œ ë¡œê·¸ëŠ” prepare ë¡œê·¸ì´ë©°
-               ì—¬ëŸ¬ ê°œì˜ prepare logê°€ ìƒì„±ëœ ê²½ìš° ì´ë“¤ì€
-               ìˆœì°¨ì ìœ¼ë¡œ ìƒì„±ë¨ì„ ë³´ì¥í•œë‹¤.
+               prepared transactionÀÌ ¸¶Áö¸·À¸·Î ±â·ÏÇÑ ·Î±×´Â prepare ·Î±×ÀÌ¸ç
+               ¿©·¯ °³ÀÇ prepare log°¡ »ı¼ºµÈ °æ¿ì ÀÌµéÀº
+               ¼øÂ÷ÀûÀ¸·Î »ı¼ºµÊÀ» º¸ÀåÇÑ´Ù.
                -------------------------------------------------------------- */
             while (smrLogHeadI::getType(&sLogHead) == SMR_LT_XA_PREPARE)
             {
@@ -3278,7 +3327,7 @@ IDE_RC smrRecoveryMgr::acquireLockForInDoubt()
                            smrLogHeadI::getPrevLSNFileNo(&sLogHead),
                            smrLogHeadI::getPrevLSNOffset(&sLogHead));
 
-                // íŠ¸ëœì­ì…˜ì˜ ë¡œê·¸ ì••ì¶•/ì••ì¶•í•´ì œ ë¦¬ì†ŒìŠ¤ë¥¼ ê°€ì ¸ì˜¨ë‹¤
+                // Æ®·£Àè¼ÇÀÇ ·Î±× ¾ĞÃà/¾ĞÃàÇØÁ¦ ¸®¼Ò½º¸¦ °¡Á®¿Â´Ù
                 IDE_TEST( smLayerCallback::getTransCompRes( sTrans, &sCompRes )
                           != IDE_SUCCESS );
 
@@ -3330,7 +3379,7 @@ IDE_RC smrRecoveryMgr::acquireLockForInDoubt()
 }
 
 /***********************************************************************
- * Description : archive ë¡œê·¸ ëª¨ë“œ ë³€ê²½ ë° ë¡œê·¸ì•µì»¤ flush
+ * Description : archive ·Î±× ¸ğµå º¯°æ ¹× ·Î±×¾ŞÄ¿ flush
  **********************************************************************/
 IDE_RC smrRecoveryMgr::updateArchiveMode(smiArchiveMode aArchiveMode)
 {
@@ -3355,22 +3404,6 @@ IDE_RC smrRecoveryMgr::updateArchiveMode(smiArchiveMode aArchiveMode)
 }
 
 /***********************************************************************
- * Description : SMR_CHKPT_TYPE_DRDB íƒ€ì…ìœ¼ë¡œ checkpoint ìˆ˜í–‰
- ***********************************************************************/
-IDE_RC smrRecoveryMgr::wakeupChkptThr4DRDB()
-{
-
-    if ( gSmrChkptThread.isStarted() == ID_TRUE )
-    {
-        return gSmrChkptThread.resumeAndNoWait( SMR_CHECKPOINT_BY_SYSTEM,
-                                                SMR_CHKPT_TYPE_DRDB );
-    }
-
-    return IDE_SUCCESS;
-
-}
-
-/***********************************************************************
  * Description : checkpoint for DRDB call by buffer flush thread
  ***********************************************************************/
 IDE_RC smrRecoveryMgr::checkpointDRDB(idvSQL* aStatistics)
@@ -3379,7 +3412,7 @@ IDE_RC smrRecoveryMgr::checkpointDRDB(idvSQL* aStatistics)
     smLSN  sEndLSN;
 
     /* PROJ-2162 RestartRiskReduction
-     * DBê°€ Consistentí•˜ì§€ ì•Šìœ¼ë©´, Checkpointë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+     * DB°¡ ConsistentÇÏÁö ¾ÊÀ¸¸é, Checkpoint¸¦ ÇÏÁö ¾Ê´Â´Ù. */
     if ( ( getConsistency() == ID_FALSE ) &&
          ( smuProperty::getCrashTolerance() != 2 ) )
     {
@@ -3390,7 +3423,7 @@ IDE_RC smrRecoveryMgr::checkpointDRDB(idvSQL* aStatistics)
         ideLog::log(SM_TRC_LOG_LEVEL_MRECOV,
                     SM_TRC_MRECOVERY_RECOVERYMGR_CHKP_DRDB_START);
 
-        IDE_TEST( smrLogMgr::getLstLSN( &sEndLSN ) != IDE_SUCCESS );
+        smrLogMgr::getLstLSN( &sEndLSN );
 
         IDE_TEST( makeBufferChkpt( aStatistics,
                                    ID_FALSE,
@@ -3401,26 +3434,26 @@ IDE_RC smrRecoveryMgr::checkpointDRDB(idvSQL* aStatistics)
         // fix BUG-16467
         IDE_ASSERT( sctTableSpaceMgr::lockForCrtTBS() == IDE_SUCCESS );
 
-        // ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ Redo LSNì„ DBF ë…¸ë“œì˜ ë°ì´íƒ€íŒŒì¼ í—¤ë”ì—
-        // ì„¤ì •í•˜ê¸° ìœ„í•´ TBS ê´€ë¦¬ìì— ì„ì‹œë¡œ ì €ì¥í•œë‹¤.
+        // µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½ºÀÇ Redo LSNÀ» DBF ³ëµåÀÇ µ¥ÀÌÅ¸ÆÄÀÏ Çì´õ¿¡
+        // ¼³Á¤ÇÏ±â À§ÇØ TBS °ü¸®ÀÚ¿¡ ÀÓ½Ã·Î ÀúÀåÇÑ´Ù.
         sctTableSpaceMgr::setRedoLSN4DBFileMetaHdr( &sOldestLSN,  // DiskRedoLSN
                                                     NULL );       // MemRedoLSN 
 
-        // ë°ì´íƒ€íŒŒì¼ì— í—¤ë”ë¥¼ ê¸°ë¡í•œë‹¤.
+        // µ¥ÀÌÅ¸ÆÄÀÏ¿¡ Çì´õ¸¦ ±â·ÏÇÑ´Ù.
         IDE_TEST( sddDiskMgr::syncAllTBS( aStatistics,
                                           SDD_SYNC_CHKPT )
                   != IDE_SUCCESS );
 
     	IDE_TEST( sdsBufferMgr::syncAllSB( aStatistics ) != IDE_SUCCESS );
 
-        // ë²„í¼ì²´í¬í¬ì¸íŠ¸ì´ê¸° ë•Œë¬¸ì— Disk Redo LSNë§Œ ê°±ì‹ í•˜ë©´ ëœë‹¤
-        // LogAnchorì— Disk Redo LSNì„ ì„¤ì •í•˜ê³  Flushí•œë‹¤.
+        // ¹öÆÛÃ¼Å©Æ÷ÀÎÆ®ÀÌ±â ¶§¹®¿¡ Disk Redo LSN¸¸ °»½ÅÇÏ¸é µÈ´Ù
+        // LogAnchor¿¡ Disk Redo LSNÀ» ¼³Á¤ÇÏ°í FlushÇÑ´Ù.
         IDE_TEST( mAnchorMgr.updateRedoLSN( &sOldestLSN, NULL )
                   != IDE_SUCCESS );
 
-        // ì²´í¬í¬ì¸íŠ¸ ê²€ì¦
-        // Stableì€ ë°˜ë“œì‹œ ìˆì–´ì•¼ í•˜ê³  , Unstableì€ ì¡´ì¬í•œë‹¤ë©´
-        // ìµœì†Œí•œ ìœ íš¨í•œ ë²„ì „ì´ì–´ì•¼ í•œë‹¤.
+        // Ã¼Å©Æ÷ÀÎÆ® °ËÁõ
+        // StableÀº ¹İµå½Ã ÀÖ¾î¾ß ÇÏ°í , UnstableÀº Á¸ÀçÇÑ´Ù¸é
+        // ÃÖ¼ÒÇÑ À¯È¿ÇÑ ¹öÀüÀÌ¾î¾ß ÇÑ´Ù.
         IDE_ASSERT( smmTBSMediaRecovery::identifyDBFilesOfAllTBS( ID_TRUE )
                     == IDE_SUCCESS );
         IDE_ASSERT( sddDiskMgr::identifyDBFilesOfAllTBS( aStatistics,
@@ -3456,7 +3489,7 @@ IDE_RC smrRecoveryMgr::checkpointDRDB(idvSQL* aStatistics)
 
 
 /***********************************************************************
- * Description : buffer checkpoint ìˆ˜í–‰
+ * Description : buffer checkpoint ¼öÇà
  **********************************************************************/
 IDE_RC smrRecoveryMgr::makeBufferChkpt( idvSQL      * aStatistics,
                                         idBool        aIsFinal,
@@ -3467,17 +3500,17 @@ IDE_RC smrRecoveryMgr::makeBufferChkpt( idvSQL      * aStatistics,
     smLSN  sSBufferRedoLSN;
  
 
-    /* PROJ-2102 buffer poolì˜ dirtypageê°€ ìµœì‹  ì´ë¯€ë¡œ 2nd->bufferpoolì˜ ìˆœì„œë¡œ ìˆ˜í–‰ */
+    /* PROJ-2102 buffer poolÀÇ dirtypage°¡ ÃÖ½Å ÀÌ¹Ç·Î 2nd->bufferpoolÀÇ ¼ø¼­·Î ¼öÇà */
     IDE_TEST( sdsBufferMgr::flushDirtyPagesInCPList( aStatistics,
                                                      ID_FALSE )// do not flush all
               != IDE_SUCCESS );
 
-    /* BUG-22386 ë¡œ internal checkpointì—ì„œë„ CPListì˜ BCBë¥¼ flushí•œë‹¤. */
+    /* BUG-22386 ·Î internal checkpoint¿¡¼­µµ CPListÀÇ BCB¸¦ flushÇÑ´Ù. */
     IDE_TEST( sdbBufferMgr::flushDirtyPagesInCPListByCheckpoint( 
                                                         aStatistics,
                                                         aIsFinal )
               != IDE_SUCCESS );
-    /* replacement flushë¥¼ í†µí•´ secondary bufferì— dirty pageê°€ ì¶”ê°€ ë°œìƒí• ìˆ˜ ìˆìŒ. */
+    /* replacement flush¸¦ ÅëÇØ secondary buffer¿¡ dirty page°¡ Ãß°¡ ¹ß»ıÇÒ¼ö ÀÖÀ½. */
     IDE_TEST( sdsBufferMgr::flushDirtyPagesInCPList( aStatistics,
                                                      ID_FALSE )// do not flush all
               != IDE_SUCCESS );
@@ -3489,9 +3522,9 @@ IDE_RC smrRecoveryMgr::makeBufferChkpt( idvSQL      * aStatistics,
     if ( smrCompareLSN::isLT( &sDiskRedoLSN, &sSBufferRedoLSN )
             == ID_TRUE )
     {
-        /* PBufferì— ìˆëŠ” RecoveryLSN(sDiskRedoLSN)ì´ 
-         * Sscondary Bufferì— ìˆëŠ” RecoveryLSN(sSBufferRedoLSN) ë³´ë‹¤ ì‘ìœ¼ë©´
-         * PBufferì— ìˆëŠ” RecoveryLSN  ì„ íƒ */
+        /* PBuffer¿¡ ÀÖ´Â RecoveryLSN(sDiskRedoLSN)ÀÌ 
+         * Sscondary Buffer¿¡ ÀÖ´Â RecoveryLSN(sSBufferRedoLSN) º¸´Ù ÀÛÀ¸¸é
+         * PBuffer¿¡ ÀÖ´Â RecoveryLSN  ¼±ÅÃ */
         SM_GET_LSN( *aOldestLSN, sDiskRedoLSN );
     }
     else
@@ -3499,7 +3532,7 @@ IDE_RC smrRecoveryMgr::makeBufferChkpt( idvSQL      * aStatistics,
         SM_GET_LSN( *aOldestLSN, sSBufferRedoLSN );
     }
 
-    /* DRDBì˜ DIRTY PAGEê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´ í˜„ì¬ EndLSNìœ¼ë¡œ ì„¤ì •í•œë‹¤. */
+    /* DRDBÀÇ DIRTY PAGE°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù¸é ÇöÀç EndLSNÀ¸·Î ¼³Á¤ÇÑ´Ù. */
     if ( ( aOldestLSN->mFileNo == ID_UINT_MAX ) &&
          ( aOldestLSN->mOffset == ID_UINT_MAX ) )
     {
@@ -3519,8 +3552,8 @@ IDE_RC smrRecoveryMgr::makeBufferChkpt( idvSQL      * aStatistics,
 }
 
 /***********************************************************************
- Description :free spaceê°€ ì²´í¬í¬ì¸íŠ¸ë¥¼ ìˆ˜í–‰í•  ìˆ˜ ìˆì„ ë§Œí¼ ì¶©ë¶„í•œì§€
-              ì—¬ë¶€ë¥¼ ë¦¬í„´í•¨. (BUG-32177)
+ Description :free space°¡ Ã¼Å©Æ÷ÀÎÆ®¸¦ ¼öÇàÇÒ ¼ö ÀÖÀ» ¸¸Å­ ÃæºĞÇÑÁö
+              ¿©ºÎ¸¦ ¸®ÅÏÇÔ. (BUG-32177)
 **********************************************************************/
 idBool smrRecoveryMgr::existDiskSpace4LogFile(void)
 {
@@ -3547,13 +3580,13 @@ idBool smrRecoveryMgr::existDiskSpace4LogFile(void)
 }
 
 /***********************************************************************
- Description : checkpoint ìˆ˜í–‰
-    [IN] aTrans        - Checkpointë¥¼ ìˆ˜í–‰í•˜ëŠ” Transaction
-    [IN] aCheckpointReason - Checkpointë¥¼ í•˜ê²Œ ëœ ì‚¬ìœ 
-    [IN] aChkptType    - Checkpointì¢…ë¥˜ - Memory ë§Œ ?
-                                          Disk ì™€ Memory ëª¨ë‘ ?
-    [IN] aRemoveLogFile - ë¶ˆí•„ìš”í•œ ë¡œê·¸íŒŒì¼ ì œê±° ì—¬ë¶€
-    [IN] aIsFinal       -
+ Description : checkpoint ¼öÇà
+    [IN] aTrans        - Checkpoint¸¦ ¼öÇàÇÏ´Â Transaction
+    [IN] aCheckpointReason - Checkpoint¸¦ ÇÏ°Ô µÈ »çÀ¯
+    [IN] aChkptType    - CheckpointÁ¾·ù - Memory ¸¸ ?
+                                          Disk ¿Í Memory ¸ğµÎ ?
+    [IN] aRemoveLogFile - ºÒÇÊ¿äÇÑ ·Î±×ÆÄÀÏ Á¦°Å ¿©ºÎ
+    [IN] aIsFinal       - smrRecoveryMgr::finalize() ¿¡¼­ È£ÃâµÇ¾ú´ÂÁö
 **********************************************************************/
 IDE_RC smrRecoveryMgr::checkpoint( idvSQL*      aStatistics,
                                    SInt         aCheckpointReason,
@@ -3571,8 +3604,8 @@ IDE_RC smrRecoveryMgr::checkpoint( idvSQL*      aStatistics,
     if ( existDiskSpace4LogFile() == ID_FALSE )
     {
         /*
-         * ë¡œê·¸íŒŒì¼ì„ ìœ„í•œ ë””ìŠ¤í¬ê³µê°„ì´ ë¶€ì¡±í•˜ì—¬ check pointë¥¼ ì‹¤íŒ¨í•¨.
-         * ì´ë•ŒëŠ” ë©”ì‹œì§€ë§Œì„ ë¿Œë¦¬ê³  ë‹¤ìŒ checkpointì‹œ ë‹¤ì‹œì‹œë„í•˜ê²Œë¨.
+         * ·Î±×ÆÄÀÏÀ» À§ÇÑ µğ½ºÅ©°ø°£ÀÌ ºÎÁ·ÇÏ¿© check point¸¦ ½ÇÆĞÇÔ.
+         * ÀÌ¶§´Â ¸Ş½ÃÁö¸¸À» »Ñ¸®°í ´ÙÀ½ checkpoint½Ã ´Ù½Ã½ÃµµÇÏ°ÔµÊ.
          * (internal only!)
          */
         IDE_CALLBACK_SEND_MSG("[CHECKPOINT-FAILURE] disk is full.");
@@ -3580,7 +3613,7 @@ IDE_RC smrRecoveryMgr::checkpoint( idvSQL*      aStatistics,
     }
 
     /* PROJ-2162 RestartRiskReduction
-     * DBê°€ Consistentí•˜ì§€ ì•Šìœ¼ë©´, Checkpointë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+     * DB°¡ ConsistentÇÏÁö ¾ÊÀ¸¸é, Checkpoint¸¦ ÇÏÁö ¾Ê´Â´Ù. */
     if ( ( getConsistency() == ID_FALSE ) &&
          ( smuProperty::getCrashTolerance() != 2 ) )
     {
@@ -3589,12 +3622,12 @@ IDE_RC smrRecoveryMgr::checkpoint( idvSQL*      aStatistics,
     }
 
     //--------------------------------------------------
-    //  Checkpointë¥¼ ì™œ í•˜ê²Œ ë˜ì—ˆëŠ”ì§€ë¥¼ logì— ë‚¨ê¸´ë‹¤.
+    //  Checkpoint¸¦ ¿Ö ÇÏ°Ô µÇ¾ú´ÂÁö¸¦ log¿¡ ³²±ä´Ù.
     //--------------------------------------------------
     IDE_TEST( logCheckpointReason( aCheckpointReason ) != IDE_SUCCESS );
 
     //---------------------------------
-    // ì‹¤ì œ Checkpoint ìˆ˜í–‰
+    // ½ÇÁ¦ Checkpoint ¼öÇà
     //---------------------------------
     IDE_TEST( checkpointInternal( aStatistics,
                                   aChkptType,
@@ -3622,58 +3655,58 @@ IDE_RC smrRecoveryMgr::checkpoint( idvSQL*      aStatistics,
 
 
 /*
-  Checkpoint êµ¬í˜„ í•¨ìˆ˜ - ì‹¤ì œ Checkpointë¥¼ ìˆ˜í–‰í•œë‹¤.
+  Checkpoint ±¸Çö ÇÔ¼ö - ½ÇÁ¦ Checkpoint¸¦ ¼öÇàÇÑ´Ù.
 
-  [IN] aChkptType    - Checkpointì¢…ë¥˜ - Memory ë§Œ ?
-  Disk ì™€ Memory ëª¨ë‘ ?
-  [IN] aRemoveLogFile - ë¶ˆí•„ìš”í•œ ë¡œê·¸íŒŒì¼ ì œê±° ì—¬ë¶€
+  [IN] aChkptType    - CheckpointÁ¾·ù - Memory ¸¸ ?
+  Disk ¿Í Memory ¸ğµÎ ?
+  [IN] aRemoveLogFile - ºÒÇÊ¿äÇÑ ·Î±×ÆÄÀÏ Á¦°Å ¿©ºÎ
   [IN] aFinal         -
 
-  checkpointì‹œ ê²°ì •ë˜ëŠ” DRDBì™€ MRDBì˜ RecvLSNì´
-  ë‹¤ë¥¼ìˆ˜ ìˆê¸° ë•Œë¬¸ì— begin checkpoint logì— ëª¨ë‘
-  ê¸°ë¡í•´ë†“ì•„ì•¼ í•œë‹¤.
+  checkpoint½Ã °áÁ¤µÇ´Â DRDB¿Í MRDBÀÇ RecvLSNÀÌ
+  ´Ù¸¦¼ö ÀÖ±â ¶§¹®¿¡ begin checkpoint log¿¡ ¸ğµÎ
+  ±â·ÏÇØ³õ¾Æ¾ß ÇÑ´Ù.
 
-  RecvLSNì€ ë‹¤ìŒê¸°ì¤€ìœ¼ë¡œ ê²°ì •ëœë‹¤.
-  - MRDBì˜ ê²½ìš° : checkpointì‹œì ì˜ Active Transaction
-  ì¤‘ ê°€ì¥ ì‘ì€ transactionì˜ ê°€ì¥ ì‘ì€ LSN
-  - DRDBì˜ ê²½ìš° : ë²„í¼ë§¤ë‹ˆì €ì˜ flush-listì— ì¡´ì¬í•˜ëŠ”
-  BCBì¤‘ ê°€ì¥ ì˜¤ë˜ì „ì— ë³€ê²½ëœ BCBì˜ oldest LSN
+  RecvLSNÀº ´ÙÀ½±âÁØÀ¸·Î °áÁ¤µÈ´Ù.
+  - MRDBÀÇ °æ¿ì : checkpoint½ÃÁ¡ÀÇ Active Transaction
+  Áß °¡Àå ÀÛÀº transactionÀÇ °¡Àå ÀÛÀº LSN
+  - DRDBÀÇ °æ¿ì : ¹öÆÛ¸Å´ÏÀúÀÇ flush-list¿¡ Á¸ÀçÇÏ´Â
+  BCBÁß °¡Àå ¿À·¡Àü¿¡ º¯°æµÈ BCBÀÇ oldest LSN
 
   + 2nd. code design
-  - logging levelì— ë”°ë¼ì„œ ëª¨ë“  íŠ¸ëœì­ì…˜ì´ ì¢…ë£Œë¥¼ ëŒ€ê¸°í•¨
-  - MRDB/DRDBì˜ recovery LSNì„ ê²°ì •í•˜ì—¬ ì‹œì‘ checkpoint ë¡œê·¸ì— ê¸°ë¡
-  - ì‹œì‘ checkpoint ë¡œê·¸ ê¸°ë¡í•œë‹¤.
-  - phase 1 : dirty-page listë¥¼ flush í•œë‹¤.(smr->disk)
-  - dirty-pageë¥¼ ì˜®ê²¨ì˜¨ë‹¤.(smm->smr)
-  - í˜„ì¬ ë¡œê·¸ê´€ë¦¬ìì˜ last LSNê¹Œì§€ì˜ ë¡œê·¸ë¥¼ syncì‹œí‚¨ë‹¤.
-  - phase 2 : dirty-page listë¥¼ flush í•œë‹¤.(smr->disk)
-  - DB íŒŒì¼ì„ syncì‹œí‚¨ë‹¤.
-  - ì™„ë£Œ checkpoint ë¡œê·¸ë¥¼ ê¸°ë¡í•œë‹¤.
-  - ì œê±°í•  fst ë¡œê·¸íŒŒì¼ë²ˆí˜¸ê³¼ lst ë¡œê·¸íŒŒì¼ë²ˆí˜¸ë¥¼ êµ¬í•œë‹¤.
-  - loganchorì— checkpoint ì •ë³´ë¥¼ ê¸°ë¡í•œë‹¤.
-  - logging levelì— ë”°ë¼ì„œ íŠ¸ëœì­ì…˜ì´ ë°œìƒí•  ìˆ˜ ìˆë„ë¡ ì²˜ë¦¬í•œë‹¤.
+  - logging level¿¡ µû¶ó¼­ ¸ğµç Æ®·£Àè¼ÇÀÌ Á¾·á¸¦ ´ë±âÇÔ
+  - MRDB/DRDBÀÇ recovery LSNÀ» °áÁ¤ÇÏ¿© ½ÃÀÛ checkpoint ·Î±×¿¡ ±â·Ï
+  - ½ÃÀÛ checkpoint ·Î±× ±â·ÏÇÑ´Ù.
+  - phase 1 : dirty-page list¸¦ flush ÇÑ´Ù.(smr->disk)
+  - dirty-page¸¦ ¿Å°Ü¿Â´Ù.(smm->smr)
+  - ÇöÀç ·Î±×°ü¸®ÀÚÀÇ last LSN±îÁöÀÇ ·Î±×¸¦ sync½ÃÅ²´Ù.
+  - phase 2 : dirty-page list¸¦ flush ÇÑ´Ù.(smr->disk)
+  - DB ÆÄÀÏÀ» sync½ÃÅ²´Ù.
+  - ¿Ï·á checkpoint ·Î±×¸¦ ±â·ÏÇÑ´Ù.
+  - Á¦°ÅÇÒ fst ·Î±×ÆÄÀÏ¹øÈ£°ú lst ·Î±×ÆÄÀÏ¹øÈ£¸¦ ±¸ÇÑ´Ù.
+  - loganchor¿¡ checkpoint Á¤º¸¸¦ ±â·ÏÇÑ´Ù.
+  - logging level¿¡ µû¶ó¼­ Æ®·£Àè¼ÇÀÌ ¹ß»ıÇÒ ¼ö ÀÖµµ·Ï Ã³¸®ÇÑ´Ù.
 
   ============================================================
-  CHECKPOINT ê³¼ì •
+  CHECKPOINT °úÁ¤
   ============================================================
-  A. Restart Recoveryì‹œì— Redoì‹œì‘ LSNìœ¼ë¡œ ì‚¬ìš©ë  Recovery LSNì„ ê³„ì‚°
-  A-1 Memory Recovery LSN ê²°ì •
-  A-2 Disk Recovery LSN ê²°ì •
+  A. Restart Recovery½Ã¿¡ Redo½ÃÀÛ LSNÀ¸·Î »ç¿ëµÉ Recovery LSNÀ» °è»ê
+  A-1 Memory Recovery LSN °áÁ¤
+  A-2 Disk Recovery LSN °áÁ¤
   - Disk Dirty Page Flush        [step0]
-  - Tablespace Log Anchor ë™ê¸°í™” [step1]
+  - Tablespace Log Anchor µ¿±âÈ­ [step1]
   B. Write  Begin_CHKPT                 [step2]
-  C. Memory Dirty Pageë“¤ì„ Checkpoint Imageì— Flush
+  C. Memory Dirty PageµéÀ» Checkpoint Image¿¡ Flush
   C-1 Flush Dirty Pages              [step3]
   C-2 Sync Log Files
   C-3 Sync Memory Database           [step4]
-  D. ëª¨ë“  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ë°ì´íƒ€íŒŒì¼ ë©”íƒ€í—¤ë”ì— RedoLSN ì„¤ì •
+  D. ¸ğµç Å×ÀÌºí½ºÆäÀÌ½ºÀÇ µ¥ÀÌÅ¸ÆÄÀÏ ¸ŞÅ¸Çì´õ¿¡ RedoLSN ¼³Á¤
   E. Write  End_CHKPT                   [step5]
   F. After  End_CHKPT
   E-1. Sync Log Files            [step6]
   E-2. Get Remove Log File #         [step7]
   E-3. Update Log Anchor             [step8]
   E-4. Remove Log Files              [step9]
-  G. ì²´í¬í¬ì¸íŠ¸ ê²€ì¦
+  G. Ã¼Å©Æ÷ÀÎÆ® °ËÁõ
   ============================================================
 */
 IDE_RC smrRecoveryMgr::checkpointInternal( idvSQL*      aStatistics,
@@ -3697,11 +3730,11 @@ IDE_RC smrRecoveryMgr::checkpointInternal( idvSQL*      aStatistics,
     IDU_FIT_POINT( "1.BUG-42785@smrRecoveryMgr::checkpointInternal::sleep" );
 
     //=============================================
-    //  A. Restart Recoveryì‹œì— Redoì‹œì‘ LSNìœ¼ë¡œ ì‚¬ìš©ë  Recovery LSNì„ ê³„ì‚°
-    //    A-1 Memory Recovery LSN ê²°ì •
-    //    A-2 Disk Recovery LSN ê²°ì •
+    //  A. Restart Recovery½Ã¿¡ Redo½ÃÀÛ LSNÀ¸·Î »ç¿ëµÉ Recovery LSNÀ» °è»ê
+    //    A-1 Memory Recovery LSN °áÁ¤
+    //    A-2 Disk Recovery LSN °áÁ¤
     //        - Disk Dirty Page Flush        [step0]
-    //        - Tablespace Log Anchor ë™ê¸°í™” [step1]
+    //        - Tablespace Log Anchor µ¿±âÈ­ [step1]
     //=============================================
 
     IDE_TEST( chkptCalcRedoLSN( aStatistics,
@@ -3719,13 +3752,14 @@ IDE_RC smrRecoveryMgr::checkpointInternal( idvSQL*      aStatistics,
                                   sDiskRedoLSN,
                                   sEndLSN,
                                   &sBeginChkptLSN,
-                                  &sDtxMinLSN ) != IDE_SUCCESS );
+                                  &sDtxMinLSN,
+                                  aIsFinal ) != IDE_SUCCESS );
 
     /* FIT/ART/sm/Bugs/BUG-13894/BUG-13894.sql */
     IDU_FIT_POINT( "1.BUG-13894@smrRecoveryMgr::checkpointInternal" );
 
     //=============================================
-    // C. Memory Dirty Pageë“¤ì„ Checkpoint Imageì— Flush
+    // C. Memory Dirty PageµéÀ» Checkpoint Image¿¡ Flush
     //    C-1 Flush Dirty Pages              [step3]
     //    C-2 Sync Log Files
     //    C-3 Sync Memory Database           [step4]
@@ -3741,7 +3775,7 @@ IDE_RC smrRecoveryMgr::checkpointInternal( idvSQL*      aStatistics,
     IDU_FIT_POINT( "1.BUG-23700@smrRecoveryMgr::checkpointInternal" );
 
     //=============================================
-    // D. ëª¨ë“  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ë°ì´íƒ€íŒŒì¼ ë©”íƒ€í—¤ë”ì— RedoLSN ì„¤ì •
+    // D. ¸ğµç Å×ÀÌºí½ºÆäÀÌ½ºÀÇ µ¥ÀÌÅ¸ÆÄÀÏ ¸ŞÅ¸Çì´õ¿¡ RedoLSN ¼³Á¤
     //=============================================
     IDE_TEST( chkptSetRedoLSNOnDBFiles( aStatistics,
                                         &sRedoLSN,
@@ -3757,10 +3791,10 @@ IDE_RC smrRecoveryMgr::checkpointInternal( idvSQL*      aStatistics,
                                 & sEndChkptLSN ) != IDE_SUCCESS );
 
 
-    /* CASE-6985 ì„œë²„ ì¢…ë£Œí›„ startupí•˜ë©´ userì™€ í…Œì´ë¸”,
-     * ë°ì´í„°ê°€ ëª¨ë‘ ì‚¬ë¼ì§: Checkpointì™„ë£Œì „ì— ì´ì—ëŒ€í•´ ê²€ì¦ì„ ìˆ˜í–‰í•œë‹¤.
-     * ë§Œì•½ Validí•˜ì§€ ì•Šë‹¤ë©´ ì´ì „ì— ì™„ë£Œëœ ë°ì´íƒ€ë² ì´ìŠ¤ ì´ë¯¸ì§€ë¥¼ ì½ì–´ì„œ ì›ë³µë  ê²ƒì´ë‹¤.*/
-    smmDatabase::validateCommitSCN(ID_TRUE/*Lock SCN Mutex*/);
+    /* CASE-6985 ¼­¹ö Á¾·áÈÄ startupÇÏ¸é user¿Í Å×ÀÌºí,
+     * µ¥ÀÌÅÍ°¡ ¸ğµÎ »ç¶óÁü: Checkpoint¿Ï·áÀü¿¡ ÀÌ¿¡´ëÇØ °ËÁõÀ» ¼öÇàÇÑ´Ù.
+     * ¸¸¾à ValidÇÏÁö ¾Ê´Ù¸é ÀÌÀü¿¡ ¿Ï·áµÈ µ¥ÀÌÅ¸º£ÀÌ½º ÀÌ¹ÌÁö¸¦ ÀĞ¾î¼­ ¿øº¹µÉ °ÍÀÌ´Ù.*/
+    smmDatabase::validateCommitSCN();
 
     //=============================================
     // F. After End_CHKPT
@@ -3780,18 +3814,18 @@ IDE_RC smrRecoveryMgr::checkpointInternal( idvSQL*      aStatistics,
               != IDE_SUCCESS );
 
     /* BUG-43499
-     * Diskì™€ Memory redo LSNì¤‘ ì‘ì€ LSNì„ Media Recovery LSNìœ¼ë¡œ ì„¤ì • í•œë‹¤. */
+     * Disk¿Í Memory redo LSNÁß ÀÛÀº LSNÀ» Media Recovery LSNÀ¸·Î ¼³Á¤ ÇÑ´Ù. */
     sMediaRecoveryLSN = (smrCompareLSN::isLTE( &sDiskRedoLSN, &sRedoLSN ) == ID_TRUE ) 
                         ? &sDiskRedoLSN : &sRedoLSN;
 
     IDE_TEST( mAnchorMgr.updateMediaRecoveryLSN(sMediaRecoveryLSN) != IDE_SUCCESS );
 
     //=============================================
-    // G. ì²´í¬í¬ì¸íŠ¸ ê²€ì¦
-    // ì²´í¬í¬ì¸íŠ¸ ì¤‘ì´ë©´ ì¸ìë¡œ ID_TRUEë¥¼ ë„˜ê¸´ë‹¤ .
+    // G. Ã¼Å©Æ÷ÀÎÆ® °ËÁõ
+    // Ã¼Å©Æ÷ÀÎÆ® ÁßÀÌ¸é ÀÎÀÚ·Î ID_TRUE¸¦ ³Ñ±ä´Ù .
     //=============================================
-    // Stableì€ ë°˜ë“œì‹œ ìˆì–´ì•¼ í•˜ê³  , Unstableì€ ì¡´ì¬í•œë‹¤ë©´
-    // ìµœì†Œí•œ ìœ íš¨í•œ ë²„ì „ì´ì–´ì•¼ í•œë‹¤.
+    // StableÀº ¹İµå½Ã ÀÖ¾î¾ß ÇÏ°í , UnstableÀº Á¸ÀçÇÑ´Ù¸é
+    // ÃÖ¼ÒÇÑ À¯È¿ÇÑ ¹öÀüÀÌ¾î¾ß ÇÑ´Ù.
     IDE_ASSERT( smmTBSMediaRecovery::identifyDBFilesOfAllTBS( ID_TRUE )
                  == IDE_SUCCESS );
     IDE_ASSERT( sddDiskMgr::identifyDBFilesOfAllTBS( aStatistics,
@@ -3818,9 +3852,9 @@ IDE_RC smrRecoveryMgr::checkpointInternal( idvSQL*      aStatistics,
 
 
 /*
-  Checkpointë¥¼ ì™œ í•˜ê²Œ ë˜ì—ˆëŠ”ì§€ë¥¼ altibase_sm.logì— ë‚¨ê¸´ë‹¤.
+  Checkpoint¸¦ ¿Ö ÇÏ°Ô µÇ¾ú´ÂÁö¸¦ altibase_sm.log¿¡ ³²±ä´Ù.
 
-  [IN] aCheckpointReason - Checkpointë¥¼ í•˜ê²Œ ëœ ì´ìœ 
+  [IN] aCheckpointReason - Checkpoint¸¦ ÇÏ°Ô µÈ ÀÌÀ¯
 */
 IDE_RC smrRecoveryMgr::logCheckpointReason( SInt aCheckpointReason )
 {
@@ -3857,18 +3891,19 @@ IDE_RC smrRecoveryMgr::logCheckpointReason( SInt aCheckpointReason )
 
 
 /*
-  Begin Checkpoint Logë¥¼ ê¸°ë¡í•œë‹¤.
+  Begin Checkpoint Log¸¦ ±â·ÏÇÑ´Ù.
 
-  [IN] aRedoLSN - Redo ì‹œì‘ LSN
+  [IN] aRedoLSN - Redo ½ÃÀÛ LSN
   [IN] aDiskRedoLSN - Disk Redo LSN
-  [OUT] aBeginChkptLSN - Begin Checkpoint Logì˜ LSN
+  [OUT] aBeginChkptLSN - Begin Checkpoint LogÀÇ LSN
 */
 IDE_RC smrRecoveryMgr::writeBeginChkptLog( idvSQL* aStatistics,
                                            smLSN * aRedoLSN,
                                            smLSN   aDiskRedoLSN,
                                            smLSN   aEndLSN,
                                            smLSN * aBeginChkptLSN,
-                                           smLSN * aDtxMinLSN )
+                                           smLSN * aDtxMinLSN,
+                                           idBool  aIsFinal )
 {
     smrBeginChkptLog   sBeginChkptLog;
     smLSN              sBeginChkptLSN;
@@ -3894,14 +3929,26 @@ IDE_RC smrRecoveryMgr::writeBeginChkptLog( idvSQL* aStatistics,
 
     sBeginChkptLog.mDiskRedoLSN = aDiskRedoLSN;
 
-    sBeginChkptLog.mDtxMinLSN = mGetDtxMinLSNFunc();
+    /* BUG-48501 
+       Shutdown½Ã¿¡ DK¸ğµâÀÌ SM¸ğµâº¸´Ù ¸ÕÀú ³»·Á°£´Ù.
+       Shutdonw½Ã¿¡´Â ÃÊ±â°ªÀ» ¼³Á¤ÇÏµµ·Ï ¼öÁ¤ÇÏ¿´´Ù. */
+    if ( ( aIsFinal == ID_TRUE ) ||
+         ( mGetDtxMinLSNFunc == NULL ) )
+    {
+        SMI_LSN_MAX( sBeginChkptLog.mDtxMinLSN );
+    }
+    else
+    {
+        sBeginChkptLog.mDtxMinLSN = mGetDtxMinLSNFunc(); /* dktGlobalTxMgr::getDtxMinLSN() */
+    }
 
     IDE_TEST( smrLogMgr::writeLog( aStatistics,
                                    NULL,
                                    (SChar*)& sBeginChkptLog,
-                                   NULL, // Prev LSN Ptr
-                                   & sBeginChkptLSN,
-                                   NULL) // END LSN Ptr
+                                   NULL,             // Prev LSN Ptr
+                                   & sBeginChkptLSN, // Log Begin LSN
+                                   NULL,             // END LSN Ptr
+                                   SM_NULL_OID )
               != IDE_SUCCESS );
 
 
@@ -3925,10 +3972,10 @@ IDE_RC smrRecoveryMgr::writeBeginChkptLog( idvSQL* aStatistics,
 }
 
 /*
-  ëª¨ë“  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ë°ì´íƒ€íŒŒì¼ ë©”íƒ€í—¤ë”ì— RedoLSN ì„¤ì •
+  ¸ğµç Å×ÀÌºí½ºÆäÀÌ½ºÀÇ µ¥ÀÌÅ¸ÆÄÀÏ ¸ŞÅ¸Çì´õ¿¡ RedoLSN ¼³Á¤
 
-  [IN] aRedoLSN  - Disk/Memory DBì˜ Redo ì‹œì‘ LSN
-  [IN] aDiskRedoLSN - Disk DBì˜ Redo ì‹œì‘ LSN
+  [IN] aRedoLSN  - Disk/Memory DBÀÇ Redo ½ÃÀÛ LSN
+  [IN] aDiskRedoLSN - Disk DBÀÇ Redo ½ÃÀÛ LSN
 */
 IDE_RC smrRecoveryMgr::chkptSetRedoLSNOnDBFiles( idvSQL* aStatistics,
                                                  smLSN * aRedoLSN,
@@ -3936,21 +3983,21 @@ IDE_RC smrRecoveryMgr::chkptSetRedoLSNOnDBFiles( idvSQL* aStatistics,
 {
 
     //=============================================
-    // D. ëª¨ë“  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ë°ì´íƒ€íŒŒì¼ ë©”íƒ€í—¤ë”ì— RedoLSN ì„¤ì •
+    // D. ¸ğµç Å×ÀÌºí½ºÆäÀÌ½ºÀÇ µ¥ÀÌÅ¸ÆÄÀÏ ¸ŞÅ¸Çì´õ¿¡ RedoLSN ¼³Á¤
     //=============================================
 
     // fix BUG-16467
     IDE_ASSERT( sctTableSpaceMgr::lockForCrtTBS() == IDE_SUCCESS );
 
-    // Redo LSNì„ ëª¨ë“  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ë°ì´íƒ€íŒŒì¼/ì²´í¬í¬ì¸íŠ¸
-    // ì´ë¯¸ì§€ì˜ ë©”íƒ€í—¤ë”ì— ê¸°ë¡í•˜ê¸° ìœ„í•´ TBS ê´€ë¦¬ìì— ì„ì‹œë¡œ ì €ì¥í•œë‹¤.
+    // Redo LSNÀ» ¸ğµç Å×ÀÌºí½ºÆäÀÌ½ºÀÇ µ¥ÀÌÅ¸ÆÄÀÏ/Ã¼Å©Æ÷ÀÎÆ®
+    // ÀÌ¹ÌÁöÀÇ ¸ŞÅ¸Çì´õ¿¡ ±â·ÏÇÏ±â À§ÇØ TBS °ü¸®ÀÚ¿¡ ÀÓ½Ã·Î ÀúÀåÇÑ´Ù.
     sctTableSpaceMgr::setRedoLSN4DBFileMetaHdr( &aDiskRedoLSN,
                                                 aRedoLSN );
 
-    // ë””ìŠ¤í¬ ë°ì´íƒ€íŒŒì¼ê³¼ ì²´í¬í¬ì¸íŠ¸ì´ë¯¸ì§€ì˜ ë©”íƒ€í—¤ë”ì— RedoLSNì„ ê¸°ë¡í•œë‹¤.
+    // µğ½ºÅ© µ¥ÀÌÅ¸ÆÄÀÏ°ú Ã¼Å©Æ÷ÀÎÆ®ÀÌ¹ÌÁöÀÇ ¸ŞÅ¸Çì´õ¿¡ RedoLSNÀ» ±â·ÏÇÑ´Ù.
     IDE_TEST( smmTBSMediaRecovery::updateDBFileHdr4AllTBS() != IDE_SUCCESS );
 
-    // ë””ìŠ¤í¬ ë°ì´íƒ€íŒŒì¼ê³¼ ì²´í¬í¬ì¸íŠ¸ì´ë¯¸ì§€ì˜ ë©”íƒ€í—¤ë”ì— RedoLSNì„ ê¸°ë¡í•œë‹¤.
+    // µğ½ºÅ© µ¥ÀÌÅ¸ÆÄÀÏ°ú Ã¼Å©Æ÷ÀÎÆ®ÀÌ¹ÌÁöÀÇ ¸ŞÅ¸Çì´õ¿¡ RedoLSNÀ» ±â·ÏÇÑ´Ù.
     IDE_TEST( sddDiskMgr::syncAllTBS( aStatistics,
                                       SDD_SYNC_CHKPT ) != IDE_SUCCESS );
 
@@ -3966,9 +4013,9 @@ IDE_RC smrRecoveryMgr::chkptSetRedoLSNOnDBFiles( idvSQL* aStatistics,
     return IDE_FAILURE;
 }
 
-/*  End Checkpoint Logë¥¼ ê¸°ë¡í•œë‹¤.
+/*  End Checkpoint Log¸¦ ±â·ÏÇÑ´Ù.
 
-    [OUT] aEndChkptLSN - End Checkpoint Logì˜ LSN
+    [OUT] aEndChkptLSN - End Checkpoint LogÀÇ LSN
 */
 IDE_RC smrRecoveryMgr::writeEndChkptLog( idvSQL* aStatistics,
                                          smLSN * aEndChkptLSN )
@@ -3998,9 +4045,10 @@ IDE_RC smrRecoveryMgr::writeEndChkptLog( idvSQL* aStatistics,
     IDE_TEST( smrLogMgr::writeLog( aStatistics,
                                    NULL,
                                    (SChar*)&sEndChkptLog,
-                                   NULL, // Prev LSN Ptr
-                                   &(sEndChkptLSN),
-                                   NULL) // END LSN Ptr
+                                   NULL,            // Prev LSN Ptr
+                                   &(sEndChkptLSN), // Log Begin LSN
+                                   NULL,            // END LSN Ptr
+                                   SM_NULL_OID )
              != IDE_SUCCESS );
 
 
@@ -4020,7 +4068,7 @@ IDE_RC smrRecoveryMgr::writeEndChkptLog( idvSQL* aStatistics,
 }
 
 /*
-  Checkpoint ìš”ì•½ Messageë¥¼ ë¡œê¹…í•œë‹¤.
+  Checkpoint ¿ä¾à Message¸¦ ·Î±ëÇÑ´Ù.
 */
 IDE_RC smrRecoveryMgr::logCheckpointSummary( smLSN   aBeginChkptLSN,
                                              smLSN   aEndChkptLSN,
@@ -4028,8 +4076,8 @@ IDE_RC smrRecoveryMgr::logCheckpointSummary( smLSN   aBeginChkptLSN,
                                              smLSN   aDiskRedoLSN )
 {
     //=============================================
-    // F. ì²´í¬í¬ì¸íŠ¸ ê²€ì¦
-    // ì²´í¬í¬ì¸íŠ¸ ì¤‘ì´ë©´ ì¸ìë¡œ ID_TRUEë¥¼ ë„˜ê¸´ë‹¤ .
+    // F. Ã¼Å©Æ÷ÀÎÆ® °ËÁõ
+    // Ã¼Å©Æ÷ÀÎÆ® ÁßÀÌ¸é ÀÎÀÚ·Î ID_TRUE¸¦ ³Ñ±ä´Ù .
     //=============================================
     ideLog::log(SM_TRC_LOG_LEVEL_MRECOV,
                 SM_TRC_MRECOVERY_RECOVERYMGR_CHKP8,
@@ -4052,30 +4100,30 @@ IDE_RC smrRecoveryMgr::logCheckpointSummary( smLSN   aBeginChkptLSN,
 }
 
 /*
-  ALTER TABLESPACE OFFLINEì„ ìœ„í•´ Tablespaceì˜ ëª¨ë“  Dirty Pageë¥¼ Flush
+  ALTER TABLESPACE OFFLINEÀ» À§ÇØ TablespaceÀÇ ¸ğµç Dirty Page¸¦ Flush
 
-  [IN] aTBSNode - Tablespaceì˜ Node
+  [IN] aTBSNode - TablespaceÀÇ Node
 
   PROJ-1548-M5 Alter Tablespace Offline/Online/Discard -----------------
 
-  Alter Tablespace Offlineì‹œ í˜¸ì¶œë˜ì–´
-  Offlineìœ¼ë¡œ ì „ì´í•˜ë ¤ëŠ” Tablespaceë¥¼ í¬í•¨í•œ ëª¨ë“  Tablespaceì— ëŒ€í•´
-  Checkpointë¥¼ ìˆ˜í–‰í•œë‹¤.
+  Alter Tablespace Offline½Ã È£ÃâµÇ¾î
+  OfflineÀ¸·Î ÀüÀÌÇÏ·Á´Â Tablespace¸¦ Æ÷ÇÔÇÑ ¸ğµç Tablespace¿¡ ´ëÇØ
+  Checkpoint¸¦ ¼öÇàÇÑ´Ù.
 
-  Offlineìœ¼ë¡œ ì „ì´í•˜ë ¤ëŠ” Tablespaceì˜
-  Dirty Pageë“¤ì„ Diskì˜ Checkpoint Imageì— Flushí•˜ê¸° ìœ„í•´ ì‚¬ìš©ëœë‹¤.
+  OfflineÀ¸·Î ÀüÀÌÇÏ·Á´Â TablespaceÀÇ
+  Dirty PageµéÀ» DiskÀÇ Checkpoint Image¿¡ FlushÇÏ±â À§ÇØ »ç¿ëµÈ´Ù.
 
-  Offlineìœ¼ë¡œ ì „ì´í•˜ë ¤ëŠ” Tablespaceì˜ Dirty Pageë§Œ ë”°ë¡œ
-  Checkpoint Imageì— Flushí•˜ëŠ”ê²ƒì´ ì›ì¹™ìƒ ë§ì§€ë§Œ,
-  ê¸°ì¡´ Checkpointë£¨í‹´ì„ ê·¸ëŒ€ë¡œ ì´ìš©í•˜ì—¬ ì½”ë“œë³€ê²½ëŸ‰ì„ ìµœì†Œí™” í•˜ì˜€ë‹¤.
+  OfflineÀ¸·Î ÀüÀÌÇÏ·Á´Â TablespaceÀÇ Dirty Page¸¸ µû·Î
+  Checkpoint Image¿¡ FlushÇÏ´Â°ÍÀÌ ¿øÄ¢»ó ¸ÂÁö¸¸,
+  ±âÁ¸ Checkpoint·çÆ¾À» ±×´ë·Î ÀÌ¿ëÇÏ¿© ÄÚµåº¯°æ·®À» ÃÖ¼ÒÈ­ ÇÏ¿´´Ù.
 
-  [ì•Œê³ ë¦¬ì¦˜]
+  [¾Ë°í¸®Áò]
 
-  (010) Checkpoint Latch íšë“
-  (020)   Checkpointë¥¼ ìˆ˜í–‰í•˜ì—¬ Dirty Page Flush ì‹¤ì‹œ
-  ( Unstable DB ë¶€í„°, 0ë²ˆ 1ë²ˆ DB ëª¨ë‘ ì‹¤ì‹œ )
+  (010) Checkpoint Latch È¹µæ
+  (020)   Checkpoint¸¦ ¼öÇàÇÏ¿© Dirty Page Flush ½Ç½Ã
+  ( Unstable DB ºÎÅÍ, 0¹ø 1¹ø DB ¸ğµÎ ½Ç½Ã )
 
-  (030) Checkpoint Latch í•´ì œ
+  (030) Checkpoint Latch ÇØÁ¦
 */
 IDE_RC smrRecoveryMgr::flushDirtyPages4AllTBS()
 {
@@ -4083,14 +4131,14 @@ IDE_RC smrRecoveryMgr::flushDirtyPages4AllTBS()
     UInt i;
 
     //////////////////////////////////////////////////////////////////////
-    //  (010) Checkpoint ìˆ˜í–‰í•˜ì§€ ëª»í•˜ë„ë¡ ë§‰ìŒ
+    //  (010) Checkpoint ¼öÇàÇÏÁö ¸øÇÏµµ·Ï ¸·À½
     IDE_TEST( smrChkptThread::blockCheckpoint() != IDE_SUCCESS );
     sStage = 1;
 
     //////////////////////////////////////////////////////////////////////
-    //  (020)   Dirty Page Flush ì‹¤ì‹œ
-    //          Tablespaceì˜ Unstable Checkpoint Imageë¶€í„° ì‹œì‘í•˜ì—¬,
-    //          0ë²ˆ 1ë²ˆ Checkpoint Imageì— ëŒ€í•´ ë‹¤ìŒì„ ìˆ˜í–‰
+    //  (020)   Dirty Page Flush ½Ç½Ã
+    //          TablespaceÀÇ Unstable Checkpoint ImageºÎÅÍ ½ÃÀÛÇÏ¿©,
+    //          0¹ø 1¹ø Checkpoint Image¿¡ ´ëÇØ ´ÙÀ½À» ¼öÇà
 
     for (i=1; i<=SMM_PINGPONG_COUNT; i++)
     {
@@ -4102,7 +4150,7 @@ IDE_RC smrRecoveryMgr::flushDirtyPages4AllTBS()
     }
 
     //////////////////////////////////////////////////////////////////////
-    //  (030) Checkpoint ìˆ˜í–‰ ê°€ëŠ¥í•˜ë„ë¡ unblock
+    //  (030) Checkpoint ¼öÇà °¡´ÉÇÏµµ·Ï unblock
     sStage = 0;
     IDE_TEST( smrChkptThread::unblockCheckpoint() != IDE_SUCCESS );
 
@@ -4126,9 +4174,9 @@ IDE_RC smrRecoveryMgr::flushDirtyPages4AllTBS()
 
 
 /*
-  íŠ¹ì • Tablespaceì— Dirty Pageê°€ ì—†ìŒì„ í™•ì¸í•œë‹¤.
+  Æ¯Á¤ Tablespace¿¡ Dirty Page°¡ ¾øÀ½À» È®ÀÎÇÑ´Ù.
 
-  [IN] aTBSNode - Dirty Pageê°€ ì—†ìŒì„ í™•ì¸í•  Tablespaceì˜ Node
+  [IN] aTBSNode - Dirty Page°¡ ¾øÀ½À» È®ÀÎÇÒ TablespaceÀÇ Node
 */
 IDE_RC smrRecoveryMgr::assertNoDirtyPagesInTBS( smmTBSNode * aTBSNode )
 {
@@ -4138,7 +4186,7 @@ IDE_RC smrRecoveryMgr::assertNoDirtyPagesInTBS( smmTBSNode * aTBSNode )
                                                     & sDirtyPageCount )
               != IDE_SUCCESS );
 
-    // Dirty Pageê°€ ì—†ì–´ì•¼ í•œë‹¤.
+    // Dirty Page°¡ ¾ø¾î¾ß ÇÑ´Ù.
     IDE_ASSERT( sDirtyPageCount == 0);
 
     return IDE_SUCCESS ;
@@ -4149,9 +4197,9 @@ IDE_RC smrRecoveryMgr::assertNoDirtyPagesInTBS( smmTBSNode * aTBSNode )
 }
 
 /*
-   PROJ-1548 SM - User Memory TableSpace ê°œë…ë„ì…
-   ëª¨ë“  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì •ë³´ë¥¼ Loganchorì— ê°±ì‹ í•œë‹¤.
-   ì„œë²„êµ¬ë™ê³¼ì •ê³¼ ì„œë²„ ì¢…ë£Œê³¼ì •ì—ì„œë§Œ í˜¸ì¶œëœë‹¤.
+   PROJ-1548 SM - User Memory TableSpace °³³äµµÀÔ
+   ¸ğµç Å×ÀÌºí½ºÆäÀÌ½º Á¤º¸¸¦ Loganchor¿¡ °»½ÅÇÑ´Ù.
+   ¼­¹ö±¸µ¿°úÁ¤°ú ¼­¹ö Á¾·á°úÁ¤¿¡¼­¸¸ È£ÃâµÈ´Ù.
 */
 IDE_RC smrRecoveryMgr::updateAnchorAllTBS()
 {
@@ -4159,8 +4207,8 @@ IDE_RC smrRecoveryMgr::updateAnchorAllTBS()
 }
 /*
    PROJ-2102 Fast Sencondary Buffer
-   ëª¨ë“  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì •ë³´ë¥¼ Loganchorì— ê°±ì‹ í•œë‹¤.
-   ì„œë²„êµ¬ë™ê³¼ì •ê³¼ ì„œë²„ ì¢…ë£Œê³¼ì •ì—ì„œë§Œ í˜¸ì¶œëœë‹¤.
+   ¸ğµç Å×ÀÌºí½ºÆäÀÌ½º Á¤º¸¸¦ Loganchor¿¡ °»½ÅÇÑ´Ù.
+   ¼­¹ö±¸µ¿°úÁ¤°ú ¼­¹ö Á¾·á°úÁ¤¿¡¼­¸¸ È£ÃâµÈ´Ù.
 */
 IDE_RC smrRecoveryMgr::updateAnchorAllSB( void )
 {
@@ -4168,10 +4216,10 @@ IDE_RC smrRecoveryMgr::updateAnchorAllSB( void )
 }
 
 /*
-   PROJ-1548 SM - User Memory TableSpace ê°œë…ë„ì…
-   ë³€ê²½ëœ TBS Node ì •ë³´ë¥¼ Loganchorì— ê°±ì‹ í•œë‹¤.
+   PROJ-1548 SM - User Memory TableSpace °³³äµµÀÔ
+   º¯°æµÈ TBS Node Á¤º¸¸¦ Loganchor¿¡ °»½ÅÇÑ´Ù.
 
-   [IN] aSpaceNode : í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œ
+   [IN] aSpaceNode : Å×ÀÌºí½ºÆäÀÌ½º ³ëµå
 */
 IDE_RC smrRecoveryMgr::updateTBSNodeToAnchor( sctTableSpaceNode*  aSpaceNode )
 {
@@ -4179,10 +4227,10 @@ IDE_RC smrRecoveryMgr::updateTBSNodeToAnchor( sctTableSpaceNode*  aSpaceNode )
 }
 
 /*
-   PROJ-1548 SM - User Memory TableSpace ê°œë…ë„ì…
-   ë³€ê²½ëœ DBF Node ì •ë³´ë¥¼ Loganchorì— ê°±ì‹ í•œë‹¤.
+   PROJ-1548 SM - User Memory TableSpace °³³äµµÀÔ
+   º¯°æµÈ DBF Node Á¤º¸¸¦ Loganchor¿¡ °»½ÅÇÑ´Ù.
 
-   [IN] aFileNode  : ë°ì´íƒ€íŒŒì¼ ë…¸ë“œ
+   [IN] aFileNode  : µ¥ÀÌÅ¸ÆÄÀÏ ³ëµå
 */
 IDE_RC smrRecoveryMgr::updateDBFNodeToAnchor( sddDataFileNode*    aFileNode )
 {
@@ -4190,14 +4238,14 @@ IDE_RC smrRecoveryMgr::updateDBFNodeToAnchor( sddDataFileNode*    aFileNode )
 }
 
 /*
-   PROJ-1548 SM - User Memory TableSpace ê°œë…ë„ì…
-   Chkpt Image ì†ì„±ì„ Loganchorì— ë³€ê²½í•œë‹¤.
+   PROJ-1548 SM - User Memory TableSpace °³³äµµÀÔ
+   Chkpt Image ¼Ó¼ºÀ» Loganchor¿¡ º¯°æÇÑ´Ù.
 
    [IN] aCrtDBFileInfo   -
-   ì²´í¬í¬ì¸íŠ¸ Image ì— ëŒ€í•œ ìƒì„±ì •ë³´ë¥¼ ê°€ì§„ Runtime êµ¬ì¡°ì²´
-   Anchor Offsetì´ ì €ì¥ë˜ì–´ ìˆë‹¤.
+   Ã¼Å©Æ÷ÀÎÆ® Image ¿¡ ´ëÇÑ »ı¼ºÁ¤º¸¸¦ °¡Áø Runtime ±¸Á¶Ã¼
+   Anchor OffsetÀÌ ÀúÀåµÇ¾î ÀÖ´Ù.
    [IN] aChkptImageAttr  -
-   ì²´í¬í¬ì¸íŠ¸ Image ì†ì„±
+   Ã¼Å©Æ÷ÀÎÆ® Image ¼Ó¼º
 */
 IDE_RC smrRecoveryMgr::updateChkptImageAttrToAnchor( smmCrtDBFileInfo  * aCrtDBFileInfo,
                                                      smmChkptImageAttr * aChkptImageAttr )
@@ -4210,10 +4258,10 @@ IDE_RC smrRecoveryMgr::updateChkptImageAttrToAnchor( smmCrtDBFileInfo  * aCrtDBF
 }
 
 /*
-   PROJ-1548 SM - User Memory TableSpace ê°œë…ë„ì…
-   Chkpt Path ì†ì„±ì„ Loganchorì— ë³€ê²½í•œë‹¤.
+   PROJ-1548 SM - User Memory TableSpace °³³äµµÀÔ
+   Chkpt Path ¼Ó¼ºÀ» Loganchor¿¡ º¯°æÇÑ´Ù.
 
-   [IN] aChkptPathNode - ë³€ê²½í•  ì²´í¬í¬ì¸íŠ¸ ê²½ë¡œ ë…¸ë“œ
+   [IN] aChkptPathNode - º¯°æÇÒ Ã¼Å©Æ÷ÀÎÆ® °æ·Î ³ëµå
 
 */
 IDE_RC smrRecoveryMgr::updateChkptPathToLogAnchor( smmChkptPathNode * aChkptPathNode )
@@ -4230,10 +4278,10 @@ IDE_RC smrRecoveryMgr::updateSBufferNodeToAnchor( sdsFileNode  * aFileNode )
 }
 
 /*
-   PROJ-1548 SM - User Memory TableSpace ê°œë…ë„ì…
-   ìƒì„±ëœ TBS Node ì •ë³´ë¥¼ Loganchorì— ì¶”ê°€í•œë‹¤.
+   PROJ-1548 SM - User Memory TableSpace °³³äµµÀÔ
+   »ı¼ºµÈ TBS Node Á¤º¸¸¦ Loganchor¿¡ Ãß°¡ÇÑ´Ù.
 
-   [IN] aSpaceNode : í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œ
+   [IN] aSpaceNode : Å×ÀÌºí½ºÆäÀÌ½º ³ëµå
 */
 IDE_RC smrRecoveryMgr::addTBSNodeToAnchor( sctTableSpaceNode*   aSpaceNode )
 {
@@ -4241,36 +4289,40 @@ IDE_RC smrRecoveryMgr::addTBSNodeToAnchor( sctTableSpaceNode*   aSpaceNode )
 
     IDE_TEST( mAnchorMgr.addTBSNodeAndFlush( aSpaceNode,
                                              &sAnchorOffset ) != IDE_SUCCESS );
-
-
-    if ( sctTableSpaceMgr::isMemTableSpace(aSpaceNode->mID) == ID_TRUE )
+    
+    switch( sctTableSpaceMgr::getTBSLocation( aSpaceNode ) )
     {
-        // ì €ì¥ë˜ê¸° ì „ì´ë¯€ë¡œ ë‹¤ìŒì„ ë§Œì¡±í•´ì•¼í•œë‹¤.
-        IDE_ASSERT( ((smmTBSNode*)aSpaceNode)->mAnchorOffset
-                    == SCT_UNSAVED_ATTRIBUTE_OFFSET );
+        case SMI_TBS_MEMORY:
+            {
+                // ÀúÀåµÇ±â ÀüÀÌ¹Ç·Î ´ÙÀ½À» ¸¸Á·ÇØ¾ßÇÑ´Ù.
+                IDE_ASSERT( ((smmTBSNode*)aSpaceNode)->mAnchorOffset
+                            == SCT_UNSAVED_ATTRIBUTE_OFFSET );
 
-        // ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤
-        ((smmTBSNode*)aSpaceNode)->mAnchorOffset = sAnchorOffset;
-    }
-    else if ( sctTableSpaceMgr::isDiskTableSpace(aSpaceNode->mID) == ID_TRUE )
-    {
-        IDE_ASSERT( ((sddTableSpaceNode*)aSpaceNode)->mAnchorOffset
-                    == SCT_UNSAVED_ATTRIBUTE_OFFSET );
+                // ¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½º
+                ((smmTBSNode*)aSpaceNode)->mAnchorOffset = sAnchorOffset;
+            }
+            break;
+        case SMI_TBS_DISK:
+            {
+                IDE_ASSERT( ((sddTableSpaceNode*)aSpaceNode)->mAnchorOffset
+                            == SCT_UNSAVED_ATTRIBUTE_OFFSET );
 
-        // ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤
-        ((sddTableSpaceNode*)aSpaceNode)->mAnchorOffset = sAnchorOffset;
-    }
-    else if ( sctTableSpaceMgr::isVolatileTableSpace(aSpaceNode->mID) == ID_TRUE )
-    {
-        IDE_ASSERT( ((svmTBSNode*)aSpaceNode)->mAnchorOffset
-                    == SCT_UNSAVED_ATTRIBUTE_OFFSET );
+                // µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º
+                ((sddTableSpaceNode*)aSpaceNode)->mAnchorOffset = sAnchorOffset;
+            }
+            break;
+        case SMI_TBS_VOLATILE:
+            {
+                IDE_ASSERT( ((svmTBSNode*)aSpaceNode)->mAnchorOffset
+                            == SCT_UNSAVED_ATTRIBUTE_OFFSET );
 
-        // Volatile tablespace
-        ((svmTBSNode*)aSpaceNode)->mAnchorOffset = sAnchorOffset;
-    }
-    else
-    {
-        IDE_ASSERT(0);
+                // Volatile tablespace
+                ((svmTBSNode*)aSpaceNode)->mAnchorOffset = sAnchorOffset;
+            }
+            break;
+        default:
+            IDE_ASSERT(0);
+            break;
     }
 
     return IDE_SUCCESS;
@@ -4281,13 +4333,13 @@ IDE_RC smrRecoveryMgr::addTBSNodeToAnchor( sctTableSpaceNode*   aSpaceNode )
 }
 
 /*
-   PROJ-1548 SM - User Memory TableSpace ê°œë…ë„ì…
-   ìƒì„±ëœ DBF Node ì •ë³´ë¥¼ Loganchorì— ì¶”ê°€í•œë‹¤.
+   PROJ-1548 SM - User Memory TableSpace °³³äµµÀÔ
+   »ı¼ºµÈ DBF Node Á¤º¸¸¦ Loganchor¿¡ Ãß°¡ÇÑ´Ù.
 
-   TBS Nodeì˜ NewFileIDë¥¼ í•¨ê»˜ ê°±ì‹ í•˜ì—¬ì•¼ í•œë‹¤.
+   TBS NodeÀÇ NewFileID¸¦ ÇÔ²² °»½ÅÇÏ¿©¾ß ÇÑ´Ù.
 
-   [IN] aSpaceNode : í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œ
-   [IN] aFileNode  : ë°ì´íƒ€íŒŒì¼ ë…¸ë“œ
+   [IN] aSpaceNode : Å×ÀÌºí½ºÆäÀÌ½º ³ëµå
+   [IN] aFileNode  : µ¥ÀÌÅ¸ÆÄÀÏ ³ëµå
 */
 IDE_RC smrRecoveryMgr::addDBFNodeToAnchor( sddTableSpaceNode*   aSpaceNode,
                                            sddDataFileNode*     aFileNode )
@@ -4302,7 +4354,7 @@ IDE_RC smrRecoveryMgr::addDBFNodeToAnchor( sddTableSpaceNode*   aSpaceNode,
                                              &sAnchorOffset )
               != IDE_SUCCESS );
 
-    // ì €ì¥ë˜ê¸° ì „ì´ë¯€ë¡œ ë‹¤ìŒì„ ë§Œì¡±í•´ì•¼í•œë‹¤.
+    // ÀúÀåµÇ±â ÀüÀÌ¹Ç·Î ´ÙÀ½À» ¸¸Á·ÇØ¾ßÇÑ´Ù.
     IDE_ASSERT( aFileNode->mAnchorOffset
                 == SCT_UNSAVED_ATTRIBUTE_OFFSET );
 
@@ -4317,13 +4369,13 @@ IDE_RC smrRecoveryMgr::addDBFNodeToAnchor( sddTableSpaceNode*   aSpaceNode,
 
 
 /*
-   PROJ-1548 SM - User Memory TableSpace ê°œë…ë„ì…
-   ìƒì„±ëœ Chkpt Node Pathì •ë³´ë¥¼ Loganchorì— ì¶”ê°€í•œë‹¤.
+   PROJ-1548 SM - User Memory TableSpace °³³äµµÀÔ
+   »ı¼ºµÈ Chkpt Node PathÁ¤º¸¸¦ Loganchor¿¡ Ãß°¡ÇÑ´Ù.
 
-   TBS Nodeì˜ ChkptNode Countë¥¼ í•¨ê»˜ ê°±ì‹ í•˜ì—¬ì•¼ í•œë‹¤.
+   TBS NodeÀÇ ChkptNode Count¸¦ ÇÔ²² °»½ÅÇÏ¿©¾ß ÇÑ´Ù.
 
-   [IN] aSpaceNode : í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œ
-   [IN] aChkptPathNode  : ì²´í¬í¬ì¸íŠ¸Path ë…¸ë“œ
+   [IN] aSpaceNode : Å×ÀÌºí½ºÆäÀÌ½º ³ëµå
+   [IN] aChkptPathNode  : Ã¼Å©Æ÷ÀÎÆ®Path ³ëµå
 */
 IDE_RC smrRecoveryMgr::addChkptPathNodeToAnchor( smmChkptPathNode * aChkptPathNode )
 {
@@ -4335,7 +4387,7 @@ IDE_RC smrRecoveryMgr::addChkptPathNodeToAnchor( smmChkptPathNode * aChkptPathNo
                                                    &sAnchorOffset )
               != IDE_SUCCESS );
 
-    // ì €ì¥ë˜ê¸° ì „ì´ë¯€ë¡œ ë‹¤ìŒì„ ë§Œì¡±í•´ì•¼í•œë‹¤.
+    // ÀúÀåµÇ±â ÀüÀÌ¹Ç·Î ´ÙÀ½À» ¸¸Á·ÇØ¾ßÇÑ´Ù.
     IDE_ASSERT( aChkptPathNode->mAnchorOffset
                 == SCT_UNSAVED_ATTRIBUTE_OFFSET );
 
@@ -4350,13 +4402,13 @@ IDE_RC smrRecoveryMgr::addChkptPathNodeToAnchor( smmChkptPathNode * aChkptPathNo
 
 
 /*
-   PROJ-1548 SM - User Memory TableSpace ê°œë…ë„ì…
-   ìƒì„±ëœ Chkpt Image ì†ì„±ì„ Loganchorì— ì¶”ê°€í•œë‹¤.
+   PROJ-1548 SM - User Memory TableSpace °³³äµµÀÔ
+   »ı¼ºµÈ Chkpt Image ¼Ó¼ºÀ» Loganchor¿¡ Ãß°¡ÇÑ´Ù.
 
    [IN] aCrtDBFileInfo   -
-   ì²´í¬í¬ì¸íŠ¸ Image ì— ëŒ€í•œ ìƒì„±ì •ë³´ë¥¼ ê°€ì§„ Runtime êµ¬ì¡°ì²´
-   Anchor Offsetì´ ì €ì¥ë˜ì–´ ìˆë‹¤.
-   [IN] aChkptImageAttr  : ì²´í¬í¬ì¸íŠ¸ Image ì†ì„±
+   Ã¼Å©Æ÷ÀÎÆ® Image ¿¡ ´ëÇÑ »ı¼ºÁ¤º¸¸¦ °¡Áø Runtime ±¸Á¶Ã¼
+   Anchor OffsetÀÌ ÀúÀåµÇ¾î ÀÖ´Ù.
+   [IN] aChkptImageAttr  : Ã¼Å©Æ÷ÀÎÆ® Image ¼Ó¼º
 */
 IDE_RC smrRecoveryMgr::addChkptImageAttrToAnchor(
     smmCrtDBFileInfo  * aCrtDBFileInfo,
@@ -4372,7 +4424,7 @@ IDE_RC smrRecoveryMgr::addChkptImageAttrToAnchor(
                                       &sAnchorOffset )
               != IDE_SUCCESS );
 
-    // ì €ì¥ë˜ê¸° ì „ì´ë¯€ë¡œ ë‹¤ìŒì„ ë§Œì¡±í•´ì•¼í•œë‹¤.
+    // ÀúÀåµÇ±â ÀüÀÌ¹Ç·Î ´ÙÀ½À» ¸¸Á·ÇØ¾ßÇÑ´Ù.
     IDE_ASSERT( aCrtDBFileInfo->mAnchorOffset
                 == SCT_UNSAVED_ATTRIBUTE_OFFSET );
 
@@ -4388,7 +4440,7 @@ IDE_RC smrRecoveryMgr::addChkptImageAttrToAnchor(
 /*
    PROJ-2102 Fast Secondary Buffer
 
-   [IN] aFileNode  : Secondary Buffer íŒŒì¼ ë…¸ë“œ
+   [IN] aFileNode  : Secondary Buffer ÆÄÀÏ ³ëµå
 */
 IDE_RC smrRecoveryMgr::addSBufferNodeToAnchor( sdsFileNode*   aFileNode )
 {
@@ -4400,7 +4452,7 @@ IDE_RC smrRecoveryMgr::addSBufferNodeToAnchor( sdsFileNode*   aFileNode )
                                                  &sAnchorOffset )
               != IDE_SUCCESS );
 
-    // ì €ì¥ë˜ê¸° ì „ì´ë¯€ë¡œ ë‹¤ìŒì„ ë§Œì¡±í•´ì•¼í•œë‹¤.
+    // ÀúÀåµÇ±â ÀüÀÌ¹Ç·Î ´ÙÀ½À» ¸¸Á·ÇØ¾ßÇÑ´Ù.
     IDE_ASSERT( aFileNode->mAnchorOffset
                 == SCT_UNSAVED_ATTRIBUTE_OFFSET );
 
@@ -4414,7 +4466,7 @@ IDE_RC smrRecoveryMgr::addSBufferNodeToAnchor( sdsFileNode*   aFileNode )
 }
 
 /*******************************************************************
- * Description : loganchorì— TXSEG Entry ê°œìˆ˜ë¥¼ ë°˜ì˜í•œë‹¤.
+ * Description : loganchor¿¡ TXSEG Entry °³¼ö¸¦ ¹İ¿µÇÑ´Ù.
  *******************************************************************/
 IDE_RC smrRecoveryMgr::updateTXSEGEntryCnt( UInt sEntryCnt )
 {
@@ -4431,7 +4483,7 @@ IDE_RC smrRecoveryMgr::updateTXSEGEntryCnt( UInt sEntryCnt )
 }
 
 /*******************************************************************
- * DESCRITPION : loganchorë¡œë¶€í„° íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ ê°œìˆ˜ë¥¼ ë°˜í™˜
+ * DESCRITPION : loganchor·ÎºÎÅÍ Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® °³¼ö¸¦ ¹İÈ¯
  *******************************************************************/
 UInt smrRecoveryMgr::getTXSEGEntryCnt()
 {
@@ -4440,7 +4492,7 @@ UInt smrRecoveryMgr::getTXSEGEntryCnt()
 
 
 /*******************************************************************
- * DESCRITPION : loganchorë¡œë¶€í„° binary db versionì„ ë°˜í™˜
+ * DESCRITPION : loganchor·ÎºÎÅÍ binary db versionÀ» ¹İÈ¯
  *******************************************************************/
 UInt smrRecoveryMgr::getSmVersionIDFromLogAnchor()
 {
@@ -4448,7 +4500,7 @@ UInt smrRecoveryMgr::getSmVersionIDFromLogAnchor()
 }
 
 /*******************************************************************
- * DESCRITPION : loganchorë¡œë¶€í„° DISK REDO LSNì„ ë°˜í™˜
+ * DESCRITPION : loganchor·ÎºÎÅÍ DISK REDO LSNÀ» ¹İÈ¯
  *******************************************************************/
 void smrRecoveryMgr::getDiskRedoLSNFromLogAnchor( smLSN* aDiskRedoLSN )
 {
@@ -4457,7 +4509,7 @@ void smrRecoveryMgr::getDiskRedoLSNFromLogAnchor( smLSN* aDiskRedoLSN )
 }
 
 /*******************************************************************
- * DESCRITPION : loganchorë¡œë¶€í„° last delete ë¡œê·¸íŒŒì¼ no ë°˜í™˜
+ * DESCRITPION : loganchor·ÎºÎÅÍ last delete ·Î±×ÆÄÀÏ no ¹İÈ¯
  *******************************************************************/
 UInt smrRecoveryMgr::getLstDeleteLogFileNo()
 {
@@ -4467,7 +4519,7 @@ UInt smrRecoveryMgr::getLstDeleteLogFileNo()
 }
 
 /*******************************************************************
- * DESCRITPION : loganchorë¡œë¶€í„° archive ë¡œê·¸ ëª¨ë“œ ë°˜í™˜
+ * DESCRITPION : loganchor·ÎºÎÅÍ archive ·Î±× ¸ğµå ¹İÈ¯
  *******************************************************************/
 smiArchiveMode smrRecoveryMgr::getArchiveMode()
 {
@@ -4476,8 +4528,8 @@ smiArchiveMode smrRecoveryMgr::getArchiveMode()
 }
 
 /*******************************************************************
- * DESCRITPION : loganchorë¡œë¶€í„° change tracking managerì˜ ìƒíƒœê°€ 
- *               Enableë˜ì—ˆëŠ”ì§€ íŒí•œí•˜ì—¬ ê²°ê³¼ ë°˜í™˜
+ * DESCRITPION : loganchor·ÎºÎÅÍ change tracking managerÀÇ »óÅÂ°¡ 
+ *               EnableµÇ¾ú´ÂÁö ÆÇÇÑÇÏ¿© °á°ú ¹İÈ¯
  * PROJ-2133 incremental backup
  *******************************************************************/
 idBool smrRecoveryMgr::isCTMgrEnabled()
@@ -4499,8 +4551,8 @@ idBool smrRecoveryMgr::isCTMgrEnabled()
 }
 
 /*******************************************************************
- * DESCRITPION : loganchorë¡œë¶€í„° change tracking managerì˜ ìƒíƒœê°€ 
- *               Createì¤‘ì¸ì§€ íŒí•œí•˜ì—¬ ê²°ê³¼ ë°˜í™˜
+ * DESCRITPION : loganchor·ÎºÎÅÍ change tracking managerÀÇ »óÅÂ°¡ 
+ *               CreateÁßÀÎÁö ÆÇÇÑÇÏ¿© °á°ú ¹İÈ¯
  * PROJ-2133 incremental backup
  *******************************************************************/
 idBool smrRecoveryMgr::isCreatingCTFile()
@@ -4565,8 +4617,8 @@ IDE_RC smrRecoveryMgr::getDataFileDescSlotIDFromLogAncho4DBF(
 }
 
 /*******************************************************************
- * DESCRITPION : loganchorë¡œë¶€í„° backup info managerì˜ ìƒíƒœê°€ 
- *               initializeì¸ì§€ íŒí•œí•˜ì—¬ ê²°ê³¼ ë°˜í™˜
+ * DESCRITPION : loganchor·ÎºÎÅÍ backup info managerÀÇ »óÅÂ°¡ 
+ *               initializeÀÎÁö ÆÇÇÑÇÏ¿© °á°ú ¹İÈ¯
  * PROJ-2133 incremental backup
  *******************************************************************/
 smriBIMgrState smrRecoveryMgr::getBIMgrState()
@@ -4575,7 +4627,7 @@ smriBIMgrState smrRecoveryMgr::getBIMgrState()
 }
 
 /*******************************************************************
- * DESCRITPION : loganchorì— ì €ì¥ëœ CTFileAttrì˜ ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
+ * DESCRITPION : loganchor¿¡ ÀúÀåµÈ CTFileAttrÀÇ Á¤º¸¸¦ °»½ÅÇÑ´Ù.
  * PROJ-2133 incremental backup
  *******************************************************************/
 IDE_RC smrRecoveryMgr::updateCTFileAttrToLogAnchor( 
@@ -4596,7 +4648,7 @@ IDE_RC smrRecoveryMgr::updateCTFileAttrToLogAnchor(
 }
 
 /*******************************************************************
- * DESCRITPION : loganchorì— ì €ì¥ëœ BIFileAttrì˜ ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
+ * DESCRITPION : loganchor¿¡ ÀúÀåµÈ BIFileAttrÀÇ Á¤º¸¸¦ °»½ÅÇÑ´Ù.
  * PROJ-2133 incremental backup
  *******************************************************************/
 IDE_RC smrRecoveryMgr::updateBIFileAttrToLogAnchor( 
@@ -4621,7 +4673,7 @@ IDE_RC smrRecoveryMgr::updateBIFileAttrToLogAnchor(
 }
 
 /*******************************************************************
- * DESCRITPION : loganchorì— ì €ì¥ëœ CTFileì´ë¦„ì„ ê°€ì ¸ì˜¨ë‹¤.
+ * DESCRITPION : loganchor¿¡ ÀúÀåµÈ CTFileÀÌ¸§À» °¡Á®¿Â´Ù.
  * PROJ-2133 incremental backup
  *******************************************************************/
 SChar* smrRecoveryMgr::getCTFileName() 
@@ -4632,7 +4684,7 @@ SChar* smrRecoveryMgr::getCTFileName()
 }
 
 /*******************************************************************
- * DESCRITPION : loganchorì— ì €ì¥ëœ BIFileì´ë¦„ì„ ê°€ì ¸ì˜¨ë‹¤.
+ * DESCRITPION : loganchor¿¡ ÀúÀåµÈ BIFileÀÌ¸§À» °¡Á®¿Â´Ù.
  * PROJ-2133 incremental backup
  *******************************************************************/
 SChar* smrRecoveryMgr::getBIFileName() 
@@ -4643,7 +4695,7 @@ SChar* smrRecoveryMgr::getBIFileName()
 }
 
 /*******************************************************************
- * DESCRITPION : loganchorì— ì €ì¥ëœ ë§ˆì§€ë§‰ flush LSNì„ ê°€ì ¸ì˜¨ë‹¤.
+ * DESCRITPION : loganchor¿¡ ÀúÀåµÈ ¸¶Áö¸· flush LSNÀ» °¡Á®¿Â´Ù.
  * PROJ-2133 incremental backup
  *******************************************************************/
 smLSN smrRecoveryMgr::getCTFileLastFlushLSNFromLogAnchor()
@@ -4654,7 +4706,7 @@ smLSN smrRecoveryMgr::getCTFileLastFlushLSNFromLogAnchor()
 }
 
 /*******************************************************************
- * DESCRITPION : loganchorì— ì €ì¥ëœ ë§ˆì§€ë§‰ backup LSNì„ ê°€ì ¸ì˜¨ë‹¤.
+ * DESCRITPION : loganchor¿¡ ÀúÀåµÈ ¸¶Áö¸· backup LSNÀ» °¡Á®¿Â´Ù.
  * PROJ-2133 incremental backup
  *******************************************************************/
 smLSN smrRecoveryMgr::getBIFileLastBackupLSNFromLogAnchor()
@@ -4665,7 +4717,7 @@ smLSN smrRecoveryMgr::getBIFileLastBackupLSNFromLogAnchor()
 }
 
 /*******************************************************************
- * DESCRITPION : loganchorì— ì €ì¥ëœ ë§ˆì§€ë§‰ ì´ì „ì— ìˆ˜í–‰ëœ backup LSNì„ ê°€ì ¸ì˜¨ë‹¤.
+ * DESCRITPION : loganchor¿¡ ÀúÀåµÈ ¸¶Áö¸· ÀÌÀü¿¡ ¼öÇàµÈ backup LSNÀ» °¡Á®¿Â´Ù.
  * PROJ-2133 incremental backup
  *******************************************************************/
 smLSN smrRecoveryMgr::getBIFileBeforeBackupLSNFromLogAnchor()
@@ -4676,8 +4728,8 @@ smLSN smrRecoveryMgr::getBIFileBeforeBackupLSNFromLogAnchor()
 }
 
 /*******************************************************************
- * DESCRITPION : loganchorì— ì €ì¥ëœ incremental backup ë””ë ‰í† ë¦¬ ê²½ë¡œë¥¼
- * ê°±ì‹ í•œë‹¤.
+ * DESCRITPION : loganchor¿¡ ÀúÀåµÈ incremental backup µğ·ºÅä¸® °æ·Î¸¦
+ * °»½ÅÇÑ´Ù.
  * PROJ-2133 incremental backup
  *******************************************************************/
 IDE_RC smrRecoveryMgr::changeIncrementalBackupDir( SChar * aNewBackupDir )
@@ -4718,7 +4770,7 @@ IDE_RC smrRecoveryMgr::changeIncrementalBackupDir( SChar * aNewBackupDir )
 }
 
 /*******************************************************************
- * DESCRITPION : loganchorì— ì €ì¥ëœ incremental backup ìœ„ì¹˜ë¥¼ ë°˜í™˜í•œë‹¤.
+ * DESCRITPION : loganchor¿¡ ÀúÀåµÈ incremental backup À§Ä¡¸¦ ¹İÈ¯ÇÑ´Ù.
  * PROJ-2133 incremental backup
  *******************************************************************/
 SChar* smrRecoveryMgr::getIncrementalBackupDirFromLogAnchor()
@@ -4730,10 +4782,10 @@ SChar* smrRecoveryMgr::getIncrementalBackupDirFromLogAnchor()
 
 /*********************************************************
  * function description: smrRecoveryMgr::resetLogFiles
- * -  incompleted media recoveryê°€ ë˜ì—ˆì„ë•Œ,
- * ì¦‰ ë³µêµ¬ê°€ í˜„ì¬ì‹œì ê¹Œì§€ ë˜ì§€ ì•Šê³ , ê³¼ê±°ì˜ íŠ¹ì •ì‹œì ê¹Œì§€
- * ë˜ì—ˆì„ë•Œ active  redo logíŒŒì¼ì„ resetì‹œì¼œ,
- * redo all, undo allì„ skipí•˜ë„ë¡ í•œë‹¤.
+ * -  incompleted media recovery°¡ µÇ¾úÀ»¶§,
+ * Áï º¹±¸°¡ ÇöÀç½ÃÁ¡±îÁö µÇÁö ¾Ê°í, °ú°ÅÀÇ Æ¯Á¤½ÃÁ¡±îÁö
+ * µÇ¾úÀ»¶§ active  redo logÆÄÀÏÀ» reset½ÃÄÑ,
+ * redo all, undo allÀ» skipÇÏµµ·Ï ÇÑ´Ù.
  *********************************************************/
 IDE_RC smrRecoveryMgr::resetLogFiles()
 {
@@ -4770,8 +4822,8 @@ IDE_RC smrRecoveryMgr::resetLogFiles()
     IDE_CALLBACK_SEND_SYM("  [SM] Recovery Phase - 0 : Reset logfiles");
 
     // fix BUG-15840
-    // ë¯¸ë””ì–´ë³µêµ¬ì—ì„œ resetlogs ë¥¼ ìˆ˜í–‰í• ë•Œ archive logì— ëŒ€í•´ì„œë„ ê³ ë ¤í•´ì•¼í•¨
-    //   Online ë¡œê·¸íŒŒì¼ ë° Archive ë¡œê·¸íŒŒì¼ë„ í•¨ê»˜ ResetLogsë¥¼ ìˆ˜í–‰í•œë‹¤.
+    // ¹Ìµğ¾îº¹±¸¿¡¼­ resetlogs ¸¦ ¼öÇàÇÒ¶§ archive log¿¡ ´ëÇØ¼­µµ °í·ÁÇØ¾ßÇÔ
+    //   Online ·Î±×ÆÄÀÏ ¹× Archive ·Î±×ÆÄÀÏµµ ÇÔ²² ResetLogs¸¦ ¼öÇàÇÑ´Ù.
 
     // [1] Delete Archive Logfiles
     idlOS::snprintf( sMsgBuf,
@@ -4799,12 +4851,12 @@ IDE_RC smrRecoveryMgr::resetLogFiles()
     // [2] Delete Online Logfiles
     if ( sResetLSN.mOffset == 0 )
     {
-        // 3ë‹¨ê³„ì—ì„œ partial clearí•  í•„ìš”ì—†ì´ íŒŒì¼ì„ ì‚­ì œí•œë‹¤.
+        // 3´Ü°è¿¡¼­ partial clearÇÒ ÇÊ¿ä¾øÀÌ ÆÄÀÏÀ» »èÁ¦ÇÑ´Ù.
         sBeginLogFileNo = sResetLSN.mFileNo;
     }
     else
     {
-        // 3ë‹¨ê³„ì—ì„œ partial clearí•˜ê¸° ìœ„í•´ ë‚¨ê²¨ë‘”ë‹¤.
+        // 3´Ü°è¿¡¼­ partial clearÇÏ±â À§ÇØ ³²°ÜµĞ´Ù.
         sBeginLogFileNo = sResetLSN.mFileNo + 1;
     }
 
@@ -4857,18 +4909,18 @@ IDE_RC smrRecoveryMgr::resetLogFiles()
         IDE_TEST( sLogFile == NULL);
         IDE_TEST( sLogFile->mFileNo != sResetLSN.mFileNo);
 
-        // BUG-14771 Log Fileì„ write modeë¡œ openì‹œ
-        //           Log Buffer Typeì´ memoryì¸ ê²½ìš°ì—ëŠ”
-        //           memset í•˜ë¯€ë¡œ, ë¡œê·¸íŒŒì¼ ìƒˆë¡œ ì½ì–´ì˜¨ë‹¤.
-        //           sLogFile->syncToDisk ì—ì„œ Direct I/O ë‹¨ìœ„ë¡œ
-        //           Diskì— ë¡œê·¸ë¥¼ ë‚´ë¦¬ê¸° ë•Œë¬¸ì— ë¡œê·¸ë¥¼ ë¯¸ë¦¬ ì½ì–´ì•¼ í•¨
+        // BUG-14771 Log FileÀ» write mode·Î open½Ã
+        //           Log Buffer TypeÀÌ memoryÀÎ °æ¿ì¿¡´Â
+        //           memset ÇÏ¹Ç·Î, ·Î±×ÆÄÀÏ »õ·Î ÀĞ¾î¿Â´Ù.
+        //           sLogFile->syncToDisk ¿¡¼­ Direct I/O ´ÜÀ§·Î
+        //           Disk¿¡ ·Î±×¸¦ ³»¸®±â ¶§¹®¿¡ ·Î±×¸¦ ¹Ì¸® ÀĞ¾î¾ß ÇÔ
         if ( smuProperty::getLogBufferType( ) == SMU_LOG_BUFFER_TYPE_MEMORY )
         {
             IDE_TEST( sLogFile->readFromDisk(
                             0,
                             (SChar*)(sLogFile->mBase),
-                            /* BUG-15532: ìœˆë„ìš° í”Œë«í¼ì—ì„œ DirectIOë¥¼ ì‚¬ìš©í• ê²½ìš°
-                             * ì„œë²„ ì‹œì‘ì‹¤íŒ¨IOí¬ê¸°ê°€ Sector Sizeë¡œ Alignë˜ì–´ì•¼ë¨ */
+                            /* BUG-15532: À©µµ¿ì ÇÃ·§Æû¿¡¼­ DirectIO¸¦ »ç¿ëÇÒ°æ¿ì
+                             * ¼­¹ö ½ÃÀÛ½ÇÆĞIOÅ©±â°¡ Sector Size·Î AlignµÇ¾î¾ßµÊ */
                             idlOS::align(sResetLSN.mOffset,
                                          iduProperty::getDirectIOPageSize()))
                       != IDE_SUCCESS );
@@ -4880,7 +4932,7 @@ IDE_RC smrRecoveryMgr::resetLogFiles()
 
         sLogFile->clear(sResetLSN.mOffset);
 
-        // Log Bufferë¥¼ Clearí–ˆê¸° ë•Œë¬¸ì— Diskì— ë³€ê²½ëœ ì˜ì—­ì„ ë°˜ì˜ì‹œí‚¨ë‹¤.
+        // Log Buffer¸¦ ClearÇß±â ¶§¹®¿¡ Disk¿¡ º¯°æµÈ ¿µ¿ªÀ» ¹İ¿µ½ÃÅ²´Ù.
         IDE_TEST( sLogFile->syncToDisk( sResetLSN.mOffset,
                                         smuProperty::getLogFileSize() )
                  != IDE_SUCCESS );
@@ -4936,14 +4988,14 @@ IDE_RC smrRecoveryMgr::resetLogFiles()
 }
 
 /*
-  ì…ë ¥ëœ Directoryì— ì…ë ¥ëœ logfile ë²ˆí˜¸ë¶€í„° ê·¸ ì´í›„ ëª¨ë“  ë¡œê·¸íŒŒì¼ì„
-  ì‚­ì œí•œë‹¤.
+  ÀÔ·ÂµÈ Directory¿¡ ÀÔ·ÂµÈ logfile ¹øÈ£ºÎÅÍ ±× ÀÌÈÄ ¸ğµç ·Î±×ÆÄÀÏÀ»
+  »èÁ¦ÇÑ´Ù.
 
-  [ ì¸ì ]
+  [ ÀÎÀÚ ]
 
-  {IN] aDirPath - ë¡œê·¸íŒŒì¼ì´ ì¡´ì¬í•˜ëŠ” ë””ë ‰í† ë¦¬
-  {IN] aBeginLogFileNo - ì‚­ì œí•  ë¡œê·¸íŒŒì¼ ì‹œì‘ë²ˆí˜¸
-  ( ì´í›„ ë¡œê·¸íŒŒì¼ì€ ëª¨ë‘ ì‚­ì œë¨ )
+  {IN] aDirPath - ·Î±×ÆÄÀÏÀÌ Á¸ÀçÇÏ´Â µğ·ºÅä¸®
+  {IN] aBeginLogFileNo - »èÁ¦ÇÒ ·Î±×ÆÄÀÏ ½ÃÀÛ¹øÈ£
+  ( ÀÌÈÄ ·Î±×ÆÄÀÏÀº ¸ğµÎ »èÁ¦µÊ )
 
 */
 IDE_RC smrRecoveryMgr::deleteLogFiles( SChar   * aDirPath,
@@ -5089,7 +5141,7 @@ IDE_RC smrRecoveryMgr::deleteLogFiles( SChar   * aDirPath,
 }
 
 /***********************************************************************
- * Description : ì¤‘ê°„ì— ìœ ì‹¤ëœ ë¡œê·¸íŒŒì¼ì´ ì—†ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+ * Description : Áß°£¿¡ À¯½ÇµÈ ·Î±×ÆÄÀÏÀÌ ¾ø´ÂÁö °Ë»çÇÑ´Ù.
  **********************************************************************/
 IDE_RC smrRecoveryMgr::identifyLogFiles()
 {
@@ -5111,6 +5163,20 @@ IDE_RC smrRecoveryMgr::identifyLogFiles()
     idBool             sIsLogFile;
     idBool             sDeleteFlag;
     ULong              sLogFileSize = smuProperty::getLogFileSize();
+
+    /* BUG-48409 prepare ¿Ï·áµÇÁö ¾ÊÀº logfile À» Á¤¸®ÇÏ´Â ¹æ¹ı °³¼±
+     * prepare ÁßÀÌ´ø ÀÓ½Ã ·Î±× ÆÄÀÏ »èÁ¦ */
+    idlOS::snprintf( sLogFileName,
+                     SM_MAX_FILE_NAME,
+                     "%s%c%s%",
+                     smuProperty::getLogDirPath(),
+                     IDL_FILE_SEPARATOR,
+                     SMR_TEMP_LOG_FILE_NAME );
+      
+    if ( idf::access(sLogFileName, F_OK) == 0 )
+    {
+        (void)idf::unlink(sLogFileName);
+    }
 
     /* smrRecoveryMgr_identifyLogFiles_malloc_DirEnt.tc */
     /* smrRecoveryMgr_identifyLogFiles.tc */
@@ -5229,30 +5295,15 @@ IDE_RC smrRecoveryMgr::identifyLogFiles()
                          sCurLogFileNo );
 
         /* PROJ-2162 RestartRiskReduction
-         * LogFileì´ ì—°ì†ì ì´ì§€ ì•Šì„ë•Œ, ë°”ë¡œ ì„œë²„ë¥¼ ì¢…ë£Œí•˜ëŠ” ëŒ€ì‹  ì´ë¥¼
-         * ì²´í¬í•´ë‘”ë‹¤.
-         * ë˜í•œ  ì´ ì´í›„ì˜ LogFileì„ ì§€ì›Œì„œë„ ì•ˆëœë‹¤. */
+         * LogFileÀÌ ¿¬¼ÓÀûÀÌÁö ¾ÊÀ»¶§, ¹Ù·Î ¼­¹ö¸¦ Á¾·áÇÏ´Â ´ë½Å ÀÌ¸¦
+         * Ã¼Å©ÇØµĞ´Ù.
+         * ¶ÇÇÑ  ÀÌ ÀÌÈÄÀÇ LogFileÀ» Áö¿ö¼­µµ ¾ÈµÈ´Ù. */
         if ( idf::access(sLogFileName, F_OK) != 0 )
         {
             mLogFileContinuity = ID_FALSE;
             idlOS::strncpy( mLostLogFile,
                             sLogFileName,
                             SM_MAX_FILE_NAME );
-            continue;
-        }
-        else
-        {
-            /* nothing to do ... */
-        }
-
-        // BUG-20229
-        // sDeleteFlagê°€ ID_TRUEë¼ëŠ” ê²ƒì€
-        // ì´ì „ ë¡œê·¸íŒŒì¼ì¤‘ì— sizeê°€ 0ì¸ ë¡œê·¸íŒŒì¼ì´ ìˆì—ˆë‹¤ëŠ” ëœ»ì´ë‹¤.
-        // sizeê°€ 0ì¸ ë¡œê·¸íŒŒì¼ì„ ë°œê²¬í–ˆë‹¤ë©´
-        // ê·¸ ì´í›„ì˜ ë¡œê·¸íŒŒì¼ì„ ëª¨ë‘ ì§€ìš´ë‹¤.
-        if ( sDeleteFlag == ID_TRUE )
-        {
-            (void)idf::unlink(sLogFileName);
             continue;
         }
         else
@@ -5277,29 +5328,50 @@ IDE_RC smrRecoveryMgr::identifyLogFiles()
 
         sState = 1;
         IDE_TEST( sFile.destroy() != IDE_SUCCESS );
+        
+        // BUG-20229
+        // sDeleteFlag°¡ ID_TRUE¶ó´Â °ÍÀº
+        // ÀÌÀü ·Î±×ÆÄÀÏÁß¿¡ size°¡ 0ÀÎ ·Î±×ÆÄÀÏÀÌ ÀÖ¾ú´Ù´Â ¶æÀÌ´Ù.
+        // size°¡ 0ÀÎ ·Î±×ÆÄÀÏÀ» ¹ß°ßÇß´Ù¸é
+        // ±× ÀÌÈÄÀÇ ·Î±×ÆÄÀÏÀ» ¸ğµÎ Áö¿î´Ù.
+        if ( sDeleteFlag == ID_TRUE )
+        {
+            ideLog::log( IDE_ERR_0,
+                         "Remove logfile : %s (%"ID_UINT32_FMT")\n" ,
+                         sLogFileName,
+                         sFileSize );
 
+            (void)idf::unlink(sLogFileName);
+            continue;
+        }
+        else
+        {
+            /* nothing to do ... */
+        }
 
         IDE_ASSERT( sFileSize <= sLogFileSize );
 
         // BUG-20229
-        // sizeê°€ 0ì¸ ë¡œê·¸íŒŒì¼ì„ ë°œê²¬í–ˆë‹¤ë©´
-        // ê·¸ ì´í›„ì˜ ë¡œê·¸íŒŒì¼ì„ ëª¨ë‘ ì§€ìš´ë‹¤.
-        // prepare logfileì‹œì—ëŠ” syncë¥¼ í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì—,
-        // ê°‘ì‘ìŠ¤ëŸ° ì „ì› ì¥ì• ë¡œ ì¸í•˜ì—¬ ì‹œìŠ¤í…œì´ rebootë˜ëŠ” ê²½ìš°,
-        // prepare ì¤‘ì´ë˜ logfileì˜ sizeê°€ 0 ì¼ ìˆ˜ ìˆë‹¤.
+        // size°¡ 0ÀÎ ·Î±×ÆÄÀÏÀ» ¹ß°ßÇß´Ù¸é
+        // ±× ÀÌÈÄÀÇ ·Î±×ÆÄÀÏÀ» ¸ğµÎ Áö¿î´Ù.
+        // prepare logfile½Ã¿¡´Â sync¸¦ ÇÏÁö ¾Ê±â ¶§¹®¿¡,
+        // °©ÀÛ½º·± Àü¿ø Àå¾Ö·Î ÀÎÇÏ¿© ½Ã½ºÅÛÀÌ rebootµÇ´Â °æ¿ì,
+        // prepare ÁßÀÌ´ø logfileÀÇ size°¡ 0 ÀÏ ¼ö ÀÖ´Ù.
         if ( sFileSize == 0 )
         {
             if ( smuProperty::getZeroSizeLogFileAutoDelete() == 0 )
             {
-                /* BUG-42930 OSê°€ ì˜ëª»ëœ sizeë¥¼ ë°˜í™˜í• ìˆ˜ ìˆìŠµë‹ˆë‹¤.
-                 * ë¡œê·¸íŒŒì¼ì„ ë¬´ì¡°ê±´ ì§€ìš°ëŠ” ëŒ€ì‹ 
-                 * DBAê°€ ì²˜ë¦¬í• ìˆ˜ ìˆë„ë¡ Error ë©”ì‹œì§€ë¥¼ ì¶œë ¥í•˜ë„ë¡ í•˜ì˜€ìŠµë‹ˆë‹¤.
-                 * Server Kill í…ŒìŠ¤íŠ¸ ë“±ì—ì„œ Log File Sizeê°€ 0ì´ ë ìˆ˜ ìˆìŠµë‹ˆë‹¤.
-                 * Testìš© Propertyë¥¼ ë‘ì–´ natc ë„ì¤‘ì—ëŠ” ìë™ì œê±° ë ìˆ˜ ìˆê²Œ í•˜ì˜€ìŠµë‹ˆë‹¤. */
+                /* BUG-42930 OS°¡ Àß¸øµÈ size¸¦ ¹İÈ¯ÇÒ¼ö ÀÖ½À´Ï´Ù.
+                 * ·Î±×ÆÄÀÏÀ» ¹«Á¶°Ç Áö¿ì´Â ´ë½Å
+                 * DBA°¡ Ã³¸®ÇÒ¼ö ÀÖµµ·Ï Error ¸Ş½ÃÁö¸¦ Ãâ·ÂÇÏµµ·Ï ÇÏ¿´½À´Ï´Ù.
+                 * Server Kill Å×½ºÆ® µî¿¡¼­ Log File Size°¡ 0ÀÌ µÉ¼ö ÀÖ½À´Ï´Ù.
+                 * Test¿ë Property¸¦ µÎ¾î natc µµÁß¿¡´Â ÀÚµ¿Á¦°Å µÉ¼ö ÀÖ°Ô ÇÏ¿´½À´Ï´Ù. */
+                ideLog::log( IDE_ERR_0, "Error zero size logfile : %s\n" , sLogFileName );
                 IDE_RAISE( LOG_FILE_SIZE_ZERO );
             }
             else
             {
+                ideLog::log( IDE_ERR_0, "Remove zero size logfile : %s\n" , sLogFileName );
                 (void)idf::unlink(sLogFileName);
                 sDeleteFlag = ID_TRUE;
             }
@@ -5308,11 +5380,29 @@ IDE_RC smrRecoveryMgr::identifyLogFiles()
         {
             if ( sFileSize != sLogFileSize )
             {
-                // BUG-20229
-                // ë¡œê·¸íŒŒì¼ì˜ í¬ê¸°ë¥¼ ì •ìƒì ì¸ ë¡œê·¸íŒŒì¼ í¬ê¸°ë¡œ ëŠ˜ì¸ë‹¤.
-                IDE_TEST( resizeLogFile(sLogFileName,
-                                       sLogFileSize)
-                         != IDE_SUCCESS );
+                /* BUG-48409 prepare ¿Ï·áµÇÁö ¾ÊÀº logfile À» Á¤¸®ÇÏ´Â ¹æ¹ı °³¼±
+                 * use temp logfile¿¡¼­´Â prepare Áß¿¡ size°¡ ÀÛÀº logfile ÀÌ ³²Áö ¾Ê´Â´Ù. */
+                if ( smuProperty::getUseTempForPrepareLogFile() == ID_TRUE )
+                {
+                    ideLog::log( IDE_ERR_0,
+                                 "Invalid logfile size : %s (%"ID_UINT32_FMT")\n" ,
+                                 sLogFileName,
+                                 sFileSize );
+                    IDE_RAISE( LOG_FILE_SIZE_ZERO );
+                }
+                else
+                {
+                    ideLog::log( IDE_ERR_0,
+                                 "Resize logfile : %s (%"ID_UINT32_FMT" -> %"ID_UINT32_FMT")\n" ,
+                                 sLogFileName,
+                                 sFileSize,
+                                 sLogFileSize );
+                    // BUG-20229
+                    // ·Î±×ÆÄÀÏÀÇ Å©±â¸¦ Á¤»óÀûÀÎ ·Î±×ÆÄÀÏ Å©±â·Î ´ÃÀÎ´Ù.
+                    IDE_TEST( resizeLogFile(sLogFileName,
+                                            sLogFileSize)
+                              != IDE_SUCCESS );
+                }
             }
             else
             {
@@ -5379,8 +5469,8 @@ IDE_RC smrRecoveryMgr::identifyLogFiles()
 }
 
 /*
-  incomplete ë¯¸ë””ì–´ë³µêµ¬ë¥¼ ìˆ˜í–‰í•˜ì—¬ reset logsë¥¼ ì„¤ì •í•œ ê²½ìš°
-  startup meta resetlogs ì¸ì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
+  incomplete ¹Ìµğ¾îº¹±¸¸¦ ¼öÇàÇÏ¿© reset logs¸¦ ¼³Á¤ÇÑ °æ¿ì
+  startup meta resetlogs ÀÎÁö¸¦ °Ë»çÇÑ´Ù.
 */
 IDE_RC smrRecoveryMgr::checkResetLogLSN( UInt aActionFlag )
 {
@@ -5413,35 +5503,35 @@ IDE_RC smrRecoveryMgr::checkResetLogLSN( UInt aActionFlag )
 
 
 /*
-   PRJ-1149 ëª¨ë“  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ë¯¸ë””ì–´ ì˜¤ë¥˜ ê²€ì‚¬
+   PRJ-1149 ¸ğµç Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ¹Ìµğ¾î ¿À·ù °Ë»ç
 
-   [IN] aActionFlag - ë‹¤ë‹¨ê³„ ì„œë²„êµ¬ë™ê³¼ì •ì—ì„œì˜ í”Œë˜ê·¸
+   [IN] aActionFlag - ´Ù´Ü°è ¼­¹ö±¸µ¿°úÁ¤¿¡¼­ÀÇ ÇÃ·¡±×
 */
 IDE_RC smrRecoveryMgr::identifyDatabase( UInt  aActionFlag )
 {
     ideLog::log( IDE_SERVER_0,
                  "  \tchecking file(s) of all memory tablespace\n" );
 
-    // [1] ëª¨ë“  ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ Stableí•œ DBFileë“¤ì€ ë°˜ë“œì‹œ
-    // ìˆì–´ì•¼ í•˜ê³  (loganchorì— ì €ì¥ë˜ì–´ìˆëŠ”í•œ) Unstable DBFilesë“¤ì€
-    // ì¡´ì¬í•œë‹¤ë©´ ìµœì†Œí•œ ìœ íš¨í•œ ë²„ì „ì´ì–´ì•¼ í•œë‹¤.
-    // ë¯¸ë””ì–´ ë³µêµ¬ í•„ìš” ì—¬ë¶€ë¥¼ ì²´í¬í•œë‹¤.
-    // ì„œë²„êµ¬ë™ì‹œì—ëŠ” ID_FALSEë¡œ ë„˜ê¸´ë‹¤.
+    // [1] ¸ğµç ¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½ºÀÇ StableÇÑ DBFileµéÀº ¹İµå½Ã
+    // ÀÖ¾î¾ß ÇÏ°í (loganchor¿¡ ÀúÀåµÇ¾îÀÖ´ÂÇÑ) Unstable DBFilesµéÀº
+    // Á¸ÀçÇÑ´Ù¸é ÃÖ¼ÒÇÑ À¯È¿ÇÑ ¹öÀüÀÌ¾î¾ß ÇÑ´Ù.
+    // ¹Ìµğ¾î º¹±¸ ÇÊ¿ä ¿©ºÎ¸¦ Ã¼Å©ÇÑ´Ù.
+    // ¼­¹ö±¸µ¿½Ã¿¡´Â ID_FALSE·Î ³Ñ±ä´Ù.
     IDE_TEST( smmTBSMediaRecovery::identifyDBFilesOfAllTBS( ID_FALSE )
               != IDE_SUCCESS );
 
     ideLog::log( IDE_SERVER_0,
                  "  \tchecking file(s) of all disk tablespace\n" );
 
-    // [2] ëª¨ë“  ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ DBFileë“¤ì˜
-    // ë¯¸ë””ì–´ ë³µêµ¬ í•„ìš” ì—¬ë¶€ë¥¼ ì²´í¬í•œë‹¤.
-    // ì„œë²„êµ¬ë™ì‹œì—ëŠ” ID_FALSEë¡œ ë„˜ê¸´ë‹¤.
+    // [2] ¸ğµç µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½ºÀÇ DBFileµéÀÇ
+    // ¹Ìµğ¾î º¹±¸ ÇÊ¿ä ¿©ºÎ¸¦ Ã¼Å©ÇÑ´Ù.
+    // ¼­¹ö±¸µ¿½Ã¿¡´Â ID_FALSE·Î ³Ñ±ä´Ù.
     IDE_TEST( sddDiskMgr::identifyDBFilesOfAllTBS( NULL, /* idvSQL* */
                                                    ID_FALSE )
               != IDE_SUCCESS );
 
-    // [3] ë¶ˆì™„ì „ë³µêµ¬ë¥¼ ìˆ˜í–‰í•˜ì˜€ë‹¤ë©´ alter databae mydb meta resetlogs;
-    // ë¥¼ ìˆ˜í–‰í•˜ì˜€ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+    // [3] ºÒ¿ÏÀüº¹±¸¸¦ ¼öÇàÇÏ¿´´Ù¸é alter databae mydb meta resetlogs;
+    // ¸¦ ¼öÇàÇÏ¿´´ÂÁö °Ë»çÇÑ´Ù.
     IDE_TEST( checkResetLogLSN( aActionFlag ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -5452,14 +5542,14 @@ IDE_RC smrRecoveryMgr::identifyDatabase( UInt  aActionFlag )
 }
 
 /*
-  ëª¨ë“  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë¥¼ ê²€ì‚¬í•˜ì—¬ ë³µêµ¬ëŒ€ìƒ íŒŒì¼ë¦¬ìŠ¤íŠ¸ë¥¼ êµ¬ì¶•í•œë‹¤.
+  ¸ğµç Å×ÀÌºí½ºÆäÀÌ½º¸¦ °Ë»çÇÏ¿© º¹±¸´ë»ó ÆÄÀÏ¸®½ºÆ®¸¦ ±¸ÃàÇÑ´Ù.
 
-  [IN]  aRecoveryType         - ë¯¸ë””ì–´ ë³µêµ¬ íƒ€ì… (RESTART RECOVERY ì œì™¸)
-  [OUT] aFailureMediaType     - ë¯¸ë””ì–´ ì˜¤ë¥˜ íƒ€ì…
-  [OUT] aFromDiskRedoLSN      - ë¯¸ë””ì–´ ë³µêµ¬í•  ì‹œì‘ Disk RedoLSN
-  [OUT] aToDiskRedoLSN        - ë¯¸ë””ì–´ ë³µêµ¬í•  ì™„ë£Œ Disk RedoLSN
-  [OUT] aFromMemRedoLSN    - ë¯¸ë””ì–´ ë³µêµ¬í•  ì‹œì‘ Memory RedoLSN 
-  [OUT] aToMemRedoLSN      - ë¯¸ë””ì–´ ë³µêµ¬í•  ì™„ë£Œ Memory RedoLSN 
+  [IN]  aRecoveryType         - ¹Ìµğ¾î º¹±¸ Å¸ÀÔ (RESTART RECOVERY Á¦¿Ü)
+  [OUT] aFailureMediaType     - ¹Ìµğ¾î ¿À·ù Å¸ÀÔ
+  [OUT] aFromDiskRedoLSN      - ¹Ìµğ¾î º¹±¸ÇÒ ½ÃÀÛ Disk RedoLSN
+  [OUT] aToDiskRedoLSN        - ¹Ìµğ¾î º¹±¸ÇÒ ¿Ï·á Disk RedoLSN
+  [OUT] aFromMemRedoLSN    - ¹Ìµğ¾î º¹±¸ÇÒ ½ÃÀÛ Memory RedoLSN 
+  [OUT] aToMemRedoLSN      - ¹Ìµğ¾î º¹±¸ÇÒ ¿Ï·á Memory RedoLSN 
 */
 IDE_RC smrRecoveryMgr::makeMediaRecoveryDBFList4AllTBS(
     smiRecoverType    aRecoveryType,
@@ -5499,19 +5589,18 @@ IDE_RC smrRecoveryMgr::makeMediaRecoveryDBFList4AllTBS(
     sFailureChkptImgCount = 0;
     sFailureDBFCount      = 0;
 
-    sctTableSpaceMgr::getFirstSpaceNode( (void**)&sCurrSpaceNode );
+    sCurrSpaceNode = sctTableSpaceMgr::getFirstSpaceNode();
 
     while ( sCurrSpaceNode != NULL )
     {
-        sctTableSpaceMgr::getNextSpaceNode( (void*)sCurrSpaceNode,
-                                            (void**)&sNextSpaceNode);
+        sNextSpaceNode = sctTableSpaceMgr::getNextSpaceNode( sCurrSpaceNode->mID );
 
         IDE_ASSERT( (sCurrSpaceNode->mState & SMI_TBS_DROPPED)
                     != SMI_TBS_DROPPED );
 
-        if ( sctTableSpaceMgr::isTempTableSpace(sCurrSpaceNode->mID) == ID_TRUE )
+        if ( sctTableSpaceMgr::isTempTableSpace( sCurrSpaceNode ) == ID_TRUE )
         {
-            // ì„ì‹œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ê²½ìš° ì²´í¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // ÀÓ½Ã Å×ÀÌºí½ºÆäÀÌ½ºÀÇ °æ¿ì Ã¼Å©ÇÏÁö ¾Ê´Â´Ù.
             sCurrSpaceNode = sNextSpaceNode;
             continue;
         }
@@ -5520,53 +5609,53 @@ IDE_RC smrRecoveryMgr::makeMediaRecoveryDBFList4AllTBS(
                                          SCT_SS_UNABLE_MEDIA_RECOVERY )
              == ID_TRUE )
         {
-            // ë¯¸ë””ì–´ë³µêµ¬ê°€ í•„ìš”ì—†ëŠ” í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤
-            // DROPPED ì´ê±°ë‚˜ DISCARD ì¸ ê²½ìš°
+            // ¹Ìµğ¾îº¹±¸°¡ ÇÊ¿ä¾ø´Â Å×ÀÌºí½ºÆäÀÌ½º
+            // DROPPED ÀÌ°Å³ª DISCARD ÀÎ °æ¿ì
             sCurrSpaceNode = sNextSpaceNode;
             continue;
         }
+        switch( sctTableSpaceMgr::getTBSLocation( sCurrSpaceNode ) )
+        {
+            case SMI_TBS_MEMORY:
+                // ¸Ş¸ğ¸®Å×ÀÌºí½ºÆäÀÌ½ºÀÇ °æ¿ì
+                IDE_TEST( smmTBSMediaRecovery::makeMediaRecoveryDBFList(
+                              sCurrSpaceNode,
+                              aRecoveryType,
+                              &sFailureChkptImgCount,
+                              &sFromMemRedoLSN,
+                              &sToMemRedoLSN )
+                          != IDE_SUCCESS );
+                break;
+            case SMI_TBS_DISK:
+                IDE_TEST( sddDiskMgr::makeMediaRecoveryDBFList( NULL, /* idvSQL* */
+                                                                sCurrSpaceNode,
+                                                                aRecoveryType,
+                                                                &sFailureDBFCount,
+                                                                &sFromDiskRedoLSN,
+                                                                &sToDiskRedoLSN )
+                          != IDE_SUCCESS );
+                break;
+            case SMI_TBS_VOLATILE:
+                // Nothing to do...
+                // volatile tablespace¿¡ ´ëÇØ¼­´Â ¾Æ¹« ÀÛ¾÷ÇÏÁö ¾Ê´Â´Ù.
 
-        if ( sctTableSpaceMgr::isMemTableSpace( sCurrSpaceNode->mID ) == ID_TRUE )
-        {
-            // ë©”ëª¨ë¦¬í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ê²½ìš°
-            IDE_TEST( smmTBSMediaRecovery::makeMediaRecoveryDBFList(
-                                                            sCurrSpaceNode,
-                                                            aRecoveryType,
-                                                            &sFailureChkptImgCount,
-                                                            &sFromMemRedoLSN,
-                                                            &sToMemRedoLSN )
-                      != IDE_SUCCESS );
+                break;
+            default:
+                IDE_ASSERT(0);
+                break;
         }
-        else if ( sctTableSpaceMgr::isDiskTableSpace( sCurrSpaceNode->mID ) == ID_TRUE )
-        {
-            IDE_TEST( sddDiskMgr::makeMediaRecoveryDBFList( NULL, /* idvSQL* */
-                                                            sCurrSpaceNode,
-                                                            aRecoveryType,
-                                                            &sFailureDBFCount,
-                                                            &sFromDiskRedoLSN,
-                                                            &sToDiskRedoLSN )
-                      != IDE_SUCCESS );
-        }
-        else if ( sctTableSpaceMgr::isVolatileTableSpace( sCurrSpaceNode->mID ) == ID_TRUE )
-        {
-            // Nothing to do...
-            // volatile tablespaceì— ëŒ€í•´ì„œëŠ” ì•„ë¬´ ì‘ì—…í•˜ì§€ ì•ŠëŠ”ë‹¤.
-        }
-        else
-        {
-            IDE_ASSERT(0);
-        }
+
         sCurrSpaceNode = sNextSpaceNode;
     }
 
     if ( (sFailureChkptImgCount + sFailureDBFCount) > 0 )
     {
         /*
-           ë³µêµ¬ëŒ€ìƒ íŒŒì¼ì´ ì¡´ì¬í•˜ë©´ ë¶„ì„ëœ ì¬ìˆ˜í–‰êµ¬ê°„ì„
-           ì¬ìˆ˜í–‰í•˜ì—¬ ë¯¸ë””ì–´ë³µêµ¬ë¥¼ ì™„ë£Œí•œë‹¤.
+           º¹±¸´ë»ó ÆÄÀÏÀÌ Á¸ÀçÇÏ¸é ºĞ¼®µÈ Àç¼öÇà±¸°£À»
+           Àç¼öÇàÇÏ¿© ¹Ìµğ¾îº¹±¸¸¦ ¿Ï·áÇÑ´Ù.
         */
 
-        // ë¬´ì¡°ê±´ ì´ˆê¸°í™”í•œë‹¤.
+        // ¹«Á¶°Ç ÃÊ±âÈ­ÇÑ´Ù.
         SM_GET_LSN( *aFromDiskRedoLSN, sFromDiskRedoLSN );
         SM_GET_LSN( *aToDiskRedoLSN, sToDiskRedoLSN );
 
@@ -5614,17 +5703,17 @@ IDE_RC smrRecoveryMgr::makeMediaRecoveryDBFList4AllTBS(
     }
     else
     {
-        // ë¶ˆì™„ì „ ë³µêµ¬ëŠ” ëª¨ë“  ë°ì´íƒ€íŒŒì¼ì´ ë³µêµ¬ëŒ€ìƒì´ë‹¤.
-        // ë§Œì•½ ì‚¬ìš©ìê°€ ë¶ˆì™„ì „ ë³µêµ¬ë¥¼ ìˆ˜í–‰í•˜ê²Œ ë˜ë©´, ëª¨ë“  ë°ì´íƒ€íŒŒì¼ì´
-        // ì˜¤ë¥˜ê°€ ì—†ë”ë¼ë„ ë³µêµ¬ëŒ€ìƒì´ ë˜ê¸° ë•Œë¬¸ì— elseë¡œ ë“¤ì–´ì˜¬ìˆ˜ ì—†ë‹¤.
+        // ºÒ¿ÏÀü º¹±¸´Â ¸ğµç µ¥ÀÌÅ¸ÆÄÀÏÀÌ º¹±¸´ë»óÀÌ´Ù.
+        // ¸¸¾à »ç¿ëÀÚ°¡ ºÒ¿ÏÀü º¹±¸¸¦ ¼öÇàÇÏ°Ô µÇ¸é, ¸ğµç µ¥ÀÌÅ¸ÆÄÀÏÀÌ
+        // ¿À·ù°¡ ¾ø´õ¶óµµ º¹±¸´ë»óÀÌ µÇ±â ¶§¹®¿¡ else·Î µé¾î¿Ã¼ö ¾ø´Ù.
         IDE_ASSERT( !((aRecoveryType == SMI_RECOVER_UNTILTIME  ) ||
                       (aRecoveryType == SMI_RECOVER_UNTILCANCEL)) );
 
-        // ë¯¸ë””ì–´ ì˜¤ë¥˜ê°€ ì—†ëŠ” ìƒí™©ì—ì„œ ì™„ì „ë³µêµ¬ë¥¼ ìˆ˜í–‰í•˜ë ¤ê³  í• ë•Œ
-        // ì´ê³³ìœ¼ë¡œ ë“¤ì–´ì˜¨ë‹¤.
+        // ¹Ìµğ¾î ¿À·ù°¡ ¾ø´Â »óÈ²¿¡¼­ ¿ÏÀüº¹±¸¸¦ ¼öÇàÇÏ·Á°í ÇÒ¶§
+        // ÀÌ°÷À¸·Î µé¾î¿Â´Ù.
 
-        // ë¯¸ë””ì–´ì˜¤ë¥˜ë‚œ ë°ì´íƒ€íŒŒì¼ì´ ì—†ì´ ì™„ì „ë³µêµ¬ë¥¼ ìˆ˜í–‰í•œ ê²½ìš° ERROR ì²˜ë¦¬
-        // ë¶ˆì™„ì „ ë³µêµ¬ ë˜ëŠ” RESTART RECOVERYë¥¼ ìˆ˜í–‰í•´ì•¼ í•œë‹¤.
+        // ¹Ìµğ¾î¿À·ù³­ µ¥ÀÌÅ¸ÆÄÀÏÀÌ ¾øÀÌ ¿ÏÀüº¹±¸¸¦ ¼öÇàÇÑ °æ¿ì ERROR Ã³¸®
+        // ºÒ¿ÏÀü º¹±¸ ¶Ç´Â RESTART RECOVERY¸¦ ¼öÇàÇØ¾ß ÇÑ´Ù.
         IDE_TEST_RAISE( aRecoveryType == SMI_RECOVER_COMPLETE,
                         err_media_recovery_type );
     }
@@ -5643,11 +5732,11 @@ IDE_RC smrRecoveryMgr::makeMediaRecoveryDBFList4AllTBS(
 }
 
 /***********************************************************************
- * Description : DBFileHdrì—ì„œ ê°€ì¥ í° MustRedoToLSNì„ ê°€ì ¸ì˜¨ë‹¤.
- *  DBFile ì´ Backupë˜ì—ˆë˜ íŒŒì¼ì´ ì•„ë‹ ê²½ìš° InitLSNì„ ë„˜ê²¨ì¤€ë‹¤.
+ * Description : DBFileHdr¿¡¼­ °¡Àå Å« MustRedoToLSNÀ» °¡Á®¿Â´Ù.
+ *  DBFile ÀÌ BackupµÇ¾ú´ø ÆÄÀÏÀÌ ¾Æ´Ò °æ¿ì InitLSNÀ» ³Ñ°ÜÁØ´Ù.
  *
- * aMustRedoToLSN - [OUT] Disk DBFile ì¤‘ ê°€ì¥ í° MustRedoToLSN
- * aDBFileName    - [OUT] í•´ë‹¹ Must Redo to LSNì„ ê°€ì§„ DBFile
+ * aMustRedoToLSN - [OUT] Disk DBFile Áß °¡Àå Å« MustRedoToLSN
+ * aDBFileName    - [OUT] ÇØ´ç Must Redo to LSNÀ» °¡Áø DBFile
  **********************************************************************/
 IDE_RC smrRecoveryMgr::getMaxMustRedoToLSN( idvSQL   * aStatistics,
                                             smLSN    * aMustRedoToLSN,
@@ -5666,23 +5755,22 @@ IDE_RC smrRecoveryMgr::getMaxMustRedoToLSN( idvSQL   * aStatistics,
     *aDBFileName = NULL;
     SM_LSN_INIT( sMaxMustRedoToLSN );
 
-    sctTableSpaceMgr::getFirstSpaceNode( (void**)&sCurrSpaceNode );
+    sCurrSpaceNode = sctTableSpaceMgr::getFirstSpaceNode();
 
     while ( sCurrSpaceNode != NULL )
     {
-        sctTableSpaceMgr::getNextSpaceNode( (void*)sCurrSpaceNode,
-                                            (void**)&sNextSpaceNode);
+        sNextSpaceNode = sctTableSpaceMgr::getNextSpaceNode( sCurrSpaceNode->mID );
 
-        if ( sctTableSpaceMgr::isDiskTableSpace( sCurrSpaceNode->mID ) != ID_TRUE )
+        if ( sctTableSpaceMgr::isDiskTableSpace( sCurrSpaceNode ) != ID_TRUE )
         {
-            // ë””ìŠ¤í¬í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ê²½ìš°ë§Œ í™•ì¸í•œë‹¤.
+            // µğ½ºÅ©Å×ÀÌºí½ºÆäÀÌ½ºÀÇ °æ¿ì¸¸ È®ÀÎÇÑ´Ù.
             sCurrSpaceNode = sNextSpaceNode;
             continue;
         }
 
-        if ( sctTableSpaceMgr::isTempTableSpace(sCurrSpaceNode->mID) == ID_TRUE )
+        if ( sctTableSpaceMgr::isTempTableSpace( sCurrSpaceNode ) == ID_TRUE )
         {
-            // ì„ì‹œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ê²½ìš° ì²´í¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // ÀÓ½Ã Å×ÀÌºí½ºÆäÀÌ½ºÀÇ °æ¿ì Ã¼Å©ÇÏÁö ¾Ê´Â´Ù.
             sCurrSpaceNode = sNextSpaceNode;
             continue;
         }
@@ -5691,8 +5779,8 @@ IDE_RC smrRecoveryMgr::getMaxMustRedoToLSN( idvSQL   * aStatistics,
                                          SCT_SS_UNABLE_MEDIA_RECOVERY )
              == ID_TRUE )
         {
-            // ë¯¸ë””ì–´ë³µêµ¬ê°€ í•„ìš”ì—†ëŠ” í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤
-            // DROPPED ì´ê±°ë‚˜ DISCARD ì¸ ê²½ìš°
+            // ¹Ìµğ¾îº¹±¸°¡ ÇÊ¿ä¾ø´Â Å×ÀÌºí½ºÆäÀÌ½º
+            // DROPPED ÀÌ°Å³ª DISCARD ÀÎ °æ¿ì
             sCurrSpaceNode = sNextSpaceNode;
             continue;
         }
@@ -5725,13 +5813,13 @@ IDE_RC smrRecoveryMgr::getMaxMustRedoToLSN( idvSQL   * aStatistics,
 }
 
 /*
-   ë¯¸ë””ì–´ ë³µêµ¬ì‹œ íŒë…í•  Logì˜ Scan í•  êµ¬ê°„ì„ ì–»ëŠ”ë‹¤.
+   ¹Ìµğ¾î º¹±¸½Ã ÆÇµ¶ÇÒ LogÀÇ Scan ÇÒ ±¸°£À» ¾ò´Â´Ù.
 
-   [IN]  aFromDiskRedoLSN   - Disk ë³µêµ¬êµ¬ê°„ ìµœì†Œ LSN
-   [IN]  aToDiskRedoLSN     - Disk ë³µêµ¬êµ¬ê°„ ìµœëŒ€ LSN
-   [IN]  aFromMemRedoLSN - Memory ë³µêµ¬êµ¬ê°„ ìµœì†Œ LSN
-   [IN]  aToMemRedoLSN   - Memory ë³µêµ¬êµ¬ê°„ ìµœëŒ€ LSN
-   [OUT] aMinFromRedoLSN - ë¯¸ë””ì–´ ë³µêµ¬ì‹œ scaní•  ë¡œê·¸ì˜ ìµœì†Œ LSN
+   [IN]  aFromDiskRedoLSN   - Disk º¹±¸±¸°£ ÃÖ¼Ò LSN
+   [IN]  aToDiskRedoLSN     - Disk º¹±¸±¸°£ ÃÖ´ë LSN
+   [IN]  aFromMemRedoLSN - Memory º¹±¸±¸°£ ÃÖ¼Ò LSN
+   [IN]  aToMemRedoLSN   - Memory º¹±¸±¸°£ ÃÖ´ë LSN
+   [OUT] aMinFromRedoLSN - ¹Ìµğ¾î º¹±¸½Ã scanÇÒ ·Î±×ÀÇ ÃÖ¼Ò LSN
 */
 void smrRecoveryMgr::getRedoLSN4SCAN( smLSN * aFromDiskRedoLSN,
                                       smLSN * aToDiskRedoLSN,
@@ -5748,15 +5836,15 @@ void smrRecoveryMgr::getRedoLSN4SCAN( smLSN * aFromDiskRedoLSN,
     IDE_ASSERT( aToMemRedoLSN   != NULL );
     IDE_ASSERT( aMinFromRedoLSN != NULL );
 
-    // Disk DBFì—ë§Œ Media Recovery ìˆ˜í–‰ë˜ì–´ì•¼ í•˜ëŠ” ê²½ìš°,
-    // Memoryì˜ From, To RedoLSNì€ ê°’ì´ ì„¤ì •ë˜ì§€ ì•Šì€ ìƒíƒœì´ë‹¤.
+    // Disk DBF¿¡¸¸ Media Recovery ¼öÇàµÇ¾î¾ß ÇÏ´Â °æ¿ì,
+    // MemoryÀÇ From, To RedoLSNÀº °ªÀÌ ¼³Á¤µÇÁö ¾ÊÀº »óÅÂÀÌ´Ù.
     //
-    // ë§ˆì°¬ê°€ì§€ë¡œ, Memory Checkpoint Imageì—ë§Œ
-    // Media Recoveryê°€ ìˆ˜í–‰ë˜ì–´ì•¼ í•˜ëŠ” ê²½ìš° Diskì˜ From, To RedoLSNì€
-    // ì„¤ì •ë˜ì§€ ì•Šì€ ìƒíƒœì´ë‹¤.
+    // ¸¶Âù°¡Áö·Î, Memory Checkpoint Image¿¡¸¸
+    // Media Recovery°¡ ¼öÇàµÇ¾î¾ß ÇÏ´Â °æ¿ì DiskÀÇ From, To RedoLSNÀº
+    // ¼³Á¤µÇÁö ¾ÊÀº »óÅÂÀÌ´Ù.
     //
-    // => ëª¨ë“  LFGì— ëŒ€í•´ From, To RedoLSNì´ ì„¤ì •ë˜ì§€ ì•Šì€ ê²½ìš°
-    //    Log Anchorìƒì˜ Redoì‹œì‘ ì‹œì ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+    // => ¸ğµç LFG¿¡ ´ëÇØ From, To RedoLSNÀÌ ¼³Á¤µÇÁö ¾ÊÀº °æ¿ì
+    //    Log Anchor»óÀÇ Redo½ÃÀÛ ½ÃÁ¡À¸·Î ¼³Á¤ÇÑ´Ù.
     //
     mAnchorMgr.getEndLSN( &sRestartRedoLSN );
 
@@ -5786,7 +5874,7 @@ void smrRecoveryMgr::getRedoLSN4SCAN( smLSN * aFromDiskRedoLSN,
                     sRestartRedoLSN );
     }
     /*
-      getRedoLogLSNRange êµ¬í•˜ê¸°
+      getRedoLogLSNRange ±¸ÇÏ±â
 
       *[IN ]From Disk Redo LSN
       LFG 0  10
@@ -5799,15 +5887,15 @@ void smrRecoveryMgr::getRedoLSN4SCAN( smLSN * aFromDiskRedoLSN,
       LFG 0  10
       LFG 1     15
 
-      ìœ„ì˜ ê·¸ë¦¼ê³¼ ê°™ì´ DISK LFG ì— ëŒ€í•´ì„œë§Œ ë¹„êµë¥¼ ë‹¤ì‹œí•˜ì—¬
-      Log Scan ì˜ì—­ì„ ê²°ì •í•œë‹¤.
-      ì¼ë‹¨ Memory ì˜ From Redo LSNì˜ ê¸°ë°˜í•˜ì—ì„œ Disk ì˜ FromRedoLSNì„
-      ë¹„êµí•˜ì—¬ LFG 0ë²ˆì— ëŒ€í•´ì„œë§Œ ë‹¤ì‹œ êµ¬í•œë‹¤.
+      À§ÀÇ ±×¸²°ú °°ÀÌ DISK LFG ¿¡ ´ëÇØ¼­¸¸ ºñ±³¸¦ ´Ù½ÃÇÏ¿©
+      Log Scan ¿µ¿ªÀ» °áÁ¤ÇÑ´Ù.
+      ÀÏ´Ü Memory ÀÇ From Redo LSNÀÇ ±â¹İÇÏ¿¡¼­ Disk ÀÇ FromRedoLSNÀ»
+      ºñ±³ÇÏ¿© LFG 0¹ø¿¡ ´ëÇØ¼­¸¸ ´Ù½Ã ±¸ÇÑ´Ù.
 
     */
     SM_GET_LSN( *aMinFromRedoLSN, *aFromMemRedoLSN );
 
-    // ë””ìŠ¤í¬ LFGì— ëŒ€í•œ ì¬ì¡°ì •
+    // µğ½ºÅ© LFG¿¡ ´ëÇÑ ÀçÁ¶Á¤
     if ( smrCompareLSN::isGT( aFromMemRedoLSN, aFromDiskRedoLSN ) == ID_TRUE )
     {
         // LFG 0 > Disk Redo LSN
@@ -5833,33 +5921,33 @@ void smrRecoveryMgr::getRedoLSN4SCAN( smLSN * aFromDiskRedoLSN,
 
 /*
    PRJ-1149 SM - Backup
-   PRJ-1548 User Memory Tablespace ê°œë…ë„ì…
+   PRJ-1548 User Memory Tablespace °³³äµµÀÔ
 
-   ë°ì´íƒ€ë² ì´ìŠ¤ì˜ ë¯¸ë””ì˜¤ ë³µêµ¬ ìˆ˜í–‰
+   µ¥ÀÌÅ¸º£ÀÌ½ºÀÇ ¹Ìµğ¿À º¹±¸ ¼öÇà
 
-   - í˜„ì¬ ì‹œì ê¹Œì§€ media recovery í• ë•ŒëŠ” aUntilTimeì´ ULong maxë¡œ ë„˜ì–´ì˜¨ë‹¤.
+   - ÇöÀç ½ÃÁ¡±îÁö media recovery ÇÒ¶§´Â aUntilTimeÀÌ ULong max·Î ³Ñ¾î¿Â´Ù.
 
-   - ê³¼ê±°ì˜ íŠ¹ì •ì‹œì ìœ¼ë¡œ DBìœ¼ë¡œ ëŒë¦´ë•ŒëŠ”
-   dateë¥¼ idlOS::time(0)ìœ¼ë¡œ ë³€í™˜í•œ ê°’ì´ ë„˜ì–´ì˜¨ë‹¤.
+   - °ú°ÅÀÇ Æ¯Á¤½ÃÁ¡À¸·Î DBÀ¸·Î µ¹¸±¶§´Â
+   date¸¦ idlOS::time(0)À¸·Î º¯È¯ÇÑ °ªÀÌ ³Ñ¾î¿Â´Ù.
    alter database recover database until time '2005-01-29:17:55:00'
 
-   ë³µì‚¬í•´ì˜¨ ì´ì „ ë°ì´íƒ€íŒŒì¼ì˜ OldestLSNë¶€í„°
-   ìµœê·¼ ë°ì´íƒ€íŒŒì¼ì˜ OldestLSN(by anchor)ê¹Œì§€ ë°ì´íƒ€íŒŒì¼ì—
-   ëŒ€í•œ Redo ë¡œê·¸ë“¤ì„ ì„ íƒì ìœ¼ë¡œ ë°˜ì˜í•˜ê³ , ë¡œê·¸ì•µì»¤ì™€ ë°ì´íƒ€
-   íŒŒì¼ì˜ íŒŒì¼í—¤ë”ì •ë³´ë¥¼ ë™ê¸°í™”ì‹œí‚¨ë‹¤.
-   ì…ë ¥ë˜ëŠ” ë°ì´íƒ€íŒŒì¼ì´ ë‹¤ìˆ˜ê°œê°€ ê°€ëŠ¥í•˜ë¯€ë¡œ ê°ê° ë°ì´íƒ€íŒŒì¼ì˜
-   redo ë²”ìœ„ë¥¼ íŒŒì•…í•˜ê³ ,  online ë¡œê·¸ì™€ archive ë¡œê·¸ì˜ ì •ë³´ë¥¼ ê³ ë ¤í•˜ì—¬
-   redoë¥¼ ì§„í–‰í•œë‹¤.
+   º¹»çÇØ¿Â ÀÌÀü µ¥ÀÌÅ¸ÆÄÀÏÀÇ OldestLSNºÎÅÍ
+   ÃÖ±Ù µ¥ÀÌÅ¸ÆÄÀÏÀÇ OldestLSN(by anchor)±îÁö µ¥ÀÌÅ¸ÆÄÀÏ¿¡
+   ´ëÇÑ Redo ·Î±×µéÀ» ¼±ÅÃÀûÀ¸·Î ¹İ¿µÇÏ°í, ·Î±×¾ŞÄ¿¿Í µ¥ÀÌÅ¸
+   ÆÄÀÏÀÇ ÆÄÀÏÇì´õÁ¤º¸¸¦ µ¿±âÈ­½ÃÅ²´Ù.
+   ÀÔ·ÂµÇ´Â µ¥ÀÌÅ¸ÆÄÀÏÀÌ ´Ù¼ö°³°¡ °¡´ÉÇÏ¹Ç·Î °¢°¢ µ¥ÀÌÅ¸ÆÄÀÏÀÇ
+   redo ¹üÀ§¸¦ ÆÄ¾ÇÇÏ°í,  online ·Î±×¿Í archive ·Î±×ÀÇ Á¤º¸¸¦ °í·ÁÇÏ¿©
+   redo¸¦ ÁøÇàÇÑ´Ù.
 
-   [ ì•Œê³ ë¦¬ì¦˜ ]
-   - ì¬ìˆ˜í–‰ê´€ë¦¬ìë¥¼ ì´ˆê¸°í™”í•œë‹¤.
-   - ì…ë ¥ëœ íŒŒì¼ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
-   - ë³µêµ¬í•  íŒŒì¼(ë“¤)ì„ ì¬ìˆ˜í–‰ ê´€ë¦¬ìì˜ RecvFileHashì— ì¶”ê°€í•œë‹¤.
-   - ì¬ìˆ˜í–‰ê´€ë¦¬ìë¥¼ í•´ì œí•œë‹¤.
-   - ë¡œê·¸íŒŒì¼ë“¤ì„ ëª¨ë‘ ë‹«ëŠ”ë‹¤.
+   [ ¾Ë°í¸®Áò ]
+   - Àç¼öÇà°ü¸®ÀÚ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+   - ÀÔ·ÂµÈ ÆÄÀÏÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù.
+   - º¹±¸ÇÒ ÆÄÀÏ(µé)À» Àç¼öÇà °ü¸®ÀÚÀÇ RecvFileHash¿¡ Ãß°¡ÇÑ´Ù.
+   - Àç¼öÇà°ü¸®ÀÚ¸¦ ÇØÁ¦ÇÑ´Ù.
+   - ·Î±×ÆÄÀÏµéÀ» ¸ğµÎ ´İ´Â´Ù.
 
-   [IN] aRecoveryType - ì™„ì „ë³µêµ¬ ë˜ëŠ” ë¶ˆì™„ì „ë³µêµ¬ íƒ€ì…
-   [IN] aUntilTIME    - íƒ€ì„ë² ì´ìŠ¤ ë¶ˆì™„ì „ ë³µêµ¬ì‹œì— ì‹œê°„ì¸ì
+   [IN] aRecoveryType - ¿ÏÀüº¹±¸ ¶Ç´Â ºÒ¿ÏÀüº¹±¸ Å¸ÀÔ
+   [IN] aUntilTIME    - Å¸ÀÓº£ÀÌ½º ºÒ¿ÏÀü º¹±¸½Ã¿¡ ½Ã°£ÀÎÀÚ
 
 */
 IDE_RC smrRecoveryMgr::recoverDB( idvSQL*           aStatistics,
@@ -5890,15 +5978,15 @@ IDE_RC smrRecoveryMgr::recoverDB( idvSQL*           aStatistics,
 
     IDE_DASSERT( aRecoveryType != SMI_RECOVER_RESTART );
 
-    /* BUG-18428: Media Recoveryì¤‘ì— Indexì— ëŒ€í•œ Undoì—°ì‚°ì„ ìˆ˜í–‰í•˜ë©´ ì•ˆë©ë‹ˆë‹¤.
+    /* BUG-18428: Media RecoveryÁß¿¡ Index¿¡ ´ëÇÑ Undo¿¬»êÀ» ¼öÇàÇÏ¸é ¾ÈµË´Ï´Ù.
      *
-     * Media RecoveryëŠ” Restart Recoveryë¡œì§ì„ ì‚¬ìš©í•˜ê¸°ë•Œë¬¸ì—
-     * Redoì‹œì— Temporal ì •ë³´ì— ëŒ€í•œ ì ‘ê·¼ì„ ë§‰ì•„ì•¼ í•œë‹¤. */
+     * Media Recovery´Â Restart Recovery·ÎÁ÷À» »ç¿ëÇÏ±â¶§¹®¿¡
+     * Redo½Ã¿¡ Temporal Á¤º¸¿¡ ´ëÇÑ Á¢±ÙÀ» ¸·¾Æ¾ß ÇÑ´Ù. */
     mRestart = ID_TRUE;
-    mMediaRecoveryPhase = ID_TRUE; /* ë¯¸ë””ì–´ ë³µêµ¬ ìˆ˜í–‰ì¤‘ì—ë§Œ TRUE */
+    mMediaRecoveryPhase = ID_TRUE; /* ¹Ìµğ¾î º¹±¸ ¼öÇàÁß¿¡¸¸ TRUE */
 
     // fix BUG-17158
-    // offline DBFì— writeê°€ ê°€ëŠ¥í•˜ë„ë¡ flag ë¥¼ ì„¤ì •í•œë‹¤.
+    // offline DBF¿¡ write°¡ °¡´ÉÇÏµµ·Ï flag ¸¦ ¼³Á¤ÇÑ´Ù.
     sddDiskMgr::setEnableWriteToOfflineDBF( ID_TRUE );
 
     sCommonState = 0;
@@ -5908,25 +5996,25 @@ IDE_RC smrRecoveryMgr::recoverDB( idvSQL*           aStatistics,
     sFailureMediaType = SMR_FAILURE_MEDIA_NONE;
     idlOS::memset( sMsgBuf, 0x00, SM_MAX_FILE_NAME );
 
-    // ë¯¸ë””ì–´ë³µêµ¬ëŠ” ì•„ì¹´ì´ë¸Œë¡œê·¸ ëª¨ë“œì—ì„œë§Œ ì§€ì›ëœë‹¤.
+    // ¹Ìµğ¾îº¹±¸´Â ¾ÆÄ«ÀÌºê·Î±× ¸ğµå¿¡¼­¸¸ Áö¿øµÈ´Ù.
     IDE_TEST_RAISE( getArchiveMode() != SMI_LOG_ARCHIVE,
                     err_archivelog_mode );
 
-    // BUG-29633 Recoveryì „ ëª¨ë“  Transactionì´ Endìƒíƒœì¸ì§€ ì ê²€ì´ í•„ìš”í•©ë‹ˆë‹¤.
-    // Recoveryì‹œì— ë‹¤ë¥¸ê³³ì—ì„œ ì‚¬ìš©ë˜ëŠ” Active Transactionì´ ì¡´ì¬í•´ì„œëŠ” ì•ˆëœë‹¤.
+    // BUG-29633 RecoveryÀü ¸ğµç TransactionÀÌ End»óÅÂÀÎÁö Á¡°ËÀÌ ÇÊ¿äÇÕ´Ï´Ù.
+    // Recovery½Ã¿¡ ´Ù¸¥°÷¿¡¼­ »ç¿ëµÇ´Â Active TransactionÀÌ Á¸ÀçÇØ¼­´Â ¾ÈµÈ´Ù.
     IDE_TEST_RAISE( smLayerCallback::existActiveTrans() == ID_TRUE,
                     err_exist_active_trans);
 
-    // Secondary  Buffer ë¥¼ ì‚¬ìš©í•˜ë©´ ì•ˆëœë‹¤. 
+    // Secondary  Buffer ¸¦ »ç¿ëÇÏ¸é ¾ÈµÈ´Ù. 
     IDE_TEST_RAISE( sdsBufferMgr::isServiceable() == ID_TRUE,
                     err_secondary_buffer_service );
 
-    // ë¶ˆì™„ì „ ë³µêµ¬ê°€ ì´ë¯¸ ì™„ë£Œë˜ì—ˆëŠ”ë° ë‹¤ì‹œ ë¯¸ë””ì–´ ë³µêµ¬ë¥¼ ì‹¤í–‰í•˜ëŠ”
-    // ê²½ìš°ë¥¼ í™•ì¸í•˜ì—¬ ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤.
+    // ºÒ¿ÏÀü º¹±¸°¡ ÀÌ¹Ì ¿Ï·áµÇ¾ú´Âµ¥ ´Ù½Ã ¹Ìµğ¾î º¹±¸¸¦ ½ÇÇàÇÏ´Â
+    // °æ¿ì¸¦ È®ÀÎÇÏ¿© ¿¡·¯¸¦ ¹İÈ¯ÇÑ´Ù.
     IDE_TEST( checkResetLogLSN( SMI_STARTUP_NOACTION )
               != IDE_SUCCESS );
 
-    // [DISK-1] ë””ìŠ¤í¬ redo ê´€ë¦¬ì ì´ˆê¸°í™”
+    // [DISK-1] µğ½ºÅ© redo °ü¸®ÀÚ ÃÊ±âÈ­
     IDE_TEST( smLayerCallback::initializeRedoMgr(
                   sdbBufferMgr::getPageCount(),
                   aRecoveryType )
@@ -5939,28 +6027,28 @@ IDE_RC smrRecoveryMgr::recoverDB( idvSQL*           aStatistics,
     {
         case SMI_RECOVER_COMPLETE:
             {
-                // ì™„ì „ë³µêµ¬ì‹œ ì‹œ
-                // ë¡œê·¸ë””ë ‰í† ë¦¬ì— ë¡œê·¸íŒŒì¼ë“¤ì˜ ìœ íš¨ì„±ì„ ê²€ì‚¬í•œë‹¤.
+                // ¿ÏÀüº¹±¸½Ã ½Ã
+                // ·Î±×µğ·ºÅä¸®¿¡ ·Î±×ÆÄÀÏµéÀÇ À¯È¿¼ºÀ» °Ë»çÇÑ´Ù.
                 IDE_TEST( identifyLogFiles() != IDE_SUCCESS );
-                // ì™„ì „ë³µêµ¬ì¼ê²½ìš° ë¡œê·¸íŒŒì¼ë“¤ì˜ ìœ íš¨ì„±ì—ì„œ ì‹¤íŒ¨í•˜ë©´ restart recovery ì—ì„œ ì—ëŸ¬ë¥¼ ì¶œë ¥í•˜ê±°ë‚˜ 
-                // ë¶ˆì™„ì „ ë³µêµ¬ë¥¼ ìœ ë„ í•œë‹¤. 
+                // ¿ÏÀüº¹±¸ÀÏ°æ¿ì ·Î±×ÆÄÀÏµéÀÇ À¯È¿¼º¿¡¼­ ½ÇÆĞÇÏ¸é restart recovery ¿¡¼­ ¿¡·¯¸¦ Ãâ·ÂÇÏ°Å³ª 
+                // ºÒ¿ÏÀü º¹±¸¸¦ À¯µµ ÇÑ´Ù. 
                 break;
             }
         case SMI_RECOVER_UNTILTIME:
             {
-                // íƒ€ì„ë² ì´ìŠ¤ ë¶ˆì™„ì „ ë³µêµ¬ì‹œ
-                // ë¡œê·¸ë””ë ‰í† ë¦¬ì— ë¡œê·¸íŒŒì¼ë“¤ì˜ ìœ íš¨ì„±ì„ ê²€ì‚¬í•œë‹¤.
+                // Å¸ÀÓº£ÀÌ½º ºÒ¿ÏÀü º¹±¸½Ã
+                // ·Î±×µğ·ºÅä¸®¿¡ ·Î±×ÆÄÀÏµéÀÇ À¯È¿¼ºÀ» °Ë»çÇÑ´Ù.
                 IDE_TEST( identifyLogFiles() != IDE_SUCCESS );
 
-                // ë¡œê·¸ê°€ ì—°ì†ì ì´ì§€ ì•Šì„ê²½ìš° UNTIL TIME ì´ ì˜ë„í•œëŒ€ë¡œ ë™ì‘í•˜ì§€ ì•Šì„ìˆ˜ìˆë‹¤. 
-                // recovery í•´ì„œ ë¡œê·¸ ë‚ ë¦¬ê¸° ì „ì— ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¨ë‹¤. 
+                // ·Î±×°¡ ¿¬¼ÓÀûÀÌÁö ¾ÊÀ»°æ¿ì UNTIL TIME ÀÌ ÀÇµµÇÑ´ë·Î µ¿ÀÛÇÏÁö ¾ÊÀ»¼öÀÖ´Ù. 
+                // recovery ÇØ¼­ ·Î±× ³¯¸®±â Àü¿¡ ¿¡·¯¸¦ ¹ß»ı½ÃÅ²´Ù. 
                 IDE_TEST_RAISE( mLogFileContinuity == ID_FALSE, err_log_consistency );
                 break;
             }
         case SMI_RECOVER_UNTILCANCEL:
             {
-                // ë¡œê·¸ë² ì´ìŠ¤ ë¶ˆì™„ì „ ë³µêµ¬ì‹œì—ëŠ” ë¡œê·¸íŒŒì¼ì´ ì—°ì†ì ìœ¼ë¡œ
-                // ì¡´ì¬í•˜ì§€ ì•Šì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì— ê²€ì¦í•˜ëŠ” ê²ƒì´ ë¶ˆí•„ìš”í•˜ë‹¤.
+                // ·Î±×º£ÀÌ½º ºÒ¿ÏÀü º¹±¸½Ã¿¡´Â ·Î±×ÆÄÀÏÀÌ ¿¬¼ÓÀûÀ¸·Î
+                // Á¸ÀçÇÏÁö ¾ÊÀ» ¼ö ÀÖ±â ¶§¹®¿¡ °ËÁõÇÏ´Â °ÍÀÌ ºÒÇÊ¿äÇÏ´Ù.
                 break;
             }
         default :
@@ -5974,9 +6062,9 @@ IDE_RC smrRecoveryMgr::recoverDB( idvSQL*           aStatistics,
                  "  \tchecking inconsistency database file(s) count..");
 
     /*
-       [1] ëª¨ë“  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ë³µêµ¬í•  ëŒ€ìƒ íŒŒì¼ë“¤ì„ êµ¬í•œë‹¤.
-       ë””ìŠ¤í¬ ë°ì´íƒ€íŒŒì¼ì€ ì¬ìˆ˜í–‰ê´€ë¦¬ìì˜ 2ì°¨í•´ì‰¬ë¡œ
-       êµ¬ì¶•í•œë‹¤.
+       [1] ¸ğµç Å×ÀÌºí½ºÆäÀÌ½ºÀÇ º¹±¸ÇÒ ´ë»ó ÆÄÀÏµéÀ» ±¸ÇÑ´Ù.
+       µğ½ºÅ© µ¥ÀÌÅ¸ÆÄÀÏÀº Àç¼öÇà°ü¸®ÀÚÀÇ 2Â÷ÇØ½¬·Î
+       ±¸ÃàÇÑ´Ù.
     */
     IDE_TEST( makeMediaRecoveryDBFList4AllTBS( aRecoveryType,
                                                &sFailureMediaType,
@@ -5986,20 +6074,20 @@ IDE_RC smrRecoveryMgr::recoverDB( idvSQL*           aStatistics,
                                                &sToMemRedoLSN )
               != IDE_SUCCESS );
 
-    // MEDIA_NONE ì¸ ê²½ìš°ëŠ” makeMediaRecoveryDBFList4AllTBSì—ì„œ
-    // exception ì²˜ë¦¬ëœë‹¤.
+    // MEDIA_NONE ÀÎ °æ¿ì´Â makeMediaRecoveryDBFList4AllTBS¿¡¼­
+    // exception Ã³¸®µÈ´Ù.
     IDE_ASSERT( sFailureMediaType != SMR_FAILURE_MEDIA_NONE );
 
     /*
-       [2] ë©”ëª¨ë¦¬/ë””ìŠ¤í¬ ì „ì²´ë¥¼ ë³µêµ¬í•  ìˆ˜ ìˆëŠ” ì¬ìˆ˜í–‰ì‹œì‘ LSNì„ ê²°ì •í•œë‹¤.
+       [2] ¸Ş¸ğ¸®/µğ½ºÅ© ÀüÃ¼¸¦ º¹±¸ÇÒ ¼ö ÀÖ´Â Àç¼öÇà½ÃÀÛ LSNÀ» °áÁ¤ÇÑ´Ù.
     */
 
-    // [ ì¤‘ìš” ]
-    // From Redo LSN ë³´ì •í•˜ê¸°
-    // ë³´ì •ë˜ì§€ ì•Šì€ Redo LSNì´ íŒŒì¼í—¤ë”ì— ì €ì¥ë˜ì–´ ìˆì–´
-    // ë¯¸ë””ì–´ ë³µêµ¬ì‹œ From Redo LSNì„ ë³´ì •ì‹œì¼œ ì£¼ì–´ì•¼ í•œë‹¤.
-    // ì™œëƒí•˜ë©´, ì¬ìˆ˜í–‰ì‹œ ì¤‘ê°„ LSNì´ ëˆ„ë½ë˜ë©´ ë°ì´íƒ€ë² ì´ìŠ¤
-    // ë³µêµ¬ê°€ ì œëŒ€ë¡œ ë˜ì§€ ì•Šì„ ìˆ˜ ìˆë‹¤.
+    // [ Áß¿ä ]
+    // From Redo LSN º¸Á¤ÇÏ±â
+    // º¸Á¤µÇÁö ¾ÊÀº Redo LSNÀÌ ÆÄÀÏÇì´õ¿¡ ÀúÀåµÇ¾î ÀÖ¾î
+    // ¹Ìµğ¾î º¹±¸½Ã From Redo LSNÀ» º¸Á¤½ÃÄÑ ÁÖ¾î¾ß ÇÑ´Ù.
+    // ¿Ö³ÄÇÏ¸é, Àç¼öÇà½Ã Áß°£ LSNÀÌ ´©¶ôµÇ¸é µ¥ÀÌÅ¸º£ÀÌ½º
+    // º¹±¸°¡ Á¦´ë·Î µÇÁö ¾ÊÀ» ¼ö ÀÖ´Ù.
 
     // get minimum RedoLSN
     getRedoLSN4SCAN( &sFromDiskRedoLSN,
@@ -6012,22 +6100,22 @@ IDE_RC smrRecoveryMgr::recoverDB( idvSQL*           aStatistics,
          == SMR_FAILURE_MEDIA_MRDB )
     {
         // [MEMORY-1]
-        // ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ë³µêµ¬ë¥¼ ìˆ˜í–‰í•˜ê¸°ì „
-        // ë³µêµ¬ ëŒ€ìƒ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë¥¼ Prepare/Restoreë¥¼ ìˆ˜í–‰í•œë‹¤.
+        // ¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½ºÀÇ º¹±¸¸¦ ¼öÇàÇÏ±âÀü
+        // º¹±¸ ´ë»ó Å×ÀÌºí½ºÆäÀÌ½º¸¦ Prepare/Restore¸¦ ¼öÇàÇÑ´Ù.
         IDE_TEST( initMediaRecovery4MemTBS() != IDE_SUCCESS );
         sMemState = 1;
     }
 
     /*
-       [3] ë©”ëª¨ë¦¬/ë””ìŠ¤í¬ ë¯¸ë””ì–´ ë³µêµ¬ ìˆ˜í–‰
+       [3] ¸Ş¸ğ¸®/µğ½ºÅ© ¹Ìµğ¾î º¹±¸ ¼öÇà
     */
     IDE_CALLBACK_SEND_MSG(
         "  [ RECMGR ] Restoring database consistency");
 
     /*
-       !! media recovery ì´í›„ì—ëŠ” server restart recoveryë¥¼ ìˆ˜í–‰í•˜ì—¬
-       ì„œë²„ê°€ êµ¬ë™ë˜ì–´ì•¼ë§Œ í•œë‹¤.
-       ìƒíƒœë§Œ ë³€ê²½í•œë‹¤.
+       !! media recovery ÀÌÈÄ¿¡´Â server restart recovery¸¦ ¼öÇàÇÏ¿©
+       ¼­¹ö°¡ ±¸µ¿µÇ¾î¾ß¸¸ ÇÑ´Ù.
+       »óÅÂ¸¸ º¯°æÇÑ´Ù.
     */
     IDE_TEST( mAnchorMgr.updateSVRStateAndFlush( SMR_SERVER_STARTED )
               != IDE_SUCCESS );
@@ -6054,7 +6142,7 @@ IDE_RC smrRecoveryMgr::recoverDB( idvSQL*           aStatistics,
                          &sToMemRedoLSN,
                          &sToDiskRedoLSN ) == ID_TRUE )
                 {
-                    // Disk To Redo LSNì´ ë” í¬ë‹¤ë©´
+                    // Disk To Redo LSNÀÌ ´õ Å©´Ù¸é
                     SM_GET_LSN( sMaxToRedoLSN, sToDiskRedoLSN );
                 }
                 else
@@ -6114,13 +6202,13 @@ IDE_RC smrRecoveryMgr::recoverDB( idvSQL*           aStatistics,
 
 
     // [COMMON-1]
-    // ê²°ì •ëœ ë³µêµ¬êµ¬ê°„ì˜ ë¡œê·¸ë ˆì½”ë“œë¥¼ íŒë…í•˜ê¸° ìœ„í•œ RedoLSN Manager ì´ˆê¸°í™”
+    // °áÁ¤µÈ º¹±¸±¸°£ÀÇ ·Î±×·¹ÄÚµå¸¦ ÆÇµ¶ÇÏ±â À§ÇÑ RedoLSN Manager ÃÊ±âÈ­
     IDE_TEST( smrRedoLSNMgr::initialize( &sMinFromRedoLSN )
               != IDE_SUCCESS );
     sCommonState = 1;
 
-    // flushë¥¼ í•˜ê¸° ìœ„í•´ sdbFlushMgrë¥¼ ì´ˆê¸°í™”í•œë‹¤.
-    // ì§€ê¸ˆì€ control ë‹¨ê³„ì´ì§€ë§Œ meria recoveryë¥¼ ìœ„í•´ flush managerê°€ í•„ìš”í•˜ë‹¤.
+    // flush¸¦ ÇÏ±â À§ÇØ sdbFlushMgr¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // Áö±İÀº control ´Ü°èÀÌÁö¸¸ meria recovery¸¦ À§ÇØ flush manager°¡ ÇÊ¿äÇÏ´Ù.
     IDE_TEST( sdbFlushMgr::initialize( smuProperty::getBufferFlusherCnt() )
               != IDE_SUCCESS );
     sDiskState = 2;
@@ -6149,7 +6237,7 @@ IDE_RC smrRecoveryMgr::recoverDB( idvSQL*           aStatistics,
         case SMI_RECOVER_UNTILTIME:
         case SMI_RECOVER_UNTILCANCEL:
             {
-                // ë¶ˆì™„ì „ ë³µêµ¬ ì¸ê²½ìš°
+                // ºÒ¿ÏÀü º¹±¸ ÀÎ°æ¿ì
                 idlOS::snprintf( sMsgBuf,
                                  SM_MAX_FILE_NAME,
                                  "\n             recover at < %"ID_UINT32_FMT", %"ID_UINT32_FMT" >",
@@ -6166,8 +6254,8 @@ IDE_RC smrRecoveryMgr::recoverDB( idvSQL*           aStatistics,
             }
         case SMI_RECOVER_COMPLETE:
             {
-                // ì™„ì „ë³µêµ¬ì‹œì—ëŠ” ResetLSNì„ íŒŒì¼í—¤ë”ì—
-                // ì„¤ì •í•  í•„ìš”ì—†ë‹¤.
+                // ¿ÏÀüº¹±¸½Ã¿¡´Â ResetLSNÀ» ÆÄÀÏÇì´õ¿¡
+                // ¼³Á¤ÇÒ ÇÊ¿ä¾ø´Ù.
                 sMemResetLSNPtr = NULL;
                 sDiskResetLSNPtr = NULL;
                 break;
@@ -6179,11 +6267,11 @@ IDE_RC smrRecoveryMgr::recoverDB( idvSQL*           aStatistics,
     if ( (sFailureMediaType & SMR_FAILURE_MEDIA_MRDB)
          == SMR_FAILURE_MEDIA_MRDB )
     {
-        // Stableì— ëª¨ë‘ í”ŒëŸ¬ì‰¬í•˜ê³  DIRTY PAGEë¥¼ ëª¨ë‘ ì œê±°í•œë‹¤.
+        // Stable¿¡ ¸ğµÎ ÇÃ·¯½¬ÇÏ°í DIRTY PAGE¸¦ ¸ğµÎ Á¦°ÅÇÑ´Ù.
         IDE_TEST( flushAndRemoveDirtyPagesAllMemTBS() != IDE_SUCCESS );
 
         IDE_CALLBACK_SEND_MSG("  Restoring unstable checkpoint images...");
-        // ë³µêµ¬ì™„ë£Œí•  ë©”ëª¨ë¦¬ ë°ì´íƒ€íŒŒì¼ í—¤ë”ì˜ REDOLSNì„ ê°±ì‹ í•œë‹¤.
+        // º¹±¸¿Ï·áÇÒ ¸Ş¸ğ¸® µ¥ÀÌÅ¸ÆÄÀÏ Çì´õÀÇ REDOLSNÀ» °»½ÅÇÑ´Ù.
         IDE_TEST( repairFailureChkptImageHdr( sMemResetLSNPtr )
                   != IDE_SUCCESS );
     }
@@ -6192,14 +6280,14 @@ IDE_RC smrRecoveryMgr::recoverDB( idvSQL*           aStatistics,
     if ( (sFailureMediaType & SMR_FAILURE_MEDIA_DRDB)
          == SMR_FAILURE_MEDIA_DRDB )
     {
-        // ë””ìŠ¤í¬ ë¡œê·¸ë ˆì½”ë“œë¥¼ ëª¨ë‘ ë°˜ì˜í•œë‹¤.
+        // µğ½ºÅ© ·Î±×·¹ÄÚµå¸¦ ¸ğµÎ ¹İ¿µÇÑ´Ù.
         IDE_TEST( applyHashedDiskLogRec( aStatistics) != IDE_SUCCESS );
 
-        // ë³µêµ¬ì™„ë£Œí•  ë””ìŠ¤í¬ ë°ì´íƒ€íŒŒì¼ í—¤ë”ì˜ REDOLSNì„ ê°±ì‹ í•œë‹¤.
+        // º¹±¸¿Ï·áÇÒ µğ½ºÅ© µ¥ÀÌÅ¸ÆÄÀÏ Çì´õÀÇ REDOLSNÀ» °»½ÅÇÑ´Ù.
         IDE_TEST( smLayerCallback::repairFailureDBFHdr( sDiskResetLSNPtr )
                   != IDE_SUCCESS );
     }
-    /* Secondary Buffer íŒŒì¼ì„ ì´ˆê¸°í™” í•œë‹¤ */
+    /* Secondary Buffer ÆÄÀÏÀ» ÃÊ±âÈ­ ÇÑ´Ù */
     IDE_TEST( smLayerCallback::repairFailureSBufferHdr( aStatistics,
                                                         sDiskResetLSNPtr )
               != IDE_SUCCESS );
@@ -6243,8 +6331,8 @@ IDE_RC smrRecoveryMgr::recoverDB( idvSQL*           aStatistics,
          == SMR_FAILURE_MEDIA_MRDB )
     {
         // [MEMORY-0]
-        // ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ë³µêµ¬ë¥¼ ìˆ˜í–‰í•˜ê¸°ì „
-        // ë³µêµ¬ ëŒ€ìƒ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë“¤ì„ ëª¨ë‘ í•´ì œí•œë‹¤..
+        // ¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½ºÀÇ º¹±¸¸¦ ¼öÇàÇÏ±âÀü
+        // º¹±¸ ´ë»ó Å×ÀÌºí½ºÆäÀÌ½ºµéÀ» ¸ğµÎ ÇØÁ¦ÇÑ´Ù..
         sMemState = 0;
         IDE_TEST( finalMediaRecovery4MemTBS() != IDE_SUCCESS );
     }
@@ -6252,14 +6340,14 @@ IDE_RC smrRecoveryMgr::recoverDB( idvSQL*           aStatistics,
     if ( (sFailureMediaType & SMR_FAILURE_MEDIA_DRDB)
          == SMR_FAILURE_MEDIA_DRDB )
     {
-        // dirty pageëŠ” ì¡´ì¬í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì— ëª¨ë“  buffer ìƒì˜
-        // pageë“¤ì„ invalid ì‹œí‚¨ë‹¤.
+        // dirty page´Â Á¸ÀçÇÏÁö ¾Ê±â ¶§¹®¿¡ ¸ğµç buffer »óÀÇ
+        // pageµéÀ» invalid ½ÃÅ²´Ù.
         IDE_TEST( sdbBufferMgr::pageOutAll( NULL )
                   != IDE_SUCCESS );
     }
 
-    // flush managerë¥¼ ì¢…ë£Œì‹œí‚¨ë‹¤. sdbBufferMgr::pageOutAll()ì„ í•˜ê¸°ìœ„í•´ì„œëŠ”
-    // flush managerê°€ ë– ìˆì–´ì•¼ í•˜ê¸° ë•Œë¬¸ì— pageOutAll()ë³´ë‹¤ ë’¤ì— ë‘¬ì•¼í•œë‹¤.
+    // flush manager¸¦ Á¾·á½ÃÅ²´Ù. sdbBufferMgr::pageOutAll()À» ÇÏ±âÀ§ÇØ¼­´Â
+    // flush manager°¡ ¶°ÀÖ¾î¾ß ÇÏ±â ¶§¹®¿¡ pageOutAll()º¸´Ù µÚ¿¡ µÖ¾ßÇÑ´Ù.
     sDiskState = 1;
     IDE_TEST( sdbFlushMgr::destroy() != IDE_SUCCESS );
 
@@ -6268,10 +6356,10 @@ IDE_RC smrRecoveryMgr::recoverDB( idvSQL*           aStatistics,
     IDE_TEST( smLayerCallback::destroyRedoMgr() != IDE_SUCCESS );
 
     mRestart = ID_FALSE;
-    mMediaRecoveryPhase = ID_FALSE; /* ë¯¸ë””ì–´ ë³µêµ¬ ìˆ˜í–‰ì¤‘ì—ë§Œ TRUE */
+    mMediaRecoveryPhase = ID_FALSE; /* ¹Ìµğ¾î º¹±¸ ¼öÇàÁß¿¡¸¸ TRUE */
 
     // fix BUG-17158
-    // offline DBFì— writeê°€ ë¶ˆê°€ëŠ¥í•˜ë„ë¡ flag ë¥¼ ì„¤ì •í•œë‹¤.
+    // offline DBF¿¡ write°¡ ºÒ°¡´ÉÇÏµµ·Ï flag ¸¦ ¼³Á¤ÇÑ´Ù.
     sddDiskMgr::setEnableWriteToOfflineDBF( ID_FALSE );
 
     return IDE_SUCCESS;
@@ -6337,7 +6425,7 @@ IDE_RC smrRecoveryMgr::recoverDB( idvSQL*           aStatistics,
     }
     IDE_POP();
 
-    mMediaRecoveryPhase = ID_FALSE; /* ë¯¸ë””ì–´ ë³µêµ¬ ìˆ˜í–‰ì¤‘ì—ë§Œ TRUE */
+    mMediaRecoveryPhase = ID_FALSE; /* ¹Ìµğ¾î º¹±¸ ¼öÇàÁß¿¡¸¸ TRUE */
     mRestart = ID_FALSE;
     sddDiskMgr::setEnableWriteToOfflineDBF( ID_FALSE );
 
@@ -6346,17 +6434,17 @@ IDE_RC smrRecoveryMgr::recoverDB( idvSQL*           aStatistics,
 }
 
 /*
-   íŒë…ëœ ë¡œê·¸ê°€ common ë¡œê·¸íƒ€ì…ì¸ì§€ í™•ì¸í•œë‹¤.
+   ÆÇµ¶µÈ ·Î±×°¡ common ·Î±×Å¸ÀÔÀÎÁö È®ÀÎÇÑ´Ù.
 
-   [IN]  aCurLogPtr         - í˜„ì¬ íŒë…ëœ ë¡œê·¸ì˜ Ptr
-   [IN]  aLogType           - í˜„ì¬ íŒë…ëœ ë¡œê·¸ì˜ Type
-   [OUT] aIsApplyLog        - ë¯¸ë””ì–´ë³µêµ¬ ì ìš©ì—¬ë¶€
+   [IN]  aCurLogPtr         - ÇöÀç ÆÇµ¶µÈ ·Î±×ÀÇ Ptr
+   [IN]  aLogType           - ÇöÀç ÆÇµ¶µÈ ·Î±×ÀÇ Type
+   [OUT] aIsApplyLog        - ¹Ìµğ¾îº¹±¸ Àû¿ë¿©ºÎ
 
    BUG-31430 - Redo Logs should not be reflected in the complete media recovery
                have been reflected.
 
-   aFailureMediaTypeì„ í™•ì¸í•˜ì—¬ ì´ë¯¸ ë¯¸ë””ì–´ ë³µêµ¬ ì™„ë£Œëœ ë¡œê·¸ëŠ” ì ìš©í•˜ì§€ ì•Šë„ë¡
-   í•œë‹¤.
+   aFailureMediaTypeÀ» È®ÀÎÇÏ¿© ÀÌ¹Ì ¹Ìµğ¾î º¹±¸ ¿Ï·áµÈ ·Î±×´Â Àû¿ëÇÏÁö ¾Êµµ·Ï
+   ÇÑ´Ù.
 */
 IDE_RC smrRecoveryMgr::filterCommonRedoLogType( smrLogType   aLogType,
                                                 UInt         aFailureMediaType,
@@ -6374,6 +6462,7 @@ IDE_RC smrRecoveryMgr::filterCommonRedoLogType( smrLogType   aLogType,
                 break;
             }
         case SMR_LT_MEMTRANS_COMMIT:
+        case SMR_LT_MEMTRANS_GROUPCOMMIT:
             {
                 if ( (aFailureMediaType & SMR_FAILURE_MEDIA_MRDB) ==
                      SMR_FAILURE_MEDIA_MRDB )
@@ -6412,12 +6501,12 @@ IDE_RC smrRecoveryMgr::filterCommonRedoLogType( smrLogType   aLogType,
 }
 
 /*
-   íŒë…ëœ ë¡œê·¸ê°€ ì˜¤ë¥˜ë‚œ ë©”ëª¨ë¦¬ ë°ì´íƒ€íŒŒì¼ì˜ ë²”ìœ„ì— í¬í•¨ë˜ëŠ”ì§€
-   íŒë‹¨í•˜ì—¬ ì ìš©ì—¬ë¶€ë¥¼ ë°˜í™˜í•œë‹¤.
+   ÆÇµ¶µÈ ·Î±×°¡ ¿À·ù³­ ¸Ş¸ğ¸® µ¥ÀÌÅ¸ÆÄÀÏÀÇ ¹üÀ§¿¡ Æ÷ÇÔµÇ´ÂÁö
+   ÆÇ´ÜÇÏ¿© Àû¿ë¿©ºÎ¸¦ ¹İÈ¯ÇÑ´Ù.
 
-   [IN]  aCurLogPtr         - í˜„ì¬ íŒë…ëœ ë¡œê·¸ì˜ Ptr
-   [IN]  aLogType           - í˜„ì¬ íŒë…ëœ ë¡œê·¸ì˜ Type
-   [OUT] aIsApplyLog        - ë¯¸ë””ì–´ë³µêµ¬ ì ìš©ì—¬ë¶€
+   [IN]  aCurLogPtr         - ÇöÀç ÆÇµ¶µÈ ·Î±×ÀÇ Ptr
+   [IN]  aLogType           - ÇöÀç ÆÇµ¶µÈ ·Î±×ÀÇ Type
+   [OUT] aIsApplyLog        - ¹Ìµğ¾îº¹±¸ Àû¿ë¿©ºÎ
 */
 IDE_RC smrRecoveryMgr::filterRedoLog4MemTBS(
     SChar      * aCurLogPtr,
@@ -6440,24 +6529,24 @@ IDE_RC smrRecoveryMgr::filterRedoLog4MemTBS(
     SC_MAKE_GRID( sGRID, 0, 0, 0 );
 
     // SMR_FAILURE_MEDIA_MRDB
-    // [1] ë¡œê·¸íƒ€ì…í™•ì¸
+    // [1] ·Î±×Å¸ÀÔÈ®ÀÎ
     switch ( aLogType )
     {
         case SMR_LT_TBS_UPDATE:
             {
-                // MEMORY TABLESPACE UPDATE ë¡œê·¸ëŠ” ë°˜ì˜í•˜ì§€ ì•ŠëŠ”ë‹¤.
-                // DISK TABLESPACE UPDATE ë¡œê·¸ëŠ” ì„ ë³„ì ìœ¼ë¡œ
-                // ë°˜ì˜í•œë‹¤. => filterRedoLogType4DiskTBSì—ì„œ ì²˜ë¦¬
-                // ì¼ë‹¨ ë³¸ í•¨ìˆ˜ì—ì„œëŠ” ë¬´ì¡°ê±´ aIsApplyLog ë¥¼ ID_FALSEë¡œ
-                // ë°˜í™˜í•œë‹¤.
-                // ë¯¸ë””ì–´ ë³µêµ¬ì—ì„œëŠ” Loganchorì— ì–´ë– í•œ TableSpace ìƒíƒœë„
-                // ë°˜ì˜í•˜ì§€ ì•ŠëŠ”ë‹¤. Loganchorë¥¼ ë³µêµ¬í•˜ì§€ ì•ŠëŠ”ë‹¤ëŠ” ì˜ë¯¸ì´ë‹¤.
+                // MEMORY TABLESPACE UPDATE ·Î±×´Â ¹İ¿µÇÏÁö ¾Ê´Â´Ù.
+                // DISK TABLESPACE UPDATE ·Î±×´Â ¼±º°ÀûÀ¸·Î
+                // ¹İ¿µÇÑ´Ù. => filterRedoLogType4DiskTBS¿¡¼­ Ã³¸®
+                // ÀÏ´Ü º» ÇÔ¼ö¿¡¼­´Â ¹«Á¶°Ç aIsApplyLog ¸¦ ID_FALSE·Î
+                // ¹İÈ¯ÇÑ´Ù.
+                // ¹Ìµğ¾î º¹±¸¿¡¼­´Â Loganchor¿¡ ¾î¶°ÇÑ TableSpace »óÅÂµµ
+                // ¹İ¿µÇÏÁö ¾Ê´Â´Ù. Loganchor¸¦ º¹±¸ÇÏÁö ¾Ê´Â´Ù´Â ÀÇ¹ÌÀÌ´Ù.
                 sIsMemTBSLog = ID_FALSE;
                 break;
             }
         case SMR_LT_UPDATE:
             {
-                // Memory Update Logë¥¼ ë°˜ì˜í•œë‹¤.
+                // Memory Update Log¸¦ ¹İ¿µÇÑ´Ù.
                 idlOS::memcpy( &sUpdateLog,
                                aCurLogPtr,
                                ID_SIZEOF(smrUpdateLog) );
@@ -6477,30 +6566,30 @@ IDE_RC smrRecoveryMgr::filterRedoLog4MemTBS(
                 {
                     sIsMemTBSLog = ID_TRUE;
 
-                    // MEMORY UPDATE CLR ë¡œê·¸ëŠ” ë°˜ì˜í•œë‹¤.
+                    // MEMORY UPDATE CLR ·Î±×´Â ¹İ¿µÇÑ´Ù.
                     SC_COPY_GRID( sCMPSLog.mGRID, sGRID );
                 }
                 else
                 {
-                    // MEMORY TABLESAPCE UPDATE CLR ë¡œê·¸
-                    // ë°˜ì˜í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                    // MEMORY TABLESAPCE UPDATE CLR ·Î±×
+                    // ¹İ¿µÇÏÁö ¾Ê´Â´Ù.
                     sIsMemTBSLog = ID_FALSE;
                 }
                 break;
             }
         case SMR_LT_DIRTY_PAGE:
             {
-                // ì¼ë‹¨ Apply ë¡œê·¸ë¡œ ì„¤ì •í•˜ê³ 
-                // redo í•  ë•Œ ì„ ë³„í•œë‹¤.
+                // ÀÏ´Ü Apply ·Î±×·Î ¼³Á¤ÇÏ°í
+                // redo ÇÒ ¶§ ¼±º°ÇÑ´Ù.
                 sIsMemTBSLog = ID_TRUE;
                 break;
             }
         case SMR_LT_NTA:
             {
-                // BUG-28709 Media recoveryì‹œ SMR_LT_NTAì— ëŒ€í•´ì„œë„
-                //           redoë¥¼ í•´ì•¼ í•¨
-                // BUG-29434 NTA Logê°€ ë°˜ì˜ë  Pageê°€ Media Recovery
-                //           ëŒ€ìƒì¸ì§€ í™•ì¸í•©ë‹ˆë‹¤.
+                // BUG-28709 Media recovery½Ã SMR_LT_NTA¿¡ ´ëÇØ¼­µµ
+                //           redo¸¦ ÇØ¾ß ÇÔ
+                // BUG-29434 NTA Log°¡ ¹İ¿µµÉ Page°¡ Media Recovery
+                //           ´ë»óÀÎÁö È®ÀÎÇÕ´Ï´Ù.
                 idlOS::memcpy( &sNTALog,
                                aCurLogPtr,
                                SMR_LOGREC_SIZE(smrNTALog));
@@ -6517,7 +6606,7 @@ IDE_RC smrRecoveryMgr::filterRedoLog4MemTBS(
                         SC_MAKE_GRID( sGRID, sSpaceID, sPageID, 0 );
                         break;
                     default :
-                        // Media Recoveryì—ì„œ RedoëŒ€ìƒì´ ì•„ë‹˜
+                        // Media Recovery¿¡¼­ Redo´ë»óÀÌ ¾Æ´Ô
                         sIsMemTBSLog = ID_FALSE;
                         break;
                 }
@@ -6531,13 +6620,13 @@ IDE_RC smrRecoveryMgr::filterRedoLog4MemTBS(
             }
     }
 
-    // Memory Log ì¸ ê²½ìš°
+    // Memory Log ÀÎ °æ¿ì
     if ( sIsMemTBSLog == ID_TRUE )
     {
-        if ( SC_GRID_IS_NULL( sGRID ) == ID_FALSE )
+        if ( SC_GRID_IS_NOT_NULL( sGRID ) )
         {
-            // [2] ë¡œê·¸ì˜ ë³€ê²½í˜ì´ì§€ê°€ ì˜¤ë¥˜ë‚œ ë°ì´íƒ€íŒŒì¼ì—
-            // í•´ë‹¹í•˜ëŠ”ì§€ í™•ì¸
+            // [2] ·Î±×ÀÇ º¯°æÆäÀÌÁö°¡ ¿À·ù³­ µ¥ÀÌÅ¸ÆÄÀÏ¿¡
+            // ÇØ´çÇÏ´ÂÁö È®ÀÎ
             IDE_TEST( smmTBSMediaRecovery::findMatchFailureDBF(
                           SC_MAKE_SPACE( sGRID ),
                           SC_MAKE_PID( sGRID ),
@@ -6547,13 +6636,13 @@ IDE_RC smrRecoveryMgr::filterRedoLog4MemTBS(
         }
         else
         {
-            // redo í•  ë•Œ ì„ ë³„í•œë‹¤.
+            // redo ÇÒ ¶§ ¼±º°ÇÑ´Ù.
             sIsApplyLog = ID_TRUE;
         }
     }
     else
     {
-        // APPLYí•  Memory Logê°€ ì•„ë‹Œ ê²½ìš°
+        // APPLYÇÒ Memory Log°¡ ¾Æ´Ñ °æ¿ì
         sIsApplyLog = ID_FALSE;
     }
 
@@ -6567,13 +6656,13 @@ IDE_RC smrRecoveryMgr::filterRedoLog4MemTBS(
 }
 
 /*
-   íŒë…ëœ ë¡œê·¸ê°€ ë””ìŠ¤í¬ ë¡œê·¸íƒ€ì…ì¸ì§€ í™•ì¸í•œë‹¤.
-   ì‹¤ì œ ì˜¤ë¥˜ë‚œ ë°ì´íƒ€íŒŒì¼ì˜ í˜ì´ì§€ë²”ìœ„ ë‚´ì— í¬í•¨ë˜ëŠ” ë¡œê·¸ì¸ì§€ëŠ”
-   sdrRedoMgrì— ì˜í•´ì„œ íŒŒì‹±í• ë•Œ Filteringëœë‹¤.
+   ÆÇµ¶µÈ ·Î±×°¡ µğ½ºÅ© ·Î±×Å¸ÀÔÀÎÁö È®ÀÎÇÑ´Ù.
+   ½ÇÁ¦ ¿À·ù³­ µ¥ÀÌÅ¸ÆÄÀÏÀÇ ÆäÀÌÁö¹üÀ§ ³»¿¡ Æ÷ÇÔµÇ´Â ·Î±×ÀÎÁö´Â
+   sdrRedoMgr¿¡ ÀÇÇØ¼­ ÆÄ½ÌÇÒ¶§ FilteringµÈ´Ù.
 
-   [IN]  aCurLogPtr         - í˜„ì¬ íŒë…ëœ ë¡œê·¸ì˜ Ptr
-   [IN]  aLogType           - í˜„ì¬ íŒë…ëœ ë¡œê·¸ì˜ Type
-   [OUT] aIsApplyLog        - ë¯¸ë””ì–´ë³µêµ¬ ì ìš©ì—¬ë¶€
+   [IN]  aCurLogPtr         - ÇöÀç ÆÇµ¶µÈ ·Î±×ÀÇ Ptr
+   [IN]  aLogType           - ÇöÀç ÆÇµ¶µÈ ·Î±×ÀÇ Type
+   [OUT] aIsApplyLog        - ¹Ìµğ¾îº¹±¸ Àû¿ë¿©ºÎ
 */
 IDE_RC smrRecoveryMgr::filterRedoLogType4DiskTBS( SChar       * aCurLogPtr,
                                                   smrLogType    aLogType,
@@ -6593,8 +6682,8 @@ IDE_RC smrRecoveryMgr::filterRedoLogType4DiskTBS( SChar       * aCurLogPtr,
     {
         case SMR_LT_TBS_UPDATE:
             {
-                // ë¯¸ë””ì–´ ë³µêµ¬ì—ì„œëŠ” Loganchorì— ì–´ë– í•œ TableSpace ìƒíƒœë„
-                // ë°˜ì˜í•˜ì§€ ì•ŠëŠ”ë‹¤. Loganchorë¥¼ ë³µêµ¬í•˜ì§€ ì•ŠëŠ”ë‹¤ëŠ” ì˜ë¯¸ì´ë‹¤.
+                // ¹Ìµğ¾î º¹±¸¿¡¼­´Â Loganchor¿¡ ¾î¶°ÇÑ TableSpace »óÅÂµµ
+                // ¹İ¿µÇÏÁö ¾Ê´Â´Ù. Loganchor¸¦ º¹±¸ÇÏÁö ¾Ê´Â´Ù´Â ÀÇ¹ÌÀÌ´Ù.
                 idlOS::memcpy( &sTBSUptLog,
                                aCurLogPtr,
                                ID_SIZEOF(smrTBSUptLog) );
@@ -6602,13 +6691,13 @@ IDE_RC smrRecoveryMgr::filterRedoLogType4DiskTBS( SChar       * aCurLogPtr,
                 if ( sTBSUptLog.mTBSUptType ==
                      SCT_UPDATE_DRDB_EXTEND_DBF )
                 {
-                    // DISK TABLESPACEì˜ EXTEND DBF ë¡œê·¸ëŠ”
-                    // ë°˜ì˜í•œë‹¤.
+                    // DISK TABLESPACEÀÇ EXTEND DBF ·Î±×´Â
+                    // ¹İ¿µÇÑ´Ù.
                     sIsApplyLog = ID_TRUE;
                 }
                 else
                 {
-                    // ê·¸ ì™¸ íƒ€ì…ì€ ë°˜ì˜í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                    // ±× ¿Ü Å¸ÀÔÀº ¹İ¿µÇÏÁö ¾Ê´Â´Ù.
                     sIsApplyLog = ID_FALSE;
                 }
                 break;
@@ -6619,7 +6708,7 @@ IDE_RC smrRecoveryMgr::filterRedoLogType4DiskTBS( SChar       * aCurLogPtr,
         case SMR_DLT_REF_NTA:
         case SMR_DLT_COMPENSATION:
             {
-                // ëª¨ë‘ ë°˜ì˜í•œë‹¤.
+                // ¸ğµÎ ¹İ¿µÇÑ´Ù.
                 if ( aIsNeedApplyDLT == SMR_DLT_REDO_ALL_DLT )
                 {
                     sIsApplyLog = ID_TRUE;
@@ -6645,8 +6734,8 @@ IDE_RC smrRecoveryMgr::filterRedoLogType4DiskTBS( SChar       * aCurLogPtr,
 
 /*
   To Fix PR-13786
-  ë³µì¡ë„ ê°œì„ ì„ ìœ„í•˜ì—¬ recoverDB() í•¨ìˆ˜ì—ì„œ
-  í•˜ë‚˜ì˜ log fileì— ëŒ€í•œ redo ì‘ì—…ì„ ë¶„ë¦¬í•œë‹¤.
+  º¹Àâµµ °³¼±À» À§ÇÏ¿© recoverDB() ÇÔ¼ö¿¡¼­
+  ÇÏ³ªÀÇ log file¿¡ ´ëÇÑ redo ÀÛ¾÷À» ºĞ¸®ÇÑ´Ù.
 
 */
 IDE_RC smrRecoveryMgr::recoverAllFailureTBS( smiRecoverType        aRecoveryType,
@@ -6690,7 +6779,7 @@ IDE_RC smrRecoveryMgr::recoverAllFailureTBS( smiRecoverType        aRecoveryType
         sIsApplyLog     = ID_FALSE;
         sIsNeedApplyDLT = SMR_DLT_REDO_NONE;
 
-        // [1] Log íŒë…
+        // [1] Log ÆÇµ¶
         IDE_TEST( smrRedoLSNMgr::readLog(&sCurRedoLSNPtr,
                                         &sLogHeadPtr,
                                         &sLogPtr,
@@ -6698,9 +6787,9 @@ IDE_RC smrRecoveryMgr::recoverAllFailureTBS( smiRecoverType        aRecoveryType
                                         &sIsValid)
                  != IDE_SUCCESS );
 
-        // [2] ë¡œê·¸ë ˆì½”ë“œê°€ Invalid í•œ ê²½ìš° ì™„ë£Œì¡°ê±´ í™•ì¸
-        // ë³´í†µ UNTILCANCELì‹œ ë¡œê·¸íŒŒì¼ì´ ì¡´ì¬í•˜ì§€ ì•Šì€ ê²½ìš°ì—
-        // í•´ë‹¹í•œë‹¤.
+        // [2] ·Î±×·¹ÄÚµå°¡ Invalid ÇÑ °æ¿ì ¿Ï·áÁ¶°Ç È®ÀÎ
+        // º¸Åë UNTILCANCEL½Ã ·Î±×ÆÄÀÏÀÌ Á¸ÀçÇÏÁö ¾ÊÀº °æ¿ì¿¡
+        // ÇØ´çÇÑ´Ù.
         if ( sIsValid == ID_FALSE )
         {
             if ( sCurRedoLSNPtr != NULL )
@@ -6712,7 +6801,7 @@ IDE_RC smrRecoveryMgr::recoverAllFailureTBS( smiRecoverType        aRecoveryType
                              sCurRedoLSNPtr->mOffset );
             }
 
-            break; /* invalidí•œ ë¡œê·¸ë¥¼ íŒë…í•œ ê²½ìš° */
+            break; /* invalidÇÑ ·Î±×¸¦ ÆÇµ¶ÇÑ °æ¿ì */
         }
 
         mCurLogPtr     = sLogPtr;
@@ -6721,23 +6810,23 @@ IDE_RC smrRecoveryMgr::recoverAllFailureTBS( smiRecoverType        aRecoveryType
 
         sLogType = smrLogHeadI::getType(sLogHeadPtr);
 
-        // [3] ë¯¸ë””ì–´ ì˜¤ë¥˜ê°€ ë°œìƒí•œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì— ë”°ë¼ Logì˜
-        // ì ìš©ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤.
+        // [3] ¹Ìµğ¾î ¿À·ù°¡ ¹ß»ıÇÑ Å×ÀÌºí½ºÆäÀÌ½º¿¡ µû¶ó LogÀÇ
+        // Àû¿ë¿©ºÎ¸¦ È®ÀÎÇÑ´Ù.
         IDE_ASSERT( sIsApplyLog == ID_FALSE );
 
         /*
-           redo êµ¬ê°„ì´ ê²°ì •ëœ ìƒíƒœì—ì„œ ê´€ë ¨ëœ ë¡œê·¸ë§Œ
-           redo ë¥¼ í•˜ê¸° ìœ„í•œê²ƒì´ë‹¤.
+           redo ±¸°£ÀÌ °áÁ¤µÈ »óÅÂ¿¡¼­ °ü·ÃµÈ ·Î±×¸¸
+           redo ¸¦ ÇÏ±â À§ÇÑ°ÍÀÌ´Ù.
 
            1. From Redo LSN
-           RedoLSNMgrê°€ ë°˜í™˜í•˜ëŠ” ë¡œê·¸ì¤‘ì— Memory From Redo LSN
-           ë³´ë‹¤ í¬ê±°ë‚˜ê°™ì€ LSNì˜ ë¡œê·¸ê°€ ë‚˜íƒ€ë‚˜ë©´ ë³µêµ¬êµ¬ê°„ì— í¬í•¨ëœë‹¤.
+           RedoLSNMgr°¡ ¹İÈ¯ÇÏ´Â ·Î±×Áß¿¡ Memory From Redo LSN
+           º¸´Ù Å©°Å³ª°°Àº LSNÀÇ ·Î±×°¡ ³ªÅ¸³ª¸é º¹±¸±¸°£¿¡ Æ÷ÇÔµÈ´Ù.
 
            2. To Redo LSN
-           RedoLSNMgrê°€ ë°˜í™˜í•˜ëŠ” ë¡œê·¸ì¤‘ì— Memory To Redo LSN
-           ë³´ë‹¤ í° LSNì˜ ë¡œê·¸ê°€ ë‚˜íƒ€ë‚˜ë©´ ë³µêµ¬êµ¬ê°„ì— í¬í•¨ëœë‹¤.  */
+           RedoLSNMgr°¡ ¹İÈ¯ÇÏ´Â ·Î±×Áß¿¡ Memory To Redo LSN
+           º¸´Ù Å« LSNÀÇ ·Î±×°¡ ³ªÅ¸³ª¸é º¹±¸±¸°£¿¡ Æ÷ÇÔµÈ´Ù.  */
 
-        // commit ë¡œê·¸ê±°ë‚˜ file_end ë¡œê·¸ì¸ì§€ í™•ì¸í•œë‹¤
+        // commit ·Î±×°Å³ª file_end ·Î±×ÀÎÁö È®ÀÎÇÑ´Ù
         IDE_TEST( filterCommonRedoLogType( sLogType,
                                            sFailureMediaType,
                                            & sIsApplyLog )
@@ -6746,7 +6835,7 @@ IDE_RC smrRecoveryMgr::recoverAllFailureTBS( smiRecoverType        aRecoveryType
         if ( ( sFailureMediaType & SMR_FAILURE_MEDIA_MRDB )
              == SMR_FAILURE_MEDIA_MRDB )
         {
-            // ì ìš©í•  ë©”ëª¨ë¦¬ ë¡œê·¸ Filtering
+            // Àû¿ëÇÒ ¸Ş¸ğ¸® ·Î±× Filtering
             if ( sIsApplyLog == ID_FALSE )
             {
                 IDE_TEST( filterRedoLog4MemTBS( sLogPtr,
@@ -6754,57 +6843,55 @@ IDE_RC smrRecoveryMgr::recoverAllFailureTBS( smiRecoverType        aRecoveryType
                                                 & sIsApplyLog)
                           != IDE_SUCCESS );
 
-                // Memory From Redo LSN ë¹„êµí•˜ì—¬ ì ìš©ì—¬ë¶€ íŒë‹¨
-                if ( smrCompareLSN::isLT(
-                        sCurRedoLSNPtr,
-                        aFromMemRedoLSN )
+                // Memory From Redo LSN ºñ±³ÇÏ¿© Àû¿ë¿©ºÎ ÆÇ´Ü
+                if ( smrCompareLSN::isLT( sCurRedoLSNPtr,
+                                          aFromMemRedoLSN )
                      == ID_TRUE )
                 {
-                    // ë‹¤ìŒ ë¡œê·¸ë¥¼ íŒë…í•œë‹¤.
+                    // ´ÙÀ½ ·Î±×¸¦ ÆÇµ¶ÇÑ´Ù.
                     sIsApplyLog = ID_FALSE;
                 }
                 else
                 {
-                    // Memory Tablespace ë³µêµ¬êµ¬ê°„ì— í•´ë‹¹í•œë‹¤.
-                    // Failure ë°ì´íƒ€íŒŒì¼ì¸ì§€ ì—¬ë¶€ë¥¼ ê²€ì‚¬í•´ì„œ
-                    // ìµœì¢… ì ìš©ì—¬ë¶€ë¥¼ ê²€í† í•œë‹¤.
+                    // Memory Tablespace º¹±¸±¸°£¿¡ ÇØ´çÇÑ´Ù.
+                    // Failure µ¥ÀÌÅ¸ÆÄÀÏÀÎÁö ¿©ºÎ¸¦ °Ë»çÇØ¼­
+                    // ÃÖÁ¾ Àû¿ë¿©ºÎ¸¦ °ËÅäÇÑ´Ù.
                 }
 
-                // Memory To Redo LSN ë¹„êµí•˜ì—¬ ì ìš©ì—¬ë¶€ íŒë‹¨
-                if ( smrCompareLSN::isGT(
-                         sCurRedoLSNPtr,
-                         aToMemRedoLSN )
+                // Memory To Redo LSN ºñ±³ÇÏ¿© Àû¿ë¿©ºÎ ÆÇ´Ü
+                if ( smrCompareLSN::isGT( sCurRedoLSNPtr,
+                                          aToMemRedoLSN )
                      == ID_TRUE )
                 {
-                    // í•´ë‹¹ë¡œê·¸ëŠ” ë°˜ì˜í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                    // ÇØ´ç·Î±×´Â ¹İ¿µÇÏÁö ¾Ê´Â´Ù.
                     sIsApplyLog = ID_FALSE;
 
-                    // ëª¨ë“  ì ìš©í•  ë¡œê·¸ê°€ ì ìš©ë˜ì—ˆë‹¤.
+                    // ¸ğµç Àû¿ëÇÒ ·Î±×°¡ Àû¿ëµÇ¾ú´Ù.
                     sFailureMediaType &= (~SMR_FAILURE_MEDIA_MRDB);
                 }
                 else
                 {
-                    // í˜„ì¬ íŒë…ëœ ë¡œê·¸ê°€ ì•„ì§ ToMemReodLSNì—
-                    // ë„ë‹¬í•˜ì§€ ì•Šì€ ê²½ìš°
+                    // ÇöÀç ÆÇµ¶µÈ ·Î±×°¡ ¾ÆÁ÷ ToMemReodLSN¿¡
+                    // µµ´ŞÇÏÁö ¾ÊÀº °æ¿ì
                 }
             }
             else
             {
-                // ì´ë¯¸ ì ìš©íŒë‹¨ì´ ì„  ê²½ìš°ì´ë‹¤
+                // ÀÌ¹Ì Àû¿ëÆÇ´ÜÀÌ ¼± °æ¿ìÀÌ´Ù
             }
         }
         else
         {
-            // Memory TableSpaceê°€ ë³µêµ¬ëŒ€ìƒì´ ì•„ë‹Œ ê²½ìš°
+            // Memory TableSpace°¡ º¹±¸´ë»óÀÌ ¾Æ´Ñ °æ¿ì
         }
 
         if ( ( sFailureMediaType & SMR_FAILURE_MEDIA_DRDB )
              == SMR_FAILURE_MEDIA_DRDB )
         {
-            // DISK ì— ëŒ€í•´ì„œë§Œ ì²˜ë¦¬í•œë‹¤.
+            // DISK ¿¡ ´ëÇØ¼­¸¸ Ã³¸®ÇÑ´Ù.
             if ( sIsApplyLog == ID_FALSE )
             {
-                // Disk From Redo LSN ë¹„êµí•˜ì—¬ ì ìš©ì—¬ë¶€ íŒë‹¨
+                // Disk From Redo LSN ºñ±³ÇÏ¿© Àû¿ë¿©ºÎ ÆÇ´Ü
                 if ( smrCompareLSN::isLT( sCurRedoLSNPtr,
                                           aFromDiskRedoLSN ) == ID_TRUE )
                 {
@@ -6812,26 +6899,25 @@ IDE_RC smrRecoveryMgr::recoverAllFailureTBS( smiRecoverType        aRecoveryType
                 }
                 else
                 {
-                    // Memory Tablespace ë³µêµ¬êµ¬ê°„ì— í•´ë‹¹í•œë‹¤.
-                    // Failure ë°ì´íƒ€íŒŒì¼ì¸ì§€ ì—¬ë¶€ë¥¼ ê²€ì‚¬í•´ì„œ
-                    // ìµœì¢… ì ìš©ì—¬ë¶€ë¥¼ ê²€í† í•œë‹¤.
+                    // Memory Tablespace º¹±¸±¸°£¿¡ ÇØ´çÇÑ´Ù.
+                    // Failure µ¥ÀÌÅ¸ÆÄÀÏÀÎÁö ¿©ºÎ¸¦ °Ë»çÇØ¼­
+                    // ÃÖÁ¾ Àû¿ë¿©ºÎ¸¦ °ËÅäÇÑ´Ù.
 
-                    // Disk To Redo LSN ë¹„êµí•˜ì—¬ ì ìš©ì—¬ë¶€ íŒë‹¨
+                    // Disk To Redo LSN ºñ±³ÇÏ¿© Àû¿ë¿©ºÎ ÆÇ´Ü
                     if ( smrCompareLSN::isGT( sCurRedoLSNPtr, aToDiskRedoLSN )
                          == ID_TRUE )
                     {
-                        // í˜„ì¬ íŒë…ëœ ë¡œê·¸ê°€ aToDiskRedoLSNë³´ë‹¤ í¬ë‹¤ë©´
-                        // ë¡œê·¸ ì ìš©ì„ ë”ì´ìƒ ì§„í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                        // ÇöÀç ÆÇµ¶µÈ ·Î±×°¡ aToDiskRedoLSNº¸´Ù Å©´Ù¸é
+                        // ·Î±× Àû¿ëÀ» ´õÀÌ»ó ÁøÇàÇÏÁö ¾Ê´Â´Ù.
 
                         // BUG-38503
-                        // ì™„ì „ ë³µêµ¬ì— í•œí•´ì„œ, SMR_LT_TBS_UPDATE íƒ€ì… ì¤‘ 
-                        // SCT_UPDATE_DRDB_EXTEND_DBF ë¥¼ ê³„ì† redo í•˜ë„ë¡ í•œë‹¤.
-                        if ( smrCompareLSN::isGT(
-                                sCurRedoLSNPtr,
-                                aToMemRedoLSN )
-                            == ID_TRUE )
+                        // ¿ÏÀü º¹±¸¿¡ ÇÑÇØ¼­, SMR_LT_TBS_UPDATE Å¸ÀÔ Áß 
+                        // SCT_UPDATE_DRDB_EXTEND_DBF ¸¦ °è¼Ó redo ÇÏµµ·Ï ÇÑ´Ù.
+                        if ( smrCompareLSN::isGT( sCurRedoLSNPtr,
+                                                  aToMemRedoLSN )
+                             == ID_TRUE )
                         {
-                            // ë©”ëª¨ë¦¬ TBS ì¢…ë£Œ ì‹œì ì´ë©´, Diskë„ ì¢…ë£Œì‹œí‚¨ë‹¤. 
+                            // ¸Ş¸ğ¸® TBS Á¾·á ½ÃÁ¡ÀÌ¸é, Diskµµ Á¾·á½ÃÅ²´Ù. 
                             sFailureMediaType  &= (~SMR_FAILURE_MEDIA_DRDB);
                             sIsNeedApplyDLT     = SMR_DLT_REDO_NONE;
                         }
@@ -6842,8 +6928,8 @@ IDE_RC smrRecoveryMgr::recoverAllFailureTBS( smiRecoverType        aRecoveryType
                     }
                     else
                     {
-                        // í˜„ì¬ íŒë…ëœ ë¡œê·¸ê°€ ì•„ì§ ToMemReodLSNì—
-                        // ë„ë‹¬í•˜ì§€ ì•Šì€ ê²½ìš°
+                        // ÇöÀç ÆÇµ¶µÈ ·Î±×°¡ ¾ÆÁ÷ ToMemReodLSN¿¡
+                        // µµ´ŞÇÏÁö ¾ÊÀº °æ¿ì
                         sIsNeedApplyDLT = SMR_DLT_REDO_ALL_DLT;
                     }
                 }
@@ -6854,7 +6940,7 @@ IDE_RC smrRecoveryMgr::recoverAllFailureTBS( smiRecoverType        aRecoveryType
                 }
                 else
                 {
-                    // ì ìš©í•  ë””ìŠ¤í¬ ë¡œê·¸ Filtering
+                    // Àû¿ëÇÒ µğ½ºÅ© ·Î±× Filtering
                     IDE_TEST( filterRedoLogType4DiskTBS(
                             sLogPtr,
                             sLogType,
@@ -6864,38 +6950,42 @@ IDE_RC smrRecoveryMgr::recoverAllFailureTBS( smiRecoverType        aRecoveryType
             }
             else
             {
-                // ì´ë¯¸ ì ìš© íŒë‹¨ì´ ì„  ê²½ìš°ì´ë‹¤.
+                // ÀÌ¹Ì Àû¿ë ÆÇ´ÜÀÌ ¼± °æ¿ìÀÌ´Ù.
             }
         }
         else
         {
-            // Disk TableSpaceê°€ ë³µêµ¬ëŒ€ìƒì´ ì•„ë‹Œ ê²½ìš°
+            // Disk TableSpace°¡ º¹±¸´ë»óÀÌ ¾Æ´Ñ °æ¿ì
         }
 
-        // [4] ë³µêµ¬ ì™„ë£Œ ì¡°ê±´ ì²´í¬
+        // [4] º¹±¸ ¿Ï·á Á¶°Ç Ã¼Å©
         if ( sFailureMediaType == SMR_FAILURE_MEDIA_NONE )
         {
-            // COMPLETE ë³µêµ¬ì˜ ê²½ìš°ì— ì—¬ê¸°ì„œ ì¢…ë£Œí•  ìˆ˜ ìˆë‹¤.
-            // ë³µêµ¬êµ¬ê°„ì„ ëª¨ë‘ scan í•œ ê²½ìš° ë”ì´ìƒ redoë¥¼
-            // ì§„í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // COMPLETE º¹±¸ÀÇ °æ¿ì¿¡ ¿©±â¼­ Á¾·áÇÒ ¼ö ÀÖ´Ù.
+            // º¹±¸±¸°£À» ¸ğµÎ scan ÇÑ °æ¿ì ´õÀÌ»ó redo¸¦
+            // ÁøÇàÇÏÁö ¾Ê´Â´Ù.
             break;
         }
 
-        // [5] ì ìš©í•  ë¡œê·¸ì¸ê°€?
+        // [5] Àû¿ëÇÒ ·Î±×ÀÎ°¡?
         if ( sIsApplyLog == ID_FALSE )
         {
-            // ë‹¤ìŒ ë¡œê·¸ë¥¼ íŒë…í•œë‹¤.
+            // ´ÙÀ½ ·Î±×¸¦ ÆÇµ¶ÇÑ´Ù.
             sCurRedoLSNPtr->mOffset += sLogSizeAtDisk;
             continue;
         }
 
         if ( (sLogType == SMR_LT_MEMTRANS_COMMIT) ||
-             (sLogType == SMR_LT_DSKTRANS_COMMIT) )
+             (sLogType == SMR_LT_DSKTRANS_COMMIT) ||
+             (sLogType == SMR_LT_MEMTRANS_GROUPCOMMIT) )
         {
-            // [7] íƒ€ì„ë² ì´ìŠ¤ ë¶ˆì™„ì „ë³µêµ¬ë¼ë©´ ì»¤ë°‹ë¡œê·¸ì— ì €ì¥ëœ
-            // ì‹œê°„ì„ í™•ì¸í•˜ì—¬ ì¬ìˆ˜í–‰ ì¤‘ì§€ ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
+            // [7] Å¸ÀÓº£ÀÌ½º ºÒ¿ÏÀüº¹±¸¶ó¸é Ä¿¹Ô·Î±×¿¡ ÀúÀåµÈ
+            // ½Ã°£À» È®ÀÎÇÏ¿© Àç¼öÇà ÁßÁö ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
             if ( aRecoveryType == SMI_RECOVER_UNTILTIME )
             {
+                /* BUG-47525 ÀÏ¹İ CommitLog¿Í GroupCommitLogÀÇ »ı±ä°Ç ´Ù¸£Áö¸¸
+                 * Time ±îÁö´Â µ¿ÀÏÇÏ±â ¶§¹®¿¡ Time¸¸ È®ÀÎÇÏ´Â °æ¿ì¶ó¸é
+                 * ±×³É CommitLog ÇüÅÂ·Î ÀĞ¾îµµ µÈ´Ù. */
                 idlOS::memcpy(&sCommitLog,
                               sLogPtr,
                               ID_SIZEOF(smrTransCommitLog));
@@ -6904,31 +6994,31 @@ IDE_RC smrRecoveryMgr::recoverAllFailureTBS( smiRecoverType        aRecoveryType
 
                 if (sCommitTIME > *aUntilTIME)
                 {
-                    // Time-Based ë¶ˆì™„ì „ ë³µêµ¬ ì™„ë£Œì‹œì 
+                    // Time-Based ºÒ¿ÏÀü º¹±¸ ¿Ï·á½ÃÁ¡
                     break;
                 }
                 else
                 {
-                    // commit log redo ìˆ˜í–‰
+                    // commit log redo ¼öÇà
                 }
             }
             else
             {
-                // íƒ€ì„ë² ì´ìŠ¤ ë¶ˆì™„ì „ ë³µêµ¬ê°€ ì•„ë‹Œ ê²½ìš°
-                // commit logì— ëŒ€í•´ì„œ ì²´í¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                // Å¸ÀÓº£ÀÌ½º ºÒ¿ÏÀü º¹±¸°¡ ¾Æ´Ñ °æ¿ì
+                // commit log¿¡ ´ëÇØ¼­ Ã¼Å©ÇÏÁö ¾Ê´Â´Ù.
             }
         }
 
         // Get Transaction Entry
-        // ë©”ëª¨ë¦¬ slotì— TIDë¥¼ ì„¤ì •í•´ì•¼í•˜ëŠ” ê²½ìš°ê°€ ìˆë‹¤.
-        // ë¯¸ë””ì–´ ë³µêµ¬ì‹œì—ë„ Transaction ê°ì²´ë¥¼ ë„˜ê¸°ì§€ë§Œ,
-        // íŠ¸ëœì­ì…˜ ìƒíƒœë¥¼ Begin ì‹œí‚¤ì§€ ì•ŠëŠ”ë‹¤.
-        // ì™œëƒí•˜ë©´ Begin ìƒíƒœê°€ ì•„ë‹Œ ê²½ìš°ì— OID ë“±ë¡ê³¼ Pending ì—°ì‚°
-        // ë“±ë¡ì´ ë˜ì§€ ì•Šì•„ active tx listì™€ prepare tx
-        // ë“±ë„ ê³ ë ¤í•˜ì§€ ì•Šì•„ë„ ë˜ê¸° ë•Œë¬¸ì´ë‹¤.
+        // ¸Ş¸ğ¸® slot¿¡ TID¸¦ ¼³Á¤ÇØ¾ßÇÏ´Â °æ¿ì°¡ ÀÖ´Ù.
+        // ¹Ìµğ¾î º¹±¸½Ã¿¡µµ Transaction °´Ã¼¸¦ ³Ñ±âÁö¸¸,
+        // Æ®·£Àè¼Ç »óÅÂ¸¦ Begin ½ÃÅ°Áö ¾Ê´Â´Ù.
+        // ¿Ö³ÄÇÏ¸é Begin »óÅÂ°¡ ¾Æ´Ñ °æ¿ì¿¡ OID µî·Ï°ú Pending ¿¬»ê
+        // µî·ÏÀÌ µÇÁö ¾Ê¾Æ active tx list¿Í prepare tx
+        // µîµµ °í·ÁÇÏÁö ¾Ê¾Æµµ µÇ±â ¶§¹®ÀÌ´Ù.
         sCurTrans = smLayerCallback::getTransByTID( smrLogHeadI::getTransID( sLogHeadPtr ) );
 
-        // [6] ì ìš©í•´ì•¼í•  ë¡œê·¸ ë ˆì½”ë“œë¥¼ ì¬ìˆ˜í–‰í•œë‹¤.
+        // [6] Àû¿ëÇØ¾ßÇÒ ·Î±× ·¹ÄÚµå¸¦ Àç¼öÇàÇÑ´Ù.
         switch( sLogType )
         {
             case SMR_LT_UPDATE:
@@ -6944,8 +7034,9 @@ IDE_RC smrRecoveryMgr::recoverAllFailureTBS( smiRecoverType        aRecoveryType
             case SMR_LT_FILE_END:
             case SMR_LT_MEMTRANS_COMMIT:
             case SMR_LT_DSKTRANS_COMMIT:
+            case SMR_LT_MEMTRANS_GROUPCOMMIT:
                 {
-                    // íŠ¸ëœì­ì…˜ê³¼ ìƒê´€ì—†ì´ ì¬ìˆ˜í–‰
+                    // Æ®·£Àè¼Ç°ú »ó°ü¾øÀÌ Àç¼öÇà
                     IDE_TEST( redo( sCurTrans,
                                     sCurRedoLSNPtr,
                                     &sFileCount,
@@ -6959,16 +7050,16 @@ IDE_RC smrRecoveryMgr::recoverAllFailureTBS( smiRecoverType        aRecoveryType
             default :
                 {
                     // sIsApplyLog == ID_FALSE
-                    // filter ê³¼ì •ì—ì„œ ì´ë¯¸ ê±¸ëŸ¬ì¡Œìœ¼ë¯€ë¡œ
-                    // assert ê²€ì‚¬í•œë‹¤.
+                    // filter °úÁ¤¿¡¼­ ÀÌ¹Ì °É·¯Á³À¸¹Ç·Î
+                    // assert °Ë»çÇÑ´Ù.
                     IDE_ASSERT( 0 );
                     break;
                 }
         }
 
-        // í•´ì‹±ëœ ë””ìŠ¤í¬ë¡œê·¸ë“¤ì˜ í¬ê¸°ì˜ ì´í•©ì´
-        // DISK_REDO_LOG_DECOMPRESS_BUFFER_SIZE ë¥¼ ë²—ì–´ë‚˜ë©´
-        // í•´ì‹±ëœ ë¡œê·¸ë“¤ì„ ëª¨ë‘ ë²„í¼ì— ì ìš©í•œë‹¤.
+        // ÇØ½ÌµÈ µğ½ºÅ©·Î±×µéÀÇ Å©±âÀÇ ÃÑÇÕÀÌ
+        // DISK_REDO_LOG_DECOMPRESS_BUFFER_SIZE ¸¦ ¹ş¾î³ª¸é
+        // ÇØ½ÌµÈ ·Î±×µéÀ» ¸ğµÎ ¹öÆÛ¿¡ Àû¿ëÇÑ´Ù.
         IDE_TEST( checkRedoDecompLogBufferSize() != IDE_SUCCESS );
     }
     mCurLogPtr     = NULL;
@@ -6996,13 +7087,13 @@ IDE_RC smrRecoveryMgr::recoverAllFailureTBS( smiRecoverType        aRecoveryType
 
 
 /*********************************************************
- * Description:rebuildArchLogfileListì€ Server Startì‹œ Archive LogFile
- * Listë¥¼ ì¬êµ¬ì„±í•˜ëŠ” ê²ƒì´ë‹¤. checkpointì‹œ ì§€ì›Œì§„ íŒŒì¼ì€ archiveë˜ì—ˆ
- * ê¸°ë•Œë¬¸ì— ë‹¤ìŒíŒŒì¼ë¶€í„° archive Listì— ì¶”ê°€í•œë‹¤.
+ * Description:rebuildArchLogfileListÀº Server Start½Ã Archive LogFile
+ * List¸¦ Àç±¸¼ºÇÏ´Â °ÍÀÌ´Ù. checkpoint½Ã Áö¿öÁø ÆÄÀÏÀº archiveµÇ¾ú
+ * ±â¶§¹®¿¡ ´ÙÀ½ÆÄÀÏºÎÅÍ archive List¿¡ Ãß°¡ÇÑ´Ù.
  *
- * aEndLSN - [IN] ë§ˆì§€ë§‰ Writeëœ logfileê¹Œì§€ Archive Logfile Listì— ì¶”
- *              ê°€í•œë‹¤.
- * BUGBUG: ì¶”ê°€ë˜ëŠ” Logfileì´ ì´ë¯¸ Archiveë˜ì—ˆì„ ìˆ˜ ìˆë‹¤. ì–´ë””ì„ ê°€ checkí•´ì•¼ë¨.
+ * aEndLSN - [IN] ¸¶Áö¸· WriteµÈ logfile±îÁö Archive Logfile List¿¡ Ãß
+ *              °¡ÇÑ´Ù.
+ * BUGBUG: Ãß°¡µÇ´Â LogfileÀÌ ÀÌ¹Ì ArchiveµÇ¾úÀ» ¼ö ÀÖ´Ù. ¾îµğ¼±°¡ checkÇØ¾ßµÊ.
  *********************************************************/
 IDE_RC smrRecoveryMgr::rebuildArchLogfileList( smLSN  *aEndLSN )
 {
@@ -7039,16 +7130,16 @@ IDE_RC smrRecoveryMgr::rebuildArchLogfileList( smLSN  *aEndLSN )
 }
 
 /*********************************************************
- * Description: Restart Recoveryì‹œì— ì‚¬ìš©ë  Redo LSNì„ ê³„ì‚°í•œë‹¤.
+ * Description: Restart Recovery½Ã¿¡ »ç¿ëµÉ Redo LSNÀ» °è»êÇÑ´Ù.
  *
- *    Checkpoint ê³¼ì • ì¤‘
- *    BEGIN CHECKPOINT LOG ì´ì „ì— ìˆ˜í–‰í•  ì¼ë“¤
+ *    Checkpoint °úÁ¤ Áß
+ *    BEGIN CHECKPOINT LOG ÀÌÀü¿¡ ¼öÇàÇÒ ÀÏµé
  *
- *    A. Restart Recoveryì‹œì— Redoì‹œì‘ LSNìœ¼ë¡œ ì‚¬ìš©ë  Recovery LSNì„ ê³„ì‚°
- *        A-1 Memory Recovery LSN ê²°ì •
- *        A-2 Disk Recovery LSN ê²°ì •
+ *    A. Restart Recovery½Ã¿¡ Redo½ÃÀÛ LSNÀ¸·Î »ç¿ëµÉ Recovery LSNÀ» °è»ê
+ *        A-1 Memory Recovery LSN °áÁ¤
+ *        A-2 Disk Recovery LSN °áÁ¤
  *            - Disk Dirty Page Flush        [step0]
- *            - Tablespace Log Anchor ë™ê¸°í™” [step1]
+ *            - Tablespace Log Anchor µ¿±âÈ­ [step1]
  *
  * Implementation
  *
@@ -7065,25 +7156,24 @@ IDE_RC smrRecoveryMgr::chkptCalcRedoLSN( idvSQL       * aStatistics,
     smLSN   sSBufferRedoLSN; 
 
     //---------------------------------
-    // A-1. Memory Recovery LSN ì˜ ê²°ì •
+    // A-1. Memory Recovery LSN ÀÇ °áÁ¤
     //---------------------------------
 
     //---------------------------------
-    // Lst LSNì„ ê°€ì ¸ì˜¨ë‹¤.
+    // Lst LSNÀ» °¡Á®¿Â´Ù.
     //---------------------------------
-    IDE_TEST( smrLogMgr::getLstLSN(aRedoLSN) != IDE_SUCCESS );
+    smrLogMgr::getLstLSN(aRedoLSN);
 
     *aDiskRedoLSN = *aRedoLSN;
     *aEndLSN      = *aDiskRedoLSN;
 
     /* ------------------------------------------------
-     * # MRDBì˜ recovery LSNì„ ê²°ì •í•˜ì—¬ ì‹œì‘ checkpoint
-     * ë¡œê·¸ì— ê¸°ë¡í•œë‹¤.
-     * íŠ¸ëœì­ì…˜ë“¤ì¤‘ ê°€ì¥ ì˜¤ë˜ì „ì— ê¸°ë¡í•œ ë¡œê·¸ì˜ LSNìœ¼ë¡œ ì„¤ì •í•˜ë©°,
-     * ì—†ë‹¤ë©´, ë¡œê·¸ê´€ë¦¬ìì˜ End LSNìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+     * # MRDBÀÇ recovery LSNÀ» °áÁ¤ÇÏ¿© ½ÃÀÛ checkpoint
+     * ·Î±×¿¡ ±â·ÏÇÑ´Ù.
+     * Æ®·£Àè¼ÇµéÁß °¡Àå ¿À·¡Àü¿¡ ±â·ÏÇÑ ·Î±×ÀÇ LSNÀ¸·Î ¼³Á¤ÇÏ¸ç,
+     * ¾ø´Ù¸é, ·Î±×°ü¸®ÀÚÀÇ End LSNÀ¸·Î ¼³Á¤ÇÑ´Ù.
      * ----------------------------------------------*/
-    IDE_TEST( smLayerCallback::getMinLSNOfAllActiveTrans( &sMinLSN )
-              != IDE_SUCCESS );
+    smLayerCallback::getMinLSNOfAllActiveTrans( &sMinLSN );
 
     if ( sMinLSN.mFileNo != ID_UINT_MAX )
     {
@@ -7105,13 +7195,13 @@ IDE_RC smrRecoveryMgr::chkptCalcRedoLSN( idvSQL       * aStatistics,
     }
 
     //---------------------------------
-    // A-2. Disk Recovery LSN ì˜ ê²°ì •
+    // A-2. Disk Recovery LSN ÀÇ °áÁ¤
     //---------------------------------
     /* ------------------------------------------------
-     * ì‹œì‘ checkpoint ë¡œê·¸ì— ê¸°ë¡í•  DRDBì˜ recovery LSNì„ ê²°ì •í•œë‹¤.
-     * ë²„í¼ê´€ë¦¬ìì˜ dirty page flush ë¦¬ìŠ¤íŠ¸ì—ì„œ ê°€ì¥ ì˜¤ë˜ëœ
-     * dirty pageì˜ first modified LSNìœ¼ë¡œ ì„¤ì •í•˜ë©°, ì—†ë‹¤ë©´
-     * ë¡œê·¸ê´€ë¦¬ìì˜ End LSNìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+     * ½ÃÀÛ checkpoint ·Î±×¿¡ ±â·ÏÇÒ DRDBÀÇ recovery LSNÀ» °áÁ¤ÇÑ´Ù.
+     * ¹öÆÛ°ü¸®ÀÚÀÇ dirty page flush ¸®½ºÆ®¿¡¼­ °¡Àå ¿À·¡µÈ
+     * dirty pageÀÇ first modified LSNÀ¸·Î ¼³Á¤ÇÏ¸ç, ¾ø´Ù¸é
+     * ·Î±×°ü¸®ÀÚÀÇ End LSNÀ¸·Î ¼³Á¤ÇÑ´Ù.
      * ----------------------------------------------*/
     if ( aChkptType == SMR_CHKPT_TYPE_BOTH )
     {
@@ -7123,10 +7213,10 @@ IDE_RC smrRecoveryMgr::chkptCalcRedoLSN( idvSQL       * aStatistics,
     }
     else
     {
-        // ë³´í†µ ë©”ëª¨ë¦¬ DB ì²´í¬í¬ì¸íŠ¸ëŠ” ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë°±ì—…ì´
-        // ì§„í–‰ ì¤‘ì¸ ê²½ìš° ë””ìŠ¤í¬ì²´í¬í¬ì¸íŠ¸ëŠ” í•˜ì§€ ì•Šì§€ë§Œ, ë¡œê·¸íŒŒì¼ì´
-        // ì‚­ì œê°€ ë˜ê¸° ë•Œë¬¸ì— ë°±ì—…ê³¼ ê´€ë ¨ëœ ë¡œê·¸íŒŒì¼ì„ ì‚­ì œí•˜ì§€ ì•Šë„ë¡
-        // ê³ ë ¤í•œë‹¤.
+        // º¸Åë ¸Ş¸ğ¸® DB Ã¼Å©Æ÷ÀÎÆ®´Â µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º ¹é¾÷ÀÌ
+        // ÁøÇà ÁßÀÎ °æ¿ì µğ½ºÅ©Ã¼Å©Æ÷ÀÎÆ®´Â ÇÏÁö ¾ÊÁö¸¸, ·Î±×ÆÄÀÏÀÌ
+        // »èÁ¦°¡ µÇ±â ¶§¹®¿¡ ¹é¾÷°ú °ü·ÃµÈ ·Î±×ÆÄÀÏÀ» »èÁ¦ÇÏÁö ¾Êµµ·Ï
+        // °í·ÁÇÑ´Ù.
 
         ideLog::log(SM_TRC_LOG_LEVEL_MRECOV,
                     SM_TRC_MRECOVERY_RECOVERYMGR_CHKP21);
@@ -7141,9 +7231,9 @@ IDE_RC smrRecoveryMgr::chkptCalcRedoLSN( idvSQL       * aStatistics,
         if ( smrCompareLSN::isLT( &sDiskRedoLSN, &sSBufferRedoLSN )
              == ID_TRUE )
         {
-            // PBufferì— ìˆëŠ” RecoveryLSN(sDiskRedoLSN)ì´ 
-            // SecondaryBufferì— ìˆëŠ” RecoveryLSN ë³´ë‹¤ ì‘ìœ¼ë©´
-            // PBufferì— ìˆëŠ” RecoveryLSN  ì„ íƒ
+            // PBuffer¿¡ ÀÖ´Â RecoveryLSN(sDiskRedoLSN)ÀÌ 
+            // SecondaryBuffer¿¡ ÀÖ´Â RecoveryLSN º¸´Ù ÀÛÀ¸¸é
+            // PBuffer¿¡ ÀÖ´Â RecoveryLSN  ¼±ÅÃ
             SM_GET_LSN( *aDiskRedoLSN, sDiskRedoLSN );
         }
         else
@@ -7181,14 +7271,14 @@ IDE_RC smrRecoveryMgr::chkptCalcRedoLSN( idvSQL       * aStatistics,
 
 
 /*********************************************************
- * Description: Memory Dirty Pageë“¤ì„ Checkpoint Imageì— Flushí•œë‹¤.
+ * Description: Memory Dirty PageµéÀ» Checkpoint Image¿¡ FlushÇÑ´Ù.
  *
- * [OUT] aSyncLstLSN - Syncí•œ ë§ˆì§€ë§‰ LSN
+ * [OUT] aSyncLstLSN - SyncÇÑ ¸¶Áö¸· LSN
  *
- *    Checkpoint ê³¼ì • ì¤‘
- *    END CHECKPOINT LOG ì´ì „ì— ìˆ˜í–‰í•˜ëŠ” ì‘ì—…
+ *    Checkpoint °úÁ¤ Áß
+ *    END CHECKPOINT LOG ÀÌÀü¿¡ ¼öÇàÇÏ´Â ÀÛ¾÷
  *
- *    C. Memory Dirty Pageë“¤ì„ Checkpoint Imageì— Flush
+ *    C. Memory Dirty PageµéÀ» Checkpoint Image¿¡ Flush
  *       C-1 Flush Dirty Pages              [step3]
  *       C-2 Sync Log Files
  *       C-3 Sync Memory Database           [step4]
@@ -7209,8 +7299,8 @@ IDE_RC smrRecoveryMgr::chkptFlushMemDirtyPages( smLSN * aSyncLstLSN,
     smLSN            sSyncedLSN;
     /* BUG-32670    [sm-disk-resource] add IO Stat information 
      * for analyzing storage performance.
-     * Checkpointê³¼ì •ì˜ ì‹œê°„ì„ ì œì–´ IO í†µê³„ì •ë³´ë¥¼ ê¸°ë¡í•¨ */
-    ULong            sTotalTime;    /* microsecond (ì´í•˜ ë™ë¬¸) */
+     * Checkpoint°úÁ¤ÀÇ ½Ã°£À» Á¦¾î IO Åë°èÁ¤º¸¸¦ ±â·ÏÇÔ */
+    ULong            sTotalTime;    /* microsecond (ÀÌÇÏ µ¿¹®) */
     ULong            sLogSyncTime;
     ULong            sDBFlushTime;
     ULong            sDBSyncTime;
@@ -7230,7 +7320,7 @@ IDE_RC smrRecoveryMgr::chkptFlushMemDirtyPages( smLSN * aSyncLstLSN,
     // C-1. Flush Dirty Pages
     //---------------------------------
 
-    // ë©”ì„¸ì§€ ê¸°ë¡
+    // ¸Ş¼¼Áö ±â·Ï
     {
         ideLog::log(SM_TRC_LOG_LEVEL_MRECOV,
                     SM_TRC_MRECOVERY_RECOVERYMGR_CHKP22);
@@ -7246,14 +7336,14 @@ IDE_RC smrRecoveryMgr::chkptFlushMemDirtyPages( smLSN * aSyncLstLSN,
     // 3) Write dirty pages on backup file
     //     3.1) Write dirty pages of last check point
     //
-    // ëª¨ë“  Tablespaceì— ëŒ€í•´ SMM => SMR ë¡œ Dirty Pageì´ë™
+    // ¸ğµç Tablespace¿¡ ´ëÇØ SMM => SMR ·Î Dirty PageÀÌµ¿
     IDE_TEST( smrDPListMgr::moveDirtyPages4AllTBS(
                                           SCT_SS_SKIP_CHECKPOINT,
                                           & sNewDirtyPageCnt,
                                           & sDupDirtyPageCnt)
               != IDE_SUCCESS );
 
-    // ë©”ì„¸ì§€ ê¸°ë¡
+    // ¸Ş¼¼Áö ±â·Ï
     {
         ideLog::log(SM_TRC_LOG_LEVEL_MRECOV,
                     SM_TRC_MRECOVERY_RECOVERYMGR_CHKP24,
@@ -7269,8 +7359,8 @@ IDE_RC smrRecoveryMgr::chkptFlushMemDirtyPages( smLSN * aSyncLstLSN,
     //---------------------------------
 
     // fix PR-2353
-    /* LOG File syncìˆ˜í–‰ */
-    IDE_TEST( smrLogMgr::getLstLSN( aSyncLstLSN ) != IDE_SUCCESS );
+    /* LOG File sync¼öÇà */
+    smrLogMgr::getLstLSN( aSyncLstLSN );
 
     ideLog::log(SM_TRC_LOG_LEVEL_MRECOV,
                 SM_TRC_MRECOVERY_RECOVERYMGR_CHKP_BEGIN_SYNCLSN,
@@ -7279,9 +7369,9 @@ IDE_RC smrRecoveryMgr::chkptFlushMemDirtyPages( smLSN * aSyncLstLSN,
 
     /* BUG-32670    [sm-disk-resource] add IO Stat information 
      * for analyzing storage performance.
-     * ì´í•˜ì—ì„œëŠ” gettimeofdayë¡œ ì‹œê°„ì„ ì  ë‹¤. ì´ í•¨ìˆ˜ëŠ” ë³‘ëª©ì´ ê½¤ ì‹¬í•œ
-     * í•¨ìˆ˜ì´ì§€ë§Œ, CheckpointëŠ” í˜¼ì ìˆ˜í–‰í•˜ë©° ê·¸ë¦¬ ìì£¼ ì¼ì–´ë‚˜ì§€ ì•Šê¸° ë•Œë¬¸ì—
-     * ì‚¬ìš©í•´ë„ ë¬´ë°©í•˜ë‹¤. */
+     * ÀÌÇÏ¿¡¼­´Â gettimeofday·Î ½Ã°£À» Á¨´Ù. ÀÌ ÇÔ¼ö´Â º´¸ñÀÌ ²Ï ½ÉÇÑ
+     * ÇÔ¼öÀÌÁö¸¸, Checkpoint´Â È¥ÀÚ ¼öÇàÇÏ¸ç ±×¸® ÀÚÁÖ ÀÏ¾î³ªÁö ¾Ê±â ¶§¹®¿¡
+     * »ç¿ëÇØµµ ¹«¹æÇÏ´Ù. */
     /*==============================LogSync==============================*/
     sTimevalue        = idlOS::gettimeofday();
     sLogSyncBeginTime = 
@@ -7295,7 +7385,7 @@ IDE_RC smrRecoveryMgr::chkptFlushMemDirtyPages( smLSN * aSyncLstLSN,
     sSyncedLogSize = 0;
     if ( SM_IS_LSN_INIT( sSyncedLSN ) )
     {
-        /* Syncedê°€ INIT LSNì¼ ê²½ìš°, ì •í™•í•œ ê³„ì‚°ì„ í•  ìˆ˜ ì—†ë‹¤. */
+        /* Synced°¡ INIT LSNÀÏ °æ¿ì, Á¤È®ÇÑ °è»êÀ» ÇÒ ¼ö ¾ø´Ù. */
         sSyncedLogSize = 0;
     }
     else
@@ -7322,7 +7412,7 @@ IDE_RC smrRecoveryMgr::chkptFlushMemDirtyPages( smLSN * aSyncLstLSN,
     sDPFlushBeginTime = 
         (time_t)sTimevalue.sec() * 1000 * 1000 + (time_t)sTimevalue.usec();
 
-    // Dirty Pageë“¤ì„ Diskì˜ Checkpoint Imageë¡œ Flushí•œë‹¤.
+    // Dirty PageµéÀ» DiskÀÇ Checkpoint Image·Î FlushÇÑ´Ù.
     IDE_TEST( smrDPListMgr::writeDirtyPages4AllTBS(
                                      SCT_SS_SKIP_CHECKPOINT,
                                      & sTotalCnt,
@@ -7330,10 +7420,10 @@ IDE_RC smrRecoveryMgr::chkptFlushMemDirtyPages( smLSN * aSyncLstLSN,
                                      & sDBWaitTime,
                                      & sDBSyncTime,
                                      smmManager::getNxtStableDB, // flush target db
-                                     sWriteOption ) /* Finalì´ Trueì¼ ê²½ìš°, ë§¹ë ¬íˆ ëŒì•„ì•¼ í•¨. */
+                                     sWriteOption ) /* FinalÀÌ TrueÀÏ °æ¿ì, ¸Í·ÄÈ÷ µ¹¾Æ¾ß ÇÔ. */
               != IDE_SUCCESS );
 
-    // ë©”ì„¸ì§€ ê¸°ë¡
+    // ¸Ş¼¼Áö ±â·Ï
     {
         ideLog::log(SM_TRC_LOG_LEVEL_MRECOV,
                     SM_TRC_MRECOVERY_RECOVERYMGR_CHKP26,
@@ -7347,7 +7437,7 @@ IDE_RC smrRecoveryMgr::chkptFlushMemDirtyPages( smLSN * aSyncLstLSN,
     //---------------------------------
     // C-3. Sync Memory Database
     //---------------------------------
-    // ë©”ì„¸ì§€ ê¸°ë¡
+    // ¸Ş¼¼Áö ±â·Ï
     {
         ideLog::log(SM_TRC_LOG_LEVEL_MRECOV,
                     SM_TRC_MRECOVERY_RECOVERYMGR_CHKP28);
@@ -7358,11 +7448,11 @@ IDE_RC smrRecoveryMgr::chkptFlushMemDirtyPages( smLSN * aSyncLstLSN,
     sLastSyncTime = (time_t)sTimevalue.sec() * 1000 * 1000 + (time_t)sTimevalue.usec();
 
     // 4) sync db files
-    // ìš´ì˜ì¤‘ì¼ ê²½ìš°ì—ëŠ” ëª¨ë“  Online Tablespaceì— ëŒ€í•´ì„œ Syncë¥¼ ìˆ˜í–‰í•œë‹¤.
-    // ë¯¸ë””ì–´ë³µêµ¬ì¤‘ì—ëŠ” ëª¨ë“  Online/Offline TableSpace ì¤‘ ë¯¸ë””ì–´ ë³µêµ¬
-    // ëŒ€ìƒì¸ ê²ƒë§Œ Syncë¥¼ ìˆ˜í–‰í•œë‹¤.
+    // ¿î¿µÁßÀÏ °æ¿ì¿¡´Â ¸ğµç Online Tablespace¿¡ ´ëÇØ¼­ Sync¸¦ ¼öÇàÇÑ´Ù.
+    // ¹Ìµğ¾îº¹±¸Áß¿¡´Â ¸ğµç Online/Offline TableSpace Áß ¹Ìµğ¾î º¹±¸
+    // ´ë»óÀÎ °Í¸¸ Sync¸¦ ¼öÇàÇÑ´Ù.
     IDE_TEST( smmManager::syncDB( SCT_SS_SKIP_CHECKPOINT,
-                                  ID_TRUE /* syncLatch íšë“ í•„ìš” */)
+                                  ID_TRUE /* syncLatch È¹µæ ÇÊ¿ä */)
               != IDE_SUCCESS );
 
     /*==============================End==============================*/
@@ -7386,19 +7476,19 @@ IDE_RC smrRecoveryMgr::chkptFlushMemDirtyPages( smLSN * aSyncLstLSN,
 
     /* BUG-33142 [sm-mem-recovery] Incorrect IO stat calculation at MMDB
      * Checkpoint
-     * ê³„ì‚°ì‹œ ë³€ìˆ˜ì— ì €ì¥ëœ ê°’ì˜ ë‹¨ìœ„ëŠ” Byteì™€ USecì…ë‹ˆë‹¤. ì´ë¥¼ MB/Secìœ¼ë¡œ í‘œí˜„í•©ë‹ˆë‹¤.
+     * °è»ê½Ã º¯¼ö¿¡ ÀúÀåµÈ °ªÀÇ ´ÜÀ§´Â Byte¿Í USecÀÔ´Ï´Ù. ÀÌ¸¦ MB/SecÀ¸·Î Ç¥ÇöÇÕ´Ï´Ù.
      * ( Byte /1024 /1024 ) / ( USec / 1000 / 1000 )
-     * ë”°ë¼ì„œ ì´ ê³µì‹ì´ ë§ìŠµë‹ˆë‹¤.
+     * µû¶ó¼­ ÀÌ °ø½ÄÀÌ ¸Â½À´Ï´Ù.
      *
-     * ë‹¤ë§Œ ê³±í•˜ê¸°ë¥¼ ì•ì—ì„œ í•˜ê³  ë‚˜ëˆ„ê¸°ë¥¼ ë’¤ì—ì„œ í•˜ëŠ” í¸ì´ ì •í™•ì„±ìƒ ì¢‹ê¸° ë•Œë¬¸ì—
+     * ´Ù¸¸ °öÇÏ±â¸¦ ¾Õ¿¡¼­ ÇÏ°í ³ª´©±â¸¦ µÚ¿¡¼­ ÇÏ´Â ÆíÀÌ Á¤È®¼º»ó ÁÁ±â ¶§¹®¿¡
      *  Byte / ( USec / 1000 / 1000 )  /1024 /1024
-     * ë¡œ ë³€ê²½í•©ë‹ˆë‹¤.*/
+     * ·Î º¯°æÇÕ´Ï´Ù.*/
 
     if ( sDBFlushTime > 0 )
     {
-        /* Byte/Usec êµ¬í•¨ */
+        /* Byte/Usec ±¸ÇÔ */
         sDBIOPerf = UINT64_TO_DOUBLE( sTotalCnt ) * SM_PAGE_SIZE / sDBFlushTime;
-        /* Byte/Usec -> MByte/Secìœ¼ë¡œ ë³€í˜•í•¨ */
+        /* Byte/Usec -> MByte/SecÀ¸·Î º¯ÇüÇÔ */
         sDBIOPerf = sDBIOPerf * 1000 * 1000 / 1024 / 1024 ;
     }
     else
@@ -7408,9 +7498,9 @@ IDE_RC smrRecoveryMgr::chkptFlushMemDirtyPages( smLSN * aSyncLstLSN,
 
     if ( sLogSyncTime > 0 )
     {
-        /* Byte/Usec êµ¬í•¨ */
+        /* Byte/Usec ±¸ÇÔ */
         sLogIOPerf = UINT64_TO_DOUBLE( sSyncedLogSize ) / sLogSyncTime ;
-        /* Byte/Usec -> MByte/Secìœ¼ë¡œ ë³€í˜•í•¨ */
+        /* Byte/Usec -> MByte/SecÀ¸·Î º¯ÇüÇÔ */
         sLogIOPerf = sDBIOPerf * 1000 * 1000 / 1024 / 1024 ;
     }
     else
@@ -7455,8 +7545,8 @@ IDE_RC smrRecoveryMgr::chkptFlushMemDirtyPages( smLSN * aSyncLstLSN,
 /*********************************************************
  * Description:
  *
- *    Checkpoint ê³¼ì • ì¤‘
- *    END CHECKPOINT LOG ì´í›„ì— ìˆ˜í–‰í•˜ëŠ” ì‘ì—…
+ *    Checkpoint °úÁ¤ Áß
+ *    END CHECKPOINT LOG ÀÌÈÄ¿¡ ¼öÇàÇÏ´Â ÀÛ¾÷
  *
  *    E. After  End_CHKPT
  *        E-1. Sync Log Files            [step6]
@@ -7498,9 +7588,8 @@ IDE_RC smrRecoveryMgr::chkptAfterEndChkptLog( idBool    aRemoveLogFile,
     ideLog::log(SM_TRC_LOG_LEVEL_MRECOV,
                 SM_TRC_MRECOVERY_RECOVERYMGR_CHKP11);
 
-    /* LOG File syncìˆ˜í–‰*/
-    IDE_TEST( smrLogMgr::getLstLSN( aSyncLstLSN )
-              != IDE_SUCCESS );
+    /* LOG File sync¼öÇà*/
+    smrLogMgr::getLstLSN( aSyncLstLSN );
 
     ideLog::log(SM_TRC_LOG_LEVEL_MRECOV,
                 SM_TRC_MRECOVERY_RECOVERYMGR_CHKP_BEGIN_SYNCLSN,
@@ -7520,10 +7609,10 @@ IDE_RC smrRecoveryMgr::chkptAfterEndChkptLog( idBool    aRemoveLogFile,
         ideLog::log(SM_TRC_LOG_LEVEL_MRECOV,
                     "OnlineRedo is performing, Skip Remove Log File(s)\n");
 
-        /* OnlineDRDBRedoê°€ ìˆ˜í–‰ì¤‘ì—ëŠ” LogFileì„ ì§€ì›Œì„œëŠ” ì•ˆëœë‹¤.
-         * Checkpointì— ì˜í•œ FlushëŠ” ëª¨ë‘ ìˆ˜í–‰ë˜ì—ˆìœ¼ë¯€ë¡œ
-         * Recovery ìˆ˜í–‰ì‹œì  ê°±ì‹ ì„ ìœ„í•˜ì—¬
-         * Log Anchorì˜ Chkpt ì •ë³´ëŠ” ê°±ì‹ í•´ì£¼ë„ë¡ í•œë‹¤. */
+        /* OnlineDRDBRedo°¡ ¼öÇàÁß¿¡´Â LogFileÀ» Áö¿ö¼­´Â ¾ÈµÈ´Ù.
+         * Checkpoint¿¡ ÀÇÇÑ Flush´Â ¸ğµÎ ¼öÇàµÇ¾úÀ¸¹Ç·Î
+         * Recovery ¼öÇà½ÃÁ¡ °»½ÅÀ» À§ÇÏ¿©
+         * Log AnchorÀÇ Chkpt Á¤º¸´Â °»½ÅÇØÁÖµµ·Ï ÇÑ´Ù. */
         mAnchorMgr.getFstDeleteLogFileNo(&sFstFileNo);
         mAnchorMgr.getLstDeleteLogFileNo(&sLstFileNo);
 
@@ -7538,7 +7627,7 @@ IDE_RC smrRecoveryMgr::chkptAfterEndChkptLog( idBool    aRemoveLogFile,
     }
     else
     {
-        /* ìˆ˜í–‰ì¤‘ì¸ OnlineDRDBRedoê°€ ì—†ìœ¼ë¯€ë¡œ Remove Log Fileì„ ìˆ˜í–‰í•œë‹¤. */
+        /* ¼öÇàÁßÀÎ OnlineDRDBRedo°¡ ¾øÀ¸¹Ç·Î Remove Log FileÀ» ¼öÇàÇÑ´Ù. */
     }
 
     //---------------------------------
@@ -7546,11 +7635,11 @@ IDE_RC smrRecoveryMgr::chkptAfterEndChkptLog( idBool    aRemoveLogFile,
     //---------------------------------
     sGetMinSNFunc    = mGetMinSNFunc;    // bug-17388
 
-    /* BUG-39675 : codesonarì—ì„œ sFstFileNo ì´ˆê¸°í™” warningì´ ì•„ë˜ì˜ DR enable
-     * ì¼ ë•Œ getFirstNeedLFN í•¨ìˆ˜ ì—ì„œ ë°œê²¬ë˜ì–´ ì´ë¡œì¸í•œ ì˜¤ë¥˜ê°€ ì˜ˆìƒë¨. 
-     * ë”°ë¼ì„œ sFstFileNoì˜ ì´ˆê¸°í™”ë¥¼ ì•„ë˜ DRì—ì„œ ì‚­ì œí•  ë¡œê·¸íŒŒì¼ ë²ˆí˜¸ë¥¼ êµ¬í•˜ëŠ”
-     * ì½”ë“œë¡œ ì§„ì…í•˜ê¸°ì „ì— ìˆ˜í–‰í•´ì¤€ë‹¤. ë˜í•œ ê¸°ì¡´ì— sFstFileNoì˜ ì´ˆê¸°í™” ì½”ë“œê°€
-     * ì¡´ì¬í–ˆë˜ ë¡œê·¸ íŒŒì¼ ì‚­ì œ ì½”ë“œì—ì„œëŠ” ì‚­ì œí•œë‹¤. 
+    /* BUG-39675 : codesonar¿¡¼­ sFstFileNo ÃÊ±âÈ­ warningÀÌ ¾Æ·¡ÀÇ DR enable
+     * ÀÏ ¶§ getFirstNeedLFN ÇÔ¼ö ¿¡¼­ ¹ß°ßµÇ¾î ÀÌ·ÎÀÎÇÑ ¿À·ù°¡ ¿¹»óµÊ. 
+     * µû¶ó¼­ sFstFileNoÀÇ ÃÊ±âÈ­¸¦ ¾Æ·¡ DR¿¡¼­ »èÁ¦ÇÒ ·Î±×ÆÄÀÏ ¹øÈ£¸¦ ±¸ÇÏ´Â
+     * ÄÚµå·Î ÁøÀÔÇÏ±âÀü¿¡ ¼öÇàÇØÁØ´Ù. ¶ÇÇÑ ±âÁ¸¿¡ sFstFileNoÀÇ ÃÊ±âÈ­ ÄÚµå°¡
+     * Á¸ÀçÇß´ø ·Î±× ÆÄÀÏ »èÁ¦ ÄÚµå¿¡¼­´Â »èÁ¦ÇÑ´Ù. 
      */
     mAnchorMgr.getLstDeleteLogFileNo( &sFstFileNo );
 
@@ -7559,10 +7648,10 @@ IDE_RC smrRecoveryMgr::chkptAfterEndChkptLog( idBool    aRemoveLogFile,
          ( aRemoveLogFile == ID_TRUE ) )
     {    
         /*
-          For Parallel Logging: Replicationì€ ìì‹ ì´ Normal Startë‚˜
-          Abnormal start ì‹œ ë³´ë‚´ì•¼í•  ì²«ë²ˆì§¸ ë¡œê·¸ì˜ LSNê°’ì„ ê°€ì§€ê³  ìˆë‹¤.
-          ë•Œë¬¸ì— LSNë³´ë‹¤ ì‘ì€ ê°’ì„ ê°€ì§€ëŠ” ë¡œê·¸ë§Œì„
-          ê°€ì§„ LogFileì„ ì°¾ì•„ì„œ ì§€ì›Œì•¼ í•œë‹¤.
+          For Parallel Logging: ReplicationÀº ÀÚ½ÅÀÌ Normal Start³ª
+          Abnormal start ½Ã º¸³»¾ßÇÒ Ã¹¹øÂ° ·Î±×ÀÇ LSN°ªÀ» °¡Áö°í ÀÖ´Ù.
+          ¶§¹®¿¡ LSNº¸´Ù ÀÛÀº °ªÀ» °¡Áö´Â ·Î±×¸¸À»
+          °¡Áø LogFileÀ» Ã£¾Æ¼­ Áö¿ö¾ß ÇÑ´Ù.
         */
         sEndFileNo = aRedoLSN->mFileNo;
         sEndFileNo =     // BUG-14898 Restart Redo FileNo (Disk)
@@ -7571,7 +7660,7 @@ IDE_RC smrRecoveryMgr::chkptAfterEndChkptLog( idBool    aRemoveLogFile,
 
         if ( getArchiveMode() == SMI_LOG_ARCHIVE )
         {
-            // ì£¼ì˜! ì´ ì•ˆì—ì„œ ë§ˆì§€ë§‰ Arhiveëœ ë¡œê·¸íŒŒì¼ ë³€ìˆ˜ì— ëŒ€í•´ Mutexë¥¼ ì¡ëŠ”ë‹¤ 
+            // ÁÖÀÇ! ÀÌ ¾È¿¡¼­ ¸¶Áö¸· ArhiveµÈ ·Î±×ÆÄÀÏ º¯¼ö¿¡ ´ëÇØ Mutex¸¦ Àâ´Â´Ù 
             IDE_TEST( smrLogMgr::getArchiveThread().getLstArchLogFileNo( &sLstArchLogFileNo )
                       != IDE_SUCCESS );
         }
@@ -7579,17 +7668,37 @@ IDE_RC smrRecoveryMgr::chkptAfterEndChkptLog( idBool    aRemoveLogFile,
         /* FIT/ART/rp/Bugs/BUG-17388/BUG-17388.tc */
         IDU_FIT_POINT( "1.BUG-17388@smrRecoveryMgr::chkptAfterEndChkptLog" );
 
-        // replicationì˜ min snê°’ì„ êµ¬í•œë‹¤.
+        // replicationÀÇ min sn°ªÀ» ±¸ÇÑ´Ù.
         if ( sGetMinSNFunc( &sEndFileNo,        // bug-14898 restart redo FileNo
                             &sLstArchLogFileNo, // bug-29115 last archive log FileNo
                             &sMinReplicationSN )
              != IDE_SUCCESS )
         {
             /* BUG-40294
-             * RPì˜ ì½œë°± í•¨ìˆ˜ê°€ ì‹¤íŒ¨í•˜ë”ë¼ë„ ì²´í¬í¬ì¸íŠ¸ ì‹¤íŒ¨ë¡œ ì„œë²„ê°€ ì¤‘ë‹¨ë˜ì–´ì„  ì•ˆë¨
-             * sGetMinSNFunc í•¨ìˆ˜ê°€ ì‹¤íŒ¨í•  ê²½ìš° ë¡œê·¸íŒŒì¼ì€ ìœ ì§€í•˜ê³  ì²´í¬í¬ì¸íŠ¸ëŠ” ì§„í–‰
+             * RPÀÇ Äİ¹é ÇÔ¼ö°¡ ½ÇÆĞÇÏ´õ¶óµµ Ã¼Å©Æ÷ÀÎÆ® ½ÇÆĞ·Î ¼­¹ö°¡ Áß´ÜµÇ¾î¼± ¾ÈµÊ
+             * sGetMinSNFunc ÇÔ¼ö°¡ ½ÇÆĞÇÒ °æ¿ì ·Î±×ÆÄÀÏÀº À¯ÁöÇÏ°í Ã¼Å©Æ÷ÀÎÆ®´Â ÁøÇà
              */
-            ideLog::log( IDE_ERR_0, "Fail to get minimum LSN for replication.\n" );
+            IDE_ERRLOG( IDE_ERR_0 );
+            ideLog::log( IDE_ERR_0, 
+                         "Fail to get minimum LSN for replication.  " \
+                         "The reason why sm log file is not removed when checkpoint is executing\n" );
+
+            IDE_ERRLOG( IDE_SM_0 );
+            ideLog::log( IDE_SM_0, 
+                         "Fail to get minimum LSN for replication.  " \
+                         "The reason why sm log file is not removed when checkpoint is executing\n" );
+
+            mAnchorMgr.getFstDeleteLogFileNo( &sFstFileNo );
+            mAnchorMgr.getLstDeleteLogFileNo( &sLstFileNo );
+
+            IDE_TEST( mAnchorMgr.updateChkptAndFlush( aBeginChkptLSN,
+                                                      aEndChkptLSN,
+                                                      aDiskRedoLSN,
+                                                      aRedoLSN,
+                                                      &sFstFileNo,
+                                                      &sLstFileNo ) != IDE_SUCCESS );
+
+            IDE_RAISE( SKIP_REMOVE_LOGFILE );
         }
         else
         {
@@ -7605,8 +7714,8 @@ IDE_RC smrRecoveryMgr::chkptAfterEndChkptLog( idBool    aRemoveLogFile,
                      sMinReplicationLSN.mFileNo,
                      sMinReplicationLSN.mOffset );
 
-        /* Replicationì„ ìœ„í•´ì„œ í•„ìš”í•œ íŒŒì¼ë“¤ì˜
-         * ì²«ë²ˆì§¸ íŒŒì¼ì˜ ë²ˆí˜¸ë¥¼ êµ¬í•œë‹¤. */
+        /* ReplicationÀ» À§ÇØ¼­ ÇÊ¿äÇÑ ÆÄÀÏµéÀÇ
+         * Ã¹¹øÂ° ÆÄÀÏÀÇ ¹øÈ£¸¦ ±¸ÇÑ´Ù. */
         if ( !SM_IS_LSN_MAX( sMinReplicationLSN ) )
         {
             (void)smrLogMgr::getFirstNeedLFN( sMinReplicationLSN,
@@ -7655,15 +7764,18 @@ IDE_RC smrRecoveryMgr::chkptAfterEndChkptLog( idBool    aRemoveLogFile,
     IDE_TEST( mAnchorMgr.updateStableNoOfAllMemTBSAndFlush()
               != IDE_SUCCESS );
 
-    /* ì—¬ê¸°ì„œ sEndLSNê°’ì€ Normal Shutdownì‹œì—ë§Œ Startì‹œì—
-       Last LSNìœ¼ë¡œ ì‚¬ìš©ë˜ê¸°ë•Œë¬¸ì— ì—¬ê¸°ì„œëŠ” ë‹¨ìˆœíˆ
-       ì¸ìë¥¼ ì±„ìš°ê¸° ìœ„í•´ì„œ ë„˜ê¸´ë‹¤..*/
+    /* ¿©±â¼­ sEndLSN°ªÀº Normal Shutdown½Ã¿¡¸¸ Start½Ã¿¡
+       Last LSNÀ¸·Î »ç¿ëµÇ±â¶§¹®¿¡ ¿©±â¼­´Â ´Ü¼øÈ÷
+       ÀÎÀÚ¸¦ Ã¤¿ì±â À§ÇØ¼­ ³Ñ±ä´Ù..*/
     IDE_TEST( mAnchorMgr.updateChkptAndFlush( aBeginChkptLSN,
                                               aEndChkptLSN,
                                               aDiskRedoLSN,
                                               aRedoLSN,
                                               &sFstFileNo,
                                               &sLstFileNo ) != IDE_SUCCESS );
+
+    /*  PROJ-2742 Support data integrity after fail-back on 1:1 consistent replication  */
+   smrRecoveryMgr::updateLastRemovedFileNo( sLstFileNo ); 
 
     //---------------------------------
     // E-4. Remove Log Files
@@ -7699,7 +7811,7 @@ IDE_RC smrRecoveryMgr::chkptAfterEndChkptLog( idBool    aRemoveLogFile,
                                                             sLstFileNo,
                                                             ID_TRUE );
 
-            // fix BUG-20241 : ì‚­ì œí•œ LogFileNoì™€ LogAnchor ë™ê¸°í™”
+            // fix BUG-20241 : »èÁ¦ÇÑ LogFileNo¿Í LogAnchor µ¿±âÈ­
             IDE_TEST( mAnchorMgr.updateFstDeleteFileAndFlush()
                       != IDE_SUCCESS );
 
@@ -7746,16 +7858,16 @@ IDE_RC smrRecoveryMgr::chkptAfterEndChkptLog( idBool    aRemoveLogFile,
 }
 
 /*
-  ë¯¸ë””ì–´ ì˜¤ë¥˜ê°€ ìˆëŠ” ë©”ëª¨ë¦¬í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì— ëŒ€í•œ
-  PREPARE ë° LOADINGì„ ì²˜ë¦¬í•œë‹¤.
+  ¹Ìµğ¾î ¿À·ù°¡ ÀÖ´Â ¸Ş¸ğ¸®Å×ÀÌºí½ºÆäÀÌ½º¿¡ ´ëÇÑ
+  PREPARE ¹× LOADINGÀ» Ã³¸®ÇÑ´Ù.
 
 */
 IDE_RC smrRecoveryMgr::initMediaRecovery4MemTBS()
 {
-    // free pageì— ëŒ€í•œ page memory í• ë‹¹ì„ í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì—
-    // redo í•˜ë‹¤ê°€ smmManager::getPersPagePtr ì—ì„œ pageì—
-    // ì ‘ê·¼í•˜ê²Œ ë˜ë©´ recovery ê³¼ì •ì¼ë•Œ
-    // ì¦‰ì‹œ page memory ë¥¼ í• ë‹¹í•  ìˆ˜ ìˆê²Œ í•´ì£¼ì–´ì•¼ í•œë‹¤.
+    // free page¿¡ ´ëÇÑ page memory ÇÒ´çÀ» ÇÏÁö ¾Ê±â ¶§¹®¿¡
+    // redo ÇÏ´Ù°¡ smmManager::getPersPagePtr ¿¡¼­ page¿¡
+    // Á¢±ÙÇÏ°Ô µÇ¸é recovery °úÁ¤ÀÏ¶§
+    // Áï½Ã page memory ¸¦ ÇÒ´çÇÒ ¼ö ÀÖ°Ô ÇØÁÖ¾î¾ß ÇÑ´Ù.
 
     IDE_CALLBACK_SEND_MSG("  [ RECMGR ] Restoring corrupted memory tablespace checkpoint images");
     IDE_TEST( smmManager::prepareDB( SMM_PREPARE_OP_DBIMAGE_NEED_MEDIA_RECOVERY )
@@ -7773,8 +7885,8 @@ IDE_RC smrRecoveryMgr::initMediaRecovery4MemTBS()
 }
 
 /*
-  ë¯¸ë””ì–´ ì˜¤ë¥˜ê°€ ìˆëŠ” ë©”ëª¨ë¦¬í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì— ëŒ€í•œ
-  PREPARE ë° LOADINGì„ ì²˜ë¦¬í•œë‹¤.
+  ¹Ìµğ¾î ¿À·ù°¡ ÀÖ´Â ¸Ş¸ğ¸®Å×ÀÌºí½ºÆäÀÌ½º¿¡ ´ëÇÑ
+  PREPARE ¹× LOADINGÀ» Ã³¸®ÇÑ´Ù.
 */
 IDE_RC smrRecoveryMgr::finalMediaRecovery4MemTBS()
 {
@@ -7782,8 +7894,8 @@ IDE_RC smrRecoveryMgr::finalMediaRecovery4MemTBS()
         "  [ RECMGR ] Memory tablespace checkpoint image restoration complete. ");
 
     //BUG-34530 
-    //SYS_TBS_MEM_DICí…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë©”ëª¨ë¦¬ê°€ í•´ì œë˜ë”ë¼ë„
-    //DicMemBaseí¬ì¸í„°ê°€ NULLë¡œ ì´ˆê¸°í™” ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+    //SYS_TBS_MEM_DICÅ×ÀÌºí½ºÆäÀÌ½º ¸Ş¸ğ¸®°¡ ÇØÁ¦µÇ´õ¶óµµ
+    //DicMemBaseÆ÷ÀÎÅÍ°¡ NULL·Î ÃÊ±âÈ­ µÇÁö ¾Ê½À´Ï´Ù.
     smmManager::clearCatalogPointers();
 
     IDE_TEST( smmTBSMediaRecovery::resetMediaFailureMemTBSNodes() != IDE_SUCCESS );
@@ -7796,7 +7908,7 @@ IDE_RC smrRecoveryMgr::finalMediaRecovery4MemTBS()
 }
 
 /*
-  ë¯¸ë””ì–´ë³µêµ¬ ì™„ë£Œì‹œ ë©”ëª¨ë¦¬ DirtyPageë¥¼ ëª¨ë‘ Flush ì‹œí‚¨ë‹¤.
+  ¹Ìµğ¾îº¹±¸ ¿Ï·á½Ã ¸Ş¸ğ¸® DirtyPage¸¦ ¸ğµÎ Flush ½ÃÅ²´Ù.
 */
 IDE_RC smrRecoveryMgr::flushAndRemoveDirtyPagesAllMemTBS()
 {
@@ -7809,14 +7921,14 @@ IDE_RC smrRecoveryMgr::flushAndRemoveDirtyPagesAllMemTBS()
 
     SChar              sMsgBuf[ SM_MAX_FILE_NAME ];
 
-    // 1) ëª¨ë“  Tablespaceì— ëŒ€í•´ SMM => SMR ë¡œ Dirty Pageì´ë™
+    // 1) ¸ğµç Tablespace¿¡ ´ëÇØ SMM => SMR ·Î Dirty PageÀÌµ¿
     IDE_TEST( smrDPListMgr::moveDirtyPages4AllTBS( SCT_SS_UNABLE_MEDIA_RECOVERY,
                                                    & sNewDirtyPageCnt,
                                                    & sDupDirtyPageCnt )
               != IDE_SUCCESS );
 
-    // 2) Dirty Pageë“¤ì„ Diskì˜ Checkpoint Imageë¡œ Flushí•œë‹¤.
-    // ë‹¨, Media Recovery ì™„ë£Œí›„ì´ë¯€ë¡œ PIDë¡œê¹… ì•ˆí•¨
+    // 2) Dirty PageµéÀ» DiskÀÇ Checkpoint Image·Î FlushÇÑ´Ù.
+    // ´Ü, Media Recovery ¿Ï·áÈÄÀÌ¹Ç·Î PID·Î±ë ¾ÈÇÔ
     IDE_TEST( smrDPListMgr::writeDirtyPages4AllTBS( SCT_SS_UNABLE_MEDIA_RECOVERY,
                                                     & sTotalCnt,
                                                     & sRemoveCnt,
@@ -7834,16 +7946,16 @@ IDE_RC smrRecoveryMgr::flushAndRemoveDirtyPagesAllMemTBS()
 
     IDE_CALLBACK_SEND_SYM( sMsgBuf );
 
-    // 3) ëª¨ë“  dirty pageë“¤ì„ discard ì‹œí‚¨ë‹¤.
-    // ìƒì„±ëœ tablespaceì˜ dirty page listëŠ”reset tablespaceì—ì„œ ì²˜ë¦¬í•œë‹¤.
+    // 3) ¸ğµç dirty pageµéÀ» discard ½ÃÅ²´Ù.
+    // »ı¼ºµÈ tablespaceÀÇ dirty page list´Âreset tablespace¿¡¼­ Ã³¸®ÇÑ´Ù.
     IDE_TEST( smrDPListMgr::discardDirtyPages4AllTBS() != IDE_SUCCESS );
 
     // 4) sync db file
-    // ìš´ì˜ì¤‘ì¼ ê²½ìš°ì—ëŠ” ëª¨ë“  Online Tablespaceì— ëŒ€í•´ì„œ Syncë¥¼ ìˆ˜í–‰í•œë‹¤.
-    // ë¯¸ë””ì–´ë³µêµ¬ì¤‘ì—ëŠ” ëª¨ë“  Online/Offline TableSpace ì¤‘ ë¯¸ë””ì–´ ë³µêµ¬
-    // ëŒ€ìƒì¸ ê²ƒë§Œ Syncë¥¼ ìˆ˜í–‰í•œë‹¤.
+    // ¿î¿µÁßÀÏ °æ¿ì¿¡´Â ¸ğµç Online Tablespace¿¡ ´ëÇØ¼­ Sync¸¦ ¼öÇàÇÑ´Ù.
+    // ¹Ìµğ¾îº¹±¸Áß¿¡´Â ¸ğµç Online/Offline TableSpace Áß ¹Ìµğ¾î º¹±¸
+    // ´ë»óÀÎ °Í¸¸ Sync¸¦ ¼öÇàÇÑ´Ù.
     IDE_TEST( smmManager::syncDB( SCT_SS_UNABLE_MEDIA_RECOVERY,
-                                  ID_TRUE /* syncLatch íšë“ í•„ìš” */ )
+                                  ID_TRUE /* syncLatch È¹µæ ÇÊ¿ä */ )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -7855,9 +7967,9 @@ IDE_RC smrRecoveryMgr::flushAndRemoveDirtyPagesAllMemTBS()
 
 
 /*
-  ë©”ëª¨ë¦¬ ë°ì´íƒ€íŒŒì¼ì˜ í—¤ë”ë¥¼ ë³µêµ¬í•œë‹¤
+  ¸Ş¸ğ¸® µ¥ÀÌÅ¸ÆÄÀÏÀÇ Çì´õ¸¦ º¹±¸ÇÑ´Ù
 
-  [IN] aResetLogsLSN - ë¶ˆì™„ì „ë³µêµ¬ì‹œ ResetLogsLSN
+  [IN] aResetLogsLSN - ºÒ¿ÏÀüº¹±¸½Ã ResetLogsLSN
 */
 IDE_RC smrRecoveryMgr::repairFailureChkptImageHdr( smLSN  * aResetLogsLSN )
 {
@@ -7879,10 +7991,10 @@ IDE_RC smrRecoveryMgr::repairFailureChkptImageHdr( smLSN  * aResetLogsLSN )
 }
 
 /***********************************************************************
- * Description  : ë¡œê·¸íŒŒì¼ì˜ í¬ê¸°ë¥¼ ì¸ìë¡œ ë°›ì€ í¬ê¸°ë§Œí¼ ì¬ì¡°ì •í•˜ëŠ” í•¨ìˆ˜
+ * Description  : ·Î±×ÆÄÀÏÀÇ Å©±â¸¦ ÀÎÀÚ·Î ¹ŞÀº Å©±â¸¸Å­ ÀçÁ¶Á¤ÇÏ´Â ÇÔ¼ö
  *
- * aLogFileName - [IN] í¬ê¸°ë¥¼ ì¬ì¡°ì •í•  ë¡œê·¸íŒŒì¼ ì´ë¦„
- * aLogFileSize - [IN] ì¬ì¡°ì •í•  í¬ê¸°
+ * aLogFileName - [IN] Å©±â¸¦ ÀçÁ¶Á¤ÇÒ ·Î±×ÆÄÀÏ ÀÌ¸§
+ * aLogFileSize - [IN] ÀçÁ¶Á¤ÇÒ Å©±â
  **********************************************************************/
 
 IDE_RC smrRecoveryMgr::resizeLogFile(SChar    *aLogFileName,
@@ -7897,7 +8009,7 @@ IDE_RC smrRecoveryMgr::resizeLogFile(SChar    *aLogFileName,
     UInt                sWriteSize    = 0;
     UInt                sState        = 0;
 
-    // Null buffer í• ë‹¹
+    // Null buffer ÇÒ´ç
     /* smrRecoveryMgr_resizeLogFile_malloc_NullBuf.tc */
     IDU_FIT_POINT("smrRecoveryMgr::resizeLogFile::malloc::NullBuf");
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_SM_SMR,
@@ -7981,10 +8093,10 @@ IDE_RC smrRecoveryMgr::resizeLogFile(SChar    *aLogFileName,
 }
 
 /******************************************************************************
- * ë§ˆì§€ë§‰ìœ¼ë¡œ checkpoint ëœ ì§€ ì˜¤ë˜ë˜ì—ˆë‹¤ë©´, restart ì‹œê°„ì„ ì¤„ì´ê³ , ë¡œê·¸ë¥¼
- * ì¤„ì´ê¸° ìœ„í•´ checkpointë¥¼ ìˆ˜í–‰í•œë‹¤.
- * ì´ í•¨ìˆ˜ëŠ” ë¡œê·¸ì–‘ì´ ì‚¬ìš©ìê°€ ì§€ì •í•œ ì–‘ ë³´ë‹¤ ë§ì´ ë‚¨ì•„ ìˆëŠ” ê²½ìš°ì— checkpoint
- * ID_TRUEë¥¼ ë¦¬í„´í•¨ìœ¼ë¡œ í•´ì„œ ì²´í¬í¬ì¸íŠ¸ê°€ ìˆ˜í–‰ë˜ê²Œë” í•œë‹¤.
+ * ¸¶Áö¸·À¸·Î checkpoint µÈ Áö ¿À·¡µÇ¾ú´Ù¸é, restart ½Ã°£À» ÁÙÀÌ°í, ·Î±×¸¦
+ * ÁÙÀÌ±â À§ÇØ checkpoint¸¦ ¼öÇàÇÑ´Ù.
+ * ÀÌ ÇÔ¼ö´Â ·Î±×¾çÀÌ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ ¾ç º¸´Ù ¸¹ÀÌ ³²¾Æ ÀÖ´Â °æ¿ì¿¡ checkpoint
+ * ID_TRUE¸¦ ¸®ÅÏÇÔÀ¸·Î ÇØ¼­ Ã¼Å©Æ÷ÀÎÆ®°¡ ¼öÇàµÇ°Ô²û ÇÑ´Ù.
  ******************************************************************************/
 idBool smrRecoveryMgr::isCheckpointFlushNeeded(smLSN aLastWrittenLSN)
 {
@@ -7995,7 +8107,7 @@ idBool smrRecoveryMgr::isCheckpointFlushNeeded(smLSN aLastWrittenLSN)
 
     if ( smrLogMgr::isAvailable() == ID_TRUE )
     {
-        (void)smrLogMgr::getLstLSN( &sEndLSN );
+        smrLogMgr::getLstLSN( &sEndLSN );
 
         if ( ( sEndLSN.mFileNo - aLastWrittenLSN.mFileNo ) >= 
              smuProperty::getCheckpointFlushMaxGap() )
@@ -8017,24 +8129,24 @@ idBool smrRecoveryMgr::isCheckpointFlushNeeded(smLSN aLastWrittenLSN)
 
 /*
   fix BUG-17157 [PROJ-1548] Disk Tablespace Online/Offline
-  ìˆ˜í–‰ì‹œ ì˜¬ë°”ë¥´ê²Œ Index Runtime Header í•´ì œí•˜ì§€ ì•ŠìŒ
+  ¼öÇà½Ã ¿Ã¹Ù¸£°Ô Index Runtime Header ÇØÁ¦ÇÏÁö ¾ÊÀ½
 
-  Restart REDO, UNDOëë‚œ í›„ì— Offline ìƒíƒœì¸ Disk Tablespaceì˜
-  Index Runtime Header í•´ì œ
+  Restart REDO, UNDO³¡³­ ÈÄ¿¡ Offline »óÅÂÀÎ Disk TablespaceÀÇ
+  Index Runtime Header ÇØÁ¦
 
-  Restart REDOAllì´ ëë‚˜ë©´, Dropped/Discarded TBSì— í¬í•¨ëœ
-  Tableì˜ Runtime Entryì™€ Tableì˜ Runitm Index Headerë¥¼ ë¹Œë“œí•œë‹¤.
-  ê·¸ì™¸ì— ì˜ˆì™¸ì ì¸ ê²½ìš°ê°€ Offline í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì¸ë°
-  Offlineì´ ì™„ë£Œê°€ ë˜ì—ˆë‹¤ë©´ Restart Recoveryë¥¼ ìˆ˜í–‰í•˜ì—¬ë„
-  Offline TBSì™€ ê´€ë ¨í•˜ì—¬ Undoê°€ ë°œìƒí•˜ì§€ ì•Šê¸° ë•Œë¬¸ì—
-  êµ³ì´ Refine DRDB Tables ê³¼ì •ì—ì„œ Offline TBSì— í¬í•¨ëœ
-  Tableë“¤ì˜ Runtime Index Headerë“¤ì„ ë¹Œë“œí•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
-  ( ê·¸ì´ìœ ëŠ” ëª…ë°±í•˜ë‹¤. ) í•˜ì§€ë§Œ í˜„ì¬, SKIP_UNDO ì—ì„œëŠ”
-  Offline TBSë¥¼ skip í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì— Refine DRDB ë‹¨ê³„ì—ì„œ
-  ë¹Œë“œí•˜ê³  ìˆë‹¤.
+  Restart REDOAllÀÌ ³¡³ª¸é, Dropped/Discarded TBS¿¡ Æ÷ÇÔµÈ
+  TableÀÇ Runtime Entry¿Í TableÀÇ Runitm Index Header¸¦ ºôµåÇÑ´Ù.
+  ±×¿Ü¿¡ ¿¹¿ÜÀûÀÎ °æ¿ì°¡ Offline Å×ÀÌºí½ºÆäÀÌ½ºÀÎµ¥
+  OfflineÀÌ ¿Ï·á°¡ µÇ¾ú´Ù¸é Restart Recovery¸¦ ¼öÇàÇÏ¿©µµ
+  Offline TBS¿Í °ü·ÃÇÏ¿© Undo°¡ ¹ß»ıÇÏÁö ¾Ê±â ¶§¹®¿¡
+  ±»ÀÌ Refine DRDB Tables °úÁ¤¿¡¼­ Offline TBS¿¡ Æ÷ÇÔµÈ
+  TableµéÀÇ Runtime Index HeaderµéÀ» ºôµåÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
+  ( ±×ÀÌÀ¯´Â ¸í¹éÇÏ´Ù. ) ÇÏÁö¸¸ ÇöÀç, SKIP_UNDO ¿¡¼­´Â
+  Offline TBS¸¦ skip ÇÏÁö ¾Ê±â ¶§¹®¿¡ Refine DRDB ´Ü°è¿¡¼­
+  ºôµåÇÏ°í ÀÖ´Ù.
 
-  ê·¸ëŸ¬ë¯€ë¡œ UndoAllê³¼ì •ì´ ì™„ë£Œëœ ì´í›„ì— Offline TBSì— í¬í•¨ëœ
-  Tableì˜ Runtime Index Headerë¥¼ free ì‹œí‚¨ë‹¤.
+  ±×·¯¹Ç·Î UndoAll°úÁ¤ÀÌ ¿Ï·áµÈ ÀÌÈÄ¿¡ Offline TBS¿¡ Æ÷ÇÔµÈ
+  TableÀÇ Runtime Index Header¸¦ free ½ÃÅ²´Ù.
 
  */
 IDE_RC smrRecoveryMgr::finiOfflineTBS( idvSQL* aStatistics )
@@ -8055,11 +8167,11 @@ IDE_RC smrRecoveryMgr::finiOfflineTBS( idvSQL* aStatistics )
 
 /**********************************************************************
  * Description : PROJ-2118 BUG Reporting
- *               Server Fatal ì‹œì ì— Signal Handler ê°€ í˜¸ì¶œí• 
- *               Debugging ì •ë³´ ê¸°ë¡í•¨ìˆ˜
+ *               Server Fatal ½ÃÁ¡¿¡ Signal Handler °¡ È£ÃâÇÒ
+ *               Debugging Á¤º¸ ±â·ÏÇÔ¼ö
  *
- *               ì´ë¯¸ altibase_dump.log ì— lockì„ ì¡ê³  ë“¤ì–´ì˜¤ë¯€ë¡œ
- *               lockì„ ì¡ì§€ì•ŠëŠ” trace ê¸°ë¡ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤.
+ *               ÀÌ¹Ì altibase_dump.log ¿¡ lockÀ» Àâ°í µé¾î¿À¹Ç·Î
+ *               lockÀ» ÀâÁö¾Ê´Â trace ±â·Ï ÇÔ¼ö¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù.
  *
  **********************************************************************/
 void smrRecoveryMgr::writeDebugInfo()
@@ -8136,9 +8248,9 @@ void smrRecoveryMgr::writeDebugInfo()
 /**********************************************************************
  * Description : PROJ-2162 RestartRiskReduction
  *
- * TOI ê°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
+ * TOI °´Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
  *
- * aObj         - [OUT] ì´ˆê¸°í™”í•  ê°ì²´
+ * aObj         - [OUT] ÃÊ±âÈ­ÇÒ °´Ã¼
  ***********************************************************************/
 void smrRecoveryMgr::initRTOI( smrRTOI * aObj )
 {
@@ -8157,18 +8269,18 @@ void smrRecoveryMgr::initRTOI( smrRTOI * aObj )
 /**********************************************************************
  * Description : PROJ-2162 RestartRiskReduction
  *
- * Logë¥¼ ë°›ì•„ ë¶„ì„í•˜ì—¬ ì´ Logê°€ Recoveryí•  ëŒ€ìƒ ê°ì²´ë“¤ì„ ì¶”ì¶œí•©ë‹ˆë‹¤.
+ * Log¸¦ ¹Ş¾Æ ºĞ¼®ÇÏ¿© ÀÌ Log°¡ RecoveryÇÒ ´ë»ó °´Ã¼µéÀ» ÃßÃâÇÕ´Ï´Ù.
  *
- * DMLë¡œê·¸ëŠ” Pageì— ëŒ€í•´ Inconsistentí•¨ì„ ì„¤ì •í•˜ê³ ,
- * DDLì€ Table/Indexì— ëŒ€í•´ Inconsistentí•¨ì„ ì„¤ì •í•©ë‹ˆë‹¤.
+ * DML·Î±×´Â Page¿¡ ´ëÇØ InconsistentÇÔÀ» ¼³Á¤ÇÏ°í,
+ * DDLÀº Table/Index¿¡ ´ëÇØ InconsistentÇÔÀ» ¼³Á¤ÇÕ´Ï´Ù.
  *
- * aLogPtr      - [IN]  ì¶”ì¶œí•˜ê²Œëœ Log ( Align ì•ˆë¨ )
- * aLogHeadPtr  - [IN]  ì¶”ì¶œí•˜ê²Œëœ Logì˜ Head ( Alignë˜ì–´ìˆìŒ )
- * aLSN         - [IN]  ì¶”ì¶œí•˜ê²Œëœ Logì˜ LSN
- * aRedoLogData - [IN]  DRDB Redo ì¤‘ì´ì—ˆì„ ê²½ìš°, ì¶”ì¶œëœ redoLogê°€ ë‚ ë¼ì˜´
- * aPagePtr     - [IN]  DRDB Redo ì¤‘ì´ì—ˆì„ ê²½ìš°, ëŒ€ìƒ Pageê°€ ì˜´
- * aIsRedo      - [IN]  Redoì¤‘ì¸ê°€?
- * aObj         - [OUT] ì„¤ì •ëœ ê²°ê³¼ë¬¼
+ * aLogPtr      - [IN]  ÃßÃâÇÏ°ÔµÈ Log ( Align ¾ÈµÊ )
+ * aLogHeadPtr  - [IN]  ÃßÃâÇÏ°ÔµÈ LogÀÇ Head ( AlignµÇ¾îÀÖÀ½ )
+ * aLSN         - [IN]  ÃßÃâÇÏ°ÔµÈ LogÀÇ LSN
+ * aRedoLogData - [IN]  DRDB Redo ÁßÀÌ¾úÀ» °æ¿ì, ÃßÃâµÈ redoLog°¡ ³¯¶ó¿È
+ * aPagePtr     - [IN]  DRDB Redo ÁßÀÌ¾úÀ» °æ¿ì, ´ë»ó Page°¡ ¿È
+ * aIsRedo      - [IN]  RedoÁßÀÎ°¡?
+ * aObj         - [OUT] ¼³Á¤µÈ °á°ú¹°
  ***********************************************************************/
 void smrRecoveryMgr::prepareRTOI( void                * aLogPtr,
                                   smrLogHead          * aLogHeadPtr,
@@ -8188,17 +8300,17 @@ void smrRecoveryMgr::prepareRTOI( void                * aLogPtr,
     IDE_DASSERT( ( ( aLogHeadPtr == NULL ) && ( aLogPtr == NULL ) ) ||
                  ( ( aLogHeadPtr != NULL ) && ( aLogPtr != NULL ) ) );
 
-    /* ì´ˆê¸°í™” */
+    /* ÃÊ±âÈ­ */
     initRTOI( aObj );
 
-    /* smrRecoveryMgr::redoì—ì„œ Logë¶„ì„ì‹œ í˜¸ì¶œí•˜ëŠ” ê²½ìš° */
-    /* LogHeadPtrì´ ì„¤ì •ë˜ì„œ ì˜¨ë‹¤. */
+    /* smrRecoveryMgr::redo¿¡¼­ LogºĞ¼®½Ã È£ÃâÇÏ´Â °æ¿ì */
+    /* LogHeadPtrÀÌ ¼³Á¤µÇ¼­ ¿Â´Ù. */
     if ( ( aLogHeadPtr != NULL ) && ( aLogPtr != NULL ) )
     {
         switch( smrLogHeadI::getType(aLogHeadPtr) )
         {
         case SMR_LT_UPDATE:
-            /* MMDB DML, DDL ì—°ì‚°.*/
+            /* MMDB DML, DDL ¿¬»ê.*/
             idlOS::memcpy(
                 &(aObj->mGRID),
                 ( (SChar*) aLogPtr) + offsetof( smrUpdateLog, mGRID ),
@@ -8209,21 +8321,21 @@ void smrRecoveryMgr::prepareRTOI( void                * aLogPtr,
                 ID_SIZEOF( smrUpdateType ) );
 
 
-            /* Page ì´ˆê¸°í™”, Tableì´ˆê¸°í™”ë“± Consistency Checkë¥¼ í•˜ë©´ ì•ˆë˜ëŠ” ê²½ìš°
-             * ê°€ ìˆë‹¤. ì´ëŸ¬í•œ ê²½ìš°ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.
+            /* Page ÃÊ±âÈ­, TableÃÊ±âÈ­µî Consistency Check¸¦ ÇÏ¸é ¾ÈµÇ´Â °æ¿ì
+             * °¡ ÀÖ´Ù. ÀÌ·¯ÇÑ °æ¿ì´Â ´ÙÀ½°ú °°´Ù.
              *
-             * Case 1) ì´ˆê¸°í™” Log( OverwriteLogí¬í•¨) ë“± ê¸°ì¡´ì— í•´ë‹¹ ê°ì²´ê°€
-             *    ì–´ë–¤ ìƒíƒœì¸ì§€ ë¬´ê´€í•œ ê²½ìš°
-             * -> Checkí•  í•„ìš”ë„ ì—†ê³ , Recoveryì‹¤íŒ¨í•˜ë”ë¼ë„ inconsistentFlag
-             *  ì„¤ì • ì•ˆí•¨. Objectê°€ ì˜ëª»ë˜ì—ˆê¸°ì— Inconsistentì„¤ì • ì¡°ì°¨
-             *  ìœ„í—˜í•  ìˆ˜ ìˆìŒ. ( DONEìœ¼ë¡œ ë°”ë¡œ ê° )
-             * Case 2) 1ê³¼ ë¹„ìŠ·í•˜ì§€ë§Œ, ConsistencyFlag ì„¤ì •ì€ ê´œì°®ì€ ê²½ìš°
-             *    ( CHECKEDë¡œ ë°”ë¡œ ê° )
-             * Case 3) Inconsistency Flagë“±ì„ ì„¤ì •í•˜ê¸° ìœ„í•œ Logì¼ ê²½ìš°
-             *    ( DONE ìƒíƒœë¡œ ê°. )
-             * Case 4) Logë§Œìœ¼ë¡œëŠ” TargetObjectë¥¼ ì•Œ ìˆ˜ ì—†ëŠ” ê²½ìš°
-             *    ( DONE ìƒíƒœë¡œ ê°. )
-             * ì´ ê²½ìš°ì— ëŒ€í•´ì„œëŠ” ì²´í¬ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+             * Case 1) ÃÊ±âÈ­ Log( OverwriteLogÆ÷ÇÔ) µî ±âÁ¸¿¡ ÇØ´ç °´Ã¼°¡
+             *    ¾î¶² »óÅÂÀÎÁö ¹«°üÇÑ °æ¿ì
+             * -> CheckÇÒ ÇÊ¿äµµ ¾ø°í, Recovery½ÇÆĞÇÏ´õ¶óµµ inconsistentFlag
+             *  ¼³Á¤ ¾ÈÇÔ. Object°¡ Àß¸øµÇ¾ú±â¿¡ Inconsistent¼³Á¤ Á¶Â÷
+             *  À§ÇèÇÒ ¼ö ÀÖÀ½. ( DONEÀ¸·Î ¹Ù·Î °¨ )
+             * Case 2) 1°ú ºñ½ÁÇÏÁö¸¸, ConsistencyFlag ¼³Á¤Àº ±¦ÂúÀº °æ¿ì
+             *    ( CHECKED·Î ¹Ù·Î °¨ )
+             * Case 3) Inconsistency FlagµîÀ» ¼³Á¤ÇÏ±â À§ÇÑ LogÀÏ °æ¿ì
+             *    ( DONE »óÅÂ·Î °¨. )
+             * Case 4) Log¸¸À¸·Î´Â TargetObject¸¦ ¾Ë ¼ö ¾ø´Â °æ¿ì
+             *    ( DONE »óÅÂ·Î °¨. )
+             * ÀÌ °æ¿ì¿¡ ´ëÇØ¼­´Â Ã¼Å©¸¦ ÇÏÁö ¾Ê´Â´Ù. */
             switch( sType )
             {
             case SMR_SMC_TABLEHEADER_INIT:              /* Case 1 */
@@ -8248,10 +8360,10 @@ void smrRecoveryMgr::prepareRTOI( void                * aLogPtr,
             case SMR_PHYSICAL:
             case SMR_SMC_TABLEHEADER_UPDATE_ALLOCINFO:
             case SMR_SMC_TABLEHEADER_UPDATE_INDEX:      /* Case 4 */
-                /* Index Create/Dropì‹œ ìˆ˜í–‰ë˜ëŠ” Physical Log
-                 * ì—°ì‚°ë˜ëŠ” Indexì— ëŒ€í•œ ì •ë³´ë¥¼ íšë“í•  ìˆ˜ ì—†ê³ ,
-                 * index ì¡´ì¬ ìœ ë¬´ì™€ ê´€ë ¨ëœ ì—°ì‚°ì˜ ì‹¤íŒ¨ë‹¤ë³´ë‹ˆ
-                 * Inconsistentë¥¼ ì„¤ì •í•  ê°ì²´ê°€ ì—†ìŒ. ë”°ë¼ì„œ ê²€ì‚¬ ì•ˆí•¨*/
+                /* Index Create/Drop½Ã ¼öÇàµÇ´Â Physical Log
+                 * ¿¬»êµÇ´Â Index¿¡ ´ëÇÑ Á¤º¸¸¦ È¹µæÇÒ ¼ö ¾ø°í,
+                 * index Á¸Àç À¯¹«¿Í °ü·ÃµÈ ¿¬»êÀÇ ½ÇÆĞ´Ùº¸´Ï
+                 * Inconsistent¸¦ ¼³Á¤ÇÒ °´Ã¼°¡ ¾øÀ½. µû¶ó¼­ °Ë»ç ¾ÈÇÔ*/
                 aObj->mState = SMR_RTOI_STATE_DONE;
                 break;
             case SMR_SMC_TABLEHEADER_UPDATE_COLUMNS:
@@ -8302,7 +8414,7 @@ void smrRecoveryMgr::prepareRTOI( void                * aLogPtr,
             }
             break;
         case SMR_LT_NTA:
-            /* MMDB DDL, AllocSlot ì—°ì‚°.*/
+            /* MMDB DDL, AllocSlot ¿¬»ê.*/
             idlOS::memcpy(
                 &sData1,
                 ( (SChar*) aLogPtr) + offsetof( smrNTALog, mData1 ),
@@ -8346,11 +8458,11 @@ void smrRecoveryMgr::prepareRTOI( void                * aLogPtr,
         case SMR_DLT_UNDOABLE:
             if ( aIsRedo == ID_TRUE )
             {
-                /* DRDB Redoì— ëŒ€í•´ì„œëŠ” smrRecoveryMgr::redoê°€ ì•„ë‹ˆë¼
-                 * sdrRedoMgr::applyLogRecì—ì„œ ìˆ˜í–‰í•œë‹¤. ì—¬ê¸°ì„œ í•˜ë©´
-                 * ì¤‘ë³µ ìˆ˜í–‰ì´ ë˜ë²„ë¦°ë‹¤.
-                 * ë‹¤ë§Œ UndoëŠ” sdrRedoMgrë“± DRDBì „ìš©ì´ ì•„ë‹ˆë¼ ê³µí†µìœ¼ë¡œ
-                 * ìˆ˜í–‰í•˜ê¸° ë•Œë¬¸ì—, Undoìš© ë¡œê·¸ëŠ” ì—¬ê¸°ì„œ ë¶„ì„í•œë‹¤. */
+                /* DRDB Redo¿¡ ´ëÇØ¼­´Â smrRecoveryMgr::redo°¡ ¾Æ´Ï¶ó
+                 * sdrRedoMgr::applyLogRec¿¡¼­ ¼öÇàÇÑ´Ù. ¿©±â¼­ ÇÏ¸é
+                 * Áßº¹ ¼öÇàÀÌ µÇ¹ö¸°´Ù.
+                 * ´Ù¸¸ Undo´Â sdrRedoMgrµî DRDBÀü¿ëÀÌ ¾Æ´Ï¶ó °øÅëÀ¸·Î
+                 * ¼öÇàÇÏ±â ¶§¹®¿¡, Undo¿ë ·Î±×´Â ¿©±â¼­ ºĞ¼®ÇÑ´Ù. */
                 aObj->mState = SMR_RTOI_STATE_DONE;
             }
             else
@@ -8373,7 +8485,7 @@ void smrRecoveryMgr::prepareRTOI( void                * aLogPtr,
         case SMR_DLT_REF_NTA:
             if ( aIsRedo == ID_TRUE )
             {
-                /* ìœ„ SMR_DLT_UNDOABLEê³¼ ê°™ì€ ì´ìœ ë¡œ ë¬´ì‹œí•¨ */
+                /* À§ SMR_DLT_UNDOABLE°ú °°Àº ÀÌÀ¯·Î ¹«½ÃÇÔ */
                 aObj->mState = SMR_RTOI_STATE_DONE;
             }
             else
@@ -8399,6 +8511,7 @@ void smrRecoveryMgr::prepareRTOI( void                * aLogPtr,
         case SMR_LT_CHKPT_BEGIN:
         case SMR_LT_DIRTY_PAGE:
         case SMR_LT_CHKPT_END:
+        case SMR_LT_MEMTRANS_GROUPCOMMIT:
         case SMR_LT_MEMTRANS_COMMIT:
         case SMR_LT_MEMTRANS_ABORT:
         case SMR_LT_DSKTRANS_COMMIT:
@@ -8419,6 +8532,7 @@ void smrRecoveryMgr::prepareRTOI( void                * aLogPtr,
         case SMR_DLT_NTA:
         case SMR_DLT_COMPENSATION:
         case SMR_LT_TABLE_META:
+        case SMR_LT_XA_START_REQ:
         case SMR_LT_XA_PREPARE_REQ:
         case SMR_LT_XA_END:
             aObj->mState = SMR_RTOI_STATE_DONE;
@@ -8433,7 +8547,7 @@ void smrRecoveryMgr::prepareRTOI( void                * aLogPtr,
         /* nothing to do ... */
     }
 
-    /* DRDBì— ëŒ€í•´ ë¶„ì„í•˜ëŠ” ê²½ìš° */
+    /* DRDB¿¡ ´ëÇØ ºĞ¼®ÇÏ´Â °æ¿ì */
     if ( aRedoLogData != NULL )
     {
         IDE_DASSERT( aPagePtr != NULL );
@@ -8460,9 +8574,9 @@ void smrRecoveryMgr::prepareRTOI( void                * aLogPtr,
                               aRedoLogData->mOffset );
             }
 
-            /* ê³¼ê±° sdrRedoMgr::checkByDiskLogì™€ ê°™ì€ ê¸°ëŠ¥  */
-            /* Pageë‹¨ìœ„ Physical Logì´ë‚˜ InitPage Logë“±ì€ PageConsistentFlag
-             * ì™€ ìƒê´€ì—†ë‹¤. */
+            /* °ú°Å sdrRedoMgr::checkByDiskLog¿Í °°Àº ±â´É  */
+            /* Page´ÜÀ§ Physical LogÀÌ³ª InitPage LogµîÀº PageConsistentFlag
+             * ¿Í »ó°ü¾ø´Ù. */
             switch( aRedoLogData->mType )
             {
             case SDR_SDP_BINARY:                  /* Case 1*/
@@ -8533,8 +8647,6 @@ void smrRecoveryMgr::prepareRTOI( void                * aLogPtr,
             case SDR_SDN_DELETE_KEY_WITH_NTA:
             case SDR_SDN_FREE_KEYS:
             case SDR_SDN_COMPACT_INDEX_PAGE:
-            case SDR_SDN_MAKE_CHAINED_KEYS:
-            case SDR_SDN_MAKE_UNCHAINED_KEYS:
             case SDR_SDN_KEY_STAMPING:
             case SDR_SDN_INIT_CTL:
             case SDR_SDN_EXTEND_CTL:
@@ -8557,8 +8669,6 @@ void smrRecoveryMgr::prepareRTOI( void                * aLogPtr,
             case SDR_STNDR_DELETE_KEY_WITH_NTA:
             case SDR_STNDR_FREE_KEYS:
             case SDR_STNDR_COMPACT_INDEX_PAGE:
-            case SDR_STNDR_MAKE_CHAINED_KEYS:
-            case SDR_STNDR_MAKE_UNCHAINED_KEYS:
             case SDR_STNDR_KEY_STAMPING:
                 SM_GET_LSN( aObj->mCauseLSN, *aLSN );
                 aObj->mType  = SMR_RTOI_TYPE_DISKPAGE;
@@ -8577,10 +8687,10 @@ void smrRecoveryMgr::prepareRTOI( void                * aLogPtr,
 /**********************************************************************
  * Description : PROJ-2162 RestartRiskReduction
  *
- * TargetObjectë¥¼ ë°›ì•„ Inconsistentí•œì§€ ì²´í¬.
+ * TargetObject¸¦ ¹Ş¾Æ InconsistentÇÑÁö Ã¼Å©.
  *
- * aObj         - [IN] ê²€ì‚¬í•  ëŒ€ìƒ
- * aConsistency - [OUT] ê²€ì‚¬ ê²°ê³¼
+ * aObj         - [IN] °Ë»çÇÒ ´ë»ó
+ * aConsistency - [OUT] °Ë»ç °á°ú
  ***********************************************************************/
 void smrRecoveryMgr::checkObjectConsistency( smrRTOI * aObj,
                                              idBool  * aConsistency )
@@ -8592,13 +8702,13 @@ void smrRecoveryMgr::checkObjectConsistency( smrRTOI * aObj,
 
     sConsistency = ID_TRUE;
 
-    /* ê²€ì‚¬í•  í•„ìš”ê°€ ìˆëŠ”ê°€? */
+    /* °Ë»çÇÒ ÇÊ¿ä°¡ ÀÖ´Â°¡? */
     if ( ( aObj->mState == SMR_RTOI_STATE_PREPARED ) &&
          ( isSkipRedo( aObj->mGRID.mSpaceID, ID_TRUE ) == ID_FALSE ) )
     {
         aObj->mCause = SMR_RTOI_CAUSE_INIT;
 
-        /* Propertyì— ì˜í•´ í•´ë‹¹ Log, Table, Index PageëŠ” ì œì™¸í•¨ */
+        /* Property¿¡ ÀÇÇØ ÇØ´ç Log, Table, Index Page´Â Á¦¿ÜÇÔ */
         if ( isIgnoreObjectByProperty( aObj ) == ID_TRUE )
         {
             aObj->mCause  = SMR_RTOI_CAUSE_PROPERTY;
@@ -8606,12 +8716,12 @@ void smrRecoveryMgr::checkObjectConsistency( smrRTOI * aObj,
 
             if ( findIOL( aObj ) == ID_TRUE )
             {
-                /* ì´ë¯¸ ì„¤ì •ëœ ê²½ìš° */
+                /* ÀÌ¹Ì ¼³Á¤µÈ °æ¿ì */
                 aObj->mState = SMR_RTOI_STATE_DONE;
             }
             else
             {
-                /* ì•„ì§ ë“±ë¡ ì•ˆë˜ì—ˆìŒ */
+                /* ¾ÆÁ÷ µî·Ï ¾ÈµÇ¾úÀ½ */
                 aObj->mState  = SMR_RTOI_STATE_CHECKED;
             }
         }
@@ -8629,9 +8739,9 @@ void smrRecoveryMgr::checkObjectConsistency( smrRTOI * aObj,
 /**********************************************************************
  * Description : PROJ-2162 RestartRiskReduction
  *
- * Propertyì—ì„œ ë¬´ì‹œí•˜ë¼ê³  ì„¤ì •ëœ ê°ì²´ì¸ì§€ í™•ì¸í•©ë‹ˆë‹¤.
+ * Property¿¡¼­ ¹«½ÃÇÏ¶ó°í ¼³Á¤µÈ °´Ã¼ÀÎÁö È®ÀÎÇÕ´Ï´Ù.
  *
- * aObj         - [IN] ê²€ì‚¬í•  ëŒ€ìƒ
+ * aObj         - [IN] °Ë»çÇÒ ´ë»ó
  ***********************************************************************/
 idBool smrRecoveryMgr::isIgnoreObjectByProperty( smrRTOI * aObj )
 {
@@ -8693,12 +8803,12 @@ idBool smrRecoveryMgr::isIgnoreObjectByProperty( smrRTOI * aObj )
 /**********************************************************************
  * Description : PROJ-2162 RestartRiskReduction
  *
- * TargetObjectê°€ Inconsistency í•œì§€ ì²´í¬í•˜ëŠ” ì‹¤ì œ í•¨ìˆ˜.
- *   Objectì— Inconsistent Flagê°€ ì„¤ì •ëœ ê²½ìš°ì—ëŠ”, ë˜ ì„¤ì •í•  í•„ìš”ê°€
- * ì—†ê¸° ë•Œë¬¸ì— Doneìƒíƒœë¡œ ê°„ë‹¤.
- *   í•˜ì§€ë§Œ Objectê°€ ì´ìƒí•  ê²½ìš°, Checkí•´ì•¼ í•œë‹¤.
+ * TargetObject°¡ Inconsistency ÇÑÁö Ã¼Å©ÇÏ´Â ½ÇÁ¦ ÇÔ¼ö.
+ *   Object¿¡ Inconsistent Flag°¡ ¼³Á¤µÈ °æ¿ì¿¡´Â, ¶Ç ¼³Á¤ÇÒ ÇÊ¿ä°¡
+ * ¾ø±â ¶§¹®¿¡ Done»óÅÂ·Î °£´Ù.
+ *   ÇÏÁö¸¸ Object°¡ ÀÌ»óÇÒ °æ¿ì, CheckÇØ¾ß ÇÑ´Ù.
  *
- * aObj        - [IN] ê²€ì‚¬í•  ëŒ€ìƒ
+ * aObj        - [IN] °Ë»çÇÒ ´ë»ó
  ***********************************************************************/
 idBool smrRecoveryMgr::checkObjectConsistencyInternal( smrRTOI * aObj )
 {
@@ -8715,7 +8825,7 @@ idBool smrRecoveryMgr::checkObjectConsistencyInternal( smrRTOI * aObj )
     smmTBSNode        * sTBSNode = NULL;
     idBool              sIsFreePage;
 
-    /* ì§ì ‘ ê°ì²´ì— ì ‘ê·¼í•˜ì—¬ í™•ì¸í•¨ */
+    /* Á÷Á¢ °´Ã¼¿¡ Á¢±ÙÇÏ¿© È®ÀÎÇÔ */
     sSpaceID = aObj->mGRID.mSpaceID;
     sPageID  = aObj->mGRID.mPageID;
     sOID     = SM_MAKE_OID( aObj->mGRID.mPageID,
@@ -8735,7 +8845,7 @@ idBool smrRecoveryMgr::checkObjectConsistencyInternal( smrRTOI * aObj )
                         != IDE_SUCCESS, err_find_object_inconsistency);
         if ( sIsFreePage == ID_TRUE )
         {
-            /* Freeëœ Page. ë¬´ì¡°ê±´ ìˆ˜í–‰í•¨ */
+            /* FreeµÈ Page. ¹«Á¶°Ç ¼öÇàÇÔ */
             aObj->mState = SMR_RTOI_STATE_CHECKED;
         }
     case SMR_RTOI_TYPE_INIT:
@@ -8745,7 +8855,7 @@ idBool smrRecoveryMgr::checkObjectConsistencyInternal( smrRTOI * aObj )
 
     if ( aObj->mState == SMR_RTOI_STATE_CHECKED )
     {
-        /* ìœ„ì—ì„œ ì´ë¯¸ ê²€ì‚¬í•¨ */
+        /* À§¿¡¼­ ÀÌ¹Ì °Ë»çÇÔ */
     }
     else
     {
@@ -8758,7 +8868,7 @@ idBool smrRecoveryMgr::checkObjectConsistencyInternal( smrRTOI * aObj )
                             != IDE_SUCCESS,
                             err_find_object_inconsistency);
             aObj->mTableOID = smLayerCallback::getTableOID( sTable );
-            /* PROJ-2375 Global Meta BUG-36236, 37915 ì„ì‹œë¡œ ë§‰ìŒ */
+            /* PROJ-2375 Global Meta BUG-36236, 37915 ÀÓ½Ã·Î ¸·À½ */
             //IDE_DASSERT( aObj->mTableOID + SMP_SLOT_HEADER_SIZE  == sOID );
 
             IDE_TEST_RAISE( smLayerCallback::isTableConsistent( (void*)sTable )
@@ -8792,7 +8902,7 @@ idBool smrRecoveryMgr::checkObjectConsistencyInternal( smrRTOI * aObj )
         case SMR_RTOI_TYPE_DISKPAGE:
             if ( aObj->mCauseDiskPage == NULL )
             {
-                /* Undo ì‹œì—ëŠ” getPageí•´ì•¼í•¨ */
+                /* Undo ½Ã¿¡´Â getPageÇØ¾ßÇÔ */
                 IDE_TEST_RAISE( sdbBufferMgr::getPage( NULL, // idvSQL
                                                        sSpaceID,
                                                        sPageID,
@@ -8809,14 +8919,14 @@ idBool smrRecoveryMgr::checkObjectConsistencyInternal( smrRTOI * aObj )
             }
             else
             {
-                /* sdrRedoMgr::applyLogRecListì—ì„œ ë“¤ì–´ì˜¨ ê²½ìš°ë¡œ
-                 * ì´ë¯¸ getpageë˜ì–´ ìˆê³ , ì•Œì•„ì„œ releaseí•¨  */
+                /* sdrRedoMgr::applyLogRecList¿¡¼­ µé¾î¿Â °æ¿ì·Î
+                 * ÀÌ¹Ì getpageµÇ¾î ÀÖ°í, ¾Ë¾Æ¼­ releaseÇÔ  */
                 sDiskPagePtr = aObj->mCauseDiskPage;
             }
-            /* DRDB Consistencyê°€ ê¹¨ì§„ ìƒí™©ì´ë©´ ì–´ì°¨í”¼ Logging/Flush ëª¨ë‘ 
-             * ë§‰íŒë‹¤.  ë‹¤ë§Œ WALì´ ê¹¨ì§„ í˜ì´ì§€ì— ì ‘ê·¼í•˜ì—¬ Startupë„ ì‹¤íŒ¨í•  ìˆ˜
-             * ìˆë‹¤. mLstDRDBRedoLSN ë³´ë‹¤ UpdateLSNì´ í¬ë©´ WALì´ ê¹¨ì§„ 
-             * ìƒí™©ì´ë‹¤. */
+            /* DRDB Consistency°¡ ±úÁø »óÈ²ÀÌ¸é ¾îÂ÷ÇÇ Logging/Flush ¸ğµÎ 
+             * ¸·Èù´Ù.  ´Ù¸¸ WALÀÌ ±úÁø ÆäÀÌÁö¿¡ Á¢±ÙÇÏ¿© Startupµµ ½ÇÆĞÇÒ ¼ö
+             * ÀÖ´Ù. mLstDRDBRedoLSN º¸´Ù UpdateLSNÀÌ Å©¸é WALÀÌ ±úÁø 
+             * »óÈ²ÀÌ´Ù. */
             sPageLSN = sdpPhyPage::getPageLSN( sDiskPagePtr );
             IDE_TEST_RAISE( ( mDRDBConsistency == ID_FALSE ) &&
                             ( smrCompareLSN::isLT( &mLstDRDBRedoLSN, 
@@ -8836,7 +8946,7 @@ idBool smrRecoveryMgr::checkObjectConsistencyInternal( smrRTOI * aObj )
             }
             else
             {
-                /* í˜¸ì¶œí•œ sdrRedoMgrì—ì„œ ì•Œì•„ì„œ release */
+                /* È£ÃâÇÑ sdrRedoMgr¿¡¼­ ¾Ë¾Æ¼­ release */
             }
             break;
         default:
@@ -8844,7 +8954,7 @@ idBool smrRecoveryMgr::checkObjectConsistencyInternal( smrRTOI * aObj )
             break;
         }
 
-        /* Check ì™„ë£Œ */
+        /* Check ¿Ï·á */
         aObj->mState = SMR_RTOI_STATE_CHECKED;
     }
 
@@ -8852,13 +8962,13 @@ idBool smrRecoveryMgr::checkObjectConsistencyInternal( smrRTOI * aObj )
 
     IDE_EXCEPTION( err_inconsistent_flag );
     {
-        /* Inconsistent Flagê°€ ì´ë¯¸ ì„¤ì •ëœ ê²½ìš°, ë˜ ì„¤ì • ì•ˆí•´ë„ ë¨. */
+        /* Inconsistent Flag°¡ ÀÌ¹Ì ¼³Á¤µÈ °æ¿ì, ¶Ç ¼³Á¤ ¾ÈÇØµµ µÊ. */
         aObj->mState = SMR_RTOI_STATE_DONE;
         aObj->mCause = SMR_RTOI_CAUSE_OBJECT;
     }
     IDE_EXCEPTION( err_find_object_inconsistency );
     {
-        /* ìƒˆë¡­ê²Œ ì˜ëª»ëœ ì ì„ ì°¾ì€ ê²½ìš°. Flag ì„¤ì • í•´ì•¼ í•¨*/
+        /* »õ·Ó°Ô Àß¸øµÈ Á¡À» Ã£Àº °æ¿ì. Flag ¼³Á¤ ÇØ¾ß ÇÔ*/
         aObj->mState = SMR_RTOI_STATE_CHECKED;
         aObj->mCause = SMR_RTOI_CAUSE_OBJECT;
     }
@@ -8877,31 +8987,31 @@ idBool smrRecoveryMgr::checkObjectConsistencyInternal( smrRTOI * aObj )
 /**********************************************************************
  * Description : PROJ-2162 RestartRiskReduction
  *
- * startupì´ ì‹¤íŒ¨í•œ ìƒí™©ì— ëŒ€í•´ ëŒ€ì²˜í•©ë‹ˆë‹¤.
+ * startupÀÌ ½ÇÆĞÇÑ »óÈ²¿¡ ´ëÇØ ´ëÃ³ÇÕ´Ï´Ù.
  *
- * aObj         - [IN] ê²€ì‚¬í•  ëŒ€ìƒ
- * aisRedo      - [IN] Redoì¤‘ì¸ê°€?
+ * aObj         - [IN] °Ë»çÇÒ ´ë»ó
+ * aisRedo      - [IN] RedoÁßÀÎ°¡?
  ***********************************************************************/
 IDE_RC smrRecoveryMgr::startupFailure( smrRTOI * aObj,
                                        idBool    aIsRedo )
 {
     IDE_DASSERT( aObj->mCause != SMR_RTOI_CAUSE_INIT );
 
-    /* Checkë˜ì–´ìˆì–´ì•¼ë§Œ, Inconsistent ì„¤ì •ì´ ì˜ë¯¸ê°€ ìˆìŒ. */
+    /* CheckµÇ¾îÀÖ¾î¾ß¸¸, Inconsistent ¼³Á¤ÀÌ ÀÇ¹Ì°¡ ÀÖÀ½. */
     if ( aObj->mState == SMR_RTOI_STATE_CHECKED )
     {
         if ( aObj->mCause == SMR_RTOI_CAUSE_PROPERTY )
         {
-            /* Propertyì— ì˜í•´ ì˜ˆì™¸ì²˜ë¦¬ëœ ê²½ìš°ëŠ” ì‚¬ìš©ìê°€ í•´ë‹¹ ê°ì²´ì˜
-             * ì†ì‹¤ì„ ê°ìˆ˜í•œë‹¤ëŠ” ê²ƒì´ê¸°ì— Durability ì†ì‹¤ì´ ì—†ìŒ */
+            /* Property¿¡ ÀÇÇØ ¿¹¿ÜÃ³¸®µÈ °æ¿ì´Â »ç¿ëÀÚ°¡ ÇØ´ç °´Ã¼ÀÇ
+             * ¼Õ½ÇÀ» °¨¼öÇÑ´Ù´Â °ÍÀÌ±â¿¡ Durability ¼Õ½ÇÀÌ ¾øÀ½ */
         }
         else
         {
-            /* Recoveryê°€ ì‹¤íŒ¨í•˜ë‹ˆ ì†ì‹¤ ë°œìƒ */
+            /* Recovery°¡ ½ÇÆĞÇÏ´Ï ¼Õ½Ç ¹ß»ı */
             mDurability = ID_FALSE;
         }
 
-        /* RECOVERYì •ì±…ì´ Normalì¼ ê²½ìš°, êµ¬ë™ ì‹¤íŒ¨ì‹œí‚´. */
+        /* RECOVERYÁ¤Ã¥ÀÌ NormalÀÏ °æ¿ì, ±¸µ¿ ½ÇÆĞ½ÃÅ´. */
         IDE_TEST_RAISE( ( mEmerRecovPolicy == SMR_RECOVERY_NORMAL ) &&
                         ( mDurability == ID_FALSE ),
                         err_durability );
@@ -8911,7 +9021,7 @@ IDE_RC smrRecoveryMgr::startupFailure( smrRTOI * aObj,
     }
     else
     {
-        /* Inconsistent ì„¤ì • ëª»í•¨  */
+        /* Inconsistent ¼³Á¤ ¸øÇÔ  */
     }
 
     return IDE_SUCCESS;
@@ -8928,12 +9038,12 @@ IDE_RC smrRecoveryMgr::startupFailure( smrRTOI * aObj,
 /**********************************************************************
  * Description : PROJ-2162 RestartRiskReduction
  *
- * TargetObjectë¥¼ Inconsistentí•˜ë‹¤ê³  ì„¤ì •í•¨
- * ì°¸ê³ ë¡œ Inconsistent ì„¤ì •ì‹œ, í•­ìƒ NULL TID, ì¦‰ DUMMY TXë¥¼ ì‚¬ìš©í•¨.
- * CLRì„ ë‚¨ê¸°ëŠ” Undoì¤‘ì¸ TXë¥¼ ì´ìš©í•  ìˆ˜ ì—†ê¸° ë•Œë¬¸.
+ * TargetObject¸¦ InconsistentÇÏ´Ù°í ¼³Á¤ÇÔ
+ * Âü°í·Î Inconsistent ¼³Á¤½Ã, Ç×»ó NULL TID, Áï DUMMY TX¸¦ »ç¿ëÇÔ.
+ * CLRÀ» ³²±â´Â UndoÁßÀÎ TX¸¦ ÀÌ¿ëÇÒ ¼ö ¾ø±â ¶§¹®.
  *
- * aObj         - [IN] ê²€ì‚¬í•  ëŒ€ìƒ
- * aisRedo      - [IN] Redoì¤‘ì¸ê°€?
+ * aObj         - [IN] °Ë»çÇÒ ´ë»ó
+ * aisRedo      - [IN] RedoÁßÀÎ°¡?
  **********************************************************************/
 void smrRecoveryMgr::setObjectInconsistency( smrRTOI * aObj,
                                              idBool    aIsRedo )
@@ -8943,17 +9053,17 @@ void smrRecoveryMgr::setObjectInconsistency( smrRTOI * aObj,
     SChar       sBuffer[ SMR_MESSAGE_BUFFER_SIZE ];
 
 
-    /* Checkedëœ ìƒíƒœì—ì„œë§Œ ì„¤ì •í•  í•„ìš”ê°€ ìˆìŒ. */
+    /* CheckedµÈ »óÅÂ¿¡¼­¸¸ ¼³Á¤ÇÒ ÇÊ¿ä°¡ ÀÖÀ½. */
     if ( aObj->mState == SMR_RTOI_STATE_CHECKED )
     {
         if ( aIsRedo == ID_TRUE )
         {
-            /* Redoì‹œì ì—ì„œëŠ” ë°”ë¡œ ìˆ˜í–‰í•˜ë©´ Logê°€ ë³€ê²½ë˜ë‹ˆ ë¯¸ë£¬ë‹¤.
-             * ë“±ë¡í•´ë‘ë©´ ë‚˜ì¤‘ì— Redoëë‚˜ê³  ì•Œì•„ì„œ ìˆ˜í–‰í•œë‹¤.*/
+            /* Redo½ÃÁ¡¿¡¼­´Â ¹Ù·Î ¼öÇàÇÏ¸é Log°¡ º¯°æµÇ´Ï ¹Ì·é´Ù.
+             * µî·ÏÇØµÎ¸é ³ªÁß¿¡ Redo³¡³ª°í ¾Ë¾Æ¼­ ¼öÇàÇÑ´Ù.*/
             if ( aObj->mCauseDiskPage != NULL )
             {
-                /* ë‹¨ DRDB Pageì¼ ê²½ìš° ë°”ë¡œ ìˆ˜í–‰í•œë‹¤. DRDBëŠ” Page Localityê°€
-                 * ì¤‘ìš”í•˜ê¸° ë•Œë¬¸ì—, ì„±ëŠ¥ìƒ ì˜í–¥ì´ ìˆê¸° ë•Œë¬¸ì´ë‹¤. */
+                /* ´Ü DRDB PageÀÏ °æ¿ì ¹Ù·Î ¼öÇàÇÑ´Ù. DRDB´Â Page Locality°¡
+                 * Áß¿äÇÏ±â ¶§¹®¿¡, ¼º´É»ó ¿µÇâÀÌ ÀÖ±â ¶§¹®ÀÌ´Ù. */
                 ((sdpPhyPageHdr*)aObj->mCauseDiskPage)->mIsConsistent = ID_FALSE;
             }
 
@@ -8994,13 +9104,13 @@ void smrRecoveryMgr::setObjectInconsistency( smrRTOI * aObj,
     }
     else
     {
-        /* ì´ë¯¸ Flag ì„¤ì •í•œ ê²½ìš° */
+        /* ÀÌ¹Ì Flag ¼³Á¤ÇÑ °æ¿ì */
     }
 
     return;
 
-    /* Inconsistency ì„¤ì •ì— ì‹¤íŒ¨í•œ ê²½ìš°.
-     * ì–´ì¨Œë“  Startupì€ í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì—, ê°ìˆ˜í•˜ê³  ì§„í–‰í•œë‹¤. */
+    /* Inconsistency ¼³Á¤¿¡ ½ÇÆĞÇÑ °æ¿ì.
+     * ¾îÂ·µç StartupÀº ÇØ¾ß ÇÏ±â ¶§¹®¿¡, °¨¼öÇÏ°í ÁøÇàÇÑ´Ù. */
 
     IDE_EXCEPTION_END;
 
@@ -9018,14 +9128,14 @@ void smrRecoveryMgr::setObjectInconsistency( smrRTOI * aObj,
 /**********************************************************************
  * Description : PROJ-2162 RestartRiskReduction
  *
- * Undoì‹¤íŒ¨ì— ëŒ€í•œ RTOIë¥¼ ì¤€ë¹„í•¨
+ * Undo½ÇÆĞ¿¡ ´ëÇÑ RTOI¸¦ ÁØºñÇÔ
  *
- * aTrans       - [IN] Undoí•˜ë˜ Transaction
- * aType        - [IN] ì˜ëª»ëœ ê°ì²´ì˜ ì¢…ë¥˜
- * aTableOID    - [IN] RTOIì— ê¸°ë¡í•  ì‹¤íŒ¨í•  TableOID
- * aIndexID     - [IN] ì‹¤íŒ¨í•œ IndexID
- * aSpaceID     - [IN] ëŒ€ìƒ í˜ì´ì§€ì˜ TablesSpaceID
- * aPageID      - [IN] ëŒ€ìƒ í˜ì´ì§€ì˜ PageID
+ * aTrans       - [IN] UndoÇÏ´ø Transaction
+ * aType        - [IN] Àß¸øµÈ °´Ã¼ÀÇ Á¾·ù
+ * aTableOID    - [IN] RTOI¿¡ ±â·ÏÇÒ ½ÇÆĞÇÒ TableOID
+ * aIndexID     - [IN] ½ÇÆĞÇÑ IndexID
+ * aSpaceID     - [IN] ´ë»ó ÆäÀÌÁöÀÇ TablesSpaceID
+ * aPageID      - [IN] ´ë»ó ÆäÀÌÁöÀÇ PageID
  **********************************************************************/
 void smrRecoveryMgr::prepareRTOIForUndoFailure( void        * aTrans,
                                                 smrRTOIType   aType,
@@ -9054,9 +9164,9 @@ void smrRecoveryMgr::prepareRTOIForUndoFailure( void        * aTrans,
 /**********************************************************************
  * Description : PROJ-2162 RestartRiskReduction
  *
- * Refineì‹¤íŒ¨ë¡œ í•´ë‹¹ Tableì´ Inconsistent í•´ì§
+ * Refine½ÇÆĞ·Î ÇØ´ç TableÀÌ Inconsistent ÇØÁü
  *
- * aTableOID    - [IN] ì‹¤íŒ¨í•œ Table
+ * aTableOID    - [IN] ½ÇÆĞÇÑ Table
  **********************************************************************/
 IDE_RC smrRecoveryMgr::refineFailureWithTable( smOID   aTableOID )
 {
@@ -9075,7 +9185,7 @@ IDE_RC smrRecoveryMgr::refineFailureWithTable( smOID   aTableOID )
                                               ID_FALSE ) // isRedo
               != IDE_SUCCESS );
 
-    /* IDE_SUCCESSë¡œ Returní•˜ê¸° ë•Œë¬¸ì—, ide errorë¥¼ ì²­ì†Œí•¨ */
+    /* IDE_SUCCESS·Î ReturnÇÏ±â ¶§¹®¿¡, ide error¸¦ Ã»¼ÒÇÔ */
     ideClearError();
 
     return IDE_SUCCESS;
@@ -9088,10 +9198,10 @@ IDE_RC smrRecoveryMgr::refineFailureWithTable( smOID   aTableOID )
 /**********************************************************************
  * Description : PROJ-2162 RestartRiskReduction
  *
- * Refineì‹¤íŒ¨ë¡œ í•´ë‹¹ Indexê°€ Inconsistent í•´ì§
+ * Refine½ÇÆĞ·Î ÇØ´ç Index°¡ Inconsistent ÇØÁü
  *
- * aTableOID    - [IN] ì‹¤íŒ¨í•œ Table
- * aIndex       - [IN] ì‹¤íŒ¨í•œ Index
+ * aTableOID    - [IN] ½ÇÆĞÇÑ Table
+ * aIndex       - [IN] ½ÇÆĞÇÑ Index
  **********************************************************************/
 IDE_RC smrRecoveryMgr::refineFailureWithIndex( smOID   aTableOID,
                                                UInt    aIndexID )
@@ -9111,7 +9221,7 @@ IDE_RC smrRecoveryMgr::refineFailureWithIndex( smOID   aTableOID,
                                               ID_FALSE ) // isRedo
               != IDE_SUCCESS );
 
-    /* IDE_SUCCESSë¡œ Returní•˜ê¸° ë•Œë¬¸ì—, ide errorë¥¼ ì²­ì†Œí•¨ */
+    /* IDE_SUCCESS·Î ReturnÇÏ±â ¶§¹®¿¡, ide error¸¦ Ã»¼ÒÇÔ */
     ideClearError();
 
     return IDE_SUCCESS;
@@ -9124,7 +9234,7 @@ IDE_RC smrRecoveryMgr::refineFailureWithIndex( smOID   aTableOID,
 /**********************************************************************
  * Description : PROJ-2162 RestartRiskReduction
  *
- * IOLì„ ì´ˆê¸°í™” í•©ë‹ˆë‹¤.
+ * IOLÀ» ÃÊ±âÈ­ ÇÕ´Ï´Ù.
  *
  **********************************************************************/
 IDE_RC smrRecoveryMgr::initializeIOL()
@@ -9146,9 +9256,9 @@ IDE_RC smrRecoveryMgr::initializeIOL()
 /**********************************************************************
  * Description : PROJ-2162 RestartRiskReduction
  *
- * IOLì„ ì¶”ê°€ í•©ë‹ˆë‹¤.
+ * IOLÀ» Ãß°¡ ÇÕ´Ï´Ù.
  *
- * aObj         - [IN] ì¶”ê°€í•  ê°ì²´
+ * aObj         - [IN] Ãß°¡ÇÒ °´Ã¼
  **********************************************************************/
 void smrRecoveryMgr::addIOL( smrRTOI * aObj )
 {
@@ -9163,9 +9273,9 @@ void smrRecoveryMgr::addIOL( smrRTOI * aObj )
     {
         idlOS::memcpy( sObj, aObj, ID_SIZEOF( smrRTOI ) );
 
-        /* Link Headì— Attach
-         * ì‚¬ì‹¤ í˜„ì¬ Mutexë¥¼ ì¡ì„ í•„ìš”ëŠ” ì—†ì§€ë§Œ, Parallel Recoveryë¥¼
-         * ëŒ€ë¹„í•˜ì—¬ Mutexë¥¼ ì¡ì•„ë‘”ë‹¤ */
+        /* Link Head¿¡ Attach
+         * »ç½Ç ÇöÀç Mutex¸¦ ÀâÀ» ÇÊ¿ä´Â ¾øÁö¸¸, Parallel Recovery¸¦
+         * ´ëºñÇÏ¿© Mutex¸¦ Àâ¾ÆµĞ´Ù */
         (void)mIOLMutex.lock( NULL /* statistics */ );
         sObj->mNext    = mIOLHead.mNext;
         mIOLHead.mNext = sObj;
@@ -9177,9 +9287,9 @@ void smrRecoveryMgr::addIOL( smrRTOI * aObj )
     else
     {
         /* nothing to do ...
-         * ë©”ëª¨ë¦¬ ë¶€ì¡±ìœ¼ë¡œ ì‹¤íŒ¨í•˜ëŠ” ìƒí™©. ì–´ë–»ê²Œë“  ì„œë²„ êµ¬ë™ì€ ì„±ê³µí•´ì•¼ í•˜ë©°
-         * addIOLì´ ì‹¤íŒ¨í•´ë„ inconsistency ì„¤ì •ë§Œ ì•ˆë  ê²ƒì´ê¸° ë•Œë¬¸ì—
-         * ê·¸ëƒ¥ ë¬´ì‹œí•œë‹¤. DEBUGëª¨ë“œ ë¹¼ê³  */
+         * ¸Ş¸ğ¸® ºÎÁ·À¸·Î ½ÇÆĞÇÏ´Â »óÈ². ¾î¶»°Ôµç ¼­¹ö ±¸µ¿Àº ¼º°øÇØ¾ß ÇÏ¸ç
+         * addIOLÀÌ ½ÇÆĞÇØµµ inconsistency ¼³Á¤¸¸ ¾ÈµÉ °ÍÀÌ±â ¶§¹®¿¡
+         * ±×³É ¹«½ÃÇÑ´Ù. DEBUG¸ğµå »©°í */
         idlOS::snprintf( sBuffer,
                          SMR_MESSAGE_BUFFER_SIZE,
                          SM_TRC_EMERECO_FAILED_SET_INCONSISTENCY_FLAG );
@@ -9195,9 +9305,9 @@ void smrRecoveryMgr::addIOL( smrRTOI * aObj )
 /**********************************************************************
  * Description : PROJ-2162 RestartRiskReduction
  *
- * IOLì´ ì´ë¯¸ ë“±ë¡ë˜ì–´ìˆëŠ”ì§€ ê²€ì‚¬í•¨
+ * IOLÀÌ ÀÌ¹Ì µî·ÏµÇ¾îÀÖ´ÂÁö °Ë»çÇÔ
  *
- * aObj         - [IN] ê²€ì‚¬í•  ê°ì²´
+ * aObj         - [IN] °Ë»çÇÒ °´Ã¼
  **********************************************************************/
 idBool smrRecoveryMgr::findIOL( smrRTOI * aObj )
 {
@@ -9253,9 +9363,9 @@ idBool smrRecoveryMgr::findIOL( smrRTOI * aObj )
 /**********************************************************************
  * Description : PROJ-2162 RestartRiskReduction
  *
- * TOI Messageë¥¼ TRC/isqlì— ì¶œë ¥í•©ë‹ˆë‹¤.
+ * TOI Message¸¦ TRC/isql¿¡ Ãâ·ÂÇÕ´Ï´Ù.
  *
- * aObj         - [IN] ì¶œë ¥í•  ëŒ€ìƒ
+ * aObj         - [IN] Ãâ·ÂÇÒ ´ë»ó
  **********************************************************************/
 void smrRecoveryMgr::displayRTOI(  smrRTOI * aObj )
 {
@@ -9337,7 +9447,7 @@ void smrRecoveryMgr::displayRTOI(  smrRTOI * aObj )
     }
 }
 
-/* Redoì‹œì ì— ë“±ë¡ì€ ë˜ì—ˆì§€ë§Œ ë¯¸ë¤„ë‘” Inconsistencyë¥¼ ì„¤ì •í•¨ */
+/* Redo½ÃÁ¡¿¡ µî·ÏÀº µÇ¾úÁö¸¸ ¹Ì·ïµĞ Inconsistency¸¦ ¼³Á¤ÇÔ */
 void smrRecoveryMgr::applyIOLAtRedoFinish()
 {
     smrRTOI * sCursor;
@@ -9352,7 +9462,7 @@ void smrRecoveryMgr::applyIOLAtRedoFinish()
     }
 }
 
-/* IOL(InconsistentObjectList)ë¥¼ ì œê±° í•©ë‹ˆë‹¤. */
+/* IOL(InconsistentObjectList)¸¦ Á¦°Å ÇÕ´Ï´Ù. */
 IDE_RC smrRecoveryMgr::finalizeIOL()
 {
     smrRTOI * sCursor;
@@ -9378,23 +9488,47 @@ IDE_RC smrRecoveryMgr::finalizeIOL()
 }
 
 
-/* DRDB Walì´ ê¹¨ì¡ŒëŠ”ì§€ í™•ì¸í•©ë‹ˆë‹¤. */
+/* DRDB WalÀÌ ±úÁ³´ÂÁö È®ÀÎÇÕ´Ï´Ù. */
 IDE_RC smrRecoveryMgr::checkDiskWAL()
 {
-    SChar             sBuffer[ SMR_MESSAGE_BUFFER_SIZE ];
+    SChar    sBuffer[ SMR_MESSAGE_BUFFER_SIZE ];
+    smLSN    sLstUpdatedPageLSN = sdrRedoMgr::getLastUpdatedPageLSN();
+    SChar *  sFileName;
 
-    if ( smrCompareLSN::isGT( &mLstDRDBPageUpdateLSN, &mLstDRDBRedoLSN )
-        == ID_TRUE )
+    if( smrCompareLSN::isGT( &sLstUpdatedPageLSN,
+                             &mLstDRDBRedoLSN ) == ID_TRUE )
     {
         idlOS::snprintf( sBuffer,
                          SMR_MESSAGE_BUFFER_SIZE,
                          SM_TRC_EMERECO_DRDB_WAL_VIOLATION,
-                         mLstDRDBPageUpdateLSN.mFileNo,
-                         mLstDRDBPageUpdateLSN.mOffset,
+                         sLstUpdatedPageLSN.mFileNo,
+                         sLstUpdatedPageLSN.mOffset,
                          mLstDRDBRedoLSN.mFileNo,
                          mLstDRDBRedoLSN.mOffset );
         ideLog::log( IDE_ERR_0, sBuffer );
         IDE_CALLBACK_SEND_MSG( sBuffer );
+
+        /* BUG-48275 recovery ¿¡¼­ Àß¸øµÈ ¿À·ù ¸Ş½ÃÁö°¡ Ãâ·Â µË´Ï´Ù.
+         *           Ãß°¡ Á¤º¸ ±â·Ï */
+        ideLog::log( IDE_ERR_0,
+                     "Last Updated SpaceID: %"ID_UINT32_FMT", "
+                     "PageID: %" ID_UINT32_FMT ", "
+                     "FileID: %" ID_UINT32_FMT ", "
+                     "FPageID: %"ID_UINT32_FMT"\n",
+                     sdrRedoMgr::getLastUpdatedSpaceID(),
+                     sdrRedoMgr::getLastUpdatedPageID(),
+                     SD_MAKE_FID(sdrRedoMgr::getLastUpdatedPageID()),
+                     SD_MAKE_FPID(sdrRedoMgr::getLastUpdatedPageID()));
+
+        sFileName = sddDiskMgr::getFileName( sdrRedoMgr::getLastUpdatedSpaceID(),
+                                             sdrRedoMgr::getLastUpdatedPageID() );
+
+        if ( sFileName != NULL )
+        {
+            ideLog::log( IDE_ERR_0,
+                         "Last Updated File : %s\n",
+                         sFileName );
+        }
 
         IDE_TEST( prepare4DBInconsistencySetting() != IDE_SUCCESS );
         mDRDBConsistency = ID_FALSE;
@@ -9412,7 +9546,7 @@ IDE_RC smrRecoveryMgr::checkDiskWAL()
     return IDE_FAILURE;
 }
 
-/* MRDB Walì´ ê¹¨ì¡ŒëŠ”ì§€ í™•ì¸í•©ë‹ˆë‹¤. */
+/* MRDB WalÀÌ ±úÁ³´ÂÁö È®ÀÎÇÕ´Ï´Ù. */
 IDE_RC smrRecoveryMgr::checkMemWAL()
 {
     SChar             sBuffer[ SMR_MESSAGE_BUFFER_SIZE ];
@@ -9446,14 +9580,18 @@ IDE_RC smrRecoveryMgr::checkMemWAL()
     return IDE_FAILURE;
 }
 
-/* DB Inconsistency ì„¤ì •ì„ ìœ„í•œ ì¤€ë¹„ë¥¼ í•©ë‹ˆë‹¤.
- * Flusherë¥¼ ë©ˆì¶¥ë‹ˆë‹¤. */
+/* DB Inconsistency ¼³Á¤À» À§ÇÑ ÁØºñ¸¦ ÇÕ´Ï´Ù.
+ * Flusher¸¦ ¸ØÃä´Ï´Ù. */
 IDE_RC smrRecoveryMgr::prepare4DBInconsistencySetting()
 {
     UInt i;
 
-    /* Inconsistentí•œ DBì¼ ê²½ìš° LogFlushë¥¼ ë§‰ëŠ”ë‹¤. ê·¸ëŸ°ë° mmapì¼ ê²½ìš°, Logê°€
-     * ìë™ìœ¼ë¡œ ê¸°ë¡ë˜ê¸° ë•Œë¬¸ì— Logì˜ ê¸°ë¡ì„ ë§‰ì„ ìˆ˜ê°€ ì—†ë‹¤. */
+    /* BUG-48275 recovery ¿¡¼­ Àß¸øµÈ ¿À·ù ¸Ş½ÃÁö°¡ Ãâ·Â µË´Ï´Ù.
+     * EMERGENCY NORMAL¿¡¼­ ´ÙÀ½À» È®ÀÎÇÏÁö ¾Ê°í ¹Ù·Î ¿À·ù Ãâ·ÂÇÑ´Ù. */
+    IDE_TEST( mEmerRecovPolicy == SMR_RECOVERY_NORMAL );
+
+    /* InconsistentÇÑ DBÀÏ °æ¿ì LogFlush¸¦ ¸·´Â´Ù. ±×·±µ¥ mmapÀÏ °æ¿ì, Log°¡
+     * ÀÚµ¿À¸·Î ±â·ÏµÇ±â ¶§¹®¿¡ LogÀÇ ±â·ÏÀ» ¸·À» ¼ö°¡ ¾ø´Ù. */
     IDE_TEST_RAISE( smuProperty::getLogBufferType() == SMU_LOG_BUFFER_TYPE_MMAP,
                     ERR_INCONSISTENT_DB_AND_LOG_BUFFER_TYPE );
 
@@ -9476,8 +9614,8 @@ IDE_RC smrRecoveryMgr::prepare4DBInconsistencySetting()
     return IDE_FAILURE;
 }
 
-/* DB Inconsistency ì„¤ì •ì„ ë§ˆë¬´ë¦¬ í•©ë‹ˆë‹¤.
- * Flusherë¥¼ ì¬êµ¬ë™í•©ë‹ˆë‹¤. */
+/* DB Inconsistency ¼³Á¤À» ¸¶¹«¸® ÇÕ´Ï´Ù.
+ * Flusher¸¦ Àç±¸µ¿ÇÕ´Ï´Ù. */
 IDE_RC smrRecoveryMgr::finish4DBInconsistencySetting()
 {
     UInt i;
@@ -9499,11 +9637,11 @@ IDE_RC smrRecoveryMgr::finish4DBInconsistencySetting()
 /**********************************************************************
  * Description : PROJ-2133 incremental backup
  *
- * Level 0 incremental bakcupíŒŒì¼ì„ ì´ìš©í•´ ë°ì´í„°ë² ì´ìŠ¤ë¥¼ ë³µì›í•œë‹¤.
+ * Level 0 incremental bakcupÆÄÀÏÀ» ÀÌ¿ëÇØ µ¥ÀÌÅÍº£ÀÌ½º¸¦ º¹¿øÇÑ´Ù.
  * 
- * aRestoreType     - [IN] ë³µì› ì¢…ë¥˜
- * aUntilTime       - [IN] ë¶ˆì™„ì „ ë³µì› (ì‹œê°„)
- * aUntilBackupTag  - [IN] ë¶ˆì™„ì „ ë³µì› (backupTag)
+ * aRestoreType     - [IN] º¹¿ø Á¾·ù
+ * aUntilTime       - [IN] ºÒ¿ÏÀü º¹¿ø (½Ã°£)
+ * aUntilBackupTag  - [IN] ºÒ¿ÏÀü º¹¿ø (backupTag)
  *
  **********************************************************************/
 IDE_RC smrRecoveryMgr::restoreDB( smiRestoreType    aRestoreType,
@@ -9530,7 +9668,7 @@ IDE_RC smrRecoveryMgr::restoreDB( smiRestoreType    aRestoreType,
     IDE_TEST( smriBackupInfoMgr::lock() != IDE_SUCCESS );
     sState = 1;
 
-    /* backup info íŒŒì¼ì—ì„œ backupinfo slotë“¤ì„ ì½ì–´ë“¤ì¸ë‹¤. */
+    /* backup info ÆÄÀÏ¿¡¼­ backupinfo slotµéÀ» ÀĞ¾îµéÀÎ´Ù. */
     IDE_TEST( smriBackupInfoMgr::loadBISlotArea() != IDE_SUCCESS );
     sState = 2;
 
@@ -9538,7 +9676,7 @@ IDE_RC smrRecoveryMgr::restoreDB( smiRestoreType    aRestoreType,
 
     (void)smriBackupInfoMgr::getBIFileHdr( &sBIFileHdr );
 
-    /* ë³µì› íƒ€ì…ì—ë”°ë¼ backupinfo slotì˜ ê²€ìƒ‰ì„ ì‹œì‘í•  ìœ„ì¹˜ë¥¼ ì •í•œë‹¤. */
+    /* º¹¿ø Å¸ÀÔ¿¡µû¶ó backupinfo slotÀÇ °Ë»öÀ» ½ÃÀÛÇÒ À§Ä¡¸¦ Á¤ÇÑ´Ù. */
     switch( aRestoreType )
     {
         case SMI_RESTORE_COMPLETE:
@@ -9550,7 +9688,7 @@ IDE_RC smrRecoveryMgr::restoreDB( smiRestoreType    aRestoreType,
             }
         case SMI_RESTORE_UNTILTIME:
             {
-                /* untilTimeì— í•´ë‹¹í•˜ëŠ” backupinfo slotì˜ ìœ„ì¹˜ë¥¼ êµ¬í•œë‹¤. */ 
+                /* untilTime¿¡ ÇØ´çÇÏ´Â backupinfo slotÀÇ À§Ä¡¸¦ ±¸ÇÑ´Ù. */ 
                 IDE_TEST( smriBackupInfoMgr::findBISlotIdxUsingTime( 
                                                              aUntilTime, 
                                                              &sUntilTimeBISlotIdx ) 
@@ -9578,7 +9716,7 @@ IDE_RC smrRecoveryMgr::restoreDB( smiRestoreType    aRestoreType,
     IDE_TEST_RAISE( sStartScanBISlotIdx == SMRI_BI_INVALID_SLOT_IDX,
                     there_is_no_incremental_backup );
 
-    /* ë³µì›ì„ ì‹œì‘í•  backupinfo slotì˜ idxê°’ì„ êµ¬í•œë‹¤. */
+    /* º¹¿øÀ» ½ÃÀÛÇÒ backupinfo slotÀÇ idx°ªÀ» ±¸ÇÑ´Ù. */
     IDE_TEST( smriBackupInfoMgr::getRestoreTargetSlotIdx( aUntilBackupTag,
                                                 sStartScanBISlotIdx,
                                                 sSearchUntilBackupTag,
@@ -9593,14 +9731,14 @@ IDE_RC smrRecoveryMgr::restoreDB( smiRestoreType    aRestoreType,
     IDE_TEST( smriBackupInfoMgr::getBISlot( sRestoreBISlotIdx, &sBISlot ) 
               != IDE_SUCCESS );
 
-    /* ë³µì› ëŒ€ìƒì¸ backup tagë¥¼ ì €ì¥í•œë‹¤. */
+    /* º¹¿ø ´ë»óÀÎ backup tag¸¦ ÀúÀåÇÑ´Ù. */
     idlOS::strncpy( sRestoreTag, 
                     sBISlot->mBackupTag, 
                     SMI_MAX_BACKUP_TAG_NAME_LEN );
 
     /* 
-     * ë³µì› ëŒ€ìƒì˜ backup tagì™€ ë‹¤ë¥¸ backup tagë¥¼ ê°€ì§„ backup info slotì´
-     * ë‚˜ì˜¬ë•Œê¹Œì§€ full backup íŒŒì¼ì„ ë³µì›í•œë‹¤.
+     * º¹¿ø ´ë»óÀÇ backup tag¿Í ´Ù¸¥ backup tag¸¦ °¡Áø backup info slotÀÌ
+     * ³ª¿Ã¶§±îÁö full backup ÆÄÀÏÀ» º¹¿øÇÑ´Ù.
      */ 
     
     IDE_CALLBACK_SEND_MSG("  [ RECMGR ] restoring level 0 datafile....");
@@ -9640,8 +9778,8 @@ IDE_RC smrRecoveryMgr::restoreDB( smiRestoreType    aRestoreType,
     IDE_CALLBACK_SEND_MSG(sBuffer);
 
     /* BUG-37371
-     * backuptagê°€ level 0 ë°±ì—…ê¹Œì§€ ë§Œ ë³µêµ¬í•˜ë„ë¡ ì§€ì •ëœê²½ìš° level 1ë³µì›ì„ í•˜ì§€
-     * ì•ŠëŠ”ë‹¤. */
+     * backuptag°¡ level 0 ¹é¾÷±îÁö ¸¸ º¹±¸ÇÏµµ·Ï ÁöÁ¤µÈ°æ¿ì level 1º¹¿øÀ» ÇÏÁö
+     * ¾Ê´Â´Ù. */
     if ( (aUntilBackupTag != NULL) &&
         (idlOS::strncmp( sRestoreTag, 
                          aUntilBackupTag, 
@@ -9655,8 +9793,8 @@ IDE_RC smrRecoveryMgr::restoreDB( smiRestoreType    aRestoreType,
     }
     
     /* 
-     * incremental backup íŒŒì¼ì„ ì´ìš©í•œ ë³µêµ¬ê°€ í•„ìš”í•œì§€ í™•ì¸í•˜ê³ 
-     * backupíŒŒì¼ì„ ì´ìš©í•´ ë°ì´í„°ë² ì´ìŠ¤ ë³µêµ¬ë¥¼ ìˆ˜í–‰í•œë‹¤. 
+     * incremental backup ÆÄÀÏÀ» ÀÌ¿ëÇÑ º¹±¸°¡ ÇÊ¿äÇÑÁö È®ÀÎÇÏ°í
+     * backupÆÄÀÏÀ» ÀÌ¿ëÇØ µ¥ÀÌÅÍº£ÀÌ½º º¹±¸¸¦ ¼öÇàÇÑ´Ù. 
      */
     if ( sIsNeedRestoreLevel1 == ID_TRUE )
     {
@@ -9834,7 +9972,7 @@ IDE_RC smrRecoveryMgr::restoreTBS( scSpaceID aSpaceID )
 /**********************************************************************
  * Description : PROJ-2133 incremental backup
  *
- * aBISlot  - [IN] ë³µì›í•  ë°±ì—…íŒŒì¼ì˜ backupinfo slot
+ * aBISlot  - [IN] º¹¿øÇÒ ¹é¾÷ÆÄÀÏÀÇ backupinfo slot
  **********************************************************************/
 IDE_RC smrRecoveryMgr::restoreDataFile4Level0( smriBISlot * aBISlot )
 {
@@ -10018,13 +10156,13 @@ IDE_RC smrRecoveryMgr::restoreDataFile4Level0( smriBISlot * aBISlot )
 /**********************************************************************
  * Description : PROJ-2133 incremental backup
  *
- * Level 1 incremental bakcupíŒŒì¼ì„ ì´ìš©í•´ ë°ì´í„°ë² ì´ìŠ¤ë¥¼ ë³µì›í•œë‹¤.
+ * Level 1 incremental bakcupÆÄÀÏÀ» ÀÌ¿ëÇØ µ¥ÀÌÅÍº£ÀÌ½º¸¦ º¹¿øÇÑ´Ù.
  * 
- * aRestoreStartSlotIdx     - [IN] ë³µì›ë¥¼ ì‹œì‘í•  backupinfo slotì˜ idx
- * aRestoreType             - [IN] ë³µì› íƒ€ì…
- * aUntilTime               - [IN] ë¶ˆì™„ì „ ë³µì› (ì‹œê°„)
- * aUntilBackupTag          - [IN] ë¶ˆì™„ì „ ë³µì› ( backup tag )
- * aLastRestoredBISlot      - [OUT] ë§ˆì§€ë§‰ìœ¼ë¡œ ë³µì›ëœ backup info slot
+ * aRestoreStartSlotIdx     - [IN] º¹¿ø¸¦ ½ÃÀÛÇÒ backupinfo slotÀÇ idx
+ * aRestoreType             - [IN] º¹¿ø Å¸ÀÔ
+ * aUntilTime               - [IN] ºÒ¿ÏÀü º¹¿ø (½Ã°£)
+ * aUntilBackupTag          - [IN] ºÒ¿ÏÀü º¹¿ø ( backup tag )
+ * aLastRestoredBISlot      - [OUT] ¸¶Áö¸·À¸·Î º¹¿øµÈ backup info slot
  *
  **********************************************************************/
 IDE_RC smrRecoveryMgr::restoreDB4Level1( UInt            aRestoreStartSlotIdx,
@@ -10041,7 +10179,7 @@ IDE_RC smrRecoveryMgr::restoreDB4Level1( UInt            aRestoreStartSlotIdx,
 
     IDE_DASSERT( aLastRestoredBISlot != NULL );
 
-    /* ë³µêµ¬ë¥¼ ìˆ˜í–‰í•  backup infoì˜ ë²”ìœ„ ê³„ì‚° */
+    /* º¹±¸¸¦ ¼öÇàÇÒ backup infoÀÇ ¹üÀ§ °è»ê */
     IDE_TEST( smriBackupInfoMgr::calcRestoreBISlotRange4Level1( 
                                               aRestoreStartSlotIdx,
                                               aRestoreType,
@@ -10052,7 +10190,7 @@ IDE_RC smrRecoveryMgr::restoreDB4Level1( UInt            aRestoreStartSlotIdx,
               != IDE_SUCCESS );
 
     IDE_CALLBACK_SEND_MSG("  [ RECMGR ] restoring level 1 datafile....");
-    /* ë³µêµ¬ ìˆ˜í–‰ */
+    /* º¹±¸ ¼öÇà */
     for( sSlotIdx = sRestoreStartSlotIdx; 
          sSlotIdx <= sRestoreEndSlotIdx; 
          sSlotIdx++ )
@@ -10096,9 +10234,9 @@ IDE_RC smrRecoveryMgr::restoreDB4Level1( UInt            aRestoreStartSlotIdx,
 /**********************************************************************
  * Description : PROJ-2133 incremental backup
  *
- * aSpaceID                 - [IN] ë³µêµ¬í•  SpaceID
- * aRestoreStartBISlotIdx   - [IN] ë³µêµ¬ë¥¼ ì‹œì‘í•  backup info slot Idx
- * aBISlotCnt               - [IN] backup info íŒŒì¼ì— ì €ì¥ëœ slotì˜ ìˆ˜
+ * aSpaceID                 - [IN] º¹±¸ÇÒ SpaceID
+ * aRestoreStartBISlotIdx   - [IN] º¹±¸¸¦ ½ÃÀÛÇÒ backup info slot Idx
+ * aBISlotCnt               - [IN] backup info ÆÄÀÏ¿¡ ÀúÀåµÈ slotÀÇ ¼ö
  *
  **********************************************************************/
 IDE_RC smrRecoveryMgr::restoreTBS4Level1( scSpaceID aSpaceID, 
@@ -10180,14 +10318,14 @@ IDE_RC smrRecoveryMgr::restoreTBS4Level1( scSpaceID aSpaceID,
  * aPageID      - [IN] 
  * smriBiSlot   - [IN]
  *
- * ì›ë³¸í•¨ìˆ˜ - smmManager::getPageNoInFile
- * chkptImageíŒŒì¼ë‚´ì—ì„œ aPageIDê°€ ëª‡ ë²ˆì§¸ì— ìœ„ì¹˜í•˜ê³ ìˆëŠ”ê°€ë¥¼ êµ¬í•œë‹¤.
+ * ¿øº»ÇÔ¼ö - smmManager::getPageNoInFile
+ * chkptImageÆÄÀÏ³»¿¡¼­ aPageID°¡ ¸î ¹øÂ°¿¡ À§Ä¡ÇÏ°íÀÖ´Â°¡¸¦ ±¸ÇÑ´Ù.
  *
- * DBFilePageCntëŠ” Membaseì— ì €ì¥ë˜ì–´ìˆìœ¼ë‚˜ startup controlë‹¨ê³„ì—ì„œëŠ”
- * Membaseê°€ ë¡œë“œë˜ì§€ ì•Šì€ ìƒíƒœì´ë¯€ë¡œ ë°ì´í„°ë² ì´ìŠ¤ ë³µêµ¬ì¤‘ì—ëŠ” 
- * DBFilePageCntê°’ì„ í™•ì¸ í• ìˆ˜ ì—†ë‹¤. incremental backup íŒŒì¼ì„ ì´ìš©í•œ ë³µêµ¬ë¥¼
- * í•˜ê¸°ìœ„í•´ DBFilePageCntê°’ì„ backup info slotì— ì €ì¥í•˜ê³  ì´ë¥¼ ì´ìš©í•˜ì—¬
- * ë³µêµ¬í•œë‹¤
+ * DBFilePageCnt´Â Membase¿¡ ÀúÀåµÇ¾îÀÖÀ¸³ª startup control´Ü°è¿¡¼­´Â
+ * Membase°¡ ·ÎµåµÇÁö ¾ÊÀº »óÅÂÀÌ¹Ç·Î µ¥ÀÌÅÍº£ÀÌ½º º¹±¸Áß¿¡´Â 
+ * DBFilePageCnt°ªÀ» È®ÀÎ ÇÒ¼ö ¾ø´Ù. incremental backup ÆÄÀÏÀ» ÀÌ¿ëÇÑ º¹±¸¸¦
+ * ÇÏ±âÀ§ÇØ DBFilePageCnt°ªÀ» backup info slot¿¡ ÀúÀåÇÏ°í ÀÌ¸¦ ÀÌ¿ëÇÏ¿©
+ * º¹±¸ÇÑ´Ù
  *
  **********************************************************************/
 UInt smrRecoveryMgr::getPageNoInFile( UInt aPageID, smriBISlot * aBISlot)
@@ -10220,7 +10358,7 @@ UInt smrRecoveryMgr::getPageNoInFile( UInt aPageID, smriBISlot * aBISlot)
 /**********************************************************************
  * Description : PROJ-2133 incremental backup
  *
- * aBISlot  - [IN] ë³µêµ¬í•˜ë ¤ëŠ” MemDataFileì˜ backup info slot
+ * aBISlot  - [IN] º¹±¸ÇÏ·Á´Â MemDataFileÀÇ backup info slot
  *
  **********************************************************************/
 IDE_RC smrRecoveryMgr::restoreMemDataFile4Level1( smriBISlot * aBISlot )
@@ -10313,7 +10451,7 @@ IDE_RC smrRecoveryMgr::restoreMemDataFile4Level1( smriBISlot * aBISlot )
 
     if ( ( aBISlot->mBackupType & SMI_BACKUP_TYPE_FULL ) != 0 )
     {
-        // copy target íŒŒì¼ì´ openëœ ìƒíƒœì—ì„œ copyí•˜ë©´ ì•ˆë¨
+        // copy target ÆÄÀÏÀÌ openµÈ »óÅÂ¿¡¼­ copyÇÏ¸é ¾ÈµÊ
         if ( sDatabaseFile->isOpen() == ID_TRUE )
         {
             IDE_TEST( sDatabaseFile->close() != IDE_SUCCESS );
@@ -10342,7 +10480,7 @@ IDE_RC smrRecoveryMgr::restoreMemDataFile4Level1( smriBISlot * aBISlot )
  
         smriBackupInfoMgr::clearDataFileHdrBI( &sChkptImageHdr.mBackupInfo );
  
-        /* ChkptImageHdrë³µêµ¬ */
+        /* ChkptImageHdrº¹±¸ */
         IDE_TEST( sDatabaseFile->mFile.write( NULL,
                                               SM_DBFILE_METAHDR_PAGE_OFFSET,
                                               &sChkptImageHdr,
@@ -10360,7 +10498,7 @@ IDE_RC smrRecoveryMgr::restoreMemDataFile4Level1( smriBISlot * aBISlot )
                   != IDE_SUCCESS );
         sMemAllocState = 1;
  
-        /* IBChunk ë³µì› */
+        /* IBChunk º¹¿ø */
         for( sIBChunkCnt = 0; sIBChunkCnt < aBISlot->mIBChunkCNT; sIBChunkCnt++ )
         {
             IDE_TEST( sBackupFile.read( NULL,
@@ -10465,7 +10603,7 @@ IDE_RC smrRecoveryMgr::restoreMemDataFile4Level1( smriBISlot * aBISlot )
 /**********************************************************************
  * Description : PROJ-2133 incremental backup
  *
- * aBISlot  - [IN] ë³µêµ¬í•˜ë ¤ëŠ” DiskDataFileì˜ backup info slot
+ * aBISlot  - [IN] º¹±¸ÇÏ·Á´Â DiskDataFileÀÇ backup info slot
  *
  **********************************************************************/
 IDE_RC smrRecoveryMgr::restoreDiskDataFile4Level1( smriBISlot * aBISlot ) 
@@ -10486,7 +10624,6 @@ IDE_RC smrRecoveryMgr::restoreDiskDataFile4Level1( smriBISlot * aBISlot )
     UInt                sState         = 0;
     UInt                sMemAllocState = 0;
     UInt                sDataFileState = 0;
-    UInt                sTBSMgrLockState = 0;
     
     IDE_DASSERT( aBISlot != NULL );
 
@@ -10510,16 +10647,16 @@ IDE_RC smrRecoveryMgr::restoreDiskDataFile4Level1( smriBISlot * aBISlot )
     IDE_TEST( sBackupFile.open() != IDE_SUCCESS );
     sState = 2;
 
-    IDE_TEST( sctTableSpaceMgr::lock( NULL ) != IDE_SUCCESS );
-    sTBSMgrLockState = 1;
-    /* full backupëœ incremental backup ë³µêµ¬ */
+    /* full backupµÈ incremental backup º¹±¸ */
     if ( ( aBISlot->mBackupType & SMI_BACKUP_TYPE_FULL ) != 0 )
     {
-        // copy target íŒŒì¼ì´ openëœ ìƒíƒœì—ì„œ copyí•˜ë©´ ì•ˆë¨
+        // copy target ÆÄÀÏÀÌ openµÈ »óÅÂ¿¡¼­ copyÇÏ¸é ¾ÈµÊ
         if ( sDataFileNode->mIsOpened == ID_TRUE )
         {
-            IDE_TEST( sddDiskMgr::closeDataFile( sDataFileNode ) != IDE_SUCCESS );
+            IDE_TEST( sddDiskMgr::closeDataFile( NULL,
+                                                 sDataFileNode ) != IDE_SUCCESS );
         }
+        IDE_ASSERT( sDataFileNode->mIsOpened == ID_FALSE );
 
         IDE_TEST( sBackupFile.copy( NULL, sDataFileNode->mFile.getFileName() )
                   != IDE_SUCCESS );
@@ -10527,12 +10664,10 @@ IDE_RC smrRecoveryMgr::restoreDiskDataFile4Level1( smriBISlot * aBISlot )
 
     if ( sDataFileNode->mIsOpened == ID_FALSE )
     {
-        IDE_TEST( sddDiskMgr::openDataFile( sDataFileNode ) != IDE_SUCCESS );
+        IDE_TEST( sddDiskMgr::openDataFile( NULL,
+                                            sDataFileNode ) != IDE_SUCCESS );
         sDataFileState = 1;
     }
-    
-    sTBSMgrLockState = 0;
-    IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS );
 
     IDE_TEST( sDataFileNode->mFile.getFileSize(&sFileSize) != IDE_SUCCESS );
 
@@ -10563,7 +10698,7 @@ IDE_RC smrRecoveryMgr::restoreDiskDataFile4Level1( smriBISlot * aBISlot )
         {
             /* 
              * nothing to do 
-             * íŒŒì¼ í¬ê¸° ë³€í™” ì—†ìŒ         
+             * ÆÄÀÏ Å©±â º¯È­ ¾øÀ½         
              */
         }
     }
@@ -10624,16 +10759,9 @@ IDE_RC smrRecoveryMgr::restoreDiskDataFile4Level1( smriBISlot * aBISlot )
         IDE_TEST( iduMemMgr::free( sCopyBuffer ) != IDE_SUCCESS );
  
     }
-
-
-    IDE_TEST( sctTableSpaceMgr::lock( NULL ) != IDE_SUCCESS );
-    sTBSMgrLockState = 1;
-
     sDataFileState = 0;
-    IDE_TEST( sddDiskMgr::closeDataFile( sDataFileNode ) != IDE_SUCCESS );
-
-    sTBSMgrLockState = 0;
-    IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS );
+    IDE_TEST( sddDiskMgr::closeDataFile( NULL,
+                                         sDataFileNode ) != IDE_SUCCESS );
 
     sState = 1;
     IDE_TEST( sBackupFile.close() != IDE_SUCCESS );
@@ -10665,22 +10793,12 @@ IDE_RC smrRecoveryMgr::restoreDiskDataFile4Level1( smriBISlot * aBISlot )
             break;
     }
 
-    switch ( sTBSMgrLockState )
-    {
-        case 1:
-            IDE_ASSERT( sctTableSpaceMgr::unlock() == IDE_SUCCESS );
-        case 0:
-        default:
-            break;
-    }
-
     switch( sDataFileState )
     {
         case 1:
-            IDE_ASSERT( sctTableSpaceMgr::lock( NULL ) == IDE_SUCCESS );
-            IDE_ASSERT( sddDiskMgr::closeDataFile( sDataFileNode ) 
+            IDE_ASSERT( sddDiskMgr::closeDataFile( NULL,
+                                                   sDataFileNode ) 
                         == IDE_SUCCESS );
-            IDE_ASSERT( sctTableSpaceMgr::unlock() == IDE_SUCCESS );
         case 0:
         default:
             break;
@@ -10695,11 +10813,14 @@ IDE_RC smrRecoveryMgr::processPrepareReqLog( SChar              * aLogPtr,
 {
     /* smrRecoveryMgr_processPrepareReqLog_ManageDtxInfoFunc.tc */
     IDU_FIT_POINT( "smrRecoveryMgr::processPrepareReqLog::ManageDtxInfoFunc" );
-    IDE_TEST( mManageDtxInfoFunc( smrLogHeadI::getTransID( &(aXaPrepareReqLog->mHead) ),
+    IDE_DASSERT( mManageDtxInfoFunc != NULL ); 
+    IDE_TEST( mManageDtxInfoFunc( &(aXaPrepareReqLog->mXID),
+                                  smrLogHeadI::getTransID( &(aXaPrepareReqLog->mHead) ),
                                   aXaPrepareReqLog->mGlobalTxId,
                                   aXaPrepareReqLog->mBranchTxSize,
                                   (UChar*)aLogPtr,
                                   aLSN,
+                                  NULL, //mCommitSCN
                                   SMI_DTX_PREPARE )
               != IDE_SUCCESS );
 
@@ -10720,8 +10841,20 @@ IDE_RC smrRecoveryMgr::processDtxLog( SChar      * aLogPtr,
     smrTransAbortLog    sAbortLog;
     smrXaEndLog         sXaEndLog;
 
-    /* PROJ-2569 xa_prepare_reqë¡œê·¸ì™€ xa_endë¡œê·¸ëŠ” sm recovery ê³¼ì •ì— ë¶ˆí•„ìš”í•˜ë¯€ë¡œ
-     * DKì—ë§Œ ë„˜ê²¨ì£¼ê³  ì´í•˜ ì‘ì—…ì€ skipí•œë‹¤. */
+    /* BUG-47525 Group Commit */
+    UInt                i;
+    UInt                sGCCnt;
+    smTID               sTID;
+    smTID               sGlobalTID;
+    SChar             * sRedoBuffer;
+    smrTransGroupCommitLog sGCLog;
+    SChar             * sGCCommitSCNBuffer;
+    smSCN               sCommitSCN;
+    UInt                sLogSize;
+    idBool              sIsWithCommitSCN = ID_FALSE;
+
+    /* PROJ-2569 xa_prepare_req·Î±×¿Í xa_end·Î±×´Â sm recovery °úÁ¤¿¡ ºÒÇÊ¿äÇÏ¹Ç·Î
+     * DK¿¡¸¸ ³Ñ°ÜÁÖ°í ÀÌÇÏ ÀÛ¾÷Àº skipÇÑ´Ù. */
     switch ( aLogType )
     {
         case SMR_LT_XA_PREPARE_REQ:
@@ -10745,11 +10878,14 @@ IDE_RC smrRecoveryMgr::processDtxLog( SChar      * aLogPtr,
                            aLogPtr,
                            SMR_LOGREC_SIZE( smrXaEndLog ) );
 
-            IDE_TEST( mManageDtxInfoFunc( smrLogHeadI::getTransID( &(sXaEndLog.mHead) ),
+            IDE_DASSERT( mManageDtxInfoFunc != NULL ); 
+            IDE_TEST( mManageDtxInfoFunc( NULL,
+                                          smrLogHeadI::getTransID( &(sXaEndLog.mHead) ),
                                           sXaEndLog.mGlobalTxId,
                                           0,
                                           NULL,
                                           NULL,
+                                          NULL, //mCommitSCN
                                           SMI_DTX_END )
                       != IDE_SUCCESS );
 
@@ -10766,17 +10902,87 @@ IDE_RC smrRecoveryMgr::processDtxLog( SChar      * aLogPtr,
 
             if ( sCommitLog.mGlobalTxId != SM_INIT_GTX_ID )
             {
-                IDE_TEST( mManageDtxInfoFunc( smrLogHeadI::getTransID( &(sCommitLog.mHead) ),
+                IDE_DASSERT( mManageDtxInfoFunc != NULL ); 
+                IDE_TEST( mManageDtxInfoFunc( NULL,
+                                              smrLogHeadI::getTransID( &(sCommitLog.mHead) ),
                                               sCommitLog.mGlobalTxId,
                                               0,
                                               NULL,
                                               NULL,
+                                              &sCommitLog.mCommitSCN,
                                               SMI_DTX_COMMIT )
                           != IDE_SUCCESS );
             }
             else
             {
                 /* Nothing to do */
+            }
+
+            break;
+
+        case SMR_LT_MEMTRANS_GROUPCOMMIT:
+
+            idlOS::memcpy( &sGCLog,  aLogPtr, ID_SIZEOF( smrTransGroupCommitLog ) );
+            sGCCnt = sGCLog.mGroupCnt;
+
+            sRedoBuffer = aLogPtr + SMR_LOGREC_SIZE( smrTransGroupCommitLog );
+
+            sLogSize = SMR_LOGREC_SIZE(smrTransGroupCommitLog) + 
+                       ( sGCCnt * ID_SIZEOF(smTID) * 2 ) + 
+                       ID_SIZEOF(smrLogTail);
+
+            if ( smrLogHeadI::getSize(&sGCLog.mHead) > sLogSize )
+            {
+                /* CommitSCN À» ±â·ÏÇßÀ¸¸é ´ç¿¬È÷ smSCN Å©±âÀÇ ¹è¼ö */
+                IDE_DASSERT( ( ( smrLogHeadI::getSize(&sGCLog.mHead) - sLogSize ) % ID_SIZEOF(smSCN) ) == 0 );
+
+                /* TID1 | GlobalTID1 | TID2 | GlobalTI2D | CommitSCN1 | CommitSCN2 | ·Î »ı°åÀ½. */
+                sGCCommitSCNBuffer = sRedoBuffer + ( sGCCnt * ID_SIZEOF(smTID) * 2 );
+
+                sIsWithCommitSCN = ID_TRUE;
+            }
+            else
+            {
+                sIsWithCommitSCN = ID_FALSE;
+            }
+
+            for ( i = 0 ; i < sGCCnt ; i++ )
+            {
+                idlOS::memcpy( &sTID,
+                               sRedoBuffer,
+                               ID_SIZEOF(smTID) );
+                sRedoBuffer += ID_SIZEOF(smTID);
+
+                idlOS::memcpy( &sGlobalTID,
+                               sRedoBuffer,
+                               ID_SIZEOF(smTID) );
+                sRedoBuffer += ID_SIZEOF(smTID);
+    
+                if ( sIsWithCommitSCN == ID_TRUE )
+                {
+                    idlOS::memcpy( &sCommitSCN,
+                                   sGCCommitSCNBuffer,
+                                   ID_SIZEOF(smSCN) );
+                    sGCCommitSCNBuffer += ID_SIZEOF(smSCN);
+                }
+                else
+                {
+                    SM_INIT_SCN( &sCommitSCN );     
+                }
+
+                if ( sGlobalTID != SM_INIT_GTX_ID )
+                {
+                    IDE_DASSERT( mManageDtxInfoFunc != NULL ); 
+                    IDE_TEST( mManageDtxInfoFunc( NULL,
+                                                  sTID,
+                                                  sGlobalTID,
+                                                  0,
+                                                  NULL,
+                                                  NULL,
+                                                  &sCommitSCN,
+                                                  SMI_DTX_COMMIT )
+                              != IDE_SUCCESS );
+                }
             }
 
             break;
@@ -10790,12 +10996,14 @@ IDE_RC smrRecoveryMgr::processDtxLog( SChar      * aLogPtr,
 
             if ( sAbortLog.mGlobalTxId != SM_INIT_GTX_ID )
             {
-
-                IDE_TEST( mManageDtxInfoFunc( smrLogHeadI::getTransID( &(sAbortLog.mHead) ),
+                IDE_DASSERT( mManageDtxInfoFunc != NULL ); 
+                IDE_TEST( mManageDtxInfoFunc( NULL,
+                                              smrLogHeadI::getTransID( &(sAbortLog.mHead) ),
                                               sAbortLog.mGlobalTxId,
                                               0,
                                               NULL,
                                               NULL,
+                                              NULL,  //mCommitSCN
                                               SMI_DTX_ROLLBACK )
                           != IDE_SUCCESS );
             }
@@ -10816,3 +11024,4 @@ IDE_RC smrRecoveryMgr::processDtxLog( SChar      * aLogPtr,
 
     return IDE_FAILURE;
 }
+

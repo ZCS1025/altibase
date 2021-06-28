@@ -41,7 +41,6 @@ typedef struct smmTBSStatistics
     smmDBRestoreType    * mRestoreType;
     SInt                * m_currentDB;
     smSCN               * m_lstSystemSCN;
-    smSCN               * m_initSystemSCN;
     ULong               * mDBMaxPageCount;
     ULong               * mHighLimitFile;
     ULong                 mPageCountPerFile;
@@ -55,17 +54,17 @@ typedef struct smmPerfMemTBSFreePageList
 {
     UInt       mSpaceID;
     UInt       mResourceGroupID ;
-    scPageID   mFirstFreePageID ;   // ì²«ë²ˆì§¸ Free Page ì˜ ID
-    ULong      mFreePageCount ;     // Free Page ìˆ˜
-    UInt       mReservedPageCount ; // BUG-31881 ì˜ˆì•½í•œ Pageìˆ˜
+    scPageID   mFirstFreePageID ;   // Ã¹¹øÂ° Free Page ÀÇ ID
+    ULong      mFreePageCount ;     // Free Page ¼ö
+    UInt       mReservedPageCount ; // BUG-31881 ¿¹¾àÇÑ Page¼ö
 } smmPerfMemTBSFreePageList ;
 
 /*----------------------------------------
  * D$MEM_TBS_PCH
  *----------------------------------------- */
 
-/* TASK-4007 [SM] PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
- * PCHë¥¼ Dumpí•  ìˆ˜ ìˆëŠ” ê¸°ëŠ¥ ì¶”ê°€ */
+/* TASK-4007 [SM] PBT¸¦ À§ÇÑ ±â´É Ãß°¡
+ * PCH¸¦ DumpÇÒ ¼ö ÀÖ´Â ±â´É Ãß°¡ */
 
 typedef struct smmMemTBSPCHDump
 {

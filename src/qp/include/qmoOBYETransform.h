@@ -19,7 +19,7 @@
  *
  * Description : ORDER BY Elimination Transformation
  *
- * μ©μ–΄ μ„¤λª… :
+ * ΏλΎξ Ό³Έν :
  *
  *****************************************************************************/
 
@@ -33,10 +33,24 @@ class qmoOBYETransform
 {
 public:
 
-    static IDE_RC doTransform( qcStatement * aStatement,
-                               qmsQuerySet * aQuerySet );
+    static IDE_RC doTransform( qcStatement  * aStatement,
+                               qmsParseTree * aParseTree );
 
 private:
+    static IDE_RC doTransformInternal( qcStatement * aStatement,
+                                       qmsQuerySet * aQuerySet,
+                                       qmsLimit    * aLimit,
+                                       idBool        aIsSubQPred );
+
+    static IDE_RC doTransform4FromTree( qcStatement * aStatement,
+                                        qmsQuerySet * aQuerySet, 
+                                        qmsFrom     * aFrom,
+                                        idBool        aIsTransMode2 );
+
+    static IDE_RC doTransform4Predicate( qcStatement * aStatement,
+                                         qtcNode     * aNode );
+
+    static idBool canTranMode2ForInlineView( qmsParseTree * aParseTree );
 };
 
 #endif  /* _Q_QMO_OBYE_TRANSFORM_H_ */

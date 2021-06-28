@@ -76,7 +76,7 @@
 /* Copy the first part of user declarations.  */
 
 /* Line 189 of yacc.c  */
-#line 39 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 39 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
 
 /* This is YACC Source for syntax Analysis of iLoader Form file */
 
@@ -87,7 +87,7 @@
 
 
 /* Line 189 of yacc.c  */
-#line 91 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.cpp"
+#line 91 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.cpp"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -160,7 +160,7 @@ typedef union YYSTYPE
 {
 
 /* Line 214 of yacc.c  */
-#line 48 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 48 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
 
 SInt          num;
 SChar        *str;
@@ -169,7 +169,7 @@ iloTableNode *pNode;
 
 
 /* Line 214 of yacc.c  */
-#line 173 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.cpp"
+#line 173 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.cpp"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -180,7 +180,7 @@ iloTableNode *pNode;
 /* Copy the second part of user declarations.  */
 
 /* Line 264 of yacc.c  */
-#line 54 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 54 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
 
 
 #if defined(VC_WIN32)
@@ -199,8 +199,8 @@ SInt Formlex(YYSTYPE * yylval_param, yyscan_t yyscanner, void *param );
 void Formerror ( yyscan_t yyscanner, void *, const SChar *s);
 SChar *ltrim(SChar *s);
 SChar *rtrim(SChar *s);
-/* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
-/* src stringì—ì„œ "..." -> ... ìœ¼ë¡œ ë³€ê²½í•´ì¤Œ. */
+/* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
+/* src string¿¡¼­ "..." -> ... À¸·Î º¯°æÇØÁÜ. */
 SChar *eraseDQuotes(SChar *aSrc);
 
 /* BUG-40310 [ux-iloader] Fail to handle where condition when 'WHERE' keyword has mixed case.
@@ -208,7 +208,7 @@ SChar *eraseDQuotes(SChar *aSrc);
 
 
 /* Line 264 of yacc.c  */
-#line 212 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.cpp"
+#line 212 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.cpp"
 
 #ifdef short
 # undef short
@@ -1547,7 +1547,7 @@ yyreduce:
         case 2:
 
 /* Line 1455 of yacc.c  */
-#line 101 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 101 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           PARAM->mParser.mTableNode = NULL;
           (yyval.pNode) = new iloTableNode(TABLE_NODE, NULL, (yyvsp[(1) - (2)].pNode), NULL);
@@ -1559,7 +1559,7 @@ yyreduce:
   case 3:
 
 /* Line 1455 of yacc.c  */
-#line 108 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 108 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           PARAM->mParser.mTableNode = NULL;
           (yyval.pNode) = new iloTableNode(TABLE_NODE, (SChar *)"seq", (yyvsp[(2) - (3)].pNode), NULL);
@@ -1572,18 +1572,18 @@ yyreduce:
   case 4:
 
 /* Line 1455 of yacc.c  */
-#line 119 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 119 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     { /* empty */ ;}
     break;
 
   case 11:
 
 /* Line 1455 of yacc.c  */
-#line 133 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 133 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
         if( PARAM->mParser.mTableNode->m_Condition == NULL)
         {
-            /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
+            /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
             (yyval.pNode) = new iloTableNode(DOWN_NODE, eraseDQuotes((yyvsp[(3) - (3)].str)), NULL, NULL);
             PARAM->mParser.mTableNode->m_Condition = (yyval.pNode);
         }
@@ -1603,11 +1603,11 @@ yyreduce:
   case 12:
 
 /* Line 1455 of yacc.c  */
-#line 152 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 152 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
         if( PARAM->mParser.mTableNode->m_Condition == NULL)
         {
-            /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
+            /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
             (yyval.pNode) = new iloTableNode(DOWN_NODE, eraseDQuotes((yyvsp[(3) - (5)].str)), NULL, NULL, eraseDQuotes((yyvsp[(5) - (5)].str)));
             PARAM->mParser.mTableNode->m_Condition = (yyval.pNode);
         }
@@ -1626,7 +1626,7 @@ yyreduce:
   case 15:
 
 /* Line 1455 of yacc.c  */
-#line 177 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 177 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           InsertSeq( PARAM, (yyvsp[(2) - (3)].str), (yyvsp[(3) - (3)].str), (SChar *)"nextval");
           //idlOS::printf("## HERE SEQUENCE");
@@ -1636,7 +1636,7 @@ yyreduce:
   case 16:
 
 /* Line 1455 of yacc.c  */
-#line 182 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 182 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           if (idlOS::strCaselessMatch((yyvsp[(4) - (4)].str), "CURRVAL") == 0)
           {
@@ -1656,7 +1656,7 @@ yyreduce:
   case 17:
 
 /* Line 1455 of yacc.c  */
-#line 200 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 200 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           idlOS::strcpy(PARAM->mParser.mDateForm, (yyvsp[(2) - (2)].str));
       ;}
@@ -1665,7 +1665,7 @@ yyreduce:
   case 18:
 
 /* Line 1455 of yacc.c  */
-#line 204 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 204 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           idlOS::strcpy(PARAM->mParser.mDateForm, (yyvsp[(2) - (2)].str));
       ;}
@@ -1674,7 +1674,7 @@ yyreduce:
   case 19:
 
 /* Line 1455 of yacc.c  */
-#line 208 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 208 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           idlOS::strcpy(PARAM->mParser.mDateForm, (yyvsp[(2) - (2)].str));
       ;}
@@ -1683,7 +1683,7 @@ yyreduce:
   case 20:
 
 /* Line 1455 of yacc.c  */
-#line 212 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 212 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           idlOS::strcpy(PARAM->mParser.mDateForm, (yyvsp[(2) - (3)].str));
           idlOS::strcat(PARAM->mParser.mDateForm, " ");
@@ -1694,7 +1694,7 @@ yyreduce:
   case 21:
 
 /* Line 1455 of yacc.c  */
-#line 218 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 218 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           SInt len  = 0;
           idlOS::strcpy(PARAM->mParser.mDateForm, (yyvsp[(2) - (2)].str));
@@ -1710,7 +1710,7 @@ yyreduce:
   case 22:
 
 /* Line 1455 of yacc.c  */
-#line 232 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 232 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           // save DATA_NLS_USE, ex) KO16KSC5601
           idlOS::strncpy(PARAM->mProgOption->m_DataNLS, (yyvsp[(3) - (3)].str), MAX_WORD_LEN);
@@ -1720,7 +1720,7 @@ yyreduce:
   case 23:
 
 /* Line 1455 of yacc.c  */
-#line 237 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 237 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           // bug-23282: euc-jp parsing
           idlOS::strncpy(PARAM->mProgOption->m_DataNLS, (yyvsp[(3) - (3)].str), MAX_WORD_LEN);
@@ -1730,7 +1730,7 @@ yyreduce:
   case 24:
 
 /* Line 1455 of yacc.c  */
-#line 245 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 245 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {     
            /* BUG-30463 */
            idlOS::strncpy(PARAM->mParser.mPartitionName, (yyvsp[(2) - (2)].str), MAX_OBJNAME_LEN);
@@ -1741,7 +1741,7 @@ yyreduce:
   case 25:
 
 /* Line 1455 of yacc.c  */
-#line 254 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 254 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           if (idlOS::strcasecmp((yyvsp[(3) - (3)].str), "YES") == 0)
           {
@@ -1757,7 +1757,7 @@ yyreduce:
   case 26:
 
 /* Line 1455 of yacc.c  */
-#line 268 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 268 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.pNode) = new iloTableNode(TABLENAME_NODE, (yyvsp[(2) - (5)].str), (yyvsp[(4) - (5)].pNode), NULL);
           PARAM->mParser.mTableNode = (yyval.pNode);
@@ -1767,7 +1767,7 @@ yyreduce:
   case 27:
 
 /* Line 1455 of yacc.c  */
-#line 273 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 273 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.pNode) = new iloTableNode(TABLENAME_NODE, (yyvsp[(2) - (5)].str), (yyvsp[(4) - (5)].pNode), NULL, 1);
           PARAM->mParser.mTableNode = (yyval.pNode);
@@ -1777,7 +1777,7 @@ yyreduce:
   case 28:
 
 /* Line 1455 of yacc.c  */
-#line 281 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 281 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           iloTableNode *pAttr;
 
@@ -1792,7 +1792,7 @@ yyreduce:
   case 29:
 
 /* Line 1455 of yacc.c  */
-#line 291 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 291 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.pNode) = (yyvsp[(1) - (1)].pNode);
       ;}
@@ -1801,9 +1801,9 @@ yyreduce:
   case 30:
 
 /* Line 1455 of yacc.c  */
-#line 298 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 298 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
-        /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
+        /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
         (yyval.str) = eraseDQuotes((yyvsp[(1) - (1)].str));
     ;}
     break;
@@ -1811,7 +1811,7 @@ yyreduce:
   case 31:
 
 /* Line 1455 of yacc.c  */
-#line 303 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 303 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
         (yyval.str) = NULL;
     ;}
@@ -1820,7 +1820,7 @@ yyreduce:
   case 32:
 
 /* Line 1455 of yacc.c  */
-#line 309 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 309 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           iloTableNode *pAttrName, *pAttrType;
 
@@ -1828,8 +1828,8 @@ yyreduce:
           {
               pAttrType = new iloTableNode(ATTRTYPE_NODE, (SChar *)"char", NULL, NULL);
               pAttrName = new iloTableNode(ATTRNAME_NODE, (yyvsp[(1) - (8)].str), NULL, pAttrType);
-              /* BUG-26485 iloader ì— trim ê¸°ëŠ¥ì„ ì¶”ê°€í•´ì•¼ í•©ë‹ˆë‹¤. */
-              /* ì‚¬ìš©ìê°€ ì…ë ¥í•œ ë¬¸ìì—´ì„ ì €ì¥í•©ë‹ˆë‹¤. */
+              /* BUG-26485 iloader ¿¡ trim ±â´ÉÀ» Ãß°¡ÇØ¾ß ÇÕ´Ï´Ù. */
+              /* »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ ¹®ÀÚ¿­À» ÀúÀåÇÕ´Ï´Ù. */
               (yyval.pNode) = new iloTableNode(ATTR_NODE, (yyvsp[(7) - (8)].str), pAttrName, NULL);
               (yyval.pNode)->setSkipFlag((yyvsp[(6) - (8)].num) & SKIP_MASK);
               (yyval.pNode)->setBinaryFlag((yyvsp[(6) - (8)].num) & BINARY_MASK);
@@ -2004,7 +2004,7 @@ yyreduce:
   case 33:
 
 /* Line 1455 of yacc.c  */
-#line 489 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 489 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           iloTableNode *pAttrName, *pAttrType;
 
@@ -2012,8 +2012,8 @@ yyreduce:
           {
               pAttrType = new iloTableNode(ATTRTYPE_NODE, (SChar *)"bit", NULL, NULL);
               pAttrName = new iloTableNode(ATTRNAME_NODE, (yyvsp[(1) - (8)].str), NULL, pAttrType);
-              /* BUG-26485 iloader ì— trim ê¸°ëŠ¥ì„ ì¶”ê°€í•´ì•¼ í•©ë‹ˆë‹¤. */
-              /* ì‚¬ìš©ìê°€ ì…ë ¥í•œ ë¬¸ìì—´ì„ ì €ì¥í•©ë‹ˆë‹¤. */
+              /* BUG-26485 iloader ¿¡ trim ±â´ÉÀ» Ãß°¡ÇØ¾ß ÇÕ´Ï´Ù. */
+              /* »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ ¹®ÀÚ¿­À» ÀúÀåÇÕ´Ï´Ù. */
               (yyval.pNode) = new iloTableNode(ATTR_NODE, (yyvsp[(7) - (8)].str), pAttrName, NULL);
               (yyval.pNode)->setSkipFlag((yyvsp[(6) - (8)].num) & SKIP_MASK);
               (yyval.pNode)->setPrecision((yyvsp[(4) - (8)].num), 0);
@@ -2042,7 +2042,7 @@ yyreduce:
   case 34:
 
 /* Line 1455 of yacc.c  */
-#line 524 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 524 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           iloTableNode *pAttrName, *pAttrType;
           
@@ -2113,7 +2113,7 @@ yyreduce:
   case 35:
 
 /* Line 1455 of yacc.c  */
-#line 592 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 592 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           iloTableNode *pAttrName, *pAttrType;
 
@@ -2122,8 +2122,8 @@ yyreduce:
               PARAM->mParser.mDateForm[0] = '\0';
               pAttrType = new iloTableNode(ATTRTYPE_NODE, (SChar *)"date", NULL, NULL);
               pAttrName = new iloTableNode(ATTRNAME_NODE, (yyvsp[(1) - (6)].str), NULL, pAttrType);
-              // nodeValue ë¥¼ dateFormat ì €ì¥ì¥ì†Œë¡œ ì‚¬ìš©
-              /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
+              // nodeValue ¸¦ dateFormat ÀúÀåÀå¼Ò·Î »ç¿ë
+              /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
               (yyval.pNode) = new iloTableNode(ATTR_NODE, eraseDQuotes((yyvsp[(4) - (6)].str)), pAttrName, NULL);
               (yyval.pNode)->setSkipFlag((yyvsp[(5) - (6)].num));
 #ifdef _ILOADER_DEBUG
@@ -2150,7 +2150,7 @@ yyreduce:
   case 36:
 
 /* Line 1455 of yacc.c  */
-#line 626 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 626 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
 
           iloTableNode *pAttrName, *pAttrType;
@@ -2159,8 +2159,8 @@ yyreduce:
           {
               pAttrType = new iloTableNode(ATTRTYPE_NODE, (SChar *)"double", NULL, NULL);
               pAttrName = new iloTableNode(ATTRNAME_NODE, (yyvsp[(1) - (5)].str), NULL, pAttrType);
-              /* BUG-26485 iloader ì— trim ê¸°ëŠ¥ì„ ì¶”ê°€í•´ì•¼ í•©ë‹ˆë‹¤. */
-              /* ì‚¬ìš©ìê°€ ì…ë ¥í•œ ë¬¸ìì—´ì„ ì €ì¥í•©ë‹ˆë‹¤. */
+              /* BUG-26485 iloader ¿¡ trim ±â´ÉÀ» Ãß°¡ÇØ¾ß ÇÕ´Ï´Ù. */
+              /* »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ ¹®ÀÚ¿­À» ÀúÀåÇÕ´Ï´Ù. */
               (yyval.pNode) = new iloTableNode(ATTR_NODE, (yyvsp[(4) - (5)].str), pAttrName, NULL);
               (yyval.pNode)->setSkipFlag((yyvsp[(3) - (5)].num) & SKIP_MASK);
               (yyval.pNode)->setPrecision(0, 0);
@@ -2309,7 +2309,7 @@ yyreduce:
   case 37:
 
 /* Line 1455 of yacc.c  */
-#line 781 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 781 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           if ( idlOS::strcasecmp((yyvsp[(2) - (5)].str), "TIMESTAMP") == 0 )
           {
@@ -2346,7 +2346,7 @@ yyreduce:
   case 38:
 
 /* Line 1455 of yacc.c  */
-#line 813 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 813 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           if ( idlOS::strcasecmp((yyvsp[(2) - (5)].str), "TIMESTAMP") == 0 )
           {
@@ -2383,7 +2383,7 @@ yyreduce:
   case 39:
 
 /* Line 1455 of yacc.c  */
-#line 845 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 845 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           if ( idlOS::strcasecmp((yyvsp[(2) - (5)].str), "TIMESTAMP") == 0 )
           {
@@ -2421,7 +2421,7 @@ yyreduce:
   case 40:
 
 /* Line 1455 of yacc.c  */
-#line 878 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 878 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           if ( idlOS::strcasecmp((yyvsp[(2) - (5)].str), "TIMESTAMP") == 0 )
           {
@@ -2457,7 +2457,7 @@ yyreduce:
   case 41:
 
 /* Line 1455 of yacc.c  */
-#line 909 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 909 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           if ( idlOS::strcasecmp((yyvsp[(2) - (5)].str), "TIMESTAMP") == 0 )
           {
@@ -2493,7 +2493,7 @@ yyreduce:
   case 42:
 
 /* Line 1455 of yacc.c  */
-#line 940 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 940 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           if ( idlOS::strcasecmp((yyvsp[(2) - (5)].str), "TIMESTAMP") == 0 )
           {
@@ -2530,7 +2530,7 @@ yyreduce:
   case 43:
 
 /* Line 1455 of yacc.c  */
-#line 973 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 973 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           if ( idlOS::strcasecmp((yyvsp[(2) - (10)].str), "NUMERIC") == 0 ||
                idlOS::strcasecmp((yyvsp[(2) - (10)].str), "NUMBER") == 0 ||
@@ -2540,8 +2540,8 @@ yyreduce:
 
               pAttrType = new iloTableNode(ATTRTYPE_NODE, (SChar *)"numeric_long", NULL, NULL);
               pAttrName = new iloTableNode(ATTRNAME_NODE, (yyvsp[(1) - (10)].str), NULL, pAttrType);
-              /* BUG-26485 iloader ì— trim ê¸°ëŠ¥ì„ ì¶”ê°€í•´ì•¼ í•©ë‹ˆë‹¤. */
-              /* ì‚¬ìš©ìê°€ ì…ë ¥í•œ ë¬¸ìì—´ì„ ì €ì¥í•©ë‹ˆë‹¤. */
+              /* BUG-26485 iloader ¿¡ trim ±â´ÉÀ» Ãß°¡ÇØ¾ß ÇÕ´Ï´Ù. */
+              /* »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ ¹®ÀÚ¿­À» ÀúÀåÇÕ´Ï´Ù. */
               (yyval.pNode) = new iloTableNode(ATTR_NODE, (yyvsp[(9) - (10)].str), pAttrName, NULL);
               (yyval.pNode)->setSkipFlag((yyvsp[(8) - (10)].num) & SKIP_MASK);
               (yyval.pNode)->setNoExpFlag((yyvsp[(8) - (10)].num) & NOEXP_MASK);
@@ -2570,7 +2570,7 @@ yyreduce:
   case 44:
 
 /* Line 1455 of yacc.c  */
-#line 1009 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1009 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           iloTableNode *pAttrName, *pAttrType;
 
@@ -2580,8 +2580,8 @@ yyreduce:
           {
               pAttrType = new iloTableNode(ATTRTYPE_NODE, (SChar *)"numeric_double", NULL, NULL);
               pAttrName = new iloTableNode(ATTRNAME_NODE, (yyvsp[(1) - (10)].str), NULL, pAttrType);
-              /* BUG-26485 iloader ì— trim ê¸°ëŠ¥ì„ ì¶”ê°€í•´ì•¼ í•©ë‹ˆë‹¤. */
-              /* ì‚¬ìš©ìê°€ ì…ë ¥í•œ ë¬¸ìì—´ì„ ì €ì¥í•©ë‹ˆë‹¤. */
+              /* BUG-26485 iloader ¿¡ trim ±â´ÉÀ» Ãß°¡ÇØ¾ß ÇÕ´Ï´Ù. */
+              /* »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ ¹®ÀÚ¿­À» ÀúÀåÇÕ´Ï´Ù. */
               (yyval.pNode) = new iloTableNode(ATTR_NODE, (yyvsp[(9) - (10)].str), pAttrName, NULL);
               (yyval.pNode)->setSkipFlag((yyvsp[(8) - (10)].num) & SKIP_MASK);
               (yyval.pNode)->setNoExpFlag((yyvsp[(8) - (10)].num) & NOEXP_MASK);
@@ -2610,7 +2610,7 @@ yyreduce:
   case 45:
 
 /* Line 1455 of yacc.c  */
-#line 1045 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1045 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           iloTableNode *pAttrName, *pAttrType;          
           if ( idlOS::strcasecmp((yyvsp[(2) - (7)].str), "GEOMETRY") == 0 )
@@ -2647,7 +2647,7 @@ yyreduce:
   case 46:
 
 /* Line 1455 of yacc.c  */
-#line 1081 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1081 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.str) = (yyvsp[(1) - (1)].str);
       ;}
@@ -2656,7 +2656,7 @@ yyreduce:
   case 47:
 
 /* Line 1455 of yacc.c  */
-#line 1085 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1085 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.str) = (yyvsp[(1) - (1)].str);
       ;}
@@ -2665,7 +2665,7 @@ yyreduce:
   case 48:
 
 /* Line 1455 of yacc.c  */
-#line 1089 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1089 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.str) = (yyvsp[(1) - (1)].str);
       ;}
@@ -2674,7 +2674,7 @@ yyreduce:
   case 49:
 
 /* Line 1455 of yacc.c  */
-#line 1093 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1093 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.str) = (yyvsp[(1) - (1)].str);
       ;}
@@ -2683,7 +2683,7 @@ yyreduce:
   case 50:
 
 /* Line 1455 of yacc.c  */
-#line 1097 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1097 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.str) = (yyvsp[(1) - (1)].str);
       ;}
@@ -2692,7 +2692,7 @@ yyreduce:
   case 51:
 
 /* Line 1455 of yacc.c  */
-#line 1101 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1101 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.str) = (yyvsp[(1) - (1)].str);
       ;}
@@ -2701,7 +2701,7 @@ yyreduce:
   case 52:
 
 /* Line 1455 of yacc.c  */
-#line 1105 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1105 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.str) = (yyvsp[(1) - (1)].str);
       ;}
@@ -2710,7 +2710,7 @@ yyreduce:
   case 53:
 
 /* Line 1455 of yacc.c  */
-#line 1109 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1109 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.str) = (yyvsp[(1) - (1)].str);
       ;}
@@ -2719,7 +2719,7 @@ yyreduce:
   case 54:
 
 /* Line 1455 of yacc.c  */
-#line 1113 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1113 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.str) = (yyvsp[(1) - (1)].str);
       ;}
@@ -2728,7 +2728,7 @@ yyreduce:
   case 55:
 
 /* Line 1455 of yacc.c  */
-#line 1117 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1117 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.str) = (yyvsp[(1) - (1)].str);
       ;}
@@ -2737,7 +2737,7 @@ yyreduce:
   case 56:
 
 /* Line 1455 of yacc.c  */
-#line 1121 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1121 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.str) = (yyvsp[(1) - (1)].str);
       ;}
@@ -2746,7 +2746,7 @@ yyreduce:
   case 57:
 
 /* Line 1455 of yacc.c  */
-#line 1125 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1125 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.str) = (yyvsp[(1) - (1)].str);
       ;}
@@ -2755,7 +2755,7 @@ yyreduce:
   case 58:
 
 /* Line 1455 of yacc.c  */
-#line 1129 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1129 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.str) = (yyvsp[(1) - (1)].str);
       ;}
@@ -2764,7 +2764,7 @@ yyreduce:
   case 59:
 
 /* Line 1455 of yacc.c  */
-#line 1133 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1133 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.str) = (yyvsp[(1) - (1)].str);
       ;}
@@ -2773,7 +2773,7 @@ yyreduce:
   case 60:
 
 /* Line 1455 of yacc.c  */
-#line 1137 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1137 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           /* BUG-28843 */
           (yyval.str) = (yyvsp[(1) - (1)].str);
@@ -2783,10 +2783,10 @@ yyreduce:
   case 61:
 
 /* Line 1455 of yacc.c  */
-#line 1142 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1142 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
-          /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
-          /* table/column ì´ë¦„ìœ¼ë¡œ caseêµ¬ë¶„ì„ ìœ„í•´ "..."ì™€ê°™ì€ stringì´ ì˜¬ìˆ˜ ìˆì–´ì•¼í•¨ */
+          /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
+          /* table/column ÀÌ¸§À¸·Î case±¸ºĞÀ» À§ÇØ "..."¿Í°°Àº stringÀÌ ¿Ã¼ö ÀÖ¾î¾ßÇÔ */
           (yyval.str) = (yyvsp[(1) - (1)].str);
       ;}
     break;
@@ -2794,7 +2794,7 @@ yyreduce:
   case 62:
 
 /* Line 1455 of yacc.c  */
-#line 1151 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1151 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {/* BUG-19173 */
           (yyval.str) = (yyvsp[(1) - (1)].str);
       ;}
@@ -2803,7 +2803,7 @@ yyreduce:
   case 63:
 
 /* Line 1455 of yacc.c  */
-#line 1155 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1155 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           idlOS::sprintf(PARAM->mParser.mTmpBuf, "%s.%s", (yyvsp[(1) - (3)].str), (yyvsp[(3) - (3)].str));
           (yyval.str) = PARAM->mParser.mTmpBuf;
@@ -2813,7 +2813,7 @@ yyreduce:
   case 64:
 
 /* Line 1455 of yacc.c  */
-#line 1163 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1163 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     { /* BUG-19173 */
           (yyval.str) = (yyvsp[(1) - (1)].str);
       ;}
@@ -2822,7 +2822,7 @@ yyreduce:
   case 65:
 
 /* Line 1455 of yacc.c  */
-#line 1168 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1168 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.str) = (yyvsp[(1) - (1)].str);
       ;}
@@ -2831,7 +2831,7 @@ yyreduce:
   case 66:
 
 /* Line 1455 of yacc.c  */
-#line 1172 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1172 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.str) = (yyvsp[(1) - (1)].str);
       ;}
@@ -2840,7 +2840,7 @@ yyreduce:
   case 67:
 
 /* Line 1455 of yacc.c  */
-#line 1179 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1179 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.num) = 0;
       ;}
@@ -2849,7 +2849,7 @@ yyreduce:
   case 68:
 
 /* Line 1455 of yacc.c  */
-#line 1183 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1183 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.num) = 1;
       ;}
@@ -2858,7 +2858,7 @@ yyreduce:
   case 69:
 
 /* Line 1455 of yacc.c  */
-#line 1190 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1190 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.num) = 0;
       ;}
@@ -2867,7 +2867,7 @@ yyreduce:
   case 70:
 
 /* Line 1455 of yacc.c  */
-#line 1194 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1194 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.num) = SKIP_MASK;
       ;}
@@ -2876,7 +2876,7 @@ yyreduce:
   case 71:
 
 /* Line 1455 of yacc.c  */
-#line 1198 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1198 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.num) = NOEXP_MASK;
       ;}
@@ -2885,7 +2885,7 @@ yyreduce:
   case 72:
 
 /* Line 1455 of yacc.c  */
-#line 1202 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1202 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.num) = SKIP_MASK | NOEXP_MASK;
       ;}
@@ -2894,7 +2894,7 @@ yyreduce:
   case 73:
 
 /* Line 1455 of yacc.c  */
-#line 1206 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1206 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.num) = SKIP_MASK | NOEXP_MASK;
       ;}
@@ -2903,7 +2903,7 @@ yyreduce:
   case 74:
 
 /* Line 1455 of yacc.c  */
-#line 1210 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1210 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
           (yyval.num) = BINARY_MASK;
       ;}
@@ -2912,7 +2912,7 @@ yyreduce:
   case 75:
 
 /* Line 1455 of yacc.c  */
-#line 1217 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1217 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
     {
         /* BUG-30463 */
         (yyval.str) = (yyvsp[(1) - (1)].str);
@@ -2922,7 +2922,7 @@ yyreduce:
 
 
 /* Line 1455 of yacc.c  */
-#line 2926 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.cpp"
+#line 2926 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.cpp"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -3134,7 +3134,7 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 1222 "/data/jinkuko/maintenance/bug-46390-710b/ut/iloader3/src/iloFormParser.y"
+#line 1222 "/data/jinkuko/maintenance/bug-47057-trunk/ut/iloader3/src/iloFormParser.y"
 
 
 

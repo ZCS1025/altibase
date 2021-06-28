@@ -30,63 +30,63 @@
 #include <smu.h>
 
 /*
-  [ì°¸ê³ ] SMMì•ˆì—ì„œì˜ Fileê°„ì˜ Layerë° ì—­í• ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
-         í•˜ìœ„ Layerì˜ ì½”ë“œì—ì„œëŠ” ìƒìœ„ Layerì˜ ì½”ë“œë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+  [Âü°í] SMM¾È¿¡¼­ÀÇ File°£ÀÇ Layer¹× ¿ªÇÒÀº ´ÙÀ½°ú °°´Ù.
+         ÇÏÀ§ LayerÀÇ ÄÚµå¿¡¼­´Â »óÀ§ LayerÀÇ ÄÚµå¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù.
 
   ----------------------------------------------------------------------------
-  smmTBSCreate          ; Create Tablespace êµ¬í˜„
-  smmTBSDrop            ; Drop Tablespace êµ¬í˜„
-  smmTBSAlterAutoExtend ; Alter Tablespace Auto Extend êµ¬í˜„
-  smmTBSAlterChkptPath  ; Alter Tablespace Add/Rename/Drop Checkpoint Pathêµ¬í˜„
-  smmTBSAlterDiscard    ; Alter Tablespace Discard êµ¬í˜„
-  smmTBSStartupShutdown ; Startup, Shutdownì‹œì˜ Tablespaceê´€ë ¨ ì²˜ë¦¬ë¥¼ êµ¬í˜„
+  smmTBSCreate          ; Create Tablespace ±¸Çö
+  smmTBSDrop            ; Drop Tablespace ±¸Çö
+  smmTBSAlterAutoExtend ; Alter Tablespace Auto Extend ±¸Çö
+  smmTBSAlterChkptPath  ; Alter Tablespace Add/Rename/Drop Checkpoint Path±¸Çö
+  smmTBSAlterDiscard    ; Alter Tablespace Discard ±¸Çö
+  smmTBSStartupShutdown ; Startup, Shutdown½ÃÀÇ Tablespace°ü·Ã Ã³¸®¸¦ ±¸Çö
   ----------------------------------------------------------------------------
-  smmTBSChkptPath  ; Tablespaceì˜ Checkpoint Path ê´€ë¦¬
-  smmTBSMultiPhase ; Tablespaceì˜ ë‹¤ë‹¨ê³„ ì´ˆê¸°í™”
+  smmTBSChkptPath  ; TablespaceÀÇ Checkpoint Path °ü¸®
+  smmTBSMultiPhase ; TablespaceÀÇ ´Ù´Ü°è ÃÊ±âÈ­
   ----------------------------------------------------------------------------
-  smmManager       ; Tablespaceì˜ ë‚´ë¶€ êµ¬í˜„ 
-  smmFPLManager    ; Tablespace Free Page Listì˜ ë‚´ë¶€ êµ¬í˜„
-  smmExpandChunk   ; Chunkì˜ ë‚´ë¶€êµ¬ì¡° êµ¬í˜„
+  smmManager       ; TablespaceÀÇ ³»ºÎ ±¸Çö 
+  smmFPLManager    ; Tablespace Free Page ListÀÇ ³»ºÎ ±¸Çö
+  smmExpandChunk   ; ChunkÀÇ ³»ºÎ±¸Á¶ ±¸Çö
   ----------------------------------------------------------------------------
   
-  c.f> Memory Tablespaceì˜ Alter Online/Offlineì€ smp layerì— êµ¬í˜„ë˜ì–´ ìˆë‹¤.
+  c.f> Memory TablespaceÀÇ Alter Online/OfflineÀº smp layer¿¡ ±¸ÇöµÇ¾î ÀÖ´Ù.
 */
 
 
 /*
-  Drop Memory Tablespace êµ¬í˜„
+  Drop Memory Tablespace ±¸Çö
  */
 class smmTBSDrop
 {
 public :
-    // ìƒì„±ì (ì•„ë¬´ê²ƒë„ ì•ˆí•¨)
+    // »ı¼ºÀÚ (¾Æ¹«°Íµµ ¾ÈÇÔ)
     smmTBSDrop();
 
          
-    // ì‚¬ìš©ì í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ë¥¼ DROPí•œë‹¤.
+    // »ç¿ëÀÚ Å×ÀÌºí ½ºÆäÀÌ½º¸¦ DROPÇÑ´Ù.
     static IDE_RC dropTBS(void            * aTrans,
                           smmTBSNode      * aTBSNode,
                           smiTouchMode      aTouchMode);
 
 public :
-    // Tablespaceë¥¼ DROPí•œ Txê°€ Commitë˜ì—ˆì„ ë•Œ ë¶ˆë¦¬ëŠ” Pendingí•¨ìˆ˜
+    // Tablespace¸¦ DROPÇÑ Tx°¡ CommitµÇ¾úÀ» ¶§ ºÒ¸®´Â PendingÇÔ¼ö
     static IDE_RC dropTableSpacePending( idvSQL            * aStatistics, 
                                          sctTableSpaceNode * aTBSNode,
                                          sctPendingOp      * aPendingOp );
-    // ì‹¤ì œ Drop Tablespaceìˆ˜í–‰ ì½”ë“œ 
+    // ½ÇÁ¦ Drop Tablespace¼öÇà ÄÚµå 
     static IDE_RC doDropTableSpace( sctTableSpaceNode * aTBSNode,
                                     smiTouchMode        aTouchMode );
 
-    // Tablespaceì˜ ìƒíƒœë¥¼ DROPPEDë¡œ ì„¤ì •í•˜ê³  Log Anchorì— Flush!
+    // TablespaceÀÇ »óÅÂ¸¦ DROPPED·Î ¼³Á¤ÇÏ°í Log Anchor¿¡ Flush!
     static IDE_RC flushTBSStatusDropped( sctTableSpaceNode * aTBSNode );
     
 private :
 
-    //Tablespaceì˜ ìƒíƒœë¥¼ ë³€ê²½í•˜ê³  Log Anchorì— Flushí•œë‹¤.
+    //TablespaceÀÇ »óÅÂ¸¦ º¯°æÇÏ°í Log Anchor¿¡ FlushÇÑ´Ù.
     static IDE_RC flushTBSStatus( sctTableSpaceNode * aSpaceNode,
                                   UInt                aNewSpaceState);
     
-    // ë©”ëª¨ë¦¬ í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ë¥¼ DROPí•œë‹¤.
+    // ¸Ş¸ğ¸® Å×ÀÌºí ½ºÆäÀÌ½º¸¦ DROPÇÑ´Ù.
     static IDE_RC dropTableSpace(void       * aTrans,
                                  smmTBSNode * aTBSNode,
                                  smiTouchMode   aTouchMode);

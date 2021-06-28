@@ -30,7 +30,7 @@
 #include <idu.h>
 #include <idv.h>
 
-/* applyFuncToEachBCBs í•¨ìˆ˜ ë‚´ì—ì„œ ê° BCBì— ì ìš©í•˜ëŠ” í•¨ìˆ˜ì˜ í˜•ì‹ */
+/* applyFuncToEachBCBs ÇÔ¼ö ³»¿¡¼­ °¢ BCB¿¡ Àû¿ëÇÏ´Â ÇÔ¼öÀÇ Çü½Ä */
 typedef IDE_RC (*sdbBufferAreaActFunc)( sdbBCB *aBCB, void *aFiltAgr);
 
 class sdbBufferArea
@@ -44,6 +44,9 @@ public:
 
     IDE_RC expandArea(idvSQL *aStatistics,
                       UInt    aChunkCount);
+
+    //BUG-48042: Buffer Area Parallel »ı¼º  
+    static void expandAreaParallel( void * aJob );
 
     IDE_RC shrinkArea(idvSQL *aStatistics,
                       UInt    aChunkCount);
@@ -76,8 +79,8 @@ public:
     void lockBufferAreaS(idvSQL   *aStatistics);
     void unlockBufferArea();
 
-    /* BUG-32528 disk page headerì˜ BCB Pointer ê°€ ê¸í˜”ì„ ê²½ìš°ì— ëŒ€í•œ
-     * ë””ë²„ê¹… ì •ë³´ ì¶”ê°€. */
+    /* BUG-32528 disk page headerÀÇ BCB Pointer °¡ ±ÜÇûÀ» °æ¿ì¿¡ ´ëÇÑ
+     * µğ¹ö±ë Á¤º¸ Ãß°¡. */
     idBool isValidBCBPtrRange( sdbBCB * aBCBPtr )
     {
         if( ( aBCBPtr < mBCBPtrMin ) ||
@@ -116,42 +119,42 @@ private:
     }
 
 private:
-    /* chunkë‹¹ page ê°œìˆ˜ */
+    /* chunk´ç page °³¼ö */
     UInt         mChunkPageCount;
     
-    /* buffer areaê°€ ê°€ì§„ chunk ê°œìˆ˜ */
+    /* buffer area°¡ °¡Áø chunk °³¼ö */
     UInt         mChunkCount;
     
-    /* í•˜ë‚˜ì˜ frame í¬ê¸°, í˜„ì¬ 8K */
+    /* ÇÏ³ªÀÇ frame Å©±â, ÇöÀç 8K */
     UInt         mPageSize;
     
-    /* buffer areaì˜ free BCB ê°œìˆ˜ */
+    /* buffer areaÀÇ free BCB °³¼ö */
     UInt         mBCBCount;
    
-    /* buffer areaì˜ free BCBë“¤ì˜ ë¦¬ìŠ¤íŠ¸ */
+    /* buffer areaÀÇ free BCBµéÀÇ ¸®½ºÆ® */
     smuList      mUnUsedBCBListBase;
     
-    /* buffer areaì˜ ëª¨ë“  BCBë“¤ì˜ ë¦¬ìŠ¤íŠ¸ */
+    /* buffer areaÀÇ ¸ğµç BCBµéÀÇ ¸®½ºÆ® */
     smuList      mAllBCBList;
     
-    /* BCB í• ë‹¹ì„ ìœ„í•œ ë©”ëª¨ë¦¬ í’€ */
+    /* BCB ÇÒ´çÀ» À§ÇÑ ¸Ş¸ğ¸® Ç® */
     iduMemPool   mBCBMemPool;
 
-    /* BUG-20796: BUFFER_AREA_SIZEì— ì§€ì •ëœ í¬ê¸°ë³´ë‹¤ ë‘ë°°ì˜ ë©”ëª¨ë¦¬ë¥¼
-     *            ì‚¬ìš©í•˜ê³  ìˆìŠµë‹ˆë‹¤.
-     * iduMemPoolì˜ êµ¬ì¡°ì ì¸ ë¬¸ì œì„. iduMemPool2ë¥¼ ì‚¬ìš©í•˜ë„ë¡ í•¨. */
+    /* BUG-20796: BUFFER_AREA_SIZE¿¡ ÁöÁ¤µÈ Å©±âº¸´Ù µÎ¹èÀÇ ¸Ş¸ğ¸®¸¦
+     *            »ç¿ëÇÏ°í ÀÖ½À´Ï´Ù.
+     * iduMemPoolÀÇ ±¸Á¶ÀûÀÎ ¹®Á¦ÀÓ. iduMemPool2¸¦ »ç¿ëÇÏµµ·Ï ÇÔ. */
 
-    /* BCBì˜ Frameì— ëŒ€í•œ Memoryë¥¼ ê´€ë¦¬í•œë‹¤. */
+    /* BCBÀÇ Frame¿¡ ´ëÇÑ Memory¸¦ °ü¸®ÇÑ´Ù. */
     iduMemPool2  mFrameMemPool;
     
-    /* BCBì˜ ë¦¬ìŠ¤íŠ¸ë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ í’€*/
+    /* BCBÀÇ ¸®½ºÆ®¸¦ À§ÇÑ ¸Ş¸ğ¸® Ç®*/
     iduMemPool   mListMemPool;
     
-    /* buffer area ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•´ ì¡ëŠ” ë˜ì¹˜ */
+    /* buffer area µ¿½Ã¼º Á¦¾î¸¦ À§ÇØ Àâ´Â ·¡Ä¡ */
     iduLatch  mBufferAreaLatch;
 
-    /* BUG-32528 disk page headerì˜ BCB Pointer ê°€ ê¸í˜”ì„ ê²½ìš°ì— ëŒ€í•œ
-     * ë””ë²„ê¹… ì •ë³´ ì¶”ê°€. */
+    /* BUG-32528 disk page headerÀÇ BCB Pointer °¡ ±ÜÇûÀ» °æ¿ì¿¡ ´ëÇÑ
+     * µğ¹ö±ë Á¤º¸ Ãß°¡. */
     sdbBCB * mBCBPtrMin;
     sdbBCB * mBCBPtrMax;
 };
@@ -174,14 +177,14 @@ inline UInt sdbBufferArea::getChunkPageCount()
 inline void sdbBufferArea::lockBufferAreaX(idvSQL   *aStatistics)
 {
     IDE_ASSERT( mBufferAreaLatch.lockWrite( aStatistics,
-                                     NULL )
+                                            NULL )
                 == IDE_SUCCESS );
 }
 
 inline void sdbBufferArea::lockBufferAreaS(idvSQL   *aStatistics)
 {
     IDE_ASSERT( mBufferAreaLatch.lockRead( aStatistics,
-                                    NULL )
+                                           NULL )
                 == IDE_SUCCESS );
 }
 
@@ -189,7 +192,6 @@ inline void sdbBufferArea::unlockBufferArea()
 {
     IDE_ASSERT( mBufferAreaLatch.unlock( ) == IDE_SUCCESS );
 }
-
 
 #endif // _O_SDB_BUFFER_AREA_H_
 

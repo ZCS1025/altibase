@@ -16,25 +16,25 @@
  
 
 /***********************************************************************
- * $Id: qtcAssign.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qtcAssign.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  *
  * Description :
  *
- *     ASSIGN ì—°ì‚°ì„ ìˆ˜í–‰í•˜ëŠ” Node
+ *     ASSIGN ¿¬»êÀ» ¼öÇàÇÏ´Â Node
  *
  *     To fix BUG-20272
- *     subqueryì˜ targetì— conversion nodeê°€ ìƒì„±ë˜ì–´ì„œëŠ” ì•ˆë˜ëŠ” ê²½ìš°
- *     conversionì„ ìœ„í•œ assign nodeë¥¼ ìƒì„±í•œë‹¤.
+ *     subqueryÀÇ target¿¡ conversion node°¡ »ı¼ºµÇ¾î¼­´Â ¾ÈµÇ´Â °æ¿ì
+ *     conversionÀ» À§ÇÑ assign node¸¦ »ı¼ºÇÑ´Ù.
  *
  *     ex) decode(:v1, 1, (select max(i1) from t1))
  *                                ^^^^^^
- *     max(i1) ê°™ì€ aggrë…¸ë“œë“¤ì€ mtrNodeë¥¼ ìƒì„±í•˜ë¯€ë¡œ indirect conversionì´
- *     ìƒì„±ë˜ì–´ì„œëŠ” ì•ˆëœë‹¤. ì´ëŸ° ê²½ìš° max(i1)ì„ ì¸ìë¡œ ê°–ëŠ” assign nodeë¥¼
- *     ìƒì„±í•˜ì—¬ assign nodeì— indirect conversion nodeë¥¼ ë‹¬ì•„ì•¼ í•œë‹¤.
+ *     max(i1) °°Àº aggr³ëµåµéÀº mtrNode¸¦ »ı¼ºÇÏ¹Ç·Î indirect conversionÀÌ
+ *     »ı¼ºµÇ¾î¼­´Â ¾ÈµÈ´Ù. ÀÌ·± °æ¿ì max(i1)À» ÀÎÀÚ·Î °®´Â assign node¸¦
+ *     »ı¼ºÇÏ¿© assign node¿¡ indirect conversion node¸¦ ´Ş¾Æ¾ß ÇÑ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -46,7 +46,7 @@
 extern mtdModule mtdList;
 
 //-----------------------------------------
-// Assign ì—°ì‚°ìì˜ ì´ë¦„ì— ëŒ€í•œ ì •ë³´
+// Assign ¿¬»êÀÚÀÇ ÀÌ¸§¿¡ ´ëÇÑ Á¤º¸
 //-----------------------------------------
 
 static mtcName qtcNames[1] = {
@@ -54,7 +54,7 @@ static mtcName qtcNames[1] = {
 };
 
 //-----------------------------------------
-// Assign ì—°ì‚°ìì˜ Module ì— ëŒ€í•œ ì •ë³´
+// Assign ¿¬»êÀÚÀÇ Module ¿¡ ´ëÇÑ Á¤º¸
 //-----------------------------------------
 
 static IDE_RC qtcEstimate( mtcNode*     aNode,
@@ -64,19 +64,19 @@ static IDE_RC qtcEstimate( mtcNode*     aNode,
                            mtcCallBack* aCallBack );
 
 mtfModule qtc::assignModule = {
-    1 |                     // í•˜ë‚˜ì˜ Column ê³µê°„
-    MTC_NODE_OPERATOR_MISC, // ê¸°íƒ€ ì—°ì‚°ì
+    1 |                     // ÇÏ³ªÀÇ Column °ø°£
+    MTC_NODE_OPERATOR_MISC, // ±âÅ¸ ¿¬»êÀÚ
     ~(MTC_NODE_INDEX_MASK), // Indexable Mask
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
-    qtcNames,               // ì´ë¦„ ì •ë³´
-    NULL,                   // Counter ì—°ì‚°ì ì—†ìŒ
-    mtf::initializeDefault, // ì„œë²„ êµ¬ë™ì‹œ ì´ˆê¸°í™” í•¨ìˆ˜, ì—†ìŒ
-    mtf::finalizeDefault,   // ì„œë²„ ì¢…ë£Œì‹œ ì¢…ë£Œ í•¨ìˆ˜, ì—†ìŒ
-    qtcEstimate             // Estimate í•  í•¨ìˆ˜
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    qtcNames,               // ÀÌ¸§ Á¤º¸
+    NULL,                   // Counter ¿¬»êÀÚ ¾øÀ½
+    mtf::initializeDefault, // ¼­¹ö ±¸µ¿½Ã ÃÊ±âÈ­ ÇÔ¼ö, ¾øÀ½
+    mtf::finalizeDefault,   // ¼­¹ö Á¾·á½Ã Á¾·á ÇÔ¼ö, ¾øÀ½
+    qtcEstimate             // Estimate ÇÒ ÇÔ¼ö
 };
 
 //-----------------------------------------
-// Assign ì—°ì‚°ìì˜ ìˆ˜í–‰ í•¨ìˆ˜ì˜ ì •ì˜
+// Assign ¿¬»êÀÚÀÇ ¼öÇà ÇÔ¼öÀÇ Á¤ÀÇ
 //-----------------------------------------
 
 IDE_RC qtcCalculate_Assign( mtcNode*     aNode,
@@ -86,15 +86,15 @@ IDE_RC qtcCalculate_Assign( mtcNode*     aNode,
                             mtcTemplate* aTemplate );
 
 static const mtcExecute qtcExecute = {
-    mtf::calculateNA,     // Aggregation ì´ˆê¸°í™” í•¨ìˆ˜, ì—†ìŒ
-    mtf::calculateNA,     // Aggregation ìˆ˜í–‰ í•¨ìˆ˜, ì—†ìŒ
+    mtf::calculateNA,     // Aggregation ÃÊ±âÈ­ ÇÔ¼ö, ¾øÀ½
+    mtf::calculateNA,     // Aggregation ¼öÇà ÇÔ¼ö, ¾øÀ½
     mtf::calculateNA,
-    mtf::calculateNA,     // Aggregation ì¢…ë£Œ í•¨ìˆ˜, ì—†ìŒ
-    qtcCalculate_Assign,  // ASSIGN ì—°ì‚° í•¨ìˆ˜
-    NULL,                 // ì—°ì‚°ì„ ìœ„í•œ ë¶€ê°€ ì •ë³´, ì—†ìŒ
+    mtf::calculateNA,     // Aggregation Á¾·á ÇÔ¼ö, ¾øÀ½
+    qtcCalculate_Assign,  // ASSIGN ¿¬»ê ÇÔ¼ö
+    NULL,                 // ¿¬»êÀ» À§ÇÑ ºÎ°¡ Á¤º¸, ¾øÀ½
     mtx::calculateNA,
-    mtk::estimateRangeNA, // Key Range í¬ê¸° ì¶”ì¶œ í•¨ìˆ˜, ì—†ìŒ
-    mtk::extractRangeNA   // Key Range ìƒì„± í•¨ìˆ˜, ì—†ìŒ
+    mtk::estimateRangeNA, // Key Range Å©±â ÃßÃâ ÇÔ¼ö, ¾øÀ½
+    mtk::extractRangeNA   // Key Range »ı¼º ÇÔ¼ö, ¾øÀ½
 };
 
 IDE_RC qtcEstimate( mtcNode*     aNode,
@@ -106,14 +106,14 @@ IDE_RC qtcEstimate( mtcNode*     aNode,
 /***********************************************************************
  *
  * Description :
- *    Assign ì—°ì‚°ìì— ëŒ€í•˜ì—¬ Estimate ë¥¼ ìˆ˜í–‰í•¨.
- *    Assign Nodeì— ëŒ€í•œ Column ì •ë³´ ë° Execute ì •ë³´ë¥¼ Settingí•œë‹¤.
+ *    Assign ¿¬»êÀÚ¿¡ ´ëÇÏ¿© Estimate ¸¦ ¼öÇàÇÔ.
+ *    Assign Node¿¡ ´ëÇÑ Column Á¤º¸ ¹× Execute Á¤º¸¸¦ SettingÇÑ´Ù.
  *
  * Implementation :
- *    TODO - Host ë³€ìˆ˜ì˜ ì¡´ì¬ì— ëŒ€í•œ ê³ ë ¤ê°€ ë˜ì–´ ìˆì§€ ì•ŠìŒ
+ *    TODO - Host º¯¼öÀÇ Á¸Àç¿¡ ´ëÇÑ °í·Á°¡ µÇ¾î ÀÖÁö ¾ÊÀ½
  *
- *    Argumentì˜ Columnì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ Assign Nodeì˜ Column ì •ë³´ë¥¼ ì„¤ì •í•˜ê³ ,
- *    Assign Nodeì˜ Execute ì •ë³´ë¥¼ Settingí•¨
+ *    ArgumentÀÇ ColumnÁ¤º¸¸¦ ÀÌ¿ëÇÏ¿© Assign NodeÀÇ Column Á¤º¸¸¦ ¼³Á¤ÇÏ°í,
+ *    Assign NodeÀÇ Execute Á¤º¸¸¦ SettingÇÔ
  ***********************************************************************/
 
 #define IDE_FN "IDE_RC qtcEstimate"
@@ -128,21 +128,21 @@ IDE_RC qtcEstimate( mtcNode*     aNode,
 
     sInfo = (qtcCallBackInfo*)aCallBack->info;
 
-    // Argument ë¥¼ ì–»ëŠ”ë‹¤.
+    // Argument ¸¦ ¾ò´Â´Ù.
     sNode = mtf::convertedNode( aNode->arguments,
                                 & sInfo->tmplate->tmplate );
 
-    // Argumentì˜ Column ì •ë³´ë¥¼ ë³µì‚¬ ë° Execute ì •ë³´ë¥¼ settingí•œë‹¤.
+    // ArgumentÀÇ Column Á¤º¸¸¦ º¹»ç ¹× Execute Á¤º¸¸¦ settingÇÑ´Ù.
     sColumn = aTemplate->rows[aNode->table].columns + aNode->column;
 
     // BUG-23102
-    // mtcColumnìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
+    // mtcColumnÀ¸·Î ÃÊ±âÈ­ÇÑ´Ù.
     mtc::initializeColumn( sColumn,
                            aTemplate->rows[sNode->table].columns + sNode->column );
 
     aTemplate->rows[aNode->table].execute[aNode->column] = qtcExecute;
 
-    // ìƒìœ„ì—ì„œì˜ Estimationì„ ìœ„í•´ Stackì— Column ì •ë³´ Setting
+    // »óÀ§¿¡¼­ÀÇ EstimationÀ» À§ÇØ Stack¿¡ Column Á¤º¸ Setting
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
     return IDE_SUCCESS;
@@ -167,11 +167,11 @@ IDE_RC qtcCalculate_Assign( mtcNode*     aNode,
  *
  * Description :
  *
- *    Assign ì—°ì‚° ( a := b ) ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
+ *    Assign ¿¬»ê ( a := b ) ¿¬»êÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
  *
- *    Argumentë¥¼ ìˆ˜í–‰í•˜ê³  ê·¸ ê²°ê³¼ë¥¼ Assignë…¸ë“œì˜ ìœ„ì¹˜ì— ë³µì‚¬í•œë‹¤.
+ *    Argument¸¦ ¼öÇàÇÏ°í ±× °á°ú¸¦ Assign³ëµåÀÇ À§Ä¡¿¡ º¹»çÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -183,15 +183,15 @@ IDE_RC qtcCalculate_Assign( mtcNode*     aNode,
     // BUG-33674
     IDE_TEST_RAISE( aRemain < 2, ERR_STACK_OVERFLOW );
     
-    // Assign Nodeì˜ Columnì •ë³´ ë° Value ì •ë³´ì˜ ìœ„ì¹˜ë¥¼ ì„¤ì •í•¨.
+    // Assign NodeÀÇ ColumnÁ¤º¸ ¹× Value Á¤º¸ÀÇ À§Ä¡¸¦ ¼³Á¤ÇÔ.
     aStack->column = aTemplate->rows[aNode->table].columns + aNode->column;
     aStack->value  = (void*)( (UChar*) aTemplate->rows[aNode->table].row
                               + aStack->column->column.offset );
 
-    // Argumentì˜ ì •ë³´ë¥¼ íšë“í•¨.
+    // ArgumentÀÇ Á¤º¸¸¦ È¹µæÇÔ.
     sNode  = aNode->arguments;
 
-    // Argumentì˜ ì—°ì‚°ì„ ìˆ˜í–‰í•¨.
+    // ArgumentÀÇ ¿¬»êÀ» ¼öÇàÇÔ.
     IDE_TEST( aTemplate->rows[sNode->table].
               execute[sNode->column].calculate(                         sNode,
                                                                         aStack + 1,
@@ -200,7 +200,7 @@ IDE_RC qtcCalculate_Assign( mtcNode*     aNode,
                                                                         aTemplate )
               != IDE_SUCCESS );
 
-    // Argumentê°€ Conversionì„ ê°€ì§ˆ ê²½ìš° Conversion ì—°ì‚°ì„ ìˆ˜í–‰í•¨.
+    // Argument°¡ ConversionÀ» °¡Áú °æ¿ì Conversion ¿¬»êÀ» ¼öÇàÇÔ.
     if( sNode->conversion != NULL )
     {
         IDE_TEST( mtf::convertCalculate( sNode,
@@ -211,8 +211,8 @@ IDE_RC qtcCalculate_Assign( mtcNode*     aNode,
                   != IDE_SUCCESS );
     }
 
-    // Argumentì˜ ì—°ì‚° ê²°ê³¼ê°€ ì €ì¥ëœ Stackì •ë³´ë¡œë¶€í„°
-    // Assign Nodeì˜ Value ìœ„ì¹˜ì— ë³µì‚¬í•¨.
+    // ArgumentÀÇ ¿¬»ê °á°ú°¡ ÀúÀåµÈ StackÁ¤º¸·ÎºÎÅÍ
+    // Assign NodeÀÇ Value À§Ä¡¿¡ º¹»çÇÔ.
     idlOS::memcpy( aStack[0].value, aStack[1].value,
                    aStack[1].column->module->actualSize(
                        aStack[1].column,

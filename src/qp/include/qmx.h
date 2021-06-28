@@ -16,14 +16,14 @@
  
 
 /***********************************************************************
- * $Id: qmx.h 82174 2018-02-02 02:28:16Z andrew.shin $
+ * $Id: qmx.h 90270 2021-03-21 23:20:18Z bethy $
  **********************************************************************/
 
 #ifndef _Q_QMX_H_
 #define _Q_QMX_H_ 1
 
 // PROJ-1350
-// ÌäπÏ†ï ÎπÑÏú®Ïùò Data Î≥ÄÍ≤ΩÏù¥ Î∞úÏÉùÌïòÎ©¥ Ïù¥ÎØ∏ ÏÉùÏÑ±Îêú Plan TreeÎ•º Ïû¨Íµ¨ÏÑ±Ìï®.
+// ∆Ø¡§ ∫Ò¿≤¿« Data ∫Ø∞Ê¿Ã πﬂª˝«œ∏È ¿ÃπÃ ª˝º∫µ» Plan Tree∏¶ ¿Á±∏º∫«‘.
 #define  QMC_AUTO_REBUILD_PLAN_PLUS_RATIO                      (0.3)
 #define  QMC_AUTO_REBUILD_PLAN_MINUS_RATIO                    (-0.3)
 
@@ -42,8 +42,10 @@ typedef struct qmxLobInfo
 
     // for copy (QP)
     UShort                count;
-    smiColumn          ** column;
-    smLobLocator        * locator;
+    smiColumn          ** column;     // dst.
+    smLobLocator        * locator;    // src.
+    // PROJ-2728 for copy (SD)
+    UShort              * dstBindId;  // BindId or ColumnOrder
 
     // for outbind (MM)
     UShort                outCount;
@@ -53,8 +55,17 @@ typedef struct qmxLobInfo
     smLobLocator        * outFirstLocator;
     idBool                outFirst;
     idBool                outCallback;
+
+    // PROJ-2728 for InBinding in PSM (SD)
+    UShort                mCount4PutLob;
+    UShort              * mBindId4PutLob;
+
+    // PROJ-2728 for OutBinding in PSM (SD)
+    UShort                mCount4OutBindNonLob;
+    UShort              * mBindId4OutBindNonLob;
+
     /* BUG-30351
-     * insert into selectÏóêÏÑú Í∞Å Row Insert ÌõÑ Ìï¥Îãπ Lob CursorÎ•º Î∞îÎ°ú Ìï¥Ï†úÌñàÏúºÎ©¥ Ìï©ÎãàÎã§.
+     * insert into selectø°º≠ ∞¢ Row Insert »ƒ «ÿ¥Á Lob Cursor∏¶ πŸ∑Œ «ÿ¡¶«ﬂ¿∏∏È «’¥œ¥Ÿ.
      */
     idBool                mImmediateClose;
 
@@ -69,7 +80,7 @@ public:
     static IDE_RC executeInsertValues(qcStatement *aStatement);
 
     static IDE_RC executeInsertSelect(qcStatement *aStatement);
-    
+
     static IDE_RC executeMultiInsertSelect(qcStatement *aStatement);
 
     static IDE_RC executeDelete(qcStatement *aStatement);
@@ -100,6 +111,17 @@ public:
                                            mtdIsNullFunc * aIsNull,
                                            qmxLobInfo    * aLobInfo );
 
+    static IDE_RC makeSmiValueForSubqueryMultiTable( qcTemplate    * aTemplate,
+                                                     qcmTableInfo  * aTableInfo,
+                                                     qcmColumn     * aColumn,
+                                                     qmmValueNode  * aValues,
+                                                     qmmValueNode ** aValuesPos,
+                                                     qmmSubqueries * aSubquery,
+                                                     UInt            aCanonizedTuple,
+                                                     smiValue      * aUpdatedRow,
+                                                     mtdIsNullFunc * aIsNull,
+                                                     qmxLobInfo    * aLobInfo );
+
     static IDE_RC makeSmiValueForUpdate( qcTemplate    * aTmplate,
                                          qcmTableInfo  * aTableInfo,
                                          qcmColumn     * aColumn,
@@ -123,7 +145,7 @@ public:
                                          void          * aQueueMsgIDSeq,
                                          smiValue      * aInsertedRow,
                                          qmxLobInfo    * aLobInfo );
-    
+
     static IDE_RC makeSmiValueWithResult( qcmColumn     * aColumn,
                                           qcTemplate    * aTemplate,
                                           qcmTableInfo  * aTableInfo,
@@ -135,7 +157,7 @@ public:
                                          mtcStack      * aStack,
                                          qcmTableInfo  * aTableInfo,
                                          smiValue      * aInsertedRow,
-                                         qmxLobInfo    * aLobInfo );    
+                                         qmxLobInfo    * aLobInfo );
 
     static IDE_RC makeSmiValueForChkRowMovement( smiColumnList * aUpdateColumns,
                                                  smiValue      * aUpdateValues,
@@ -163,7 +185,7 @@ public:
                                        smiValue    * aValues,
                                        void        * aRow );
 
-    /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
     static IDE_RC makeSmiValueWithSmiValue( qcmTableInfo * aSrcTableInfo,
                                             qcmTableInfo * aDstTableInfo,
                                             qcmColumn    * aQcmColumn,
@@ -171,7 +193,7 @@ public:
                                             smiValue     * aSrcValueArr,
                                             smiValue     * aDstValueArr );
 
-    /* BUG-45680 insert ÏàòÌñâÏãú not null columnÏóê ÎåÄÌïú ÏóêÎü¨Î©îÏãúÏßÄ Ï†ïÎ≥¥Ïóê column Ï†ïÎ≥¥ Ï∂úÎ†•. */
+    /* BUG-45680 insert ºˆ«‡Ω√ not null columnø° ¥Î«— ø°∑Ø∏ﬁΩ√¡ˆ ¡§∫∏ø° column ¡§∫∏ √‚∑¬. */
     static IDE_RC checkNotNullColumnForInsert( qcmColumn  * aColumn,
                                                smiValue   * aInsertedRow,
                                                qmxLobInfo * aLobInfo,
@@ -182,7 +204,7 @@ public:
 
     static IDE_RC dummySequenceNextVals( qcStatement        * aStatement,
                                          qcParseSeqCaches   * aNextValSeqs );
-    
+
     static IDE_RC findSessionSeqCaches( qcStatement * aStatement,
                                         qcParseTree * aParseTree );
 
@@ -207,14 +229,15 @@ public:
 
     static IDE_RC addLobInfoForCopy( qmxLobInfo   * aLobInfo,
                                      smiColumn    * aColumn,
-                                     smLobLocator   aLocator );
+                                     smLobLocator   aLocator,
+                                     UShort         aBindId = -1 ); // PROJ-2728
 
     static IDE_RC addLobInfoForOutBind( qmxLobInfo  * aLobInfo,
                                         smiColumn   * aColumn,
                                         UShort        aBindId );
 
     /* BUG-30351
-     * insert into selectÏóêÏÑú Í∞Å Row Insert ÌõÑ Ìï¥Îãπ Lob CursorÎ•º Î∞îÎ°ú Ìï¥Ï†úÌñàÏúºÎ©¥ Ìï©ÎãàÎã§.
+     * insert into selectø°º≠ ∞¢ Row Insert »ƒ «ÿ¥Á Lob Cursor∏¶ πŸ∑Œ «ÿ¡¶«ﬂ¿∏∏È «’¥œ¥Ÿ.
      */
     static void setImmediateCloseLobInfo( qmxLobInfo  * aLobInfo,
                                           idBool        aImmediateClose );
@@ -233,16 +256,17 @@ public:
     static void finalizeLobInfo( qcStatement * aStatement,
                                  qmxLobInfo  * aLobInfo );
 
-    static IDE_RC closeLobLocator( smLobLocator  aLocator );
+    static IDE_RC closeLobLocator( idvSQL       *aStatistics,
+                                   smLobLocator  aLocator );
 
     static IDE_RC changeLobColumnInfo( qmxLobInfo * aLobInfo,
                                        qcmColumn  * aColumns );
 
     static idBool existLobInfo( qmxLobInfo * aLobInfo,
                                 UInt         aColumnID );
-    
-    // PROJ-1350 Plan Tree ÏûêÎèô Ïû¨Íµ¨ÏÑ±
-    // Plan TreeÍ∞Ä Ïú†Ìö®ÌïúÏßÄÎ•º Í≤ÄÏÇ¨
+
+    // PROJ-1350 Plan Tree ¿⁄µø ¿Á±∏º∫
+    // Plan Tree∞° ¿Ø»ø«—¡ˆ∏¶ ∞ÀªÁ
     static IDE_RC checkPlanTreeOld( qcStatement * aStatement,
                                     idBool      * aIsOld );
 
@@ -254,12 +278,12 @@ public:
     static IDE_RC atomicExecuteInsertAfter( qcStatement  * aStatement );
 
     static IDE_RC atomicExecuteFinalize( qcStatement  * aStatement );
-    
+
     // BUG-34084 partition lock pruning
     static IDE_RC lockPartitionForDML( smiStatement     * aSmiStmt,
                                        qmsPartitionRef  * aPartitionRef,
                                        smiTableLockMode   aLockMode );
-    
+
     // PROJ-1359 Trigger
     static IDE_RC fireTriggerInsertRowGranularity(
         qcStatement      * aStatement,
@@ -267,7 +291,7 @@ public:
         qmcInsertCursor  * aInsertCursorMgr,
         scGRID             aInsertGRID,
         qmmReturnInto    * aReturnInto,
-        qdConstraintSpec * aCheckConstrList,    /* PROJ-1107 Check Constraint ÏßÄÏõê */
+        qdConstraintSpec * aCheckConstrList,    /* PROJ-1107 Check Constraint ¡ˆø¯ */
         vSLong             aRowCnt,
         idBool             aNeedNewRow );
 
@@ -283,19 +307,19 @@ public:
     static  IDE_RC normalReturnToInto( qcTemplate      * aTemplate,
                                        qmmReturnInto   * aReturnInto );
 
-    /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
     static void copyMtcTupleForPartitionedTable( mtcTuple * aDstTuple,
                                                  mtcTuple * aSrcTuple );
 
-    /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
     static void copyMtcTupleForPartitionDML( mtcTuple * aDstTuple,
                                              mtcTuple * aSrcTuple );
 
-    /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
     static void adjustMtcTupleForPartitionDML( mtcTuple * aDstTuple,
                                                mtcTuple * aSrcTuple );
 
-    /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
     static UInt getMaxRowOffset( mtcTemplate * aTemplate,
                                  qmsTableRef * aTableRef );
 
@@ -308,17 +332,21 @@ public:
     /* PROJ-2359 Table/Partition Access Option */
     static IDE_RC checkAccessOption(
         qcmTableInfo * aTableInfo,
-        idBool         aIsInsertion );
+        idBool         aIsInsertion,
+        idBool         aCheckDmlConsistency = ID_FALSE );
 
     /* PROJ-2359 Table/Partition Access Option */
     static IDE_RC checkAccessOptionForExistentRecord(
         qcmAccessOption   aAccessOption,
         void            * aTableHandle );
 
+    /* PROJ-2714 Multiple Update Delete support */
+    static IDE_RC executeMultiUpdate( qcStatement * aStatement );
+    static IDE_RC executeMultiDelete( qcStatement * aStatement );
 private:
 
-    // delete on cascade ÏòµÏÖòÏóê ÏùòÌï¥ ÏÇ≠Ï†úÎêòÎäî child tableÏóê ÎåÄÌïú
-    // statement trigger ÏàòÌñâ.
+    // delete on cascade ø…º«ø° ¿««ÿ ªË¡¶µ«¥¬ child tableø° ¥Î«—
+    // statement trigger ºˆ«‡.
     static IDE_RC fireStatementTriggerOnDeleteCascade(
         qcStatement         * aStatement,
         qmsTableRef         * aParentTableRef,  // BUG-28049

@@ -21,16 +21,16 @@
  * Description :
  *     Multiple BUNI(Multiple Bag Union) Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ Bag Unionì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     °ü°èÇü ¸ğµ¨¿¡¼­ Bag UnionÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
  *  
- *     ë‹¤ìŒê³¼ ê°™ì€ ê¸°ëŠ¥ì„ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
+ *     ´ÙÀ½°ú °°Àº ±â´ÉÀ» À§ÇØ »ç¿ëµÈ´Ù.
  *         - Multiple Bag Union
  *
- *     Multi Children ì— ëŒ€í•œ Dataë¥¼ ëª¨ë‘ ë¦¬í„´í•œë‹¤.
+ *     Multi Children ¿¡ ´ëÇÑ Data¸¦ ¸ğµÎ ¸®ÅÏÇÑ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -58,7 +58,7 @@
 typedef struct qmncMultiBUNI
 {
     //---------------------------------
-    // Code ì˜ì—­ ê³µí†µ ì •ë³´
+    // Code ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmnPlan        plan;
@@ -69,7 +69,7 @@ typedef struct qmncMultiBUNI
 typedef struct qmndMultiBUNI
 {
     //---------------------------------
-    // Data ì˜ì—­ ê³µí†µ ì •ë³´
+    // Data ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmndPlan            plan;
@@ -77,10 +77,10 @@ typedef struct qmndMultiBUNI
     UInt              * flag;
 
     //---------------------------------
-    // Multi BUNI ê³ ìœ  ì •ë³´
+    // Multi BUNI °íÀ¯ Á¤º¸
     //---------------------------------
 
-    qmnChildren       * curChild;  // í˜„ì¬ ìˆ˜í–‰ ì¤‘ì¸ child
+    qmnChildren       * curChild;  // ÇöÀç ¼öÇà ÁßÀÎ child
     
 } qmndMultiBUNI;
 
@@ -92,11 +92,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ìˆ˜í–‰ í•¨ìˆ˜
+    // ¼öÇà ÇÔ¼ö
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -105,7 +105,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan ì •ë³´ ì¶œë ¥
+    // Plan Á¤º¸ Ãâ·Â
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -116,14 +116,14 @@ public:
     // mapping by doIt() function pointer
     //------------------------
 
-    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨
+    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
 private:
 
-    // ìµœì´ˆ ì´ˆê¸°í™”
+    // ÃÖÃÊ ÃÊ±âÈ­
     static IDE_RC firstInit( qmndMultiBUNI   * aDataPlan );
 
 };

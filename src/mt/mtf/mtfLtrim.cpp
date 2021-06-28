@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfLtrim.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfLtrim.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -45,7 +45,7 @@ static IDE_RC mtfLtrimEstimate( mtcNode*     aNode,
 mtfModule mtfLtrim = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfLtrimFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -248,8 +248,8 @@ IDE_RC mtfLeftTrim( const mtlModule * aLanguage,
                                             sSourceFence,
                                             aLanguage );
         
-        // Left->right ë°©í–¥ìœ¼ë¡œ ë¬¸ìžë¥¼ ì½ì–´ê°€ë©´ì„œ 
-        // trim ëŒ€ìƒ ë¬¸ìžì—´ì˜ ë¬¸ìžì™€ ë™ì¼í•œ ë¬¸ìžê°€ ìžˆëŠ”ì§€ ì°¾ìŒ
+        // Left->right ¹æÇâÀ¸·Î ¹®ÀÚ¸¦ ÀÐ¾î°¡¸é¼­ 
+        // trim ´ë»ó ¹®ÀÚ¿­ÀÇ ¹®ÀÚ¿Í µ¿ÀÏÇÑ ¹®ÀÚ°¡ ÀÖ´ÂÁö Ã£À½
         sTrimIndex = aTrim;
         sTrimFence = aTrim + aTrimLen;
         
@@ -266,39 +266,39 @@ IDE_RC mtfLeftTrim( const mtlModule * aLanguage,
             
             if ( sIsSame == ID_TRUE )
             {
-                // ë™ì¼í•œ ë¬¸ìžê°€ ìžˆìŒ
+                // µ¿ÀÏÇÑ ¹®ÀÚ°¡ ÀÖÀ½
                 break;
             }
             else
             {
-                // ë‹¤ìŒ trim ë¬¸ìžë¡œ ì§„í–‰
-                // TASK-3420 ë¬¸ìžì—´ ì²˜ë¦¬ ì •ì±… ê°œì„ 
+                // ´ÙÀ½ trim ¹®ÀÚ·Î ÁøÇà
+                // TASK-3420 ¹®ÀÚ¿­ Ã³¸® Á¤Ã¥ °³¼±
                 (void)aLanguage->nextCharPtr( & sTrimIndex, sTrimFence );
             }
         }
 
         if ( sIsSame == ID_FALSE )
         {
-            // ë™ì¼í•œ ë¬¸ìžê°€ ì—†ëŠ” ê²½ìš°
+            // µ¿ÀÏÇÑ ¹®ÀÚ°¡ ¾ø´Â °æ¿ì
             sFirst = sSourceIndex;
             break;
         }
         else
         {
-            // ë‹¤ìŒ source ë¬¸ìžë¡œ ì§„í–‰
-            // TASK-3420 ë¬¸ìžì—´ ì²˜ë¦¬ ì •ì±… ê°œì„ 
+            // ´ÙÀ½ source ¹®ÀÚ·Î ÁøÇà
+            // TASK-3420 ¹®ÀÚ¿­ Ã³¸® Á¤Ã¥ °³¼±
             (void)aLanguage->nextCharPtr( & sSourceIndex, sSourceFence );
         }
     }
 
     if ( ( sIsSame == ID_TRUE ) && ( sSourceIndex == sSourceFence ) )
     {
-        // Sourceì˜ ëª¨ë“  ë¬¸ìžê°€ Trim ë¬¸ìžì¸ ê²½ìš°
+        // SourceÀÇ ¸ðµç ¹®ÀÚ°¡ Trim ¹®ÀÚÀÎ °æ¿ì
         *aResultLen = 0;
     }
     else
     {
-        // ë™ì¼í•˜ì§€ ì•Šì€ ì²« ë¬¸ìž ì´í›„ë¥¼ ê²°ê³¼ì— ì €ìž¥
+        // µ¿ÀÏÇÏÁö ¾ÊÀº Ã¹ ¹®ÀÚ ÀÌÈÄ¸¦ °á°ú¿¡ ÀúÀå
         *aResultLen = sSourceFence - sFirst;
         
         IDE_TEST_RAISE( *aResultLen > aResultMaxLen, ERR_EXCEED_MAX );
@@ -329,7 +329,7 @@ IDE_RC mtfLeftTrimFor1ByteSpace( const mtlModule * aLanguage,
  *
  * Description : Left Trim
  *     BUG-10370
- *     1byte space 0x20ì„ ì‚¬ìš©í•˜ëŠ” charsetì— ëŒ€í•´ ltrimì„ ìˆ˜í–‰í•œë‹¤.
+ *     1byte space 0x20À» »ç¿ëÇÏ´Â charset¿¡ ´ëÇØ ltrimÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
  *
@@ -351,7 +351,7 @@ IDE_RC mtfLeftTrimFor1ByteSpace( const mtlModule * aLanguage,
         {
             if ( *sSourceIndex != *aLanguage->specialCharSet[MTL_SP_IDX] )
             {
-                // spaceê°€ ì•„ë‹Œ ê²½ìš°
+                // space°¡ ¾Æ´Ñ °æ¿ì
                 break;
             }
             else
@@ -362,12 +362,12 @@ IDE_RC mtfLeftTrimFor1ByteSpace( const mtlModule * aLanguage,
         
         if ( sSourceIndex == sSourceFence )
         {
-            // Sourceì˜ ëª¨ë“  ë¬¸ìžê°€ Trim ë¬¸ìžì¸ ê²½ìš°
+            // SourceÀÇ ¸ðµç ¹®ÀÚ°¡ Trim ¹®ÀÚÀÎ °æ¿ì
             *aResultLen = 0;
         }
         else
         {
-            // ë™ì¼í•˜ì§€ ì•Šì€ ì²« ë¬¸ìž ì´í›„ë¥¼ ê²°ê³¼ì— ì €ìž¥
+            // µ¿ÀÏÇÏÁö ¾ÊÀº Ã¹ ¹®ÀÚ ÀÌÈÄ¸¦ °á°ú¿¡ ÀúÀå
             *aResultLen = sSourceFence - sSourceIndex;
             
             IDE_TEST_RAISE( *aResultLen > aResultMaxLen, ERR_EXCEED_MAX );
@@ -403,7 +403,7 @@ IDE_RC mtfLeftTrimFor2ByteSpace( const mtlModule * aLanguage,
  *
  * Description : Left Trim
  *     BUG-10370
- *     2byte space 0x00 0x20ì„ ì‚¬ìš©í•˜ëŠ” charsetì— ëŒ€í•´ ltrimì„ ìˆ˜í–‰í•œë‹¤.
+ *     2byte space 0x00 0x20À» »ç¿ëÇÏ´Â charset¿¡ ´ëÇØ ltrimÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
  *
@@ -426,7 +426,7 @@ IDE_RC mtfLeftTrimFor2ByteSpace( const mtlModule * aLanguage,
             if ( *sSourceIndex !=
                  ((mtlU16Char*)aLanguage->specialCharSet[MTL_SP_IDX])->value1 )
             {
-                // spaceê°€ ì•„ë‹Œ ê²½ìš°
+                // space°¡ ¾Æ´Ñ °æ¿ì
                 break;
             }
             else
@@ -437,7 +437,7 @@ IDE_RC mtfLeftTrimFor2ByteSpace( const mtlModule * aLanguage,
             if ( *(sSourceIndex + 1) !=
                  ((mtlU16Char*)aLanguage->specialCharSet[MTL_SP_IDX])->value2 )
             {
-                // spaceê°€ ì•„ë‹Œ ê²½ìš°
+                // space°¡ ¾Æ´Ñ °æ¿ì
                 break;
             }
             else
@@ -448,12 +448,12 @@ IDE_RC mtfLeftTrimFor2ByteSpace( const mtlModule * aLanguage,
         
         if ( sSourceIndex == sSourceFence )
         {
-            // Sourceì˜ ëª¨ë“  ë¬¸ìžê°€ Trim ë¬¸ìžì¸ ê²½ìš°
+            // SourceÀÇ ¸ðµç ¹®ÀÚ°¡ Trim ¹®ÀÚÀÎ °æ¿ì
             *aResultLen = 0;
         }
         else
         {
-            // ë™ì¼í•˜ì§€ ì•Šì€ ì²« ë¬¸ìž ì´í›„ë¥¼ ê²°ê³¼ì— ì €ìž¥
+            // µ¿ÀÏÇÏÁö ¾ÊÀº Ã¹ ¹®ÀÚ ÀÌÈÄ¸¦ °á°ú¿¡ ÀúÀå
             *aResultLen = sSourceFence - sSourceIndex;
         
             IDE_TEST_RAISE( *aResultLen > aResultMaxLen, ERR_EXCEED_MAX );
@@ -491,8 +491,8 @@ IDE_RC mtfLtrimCalculateFor1Arg( mtcNode*     aNode,
  * Implementation :
  *    LTRIM( char1 )
  *
- *    aStack[0] : ìž…ë ¥í•œ ë¬¸ìžì—´ì˜ ì™¼ìª½ì— ' 'ì„ ëª¨ë‘ ì‚­ì œí•œ ê°’
- *    aStack[1] : char1 ( ìž…ë ¥ ë¬¸ìžì—´ )
+ *    aStack[0] : ÀÔ·ÂÇÑ ¹®ÀÚ¿­ÀÇ ¿ÞÂÊ¿¡ ' 'À» ¸ðµÎ »èÁ¦ÇÑ °ª
+ *    aStack[1] : char1 ( ÀÔ·Â ¹®ÀÚ¿­ )
  *
  *    ex) LTRIM('   ab' ) ==> 'ab'
  *
@@ -558,10 +558,10 @@ IDE_RC mtfLtrimCalculateFor2Args( mtcNode*     aNode,
  * Implementation :
  *    LTRIM( char1, char2 )
  *
- *    aStack[0] : char1ì˜ ë¬¸ìžì—´ì„ ì™¼ìª½ë¶€í„° char2ì˜ ë¬¸ìžì™€ ë¹„êµí•˜ì—¬
- *                ê°™ìœ¼ë©´ ì‚­ì œí•œë‹¤.
- *    aStack[1] : char1 ( ìž…ë ¥ ë¬¸ìžì—´ )
- *    aStack[2] : char2 ( trim ëŒ€ìƒ ë¬¸ìžì—´ )
+ *    aStack[0] : char1ÀÇ ¹®ÀÚ¿­À» ¿ÞÂÊºÎÅÍ char2ÀÇ ¹®ÀÚ¿Í ºñ±³ÇÏ¿©
+ *                °°À¸¸é »èÁ¦ÇÑ´Ù.
+ *    aStack[1] : char1 ( ÀÔ·Â ¹®ÀÚ¿­ )
+ *    aStack[2] : char2 ( trim ´ë»ó ¹®ÀÚ¿­ )
  *
  *    ex) LTRIM( 'abABa', 'ab' )  ==> 'ABa'
  *
@@ -633,8 +633,8 @@ IDE_RC mtfLtrimCalculateNcharFor1Arg( mtcNode*     aNode,
  * Implementation :
  *    LTRIM( char1 )
  *
- *    aStack[0] : ìž…ë ¥í•œ ë¬¸ìžì—´ì˜ ì™¼ìª½ì— ' 'ì„ ëª¨ë‘ ì‚­ì œí•œ ê°’
- *    aStack[1] : char1 ( ìž…ë ¥ ë¬¸ìžì—´ )
+ *    aStack[0] : ÀÔ·ÂÇÑ ¹®ÀÚ¿­ÀÇ ¿ÞÂÊ¿¡ ' 'À» ¸ðµÎ »èÁ¦ÇÑ °ª
+ *    aStack[1] : char1 ( ÀÔ·Â ¹®ÀÚ¿­ )
  *
  *    ex) LTRIM('   ab' ) ==> 'ab'
  *
@@ -668,7 +668,7 @@ IDE_RC mtfLtrimCalculateNcharFor1Arg( mtcNode*     aNode,
         sResultMaxLen = sSrcCharSet->maxPrecision(aStack[0].column->precision);
 
         // ------------------------------
-        // LeftTrim ê³µí†µ í•¨ìˆ˜
+        // LeftTrim °øÅë ÇÔ¼ö
         // ------------------------------
         
         if( sSrcCharSet->id == MTL_UTF16_ID )
@@ -723,10 +723,10 @@ IDE_RC mtfLtrimCalculateNcharFor2Args( mtcNode*     aNode,
  * Implementation :
  *    LTRIM( char1, char2 )
  *
- *    aStack[0] : char1ì˜ ë¬¸ìžì—´ì„ ì™¼ìª½ë¶€í„° char2ì˜ ë¬¸ìžì™€ ë¹„êµí•˜ì—¬
- *                ê°™ìœ¼ë©´ ì‚­ì œí•œë‹¤.
- *    aStack[1] : char1 ( ìž…ë ¥ ë¬¸ìžì—´ )
- *    aStack[2] : char2 ( trim ëŒ€ìƒ ë¬¸ìžì—´ )
+ *    aStack[0] : char1ÀÇ ¹®ÀÚ¿­À» ¿ÞÂÊºÎÅÍ char2ÀÇ ¹®ÀÚ¿Í ºñ±³ÇÏ¿©
+ *                °°À¸¸é »èÁ¦ÇÑ´Ù.
+ *    aStack[1] : char1 ( ÀÔ·Â ¹®ÀÚ¿­ )
+ *    aStack[2] : char2 ( trim ´ë»ó ¹®ÀÚ¿­ )
  *
  *    ex) LTRIM( 'abABa', 'ab' )  ==> 'ABa'
  *
@@ -764,7 +764,7 @@ IDE_RC mtfLtrimCalculateNcharFor2Args( mtcNode*     aNode,
         sResultMaxLen = sSrcCharSet->maxPrecision(aStack[0].column->precision);
 
         // ------------------------------
-        // LeftTrim ê³µí†µ í•¨ìˆ˜
+        // LeftTrim °øÅë ÇÔ¼ö
         // ------------------------------
 
         IDE_TEST( mtfLeftTrim( aStack[1].column->language,

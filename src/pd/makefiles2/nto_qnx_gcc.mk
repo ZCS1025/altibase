@@ -3,10 +3,10 @@
 # CVS Info : $Id: nto_qnx_gcc.mk 26440 2008-06-10 04:02:48Z jdlee $
 #
 
-# ì „ë‹¬ë˜ëŠ” ì™¸ë¶€ ë³€ìˆ˜ë“¤
-# ID_DIR      : SM ë””ë ‰í† ë¦¬ 
-# ID_ACE_ROOT : ë¼ì´ë¸ŒëŸ¬ë¦¬ íŒ¨ìŠ¤
-# compile64   : ì»´íŒŒì¼ í™˜ê²½
+# Àü´ŞµÇ´Â ¿ÜºÎ º¯¼öµé
+# ID_DIR      : SM µğ·ºÅä¸® 
+# ID_ACE_ROOT : ¶óÀÌºê·¯¸® ÆĞ½º
+# compile64   : ÄÄÆÄÀÏ È¯°æ
 
 ifndef	BUILD_MODE
 	@echo "ERROR BUILD_MODE!!!!"
@@ -23,21 +23,21 @@ AOPT    =
 NM 	    = /usr/bin/nm
 NMFLAGS	= -t x
 
-# readline library ì„¤ì •
+# readline library ¼³Á¤
 ifeq "$(USE_READLINE)" "1"
 READLINE_INCLUDES = -I/usr/local/include/readline
 READLINE_LIBRARY =  -lreadline -ltermcap 
 endif # use readline library 
 
-# LIBS ì¤‘ë³µ
+# LIBS Áßº¹
 LIBS     = $(READLINE_LIBRARY) -lsocket
 
-# LDFLAGSì™€ ì¤‘ë³µ
+# LDFLAGS¿Í Áßº¹
 LFLAGS  =
-# BUILD_MODEì˜ ì¢…ë¥˜
-# debug	      : Debug ëª¨ë“œ
+# BUILD_MODEÀÇ Á¾·ù
+# debug	      : Debug ¸ğµå
 # prerelease  : -DDEBUG(x) -g (o)
-# release     : release ë²„ì ¼, ì‹¤ì œ productì— í•´ë‹¹
+# release     : release ¹öÁ¯, ½ÇÁ¦ product¿¡ ÇØ´ç
 ifeq "$(BUILD_MODE)" "debug"
     LFLAGS = -g
 else

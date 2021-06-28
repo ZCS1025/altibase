@@ -24,8 +24,6 @@
  *
  **********************************************************************/
 
-#include <iduMemMgr.h>
-#include <idCore.h>
 #include <sddDef.h>
 #include <sct.h>
 #include <smu.h>
@@ -57,6 +55,7 @@ UInt                smriChangeTrackingMgr::mIBChunkCnt;
 UInt                smriChangeTrackingMgr::mIBChunkID;
 UInt                smriChangeTrackingMgr::mFileNo;
 scPageID            smriChangeTrackingMgr::mSplitFilePageCount;
+UInt                smriChangeTrackingMgr::mCurrChangeTrackingThreadCnt; // change trackingÀ» ¼öÇàÁßÀÎ threadÀÇ ¼ö
 
 IDE_RC smriChangeTrackingMgr::initializeStatic()
 {
@@ -65,20 +64,20 @@ IDE_RC smriChangeTrackingMgr::initializeStatic()
     idBool  sMutexState  = ID_FALSE;
     idBool  sBufferState = ID_FALSE;
 
-    /*change trackingíŒŒì¼ í—¤ë”*/
+    /*change trackingÆÄÀÏ Çì´õ*/
     idlOS::memset( &mCTFileHdr, 0x00, SMRI_CT_BLOCK_SIZE );
 
     mCTHdrState = SMRI_CT_MGR_STATE_NORMAL;
 
-    /*CT bodyì— ëŒ€í•œ pointer*/
+    /*CT body¿¡ ´ëÇÑ pointer*/
     for( i = 0; i < SMRI_CT_MAX_CT_BODY_CNT; i++ )
     {
         mCTBodyPtr[i] = NULL;
     }
     
     /* BUG-40716
-     * CTBodyë¥¼ flushí• ë•Œ ì‚¬ìš©í•  bufferë¥¼ ë¯¸ë¦¬ í• ë‹¹í•˜ì—¬
-     * checkpointì‹œì— CTBodyì˜ ë©”ëª¨ë¦¬ í• ë‹¹ ì‹¤íŒ¨ë¡œ ì¸í•´ ì„œë²„ê°€ ì£½ëŠ” ê²½ìš° ë°©ì§€
+     * CTBody¸¦ flushÇÒ¶§ »ç¿ëÇÒ buffer¸¦ ¹Ì¸® ÇÒ´çÇÏ¿©
+     * checkpoint½Ã¿¡ CTBodyÀÇ ¸Ş¸ğ¸® ÇÒ´ç ½ÇÆĞ·Î ÀÎÇØ ¼­¹ö°¡ Á×´Â °æ¿ì ¹æÁö
      */
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SMR,
                                  1,
@@ -109,18 +108,21 @@ IDE_RC smriChangeTrackingMgr::initializeStatic()
     mIBChunkID          = ID_UINT_MAX;
     mBmpBlockBitmapSize = smuProperty::getBmpBlockBitmapSize();
     mCTBodyExtCnt       = smuProperty::getCTBodyExtCnt();
-    mCTBodyBmpExtCnt    = mCTBodyExtCnt - 2; /* meta extì™€ empty extë¥¼ ëº€ë‹¤ */
+    mCTBodyBmpExtCnt    = mCTBodyExtCnt - 2; /* meta ext¿Í empty ext¸¦ »«´Ù */
     mCTExtMapSize       = mCTBodyBmpExtCnt;
     mCTBodySize         = (mCTBodyExtCnt 
                           * SMRI_CT_EXT_BLOCK_CNT 
                           * SMRI_CT_BLOCK_SIZE );
     mCTBodyBlockCnt     = (mCTBodySize / SMRI_CT_BLOCK_SIZE);
     
-    /*BmpBlockì´ ê°€ì§€ëŠ” bitmapì˜ bit ìˆ˜*/
+    /*BmpBlockÀÌ °¡Áö´Â bitmapÀÇ bit ¼ö*/
     mBmpBlockBitCnt     = (mBmpBlockBitmapSize * SMRI_CT_BIT_CNT);
-    /*BmpExtê°€ ê°€ì§€ëŠ” bitmapì˜ bit ìˆ˜*/
+    /*BmpExt°¡ °¡Áö´Â bitmapÀÇ bit ¼ö*/
     mBmpExtBitCnt       = (mBmpBlockBitCnt 
                           * SMRI_CT_EXT_BLOCK_CNT_EXCEPT_META_BLOCK);
+
+    //PROJ-2133 incremental backup
+    mCurrChangeTrackingThreadCnt = 0;
 
     return IDE_SUCCESS;
 
@@ -187,7 +189,7 @@ IDE_RC smriChangeTrackingMgr::destroyStatic()
 }
 
 /***********************************************************************
- * CT(change tracking)íŒŒì¼ì„ ìƒì„±í•œë‹¤.
+ * CT(change tracking)ÆÄÀÏÀ» »ı¼ºÇÑ´Ù.
  * 
  * 
  **********************************************************************/
@@ -209,11 +211,11 @@ IDE_RC smriChangeTrackingMgr::createCTFile()
     IDE_TEST( lockCTMgr() != IDE_SUCCESS );
     sState = 1;
 
-    /* change tarcking ê¸°ëŠ¥ì´ í™œì„±í™” ë˜ì–´ìˆëŠ”ì§€ í™•ì¸ */
+    /* change tarcking ±â´ÉÀÌ È°¼ºÈ­ µÇ¾îÀÖ´ÂÁö È®ÀÎ */
     IDE_TEST_RAISE( smrRecoveryMgr::isCTMgrEnabled() == ID_TRUE, 
                     error_already_enabled_change_tracking );
 
-    /* íŒŒì¼ ì´ë¦„ ì„¤ì • */
+    /* ÆÄÀÏ ÀÌ¸§ ¼³Á¤ */
     idlOS::snprintf( sFileName,                     
                      SM_MAX_FILE_NAME,              
                      "%s%c%s",
@@ -222,8 +224,8 @@ IDE_RC smriChangeTrackingMgr::createCTFile()
                      SMRI_CT_FILE_NAME );
 
     /* 
-     * change tracking  íŒŒì¼ ìƒì„±ì¤‘ ì„œë²„ ë¹„ì •ìƒì¢…ë£Œ ìƒí™©
-     * ìƒì„±ì¤‘ì¸ íŒŒì¼ì´ ì¡´ì¬í•˜ë©´ ì‚­ì œí•˜ê³  ìƒˆë¡œ ë§Œë“ ë‹¤
+     * change tracking  ÆÄÀÏ »ı¼ºÁß ¼­¹ö ºñÁ¤»óÁ¾·á »óÈ²
+     * »ı¼ºÁßÀÎ ÆÄÀÏÀÌ Á¸ÀçÇÏ¸é »èÁ¦ÇÏ°í »õ·Î ¸¸µç´Ù
      * */
     if( smrRecoveryMgr::isCreatingCTFile() == ID_TRUE )
     {
@@ -241,7 +243,7 @@ IDE_RC smriChangeTrackingMgr::createCTFile()
         /* nothing to do */
     }
 
-    /* logAnchorì— CTFileì´ë¦„ê³¼ íŒŒì¼ì„ ìƒì„±ì¤‘ì´ë¼ëŠ” ì •ë³´ë¥¼ ë‚¨ê¹€ */
+    /* logAnchor¿¡ CTFileÀÌ¸§°ú ÆÄÀÏÀ» »ı¼ºÁßÀÌ¶ó´Â Á¤º¸¸¦ ³²±è */
     SM_LSN_INIT( sFlushLSN );
     sCTMgrState = SMRI_CT_MGR_FILE_CREATING;
     IDE_TEST( smrRecoveryMgr::updateCTFileAttrToLogAnchor( sFileName,
@@ -250,7 +252,7 @@ IDE_RC smriChangeTrackingMgr::createCTFile()
               != IDE_SUCCESS );
     
 
-    /* CTMgrHdr ì •ë³´ ì´ˆê¸°í™” */
+    /* CTMgrHdr Á¤º¸ ÃÊ±âÈ­ */
     mCTHdrState  = SMRI_CT_MGR_STATE_NORMAL;
     IDE_TEST( createFileHdrBlock( &mCTFileHdr ) !=IDE_SUCCESS );
 
@@ -262,7 +264,7 @@ IDE_RC smriChangeTrackingMgr::createCTFile()
     IDE_TEST( mFile.open() != IDE_SUCCESS );
     sState = 3;
 
-    /*CTFileHdr checksum ê³„ì‚°í›„ íŒŒì¼ë¡œ write */
+    /*CTFileHdr checksum °è»êÈÄ ÆÄÀÏ·Î write */
     setBlockCheckSum( &mCTFileHdr.mBlockHdr );
 
     IDE_TEST( mFile.write( NULL, //aStatistics
@@ -274,20 +276,20 @@ IDE_RC smriChangeTrackingMgr::createCTFile()
     sState = 2;
     IDE_TEST( mFile.close() != IDE_SUCCESS );
 
-    /* CTFile Bodyìƒì„± */
-    IDE_TEST( extend( ID_FALSE, /* í™•ì¥í•˜ê³  íŒŒì¼ì— ê¸°ë¡ì„ í• ì§€ ì•ˆí• ì§€ íŒë‹¨*/
+    /* CTFile Body»ı¼º */
+    IDE_TEST( extend( ID_FALSE, /* È®ÀåÇÏ°í ÆÄÀÏ¿¡ ±â·ÏÀ» ÇÒÁö ¾ÈÇÒÁö ÆÇ´Ü*/
                       &sCTBody ) != IDE_SUCCESS );
     sCTBodyState = ID_TRUE;
 
-    /* ê¸°ì¡´ì— ì¡´ì¬í•˜ëŠ” ëª¨ë“  ë°ì´í„°íŒŒì¼ì„ CTFileì— ë“±ë¡*/
+    /* ±âÁ¸¿¡ Á¸ÀçÇÏ´Â ¸ğµç µ¥ÀÌÅÍÆÄÀÏÀ» CTFile¿¡ µî·Ï*/
     IDE_TEST( addAllExistingDataFile2CTFile( NULL /*aStatistics*/ ) 
               != IDE_SUCCESS );
 
     IDE_TEST( flush() != IDE_SUCCESS );
 
     /* 
-     * change trackingíŒŒì¼ì´ ìƒì„± ì™„ë£Œë˜ê³  change tracking managerì‚¬ í™œì„±í™” ë¨ì„
-     * ê¸°ë¡ìœ¼ë¡œ ë‚¨ê¹€
+     * change trackingÆÄÀÏÀÌ »ı¼º ¿Ï·áµÇ°í change tracking manager»ç È°¼ºÈ­ µÊÀ»
+     * ±â·ÏÀ¸·Î ³²±è
      */
     sCTMgrState = SMRI_CT_MGR_ENABLED;
     IDE_TEST( smrRecoveryMgr::updateCTFileAttrToLogAnchor( NULL,  //FileName
@@ -329,7 +331,7 @@ IDE_RC smriChangeTrackingMgr::createCTFile()
 }
 
 /***********************************************************************
- * CT(chang tracking)íŒŒì¼ bodyë¥¼ ì´ˆê¸°í™” í•œë‹¤.
+ * CT(chang tracking)ÆÄÀÏ body¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
  * 
  * aCTBody    - [IN] changeTracking body
  **********************************************************************/
@@ -343,7 +345,7 @@ IDE_RC smriChangeTrackingMgr::createCTBody( smriCTBody * aCTBody )
 
     IDE_DASSERT( aCTBody != NULL );
     
-    /* CTbodyì˜ ì²«ë²ˆì§¸ blockì˜ IDë¥¼ êµ¬í•œë‹¤.*/
+    /* CTbodyÀÇ Ã¹¹øÂ° blockÀÇ ID¸¦ ±¸ÇÑ´Ù.*/
     sBlockID = mCTFileHdr.mCTBodyCNT * mCTBodyBlockCnt;
 
     for( sBlockIdx = 0; 
@@ -352,7 +354,7 @@ IDE_RC smriChangeTrackingMgr::createCTBody( smriCTBody * aCTBody )
     {
         sBlock = &aCTBody->mBlock[ sBlockIdx ];
 
-        /* Meta Extent ì´ˆê¸°í™” */
+        /* Meta Extent ÃÊ±âÈ­ */
         if( sBlockIdx < SMRI_CT_EXT_BLOCK_CNT )
         {
             if( ( sBlockIdx % SMRI_CT_EXT_BLOCK_CNT ) == 0 )
@@ -373,11 +375,11 @@ IDE_RC smriChangeTrackingMgr::createCTBody( smriCTBody * aCTBody )
             }
         }
 
-        /*BmpExt ì´ˆê¸°í™”*/
+        /*BmpExt ÃÊ±âÈ­*/
         if( (sBlockIdx >= SMRI_CT_EXT_BLOCK_CNT) &&
             (sBlockIdx < mCTBodyBlockCnt) )
         {
-            /*BmpExtHdrë¸”ëŸ­ ì´ˆê¸°í™”*/
+            /*BmpExtHdrºí·° ÃÊ±âÈ­*/
             if( ( sBlockIdx % SMRI_CT_EXT_BLOCK_CNT ) == 0 )
             {
                 IDE_TEST( createBmpExtHdrBlock( 
@@ -385,7 +387,7 @@ IDE_RC smriChangeTrackingMgr::createCTBody( smriCTBody * aCTBody )
                            sBlockID )
                           != IDE_SUCCESS );
             }
-            else /*Bmpë¸”ëŸ­ ì´ˆê¸°í™”*/
+            else /*Bmpºí·° ÃÊ±âÈ­*/
             {
                 IDE_TEST( createBmpBlock(
                            (smriCTBmpBlock *)sBlock,
@@ -422,9 +424,9 @@ IDE_RC smriChangeTrackingMgr::createCTBody( smriCTBody * aCTBody )
 }
 
 /***********************************************************************
- * CT(change tracking)íŒŒì¼í—¤ë”ë¥¼ ì´ˆê¸°í™” í•œë‹¤.
+ * CT(change tracking)ÆÄÀÏÇì´õ¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
  * 
- * aCTFileHdrBlock  - [IN] CTíŒŒì¼ í—¤ë” ë¸”ëŸ­
+ * aCTFileHdrBlock  - [IN] CTÆÄÀÏ Çì´õ ºí·°
  * 
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::createFileHdrBlock( 
@@ -477,10 +479,10 @@ IDE_RC smriChangeTrackingMgr::createFileHdrBlock(
 }
 
 /***********************************************************************
- * ExtMapë¸”ëŸ­ì„ ì´ˆê¸°í™” í•œë‹¤.
+ * ExtMapºí·°À» ÃÊ±âÈ­ ÇÑ´Ù.
  * 
- * aExtMapBlock - [IN] ExtMap Blockì˜ Ptr
- * aBlockID     - [IN] ë¸”ëŸ­ ID
+ * aExtMapBlock - [IN] ExtMap BlockÀÇ Ptr
+ * aBlockID     - [IN] ºí·° ID
  * 
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::createExtMapBlock( 
@@ -508,10 +510,10 @@ IDE_RC smriChangeTrackingMgr::createExtMapBlock(
     return IDE_FAILURE;
 }
 /***********************************************************************
- * dataFileDescë¸”ëŸ­ì„ ì´ˆê¸°í™” í•œë‹¤.
+ * dataFileDescºí·°À» ÃÊ±âÈ­ ÇÑ´Ù.
  * 
- * adataFileDescBlock   - [IN] dataFileDesc blockì˜ Ptr
- * aBlockID             - [IN] ë¸”ëŸ­ ID
+ * adataFileDescBlock   - [IN] dataFileDesc blockÀÇ Ptr
+ * aBlockID             - [IN] ºí·° ID
  * 
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::createDataFileDescBlock(
@@ -547,11 +549,11 @@ IDE_RC smriChangeTrackingMgr::createDataFileDescBlock(
 }
 
 /***********************************************************************
- * DataFileDesc slotì„ ì´ˆê¸°í™” í•œë‹¤.
+ * DataFileDesc slotÀ» ÃÊ±âÈ­ ÇÑ´Ù.
  * 
- * aDataFileDescSlot    - [IN] DataFiledescSlotì˜ Ptr
- * aBlockID             - [IN] ë¸”ëŸ­ ID
- * aSlotIdx             - [IN] Slotì˜ indexë²ˆí˜¸
+ * aDataFileDescSlot    - [IN] DataFiledescSlotÀÇ Ptr
+ * aBlockID             - [IN] ºí·° ID
+ * aSlotIdx             - [IN] SlotÀÇ index¹øÈ£
  * 
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::createDataFileDescSlot(
@@ -593,10 +595,10 @@ IDE_RC smriChangeTrackingMgr::createDataFileDescSlot(
 }
 
 /***********************************************************************
- * BmpExtHdrBlockì„ ì´ˆê¸°í™” í•œë‹¤.
+ * BmpExtHdrBlockÀ» ÃÊ±âÈ­ ÇÑ´Ù.
  * 
- * aBmpExtHdrBlock  - [IN] BmpExtHdrBlockì˜ Ptr
- * aBlockID         - [IN] ë¸”ëŸ­ ID
+ * aBmpExtHdrBlock  - [IN] BmpExtHdrBlockÀÇ Ptr
+ * aBlockID         - [IN] ºí·° ID
  * 
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::createBmpExtHdrBlock( 
@@ -647,10 +649,10 @@ IDE_RC smriChangeTrackingMgr::createBmpExtHdrBlock(
 }
 
 /***********************************************************************
- * BmpBlockì„ ì´ˆê¸°í™” í•œë‹¤.
+ * BmpBlockÀ» ÃÊ±âÈ­ ÇÑ´Ù.
  * 
- * aBmpBlock  - [IN] BmpBlockì˜ Ptr
- * aBlockID   - [IN] ë¸”ëŸ­ ID
+ * aBmpBlock  - [IN] BmpBlockÀÇ Ptr
+ * aBlockID   - [IN] ºí·° ID
  * 
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::createBmpBlock( 
@@ -677,11 +679,11 @@ IDE_RC smriChangeTrackingMgr::createBmpBlock(
 }
 
 /***********************************************************************
- * ë¸”ëŸ­í—¤ë”ë¥¼ ì´ˆê¸°í™” í•œë‹¤.
+ * ºí·°Çì´õ¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
  * 
- * aBlockHdr    - [IN] ë¸”ëŸ­í—¤ë”
- * aBlockType   - [IN] ë¸”ëŸ­ì¢…ë¥˜
- * aBlockID     - [IN] ë¸”ëŸ­ ID
+ * aBlockHdr    - [IN] ºí·°Çì´õ
+ * aBlockType   - [IN] ºí·°Á¾·ù
+ * aBlockID     - [IN] ºí·° ID
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::createBlockHdr( 
                                   smriCTBlockHdr    * aBlockHdr,
@@ -723,7 +725,7 @@ IDE_RC smriChangeTrackingMgr::createBlockHdr(
 }
 
 /***********************************************************************
- * ì´ë¯¸ ì¡´ì¬í•˜ëŠ” ëª¨ë“  DataFileë“¤ì„ CTíŒŒì¼ì— ë“±ë¡í•œë‹¤.
+ * ÀÌ¹Ì Á¸ÀçÇÏ´Â ¸ğµç DataFileµéÀ» CTÆÄÀÏ¿¡ µî·ÏÇÑ´Ù.
  * 
  * 
  **********************************************************************/
@@ -732,6 +734,7 @@ IDE_RC smriChangeTrackingMgr::addAllExistingDataFile2CTFile(
 {
     UInt    sState = 0;
 
+    // XXX ¿Ö ÇÊ¿äÇÏÁö? ÀÏ´Ü ³öµÎÀÚ
     IDE_TEST( sctTableSpaceMgr::lockForCrtTBS() != IDE_SUCCESS );
     sState = 1;
 
@@ -757,11 +760,11 @@ IDE_RC smriChangeTrackingMgr::addAllExistingDataFile2CTFile(
 }
 
 /***********************************************************************
- * ì´ë¯¸ ì¡´ì¬í•˜ëŠ” ëª¨ë“  DataFileë“¤ì„ CTíŒŒì¼ì— ë“±ë¡í•œë‹¤.
+ * ÀÌ¹Ì Á¸ÀçÇÏ´Â ¸ğµç DataFileµéÀ» CTÆÄÀÏ¿¡ µî·ÏÇÑ´Ù.
  * 
  * aStatistics  - [IN] 
  * aSpaceNode   - [IN]  tableSpace Node
- * aActionAtg   - [IN]  actioní•¨ìˆ˜ì— ì „ë‹¬ë  ì¸ì
+ * aActionAtg   - [IN]  actionÇÔ¼ö¿¡ Àü´ŞµÉ ÀÎÀÚ
  * 
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::addExistingDataFile2CTFile( 
@@ -798,14 +801,14 @@ IDE_RC smriChangeTrackingMgr::addExistingDataFile2CTFile(
                                           &sDatabaseFile1 )
                       != IDE_SUCCESS );
 
-            /* DataFileDescSlot í• ë‹¹ */
+            /* DataFileDescSlot ÇÒ´ç */
             IDE_TEST( addDataFile2CTFile( aSpaceNode->mID,
                                           i,
                                           SMRI_CT_MEM_TBS,
                                           &sSlotID )
                       != IDE_SUCCESS );
     
-            /* ChkptInageHdrì— slotID ì €ì¥ */
+            /* ChkptInageHdr¿¡ slotID ÀúÀå */
             sDatabaseFile0->setChkptImageHdr( NULL, //MemRedoLSN
                                               NULL, //MemCreateLSN
                                               NULL, //SpaceID
@@ -814,7 +817,7 @@ IDE_RC smriChangeTrackingMgr::addExistingDataFile2CTFile(
 
             IDE_TEST( sDatabaseFile0->flushDBFileHdr() != IDE_SUCCESS );
 
-            /* ChkptInageHdrì— slotID ì €ì¥ */
+            /* ChkptInageHdr¿¡ slotID ÀúÀå */
             sDatabaseFile1->setChkptImageHdr( NULL, //MemRedoLSN
                                               NULL, //MemCreateLSN
                                               NULL, //SpaceID
@@ -826,7 +829,7 @@ IDE_RC smriChangeTrackingMgr::addExistingDataFile2CTFile(
             sDatabaseFile0->getChkptImageAttr( sMemSpaceNode, 
                                                &sChkptImageAttr );
         
-            /* logAnchorì— slotIDì €ì¥ */
+            /* logAnchor¿¡ slotIDÀúÀå */
             IDE_ASSERT( smrRecoveryMgr::updateChkptImageAttrToAnchor( 
                                             &(sMemSpaceNode->mCrtDBFileInfo[i]),
                                             &sChkptImageAttr )
@@ -836,8 +839,8 @@ IDE_RC smriChangeTrackingMgr::addExistingDataFile2CTFile(
     }
     else 
     {
-        if( ( sctTableSpaceMgr::isDiskTableSpace( aSpaceNode->mID ) == ID_TRUE ) &&
-            ( sctTableSpaceMgr::isTempTableSpace( aSpaceNode->mID ) != ID_TRUE ) )
+        if( ( sctTableSpaceMgr::isDiskTableSpace( aSpaceNode ) == ID_TRUE ) &&
+            ( sctTableSpaceMgr::isTempTableSpace( aSpaceNode ) != ID_TRUE ) )
         {
             sDiskSpaceNode = (sddTableSpaceNode *)aSpaceNode;
             
@@ -855,14 +858,14 @@ IDE_RC smriChangeTrackingMgr::addExistingDataFile2CTFile(
                     continue;
                 }
  
-                /* DataFileDescSlot í• ë‹¹ */
+                /* DataFileDescSlot ÇÒ´ç */
                 IDE_TEST( addDataFile2CTFile( aSpaceNode->mID,
                                               i,
                                               SMRI_CT_DISK_TBS,
                                               &sSlotID )
                           != IDE_SUCCESS );
                 
-                /* DataFileHdrì— slotID ì €ì¥ */
+                /* DataFileHdr¿¡ slotID ÀúÀå */
                 sDataFileNode->mDBFileHdr.mDataFileDescSlotID.mBlockID 
                                                             = sSlotID->mBlockID;
                 sDataFileNode->mDBFileHdr.mDataFileDescSlotID.mSlotIdx 
@@ -872,7 +875,7 @@ IDE_RC smriChangeTrackingMgr::addExistingDataFile2CTFile(
                                                    sDataFileNode ) 
                           != IDE_SUCCESS );
  
-                /* logAnchorì— slotIDì €ì¥ */
+                /* logAnchor¿¡ slotIDÀúÀå */
                 IDE_ASSERT( smrRecoveryMgr::updateDBFNodeToAnchor( 
                                                         sDataFileNode )
                             == IDE_SUCCESS );
@@ -892,7 +895,7 @@ IDE_RC smriChangeTrackingMgr::addExistingDataFile2CTFile(
 }
 
 /***********************************************************************
- * CT(change tracking)íŒŒì¼ì„ ì‚­ì¬í•œë‹¤.
+ * CT(change tracking)ÆÄÀÏÀ» »èÀçÇÑ´Ù.
  * 
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::removeCTFile()
@@ -928,7 +931,7 @@ IDE_RC smriChangeTrackingMgr::removeCTFile()
                         sAnchorMgr->getCTFileName(), 
                         SM_MAX_FILE_NAME );
 
-        /* logAnchorì— change trackingíŒŒì¼ ìƒíƒœ ê°±ì‹  */
+        /* logAnchor¿¡ change trackingÆÄÀÏ »óÅÂ °»½Å */
         SM_LSN_INIT( sFlushLSN );
         sCTMgrState = SMRI_CT_MGR_DISABLED;
         IDE_TEST( sAnchorMgr->updateCTFileAttr( sNULLFileName,
@@ -954,7 +957,7 @@ IDE_RC smriChangeTrackingMgr::removeCTFile()
 
         sAnchorMgr = smrRecoveryMgr::getLogAnchorMgr();
  
-        /* logAnchorì— change trackingíŒŒì¼ ìƒíƒœ ê°±ì‹  */
+        /* logAnchor¿¡ change trackingÆÄÀÏ »óÅÂ °»½Å */
         SM_LSN_INIT( sFlushLSN );
         sCTMgrState = SMRI_CT_MGR_DISABLED;
         IDE_TEST( sAnchorMgr->updateCTFileAttr( sNULLFileName,
@@ -970,8 +973,8 @@ IDE_RC smriChangeTrackingMgr::removeCTFile()
                         mFile.getFileName(), 
                         SM_MAX_FILE_NAME );
 
-        // changeTrackingì„ ìˆ˜í–‰ì¤‘ì¸ threadê°€ ìˆë‹¤ë©´ ì™„ë£Œë ë•Œ ê¹Œì§€ ëŒ€ê¸°í•œë‹¤.
-        while( sddDiskMgr::getCurrChangeTrackingThreadCnt() != 0 )
+        // changeTrackingÀ» ¼öÇàÁßÀÎ thread°¡ ÀÖ´Ù¸é ¿Ï·áµÉ¶§ ±îÁö ´ë±âÇÑ´Ù.
+        while( getCurrChangeTrackingThreadCnt() != 0 )
         {
             idlOS::sleep(1);
         } 
@@ -987,7 +990,7 @@ IDE_RC smriChangeTrackingMgr::removeCTFile()
         idlOS::memset( &mCTFileHdr, 0, SMRI_CT_BLOCK_SIZE );
     }
 
-    /* íŒŒì¼ì„ ì‚­ì œ í•œë‹¤. */
+    /* ÆÄÀÏÀ» »èÁ¦ ÇÑ´Ù. */
     if( idf::access( sFileName, F_OK ) == 0 )
     {
         IDE_TEST( idf::unlink( sFileName ) != IDE_SUCCESS );
@@ -1041,8 +1044,8 @@ IDE_RC smriChangeTrackingMgr::removeCTFile()
 }
 
 /***********************************************************************
- * ct(change tracking)managerë¥¼ ì´ˆê¸°í™”í•œë‹¤.
- * startup control ë‹¨ê³„ì—ì„œ í˜¸ì¶œëœë‹¤.
+ * ct(change tracking)manager¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * startup control ´Ü°è¿¡¼­ È£ÃâµÈ´Ù.
  * 
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::begin()
@@ -1057,7 +1060,7 @@ IDE_RC smriChangeTrackingMgr::begin()
 
     mCTHdrState  = SMRI_CT_MGR_STATE_NORMAL;
 
-    /* logAnchorì—ì„œ íŒŒì¼ì´ë¦„ì„ ê°€ì ¸ì˜¨ë‹¤. */
+    /* logAnchor¿¡¼­ ÆÄÀÏÀÌ¸§À» °¡Á®¿Â´Ù. */
     sFileName = smrRecoveryMgr::getCTFileName();
 
     IDE_TEST_RAISE( idf::access( sFileName, F_OK ) != 0,
@@ -1068,7 +1071,7 @@ IDE_RC smriChangeTrackingMgr::begin()
     IDE_TEST( mFile.open() != IDE_SUCCESS );
     sState = 1;
 
-    /* change trackingíŒŒì¼ì˜ í—¤ë”ë¸”ëŸ­ì„ ì½ì–´ì˜´ */
+    /* change trackingÆÄÀÏÀÇ Çì´õºí·°À» ÀĞ¾î¿È */
     IDE_TEST( mFile.read( NULL,  //aStatistics
                           SMRI_CT_HDR_OFFSET,
                           (void *)&mCTFileHdr,
@@ -1080,8 +1083,8 @@ IDE_RC smriChangeTrackingMgr::begin()
 
     sLastFlushLSN = smrRecoveryMgr::getCTFileLastFlushLSNFromLogAnchor();
 
-    /* íŒŒì¼í—¤ë”ì— ì €ì¥ëœ LSNê³¼ logAnchorì— ì €ì¥ëœ LSNì„ ë¹„êµí•˜ì—¬ validí•œ
-     * change trackingíŒŒì¼ì¸ì§€ ê²€ì‚¬
+    /* ÆÄÀÏÇì´õ¿¡ ÀúÀåµÈ LSN°ú logAnchor¿¡ ÀúÀåµÈ LSNÀ» ºñ±³ÇÏ¿© validÇÑ
+     * change trackingÆÄÀÏÀÎÁö °Ë»ç
      */
     IDE_TEST_RAISE( smrCompareLSN::isEQ( &mCTFileHdr.mLastFlushLSN, 
                                          &sLastFlushLSN ) != ID_TRUE,
@@ -1107,8 +1110,8 @@ IDE_RC smriChangeTrackingMgr::begin()
     idlOS::memset( &mCTBodyPtr, 0x00, SMRI_CT_MAX_CT_BODY_CNT );
 
     /* 
-     * CTBodyë¥¼ ë©”ëª¨ë¦¬ë¡œ ì½ì–´ ì˜¨ë‹¤.
-     * ë©”ëª¨ë¦¬ í• ë‹¹, checksumê²€ì‚¬, mutex, latchì´ˆê¸°í™”
+     * CTBody¸¦ ¸Ş¸ğ¸®·Î ÀĞ¾î ¿Â´Ù.
+     * ¸Ş¸ğ¸® ÇÒ´ç, checksum°Ë»ç, mutex, latchÃÊ±âÈ­
      */
     for( sLoadCTBodyCNT = 0, sCTBodyOffset = SMRI_CT_BLOCK_SIZE; 
          sLoadCTBodyCNT < mCTFileHdr.mCTBodyCNT; 
@@ -1163,10 +1166,10 @@ IDE_RC smriChangeTrackingMgr::begin()
 }
 
 /***********************************************************************
- * ct(change tracking)Bodyë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ * ct(change tracking)Body¸¦ ÃÊ±âÈ­ÇÑ´Ù.
  *
- * aCTBodyOffset - [IN] ì½ì–´ì˜¬ bodyì˜ íŒŒì¼ë‚´ì˜ offset
- * aCTBodyIdx    - [IN] ì½ì–´ì˜¬ bpdyì˜ idx
+ * aCTBodyOffset - [IN] ÀĞ¾î¿Ã bodyÀÇ ÆÄÀÏ³»ÀÇ offset
+ * aCTBodyIdx    - [IN] ÀĞ¾î¿Ã bpdyÀÇ idx
  * 
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::loadCTBody( ULong aCTBodyOffset, UInt aCTBodyIdx )
@@ -1230,7 +1233,7 @@ IDE_RC smriChangeTrackingMgr::loadCTBody( ULong aCTBodyOffset, UInt aCTBodyIdx )
 }
 
 /***********************************************************************
- * ct(change tracking)íŒŒì¼ì˜ bodyë¥¼ ê²€ì‚¬í•œë‹¤.
+ * ct(change tracking)ÆÄÀÏÀÇ body¸¦ °Ë»çÇÑ´Ù.
  * 
  * 
  **********************************************************************/
@@ -1294,11 +1297,11 @@ IDE_RC smriChangeTrackingMgr::validateCTFile()
 }
 
 /***********************************************************************
- * ct(change tracking)íŒŒì¼ì˜ DataFileDesc slotì—
- * í• ë‹¹ëœ BmpExtListë¥¼ ê²€ì‚¬í•œë‹¤.
+ * ct(change tracking)ÆÄÀÏÀÇ DataFileDesc slot¿¡
+ * ÇÒ´çµÈ BmpExtList¸¦ °Ë»çÇÑ´Ù.
  * 
  * aBmpExtList      - [IN] BmpExtList
- * aBmpExtListLen   - [IN] BmpExtListì˜ ê¸¸ì´
+ * aBmpExtListLen   - [IN] BmpExtListÀÇ ±æÀÌ
  * 
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::validateBmpExtList( 
@@ -1357,8 +1360,8 @@ IDE_RC smriChangeTrackingMgr::validateBmpExtList(
 }
 
 /***********************************************************************
- * CT(change tracking)managerë¥¼ íŒŒê´´í•œë‹¤.
- * ì„œë²„ ì¢…ë£Œì‹œì— í˜¸ì¶œëœë‹¤.
+ * CT(change tracking)manager¸¦ ÆÄ±«ÇÑ´Ù.
+ * ¼­¹ö Á¾·á½Ã¿¡ È£ÃâµÈ´Ù.
  * 
  * 
  **********************************************************************/
@@ -1367,8 +1370,8 @@ IDE_RC smriChangeTrackingMgr::end()
     UInt            sCTBodyCnt;
     UInt            sState = 1;
     
-    // changeTrackingì„ ìˆ˜í–‰ì¤‘ì¸ threadê°€ ìˆë‹¤ë©´ ì™„ë£Œë ë•Œ ê¹Œì§€ ëŒ€ê¸°í•œë‹¤.
-    while( sddDiskMgr::getCurrChangeTrackingThreadCnt() != 0 )
+    // changeTrackingÀ» ¼öÇàÁßÀÎ thread°¡ ÀÖ´Ù¸é ¿Ï·áµÉ¶§ ±îÁö ´ë±âÇÑ´Ù.
+    while( getCurrChangeTrackingThreadCnt() != 0 )
     {
         idlOS::sleep(1);
     } 
@@ -1401,7 +1404,7 @@ IDE_RC smriChangeTrackingMgr::end()
 }
 
 /***********************************************************************
- * CT(change tracking)bodyë¥¼ íŒŒê´´í•œë‹¤.
+ * CT(change tracking)body¸¦ ÆÄ±«ÇÑ´Ù.
  * 
  * 
  **********************************************************************/
@@ -1438,9 +1441,9 @@ IDE_RC smriChangeTrackingMgr::unloadCTBody( smriCTBody * aCTBody )
 }
 
 /***********************************************************************
- * Block mutexë¥¼ ì´ˆê¸°í™” í•œë‹¤.
+ * Block mutex¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
  * 
- * aCTBody  - [IN] CTBodyì˜ ptr
+ * aCTBody  - [IN] CTBodyÀÇ ptr
  * 
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::initBlockMutex( smriCTBody * aCTBody )
@@ -1484,9 +1487,9 @@ IDE_RC smriChangeTrackingMgr::initBlockMutex( smriCTBody * aCTBody )
 }
 
 /***********************************************************************
- * Block mutexë¥¼ íŒŒê´´í•œë‹¤.
+ * Block mutex¸¦ ÆÄ±«ÇÑ´Ù.
  * 
- * aCTBody  - [IN] CTBodyì˜ ptr
+ * aCTBody  - [IN] CTBodyÀÇ ptr
  * 
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::destroyBlockMutex( smriCTBody * aCTBody )
@@ -1509,9 +1512,9 @@ IDE_RC smriChangeTrackingMgr::destroyBlockMutex( smriCTBody * aCTBody )
     return IDE_FAILURE;
 }
 /***********************************************************************
- * BmpExtHdr blockì˜ latchë¥¼ ì´ˆê¸°í™” í•œë‹¤.
+ * BmpExtHdr blockÀÇ latch¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
  * 
- * aCTBody  - [IN] CTBodyì˜ Ptr
+ * aCTBody  - [IN] CTBodyÀÇ Ptr
  * 
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::initBmpExtLatch( smriCTBody * aCTBody )
@@ -1558,9 +1561,9 @@ IDE_RC smriChangeTrackingMgr::initBmpExtLatch( smriCTBody * aCTBody )
 }
 
 /***********************************************************************
- * BmpExtHdr blockì˜ latchë¥¼ íŒŒê´´ í•œë‹¤.
+ * BmpExtHdr blockÀÇ latch¸¦ ÆÄ±« ÇÑ´Ù.
  * 
- * aCTBody  - [IN] CTBodyì˜ Ptr
+ * aCTBody  - [IN] CTBodyÀÇ Ptr
  * 
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::destroyBmpExtLatch( smriCTBody * aCTBody )
@@ -1586,7 +1589,7 @@ IDE_RC smriChangeTrackingMgr::destroyBmpExtLatch( smriCTBody * aCTBody )
 }
 
 /***********************************************************************
- * CTíŒŒì¼ flush
+ * CTÆÄÀÏ flush
  * 
  * 
  **********************************************************************/
@@ -1607,9 +1610,9 @@ IDE_RC smriChangeTrackingMgr::flush()
     IDE_TEST( mFile.open() != IDE_SUCCESS );
     sState = 2;
 
-    /* CTíŒŒì¼ì„ ë””ìŠ¤í¬ë¡œ ê¸°ë¡í•  ë•Œì˜ LSN ê°’ì„ loganchorì™€
-     * CTFileHdrì— ì €ì¥í•œë‹¤.*/
-    (void)smrLogMgr::getLstLSN( &sFlushLSN );
+    /* CTÆÄÀÏÀ» µğ½ºÅ©·Î ±â·ÏÇÒ ¶§ÀÇ LSN °ªÀ» loganchor¿Í
+     * CTFileHdr¿¡ ÀúÀåÇÑ´Ù.*/
+    smrLogMgr::getLstLSN( &sFlushLSN );
     IDE_TEST( smrRecoveryMgr::updateCTFileAttrToLogAnchor( NULL, //FileName
                                                            NULL, //CTMgrState
                                                            &sFlushLSN )
@@ -1655,7 +1658,7 @@ IDE_RC smriChangeTrackingMgr::flush()
 } 
 
 /***********************************************************************
- * CTíŒŒì¼ì„ flushí•˜ê¸°ìœ„í•œ ì¤€ë¹„ ì‘ì—…
+ * CTÆÄÀÏÀ» flushÇÏ±âÀ§ÇÑ ÁØºñ ÀÛ¾÷
  * 
  * 
  **********************************************************************/
@@ -1667,8 +1670,8 @@ IDE_RC smriChangeTrackingMgr::startFlush()
               != IDE_SUCCESS );
     sState = 1;
 
-    /* BUG-44834 íŠ¹ì • ì¥ë¹„ì—ì„œ sprious wakeup í˜„ìƒì´ ë°œìƒí•˜ë¯€ë¡œ 
-                 wakeup í›„ì—ë„ ë‹¤ì‹œ í™•ì¸ í•˜ë„ë¡ whileë¬¸ìœ¼ë¡œ ì²´í¬í•œë‹¤.*/
+    /* BUG-44834 Æ¯Á¤ Àåºñ¿¡¼­ sprious wakeup Çö»óÀÌ ¹ß»ıÇÏ¹Ç·Î 
+                 wakeup ÈÄ¿¡µµ ´Ù½Ã È®ÀÎ ÇÏµµ·Ï while¹®À¸·Î Ã¼Å©ÇÑ´Ù.*/
     while ( mCTHdrState == SMRI_CT_MGR_STATE_EXTEND )
     {
         IDE_TEST_RAISE(mCTFileHdr.mExtendCV.wait(&(mCTFileHdr.mBlockHdr.mMutex))
@@ -1706,7 +1709,7 @@ IDE_RC smriChangeTrackingMgr::startFlush()
 } 
 
 /***********************************************************************
- * CTíŒŒì¼ flush ì™„ë£Œ ì‘ì—…
+ * CTÆÄÀÏ flush ¿Ï·á ÀÛ¾÷
  * 
  * 
  **********************************************************************/
@@ -1809,10 +1812,10 @@ IDE_RC smriChangeTrackingMgr::flushCTBody( smLSN aFlushLSN )
 }
 
 /***********************************************************************
- * CTíŒŒì¼ extend
+ * CTÆÄÀÏ extend
  * 
- * aFlushBody - [IN] extendì™„ë£Œí›„ íŒŒì¼ë¡œ ë‚´ë¦´ê²ƒì¸ ì§€ íŒë‹¨
- * aCTBody    - [OUT] extendëœ CTBodyì˜ ptr
+ * aFlushBody - [IN] extend¿Ï·áÈÄ ÆÄÀÏ·Î ³»¸±°ÍÀÎ Áö ÆÇ´Ü
+ * aCTBody    - [OUT] extendµÈ CTBodyÀÇ ptr
  * 
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::extend( idBool        aFlushBody, 
@@ -1862,7 +1865,7 @@ IDE_RC smriChangeTrackingMgr::extend( idBool        aFlushBody,
         IDE_TEST( mFile.open() != IDE_SUCCESS );
         sFileState = 1;
 
-        (void)smrLogMgr::getLstLSN( &sFlushLSN );
+        smrLogMgr::getLstLSN( &sFlushLSN );
 
         SM_GET_LSN( mCTFileHdr.mLastFlushLSN, sFlushLSN );
  
@@ -1922,9 +1925,9 @@ IDE_RC smriChangeTrackingMgr::extend( idBool        aFlushBody,
 } 
 
 /***********************************************************************
- * CTíŒŒì¼ì„ Extendí•˜ê¸°ìœ„í•œ ì¤€ë¹„ ì‘ì—…
+ * CTÆÄÀÏÀ» ExtendÇÏ±âÀ§ÇÑ ÁØºñ ÀÛ¾÷
  * 
- * aIsNeedExtend    - [OUT] extendê°€ í•„ìš”í•œì§€ ì—¬ë¶€
+ * aIsNeedExtend    - [OUT] extend°¡ ÇÊ¿äÇÑÁö ¿©ºÎ
  * 
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::startExtend( idBool * aIsNeedExtend )
@@ -1939,8 +1942,8 @@ IDE_RC smriChangeTrackingMgr::startExtend( idBool * aIsNeedExtend )
               != IDE_SUCCESS );
     sState = 1;
 
-    /* BUG-44834 íŠ¹ì • ì¥ë¹„ì—ì„œ sprious wakeup í˜„ìƒì´ ë°œìƒí•˜ë¯€ë¡œ 
-                 wakeup í›„ì—ë„ ë‹¤ì‹œ í™•ì¸ í•˜ë„ë¡ whileë¬¸ìœ¼ë¡œ ì²´í¬í•œë‹¤.*/
+    /* BUG-44834 Æ¯Á¤ Àåºñ¿¡¼­ sprious wakeup Çö»óÀÌ ¹ß»ıÇÏ¹Ç·Î 
+                 wakeup ÈÄ¿¡µµ ´Ù½Ã È®ÀÎ ÇÏµµ·Ï while¹®À¸·Î Ã¼Å©ÇÑ´Ù.*/
     while ( mCTHdrState == SMRI_CT_MGR_STATE_EXTEND )
     {
         IDE_TEST_RAISE(mCTFileHdr.mExtendCV.wait(&(mCTFileHdr.mBlockHdr.mMutex))
@@ -1979,7 +1982,7 @@ IDE_RC smriChangeTrackingMgr::startExtend( idBool * aIsNeedExtend )
 } 
 
 /***********************************************************************
- * CTíŒŒì¼ Extend ì™„ë£Œ ì‘ì—…
+ * CTÆÄÀÏ Extend ¿Ï·á ÀÛ¾÷
  * 
  * 
  **********************************************************************/
@@ -2018,15 +2021,15 @@ IDE_RC smriChangeTrackingMgr::completeExtend()
 } 
 
 /***********************************************************************
- * CTíŒŒì¼ì˜ flushì™€ extendê°€ ì™„ë£Œë˜ê¸°ë¥¼ ëŒ€ê¸°í•¨
+ * CTÆÄÀÏÀÇ flush¿Í extend°¡ ¿Ï·áµÇ±â¸¦ ´ë±âÇÔ
  * 
- * ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê¸° ìœ„í•´ì„œëŠ” CTFileHdrì˜ mutexë¥¼ íšë“í•œ ìƒíƒœì´ì—¬ë§Œ í•œë‹¤.
+ * ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ±â À§ÇØ¼­´Â CTFileHdrÀÇ mutex¸¦ È¹µæÇÑ »óÅÂÀÌ¿©¸¸ ÇÑ´Ù.
  * 
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::wait4FlushAndExtend()
 {
-    /* BUG-44834 íŠ¹ì • ì¥ë¹„ì—ì„œ sprious wakeup í˜„ìƒì´ ë°œìƒí•˜ë¯€ë¡œ 
-                 wakeup í›„ì—ë„ ë‹¤ì‹œ í™•ì¸ í•˜ë„ë¡ whileë¬¸ìœ¼ë¡œ ì²´í¬í•œë‹¤.*/
+    /* BUG-44834 Æ¯Á¤ Àåºñ¿¡¼­ sprious wakeup Çö»óÀÌ ¹ß»ıÇÏ¹Ç·Î 
+                 wakeup ÈÄ¿¡µµ ´Ù½Ã È®ÀÎ ÇÏµµ·Ï while¹®À¸·Î Ã¼Å©ÇÑ´Ù.*/
     while ( mCTHdrState == SMRI_CT_MGR_STATE_FLUSH )
     {
         IDE_TEST_RAISE( mCTFileHdr.mFlushCV.wait(&(mCTFileHdr.mBlockHdr.mMutex))
@@ -2054,13 +2057,13 @@ IDE_RC smriChangeTrackingMgr::wait4FlushAndExtend()
 }
 
 /***********************************************************************
- * ë°ì´í„°íŒŒì¼ì„ CTíŒŒì¼ì— ë“±ë¡
- * í•¨ìˆ˜ ì‹¤íŒ¨ì‹œ change trackingíŒŒì¼ invalid
+ * µ¥ÀÌÅÍÆÄÀÏÀ» CTÆÄÀÏ¿¡ µî·Ï
+ * ÇÔ¼ö ½ÇÆĞ½Ã change trackingÆÄÀÏ invalid
  *
- * aSpaceID     - [IN]  ë°ì´í„°íŒŒì¼ì˜ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID
- * aDataFileID  - [IN]  ë°ì´í„°íŒŒì¼ì˜ ID
- * aPageSize    - [IN]  ë°ì´í„°íŒŒì¼ì˜ í˜ì´ì§€í¬ê¸°
- * aSlotID      - [OUT] í• ë‹¹ëœ slotì˜ ID
+ * aSpaceID     - [IN]  µ¥ÀÌÅÍÆÄÀÏÀÇ Å×ÀÌºí½ºÆäÀÌ½º ID
+ * aDataFileID  - [IN]  µ¥ÀÌÅÍÆÄÀÏÀÇ ID
+ * aPageSize    - [IN]  µ¥ÀÌÅÍÆÄÀÏÀÇ ÆäÀÌÁöÅ©±â
+ * aSlotID      - [OUT] ÇÒ´çµÈ slotÀÇ ID
  * 
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::addDataFile2CTFile( 
@@ -2081,15 +2084,15 @@ IDE_RC smriChangeTrackingMgr::addDataFile2CTFile(
 
     IDE_TEST( wait4FlushAndExtend() != IDE_SUCCESS );
 
-    /* ì¶”ê°€ë˜ëŠ” ë°ì´í„°íŒŒì¼ì— DataFileDescSlotì„ í• ë‹¹í•œë‹¤. */
+    /* Ãß°¡µÇ´Â µ¥ÀÌÅÍÆÄÀÏ¿¡ DataFileDescSlotÀ» ÇÒ´çÇÑ´Ù. */
     IDE_TEST( allocDataFileDescSlot( &sSlot ) !=IDE_SUCCESS );
 
-    /* DataFileDescSlotì— BmpExtë¥¼ ì¶”ê°€í•œë‹¤. */
+    /* DataFileDescSlot¿¡ BmpExt¸¦ Ãß°¡ÇÑ´Ù. */
     IDE_TEST( addBmpExt2DataFileDescSlot( sSlot,
                                           &sDummyBmpExt ) 
               != IDE_SUCCESS );
 
-    /* DataFileDescSlot ì •ë³´ ì„¤ì • */
+    /* DataFileDescSlot Á¤º¸ ¼³Á¤ */
     sSlot->mSpaceID        = aSpaceID;
 
     if( aTBSType == SMRI_CT_MEM_TBS )
@@ -2131,12 +2134,12 @@ IDE_RC smriChangeTrackingMgr::addDataFile2CTFile(
 }
 
 /***********************************************************************
- * ì‚¬ìš©ì¤‘ì´ì§€ ì•Šì€ DataFile Desc slotì„ ê°€ì ¸ì˜¨ë‹¤.
- * í•œìˆ˜ê°€ í˜¸ì¶œë˜ê¸° ì „ì— CTFileHdrì˜ mutexê°€ ì¡íŒ ìƒíƒœì—¬ì•¼ í•œë‹¤.
- * DataFileDescSlotì˜ í• ë‹¹ì€ CTFileHdrì˜ mutexë¥¼ ì¡ê³  ì§„í–‰ ë˜ê¸° ë•Œë¬¸ì—
- * DataFileDescBlockì˜ mutexë¥¼ íšë“¤í•  í•„ìš”ê°€ ì—†ë‹¤.
+ * »ç¿ëÁßÀÌÁö ¾ÊÀº DataFile Desc slotÀ» °¡Á®¿Â´Ù.
+ * ÇÑ¼ö°¡ È£ÃâµÇ±â Àü¿¡ CTFileHdrÀÇ mutex°¡ ÀâÈù »óÅÂ¿©¾ß ÇÑ´Ù.
+ * DataFileDescSlotÀÇ ÇÒ´çÀº CTFileHdrÀÇ mutex¸¦ Àâ°í ÁøÇà µÇ±â ¶§¹®¿¡
+ * DataFileDescBlockÀÇ mutex¸¦ È¹µéÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
  * 
- * aSlot    - [OUT] í• ë‹¹ë°›ì€ DataFile Desc slotì˜ ptr
+ * aSlot    - [OUT] ÇÒ´ç¹ŞÀº DataFile Desc slotÀÇ ptr
  * 
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::allocDataFileDescSlot( 
@@ -2201,10 +2204,10 @@ IDE_RC smriChangeTrackingMgr::allocDataFileDescSlot(
 }
 
 /***********************************************************************
- * ì‚¬ìš©ì¤‘ì´ì§€ ì•Šì€ DataFile Desc slot idxë¥¼ ê°€ì ¸ì˜¨ë‹¤
+ * »ç¿ëÁßÀÌÁö ¾ÊÀº DataFile Desc slot idx¸¦ °¡Á®¿Â´Ù
  * 
- * aAllocSlotFlag   - [IN] í• ë‹¹í•˜ë ¤ëŠ” slotì´ ì¡´ì¬í•˜ëŠ” DataFileDesc ë¸”ëŸ­
- * aSlotIdx         - [OUT] í• ë‹¹ í•˜ë ¤ëŠ” DataFileDesc slotì˜ index
+ * aAllocSlotFlag   - [IN] ÇÒ´çÇÏ·Á´Â slotÀÌ Á¸ÀçÇÏ´Â DataFileDesc ºí·°
+ * aSlotIdx         - [OUT] ÇÒ´ç ÇÏ·Á´Â DataFileDesc slotÀÇ index
  * 
  **********************************************************************/
 void smriChangeTrackingMgr::getFreeSlotIdx( UInt aAllocSlotFlag, 
@@ -2244,11 +2247,11 @@ void smriChangeTrackingMgr::getFreeSlotIdx( UInt aAllocSlotFlag,
 }
 
 /***********************************************************************
- * DataFileDesc slotì— BmpExtë¥¼ ì¶”ê°€í•œë‹¤.
+ * DataFileDesc slot¿¡ BmpExt¸¦ Ãß°¡ÇÑ´Ù.
  * 
- * aSlot            - [IN] BmpExtë¥¼ ë°”ì¸ë“œ í•  slot
- * aAllocCurBmpExt  - [OUT] ìƒˆë¡œ ì¶”ê°€ëœ BmpExtì¤‘CurTrackingListIDì— í•´ë‹¹í•˜ëŠ”
- *                          BmpExtë¥¼ ì „ë‹¬í•œë‹¤.
+ * aSlot            - [IN] BmpExt¸¦ ¹ÙÀÎµå ÇÒ slot
+ * aAllocCurBmpExt  - [OUT] »õ·Î Ãß°¡µÈ BmpExtÁßCurTrackingListID¿¡ ÇØ´çÇÏ´Â
+ *                          BmpExt¸¦ Àü´ŞÇÑ´Ù.
  *
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::addBmpExt2DataFileDescSlot( 
@@ -2294,9 +2297,9 @@ IDE_RC smriChangeTrackingMgr::addBmpExt2DataFileDescSlot(
 }
 
 /***********************************************************************
- * DataFileDesc slotì— BmpExtë¥¼ í• ë‹¹í•œë‹¤.
+ * DataFileDesc slot¿¡ BmpExt¸¦ ÇÒ´çÇÑ´Ù.
  * 
- * aAllocBmpExt   - [OUT] í• ë‹¹ëœ BmpExt ë°˜í™˜
+ * aAllocBmpExt   - [OUT] ÇÒ´çµÈ BmpExt ¹İÈ¯
  *
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::allocBmpExt( smriCTBmpExt ** aAllocBmpExt )
@@ -2339,7 +2342,7 @@ IDE_RC smriChangeTrackingMgr::allocBmpExt( smriCTBmpExt ** aAllocBmpExt )
             }
         }
  
-        /* BmpExtê°€ ë¶€ì¡±í•œ ìƒí™© CTBodyë¥¼ í™•ì¥í•œë‹¤. */
+        /* BmpExt°¡ ºÎÁ·ÇÑ »óÈ² CTBody¸¦ È®ÀåÇÑ´Ù. */
         if ( sResult == ID_FALSE )
         {
             IDE_TEST( mCTFileHdr.mBlockHdr.mMutex.unlock() != IDE_SUCCESS );
@@ -2356,7 +2359,7 @@ IDE_RC smriChangeTrackingMgr::allocBmpExt( smriCTBmpExt ** aAllocBmpExt )
         }
         else 
         {
-            /* BmpExtí• ë‹¹ì— ì„±ê³µí•¨
+            /* BmpExtÇÒ´ç¿¡ ¼º°øÇÔ
              * sResult == ID_TRUE
              */
             break;
@@ -2382,10 +2385,10 @@ IDE_RC smriChangeTrackingMgr::allocBmpExt( smriCTBmpExt ** aAllocBmpExt )
 }
 
 /***********************************************************************
- * BmpExtListì— BmpExtë¥¼ addí•œë‹¤.
+ * BmpExtList¿¡ BmpExt¸¦ addÇÑ´Ù.
  * 
- * aBaseBmpExt  - [IN] BmpExtListì˜ í—¤ë” BmpExt
- * aNewBmpExt   - [IN] BmpExtListì— ì¶”ê°€í•  BmpExt
+ * aBaseBmpExt  - [IN] BmpExtListÀÇ Çì´õ BmpExt
+ * aNewBmpExt   - [IN] BmpExtList¿¡ Ãß°¡ÇÒ BmpExt
  *
  **********************************************************************/
 void smriChangeTrackingMgr::addBmpExt2List( 
@@ -2449,10 +2452,10 @@ void smriChangeTrackingMgr::addBmpExt2List(
 }
 
 /***********************************************************************
- * DataFileDesc slotì„ ë°˜í™˜í•œë‹¤.
- * í•¨ìˆ˜ ì‹¤íŒ¨ì‹œ change trackingíŒŒì¼ invalid
+ * DataFileDesc slotÀ» ¹İÈ¯ÇÑ´Ù.
+ * ÇÔ¼ö ½ÇÆĞ½Ã change trackingÆÄÀÏ invalid
  *
- * aSlotID  - [IN] í• ë‹¹í•´ì œí•˜ë ¤ëŠ” slotì˜ ID
+ * aSlotID  - [IN] ÇÒ´çÇØÁ¦ÇÏ·Á´Â slotÀÇ ID
  *
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::deleteDataFileFromCTFile( 
@@ -2471,10 +2474,10 @@ IDE_RC smriChangeTrackingMgr::deleteDataFileFromCTFile(
 
     getDataFileDescSlot( aSlotID, &sSlot );
 
-    /* slotì— í• ë‹¹ëœ ëª¨ë“  BmpExtë¥¼ ì œê±°í•œë‹¤. */
+    /* slot¿¡ ÇÒ´çµÈ ¸ğµç BmpExt¸¦ Á¦°ÅÇÑ´Ù. */
     IDE_TEST( deleteBmpExtFromDataFileDescSlot( sSlot ) != IDE_SUCCESS );
 
-    /* DataFileDescSlot ì •ë³´ ì´ˆê¸°í™”ë° í• ë‹¹ í•´ì œ */
+    /* DataFileDescSlot Á¤º¸ ÃÊ±âÈ­¹× ÇÒ´ç ÇØÁ¦ */
     IDE_TEST( deallocDataFileDescSlot( sSlot ) != IDE_SUCCESS );
 
     sState = 0;
@@ -2493,9 +2496,9 @@ IDE_RC smriChangeTrackingMgr::deleteDataFileFromCTFile(
 }
 
 /***********************************************************************
- * slotì— í• ë‹¹ëœ BmpExtListë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ * slot¿¡ ÇÒ´çµÈ BmpExtList¸¦ ÃÊ±âÈ­ÇÑ´Ù.
  * 
- * aBmpExtList  - [IN] slotì—ì„œ ë°˜í™˜í•˜ë ¤ëŠ” BmpExtë“¤ì˜ List
+ * aBmpExtList  - [IN] slot¿¡¼­ ¹İÈ¯ÇÏ·Á´Â BmpExtµéÀÇ List
  *
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::deleteBmpExtFromDataFileDescSlot( 
@@ -2545,10 +2548,10 @@ IDE_RC smriChangeTrackingMgr::deleteBmpExtFromDataFileDescSlot(
 }
 
 /***********************************************************************
- * BmpExtListë¡œë¶€í„° listì˜ ë§ˆì§€ë§‰ BmpExtë¥¼ ì‚­ì œí•œë‹¤.
+ * BmpExtList·ÎºÎÅÍ listÀÇ ¸¶Áö¸· BmpExt¸¦ »èÁ¦ÇÑ´Ù.
  * 
- * aBmpExtList      - [IN] BmpExtë¥¼ ì‚­ì œí•˜ë ¤ëŠ” List
- * aBmpExtHdrBlock  - [OUT] Listë¡œë¶€í„° ì‚­ì œë˜ BmpExtì˜ BmpExtHdrBlock
+ * aBmpExtList      - [IN] BmpExt¸¦ »èÁ¦ÇÏ·Á´Â List
+ * aBmpExtHdrBlock  - [OUT] List·ÎºÎÅÍ »èÁ¦µÇ BmpExtÀÇ BmpExtHdrBlock
  *
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::deleteBmpExtFromList( 
@@ -2587,8 +2590,8 @@ IDE_RC smriChangeTrackingMgr::deleteBmpExtFromList(
     else
     {
         /* 
-         * aBmpExtListì— BmpExtê°€ 1ê°œ ë‚¨ì•„ìˆëŠ”ìƒí™©, ë³„ë„ì˜ listì—°ì‚°ì„ ìˆ˜í–‰í• 
-         * í•„ìš”ê°€ ì—†ë‹¤
+         * aBmpExtList¿¡ BmpExt°¡ 1°³ ³²¾ÆÀÖ´Â»óÈ², º°µµÀÇ list¿¬»êÀ» ¼öÇàÇÒ
+         * ÇÊ¿ä°¡ ¾ø´Ù
          */
         sLastBmpExtHdrBlock = sBaseBmpExtHdrBlock;
     }
@@ -2612,9 +2615,9 @@ IDE_RC smriChangeTrackingMgr::deleteBmpExtFromList(
 }
 
 /***********************************************************************
- * BmpExtë¥¼ í• ë‹¹ í•´ì œí•œë‹¤.
+ * BmpExt¸¦ ÇÒ´ç ÇØÁ¦ÇÑ´Ù.
  * 
- * aBmpExtHdrBlock  - [IN] í• ë‹¹í•´ì œí•˜ë ¤ëŠ” BmpExtHdrBlock
+ * aBmpExtHdrBlock  - [IN] ÇÒ´çÇØÁ¦ÇÏ·Á´Â BmpExtHdrBlock
  *
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::deallocBmpExt( 
@@ -2631,10 +2634,10 @@ IDE_RC smriChangeTrackingMgr::deallocBmpExt(
 
     IDE_DASSERT( aBmpExtHdrBlock != NULL );    
 
-    /* BmpExtê°€ ì†í•œ CTBodyì˜ Idxë¥¼ êµ¬í•œë‹¤. */
+    /* BmpExt°¡ ¼ÓÇÑ CTBodyÀÇ Idx¸¦ ±¸ÇÑ´Ù. */
     sCTBodyIdx = aBmpExtHdrBlock->mBlockHdr.mBlockID / mCTBodyBlockCnt;
 
-    /* CTBodyë‚´ì—ì„œ BmpExtì˜ Idxê°’ì„ êµ¬í•œë‹¤. */
+    /* CTBody³»¿¡¼­ BmpExtÀÇ Idx°ªÀ» ±¸ÇÑ´Ù. */
     sBmpExtIdx = ( aBmpExtHdrBlock->mBlockHdr.mBlockID 
                    - (sCTBodyIdx * mCTBodyBlockCnt) ) 
                    / SMRI_CT_EXT_BLOCK_CNT;
@@ -2647,7 +2650,7 @@ IDE_RC smriChangeTrackingMgr::deallocBmpExt(
     IDE_ERROR( sBmpExt->mBmpExtHdrBlock.mBlockHdr.mBlockID == 
                  aBmpExtHdrBlock->mBlockHdr.mBlockID );
     
-    /* BmpExtì˜ ì •ë³´ë¥¼ ì´ˆê¸°í™” í•œë‹¤. */
+    /* BmpExtÀÇ Á¤º¸¸¦ ÃÊ±âÈ­ ÇÑ´Ù. */
     sBmpExt->mBmpExtHdrBlock.mNextBmpExtHdrBlockID = SMRI_CT_INVALID_BLOCK_ID;
     sBmpExt->mBmpExtHdrBlock.mPrevBmpExtHdrBlockID = SMRI_CT_INVALID_BLOCK_ID;
     sBmpExt->mBmpExtHdrBlock.mCumBmpExtHdrBlockID  = SMRI_CT_INVALID_BLOCK_ID;
@@ -2659,7 +2662,7 @@ IDE_RC smriChangeTrackingMgr::deallocBmpExt(
     sBmpExt->mBmpExtHdrBlock.mDataFileDescSlotID.mSlotIdx = 
                                         SMRI_CT_DATAFILE_DESC_INVALID_SLOT_IDX;
     
-    /*BmpBlockì˜ bitmapì •ë³´ë¥¼ 0ìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤. */
+    /*BmpBlockÀÇ bitmapÁ¤º¸¸¦ 0À¸·Î ÃÊ±âÈ­ÇÑ´Ù. */
     for( sBmpBlockIdx = 0; 
          sBmpBlockIdx < SMRI_CT_EXT_BLOCK_CNT_EXCEPT_META_BLOCK; 
          sBmpBlockIdx++ )
@@ -2670,7 +2673,7 @@ IDE_RC smriChangeTrackingMgr::deallocBmpExt(
 
     IDE_ERROR( sExtMapBlock->mExtentMap[ sBmpExtIdx - 1 ] == SMRI_CT_EXT_USE );
 
-    /* extent mapì—ì„œ í•´ë‹¹ BmpExtì˜ í• ë‹¹ì„ í•´ì œí•œë‹¤. */
+    /* extent map¿¡¼­ ÇØ´ç BmpExtÀÇ ÇÒ´çÀ» ÇØÁ¦ÇÑ´Ù. */
     sExtMapBlock->mExtentMap[ sBmpExtIdx - 1 ] = SMRI_CT_EXT_FREE;
 
     return IDE_SUCCESS;
@@ -2681,9 +2684,9 @@ IDE_RC smriChangeTrackingMgr::deallocBmpExt(
 }
 
 /***********************************************************************
- * í• ë‹¹í•´ì œë˜ëŠ” BmpExtë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ * ÇÒ´çÇØÁ¦µÇ´Â BmpExt¸¦ ÃÊ±âÈ­ÇÑ´Ù.
  * 
- * aSlot              - [IN] í• ë‹¹ í•´ì œë˜ëŠ” DataFileDescSlot
+ * aSlot              - [IN] ÇÒ´ç ÇØÁ¦µÇ´Â DataFileDescSlot
  *
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::deallocDataFileDescSlot( 
@@ -2721,9 +2724,9 @@ IDE_RC smriChangeTrackingMgr::deallocDataFileDescSlot(
 }
 
 /***********************************************************************
- * differential bakcupë³€ê²½ ì •ë³´ë¥¼ ì¶”ì ì¤‘ì¸ BmpExtListë¥¼ switchí•œë‹¤.
- * í•¨ìˆ˜ ì‹¤íŒ¨ì‹œ changeTrackingíŒŒì¼ invaild
- * aSlot  - [IN] backupì„ ìˆ˜í–‰í•˜ë ¤ëŠ” datafileì˜ slot
+ * differential bakcupº¯°æ Á¤º¸¸¦ ÃßÀûÁßÀÎ BmpExtList¸¦ switchÇÑ´Ù.
+ * ÇÔ¼ö ½ÇÆĞ½Ã changeTrackingÆÄÀÏ invaild
+ * aSlot  - [IN] backupÀ» ¼öÇàÇÏ·Á´Â datafileÀÇ slot
  *
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::switchBmpExtListID( 
@@ -2764,9 +2767,9 @@ IDE_RC smriChangeTrackingMgr::switchBmpExtListID(
 }
 
 /***********************************************************************
- * DataFile Desc slotì— í• ë‹¹ëœ ëª¨ë“  BmpExtHdrì˜ latchë¥¼ íšë“í•œë‹¤.
+ * DataFile Desc slot¿¡ ÇÒ´çµÈ ¸ğµç BmpExtHdrÀÇ latch¸¦ È¹µæÇÑ´Ù.
  * 
- * aSlot  - [IN] backupì„ ìˆ˜í–‰í•˜ë ¤ëŠ” datafileì˜ slot
+ * aSlot  - [IN] backupÀ» ¼öÇàÇÏ·Á´Â datafileÀÇ slot
  *
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::lockBmpExtHdrLatchX( 
@@ -2827,9 +2830,9 @@ IDE_RC smriChangeTrackingMgr::lockBmpExtHdrLatchX(
 }
 
 /***********************************************************************
- * DataFile Desc slotì— í• ë‹¹ëœ ëª¨ë“  BmpExtHdrì˜ latchë¥¼ í•´ì œí•œë‹¤.
+ * DataFile Desc slot¿¡ ÇÒ´çµÈ ¸ğµç BmpExtHdrÀÇ latch¸¦ ÇØÁ¦ÇÑ´Ù.
  * 
- * aSlot  - [IN] backupì„ ìˆ˜í–‰í•˜ë ¤ëŠ” datafileì˜ slot
+ * aSlot  - [IN] backupÀ» ¼öÇàÇÏ·Á´Â datafileÀÇ slot
  *
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::unlockBmpExtHdrLatchX( 
@@ -2890,11 +2893,39 @@ IDE_RC smriChangeTrackingMgr::unlockBmpExtHdrLatchX(
 }
 
 /***********************************************************************
- * IBChunkë³€í™”ë¥¼ ì¶”ì í•œë‹¤.
- * í•¨ìˆ˜ ì‹¤íŒ¨ì‹œ change trackingíŒŒì¼ invalid
- * sddDataFileNode  - [IN] ì¶”ì í•˜ë ¤ëŠ” datafileì˜ node
- * aDatabaseFile    - [IN] ì¶”ì í•˜ë ¤ëŠ” database file
- * aIBChunkID       - [IN] ì¶”ì í•˜ë ¤ëŠ” IBChunkID
+ * Write Page ÇÑ Á¤º¸¸¦ ±â·ÏÇÑ´Ù.
+ * 
+ * aDataFileNode - [IN] ÇØ´ç DataFile
+ * aPageID       - [IN] ÇØ´ç PageID
+ **********************************************************************/
+IDE_RC smriChangeTrackingMgr::changeTracking4WriteDiskPage( sddDataFileNode * aDataFileNode,
+                                                            scPageID          aPageID )
+{
+    UInt  sIBChunkID;
+    
+    (void)idCore::acpAtomicInc32( &mCurrChangeTrackingThreadCnt );
+
+    sIBChunkID = calcIBChunkID4DiskPage( aPageID );
+
+    IDE_TEST( changeTracking( aDataFileNode,
+                              NULL,
+                              sIBChunkID ) 
+              != IDE_SUCCESS );
+
+    (void)idCore::acpAtomicDec32( &mCurrChangeTrackingThreadCnt );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+/***********************************************************************
+ * IBChunkº¯È­¸¦ ÃßÀûÇÑ´Ù.
+ * ÇÔ¼ö ½ÇÆĞ½Ã change trackingÆÄÀÏ invalid
+ * sddDataFileNode  - [IN] ÃßÀûÇÏ·Á´Â datafileÀÇ node
+ * aDatabaseFile    - [IN] ÃßÀûÇÏ·Á´Â database file
+ * aIBChunkID       - [IN] ÃßÀûÇÏ·Á´Â IBChunkID
  *
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::changeTracking( 
@@ -2913,7 +2944,7 @@ IDE_RC smriChangeTrackingMgr::changeTracking(
     UInt                        sAfterTrackingListID;
     UInt                        sState = 0;
 
-    /* ë©”ëª¨ë¦¬/ë””ìŠ¤í¬ ë°ì´í„°íŒŒì¼ì„ êµ¬ë¶„í•˜ê³  í•„ìš”í•œ ì •ë³´ë¥¼ ì–»ëŠ”ë‹¤ */
+    /* ¸Ş¸ğ¸®/µğ½ºÅ© µ¥ÀÌÅÍÆÄÀÏÀ» ±¸ºĞÇÏ°í ÇÊ¿äÇÑ Á¤º¸¸¦ ¾ò´Â´Ù */
     if( aDataFileNode != NULL )
     {
         IDE_ERROR( aDatabaseFile == NULL );
@@ -2941,12 +2972,12 @@ IDE_RC smriChangeTrackingMgr::changeTracking(
 
     while(1)
     {
-        /* DataFileDescSlotì„ ê°€ì ¸ì˜¨ë‹¤. */
+        /* DataFileDescSlotÀ» °¡Á®¿Â´Ù. */
         getDataFileDescSlot( sDataFileDescSlotID, &sSlot );
  
         IDE_ERROR( (sSpaceID == sSlot->mSpaceID) && (sFileID == sSlot->mFileID) );
  
-        /* DataFileDescSlotì´ change trackingì„ í• ìˆ˜ ìˆëŠ” ìƒíƒœì¸ì§€ í™•ì¸í•œë‹¤. */
+        /* DataFileDescSlotÀÌ change trackingÀ» ÇÒ¼ö ÀÖ´Â »óÅÂÀÎÁö È®ÀÎÇÑ´Ù. */
         sTrackingState = 
                     (smriCTState)idCore::acpAtomicGet32( &sSlot->mTrackingState );
  
@@ -2956,13 +2987,13 @@ IDE_RC smriChangeTrackingMgr::changeTracking(
         sBeforeTrackingListID = sSlot->mCurTrackingListID;
 
  
-        /* ì „ë‹¬ëœ IBChunkIDì— í•´ë‹¹í•˜ëŠ” BmpExtë¥¼ ê°€ì ¸ì˜¨ë‹¤ */
+        /* Àü´ŞµÈ IBChunkID¿¡ ÇØ´çÇÏ´Â BmpExt¸¦ °¡Á®¿Â´Ù */
         IDE_TEST( getCurBmpExt( sSlot, aIBChunkID, &sCurBmpExt ) 
                   != IDE_SUCCESS );
  
         /* 
-         * change trackingì¤‘ bitmapì´ switchë˜ëŠ” ê²ƒì„
-         * ë°©ì§€í•˜ê¸°ìœ„í•´ ê°€ì ¸ì˜¨ BmpExtì— read lockì„ ê±´ë‹¤.
+         * change trackingÁß bitmapÀÌ switchµÇ´Â °ÍÀ»
+         * ¹æÁöÇÏ±âÀ§ÇØ °¡Á®¿Â BmpExt¿¡ read lockÀ» °Ç´Ù.
          */
         IDE_TEST( sCurBmpExt->mBmpExtHdrBlock.mLatch.lockRead( NULL,  //aStatistics
                                       NULL ) //aWeArgs
@@ -2970,8 +3001,8 @@ IDE_RC smriChangeTrackingMgr::changeTracking(
         sState = 1;
  
         /* 
-         * readlockì„ ê±¸ê¸°ì „ì— bitmap switchê°€ ë˜ì—ˆëŠ”ì§€ í™•ì¸í•˜ê¸°ìœ„í•´
-         * ë‹¤ì‹œ DataFileDescSlotì„ ê°€ì ¸ì˜¨ë‹¤.
+         * readlockÀ» °É±âÀü¿¡ bitmap switch°¡ µÇ¾ú´ÂÁö È®ÀÎÇÏ±âÀ§ÇØ
+         * ´Ù½Ã DataFileDescSlotÀ» °¡Á®¿Â´Ù.
          */
         getDataFileDescSlot( sDataFileDescSlotID, &sSlot ); 
  
@@ -2979,7 +3010,7 @@ IDE_RC smriChangeTrackingMgr::changeTracking(
  
         sAfterTrackingListID = sSlot->mCurTrackingListID;
  
-        /* BmpExtì— readlockì„ ì¡ê¸°ì „ì— bitmap switchê°€ ë˜ì—ˆëŠ”ì§€ í™•ì¸ */
+        /* BmpExt¿¡ readlockÀ» Àâ±âÀü¿¡ bitmap switch°¡ µÇ¾ú´ÂÁö È®ÀÎ */
         if( sBeforeTrackingListID != sAfterTrackingListID )
         {
             sState = 0;
@@ -2988,12 +3019,12 @@ IDE_RC smriChangeTrackingMgr::changeTracking(
         }
         else
         {
-            /* bitmapì´ switë˜ì§€ ì•Šì•˜ë‹¤. ì œëŒ€ë¡œëœ CurBmpExtë¥¼ ê°€ì ¸ì˜¨ ìƒíƒœ */
+            /* bitmapÀÌ switµÇÁö ¾Ê¾Ò´Ù. Á¦´ë·ÎµÈ CurBmpExt¸¦ °¡Á®¿Â »óÅÂ */
             break;
         }
     }
 
-    /* bitë¥¼ setí•œë‹¤. */
+    /* bit¸¦ setÇÑ´Ù. */
     IDE_TEST( calcBitPositionAndSet( sCurBmpExt, aIBChunkID, sSlot ) != IDE_SUCCESS );
     
     sState = 0;
@@ -3022,11 +3053,11 @@ IDE_RC smriChangeTrackingMgr::changeTracking(
 }
 
 /***********************************************************************
- * IBChunkIDê°€ ì†í•˜ëŠ” í˜„ì¬ ì¶”ì ì¤‘ì¸ differential BmpExtë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+ * IBChunkID°¡ ¼ÓÇÏ´Â ÇöÀç ÃßÀûÁßÀÎ differential BmpExt¸¦ °¡Á®¿Â´Ù.
  * 
- * aSlot        - [IN] ì¶”ì í•˜ë ¤ëŠ” datafileì˜ DataFileDesc slot
- * aIBChunkID   - [IN] ì¶”ì í•˜ë ¤ëŠ” IBChunkID
- * aCurBmpExt   - [OUT] IBChunkIDê°€ ì†í•˜ëŠ” BmpExt
+ * aSlot        - [IN] ÃßÀûÇÏ·Á´Â datafileÀÇ DataFileDesc slot
+ * aIBChunkID   - [IN] ÃßÀûÇÏ·Á´Â IBChunkID
+ * aCurBmpExt   - [OUT] IBChunkID°¡ ¼ÓÇÏ´Â BmpExt
  *
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::getCurBmpExt(       
@@ -3042,11 +3073,11 @@ IDE_RC smriChangeTrackingMgr::getCurBmpExt(
     IDE_DASSERT( aSlot       != NULL );
     IDE_DASSERT( aCurBmpExt  != NULL );
 
-    /* IBChunkIDê°€ ì†í•œ BmpExtê°€ Listì—ì„œ ëª‡ë²ˆì§¸ BmpExtì¸ì§€ êµ¬í•œë‹¤. */
+    /* IBChunkID°¡ ¼ÓÇÑ BmpExt°¡ List¿¡¼­ ¸î¹øÂ° BmpExtÀÎÁö ±¸ÇÑ´Ù. */
     sBmpExtSeq = aIBChunkID / mBmpExtBitCnt;
 
 
-    /* BmpExtSeqì— í•´ë‹¹í•˜ëŠ” BmpExtë¥¼ ê°€ì ¸ì˜¨ë‹¤. */
+    /* BmpExtSeq¿¡ ÇØ´çÇÏ´Â BmpExt¸¦ °¡Á®¿Â´Ù. */
     IDE_TEST( getCurBmpExtInternal( aSlot, sBmpExtSeq, &sCurBmpExt ) 
               != IDE_SUCCESS );
 
@@ -3061,21 +3092,21 @@ IDE_RC smriChangeTrackingMgr::getCurBmpExt(
             IDE_TEST( wait4FlushAndExtend() != IDE_SUCCESS );
  
             /* 
-             * CTHdrì˜ mutextë¥¼ ì¡ì€ í›„ì— ë‹¤ë¥¸ì“°ë ˆë“œì—ì˜í•´ BmpExtê°€ ìƒˆë¡œ í• ë‹¹
-             * ë˜ì—ˆëŠ”ì§€ í™•ì¸í•œë‹¤.
+             * CTHdrÀÇ mutext¸¦ ÀâÀº ÈÄ¿¡ ´Ù¸¥¾²·¹µå¿¡ÀÇÇØ BmpExt°¡ »õ·Î ÇÒ´ç
+             * µÇ¾ú´ÂÁö È®ÀÎÇÑ´Ù.
              */
              IDE_TEST( getCurBmpExtInternal( aSlot, sBmpExtSeq, &sCurBmpExt ) 
                        != IDE_SUCCESS );
  
             if( sCurBmpExt != NULL )
             {
-                /* IBChunkIDê°€ ì†í•œ BmpExtë¥¼ ì°¾ì€ê²½ìš° */
+                /* IBChunkID°¡ ¼ÓÇÑ BmpExt¸¦ Ã£Àº°æ¿ì */
             }
             else
             {
                 /* 
-                 * IBChunkIDê°€ ì†í•œ BmpExtë¥¼ ëª» ì°¾ì€ê²½ìš° DataFileDescSlotì— ìƒˆë¡œìš´
-                 * BmpExtë¥¼ í• ë‹¹í•œë‹¤.
+                 * IBChunkID°¡ ¼ÓÇÑ BmpExt¸¦ ¸ø Ã£Àº°æ¿ì DataFileDescSlot¿¡ »õ·Î¿î
+                 * BmpExt¸¦ ÇÒ´çÇÑ´Ù.
                  */
                 IDE_TEST( addBmpExt2DataFileDescSlot( aSlot, 
                                                       &sAllocCurBmpExt ) 
@@ -3085,22 +3116,22 @@ IDE_RC smriChangeTrackingMgr::getCurBmpExt(
 
                 if( sBmpExtSeq == sCurBmpExt->mBmpExtHdrBlock.mBmpExtSeq )
                 {
-                    /* ì œëŒ€ë¡œëœ BmpExtSeqë¥¼ ê°€ì§„ BmpExtë¥¼ í• ë‹¹ ë°›ì€ ê²½ìš° */
+                    /* Á¦´ë·ÎµÈ BmpExtSeq¸¦ °¡Áø BmpExt¸¦ ÇÒ´ç ¹ŞÀº °æ¿ì */
                     break;
                 }
                 else
                 {
                     if( sBmpExtSeq > sCurBmpExt->mBmpExtHdrBlock.mBmpExtSeq )
                     {
-                        /* BmpExtë¥¼ í• ë‹¹ë°›ì•˜ì§€ë§Œ IBCunkIDê°€ ì†í•œ BmpExtë¥¼ í• ë‹¹ë°›ì§€ ëª»í•œê²½ìš°.
-                         * ì—¬ëŸ¬ê°œì˜ BmpExtë¥¼ í• ë‹¹í•´ì•¼í•˜ëŠ”ê²½ìš° ë‹¤ì‹œ ì²˜ìŒìœ¼ë¡œ ëŒì•„ê°€
-                         * BmpExtë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.
+                        /* BmpExt¸¦ ÇÒ´ç¹Ş¾ÒÁö¸¸ IBCunkID°¡ ¼ÓÇÑ BmpExt¸¦ ÇÒ´ç¹ŞÁö ¸øÇÑ°æ¿ì.
+                         * ¿©·¯°³ÀÇ BmpExt¸¦ ÇÒ´çÇØ¾ßÇÏ´Â°æ¿ì ´Ù½Ã Ã³À½À¸·Î µ¹¾Æ°¡
+                         * BmpExt¸¦ ÇÒ´ç¹Ş´Â´Ù.
                          */
                         sCurBmpExt = NULL;
                     }
                     else
                     {
-                        /* sBmpExtSeqë³´ë‹¤ ìƒˆë¡œí• ë‹¹ë°›ì€ BmpExtì˜ mBmpExtSeqì´ í´ ìˆ˜ ì—†ë‹¤. */
+                        /* sBmpExtSeqº¸´Ù »õ·ÎÇÒ´ç¹ŞÀº BmpExtÀÇ mBmpExtSeqÀÌ Å¬ ¼ö ¾ø´Ù. */
                         IDE_ERROR(0);
                     }
                 }
@@ -3135,11 +3166,11 @@ IDE_RC smriChangeTrackingMgr::getCurBmpExt(
 }
 
 /***********************************************************************
- * aBmpExtSeqì— í•´ë‹¹í•˜ëŠ” í˜„ì¬ ì¶”ì ì¤‘ì¸ differential BmpExtë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+ * aBmpExtSeq¿¡ ÇØ´çÇÏ´Â ÇöÀç ÃßÀûÁßÀÎ differential BmpExt¸¦ °¡Á®¿Â´Ù.
  * 
- * aSlot        - [IN] ì¶”ì í•˜ë ¤ëŠ” datafileì˜ DataFileDesc slot
- * aBmpExtSeq   - [IN] ì°¾ìœ¼ë ¤ëŠ” BmpExtì˜ sequence ë²ˆí˜¸
- * aCurBmpExt   - [OUT] aBmpExtSeqì— í•´ë‹¹í•˜ëŠ” BmpExt
+ * aSlot        - [IN] ÃßÀûÇÏ·Á´Â datafileÀÇ DataFileDesc slot
+ * aBmpExtSeq   - [IN] Ã£À¸·Á´Â BmpExtÀÇ sequence ¹øÈ£
+ * aCurBmpExt   - [OUT] aBmpExtSeq¿¡ ÇØ´çÇÏ´Â BmpExt
  *
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::getCurBmpExtInternal( 
@@ -3155,9 +3186,9 @@ IDE_RC smriChangeTrackingMgr::getCurBmpExtInternal(
     IDE_DASSERT( aCurBmpExt  != NULL );
 
     /* 
-     * IBChunkIDê°€ ì†í•œ BmpExtê°€ SMRI_CT_BMP_EXT_LIST_HINT_CNTì´ë‚´ì— ìˆë‹¤ë©´
-     * mBmpExtListHintì—ì„œ ë°”ë¡œ ê°€ì ¸ì˜¨ë‹¤. ê·¸ë ‡ì§€ ì•Šì€ê²½ìš° BmpExtListë¥¼ íƒìƒ‰í•´
-     * ì°¾ëŠ”ë‹¤.
+     * IBChunkID°¡ ¼ÓÇÑ BmpExt°¡ SMRI_CT_BMP_EXT_LIST_HINT_CNTÀÌ³»¿¡ ÀÖ´Ù¸é
+     * mBmpExtListHint¿¡¼­ ¹Ù·Î °¡Á®¿Â´Ù. ±×·¸Áö ¾ÊÀº°æ¿ì BmpExtList¸¦ Å½»öÇØ
+     * Ã£´Â´Ù.
      */
     if( aBmpExtSeq < SMRI_CT_BMP_EXT_LIST_HINT_CNT )
     {
@@ -3213,10 +3244,10 @@ IDE_RC smriChangeTrackingMgr::getCurBmpExtInternal(
 }
 
 /***********************************************************************
- * IBChunkIDì— í•´ë‹¹í•˜ëŠ” bitì˜ ìœ„ì¹˜ë¥¼ êµ¬í•˜ê³  bitë¥¼ setí•œë‹¤.
+ * IBChunkID¿¡ ÇØ´çÇÏ´Â bitÀÇ À§Ä¡¸¦ ±¸ÇÏ°í bit¸¦ setÇÑ´Ù.
  * 
- * aCurBmpExt   - [IN] bitë¥¼ setí•  BmpExt
- * aIBChunkID   - [IN] bitì˜ ìœ„ì¹˜ë¥¼ êµ¬í•  IBChunkID
+ * aCurBmpExt   - [IN] bit¸¦ setÇÒ BmpExt
+ * aIBChunkID   - [IN] bitÀÇ À§Ä¡¸¦ ±¸ÇÒ IBChunkID
  *
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::calcBitPositionAndSet( 
@@ -3277,12 +3308,12 @@ IDE_RC smriChangeTrackingMgr::calcBitPositionAndSet(
 }
 
 /***********************************************************************
- * IBChunkì˜ bitë¥¼ setí•œë‹¤.
+ * IBChunkÀÇ bit¸¦ setÇÑ´Ù.
  * 
- * aBmpExt          - [IN] bitë¥¼ setí•  BmpExt
- * aBmpBlockIdx     - [IN] bitê°€ ì†í•œ BmpBlockì˜ Idx
- * aByteIdx         - [IN] bitê°€ ì†í•œ byteì˜ Idx
- * aBitPosition     - [IN] byteë‚´ì—ì„œì˜ bitìœ„ì¹˜
+ * aBmpExt          - [IN] bit¸¦ setÇÒ BmpExt
+ * aBmpBlockIdx     - [IN] bit°¡ ¼ÓÇÑ BmpBlockÀÇ Idx
+ * aByteIdx         - [IN] bit°¡ ¼ÓÇÑ byteÀÇ Idx
+ * aBitPosition     - [IN] byte³»¿¡¼­ÀÇ bitÀ§Ä¡
  *
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::setBit( smriCTBmpExt     * aBmpExt,
@@ -3303,7 +3334,7 @@ IDE_RC smriChangeTrackingMgr::setBit( smriCTBmpExt     * aBmpExt,
 
     sTempByte |= (1 << aBitPosition);
 
-    /* bitê°€ setë˜ì–´ìˆì§€ ì•Šì€ê²½ìš°ì—ë§Œ bitë¥¼ setí•œë‹¤. */
+    /* bit°¡ setµÇ¾îÀÖÁö ¾ÊÀº°æ¿ì¿¡¸¸ bit¸¦ setÇÑ´Ù. */
     if( ( *sTargetByte & sTempByte ) == 0 )
     {
         IDE_TEST( sBmpBlock->mBlockHdr.mMutex.lock( NULL ) != IDE_SUCCESS );
@@ -3334,12 +3365,12 @@ IDE_RC smriChangeTrackingMgr::setBit( smriCTBmpExt     * aBmpExt,
 
 
 /*********************************************************************** 
- * Bimapì„ ìŠ¤ìº”í•˜ê³  IBchunkë¥¼ ë³µì‚¬í•œë‹¤.
+ * BimapÀ» ½ºÄµÇÏ°í IBchunk¸¦ º¹»çÇÑ´Ù.
  *
- * aDataFielDescSlot    - [IN] bitmapì„ ê²€ìƒ‰í•  DataFileDescSlot
- * aBackupInfo          - [IN] ì–´ë–¤ backupì„ ìˆ˜í–‰í• ì§€ì—ëŒ€í•œ ì •ë³´
- * aSrcFile             - [IN] backupì„ ìˆ˜í–‰í•  ì›ë³¸ ë°ì´í„°íŒŒì¼
- * aDestFile            - [IN] ìƒì„±ë  backupíŒŒì¼
+ * aDataFielDescSlot    - [IN] bitmapÀ» °Ë»öÇÒ DataFileDescSlot
+ * aBackupInfo          - [IN] ¾î¶² backupÀ» ¼öÇàÇÒÁö¿¡´ëÇÑ Á¤º¸
+ * aSrcFile             - [IN] backupÀ» ¼öÇàÇÒ ¿øº» µ¥ÀÌÅÍÆÄÀÏ
+ * aDestFile            - [IN] »ı¼ºµÉ backupÆÄÀÏ
  *
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::makeLevel1BackupFile( 
@@ -3367,8 +3398,8 @@ IDE_RC smriChangeTrackingMgr::makeLevel1BackupFile(
     IDE_DASSERT( aDestFile             != NULL );
 
     /* 
-     * Differetion backupì¸ì§€ cumulative backupì¸ì§€ íŒë‹¨í•˜ì—¬ í•´ë‹¹í•˜ëŠ” BmpExtë¥¼
-     * ê°€ì ¸ì˜¨ë‹¤.
+     * Differetion backupÀÎÁö cumulative backupÀÎÁö ÆÇ´ÜÇÏ¿© ÇØ´çÇÏ´Â BmpExt¸¦
+     * °¡Á®¿Â´Ù.
      */
     if( (aBackupInfo->mBackupType & SMI_BACKUP_TYPE_DIFFERENTIAL) != 0 )
     {
@@ -3405,8 +3436,8 @@ IDE_RC smriChangeTrackingMgr::makeLevel1BackupFile(
 
     IDE_ERROR( mTBSType == aTBSType );
 
-    /* MEM TBSì¼ ê²½ìš° splitëœ ë‘ë²ˆì§¸ íŒŒì¼ì˜ pageidë¥¼ êµ¬í•˜ê¸° ìœ„í•´
-     * mSplitFilePageCountê°’ì„ êµ¬í•œë‹¤. */
+    /* MEM TBSÀÏ °æ¿ì splitµÈ µÎ¹øÂ° ÆÄÀÏÀÇ pageid¸¦ ±¸ÇÏ±â À§ÇØ
+     * mSplitFilePageCount°ªÀ» ±¸ÇÑ´Ù. */
     if( aTBSType == SMRI_CT_MEM_TBS )
     {
         IDE_ERROR( sctTableSpaceMgr::isMemTableSpace( aSpaceID ) == ID_TRUE );
@@ -3420,7 +3451,7 @@ IDE_RC smriChangeTrackingMgr::makeLevel1BackupFile(
     }
 
 
-    /* IBChunkë¥¼ ë³µì‚¬í•  ë²„í¼ë¥¼ í• ë‹¹ ë°›ëŠ”ë‹¤. */
+    /* IBChunk¸¦ º¹»çÇÒ ¹öÆÛ¸¦ ÇÒ´ç ¹Ş´Â´Ù. */
     /* smriChangeTrackingMgr_makeLevel1BackupFile_calloc_IBChunkBuffer.tc */
     IDU_FIT_POINT("smriChangeTrackingMgr::makeLevel1BackupFile::calloc::IBChunkBuffer");
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SMR,
@@ -3433,7 +3464,7 @@ IDE_RC smriChangeTrackingMgr::makeLevel1BackupFile(
     IDE_ERROR( aDataFileDescSlot->mBmpExtCnt % 
                         SMRI_CT_DATAFILE_DESC_BMP_EXT_LIST_CNT == 0 );
     
-    /* BmpExtListì˜ ê¸¸ì´ë¥¼ êµ¬í•œë‹¤ */
+    /* BmpExtListÀÇ ±æÀÌ¸¦ ±¸ÇÑ´Ù */
     sBmpExtListLen = aDataFileDescSlot->mBmpExtCnt 
                      / SMRI_CT_DATAFILE_DESC_BMP_EXT_LIST_CNT;
 
@@ -3443,7 +3474,7 @@ IDE_RC smriChangeTrackingMgr::makeLevel1BackupFile(
     {
         getBlock( sBmpExtHdrBlockID, (void **)&sBmpExt ); 
 
-        /* í•œ BmpExtì— ëŒ€í•œ bitmapì„ ê²€ìƒ‰í•œë‹¤. */
+        /* ÇÑ BmpExt¿¡ ´ëÇÑ bitmapÀ» °Ë»öÇÑ´Ù. */
         IDE_TEST( makeLevel1BackupFilePerEachBmpExt( 
                                     sBmpExt, 
                                     sBmpExt->mBmpExtHdrBlock.mBmpExtSeq )
@@ -3492,10 +3523,10 @@ IDE_RC smriChangeTrackingMgr::makeLevel1BackupFile(
 }
 
 /***********************************************************************
- * ê° BmpExtì˜ bitë¥¼ í™•ì¸í•œë‹¤.
+ * °¢ BmpExtÀÇ bit¸¦ È®ÀÎÇÑ´Ù.
  *
- * aBmpExt      - [IN] ê²€ìƒ‰í•  BmpExt
- * aBmpExtSeq   - [IN] BmpExtListì—ì„œì˜ BmpExtì˜ ìœ„ì¹˜
+ * aBmpExt      - [IN] °Ë»öÇÒ BmpExt
+ * aBmpExtSeq   - [IN] BmpExtList¿¡¼­ÀÇ BmpExtÀÇ À§Ä¡
  *
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::makeLevel1BackupFilePerEachBmpExt( 
@@ -3512,7 +3543,7 @@ IDE_RC smriChangeTrackingMgr::makeLevel1BackupFilePerEachBmpExt(
          sBmpBlockIdx++ )
     {
         sBmpBlock = &aBmpExt->mBmpBlock[ sBmpBlockIdx ];
-        /* í•œ BmpExtBlockì„ ê²€ìƒ‰í•œë‹¤. */
+        /* ÇÑ BmpExtBlockÀ» °Ë»öÇÑ´Ù. */
         IDE_TEST( makeLevel1BackupFilePerEachBmpBlock( sBmpBlock, 
                                                        aBmpExtSeq, 
                                                        sBmpBlockIdx )
@@ -3527,11 +3558,11 @@ IDE_RC smriChangeTrackingMgr::makeLevel1BackupFilePerEachBmpExt(
 }
 
 /***********************************************************************
- * ê° BmpBlockì˜ bitë¥¼ í™•ì¸í•œë‹¤.
+ * °¢ BmpBlockÀÇ bit¸¦ È®ÀÎÇÑ´Ù.
  *
- * aBmpBlock    - [IN] ê²€ìƒ‰í•  BmpBlock
- * aBmpExtSeq   - [IN] BmpExtListì—ì„œì˜ BmpExtì˜ ìœ„ì¹˜
- * aBmpBlockIdx - [IN] BmpExtì—ì„œì˜ BmpBlockì˜ ìœ„ì¹˜
+ * aBmpBlock    - [IN] °Ë»öÇÒ BmpBlock
+ * aBmpExtSeq   - [IN] BmpExtList¿¡¼­ÀÇ BmpExtÀÇ À§Ä¡
+ * aBmpBlockIdx - [IN] BmpExt¿¡¼­ÀÇ BmpBlockÀÇ À§Ä¡
  *
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::makeLevel1BackupFilePerEachBmpBlock(
@@ -3550,7 +3581,7 @@ IDE_RC smriChangeTrackingMgr::makeLevel1BackupFilePerEachBmpBlock(
     {
         sBmpByte = &aBmpBlock->mBitmap[ sBmpByteIdx ];
 
-        /* í•œ BmpByteë¥¼ ê²€ìƒ‰í•œë‹¤. */
+        /* ÇÑ BmpByte¸¦ °Ë»öÇÑ´Ù. */
         IDE_TEST( makeLevel1BackupFilePerEachBmpByte( sBmpByte, 
                                                       aBmpExtSeq, 
                                                       aBmpBlockIdx, 
@@ -3566,12 +3597,12 @@ IDE_RC smriChangeTrackingMgr::makeLevel1BackupFilePerEachBmpBlock(
 }
 
 /*********************************************************************** 
- * ê° BmpByteì˜ bitë¥¼ í™•ì¸í•˜ê³  bitì— í•´ë‹¹í•˜ëŠ” IBChunkë¥¼ ë³µì‚¬í•œë‹¤.
+ * °¢ BmpByteÀÇ bit¸¦ È®ÀÎÇÏ°í bit¿¡ ÇØ´çÇÏ´Â IBChunk¸¦ º¹»çÇÑ´Ù.
  *
- * aBmpBlock    - [IN] ê²€ìƒ‰í•  BmpBlock
- * aBmpExtSeq   - [IN] BmpExtListì—ì„œì˜ BmpExtì˜ ìœ„ì¹˜
- * aBmpBlockIdx - [IN] BmpExtì—ì„œì˜ BmpBlockì˜ ìœ„ì¹˜
- * aBmpByteIdx  - [IN] BmpBlockì—ì„œì˜ BmpByteì˜ìœ„ì¹˜
+ * aBmpBlock    - [IN] °Ë»öÇÒ BmpBlock
+ * aBmpExtSeq   - [IN] BmpExtList¿¡¼­ÀÇ BmpExtÀÇ À§Ä¡
+ * aBmpBlockIdx - [IN] BmpExt¿¡¼­ÀÇ BmpBlockÀÇ À§Ä¡
+ * aBmpByteIdx  - [IN] BmpBlock¿¡¼­ÀÇ BmpByteÀÇÀ§Ä¡
  *
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::makeLevel1BackupFilePerEachBmpByte( 
@@ -3591,7 +3622,7 @@ IDE_RC smriChangeTrackingMgr::makeLevel1BackupFilePerEachBmpByte(
         sTempByte = 0;
         sTempByte = ( 1 << sBmpBitIdx );
         
-        /* BmpByteì—ì„œ bitê°€ 1ë¡œ setëœ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤. */
+        /* BmpByte¿¡¼­ bit°¡ 1·Î setµÈ À§Ä¡¸¦ Ã£´Â´Ù. */
         if( ( *aBmpByte & sTempByte ) != 0 )
         {
             sIBChunkID = ( aBmpExtSeq * mBmpExtBitCnt )
@@ -3601,7 +3632,7 @@ IDE_RC smriChangeTrackingMgr::makeLevel1BackupFilePerEachBmpByte(
 
             IDE_ASSERT( sIBChunkID == mIBChunkID );
 
-            /* 1ë¡œ setëœ IBChunkë¥¼ backupíŒŒì¼ë¡œ ë³µì‚¬ í•œë‹¤. */
+            /* 1·Î setµÈ IBChunk¸¦ backupÆÄÀÏ·Î º¹»ç ÇÑ´Ù. */
             IDE_TEST( copyIBChunk( sIBChunkID ) != IDE_SUCCESS );
 
             mIBChunkCnt++;
@@ -3617,7 +3648,7 @@ IDE_RC smriChangeTrackingMgr::makeLevel1BackupFilePerEachBmpByte(
 }
 
 /*********************************************************************** 
- * IBChunkë¥¼ ë°±ì—…í•œë‹¤.
+ * IBChunk¸¦ ¹é¾÷ÇÑ´Ù.
  * PROJ-2133 
  *
  **********************************************************************/
@@ -3638,11 +3669,11 @@ IDE_RC smriChangeTrackingMgr::copyIBChunk( UInt aIBChunkID )
     scPageID            sPageIDFromReadOffset;
     idBool              sIsValid = ID_FALSE;
 
-    /* ì›ë³¸íŒŒì¼ì—ì„œ IBChunkë¥¼ ì½ì–´ì˜¬ ìœ„ì¹˜ë¥¼ êµ¬í•œë‹¤. */
+    /* ¿øº»ÆÄÀÏ¿¡¼­ IBChunk¸¦ ÀĞ¾î¿Ã À§Ä¡¸¦ ±¸ÇÑ´Ù. */
     sReadOffset = SM_DBFILE_METAHDR_PAGE_SIZE;
     sReadOffset += aIBChunkID * mCopySize;
 
-    /* ë°±ì—…íŒŒì¼ì—ì„œ IBChunkë¥¼ ì“¸ ìœ„ì¹˜ë¥¼ êµ¬í•œë‹¤. append olny */
+    /* ¹é¾÷ÆÄÀÏ¿¡¼­ IBChunk¸¦ ¾µ À§Ä¡¸¦ ±¸ÇÑ´Ù. append olny */
     IDE_TEST( mDestFile->getFileSize( &sDestFileSize ) != IDE_SUCCESS );
 
     if( sDestFileSize <= SM_DBFILE_METAHDR_PAGE_SIZE )
@@ -3686,8 +3717,8 @@ IDE_RC smriChangeTrackingMgr::copyIBChunk( UInt aIBChunkID )
             {
                 IDE_ERROR( sDiskPageHdr4Validation->mPageType == SDP_PAGE_UNFORMAT );
 
-                /* unformat pageì—ëŠ” pageidê°€ ì„¸íŒ…ë˜ì–´ ìˆì§€ ì•Šë‹¤. ê³„ì‚°í•˜ì—¬ êµ¬í•œ
-                 * pageidë¥¼ ë„£ëŠ”ë‹¤.*/
+                /* unformat page¿¡´Â pageid°¡ ¼¼ÆÃµÇ¾î ÀÖÁö ¾Ê´Ù. °è»êÇÏ¿© ±¸ÇÑ
+                 * pageid¸¦ ³Ö´Â´Ù.*/
                 sDiskPageHdr4Validation->mPageID = sPageIDFromIBChunkID + i;
             }
         }
@@ -3736,8 +3767,8 @@ IDE_RC smriChangeTrackingMgr::copyIBChunk( UInt aIBChunkID )
             }
             else
             {
-                /* chkptì˜ ë‘ë²ˆì§¸ íŒŒì¼ë¶€í„°ëŠ” ì²«ë²ˆì§¸ pageidê°€ 0ì´ ì•„ë‹Œ
-                 * mSplitFilePageCount + 1ì˜ ê°’ì„ ê°€ì§„ë‹¤. */
+                /* chkptÀÇ µÎ¹øÂ° ÆÄÀÏºÎÅÍ´Â Ã¹¹øÂ° pageid°¡ 0ÀÌ ¾Æ´Ñ
+                 * mSplitFilePageCount + 1ÀÇ °ªÀ» °¡Áø´Ù. */
                 sPageIDFromIBChunkID = (aIBChunkID * sIBChunkSize)
                                        + ( mFileNo * mSplitFilePageCount )
                                        + 1;
@@ -3764,8 +3795,8 @@ IDE_RC smriChangeTrackingMgr::copyIBChunk( UInt aIBChunkID )
                     IDE_ERROR( ( SMP_GET_PERS_PAGE_TYPE( sMemPageHdr4Validation) != SMP_PAGETYPE_FIX ) &&
                                ( SMP_GET_PERS_PAGE_TYPE( sMemPageHdr4Validation) != SMP_PAGETYPE_VAR ) );
 
-                    /* unformat pageì—ëŠ” pageidê°€ ì„¸íŒ…ë˜ì–´ ìˆì§€ ì•Šë‹¤. ê³„ì‚°í•˜ì—¬ êµ¬í•œ
-                     * pageidë¥¼ ë„£ëŠ”ë‹¤.*/
+                    /* unformat page¿¡´Â pageid°¡ ¼¼ÆÃµÇ¾î ÀÖÁö ¾Ê´Ù. °è»êÇÏ¿© ±¸ÇÑ
+                     * pageid¸¦ ³Ö´Â´Ù.*/
                     sMemPageHdr4Validation->mSelfPageID = sPageIDFromIBChunkID + i;
                 }
             }
@@ -3811,12 +3842,12 @@ IDE_RC smriChangeTrackingMgr::copyIBChunk( UInt aIBChunkID )
 }
 
 /***********************************************************************
- * incremental Backupì„ ìˆ˜í–‰í•œë‹¤.
+ * incremental BackupÀ» ¼öÇàÇÑ´Ù.
  * 
- * DataFileDescSlot - [IN] ë°±ì—…ì„ ìˆ˜í–‰í•˜ë ¤ëŠ” ë°ì´í„°íŒŒì¼ì˜ DataFileDescSlot
- * SrcFile          - [IN] ë°±ì—…ëŒ€ìƒì´ ë˜ëŠ” íŒŒì¼
- * DestFile         - [IN] ìƒì„±ë˜ëŠ” ë°±ì—…íŒŒì¼
- * BackupInfo       - [IN/OUT] ë°±ì—…ìˆ˜í–‰ì¤‘ í•„ìš”í•œ ì •ë³´ì™€ ë°±ì—…ìˆ˜í–‰ ê²°ê³¼ ì •ë³´ ì „ë‹¬
+ * DataFileDescSlot - [IN] ¹é¾÷À» ¼öÇàÇÏ·Á´Â µ¥ÀÌÅÍÆÄÀÏÀÇ DataFileDescSlot
+ * SrcFile          - [IN] ¹é¾÷´ë»óÀÌ µÇ´Â ÆÄÀÏ
+ * DestFile         - [IN] »ı¼ºµÇ´Â ¹é¾÷ÆÄÀÏ
+ * BackupInfo       - [IN/OUT] ¹é¾÷¼öÇàÁß ÇÊ¿äÇÑ Á¤º¸¿Í ¹é¾÷¼öÇà °á°ú Á¤º¸ Àü´Ş
  *
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::performIncrementalBackup(
@@ -3830,17 +3861,17 @@ IDE_RC smriChangeTrackingMgr::performIncrementalBackup(
 {
     UInt    sNewBmpExtListID;
 
-    /* switchí•  BmpExtListIDë¥¼ êµ¬í•œë‹¤. */
+    /* switchÇÒ BmpExtListID¸¦ ±¸ÇÑ´Ù. */
     sNewBmpExtListID = (aDataFileDescSlot->mCurTrackingListID + 1) % 2;
 
-    /* sNewBmpExtListì˜ bitmapë“¤ì„ 0ìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤. */
+    /* sNewBmpExtListÀÇ bitmapµéÀ» 0À¸·Î ÃÊ±âÈ­ÇÑ´Ù. */
     IDE_TEST( initBmpExtListBlocks( aDataFileDescSlot, sNewBmpExtListID )
               != IDE_SUCCESS );
 
-    /* BmpExtListë¥¼ switchí•œë‹¤. */
+    /* BmpExtList¸¦ switchÇÑ´Ù. */
     IDE_TEST( switchBmpExtListID( aDataFileDescSlot ) != IDE_SUCCESS );
 
-    /* bitmapì„ ìŠ¤ìº”í•˜ê³  IBChunkë¥¼ ë°±ì—…íŒŒì¼ë¡œ ë³µì‚¬í•œë‹¤. */
+    /* bitmapÀ» ½ºÄµÇÏ°í IBChunk¸¦ ¹é¾÷ÆÄÀÏ·Î º¹»çÇÑ´Ù. */
     IDE_TEST( makeLevel1BackupFile( aDataFileDescSlot,
                                     aBackupInfo,
                                     aSrcFile,
@@ -3858,12 +3889,12 @@ IDE_RC smriChangeTrackingMgr::performIncrementalBackup(
 }
 
 /***********************************************************************
- * ë¸”ëŸ­ì„ ê°€ì ¸ì˜¨ë‹¤.
+ * ºí·°À» °¡Á®¿Â´Ù.
  * 
- * DataFileDescSlotID - [IN] ê°€ì ¸ì˜¬ ë¸”ëŸ­ì˜ ID
+ * DataFileDescSlotID - [IN] °¡Á®¿Ã ºí·°ÀÇ ID
  * aSpaceID           - [IN] tablespace ID
  * aDataFileNum       - [IN] dataFile Num( or ID)
- * aResult            - [OUT] ë¸”ëŸ­ì„ ì „ë‹¬í•  outì¸ì
+ * aResult            - [OUT] ºí·°À» Àü´ŞÇÒ outÀÎÀÚ
  *
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::isNeedAllocDataFileDescSlot( 
@@ -3885,8 +3916,8 @@ IDE_RC smriChangeTrackingMgr::isNeedAllocDataFileDescSlot(
     
     sDataFileDescSlotIdx |= ( 1 << aDataFileDescSlotID->mSlotIdx );
 
-    /* loganchorë° ë°ì´í„°íŒŒì¼ í—¤ë”ì— DataFileDescSlotIDê°€ ì €ì¥ë˜ì–´ìˆì§€ë§Œ
-     * CTFileì´ flushë˜ì§€ ì•Šì•„ DataFileDescSlotIDê°€ í• ë‹¹ë˜ì§€ ì•Šì€ ìƒíƒœ
+    /* loganchor¹× µ¥ÀÌÅÍÆÄÀÏ Çì´õ¿¡ DataFileDescSlotID°¡ ÀúÀåµÇ¾îÀÖÁö¸¸
+     * CTFileÀÌ flushµÇÁö ¾Ê¾Æ DataFileDescSlotID°¡ ÇÒ´çµÇÁö ¾ÊÀº »óÅÂ
      */
     if( (sDataFileDescBlock->mAllocSlotFlag & 
          sDataFileDescSlotIdx) == 0 )
@@ -3898,8 +3929,8 @@ IDE_RC smriChangeTrackingMgr::isNeedAllocDataFileDescSlot(
         if( (aSpaceID != sDataFileDescSlot->mSpaceID) &&
             (aDataFileNum != sDataFileDescSlot->mFileID) )
         {
-            /* DataFileDescSlotì´ ë‹¤ë¥¸ ë°ì´í„°íŒŒì¼ì— ì˜í•´ ì´ë¯¸ ì‚¬ìš©ì¤‘ì¸
-             * ê²½ìš°ëŠ” ë°œìƒí• ìˆ˜ ì—†ìŒ
+            /* DataFileDescSlotÀÌ ´Ù¸¥ µ¥ÀÌÅÍÆÄÀÏ¿¡ ÀÇÇØ ÀÌ¹Ì »ç¿ëÁßÀÎ
+             * °æ¿ì´Â ¹ß»ıÇÒ¼ö ¾øÀ½
              */
             IDE_ERROR_MSG( 0, 
                            "SpaceID                    : %"ID_UINT32_FMT"\n"
@@ -3913,7 +3944,7 @@ IDE_RC smriChangeTrackingMgr::isNeedAllocDataFileDescSlot(
         }
         else
         {
-            /* DataFileDescSlotì´ ì œëŒ€ë¡œ í• ë‹¹ë˜ì–´ìˆëŠ” ìƒíƒœ */
+            /* DataFileDescSlotÀÌ Á¦´ë·Î ÇÒ´çµÇ¾îÀÖ´Â »óÅÂ */
             sNeedDataFileDescSlotAlloc = ID_FALSE;
         }
     }
@@ -3928,10 +3959,10 @@ IDE_RC smriChangeTrackingMgr::isNeedAllocDataFileDescSlot(
 }
 
 /***********************************************************************
- * DataFile desc Slotì„ ê°€ì ¸ì˜¨ë‹¤.
+ * DataFile desc SlotÀ» °¡Á®¿Â´Ù.
  * 
- * aSlotID - [IN] ê°€ì ¸ì˜¬ Slotì˜ ID
- * aSlot   - [OUT] Slotì„ ì „ë‹¬í•  outì¸ì
+ * aSlotID - [IN] °¡Á®¿Ã SlotÀÇ ID
+ * aSlot   - [OUT] SlotÀ» Àü´ŞÇÒ outÀÎÀÚ
  *
  *
  **********************************************************************/
@@ -3952,10 +3983,10 @@ void smriChangeTrackingMgr::getDataFileDescSlot(
 }
 
 /***********************************************************************
- * ë¸”ëŸ­ì„ ê°€ì ¸ì˜¨ë‹¤.
+ * ºí·°À» °¡Á®¿Â´Ù.
  * 
- * aBlockID - [IN] ê°€ì ¸ì˜¬ ë¸”ëŸ­ì˜ ID
- * aBlock   - [OUT] ë¸”ëŸ­ì„ ì „ë‹¬í•  outì¸ì
+ * aBlockID - [IN] °¡Á®¿Ã ºí·°ÀÇ ID
+ * aBlock   - [OUT] ºí·°À» Àü´ŞÇÒ outÀÎÀÚ
  *
  **********************************************************************/
 void smriChangeTrackingMgr::getBlock( UInt aBlockID, void ** aBlock )
@@ -3976,10 +4007,10 @@ void smriChangeTrackingMgr::getBlock( UInt aBlockID, void ** aBlock )
 }
 
 /***********************************************************************
- * NewBmpExtListì˜ ì²«ë²ˆì§¸ ë¸”ëŸ­ IDë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+ * NewBmpExtListÀÇ Ã¹¹øÂ° ºí·° ID¸¦ °¡Á®¿Â´Ù.
  * 
- * aSlot            - [IN] ê°€ì ¸ì˜¬ ë¸”ëŸ­ì´ìˆëŠ” slot
- * aBmpExtBlockID   - [OUT] ë¸”ëŸ­ì„ ì „ë‹¬í•  outì¸ì
+ * aSlot            - [IN] °¡Á®¿Ã ºí·°ÀÌÀÖ´Â slot
+ * aBmpExtBlockID   - [OUT] ºí·°À» Àü´ŞÇÒ outÀÎÀÚ
  *
  **********************************************************************/
 void smriChangeTrackingMgr::getFirstDifBmpExt( 
@@ -4000,10 +4031,10 @@ void smriChangeTrackingMgr::getFirstDifBmpExt(
 }
 
 /***********************************************************************
- * NewBmpExtListì˜ ì²«ë²ˆì§¸ ë¸”ëŸ­ IDë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+ * NewBmpExtListÀÇ Ã¹¹øÂ° ºí·° ID¸¦ °¡Á®¿Â´Ù.
  * 
- * aSlot            - [IN] ê°€ì ¸ì˜¬ ë¸”ëŸ­ì´ìˆëŠ” slot
- * aBmpExtBlockID   - [OUT] ë¸”ëŸ­ì„ ì „ë‹¬í•  outì¸ì
+ * aSlot            - [IN] °¡Á®¿Ã ºí·°ÀÌÀÖ´Â slot
+ * aBmpExtBlockID   - [OUT] ºí·°À» Àü´ŞÇÒ outÀÎÀÚ
  *
  **********************************************************************/
 void smriChangeTrackingMgr::getFirstCumBmpExt( 
@@ -4021,9 +4052,9 @@ void smriChangeTrackingMgr::getFirstCumBmpExt(
 }
 
 /***********************************************************************
- * BmpExtListì— ì†í•œ ëª¨ë“  Bmp blockë“¤ì„ ì´ˆê¸°í™” í•œë‹¤.
+ * BmpExtList¿¡ ¼ÓÇÑ ¸ğµç Bmp blockµéÀ» ÃÊ±âÈ­ ÇÑ´Ù.
  *
- * aBmpExtList - [IN] ì´ˆê¸°í™”í•  BmpExtì˜ List
+ * aBmpExtList - [IN] ÃÊ±âÈ­ÇÒ BmpExtÀÇ List
  *
  *
  **********************************************************************/
@@ -4052,7 +4083,7 @@ IDE_RC smriChangeTrackingMgr::initBmpExtListBlocks(
     IDE_ERROR( aDataFileDescSlot->mBmpExtCnt % 
                         SMRI_CT_DATAFILE_DESC_BMP_EXT_LIST_CNT == 0 );
     
-    /* BmpExtListì˜ ê¸¸ì´ë¥¼ êµ¬í•œë‹¤ */
+    /* BmpExtListÀÇ ±æÀÌ¸¦ ±¸ÇÑ´Ù */
     sBmpExtListLen = aDataFileDescSlot->mBmpExtCnt 
                      / SMRI_CT_DATAFILE_DESC_BMP_EXT_LIST_CNT;
 
@@ -4100,9 +4131,9 @@ IDE_RC smriChangeTrackingMgr::initBmpExtListBlocks(
 }
 
 /***********************************************************************
- * ë¸”ëŸ­ì˜ checksumì„ ê²€ì‚¬í•œë‹¤.
+ * ºí·°ÀÇ checksumÀ» °Ë»çÇÑ´Ù.
  * 
- * aBlockHdr    - [IN] CheckSumì„ ê³„ì‚°í•  ë¸”ëŸ­ì˜ í—¤ë”
+ * aBlockHdr    - [IN] CheckSumÀ» °è»êÇÒ ºí·°ÀÇ Çì´õ
  * 
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::checkBlockCheckSum( smriCTBlockHdr * aBlockHdr )
@@ -4137,9 +4168,9 @@ IDE_RC smriChangeTrackingMgr::checkBlockCheckSum( smriCTBlockHdr * aBlockHdr )
 }
 
 /***********************************************************************
- * ë¸”ëŸ­ì˜ checksumê°’ì„ êµ¬í•´ ì €ì¥í•œë‹¤.
+ * ºí·°ÀÇ checksum°ªÀ» ±¸ÇØ ÀúÀåÇÑ´Ù.
  * 
- * aBlockHdr    - [IN] CheckSumì„ ê³„ì‚°í•  ë¸”ëŸ­ì˜ í—¤ë”
+ * aBlockHdr    - [IN] CheckSumÀ» °è»êÇÒ ºí·°ÀÇ Çì´õ
  * 
  **********************************************************************/
 void smriChangeTrackingMgr::setBlockCheckSum( smriCTBlockHdr * aBlockHdr )
@@ -4163,10 +4194,10 @@ void smriChangeTrackingMgr::setBlockCheckSum( smriCTBlockHdr * aBlockHdr )
 }
 
 /***********************************************************************
- * CTBodyì˜ checksumê°’ì„ ê²€ì‚¬í•œë‹¤.
+ * CTBodyÀÇ checksum°ªÀ» °Ë»çÇÑ´Ù.
  * 
- * aCTBody    - [IN] CheckSumì„ ê²€ì‚¬í•  CTBodyì˜ ptr
- * aFlushLSN  - [IN] CTíŒŒì¼ í—¤ë”ì— ì €ì¥ëœ FlushLSN
+ * aCTBody    - [IN] CheckSumÀ» °Ë»çÇÒ CTBodyÀÇ ptr
+ * aFlushLSN  - [IN] CTÆÄÀÏ Çì´õ¿¡ ÀúÀåµÈ FlushLSN
  * 
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::checkCTBodyCheckSum( smriCTBody * aCTBody, 
@@ -4207,10 +4238,10 @@ IDE_RC smriChangeTrackingMgr::checkCTBodyCheckSum( smriCTBody * aCTBody,
 }
 
 /***********************************************************************
- * CTBodyì˜ checksumê°’ì„ ê³„ì‚°í•˜ê³  ì €ì¥í•œë‹¤.
+ * CTBodyÀÇ checksum°ªÀ» °è»êÇÏ°í ÀúÀåÇÑ´Ù.
  * 
- * aCTBody    - [IN] CheckSumì„ ê³„ì‚°í•  CTBodyì˜ ptr
- * aFlushLSN  - [IN] BmpExtHdrBlockì— ì €ì¥ë  FlushLSN
+ * aCTBody    - [IN] CheckSumÀ» °è»êÇÒ CTBodyÀÇ ptr
+ * aFlushLSN  - [IN] BmpExtHdrBlock¿¡ ÀúÀåµÉ FlushLSN
  * 
  **********************************************************************/
 void smriChangeTrackingMgr::setCTBodyCheckSum( smriCTBody * aCTBody, 
@@ -4241,9 +4272,9 @@ void smriChangeTrackingMgr::setCTBodyCheckSum( smriCTBody * aCTBody,
 }
 
 /***********************************************************************
- * Extì˜ checksumê°’ì„ ê²€ì‚¬í•œë‹¤.
+ * ExtÀÇ checksum°ªÀ» °Ë»çÇÑ´Ù.
  * 
- * aBlockHdr    - [IN] CheckSumì„ ê³„ì‚°í•  BmpExtHdrBlock
+ * aBlockHdr    - [IN] CheckSumÀ» °è»êÇÒ BmpExtHdrBlock
  * 
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::checkExtCheckSum( smriCTBlockHdr * aBlockHdr )
@@ -4272,9 +4303,9 @@ IDE_RC smriChangeTrackingMgr::checkExtCheckSum( smriCTBlockHdr * aBlockHdr )
 }
 
 /***********************************************************************
- * Extì˜ checksumê°’ì„ êµ¬í•´ ì €ì¥í•œë‹¤.
+ * ExtÀÇ checksum°ªÀ» ±¸ÇØ ÀúÀåÇÑ´Ù.
  * 
- * aBlockHdr    - [IN] CheckSumì„ ê³„ì‚°í•  BmpExtHdrBlock
+ * aBlockHdr    - [IN] CheckSumÀ» °è»êÇÒ BmpExtHdrBlock
  * 
  **********************************************************************/
 void smriChangeTrackingMgr::setExtCheckSum( smriCTBlockHdr * aBlockHdr )
@@ -4299,9 +4330,9 @@ void smriChangeTrackingMgr::setExtCheckSum( smriCTBlockHdr * aBlockHdr )
 }
 
 /***********************************************************************
- * MemBaseì— ì €ì¥ëœ DBNameê³¼ CTFileì— ì €ì¥ëœ DBNameì„ ë¹„êµí•œë‹¤.
+ * MemBase¿¡ ÀúÀåµÈ DBName°ú CTFile¿¡ ÀúÀåµÈ DBNameÀ» ºñ±³ÇÑ´Ù.
  * 
- * aDBName    - [IN] MemBaseì— ì €ì¥ëœ DBName
+ * aDBName    - [IN] MemBase¿¡ ÀúÀåµÈ DBName
  * 
  **********************************************************************/
 IDE_RC smriChangeTrackingMgr::checkDBName( SChar * aDBName )

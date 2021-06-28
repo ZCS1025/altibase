@@ -33,29 +33,27 @@ public class CompositeShardingStrategy implements ShardingStrategy
     private CompositeShardingAlgorithm mDefaultShardingAlgorithm;
     private DataNode                   mDefaultNode;
     private List<ShardSplitMethod>     mShardSplitMethodList;
+    private int                        mShardValueCnt;
+    private int                        mShardSubValueCnt;
 
     public CompositeShardingStrategy(ShardRangeList aShardRangeList, DataNode aDefaultNode,
-                                     List<ShardSplitMethod> aShardSplitMethodList)
+                                     List<ShardSplitMethod> aShardSplitMethodList,
+                                     int aShardValueCnt, int aShardSubValueCnt)
     {
         mDefaultShardingAlgorithm = new StandardCompositeShardingAlgorithm(aShardRangeList);
         mDefaultNode = aDefaultNode;
         mShardSplitMethodList = aShardSplitMethodList;
+        mShardValueCnt = aShardValueCnt;
+        mShardSubValueCnt = aShardSubValueCnt;
     }
 
-    public Set<DataNode> doSharding(List<ShardingValue> aShardingValues) throws SQLException
+    public List<DataNode> doSharding(List<Comparable<?>> aShardValues) throws SQLException
     {
-        List<PreciseShardingValue> sShardValues = new ArrayList<PreciseShardingValue>();
-
-        for (ShardingValue sShardingValue : aShardingValues)
-        {
-            sShardValues.add(getPreciseShardingValue((ListShardingValue<?>)sShardingValue));
-        }
-
-        Set<DataNode> sResults;
+        List<DataNode> sResults;
         try
         {
-            sResults = mDefaultShardingAlgorithm.doSharding(sShardValues, mShardSplitMethodList,
-                                                            mDefaultNode);
+            sResults = mDefaultShardingAlgorithm.doSharding(aShardValues, mShardSplitMethodList,
+                                                            mDefaultNode, mShardValueCnt, mShardSubValueCnt);
         }
         catch (SQLException aEx)
         {
@@ -64,18 +62,5 @@ public class CompositeShardingStrategy implements ShardingStrategy
         }
 
         return sResults;
-    }
-
-    @SuppressWarnings("unchecked")
-    private PreciseShardingValue getPreciseShardingValue(ListShardingValue<?> aShardingValue)
-    {
-        PreciseShardingValue sResult = null;
-
-        for (Comparable sEach : aShardingValue.getValues())
-        {
-            sResult =  new PreciseShardingValue(aShardingValue.getColumnIdx(), sEach);
-        }
-
-        return sResult;
     }
 }

@@ -2309,9 +2309,9 @@ IDE_RC cmpWriteRPSyncStart(cmbBlock *aBlock, cmpProtocol *aProtocol, cmpMarshalS
     return IDE_FAILURE;
 }
 
-IDE_RC cmpReadRPSyncRebuildIndex( cmbBlock *aBlock, cmpProtocol *aProtocol, cmpMarshalState *aMarshalState )
+IDE_RC cmpReadRPSyncEnd( cmbBlock *aBlock, cmpProtocol *aProtocol, cmpMarshalState *aMarshalState )
 {
-    cmpArgRPSyncRebuildIndex *sArg = CMI_PROTOCOL_GET_ARG( *aProtocol, RP, SyncRebuildIndex );
+    cmpArgRPSyncEnd *sArg = CMI_PROTOCOL_GET_ARG( *aProtocol, RP, SyncEnd );
 
     CMP_MARSHAL_BEGIN( 1 );
     CMP_MARSHAL_READ_UINT( sArg->mXLogType );
@@ -2325,9 +2325,9 @@ IDE_RC cmpReadRPSyncRebuildIndex( cmbBlock *aBlock, cmpProtocol *aProtocol, cmpM
     return IDE_FAILURE;
 }
 
-IDE_RC cmpWriteRPSyncRebuildIndex( cmbBlock *aBlock, cmpProtocol *aProtocol, cmpMarshalState *aMarshalState )
+IDE_RC cmpWriteRPSyncEnd( cmbBlock *aBlock, cmpProtocol *aProtocol, cmpMarshalState *aMarshalState )
 {
-    cmpArgRPSyncRebuildIndex *sArg = CMI_PROTOCOL_GET_ARG( *aProtocol, RP, SyncRebuildIndex );
+    cmpArgRPSyncEnd *sArg = CMI_PROTOCOL_GET_ARG( *aProtocol, RP, SyncEnd );
 
     CMP_MARSHAL_BEGIN( 1 );
     CMP_MARSHAL_WRITE_UINT( sArg->mXLogType );
@@ -2405,7 +2405,7 @@ cmpMarshalFunction gCmpReadFunctionRP[CMP_OP_RP_MAX] =
     cmpReadRPFailbackEnd,
     cmpReadRPSyncTableNumber,
     cmpReadRPSyncStart,
-    cmpReadRPSyncRebuildIndex,
+    cmpReadRPSyncEnd,
     cmpReadRPLobTrim,
     cmpReadRPDummy,
     cmpReadRPDummy,/* BUG-38759 */
@@ -2417,6 +2417,18 @@ cmpMarshalFunction gCmpReadFunctionRP[CMP_OP_RP_MAX] =
     cmpReadRPDummy, /* DDLSyncCancel */
     cmpReadRPDummy, /* BUG-46252 Partition Merge / Split / Replace DDL asynchronization support */
     cmpReadRPDummy,
+    cmpReadRPDummy,
+    cmpReadRPDummy,
+    cmpReadRPDummy,
+    cmpReadRPDummy,
+    cmpReadRPDummy, /* CMP_OP_RP_TemporarySyncInfo */
+    cmpReadRPDummy,
+    cmpReadRPDummy,
+    cmpReadRPDummy,
+    cmpReadRPDummy,
+    cmpReadRPDummy,
+    cmpReadRPDummy,
+    cmpReadRPDummy, /* CMP_OP_RP_XA_START_REQ */
     cmpReadRPDummy,
     cmpReadRPDummy,
     cmpReadRPDummy,
@@ -2465,7 +2477,7 @@ cmpMarshalFunction gCmpWriteFunctionRP[CMP_OP_RP_MAX] =
     cmpWriteRPFailbackEnd,
     cmpWriteRPSyncTableNumber,
     cmpWriteRPSyncStart,
-    cmpWriteRPSyncRebuildIndex,
+    cmpWriteRPSyncEnd,
     cmpWriteRPLobTrim,
     cmpWriteRPDummy,
     cmpWriteRPDummy,/* BUG-38759 */
@@ -2477,6 +2489,18 @@ cmpMarshalFunction gCmpWriteFunctionRP[CMP_OP_RP_MAX] =
     cmpWriteRPDummy, /* DDLSyncCancel */
     cmpWriteRPDummy, /* BUG-46252 Partition Merge / Split / Replace DDL asynchronization support */    
     cmpWriteRPDummy,
+    cmpWriteRPDummy,
+    cmpWriteRPDummy,
+    cmpWriteRPDummy,
+    cmpWriteRPDummy,
+    cmpWriteRPDummy, /* CMP_OP_RP_TemporarySyncInfo */
+    cmpWriteRPDummy, /* CMP_OP_RP_TemporarySyncItem */
+    cmpWriteRPDummy, /* CMP_OP_RP_TemporarySyncHandshakeAck */
+    cmpWriteRPDummy,
+    cmpWriteRPDummy,
+    cmpWriteRPDummy,
+    cmpWriteRPDummy,
+    cmpWriteRPDummy, /* CMP_OP_RP_XA_START_REQ */
     cmpWriteRPDummy,
     cmpWriteRPDummy,
     cmpWriteRPDummy,

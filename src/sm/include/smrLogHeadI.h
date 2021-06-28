@@ -18,7 +18,7 @@
  *
  * Description :
  *
- * smrLogHead ìë£Œêµ¬ì¡°ì— ëŒ€í•œ ì¸í„°í˜ì´ìŠ¤ í´ë˜ìŠ¤ ì •ì˜
+ * smrLogHead ÀÚ·á±¸Á¶¿¡ ´ëÇÑ ÀÎÅÍÆäÀÌ½º Å¬·¡½º Á¤ÀÇ
  *
  *
  **********************************************************************/
@@ -52,7 +52,7 @@ class smrLogHeadI
     }
 
     /* BUG-35392
-     * mFlagì˜ í¬ê¸°ê°€ UChar -> UIntë¡œ ë³€ê²½ */
+     * mFlagÀÇ Å©±â°¡ UChar -> UInt·Î º¯°æ */
     inline static UInt getFlag( smrLogHead  * aLogHead )
     {
         return aLogHead->mFlag;
@@ -159,8 +159,8 @@ class smrLogHeadI
     {
         UInt    sLogFlag    = 0;
 
-        /* smrLogHeadì˜ mFlag ëŠ” UInt ì´ë¯€ë¡œ memcpyë¡œ ì½ì–´ì•¼
-         * align ë¬¸ì œë¥¼ íšŒí”¼ í•  ìˆ˜ ìˆë‹¤. */
+        /* smrLogHeadÀÇ mFlag ´Â UInt ÀÌ¹Ç·Î memcpy·Î ÀĞ¾î¾ß
+         * align ¹®Á¦¸¦ È¸ÇÇ ÇÒ ¼ö ÀÖ´Ù. */
         idlOS::memcpy( &sLogFlag,
                        aLogPtr,
                        ID_SIZEOF( UInt ) );

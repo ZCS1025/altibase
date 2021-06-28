@@ -27,9 +27,10 @@
 #include <qcpManager.h>
 #include <qmvWith.h>
 #include <qcuSqlSourceInfo.h>
+#include <sdi.h> /* TASK-7219 Shard Transformer Refactoring */
 
 /*
- withStmt ë…¸ë“œì˜ êµ¬ì„±
+ withStmt ³ëµåÀÇ ±¸¼º
 
     with q1 as (select 1 from dual),
          q2 as (select 2 from dual),
@@ -48,28 +49,28 @@
       )
     );
 
- ìœ„ì™€ ê°™ì€ ì¿¼ë¦¬ëŠ” ë‹¤ìŒê³¼ ê°™ì€ withStmt ë…¸ë“œê°€ êµ¬ì„±ëœë‹¤.
+ À§¿Í °°Àº Äõ¸®´Â ´ÙÀ½°ú °°Àº withStmt ³ëµå°¡ ±¸¼ºµÈ´Ù.
 
                                       ( head (backup) null)
                                         ^
                                         |
-                             q1-->q2-->q3                  <----ìµœìƒìœ„ WITH
+                             q1-->q2-->q3                  <----ÃÖ»óÀ§ WITH
                              ^
                              |
-                q21-->q22-->q23                            <----fromì ˆì— WITH
+                q21-->q22-->q23                            <----fromÀý¿¡ WITH
                 ^
                 |
     q31-->q32-->q33                                        <----
 
-    qmvWith::validate() head í¬ì¸í„°ë¥¼ ìƒˆë¡œ ìƒì„± í•´ì„œ ë…¸ë“œë¥¼ ì¶”ê°€í•œë‹¤.
-    with ì ˆì´ ìƒˆë¡œ ì‹œìž‘ ë ë•Œ ìœ„ ê·¸ë¦¼ ì²˜ëŸ¼ ì‹œìž‘ í¬ì¸í„°ê°€ ë‹¬ë¼ì§„ë‹¤.
-    validate()í•¨ìˆ˜ì˜ í•˜ë‹¨ ë¶€ë¶„ì— ë§ˆì§€ë§‰ ì¶”ê°€ëœ ë…¸ë“œì˜ nextë¥¼ ì´ì „ headì— ì—°ê²°í•´ ì¤€ë‹¤.
+    qmvWith::validate() head Æ÷ÀÎÅÍ¸¦ »õ·Î »ý¼º ÇØ¼­ ³ëµå¸¦ Ãß°¡ÇÑ´Ù.
+    with ÀýÀÌ »õ·Î ½ÃÀÛ µÉ¶§ À§ ±×¸² Ã³·³ ½ÃÀÛ Æ÷ÀÎÅÍ°¡ ´Þ¶óÁø´Ù.
+    validate()ÇÔ¼öÀÇ ÇÏ´Ü ºÎºÐ¿¡ ¸¶Áö¸· Ãß°¡µÈ ³ëµåÀÇ next¸¦ ÀÌÀü head¿¡ ¿¬°áÇØ ÁØ´Ù.
 
-    qmvWith::parseViewInTableRef()í•¨ìˆ˜ëŠ” ì£¼ì–´ì§„ tablenameì„ ìœ„ ë…¸ë“œ ë¦¬ìŠ¤íŠ¸ì— headë¡œ ë¶€í„°
-    íƒìƒ‰ í•˜ê²Œ ëœë‹¤.
+    qmvWith::parseViewInTableRef()ÇÔ¼ö´Â ÁÖ¾îÁø tablenameÀ» À§ ³ëµå ¸®½ºÆ®¿¡ head·Î ºÎÅÍ
+    Å½»ö ÇÏ°Ô µÈ´Ù.
 
-    qmv::parseSelect()í•¨ìˆ˜ì—ì„œ í•˜ìœ„ ì¿¼ë¦¬ë¬¸ìœ¼ë¡œ ì§„ìž… í• ë•Œ ë…¸ë“œì˜ ì‹œìž‘ í¬ì¸í„°ë¥¼ ë°±ì—… í•˜ê³ 
-    í•¨ìˆ˜ ëì—ì„œ ë³µì› í•´ì£¼ì–´ í•˜ìœ„ ì¿¼ë¦¬ê°€ ì™„ë£Œ ë˜ë©´ ì§„ìž…ì‹œ ë ˆë²¨ì´ ëœë‹¤.
+    qmv::parseSelect()ÇÔ¼ö¿¡¼­ ÇÏÀ§ Äõ¸®¹®À¸·Î ÁøÀÔ ÇÒ¶§ ³ëµåÀÇ ½ÃÀÛ Æ÷ÀÎÅÍ¸¦ ¹é¾÷ ÇÏ°í
+    ÇÔ¼ö ³¡¿¡¼­ º¹¿ø ÇØÁÖ¾î ÇÏÀ§ Äõ¸®°¡ ¿Ï·á µÇ¸é ÁøÀÔ½Ã ·¹º§ÀÌ µÈ´Ù.
 
     ex)
     select * from
@@ -104,14 +105,14 @@
                         ^
                         |
                        q1
-    q1 --> q1 --> q2 ì°¾ìŒ
+    q1 --> q1 --> q2 Ã£À½
 
     q1 --> q3 --> q4 --> top --> null
-    q2ë¥¼ ì°¾ì§€ ëª»í•¨
+    q2¸¦ Ã£Áö ¸øÇÔ
 */
 IDE_RC qmvWith::validate( qcStatement * aStatement )
 {
-    qcStmtListMgr     * sStmtListMgr; /* BUG-45994 - ì»´íŒŒì¼ëŸ¬ ìµœì í™” íšŒí”¼ */
+    qcStmtListMgr     * sStmtListMgr; /* BUG-45994 - ÄÄÆÄÀÏ·¯ ÃÖÀûÈ­ È¸ÇÇ */
     qmsWithClause     * sWithClause;
     qmsParseTree      * sParseTree;
     qmsParseTree      * sViewParseTree = NULL;
@@ -119,6 +120,8 @@ IDE_RC qmvWith::validate( qcStatement * aStatement )
     qcWithStmt        * sNewNode  = NULL;
     qcWithStmt        * sCurNode  = NULL;
     idBool              sFirstQueryBlcok = ID_TRUE;
+    idBool              sOrgPSMFlag = ID_FALSE; /* TAKS-7219 Shard Transformer Refactoring */
+    idBool              sIsChanged  = ID_FALSE; /* TAKS-7219 Shard Transformer Refactoring */
 
     IDE_FT_BEGIN();
 
@@ -137,6 +140,12 @@ IDE_RC qmvWith::validate( qcStatement * aStatement )
 
     if ( sParseTree->withClause != NULL )
     {
+        /* TASK-7219 Shard Transformer Refactoring */
+        IDE_TEST( sdi::setQuerySetListState( aStatement,
+                                             NULL, /* aParseTree */
+                                             &( sIsChanged ) )
+              != IDE_SUCCESS );
+
         sPrevHead = sStmtListMgr->head;
 
         for ( sWithClause =  sParseTree->withClause;
@@ -150,20 +159,22 @@ IDE_RC qmvWith::validate( qcStatement * aStatement )
                                                   &sNewNode )
                       != IDE_SUCCESS );
 
-            // recursive withë¥¼ ê²€ì‚¬í•˜ê¸° ìœ„í•´ í˜„ìž¬ stmtë¥¼ ê¸°ë¡í•œë‹¤.
+            // recursive with¸¦ °Ë»çÇÏ±â À§ÇØ ÇöÀç stmt¸¦ ±â·ÏÇÑ´Ù.
             sStmtListMgr->current = sNewNode;
 
-            IDE_TEST( qmv::parseSelect( sWithClause->stmt )
+            /* TASK-7219 Shard Transformer Refactoring */
+            IDE_TEST( qmv::parseSelectInternal( sWithClause->stmt )
                       != IDE_SUCCESS );
 
-            aStatement->mFlag |=
-                (sWithClause->stmt->mFlag & QC_STMT_SHARD_OBJ_MASK);
+            IDE_TEST( sdi::setStatementFlagForShard( aStatement,
+                                                     sWithClause->stmt->mFlag )
+                      != IDE_SUCCESS );
 
             if ( sNewNode->isRecursiveView == ID_TRUE )
             {
                 sViewParseTree = (qmsParseTree*) sWithClause->stmt->myPlan->parseTree;
                 
-                // union allì´ ì•„ë‹ˆë©´ ì—ëŸ¬
+                // union allÀÌ ¾Æ´Ï¸é ¿¡·¯
                 if ( sViewParseTree->querySet->setOp != QMS_UNION_ALL )
                 {
                     IDE_RAISE( ERR_NOT_NON_EXIST_UNION_ALL_RECURSIVE_VIEW );
@@ -181,16 +192,23 @@ IDE_RC qmvWith::validate( qcStatement * aStatement )
                     }
                 }
                 
-                sViewParseTree->querySet->flag &= ~QMV_QUERYSET_RECURSIVE_VIEW_MASK;
-                sViewParseTree->querySet->flag |= QMV_QUERYSET_RECURSIVE_VIEW_TOP;
+                sViewParseTree->querySet->lflag &= ~QMV_QUERYSET_RECURSIVE_VIEW_MASK;
+                sViewParseTree->querySet->lflag |= QMV_QUERYSET_RECURSIVE_VIEW_TOP;
             }
             else
             {
                 // Nothing to do.
             }
 
+            /* TASK-7219 Shard Transformer Refactoring */
+            sOrgPSMFlag                        = sWithClause->stmt->calledByPSMFlag;
+            sWithClause->stmt->calledByPSMFlag = aStatement->calledByPSMFlag;
+
             IDE_TEST( qmv::validateSelect( sWithClause->stmt )
                       != IDE_SUCCESS );
+
+            /* TASK-7219 Shard Transformer Refactoring */
+            sWithClause->stmt->calledByPSMFlag = sOrgPSMFlag;
 
             sStmtListMgr->current = NULL;
             
@@ -198,23 +216,28 @@ IDE_RC qmvWith::validate( qcStatement * aStatement )
             IDE_TEST( validateColumnAlias( sWithClause )
                       != IDE_SUCCESS );
             
-            /* ìƒìœ„ ë…¸ë“œì™€ ì—°ê²° */
+            /* »óÀ§ ³ëµå¿Í ¿¬°á */
             sNewNode->next = sPrevHead;
 
             if ( sFirstQueryBlcok == ID_TRUE )
             {
-                /* ìµœì´ˆ ìƒì„±ì‹œì—ëŠ” í—¤ë“œì— ë¶™ì¸ë‹¤. */
+                /* ÃÖÃÊ »ý¼º½Ã¿¡´Â Çìµå¿¡ ºÙÀÎ´Ù. */
                 sStmtListMgr->head     = sNewNode;
                 sCurNode               = sNewNode;
                 sFirstQueryBlcok       = ID_FALSE;
             }
             else
             {
-                /* ì´í›„ì—ëŠ” ë’¤ì— ë¶™ì¸ë‹¤. */
+                /* ÀÌÈÄ¿¡´Â µÚ¿¡ ºÙÀÎ´Ù. */
                 sCurNode->next = sNewNode;
                 sCurNode       = sNewNode;
             }
         }
+
+        /* TASK-7219 Shard Transformer Refactoring */
+        IDE_TEST( sdi::unsetQuerySetListState( aStatement,
+                                               sIsChanged )
+                  != IDE_SUCCESS );
     }
     else
     {
@@ -297,40 +320,40 @@ IDE_RC qmvWith::parseViewInTableRef( qcStatement * aStatement,
             {
                 if ( sCurWithStmt->isTop == ID_TRUE )
                 {
-                    // ìµœìƒìœ„ recursive view
+                    // ÃÖ»óÀ§ recursive view
                     IDE_TEST( makeParseTree( aStatement,
                                              aTableRef,
                                              sCurWithStmt )
                               != IDE_SUCCESS );
 
-                    // viewë¥¼ recursive viewë¡œ ë³€ê²½
+                    // view¸¦ recursive view·Î º¯°æ
                     aTableRef->recursiveView = aTableRef->view;
-                    
+
                     IDE_TEST( makeParseTree( aStatement,
                                              aTableRef,
                                              sCurWithStmt )
                               != IDE_SUCCESS );
 
-                    // viewë¥¼ recursive viewë¡œ ë³€ê²½ (ìž¬ê·€í˜¸ì¶œìš© ìž„ì‹œ)
+                    // view¸¦ recursive view·Î º¯°æ (Àç±ÍÈ£Ãâ¿ë ÀÓ½Ã)
                     aTableRef->tempRecursiveView = aTableRef->view;
                     
                     aTableRef->view = NULL;
 
-                    /* BUG-46932 from ì ˆì— recursive with viewë¥¼ ì‚¬ìš©í•˜ê³  ìžˆë‹¤ */
+                    /* BUG-46932 from Àý¿¡ recursive with view¸¦ »ç¿ëÇÏ°í ÀÖ´Ù */
                     sQuerySet = ((qmsParseTree*)aStatement->myPlan->parseTree)->querySet;
-                    sQuerySet->flag &= ~QMV_QUERYSET_FROM_RECURSIVE_WITH_MASK;
-                    sQuerySet->flag |= QMV_QUERYSET_FROM_RECURSIVE_WITH_TRUE;
+                    sQuerySet->lflag &= ~QMV_QUERYSET_FROM_RECURSIVE_WITH_MASK;
+                    sQuerySet->lflag |= QMV_QUERYSET_FROM_RECURSIVE_WITH_TRUE;
 
-                    // ë‹¤ìŒ ë¶€í„°ëŠ” í•˜ìœ„ recursive viewì´ë‹¤.
+                    // ´ÙÀ½ ºÎÅÍ´Â ÇÏÀ§ recursive viewÀÌ´Ù.
                     sCurWithStmt->isTop = ID_FALSE;
                 }
                 else
                 {
-                    // í•˜ìœ„ recursive view
+                    // ÇÏÀ§ recursive view
                     // Nothing to do.
                 }
                 
-                // recursive viewì¸ ê²½ìš°
+                // recursive viewÀÎ °æ¿ì
                 aTableRef->flag &= ~QMS_TABLE_REF_RECURSIVE_VIEW_MASK;
                 aTableRef->flag |= QMS_TABLE_REF_RECURSIVE_VIEW_TRUE;
             }
@@ -342,8 +365,12 @@ IDE_RC qmvWith::parseViewInTableRef( qcStatement * aStatement,
                           != IDE_SUCCESS );
             }
 
-            // ì°¾ì€ withStmtListë¥¼ í• ë‹¹ í•œë‹¤.
+            // Ã£Àº withStmtList¸¦ ÇÒ´ç ÇÑ´Ù.
             aTableRef->withStmt = sCurWithStmt;
+            
+            // BUG-48090 aTableRef¿¡ With View ÇÃ·¡±×¸¦ ¼³Á¤ÇÑ´Ù.
+            aTableRef->flag &= ~QMS_TABLE_REF_WITH_VIEW_MASK;
+            aTableRef->flag |= QMS_TABLE_REF_WITH_VIEW_TRUE;
             break;
         }
         else
@@ -376,15 +403,15 @@ IDE_RC qmvWith::parseViewInTableRef( qcStatement * aStatement,
         
         if ( sIsFound == ID_TRUE )
         {
-            // recursive withì´ë‹¤.
+            // recursive withÀÌ´Ù.
             sCurWithStmt->isRecursiveView = ID_TRUE;
-            // ë‹¤ìŒì€ ìµœìƒìœ„ recursive view
+            // ´ÙÀ½Àº ÃÖ»óÀ§ recursive view
             sCurWithStmt->isTop = ID_TRUE;
             
             aTableRef->flag &= ~QMS_TABLE_REF_RECURSIVE_VIEW_MASK;
             aTableRef->flag |= QMS_TABLE_REF_RECURSIVE_VIEW_TRUE;
             
-            // ì°¾ì€ withStmtListë¥¼ í• ë‹¹ í•œë‹¤.
+            // Ã£Àº withStmtList¸¦ ÇÒ´ç ÇÑ´Ù.
             aTableRef->withStmt = sCurWithStmt;
             break;
         }
@@ -393,7 +420,7 @@ IDE_RC qmvWith::parseViewInTableRef( qcStatement * aStatement,
             // Nothing to do.
         }
 
-        // ëª»ì°¾ì€ ê²½ìš°
+        // ¸øÃ£Àº °æ¿ì
         aTableRef->withStmt = NULL;
         break;
     }
@@ -406,7 +433,7 @@ IDE_RC qmvWith::parseViewInTableRef( qcStatement * aStatement,
 }
 
 /*
- * with clauseë¥¼ ì´ìš©í•´ì„œ with stmtì— ê°’ì„ ì„¸íŒ… í•œë‹¤.
+ * with clause¸¦ ÀÌ¿ëÇØ¼­ with stmt¿¡ °ªÀ» ¼¼ÆÃ ÇÑ´Ù.
  */
 IDE_RC qmvWith::makeWithStmtFromWithClause( qcStatement        * aStatement,
                                             qcStmtListMgr      * aStmtListMgr,
@@ -439,7 +466,7 @@ IDE_RC qmvWith::makeWithStmtFromWithClause( qcStatement        * aStatement,
 
     sNewNode->tableID = sNextTableID;
 
-    /* tableID sequence ì¦ê°€ */
+    /* tableID sequence Áõ°¡ */
     aStmtListMgr->tableIDSeqNext++;
 
     *aNewNode = sNewNode;
@@ -458,10 +485,10 @@ IDE_RC qmvWith::makeWithStmtFromWithClause( qcStatement        * aStatement,
 }
 
 /*
- * with stmt list ì—ì„œ ì–»ì€ stmtTextë¥¼ ì´ìš©í•´ì„œ parse treeë¥¼ ìƒì„±í•œë‹¤.
- * 1. stmtTextë¥¼ ì´ìš©í•´ì„œ parse treeë¥¼ ë§Œë“ ë‹¤.
- * 2. aTableRef->viewì— statementë¥¼ í• ë‹¹í•´ì„œ inline ë·°ë¡œ ë§Œë“¤ì–´ì¤€ë‹¤.
- * 3. stmtNameìœ¼ë¡œ aliasë¥¼ ìƒì„±í•œë‹¤.
+ * with stmt list ¿¡¼­ ¾òÀº stmtText¸¦ ÀÌ¿ëÇØ¼­ parse tree¸¦ »ý¼ºÇÑ´Ù.
+ * 1. stmtText¸¦ ÀÌ¿ëÇØ¼­ parse tree¸¦ ¸¸µç´Ù.
+ * 2. aTableRef->view¿¡ statement¸¦ ÇÒ´çÇØ¼­ inline ºä·Î ¸¸µé¾îÁØ´Ù.
+ * 3. stmtNameÀ¸·Î alias¸¦ »ý¼ºÇÑ´Ù.
  */
 IDE_RC qmvWith::makeParseTree( qcStatement * aStatement,
                                qmsTableRef * aTableRef,
@@ -477,7 +504,10 @@ IDE_RC qmvWith::makeParseTree( qcStatement * aStatement,
     // set meber of qcStatement
     idlOS::memcpy( sStatement, aStatement, ID_SIZEOF(qcStatement) );
 
-    // myPlanì„ ìž¬ì„¤ì •í•œë‹¤.
+    /* TASK-7219 */
+    SDI_INIT_PRINT_INFO( &( sStatement->mShardPrintInfo ) );
+
+    // myPlanÀ» Àç¼³Á¤ÇÑ´Ù.
     sStatement->myPlan = &sStatement->privatePlan;
     sStatement->myPlan->planEnv = NULL;
 
@@ -507,7 +537,7 @@ IDE_RC qmvWith::makeParseTree( qcStatement * aStatement,
         /* Nothing to do. */
     }
 
-    // planEnvë¥¼ ìž¬ì„¤ì •í•œë‹¤.
+    // planEnv¸¦ Àç¼³Á¤ÇÑ´Ù.
     aTableRef->view->myPlan->planEnv = aStatement->myPlan->planEnv;
 
     return IDE_SUCCESS;
@@ -530,7 +560,7 @@ IDE_RC qmvWith::validateColumnAlias( qmsWithClause  * aWithClause )
     
     if ( aWithClause->columns != NULL )
     {
-        // columnsì˜ ê°¯ìˆ˜ì™€ targetì˜ ê°¯ìˆ˜ê°€ ë™ì¼í•´ì•¼ í•œë‹¤.
+        // columnsÀÇ °¹¼ö¿Í targetÀÇ °¹¼ö°¡ µ¿ÀÏÇØ¾ß ÇÑ´Ù.
         for ( sColumn = aWithClause->columns,
                   sTarget = sParseTree->querySet->target;
               sColumn != NULL;

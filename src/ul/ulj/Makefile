@@ -63,13 +63,13 @@ INCLUDES += $(IDROPT)$(UL_DIR_JDBC)/include       \
             $(IDROPT)$(JAVA_HOME)/include         \
             $(IDROPT)$(JAVA_HOME)/include/linux
 
-include jdbc_jdk14.mk
+include jdbc_jdk18.mk
 include jdbc_shard.mk
 
 ifeq  "$(debug)"  "0"
-JAVAC = $(JDK)/bin/javac -g:none -O -nowarn
+JAVAC = $(JDK)/bin/javac -g:none -O -nowarn -encoding euc-kr
 else
-JAVAC = $(JDK)/bin/javac -g -nowarn
+JAVAC = $(JDK)/bin/javac -g -nowarn -encoding euc-kr
 endif
 JAVAH = $(JDK)/bin/javah
 

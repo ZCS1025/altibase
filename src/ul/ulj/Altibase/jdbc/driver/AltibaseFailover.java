@@ -16,35 +16,41 @@
 
 package Altibase.jdbc.driver;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import Altibase.jdbc.driver.cm.CmChannel;
-import Altibase.jdbc.driver.cm.CmProtocolContextShardConnect;
+import Altibase.jdbc.driver.cm.CmOperation;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
 import Altibase.jdbc.driver.ex.ShardFailOverSuccessException;
 import Altibase.jdbc.driver.logging.LoggingProxy;
 import Altibase.jdbc.driver.logging.TraceFlag;
-import Altibase.jdbc.driver.cm.CmShardProtocol;
 import Altibase.jdbc.driver.sharding.core.AltibaseShardingConnection;
+import Altibase.jdbc.driver.sharding.core.AltibaseShardingFailover;
+import Altibase.jdbc.driver.sharding.core.DataNode;
+import Altibase.jdbc.driver.sharding.core.ShardNodeConfig;
 import Altibase.jdbc.driver.util.AltibaseProperties;
 import Altibase.jdbc.driver.util.StringUtils;
 
+import static Altibase.jdbc.driver.util.AltibaseProperties.PROP_SHARD_PIN;
+
 public final class AltibaseFailover
 {
-    enum CallbackState
+    public enum CallbackState
     {
         STOPPED,
         IN_PROGRESS,
     }
 
     /* BUG-31390 Failover info for v$session */
-    enum FailoverType
+    public enum FailoverType
     {
         CTF,
         STF,
@@ -52,7 +58,7 @@ public final class AltibaseFailover
 
     private static Logger    mLogger;
 
-    static 
+    static
     {
         if (TraceFlag.TRACE_COMPILE && TraceFlag.TRACE_ENABLED)
         {
@@ -65,25 +71,53 @@ public final class AltibaseFailover
     }
 
     /**
-     * CTFë¥¼ ì‹œë„í•˜ê³ , ê²°ê³¼ì— ë”°ë¼ ê²½ê³ ë¥¼ ë‚¨ê¸°ê±°ë‚˜ ì›ë˜ë‚¬ë˜ ì˜ˆì™¸ë¥¼ ë‹¤ì‹œ ë˜ì§„ë‹¤.
+     * CTF¸¦ ½ÃµµÇÏ°í, °á°ú¿¡ µû¶ó °æ°í¸¦ ³²±â°Å³ª ¿ø·¡³µ´ø ¿¹¿Ü¸¦ ´Ù½Ã ´øÁø´Ù.
      *
      * @param aContext Failover context
-     * @param aWarning ê²½ê³ ë¥¼ ë‹´ì„ ê°ì²´. nullì´ë©´ ìƒˆ ê°ì²´ë¥¼ ë§Œë“ ë‹¤.
-     * @param aException ì›ë˜ ë‚¬ë˜ ì˜ˆì™¸
-     * @return ê²½ê³ ë¥¼ ë‹´ì€ ê°ì²´
-     * @throws SQLException CTFë¥¼ í•  ìƒí™©ì´ ì•„ë‹ˆê±°ë‚˜ CTFì— ì‹¤íŒ¨í•œ ê²½ìš°
+     * @param aWarning °æ°í¸¦ ´ãÀ» °´Ã¼. nullÀÌ¸é »õ °´Ã¼¸¦ ¸¸µç´Ù.
+     * @param aException ¿ø·¡ ³µ´ø ¿¹¿Ü
+     * @return °æ°í¸¦ ´ãÀº °´Ã¼
+     * @throws SQLException CTF¸¦ ÇÒ »óÈ²ÀÌ ¾Æ´Ï°Å³ª CTF¿¡ ½ÇÆĞÇÑ °æ¿ì
      */
-    public static SQLWarning tryCTF(AltibaseFailoverContext aContext, SQLWarning aWarning, SQLException aException) throws SQLException
+    static SQLWarning tryCTF(AltibaseFailoverContext aContext, SQLWarning aWarning, SQLException aException) throws SQLException
     {
         if (!AltibaseFailover.checkNeedCTF(aContext, aException))
         {
             throw aException;
         }
-
-        boolean sCTFSuccess = AltibaseFailover.doCTF(aContext);
-        if (sCTFSuccess == false)
+        AltibaseConnection sConn = aContext.getConnection();
+        if (!AltibaseFailover.doCTF(aContext))
         {
+            /* BUG-47145 node connectionÀÌ°í lazy¸ğµåÀÏ¶§ ctf¿¡ ½ÇÆĞÇÑ °æ¿ì
+               ShardFailoverIsNotAvailableExceptionÀ» ¿Ã¸°´Ù. */
+            if (sConn.isNodeConnection() && sConn.getMetaConnection().isLazyNodeConnect())
+            {
+                CmOperation.throwShardFailoverIsNotAvailableException(sConn.getNodeName(),
+                                                                      sConn.getServer(),
+                                                                      sConn.getPort());
+            }
             throw aException;
+        }
+        // BUG-46790 shard connectionÀÎ °æ¿ì¿¡´Â notify failover ¸Ş¼¼Áö¸¦ º¸³½´Ù.
+        if (sConn.isShardConnection())
+        {
+            AltibaseShardingConnection sMetaCon = sConn.getMetaConnection();
+            AltibaseShardingFailover sShardFailover = sMetaCon.getShardFailover();
+            sShardFailover.notifyFailover(sConn);
+
+            /* BUG-47145 node connection¿¡¼­ CTF°¡ ¹ß»ıÇßÀ»¶§ autocommit false, lazy node connect »óÅÂ¶ó¸é
+               STF success¸¦ ¿Ã·Á¾ß ÇÑ´Ù. */
+            if (sConn.isNodeConnection() && !sMetaCon.getAutoCommit() && sMetaCon.isLazyNodeConnect())
+            {
+                ShardNodeConfig sNodeConfg = sMetaCon.getShardNodeConfig();
+                DataNode sNode = sNodeConfg.getNodeByName(sConn.getNodeName());
+                Map<DataNode, Connection> sCachedMap = sMetaCon.getCachedConnections();
+                // BUG-47145 CTF·Î º¹±¸µÈ connectionÀ» cached node connection map¿¡ ÀúÀåÇÑ´Ù.
+                sCachedMap.put(sNode, sConn);
+                throw new ShardFailOverSuccessException(aException.getMessage(),
+                                                        ErrorDef.FAILOVER_SUCCESS,
+                                                        sConn.getNodeName(), sConn.getServer(), sConn.getPort());
+            }
         }
 
         /* BUG-32917 Connection Time Failover(CTF) information should be logged */
@@ -97,14 +131,14 @@ public final class AltibaseFailover
     }
 
     /**
-     * STFë¥¼ ì‹œë„í•˜ê³ , ê²°ê³¼ì— ë”°ë¼ ì˜ˆì™¸ë¥¼ ë˜ì§„ë‹¤.
-     * ì„±ê³µí–ˆì„ë•Œë„ ì˜ˆì™¸ë¥¼ ë˜ì ¸ STF ì„±ê³µì„ ì•Œë¦°ë‹¤.
+     * STF¸¦ ½ÃµµÇÏ°í, °á°ú¿¡ µû¶ó ¿¹¿Ü¸¦ ´øÁø´Ù.
+     * ¼º°øÇßÀ»¶§µµ ¿¹¿Ü¸¦ ´øÁ® STF ¼º°øÀ» ¾Ë¸°´Ù.
      * <p>
-     * ë§Œì•½ failover contextê°€ ì´ˆê¸°í™”ë˜ì§€ ì•Šì•˜ë‹¤ë©´ ì›ë˜ ë‚¬ë˜ ì˜ˆì™¸ë¥¼ ë˜ì§€ê±°ë‚˜ ì‚¬ìš©ìê°€ ë„˜ê¸´ ê²½ê³  ê°ì²´ë¥¼ ê·¸ëŒ€ë¡œ ë°˜í™˜í•œë‹¤.
+     * ¸¸¾à failover context°¡ ÃÊ±âÈ­µÇÁö ¾Ê¾Ò´Ù¸é ¿ø·¡ ³µ´ø ¿¹¿Ü¸¦ ´øÁö°Å³ª »ç¿ëÀÚ°¡ ³Ñ±ä °æ°í °´Ã¼¸¦ ±×´ë·Î ¹İÈ¯ÇÑ´Ù.
      *
      * @param aContext Failover context
-     * @param aException ì›ë˜ ë‚¬ë˜ ì˜ˆì™¸
-     * @throws SQLException STFì— ì‹¤íŒ¨í–ˆë‹¤ë©´ ì›ë˜ ë‚¬ë˜ ì˜ˆì™¸, ì•„ë‹ˆë©´ STF ì„±ê³µì„ ì•Œë¦¬ëŠ” ì˜ˆì™¸
+     * @param aException ¿ø·¡ ³µ´ø ¿¹¿Ü
+     * @throws SQLException STF¿¡ ½ÇÆĞÇß´Ù¸é ¿ø·¡ ³µ´ø ¿¹¿Ü, ¾Æ´Ï¸é STF ¼º°øÀ» ¾Ë¸®´Â ¿¹¿Ü
      */
     public static void trySTF(AltibaseFailoverContext aContext, SQLException aException) throws SQLException
     {
@@ -112,33 +146,48 @@ public final class AltibaseFailover
         {
             throw aException;
         }
-
+        AltibaseFailoverServerInfo sOldServerInfo = aContext.getCurrentServer();
         boolean sSTFSuccess = AltibaseFailover.doSTF(aContext);
+        AltibaseConnection sConn = aContext.getConnection();
+        /* BUG-46790 meta connection ÀÌ°í autocommitÀÌ false ÀÎ °æ¿ì¿¡´Â stf¼º°ø¿©ºÎ¿¡ »ó°ü¾øÀÌ
+           Àü³ëµåµé¿¡ touch¸¦ ÇØÁØ´Ù. */
+        AltibaseProperties sProps = aContext.connectionProperties();
+        if (sConn.isMetaConnection() && !sProps.isAutoCommit())
+        {
+            AltibaseShardingFailover sShardFailover = sConn.getMetaConnection().getShardFailover();
+            sShardFailover.setTouchedToAllNodes();
+        }
         if (sSTFSuccess)
         {
-            AltibaseConnection sConn = aContext.getConnection();
-            // node connectionì¸ ê²½ìš°ì—ëŠ” ShardFailOverSuccessExceptionì„ ë˜ì§„ë‹¤.
-            if (sConn.isNodeConnection())
+            // BUG-46790 shard connection(meta, node)ÀÎ °æ¿ì¿¡´Â ShardFailOverSuccessExceptionÀ» ´øÁø´Ù.
+            if (sConn.isShardConnection())
             {
-                ShardFailOverSuccessException sFOSException =
-                        new ShardFailOverSuccessException(aException.getMessage(),
-                                                          ErrorDef.FAILOVER_SUCCESS,
-                                                          sConn.getNodeName());
-                throw sFOSException;
+                throw new ShardFailOverSuccessException(aException.getMessage(),
+                                                        ErrorDef.FAILOVER_SUCCESS,
+                                                        sConn.getNodeName(),
+                                                        sConn.getServer(),
+                                                        sOldServerInfo.getPort());
             }
             Error.throwSQLExceptionForFailover(aException);
         }
-        else 
+        else
         {
+            // BUG-47145 node connectionÀÌ°í stf¿¡ ½ÇÆĞÇÑ °æ¿ì ShardFailoverIsNotAvailableExceptionÀ» ¿Ã¸°´Ù.
+            if (sConn.isNodeConnection())
+            {
+                CmOperation.throwShardFailoverIsNotAvailableException(sConn.getNodeName(),
+                                                                      sConn.getServer(),
+                                                                      sConn.getPort());
+            }
             throw aException;
-        }           
+        }
     }
 
     /**
-     * CTFë¥¼ ìœ„í•´ alternateserversì—ì„œ ì‚¬ìš© ê°€ëŠ¥í•œ ì„œë²„ë¥¼ ì„ íƒí•´ ì ‘ì†í•œë‹¤.
+     * CTF¸¦ À§ÇØ alternateservers¿¡¼­ »ç¿ë °¡´ÉÇÑ ¼­¹ö¸¦ ¼±ÅÃÇØ Á¢¼ÓÇÑ´Ù.
      *
      * @param aContext Failover context
-     * @return CTF ì„±ê³µ ì—¬ë¶€
+     * @return CTF ¼º°ø ¿©ºÎ
      */
     private static boolean doCTF(AltibaseFailoverContext aContext)
     {
@@ -146,20 +195,33 @@ public final class AltibaseFailover
     }
 
     /**
-     * CTF ë˜ëŠ” STFë¥¼ ìœ„í•´ alternateserversì—ì„œ ì‚¬ìš© ê°€ëŠ¥í•œ ì„œë²„ë¥¼ ì„ íƒí•´ ì ‘ì†í•œë‹¤.
+     * shard failover alignÀ» ÇÒ¶§ ¼öÇàµÇ¸ç Æ¯Á¤ ¼­¹ö·Î CTF¸¦ ½ÃµµÇÑ´Ù.
+     * @param aContext Failover context °´Ã¼
+     * @param aFailoverType Failover Å¸ÀÔ
+     * @param aNewServerInfo Á¢¼ÓÇÒ ¼­¹ö
+     * @return aNewServerInfo ¼­¹ö·ÎÀÇ CTF ¼º°ø¿©ºÎ
+     */
+    public static boolean doCTF(AltibaseFailoverContext aContext, FailoverType aFailoverType,
+                                AltibaseFailoverServerInfo aNewServerInfo)
+    {
+
+        return connectToAlternateServer(aContext, aFailoverType, aContext.connectionProperties(), aNewServerInfo);
+
+    }
+
+    /**
+     * CTF ¶Ç´Â STF¸¦ À§ÇØ alternateservers¿¡¼­ »ç¿ë °¡´ÉÇÑ ¼­¹ö¸¦ ¼±ÅÃÇØ Á¢¼ÓÇÑ´Ù.
      *
      * @param aContext Failover context
-     * @param aFailoverType Failover ìœ í˜•
-     * @return CTF ì„±ê³µ ì—¬ë¶€
+     * @param aFailoverType Failover À¯Çü
+     * @return CTF ¼º°ø ¿©ºÎ
      */
     private static boolean doCTF(AltibaseFailoverContext aContext, FailoverType aFailoverType)
     {
         final AltibaseProperties sProp = aContext.connectionProperties();
         final AltibaseFailoverServerInfo sOldServerInfo = aContext.getCurrentServer();
-        final int sMaxConnectionRetry = sProp.getConnectionRetryCount();
-        final int sConnectionRetryDelay = sProp.getConnectionRetryDelay() * 1000; // millisecond
 
-        ArrayList<AltibaseFailoverServerInfo> sTryList = new ArrayList<AltibaseFailoverServerInfo>(aContext.getFailoverServerList());
+        List<AltibaseFailoverServerInfo> sTryList = aContext.getFailoverServerList().getList();
         if (sProp.useLoadBalance())
         {
             Collections.shuffle(sTryList);
@@ -171,41 +233,58 @@ public final class AltibaseFailover
         }
         for (AltibaseFailoverServerInfo sNewServerInfo : sTryList)
         {
-            for (int sRemainRetryCnt = Math.max(1, sMaxConnectionRetry); sRemainRetryCnt > 0; sRemainRetryCnt--)
+            if (connectToAlternateServer(aContext, aFailoverType, sProp, sNewServerInfo))
             {
-                /* BUG-43219 ë§¤ ì ‘ì†ì‹œë§ˆë‹¤ ì±„ë„ì„ ì¬ìƒì„±í•´ì•¼ í•œë‹¤. ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ì²«ë²ˆì§¸ ì ‘ì† ì •ë³´ê°€ ë’¤ì—ì˜¤ëŠ” ì ‘ì†ì— ì˜í–¥ì„ ë¼ì¹œë‹¤. */
-                CmChannel sNewChannel = new CmChannel();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean connectToAlternateServer(AltibaseFailoverContext aContext,
+                                                    FailoverType aFailoverType, 
+                                                    AltibaseProperties aProp, 
+                                                    AltibaseFailoverServerInfo aNewServerInfo)
+    {
+        int sMaxConnectionRetry = aProp.getConnectionRetryCount();
+        int sConnectionRetryDelay = aProp.getConnectionRetryDelay() * 1000; // millisecond
+        AltibaseFailoverServerInfo sOldServerInfo = aContext.getCurrentServer();
+        
+        for (int sRemainRetryCnt = Math.max(1, sMaxConnectionRetry); sRemainRetryCnt > 0; sRemainRetryCnt--)
+        {
+            /* BUG-43219 ¸Å Á¢¼Ó½Ã¸¶´Ù Ã¤³ÎÀ» Àç»ı¼ºÇØ¾ß ÇÑ´Ù. ±×·¸Áö ¾ÊÀ¸¸é Ã¹¹øÂ° Á¢¼Ó Á¤º¸°¡ µÚ¿¡¿À´Â Á¢¼Ó¿¡ ¿µÇâÀ» ³¢Ä£´Ù. */
+            CmChannel sNewChannel = new CmChannel();
+            try
+            {
+                sNewChannel.open(aNewServerInfo.getServer(),
+                                 aProp.getSockBindAddr(),
+                                 aNewServerInfo.getPort(),
+                                 aProp.getLoginTimeout());
+                setFailoverSource(aContext, aFailoverType, sOldServerInfo);
+                aContext.setCurrentServer(aNewServerInfo);
+                AltibaseFailover.changeChannelAndConnect(aContext, sNewChannel, aNewServerInfo);
+                if (TraceFlag.TRACE_COMPILE && TraceFlag.TRACE_ENABLED)
+                {
+                    mLogger.log(Level.INFO, "Success to connect to (" + aNewServerInfo + ")");
+                }
+                
+                return true;
+            }
+            catch (Exception aEx)
+            {
+                if (TraceFlag.TRACE_COMPILE && TraceFlag.TRACE_ENABLED)
+                {
+                    mLogger.log(Level.INFO, "Failure to connect to (" + aNewServerInfo + ")", aEx);
+                    mLogger.log(Level.INFO, "Sleep " + sConnectionRetryDelay);
+                }
                 try
                 {
-                    sNewChannel.open(sNewServerInfo.getServer(),
-                                     sProp.getSockBindAddr(),
-                                     sNewServerInfo.getPort(),                                         
-                                     sProp.getLoginTimeout(),
-                                     sProp.getResponseTimeout());
-                    setFailoverSource(aContext, aFailoverType, sOldServerInfo);
-                    aContext.setCurrentServer(sNewServerInfo);
-                    AltibaseFailover.changeChannelAndConnect(aContext, sNewChannel, sNewServerInfo);
-                    if (TraceFlag.TRACE_COMPILE && TraceFlag.TRACE_ENABLED)
-                    {
-                        mLogger.log(Level.INFO, "Success to connect to (" + sNewServerInfo + ")");
-                    }
-                    return true;
+                    Thread.sleep(sConnectionRetryDelay);
                 }
-                catch (Exception aEx)
+                catch (InterruptedException sExSleep)
                 {
-                    if (TraceFlag.TRACE_COMPILE && TraceFlag.TRACE_ENABLED)
-                    {
-                        mLogger.log(Level.INFO, "Failure to connect to (" + sNewServerInfo + ")", aEx);
-                        mLogger.log(Level.INFO, "Sleep "+ sConnectionRetryDelay);
-                    }
-                    try
-                    {
-                        Thread.sleep(sConnectionRetryDelay);
-                    }
-                    catch (InterruptedException sExSleep)
-                    {
-                        // ignore
-                    }
+                    // ignore
                 }
             }
         }
@@ -214,45 +293,65 @@ public final class AltibaseFailover
     }
 
     /**
-     * <tt>CmChannel</tt>ì„ ë°”ê¾¸ê³ , ê·¸ë¥¼ ì´ìš©í•´ <tt>connect</tt>ë¥¼ ì‹œë„í•œë‹¤.
+     * <tt>CmChannel</tt>À» ¹Ù²Ù°í, ±×¸¦ ÀÌ¿ëÇØ <tt>connect</tt>¸¦ ½ÃµµÇÑ´Ù.
      *
      * @param aContext Failover contest
-     * @param aChannel ë°”ê¿€ <tt>CmChannel</tt>
-     * @param aServerInfo AltibaseFailoverServerInfo ì •ë³´
-     * @throws SQLException ìƒˆ <tt>CmChannel</tt>ì„ ì´ìš©í•˜ <tt>connect</tt>ì— ì‹¤íŒ¨í•œ ê²½ìš°
+     * @param aChannel ¹Ù²Ü <tt>CmChannel</tt>
+     * @param aServerInfo AltibaseFailoverServerInfo Á¤º¸
+     * @throws SQLException »õ <tt>CmChannel</tt>À» ÀÌ¿ëÇÏ <tt>connect</tt>¿¡ ½ÇÆĞÇÑ °æ¿ì
      */
-    private static void changeChannelAndConnect(AltibaseFailoverContext aContext, CmChannel aChannel, AltibaseFailoverServerInfo aServerInfo) throws SQLException
+    private static void changeChannelAndConnect(AltibaseFailoverContext aContext, CmChannel aChannel,
+                                                AltibaseFailoverServerInfo aServerInfo) throws SQLException
     {
         AltibaseConnection sConn = aContext.getConnection();
-
+        AltibaseProperties sProps = aContext.connectionProperties();
         sConn.setChannel(aChannel);
         sConn.handshake();
-        /* BUG-43219 set dbname property */
-        AltibaseProperties sProps = aContext.connectionProperties();
+        if (sConn.isShardConnection())
+        {
+            sConn.shardHandshake();
+            if (sConn.isMetaConnection())  // BUG-46790 meta connectionÀÎ °æ¿ì¿¡´Â CTF ¼º°øÈÄ channel°´Ã¼¸¦ ±³Ã¼ÇØ ÁØ´Ù.
+            {
+                AltibaseShardingConnection sMetaConn = sConn.getMetaConnection();
+                sMetaConn.setChannel(aChannel);
+                long sShardPin = sMetaConn.getShardContextConnect().getShardPin();
+                // BUG-46790 meta nodeÀÎ °æ¿ì channelÀ» ±³Ã¼ÇÑ ÈÄ ±âÁ¸ shardpin °ªÀ» ´Ù½Ã ¼ÂÆÃÇØ ÁØ´Ù.
+                sProps.put(PROP_SHARD_PIN, String.valueOf(sShardPin));
+            }
+        }
+        sConn.setClosed(false);
         sProps.setDatabase(aServerInfo.getDatabase());
+        sProps.setAutoCommit(sConn.getAutoCommit());
         sConn.connect(sProps);
     }
 
     /**
-     * CTFì™€ Failover callbackì„ ìˆ˜í–‰í•œë‹¤.
-     * callback ê²°ê³¼ì— ë”°ë¼ STFë¥¼ ê³„ì† ì§„í–‰í• ì§€ ê·¸ë§Œë‘˜ì§€ë¥¼ ê²°ì •í•œë‹¤.
+     * CTF¿Í Failover callbackÀ» ¼öÇàÇÑ´Ù.
+     * callback °á°ú¿¡ µû¶ó STF¸¦ °è¼Ó ÁøÇàÇÒÁö ±×¸¸µÑÁö¸¦ °áÁ¤ÇÑ´Ù.
      *
      * @param aContext Failover context
-     * @return STF ì„±ê³µ ì—¬ë¶€
-     * @throws SQLException STFë¥¼ ìœ„í•´ <tt>Statement</tt>ë¥¼ ì •ë¦¬í•˜ë‹¤ê°€ ì‹¤íŒ¨í•œ ê²½ìš°
+     * @return STF ¼º°ø ¿©ºÎ
+     * @throws SQLException STF¸¦ À§ÇØ <tt>Statement</tt>¸¦ Á¤¸®ÇÏ´Ù°¡ ½ÇÆĞÇÑ °æ¿ì
      */
     private static boolean doSTF(AltibaseFailoverContext aContext) throws SQLException
     {
-
         int sFailoverIntention;
         boolean sFOSuccess;
         int sFailoverEvent;
         AltibaseFailoverCallback sFailoverCallback = aContext.getCallback();
+        AltibaseConnection sConn = aContext.getConnection();
 
-        aContext.getConnection().clearStatements4STF();
+        // BUG-46790 node connection¿¡¼­ ¹ß»ıÇÑ STFÀÏ °æ¿ì¿¡´Â dummy callbackÀ¸·Î ¼ÂÆÃÇÑ´Ù.
+        if (sConn.isNodeConnection() && !(sFailoverCallback instanceof AltibaseFailoverCallbackDummy))
+        {
+            sFailoverCallback = new AltibaseFailoverCallbackDummy();
+            aContext.setCallback(sFailoverCallback);
+        }
 
         aContext.setCallbackState(CallbackState.IN_PROGRESS);
-        sFailoverIntention = sFailoverCallback.failoverCallback(aContext.getConnection(), aContext.getAppContext(), AltibaseFailoverCallback.Event.BEGIN);
+        sFailoverIntention = sFailoverCallback.failoverCallback(aContext.getConnection(),
+                                                                aContext.getAppContext(),
+                                                                AltibaseFailoverCallback.Event.BEGIN);
         aContext.setCallbackState(CallbackState.STOPPED);
 
         if (sFailoverIntention == AltibaseFailoverCallback.Result.QUIT)
@@ -262,14 +361,20 @@ public final class AltibaseFailover
         else
         {
             sFOSuccess = doCTF(aContext, FailoverType.STF);
+            sConn.clearStatements4STF();
 
-            if (sFOSuccess == true)
+            if (sFOSuccess)
             {
+                // BUG-46790 shard connectionÀÎ °æ¿ì¿¡´Â notify failover ¸Ş¼¼Áö¸¦ º¸³½´Ù.
+                if (aContext.getConnection().isShardConnection())
+                {
+                    notifyShardFailover(aContext);
+                }
                 aContext.setCallbackState(CallbackState.IN_PROGRESS);
                 try
                 {
                     AltibaseXAResource sXAResource = aContext.getRelatedXAResource();
-                    if ((sXAResource != null) && (sXAResource.isOpen() == true))
+                    if ((sXAResource != null) && (sXAResource.isOpen()))
                     {
                         sXAResource.xaOpen();
                     }
@@ -282,9 +387,6 @@ public final class AltibaseFailover
                 sFailoverIntention = sFailoverCallback.failoverCallback(aContext.getConnection(), aContext.getAppContext(), sFailoverEvent);
                 aContext.setCallbackState(CallbackState.STOPPED);
 
-                // PROJ-2690 meta connectionì—ì„œ STFê°€ ë°œìƒí•œ ê²½ìš°ì—ëŠ” shard node listë¥¼ ê°±ì‹ í•œë‹¤.
-                updateShardNodeList(aContext.getConnection());
-
                 if ((sFailoverEvent == AltibaseFailoverCallback.Event.ABORT) ||
                     (sFailoverIntention == AltibaseFailoverCallback.Result.QUIT))
                 {
@@ -295,37 +397,31 @@ public final class AltibaseFailover
             else
             {
                 aContext.setCallbackState(CallbackState.IN_PROGRESS);
-                sFailoverIntention = sFailoverCallback.failoverCallback(aContext.getConnection(), aContext.getAppContext(), AltibaseFailoverCallback.Event.ABORT);
+                sFailoverCallback.failoverCallback(aContext.getConnection(), aContext.getAppContext(), AltibaseFailoverCallback.Event.ABORT);
                 aContext.setCallbackState(CallbackState.STOPPED);
+                // BUG-46790 CTF¿¡ ½ÇÆĞÇÑ °æ¿ì close flag¸¦ ¼ÂÆÃÇØ ÁØ´Ù.
+                sConn.setClosed(true);
             }
         }
         return sFOSuccess;
 
     }
 
-    private static void updateShardNodeList(AltibaseConnection aConn) throws SQLException
+    private static void notifyShardFailover(AltibaseFailoverContext aContext) throws SQLException
     {
-        AltibaseShardingConnection sShardCon = aConn.getMetaConnection();
-        if (sShardCon != null)
-        {
-            CmShardProtocol sShardProtocol = sShardCon.getShardProtocol();
-            AltibaseProperties sProps = sShardCon.getProps();
-            sShardProtocol.updateNodeList();
-            CmProtocolContextShardConnect sShardConnectContext = sShardCon.getShardContextConnect();
-            if (sShardConnectContext.getError() == null)
-            {
-                sShardConnectContext.createDataSources(sProps);
-            }
-        }
+        AltibaseShardingConnection sMetaCon = aContext.getConnection().getMetaConnection();
+        AltibaseShardingFailover sShardFailover = sMetaCon.getShardFailover();
+        sShardFailover.updateShardNodeList(aContext.getConnection());
+        sShardFailover.notifyFailover(aContext.getConnection());
     }
 
     /* BUG-31390 Failover info for v$session */
     /**
-     * V$SESSION.FAILOVER_SOURCEë¡œ ë³´ì—¬ì¤„ ê°’ì„ ìƒì„±í•´ Connection propertyë¡œ ì„¤ì •í•œë‹¤.
+     * V$SESSION.FAILOVER_SOURCE·Î º¸¿©ÁÙ °ªÀ» »ı¼ºÇØ Connection property·Î ¼³Á¤ÇÑ´Ù.
      *
      * @param aContext Failover Context
-     * @param aFailoverType Failover ìœ í˜•
-     * @param aServerInfo ì„¤ì •í•  ì„œë²„ ì •ë³´
+     * @param aFailoverType Failover À¯Çü
+     * @param aServerInfo ¼³Á¤ÇÒ ¼­¹ö Á¤º¸
      */
     private static void setFailoverSource(AltibaseFailoverContext aContext, FailoverType aFailoverType, AltibaseFailoverServerInfo aServerInfo)
     {
@@ -342,7 +438,7 @@ public final class AltibaseFailover
                 break;
 
             default:
-                // ë‚´ë¶€ì—ì„œë§Œ ì“°ë¯€ë¡œ, ì´ëŸ°ì¼ì€ ì ˆëŒ€ ì¼ì–´ë‚˜ì„  ì•ˆëœë‹¤.
+                // ³»ºÎ¿¡¼­¸¸ ¾²¹Ç·Î, ÀÌ·±ÀÏÀº Àı´ë ÀÏ¾î³ª¼± ¾ÈµÈ´Ù.
                 Error.throwInternalError(ErrorDef.INTERNAL_ASSERTION);
                 break;
         }
@@ -359,48 +455,40 @@ public final class AltibaseFailover
     }
 
     /**
-     * CTFê°€ í•„ìš”í•œì§€ í™•ì¸í•œë‹¤.
+     * CTF°¡ ÇÊ¿äÇÑÁö È®ÀÎÇÑ´Ù.
      *
-     * @param aContext Failoverì— ëŒ€í•œ ì •ë³´ë¥¼ ë‹´ì€ ê°ì²´
-     * @param aException CTFê°€ í•„ìš”í•œì§€ ë³¼ ì˜ˆì™¸
-     * @return CTFê°€ í•„ìš”í•˜ë©´ true, ì•„ë‹ˆë©´ false
+     * @param aContext Failover¿¡ ´ëÇÑ Á¤º¸¸¦ ´ãÀº °´Ã¼
+     * @param aException CTF°¡ ÇÊ¿äÇÑÁö º¼ ¿¹¿Ü
+     * @return CTF°¡ ÇÊ¿äÇÏ¸é true, ¾Æ´Ï¸é false
      */
-    private static boolean checkNeedCTF(AltibaseFailoverContext aContext, SQLException aException) throws SQLException
+    private static boolean checkNeedCTF(AltibaseFailoverContext aContext, SQLException aException)
     {
-        if ((aContext == null) ||
-            (aContext.getFailoverServerList().size() <= 0) ||
-            (isNeedToFailover(aException) == false))
-        {
-            return false;
-        }
-        return true;
+        return (aContext != null) &&
+               (aContext.getFailoverServerList().size() > 0) &&
+               (isNeedToFailover(aException));
     }
 
     /**
-     * STFê°€ í•„ìš”í•œì§€ í™•ì¸í•œë‹¤.
+     * STF°¡ ÇÊ¿äÇÑÁö È®ÀÎÇÑ´Ù.
      *
-     * @param aContext Failoverì— ëŒ€í•œ ì •ë³´ë¥¼ ë‹´ì€ ê°ì²´
-     * @param aException STFê°€ í•„ìš”í•œì§€ ë³¼ ì˜ˆì™¸
-     * @return STFê°€ í•„ìš”í•˜ë©´ true, ì•„ë‹ˆë©´ false
+     * @param aContext Failover¿¡ ´ëÇÑ Á¤º¸¸¦ ´ãÀº °´Ã¼
+     * @param aException STF°¡ ÇÊ¿äÇÑÁö º¼ ¿¹¿Ü
+     * @return STF°¡ ÇÊ¿äÇÏ¸é true, ¾Æ´Ï¸é false
      */
-    private static boolean checkNeedSTF(AltibaseFailoverContext aContext, SQLException aException) throws SQLException
+    private static boolean checkNeedSTF(AltibaseFailoverContext aContext, SQLException aException)
     {
-        if ((aContext == null) ||
-            (aContext.useSessionFailover() == false) ||
-            (aContext.getFailoverServerList().size() <= 0) ||
-            (isNeedToFailover(aException) == false) ||
-            (aContext.getCallbackState() != CallbackState.STOPPED))
-        {
-            return false;
-        }
-        return true;
+        return (aContext != null) &&
+               (aContext.useSessionFailover()) &&
+               (aContext.getFailoverServerList().size() > 0) &&
+               (isNeedToFailover(aException)) &&
+               (aContext.getCallbackState() == CallbackState.STOPPED);
     }
 
     /**
-     * Failoverê°€ í•„ìš”í•œ ì˜ˆì™¸ì¸ì§€ í™•ì¸í•œë‹¤.
+     * Failover°¡ ÇÊ¿äÇÑ ¿¹¿ÜÀÎÁö È®ÀÎÇÑ´Ù.
      *
-     * @param aException Failoverê°€ í•„ìš”í•œì§€ ë³¼ ì˜ˆì™¸
-     * @return Failoverê°€ í•„ìš”í•˜ë©´ true, ì•„ë‹ˆë©´ false
+     * @param aException Failover°¡ ÇÊ¿äÇÑÁö º¼ ¿¹¿Ü
+     * @return Failover°¡ ÇÊ¿äÇÏ¸é true, ¾Æ´Ï¸é false
      */
     public static boolean isNeedToFailover(SQLException aException)
     {

@@ -19,7 +19,7 @@
  *
  * $Id: sdpstBMP.h 27220 2008-07-23 14:56:22Z newdaily $
  *
- * ë³¸ íŒŒì¼ì€ Treelist Managed Segmentì˜ BMPì˜ í—¤ë”íŒŒì¼ì´ë‹¤.
+ * º» ÆÄÀÏÀº Treelist Managed SegmentÀÇ BMPÀÇ Çì´õÆÄÀÏÀÌ´Ù.
  *
  ***********************************************************************/
 
@@ -93,7 +93,7 @@ public:
 };
 
 /***********************************************************************
- * Description : SlotIdxë¶€í„° ì´í›„ë¡œ ë‹¤ìŒ freeë¥¼ ê²€ìƒ‰í•œë‹¤.
+ * Description : SlotIdxºÎÅÍ ÀÌÈÄ·Î ´ÙÀ½ free¸¦ °Ë»öÇÑ´Ù.
  ***********************************************************************/
 inline SShort sdpstRtBMP::getNxtFree( sdpstBMPHdr  * aBMPHdr,
                                       SShort         aSlotNo )

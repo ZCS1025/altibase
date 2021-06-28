@@ -39,37 +39,30 @@ void ulsdSetNodeInfo( ulsdNodeInfo * aShardNodeInfo,
                       acp_char_t   * aAlternateServerIP,
                       acp_uint16_t   aAlternatePortNo );
 
-ACI_RC ulsdApplyNodesInfo( ulnFnContext  * aFnContext,
-                           ulsdNodeInfo ** aNodeInfo,
-                           acp_uint16_t    aNodeCount,
-                           acp_uint64_t    aShardPin,
-                           acp_uint64_t    aShardMetaNumber,
-                           acp_uint8_t     aIsTestEnable );
-
-/* BUG-46257 shardcliì—ì„œ Node ì¶”ê°€/ì œê±° ì§€ì› */
+/* BUG-46257 shardcli¿¡¼­ Node Ãß°¡/Á¦°Å Áö¿ø */
 SQLRETURN ulsdAddNode( ulnFnContext * aFnContext,
                        ulnDbc       * aMetaDbc,
                        ulsdNodeInfo * aNewNodeInfo );
 
-/* BUG-46257 shardcliì—ì„œ Node ì¶”ê°€/ì œê±° ì§€ì› */
+/* BUG-46257 shardcli¿¡¼­ Node Ãß°¡/Á¦°Å Áö¿ø */
 SQLRETURN ulsdAddNodeToDbc( ulnFnContext * aFnContext,
                             ulnDbc       * aMetaDbc,
                             ulsdNodeInfo * aNewNodeInfo );
 
-/* BUG-46257 shardcliì—ì„œ Node ì¶”ê°€/ì œê±° ì§€ì› */
+/* BUG-46257 shardcli¿¡¼­ Node Ãß°¡/Á¦°Å Áö¿ø */
 SQLRETURN ulsdAddNodeToStmt( ulnFnContext * aFnContext,
                              ulnStmt      * aMetaStmt,
                              ulsdNodeInfo * aNewNodeInfo );
 
-/* BUG-46257 shardcliì—ì„œ Node ì¶”ê°€/ì œê±° ì§€ì› */
+/* BUG-46257 shardcli¿¡¼­ Node Ãß°¡/Á¦°Å Áö¿ø */
 void ulsdRemoveNode( ulnDbc       * aMetaDbc,
                      ulsdNodeInfo * aRemoveNodeInfo );
 
-/* BUG-46257 shardcliì—ì„œ Node ì¶”ê°€/ì œê±° ì§€ì› */
+/* BUG-46257 shardcli¿¡¼­ Node Ãß°¡/Á¦°Å Áö¿ø */
 void ulsdRemoveNodeFromDbc( ulnDbc       * aMetaDbc,
                             ulsdNodeInfo * aRemoveNodeInfo );
 
-/* BUG-46257 shardcliì—ì„œ Node ì¶”ê°€/ì œê±° ì§€ì› */
+/* BUG-46257 shardcli¿¡¼­ Node Ãß°¡/Á¦°Å Áö¿ø */
 void ulsdRemoveNodeFromStmt( ulnStmt      * aMetaStmt,
                              ulsdNodeInfo * aRemoveNodeInfo );
 
@@ -89,6 +82,9 @@ SQLRETURN ulsdNodeInfoFree(ulsdNodeInfo *aShardNodeInfo);
 void ulsdGetShardFromDbc(ulnDbc        *aDbc,
                          ulsdDbc      **aShard);
 
+/* BUG-47553 */
+ACI_RC ulsdEnter( ulnFnContext *aFnContext );
+
 SQLRETURN ulsdNodeFreeHandleStmt(ulsdDbc      *aShard,
                                  ulnStmt      *aMetaStmt);
 
@@ -98,7 +94,8 @@ SQLRETURN ulsdNodeFreeStmt(ulnStmt      *aMetaStmt,
 SQLRETURN ulsdCreateNodeStmt(ulnDbc    *aDbc,
                              ulnStmt   *aMetaStmt);
 
-void ulsdInitalizeNodeStmt(ulnStmt    *aNodeStmt);
+void ulsdInitalizeNodeStmt(ulnStmt    *aMetaStmt,
+                           ulnStmt    *aNodeStmt);
 
 void ulsdNodeStmtDestroy(ulnStmt *aStmt);
 
@@ -123,16 +120,45 @@ SQLRETURN ulsdDriverConnectToNode(ulnDbc       *aMetaDbc,
                                   acp_char_t   *aConnString,
                                   acp_sint16_t  aConnStringLength);
 
-SQLRETURN ulsdDriverConnectToNodeInternal( ulnDbc       * aMetaDbc,
-                                           ulnFnContext * aFnContext,
+SQLRETURN ulsdDriverConnectToNodeInternal( ulnFnContext * aFnContext,
                                            ulsdNodeInfo * aNodeInfo,
-                                           acp_bool_t     aIsTestEnable );
+                                           acp_char_t   * aConnString );
 
-ACI_RC ulsdMakeNodeConnString(ulnFnContext        *aFnContext,
-                              ulsdNodeInfo        *aNodeInfo,
-                              acp_bool_t           aIsTestEnable,
-                              acp_char_t          *aNodeBaseConnString,
-                              acp_char_t          *aOutString);
+/* BUG-47327 */
+SQLRETURN ulsdConnect( ulnDbc       * aDbc,
+                       acp_char_t   * aServerName,
+                       acp_sint16_t   aServerNameLength,
+                       acp_char_t   * aUserName,
+                       acp_sint16_t   aUserNameLength,
+                       acp_char_t   * aPassword,
+                       acp_sint16_t   aPasswordLength );
+
+SQLRETURN ulsdNodeConnect( ulnDbc       * aMetaDbc,
+                           ulnFnContext * aFnContext,
+                           acp_char_t   * aServerName,
+                           acp_sint16_t   aServerNameLength,
+                           acp_char_t   * aUserName,
+                           acp_sint16_t   aUserNameLength,
+                           acp_char_t   * aPassword,
+                           acp_sint16_t   aPasswordLength );
+
+SQLRETURN ulsdConnectToNode( ulnDbc       * aMetaDbc,
+                             ulnFnContext * aFnContext,
+                             acp_char_t   * aServerName,
+                             acp_sint16_t   aServerNameLength,
+                             acp_char_t   * aUserName,
+                             acp_sint16_t   aUserNameLength,
+                             acp_char_t   * aPassword,
+                             acp_sint16_t   aPasswordLength );
+
+SQLRETURN ulsdConnectToNodeInternal( ulnFnContext * aFnContext,
+                                     ulsdNodeInfo * aNodeInfo,
+                                     acp_char_t   * aServerName,
+                                     acp_sint16_t   aServerNameLength,
+                                     acp_char_t   * aUserName,
+                                     acp_sint16_t   aUserNameLength,
+                                     acp_char_t   * aPassword,
+                                     acp_sint16_t   aPasswordLength );
 
 SQLRETURN ulsdAllocHandleNodeDbc(ulnFnContext  *aFnContext,
                                  ulnEnv        *aEnv,
@@ -222,18 +248,23 @@ void ulsdReadMtValue(cmiProtocolContext *aProtocolContext,
                      acp_uint32_t        aKeyDataType,
                      ulsdValue          *aRangeValue);
 
-SQLRETURN ulsdNodeBindParameter(ulsdDbc      *aShard,
-                                ulnStmt      *aStmt,
-                                acp_uint16_t  aParamNumber,
-                                acp_char_t   *aParamName,
-                                acp_sint16_t  aInputOutputType,
-                                acp_sint16_t  aValueType,
-                                acp_sint16_t  aParamType,
-                                ulvULen       aColumnSize,
-                                acp_sint16_t  aDecimalDigits,
-                                void         *aParamValuePtr,
-                                ulvSLen       aBufferLength,
-                                ulvSLen      *aStrLenOrIndPtr);
+// BUG-47129
+void ulsdSkipReadMtValue(cmiProtocolContext * aProtocolContext,
+                         acp_uint32_t         aKeyDataType );
+
+SQLRETURN ulsdNodeBindParameter( ulnStmt      *aStmt,
+                                 acp_uint16_t  aParamNumber,
+                                 acp_char_t   *aParamName,
+                                 acp_sint16_t  aInputOutputType,
+                                 acp_sint16_t  aValueType,
+                                 acp_sint16_t  aParamType,
+                                 ulvULen       aColumnSize,
+                                 acp_sint16_t  aDecimalDigits,
+                                 void         *aParamValuePtr,
+                                 ulvSLen       aBufferLength,
+                                 ulvSLen      *aStrLenOrIndPtr,
+                                 ulvSLen      *aFileNameLengthArray,
+                                 acp_uint32_t *aFileOptionPtr );
 
 SQLRETURN ulsdNodeBindParameterOnNode( ulnFnContext    * aFnContext,
                                        ulsdStmtContext * aMetaShardStmtCxt,
@@ -256,13 +287,14 @@ SQLRETURN ulsdConvertNodeIdToNodeDbcIndex(ulnStmt          *aMetaStmt,
                                           acp_uint16_t     *aNodeDbcIndex,
                                           acp_uint16_t      aFuncId);
 
-SQLRETURN ulsdNodeBindCol(ulsdDbc      *aShard,
-                          ulnStmt      *aStmt,
-                          acp_uint16_t  aColumnNumber,
-                          acp_sint16_t  aTargetType,
-                          void         *aTargetValuePtr,
-                          ulvSLen       aBufferLength,
-                          ulvSLen      *aStrLenOrIndPtr);
+SQLRETURN ulsdNodeBindCol( ulnStmt      *aStmt,
+                           acp_uint16_t  aColumnNumber,
+                           acp_sint16_t  aTargetType,
+                           void         *aTargetValuePtr,
+                           ulvSLen       aBufferLength,
+                           ulvSLen      *aStrLenOrIndPtr,
+                           ulvSLen      *aFileNameLengthArray,
+                           acp_uint32_t *aFileOptionPtr );
 
 SQLRETURN ulsdNodeBindColOnNode( ulnFnContext    * aFnContext,
                                  ulsdStmtContext * aMetaShardStmtCxt,
@@ -277,6 +309,9 @@ SQLRETURN ulsdSetConnectAttr(ulnDbc       *aMetaDbc,
 SQLRETURN ulsdSetConnectAttrOnNode( ulnFnContext   * aFnContext,
                                     ulsdDbcContext * aMetaShardDbcCxt,
                                     ulsdNodeInfo   * aNodeInfo );
+
+acp_bool_t ulsdIsSetConnectAttr( ulnFnContext     * aFnContext, 
+                                 ulnConnAttrID      aConnAttrID );
 
 SQLRETURN ulsdSetStmtAttr(ulnStmt      *aMetaStmt,
                           acp_sint32_t  aAttribute,
@@ -300,6 +335,11 @@ SQLRETURN ulsdAnalyze(ulnFnContext *aFnContext,
 
 void ulsdSetCoordQuery(ulnStmt  *aStmt);
 
+SQLRETURN ulsdAnalyzePrepareAndRetry( ulnStmt      *aStmt,
+                                      acp_char_t   *aStatementText,
+                                      acp_sint32_t  aTextLength,
+                                      acp_char_t   *aAnalyzeText );
+
 SQLRETURN ulsdPrepare(ulnFnContext *aFnContext,
                       ulnStmt      *aStmt,
                       acp_char_t   *aStatementText,
@@ -318,6 +358,14 @@ SQLRETURN ulsdExecuteNodes(ulnFnContext *aFnContext,
 SQLRETURN ulsdFetchNodes(ulnFnContext *aFnContext,
                          ulnStmt      *aStmt);
 
+/* BUG-47433 */
+SQLRETURN ulsdGetData( ulnStmt      * aStmt,
+                       acp_uint16_t   aColumnNumber,
+                       acp_sint16_t   aTargetType,
+                       void         * aTargetValue,
+                       ulvSLen        aBufferLength,
+                       ulvSLen      * aStrLenOrInd );
+
 SQLRETURN ulsdRowCountNodes(ulnFnContext *aFnContext,
                             ulnStmt      *aStmt,
                             ulvSLen      *aRowCount);
@@ -328,9 +376,6 @@ SQLRETURN ulsdMoreResultsNodes(ulnFnContext *aFnContext,
 acp_bool_t ulsdStmtHasNoDataOnNodes( ulnStmt * aMetaStmt );
 
 acp_bool_t ulsdHasNoData( ulnDbc * aMetaDbc );
-
-/* BUG-46100 Session SMN Update */
-acp_bool_t ulsdIsTimeToUpdateShardMetaNumber( ulnDbc * aMetaDbc );
 
 /* BUG-46100 Session SMN Update */
 SQLRETURN ulsdUpdateShardMetaNumber( ulnDbc       * aMetaDbc,
@@ -346,9 +391,9 @@ SQLRETURN ulsdCloseCursor(ulnStmt *aStmt);
 SQLRETURN ulsdNodeSilentCloseCursor(ulsdDbc *aShard,
                                     ulnStmt *aStmt);
 
-SQLRETURN ulsdFetch(ulnStmt *aStmt);
+SQLRETURN ulsdNodeCloseCursor( ulnStmt * aStmt );
 
-SQLRETURN ulsdExecute(ulnStmt *aStmt);
+SQLRETURN ulsdFetch(ulnStmt *aStmt);
 
 SQLRETURN ulsdRowCount(ulnStmt *aStmt,
                        ulvSLen *aRowCountPtr);
@@ -365,6 +410,7 @@ void ulsdNativeErrorToUlnError(ulnFnContext       *aFnContext,
 void ulsdMoveNodeDiagRec( ulnFnContext * aFnContext,
                           ulnObject    * aObjectTo,
                           ulnObject    * aObjectFrom,
+                          acp_uint32_t   aNodeId,
                           acp_char_t   * aNodeString,
                           acp_char_t   * aOperation );
 
@@ -383,6 +429,8 @@ acp_bool_t ulsdNodeInvalidTouch(acp_sint16_t  aHandleType,
 void ulsdMakeNodeAlternateServersString(ulsdNodeInfo      *aShardNodeInfo,
                                         acp_char_t        *aAlternateServers,
                                         acp_sint32_t       aMaxAlternateServersLen);
+
+ACI_RC ulsdSetConnAttrForLibConn( ulnFnContext  * aFnContext );
 
 SQLRETURN ulsdDriverConnect(ulnDbc       *aDbc,
                             acp_char_t   *aConnString,
@@ -410,9 +458,15 @@ SQLRETURN ulsdEndTranDbc(acp_sint16_t  aHandleType,
 SQLRETURN ulsdShardEndTranDbc( ulnFnContext * aFnContext,
                                ulsdDbc      * aShard );
 
+SQLRETURN ulsdnSimpleShardEndTranDbc( ulnDbc *aDbc, ulnTransactionOp aCompletionType );
+
 SQLRETURN ulsdTouchNodeEndTranDbc(ulnFnContext  *aFnContext,
                                   ulsdDbc       *aShard,
                                   acp_sint16_t   aCompletionType);
+
+SQLRETURN ulsdTouchNodeShardEndTranDbc(ulnFnContext      *aFnContext,
+                                       ulsdDbc           *aShard,
+                                       acp_sint16_t       aCompletionType);
 
 SQLRETURN ulsdNodeEndTranDbc(ulnFnContext  *aFnContext,
                              ulsdDbc       *aShard,
@@ -438,10 +492,11 @@ ACI_RC ulsdAnalyzeRequest(ulnFnContext  *aFnContext,
                           acp_char_t    *aString,
                           acp_sint32_t   aLength);
 
-ACI_RC ulsdShardTransactionCommitRequest( ulnFnContext * aFnContext,
-                                          ulnPtContext * aPtContext,
-                                          acp_uint32_t * aTouchNodeArr,
-                                          acp_uint16_t   aTouchNodeCount );
+ACI_RC ulsdShardTransactionCommitRequest( ulnFnContext     * aFnContext,
+                                          ulnPtContext     * aPtContext,
+                                          ulnTransactionOp   aTransactOp,
+                                          acp_uint32_t     * aTouchNodeArr,
+                                          acp_uint16_t       aTouchNodeCount);
 
 ACI_RC ulsdInitializeDBProtocolCallbackFunctions(void);
 
@@ -480,5 +535,14 @@ ACP_INLINE void ulsdDbcSetShardCli( ulnDbc *aDbc, acp_uint8_t aShardClient )
 {
     aDbc->mShardDbcCxt.mShardClient = aShardClient;
 }
+
+ACP_INLINE void ulsdDbcSetShardSessionType( ulnDbc * aDbc, acp_uint8_t  aShardSessionType )
+{
+    aDbc->mShardDbcCxt.mShardSessionType = aShardSessionType;
+}
+
+void ulsdProcessExecuteError( ulnFnContext       * aFnContext,
+                              ulnStmt            * aStmt,
+                              ulsdFuncCallback   * aCallback );
 
 #endif /* _O_ULSD_MAIN_H_ */

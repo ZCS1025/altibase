@@ -16,7 +16,7 @@
  
 
 /*******************************************************************************
- * $Id: svnpModule.cpp 82916 2018-04-26 06:29:17Z seulki $
+ * $Id: svnpModule.cpp 90083 2021-02-26 00:58:48Z et16 $
  ******************************************************************************/
 
 #include <ide.h>
@@ -38,21 +38,21 @@ static IDE_RC svnpPrepareIteratorMem( const smnIndexModule* );
 
 static IDE_RC svnpReleaseIteratorMem(const smnIndexModule* );
 
-static IDE_RC svnpInit( idvSQL               * /* aStatistics */,
-                        svnpIterator         * aIterator,
+static IDE_RC svnpInit( svnpIterator         * aIterator,
                         void                 * aTrans,
                         smcTableHeader       * aTable,
-                        smnIndexHeader       * aIndex,
-                        void                 * aDumpObject,
+                        smnIndexHeader       * /* aIndex */,
+                        void                 * /* aDumpObject */,
                         const smiRange       * aKeyRange,
-                        const smiRange       * aKeyFilter,
+                        const smiRange       * /* aKeyFilter */,
                         const smiCallBack    * aRowFilter,
                         UInt                   aFlag,
                         smSCN                  aSCN,
                         smSCN                  aInfinite,
-                        idBool                 sUntouchable,
+                        idBool                 /* aUntouchable */,
                         smiCursorProperties  * aProperties,
-                        const smSeekFunc    ** aSeekFunc );
+                        const smSeekFunc    ** aSeekFunc,
+                        smiStatement         * aStatement );
 
 static IDE_RC svnpDest( svnpIterator* aIterator );
 
@@ -108,7 +108,6 @@ smnIndexModule svnpModule = {
     (smTableCursorLockRowFunc) smnManager::lockRow,
     (smnDeleteFunc) NULL,
     (smnFreeFunc) NULL,
-    (smnExistKeyFunc) NULL,
     (smnInsertRollbackFunc) NULL,
     (smnDeleteRollbackFunc) NULL,
     (smnAgingFunc) NULL,
@@ -628,12 +627,11 @@ static IDE_RC svnpReleaseIteratorMem(const smnIndexModule* )
     return IDE_SUCCESS;
 }
 
-static IDE_RC svnpInit( idvSQL                * /* aStatistics */,
-                        svnpIterator          * aIterator,
+static IDE_RC svnpInit( svnpIterator          * aIterator,
                         void                  * aTrans,
                         smcTableHeader        * aTable,
                         smnIndexHeader        * ,
-                        void                  * /* aDumpObject */,
+                        void                  * ,
                         const smiRange        * aRange,
                         const smiRange        * ,
                         const smiCallBack     * aFilter,
@@ -642,7 +640,8 @@ static IDE_RC svnpInit( idvSQL                * /* aStatistics */,
                         smSCN                   aInfinite,
                         idBool                  ,
                         smiCursorProperties   * aProperties,
-                        const smSeekFunc     ** aSeekFunc )
+                        const smSeekFunc     ** aSeekFunc,
+                        smiStatement          * aStatement )
 {
     idvSQL                        *sSQLStat;
 
@@ -660,6 +659,8 @@ static IDE_RC svnpInit( idvSQL                * /* aStatistics */,
     aIterator->mRange             = aRange;
     aIterator->mNxtRange          = NULL;
     aIterator->mFilter            = aFilter;
+    aIterator->mStatement         = aStatement; 
+
 
     *aSeekFunc = svnpSeekFunctions[ aFlag&(SMI_TRAVERSE_MASK |
                                            SMI_PREVIOUS_MASK |
@@ -1243,17 +1244,17 @@ static IDE_RC svnpFetchNextR( svnpIterator  * aIterator)
     idBool      sIsVisibleRow;
     scGRID      sGRID;
     idBool      sIsValidGRID;
-    /* BUG-39836 : ìµœì´ˆê°’ ì €ì¥ ë³€ìˆ˜ ì¶”ê°€ */ 
+    /* BUG-39836 : ÃÖÃÊ°ª ÀúÀå º¯¼ö Ãß°¡ */ 
     ULong           sReadRecordCountOrigin;
     ULong           sFirstReadRecordPosOrigin; 
     const smiRange *sNxtRangeOrigin;
 
-    /* BUG-39836 : repeatable readëª¨ë“œì—ì„œ smnp/svnpFetchNextRí•¨ìˆ˜ëŠ” fetchí•  
-     * rowë¥¼ ìˆœíšŒí•˜ê³  lockì„ ì¡ëŠ”ë‹¤. ëŒ€ìƒì´ ë˜ëŠ” rowë¥¼ ìˆœíšŒí•˜ê¸° ìœ„í•´ aIterator->mPropertiesì˜
-     * mReadRecordCountì™€ mFirstReadRecordPos, mNxtRangeê°’ì„ ì´ìš©í•œë‹¤. ì´ í•¨ìˆ˜ì—ì„œëŠ”
-     * lockë§Œ ì¡ê³  ì‹¤ì œ fetchëŠ” smnp/svnpFetchNextì—ì„œ ìˆ˜í–‰í•œë‹¤. (smnp/svnpSeekFunctions ì°¸ì¡°)
-     * ë”°ë¼ì„œ mReadRecordCountì™€ mFirstReadRecordPos, mNxtRangeì˜ ìµœì´ˆ ê°’ì„ ì €ì¥í•˜ê³ 
-     * ì´ í•¨ìˆ˜ê°€ ì¢…ë£Œ ë˜ëŠ” ì‹œì ì— ì´ ë³€ìˆ˜ë“¤ì˜ ê°’ì„ ìµœì´ˆê°’ìœ¼ë¡œ ë³µêµ¬ ì‹œì¼œ ì£¼ì–´ì•¼ í•œë‹¤.
+    /* BUG-39836 : repeatable read¸ğµå¿¡¼­ smnp/svnpFetchNextRÇÔ¼ö´Â fetchÇÒ 
+     * row¸¦ ¼øÈ¸ÇÏ°í lockÀ» Àâ´Â´Ù. ´ë»óÀÌ µÇ´Â row¸¦ ¼øÈ¸ÇÏ±â À§ÇØ aIterator->mPropertiesÀÇ
+     * mReadRecordCount¿Í mFirstReadRecordPos, mNxtRange°ªÀ» ÀÌ¿ëÇÑ´Ù. ÀÌ ÇÔ¼ö¿¡¼­´Â
+     * lock¸¸ Àâ°í ½ÇÁ¦ fetch´Â smnp/svnpFetchNext¿¡¼­ ¼öÇàÇÑ´Ù. (smnp/svnpSeekFunctions ÂüÁ¶)
+     * µû¶ó¼­ mReadRecordCount¿Í mFirstReadRecordPos, mNxtRangeÀÇ ÃÖÃÊ °ªÀ» ÀúÀåÇÏ°í
+     * ÀÌ ÇÔ¼ö°¡ Á¾·á µÇ´Â ½ÃÁ¡¿¡ ÀÌ º¯¼öµéÀÇ °ªÀ» ÃÖÃÊ°ªÀ¸·Î º¹±¸ ½ÃÄÑ ÁÖ¾î¾ß ÇÑ´Ù.
      */
     sReadRecordCountOrigin    = aIterator->mProperties->mReadRecordCount;
     sFirstReadRecordPosOrigin = aIterator->mProperties->mFirstReadRecordPos; 
@@ -1340,7 +1341,7 @@ static IDE_RC svnpFetchNextR( svnpIterator  * aIterator)
     aIterator->lstFetchRecPtr = NULL;
     SC_MAKE_NULL_GRID( aIterator->mRowGRID );
 
-    /* BUG-39836 : mReadRecordCountì™€ mFirstReadRecordPos, mNxtRangeë¥¼ ìµœì´ˆ ê°’ìœ¼ë¡œ ë³µì› */
+    /* BUG-39836 : mReadRecordCount¿Í mFirstReadRecordPos, mNxtRange¸¦ ÃÖÃÊ °ªÀ¸·Î º¹¿ø */
     aIterator->mProperties->mReadRecordCount    = sReadRecordCountOrigin;
     aIterator->mProperties->mFirstReadRecordPos = sFirstReadRecordPosOrigin;
     aIterator->mNxtRange                        = sNxtRangeOrigin;
@@ -1365,16 +1366,16 @@ static IDE_RC svnpFreeIterator( void * /* aIteratorMem */ )
 }
 
 /*******************************************************************************
- * Description: smpSlotHeaderì˜ nextë¥¼ ë”°ë¼ê°€ì„œ ìì‹ ì´ ì½ì„ ìˆ˜ ìˆëŠ” visibleí•œ
- *              versionì´ ìˆì„ ê²½ìš°, ì½ì„ ìˆ˜ ìˆëŠ” versionì˜ row pointerë¥¼ ë°˜í™˜.
- *              ì½ì„ ìˆ˜ ìˆëŠ” versionì´ ì—†ì„ ê²½ìš°, aIsVisibleRowë¥¼ ID_FALSEë¡œ
- *              ì„¤ì •í•˜ì—¬ ë°˜í™˜.
+ * Description: smpSlotHeaderÀÇ next¸¦ µû¶ó°¡¼­ ÀÚ½ÅÀÌ ÀĞÀ» ¼ö ÀÖ´Â visibleÇÑ
+ *              versionÀÌ ÀÖÀ» °æ¿ì, ÀĞÀ» ¼ö ÀÖ´Â versionÀÇ row pointer¸¦ ¹İÈ¯.
+ *              ÀĞÀ» ¼ö ÀÖ´Â versionÀÌ ¾øÀ» °æ¿ì, aIsVisibleRow¸¦ ID_FALSE·Î
+ *              ¼³Á¤ÇÏ¿© ¹İÈ¯.
  *
  * Parameters:
  *  - aIterator     [IN] Iterator
- *  - aFstOID       [IN] ìµœì´ˆ ì ‘ê·¼í•œ recordì˜ OID
- *  - aRow          [OUT] ì½ì–´ì˜¨ recordì˜ pointer
- *  - aIsVisibleRow [OUT] aRowì˜ pointerê°€ visibleí•œ recordë¥¼ ê°€ë¦¬í‚¤ê³  ìˆëŠ”ì§€
+ *  - aFstOID       [IN] ÃÖÃÊ Á¢±ÙÇÑ recordÀÇ OID
+ *  - aRow          [OUT] ÀĞ¾î¿Â recordÀÇ pointer
+ *  - aIsVisibleRow [OUT] aRowÀÇ pointer°¡ visibleÇÑ record¸¦ °¡¸®Å°°í ÀÖ´ÂÁö
  ******************************************************************************/
 static IDE_RC svnpGetValidVersion( svnpIterator  * aIterator,
                                    smOID           aFstOID,
@@ -1386,6 +1387,7 @@ static IDE_RC svnpGetValidVersion( svnpIterator  * aIterator,
     smOID            sNxtOID;
     smpSlotHeader  * sRow;
     idBool           sLocked   = ID_FALSE;
+    idBool           sIsVisible;
 
     IDE_ERROR( aRow != NULL );
     IDE_ERROR( aIsVisibleRow != NULL );
@@ -1400,13 +1402,14 @@ static IDE_RC svnpGetValidVersion( svnpIterator  * aIterator,
 
     while( sCurOID != SM_NULL_OID )
     {
-        IDE_ASSERT( svmManager::getOIDPtr( sSpaceID,
+        IDE_ASSERT( smmManager::getOIDPtr( sSpaceID,
                                            sCurOID,
                                            (void**)&sRow )
                     == IDE_SUCCESS );
 
-        if( smnManager::checkSCN( (smiIterator*)aIterator, sRow, NULL )
-            == ID_TRUE )
+        IDE_TEST( smnManager::checkSCN( (smiIterator*)aIterator, sRow, NULL, &sIsVisible )
+                  != IDE_SUCCESS );
+        if( sIsVisible == ID_TRUE )
         {
             *aRow = sRow;
             *aIsVisibleRow = ID_TRUE;
@@ -1452,13 +1455,13 @@ static IDE_RC svnpGetValidVersion( svnpIterator  * aIterator,
 }
 
 /*******************************************************************************
- * Description: MRDBì— ëŒ€í•´ fetch by GRIDë¥¼ ìˆ˜í–‰í•  ë•Œ ëŒ€ìƒ GRIDê°€ ìœ íš¨í•œì§€
- *              í™•ì¸í•˜ëŠ” í•¨ìˆ˜
+ * Description: MRDB¿¡ ´ëÇØ fetch by GRID¸¦ ¼öÇàÇÒ ¶§ ´ë»ó GRID°¡ À¯È¿ÇÑÁö
+ *              È®ÀÎÇÏ´Â ÇÔ¼ö
  *
  * Parameters:
- *  - aTableHdr     [IN] Fetch ëŒ€ìƒ tableì˜ table header
- *  - aGRID         [IN] Fetch ëŒ€ìƒ recordì˜ GRID
- *  - aIsValidGRID  [OUT] GRIDê°€ ìœ íš¨í•œì§€ ì—¬ë¶€
+ *  - aTableHdr     [IN] Fetch ´ë»ó tableÀÇ table header
+ *  - aGRID         [IN] Fetch ´ë»ó recordÀÇ GRID
+ *  - aIsValidGRID  [OUT] GRID°¡ À¯È¿ÇÑÁö ¿©ºÎ
  ******************************************************************************/
 static IDE_RC svnpValidateGRID( smcTableHeader     * aTableHdr,
                                 scGRID               aGRID,
@@ -1475,18 +1478,15 @@ static IDE_RC svnpValidateGRID( smcTableHeader     * aTableHdr,
 
     *aIsValidGRID = ID_FALSE;
 
-    /* ì½ì„ ìˆ˜ ìˆëŠ” GRIDì¸ì§€ ê²€ì‚¬ */
-    IDE_TEST_CONT( SC_GRID_IS_NULL(aGRID) == ID_TRUE,
-                    error_invalid_grid );
-
-    IDE_TEST_CONT( SC_GRID_IS_WITH_SLOTNUM(aGRID) == ID_TRUE,
-                    error_invalid_grid );
+    /* ÀĞÀ» ¼ö ÀÖ´Â GRIDÀÎÁö °Ë»ç */
+    IDE_TEST_CONT( SC_GRID_IS_NULL(aGRID), error_invalid_grid );
+    IDE_TEST_CONT( SC_GRID_IS_WITH_SLOTNUM(aGRID), error_invalid_grid );
 
     sSpaceID = SC_MAKE_SPACE(aGRID);
     sPageID  = SC_MAKE_PID(aGRID);
     sOffset  = SC_MAKE_OFFSET(aGRID);
 
-    /* GRIDì™€ table headerì˜ SpaceID ì¼ì¹˜ ê²€ì‚¬ */
+    /* GRID¿Í table headerÀÇ SpaceID ÀÏÄ¡ °Ë»ç */
     IDE_TEST_CONT( sSpaceID != aTableHdr->mSpaceID,
                     error_invalid_grid );
 
@@ -1496,10 +1496,10 @@ static IDE_RC svnpValidateGRID( smcTableHeader     * aTableHdr,
 
     sMaxPageCnt = svmDatabase::getAllocPersPageCount( &sTBSNode->mMemBase );
 
-    /* GRIDì˜ PageIDê°€ ìœ íš¨í•œ PageID ë²”ìœ„ ì•ˆì¸ì§€ í™•ì¸ */
+    /* GRIDÀÇ PageID°¡ À¯È¿ÇÑ PageID ¹üÀ§ ¾ÈÀÎÁö È®ÀÎ */
     IDE_TEST_CONT( !(sPageID < sMaxPageCnt), error_invalid_grid );
 
-    /* ëŒ€ìƒ pageê°€ tableì— í• ë‹¹ ë˜ì–´ ìˆëŠ” data pageê°€ ë§ëŠ”ì§€ í™•ì¸ */
+    /* ´ë»ó page°¡ table¿¡ ÇÒ´ç µÇ¾î ÀÖ´Â data page°¡ ¸Â´ÂÁö È®ÀÎ */
     IDE_TEST( svmExpandChunk::getPageState( sTBSNode,
                                             sPageID,
                                             &sPageState )
@@ -1507,18 +1507,18 @@ static IDE_RC svnpValidateGRID( smcTableHeader     * aTableHdr,
 
     IDE_TEST_CONT( sPageState != SVM_PAGE_STATE_ALLOC, error_invalid_grid );
 
-    IDE_TEST( svmManager::getPersPagePtr( sSpaceID,
+    IDE_TEST( smmManager::getPersPagePtr( sSpaceID,
                                           sPageID,
                                           (void**)&sPageHdrPtr )
               != IDE_SUCCESS );
 
-    /* GRIDì™€ pageì˜ TableOIDê°€ ì¼ì¹˜í•˜ëŠ”ì§€, fixed pageê°€ ë§ëŠ”ì§€ í™•ì¸ */
+    /* GRID¿Í pageÀÇ TableOID°¡ ÀÏÄ¡ÇÏ´ÂÁö, fixed page°¡ ¸Â´ÂÁö È®ÀÎ */
     IDE_TEST_CONT( ( sPageHdrPtr->mTableOID != aTableHdr->mSelfOID ) &&
                     ( SMP_GET_PERS_PAGE_TYPE(sPageHdrPtr) ==
                             SMP_PAGETYPE_FIX ),
                     error_invalid_grid );
 
-    /* offsetì´ slot sizeì— ë”°ë¥¸ alignì— ëŒ€í•´ ìœ íš¨í•œ offset ê°’ì¸ì§€ í™•ì¸ */
+    /* offsetÀÌ slot size¿¡ µû¸¥ align¿¡ ´ëÇØ À¯È¿ÇÑ offset °ªÀÎÁö È®ÀÎ */
     sSlotSize = aTableHdr->mFixed.mVRDB.mSlotSize;
 
     IDE_TEST_CONT( ((sOffset - ID_SIZEOF(smpPersPageHeader)) % sSlotSize)
@@ -1526,7 +1526,7 @@ static IDE_RC svnpValidateGRID( smcTableHeader     * aTableHdr,
                     error_invalid_grid )
 
 
-    /* ëª¨ë“  ê²€ì‚¬ë¥¼ í†µê³¼í•˜ì˜€ìŒ. */
+    /* ¸ğµç °Ë»ç¸¦ Åë°úÇÏ¿´À½. */
     *aIsValidGRID = ID_TRUE;
 
     IDE_EXCEPTION_CONT( error_invalid_grid );

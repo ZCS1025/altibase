@@ -23,6 +23,8 @@
 #include <ulsdnTrans.h>
 #include <ulnConfigFile.h>
 #include <ulsdnFailover.h>
+#include <ulsdnLob.h>
+#include <ulsdnDistTxInfo.h>
 
 #include <sqlcli.h>
 
@@ -94,7 +96,18 @@ SQLRETURN  SQL_API SQLExecuteForMtDataRows(SQLHSTMT      aStatementHandle,
     ACI_EXCEPTION_END;
     return SQL_ERROR;
 }
-
+SQLRETURN  SQL_API SQLExecDirectAddCallback( SQLUINTEGER   aIndex,
+                                             SQLHSTMT      aStatementHandle,
+                                             SQLCHAR      *aStatementText,
+                                             SQLINTEGER    aTextLength,
+                                             SQLPOINTER  **aCallback )
+{
+    return ulsdExecDirectAddCallback( (acp_uint32_t )      aIndex,
+                                      (ulnStmt *)          aStatementHandle,
+                                      (acp_char_t *)        aStatementText,
+                                      (acp_sint32_t)        aTextLength,
+                                      (ulsdFuncCallback**)  aCallback );
+}
 SQLRETURN  SQL_API SQLPrepareAddCallback( SQLUINTEGER   aIndex,
                                           SQLHSTMT      aStatementHandle,
                                           SQLCHAR      *aStatementText,
@@ -149,6 +162,21 @@ SQLRETURN  SQL_API SQLPrepareTranAddCallback( SQLUINTEGER   aIndex,
                                        (acp_uint8_t*)       aXID,
                                        (acp_uint8_t*)       aReadOnly,
                                        (ulsdFuncCallback**) aCallback );
+}
+
+SQLRETURN  SQL_API SQLEndPendingTranAddCallback( SQLUINTEGER   aIndex,
+                                                 SQLHDBC       aConnectionHandle,
+                                                 SQLUINTEGER   aXIDSize,
+                                                 SQLPOINTER   *aXID,
+                                                 SQLSMALLINT   aCompletionType,
+                                                 SQLPOINTER  **aCallback )
+{
+    return ulsdEndPendingTranAddCallback( (acp_uint32_t)       aIndex,
+                                          (ulnDbc*)            aConnectionHandle,
+                                          (acp_uint32_t)       aXIDSize,
+                                          (acp_uint8_t*)       aXID,
+                                          (acp_sint16_t)       aCompletionType,
+                                          (ulsdFuncCallback**) aCallback );
 }
 
 SQLRETURN  SQL_API SQLEndTranAddCallback( SQLUINTEGER   aIndex,
@@ -283,8 +311,8 @@ SQLRETURN  SQL_API SQLEndPendingTran(SQLHDBC      aConnectionHandle,
 
 SQLRETURN SQL_API SQLDisconnectLocal(SQLHDBC ConnectionHandle)
 {
-    /* ÏÑúÎ≤ÑÍ∞Ä ÏÇ¨ÎßùÌïú Í≤ΩÏö∞ disconnect protocolÏùÄ Ìï≠ÏÉÅ Ïã§Ìå®ÌïòÍ≤å ÎêòÎØÄÎ°ú
-     * ÏÑúÎ≤ÑÏôÄ ÏÉÅÍ¥ÄÏóÜÏù¥ disconnectÎ•º ÏàòÌñâÌï† ÌïÑÏöîÍ∞Ä ÏûàÎã§.
+    /* º≠πˆ∞° ªÁ∏¡«— ∞ÊøÏ disconnect protocol¿∫ «◊ªÛ Ω«∆–«œ∞‘ µ«π«∑Œ
+     * º≠πˆøÕ ªÛ∞¸æ¯¿Ã disconnect∏¶ ºˆ«‡«“ « ø‰∞° ¿÷¥Ÿ.
      */
     return ulnDisconnectLocal((ulnDbc *)ConnectionHandle);
 }
@@ -298,11 +326,6 @@ void SQL_API SQLSetShardMetaNumber( SQLHDBC aConnectionHandle,
                                     ULONG   aShardMetaNumber )
 {
     ulnDbcSetShardMetaNumber( (ulnDbc *)aConnectionHandle, aShardMetaNumber );
-}
-
-ULONG SQL_API SQLGetSMNOfDataNode( SQLHDBC aConnectionHandle )
-{
-    return ulnDbcGetSMNOfDataNode( (ulnDbc *)aConnectionHandle );
 }
 
 SQLRETURN SQL_API SQLReconnect( SQLSMALLINT  HandleType,
@@ -323,7 +346,205 @@ SQLRETURN SQL_API SQLGetNeedFailover( SQLSMALLINT  HandleType,
 }
 
 
-SQLCHAR SQL_API SQLGetNeedToDisconnect( SQLHDBC aConnectionHandle )
+void SQL_API SQLSetFailoverSuspend( SQLHDBC    aConnectionHandle,
+                                    SQLINTEGER aSuspendOnOff )
 {
-    return (acp_uint8_t)ulnDbcGetNeedToDisconnect( (ulnDbc *)aConnectionHandle );
+    if ( aSuspendOnOff == 1 )
+    {
+        ulnDbcSetFailoverSuspendState( aConnectionHandle, ULN_FAILOVER_SUSPEND_ON_STATE );
+    }
+    else
+    {
+        ulnDbcSetFailoverSuspendState( aConnectionHandle, ULN_FAILOVER_SUSPEND_OFF_STATE );
+    }
+}
+
+/* PROJ-2728 Sharding LOB */
+SQLRETURN SQL_API SQLGetLobLengthForSd( SQLSMALLINT aHandleType,
+                                        SQLHANDLE   aHandle,
+                                        SQLUBIGINT    aLocator,
+                                        SQLSMALLINT   aLocatorCType,
+                                        SQLUINTEGER  *aLobLengthPtr,
+                                        SQLUSMALLINT *aIsNull)
+{
+    return ulnGetLobLength((acp_sint16_t  )aHandleType,
+                           (ulnObject    *)aHandle,
+                           (acp_uint64_t  )aLocator,
+                           (acp_sint16_t  )aLocatorCType,
+                           (acp_uint32_t *)aLobLengthPtr,
+                           (acp_uint16_t *)aIsNull);
+}
+
+SQLRETURN SQL_API SQLPutLobForSd( SQLSMALLINT aHandleType,
+                                  SQLHANDLE   aHandle,
+                                  SQLSMALLINT aLocatorCType,
+                                  SQLUBIGINT  aLocator,
+                                  SQLUINTEGER aStartOffset,
+                                  SQLUINTEGER aSizeToBeUpdated,
+                                  SQLSMALLINT aSourceCType,
+                                  SQLPOINTER  aDataToPut,
+                                  SQLUINTEGER aSizeDataToPut )
+{
+    return ulnPutLob((acp_sint16_t)aHandleType,
+                     (ulnObject  *)aHandle,
+                     (acp_sint16_t)aLocatorCType,
+                     (acp_uint64_t)aLocator,
+                     (acp_uint32_t)aStartOffset,
+                     (acp_uint32_t)aSizeToBeUpdated,
+                     (acp_sint16_t)aSourceCType,
+                     (void       *)aDataToPut,
+                     (acp_uint32_t)aSizeDataToPut);
+}
+
+SQLRETURN SQL_API SQLGetLobForSd( SQLSMALLINT  aHandleType,
+                                  SQLHANDLE    aHandle,
+                                  SQLSMALLINT  aLocatorCType,
+                                  SQLUBIGINT   aLocator,
+                                  SQLUINTEGER  aStartOffset,
+                                  SQLUINTEGER  aSizeToGet,
+                                  SQLSMALLINT  aTargetCType,
+                                  SQLPOINTER   aBufferToStoreData,
+                                  SQLUINTEGER  aSizeBuffer,
+                                  SQLUINTEGER *aSizeReadPtr)
+{
+    return ulnGetLob((acp_sint16_t  )aHandleType,
+                     (ulnObject    *)aHandle,
+                     (acp_sint16_t  )aLocatorCType,
+                     (acp_uint64_t  )aLocator,
+                     (acp_uint32_t  )aStartOffset,
+                     (acp_uint32_t  )aSizeToGet,
+                     (acp_sint16_t  )aTargetCType,
+                     (void         *)aBufferToStoreData,
+                     (acp_uint32_t  )aSizeBuffer,
+                     (acp_uint32_t *)aSizeReadPtr);
+}
+
+SQLRETURN SQL_API SQLFreeLobForSd( SQLSMALLINT  aHandleType,
+                                   SQLHSTMT     aHandle,
+                                   SQLUBIGINT   aLocator )
+{
+    return ulnFreeLob((acp_sint16_t)aHandleType,
+                      (ulnObject  *)aHandle,
+                      aLocator);
+}
+
+SQLRETURN SQL_API SQLTrimLobForSd( SQLSMALLINT  aHandleType,
+                                   SQLHSTMT     aHandle,
+                                   SQLSMALLINT  aLocatorCType,
+                                   SQLUBIGINT   aLocator,
+                                   SQLUINTEGER  aStartOffset)
+{
+    return ulnTrimLob((acp_sint16_t)aHandleType,
+                      (ulnObject  *)aHandle,
+                      (acp_sint16_t)aLocatorCType,
+                      (acp_uint64_t)aLocator,
+                      (acp_uint32_t)aStartOffset);
+}
+
+SQLRETURN SQL_API SQLLobPrepare4Write( SQLSMALLINT aHandleType,
+                                       SQLHANDLE   aHandle,
+                                       SQLSMALLINT aLocatorCType,
+                                       SQLUBIGINT  aLocator,
+                                       SQLUINTEGER aSize,
+                                       SQLUINTEGER aStartOffset )
+{
+    return ulsdnLobPrepare4Write( (acp_sint16_t)aHandleType,
+                                  (ulnObject  *)aHandle,
+                                  (acp_sint16_t)aLocatorCType,
+                                  (acp_uint64_t)aLocator,
+                                  (acp_uint32_t)aSize,
+                                  (acp_uint32_t)aStartOffset );
+}
+
+SQLRETURN SQL_API SQLLobWrite( SQLSMALLINT aHandleType,
+                               SQLHANDLE   aHandle,
+                               SQLSMALLINT aLocatorCType,
+                               SQLUBIGINT  aLocator,
+                               SQLSMALLINT aSourceCType,
+                               SQLPOINTER  aDataToPut,
+                               SQLUINTEGER aSizeDataToPut )
+{
+    return ulsdnLobWrite( (acp_sint16_t)aHandleType,
+                          (ulnObject  *)aHandle,
+                          (acp_sint16_t)aLocatorCType,
+                          (acp_uint64_t)aLocator,
+                          (acp_sint16_t)aSourceCType,
+                          (void       *)aDataToPut,
+                          (acp_uint32_t)aSizeDataToPut );
+}
+
+SQLRETURN SQL_API SQLLobFinishWrite( SQLSMALLINT  aHandleType,
+                                     SQLHANDLE    aHandle,
+                                     SQLSMALLINT  aLocatorCType,
+                                     SQLUBIGINT   aLocator )
+{
+    return ulsdnLobFinishWrite( (acp_sint16_t)aHandleType,
+                                (ulnObject  *)aHandle,
+                                (acp_sint16_t)aLocatorCType,
+                                (acp_uint64_t)aLocator );
+}
+
+/* PROJ-2733-DistTxInfo */
+SQLRETURN SQL_API SQLGetScn( SQLHDBC     ConnectionHandle,
+                             SQLUBIGINT *Scn )
+{
+    ULN_TRACE( SQLGetScn );
+
+    return ulsdnGetSCN( (ulnDbc *)ConnectionHandle, (acp_uint64_t *)Scn );
+}
+
+SQLRETURN SQL_API SQLSetScn( SQLHDBC     ConnectionHandle,
+                             SQLUBIGINT *Scn )
+{
+    ULN_TRACE( SQLSetScn );
+
+    return ulsdnSetSCN( (ulnDbc *)ConnectionHandle, (acp_uint64_t *)Scn );
+}
+
+SQLRETURN SQL_API SQLSetTxFirstStmtScn( SQLHDBC     ConnectionHandle,
+                                        SQLUBIGINT *TxFirstStmtScn )
+{
+    ULN_TRACE( SQLSetTxFirstStmtScn );
+
+    return ulsdnSetTxFirstStmtSCN( (ulnDbc *)ConnectionHandle, (acp_uint64_t *)TxFirstStmtScn );
+}
+
+SQLRETURN SQL_API SQLSetTxFirstStmtTime( SQLHDBC   ConnectionHandle,
+                                         SQLBIGINT TxFirstStmtTime )
+{
+    ULN_TRACE( SQLSetTxFirstStmtTime );
+
+    return ulsdnSetTxFirstStmtTime( (ulnDbc *)ConnectionHandle, (acp_sint64_t)TxFirstStmtTime );
+}
+
+SQLRETURN SQL_API SQLSetDistLevel( SQLHDBC      ConnectionHandle,
+                                   SQLUSMALLINT DistLevel )
+{
+    ULN_TRACE( SQLSetDistLevel );
+
+    return ulsdnSetDistLevel( (ulnDbc *)ConnectionHandle, (ulsdDistLevel)DistLevel );
+}
+
+void SQL_API SQLSetTargetShardMetaNumber( SQLHDBC aConnectionHandle,
+                                          ULONG   aShardMetaNumber )
+{
+    ulnDbcSetTargetShardMetaNumber( (ulnDbc *)aConnectionHandle, aShardMetaNumber );
+}
+
+/* TASK-7219 Non-shard DML */
+SQLRETURN SQL_API SQLSetPartialExecType( SQLHSTMT   aStmt,
+                                         SQLINTEGER aPartialExecType )
+{
+    ULN_TRACE(SQLSetPartialExecType);
+    return ulsdnStmtSetPartialExecType( (ulnStmt *)aStmt,
+                                        (acp_sint32_t)aPartialExecType );
+}
+
+/* TASK-7219 Non-shard DML */
+void SQL_API SQLSetStmtExecSeq( SQLHDBC      aConnectionHandle,
+                                SQLUINTEGER  aExecSequence )
+{
+    ULN_TRACE(SQLSetStmtExecSeq);
+    ulnDbcSetExecSeqForShardTx( (ulnDbc *)aConnectionHandle,
+                                (acp_uint32_t)aExecSequence );
 }

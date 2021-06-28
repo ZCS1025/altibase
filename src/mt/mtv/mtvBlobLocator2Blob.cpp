@@ -104,7 +104,8 @@ IDE_RC mtvCalculate_BlobLocator2Blob( mtcNode*,
 
     IDE_TEST( mtc::getLobLengthLocator( sLocator,
                                         & sIsNull,
-                                        & sLobLength )
+                                        & sLobLength,
+                                        mtc::getStatistics(aTemplate) )
               != IDE_SUCCESS );
 
     if ( sIsNull == ID_TRUE )
@@ -119,7 +120,7 @@ IDE_RC mtvCalculate_BlobLocator2Blob( mtcNode*,
 
         sBlobValue = (mtdBlobType*)aStack[0].value;
 
-        IDE_TEST( mtc::readLob( mtc::getStatistics( aTemplate ), //  NULL, /* idvSQL* */
+        IDE_TEST( mtc::readLob( mtc::getStatistics( aTemplate ), /* idvSQL* */
                                 sLocator,
                                 0,
                                 sLobLength,

@@ -17,9 +17,9 @@
 package Altibase.jdbc.driver.ex;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.sql.BatchUpdateException;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,15 +29,10 @@ import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
 import Altibase.jdbc.driver.cm.*;
-import Altibase.jdbc.driver.util.StringUtils;
 import Altibase.jdbc.driver.util.WrappedIOException;
 
 public final class Error
 {
-    private static final String  DATA_NODE_SMN_PREFIX    = "Data Node SMN=";
-    private static final String  SHARD_DISCONNECT_PREFIX = "Disconnect=N";
-    private static final String  EXECUTEV2_RESULT_PREFIX = "ExecuteV2Result";
-
     private static String getMessage(Throwable aThrowable)
     {
         return (aThrowable.getMessage() == null) ? aThrowable.toString() : aThrowable.getMessage();
@@ -73,7 +68,7 @@ public final class Error
     }
 
     /**
-     * PROJ-2427 StringBufferë¥¼ ì´ìš©í•˜ì—¬ %ë¬¸ì ì¹˜í™˜ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+     * PROJ-2427 StringBuffer¸¦ ÀÌ¿ëÇÏ¿© %¹®ÀÚ Ä¡È¯ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
      */
     private static void replaceErrorDefStr(StringBuffer aMessage, String aArg)
     {
@@ -99,22 +94,22 @@ public final class Error
     }
 
     /**
-     * JDBCErrorCodeì— í•´ë‹¹í•˜ëŠ” SQLExceptionì„ ë˜ì§„ë‹¤.
+     * JDBCErrorCode¿¡ ÇØ´çÇÏ´Â SQLExceptionÀ» ´øÁø´Ù.
      *
-     * @param aJDBCErrorCode ì˜ˆì™¸ë¥¼ ë§Œë“œëŠ”ë° ì‚¬ìš©í•  ì—ëŸ¬ ì½”ë“œ
+     * @param aJDBCErrorCode ¿¹¿Ü¸¦ ¸¸µå´Âµ¥ »ç¿ëÇÒ ¿¡·¯ ÄÚµå
      * @throws SQLException
      */
     public static void throwSQLException(int aJDBCErrorCode) throws SQLException
     {
-        // PROJ-2427 String[]ì„ ì‚¬ìš©í•˜ì§€ ì•Šê¸° ìœ„í•´ ë¨¼ì € buildErrorMessageë¥¼ í•œ ê²°ê³¼ë¥¼ ë„˜ê²¨ì¤€ë‹¤.
+        // PROJ-2427 String[]À» »ç¿ëÇÏÁö ¾Ê±â À§ÇØ ¸ÕÀú buildErrorMessage¸¦ ÇÑ °á°ú¸¦ ³Ñ°ÜÁØ´Ù.
         throwSQLExceptionInternal(aJDBCErrorCode, buildErrorMessage(aJDBCErrorCode, null), null);
     }
 
     /**
-     * JDBCErrorCodeì— í•´ë‹¹í•˜ëŠ” SQLExceptionì„ ë˜ì§„ë‹¤.
+     * JDBCErrorCode¿¡ ÇØ´çÇÏ´Â SQLExceptionÀ» ´øÁø´Ù.
      *
-     * @param aJDBCErrorCode ì˜ˆì™¸ë¥¼ ë§Œë“œëŠ”ë° ì‚¬ìš©í•  ì—ëŸ¬ ì½”ë“œ
-     * @param aCause ì›ë˜ ë‚¬ë˜ ì˜ˆì™¸
+     * @param aJDBCErrorCode ¿¹¿Ü¸¦ ¸¸µå´Âµ¥ »ç¿ëÇÒ ¿¡·¯ ÄÚµå
+     * @param aCause ¿ø·¡ ³µ´ø ¿¹¿Ü
      * @throws SQLException
      */
     public static void throwSQLException(int aJDBCErrorCode, Throwable aCause) throws SQLException
@@ -123,10 +118,10 @@ public final class Error
     }
 
     /**
-     * JDBCErrorCodeì— í•´ë‹¹í•˜ëŠ” SQLExceptionì„ ë˜ì§„ë‹¤.
+     * JDBCErrorCode¿¡ ÇØ´çÇÏ´Â SQLExceptionÀ» ´øÁø´Ù.
      *
-     * @param aJDBCErrorCode ì˜ˆì™¸ë¥¼ ë§Œë“œëŠ”ë° ì‚¬ìš©í•  ì—ëŸ¬ ì½”ë“œ
-     * @param aArg ë©”ì‹œì§€ì˜ ì²«ë²ˆì§¸ ì¸ìì— ì„¤ì •í•  ì¸ìê°’
+     * @param aJDBCErrorCode ¿¹¿Ü¸¦ ¸¸µå´Âµ¥ »ç¿ëÇÒ ¿¡·¯ ÄÚµå
+     * @param aArg ¸Ş½ÃÁöÀÇ Ã¹¹øÂ° ÀÎÀÚ¿¡ ¼³Á¤ÇÒ ÀÎÀÚ°ª
      * @throws SQLException
      */
     public static void throwSQLException(int aJDBCErrorCode, String aArg) throws SQLException
@@ -135,11 +130,11 @@ public final class Error
     }
 
     /**
-     * JDBCErrorCodeì— í•´ë‹¹í•˜ëŠ” SQLExceptionì„ ë˜ì§„ë‹¤.
+     * JDBCErrorCode¿¡ ÇØ´çÇÏ´Â SQLExceptionÀ» ´øÁø´Ù.
      *
-     * @param aJDBCErrorCode ì˜ˆì™¸ë¥¼ ë§Œë“œëŠ”ë° ì‚¬ìš©í•  ì—ëŸ¬ ì½”ë“œ
-     * @param aArg ë©”ì‹œì§€ì˜ ì²«ë²ˆì§¸ ì¸ìì— ì„¤ì •í•  ì¸ìê°’
-     * @param aCause ì›ë˜ ë‚¬ë˜ ì˜ˆì™¸
+     * @param aJDBCErrorCode ¿¹¿Ü¸¦ ¸¸µå´Âµ¥ »ç¿ëÇÒ ¿¡·¯ ÄÚµå
+     * @param aArg ¸Ş½ÃÁöÀÇ Ã¹¹øÂ° ÀÎÀÚ¿¡ ¼³Á¤ÇÒ ÀÎÀÚ°ª
+     * @param aCause ¿ø·¡ ³µ´ø ¿¹¿Ü
      * @throws SQLException
      */
     public static void throwSQLException(int aJDBCErrorCode, String aArg, Throwable aCause) throws SQLException
@@ -148,11 +143,11 @@ public final class Error
     }
 
     /**
-     * JDBCErrorCodeì— í•´ë‹¹í•˜ëŠ” SQLExceptionì„ ë˜ì§„ë‹¤.
+     * JDBCErrorCode¿¡ ÇØ´çÇÏ´Â SQLExceptionÀ» ´øÁø´Ù.
      *
-     * @param aJDBCErrorCode ì˜ˆì™¸ë¥¼ ë§Œë“œëŠ”ë° ì‚¬ìš©í•  ì—ëŸ¬ ì½”ë“œ
-     * @param aArg1 ë©”ì‹œì§€ì˜ 1ë²ˆì§¸ ì¸ìì— ì„¤ì •í•  ì¸ìê°’
-     * @param aArg2 ë©”ì‹œì§€ì˜ 2ë²ˆì§¸ ì¸ìì— ì„¤ì •í•  ì¸ìê°’
+     * @param aJDBCErrorCode ¿¹¿Ü¸¦ ¸¸µå´Âµ¥ »ç¿ëÇÒ ¿¡·¯ ÄÚµå
+     * @param aArg1 ¸Ş½ÃÁöÀÇ 1¹øÂ° ÀÎÀÚ¿¡ ¼³Á¤ÇÒ ÀÎÀÚ°ª
+     * @param aArg2 ¸Ş½ÃÁöÀÇ 2¹øÂ° ÀÎÀÚ¿¡ ¼³Á¤ÇÒ ÀÎÀÚ°ª
      * @throws SQLException
      */
     public static void throwSQLException(int aJDBCErrorCode, String aArg1, String aArg2) throws SQLException
@@ -161,12 +156,12 @@ public final class Error
     }
 
     /**
-     * JDBCErrorCodeì— í•´ë‹¹í•˜ëŠ” SQLExceptionì„ ë˜ì§„ë‹¤.
+     * JDBCErrorCode¿¡ ÇØ´çÇÏ´Â SQLExceptionÀ» ´øÁø´Ù.
      *
-     * @param aJDBCErrorCode ì˜ˆì™¸ë¥¼ ë§Œë“œëŠ”ë° ì‚¬ìš©í•  ì—ëŸ¬ ì½”ë“œ
-     * @param aArg1 ë©”ì‹œì§€ì˜ 1ë²ˆì§¸ ì¸ìì— ì„¤ì •í•  ì¸ìê°’
-     * @param aArg2 ë©”ì‹œì§€ì˜ 2ë²ˆì§¸ ì¸ìì— ì„¤ì •í•  ì¸ìê°’
-     * @param aCause ì›ë˜ ë‚¬ë˜ ì˜ˆì™¸
+     * @param aJDBCErrorCode ¿¹¿Ü¸¦ ¸¸µå´Âµ¥ »ç¿ëÇÒ ¿¡·¯ ÄÚµå
+     * @param aArg1 ¸Ş½ÃÁöÀÇ 1¹øÂ° ÀÎÀÚ¿¡ ¼³Á¤ÇÒ ÀÎÀÚ°ª
+     * @param aArg2 ¸Ş½ÃÁöÀÇ 2¹øÂ° ÀÎÀÚ¿¡ ¼³Á¤ÇÒ ÀÎÀÚ°ª
+     * @param aCause ¿ø·¡ ³µ´ø ¿¹¿Ü
      * @throws SQLException
      */
     public static void throwSQLException(int aJDBCErrorCode, String aArg1, String aArg2, Throwable aCause) throws SQLException
@@ -175,12 +170,12 @@ public final class Error
     }
 
     /**
-     * JDBCErrorCodeì— í•´ë‹¹í•˜ëŠ” SQLExceptionì„ ë˜ì§„ë‹¤.
+     * JDBCErrorCode¿¡ ÇØ´çÇÏ´Â SQLExceptionÀ» ´øÁø´Ù.
      *
-     * @param aJDBCErrorCode ì˜ˆì™¸ë¥¼ ë§Œë“œëŠ”ë° ì‚¬ìš©í•  ì—ëŸ¬ ì½”ë“œ
-     * @param aArg1 ë©”ì‹œì§€ì˜ 1ë²ˆì§¸ ì¸ìì— ì„¤ì •í•  ì¸ìê°’
-     * @param aArg2 ë©”ì‹œì§€ì˜ 2ë²ˆì§¸ ì¸ìì— ì„¤ì •í•  ì¸ìê°’
-     * @param aArg2 ë©”ì‹œì§€ì˜ 3ë²ˆì§¸ ì¸ìì— ì„¤ì •í•  ì¸ìê°’
+     * @param aJDBCErrorCode ¿¹¿Ü¸¦ ¸¸µå´Âµ¥ »ç¿ëÇÒ ¿¡·¯ ÄÚµå
+     * @param aArg1 ¸Ş½ÃÁöÀÇ 1¹øÂ° ÀÎÀÚ¿¡ ¼³Á¤ÇÒ ÀÎÀÚ°ª
+     * @param aArg2 ¸Ş½ÃÁöÀÇ 2¹øÂ° ÀÎÀÚ¿¡ ¼³Á¤ÇÒ ÀÎÀÚ°ª
+     * @param aArg2 ¸Ş½ÃÁöÀÇ 3¹øÂ° ÀÎÀÚ¿¡ ¼³Á¤ÇÒ ÀÎÀÚ°ª
      * @throws SQLException
      */
     public static void throwSQLException(int aJDBCErrorCode, String aArg1, String aArg2, String aArg3) throws SQLException
@@ -190,7 +185,13 @@ public final class Error
 
     private static void throwSQLExceptionInternal(int aJDBCErrorCode, String aErrorMessage, Throwable aCause) throws SQLException
     {
-        // PROJ-2427 aErroMessage ë©”ì„¸ì§€ë¥¼ buildErrorMessageë¥¼ ì´ìš©í•˜ì§€ ì•Šê³  ë§¤ê°œë³€ìˆ˜ë¡œ ì „ë‹¬ ë°›ëŠ”ë‹¤.
+        // PROJ-2427 aErroMessage ¸Ş¼¼Áö¸¦ buildErrorMessage¸¦ ÀÌ¿ëÇÏÁö ¾Ê°í ¸Å°³º¯¼ö·Î Àü´Ş ¹Ş´Â´Ù.
+        throw createSQLExceptionInternal(aJDBCErrorCode, aErrorMessage, aCause);
+    }
+
+    private static SQLException createSQLExceptionInternal(int aJDBCErrorCode, String aErrorMessage,
+                                                           Throwable aCause)
+    {
         SQLException sException = new SQLException(aErrorMessage,
                                                    ErrorDef.getErrorState(aJDBCErrorCode),
                                                    aJDBCErrorCode);
@@ -198,13 +199,33 @@ public final class Error
         {
             sException.initCause(aCause);
         }
-        throw sException;
+        return sException;
+    }
+
+    public static SQLException createSQLException(int aJDBCErrorCode)
+    {
+        return createSQLExceptionInternal(aJDBCErrorCode, buildErrorMessage(aJDBCErrorCode, null), null);
+    }
+
+    public static SQLException createSQLException(int aJDBCErrorCode, String aArg1)
+    {
+        return createSQLExceptionInternal(aJDBCErrorCode, buildErrorMessage(aJDBCErrorCode, aArg1), null);
+    }
+
+    public static SQLException createSQLException(int aJDBCErrorCode, String aArg1, String aArg2)
+    {
+        return createSQLExceptionInternal(aJDBCErrorCode, buildErrorMessage(aJDBCErrorCode, aArg1, aArg2), null);
+    }
+
+    public static SQLException createSQLException(int aJDBCErrorCode, String aArg1, Throwable aCause)
+    {
+        return createSQLExceptionInternal(aJDBCErrorCode, buildErrorMessage(aJDBCErrorCode, aArg1), aCause);
     }
 
     /**
-     * {@link BatchUpdateException}ì„ ë˜ì§„ë‹¤.
+     * {@link BatchUpdateException}À» ´øÁø´Ù.
      *
-     * @param aJDBCErrorCode ì˜ˆì™¸ë¥¼ ë§Œë“œëŠ”ë° ì‚¬ìš©í•  ì—ëŸ¬ ì½”ë“œ
+     * @param aJDBCErrorCode ¿¹¿Ü¸¦ ¸¸µå´Âµ¥ »ç¿ëÇÒ ¿¡·¯ ÄÚµå
      * @throws BatchUpdateException
      */
     public static void throwBatchUpdateException(int aJDBCErrorCode) throws BatchUpdateException
@@ -213,10 +234,10 @@ public final class Error
     }
 
     /**
-     * {@link BatchUpdateException}ì„ ë˜ì§„ë‹¤.
+     * {@link BatchUpdateException}À» ´øÁø´Ù.
      *
-     * @param aJDBCErrorCode ì˜ˆì™¸ë¥¼ ë§Œë“œëŠ”ë° ì‚¬ìš©í•  ì—ëŸ¬ ì½”ë“œ
-     * @param aUpdateCounts ê° ì¿¼ë¦¬ì— ëŒ€í•œ update counts
+     * @param aJDBCErrorCode ¿¹¿Ü¸¦ ¸¸µå´Âµ¥ »ç¿ëÇÒ ¿¡·¯ ÄÚµå
+     * @param aUpdateCounts °¢ Äõ¸®¿¡ ´ëÇÑ update counts
      * @throws BatchUpdateException
      */
     public static void throwBatchUpdateException(int aJDBCErrorCode, int[] aUpdateCounts) throws BatchUpdateException
@@ -229,10 +250,10 @@ public final class Error
     }
 
     /**
-     * SQLExceptionì„ BatchUpdateExceptionìœ¼ë¡œ í¬ì¥í•´ì„œ ë˜ì§„ë‹¤.
+     * SQLExceptionÀ» BatchUpdateExceptionÀ¸·Î Æ÷ÀåÇØ¼­ ´øÁø´Ù.
      *
-     * @param aCause ì›ë˜ ë‚¬ë˜ ì˜ˆì™¸
-     * @param aUpdateCounts ê° ì¿¼ë¦¬ì— ëŒ€í•œ update count
+     * @param aCause ¿ø·¡ ³µ´ø ¿¹¿Ü
+     * @param aUpdateCounts °¢ Äõ¸®¿¡ ´ëÇÑ update count
      * @throws BatchUpdateException
      */
     public static void throwBatchUpdateException(SQLException aCause, int[] aUpdateCounts) throws BatchUpdateException
@@ -246,13 +267,13 @@ public final class Error
     }
 
     /**
-     * communicationìœ¼ë¡œ ì¸í•œ ì˜ˆì™¸ë¥¼ {@link SQLException}ìœ¼ë¡œ í¬ì¥í•´ì„œ ë˜ì ¸ì¤€ë‹¤.
-     * ë§Œì•½, ì›ë³¸ ì˜ˆì™¸ê°€ SQLExceptionì´ë¼ë©´ ê·¸ëƒ¥ ì›ë³¸ ì˜ˆì™¸ë¥¼ ë˜ì§„ë‹¤.
+     * communicationÀ¸·Î ÀÎÇÑ ¿¹¿Ü¸¦ {@link SQLException}À¸·Î Æ÷ÀåÇØ¼­ ´øÁ®ÁØ´Ù.
+     * ¸¸¾à, ¿øº» ¿¹¿Ü°¡ SQLExceptionÀÌ¶ó¸é ±×³É ¿øº» ¿¹¿Ü¸¦ ´øÁø´Ù.
      * <p>
-     * ì›ë³¸ ì˜ˆì™¸ê°€ SQLExceptionì´ ì•„ë‹ˆë©´ SQLExceptionìœ¼ë¡œ í•œë²ˆ ê°ì‹¸ì£¼ë©°,
-     * ì—ëŸ¬ ë©”ì‹œì§€ ì•ì— 'Communication link failure'ë¥¼ ë§ë¶™ì¸ë‹¤.
+     * ¿øº» ¿¹¿Ü°¡ SQLExceptionÀÌ ¾Æ´Ï¸é SQLExceptionÀ¸·Î ÇÑ¹ø °¨½ÎÁÖ¸ç,
+     * ¿¡·¯ ¸Ş½ÃÁö ¾Õ¿¡ 'Communication link failure'¸¦ µ¡ºÙÀÎ´Ù.
      *
-     * @param aCause ì›ë˜ ë‚¬ë˜ ì˜ˆì™¸
+     * @param aCause ¿ø·¡ ³µ´ø ¿¹¿Ü
      * @throws SQLException 
      */
     public static void throwCommunicationErrorException(Throwable aCause) throws SQLException
@@ -283,11 +304,11 @@ public final class Error
     }
     
     /**
-     * Failover successë¡œ í¬ì¥í•œ ì˜ˆì™¸ë¥¼ ë˜ì§„ë‹¤.
+     * Failover success·Î Æ÷ÀåÇÑ ¿¹¿Ü¸¦ ´øÁø´Ù.
      * <p>
-     * ë©”ì‹œì§€ì— í†µì‹  'Failover success'ë¼ê³  ì°íˆë¯€ë¡œ, í†µì‹  í•˜ë‹¤ê°€ ë‚œ ê²½ìš°ì—ë§Œ ì“¸ ê²ƒ.
+     * ¸Ş½ÃÁö¿¡ Åë½Å 'Failover success'¶ó°í ÂïÈ÷¹Ç·Î, Åë½Å ÇÏ´Ù°¡ ³­ °æ¿ì¿¡¸¸ ¾µ °Í.
      *
-     * @param aCause ì›ë˜ ë‚¬ë˜ ì˜ˆì™¸
+     * @param aCause ¿ø·¡ ³µ´ø ¿¹¿Ü
      * @throws SQLException
      */
     public static void throwSQLExceptionForFailover(SQLException aCause) throws SQLException
@@ -296,12 +317,12 @@ public final class Error
     }
 
     /**
-     * ì„œë²„ì—ì„œ ë°›ì€ ì—ëŸ¬ê°€ ìˆë‚˜ í™•ì¸í•œë‹¤.
+     * ¼­¹ö¿¡¼­ ¹ŞÀº ¿¡·¯°¡ ÀÖ³ª È®ÀÎÇÑ´Ù.
      * <p>
-     * next errorê¹Œì§€ ëª¨ë‘ í™•ì¸í•œë‹¤. 
+     * next error±îÁö ¸ğµÎ È®ÀÎÇÑ´Ù. 
      *
-     * @param aErrorResult ì„œë²„ì—ì„œ ë°›ì€ ì—ëŸ¬/ê²½ê³  ì •ë³´
-     * @return ì—ëŸ¬ê°€ ìˆëŠ”ì§€ ì—¬ë¶€
+     * @param aErrorResult ¼­¹ö¿¡¼­ ¹ŞÀº ¿¡·¯/°æ°í Á¤º¸
+     * @return ¿¡·¯°¡ ÀÖ´ÂÁö ¿©ºÎ
      */
     public static boolean hasServerError(CmErrorResult aErrorResult)
     {
@@ -316,17 +337,18 @@ public final class Error
     }
 
     /**
-     * ì„œë²„ì—ì„œ ë°›ì€ ì—ëŸ¬/ê²½ê³  ì •ë³´ë¥¼ ì²˜ë¦¬í•œë‹¤.
-     * ì—ëŸ¬ê°€ ìˆìœ¼ë©´ SQLExceptionìœ¼ë¡œ í¬ì¥í•´ì„œ ë˜ì§€ë©°, ê²½ê³ ëŠ” aWarningì— chainìœ¼ë¡œ ì—°ê²°í•œë‹¤.
+     * ¼­¹ö¿¡¼­ ¹ŞÀº ¿¡·¯/°æ°í Á¤º¸¸¦ Ã³¸®ÇÑ´Ù.
+     * ¿¡·¯°¡ ÀÖÀ¸¸é SQLExceptionÀ¸·Î Æ÷ÀåÇØ¼­ ´øÁö¸ç, °æ°í´Â aWarning¿¡ chainÀ¸·Î ¿¬°áÇÑ´Ù.
      * <p>
-     * ë§Œì•½, ì„œë²„ì—ì„œ ë°›ì€ ì—ëŸ¬ê°€ ì—¬ëŸ¬ê°œë¼ë©´ ì´ë¥¼ chainìœ¼ë¡œ ì—°ê²°í•œë‹¤.
+     * ¸¸¾à, ¼­¹ö¿¡¼­ ¹ŞÀº ¿¡·¯°¡ ¿©·¯°³¶ó¸é ÀÌ¸¦ chainÀ¸·Î ¿¬°áÇÑ´Ù.
      *
-     * @param aWarning ê²½ê³ ë¥¼ ì—°ê²°í•  ê°ì²´. nullì´ë©´ ìƒˆë¡œ ë§Œë“ ë‹¤.
-     * @param aErrorResult ì„œë²„ì—ì„œ ë°›ì€ ì—ëŸ¬/ê²½ê³  ì •ë³´
-     * @return aWarningì´ nullì´ë©´ ìƒˆë¡œ ë§Œë“  ê°ì²´, ì•„ë‹ˆë©´ aWarning
-     * @throws SQLException ì„œë²„ì—ì„œ ë°›ì€ ì—ëŸ¬ê°€ 1ê°œë¼ë„ ìˆëŠ” ê²½ìš°
+     * @param aWarning °æ°í¸¦ ¿¬°áÇÒ °´Ã¼. nullÀÌ¸é »õ·Î ¸¸µç´Ù.
+     * @param aErrorResult ¼­¹ö¿¡¼­ ¹ŞÀº ¿¡·¯/°æ°í Á¤º¸
+     * @return aWarningÀÌ nullÀÌ¸é »õ·Î ¸¸µç °´Ã¼, ¾Æ´Ï¸é aWarning
+     * @throws SQLException ¼­¹ö¿¡¼­ ¹ŞÀº ¿¡·¯°¡ 1°³¶óµµ ÀÖ´Â °æ¿ì
      */
-    public static SQLWarning processServerError(SQLWarning aWarning, CmErrorResult aErrorResult) throws SQLException
+    public static SQLWarning processServerError(SQLWarning aWarning,
+                                                CmErrorResult aErrorResult) throws SQLException
     {
         List<SQLException> sExceptionList = new ArrayList<SQLException>();
         List<SQLWarning> sWarningList = new ArrayList<SQLWarning>();
@@ -337,7 +359,7 @@ public final class Error
             String sErrorMsg = aErrorResult.getErrorMessage();
             String sSQLState = SQLStateMap.getSQLState(sErrorCode);
 
-            // _PROWIDëŠ” íˆë“  ì»¬ëŸ¼ì´ë¯€ë¡œ ì´ì—ëŒ€í•œ ì—ëŸ¬ ë©”ì‹œì§€ëŠ” ë°”ê¿”ì„œ ì „ë‹¬í•œë‹¤.
+            // _PROWID´Â È÷µç ÄÃ·³ÀÌ¹Ç·Î ÀÌ¿¡´ëÇÑ ¿¡·¯ ¸Ş½ÃÁö´Â ¹Ù²ã¼­ Àü´ŞÇÑ´Ù.
             switch (sErrorCode)
             {
                 case ErrorDef.CANNOT_SELECT_PROWID:
@@ -354,22 +376,28 @@ public final class Error
                     break;
 
                 default:
-                	break;
+                    break;
             }
 
             if (!aErrorResult.isIgnorable())
             {
                 if (aErrorResult.isInvalidSMNError())
                 {
-                    processInvalidSMNError(aErrorResult, sExceptionList, sWarningList, sErrorCode,
-                                           sErrorMsg, sSQLState);
+                    ShardError.processInvalidSMNError(aErrorResult, sExceptionList, sWarningList,
+                                                      sErrorCode, sErrorMsg, sSQLState);
+                }
+                else if (aErrorResult.isShardModuleError())
+                {
+                    // BUG-46790 ¿¡·¯¸Ş¼¼Áö¸¦ ÆÄ½ÌÇÏ¿© failover alignÁ¤º¸¸¦ ±¸¼ºÇÑ´Ù.
+                    ShardError.parseShardingError(sExceptionList, aErrorResult, sErrorCode,
+                                                  sErrorMsg, sSQLState);
                 }
                 else
                 {
                     sExceptionList.add(new SQLException(sErrorMsg, sSQLState, sErrorCode));
                 }
             }
-            // BUG-44471 ë‚´ë¶€ êµ¬í˜„ìœ¼ë¡œ ì¸í•œ ignore ì—ëŸ¬ê°€ ì•„ë‹ë•Œë§Œ SQLWarningì„ ìƒì„±í•œë‹¤.
+            // BUG-44471 ³»ºÎ ±¸ÇöÀ¸·Î ÀÎÇÑ ignore ¿¡·¯°¡ ¾Æ´Ò¶§¸¸ SQLWarningÀ» »ı¼ºÇÑ´Ù.
             else if (!aErrorResult.canSkipSQLWarning(sErrorCode))
             {
                 sWarningList.add(new SQLWarning(sErrorMsg, sSQLState, sErrorCode));
@@ -396,74 +424,6 @@ public final class Error
         return aWarning;
     }
 
-    /**
-     * ì„œë²„ë¡œë¶€í„° ë„˜ì–´ì˜¨ SMN Invalid ì—ëŸ¬ë¥¼ ì²˜ë¦¬í•œë‹¤.
-     * @param aErrorResult ì„œë²„ì—ì„œ ë°›ì€ ì—ëŸ¬/ê²½ê³  ì •ë³´
-     * @param aExceptionList SQLException ë¦¬ìŠ¤íŠ¸
-     * @param aWarningList SQLWarning ë¦¬ìŠ¤íŠ¸
-     * @param aErrorCode ì—ëŸ¬ì½”ë“œ
-     * @param aErrorMsg ì—ëŸ¬ë©”ì„¸ì§€
-     * @param aSQLState SQLState
-     */
-    private static void processInvalidSMNError(CmErrorResult aErrorResult, List<SQLException> aExceptionList,
-                                               List<SQLWarning> aWarningList,
-                                               int aErrorCode, String aErrorMsg, String aSQLState)
-    {
-        // BUG-46513 ì—ëŸ¬ë©”ì„¸ì§€ë¥¼ íŒŒì‹±í•´ SMNê°’ê³¼ NeedToDisconnectê°’ì„ ì–»ì–´ì˜¨ë‹¤.
-        setShardMetaNumberOfDataNode(aErrorResult, aErrorMsg);
-        boolean sNeedToDisconnect = setShardDisconnectValue(aErrorResult, aErrorMsg);
-
-        switch (aErrorResult.getErrorOp())
-        {
-            case CmOperationDef.DB_OP_SET_PROPERTY :
-                if (sNeedToDisconnect)
-                {
-                    aExceptionList.add(new SQLException(aErrorMsg, aSQLState, aErrorCode));
-                }
-                break;
-            case CmOperationDef.DB_OP_EXECUTE_V2:
-            case CmOperationDef.DB_OP_PARAM_DATA_IN_LIST_V2:
-                if (sNeedToDisconnect)
-                {
-                    aWarningList.add(new SQLWarning(aErrorMsg, aSQLState, aErrorCode));
-                }
-                parseExecuteResults(aErrorResult.getProtocolContext(), aErrorMsg);
-                break;
-            case CmOperationDef.DB_OP_TRANSACTION:
-            case CmOperationDef.DB_OP_SHARD_TRANSACTION:
-                if (sNeedToDisconnect)
-                {
-                    aWarningList.add(new SQLWarning(aErrorMsg, aSQLState, aErrorCode));
-                }
-                break;
-            default:
-                break;
-        }
-    }
-
-    /**
-     * SMN Invalid ì—ëŸ¬ê°€ ë°œìƒí–ˆì„ ë•Œ ì—ëŸ¬ë©”ì„¸ì§€ë¥¼ íŒŒì‹±í•˜ì—¬ executeV2ì˜ ê²°ê³¼ë¥¼ ì €ì¥í•œë‹¤.<br>
-     * ExecuteV2Resultì „ë¬¸ ì˜ˆ : ExecuteV2Result 65536 1 1 18446744073709551615 0 0
-     * @param aContext í”„ë¡œí† ì½œ ì»¨í…ìŠ¤íŠ¸ ê°ì²´
-     * @param aErrorMsg ì—ëŸ¬ë©”ì„¸ì§€
-     */
-    static void parseExecuteResults(CmProtocolContext aContext, String aErrorMsg)
-    {
-        CmExecutionResult sExecResult = (CmExecutionResult)aContext.getCmResult(CmOperation.DB_OP_EXECUTE_V2_RESULT);
-        int sIndex = aErrorMsg.indexOf(EXECUTEV2_RESULT_PREFIX);
-        sIndex += EXECUTEV2_RESULT_PREFIX.length() + 1;
-        String sRemain = aErrorMsg.substring(sIndex);
-        String[] sValues = sRemain.split(" ");
-
-        sExecResult.setStatementId(Integer.parseInt(sValues[0]));
-        sExecResult.setRowNumber(Integer.parseInt(sValues[1]));
-        sExecResult.setResultSetCount(Integer.parseInt(sValues[2]));
-        String sUpdatedRowCount = sValues[3];
-        // BUG-46513 updatedRowCountëŠ” unsigned long í˜•íƒœì˜ textë¡œ ë„˜ì–´ ì˜¤ê¸° ë•Œë¬¸ì— BigIntegerë¡œ ì²˜ë¦¬í•œë‹¤.
-        BigInteger sBigInt = new BigInteger(sUpdatedRowCount);
-        sExecResult.setUpdatedRowCount(sBigInt.longValue());
-    }
-
     private static SQLWarning makeSQLWarningFromList(List<SQLWarning> aWarningList)
     {
         if (aWarningList.size() == 0)
@@ -479,7 +439,7 @@ public final class Error
         return sResult;
     }
 
-    private static SQLException makeSQLExceptionFromList(List<SQLException> aExceptionList)
+    public static SQLException makeSQLExceptionFromList(List<SQLException> aExceptionList)
     {
         if (aExceptionList.size() == 0)
         {
@@ -494,78 +454,6 @@ public final class Error
         return sResult;
     }
 
-    /**
-     * ì—ëŸ¬ë©”ì„¸ì§€ë¥¼ íŒŒì‹±í•˜ì—¬ Disconnectê°’ì„ ë°˜ì˜í•œë‹¤.
-     * @param aErrorResult ì„œë²„ì—ì„œ ë°›ì€ ì—ëŸ¬/ê²½ê³  ì •ë³´
-     * @param aErrorMsg ì—ëŸ¬ ë©”ì„¸ì§€
-     */
-    private static boolean setShardDisconnectValue(CmErrorResult aErrorResult, String aErrorMsg)
-    {
-        boolean sNeedToDisconnect = getShardDiconnectFromErrorMsg(aErrorMsg);
-        aErrorResult.setNeedToDisconnect(sNeedToDisconnect);
-
-        return sNeedToDisconnect;
-    }
-
-    /**
-     * ì—ëŸ¬ë©”ì„¸ì§€ë¥¼ íŒŒì‹±í•˜ì—¬ ì–»ì€ SMNê°’ì„ node ì»¤ë„¥ì…˜ ë° meta ì»¤ë„¥ì…˜ì— ë°˜ì˜í•œë‹¤.
-     * @param aErrorResult ì„œë²„ì—ì„œ ë°›ì€ ì—ëŸ¬/ê²½ê³  ì •ë³´
-     * @param aErrorMsg ì—ëŸ¬ë©”ì„¸ì§€
-     */
-    private static void setShardMetaNumberOfDataNode(CmErrorResult aErrorResult, String aErrorMsg)
-    {
-        long sSMNOfDataNode = getSMNOfDataNodeFromErrorMsg(aErrorMsg);
-        aErrorResult.setSMNOfDataNode(sSMNOfDataNode);
-    }
-
-    /**
-     * ì—ëŸ¬ë©”ì„¸ì§€ë¥¼ íŒŒì‹±í•˜ì—¬ SMNê°’ì„ êµ¬í•œë‹¤.
-     * @param aErrorMsg ì—ëŸ¬ë©”ì„¸ì§€
-     * @return SMNê°’
-     */
-    public static long getSMNOfDataNodeFromErrorMsg(String aErrorMsg)
-    {
-        if (StringUtils.isEmpty(aErrorMsg)) return 0;
-
-        int sSMNIndex = aErrorMsg.indexOf(DATA_NODE_SMN_PREFIX);
-        if (sSMNIndex < 0)  return 0;
-
-        String sSMNRemainStr = aErrorMsg.substring(sSMNIndex + DATA_NODE_SMN_PREFIX.length());
-        StringBuilder sSb = new StringBuilder();
-        for (char sEach : sSMNRemainStr.toCharArray())
-        {
-            if (Character.isDigit(sEach))
-            {
-                sSb.append(sEach);
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        return Long.parseLong(sSb.toString());
-    }
-
-    /**
-     * ì—ëŸ¬ë©”ì„¸ì§€ë¥¼ íŒŒì‹±í•˜ì—¬ ShardDisconnect ê°’ì„ êµ¬í•œë‹¤.
-     * @param aErrorMsg ì—ëŸ¬ë©”ì„¸ì§€
-     * @return needToDisconnectì—¬ë¶€ <br>
-     *         false  : ì´ì „ SMNì„ ê°€ì§„ Connectionì„ í—ˆìš©(default) <br>
-     *         true   : ì´ì „ SMNì„ ê°€ì§„ Connectionì„ í—ˆìš©í•˜ì§€ ì•ŠìŒ
-     */
-    public static boolean getShardDiconnectFromErrorMsg(String aErrorMsg)
-    {
-        if (StringUtils.isEmpty(aErrorMsg)) return false;
-
-        boolean sIsDisconnect = true;
-        if (aErrorMsg.contains(SHARD_DISCONNECT_PREFIX))
-        {
-            sIsDisconnect = false;
-        }
-
-        return sIsDisconnect;
-    }
 
     public static int toClientSideErrorCode(int aErrorCode)
     {
@@ -620,11 +508,11 @@ public final class Error
     }
 
     /**
-     * ì„œë²„ì—ì„œ ë°›ì€ ì—ëŸ¬ ì •ë³´ì™€ XA ê²°ê³¼ë¥¼ í™•ì¸í•˜ê³ , í•„ìš”í•˜ë©´ ì˜ˆì™¸ë¥¼ ë˜ì§„ë‹¤.
+     * ¼­¹ö¿¡¼­ ¹ŞÀº ¿¡·¯ Á¤º¸¿Í XA °á°ú¸¦ È®ÀÎÇÏ°í, ÇÊ¿äÇÏ¸é ¿¹¿Ü¸¦ ´øÁø´Ù.
      *
-     * @param aErrorResult ì„œë²„ì—ì„œ ë°›ì€ ì—ëŸ¬/ê²½ê³  ì •ë³´
-     * @param aXAResult ì„œë²„ì—ì„œ ë°›ì€ XA ê²°ê³¼
-     * @throws XAException ì„œë²„ì—ì„œ ë°›ì€ ì—ëŸ¬ê°€ ìˆëŠ” ê²½ìš°
+     * @param aErrorResult ¼­¹ö¿¡¼­ ¹ŞÀº ¿¡·¯/°æ°í Á¤º¸
+     * @param aXAResult ¼­¹ö¿¡¼­ ¹ŞÀº XA °á°ú
+     * @throws XAException ¼­¹ö¿¡¼­ ¹ŞÀº ¿¡·¯°¡ ÀÖ´Â °æ¿ì
      */
     public static void processXaError(CmErrorResult aErrorResult, CmXAResult aXAResult) throws XAException
     {
@@ -650,10 +538,10 @@ public final class Error
     }
 
     /**
-     * Xidê°€ ì˜¬ë°”ë¥¸ì§€ í™•ì¸í•˜ê³ , í•„ìš”í•˜ë©´ ì˜ˆì™¸ë¥¼ ë˜ì§„ë‹¤.
+     * Xid°¡ ¿Ã¹Ù¸¥Áö È®ÀÎÇÏ°í, ÇÊ¿äÇÏ¸é ¿¹¿Ü¸¦ ´øÁø´Ù.
      *
-     * @param aXid ì˜¬ë°”ë¥¸ì§€ í™•ì¸í•  Xid
-     * @throws XAException Xidê°€ ì˜¬ë°”ë¥´ì§€ ì•Šì„ ê²½ìš°
+     * @param aXid ¿Ã¹Ù¸¥Áö È®ÀÎÇÒ Xid
+     * @throws XAException Xid°¡ ¿Ã¹Ù¸£Áö ¾ÊÀ» °æ¿ì
      */
     public static void checkXidAndThrowXAException(Xid aXid) throws XAException
     {
@@ -669,9 +557,9 @@ public final class Error
     }
 
     /**
-     * XAException ì˜ˆì™¸ë¥¼ ë˜ì§„ë‹¤.
+     * XAException ¿¹¿Ü¸¦ ´øÁø´Ù.
      *
-     * @param aJDBCErrorCode ì—ëŸ¬ ì½”ë“œ
+     * @param aJDBCErrorCode ¿¡·¯ ÄÚµå
      * @param aXaResult XA Result
      * @throws XAException 
      */
@@ -683,9 +571,9 @@ public final class Error
     }
 
     /**
-     * SQLExceptionì„ XAExceptionìœ¼ë¡œ ê°ì‹¸ ë˜ì§„ë‹¤.
+     * SQLExceptionÀ» XAExceptionÀ¸·Î °¨½Î ´øÁø´Ù.
      *
-     * @param aCause ì›ë˜ ë‚¬ë˜ ì˜ˆì™¸
+     * @param aCause ¿ø·¡ ³µ´ø ¿¹¿Ü
      * @throws XAException
      */
     public static void throwXaException(SQLException aCause) throws XAException
@@ -710,11 +598,11 @@ public final class Error
     }
 
     /**
-     * JDBCErrorCodeì— í•´ë‹¹í•˜ëŠ” SQLWarningì„ ë§Œë“ ë‹¤.
+     * JDBCErrorCode¿¡ ÇØ´çÇÏ´Â SQLWarningÀ» ¸¸µç´Ù.
      *
-     * @param aParent ê²½ê³ ë¥¼ ì—°ê²°í•  ê°ì²´. nullì´ë©´ ìƒˆë¡œ ë§Œë“ ë‹¤.
-     * @param aJDBCErrorCode ê²½ê³ ë¥¼ ë§Œë“œëŠ”ë° ì‚¬ìš©í•  ì—ëŸ¬ ì½”ë“œ
-     * @return ìƒˆë¡œ ë§Œë“  SQLWarning ê°ì²´
+     * @param aParent °æ°í¸¦ ¿¬°áÇÒ °´Ã¼. nullÀÌ¸é »õ·Î ¸¸µç´Ù.
+     * @param aJDBCErrorCode °æ°í¸¦ ¸¸µå´Âµ¥ »ç¿ëÇÒ ¿¡·¯ ÄÚµå
+     * @return »õ·Î ¸¸µç SQLWarning °´Ã¼
      */
     public static SQLWarning createWarning(SQLWarning aParent, int aJDBCErrorCode)
     {
@@ -722,12 +610,12 @@ public final class Error
     }
 
     /**
-     * JDBCErrorCodeì— í•´ë‹¹í•˜ëŠ” SQLWarningì„ ë§Œë“ ë‹¤.
+     * JDBCErrorCode¿¡ ÇØ´çÇÏ´Â SQLWarningÀ» ¸¸µç´Ù.
      *
-     * @param aParent ê²½ê³ ë¥¼ ì—°ê²°í•  ê°ì²´. nullì´ë©´ ìƒˆë¡œ ë§Œë“ ë‹¤.
-     * @param aJDBCErrorCode ê²½ê³ ë¥¼ ë§Œë“œëŠ”ë° ì‚¬ìš©í•  ì—ëŸ¬ ì½”ë“œ
-     * @param aCause ì›ë˜ ë‚¬ë˜ ì˜ˆì™¸
-     * @return ìƒˆë¡œ ë§Œë“  SQLWarning ê°ì²´
+     * @param aParent °æ°í¸¦ ¿¬°áÇÒ °´Ã¼. nullÀÌ¸é »õ·Î ¸¸µç´Ù.
+     * @param aJDBCErrorCode °æ°í¸¦ ¸¸µå´Âµ¥ »ç¿ëÇÒ ¿¡·¯ ÄÚµå
+     * @param aCause ¿ø·¡ ³µ´ø ¿¹¿Ü
+     * @return »õ·Î ¸¸µç SQLWarning °´Ã¼
      */
     public static SQLWarning createWarning(SQLWarning aParent, int aJDBCErrorCode, Throwable aCause)
     {
@@ -735,12 +623,12 @@ public final class Error
     }
 
     /**
-     * JDBCErrorCodeì— í•´ë‹¹í•˜ëŠ” SQLWarningì„ ë§Œë“ ë‹¤.
+     * JDBCErrorCode¿¡ ÇØ´çÇÏ´Â SQLWarningÀ» ¸¸µç´Ù.
      *
-     * @param aParent ê²½ê³ ë¥¼ ì—°ê²°í•  ê°ì²´. nullì´ë©´ ìƒˆë¡œ ë§Œë“ ë‹¤.
-     * @param aJDBCErrorCode ê²½ê³ ë¥¼ ë§Œë“œëŠ”ë° ì‚¬ìš©í•  ì—ëŸ¬ ì½”ë“œ
-     * @param aArg ë©”ì‹œì§€ì˜ ì²«ë²ˆì§¸ ì¸ìì— ì„¤ì •í•  ì¸ìê°’
-     * @return ìƒˆë¡œ ë§Œë“  SQLWarning ê°ì²´
+     * @param aParent °æ°í¸¦ ¿¬°áÇÒ °´Ã¼. nullÀÌ¸é »õ·Î ¸¸µç´Ù.
+     * @param aJDBCErrorCode °æ°í¸¦ ¸¸µå´Âµ¥ »ç¿ëÇÒ ¿¡·¯ ÄÚµå
+     * @param aArg ¸Ş½ÃÁöÀÇ Ã¹¹øÂ° ÀÎÀÚ¿¡ ¼³Á¤ÇÒ ÀÎÀÚ°ª
+     * @return »õ·Î ¸¸µç SQLWarning °´Ã¼
      */
     public static SQLWarning createWarning(SQLWarning aParent, int aJDBCErrorCode, String aArg)
     {
@@ -748,13 +636,13 @@ public final class Error
     }
 
     /**
-     * JDBCErrorCodeì— í•´ë‹¹í•˜ëŠ” SQLWarningì„ ë§Œë“ ë‹¤.
+     * JDBCErrorCode¿¡ ÇØ´çÇÏ´Â SQLWarningÀ» ¸¸µç´Ù.
      *
-     * @param aParent ê²½ê³ ë¥¼ ì—°ê²°í•  ê°ì²´. nullì´ë©´ ìƒˆë¡œ ë§Œë“ ë‹¤.
-     * @param aJDBCErrorCode ê²½ê³ ë¥¼ ë§Œë“œëŠ”ë° ì‚¬ìš©í•  ì—ëŸ¬ ì½”ë“œ
-     * @param aArg ë©”ì‹œì§€ì˜ ì²«ë²ˆì§¸ ì¸ìì— ì„¤ì •í•  ì¸ìê°’
-     * @param aCause ì›ë˜ ë‚¬ë˜ ì˜ˆì™¸
-     * @return ìƒˆë¡œ ë§Œë“  SQLWarning ê°ì²´
+     * @param aParent °æ°í¸¦ ¿¬°áÇÒ °´Ã¼. nullÀÌ¸é »õ·Î ¸¸µç´Ù.
+     * @param aJDBCErrorCode °æ°í¸¦ ¸¸µå´Âµ¥ »ç¿ëÇÒ ¿¡·¯ ÄÚµå
+     * @param aArg ¸Ş½ÃÁöÀÇ Ã¹¹øÂ° ÀÎÀÚ¿¡ ¼³Á¤ÇÒ ÀÎÀÚ°ª
+     * @param aCause ¿ø·¡ ³µ´ø ¿¹¿Ü
+     * @return »õ·Î ¸¸µç SQLWarning °´Ã¼
      */
     public static SQLWarning createWarning(SQLWarning aParent, int aJDBCErrorCode, String aArg, Throwable aCause)
     {
@@ -762,13 +650,13 @@ public final class Error
     }
 
     /**
-     * JDBCErrorCodeì— í•´ë‹¹í•˜ëŠ” SQLWarningì„ ë§Œë“ ë‹¤.
+     * JDBCErrorCode¿¡ ÇØ´çÇÏ´Â SQLWarningÀ» ¸¸µç´Ù.
      *
-     * @param aParent ê²½ê³ ë¥¼ ì—°ê²°í•  ê°ì²´. nullì´ë©´ ìƒˆë¡œ ë§Œë“ ë‹¤.
-     * @param aJDBCErrorCode ê²½ê³ ë¥¼ ë§Œë“œëŠ”ë° ì‚¬ìš©í•  ì—ëŸ¬ ì½”ë“œ
-     * @param aArg1 ë©”ì‹œì§€ì˜ 1ë²ˆì§¸ ì¸ìì— ì„¤ì •í•  ì¸ìê°’
-     * @param aArg2 ë©”ì‹œì§€ì˜ 2ë²ˆì§¸ ì¸ìì— ì„¤ì •í•  ì¸ìê°’
-     * @return ìƒˆë¡œ ë§Œë“  SQLWarning ê°ì²´
+     * @param aParent °æ°í¸¦ ¿¬°áÇÒ °´Ã¼. nullÀÌ¸é »õ·Î ¸¸µç´Ù.
+     * @param aJDBCErrorCode °æ°í¸¦ ¸¸µå´Âµ¥ »ç¿ëÇÒ ¿¡·¯ ÄÚµå
+     * @param aArg1 ¸Ş½ÃÁöÀÇ 1¹øÂ° ÀÎÀÚ¿¡ ¼³Á¤ÇÒ ÀÎÀÚ°ª
+     * @param aArg2 ¸Ş½ÃÁöÀÇ 2¹øÂ° ÀÎÀÚ¿¡ ¼³Á¤ÇÒ ÀÎÀÚ°ª
+     * @return »õ·Î ¸¸µç SQLWarning °´Ã¼
      */
     public static SQLWarning createWarning(SQLWarning aParent, int aJDBCErrorCode, String aArg1, String aArg2)
     {
@@ -776,14 +664,14 @@ public final class Error
     }
 
     /**
-     * JDBCErrorCodeì— í•´ë‹¹í•˜ëŠ” SQLWarningì„ ë§Œë“ ë‹¤.
+     * JDBCErrorCode¿¡ ÇØ´çÇÏ´Â SQLWarningÀ» ¸¸µç´Ù.
      *
-     * @param aParent ê²½ê³ ë¥¼ ì—°ê²°í•  ê°ì²´. nullì´ë©´ ìƒˆë¡œ ë§Œë“ ë‹¤.
-     * @param aJDBCErrorCode ê²½ê³ ë¥¼ ë§Œë“œëŠ”ë° ì‚¬ìš©í•  ì—ëŸ¬ ì½”ë“œ
-     * @param aArg1 ë©”ì‹œì§€ì˜ 1ë²ˆì§¸ ì¸ìì— ì„¤ì •í•  ì¸ìê°’
-     * @param aArg2 ë©”ì‹œì§€ì˜ 2ë²ˆì§¸ ì¸ìì— ì„¤ì •í•  ì¸ìê°’
-     * @param aCause ì›ë˜ ë‚¬ë˜ ì˜ˆì™¸
-     * @return ìƒˆë¡œ ë§Œë“  SQLWarning ê°ì²´
+     * @param aParent °æ°í¸¦ ¿¬°áÇÒ °´Ã¼. nullÀÌ¸é »õ·Î ¸¸µç´Ù.
+     * @param aJDBCErrorCode °æ°í¸¦ ¸¸µå´Âµ¥ »ç¿ëÇÒ ¿¡·¯ ÄÚµå
+     * @param aArg1 ¸Ş½ÃÁöÀÇ 1¹øÂ° ÀÎÀÚ¿¡ ¼³Á¤ÇÒ ÀÎÀÚ°ª
+     * @param aArg2 ¸Ş½ÃÁöÀÇ 2¹øÂ° ÀÎÀÚ¿¡ ¼³Á¤ÇÒ ÀÎÀÚ°ª
+     * @param aCause ¿ø·¡ ³µ´ø ¿¹¿Ü
+     * @return »õ·Î ¸¸µç SQLWarning °´Ã¼
      */
     public static SQLWarning createWarning(SQLWarning aParent, int aJDBCErrorCode, String aArg1, String aArg2, Throwable aCause)
     {
@@ -889,5 +777,10 @@ public final class Error
     private static void throwIllegalArgumentExceptionInternal(int aJDBCErrorCode, String aErrorMessage)
     {
         throw new IllegalArgumentException(aErrorMessage);
+    }
+
+    public static SQLException createSQLFeatureNotSupportedException()
+    {
+        return new SQLFeatureNotSupportedException();
     }
 }

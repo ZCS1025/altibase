@@ -16,18 +16,18 @@
  
 
 /***********************************************************************
- * $Id: qsfMCount.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qsfMCount.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  *
  * Description :
- *     PROJ-1075 array typeÎ≥ÄÏàòÏùò member function COUNT
+ *     PROJ-1075 array type∫Øºˆ¿« member function COUNT
  *
  * Syntax :
  *     arr_var.COUNT();
- *     RETURN INTEGER  <= array elementÏùò Í∞úÏàò
+ *     RETURN INTEGER  <= array element¿« ∞≥ºˆ
  *
  * Implementation :
- *     1. array elementÏùò Í∞úÏàòÎ•º Î¶¨ÌÑ¥.
- *     2. array elementÏùò Í∞úÏàòÎäî ÏµúÎåÄ SIntÏùò MAXÍπåÏßÄÏù¥Îã§.
+ *     1. array element¿« ∞≥ºˆ∏¶ ∏Æ≈œ.
+ *     2. array element¿« ∞≥ºˆ¥¬ √÷¥Î SInt¿« MAX±Ó¡ˆ¿Ã¥Ÿ.
  *
  **********************************************************************/
 
@@ -63,7 +63,7 @@ IDE_RC qsfMCountCalculate(mtcNode*     aNode,
 mtfModule qsfMCountModule = {
     1|MTC_NODE_OPERATOR_FUNCTION|MTC_NODE_VARIABLE_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞ÏûêÍ∞Ä ÏïÑÎãò)
+    1.0,  // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄∞° æ∆¥‘)
     qsfMCountFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -91,19 +91,19 @@ IDE_RC qsfMCountEstimate( mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 countÌï®ÏàòÏùò estimate
+ * Description : PROJ-1075 count«‘ºˆ¿« estimate
  *
  * Implementation :
- *            Í∏∞Î≥∏Ï†ÅÏù∏ routineÏùÄ ÏùºÎ∞ò qsf~Ìï®ÏàòÎì§Í≥º Í∞ôÏúºÎÇò,
- *            host variable bindingÏùÑ ÌóàÏö©ÌïòÏßÄ ÏïäÍ≥†
- *            psmÎÇ¥Î∂ÄÏóêÏÑúÎßå ÏÇ¨Ïö©Ïù¥ Í∞ÄÎä•ÌïòÎã§.
+ *            ±‚∫ª¿˚¿Œ routine¿∫ ¿œπ› qsf~«‘ºˆµÈ∞˙ ∞∞¿∏≥™,
+ *            host variable binding¿ª «„øÎ«œ¡ˆ æ ∞Ì
+ *            psm≥ª∫Œø°º≠∏∏ ªÁøÎ¿Ã ∞°¥…«œ¥Ÿ.
  *
- *            Îã§ÏùåÍ≥º Í∞ôÏùÄ Ïú†ÌòïÏúºÎ°ú Îì§Ïñ¥Ïò¨ Ïàò ÏûàÎã§.
+ *            ¥Ÿ¿Ω∞˙ ∞∞¿∫ ¿Ø«¸¿∏∑Œ µÈæÓø√ ºˆ ¿÷¥Ÿ.
  *            (1) var_name.count()
  *            (2) label_name.var_name.count()
- *            var_nameÏùÄ qtcNodeÏùò tableNameÏóê Ìï¥ÎãπÎêòÎØÄÎ°ú Î¨¥Ï°∞Í±¥ Ï°¥Ïû¨Ìï¥Ïïº ÌïúÎã§.
- *            qtcNode->userName, tableNameÏùÑ Ïù¥Ïö©ÌïòÏó¨ array type variableÏùÑ Í≤ÄÏÉâ.
- *            execute->calculateInfoÏóê Ï∞æÏùÄ Î≥ÄÏàòÏùò Ï†ïÎ≥¥Î•º Ïó∞Í≤∞ÌïòÏó¨ Ï§ÄÎã§.
+ *            var_name¿∫ qtcNode¿« tableNameø° «ÿ¥Áµ«π«∑Œ π´¡∂∞« ¡∏¿Á«ÿæﬂ «—¥Ÿ.
+ *            qtcNode->userName, tableName¿ª ¿ÃøÎ«œø© array type variable¿ª ∞Àªˆ.
+ *            execute->calculateInfoø° √£¿∫ ∫Øºˆ¿« ¡§∫∏∏¶ ø¨∞·«œø© ¡ÿ¥Ÿ.
  *
  ***********************************************************************/
 
@@ -127,10 +127,10 @@ IDE_RC qsfMCountEstimate( mtcNode*     aNode,
 
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨. tableNameÏùÄ Î∞òÎìúÏãú Ï°¥Ïû¨Ìï¥Ïïº Ìï®.
+    // ¿˚«’º∫ ∞ÀªÁ. tableName¿∫ π›µÂΩ√ ¡∏¿Á«ÿæﬂ «‘.
     IDE_DASSERT( QC_IS_NULL_NAME(sNode->tableName) == ID_FALSE );
 
-    // array type Î≥ÄÏàòÎ•º Í≤ÄÏÉâ.
+    // array type ∫Øºˆ∏¶ ∞Àªˆ.
     IDE_TEST( qsvProcVar::searchArrayVar( sStatement,
                                           sNode,
                                           &sIsFound,
@@ -147,7 +147,7 @@ IDE_RC qsfMCountEstimate( mtcNode*     aNode,
     {
         aTemplate->rows[aNode->table].execute[aNode->column] = qsfExecute;
 
-        // Î≥ÄÏàòÏùò table, columnÏ†ïÎ≥¥Î•º execute->calculateInfoÏóê Ïó∞Í≤∞ÌïúÎã§.
+        // ∫Øºˆ¿« table, column¡§∫∏∏¶ execute->calculateInfoø° ø¨∞·«—¥Ÿ.
         IDU_FIT_POINT( "qsfMCount::qsfMCountEstimate::alloc::ColumnInfo" );
         IDE_TEST( aCallBack->alloc( aCallBack->info,
                                     ID_SIZEOF( qtcColumnInfo ),
@@ -160,7 +160,7 @@ IDE_RC qsfMCountEstimate( mtcNode*     aNode,
 
         aTemplate->rows[aNode->table].execute[aNode->column].calculateInfo = (void*)sColumnInfo;
 
-        // returnÍ∞íÏùÄ Integer
+        // return∞™¿∫ Integer
         IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                          &mtdInteger,
                                          0,
@@ -200,12 +200,12 @@ IDE_RC qsfMCountCalculate(mtcNode*     aNode,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 countÌï®ÏàòÏùò calculate
+ * Description : PROJ-1075 count«‘ºˆ¿« calculate
  *
  * Implementation :
- *              aInfoÏóêÎäî estimateÍ≥ºÏ†ïÏãú Ï∞æÏùÄ Î≥ÄÏàòÏùò Ï†ïÎ≥¥Í∞Ä Îì§Ïñ¥ÏûàÎã§.
- *              Ïù¥ Ï†ïÎ≥¥Î•º Ïù¥Ïö©ÌïòÏó¨ arrayÎ≥ÄÏàòÎ•º Í∞ÄÏ†∏ÏôÄÏÑú
- *              qsxArray::getElementsCountÌï®ÏàòÎ•º Ìò∏Ï∂úÌïúÎã§.
+ *              aInfoø°¥¬ estimate∞˙¡§Ω√ √£¿∫ ∫Øºˆ¿« ¡§∫∏∞° µÈæÓ¿÷¥Ÿ.
+ *              ¿Ã ¡§∫∏∏¶ ¿ÃøÎ«œø© array∫Øºˆ∏¶ ∞°¡ÆøÕº≠
+ *              qsxArray::getElementsCount«‘ºˆ∏¶ »£√‚«—¥Ÿ.
  *
  ***********************************************************************/    
 
@@ -225,8 +225,8 @@ IDE_RC qsfMCountCalculate(mtcNode*     aNode,
               != IDE_SUCCESS );
 
     /* BUG-38243
-       array method ÏÇ¨Ïö© Ïãú, Ìï¥Îãπ arrayÎäî Ìï¥Îãπ aTemplateÏù¥ ÏïÑÎãå
-       Îã§Î•∏ templateÏóê Ï†ïÎ≥¥Í∞Ä ÏûàÏùÑ Ïàò ÏûàÎã§. */
+       array method ªÁøÎ Ω√, «ÿ¥Á array¥¬ «ÿ¥Á aTemplate¿Ã æ∆¥—
+       ¥Ÿ∏• templateø° ¡§∫∏∞° ¿÷¿ª ºˆ ¿÷¥Ÿ. */
     if ( sColumnInfo->objectId == QS_EMPTY_OID )
     {
         sTemplateForArrayVar = aTemplate;
@@ -249,7 +249,7 @@ IDE_RC qsfMCountCalculate(mtcNode*     aNode,
     sArrayInfo = *((qsxArrayInfo ** )( (UChar*) sTemplateForArrayVar->rows[sColumnInfo->table].row
                                     + sArrayColumn->column.offset ));
 
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨.
+    // ¿˚«’º∫ ∞ÀªÁ.
     IDE_TEST_RAISE( sArrayInfo == NULL, ERR_INVALID_ARRAY );
 
     sReturnValue = (mtdIntegerType*)aStack[0].value;

@@ -21,9 +21,9 @@
  * Description :
  *     BUG-19756 View Predicate Pushdown
  *
- * Ïö©Ïñ¥ ÏÑ§Î™Ö :
+ * øÎæÓ º≥∏Ì :
  *
- * ÏïΩÏñ¥ :
+ * æ‡æÓ :
  *
  **********************************************************************/
 
@@ -35,14 +35,16 @@
 #include <qmgDef.h>
 #include <qmoPredicate.h>
 
-// BUG-40409 row_number_limit ÏµúÎåÄÏπò
-#define QMO_PUSH_RANK_MAX                   1024
+/* TASK-7219 */
+#define QMO_CHANGE_COLUMN_NAME_DISABLE (0)
+#define QMO_CHANGE_COLUMN_NAME_ENABLE  (1)
+#define QMO_CHANGE_COLUMN_NAME_ONLY    (2)
 
 class qmoPushPred
 {
 public:
     
-    // BUG-18367 SFWGHÏùò predicateÏùÑ viewÏùò predicateÏúºÎ°ú pushdown ÏàòÌñâ
+    // BUG-18367 SFWGH¿« predicate¿ª view¿« predicate¿∏∑Œ pushdown ºˆ«‡
     static IDE_RC doPushDownViewPredicate( qcStatement  * aStatement,
                                            qmsParseTree * aViewParseTree,
                                            qmsQuerySet  * aViewQuerySet,
@@ -53,26 +55,56 @@ public:
                                            idBool       * aIsPushed,
                                            idBool       * aIsPushedAll,
                                            idBool       * aRemainPushedPred );
+
+    /* TASK-7219 */
+    static IDE_RC checkPushDownPredicate( qcStatement  * aStatement,
+                                          qmsParseTree * aViewParseTree,
+                                          qmsQuerySet  * aViewQuerySet,
+                                          qmsSFWGH     * aOuterQuery,
+                                          UShort         aViewTupleId,
+                                          qmoPredicate * aPredicate,
+                                          idBool       * aIsPushed );
+
+    static IDE_RC changePredicateNodeName( qcStatement * aStatement,
+                                           qmsQuerySet * aViewQuerySet,
+                                           UShort        aViewTupleId,
+                                           qtcNode     * aSrcNode,
+                                           qtcNode    ** aDstNode );
+
+    /* TASK-7219 Non-shard DML */
+    static void setForcePushedPredForShardView( mtcNode * aNode );
     
+
 private:
 
-    // Push selection Ìï¥ÎèÑ ÎêòÎäî Íµ¨Î¨∏Ïù∏ÏßÄ queryset Îã®ÏúÑÎ°ú Í≤ÄÏÇ¨
+    // Push selection «ÿµµ µ«¥¬ ±∏πÆ¿Œ¡ˆ queryset ¥‹¿ß∑Œ ∞ÀªÁ
     static IDE_RC canPushSelectionQuerySet( qmsParseTree * aViewParseTree,
                                             qmsQuerySet  * aViewQuerySet,
                                             idBool       * aCanPushDown,
                                             idBool       * aRemainPushedPred );
     
 
-    // Push slection Ìï¥ÎèÑ ÎêòÎäî predicateÏù∏ÏßÄ Í≤ÄÏÇ¨ 
+    // Push slection «ÿµµ µ«¥¬ predicate¿Œ¡ˆ ∞ÀªÁ 
     static IDE_RC canPushDownPredicate( qcStatement  * aStatement,
-                                        qmsSFWGH     * aViewSFWGH,
+                                        qmsQuerySet  * aViewQuerySet,
                                         qmsTarget    * aViewTarget,
                                         UShort         aViewTupleId,
+                                        qmsSFWGH     * aOuterQuery,
                                         qtcNode      * aNode,
                                         idBool         aContainRootsNext,
                                         idBool       * aCanPushDown );
 
-    // BUG-18367 viewÏùò predicateÏúºÎ°ú pushdown ÏàòÌñâ
+    /* TASK-7219 Non-shard DML */
+    static IDE_RC findOutRefTuple( UShort    aTupleId,
+                                   qmsFrom * aOutRefFrom,
+                                   idBool  * aIsFound );
+
+    /* TASK-7219 Non-shard DML */
+    static IDE_RC findOutRefTupleForFromTree( UShort    aTupleId,
+                                              qmsFrom * aFrom,
+                                              idBool  * aIsFound );
+    
+    // BUG-18367 view¿« predicate¿∏∑Œ pushdown ºˆ«‡
     static IDE_RC pushDownPredicate( qcStatement  * aStatement,
                                      qmsQuerySet  * aViewQuerySet,
                                      UShort         aViewTupleId,
@@ -102,22 +134,24 @@ private:
                                          UInt           aRankTargetOrder,
                                          qtcNode      * aRankLimit );
 
-    // BUG-19756 viewÏùò predicateÏùÑ view ÎÇ¥Î∂ÄÏùò table predicateÏúºÎ°ú Î≥ÄÌôò
+    // BUG-19756 view¿« predicate¿ª view ≥ª∫Œ¿« table predicate¿∏∑Œ ∫Ø»Ø
     static IDE_RC changeViewPredIntoTablePred( qcStatement  * aStatement,
                                                qmsTarget    * aViewTarget,
                                                UShort         aViewTupleId,
                                                qtcNode      * aNode,
+                                               UShort         aChangeName, /* TASK-7219 */
                                                idBool         aContainRootsNext );
 
-    // BUG-19756 view Ïª¨ÎüºÏùÑ view target columnÏúºÎ°ú Î≥ÄÌôò
+    // BUG-19756 view ƒ√∑≥¿ª view target column¿∏∑Œ ∫Ø»Ø
     static IDE_RC transformToTargetColumn( qtcNode      * aNode,
+                                           UShort         aChangeName, /* TASK-7219 */
                                            qtcNode      * aTargetColumn );
     
-    // BUG-19756 view Ïª¨ÎüºÏùÑ view target valueÎ°ú Î≥ÄÌôò
+    // BUG-19756 view ƒ√∑≥¿ª view target value∑Œ ∫Ø»Ø
     static IDE_RC transformToTargetValue( qtcNode      * aNode,
                                           qtcNode      * aTargetColumn );
                                              
-    // BUG-19756 view Ïª¨ÎüºÏùÑ viewÏùò target expressionÏúºÎ°ú Î≥ÄÌôò
+    // BUG-19756 view ƒ√∑≥¿ª view¿« target expression¿∏∑Œ ∫Ø»Ø
     static IDE_RC transformToTargetExpression( qcStatement  * aStatement,
                                                qtcNode      * aNode,
                                                qtcNode      * aTargetColumn );

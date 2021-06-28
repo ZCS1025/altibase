@@ -18,14 +18,17 @@ package Altibase.jdbc.driver.cm;
 
 public class CmExecutionResult extends CmStatementIdResult
 {
-    static final byte MY_OP = CmOperation.DB_OP_EXECUTE_V2_RESULT;
+    static final byte MY_OP = CmOperation.DB_OP_EXECUTE_V3_RESULT;
     
-    private int mRowNumber;
-    private int mResultSetCount;
-    private long mUpdatedRowCount;
+    private int     mRowNumber;
+    private int     mResultSetCount;
+    private long    mUpdatedRowCount;
     private boolean mBatchMode = false;
-    private int[] mUpdateCountList;
-    private int mUpdateCountListSize;
+    private long[]  mUpdateCountList;         // PROJ-2707 update count long Áö¿ø
+    private int     mUpdateCountListSize;
+    // PROJ-2733 ºĞ»ê Æ®·£Àè¼Ç Á¤ÇÕ¼º 
+    private short   mSessionPropID;
+    private String  mSessionPropValueStr = null;
     
     public CmExecutionResult()
     {
@@ -51,14 +54,14 @@ public class CmExecutionResult extends CmStatementIdResult
         return mUpdatedRowCount;
     }
     
-    public int[] getUpdatedRowCounts()
+    public long[] getUpdatedRowCounts()
     {
         if (mUpdateCountList == null)
         {
             return null;
         }
 
-        int[] sResult = new int[mUpdateCountListSize];
+        long[] sResult = new long[mUpdateCountListSize];
         System.arraycopy(mUpdateCountList, 0, sResult, 0, mUpdateCountListSize);
         return sResult;
     }
@@ -83,7 +86,7 @@ public class CmExecutionResult extends CmStatementIdResult
         return MY_OP;
     }
 
-    // BUG-46513 smn ì˜¤ë¥˜ì¼ë•Œ ì—ëŸ¬ë©”ì„¸ì§€ë¡œ ë¶€í„° ê²°ê³¼ë¥¼ íŒŒì‹±í•˜ì—¬ ì…‹íŒ…í•˜ê¸° ë•Œë¬¸ì— publicìœ¼ë¡œ ë³€ê²½
+    // BUG-46513 smn ¿À·ùÀÏ¶§ ¿¡·¯¸Ş¼¼Áö·Î ºÎÅÍ °á°ú¸¦ ÆÄ½ÌÇÏ¿© ¼ÂÆÃÇÏ±â ¶§¹®¿¡ publicÀ¸·Î º¯°æ
     public void setResultSetCount(int aResultSetCount)
     {
         mResultSetCount = aResultSetCount;
@@ -95,15 +98,15 @@ public class CmExecutionResult extends CmStatementIdResult
         {
             if (mUpdateCountList == null)
             {
-                mUpdateCountList = new int[32];
+                mUpdateCountList = new long[32];
             }
             else if (mUpdateCountListSize == mUpdateCountList.length)
             {
-                int[] sNewList = new int[mUpdateCountList.length + 32];
+                long[] sNewList = new long[mUpdateCountList.length + 32];
                 System.arraycopy(mUpdateCountList, 0, sNewList, 0, mUpdateCountList.length);
                 mUpdateCountList = sNewList;
             }
-            mUpdateCountList[mUpdateCountListSize++] = (int)aUpdatedRowCount;
+            mUpdateCountList[mUpdateCountListSize++] = aUpdatedRowCount;
         }
         else
         {
@@ -114,5 +117,25 @@ public class CmExecutionResult extends CmStatementIdResult
     int getUpdatedRowCountArraySize()
     {
         return mUpdateCountListSize;
+    }
+
+    public short getSessionPropID()
+    {
+        return mSessionPropID;
+    }
+
+    public void setSessionPropID(short aSessionPropID)
+    {
+        mSessionPropID = aSessionPropID;
+    }
+
+    public String getSessionPropValueStr()
+    {
+        return mSessionPropValueStr;
+    }
+
+    public void setSessionPropValueStr(String aSessionPropValueStr)
+    {
+        mSessionPropValueStr = aSessionPropValueStr;
     }
 }

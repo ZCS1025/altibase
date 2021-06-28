@@ -1,16 +1,16 @@
-# $Id: Makefile 70601 2015-04-30 01:29:54Z heesuk.shin $
+# $Id: Makefile 90822 2021-05-13 04:45:36Z kclee $
 
 include ../smEnv.mk
 
 #SRCS    = genErrMsg.cpp
 #BINS	= genErrMsg
 
-# ì†ŒìŠ¤ì½”ë“œì— include ë  ì—ëŸ¬ì½”ë“œ í™”ì¼
+# ¼Ò½ºÄÚµå¿¡ include µÉ ¿¡·¯ÄÚµå È­ÀÏ
 
 E_HEADER = smErrorCode.ih
 ALLMSB         = $(ALTI_HOME)/msg/E_SM_US7ASCII.msb $(ALTI_HOME)/msg/E_SM_KO16KSC5601.msb
 
-# ì—ëŸ¬ì½”ë“œ ë©”ì‹œì§€ í™”ì¼
+# ¿¡·¯ÄÚµå ¸Ş½ÃÁö È­ÀÏ
 
 all: ErrorFiles
 #genErrMsg 
@@ -28,6 +28,7 @@ ErrorFiles : $(ALLMSB)
 E_SM_US7ASCII.msb : E_SM_US7ASCII.msg $(GENERRMSG)
 	$(GENERRMSG) -i E_SM_US7ASCII.msg -o $(E_HEADER)
 	$(COPY) SM_TRC_CODE.ih SM_TRC_CODE.ic  $(E_HEADER) ../include	
+	sync
 
 $(ALLMSB): E_SM_US7ASCII.msb
 	$(COPY) $^ $@

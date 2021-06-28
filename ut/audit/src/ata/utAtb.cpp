@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: utAtb.cpp 82790 2018-04-15 23:41:55Z bethy $
+ * $Id: utAtb.cpp 82786 2018-04-12 08:04:45Z bethy $
  ******************************************************************************/
 
 #include <utAtb.h>
@@ -29,7 +29,7 @@
 
     SInt sqlTypeToAltibase(SInt type)
     {
-        //ulnGetDefaultCTypdForSqlTypeÏùÑ Í∑∏ÎåÄÎ°ú Î≥µÏÇ¨Ìï¥Ïò¥.
+        //ulnGetDefaultCTypdForSqlType¿ª ±◊¥Î∑Œ ∫πªÁ«ÿø».
         switch(type)
         {
             case SQL_CHAR:

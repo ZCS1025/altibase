@@ -238,7 +238,7 @@ IDE_RC smxLegacyTransMgr::addLegacyTrans( smxTrans * aSmxTrans,
     sLegacyTrans->mFstDskViewSCN = aSmxTrans->mFstDskViewSCN;
 
     /* PROJ-2694 Fetch Across Rollback 
-     * rollbackì—ì„œ í˜¸ì¶œë  ê²½ìš°ì—ëŠ” OID listë¥¼ ì´ë¯¸ ì²˜ë¦¬ í•œ ë‹¤ìŒì´ë¯€ë¡œ OID listë¥¼ ì—°ê²°í•  í•„ìš”ê°€ ì—†ë‹¤. */
+     * rollback¿¡¼­ È£ÃâµÉ °æ¿ì¿¡´Â OID list¸¦ ÀÌ¹Ì Ã³¸® ÇÑ ´ÙÀ½ÀÌ¹Ç·Î OID list¸¦ ¿¬°áÇÒ ÇÊ¿ä°¡ ¾ø´Ù. */
     if( aIsCommit == ID_TRUE )
     {
         sLegacyTrans->mMadeType  = 'C';
@@ -265,9 +265,9 @@ IDE_RC smxLegacyTransMgr::addLegacyTrans( smxTrans * aSmxTrans,
     if( smuProperty::isTrcLogLegacyTxInfo() == ID_TRUE )
     {
         /* --------------------------------------------------------------------
-         * BUG-38515 __SM_SKIP_CHECKSCN_IN_STARTUP íˆë“  í”„ë¡œí¼í‹°ë¥¼ ì‚¬ìš©ì‹œ ë¶„ì„ì„ ë•ê¸° ìœ„í•´
-         * Legacy Txì— ê´€ë ¨í•˜ì—¬ addLegacyTransì™€ removeLegacyTrans í•¨ìˆ˜ì—ì„œ legacy Txê°€ 
-         * ì¶”ê°€/ì œê±° ë  ë•Œë§ˆë‹¤ trc ë¡œê·¸ë¥¼ ë‚¨ê¸´ë‹¤. 
+         * BUG-38515 __SM_SKIP_CHECKSCN_IN_STARTUP È÷µç ÇÁ·ÎÆÛÆ¼¸¦ »ç¿ë½Ã ºĞ¼®À» µ½±â À§ÇØ
+         * Legacy Tx¿¡ °ü·ÃÇÏ¿© addLegacyTrans¿Í removeLegacyTrans ÇÔ¼ö¿¡¼­ legacy Tx°¡ 
+         * Ãß°¡/Á¦°Å µÉ ¶§¸¶´Ù trc ·Î±×¸¦ ³²±ä´Ù. 
          * ----------------------------------------------------------------- */
         ideLog::log( IDE_SM_0, 
                      "AddLegacyTrans TID=%"ID_UINT32_FMT", CommitSCN=%"ID_UINT64_FMT
@@ -337,9 +337,9 @@ IDE_RC smxLegacyTransMgr::removeLegacyTrans( smuList * aLegacyTransNode,
      *
      * 1. Lock
      * 2. Search target node
-     * 3. Unlock    -- ì¶”í›„ íŠœë‹
+     * 3. Unlock    -- ÃßÈÄ Æ©´×
      * 4. Process OIDList pending jobs.
-     * 5. Lock      -- ì¶”í›„ íŠœë‹
+     * 5. Lock      -- ÃßÈÄ Æ©´×
      * 6. Remove Legacy Transaction From Legacy Transaction List.
      * 7. Unlock */
 
@@ -369,7 +369,7 @@ IDE_RC smxLegacyTransMgr::removeLegacyTrans( smuList * aLegacyTransNode,
     }
 
     /* sState = 0;
-     * unlockLTL(); -- ì¶”í›„ íŠœë‹ */
+     * unlockLTL(); -- ÃßÈÄ Æ©´× */
 
     if( sTargetNode != NULL )
     {
@@ -397,8 +397,8 @@ IDE_RC smxLegacyTransMgr::removeLegacyTrans( smuList * aLegacyTransNode,
             else
             {
                 /* PROJ-2694 Fetch Across Rollback
-                 * legacy Txê°€ rollbackì¼ ê²½ìš°ëŠ” OID listê°€ ëª¨ë‘ ì •ë¦¬ëœ ìƒíƒœë¡œ ì—°ê²°ë˜ë¯€ë¡œ 
-                 * OID listë¥¼ ì •ë¦¬í•  í•„ìš” ì—†ë‹¤. */
+                 * legacy Tx°¡ rollbackÀÏ °æ¿ì´Â OID list°¡ ¸ğµÎ Á¤¸®µÈ »óÅÂ·Î ¿¬°áµÇ¹Ç·Î 
+                 * OID list¸¦ Á¤¸®ÇÒ ÇÊ¿ä ¾ø´Ù. */
             }
         }
         else
@@ -409,9 +409,9 @@ IDE_RC smxLegacyTransMgr::removeLegacyTrans( smuList * aLegacyTransNode,
         if( smuProperty::isTrcLogLegacyTxInfo() == ID_TRUE )
         {
             /* --------------------------------------------------------------------
-             * BUG-38515 __SM_SKIP_CHECKSCN_IN_STARTUP íˆë“  í”„ë¡œí¼í‹°ë¥¼ ì‚¬ìš©ì‹œ ë¶„ì„ì„ ë•ê¸° ìœ„í•´
-             * Legacy Txì— ê´€ë ¨í•˜ì—¬ addLegacyTransì™€ removeLegacyTrans í•¨ìˆ˜ì—ì„œ legacy Tx>ê°€ 
-             * ì¶”ê°€/ì œê±° ë  ë•Œë§ˆë‹¤ trc ë¡œê·¸ë¥¼ ë‚¨ê¸´ë‹¤. 
+             * BUG-38515 __SM_SKIP_CHECKSCN_IN_STARTUP È÷µç ÇÁ·ÎÆÛÆ¼¸¦ »ç¿ë½Ã ºĞ¼®À» µ½±â À§ÇØ
+             * Legacy Tx¿¡ °ü·ÃÇÏ¿© addLegacyTrans¿Í removeLegacyTrans ÇÔ¼ö¿¡¼­ legacy Tx>°¡ 
+             * Ãß°¡/Á¦°Å µÉ ¶§¸¶´Ù trc ·Î±×¸¦ ³²±ä´Ù. 
              * ----------------------------------------------------------------- */
             ideLog::log( IDE_SM_0, "RemoveLegacyTrans TID=%"ID_UINT32_FMT, sLegacyTrans->mTransID );
         }
@@ -425,7 +425,7 @@ IDE_RC smxLegacyTransMgr::removeLegacyTrans( smuList * aLegacyTransNode,
         /* do nothing */
     }
 
-    /* lockLTL();   -- ì¶”í›„ íŠœë‹
+    /* lockLTL();   -- ÃßÈÄ Æ©´×
      * sState = 1; */
 
     if( sTargetNode != NULL )

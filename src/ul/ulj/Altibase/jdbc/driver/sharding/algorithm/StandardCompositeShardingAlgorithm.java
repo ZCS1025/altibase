@@ -27,9 +27,7 @@ import Altibase.jdbc.driver.sharding.util.Range;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static Altibase.jdbc.driver.sharding.util.ShardingTraceLogger.shard_log;
 
@@ -42,18 +40,18 @@ public class StandardCompositeShardingAlgorithm implements CompositeShardingAlgo
         this.mShardRangeList = aShardRangeList;
     }
 
-    public Set<DataNode> doSharding(List<PreciseShardingValue> aShardValueList,
-                                    List<ShardSplitMethod> aShardSplitMethodList, DataNode aDefaultNode)
+    public List<DataNode> doSharding(List<Comparable<?>> aShardValueList,
+                                     List<ShardSplitMethod> aShardSplitMethodList, DataNode aDefaultNode,
+                                     int aShardValueCnt, int aShardSubValueCnt)
             throws SQLException
     {
         if (mShardRangeList.getRangeList().isEmpty())
         {
             Error.throwSQLException(ErrorDef.SHARD_RANGE_NOT_FOUNDED);
         }
-        Set<DataNode> sResult = new HashSet<DataNode>();
-        // PROJ-2690 í˜„ì¬ ë³µí•©ìƒ¤ë“œí‚¤ëŠ” ë‘ê°œê¹Œì§€ ë°–ì— ì•ˆë˜ê¸° ë•Œë¬¸ì— aShardValueListì˜ ì²«ë²ˆì§¸, ë‘ë²ˆì§¸ í•­ëª©ë§Œ ê°€ì ¸ì˜¨ë‹¤.
-        PreciseShardingValue sShardingValue = aShardValueList.get(0);
-        PreciseShardingValue sShardingSubValue = aShardValueList.get(1);
+        List<DataNode> sResult = new ArrayList<DataNode>();
+        // PROJ-2690 ÇöÀç º¹ÇÕ»şµåÅ°´Â µÎ°³±îÁö ¹Û¿¡ ¾ÈµÇ±â ¶§¹®¿¡ aShardValueListÀÇ Ã¹¹øÂ°, µÎ¹øÂ° Ç×¸ñ¸¸ °¡Á®¿Â´Ù.
+
         ShardSplitMethod sShardSplitMethod = aShardSplitMethodList.get(0);
         ShardSplitMethod sShardSubSplitMethod = aShardSplitMethodList.get(1);
 
@@ -61,36 +59,69 @@ public class StandardCompositeShardingAlgorithm implements CompositeShardingAlgo
         List<Integer> sSubNodeIndexList = new ArrayList<Integer>();
 
         int sNodeIdx = 0;
+        boolean sDefaultNodeExec = false;
+        boolean[] sPrimaryFound = new boolean[aShardValueCnt];
+        boolean[] sSecondaryFound = new boolean[aShardSubValueCnt];
+        int sRangeSize = mShardRangeList.getRangeList().size();
         for (ShardRange sShardRange : mShardRangeList.getRangeList())
         {
-            // PROJ-2690 ì²«ë²ˆì§¸ ìƒ¤ë“œí‚¤ ê°’ì— ëŒ€í•œ range ì²´í¬. nullì¸ ê²½ìš°ì—ëŠ” Subí‚¤ ê°’ë§Œ ë¹„êµí•œë‹¤.
-            if (sShardingValue != null &&
-                isInTheRange(sShardingValue, sShardSplitMethod, sShardRange.getRange()))
+            // PROJ-2690 Ã¹¹øÂ° »şµåÅ° °ª¿¡ ´ëÇÑ range Ã¼Å©. nullÀÎ °æ¿ì¿¡´Â SubÅ° °ª¸¸ ºñ±³ÇÑ´Ù.
+            int i;
+            for (i = 0; i < aShardValueCnt; i++)
             {
-                sPrimaryNodeIndexList.add(sNodeIdx);
+                Comparable<?> sShardingValue = aShardValueList.get(i);
+                if (sShardingValue != null)
+                {
+                    if (isInTheRange(sShardingValue, sShardSplitMethod, sShardRange.getRange()))
+                    {
+                        sPrimaryNodeIndexList.add(sNodeIdx);
+                        sPrimaryFound[i] = true;
+                    }
+                    else
+                    {
+                        if (sNodeIdx == sRangeSize - 1 && !sPrimaryFound[i])
+                        {
+                            sDefaultNodeExec = true;
+                        }
+                    }
+                }
             }
-            // PROJ-2690  ë‘ë²ˆì§¸ ìƒ¤ë“œí‚¤ ê°’ì— ëŒ€í•œ range ì²´í¬
-            if (sShardingSubValue != null &&
-                isInTheRange(sShardingSubValue, sShardSubSplitMethod, sShardRange.getSubRange()))
+            // PROJ-2690  µÎ¹øÂ° »şµåÅ° °ª¿¡ ´ëÇÑ range Ã¼Å©
+            for (int j = 0; j < aShardSubValueCnt; j++)
             {
-                sSubNodeIndexList.add(sNodeIdx);
+                Comparable<?> sShardingSubValue = aShardValueList.get(i + j);
+                if (sShardingSubValue != null)
+                {
+                    if (isInTheRange(sShardingSubValue, sShardSubSplitMethod, sShardRange.getSubRange()))
+                    {
+                        sSubNodeIndexList.add(sNodeIdx);
+                        sSecondaryFound[j] = true;
+                    }
+                    else
+                    {
+                        if (sNodeIdx == sRangeSize - 1 && !sSecondaryFound[j])
+                        {
+                            sDefaultNodeExec = true;
+                        }
+                    }
+                }
             }
             sNodeIdx++;
         }
 
         List<Integer> sIntersectList = new ArrayList<Integer>(sPrimaryNodeIndexList);
         sIntersectList.retainAll(sSubNodeIndexList);
-        if (sShardingValue == null)
+        if (aShardValueCnt == 0)
         {
-            // PROJ-2690 ì²«ë²ˆì§¸ ìƒ¤ë“œê°’ì´ nullì¸ ê²½ìš°ì—ëŠ” ì„œë¸Œìƒ¤ë“œê°’ì˜ ê²°ê³¼ë§Œ í¬í•¨ì‹œí‚¨ë‹¤.
+            // PROJ-2690 Ã¹¹øÂ° »şµå°ªÀÌ nullÀÎ °æ¿ì¿¡´Â ¼­ºê»şµå°ªÀÇ °á°ú¸¸ Æ÷ÇÔ½ÃÅ²´Ù.
             sIntersectList.addAll(sSubNodeIndexList);
         }
-        for (int sEach : sIntersectList) // ê³µí†µë˜ëŠ” node indexë¥¼ node idë¡œ ë°”ê¾¼ë‹¤.
+        for (int sEach : sIntersectList) // °øÅëµÇ´Â node index¸¦ node id·Î ¹Ù²Û´Ù.
         {
             sResult.add(mShardRangeList.getRangeList().get(sEach).getNode());
         }
 
-        if (sResult.size() == 0)
+        if (sResult.size() == 0 || sDefaultNodeExec)
         {
             if (aDefaultNode != null)
             {
@@ -109,20 +140,20 @@ public class StandardCompositeShardingAlgorithm implements CompositeShardingAlgo
     }
 
     @SuppressWarnings("unchecked")
-    private boolean isInTheRange(PreciseShardingValue aShardingValue, ShardSplitMethod aShardSplitMethod,
+    private boolean isInTheRange(Comparable<?> aShardingValue, ShardSplitMethod aShardSplitMethod,
                                  Range aRange)
     {
         boolean sFounded;
 
         if (aShardSplitMethod == ShardSplitMethod.LIST)
         {
-            sFounded =  aRange.isEndedBy(aShardingValue.getValue());
+            sFounded =  aRange.isEndedBy(aShardingValue);
         }
         else
         {
-            /* PROJ-2690 compositeì¸ ê²½ìš°ì—ëŠ” subkeyê°’ì´ ìˆê¸° ë•Œë¬¸ì— containsEndedByì„ ì‚¬ìš©í•˜ì§€ ì•Šê³ 
-               min, maxë¥¼ ë‹¤ ë¹„êµí•œë‹¤. */
-            sFounded = aRange.containsEqualAndLessThan(aShardingValue.getValue());
+            /* PROJ-2690 compositeÀÎ °æ¿ì¿¡´Â subkey°ªÀÌ ÀÖ±â ¶§¹®¿¡ containsEndedByÀ» »ç¿ëÇÏÁö ¾Ê°í
+               min, max¸¦ ´Ù ºñ±³ÇÑ´Ù. */
+            sFounded = aRange.containsEqualAndLessThan(aShardingValue);
         }
 
         return sFounded;

@@ -32,6 +32,7 @@ public abstract class LobLocatorColumn extends AbstractColumn
     private static final BigInteger NULL_LENGTH  = BigInteger.ZERO;
 
     private static final int        LOB_LOCATOR_OCTET_LEGNTH = 8;
+    private static final long       LONG_MAX = -1;
 
     protected BigInteger      mLocatorId;
     protected BigInteger      mLength;
@@ -100,7 +101,11 @@ public abstract class LobLocatorColumn extends AbstractColumn
 
     protected boolean isNullValueSet()
     {
-        // BUG-37418 Í∏∏Ïù¥Í∞Ä 0ÏùºÎïåÎèÑ nullÎ°ú Î≥¥ÏïÑÏïºÌïúÎã§.
+        if (mLength == null || mLength.longValue() == LONG_MAX)
+        {
+            mLength = NULL_LENGTH;
+        }
+        // BUG-37418 ±Ê¿Ã∞° 0¿œ∂ßµµ null∑Œ ∫∏æ∆æﬂ«—¥Ÿ.
         return isNullLocator()
             || (NULL_LENGTH.compareTo(mLength) == 0);
     }

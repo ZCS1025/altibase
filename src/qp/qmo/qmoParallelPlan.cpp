@@ -76,14 +76,14 @@ IDE_RC qmoParallelPlan::makePRLQ( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoParallelPlan::makePRLQ::__FT__" );
 
     //----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aQuerySet  != NULL );
 
     //-------------------------------------------------------------
-    // ì´ˆê¸°í™” ìž‘ì—…
+    // ÃÊ±âÈ­ ÀÛ¾÷
     //-------------------------------------------------------------
 
     aPlan->offset   = QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize;
@@ -92,7 +92,7 @@ IDE_RC qmoParallelPlan::makePRLQ( qcStatement * aStatement,
     sPRLQ->plan.left = aChildPlan;
 
     //----------------------------------
-    // Flag ì •ë³´ ì„¤ì •
+    // Flag Á¤º¸ ¼³Á¤
     //----------------------------------
 
     sPRLQ->plan.flag = QMN_PLAN_FLAG_CLEAR;
@@ -108,7 +108,7 @@ IDE_RC qmoParallelPlan::makePRLQ( qcStatement * aStatement,
 
     /*
      * PROJ-2402 Parallel Table Scan
-     * parallel type ì„¸ë¶„í™”
+     * parallel type ¼¼ºÐÈ­
      */
     switch ( aParallelType )
     {
@@ -123,7 +123,7 @@ IDE_RC qmoParallelPlan::makePRLQ( qcStatement * aStatement,
     }
 
     //-------------------------------------------------------------
-    // ë©”ì¸ ìž‘ì—…
+    // ¸ÞÀÎ ÀÛ¾÷
     //-------------------------------------------------------------
 
     if ( aChildPlan != NULL )
@@ -137,20 +137,20 @@ IDE_RC qmoParallelPlan::makePRLQ( qcStatement * aStatement,
     else
 
     {
-        // Multi-children ì„ ê°€ì§€ëŠ” ë…¸ë“œì—ì„œ ì‚¬ìš©ë˜ëŠ” ê²½ìš°ì´ë‹¤.
-        // Execution ì‹œì— í•˜ìœ„ ë…¸ë“œê°€ ì •í•´ì§€ë¯€ë¡œ filter í•  ìˆ˜ ì—†ë‹¤.
+        // Multi-children À» °¡Áö´Â ³ëµå¿¡¼­ »ç¿ëµÇ´Â °æ¿ìÀÌ´Ù.
+        // Execution ½Ã¿¡ ÇÏÀ§ ³ëµå°¡ Á¤ÇØÁö¹Ç·Î filter ÇÒ ¼ö ¾ø´Ù.
         // Nothing to do
     }
 
     //-------------------------------------------------------------
-    // ë§ˆë¬´ë¦¬ ìž‘ì—…
+    // ¸¶¹«¸® ÀÛ¾÷
     //-------------------------------------------------------------
 
-    //data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+    //data ¿µ¿ªÀÇ Å©±â °è»ê
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
     //----------------------------------
-    //dependency ì²˜ë¦¬ ë° subqueryì˜ ì²˜ë¦¬
+    //dependency Ã³¸® ¹× subqueryÀÇ Ã³¸®
     //----------------------------------
 
     IDE_TEST( qmoDependency::setDependency( aStatement,
@@ -401,7 +401,7 @@ IDE_RC qmoParallelPlan::copyGRAG( qcStatement * aStatement,
     IDE_DASSERT( aOrgPlan->type == QMN_GRAG );
 
     //----------------------------------
-    // planì„ ë³µì‚¬í•œë‹¤.
+    // planÀ» º¹»çÇÑ´Ù.
     //----------------------------------
     IDU_FIT_POINT( "qmoParallelPlan::copyGRAG::alloc::GRAG" );
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncGRAG ),
@@ -412,7 +412,7 @@ IDE_RC qmoParallelPlan::copyGRAG( qcStatement * aStatement,
 
 
     //----------------------------------
-    // result desc ë¥¼ ë³µì‚¬í•œë‹¤.
+    // result desc ¸¦ º¹»çÇÑ´Ù.
     //----------------------------------
     sGRAG->plan.resultDesc = NULL;
 
@@ -422,7 +422,7 @@ IDE_RC qmoParallelPlan::copyGRAG( qcStatement * aStatement,
               != IDE_SUCCESS );
 
     //----------------------------------
-    // initGRAG ì˜ ìž‘ì—…ì„ ë‹¨ìˆœí™” ì‹œí‚¨ë‹¤.
+    // initGRAG ÀÇ ÀÛ¾÷À» ´Ü¼øÈ­ ½ÃÅ²´Ù.
     //----------------------------------
     sGRAG->plan.offset           = sTemplate->tmplate.dataSize;
     sGRAG->planID                = sTemplate->planCount;
@@ -430,10 +430,10 @@ IDE_RC qmoParallelPlan::copyGRAG( qcStatement * aStatement,
     sTemplate->tmplate.dataSize += idlOS::align8(ID_SIZEOF(qmndGRAG));
     sTemplate->planCount        += 1;
 
-    // makeGRAG qmoDependency::setDependency í•¨ìˆ˜ê°€ ì œëŒ€ë¡œ ì„¤ì •í•˜ì§€ ëª»í•œë‹¤.
-    // ì•„ëž˜ì™€ ê°™ì´ ì„¤ì •í•˜ë©´ ERR_INVALID_DEPENDENCY ê°€ ë°œìƒí•˜ì§€ ì•ŠëŠ”ë‹¤.
-    // ì‹¤íŒ¨í•˜ëŠ” ì›ì¸ìœ¼ë¡œëŠ” íŒŒí‹°ì…˜ í…Œì´ë¸”ì˜ tuple ê°’ì´ ì„œë¡œ ë‹¤ë¥´ê¸° ë•Œë¬¸ì´ë‹¤.
-    // makeSCAN ì—ì„œëŠ” ERR_INVALID_DEPENDENCY ë¥¼ ì²´í¬í•˜ì§€ ì•Šê¸°ë•Œë¬¸ì— ë¬¸ì œê°€ ì—†ì—ˆë‹¤.
+    // makeGRAG qmoDependency::setDependency ÇÔ¼ö°¡ Á¦´ë·Î ¼³Á¤ÇÏÁö ¸øÇÑ´Ù.
+    // ¾Æ·¡¿Í °°ÀÌ ¼³Á¤ÇÏ¸é ERR_INVALID_DEPENDENCY °¡ ¹ß»ýÇÏÁö ¾Ê´Â´Ù.
+    // ½ÇÆÐÇÏ´Â ¿øÀÎÀ¸·Î´Â ÆÄÆ¼¼Ç Å×ÀÌºíÀÇ tuple °ªÀÌ ¼­·Î ´Ù¸£±â ¶§¹®ÀÌ´Ù.
+    // makeSCAN ¿¡¼­´Â ERR_INVALID_DEPENDENCY ¸¦ Ã¼Å©ÇÏÁö ¾Ê±â¶§¹®¿¡ ¹®Á¦°¡ ¾ø¾ú´Ù.
     sGRAG->plan.dependency = aDestTable;
     sGRAG->depTupleRowID   = aDestTable;
 

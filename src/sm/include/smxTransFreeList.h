@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smxTransFreeList.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smxTransFreeList.h 88191 2020-07-27 03:08:54Z mason.lee $
  **********************************************************************/
 
 #ifndef _O_SMX_TRANS_FREE_LIST_H_
@@ -44,9 +44,9 @@ public:
     IDE_RC allocTrans(smxTrans **aTrans);
 
     IDE_RC freeTrans(smxTrans *aTrans);
-
+#if 0
     void dump();
-
+#endif
     IDE_RC lock() { return mMutex.lock( NULL /* idvSQL* */); }
     IDE_RC unlock() { return mMutex.unlock(); }
 

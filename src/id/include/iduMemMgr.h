@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduMemMgr.h 85186 2019-04-09 07:37:00Z jayce.park $
+ * $Id: iduMemMgr.h 85026 2019-03-15 02:16:46Z jayce.park $
  **********************************************************************/
 
 #ifndef _O_IDU_MEM_MGR_H_
@@ -22,19 +22,19 @@
 #include <idCore.h>
 #include <iduMemDefs.h>
 
-/// ë©”ëª¨ë¦¬ í• ë‹¹ ëª¨ë“œì— ëŒ€í•œ ì˜µì…˜ ì¶”ê°€
-/// - IDU_MEM_FORCE : í• ë‹¹ì— ì‹¤íŒ¨í•˜ë©´ ë¬´í•œížˆ ëŒ€ê¸°í•˜ì—¬, ê²°êµ­ í• ë‹¹ì— ì„±ê³µ
-/// - IDU_MEM_IMMEDIATE : ì„±ê³µ/ì‹¤íŒ¨ë¥¼ ì¦‰ì‹œ ë°˜í™˜í•œë‹¤.
-/// ì´ ì™¸ì˜ ê²½ìš°ëŠ” ì£¼ì–´ì§„ ì‹œê°„ë§Œí¼ ëŒ€ê¸°í•˜ì—¬ ìž¬ì‹œë„í•œ í›„, ê·¸ ê²°ê³¼ë¥¼
-/// ë°˜í™˜í•˜ë„ë¡ í•œë‹¤. ì‹œê°„ ë‹¨ìœ„ëŠ” u-secì´ë©°, ì„±ê³µ/ì‹¤íŒ¨ ë°˜í™˜
+/// ¸Þ¸ð¸® ÇÒ´ç ¸ðµå¿¡ ´ëÇÑ ¿É¼Ç Ãß°¡
+/// - IDU_MEM_FORCE : ÇÒ´ç¿¡ ½ÇÆÐÇÏ¸é ¹«ÇÑÈ÷ ´ë±âÇÏ¿©, °á±¹ ÇÒ´ç¿¡ ¼º°ø
+/// - IDU_MEM_IMMEDIATE : ¼º°ø/½ÇÆÐ¸¦ Áï½Ã ¹ÝÈ¯ÇÑ´Ù.
+/// ÀÌ ¿ÜÀÇ °æ¿ì´Â ÁÖ¾îÁø ½Ã°£¸¸Å­ ´ë±âÇÏ¿© Àç½ÃµµÇÑ ÈÄ, ±× °á°ú¸¦
+/// ¹ÝÈ¯ÇÏµµ·Ï ÇÑ´Ù. ½Ã°£ ´ÜÀ§´Â u-secÀÌ¸ç, ¼º°ø/½ÇÆÐ ¹ÝÈ¯
 #define IDU_MEM_FORCE     (-1)
 #define IDU_MEM_IMMEDIATE (0)
 
-/// ë©”ëª¨ë¦¬ í• ë‹¹ ì‹œë„ê°€ ì‹¤íŒ¨í•˜ì˜€ì„ ê²½ìš°, ìž¬ì‹œë„í• ë•Œê¹Œì§€ì˜ ëŒ€ê¸°ì‹œê°„
-/// ì‹œê°„ ë‹¨ìœ„ëŠ” u-secì´ë©°, IDU_MEM_IMMEDIATEì¼ ê²½ìš° í•´ë‹¹ì‚¬í•­ ì—†ìŒ
+/// ¸Þ¸ð¸® ÇÒ´ç ½Ãµµ°¡ ½ÇÆÐÇÏ¿´À» °æ¿ì, Àç½ÃµµÇÒ¶§±îÁöÀÇ ´ë±â½Ã°£
+/// ½Ã°£ ´ÜÀ§´Â u-secÀÌ¸ç, IDU_MEM_IMMEDIATEÀÏ °æ¿ì ÇØ´ç»çÇ× ¾øÀ½
 #define IDU_MEM_DEFAULT_RETRY_TIME        (50*1000) // 50 ms
 
-/** ìž˜ëª»ëœ ë©”ëª¨ë¦¬ ì¸ë±ìŠ¤ */
+/** Àß¸øµÈ ¸Þ¸ð¸® ÀÎµ¦½º */
 #define IDU_INVALID_CLIENT_INDEX ID_UINT_MAX
 
 // allocator index for special cases
@@ -77,7 +77,7 @@ typedef IDE_RC (*iduMemFree4MAlignFunc)(void *, iduMemoryClientIndex aIndex, ULo
 
 typedef IDE_RC (*iduMemShrinkFunc)(void);
 
-// malloc, calloc, free í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ì €ìž¥í•˜ëŠ” ìžë£Œêµ¬ì¡°
+// malloc, calloc, free ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ÀúÀåÇÏ´Â ÀÚ·á±¸Á¶
 typedef struct iduMemFuncType
 {
     iduMemInitializeStaticFunc  mInitializeStaticFunc;
@@ -271,10 +271,10 @@ private:
     static iduMemMgrType    mMemType;
     static iduMemFuncType   mMemFunc[IDU_MEMMGR_MAX];
 
-    // Allocation ì‹¤íŒ¨ì‹œ, ìž¬ì‹œë„ë¥¼ ìˆ˜í–‰í•  ë•Œê¹Œì§€ì˜ ëŒ€ê¸°ì‹œê°„(u-sec)
+    // Allocation ½ÇÆÐ½Ã, Àç½Ãµµ¸¦ ¼öÇàÇÒ ¶§±îÁöÀÇ ´ë±â½Ã°£(u-sec)
     static SLong            mAllocRetryTime;
 
-    // ë²”ìœ„ë‚´ì˜ ì‚¬ì´ì¦ˆì— ëŒ€í•œ ë©”ëª¨ë¦¬ í• ë‹¹ ìš”ì²­ì´ ë“¤ì–´ì˜¤ë©´ ì½œìŠ¤íƒì„ ë‚¨ê¹€
+    // ¹üÀ§³»ÀÇ »çÀÌÁî¿¡ ´ëÇÑ ¸Þ¸ð¸® ÇÒ´ç ¿äÃ»ÀÌ µé¾î¿À¸é ÄÝ½ºÅÃÀ» ³²±è
     static UInt             mLogLevel;
     static ULong            mLogLowerSize;
     static ULong            mLogUpperSize;
@@ -303,56 +303,56 @@ public:
     /// @return memory size
     static ULong  getTotalMemory();
 
-    /// ëª¨ë“  ë©”ëª¨ë¦¬ë¥¼ í•´ì§€í•œ í›„ì—ë„ í•´ì§€ê°€ ì•ˆëœ ë©”ëª¨ë¦¬ê°€ ìžˆëŠ”ì§€ í™•ì¸í•œë‹¤.
-    /// ë§Œì•½ í•´ì§€ê°€ ë˜ì§€ ì•Šì€ ë©”ëª¨ë¦¬ê°€ ì¡´ìž¬í•œë‹¤ë©´ ë©”ëª¨ë¦¬ ë¦­ì´ ë°œìƒí•œ ê²ƒì´ë‹¤.
-    /// ë¦­ì´ ì¡´ìž¬í•œë‹¤ë©´ ë¡œê·¸ì— ì–´ë–¤ í´ë¼ì´ì–¸íŠ¸ ì¸ë±ìŠ¤ì— ì–´ëŠ í¬ê¸°ì˜
-    /// ë©”ëª¨ë¦¬ê°€ í•´ì§€ë˜ì§€ ì•Šì•˜ëŠ”ì§€ ë©”ì‹œì§€ë¥¼ ì¶œë ¥í•œë‹¤.
+    /// ¸ðµç ¸Þ¸ð¸®¸¦ ÇØÁöÇÑ ÈÄ¿¡µµ ÇØÁö°¡ ¾ÈµÈ ¸Þ¸ð¸®°¡ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+    /// ¸¸¾à ÇØÁö°¡ µÇÁö ¾ÊÀº ¸Þ¸ð¸®°¡ Á¸ÀçÇÑ´Ù¸é ¸Þ¸ð¸® ¸¯ÀÌ ¹ß»ýÇÑ °ÍÀÌ´Ù.
+    /// ¸¯ÀÌ Á¸ÀçÇÑ´Ù¸é ·Î±×¿¡ ¾î¶² Å¬¶óÀÌ¾ðÆ® ÀÎµ¦½º¿¡ ¾î´À Å©±âÀÇ
+    /// ¸Þ¸ð¸®°¡ ÇØÁöµÇÁö ¾Ê¾Ò´ÂÁö ¸Þ½ÃÁö¸¦ Ãâ·ÂÇÑ´Ù.
     static IDE_RC logMemoryLeak();
 
-    /// ìš´ì˜ì²´ì²´ë¡œë¶€í„° ì§ì ‘ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹ ë° í•´ì œí•˜ì§€ë§Œ,
-    /// time out ê¸°ëŠ¥ì„ í•„ìš”ë¡œ í• ë•Œ ì‚¬ìš©í•œë‹¤.
+    /// ¿î¿µÃ¼Ã¼·ÎºÎÅÍ Á÷Á¢ ¸Þ¸ð¸®¸¦ ÇÒ´ç ¹× ÇØÁ¦ÇÏÁö¸¸,
+    /// time out ±â´ÉÀ» ÇÊ¿ä·Î ÇÒ¶§ »ç¿ëÇÑ´Ù.
     /// @param aSize memory size
     /// @param aTimeOut amount of wait time
     static void * mallocRaw(ULong aSize,
                             SLong aTimeOut = IDU_MEM_IMMEDIATE);
-    /// ìš´ì˜ì²´ì œì˜ callocì„ í˜¸ì¶œí•¨
+    /// ¿î¿µÃ¼Á¦ÀÇ callocÀ» È£ÃâÇÔ
     static void * callocRaw(vSLong aCount,
                             ULong aSize,
                             SLong aTimeOut = IDU_MEM_IMMEDIATE);
-    /// ìš´ì˜ì²´ì œì˜ reallocì„ í˜¸ì¶œí•¨
+    /// ¿î¿µÃ¼Á¦ÀÇ reallocÀ» È£ÃâÇÔ
     static void * reallocRaw(void *aMemPtr,
                              ULong aSize,
                              SLong aTimeOut = IDU_MEM_IMMEDIATE);
-    /// ìš´ì˜ì²´ì œì˜ freeë¥¼ í˜¸ì¶œí•¨
-    /// mallocRaw(), callocRaw(), reallocRaw()ë¡œ í• ë‹¹ë°›ì€ ë©”ëª¨ë¦¬ëŠ” ë°˜ë“œì‹œ
-    /// freeRawë¡œ í•´ì§€í•´ì•¼í•¨
+    /// ¿î¿µÃ¼Á¦ÀÇ free¸¦ È£ÃâÇÔ
+    /// mallocRaw(), callocRaw(), reallocRaw()·Î ÇÒ´ç¹ÞÀº ¸Þ¸ð¸®´Â ¹Ýµå½Ã
+    /// freeRaw·Î ÇØÁöÇØ¾ßÇÔ
     static void   freeRaw(void*  aMemPtr);
 
-    // iduMemMgrì˜ ë©”ëª¨ë¦¬ í• ë‹¹ í•´ì œ í•¨ìˆ˜ë“¤
+    // iduMemMgrÀÇ ¸Þ¸ð¸® ÇÒ´ç ÇØÁ¦ ÇÔ¼öµé
 
-    /// mallocê³¼ ë™ì¼í•œ ì—­í• ì„ í•˜ë©° í†µê³„ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
-    /// ë‹¤ìŒê³¼ ê°™ì´ í´ëž˜ìŠ¤ì˜ ì´ˆê¸°í™” íƒ€ìž…ì— ë”°ë¼ í†µê³„ ì •ë³´ ê°±ì‹ ì— ì°¨ì´ê°€ ìžˆë‹¤.
-    /// - IDU_MEMMGR_CLIENT: í†µê³„ ì •ë³´ ê°±ì‹ ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
-    /// - IDU_MEMMGR_SERVER: ì—¬ëŸ¬ê°œì˜ ì“°ë ˆë“œê°€ ë™ì‹œì— ì‹¤í–‰ë  ìˆ˜ ìžˆë„ë¡ ë™ê¸°í™”ëœ í†µê³„ ì •ë³´ ê°±ì‹ ì„ í•œë‹¤.
-    /// @param aIndex ë©”ëª¨ë¦¬ë¥¼ ìš”ì²­í•˜ëŠ” ëª¨ë“ˆì˜ ì¸ë±ìŠ¤
-    /// @param aSize ë©”ëª¨ë¦¬ í¬ê¸°
-    /// @param aMemPtr í• ë‹¹ëœ ë©”ëª¨ë¦¬ì˜ í¬ì¸í„°ë¥¼ ì €ìž¥í•  ë³€ìˆ˜ì˜ í¬ì¸í„°
-    /// @param aTimeOut ëŒ€ê¸° ì‹œê°„
-    /// @param aAlloc ë©”ëª¨ë¦¬ ê´€ë¦¬ìž
+    /// malloc°ú µ¿ÀÏÇÑ ¿ªÇÒÀ» ÇÏ¸ç Åë°èÁ¤º¸¸¦ °»½ÅÇÑ´Ù.
+    /// ´ÙÀ½°ú °°ÀÌ Å¬·¡½ºÀÇ ÃÊ±âÈ­ Å¸ÀÔ¿¡ µû¶ó Åë°è Á¤º¸ °»½Å¿¡ Â÷ÀÌ°¡ ÀÖ´Ù.
+    /// - IDU_MEMMGR_CLIENT: Åë°è Á¤º¸ °»½ÅÀ» ÇÏÁö ¾Ê´Â´Ù.
+    /// - IDU_MEMMGR_SERVER: ¿©·¯°³ÀÇ ¾²·¹µå°¡ µ¿½Ã¿¡ ½ÇÇàµÉ ¼ö ÀÖµµ·Ï µ¿±âÈ­µÈ Åë°è Á¤º¸ °»½ÅÀ» ÇÑ´Ù.
+    /// @param aIndex ¸Þ¸ð¸®¸¦ ¿äÃ»ÇÏ´Â ¸ðµâÀÇ ÀÎµ¦½º
+    /// @param aSize ¸Þ¸ð¸® Å©±â
+    /// @param aMemPtr ÇÒ´çµÈ ¸Þ¸ð¸®ÀÇ Æ÷ÀÎÅÍ¸¦ ÀúÀåÇÒ º¯¼öÀÇ Æ÷ÀÎÅÍ
+    /// @param aTimeOut ´ë±â ½Ã°£
+    /// @param aAlloc ¸Þ¸ð¸® °ü¸®ÀÚ
     /// @see iduMemMgrType
     static IDE_RC malloc(iduMemoryClientIndex   aIndex,
                          ULong                  aSize,
                          void                 **aMemPtr,
                          SLong                  aTimeOut = IDU_MEM_IMMEDIATE);
 
-    /** mallocê³¼ ë™ì¼í•œ ì—­í• ì„ í•˜ë˜
-     * aAlignì— ìœ„ì¹˜ë¥¼ ë§žì¶˜ ë©”ëª¨ë¦¬ í¬ì¸í„°ë¥¼ ë¦¬í„´í•œë‹¤.
-     * @param aIndex ë©”ëª¨ë¦¬ë¥¼ ìš”ì²­í•˜ëŠ” ëª¨ë“ˆì˜ ì¸ë±ìŠ¤
-     * @param aAlign ë©”ëª¨ë¦¬ ì •ë ¬ ê¸°ì¤€. 2ì˜ ê±°ë“­ì œê³±ê°’(=2^n)ì´ê³  sizeof(void*)ì˜ ë°°ìˆ˜ì—¬ì•¼ í•¨.
-     * @param aSize ë©”ëª¨ë¦¬ í¬ê¸°
-     * @param aMemPtr í• ë‹¹ëœ ë©”ëª¨ë¦¬ì˜ í¬ì¸í„°ë¥¼ ì €ìž¥í•  ë³€ìˆ˜ì˜ í¬ì¸í„°
-     * @param aTimeOut ëŒ€ê¸° ì‹œê°„
-     * @param aAlloc ë©”ëª¨ë¦¬ ê´€ë¦¬ìž
+    /** malloc°ú µ¿ÀÏÇÑ ¿ªÇÒÀ» ÇÏµÇ
+     * aAlign¿¡ À§Ä¡¸¦ ¸ÂÃá ¸Þ¸ð¸® Æ÷ÀÎÅÍ¸¦ ¸®ÅÏÇÑ´Ù.
+     * @param aIndex ¸Þ¸ð¸®¸¦ ¿äÃ»ÇÏ´Â ¸ðµâÀÇ ÀÎµ¦½º
+     * @param aAlign ¸Þ¸ð¸® Á¤·Ä ±âÁØ. 2ÀÇ °ÅµìÁ¦°ö°ª(=2^n)ÀÌ°í sizeof(void*)ÀÇ ¹è¼ö¿©¾ß ÇÔ.
+     * @param aSize ¸Þ¸ð¸® Å©±â
+     * @param aMemPtr ÇÒ´çµÈ ¸Þ¸ð¸®ÀÇ Æ÷ÀÎÅÍ¸¦ ÀúÀåÇÒ º¯¼öÀÇ Æ÷ÀÎÅÍ
+     * @param aTimeOut ´ë±â ½Ã°£
+     * @param aAlloc ¸Þ¸ð¸® °ü¸®ÀÚ
      * @see iduMemMgrType
      */
     static IDE_RC malign(iduMemoryClientIndex   aIndex,
@@ -361,7 +361,7 @@ public:
                          void                 **aMemPtr,
                          SLong                  aTimeOut = IDU_MEM_IMMEDIATE);
 
-    /// callocê³¼ ê°™ìŒ
+    /// calloc°ú °°À½
     /// @see malloc()
     static IDE_RC calloc(iduMemoryClientIndex   aIndex,
                          vSLong                 aCount,
@@ -369,17 +369,17 @@ public:
                          void                 **aMemPtr,
                          SLong                  aTimeOut = IDU_MEM_IMMEDIATE);
 
-    /// reallocê³¼ ê°™ìŒ
+    /// realloc°ú °°À½
     /// @see malloc()
     static IDE_RC realloc(iduMemoryClientIndex  aIndex,
                           ULong                 aSize,
                           void                **aMemPtr,
                           SLong                 aTimeOut = IDU_MEM_IMMEDIATE);
 
-    /// freeì™€ ê°™ìŒ
-    /// malloc(), calloc(), realloc()ìœ¼ë¡œ í• ë‹¹ë°›ì€ ë©”ëª¨ë¦¬ëŠ” ë°˜ë“œì‹œ free()ë¡œ í•´ì§€ë˜ì•¼ í•œë‹¤.
-    /// @param aMemPtr í•´ì§€í•  ë©”ëª¨ë¦¬ì˜ í¬ì¸í„°
-    /// @param aAlloc ë©”ëª¨ë¦¬ ê´€ë¦¬ìž
+    /// free¿Í °°À½
+    /// malloc(), calloc(), realloc()À¸·Î ÇÒ´ç¹ÞÀº ¸Þ¸ð¸®´Â ¹Ýµå½Ã free()·Î ÇØÁöµÇ¾ß ÇÑ´Ù.
+    /// @param aMemPtr ÇØÁöÇÒ ¸Þ¸ð¸®ÀÇ Æ÷ÀÎÅÍ
+    /// @param aAlloc ¸Þ¸ð¸® °ü¸®ÀÚ
     static IDE_RC free(void                 * aMemPtr);
 
     //BUG-46165
@@ -443,9 +443,9 @@ public:
 private:
     /*
      * IDU_MEMMGR_SINGLE = IDU_MEMMGR_CLIENT
-     * initializeStatic ì´ì „ì˜ single-threaded server ìƒí™©,
-     * í˜¹ì€ í´ë¼ì´ì–¸íŠ¸ì—ì„œ ì‚¬ìš©ë˜ëŠ” í•¨ìˆ˜ë“¤
-     * mutex lockì„ ìž¡ì§€ ì•Šê³  ëª¨ë“ˆë³„ í†µê³„ ì •ë³´ë¥¼ ê¸°ë¡í•˜ì§€ ì•ŠëŠ”ë‹¤.
+     * initializeStatic ÀÌÀüÀÇ single-threaded server »óÈ²,
+     * È¤Àº Å¬¶óÀÌ¾ðÆ®¿¡¼­ »ç¿ëµÇ´Â ÇÔ¼öµé
+     * mutex lockÀ» ÀâÁö ¾Ê°í ¸ðµâº° Åë°è Á¤º¸¸¦ ±â·ÏÇÏÁö ¾Ê´Â´Ù.
      */
     static IDE_RC single_initializeStatic(void);
     static IDE_RC single_destroyStatic(void);
@@ -473,9 +473,9 @@ private:
 private:
     /*
      * IDU_MEMMGR_LIBC
-     * multi-threaded serverì—ì„œ ì‚¬ìš©ë˜ëŠ” í•¨ìˆ˜ë“¤
-     * mallocì„ ì§ì ‘ í˜¸ì¶œí•˜ê³  ëª¨ë“ˆë³„ í†µê³„ ì •ë³´ë¥¼ ê¸°ë¡í•œë‹¤.
-     * ë©”ëª¨ë¦¬ ë¸”ëŸ­ ê³ ì •í…Œì´ë¸”ì„ ì¡°íšŒí•  ìˆ˜ ì—†ë‹¤.
+     * multi-threaded server¿¡¼­ »ç¿ëµÇ´Â ÇÔ¼öµé
+     * mallocÀ» Á÷Á¢ È£ÃâÇÏ°í ¸ðµâº° Åë°è Á¤º¸¸¦ ±â·ÏÇÑ´Ù.
+     * ¸Þ¸ð¸® ºí·° °íÁ¤Å×ÀÌºíÀ» Á¶È¸ÇÒ ¼ö ¾ø´Ù.
      */
     static IDE_RC libc_initializeStatic(void);
     static IDE_RC libc_destroyStatic(void);
@@ -506,9 +506,9 @@ private:
 private:
     /*
      * IDU_MEMMGR_TLSF
-     * multi-threaded serverì—ì„œ ì‚¬ìš©ë˜ëŠ” í•¨ìˆ˜ë“¤
-     * TLSF ë©”ëª¨ë¦¬ ê´€ë¦¬ìžë¥¼ ìƒì„±í•´ ì‚¬ìš©í•˜ê³  ëª¨ë“ˆë³„ í†µê³„ ì •ë³´ë¥¼ ê¸°ë¡í•œë‹¤.
-     * ë©”ëª¨ë¦¬ ë¸”ëŸ­ ê³ ì •í…Œì´ë¸”ì„ ì¡°íšŒí•  ìˆ˜ ìžˆë‹¤.
+     * multi-threaded server¿¡¼­ »ç¿ëµÇ´Â ÇÔ¼öµé
+     * TLSF ¸Þ¸ð¸® °ü¸®ÀÚ¸¦ »ý¼ºÇØ »ç¿ëÇÏ°í ¸ðµâº° Åë°è Á¤º¸¸¦ ±â·ÏÇÑ´Ù.
+     * ¸Þ¸ð¸® ºí·° °íÁ¤Å×ÀÌºíÀ» Á¶È¸ÇÒ ¼ö ÀÖ´Ù.
      */
     static IDE_RC tlsf_initializeStatic(void);
     static IDE_RC tlsf_destroyStatic(void);

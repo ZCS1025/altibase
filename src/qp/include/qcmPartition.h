@@ -26,7 +26,7 @@
 #include    <qcm.h>
 
 // PROJ-1502 PARTITIONED DISK TABLE
-// partition refÎ•º Íµ¨ÌïòÍ∏∞ ÏúÑÌïú ÏûÑÏãú Íµ¨Ï°∞Ï≤¥.
+// partition ref∏¶ ±∏«œ±‚ ¿ß«— ¿”Ω√ ±∏¡∂√º.
 typedef struct qcmSetRef
 {
     qcStatement * statement;
@@ -34,7 +34,7 @@ typedef struct qcmSetRef
 } qcmSetRef;
 
 // PROJ-1502 PARTITIONED DISK TABLE
-// ÌååÌã∞ÏÖò Ï†ïÎ≥¥Ïùò Î¶¨Ïä§Ìä∏Î•º Íµ¨Ï∂ï
+// ∆ƒ∆ºº« ¡§∫∏¿« ∏ÆΩ∫∆Æ∏¶ ±∏√‡
 typedef struct qcmPartitionInfoList
 {
     qcmTableInfo         * partitionInfo;
@@ -44,7 +44,7 @@ typedef struct qcmPartitionInfoList
 } qcmPartitionInfoList;
 
 // PROJ-1502 PARTITIONED DISK TABLE
-// Partition IDÏùò Î¶¨Ïä§Ìä∏Î•º Íµ¨Ï∂ï
+// Partition ID¿« ∏ÆΩ∫∆Æ∏¶ ±∏√‡
 typedef struct qcmPartitionIdList
 {
     UInt                 partId;
@@ -118,7 +118,8 @@ public:
         UInt        * aPartitionCount );
 
     //get the partition count from smiStatement(BUG-46120)
-    //currently, this function is only used in rp.
+    //currently, this function is only used in rp/sd.
+    // BUG-47599 Real partition count(empty partition ¡¶ø‹«— ∆ƒ∆ºº« ∞≥ºˆ)
     static IDE_RC getPartitionCount4SmiStmt(
         smiStatement * aSmiStmt,
         UInt           aTableID,
@@ -240,14 +241,16 @@ public:
         smiStatement            * aSmiStmt,
         iduVarMemList           * aMem,
         UInt                      aTableID,
-        qcmPartitionInfoList   ** aPartitionInfoList );
+        qcmPartitionInfoList   ** aPartitionInfoList,
+        idBool                    aIsRealPart = ID_FALSE );
 
     static IDE_RC getPartitionInfoList(
         qcStatement             * aStatement,
         smiStatement            * aSmiStmt,
         iduMemory               * aMem,
         UInt                      aTableID,
-        qcmPartitionInfoList   ** aPartitionInfoList );
+        qcmPartitionInfoList   ** aPartitionInfoList,
+        idBool                    aIsRealPart = ID_FALSE );
 
     static IDE_RC getPartitionIdList(
         qcStatement         * aStatement,
@@ -311,11 +314,11 @@ public:
         qmsPartitionRef  * aSource,
         qmsPartitionRef ** aDestination );
 
-    /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
     static IDE_RC makePartitionSummary( qcStatement * aStatement,
                                         qmsTableRef * aTableRef );
 
-    /* BUG-42681 valgrind split Ï§ë add column ÎèôÏãúÏÑ± Î¨∏Ï†ú */
+    /* BUG-42681 valgrind split ¡ﬂ add column µøΩ√º∫ πÆ¡¶ */
     static IDE_RC checkPartitionCount4Execute( qcStatement          * aStatement,
                                                qcmPartitionInfoList * aPartInfoList,
                                                UInt                   aTableID );
@@ -342,6 +345,13 @@ public:
                                        SChar                 * aPartitionName,
                                        UInt                    aNameLength,
                                        qcmPartitionInfoList ** aFoundPartition );
+
+    static IDE_RC isEmptyPartition( smiStatement * aSmiStmt,
+                                    UInt           aTableID,
+                                    idBool       * aIsEmptyPart ); 
+
+    static IDE_RC setEmptyPartitionRef( qcStatement  * aStatement,
+                                        qmsTableRef  * aTableRef );
 };
 
 #endif /* _O_QCM_PARTITION_H_ */

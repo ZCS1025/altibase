@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smiFixedTable.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smiFixedTable.h 88191 2020-07-27 03:08:54Z mason.lee $
  **********************************************************************/
 #ifndef _O_SMI_FIXED_TABLE_H_
 # define _O_SMI_FIXED_TABLE_H_ 1
@@ -40,9 +40,9 @@ class smiFixedTable
                                  UChar              *aObj);
 
     /* ------------------------------------------------
-     * ë ˆì½”ë“œì˜ ë©”ëª¨ë¦¬ë¥¼ ìˆœì°¨ì ìœ¼ë¡œ ì¦ê°€í•˜ë©´ì„œ í• ë‹¹ë°›ìŒ.
+     * ·¹ÄÚµåÀÇ ¸Ş¸ğ¸®¸¦ ¼øÂ÷ÀûÀ¸·Î Áõ°¡ÇÏ¸é¼­ ÇÒ´ç¹ŞÀ½.
      * API Sets
-     *  - buildRecord()  : í•˜ë‚˜ì”© í• ë‹¹í›„ ì¦ê°€.
+     *  - buildRecord()  : ÇÏ³ª¾¿ ÇÒ´çÈÄ Áõ°¡.
      * ----------------------------------------------*/
     
     static IDE_RC buildRecord(void      *aHeader,
@@ -75,7 +75,7 @@ public:
     static SChar *getColumnName(void *aHeader, UInt aNum);
     static UInt   getColumnOffset(void *aHeader, UInt aNum);
 
-    static UInt   getColumnLength(void *aHeader, UInt aNum); // ì‹¤ì œ ë°ì´íƒ€ í¬ê¸°
+    static UInt   getColumnLength(void *aHeader, UInt aNum); // ½ÇÁ¦ µ¥ÀÌÅ¸ Å©±â
     static iduFixedTableDataType getColumnType(void *aHeader, UInt aNum);
     static void   setNullRow(void *aHeader, void *aNullRow);
     
@@ -90,10 +90,22 @@ public:
                              void        *aMember,
                              UChar       *aBuf,
                              UInt         aBufSize);
+
     static UInt convertTIMESTAMP(void        *aBaseObj,
                                    void        *aMember,
                                    UChar       *aBuf,
                                    UInt         aBufSize);
+
+    static UInt convertAlignedTIMESTAMP( void       * aBaseObj,
+                                         void       * aMember,
+                                         UChar      * aBuf,
+                                         UInt         aBufSize );
+
+    static UInt convertShardPinToString( void       * aBaseObj,
+                                         void       * aMember,
+                                         UChar      * aBuf,
+                                         UInt         aBufSize );
+
 
     // BUG-42639 Monitoring query
     static IDE_RC build( idvSQL               * aStatistics,

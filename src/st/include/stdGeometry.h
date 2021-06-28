@@ -93,8 +93,15 @@ static UInt stdNullValueSize();
 
 static UInt stdHeaderSize();
 
-static mtcName stdTypeName[1] = {
-    { NULL, STD_GEOMETRY_NAME_LEN, (void*)STD_GEOMETRY_NAME }
+static mtcName stdTypeName[8] = {
+    { stdTypeName+1, STD_GEOMETRY_NAME_LEN,        (void*)STD_GEOMETRY_NAME        },
+    { stdTypeName+2, STD_POINT_NAME_LEN,           (void*)STD_POINT_NAME           },
+    { stdTypeName+3, STD_LINESTRING_NAME_LEN,      (void*)STD_LINESTRING_NAME      },
+    { stdTypeName+4, STD_POLYGON_NAME_LEN,         (void*)STD_POLYGON_NAME         },
+    { stdTypeName+5, STD_MULTIPOINT_NAME_LEN,      (void*)STD_MULTIPOINT_NAME      },
+    { stdTypeName+6, STD_MULTILINESTRING_NAME_LEN, (void*)STD_MULTILINESTRING_NAME },
+    { stdTypeName+7, STD_MULTIPOLYGON_NAME_LEN,    (void*)STD_MULTIPOLYGON_NAME    },
+    { NULL,          STD_GEOCOLLECTION_NAME_LEN,   (void*)STD_GEOCOLLECTION_NAME   }
 };
 
 

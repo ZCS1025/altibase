@@ -39,13 +39,13 @@ int main()
     
     if(startThread(Lock_Thread, T_THREADCOUNT, arrTID) == false)
     {
-        idlOS::printf("Thread 靸濎劚 鞁ろ尐\n");
+        idlOS::printf("Thread 积己 角菩\n");
         idlOS::exit(-1);
     }
 
     if(waitTerminateThread(T_THREADCOUNT, arrTID) == false)
     {
-        idlOS::printf("Thread 靸濎劚 鞁ろ尐\n");
+        idlOS::printf("Thread 积己 角菩\n");
         idlOS::exit(-1);
     }
 
@@ -59,13 +59,13 @@ int main()
 
     if(startThread(Latch_Thread, T_THREADCOUNT, arrTID) == false)
     {
-        idlOS::printf("Thread 靸濎劚 鞁ろ尐\n");
+        idlOS::printf("Thread 积己 角菩\n");
         idlOS::exit(-1);
     }
 
     if(waitTerminateThread(T_THREADCOUNT, arrTID) == false)
     {
-        idlOS::printf("Thread 靸濎劚 鞁ろ尐\n");
+        idlOS::printf("Thread 积己 角菩\n");
         idlOS::exit(-1);
     }
 
@@ -125,7 +125,7 @@ bool startThread(void *(*start_routine)(void*), int cThread, pthread_t* arrTID)
         
         if(return_val != 0)
         {
-            printf("Thread 靸濎劚 鞁ろ尐\n");
+            printf("Thread 积己 角菩\n");
 
             exit(-1);
         }

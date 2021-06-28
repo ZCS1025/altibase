@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smmSlotList.cpp 84166 2018-10-15 07:54:37Z justin.kwon $
+ * $Id: smmSlotList.cpp 84167 2018-10-15 07:54:50Z justin.kwon $
  **********************************************************************/
 
 #include <ide.h>
@@ -66,7 +66,7 @@ IDE_RC smmSlotList::initialize( iduMemoryClientIndex aIndex, /* mempool idx */
     mSlots.prev  = &mSlots;
     mSlots.next  = &mSlots;
 
-    // BUG-18122 : MEM_BTREE_NODEPOOL performance view ì¶”ê°€
+    // BUG-18122 : MEM_BTREE_NODEPOOL performance view Ãß°¡
     mTotalAllocReq = (ULong)0;
     mTotalFreeReq  = (ULong)0;
 
@@ -125,7 +125,7 @@ IDE_RC smmSlotList::destroy( void )
     return IDE_FAILURE;
 }
 
-/* node listë¥¼ mempool freeí•œë‹¤. */
+/* node list¸¦ mempool freeÇÑ´Ù. */
 IDE_RC smmSlotList::freeSlots( UInt       aNumber,
                                smmSlot  * aNodes )
 {
@@ -208,7 +208,7 @@ IDE_RC smmSlotList::allocateSlots( UInt         aNumber,
         }
     }
 
-    // BUG-18122 : MEM_BTREE_NODEPOOL performance view ì¶”ê°€
+    // BUG-18122 : MEM_BTREE_NODEPOOL performance view Ãß°¡
     mTotalAllocReq += (ULong)aNumber;
 
     mNumber -= aNumber;
@@ -309,7 +309,7 @@ IDE_RC smmSlotList::releaseSlots( UInt     aNumber,
         }
     }
 
-    // BUG-18122 : MEM_BTREE_NODEPOOL performance view ì¶”ê°€
+    // BUG-18122 : MEM_BTREE_NODEPOOL performance view Ãß°¡
     mTotalFreeReq += (ULong)aNumber;
     
     if( sLocked == ID_TRUE )
@@ -356,7 +356,7 @@ IDE_RC smmSlotList::release( )
         if ( isParent() == ID_FALSE )
         {
             /* CHILD */
-            /* ë‚´ listë¥¼ ëª¨ë‘ PARENTì—ê²Œ ë°˜ë‚© */
+            /* ³» list¸¦ ¸ðµÎ PARENT¿¡°Ô ¹Ý³³ */
             mSlots.prev->next = mSlots.next;
             mSlots.next->prev = mSlots.prev;
             sSlots            = mSlots.next;

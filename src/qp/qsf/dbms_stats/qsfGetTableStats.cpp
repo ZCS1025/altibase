@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsfGetTableStats.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qsfGetTableStats.cpp 88191 2020-07-27 03:08:54Z mason.lee $
  *
  * Description :
  *
@@ -62,7 +62,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfGetTableStatsModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞Ïûê ÏïÑÎãò)
+    1.0,                    // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄ æ∆¥‘)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -184,7 +184,6 @@ IDE_RC qsfCalculate_GetTableStats( mtcNode*     aNode,
     smiStatement         * sDummyParentStmt;
     smiStatement           sDummyStmt;
     smiTrans               sSmiTrans;
-    smSCN                  sDummySCN;
     UInt                   sSmiStmtFlag;
     UInt                   sState = 0;
 
@@ -209,9 +208,9 @@ IDE_RC qsfCalculate_GetTableStats( mtcNode*     aNode,
     IDE_TEST( qsf::getArg( aStack, 5, ID_FALSE, QS_OUT, (void**)&sNumPagePtr )        != IDE_SUCCESS );
     IDE_TEST( qsf::getArg( aStack, 6, ID_FALSE, QS_OUT, (void**)&sAvgRLenPtr )        != IDE_SUCCESS );
     
-    /* BUG-42095 : PROJ-2281 "buffer poolÏóê loadÎêú page ÌÜµÍ≥Ñ Ï†ïÎ≥¥ Ï†úÍ≥µ" Í∏∞Îä•ÏùÑ Ï†úÍ±∞ÌïúÎã§.
-     * sCachePagePtrÏôÄ Ïó∞Í≤∞ÎêòÎäî aStackÏù¥ arrayÏù¥Í∏∞ ÎïåÎ¨∏Ïóê Ïù¥ ÏΩîÎìúÎ•º ÏÇ≠Ï†úÌï† Í≤ΩÏö∞ Í≥ºÎèÑÌïú 
-     * ÏàòÏ†ï ÏÇ¨Ìï≠Ïù¥ Î∞úÏÉùÌï† Í≤ÉÏù¥Í∏∞ ÎïåÎ¨∏Ïóê Îã§Ïùå ÏΩîÎìúÎäî ÏÇ≠Ï†ú ÌïòÏßÄ ÏïäÎäîÎã§. */
+    /* BUG-42095 : PROJ-2281 "buffer poolø° loadµ» page ≈Î∞Ë ¡§∫∏ ¡¶∞¯" ±‚¥…¿ª ¡¶∞≈«—¥Ÿ.
+     * sCachePagePtrøÕ ø¨∞·µ«¥¬ aStack¿Ã array¿Ã±‚ ∂ßπÆø° ¿Ã ƒ⁄µÂ∏¶ ªË¡¶«“ ∞ÊøÏ ∞˙µµ«— 
+     * ºˆ¡§ ªÁ«◊¿Ã πﬂª˝«“ ∞Õ¿Ã±‚ ∂ßπÆø° ¥Ÿ¿Ω ƒ⁄µÂ¥¬ ªË¡¶ «œ¡ˆ æ ¥¬¥Ÿ. */
     IDE_TEST( qsf::getArg( aStack, 7, ID_FALSE, QS_OUT, (void**)&sCachePagePtr )      != IDE_SUCCESS );
     
     IDE_TEST( qsf::getArg( aStack, 8, ID_FALSE, QS_OUT, (void**)&sOneRowReadTimePtr ) != IDE_SUCCESS );
@@ -235,7 +234,7 @@ IDE_RC qsfCalculate_GetTableStats( mtcNode*     aNode,
     IDE_TEST( sDummyStmt.begin( sStatement->mStatistics, sDummyParentStmt, sSmiStmtFlag ) != IDE_SUCCESS);
     sState = 4;
 
-    /* TableÏ†ïÎ≥¥ ÌöçÎìù */
+    /* Table¡§∫∏ »πµÊ */
     IDE_TEST( qcmUser::getUserID( sStatement,
                                   (SChar*)sOwnerNameValue->value,
                                   sOwnerNameValue->length,
@@ -254,7 +253,7 @@ IDE_RC qsfCalculate_GetTableStats( mtcNode*     aNode,
     IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT(sStatement))->getTrans(),
                                          sTableHandle,
                                          sTableSCN,
-                                         SMI_TBSLV_DDL_DML, // TBS Validation ÏòµÏÖò
+                                         SMI_TBSLV_DDL_DML, // TBS Validation ø…º«
                                          SMI_TABLE_LOCK_IS,
                                          ID_ULONG_MAX,
                                          ID_FALSE )         // BUG-28752 isExplicitLock
@@ -271,7 +270,7 @@ IDE_RC qsfCalculate_GetTableStats( mtcNode*     aNode,
                 NULL )
             != IDE_SUCCESS );
 
-    /* Partition ÌïòÎÇòÏóê ÎåÄÌï¥ÏÑúÎßå ÌÜµÍ≥ÑÏ†ïÎ≥¥ ÌöçÎìù */
+    /* Partition «œ≥™ø° ¥Î«ÿº≠∏∏ ≈Î∞Ë¡§∫∏ »πµÊ */
     if( sPartitionNameValue != NULL )
     {
         IDE_TEST( qcmPartition::getPartitionInfo( 
@@ -287,7 +286,7 @@ IDE_RC qsfCalculate_GetTableStats( mtcNode*     aNode,
         IDE_TEST( qcmPartition::validateAndLockOnePartition( sStatement,
                                                              sTableHandle,
                                                              sTableSCN,
-                                                             SMI_TBSLV_DDL_DML, // TBS Validation ÏòµÏÖò
+                                                             SMI_TBSLV_DDL_DML, // TBS Validation ø…º«
                                                              SMI_TABLE_LOCK_IS,
                                                              ID_ULONG_MAX )
                   != IDE_SUCCESS );
@@ -365,7 +364,7 @@ IDE_RC qsfCalculate_GetTableStats( mtcNode*     aNode,
 
     // transaction commit
     sState = 1;
-    IDE_TEST( sSmiTrans.commit(&sDummySCN) != IDE_SUCCESS );
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
 
     // transaction destroy
     sState = 0;

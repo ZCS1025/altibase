@@ -22,8 +22,8 @@ import java.security.cert.X509Certificate;
 import javax.net.ssl.X509TrustManager;
 
 /**
- * PROJ-2474 Truststore ê²€ì¦ì—†ì´ bypass í•˜ëŠ” simple TrustManager</br>
- * singleton íŒ¨í„´ìœ¼ë¡œ êµ¬í˜„í•¨
+ * PROJ-2474 Truststore °ËÁõ¾øÀÌ bypass ÇÏ´Â simple TrustManager</br>
+ * singleton ÆĞÅÏÀ¸·Î ±¸ÇöÇÔ
  * @author yjpark
  *
  */
@@ -40,12 +40,12 @@ class BlindTrustManager implements X509TrustManager
     
     public void checkClientTrusted(X509Certificate[] aChain, String aAuthType) throws CertificateException
     {
-        // ì¸ì¦ì„œ ê²€ì¦ì„ í•˜ì§€ ì•Šê³  ê·¸ëƒ¥ ë„˜ì–´ê°„ë‹¤.
+        // ÀÎÁõ¼­ °ËÁõÀ» ÇÏÁö ¾Ê°í ±×³É ³Ñ¾î°£´Ù.
     }
 
     public void checkServerTrusted(X509Certificate[] aChain, String aAuthType) throws CertificateException
     {
-        // ì¸ì¦ì„œ ê²€ì¦ì„ í•˜ì§€ ì•Šê³  ê·¸ëƒ¥ ë„˜ì–´ê°„ë‹¤.
+        // ÀÎÁõ¼­ °ËÁõÀ» ÇÏÁö ¾Ê°í ±×³É ³Ñ¾î°£´Ù.
     }
 
     public X509Certificate[] getAcceptedIssuers()

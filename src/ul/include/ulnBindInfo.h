@@ -147,17 +147,17 @@ struct ulnBindInfo
 };
 
 /*
- * ulnBindInfoMap ÏóêÏÑú ÏÑúÎ≤ÑÎ°ú Ï†ÑÏÜ°Ìï† MTYPE ÏùÑ Ï∞æÏïÑÎÇ¥Îäî Ìï®Ïàò
+ * ulnBindInfoMap ø°º≠ º≠πˆ∑Œ ¿¸º€«“ MTYPE ¿ª √£æ∆≥ª¥¬ «‘ºˆ
  */
 ulnMTypeID ulnBindInfoGetMTYPEtoSet(ulnCTypeID aCTYPE, ulnMTypeID aMTYPE);
 
 /*
- * ulnBindInfo Íµ¨Ï°∞Ï≤¥ Ï¥àÍ∏∞Ìôî Ìï®Ïàò.
+ * ulnBindInfo ±∏¡∂√º √ ±‚»≠ «‘ºˆ.
  */
 void ulnBindInfoInitialize(ulnBindInfo *aBindInfo);
 
 /*
- * ulnBindInfo Ïùò Î©§Î≤ÑÎì§ÏùÑ set/get ÌïòÎäî Ìï®ÏàòÎì§
+ * ulnBindInfo ¿« ∏‚πˆµÈ¿ª set/get «œ¥¬ «‘ºˆµÈ
  */
 
 void       ulnBindInfoSetType(ulnBindInfo *aBindInfo, ulnMTypeID aMTYPE);
@@ -205,23 +205,24 @@ ACI_RC ulnCallbackParamInfoSetListResult(cmiProtocolContext *aProtocolContext,
                                          void               *aServiceSession,
                                          void               *aUserContext);
 
-ACI_RC ulnBindInfoBuild4Param(ulnMeta           *aAppMeta,
-                              ulnMeta           *aImpMeta,
+ACI_RC ulnBindInfoBuild4Param(ulnFnContext      *aFnContext,
+                              acp_uint32_t       aRowNumber,
+                              ulnDescRec        *aDescRecApd,
+                              ulnDescRec        *aDescRecIpd,
                               ulnParamInOutType  aInOutType,
-                              ulnBindInfo       *aBindInfo,
                               acp_bool_t        *aIsChanged);
 
 ACI_RC ulnParamProcess_INFOs(ulnFnContext      *aFnContext,
                              ulnPtContext      *aPtContext,
-                             acp_uint32_t       aRowNumber ); /* 0 Î≤†Ïù¥Ïä§ */
+                             acp_uint32_t       aRowNumber ); /* 0 ∫£¿ÃΩ∫ */
 
 ACI_RC ulnParamProcess_DATAs(ulnFnContext      *aFnContext,
                              ulnPtContext      *aPtContext,
-                             acp_uint32_t       aRowNumber ); /* 0 Î≤†Ïù¥Ïä§ */
+                             acp_uint32_t       aRowNumber ); /* 0 ∫£¿ÃΩ∫ */
 
 ACI_RC ulnParamProcess_IPCDA_DATAs(ulnFnContext *aFnContext,
                                    ulnPtContext *aPtContext,
                                    acp_uint32_t  aRowNumber,
-                                   acp_uint64_t *aDataSize ); /* 0 Î≤†Ïù¥Ïä§ */
+                                   acp_uint64_t *aDataSize ); /* 0 ∫£¿ÃΩ∫ */
 
 #endif /* _O_ULN_BINDINFO_H_ */

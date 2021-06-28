@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfNvl2.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfNvl2.cpp 90192 2021-03-12 02:01:03Z jayce.park $
  **********************************************************************/
 
 #include <mte.h>
@@ -49,7 +49,7 @@ static IDE_RC mtfNvl2Estimate( mtcNode*     aNode,
 mtfModule mtfNvl2 = {
     1|MTC_NODE_OPERATOR_FUNCTION|MTC_NODE_EAT_NULL_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfNvl2FunctionName,
     NULL,
     mtf::initializeDefault,
@@ -133,7 +133,7 @@ IDE_RC mtfNvl2Estimate( mtcNode*     aNode,
                     ERR_CONVERSION_NOT_APPLICABLE );
 
     // PROJ-2002 Column Security
-    // ë³´ì•ˆ ì»¬ëŸ¼ì¸ ê²½ìš° ì›ë³¸ ì»¬ëŸ¼ìœ¼ë¡œ ë°”ê¾¼ë‹¤.
+    // º¸¾È ÄÃ·³ÀÎ °æ¿ì ¿øº» ÄÃ·³À¸·Î ¹Ù²Û´Ù.
     if( sTarget == &mtdEchar )
     {
         sModules[0] = aStack[1].column->module;
@@ -182,7 +182,7 @@ IDE_RC mtfNvl2Estimate( mtcNode*     aNode,
         }
         else
         {
-            /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
+            /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
             aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
         }
     }
@@ -197,7 +197,7 @@ IDE_RC mtfNvl2Estimate( mtcNode*     aNode,
     }
 
     // BUG-23102
-    // mtcColumnìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
+    // mtcColumnÀ¸·Î ÃÊ±âÈ­ÇÑ´Ù.
     if( aStack[2].column->column.size > aStack[3].column->column.size )
     {
         mtc::initializeColumn( aStack[0].column, aStack[2].column );
@@ -321,7 +321,7 @@ IDE_RC mtfNvl2CalculateXlobColumn( mtcNode*     aNode,
                                                                     aTemplate )
               != IDE_SUCCESS );
 
-    // Lob Locatorë¥¼ ì–»ëŠ”ë° í•„ìš”í•œ ì»¤ì„œì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+    // Lob Locator¸¦ ¾ò´Âµ¥ ÇÊ¿äÇÑ Ä¿¼­Á¤º¸¸¦ °¡Á®¿Â´Ù.
     IDE_TEST( aTemplate->getOpenedCursor( aTemplate,
                                           sNode->table,
                                           & sCursor,
@@ -329,23 +329,36 @@ IDE_RC mtfNvl2CalculateXlobColumn( mtcNode*     aNode,
                                           & sFound )
               != IDE_SUCCESS );
 
-    IDE_TEST_RAISE( sFound != ID_TRUE,
-                    ERR_CONVERSION_NOT_APPLICABLE );
-    
-    sRow    = aTemplate->rows[sOrgTableID].row;
-
-    sOrgLobColumn = aTemplate->rows[sOrgTableID].columns + sNode->column;
-
-    if( SMI_GRID_IS_VIRTUAL_NULL(aTemplate->rows[sOrgTableID].rid))
+    if ( sFound == ID_FALSE )
     {
-        sIsNull = ID_TRUE;
+        /* BUG-48006 partition table nvl2 function error */
+        if ( ( aTemplate->rows[sOrgTableID].lflag & MTC_TUPLE_PARTITIONED_TABLE_MASK )
+             == MTC_TUPLE_PARTITIONED_TABLE_TRUE )
+        {
+            sIsNull = ID_TRUE;
+        }
+        else
+        {
+            IDE_RAISE( ERR_CONVERSION_NOT_APPLICABLE );
+        }
     }
     else
     {
-        IDE_TEST( mtc::isNullLobRow( sRow,
-                                     & sOrgLobColumn->column,
-                                     & sIsNull )
-                  != IDE_SUCCESS );
+        sRow    = aTemplate->rows[sOrgTableID].row;
+
+        sOrgLobColumn = aTemplate->rows[sOrgTableID].columns + sNode->column;
+
+        if( SMI_GRID_IS_VIRTUAL_NULL(aTemplate->rows[sOrgTableID].rid))
+        {
+            sIsNull = ID_TRUE;
+        }
+        else
+        {
+            IDE_TEST( mtc::isNullLobRow( sRow,
+                                         & sOrgLobColumn->column,
+                                         & sIsNull )
+                      != IDE_SUCCESS );
+        }
     }
     
     sNode = sNode->next;
@@ -421,7 +434,8 @@ IDE_RC mtfNvl2CalculateXlobLocator( mtcNode*     aNode,
     
     IDE_TEST( mtc::getLobLengthLocator( sLocator,
                                         & sIsNull,
-                                        & sLength )
+                                        & sLength,
+                                        mtc::getStatistics(aTemplate) )
               != IDE_SUCCESS );
 
     sNode = sNode->next;

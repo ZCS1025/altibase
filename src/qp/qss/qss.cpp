@@ -26,7 +26,7 @@ IDE_RC qss::setStmtTexts( qcStatement    * aStatement,
                           SChar          * aPlainText,
                           SInt             aPlainTextLen )
 {
-    /* ì í•©ì„± ê²€ì‚¬ */
+    /* ÀûÇÕ¼º °Ë»ç */
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aPlainText != NULL );
     IDE_DASSERT( aPlainTextLen != 0 );
@@ -68,13 +68,13 @@ IDE_RC qss::doDecryption( qcStatement    * aStatement,
     SInt              sDecryptedBodyLen = 0;
     SInt              sState = 0;
 
-    /* ì í•©ì„± ê²€ì‚¬ */
+    /* ÀûÇÕ¼º °Ë»ç */
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( QC_IS_NULL_NAME( aBody ) == ID_FALSE );
 
-    /* sEncryptedBodyPos ì•„ëž˜ì™€ ê°™ì´ ì„¤ì •í•˜ëŠ” ì´ìœ ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.
+    /* sEncryptedBodyPos ¾Æ·¡¿Í °°ÀÌ ¼³Á¤ÇÏ´Â ÀÌÀ¯´Â ´ÙÀ½°ú °°´Ù.
  
-       encrypted textê°€ ì•„ëž˜ì™€ ê°™ì€ ì˜ˆë¼ê³  í•˜ìž.
+       encrypted text°¡ ¾Æ·¡¿Í °°Àº ¿¹¶ó°í ÇÏÀÚ.
        => create or replace procedure proc1 wrapped
           'NTM=
           NTY=
@@ -82,21 +82,21 @@ IDE_RC qss::doDecryption( qcStatement    * aStatement,
           ';
        /
 
-       aBodyì˜ positionì€ 
+       aBodyÀÇ positionÀº 
        'NTM=
        NTY=
        AAhjcmVhdGUgb3IgcmVwbGFjZSBwcm9jZWCRTY5NkMwQzA5RTMzMTVD
        '
-       ì´ë‹¤.
+       ÀÌ´Ù.
 
-       ê·¸ëŸ¬ë‚˜, decrpytion í•´ì•¼ í•˜ëŠ” ë¶€ë¶„ì€ ' 'ë¥¼ ì œì™¸í•œ
+       ±×·¯³ª, decrpytion ÇØ¾ß ÇÏ´Â ºÎºÐÀº ' '¸¦ Á¦¿ÜÇÑ
        NTM=
        NTY=
        AAhjcmVhdGUgb3IgcmVwbGFjZSBwcm9jZWCRTY5NkMwQzA5RTMzMTVD
-       ë¶€ë¶„ì¸ ê²ƒì´ë‹¤. 
+       ºÎºÐÀÎ °ÍÀÌ´Ù. 
 
-       ë”°ë¼ì„œ, decryption í•´ì•¼ í•  textë¥¼ offsetì€ 'ë¥¼ ë‹¤ìŒ ë¶€í„°ì´ë¯€ë¡œ +1ì„ í•´ì¤˜ì•¼ í•˜ë©°,
-       ì „ì²´ text sizeì—ì„œ ' 'ë¥¼ ì œì™¸í•œ ê¸¸ì´ì—¬ì•¼ í•˜ë¯€ë¡œ, -2ë¥¼ í•´ì¤˜ì•¼ í•œë‹¤. */
+       µû¶ó¼­, decryption ÇØ¾ß ÇÒ text¸¦ offsetÀº '¸¦ ´ÙÀ½ ºÎÅÍÀÌ¹Ç·Î +1À» ÇØÁà¾ß ÇÏ¸ç,
+       ÀüÃ¼ text size¿¡¼­ ' '¸¦ Á¦¿ÜÇÑ ±æÀÌ¿©¾ß ÇÏ¹Ç·Î, -2¸¦ ÇØÁà¾ß ÇÑ´Ù. */
     sEncryptedBodyPos.stmtText = aBody.stmtText;
     sEncryptedBodyPos.offset   = aBody.offset + 1;
     sEncryptedBodyPos.size     = aBody.size - 2;

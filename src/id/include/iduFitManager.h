@@ -225,19 +225,19 @@ private:
     iduFitManager(){};
     ~iduFitManager(){};
 
-    /* fitPlugin ë¡œë”© ê´€ë ¨ëœ í•¨ìˆ˜ë“¤ */
+    /* fitPlugin ·Îµù °ü·ÃµÈ ÇÔ¼öµé */
     static IDE_RC loadFitPlugin();
     static IDE_RC unloadFitPlugin();
     static IDE_RC loadFitFunctions();
 
-    /* íŒŒì‹± ê´€ë ¨ëœ í•¨ìˆ˜ë“¤ */
+    /* ÆÄ½Ì °ü·ÃµÈ ÇÔ¼öµé */
     static IDE_RC parseFitAction( SChar *aRecvData, iduFitAction *aFitAction );
     static IDE_RC parseSID( void );
 
-    /* ë™ì ìœ¼ë¡œ ë¡œë”©ë  í•¨ìˆ˜ */
+    /* µ¿ÀûÀ¸·Î ·ÎµùµÉ ÇÔ¼ö */
     static fitTransmission mTransmission;
 
-    /* SleepList ê´€ë ¨ëœ í•¨ìˆ˜ë“¤ */
+    /* SleepList °ü·ÃµÈ ÇÔ¼öµé */
     static IDE_RC initSleepList( iduSleepList *aSleepList );
     static IDE_RC finalSleepList( iduSleepList *aSleepList );
     static IDE_RC resetSleepList( iduSleepList *aSleepList );
@@ -250,7 +250,7 @@ private:
 
     static IDE_RC getSleepNode( const SChar *aUID, iduSleepNode **aSleepNode );
 
-    /* FIT í…ŒìŠ¤íŠ¸ ê¸°ëŠ¥ í•¨ìˆ˜ë“¤ */
+    /* FIT Å×½ºÆ® ±â´É ÇÔ¼öµé */
     static IDE_RC hitServer( iduFitAction *aFitAction );
     static IDE_RC abortServer( iduFitAction *aFitAction );
     static IDE_RC killServer( iduFitAction *aFitAction );
@@ -282,7 +282,7 @@ inline iduFitStatus iduFitManager::getFitEnable()
     static SLong sFitEnable = 0L;
     static SInt sFitEnableEnvLen = 0;
 
-    /* FIT_ENABLE í™˜ê²½ë³€ìˆ˜ë¥¼ ì´ë¯¸ ì½ì€ ê²½ìš°ì—ëŠ” ë‹¤ì‹œ ì½ì§€ ì•ŠëŠ”ë‹¤. */
+    /* FIT_ENABLE È¯°æº¯¼ö¸¦ ÀÌ¹Ì ÀĞÀº °æ¿ì¿¡´Â ´Ù½Ã ÀĞÁö ¾Ê´Â´Ù. */
     IDE_TEST( mIsFitEnabled != IDU_FIT_NONE );
 
     sFitEnableEnv = idlOS::getenv( IDU_FIT_ENABLE_ENV );

@@ -18,7 +18,7 @@
 #include <mmdManager.h>
 #include <mmcLob.h>
 #include <mmcStatementManager.h>
-#include <mmcTrans.h>
+#include <mmcTransManager.h>
 #include <mmtSessionManager.h>
 #include <mmtThreadManager.h>
 #include <mmqManager.h>
@@ -40,15 +40,15 @@ static IDE_RC mmmPhaseActionShutdownService(mmmPhase         /*aPhase*/,
     IDE_TEST_RAISE(mmtSessionManager::shutdown() != IDE_SUCCESS, SessionShutdownFail);
 
     // bug-34789: stmt table should be cleared after stopServiceThreads
-    // ë…¼ë¦¬ìƒ, servcie threadê°€ ë‹¤ ì¢…ë£Œí•œ í›„ì— stmt tableì„ clearí•´ì•¼ í•¨
-    // service thread ì¢…ë£Œë¡œì§ì—ì„œ freeTaskë¥¼ í˜¸ì¶œí•˜ëŠ” ë¶€ë¶„ì´ ìˆë‹¤.
+    // ³í¸®»ó, servcie thread°¡ ´Ù Á¾·áÇÑ ÈÄ¿¡ stmt tableÀ» clearÇØ¾ß ÇÔ
+    // service thread Á¾·á·ÎÁ÷¿¡¼­ freeTask¸¦ È£ÃâÇÏ´Â ºÎºĞÀÌ ÀÖ´Ù.
     IDE_TEST(mmtThreadManager::stopServiceThreads() != IDE_SUCCESS);
 
     IDE_TEST(mmcLob::finalize() != IDE_SUCCESS);
     //fix BUG-22575 [valgrind] XA mmcTrans::free invalid read of size 4
     IDE_TEST(mmdManager::finalize() != IDE_SUCCESS);
 
-    IDE_TEST(mmcTrans::finalize() != IDE_SUCCESS);
+    IDE_TEST(mmcTransManager::finalizeManager() != IDE_SUCCESS);
 
     IDE_TEST(mmcStatementManager::finalize() != IDE_SUCCESS);
 

@@ -4,19 +4,19 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: idmSNMP.cpp 83415 2018-07-04 04:47:30Z kclee $
+ * $Id: idmSNMP.cpp 83346 2018-06-26 03:32:55Z kclee $
  **********************************************************************/
 
 #include <idmSNMP.h>
 
 /* 
- * PROJ-2473 SNMP ì§€ì›
+ * PROJ-2473 SNMP Áö¿ø
  */
 
 PDL_SOCKET         idmSNMP::mSock = PDL_INVALID_SOCKET;
 struct sockaddr_in idmSNMP::mSubagentAddr;
 
-/* idmSNMPTrap êµ¬ì¡° ì°¸ê³  
+/* idmSNMPTrap ±¸Á¶ Âü°í 
 struct idmSNMPTrap
 {
     UChar mAddress[128];
@@ -51,7 +51,7 @@ void idmSNMP::trap(const idmSNMPTrap *aTrap)
     FD_ZERO(&sWriteFdSet);
     FD_SET(mSock, &sWriteFdSet);
 
-    /* sendto()ì—ì„œ selectëŠ” í° ì˜ë¯¸ê°€ ì—†ë‹¤ */
+    /* sendto()¿¡¼­ select´Â Å« ÀÇ¹Ì°¡ ¾ø´Ù */
     sSelectRet = idmSNMP::selectSNMP(mSock,
                                      NULL, &sWriteFdSet,
                                      sTimeout, (SChar *)"TRAP_SEND");
@@ -91,7 +91,7 @@ void idmSNMP::trap(const idmSNMPTrap *aTrap)
 /**
  * idmSNMP::selectSNMP
  *
- * @aSock : í˜¸ì¶œì‹œ Sock + 1ë¡œ ì£¼ì§€ ì•Šì•„ì•¼ í•œë‹¤.
+ * @aSock : È£Ãâ½Ã Sock + 1·Î ÁÖÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
  */
 UInt idmSNMP::selectSNMP(const PDL_SOCKET&  aSock,
                          fd_set            *aReadFdSet,
@@ -178,7 +178,7 @@ IDE_RC idmSNMP::initialize()
 
     IDE_EXCEPTION(SNMP_DISABLED)
     {
-        /* SNMPê°€ Disable ë˜ì–´ ìˆìœ¼ë©´ Alarmì„ ë„ì */
+        /* SNMP°¡ Disable µÇ¾î ÀÖÀ¸¸é AlarmÀ» ²ôÀÚ */
         iduProperty::setSNMPAlarmQueryTimeout(0);
         iduProperty::setSNMPAlarmUtransTimeout(0);
         iduProperty::setSNMPAlarmFetchTimeout(0);

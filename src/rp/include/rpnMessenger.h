@@ -25,16 +25,21 @@
 
 #define RPN_STOP_MSG_NETWORK_TIMEOUT_SEC    (600)
 
+typedef enum
+{
+    RPN_RELEASE_PROTOCOL_CONTEXT = 0,
+    RPN_DO_NOT_RELEASE_PROTOCOL_CONTEXT = 1,
+} rpnProtocolContextReleasePolicy;
+
 class rpnMessenger
 {
 
 private:
 
-
     RP_SOCKET_TYPE     mSocketType;
 
     cmiLink          * mLink;
-    cmiProtocolContext mProtocolContext;
+    cmiProtocolContext * mProtocolContext;
     rpdReplications  * mReplication;
 
     idBool           * mExitFlag;
@@ -52,6 +57,10 @@ private:
     /* PROJ-2453 */
     iduMutex           mSocketMutex;
     idBool             mNeedSocketMutex;
+    
+    RP_MESSENGER_CHECK_VERSION  mCheckVersion;
+
+    idBool             mIsFlushCommitXLog;
 
 public:
 
@@ -64,9 +73,6 @@ public:
 
 
 private:
-    void getVersionFromAck( SChar      *aMsg,
-                            UInt       aMsgLen,
-                            rpdVersion *aVersion );
     IDE_RC connect( cmiConnectArg * aConnectArg );
 
     void initializeNetworkAddress( RP_SOCKET_TYPE aSocketType );
@@ -127,6 +133,18 @@ private:
     IDE_RC sendLobTrim( rpdLogAnalyzer          * aLogAnlz,
                         rpdSenderInfo           * aSenderInfo,
                         smSN                      aFlushSN );    
+    IDE_RC sendXaStartReq( rpdLogAnalyzer * aLogAnlz, 
+                           rpdSenderInfo  * aSenderInfo );
+
+    IDE_RC sendXaPrepareReq( rpdLogAnalyzer * aLogAnlz,
+                             rpdSenderInfo  * aSenderInfo );
+
+    IDE_RC sendXaPrepare( rpdLogAnalyzer * aLogAnlz,
+                          rpdSenderInfo  * aSenderInfo );
+
+    IDE_RC sendXaEnd( rpdLogAnalyzer * aLogAnlz, 
+                      rpdSenderInfo  * aSenderInfo );
+
     IDE_RC sendNA( rpdLogAnalyzer * aLogAnlz );
 
     IDE_RC checkAndSendSvpList( rpdTransTbl     * aTransTbl,
@@ -136,16 +154,25 @@ private:
     void setLastSN( rpdSenderInfo     * aSenderInfo,
                     smTID               aTransID,
                     smSN                aSN );
+
+    void checkSupportOnRemoteVersion( rpdVersion     aRemoteVersion,
+                                      rpMsgReturn  * aRC,
+                                      SChar        * aRCMsg,
+                                      SInt           aRCMsgLen );
+
 public:
 
     rpnMessenger( void );
 
-    IDE_RC initialize( RP_SOCKET_TYPE             aSocketType,
-                       idBool                   * aExitFlag,
-                       rpdReplications          * aReplication,
-                       void                     * aHBTResource,
-                       idBool                     aNeedLock );
-    void destroy( void );
+    IDE_RC initialize( cmiProtocolContext * aProtocolContext,
+                       RP_MESSENGER_CHECK_VERSION    aCheckVersion, 
+                       RP_SOCKET_TYPE       aSocketType,
+                       idBool             * aExitFlag,
+                       rpdReplications    * aReplication,
+                       void               * aHBTResource,
+                       idBool               aNeedLock );
+
+    void destroy( rpnProtocolContextReleasePolicy aProtocolCtxReleasePolicy );
 
     IDE_RC connectThroughTcp( SChar * aHostIp, UInt aPortNo );
     IDE_RC connectThroughUnix( SChar * aFileName );
@@ -163,6 +190,13 @@ public:
 
     void setRemoteTcpAddress( SChar * aRemoteIP, SInt aRemotePort );
     void setRemoteIBAddress( SChar * aRemoteIP, SInt aRemotePort, rpIBLatency aIBLatency );
+
+    static void getVersionFromAck( SChar      *aMsg,
+                                   UInt        aMsgLen,
+                                   rpdVersion *aVersion );
+
+    static void getCompressType( rpdVersion         aVersion, 
+                                 cmiCompressType    aCompressType);
 
     void updateAddress( void );
 
@@ -218,7 +252,8 @@ public:
                               smSN    aFlushN,
                               smSN    aRestartSN,
                               idBool  aNeedLock );
-    IDE_RC sendXLogHandshake( smSN    aSN,
+    IDE_RC sendXLogHandshake( smTID   aTID,
+                              smSN    aSN,
                               smSN    aFlushSN,
                               idBool  aNeedLock );
     IDE_RC sendXLogSyncPKBegin( void );
@@ -238,8 +273,12 @@ public:
     IDE_RC sendSyncTableInfo( rpdMetaItem * aItem );
     IDE_RC sendSyncTableNumber( UInt aSyncTableNumber );
     IDE_RC sendSyncStart( void );
-    IDE_RC sendRebuildIndex( void );
+    IDE_RC sendSyncEnd( void );
+    IDE_RC sendFlush( void );
     /* PROJ-2453 */
+    
+    static void setCompressType( rpdVersion         aRemoteVersion,
+                                 cmiCompressType    aCompressType );
 public:
     IDE_RC sendAckOnDML( void );
     IDE_RC sendCmBlock( void );
@@ -265,6 +304,12 @@ public:
                                    UInt  * aIsSuccess, 
                                    UInt  * aErrCode,
                                    SChar * aErrMsg );
+
+    IDE_RC communicateConditionInfo( rpdConditionItemInfo  * aSendConditionInfo,
+                                     SInt                    aItemCount,
+                                     rpdConditionActInfo   * aRecvConditionActInfo );
+
+    IDE_RC sendTruncate( ULong aTableOID );
 };
 
 #endif /* _O_RPN_MESSENGER_H_ */

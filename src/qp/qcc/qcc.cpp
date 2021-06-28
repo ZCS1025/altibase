@@ -16,7 +16,7 @@
  
 
 /********************************\***************************************
- * $Id: qcc.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qcc.cpp 88963 2020-10-19 03:33:18Z jake.jang $
  **********************************************************************/
 
 #include <idl.h>
@@ -57,7 +57,7 @@ IDE_RC qcc::validate(qcStatement * aStatement)
     if ( ( aStatement->myPlan->parseTree->stmtKind & QCI_STMT_MASK_MASK )
          == QCI_STMT_MASK_DML )
     {
-        // CHECK SEQUENCE ì¼ ê²½ìš°
+        // CHECK SEQUENCE ÀÏ °æ¿ì
         QC_SHARED_TMPLATE(aStatement)->smiStatementFlag |= SMI_STATEMENT_MEMORY_CURSOR;
     }
     else
@@ -86,4 +86,21 @@ IDE_RC qcc::execute(qcStatement * /* aStatement */)
     return IDE_SUCCESS;
 
 #undef IDE_FN
+}
+
+IDE_RC qcc::executeError(qcStatement * /* aStatement */)
+{
+    IDE_RAISE(ERR_ABORT_INVALID_STMT_TYPE);
+    
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION( ERR_ABORT_INVALID_STMT_TYPE )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qcc::executeError",
+                                  "This statement cannot be executed through the execution plan." ));
+    }
+    IDE_EXCEPTION_END;
+    
+    return IDE_FAILURE;
 }

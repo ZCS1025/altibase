@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smmFixedMemoryMgr.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smmFixedMemoryMgr.h 90522 2021-04-09 01:29:20Z emlee $
  **********************************************************************/
 
 #ifndef _O_SMM_FIXED_MEMORY_MGR_H_
@@ -50,7 +50,7 @@ public:
     static IDE_RC destroyStatic();
     static IDE_RC initialize(smmTBSNode * aTBSNode);
 
-    // TBSNodeì˜ ì •ë³´ì¤‘ ê³µìœ ë©”ëª¨ë¦¬ ê´€ë¦¬ì ê´€ë ¨ ë¶€ë¶„ì„ í•´ì œí•œë‹¤.
+    // TBSNodeÀÇ Á¤º¸Áß °øÀ¯¸Ş¸ğ¸® °ü¸®ÀÚ °ü·Ã ºÎºĞÀ» ÇØÁ¦ÇÑ´Ù.
     static IDE_RC destroy(smmTBSNode * aTBSNode);
 
     /* ------------------------------------------------
@@ -58,7 +58,7 @@ public:
      * ----------------------------------------------*/
     static IDE_RC attach(smmTBSNode * aTBSNode, smmShmHeader *aRsvShmHeader);
     static IDE_RC detach(smmTBSNode * aTBSNode);
-    static IDE_RC create(smmTBSNode * aTBSNode, scPageID aPageCount);
+    static IDE_RC create(smmTBSNode * aTBSNode, UInt aPageCount);
     static IDE_RC remove(smmTBSNode * aTBSNode);
 
     /* ------------------------------------------------
@@ -68,9 +68,9 @@ public:
                                    smmTempPage   *aPage);
     static IDE_RC allocNewChunk(smmTBSNode * aTBSNode,
                                 key_t        aShmkey,
-                                scPageID     aCount);
+                                UInt         aCount);
     static IDE_RC extendShmPage(smmTBSNode * aTBSNode,
-                                scPageID     aCount,
+                                UInt         aCount,
                                 key_t      * aCreatedShmKey = NULL );
     
     static IDE_RC freeShmPage(smmTBSNode *  aTBSNode,
@@ -78,9 +78,9 @@ public:
     static IDE_RC allocShmPage(smmTBSNode *  aTBSNode,
                                smmTempPage **aPage);
 
-    // Tablespaceì˜ ì²«ë²ˆì§¸ ê³µìœ ë©”ëª¨ë¦¬ Chunkë¥¼ ìƒì„±í•œë‹¤.
+    // TablespaceÀÇ Ã¹¹øÂ° °øÀ¯¸Ş¸ğ¸® Chunk¸¦ »ı¼ºÇÑ´Ù.
     static IDE_RC createFirstChunk( smmTBSNode * aTBSNode,
-                                    scPageID     aPageCount);
+                                    UInt         aPageCount);
     
     /* ------------------------------------------------
      * [] Check of DB Infomation

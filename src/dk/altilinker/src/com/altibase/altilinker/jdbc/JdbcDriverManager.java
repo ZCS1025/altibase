@@ -379,7 +379,23 @@ public class JdbcDriverManager
 
         return sXAds.getXAConnection( aUser, aPassword );
     }
-    
+   
+    private static boolean isVersionGreaterThan8()
+    {
+        String sJavaVersion = System.getProperty("java.version");
+        String[] sVersion = sJavaVersion.split( "\\." ) ;
+        int  sMajorVersion = Integer.parseInt( sVersion[0] );
+
+        if ( sMajorVersion > 8 )
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     /**
      * Create new java.sql.Driver object from JDBC driver file
      * 
@@ -397,15 +413,28 @@ public class JdbcDriverManager
         
         Driver sDriver = null;
 
+        URLClassLoader sUrlClassLoader ; 
         try
         {
             String sJarUrlPath = "file:" + sDriverJarFilePath + "!/";
             URL sJarUrl = new URL("jar", "", sJarUrlPath);
-            
-            URLClassLoader sUrlClassLoader = 
+    
+            if ( isVersionGreaterThan8() == false )
+            {
+                sUrlClassLoader = 
                     new URLClassLoader(new URL[] { sJarUrl },
                                        sJarUrlPath.getClass().getClassLoader());
-    
+            }
+            else
+            {
+                /* BUG-46878 dblink support on jdk 11
+                 * jdk9 부터는 platform class loader를 인자로 넘겨줘야 한다.
+                 * 9 이하 버전에서 빌드하기 위해 아래같이 system class의 부모를 넘겨준다 */
+                sUrlClassLoader = 
+                    new URLClassLoader(new URL[] { sJarUrl },
+                                       ClassLoader.getSystemClassLoader().getParent() );
+            }
+            
             JarInputStream sJarInputStream = new JarInputStream(
                         new BufferedInputStream(
                                 new FileInputStream( sDriverJarFilePath ) ) );
@@ -529,11 +558,20 @@ public class JdbcDriverManager
         {
             String sJarUrlPath = "file:" + aTarget.mDriver + "!/";
             URL sJarUrl = new URL("jar", "", sJarUrlPath);
-    
-            sUrlClassLoader = 
+   
+            if ( isVersionGreaterThan8() == false )
+            {
+                sUrlClassLoader = 
                     new URLClassLoader(new URL[] { sJarUrl },
                                        sJarUrlPath.getClass().getClassLoader());
- 
+            }
+            else
+            {
+                sUrlClassLoader = 
+                    new URLClassLoader(new URL[] { sJarUrl },
+                                       ClassLoader.getSystemClassLoader().getParent() );
+            }
+            
             sXADataSrcClass = sUrlClassLoader.loadClass( aTarget.mXADataSourceClassName );
             
             sXADataSrc = (XADataSource)sXADataSrcClass.newInstance();

@@ -140,7 +140,7 @@ ACI_RC mtdInitializeList( acp_uint32_t aNo )
 {
     ACI_TEST( mtdInitializeModule( &mtcdList, aNo ) != ACI_SUCCESS );
 
-    // mtdColumnÏùò Ï¥àÍ∏∞Ìôî
+    // mtdColumn¿« √ ±‚»≠
     ACI_TEST( mtcInitializeColumn( & mtdColumn,
                                    & mtcdList,
                                    1,   // arguments

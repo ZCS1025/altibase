@@ -25,13 +25,13 @@
  *
  *	Related Files	:
  *
- *	Description		:	ì—ëŸ¬ ì²˜ë¦¬ ëª¨ë“ˆ
+ *	Description		:	¿¡·¯ Ã³¸® ¸ğµâ
  *
  *
  **********************************************************************/
 
 /* ----------------------------------------------------------------------------
- * ì„±ëŠ¥ ê³ ë ¤ë¡œ ì¸í•´ class ëŒ€ì‹  struct ë° plain function ìœ¼ë¡œ êµ¬í˜„
+ * ¼º´É °í·Á·Î ÀÎÇØ class ´ë½Å struct ¹× plain function À¸·Î ±¸Çö
  * ---------------------------------------------------------------------------*/
 
 #include <aciErrorMgr.h>
@@ -46,16 +46,16 @@
 
 /* ----------------------------------------------------------------------------
  *
- *  PDL ì—ëŸ¬ ìˆ˜ì •
+ *  PDL ¿¡·¯ ¼öÁ¤
  *
- *  Sparc Solaris 2.7ì—ì„œ 64ë¹„íŠ¸ ì»´íŒŒì¼ ëª¨ë“œì¼ ê²½ìš°
- *  ì „ì—­ ì‹œìŠ¤í…œ ì—ëŸ¬ì½”ë“œë²ˆí˜¸ ë³€ìˆ˜ì¸ sys_nerrì´ ì—†ì–´ì§„ë‹¤.
- *  ê·¸ëŸ¬ë‚˜, PDLì—ì„œëŠ” ì´ê²ƒì„ ê³ ë ¤í•˜ì§€ ì•Šê³  ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì—
- *  ë§í¬ì—ëŸ¬ë¥¼ ë°œìƒí•œë‹¤. ì´ê²ƒì„ ë°©ì§€í•˜ê¸° ìœ„í•´ ì„ì‹œë¡œ sys_nerrì„ ì •ì˜í•œë‹¤.
+ *  Sparc Solaris 2.7¿¡¼­ 64ºñÆ® ÄÄÆÄÀÏ ¸ğµåÀÏ °æ¿ì
+ *  Àü¿ª ½Ã½ºÅÛ ¿¡·¯ÄÚµå¹øÈ£ º¯¼öÀÎ sys_nerrÀÌ ¾ø¾îÁø´Ù.
+ *  ±×·¯³ª, PDL¿¡¼­´Â ÀÌ°ÍÀ» °í·ÁÇÏÁö ¾Ê°í »ç¿ëÇÏ±â ¶§¹®¿¡
+ *  ¸µÅ©¿¡·¯¸¦ ¹ß»ıÇÑ´Ù. ÀÌ°ÍÀ» ¹æÁöÇÏ±â À§ÇØ ÀÓ½Ã·Î sys_nerrÀ» Á¤ÀÇÇÑ´Ù.
  *
  * --------------------------------------------------------------------------*/
 
-aci_err_type_info_t gAciTypeInfo[] = /* ì—ëŸ¬ ë©”ì‹œì§€ í™”ì¼ì— ì‚¬ìš©ë˜ëŠ” ë°ì´íƒ€ íƒ€ì… ì¢…ë¥˜ */
+aci_err_type_info_t gAciTypeInfo[] = /* ¿¡·¯ ¸Ş½ÃÁö È­ÀÏ¿¡ »ç¿ëµÇ´Â µ¥ÀÌÅ¸ Å¸ÀÔ Á¾·ù */
 {
     { ACI_ERR_SCHAR   , "%c"  , "%c"              , 2 },
     { ACI_ERR_STRING  , "%s"  , "%s"              , 2 },
@@ -99,7 +99,7 @@ const acp_bool_t aciErrorConversionMatrix[ACI_MAX_ERROR_ACTION][ACI_MAX_ERROR_AC
 
 /* ----------------------------------------------------------------------
  *
- *  MT í´ë¼ì´ì–¸íŠ¸ë¥¼ ìœ„í•œ ì»´íŒŒì¼ - shore storage manager ì°¸ì¡°
+ *  MT Å¬¶óÀÌ¾ğÆ®¸¦ À§ÇÑ ÄÄÆÄÀÏ - shore storage manager ÂüÁ¶
  *
  * ---------------------------------------------------------------------- */
 
@@ -121,7 +121,7 @@ void  aciClearTSDError(aci_error_mgr_t* aIdErr)
 
 /* ----------------------------------------------------------------------
  *
- *  ID ì—ëŸ¬ ì½”ë“œê°’ ì–»ê¸° : SERVER, CLIENT ê³µí†µ í•¨ìˆ˜
+ *  ID ¿¡·¯ ÄÚµå°ª ¾ò±â : SERVER, CLIENT °øÅë ÇÔ¼ö
  *
  * ----------------------------------------------------------------------*/
 
@@ -210,7 +210,7 @@ acp_sint32_t   aciIsRebuild()
 
 /* ----------------------------------------------------------------------
  *
- *  ì—ëŸ¬ ì½”ë“œê°’ ì„¤ì • + ë©”ì‹œì§€ êµ¬ì„±
+ *  ¿¡·¯ ÄÚµå°ª ¼³Á¤ + ¸Ş½ÃÁö ±¸¼º
  *
  * ----------------------------------------------------------------------*/
 
@@ -233,9 +233,9 @@ void aciClearError()
 
 /* #ifdef DEBUG *//* BUG-26930 */
 ACP_EXPORT
-acp_sint32_t aciSetDebugInfo(acp_char_t *File,     /* ì—ëŸ¬ í™”ì¼ */
-                     acp_uint32_t   Line,     /* ì—ëŸ¬ ë¼ì¸ */
-                     acp_char_t *testline) /* ì—ëŸ¬ì •ë³´ */
+acp_sint32_t aciSetDebugInfo(acp_char_t *File,     /* ¿¡·¯ È­ÀÏ */
+                     acp_uint32_t   Line,     /* ¿¡·¯ ¶óÀÎ */
+                     acp_char_t *testline) /* ¿¡·¯Á¤º¸ */
 {
     aci_error_mgr_t* error = aciGetErrorMgr();
     if( error->ErrorTested)
@@ -258,13 +258,13 @@ acp_sint32_t aciSetDebugInfo(acp_char_t *File,     /* ì—ëŸ¬ í™”ì¼ */
 
 /* ----------------------------------------------------------------------
  *
- *  ì„œë²„ë¥¼ ìœ„í•œ ID ì—ëŸ¬ ë©”ì‹œì§€ ë¡œë”© ë° ì–»ê¸°
+ *  ¼­¹ö¸¦ À§ÇÑ ID ¿¡·¯ ¸Ş½ÃÁö ·Îµù ¹× ¾ò±â
  *
  * ----------------------------------------------------------------------*/
 
 static aci_error_factory_t aciErrorStorage[ACI_E_MODULE_COUNT];
 
-/* formatted stirngì„ ì½ì–´ì„œ ê°€ë³€ì¸ì ì •ë³´ë¥¼ êµ¬ì„± */
+/* formatted stirngÀ» ÀĞ¾î¼­ °¡º¯ÀÎÀÚ Á¤º¸¸¦ ±¸¼º */
 static acp_sint32_t aciGetArgumentInfo(acp_char_t *orgFmt, aci_arg_info_t *orgInfo, va_list args)
 {
     acp_uint32_t  maxInfoCnt = 0;
@@ -277,19 +277,19 @@ static acp_sint32_t aciGetArgumentInfo(acp_char_t *orgFmt, aci_arg_info_t *orgIn
     acp_rc_t sRC;
 
     fmt = orgFmt;
-    orgInfo[0].type_info = NULL; /* ì´ˆê¸°í™” */
+    orgInfo[0].type_info = NULL; /* ÃÊ±âÈ­ */
 
     while(( c = *fmt++) )
     {
-        if (c == '<') /* [<] ì¶œí˜„ */
+        if (c == '<') /* [<] ÃâÇö */
         {
-            acp_char_t numBuf[8]; /* ì¸ìë²ˆí˜¸ ì…ë ¥ */
+            acp_char_t numBuf[8]; /* ÀÎÀÚ¹øÈ£ ÀÔ·Â */
             acp_sint32_t sign;
 
             /* ------------------
-             * [1] ì¸ìë²ˆí˜¸ ì–»ê¸°
+             * [1] ÀÎÀÚ¹øÈ£ ¾ò±â
              * -----------------*/
-            if (acpCharIsDigit(*fmt) == ACP_FALSE) /* ìˆ«ìê°€ ì•„ë‹˜ */
+            if (acpCharIsDigit(*fmt) == ACP_FALSE) /* ¼ıÀÚ°¡ ¾Æ´Ô */
             {
                 continue;
             }
@@ -303,7 +303,7 @@ static acp_sint32_t aciGetArgumentInfo(acp_char_t *orgFmt, aci_arg_info_t *orgIn
                 }
                 numBuf[i] = *fmt++;
             }
-            /* ëª‡ë²ˆì§¸ ì…ë ¥ ì¸ìì¸ê°€? í¬ì¸í„° ëŒ€ì… */
+            /* ¸î¹øÂ° ÀÔ·Â ÀÎÀÚÀÎ°¡? Æ÷ÀÎÅÍ ´ëÀÔ */
             sRC = acpCStrToInt32(numBuf, 8, &sign, &inputOrder, 10, NULL);
 
             if (ACP_RC_NOT_SUCCESS(sRC)
@@ -320,7 +320,7 @@ static acp_sint32_t aciGetArgumentInfo(acp_char_t *orgFmt, aci_arg_info_t *orgIn
             if (inputOrder > maxInfoCnt) maxInfoCnt = inputOrder;
 
             /* ------------------
-             * [2] ì¸ìíƒ€ì… ì–»ê¸°
+             * [2] ÀÎÀÚÅ¸ÀÔ ¾ò±â
              * -----------------*/
             for (i = 0; ; i++)
             {
@@ -348,14 +348,14 @@ static acp_sint32_t aciGetArgumentInfo(acp_char_t *orgFmt, aci_arg_info_t *orgIn
     {
         return ACI_FAILURE;
     }
-    orgInfo[maxInfoCnt + 1].type_info = NULL; /* NULLì„ ì§€ì • ; ë§ˆì§€ë§‰ flag */
+    orgInfo[maxInfoCnt + 1].type_info = NULL; /* NULLÀ» ÁöÁ¤ ; ¸¶Áö¸· flag */
 
     /* ------------------
-     * [3] ì¸ì í¬ì¸í„° ëŒ€ì…
-     *     argument *ë¥¼ ë‹¤ì‹œ ì €ì¥.
+     * [3] ÀÎÀÚ Æ÷ÀÎÅÍ ´ëÀÔ
+     *     argument *¸¦ ´Ù½Ã ÀúÀå.
      * -----------------*/
 
-    for (i = 0; ; i++) /* BUGBUG : sizeof(data types)ë¡œ í•´ì„œ ë¯¸ë¦¬ ê³„ì‚°í•  ìˆ˜ ìˆìŒ. */
+    for (i = 0; ; i++) /* BUGBUG : sizeof(data types)·Î ÇØ¼­ ¹Ì¸® °è»êÇÒ ¼ö ÀÖÀ½. */
     {
         aci_err_type_info_t *typeinfo = orgInfo[i].type_info;
         if (typeinfo == NULL) break;
@@ -417,17 +417,17 @@ static acp_sint32_t aciConcatErrorArg(acp_char_t *orgBuf, acp_char_t *fmt, aci_a
     acp_uint32_t  orgBufLen;
 
     /* ---------------------------
-     * [1] formatted string êµ¬ì„±
+     * [1] formatted string ±¸¼º
      * --------------------------*/
     while( (c = *fmt++) != 0)
     {
-        if (c == '<') /* [<] ì¶œí˜„ */
+        if (c == '<') /* [<] ÃâÇö */
         {
-            while(*fmt++ != '>') ; /* [>]ê°€ ë‚˜ì˜¬ë•Œ ê¹Œì§€ skip ë° ë©”ì‹œì§€ êµ¬í˜„ */
+            while(*fmt++ != '>') ; /* [>]°¡ ³ª¿Ã¶§ ±îÁö skip ¹× ¸Ş½ÃÁö ±¸Çö */
 
-            /* BUG-21296 : HPì¥ë¹„ì—ì„œ ê¸´ error messageë¡œ ì¸í•´ ë©”ë¦¬ê°€ ê¸í˜ */
-            /* orgBufì— appendì‹œí‚¤ê³  orgBufLenì„ ì¬ê³„ì‚°í•´ì•¼ í•˜ê³  */
-            /* MAX_ERROR_MSG_LENGë³´ë‹¤ ê¸´ error messageë¥¼ truncateí•¨ */
+            /* BUG-21296 : HPÀåºñ¿¡¼­ ±ä error message·Î ÀÎÇØ ¸Ş¸®°¡ ±ÜÈû */
+            /* orgBuf¿¡ append½ÃÅ°°í orgBufLenÀ» Àç°è»êÇØ¾ß ÇÏ°í */
+            /* MAX_ERROR_MSG_LENGº¸´Ù ±ä error message¸¦ truncateÇÔ */
             orgBufLen = acpCStrLen(orgBuf, ACP_SINT32_MAX);
 
             switch(info->outputOrder->type_info->type)
@@ -576,7 +576,7 @@ acp_uint32_t aciGetErrorArgCount(acp_uint32_t ErrorCode)
     
     while( (c = *Fmt) )
     {
-        if (c == '<') /* [<] ì¶œí˜„ */
+        if (c == '<') /* [<] ÃâÇö */
         {
             Count++;
             Fmt++; 
@@ -595,7 +595,7 @@ acp_uint32_t aciGetErrorArgCount(acp_uint32_t ErrorCode)
     return Count;
 }
 
-/* Error Codeë¥¼ í• ë‹¹í•  ìˆ˜ ì—†ìŒ. */
+/* Error Code¸¦ ÇÒ´çÇÒ ¼ö ¾øÀ½. */
 ACP_EXPORT
 acp_sint32_t aciRegistErrorMsb(acp_char_t *fn)
 {
@@ -610,7 +610,7 @@ acp_sint32_t aciRegistErrorMsb(acp_char_t *fn)
     acp_size_t sRecNum = 0;
     acp_bool_t sEof = ACP_FALSE;
     /* --------------------------
-     * [0] ì¸ì ê²€ì‚¬
+     * [0] ÀÎÀÚ °Ë»ç
      * -------------------------*/
 
     if (fn == NULL)
@@ -619,7 +619,7 @@ acp_sint32_t aciRegistErrorMsb(acp_char_t *fn)
     }
 
     /* --------------------------
-     * [1] MSB í™”ì¼ì„ ì½ëŠ”ë‹¤.
+     * [1] MSB È­ÀÏÀ» ÀĞ´Â´Ù.
      * -------------------------*/
     if (acpStdOpen(&sFD, fn, "rt") != ACP_RC_SUCCESS)
     {
@@ -640,7 +640,7 @@ acp_sint32_t aciRegistErrorMsb(acp_char_t *fn)
     }
 
     /* ------------------------------------------
-     * [2] ì½ì€ ì„ì‹œ í—¤ë” ë°ì´íƒ€ ì €ì¥
+     * [2] ÀĞÀº ÀÓ½Ã Çì´õ µ¥ÀÌÅ¸ ÀúÀå
      * -----------------------------------------*/
     AltiVer  = acpByteOrderTOH4(TempMsbHeader.value_.header.AltiVersionId);
     errCount = acpByteOrderTOH8(TempMsbHeader.value_.header.ErrorCount);
@@ -650,7 +650,7 @@ acp_sint32_t aciRegistErrorMsb(acp_char_t *fn)
     TempMsbHeader.value_.header.Section       = Section;
 
     /* ------------------------------------------
-     * [2.5] í—¤ë”ì˜ ë²„ì „ ì •ë³´ ê²€ì‚¬
+     * [2.5] Çì´õÀÇ ¹öÀü Á¤º¸ °Ë»ç
      * -----------------------------------------*/
     if (AltiVer != aciVersionID)
     {
@@ -675,13 +675,13 @@ acp_sint32_t aciRegistErrorMsb(acp_char_t *fn)
     }
 
     /* ------------------------------------------
-     * [3] Error Storageì˜ Section ê²°ì • ë° í—¤ë” ì €ì¥
+     * [3] Error StorageÀÇ Section °áÁ¤ ¹× Çì´õ ÀúÀå
      * -----------------------------------------*/
     Storage = &aciErrorStorage[Section];
     (void)acpMemCpy((void **)&Storage->MsbHeader, &TempMsbHeader, sizeof(aci_error_msb_type_t));
 
     /* ------------------------------------------
-     * [4] ì‹¤ì œ ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ ì½ì–´ ë“¤ì„
+     * [4] ½ÇÁ¦ ¿¡·¯ ¸Ş½ÃÁö¸¦ ÀĞ¾î µéÀÓ
      * -----------------------------------------*/
     if (errCount >= ACP_SIZE_MAX)
     {
@@ -699,7 +699,7 @@ acp_sint32_t aciRegistErrorMsb(acp_char_t *fn)
 
     for (i = 0; sEof != ACP_TRUE && i < (acp_sint32_t)errCount; i++)
     {
-        /* ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ ì½ì–´ì„œ ë³´ê´€ */
+        /* ¿¡·¯ ¸Ş½ÃÁö¸¦ ÀĞ¾î¼­ º¸°ü */
         acp_char_t buffer[1024] = {0};
 
         if (ACP_RC_IS_SUCCESS(acpStdGetCString(&sFD, buffer, 1024)))
@@ -729,7 +729,7 @@ acp_sint32_t aciRegistErrorMsb(acp_char_t *fn)
     (void)acpStdClose(&sFD);
 
     /* ------------------------------------------
-     * [5] Error Storage ì™„ì„±
+     * [5] Error Storage ¿Ï¼º
      * -----------------------------------------*/
     Storage->MsgBuf = MsgBuf;
 
@@ -801,7 +801,7 @@ static void aciSetServerErrorCode(aci_error_mgr_t *aErrorMgr,
         acpCStrCpy(aErrorMgr->LastErrorMsg, ACI_MAX_ERROR_MSG_LEN+256,     
                    NULL_MESSAGE, ACI_MAX_ERROR_MSG_LEN);
     }
-    else if (Index < Storage->MsbHeader.value_.header.ErrorCount) /* ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ êµ¬ì„±í•˜ì. */
+    else if (Index < Storage->MsbHeader.value_.header.ErrorCount) /* ¿¡·¯ ¸Ş½ÃÁö¸¦ ±¸¼ºÇÏÀÚ. */
     {
         acp_char_t *fmt = Storage->MsgBuf[Index];
 
@@ -865,7 +865,7 @@ static void aciSetServerErrorCode(aci_error_mgr_t *aErrorMgr,
 ACP_EXPORT
 aci_error_mgr_t* aciSetErrorCode(acp_uint32_t ErrorCode, ...)
 {
-    acp_sint32_t systemErrno = ACP_RC_GET_OS_ERROR();  /*errno; *//* ë¯¸ë¦¬ ì„¤ì • */
+    acp_sint32_t systemErrno = ACP_RC_GET_OS_ERROR();  /*errno; *//* ¹Ì¸® ¼³Á¤ */
     va_list      args;
     aci_error_mgr_t* sErrMgr = aciGetErrorMgr();
 
@@ -880,11 +880,11 @@ aci_error_mgr_t* aciSetErrorCode(acp_uint32_t ErrorCode, ...)
     return sErrMgr;
 }
 
-/* PROJ-1335 errorCode, errorMsgë¥¼ ì§ì ‘ ì„¸íŒ… */
+/* PROJ-1335 errorCode, errorMsg¸¦ Á÷Á¢ ¼¼ÆÃ */
 ACP_EXPORT
 aci_error_mgr_t* aciSetErrorCodeAndMsg( acp_uint32_t ErrorCode, acp_char_t* ErrorMsg )
 {
-    acp_sint32_t         systemErrno = ACP_RC_GET_OS_ERROR(); /*errno; *//* ë¯¸ë¦¬ ì„¤ì • */
+    acp_sint32_t         systemErrno = ACP_RC_GET_OS_ERROR(); /*errno; *//* ¹Ì¸® ¼³Á¤ */
     aci_error_mgr_t* sErrMgr = aciGetErrorMgr();
 
     sErrMgr->LastError       = ErrorCode;
@@ -908,7 +908,7 @@ void aciDump()
 
     (void)acpMemCalloc((void **)&errbuf, 1, errbuflen);
     /* BUG-25586
-     * [CodeSonar::NullPointerDereference] ideDump() ì—ì„œ ë°œìƒ */
+     * [CodeSonar::NullPointerDereference] ideDump() ¿¡¼­ ¹ß»ı */
     ACI_TEST_RAISE( errbuf == NULL, skip_err_dump );
 
     {
@@ -920,8 +920,8 @@ void aciDump()
 #ifndef GEN_ERR_MSG
         acp_uint32_t sSourceInfo = 0;
         /* ------------------------------------------------
-         *  genErrMsgë¥¼ ë§Œë“¤ê²½ìš° propertyë¥¼
-         *  ì°¸ì¡°í•˜ì§€ ì•Šë„ë¡!
+         *  genErrMsg¸¦ ¸¸µé°æ¿ì property¸¦
+         *  ÂüÁ¶ÇÏÁö ¾Êµµ·Ï!
          * ----------------------------------------------*/
         /* NOTICE: PROJ-1000
          * original code : (void)idp::read("SOURCE_INFO", &sSourceInfo);
@@ -991,7 +991,7 @@ void aciSetClientErrorCode(aci_client_error_mgr_t     *aErrorMgr,
     
     aErrorMgr->mErrorCode       = aErrorCode;
 
-    if (1)/* Index < Storage->MsbHeader.value_.header.ErrorCount) ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ êµ¬ì„±í•˜ì. */
+    if (1)/* Index < Storage->MsbHeader.value_.header.ErrorCount) ¿¡·¯ ¸Ş½ÃÁö¸¦ ±¸¼ºÇÏÀÚ. */
     {
         acp_char_t *fmt = (acp_char_t *)aFactory[Index].mErrorMsg;
 

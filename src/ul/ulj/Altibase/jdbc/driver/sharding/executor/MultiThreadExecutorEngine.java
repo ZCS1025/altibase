@@ -18,15 +18,14 @@
 
 package Altibase.jdbc.driver.sharding.executor;
 
+import Altibase.jdbc.driver.AltibaseConnection;
+import Altibase.jdbc.driver.AltibaseStatement;
+import Altibase.jdbc.driver.ex.ShardError;
 import Altibase.jdbc.driver.ex.ShardJdbcException;
-import Altibase.jdbc.driver.ex.ShardFailoverIsNotAvailableException;
-import Altibase.jdbc.driver.sharding.core.AltibaseShardingConnection;
 import Altibase.jdbc.driver.sharding.core.DataNode;
-import Altibase.jdbc.driver.sharding.core.ShardNodeConfig;
-import Altibase.jdbc.driver.sharding.routing.SQLExecutionUnit;
 
-import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Level;
@@ -35,40 +34,60 @@ import static Altibase.jdbc.driver.sharding.util.ShardingTraceLogger.shard_log;
 
 public class MultiThreadExecutorEngine implements ExecutorEngine
 {
-    private AltibaseShardingConnection mShardConn;
-    private ShardNodeConfig mShardNodeConfig;
-
-    public MultiThreadExecutorEngine(AltibaseShardingConnection aShardConn)
-    {
-        mShardConn = aShardConn;
-        mShardNodeConfig = aShardConn.getShardNodeConfig();
-    }
-
-    public <T> List<T> executeStatement(List<? extends BaseStatementUnit> aStatements,
+    public <T> List<T> executeStatement(List<Statement> aStatements,
                                         ExecuteCallback<T> aExecuteCallback) throws SQLException
     {
-        return execute(aStatements, aExecuteCallback);
+        List<T> sRestOutputs = new ArrayList<T>();
+        List<SQLException> sExceptionList = new ArrayList<SQLException>();
+
+        if (aStatements.isEmpty())
+        {
+            return Collections.emptyList();
+        }
+        List<Future<T>> sFutures = null;
+        if (aStatements.size() > 1)
+        {
+            sFutures = asyncExecute(aStatements, aExecuteCallback);
+            sRestOutputs = getRestFutures(sFutures, sExceptionList);
+        }
+        else
+        {
+            Statement sFirstInput = aStatements.get(0);
+            T sFirstOutput = null;
+            try
+            {
+                sFirstOutput = syncExecute(sFirstInput, aExecuteCallback);
+            }
+            catch (SQLException aException)
+            {
+                shard_log(Level.SEVERE, "(NODE EXECUTION EXCEPTION) ", aException);
+                sExceptionList.add(aException);
+            }
+            sRestOutputs.add(0, sFirstOutput);
+        }
+        ShardError.throwSQLExceptionIfExists(sExceptionList);
+        return sRestOutputs;
     }
 
-    public <T> List<T> generateStatement(Set<SQLExecutionUnit> aSqlExecutionUnit,
-                                         GenerateCallback<T> aGenerateStmtCallback) throws SQLException
+    public <T> List<T> generateStatement(List<DataNode> aNodes, GenerateCallback<T> aGenerateStmtCallback) throws SQLException
     {
-        if (aSqlExecutionUnit.isEmpty())
+        if (aNodes.isEmpty())
         {
             return Collections.emptyList();
         }
 
-        Iterator<SQLExecutionUnit> sItr = aSqlExecutionUnit.iterator();
-        SQLExecutionUnit sFirst = sItr.next();
         List<Future<T>> sRestFutures = null;
-        if (sItr.hasNext())
+
+        // BUG-47460 node ∞πºˆ∞° 2∞≥ ¿ÃªÛ¿œ∂ß∏∏ async∑Œ ª˝º∫
+        if (aNodes.size() > 1)
         {
-            sRestFutures = asyncGenerate(getExecutionUnitForAsync(sItr), aGenerateStmtCallback);
+            sRestFutures = asyncGenerate(aNodes, aGenerateStmtCallback);
         }
         T sFirstStatement = null;
         List<T> sRestStatements;
         List<SQLException> sExceptionList = new ArrayList<SQLException>();
 
+        DataNode sFirst = aNodes.iterator().next();
         try
         {
             sFirstStatement = syncGenerate(sFirst, aGenerateStmtCallback);
@@ -80,32 +99,69 @@ public class MultiThreadExecutorEngine implements ExecutorEngine
         }
 
         sRestStatements = getRestFutures(sRestFutures, sExceptionList);
-        throwSQLExceptionIfExists(sExceptionList);
+        ShardError.throwSQLExceptionIfExists(sExceptionList);
         sRestStatements.add(0, sFirstStatement);
 
         return sRestStatements;
     }
 
-    private <T> T syncGenerate(SQLExecutionUnit aFirst,
+    private <T> T syncGenerate(DataNode aFirst,
                                GenerateCallback<T> aGenerateStmtCallback) throws SQLException
     {
-        return generateInternal(aFirst, aGenerateStmtCallback);
+        T sResult = null;
+
+        try
+        {
+            sResult = aGenerateStmtCallback.generate(aFirst);
+        }
+        catch (ShardJdbcException aShardJdbcEx)
+        {
+            throw aShardJdbcEx;
+        }
+        catch (SQLException aException)
+        {
+            ExecutorExceptionHandler.handleException(aException, aFirst.getNodeName());
+        }
+
+        return sResult;
+
     }
 
-    private <T> List<Future<T>> asyncGenerate(List<SQLExecutionUnit> aSqlExecutionUnits,
+    private <T> List<Future<T>> asyncGenerate(List<DataNode> aNodes,
                                               final GenerateCallback<T> aGenerateStmtCallback) throws SQLException
     {
-        List<Callable<T>> sCallables = new ArrayList<Callable<T>>(aSqlExecutionUnits.size());
+        List<Callable<T>> sCallables = new ArrayList<Callable<T>>(aNodes.size());
 
-        for (final SQLExecutionUnit sEach : aSqlExecutionUnits)
+        boolean isFirst = true;
+        for (final DataNode sEach : aNodes)
         {
-            sCallables.add(new Callable<T>()
+            if (!isFirst) // BUG-47460 √ππ¯¬∞¥¬ sync∑Œ √≥∏Æµ«±‚ ∂ßπÆø° ∞«≥ ∂⁄¥Ÿ.
             {
-                public T call() throws Exception
+                sCallables.add(new Callable<T>()
                 {
-                    return generateInternal(sEach, aGenerateStmtCallback);
-                }
-            });
+                    public T call() throws Exception
+                    {
+                        T sResult = null;
+
+                        try
+                        {
+                            sResult = aGenerateStmtCallback.generate(sEach);
+                        }
+                        catch (ShardJdbcException aShardJdbcEx)
+                        {
+                            throw aShardJdbcEx;
+                        }
+                        catch (SQLException aException)
+                        {
+                            ExecutorExceptionHandler.handleException(aException, sEach.getNodeName());
+                        }
+
+                        return sResult;
+
+                    }
+                });
+            }
+            isFirst = false;
         }
 
         List<Future<T>> sResult = null;
@@ -124,96 +180,7 @@ public class MultiThreadExecutorEngine implements ExecutorEngine
 
     }
 
-    private <T> T generateInternal(SQLExecutionUnit aSqlExecutionUnit,
-                                   GenerateCallback<T> aGenerateCallback) throws SQLException
-    {
-        T sResult = null;
-
-        try
-        {
-            sResult = aGenerateCallback.generate(aSqlExecutionUnit);
-        }
-        catch (ShardJdbcException aShardJdbcEx)
-        {
-            throw aShardJdbcEx;
-        }
-        catch (SQLException aException)
-        {
-            ExecutorExceptionHandler.handleException(aException,
-                                                     aSqlExecutionUnit.getNode().getNodeName());
-        }
-
-        return sResult;
-
-    }
-
-    private List<SQLExecutionUnit> getExecutionUnitForAsync(Iterator<SQLExecutionUnit> aItr)
-    {
-        List<SQLExecutionUnit> sResult = new ArrayList<SQLExecutionUnit>();
-        while (aItr.hasNext())
-        {
-            sResult.add(aItr.next());
-        }
-        return sResult;
-    }
-
-    private <T> List<T> execute(List<? extends BaseStatementUnit> aStatements,
-                                ExecuteCallback<T> aExecuteCallback) throws SQLException
-    {
-        if (aStatements.isEmpty())
-        {
-            return Collections.emptyList();
-        }
-        Iterator<? extends BaseStatementUnit> sIterator = aStatements.iterator();
-        BaseStatementUnit sFirstInput = sIterator.next();
-        List<Future<T>> sFutures = null;
-        if (sIterator.hasNext())
-        {
-            sFutures = asyncExecute(newArrayList(sIterator), aExecuteCallback);
-        }
-        T sFirstOutput = null;
-        List<T> sRestOutputs;
-        List<SQLException> sExceptionList = new ArrayList<SQLException>();
-
-        try
-        {
-            sFirstOutput = syncExecute(sFirstInput, aExecuteCallback);
-        }
-        catch (SQLException aException)
-        {
-            shard_log(Level.SEVERE, "(NODE EXECUTION EXCEPTION) ", aException);
-            sExceptionList.add(aException);
-        }
-        sRestOutputs = getRestFutures(sFutures, sExceptionList);
-        throwSQLExceptionIfExists(sExceptionList);
-        sRestOutputs.add(0, sFirstOutput);
-
-        return sRestOutputs;
-    }
-
-    private void throwSQLExceptionIfExists(List<SQLException> aExceptionList) throws SQLException
-    {
-        if (aExceptionList.size() > 0)
-        {
-            SQLException sException = null;
-            for (SQLException sEach : aExceptionList)
-            {
-                if (sException == null)
-                {
-                    sException = sEach;
-                }
-                else
-                {
-                    sException.setNextException(sEach);
-                }
-            }
-            shard_log(Level.SEVERE, "(NODE EXECUTION EXCEPTION) ", sException);
-            throw sException;
-        }
-    }
-
-    private <T> List<T> getRestFutures(List<Future<T>> aRestFutures,
-                                       List<SQLException> aExceptionList)
+    private <T> List<T> getRestFutures(List<Future<T>> aRestFutures, List<SQLException> aExceptionList)
     {
         List<T> sResult = new ArrayList<T>();
         if (aRestFutures == null)
@@ -248,39 +215,55 @@ public class MultiThreadExecutorEngine implements ExecutorEngine
         return sResult;
     }
 
-    private List<BaseStatementUnit> newArrayList(Iterator<? extends BaseStatementUnit> aIterator)
+    private <T> T syncExecute(Statement aStatement, ExecuteCallback<T> aExecuteCallback) throws SQLException
     {
-        List<BaseStatementUnit> sResult = new ArrayList<BaseStatementUnit>();
-        while (aIterator.hasNext())
+        T sResult = null;
+
+        try
         {
-            sResult.add(aIterator.next());
+            sResult = aExecuteCallback.execute(aStatement);
+        }
+        catch (ShardJdbcException aShardJdbcEx)
+        {
+            throw aShardJdbcEx;
+        }
+        catch (SQLException aException)
+        {
+            AltibaseConnection sConn = (AltibaseConnection)aStatement.getConnection();
+            ExecutorExceptionHandler.handleException(aException, sConn.getNodeName());
         }
 
         return sResult;
     }
 
-    private <T> T syncExecute(BaseStatementUnit aBaseStatementUnit,
-                              ExecuteCallback<T> aExecuteCallback) throws SQLException
-    {
-        return executeInternal(aBaseStatementUnit, aExecuteCallback);
-    }
-
-    private <T> List<Future<T>> asyncExecute(List<BaseStatementUnit> aBaseStatementUnits,
+    private <T> List<Future<T>> asyncExecute(List<Statement> aStatements,
                                              final ExecuteCallback<T> aExecuteCallback) throws SQLException
     {
-        if (aBaseStatementUnits.isEmpty())
-        {
-            return Collections.emptyList();
-        }
-        List<Callable<T>> sCallableList = new ArrayList<Callable<T>>(aBaseStatementUnits.size());
+        List<Callable<T>> sCallableList = new ArrayList<Callable<T>>(aStatements.size() - 1);
 
-        for (final BaseStatementUnit sEach : aBaseStatementUnits)
+        for (final Statement sEach : aStatements)
         {
             sCallableList.add(new Callable<T>()
             {
                 public T call() throws Exception
                 {
-                    return executeInternal(sEach, aExecuteCallback);
+                    T sResult = null;
+
+                    try
+                    {
+                        sResult = aExecuteCallback.execute(sEach);
+                    }
+                    catch (ShardJdbcException aShardJdbcEx)
+                    {
+                        throw aShardJdbcEx;
+                    }
+                    catch (SQLException aException)
+                    {
+                        AltibaseConnection sConn = (AltibaseConnection)sEach.getConnection();
+                        ExecutorExceptionHandler.handleException(aException, sConn.getNodeName());
+                    }
+
+                    return sResult;
                 }
             });
         }
@@ -300,99 +283,195 @@ public class MultiThreadExecutorEngine implements ExecutorEngine
         return sResult;
     }
 
-    private <T> T executeInternal(BaseStatementUnit aBaseStatementUnit,
-                                  ExecuteCallback<T> aExecuteCallback) throws SQLException
+    public void closeStatements(Collection<Statement> aStatements) throws SQLException
     {
-        T sResult = null;
+        if (aStatements.isEmpty())
+        {
+            return;
+        }
+
+        List<Future<Void>> sFutureList = asyncStmtClose(aStatements);
+        List<SQLException> sExceptionList = new ArrayList<SQLException>();
 
         try
         {
-            sResult = aExecuteCallback.execute(aBaseStatementUnit);
+            aStatements.iterator().next().close();
         }
-        catch (ShardFailoverIsNotAvailableException aFailoverException)
+        catch (SQLException aEx)
         {
-            /*
-             * ShardFailoverIsNotAvailableException ÏòàÏô∏Í∞Ä Ïò¨ÎùºÏò® Í≤ΩÏö∞ÏóêÎäî Ìï¥Îãπ Ïª§ÎÑ•ÏÖòÏùÑ cached mapÏóêÏÑú Ï†úÍ±∞Ìï¥ Ï§ÄÎã§.
-             */
-            String sNodeName = aFailoverException.getNodeName();
-            DataNode sDataNode = mShardNodeConfig.getNodeByName(sNodeName);
-            mShardConn.getCachedConnections().remove(sDataNode);
-            shard_log(Level.SEVERE, "(SHARD FAILOVER IS NOT AVAILABLE EXCEPTION) ", aFailoverException);
-            mShardNodeConfig.getNodeByName(sNodeName).setClosedOnExecute(true);
-            throw aFailoverException;
+            shard_log(Level.SEVERE, "(STATEMENT CLOSE EXCEPTION) ", aEx);
+            sExceptionList.add(aEx);
         }
-        catch (ShardJdbcException aShardJdbcEx)
-        {
-            setClosedOnExecuteOn(aBaseStatementUnit);
-            throw aShardJdbcEx;
-        }
-        catch (SQLException aException)
-        {
-            DataNode sNode = setClosedOnExecuteOn(aBaseStatementUnit);
-            ExecutorExceptionHandler.handleException(aException, sNode.getNodeName());
-        }
+        getFutures(sFutureList, sExceptionList);
+        ShardError.throwSQLExceptionIfExists(sExceptionList);
 
-        return sResult;
     }
 
-    private DataNode setClosedOnExecuteOn(BaseStatementUnit aBaseStatementUnit)
+    private void getFutures(List<Future<Void>> aFutureList, List<SQLException> aExceptionList)
     {
-        DataNode sNode = aBaseStatementUnit.getSqlExecutionUnit().getNode();
-        sNode.setClosedOnExecute(true);
-        return sNode;
-    }
-
-    public void doTransaction(Collection<Connection> aConnections,
-                              final ConnectionParallelProcessCallback aParallelProcessCallback) throws SQLException
-    {
-        if (aConnections.size() == 0) return;
-
-        Iterator<Connection> sItr = aConnections.iterator();
-        Connection sFirstConn = sItr.next();
-
-        List<Connection> sRestConn = new ArrayList<Connection>();
-        while (sItr.hasNext())
+        if (aFutureList == null)
         {
-            sRestConn.add(sItr.next());
+            return;
         }
 
-        List<Future<Void>> sFutureList = asyncDoTransaction(aParallelProcessCallback, sRestConn);
-
-        aParallelProcessCallback.processInParallel(sFirstConn);
-        if (sFutureList != null)
+        for (Future<Void> sEach : aFutureList)
         {
-            for (Future<Void> sEach : sFutureList)
+            try
             {
-                try
+                sEach.get();
+            }
+            catch (ExecutionException aEx)
+            {
+                Throwable sThrowable = aEx.getCause();
+                if (sThrowable instanceof SQLException)
                 {
-                    sEach.get();
+                    // BUG-46790 ≥ÎµÂ ¡ﬂ∞£ø° ø°∑Ø∞° ≥™¥ı∂Ûµµ ∏µÁ ≥ÎµÂµÈ¿« √≥∏Æ ∞·∞˙∏¶ √Î«’«ÿæﬂ «—¥Ÿ.
+                    aExceptionList.add((SQLException)sThrowable);
                 }
-                catch (ExecutionException aEx)
+                else
                 {
-                    Throwable sThrowable = aEx.getCause();
-                    if (sThrowable instanceof SQLException)
-                    {
-                        ExecutorExceptionHandler.handleException((SQLException)sThrowable);
-                    }
-                    else
-                    {
-                        throw new RuntimeException(sThrowable);
-                    }
+                    throw new RuntimeException(sThrowable);
                 }
-                catch (InterruptedException aInterruptEx)
-                {
-                    shard_log(Level.SEVERE, aInterruptEx);
-                    throw new RuntimeException(aInterruptEx);
-                }
+            }
+            catch (InterruptedException aInterruptEx)
+            {
+                shard_log(Level.SEVERE, aInterruptEx);
+                throw new RuntimeException(aInterruptEx);
             }
         }
     }
 
-    private List<Future<Void>> asyncDoTransaction(ConnectionParallelProcessCallback aParallelProcessCallback,
-                                    List<Connection> aRestConn) throws SQLException
+    private List<Future<Void>> asyncStmtClose(Collection<Statement> aStatements) throws SQLException
     {
-        if (aRestConn.size() == 0) return null;
-        List<Callable<Void>> sCallables = makeTransactionCallables(aParallelProcessCallback, aRestConn);
+        if (aStatements.size() <= 1)
+        {
+            return null;
+        }
+
+        boolean sIsFirst = true;
+        List<Callable<Void>> sCallables = new ArrayList<Callable<Void>>();
+        for (final Statement sStmt : aStatements)
+        {
+            if (!sIsFirst)
+            {
+                sCallables.add(new Callable<Void>()
+                {
+                    public Void call() throws SQLException
+                    {
+                        try
+                        {
+                            sStmt.close();
+                        }
+                        catch (SQLException aEx)
+                        {
+                            AltibaseConnection sConn = (AltibaseConnection)sStmt.getConnection();
+                            ExecutorExceptionHandler.handleException(aEx, sConn.getNodeName());
+                        }
+                        return null;
+                    }
+                });
+            }
+            sIsFirst = false;
+        }
+        return invokeCallables(sCallables);
+    }
+
+    private List<Future<Void>> invokeCallables(List<Callable<Void>> aCallables) throws SQLException
+    {
+        List<Future<Void>> sFutureList = null;
+        try
+        {
+            ExecutorService sExecutorService = SingletonExecutorService.getExecutorService();
+            sFutureList = sExecutorService.invokeAll(aCallables);
+        }
+        catch (InterruptedException aException)
+        {
+            shard_log(Level.SEVERE, aException.getMessage(), aException);
+            ExecutorExceptionHandler.handleException(aException);
+        }
+
+        return sFutureList;
+    }
+
+    public <T> void closeCursor(Collection<T> aStatements,
+                                final ParallelProcessCallback<T> aParallelProcessCallback) throws SQLException
+    {
+        doParallelProcess(aStatements, aParallelProcessCallback);
+    }
+
+    public <T> void doPartialRollback(Collection<T> aStatements,
+                                      final ParallelProcessCallback<T> aParallelProcessCallback) throws SQLException
+    {
+        doParallelProcess(aStatements, aParallelProcessCallback);
+    }
+
+    public <T> void doTransaction(Collection<T> aConnections,
+                                  final ParallelProcessCallback<T> aParallelProcessCallback) throws SQLException
+    {
+        doParallelProcess(aConnections, aParallelProcessCallback);
+    }
+    
+    private <T> void doParallelProcess(Collection<T> aObjects,
+                                       final ParallelProcessCallback<T> aParallelProcessCallback) throws SQLException
+    {
+        if (aObjects.size() == 0) return;
+
+        Iterator<T> sItr = aObjects.iterator();
+        T sFirstObj = sItr.next();
+
+        List<T> sRestObj = new ArrayList<T>();
+        while (sItr.hasNext())
+        {
+            sRestObj.add(sItr.next());
+        }
+
+        List<Future<Void>> sFutureList = asyncProcess(sRestObj, aParallelProcessCallback);
+        List<SQLException> sExceptionList = new ArrayList<SQLException>();
+        
+        try
+        {
+            syncProcess(sFirstObj, aParallelProcessCallback);
+        }
+        catch (SQLException aEx)
+        {
+            shard_log(Level.SEVERE, "(NODE DO ParallelProcess EXCEPTION) ", aEx);
+            sExceptionList.add(aEx);
+        }
+        getFutures(sFutureList, sExceptionList);
+        ShardError.throwSQLExceptionIfExists(sExceptionList);
+    }
+
+    private <T> void syncProcess(T aFirstObj, 
+                                 ParallelProcessCallback<T> aParallelProcessCallback) throws SQLException
+    {
+        try
+        {
+            aParallelProcessCallback.processInParallel(aFirstObj);
+        }
+        catch (ShardJdbcException aShardJdbcEx)
+        {
+            throw aShardJdbcEx;
+        }
+        catch (SQLException aException)
+        {
+            AltibaseConnection sConn = null;
+            if (aFirstObj instanceof AltibaseConnection)
+            {
+                sConn = (AltibaseConnection)aFirstObj;
+            }
+            else if (aFirstObj instanceof AltibaseStatement)
+            {
+                sConn = (AltibaseConnection)((AltibaseStatement)aFirstObj).getConnection();
+            }
+            ExecutorExceptionHandler.handleException(aException, sConn.getNodeName());
+        }
+    }
+    
+    private <T> List<Future<Void>> asyncProcess(List<T> aRestObj, 
+                                                ParallelProcessCallback<T> aParallelProcessCallback) throws SQLException
+    {
+        if (aRestObj.size() == 0) return null;
+        List<Callable<Void>> sCallables = makeTransactionCallables(aRestObj, aParallelProcessCallback);
         List<Future<Void>> sFutureList = null;
         try
         {
@@ -404,21 +483,42 @@ public class MultiThreadExecutorEngine implements ExecutorEngine
             shard_log(Level.SEVERE, aException.getMessage(), aException);
             ExecutorExceptionHandler.handleException(aException);
         }
-
+        
         return sFutureList;
     }
 
-    private List<Callable<Void>> makeTransactionCallables(final ConnectionParallelProcessCallback aParallelProcessCallback,
-                                                          List<Connection> aRestConn)
+    private <T> List<Callable<Void>> makeTransactionCallables(List<T> aRestObj,
+                                                              final ParallelProcessCallback<T> aParallelProcessCallback)
     {
         List<Callable<Void>> sCallables = new ArrayList<Callable<Void>>();
-        for (final Connection sEach : aRestConn)
+        for (final T sEach : aRestObj)
         {
             sCallables.add(new Callable<Void>()
             {
                 public Void call() throws Exception
                 {
-                    return aParallelProcessCallback.processInParallel(sEach);
+                    try
+                    {
+                        aParallelProcessCallback.processInParallel(sEach);
+                    }
+                    catch (ShardJdbcException aShardJdbcEx)
+                    {
+                        throw aShardJdbcEx;
+                    }
+                    catch (SQLException aException)
+                    {
+                        AltibaseConnection sConn = null;
+                        if (sEach instanceof AltibaseConnection)
+                        {
+                            sConn = (AltibaseConnection)sEach;
+                        }
+                        else if (sEach instanceof AltibaseStatement)
+                        {
+                            sConn = (AltibaseConnection)((AltibaseStatement)sEach).getConnection();
+                        }
+                        ExecutorExceptionHandler.handleException(aException, sConn.getNodeName());
+                    }
+                    return null;
                 }
             });
         }

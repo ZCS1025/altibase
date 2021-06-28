@@ -75,7 +75,7 @@ acp_bool_t cmnDispatcherIsSupportedImpl(cmnDispatcherImpl aImpl)
 cmnDispatcherImpl cmnDispatcherImplForLinkImpl(cmnLinkImpl aLinkImpl)
 {
     /*
-     * Link Implì— ë”°ë¥¸ Dispatcher Impl ë°˜í™˜
+     * Link Impl¿¡ µû¸¥ Dispatcher Impl ¹ÝÈ¯
      */
     switch (aLinkImpl)
     {
@@ -104,7 +104,7 @@ cmnDispatcherImpl cmnDispatcherImplForLinkImpl(cmnLinkImpl aLinkImpl)
     }
 
     /*
-     * ì¡´ìž¬í•˜ì§€ ì•ŠëŠ” Link Implì¸ ê²½ìš°
+     * Á¸ÀçÇÏÁö ¾Ê´Â Link ImplÀÎ °æ¿ì
      */
     return CMN_DISPATCHER_IMPL_INVALID;
 }
@@ -114,18 +114,18 @@ ACI_RC cmnDispatcherWaitLink(cmnLink *aLink, cmiDirection aDirection, acp_time_t
     cmnDispatcherImpl sImpl;
 
     /*
-     * Dispatcher Impl íšë“
+     * Dispatcher Impl È¹µæ
      */
     sImpl = cmnDispatcherImplForLinkImpl(aLink->mImpl);
 
     /*
-     * Dispatcher Impl ë²”ìœ„ ê²€ì‚¬
+     * Dispatcher Impl ¹üÀ§ °Ë»ç
      */
     ACE_ASSERT((acp_sint32_t)sImpl >= CMN_DISPATCHER_IMPL_BASE);
     ACE_ASSERT(sImpl < CMN_DISPATCHER_IMPL_MAX);
 
     /*
-     * WaitLink í•¨ìˆ˜ í˜¸ì¶œ
+     * WaitLink ÇÔ¼ö È£Ãâ
      */
     ACI_TEST(gCmnDispatcherWaitLinkClient[sImpl](aLink, aDirection, aTimeout) != ACI_SUCCESS);
 

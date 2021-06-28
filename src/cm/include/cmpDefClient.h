@@ -53,6 +53,9 @@ typedef struct cmpProtocol
 {
     acp_uint8_t  mOpID;
 
+    /* PROJ-2733-Protocol 서버가 지원하는 마지막 OpID, Handshake로 전달 받는다. */
+    acp_uint8_t  mServerLastOpID;
+
     void  *mFinalizeFunction;
 
     union

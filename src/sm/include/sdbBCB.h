@@ -34,8 +34,8 @@ class sdbBCB;
 class sdsBCB;
 
 /* --------------------------------------------------------------------
- * íŠ¹ì • BCBê°€ ì–´ë– í•œ ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ”ì§€ ì—¬ë¶€ë¥¼
- * ê²€ì‚¬í• ë•Œ ì‚¬ìš©
+ * Æ¯Á¤ BCB°¡ ¾î¶°ÇÑ Á¶°ÇÀ» ¸¸Á·ÇÏ´ÂÁö ¿©ºÎ¸¦
+ * °Ë»çÇÒ¶§ »ç¿ë
  * ----------------------------------------------------------------- */
 typedef idBool (*sdbFiltFunc)( void *aBCB, void *aFiltAgr );
 
@@ -53,113 +53,130 @@ typedef enum
 #define SDB_CP_LIST_NONE       ID_UINT_MAX
 
 /* --------------------------------------------------------------------
- * BCBì˜ ìƒíƒœ ì •ì˜
+ * BCBÀÇ »óÅÂ Á¤ÀÇ
  * ----------------------------------------------------------------- */
 typedef enum
 {
-    // í˜„ìž¬ ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” ìƒíƒœ. hashì—ì„œ ì œê±°ë˜ì–´ ìžˆë‹¤.
-    // mPageIDì™€ mSpaceIDë¥¼ ì‹ ë¢°í•  ìˆ˜ ì—†ë‹¤.
+    // ÇöÀç »ç¿ëµÇÁö ¾Ê´Â »óÅÂ. hash¿¡¼­ Á¦°ÅµÇ¾î ÀÖ´Ù.
+    // mPageID¿Í mSpaceID¸¦ ½Å·ÚÇÒ ¼ö ¾ø´Ù.
     SDB_BCB_FREE = 0,
 
-    // í˜„ìž¬ hashì—ì„œ ì ‘ê·¼í•  ìˆ˜ ìžˆëŠ” ìƒíƒœ. í•˜ì§€ë§Œ ë‚´ìš©ì´ ë³€ê²½ë˜ì§€ ì•Šì•˜ê¸°
-    // ë•Œë¬¸ì—, ë””ìŠ¤í¬ IOì—†ì´ ê·¸ëƒ¥ replaceê°€ ê°€ëŠ¥í•˜ë‹¤.
+    // ÇöÀç hash¿¡¼­ Á¢±ÙÇÒ ¼ö ÀÖ´Â »óÅÂ. ÇÏÁö¸¸ ³»¿ëÀÌ º¯°æµÇÁö ¾Ê¾Ò±â
+    // ¶§¹®¿¡, µð½ºÅ© IO¾øÀÌ ±×³É replace°¡ °¡´ÉÇÏ´Ù.
     SDB_BCB_CLEAN,
 
-    // í˜„ìž¬ hashì—ì„œ ì ‘ê·¼í•  ìˆ˜ ìžˆìœ¼ë©°, ë‚´ìš©ì´ ë³€ê²½ëœ ìƒíƒœ.
-    // replace ë¥¼ ìœ„í•´ì„  ë””ìŠ¤í¬ì— flushê°€ í•„ìš”
+    // ÇöÀç hash¿¡¼­ Á¢±ÙÇÒ ¼ö ÀÖÀ¸¸ç, ³»¿ëÀÌ º¯°æµÈ »óÅÂ.
+    // replace ¸¦ À§ÇØ¼± µð½ºÅ©¿¡ flush°¡ ÇÊ¿ä
     SDB_BCB_DIRTY,
 
-    // flusherê°€ flushë¥¼ ìœ„í•´ ìžì‹ ì˜ ë‚´ë¶€ ë²„í¼(IOB)ì— í˜„ BCB
-    // ë‚´ìš©ì„ ì €ìž¥í•œ ìƒíƒœ. ì ˆëŒ€ë¡œ replaceë˜ì–´ì„œëŠ” ì•ˆëœë‹¤.
+    // flusher°¡ flush¸¦ À§ÇØ ÀÚ½ÅÀÇ ³»ºÎ ¹öÆÛ(IOB)¿¡ Çö BCB
+    // ³»¿ëÀ» ÀúÀåÇÑ »óÅÂ. Àý´ë·Î replaceµÇ¾î¼­´Â ¾ÈµÈ´Ù.
     SDB_BCB_INIOB,
 
-    // SDB_BCB_INIOB ìƒíƒœì—ì„œ ì–´ë–¤ íŠ¸ëžœìž­ì…˜ì´ ë‚´ìš©ì„ ë³€ê²½í•œ ìƒíƒœ.
+    // SDB_BCB_INIOB »óÅÂ¿¡¼­ ¾î¶² Æ®·£Àè¼ÇÀÌ ³»¿ëÀ» º¯°æÇÑ »óÅÂ.
     SDB_BCB_REDIRTY
 } sdbBCBState;
+
+//BUG-48042: Page, BCB, BCB ¸®½ºÆ® ³ëµå ¼¼Æ®
+typedef struct
+{
+    UChar       *mTmpFrame;
+    sdbBCB      *mTmpBCB;
+    smuList     *mTmpNode;
+    void        *mTmpFrameMemHandle;
+} sdbBuffAreaPtrSet;
+
+//BCB-48042: Parallel ÇÒ´çÀ» À§ÇÑ Job
+typedef struct
+{
+    UInt              mStartBCBID;
+    UInt              mJobCnt;
+    sdbBuffAreaPtrSet *mPtrSet;
+} sdbBuffAreaJobInfo; 
 
 class sdbBCB
 {
 public:
-    // PROJ-2102 ê³µí†µ ë¶€ë¶„ 
+    // PROJ-2102 °øÅë ºÎºÐ 
     SD_BCB_PARAMETERS
 
-    // BCB ê³ ìœ  ID
+    // BCB °íÀ¯ ID
     UInt            mID;
 
-    // BCBì˜ ìƒíƒœ
+    // BCBÀÇ »óÅÂ
     sdbBCBState     mState;
     sdbBCBState     mPrevState;
 
-    // í•˜ë‚˜ì˜ Buffer Frameì˜ ì£¼ì†Œë¥¼ ê°€ë¥´í‚¨ë‹¤. ë²„í¼ frameì˜ ì£¼ì†ŒëŠ” íŽ˜ì´ì§€
-    // sizeë¡œ alignë˜ì–´ìžˆë‹¤.
+    // ÇÏ³ªÀÇ Buffer FrameÀÇ ÁÖ¼Ò¸¦ °¡¸£Å²´Ù. ¹öÆÛ frameÀÇ ÁÖ¼Ò´Â ÆäÀÌÁö
+    // size·Î alignµÇ¾îÀÖ´Ù.
     UChar          *mFrame;
 
-    // mFrameì— ëŒ€í•œ MemoryHandleë¡œì„œ Freeì‹œì— ì‚¬ìš©í•œë‹¤. (ì°¸ì¡°:iduMemPool2)
+    // mFrame¿¡ ´ëÇÑ MemoryHandle·Î¼­ Free½Ã¿¡ »ç¿ëÇÑ´Ù. (ÂüÁ¶:iduMemPool2)
     void           *mFrameMemHandle;
 
     // To fix BUG-13462
-    // BCB frameì˜ íŽ˜ì´ì§€ íƒ€ìž…
-    // ê¸° ì •ì˜ëœ ìƒìœ„ ë ˆì´ì–´ì˜ íŽ˜ì´ì§€ íƒ€ìž…ì„ ëª¨ë¥´ê¸° ë•Œë¬¸ì— UIntë¥¼ ì‚¬ìš©
+    // BCB frameÀÇ ÆäÀÌÁö Å¸ÀÔ
+    // ±â Á¤ÀÇµÈ »óÀ§ ·¹ÀÌ¾îÀÇ ÆäÀÌÁö Å¸ÀÔÀ» ¸ð¸£±â ¶§¹®¿¡ UInt¸¦ »ç¿ë
     UInt            mPageType;
 
-    // sdbLRUList ë˜ëŠ” sdbFlushList ë˜ëŠ” sdbPrepareListì¤‘ í•˜ë‚˜ì— ì†í•  ìˆ˜ ìžˆë‹¤.
-    // Listë¥¼ ìœ„í•œ ìžë£Œêµ¬ì¡°
+    // sdbLRUList ¶Ç´Â sdbFlushList ¶Ç´Â sdbPrepareListÁß ÇÏ³ª¿¡ ¼ÓÇÒ ¼ö ÀÖ´Ù.
+    // List¸¦ À§ÇÑ ÀÚ·á±¸Á¶
     smuList         mBCBListItem;
     sdbBCBListType  mBCBListType;
     
-    // ë‹¤ì¤‘í™”ëœ ë¦¬ìŠ¤íŠ¸ì¤‘ì—ì„œ ìžì‹ ì´ ì†í•œ ë¦¬ìŠ¤íŠ¸ì˜ ì‹ë³„ìž
+    // ´ÙÁßÈ­µÈ ¸®½ºÆ®Áß¿¡¼­ ÀÚ½ÅÀÌ ¼ÓÇÑ ¸®½ºÆ®ÀÇ ½Äº°ÀÚ
     UInt            mBCBListNo;
 
-    // BCBë¥¼ ì ‘ê·¼í•œ íšŸìˆ˜
+    // BCB¸¦ Á¢±ÙÇÑ È½¼ö
     UInt            mTouchCnt;
 
-    // mStateë¥¼ ë³€ê²½í•˜ê¸° ìœ„í•´ì„œ, ë˜ëŠ” mFixCountì™€ mTouchCntë¥¼ ë³€ê²½í•˜ê¸° ìœ„í•´ì„œ
-    // ìž¡ì•„ì•¼ í•˜ëŠ” mutex. ë³´í†µ BCBMutexë¼ê³  í•˜ë©´ ì´ê²ƒì„ ëœ»í•œë‹¤.
+    // mState¸¦ º¯°æÇÏ±â À§ÇØ¼­, ¶Ç´Â mFixCount¿Í mTouchCnt¸¦ º¯°æÇÏ±â À§ÇØ¼­
+    // Àâ¾Æ¾ß ÇÏ´Â mutex. º¸Åë BCBMutex¶ó°í ÇÏ¸é ÀÌ°ÍÀ» ¶æÇÑ´Ù.
     iduMutex        mMutex;
     
-    // íŽ˜ì´ì§€ì— ëŒ€í•œ ëž˜ì¹˜. íŽ˜ì´ì§€ ìžì²´ì— ëŒ€í•œ ë™ì‹œì„± ì œì–´
+    // ÆäÀÌÁö¿¡ ´ëÇÑ ·¡Ä¡. ÆäÀÌÁö ÀÚÃ¼¿¡ ´ëÇÑ µ¿½Ã¼º Á¦¾î
     iduLatch     mPageLatch;
     
-    // íŽ˜ì´ì§€ ëž˜ì¹˜ë¥¼ ìž¡ì§€ ì•ŠëŠ” fixPageì—°ì‚°ì„ ìœ„í•œ mutex.
+    // ÆäÀÌÁö ·¡Ä¡¸¦ ÀâÁö ¾Ê´Â fixPage¿¬»êÀ» À§ÇÑ mutex.
     iduMutex        mReadIOMutex;
     
-    // í˜„ BCBë¥¼ ê°€ìž¥ ë§ˆì§€ë§‰ì— mTouchCntë¥¼ ë³€ê²½í•œ ì‹œê°„
+    // Çö BCB¸¦ °¡Àå ¸¶Áö¸·¿¡ mTouchCnt¸¦ º¯°æÇÑ ½Ã°£
     idvTime         mLastTouchedTime;
 
-    /* PROJ-2669 ì‹¤ì œ ë§ˆì§€ë§‰ BCB Touch ì‹œê°„ */
+    /* PROJ-2669 ½ÇÁ¦ ¸¶Áö¸· BCB Touch ½Ã°£ */
     idvTime         mLastTouchCheckTime;
     
-    // í˜„ BCBì— ëŒ€í•´ì„œ fixí•˜ê³  ìžˆëŠ” ì“°ë ˆë“œ ê°¯ìˆ˜
+    // Çö BCB¿¡ ´ëÇØ¼­ fixÇÏ°í ÀÖ´Â ¾²·¹µå °¹¼ö
     UInt            mFixCnt;
 
-    // íŽ˜ì´ì§€ë¥¼ ì½ì–´ë„ ë˜ëŠ”ì§€ ì—¬ë¶€
+    // ÆäÀÌÁö¸¦ ÀÐ¾îµµ µÇ´ÂÁö ¿©ºÎ
     idBool          mReadyToRead;
     
-    /* íŽ˜ì´ì§€ë¥¼ ë””ìŠ¤í¬ì—ì„œ ì½ì–´ì™”ëŠ”ë°, ì´ê²ƒì´ ì—ëŸ¬ì¼ ê²½ìš°ì— ì—¬ê¸°ì—
-     * ID_TRUE ë¡œ ì„¤ì •í•œë‹¤. ì´ê²ƒì´ í•„ìš”í•œ ì´ìœ ëŠ” no latchë¡œ íŽ˜ì´ì§€ë¥¼
-     * ì ‘ê·¼í•˜ëŠ” ì“°ë ˆë“œê°€ í˜„ìž¬ íŽ˜ì´ì§€ê°€ ì—ëŸ¬ê°€ ë‚œ íŽ˜ì´ì§€ì¸ì§€ ì•Œì•„ì•¼ í•˜ê¸°
-     * ë•Œë¬¸ì´ë‹¤.*/
+    /* ÆäÀÌÁö¸¦ µð½ºÅ©¿¡¼­ ÀÐ¾î¿Ô´Âµ¥, ÀÌ°ÍÀÌ ¿¡·¯ÀÏ °æ¿ì¿¡ ¿©±â¿¡
+     * ID_TRUE ·Î ¼³Á¤ÇÑ´Ù. ÀÌ°ÍÀÌ ÇÊ¿äÇÑ ÀÌÀ¯´Â no latch·Î ÆäÀÌÁö¸¦
+     * Á¢±ÙÇÏ´Â ¾²·¹µå°¡ ÇöÀç ÆäÀÌÁö°¡ ¿¡·¯°¡ ³­ ÆäÀÌÁöÀÎÁö ¾Ë¾Æ¾ß ÇÏ±â
+     * ¶§¹®ÀÌ´Ù.*/
     idBool          mPageReadError;
 
-    // í†µê³„ì •ë³´ë¥¼ ìœ„í•œ ìžë£Œ
-    idvTime         mCreateOrReadTime;   // ë§ˆì§€ë§‰ createPage ë˜ëŠ” loadPageí•œ ì‹œê°„
+    // Åë°èÁ¤º¸¸¦ À§ÇÑ ÀÚ·á
+    idvTime         mCreateOrReadTime;   // ¸¶Áö¸· createPage ¶Ç´Â loadPageÇÑ ½Ã°£
     UInt            mWriteCount;
-    // PROJ-2102 : ëŒ€ì‘ ë˜ëŠ” Secondary Buffer BCB
+    // PROJ-2102 : ´ëÀÀ µÇ´Â Secondary Buffer BCB
     sdsBCB        * mSBCB;
 
 public:
     static ULong mTouchUSecInterval;
 
 public:
-    /* ì£¼ì˜!!
-     * ì—¬ê¸°ìžˆëŠ” ë©”ì†Œë“œë“¤ì€ ì–´ë– í•œê²ƒë„ ë™ì‹œì„±ì„ ë³´ìž¥í•´ì£¼ì§€ ì•ŠëŠ”ë‹¤.
-     * ì™¸ë¶€ì—ì„œ ë™ì‹œì„±ì„ ì»¨íŠ¸ë¡¤ í•´ì•¼ í•œë‹¤.
+    /* ÁÖÀÇ!!
+     * ¿©±âÀÖ´Â ¸Þ¼ÒµåµéÀº ¾î¶°ÇÑ°Íµµ µ¿½Ã¼ºÀ» º¸ÀåÇØÁÖÁö ¾Ê´Â´Ù.
+     * ¿ÜºÎ¿¡¼­ µ¿½Ã¼ºÀ» ÄÁÆ®·Ñ ÇØ¾ß ÇÑ´Ù.
      * */
     IDE_RC initialize(void *aFrameMemHandle, UChar *aFrame, UInt aBCBID);
 
     IDE_RC destroy();
 
-    //dirtyìƒíƒœë¥¼ cleanìƒíƒœë¡œ ë³€ê²½í•˜ê³ , ê´€ë ¨ëœ ë³€ìˆ˜ë¥¼ ì´ˆê¸°í™” í•œë‹¤.
+    //dirty»óÅÂ¸¦ clean»óÅÂ·Î º¯°æÇÏ°í, °ü·ÃµÈ º¯¼ö¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
     void clearDirty();
 
     inline idBool isFree();
@@ -189,7 +206,7 @@ public:
     static  idBool isSamePageID(void *aLhs,
                                 void *aRhs);
 
-    static IDE_RC dump(sdbBCB *aBCB);
+    void dump();
     static inline IDE_RC dump(void *aBCB);
 
     static inline void setBCBPtrOnFrame( sdbFrameHdr   *aFrame,
@@ -237,13 +254,23 @@ void sdbBCB::makeFreeExceptListItem()
     mPageReadError = ID_FALSE;
 }
 
-// flagë§Œ ì„¤ì •í•˜ê¸°ë¡œ, ë‚˜ë¨¸ì§€ëŠ”   cleanìœ¼ë¡œ ë ë•Œ ì´ˆê¸°í™”
+// flag¸¸ ¼³Á¤ÇÏ±â·Î, ³ª¸ÓÁö´Â   cleanÀ¸·Î µÉ¶§ ÃÊ±âÈ­
 void sdbBCB::setToFree()
 {
     makeFreeExceptListItem();
 
     SDB_INIT_BCB_LIST( this );
-    SDB_INIT_CP_LIST( this);
+
+    if (( mCPListItem.mNext != NULL ) ||
+        ( mCPListItem.mPrev != NULL ) ||
+        ( mCPListNo != SDB_CP_LIST_NONE ))
+    {
+        /* BUG-47945 cp list µð¹ö±ë Á¤º¸ º¸°­ */
+        dump();
+        IDE_ASSERT(0);
+    }
+
+    SDB_INIT_CP_LIST( this );
 }
 
 void sdbBCB::lockPageXLatch(idvSQL  * aStatistics)
@@ -313,16 +340,16 @@ void sdbBCB::updateTouchCnt()
     idvTime sCurrentTime;
     ULong   sTime;
 
-    // ì—¬ëŸ¬ë²ˆ touch ëœë‹¤ê³  í•´ì„œ ë‹¤ touchCountë¥¼ ìš¸ë¦¬ì§€ ì•Šê³ 
-    // ë§ˆì§€ë§‰ touchí•˜ê³ , sdbBCB::mTouchUSecIntervalì§€ë‚˜ê³  ë‚˜ì„œì•¼
-    // touch countë¥¼ ì˜¬ë¦°ë‹¤.
+    // ¿©·¯¹ø touch µÈ´Ù°í ÇØ¼­ ´Ù touchCount¸¦ ¿ï¸®Áö ¾Ê°í
+    // ¸¶Áö¸· touchÇÏ°í, sdbBCB::mTouchUSecIntervalÁö³ª°í ³ª¼­¾ß
+    // touch count¸¦ ¿Ã¸°´Ù.
     IDV_TIME_GET( &sCurrentTime );
 
     if ( sdbBCB::mTouchUSecInterval > 0 )
     {
         sTime = IDV_TIME_DIFF_MICRO( &mLastTouchedTime, &sCurrentTime );
 
-        /* PROJ-2669 ì‹¤ì œ ë§ˆì§€ë§‰ BCB Touch ì‹œê°„ */
+        /* PROJ-2669 ½ÇÁ¦ ¸¶Áö¸· BCB Touch ½Ã°£ */
         mLastTouchCheckTime = sCurrentTime;
 
         if ( sTime > mTouchUSecInterval )
@@ -333,16 +360,25 @@ void sdbBCB::updateTouchCnt()
     }
     else
     {
-        /* PROJ-2669 ì‹¤ì œ ë§ˆì§€ë§‰ BCB Touch ì‹œê°„ */
+        /* PROJ-2669 ½ÇÁ¦ ¸¶Áö¸· BCB Touch ½Ã°£ */
         mLastTouchCheckTime = sCurrentTime;
 
         mTouchCnt++;
     }
 }
 
+/* BUG-47945 cp list µð¹ö±ë Á¤º¸ º¸°­ */
 IDE_RC sdbBCB::dump(void *aBCB)
 {
-    return dump((sdbBCB*)aBCB);
+    IDE_ERROR( aBCB != NULL );
+
+    ((sdbBCB*)aBCB)->dump();
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
 void sdbBCB::clearTouchCnt()
@@ -354,7 +390,7 @@ void sdbBCB::clearTouchCnt()
 /***********************************************************************
  * Description :
  *  aFrame      - [IN]  Page pointer
- *  aBCB        - [IN]  í•´ë‹¹ BCB
+ *  aBCB        - [IN]  ÇØ´ç BCB
  ***********************************************************************/
 void sdbBCB::setBCBPtrOnFrame( sdbFrameHdr   *aFrame,
                                sdbBCB        *aBCBPtr)
@@ -364,8 +400,8 @@ void sdbBCB::setBCBPtrOnFrame( sdbFrameHdr   *aFrame,
 
 /***********************************************************************
  * Description :
- *  aFrame      - [IN] í•´ë‹¹ page pointer
- *  aSpaceID    - [IN]  í•´ë‹¹ table space ID
+ *  aFrame      - [IN] ÇØ´ç page pointer
+ *  aSpaceID    - [IN]  ÇØ´ç table space ID
  ***********************************************************************/
 void sdbBCB::setSpaceIDOnFrame( sdbFrameHdr   *aFrame,
                                 scSpaceID      aSpaceID)
@@ -375,7 +411,7 @@ void sdbBCB::setSpaceIDOnFrame( sdbFrameHdr   *aFrame,
 
 /***********************************************************************
  * Description :
- *  aFrame      - [IN] í•´ë‹¹ page pointer
+ *  aFrame      - [IN] ÇØ´ç page pointer
  *  aLSN        - [IN] PAGE LSN
  ***********************************************************************/
 void sdbBCB::setPageLSN( sdbFrameHdr    *aFrame,

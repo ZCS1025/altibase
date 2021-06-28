@@ -43,7 +43,8 @@ public:
     static IDE_RC alloc(mmcLobLocator **aLobLocator,
                         UInt            aStatementID,
                         smLobLocator    aLocatorID);
-    static IDE_RC free(mmcLobLocator *aLobLocator);
+    static IDE_RC free(idvSQL        *aStatistics,
+                       mmcLobLocator *aLobLocator);
 
     static IDE_RC addLocator(mmcLobLocator *aLobLocator,
                              UInt           aStatementID,

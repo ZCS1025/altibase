@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smxOIDList.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smxOIDList.h 90259 2021-03-19 01:22:22Z emlee $
  **********************************************************************/
 
 #ifndef _O_SMX_OIDLIST_H_
@@ -45,22 +45,24 @@ public:
                        smOID               aTableOID,
                        smOID               aTargetOID,
                        scSpaceID           aSpaceID,
-                       UInt                aFlag );
+                       UInt                aFlag,
+                       smSCN               aSCN );
 
     IDE_RC add( smOID           aTableOID,
                 smOID           aTargetOID,
                 scSpaceID       aSpaceID,
-                UInt            aFlag );
+                UInt            aFlag,
+                smSCN           aSCN = SM_SCN_MAX );
 
     IDE_RC processOIDList(SInt                 aAgingState,
                           smLSN*               aLSN,
-                          smSCN                aScn,
+                          smSCN                aSCN,
                           smxProcessOIDListOpt aProcessOIDOpt,
                           ULong               *aAgingCnt,
                           idBool               aIsLegacyTrans);
 
     IDE_RC processOIDList4LegacyTx( smLSN   * aLSN, 
-                                    smSCN     aScn ); /* BUG-42760 */
+                                    smSCN     aSCN ); /* BUG-42760 */
 
     inline void initOIDNode(smxOIDNode *aOIDNode);
     static IDE_RC initializeStatic();
@@ -69,20 +71,24 @@ public:
 
     IDE_RC allocAndLinkOIDNode();
 
+    /* BUG-47367 SCN Check¥¬ OIDFreeListø°º≠∏∏ « ø‰«œ¥Ÿ. */
     IDE_RC addOID( smOID           aTableOID,
                    smOID           aTargetOID,
                    scSpaceID       aSpaceID,
-                   UInt            aFlag );
+                   UInt            aFlag,
+                   smSCN           aSCN = SM_SCN_MAX );
 
     IDE_RC addOIDWithCheckFlag(smOID      aTableOID,
                                smOID      aTargetOID,
                                scSpaceID  aSpaceID,
-                               UInt       aFlag );
+                               UInt       aFlag,
+                               smSCN      aSCN = SM_SCN_MAX );
 
     IDE_RC addOIDToVerify( smOID           aTableOID,
                            smOID           aTargetOID,
                            scSpaceID       aSpaceID,
-                           UInt            aFlag );
+                           UInt            aFlag,
+                           smSCN           aSCN = SM_SCN_MAX );
 
 
     static inline IDE_RC alloc( smxOIDNode **aNewNode );
@@ -123,7 +129,7 @@ public:
                             smSCN       aSCN);
 
     IDE_RC processDeleteOIDList( UInt   aAgingState,
-                                 smSCN  aScn,
+                                 smSCN  aSCN,
                                  ULong *aAgingCnt );
 
     IDE_RC processOIDListToVerify( idvSQL * aStatistics );
@@ -156,9 +162,9 @@ public:
     smxOIDNode              *mCacheOIDNode4Insert;
 
 private:
-    /* mMemPoolType == 0 Ïù¥Î©¥ mOIDListSizeÎ•º ÏÇ¨Ïö©.
-     * 1Ïù¥Î©¥ mMemPoolÏùÑ ÏÇ¨Ïö©.
-     * XXX: ÌÖåÏä§Ìä∏Ïö©ÏúºÎ°ú Ï∂îÍ∞Ä */
+    /* mMemPoolType == 0 ¿Ã∏È mOIDListSize∏¶ ªÁøÎ.
+     * 1¿Ã∏È mMemPool¿ª ªÁøÎ.
+     * XXX: ≈◊Ω∫∆ÆøÎ¿∏∑Œ √ﬂ∞° */
     static UInt              mMemPoolType;
     static UInt              mOIDListSize;
     static iduOIDMemory      mOIDMemory;
@@ -170,7 +176,7 @@ public:
     // To fix BUG-14126
     idBool                   mNeedAging;
 
-    smuHashBase             *mUniqueOIDHash; // OID Ï§ëÎ≥µÌóàÏö©ÌïòÏßÄ ÏïäÍ∏∞ ÏúÑÌïú Hash.
+    smuHashBase             *mUniqueOIDHash; // OID ¡ﬂ∫π«„øÎ«œ¡ˆ æ ±‚ ¿ß«— Hash.
 };
 
 void smxOIDList::initOIDNode(smxOIDNode *aOIDNode)
@@ -182,14 +188,14 @@ void smxOIDList::initOIDNode(smxOIDNode *aOIDNode)
 }
 
 /**********************************************************************
- * Description: aOIDInfoÍ∞Ä AgingÎåÄÏÉÅÏù¥Î©¥ ID_TRUE, ÏïÑÎãàÎ©¥ ID_FALSE
+ * Description: aOIDInfo∞° Aging¥ÎªÛ¿Ã∏È ID_TRUE, æ∆¥œ∏È ID_FALSE
  *
- * aAgingState - [IN] CommitÏãúÏóêÎäî SM_OID_ACT_AGING_COMMIT
- *                    RollbackÏãúÏóêÎäî SM_OID_ACT_AGING_ROLLBACk
+ * aAgingState - [IN] CommitΩ√ø°¥¬ SM_OID_ACT_AGING_COMMIT
+ *                    RollbackΩ√ø°¥¬ SM_OID_ACT_AGING_ROLLBACk
  * aOIDInfo    - [IN] OID Info
  *
- * Releated Issue - 1. BUG-17417 V$AgerÏ†ïÎ≥¥Ïùò Add OIDÍ∞ØÏàòÎäî Ïã§Ï†ú AgerÍ∞Ä
- *                     Ìï¥ÏïºÌï† ÏûëÏóÖÏùò Í∞ØÏàòÍ∞Ä ÏïÑÎãàÎã§.
+ * Releated Issue - 1. BUG-17417 V$Ager¡§∫∏¿« Add OID∞πºˆ¥¬ Ω«¡¶ Ager∞°
+ *                     «ÿæﬂ«“ ¿€æ˜¿« ∞πºˆ∞° æ∆¥œ¥Ÿ.
  **********************************************************************/
 idBool smxOIDList::checkIsAgingTarget( UInt         aAgingState,
                                        smxOIDInfo  *aOIDInfo )

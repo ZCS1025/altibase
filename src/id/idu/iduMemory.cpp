@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduMemory.cpp 85313 2019-04-24 05:52:44Z andrew.shin $
+ * $Id: iduMemory.cpp 86179 2019-09-16 10:34:38Z jykim $
  **********************************************************************/
 
 /***********************************************************************
@@ -17,14 +17,14 @@
  *
  * PUBLIC FUNCTION(S)
  *   iduMemory( ULong BufferSize )
- *      BufferSizeëŠ” ë©”ëª¨ë¦¬ í• ë‹¹ì„ ìœ„í•œ ì¤‘ê°„ ë²„í¼ì˜ í¬ê¸° í• ë‹¹ë°›ëŠ”
- *      ë©”ëª¨ë¦¬ì˜ í¬ê¸°ëŠ” BufferSizeë¥¼ ì´ˆê³¼í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.
+ *      BufferSize´Â ¸Ş¸ğ¸® ÇÒ´çÀ» À§ÇÑ Áß°£ ¹öÆÛÀÇ Å©±â ÇÒ´ç¹Ş´Â
+ *      ¸Ş¸ğ¸®ÀÇ Å©±â´Â BufferSize¸¦ ÃÊ°úÇÒ ¼ö ¾ø½À´Ï´Ù.
  *
  *   void* alloc( size_t Size )
- *      Sizeë§Œí¼ì˜ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•´ ì¤ë‹ˆë‹¤.
+ *      Size¸¸Å­ÀÇ ¸Ş¸ğ¸®¸¦ ÇÒ´çÇØ Áİ´Ï´Ù.
  *
  *   void clear( )
- *      í• ë‹¹ë°›ì€ ëª¨ë“  ë©”ëª¨ë¦¬ë¥¼ í•´ì œ í•©ë‹ˆë‹¤.
+ *      ÇÒ´ç¹ŞÀº ¸ğµç ¸Ş¸ğ¸®¸¦ ÇØÁ¦ ÇÕ´Ï´Ù.
  *
  * NOTES
  *
@@ -74,9 +74,10 @@ IDE_RC iduMemory::init( iduMemoryClientIndex aIndex, ULong aBufferSize)
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
     mCurHead    = mHead = NULL;
-    mChunkSize  = aBufferSize;
+    mDefaultChunkSize  = aBufferSize;
     mIndex      = aIndex;
     mChunkCount = 0;
+    mTotalChunkSize = 0;
     
 #if defined(ALTIBASE_MEMORY_CHECK)
     mUsePrivate = ID_FALSE;
@@ -175,23 +176,25 @@ IDE_RC iduMemory::header()
 #else
     if( mHead == NULL )
     {
-        if( mChunkSize == 0 )
+        if( mDefaultChunkSize < ID_SIZEOF(iduMemoryHeader) )
         {
             // BUG-32293
-            mChunkSize = idlOS::align8((UInt)IDL_MAX(sizeof(iduMemoryHeader),
+            mDefaultChunkSize = idlOS::align8((UInt)IDL_MAX(sizeof(iduMemoryHeader),
                                                      iduProperty::getQpMemChunkSize()));
         }
 
-        IDE_TEST(malloc(mChunkSize, (void**)&mHead) != IDE_SUCCESS);
+        IDE_TEST(malloc(mDefaultChunkSize, (void**)&mHead) != IDE_SUCCESS);
+        mTotalChunkSize += mDefaultChunkSize;
 
         IDE_ASSERT(mHead != NULL);
         mCurHead = mHead;
+
         IDE_ASSERT(mCurHead != NULL);
         if( mCurHead != NULL )
         {
             mCurHead->mNext   = NULL;
             mCurHead->mCursor = idlOS::align8((UInt)sizeof(iduMemoryHeader));
-            mCurHead->mChunkSize = mChunkSize;
+            mCurHead->mChunkSize = mDefaultChunkSize;
             mCurHead->mBuffer = ((char*)mCurHead);
             mChunkCount++;
         }
@@ -241,6 +244,7 @@ IDE_RC iduMemory::release( iduMemoryHeader* aHeader )
     for( sHeader = aHeader; sHeader != NULL; sHeader = next )
     {
         next = sHeader->mNext;
+	mTotalChunkSize -= sHeader->mChunkSize;
         IDE_TEST(free(sHeader) != IDE_SUCCESS);
 
         mChunkCount--;
@@ -278,7 +282,7 @@ IDE_RC iduMemory::cralloc( size_t aSize, void** aMemPtr )
 #undef IDE_FN
 }
 
-IDE_RC iduMemory::extend( ULong aChunkSize)
+IDE_RC iduMemory::extend( ULong aRequestedSize)
 {
 
 #define IDE_FN "iduMemory::extend"
@@ -302,7 +306,7 @@ IDE_RC iduMemory::extend( ULong aChunkSize)
 
         /* find proper memory which has enough size,
            it is pointed by mCurHead */
-        if ( aChunkSize <= (mCurHead->mChunkSize - mCurHead->mCursor))
+        if ( aRequestedSize <= (mCurHead->mChunkSize - mCurHead->mCursor))
         {
             return IDE_SUCCESS;
         }
@@ -312,20 +316,19 @@ IDE_RC iduMemory::extend( ULong aChunkSize)
     /* can't find proper memory, make another header */
     IDE_ASSERT(sBefore != NULL && mCurHead == NULL);
 
-    sSize = aChunkSize + idlOS::align8((UInt)sizeof(iduMemoryHeader));
+    sSize = aRequestedSize + idlOS::align8((UInt)sizeof(iduMemoryHeader));
 
-    if (sSize < mChunkSize)
+    if (sSize < mDefaultChunkSize)
     {
-        sSize = mChunkSize;
+        sSize = mDefaultChunkSize;
     }
 
-    /* The requested size is checked 
-       because users are not interested in the inner structure */
-    IDE_TEST( checkMemoryMaximumLimit(aChunkSize) != IDE_SUCCESS );
+    IDE_TEST( checkMemoryMaximumLimit(sSize) != IDE_SUCCESS );
 
     IDE_TEST(malloc(sSize,
                     (void**)&mCurHead)
              != IDE_SUCCESS);
+    mTotalChunkSize += sSize;
 
     mCurHead->mNext      = NULL;
     mCurHead->mCursor    = idlOS::align8((UInt)sizeof(iduMemoryHeader));
@@ -457,9 +460,9 @@ SInt  iduMemory::setStatus( iduMemoryStatus* aStatus )
         }
 
 #if defined(DEBUG)
-        // aStatus->mSavedCurrê°€ ë¦¬ìŠ¤íŠ¸ ìƒì— ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
-        // BUG-22287, ê²½ìš°ì— ë”°ë¼ ì‹œê°„ì´ ë§ì´ ê±¸ë¦¬ëŠ” ì‘ì—…ìœ¼ë¡œ ì „ì²´
-        // loop ì—ì„œ ë¶„ë¦¬ í•˜ì—¬ DEBUG ìƒì—ì„œë§Œ í™•ì¸ í•˜ë„ë¡ í•œë‹¤.
+        // aStatus->mSavedCurr°¡ ¸®½ºÆ® »ó¿¡ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
+        // BUG-22287, °æ¿ì¿¡ µû¶ó ½Ã°£ÀÌ ¸¹ÀÌ °É¸®´Â ÀÛ¾÷À¸·Î ÀüÃ¼
+        // loop ¿¡¼­ ºĞ¸® ÇÏ¿© DEBUG »ó¿¡¼­¸¸ È®ÀÎ ÇÏµµ·Ï ÇÑ´Ù.
 
         for( sHeader = mHead ; sHeader != NULL ; sHeader = sHeader->mNext )
         {
@@ -491,20 +494,20 @@ SInt  iduMemory::setStatus( iduMemoryStatus* aStatus )
         /* BUG-18098 [valgrind] 12,672 bytes in 72 blocks are indirectly
          * lost - by smnfInit()
          *
-         * ALTIBASE_MEMORY_CHECKì¼ ê²½ìš° iduMemoryëŠ” allocë•Œ ë§ˆë‹¤ ë©”ëª¨ë¦¬ë¥¼
-         * í• ë‹¹í•œë‹¤. í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¼ë¦¬ ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ìœ ì§€í•˜ê³  ì¶”ê°€ëœ
-         * ë©”ëª¨ë¦¬ëŠ” ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ì˜ ëì— ì¶”ê°€í•©ë‹ˆë‹¤. ê·¸ë¦¬ê³  ë§Œì•½ setstatusê°€
-         * í˜¸ì¶œë˜ë©´ iduMemoryStatusê°€ ê°€ë¦¬í‚¤ëŠ” ë§í¬ë…¸ë“œë¡œ mCurHeadì˜ ê°’ì„
-         * ë°”ê¿‰ë‹ˆë‹¤. ê·¸ëŸ°ë° í•­ìƒ mCurHeadëŠ” ë§ˆì§€ë§‰ ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚¤ê¸° ë•Œë¬¸ì—
-         * setstatusê°€ í˜¸ì¶œëœí›„ ë‹¤ì‹œ allocì´ í˜¸ì¶œë  ê²½ìš° mCurHeadê°€ ê°€ë¦¬í‚¤ëŠ”
-         * ë…¸ë“œë‹¤ìŒì˜ ë…¸ë“¤ë“±ì€ ê³ ì•„ê°€ ë ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+         * ALTIBASE_MEMORY_CHECKÀÏ °æ¿ì iduMemory´Â alloc¶§ ¸¶´Ù ¸Ş¸ğ¸®¸¦
+         * ÇÒ´çÇÑ´Ù. ÇÒ´çµÈ ¸Ş¸ğ¸®³¢¸® ¸µÅ©µå ¸®½ºÆ®¸¦ À¯ÁöÇÏ°í Ãß°¡µÈ
+         * ¸Ş¸ğ¸®´Â ¸µÅ©µå ¸®½ºÆ®ÀÇ ³¡¿¡ Ãß°¡ÇÕ´Ï´Ù. ±×¸®°í ¸¸¾à setstatus°¡
+         * È£ÃâµÇ¸é iduMemoryStatus°¡ °¡¸®Å°´Â ¸µÅ©³ëµå·Î mCurHeadÀÇ °ªÀ»
+         * ¹Ù²ß´Ï´Ù. ±×·±µ¥ Ç×»ó mCurHead´Â ¸¶Áö¸· À§Ä¡¸¦ °¡¸®Å°±â ¶§¹®¿¡
+         * setstatus°¡ È£ÃâµÈÈÄ ´Ù½Ã allocÀÌ È£ÃâµÉ °æ¿ì mCurHead°¡ °¡¸®Å°´Â
+         * ³ëµå´ÙÀ½ÀÇ ³ëµéµîÀº °í¾Æ°¡ µÉ¼ö ÀÖ½À´Ï´Ù.
          *
-         * a -> b -> c -> dì¼ ê²½ìš° mCurHead = dê°€ ë©ë‹ˆë‹¤. ì—¬ê¸°ì„œ setstatus
-         * ê°€ í˜¸ì¶œë˜ì–´ ë§Œì•½ mCurHeadê°€ bê°€ ë˜ì—ˆë‹¤ê³  í•˜ê³  ë‹¤ì‹œ allocì´ ë˜ì–´
-         * eê°€ ì¶”ê°€ë˜ë©´
-         * a -> b -> eê°€ ë©ë‹ˆë‹¤. ê²°ê³¼ì ìœ¼ë¡œ c, dì™€ ì°¾ì„ ê¸¸ì´ ì—†ëŠ” ì²œì˜ˆì˜
-         * ê³ ì•„ê°€ ë©ë‹ˆë‹¤. ë”°ë¼ì„œ c, dëŠ” freeì‹œì¼œì£¼ê³  bì˜ nextëŠ” nullë¡œ
-         * ë°”ê¾¸ì–´ì•¼ í•©ë‹ˆë‹¤. */
+         * a -> b -> c -> dÀÏ °æ¿ì mCurHead = d°¡ µË´Ï´Ù. ¿©±â¼­ setstatus
+         * °¡ È£ÃâµÇ¾î ¸¸¾à mCurHead°¡ b°¡ µÇ¾ú´Ù°í ÇÏ°í ´Ù½Ã allocÀÌ µÇ¾î
+         * e°¡ Ãß°¡µÇ¸é
+         * a -> b -> e°¡ µË´Ï´Ù. °á°úÀûÀ¸·Î c, d¿Í Ã£À» ±æÀÌ ¾ø´Â Ãµ¿¹ÀÇ
+         * °í¾Æ°¡ µË´Ï´Ù. µû¶ó¼­ c, d´Â free½ÃÄÑÁÖ°í bÀÇ next´Â null·Î
+         * ¹Ù²Ù¾î¾ß ÇÕ´Ï´Ù. */
         if( sHeader->mNext != NULL )
         {
             IDE_ASSERT( release( sHeader->mNext ) == IDE_SUCCESS );
@@ -637,11 +640,7 @@ ULong iduMemory::getSize( void )
 #define IDE_FN "iduMemory::getSize"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY("getSize"));
 
-    ULong            sSize = 0;
-
-    sSize = mChunkSize * mChunkCount;
-
-    return sSize;
+    return mTotalChunkSize;
 
 #undef IDE_FN
 }
@@ -667,18 +666,16 @@ IDE_RC iduMemory::checkMemoryMaximumLimit(ULong aSize)
 {
 /***********************************************************************
  *
- * Description : prepare, execute memory ì²´í¬ (BUG-
+ * Description : prepare, execute memory Ã¼Å© (BUG-
  *
  * Implementation :
- *    extendì‹œì— ë¶ˆë¦¬ë©°, í˜„ì¬ chunkcount +1ì— chunksizeë¥¼ ê³±í•œ ê°’ì´
- *    propertyì˜ ê°’ë³´ë‹¤ í¬ë©´ ì—ëŸ¬.
- *    query prepare, query execute ë©”ëª¨ë¦¬ì— í•œí•¨.
+ *    extend½Ã¿¡ ºÒ¸®¸ç, ÇöÀç chunkcount +1¿¡ chunksize¸¦ °öÇÑ °ªÀÌ
+ *    propertyÀÇ °ªº¸´Ù Å©¸é ¿¡·¯.
+ *    query prepare, query execute ¸Ş¸ğ¸®¿¡ ÇÑÇÔ.
  *
  ***********************************************************************/
 #define IDE_FN "iduMemory::checkMemoryMaximum"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(IDE_FN));
-
-    ULong sTargetSize = 0;
 
 #if defined(ALTIBASE_MEMORY_CHECK)
     switch( mIndex )
@@ -698,26 +695,18 @@ IDE_RC iduMemory::checkMemoryMaximumLimit(ULong aSize)
             break;
     }
 #else
-
-    if( IDU_USE_REQUESTED_SIZE  == ID_TRUE )
-    {
-        sTargetSize = (mChunkSize * (mChunkCount + 1)) + aSize;
-    }
-    else
-    {
-        sTargetSize = (mChunkSize * (mChunkCount + 1));
-    }
-
     switch( mIndex )
     {
         case IDU_MEM_QMP:
             IDE_TEST_RAISE(
-                sTargetSize > iduProperty::getPrepareMemoryMax(),
+                (getSize() + aSize) >
+                iduProperty::getPrepareMemoryMax(),
                 err_prep_mem_alloc );
             break;
         case IDU_MEM_QMX:
             IDE_TEST_RAISE(
-                sTargetSize > iduProperty::getExecuteMemoryMax(),
+                (getSize() + aSize) >                  /*BUG-46948*/
+                iduProperty::getExecuteMemoryMax(),
                 err_exec_mem_alloc );
             break;
 
@@ -732,16 +721,14 @@ IDE_RC iduMemory::checkMemoryMaximumLimit(ULong aSize)
     {
         IDE_SET( ideSetErrorCode(idERR_ABORT_MAX_MEM_SIZE_EXCEED,
                                  iduMemMgr::mClientInfo[mIndex].mName,
-                                 IDU_USE_REQUESTED_SIZE == ID_TRUE ?  aSize : 
-                                     (mChunkSize * (mChunkCount + 1)),
+                                 aSize,
                                  iduProperty::getPrepareMemoryMax() ) );
     }
     IDE_EXCEPTION( err_exec_mem_alloc );
     {
         IDE_SET( ideSetErrorCode(idERR_ABORT_MAX_MEM_SIZE_EXCEED,
                                  iduMemMgr::mClientInfo[mIndex].mName,
-                                 IDU_USE_REQUESTED_SIZE == ID_TRUE ?  aSize : 
-                                     (mChunkSize * (mChunkCount + 1)),
+                                 aSize,
                                  iduProperty::getExecuteMemoryMax() ) );
     }
     IDE_EXCEPTION_END;

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smmSlotList.h 84166 2018-10-15 07:54:37Z justin.kwon $
+ * $Id: smmSlotList.h 84167 2018-10-15 07:54:50Z justin.kwon $
  ***********************************************************************/ 
 
 #ifndef _O_SMM_SLOT_LIST_H_
@@ -58,7 +58,7 @@ class smmSlotList
 
     UInt testGetCount( void ) { return mNumber; }
 
-    // BUG-18122 : MEM_BTREE_NODEPOOL performance view ì¶”ê°€
+    // BUG-18122 : MEM_BTREE_NODEPOOL performance view Ãß°¡
     UInt getAllocSlotCount( void ) { return mAllocSlotCount; }
     UInt getSlotPerPage( void )    { return mSlotPerPage;    }
     UInt getFreeSlotCount( void )  { return mNumber;         }
@@ -83,7 +83,7 @@ private:
     UInt                   mAllocSlotCount;
     iduMemPool             mMemPool;
 
-    // BUG-18122 : MEM_BTREE_NODEPOOL performance view ì¶”ê°€
+    // BUG-18122 : MEM_BTREE_NODEPOOL performance view Ãß°¡
     ULong                  mTotalAllocReq;
     ULong                  mTotalFreeReq;
 };

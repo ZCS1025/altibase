@@ -171,7 +171,7 @@ public class ClobTest extends AltibaseTestCase
         sInsStmt.setString(2, CLOB_VAL2);
         assertEquals(false, sInsStmt.execute());
 
-        // 2Î≤àÏß∏ rowÏùò clobÏùÑ 1Î≤àÏß∏ clobÏùò Í∞íÏúºÎ°ú update
+        // 2π¯¬∞ row¿« clob¿ª 1π¯¬∞ clob¿« ∞™¿∏∑Œ update
         Statement sUpdStmt = connection().createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE, ResultSet.CLOSE_CURSORS_AT_COMMIT);
         ResultSet sUpdRS = sUpdStmt.executeQuery("SELECT id, val1 FROM t1");
         assertEquals(true, sUpdRS.next());
@@ -205,7 +205,7 @@ public class ClobTest extends AltibaseTestCase
         sInsStmt.setString(2, CLOB_VAL2);
         assertEquals(false, sInsStmt.execute());
 
-        // 2Î≤àÏß∏ rowÏùò clobÏùÑ 1Î≤àÏß∏ clobÏùò Í∞íÏúºÎ°ú update
+        // 2π¯¬∞ row¿« clob¿ª 1π¯¬∞ clob¿« ∞™¿∏∑Œ update
         Statement sUpdStmt = connection().createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE, ResultSet.CLOSE_CURSORS_AT_COMMIT);
         ResultSet sUpdRS = sUpdStmt.executeQuery("SELECT id, val1 FROM t1");
         assertEquals(true, sUpdRS.next());
@@ -535,8 +535,11 @@ public class ClobTest extends AltibaseTestCase
             ResultSet sRS = sStmt.executeQuery("SELECT val1 FROM t1 WHERE id = 1002 FOR UPDATE");
             assertEquals(true, sRS.next());
             Clob sClob = sRS.getClob(1);
-            Writer sWriter = sClob.setCharacterStream(0);
-            sWriter.write(sOrg);
+            if (sClob != null)  // BUG-47639 getClob() will return null if clob column is null
+            {
+                Writer sWriter = sClob.setCharacterStream(0);
+                sWriter.write(sOrg);
+            }
             sRS.close();
             sStmt.close();
             sSelCheckCnt++;
@@ -549,11 +552,15 @@ public class ClobTest extends AltibaseTestCase
             {
                 assertEquals(i + "th fetch", true, sSelRS.next());
                 int sID = sSelRS.getInt(1);
-                Reader sClobReader = sSelRS.getClob(2).getCharacterStream();
-                char[] sCharBuf = new char[sOrg.length()];
-                sClobReader.read(sCharBuf);
-                String sStr = String.valueOf(sCharBuf);
-                assertEquals("CLOB[" + sID + "]", sOrg, sStr);
+                Clob sClob = sSelRS.getClob(2);
+                if (sClob != null)  // BUG-47639 getClob() will return null if clob column is null
+                {
+                    Reader sClobReader = sClob.getCharacterStream();
+                    char[] sCharBuf = new char[sOrg.length()];
+                    sClobReader.read(sCharBuf);
+                    String sStr = String.valueOf(sCharBuf);
+                    assertEquals("CLOB[" + sID + "]", sOrg, sStr);
+                }
             }
             assertEquals(false, sSelRS.next());
             sSelRS.close();
@@ -564,14 +571,14 @@ public class ClobTest extends AltibaseTestCase
     public void testReadLength() throws SQLException, IOException
     {
         Statement sStmt = connection().createStatement();
-        assertEquals(1, sStmt.executeUpdate("INSERT INTO t1 (id, val1) values (1001, 'Í∞ÄÎÇòÎã§')"));
+        assertEquals(1, sStmt.executeUpdate("INSERT INTO t1 (id, val1) values (1001, '∞°≥™¥Ÿ')"));
 
         ResultSet sRS = sStmt.executeQuery("SELECT val1 FROM t1 WHERE id = 1001");
         assertEquals(true, sRS.next());
         Reader sReader = sRS.getCharacterStream(1);
         char[] sBuf = new char[10];
         int sReaded = sReader.read(sBuf);
-        assertEquals("Í∞ÄÎÇòÎã§", String.valueOf(sBuf, 0, sReaded));
+        assertEquals("∞°≥™¥Ÿ", String.valueOf(sBuf, 0, sReaded));
         assertEquals(3, sReaded);
         sRS.close();
         sStmt.close();

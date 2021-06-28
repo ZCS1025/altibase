@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: sduProperty.cpp 85186 2019-04-09 07:37:00Z jayce.park $
+ * $Id: sduProperty.cpp 90651 2021-04-20 04:24:52Z seulki $
  **********************************************************************/
 
 #include <idl.h>
@@ -26,9 +26,17 @@ sduProperties sduProperty::mStaticProperty;
 
 IDE_RC sduProperty::initProperty( idvSQL * /* aStatistics */ )
 {
+    initUpperModuleProperty();
     IDE_TEST( load() != IDE_SUCCESS );
     IDE_TEST( setupUpdateCallback() != IDE_SUCCESS );
 
+    // BUG-47817
+    if (( SDU_SHARD_ENABLE == 1 ) && ( SDU_SHARD_ADMIN_MODE == 0 ))
+    {
+        IDE_TEST( idp::update( NULL, "SHARD_ADMIN_MODE", (ULong)1, 0, NULL )
+                  != IDE_SUCCESS );
+    }
+    
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -41,23 +49,31 @@ IDE_RC sduProperty::finalProperty( idvSQL * /* aStatistics */ )
     return IDE_SUCCESS;
 }
 
+void sduProperty::setReplicationMaxParallelCount(UInt aMaxParallelCount)
+{
+    SDU_PROPERTY( mShardReplicationMaxParallelCount ) = aMaxParallelCount;
+}
+
+void sduProperty::initUpperModuleProperty()
+{
+    SDU_PROPERTY( mShardReplicationMaxParallelCount ) = 0;
+}
+
 IDE_RC sduProperty::load()
 {
 /***********************************************************************
  *
  * Description :
- *    Server Íµ¨Îèô Ïãú System PropertyÎì§ÏùÑ LoadingÌïúÎã§.
+ *    Server ±∏µø Ω√ System PropertyµÈ¿ª Loading«—¥Ÿ.
  *
  * Implementation :
- *    Writable PropertyÏùò Í≤ΩÏö∞ CallBackÏùÑ Îì±Î°ùÌï¥Ïïº Ìï®.
+ *    Writable Property¿« ∞ÊøÏ CallBack¿ª µÓ∑œ«ÿæﬂ «‘.
  *
  ***********************************************************************/
 
-    //--------------------------------------------------------
-    // Trace Log Í¥ÄÎ†® property loading
-    //    - Writable PropertyÏù¥ÎØÄÎ°ú CallBackÏùÑ Îì±Î°ùÌïúÎã§.
-    //    - Atomic OperationÏù¥ÎØÄÎ°ú, BeforeCallBackÏùÄ ÌïÑÏöî ÏóÜÎã§.
-    //--------------------------------------------------------
+    /* BUG-45899 */ 
+    IDE_ASSERT( idp::read( "TRCLOG_DETAIL_SHARD",
+                           &SDU_PROPERTY( mTrclogDetailShard ) ) == IDE_SUCCESS );
 
     IDE_ASSERT( idp::read( "SHARD_ENABLE",
                            &SDU_PROPERTY( mShardEnable ) ) == IDE_SUCCESS );
@@ -65,8 +81,18 @@ IDE_RC sduProperty::load()
     IDE_ASSERT( idp::read( "__SHARD_TEST_ENABLE",
                            &SDU_PROPERTY( mShardTestEnable ) ) == IDE_SUCCESS );
 
-    IDE_ASSERT( idp::read( "__SHARD_AGGREGATION_TRANSFORM_DISABLE",
-                           &SDU_PROPERTY( mShardAggrTransformDisable ) ) == IDE_SUCCESS );
+    IDE_ASSERT( idp::read( "__SHARD_ALLOW_AUTO_COMMIT",
+                           &SDU_PROPERTY( mShardAllowAutoCommit) ) == IDE_SUCCESS );
+
+    IDE_ASSERT( idp::read( "__SHARD_LOCAL_FORCE",
+                           &SDU_PROPERTY( mShardLocalForce ) ) == IDE_SUCCESS );
+
+    IDE_ASSERT( idp::read( "SHARD_AGGREGATION_TRANSFORM_ENABLE",
+                           &SDU_PROPERTY( mShardAggregationTransformEnable ) ) == IDE_SUCCESS );
+
+    /* TASK-7219 */
+    IDE_ASSERT( idp::read( "SHARD_TRANSFORM_MODE",
+                           & SDU_PROPERTY( mShardTransformMode ) ) == IDE_SUCCESS );
 
     IDE_ASSERT( idp::read( "SHARD_INTERNAL_CONN_ATTR_RETRY_COUNT",
                            &SDU_PROPERTY( mShardInternalConnAttrRetryCount ) ) == IDE_SUCCESS );
@@ -81,25 +107,10 @@ IDE_RC sduProperty::load()
                            &SDU_PROPERTY( mShardInternalConnAttrLoginTimeout ) ) == IDE_SUCCESS );
 
     IDE_ASSERT( idp::read( "SHARD_REBUILD_DATA_STEP",
-                           &SDU_PROPERTY( mShardRebuildDataStep ) )
-                == IDE_SUCCESS );
-
-    /* BUG-45899 */ 
-    IDE_ASSERT( idp::read( "TRCLOG_DETAIL_SHARD",
-                           &SDU_PROPERTY( mTrclogDetailShard ) ) == IDE_SUCCESS );
-
-    IDE_ASSERT( idp::read( "SHARD_IGNORE_SMN_PROPAGATION_FAILURE",
-                           & SDU_PROPERTY( mShardIgnoreSmnPropagationFailure ) )
-                == IDE_SUCCESS );
-
-    IDE_ASSERT( idp::read( "SHARD_ALLOW_OLD_SMN",
-                           & SDU_PROPERTY( mShardAllowOldSmn ) )
+                           & SDU_PROPERTY( mShardRebuildDataStep ) )
                 == IDE_SUCCESS );
 
     /* PROJ-2701 Sharding online data rebuild */
-    IDE_ASSERT( idp::read( "SHARD_META_HISTORY_AUTO_PURGE_DISABLE",
-                           & SDU_PROPERTY(mShardMetaHistoryAutoPurgeDisable) ) == IDE_SUCCESS );
-
     IDE_ASSERT( idp::read( "SHARD_REBUILD_PLAN_DETAIL_FORCE_ENABLE",
                            & SDU_PROPERTY(mShardRebuildPlanDetailForceEnable) ) == IDE_SUCCESS );
 
@@ -112,9 +123,29 @@ IDE_RC sduProperty::load()
     IDE_ASSERT( idp::read( "SHARD_TRANSFORM_STRING_LENGTH_MAX",
                            & SDU_PROPERTY(mShardTransformStringLengthMax) ) == IDE_SUCCESS );
 
-    IDE_ASSERT( idp::read( "SHARD_SMN_CACHE_APPLY_ENABLE",
-                           & SDU_PROPERTY(mShardSMNCacheApplyEnable) ) == IDE_SUCCESS );
+    IDE_ASSERT( idp::read( "SHARD_ADMIN_MODE",
+                           & SDU_PROPERTY(mShardAdminMode) ) == IDE_SUCCESS );    
 
+    /* PROJ-2726 Sharding Node Manager */
+    IDE_ASSERT( idp::read( "ZOOKEEPER_LOCK_WAIT_TIMEOUT",
+                           & SDU_PROPERTY(mZookeeperLockWaitTimeout) ) == IDE_SUCCESS );
+
+    IDE_ASSERT( idp::read( "SHARD_STATEMENT_RETRY",
+                           & SDU_PROPERTY(mShardStatementRetry) ) == IDE_SUCCESS );
+
+    IDE_ASSERT( idp::read( "__SHARD_ZOOKEEPER_TEST",
+                           &SDU_PROPERTY( mShardZookeeperTest ) ) == IDE_SUCCESS );
+
+    IDE_ASSERT( idp::read( "SHARD_DDL_LOCK_TIMEOUT",
+                           & SDU_PROPERTY(mShardDDLLockTimeout) ) == IDE_SUCCESS );
+
+    IDE_ASSERT( idp::read( "SHARD_DDL_LOCK_TRY_COUNT",
+                           & SDU_PROPERTY(mShardDDLLockTryCount) ) == IDE_SUCCESS );
+
+    IDE_ASSERT( idp::read( "__DISABLE_FAILOVER_FOR_WATCHER",
+                           & SDU_PROPERTY(mDisableFailoverForWatcher) ) == IDE_SUCCESS );
+
+    
     return IDE_SUCCESS;
 }
 
@@ -123,21 +154,29 @@ IDE_RC sduProperty::setupUpdateCallback()
 /***********************************************************************
  *
  * Description :
- *    Writable PropertyÏùò Í≤ΩÏö∞ CallBackÏùÑ Îì±Î°ùÌï¥Ïïº Ìï®.
+ *    Writable Property¿« ∞ÊøÏ CallBack¿ª µÓ∑œ«ÿæﬂ «‘.
  *
  * Implementation :
  *
  ***********************************************************************/
 
-    //--------------------------------------------------------
-    // Trace Log Í¥ÄÎ†® property loading
-    //    - Writable PropertyÏù¥ÎØÄÎ°ú CallBackÏùÑ Îì±Î°ùÌïúÎã§.
-    //    - Atomic OperationÏù¥ÎØÄÎ°ú, BeforeCallBackÏùÄ ÌïÑÏöî ÏóÜÎã§.
-    //--------------------------------------------------------
+    /* BUG-45899 */ 
+    IDE_TEST( idp::setupAfterUpdateCallback( "TRCLOG_DETAIL_SHARD",
+                                             sduProperty::changeTRCLOG_DETAIL_SHARD )
+              != IDE_SUCCESS );
+
+    IDE_TEST( idp::setupAfterUpdateCallback( "__SHARD_LOCAL_FORCE",
+                                             sduProperty::changeSHARD_LOCAL_FORCE )
+              != IDE_SUCCESS );
 
     /* PROJ-2687 Shard aggregation transform */ 
-    IDE_TEST( idp::setupAfterUpdateCallback( "__SHARD_AGGREGATION_TRANSFORM_DISABLE",
-                                             sduProperty::changeSHARD_AGGREGATION_TRANSFORM_DISABLE )
+    IDE_TEST( idp::setupAfterUpdateCallback( "SHARD_AGGREGATION_TRANSFORM_ENABLE",
+                                             sduProperty::changeSHARD_AGGREGATION_TRANSFORM_ENABLE )
+              != IDE_SUCCESS );
+
+    /* TASK-7219 */
+    IDE_TEST( idp::setupAfterUpdateCallback( "SHARD_TRANSFORM_MODE",
+                                             sduProperty::changeSHARD_TRANSFORM_MODE )
               != IDE_SUCCESS );
 
     IDE_TEST( idp::setupAfterUpdateCallback( "SHARD_INTERNAL_CONN_ATTR_RETRY_COUNT",
@@ -156,31 +195,12 @@ IDE_RC sduProperty::setupUpdateCallback()
                                              sduProperty::changeSHARD_INTERNAL_CONN_ATTR_LOGIN_TIMEOUT )
               != IDE_SUCCESS );
 
-    /* BUG-45967 Rebuild Data ÏôÑÎ£å ÎåÄÍ∏∞ */
+    /* BUG-45967 Rebuild Data øœ∑· ¥Î±‚ */
     IDE_TEST( idp::setupAfterUpdateCallback( "SHARD_REBUILD_DATA_STEP",
                                              sduProperty::changeSHARD_REBUILD_DATA_STEP )
               != IDE_SUCCESS );
 
-    /* BUG-45899 */ 
-    IDE_TEST( idp::setupAfterUpdateCallback( "TRCLOG_DETAIL_SHARD",
-                                             sduProperty::changeTRCLOG_DETAIL_SHARD )
-              != IDE_SUCCESS );
-
-    /* BUG-46100 SMN Propagation Failure Ignore */
-    IDE_TEST( idp::setupAfterUpdateCallback( "SHARD_IGNORE_SMN_PROPAGATION_FAILURE",
-                                             sduProperty::changeSHARD_IGNORE_SMN_PROPAGATION_FAILURE )
-              != IDE_SUCCESS );
-
-    /* BUG-46100 Session SMN Update */
-    IDE_TEST( idp::setupAfterUpdateCallback( "SHARD_ALLOW_OLD_SMN",
-                                             sduProperty::changeSHARD_ALLOW_OLD_SMN )
-              != IDE_SUCCESS );
-
     /* PROJ-2701 Online data rebuild */
-    IDE_TEST( idp::setupAfterUpdateCallback("SHARD_META_HISTORY_AUTO_PURGE_DISABLE",
-                                            sduProperty::changeSHARD_META_HISTORY_AUTO_PURGE_DISABLE)
-              != IDE_SUCCESS );
-
     IDE_TEST( idp::setupAfterUpdateCallback("SHARD_REBUILD_PLAN_DETAIL_FORCE_ENABLE",
                                             sduProperty::changeSHARD_REBUILD_PLAN_DETAIL_FORCE_ENABLE)
               != IDE_SUCCESS );
@@ -197,9 +217,32 @@ IDE_RC sduProperty::setupUpdateCallback()
                                             sduProperty::changeSHARD_TRANSFORM_STRING_LENGTH_MAX)
               != IDE_SUCCESS );
 
-    IDE_TEST( idp::setupAfterUpdateCallback("SHARD_SMN_CACHE_APPLY_ENABLE",
-                                            sduProperty::changeSHARD_SMN_CACHE_APPLY_ENABLE)
+    // BUG-47817
+    IDE_TEST( idp::setupAfterUpdateCallback("SHARD_ADMIN_MODE",
+                                            sduProperty::changeSHARD_ADMIN_MODE)
               != IDE_SUCCESS );
+
+    /* PROJ-2726 Sharding Node Manager */
+    IDE_TEST( idp::setupAfterUpdateCallback("ZOOKEEPER_LOCK_WAIT_TIMEOUT",
+                                            sduProperty::changeZOOKEEPER_LOCK_WAIT_TIMEOUT)
+              != IDE_SUCCESS );
+
+    IDE_TEST( idp::setupAfterUpdateCallback("SHARD_STATEMENT_RETRY",
+                                            sduProperty::changeSHARD_STATEMENT_RETRY)
+              != IDE_SUCCESS );
+
+    IDE_TEST( idp::setupAfterUpdateCallback("SHARD_DDL_LOCK_TIMEOUT",
+                                            sduProperty::changeSHARD_DDL_LOCK_TIMEOUT)
+              != IDE_SUCCESS );
+
+    IDE_TEST( idp::setupAfterUpdateCallback("SHARD_DDL_LOCK_TRY_COUNT",
+                                            sduProperty::changeSHARD_DDL_LOCK_TRY_COUNT)
+              != IDE_SUCCESS );
+
+    IDE_TEST( idp::setupAfterUpdateCallback("__DISABLE_FAILOVER_FOR_WATCHER",
+                                            sduProperty::changeDISABLE_FAILOVER_FOR_WATCHER)
+              != IDE_SUCCESS );
+
 
     return IDE_SUCCESS;
 
@@ -208,14 +251,56 @@ IDE_RC sduProperty::setupUpdateCallback()
     return IDE_FAILURE;
 }
 
-/* PROJ-2687 Shard aggregation transform */
-IDE_RC sduProperty::changeSHARD_AGGREGATION_TRANSFORM_DISABLE( idvSQL * /* aStatistics */,
-                                                               SChar  * /* aName */,
-                                                               void   * /* aOldValue */,
-                                                               void   * aNewValue,
-                                                               void   * /* aArg */ )
+/* BUG-45899 */
+IDE_RC sduProperty::changeTRCLOG_DETAIL_SHARD( idvSQL * /* aStatistics */,
+                                               SChar  * /* aName */,
+                                               void   * /* aOldValue */,
+                                               void   * aNewValue,
+                                               void   * /* aArg */ )
 {
-    idlOS::memcpy( &SDU_PROPERTY( mShardAggrTransformDisable ),
+    idlOS::memcpy( &SDU_PROPERTY( mTrclogDetailShard ),
+                   aNewValue,
+                   ID_SIZEOF( UInt ) );
+
+    return IDE_SUCCESS;
+}
+
+/* PROJ-2687 Shard aggregation transform */
+IDE_RC sduProperty::changeSHARD_LOCAL_FORCE( idvSQL * /* aStatistics */,
+                                             SChar  * /* aName */,
+                                             void   * /* aOldValue */,
+                                             void   * aNewValue,
+                                             void   * /* aArg */ )
+{
+    idlOS::memcpy( &SDU_PROPERTY( mShardLocalForce ),
+                   aNewValue,
+                   ID_SIZEOF( UInt ) );
+
+    return IDE_SUCCESS;
+}
+
+/* PROJ-2687 Shard aggregation transform */
+IDE_RC sduProperty::changeSHARD_AGGREGATION_TRANSFORM_ENABLE( idvSQL * /* aStatistics */,
+                                                              SChar  * /* aName */,
+                                                              void   * /* aOldValue */,
+                                                              void   * aNewValue,
+                                                              void   * /* aArg */ )
+{
+    idlOS::memcpy( &SDU_PROPERTY( mShardAggregationTransformEnable ),
+                   aNewValue,
+                   ID_SIZEOF( UInt ) );
+
+    return IDE_SUCCESS;
+}
+
+/* TASK-7219 */
+IDE_RC sduProperty::changeSHARD_TRANSFORM_MODE( idvSQL * /* aStatistics */,
+                                                SChar  * /* aName */,
+                                                void   * /* aOldValue */,
+                                                void   * aNewValue,
+                                                void   * /* aArg */ )
+{
+    idlOS::memcpy( &SDU_PROPERTY( mShardTransformMode ),
                    aNewValue,
                    ID_SIZEOF( UInt ) );
 
@@ -274,7 +359,7 @@ IDE_RC sduProperty::changeSHARD_INTERNAL_CONN_ATTR_LOGIN_TIMEOUT( idvSQL* /* aSt
     return IDE_SUCCESS;
 }
 
-/* BUG-45967 Rebuild Data ÏôÑÎ£å ÎåÄÍ∏∞ */
+/* BUG-45967 Rebuild Data øœ∑· ¥Î±‚ */
 IDE_RC sduProperty::changeSHARD_REBUILD_DATA_STEP( idvSQL * /* aStatistics */,
                                                    SChar  * /* aName */,
                                                    void   * /* aOldValue */,
@@ -284,62 +369,6 @@ IDE_RC sduProperty::changeSHARD_REBUILD_DATA_STEP( idvSQL * /* aStatistics */,
     idlOS::memcpy( & SDU_PROPERTY( mShardRebuildDataStep ),
                    aNewValue,
                    ID_SIZEOF( SInt ) );
-
-    return IDE_SUCCESS;
-}
-
-/* BUG-45899 */
-IDE_RC sduProperty::changeTRCLOG_DETAIL_SHARD( idvSQL* /* aStatistics */,
-                                               SChar * /* aName */,
-                                               void  * /* aOldValue */,
-                                               void  * aNewValue,
-                                               void  * /* aArg */)
-{
-    idlOS::memcpy( &SDU_PROPERTY( mTrclogDetailShard ),
-                   aNewValue,
-                   ID_SIZEOF(UInt) );
-
-    return IDE_SUCCESS;
-}
-
-/* BUG-46100 SMN Propagation Failure Ignore */
-IDE_RC sduProperty::changeSHARD_IGNORE_SMN_PROPAGATION_FAILURE( idvSQL * /* aStatistics */,
-                                                                SChar  * /* aName */,
-                                                                void   * /* aOldValue */,
-                                                                void   * aNewValue,
-                                                                void   * /* aArg */ )
-{
-    idlOS::memcpy( & SDU_PROPERTY( mShardIgnoreSmnPropagationFailure ),
-                   aNewValue,
-                   ID_SIZEOF( UInt ) );
-
-    return IDE_SUCCESS;
-}
-
-/* BUG-46100 Session SMN Update */
-IDE_RC sduProperty::changeSHARD_ALLOW_OLD_SMN( idvSQL * /* aStatistics */,
-                                               SChar  * /* aName */,
-                                               void   * /* aOldValue */,
-                                               void   * aNewValue,
-                                               void   * /* aArg */ )
-{
-    idlOS::memcpy( & SDU_PROPERTY( mShardAllowOldSmn ),
-                   aNewValue,
-                   ID_SIZEOF( UInt ) );
-
-    return IDE_SUCCESS;
-}
-
-/* PROJ-2701 Sharding online data rebuild */
-IDE_RC sduProperty::changeSHARD_META_HISTORY_AUTO_PURGE_DISABLE( idvSQL* /* aStatistics */,
-                                                                 SChar * /* aName */,
-                                                                 void  * /* aOldValue */,
-                                                                 void  * aNewValue,
-                                                                 void  * /* aArg */)
-{
-    idlOS::memcpy( &SDU_PROPERTY( mShardMetaHistoryAutoPurgeDisable ),
-                   aNewValue,
-                   ID_SIZEOF( UInt ) );
 
     return IDE_SUCCESS;
 }
@@ -396,15 +425,83 @@ IDE_RC sduProperty::changeSHARD_TRANSFORM_STRING_LENGTH_MAX( idvSQL* /* aStatist
     return IDE_SUCCESS;
 }
 
-IDE_RC sduProperty::changeSHARD_SMN_CACHE_APPLY_ENABLE( idvSQL* /* aStatistics */,
-                                                        SChar * /* aName */,
-                                                        void  * /* aOldValue */,
-                                                        void  * aNewValue,
-                                                        void  * /* aArg */)
+// BUG-47817
+IDE_RC sduProperty::changeSHARD_ADMIN_MODE( idvSQL* /* aStatistics */,
+                                            SChar * /* aName */,
+                                            void  * /* aOldValue */,
+                                            void  * aNewValue,
+                                            void  * /* aArg */)
 {
-    idlOS::memcpy( &SDU_PROPERTY( mShardSMNCacheApplyEnable ),
+    idlOS::memcpy( &SDU_PROPERTY( mShardAdminMode ),
                    aNewValue,
                    ID_SIZEOF( UInt ) );
 
     return IDE_SUCCESS;
 }
+
+/* PROJ-2726 Sharding Node Manager */
+IDE_RC sduProperty::changeZOOKEEPER_LOCK_WAIT_TIMEOUT( idvSQL* /* aStatistics */,
+                                                       SChar * /* aName */,
+                                                       void  * /* aOldValue */,
+                                                       void  * aNewValue,
+                                                       void  * /* aArg */)
+{
+    idlOS::memcpy( &SDU_PROPERTY( mZookeeperLockWaitTimeout ),
+                   aNewValue,
+                   ID_SIZEOF( UInt ) );
+
+    return IDE_SUCCESS;
+}
+
+IDE_RC sduProperty::changeSHARD_STATEMENT_RETRY( idvSQL* /* aStatistics */,
+                                                 SChar * /* aName */,
+                                                 void  * /* aOldValue */,
+                                                 void  * aNewValue,
+                                                 void  * /* aArg */)
+{
+    idlOS::memcpy( &SDU_PROPERTY( mShardStatementRetry ),
+                   aNewValue,
+                   ID_SIZEOF( UInt ) );
+
+    return IDE_SUCCESS;
+}
+
+IDE_RC sduProperty::changeSHARD_DDL_LOCK_TIMEOUT( idvSQL* /* aStatistics */,
+    SChar * /* aName */,
+    void  * /* aOldValue */,
+    void  * aNewValue,
+    void  * /* aArg */)
+{
+    idlOS::memcpy( &SDU_PROPERTY( mShardDDLLockTimeout ),
+                   aNewValue,
+                   ID_SIZEOF( UInt ) );
+
+    return IDE_SUCCESS;
+}
+
+IDE_RC sduProperty::changeSHARD_DDL_LOCK_TRY_COUNT( idvSQL* /* aStatistics */,
+                                                    SChar * /* aName */,
+                                                    void  * /* aOldValue */,
+                                                    void  * aNewValue,
+                                                    void  * /* aArg */)
+{
+    idlOS::memcpy( &SDU_PROPERTY( mShardDDLLockTryCount ),
+                   aNewValue,
+                   ID_SIZEOF( UInt ) );
+    
+    return IDE_SUCCESS;
+}
+
+IDE_RC sduProperty::changeDISABLE_FAILOVER_FOR_WATCHER( idvSQL* /* aStatistics */,
+                                                        SChar * /* aName */,
+                                                        void  * /* aOldValue */,
+                                                        void  * aNewValue,
+                                                        void  * /* aArg */)
+{
+    idlOS::memcpy( &SDU_PROPERTY( mDisableFailoverForWatcher ),
+                   aNewValue,
+                   ID_SIZEOF( UInt ) );
+
+    return IDE_SUCCESS;
+}
+

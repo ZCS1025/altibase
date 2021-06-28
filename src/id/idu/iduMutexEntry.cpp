@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduMutexEntry.cpp 85186 2019-04-09 07:37:00Z jayce.park $
+ * $Id: iduMutexEntry.cpp 86279 2019-10-15 01:10:42Z hykim $
  **********************************************************************/
 
 #include <idl.h>
@@ -41,7 +41,6 @@ iduMutexEntry::initialize(const SChar      *aName,
     mStat.mBusyValue        = (aBusyValue == 0 ? 1 : aBusyValue);
     mStat.mAccLockCount     = 0;
     mStat.mOwner            = (ULong)PDL_INVALID_HANDLE;
-    mRecursiveCount         = 0;
     idlOS::memset( &mWeArgs, 0x00, ID_SIZEOF(idvWeArgs) );
     mWeArgs.mWaitEventID = aWEID;
 
@@ -90,8 +89,8 @@ iduMutexEntry::setName(SChar *aName)
 }
 
 /* 
- * BUG-43940 V$mutexì—ì„œ mutex lockì„ íšë“í•œ ìŠ¤ë ˆë“œ IDì¶œë ¥
- * lockì„ íšë“í•œ mOwnerë¥¼ 16ì§„ìˆ˜ë¡œ ì¶œë ¥í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+ * BUG-43940 V$mutex¿¡¼­ mutex lockÀ» È¹µæÇÑ ½º·¹µå IDÃâ·Â
+ * lockÀ» È¹µæÇÑ mOwner¸¦ 16Áø¼ö·Î Ãâ·ÂÇÏ±â À§ÇÑ ÇÔ¼ö
 */
 void
 iduMutexEntry::setThreadID()

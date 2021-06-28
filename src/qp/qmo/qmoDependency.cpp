@@ -21,21 +21,21 @@
  * Description :
  *     Plan Dependency Manager
  *
- *     ê° Plan Node ìƒì„± ì‹œ Plan ê°„ì˜ ê´€ê³„ë¥¼ ê³ ë ¤í•˜ì—¬,
- *     í•´ë‹¹ Planì˜ Dependencyë¥¼ ì„¤ì •í•˜ëŠ” ì ˆì°¨ë¥¼ ì œê³µí•œë‹¤.
+ *     °¢ Plan Node »ı¼º ½Ã Plan °£ÀÇ °ü°è¸¦ °í·ÁÇÏ¿©,
+ *     ÇØ´ç PlanÀÇ Dependency¸¦ ¼³Á¤ÇÏ´Â ÀıÂ÷¸¦ Á¦°øÇÑ´Ù.
  *
- *     ì•„ë˜ì™€ ê°™ì´ ì´ 6ë‹¨ê³„ì˜ ì ˆì°¨ë¥¼ í†µí•´ Planì˜ Depenendencyê°€ ê²°ì •ëœë‹¤.
+ *     ¾Æ·¡¿Í °°ÀÌ ÃÑ 6´Ü°èÀÇ ÀıÂ÷¸¦ ÅëÇØ PlanÀÇ Depenendency°¡ °áÁ¤µÈ´Ù.
  *
- *     - 1ë‹¨ê³„ : Set Tuple ID
- *     - 2ë‹¨ê³„ : Dependencies ìƒì„±
- *     - 3ë‹¨ê³„ : Table Map ë³´ì •
- *     - 4ë‹¨ê³„ : Dependency ê²°ì •
- *     - 5ë‹¨ê³„ : Dependency ë³´ì •
- *     - 6ë‹¨ê³„ : Dependencies ë³´ì •
+ *     - 1´Ü°è : Set Tuple ID
+ *     - 2´Ü°è : Dependencies »ı¼º
+ *     - 3´Ü°è : Table Map º¸Á¤
+ *     - 4´Ü°è : Dependency °áÁ¤
+ *     - 5´Ü°è : Dependency º¸Á¤
+ *     - 6´Ü°è : Dependencies º¸Á¤
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -58,38 +58,38 @@ qmoDependency::setDependency( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *    í•´ë‹¹ Plan Nodeì˜ Dependency ë° Depedenciesë¥¼ ê²°ì •í•œë‹¤.
- *    ì´ ì™¸ì—ë„ Predicateì´ë‚˜ Expressionì— ì¡´ì¬í•˜ëŠ”
- *    Subqueryì˜ Plan Treeë¥¼ ìƒì„±í•œë‹¤.
+ *    ÇØ´ç Plan NodeÀÇ Dependency ¹× Depedencies¸¦ °áÁ¤ÇÑ´Ù.
+ *    ÀÌ ¿Ü¿¡µµ PredicateÀÌ³ª Expression¿¡ Á¸ÀçÇÏ´Â
+ *    SubqueryÀÇ Plan Tree¸¦ »ı¼ºÇÑ´Ù.
  *
- *        - aDependencyFlag : í”Œëœì˜ Dependencyê´€ë ¨ëœ Flag ë¥¼ ì„¤ì •
- *        - aTupleID : Tupleì„ ê°€ì§€ê³  ìˆëŠ” ê²½ìš° ê·¸ ê°’ì„ ì…‹íŒ…
- *        - aTarget  : Targetì´ ìˆëŠ” ê²½ìš° ì„¤ì •
- *        - aPredCount : Predicate ë˜ëŠ” Expressionì„ êµ¬ì„±í•˜ëŠ” ì¢…ë¥˜ì˜ ê°œìˆ˜
- *        - aPredExpr  : ëª¨ë“  Predicateì´ë‚˜ Expressionì˜ ì‹œì‘ ìœ„ì¹˜
- *            Ex) SCAN ë…¸ë“œì˜ ê²½ìš°, ë‹¤ìŒê³¼ ê°™ì€ Predicateì´ ì¡´ì¬í•¨.
+ *        - aDependencyFlag : ÇÃ·£ÀÇ Dependency°ü·ÃµÈ Flag ¸¦ ¼³Á¤
+ *        - aTupleID : TupleÀ» °¡Áö°í ÀÖ´Â °æ¿ì ±× °ªÀ» ¼ÂÆÃ
+ *        - aTarget  : TargetÀÌ ÀÖ´Â °æ¿ì ¼³Á¤
+ *        - aPredCount : Predicate ¶Ç´Â ExpressionÀ» ±¸¼ºÇÏ´Â Á¾·ùÀÇ °³¼ö
+ *        - aPredExpr  : ¸ğµç PredicateÀÌ³ª ExpressionÀÇ ½ÃÀÛ À§Ä¡
+ *            Ex) SCAN ³ëµåÀÇ °æ¿ì, ´ÙÀ½°ú °°Àº PredicateÀÌ Á¸ÀçÇÔ.
  *                - constantFilter, filter, subqueryFilter
  *                - fixKeyRangeOrg, varKeyRange,
  *                - fixKeyFilterOrg, varKeyRange,
- *                - ìœ„ì˜ ê²½ìš° ë‹¤ìŒê³¼ ê°™ì´ ê°’ì´ ì„¤ì •ë¨
+ *                - À§ÀÇ °æ¿ì ´ÙÀ½°ú °°ÀÌ °ªÀÌ ¼³Á¤µÊ
  *                    - aPredCount : 7
- *                    - aPredExpr  : í•´ë‹¹ predicateì˜ ì‹œì‘ ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚¤ëŠ” ë°°ì—´
- *            Cf) ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°ì—ë„ ì„¤ì •í•¨.
+ *                    - aPredExpr  : ÇØ´ç predicateÀÇ ½ÃÀÛ À§Ä¡¸¦ °¡¸®Å°´Â ¹è¿­
+ *            Cf) Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì¿¡µµ ¼³Á¤ÇÔ.
  *
- *        - aMtrCount : ì €ì¥ ë…¸ë“œì˜ ì¢…ë¥˜ì˜ ê°œìˆ˜
- *        - aMtrNode  : ëª¨ë“  ì €ì¥ ë…¸ë“œì˜ ì‹œì‘ ìœ„ì¹˜
- *            Ex) AGGR ë…¸ë“œì˜ ê²½ìš°, ë‹¤ìŒê³¼ ê°™ì€ ë‘ ì¢…ë¥˜ì˜ ì €ì¥ ë…¸ë“œê°€ ì¡´ì¬í•¨.
+ *        - aMtrCount : ÀúÀå ³ëµåÀÇ Á¾·ùÀÇ °³¼ö
+ *        - aMtrNode  : ¸ğµç ÀúÀå ³ëµåÀÇ ½ÃÀÛ À§Ä¡
+ *            Ex) AGGR ³ëµåÀÇ °æ¿ì, ´ÙÀ½°ú °°Àº µÎ Á¾·ùÀÇ ÀúÀå ³ëµå°¡ Á¸ÀçÇÔ.
  *                - myNode, distNode
  *
  * Implementation :
- *     - Tuple IDë¥¼ ìê¸°ëŠ” NODEë“¤ì€ Table Mapì— ë“±ë¡í•œë‹¤.
- *     - Dependency ì„¤ì •ì˜ ê° 6 ë‹¨ê³„ë¥¼ ìˆ˜í–‰í•œë‹¤.
- *          - 1 ë‹¨ê³„ : Tuple ID ì„¤ì • ë‹¨ê³„
- *          - 2 ë‹¨ê³„ : Dependencies ê²°ì • ë‹¨ê³„
- *          - 3 ë‹¨ê³„ : Table Map ë³´ì • ë‹¨ê³„
- *          - 4 ë‹¨ê³„ : Dependency ê²°ì • ë‹¨ê³„
- *          - 5 ë‹¨ê³„ : Dependecny ë³´ì • ë‹¨ê³„ : 4ë‹¨ê³„ì— í¬í•¨ë¨
- *          - 6 ë‹¨ê³„ : Dependencies ë³´ì • ë‹¨ê³„
+ *     - Tuple ID¸¦ ÀÚ±â´Â NODEµéÀº Table Map¿¡ µî·ÏÇÑ´Ù.
+ *     - Dependency ¼³Á¤ÀÇ °¢ 6 ´Ü°è¸¦ ¼öÇàÇÑ´Ù.
+ *          - 1 ´Ü°è : Tuple ID ¼³Á¤ ´Ü°è
+ *          - 2 ´Ü°è : Dependencies °áÁ¤ ´Ü°è
+ *          - 3 ´Ü°è : Table Map º¸Á¤ ´Ü°è
+ *          - 4 ´Ü°è : Dependency °áÁ¤ ´Ü°è
+ *          - 5 ´Ü°è : Dependecny º¸Á¤ ´Ü°è : 4´Ü°è¿¡ Æ÷ÇÔµÊ
+ *          - 6 ´Ü°è : Dependencies º¸Á¤ ´Ü°è
  *
  ***********************************************************************/
 
@@ -105,7 +105,7 @@ qmoDependency::setDependency( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoDependency::setDependency::__FT__" );
 
     //----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -113,7 +113,7 @@ qmoDependency::setDependency( qcStatement * aStatement,
     IDE_DASSERT( aPlan != NULL );
 
     //---------------------------------------------------------
-    // 1 ë‹¨ê³„ : Tuple ID ì„¤ì • ë‹¨ê³„
+    // 1 ´Ü°è : Tuple ID ¼³Á¤ ´Ü°è
     //---------------------------------------------------------
 
     qtc::dependencyClear( & aPlan->depInfo );
@@ -131,24 +131,24 @@ qmoDependency::setDependency( qcStatement * aStatement,
     }
 
     //---------------------------------------------------------
-    // 2 ë‹¨ê³„ : Dependencies ê²°ì • ë‹¨ê³„
+    // 2 ´Ü°è : Dependencies °áÁ¤ ´Ü°è
     //---------------------------------------------------------
 
     qtc::dependencyClear( & sTotalDependencies );
     qtc::dependencyClear( & sMtrDependencies );
 
     //-------------------------------------------
-    // Predicate/Expressionì˜ ëª¨ë“  Dependenciesì¶”ì¶œ
-    //     - 2ë‹¨ê³„ ë˜ëŠ” 6ë‹¨ê³„ì—ì„œ ì‚¬ìš©ë¨
+    // Predicate/ExpressionÀÇ ¸ğµç DependenciesÃßÃâ
+    //     - 2´Ü°è ¶Ç´Â 6´Ü°è¿¡¼­ »ç¿ëµÊ
     //-------------------------------------------
 
-    // Targetìœ¼ë¡œë¶€í„° Dependenciesì¶”ì¶œ
+    // TargetÀ¸·ÎºÎÅÍ DependenciesÃßÃâ
     for ( sTarget = aTarget; sTarget != NULL; sTarget = sTarget->next )
     {
         qtc::dependencySetWithDep( & sDependencies ,
                                    & sTotalDependencies );
 
-        // BUG-38228 group by ê°€ ìˆì„ë•ŒëŠ” target ì— pass nodeê°€ ìˆì„ìˆ˜ ìˆë‹¤.
+        // BUG-38228 group by °¡ ÀÖÀ»¶§´Â target ¿¡ pass node°¡ ÀÖÀ»¼ö ÀÖ´Ù.
         if ( sTarget->targetColumn->node.module == &qtc::passModule )
         {
             sTargetNode = (qtcNode*)(sTarget->targetColumn->node.arguments);
@@ -164,7 +164,7 @@ qmoDependency::setDependency( qcStatement * aStatement,
                   != IDE_SUCCESS );
     }
 
-    // Predicateì´ë‚˜ Expressionìœ¼ë¡œë¶€í„° ì¶”ì¶œ
+    // PredicateÀÌ³ª ExpressionÀ¸·ÎºÎÅÍ ÃßÃâ
     for ( i = 0; i < aPredCount; i++ )
     {
         if ( aPredExpr[i] != NULL )
@@ -184,15 +184,15 @@ qmoDependency::setDependency( qcStatement * aStatement,
     }
 
     //-------------------------------------------
-    // ìœ í˜•ì— ë”°ë¥¸ 2ë‹¨ê³„ ìˆ˜í–‰
+    // À¯Çü¿¡ µû¸¥ 2´Ü°è ¼öÇà
     //-------------------------------------------
 
     if ( ( aDependencyFlag & QMO_DEPENDENCY_STEP2_DEP_MASK ) ==
          QMO_DEPENDENCY_STEP2_DEP_WITH_PREDICATE )
     {
         //------------------------------------
-        // Predicateì´ë‚˜ Expresssionìœ¼ë¡œë¶€í„°
-        // dependenciesë¥¼ ê²°ì •í•˜ëŠ” ê²½ìš°
+        // PredicateÀÌ³ª ExpresssionÀ¸·ÎºÎÅÍ
+        // dependencies¸¦ °áÁ¤ÇÏ´Â °æ¿ì
         //------------------------------------
 
         IDE_TEST( qmoDependency::step2makeDependencies( aPlan,
@@ -204,9 +204,9 @@ qmoDependency::setDependency( qcStatement * aStatement,
     else
     {
         //------------------------------------
-        // Materialization Nodeë“¤ë¡œë¶€í„°
-        // dependenciesë¥¼ ê²°ì •í•˜ëŠ” ê²½ìš°
-        // Joinì— ì°¸ì—¬í•˜ëŠ” HASH, SORT ë…¸ë“œê°€ ì´ì— í•´ë‹¹í•¨.
+        // Materialization Nodeµé·ÎºÎÅÍ
+        // dependencies¸¦ °áÁ¤ÇÏ´Â °æ¿ì
+        // Join¿¡ Âü¿©ÇÏ´Â HASH, SORT ³ëµå°¡ ÀÌ¿¡ ÇØ´çÇÔ.
         //------------------------------------
 
         IDE_DASSERT( aMtrNode != NULL && aMtrCount > 0 );
@@ -233,7 +233,7 @@ qmoDependency::setDependency( qcStatement * aStatement,
                                                         & sMtrDependencies )
                   != IDE_SUCCESS );
 
-        // Materialized Columnì— ëŒ€í•œ Plan Treeë¥¼ ìƒì„±í•¨.
+        // Materialized Column¿¡ ´ëÇÑ Plan Tree¸¦ »ı¼ºÇÔ.
         for ( i = 0; i < aMtrCount; i++ )
         {
             for ( sMtrNode = aMtrNode[i];
@@ -249,7 +249,7 @@ qmoDependency::setDependency( qcStatement * aStatement,
     }
 
     //---------------------------------------------------------
-    // 3 ë‹¨ê³„ : Table Map ë³´ì • ë‹¨ê³„
+    // 3 ´Ü°è : Table Map º¸Á¤ ´Ü°è
     //---------------------------------------------------------
 
     if ( ( aDependencyFlag & QMO_DEPENDENCY_STEP3_TABLEMAP_REFINE_MASK )
@@ -266,11 +266,11 @@ qmoDependency::setDependency( qcStatement * aStatement,
         // Nothing To Do
     }
 
-    // Target Columnì— ëŒ€í•œ plan treeë¥¼ ìƒì„±í•œë‹¤.
-    // ì´ëŠ” 3ë‹¨ê³„ê°€ ì§€ë‚œ í›„ì— ì²˜ë¦¬ë¥¼ í•´ì£¼ë„ë¡ í•œë‹¤.
+    // Target Column¿¡ ´ëÇÑ plan tree¸¦ »ı¼ºÇÑ´Ù.
+    // ÀÌ´Â 3´Ü°è°¡ Áö³­ ÈÄ¿¡ Ã³¸®¸¦ ÇØÁÖµµ·Ï ÇÑ´Ù.
     for ( sTarget = aTarget; sTarget != NULL; sTarget = sTarget->next )
     {
-        // BUG-38228 group by ê°€ ìˆì„ë•ŒëŠ” target ì— pass nodeê°€ ìˆì„ìˆ˜ ìˆë‹¤.
+        // BUG-38228 group by °¡ ÀÖÀ»¶§´Â target ¿¡ pass node°¡ ÀÖÀ»¼ö ÀÖ´Ù.
         if ( sTarget->targetColumn->node.module == &qtc::passModule )
         {
             sTargetNode = (qtcNode*)(sTarget->targetColumn->node.arguments);
@@ -287,14 +287,14 @@ qmoDependency::setDependency( qcStatement * aStatement,
     }
 
     //--------------------------------------
-    // Plan Tree ìƒì„± ë° Host ë³€ìˆ˜ ë“±ë¡
+    // Plan Tree »ı¼º ¹× Host º¯¼ö µî·Ï
     //--------------------------------------
 
     for ( i = 0; i < aPredCount; i++ )
     {
         if ( aPredExpr[i] != NULL )
         {
-            // Plan Tree ìƒì„±
+            // Plan Tree »ı¼º
             IDE_TEST( qmoSubquery::makePlan( aStatement,
                                              aTupleID,
                                              aPredExpr[i] )
@@ -307,8 +307,8 @@ qmoDependency::setDependency( qcStatement * aStatement,
     }
 
     //---------------------------------------------------------
-    // 4 ë‹¨ê³„ : Dependency ê²°ì • ë‹¨ê³„
-    // 5 ë‹¨ê³„ : Dependecny ë³´ì • ë‹¨ê³„ : 4ë‹¨ê³„ì— í¬í•¨ë¨
+    // 4 ´Ü°è : Dependency °áÁ¤ ´Ü°è
+    // 5 ´Ü°è : Dependecny º¸Á¤ ´Ü°è : 4´Ü°è¿¡ Æ÷ÇÔµÊ
     //---------------------------------------------------------
 
     IDE_TEST( qmoDependency::step4decideDependency( aStatement ,
@@ -317,7 +317,7 @@ qmoDependency::setDependency( qcStatement * aStatement,
               != IDE_SUCCESS );
 
     //---------------------------------------------------------
-    // 6 ë‹¨ê³„ : Dependencies ë³´ì • ë‹¨ê³„
+    // 6 ´Ü°è : Dependencies º¸Á¤ ´Ü°è
     //---------------------------------------------------------
 
     if( ( aDependencyFlag & QMO_DEPENDENCY_STEP6_DEPENDENCIES_REFINE_MASK ) ==
@@ -345,24 +345,24 @@ qmoDependency::step1setTupleID( qcStatement * aStatement ,
 {
 /***********************************************************************
  *
- * Description : Dependencyê´€ë¦¬ì¤‘ 1ë‹¨ê³„ì¸ ìì‹ ì˜ Tuple IDë¥¼ Table Mapì—
- *               ë“±ë¡í•œë‹¤.
+ * Description : Dependency°ü¸®Áß 1´Ü°èÀÎ ÀÚ½ÅÀÇ Tuple ID¸¦ Table Map¿¡
+ *               µî·ÏÇÑ´Ù.
  *
  * Implementation :
- *     - Tuple IDë¥¼ ìê¸°ëŠ” NODEë“¤ì€ Table Mapì— ë“±ë¡í•œë‹¤.
+ *     - Tuple ID¸¦ ÀÚ±â´Â NODEµéÀº Table Map¿¡ µî·ÏÇÑ´Ù.
  *
  ***********************************************************************/
 
     IDU_FIT_POINT_FATAL( "qmoDependency::step1setTupleID::__FT__" );
 
     //----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //----------------------------------
-    //Table Mapì— ë“±ë¡
+    //Table Map¿¡ µî·Ï
     //----------------------------------
 
     QC_SHARED_TMPLATE(aStatement)->tableMap[aTupleID].dependency = (ULong)aTupleID;
@@ -378,17 +378,17 @@ qmoDependency::step2makeDependencies( qmnPlan     * aPlan ,
 {
 /***********************************************************************
  *
- * Description : Dependencyê´€ë¦¬ì¤‘ 2ë‹¨ê³„ì¸ ëŒ€í‘œ Dependencyë¥¼ ìœ„í•´
- *               dependenciesë¥¼ êµ¬ì„±í•œë‹¤.
+ * Description : Dependency°ü¸®Áß 2´Ü°èÀÎ ´ëÇ¥ Dependency¸¦ À§ÇØ
+ *               dependencies¸¦ ±¸¼ºÇÑ´Ù.
  *
  * Implementation :
- *     - 4ê°€ì§€ë¡œ êµ¬ë¶„ì„ í•œë‹¤.
- *         - ë…¸ë“œì˜ ì¢…ë¥˜ : ê°œë…ìƒ Base Tableì„ ì˜ë¯¸ í•˜ëŠ” NODE
- *         - ë…¸ë“œì˜ ì¢…ë¥˜ : í•˜ìœ„ childì˜ dependenciesë¥¼ í¬í•¨í•˜ëŠ” NODE
- *         - ì—°ì‚°ì˜ ì¢…ë¥˜ : ëª¨ë“  Predicate ë° Expressionì˜ dependencies
- *                         í¬í•¨
- *         - ì—°ì‚°ì˜ ì¢…ë¥˜ : Materializationê³¼ Predicateì´ ë‹¤ë¥¸
- *                         dependenciesë¥¼ ê°€ì§€ëŠ” ê²½ìš°
+ *     - 4°¡Áö·Î ±¸ºĞÀ» ÇÑ´Ù.
+ *         - ³ëµåÀÇ Á¾·ù : °³³ä»ó Base TableÀ» ÀÇ¹Ì ÇÏ´Â NODE
+ *         - ³ëµåÀÇ Á¾·ù : ÇÏÀ§ childÀÇ dependencies¸¦ Æ÷ÇÔÇÏ´Â NODE
+ *         - ¿¬»êÀÇ Á¾·ù : ¸ğµç Predicate ¹× ExpressionÀÇ dependencies
+ *                         Æ÷ÇÔ
+ *         - ¿¬»êÀÇ Á¾·ù : Materialization°ú PredicateÀÌ ´Ù¸¥
+ *                         dependencies¸¦ °¡Áö´Â °æ¿ì
  *
  ***********************************************************************/
 
@@ -398,21 +398,21 @@ qmoDependency::step2makeDependencies( qmnPlan     * aPlan ,
     IDU_FIT_POINT_FATAL( "qmoDependency::step2makeDependencies::__FT__" );
 
     //----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //----------------------------------
 
     IDE_DASSERT( aPlan != NULL );
     IDE_DASSERT( aDependencies != NULL );
 
     //----------------------------------
-    //ë…¸ë“œì— ë”°ë¥¸ êµ¬ë¶„
+    //³ëµå¿¡ µû¸¥ ±¸ºĞ
     //----------------------------------
 
     if( ( aDependencyFlag & QMO_DEPENDENCY_STEP2_BASE_TABLE_MASK )
         == QMO_DEPENDENCY_STEP2_BASE_TABLE_TRUE )
     {
-        //ê°œë…ìƒ Base Tableì„ ì˜ë¯¸í•˜ëŠ” NODE
-        //Tuple IDë¡œ ë¶€í„° dependencies í‘œí˜„
+        //°³³ä»ó Base TableÀ» ÀÇ¹ÌÇÏ´Â NODE
+        //Tuple ID·Î ºÎÅÍ dependencies Ç¥Çö
         qtc::dependencySet( aTupleID , & aPlan->depInfo );
     }
     else
@@ -421,13 +421,13 @@ qmoDependency::step2makeDependencies( qmnPlan     * aPlan ,
              == QMO_DEPENDENCY_STEP2_SETNODE_TRUE )
         {
             // PROJ-1358
-            // SET ì˜ ê²½ìš° dependencyë¥¼ ëˆ„ì í•˜ì§€ ì•Šê³ ,
-            // Childì˜ ëŒ€í‘œ outer dependencyë§Œì„ ëˆ„ì í•œë‹¤.
+            // SET ÀÇ °æ¿ì dependency¸¦ ´©ÀûÇÏÁö ¾Ê°í,
+            // ChildÀÇ ´ëÇ¥ outer dependency¸¸À» ´©ÀûÇÑ´Ù.
             qtc::dependencySet( aTupleID , & aPlan->depInfo );
 
             if ( aPlan->children == NULL )
             {
-                // Left Childì˜ ëŒ€í‘œ dependency ëˆ„ì 
+                // Left ChildÀÇ ´ëÇ¥ dependency ´©Àû
                 if( aPlan->left != NULL )
                 {
                     if ( (aPlan->left->flag & QMN_PLAN_OUTER_REF_MASK)
@@ -442,7 +442,7 @@ qmoDependency::step2makeDependencies( qmnPlan     * aPlan ,
                     }
                     else
                     {
-                        // dependencyë¥¼ ëˆ„ì í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                        // dependency¸¦ ´©ÀûÇÏÁö ¾Ê´Â´Ù.
                     }
                 }
                 else
@@ -450,7 +450,7 @@ qmoDependency::step2makeDependencies( qmnPlan     * aPlan ,
                     // Nothing to do.
                 }
 
-                // Right Childì˜ ëŒ€í‘œ dependency ëˆ„ì 
+                // Right ChildÀÇ ´ëÇ¥ dependency ´©Àû
                 if( aPlan->right != NULL )
                 {
                     if ( (aPlan->right->flag & QMN_PLAN_OUTER_REF_MASK)
@@ -465,7 +465,7 @@ qmoDependency::step2makeDependencies( qmnPlan     * aPlan ,
                     }
                     else
                     {
-                        // dependencyë¥¼ ëˆ„ì í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                        // dependency¸¦ ´©ÀûÇÏÁö ¾Ê´Â´Ù.
                     }
                 }
                 else
@@ -476,7 +476,7 @@ qmoDependency::step2makeDependencies( qmnPlan     * aPlan ,
             else
             {
                 // PROJ-1486
-                // Multiple Children Set ì¸ ê²½ìš°
+                // Multiple Children Set ÀÎ °æ¿ì
                 for ( sChildren = aPlan->children;
                       sChildren != NULL;
                       sChildren = sChildren->next )
@@ -493,14 +493,14 @@ qmoDependency::step2makeDependencies( qmnPlan     * aPlan ,
                     }
                     else
                     {
-                        // dependencyë¥¼ ëˆ„ì í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                        // dependency¸¦ ´©ÀûÇÏÁö ¾Ê´Â´Ù.
                     }
                 }
             }
         }
         else
         {
-            //Base Tableì´ ì•„ë‹ˆë¼ì„œ, í•˜ìœ„ì˜ Dependenciesë¥¼ í¬í•¨í•˜ëŠ” NODE
+            //Base TableÀÌ ¾Æ´Ï¶ó¼­, ÇÏÀ§ÀÇ Dependencies¸¦ Æ÷ÇÔÇÏ´Â NODE
             if( aPlan->left != NULL )
             {
                 if( aPlan->right == NULL )
@@ -524,11 +524,11 @@ qmoDependency::step2makeDependencies( qmnPlan     * aPlan ,
     }
 
     //----------------------------------
-    //ì—°ì‚°ì— ë”°ë¥¸ êµ¬ë¶„
+    //¿¬»ê¿¡ µû¸¥ ±¸ºĞ
     //----------------------------------
 
-    //ì—°ì‚°ê³¼ materialize columnë“¤ì˜ dependenciesë¥¼ ì¶”ê°€í•œë‹¤.
-    //NODEì— ë”°ë¼ì„œ dependenciesëŠ” ë¯¸ë¦¬ ê³„ì‚°ë˜ì–´ì„œ ì…ë ¥ëœë‹¤.
+    //¿¬»ê°ú materialize columnµéÀÇ dependencies¸¦ Ãß°¡ÇÑ´Ù.
+    //NODE¿¡ µû¶ó¼­ dependencies´Â ¹Ì¸® °è»êµÇ¾î¼­ ÀÔ·ÂµÈ´Ù.
     IDE_TEST( qtc::dependencyOr( & aPlan->depInfo,
                                  aDependencies,
                                  & aPlan->depInfo )
@@ -549,11 +549,11 @@ qmoDependency::step3refineTableMap( qcStatement * aStatement ,
 {
 /***********************************************************************
  *
- * Description : Dependencyê´€ë¦¬ì¤‘ 3ë‹¨ê³„ì¸ Table Mapì„ ë³´ì •í•œë‹¤.
+ * Description : Dependency°ü¸®Áß 3´Ü°èÀÎ Table MapÀ» º¸Á¤ÇÑ´Ù.
  *
  * Implementation :
- *     - Materialization NODEë“¤ì€ Table Mapì˜ dependencyë¥¼ ë³´ì •í•œë‹¤.
- *     - í•´ë‹¹ ë…¸ë“œì˜
+ *     - Materialization NODEµéÀº Table MapÀÇ dependency¸¦ º¸Á¤ÇÑ´Ù.
+ *     - ÇØ´ç ³ëµåÀÇ
  ***********************************************************************/
 
     qcDepInfo sDependencies;
@@ -562,7 +562,7 @@ qmoDependency::step3refineTableMap( qcStatement * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoDependency::step3refineTableMap::__FT__" );
 
     //----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -572,24 +572,24 @@ qmoDependency::step3refineTableMap( qcStatement * aStatement ,
     qtc::dependencyClear( & sDependencies );
 
     //----------------------------------
-    //dependenciesì— í•´ë‹¹í•˜ëŠ” í…Œì´ë¸” ì¶”ì¶œ
+    //dependencies¿¡ ÇØ´çÇÏ´Â Å×ÀÌºí ÃßÃâ
     //----------------------------------
 
-    //í•´ë‹¹ ë…¸ë“œì˜ dependenciesë¡œ ë¶€í„° í•´ë‹¹ querySetì— í•´ë‹¹í•˜ëŠ”
-    //dependenciesì¶”ì¶œ
+    //ÇØ´ç ³ëµåÀÇ dependencies·Î ºÎÅÍ ÇØ´ç querySet¿¡ ÇØ´çÇÏ´Â
+    //dependenciesÃßÃâ
     qtc::dependencyAnd( & aPlan->depInfo,
                         & aQuerySet->depInfo,
                         & sDependencies );
 
-    //ì¶”ì¶œëœ dependenciesì— í•´ë‹¹í•˜ëŠ” í…Œì´ë¸” ì¶”ì¶œ
+    //ÃßÃâµÈ dependencies¿¡ ÇØ´çÇÏ´Â Å×ÀÌºí ÃßÃâ
     sTableMapIndex = qtc::getPosFirstBitSet( & sDependencies );
 
     //----------------------------------
-    //Table Mapì˜ ë³´ì •
+    //Table MapÀÇ º¸Á¤
     //----------------------------------
     while( sTableMapIndex != QTC_DEPENDENCIES_END )
     {
-        //ì¶”ì¶œëœ Tableì˜ dependencyì— TupleID ë³€ê²½
+        //ÃßÃâµÈ TableÀÇ dependency¿¡ TupleID º¯°æ
         QC_SHARED_TMPLATE(aStatement)->tableMap[sTableMapIndex].dependency = (ULong)aTupleID;
         sTableMapIndex = qtc::getPosNextBitSet( & sDependencies ,
                                                 sTableMapIndex );
@@ -605,18 +605,18 @@ qmoDependency::step4decideDependency( qcStatement * aStatement ,
 {
 /***********************************************************************
  *
- * Description : Dependencyê´€ë¦¬ì¤‘ 4ë‹¨ê³„ì¸ ëŒ€í‘œ Dependencyë¥¼ ê²°ì •í•œë‹¤.
+ * Description : Dependency°ü¸®Áß 4´Ü°èÀÎ ´ëÇ¥ Dependency¸¦ °áÁ¤ÇÑ´Ù.
  *
  * Implementation :
- *     - Outer Column Referenceê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
- *         - planì˜ dependencies & NOT(í˜„queryì˜ dependencies)
- *             - Referenceê°€ ì—†ëŠ” ê²½ìš° :
- *                      í•´ë‹¹ querySetì˜ join Orderë¥¼ ì°¸ì¡°
- *             - Referenceê°€ ìˆëŠ” ê²½ìš° :
- *                      ìƒìœ„ querySetì˜ join Orderë¥¼ ì°¸ì¡°
- *     - Dependenciesì™€ Join Orderë¡œ ë¶€í„° ê°€ì¥ ì˜¤ë¥¸ìª½ Tableì„ ì°¾ëŠ”ë‹¤.
- *     - ì•„ë˜ì˜ 5ë‹¨ê³„ìˆ˜í–‰ì€ Outer Column Referenceì˜ ìœ ë¬´ë¥¼ ì•Œì•„ì•¼
- *       í•˜ë¯€ë¡œ 4ë‹¨ê³„ì—ì„œ ê°™ì´ ì²˜ë¦¬ í•œë‹¤.
+ *     - Outer Column Reference°¡ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù.
+ *         - planÀÇ dependencies & NOT(ÇöqueryÀÇ dependencies)
+ *             - Reference°¡ ¾ø´Â °æ¿ì :
+ *                      ÇØ´ç querySetÀÇ join Order¸¦ ÂüÁ¶
+ *             - Reference°¡ ÀÖ´Â °æ¿ì :
+ *                      »óÀ§ querySetÀÇ join Order¸¦ ÂüÁ¶
+ *     - Dependencies¿Í Join Order·Î ºÎÅÍ °¡Àå ¿À¸¥ÂÊ TableÀ» Ã£´Â´Ù.
+ *     - ¾Æ·¡ÀÇ 5´Ü°è¼öÇàÀº Outer Column ReferenceÀÇ À¯¹«¸¦ ¾Ë¾Æ¾ß
+ *       ÇÏ¹Ç·Î 4´Ü°è¿¡¼­ °°ÀÌ Ã³¸® ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -629,7 +629,7 @@ qmoDependency::step4decideDependency( qcStatement * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoDependency::step4decideDependency::__FT__" );
 
     //----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -637,30 +637,30 @@ qmoDependency::step4decideDependency( qcStatement * aStatement ,
     IDE_DASSERT( aQuerySet != NULL );
 
     //----------------------------------
-    //ëŒ€í‘œ Dependencyì˜ ê²°ì •
+    //´ëÇ¥ DependencyÀÇ °áÁ¤
     //----------------------------------
 
     //----------------------------------
-    //outer column reference ì°¾ê¸°
+    //outer column reference Ã£±â
     //----------------------------------
 
     // PROJ-2418
-    // Lateral Dependencyê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°ì—”, ê¸°ì¤€ dependencyë¥¼ êµì²´í•œë‹¤
+    // Lateral Dependency°¡ Á¸ÀçÇÏ´Â °æ¿ì¿£, ±âÁØ dependency¸¦ ±³Ã¼ÇÑ´Ù
     qtc::dependencyClear( & sBaseDepInfo );
 
     if ( qtc::haveDependencies ( & aQuerySet->lateralDepInfo ) == ID_TRUE )
     {
-        // QuerySetì—ì„œ ì™¸ë¶€ ì°¸ì¡°ë¥¼ í•´ì•¼ í•˜ëŠ” ìƒí™©ì´ë¼ë©´
-        // QuerySetì˜ Lateral Dependenciesë¥¼ ê¸°ì¤€
+        // QuerySet¿¡¼­ ¿ÜºÎ ÂüÁ¶¸¦ ÇØ¾ß ÇÏ´Â »óÈ²ÀÌ¶ó¸é
+        // QuerySetÀÇ Lateral Dependencies¸¦ ±âÁØ
         qtc::dependencySetWithDep( & sBaseDepInfo, & aQuerySet->lateralDepInfo );
 
-        // ì´ ê²½ìš°, ì²« ë²ˆì§¸ ê²½ìš° (dependenciesê°€ ì—†ëŠ” ê²½ìš°) ëŠ”
-        // ë¬´ì¡°ê±´ í†µê³¼í•˜ê²Œ ëœë‹¤. ë‘ ë²ˆì§¸ ê²½ìš°ë¡œ ì´ë™í•´ ëŒ€í‘œ dependencyë¥¼ ì°¾ëŠ”ë‹¤.
+        // ÀÌ °æ¿ì, Ã¹ ¹øÂ° °æ¿ì (dependencies°¡ ¾ø´Â °æ¿ì) ´Â
+        // ¹«Á¶°Ç Åë°úÇÏ°Ô µÈ´Ù. µÎ ¹øÂ° °æ¿ì·Î ÀÌµ¿ÇØ ´ëÇ¥ dependency¸¦ Ã£´Â´Ù.
     }
     else
     {
-        // Lateral Viewê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” QuerySetì¸ ê²½ìš°ë¼ë©´
-        // ê¸°ì¡´ê³¼ ê°™ì´ Planì˜ Dependenciesë¥¼ ê¸°ì¤€
+        // Lateral View°¡ Á¸ÀçÇÏÁö ¾Ê´Â QuerySetÀÎ °æ¿ì¶ó¸é
+        // ±âÁ¸°ú °°ÀÌ PlanÀÇ Dependencies¸¦ ±âÁØ
         qtc::dependencySetWithDep( & sBaseDepInfo, & aPlan->depInfo );
     }
 
@@ -668,14 +668,14 @@ qmoDependency::step4decideDependency( qcStatement * aStatement ,
                                  & sBaseDepInfo ) == ID_TRUE )
     {
         //---------------------------------
-        // dependenciesê°€ ì—†ëŠ” ê²½ìš°.
-        // ì¦‰, outer column referenceê°€ ì—†ëŠ” ê²½ìš°
+        // dependencies°¡ ¾ø´Â °æ¿ì.
+        // Áï, outer column reference°¡ ¾ø´Â °æ¿ì
         //---------------------------------
 
         if( aQuerySet->SFWGH != NULL )
         {
-            //í˜„ì¬ querySetì˜ join orderì™€ aPlanì˜ dependenciesë¥¼ í†µí•´
-            //ê°€ì¥ ì˜¤ë¥¸ìª½ orderë¥¼ ì°¾ëŠ”ë‹¤.
+            //ÇöÀç querySetÀÇ join order¿Í aPlanÀÇ dependencies¸¦ ÅëÇØ
+            //°¡Àå ¿À¸¥ÂÊ order¸¦ Ã£´Â´Ù.
             sSFWGH = aQuerySet->SFWGH;
             IDE_TEST( findRightJoinOrder( sSFWGH,
                                           &sBaseDepInfo,
@@ -685,38 +685,38 @@ qmoDependency::step4decideDependency( qcStatement * aStatement ,
             sHaveDependencies = qtc::haveDependencies( & sDependencies );
             if( sHaveDependencies == ID_TRUE )
             {
-                //ì°¾ì€ dependenciesë¥¼ ëŒ€í‘œ dependenciesë¡œ ì‚¼ëŠ”ë‹¤
+                //Ã£Àº dependencies¸¦ ´ëÇ¥ dependencies·Î »ï´Â´Ù
                 aPlan->dependency = qtc::getPosFirstBitSet( & sDependencies );
             }
             else
             {
-                //ì°¾ì§€ ëª»í•œ ê²½ìš°
+                //Ã£Áö ¸øÇÑ °æ¿ì
                 IDE_DASSERT( 0 );
             }
         }
         else
         {
-            //ì¦‰, SETì¸ ê²½ìš°ì—ëŠ” SFWGHê°€ NULLì´ê³  right, leftë¡œ ë‹¬ë ¤
-            //ìˆëŠ”ë° ì´ ê²½ìš° VIEWê°€ ìƒì„±ë˜ëŠ”ë° ì´ëŠ” ìƒˆë¡œìš´ Relationì˜
-            //ìƒì„±ì´ë¯€ë¡œ, leafë…¸ë“œ ì²˜ëŸ¼ ì²˜ë¦¬ê°€ ë˜ì–´ì•¼ í•¨ì´ë‹¤.
-            //(ì¦‰, ìì‹ ì˜ ëŒ€í‘œdependencyë¥¼ ê°€ì§€ê³  ìˆëŠ”ë‹¤.)
+            //Áï, SETÀÎ °æ¿ì¿¡´Â SFWGH°¡ NULLÀÌ°í right, left·Î ´Ş·Á
+            //ÀÖ´Âµ¥ ÀÌ °æ¿ì VIEW°¡ »ı¼ºµÇ´Âµ¥ ÀÌ´Â »õ·Î¿î RelationÀÇ
+            //»ı¼ºÀÌ¹Ç·Î, leaf³ëµå Ã³·³ Ã³¸®°¡ µÇ¾î¾ß ÇÔÀÌ´Ù.
+            //(Áï, ÀÚ½ÅÀÇ ´ëÇ¥dependency¸¦ °¡Áö°í ÀÖ´Â´Ù.)
             aPlan->dependency = qtc::getPosFirstBitSet( & sBaseDepInfo );
         }
 
         // PROJ-1358
-        // Outer Reference ì¡´ì¬ì—¬ë¶€ë¥¼ ì„¤ì •
+        // Outer Reference Á¸Àç¿©ºÎ¸¦ ¼³Á¤
         aPlan->flag &= ~QMN_PLAN_OUTER_REF_MASK;
         aPlan->flag |= QMN_PLAN_OUTER_REF_FALSE;
     }
     else
     {
         //---------------------------------
-        // dependenciesê°€ ìˆëŠ” ê²½ìš°.
-        // ì¦‰, outer column referenceê°€ ìˆëŠ” ê²½ìš°
+        // dependencies°¡ ÀÖ´Â °æ¿ì.
+        // Áï, outer column reference°¡ ÀÖ´Â °æ¿ì
         //---------------------------------
 
-        // SETë“±ì„ í‘œí˜„í•˜ëŠ” Query Setì¼ ê²½ìš°,
-        // ìƒìœ„ Queryë¥¼ ì°¾ê¸° ìœ„í•´ Right-most Query Setìœ¼ë¡œ ì´ë™í•œë‹¤.
+        // SETµîÀ» Ç¥ÇöÇÏ´Â Query SetÀÏ °æ¿ì,
+        // »óÀ§ Query¸¦ Ã£±â À§ÇØ Right-most Query SetÀ¸·Î ÀÌµ¿ÇÑ´Ù.
         sQuerySet = aQuerySet;
         while ( sQuerySet->right != NULL )
         {
@@ -728,13 +728,13 @@ qmoDependency::step4decideDependency( qcStatement * aStatement ,
 
         while( sSFWGH->outerQuery != NULL )
         {
-            //ìƒìœ„ querySetì˜ join orderì—ì„œ ì°¾ëŠ”ë‹¤.
-            //ê²°ê³¼ê°€ ì—†ìœ¼ë©´ ë‹¤ì‹œ ìƒìœ„ë¡œ ì˜¬ë¼ê°„ë‹¤.
+            //»óÀ§ querySetÀÇ join order¿¡¼­ Ã£´Â´Ù.
+            //°á°ú°¡ ¾øÀ¸¸é ´Ù½Ã »óÀ§·Î ¿Ã¶ó°£´Ù.
             sSFWGH = sSFWGH->outerQuery;
 
             // PROJ-1413
-            // outerQueryëŠ” view mergingì— ì˜í•´ ë”ì´ìƒ ìœ íš¨í•˜ì§€ ì•Šì„ ìˆ˜ ìˆë‹¤.
-            // mergeëœ SFWGHë¡œ ì°¾ì•„ê°€ì•¼ í•œë‹¤.
+            // outerQuery´Â view merging¿¡ ÀÇÇØ ´õÀÌ»ó À¯È¿ÇÏÁö ¾ÊÀ» ¼ö ÀÖ´Ù.
+            // mergeµÈ SFWGH·Î Ã£¾Æ°¡¾ß ÇÑ´Ù.
             while ( sSFWGH->mergedSFWGH != NULL )
             {
                 sSFWGH = sSFWGH->mergedSFWGH;
@@ -751,15 +751,15 @@ qmoDependency::step4decideDependency( qcStatement * aStatement ,
 
                 if( sHaveDependencies == ID_TRUE )
                 {
-                    //ì°¾ì€ dependenciesë¥¼ ëŒ€í‘œ dependenciesë¡œ ì‚¼ëŠ”ë‹¤
+                    //Ã£Àº dependencies¸¦ ´ëÇ¥ dependencies·Î »ï´Â´Ù
                     aPlan->dependency = qtc::getPosFirstBitSet( & sDependencies );
 
                     // PROJ-1358
-                    // ë³´ì • ì „ì˜ ëŒ€í‘œ outer dependencyë¥¼ ê¸°ë¡í•œë‹¤.
+                    // º¸Á¤ ÀüÀÇ ´ëÇ¥ outer dependency¸¦ ±â·ÏÇÑ´Ù.
                     aPlan->outerDependency = aPlan->dependency;
 
-                    // 5ë‹¨ê³„ ì²˜ë¦¬
-                    // Table Mapìœ¼ë¡œë¶€í„° ë³´ì •ëœ dependencyê°’ì„ ì„¤ì •í•œë‹¤.
+                    // 5´Ü°è Ã³¸®
+                    // Table MapÀ¸·ÎºÎÅÍ º¸Á¤µÈ dependency°ªÀ» ¼³Á¤ÇÑ´Ù.
                     aPlan->dependency =
                         QC_SHARED_TMPLATE(aStatement)->tableMap[aPlan->
                                                       dependency].dependency;
@@ -777,7 +777,7 @@ qmoDependency::step4decideDependency( qcStatement * aStatement ,
         }
 
         // PROJ-1358
-        // Outer Reference ì¡´ì¬ì—¬ë¶€ë¥¼ ì„¤ì •
+        // Outer Reference Á¸Àç¿©ºÎ¸¦ ¼³Á¤
         aPlan->flag &= ~QMN_PLAN_OUTER_REF_MASK;
         aPlan->flag |= QMN_PLAN_OUTER_REF_TRUE;
     }
@@ -801,31 +801,31 @@ qmoDependency::step6refineDependencies( qmnPlan     * aPlan ,
 {
 /***********************************************************************
  *
- * Description : Dependency ê´€ë¦¬ì¤‘ 6ë‹¨ê³„ì¸ ìƒìœ„ NODEë¥¼ ìœ„í•œ Dependencies
- *               ë¥¼ ë³´ì •í•œë‹¤.
+ * Description : Dependency °ü¸®Áß 6´Ü°èÀÎ »óÀ§ NODE¸¦ À§ÇÑ Dependencies
+ *               ¸¦ º¸Á¤ÇÑ´Ù.
  *
  * Implementation :
- *     - 2ë‹¨ê³„ì—ì„œ HASH , SORTëŠ” Materialize columnì— ëŒ€í•´ì„œë§Œ
- *       dependenciesë¥¼ ì„¤ì •í–ˆìœ¼ë¯€ë¡œ Predicate ë° Expressionì— ëŒ€í•´ì„œë„
- *       dependenciesë¥¼ ì ìš©í•´ì¤€ë‹¤.
+ *     - 2´Ü°è¿¡¼­ HASH , SORT´Â Materialize column¿¡ ´ëÇØ¼­¸¸
+ *       dependencies¸¦ ¼³Á¤ÇßÀ¸¹Ç·Î Predicate ¹× Expression¿¡ ´ëÇØ¼­µµ
+ *       dependencies¸¦ Àû¿ëÇØÁØ´Ù.
  *
  ***********************************************************************/
 
     IDU_FIT_POINT_FATAL( "qmoDependency::step6refineDependencies::__FT__" );
 
     //----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //----------------------------------
 
     IDE_DASSERT( aPlan != NULL );
     IDE_DASSERT( aDependencies != NULL );
 
     //----------------------------------
-    //dependenciesì˜ ë³´ì •
+    //dependenciesÀÇ º¸Á¤
     //----------------------------------
 
-    //Predicate ë° Expressionë“¤ì˜ dependencies ì¶”ê°€
-    //depdenciesëŠ” ë¯¸ë¦¬ ê³„ì‚°ë˜ì–´ì„œ ì…ë ¥ëœë‹¤.
+    //Predicate ¹× ExpressionµéÀÇ dependencies Ãß°¡
+    //depdencies´Â ¹Ì¸® °è»êµÇ¾î¼­ ÀÔ·ÂµÈ´Ù.
     IDE_TEST( qtc::dependencyOr( & aPlan->depInfo,
                                  aDependencies ,
                                  & aPlan->depInfo )
@@ -846,14 +846,14 @@ qmoDependency::findRightJoinOrder( qmsSFWGH   * aSFWGH ,
 {
 /***********************************************************************
  *
- * Description : í˜„ì¬ Dependenciesì™€ Join Orderë¡œ ë¶€í„° ê°€ì¥ ì˜¤ë¥¸ìª½
- *               orderì˜ Tableì„ ì°¾ëŠ”ë‹¤.
+ * Description : ÇöÀç Dependencies¿Í Join Order·Î ºÎÅÍ °¡Àå ¿À¸¥ÂÊ
+ *               orderÀÇ TableÀ» Ã£´Â´Ù.
  *
  * Implementation :
- *     - qmoTableOrderë¥¼ ìˆœíšŒ í•˜ë©´ì„œ input dependenciesì™€ ANDì—°ì‚°í•˜ì—¬
- *       dependenciesê°€ ì¡´ì¬í•  ê²½ìš° ê¸°ë¡ í•´ë‘”ë‹¤.
+ *     - qmoTableOrder¸¦ ¼øÈ¸ ÇÏ¸é¼­ input dependencies¿Í AND¿¬»êÇÏ¿©
+ *       dependencies°¡ Á¸ÀçÇÒ °æ¿ì ±â·Ï ÇØµĞ´Ù.
  *
- *     - dependenciesê°€ ì—†ëŠ” ê²½ìš°
+ *     - dependencies°¡ ¾ø´Â °æ¿ì
  *          -
  ***********************************************************************/
 
@@ -865,7 +865,7 @@ qmoDependency::findRightJoinOrder( qmsSFWGH   * aSFWGH ,
     IDU_FIT_POINT_FATAL( "qmoDependency::findRightJoinOrder::__FT__" );
 
     //----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //----------------------------------
 
     IDE_DASSERT( aSFWGH != NULL );
@@ -873,16 +873,16 @@ qmoDependency::findRightJoinOrder( qmsSFWGH   * aSFWGH ,
     IDE_DASSERT( aOutputDependencies != NULL );
 
     //----------------------------------
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     //----------------------------------
 
     sTableOrder = aSFWGH->crtPath->currentCNF->tableOrder;
 
-    //ê²°ê³¼ dependenciesëŠ” ì—†ì„ ê²½ìš° clearë˜ì–´ ë¦¬í„´ëœë‹¤.
+    //°á°ú dependencies´Â ¾øÀ» °æ¿ì clearµÇ¾î ¸®ÅÏµÈ´Ù.
     qtc::dependencyClear( aOutputDependencies );
 
     // PROJ-2582 recursive with
-    // recursive viewì˜ dependency ì •ë³´ë¥¼ ìƒì„±í•œë‹¤.
+    // recursive viewÀÇ dependency Á¤º¸¸¦ »ı¼ºÇÑ´Ù.
     if ( aSFWGH->recursiveViewID != ID_USHORT_MAX )
     {
         qtc::dependencySet( aSFWGH->recursiveViewID,
@@ -894,30 +894,30 @@ qmoDependency::findRightJoinOrder( qmsSFWGH   * aSFWGH ,
     }
 
     //----------------------------------
-    // Join Orderì—ì„œ ì˜¤ë¥¸ìª½ Table ê²€ìƒ‰
+    // Join Order¿¡¼­ ¿À¸¥ÂÊ Table °Ë»ö
     //----------------------------------
 
-    //Join Orderë¥¼ ìˆœíšŒ í•œë‹¤.
+    //Join Order¸¦ ¼øÈ¸ ÇÑ´Ù.
     while( sTableOrder != NULL )
     {
-        //join orderì™€ ì…ë ¥ëœ dependenciesì™€ ANDì—°ì‚°í•˜ì—¬
-        //í•´ë‹¹ join orderì— ìˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+        //join order¿Í ÀÔ·ÂµÈ dependencies¿Í AND¿¬»êÇÏ¿©
+        //ÇØ´ç join order¿¡ ÀÖ´ÂÁö °Ë»çÇÑ´Ù.
         qtc::dependencyAnd( & sTableOrder->depInfo,
                             aInputDependencies ,
                             & sDependencies );
 
         sHaveDependencies = qtc::haveDependencies( & sDependencies );
 
-        //join orderì— ê°€ì¥ ë§ˆì§€ë§‰ì— ìˆëŠ” ê³µí†µ dependenciesê°€ ê°€ì¥
-        //ì˜¤ë¥¸ìª½ì´ ëœë‹¤.
+        //join order¿¡ °¡Àå ¸¶Áö¸·¿¡ ÀÖ´Â °øÅë dependencies°¡ °¡Àå
+        //¿À¸¥ÂÊÀÌ µÈ´Ù.
         if ( sHaveDependencies == ID_TRUE )
         {
             qtc::dependencySetWithDep( aOutputDependencies ,
                                        & sDependencies );
 
             // PROJ-2582 recursive with
-            // recursive viewê°€ ìˆëŠ” ê²½ìš° ì¤‘ì§€í•˜ê³ , recursive viewë¥¼
-            // dependencyë¡œ ì„¤ì •í•˜ê²Œ í•œë‹¤.
+            // recursive view°¡ ÀÖ´Â °æ¿ì ÁßÁöÇÏ°í, recursive view¸¦
+            // dependency·Î ¼³Á¤ÇÏ°Ô ÇÑ´Ù.
             if ( ( qtc::haveDependencies( & sRecursiveViewDep )
                    == ID_TRUE ) &&
                  ( qtc::dependencyContains( & sDependencies,

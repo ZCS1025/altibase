@@ -19,11 +19,11 @@
  * $Id$
  *
  * Description :
- *     Shard Insert Graphë¥¼ ìœ„í•œ ì •ì˜
+ *     Shard Insert Graph¸¦ À§ÇÑ Á¤ÀÇ
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -34,20 +34,20 @@
 #include <qmgDef.h>
 
 //---------------------------------------------------
-// Shard Insert Graphì˜ Define ìƒìˆ˜
+// Shard Insert GraphÀÇ Define »ó¼ö
 //---------------------------------------------------
 
 
 //---------------------------------------------------
-// Shard Insert Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+// Shard Insert Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
 //---------------------------------------------------
 
 typedef struct qmgShardINST
 {
-    qmgGraph             graph;    // ê³µí†µ Graph ì •ë³´
+    qmgGraph             graph;    // °øÅë Graph Á¤º¸
 
     //---------------------------------
-    // insert ê´€ë ¨ ì •ë³´
+    // insert °ü·Ã Á¤º¸
     //---------------------------------
 
     struct qmsTableRef * tableRef;
@@ -63,11 +63,11 @@ typedef struct qmgShardINST
     // Proj - 1360 Queue
     void               * queueMsgIDSeq;
 
-    // sequence ì •ë³´
+    // sequence Á¤º¸
     qcParseSeqCaches   * nextValSeqs;
 
     //---------------------------------
-    // ê³ ìœ  ì •ë³´
+    // °íÀ¯ Á¤º¸
     //---------------------------------
 
     qcNamePosition       insertPos;
@@ -78,27 +78,27 @@ typedef struct qmgShardINST
 } qmgShardINST;
 
 //---------------------------------------------------
-// Shard Insert Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+// Shard Insert Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
 //---------------------------------------------------
 
 class qmgShardInsert
 {
 public:
-    // Graph ì˜ ì´ˆê¸°í™”
+    // Graph ÀÇ ÃÊ±âÈ­
     static IDE_RC  init( qcStatement      * aStatement,
                          qmmInsParseTree  * aParseTree,
                          qmgGraph         * aChildGraph,
                          qmgGraph        ** aGraph );
 
-    // Graphì˜ ìµœì í™” ìˆ˜í–‰
+    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
     static IDE_RC  optimize( qcStatement * aStatement, qmgGraph * aGraph );
 
-    // Graphì˜ Plan Tree ìƒì„±
+    // GraphÀÇ Plan Tree »ı¼º
     static IDE_RC  makePlan( qcStatement    * aStatement,
                              const qmgGraph * aParent,
                              qmgGraph       * aGraph );
 
-    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
+    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
     static IDE_RC  printGraph( qcStatement  * aStatement,
                                qmgGraph     * aGraph,
                                ULong          aDepth,

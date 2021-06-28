@@ -3,12 +3,12 @@
 # CVS Info : $Id: x86_macosx_gcc.mk 50240 2011-12-22 04:52:43Z djin $
 #
 
-# ì „ë‹¬ë˜ëŠ” ì™¸ë¶€ ë³€ìˆ˜ë“¤ : GCC
+# Àü´ŞµÇ´Â ¿ÜºÎ º¯¼öµé : GCC
 
-# ID_DIR      : SM ë””ë ‰í† ë¦¬ 
-# ID_ACE_ROOT : ë¼ì´ë¸ŒëŸ¬ë¦¬ íŒ¨ìŠ¤
-# compile64   : ì»´íŒŒì¼ í™˜ê²½
-# compat5     : CC 5.0 ìœ¼ë¡œ?
+# ID_DIR      : SM µğ·ºÅä¸® 
+# ID_ACE_ROOT : ¶óÀÌºê·¯¸® ÆĞ½º
+# compile64   : ÄÄÆÄÀÏ È¯°æ
+# compat5     : CC 5.0 À¸·Î?
 
 ifndef	BUILD_MODE
 	@echo "ERROR BUILD_MODE!!!!"
@@ -35,7 +35,7 @@ PURIFYCOV   = $(PURIFY) $(PURECOV)
 # IDL(ACE) Library
 # Library
 
-# readline library ì„¤ì •
+# readline library ¼³Á¤
 
 ifeq "$(USE_READLINE)" "1"
 READLINE_INCLUDES = -I/usr/local/include/readline
@@ -49,19 +49,19 @@ LIBS_SHIP = $(READLINE_LIBRARY) -ldl -lpthread
 #CLI_ID_SA_LIB     = -lid_cli_sa
 #CLI_ID_MT_LIB     = -lid_cli_mt
 
-# ë§¤í¬ë¡œ ì„ ì–¸
+# ¸ÅÅ©·Î ¼±¾ğ
 CLASSIC_LIB = 
 LIB64_DIRS  =
 LIB32_DIRS  =
 
 
-# ACEì™€ ì»´íŒŒì¼ ì˜µì…˜ì„ ì¼ì¹˜ì‹œí‚¨ë‹¤.
+# ACE¿Í ÄÄÆÄÀÏ ¿É¼ÇÀ» ÀÏÄ¡½ÃÅ²´Ù.
 # inline = -D__ACE_INLINE__ 
 # else   =  -DACE_NO_INLINE
 #
 #ACE_FLAG = -W -Wall -Wpointer-arith -pipe  -O2 -g -fno-implicit-templates   -fno-exceptions -fcheck-new -DACE_NO_INLINE -DACE_LACKS_ACE_TOKEN -DACE_LACKS_ACE_OTHER 
 
-# ë™ì  ì»´íŒŒì¼ ì˜µì…˜ ì„ ì–¸
+# µ¿Àû ÄÄÆÄÀÏ ¿É¼Ç ¼±¾ğ
 #
 EXTRA_CXXOPT  = 
 EXTRA_LOPT += $(LIB32_DIRS)
@@ -81,12 +81,12 @@ CXXOPT_DEPENDANCY = -MM
 # CVS Info : $Id: amd64_linux_gcc.mk 50240 2011-12-22 04:52:43Z djin $
 #
 
-# BUILD_MODEì˜ ì¢…ë¥˜
-#	debug		: Debug ëª¨ë“œ
+# BUILD_MODEÀÇ Á¾·ù
+#	debug		: Debug ¸ğµå
 #   prerelease      : -DDEBUG(x) -g (o)
-#	release		: release ë²„ì ¼, ì‹¤ì œ productì— í•´ë‹¹
+#	release		: release ¹öÁ¯, ½ÇÁ¦ product¿¡ ÇØ´ç
 
-# LINK MODE ì¢…ë¥˜ 
+# LINK MODE Á¾·ù 
 #	purify		: purify version
 #	quantify	: quantify version
 #	purecov		: purecov version

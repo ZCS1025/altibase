@@ -86,7 +86,7 @@ void  mmcSQLTextHash::initBucket(mmcSQLTextHashBucket* aBucket)
     aBucket->mNextParentPCOId =0;;
 }
 
-// í•˜ë‚˜ì˜ bucket chainì„ ìƒì— ìˆëŠ” parent PCOsë“¤ì„  í—¤ì¬í•œë‹¤.
+// ÇÏ³ªÀÇ bucket chain¼±»ó¿¡ ÀÖ´Â parent PCOsµéÀ»  ÇìÀçÇÑ´Ù.
 void  mmcSQLTextHash::freeBucketChain(iduList*  aChain)
 {
 
@@ -147,10 +147,10 @@ void  mmcSQLTextHash::searchParentPCO(idvSQL         *aStatistics,
     IDE_ASSERT(aBucket < mBucketCnt);
     sChain = &(mBucketTable[aBucket].mChain);
     //fix BUG-27367 Code-Sonar UMR
-    // listì˜ ë§ˆì§€ë§‰
+    // listÀÇ ¸¶Áö¸·
     *aInsertAfterNode = sChain->mPrev;
     *aFoundedParentPCO = (mmcParentPCO*) NULL;
-    // bucket ì˜ chainì€ hash key valueë¡œ sortingë˜ì–´ ìˆë‹¤.
+    // bucket ÀÇ chainÀº hash key value·Î sortingµÇ¾î ÀÖ´Ù.
     if(aHashKeyValue <= mBucketTable[aBucket]. mMaxHashKeyVal)
     {   
         IDU_LIST_ITERATE(sChain,sIterator)   
@@ -164,10 +164,10 @@ void  mmcSQLTextHash::searchParentPCO(idvSQL         *aStatistics,
             }
             else
             {
-                //aHashKeyValue <= Parent PCOì˜ HashKeyValue
+                //aHashKeyValue <= Parent PCOÀÇ HashKeyValue
                 if(aHashKeyValue < sParentPCOHashKeyVal)
                 {
-                    //ë”ì´ìƒ ì°¾ì„ í•„ìš”ì—†ë‹¤.
+                    //´õÀÌ»ó Ã£À» ÇÊ¿ä¾ø´Ù.
                     break;
                 }
                 else
@@ -190,7 +190,7 @@ void  mmcSQLTextHash::searchParentPCO(idvSQL         *aStatistics,
     }
 }
 
-//parent PCO addì‹œ max hash value update
+//parent PCO add½Ã max hash value update
 void mmcSQLTextHash::tryUpdateBucketMaxHashVal(UInt        aBucket,
                                                iduListNode *aNode,
                                                vULong      aHashKeyVal)
@@ -201,7 +201,7 @@ void mmcSQLTextHash::tryUpdateBucketMaxHashVal(UInt        aBucket,
         mBucketTable[aBucket].mMaxHashKeyVal = aHashKeyVal;
     }
 }
-//parent PCO removeì‹œ max hash value update
+//parent PCO remove½Ã max hash value update
 void mmcSQLTextHash::tryUpdateBucketMaxHashVal(UInt        aBucket,
                                                iduListNode *aNode)
 {
@@ -213,12 +213,12 @@ void mmcSQLTextHash::tryUpdateBucketMaxHashVal(UInt        aBucket,
     {
         if(mBucketTable[aBucket].mChain.mNext == aNode)
         {
-            //bucketì— í•œê°œë§Œ ë‚¨ì•„ ìˆê³ ê³§ 0ì´ ë  ìš´ëª….
+            //bucket¿¡ ÇÑ°³¸¸ ³²¾Æ ÀÖ°í°ğ 0ÀÌ µÉ ¿î¸í.
             mBucketTable[aBucket].mMaxHashKeyVal = 0;
         }//if
         else
         {
-            //ì´ì „ë…¸ë“œì˜ hash ê°’ìœ¼ë¡œ update.
+            //ÀÌÀü³ëµåÀÇ hash °ªÀ¸·Î update.
             sParentPCO = (mmcParentPCO*)aNode->mPrev->mObj;
             mBucketTable[aBucket].mMaxHashKeyVal = sParentPCO->getHashKeyValue();
         }
@@ -292,11 +292,11 @@ void  mmcSQLTextHash::getCacheHitCount(ULong *aHitCount)
 /**
  * BUG-46158 PLAN_CACHE_KEEP
  *
- * @aSQLTextID : Keep/Unkeep ëŒ€ìƒì´ ë˜ëŠ” SQLTextID
+ * @aSQLTextID : Keep/Unkeep ´ë»óÀÌ µÇ´Â SQLTextID
  * @aPlanKeep  : MMC_PCO_PLAN_CACHE_KEEP, MMC_PCO_PLAN_CACHE_UNKEEP
  *
- * Keepëœ Planì€ Victimìœ¼ë¡œ ì„ ì •ë˜ì§€ ì•ŠëŠ”ë‹¤. ê·¸ë˜ì„œ Plancacheë‚´ì— ê³„ì† ìœ ì§€ëœë‹¤.
- * KEEP_PLANì€ Rebuildë¥¼ ë°©ì§€í•˜ëŠ” íŒíŠ¸ì´ë©° PLAN_CACHE_KEEPê³¼ í˜¼ë™ë˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
+ * KeepµÈ PlanÀº VictimÀ¸·Î ¼±Á¤µÇÁö ¾Ê´Â´Ù. ±×·¡¼­ Plancache³»¿¡ °è¼Ó À¯ÁöµÈ´Ù.
+ * KEEP_PLANÀº Rebuild¸¦ ¹æÁöÇÏ´Â ÈùÆ®ÀÌ¸ç PLAN_CACHE_KEEP°ú È¥µ¿µÇÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
  */
 IDE_RC mmcSQLTextHash::planCacheKeep(idvSQL              *aStatistics,
                                      SChar               *aSQLTextID,
@@ -323,7 +323,7 @@ IDE_RC mmcSQLTextHash::planCacheKeep(idvSQL              *aStatistics,
     }
     IDE_TEST_RAISE(sBucket >= mBucketCnt, NOT_FOUND_SQL_TEXT_ID);
 
-    /* ë™ì¼í•œ SQLTextIDì˜ PCOë¥¼ ì°¾ì•„ì„œ aPlanKeepì„ ì„¤ì •í•´ ì¤€ë‹¤. */ 
+    /* µ¿ÀÏÇÑ SQLTextIDÀÇ PCO¸¦ Ã£¾Æ¼­ aPlanKeepÀ» ¼³Á¤ÇØ ÁØ´Ù. */ 
     latchBucketAsShared(aStatistics, sBucket);
     IDU_LIST_ITERATE(&mBucketTable[sBucket].mChain, sIterator)
     {

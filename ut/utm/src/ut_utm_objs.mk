@@ -1,7 +1,8 @@
-# $Id: ut_utm_objs.mk 78292 2016-12-15 05:50:02Z bethy $
+# $Id: ut_utm_objs.mk 86068 2019-08-27 06:13:27Z bethy $
 #
 
 UT_UTM_SRCS = $(UT_DIR)/utm/src/aexport.cpp \
+              $(UT_DIR)/utm/src/utmDbmsMeta.cpp \
               $(UT_DIR)/utm/src/utmProgOption.cpp \
               $(UT_DIR)/utm/src/utmPropertyMgr.cpp \
               $(UT_DIR)/utm/src/utmPassword.cpp \
@@ -9,7 +10,6 @@ UT_UTM_SRCS = $(UT_DIR)/utm/src/aexport.cpp \
               $(UT_DIR)/utm/src/utmTable.cpp \
               $(UT_DIR)/utm/src/utmMisc.cpp \
               $(UT_DIR)/utm/src/utmSQLApi.cpp \
-              $(UT_DIR)/utm/src/utmPartition.cpp \
               $(UT_DIR)/utm/src/utmObjMode.cpp \
               $(UT_DIR)/utm/src/utmSeqSym.cpp \
               $(UT_DIR)/utm/src/utmQueue.cpp \

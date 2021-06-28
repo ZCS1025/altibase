@@ -62,7 +62,7 @@ struct cmbPoolOP gCmbPoolOpIPCDA =
 IDE_RC cmbPoolMapIPCDA(cmbPool *aPool)
 {
     /*
-     * í•¨ìˆ˜ í¬ì¸í„° ì„¸íŒ…
+     * ÇÔ¼ö Æ÷ÀÎÅÍ ¼¼ÆÃ
      */
     aPool->mOp = &gCmbPoolOpIPCDA;
 

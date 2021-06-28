@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: utmManager.h 83784 2018-08-23 05:59:35Z chkim $
+ * $Id: utmManager.h 86068 2019-08-27 06:13:27Z bethy $
  **********************************************************************/
 
 #ifndef _O_UTM_MANAGER_H_
@@ -27,7 +27,6 @@
 #include <utmUser.h>
 #include <utmTbs.h>
 #include <utmViewProc.h>
-#include <utmPartition.h>
 #include <utmObjMode.h>
 #include <utmSeqSym.h>
 #include <utmQueue.h>

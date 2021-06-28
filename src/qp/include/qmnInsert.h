@@ -21,11 +21,11 @@
  * Description :
  *     INST(INSerT) Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ insertë¥¼ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     °ü°èÇü ¸ğµ¨¿¡¼­ insert¸¦ ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -46,6 +46,27 @@
 #define QMNC_INST_PARTITIONED_MASK  (0x00000001)
 #define QMNC_INST_PARTITIONED_FALSE (0x00000000)
 #define QMNC_INST_PARTITIONED_TRUE  (0x00000001)
+
+/* BUG-47625 Insert execution ¼º´ÉÇâ»ó */
+#define QMNC_INST_COMPLEX_MASK  (0x00000002)
+#define QMNC_INST_COMPLEX_FALSE (0x00000000)
+#define QMNC_INST_COMPLEX_TRUE  (0x00000002)
+
+#define QMNC_INST_EXIST_NOTNULL_COLUMN_MASK  (0x00000004)
+#define QMNC_INST_EXIST_NOTNULL_COLUMN_FALSE (0x00000000)
+#define QMNC_INST_EXIST_NOTNULL_COLUMN_TRUE  (0x00000004)
+
+#define QMNC_INST_EXIST_ENCRYPT_COLUMN_MASK  (0x00000008)
+#define QMNC_INST_EXIST_ENCRYPT_COLUMN_FALSE (0x00000000)
+#define QMNC_INST_EXIST_ENCRYPT_COLUMN_TRUE  (0x00000008)
+
+#define QMNC_INST_EXIST_TIMESTAMP_MASK  (0x00000010)
+#define QMNC_INST_EXIST_TIMESTAMP_FALSE (0x00000000)
+#define QMNC_INST_EXIST_TIMESTAMP_TRUE  (0x00000010)
+
+#define QMNC_INST_EXIST_QUEUE_MASK  (0x00000020)
+#define QMNC_INST_EXIST_QUEUE_FALSE (0x00000000)
+#define QMNC_INST_EXIST_QUEUE_TRUE  (0x00000020)
 
 //-----------------
 // Data Node Flags
@@ -71,10 +92,15 @@
 # define QMND_INST_INDEX_CURSOR_NONE        (0x00000000)
 # define QMND_INST_INDEX_CURSOR_INITED      (0x00000008)
 
+// qmndINST.flag
+# define QMND_INST_ATOMIC_MASK              (0x00000010)
+# define QMND_INST_ATOMIC_FALSE             (0x00000000)
+# define QMND_INST_ATOMIC_TRUE              (0x00000010)
+
 typedef struct qmncINST  
 {
     //---------------------------------
-    // Code ì˜ì—­ ê³µí†µ ì •ë³´
+    // Code ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmnPlan               plan;
@@ -82,13 +108,13 @@ typedef struct qmncINST
     UInt                  planID;
 
     //---------------------------------
-    // querySet ê´€ë ¨ ì •ë³´
+    // querySet °ü·Ã Á¤º¸
     //---------------------------------
     
     qmsTableRef         * tableRef;
 
     //---------------------------------
-    // insert ê´€ë ¨ ì •ë³´
+    // insert °ü·Ã Á¤º¸
     //---------------------------------
 
     idBool                isInsertSelect;
@@ -111,37 +137,37 @@ typedef struct qmncINST
     idBool                isAppend;
     idBool                disableTrigger;
 
-    // sequence ì •ë³´
+    // sequence Á¤º¸
     qcParseSeqCaches    * nextValSeqs;
     
-    // instead of triggerì¸ ê²½ìš°
+    // instead of triggerÀÎ °æ¿ì
     idBool                insteadOfTrigger;
 
-    // PROJ-2551 simple query ìµœì í™”
+    // PROJ-2551 simple query ÃÖÀûÈ­
     idBool                isSimple;    // simple insert
     UInt                  simpleValueCount;
     qmnValueInfo        * simpleValues;
-    UInt                  simpleValueBufSize;  // c-type valueë¥¼ mt-type valueë¡œ ë³€í™˜
+    UInt                  simpleValueBufSize;  // c-type value¸¦ mt-type value·Î º¯È¯
 
     // BUG-43063 insert nowait
     ULong                 lockWaitMicroSec;
     
     //---------------------------------
-    // constraint ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
+    // constraint Ã³¸®¸¦ À§ÇÑ Á¤º¸
     //---------------------------------
 
     qcmParentInfo       * parentConstraints;
     qdConstraintSpec    * checkConstrList;
 
     //---------------------------------
-    // return into ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
+    // return into Ã³¸®¸¦ À§ÇÑ Á¤º¸
     //---------------------------------
     
     /* PROJ-1584 DML Return Clause */
     qmmReturnInto       * returnInto;
     
     //---------------------------------
-    // Display ê´€ë ¨ ì •ë³´
+    // Display °ü·Ã Á¤º¸
     //---------------------------------
 
     qmsNamePosition       tableOwnerName;     // Table Owner Name
@@ -160,7 +186,7 @@ typedef struct qmncINST
 typedef struct qmndINST
 {
     //---------------------------------
-    // Data ì˜ì—­ ê³µí†µ ì •ë³´
+    // Data ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmndPlan              plan;
@@ -168,7 +194,7 @@ typedef struct qmndINST
     UInt                * flag;        
 
     //---------------------------------
-    // INST ê³ ìœ  ì •ë³´
+    // INST °íÀ¯ Á¤º¸
     //---------------------------------
 
     qmcInsertCursor       insertCursorMgr;
@@ -182,34 +208,34 @@ typedef struct qmndINST
     /* BUG-42764 Multi Row */
     qmmMultiRows        * rows;   // Current row
     //---------------------------------
-    // lob ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
+    // lob Ã³¸®¸¦ À§ÇÑ Á¤º¸
     //---------------------------------
     
     struct qmxLobInfo   * lobInfo;
 
     //---------------------------------
-    // Trigger ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
+    // Trigger Ã³¸®¸¦ À§ÇÑ Á¤º¸
     //---------------------------------
 
     qcmColumn           * columnsForRow;
     
     // PROJ-1705
-    // trigger rowê°€ í•„ìš”ì—¬ë¶€ ì •ë³´
+    // trigger row°¡ ÇÊ¿ä¿©ºÎ Á¤º¸
     idBool                needTriggerRow;
     idBool                existTrigger;
     
     idBool                isAppend;
     //---------------------------------
-    // return into ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
+    // return into Ã³¸®¸¦ À§ÇÑ Á¤º¸
     //---------------------------------
 
-    // instead of triggerì˜ newRowëŠ” smiValueì´ë¯€ë¡œ
-    // return intoë¥¼ ìœ„í•œ tableRowê°€ í•„ìš”í•˜ë‹¤.
+    // instead of triggerÀÇ newRow´Â smiValueÀÌ¹Ç·Î
+    // return into¸¦ À§ÇÑ tableRow°¡ ÇÊ¿äÇÏ´Ù.
     mtcTuple            * viewTuple;    
     void                * returnRow;
     
     //---------------------------------
-    // index table ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
+    // index table Ã³¸®¸¦ À§ÇÑ Á¤º¸
     //---------------------------------
 
     qmsIndexTableCursors  indexTableCursorInfo;
@@ -230,11 +256,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ìˆ˜í–‰ í•¨ìˆ˜
+    // ¼öÇà ÇÔ¼ö
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -243,7 +269,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
     
-    // Plan ì •ë³´ ì¶œë ¥
+    // Plan Á¤º¸ Ãâ·Â
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -254,7 +280,7 @@ public:
     static IDE_RC checkInsertRef( qcTemplate * aTemplate,
                                   qmnPlan    * aPlan );
     
-    // Cursorì˜ Close
+    // CursorÀÇ Close
     static IDE_RC closeCursor( qcTemplate * aTemplate,
                                qmnPlan    * aPlan );
     
@@ -266,10 +292,10 @@ public:
 private:    
 
     //------------------------
-    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
+    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
     //------------------------
 
-    // ìµœì´ˆ ì´ˆê¸°í™”
+    // ÃÖÃÊ ÃÊ±âÈ­
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncINST   * aCodePlan,
                              qmndINST   * aDataPlan );
@@ -288,36 +314,42 @@ private:
                                          qmncINST   * aCodePlan,
                                          qmndINST   * aDataPlan );
     
-    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨.
+    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ.
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // ìµœì´ˆ INSTì„ ìˆ˜í–‰
+    // ÃÖÃÊ INSTÀ» ¼öÇà
     static IDE_RC doItFirst( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              qmcRowFlag * aFlag );
 
-    // ë‹¤ìŒ INSTì„ ìˆ˜í–‰
+    // ´ÙÀ½ INSTÀ» ¼öÇà
     static IDE_RC doItNext( qcTemplate * aTemplate,
                             qmnPlan    * aPlan,
                             qmcRowFlag * aFlag );
 
-    // ìµœì´ˆ INSTì„ ìˆ˜í–‰
+    // ÃÖÃÊ INSTÀ» ¼öÇà
     static IDE_RC doItFirstMultiRows( qcTemplate * aTemplate,
                                       qmnPlan    * aPlan,
                                       qmcRowFlag * aFlag );
 
-    // ë‹¤ìŒ INSTì„ ìˆ˜í–‰
+    // ´ÙÀ½ INSTÀ» ¼öÇà
     static IDE_RC doItNextMultiRows( qcTemplate * aTemplate,
                                      qmnPlan    * aPlan,
                                      qmcRowFlag * aFlag );
+
+    // ÃÖÃÊ INSTÀ» ¼öÇà
+    /* BUG-47625 Insert execution ¼º´ÉÇâ»ó */
+    static IDE_RC doItOneRow( qcTemplate * aTemplate,
+                              qmnPlan    * aPlan,
+                              qmcRowFlag * aFlag );
 
     // check trigger 
     static IDE_RC checkTrigger( qcTemplate * aTemplate,
                                 qmnPlan    * aPlan );
     
-    // Cursorì˜ Open
+    // CursorÀÇ Open
     static IDE_RC openCursor( qcTemplate * aTemplate,
                               qmnPlan    * aPlan );
 

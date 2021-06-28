@@ -23,6 +23,7 @@
 #define _O_SDM_FIXED_TABLE_H_ 1
 
 #include <sdi.h>
+#include <sdiZookeeper.h>
 #include <mtdTypes.h>
 
 typedef struct sdmConnectInfo4PV
@@ -30,7 +31,7 @@ typedef struct sdmConnectInfo4PV
     UInt     mNodeId;
     SChar    mNodeName[SDI_NODE_NAME_MAX_SIZE + 1];
     SChar    mCommName[IDL_IP_ADDR_MAX_LEN];
-    UInt     mTouchCount;   // commit modeë³€ê²½í›„ DML íšŸìˆ˜
+    UInt     mTouchCount;   // commit modeº¯°æÈÄ DML È½¼ö
     idBool   mLinkFailure;
 } sdmConnectInfo4PV;
 
@@ -41,7 +42,8 @@ typedef struct sdmMetaNodeInfo4PV
 
 typedef struct sdmDataNodeInfo4PV
 {
-    ULong       mSMN;       // SMN
+    ULong       mSMN;         // SMN
+    UInt        mShardStatus; // SHARD_SATUS
 } sdmDataNodeInfo4PV;
 
 class sdmFixedTable
@@ -63,6 +65,11 @@ public:
                                                    void                * aHeader,
                                                    void                * aDumpObj,
                                                    iduFixedTableMemory * aMemory );
+
+    static IDE_RC buildRecordForZookeeperInfo( idvSQL              * aStatistics,
+                                               void                * aHeader,
+                                               void                * aDumpObj,
+                                               iduFixedTableMemory * aMemory );
 };
 
 #endif /* _O_SDM_FIXED_TABLE_H_ */

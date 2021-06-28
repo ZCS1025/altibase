@@ -120,7 +120,7 @@ public class HashGeneratorTest extends TestCase
                 16909060L
         };
         int sIndex = 0;
-        String[] sSample = new String[] { "001", "abcd", "  abcd  ", "ê°€ë‚˜ë‹¤", "1234", "" };
+        String[] sSample = new String[] { "001", "abcd", "  abcd  ", "°¡³ª´Ù", "1234", "" };
         for (String sValue : sSample)
         {
             sColumn.setValue(sValue);

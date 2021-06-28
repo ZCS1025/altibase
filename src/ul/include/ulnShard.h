@@ -17,12 +17,10 @@
 #ifndef _O_ULN_SHARD_H_
 #define _O_ULN_SHARD_H_ 1
 
-void ulnShardDbcContextInitialize(ulnDbc *aDbc);
-
-#ifdef COMPILE_SHARDCLI /* BUG-46092 */
+ACI_RC ulnShardDbcContextInitialize(ulnFnContext *aFnContext, ulnDbc *aDbc);
 void ulnShardDbcContextFinalize( ulnDbc *aDbc );
-#endif /* COMPILE_SHARDCLI */
 
 void ulnShardStmtContextInitialize(ulnStmt *aStmt);
+void ulnShardStmtFreeAllShardValueInfo( ulnStmt * aStmt );
 
 #endif /* _O_ULN_SHARD_H_ */

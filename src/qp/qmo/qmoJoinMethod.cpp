@@ -16,15 +16,15 @@
  
 
 /***********************************************************************
- * $Id: qmoJoinMethod.cpp 85332 2019-04-26 01:19:42Z ahra.cho $
+ * $Id: qmoJoinMethod.cpp 89835 2021-01-22 10:10:02Z andrew.shin $
  *
  * Description :
- *    Join Costë¥¼ êµ¬í•˜ì—¬ ë‹¤ì–‘í•œ Join Methodë“¤ ì¤‘ì—ì„œ ê°€ì¥ cost ê°€ ì¢‹ì€
- *    Join Methodë¥¼ ì„ íƒí•œë‹¤.
+ *    Join Cost¸¦ ±¸ÇÏ¿© ´Ù¾çÇÑ Join Methodµé Áß¿¡¼­ °¡Àå cost °¡ ÁÁÀº
+ *    Join Method¸¦ ¼±ÅÃÇÑ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -52,12 +52,12 @@ qmoJoinMethodMgr::init( qcStatement    * aStatement,
 {
 /***********************************************************************
  *
- * Description : Join Methodì˜ ì´ˆê¸°í™”
+ * Description : Join MethodÀÇ ÃÊ±âÈ­
  *
  * Implementation :
- *    (1) qmoJoinMethod ì´ˆê¸°í™”
- *    (2) Join Method Typeì— ë”°ë¼ joinMethodCnt, joinMethodCost êµ¬ì„±
- *    (3) joinMethodCost ì´ˆê¸°í™”
+ *    (1) qmoJoinMethod ÃÊ±âÈ­
+ *    (2) Join Method Type¿¡ µû¶ó joinMethodCnt, joinMethodCost ±¸¼º
+ *    (3) joinMethodCost ÃÊ±âÈ­
  *
  ***********************************************************************/
 
@@ -69,13 +69,13 @@ qmoJoinMethodMgr::init( qcStatement    * aStatement,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::init::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
-    // Join Method ì´ˆê¸°í™”
+    // Join Method ÃÊ±âÈ­
     aJoinMethod->flag = QMO_JOIN_METHOD_FLAG_CLEAR;
     aJoinMethod->selectedJoinMethod = NULL;
     aJoinMethod->hintJoinMethod = NULL;
@@ -84,19 +84,19 @@ qmoJoinMethodMgr::init( qcStatement    * aStatement,
     aJoinMethod->joinMethodCost = NULL;
 
     // PROJ-2418
-    // Lateral Position íšë“
+    // Lateral Position È¹µæ
     IDE_TEST( getJoinLateralDirection( aGraph, & sLateralDirection )
               != IDE_SUCCESS );
 
-    // Join Method Type Flag ì„¤ì •  ë° Join Method Costì˜ ì´ˆê¸°í™”
+    // Join Method Type Flag ¼³Á¤  ¹× Join Method CostÀÇ ÃÊ±âÈ­
     switch ( aJoinMethodType & QMO_JOIN_METHOD_MASK )
     {
         case QMO_JOIN_METHOD_NL :
-            // Join Method Type ì„¤ì •
+            // Join Method Type ¼³Á¤
             aJoinMethod->flag &= ~QMO_JOIN_METHOD_MASK;
             aJoinMethod->flag |= QMO_JOIN_METHOD_NL;
 
-            // Join Method Costì˜ ì´ˆê¸°í™”
+            // Join Method CostÀÇ ÃÊ±âÈ­
             IDE_TEST( initJoinMethodCost4NL( aStatement,
                                              aGraph,
                                              aJoinPredicate,
@@ -109,7 +109,7 @@ qmoJoinMethodMgr::init( qcStatement    * aStatement,
             aJoinMethod->flag &= ~QMO_JOIN_METHOD_MASK;
             aJoinMethod->flag |= QMO_JOIN_METHOD_HASH;
 
-            // Join Method Costì˜ ì´ˆê¸°í™”
+            // Join Method CostÀÇ ÃÊ±âÈ­
             IDE_TEST( initJoinMethodCost4Hash( aStatement,
                                                aGraph,
                                                aJoinPredicate,
@@ -123,7 +123,7 @@ qmoJoinMethodMgr::init( qcStatement    * aStatement,
             aJoinMethod->flag &= ~QMO_JOIN_METHOD_MASK;
             aJoinMethod->flag |= QMO_JOIN_METHOD_SORT;
 
-            // Join Method Costì˜ ì´ˆê¸°í™”
+            // Join Method CostÀÇ ÃÊ±âÈ­
             IDE_TEST( initJoinMethodCost4Sort( aStatement,
                                                aGraph,
                                                aJoinPredicate,
@@ -136,7 +136,7 @@ qmoJoinMethodMgr::init( qcStatement    * aStatement,
             aJoinMethod->flag &= ~QMO_JOIN_METHOD_MASK;
             aJoinMethod->flag |= QMO_JOIN_METHOD_MERGE;
 
-            // Join Method Costì˜ ì´ˆê¸°í™”
+            // Join Method CostÀÇ ÃÊ±âÈ­
             IDE_TEST( initJoinMethodCost4Merge( aStatement,
                                                 aGraph,
                                                 aJoinPredicate,
@@ -174,22 +174,22 @@ qmoJoinMethodMgr::getBestJoinMethodCost( qcStatement   * aStatement,
 {
     /********************************************************************
      *
-     * Description : Join Method Cost ì¤‘ì— ê°€ì¥ costê°€ ì¢‹ì€ method ì„ íƒ
+     * Description : Join Method Cost Áß¿¡ °¡Àå cost°¡ ÁÁÀº method ¼±ÅÃ
      *
      * Implementation :
-     *    (1) Join Ordered Hint ì²˜ë¦¬
-     *        left->right ë°©í–¥ë§Œì´ feasibilityë¥¼ ë§Œì¡±í•˜ë¯€ë¡œ
-     *        right->left ë°©í–¥ì˜ feasibilityë¥¼ FALSEë¡œ ì„¤ì •
-     *    (2) ê° Join Method Costì˜ costë¥¼ êµ¬í•œë‹¤.
-     *    (3) Join Method ê²°ì •
-     *        - Join Method Hintê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš° :
-     *          A. Join Method Hintë¥¼ ë§Œì¡±í•˜ëŠ” ê²ƒ ì¤‘ì—ì„œ ê°€ì¥ costê°€ ì¢‹ì€ ê²ƒ ì„ íƒ
-     *          B. Join Method Hintë¥¼ ë§Œì¡±í•˜ëŠ” ê²ƒì´ ì—†ëŠ” ê²½ìš°
-     *             hintê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²ƒê³¼ ë™ì¼í•˜ê²Œ ì²˜ë¦¬
-     *        - Join Method Hintê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš° :
-     *          ê°€ì¥ costê°€ ì‘ì€ JoinMethodë¥¼ selectedJoinMethodì— ì—°ê²°
-     *          ë‹¨, Index Nested Loop Joinê³¼ Anti Outer Joinì˜ ê²½ìš°
-     *          table access hintê°€ ìˆëŠ” ê²½ìš° ê·¸ì— ë”°ë¥¸ feasibility ê²€ì‚¬
+     *    (1) Join Ordered Hint Ã³¸®
+     *        left->right ¹æÇâ¸¸ÀÌ feasibility¸¦ ¸¸Á·ÇÏ¹Ç·Î
+     *        right->left ¹æÇâÀÇ feasibility¸¦ FALSE·Î ¼³Á¤
+     *    (2) °¢ Join Method CostÀÇ cost¸¦ ±¸ÇÑ´Ù.
+     *    (3) Join Method °áÁ¤
+     *        - Join Method Hint°¡ Á¸ÀçÇÏ´Â °æ¿ì :
+     *          A. Join Method Hint¸¦ ¸¸Á·ÇÏ´Â °Í Áß¿¡¼­ °¡Àå cost°¡ ÁÁÀº °Í ¼±ÅÃ
+     *          B. Join Method Hint¸¦ ¸¸Á·ÇÏ´Â °ÍÀÌ ¾ø´Â °æ¿ì
+     *             hint°¡ Á¸ÀçÇÏÁö ¾Ê´Â °Í°ú µ¿ÀÏÇÏ°Ô Ã³¸®
+     *        - Join Method Hint°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì :
+     *          °¡Àå cost°¡ ÀÛÀº JoinMethod¸¦ selectedJoinMethod¿¡ ¿¬°á
+     *          ´Ü, Index Nested Loop Join°ú Anti Outer JoinÀÇ °æ¿ì
+     *          table access hint°¡ ÀÖ´Â °æ¿ì ±×¿¡ µû¸¥ feasibility °Ë»ç
      *
      ***********************************************************************/
 
@@ -206,7 +206,7 @@ qmoJoinMethodMgr::getBestJoinMethodCost( qcStatement   * aStatement,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::getBestJoinMethodCost::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -214,7 +214,7 @@ qmoJoinMethodMgr::getBestJoinMethodCost( qcStatement   * aStatement,
     IDE_DASSERT( aJoinMethod != NULL );
 
     //------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //------------------------------------------
 
     sHints          = aGraph->myQuerySet->SFWGH->hints;
@@ -225,15 +225,15 @@ qmoJoinMethodMgr::getBestJoinMethodCost( qcStatement   * aStatement,
     sDiffTableOrder = NULL;
 
     //------------------------------------------
-    // Join Ordered Hint ì²˜ë¦¬
-    //    directionì´ right->leftì¸ access methodì˜ feasibilityë¥¼
-    //    ëª¨ë‘ falseë¡œ ì„¤ì • ( left->rightê°€ ordered ë°©í–¥ì´ë¯€ë¡œ )
+    // Join Ordered Hint Ã³¸®
+    //    directionÀÌ right->leftÀÎ access methodÀÇ feasibility¸¦
+    //    ¸ğµÎ false·Î ¼³Á¤ ( left->right°¡ ordered ¹æÇâÀÌ¹Ç·Î )
     //------------------------------------------
 
     // PROJ-1495
-    // ordered hintì™€ push_pred hintê°€ ì ìš©ë˜ëŠ” ê²½ìš°
-    // push_pred hintê°€ ordered hintë³´ë‹¤ ìš°ì„ ì ìš©ë˜ë¯€ë¡œ
-    // ordered hintê°€ ì ìš©ë  ìˆ˜ ì—†ë‹¤.
+    // ordered hint¿Í push_pred hint°¡ Àû¿ëµÇ´Â °æ¿ì
+    // push_pred hint°¡ ordered hintº¸´Ù ¿ì¼±Àû¿ëµÇ¹Ç·Î
+    // ordered hint°¡ Àû¿ëµÉ ¼ö ¾ø´Ù.
     if( sHints != NULL )
     {
         if( sHints->pushPredHint == NULL )
@@ -275,17 +275,17 @@ qmoJoinMethodMgr::getBestJoinMethodCost( qcStatement   * aStatement,
     }
 
     //------------------------------------------
-    // recursive viewë¥¼ joinì˜ ê°€ì¥ ì™¼ìª½ìœ¼ë¡œ ë³€ê²½
+    // recursive view¸¦ joinÀÇ °¡Àå ¿ŞÂÊÀ¸·Î º¯°æ
     //------------------------------------------
 
     // PROJ-2582 recursive with
-    // push pred, ordered hintëŠ” ë¬´ì‹œë˜ì—ˆë‹¤.
+    // push pred, ordered hint´Â ¹«½ÃµÇ¾ú´Ù.
     IDE_TEST( forceJoinOrder4RecursiveView( aGraph,
                                             aJoinMethod )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // Join Method Cost ê³„ì‚°
+    // Join Method Cost °è»ê
     //------------------------------------------
 
     for ( i = 0; i < aJoinMethod->joinMethodCnt; i++ )
@@ -317,26 +317,26 @@ qmoJoinMethodMgr::getBestJoinMethodCost( qcStatement   * aStatement,
         }
         else
         {
-            // feasibility ê°€ FALSEì¸ ê²½ìš°
+            // feasibility °¡ FALSEÀÎ °æ¿ì
             // nothing to do
         }
     }
 
     //------------------------------------------
-    // (1) Join Method Hintë¥¼ ë§Œì¡±í•˜ëŠ” Join Methodë¥¼ ì°¾ìŒ
-    //    Hintë¥¼ ë§Œì¡±í•˜ëŠ” Join Method ì¤‘ ê°€ì¥ costê°€ ì¢‹ì€ Method ì •ë³´ë¥¼ ê°€ì§
-    //     - hintJoinMethod : Table Orderê¹Œì§€ Join Method Hintì™€ ë™ì¼í•œ
-    //                        Methodë¥¼ ê°€ë¦¬í‚´
-    //     - hintJoinMethod2 : Join Methodë§Œ Join Method Hintì™€ ë™ì¼í•œ
-    //                         Methodë¥¼ ê°€ë¦¬í‚´
-    //                        ( hintJoinMethodê°€ NULLì¼ë•Œë§Œ ì¡´ì¬ )
-    // (2) Join Method Hintê°€ ì—†ëŠ” ê²½ìš°
+    // (1) Join Method Hint¸¦ ¸¸Á·ÇÏ´Â Join Method¸¦ Ã£À½
+    //    Hint¸¦ ¸¸Á·ÇÏ´Â Join Method Áß °¡Àå cost°¡ ÁÁÀº Method Á¤º¸¸¦ °¡Áü
+    //     - hintJoinMethod : Table Order±îÁö Join Method Hint¿Í µ¿ÀÏÇÑ
+    //                        Method¸¦ °¡¸®Å´
+    //     - hintJoinMethod2 : Join Method¸¸ Join Method Hint¿Í µ¿ÀÏÇÑ
+    //                         Method¸¦ °¡¸®Å´
+    //                        ( hintJoinMethod°¡ NULLÀÏ¶§¸¸ Á¸Àç )
+    // (2) Join Method Hint°¡ ¾ø´Â °æ¿ì
     //------------------------------------------
 
     if( sHints != NULL )
     {
-        // BUG-42413 NO_USE hint ì§€ì›
-        // NO_USEë¡œ ë§‰íŒ ì¡°ì¸ ë©”ì†Œë“œë¥¼ ëª¨ë‘ ì°¾ì•„ë‚¸ë‹¤.
+        // BUG-42413 NO_USE hint Áö¿ø
+        // NO_USE·Î ¸·Èù Á¶ÀÎ ¸Ş¼Òµå¸¦ ¸ğµÎ Ã£¾Æ³½´Ù.
         for ( sJoinMethodHints = sHints->joinMethod;
               sJoinMethodHints != NULL;
               sJoinMethodHints = sJoinMethodHints->next )
@@ -368,8 +368,8 @@ qmoJoinMethodMgr::getBestJoinMethodCost( qcStatement   * aStatement,
 
             if ( sCurrentHint == ID_TRUE )
             {
-                // í˜„ì¬ ì ìš©í•´ì•¼í•  Hintì¸ ê²½ìš°,
-                // Hintì™€ ë™ì¼í•œ Join Methodë¥¼ ì°¾ìŒ
+                // ÇöÀç Àû¿ëÇØ¾ßÇÒ HintÀÎ °æ¿ì,
+                // Hint¿Í µ¿ÀÏÇÑ Join Method¸¦ Ã£À½
                 IDE_TEST( setJoinMethodHint( aJoinMethod,
                                              sJoinMethodHints,
                                              aGraph,
@@ -434,7 +434,7 @@ qmoJoinMethodMgr::getBestJoinMethodCost( qcStatement   * aStatement,
             }
             else
             {
-                // í˜„ì¬ Joinê³¼ ê´€ë ¨ì—†ëŠ” Hint
+                // ÇöÀç Join°ú °ü·Ã¾ø´Â Hint
                 // nothing to do
             }
         }
@@ -445,8 +445,8 @@ qmoJoinMethodMgr::getBestJoinMethodCost( qcStatement   * aStatement,
     }
 
     //------------------------------------------
-    // Join Method Hintê°€ ì—†ëŠ” ê²½ìš°,
-    // Join Method Costê°€ ê°€ì¥ ì¢‹ì€ Join Method ì„ íƒ
+    // Join Method Hint°¡ ¾ø´Â °æ¿ì,
+    // Join Method Cost°¡ °¡Àå ÁÁÀº Join Method ¼±ÅÃ
     //------------------------------------------
 
     if ( aJoinMethod->hintJoinMethod == NULL &&
@@ -459,7 +459,7 @@ qmoJoinMethodMgr::getBestJoinMethodCost( qcStatement   * aStatement,
             if ( ( sJoinMethodCost->flag & QMO_JOIN_METHOD_FEASIBILITY_MASK )
                  == QMO_JOIN_METHOD_FEASIBILITY_TRUE )
             {
-                // feasibilityê°€ TRUE ì¸ ê²½ìš°
+                // feasibility°¡ TRUE ÀÎ °æ¿ì
                 if ( sSelected == NULL )
                 {
                     sSelected = sJoinMethodCost;
@@ -507,7 +507,7 @@ qmoJoinMethodMgr::printJoinMethod( qmoJoinMethod * aMethod,
 /***********************************************************************
  *
  * Description :
- *    Join Method ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *    Join Method Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  * Implementation :
  *
@@ -519,14 +519,14 @@ qmoJoinMethodMgr::printJoinMethod( qmoJoinMethod * aMethod,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::printJoinMethod::__FT__" );
 
     //-----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //-----------------------------------
 
     IDE_DASSERT( aMethod != NULL );
     IDE_DASSERT( aString != NULL );
 
     //-----------------------------------
-    // Join Methodì˜ ì •ë³´ ì¶œë ¥
+    // Join MethodÀÇ Á¤º¸ Ãâ·Â
     //-----------------------------------
 
     for ( j = 0; j < aMethod->joinMethodCnt; j++ )
@@ -535,10 +535,10 @@ qmoJoinMethodMgr::printJoinMethod( qmoJoinMethod * aMethod,
                QMO_JOIN_METHOD_FEASIBILITY_MASK )
              == QMO_JOIN_METHOD_FEASIBILITY_TRUE )
         {
-            // ìˆ˜í–‰ ê°€ëŠ¥í•œ Join Method
+            // ¼öÇà °¡´ÉÇÑ Join Method
 
             //-----------------------------------
-            // Join Methodì˜ ì¢…ë¥˜ ì¶œë ¥
+            // Join MethodÀÇ Á¾·ù Ãâ·Â
             //-----------------------------------
 
             QMG_PRINT_LINE_FEED( i, aDepth, aString );
@@ -611,7 +611,7 @@ qmoJoinMethodMgr::printJoinMethod( qmoJoinMethod * aMethod,
             }
 
             //-----------------------------------
-            // Join ë°©í–¥ì˜ ì¢…ë¥˜ ì¶œë ¥
+            // Join ¹æÇâÀÇ Á¾·ù Ãâ·Â
             //-----------------------------------
 
             if ( ( aMethod->joinMethodCost[j].flag &
@@ -628,7 +628,7 @@ qmoJoinMethodMgr::printJoinMethod( qmoJoinMethod * aMethod,
             }
 
             //-----------------------------------
-            // Join ì •ë³´ì˜ ì¶œë ¥
+            // Join Á¤º¸ÀÇ Ãâ·Â
             //-----------------------------------
 
             // Selectivity
@@ -655,7 +655,7 @@ qmoJoinMethodMgr::printJoinMethod( qmoJoinMethod * aMethod,
         }
         else
         {
-            // ìˆ˜í–‰ì´ ë¶ˆê°€ëŠ¥í•œ Join Methodì„
+            // ¼öÇàÀÌ ºÒ°¡´ÉÇÑ Join MethodÀÓ
         }
     }
 
@@ -672,17 +672,17 @@ qmoJoinMethodMgr::getJoinCost( qcStatement       * aStatement,
 {
 /***********************************************************************
  *
- * Description : Join Cost ê³„ì‚°ê¸°
+ * Description : Join Cost °è»ê±â
  *
  * Implementation :
- *    Join Method Typeì— ë§ëŠ” Join Cost ê³„ì‚°ê¸°ë¥¼ í˜¸ì¶œí•œë‹¤.
+ *    Join Method Type¿¡ ¸Â´Â Join Cost °è»ê±â¸¦ È£ÃâÇÑ´Ù.
  *
  ***********************************************************************/
 
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::getJoinCost::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aMethod != NULL );
@@ -690,7 +690,7 @@ qmoJoinMethodMgr::getJoinCost( qcStatement       * aStatement,
     IDE_DASSERT( aRight != NULL );
 
     //------------------------------------------
-    // Cost ê³„ì‚°
+    // Cost °è»ê
     //------------------------------------------
     switch( aMethod->flag & QMO_JOIN_METHOD_MASK )
     {
@@ -814,7 +814,7 @@ qmoJoinMethodMgr::getFullNestedLoop( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::getFullNestedLoop::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aJoinMethodCost != NULL );
@@ -824,7 +824,7 @@ qmoJoinMethodMgr::getFullNestedLoop( qcStatement       * aStatement,
     aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_FEASIBILITY_MASK;
     aJoinMethodCost->flag |= QMO_JOIN_METHOD_FEASIBILITY_TRUE;
 
-    // left ë…¸ë“œì˜ cost ê°’ì„ ë‚®ì¶˜ë‹¤.
+    // left ³ëµåÀÇ cost °ªÀ» ³·Ãá´Ù.
     QMO_FIRST_ROWS_SET(aLeft, aJoinMethodCost);
 
     sFilterCost = qmoCost::getFilterCost( aStatement->mSysStat,
@@ -863,9 +863,22 @@ qmoJoinMethodMgr::getFullNestedLoop( qcStatement       * aStatement,
                                                 sFilterCost,
                                                 &(aJoinMethodCost->accessCost),
                                                 &(aJoinMethodCost->diskCost) );
+
+        /* BUG-48234 Recursive With Join cost adjust */
+        if ( ( ( aLeft->myQuerySet->lflag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
+              == QMV_QUERYSET_RECURSIVE_VIEW_LEFT ) ||
+             ( ( aLeft->myQuerySet->lflag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
+              == QMV_QUERYSET_RECURSIVE_VIEW_RIGHT ) ||
+             ( ( aRight->myQuerySet->lflag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
+              == QMV_QUERYSET_RECURSIVE_VIEW_LEFT ) ||
+             ( ( aRight->myQuerySet->lflag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
+              == QMV_QUERYSET_RECURSIVE_VIEW_RIGHT ) )
+        {
+            aJoinMethodCost->totalCost = aJoinMethodCost->totalCost * 8;
+        }
     }
 
-    // left ë…¸ë“œì˜ cost ê°’ì„ ë³µì›í•œë‹¤.
+    // left ³ëµåÀÇ cost °ªÀ» º¹¿øÇÑ´Ù.
     QMO_FIRST_ROWS_UNSET(aLeft, aJoinMethodCost);
 
     return IDE_SUCCESS;
@@ -884,7 +897,7 @@ qmoJoinMethodMgr::getFullStoreNestedLoop( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::getFullStoreNestedLoop::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aJoinMethodCost != NULL );
@@ -892,7 +905,7 @@ qmoJoinMethodMgr::getFullStoreNestedLoop( qcStatement       * aStatement,
     IDE_DASSERT( aRight != NULL );
 
     //------------------------------------------
-    // ì €ì¥ ë§¤ì²´ì˜ ê²°ì •
+    // ÀúÀå ¸ÅÃ¼ÀÇ °áÁ¤
     //------------------------------------------
 
     IDE_TEST( qmg::isDiskTempTable( aRight, & sIsDisk )
@@ -900,19 +913,19 @@ qmoJoinMethodMgr::getFullStoreNestedLoop( qcStatement       * aStatement,
 
     if ( sIsDisk == ID_TRUE )
     {
-        // Childì˜ ì €ì¥ ë§¤ì²´ ê²°ì •
+        // ChildÀÇ ÀúÀå ¸ÅÃ¼ °áÁ¤
         aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_RIGHT_STORAGE_MASK;
         aJoinMethodCost->flag |= QMO_JOIN_METHOD_RIGHT_STORAGE_DISK;
     }
     else
     {
-        // Childì˜ ì €ì¥ ë§¤ì²´ ê²°ì •
+        // ChildÀÇ ÀúÀå ¸ÅÃ¼ °áÁ¤
         aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_RIGHT_STORAGE_MASK;
         aJoinMethodCost->flag |= QMO_JOIN_METHOD_RIGHT_STORAGE_MEMORY;
     }
 
     //------------------------------------------
-    // Cost ì˜ ê³„ì‚°
+    // Cost ÀÇ °è»ê
     //------------------------------------------
     QMO_FIRST_ROWS_SET(aLeft, aJoinMethodCost);
 
@@ -929,6 +942,19 @@ qmoJoinMethodMgr::getFullStoreNestedLoop( qcStatement       * aStatement,
                                            sIsDisk,
                                            &(aJoinMethodCost->accessCost),
                                            &(aJoinMethodCost->diskCost) );
+
+    /* BUG-48234 Recursive With Join cost adjust */
+    if ( ( ( aLeft->myQuerySet->lflag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
+          == QMV_QUERYSET_RECURSIVE_VIEW_LEFT ) ||
+         ( ( aLeft->myQuerySet->lflag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
+          == QMV_QUERYSET_RECURSIVE_VIEW_RIGHT ) ||
+         ( ( aRight->myQuerySet->lflag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
+          == QMV_QUERYSET_RECURSIVE_VIEW_LEFT ) ||
+         ( ( aRight->myQuerySet->lflag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
+          == QMV_QUERYSET_RECURSIVE_VIEW_RIGHT ) )
+    {
+        aJoinMethodCost->totalCost = aJoinMethodCost->totalCost * 4;
+    }
 
     QMO_FIRST_ROWS_UNSET(aLeft, aJoinMethodCost);
 
@@ -971,7 +997,7 @@ qmoJoinMethodMgr::getIndexNestedLoop( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::getIndexNestedLoop::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aJoinMethodCost != NULL );
@@ -979,22 +1005,22 @@ qmoJoinMethodMgr::getIndexNestedLoop( qcStatement       * aStatement,
     IDE_DASSERT( aRight != NULL );
 
     //------------------------------------------
-    // ì €ì¥ ë§¤ì²´ì˜ ê²°ì •
+    // ÀúÀå ¸ÅÃ¼ÀÇ °áÁ¤
     //------------------------------------------
 
-    // ì €ì¥ ë§¤ì²´ íŒë‹¨
+    // ÀúÀå ¸ÅÃ¼ ÆÇ´Ü
     IDE_TEST( qmg::isDiskTempTable( aLeft, & sIsDisk )
               != IDE_SUCCESS );
 
     if ( sIsDisk == ID_TRUE )
     {
-        // Childì˜ ì €ì¥ ë§¤ì²´ ê²°ì •
+        // ChildÀÇ ÀúÀå ¸ÅÃ¼ °áÁ¤
         aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_LEFT_STORAGE_MASK;
         aJoinMethodCost->flag |= QMO_JOIN_METHOD_LEFT_STORAGE_DISK;
     }
     else
     {
-        // Childì˜ ì €ì¥ ë§¤ì²´ ê²°ì •
+        // ChildÀÇ ÀúÀå ¸ÅÃ¼ °áÁ¤
         aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_LEFT_STORAGE_MASK;
         aJoinMethodCost->flag |= QMO_JOIN_METHOD_LEFT_STORAGE_MEMORY;
     }
@@ -1023,15 +1049,15 @@ qmoJoinMethodMgr::getIndexNestedLoop( qcStatement       * aStatement,
 
     QMO_FIRST_ROWS_SET(aLeft, aJoinMethodCost);
 
-    // BUG-36454 index hint ë¥¼ ì‚¬ìš©í•˜ë©´ sAccessMethod[0] ì€ fullscan ì•„ë‹ˆë‹¤.
-    for( i = 0; i < sAccessMethodCnt; i++ )
+    // BUG-36454 index hint ¸¦ »ç¿ëÇÏ¸é sAccessMethod[0] Àº fullscan ¾Æ´Ï´Ù.
+    for ( i = 0; i < sAccessMethodCnt; i++ )
     {
         sIsChange       = ID_FALSE;
         sCurrIndexCost  = QMO_COST_INVALID_COST;
 
         if ( sAccessMethod[i].method != NULL )
         {
-            // keyRange ë§Œ ì¶”ì¶œí•´ë‚¸ë‹¤.
+            // keyRange ¸¸ ÃßÃâÇØ³½´Ù.
             IDE_TEST ( setJoinPredInfo4NL( aStatement,
                                            aJoinPredicate,
                                            sAccessMethod[i].method,
@@ -1039,9 +1065,9 @@ qmoJoinMethodMgr::getIndexNestedLoop( qcStatement       * aStatement,
                                            aJoinMethodCost )
                        != IDE_SUCCESS );
 
-            if( aJoinMethodCost->joinPredicate != NULL )
+            if ( aJoinMethodCost->joinPredicate != NULL )
             {
-                // BUG-42429 index cost ë¥¼ ë‹¤ì‹œ ê³„ì‚°í•´ì•¼í•¨
+                // BUG-42429 index cost ¸¦ ´Ù½Ã °è»êÇØ¾ßÇÔ
                 adjustIndexCost( aStatement,
                                  aRight,
                                  sAccessMethod[i].method,
@@ -1050,7 +1076,7 @@ qmoJoinMethodMgr::getIndexNestedLoop( qcStatement       * aStatement,
                                  &sRightIndexDiskCost );
 
                 // BUG-37407 semi, anti join cost
-                if( (aJoinMethodCost->flag & QMO_JOIN_SEMI_MASK)
+                if ( (aJoinMethodCost->flag & QMO_JOIN_SEMI_MASK)
                     == QMO_JOIN_SEMI_TRUE )
                 {
                     if ( ( aJoinMethodCost->flag & QMO_JOIN_METHOD_MASK )
@@ -1066,7 +1092,7 @@ qmoJoinMethodMgr::getIndexNestedLoop( qcStatement       * aStatement,
                                                                 &sTempMemCost,
                                                                 &sTempDiskCost );
 
-                        // BUG-45169 semi inverse index NL join ì¼ ë•Œë§Œ, index costë¥¼ ê³ ë ¤í•  í•„ìš”ê°€ ìˆìŠµë‹ˆë‹¤.
+                        // BUG-45169 semi inverse index NL join ÀÏ ¶§¸¸, index cost¸¦ °í·ÁÇÒ ÇÊ¿ä°¡ ÀÖ½À´Ï´Ù.
                         sCurrIndexCost = sRightIndexMemCost + sRightIndexDiskCost;
                         IDE_DASSERT(QMO_COST_IS_LESS(sCurrIndexCost, 0.0) == ID_FALSE);
 
@@ -1081,9 +1107,11 @@ qmoJoinMethodMgr::getIndexNestedLoop( qcStatement       * aStatement,
                                                               0, // filter cost
                                                               &sTempMemCost,
                                                               &sTempDiskCost );
+                        // BUG-48327 semi join wrong index
+                        sCurrIndexCost = sRightIndexMemCost + sRightIndexDiskCost;
                     }
                 }
-                else if( (aJoinMethodCost->flag & QMO_JOIN_ANTI_MASK)
+                else if ( (aJoinMethodCost->flag & QMO_JOIN_ANTI_MASK)
                           == QMO_JOIN_ANTI_TRUE )
                 {
                     sTempCost =
@@ -1094,6 +1122,8 @@ qmoJoinMethodMgr::getIndexNestedLoop( qcStatement       * aStatement,
                                                           0, // filter cost
                                                           &sTempMemCost,
                                                           &sTempDiskCost );
+                        // BUG-48327 semi join wrong index
+                        sCurrIndexCost = sRightIndexMemCost + sRightIndexDiskCost;
                 }
                 else
                 {
@@ -1109,7 +1139,7 @@ qmoJoinMethodMgr::getIndexNestedLoop( qcStatement       * aStatement,
                                                      &sTempDiskCost );
                 }
 
-                // ìµœì†Œ Cost ì¸ index ë¥¼ ì €ì¥í•œë‹¤.
+                // ÃÖ¼Ò Cost ÀÎ index ¸¦ ÀúÀåÇÑ´Ù.
                 if (((QMO_COST_IS_EQUAL(sMinCost, QMO_COST_INVALID_COST) == ID_TRUE) ||
                      (QMO_COST_IS_LESS(sTempCost, sMinCost) == ID_TRUE)))
                 {
@@ -1117,25 +1147,50 @@ qmoJoinMethodMgr::getIndexNestedLoop( qcStatement       * aStatement,
                 }
                 else
                 {
-                    if ( (QCU_OPTIMIZER_INDEX_NL_JOIN_ACCESS_METHOD_POLICY == 0) &&
+                    /* BUG-44850 Index NL , Inverse index NL Á¶ÀÎ ÃÖÀûÈ­ ¼öÇà½Ã ºñ¿ëÀÌ µ¿ÀÏÇÏ¸é primary key¸¦ ¿ì¼±ÀûÀ¸·Î ¼±ÅÃ.
+                         0 ( 7.1.0 default ) : primary key ¿ì¼±ÀûÀ¸·Î ¼±ÅÃ (BUG-44850) +
+                             Inverse index NL Á¶ÀÎÀÏ ¶§ index cost°¡ ÀÛÀº ÀÎµ¦½º ¼±ÅÃ (BUG-45169)
+                         1 ( 6.5.1. default ): ±âÁ¸ ÇÃ·£ ¹æ½Ä°ú µ¿ÀÏ
+                         2 ( trunk defulat ) : primary key ¿ì¼±ÀûÀ¸·Î ¼±ÅÃ (BUG-44850) +
+                             Inverse index NL Á¶ÀÎÀÏ ¶§ index cost°¡ ÀÛÀº ÀÎµ¦½º ¼±ÅÃ (BUG-45169) +
+                             index NL Á¶ÀÎ ÀÏ¶§ index cost°¡ ÀÛÀº ÀÎµ¦½º ¼±ÅÃ + ( BUG-48327 )
+                             Anti Á¶ÀÎ ÀÏ¶§ index cost°¡ ÀÛÀº ÀÎµ¦½º ¼±ÅÃ
+                    */
+                    if ( (QCU_OPTIMIZER_INDEX_NL_JOIN_ACCESS_METHOD_POLICY != 1) &&
                          (QMO_COST_IS_EQUAL( sTempCost, sMinCost ) == ID_TRUE) )
                     {
-                        // BUG-45169 semi inverse index NL join ì¼ ë•Œë§Œ, index costë¥¼ ê³ ë ¤í•  í•„ìš”ê°€ ìˆìŠµë‹ˆë‹¤.
-                        if ( ( aJoinMethodCost->flag & QMO_JOIN_METHOD_MASK ) 
-                             == QMO_JOIN_METHOD_INVERSE_INDEX )
+                        if ( QCU_OPTIMIZER_INDEX_NL_JOIN_ACCESS_METHOD_POLICY == 0 )
                         {
-                            if ( QMO_COST_IS_LESS(sCurrIndexCost, sMinIndexCost) == ID_TRUE )
+                            // BUG-45169 semi inverse index NL join ÀÏ ¶§¸¸, index cost¸¦ °í·ÁÇÒ ÇÊ¿ä°¡ ÀÖ½À´Ï´Ù.
+                            if ( ( aJoinMethodCost->flag & QMO_JOIN_METHOD_MASK ) 
+                                 == QMO_JOIN_METHOD_INVERSE_INDEX )
                             {
-                                // sMinIndexCostëŠ” ì ˆëŒ€ QMO_COST_INVALID_COST ì¼ ìˆ˜ ì—†ë‹¤.
-                                IDE_DASSERT(QMO_COST_IS_LESS(sMinIndexCost, 0.0) == ID_FALSE);
-                                sIsChange = ID_TRUE;
+                                if ( QMO_COST_IS_LESS(sCurrIndexCost, sMinIndexCost) == ID_TRUE )
+                                {
+                                    // sMinIndexCost´Â Àı´ë QMO_COST_INVALID_COST ÀÏ ¼ö ¾ø´Ù.
+                                    IDE_DASSERT(QMO_COST_IS_LESS(sMinIndexCost, 0.0) == ID_FALSE);
+                                    sIsChange = ID_TRUE;
+                                }
+                                else
+                                {
+                                    /* BUG-44850 Inverse index NL Á¶ÀÎ ÃÖÀûÈ­ ¼öÇà½Ã ºñ¿ëÀÌ µ¿ÀÏÇÏ¸é primary key¸¦ ¿ì¼±ÀûÀ¸·Î ¼±ÅÃ. */
+                                    if ( ( QMO_COST_IS_EQUAL( sCurrIndexCost, sMinIndexCost) == ID_TRUE ) &&
+                                         ( (sAccessMethod[i].method->flag & QMO_STAT_CARD_IDX_PRIMARY_MASK) ==
+                                           QMO_STAT_CARD_IDX_PRIMARY_TRUE ) )
+                                    {
+                                        sIsChange = ID_TRUE; 
+                                    }
+                                    else
+                                    {
+                                        // Nothing to do.
+                                    }
+                                }
                             }
                             else
                             {
-                                /* BUG-44850 Inverse index NL ì¡°ì¸ ìµœì í™” ìˆ˜í–‰ì‹œ ë¹„ìš©ì´ ë™ì¼í•˜ë©´ primary keyë¥¼ ìš°ì„ ì ìœ¼ë¡œ ì„ íƒ. */
-                                if ( ( QMO_COST_IS_EQUAL( sCurrIndexCost, sMinIndexCost) == ID_TRUE ) &&
-                                     ( (sAccessMethod[i].method->flag & QMO_STAT_CARD_IDX_PRIMARY_MASK) ==
-                                       QMO_STAT_CARD_IDX_PRIMARY_TRUE ) )
+                                /* BUG-44850 Index NL Á¶ÀÎ ÃÖÀûÈ­ ¼öÇà½Ã ºñ¿ëÀÌ µ¿ÀÏÇÏ¸é primary key¸¦ ¿ì¼±ÀûÀ¸·Î ¼±ÅÃ. */
+                                if ( (sAccessMethod[i].method->flag & QMO_STAT_CARD_IDX_PRIMARY_MASK) ==
+                                     QMO_STAT_CARD_IDX_PRIMARY_TRUE )
                                 {
                                     sIsChange = ID_TRUE; 
                                 }
@@ -1145,17 +1200,22 @@ qmoJoinMethodMgr::getIndexNestedLoop( qcStatement       * aStatement,
                                 }
                             }
                         }
-                        else
+                        else if ( QCU_OPTIMIZER_INDEX_NL_JOIN_ACCESS_METHOD_POLICY == 2 )
                         {
-                            /* BUG-44850 Index NL ì¡°ì¸ ìµœì í™” ìˆ˜í–‰ì‹œ ë¹„ìš©ì´ ë™ì¼í•˜ë©´ primary keyë¥¼ ìš°ì„ ì ìœ¼ë¡œ ì„ íƒ. */
-                            if ( (sAccessMethod[i].method->flag & QMO_STAT_CARD_IDX_PRIMARY_MASK) ==
-                                 QMO_STAT_CARD_IDX_PRIMARY_TRUE )
+                            if ( QMO_COST_IS_LESS(sCurrIndexCost, sMinIndexCost) == ID_TRUE )
                             {
-                                sIsChange = ID_TRUE; 
+                                // sMinIndexCost´Â Àı´ë QMO_COST_INVALID_COST ÀÏ ¼ö ¾ø´Ù.
+                                IDE_DASSERT(QMO_COST_IS_LESS(sMinIndexCost, 0.0) == ID_FALSE);
+                                sIsChange = ID_TRUE;
                             }
                             else
                             {
-                                // Nothing to do.
+                                if ( ( QMO_COST_IS_EQUAL( sCurrIndexCost, sMinIndexCost) == ID_TRUE ) &&
+                                     ( (sAccessMethod[i].method->flag & QMO_STAT_CARD_IDX_PRIMARY_MASK) ==
+                                       QMO_STAT_CARD_IDX_PRIMARY_TRUE ) )
+                                {
+                                    sIsChange = ID_TRUE;
+                                }
                             }
                         }
                     }
@@ -1175,17 +1235,7 @@ qmoJoinMethodMgr::getIndexNestedLoop( qcStatement       * aStatement,
                     sMinDiskCost    = sTempDiskCost;
                     sJoinPredicate  = aJoinMethodCost->joinPredicate;
                     sIdxInfo        = sAccessMethod[i].method;
-
-                    if ( ( aJoinMethodCost->flag & QMO_JOIN_METHOD_MASK ) 
-                         == QMO_JOIN_METHOD_INVERSE_INDEX )
-                    {
-                        sMinIndexCost   = sCurrIndexCost;
-                    }
-                    else
-                    {
-                        // inverse index nl joinì´ ì•„ë‹Œ ê²½ìš°ì´ê¸° ë•Œë¬¸ì— ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
-                        // Nothing to do.
-                    }
+                    sMinIndexCost   = sCurrIndexCost;
                 }
             }
             else
@@ -1205,9 +1255,9 @@ qmoJoinMethodMgr::getIndexNestedLoop( qcStatement       * aStatement,
         IDE_DASSERT(QMO_COST_IS_LESS(sMinCost, 0.0) == ID_FALSE);
 
         // BUG-39403
-        // INVERSE_INDEX Join Method ì—ì„œëŠ”,
-        // Predicate Listì˜ ëª¨ë“  Join Predicateì˜
-        // ë¹„êµ ì—°ì‚°ì ì–‘ ìª½ operandê°€ ëª¨ë‘ Column Nodeì—¬ì•¼ í•œë‹¤.
+        // INVERSE_INDEX Join Method ¿¡¼­´Â,
+        // Predicate ListÀÇ ¸ğµç Join PredicateÀÇ
+        // ºñ±³ ¿¬»êÀÚ ¾ç ÂÊ operand°¡ ¸ğµÎ Column Node¿©¾ß ÇÑ´Ù.
         if ( ( ( aJoinMethodCost->flag & QMO_JOIN_METHOD_MASK )
                == QMO_JOIN_METHOD_INVERSE_INDEX ) &&
              ( qmoPred::hasOnlyColumnCompInPredList( sJoinPredicate ) == ID_FALSE ) )
@@ -1217,8 +1267,8 @@ qmoJoinMethodMgr::getIndexNestedLoop( qcStatement       * aStatement,
         }
         else
         {
-            // INVERSE_INDEX Join Methodê°€ ì•„ë‹ˆê±°ë‚˜,
-            // INVERSE_INDEX ì´ê³  Join Predicateì´ ëª¨ë‘ Column Nodeë¥¼ ë¹„êµí•˜ëŠ” ê²½ìš°
+            // INVERSE_INDEX Join Method°¡ ¾Æ´Ï°Å³ª,
+            // INVERSE_INDEX ÀÌ°í Join PredicateÀÌ ¸ğµÎ Column Node¸¦ ºñ±³ÇÏ´Â °æ¿ì
             aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_FEASIBILITY_MASK;
             aJoinMethodCost->flag |= QMO_JOIN_METHOD_FEASIBILITY_TRUE;
 
@@ -1226,6 +1276,18 @@ qmoJoinMethodMgr::getIndexNestedLoop( qcStatement       * aStatement,
             aJoinMethodCost->diskCost     = sMinDiskCost;
             aJoinMethodCost->totalCost    = sMinCost;
 
+            /* BUG-48234 Recursive With Join cost adjust */
+            if ( ( ( aLeft->myQuerySet->lflag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
+                  == QMV_QUERYSET_RECURSIVE_VIEW_LEFT ) ||
+                 ( ( aLeft->myQuerySet->lflag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
+                  == QMV_QUERYSET_RECURSIVE_VIEW_RIGHT ) ||
+                 ( ( aRight->myQuerySet->lflag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
+                  == QMV_QUERYSET_RECURSIVE_VIEW_LEFT ) ||
+                 ( ( aRight->myQuerySet->lflag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
+                  == QMV_QUERYSET_RECURSIVE_VIEW_RIGHT ) )
+            {
+                aJoinMethodCost->totalCost = aJoinMethodCost->totalCost * 2;
+            }
             IDE_DASSERT( sJoinPredicate != NULL );
             IDE_DASSERT( sIdxInfo != NULL );
 
@@ -1273,7 +1335,7 @@ qmoJoinMethodMgr::getAntiOuter( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::getAntiOuter::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aJoinMethodCost != NULL );
@@ -1304,7 +1366,7 @@ qmoJoinMethodMgr::getAntiOuter( qcStatement       * aStatement,
 
     QMO_FIRST_ROWS_SET(aLeft, aJoinMethodCost);
 
-    // BUG-36454 index hint ë¥¼ ì‚¬ìš©í•˜ë©´ sAccessMethod[0] ì€ fullscan ì•„ë‹ˆë‹¤.
+    // BUG-36454 index hint ¸¦ »ç¿ëÇÏ¸é sAccessMethod[0] Àº fullscan ¾Æ´Ï´Ù.
     for( i = 0; i < sAccessMethodCnt; i++ )
     {
         if ( sAccessMethod[i].method != NULL )
@@ -1327,7 +1389,7 @@ qmoJoinMethodMgr::getAntiOuter( qcStatement       * aStatement,
                                                    &sTempMemCost,
                                                    &sTempDiskCost );
 
-                // ìµœì†Œ Cost ì¸ index ë¥¼ ì €ì¥í•œë‹¤.
+                // ÃÖ¼Ò Cost ÀÎ index ¸¦ ÀúÀåÇÑ´Ù.
                 /* BUG-40589 floating point calculation */
                 if ((QMO_COST_IS_EQUAL(sMinCost, QMO_COST_INVALID_COST) == ID_TRUE) ||
                     (QMO_COST_IS_LESS(sTempCost, sMinCost) == ID_TRUE))
@@ -1401,7 +1463,7 @@ qmoJoinMethodMgr::getOnePassSort( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::getOnePassSort::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aJoinMethodCost != NULL );
@@ -1409,28 +1471,28 @@ qmoJoinMethodMgr::getOnePassSort( qcStatement       * aStatement,
     IDE_DASSERT( aRight != NULL );
 
     //------------------------------------------
-    // ì €ì¥ ë§¤ì²´ì˜ ê²°ì •
+    // ÀúÀå ¸ÅÃ¼ÀÇ °áÁ¤
     //------------------------------------------
 
-    // ì €ì¥ ë§¤ì²´ íŒë‹¨
+    // ÀúÀå ¸ÅÃ¼ ÆÇ´Ü
     IDE_TEST( qmg::isDiskTempTable( aRight, & sIsDisk )
               != IDE_SUCCESS );
 
     if ( sIsDisk == ID_TRUE )
     {
-        // Childì˜ ì €ì¥ ë§¤ì²´ ê²°ì •
+        // ChildÀÇ ÀúÀå ¸ÅÃ¼ °áÁ¤
         aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_RIGHT_STORAGE_MASK;
         aJoinMethodCost->flag |= QMO_JOIN_METHOD_RIGHT_STORAGE_DISK;
     }
     else
     {
-        // Childì˜ ì €ì¥ ë§¤ì²´ ê²°ì •
+        // ChildÀÇ ÀúÀå ¸ÅÃ¼ °áÁ¤
         aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_RIGHT_STORAGE_MASK;
         aJoinMethodCost->flag |= QMO_JOIN_METHOD_RIGHT_STORAGE_MEMORY;
     }
 
     //------------------------------------------
-    // Preserved Orderì˜ ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€ íŒë‹¨
+    // Preserved OrderÀÇ »ç¿ë °¡´É ¿©ºÎ ÆÇ´Ü
     //------------------------------------------
     IDE_TEST( setJoinPredInfo4Sort( aStatement,
                                     aJoinPredicate,
@@ -1449,19 +1511,19 @@ qmoJoinMethodMgr::getOnePassSort( qcStatement       * aStatement,
 
         if ( sUseOrder == ID_TRUE )
         {
-            // Child Nodeì˜ ì¢…ë¥˜ ê²°ì •
+            // Child NodeÀÇ Á¾·ù °áÁ¤
             aJoinMethodCost->flag &= ~QMO_JOIN_RIGHT_NODE_MASK;
             aJoinMethodCost->flag |= QMO_JOIN_RIGHT_NODE_STORE;
         }
         else
         {
-            // Child Nodeì˜ ì¢…ë¥˜ ê²°ì •
+            // Child NodeÀÇ Á¾·ù °áÁ¤
             aJoinMethodCost->flag &= ~QMO_JOIN_RIGHT_NODE_MASK;
             aJoinMethodCost->flag |= QMO_JOIN_RIGHT_NODE_SORTING;
         }
 
         //------------------------------------------
-        // Cost ì˜ ê³„ì‚°
+        // Cost ÀÇ °è»ê
         //------------------------------------------
 
         QMO_FIRST_ROWS_SET(aLeft, aJoinMethodCost);
@@ -1515,52 +1577,52 @@ qmoJoinMethodMgr::getTwoPassSort( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::getTwoPassSort::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
     IDE_DASSERT( aJoinMethodCost != NULL );
     IDE_DASSERT( aLeft != NULL );
     IDE_DASSERT( aRight != NULL );
 
     //------------------------------------------
-    // ì €ì¥ ë§¤ì²´ì˜ ê²°ì •
+    // ÀúÀå ¸ÅÃ¼ÀÇ °áÁ¤
     //------------------------------------------
 
-    // Left ì €ì¥ ë§¤ì²´ íŒë‹¨
+    // Left ÀúÀå ¸ÅÃ¼ ÆÇ´Ü
     IDE_TEST( qmg::isDiskTempTable( aLeft, & sLeftIsDisk )
               != IDE_SUCCESS );
 
     if ( sLeftIsDisk == ID_TRUE )
     {
-        // Left Childì˜ ì €ì¥ ë§¤ì²´ ê²°ì •
+        // Left ChildÀÇ ÀúÀå ¸ÅÃ¼ °áÁ¤
         aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_LEFT_STORAGE_MASK;
         aJoinMethodCost->flag |= QMO_JOIN_METHOD_LEFT_STORAGE_DISK;
     }
     else
     {
-        // Left Childì˜ ì €ì¥ ë§¤ì²´ ê²°ì •
+        // Left ChildÀÇ ÀúÀå ¸ÅÃ¼ °áÁ¤
         aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_LEFT_STORAGE_MASK;
         aJoinMethodCost->flag |= QMO_JOIN_METHOD_LEFT_STORAGE_MEMORY;
     }
 
-    // Right ì €ì¥ ë§¤ì²´ íŒë‹¨
+    // Right ÀúÀå ¸ÅÃ¼ ÆÇ´Ü
     IDE_TEST( qmg::isDiskTempTable( aRight, & sRightIsDisk )
               != IDE_SUCCESS );
 
     if ( sRightIsDisk == ID_TRUE )
     {
-        // Right Childì˜ ì €ì¥ ë§¤ì²´ ê²°ì •
+        // Right ChildÀÇ ÀúÀå ¸ÅÃ¼ °áÁ¤
         aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_RIGHT_STORAGE_MASK;
         aJoinMethodCost->flag |= QMO_JOIN_METHOD_RIGHT_STORAGE_DISK;
     }
     else
     {
-        // Right Childì˜ ì €ì¥ ë§¤ì²´ ê²°ì •
+        // Right ChildÀÇ ÀúÀå ¸ÅÃ¼ °áÁ¤
         aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_RIGHT_STORAGE_MASK;
         aJoinMethodCost->flag |= QMO_JOIN_METHOD_RIGHT_STORAGE_MEMORY;
     }
 
     //------------------------------------------
-    // Preserved Orderì˜ ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€ íŒë‹¨
+    // Preserved OrderÀÇ »ç¿ë °¡´É ¿©ºÎ ÆÇ´Ü
     //------------------------------------------
     IDE_TEST( setJoinPredInfo4Sort( aStatement,
                                     aJoinPredicate,
@@ -1570,7 +1632,7 @@ qmoJoinMethodMgr::getTwoPassSort( qcStatement       * aStatement,
 
     if( aJoinMethodCost->joinPredicate != NULL )
     {
-        // Leftì˜ Order ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€ íŒë‹¨
+        // LeftÀÇ Order »ç¿ë °¡´É ¿©ºÎ ÆÇ´Ü
         IDE_TEST( canUsePreservedOrder( aStatement,
                                         aJoinMethodCost,
                                         aLeft,
@@ -1580,7 +1642,7 @@ qmoJoinMethodMgr::getTwoPassSort( qcStatement       * aStatement,
 
         if ( sLeftUseOrder == ID_TRUE )
         {
-            // BUG-37861 two pass sort ì¼ë•ŒëŠ” ë…¸ë“œë¥¼ ë¬´ì¡°ê±´ ë§Œë“¤ì–´ì•¼ í•œë‹¤.
+            // BUG-37861 two pass sort ÀÏ¶§´Â ³ëµå¸¦ ¹«Á¶°Ç ¸¸µé¾î¾ß ÇÑ´Ù.
             aJoinMethodCost->flag &= ~QMO_JOIN_LEFT_NODE_MASK;
             aJoinMethodCost->flag |= QMO_JOIN_LEFT_NODE_STORE;
         }
@@ -1590,7 +1652,7 @@ qmoJoinMethodMgr::getTwoPassSort( qcStatement       * aStatement,
             aJoinMethodCost->flag |= QMO_JOIN_LEFT_NODE_SORTING;
         }
 
-        // Rightì˜ Order ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€ íŒë‹¨
+        // RightÀÇ Order »ç¿ë °¡´É ¿©ºÎ ÆÇ´Ü
         IDE_TEST( canUsePreservedOrder( aStatement,
                                         aJoinMethodCost,
                                         aRight,
@@ -1600,19 +1662,19 @@ qmoJoinMethodMgr::getTwoPassSort( qcStatement       * aStatement,
 
         if ( sRightUseOrder == ID_TRUE )
         {
-            // Child Nodeì˜ ì¢…ë¥˜ ê²°ì •
+            // Child NodeÀÇ Á¾·ù °áÁ¤
             aJoinMethodCost->flag &= ~QMO_JOIN_RIGHT_NODE_MASK;
             aJoinMethodCost->flag |= QMO_JOIN_RIGHT_NODE_STORE;
         }
         else
         {
-            // Child Nodeì˜ ì¢…ë¥˜ ê²°ì •
+            // Child NodeÀÇ Á¾·ù °áÁ¤
             aJoinMethodCost->flag &= ~QMO_JOIN_RIGHT_NODE_MASK;
             aJoinMethodCost->flag |= QMO_JOIN_RIGHT_NODE_SORTING;
         }
 
         //------------------------------------------
-        // Cost ì˜ ê³„ì‚°
+        // Cost ÀÇ °è»ê
         //------------------------------------------
         QMO_FIRST_ROWS_SET(aLeft, aJoinMethodCost);
 
@@ -1662,7 +1724,7 @@ IDE_RC qmoJoinMethodMgr::getInverseSort( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::getInverseSort::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aMethod != NULL );
@@ -1670,28 +1732,28 @@ IDE_RC qmoJoinMethodMgr::getInverseSort( qcStatement       * aStatement,
     IDE_DASSERT( aRight != NULL );
 
     //------------------------------------------
-    // ì €ì¥ ë§¤ì²´ì˜ ê²°ì •
+    // ÀúÀå ¸ÅÃ¼ÀÇ °áÁ¤
     //------------------------------------------
 
-    // ì €ì¥ ë§¤ì²´ íŒë‹¨
+    // ÀúÀå ¸ÅÃ¼ ÆÇ´Ü
     IDE_TEST( qmg::isDiskTempTable( aRight, & sIsDisk )
               != IDE_SUCCESS );
 
     if ( sIsDisk == ID_TRUE )
     {
-        // Childì˜ ì €ì¥ ë§¤ì²´ ê²°ì •
+        // ChildÀÇ ÀúÀå ¸ÅÃ¼ °áÁ¤
         aMethod->flag &= ~QMO_JOIN_METHOD_RIGHT_STORAGE_MASK;
         aMethod->flag |= QMO_JOIN_METHOD_RIGHT_STORAGE_DISK;
     }
     else
     {
-        // Childì˜ ì €ì¥ ë§¤ì²´ ê²°ì •
+        // ChildÀÇ ÀúÀå ¸ÅÃ¼ °áÁ¤
         aMethod->flag &= ~QMO_JOIN_METHOD_RIGHT_STORAGE_MASK;
         aMethod->flag |= QMO_JOIN_METHOD_RIGHT_STORAGE_MEMORY;
     }
 
     //------------------------------------------
-    // Preserved Orderì˜ ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€ íŒë‹¨
+    // Preserved OrderÀÇ »ç¿ë °¡´É ¿©ºÎ ÆÇ´Ü
     //------------------------------------------
     IDE_TEST( setJoinPredInfo4Sort( aStatement,
                                     aJoinPredicate,
@@ -1710,19 +1772,19 @@ IDE_RC qmoJoinMethodMgr::getInverseSort( qcStatement       * aStatement,
 
         if ( sUseOrder == ID_TRUE )
         {
-            // Child Nodeì˜ ì¢…ë¥˜ ê²°ì •
+            // Child NodeÀÇ Á¾·ù °áÁ¤
             aMethod->flag &= ~QMO_JOIN_RIGHT_NODE_MASK;
             aMethod->flag |= QMO_JOIN_RIGHT_NODE_STORE;
         }
         else
         {
-            // Child Nodeì˜ ì¢…ë¥˜ ê²°ì •
+            // Child NodeÀÇ Á¾·ù °áÁ¤
             aMethod->flag &= ~QMO_JOIN_RIGHT_NODE_MASK;
             aMethod->flag |= QMO_JOIN_RIGHT_NODE_SORTING;
         }
 
         //------------------------------------------
-        // Cost ì˜ ê³„ì‚°
+        // Cost ÀÇ °è»ê
         //------------------------------------------
 
         QMO_FIRST_ROWS_SET(aLeft, aMethod);
@@ -1773,7 +1835,7 @@ qmoJoinMethodMgr::getOnePassHash( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::getOnePassHash::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aJoinMethodCost != NULL );
@@ -1781,28 +1843,28 @@ qmoJoinMethodMgr::getOnePassHash( qcStatement       * aStatement,
     IDE_DASSERT( aRight != NULL );
 
     //------------------------------------------
-    // ì €ì¥ ë§¤ì²´ì˜ ê²°ì •
+    // ÀúÀå ¸ÅÃ¼ÀÇ °áÁ¤
     //------------------------------------------
 
-    // ì €ì¥ ë§¤ì²´ íŒë‹¨
+    // ÀúÀå ¸ÅÃ¼ ÆÇ´Ü
     IDE_TEST( qmg::isDiskTempTable( aRight, & sIsDisk )
               != IDE_SUCCESS );
 
     if ( sIsDisk == ID_TRUE )
     {
-        // Childì˜ ì €ì¥ ë§¤ì²´ ê²°ì •
+        // ChildÀÇ ÀúÀå ¸ÅÃ¼ °áÁ¤
         aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_RIGHT_STORAGE_MASK;
         aJoinMethodCost->flag |= QMO_JOIN_METHOD_RIGHT_STORAGE_DISK;
     }
     else
     {
-        // Childì˜ ì €ì¥ ë§¤ì²´ ê²°ì •
+        // ChildÀÇ ÀúÀå ¸ÅÃ¼ °áÁ¤
         aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_RIGHT_STORAGE_MASK;
         aJoinMethodCost->flag |= QMO_JOIN_METHOD_RIGHT_STORAGE_MEMORY;
     }
 
     //------------------------------------------
-    // Cost ì˜ ê³„ì‚°
+    // Cost ÀÇ °è»ê
     //------------------------------------------
     IDE_TEST( setJoinPredInfo4Hash( aStatement,
                                     aJoinPredicate,
@@ -1833,7 +1895,7 @@ qmoJoinMethodMgr::getOnePassHash( qcStatement       * aStatement,
         aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_FEASIBILITY_MASK;
         aJoinMethodCost->flag |= QMO_JOIN_METHOD_FEASIBILITY_TRUE;
         //------------------------------------------
-        // ìµœì¢… ë¹„ìš©ì˜ ê³„ì‚°
+        // ÃÖÁ¾ ºñ¿ëÀÇ °è»ê
         //------------------------------------------
 
         aJoinMethodCost->totalCost *= QCU_OPTIMIZER_HASH_JOIN_COST_ADJ;
@@ -1869,7 +1931,7 @@ qmoJoinMethodMgr::getTwoPassHash( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::getTwoPassHash::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aJoinMethodCost != NULL );
@@ -1877,45 +1939,45 @@ qmoJoinMethodMgr::getTwoPassHash( qcStatement       * aStatement,
     IDE_DASSERT( aRight != NULL );
 
     //------------------------------------------
-    // ì €ì¥ ë§¤ì²´ì˜ ê²°ì •
+    // ÀúÀå ¸ÅÃ¼ÀÇ °áÁ¤
     //------------------------------------------
 
-    // Left ì €ì¥ ë§¤ì²´ íŒë‹¨
+    // Left ÀúÀå ¸ÅÃ¼ ÆÇ´Ü
     IDE_TEST( qmg::isDiskTempTable( aLeft, & sLeftIsDisk )
               != IDE_SUCCESS );
 
     if ( sLeftIsDisk == ID_TRUE )
     {
-        // Left Childì˜ ì €ì¥ ë§¤ì²´ ê²°ì •
+        // Left ChildÀÇ ÀúÀå ¸ÅÃ¼ °áÁ¤
         aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_LEFT_STORAGE_MASK;
         aJoinMethodCost->flag |= QMO_JOIN_METHOD_LEFT_STORAGE_DISK;
     }
     else
     {
-        // Left Childì˜ ì €ì¥ ë§¤ì²´ ê²°ì •
+        // Left ChildÀÇ ÀúÀå ¸ÅÃ¼ °áÁ¤
         aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_LEFT_STORAGE_MASK;
         aJoinMethodCost->flag |= QMO_JOIN_METHOD_LEFT_STORAGE_MEMORY;
     }
 
-    // Right ì €ì¥ ë§¤ì²´ íŒë‹¨
+    // Right ÀúÀå ¸ÅÃ¼ ÆÇ´Ü
     IDE_TEST( qmg::isDiskTempTable( aRight, & sRightIsDisk )
               != IDE_SUCCESS );
 
     if ( sRightIsDisk == ID_TRUE )
     {
-        // Right Childì˜ ì €ì¥ ë§¤ì²´ ê²°ì •
+        // Right ChildÀÇ ÀúÀå ¸ÅÃ¼ °áÁ¤
         aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_RIGHT_STORAGE_MASK;
         aJoinMethodCost->flag |= QMO_JOIN_METHOD_RIGHT_STORAGE_DISK;
     }
     else
     {
-        // Right Childì˜ ì €ì¥ ë§¤ì²´ ê²°ì •
+        // Right ChildÀÇ ÀúÀå ¸ÅÃ¼ °áÁ¤
         aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_RIGHT_STORAGE_MASK;
         aJoinMethodCost->flag |= QMO_JOIN_METHOD_RIGHT_STORAGE_MEMORY;
     }
 
     //------------------------------------------
-    // Cost ì˜ ê³„ì‚°
+    // Cost ÀÇ °è»ê
     //------------------------------------------
     IDE_TEST( setJoinPredInfo4Hash( aStatement,
                                     aJoinPredicate,
@@ -1948,7 +2010,7 @@ qmoJoinMethodMgr::getTwoPassHash( qcStatement       * aStatement,
         aJoinMethodCost->flag |= QMO_JOIN_METHOD_FEASIBILITY_TRUE;
 
         //------------------------------------------
-        // ìµœì¢… ë¹„ìš©ì˜ ê³„ì‚°
+        // ÃÖÁ¾ ºñ¿ëÀÇ °è»ê
         //------------------------------------------
         aJoinMethodCost->totalCost *= QCU_OPTIMIZER_HASH_JOIN_COST_ADJ;
         aJoinMethodCost->totalCost /= 100.0;
@@ -1981,7 +2043,7 @@ IDE_RC qmoJoinMethodMgr::getInverseHash( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::getInverseHash::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aJoinMethodCost != NULL );
@@ -1989,28 +2051,28 @@ IDE_RC qmoJoinMethodMgr::getInverseHash( qcStatement       * aStatement,
     IDE_DASSERT( aRight != NULL );
 
     //------------------------------------------
-    // ì €ì¥ ë§¤ì²´ì˜ ê²°ì •
+    // ÀúÀå ¸ÅÃ¼ÀÇ °áÁ¤
     //------------------------------------------
 
-    // ì €ì¥ ë§¤ì²´ íŒë‹¨
+    // ÀúÀå ¸ÅÃ¼ ÆÇ´Ü
     IDE_TEST( qmg::isDiskTempTable( aRight, & sIsDisk )
               != IDE_SUCCESS );
 
     if ( sIsDisk == ID_TRUE )
     {
-        // Childì˜ ì €ì¥ ë§¤ì²´ ê²°ì •
+        // ChildÀÇ ÀúÀå ¸ÅÃ¼ °áÁ¤
         aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_RIGHT_STORAGE_MASK;
         aJoinMethodCost->flag |= QMO_JOIN_METHOD_RIGHT_STORAGE_DISK;
     }
     else
     {
-        // Childì˜ ì €ì¥ ë§¤ì²´ ê²°ì •
+        // ChildÀÇ ÀúÀå ¸ÅÃ¼ °áÁ¤
         aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_RIGHT_STORAGE_MASK;
         aJoinMethodCost->flag |= QMO_JOIN_METHOD_RIGHT_STORAGE_MEMORY;
     }
 
     //------------------------------------------
-    // Cost ì˜ ê³„ì‚°
+    // Cost ÀÇ °è»ê
     //------------------------------------------
     IDE_TEST( setJoinPredInfo4Hash( aStatement,
                                     aJoinPredicate,
@@ -2041,7 +2103,7 @@ IDE_RC qmoJoinMethodMgr::getInverseHash( qcStatement       * aStatement,
         aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_FEASIBILITY_MASK;
         aJoinMethodCost->flag |= QMO_JOIN_METHOD_FEASIBILITY_TRUE;
         //------------------------------------------
-        // ìµœì¢… ë¹„ìš©ì˜ ê³„ì‚°
+        // ÃÖÁ¾ ºñ¿ëÀÇ °è»ê
         //------------------------------------------
 
         aJoinMethodCost->totalCost *= QCU_OPTIMIZER_HASH_JOIN_COST_ADJ;
@@ -2083,7 +2145,7 @@ qmoJoinMethodMgr::getMerge( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::getMerge::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL);
@@ -2092,47 +2154,47 @@ qmoJoinMethodMgr::getMerge( qcStatement       * aStatement,
     IDE_DASSERT( aRight != NULL );
 
     //------------------------------------------
-    // ì €ì¥ ë§¤ì²´ì˜ ê²°ì •
+    // ÀúÀå ¸ÅÃ¼ÀÇ °áÁ¤
     //------------------------------------------
 
-    // Left ì €ì¥ ë§¤ì²´ íŒë‹¨
+    // Left ÀúÀå ¸ÅÃ¼ ÆÇ´Ü
     IDE_TEST( qmg::isDiskTempTable( aLeft, & sLeftIsDisk )
               != IDE_SUCCESS );
 
     if ( sLeftIsDisk == ID_TRUE )
     {
-        // Left Childì˜ ì €ì¥ ë§¤ì²´ ê²°ì •
+        // Left ChildÀÇ ÀúÀå ¸ÅÃ¼ °áÁ¤
         aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_LEFT_STORAGE_MASK;
         aJoinMethodCost->flag |= QMO_JOIN_METHOD_LEFT_STORAGE_DISK;
     }
     else
     {
-        // Left Childì˜ ì €ì¥ ë§¤ì²´ ê²°ì •
+        // Left ChildÀÇ ÀúÀå ¸ÅÃ¼ °áÁ¤
         aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_LEFT_STORAGE_MASK;
         aJoinMethodCost->flag |= QMO_JOIN_METHOD_LEFT_STORAGE_MEMORY;
     }
 
-    // Right ì €ì¥ ë§¤ì²´ íŒë‹¨
+    // Right ÀúÀå ¸ÅÃ¼ ÆÇ´Ü
     IDE_TEST( qmg::isDiskTempTable( aRight, & sRightIsDisk )
               != IDE_SUCCESS );
 
     if ( sRightIsDisk == ID_TRUE )
     {
-        // Right Childì˜ ì €ì¥ ë§¤ì²´ ê²°ì •
+        // Right ChildÀÇ ÀúÀå ¸ÅÃ¼ °áÁ¤
         aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_RIGHT_STORAGE_MASK;
         aJoinMethodCost->flag |= QMO_JOIN_METHOD_RIGHT_STORAGE_DISK;
     }
     else
     {
-        // Right Childì˜ ì €ì¥ ë§¤ì²´ ê²°ì •
+        // Right ChildÀÇ ÀúÀå ¸ÅÃ¼ °áÁ¤
         aJoinMethodCost->flag &= ~QMO_JOIN_METHOD_RIGHT_STORAGE_MASK;
         aJoinMethodCost->flag |= QMO_JOIN_METHOD_RIGHT_STORAGE_MEMORY;
     }
 
     //------------------------------------------
-    // Child ì˜ ì¢…ë¥˜ ê²°ì •
+    // Child ÀÇ Á¾·ù °áÁ¤
     //------------------------------------------
-    // Left Childì˜ ì¢…ë¥˜ íŒë‹¨
+    // Left ChildÀÇ Á¾·ù ÆÇ´Ü
 
     IDE_TEST( setJoinPredInfo4Merge( aStatement,
                                      aJoinPredicate,
@@ -2144,7 +2206,7 @@ qmoJoinMethodMgr::getMerge( qcStatement       * aStatement,
         aJoinMethodCost->leftIdxInfo  = NULL;
         aJoinMethodCost->rightIdxInfo = NULL;
 
-        // preserved order ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€ íŒë‹¨
+        // preserved order »ç¿ë °¡´É ¿©ºÎ ÆÇ´Ü
         IDE_TEST( usablePreservedOrder4Merge( aStatement,
                                               aJoinMethodCost->joinPredicate,
                                               aLeft,
@@ -2161,8 +2223,8 @@ qmoJoinMethodMgr::getMerge( qcStatement       * aStatement,
                 case QMG_SHARD_SELECT:     // PROJ-2638
                     if ( aLeft->myFrom->tableRef->view == NULL )
                     {
-                        // ì¼ë°˜ í…Œì´ë¸”ì¸ ê²½ìš°
-                        // ì¸ë±ìŠ¤ë¥¼ ì´ìš©í•œ ì •ë ¬ ë° ì»¤ì„œ ì €ì¥ì´ ê°€ëŠ¥í•˜ë‹¤.
+                        // ÀÏ¹İ Å×ÀÌºíÀÎ °æ¿ì
+                        // ÀÎµ¦½º¸¦ ÀÌ¿ëÇÑ Á¤·Ä ¹× Ä¿¼­ ÀúÀåÀÌ °¡´ÉÇÏ´Ù.
                         aJoinMethodCost->flag &= ~QMO_JOIN_LEFT_NODE_MASK;
                         aJoinMethodCost->flag |= QMO_JOIN_LEFT_NODE_NONE;
 
@@ -2170,8 +2232,8 @@ qmoJoinMethodMgr::getMerge( qcStatement       * aStatement,
                     }
                     else
                     {
-                        // ë·°ì¸ ê²½ìš°
-                        // ì •ë ¬ì€ ë³´ì¥ë˜ë‚˜ ì €ì¥í•˜ì—¬ ì²˜ë¦¬í•˜ì—¬ì•¼ í•¨.
+                        // ºäÀÎ °æ¿ì
+                        // Á¤·ÄÀº º¸ÀåµÇ³ª ÀúÀåÇÏ¿© Ã³¸®ÇÏ¿©¾ß ÇÔ.
                         aJoinMethodCost->flag &= ~QMO_JOIN_LEFT_NODE_MASK;
                         aJoinMethodCost->flag |= QMO_JOIN_LEFT_NODE_STORE;
                     }
@@ -2182,14 +2244,14 @@ qmoJoinMethodMgr::getMerge( qcStatement       * aStatement,
                         & QMO_JOIN_METHOD_MASK ) ==
                         QMO_JOIN_METHOD_MERGE )
                     {
-                        // ë¨¸ì§€ ì£ ì¸ì„ í†µí•˜ì—¬ ì •ë ¬ì´ ë³´ì¥ë˜ëŠ” ê²½ìš°ë¡œ
-                        // ë³„ë„ì˜ ì €ì¥ì´ í•„ìš”ì—†ë‹¤.
+                        // ¸ÓÁö ÁÒÀÎÀ» ÅëÇÏ¿© Á¤·ÄÀÌ º¸ÀåµÇ´Â °æ¿ì·Î
+                        // º°µµÀÇ ÀúÀåÀÌ ÇÊ¿ä¾ø´Ù.
                         aJoinMethodCost->flag &= ~QMO_JOIN_LEFT_NODE_MASK;
                         aJoinMethodCost->flag |= QMO_JOIN_LEFT_NODE_NONE;
                     }
                     else
                     {
-                        // ì •ë ¬ì€ ë³´ì¥ë˜ë‚˜ ì €ì¥í•˜ì—¬ ì²˜ë¦¬í•˜ì—¬ì•¼ í•¨.
+                        // Á¤·ÄÀº º¸ÀåµÇ³ª ÀúÀåÇÏ¿© Ã³¸®ÇÏ¿©¾ß ÇÔ.
                         aJoinMethodCost->flag &= ~QMO_JOIN_LEFT_NODE_MASK;
                         aJoinMethodCost->flag |= QMO_JOIN_LEFT_NODE_STORE;
                     }
@@ -2210,8 +2272,8 @@ qmoJoinMethodMgr::getMerge( qcStatement       * aStatement,
             aJoinMethodCost->flag |= QMO_JOIN_LEFT_NODE_SORTING;
         }
 
-        // Right Childì˜ ì¢…ë¥˜ íŒë‹¨
-        // preserved order ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€ íŒë‹¨
+        // Right ChildÀÇ Á¾·ù ÆÇ´Ü
+        // preserved order »ç¿ë °¡´É ¿©ºÎ ÆÇ´Ü
         IDE_TEST( usablePreservedOrder4Merge( aStatement,
                                               aJoinMethodCost->joinPredicate,
                                               aRight,
@@ -2228,8 +2290,8 @@ qmoJoinMethodMgr::getMerge( qcStatement       * aStatement,
                 case QMG_SHARD_SELECT:     // PROJ-2638
                     if ( aRight->myFrom->tableRef->view == NULL )
                     {
-                        // ì¼ë°˜ í…Œì´ë¸”ì¸ ê²½ìš°
-                        // ì¸ë±ìŠ¤ë¥¼ ì´ìš©í•œ ì •ë ¬ ë° ì»¤ì„œ ì €ì¥ì´ ê°€ëŠ¥í•˜ë‹¤.
+                        // ÀÏ¹İ Å×ÀÌºíÀÎ °æ¿ì
+                        // ÀÎµ¦½º¸¦ ÀÌ¿ëÇÑ Á¤·Ä ¹× Ä¿¼­ ÀúÀåÀÌ °¡´ÉÇÏ´Ù.
                         aJoinMethodCost->flag &= ~QMO_JOIN_RIGHT_NODE_MASK;
                         aJoinMethodCost->flag |= QMO_JOIN_RIGHT_NODE_NONE;
 
@@ -2237,17 +2299,17 @@ qmoJoinMethodMgr::getMerge( qcStatement       * aStatement,
                     }
                     else
                     {
-                        // ë·°ì¸ ê²½ìš°
-                        // ì •ë ¬ì€ ë³´ì¥ë˜ë‚˜ ì €ì¥í•˜ì—¬ ì²˜ë¦¬í•˜ì—¬ì•¼ í•¨.
+                        // ºäÀÎ °æ¿ì
+                        // Á¤·ÄÀº º¸ÀåµÇ³ª ÀúÀåÇÏ¿© Ã³¸®ÇÏ¿©¾ß ÇÔ.
                         aJoinMethodCost->flag &= ~QMO_JOIN_RIGHT_NODE_MASK;
                         aJoinMethodCost->flag |= QMO_JOIN_RIGHT_NODE_STORE;
                     }
 
                     break;
                 default:
-                    // Left ì™€ ë‹¬ë¦¬ RightëŠ” Merge Joinìœ¼ë¡œ ì¸í•œ ì •ë ¬ì´
-                    // ë³´ì¥ë˜ë”ë¼ë„ Merge Join Algorithmì˜ íŠ¹ì„±ìƒ
-                    // ì €ì¥í•˜ì—¬ ì²˜ë¦¬í•˜ì—¬ì•¼ í•¨.
+                    // Left ¿Í ´Ş¸® Right´Â Merge JoinÀ¸·Î ÀÎÇÑ Á¤·ÄÀÌ
+                    // º¸ÀåµÇ´õ¶óµµ Merge Join AlgorithmÀÇ Æ¯¼º»ó
+                    // ÀúÀåÇÏ¿© Ã³¸®ÇÏ¿©¾ß ÇÔ.
                     aJoinMethodCost->flag &= ~QMO_JOIN_RIGHT_NODE_MASK;
                     aJoinMethodCost->flag |= QMO_JOIN_RIGHT_NODE_STORE;
                     break;
@@ -2263,7 +2325,7 @@ qmoJoinMethodMgr::getMerge( qcStatement       * aStatement,
         }
 
         //------------------------------------------
-        // Cost ì˜ ê³„ì‚°
+        // Cost ÀÇ °è»ê
         //------------------------------------------
         QMO_FIRST_ROWS_SET(aLeft, aJoinMethodCost);
 
@@ -2312,12 +2374,12 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4NL( qcStatement             * aState
 {
 /***********************************************************************
  *
- * Description : Nested Loop Joinì˜ Join Method Cost ì´ˆê¸° ì„¤ì •
+ * Description : Nested Loop JoinÀÇ Join Method Cost ÃÊ±â ¼³Á¤
  *
  * Implementation :
- *    (1) Join Method Cost ìƒì„± ë° ì´ˆê¸°í™”
- *    (2) flag ì„¤ì • : join type, join direction, left right DISK/MEMORY
- *    (3) ê° typeì— feasibility ê²€ì‚¬
+ *    (1) Join Method Cost »ı¼º ¹× ÃÊ±âÈ­
+ *    (2) flag ¼³Á¤ : join type, join direction, left right DISK/MEMORY
+ *    (3) °¢ type¿¡ feasibility °Ë»ç
  *
  ***********************************************************************/
 
@@ -2333,7 +2395,7 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4NL( qcStatement             * aState
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::initJoinMethodCost4NL::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL);
@@ -2364,18 +2426,16 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4NL( qcStatement             * aState
     //                | anti outer ( right->left )
     //---------------------------------------------------------
 
-
     //------------------------------------------
-    // ê° Join Typeì— ë§ëŠ” Join Method Cost ìƒì„± ë° flag ì •ë³´ ì„¤ì •
+    // °¢ Join Type¿¡ ¸Â´Â Join Method Cost »ı¼º ¹× flag Á¤º¸ ¼³Á¤
     //------------------------------------------
-
     switch ( aGraph->type )
     {
         case QMG_INNER_JOIN :
             sMethodCnt = 6;
             sIsDirectedJoin = ID_FALSE;
 
-            // ì²«ë²ˆì§¸ Join Method Type
+            // Ã¹¹øÂ° Join Method Type
             sFirstTypeFlag = QMO_JOIN_METHOD_FLAG_CLEAR;
             sFirstTypeFlag |= QMO_JOIN_METHOD_FULL_NL;
 
@@ -2409,13 +2469,13 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4NL( qcStatement             * aState
             break;
     }
 
-    // Join Method Cost ë°°ì—´ ìƒì„±
+    // Join Method Cost ¹è¿­ »ı¼º
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmoJoinMethodCost ) *
                                              sMethodCnt,
                                              (void **)&sJoinMethodCost )
               != IDE_SUCCESS );
 
-    // join method type, direction, leftì™€ right childì˜ inter result type ì„¤ì •
+    // join method type, direction, left¿Í right childÀÇ inter result type ¼³Á¤
     IDE_TEST( setFlagInfo( sJoinMethodCost,
                            sFirstTypeFlag,
                            sMethodCnt,
@@ -2430,7 +2490,7 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4NL( qcStatement             * aState
         // sJoinMethodCost[0] : Full nested loop join       (LEFTRIGHT)
         // sJoinMethodCost[1] : Index nested loop join      (LEFTRIGHT)
         // sJoinMethodCost[2] : Full store nested loop join (LEFTRIGHT)
-        // sJoinMethodCost[3] : Anti-Outer                  (LEFTRIGHT) << ì—¬ê¸°ë¥¼ ì•„ë˜ì™€ ê°™ì´ ë³€ê²½í•œë‹¤.
+        // sJoinMethodCost[3] : Anti-Outer                  (LEFTRIGHT) << ¿©±â¸¦ ¾Æ·¡¿Í °°ÀÌ º¯°æÇÑ´Ù.
         sJoinMethodCost[3].flag &= ~QMO_JOIN_METHOD_MASK;
         sJoinMethodCost[3].flag |= QMO_JOIN_METHOD_INVERSE_INDEX;
         sJoinMethodCost[3].flag &= ~QMO_JOIN_METHOD_DIRECTION_MASK;
@@ -2441,16 +2501,16 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4NL( qcStatement             * aState
         // Nothing to do.
     }
 
-    // full (store) nested loop join ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€ ì¡°ì‚¬
+    // full (store) nested loop join »ç¿ë °¡´É ¿©ºÎ Á¶»ç
     IDE_TEST( usableJoinMethodFullNL( aGraph,
                                       aJoinPredicate,
                                       & sIsUsable )
               != IDE_SUCCESS );
 
     // PROJ-2385
-    // inverse index nl ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€ ì¡°ì‚¬
-    //  > Predicateê°€ Equal Operatorë¥¼ ê°€ì§€ê³  ìˆë‹¤ë©´ HASH_JOINABLE
-    // >> Predicateê°€ ëª¨ë‘ HASH_JOINABLE ì´ë©´ Inverse Index NL ê°€ëŠ¥
+    // inverse index nl »ç¿ë °¡´É ¿©ºÎ Á¶»ç
+    //  > Predicate°¡ Equal Operator¸¦ °¡Áö°í ÀÖ´Ù¸é HASH_JOINABLE
+    // >> Predicate°¡ ¸ğµÎ HASH_JOINABLE ÀÌ¸é Inverse Index NL °¡´É
     sIsInverseUsable = ID_TRUE;
 
     for ( sJoinPredicate = aJoinPredicate;
@@ -2470,10 +2530,10 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4NL( qcStatement             * aState
     }
 
     //------------------------------------------
-    // ê° Join Method Typeê³¼ directionì— ë”°ë¥¸ Join Method Cost ì •ë³´ ì„¤ì •
-    //    - selectivity ì„¤ì •
-    //    - feasibility ì„¤ì •
-    //      feasibility ì´ˆê¸°ê°’ì€ TRUE, feasibilityê°€ ì—†ìœ¼ë©´ FALSEë¡œ ì„¤ì •í•¨
+    // °¢ Join Method Type°ú direction¿¡ µû¸¥ Join Method Cost Á¤º¸ ¼³Á¤
+    //    - selectivity ¼³Á¤
+    //    - feasibility ¼³Á¤
+    //      feasibility ÃÊ±â°ªÀº TRUE, feasibility°¡ ¾øÀ¸¸é FALSE·Î ¼³Á¤ÇÔ
     //------------------------------------------
 
     for ( i = 0; i < sMethodCnt; i++ )
@@ -2487,47 +2547,47 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4NL( qcStatement             * aState
 
                 //------------------------------------------
                 // fix BUG-12580
-                // left ë…¸ë“œìª½ì˜ ë ˆì½”ë“œ ì¹´ìš´íŠ¸ ì˜ˆì¸¡ì´ ì˜ëª»ë  ê²½ìš°
-                // right ë…¸ë“œê°€ join ë˜ëŠ” viewì™€ ê°™ì´ ë ˆì½”ë“œê°€ ë§ì€ ê²½ìš°ì—
-                // ì—„ì²­ë‚œ ì„±ëŠ¥ì €í•˜ê°€ ë°œìƒí•˜ê²Œ ëœë‹¤.
-                // ë”°ë¼ì„œ, hash ë˜ëŠ” sort joinìœ¼ë¡œ ìˆ˜í–‰í•  ìˆ˜ ìˆë„ë¡ í•˜ê¸° ìœ„í•´
-                // joinable predicateì´ ìˆëŠ” ê²½ìš°,
-                // full nested loop, full store nested loop join methodë¥¼
-                // ì„ íƒí•˜ì§€ ì•ŠëŠ”ë‹¤.
+                // left ³ëµåÂÊÀÇ ·¹ÄÚµå Ä«¿îÆ® ¿¹ÃøÀÌ Àß¸øµÉ °æ¿ì
+                // right ³ëµå°¡ join ¶Ç´Â view¿Í °°ÀÌ ·¹ÄÚµå°¡ ¸¹Àº °æ¿ì¿¡
+                // ¾öÃ»³­ ¼º´ÉÀúÇÏ°¡ ¹ß»ıÇÏ°Ô µÈ´Ù.
+                // µû¶ó¼­, hash ¶Ç´Â sort joinÀ¸·Î ¼öÇàÇÒ ¼ö ÀÖµµ·Ï ÇÏ±â À§ÇØ
+                // joinable predicateÀÌ ÀÖ´Â °æ¿ì,
+                // full nested loop, full store nested loop join method¸¦
+                // ¼±ÅÃÇÏÁö ¾Ê´Â´Ù.
                 //------------------------------------------
 
                 /**********************************************************
                  *
                  *  PROJ-2418
                  * 
-                 *  Lateral Viewì™€, Lateral Viewê°€ ì°¸ì¡°í•˜ëŠ” Relationê°„
-                 *  Joinì˜ Join MethodëŠ” ë°˜ë“œì‹œ Full NLë§Œ ì„ íƒë˜ì–´ì•¼ í•œë‹¤.
-                 *  ê·¸ê²ƒë„, Lateral Viewê°€ Driven(RIGHT)ì— ìœ„ì¹˜í•´ì•¼ í•œë‹¤.
+                 *  Lateral View¿Í, Lateral View°¡ ÂüÁ¶ÇÏ´Â Relation°£
+                 *  JoinÀÇ Join Method´Â ¹İµå½Ã Full NL¸¸ ¼±ÅÃµÇ¾î¾ß ÇÑ´Ù.
+                 *  ±×°Íµµ, Lateral View°¡ Driven(RIGHT)¿¡ À§Ä¡ÇØ¾ß ÇÑ´Ù.
                  * 
-                 *  - Lateral Viewê°€ Driving(LEFT)ì´ ë˜ë©´,
-                 *    Driven Tableì´ Lateral Viewì˜ ê²°ê³¼ ì§‘í•©ì„ ê²°ì •í•´ì•¼ í•˜ëŠ”ë°..
-                 *    Lateral Viewê°€ íƒìƒ‰ì„ ì‹œì‘í•  ìˆ˜ ì¡°ì°¨ ì—†ë‹¤.
+                 *  - Lateral View°¡ Driving(LEFT)ÀÌ µÇ¸é,
+                 *    Driven TableÀÌ Lateral ViewÀÇ °á°ú ÁıÇÕÀ» °áÁ¤ÇØ¾ß ÇÏ´Âµ¥..
+                 *    Lateral View°¡ Å½»öÀ» ½ÃÀÛÇÒ ¼ö Á¶Â÷ ¾ø´Ù.
                  *
-                 *  - Lateral Viewê°€ Drivenì— ìˆì§€ë§Œ MTR Tupleì— ìŒ“ì´ë©´,
-                 *    Driving Tableì´ Lateral Viewì˜ ê²°ê³¼ ì§‘í•©ì„ ê²°ì •í•  ë•Œë§ˆë‹¤
-                 *    ìƒˆë¡œ MTR Tupleì— ìŒ“ê²Œ ëœë‹¤. Full NLë³´ë‹¤ ë” íš¨ìœ¨ì´ ë–¨ì–´ì§„ë‹¤.
+                 *  - Lateral View°¡ Driven¿¡ ÀÖÁö¸¸ MTR Tuple¿¡ ½×ÀÌ¸é,
+                 *    Driving TableÀÌ Lateral ViewÀÇ °á°ú ÁıÇÕÀ» °áÁ¤ÇÒ ¶§¸¶´Ù
+                 *    »õ·Î MTR Tuple¿¡ ½×°Ô µÈ´Ù. Full NLº¸´Ù ´õ È¿À²ÀÌ ¶³¾îÁø´Ù.
                  * 
-                 *  ë”°ë¼ì„œ, Full Store NL ì—­ì‹œ ì—¬ê¸°ì„œëŠ” ë°°ì œí•œë‹¤.
-                 *  Lateral ViewëŠ” Index NLì„ ì‚¬ìš©í•  ìˆ˜ ì¡°ì°¨ ì—†ë‹¤.
-                 *  ì•„ë˜ì˜ Hash-based / Sort-based / Merge ì—­ì‹œ ëª¨ë‘ ë°°ì œí•œë‹¤.
+                 *  µû¶ó¼­, Full Store NL ¿ª½Ã ¿©±â¼­´Â ¹èÁ¦ÇÑ´Ù.
+                 *  Lateral View´Â Index NLÀ» »ç¿ëÇÒ ¼ö Á¶Â÷ ¾ø´Ù.
+                 *  ¾Æ·¡ÀÇ Hash-based / Sort-based / Merge ¿ª½Ã ¸ğµÎ ¹èÁ¦ÇÑ´Ù.
                  *
                 **********************************************************/
 
                 switch ( aLateralDirection )
                 {
                     case QMO_JOIN_LATERAL_LEFT:
-                        // Leftì—ì„œ, Rightë¥¼ ì°¸ì¡°í•˜ëŠ” LViewê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+                        // Left¿¡¼­, Right¸¦ ÂüÁ¶ÇÏ´Â LView°¡ Á¸ÀçÇÏ´Â °æ¿ì
 
-                        // FULL_NLì„ ê°•ì œë¡œ ì¨ì•¼ í•˜ë¯€ë¡œ sIsUsableì„ TRUEë¡œ ì„¤ì •í•œë‹¤.
+                        // FULL_NLÀ» °­Á¦·Î ½á¾ß ÇÏ¹Ç·Î sIsUsableÀ» TRUE·Î ¼³Á¤ÇÑ´Ù.
                         sIsUsable = ID_TRUE;
 
-                        // RIGHTLEFT Full NLë§Œ ë‚¨ê¸°ê³  ëª¨ë‘ ë°°ì œ
-                        // RIGHTLEFTë¼ë©´, Leftì˜ Lateral Viewê°€ Right ìœ„ì¹˜ë¡œ ë³€ê²½ëœë‹¤.
+                        // RIGHTLEFT Full NL¸¸ ³²±â°í ¸ğµÎ ¹èÁ¦
+                        // RIGHTLEFT¶ó¸é, LeftÀÇ Lateral View°¡ Right À§Ä¡·Î º¯°æµÈ´Ù.
                         if ( ( ( sJoinMethodCost[i].flag & QMO_JOIN_METHOD_MASK ) 
                              != QMO_JOIN_METHOD_FULL_NL ) ||
                              ( ( sJoinMethodCost[i].flag & QMO_JOIN_METHOD_DIRECTION_MASK ) 
@@ -2542,12 +2602,12 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4NL( qcStatement             * aState
                         }
                         break;
                     case QMO_JOIN_LATERAL_RIGHT:
-                        // Rightì—ì„œ, Leftë¥¼ ì°¸ì¡°í•˜ëŠ” LViewê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+                        // Right¿¡¼­, Left¸¦ ÂüÁ¶ÇÏ´Â LView°¡ Á¸ÀçÇÏ´Â °æ¿ì
 
-                        // FULL_NLì„ ê°•ì œë¡œ ì¨ì•¼ í•˜ë¯€ë¡œ sIsUsableì„ TRUEë¡œ ì„¤ì •í•œë‹¤.
+                        // FULL_NLÀ» °­Á¦·Î ½á¾ß ÇÏ¹Ç·Î sIsUsableÀ» TRUE·Î ¼³Á¤ÇÑ´Ù.
                         sIsUsable = ID_TRUE;
 
-                        // LEFTRIGHT Full NLë§Œ ë‚¨ê¸°ê³  ëª¨ë‘ ë°°ì œ
+                        // LEFTRIGHT Full NL¸¸ ³²±â°í ¸ğµÎ ¹èÁ¦
                         if ( ( ( sJoinMethodCost[i].flag & QMO_JOIN_METHOD_MASK ) 
                              != QMO_JOIN_METHOD_FULL_NL ) ||
                              ( ( sJoinMethodCost[i].flag & QMO_JOIN_METHOD_DIRECTION_MASK ) 
@@ -2570,9 +2630,9 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4NL( qcStatement             * aState
 
                 if( sIsUsable == ID_TRUE )
                 {
-                    // joinable predicateì´ ì—†ëŠ” ê²½ìš°
-                    // ë˜ëŠ” use_nl hintê°€ ì ìš©ëœ ê²½ìš°
-                    // ì™¸ë¶€ ì°¸ì¡°ë¥¼ í•„ìš”ë¡œ í•˜ëŠ” Lateral Viewê°€ ìˆëŠ” ê²½ìš°
+                    // joinable predicateÀÌ ¾ø´Â °æ¿ì
+                    // ¶Ç´Â use_nl hint°¡ Àû¿ëµÈ °æ¿ì
+                    // ¿ÜºÎ ÂüÁ¶¸¦ ÇÊ¿ä·Î ÇÏ´Â Lateral View°¡ ÀÖ´Â °æ¿ì
 
                     // Nothing To Do
                 }
@@ -2586,9 +2646,11 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4NL( qcStatement             * aState
                              ( aGraph->right->type == QMG_SHARD_SELECT ) || // PROJ-2638
                              ( aGraph->right->type == QMG_PARTITION ) )
                         {
-                            // BUG-43424 ì˜¤ë¥¸ìª½ì— view ê°€ ìˆì„ë•Œ push_pred íŒíŠ¸ë¥¼ ì‚¬ìš©ì‹œì—ë§Œ NL ì¡°ì¸ì„ í—ˆìš©í•©ë‹ˆë‹¤.
+                            // BUG-43424 ¿À¸¥ÂÊ¿¡ view °¡ ÀÖÀ»¶§ push_pred ÈùÆ®¸¦ »ç¿ë½Ã¿¡¸¸ NL Á¶ÀÎÀ» Çã¿ëÇÕ´Ï´Ù.
                             if( (aGraph->right->myFrom->tableRef->view != NULL) &&
-                                (aGraph->myQuerySet->SFWGH->hints->pushPredHint == NULL) )
+                                (aGraph->myQuerySet->SFWGH->hints->pushPredHint == NULL) &&
+                                ( ( aGraph->flag & QMG_JOIN_ONLY_NL_MASK )
+                                  == QMG_JOIN_ONLY_NL_FALSE ) )
                             {
                                 sJoinMethodCost[i].flag &=
                                     ~QMO_JOIN_METHOD_FEASIBILITY_MASK;
@@ -2614,9 +2676,11 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4NL( qcStatement             * aState
                              ( aGraph->left->type == QMG_SHARD_SELECT ) || // PROJ-2638
                              ( aGraph->left->type == QMG_PARTITION ) )
                         {
-                            // BUG-43424 ì˜¤ë¥¸ìª½ì— view ê°€ ìˆì„ë•Œ push_pred íŒíŠ¸ë¥¼ ì‚¬ìš©ì‹œì—ë§Œ NL ì¡°ì¸ì„ í—ˆìš©í•©ë‹ˆë‹¤.
+                            // BUG-43424 ¿À¸¥ÂÊ¿¡ view °¡ ÀÖÀ»¶§ push_pred ÈùÆ®¸¦ »ç¿ë½Ã¿¡¸¸ NL Á¶ÀÎÀ» Çã¿ëÇÕ´Ï´Ù.
                             if( (aGraph->left->myFrom->tableRef->view != NULL) &&
-                                (aGraph->myQuerySet->SFWGH->hints->pushPredHint == NULL) )
+                                (aGraph->myQuerySet->SFWGH->hints->pushPredHint == NULL) &&
+                                ( ( aGraph->flag & QMG_JOIN_ONLY_NL_MASK )
+                                  == QMG_JOIN_ONLY_NL_FALSE ) )
                             {
                                 sJoinMethodCost[i].flag &=
                                     ~QMO_JOIN_METHOD_FEASIBILITY_MASK;
@@ -2643,17 +2707,17 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4NL( qcStatement             * aState
 
                 //------------------------------------------
                 // feasibility :
-                // (1) predicateì´ ì¡´ì¬
-                // (2) rightê°€ qmgSelection ì¸ ê²½ìš°
-                // (3) - Index Nested Loop Join Hintê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
-                //       Join Method Hint ì ìš© í›„, table access hint ë¬´ì‹œ
-                //     - ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
-                //       rightì— Full Scan Hintê°€ ìˆìœ¼ë©´, FALSE
+                // (1) predicateÀÌ Á¸Àç
+                // (2) right°¡ qmgSelection ÀÎ °æ¿ì
+                // (3) - Index Nested Loop Join Hint°¡ Á¸ÀçÇÏ´Â °æ¿ì
+                //       Join Method Hint Àû¿ë ÈÄ, table access hint ¹«½Ã
+                //     - Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
+                //       right¿¡ Full Scan Hint°¡ ÀÖÀ¸¸é, FALSE
                 //------------------------------------------
 
                 // PROJ-2418
-                // Child Graphê°€ ì™¸ë¶€ ì°¸ì¡°í•˜ëŠ” ìƒí™©ì´ë¼ë©´
-                // Index NLì€ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+                // Child Graph°¡ ¿ÜºÎ ÂüÁ¶ÇÏ´Â »óÈ²ÀÌ¶ó¸é
+                // Index NLÀº »ç¿ëÇÒ ¼ö ¾ø´Ù.
                 if ( ( aJoinPredicate == NULL ) || 
                      ( aLateralDirection != QMO_JOIN_LATERAL_NONE ) )
                 {
@@ -2665,7 +2729,7 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4NL( qcStatement             * aState
                 else
                 {
                     // PROJ-1502 PARTITIONED DISK TABLE
-                    // feasibility : rightê°€ qmgSelection ë˜ëŠ” qmgPartition ì¸ ê²½ìš°ì—ë§Œ ê°€ëŠ¥
+                    // feasibility : right°¡ qmgSelection ¶Ç´Â qmgPartition ÀÎ °æ¿ì¿¡¸¸ °¡´É
                     // To Fix BUG-8804
                     if ( ( sJoinMethodCost[i].flag &
                            QMO_JOIN_METHOD_DIRECTION_MASK ) ==
@@ -2708,8 +2772,8 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4NL( qcStatement             * aState
 
                 //------------------------------------------
                 // PROJ-2385
-                // index nested loop methodì™€ ë™ì¼í•˜ê²Œ ê²€ì‚¬í•˜ì§€ë§Œ
-                // rightê°€ ì•„ë‹Œ leftê°€ selectionì´ì–´ì•¼ í•œë‹¤.
+                // index nested loop method¿Í µ¿ÀÏÇÏ°Ô °Ë»çÇÏÁö¸¸
+                // right°¡ ¾Æ´Ñ left°¡ selectionÀÌ¾î¾ß ÇÑ´Ù.
                 //------------------------------------------
 
                 if ( ( aJoinPredicate == NULL ) ||
@@ -2742,15 +2806,15 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4NL( qcStatement             * aState
 
                 //------------------------------------------
                 // feasibility :
-                //    (1) left, right ëª¨ë‘ qmgSelection ì¸ ê²½ìš°
-                //    (2) join predicateì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+                //    (1) left, right ¸ğµÎ qmgSelection ÀÎ °æ¿ì
+                //    (2) join predicateÀÌ Á¸ÀçÇÏ´Â °æ¿ì
                 //------------------------------------------
                 // TODO1502:
-                // anti outer joinì— ëŒ€í•´ ê³ ë ¤í•´ì•¼ í•¨.
+                // anti outer join¿¡ ´ëÇØ °í·ÁÇØ¾ß ÇÔ.
 
                 // PROJ-2418
-                // Child Graphê°€ ì™¸ë¶€ ì°¸ì¡°í•˜ëŠ” ìƒí™©ì´ë¼ë©´
-                // Anti OuterëŠ” ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+                // Child Graph°¡ ¿ÜºÎ ÂüÁ¶ÇÏ´Â »óÈ²ÀÌ¶ó¸é
+                // Anti Outer´Â »ç¿ëÇÒ ¼ö ¾ø´Ù.
                 if ( aLateralDirection != QMO_JOIN_LATERAL_NONE )
                 {
                     sJoinMethodCost[i].flag &= ~QMO_JOIN_METHOD_FEASIBILITY_MASK;
@@ -2773,7 +2837,7 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4NL( qcStatement             * aState
                         else
                         {
                             // To Fix BUG-8763
-                            // Join Predicateì´ ì—†ëŠ” ê²½ìš°
+                            // Join PredicateÀÌ ¾ø´Â °æ¿ì
                             sJoinMethodCost[i].flag &=
                                 ~QMO_JOIN_METHOD_FEASIBILITY_MASK;
                             sJoinMethodCost[i].flag |=
@@ -2830,6 +2894,28 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4NL( qcStatement             * aState
         // Nothing To Do
     }
 
+    if ( ( aGraph->flag & QMG_JOIN_ONLY_NL_MASK )
+         == QMG_JOIN_ONLY_NL_TRUE )
+    {
+        for ( i = 0; i < sMethodCnt; i++ )
+        {
+            if ( ( sJoinMethodCost[i].flag & QMO_JOIN_METHOD_MASK )
+                 == QMO_JOIN_METHOD_FULL_STORE_NL )
+            {
+                sJoinMethodCost[i].flag &= ~QMO_JOIN_METHOD_FEASIBILITY_MASK;
+                sJoinMethodCost[i].flag |= QMO_JOIN_METHOD_FEASIBILITY_FALSE;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
     qcgPlan::registerPlanProperty( aStatement,
                                     PLAN_PROPERTY_OPTIMIZER_JOIN_DISABLE );
 
@@ -2837,8 +2923,8 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4NL( qcStatement             * aState
     if ( ( QCU_OPTIMIZER_INVERSE_JOIN_ENABLE == 0 ) &&
          ( ( aGraph->type == QMG_SEMI_JOIN ) ) ) 
     {
-        // recursive withì¸ ê²½ìš° forceJoinOrder4RecursiveViewì—ì„œ ìˆœì„œë¥¼ ê°•ì œë¡œ ì„¤ì •
-        if ( (aGraph->myQuerySet->flag & QMV_QUERYSET_FROM_RECURSIVE_WITH_MASK) 
+        // recursive withÀÎ °æ¿ì forceJoinOrder4RecursiveView¿¡¼­ ¼ø¼­¸¦ °­Á¦·Î ¼³Á¤
+        if ( (aGraph->myQuerySet->lflag & QMV_QUERYSET_FROM_RECURSIVE_WITH_MASK) 
              == QMV_QUERYSET_FROM_RECURSIVE_WITH_FALSE )
         {
             // 3 : inverse hash
@@ -2849,6 +2935,18 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4NL( qcStatement             * aState
 
     qcgPlan::registerPlanProperty( aStatement,
                                    PLAN_PROPERTY_OPTIMIZER_INVERSE_JOIN_ENABLE );
+
+    /* BUG-47786 Unnesting °á°ú ¿À·ù */
+    if ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_UNNEST_INVERSE_JOIN_DISABLE_MASK )
+         == QC_TMP_UNNEST_INVERSE_JOIN_DISABLE_TRUE )
+    {
+        if ( aGraph->type == QMG_SEMI_JOIN )
+        {
+            // 3 : inverse hash
+            sJoinMethodCost[3].flag &= ~QMO_JOIN_METHOD_FEASIBILITY_MASK;
+            sJoinMethodCost[3].flag |= QMO_JOIN_METHOD_FEASIBILITY_FALSE;
+        }
+    }
 
     *aMethodCnt = sMethodCnt;
     *aMethod = sJoinMethodCost;
@@ -2870,12 +2968,12 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Hash( qcStatement             * aSta
 {
 /***********************************************************************
  *
- * Description : Hash Joinì˜ join method cost ì •ë³´ ì„¤ì •
+ * Description : Hash JoinÀÇ join method cost Á¤º¸ ¼³Á¤
  *
  * Implementation :
- *    (1) Join Method Cost ìƒì„± ë° ì´ˆê¸°í™”
- *    (2) flag ì„¤ì • : join type, join direction, left right DISK/MEMORY
- *    (3) ê° typeì— feasibility ê²€ì‚¬
+ *    (1) Join Method Cost »ı¼º ¹× ÃÊ±âÈ­
+ *    (2) flag ¼³Á¤ : join type, join direction, left right DISK/MEMORY
+ *    (3) °¢ type¿¡ feasibility °Ë»ç
  *
  ***********************************************************************/
 
@@ -2888,7 +2986,7 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Hash( qcStatement             * aSta
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::initJoinMethodCost4NL::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL);
@@ -2914,7 +3012,7 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Hash( qcStatement             * aSta
     //---------------------------------------------------------
 
     //------------------------------------------
-    // ê° Join Typeì— ë§ëŠ” Join Method Cost ìƒì„± ë° flag ì •ë³´ ì„¤ì •
+    // °¢ Join Type¿¡ ¸Â´Â Join Method Cost »ı¼º ¹× flag Á¤º¸ ¼³Á¤
     //------------------------------------------
 
     sFirstTypeFlag = QMO_JOIN_METHOD_FLAG_CLEAR;
@@ -2938,13 +3036,13 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Hash( qcStatement             * aSta
             break;
     }
 
-    // Join Method Cost ë°°ì—´ ìƒì„±
+    // Join Method Cost ¹è¿­ »ı¼º
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmoJoinMethodCost ) *
                                              sMethodCnt,
                                              (void **)&sJoinMethodCost )
               != IDE_SUCCESS );
 
-    // join method type, direction, leftì™€ right childì˜ inter result type ì„¤ì •
+    // join method type, direction, left¿Í right childÀÇ inter result type ¼³Á¤
     IDE_TEST( setFlagInfo( sJoinMethodCost,
                            sFirstTypeFlag,
                            sMethodCnt,
@@ -2960,7 +3058,7 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Hash( qcStatement             * aSta
 
         // sJoinMethodCost[0] : One-Pass Hash Join (LEFTRIGHT)
         // sJoinMethodCost[1] : Two-Pass Hash Join (LEFTRIGHT)
-        // sJoinMethodCost[2] : Inverse Hash Join  (LEFTRIGHT) << ì—¬ê¸°ë¥¼ ì•„ë˜ì™€ ê°™ì´ ë³€ê²½í•œë‹¤.
+        // sJoinMethodCost[2] : Inverse Hash Join  (LEFTRIGHT) << ¿©±â¸¦ ¾Æ·¡¿Í °°ÀÌ º¯°æÇÑ´Ù.
         sJoinMethodCost[2].flag &= ~QMO_JOIN_METHOD_DIRECTION_MASK;
         sJoinMethodCost[2].flag |= QMO_JOIN_METHOD_DIRECTION_RIGHTLEFT;
     }
@@ -2970,9 +3068,9 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Hash( qcStatement             * aSta
     }
 
     //------------------------------------------
-    // ê° Join Method Typeê³¼ directionì— ë”°ë¥¸ Join Method Cost ì •ë³´ ì„¤ì •
-    //    - selectivity ì„¤ì •
-    //    - feasibility ì„¤ì •
+    // °¢ Join Method Type°ú direction¿¡ µû¸¥ Join Method Cost Á¤º¸ ¼³Á¤
+    //    - selectivity ¼³Á¤
+    //    - feasibility ¼³Á¤
     //------------------------------------------
 
     for ( i = 0; i < sMethodCnt; i++ )
@@ -2980,7 +3078,7 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Hash( qcStatement             * aSta
         sJoinMethodCost[i].selectivity     = aGraph->costInfo.selectivity;
 
         //------------------------------------------
-        // feasibility  : predicateì´ ì¡´ì¬í•  ê²½ìš°ì—ë§Œ ê°€ëŠ¥
+        // feasibility  : predicateÀÌ Á¸ÀçÇÒ °æ¿ì¿¡¸¸ °¡´É
         //------------------------------------------
 
         if ( aJoinPredicate == NULL )
@@ -2991,8 +3089,8 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Hash( qcStatement             * aSta
         else
         {
             // PROJ-2418
-            // Child Graphê°€ ì™¸ë¶€ ì°¸ì¡°í•˜ëŠ” ìƒí™©ì´ë¼ë©´
-            // Hash-based Join MethodëŠ” ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+            // Child Graph°¡ ¿ÜºÎ ÂüÁ¶ÇÏ´Â »óÈ²ÀÌ¶ó¸é
+            // Hash-based Join Method´Â »ç¿ëÇÒ ¼ö ¾ø´Ù.
             if ( aLateralDirection != QMO_JOIN_LATERAL_NONE )
             {
                 sJoinMethodCost[i].flag &= ~QMO_JOIN_METHOD_FEASIBILITY_MASK;
@@ -3051,8 +3149,8 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Hash( qcStatement             * aSta
            ( aGraph->type == QMG_ANTI_JOIN ) ||
            ( aGraph->type == QMG_LEFT_OUTER_JOIN ) ) )
     {
-        // recursive withì¸ ê²½ìš° forceJoinOrder4RecursiveViewì—ì„œ ìˆœì„œë¥¼ ê°•ì œë¡œ ì„¤ì •
-        if ( (aGraph->myQuerySet->flag & QMV_QUERYSET_FROM_RECURSIVE_WITH_MASK) 
+        // recursive withÀÎ °æ¿ì forceJoinOrder4RecursiveView¿¡¼­ ¼ø¼­¸¦ °­Á¦·Î ¼³Á¤
+        if ( (aGraph->myQuerySet->lflag & QMV_QUERYSET_FROM_RECURSIVE_WITH_MASK) 
              == QMV_QUERYSET_FROM_RECURSIVE_WITH_FALSE )
         {
             // 2 : inverse hash
@@ -3063,6 +3161,19 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Hash( qcStatement             * aSta
 
     qcgPlan::registerPlanProperty( aStatement,
                                    PLAN_PROPERTY_OPTIMIZER_INVERSE_JOIN_ENABLE );
+
+    /* BUG-47786 Unnesting °á°ú ¿À·ù */
+    if ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_UNNEST_INVERSE_JOIN_DISABLE_MASK )
+         == QC_TMP_UNNEST_INVERSE_JOIN_DISABLE_TRUE )
+    {
+        if ( ( aGraph->type == QMG_SEMI_JOIN ) ||
+             ( aGraph->type == QMG_ANTI_JOIN ) )
+        {
+            // 2 : inverse hash
+            sJoinMethodCost[2].flag &= ~QMO_JOIN_METHOD_FEASIBILITY_MASK;
+            sJoinMethodCost[2].flag |= QMO_JOIN_METHOD_FEASIBILITY_FALSE;
+        }
+    }
 
     *aMethodCnt = sMethodCnt;
     *aMethod = sJoinMethodCost;
@@ -3083,12 +3194,12 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Sort( qcStatement             * aSta
 {
 /***********************************************************************
  *
- * Description : Sort Joinì˜ Join Method Cost ì´ˆê¸° ì„¤ì •
+ * Description : Sort JoinÀÇ Join Method Cost ÃÊ±â ¼³Á¤
  *
  * Implementation :
- *    (1) Join Method Cost ìƒì„± ë° ì´ˆê¸°í™”
- *    (2) flag ì„¤ì • : join type, join direction, left right DISK/MEMORY
- *    (3) ê° typeì— feasibility ê²€ì‚¬
+ *    (1) Join Method Cost »ı¼º ¹× ÃÊ±âÈ­
+ *    (2) flag ¼³Á¤ : join type, join direction, left right DISK/MEMORY
+ *    (3) °¢ type¿¡ feasibility °Ë»ç
  *
  ***********************************************************************/
 
@@ -3101,7 +3212,7 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Sort( qcStatement             * aSta
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::initJoinMethodCost4Sort::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL);
@@ -3130,14 +3241,14 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Sort( qcStatement             * aSta
     //---------------------------------------------------------
 
     //------------------------------------------
-    // ê° Join Typeì— ë§ëŠ” Join Method Cost ìƒì„± ë° flag ì •ë³´ ì„¤ì •
-    //    - ì„¤ì •ë˜ëŠ” flag ì •ë³´ : joinMethodType,
+    // °¢ Join Type¿¡ ¸Â´Â Join Method Cost »ı¼º ¹× flag Á¤º¸ ¼³Á¤
+    //    - ¼³Á¤µÇ´Â flag Á¤º¸ : joinMethodType,
     //                           direction,
     //                           left right disk/memory
     //------------------------------------------
 
     //------------------------------------------
-    // joinMethodType, direction ì •ë³´ ì„¤ì •
+    // joinMethodType, direction Á¤º¸ ¼³Á¤
     //------------------------------------------
 
     sFirstTypeFlag = QMO_JOIN_METHOD_FLAG_CLEAR;
@@ -3164,13 +3275,13 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Sort( qcStatement             * aSta
             break;
     }
 
-    // Join Method Cost ë°°ì—´ ìƒì„±
+    // Join Method Cost ¹è¿­ »ı¼º
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmoJoinMethodCost ) *
                                                 sMethodCnt,
                                                 (void **)&sJoinMethodCost )
                  != IDE_SUCCESS );
 
-    // join method type, direction, leftì™€ right childì˜ inter result type ì„¤ì •
+    // join method type, direction, left¿Í right childÀÇ inter result type ¼³Á¤
     IDE_TEST( setFlagInfo( sJoinMethodCost,
                               sFirstTypeFlag,
                               sMethodCnt,
@@ -3185,7 +3296,7 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Sort( qcStatement             * aSta
 
         // sJoinMethodCost[0] : One-Pass Sort Join (LEFTRIGHT)
         // sJoinMethodCost[1] : Two-Pass Sort Join (LEFTRIGHT)
-        // sJoinMethodCost[2] : Inverse  Sort Join (LEFTRIGHT) << ì—¬ê¸°ë¥¼ ì•„ë˜ì™€ ê°™ì´ ë³€ê²½í•œë‹¤.
+        // sJoinMethodCost[2] : Inverse  Sort Join (LEFTRIGHT) << ¿©±â¸¦ ¾Æ·¡¿Í °°ÀÌ º¯°æÇÑ´Ù.
         sJoinMethodCost[2].flag &= ~QMO_JOIN_METHOD_DIRECTION_MASK;
         sJoinMethodCost[2].flag |= QMO_JOIN_METHOD_DIRECTION_RIGHTLEFT;
     }
@@ -3195,9 +3306,9 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Sort( qcStatement             * aSta
     }
 
     //------------------------------------------
-    // ê° Join Method Typeê³¼ directionì— ë”°ë¥¸ Join Method Cost ì •ë³´ ì„¤ì •
-    //    - selectivity ì„¤ì •
-    //    - feasibility ì„¤ì •
+    // °¢ Join Method Type°ú direction¿¡ µû¸¥ Join Method Cost Á¤º¸ ¼³Á¤
+    //    - selectivity ¼³Á¤
+    //    - feasibility ¼³Á¤
     //------------------------------------------
 
     for ( i = 0; i < sMethodCnt; i++ )
@@ -3205,7 +3316,7 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Sort( qcStatement             * aSta
         sJoinMethodCost[i].selectivity     = aGraph->costInfo.selectivity;
 
         //------------------------------------------
-        // feasibility  : predicateì´ ì¡´ì¬í•  ê²½ìš°ì—ë§Œ ê°€ëŠ¥
+        // feasibility  : predicateÀÌ Á¸ÀçÇÒ °æ¿ì¿¡¸¸ °¡´É
         //------------------------------------------
 
         if ( aJoinPredicate == NULL )
@@ -3216,8 +3327,8 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Sort( qcStatement             * aSta
         else
         {
             // PROJ-2418
-            // Child Graphê°€ ì™¸ë¶€ ì°¸ì¡°í•˜ëŠ” ìƒí™©ì´ë¼ë©´
-            // Sort-based Join MethodëŠ” ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+            // Child Graph°¡ ¿ÜºÎ ÂüÁ¶ÇÏ´Â »óÈ²ÀÌ¶ó¸é
+            // Sort-based Join Method´Â »ç¿ëÇÒ ¼ö ¾ø´Ù.
             if ( aLateralDirection != QMO_JOIN_LATERAL_NONE )
             {
                 sJoinMethodCost[i].flag &= ~QMO_JOIN_METHOD_FEASIBILITY_MASK;
@@ -3275,11 +3386,11 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Sort( qcStatement             * aSta
          ( ( aGraph->type == QMG_SEMI_JOIN ) || 
            ( aGraph->type == QMG_ANTI_JOIN ) ) )
     {
-        // recursive withì¸ ê²½ìš° forceJoinOrder4RecursiveViewì—ì„œ ìˆœì„œë¥¼ ê°•ì œë¡œ ì„¤ì •
-        if ( (aGraph->myQuerySet->flag & QMV_QUERYSET_FROM_RECURSIVE_WITH_MASK) 
+        // recursive withÀÎ °æ¿ì forceJoinOrder4RecursiveView¿¡¼­ ¼ø¼­¸¦ °­Á¦·Î ¼³Á¤
+        if ( (aGraph->myQuerySet->lflag & QMV_QUERYSET_FROM_RECURSIVE_WITH_MASK) 
              == QMV_QUERYSET_FROM_RECURSIVE_WITH_FALSE )
         {
-            // 2 : inverse hash
+            // 2 : inverse sort
             sJoinMethodCost[2].flag &= ~QMO_JOIN_METHOD_FEASIBILITY_MASK;
             sJoinMethodCost[2].flag |= QMO_JOIN_METHOD_FEASIBILITY_FALSE;
         }
@@ -3287,6 +3398,19 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Sort( qcStatement             * aSta
 
     qcgPlan::registerPlanProperty( aStatement,
                                    PLAN_PROPERTY_OPTIMIZER_INVERSE_JOIN_ENABLE );
+
+    /* BUG-47786 Unnesting °á°ú ¿À·ù */
+    if ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_UNNEST_INVERSE_JOIN_DISABLE_MASK )
+         == QC_TMP_UNNEST_INVERSE_JOIN_DISABLE_TRUE )
+    {
+        if ( ( aGraph->type == QMG_SEMI_JOIN ) ||
+             ( aGraph->type == QMG_ANTI_JOIN ) )
+        {
+            // 2 : inverse sort
+            sJoinMethodCost[2].flag &= ~QMO_JOIN_METHOD_FEASIBILITY_MASK;
+            sJoinMethodCost[2].flag |= QMO_JOIN_METHOD_FEASIBILITY_FALSE;
+        }
+    }
 
     *aMethodCnt = sMethodCnt;
     *aMethod = sJoinMethodCost;
@@ -3307,11 +3431,11 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Merge(qcStatement             * aSta
 {
 /***********************************************************************
  *
- * Description : Merge Joinì˜ Join Method Cost ì´ˆê¸° ì„¤ì •
+ * Description : Merge JoinÀÇ Join Method Cost ÃÊ±â ¼³Á¤
  *
  * Implementation :
- *    (1) joinMethodType, direction ì •ë³´ ì„¤ì •
- *    (2) feasibility ê²€ì‚¬
+ *    (1) joinMethodType, direction Á¤º¸ ¼³Á¤
+ *    (2) feasibility °Ë»ç
  *
  ***********************************************************************/
 
@@ -3327,7 +3451,7 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Merge(qcStatement             * aSta
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::initJoinMethodCost4Merge::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL);
@@ -3341,7 +3465,7 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Merge(qcStatement             * aSta
     //--------------------------------------------------------
 
     //------------------------------------------
-    // Inner Join ì˜ Merge Join
+    // Inner Join ÀÇ Merge Join
     //------------------------------------------
 
     switch ( aGraph->type )
@@ -3366,7 +3490,7 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Merge(qcStatement             * aSta
                                              (void **)&sJoinMethodCost )
               != IDE_SUCCESS );
 
-    // Join Method Typeê³¼ Join Direction ì„¤ì •
+    // Join Method Type°ú Join Direction ¼³Á¤
     sFirstTypeFlag = QMO_JOIN_METHOD_FLAG_CLEAR;
     sFirstTypeFlag |= QMO_JOIN_METHOD_MERGE;
 
@@ -3377,16 +3501,16 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Merge(qcStatement             * aSta
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // ê° Join Method Typeê³¼ directionì— ë”°ë¥¸ Join Method Cost ì •ë³´ ì„¤ì •
-    //    - selectivity ì„¤ì •
-    //    - feasibility ì„¤ì •
+    // °¢ Join Method Type°ú direction¿¡ µû¸¥ Join Method Cost Á¤º¸ ¼³Á¤
+    //    - selectivity ¼³Á¤
+    //    - feasibility ¼³Á¤
     //------------------------------------------
 
     for ( i = 0; i < sMethodCnt; i++ )
     {
         sJoinMethodCost[i].selectivity     = aGraph->costInfo.selectivity;
 
-        // feasibility ì„¤ì •
+        // feasibility ¼³Á¤
         if ( aJoinPredicate == NULL )
         {
             sJoinMethodCost[i].flag &= ~QMO_JOIN_METHOD_FEASIBILITY_MASK;
@@ -3397,8 +3521,8 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Merge(qcStatement             * aSta
             // PROJ-2418
             if ( aLateralDirection != QMO_JOIN_LATERAL_NONE )
             {
-                // Child Graphê°€ ì™¸ë¶€ ì°¸ì¡°í•˜ëŠ” ìƒí™©ì´ë¼ë©´
-                // Merge Join MethodëŠ” ì„ íƒë  ìˆ˜ ì—†ë‹¤.
+                // Child Graph°¡ ¿ÜºÎ ÂüÁ¶ÇÏ´Â »óÈ²ÀÌ¶ó¸é
+                // Merge Join Method´Â ¼±ÅÃµÉ ¼ö ¾ø´Ù.
                 sJoinMethodCost[i].flag &= ~QMO_JOIN_METHOD_FEASIBILITY_MASK;
                 sJoinMethodCost[i].flag |= QMO_JOIN_METHOD_FEASIBILITY_FALSE;
             }
@@ -3415,8 +3539,8 @@ IDE_RC qmoJoinMethodMgr::initJoinMethodCost4Merge(qcStatement             * aSta
                 }
 
                 // To Fix PR-11944
-                // Right Childê°€ Merge Joinì¸ ê²½ìš°
-                // Store Cursorì˜ ì¼ê´€ì„±ì´ ë³´ì¥ë˜ì§€ ì•Šìœ¼ë¯€ë¡œ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+                // Right Child°¡ Merge JoinÀÎ °æ¿ì
+                // Store CursorÀÇ ÀÏ°ü¼ºÀÌ º¸ÀåµÇÁö ¾ÊÀ¸¹Ç·Î »ç¿ëÇÒ ¼ö ¾ø´Ù.
                 if ( sRightChildGraph->type == QMG_INNER_JOIN )
                 {
                     sRightJoinGraph = (qmgJOIN *) sRightChildGraph;
@@ -3515,11 +3639,11 @@ qmoJoinMethodMgr::setFlagInfo( qmoJoinMethodCost * aJoinMethodCost,
 {
 /***********************************************************************
  *
- * Description : Join Method Type ê³¼ Direction ì •ë³´ë¥¼ ì„¤ì •
+ * Description : Join Method Type °ú Direction Á¤º¸¸¦ ¼³Á¤
  *
  * Implementation :
- *    (1) joinMethodType ì •ë³´ ì„¤ì •
- *    (2) direction ì •ë³´ ì„¤ì •
+ *    (1) joinMethodType Á¤º¸ ¼³Á¤
+ *    (2) direction Á¤º¸ ¼³Á¤
  *
  ***********************************************************************/
 
@@ -3531,13 +3655,13 @@ qmoJoinMethodMgr::setFlagInfo( qmoJoinMethodCost * aJoinMethodCost,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::setFlagInfo::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aJoinMethodCost != NULL );
 
     //------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //------------------------------------------
 
     sJoinMethodTypeFlag = aFirstTypeFlag;
@@ -3546,7 +3670,7 @@ qmoJoinMethodMgr::setFlagInfo( qmoJoinMethodCost * aJoinMethodCost,
     {
         sCurJoinMethodCost = & aJoinMethodCost[i];
 
-        // Join Method Cost ì´ˆê¸°í™”
+        // Join Method Cost ÃÊ±âÈ­
         sCurJoinMethodCost->selectivity = 0;
         sCurJoinMethodCost->joinPredicate = NULL;
         sCurJoinMethodCost->accessCost = 0;
@@ -3556,12 +3680,12 @@ qmoJoinMethodMgr::setFlagInfo( qmoJoinMethodCost * aJoinMethodCost,
         sCurJoinMethodCost->leftIdxInfo = NULL;
         sCurJoinMethodCost->hashTmpTblCntHint = QMS_NOT_DEFINED_TEMP_TABLE_CNT;
 
-        // flag ì •ë³´ ì´ˆê¸°í™”
+        // flag Á¤º¸ ÃÊ±âÈ­
         if ( aIsDirected == ID_FALSE )
         {
             //------------------------------------------
-            // ë°©í–¥ì„±ì´ ìˆëŠ” joinì´ ì•„ë‹Œ ê²½ìš°
-            // left->right ì™€ right->left ë°©í–¥ ëª¨ë‘ ì„¤ì •
+            // ¹æÇâ¼ºÀÌ ÀÖ´Â joinÀÌ ¾Æ´Ñ °æ¿ì
+            // left->right ¿Í right->left ¹æÇâ ¸ğµÎ ¼³Á¤
             //------------------------------------------
 
             if ( i % 2 == 0 )
@@ -3570,7 +3694,7 @@ qmoJoinMethodMgr::setFlagInfo( qmoJoinMethodCost * aJoinMethodCost,
                 // left->right
                 //------------------------------------------
 
-                // join method type ì„¤ì •
+                // join method type ¼³Á¤
                 sCurJoinMethodCost->flag = QMO_JOIN_METHOD_FLAG_CLEAR;
                 sCurJoinMethodCost->flag |= sJoinMethodTypeFlag;
 
@@ -3578,7 +3702,7 @@ qmoJoinMethodMgr::setFlagInfo( qmoJoinMethodCost * aJoinMethodCost,
                 sNextJoinMethodCost->flag = QMO_JOIN_METHOD_FLAG_CLEAR;
                 sNextJoinMethodCost->flag |= sJoinMethodTypeFlag;
 
-                // direction ì •ë³´ ì„¤ì •
+                // direction Á¤º¸ ¼³Á¤
                 sCurJoinMethodCost->flag &= ~QMO_JOIN_METHOD_DIRECTION_MASK;
                 sCurJoinMethodCost->flag |=
                     QMO_JOIN_METHOD_DIRECTION_LEFTRIGHT;
@@ -3591,7 +3715,7 @@ qmoJoinMethodMgr::setFlagInfo( qmoJoinMethodCost * aJoinMethodCost,
 
                 sJoinMethodTypeFlag = sJoinMethodTypeFlag << 1;
 
-                // direction ì •ë³´ ì„¤ì •
+                // direction Á¤º¸ ¼³Á¤
                 sCurJoinMethodCost->flag &= ~QMO_JOIN_METHOD_DIRECTION_MASK;
                 sCurJoinMethodCost->flag |=
                     QMO_JOIN_METHOD_DIRECTION_RIGHTLEFT;
@@ -3600,11 +3724,11 @@ qmoJoinMethodMgr::setFlagInfo( qmoJoinMethodCost * aJoinMethodCost,
         else
         {
             //------------------------------------------
-            // ë°©í–¥ì„±ì´ ìˆëŠ” joinì¸ ê²½ìš°
-            // left->right ë°©í–¥ë§Œì„ ì„¤ì •
+            // ¹æÇâ¼ºÀÌ ÀÖ´Â joinÀÎ °æ¿ì
+            // left->right ¹æÇâ¸¸À» ¼³Á¤
             //------------------------------------------
 
-            // join method type ì„¤ì •
+            // join method type ¼³Á¤
             sCurJoinMethodCost->flag = QMO_JOIN_METHOD_FLAG_CLEAR;
             sCurJoinMethodCost->flag |= sJoinMethodTypeFlag;
 
@@ -3624,7 +3748,7 @@ qmoJoinMethodMgr::usablePreservedOrder4Merge( qcStatement    * aStatement,
 {
 /***********************************************************************
  *
- * Description :  Preserver Order ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€
+ * Description :  Preserver Order »ç¿ë °¡´É ¿©ºÎ
  *
  * Implementation :
  *
@@ -3641,7 +3765,7 @@ qmoJoinMethodMgr::usablePreservedOrder4Merge( qcStatement    * aStatement,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::usablePreservedOrder4Merge::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -3651,13 +3775,13 @@ qmoJoinMethodMgr::usablePreservedOrder4Merge( qcStatement    * aStatement,
     IDE_DASSERT( aUsable != NULL );
 
     //------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //------------------------------------------
 
     sUsable = ID_FALSE;
 
     //------------------------------------------
-    // preserved order ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€ ê²€ì‚¬
+    // preserved order »ç¿ë °¡´É ¿©ºÎ °Ë»ç
     //------------------------------------------
     sJoinColumnNode =  qmoPred::getColumnNodeOfJoinPred(
         aStatement,
@@ -3666,7 +3790,7 @@ qmoJoinMethodMgr::usablePreservedOrder4Merge( qcStatement    * aStatement,
 
     if ( aGraph->preservedOrder != NULL )
     {
-        // Preserved Orderê°€ ìˆëŠ” ê²½ìš°
+        // Preserved Order°¡ ÀÖ´Â °æ¿ì
 
         if( sJoinColumnNode != NULL )
         {
@@ -3676,9 +3800,9 @@ qmoJoinMethodMgr::usablePreservedOrder4Merge( qcStatement    * aStatement,
                   aGraph->preservedOrder->column ) )
             {
                 // BUG-21195
-                // directionì´ ASCì¸ ê²½ìš°ì™€ NOT DEFINEDì¸ ê²½ìš°ë¥¼ ë”°ë¡œ ë¶„ë¦¬í•  í•„ìš”ê°€ ì—†ë‹¤.
-                // ì´ì „ì—ëŠ” ë”°ë¡œ ë¶„ë¦¬ê°€ ë˜ì–´ ìˆì—ˆê³ ,
-                // ASCì¸ ê²½ìš°ì— aAccessMethodë¥¼ ì„¸íŒ…í•˜ì§€ ì•Šì•„ segment fault ì—ëŸ¬ê°€ ë°œìƒí–ˆì—ˆë‹¤.
+                // directionÀÌ ASCÀÎ °æ¿ì¿Í NOT DEFINEDÀÎ °æ¿ì¸¦ µû·Î ºĞ¸®ÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+                // ÀÌÀü¿¡´Â µû·Î ºĞ¸®°¡ µÇ¾î ÀÖ¾ú°í,
+                // ASCÀÎ °æ¿ì¿¡ aAccessMethod¸¦ ¼¼ÆÃÇÏÁö ¾Ê¾Æ segment fault ¿¡·¯°¡ ¹ß»ıÇß¾ú´Ù.
                 if ( ( aGraph->preservedOrder->direction == QMG_DIRECTION_ASC ) ||
                      ( aGraph->preservedOrder->direction == QMG_DIRECTION_NOT_DEFINED ) )
                 {
@@ -3718,12 +3842,12 @@ qmoJoinMethodMgr::usablePreservedOrder4Merge( qcStatement    * aStatement,
     }
     else
     {
-        // Preserved Orderê°€ ì—†ëŠ” ê²½ìš°,
-        // Preserved Order ì‚¬ìš© ê°€ëŠ¥í•œì§€ ê²€ì‚¬
+        // Preserved Order°¡ ¾ø´Â °æ¿ì,
+        // Preserved Order »ç¿ë °¡´ÉÇÑÁö °Ë»ç
 
         // To Fix PR-8023
         //------------------------------
-        // Column Nodeì˜ ì¶”ì¶œ
+        // Column NodeÀÇ ÃßÃâ
         //------------------------------
 
         sCompareNode = aJoinPred->predicate->node;
@@ -3731,12 +3855,12 @@ qmoJoinMethodMgr::usablePreservedOrder4Merge( qcStatement    * aStatement,
         if( ( sCompareNode->node.lflag & MTC_NODE_LOGICAL_CONDITION_MASK )
             == MTC_NODE_LOGICAL_CONDITION_TRUE )
         {
-            // CNFì˜ ê²½ìš°
+            // CNFÀÇ °æ¿ì
             sCompareNode = (qtcNode *) sCompareNode->node.arguments;
         }
         else
         {
-            // DNFì˜ ê²½ìš°ë¡œ ë¹„êµ ì—°ì‚°ìì„.
+            // DNFÀÇ °æ¿ì·Î ºñ±³ ¿¬»êÀÚÀÓ.
             // Nothing To Do
         }
 
@@ -3750,7 +3874,7 @@ qmoJoinMethodMgr::usablePreservedOrder4Merge( qcStatement    * aStatement,
         }
 
         //------------------------------
-        // Want Orderì˜ ìƒì„±
+        // Want OrderÀÇ »ı¼º
         //------------------------------
 
         IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmgPreservedOrder ),
@@ -3773,22 +3897,22 @@ qmoJoinMethodMgr::usablePreservedOrder4Merge( qcStatement    * aStatement,
                   != IDE_SUCCESS );
     }
 
-    // BUG-38118 merge join ê²°ê³¼ ì˜¤ë¥˜
-    // merge join ì˜ ê²½ìš° ë¬´ì¡°ê±´ asc ìˆœìœ¼ë¡œ ì •ë ¬ë˜ì–´ì•¼ í•œë‹¤.
-    // ë˜í•œ index ë¥¼ QMNC_SCAN_TRAVERSE_FORWARD ë°©ì‹ìœ¼ë¡œ ì½ì–´ì•¼ í•œë‹¤.
-    // index ë¥¼ QMNC_SCAN_TRAVERSE_BACKWARD ë°©ì‹ìœ¼ë¡œ ì½ìœ¼ë©´ null ë¶€í„° ë‚˜ì™€ ê²°ê³¼ê°€ í‹€ë ¤ì§„ë‹¤.
+    // BUG-38118 merge join °á°ú ¿À·ù
+    // merge join ÀÇ °æ¿ì ¹«Á¶°Ç asc ¼øÀ¸·Î Á¤·ÄµÇ¾î¾ß ÇÑ´Ù.
+    // ¶ÇÇÑ index ¸¦ QMNC_SCAN_TRAVERSE_FORWARD ¹æ½ÄÀ¸·Î ÀĞ¾î¾ß ÇÑ´Ù.
+    // index ¸¦ QMNC_SCAN_TRAVERSE_BACKWARD ¹æ½ÄÀ¸·Î ÀĞÀ¸¸é null ºÎÅÍ ³ª¿Í °á°ú°¡ Æ²·ÁÁø´Ù.
     if ( sUsable == ID_TRUE )
     {
         //----------------------------------
-        // ì²«ë²ˆì§¸ Columnì´ ASC ê²€ì‚¬.
+        // Ã¹¹øÂ° ColumnÀÌ ASC °Ë»ç.
         //----------------------------------
 
         if( *aAccessMethod != NULL )
         {
             sIndex  = (*aAccessMethod)->method->index;
 
-            // index desc íŒíŠ¸ê°€ ìˆëŠ”ê²½ìš° QMNC_SCAN_TRAVERSE_BACKWARD ë°©ì‹ìœ¼ë¡œ ì½ëŠ”ë‹¤.
-            // QMNC_SCAN_TRAVERSE_BACKWARD ë°©ì‹ìœ¼ë¡œëŠ” merge ì¡°ì¸ì„ í•´ì„œëŠ” ì•ˆëœë‹¤.
+            // index desc ÈùÆ®°¡ ÀÖ´Â°æ¿ì QMNC_SCAN_TRAVERSE_BACKWARD ¹æ½ÄÀ¸·Î ÀĞ´Â´Ù.
+            // QMNC_SCAN_TRAVERSE_BACKWARD ¹æ½ÄÀ¸·Î´Â merge Á¶ÀÎÀ» ÇØ¼­´Â ¾ÈµÈ´Ù.
             if( ((*aAccessMethod)->method->flag & QMO_STAT_CARD_IDX_HINT_MASK)
                 == QMO_STAT_CARD_IDX_INDEX_DESC )
             {
@@ -3799,8 +3923,8 @@ qmoJoinMethodMgr::usablePreservedOrder4Merge( qcStatement    * aStatement,
                 // nothing to do
             }
 
-            // index ì»¬ëŸ¼ì´ desc ìˆœì¼ë•Œ indexë¥¼ ë°˜ëŒ€ë¡œ ì½ì–´ì„œ ìš”êµ¬í•œ asc ë°©ì‹ìœ¼ë¡œ ì½ìœ¼ë ¤ í•˜ëŠ”ê²ƒì´ë‹¤.
-            // QMNC_SCAN_TRAVERSE_BACKWARD ë°©ì‹ìœ¼ë¡œëŠ” merge ì¡°ì¸ì„ í•´ì„œëŠ” ì•ˆëœë‹¤.
+            // index ÄÃ·³ÀÌ desc ¼øÀÏ¶§ index¸¦ ¹İ´ë·Î ÀĞ¾î¼­ ¿ä±¸ÇÑ asc ¹æ½ÄÀ¸·Î ÀĞÀ¸·Á ÇÏ´Â°ÍÀÌ´Ù.
+            // QMNC_SCAN_TRAVERSE_BACKWARD ¹æ½ÄÀ¸·Î´Â merge Á¶ÀÎÀ» ÇØ¼­´Â ¾ÈµÈ´Ù.
             if ( (sIndex->keyColsFlag[0] & SMI_COLUMN_ORDER_MASK)
                 == SMI_COLUMN_ORDER_DESCENDING )
             {
@@ -3840,8 +3964,8 @@ qmoJoinMethodMgr::setJoinMethodHint( qmoJoinMethod      * aJoinMethod,
 {
 /***********************************************************************
  *
- * Description : Join Method Hintë¥¼ ë§Œì¡±í•˜ëŠ” Join Method Costë“¤ ì¤‘ì—ì„œ
- *               ê°€ì¥ costê°€ ì¢‹ì€ ê²ƒì„ ì°¾ì•„ëƒ„
+ * Description : Join Method Hint¸¦ ¸¸Á·ÇÏ´Â Join Method Costµé Áß¿¡¼­
+ *               °¡Àå cost°¡ ÁÁÀº °ÍÀ» Ã£¾Æ³¿
  *
  * Implementation :
  *
@@ -3857,7 +3981,7 @@ qmoJoinMethodMgr::setJoinMethodHint( qmoJoinMethod      * aJoinMethod,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::setJoinMethodHint::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aJoinMethod != NULL );
@@ -3865,19 +3989,19 @@ qmoJoinMethodMgr::setJoinMethodHint( qmoJoinMethod      * aJoinMethod,
     IDE_DASSERT( aGraph != NULL );
 
     //------------------------------------------
-    // Hintì™€ ë™ì¼í•œ Join Method Typeì„ ê°€ì§€ëŠ” Join Method Costë“¤ ì¤‘ì—ì„œ
-    // Costê°€ ê°€ì¥ ì¢‹ì€ ê²ƒì„ ì„ íƒ
+    // Hint¿Í µ¿ÀÏÇÑ Join Method TypeÀ» °¡Áö´Â Join Method Costµé Áß¿¡¼­
+    // Cost°¡ °¡Àå ÁÁÀº °ÍÀ» ¼±ÅÃ
     //------------------------------------------
 
     for ( i = 0; i < aJoinMethod->joinMethodCnt; i++ )
     {
         sJoinMethodCost = &(aJoinMethod->joinMethodCost[i]);
 
-        // BUG-42413 NO_USE_ hint ì§€ì›
-        // NO_USE íŒíŠ¸ skip
+        // BUG-42413 NO_USE_ hint Áö¿ø
+        // NO_USE ÈùÆ® skip
         if ( aJoinMethodHints->isNoUse == ID_TRUE )
         {
-            // NO_USEë¡œ ë§‰íŒ ì¡°ì¸ ë©”ì†Œë“œ skip
+            // NO_USE·Î ¸·Èù Á¶ÀÎ ¸Ş¼Òµå skip
             if ( ( (sJoinMethodCost->flag & QMO_JOIN_METHOD_MASK) &
                    (aNoUseHintMask & QMO_JOIN_METHOD_MASK) ) != 0 )
             {
@@ -3890,7 +4014,7 @@ qmoJoinMethodMgr::setJoinMethodHint( qmoJoinMethod      * aJoinMethod,
         }
         else
         {
-            // USE íŒíŠ¸ì™€ ë‹¤ë¥¸ ì¡°ì¸ ë©”ì†Œë“œ skip
+            // USE ÈùÆ®¿Í ´Ù¸¥ Á¶ÀÎ ¸Ş¼Òµå skip
             if ( ( (sJoinMethodCost->flag & QMO_JOIN_METHOD_MASK) &
                    (aJoinMethodHints->flag & QMO_JOIN_METHOD_MASK) ) == 0 )
             {
@@ -3902,7 +4026,7 @@ qmoJoinMethodMgr::setJoinMethodHint( qmoJoinMethod      * aJoinMethod,
             }
         }
 
-        // feasibilityê°€ ì—†ëŠ” ê²½ìš°
+        // feasibility°¡ ¾ø´Â °æ¿ì
         if ( (sJoinMethodCost->flag & QMO_JOIN_METHOD_FEASIBILITY_MASK) ==
               QMO_JOIN_METHOD_FEASIBILITY_FALSE )
         {
@@ -3914,16 +4038,16 @@ qmoJoinMethodMgr::setJoinMethodHint( qmoJoinMethod      * aJoinMethod,
         }
 
         //------------------------------------------
-        // feasilityê°€ TRUE ê²½ìš°,
-        // Table Orderê¹Œì§€ ë™ì¼í•œ Join Method ì¸ì§€ ê²€ì‚¬
+        // feasility°¡ TRUE °æ¿ì,
+        // Table Order±îÁö µ¿ÀÏÇÑ Join Method ÀÎÁö °Ë»ç
         //------------------------------------------
 
         // To Fix PR-13145
-        // Two Pass Hash Joinì¸ ê²½ìš° Temp Tableì˜ ê°œìˆ˜ íŒíŠ¸ë¥¼
-        // ì ìš©ì‹œì¼œì•¼ í•œë‹¤.
-        // Temp Table CountëŠ” Two Pass Hash Joinì—ì„œë§Œ ê°’ì„ ê°–ê³ 
-        // ë‹¤ë¥¸ Join MethodëŠ” 0ê°’ì„ ê°€ì§€ë¯€ë¡œ,
-        // Two Pass Hash Joinê³¼ ë‹¤ë¥¸ Join Methodë¥¼ êµ¬ë³„í•  í•„ìš”ëŠ” ì—†ë‹¤.
+        // Two Pass Hash JoinÀÎ °æ¿ì Temp TableÀÇ °³¼ö ÈùÆ®¸¦
+        // Àû¿ë½ÃÄÑ¾ß ÇÑ´Ù.
+        // Temp Table Count´Â Two Pass Hash Join¿¡¼­¸¸ °ªÀ» °®°í
+        // ´Ù¸¥ Join Method´Â 0°ªÀ» °¡Áö¹Ç·Î,
+        // Two Pass Hash Join°ú ´Ù¸¥ Join Method¸¦ ±¸º°ÇÒ ÇÊ¿ä´Â ¾ø´Ù.
         sJoinMethodCost->hashTmpTblCntHint = aJoinMethodHints->tempTableCnt;
 
         if ( ( sJoinMethodCost->flag & QMO_JOIN_METHOD_DIRECTION_MASK )
@@ -3940,24 +4064,24 @@ qmoJoinMethodMgr::setJoinMethodHint( qmoJoinMethod      * aJoinMethod,
 
         /* PROJ-2339 Inverse Hash Join + PROJ-2385
             *
-            *  Hintê°€ ì¡´ì¬í•  ë•Œ, Join Method ì„ íƒì€ ë‹¤ìŒê³¼ ê°™ì´ ì´ë£¨ì–´ì§„ë‹¤.
-            *  - Hintê°€ ì›í•˜ëŠ” (Driven, Driving ìˆœì„œë¡œ ì´ì–´ì§€ëŠ”) Orderê¹Œì§€ ì¼ì¹˜í•˜ëŠ” Method
-            *  - Hintê°€ ì›í•˜ëŠ” Methodì§€ë§Œ, OrderëŠ” ì¼ì¹˜í•˜ì§€ ì•ŠëŠ” Method
-            *  >>> Orderê¹Œì§€ ì¼ì¹˜í•˜ëŠ” Methodê°€ ìˆë‹¤ë©´, ê·¸ ì¤‘ì—ì„œ Methodë¥¼ ì„ íƒí•œë‹¤.
-            *  >>> Orderê¹Œì§€ ì¼ì¹˜í•˜ëŠ” Methodê°€ ì—†ì„ ê²½ìš°,
-            *      OrderëŠ” ì¼ì¹˜í•˜ì§€ ì•Šì§€ë§Œ íŒíŠ¸ê°€ ì›í•˜ë˜ Methodë¥¼ ì„ íƒí•œë‹¤.
+            *  Hint°¡ Á¸ÀçÇÒ ¶§, Join Method ¼±ÅÃÀº ´ÙÀ½°ú °°ÀÌ ÀÌ·ç¾îÁø´Ù.
+            *  - Hint°¡ ¿øÇÏ´Â (Driven, Driving ¼ø¼­·Î ÀÌ¾îÁö´Â) Order±îÁö ÀÏÄ¡ÇÏ´Â Method
+            *  - Hint°¡ ¿øÇÏ´Â MethodÁö¸¸, Order´Â ÀÏÄ¡ÇÏÁö ¾Ê´Â Method
+            *  >>> Order±îÁö ÀÏÄ¡ÇÏ´Â Method°¡ ÀÖ´Ù¸é, ±× Áß¿¡¼­ Method¸¦ ¼±ÅÃÇÑ´Ù.
+            *  >>> Order±îÁö ÀÏÄ¡ÇÏ´Â Method°¡ ¾øÀ» °æ¿ì,
+            *      Order´Â ÀÏÄ¡ÇÏÁö ¾ÊÁö¸¸ ÈùÆ®°¡ ¿øÇÏ´ø Method¸¦ ¼±ÅÃÇÑ´Ù.
             *
-            *  ì´ ë°©ë²•ì€ Inner Join / Outer Joinì—ì„œëŠ” ë¬¸ì œê°€ ì—†ë‹¤. í•˜ì§€ë§Œ,
-            *  Semi/Anti Joinì—ì„œëŠ” Inverse Join Method ì¶”ê°€ë¡œ ì•„ë˜ì™€ ê°™ì€ ë¬¸ì œê°€ ì¡´ì¬í•œë‹¤.
+            *  ÀÌ ¹æ¹ıÀº Inner Join / Outer Join¿¡¼­´Â ¹®Á¦°¡ ¾ø´Ù. ÇÏÁö¸¸,
+            *  Semi/Anti Join¿¡¼­´Â Inverse Join Method Ãß°¡·Î ¾Æ·¡¿Í °°Àº ¹®Á¦°¡ Á¸ÀçÇÑ´Ù.
             *
-            *  Inverseì™€ Non-Inverse Join Method ëª¨ë‘ë¥¼ ê³ ë ¤í•œë‹¤ê³  ê°€ì •í•˜ì.
-            *  Hintê°€ ì›í•˜ëŠ” Orderì™€ ì¼ì¹˜í•˜ëŠ” Methodë¡œ Non-Inverse Join ì¤‘ì—ì„œ í•˜ë‚˜ê°€ ì„ íƒëœë‹¤.
-            *  Inverse Join Methodì˜ CostëŠ” Orderê°€ ì¼ì¹˜í•˜ì§€ ì•ŠëŠ” Methodë¡œ ì¸ì‹ëœë‹¤.
-            *  ì´ ë•Œ, Inverse Join Methodì˜ Costê°€ ë” ë‚®ë”ë¼ë„ ë¬´ì‹œë˜ëŠ” ë¬¸ì œê°€ ë°œìƒí•œë‹¤.
+            *  Inverse¿Í Non-Inverse Join Method ¸ğµÎ¸¦ °í·ÁÇÑ´Ù°í °¡Á¤ÇÏÀÚ.
+            *  Hint°¡ ¿øÇÏ´Â Order¿Í ÀÏÄ¡ÇÏ´Â Method·Î Non-Inverse Join Áß¿¡¼­ ÇÏ³ª°¡ ¼±ÅÃµÈ´Ù.
+            *  Inverse Join MethodÀÇ Cost´Â Order°¡ ÀÏÄ¡ÇÏÁö ¾Ê´Â Method·Î ÀÎ½ÄµÈ´Ù.
+            *  ÀÌ ¶§, Inverse Join MethodÀÇ Cost°¡ ´õ ³·´õ¶óµµ ¹«½ÃµÇ´Â ¹®Á¦°¡ ¹ß»ıÇÑ´Ù.
             *
-            *  ë”°ë¼ì„œ, Inverseì™€ Non-Inverse Join Method ëª¨ë‘ë¥¼ ê³ ë ¤í•˜ëŠ” ê²½ìš°ì—ëŠ”
-            *  (INVERSE_JOINì´ë‚˜ NO_INVERSE_JOINì´ ì‚¬ìš©ë˜ì§€ ì•Šì€ ê²½ìš°, ì¦‰ isUndirected == TRUE)
-            *  Inverse Join Methodë¥¼ 'Orderê°€ ì¼ì¹˜í•˜ëŠ” Method'ì¸ ê²ƒì²˜ëŸ¼ í¸ì…ì‹œí‚¨ë‹¤.
+            *  µû¶ó¼­, Inverse¿Í Non-Inverse Join Method ¸ğµÎ¸¦ °í·ÁÇÏ´Â °æ¿ì¿¡´Â
+            *  (INVERSE_JOINÀÌ³ª NO_INVERSE_JOINÀÌ »ç¿ëµÇÁö ¾ÊÀº °æ¿ì, Áï isUndirected == TRUE)
+            *  Inverse Join Method¸¦ 'Order°¡ ÀÏÄ¡ÇÏ´Â Method'ÀÎ °ÍÃ³·³ ÆíÀÔ½ÃÅ²´Ù.
             *
             */
         if ( aJoinMethodHints->isUndirected == ID_TRUE )
@@ -3981,8 +4105,8 @@ qmoJoinMethodMgr::setJoinMethodHint( qmoJoinMethod      * aJoinMethod,
         if ( sIsSameTableOrder == ID_TRUE )
         {
             //------------------------------------------
-            // table orderê°€ ê°™ì€ ê²½ìš°,
-            // ì´ë¯¸ ì„ íƒëœ Join Methodì™€ ë¹„êµí•˜ì—¬ costê°€ ì¢‹ì€ ê²ƒ ì„ íƒ
+            // table order°¡ °°Àº °æ¿ì,
+            // ÀÌ¹Ì ¼±ÅÃµÈ Join Method¿Í ºñ±³ÇÏ¿© cost°¡ ÁÁÀº °Í ¼±ÅÃ
             //------------------------------------------
 
             if ( sSameTableOrder == NULL )
@@ -4008,15 +4132,15 @@ qmoJoinMethodMgr::setJoinMethodHint( qmoJoinMethod      * aJoinMethod,
         else
         {
             //------------------------------------------
-            // table orderê°€ ë‹¤ë¥¸ ê²½ìš°
-            // ì´ì „ì— ì„ íƒëœ Join Methodì™€ ë¹„êµí•˜ì—¬ costê°€ ì¢‹ì€ ê²ƒ ì„ íƒ
+            // table order°¡ ´Ù¸¥ °æ¿ì
+            // ÀÌÀü¿¡ ¼±ÅÃµÈ Join Method¿Í ºñ±³ÇÏ¿© cost°¡ ÁÁÀº °Í ¼±ÅÃ
             //------------------------------------------
 
             if ( sSameTableOrder == NULL )
             {
-                // Table Order ê¹Œì§€ ë™ì¼í•œ Join Methodê°€ ì•„ì§ê¹Œì§€
-                // ì„ íƒë˜ì§€ ì•Šì€ ê²½ìš°
-                // ì´ì „ì— ì„ íƒëœ Join Methodì™€ cost ë¹„êµ í›„ ì¢‹ì€ê²ƒ ì„ íƒ
+                // Table Order ±îÁö µ¿ÀÏÇÑ Join Method°¡ ¾ÆÁ÷±îÁö
+                // ¼±ÅÃµÇÁö ¾ÊÀº °æ¿ì
+                // ÀÌÀü¿¡ ¼±ÅÃµÈ Join Method¿Í cost ºñ±³ ÈÄ ÁÁÀº°Í ¼±ÅÃ
                 if ( sDiffTableOrder == NULL )
                 {
                     sDiffTableOrder = sJoinMethodCost;
@@ -4060,7 +4184,7 @@ qmoJoinMethodMgr::canUsePreservedOrder( qcStatement       * aStatement,
  *
  * Description :
  *
- *    Sort Joinë“±ì„ ìœ„í•˜ì—¬ Preserved Orderë¥¼ ì‚¬ìš© ê°€ëŠ¥í•œì§€ ê²€ì‚¬
+ *    Sort JoinµîÀ» À§ÇÏ¿© Preserved Order¸¦ »ç¿ë °¡´ÉÇÑÁö °Ë»ç
  *
  * Implementation :
  *
@@ -4135,25 +4259,25 @@ qmoJoinMethodMgr::usableJoinMethodFullNL( qmgGraph      * aGraph,
 {
 /***********************************************************************
  *
- * Description : full nested loop, full store nested loop joinì˜
- *               ì‚¬ìš©ì—¬ë¶€ë¥¼ íŒë‹¨
+ * Description : full nested loop, full store nested loop joinÀÇ
+ *               »ç¿ë¿©ºÎ¸¦ ÆÇ´Ü
  *
  * Implementation :
  *
- *   join ë…¸ë“œì˜
- *   left ë…¸ë“œìª½ì˜ ë ˆì½”ë“œ ì¹´ìš´íŠ¸ ì˜ˆì¸¡ì´ ì˜ëª»ë  ê²½ìš°,
- *   right ë…¸ë“œê°€ join ë˜ëŠ” viewì™€ ê°™ì´ ë ˆì½”ë“œê°€ ë§ì€ ê²½ìš°,
- *   ì„±ëŠ¥ì €í•˜ê°€ ë°œìƒí•˜ê²Œ ë˜ì–´
- *   full (store) nested loop joinì˜ feasibilityë¥¼ ì²´í¬í•˜ê²Œ ëœë‹¤.
+ *   join ³ëµåÀÇ
+ *   left ³ëµåÂÊÀÇ ·¹ÄÚµå Ä«¿îÆ® ¿¹ÃøÀÌ Àß¸øµÉ °æ¿ì,
+ *   right ³ëµå°¡ join ¶Ç´Â view¿Í °°ÀÌ ·¹ÄÚµå°¡ ¸¹Àº °æ¿ì,
+ *   ¼º´ÉÀúÇÏ°¡ ¹ß»ıÇÏ°Ô µÇ¾î
+ *   full (store) nested loop joinÀÇ feasibility¸¦ Ã¼Å©ÇÏ°Ô µÈ´Ù.
  *
- *   1. use_nl hintê°€ ì“°ì¸ ê²½ìš°ëŠ”
- *      hintë¡œ ìˆ˜í–‰í•˜ê¸° ìœ„í•´,
- *      full (store) nested loop joinì˜ feasibilityë¥¼ trueë¡œ ë§Œë“ ë‹¤.
+ *   1. use_nl hint°¡ ¾²ÀÎ °æ¿ì´Â
+ *      hint·Î ¼öÇàÇÏ±â À§ÇØ,
+ *      full (store) nested loop joinÀÇ feasibility¸¦ true·Î ¸¸µç´Ù.
  *
- *   2. joinable predicateì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°,
- *      ì ì ˆí•œ join methodê°€ ì„ íƒë˜ë„ë¡ í•˜ê¸° ìœ„í•´,
- *      full (store) nested loop joinì˜ feasibilityë¥¼ falseë¡œ ë§Œë“ ë‹¤.
- *     ( right graphê°€ view ë˜ëŠ” joinì¸ ê²½ìš° feasibilityë¥¼ flaseë¡œ.. )
+ *   2. joinable predicateÀÌ Á¸ÀçÇÏ´Â °æ¿ì,
+ *      ÀûÀıÇÑ join method°¡ ¼±ÅÃµÇµµ·Ï ÇÏ±â À§ÇØ,
+ *      full (store) nested loop joinÀÇ feasibility¸¦ false·Î ¸¸µç´Ù.
+ *     ( right graph°¡ view ¶Ç´Â joinÀÎ °æ¿ì feasibility¸¦ flase·Î.. )
  *
  ***********************************************************************/
 
@@ -4165,24 +4289,24 @@ qmoJoinMethodMgr::usableJoinMethodFullNL( qmgGraph      * aGraph,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::usableJoinMethodFullNL::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aGraph != NULL );
 
     //------------------------------------------
-    // USE_NL hint ê²€ì‚¬
+    // USE_NL hint °Ë»ç
     //------------------------------------------
 
     // fix BUG-13232
-    // use_nl hintê°€ ìˆëŠ” ê²½ìš° (ì˜ˆ: use_nl(table, view) )
-    // full nested loop, full store nested loop joinë„ ê°€ëŠ¥í•´ì•¼ í•¨.
+    // use_nl hint°¡ ÀÖ´Â °æ¿ì (¿¹: use_nl(table, view) )
+    // full nested loop, full store nested loop joinµµ °¡´ÉÇØ¾ß ÇÔ.
     for( sJoinMethodHint = aGraph->myQuerySet->SFWGH->hints->joinMethod;
          sJoinMethodHint != NULL;
          sJoinMethodHint = sJoinMethodHint->next )
     {
-        // ì˜ëª»ëœ hintê°€ ì•„ë‹ˆê³ 
-        // USE_NL hintì¸ ê²½ìš°
+        // Àß¸øµÈ hint°¡ ¾Æ´Ï°í
+        // USE_NL hintÀÎ °æ¿ì
         if( ( sJoinMethodHint->depInfo.depCount != 0 ) &&
             ( ( sJoinMethodHint->flag & QMO_JOIN_METHOD_NL )
               != QMO_JOIN_METHOD_NONE ) )
@@ -4215,11 +4339,11 @@ qmoJoinMethodMgr::usableJoinMethodFullNL( qmgGraph      * aGraph,
     else
     {
         // fix BUG-12580
-        // joinable predicateì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
-        // joinable predicateì¸ ê²½ìš°, ìµœì•…ì˜ ê²½ìš°
-        // ì‚¬ìš©ê°€ëŠ¥í•œ join methodê°€ full_nll, full_store_nl ë°–ì— ì—†ëŠ” ê²½ìš°ë¥¼
-        // ëŒ€ë¹„í•´ì„œ, full_nl, full_store_nl ì´ì™¸ì—
-        // ì‚¬ìš©ê°€ëŠ¥í•œ join methodê°€ ìˆëŠ”ì§€ë¥¼ ê²€ì‚¬
+        // joinable predicateÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+        // joinable predicateÀÎ °æ¿ì, ÃÖ¾ÇÀÇ °æ¿ì
+        // »ç¿ë°¡´ÉÇÑ join method°¡ full_nll, full_store_nl ¹Û¿¡ ¾ø´Â °æ¿ì¸¦
+        // ´ëºñÇØ¼­, full_nl, full_store_nl ÀÌ¿Ü¿¡
+        // »ç¿ë°¡´ÉÇÑ join method°¡ ÀÖ´ÂÁö¸¦ °Ë»ç
         for( sJoinPredicate = aJoinPredicate;
              sJoinPredicate != NULL;
              sJoinPredicate = sJoinPredicate->next )
@@ -4253,6 +4377,16 @@ qmoJoinMethodMgr::usableJoinMethodFullNL( qmgGraph      * aGraph,
         }
     }
 
+    if ( ( aGraph->flag & QMG_JOIN_ONLY_NL_MASK )
+         == QMG_JOIN_ONLY_NL_TRUE )
+    {
+        sIsUsable = ID_TRUE;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
     *aIsUsable = sIsUsable;
 
     return IDE_SUCCESS;
@@ -4276,14 +4410,14 @@ qmoJoinMethodMgr::forcePushPredHint( qmgGraph      * aGraph,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::forcePushPredHint::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aGraph != NULL );
     IDE_DASSERT( aJoinMethod != NULL );
 
     //------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //------------------------------------------
 
     sHints          = aGraph->myQuerySet->SFWGH->hints;
@@ -4298,7 +4432,7 @@ qmoJoinMethodMgr::forcePushPredHint( qmgGraph      * aGraph,
               QMS_TABLE_REF_PUSH_PRED_HINT_MASK )
             == QMS_TABLE_REF_PUSH_PRED_HINT_TRUE )
         {
-            // push_pred hintê°€ ì ìš©ë˜ëŠ” ë·° ë˜ëŠ” JOINì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
+            // push_pred hint°¡ Àû¿ëµÇ´Â ºä ¶Ç´Â JOINÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
             if( qtc::dependencyContains(
                     &(((qmgGraph*)(aGraph))->right->depInfo),
                     &(sPushPredHint->table->table->depInfo) )
@@ -4309,20 +4443,20 @@ qmoJoinMethodMgr::forcePushPredHint( qmgGraph      * aGraph,
             else
             {
                 // BUG-26800
-                // inner join onì ˆì˜ joinì¡°ê±´ì— push_pred íŒíŠ¸ ì ìš©
-                // viewì— ê´€ê³„ëœ ì¡°ì¸ì¡°ê±´ì´ ë‚´ë ¤ê°„ í…Œì´ë¸”ì„
-                // ì¡°ì¸ì˜ ì˜¤ë¥¸ìª½ì—ì„œ ì²˜ë¦¬ë˜ë„ë¡ ìˆœì„œë¥¼ ê²°ì •í•œë‹¤.
+                // inner join onÀıÀÇ joinÁ¶°Ç¿¡ push_pred ÈùÆ® Àû¿ë
+                // view¿¡ °ü°èµÈ Á¶ÀÎÁ¶°ÇÀÌ ³»·Á°£ Å×ÀÌºíÀ»
+                // Á¶ÀÎÀÇ ¿À¸¥ÂÊ¿¡¼­ Ã³¸®µÇµµ·Ï ¼ø¼­¸¦ °áÁ¤ÇÑ´Ù.
 
-                // push_pred hint ì ìš©ì‹œ,
-                // (1) from v1, t1 where v1.i1=t1.i1 ì˜ ê²½ìš°ëŠ”
-                //     join orderingì‹œ left t1, right v1ì˜ ìˆœì„œë¡œ ì²˜ë¦¬ë˜ì–´ìˆì§€ë§Œ,
-                // (2) from v1 inner join t1 on v1.i1=t1.i1 ì˜ ê²½ìš°ëŠ”
-                //     join oderingê³¼ì •ì„ ê±°ì¹˜ì§€ ì•Šê¸°ë•Œë¬¸ì—
-                //     righì— v1ì´ ì˜¤ë„ë¡ ì¡°ì •í•´ì¤€ë‹¤.
+                // push_pred hint Àû¿ë½Ã,
+                // (1) from v1, t1 where v1.i1=t1.i1 ÀÇ °æ¿ì´Â
+                //     join ordering½Ã left t1, right v1ÀÇ ¼ø¼­·Î Ã³¸®µÇ¾îÀÖÁö¸¸,
+                // (2) from v1 inner join t1 on v1.i1=t1.i1 ÀÇ °æ¿ì´Â
+                //     join odering°úÁ¤À» °ÅÄ¡Áö ¾Ê±â¶§¹®¿¡
+                //     righ¿¡ v1ÀÌ ¿Àµµ·Ï Á¶Á¤ÇØÁØ´Ù.
                 if( ( aGraph->type == QMG_INNER_JOIN ) &&
                     ( ((qmgJOIN*)aGraph)->onConditionCNF != NULL ) )
                 {
-                    // ì™¼ìª½ì— í…Œì´ë¸” ë˜ëŠ” ë·°ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
+                    // ¿ŞÂÊ¿¡ Å×ÀÌºí ¶Ç´Â ºä°¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç
                     if( (aGraph->left->type == QMG_SELECTION) ||
                         (aGraph->left->type == QMG_PARTITION) )
                     {
@@ -4330,14 +4464,14 @@ qmoJoinMethodMgr::forcePushPredHint( qmgGraph      * aGraph,
                               QMS_TABLE_REF_PUSH_PRED_HINT_MASK )
                             == QMS_TABLE_REF_PUSH_PRED_HINT_TRUE )
                         {
-                            // push_pred hintê°€ ì ìš©ë˜ëŠ” ë·°ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
+                            // push_pred hint°¡ Àû¿ëµÇ´Â ºä°¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç
                             if( qtc::dependencyContains(
                                     &(((qmgGraph*)(aGraph))->left->depInfo),
                                     &(sPushPredHint->table->table->depInfo) )
                                 == ID_TRUE )
                             {
-                                // push_pred hintê°€ ì ìš©ë˜ëŠ” ë·°ê°€
-                                // ì˜¤ë¥¸ìª½ì— ê°€ë„ë¡ join ê·¸ë˜í”„ì˜ ìˆœì„œ ë³€ê²½
+                                // push_pred hint°¡ Àû¿ëµÇ´Â ºä°¡
+                                // ¿À¸¥ÂÊ¿¡ °¡µµ·Ï join ±×·¡ÇÁÀÇ ¼ø¼­ º¯°æ
                                 sLeftGraph   = aGraph->left;
                                 sRightGraph  = aGraph->right;
 
@@ -4362,7 +4496,7 @@ qmoJoinMethodMgr::forcePushPredHint( qmgGraph      * aGraph,
                 }
                 else
                 {
-                    // JOIN ì™¼ìª½ì— í…Œì´ë¸” ë˜ëŠ” ë·°ê°€ ì•„ë‹Œ ê²½ìš°
+                    // JOIN ¿ŞÂÊ¿¡ Å×ÀÌºí ¶Ç´Â ºä°¡ ¾Æ´Ñ °æ¿ì
                     // ex)    JOIN
                     //    ------------
                     //    |          |
@@ -4378,40 +4512,40 @@ qmoJoinMethodMgr::forcePushPredHint( qmgGraph      * aGraph,
         }
     }
 
-    // PUSH_PRED(view) hintê°€ ì ìš©ë˜ì—ˆê³ ,
-    // join graphê°€ viewë¥¼ í¬í•¨í•˜ëŠ” ê²½ìš°ë¼ë©´,
-    // join ìˆ˜í–‰ë°©í–¥ì€ left->rightì˜ full nested loop joinë§Œ ê°€ëŠ¥í•˜ë‹¤.
-    // joinOrdering ê³¼ì •ì¤‘ì— viewëŠ” pushë˜ëŠ” predicateê³¼ ì—°ê´€ëœ
-    // ê·¸ë˜í”„ë³´ë‹¤ ë‚˜ì¤‘ì— ìˆ˜í–‰ë˜ë„ë¡ ìˆœì„œê°€ ì •í•´ì§.
-    // inner join, left outer join, full outer joinì€
-    // PUSH_PRED(view) hintê°€ ì ìš©ë˜ì§€ ì•ŠìŒ.
+    // PUSH_PRED(view) hint°¡ Àû¿ëµÇ¾ú°í,
+    // join graph°¡ view¸¦ Æ÷ÇÔÇÏ´Â °æ¿ì¶ó¸é,
+    // join ¼öÇà¹æÇâÀº left->rightÀÇ full nested loop join¸¸ °¡´ÉÇÏ´Ù.
+    // joinOrdering °úÁ¤Áß¿¡ view´Â pushµÇ´Â predicate°ú ¿¬°üµÈ
+    // ±×·¡ÇÁº¸´Ù ³ªÁß¿¡ ¼öÇàµÇµµ·Ï ¼ø¼­°¡ Á¤ÇØÁü.
+    // inner join, left outer join, full outer joinÀº
+    // PUSH_PRED(view) hint°¡ Àû¿ëµÇÁö ¾ÊÀ½.
 
     // BUG-29572
-    // PUSH_PRED HINTê°€ ì ìš©ë˜ëŠ” ë·°ê°€
-    // JOINì˜ ì˜¤ë¥¸ìª½ì— ì˜¨ ê²½ìš°ì— ëŒ€í•´ì„œë§Œ join methodë¥¼ ì„ íƒí•˜ë„ë¡ í•œë‹¤.
-    // ì˜ˆ) ì„ íƒ ê°€ëŠ¥í•œ join methodì˜ join order
+    // PUSH_PRED HINT°¡ Àû¿ëµÇ´Â ºä°¡
+    // JOINÀÇ ¿À¸¥ÂÊ¿¡ ¿Â °æ¿ì¿¡ ´ëÇØ¼­¸¸ join method¸¦ ¼±ÅÃÇÏµµ·Ï ÇÑ´Ù.
+    // ¿¹) ¼±ÅÃ °¡´ÉÇÑ join methodÀÇ join order
     //        JOIN
     //    ------------
     //    |          |
-    //   ???        VIEW  <= PUSH_PRED HINTê°€ ì ìš©ë˜ëŠ” ë·°
+    //   ???        VIEW  <= PUSH_PRED HINT°¡ Àû¿ëµÇ´Â ºä
     //
-    // ì˜ˆ) ì„ íƒ ë¶ˆê°€ëŠ¥í•œ join methodì˜ join order
+    // ¿¹) ¼±ÅÃ ºÒ°¡´ÉÇÑ join methodÀÇ join order
     //        JOIN
     //    ------------
     //    |          |
     //   VIEW       ???
     //    ^
     //    |
-    //  PUSH_PRED HINTê°€ ì ìš©ë˜ëŠ” ë·°
+    //  PUSH_PRED HINT°¡ Àû¿ëµÇ´Â ºä
     //
-    // ë‹¨, PUSH_PRED HINTê°€ ì ìš©ë˜ëŠ” ë·°ë¥¼ ê°€ì§„ JOINì€
-    //     ìƒìœ„ JOINì˜ ì™¼ìª½ì— ì˜¬ ìˆ˜ë„ ìˆë‹¤.
+    // ´Ü, PUSH_PRED HINT°¡ Àû¿ëµÇ´Â ºä¸¦ °¡Áø JOINÀº
+    //     »óÀ§ JOINÀÇ ¿ŞÂÊ¿¡ ¿Ã ¼öµµ ÀÖ´Ù.
     //
-    // ì˜ˆ) ì„ íƒ ê°€ëŠ¥í•œ join methodì˜ join order
+    // ¿¹) ¼±ÅÃ °¡´ÉÇÑ join methodÀÇ join order
     //        JOIN
     //    ------------
     //    |          |
-    //   ???        JOIN  <= PUSH_PRED HINTê°€ ì ìš©ë˜ëŠ” ë·°ê°€ í¬í•¨ëœ JOIN
+    //   ???        JOIN  <= PUSH_PRED HINT°¡ Àû¿ëµÇ´Â ºä°¡ Æ÷ÇÔµÈ JOIN
     //
     //        JOIN
     //    ------------
@@ -4419,15 +4553,15 @@ qmoJoinMethodMgr::forcePushPredHint( qmgGraph      * aGraph,
     //   JOIN       ???
     //    ^
     //    |
-    //  PUSH_PRED HINTê°€ ì ìš©ë˜ëŠ” ë·°ê°€ í¬í•¨ëœ JOIN
+    //  PUSH_PRED HINT°¡ Àû¿ëµÇ´Â ºä°¡ Æ÷ÇÔµÈ JOIN
 
-    // ì•„ë˜ì˜ ifë¬¸ì€ join graphì˜ ì˜¤ë¥¸ìª½ì— ì˜¤ëŠ” join ëŒ€ìƒì´
-    // push_predì´ ì ìš©ëœ ë·°ì¸ì§€ë¥¼ êµ¬ë¶„í•˜ëŠ” ê²ƒì„
+    // ¾Æ·¡ÀÇ if¹®Àº join graphÀÇ ¿À¸¥ÂÊ¿¡ ¿À´Â join ´ë»óÀÌ
+    // push_predÀÌ Àû¿ëµÈ ºäÀÎÁö¸¦ ±¸ºĞÇÏ´Â °ÍÀÓ
     //
     // aGraph->right->type == QMG_SELECTION
-    //   => TABLE/VIEWì™€ JOIN ê·¸ë˜í”„ë¥¼ êµ¬ë¶„í•˜ê¸° ìœ„í•´ ì‚¬ìš©
-    // sPushPredHint == NULL ì¸ ê²½ìš°ëŠ” push_predì´ ì ìš©ë˜ëŠ” ë·°ê°€ ì—†ëŠ” ê²½ìš°ì„
-    //   => ìœ„ì˜ forë¬¸ì—ì„œ push_predê°€ ì ìš©ë  viewê°€ ìˆëŠ” ê²½ìš° sPushPredHintê°€ ì„¤ì •ë¨
+    //   => TABLE/VIEW¿Í JOIN ±×·¡ÇÁ¸¦ ±¸ºĞÇÏ±â À§ÇØ »ç¿ë
+    // sPushPredHint == NULL ÀÎ °æ¿ì´Â push_predÀÌ Àû¿ëµÇ´Â ºä°¡ ¾ø´Â °æ¿ìÀÓ
+    //   => À§ÀÇ for¹®¿¡¼­ push_pred°¡ Àû¿ëµÉ view°¡ ÀÖ´Â °æ¿ì sPushPredHint°¡ ¼³Á¤µÊ
     if( ( (aGraph->right->type == QMG_SELECTION) ||
           (aGraph->right->type == QMG_PARTITION) )
         &&
@@ -4447,7 +4581,7 @@ qmoJoinMethodMgr::forcePushPredHint( qmgGraph      * aGraph,
             }
             else
             {
-                // ìœ„ì—ì„œ join orderê°€ right->leftì¸ ê²½ìš°ë¥¼ ì œê±°í•¨
+                // À§¿¡¼­ join order°¡ right->leftÀÎ °æ¿ì¸¦ Á¦°ÅÇÔ
                 if( i == 1 )
                 {
                     sJoinMethodCost->flag &=
@@ -4477,9 +4611,9 @@ qmoJoinMethodMgr::forceJoinOrder4RecursiveView( qmgGraph      * aGraph,
 /******************************************************************************
  *
  * Description : PROJ-2582 recursive with
- *          recursive viewì˜ right subqueryì—ì„œ ì°¸ì¡°ë˜ëŠ” bottom recursive
- *          viewëŠ” ì˜¤ì§ í•œë²ˆì˜ scanë§Œìœ¼ë¡œ ìˆ˜í–‰ë˜ì–´ì•¼ í•œë‹¤. ë§Œì¼ joinì˜
- *          ì˜¤ë¥¸ìª½ì— ì˜¤ëŠ” ê²½ìš°, ê²½ìš°ì— ë”°ë¼ restartë˜ì–´ ë¬´í•œ ë°˜ë³µë  ìˆ˜ ìˆë‹¤.
+ *          recursive viewÀÇ right subquery¿¡¼­ ÂüÁ¶µÇ´Â bottom recursive
+ *          view´Â ¿ÀÁ÷ ÇÑ¹øÀÇ scan¸¸À¸·Î ¼öÇàµÇ¾î¾ß ÇÑ´Ù. ¸¸ÀÏ joinÀÇ
+ *          ¿À¸¥ÂÊ¿¡ ¿À´Â °æ¿ì, °æ¿ì¿¡ µû¶ó restartµÇ¾î ¹«ÇÑ ¹İº¹µÉ ¼ö ÀÖ´Ù.
  *
  * Implementation :
  *
@@ -4493,21 +4627,21 @@ qmoJoinMethodMgr::forceJoinOrder4RecursiveView( qmgGraph      * aGraph,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::forceJoinOrder4RecursiveView::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aGraph != NULL );
     IDE_DASSERT( aJoinMethod != NULL );
 
     //------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //------------------------------------------
 
     sJoinMethodCost = aJoinMethod->joinMethodCost;
     sRecursiveViewID = aGraph->myQuerySet->SFWGH->recursiveViewID;
 
     //------------------------------------------
-    // recursive viewë¥¼ joinì˜ ê°€ì¥ ì™¼ìª½ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
+    // recursive view¸¦ joinÀÇ °¡Àå ¿ŞÂÊÀ¸·Î º¯°æÇÑ´Ù.
     //------------------------------------------
 
     if ( sRecursiveViewID != ID_USHORT_MAX )
@@ -4522,7 +4656,7 @@ qmoJoinMethodMgr::forceJoinOrder4RecursiveView( qmgGraph      * aGraph,
                                           &sDepInfo )
                  == ID_TRUE )
             {
-                // left->right join ê¸ˆì§€
+                // left->right join ±İÁö
                 for ( i = 0; i < aJoinMethod->joinMethodCnt; i++ )
                 {
                     sJoinMethodCost = & aJoinMethod->joinMethodCost[i];
@@ -4541,7 +4675,7 @@ qmoJoinMethodMgr::forceJoinOrder4RecursiveView( qmgGraph      * aGraph,
             }
             else
             {
-                // right->left join ê¸ˆì§€
+                // right->left join ±İÁö
                 for ( i = 0; i < aJoinMethod->joinMethodCnt; i++ )
                 {
                     sJoinMethodCost = & aJoinMethod->joinMethodCost[i];
@@ -4581,9 +4715,9 @@ qmoJoinMethodMgr::setJoinPredInfo4NL( qcStatement           * aStatement,
 {
 /******************************************************************************
  *
- * Description : Index Nested Loop Join ê³¼ ê´€ë ¨ëœ predicate ì„ ê²€ì¶œí•˜ì—¬
- *               qmoPredicate.totalSelectivity ë¥¼ ì„¤ì •í•˜ê³ 
- *               qmoJoinMethodCost.joinPredicate (qmoPredInfo list) ì— ì—°ê²°
+ * Description : Index Nested Loop Join °ú °ü·ÃµÈ predicate À» °ËÃâÇÏ¿©
+ *               qmoPredicate.totalSelectivity ¸¦ ¼³Á¤ÇÏ°í
+ *               qmoJoinMethodCost.joinPredicate (qmoPredInfo list) ¿¡ ¿¬°á
  *
  * Implementation :
  *
@@ -4595,7 +4729,7 @@ qmoJoinMethodMgr::setJoinPredInfo4NL( qcStatement           * aStatement,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::setJoinPredInfo4NL::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement      != NULL );
@@ -4604,12 +4738,12 @@ qmoJoinMethodMgr::setJoinPredInfo4NL( qcStatement           * aStatement,
     IDE_DASSERT( aMethodCost     != NULL );
 
     //------------------------------------------
-    // Join ê´€ë ¨ qmoPredInfo list íšë“
+    // Join °ü·Ã qmoPredInfo list È¹µæ
     //------------------------------------------
 
     if ( aJoinPredicate != NULL )
     {
-        // Index Nested Loop Join ê³„ì‚° ì‹œ ë„˜ê²¨ì¤„ ì •ë³´ ì„¤ì •
+        // Index Nested Loop Join °è»ê ½Ã ³Ñ°ÜÁÙ Á¤º¸ ¼³Á¤
         sIndexNLInfo.index = aRightIndexInfo->index;
         sIndexNLInfo.predicate = aJoinPredicate;
         sIndexNLInfo.rightChildPred = aRightGraph->myPredicate;
@@ -4627,7 +4761,7 @@ qmoJoinMethodMgr::setJoinPredInfo4NL( qcStatement           * aStatement,
             sIndexNLInfo.direction = QMO_JOIN_DIRECTION_RIGHT_LEFT;
         }
 
-        // Join ê´€ë ¨ qmoPredInfo list íšë“
+        // Join °ü·Ã qmoPredInfo list È¹µæ
         IDE_TEST( getIndexNLPredInfo( aStatement,
                                       & sIndexNLInfo,
                                       & sJoinPredInfo )
@@ -4638,7 +4772,7 @@ qmoJoinMethodMgr::setJoinPredInfo4NL( qcStatement           * aStatement,
     }
     else
     {
-        // join predicate ì´ ì—†ëŠ” ê²½ìš°
+        // join predicate ÀÌ ¾ø´Â °æ¿ì
         aMethodCost->joinPredicate = NULL;
         aMethodCost->rightIdxInfo = aRightIndexInfo;
     }
@@ -4658,18 +4792,18 @@ qmoJoinMethodMgr::getIndexNLPredInfo( qcStatement      * aStatement,
 {
 /******************************************************************************
  *
- * Description : Index Nested Loop Join ê°€ëŠ¥í•œ qmoPredInfo list ë¥¼ ì¶”ì¶œí•œë‹¤.
- *              [ composite indexì¸ ê²½ìš°, join index í™œìš©ì˜ ìµœì í™” íŒì„ ì ìš© ]
+ * Description : Index Nested Loop Join °¡´ÉÇÑ qmoPredInfo list ¸¦ ÃßÃâÇÑ´Ù.
+ *              [ composite indexÀÎ °æ¿ì, join index È°¿ëÀÇ ÃÖÀûÈ­ ÆÁÀ» Àû¿ë ]
  *
  * Implementation :
  *
- *  join predicateì€ one table predicateì²˜ëŸ¼ predicateì¬ë°°ì¹˜ë¥¼ í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ,
- *  ì¸ë±ìŠ¤ì»¬ëŸ¼ê³¼ ê´€ë ¨ëœ ì»¬ëŸ¼ì˜ ì—°ê²°ë¦¬ìŠ¤íŠ¸ë¥¼ êµ¬ì„±í•œë‹¤.
+ *  join predicateÀº one table predicateÃ³·³ predicateÀç¹èÄ¡¸¦ ÇÒ ¼ö ¾øÀ¸¹Ç·Î,
+ *  ÀÎµ¦½ºÄÃ·³°ú °ü·ÃµÈ ÄÃ·³ÀÇ ¿¬°á¸®½ºÆ®¸¦ ±¸¼ºÇÑ´Ù.
  *
- *  index ì— ì°¸ì—¬í•œ predicateì˜ ì—°ê²°ì •ë³´ë¥¼ graphë¡œ ë„˜ê¸°ëŠ”ë°, ì´ ì—°ê²°ì •ë³´ëŠ”
- *  join methodê°€ ê²°ì •ë˜ë©´, í•´ë‹¹ join predicateì„ ë¶„ë¦¬í•´ë‚´ëŠ” ì •ë³´ë¡œ ì´ìš©ëœë‹¤.
+ *  index ¿¡ Âü¿©ÇÑ predicateÀÇ ¿¬°áÁ¤º¸¸¦ graph·Î ³Ñ±â´Âµ¥, ÀÌ ¿¬°áÁ¤º¸´Â
+ *  join method°¡ °áÁ¤µÇ¸é, ÇØ´ç join predicateÀ» ºĞ¸®ÇØ³»´Â Á¤º¸·Î ÀÌ¿ëµÈ´Ù.
  *
- *  right child graphì˜ predicateì€ qmoPredicateì— ì €ì¥ë˜ì–´ ìˆëŠ” ê°’ì„ ì´ìš©í•œë‹¤.
+ *  right child graphÀÇ predicateÀº qmoPredicate¿¡ ÀúÀåµÇ¾î ÀÖ´Â °ªÀ» ÀÌ¿ëÇÑ´Ù.
  *
  ******************************************************************************/
 
@@ -4690,7 +4824,7 @@ qmoJoinMethodMgr::getIndexNLPredInfo( qcStatement      * aStatement,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::getIndexNLPredInfo::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement    != NULL );
@@ -4701,21 +4835,21 @@ qmoJoinMethodMgr::getIndexNLPredInfo( qcStatement      * aStatement,
     IDE_DASSERT( aJoinPredInfo != NULL );
 
     //--------------------------------------
-    // index nested loop join qmoPred info íšë“
+    // index nested loop join qmoPred info È¹µæ
     //--------------------------------------
 
     if( aIndexNLInfo->index->isOnlineTBS == ID_TRUE )
     {
-        // ì¸ë±ìŠ¤ ì‚¬ìš© ê°€ëŠ¥
+        // ÀÎµ¦½º »ç¿ë °¡´É
 
         //--------------------------------------
-        // ì„ì‹œ ì •ë³´ ì„¤ì •.
-        // 1. ì¸ìë¡œ ë°›ì€ right dependencies ì •ë³´ë¡œ columnIDë¥¼ ì„¤ì •.
-        //    ( ì¸ë±ìŠ¤ ì»¬ëŸ¼ê³¼ ë¹„êµí•˜ê¸° ìœ„í•¨)
-        // 2. ë™ì¼ ì»¬ëŸ¼ì— ëŒ€í•œ ëŒ€í‘œ selectivityì™€
-        //    ë‹¤ìŒì¸ë±ìŠ¤ì»¬ëŸ¼ ì‚¬ìš©ì—¬ë¶€ì— ëŒ€í•œ ì •ë³´ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ í•„ìš”í•œ ì •ë³´ì¸
-        //    indexArgument ì •ë³´ ì„¤ì •.
-        //    one table predicateê³¼ ë™ì¼í•œ í•¨ìˆ˜ ì‚¬ìš© (qmoPred::setTotal)
+        // ÀÓ½Ã Á¤º¸ ¼³Á¤.
+        // 1. ÀÎÀÚ·Î ¹ŞÀº right dependencies Á¤º¸·Î columnID¸¦ ¼³Á¤.
+        //    ( ÀÎµ¦½º ÄÃ·³°ú ºñ±³ÇÏ±â À§ÇÔ)
+        // 2. µ¿ÀÏ ÄÃ·³¿¡ ´ëÇÑ ´ëÇ¥ selectivity¿Í
+        //    ´ÙÀ½ÀÎµ¦½ºÄÃ·³ »ç¿ë¿©ºÎ¿¡ ´ëÇÑ Á¤º¸¸¦ ±¸ÇÏ±â À§ÇØ ÇÊ¿äÇÑ Á¤º¸ÀÎ
+        //    indexArgument Á¤º¸ ¼³Á¤.
+        //    one table predicate°ú µ¿ÀÏÇÑ ÇÔ¼ö »ç¿ë (qmoPred::setTotal)
         //--------------------------------------
 
         if( aIndexNLInfo->direction == QMO_JOIN_DIRECTION_LEFT_RIGHT )
@@ -4737,7 +4871,7 @@ qmoJoinMethodMgr::getIndexNLPredInfo( qcStatement      * aStatement,
         {
             sIdxColumnID = aIndexNLInfo->index->keyColumns[sCnt].column.id;
 
-            // ì¸ë±ìŠ¤ ì»¬ëŸ¼ê³¼ ê°™ì€ ì»¬ëŸ¼ì„ ê°€ì§„ predicateì„ ì°¾ëŠ”ë‹¤.
+            // ÀÎµ¦½º ÄÃ·³°ú °°Àº ÄÃ·³À» °¡Áø predicateÀ» Ã£´Â´Ù.
             sTempInfo = NULL;
             sTempPredicate = NULL;
 
@@ -4763,12 +4897,12 @@ qmoJoinMethodMgr::getIndexNLPredInfo( qcStatement      * aStatement,
                         sPredInfo->more = NULL;
 
                         //---------------------------------------
-                        // ì—°ê²°ê´€ê³„êµ¬ì„±
+                        // ¿¬°á°ü°è±¸¼º
                         // 1. sTempInfo :
-                        //    ë™ì¼ ì»¬ëŸ¼ì— ëŒ€í•œ predicate ì—°ê²°ê´€ê³„ìœ ì§€
+                        //    µ¿ÀÏ ÄÃ·³¿¡ ´ëÇÑ predicate ¿¬°á°ü°èÀ¯Áö
                         // 2. sTempPredicate :
-                        //    one table predicateê³¼ ê°™ì€ qmoPred::setTotal()
-                        //    ì„ ì‚¬ìš©í•˜ê¸° ìœ„í•œ ì„ì‹œ predicateì—°ê²°ê´€ê³„êµ¬ì„±
+                        //    one table predicate°ú °°Àº qmoPred::setTotal()
+                        //    À» »ç¿ëÇÏ±â À§ÇÑ ÀÓ½Ã predicate¿¬°á°ü°è±¸¼º
                         //---------------------------------------
                         if( sTempInfo == NULL )
                         {
@@ -4796,15 +4930,15 @@ qmoJoinMethodMgr::getIndexNLPredInfo( qcStatement      * aStatement,
                 {
                     // Nothing To Do
                 }
-            } // í•˜ë‚˜ì˜ ì¸ë±ìŠ¤ ì»¬ëŸ¼ê³¼ ê°™ì€ ì»¬ëŸ¼ì˜ predicateì„ ì°¾ëŠ”ë‹¤.
+            } // ÇÏ³ªÀÇ ÀÎµ¦½º ÄÃ·³°ú °°Àº ÄÃ·³ÀÇ predicateÀ» Ã£´Â´Ù.
 
-            // ì¸ë±ìŠ¤ ì»¬ëŸ¼ê³¼ ê°™ì€ ì»¬ëŸ¼ì˜ predicateì„ ì—°ê²°í•œë‹¤.
+            // ÀÎµ¦½º ÄÃ·³°ú °°Àº ÄÃ·³ÀÇ predicateÀ» ¿¬°áÇÑ´Ù.
 
             if( sTempInfo != NULL )
             {
-                // í•˜ë‚˜ì˜ ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ì— ëŒ€í•œ ëŒ€í‘œ selectivity
-                // (qmoPredicate.totalSelectivity) ë¥¼ íšë“í•˜ê³ 
-                // ë‹¤ìŒ ì¸ë±ìŠ¤ ì‚¬ìš© ê°€ëŠ¥ ì •ë³´ë¥¼ ì–»ëŠ”ë‹¤.
+                // ÇÏ³ªÀÇ ÄÃ·³¸®½ºÆ®¿¡ ´ëÇÑ ´ëÇ¥ selectivity
+                // (qmoPredicate.totalSelectivity) ¸¦ È¹µæÇÏ°í
+                // ´ÙÀ½ ÀÎµ¦½º »ç¿ë °¡´É Á¤º¸¸¦ ¾ò´Â´Ù.
                 IDE_TEST( qmoSelectivity::setTotalSelectivity( aStatement,
                                                                aIndexNLInfo->rightStatiscalData,
                                                                sTempPredicate )
@@ -4812,7 +4946,7 @@ qmoJoinMethodMgr::getIndexNLPredInfo( qcStatement      * aStatement,
 
                 qmoPred::setCompositeKeyUsableFlag( sTempPredicate );
 
-                // ì´ì „ ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ì™€ ì—°ê²°ê´€ê³„ êµ¬ì„±
+                // ÀÌÀü ÄÃ·³¸®½ºÆ®¿Í ¿¬°á°ü°è ±¸¼º
                 if( sJoinPredInfo == NULL )
                 {
                     sJoinPredInfo = sTempInfo;
@@ -4824,7 +4958,7 @@ qmoJoinMethodMgr::getIndexNLPredInfo( qcStatement      * aStatement,
                     sLastJoinPredInfo = sLastJoinPredInfo->next;
                 }
 
-                // ìœ„ì—ì„œ ì„ì‹œë¡œ ì—°ê²°í•œ predicateì˜ more ì—°ê²°ê´€ê³„ ì›ìƒë³µê·€
+                // À§¿¡¼­ ÀÓ½Ã·Î ¿¬°áÇÑ predicateÀÇ more ¿¬°á°ü°è ¿ø»óº¹±Í
                 for( sPredicate = sTempPredicate;
                      sPredicate != NULL;
                      sPredicate = sTempMorePredicate )
@@ -4833,7 +4967,7 @@ qmoJoinMethodMgr::getIndexNLPredInfo( qcStatement      * aStatement,
                     sPredicate->more = NULL;
                 }
 
-                // ë‹¤ìŒ ì¸ë±ìŠ¤ ì»¬ëŸ¼ ì‚¬ìš©ì—¬ë¶€
+                // ´ÙÀ½ ÀÎµ¦½º ÄÃ·³ »ç¿ë¿©ºÎ
                 if( ( sPredInfo->predicate->flag & QMO_PRED_NEXT_KEY_USABLE_MASK )
                       == QMO_PRED_NEXT_KEY_USABLE )
                 {
@@ -4852,25 +4986,25 @@ qmoJoinMethodMgr::getIndexNLPredInfo( qcStatement      * aStatement,
         }
 
         //-------------------------------
-        // join index í™œìš©ì˜ ìµœì í™” ì ìš©
-        // right graphì˜ predicateì— í•´ë‹¹ ì¸ë±ìŠ¤ ì»¬ëŸ¼ê³¼ ê°™ì€
-        // predicateì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬.
+        // join index È°¿ëÀÇ ÃÖÀûÈ­ Àû¿ë
+        // right graphÀÇ predicate¿¡ ÇØ´ç ÀÎµ¦½º ÄÃ·³°ú °°Àº
+        // predicateÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç.
         //-------------------------------
 
         if( ( sJoinPredInfo == NULL ) || ( sIsUsableNextKey == ID_FALSE ) )
         {
-            // ì¸ìë¡œ ë„˜ì–´ì˜¨ ì¸ë±ìŠ¤ì™€ ê´€ë ¨ëœ
-            // joinable predicateì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°ì´ê±°ë‚˜,
-            // joinable predicateì´ ë‹¤ìŒ ì¸ë±ìŠ¤ ì‚¬ìš©ê°€ëŠ¥í•˜ì§€ ì•Šì€ ê²½ìš°.
+            // ÀÎÀÚ·Î ³Ñ¾î¿Â ÀÎµ¦½º¿Í °ü·ÃµÈ
+            // joinable predicateÀÌ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ìÀÌ°Å³ª,
+            // joinable predicateÀÌ ´ÙÀ½ ÀÎµ¦½º »ç¿ë°¡´ÉÇÏÁö ¾ÊÀº °æ¿ì.
 
             // Nothing To Do
         }
         else
         {
-            // ì²«ë²ˆì§¸ ì»¬ëŸ¼ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+            // Ã¹¹øÂ° ÄÃ·³ÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù.
             sIdxColumnID = aIndexNLInfo->index->keyColumns[0].column.id;
 
-            // right ê·¸ë˜í”„ì— ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+            // right ±×·¡ÇÁ¿¡ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù.
             for( sPredicate = aIndexNLInfo->rightChildPred;
                  sPredicate != NULL;
                  sPredicate = sPredicate->next )
@@ -4882,12 +5016,12 @@ qmoJoinMethodMgr::getIndexNLPredInfo( qcStatement      * aStatement,
                 }
                 else
                 {
-                    // ì¸ë±ìŠ¤ ì»¬ëŸ¼ê³¼ ê°™ì€ ì»¬ëŸ¼ì„ ê°€ì§„ predicateì´ ì—†ëŠ” ê²½ìš°
+                    // ÀÎµ¦½º ÄÃ·³°ú °°Àº ÄÃ·³À» °¡Áø predicateÀÌ ¾ø´Â °æ¿ì
                     // Nothing To Do
                 }
             }
 
-            // Join Predicateì— ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+            // Join Predicate¿¡ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù.
             for( sPredInfo = sJoinPredInfo;
                  sPredInfo != NULL;
                  sPredInfo = sPredInfo->next )
@@ -4937,9 +5071,9 @@ qmoJoinMethodMgr::setJoinPredInfo4AntiOuter( qcStatement       * aStatement,
 {
 /******************************************************************************
  *
- * Description : Full outer join ì— ëŒ€í•œ join predicate ì„ ëŒ€ìƒìœ¼ë¡œ
- *               qmoPredicate.totalSelectivity ë¥¼ ì„¤ì •í•˜ê³ 
- *               qmoJoinMethodCost.joinPredicate (qmoPredInfo list) ì— ì—°ê²°
+ * Description : Full outer join ¿¡ ´ëÇÑ join predicate À» ´ë»óÀ¸·Î
+ *               qmoPredicate.totalSelectivity ¸¦ ¼³Á¤ÇÏ°í
+ *               qmoJoinMethodCost.joinPredicate (qmoPredInfo list) ¿¡ ¿¬°á
  *
  * Implementation :
  *
@@ -4956,7 +5090,7 @@ qmoJoinMethodMgr::setJoinPredInfo4AntiOuter( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::setJoinPredInfo4AntiOuter::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement      != NULL );
@@ -4966,7 +5100,7 @@ qmoJoinMethodMgr::setJoinPredInfo4AntiOuter( qcStatement       * aStatement,
     IDE_DASSERT( aMethodCost     != NULL );
 
     //------------------------------------------
-    // qmoPredInfo list íšë“
+    // qmoPredInfo list È¹µæ
     //------------------------------------------
 
     sJoinPredInfo = NULL;
@@ -4978,7 +5112,7 @@ qmoJoinMethodMgr::setJoinPredInfo4AntiOuter( qcStatement       * aStatement,
         sLeftIndexInfo = aLeftGraph->myFrom->tableRef->statInfo->idxCardInfo;
         sLeftIndexCnt = aLeftGraph->myFrom->tableRef->statInfo->indexCnt;
 
-        // sJoinPredInfo íšë“ ë„˜ê²¨ì¤„ ì •ë³´ ì„¤ì •
+        // sJoinPredInfo È¹µæ ³Ñ°ÜÁÙ Á¤º¸ ¼³Á¤
         sAntiOuterInfo.index = aRightIndexInfo->index;
         sAntiOuterInfo.predicate = aJoinPredicate;
         // To Fix BUG-8384
@@ -4990,7 +5124,7 @@ qmoJoinMethodMgr::setJoinPredInfo4AntiOuter( qcStatement       * aStatement,
         {
             sLeftMyGraph = (qmgSELT*) aLeftGraph;
 
-            // sJoinPredInfo íšë“
+            // sJoinPredInfo È¹µæ
             IDE_TEST( getAntiOuterPredInfo( aStatement,
                                             sLeftMyGraph->accessMethodCnt,
                                             sLeftMyGraph->accessMethod,
@@ -5032,15 +5166,15 @@ qmoJoinMethodMgr::getAntiOuterPredInfo( qcStatement      * aStatement,
 {
 /******************************************************************************
  *
- * Description : Anti Outer Join ê´€ë ¨ qmoPredInfo list ì™€
- *               cost ê°€ ê°€ì¥ ì¢‹ì€ qmoAccessMethod ì˜ index ë¥¼ ë°˜í™˜í•œë‹¤.
+ * Description : Anti Outer Join °ü·Ã qmoPredInfo list ¿Í
+ *               cost °¡ °¡Àå ÁÁÀº qmoAccessMethod ÀÇ index ¸¦ ¹İÈ¯ÇÑ´Ù.
  *
- *               ì¸ìë¡œ ë„˜ì–´ì˜¨ qmoAccessMethod ê´€ë ¨ëœ predicateì„ ì°¾ì•„ì„œ
- *               qmoPredInfo list ë¥¼ êµ¬í•œë‹¤.
+ *               ÀÎÀÚ·Î ³Ñ¾î¿Â qmoAccessMethod °ü·ÃµÈ predicateÀ» Ã£¾Æ¼­
+ *               qmoPredInfo list ¸¦ ±¸ÇÑ´Ù.
  *
- *   Anti Outer Join predicateì€
- *   (1) join predicate ì–‘ìª½ ëª¨ë‘ ì¸ë±ìŠ¤ë¥¼ ê°€ì§€ê³  ìˆì–´ì•¼ í•˜ë©°,
- *   (2) index column ë§ˆë‹¤ í•˜ë‚˜ì˜ predicateë§Œ ì„ íƒë  ìˆ˜ ìˆë‹¤.
+ *   Anti Outer Join predicateÀº
+ *   (1) join predicate ¾çÂÊ ¸ğµÎ ÀÎµ¦½º¸¦ °¡Áö°í ÀÖ¾î¾ß ÇÏ¸ç,
+ *   (2) index column ¸¶´Ù ÇÏ³ªÀÇ predicate¸¸ ¼±ÅÃµÉ ¼ö ÀÖ´Ù.
  *
  * Implementation :
  *
@@ -5061,7 +5195,7 @@ qmoJoinMethodMgr::getAntiOuterPredInfo( qcStatement      * aStatement,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::getAntiOuterPredInfo::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement     != NULL );
@@ -5074,18 +5208,18 @@ qmoJoinMethodMgr::getAntiOuterPredInfo( qcStatement      * aStatement,
     IDE_DASSERT( aLeftIdxInfo   != NULL );
 
     //--------------------------------------
-    // Anti outer join qmoPredInfo list íšë“
+    // Anti outer join qmoPredInfo list È¹µæ
     //--------------------------------------
 
     if( aAntiOuterInfo->index->isOnlineTBS == ID_TRUE )
     {
-        // ì¸ë±ìŠ¤ ì‚¬ìš© ê°€ëŠ¥
+        // ÀÎµ¦½º »ç¿ë °¡´É
 
         //--------------------------------------
-        // ì„ì‹œ ì •ë³´ ì„¤ì •.
-        // 1. ì¸ìë¡œ ë°›ì€ right dependencies ì •ë³´ë¡œ columnIDë¥¼ ì„¤ì •.
-        //    ( ì¸ë±ìŠ¤ ì»¬ëŸ¼ê³¼ ë¹„êµí•˜ê¸° ìœ„í•¨)
-        // 2. left child graphì˜ columnì„ ì°¾ê¸° ìœ„í•´.
+        // ÀÓ½Ã Á¤º¸ ¼³Á¤.
+        // 1. ÀÎÀÚ·Î ¹ŞÀº right dependencies Á¤º¸·Î columnID¸¦ ¼³Á¤.
+        //    ( ÀÎµ¦½º ÄÃ·³°ú ºñ±³ÇÏ±â À§ÇÔ)
+        // 2. left child graphÀÇ columnÀ» Ã£±â À§ÇØ.
         //--------------------------------------
 
         sDirection = QMO_PRED_INDEX_DIRECTION_MASK;
@@ -5097,14 +5231,14 @@ qmoJoinMethodMgr::getAntiOuterPredInfo( qcStatement      * aStatement,
                   != IDE_SUCCESS );
 
         //--------------------------------------
-        // ì¸ë±ìŠ¤ ì»¬ëŸ¼ìˆœìœ¼ë¡œ ì¸ë±ìŠ¤ ì»¬ëŸ¼ê³¼ ë™ì¼í•œ ì»¬ëŸ¼ì˜ predicateì„ ì°¾ëŠ”ë‹¤.
+        // ÀÎµ¦½º ÄÃ·³¼øÀ¸·Î ÀÎµ¦½º ÄÃ·³°ú µ¿ÀÏÇÑ ÄÃ·³ÀÇ predicateÀ» Ã£´Â´Ù.
         //--------------------------------------
 
         for( sCnt = 0; sCnt < aAntiOuterInfo->index->keyColCount; sCnt++ )
         {
             sIdxColumnID = aAntiOuterInfo->index->keyColumns[sCnt].column.id;
 
-            // ì¸ë±ìŠ¤ ì»¬ëŸ¼ê³¼ ê°™ì€ ì»¬ëŸ¼ì„ ê°€ì§„ predicateì„ ì°¾ëŠ”ë‹¤.
+            // ÀÎµ¦½º ÄÃ·³°ú °°Àº ÄÃ·³À» °¡Áø predicateÀ» Ã£´Â´Ù.
             sTempPredicate = NULL;
 
             for( sPredicate = aAntiOuterInfo->predicate;
@@ -5120,11 +5254,11 @@ qmoJoinMethodMgr::getAntiOuterPredInfo( qcStatement      * aStatement,
                     if( sIdxColumnID == sPredicate->id )
                     {
                         //---------------------------------------
-                        // ì—°ê²°ê´€ê³„êµ¬ì„±
+                        // ¿¬°á°ü°è±¸¼º
                         // sTempPredicate :
-                        // í˜„ì¬ right ì¸ë±ìŠ¤ ì»¬ëŸ¼ì˜ predicateê³¼ ê´€ë ¨ëœ
-                        // left ì¸ë±ìŠ¤ ì»¬ëŸ¼ì„ ì°¾ê¸° ìœ„í•œ
-                        // ì„ì‹œ predicateì˜ ì—°ê²°ê´€ê³„
+                        // ÇöÀç right ÀÎµ¦½º ÄÃ·³ÀÇ predicate°ú °ü·ÃµÈ
+                        // left ÀÎµ¦½º ÄÃ·³À» Ã£±â À§ÇÑ
+                        // ÀÓ½Ã predicateÀÇ ¿¬°á°ü°è
                         //---------------------------------------
                         if( sTempPredicate == NULL )
                         {
@@ -5141,16 +5275,16 @@ qmoJoinMethodMgr::getAntiOuterPredInfo( qcStatement      * aStatement,
                     {
                         // Nothing To Do
                     }
-                } // í˜„ì¬ ì¸ë±ìŠ¤ ì»¬ëŸ¼ê³¼ ê´€ë ¨ëœ predicateì´ ì¡´ì¬í• ë•Œì˜ ì²˜ë¦¬
+                } // ÇöÀç ÀÎµ¦½º ÄÃ·³°ú °ü·ÃµÈ predicateÀÌ Á¸ÀçÇÒ¶§ÀÇ Ã³¸®
                 else
                 {
                     // Nothing To Do
                 }
-            } // í•˜ë‚˜ì˜ ì¸ë±ìŠ¤ ì»¬ëŸ¼ê³¼ ê°™ì€ ì»¬ëŸ¼ì˜ predicateì„ ì°¾ëŠ”ë‹¤.
+            } // ÇÏ³ªÀÇ ÀÎµ¦½º ÄÃ·³°ú °°Àº ÄÃ·³ÀÇ predicateÀ» Ã£´Â´Ù.
 
             if( sTempPredicate == NULL )
             {
-                // í˜„ì¬ ì¸ë±ìŠ¤ì™€ ê´€ë ¨ëœ predicateì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
+                // ÇöÀç ÀÎµ¦½º¿Í °ü·ÃµÈ predicateÀÌ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
                 break;
             }
             else
@@ -5165,20 +5299,20 @@ qmoJoinMethodMgr::getAntiOuterPredInfo( qcStatement      * aStatement,
                           != IDE_SUCCESS );
             }
 
-            // ì¸ë±ìŠ¤ ì»¬ëŸ¼ê³¼ ê°™ì€ ì»¬ëŸ¼ì˜ predicatì„ ì—°ê²°í•œë‹¤.
+            // ÀÎµ¦½º ÄÃ·³°ú °°Àº ÄÃ·³ÀÇ predicatÀ» ¿¬°áÇÑ´Ù.
             if( sAntiOuterPred != NULL )
             {
                 IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmoPredInfo),
                                                          (void **)&sPredInfo )
                           != IDE_SUCCESS );
 
-                // qmoPredicate.totalSelectivity íšë“
+                // qmoPredicate.totalSelectivity È¹µæ
                 sAntiOuterPred->totalSelectivity = sAntiOuterPred->mySelectivity;
                 sPredInfo->predicate = sAntiOuterPred;
                 sPredInfo->next = NULL;
                 sPredInfo->more = NULL;
 
-                // ì´ì „ ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ì™€ ì—°ê²°ê´€ê³„ êµ¬ì„±
+                // ÀÌÀü ÄÃ·³¸®½ºÆ®¿Í ¿¬°á°ü°è ±¸¼º
                 if( sJoinPredInfo == NULL )
                 {
                     sJoinPredInfo = sPredInfo;
@@ -5190,7 +5324,7 @@ qmoJoinMethodMgr::getAntiOuterPredInfo( qcStatement      * aStatement,
                     sLastJoinPredInfo = sLastJoinPredInfo->next;
                 }
 
-                // ìœ„ì—ì„œ ì„ì‹œë¡œ ì—°ê²°í•œ predicateì˜ more ì—°ê²°ê´€ê³„ ì›ìƒë³µê·€
+                // À§¿¡¼­ ÀÓ½Ã·Î ¿¬°áÇÑ predicateÀÇ more ¿¬°á°ü°è ¿ø»óº¹±Í
                 for( sPredicate = sTempPredicate;
                      sPredicate != NULL;
                      sPredicate = sTempMorePredicate )
@@ -5204,7 +5338,7 @@ qmoJoinMethodMgr::getAntiOuterPredInfo( qcStatement      * aStatement,
                 break;
             }
 
-            // ë‹¤ìŒ ì¸ë±ìŠ¤ ì»¬ëŸ¼ ì‚¬ìš©ì—¬ë¶€
+            // ´ÙÀ½ ÀÎµ¦½º ÄÃ·³ »ç¿ë¿©ºÎ
             if( ( sPredInfo->predicate->flag & QMO_PRED_NEXT_KEY_USABLE_MASK )
                 == QMO_PRED_NEXT_KEY_USABLE )
             {
@@ -5243,13 +5377,13 @@ qmoJoinMethodMgr::getAntiOuterPred( qcStatement      * aStatement,
 {
 /******************************************************************************
  *
- * Description : anti outer join ê´€ë ¨ qmoPredInfo list íšë“ì‹œ í˜¸ì¶œëœë‹¤.
- *               right graph ì˜ í˜„ì¬ ì¸ë±ìŠ¤ ì»¬ëŸ¼ì— ì†í•œ predicate ì— ëŒ€í•´
- *               left graph (scan) ì˜ qmoAccessMethod array ë¥¼ ìˆœíšŒí•˜ë©° cost ë¹„êµ
- *               ê°€ì¥ ì¢‹ì€ qmoAccessMethod ì˜ index ì™€ ê·¸ì— ì†í•˜ëŠ” predicate ë°˜í™˜
+ * Description : anti outer join °ü·Ã qmoPredInfo list È¹µæ½Ã È£ÃâµÈ´Ù.
+ *               right graph ÀÇ ÇöÀç ÀÎµ¦½º ÄÃ·³¿¡ ¼ÓÇÑ predicate ¿¡ ´ëÇØ
+ *               left graph (scan) ÀÇ qmoAccessMethod array ¸¦ ¼øÈ¸ÇÏ¸ç cost ºñ±³
+ *               °¡Àå ÁÁÀº qmoAccessMethod ÀÇ index ¿Í ±×¿¡ ¼ÓÇÏ´Â predicate ¹İÈ¯
  *
- *     aMethodCount : left graph (scan) ì˜ method count
- *     aKeyColCnt  : í˜„ì¬ right index ì»¬ëŸ¼
+ *     aMethodCount : left graph (scan) ÀÇ method count
+ *     aKeyColCnt  : ÇöÀç right index ÄÃ·³
  *
  * Implementation :
  *
@@ -5271,7 +5405,7 @@ qmoJoinMethodMgr::getAntiOuterPred( qcStatement      * aStatement,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::getAntiOuterPred::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement           != NULL );
@@ -5281,7 +5415,7 @@ qmoJoinMethodMgr::getAntiOuterPred( qcStatement      * aStatement,
     IDE_DASSERT( aSelectedLeftIdxInfo != NULL );
 
     //--------------------------------------
-    // í˜„ì¬ ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ì—ì„œ anti outer join predicate ì„ íƒ
+    // ÇöÀç ÄÃ·³¸®½ºÆ®¿¡¼­ anti outer join predicate ¼±ÅÃ
     //--------------------------------------
 
     sAntiOuterPred = NULL;
@@ -5305,8 +5439,8 @@ qmoJoinMethodMgr::getAntiOuterPred( qcStatement      * aStatement,
             }
             else
             {
-                // OR ë…¸ë“œ í•˜ìœ„ì— ë¹„êµì—°ì‚°ìê°€ ì—¬ëŸ¬ê°œ ìˆëŠ” ê²½ìš°ëŠ”
-                // anti outer joinable predicateì´ ì•„ë‹˜.
+                // OR ³ëµå ÇÏÀ§¿¡ ºñ±³¿¬»êÀÚ°¡ ¿©·¯°³ ÀÖ´Â °æ¿ì´Â
+                // anti outer joinable predicateÀÌ ¾Æ´Ô.
                 sIsAntiOuterPred = ID_FALSE;
             }
         }
@@ -5327,16 +5461,16 @@ qmoJoinMethodMgr::getAntiOuterPred( qcStatement      * aStatement,
             }
 
             //-------------------------------------------
-            // anti outer join predicateì„ ì°¾ëŠ”ë‹¤.
-            // í˜„ì¬ right index columnê³¼ ê°™ì€ columnIDë¥¼ ê°€ì§„
-            // predicateì˜ ì—°ê²°ë¦¬ìŠ¤íŠ¸ì˜ value nodeì™€
-            // ê°™ì€ columnIDë¥¼ ê°€ì§„ left indexë¥¼ ì°¾ëŠ”ë‹¤.
+            // anti outer join predicateÀ» Ã£´Â´Ù.
+            // ÇöÀç right index column°ú °°Àº columnID¸¦ °¡Áø
+            // predicateÀÇ ¿¬°á¸®½ºÆ®ÀÇ value node¿Í
+            // °°Àº columnID¸¦ °¡Áø left index¸¦ Ã£´Â´Ù.
             //--------------------------------------------
             sValueColumnID =
                 QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sValueNode->node.table].
                 columns[sValueNode->node.column].column.id;
 
-            // BUG-36454 index hint ë¥¼ ì‚¬ìš©í•˜ë©´ sAccessMethod[0] ì€ fullscan ì•„ë‹ˆë‹¤.
+            // BUG-36454 index hint ¸¦ »ç¿ëÇÏ¸é sAccessMethod[0] Àº fullscan ¾Æ´Ï´Ù.
             for( sCnt = 0; sCnt < aMethodCount; sCnt++ )
             {
                 sMethodIndexInfo = sAccessMethod[sCnt].method;
@@ -5347,7 +5481,7 @@ qmoJoinMethodMgr::getAntiOuterPred( qcStatement      * aStatement,
                         ( ( sMethodIndexInfo->index->keyColCount - 1 )
                           >= aKeyColCnt ) )
                     {
-                        // ì¸ë±ìŠ¤ ì‚¬ìš© ê°€ëŠ¥
+                        // ÀÎµ¦½º »ç¿ë °¡´É
                         sIdxColumnID =
                             sMethodIndexInfo->index->keyColumns[aKeyColCnt].column.id;
 
@@ -5361,7 +5495,7 @@ qmoJoinMethodMgr::getAntiOuterPred( qcStatement      * aStatement,
                             }
                             else
                             {
-                                // cost ê°€ ì‘ì€ access method ì˜ index info ì„ íƒ
+                                // cost °¡ ÀÛÀº access method ÀÇ index info ¼±ÅÃ
                                 /* BUG-40589 floating point calculation */
                                 if (QMO_COST_IS_GREATER(sTotalCost,
                                                         sAccessMethod[sCnt].totalCost)
@@ -5392,11 +5526,11 @@ qmoJoinMethodMgr::getAntiOuterPred( qcStatement      * aStatement,
                     // Nothing To Do
                 }
             }
-        } // AntiOuterJoin predicateì¸ ê²½ìš°
+        } // AntiOuterJoin predicateÀÎ °æ¿ì
         else
         {
-            // OR ë…¸ë“œ í•˜ìœ„ì— ë¹„êµì—°ì‚°ìê°€ ë‘ê°œì´ìƒì¸ ê²½ìš°ë¡œ,
-            // Anti outer joinable predicateì´ ì•„ë‹˜.
+            // OR ³ëµå ÇÏÀ§¿¡ ºñ±³¿¬»êÀÚ°¡ µÎ°³ÀÌ»óÀÎ °æ¿ì·Î,
+            // Anti outer joinable predicateÀÌ ¾Æ´Ô.
 
             // Nothing To Do
         }
@@ -5416,13 +5550,13 @@ qmoJoinMethodMgr::setJoinPredInfo4Hash( qcStatement       * aStatement,
 {
 /******************************************************************************
  *
- * Description : Hash Join ê³¼ ê´€ë ¨ëœ predicate ì„ ê²€ì¶œí•˜ì—¬
- *               qmoPredicate.totalSelectivity ë¥¼ ì„¤ì •í•˜ê³ 
- *               qmoJoinMethodCost.joinPredicate (qmoPredInfo list) ì— ì—°ê²°
+ * Description : Hash Join °ú °ü·ÃµÈ predicate À» °ËÃâÇÏ¿©
+ *               qmoPredicate.totalSelectivity ¸¦ ¼³Á¤ÇÏ°í
+ *               qmoJoinMethodCost.joinPredicate (qmoPredInfo list) ¿¡ ¿¬°á
  *
- * Implementation : ì¸ìë¡œ ë„˜ì–´ì˜¨ join predicate listì¤‘ì—ì„œ
- *                  hash joinable predicate ì„ ëª¨ë‘ ì°¾ê³ ,
- *                  ì°¾ì€ predicateì˜ ì—°ê²°ì •ë³´ë¥¼ êµ¬ì„±í•œë‹¤.
+ * Implementation : ÀÎÀÚ·Î ³Ñ¾î¿Â join predicate listÁß¿¡¼­
+ *                  hash joinable predicate À» ¸ğµÎ Ã£°í,
+ *                  Ã£Àº predicateÀÇ ¿¬°áÁ¤º¸¸¦ ±¸¼ºÇÑ´Ù.
  *
  *****************************************************************************/
 
@@ -5434,7 +5568,7 @@ qmoJoinMethodMgr::setJoinPredInfo4Hash( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::setJoinPredInfo4Hash::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement     != NULL );
@@ -5442,7 +5576,7 @@ qmoJoinMethodMgr::setJoinPredInfo4Hash( qcStatement       * aStatement,
     IDE_DASSERT( aMethodCost    != NULL );
 
     //--------------------------------------
-    // Hash join predicate info íšë“
+    // Hash join predicate info È¹µæ
     //--------------------------------------
 
     sJoinPredInfo = NULL;
@@ -5461,7 +5595,7 @@ qmoJoinMethodMgr::setJoinPredInfo4Hash( qcStatement       * aStatement,
             sPredInfo->next = NULL;
             sPredInfo->more = NULL;
 
-            // qmoPredicate.totalSelectivity íšë“
+            // qmoPredicate.totalSelectivity È¹µæ
             sPredInfo->predicate->totalSelectivity
                     = sPredInfo->predicate->mySelectivity;
 
@@ -5501,10 +5635,10 @@ qmoJoinMethodMgr::setJoinPredInfo4Sort( qcStatement       * aStatement,
 {
 /******************************************************************************
  *
- * Description : Sort Join ê³¼ ê´€ë ¨ëœ predicate ì„ ê²€ì¶œí•˜ì—¬
- *               qmoPredicate.totalSelectivity ë¥¼ ì„¤ì •í•˜ê³ 
- *               qmoJoinMethodCost.joinPredicate (qmoPredInfo list) ì— ì—°ê²°
- *               (sort joinì€ í•œ ì»¬ëŸ¼ì— ëŒ€í•´ì„œë§Œ ì ìš©í•  ìˆ˜ ìˆìŒ)
+ * Description : Sort Join °ú °ü·ÃµÈ predicate À» °ËÃâÇÏ¿©
+ *               qmoPredicate.totalSelectivity ¸¦ ¼³Á¤ÇÏ°í
+ *               qmoJoinMethodCost.joinPredicate (qmoPredInfo list) ¿¡ ¿¬°á
+ *               (sort joinÀº ÇÑ ÄÃ·³¿¡ ´ëÇØ¼­¸¸ Àû¿ëÇÒ ¼ö ÀÖÀ½)
  *
  * Implementation :
  *
@@ -5520,7 +5654,7 @@ qmoJoinMethodMgr::setJoinPredInfo4Sort( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::setJoinPredInfo4Sort::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement     != NULL );
@@ -5529,10 +5663,10 @@ qmoJoinMethodMgr::setJoinPredInfo4Sort( qcStatement       * aStatement,
     IDE_DASSERT( aMethodCost    != NULL );
 
     //--------------------------------------
-    // Sort join qmoPredInfo list íšë“
+    // Sort join qmoPredInfo list È¹µæ
     //--------------------------------------
 
-    // ì²˜ë¦¬ëœ predicateì— ëŒ€í•œ ì¤‘ë³µ ì„ íƒ ë°©ì§€ë¥¼ ìœ„í•œ flag ì´ˆê¸°í™”
+    // Ã³¸®µÈ predicate¿¡ ´ëÇÑ Áßº¹ ¼±ÅÃ ¹æÁö¸¦ À§ÇÑ flag ÃÊ±âÈ­
     for( sPredicate = aJoinPredicate;
          sPredicate != NULL;
          sPredicate = sPredicate->next )
@@ -5541,9 +5675,9 @@ qmoJoinMethodMgr::setJoinPredInfo4Sort( qcStatement       * aStatement,
     }
 
     //--------------------------------------
-    // sort joinable predicateë“¤ì„ ì»¬ëŸ¼ë³„ë¡œ ë¶„ë¦¬ë°°ì¹˜í•˜ê³ ,
-    // ì»¬ëŸ¼ë³„ë¡œ total selectivityë¥¼ êµ¬í•œ í›„,
-    // total selectivityê°€ ê°€ì¥ ì¢‹ì€ ì»¬ëŸ¼ í•˜ë‚˜ë§Œ ì„ íƒí•œë‹¤.
+    // sort joinable predicateµéÀ» ÄÃ·³º°·Î ºĞ¸®¹èÄ¡ÇÏ°í,
+    // ÄÃ·³º°·Î total selectivity¸¦ ±¸ÇÑ ÈÄ,
+    // total selectivity°¡ °¡Àå ÁÁÀº ÄÃ·³ ÇÏ³ª¸¸ ¼±ÅÃÇÑ´Ù.
     //--------------------------------------
     for( sPredicate = aJoinPredicate;
          sPredicate != NULL;
@@ -5566,8 +5700,8 @@ qmoJoinMethodMgr::setJoinPredInfo4Sort( qcStatement       * aStatement,
             sPredInfo->next = NULL;
             sPredInfo->more = NULL;
 
-            // ì´ predicateê³¼ ë™ì¼í•œ ì»¬ëŸ¼ì˜ predicateì´ ì¡´ì¬í•˜ëŠ”ì§€
-            // ê²€ì‚¬í•˜ê¸° ìœ„í•´, right dependenciesì— í•´ë‹¹í•˜ëŠ” ë…¸ë“œë¥¼ ì°¾ëŠ”ë‹¤.
+            // ÀÌ predicate°ú µ¿ÀÏÇÑ ÄÃ·³ÀÇ predicateÀÌ Á¸ÀçÇÏ´ÂÁö
+            // °Ë»çÇÏ±â À§ÇØ, right dependencies¿¡ ÇØ´çÇÏ´Â ³ëµå¸¦ Ã£´Â´Ù.
             if( ( sPredicate->node->node.lflag
                   & MTC_NODE_LOGICAL_CONDITION_MASK )
                 == MTC_NODE_LOGICAL_CONDITION_TRUE )
@@ -5579,7 +5713,7 @@ qmoJoinMethodMgr::setJoinPredInfo4Sort( qcStatement       * aStatement,
                 sCompareNode = sPredicate->node;
             }
 
-            // sort columnì„ ì°¾ëŠ”ë‹¤.
+            // sort columnÀ» Ã£´Â´Ù.
             qtc::dependencyAnd(
                 aRightDepInfo,
                 & ( (qtcNode *)(sCompareNode->node.arguments) )->depInfo,
@@ -5597,8 +5731,8 @@ qmoJoinMethodMgr::setJoinPredInfo4Sort( qcStatement       * aStatement,
             }
 
             //--------------------------------------------
-            // í˜„ì¬ sort columnê³¼ ë™ì¼í•œ ì»¬ëŸ¼ì´ ì¡´ì¬í•˜ëŠ”ì§€ ì°¾ê³ 
-            // qmoPredicate.totalSelectivity ë¥¼ íšë“í•œë‹¤.
+            // ÇöÀç sort column°ú µ¿ÀÏÇÑ ÄÃ·³ÀÌ Á¸ÀçÇÏ´ÂÁö Ã£°í
+            // qmoPredicate.totalSelectivity ¸¦ È¹µæÇÑ´Ù.
             //--------------------------------------------
             if( sPredicate->next != NULL )
             {
@@ -5634,11 +5768,11 @@ qmoJoinMethodMgr::setJoinPredInfo4Sort( qcStatement       * aStatement,
                 }
             }
 
-        } // sort joinable predicateì— ëŒ€í•œ ì²˜ë¦¬
+        } // sort joinable predicate¿¡ ´ëÇÑ Ã³¸®
         else
         {
-            // sort joinable predicateì´ ì•„ë‹ˆê±°ë‚˜,
-            // sort joinable predicateì¸ ê²½ìš°, ì´ë¯¸ ì²˜ë¦¬ëœ predicateì¸ ê²½ìš°
+            // sort joinable predicateÀÌ ¾Æ´Ï°Å³ª,
+            // sort joinable predicateÀÎ °æ¿ì, ÀÌ¹Ì Ã³¸®µÈ predicateÀÎ °æ¿ì
 
             // Nothing To Do
         }
@@ -5660,11 +5794,11 @@ qmoJoinMethodMgr::setJoinPredInfo4Merge( qcStatement         * aStatement,
 {
 /******************************************************************************
  *
- * Description : Merge Join ê³¼ ê´€ë ¨ëœ predicate ì¤‘
- *               selectivity ê°€ ê°€ì¥ ì¢‹ì€ qmoPredicate ì„ í•˜ë‚˜ë§Œ ê²€ì¶œí•˜ì—¬
- *               (merge joinì€ ë‹¨ í•˜ë‚˜ì˜ predicateë§Œ ì„ íƒê°€ëŠ¥)
- *               qmoPredicate.totalSelectivity ë¥¼ ì„¤ì •í•˜ê³ 
- *               qmoJoinMethodCost.joinPredicate (qmoPredInfo) ì— ì—°ê²°
+ * Description : Merge Join °ú °ü·ÃµÈ predicate Áß
+ *               selectivity °¡ °¡Àå ÁÁÀº qmoPredicate À» ÇÏ³ª¸¸ °ËÃâÇÏ¿©
+ *               (merge joinÀº ´Ü ÇÏ³ªÀÇ predicate¸¸ ¼±ÅÃ°¡´É)
+ *               qmoPredicate.totalSelectivity ¸¦ ¼³Á¤ÇÏ°í
+ *               qmoJoinMethodCost.joinPredicate (qmoPredInfo) ¿¡ ¿¬°á
  *
  * Implementation :
  *
@@ -5679,7 +5813,7 @@ qmoJoinMethodMgr::setJoinPredInfo4Merge( qcStatement         * aStatement,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::setJoinPredInfo4Merge::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement     != NULL );
@@ -5687,7 +5821,7 @@ qmoJoinMethodMgr::setJoinPredInfo4Merge( qcStatement         * aStatement,
     IDE_DASSERT( aMethodCost    != NULL );
 
     //--------------------------------------
-    // Merge join qmoPredInfo list íšë“
+    // Merge join qmoPredInfo list È¹µæ
     //--------------------------------------
 
     sSelectivity = 1;
@@ -5703,9 +5837,9 @@ qmoJoinMethodMgr::setJoinPredInfo4Merge( qcStatement         * aStatement,
         sDirection = QMO_PRED_MERGE_RIGHT_LEFT;
     }
 
-    // merge joinable predicateì´ê³ ,
-    // ì¸ìë¡œ ë„˜ì–´ì˜¨ join ìˆ˜í–‰ê°€ëŠ¥ë°©í–¥ì¸ predicate ì¤‘
-    // selectivityê°€ ì¢‹ì€ predicateì„ ì°¾ëŠ”ë‹¤.
+    // merge joinable predicateÀÌ°í,
+    // ÀÎÀÚ·Î ³Ñ¾î¿Â join ¼öÇà°¡´É¹æÇâÀÎ predicate Áß
+    // selectivity°¡ ÁÁÀº predicateÀ» Ã£´Â´Ù.
     while( sPredicate != NULL )
     {
         if( ( ( sPredicate->flag & QMO_PRED_MERGE_JOINABLE_MASK )
@@ -5743,7 +5877,7 @@ qmoJoinMethodMgr::setJoinPredInfo4Merge( qcStatement         * aStatement,
         sPredicate = sPredicate->next;
     }
 
-    // merge join ì— ê´€ê³„ëœ qmoPredInfo ì •ë³´ ì„¤ì •.
+    // merge join ¿¡ °ü°èµÈ qmoPredInfo Á¤º¸ ¼³Á¤.
     if( sMergeJoinPred == NULL )
     {
         aMethodCost->joinPredicate = NULL;
@@ -5758,7 +5892,7 @@ qmoJoinMethodMgr::setJoinPredInfo4Merge( qcStatement         * aStatement,
         sPredInfo->next = NULL;
         sPredInfo->more = NULL;
 
-        // qmoPredicate.totalSelectivity íšë“
+        // qmoPredicate.totalSelectivity È¹µæ
         sPredInfo->predicate->totalSelectivity =
             sPredInfo->predicate->mySelectivity;
 
@@ -5780,8 +5914,8 @@ qmoJoinMethodMgr::setTempInfo( qcStatement  * aStatement,
 {
 /******************************************************************************
  *
- * Description : index nested loop, anti outer join qmoPredInfo list íšë“ì‹œ
- *               í•„ìš”í•œ ì„ì‹œì •ë³´ ì„¤ì • ( columnID, indexArgument )
+ * Description : index nested loop, anti outer join qmoPredInfo list È¹µæ½Ã
+ *               ÇÊ¿äÇÑ ÀÓ½ÃÁ¤º¸ ¼³Á¤ ( columnID, indexArgument )
  *
  * Implementation :
  *
@@ -5794,7 +5928,7 @@ qmoJoinMethodMgr::setTempInfo( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::setTempInfo::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement    != NULL );
@@ -5802,20 +5936,20 @@ qmoJoinMethodMgr::setTempInfo( qcStatement  * aStatement,
     IDE_DASSERT( aRightDepInfo != NULL );
 
     //--------------------------------------
-    // ì„ì‹œì •ë³´ ì„¤ì •( columnID, indexArguments )
+    // ÀÓ½ÃÁ¤º¸ ¼³Á¤( columnID, indexArguments )
     //--------------------------------------
 
     //--------------------------------------
-    // ì„ì‹œ ì •ë³´ ì„¤ì •.
-    // 1. ì¸ìë¡œ ë°›ì€ right dependencies ì •ë³´ë¡œ columnIDë¥¼ ì„¤ì •.
-    //    ( ì¸ë±ìŠ¤ ì»¬ëŸ¼ê³¼ ë¹„êµí•˜ê¸° ìœ„í•¨)
-    // 2. ë™ì¼ ì»¬ëŸ¼ì— ëŒ€í•œ ëŒ€í‘œ selectivityì™€
-    //    ë‹¤ìŒì¸ë±ìŠ¤ì»¬ëŸ¼ ì‚¬ìš©ì—¬ë¶€ì— ëŒ€í•œ ì •ë³´ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ í•„ìš”í•œ ì •ë³´ì¸
-    //    indexArgument ì •ë³´ ì„¤ì •.
+    // ÀÓ½Ã Á¤º¸ ¼³Á¤.
+    // 1. ÀÎÀÚ·Î ¹ŞÀº right dependencies Á¤º¸·Î columnID¸¦ ¼³Á¤.
+    //    ( ÀÎµ¦½º ÄÃ·³°ú ºñ±³ÇÏ±â À§ÇÔ)
+    // 2. µ¿ÀÏ ÄÃ·³¿¡ ´ëÇÑ ´ëÇ¥ selectivity¿Í
+    //    ´ÙÀ½ÀÎµ¦½ºÄÃ·³ »ç¿ë¿©ºÎ¿¡ ´ëÇÑ Á¤º¸¸¦ ±¸ÇÏ±â À§ÇØ ÇÊ¿äÇÑ Á¤º¸ÀÎ
+    //    indexArgument Á¤º¸ ¼³Á¤.
     //    (1) index nested loop join
-    //        one table predicateê³¼ ë™ì¼í•œ í•¨ìˆ˜ ì‚¬ìš© (qmoPred::setTotal)
+    //        one table predicate°ú µ¿ÀÏÇÑ ÇÔ¼ö »ç¿ë (qmoPred::setTotal)
     //    (2) anti outer join
-    //        left child graphë¥¼ ì°¾ê¸° ìœ„í•´.
+    //        left child graph¸¦ Ã£±â À§ÇØ.
     //--------------------------------------
 
     for( sPredicate = aPredicate;
@@ -5874,15 +6008,15 @@ qmoJoinMethodMgr::findEqualSortColumn( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : sort join qmoPredInfo list íšë“ì‹œ,
- *               í˜„ì¬ sort columnê³¼ ë™ì¼í•œ ì»¬ëŸ¼ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬.
+ * Description : sort join qmoPredInfo list È¹µæ½Ã,
+ *               ÇöÀç sort column°ú µ¿ÀÏÇÑ ÄÃ·³ÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç.
  *
  * Implementation :
  *
- *   ì¸ìë¡œ ë„˜ì–´ì˜¨ sort columnê³¼ ë™ì¼í•œ ì»¬ëŸ¼ì„ ëª¨ë‘ ì°¾ì•„ì„œ,
- *   aPredInfo->moreì˜ ì—°ê²°ë¦¬ìŠ¤íŠ¸ë¡œ êµ¬ì„±í•œë‹¤.
- *   ì»¬ëŸ¼ì˜ total selectivityë¥¼ êµ¬í•´ì„œ,
- *   ì²«ë²ˆì§¸ qmoPredicate->totalSelectivityì— ì €ì¥í•œë‹¤.
+ *   ÀÎÀÚ·Î ³Ñ¾î¿Â sort column°ú µ¿ÀÏÇÑ ÄÃ·³À» ¸ğµÎ Ã£¾Æ¼­,
+ *   aPredInfo->moreÀÇ ¿¬°á¸®½ºÆ®·Î ±¸¼ºÇÑ´Ù.
+ *   ÄÃ·³ÀÇ total selectivity¸¦ ±¸ÇØ¼­,
+ *   Ã¹¹øÂ° qmoPredicate->totalSelectivity¿¡ ÀúÀåÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -5898,7 +6032,7 @@ qmoJoinMethodMgr::findEqualSortColumn( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::findEqualSortColumn::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement    != NULL );
@@ -5908,7 +6042,7 @@ qmoJoinMethodMgr::findEqualSortColumn( qcStatement  * aStatement,
     IDE_DASSERT( aPredInfo     != NULL );
 
     //--------------------------------------
-    // í˜„ì¬ sort columnê³¼ ë™ì¼í•œ ì»¬ëŸ¼ì„ ì°¾ëŠ”ë‹¤.
+    // ÇöÀç sort column°ú µ¿ÀÏÇÑ ÄÃ·³À» Ã£´Â´Ù.
     //--------------------------------------
 
     sMorePredInfo = aPredInfo;
@@ -5919,9 +6053,9 @@ qmoJoinMethodMgr::findEqualSortColumn( qcStatement  * aStatement,
          sPredicate = sPredicate->next )
     {
         // PR-13286
-        // ë™ì¼í•œ Columnì´ë¼ í•˜ë”ë¼ë„ Conversionì´ ì¡´ì¬í•œë‹¤ë©´,
-        // í•˜ë‚˜ì˜ Columnë§Œì„ ì €ì¥í•˜ëŠ” Sort Joinì—ì„œëŠ” í•˜ë‚˜ì˜ ê°’ë§Œì„
-        // ì €ì¥í•˜ì—¬ ì²˜ë¦¬í•  ìˆ˜ ì—†ë‹¤.
+        // µ¿ÀÏÇÑ ColumnÀÌ¶ó ÇÏ´õ¶óµµ ConversionÀÌ Á¸ÀçÇÑ´Ù¸é,
+        // ÇÏ³ªÀÇ Column¸¸À» ÀúÀåÇÏ´Â Sort Join¿¡¼­´Â ÇÏ³ªÀÇ °ª¸¸À»
+        // ÀúÀåÇÏ¿© Ã³¸®ÇÒ ¼ö ¾ø´Ù.
         // Ex) T1.int > T2.double + AND T1.int < T2.int
         if ( aSortColumn->node.conversion != NULL )
         {
@@ -5938,7 +6072,7 @@ qmoJoinMethodMgr::findEqualSortColumn( qcStatement  * aStatement,
             ( ( sPredicate->flag & QMO_PRED_SEL_PROCESS_MASK )
               == QMO_PRED_SEL_PROCESS_FALSE ) )
         {
-            // right dependenciesì— í•´ë‹¹í•˜ëŠ” ë…¸ë“œë¥¼ ì°¾ëŠ”ë‹¤.
+            // right dependencies¿¡ ÇØ´çÇÏ´Â ³ëµå¸¦ Ã£´Â´Ù.
             if( ( sPredicate->node->node.lflag
                   & MTC_NODE_LOGICAL_CONDITION_MASK )
                 == MTC_NODE_LOGICAL_CONDITION_TRUE )
@@ -5950,7 +6084,7 @@ qmoJoinMethodMgr::findEqualSortColumn( qcStatement  * aStatement,
                 sCompareNode = sPredicate->node;
             }
 
-            // sort columnì„ ì°¾ëŠ”ë‹¤.
+            // sort columnÀ» Ã£´Â´Ù.
             qtc::dependencyAnd( aRightDepInfo,
                                 & ((qtcNode *)(sCompareNode->node.arguments))->\
                                 depInfo,
@@ -5968,9 +6102,9 @@ qmoJoinMethodMgr::findEqualSortColumn( qcStatement  * aStatement,
             }
 
             // PR-13286
-            // ë™ì¼í•œ Columnì´ë¼ í•˜ë”ë¼ë„ Conversionì´ ì¡´ì¬í•œë‹¤ë©´,
-            // í•˜ë‚˜ì˜ Columnë§Œì„ ì €ì¥í•˜ëŠ” Sort Joinì—ì„œëŠ” í•˜ë‚˜ì˜ ê°’ë§Œì„
-            // ì €ì¥í•˜ì—¬ ì²˜ë¦¬í•  ìˆ˜ ì—†ë‹¤.
+            // µ¿ÀÏÇÑ ColumnÀÌ¶ó ÇÏ´õ¶óµµ ConversionÀÌ Á¸ÀçÇÑ´Ù¸é,
+            // ÇÏ³ªÀÇ Column¸¸À» ÀúÀåÇÏ´Â Sort Join¿¡¼­´Â ÇÏ³ªÀÇ °ª¸¸À»
+            // ÀúÀåÇÏ¿© Ã³¸®ÇÒ ¼ö ¾ø´Ù.
             // Ex) T1.int > T2.int + AND T1.int < T2.double
             if ( sSortColumnNode->node.conversion != NULL )
             {
@@ -6030,15 +6164,15 @@ IDE_RC qmoJoinMethodMgr::getJoinLateralDirection( qmgGraph                * aJoi
  *
  * Description : PROJ-2418 Cross/Outer APPLY & Lateral View
  *
- *   í˜„ì¬ Join Graphì˜ Child Graph ë¼ë¦¬ ì„œë¡œ ì°¸ì¡°í•˜ëŠ”ì§€,
- *   ê·¸ë ‡ë‹¤ë©´ ì°¸ì¡°í•˜ëŠ” GraphëŠ” LEFTì¸ì§€ RIGHTì¸ì§€ë¥¼ ë‚˜íƒ€ë‚´ëŠ”
- *   Lateral Positionì„ ë°˜í™˜í•œë‹¤.
+ *   ÇöÀç Join GraphÀÇ Child Graph ³¢¸® ¼­·Î ÂüÁ¶ÇÏ´ÂÁö,
+ *   ±×·¸´Ù¸é ÂüÁ¶ÇÏ´Â Graph´Â LEFTÀÎÁö RIGHTÀÎÁö¸¦ ³ªÅ¸³»´Â
+ *   Lateral PositionÀ» ¹İÈ¯ÇÑ´Ù.
  *
  * Implementation :
  *
- *  - Child Graphì˜ LateralDepInfoë¥¼ ê°€ì ¸ì˜¨ë‹¤.
- *  - í•œ ìª½ì˜ depInfoì™€ ë‹¤ë¥¸ ìª½ì˜ lateralDepInfoë¥¼ AND í•œë‹¤.
- *  - ANDí•œ ê²°ê³¼ê°€ ì¡´ì¬í•˜ë©´, lateralDepInfoë¥¼ ê°€ì§„ ìª½ì´ ì°¸ì¡°ë¥¼ í•˜ê³  ìˆëŠ” ê²ƒ.
+ *  - Child GraphÀÇ LateralDepInfo¸¦ °¡Á®¿Â´Ù.
+ *  - ÇÑ ÂÊÀÇ depInfo¿Í ´Ù¸¥ ÂÊÀÇ lateralDepInfo¸¦ AND ÇÑ´Ù.
+ *  - ANDÇÑ °á°ú°¡ Á¸ÀçÇÏ¸é, lateralDepInfo¸¦ °¡Áø ÂÊÀÌ ÂüÁ¶¸¦ ÇÏ°í ÀÖ´Â °Í.
  *
  ***********************************************************************/
 
@@ -6048,7 +6182,7 @@ IDE_RC qmoJoinMethodMgr::getJoinLateralDirection( qmgGraph                * aJoi
 
     IDU_FIT_POINT_FATAL( "qmoJoinMethodMgr::getJoinLateralDirection::__FT__" );
 
-    // Child Graphì˜ Lateral DepInfo íšë“
+    // Child GraphÀÇ Lateral DepInfo È¹µæ
     IDE_TEST( qmg::getGraphLateralDepInfo( aJoinGraph->left,
                                            & sLeftLateralDepInfo )
               != IDE_SUCCESS );
@@ -6080,7 +6214,7 @@ IDE_RC qmoJoinMethodMgr::getJoinLateralDirection( qmgGraph                * aJoi
         }
         else
         {
-            // ì™¸ë¶€ ì°¸ì¡°ê°€ ì´ë£¨ì–´ì§€ì§€ ì•Šê³  ìˆìŒ
+            // ¿ÜºÎ ÂüÁ¶°¡ ÀÌ·ç¾îÁöÁö ¾Ê°í ÀÖÀ½
             *aLateralDirection = QMO_JOIN_LATERAL_NONE;
         }
     }
@@ -6118,7 +6252,7 @@ void qmoJoinMethodMgr::adjustIndexCost( qcStatement      * aStatement,
     sStatistics = aRight->myFrom->tableRef->statInfo;
 
     //--------------------------------------
-    // right predicate ì€ ì¼ë¶€ë¶„ì´ filter ê°€ ëœë‹¤.
+    // right predicate Àº ÀÏºÎºĞÀÌ filter °¡ µÈ´Ù.
     //--------------------------------------
     sRightFilterCost = qmoCost::getFilterCost(
                             aStatement->mSysStat,
@@ -6126,7 +6260,7 @@ void qmoJoinMethodMgr::adjustIndexCost( qcStatement      * aStatement,
                             1 );
 
     //--------------------------------------
-    // join predicate ì€ ì¼ë¶€ë¶„ì´ filter ê°€ ëœë‹¤.
+    // join predicate Àº ÀÏºÎºĞÀÌ filter °¡ µÈ´Ù.
     //--------------------------------------
     for ( sPredInfo = aJoinPredInfo;
           sPredInfo != NULL;
@@ -6139,7 +6273,7 @@ void qmoJoinMethodMgr::adjustIndexCost( qcStatement      * aStatement,
     }
 
     //--------------------------------------
-    // join predicate, right predicate ì¤‘ index ë¥¼ íƒˆìˆ˜ ìˆëŠ” ê²ƒì„ ì°¾ëŠ”ë‹¤.
+    // join predicate, right predicate Áß index ¸¦ Å»¼ö ÀÖ´Â °ÍÀ» Ã£´Â´Ù.
     //--------------------------------------
 
     for ( sCount = 0; sCount < aIndexCardInfo->index->keyColCount; sCount++ )
@@ -6149,7 +6283,7 @@ void qmoJoinMethodMgr::adjustIndexCost( qcStatement      * aStatement,
         sIdxColumnID = aIndexCardInfo->index->keyColumns[sCount].column.id;
         sColCardInfo = sStatistics->colCardInfo;
 
-        // BUG-43161 keyColumnì˜ NDVë¥¼ ì°¸ì¡°í•˜ëŠ” ìœ„ì¹˜ë¥¼ ë³€ê²½í•¨
+        // BUG-43161 keyColumnÀÇ NDV¸¦ ÂüÁ¶ÇÏ´Â À§Ä¡¸¦ º¯°æÇÔ
         for ( sColCount    = 0;
               sColCount < sStatistics->columnCnt;
               sColCount++ )
@@ -6165,7 +6299,7 @@ void qmoJoinMethodMgr::adjustIndexCost( qcStatement      * aStatement,
             }
         }
 
-        // join predicate ì„ ìš°ì„ í•œë‹¤.
+        // join predicate À» ¿ì¼±ÇÑ´Ù.
         for ( sPredInfo = aJoinPredInfo;
               sPredInfo != NULL;
               sPredInfo = sPredInfo->next )
@@ -6207,8 +6341,8 @@ void qmoJoinMethodMgr::adjustIndexCost( qcStatement      * aStatement,
         if( sFind == ID_TRUE )
         {
             // BUG-42857
-            // Index key column ì´ join predicate ê³¼ ê´€ë ¨ëœ ê²½ìš°ëŠ”
-            // ì´ë¯¸ ë³´ì •ëœ join predicate ì˜ totalSelectivity ë¥¼ ì‚¬ìš©í•˜ë©´ ì•ˆë¨
+            // Index key column ÀÌ join predicate °ú °ü·ÃµÈ °æ¿ì´Â
+            // ÀÌ¹Ì º¸Á¤µÈ join predicate ÀÇ totalSelectivity ¸¦ »ç¿ëÇÏ¸é ¾ÈµÊ
             sKeyRangeSelectivity *= 1 / sNDV;
 
             sKeyRange.pred = sPredicate;
@@ -6227,7 +6361,7 @@ void qmoJoinMethodMgr::adjustIndexCost( qcStatement      * aStatement,
                                         sPredicate,
                                         1 );
 
-            // ë‹¤ìŒ index ì»¬ëŸ¼ì„ ì‚¬ìš©í• ìˆ˜ ì—†ëŠ” ê²½ìš°
+            // ´ÙÀ½ index ÄÃ·³À» »ç¿ëÇÒ¼ö ¾ø´Â °æ¿ì
             if( ( sPredicate->flag & QMO_PRED_NEXT_KEY_USABLE_MASK )
                 == QMO_PRED_NEXT_KEY_UNUSABLE )
             {
@@ -6240,7 +6374,7 @@ void qmoJoinMethodMgr::adjustIndexCost( qcStatement      * aStatement,
         }
         else
         {
-            // ë§ëŠ” ì»¬ëŸ¼ì´ ì—†ìœ¼ë¯€ë¡œ ë” ê²€ì‚¬í•  í•„ìš”ê°€ ì—†ë‹¤.
+            // ¸Â´Â ÄÃ·³ÀÌ ¾øÀ¸¹Ç·Î ´õ °Ë»çÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
             break;
         }
     }
@@ -6250,19 +6384,19 @@ void qmoJoinMethodMgr::adjustIndexCost( qcStatement      * aStatement,
                      sKeyRangeSelectivity );
 
     //--------------------------------------
-    // index_nl ì‹œ right ê·¸ë˜í”„ì˜ filter ëŠ” index ì˜ output ë§Œí¼ ë°˜ë³µ ìˆ˜í–‰ëœë‹¤.
+    // index_nl ½Ã right ±×·¡ÇÁÀÇ filter ´Â index ÀÇ output ¸¸Å­ ¹İº¹ ¼öÇàµÈ´Ù.
     //--------------------------------------
 
     sRightFilterCost  = IDL_MAX( sRightFilterCost, 0.0 );
     sRightFilterCost *= (aRight->costInfo.inputRecordCnt * sKeyRangeSelectivity);
 
     //--------------------------------------
-    // sKeyRangeCost ê³„ì‚°ì‹œ Selectivityê°€ ê³ ë ¤ì•ˆë˜ì–´ ìˆë‹¤.
+    // sKeyRangeCost °è»ê½Ã Selectivity°¡ °í·Á¾ÈµÇ¾î ÀÖ´Ù.
     //--------------------------------------
     sKeyRangeCost    *= sKeyRangeSelectivity;
 
     //--------------------------------------
-    // index cost ê³„ì‚°
+    // index cost °è»ê
     //--------------------------------------
 
     (void) qmoCost::getIndexScanCost(

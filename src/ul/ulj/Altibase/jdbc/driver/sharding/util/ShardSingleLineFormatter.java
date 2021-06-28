@@ -31,10 +31,10 @@ public class ShardSingleLineFormatter extends Formatter
     private String              mLineSeparator = System.getProperty("line.separator");
 
     /**
-     * ìƒ¤ë“œ ë¡œê·¸ë¥¼ í¬ë§¤íŒ…í•œë‹¤.<br>
-     * ëª¨ë“  ìš”ì²­ì´ ShardingTraceLoggerë¡œë¶€í„° ìƒì„±ë˜ê¸° ë•Œë¬¸ì— í´ë˜ìŠ¤ì™€ ë©”ì†Œë“œ ì •ë³´ëŠ” ìƒëµí•œë‹¤.
-     * @param aRecord ë¡œê·¸ ë ˆì½”ë“œ
-     * @return í¬ë§·íŒ…ëœ ìŠ¤íŠ¸ë§
+     * »şµå ·Î±×¸¦ Æ÷¸ÅÆÃÇÑ´Ù.<br>
+     * ¸ğµç ¿äÃ»ÀÌ ShardingTraceLogger·ÎºÎÅÍ »ı¼ºµÇ±â ¶§¹®¿¡ Å¬·¡½º¿Í ¸Ş¼Òµå Á¤º¸´Â »ı·«ÇÑ´Ù.
+     * @param aRecord ·Î±× ·¹ÄÚµå
+     * @return Æ÷¸ËÆÃµÈ ½ºÆ®¸µ
      */
     public String format(LogRecord aRecord)
     {
@@ -58,7 +58,7 @@ public class ShardSingleLineFormatter extends Formatter
 
         String sMessage = formatMessage(aRecord);
 
-        // ë ˆë²¨
+        // ·¹º§
         sSb.append(aRecord.getLevel().getLocalizedName()).append(": ");
 
         int sOffset = (1000 - aRecord.getLevel().intValue()) / 100;

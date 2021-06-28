@@ -17,11 +17,11 @@
 /* **********************************************************************
  *   $Id: 
  *   NAME
- *     idtContainer.h - Л┼╓К═┬К⌠° Л╩╗М┘▄Л²╢К└┬
+ *     idtContainer.h - ╫╨╥╧╣Е даевюлЁй
  *
  *   DESCRIPTION
- *     М■└К║°Л═²М┼╦ 2379К║° Л┐┬К║° Л┐²Л└╠К░≤К┼■ Л┼╓К═┬К⌠° Л╩╗М┘▄Л²╢К└┬
- *     Л┼╓К═┬К⌠° Л╩╗М┘▄Л²╢К└┬ 
+ *     га╥на╖ф╝ 2379╥н ╩У╥н ╩Щ╪╨╣г╢б ╫╨╥╧╣Е даевюлЁй
+ *     ╫╨╥╧╣Е даевюлЁй 
  *
  *   PUBLIC FUNCTION(S)
  *
@@ -68,6 +68,13 @@ typedef enum
 
 #define IDT_STRLEN 16
 #define IDT_MAX_MSG_SIZE (65536)
+
+IDL_EXTERN_C void initTempContainer( SChar       * aObjectString,
+                                     UInt          aChkFlag,
+                                     ideLogModule  aModule,
+                                     UInt          aLevel );
+
+IDL_EXTERN_C void destroyTempContainer();
 
 class idtBaseThread;
 

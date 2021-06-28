@@ -22,13 +22,13 @@
 #include <idl.h>
 #include <smrCompResList.h>
 
-/*  íŠ¹ì • ì‹œê°„ë™ì•ˆ ì‚¬ìš©ë˜ì§€ ì•Šì€ ì••ì¶• ë¦¬ì†ŒìŠ¤ë¥¼
-    Linked Listì˜ Tailë¡œë¶€í„° ì œê±°
+/*  Æ¯Á¤ ½Ã°£µ¿¾È »ç¿ëµÇÁö ¾ÊÀº ¾ÐÃà ¸®¼Ò½º¸¦
+    Linked ListÀÇ Tail·ÎºÎÅÍ Á¦°Å
 
-    [IN] aMinimumResourceCount - ìµœì†Œ ë¦¬ì†ŒìŠ¤ ê°¯ìˆ˜ 
+    [IN] aMinimumResourceCount - ÃÖ¼Ò ¸®¼Ò½º °¹¼ö 
     [IN] aGarbageCollectionMicro -
-            ëª‡ Micro ì´ˆë™ì•ˆ ì‚¬ìš©ë˜ì§€ ì•Šì€ ê²½ìš° Garbageë¡œ ë¶„ë¥˜í• ì§€?
-    [OUT] aCompRes - ì••ì¶• ë¦¬ì†ŒìŠ¤ 
+            ¸î Micro ÃÊµ¿¾È »ç¿ëµÇÁö ¾ÊÀº °æ¿ì Garbage·Î ºÐ·ùÇÒÁö?
+    [OUT] aCompRes - ¾ÐÃà ¸®¼Ò½º 
  */
 IDE_RC smrCompResList::removeGarbageFromTail(
            UInt          aMinimumResourceCount,
@@ -49,7 +49,7 @@ IDE_RC smrCompResList::removeGarbageFromTail(
     IDE_TEST( mListMutex.lock(NULL) != IDE_SUCCESS );
     sStage = 1;
 
-    // ìµœì†Œ ìœ ì§€ ê°¯ìˆ˜ë³´ë‹¤ í´ ê²½ìš°
+    // ÃÖ¼Ò À¯Áö °¹¼öº¸´Ù Å¬ °æ¿ì
     if ( mElemCount > aMinimumResourceCount )
     {
 
@@ -59,12 +59,12 @@ IDE_RC smrCompResList::removeGarbageFromTail(
         
         sTailRes = (smrCompRes*) sListNode->mData;
         
-        // í˜„ìž¬ ì‹œê°ê³¼ ë§ˆì§€ë§‰ ì‚¬ìš©ëœ ì‹œê°ì˜ ì‹œê°„ ì°¨ì´ ê³„ì‚°
+        // ÇöÀç ½Ã°¢°ú ¸¶Áö¸· »ç¿ëµÈ ½Ã°¢ÀÇ ½Ã°£ Â÷ÀÌ °è»ê
         IDV_TIME_GET( & sCurrTime );
         sElapsedUS = IDV_TIME_DIFF_MICRO( & sTailRes->mLastUsedTime,
                                           & sCurrTime );
         
-        // Garbage Collectioní•  ì‹œê°„ì´ ëœ ê²½ìš° 
+        // Garbage CollectionÇÒ ½Ã°£ÀÌ µÈ °æ¿ì 
         if ( sElapsedUS >= aGarbageCollectionMicro )
         {
             SMU_LIST_DELETE( sListNode );
@@ -73,7 +73,7 @@ IDE_RC smrCompResList::removeGarbageFromTail(
         }
         else
         {
-            // Garbage Collectioní•  ì‹œê°„ì´ ë˜ì§€ ì•Šì€ ê²½ìš°
+            // Garbage CollectionÇÒ ½Ã°£ÀÌ µÇÁö ¾ÊÀº °æ¿ì
             sListNode = NULL;
         }
     }
@@ -83,16 +83,16 @@ IDE_RC smrCompResList::removeGarbageFromTail(
 
     if ( sListNode == NULL )
     {
-        // Listê°€ ë¹„ì–´ìžˆëŠ” ê²½ìš°
+        // List°¡ ºñ¾îÀÖ´Â °æ¿ì
         *aCompRes = NULL;
     }
     else
     {
         *aCompRes = (smrCompRes*)sListNode->mData ;
 
-        // Listì— Addí• ë•Œë¶€í„° 
-        // ë°ì´í„°ì˜ í¬ì¸í„°ë¡œ NULLì„ í—ˆìš©í•˜ì§€ ì•Šì•˜ìœ¼ë¯€ë¡œ,
-        // Dataì˜ í¬ì¸í„°ê°€ NULLì¼ ìˆ˜ ì—†ë‹¤.
+        // List¿¡ AddÇÒ¶§ºÎÅÍ 
+        // µ¥ÀÌÅÍÀÇ Æ÷ÀÎÅÍ·Î NULLÀ» Çã¿ëÇÏÁö ¾Ê¾ÒÀ¸¹Ç·Î,
+        // DataÀÇ Æ÷ÀÎÅÍ°¡ NULLÀÏ ¼ö ¾ø´Ù.
         IDE_ASSERT( *aCompRes != NULL );
         
         IDE_TEST( mListNodePool.memfree(sListNode) != IDE_SUCCESS );

@@ -24,9 +24,9 @@
 #include <idl.h>
 #include <utpDef.h>
 
-// ê°€ë³€ê¸¸ì´ ì»¬ëŸ¼ ë°ì´í„°ì˜ ê¸°ë³¸ ìµœëŒ€ ì¶œë ¥ ê¸¸ì´: 160bytes
-// ì™œ: ë°ì´í„°ê°€ í° ê²½ìš° ë‹¤ ì¶œë ¥í•  í•„ìš”ê°€ ì—†ì„ê²ƒ ê°™ì•„ì„œ
-// ê°€ë³€ì»¬ëŸ¼ì˜ ê²½ìš° ì¶œë ¥ì„ 80 bytesì”© í•˜ë¯€ë¡œ ìµœëŒ€ 2ì¤„ì •ë„ ì¶œë ¥ëœë‹¤
+// °¡º¯±æÀÌ ÄÃ·³ µ¥ÀÌÅÍÀÇ ±âº» ÃÖ´ë Ãâ·Â ±æÀÌ: 160bytes
+// ¿Ö: µ¥ÀÌÅÍ°¡ Å« °æ¿ì ´Ù Ãâ·ÂÇÒ ÇÊ¿ä°¡ ¾øÀ»°Í °°¾Æ¼­
+// °¡º¯ÄÃ·³ÀÇ °æ¿ì Ãâ·ÂÀ» 80 bytes¾¿ ÇÏ¹Ç·Î ÃÖ´ë 2ÁÙÁ¤µµ Ãâ·ÂµÈ´Ù
 #define UTP_BIND_UNLIMIT_MAX_LEN  0x7fffffff
 #define UTP_BIND_DEFAULT_MAX_LEN  160
 

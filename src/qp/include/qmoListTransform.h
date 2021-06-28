@@ -19,7 +19,7 @@
  *
  * Description : BUG-36438 List Transformation
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
  *****************************************************************************/
 #ifndef _Q_QMO_LIST_TRANSFORM_H_
@@ -33,13 +33,13 @@
 #define QMO_LIST_TRANSFORM_DEPENDENCY_COUNT 2
 
 //-----------------------------------------------------------
-// LIST Transform ê´€ë¦¬ í•¨ìˆ˜
+// LIST Transform °ü¸® ÇÔ¼ö
 //-----------------------------------------------------------
 class qmoListTransform
 {
 public:
 
-    // ìµœì´ˆ NNF í˜•íƒœì˜ ëª¨ë“  ì¡°ê±´ì ˆì— ëŒ€í•œ LIST transformation
+    // ÃÖÃÊ NNF ÇüÅÂÀÇ ¸ğµç Á¶°ÇÀı¿¡ ´ëÇÑ LIST transformation
     // - Where clause
     // - On condition
     // - Having clause
@@ -48,7 +48,7 @@ public:
 
 private:
 
-    // From ì ˆì˜ onCondition ì— ëŒ€í•œ LIST transformation (ì¬ê·€)
+    // From ÀıÀÇ onCondition ¿¡ ´ëÇÑ LIST transformation (Àç±Í)
     static IDE_RC doTransform4From( qcStatement * aStatement,
                                     qmsFrom     * aFrom );
 
@@ -56,16 +56,16 @@ private:
     static IDE_RC listTransform( qcStatement * aStatement,
                                  qtcNode    ** aNode );
 
-    // Predicate list ìƒì„±
+    // Predicate list »ı¼º
     static IDE_RC makePredicateList( qcStatement  * aStatement,
                                      qtcNode      * aCompareNode,
                                      qtcNode     ** aResult );
 
-    // ë³€í™˜ ì¡°ê±´ ê²€ì‚¬
+    // º¯È¯ Á¶°Ç °Ë»ç
     static IDE_RC checkCondition( qtcNode     * aNode,
                                   idBool      * aResult );
 
-    // Predicate ìƒì„±
+    // Predicate »ı¼º
     static IDE_RC makePredicate( qcStatement  * aStatement,
                                  qtcNode      * aPredicate,
                                  qtcNode      * aOperand1,

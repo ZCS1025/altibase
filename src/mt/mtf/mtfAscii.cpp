@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfAscii.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfAscii.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -43,7 +43,7 @@ static IDE_RC mtfAsciiEstimate( mtcNode*     aNode,
 mtfModule mtfAscii = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfAsciiFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -86,7 +86,7 @@ IDE_RC mtfAsciiEstimate( mtcNode*     aNode,
 
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
-    // mtdModule ì„¤ì •
+    // mtdModule ¼³Á¤
     IDE_TEST( mtf::getCharFuncResultModule( &sModules[0],
                                             aStack[1].column->module )
               != IDE_SUCCESS );
@@ -136,8 +136,8 @@ IDE_RC mtfAsciiCalculate( mtcNode*     aNode,
  * Implementation :
  *    ASCII( char )
  * 
- *    aStack[0] : ìž…ë ¥ ìŠ¤íŠ¸ë§ì˜ ê°€ìž¥ ì™¼ìª½ ë¬¸ìžì˜ ASCII ì½”ë“œê°’
- *    aStack[1] : char ( ìž…ë ¥ ìŠ¤íŠ¸ë§ )
+ *    aStack[0] : ÀÔ·Â ½ºÆ®¸µÀÇ °¡Àå ¿ÞÂÊ ¹®ÀÚÀÇ ASCII ÄÚµå°ª
+ *    aStack[1] : char ( ÀÔ·Â ½ºÆ®¸µ )
  *
  ***********************************************************************/
 
@@ -172,7 +172,7 @@ IDE_RC mtfAsciiCalculate( mtcNode*     aNode,
         
         (void)sLanguage->nextCharPtr( & sIndex, sFence );
         
-        // í•œ ë¬¸ìžë¥¼ Integer ê°’ìœ¼ë¡œ ë³€ê²½
+        // ÇÑ ¹®ÀÚ¸¦ Integer °ªÀ¸·Î º¯°æ
         sResult = sSource->value[0];
         sNextCharIndex = sIndex - sSource->value;
         

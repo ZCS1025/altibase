@@ -65,7 +65,7 @@ extern IDE_RC dkmSessionSetRemoteStatementAutoCommit( dkmSession * aSession,
  * Transaction
  */
 extern void dkmSetGtxPreparedStatus( dkmSession * aSession );
-extern IDE_RC dkmPrepare( dkmSession * aSession );
+extern IDE_RC dkmPrepare( dkmSession * aSession, ID_XID * aSourceXID );
 extern IDE_RC dkmCommit( dkmSession * aSession );
 extern IDE_RC dkmRollback( dkmSession * aSession, SChar * aSavepoint );
 extern IDE_RC dkmRollbackForce( dkmSession * aSession );
@@ -216,12 +216,23 @@ typedef struct dkmNotifierTransactionInfo
 
     ID_XID mXID;
 
+    UInt  mIsRequestNode;
+
     SChar mTransactionResult[DK_TX_RESULT_STR_SIZE] ;
 
     SChar mTargetInfo[ DK_NAME_LEN + 1 ];
+
+    ID_XID mSourceXID;
+
+    UInt   mTransactionState;
+
+    smSCN  mGlobalCommitSCN;
 } dkmNotifierTransactionInfo;
 
 extern IDE_RC dkmGetNotifierTransactionInfo( dkmNotifierTransactionInfo ** aInfo,
+                                             UInt * aInfoCount );
+
+extern IDE_RC dkmGetShardNotifierTransactionInfo( dkmNotifierTransactionInfo ** aInfo,
                                              UInt * aInfoCount );
 
 /*
@@ -235,6 +246,7 @@ extern void dkmCloseShardConnection( sdiConnectInfo * aConnectInfo );
 extern IDE_RC dkmAddShardTransaction( idvSQL         * aStatistics,
                                       dkmSession     * aSession,
                                       smTID            aTransID,
+                                      sdiClientInfo  * aClientInfo,
                                       sdiConnectInfo * aConnectInfo );
 
 extern void dkmDelShardTransaction( dkmSession     * aSession,
@@ -457,4 +469,21 @@ extern idBool dkmIs2PCSession( dkmSession *aSession );
 
 extern IDE_RC dkmIsExistRemoteTx( dkmSession * aSession,
                                   idBool     * aIsExist );
+
+extern IDE_RC dkmEndPendingPassiveDtxInfo( ID_XID * aXID, idBool aCommit );
+extern IDE_RC dkmEndPendingFailoverDtxInfo( ID_XID * aXID, 
+                                            idBool   aCommit,
+                                            smSCN  * aGlobalCommitSCN );
+
+extern IDE_RC dkmCheckGlobalTransactionStatus( dkmSession     * aSession );
+
+extern IDE_RC dkmAddDtxBranchTx( void   * aDtxInfo,
+                                 UChar    aCoordinatorType,
+                                 SChar  * aNodeName,
+                                 SChar  * aUserName,
+                                 SChar  * aUserPassword,
+                                 SChar  * aDataServerIP,
+                                 UShort   aDataPortNo,
+                                 UShort   aConnectType );
+
 #endif /* _O_DKM_H_ */

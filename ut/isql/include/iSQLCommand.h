@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLCommand.h 85096 2019-03-28 04:04:46Z bethy $
+ * $Id: iSQLCommand.h 85564 2019-06-02 23:26:09Z bethy $
  **********************************************************************/
 
 #ifndef _O_ISQLCOMMAND_H_
@@ -204,6 +204,7 @@ public:
     SShort            GetHostInOutType()
                                       { return mHostInOutType; }
 
+    void              FreeHostVarValue(); /* BUG-47126 */
     void              SetHostVarValue(SChar* aHostVarValue);
     SChar            *GetHostVarValue()
                                       { return mHostVarValue; }
@@ -334,7 +335,7 @@ private:
     SInt              mHostVarPrecision;
     SChar             mHostVarScale[WORD_LEN];
     SShort            mHostInOutType;
-    SChar             mHostVarValue[WORD_LEN];
+    SChar            *mHostVarValue; /* BUG-47126 */
 
     /* BUG-40426 column format */
     SChar             mColumnName[WORD_LEN];

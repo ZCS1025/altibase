@@ -55,7 +55,7 @@ endif
 
 ifeq "$(OS_TARGET)" "IA64_HP_HPUX"
 	CFLAGS+=+W2111
-    INCLUDES += -I$(JAVA_HOME)/include/hp-ux
+    INCLUDES += -I$(JAVA_HOME)/include/hpux
 endif
 
 ifeq "$(OS_TARGET)" "INTEL_WINDOWS"

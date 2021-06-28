@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smxDef.h 82855 2018-04-19 05:53:31Z emlee $
+ * $Id: smxDef.h 90177 2021-03-11 04:29:45Z lswhh $
  **********************************************************************/
 
 #ifndef _O_SMX_DEF_H_
@@ -38,12 +38,12 @@
 // BUG-15396
 // COMMIT WRITE WAIT type
 // - SMX_COMMIT_WRITE_WAIT
-//   commit ì‹œì— logê°€ diskì— ë°˜ì˜ë ë•Œê¹Œì§€ ê¸°ë‹¤ë¦¼
-//   ë”°ë¼ì„œ durability ë³´ì¥
+//   commit ½Ã¿¡ log°¡ disk¿¡ ¹İ¿µµÉ¶§±îÁö ±â´Ù¸²
+//   µû¶ó¼­ durability º¸Àå
 // - SMX_COMMIT_WRITE_NOWAIT
-//   commit ì‹œì— logê°€ diskì— ë°˜ì˜ë ë•Œê¹Œì§€ ê¸°ë‹¤ë¦¬ì§€ ì•ŠìŒ
-//   ë”°ë¼ì„œ durability ë³´ì¥ ëª» í•¨
-// ps ) SMI_COMMIT_WRITE_MASK ê°’ê³¼ ë™ì¼
+//   commit ½Ã¿¡ log°¡ disk¿¡ ¹İ¿µµÉ¶§±îÁö ±â´Ù¸®Áö ¾ÊÀ½
+//   µû¶ó¼­ durability º¸Àå ¸ø ÇÔ
+// ps ) SMI_COMMIT_WRITE_MASK °ª°ú µ¿ÀÏ
 //---------------------------------------------------------------------
 // smxTrans.mFlag (0x00000100)
 # define SMX_COMMIT_WRITE_MASK    SMI_COMMIT_WRITE_MASK
@@ -53,10 +53,10 @@
 # define SMX_MUTEX_LIST_NODE_POOL_SIZE (10)
 # define SMX_PRIVATE_BUCKETCOUNT  (smuProperty::getPrivateBucketCount())
 
-// BUG-29839 ì¬ì‚¬ìš©ëœ undo pageì—ì„œ ì´ì „ CTSë¥¼ ë³´ë ¤ê³  í•  ìˆ˜ ìˆìŒ.
-// ì¬í˜„í•˜ê¸° ìœ„í•´ transactionì— íŠ¹ì • segment entryë¥¼ bindingí•˜ëŠ” ê¸°ëŠ¥ ì¶”ê°€
-// íŠ¹ì • segment entryì— í• ë‹¹í•˜ì§€ ì•Šê³  segment free listì—ì„œ
-// round-robin ë°©ì‹ìœ¼ë¡œ í• ë‹¹í•˜ëŠ” ë°©ì‹ì¸ ê²½ìš°(ê¸°ì¡´ ë°©ì‹)
+// BUG-29839 Àç»ç¿ëµÈ undo page¿¡¼­ ÀÌÀü CTS¸¦ º¸·Á°í ÇÒ ¼ö ÀÖÀ½.
+// ÀçÇöÇÏ±â À§ÇØ transaction¿¡ Æ¯Á¤ segment entry¸¦ bindingÇÏ´Â ±â´É Ãß°¡
+// Æ¯Á¤ segment entry¿¡ ÇÒ´çÇÏÁö ¾Ê°í segment free list¿¡¼­
+// round-robin ¹æ½ÄÀ¸·Î ÇÒ´çÇÏ´Â ¹æ½ÄÀÎ °æ¿ì(±âÁ¸ ¹æ½Ä)
 # define SMX_AUTO_BINDING_TRANSACTION_SEGMENT_ENTRY (512)
 
 // Trans Lock Flag
@@ -66,12 +66,12 @@
 // Savepoint Name For PSM
 #define SMX_PSM_SAVEPOINT_NAME "$$PSM_SVP"
 /**
- * íŠ¸ëœì­ì…˜ì´ partial rollbackì„ ìˆ˜í–‰í• ë•Œ, partial rollbackì˜ ëŒ€ìƒì´ ë˜ëŠ”
- * oidListë“¤ì˜ mFlagì— ëŒ€í•´ì„œ mAndMaskë¥¼ Andí•˜ê³ , mOrMaskë¥¼ orí•œë‹¤.
- * mAndMaskëŠ” ì„¤ì •ë˜ì–´ìˆëŠ” flagì¤‘ì— ëª‡ê°œë¥¼ ì œê±°í•˜ê¸° ìœ„í•´ ì“°ì´ê³ ,
- * mOrMaskëŠ” ì„¤ì •ë˜ì–´ìˆëŠ” flagì¤‘ì— ëª‡ê°œë¥¼ ì¶”ê°€í•˜ê³ ì í•˜ê¸° ìœ„í•´ ì“°ì¸ë‹¤.
- * ë°”ë¡œ AGER LISTì— ë§¤ë‹¬ì§€ ì•Šê³ , ì¦‰ ë°”ë¡œ ì²˜ë¦¬í•˜ì§€ ì•Šê³  ì‹¤ì œ íŠ¸ëœì­ì…˜ì´ commití•˜ê±°ë‚˜,
- * rollbackí• ë•Œ ì²˜ë¦¬í•˜ê²Œ ëœë‹¤.
+ * Æ®·£Àè¼ÇÀÌ partial rollbackÀ» ¼öÇàÇÒ¶§, partial rollbackÀÇ ´ë»óÀÌ µÇ´Â
+ * oidListµéÀÇ mFlag¿¡ ´ëÇØ¼­ mAndMask¸¦ AndÇÏ°í, mOrMask¸¦ orÇÑ´Ù.
+ * mAndMask´Â ¼³Á¤µÇ¾îÀÖ´Â flagÁß¿¡ ¸î°³¸¦ Á¦°ÅÇÏ±â À§ÇØ ¾²ÀÌ°í,
+ * mOrMask´Â ¼³Á¤µÇ¾îÀÖ´Â flagÁß¿¡ ¸î°³¸¦ Ãß°¡ÇÏ°íÀÚ ÇÏ±â À§ÇØ ¾²ÀÎ´Ù.
+ * ¹Ù·Î AGER LIST¿¡ ¸Å´ŞÁö ¾Ê°í, Áï ¹Ù·Î Ã³¸®ÇÏÁö ¾Ê°í ½ÇÁ¦ Æ®·£Àè¼ÇÀÌ commitÇÏ°Å³ª,
+ * rollbackÇÒ¶§ Ã³¸®ÇÏ°Ô µÈ´Ù.
  * */
 typedef struct smxOidSavePointMaskType
 {
@@ -85,12 +85,13 @@ extern const smxOidSavePointMaskType smxOidSavePointMask[SM_OID_OP_COUNT];
 typedef enum
 {
     SMX_TX_BEGIN,
-    SMX_TX_PRECOMMIT,
-    SMX_TX_COMMIT_IN_MEMORY,
+    SMX_TX_PRECOMMIT, /* BUG-47367 TxÀÌ commitSCNÀ» È¹µæÇÏ±â Á÷Àü »óÅÂ */
+    SMX_TX_COMMIT_IN_MEMORY, // not used
     SMX_TX_COMMIT,
     SMX_TX_ABORT,
     SMX_TX_BLOCKED,
-    SMX_TX_END
+    SMX_TX_END,
+    SMX_TX_PREPARED,  /* PROJ-2733 XA_PREPARED µÈ »óÅÂ */
 } smxStatus;
 
 struct smcTableHeader;
@@ -102,9 +103,10 @@ typedef struct smxOIDInfo
 {
     smOID            mTableOID;
     smOID            mTargetOID;
-    scSpaceID        mSpaceID;
+    smSCN            mSCN; /* BUG-47367 FreeSlotList¸¦ À§ÇÑ SCNÀÌ ÇÊ¿äÇÔ. */
     UInt             mFlag;
-    UInt             mAlign;
+    scSpaceID        mSpaceID;
+    UShort           mAlign; 
 } smxOIDInfo;
 
 typedef struct smxOIDNode
@@ -138,12 +140,12 @@ typedef struct smxSavepoint
     smLSN           mUndoLSN;
 
     /* PROJ-1594 Volatile TBS */
-    /* volatile TBS ëŒ€í•œ rollbackì„ ìœ„í•´ í•„ìš”í•¨ */
+    /* volatile TBS ´ëÇÑ rollbackÀ» À§ÇØ ÇÊ¿äÇÔ */
     svrLSN          mVolatileLSN;
 
-    /* BUG-15096: non-autocommitëª¨ë“œì—ì„œ selectì™„ë£Œí›„ IS_LOCKì´ í•´ì œë˜ë©´
-       ì¢‹ê² ìŠµë‹ˆë‹¤.: Lockí•´ì œì‹œ Transactionì˜ Lock Slotì˜ Lock Sequenceê°€
-       mLockSequenceë³´ë‹¤ í´ë•Œê¹Œì§€ Lockì„ í•´ì œí•œë‹¤. */
+    /* BUG-15096: non-autocommit¸ğµå¿¡¼­ select¿Ï·áÈÄ IS_LOCKÀÌ ÇØÁ¦µÇ¸é
+       ÁÁ°Ú½À´Ï´Ù.: LockÇØÁ¦½Ã TransactionÀÇ Lock SlotÀÇ Lock Sequence°¡
+       mLockSequenceº¸´Ù Å¬¶§±îÁö LockÀ» ÇØÁ¦ÇÑ´Ù. */
     ULong           mLockSequence;
     SChar           mName[SMX_MAX_SVPNAME_SIZE];
     smxOIDNode     *mOIDNode;
@@ -152,15 +154,15 @@ typedef struct smxSavepoint
     smxSavepoint   *mNxtSavepoint;
 
     /* For only implicit savepoint */
-    /* Savepointë¥¼ ì°ì€ Statementì˜ Depth */
+    /* Savepoint¸¦ ÂïÀº StatementÀÇ Depth */
     UInt            mStmtDepth;
-    /* BUG-17033: ìµœìƒìœ„ Statementê°€ ì•„ë‹Œ Statmentì— ëŒ€í•´ì„œë„
-     * Partial Rollbackì„ ì§€ì›í•´ì•¼ í•©ë‹ˆë‹¤.
+    /* BUG-17033: ÃÖ»óÀ§ Statement°¡ ¾Æ´Ñ Statment¿¡ ´ëÇØ¼­µµ
+     * Partial RollbackÀ» Áö¿øÇØ¾ß ÇÕ´Ï´Ù.
      *
-     * Replicationê³¼ Transactionì˜ Implicit Savepointì˜ ìœ„ì¹˜ëŠ”
-     * ë‹¤ë¥´ë‹¤. ë•Œë¬¸ì— Replicationì„ ìœ„í•´ì„œ ê¸°ë¡ë˜ëŠ” Savepoint Abortë¡œê·¸
-     * ê¸°ë¡ì‹œ Savepointì˜ ì´ë¦„ì´ í˜„ì¬ Abortë¥¼ ìˆ˜í–‰í•  Savepointì™€
-     * ë‹¤ë¥¸ ê²½ìš°ê°€ ì¡´ì¬í•œë‹¤.
+     * Replication°ú TransactionÀÇ Implicit SavepointÀÇ À§Ä¡´Â
+     * ´Ù¸£´Ù. ¶§¹®¿¡ ReplicationÀ» À§ÇØ¼­ ±â·ÏµÇ´Â Savepoint Abort·Î±×
+     * ±â·Ï½Ã SavepointÀÇ ÀÌ¸§ÀÌ ÇöÀç Abort¸¦ ¼öÇàÇÒ Savepoint¿Í
+     * ´Ù¸¥ °æ¿ì°¡ Á¸ÀçÇÑ´Ù.
      *
      * ex) T1: No Replication , T2: Replication
      * + Stmt1 begin
@@ -172,17 +174,17 @@ typedef struct smxSavepoint
      *      update T2(#3) <---- Replication SVP(Depth = 2)
      *   + Stmt1-1 end(Failure !!)
      *
-     *   ìœ„ ì˜ˆì œì—ì„œ Stmt1-1ì´ Abortí–ˆìœ¼ë¯€ë¡œ Abortë¡œê·¸ë˜í•œ Stmt1-1ì´
-     *   ê¸°ë¡ë˜ì–´ì•¼ í•˜ë‚˜ ê·¸ë ‡ê²Œ ë˜ë©´ Standbyìª½ì€ #3ë§Œ Rollbackëœë‹¤.
-     *   ì™œëƒë©´ Depth=2ë¼ëŠ” Abortë¡œê·¸ê°€ ì°íˆê³  Dept=2ì— í•´ë‹¹í•˜ëŠ”
-     *   Implicit SVPëŠ” #3ì—ì„œ ì§€ì •ì´ ë˜ì—ˆê¸° ë•Œë¬¸ì´ë‹¤. ì´ëŠ”
-     *   Stmt beginí›„ ì²«ë²ˆì§¸ Replication ê´€ë ¨ Tableì— ëŒ€í•œ
-     *   Updateì‹œ ê·¸ ë¡œê·¸ë¥¼ Replication Beginë¡œê·¸ë¡œ ì„¤ì •í•˜ê¸°ë•Œë¬¸ì´ë‹¤.
-     *   ìœ„ ë¬¸ì œë¥¼ í•´ê²°í•˜ê¸° ìœ„í•´ì„œ mReplImpSvpStmtDepthë¥¼ ì¶”ê°€í–ˆë‹¤.
-     *   mReplImpSvpStmtDepthëŠ” Partial Abortì‹œ Implicit SVP Abort
-     *   ë¡œê·¸ ê¸°ë¡ì‹œ SVPì˜ ì´ë¦„ì„ mReplImpSvpStmtDepthìœ¼ë¡œ ì§€ì •í•œë‹¤.
-     *   ìœ„ì—ì„œ ë°œìƒí•˜ëŠ” ë¬¸ì œëŠ” ë‹¤ìŒê³¼ ê°™ì´ mReplImpSvpStmtDepthì„
-     *   ì´ìš©í•¨ìœ¼ë¡œì¨ í•´ê²°ë  ìˆ˜ ìˆë‹¤.
+     *   À§ ¿¹Á¦¿¡¼­ Stmt1-1ÀÌ AbortÇßÀ¸¹Ç·Î Abort·Î±×¶ÇÇÑ Stmt1-1ÀÌ
+     *   ±â·ÏµÇ¾î¾ß ÇÏ³ª ±×·¸°Ô µÇ¸é StandbyÂÊÀº #3¸¸ RollbackµÈ´Ù.
+     *   ¿Ö³Ä¸é Depth=2¶ó´Â Abort·Î±×°¡ ÂïÈ÷°í Dept=2¿¡ ÇØ´çÇÏ´Â
+     *   Implicit SVP´Â #3¿¡¼­ ÁöÁ¤ÀÌ µÇ¾ú±â ¶§¹®ÀÌ´Ù. ÀÌ´Â
+     *   Stmt beginÈÄ Ã¹¹øÂ° Replication °ü·Ã Table¿¡ ´ëÇÑ
+     *   Update½Ã ±× ·Î±×¸¦ Replication Begin·Î±×·Î ¼³Á¤ÇÏ±â¶§¹®ÀÌ´Ù.
+     *   À§ ¹®Á¦¸¦ ÇØ°áÇÏ±â À§ÇØ¼­ mReplImpSvpStmtDepth¸¦ Ãß°¡Çß´Ù.
+     *   mReplImpSvpStmtDepth´Â Partial Abort½Ã Implicit SVP Abort
+     *   ·Î±× ±â·Ï½Ã SVPÀÇ ÀÌ¸§À» mReplImpSvpStmtDepthÀ¸·Î ÁöÁ¤ÇÑ´Ù.
+     *   À§¿¡¼­ ¹ß»ıÇÏ´Â ¹®Á¦´Â ´ÙÀ½°ú °°ÀÌ mReplImpSvpStmtDepthÀ»
+     *   ÀÌ¿ëÇÔÀ¸·Î½á ÇØ°áµÉ ¼ö ÀÖ´Ù.
      *
      * ex) T1: No Replication , T2: Replication
      * 1: + Stmt1 begin : Set SVP1
@@ -191,13 +193,13 @@ typedef struct smxSavepoint
      * 4:     + Stmt1-1-1 begin : Set SVP3
      * 5:       - update T2(#2) <---- Replication SVP(Depth = 3)
      * 6:     + Stmt1-1-1 end(Success) : Remove SVP3
-     * 7:     update T2(#3) <---- 5lineì—ì„œ ìê¸°ì•ì— Replication Implicit
-     *                            savepointë¥¼ ì„¤ì •í•˜ì§€ ì•Šì€ ë¶€ë¶„ì„ ëª¨ë‘ì„¤ì •í–ˆê¸°
-     *                            ë•Œë¬¸ì— ì—¬ê¸°ì„œ ì„¤ì •í•  í•„ìš”ê°€ ì—†ë‹¤.
+     * 7:     update T2(#3) <---- 5line¿¡¼­ ÀÚ±â¾Õ¿¡ Replication Implicit
+     *                            savepoint¸¦ ¼³Á¤ÇÏÁö ¾ÊÀº ºÎºĞÀ» ¸ğµÎ¼³Á¤Çß±â
+     *                            ¶§¹®¿¡ ¿©±â¼­ ¼³Á¤ÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
      * 8:  + Stmt1-1 end(Failure !!)
      *
-     * Implicit SVPê°€ Setë ë•Œë§ˆë‹¤ Transactionì˜ Implicit SVP Listì—
-     * ì¶”ê°€ëœë‹¤.
+     * Implicit SVP°¡ SetµÉ¶§¸¶´Ù TransactionÀÇ Implicit SVP List¿¡
+     * Ãß°¡µÈ´Ù.
      *
      * + SMI_STATEMENT_DEPTH_NULL = 0
      * + SVP(#1, #2) :
@@ -205,29 +207,31 @@ typedef struct smxSavepoint
      *    - #1: Stmt Depth, #2: mReplImpSvpStmtDepth
      *
      * Trans: SVP1(1, 0)  + SVP2(2, 0) + SVP3(3, 0)
-     * ì´ê²ƒì€ line 4ê¹Œì§€ ìˆ˜í–‰í–ˆì„ë•Œì˜ ê²°ê³¼ì´ë‹¤. ì—¬ê¸°ì„œ line5ë¥¼ ìˆ˜í–‰í•˜ê²Œ
-     * ë˜ë©´
+     * ÀÌ°ÍÀº line 4±îÁö ¼öÇàÇßÀ»¶§ÀÇ °á°úÀÌ´Ù. ¿©±â¼­ line5¸¦ ¼öÇàÇÏ°Ô
+     * µÇ¸é
      * Trans: SVP1(1, 1)  + SVP2(2, 1) + SVP3(3, 1)
-     * ìœ¼ë¡œ ì„¤ì •ëœë‹¤. Replication Savepointê°€ ì„¤ì •ë ë•Œ ì•ì—ìˆëŠ” SVPê°’ì¤‘
-     * ê°€ì¥ í°ê°’ + 1ì„ ìì‹ ì˜ mReplImpSvpStmtDepthê°’ìœ¼ë¡œ ê²°ì •í•œë‹¤.
-     * ê·¸ë¦¬ê³  ìì‹ ì˜ ì•ì˜ SVPë“¤ì„ ì°¾ì•„ê°€ë©´ì„œ 0ì´ ì•„ë‹ˆê°’ì„ ê°€ì§„ SVPê°€
-     * ë‚˜ì˜¬ë•Œê¹Œì§€ 0ì¸ê°’ì„ ê°€ì§„ SVPë¥¼ ëª¨ë‘ ìì‹ ì˜ mReplImpSvpStmtDepthê°’ìœ¼ë¡œ
-     * ì„¤ì •í•´ ì¤€ë‹¤.
-     * ìœ„ ì˜ˆì œì—ì„œëŠ” SVP3ì˜ ì•ì˜ SVPì¤‘ ê°€ì¥ í°ê°’ì´ 0ì´ê¸° ë•Œë¬¸ì— SVP3ì˜
-     * mReplImpSvpStmtDepthê°’ì„ (0 + 1)ìœ¼ë¡œ ì„¤ì •í•œë‹¤. ê·¸ë¦¬ê³  SVP1ê³¼
-     * SVP2ê°€ 0ì´ë¯€ë¡œ ì´ê°’ì„ ìì‹ ì˜ mReplImpSvpStmtDepthì˜ ê°’ì¸ 1ë¡œ
-     * ëª¨ë‘ ë°”ê¾¸ì–´ ì¤€ë‹¤. ì™œëƒë©´ SVP2ì—ì„œ í•œë²ˆë„ Replication SVPê°€ ì„¤ì •ë˜ì§€
-     * ì•Šì•„ì„œ ë§Œì•½ SVP2ê°€ Abortëœë‹¤ë©´ ì‹¤ì œë¡œëŠ” SVP3ê¹Œì§€ Rollbackí•˜ì§€ë§Œ
-     * Replicationì€ ì´ë¥¼ ì•Œì§€ ëª»í•˜ê²Œ ë˜ê¸° ë•Œë¬¸ì´ë‹¤.
-     * Partial Rollbackí•˜ê²Œ ë˜ë©´ mReplImpSvpStmtDepthê°’ì„ Partial Abort
-     * Logì— ê¸°ë¡í•´ì¤€ë‹¤.
-     * ë‹¤ì‹œ line 6ì„ ìˆ˜í–‰í•˜ê²Œë˜ë©´ SVP3ê°€ ì œê±°ëœë‹¤.
+     * À¸·Î ¼³Á¤µÈ´Ù. Replication Savepoint°¡ ¼³Á¤µÉ¶§ ¾Õ¿¡ÀÖ´Â SVP°ªÁß
+     * °¡Àå Å«°ª + 1À» ÀÚ½ÅÀÇ mReplImpSvpStmtDepth°ªÀ¸·Î °áÁ¤ÇÑ´Ù.
+     * ±×¸®°í ÀÚ½ÅÀÇ ¾ÕÀÇ SVPµéÀ» Ã£¾Æ°¡¸é¼­ 0ÀÌ ¾Æ´Ï°ªÀ» °¡Áø SVP°¡
+     * ³ª¿Ã¶§±îÁö 0ÀÎ°ªÀ» °¡Áø SVP¸¦ ¸ğµÎ ÀÚ½ÅÀÇ mReplImpSvpStmtDepth°ªÀ¸·Î
+     * ¼³Á¤ÇØ ÁØ´Ù.
+     * À§ ¿¹Á¦¿¡¼­´Â SVP3ÀÇ ¾ÕÀÇ SVPÁß °¡Àå Å«°ªÀÌ 0ÀÌ±â ¶§¹®¿¡ SVP3ÀÇ
+     * mReplImpSvpStmtDepth°ªÀ» (0 + 1)À¸·Î ¼³Á¤ÇÑ´Ù. ±×¸®°í SVP1°ú
+     * SVP2°¡ 0ÀÌ¹Ç·Î ÀÌ°ªÀ» ÀÚ½ÅÀÇ mReplImpSvpStmtDepthÀÇ °ªÀÎ 1·Î
+     * ¸ğµÎ ¹Ù²Ù¾î ÁØ´Ù. ¿Ö³Ä¸é SVP2¿¡¼­ ÇÑ¹øµµ Replication SVP°¡ ¼³Á¤µÇÁö
+     * ¾Ê¾Æ¼­ ¸¸¾à SVP2°¡ AbortµÈ´Ù¸é ½ÇÁ¦·Î´Â SVP3±îÁö RollbackÇÏÁö¸¸
+     * ReplicationÀº ÀÌ¸¦ ¾ËÁö ¸øÇÏ°Ô µÇ±â ¶§¹®ÀÌ´Ù.
+     * Partial RollbackÇÏ°Ô µÇ¸é mReplImpSvpStmtDepth°ªÀ» Partial Abort
+     * Log¿¡ ±â·ÏÇØÁØ´Ù.
+     * ´Ù½Ã line 6À» ¼öÇàÇÏ°ÔµÇ¸é SVP3°¡ Á¦°ÅµÈ´Ù.
      * Trans: SVP1(1, 1)  + SVP2(2, 1)
-     * ë‹¤ì‹œ line8ì„ ìˆ˜í–‰í•˜ê²Œ ë˜ë©´ SVP2ë¥¼ ì œê±°í•˜ê³  Implicit SVP Abortë¡œê·¸
-     * ê¸°ë¡ì‹œ ì´ë¦„ì„ Depth=1ë¡œ ì§€ì •í•˜ê²Œ ëœë‹¤.
+     * ´Ù½Ã line8À» ¼öÇàÇÏ°Ô µÇ¸é SVP2¸¦ Á¦°ÅÇÏ°í Implicit SVP Abort·Î±×
+     * ±â·Ï½Ã ÀÌ¸§À» Depth=1·Î ÁöÁ¤ÇÏ°Ô µÈ´Ù.
      * */
 
     UInt            mReplImpSvpStmtDepth;
+
+    struct smiDDLTargetTableInfo * mDDLTargetTableInfo;
 } smxSavepoint;
 
 
@@ -256,8 +260,8 @@ typedef struct smxTableInfo
     /*
      * PROJ-1671 Bitmap-based Tablespace And
      *           Segment Space Management
-     * Table Segmentì—ì„œ ë§ˆì§€ë§‰ Slotì„ í• ë‹¹í–ˆë˜
-     * Data í˜ì´ì§€ì˜ PIDë¥¼ Cacheí•œë‹¤.
+     * Table Segment¿¡¼­ ¸¶Áö¸· SlotÀ» ÇÒ´çÇß´ø
+     * Data ÆäÀÌÁöÀÇ PID¸¦ CacheÇÑ´Ù.
      */
     scPageID      mHintDataPID;
     idBool        mExistDPathIns;
@@ -269,37 +273,39 @@ typedef struct smxTableInfo
 struct sdpSegMgmtOp;
 
 // PROJ-1553 Replication self-deadlock
-#define SMX_NOT_REPL_TX_ID       (ID_UINT_MAX)
 
-/* BUG-27709 receiverì— ì˜í•œ ë°˜ì˜ ì¤‘, íŠ¸ëœì­ì…˜ allocì‹¤íŒ¨ì‹œ í•´ë‹¹ receiver ì¢…ë£Œ */
+#define SMX_NOT_REPL_TX_ID       (ID_SINT_MAX)
+#define SMX_LOCK_WAIT_REPL_TX_ID (ID_SINT_MAX - 1)
+
+/* BUG-27709 receiver¿¡ ÀÇÇÑ ¹İ¿µ Áß, Æ®·£Àè¼Ç alloc½ÇÆĞ½Ã ÇØ´ç receiver Á¾·á */
 #define SMX_IGNORE_TX_ALLOC_TIMEOUT (0)
 
-// Transactionì˜ Log Bufferí¬ê¸°ë¥¼ í•­ìƒ ì´ê°’ìœ¼ë¡œ Alignì‹œí‚¨ë‹¤.
+// TransactionÀÇ Log BufferÅ©±â¸¦ Ç×»ó ÀÌ°ªÀ¸·Î Align½ÃÅ²´Ù.
 #define SMX_TRANSACTION_LOG_BUFFER_ALIGN_SIZE (1024)
 
-// Transactionì˜ ì´ˆê¸° Bufferí¬ê¸°.
+// TransactionÀÇ ÃÊ±â BufferÅ©±â.
 #define SMX_TRANSACTION_LOG_BUFFER_INIT_SIZE  (2048)
 
 /***********************************************************************
  *
- * PROJ-1704 Disk MVCC ë¦¬ë‰´ì–¼
+ * PROJ-1704 Disk MVCC ¸®´º¾ó
  *
- * Touch Page List ê´€ë ¨ ìë£Œêµ¬ì¡° ì •ì˜
+ * Touch Page List °ü·Ã ÀÚ·á±¸Á¶ Á¤ÀÇ
  *
- * íŠ¸ëœì­ì…˜ì´ ê°±ì‹ í•œ ë””ìŠ¤í¬ í˜ì´ì§€ ì •ë³´
+ * Æ®·£Àè¼ÇÀÌ °»½ÅÇÑ µğ½ºÅ© ÆäÀÌÁö Á¤º¸
  *
  ***********************************************************************/
 typedef struct smxTouchInfo
 {
-    scPageID         mPageID;      // ê°±ì‹ ëœ í˜ì´ì§€ì˜ PageID
-    scSpaceID        mSpaceID;     // ê°±ì‹ ëœ í˜ì´ì§€ì˜ SpaceID
-    SShort           mCTSlotIdx;   // ê°±ì‹ ëœ í˜ì´ì§€ë‚´ì˜ í• ë‹¹ëœ CTS ìˆœë²ˆ
+    scPageID         mPageID;      // °»½ÅµÈ ÆäÀÌÁöÀÇ PageID
+    scSpaceID        mSpaceID;     // °»½ÅµÈ ÆäÀÌÁöÀÇ SpaceID
+    SShort           mCTSlotIdx;   // °»½ÅµÈ ÆäÀÌÁö³»ÀÇ ÇÒ´çµÈ CTS ¼ø¹ø
 } smxTouchInfo;
 
 /*
- * ê°±ì‹ ëœ ì—¬ëŸ¬ê°œì˜ í˜ì´ì§€ë“¤ì„ ê´€ë¦¬í•˜ëŠ” ë…¸ë“œ ì •ì˜
- * ë©”ëª¨ë¦¬ í• ë‹¹/í•´ì œ ë‹¨ìœ„ë¡œ ì‚¬ìš©í•¨
- * ê´€ë¦¬ë˜ëŠ” ê°œìˆ˜ëŠ” TOUCH_PAGE_CNT_BY_NODE ì— ì˜í•´ì„œ ê²°ì •ëœë‹¤
+ * °»½ÅµÈ ¿©·¯°³ÀÇ ÆäÀÌÁöµéÀ» °ü¸®ÇÏ´Â ³ëµå Á¤ÀÇ
+ * ¸Ş¸ğ¸® ÇÒ´ç/ÇØÁ¦ ´ÜÀ§·Î »ç¿ëÇÔ
+ * °ü¸®µÇ´Â °³¼ö´Â TOUCH_PAGE_CNT_BY_NODE ¿¡ ÀÇÇØ¼­ °áÁ¤µÈ´Ù
  */
 typedef struct smxTouchNode
 {
@@ -310,7 +316,7 @@ typedef struct smxTouchNode
 } smxTouchNode;
 
 /*
- * smxTouchPage Hashë¥¼ ê²€ìƒ‰í•œ ê²°ê³¼ê°’ìœ¼ë¡œ ì‚¬ìš©ë˜ëŠ” flag
+ * smxTouchPage Hash¸¦ °Ë»öÇÑ °á°ú°ªÀ¸·Î »ç¿ëµÇ´Â flag
  */
 
 #define SMX_TPH_PAGE_NOT_FOUND     (-2)
@@ -318,23 +324,26 @@ typedef struct smxTouchNode
 #define SMX_TPH_PAGE_FOUND         (0)
 
 /*
- * Transaction ì •ë³´ X$ ì¶œë ¥ ìë£Œêµ¬ì¡° ì •ì˜
+ * Transaction Á¤º¸ X$ Ãâ·Â ÀÚ·á±¸Á¶ Á¤ÀÇ
  */
 typedef struct smxTransInfo4Perf
 {
     smTID              mTransID;
-    //fix BUG-23656 session,xid ,transactionì„ ì—°ê³„í•œ performance viewë¥¼ ì œê³µí•˜ê³ ,
-    //ê·¸ë“¤ê°„ì˜ ê´€ê³„ë¥¼ ì •í™•íˆ ìœ ì§€í•´ì•¼ í•¨.
-    //transactionì—ì„œ session idë¥¼ ì¶”ê°€. 
+    //fix BUG-23656 session,xid ,transactionÀ» ¿¬°èÇÑ performance view¸¦ Á¦°øÇÏ°í,
+    //±×µé°£ÀÇ °ü°è¸¦ Á¤È®È÷ À¯ÁöÇØ¾ß ÇÔ.
+    //transaction¿¡¼­ session id¸¦ Ãß°¡. 
     UInt               mSessionID;
     smSCN              mMscn;
     smSCN              mDscn;
-    // BUG-24821 V$TRANSACTIONì— LOBê´€ë ¨ MinSCNì´ ì¶œë ¥ë˜ì–´ì•¼ í•©ë‹ˆë‹¤. 
-    smSCN              mMinMemViewSCN4LOB;
-    smSCN              mMinDskViewSCN4LOB;
+    smSCN              mFstDskViewSCN;
+    // BUG-24821 V$TRANSACTION¿¡ LOB°ü·Ã MinSCNÀÌ Ãâ·ÂµÇ¾î¾ß ÇÕ´Ï´Ù. 
+    smSCN              mMinMemViewSCNwithLOB;
+    smSCN              mMinDskViewSCNwithLOB;
+    smSCN              mLastRequestSCN;
+    smSCN              mPrepareSCN;
     smSCN              mCommitSCN;
     smxStatus          mStatus;
-    idBool             mIsUpdate; // durable writingì˜ ì—¬ë¶€
+    idBool             mIsUpdate; // durable writingÀÇ ¿©ºÎ
     UInt               mLogTypeFlag;
     ID_XID             mXaTransID;
     smxCommitState     mCommitState;
@@ -350,8 +359,8 @@ typedef struct smxTransInfo4Perf
     /* BUG-33895 [sm_recovery] add the estimate function 
      * the time of transaction undoing. */
     UInt               mProcessedUndoTime;
-    UInt               mTotalLogCount;
-    UInt               mProcessedUndoLogCount;
+    ULong              mTotalLogCount;
+    ULong              mProcessedUndoLogCount;
     UInt               mEstimatedTotalUndoTime;
     UInt               mLogBufferSize;
     UInt               mLogOffset;
@@ -366,10 +375,23 @@ typedef struct smxTransInfo4Perf
     UInt               mLegacyTransCount;
     // BUG-40213 Add isolation level in V$TRANSACTION
     UInt               mIsolationLevel;
+
+    /* PROJ-2734 */
+    PDL_Time_Value     mGCTxFirstStmtTime;
+    smSCN              mGCTxFirstStmtViewSCN;
+    smiDistLevel       mDistLevel;
+    smiShardPin        mShardPin;
+    /* PROJ-2733 */
+    idBool             mIsGCTx; //GlobalConsistentTx:GLOBAL_TRANSACTION_LEVEL=3 À¸·Î ¼³Á¤µÈ Tx
+    
+    SChar              mDetectionStr[64];
+    ULong              mDieWaitTime;
+    ULong              mElapsedTime;
+
 } smxTransInfo4Perf;
 
 /*
- * Transaction Segment ì •ë³´ X$ ì¶œë ¥ ìë£Œêµ¬ì¡° ì •ì˜
+ * Transaction Segment Á¤º¸ X$ Ãâ·Â ÀÚ·á±¸Á¶ Á¤ÀÇ
  */
 typedef struct smxTXSeg4Perf
 {
@@ -389,7 +411,7 @@ typedef struct smxTXSeg4Perf
 } smxTXSeg4Perf;
 
 /* PROJ-1381 Fetch Across Commits
- * FAC commitì‹œì˜ smxTransì˜ ë³µì‚¬ë³¸ */
+ * FAC commit½ÃÀÇ smxTransÀÇ º¹»çº» */
 typedef struct smxLegacyTrans
 {
     smTID       mTransID;

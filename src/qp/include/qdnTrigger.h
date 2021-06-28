@@ -22,11 +22,11 @@
  *
  *     [PROJ-1359] Trigger
  *
- *     Trigger ì²˜ë¦¬ë¥¼ ìœ„í•œ ìë£Œ êµ¬ì¡° ë° í•¨ìˆ˜
+ *     Trigger Ã³¸®¸¦ À§ÇÑ ÀÚ·á ±¸Á¶ ¹× ÇÔ¼ö
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -38,14 +38,14 @@
 #include <qsxProc.h>
 
 //=========================================================
-// [PROJ-1359] Triggerë¥¼ ìœ„í•œ Parse Tree ì •ë³´
+// [PROJ-1359] Trigger¸¦ À§ÇÑ Parse Tree Á¤º¸
 //=========================================================
 
 //-----------------------------------------------------
-// [Trigger Event êµ¬ë¬¸]
+// [Trigger Event ±¸¹®]
 //-----------------------------------------------------
 
-// [Trigger Eventì˜ ì •ë³´]
+// [Trigger EventÀÇ Á¤º¸]
 typedef struct qdnTriggerEventTypeList
 {
     UInt                       eventType;
@@ -59,14 +59,14 @@ typedef struct qdnTriggerEvent {
 } qdnTriggerEvent;
 
 //-----------------------------------------------------
-// [Trigger Referencing êµ¬ë¬¸]
+// [Trigger Referencing ±¸¹®]
 //-----------------------------------------------------
 
-// RERENCING êµ¬ë¬¸ì— ê¸°ë¡ë˜ëŠ” OLD ROW, NEW ROWë“±ì€
-// Action Bodyë‚´ì—ì„œ [old_row T1%ROWTYPE] ì•”ì‹œì ìœ¼ë¡œ ì‚¬ìš©ë˜ë©°,
-// í•˜ë‚˜ì˜ Nodeë¡œ í‘œí˜„ëœë‹¤.  ì´ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ì •ë³´ì´ë©°,
-// Trigger Action ìˆ˜í–‰ ì‹œ í•´ë‹¹ ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ Procedureì˜
-// Declare Secionì˜ ê°’ì„ ë³€í™”ì‹œí‚¨ë‹¤.
+// RERENCING ±¸¹®¿¡ ±â·ÏµÇ´Â OLD ROW, NEW ROWµîÀº
+// Action Body³»¿¡¼­ [old_row T1%ROWTYPE] ¾Ï½ÃÀûÀ¸·Î »ç¿ëµÇ¸ç,
+// ÇÏ³ªÀÇ Node·Î Ç¥ÇöµÈ´Ù.  ÀÌ¸¦ °ü¸®ÇÏ±â À§ÇÑ Á¤º¸ÀÌ¸ç,
+// Trigger Action ¼öÇà ½Ã ÇØ´ç Á¤º¸¸¦ ÀÌ¿ëÇÏ¿© ProcedureÀÇ
+// Declare SecionÀÇ °ªÀ» º¯È­½ÃÅ²´Ù.
 //
 // Ex) CREATE TRIGGER trigger_1 AFTER UPDATE ON t1
 //     REFERENCING OLD ROW AS old_row
@@ -74,17 +74,17 @@ typedef struct qdnTriggerEvent {
 //         INSERT INTO log_table VALUES ( old_row.i1 );
 //     END;
 //
-//     ===>  Action Bodyë¥¼ ìœ„í•œ Procedure ìƒì„±
+//     ===>  Action Body¸¦ À§ÇÑ Procedure »ı¼º
 //
 //     CREATE PROCEDURE trigger_procedure
 //     AS
-//         old_row T1%ROWTYPE;   <========== ë°”ë¡œ ì—¬ê¸°ì˜ ì •ë³´ë¥¼ ì €ì¥
+//         old_row T1%ROWTYPE;   <========== ¹Ù·Î ¿©±âÀÇ Á¤º¸¸¦ ÀúÀå
 //     AS BEGIN
 //         INSERT INTO log_table VALUES ( old_row.i1 );
 //     END;
 //-----------------------------------------------------
 
-// [REFERENCING ì •ë³´]
+// [REFERENCING Á¤º¸]
 typedef struct qdnTriggerRef
 {
     qcmTriggerRefType         refType;
@@ -94,10 +94,10 @@ typedef struct qdnTriggerRef
 } qdnTriggerRef;
 
 //-----------------------------------------------------
-// [Trigger Action Condition êµ¬ë¬¸]
+// [Trigger Action Condition ±¸¹®]
 //-----------------------------------------------------
 
-// [ACTION CONDITION ì •ë³´]
+// [ACTION CONDITION Á¤º¸]
 typedef struct qdnTriggerActionCond
 {
     qcmTriggerGranularity actionGranularity;
@@ -108,8 +108,8 @@ typedef struct qdnTriggerActionCond
     qtcNode *             whenCondition;
 } qdnTriggerActionCond;
 
-// [ACTION BODYê°€ ì°¸ì¡°í•˜ëŠ” DML Table]
-// Cycle Detectionì„ ìœ„í•˜ì—¬ ê´€ë¦¬í•œë‹¤.
+// [ACTION BODY°¡ ÂüÁ¶ÇÏ´Â DML Table]
+// Cycle DetectionÀ» À§ÇÏ¿© °ü¸®ÇÑ´Ù.
 
 typedef struct qdnActionRelatedTable
 {
@@ -119,7 +119,7 @@ typedef struct qdnActionRelatedTable
 } qdnActionRelatedTable;
 
 //-----------------------------------------------------
-// [ALTER TRIGGERë¥¼ ìœ„í•œ êµ¬ë¬¸]
+// [ALTER TRIGGER¸¦ À§ÇÑ ±¸¹®]
 //-----------------------------------------------------
 
 typedef enum {
@@ -130,7 +130,7 @@ typedef enum {
 } qdnTriggerAlterOption;
 
 //===========================================================
-// Triggerë¥¼ ìœ„í•œ Parse Tree
+// Trigger¸¦ À§ÇÑ Parse Tree
 //===========================================================
 
 // Example )
@@ -143,30 +143,30 @@ typedef enum {
 //         INSERT INTO log_table VALUES ( aliasName.i1 );
 //     END;
 
-// [CREATE TRIGGERë¥¼ ìœ„í•œ Parse Tree]
+// [CREATE TRIGGER¸¦ À§ÇÑ Parse Tree]
 typedef struct qdnCreateTriggerParseTree
 {
     //---------------------------------------------
-    // Parsing ì •ë³´
+    // Parsing Á¤º¸
     //---------------------------------------------
 
     qcParseTree                common;
 
-    // Trigger Name ì •ë³´
+    // Trigger Name Á¤º¸
     qcNamePosition             triggerUserPos;
     qcNamePosition             triggerNamePos;
 
-    // Trigger Table ì •ë³´
+    // Trigger Table Á¤º¸
     qcNamePosition             userNamePos;
     qcNamePosition             tableNamePos;
 
-    // Trigger Event ì •ë³´
+    // Trigger Event Á¤º¸
     qdnTriggerEvent            triggerEvent;
 
-    // Referencing ì •ë³´
+    // Referencing Á¤º¸
     qdnTriggerRef            * triggerReference;
 
-    // Trigger Action ì •ë³´
+    // Trigger Action Á¤º¸
     qdnTriggerActionCond       actionCond;
     qsProcParseTree            actionBody;
 
@@ -174,18 +174,18 @@ typedef struct qdnCreateTriggerParseTree
     smSCN                      triggerSCN;
 
     //---------------------------------------------
-    // Validation ì •ë³´
+    // Validation Á¤º¸
     //---------------------------------------------
 
-    // recompile ì •ë³´
+    // recompile Á¤º¸
     idBool                     isRecompile;
 
-    // Trigger Name ì •ë³´
+    // Trigger Name Á¤º¸
     UInt                       triggerUserID;
     SChar                      triggerUserName[QC_MAX_OBJECT_NAME_LEN + 1];
     SChar                      triggerName[QC_MAX_OBJECT_NAME_LEN + 1];
 
-    // Trigger Table ì •ë³´
+    // Trigger Table Á¤º¸
     UInt                       tableUserID;
     UInt                       tableID;
     smOID                      tableOID;
@@ -196,7 +196,7 @@ typedef struct qdnCreateTriggerParseTree
     smSCN                      tableSCN;
 
     // BUG-20948
-    // Triggerì˜ Target Tableì´ ë°”ë€Œì—ˆì„ ê²½ìš° Original Tableì˜ ì •ë³´ë¥¼ ë³€ê²½í•˜ê¸° ìœ„í•´ ì €ì¥
+    // TriggerÀÇ Target TableÀÌ ¹Ù²î¾úÀ» °æ¿ì Original TableÀÇ Á¤º¸¸¦ º¯°æÇÏ±â À§ÇØ ÀúÀå
     UInt                       orgTableUserID;
     UInt                       orgTableID;
     smOID                      orgTableOID;
@@ -205,13 +205,13 @@ typedef struct qdnCreateTriggerParseTree
     void                     * orgTableHandle; 
     smSCN                      orgTableSCN;       
 
-    // íŠ¸ë¦¬ê±°ë„ í”„ë¡œì‹œì €ì™€ ë™ì¼í•˜ê²Œ ë¶€ë¶„ ì¬ë¹Œë“œê°€ ê°€ëŠ¥í•˜ë‹¤.
-    // ë¶€ë¶„ ì¬ë¹Œë“œ ê´€ë ¨ ì •ë³´ëŠ” qsxProcInfoì— ì¡´ì¬í•˜ê¸° ë•Œë¬¸ì— ê°€ìƒì˜
-    // qsxProcInfoë¥¼ êµ¬ì¶•í•´ ì£¼ì–´ì•¼ í•œë‹¤.
+    // Æ®¸®°Åµµ ÇÁ·Î½ÃÀú¿Í µ¿ÀÏÇÏ°Ô ºÎºĞ Àçºôµå°¡ °¡´ÉÇÏ´Ù.
+    // ºÎºĞ Àçºôµå °ü·Ã Á¤º¸´Â qsxProcInfo¿¡ Á¸ÀçÇÏ±â ¶§¹®¿¡ °¡»óÀÇ
+    // qsxProcInfo¸¦ ±¸ÃàÇØ ÁÖ¾î¾ß ÇÑ´Ù.
     qsxProcInfo                procInfo;
 
     // BUG-21761
-    // Níƒ€ì…ì„ Uíƒ€ì…ìœ¼ë¡œ ë³€í˜•ì‹œí‚¬ ë•Œ ì‚¬ìš©
+    // NÅ¸ÀÔÀ» UÅ¸ÀÔÀ¸·Î º¯Çü½ÃÅ³ ¶§ »ç¿ë
     qcNamePosList            * ncharList;
 
     // PROJ-2219 Row-level before update trigger
@@ -235,30 +235,30 @@ typedef struct qdnCreateTriggerParseTree
     }
 
 
-// [ALTER TRIGGERë¥¼ ìœ„í•œ Parse Tree]
+// [ALTER TRIGGER¸¦ À§ÇÑ Parse Tree]
 typedef struct qdnAlterTriggerParseTree
 {
     //---------------------------------------------
-    // Parsing ì •ë³´
+    // Parsing Á¤º¸
     //---------------------------------------------
 
     qcParseTree                common;
 
-    // Trigger Name ì •ë³´
+    // Trigger Name Á¤º¸
     qcNamePosition             triggerUserPos;
     qcNamePosition             triggerNamePos;
 
     qdnTriggerAlterOption      option;
 
     //---------------------------------------------
-    // Validation ì •ë³´
+    // Validation Á¤º¸
     //---------------------------------------------
 
-    // Trigger Name ì •ë³´
+    // Trigger Name Á¤º¸
     UInt                       triggerUserID;
     smOID                      triggerOID;
 
-    // Triggerê°€ ì ‘ê·¼í•˜ëŠ” Table ì •ë³´
+    // Trigger°¡ Á¢±ÙÇÏ´Â Table Á¤º¸
     UInt                       tableID;
 
 } qdnAlterTriggerParseTree;
@@ -270,28 +270,28 @@ typedef struct qdnAlterTriggerParseTree
     }
 
 
-// [DROP TRIGGERë¥¼ ìœ„í•œ Parse Tree]
+// [DROP TRIGGER¸¦ À§ÇÑ Parse Tree]
 typedef struct qdnDropTriggerParseTree
 {
     //---------------------------------------------
-    // Parsing ì •ë³´
+    // Parsing Á¤º¸
     //---------------------------------------------
 
     qcParseTree                common;
 
-    // Trigger Name ì •ë³´
+    // Trigger Name Á¤º¸
     qcNamePosition             triggerUserPos;
     qcNamePosition             triggerNamePos;
 
     //---------------------------------------------
-    // Validation ì •ë³´
+    // Validation Á¤º¸
     //---------------------------------------------
 
-    // Trigger Name ì •ë³´
+    // Trigger Name Á¤º¸
     UInt                       triggerUserID;
     smOID                      triggerOID;
 
-    // Triggerê°€ ì ‘ê·¼í•˜ëŠ” Table ì •ë³´
+    // Trigger°¡ Á¢±ÙÇÏ´Â Table Á¤º¸
     UInt                       tableID;
     qcmTableInfo             * tableInfo;
 
@@ -308,29 +308,29 @@ typedef struct qdnDropTriggerParseTree
     }
 
 //===========================================================
-// [Trigger Objectë¥¼ ìœ„í•œ Cache êµ¬ì¡°]
+// [Trigger Object¸¦ À§ÇÑ Cache ±¸Á¶]
 //
 //     [Trigger Handle] -- info ----> CREATE TRIGGER String
 //                      |
 //                      -- tempInfo ----> Trigger Object Cache
 //
-// Trigger Object CacheëŠ” CREATE TRIGGER ë˜ëŠ” Server êµ¬ë™ ì‹œ
-// ìƒì„±ë˜ë©°,  Triggerë¥¼ ìˆ˜í–‰í•˜ê¸° ìœ„í•œ ì¼ë¶€ ì •ë³´ë“¤ì„ ê´€ë¦¬í•œë‹¤.
-// Trigger ìˆ˜í–‰ì˜ ë™ì‹œì„± ì œì–´ ë° Trigger Action ì •ë³´ê°€ êµ¬ì¶•ëœë‹¤.
+// Trigger Object Cache´Â CREATE TRIGGER ¶Ç´Â Server ±¸µ¿ ½Ã
+// »ı¼ºµÇ¸ç,  Trigger¸¦ ¼öÇàÇÏ±â À§ÇÑ ÀÏºÎ Á¤º¸µéÀ» °ü¸®ÇÑ´Ù.
+// Trigger ¼öÇàÀÇ µ¿½Ã¼º Á¦¾î ¹× Trigger Action Á¤º¸°¡ ±¸ÃàµÈ´Ù.
 //===========================================================
 
 typedef struct qdnTriggerCache
 {
-    iduLatch                     latch;      // ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•œ latch
-    idBool                       isValid;    // Cache ì •ë³´ì˜ ìœ íš¨ì„± ì—¬ë¶€
-    qcStatement                  triggerStatement; // PVOê°€ ì™„ë£Œëœ Statement ì •ë³´
+    iduLatch                     latch;      // µ¿½Ã¼º Á¦¾î¸¦ À§ÇÑ latch
+    idBool                       isValid;    // Cache Á¤º¸ÀÇ À¯È¿¼º ¿©ºÎ
+    qcStatement                  triggerStatement; // PVO°¡ ¿Ï·áµÈ Statement Á¤º¸
     
     UInt                         stmtTextLen;
     SChar                      * stmtText;
 } qdnTriggerCache;
 
 //=========================================================
-// [PROJ-1359] Triggerë¥¼ ìœ„í•œ í•¨ìˆ˜
+// [PROJ-1359] Trigger¸¦ À§ÇÑ ÇÔ¼ö
 //=========================================================
 
 class qdnTrigger
@@ -338,7 +338,7 @@ class qdnTrigger
 public:
 
     //----------------------------------------------
-    // CREATE TRIGGERë¥¼ ìœ„í•œ í•¨ìˆ˜
+    // CREATE TRIGGER¸¦ À§ÇÑ ÇÔ¼ö
     //----------------------------------------------
 
     static IDE_RC parseCreate( qcStatement * aStatement );
@@ -350,7 +350,7 @@ public:
     static IDE_RC executeReplace( qcStatement * aStatement );
 
     //----------------------------------------------
-    // ALTER TRIGGERë¥¼ ìœ„í•œ í•¨ìˆ˜
+    // ALTER TRIGGER¸¦ À§ÇÑ ÇÔ¼ö
     //----------------------------------------------
 
     static IDE_RC parseAlter( qcStatement * aStatement );
@@ -359,7 +359,7 @@ public:
     static IDE_RC executeAlter( qcStatement * aStatement );
 
     //----------------------------------------------
-    // DROP TRIGGERë¥¼ ìœ„í•œ í•¨ìˆ˜
+    // DROP TRIGGER¸¦ À§ÇÑ ÇÔ¼ö
     //----------------------------------------------
 
     static IDE_RC parseDrop( qcStatement * aStatement );
@@ -368,10 +368,10 @@ public:
     static IDE_RC executeDrop( qcStatement * aStatement );
 
     //----------------------------------------------
-    // TRIGGER ìˆ˜í–‰ì„ ìœ„í•œ í•¨ìˆ˜
+    // TRIGGER ¼öÇàÀ» À§ÇÑ ÇÔ¼ö
     //----------------------------------------------
 
-    // Trigger Referencing Rowì˜ Buildê°€ í•„ìš”í•œì§€ë¥¼ íŒë‹¨
+    // Trigger Referencing RowÀÇ Build°¡ ÇÊ¿äÇÑÁö¸¦ ÆÇ´Ü
     static IDE_RC needTriggerRow( qcStatement         * aStatement,
                                   qcmTableInfo        * aTableInfo,
                                   qcmTriggerEventTime   aEventTime,
@@ -379,7 +379,7 @@ public:
                                   smiColumnList       * aUptColumn,
                                   idBool              * aIsNeed );
 
-    // Triggerë¥¼ ìˆ˜í–‰í•œë‹¤.
+    // Trigger¸¦ ¼öÇàÇÑ´Ù.
     static IDE_RC fireTrigger( qcStatement         * aStatement,
                                iduMemory           * aNewValueMem,
                                qcmTableInfo        * aTableInfo,
@@ -395,23 +395,23 @@ public:
                                qcmColumn           * aNewRowColumns );
 
     //----------------------------------------------
-    // Triggerì˜ ì¼ê´„ ì²˜ë¦¬ ì‘ì—…
+    // TriggerÀÇ ÀÏ°ı Ã³¸® ÀÛ¾÷
     //----------------------------------------------
 
-    // Server êµ¬ë™ì‹œ Trigger Object Cacheì •ë³´ë¥¼ êµ¬ì¶•í•œë‹¤.
+    // Server ±¸µ¿½Ã Trigger Object CacheÁ¤º¸¸¦ ±¸ÃàÇÑ´Ù.
     static IDE_RC loadAllTrigger( smiStatement * aSmiStmt );
 
-    // Table ì´ ì†Œìœ í•œ Triggerë¥¼ ëª¨ë‘ ì œê±°í•œë‹¤.
+    // Table ÀÌ ¼ÒÀ¯ÇÑ Trigger¸¦ ¸ğµÎ Á¦°ÅÇÑ´Ù.
     static IDE_RC dropTrigger4DropTable( qcStatement  * aStatement,
                                          qcmTableInfo * aTableInfo );
 
     // To Fix BUG-12034
-    // qdd::executeDropTable ì—ì„œ
-    // SMì´ ë”ì´ìƒ ì‹¤íŒ¨í•  ì—¬ì§€ê°€ ì—†ì„ ë•Œì—
-    // ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì—¬ TriggerChacheë¥¼ freeí•œë‹¤.
+    // qdd::executeDropTable ¿¡¼­
+    // SMÀÌ ´õÀÌ»ó ½ÇÆĞÇÒ ¿©Áö°¡ ¾øÀ» ¶§¿¡
+    // ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ¿© TriggerChache¸¦ freeÇÑ´Ù.
     static IDE_RC freeTriggerCaches4DropTable( qcmTableInfo * aTableInfo );
 
-    // Trigger Cache ë¥¼ ì‚­ì œí•œë‹¤.
+    // Trigger Cache ¸¦ »èÁ¦ÇÑ´Ù.
     static IDE_RC freeTriggerCache( qdnTriggerCache * aCache );
 
     /* PROJ-2600 Online DDL for Tablespace Alteration */
@@ -453,48 +453,48 @@ public:
                                   idBool        * aIsNeedRebuild );
 
     //----------------------------------------------
-    // CREATE TRIGGERì˜ Executionì„ ìœ„í•œ í•¨ìˆ˜
+    // CREATE TRIGGERÀÇ ExecutionÀ» À§ÇÑ ÇÔ¼ö
     //----------------------------------------------
     
-    // Trigger Handleì„ ìœ„í•œ Cache ê³µê°„ì„ í• ë‹¹í•œë‹¤.
+    // Trigger HandleÀ» À§ÇÑ Cache °ø°£À» ÇÒ´çÇÑ´Ù.
     static IDE_RC allocTriggerCache( void             * aTriggerHandle,
                                      smOID              aTriggerOID,
                                      qdnTriggerCache ** aCache );
 private:
 
     //----------------------------------------------
-    // CREATE TRIGGERì˜ Parsingì„ ìœ„í•œ í•¨ìˆ˜
+    // CREATE TRIGGERÀÇ ParsingÀ» À§ÇÑ ÇÔ¼ö
     //----------------------------------------------
 
-    // FOR EACH ROWì˜ Validationì„ ìœ„í•œ ë¶€ê°€ ì •ë³´ë¥¼ ì¶”ê°€í•¨
+    // FOR EACH ROWÀÇ ValidationÀ» À§ÇÑ ºÎ°¡ Á¤º¸¸¦ Ãß°¡ÇÔ
     static IDE_RC addGranularityInfo( qdnCreateTriggerParseTree * aParseTree );
 
-    // FOR EACH ROWì˜ Action Bodyë¥¼ ìœ„í•œ ë¶€ê°€ ì •ë³´ë¥¼ ì¶”ê°€í•¨.
+    // FOR EACH ROWÀÇ Action Body¸¦ À§ÇÑ ºÎ°¡ Á¤º¸¸¦ Ãß°¡ÇÔ.
     static IDE_RC addActionBodyInfo( qcStatement               * aStatement,
                                      qdnCreateTriggerParseTree * aParseTree );
 
     //----------------------------------------------
-    // CREATE TRIGGERì˜ Validationì„ ìœ„í•œ í•¨ìˆ˜
+    // CREATE TRIGGERÀÇ ValidationÀ» À§ÇÑ ÇÔ¼ö
     //----------------------------------------------
 
     // BUG-24570
-    // Trigger Userì— ëŒ€í•œ ì •ë³´ ì„¤ì •
+    // Trigger User¿¡ ´ëÇÑ Á¤º¸ ¼³Á¤
     static IDE_RC setTriggerUser( qcStatement               * aStatement,
                                   qdnCreateTriggerParseTree * aParseTree );
 
-    // Trigger ìƒì„±ì— ëŒ€í•œ ê¶Œí•œ ê²€ì‚¬
+    // Trigger »ı¼º¿¡ ´ëÇÑ ±ÇÇÑ °Ë»ç
     static IDE_RC valPrivilege( qcStatement               * aStatement,
                                 qdnCreateTriggerParseTree * aParseTree );
 
-    // Trigger Nameì— ëŒ€í•œ Validation
+    // Trigger Name¿¡ ´ëÇÑ Validation
     static IDE_RC valTriggerName( qcStatement               * aStatement,
                                   qdnCreateTriggerParseTree * aParseTree );
 
-    // Recompileì„ ìœ„í•œ Trigger Nameì— ëŒ€í•œ Validation
+    // RecompileÀ» À§ÇÑ Trigger Name¿¡ ´ëÇÑ Validation
     static IDE_RC reValTriggerName( qcStatement               * aStatement,
                                     qdnCreateTriggerParseTree * aParseTree );
 
-    // Trigger Tableì— ëŒ€í•œ Validation
+    // Trigger Table¿¡ ´ëÇÑ Validation
     static IDE_RC valTableName( qcStatement               * aStatement,
                                 qdnCreateTriggerParseTree * aParseTree );
 
@@ -502,51 +502,51 @@ private:
     static IDE_RC valOrgTableName( qcStatement               * aStatement,
                                    qdnCreateTriggerParseTree * aParseTree );
 
-    // Trigger Eventì™€ Referencing ì— ëŒ€í•œ Validation
+    // Trigger Event¿Í Referencing ¿¡ ´ëÇÑ Validation
     static IDE_RC valEventReference( qcStatement               * aStatement,
                                      qdnCreateTriggerParseTree * aParseTree );
 
-    // Action Conditionì— ëŒ€í•œ Validation
+    // Action Condition¿¡ ´ëÇÑ Validation
     static IDE_RC valActionCondition( qcStatement               * aStatement,
                                       qdnCreateTriggerParseTree * aParseTree );
 
-    // Action Bodyì— ëŒ€í•œ Validation
+    // Action Body¿¡ ´ëÇÑ Validation
     static IDE_RC valActionBody( qcStatement               * aStatement,
                                  qdnCreateTriggerParseTree * aParseTree );
     
-    //PROJ-1888 INSTEAD OF TRIGGER ì œì•½ì‚¬í•­ ê²€ì‚¬
+    //PROJ-1888 INSTEAD OF TRIGGER Á¦¾à»çÇ× °Ë»ç
     static IDE_RC valInsteadOfTrigger( qdnCreateTriggerParseTree * aParseTree );
     
-    // Action Bodyì— ì¡´ì¬í•˜ëŠ” Cycleì˜ ê²€ì‚¬
+    // Action Body¿¡ Á¸ÀçÇÏ´Â CycleÀÇ °Ë»ç
     static IDE_RC checkCycle( qcStatement               * aStatement,
                               qdnCreateTriggerParseTree * aParseTree );
 
-    // DMLë¡œ ì°¸ì¡°ë˜ëŠ” Tableì´ ì†Œìœ í•œ Triggerë¡œë¶€í„° Cycleì˜ ê²€ì‚¬
+    // DML·Î ÂüÁ¶µÇ´Â TableÀÌ ¼ÒÀ¯ÇÑ Trigger·ÎºÎÅÍ CycleÀÇ °Ë»ç
     static IDE_RC checkCycleOtherTable( qcStatement               * aStatement,
                                         qdnCreateTriggerParseTree * aParseTree,
                                         UInt                        aTableID );
 
     //----------------------------------------------
-    // CREATE TRIGGERì˜ Executionì„ ìœ„í•œ í•¨ìˆ˜
+    // CREATE TRIGGERÀÇ ExecutionÀ» À§ÇÑ ÇÔ¼ö
     //----------------------------------------------
 
-    // Trigger Objectë¥¼ ìƒì„±í•œë‹¤.
+    // Trigger Object¸¦ »ı¼ºÇÑ´Ù.
     static IDE_RC createTriggerObject( qcStatement     * aStatement,
                                        void           ** aTriggerHandle );
 
     //----------------------------------------------
-    // DROP TRIGGERì˜ Executionì„ ìœ„í•œ í•¨ìˆ˜
+    // DROP TRIGGERÀÇ ExecutionÀ» À§ÇÑ ÇÔ¼ö
     //----------------------------------------------
 
-    // Trigger Objectë¥¼ ìƒì„±í•œë‹¤.
+    // Trigger Object¸¦ »ı¼ºÇÑ´Ù.
     static IDE_RC dropTriggerObject( qcStatement     * aStatement,
                                      void            * aTriggerHandle );
 
     //----------------------------------------------
-    // Trigger ìˆ˜í–‰ì„ ìœ„í•œ í•¨ìˆ˜
+    // Trigger ¼öÇàÀ» À§ÇÑ ÇÔ¼ö
     //----------------------------------------------
 
-    // ì¡°ê±´ì— ë¶€í•©í•˜ëŠ” Triggerì¸ì§€ ê²€ì‚¬
+    // Á¶°Ç¿¡ ºÎÇÕÇÏ´Â TriggerÀÎÁö °Ë»ç
     static IDE_RC checkCondition( qcStatement         * aStatement,
                                   qcmTriggerInfo      * aTriggerInfo,
                                   qcmTriggerGranularity aGranularity,
@@ -556,7 +556,7 @@ private:
                                   idBool              * aNeedAction,
                                   idBool              * aIsRecompile );
 
-    // Validation ì—¬ë¶€ë¥¼ ê³ ë ¤í•˜ì—¬ Trigger Actionì„ ìˆ˜í–‰í•œë‹¤.
+    // Validation ¿©ºÎ¸¦ °í·ÁÇÏ¿© Trigger ActionÀ» ¼öÇàÇÑ´Ù.
     static IDE_RC fireTriggerAction( qcStatement    * aStatement,
                                      iduMemory      * aNewValueMem,
                                      qcmTableInfo   * aTableInfo,
@@ -568,7 +568,7 @@ private:
                                      void           * aNewRow,
                                      qcmColumn      * aNewRowColumns );
 
-    // Validateí•œ ê²½ìš° Trigger Actionì„ ìˆ˜í–‰í•œë‹¤.
+    // ValidateÇÑ °æ¿ì Trigger ActionÀ» ¼öÇàÇÑ´Ù.
     static IDE_RC runTriggerAction( qcStatement           * aStatement,
                                     iduMemory             * aNewValueMem,
                                     qcmTableInfo          * aTableInfo,
@@ -580,8 +580,8 @@ private:
                                     void                  * aNewRow,
                                     qcmColumn             * aNewRowColumns );
 
-    // WHEN Condition ë° Action Bodyì •ë³´ë¥¼ ì²˜ë¦¬í•  ìˆ˜ ìˆë„ë¡
-    // REFERENCING ROWì˜ ì •ë³´ë¥¼ ì…‹íŒ…í•œë‹¤.
+    // WHEN Condition ¹× Action BodyÁ¤º¸¸¦ Ã³¸®ÇÒ ¼ö ÀÖµµ·Ï
+    // REFERENCING ROWÀÇ Á¤º¸¸¦ ¼ÂÆÃÇÑ´Ù.
     static IDE_RC setReferencingRow( qcTemplate                * aClonedTemplate,
                                      qcmTableInfo              * aTableInfo,
                                      qdnCreateTriggerParseTree * aParseTree,
@@ -592,8 +592,8 @@ private:
                                      void                      * aNewRow,
                                      qcmColumn                 * aNewRowColumns );
 
-    // WHEN Condition ë° Action Bodyì •ë³´ë¥¼ ì²˜ë¦¬í•  ìˆ˜ ìˆë„ë¡
-    // REFERENCING ROWì˜ ì •ë³´ë¥¼ ì…‹íŒ…í•œë‹¤.
+    // WHEN Condition ¹× Action BodyÁ¤º¸¸¦ Ã³¸®ÇÒ ¼ö ÀÖµµ·Ï
+    // REFERENCING ROWÀÇ Á¤º¸¸¦ ¼ÂÆÃÇÑ´Ù.
     static IDE_RC makeValueListFromReferencingRow(
         qcTemplate                * aClonedTemplate,
         iduMemory                 * aNewValueMem,
@@ -602,7 +602,7 @@ private:
         void                      * aNewRow,
         qcmColumn                 * aNewRowColumn );
     
-    // tableRowë¥¼ PSM rowtypeìœ¼ë¡œ ë³€í™˜í•˜ì—¬ ë³µì‚¬
+    // tableRow¸¦ PSM rowtypeÀ¸·Î º¯È¯ÇÏ¿© º¹»ç
     static IDE_RC copyRowFromTableRow( qcTemplate        * aTemplate,
                                        qcmTableInfo      * aTableInfo,
                                        qsVariables       * aVariable,
@@ -612,14 +612,14 @@ private:
                                        qcmColumn         * aTableRowColumns,
                                        qcmTriggerRefType   aRefType );
 
-    // value listë¥¼ PSM rowtypeìœ¼ë¡œ ë³€í™˜í•˜ì—¬ ë³µì‚¬
+    // value list¸¦ PSM rowtypeÀ¸·Î º¯È¯ÇÏ¿© º¹»ç
     static IDE_RC copyRowFromValueList( qcTemplate   * aTemplate,
                                         qcmTableInfo * aTableInfo,
                                         qsVariables  * aVariable,
                                         void         * aValueList,
                                         qcmColumn    * aTableRowColumns );
 
-    // rowë¡œ ë¶€í„° value listë¥¼ ë³µì‚¬
+    // row·Î ºÎÅÍ value list¸¦ º¹»ç
     static IDE_RC copyValueListFromRow( qcTemplate   * aTemplate,
                                         iduMemory    * aNewValueMem,
                                         qcmTableInfo * aTableInfo,
@@ -628,11 +628,11 @@ private:
                                         qcmColumn    * aTableRowColumns );
 
     // BUG-20797
-    // Triggerì—ì„œ ì°¸ì¡°í•˜ëŠ” PSMì˜ ë³€ê²½ì„ ê²€ì‚¬í•œë‹¤.
+    // Trigger¿¡¼­ ÂüÁ¶ÇÏ´Â PSMÀÇ º¯°æÀ» °Ë»çÇÑ´Ù.
     static IDE_RC checkObjects( qcStatement  * aStatement,
                                 idBool       * aInvalidProc );
 
-    // Triggerë¥¼ Recompileí•œë‹¤.
+    // Trigger¸¦ RecompileÇÑ´Ù.
     static IDE_RC recompileTrigger( qcStatement     * aStatement,
                                     qcmTriggerInfo  * aTriggerInfo );
 
@@ -643,7 +643,7 @@ private:
     static IDE_RC getTriggerSCN( smOID    aTriggerOID,
                                  smSCN  * aTriggerSCN );
 
-    /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+    /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
     static IDE_RC convertXlobToXlobValue( mtcTemplate        * aTemplate,
                                           smiTableCursor     * aTableCursor,
                                           void               * aTableRow,
@@ -657,7 +657,7 @@ private:
     /* PROJ-2219 Row-level before update trigger */
     static IDE_RC makeRefColumnList( qcStatement * aQcStmt );
 
-    // BUG-38137 Triggerì˜ when conditionì—ì„œ PSMì„ í˜¸ì¶œí•  ìˆ˜ ì—†ë‹¤.
+    // BUG-38137 TriggerÀÇ when condition¿¡¼­ PSMÀ» È£ÃâÇÒ ¼ö ¾ø´Ù.
     static IDE_RC checkNoSpFunctionCall( qtcNode * aNode );
 
     /* PROJ-2600 Online DDL for Tablespace Alteration */

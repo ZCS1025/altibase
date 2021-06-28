@@ -35,7 +35,7 @@ static IDE_RC mmmPhaseActionInitModuleMsgLog(mmmPhase         /*aPhase*/,
 
 
     /* ------------------------
-     * ë©”ì‹œì§€ ë¡œê¹… ëª¨ë“ˆ ì´ˆê¸°í™”
+     * ¸Þ½ÃÁö ·Î±ë ¸ðµâ ÃÊ±âÈ­
      * ---------------------- */
     IDE_TEST(ideLog::destroyStaticBoot() != IDE_SUCCESS);
     IDE_TEST(ideLog::initializeStaticModule(sDebug) != IDE_SUCCESS);

@@ -19,11 +19,11 @@
  * $Id: qmgDelete.cpp 53774 2012-06-15 04:53:31Z eerien $
  *
  * Description :
- *     Delete Graphë¥¼ ìœ„í•œ ìˆ˜í–‰ í•¨ìˆ˜
+ *     Delete Graph¸¦ À§ÇÑ ¼öÇà ÇÔ¼ö
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -41,12 +41,12 @@ qmgDelete::init( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgDelete Graphì˜ ì´ˆê¸°í™”
+ * Description : qmgDelete GraphÀÇ ÃÊ±âÈ­
  *
  * Implementation :
- *    (1) qmgDeleteì„ ìœ„í•œ ê³µê°„ í• ë‹¹
- *    (2) graph( ëª¨ë“  Graphë¥¼ ìœ„í•œ ê³µí†µ ìë£Œ êµ¬ì¡°) ì´ˆê¸°í™”
- *    (3) out ì„¤ì •
+ *    (1) qmgDeleteÀ» À§ÇÑ °ø°£ ÇÒ´ç
+ *    (2) graph( ¸ğµç Graph¸¦ À§ÇÑ °øÅë ÀÚ·á ±¸Á¶) ÃÊ±âÈ­
+ *    (3) out ¼³Á¤
  *
  ***********************************************************************/
 
@@ -57,7 +57,7 @@ qmgDelete::init( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgDelete::init::__FT__" );
 
     //---------------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -65,15 +65,15 @@ qmgDelete::init( qcStatement * aStatement,
     IDE_DASSERT( aChildGraph != NULL );
 
     //---------------------------------------------------
-    // Delete Graphë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
+    // Delete Graph¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
     //---------------------------------------------------
 
-    // qmgDeleteì„ ìœ„í•œ ê³µê°„ í• ë‹¹
+    // qmgDeleteÀ» À§ÇÑ °ø°£ ÇÒ´ç
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmgDETE ),
                                              (void**) &sMyGraph )
               != IDE_SUCCESS );
 
-    // Graph ê³µí†µ ì •ë³´ì˜ ì´ˆê¸°í™”
+    // Graph °øÅë Á¤º¸ÀÇ ÃÊ±âÈ­
     IDE_TEST( qmg::initGraph( & sMyGraph->graph ) != IDE_SUCCESS );
 
     sMyGraph->graph.type = QMG_DELETE;
@@ -87,7 +87,7 @@ qmgDelete::init( qcStatement * aStatement,
     sMyGraph->graph.makePlan = qmgDelete::makePlan;
     sMyGraph->graph.printGraph = qmgDelete::printGraph;
 
-    // Disk/Memory ì •ë³´ ì„¤ì •
+    // Disk/Memory Á¤º¸ ¼³Á¤
     for ( sQuerySet = aQuerySet;
           sQuerySet->left != NULL;
           sQuerySet = sQuerySet->left ) ;
@@ -95,7 +95,7 @@ qmgDelete::init( qcStatement * aStatement,
     switch(  sQuerySet->SFWGH->hints->interResultType )
     {
         case QMO_INTER_RESULT_TYPE_NOT_DEFINED :
-            // ì¤‘ê°„ ê²°ê³¼ Type Hintê°€ ì—†ëŠ” ê²½ìš°, í•˜ìœ„ì˜ Typeì„ ë”°ë¥¸ë‹¤.
+            // Áß°£ °á°ú Type Hint°¡ ¾ø´Â °æ¿ì, ÇÏÀ§ÀÇ TypeÀ» µû¸¥´Ù.
             if ( ( aChildGraph->flag & QMG_GRAPH_TYPE_MASK )
                  == QMG_GRAPH_TYPE_DISK )
             {
@@ -122,29 +122,31 @@ qmgDelete::init( qcStatement * aStatement,
     }
 
     //---------------------------------------------------
-    // Delete Graph ë§Œì„ ìœ„í•œ ì´ˆê¸°í™”
+    // Delete Graph ¸¸À» À§ÇÑ ÃÊ±âÈ­
     //---------------------------------------------------
 
     sParseTree = (qmmDelParseTree *)aStatement->myPlan->parseTree;
 
     /* PROJ-2204 Join Update, Delete */
     sMyGraph->deleteTableRef = sParseTree->deleteTableRef;
-        
-    // ìµœìƒìœ„ graphì¸ delete graphì— instead of triggerì •ë³´ë¥¼ ì„¤ì •
+
+    // ÃÖ»óÀ§ graphÀÎ delete graph¿¡ instead of triggerÁ¤º¸¸¦ ¼³Á¤
     sMyGraph->insteadOfTrigger = sParseTree->insteadOfTrigger;
 
-    // ìµœìƒìœ„ graphì¸ delete graphì— limitì„ ì—°ê²°
+    // ÃÖ»óÀ§ graphÀÎ delete graph¿¡ limitÀ» ¿¬°á
     sMyGraph->limit = sParseTree->limit;
 
-    // ìµœìƒìœ„ graphì¸ delete graphì— child constraintë¥¼ ì—°ê²°
+    // ÃÖ»óÀ§ graphÀÎ delete graph¿¡ child constraint¸¦ ¿¬°á
     sMyGraph->childConstraints = sParseTree->childConstraints;
 
-    // ìµœìƒìœ„ graphì¸ delete graphì— return intoë¥¼ ì—°ê²°
+    // ÃÖ»óÀ§ graphÀÎ delete graph¿¡ return into¸¦ ¿¬°á
     sMyGraph->returnInto = sParseTree->returnInto;
 
-    // out ì„¤ì •
+    /* PROJ-2714 Multiple update, delete support */
+    sMyGraph->mTableList = sParseTree->mTableList;
+    // out ¼³Á¤
     *aGraph = (qmgGraph *)sMyGraph;
-    
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -158,11 +160,11 @@ qmgDelete::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- * Description : qmgDeleteì˜ ìµœì í™”
+ * Description : qmgDeleteÀÇ ÃÖÀûÈ­
  *
  * Implementation :
- *    (1) SCAN Limit ìµœì í™”
- *    (2) ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì •
+ *    (1) SCAN Limit ÃÖÀûÈ­
+ *    (2) °øÅë ºñ¿ë Á¤º¸ ¼³Á¤
  *
  ***********************************************************************/
 
@@ -178,21 +180,21 @@ qmgDelete::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     IDU_FIT_POINT_FATAL( "qmgDelete::optimize::__FT__" );
 
     //---------------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //---------------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //---------------------------------------------------
 
     sMyGraph = (qmgDETE*) aGraph;
     sChildGraph = aGraph->left;
 
     //---------------------------------------------------
-    // SCAN Limit ìµœì í™”
+    // SCAN Limit ÃÖÀûÈ­
     //---------------------------------------------------
 
     sIsScanLimit = ID_FALSE;
@@ -201,18 +203,18 @@ qmgDelete::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         if ( sChildGraph->type == QMG_SELECTION )
         {
             //---------------------------------------------------
-            // í•˜ìœ„ê°€ ì¼ë°˜ qmgSelectionì¸ ê²½ìš°
-            // ì¦‰, Set, Order By, Group By, Aggregation, Distinct, Joinì´
-            //  ì—†ëŠ” ê²½ìš°
+            // ÇÏÀ§°¡ ÀÏ¹İ qmgSelectionÀÎ °æ¿ì
+            // Áï, Set, Order By, Group By, Aggregation, Distinct, JoinÀÌ
+            //  ¾ø´Â °æ¿ì
             //---------------------------------------------------
             if ( sChildGraph->myFrom->tableRef->view == NULL )
             {
-                // View ê°€ ì•„ë‹Œ ê²½ìš°, SCAN Limit ì ìš©
+                // View °¡ ¾Æ´Ñ °æ¿ì, SCAN Limit Àû¿ë
                 sNode = (qtcNode *)sChildGraph->myQuerySet->SFWGH->where;
 
                 if ( sNode != NULL )
                 {
-                    // whereê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°, subquery ì¡´ì¬ ìœ ë¬´ ê²€ì‚¬
+                    // where°¡ Á¸ÀçÇÏ´Â °æ¿ì, subquery Á¸Àç À¯¹« °Ë»ç
                     if ( ( sNode->lflag & QTC_NODE_SUBQUERY_MASK )
                          != QTC_NODE_SUBQUERY_EXIST )
                     {
@@ -225,7 +227,7 @@ qmgDelete::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                 }
                 else
                 {
-                    // whereê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°,SCAN Limit ì ìš©
+                    // where°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì,SCAN Limit Àû¿ë
                     sIsScanLimit = ID_TRUE;
                 }
             }
@@ -236,8 +238,8 @@ qmgDelete::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         }
         else
         {
-            // Set, Order By, Group By, Distinct, Aggregation, Join, Viewê°€
-            // ìˆëŠ” ê²½ìš° :
+            // Set, Order By, Group By, Distinct, Aggregation, Join, View°¡
+            // ÀÖ´Â °æ¿ì :
             // nothing to do
         }
     }
@@ -247,7 +249,7 @@ qmgDelete::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //---------------------------------------------------
-    // SCAN Limit Tipì´ ì ìš©ëœ ê²½ìš°
+    // SCAN Limit TipÀÌ Àû¿ëµÈ °æ¿ì
     //---------------------------------------------------
 
     if ( sIsScanLimit == ID_TRUE )
@@ -261,10 +263,10 @@ qmgDelete::optimize( qcStatement * aStatement, qmgGraph * aGraph )
             != IDE_SUCCESS );
 
         // fix BUG-13482
-        // parse treeì˜ limitì •ë³´ë¥¼ í˜„ì¬ ê°€ì§€ë©°,
-        // DETE ë…¸ë“œ ìƒì„±ì‹œ,
-        // í•˜ìœ„ SCAN ë…¸ë“œì—ì„œ SCAN Limit ì ìš©ì´ í™•ì •ë˜ë©´,
-        // DETE ë…¸ë“œì˜ limit startë¥¼ 1ë¡œ ë³€ê²½í•œë‹¤.
+        // parse treeÀÇ limitÁ¤º¸¸¦ ÇöÀç °¡Áö¸ç,
+        // DETE ³ëµå »ı¼º½Ã,
+        // ÇÏÀ§ SCAN ³ëµå¿¡¼­ SCAN Limit Àû¿ëÀÌ È®Á¤µÇ¸é,
+        // DETE ³ëµåÀÇ limit start¸¦ 1·Î º¯°æÇÑ´Ù.
 
         qmsLimitI::setStart( sLimit,
                              qmsLimitI::getStart( sMyGraph->limit ) );
@@ -282,7 +284,7 @@ qmgDelete::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //---------------------------------------------------
-    // ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì •
+    // °øÅë ºñ¿ë Á¤º¸ ¼³Á¤
     //---------------------------------------------------
 
     // recordSize
@@ -319,7 +321,7 @@ qmgDelete::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         sMyGraph->graph.costInfo.myAllCost;
 
     //---------------------------------------------------
-    // Preserved Order ì„¤ì •
+    // Preserved Order ¼³Á¤
     //---------------------------------------------------
 
     sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
@@ -341,10 +343,10 @@ qmgDelete::makePlan( qcStatement     * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgDeleteìœ¼ë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
+ * Description : qmgDeleteÀ¸·Î ºÎÅÍ PlanÀ» »ı¼ºÇÑ´Ù.
  *
  * Implementation :
- *    - qmgDeleteìœ¼ë¡œ ìƒì„±ê°€ëŠ¥í•œ Plan
+ *    - qmgDeleteÀ¸·Î »ı¼º°¡´ÉÇÑ Plan
  *
  *           [DETE]
  *
@@ -358,7 +360,7 @@ qmgDelete::makePlan( qcStatement     * aStatement,
     IDU_FIT_POINT_FATAL( "qmgDelete::makePlan::__FT__" );
 
     //---------------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -367,7 +369,7 @@ qmgDelete::makePlan( qcStatement     * aStatement,
     sMyGraph = (qmgDETE*) aGraph;
 
     //---------------------------
-    // Current CNFì˜ ë“±ë¡
+    // Current CNFÀÇ µî·Ï
     //---------------------------
 
     if ( sMyGraph->graph.myCNF != NULL )
@@ -385,19 +387,31 @@ qmgDelete::makePlan( qcStatement     * aStatement,
     sMyGraph->graph.flag |= QMG_PARALLEL_IMPOSSIBLE_TRUE;
 
     //---------------------------
-    // Planì˜ ìƒì„±
+    // PlanÀÇ »ı¼º
     //---------------------------
 
-    // ìµœìƒìœ„ planì´ë‹¤.
+    // ÃÖ»óÀ§ planÀÌ´Ù.
     IDE_DASSERT( aParent == NULL );
-    
-    IDE_TEST( qmoOneNonPlan::initDETE( aStatement ,
-                                       &sPlan )
-              != IDE_SUCCESS);
+
+    if ( sMyGraph->mTableList == NULL )
+    {
+        IDE_TEST( qmoOneNonPlan::initDETE( aStatement ,
+                                           &sPlan )
+                  != IDE_SUCCESS);
+    }
+    else
+    {
+        IDE_TEST( qmoOneNonPlan::initMultiDETE( aStatement ,
+                                                sMyGraph->graph.myQuerySet,
+                                                sMyGraph->mTableList,
+                                                &sPlan )
+                  != IDE_SUCCESS);
+    }
+
     sMyGraph->graph.myPlan = sPlan;
-    
+
     //---------------------------
-    // í•˜ìœ„ Planì˜ ìƒì„±
+    // ÇÏÀ§ PlanÀÇ »ı¼º
     //---------------------------
 
     IDE_TEST( sMyGraph->graph.left->makePlan( aStatement ,
@@ -406,12 +420,12 @@ qmgDelete::makePlan( qcStatement     * aStatement,
               != IDE_SUCCESS);
 
     // fix BUG-13482
-    // SCAN Limit ìµœì í™” ì ìš©ì— ë”°ë¥¸ DETE planì˜ start value ê²°ì •ìœ ë¬´
+    // SCAN Limit ÃÖÀûÈ­ Àû¿ë¿¡ µû¸¥ DETE planÀÇ start value °áÁ¤À¯¹«
     if( sMyGraph->graph.left->type == QMG_SELECTION )
     {
-        // projection í•˜ìœ„ê°€ SCANì´ê³ ,
-        // SCAN limit ìµœì í™”ê°€ ì ìš©ëœ ê²½ìš°ì´ë©´,
-        // DETEì˜ limit start valueë¥¼ 1ë¡œ ì¡°ì •í•œë‹¤.
+        // projection ÇÏÀ§°¡ SCANÀÌ°í,
+        // SCAN limit ÃÖÀûÈ­°¡ Àû¿ëµÈ °æ¿ìÀÌ¸é,
+        // DETEÀÇ limit start value¸¦ 1·Î Á¶Á¤ÇÑ´Ù.
         if( ((qmgSELT*)(sMyGraph->graph.left))->limit != NULL )
         {
             qmsLimitI::setStartValue( sMyGraph->limit, 1 );
@@ -426,16 +440,16 @@ qmgDelete::makePlan( qcStatement     * aStatement,
         // Nothing To Do
     }
 
-    // childê°€ì ¸ì˜¤ê¸°
+    // child°¡Á®¿À±â
     sChildPlan = sMyGraph->graph.left->myPlan;
 
     //---------------------------------------------------
-    // Process ìƒíƒœ ì„¤ì • 
+    // Process »óÅÂ ¼³Á¤ 
     //---------------------------------------------------
     sMyGraph->graph.myQuerySet->processPhase = QMS_MAKEPLAN_DELETE;
 
     //----------------------------
-    // DETEì˜ ìƒì„±
+    // DETEÀÇ »ı¼º
     //----------------------------
 
     sDETEInfo.deleteTableRef   = sMyGraph->deleteTableRef;
@@ -443,15 +457,29 @@ qmgDelete::makePlan( qcStatement     * aStatement,
     sDETEInfo.limit            = sMyGraph->limit;
     sDETEInfo.childConstraints = sMyGraph->childConstraints;
     sDETEInfo.returnInto       = sMyGraph->returnInto;
-        
-    IDE_TEST( qmoOneNonPlan::makeDETE( aStatement ,
-                                       sMyGraph->graph.myQuerySet ,
-                                       & sDETEInfo ,
-                                       sChildPlan ,
-                                       sPlan )
-              != IDE_SUCCESS);
+    sDETEInfo.mTableList       = sMyGraph->mTableList;
+
+    if ( sMyGraph->mTableList == NULL )
+    {
+        IDE_TEST( qmoOneNonPlan::makeDETE( aStatement ,
+                                           sMyGraph->graph.myQuerySet ,
+                                           & sDETEInfo ,
+                                           sChildPlan ,
+                                           sPlan )
+                  != IDE_SUCCESS);
+    }
+    else
+    {
+        IDE_TEST( qmoOneNonPlan::makeMultiDETE( aStatement,
+                                                sMyGraph->graph.myQuerySet,
+                                                &sDETEInfo,
+                                                sChildPlan,
+                                                sPlan )
+                  != IDE_SUCCESS );
+    }
+
     sMyGraph->graph.myPlan = sPlan;
-    
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -469,7 +497,7 @@ qmgDelete::printGraph( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Graphë¥¼ êµ¬ì„±í•˜ëŠ” ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *    Graph¸¦ ±¸¼ºÇÏ´Â °øÅë Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  *
  * Implementation :
@@ -481,7 +509,7 @@ qmgDelete::printGraph( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgDelete::printGraph::__FT__" );
 
     //-----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //-----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -489,7 +517,7 @@ qmgDelete::printGraph( qcStatement  * aStatement,
     IDE_DASSERT( aString != NULL );
 
     //-----------------------------------
-    // Graphì˜ ì‹œì‘ ì¶œë ¥
+    // GraphÀÇ ½ÃÀÛ Ãâ·Â
     //-----------------------------------
 
     if ( aDepth == 0 )
@@ -504,7 +532,7 @@ qmgDelete::printGraph( qcStatement  * aStatement,
     }
 
     //-----------------------------------
-    // Graph ê³µí†µ ì •ë³´ì˜ ì¶œë ¥
+    // Graph °øÅë Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
     IDE_TEST( qmg::printGraph( aStatement,
@@ -514,12 +542,12 @@ qmgDelete::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
+    // Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
 
     //-----------------------------------
-    // Child Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
+    // Child Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
     IDE_TEST( aGraph->left->printGraph( aStatement,
@@ -529,7 +557,7 @@ qmgDelete::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Graphì˜ ë§ˆì§€ë§‰ ì¶œë ¥
+    // GraphÀÇ ¸¶Áö¸· Ãâ·Â
     //-----------------------------------
 
     if ( aDepth == 0 )

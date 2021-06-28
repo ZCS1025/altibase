@@ -45,6 +45,7 @@ public class OsJob extends ProfileRunner {
     public List getProfileResult() {
         List result = null;
         String time = "";
+        String sMetricValue;
         double measuredValue = 0.0;
 
         if(!Picl.isFileExist) {
@@ -95,10 +96,11 @@ public class OsJob extends ProfileRunner {
             // Insert into real-time alert queue
             //QueueManager.getInstance().transitAlert(alert);
 
+            sMetricValue = (String)result.get(MetricManager.METRIC_VALUE);
             alert.add(MetricManager.METRIC_NAME, mJobId);
             alert.add(MetricManager.METRIC_TIME, time);
             alert.add(MetricManager.METRIC_OUTTYPE, oType);
-            alert.add(MetricManager.METRIC_VALUE, (String)result.get(MetricManager.METRIC_VALUE));
+            alert.add(MetricManager.METRIC_VALUE, sMetricValue);
 
             // Insert into DB or File
             mQueue.enqueue(alert);			
@@ -107,7 +109,9 @@ public class OsJob extends ProfileRunner {
             //{
             //	metric.notifyAlert(alert);
             //}
-            metric.performActionScript(oType);
+
+            /* BUG-47437 Need to pass metric name, level, threshold, value to action script as arguments */
+            metric.performActionScript(oType, sMetricValue);
         }
         if (!metric.getLogging()) {			
             result.clear();

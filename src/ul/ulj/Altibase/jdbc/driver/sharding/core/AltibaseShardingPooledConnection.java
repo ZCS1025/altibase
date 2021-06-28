@@ -23,6 +23,7 @@ import Altibase.jdbc.driver.ex.ErrorDef;
 import javax.sql.ConnectionEvent;
 import javax.sql.ConnectionEventListener;
 import javax.sql.PooledConnection;
+import javax.sql.StatementEventListener;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.LinkedList;
@@ -118,5 +119,17 @@ public class AltibaseShardingPooledConnection implements PooledConnection
                 ((ConnectionEventListener)aEach).connectionClosed(sEvent);
             }
         }
+    }
+
+    @Override
+    public void addStatementEventListener(StatementEventListener aListener)
+    {
+        // do not implements
+    }
+
+    @Override
+    public void removeStatementEventListener(StatementEventListener aListener)
+    {
+        // do not implements
     }
 }

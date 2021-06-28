@@ -21,21 +21,21 @@
  * Description :
  *     HASH(HASH) Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ hashing ì—°ì‚°ì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     °ü°èÇü ¸ğµ¨¿¡¼­ hashing ¿¬»êÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
  *
- *     ë‹¤ìŒê³¼ ê°™ì€ ê¸°ëŠ¥ì„ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
+ *     ´ÙÀ½°ú °°Àº ±â´ÉÀ» À§ÇØ »ç¿ëµÈ´Ù.
  *         - Hash Join
  *         - Hash-based Left Outer Join
  *         - Hash-based Full Outer Join
  *         - Store And Search
  *
- *     HASH ë…¸ë“œëŠ” Two Pass Hash Joinë“±ì— ì‚¬ìš©ë  ë•Œ,
- *     ì—¬ëŸ¬ê°œì˜ Temp Tableì„ ê´€ë¦¬í•  ìˆ˜ ìˆë‹¤.
- *     ë”°ë¼ì„œ, ëª¨ë“  ì‚½ì… ë° ê²€ìƒ‰ ì‹œ ì´ì— ëŒ€í•œ ê³ ë ¤ê°€ ì¶©ë¶„í•˜ì—¬ì•¼ í•œë‹¤.
+ *     HASH ³ëµå´Â Two Pass Hash Joinµî¿¡ »ç¿ëµÉ ¶§,
+ *     ¿©·¯°³ÀÇ Temp TableÀ» °ü¸®ÇÒ ¼ö ÀÖ´Ù.
+ *     µû¶ó¼­, ¸ğµç »ğÀÔ ¹× °Ë»ö ½Ã ÀÌ¿¡ ´ëÇÑ °í·Á°¡ ÃæºĞÇÏ¿©¾ß ÇÑ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -48,12 +48,12 @@
 #include <qmnDef.h>
 
 //---------------------------------------------------
-// - Two-Pass Hash Joinë“±ì—ì„œ
-//   Temp Tableì€ ì—¬ëŸ¬ ê°œê°€ ì¡´ì¬í•  ìˆ˜ ìˆìœ¼ë©°,
-//   ìµœì´ˆ 1ê°œì˜ Temp Tableì€ Primaryë¡œ ì‚¬ìš©ë˜ë©°,
-//   ì´í›„ì˜ Temp Tableì€ Secondaryë¡œ ì‚¬ìš©ëœë‹¤.
-// - HASH ë…¸ë“œëŠ” Master Tableì„ í†µí•´ ë©”ëª¨ë¦¬ í• ë‹¹ ë°
-//   Null Rowíšë“ì„ ìˆ˜í–‰í•˜ê²Œ ëœë‹¤.
+// - Two-Pass Hash Joinµî¿¡¼­
+//   Temp TableÀº ¿©·¯ °³°¡ Á¸ÀçÇÒ ¼ö ÀÖÀ¸¸ç,
+//   ÃÖÃÊ 1°³ÀÇ Temp TableÀº Primary·Î »ç¿ëµÇ¸ç,
+//   ÀÌÈÄÀÇ Temp TableÀº Secondary·Î »ç¿ëµÈ´Ù.
+// - HASH ³ëµå´Â Master TableÀ» ÅëÇØ ¸Ş¸ğ¸® ÇÒ´ç ¹×
+//   Null RowÈ¹µæÀ» ¼öÇàÇÏ°Ô µÈ´Ù.
 //---------------------------------------------------
 
 #define QMN_HASH_PRIMARY_ID                        (0)
@@ -64,10 +64,10 @@
 
 //----------------------------------------------------
 // qmncHASH.flag
-// ì €ì¥ ë°©ì‹ì˜ ì„ íƒ
-// - HASHING : ì¼ë°˜ì ì¸ Hashingìœ¼ë¡œ ì €ì¥
-// - DISTINCT : Distinct Hashingìœ¼ë¡œ ì €ì¥
-//              Store And Searchë¡œ ì‚¬ìš©ë  ë•Œ ì„ íƒí•¨
+// ÀúÀå ¹æ½ÄÀÇ ¼±ÅÃ
+// - HASHING : ÀÏ¹İÀûÀÎ HashingÀ¸·Î ÀúÀå
+// - DISTINCT : Distinct HashingÀ¸·Î ÀúÀå
+//              Store And Search·Î »ç¿ëµÉ ¶§ ¼±ÅÃÇÔ
 //----------------------------------------------------
 
 #define QMNC_HASH_STORE_MASK              (0x00000003)
@@ -77,12 +77,12 @@
 
 //----------------------------------------------------
 // qmncHASH.flag
-// ê²€ìƒ‰ ë°©ì‹ì˜ ì„ íƒ
-// - SEQUENTIAL : ìˆœì°¨ ê²€ìƒ‰
-//                Two-Pass Hash Joinì˜ leftì—ì„œ ì‚¬ìš©
-// - RANGE      : ë²”ìœ„ ê²€ìƒ‰
-//                Hash Joinì˜ Rightì—ì„œ ì‚¬ìš©
-// - SEARCH     : STORE AND SEARCH ê²€ìƒ‰
+// °Ë»ö ¹æ½ÄÀÇ ¼±ÅÃ
+// - SEQUENTIAL : ¼øÂ÷ °Ë»ö
+//                Two-Pass Hash JoinÀÇ left¿¡¼­ »ç¿ë
+// - RANGE      : ¹üÀ§ °Ë»ö
+//                Hash JoinÀÇ Right¿¡¼­ »ç¿ë
+// - SEARCH     : STORE AND SEARCH °Ë»ö
 //----------------------------------------------------
 
 #define QMNC_HASH_SEARCH_MASK             (0x00000030)
@@ -93,19 +93,19 @@
 
 //----------------------------------------------------
 // qmncHASH.flag
-// Store And Searchì‹œ NULL ì¡´ì¬ ì—¬ë¶€ì˜ ê²€ì‚¬
-// Hashë¥¼ ì´ìš©í•œ Store And Searchê°€ ê°€ëŠ¥í•œ ê²½ìš°ëŠ”
-// ë‹¤ìŒê³¼ ê°™ì€ ê²½ìš°ì´ë‹¤.
-//    - í•œ Columnì— ëŒ€í•œ Filter
-//        - NOT NULL Constraintê°€ ì¡´ì¬í•˜ë©´,
-//          NULLê²€ì‚¬ í•„ìš” ì—†ìŒ.
-//        - NOT NULL Constraintê°€ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´,
-//          NULLê²€ì‚¬ í•„ìš”í•¨
-//    - ì—¬ëŸ¬ Columnì— ëŒ€í•œ Filter
-//        - ë°˜ë“œì‹œ NOT NULL Constraintsê°€ ì¡´ì¬í•´ì•¼
-//          í•˜ë©°, ë”°ë¼ì„œ NULLê²€ì‚¬ í•„ìš” ì—†ìŒ
-//  NULL_CHECK_FALSE : NULL CHECKí•  í•„ìš” ì—†ìŒ
-//  NULL_CHECK_TRUE  : NULL CHECK í•„ìš”í•¨.
+// Store And Search½Ã NULL Á¸Àç ¿©ºÎÀÇ °Ë»ç
+// Hash¸¦ ÀÌ¿ëÇÑ Store And Search°¡ °¡´ÉÇÑ °æ¿ì´Â
+// ´ÙÀ½°ú °°Àº °æ¿ìÀÌ´Ù.
+//    - ÇÑ Column¿¡ ´ëÇÑ Filter
+//        - NOT NULL Constraint°¡ Á¸ÀçÇÏ¸é,
+//          NULL°Ë»ç ÇÊ¿ä ¾øÀ½.
+//        - NOT NULL Constraint°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é,
+//          NULL°Ë»ç ÇÊ¿äÇÔ
+//    - ¿©·¯ Column¿¡ ´ëÇÑ Filter
+//        - ¹İµå½Ã NOT NULL Constraints°¡ Á¸ÀçÇØ¾ß
+//          ÇÏ¸ç, µû¶ó¼­ NULL°Ë»ç ÇÊ¿ä ¾øÀ½
+//  NULL_CHECK_FALSE : NULL CHECKÇÒ ÇÊ¿ä ¾øÀ½
+//  NULL_CHECK_TRUE  : NULL CHECK ÇÊ¿äÇÔ.
 //----------------------------------------------------
 
 #define QMNC_HASH_NULL_CHECK_MASK         (0x00000100)
@@ -123,8 +123,8 @@
 #define QMND_HASH_INIT_DONE_TRUE          (0x00000001)
 
 // qmndHash.flag
-// ìƒìˆ˜ì— í•´ë‹¹í•˜ëŠ” ê°’ì´ NULLì¸ì§€ì˜ ì—¬ë¶€
-// Store And Searchì‹œ ìƒìˆ˜ ê°’ì— ë”°ë¼ ê²€ìƒ‰ ë°©ë²•ì„ ë‹¬ë¦¬í•œë‹¤.
+// »ó¼ö¿¡ ÇØ´çÇÏ´Â °ªÀÌ NULLÀÎÁöÀÇ ¿©ºÎ
+// Store And Search½Ã »ó¼ö °ª¿¡ µû¶ó °Ë»ö ¹æ¹ıÀ» ´Ş¸®ÇÑ´Ù.
 #define QMND_HASH_CONST_NULL_MASK         (0x00000002)
 #define QMND_HASH_CONST_NULL_FALSE        (0x00000000)
 #define QMND_HASH_CONST_NULL_TRUE         (0x00000002)
@@ -155,7 +155,7 @@ typedef IDE_RC (* qmnHashSearchFunc ) (  qcTemplate * aTemplate,
 typedef struct qmncHASH
 {
     //---------------------------------
-    // Code ì˜ì—­ ê³µí†µ ì •ë³´
+    // Code ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmnPlan        plan;
@@ -163,23 +163,23 @@ typedef struct qmncHASH
     UInt           planID;
 
     //---------------------------------
-    // HASH ê³ ìœ  ì •ë³´
+    // HASH °íÀ¯ Á¤º¸
     //---------------------------------
 
     UShort         baseTableCount;
-    qmcMtrNode   * myNode;          // ì €ì¥ Column ì •ë³´
+    qmcMtrNode   * myNode;          // ÀúÀå Column Á¤º¸
 
     UShort         depTupleRowID;   // dependent tuple ID
 
     //---------------------------------
-    // Temp Table ê´€ë ¨ ì •ë³´
+    // Temp Table °ü·Ã Á¤º¸
     //---------------------------------
 
-    UInt           bucketCnt;      // Bucketì˜ ê°œìˆ˜
-    UInt           tempTableCnt;   // Temp Tableì˜ ê°œìˆ˜
+    UInt           bucketCnt;      // BucketÀÇ °³¼ö
+    UInt           tempTableCnt;   // Temp TableÀÇ °³¼ö
 
     //---------------------------------
-    // Range ê²€ìƒ‰ ì •ë³´
+    // Range °Ë»ö Á¤º¸
     //---------------------------------
 
     qtcNode      * filter;         // if filter t1.i1 = t2.i1(right)
@@ -192,17 +192,17 @@ typedef struct qmncHASH
 
     qcComponentInfo * componentInfo; // PROJ-2462 Result Cache
     //---------------------------------
-    // Data ì˜ì—­ ì •ë³´
+    // Data ¿µ¿ª Á¤º¸
     //---------------------------------
 
-    UInt           mtrNodeOffset;     // ì €ì¥ Columnì˜ ìœ„ì¹˜
+    UInt           mtrNodeOffset;     // ÀúÀå ColumnÀÇ À§Ä¡
 
 } qmncHASH;
 
 typedef struct qmndHASH
 {
     //---------------------------------
-    // Data ì˜ì—­ ê³µí†µ ì •ë³´
+    // Data ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmndPlan            plan;
@@ -210,25 +210,25 @@ typedef struct qmndHASH
     UInt              * flag;
 
     //---------------------------------
-    // HASH ê³ ìœ  ì •ë³´
+    // HASH °íÀ¯ Á¤º¸
     //---------------------------------
 
-    UInt                mtrRowSize;   // ì €ì¥ Rowì˜ í¬ê¸°
+    UInt                mtrRowSize;   // ÀúÀå RowÀÇ Å©±â
 
-    qmdMtrNode        * mtrNode;      // ì €ì¥ Column ì •ë³´
-    qmdMtrNode        * hashNode;     // Hashing Columnì˜ ìœ„ì¹˜
+    qmdMtrNode        * mtrNode;      // ÀúÀå Column Á¤º¸
+    qmdMtrNode        * hashNode;     // Hashing ColumnÀÇ À§Ä¡
 
-    mtcTuple          * depTuple;     // Dependent Tuple ìœ„ì¹˜
+    mtcTuple          * depTuple;     // Dependent Tuple À§Ä¡
     UInt                depValue;     // Dependent Value
 
-    qmcdHashTemp      * hashMgr;      // ì—¬ëŸ¬ ê°œì˜ Hash Temp Table
-    SLong               mtrTotalCnt;  // ì €ì¥ëœ Dataì˜ ê°œìˆ˜
+    qmcdHashTemp      * hashMgr;      // ¿©·¯ °³ÀÇ Hash Temp Table
+    SLong               mtrTotalCnt;  // ÀúÀåµÈ DataÀÇ °³¼ö
 
-    qmnHashSearchFunc   searchFirst;  // ê²€ìƒ‰ í•¨ìˆ˜
-    qmnHashSearchFunc   searchNext;   // ê²€ìƒ‰ í•¨ìˆ˜
+    qmnHashSearchFunc   searchFirst;  // °Ë»ö ÇÔ¼ö
+    qmnHashSearchFunc   searchNext;   // °Ë»ö ÇÔ¼ö
 
-    UInt                currTempID;    // í˜„ì¬ Temp Table ID
-    idBool              isNullStore;   // Nullì„ Storeí•˜ê³  ìˆëŠ”ì§€ ì—¬ë¶€
+    UInt                currTempID;    // ÇöÀç Temp Table ID
+    idBool              isNullStore;   // NullÀ» StoreÇÏ°í ÀÖ´ÂÁö ¿©ºÎ
     /* PROJ-2462 Result Cache */
     qmndResultCache     resultData;
 } qmndHASH;
@@ -241,11 +241,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ìˆ˜í–‰ í•¨ìˆ˜
+    // ¼öÇà ÇÔ¼ö
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -254,7 +254,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan ì •ë³´ ì¶œë ¥
+    // Plan Á¤º¸ Ãâ·Â
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -265,27 +265,27 @@ public:
     // mapping by doIt() function pointer
     //------------------------
 
-    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨
+    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // ì²«ë²ˆì§¸ ìˆ˜í–‰ í•¨ìˆ˜
+    // Ã¹¹øÂ° ¼öÇà ÇÔ¼ö
     static IDE_RC doItFirst( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              qmcRowFlag * aFlag );
 
-    // ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
+    // ´ÙÀ½ ¼öÇà ÇÔ¼ö
     static IDE_RC doItNext( qcTemplate * aTemplate,
                             qmnPlan    * aPlan,
                             qmcRowFlag * aFlag );
 
-    // Store And Searchì˜ ì²«ë²ˆì§¸ ìˆ˜í–‰ í•¨ìˆ˜
+    // Store And SearchÀÇ Ã¹¹øÂ° ¼öÇà ÇÔ¼ö
     static IDE_RC doItFirstStoreSearch( qcTemplate * aTemplate,
                                         qmnPlan    * aPlan,
                                         qmcRowFlag * aFlag );
 
-    // Store And Searchì˜ ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
+    // Store And SearchÀÇ ´ÙÀ½ ¼öÇà ÇÔ¼ö
     static IDE_RC doItNextStoreSearch( qcTemplate * aTemplate,
                                        qmnPlan    * aPlan,
                                        qmcRowFlag * aFlag );
@@ -294,144 +294,144 @@ public:
     // Direct External Call
     //------------------------
 
-    // Hit ê²€ìƒ‰ ëª¨ë“œë¡œ ë³€ê²½
+    // Hit °Ë»ö ¸ğµå·Î º¯°æ
     static void setHitSearch( qcTemplate * aTemplate,
                               qmnPlan    * aPlan );
 
-    // Non-Hit ê²€ìƒ‰ ëª¨ë“œë¡œ ë³€ê²½
+    // Non-Hit °Ë»ö ¸ğµå·Î º¯°æ
     static void setNonHitSearch( qcTemplate * aTemplate,
                                  qmnPlan    * aPlan );
 
-    // Recordì— Hit í‘œê¸°
+    // Record¿¡ Hit Ç¥±â
     static IDE_RC setHitFlag( qcTemplate * aTemplate,
                               qmnPlan    * aPlan );
 
-    // Recordì— Hit í‘œê¸°ë˜ì—ˆëŠ”ì§€ ê²€ì¦
+    // Record¿¡ Hit Ç¥±âµÇ¾ú´ÂÁö °ËÁõ
     static idBool isHitFlagged( qcTemplate * aTemplate,
                                 qmnPlan    * aPlan );
 private:
 
     //-----------------------------
-    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
+    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
     //-----------------------------
 
-    // ìµœì´ˆ ì´ˆê¸°í™” í•¨ìˆ˜
+    // ÃÖÃÊ ÃÊ±âÈ­ ÇÔ¼ö
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncHASH   * aCodePlan,
                              qmndHASH   * aDataPlan );
 
-    // ì €ì¥ Columnì˜ ì´ˆê¸°í™”
+    // ÀúÀå ColumnÀÇ ÃÊ±âÈ­
     static IDE_RC initMtrNode( qcTemplate * aTemplate,
                                qmncHASH   * aCodePlan,
                                qmndHASH   * aDataPlan );
 
-    // Hashing Columnì˜ ì‹œì‘ ìœ„ì¹˜
+    // Hashing ColumnÀÇ ½ÃÀÛ À§Ä¡
     static IDE_RC initHashNode( qmncHASH   * aCodePlan,
                                 qmndHASH   * aDataPlan );
 
-    // Temp Table ì´ˆê¸°í™”
+    // Temp Table ÃÊ±âÈ­
     static IDE_RC initTempTable( qcTemplate * aTemplate,
                                  qmncHASH   * aCodePlan,
                                  qmndHASH   * aDataPlan );
 
-    // Dependent Tupleì˜ ë³€ê²½ ì—¬ë¶€ ê²€ì‚¬
+    // Dependent TupleÀÇ º¯°æ ¿©ºÎ °Ë»ç
     static IDE_RC checkDependency( qcTemplate * aTemplate,
                                    qmncHASH   * aCodePlan,
                                    qmndHASH   * aDataPlan,
                                    idBool     * aDependent );
 
     //-----------------------------
-    // ì €ì¥ ê´€ë ¨ í•¨ìˆ˜
+    // ÀúÀå °ü·Ã ÇÔ¼ö
     //-----------------------------
 
-    // Hash Temp Tableì„ êµ¬ì„±í•œë‹¤.
+    // Hash Temp TableÀ» ±¸¼ºÇÑ´Ù.
     static IDE_RC storeAndHashing( qcTemplate * aTemplate,
                                    qmncHASH   * aCodePlan,
                                    qmndHASH   * aDataPlan );
 
-    // ì €ì¥ Rowë¥¼ êµ¬ì„±
+    // ÀúÀå Row¸¦ ±¸¼º
     static IDE_RC setMtrRow( qcTemplate * aTemplate,
                              qmndHASH   * aDataPlan );
 
-    // ì €ì¥ Rowì˜ Null ì—¬ë¶€ ê²€ì‚¬
+    // ÀúÀå RowÀÇ Null ¿©ºÎ °Ë»ç
     static IDE_RC checkNullExist( qmncHASH   * aCodePlan,
                                   qmndHASH   * aDataPlan );
 
-    // ì €ì¥ Rowì˜ Hash Key ê°’ íšë“
+    // ÀúÀå RowÀÇ Hash Key °ª È¹µæ
     static IDE_RC getMtrHashKey( qmndHASH   * aDataPlan,
                                  UInt       * aHashKey );
 
     //-----------------------------
-    // ìˆ˜í–‰ ê´€ë ¨ í•¨ìˆ˜
+    // ¼öÇà °ü·Ã ÇÔ¼ö
     //-----------------------------
 
-    // ìƒìˆ˜ ì˜ì—­ì˜ Hash Keyê°’ íšë“
+    // »ó¼ö ¿µ¿ªÀÇ Hash Key°ª È¹µæ
     static IDE_RC getConstHashKey( qcTemplate * aTemplate,
                                    qmncHASH   * aCodePlan,
                                    qmndHASH   * aDataPlan,
                                    UInt       * aHashKey );
 
-    // ì €ì¥ Rowë¥¼ ì´ìš©í•œ Tuple Setì˜ ë³µì›
+    // ÀúÀå Row¸¦ ÀÌ¿ëÇÑ Tuple SetÀÇ º¹¿ø
     static IDE_RC setTupleSet( qcTemplate * aTemplate,
                                qmndHASH   * aDataPlan );
 
     //-----------------------------
-    // ê²€ìƒ‰ ê´€ë ¨ í•¨ìˆ˜
+    // °Ë»ö °ü·Ã ÇÔ¼ö
     //-----------------------------
 
-    // ê²€ìƒ‰ í•¨ìˆ˜ì˜ ê²°ì •
+    // °Ë»ö ÇÔ¼öÀÇ °áÁ¤
     static IDE_RC setSearchFunction( qmncHASH   * aCodePlan,
                                      qmndHASH   * aDataPlan );
 
-    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨
+    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ
     static IDE_RC searchDefault( qcTemplate * aTemplate,
                                  qmncHASH   * aCodePlan,
                                  qmndHASH   * aDataPlan,
                                  qmcRowFlag * aFlag );
 
-    // ì²«ë²ˆì§¸ ìˆœì°¨ ê²€ìƒ‰
+    // Ã¹¹øÂ° ¼øÂ÷ °Ë»ö
     static IDE_RC searchFirstSequence( qcTemplate * aTemplate,
                                        qmncHASH   * aCodePlan,
                                        qmndHASH   * aDataPlan,
                                        qmcRowFlag * aFlag );
-    // ë‹¤ìŒ ìˆœì°¨ ê²€ìƒ‰
+    // ´ÙÀ½ ¼øÂ÷ °Ë»ö
     static IDE_RC searchNextSequence( qcTemplate * aTemplate,
                                       qmncHASH   * aCodePlan,
                                       qmndHASH   * aDataPlan,
                                       qmcRowFlag * aFlag );
 
-    // ì²«ë²ˆì§¸ ë²”ìœ„ ê²€ìƒ‰
+    // Ã¹¹øÂ° ¹üÀ§ °Ë»ö
     static IDE_RC searchFirstFilter( qcTemplate * aTemplate,
                                      qmncHASH   * aCodePlan,
                                      qmndHASH   * aDataPlan,
                                      qmcRowFlag * aFlag );
 
-    // ë‹¤ìŒ ë²”ìœ„ ê²€ìƒ‰
+    // ´ÙÀ½ ¹üÀ§ °Ë»ö
     static IDE_RC searchNextFilter( qcTemplate * aTemplate,
                                     qmncHASH   * aCodePlan,
                                     qmndHASH   * aDataPlan,
                                     qmcRowFlag * aFlag );
 
-    // ì²«ë²ˆì§¸ Non-Hit ê²€ìƒ‰
+    // Ã¹¹øÂ° Non-Hit °Ë»ö
     static IDE_RC searchFirstNonHit( qcTemplate * aTemplate,
                                      qmncHASH   * aCodePlan,
                                      qmndHASH   * aDataPlan,
                                      qmcRowFlag * aFlag );
 
-    // ë‹¤ìŒ Non-Hit ê²€ìƒ‰
+    // ´ÙÀ½ Non-Hit °Ë»ö
     static IDE_RC searchNextNonHit( qcTemplate * aTemplate,
                                     qmncHASH   * aCodePlan,
                                     qmndHASH   * aDataPlan,
                                     qmcRowFlag * aFlag );
 
     /* PRORJ-2339 */
-    // ì²«ë²ˆì§¸ Hit ê²€ìƒ‰
+    // Ã¹¹øÂ° Hit °Ë»ö
     static IDE_RC searchFirstHit( qcTemplate * aTemplate,
                                   qmncHASH   * aCodePlan,
                                   qmndHASH   * aDataPlan,
                                   qmcRowFlag * aFlag );
 
-    // ë‹¤ìŒ Hit ê²€ìƒ‰
+    // ´ÙÀ½ Hit °Ë»ö
     static IDE_RC searchNextHit( qcTemplate * aTemplate,
                                  qmncHASH   * aCodePlan,
                                  qmndHASH   * aDataPlan,

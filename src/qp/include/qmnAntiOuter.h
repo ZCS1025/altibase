@@ -21,15 +21,15 @@
  * Description :
  *     AOJN(Anti Outer JoiN) Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ Full Outer Joinì˜ ì²˜ë¦¬ë¥¼ ìœ„í•´
- *     íŠ¹ìˆ˜í•œ ì—°ì‚°ì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     °ü°èÇü ¸ğµ¨¿¡¼­ Full Outer JoinÀÇ Ã³¸®¸¦ À§ÇØ
+ *     Æ¯¼öÇÑ ¿¬»êÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
  *
- *     Left Outer Joinê³¼ íë¦„ì€ ìœ ì‚¬í•˜ë‚˜ ë‹¤ìŒê³¼ ê°™ì€ í° ì°¨ì´ê°€ ìˆë‹¤.
- *        - Left Rowì— ë§Œì¡±í•˜ëŠ” Right Rowê°€ ì—†ëŠ” ê²½ìš°ë¥¼ ê²€ìƒ‰í•œë‹¤.
+ *     Left Outer Join°ú Èå¸§Àº À¯»çÇÏ³ª ´ÙÀ½°ú °°Àº Å« Â÷ÀÌ°¡ ÀÖ´Ù.
+ *        - Left Row¿¡ ¸¸Á·ÇÏ´Â Right Row°¡ ¾ø´Â °æ¿ì¸¦ °Ë»öÇÑ´Ù.
  *        
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -57,7 +57,7 @@
 typedef struct qmncAOJN
 {
     //---------------------------------
-    // Code ì˜ì—­ ê³µí†µ ì •ë³´
+    // Code ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmnPlan        plan;
@@ -65,17 +65,17 @@ typedef struct qmncAOJN
     UInt           planID;
 
     //---------------------------------
-    // AOJN ê³ ìœ  ì •ë³´
+    // AOJN °íÀ¯ Á¤º¸
     //---------------------------------
     
-    qtcNode      * filter;    // ON Conditionë‚´ì˜ Filter ì¡°ê±´
+    qtcNode      * filter;    // ON Condition³»ÀÇ Filter Á¶°Ç
     
 } qmncAOJN;
 
 typedef struct qmndAOJN
 {
     //---------------------------------
-    // Data ì˜ì—­ ê³µí†µ ì •ë³´
+    // Data ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
     qmndPlan            plan;
     doItFunc            doIt;
@@ -91,11 +91,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ìˆ˜í–‰ í•¨ìˆ˜
+    // ¼öÇà ÇÔ¼ö
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -104,7 +104,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan ì •ë³´ ì¶œë ¥
+    // Plan Á¤º¸ Ãâ·Â
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -115,12 +115,12 @@ public:
     // mapping by doIt() function pointer
     //------------------------
 
-    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨
+    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // ìƒˆë¡œìš´ Left Rowì— ëŒ€í•œ ì²˜ë¦¬
+    // »õ·Î¿î Left Row¿¡ ´ëÇÑ Ã³¸®
     static IDE_RC doItLeft( qcTemplate * aTemplate,
                             qmnPlan    * aPlan,
                             qmcRowFlag * aFlag );
@@ -128,10 +128,10 @@ public:
 private:
 
     //------------------------
-    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
+    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
     //------------------------
     
-    // ìµœì´ˆ ì´ˆê¸°í™”
+    // ÃÖÃÊ ÃÊ±âÈ­
     static IDE_RC firstInit( qmndAOJN   * aDataPlan );
 
 };

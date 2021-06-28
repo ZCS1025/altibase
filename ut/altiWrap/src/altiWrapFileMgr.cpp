@@ -43,8 +43,8 @@ IDE_RC altiWrapFileMgr::setFilePathInternal( altiWrap   * aAltiWrap,
 
     idlOS::memset( sPath, 0x00, ALTIWRAP_MAX_STRING_LEN );
 
-    /* separator ì¡´ì¬ ì—¬ë¶€ í™•ì¸, file ì´ë¦„ ì „ê¹Œì§€ë§Œ ë³µì‚¬ 
-       ex) ../a.sql ì´ëŸ° ê²½ìš°, í™•ì¥ì ì—¬ë¶€ë§Œ í™•ì¸ ì‹œ íŒŒì¼ pathê°€ í‹€ë ¤ì§„ë‹¤. */
+    /* separator Á¸Àç ¿©ºÎ È®ÀÎ, file ÀÌ¸§ Àü±îÁö¸¸ º¹»ç 
+       ex) ../a.sql ÀÌ·± °æ¿ì, È®ÀåÀÚ ¿©ºÎ¸¸ È®ÀÎ ½Ã ÆÄÀÏ path°¡ Æ²·ÁÁø´Ù. */
     sPos = idlOS::strrchr( aOriPath, IDL_FILE_SEPARATOR );
 
     if ( sPos != NULL )
@@ -66,7 +66,7 @@ IDE_RC altiWrapFileMgr::setFilePathInternal( altiWrap   * aAltiWrap,
     idlOS::memcpy( sPath + sPathLen, sFileNamePos, sFileNameLen );
     sPathLen += sFileNameLen;
 
-    /* í™•ì¥ìì˜ ì¡´ì¬ ì—¬ë¶€ í™•ì¸ */
+    /* È®ÀåÀÚÀÇ Á¸Àç ¿©ºÎ È®ÀÎ */
     sPos = idlOS::strchr( sFileNamePos, '.' );
 
     if ( sPos == NULL )
@@ -162,7 +162,7 @@ IDE_RC altiWrapFileMgr::setFilePath( altiWrap * aAltiWrap,
               != IDE_SUCCESS );
 
     /* set out file path */
-    if ( aOutPath == NULL )   /* ì‚¬ìš©ìê°€ out fileì— ëŒ€í•œ pathë¥¼ ì •í•´ì£¼ì§€ ì•Šì•˜ì„ ê²½ìš° */
+    if ( aOutPath == NULL )   /* »ç¿ëÀÚ°¡ out file¿¡ ´ëÇÑ path¸¦ Á¤ÇØÁÖÁö ¾Ê¾ÒÀ» °æ¿ì */
     {
         sInFileName = idlOS::strrchr( sPathInfo->mInFilePath, '/' );
 
@@ -193,7 +193,7 @@ IDE_RC altiWrapFileMgr::setFilePath( altiWrap * aAltiWrap,
         sPathInfo->mOutFilePathLen = idlOS::strlen(sPathInfo->mOutFilePath);
         sPathInfo->mOutFilePath[sPathInfo->mOutFilePathLen] = '\0';
     }
-    else   /* ì‚¬ìš©ìê°€ out fileì— ëŒ€í•œ pathë¥¼ ì£¼ì—ˆì„ ê²½ìš° */
+    else   /* »ç¿ëÀÚ°¡ out file¿¡ ´ëÇÑ path¸¦ ÁÖ¾úÀ» °æ¿ì */
     {
         IDE_TEST( setFilePathInternal( aAltiWrap, aOutPath, AW_OUTPUT_FILE_PATH )
                   != IDE_SUCCESS );

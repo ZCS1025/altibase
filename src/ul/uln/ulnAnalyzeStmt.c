@@ -19,11 +19,11 @@
 #include <ulnAnalyzeStmt.h>
 #include <ulnConv.h>
 
-/* Position Arrayì˜ Element ê¸°ë³¸ ê°œìˆ˜ */
+/* Position ArrayÀÇ Element ±âº» °³¼ö */
 #define BASE_ARR_CNT           (16)
 
 /*
- * ' ', " " ì‚¬ì´ ë¬¸ìëŠ” ëª¨ë‘ Skip.
+ * ' ', " " »çÀÌ ¹®ÀÚ´Â ¸ğµÎ Skip.
  */
 #define SKIP_QUOTER(aCurPtr, aFencePtr, aChar) \
 do                                             \
@@ -44,7 +44,7 @@ do                                             \
 /*
  * BUG-35204 distinguish between the query and the comment
  *
- * COMMENTëŠ” Skip.
+ * COMMENT´Â Skip.
  *
  * A line comment     : //, --
  * Multi-line comment : Slash* *Slash
@@ -95,7 +95,7 @@ do                                                                \
 } while (0)                                                       \
 
 /*
- * IDENTIFIERëŠ” Skip.
+ * IDENTIFIER´Â Skip.
  *
  * [a-zA-Z_][a-zA-Z0-9_]*
  */
@@ -133,8 +133,8 @@ struct ulnAnalyzeStmt
     acl_mem_area_t          mMemArea;
     acl_mem_area_snapshot_t mMemAreaSnapShot;
 
-    acp_uint16_t            mNameCnt;   /* :nameì˜ ê°œìˆ˜ */
-    acp_uint16_t            mMarkerCnt; /* ?ì˜ ê°œìˆ˜     */
+    acp_uint16_t            mNameCnt;   /* :nameÀÇ °³¼ö */
+    acp_uint16_t            mMarkerCnt; /* ?ÀÇ °³¼ö     */
 
     acp_list_t              mTokensList;
 };
@@ -186,8 +186,8 @@ ACI_RC ulnAnalyzeStmtCreate(ulnAnalyzeStmt **aAnalyzeStmt,
     ULN_FLAG_UP(sNeedFreeAnalyzeStmt);
 
     /*
-     * aclMemAreaCreate()ì—ì„œëŠ” ì‹¤ì œ Chunkì˜ ì‚¬ì´ì¦ˆë§Œ ì„¤ì •í•˜ê³ 
-     * ì‹¤ì œ í• ë‹¹ì€ aclMemAreaAlloc()ì—ì„œ í•œë‹¤.
+     * aclMemAreaCreate()¿¡¼­´Â ½ÇÁ¦ ChunkÀÇ »çÀÌÁî¸¸ ¼³Á¤ÇÏ°í
+     * ½ÇÁ¦ ÇÒ´çÀº aclMemAreaAlloc()¿¡¼­ ÇÑ´Ù.
      */
     aclMemAreaCreate(&sAnalyzeStmt->mMemArea, 512);
     aclMemAreaGetSnapshot(&sAnalyzeStmt->mMemArea,
@@ -237,7 +237,7 @@ ACI_RC ulnAnalyzeStmtReInit(ulnAnalyzeStmt **aAnalyzeStmt,
 
     sAnalyzeStmt = *aAnalyzeStmt;
 
-    /* MemAreaë¥¼ ì²˜ìŒ ìœ„ì¹˜ë¡œ ëŒë¦¬ì */
+    /* MemArea¸¦ Ã³À½ À§Ä¡·Î µ¹¸®ÀÚ */
     aclMemAreaFreeToSnapshot(&sAnalyzeStmt->mMemArea,
                              &sAnalyzeStmt->mMemAreaSnapShot);
 
@@ -285,10 +285,10 @@ void ulnAnalyzeStmtDestroy(ulnAnalyzeStmt **aAnalyzeStmt)
 /**
  *  ulnAnalyzeStmtStrip
  *
- *  ì´ í•¨ìˆ˜ëŠ” ulnPrepare() ì´í›„ í˜¸ì¶œë˜ê¸° ë•Œë¬¸ì—
- *  SQL êµ¬ë¬¸ ì˜¤ë¥˜ ìƒí™©ì— ëŒ€í•´ ë§ì´ ê³ ë ¤í•  í•„ìš”ëŠ” ì—†ë‹¤.
+ *  ÀÌ ÇÔ¼ö´Â ulnPrepare() ÀÌÈÄ È£ÃâµÇ±â ¶§¹®¿¡
+ *  SQL ±¸¹® ¿À·ù »óÈ²¿¡ ´ëÇØ ¸¹ÀÌ °í·ÁÇÒ ÇÊ¿ä´Â ¾ø´Ù.
  *
- *  = Statementì—ì„œ :nameì˜ ìœ„ì¹˜ë¥¼ ë¦¬ìŠ¤íŠ¸ì— ì €ì¥í•œë‹¤.
+ *  = Statement¿¡¼­ :nameÀÇ À§Ä¡¸¦ ¸®½ºÆ®¿¡ ÀúÀåÇÑ´Ù.
  */
 ACI_RC ulnAnalyzeStmtStrip(ulnAnalyzeStmt *aAnalyzeStmt,
                            acp_char_t     *aStmtStr,
@@ -304,7 +304,7 @@ ACI_RC ulnAnalyzeStmtStrip(ulnAnalyzeStmt *aAnalyzeStmt,
     sCurPtr   = aStmtStr;
     sFencePtr = aStmtStr + aStmtStrLen;
 
-    /* í† í°ì„ ë¶„ì„í•˜ê³  TokenListì— í•˜ë‚˜ì”© ë„£ëŠ”ë‹¤. */
+    /* ÅäÅ«À» ºĞ¼®ÇÏ°í TokenList¿¡ ÇÏ³ª¾¿ ³Ö´Â´Ù. */
     for ( ; sCurPtr < sFencePtr; sCurPtr++)
     {
         switch (*sCurPtr)
@@ -370,7 +370,7 @@ ACI_RC ulnAnalyzeStmtStrip(ulnAnalyzeStmt *aAnalyzeStmt,
 /**
  *  ulnAnalyzeStmtSetPosArr
  *
- *  ìƒˆë¡œìš´ í† í°ì´ë‚˜ ê¸°ì¡´ í† í°ì˜ Positionì„ ì €ì¥í•œë‹¤.
+ *  »õ·Î¿î ÅäÅ«ÀÌ³ª ±âÁ¸ ÅäÅ«ÀÇ PositionÀ» ÀúÀåÇÑ´Ù.
  */
 static ACI_RC ulnAnalyzeStmtSetPosArr(ulnAnalyzeStmt  *aAnalyzeStmt,
                                       acp_char_t      *aToken,
@@ -405,7 +405,7 @@ static ACI_RC ulnAnalyzeStmtSetPosArr(ulnAnalyzeStmt  *aAnalyzeStmt,
         }
     }
 
-    /* ìƒˆë¡œìš´ í† í°ì´ë©´ Listì— ì¶”ê°€í•œë‹¤ */
+    /* »õ·Î¿î ÅäÅ«ÀÌ¸é List¿¡ Ãß°¡ÇÑ´Ù */
     if (sIsNewToken == ACP_TRUE)
     {
         sRC = aclMemAreaAlloc(&aAnalyzeStmt->mMemArea,
@@ -443,7 +443,7 @@ static ACI_RC ulnAnalyzeStmtSetPosArr(ulnAnalyzeStmt  *aAnalyzeStmt,
     }
     else
     {
-        /* Positionì„ ì €ì¥í•  ê³µê°„ì´ ìˆëŠ”ì§€ í™•ì¸í•˜ì */
+        /* PositionÀ» ÀúÀåÇÒ °ø°£ÀÌ ÀÖ´ÂÁö È®ÀÎÇÏÀÚ */
         if (sObj->mPosCnt % BASE_ARR_CNT == 0)
         {
             sPosArr = sObj->mPosArr;
@@ -487,7 +487,7 @@ static ACI_RC ulnAnalyzeStmtSetPosArr(ulnAnalyzeStmt  *aAnalyzeStmt,
 /**
  *  ulnAnalyzeStmtGetPosArr
  *
- *  aTokenì´ PosArrì— ìˆìœ¼ë©´ ê·¸ ë°°ì—´ê³¼ í¬ì§€ì…˜ì„ ë°˜í™˜í•´ ì¤€ë‹¤.
+ *  aTokenÀÌ PosArr¿¡ ÀÖÀ¸¸é ±× ¹è¿­°ú Æ÷Áö¼ÇÀ» ¹İÈ¯ÇØ ÁØ´Ù.
  */
 ACI_RC ulnAnalyzeStmtGetPosArr(ulnAnalyzeStmt  *aAnalyzeStmt,
                                acp_char_t      *aToken,
@@ -506,7 +506,7 @@ ACI_RC ulnAnalyzeStmtGetPosArr(ulnAnalyzeStmt  *aAnalyzeStmt,
     *aPosArr = NULL;
     *aPosCnt = 0;
 
-    /* ?, :nameì´ statementì— í˜¼ìš©ëœ ê²½ìš° ëª¨ë‘ Position ë°”ì¸ë”© í•˜ì */
+    /* ?, :nameÀÌ statement¿¡ È¥¿ëµÈ °æ¿ì ¸ğµÎ Position ¹ÙÀÎµù ÇÏÀÚ */
     ACI_TEST(aAnalyzeStmt->mMarkerCnt == 0 && aAnalyzeStmt->mNameCnt == 0);
     ACI_TEST(aAnalyzeStmt->mMarkerCnt > 0 && aAnalyzeStmt->mNameCnt > 0);
     ACI_TEST(aAnalyzeStmt->mMarkerCnt > 0 && aAnalyzeStmt->mNameCnt == 0);

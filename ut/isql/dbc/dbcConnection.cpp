@@ -59,6 +59,10 @@ utISPApi::utISPApi(SInt a_bufSize, uteErrorMgr *aGlobalErrorMgr)
     mNumFormat = NULL; // BUG-34447 SET NUMFORMAT
     mNumToken = NULL;
 
+    /* TASK-7218 Handling Multi-Error */
+    mMultiErrorSize = 0;
+    mMultiErrorMgr = NULL;
+
     return;
 
     IDE_EXCEPTION(MAllocError);
@@ -74,6 +78,12 @@ utISPApi::utISPApi(SInt a_bufSize, uteErrorMgr *aGlobalErrorMgr)
 
 utISPApi::~utISPApi()
 {
+    /* TASK-7218 Handling Multi-Error */
+    if (mMultiErrorMgr != NULL)
+    {
+        idlOS::free(mMultiErrorMgr);
+    }
+
     idlOS::free(m_Buf);
     idlOS::free(m_Query);
 }
@@ -86,7 +96,7 @@ IDE_RC utISPApi::Open(SChar                       *aHost,
                       SInt                         aPortNo,
                       SInt                         aConnType,
                       SChar                       *aTimezone,           /* PROJ-2209 DBTIMEZONE */
-                      SQL_MESSAGE_CALLBACK_STRUCT *aMessageCallbackStruct,
+                      SQLMessageCallbackStruct    *aMessageCallback,
                       SChar                       *aSslCa,              /* default is "" */
                       SChar                       *aSslCapath,          /* default is "" */
                       SChar                       *aSslCert,            /* default is "" */
@@ -119,7 +129,7 @@ IDE_RC utISPApi::Open(SChar                       *aHost,
                    AllocDBCError);
 
     IDE_TEST_RAISE(SQLSetConnectAttr(m_ICon, ALTIBASE_MESSAGE_CALLBACK,
-                                     (SQLPOINTER)aMessageCallbackStruct, 0)
+                                     (SQLPOINTER)aMessageCallback, 0)
                    != SQL_SUCCESS, SetDBCAttrError);
 
     SChar sWorkDir[1024];
@@ -172,7 +182,7 @@ IDE_RC utISPApi::Open(SChar                       *aHost,
     IDE_TEST( utString::AppendConnStrAttr(mErrorMgr, sConnStr, ID_SIZEOF(sConnStr), (SChar *)"NLS_USE", aNLS_USE) );
     idlVA::appendFormat(sConnStr, ID_SIZEOF(sConnStr), "CONNTYPE=%"ID_INT32_FMT";", aConnType);
 
-    // fix BUG-17969 ì§€ì›í¸ì˜ì„±ì„ ìœ„í•´ APP_INFO ì„¤ì •
+    // fix BUG-17969 Áö¿øÆíÀÇ¼ºÀ» À§ÇØ APP_INFO ¼³Á¤
     IDE_TEST( utString::AppendConnStrAttr(mErrorMgr, sConnStr, ID_SIZEOF(sConnStr), (SChar *)"APP_INFO", aAppInfo) );
 
     /* BUG-29915 */
@@ -195,7 +205,7 @@ IDE_RC utISPApi::Open(SChar                       *aHost,
     }
 
     // bug-19279 remote sysdba enable
-    // sysdba ì ‘ì† ë°©ë²•ì´ ì¶”ê°€ë˜ì—ˆë‹¤.
+    // sysdba Á¢¼Ó ¹æ¹ıÀÌ Ãß°¡µÇ¾ú´Ù.
     // old: conntype=5       (unix-domain)  (windows:tcp)
     // new: privilege=sysdba (tcp/unix)     (windows:tcp)
     if (aIsSysDBA == ID_TRUE)
@@ -298,8 +308,8 @@ IDE_RC utISPApi::Open(SChar                       *aHost,
                 /*
                  * TASK-5894 Permit sysdba via IPC
                  *
-                 * IPCì˜ ê²½ìš° SYSDBAê°€ ì ‘ì†ì¤‘ì´ê³  ë‚¨ì€ ì±„ë„ì´ ì—†ì„ ë•Œ
-                 * SYSDBAë¡œ ì ‘ì†í•˜ë©´ ì ‘ì†ì„ ëŠì–´ì£¼ì–´ì•¼ í•œë‹¤.
+                 * IPCÀÇ °æ¿ì SYSDBA°¡ Á¢¼ÓÁßÀÌ°í ³²Àº Ã¤³ÎÀÌ ¾øÀ» ¶§
+                 * SYSDBA·Î Á¢¼ÓÇÏ¸é Á¢¼ÓÀ» ²÷¾îÁÖ¾î¾ß ÇÑ´Ù.
                  *
                  * 0x5108A : ulERR_ABORT_ADMIN_ALREADY_RUNNING
                  */
@@ -311,8 +321,8 @@ IDE_RC utISPApi::Open(SChar                       *aHost,
                 {
 #ifndef ALTI_CFG_OS_WINDOWS
                     /*
-                     * BUG-44144 -sysdbaë¡œ ì›ê²©ì§€ altibaseì— ì ‘ì†í•  ê²½ìš°
-                     * í•´ë‹¹ ì„œë²„ê°€ êµ¬ë™ë˜ì–´ ìˆì„ ê²½ìš°ì—ë§Œ ì ‘ì† ê°€ëŠ¥
+                     * BUG-44144 -sysdba·Î ¿ø°İÁö altibase¿¡ Á¢¼ÓÇÒ °æ¿ì
+                     * ÇØ´ç ¼­¹ö°¡ ±¸µ¿µÇ¾î ÀÖÀ» °æ¿ì¿¡¸¸ Á¢¼Ó °¡´É
                      */
                     if (aConnType == ISQL_CONNTYPE_TCP)
                     {
@@ -363,8 +373,11 @@ IDE_RC utISPApi::CheckPassword(SChar *aUser, SChar * aPasswd)
     SChar      sUserPassword[256 + 1];
     UInt       sUserPassLen;
     SChar      sEncryptedStr[IDS_MAX_PASSWORD_BUFFER_LEN + 1];
-
-    /* ì•”í˜¸ íŒŒì¼ ì—´ê¸° */
+    
+    /* BUG-47889 Case sensitive password */
+    idBool     sIsCaseSensitivePasswd = ID_FALSE;
+    
+    /* ¾ÏÈ£ ÆÄÀÏ ¿­±â */
     sHomeDir = idlOS::getenv(IDP_HOME_ENV);
     IDE_TEST(sHomeDir == NULL);
     idlOS::snprintf(sPassFileName, ID_SIZEOF(sPassFileName),
@@ -373,23 +386,26 @@ IDE_RC utISPApi::CheckPassword(SChar *aUser, SChar * aPasswd)
     sFP = idlOS::fopen(sPassFileName, "r");
     if (sFP == NULL)
     {
-        /* ì•”í˜¸ íŒŒì¼ ìƒì„± í›„ ë‹¤ì‹œ ì—´ê¸° ì‹œë„ */
+        /* ¾ÏÈ£ ÆÄÀÏ »ı¼º ÈÄ ´Ù½Ã ¿­±â ½Ãµµ */
         IDE_TEST(GenPasswordFile(sPassFileName) != IDE_SUCCESS);
         sFP = idlOS::fopen(sPassFileName, "r");
         IDE_TEST_RAISE(sFP == NULL, SyspwdOpenError);
     }
 
-    /* ì‚¬ìš©ì ì´ë¦„ ê²€ì‚¬ */
+    /* »ç¿ëÀÚ ÀÌ¸§ °Ë»ç */
     IDE_TEST_RAISE(idlOS::strcasecmp(aUser, IDP_SYSUSER_NAME) != 0, IncorrectUser);
 
-    /* ì•”í˜¸ íŒŒì¼ì— ì €ì¥ëœ ì•”í˜¸ ì½ê¸° */
+    /* ¾ÏÈ£ ÆÄÀÏ¿¡ ÀúÀåµÈ ¾ÏÈ£ ÀĞ±â */
     sPassFilePasswdLen = idlOS::fread(sPassFilePasswd, 1,
                                       ID_SIZEOF(sPassFilePasswd) - 1, sFP);
     idlOS::fclose(sFP);
     sFP = NULL;
     sPassFilePasswd[sPassFilePasswdLen] = '\0';
-
-    /* ì¸ìë¡œ ë°›ì€ ì•”í˜¸ì™€ ì•”í˜¸ íŒŒì¼ì˜ ì•”í˜¸ ë¹„êµ */
+    
+    /* BUG-48000 Need to print ideGetErrorMsg first */
+    IDE_TEST( GetIsCaseSensitivePasswd( &sIsCaseSensitivePasswd ) != IDE_SUCCESS );
+    
+    /* ÀÎÀÚ·Î ¹ŞÀº ¾ÏÈ£¿Í ¾ÏÈ£ ÆÄÀÏÀÇ ¾ÏÈ£ ºñ±³ */
     if (aPasswd != NULL)
     {
         sUserPassLen = idlOS::strlen(aPasswd);
@@ -399,10 +415,14 @@ IDE_RC utISPApi::CheckPassword(SChar *aUser, SChar * aPasswd)
             idlOS::memset(sUserPassword, 0, ID_SIZEOF(sUserPassword));
             idlOS::snprintf(sUserPassword, ID_SIZEOF(sUserPassword), "%s", aPasswd);
             
-            /* BUG-38101 syspasswordë¡œ ê²€ì‚¬í•˜ëŠ” ê²½ìš° ëŒ€ì†Œë¬¸ìë¥¼ êµ¬ë¶„í•˜ì§€ ì•ŠëŠ”ë‹¤. */
-            utString::toUpper(sUserPassword);
+            /* BUG-47889 Case sensitive password */
+            /* BUG-38101 syspassword·Î °Ë»çÇÏ´Â °æ¿ì ´ë¼Ò¹®ÀÚ¸¦ ±¸ºĞÇÏÁö ¾Ê´Â´Ù. */
+            if (sIsCaseSensitivePasswd == ID_FALSE) 
+            {
+                utString::toUpper(sUserPassword);
+            }
 
-            // BUG-38565 password ì•”í˜¸í™” ì•Œê³ ë¦¬ë“¬ ë³€ê²½
+            // BUG-38565 password ¾ÏÈ£È­ ¾Ë°í¸®µë º¯°æ
             idsPassword::crypt( sEncryptedStr, sUserPassword, sUserPassLen, sPassFilePasswd );
             
             IDE_TEST_RAISE(idlOS::strcmp(sEncryptedStr, sPassFilePasswd) != 0, IncorrectPassword);
@@ -434,12 +454,47 @@ IDE_RC utISPApi::CheckPassword(SChar *aUser, SChar * aPasswd)
     }
     IDE_EXCEPTION_END;
 
-    // fix BUG-25556 : [codeSonar] fclose ì¶”ê°€.
+    // fix BUG-25556 : [codeSonar] fclose Ãß°¡.
     if (sFP != NULL)
     {
         idlOS::fclose(sFP);
     }
 
+    return IDE_FAILURE;
+}
+
+/* BUG-48000 Need to print ideGetErrorMsg first */
+/* BUG-47889 Case sensitive password */
+IDE_RC utISPApi::GetIsCaseSensitivePasswd( idBool *aIsCaseSensitivePasswd )
+{
+    IDE_RC     sPropRead;
+    UInt       sPropIntValue;
+    
+    // Read CASE_SENSITIVE_PASSWORD from altibase.properteis
+    IDE_TEST_RAISE( idp::initialize() != IDE_SUCCESS, AltiPropIdeError );
+
+    sPropRead = idp::read("CASE_SENSITIVE_PASSWORD", (void *)&sPropIntValue, 0);
+    
+    if ( (sPropRead == IDE_SUCCESS) && (sPropIntValue == 1) )
+    {
+        *aIsCaseSensitivePasswd = ID_TRUE;
+    }
+    else
+    {
+        *aIsCaseSensitivePasswd = ID_FALSE;
+    } 
+    
+    (void) idp::destroy();
+
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION(AltiPropIdeError) ;
+    {
+        // print ide error msg directly
+        idlOS::printf("%s\n", ideGetErrorMsg() );
+    }
+    IDE_EXCEPTION_END;
+    
     return IDE_FAILURE;
 }
 
@@ -450,15 +505,22 @@ IDE_RC utISPApi::GenPasswordFile(SChar * aPassFileName)
     SChar      sCryptStr[IDS_MAX_PASSWORD_BUFFER_LEN + 1];
     size_t     sCryptStrLen;
 
-    /* ì•”í˜¸ íŒŒì¼ ì—´ê¸°(íŒŒì¼ ì—†ì„ ê²½ìš° ìƒì„±) */
+    /* ¾ÏÈ£ ÆÄÀÏ ¿­±â(ÆÄÀÏ ¾øÀ» °æ¿ì »ı¼º) */
     sFP = idlOS::fopen(aPassFileName, "w");
     IDE_TEST(sFP == NULL);
 
-    /* ê¸°ë³¸ê°’ ì•”í˜¸ë¥¼ ì•”í˜¸ íŒŒì¼ì— ì €ì¥ */
+    /* BUG-49061 set syspassword file permission as 622 */
+#if defined( ALTI_CFG_OS_WINDOWS )
+    // Unable to set file permission at Windows OS
+#else
+    (void) idlOS::fchmod( fileno( sFP ), S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH );
+#endif
+
+    /* ±âº»°ª ¾ÏÈ£¸¦ ¾ÏÈ£ ÆÄÀÏ¿¡ ÀúÀå */
     idlOS::memset(sUserPassword, 0, ID_SIZEOF(sUserPassword));
     idlOS::snprintf(sUserPassword, ID_SIZEOF(sUserPassword), "MANAGER");
 
-    // BUG-38565 password ì•”í˜¸í™” ì•Œê³ ë¦¬ë“¬ ë³€ê²½
+    // BUG-38565 password ¾ÏÈ£È­ ¾Ë°í¸®µë º¯°æ
     idsPassword::crypt( sCryptStr, sUserPassword, 7, NULL );
 
     sCryptStrLen = idlOS::strlen(sCryptStr);
@@ -536,4 +598,3 @@ IDE_RC utISPApi::Close()
 
     return IDE_FAILURE;
 }
-

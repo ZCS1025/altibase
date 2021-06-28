@@ -17,7 +17,7 @@
 /***********************************************************************
  * $Id: sdptbDef.h 27220 2008-07-23 14:56:22Z newdaily $
  *
- * Bitmap-based tablespaceë¥¼ ìœ„í•œ ìë£Œêµ¬ì¡°ë° ë§¤í¬ë¡œë¥¼ ì •ì˜í•œë‹¤.
+ * Bitmap-based tablespace¸¦ À§ÇÑ ÀÚ·á±¸Á¶¹× ¸ÅÅ©·Î¸¦ Á¤ÀÇÇÑ´Ù.
  ***********************************************************************/
 
 #ifndef _O_SDPTB_DEF_H_
@@ -30,79 +30,80 @@
 #include <sdpSglPIDList.h>
 #include <smDef.h>
 
-#define SDPTB_BITS_PER_BYTE    (8)     //í•œë°”ì´íŠ¸ì— ìˆëŠ” ë¹„íŠ¸ìˆ˜
-#define SDPTB_BITS_PER_ULONG   (SDPTB_BITS_PER_BYTE * 8) //ULongì— ìˆëŠ” ë¹„íŠ¸ìˆ˜
+#define SDPTB_BITS_PER_BYTE    (8)     //ÇÑ¹ÙÀÌÆ®¿¡ ÀÖ´Â ºñÆ®¼ö
+#define SDPTB_BITS_PER_UINT    (SDPTB_BITS_PER_BYTE * 4) //UInt ¿¡ ÀÖ´Â ºñÆ®¼ö  // BUG-47666
+#define SDPTB_BITS_PER_ULONG   (SDPTB_BITS_PER_BYTE * 8) //ULong¿¡ ÀÖ´Â ºñÆ®¼ö
 
 
 #define SDPTB_BIT_OFF          (0)
 #define SDPTB_BIT_ON           (1)
 
 /*
- * íŒŒì¼ì˜ ê°€ìš©ì—¬ë¶€ë¥¼ bitë¡œ ê´€ë¦¬í• ë•Œ í• ë‹¹í•´ì•¼ í•˜ëŠ” ë°°ì—´ì˜ í¬ê¸°ì •ì˜
- * TBSì—ëŠ” ìµœëŒ€ 1024ê°œì˜ íŒŒì¼ì´ ìˆì„ìˆ˜ìˆë‹¤.
- * ì¼ë°˜ì ìœ¼ë¡œ SDPTB_GLOBAL_GROUP_ARRAY_SIZEì€ 16 ì´ë‹¤.
+ * ÆÄÀÏÀÇ °¡¿ë¿©ºÎ¸¦ bit·Î °ü¸®ÇÒ¶§ ÇÒ´çÇØ¾ß ÇÏ´Â ¹è¿­ÀÇ Å©±âÁ¤ÀÇ
+ * TBS¿¡´Â ÃÖ´ë 1024°³ÀÇ ÆÄÀÏÀÌ ÀÖÀ»¼öÀÖ´Ù.
+ * ÀÏ¹İÀûÀ¸·Î SDPTB_GLOBAL_GROUP_ARRAY_SIZEÀº 16 ÀÌ´Ù.
  */
 #define SDPTB_GLOBAL_GROUP_ARRAY_SIZE  \
             ( SD_MAX_FID_COUNT/(ID_SIZEOF(ULong)* SDPTB_BITS_PER_BYTE) )
 
-//GG hdrë¥¼ ìœ„í•œ í˜ì´ì§€ ê°¯ìˆ˜
+//GG hdr¸¦ À§ÇÑ ÆäÀÌÁö °¹¼ö
 #define SDPTB_GG_HDR_PAGE_CNT  (1)
 
-/*  LG hdrë¥¼ ìœ„í•œ í˜ì´ì§€ ê°¯ìˆ˜
- * alloc LG header,dealloc LG headerë¥¼ ìœ„í•´ ê°ê° 1ê°œì˜ í˜ì´ì§€ê°€ í•„ìš”í•˜ë¯€ë¡œ
- * ì´ 2ê°œì˜ í˜ì´ì§€ê°€ í•„ìš”í•˜ë‹¤.
+/*  LG hdr¸¦ À§ÇÑ ÆäÀÌÁö °¹¼ö
+ * alloc LG header,dealloc LG header¸¦ À§ÇØ °¢°¢ 1°³ÀÇ ÆäÀÌÁö°¡ ÇÊ¿äÇÏ¹Ç·Î
+ * ÃÑ 2°³ÀÇ ÆäÀÌÁö°¡ ÇÊ¿äÇÏ´Ù.
  */
 #define SDPTB_LG_HDR_PAGE_CNT  (2)
 
-//í•˜ë‚˜ì˜ Extentì˜ í¬ê¸°ë¥¼ ë°”ì´íŠ¸ë¡œ ê³„ì‚°
+//ÇÏ³ªÀÇ ExtentÀÇ Å©±â¸¦ ¹ÙÀÌÆ®·Î °è»ê
 #define SDPTB_EXTENT_SIZE_IN_BYTES( pages_per_extent )  \
                                    ((pages_per_extent)*SD_PAGE_SIZE)
 
 
 #define SDPTB_LGID_MAX          (SDPTB_BITS_PER_ULONG*2)
 
-//LGì—ì„œ ë¹„íŠ¸ë©¥ê´€ë¦¬ì‹œ ì‚¬ìš©í•˜ëŠ” ë§¤ì§ë„˜ë²„
+//LG¿¡¼­ ºñÆ®¸ã°ü¸®½Ã »ç¿ëÇÏ´Â ¸ÅÁ÷³Ñ¹ö
 #define SDPTB_LG_BITMAP_MAGIC       (ID_ULONG(0xaf))
 
-//í•˜ë‚˜ì˜  LGì— ìˆëŠ” í˜ì´ì§€ ê°¯ìˆ˜( ì´ê°’ì€ í—¤ë”ê¹Œì§€ í¬í•¨í•œí¬ê¸°ì´ë‹¤)
+//ÇÏ³ªÀÇ  LG¿¡ ÀÖ´Â ÆäÀÌÁö °¹¼ö( ÀÌ°ªÀº Çì´õ±îÁö Æ÷ÇÔÇÑÅ©±âÀÌ´Ù)
 #define SDPTB_PAGES_PER_LG(pages_per_extent)  \
     ( ( sdptbGroup::nBitsPerLG() * pages_per_extent ) + SDPTB_LG_HDR_PAGE_CNT )
 
-//FIDë¡œ GG hdrì˜ PIDë¥¼ ì–»ì–´ë‚¸ë‹¤.
+//FID·Î GG hdrÀÇ PID¸¦ ¾ò¾î³½´Ù.
 #define SDPTB_GLOBAL_GROUP_HEADER_PID(file_id)  SD_CREATE_PID(file_id, 0)
 
 /*
- * LG hdrì˜ PIDë¥¼ ì–»ì–´ë‚¸ë‹¤.
- * whichê°€ 0ì´ë©´ í•˜ë‚˜ì˜ LG groupì— ìˆëŠ” LG hdrì¤‘ ì•ìœ¼ê²ƒì˜ PID
- * whichê°€ 1ì´ë©´ í•˜ë‚˜ì˜ LG groupì— ìˆëŠ” LG hdrì¤‘ ë’¤ì˜ê²ƒì˜ PID
+ * LG hdrÀÇ PID¸¦ ¾ò¾î³½´Ù.
+ * which°¡ 0ÀÌ¸é ÇÏ³ªÀÇ LG group¿¡ ÀÖ´Â LG hdrÁß ¾ÕÀ¸°ÍÀÇ PID
+ * which°¡ 1ÀÌ¸é ÇÏ³ªÀÇ LG group¿¡ ÀÖ´Â LG hdrÁß µÚÀÇ°ÍÀÇ PID
  */
 #define SDPTB_LG_HDR_PID_FROM_LGID( file_id , lg_id, which, pages_per_extent )        \
     ( SD_CREATE_PID( file_id, SDPTB_GG_HDR_PAGE_CNT +                                 \
                       lg_id * SDPTB_PAGES_PER_LG( pages_per_extent ) + which ) )
 
-//LGIDë¡œë¶€í„° í•´ë‹¹ LGì—ì„œ extentê°€ ì‹œì‘í•˜ëŠ”ê³³ì˜ FPIDë¥¼ ì–»ì–´ë‚¸ë‹¤.
+//LGID·ÎºÎÅÍ ÇØ´ç LG¿¡¼­ extent°¡ ½ÃÀÛÇÏ´Â°÷ÀÇ FPID¸¦ ¾ò¾î³½´Ù.
 #define SDPTB_EXTENT_START_FPID_FROM_LGID( lg_id, pages_per_extent )  \
    (( SDPTB_GG_HDR_PAGE_CNT + lg_id * SDPTB_PAGES_PER_LG(pages_per_extent) )  \
      +  SDPTB_LG_HDR_PAGE_CNT)
 
-/* extentì˜ ì²«ë²ˆì§¸ PID ë¥¼ ë°›ì•„ì„œ LGIDë¥¼ ë¦¬í„´í•˜ëŠ” ë§¤í¬ë¡œ í•¨ìˆ˜ì´ë‹¤.*/
+/* extentÀÇ Ã¹¹øÂ° PID ¸¦ ¹Ş¾Æ¼­ LGID¸¦ ¸®ÅÏÇÏ´Â ¸ÅÅ©·Î ÇÔ¼öÀÌ´Ù.*/
 #define SDPTB_GET_LGID_BY_PID( aExtPID, aPagesPerExt)           \
                 ((SD_MAKE_FPID( aExtPID ) - SDPTB_GG_HDR_PAGE_CNT )      \
                     /  SDPTB_PAGES_PER_LG( aPagesPerExt ))
 
-// PIDë¡œë¶€í„° í•´ë‹¹ LGì—ì„œ extentê°€ ì‹œì‘í•˜ëŠ”ê³³ì˜ PIDë¥¼ ì–»ì–´ë‚¸ë‹¤.
+// PID·ÎºÎÅÍ ÇØ´ç LG¿¡¼­ extent°¡ ½ÃÀÛÇÏ´Â°÷ÀÇ PID¸¦ ¾ò¾î³½´Ù.
 #define SDPTB_EXTENT_START_PID_FROM_PID( aPID, aPagesPerExt )            \
     ( SD_CREATE_PID( SD_MAKE_FID( aPID ) ,                                \
                      SDPTB_EXTENT_START_FPID_FROM_LGID (                  \
                            SDPTB_GET_LGID_BY_PID( aPID, aPagesPerExt ),   \
                            aPagesPerExt ) ) )
 
-// PIDë¥¼ ë°›ì•„ì„œ pageê°€ ì†í•œ extentì˜ indexë¥¼ ë¦¬í„´í•˜ëŠ” ë§¤í¬ë¡œ í•¨ìˆ˜ì´ë‹¤.
+// PID¸¦ ¹Ş¾Æ¼­ page°¡ ¼ÓÇÑ extentÀÇ index¸¦ ¸®ÅÏÇÏ´Â ¸ÅÅ©·Î ÇÔ¼öÀÌ´Ù.
 #define SDPTB_EXTENT_IDX_AT_LG_BY_PID( aPID, aPagesPerExt )              \
     ( ( aPID - SDPTB_EXTENT_START_PID_FROM_PID( aPID, aPagesPerExt ) )  \
       / aPagesPerExt )
 
-// Pageê°€ ì†í•œ extent PIDë¥¼ ë¦¬í„´í•˜ëŠ” ë§¤í¬ë¡œ í•¨ìˆ˜ì´ë‹¤.
+// Page°¡ ¼ÓÇÑ extent PID¸¦ ¸®ÅÏÇÏ´Â ¸ÅÅ©·Î ÇÔ¼öÀÌ´Ù.
 #define SDPTB_GET_EXTENT_PID_BY_PID( aPID, aPagesPerExt )                  \
     ( ( SDPTB_EXTENT_IDX_AT_LG_BY_PID( aPID, aPagesPerExt ) * aPagesPerExt ) \
       + SDPTB_EXTENT_START_PID_FROM_PID( aPID, aPagesPerExt ) )
@@ -111,46 +112,46 @@
 typedef  UInt sdptbGGID; // Global Group ID
 typedef  UInt sdptbLGID; // Local Group ID
 
-// FEBT í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ Space Cache Runtime ìë£Œêµ¬ì¡°
+// FEBT Å×ÀÌºí½ºÆäÀÌ½ºÀÇ Space Cache Runtime ÀÚ·á±¸Á¶
 typedef struct sdptbSpaceCache
 {
     sdpSpaceCacheCommon mCommon;      // Space Cache Header
 
-    /* Freeëœ Extent Poolì„ ê°€ì§€ê³  ìˆë‹¤. */
+    /* FreeµÈ Extent PoolÀ» °¡Áö°í ÀÖ´Ù. */
     iduStackMgr         mFreeExtPool;
 
-    /* Extentë¥¼ í• ë‹¹ íƒìƒ‰ì—°ì‚°ì˜ ì‹œì‘ GGID */
+    /* Extent¸¦ ÇÒ´ç Å½»ö¿¬»êÀÇ ½ÃÀÛ GGID */
     volatile sdptbGGID  mGGIDHint;
 
-    /* MaxGGIDëŠ” í˜„ì¬ í•´ë‹¹TBSì— ìœ ìš©í•œ GGì—ì„œ ìµœëŒ€ IDê°’ì„ ì˜ë¯¸í•œë‹¤.
-     * freeê°€ ìˆë“ ì—†ë“  ê·¸ê²ƒì€ ê³ ë ¤ëŒ€ìƒì´ ì•„ë‹ˆë‹¤.
-     * ì¦‰, GGì— free extentê°€ ì—†ëŠ” GGIDë¼ í• ì§€ë¼ë„ Max GGIDê°€ ë ìˆ˜ ìˆë‹¤.
+    /* MaxGGID´Â ÇöÀç ÇØ´çTBS¿¡ À¯¿ëÇÑ GG¿¡¼­ ÃÖ´ë ID°ªÀ» ÀÇ¹ÌÇÑ´Ù.
+     * free°¡ ÀÖµç¾øµç ±×°ÍÀº °í·Á´ë»óÀÌ ¾Æ´Ï´Ù.
+     * Áï, GG¿¡ free extent°¡ ¾ø´Â GGID¶ó ÇÒÁö¶óµµ Max GGID°¡ µÉ¼ö ÀÖ´Ù.
      */
     volatile sdptbGGID  mMaxGGID;
 
     /*
-     * í• ë‹¹ê°€ëŠ¥í•œ Extentì˜ ì¡´ì¬ì—¬ë¶€ë¥¼ bitë¡œ í‘œí˜„í•˜ë©°,
-     * DROPëœ GlobalGroupì˜ ê²½ìš° ë¹„íŠ¸ë¥¼ 0ìœ¼ë¡œ ì„¤ì •ëœë‹¤.
+     * ÇÒ´ç°¡´ÉÇÑ ExtentÀÇ Á¸Àç¿©ºÎ¸¦ bit·Î Ç¥ÇöÇÏ¸ç,
+     * DROPµÈ GlobalGroupÀÇ °æ¿ì ºñÆ®¸¦ 0À¸·Î ¼³Á¤µÈ´Ù.
      */
     ULong        mFreenessOfGGs[ SDPTB_GLOBAL_GROUP_ARRAY_SIZE ];
 
-    /* TBSì—ì„œ íŒŒì¼í™•ì¥(Autoextend) ì„ ìœ„í•œ Mutex */
+    /* TBS¿¡¼­ ÆÄÀÏÈ®Àå(Autoextend) À» À§ÇÑ Mutex */
     iduMutex     mMutexForExtend;
     /* BUG-31608 [sm-disk-page] add datafile during DML
-     * AddDataFileì„ í•˜ê¸° ìœ„í•œ Mutex */
+     * AddDataFileÀ» ÇÏ±â À§ÇÑ Mutex */
     iduMutex     mMutexForAddDataFile;
-    idBool       mOnExtend;        // í˜„ì¬ í™•ì¥ì´ ì§„í–‰ë˜ê³  ìˆëŠ”ê°€?
+    idBool       mOnExtend;        // ÇöÀç È®ÀåÀÌ ÁøÇàµÇ°í ÀÖ´Â°¡?
     iduCond      mCondVar;
-    UInt         mWaitThr4Extend;  // waterë“¤ì˜ ìˆ˜
+    UInt         mWaitThr4Extend;  // waterµéÀÇ ¼ö
 
-    // í• ë‹¹ê°€ëŠ¥í•œ ExtDir ì—¬ë¶€
+    // ÇÒ´ç°¡´ÉÇÑ ExtDir ¿©ºÎ
     idBool     mArrIsFreeExtDir[ SDP_MAX_FREE_EXTDIR_LIST ];
 } sdptbSpaceCache;
 
 /*
- * Extent Slot ì •ì˜
+ * Extent Slot Á¤ÀÇ
  *
- * Extentë¥¼ TBSì— í•´ì œí• ë•Œ ì‚¬ìš©ë˜ëŠ” ì„ì‹œ êµ¬ì¡°ì²´ì´ë‹¤.
+ * Extent¸¦ TBS¿¡ ÇØÁ¦ÇÒ¶§ »ç¿ëµÇ´Â ÀÓ½Ã ±¸Á¶Ã¼ÀÌ´Ù.
  */
 typedef struct sdptbSortExtSlot
 {
@@ -160,7 +161,7 @@ typedef struct sdptbSortExtSlot
 } sdptbSortExtSlot;
 
 /*
- * ExtDesc ì •ë³´ ì •ì˜
+ * ExtDesc Á¤º¸ Á¤ÀÇ
  */
 typedef struct sdptbExtSlot
 {
@@ -168,12 +169,12 @@ typedef struct sdptbExtSlot
     UShort     mLength;
 } sdptbExtSlot;
 
-/* BUG-24730 [SD] Dropëœ Temp Segmentì˜ ExtentëŠ” ë¹ ë¥´ê²Œ ì¬ì‚¬ìš©ë˜ì–´ì•¼ í•©
- * ë‹ˆë‹¤. 
+/* BUG-24730 [SD] DropµÈ Temp SegmentÀÇ Extent´Â ºü¸£°Ô Àç»ç¿ëµÇ¾î¾ß ÇÕ
+ * ´Ï´Ù. 
  * 
- *  Temp Segementì˜ Extentë“¤ì„ Mtx Commit ì´í›„ì— ë°˜í™˜í•˜ë„ë¡ í•˜ê¸° ìœ„í•´
- * Pending Jobìœ¼ë¡œ ë§¤ë‹µë‹ˆë‹¤. Pending Jobìœ¼ë¡œ ë§¤ë‹¬ê¸° ìœ„í•œ êµ¬ì¡°ì²´ê°€
- * sdptbFreeExtIDì…ë‹ˆë‹¤.
+ *  Temp SegementÀÇ ExtentµéÀ» Mtx Commit ÀÌÈÄ¿¡ ¹İÈ¯ÇÏµµ·Ï ÇÏ±â À§ÇØ
+ * Pending JobÀ¸·Î ¸Å´ä´Ï´Ù. Pending JobÀ¸·Î ¸Å´Ş±â À§ÇÑ ±¸Á¶Ã¼°¡
+ * sdptbFreeExtIDÀÔ´Ï´Ù.
  */
 typedef struct sdptbFreeExtID
 {
@@ -181,36 +182,36 @@ typedef struct sdptbFreeExtID
     scPageID   mExtFstPID;
 } sdptbFreeExtID;
 
-/* Extent ì—°ì‚°ì— ë”°ë¼ ì ‘ê·¼í•˜ëŠ” Local Group Headerê°€ ë‹¤ë¥´ë‹¤.
- * Extent í• ë‹¹ ì—°ì‚° : Alloc LG Header ì ‘ê·¼
- * Extent í•´ì œ ì—°ì‚° : Dealloc LG Header ì ‘ê·¼ */
+/* Extent ¿¬»ê¿¡ µû¶ó Á¢±ÙÇÏ´Â Local Group Header°¡ ´Ù¸£´Ù.
+ * Extent ÇÒ´ç ¿¬»ê : Alloc LG Header Á¢±Ù
+ * Extent ÇØÁ¦ ¿¬»ê : Dealloc LG Header Á¢±Ù */
 #define SDPTB_LG_PINGPONG_COUNT    (2)
 
-/*  LGì—ëŒ€í•œ freenessë°°ì—´ì˜ í¬ê¸°
- *  í•œê°œì˜ GGì— LGëŠ” 128ê°œ ì´ìƒì„ ê°€ì§ˆìˆ˜ ì—†ìœ¼ë¯€ë¡œ 2ë©´ ì¶©ë¶„í•˜ë‹¤.  */
+/*  LG¿¡´ëÇÑ freeness¹è¿­ÀÇ Å©±â
+ *  ÇÑ°³ÀÇ GG¿¡ LG´Â 128°³ ÀÌ»óÀ» °¡Áú¼ö ¾øÀ¸¹Ç·Î 2¸é ÃæºĞÇÏ´Ù.  */
 #define SDPTB_LG_FN_ARRAY_SIZE     (2)
 
-// LGì—ëŒ€í•œ freenessë°°ì—´ì˜ í¬ê¸°ë¥¼ ë¹„íŠ¸ë¡œ ë‚˜íƒ€ë‚¸ê²ƒ
+// LG¿¡´ëÇÑ freeness¹è¿­ÀÇ Å©±â¸¦ ºñÆ®·Î ³ªÅ¸³½°Í
 #define SDPTB_LG_FN_SIZE_IN_BITS               \
         (SDPTB_LG_FN_ARRAY_SIZE*ID_SIZEOF(ULong)*SDPTB_BITS_PER_BYTE ) //128
 
 #define SDPTB_LG_CNT_MAX  SDPTB_LG_FN_SIZE_IN_BITS
 
-//FIDë¡œë¶€í„° GGPIDì–»ì–´ë‚´ëŠ” ë©”í¬ë¡œ
+//FID·ÎºÎÅÍ GGPID¾ò¾î³»´Â ¸ŞÅ©·Î
 #define SDPTB_GET_GGHDR_PID_BY_FID( fid )        SD_CREATE_PID( fid, 0 )
 
 #define SDPTB_FIRST_FID                         (0)
 
-//GG hdrì˜ LG typeí•„ë“œì— ì ì„ ê°’
+//GG hdrÀÇ LG typeÇÊµå¿¡ ÀûÀ» °ª
 typedef enum sdptbAllocLGIdx
 {
-    SDPTB_ALLOC_LG_IDX_0 = 0,   // ì•ì˜ LGê°€ alloc LG group
-                                // (ì²˜ìŒ LGë¥¼ ë§Œë“¤ì—ˆì„ë•Œì˜type)
-    SDPTB_ALLOC_LG_IDX_1,       // ë’¤ì˜ LGê°€ alloc LG group
+    SDPTB_ALLOC_LG_IDX_0 = 0,   // ¾ÕÀÇ LG°¡ alloc LG group
+                                // (Ã³À½ LG¸¦ ¸¸µé¾úÀ»¶§ÀÇtype)
+    SDPTB_ALLOC_LG_IDX_1,       // µÚÀÇ LG°¡ alloc LG group
     SDPTB_ALLOC_LG_IDX_CNT
 }sdptbAllocLGIdx;
 
-//alloc LGì¸ì§€ dealloc LGì¸ì§€ë¥¼ êµ¬ë¶„í•˜ëŠ” ìš©ë„ë¡œ ì‚¬ìš©
+//alloc LGÀÎÁö dealloc LGÀÎÁö¸¦ ±¸ºĞÇÏ´Â ¿ëµµ·Î »ç¿ë
 typedef enum sdptbLGType {
     SDPTB_ALLOC_LG,
     SDPTB_DEALLOC_LG,
@@ -218,14 +219,14 @@ typedef enum sdptbLGType {
 } sdptbLGType;
 
 /*
- * extentì—ì„œ ì²«ë²ˆì§¸ PIDê°’ê³¼ extentë‹¹ pageê°¯ìˆ˜ë¥¼ ê°–ê³ 
- * extentì˜ ë§ˆì§€ë§‰ PIDê°’ì„ ì–»ëŠ”ë‹¤.
+ * extent¿¡¼­ Ã¹¹øÂ° PID°ª°ú extent´ç page°¹¼ö¸¦ °®°í
+ * extentÀÇ ¸¶Áö¸· PID°ªÀ» ¾ò´Â´Ù.
  */
 #define SDPTB_LAST_PID_OF_EXTENT(ext_first_pid ,pages_per_extent)   \
                             ( ext_first_pid + pages_per_extent -1)
 
 /*
- * interfaceì— ì‚¬ìš©ë˜ëŠ” RID type
+ * interface¿¡ »ç¿ëµÇ´Â RID type
  */
 typedef enum sdptbRIDType
 {
@@ -234,10 +235,10 @@ typedef enum sdptbRIDType
     SDPTB_RID_TYPE_MAX
 } sdptbRIDType;
 
-/* Local Groupì˜ Extent ëŒ€í•œ ê°€ìš© ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ìë£Œêµ¬ì¡°. */
+/* Local GroupÀÇ Extent ´ëÇÑ °¡¿ë Á¤º¸¸¦ ÀúÀåÇÏ´Â ÀÚ·á±¸Á¶. */
 typedef struct sdptbLGFreeInfo
 {
-    ULong    mFreeExts;   //ëª¨ë“  Local Groupì— ê±¸ì³ í• ë‹¹ ê°€ëŠ¥í•œ ì´ Extent ê°œìˆ˜
+    ULong    mFreeExts;   //¸ğµç Local Group¿¡ °ÉÃÄ ÇÒ´ç °¡´ÉÇÑ ÃÑ Extent °³¼ö
     ULong    mBits[SDPTB_LG_FN_ARRAY_SIZE];
 } sdptbLGFreeInfo;
 
@@ -245,68 +246,68 @@ typedef struct sdptbLGFreeInfo
 
 typedef struct sdptbGGHdr
 {
-    /* A. Global Group ì •ë³´ (ì „ì²´ Groupì˜ ìµìŠ¤í…íŠ¸ í• ë‹¹ ë° í•´ì œë¥¼ ê´€ë¦¬)
-           Local Group ì—ì„œëŠ” ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+    /* A. Global Group Á¤º¸ (ÀüÃ¼ GroupÀÇ ÀÍ½ºÅÙÆ® ÇÒ´ç ¹× ÇØÁ¦¸¦ °ü¸®)
+           Local Group ¿¡¼­´Â »ç¿ëÇÏÁö ¾Ê´Â´Ù. */
     sdptbGGID           mGGID;        // global group id
-    UInt                mPagesPerExt; // extentì˜ page uniform ê°œìˆ˜
+    UInt                mPagesPerExt; // extentÀÇ page uniform °³¼ö
 
     /*
      * mHWM
-     * GGì˜ ëª¨ë“  extentì¤‘ì—ì„œ í•œë²ˆì´ìƒ í• ë‹¹ëœì ì´ ìˆëŠ” extentë“¤ì¤‘ì—ì„œ,
-     * extentì˜ ì²«ë²ˆì§¸ PIDê°€ ê°€ì¥í° extentì•ˆì˜ ë§ˆì§€ë§‰ í˜ì´ì§€ì˜ PIDê°’.
-     * ë‹¤ì‹œë§í•˜ë©´,GGì˜ ëª¨ë“  pageì¤‘ì—ì„œ í•œë²ˆì´ìƒ í• ë‹¹ëœì ì´ ìˆëŠ”
-     * pageë“¤ì¤‘ì—ì„œ, ê°€ì¥í° PIDê°’
-     * ì´ê°’ì€ ì¦ê°€ë§Œí•˜ë©° ê°ì†Œí•˜ì§€ ì•Š.ëŠ”.ë‹¤.
+     * GGÀÇ ¸ğµç extentÁß¿¡¼­ ÇÑ¹øÀÌ»ó ÇÒ´çµÈÀûÀÌ ÀÖ´Â extentµéÁß¿¡¼­,
+     * extentÀÇ Ã¹¹øÂ° PID°¡ °¡ÀåÅ« extent¾ÈÀÇ ¸¶Áö¸· ÆäÀÌÁöÀÇ PID°ª.
+     * ´Ù½Ã¸»ÇÏ¸é,GGÀÇ ¸ğµç pageÁß¿¡¼­ ÇÑ¹øÀÌ»ó ÇÒ´çµÈÀûÀÌ ÀÖ´Â
+     * pageµéÁß¿¡¼­, °¡ÀåÅ« PID°ª
+     * ÀÌ°ªÀº Áõ°¡¸¸ÇÏ¸ç °¨¼ÒÇÏÁö ¾Ê.´Â.´Ù.
      */
     scPageID            mHWM;
-    UInt                mLGCnt;//ì´local group ê°œìˆ˜,ìë™í™•ì¥ì‹œ ì¦ê°€í•  ìˆ˜ ìˆë‹¤
-    UInt                mTotalPages; //ì‹¤ì œ ë°ì´íƒ€íŒŒì¼ì˜ í˜ì´ì§€ ê°œìˆ˜
+    UInt                mLGCnt;//ÃÑlocal group °³¼ö,ÀÚµ¿È®Àå½Ã Áõ°¡ÇÒ ¼ö ÀÖ´Ù
+    UInt                mTotalPages; //½ÇÁ¦ µ¥ÀÌÅ¸ÆÄÀÏÀÇ ÆäÀÌÁö °³¼ö
 
     /*
      * alloc LG index
      *
-     *    SDPTB_ALLOC_LG_IDX_0  -->   alloc LG pageê°€ ì•ì˜ê²ƒ
-     *    SDPTB_ALLOC_LG_IDX_1  -->   alloc LG pageëŠ” ë’¤ì˜ê²ƒ
+     *    SDPTB_ALLOC_LG_IDX_0  -->   alloc LG page°¡ ¾ÕÀÇ°Í
+     *    SDPTB_ALLOC_LG_IDX_1  -->   alloc LG page´Â µÚÀÇ°Í
      */
     UInt                mAllocLGIdx;
     sdptbLGFreeInfo     mLGFreeness[ SDPTB_LG_PINGPONG_COUNT ];
 
-    // UndoTBSì˜ TSS/Undo ExtDir PID ë¦¬ìŠ¤íŠ¸
+    // UndoTBSÀÇ TSS/Undo ExtDir PID ¸®½ºÆ®
     sdpSglPIDListBase   mArrFreeExtDirList[ SDP_MAX_FREE_EXTDIR_LIST ];
 
-    //Undo í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ TSS ì„¸ê·¸ë¨¼íŠ¸ì˜ Meta PID
+    //Undo Å×ÀÌºí½ºÆäÀÌ½ºÀÇ TSS ¼¼±×¸ÕÆ®ÀÇ Meta PID
     scPageID            mArrTSSegPID[ SDP_MAX_TSSEG_PID_CNT ];
     scPageID            mArrUDSegPID[ SDP_MAX_UDSEG_PID_CNT ];
 
 } sdptbGGHdr;
 
-// Local GroupìµìŠ¤í…íŠ¸ í• ë‹¹ ë° í•´ì œë¥¼ ê´€ë¦¬í•œë‹¤.
+// Local GroupÀÍ½ºÅÙÆ® ÇÒ´ç ¹× ÇØÁ¦¸¦ °ü¸®ÇÑ´Ù.
 typedef struct sdptbLGHdr
 {
      sdptbLGID  mLGID;       // local group id
-     UInt       mStartPID;   // ì²«ë²ˆì§¸ Extent ì‹œì‘ PID (fid, fpid )
-     UInt       mHint;       // ë‹¤ìŒ í• ë‹¹í•  Extentì˜ ë¹„íŠ¸ index
-     UInt       mValidBits;  // groupë‚´ì—ì„œ ì´ˆê¸°í™”ëœ ë¹„íŠ¸ê°¯ìˆ˜
-                             // (ë¹„íŠ¸ ê²€ìƒ‰í• ë•Œ ëŒ€ìƒì´ ë˜ëŠ” ë¹„íŠ¸ê°¯ìˆ˜)
-     UInt       mFree;       // í• ë‹¹ê°€ëŠ¥í•œ free extent ê°¯ìˆ˜
-     ULong      mBitmap[1];  // page í¬ê¸°ì— ë”°ë¼ ë‚˜ë¨¸ì§€ ê³µê°„ë§Œí¼ ì‚¬ìš©í•œë‹¤.
+     UInt       mStartPID;   // Ã¹¹øÂ° Extent ½ÃÀÛ PID (fid, fpid )
+     UInt       mHint;       // ´ÙÀ½ ÇÒ´çÇÒ ExtentÀÇ ºñÆ® index
+     UInt       mValidBits;  // group³»¿¡¼­ ÃÊ±âÈ­µÈ ºñÆ®°¹¼ö
+                             // (ºñÆ® °Ë»öÇÒ¶§ ´ë»óÀÌ µÇ´Â ºñÆ®°¹¼ö)
+     UInt       mFree;       // ÇÒ´ç°¡´ÉÇÑ free extent °¹¼ö
+     ULong      mBitmap[1];  // page Å©±â¿¡ µû¶ó ³ª¸ÓÁö °ø°£¸¸Å­ »ç¿ëÇÑ´Ù.
 } sdptbLGHdr;
 
 /*
- *LG headerë¥¼ ì´ˆê¸°í™”í•˜ëŠ” redo routine ì—ì„œ ì‚¬ìš©í• ì •ë³´ì´ë‹¤.
+ *LG header¸¦ ÃÊ±âÈ­ÇÏ´Â redo routine ¿¡¼­ »ç¿ëÇÒÁ¤º¸ÀÌ´Ù.
  */
 typedef struct sdptbData4InitLGHdr
 {
-    UChar    mBitVal;   //ì„¸íŒ…í•  ë¹„íŠ¸ê°’
-    UInt     mStartIdx; //mBitmapì—ì„œ ì„¸íŒ…ì„ ì‹œì‘í•  index
-    UInt     mCount;    //sBitValë¡œ ì´ˆê¸°í™”í•  ë¹„íŠ¸ì—´ ê°¯ìˆ˜
-                        //ë‚˜ë¨¸ì§€ ë¹„íŠ¸ëŠ” !sBitValë¡œ ì„¸íŠ¸í•´ì•¼í•¨.
+    UChar    mBitVal;   //¼¼ÆÃÇÒ ºñÆ®°ª
+    UInt     mStartIdx; //mBitmap¿¡¼­ ¼¼ÆÃÀ» ½ÃÀÛÇÒ index
+    UInt     mCount;    //sBitVal·Î ÃÊ±âÈ­ÇÒ ºñÆ®¿­ °¹¼ö
+                        //³ª¸ÓÁö ºñÆ®´Â !sBitVal·Î ¼¼Æ®ÇØ¾ßÇÔ.
 } sdptbData4InitLGHdr;
 
-//FID, LGIDë“±ì„ ë°œê²¬í•˜ì§€ ëª»í–ˆì„ë•Œë¥¼ ê²€ì‚¬í•˜ëŠ” magic numberí•œë‹¤.
+//FID, LGIDµîÀ» ¹ß°ßÇÏÁö ¸øÇßÀ»¶§¸¦ °Ë»çÇÏ´Â magic numberÇÑ´Ù.
 #define SDPTB_NOT_FOUND        (0xFFFF)
 
-//LGì—ì„œ ë¹„íŠ¸ê²€ìƒ‰ì‹œ ë°œê²¬ëª»í–ˆì„ê²½ìš°ì—ëŒ€í•œ magic number
+//LG¿¡¼­ ºñÆ®°Ë»ö½Ã ¹ß°ß¸øÇßÀ»°æ¿ì¿¡´ëÇÑ magic number
 #define SDPTB_BIT_NOT_FOUND   (0xFFFFFFFF)
 
 

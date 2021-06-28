@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * rangeì™€ subrangeë¥¼ í¬í•¨í•˜ëŠ” ë°ì´í„° ë…¸ë“œì˜ ì •ë³´ë¥¼ ë‚˜íƒ€ë‚´ëŠ” í´ë˜ìŠ¤
+ * range¿Í subrange¸¦ Æ÷ÇÔÇÏ´Â µ¥ÀÌÅÍ ³ëµåÀÇ Á¤º¸¸¦ ³ªÅ¸³»´Â Å¬·¡½º
  */
 public class ShardRange
 {

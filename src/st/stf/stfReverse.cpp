@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: stfReverse.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: stfReverse.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -32,7 +32,7 @@ static IDE_RC stfReverseEstimate( mtcNode     * aNode,
 mtfModule stfReverse = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞ÏûêÍ∞Ä ÏïÑÎãò)
+    1.0,  // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄∞° æ∆¥‘)
     stfReverseFunctionName,
     NULL,
     mtf::initializeDefault,

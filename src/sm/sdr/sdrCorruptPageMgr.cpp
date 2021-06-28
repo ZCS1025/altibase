@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * DRDB ë³µêµ¬ê³¼ì •ì—ì„œì˜ Corrupted page ì²˜ë¦¬ì— ëŒ€í•œ êµ¬í˜„íŒŒì¼ì´ë‹¤.
+ * DRDB º¹±¸°úÁ¤¿¡¼­ÀÇ Corrupted page Ã³¸®¿¡ ´ëÇÑ ±¸ÇöÆÄÀÏÀÌ´Ù.
  *
  **********************************************************************/
 
@@ -29,19 +29,20 @@
 #include <smDef.h>
 #include <sdrCorruptPageMgr.h>
 #include <sct.h>
+#include <sdptbExtent.h>
 
-// Redo ì‹œì— Direct-Path INSERT ìˆ˜í–‰ ì‹œ ë°œìƒí•œ
-// Partial Write PageëŠ” Skip í•˜ê¸° ìœ„í•˜ì—¬ í•„ìš”í•œ ìë£Œ êµ¬ì¡°
+// Redo ½Ã¿¡ Direct-Path INSERT ¼öÇà ½Ã ¹ß»ıÇÑ
+// Partial Write Page´Â Skip ÇÏ±â À§ÇÏ¿© ÇÊ¿äÇÑ ÀÚ·á ±¸Á¶
 smuHashBase sdrCorruptPageMgr::mCorruptedPages;
 UInt        sdrCorruptPageMgr::mHashTableSize;
 sdbCorruptPageReadPolicy sdrCorruptPageMgr::mCorruptPageReadPolicy;
 
 /***********************************************************************
- * Description : Corrupt page ê´€ë¦¬ìì˜ ì´ˆê¸°í™” í•¨ìˆ˜ì´ë‹¤.
- *               addCorruptedPageê°€ redoAllê³¼ì • ì¤‘ì— ìˆ˜í–‰ë˜ë¯€ë¡œ
- *               ê·¸ ì´ì „ì— ì´ˆê¸°í™” ë˜ì–´ì•¼ í•œë‹¤.
+ * Description : Corrupt page °ü¸®ÀÚÀÇ ÃÊ±âÈ­ ÇÔ¼öÀÌ´Ù.
+ *               addCorruptedPage°¡ redoAll°úÁ¤ Áß¿¡ ¼öÇàµÇ¹Ç·Î
+ *               ±× ÀÌÀü¿¡ ÃÊ±âÈ­ µÇ¾î¾ß ÇÑ´Ù.
  *
- *  aHashTableSize - [IN] CorruptedPagesHashì˜ bucket count
+ *  aHashTableSize - [IN] CorruptedPagesHashÀÇ bucket count
  **********************************************************************/
 IDE_RC sdrCorruptPageMgr::initialize( UInt  aHashTableSize )
 {
@@ -49,7 +50,7 @@ IDE_RC sdrCorruptPageMgr::initialize( UInt  aHashTableSize )
 
     mHashTableSize = aHashTableSize;
 
-    // Corrupted Pageë“¤ì„ ì €ì¥í•  Hash Table
+    // Corrupted PageµéÀ» ÀúÀåÇÒ Hash Table
     // HashKey : <space, pageID, unused>
     IDE_TEST( smuHash::initialize( &mCorruptedPages,
                                    1,                 // ConcurrentLevel
@@ -59,9 +60,9 @@ IDE_RC sdrCorruptPageMgr::initialize( UInt  aHashTableSize )
                                    genHashValueFunc,
                                    compareFunc ) != IDE_SUCCESS );
 
-    // BUG-45598: í”„ë¡œí¼í‹°ì— ë§ì¶° Corrupt Page ì²˜ë¦¬ ì •ì±…ì„ ì„¤ì •
+    // BUG-45598: ÇÁ·ÎÆÛÆ¼¿¡ ¸ÂÃç Corrupt Page Ã³¸® Á¤Ã¥À» ¼³Á¤
     setPageErrPolicyByProp();
-
+ 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -71,7 +72,7 @@ IDE_RC sdrCorruptPageMgr::initialize( UInt  aHashTableSize )
 
 
 /***********************************************************************
- * Description : Corrupt page ê´€ë¦¬ìì˜ í•´ì œ í•¨ìˆ˜ì´ë‹¤.
+ * Description : Corrupt page °ü¸®ÀÚÀÇ ÇØÁ¦ ÇÔ¼öÀÌ´Ù.
  **********************************************************************/
 IDE_RC sdrCorruptPageMgr::destroy()
 {
@@ -86,7 +87,7 @@ IDE_RC sdrCorruptPageMgr::destroy()
 
 
 /***********************************************************************
- * Description : Corrupted pages hashì— corrupted pageì •ë³´ë¥¼ ìˆ˜ì§‘í•œë‹¤.
+ * Description : Corrupted pages hash¿¡ corrupted pageÁ¤º¸¸¦ ¼öÁıÇÑ´Ù.
  *
  *  aSpaceID - [IN] tablespace ID
  *  aPageID  - [IN] corrupted page ID
@@ -109,8 +110,8 @@ IDE_RC sdrCorruptPageMgr::addCorruptPage( scSpaceID aSpaceID,
     if ( sNode == NULL )
     {
         //------------------------------------------
-        // corrupted pageì— ë“±ë¡ë˜ì§€ ì•Šì€ pageì´ë©´
-        // ì´ë¥¼ mCorruptedPagesì— ë“±ë¡
+        // corrupted page¿¡ µî·ÏµÇÁö ¾ÊÀº pageÀÌ¸é
+        // ÀÌ¸¦ mCorruptedPages¿¡ µî·Ï
         //------------------------------------------
 
         /* sdrCorruptPageMgr_addCorruptPage_malloc_Node.tc */
@@ -125,7 +126,9 @@ IDE_RC sdrCorruptPageMgr::addCorruptPage( scSpaceID aSpaceID,
         sNode->mSpaceID = aSpaceID;
         sNode->mPageID  = aPageID;
 
-        sctTableSpaceMgr::getTBSAttrByID( aSpaceID, &sTBSAttr );
+        sctTableSpaceMgr::getTBSAttrByID( NULL,
+                                          aSpaceID,
+                                          &sTBSAttr );
         ideLog::log( SM_TRC_LOG_LEVEL_WARNNING,
                      SM_TRC_DRECOVER_ADD_CORRUPTED_PAGE,
                      sTBSAttr.mName,
@@ -138,7 +141,7 @@ IDE_RC sdrCorruptPageMgr::addCorruptPage( scSpaceID aSpaceID,
     }
     else
     {
-        // ì´ë¯¸ corruptedPagesì— ë“±ë¡ë˜ì–´ ìˆë‹¤.
+        // ÀÌ¹Ì corruptedPages¿¡ µî·ÏµÇ¾î ÀÖ´Ù.
     }
 
     return IDE_SUCCESS;
@@ -154,7 +157,7 @@ IDE_RC sdrCorruptPageMgr::addCorruptPage( scSpaceID aSpaceID,
 }
 
 /***********************************************************************
- * Description : Corrupted pages hashì— corrupted pageê°€ ìˆë‹¤ë©´ ì‚­ì œí•œë‹¤.
+ * Description : Corrupted pages hash¿¡ corrupted page°¡ ÀÖ´Ù¸é »èÁ¦ÇÑ´Ù.
  *
  *  aSpaceID - [IN] tablespace ID
  *  aPageID  - [IN] corrupted page ID
@@ -180,7 +183,9 @@ IDE_RC sdrCorruptPageMgr::delCorruptPage( scSpaceID aSpaceID,
                                        (void**)&sNode )
                   != IDE_SUCCESS );
 
-        sctTableSpaceMgr::getTBSAttrByID( aSpaceID, &sTBSAttr );
+        sctTableSpaceMgr::getTBSAttrByID( NULL,
+                                          aSpaceID,
+                                          &sTBSAttr );
         ideLog::log( SM_TRC_LOG_LEVEL_WARNNING,
                      SM_TRC_DRECOVER_DEL_CORRUPTED_PAGE,
                      sTBSAttr.mName,
@@ -190,7 +195,7 @@ IDE_RC sdrCorruptPageMgr::delCorruptPage( scSpaceID aSpaceID,
     }
     else
     {
-        // ì—†ë‹¤ë©´ ìƒê´€ì—†ìŒ
+        // ¾ø´Ù¸é »ó°ü¾øÀ½
     }
 
     return IDE_SUCCESS;
@@ -203,11 +208,11 @@ IDE_RC sdrCorruptPageMgr::delCorruptPage( scSpaceID aSpaceID,
 
 
 /***********************************************************************
- * Description : Corrupted Pageë“¤ì˜ ìƒíƒœë¥¼ ê²€ì‚¬í•œë‹¤.
+ * Description : Corrupted PageµéÀÇ »óÅÂ¸¦ °Ë»çÇÑ´Ù.
  *
- *    Corrupted pages hash ì— í¬í•¨ëœ pageë“¤ì´ ì†í•œ Extentì˜ ìƒíƒœê°€
- *    Freeì¸ì§€ ëª¨ë‘ í™•ì¸í•œë‹¤. Free extentê°€ ì•„ë‹Œê²½ìš° Corrupted pageì˜
- *    PID ë° extentì˜ PIDë¥¼ boot logì— ê¸°ë¡í•˜ê³  ì„œë²„ë¥¼ ì¢…ë£Œí•œë‹¤.
+ *    Corrupted pages hash ¿¡ Æ÷ÇÔµÈ pageµéÀÌ ¼ÓÇÑ ExtentÀÇ »óÅÂ°¡
+ *    FreeÀÎÁö ¸ğµÎ È®ÀÎÇÑ´Ù. Free extent°¡ ¾Æ´Ñ°æ¿ì Corrupted pageÀÇ
+ *    PID ¹× extentÀÇ PID¸¦ boot log¿¡ ±â·ÏÇÏ°í ¼­¹ö¸¦ Á¾·áÇÑ´Ù.
  *
  **********************************************************************/
 IDE_RC sdrCorruptPageMgr::checkCorruptedPages()
@@ -216,7 +221,6 @@ IDE_RC sdrCorruptPageMgr::checkCorruptedPages()
     UInt                     sState = 0;
     idBool                   sExistCorruptPage;
     idBool                   sIsFreeExt;
-    sdpExtMgmtOp           * sTBSMgrOp;
     smiTableSpaceAttr        sTBSAttr;
     scSpaceID                sSpaceID = SC_NULL_SPACEID ;
     scPageID                 sPageID  = SC_NULL_PID;
@@ -234,20 +238,20 @@ IDE_RC sdrCorruptPageMgr::checkCorruptedPages()
     while( sNode != NULL )
     {
         sIsFreeExt = ID_FALSE ;
-        sTBSMgrOp  = sdpTableSpace::getTBSMgmtOP( sNode->mSpaceID );
-        IDE_ASSERT( sTBSMgrOp != NULL );
 
-        // í•´ë‹¹ extentê°€ í˜„ì¬ free ì¸ì§€ í™•ì¸í•œë‹¤.
-        IDE_TEST( sTBSMgrOp->mIsFreeExtPage( NULL /*idvSQL*/,
-                                             sNode->mSpaceID,
-                                             sNode->mPageID,
-                                             &sIsFreeExt )
+        // ÇØ´ç extent°¡ ÇöÀç free ÀÎÁö È®ÀÎÇÑ´Ù.
+        IDE_TEST( sdptbExtent::isFreeExtPage( NULL /*idvSQL*/,
+                                              sNode->mSpaceID,
+                                              sNode->mPageID,
+                                              &sIsFreeExt )
                   != IDE_SUCCESS );
 
         if( sIsFreeExt == ID_TRUE )
         {
-            // pageê°€ ì†í•œ extentê°€ freeì´ë‹¤
-            sctTableSpaceMgr::getTBSAttrByID( sNode->mSpaceID, &sTBSAttr );
+            // page°¡ ¼ÓÇÑ extent°¡ freeÀÌ´Ù
+            sctTableSpaceMgr::getTBSAttrByID( NULL,
+                                              sNode->mSpaceID,
+                                              &sTBSAttr );
             ideLog::log( SM_TRC_LOG_LEVEL_WARNNING,
                          SM_TRC_DRECOVER_DEL_CORRUPTED_PAGE_NOTALLOC,
                          sTBSAttr.mName,
@@ -255,8 +259,10 @@ IDE_RC sdrCorruptPageMgr::checkCorruptedPages()
         }
         else
         {
-            // pageê°€ ì†í•œ extentê°€ freeê°€ ì•„ë‹ˆë‹¤.
-            sctTableSpaceMgr::getTBSAttrByID( sNode->mSpaceID, &sTBSAttr );
+            // page°¡ ¼ÓÇÑ extent°¡ free°¡ ¾Æ´Ï´Ù.
+            sctTableSpaceMgr::getTBSAttrByID( NULL,
+                                              sNode->mSpaceID,
+                                              &sTBSAttr );
             ideLog::log( SM_TRC_LOG_LEVEL_WARNNING,
                          SM_TRC_DRECOVER_PAGE_IS_CORRUPTED,
                          sTBSAttr.mName,
@@ -278,10 +284,10 @@ IDE_RC sdrCorruptPageMgr::checkCorruptedPages()
           & SDR_CORRUPT_PAGE_ERR_POLICY_SERVERFATAL )
         == SDR_CORRUPT_PAGE_ERR_POLICY_SERVERFATAL )
     {
-        // corrupt pageê°€ ë°œê²¬ ë˜ì—ˆì„ ì‹œì— ì„œë²„ë¥¼ ì¢…ë£Œí•  ê²ƒì¸ì§€ë¥¼
-        // ì •í•˜ëŠ” property, ì´ Propertyê°€ êº¼ì ¸ ìˆì„ ê²½ìš° corrupt
-        // pageë¥¼ ë°œê²¬ í•˜ë”ë¼ë„ GG,LG Hdrê°€ corrupt ëœ ê²½ìš°ë¥¼
-        // ì œì™¸í•˜ê³ ëŠ” ì„œë²„ë¥¼ ì¢…ë£Œí•˜ì§€ ì•ŠëŠ”ë‹¤. default : 0 (skip)
+        // corrupt page°¡ ¹ß°ß µÇ¾úÀ» ½Ã¿¡ ¼­¹ö¸¦ Á¾·áÇÒ °ÍÀÎÁö¸¦
+        // Á¤ÇÏ´Â property, ÀÌ Property°¡ ²¨Á® ÀÖÀ» °æ¿ì corrupt
+        // page¸¦ ¹ß°ß ÇÏ´õ¶óµµ GG,LG Hdr°¡ corrupt µÈ °æ¿ì¸¦
+        // Á¦¿ÜÇÏ°í´Â ¼­¹ö¸¦ Á¾·áÇÏÁö ¾Ê´Â´Ù. default : 0 (skip)
 
         IDE_TEST_RAISE( sExistCorruptPage == ID_TRUE,
                         page_corruption_fatal_error );
@@ -289,8 +295,8 @@ IDE_RC sdrCorruptPageMgr::checkCorruptedPages()
 
     sState = 0;
     IDE_TEST( smuHash::close( &mCorruptedPages ) != IDE_SUCCESS );
-
-    // BUG-45598: í”„ë¡œí¼í‹°ì— ë§ì¶° Corrupt Page ì²˜ë¦¬ ì •ì±…ì„ ì¬ ì„¤ì •
+    
+    // BUG-45598: ÇÁ·ÎÆÛÆ¼¿¡ ¸ÂÃç Corrupt Page Ã³¸® Á¤Ã¥À» Àç ¼³Á¤
     setPageErrPolicyByProp();
 
     return IDE_SUCCESS;
@@ -316,13 +322,13 @@ IDE_RC sdrCorruptPageMgr::checkCorruptedPages()
 
 
 /***********************************************************************
- * Description : redo logì˜ ridë¥¼ ì´ìš©í•œ hash valueë¥¼ ìƒì„±
+ * Description : redo logÀÇ rid¸¦ ÀÌ¿ëÇÑ hash value¸¦ »ı¼º
  *
- * space idì™€ page idë¥¼ ì ì ˆíˆ ë³€í™˜í•˜ì—¬ ì •ìˆ˜ë¥¼ ë§Œë“¤ì–´ ë¦¬í„´í•œë‹¤.
- * ì´ í•¨ìˆ˜ëŠ” corrupted pageì— ëŒ€í•œ hash functionìœ¼ë¡œ ì‚¬ìš©ëœë‹¤.
- * hash keyëŠ” GRIDì´ë‹¤.
+ * space id¿Í page id¸¦ ÀûÀıÈ÷ º¯È¯ÇÏ¿© Á¤¼ö¸¦ ¸¸µé¾î ¸®ÅÏÇÑ´Ù.
+ * ÀÌ ÇÔ¼ö´Â corrupted page¿¡ ´ëÇÑ hash functionÀ¸·Î »ç¿ëµÈ´Ù.
+ * hash key´Â GRIDÀÌ´Ù.
  *
- * aGRID - [IN] <spaceid, pageid, 0>ë¡œ corrupt pageì— ëŒ€í•œ gridì´ë‹¤.
+ * aGRID - [IN] <spaceid, pageid, 0>·Î corrupt page¿¡ ´ëÇÑ gridÀÌ´Ù.
  **********************************************************************/
 UInt sdrCorruptPageMgr::genHashValueFunc( void* aGRID )
 {
@@ -336,14 +342,14 @@ UInt sdrCorruptPageMgr::genHashValueFunc( void* aGRID )
 
 
 /***********************************************************************
- * Description : hash-key ë¹„êµí•¨ìˆ˜
+ * Description : hash-key ºñ±³ÇÔ¼ö
  *
- * 2ê°œì˜ GRIDê°€ ê°™ì€ì§€ ë¹„êµí•œë‹¤. ê°™ìœ¼ë©´ 0ì„ ë¦¬í„´í•œë‹¤.
- * ì´ í•¨ìˆ˜ëŠ” corrupted page ì— ëŒ€í•œ hash compare functionìœ¼ë¡œ
- * ì‚¬ìš©ëœë‹¤.
+ * 2°³ÀÇ GRID°¡ °°ÀºÁö ºñ±³ÇÑ´Ù. °°À¸¸é 0À» ¸®ÅÏÇÑ´Ù.
+ * ÀÌ ÇÔ¼ö´Â corrupted page ¿¡ ´ëÇÑ hash compare functionÀ¸·Î
+ * »ç¿ëµÈ´Ù.
  *
- * aLhs - [IN] pageì˜ gridë¡œ <spaceid, pageid, 0>ë¡œ êµ¬ì„±.
- * aRhs - [IN] pageì˜ gridë¡œ <spaceid, pageid, 0>ë¡œ êµ¬ì„±.
+ * aLhs - [IN] pageÀÇ grid·Î <spaceid, pageid, 0>·Î ±¸¼º.
+ * aRhs - [IN] pageÀÇ grid·Î <spaceid, pageid, 0>·Î ±¸¼º.
  **********************************************************************/
 SInt sdrCorruptPageMgr::compareFunc( void*  aLhs,
                                      void*  aRhs )
@@ -359,8 +365,8 @@ SInt sdrCorruptPageMgr::compareFunc( void*  aLhs,
 }
 
 /***********************************************************************
- * Description : pageì „ì²´ë¥¼ Overwriteí•˜ëŠ” logì¸ì§€ í™•ì¸í•´ ì¤€ë‹¤.
- * aLogType - [IN] í™•ì¸í•  logì˜ logtype
+ * Description : pageÀüÃ¼¸¦ OverwriteÇÏ´Â logÀÎÁö È®ÀÎÇØ ÁØ´Ù.
+ * aLogType - [IN] È®ÀÎÇÒ logÀÇ logtype
  **********************************************************************/
 idBool sdrCorruptPageMgr::isOverwriteLog( sdrLogType aLogType )
 {
@@ -383,7 +389,7 @@ idBool sdrCorruptPageMgr::isOverwriteLog( sdrLogType aLogType )
 }
 
 /***********************************************************************
- * Description : corrupt pageë¥¼ ì½ì—ˆì„ ë•Œ ì„œë²„ë¥¼ ì¢…ë£Œì‹œí‚¤ì§€ ì•ŠëŠ”ë‹¤.
+ * Description : corrupt page¸¦ ÀĞ¾úÀ» ¶§ ¼­¹ö¸¦ Á¾·á½ÃÅ°Áö ¾Ê´Â´Ù.
  **********************************************************************/
 void sdrCorruptPageMgr::allowReadCorruptPage()
 {
@@ -400,7 +406,7 @@ void sdrCorruptPageMgr::allowReadCorruptPage()
 }
 
 /***********************************************************************
- * Description : corrupt pageë¥¼ ì½ì—ˆì„ ë•Œ ì„œë²„ë¥¼ ì¢…ë£Œì‹œí‚¨ë‹¤.
+ * Description : corrupt page¸¦ ÀĞ¾úÀ» ¶§ ¼­¹ö¸¦ Á¾·á½ÃÅ²´Ù.
  **********************************************************************/
 void sdrCorruptPageMgr::fatalReadCorruptPage()
 {
@@ -408,8 +414,8 @@ void sdrCorruptPageMgr::fatalReadCorruptPage()
 }
 
 /***********************************************************************
- * Description : ìš´ì˜ì¤‘ corrupt pageë¥¼ ì½ì—ˆì„ ë•Œ ì •ì±…ì„ CorruptPageErrPolicy
- *              í”„ë¡œí¼í‹° ê°’ì— ë”°ë¼ì„œ ì„¤ì •í•œë‹¤.(BUG-45598)
+ * Description : ¿î¿µÁß corrupt page¸¦ ÀĞ¾úÀ» ¶§ Á¤Ã¥À» CorruptPageErrPolicy
+ *              ÇÁ·ÎÆÛÆ¼ °ª¿¡ µû¶ó¼­ ¼³Á¤ÇÑ´Ù.(BUG-45598)
  **********************************************************************/
 void sdrCorruptPageMgr::setPageErrPolicyByProp()
 {
@@ -424,3 +430,5 @@ void sdrCorruptPageMgr::setPageErrPolicyByProp()
         mCorruptPageReadPolicy = SDB_CORRUPTED_PAGE_READ_ABORT;
     }
 }
+
+

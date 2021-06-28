@@ -35,20 +35,20 @@ smnIndexModule svnbModule =
       SMN_BOTTOMUP_BUILD_ENABLE,
     SMP_VC_PIECE_MAX_SIZE - 1,  // BUG-23113
 
-    /* ì•„ë˜ í•¨ìˆ˜ í¬ì¸í„° ë©¤ë²„ì— smnbBTree::prepareXXX, releaseXXX í•¨ìˆ˜ë“¤ì„
-       ì‚¬ìš©í•´ì„œëŠ” ì•ˆëœë‹¤. ê·¸ í•¨ìˆ˜ë“¤ì€ í•œ ëª¨ë“ˆ ì¸ìŠ¤í„´ìŠ¤ë‚´ì—ì„œë§Œ
-       ì‚¬ìš©ë˜ì–´ì•¼ í•œë‹¤. ì¦‰,
+    /* ¾Æ·¡ ÇÔ¼ö Æ÷ÀÎÅÍ ¸â¹ö¿¡ smnbBTree::prepareXXX, releaseXXX ÇÔ¼öµéÀ»
+       »ç¿ëÇØ¼­´Â ¾ÈµÈ´Ù. ±× ÇÔ¼öµéÀº ÇÑ ¸ğµâ ÀÎ½ºÅÏ½º³»¿¡¼­¸¸
+       »ç¿ëµÇ¾î¾ß ÇÑ´Ù. Áï,
           smnbBTree::prepareIteratorMem
           smnbBTree::releaseIteratorMem
           smnbBTree::prepareFreeNodeMem
           smnbBTree::releaseFreeNodeMem
-       ë“¤ì„ ì‚¬ìš©í•˜ë©´ ì•ˆëœë‹¤. ì™œëƒí•˜ë©´ smnbModuleê³¼ svnbModuleì´
-       ìœ„ í•¨ìˆ˜ë“¤ì„ ê°™ì´ ì‚¬ìš©í•˜ë©´ ìœ„ í•¨ìˆ˜ë“¤ì´ ì ‘ê·¼í•˜ëŠ”
-       mIteratorPool, gSmnbNodePool, gSmnbFreeNodeList ì „ì—­ ë³€ìˆ˜ ë˜ëŠ” ë©¤ë²„ë“¤ì„
-       ê³µìœ í•˜ê²Œ ë˜ëŠ”ë°, ì´ë“¤ì— ëŒ€í•œ ì´ˆê¸°í™” ë° í•´ì œ ì‘ì—…ì„ ì¤‘ë³µìœ¼ë¡œ í•˜ê²Œ ëœë‹¤.
-       ë”°ë¼ì„œ volatile B-tree index moduleì—ì„œëŠ” ì´ í•¨ìˆ˜ê°€ ë¶ˆë ¤ì§ˆ ê²½ìš°
-       ì•„ë¬´ëŸ° ì‘ì—…ë„ í•˜ì§€ ì•Šë„ë¡ í•˜ê¸° ìœ„í•´ svnbIndexMemoryNA
-       í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ë‹¬ë„ë¡ í•œë‹¤. */
+       µéÀ» »ç¿ëÇÏ¸é ¾ÈµÈ´Ù. ¿Ö³ÄÇÏ¸é smnbModule°ú svnbModuleÀÌ
+       À§ ÇÔ¼öµéÀ» °°ÀÌ »ç¿ëÇÏ¸é À§ ÇÔ¼öµéÀÌ Á¢±ÙÇÏ´Â
+       mIteratorPool, gSmnbNodePool, gSmnbFreeNodeList Àü¿ª º¯¼ö ¶Ç´Â ¸â¹öµéÀ»
+       °øÀ¯ÇÏ°Ô µÇ´Âµ¥, ÀÌµé¿¡ ´ëÇÑ ÃÊ±âÈ­ ¹× ÇØÁ¦ ÀÛ¾÷À» Áßº¹À¸·Î ÇÏ°Ô µÈ´Ù.
+       µû¶ó¼­ volatile B-tree index module¿¡¼­´Â ÀÌ ÇÔ¼ö°¡ ºÒ·ÁÁú °æ¿ì
+       ¾Æ¹«·± ÀÛ¾÷µµ ÇÏÁö ¾Êµµ·Ï ÇÏ±â À§ÇØ svnbIndexMemoryNA
+       ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ´Şµµ·Ï ÇÑ´Ù. */
 
     (smnMemoryFunc)       svnbIndexMemoryNA,
     (smnMemoryFunc)       svnbIndexMemoryNA,
@@ -60,7 +60,6 @@ smnIndexModule svnbModule =
     (smTableCursorLockRowFunc) smnManager::lockRow,
     (smnDeleteFunc)            smnbBTree::deleteNA,
     (smnFreeFunc)              smnbBTree::freeSlot,
-    (smnExistKeyFunc)          smnbBTree::existKey,
     (smnInsertRollbackFunc)    NULL,
     (smnDeleteRollbackFunc)    NULL,
     (smnAgingFunc)             NULL,

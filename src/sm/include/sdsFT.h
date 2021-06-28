@@ -29,7 +29,7 @@
 #include <smDef.h>
 
 /***********************************************
- *  BCBë¥¼ ìœ„í•œ fixed table ì •ì˜
+ *  BCB¸¦ À§ÇÑ fixed table Á¤ÀÇ
  ***********************************************/
 typedef struct sdsBCBStat
 {
@@ -53,30 +53,30 @@ typedef struct sdsBCBStatArg
 } sdsBCBStatArg;
 
 /***********************************************************************
- *  Flush Mgr ìœ„í•œ fixed table ì •ì˜
+ *  Flush Mgr À§ÇÑ fixed table Á¤ÀÇ
  ***********************************************************************/
 typedef struct sdsFlushMgrStat
 {
-    /* flusherì˜ ê°œìˆ˜*/
+    /* flusherÀÇ °³¼ö*/
     UInt    mFluserCount;
     /* checkpoint list count */
     UInt    mCPList;
-    /* í˜„ì¬ ìš”ì²­í•œ job ê°¯ìˆ˜ */
+    /* ÇöÀç ¿äÃ»ÇÑ job °¹¼ö */
     UInt    mReqJobCount;
-    /* flush ëŒ€ìƒì˜ í˜ì´ì§€ ìˆ˜ */
+    /* flush ´ë»óÀÇ ÆäÀÌÁö ¼ö */
     UInt    mReplacementFlushPages;
-    /* checkpoint flush ëŒ€ìƒ pages ìˆ˜ */
+    /* checkpoint flush ´ë»ó pages ¼ö */
     ULong   mCheckpointFlushPages;
-    /* checkpoint recoveryLSNì´ ê°€ì¥ ì‘ì€ SBCB.BCBID */
+    /* checkpoint recoveryLSNÀÌ °¡Àå ÀÛÀº SBCB.BCBID */
     UInt    mMinBCBID;
-    /* checkpoint recoveryLSNì´ ê°€ì¥ ì‘ì€ SBCB.SpaceID */
+    /* checkpoint recoveryLSNÀÌ °¡Àå ÀÛÀº SBCB.SpaceID */
     UInt    mMinBCBSpaceID;
-    /* checkpoint recoveryLSNì´ ê°€ì¥ ì‘ì€ SBCB.PageID */
+    /* checkpoint recoveryLSNÀÌ °¡Àå ÀÛÀº SBCB.PageID */
     UInt    mMinBCBPageID;
 } sdsFlushMgrStat;
 
 /***********************************************************************
- *  File node ìœ„í•œ fixed table ì •ì˜
+ *  File node À§ÇÑ fixed table Á¤ÀÇ
  ***********************************************************************/
 typedef struct sdsFileNodeStat
 {

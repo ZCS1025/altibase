@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smiDef.h 84383 2018-11-20 04:18:42Z emlee $
+ * $Id: smiDef.h 90899 2021-05-27 08:55:20Z jiwon.kim $
  **********************************************************************/
 
 #ifndef _O_SMI_DEF_H_
@@ -29,7 +29,7 @@
 # include <idnCharSet.h>
 # include <smuQueueMgr.h>
 
-/* Class ì„ ì–¸                                        */
+/* Class ¼±¾ğ                                        */
 class smiTable;
 class smiTrans;
 class smiStatement;
@@ -38,16 +38,20 @@ class smiTableCursor;
 #define SMI_MINIMUM_TABLE_CTL_SIZE (0)
 #define SMI_MAXIMUM_TABLE_CTL_SIZE (120)
 #define SMI_MINIMUM_INDEX_CTL_SIZE (0)
-#define SMI_MAXIMUM_INDEX_CTL_SIZE (30) 
+#define SMI_MAXIMUM_INDEX_CTL_SIZE (50) /* <BUG-48064>
+                                           sdnbLKey::mTxInfo[2]ÀÇ createCTS/limitCTS indexÀÇ ÀúÀåbit°¡ 5->6bit·Î Áõ°¡ÇÔ.
+                                           µû¶ó¼­, CTSÀÇ MAX°¹¼ö¸¦ 30->50°³·Î Áõ°¡½ÃÅ´.
+                                           (MAX¸¦ 62°³±îÁö  Áõ°¡½ÃÅ³¼ö ÀÖÀ¸³ª, sdnbBTree::getMaxKeySize()¿¡¼­ CTS MAX°ªÀ» °í·ÁÇØ
+                                           MAX KEY SIZE¸¦ Á¦ÇÑÇÏ±â ¶§¹®¿¡ ±âÁ¸°ú µ¿ÀÏÇÑ Å©±â°¡ µÇµµ·Ï 50À¸·Î ¸ÂÃß¾úÀ½) */
 
 /* TASK-4990 changing the method of collecting index statistics
- * ìˆ˜ë™ í†µê³„ì •ë³´ ìˆ˜ì§‘ ê¸°ëŠ¥ */
-/*  MIN MAX Value ìµœëŒ€ ê¸¸ì´ */
-#define SMI_MAX_MINMAX_VALUE_SIZE (40) // ë°˜ë“œì‹œ 8byte alignì„ ë§ì¶°ì•¼ í•¨.
+ * ¼öµ¿ Åë°èÁ¤º¸ ¼öÁı ±â´É */
+/*  MIN MAX Value ÃÖ´ë ±æÀÌ */
+#define SMI_MAX_MINMAX_VALUE_SIZE (40) // ¹İµå½Ã 8byte alignÀ» ¸ÂÃç¾ß ÇÔ.
 
-/* ë§Œì•½ ì „ì²´ Pageê°€ 4ì¸ë° Sampling Percentageê°€ 10%ë‹¤, ê·¸ëŸ¬ë©´ ì–´ë–¤ Pageë„
- * Samplig ë¼ì§€ ì•Šì„ ìˆ˜ ìˆë‹¤. ë”°ë¼ì„œ ì²« í˜ì´ì§€ëŠ” ê±°ì˜ ë¬´ì¡°ê±´ Samplingë˜ë„ë¡
- * ì´ˆê¸°ê°’ì„ ë†’ê²Œ ì¡ëŠ”ë‹¤. */
+/* ¸¸¾à ÀüÃ¼ Page°¡ 4ÀÎµ¥ Sampling Percentage°¡ 10%´Ù, ±×·¯¸é ¾î¶² Pageµµ
+ * Samplig µÅÁö ¾ÊÀ» ¼ö ÀÖ´Ù. µû¶ó¼­ Ã¹ ÆäÀÌÁö´Â °ÅÀÇ ¹«Á¶°Ç SamplingµÇµµ·Ï
+ * ÃÊ±â°ªÀ» ³ô°Ô Àâ´Â´Ù. */
 #define SMI_STAT_SAMPLING_INITVAL  (0.99f)
 
 #define SMI_STAT_NULL              (ID_SLONG_MAX)
@@ -60,44 +64,44 @@ typedef struct smiSystemStat
     SDouble  mMReadTime;                /*Milti block read time */
     SLong    mDBFileMultiPageReadCount; /*DB_FILE_MULTIPAGE_READ_COUNT */
 
-    SDouble  mHashTime;          /* í‰ê·  hashFunc() ìˆ˜í–‰ ì‹œê°„ */
-    SDouble  mCompareTime;       /* í‰ê·  compare() ìˆ˜í–‰ ì‹œê°„ */
-    SDouble  mStoreTime;         /* í‰ê·  mem temp table store ìˆ˜í–‰ ì‹œê°„ */
+    SDouble  mHashTime;          /* Æò±Õ hashFunc() ¼öÇà ½Ã°£ */
+    SDouble  mCompareTime;       /* Æò±Õ compare() ¼öÇà ½Ã°£ */
+    SDouble  mStoreTime;         /* Æò±Õ mem temp table store ¼öÇà ½Ã°£ */
 } smiSystemStat;
- 
+
 typedef struct smiTableStat
 {
     UInt     mCreateTV;         /*TimeValue */
-    SLong    mNumRowChange;     /*í†µê³„ì •ë³´ ìˆ˜ì§‘ ì´í›„ Rowê°œìˆ˜ ë³€í™”ëŸ‰(I/D)*/
+    SLong    mNumRowChange;     /*Åë°èÁ¤º¸ ¼öÁı ÀÌÈÄ Row°³¼ö º¯È­·®(I/D)*/
     SFloat   mSampleSize;       /*1~100     */
     SLong    mNumRow;           /*TableRowCount     */
-    SLong    mNumPage;          /*Pageê°œìˆ˜          */
-    SLong    mAverageRowLen;    /*Record ê¸¸ì´       */
-    SDouble  mOneRowReadTime;   /*Row í•˜ë‚˜ë¥¼ ì½ëŠ” í‰ê·  ì‹œê°„ */
+    SLong    mNumPage;          /*Page°³¼ö          */
+    SLong    mAverageRowLen;    /*Record ±æÀÌ       */
+    SDouble  mOneRowReadTime;   /*Row ÇÏ³ª¸¦ ÀĞ´Â Æò±Õ ½Ã°£ */
 
-    SLong    mMetaSpace;     /* PageHeader, ExtDirë“± Meta ê³µê°„ */
-    SLong    mUsedSpace;     /* í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ ê³µê°„ */
-    SLong    mAgableSpace;   /* ë‚˜ì¤‘ì— Agingê°€ëŠ¥í•œ ê³µê°„ */
-    SLong    mFreeSpace;     /* Dataì‚½ì…ì´ ê°€ëŠ¥í•œ ë¹ˆ ê³µê°„ */
+    SLong    mMetaSpace;     /* PageHeader, ExtDirµî Meta °ø°£ */
+    SLong    mUsedSpace;     /* ÇöÀç »ç¿ëÁßÀÎ °ø°£ */
+    SLong    mAgableSpace;   /* ³ªÁß¿¡ Aging°¡´ÉÇÑ °ø°£ */
+    SLong    mFreeSpace;     /* Data»ğÀÔÀÌ °¡´ÉÇÑ ºó °ø°£ */
 
-    /* ë²„í¼í’€ì— ì˜¬ë¼ì˜¨ í…Œì´ë¸” í˜ì´ì§€ ìˆ«ì. 
-     * BUG-42095 : ì‚¬ìš© ì•ˆ í•¨*/ 
-    SLong    mNumCachedPage; 
+    /* ¹öÆÛÇ®¿¡ ¿Ã¶ó¿Â Å×ÀÌºí ÆäÀÌÁö ¼ıÀÚ.
+     * BUG-42095 : »ç¿ë ¾È ÇÔ*/
+    SLong    mNumCachedPage;
 } smiTableStat;
 
- /* í…Œì´ë¸” í—¤ë”ì™€ ì¸ë±ìŠ¤ í—¤ë”ì— ì‚½ì…ë  êµ¬ì¡°ì²´
-  * ì‹¤ì‹œê°„ìœ¼ë¡œ í…Œì´ë¸”(ë˜ëŠ” ì¸ë±ìŠ¤) ë‹¨ìœ„ë¡œ í†µê³„ë¥¼ ìˆ˜ì§‘í•˜ê¸° ë•Œë¬¸ì— í—¤ë”ì— ë“¤ì–´ê°€ë©°
-  * ëŸ°íƒ€ì„ì—ë§Œ ìœ ì˜ë¯¸í•œ ì •ë³´ì´ë¯€ë¡œ êµ¬ì¡°ì²´ë¡œ ë‘ê³   ë™ì í• ë‹¹ì„ í†µí•´ ì ‘ê·¼í•œë‹¤.
-  * ë³€ìˆ˜ê°€ í•˜ë‚˜ë¿ì„ì—ë„ ë¶ˆêµ¬í•˜ê³  ì´ë ‡ê²Œ í•˜ëŠ” ì´ìœ ëŠ”
-  * FSB ë° í–¥í›„ ë‹¤ë¥¸ í”„ë¡œì íŠ¸ë¡œ ì‹¤ì‹œê°„ í†µê³„ì •ë³´ì™€ ìˆ˜ë™ ì •ë³´ë¥¼ ë¶„ë¦¬í•´ì„œ ì €ì¥í•  ë•Œ
-  * ìœ ì—°í•˜ê²Œ í•´ê²°í•  ìˆ˜ ìˆë„ë¡ í•˜ê¸° ìœ„í•¨ì´ë‹¤.
+ /* Å×ÀÌºí Çì´õ¿Í ÀÎµ¦½º Çì´õ¿¡ »ğÀÔµÉ ±¸Á¶Ã¼
+  * ½Ç½Ã°£À¸·Î Å×ÀÌºí(¶Ç´Â ÀÎµ¦½º) ´ÜÀ§·Î Åë°è¸¦ ¼öÁıÇÏ±â ¶§¹®¿¡ Çì´õ¿¡ µé¾î°¡¸ç
+  * ·±Å¸ÀÓ¿¡¸¸ À¯ÀÇ¹ÌÇÑ Á¤º¸ÀÌ¹Ç·Î ±¸Á¶Ã¼·Î µÎ°í  µ¿ÀûÇÒ´çÀ» ÅëÇØ Á¢±ÙÇÑ´Ù.
+  * º¯¼ö°¡ ÇÏ³ª»ÓÀÓ¿¡µµ ºÒ±¸ÇÏ°í ÀÌ·¸°Ô ÇÏ´Â ÀÌÀ¯´Â
+  * FSB ¹× ÇâÈÄ ´Ù¸¥ ÇÁ·ÎÁ§Æ®·Î ½Ç½Ã°£ Åë°èÁ¤º¸¿Í ¼öµ¿ Á¤º¸¸¦ ºĞ¸®ÇØ¼­ ÀúÀåÇÒ ¶§
+  * À¯¿¬ÇÏ°Ô ÇØ°áÇÒ ¼ö ÀÖµµ·Ï ÇÏ±â À§ÇÔÀÌ´Ù.
   *
-  * BUG-42095 : PROJ-2281 "buffer poolì— loadëœ page í†µê³„ ì •ë³´ ì œê³µ" ê¸°ëŠ¥ì„ ì œê±°í•œë‹¤.
-  * êµ¬ì¡°ì²´ ë° ê´€ë ¨ ë³€ìˆ˜ëŠ” ì‚­ì œ í•˜ì§€ ì•Šê³  í†µê³„ ì •ë³´ ìˆ˜ì§‘ë° ì—…ë°ì´íŠ¸ ë¶€ë¶„ì€ ì‚­ì œí•œë‹¤.   
+  * BUG-42095 : PROJ-2281 "buffer pool¿¡ loadµÈ page Åë°è Á¤º¸ Á¦°ø" ±â´ÉÀ» Á¦°ÅÇÑ´Ù.
+  * ±¸Á¶Ã¼ ¹× °ü·Ã º¯¼ö´Â »èÁ¦ ÇÏÁö ¾Ê°í Åë°è Á¤º¸ ¼öÁı¹× ¾÷µ¥ÀÌÆ® ºÎºĞÀº »èÁ¦ÇÑ´Ù.
   */
 typedef struct smiCachedPageStat
 {
-    SLong  mNumCachedPage; /* ë²„í¼í’€ì— ì˜¬ë¼ì˜¨ í…Œì´ë¸” í˜ì´ì§€ ìˆ«ì */
+    SLong  mNumCachedPage; /* ¹öÆÛÇ®¿¡ ¿Ã¶ó¿Â Å×ÀÌºí ÆäÀÌÁö ¼ıÀÚ */
 } smiCachedPageStat;
 
 
@@ -105,28 +109,30 @@ typedef struct smiIndexStat
 {
     UInt   mCreateTV;      /*TimeValue */
     SFloat mSampleSize;    /*1~100     */
-    SLong  mNumPage;       /*Pageê°œìˆ˜  */
-    SLong  mAvgSlotCnt;    /*Leaf nodeë‹¹ í‰ê·  slot ê°œìˆ˜ */
+    SLong  mNumPage;       /*Page°³¼ö  */
+    SLong  mAvgSlotCnt;    /*Leaf node´ç Æò±Õ slot °³¼ö */
     SLong  mClusteringFactor;
     SLong  mIndexHeight;
     SLong  mNumDist;       /*Distinct Value */
     SLong  mKeyCount;      /*Key Count      */
 
-    SLong  mMetaSpace;     /* PageHeader, ExtDirë“± Meta ê³µê°„ */
-    SLong  mUsedSpace;     /* í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ ê³µê°„ */
-    SLong  mAgableSpace;   /* ë‚˜ì¤‘ì— Agingê°€ëŠ¥í•œ ê³µê°„ */
-    SLong  mFreeSpace;     /* Dataì‚½ì…ì´ ê°€ëŠ¥í•œ ë¹ˆ ê³µê°„ */
+    SLong  mMetaSpace;     /* PageHeader, ExtDirµî Meta °ø°£ */
+    SLong  mUsedSpace;     /* ÇöÀç »ç¿ëÁßÀÎ °ø°£ */
+    SLong  mAgableSpace;   /* ³ªÁß¿¡ Aging°¡´ÉÇÑ °ø°£ */
+    SLong  mFreeSpace;     /* Data»ğÀÔÀÌ °¡´ÉÇÑ ºó °ø°£ */
 
-    /* ë²„í¼í’€ì— ì˜¬ë¼ì˜¨ í…Œì´ë¸” í˜ì´ì§€ ìˆ«ì. 
-     * BUG-42095 : ì‚¬ìš© ì•ˆ í•¨*/ 
-    SLong  mNumCachedPage;  
+    /* mNumCachedPage: ¹öÆÛÇ®¿¡ ¿Ã¶ó¿Â Å×ÀÌºí ÆäÀÌÁö ¼ıÀÚ.
+     * BUG-42095 : »ç¿ë ¾ÈÇÏµµ·Ï º¯°æ,  
+     * BUG-47885 : ÀÎµ¦½º ¾ÆÀÌµğ + dummy·Î º¯°æ */ 
+    UInt   mId;
+    UInt   mDummy;
 
-    /* í•­ìƒ MinMaxëŠ” ë§¨ ë’¤ì— ìˆì–´ì•¼ í•¨.
-     * smiStatistics::setIndexStatWithoutMinMax ì°¸ì¡° */
-    /* BUG-33548   [sm_transaction] The gather table statistics function 
+    /* Ç×»ó MinMax´Â ¸Ç µÚ¿¡ ÀÖ¾î¾ß ÇÔ.
+     * smiStatistics::setIndexStatWithoutMinMax ÂüÁ¶ */
+    /* BUG-33548   [sm_transaction] The gather table statistics function
      * doesn't consider SigBus error */
-    ULong  mMinValue[SMI_MAX_MINMAX_VALUE_SIZE/ID_SIZEOF(ULong)]; /*Minê°’ */
-    ULong  mMaxValue[SMI_MAX_MINMAX_VALUE_SIZE/ID_SIZEOF(ULong)]; /*Maxê°’ */
+    ULong  mMinValue[SMI_MAX_MINMAX_VALUE_SIZE/ID_SIZEOF(ULong)]; /*Min°ª */
+    ULong  mMaxValue[SMI_MAX_MINMAX_VALUE_SIZE/ID_SIZEOF(ULong)]; /*Max°ª */
 } smiIndexStat;
 
 typedef struct smiColumnStat
@@ -135,15 +141,15 @@ typedef struct smiColumnStat
     SFloat mSampleSize;       /*1~100     */
     SLong  mNumDist;          /*Distinct Value  */
     SLong  mNumNull;          /*NullValue Count */
-    SLong  mAverageColumnLen; /*í‰ê·  ê¸¸ì´       */
-    /* BUG-33548   [sm_transaction] The gather table statistics function 
+    SLong  mAverageColumnLen; /*Æò±Õ ±æÀÌ       */
+    /* BUG-33548   [sm_transaction] The gather table statistics function
      * doesn't consider SigBus error */
-    ULong  mMinValue[SMI_MAX_MINMAX_VALUE_SIZE/ID_SIZEOF(ULong)]; /*Minê°’ */
-    ULong  mMaxValue[SMI_MAX_MINMAX_VALUE_SIZE/ID_SIZEOF(ULong)]; /*Maxê°’ */
+    ULong  mMinValue[SMI_MAX_MINMAX_VALUE_SIZE/ID_SIZEOF(ULong)]; /*Min°ª */
+    ULong  mMaxValue[SMI_MAX_MINMAX_VALUE_SIZE/ID_SIZEOF(ULong)]; /*Max°ª */
 } smiColumnStat;
 
 // PROJ-2492 Dynamic sample selection
-// í†µê³„ì •ë³´ë¥¼ ëª¨ë‘ ì €ì¥ í•  ìˆ˜ ìˆëŠ” ìë£Œêµ¬ì¡°
+// Åë°èÁ¤º¸¸¦ ¸ğµÎ ÀúÀå ÇÒ ¼ö ÀÖ´Â ÀÚ·á±¸Á¶
 typedef struct smiAllStat
 {
     smiTableStat    mTableStat;
@@ -165,7 +171,7 @@ typedef enum smiExtMgmtType
 } smiExtMgmtType;
 
 /*
- * ì„¸ê·¸ë¨¼íŠ¸ì˜ ê³µê°„ê´€ë¦¬ ë°©ì‹
+ * ¼¼±×¸ÕÆ®ÀÇ °ø°£°ü¸® ¹æ½Ä
  */
 typedef enum smiSegMgmtType
 {
@@ -176,7 +182,7 @@ typedef enum smiSegMgmtType
     SMI_SEGMENT_MGMT_MAX
 } smiSegMgmtType;
 
-/* Segment ì†ì„±ì„ ì •ì˜í•œë‹¤. */
+/* Segment ¼Ó¼ºÀ» Á¤ÀÇÇÑ´Ù. */
 typedef struct smiSegAttr
 {
     /* PCTFREE reserves space in the data block for updates to existing rows.
@@ -191,38 +197,38 @@ typedef struct smiSegAttr
        the block is not considered for insertion. */
     UShort   mPctUsed;
 
-    /* í•œ í˜ì´ì§€ë‹¹ ì´ˆê¸° CTS ê°œìˆ˜ */
+    /* ÇÑ ÆäÀÌÁö´ç ÃÊ±â CTS °³¼ö */
     UShort   mInitTrans;
-    /* í•œ í˜ì´ì§€ë‹¹ ìµœëŒ€ CTS ê°œìˆ˜ */
+    /* ÇÑ ÆäÀÌÁö´ç ÃÖ´ë CTS °³¼ö */
     UShort   mMaxTrans;
 } smiSegAttr;
 
 
 /*
- * Segmentì˜ STORAGE ì†ì„±ì„ ì •ì˜í•œë‹¤.
- * í˜„ì¬ëŠ” Treelist Managed Segmentì—ì„œë§Œ ì§€ì›í•¨.
+ * SegmentÀÇ STORAGE ¼Ó¼ºÀ» Á¤ÀÇÇÑ´Ù.
+ * ÇöÀç´Â Treelist Managed Segment¿¡¼­¸¸ Áö¿øÇÔ.
  */
 typedef struct smiSegStorageAttr
 {
-    /* Segment ìƒì„±ì‹œ Extent ê°œìˆ˜ */
+    /* Segment »ı¼º½Ã Extent °³¼ö */
     UInt     mInitExtCnt;
-    /* Segment í™•ì¥ì‹œ Extent ê°œìˆ˜ */
+    /* Segment È®Àå½Ã Extent °³¼ö */
     UInt     mNextExtCnt;
-    /* Segmentì˜ ìµœì†Œ Extent ê°œìˆ˜ */
+    /* SegmentÀÇ ÃÖ¼Ò Extent °³¼ö */
     UInt     mMinExtCnt;
-    /* Segmentì˜ ìµœëŒ€ Extent ê°œìˆ˜ */
+    /* SegmentÀÇ ÃÖ´ë Extent °³¼ö */
     UInt     mMaxExtCnt;
 } smiSegStorageAttr;
 
-/* BUG-17033: ìµœìƒìœ„ Statementê°€ ì•„ë‹Œ Statmentì— ëŒ€í•´ì„œë„
- * Partial Rollbackì„ ì§€ì›í•´ì•¼ í•©ë‹ˆë‹¤. */
+/* BUG-17033: ÃÖ»óÀ§ Statement°¡ ¾Æ´Ñ Statment¿¡ ´ëÇØ¼­µµ
+ * Partial RollbackÀ» Áö¿øÇØ¾ß ÇÕ´Ï´Ù. */
 
-/* Statmentì˜ Depthê°€ ê°€ì§ˆìˆ˜ ìˆëŠ” ìµœëŒ€ê°’ */
+/* StatmentÀÇ Depth°¡ °¡Áú¼ö ÀÖ´Â ÃÖ´ë°ª */
 #define SMI_STATEMENT_DEPTH_MAX  (255)
-/* Statmentì˜ Depthê°€ ì´ê°’ì„ Depthë¡œ ê°€ì ¸ì„œëŠ” ì•ˆëœë‹¤ */
+/* StatmentÀÇ Depth°¡ ÀÌ°ªÀ» Depth·Î °¡Á®¼­´Â ¾ÈµÈ´Ù */
 #define SMI_STATEMENT_DEPTH_NULL (0)
 
-/* FOR A4 : í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ì˜ íƒ€ì…ì„ ì •ì˜í•¨ */
+/* FOR A4 : Å×ÀÌºí ½ºÆäÀÌ½ºÀÇ Å¸ÀÔÀ» Á¤ÀÇÇÔ */
 typedef enum
 {
     SMI_MEMORY_SYSTEM_DICTIONARY = 0,
@@ -237,9 +243,9 @@ typedef enum
     SMI_TABLESPACE_TYPE_MAX  //  for function array
 } smiTableSpaceType;
 
-// TBSê°€ ì†í•œ ê´€ë¦¬ ì˜ì—­ì„ ë‚˜íƒ€ëƒ„
-// XXX ì´í›„ smiTableSpaceTypeì˜ ìƒìœ„ bitsetìœ¼ë¡œ
-// ê´€ë¦¬ ì˜ì—­ì„ í‘œì‹œí•˜ë„ë¡ ë³€ê²½ë˜ë©´ ì œê±° ë˜ì–´ì•¼ í•¨
+// TBS°¡ ¼ÓÇÑ °ü¸® ¿µ¿ªÀ» ³ªÅ¸³¿
+// XXX ÀÌÈÄ smiTableSpaceTypeÀÇ »óÀ§ bitsetÀ¸·Î
+// °ü¸® ¿µ¿ªÀ» Ç¥½ÃÇÏµµ·Ï º¯°æµÇ¸é Á¦°Å µÇ¾î¾ß ÇÔ
 typedef enum
 {
     SMI_TBS_DISK = 0,
@@ -247,20 +253,6 @@ typedef enum
     SMI_TBS_VOLATILE,
     SMI_TBS_NONE
 } smiTBSLocation;
-
-#define SMI_TBS_SYSTEM_MASK         ( 0x80000000 )
-#define SMI_TBS_SYSTEM_YES          ( 0x80000000 )
-#define SMI_TBS_SYSTEM_NO           ( 0x00000000 )
-
-#define SMI_TBS_TEMP_MASK           ( 0x40000000 )
-#define SMI_TBS_TEMP_YES            ( 0x40000000 )
-#define SMI_TBS_TEMP_NO             ( 0x00000000 )
-
-#define SMI_TBS_LOCATION_MASK       ( 0x0F000000 )
-#define SMI_TBS_LOCATION_DISK       ( 0x01000000 )
-#define SMI_TBS_LOCATION_MEMORY     ( 0x02000000 )
-#define SMI_TBS_LOCATION_VOLATILE   ( 0x04000000 )
-#define SMI_TBS_LOCATION_NONE       ( 0x00000000 )
 
 typedef enum
 {
@@ -271,27 +263,27 @@ typedef enum
 
 /* --------------------------------------------------------------------
  * Description :
- * [ì£¼ì˜] removeTableSpaceì™€ removeDataFileì€ each ëª¨ë“œë¡œ ìˆ˜í–‰í•˜ì§€ ëª»í•˜ë©°,
- *  createTableSpace ë° createDataFilesëŠ” each ëª¨ë“œë¡œ ìˆ˜í–‰ê°€ëŠ¥í•˜ë‹¤.
+ * [ÁÖÀÇ] removeTableSpace¿Í removeDataFileÀº each ¸ğµå·Î ¼öÇàÇÏÁö ¸øÇÏ¸ç,
+ *  createTableSpace ¹× createDataFiles´Â each ¸ğµå·Î ¼öÇà°¡´ÉÇÏ´Ù.
  *
- * + ìƒì„±ì‹œì˜ touch ëª¨ë“œ
+ * + »ı¼º½ÃÀÇ touch ¸ğµå
  *    EACH_BYMODE, ALL_NOTOUCH
  *
- * +  ì œê±°ì‹œì˜ touch ëª¨ë“œ
+ * +  Á¦°Å½ÃÀÇ touch ¸ğµå
  *    ALL_TOUCH, ALL_NOTOUCH
  * ----------------------------------------------------------------- */
 typedef enum
 {
-    SMI_ALL_TOUCH = 0, /* tablespaceì˜ ëª¨ë“  datafile ë…¸ë“œì˜
-                          datafileì„ ê±´ë“œë¦°ë‹¤. */
-    SMI_ALL_NOTOUCH,   /* tablespaceì˜ ëª¨ë“  datafile ë…¸ë“œì˜
-                          datafileì„ ê±´ë“œë¦¬ì§€ ì•ŠëŠ”ë‹¤. */
-    SMI_EACH_BYMODE    // ê° datafile ë…¸ë“œì˜ create ëª¨ë“œì— ë”°ë¥¸ë‹¤.
+    SMI_ALL_TOUCH = 0, /* tablespaceÀÇ ¸ğµç datafile ³ëµåÀÇ
+                          datafileÀ» °Çµå¸°´Ù. */
+    SMI_ALL_NOTOUCH,   /* tablespaceÀÇ ¸ğµç datafile ³ëµåÀÇ
+                          datafileÀ» °Çµå¸®Áö ¾Ê´Â´Ù. */
+    SMI_EACH_BYMODE    // °¢ datafile ³ëµåÀÇ create ¸ğµå¿¡ µû¸¥´Ù.
 
 } smiTouchMode;
 
 /* ------------------------------------------------
- * media recovery ë° restartì‹œ ì¬ìˆ˜í–‰ê´€ë¦¬ì ì´ˆê¸°í™” flag
+ * media recovery ¹× restart½Ã Àç¼öÇà°ü¸®ÀÚ ÃÊ±âÈ­ flag
  * ----------------------------------------------*/
 typedef enum smiRecoverType
 {
@@ -316,35 +308,35 @@ typedef enum smiRestoreType
 /*-------------------------------------------------------------
  * PROJ-2133 Incremental backup
  * Description :
- * ìˆ˜í–‰ëœ backup level
- * 
- * backup levelê³¼ backup typeê³¼ì˜ ê´€ê³„
- * + level0 backupì˜ backup type: 
- *     1) SMI_BACKUP_TYPE_FULL
- *          level0ì¸ê²½ìš° backup typeì€ SMI_BACKUP_TYPE_FULLë§Œ ê°€ëŠ¥í•˜ë‹¤.
+ * ¼öÇàµÈ backup level
  *
- * + level1 backupì˜ backup type: 
- *     1) SMI_BACKUP_TYPE_DIFFERENTIAL 
- *          ê³¼ê±°ì— í•´ë‹¹ ë°ì´í„°íŒŒì¼ì´ level0ìœ¼ë¡œ backupëœì ì´ <ìˆê³ > 
- *          DIFFERENTIALë¡œ backupì„ ìˆ˜í–‰í•œ ê²½ìš°
+ * backup level°ú backup type°úÀÇ °ü°è
+ * + level0 backupÀÇ backup type:
+ *     1) SMI_BACKUP_TYPE_FULL
+ *          level0ÀÎ°æ¿ì backup typeÀº SMI_BACKUP_TYPE_FULL¸¸ °¡´ÉÇÏ´Ù.
+ *
+ * + level1 backupÀÇ backup type:
+ *     1) SMI_BACKUP_TYPE_DIFFERENTIAL
+ *          °ú°Å¿¡ ÇØ´ç µ¥ÀÌÅÍÆÄÀÏÀÌ level0À¸·Î backupµÈÀûÀÌ <ÀÖ°í>
+ *          DIFFERENTIAL·Î backupÀ» ¼öÇàÇÑ °æ¿ì
  *
  *     2) SMI_BACKUP_TYPE_CUMULATIVE
- *          ê³¼ê±°ì— í•´ë‹¹ ë°ì´í„°íŒŒì¼ì´ level0ìœ¼ë¡œ backupëœì ì´ <ìˆê³ > 
- *          CUMULATIVEë¡œ backupì„ ìˆ˜í–‰í•œ ê²½ìš°
+ *          °ú°Å¿¡ ÇØ´ç µ¥ÀÌÅÍÆÄÀÏÀÌ level0À¸·Î backupµÈÀûÀÌ <ÀÖ°í>
+ *          CUMULATIVE·Î backupÀ» ¼öÇàÇÑ °æ¿ì
  *
  *     3) SMI_BACKUP_TYPE_DIFFERENTIAL & SMI_BACKUP_TYPE_FULL
- *          ê³¼ê±°ì— í•´ë‹¹ ë°ì´í„°íŒŒì¼ì´ level0ìœ¼ë¡œ backupëœì ì´ <ì—†ê³ >
- *          DIFFERENTIALë¡œ backupì„ ìˆ˜í–‰í•œ ê²½ìš°
+ *          °ú°Å¿¡ ÇØ´ç µ¥ÀÌÅÍÆÄÀÏÀÌ level0À¸·Î backupµÈÀûÀÌ <¾ø°í>
+ *          DIFFERENTIAL·Î backupÀ» ¼öÇàÇÑ °æ¿ì
  *
  *     4) SMI_BACKUP_TYPE_CUMULATIVE & SMI_BACKUP_TYPE_FULL
- *          ê³¼ê±°ì— í•´ë‹¹ ë°ì´í„°íŒŒì¼ì´ level0ìœ¼ë¡œ backupëœì ì´ <ì—†ê³ >
- *          CUMULATIVEë¡œ backupì„ ìˆ˜í–‰í•œ ê²½ìš°
+ *          °ú°Å¿¡ ÇØ´ç µ¥ÀÌÅÍÆÄÀÏÀÌ level0À¸·Î backupµÈÀûÀÌ <¾ø°í>
+ *          CUMULATIVE·Î backupÀ» ¼öÇàÇÑ °æ¿ì
  *
- *  3ë²ˆê³¼ 4ë²ˆì˜ backup typeì€ level 0ë°±ì—…ì´ ìˆ˜í–‰ëœ ì´í›„ create TBSë‚˜ create
- *  dataFileì´ ìˆ˜í–‰ë˜ì–´ ìƒˆë¡œìš´ ë°ì´í„°íŒŒì¼ì´ ë°ì´í„°ë² ì´ìŠ¤ì— ì¶”ê°€ëœê²½ìš°ì´ë‹¤.
- *  ì´ ê²½ìš° level1 backupì´ ìˆ˜í–‰ëœê²½ìš° ìƒˆë¡­ê²Œ ì¶”ê°€ëœ ë°ì´í„°íŒŒì¼ì€ ë³€í™”ì¶”ì ì—
- *  ëŒ€í•œ baseê°€ ì—†ê¸° ë•Œë¬¸ì— full backupì´ ìˆ˜í–‰ë˜ê³  changeTrackingì´ ì‹œì‘ë˜ê²Œ
- *  ëœë‹¤.
+ *  3¹ø°ú 4¹øÀÇ backup typeÀº level 0¹é¾÷ÀÌ ¼öÇàµÈ ÀÌÈÄ create TBS³ª create
+ *  dataFileÀÌ ¼öÇàµÇ¾î »õ·Î¿î µ¥ÀÌÅÍÆÄÀÏÀÌ µ¥ÀÌÅÍº£ÀÌ½º¿¡ Ãß°¡µÈ°æ¿ìÀÌ´Ù.
+ *  ÀÌ °æ¿ì level1 backupÀÌ ¼öÇàµÈ°æ¿ì »õ·Ó°Ô Ãß°¡µÈ µ¥ÀÌÅÍÆÄÀÏÀº º¯È­ÃßÀû¿¡
+ *  ´ëÇÑ base°¡ ¾ø±â ¶§¹®¿¡ full backupÀÌ ¼öÇàµÇ°í changeTrackingÀÌ ½ÃÀÛµÇ°Ô
+ *  µÈ´Ù.
  *-----------------------------------------------------------*/
 typedef enum smiBackupLevel
 {
@@ -359,7 +351,7 @@ typedef enum smiBackupLevel
 #define SMI_MAX_BACKUP_TAG_NAME_LEN     (128)
 
 /* ------------------------------------------------
- * archive ë¡œê·¸ ëª¨ë“œ íƒ€ì…
+ * archive ·Î±× ¸ğµå Å¸ÀÔ
  * ------------------------------------------------ */
 typedef enum
 {
@@ -378,9 +370,9 @@ typedef enum
 } smiLockItemType;
 
 /*
-  Tablespaceì˜ Lock Mode
+  TablespaceÀÇ Lock Mode
 
-  Tablespaceì— ì§ì ‘ Lockì„ íšë“í• ë•Œ ì‚¬ìš©í•œë‹¤.
+  Tablespace¿¡ Á÷Á¢ LockÀ» È¹µæÇÒ¶§ »ç¿ëÇÑ´Ù.
  */
 typedef enum smiTBSLockMode
 {
@@ -415,9 +407,13 @@ typedef enum
 #define  SC_MAX_SPACE_COUNT  (32)
 #else
 /* PROJ-2201
- * SpaceIDì˜ ë§ˆì§€ë§‰ ë‘˜ì€ WorkAreaìš©ìœ¼ë¡œ ì˜ˆì•½í•œë‹¤.
- * sdtDef.hì˜ SDT_SPACEID_WORKAREA, SDT_SPACEID_WAMAP ì°¸ì¡° */
-#define  SC_MAX_SPACE_COUNT  (ID_USHORT_MAX - 2)
+ * SpaceIDÀÇ ¸¶Áö¸· µÑÀº WorkArea¿ëÀ¸·Î ¿¹¾àÇÑ´Ù.
+ * sdtDef.hÀÇ SDT_SPACEID_WORKAREA, SDT_SPACEID_WAMAP ÂüÁ¶
+ * BUG-48513 ushort max -2 °¡ µé¾î°¡·Á¸é array size ´Â ushort max -1 */
+#define  SC_MAX_SPACE_COUNT  (ID_USHORT_MAX - 1)
+/* BUG-48513 3°³ ´õ Ãß°¡ÇØ¼­ scSpaceID(short)°¡ Àß¸ø µé¾î¿Íµµ
+ * ºñÁ¤»ó Á¾·á¸¦ ÇÏÁö ¾Êµµ·Ï ÇÑ´Ù.*/
+#define  SC_MAX_SPACE_ARRAY_SIZE  (ID_USHORT_MAX + (UInt)1)
 #endif
 #define  SC_MAX_PAGE_COUNT   (ID_UINT_MAX)
 #define  SC_MAX_OFFSET       (ID_USHORT_MAX)
@@ -455,20 +451,20 @@ typedef struct scGRID
        (grid).mPageID = (pid);                       \
        (grid).mOffset = ((slotnum) | SC_GRID_OFFSET_FLAG_SLOTNUM); }
 
-#define SC_MAKE_NULL_GRID(grid)                      \
-    {  (grid).mSpaceID = SC_NULL_SPACEID;            \
-       (grid).mPageID  = SC_NULL_PID;                \
-       (grid).mOffset  = SC_NULL_OFFSET; }
+#define SC_MAKE_NULL_GRID(grid)                       \
+    {   (grid).mSpaceID = SC_NULL_SPACEID;            \
+        (grid).mPageID  = SC_NULL_PID;                \
+        (grid).mOffset  = SC_NULL_OFFSET; }
 
-#define SC_MAKE_VIRTUAL_NULL_GRID_FOR_LOB(grid)         \
+#define SC_MAKE_VIRTUAL_NULL_GRID_FOR_LOB(grid)      \
     {  (grid).mSpaceID = SC_NULL_SPACEID;            \
-       (grid).mPageID  = SC_NULL_PID;                \
+        (grid).mPageID  = SC_NULL_PID;               \
        (grid).mOffset  = SC_VIRTUAL_NULL_OFFSET; }
 
-#define SC_COPY_GRID(src_grid, dst_grid)             \
-    {  (dst_grid).mSpaceID = (src_grid).mSpaceID;    \
-       (dst_grid).mPageID = (src_grid).mPageID;      \
-       (dst_grid).mOffset = (src_grid).mOffset; }
+#define SC_COPY_GRID(src_grid, dst_grid)            \
+    {   (dst_grid).mSpaceID = (src_grid).mSpaceID;  \
+        (dst_grid).mPageID  = (src_grid).mPageID;   \
+        (dst_grid).mOffset  = (src_grid).mOffset; }
 
 #define SC_MAKE_SPACE(grid)    ( (grid).mSpaceID )
 #define SC_MAKE_PID(grid)      ( (grid).mPageID )
@@ -477,7 +473,7 @@ inline static scSlotNum SC_MAKE_OFFSET(scGRID aGRID)
 {
     IDE_DASSERT( ((aGRID.mOffset) & SC_GRID_OFFSET_FLAG_MASK) ==
                  (SC_GRID_OFFSET_FLAG_OFFSET) );
- 
+
     return aGRID.mOffset;
 }
 
@@ -485,28 +481,42 @@ inline static scSlotNum SC_MAKE_SLOTNUM(scGRID aGRID)
 {
     IDE_DASSERT( ((aGRID.mOffset) & SC_GRID_OFFSET_FLAG_MASK) ==
                  (SC_GRID_OFFSET_FLAG_SLOTNUM) );
- 
+
     return (aGRID.mOffset) & SC_GRID_SLOTNUM_MASK;
 }
 
-#define SC_GRID_IS_EQUAL(grid1, grid2)              \
-  (  ( ((grid1).mSpaceID  == (grid2).mSpaceID)  &&  \
-       ((grid1).mPageID == (grid2).mPageID) &&      \
-       ((grid1).mOffset == (grid2).mOffset) ) ? ID_TRUE : ID_FALSE )
+#define SC_GRID_IS_EQUAL(grid1, grid2)            \
+    (((grid1).mSpaceID == (grid2).mSpaceID) &&    \
+     ((grid1).mPageID  == (grid2).mPageID)  &&    \
+     ((grid1).mOffset  == (grid2).mOffset))
 
-#define SC_GRID_IS_NULL(grid1)                      \
-  (  ( ((grid1).mSpaceID  == SC_NULL_SPACEID)  &&   \
-       ((grid1).mPageID == SC_NULL_PID) &&          \
-       ((grid1).mOffset == SC_NULL_OFFSET) ) ? ID_TRUE : ID_FALSE )
+#define SC_GRID_IS_NOT_EQUAL(grid1, grid2)     \
+    (((grid1).mSpaceID != (grid2).mSpaceID) || \
+     ((grid1).mPageID  != (grid2).mPageID)  || \
+     ((grid1).mOffset  != (grid2).mOffset))
 
-#define SC_GRID_IS_VIRTUAL_NULL_GRID_FOR_LOB(grid)          \
-  ( ( ((grid).mSpaceID  ==   SC_NULL_SPACEID)  &&    \
-      ((grid).mPageID   ==   SC_NULL_PID    )  &&    \
-      ((grid).mOffset   ==   SC_VIRTUAL_NULL_OFFSET ) ) ? ID_TRUE : ID_FALSE )
+#define SC_GRID_IS_NULL(grid1)                  \
+    (((grid1).mSpaceID == SC_NULL_SPACEID)  && \
+     ((grid1).mPageID  == SC_NULL_PID)      && \
+     ((grid1).mOffset  == SC_NULL_OFFSET))
+
+#define SC_GRID_IS_NOT_NULL(grid1)            \
+    (((grid1).mSpaceID != SC_NULL_SPACEID) || \
+     ((grid1).mPageID  != SC_NULL_PID)     || \
+     ((grid1).mOffset  != SC_NULL_OFFSET))
+
+#define SC_GRID_IS_VIRTUAL_NULL_GRID_FOR_LOB(grid)       \
+    ( ((grid).mSpaceID == SC_NULL_SPACEID)  &&           \
+      ((grid).mPageID  == SC_NULL_PID    )  &&    \
+      ((grid).mOffset  == SC_VIRTUAL_NULL_OFFSET ) )
 
 #define SC_GRID_IS_WITH_SLOTNUM(grid)                        \
-  ( ( ((grid).mOffset & SC_GRID_OFFSET_FLAG_MASK) ==         \
-      SC_GRID_OFFSET_FLAG_SLOTNUM ) ? ID_TRUE : ID_FALSE )
+    ( ((grid).mOffset & SC_GRID_OFFSET_FLAG_MASK) ==         \
+      SC_GRID_OFFSET_FLAG_SLOTNUM )
+
+#define SC_GRID_IS_NOT_WITH_SLOTNUM(grid)                    \
+    ( ((grid).mOffset & SC_GRID_OFFSET_FLAG_MASK) !=         \
+      SC_GRID_OFFSET_FLAG_SLOTNUM )
 
 // PROJ-1705
 #define SMI_MAKE_GRID              SC_MAKE_GRID
@@ -514,7 +524,6 @@ inline static scSlotNum SC_MAKE_SLOTNUM(scGRID aGRID)
 #define SMI_GRID_IS_NULL           SC_GRID_IS_NULL
 #define SMI_MAKE_VIRTUAL_NULL_GRID SC_MAKE_VIRTUAL_NULL_GRID_FOR_LOB
 #define SMI_GRID_IS_VIRTUAL_NULL   SC_GRID_IS_VIRTUAL_NULL_GRID_FOR_LOB
-
 
 extern scGRID gScNullGRID;
 #define SC_NULL_GRID gScNullGRID
@@ -527,7 +536,7 @@ extern scGRID gScNullGRID;
 #define SMI_INIT_SCN( SCN ) SM_INIT_SCN( SCN )
 
 // PRJ-1671
-typedef  UShort   smFileID;  /* SM ë‚´ë¶€ì—ì„œëŠ” sdFileIDë¡œ êµ¬í˜„ë˜ì—ˆìŒ */
+typedef  UShort   smFileID;  /* SM ³»ºÎ¿¡¼­´Â sdFileID·Î ±¸ÇöµÇ¾úÀ½ */
 
 // PROJ-1362.
 typedef  ULong  smLobLocator;
@@ -559,32 +568,32 @@ typedef struct smSCN
 
 typedef struct smLSN
 {
-    /* ë¡œê·¸ê°€ ìœ„ì¹˜í•œ File No */
+    /* ·Î±×°¡ À§Ä¡ÇÑ File No */
     UInt  mFileNo;
-    /* ë¡œê·¸ê°€ ìœ„ì¹˜í•œ Fileì—ì„œì˜ ìœ„ì¹˜ */
+    /* ·Î±×°¡ À§Ä¡ÇÑ File¿¡¼­ÀÇ À§Ä¡ */
     UInt  mOffset;
 } smLSN;
 
 /* ------------------------------------------------
- * Description : tablespaceì™€ datafileì˜ ì†ì„± ìë£Œêµ¬ì¡°
+ * Description : tablespace¿Í datafileÀÇ ¼Ó¼º ÀÚ·á±¸Á¶
  *
- * - Log Anchorì— í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì™€ ë°ì´íƒ€íŒŒì¼ì˜
- *   ì •ë³´ë¥¼ writeí•˜ê±°ë‚˜ readí•  ê²½ìš°ì— ì‚¬ìš©
+ * - Log Anchor¿¡ Å×ÀÌºí½ºÆäÀÌ½º¿Í µ¥ÀÌÅ¸ÆÄÀÏÀÇ
+ *   Á¤º¸¸¦ writeÇÏ°Å³ª readÇÒ °æ¿ì¿¡ »ç¿ë
  *
- *   # í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ì •ë³´ì™€ ë°ì´íŒŒì¼ì˜ ì •ë³´ê°€
- *     Log Anchorì— ì €ì¥ëœ ê·¸ë¦¼
+ *   # Å×ÀÌºí½ºÆäÀÌ½ºÀÇ Á¤º¸¿Í µ¥ÀÌÆÄÀÏÀÇ Á¤º¸°¡
+ *     Log Anchor¿¡ ÀúÀåµÈ ±×¸²
  *   __________________________
  *   |      ........          |
  *   |________________________| ___
  *   |@ sddTableSpaceAttr     |   |
- *   |____________________+2ê°œ|   |
- *   |+ sddDataFileAttr       |   |-- í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID 1
+ *   |____________________+2°³|   |
+ *   |+ sddDataFileAttr       |   |-- Å×ÀÌºí½ºÆäÀÌ½º ID 1
  *   |________________________|   |
  *   |+ sddDataFileAttr       |   |
  *   |________________________| __|
  *   |@                       |   |
- *   |____________________+3ê°œ|   |
- *   |+_______________________|   |-- í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID 2
+ *   |____________________+3°³|   |
+ *   |+_______________________|   |-- Å×ÀÌºí½ºÆäÀÌ½º ID 2
  *   |+_______________________|   |
  *   |+_______________________| __|
  *               .
@@ -597,17 +606,17 @@ typedef struct smLSN
 #define SMI_MAX_CHKPT_PATH_NAME_LEN    (512)
 #define SMI_MAX_SBUFFER_FILE_NAME_LEN  (512)
 /* --------------------------------------------------------------------
- * Description : create ëª¨ë“œ for reuse êµ¬ë¬¸
+ * Description : create ¸ğµå for reuse ±¸¹®
  * ----------------------------------------------------------------- */
 typedef enum
 {
-    SMI_DATAFILE_REUSE = 0,  // datafileì„ ì¬ì‚¬ìš©í•œë‹¤.
-    SMI_DATAFILE_CREATE,     // datafileì„ ìƒì„±í•œë‹¤.
-    SMI_DATAFILE_CREATE_MODE_MAX // smiDataFileMode ê°€ ê°€ì§ˆìˆ˜ ìˆëŠ” ìµœëŒ€ê°’
+    SMI_DATAFILE_REUSE = 0,  // datafileÀ» Àç»ç¿ëÇÑ´Ù.
+    SMI_DATAFILE_CREATE,     // datafileÀ» »ı¼ºÇÑ´Ù.
+    SMI_DATAFILE_CREATE_MODE_MAX // smiDataFileMode °¡ °¡Áú¼ö ÀÖ´Â ÃÖ´ë°ª
 } smiDataFileMode;
 
 /* ------------------------------------------------
- * PRJ-1149 Data File Nodeì˜ ìƒíƒœ
+ * PRJ-1149 Data File NodeÀÇ »óÅÂ
  * ----------------------------------------------*/
 typedef enum smiDataFileState
 {
@@ -671,37 +680,34 @@ typedef enum smiDataFileState
    DROPPED              0x40        = 128
 */
 
-// Data File Node stateê°€ ê°€ì§ˆ ìˆ˜ ìˆëŠ” ìµœëŒ€ê°’
+// Data File Node state°¡ °¡Áú ¼ö ÀÖ´Â ÃÖ´ë°ª
 #define SMI_DATAFILE_STATE_MAX      (0x0000000FF)
 
 // OFFLINE | ONLINE
 #define SMI_ONLINE_OFFLINE_MASK     (0x000000003)
 
-// DATAFILEì˜ ìƒíƒœ MASK ì ìš©í›„ ìƒíƒœê°’ì˜ ìµœëŒ€ ê°’
-#define SMI_ONLINE_OFFLINE_MAX      (3)
-
 /* ------------------------------------------------
- * PRJ-1149, table spaceì˜ ìƒíƒœ
+ * PRJ-1149, table spaceÀÇ »óÅÂ
  * ----------------------------------------------*/
-/* ì´ Enumerationì´ ë³€ê²½ë˜ë©´ smmTBSFixedTable.cppì˜
-   X$MEM_TABLESPACE_STATUS_DESC êµ¬ì¶• ì½”ë“œë„ ë³€ê²½ë˜ì–´ì•¼ í•¨ */
+/* ÀÌ EnumerationÀÌ º¯°æµÇ¸é smmTBSFixedTable.cppÀÇ
+   X$MEM_TABLESPACE_STATUS_DESC ±¸Ãà ÄÚµåµµ º¯°æµÇ¾î¾ß ÇÔ */
 typedef enum smiTableSpaceState
 {
-    /* ë°±ì—…í•  ìˆ˜ ì—†ë‹¤. ëŒ€ê¸° í•´ì•¼í•¨. ìƒì„±, ì‚­ì œ, OFFLINE ì¤‘ì¼ìˆ˜ ìˆë‹¤. */
+    /* ¹é¾÷ÇÒ ¼ö ¾ø´Ù. ´ë±â ÇØ¾ßÇÔ. »ı¼º, »èÁ¦, OFFLINE ÁßÀÏ¼ö ÀÖ´Ù. */
     SMI_TBS_BLOCK_BACKUP          = 0x10000000,
     SMI_TBS_OFFLINE               = 0x00000001,
     SMI_TBS_ONLINE                = 0x00000002,
     SMI_TBS_BACKUP                = 0x00000004,
-    // Tablespace ìƒì„±ë„ì¤‘ì— ì¼ì‹œì ìœ¼ë¡œ INCONSISTENTí•œ ìƒíƒœê°€ ë  ìˆ˜ ìˆë‹¤.
+    // Tablespace »ı¼ºµµÁß¿¡ ÀÏ½ÃÀûÀ¸·Î INCONSISTENTÇÑ »óÅÂ°¡ µÉ ¼ö ÀÖ´Ù.
     SMI_TBS_INCONSISTENT          = 0x00000008,
     SMI_TBS_CREATING              = 0x00000010 | SMI_TBS_BLOCK_BACKUP ,
     SMI_TBS_DROPPING              = 0x00000020 | SMI_TBS_BLOCK_BACKUP ,
-    // Drop Tablespace Transactionì˜ Commitë„ì¤‘ Pending Actionìˆ˜í–‰ì¤‘
+    // Drop Tablespace TransactionÀÇ CommitµµÁß Pending Action¼öÇàÁß
     SMI_TBS_DROP_PENDING          = 0x00000040,
     SMI_TBS_DROPPED               = 0x00000080,
-    // Online->Offlineìœ¼ë¡œ ì§„í–‰ì¤‘
+    // Online->OfflineÀ¸·Î ÁøÇàÁß
     SMI_TBS_SWITCHING_TO_OFFLINE  = 0x00000100 | SMI_TBS_BLOCK_BACKUP ,
-    // Offline->Onlineìœ¼ë¡œ ì§„í–‰ì¤‘
+    // Offline->OnlineÀ¸·Î ÁøÇàÁß
     SMI_TBS_SWITCHING_TO_ONLINE   = 0x00000200 | SMI_TBS_BLOCK_BACKUP ,
     SMI_TBS_DISCARDED             = 0x00000400
 } smiTableSpaceState;
@@ -709,40 +715,48 @@ typedef enum smiTableSpaceState
 # define SMI_TBS_IS_OFFLINE(state) (((state) & SMI_ONLINE_OFFLINE_MASK ) == SMI_TBS_OFFLINE )
 # define SMI_TBS_IS_ONLINE(state) (((state) & SMI_ONLINE_OFFLINE_MASK ) == SMI_TBS_ONLINE )
 # define SMI_TBS_IS_BACKUP(state) (((state) & SMI_TBS_BACKUP ) == SMI_TBS_BACKUP )
+# define SMI_TBS_IS_NOT_BACKUP(state) (((state) & SMI_TBS_BACKUP ) != SMI_TBS_BACKUP )
 # define SMI_TBS_IS_CREATING(state) (((state) & SMI_TBS_CREATING ) == SMI_TBS_CREATING )
 # define SMI_TBS_IS_DROPPING(state) (((state) & SMI_TBS_DROPPING ) == SMI_TBS_DROPPING )
 # define SMI_TBS_IS_DROP_PENDING(state) (((state) & SMI_TBS_DROP_PENDING) == SMI_TBS_DROP_PENDING )
 # define SMI_TBS_IS_DROPPED(state) (((state) & SMI_TBS_DROPPED) == SMI_TBS_DROPPED )
+# define SMI_TBS_IS_NOT_DROPPED(state) (((state) & SMI_TBS_DROPPED) != SMI_TBS_DROPPED )
 # define SMI_TBS_IS_DISCARDED(state) (((state) & SMI_TBS_DISCARDED) == SMI_TBS_DISCARDED )
+# define SMI_TBS_IS_NOT_DISCARDED(state) (((state) & SMI_TBS_DISCARDED) != SMI_TBS_DISCARDED )
 
 
-/* í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ì†ì„± í”Œë˜ê·¸
+/*ONLINE, BACKUP ÀÌ¿ÜÀÇ Flag°¡ ÀÖÀ¸¸é »ı¼ºÁß, offline, dropping µîµîÀÌ´Ù.*/
+# define SMI_TBS_IS_INCOMPLETE(state) ((state) & ~(SMI_TBS_ONLINE|SMI_TBS_BACKUP)) 
+# define SMI_TBS_IS_COMPLETE(state)   (!SMI_TBS_IS_INCOMPLETE(state))
 
-   ê¸°ë³¸ê°’ìœ¼ë¡œ ì‚¬ìš©í•  ê°’ì— ëŒ€í•´ Maskì•ˆì˜ ëª¨ë“  Bitë¥¼ 0ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+
+/* Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ¼Ó¼º ÇÃ·¡±×
+
+   ±âº»°ªÀ¸·Î »ç¿ëÇÒ °ª¿¡ ´ëÇØ Mask¾ÈÀÇ ¸ğµç Bit¸¦ 0À¸·Î ¼³Á¤ÇÑ´Ù.
 
  */
-// V$TABLESPACESì—ì„œ ì‚¬ìš©ìì—ê²Œ ë³´ì´ëŠ” Tablespaceì˜ ìƒíƒœë“¤
-// XXX ì´í›„ ìµœì í™” í•´ì„œ ëª¨ë‘ ë³´ì´ë„ë¡ ìˆ˜ì •í•´ì•¼ í•œë‹¤.
+// V$TABLESPACES¿¡¼­ »ç¿ëÀÚ¿¡°Ô º¸ÀÌ´Â TablespaceÀÇ »óÅÂµé
+// XXX ÀÌÈÄ ÃÖÀûÈ­ ÇØ¼­ ¸ğµÎ º¸ÀÌµµ·Ï ¼öÁ¤ÇØ¾ß ÇÑ´Ù.
 // OFFLINE(0x001) | ONLINE(0x002) | DISCARD(0x400) | DROPPED(0x080)
 #define SMI_TBS_STATE_USER_MASK         (0x000000483)
-// í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì•ˆì˜ ë°ì´í„°ì— ëŒ€í•œ Logë¥¼ Compressí• ì§€ì˜ ì—¬ë¶€
+// Å×ÀÌºí½ºÆäÀÌ½º¾ÈÀÇ µ¥ÀÌÅÍ¿¡ ´ëÇÑ Log¸¦ CompressÇÒÁöÀÇ ¿©ºÎ
 #define SMI_TBS_ATTR_LOG_COMPRESS_MASK  ( 0x00000001 )
-// ê¸°ë³¸ì ìœ¼ë¡œ "ë¡œê·¸ ì••ì¶•"ì„ ì‚¬ìš©í•˜ë„ë¡ í•œë‹¤. (0ìœ¼ë¡œ ì„¤ì •)
+// ±âº»ÀûÀ¸·Î "·Î±× ¾ĞÃà"À» »ç¿ëÇÏµµ·Ï ÇÑ´Ù. (0À¸·Î ¼³Á¤)
 #define SMI_TBS_ATTR_LOG_COMPRESS_TRUE  ( 0x00000000 )
 #define SMI_TBS_ATTR_LOG_COMPRESS_FALSE ( 0x00000001 )
 
 /* --------------------------------------------------------------------
- * Description : tablespace ì •ë³´
+ * Description : tablespace Á¤º¸
  *
- * IDëŠ” ì…ë ¥ê°’ìœ¼ë¡œëŠ” ì–´ë–¤ ì˜ë¯¸ë¥¼ ì§€ë‹ˆì§€ ì•Šê³  ì˜¤ì§ ì¶œë ¥ê°’ìœ¼ë¡œë§Œ ì‚¬ìš©ëœë‹¤.
- * tablespace create ì‹œ ë¶€ì—¬ëœ ì•„ì´ë””ê°€ ë¦¬í„´ëœë‹¤.
+ * ID´Â ÀÔ·Â°ªÀ¸·Î´Â ¾î¶² ÀÇ¹Ì¸¦ Áö´ÏÁö ¾Ê°í ¿ÀÁ÷ Ãâ·Â°ªÀ¸·Î¸¸ »ç¿ëµÈ´Ù.
+ * tablespace create ½Ã ºÎ¿©µÈ ¾ÆÀÌµğ°¡ ¸®ÅÏµÈ´Ù.
  * ----------------------------------------------------------------- */
 typedef struct smiDiskTableSpaceAttr
 {
-    smFileID              mNewFileID;      /* ë‹¤ìŒì— ìƒì„±ë  datafile ID */
-    UInt                  mExtPageCount;   /* extentì˜ í¬ê¸°(page count) */
-    smiExtMgmtType        mExtMgmtType;    /* Extent ê´€ë¦¬ë°©ì‹ */
-    smiSegMgmtType        mSegMgmtType;    /* Segment ê´€ë¦¬ë°©ì‹ */
+    smFileID              mNewFileID;      /* ´ÙÀ½¿¡ »ı¼ºµÉ datafile ID */
+    UInt                  mExtPageCount;   /* extentÀÇ Å©±â(page count) */
+    smiExtMgmtType        mExtMgmtType;    /* Extent °ü¸®¹æ½Ä */
+    smiSegMgmtType        mSegMgmtType;    /* Segment °ü¸®¹æ½Ä */
 } smiDiskTableSpaceAttr;
 
 typedef struct smiMemTableSpaceAttr
@@ -768,108 +782,108 @@ typedef struct smiVolTableSpaceAttr
 /*
   PRJ-1548 User Memory Tablespace
 
-  ë…¸ë“œ ì†ì„± íƒ€ì… ì •ì˜
+  ³ëµå ¼Ó¼º Å¸ÀÔ Á¤ÀÇ
 
-  Loganchorì— ê°€ë³€ê¸¸ì´ì˜ì—­ì„ ë¡œë“œí• ë•Œ, smiNodeAttrHeadë¥¼
-  ë¨¼ì € ì½ì–´ì„œ ë…¸ë“œì†ì„±ì„ ì•Œì•„ë‚¸ í›„, ë‹¤ìŒ ë…¸ë“œê°€ ì €ì¥ëœ ì˜¤í”„ì…‹ì„
-  ì•Œì•„ë‚¸ë‹¤.
+  Loganchor¿¡ °¡º¯±æÀÌ¿µ¿ªÀ» ·ÎµåÇÒ¶§, smiNodeAttrHead¸¦
+  ¸ÕÀú ÀĞ¾î¼­ ³ëµå¼Ó¼ºÀ» ¾Ë¾Æ³½ ÈÄ, ´ÙÀ½ ³ëµå°¡ ÀúÀåµÈ ¿ÀÇÁ¼ÂÀ»
+  ¾Ë¾Æ³½´Ù.
 */
 typedef enum smiNodeAttrType
 {
-    SMI_TBS_ATTR        = 1,  // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œì†ì„±
-    SMI_CHKPTPATH_ATTR  = 2,  // CHECKPOINT PATH ë…¸ë“œì†ì„±
-    SMI_DBF_ATTR        = 3,  // ë°ì´íƒ€íŒŒì¼ ë…¸ë“œì†ì„±
-    SMI_CHKPTIMG_ATTR   = 4,  // CHECKPOINT IMAGE ë…¸ë“œì†ì„±
-    SMI_SBUFFER_ATTR    = 5   // Second Buffer File ë…¸ë“œ ì†ì„± 
+    SMI_TBS_ATTR        = 1,  // Å×ÀÌºí½ºÆäÀÌ½º ³ëµå¼Ó¼º
+    SMI_CHKPTPATH_ATTR  = 2,  // CHECKPOINT PATH ³ëµå¼Ó¼º
+    SMI_DBF_ATTR        = 3,  // µ¥ÀÌÅ¸ÆÄÀÏ ³ëµå¼Ó¼º
+    SMI_CHKPTIMG_ATTR   = 4,  // CHECKPOINT IMAGE ³ëµå¼Ó¼º
+    SMI_SBUFFER_ATTR    = 5   // Second Buffer File ³ëµå ¼Ó¼º
 } smiNodeAttrType;
 
 /* --------------------------------------------------------------------
- * Description : tablespace ì •ë³´
+ * Description : tablespace Á¤º¸
  *
- * IDëŠ” ì…ë ¥ê°’ìœ¼ë¡œëŠ” ì–´ë–¤ ì˜ë¯¸ë¥¼ ì§€ë‹ˆì§€ ì•Šê³  ì˜¤ì§ ì¶œë ¥ê°’ìœ¼ë¡œë§Œ ì‚¬ìš©ëœë‹¤.
- * tablespace create ì‹œ ë¶€ì—¬ëœ ì•„ì´ë””ê°€ ë¦¬í„´ëœë‹¤.
+ * ID´Â ÀÔ·Â°ªÀ¸·Î´Â ¾î¶² ÀÇ¹Ì¸¦ Áö´ÏÁö ¾Ê°í ¿ÀÁ÷ Ãâ·Â°ªÀ¸·Î¸¸ »ç¿ëµÈ´Ù.
+ * tablespace create ½Ã ºÎ¿©µÈ ¾ÆÀÌµğ°¡ ¸®ÅÏµÈ´Ù.
  * ----------------------------------------------------------------- */
 typedef struct smiTableSpaceAttr
 {
-    smiNodeAttrType       mAttrType; // PRJ-1548 ë°˜ë“œì‹œ ì²˜ìŒì— ì €ì¥
-    scSpaceID             mID;    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì•„ì´ë””
-    // NULLë¡œ ëë‚˜ëŠ” ë¬¸ìì—´
+    smiNodeAttrType       mAttrType; // PRJ-1548 ¹İµå½Ã Ã³À½¿¡ ÀúÀå
+    scSpaceID             mID;    // Å×ÀÌºí½ºÆäÀÌ½º ¾ÆÀÌµğ
+    // NULL·Î ³¡³ª´Â ¹®ÀÚ¿­
     SChar                 mName[SMI_MAX_TABLESPACE_NAME_LEN + 1];
     UInt                  mNameLength;
 
-    // í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ ì†ì„± FLAG
+    // Å×ÀÌºí ½ºÆäÀÌ½º ¼Ó¼º FLAG
     UInt                  mAttrFlag;
 
-    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ìƒíƒœ(Creating, Droppping, Online, Offline...)
-    // ì´ ìƒíƒœëŠ” Log Anchorì— ì €ì¥ë˜ëŠ” ìƒíƒœì´ë‹¤.
-    // sctTableSpaceNode.mStateì™€ í˜¼ë™í•˜ì—¬ ì“°ëŠ” ê²ƒì„ ë§‰ê¸° ìœ„í•´
-    // ë³€ìˆ˜ì´ë¦„ì— LA(Log Anchor)ì— ì €ì¥ë˜ëŠ” Stateì„ì„ ëª…ì‹œí•˜ì˜€ë‹¤.
+    // Å×ÀÌºí½ºÆäÀÌ½º »óÅÂ(Creating, Droppping, Online, Offline...)
+    // ÀÌ »óÅÂ´Â Log Anchor¿¡ ÀúÀåµÇ´Â »óÅÂÀÌ´Ù.
+    // sctTableSpaceNode.mState¿Í È¥µ¿ÇÏ¿© ¾²´Â °ÍÀ» ¸·±â À§ÇØ
+    // º¯¼öÀÌ¸§¿¡ LA(Log Anchor)¿¡ ÀúÀåµÇ´Â StateÀÓÀ» ¸í½ÃÇÏ¿´´Ù.
     UInt                  mTBSStateOnLA;
-    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì¢…ë¥˜
+    // Å×ÀÌºí½ºÆäÀÌ½º Á¾·ù
     // User || System, Disk || Memory, Data || Temp || Undo
     smiTableSpaceType     mType;
-    // ì˜¤í”„ë¼ì¸ íƒ€ì…(None, Normal, Immediate)
+    // ¿ÀÇÁ¶óÀÎ Å¸ÀÔ(None, Normal, Immediate)
     smiDiskTableSpaceAttr mDiskAttr;
     smiMemTableSpaceAttr  mMemAttr;
     smiVolTableSpaceAttr  mVolAttr;
 } smiTableSpaceAttr;
 
 /* --------------------------------------------------------------------
- * Description : data fileì˜ ì •ë³´
+ * Description : data fileÀÇ Á¤º¸
  *
- * ê° sizeëŠ” tbs í™•ì¥ í¬ê¸°ì˜ ë°°ìˆ˜ë¡œ align ëœë‹¤.
- * tbs í™•ì¥ í¬ê¸°ëŠ” tablespaceê°€ í•œë²ˆì— í• ë‹¹í•˜ëŠ” extentì˜ ê°œìˆ˜ *
- * extentì˜ í¬ê¸°ì´ë‹¤.
- * next sizeëŠ” tbsí™•ì¥ í¬ê¸°ë³´ë‹¤ëŠ” ì»¤ì•¼ í•œë‹¤.
- * createTableSpaceì‹œì— init sizeì™€ curr sizeì˜ ê°’ì€ ë°˜ë“œì‹œ
- * ê°™ì•„ì•¼ í•œë‹¤. extendê°€ ë°œìƒí•˜ë©´ ì´ ë‘ ê°’ì€ ë‹¬ë¼ì§„ë‹¤.
+ * °¢ size´Â tbs È®Àå Å©±âÀÇ ¹è¼ö·Î align µÈ´Ù.
+ * tbs È®Àå Å©±â´Â tablespace°¡ ÇÑ¹ø¿¡ ÇÒ´çÇÏ´Â extentÀÇ °³¼ö *
+ * extentÀÇ Å©±âÀÌ´Ù.
+ * next size´Â tbsÈ®Àå Å©±âº¸´Ù´Â Ä¿¾ß ÇÑ´Ù.
+ * createTableSpace½Ã¿¡ init size¿Í curr sizeÀÇ °ªÀº ¹İµå½Ã
+ * °°¾Æ¾ß ÇÑ´Ù. extend°¡ ¹ß»ıÇÏ¸é ÀÌ µÎ °ªÀº ´Ş¶óÁø´Ù.
  *
  * ----------------------------------------------------------------- */
 //incremental backup
 typedef struct smiDataFileDescSlotID
 {
-    /*datafile descriptor slotì´ ìœ„ì¹˜í•œ block ID*/
+    /*datafile descriptor slotÀÌ À§Ä¡ÇÑ block ID*/
     UInt             mBlockID;
 
-    /*datafile descriptor blockë‚´ì—ì„œì˜ slot index*/
+    /*datafile descriptor block³»¿¡¼­ÀÇ slot index*/
     UInt             mSlotIdx;
 }smiDataFileDescSlotID;
 
 typedef struct smiDataFileAttr
 {
-    smiNodeAttrType       mAttrType;  // PRJ-1548 ë°˜ë“œì‹œ ì²˜ìŒì— ì €ì¥
+    smiNodeAttrType       mAttrType;  // PRJ-1548 ¹İµå½Ã Ã³À½¿¡ ÀúÀå
     scSpaceID             mSpaceID;
     SChar                 mName[SMI_MAX_DATAFILE_NAME_LEN];
     UInt                  mNameLength;
     smFileID              mID;
 
-    // unlimitedì¼ ê²½ìš° 0ì´ setë˜ë©°
-    // system max sizeë¡œ setëœë‹¤.
-    ULong                 mMaxSize;      /* datafileì˜ ìµœëŒ€ page ê°œìˆ˜ */
-    ULong                 mNextSize;     /* datafileì˜ í™•ì¥ page ê°œìˆ˜ */
-    ULong                 mCurrSize;     /* datafileì˜ ì´ page ê°œìˆ˜ */
-    ULong                 mInitSize;     /* datafileì˜ ì´ˆê¸° page ê°œìˆ˜ */
-    idBool                mIsAutoExtend; /* ë°ì´íƒ€íŒŒì¼ì˜ ìë™í™•ì¥ ì—¬ë¶€ */
-    UInt                  mState;        /* ë°ì´íƒ€ íŒŒì¼ì˜ìƒíƒœ       */
-    smiDataFileMode       mCreateMode;   /* datafile ìƒì„±? reuse ? */
-    smLSN                 mCreateLSN;    /* ë°ì´íƒ€íŒŒì¼ ìƒì„± LSN */
+    // unlimitedÀÏ °æ¿ì 0ÀÌ setµÇ¸ç
+    // system max size·Î setµÈ´Ù.
+    ULong                 mMaxSize;      /* datafileÀÇ ÃÖ´ë page °³¼ö */
+    ULong                 mNextSize;     /* datafileÀÇ È®Àå page °³¼ö */
+    ULong                 mCurrSize;     /* datafileÀÇ ÃÑ page °³¼ö */
+    ULong                 mInitSize;     /* datafileÀÇ ÃÊ±â page °³¼ö */
+    idBool                mIsAutoExtend; /* µ¥ÀÌÅ¸ÆÄÀÏÀÇ ÀÚµ¿È®Àå ¿©ºÎ */
+    UInt                  mState;        /* µ¥ÀÌÅ¸ ÆÄÀÏÀÇ»óÅÂ       */
+    smiDataFileMode       mCreateMode;   /* datafile »ı¼º? reuse ? */
+    smLSN                 mCreateLSN;    /* µ¥ÀÌÅ¸ÆÄÀÏ »ı¼º LSN */
     //PROJ-2133 incremental backup
     smiDataFileDescSlotID  mDataFileDescSlotID;
 } smiDataFileAttr;
 
 /* --------------------------------------------------------------------
- * Description : checkpoint path ì •ë³´
+ * Description : checkpoint path Á¤º¸
  * ----------------------------------------------------------------- */
 typedef struct smiChkptPathAttr
 {
     smiNodeAttrType       mAttrType;
-    scSpaceID             mSpaceID; // PRJ-1548 ë°˜ë“œì‹œ ì²˜ìŒì— ì €ì¥
-    // NULL ë¡œ ëë‚˜ëŠ” ë¬¸ìì—´
+    scSpaceID             mSpaceID; // PRJ-1548 ¹İµå½Ã Ã³À½¿¡ ÀúÀå
+    // NULL ·Î ³¡³ª´Â ¹®ÀÚ¿­
     SChar                 mChkptPath[SMI_MAX_CHKPT_PATH_NAME_LEN+1];
 } smiChkptPathAttr;
 
 
-/* ì—¬ëŸ¬ ê°œì˜ smiChkptPathAttrì„ ë‹¨ë°©í–¥ Linked Listë¡œ ì—°ê²°í•œ ìë£Œêµ¬ì¡° */
+/* ¿©·¯ °³ÀÇ smiChkptPathAttrÀ» ´Ü¹æÇâ Linked List·Î ¿¬°áÇÑ ÀÚ·á±¸Á¶ */
 typedef struct smiChkptPathAttrList
 {
     smiChkptPathAttr       mCPathAttr;
@@ -878,24 +892,24 @@ typedef struct smiChkptPathAttrList
 
 
 /**********************************************************************
- * Log anchor fileì— ì €ì¥ë˜ëŠ” Secondaty Buffer file ì˜ ì •ë³´ 
+ * Log anchor file¿¡ ÀúÀåµÇ´Â Secondaty Buffer file ÀÇ Á¤º¸
  **********************************************************************/
 typedef struct smiSBufferFileAttr
 {
-    smiNodeAttrType       mAttrType;     // PRJ-1548 ë°˜ë“œì‹œ ì²˜ìŒì— ì €ì¥. 
-    SChar                 mName[SMI_MAX_SBUFFER_FILE_NAME_LEN];  // Fileì´ ì €ì¥ëœ ìœ„ì¹˜
-    UInt                  mNameLength;   // ì´ë¦„ì˜ ê¸¸ì´
-    ULong                 mPageCnt;      // Secondaty Buffer fileì˜ ìµœëŒ€ page ê°œìˆ˜
-    smiDataFileState      mState;        // Fileì˜ ìƒíƒœ (online, offline)
-    smLSN                 mCreateLSN;    // ìƒì„± LSN
+    smiNodeAttrType       mAttrType;     // PRJ-1548 ¹İµå½Ã Ã³À½¿¡ ÀúÀå.
+    SChar                 mName[SMI_MAX_SBUFFER_FILE_NAME_LEN];  // FileÀÌ ÀúÀåµÈ À§Ä¡
+    UInt                  mNameLength;   // ÀÌ¸§ÀÇ ±æÀÌ
+    ULong                 mPageCnt;      // Secondaty Buffer fileÀÇ ÃÖ´ë page °³¼ö
+    smiDataFileState      mState;        // FileÀÇ »óÅÂ (online, offline)
+    smLSN                 mCreateLSN;    // »ı¼º LSN
 } smiSBufferFileAttr;
 
 
 /* ------------------------------------------------
  * Description : Reserved ID of tablespace
  *
- * ì•„ë˜ì˜ ê¸°ë³¸ì ìœ¼ë¡œ ìƒì„±ë˜ëŠ” tablespaceë¥¼ ìœ„í•´ 0ë¶€í„° 3ë²ˆ IDê¹Œì§€
- * ì˜ˆì•½í•˜ë©°, ê·¸ ì´í›„ IDëŠ” user tablespaceì— í• ë‹¹ ê°€ëŠ¥í•˜ë‹¤.
+ * ¾Æ·¡ÀÇ ±âº»ÀûÀ¸·Î »ı¼ºµÇ´Â tablespace¸¦ À§ÇØ 0ºÎÅÍ 3¹ø ID±îÁö
+ * ¿¹¾àÇÏ¸ç, ±× ÀÌÈÄ ID´Â user tablespace¿¡ ÇÒ´ç °¡´ÉÇÏ´Ù.
  * ----------------------------------------------*/
 #define SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC      ((scSpaceID)0)
 #define SMI_ID_TABLESPACE_SYSTEM_MEMORY_DATA     ((scSpaceID)1)
@@ -909,8 +923,8 @@ typedef struct smiSBufferFileAttr
 #define SMI_TABLESPACE_NAME_SYSTEM_DISK_UNDO     "SYS_TBS_DISK_UNDO"
 #define SMI_TABLESPACE_NAME_SYSTEM_DISK_TEMP     "SYS_TBS_DISK_TEMP"
 
-/* System Tablespaceë“¤ì˜ Attribute Flag */
-// ì•ˆì •ì„±ì„ ìœ„í•´ Dictionary Tablespaceì— ëŒ€í•œ Logë¥¼ ì••ì¶•í•˜ì§€ ì•ŠëŠ”ë‹¤.
+/* System TablespaceµéÀÇ Attribute Flag */
+// ¾ÈÁ¤¼ºÀ» À§ÇØ Dictionary Tablespace¿¡ ´ëÇÑ Log¸¦ ¾ĞÃàÇÏÁö ¾Ê´Â´Ù.
 #define SMI_TABLESPACE_ATTRFLAG_SYSTEM_MEMORY_DIC \
         ( SMI_TBS_ATTR_LOG_COMPRESS_FALSE )
 
@@ -972,30 +986,50 @@ typedef enum
 
 /* ----------------------------------------------------------------------------
  *   PROJ-1362 Large Record & Internal LOB support
- *   LobLocatorëŠ” ë‹¤ìŒê³¼ ê°™ì´ ì •ì˜ëœë‹¤.
- *   [TransactionID | LobCursorID ] =  smLobLocator
- *     32bit           32bit        =  64bit.
+ *   LobLocator´Â ´ÙÀ½°ú °°ÀÌ Á¤ÀÇµÈ´Ù.
+ *   [ Shard flag | TransactionID | LobCursorID ] =  smLobLocator
+ *      1bit      |  31bit        |  32bit        =  64bit.
  * --------------------------------------------------------------------------*/
+#define  SMI_LOB_LOCATOR_SHARD_MASK  (0x80000000)
+#define  SMI_LOB_SHARD_FLAG_BIT_SIZE (ID_ULONG(1))
+#define  SMI_LOB_SHARD_FLAG_MASK     ((ID_ULONG(1) << SMI_LOB_SHARD_FLAG_BIT_SIZE) - ID_ULONG(1))
+#define  SMI_LOB_TRANSID_BIT_SIZE    (ID_ULONG(31))
+#define  SMI_LOB_TRANSID_MASK        ((ID_ULONG(1) << SMI_LOB_TRANSID_BIT_SIZE) - ID_ULONG(1))
 #define  SMI_LOB_CURSORID_BIT_SIZE   (ID_ULONG(32))
 #define  SMI_LOB_CURSORID_MASK       ((ID_ULONG(1) << SMI_LOB_CURSORID_BIT_SIZE) - ID_ULONG(1))
 
-#define  SMI_MAKE_LOB_TRANSID(locator)  ( (locator) >>  SMI_LOB_CURSORID_BIT_SIZE)
+#define  SMI_MAKE_LOB_SHARD_FLAG(locator)                                      \
+    ( ((locator) >> (SMI_LOB_CURSORID_BIT_SIZE + SMI_LOB_TRANSID_BIT_SIZE) ) & \
+      SMI_LOB_SHARD_FLAG_MASK )
+
+#define  SMI_MAKE_LOB_TRANSID(locator)                                         \
+    ( ((locator) >> SMI_LOB_CURSORID_BIT_SIZE) & SMI_LOB_TRANSID_MASK )
+
 #define  SMI_MAKE_LOB_CURSORID(locator) ( (locator) & SMI_LOB_CURSORID_MASK)
 #define  SMI_MAKE_LOB_LOCATOR(tid,cursorid) ( ((smLobLocator) (tid) << SMI_LOB_CURSORID_BIT_SIZE) | (cursorid))
 
+#define  SMI_MAKE_SHARD_LOB_LOCATOR(tid,cursorid)                              \
+    ( ((smLobLocator) ((tid) | SMI_LOB_LOCATOR_SHARD_MASK)                     \
+                       << SMI_LOB_CURSORID_BIT_SIZE) | (cursorid) )
+
+#define  SMI_IS_SHARD_LOB_LOCATOR(locator)                                     \
+    (idBool)( ( SMI_MAKE_LOB_SHARD_FLAG((locator)) == 1 ) &&                   \
+              ( SMI_IS_NULL_LOCATOR((locator)) == 0 ) )
+
 #define  SMI_NULL_LOCATOR  SMI_MAKE_LOB_LOCATOR(SM_NULL_TID, 0);
 
-#define  SMI_IS_NULL_LOCATOR(locator)                                         \
-            ( (((locator) >>  SMI_LOB_CURSORID_BIT_SIZE) == SM_NULL_TID) && \
-              (((locator) & SMI_LOB_CURSORID_MASK) == 0 ) )
+#define  SMI_IS_NULL_LOCATOR(locator)                                          \
+    ( (SMI_MAKE_LOB_TRANSID((locator)) == SM_NULL_TID) &&                      \
+      (((locator) & SMI_LOB_CURSORID_MASK) == 0) )
 
+#define SMI_GET_SESSION_STATISTICS( aTrans ) (((smxTrans*)aTrans)->mStatistics)
 
 typedef enum
 {
     SMI_LOB_READ_MODE = 0,
     SMI_LOB_READ_WRITE_MODE,
     SMI_LOB_TABLE_CURSOR_MODE,
-    SMI_LOB_READ_LAST_VERSION_MODE
+    SMI_LOB_READ_LAST_VERSION_MODE  /* not used */
 } smiLobCursorMode;
 
 typedef enum
@@ -1017,20 +1051,20 @@ typedef enum
 # define SMI_COLUMN_TYPE_FIXED             (0x00000000)
 # define SMI_COLUMN_TYPE_VARIABLE          (0x00000001)
 # define SMI_COLUMN_TYPE_LOB               (0x00000002)
-/* BUG-43840 
- * PROJ-2419 UnitedVar ì ìš©ë˜ê¸° ì´ì „ì˜ Variable íƒ€ì…ì¸ LargeVarë¥¼
- * ì‚¬ìš© í•˜ê¸° ìœ„í•´ Column Typeì— LargeVarë¥¼ ì¶”ê°€í•˜ì˜€ë‹¤.
- * Geometry Type ì€ í•­ìƒ LargeVar í˜•íƒœë¡œ ì €ì¥ëœë‹¤. */
+/* BUG-43840
+ * PROJ-2419 UnitedVar Àû¿ëµÇ±â ÀÌÀüÀÇ Variable Å¸ÀÔÀÎ LargeVar¸¦
+ * »ç¿ë ÇÏ±â À§ÇØ Column Type¿¡ LargeVar¸¦ Ãß°¡ÇÏ¿´´Ù.
+ * Geometry Type Àº Ç×»ó LargeVar ÇüÅÂ·Î ÀúÀåµÈ´Ù. */
 # define SMI_COLUMN_TYPE_VARIABLE_LARGE      (0x00000003)
 
-// PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
-// memory tempì—ë§Œ ì‚¬ìš©ë˜ëŠ” column type
+// PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
+// memory temp¿¡¸¸ »ç¿ëµÇ´Â column type
 # define SMI_COLUMN_TYPE_TEMP_1B           (0x00010000)
 # define SMI_COLUMN_TYPE_TEMP_2B           (0x00020000)
 # define SMI_COLUMN_TYPE_TEMP_4B           (0x00030000)
 
 /* smiColumn.flag                                    */
-// Variable Columnì˜ IN/OUT MODE
+// Variable ColumnÀÇ IN/OUT MODE
 # define SMI_COLUMN_MODE_MASK              (0x00000004)
 # define SMI_COLUMN_MODE_IN                (0x00000000)
 # define SMI_COLUMN_MODE_OUT               (0x00000004)
@@ -1041,7 +1075,7 @@ typedef enum
 # define SMI_COLUMN_ORDER_DESCENDING       (0x00000008)
 
 /* smiColumn.flag                                     */
-// Columnì˜ ì €ì¥ ë§¤ì²´ì— ëŒ€í•œ ì •ë³´
+// ColumnÀÇ ÀúÀå ¸ÅÃ¼¿¡ ´ëÇÑ Á¤º¸
 # define SMI_COLUMN_STORAGE_MASK            (0x00000010)
 # define SMI_COLUMN_STORAGE_MEMORY          (0x00000000)
 # define SMI_COLUMN_STORAGE_DISK            (0x00000010)
@@ -1063,20 +1097,20 @@ typedef enum
 # define SMI_COLUMN_USE_NOBUFFER            (0x00000080)
 
 /* smiColumn.flag */
-/* SMì´ ì»¬ëŸ¼ì„ ì—¬ëŸ¬ row pieceì—
- * ë‚˜ëˆ„ì–´ ì €ì¥í•´ë„ ë˜ëŠ”ì§€ ì—¬ë¶€ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤. */
+/* SMÀÌ ÄÃ·³À» ¿©·¯ row piece¿¡
+ * ³ª´©¾î ÀúÀåÇØµµ µÇ´ÂÁö ¿©ºÎ¸¦ ³ªÅ¸³½´Ù. */
 # define SMI_COLUMN_DATA_STORE_DIVISIBLE_MASK  (0x00000100)
 # define SMI_COLUMN_DATA_STORE_DIVISIBLE_FALSE (0x00000000)
 # define SMI_COLUMN_DATA_STORE_DIVISIBLE_TRUE  (0x00000100)
 
-// PROJ-1872 Disk index ì €ì¥ êµ¬ì¡° ìµœì í™”
+// PROJ-1872 Disk index ÀúÀå ±¸Á¶ ÃÖÀûÈ­
 /* smiColumn.flag */
-/* Lengthê°€ ì•Œë ¤ì§„ Columnì¸ì§€, ë‹¤ë£¨ ë¶™ëŠ”ì§€ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤ */
+/* Length°¡ ¾Ë·ÁÁø ColumnÀÎÁö, ´Ù·ç ºÙ´ÂÁö¸¦ ³ªÅ¸³½´Ù */
 # define SMI_COLUMN_LENGTH_TYPE_MASK           (0x00000200)
 # define SMI_COLUMN_LENGTH_TYPE_KNOWN          (0x00000000)
 # define SMI_COLUMN_LENGTH_TYPE_UNKNOWN        (0x00000200)
 
-/* findCompare í•¨ìˆ˜ì—ì„œ í•„ìš”í•œ flag ì •ë³´ */
+/* findCompare ÇÔ¼ö¿¡¼­ ÇÊ¿äÇÑ flag Á¤º¸ */
 # define SMI_COLUMN_COMPARE_TYPE_MASK          (0x00000C00)
 # define SMI_COLUMN_COMPARE_NORMAL             (0x00000000)
 # define SMI_COLUMN_COMPARE_KEY_AND_VROW       (0x00000400)
@@ -1084,35 +1118,35 @@ typedef enum
 # define SMI_COLUMN_COMPARE_DIRECT_KEY         (0x00000C00) /* PROJ-2433 */
 
 /* smiColumn.flag */
-/* PROJ-1597 Temp record size ì œì•½ì œê±°
-   length-unknown typeì´ì§€ë§Œ ìµœëŒ€ column precisionë§Œí¼
-   ê³µê°„ì„ í™•ë³´í•´ë†”ì•¼ í•˜ëŠ” ì»¬ëŸ¼ì„ì„ í‘œì‹œ
-   ì´ ì†ì„±ì€ temp tableì˜ aggregation columnì²˜ëŸ¼
-   updateê°€ í•„ìš”í•œ ì»¬ëŸ¼ë“¤ì— ëŒ€í•´ í•„ìš”í•˜ë‹¤.
-   SMI_COLUMN_LENGTH_TYPE_UNKNOWN ì´ë©´ì„œ updateë˜ëŠ” ì»¬ëŸ¼ì´ë©´
-   ì´ ì†ì„±ì„ ì¼œì•¼ í•œë‹¤. (temp tableì—ë§Œ ì ìš©ë¨) */
+/* PROJ-1597 Temp record size Á¦¾àÁ¦°Å
+   length-unknown typeÀÌÁö¸¸ ÃÖ´ë column precision¸¸Å­
+   °ø°£À» È®º¸ÇØ³ö¾ß ÇÏ´Â ÄÃ·³ÀÓÀ» Ç¥½Ã
+   ÀÌ ¼Ó¼ºÀº temp tableÀÇ aggregation columnÃ³·³
+   update°¡ ÇÊ¿äÇÑ ÄÃ·³µé¿¡ ´ëÇØ ÇÊ¿äÇÏ´Ù.
+   SMI_COLUMN_LENGTH_TYPE_UNKNOWN ÀÌ¸é¼­ updateµÇ´Â ÄÃ·³ÀÌ¸é
+   ÀÌ ¼Ó¼ºÀ» ÄÑ¾ß ÇÑ´Ù. (temp table¿¡¸¸ Àû¿ëµÊ) */
 # define SMI_COLUMN_ALLOC_FIXED_SIZE_MASK      (0x00001000)
 # define SMI_COLUMN_ALLOC_FIXED_SIZE_FALSE     (0x00000000)
 # define SMI_COLUMN_ALLOC_FIXED_SIZE_TRUE      (0x00001000)
 
 // PROJ-2264
-// compression column ì—¬ë¶€ë¥¼ íŒë‹¨í•˜ë° í•„ìš”í•œ flag ì •ë³´
+// compression column ¿©ºÎ¸¦ ÆÇ´ÜÇÏµ¥ ÇÊ¿äÇÑ flag Á¤º¸
 # define SMI_COLUMN_COMPRESSION_MASK           (0x00002000)
 # define SMI_COLUMN_COMPRESSION_FALSE          (0x00000000)
 # define SMI_COLUMN_COMPRESSION_TRUE           (0x00002000)
 
 // PROJ-2429 Dictionary based data compress for on-disk DB
-// Dictionary Tableì˜ columnì´ ì–´ëŠ íƒ€ì…ì˜ table columnì˜ 
-// ì‹¤ì œ ë°ì´í„°ë¥¼ ê°€ì§€ê³ ìˆëŠ”ì§€ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤. 
+// Dictionary TableÀÇ columnÀÌ ¾î´À Å¸ÀÔÀÇ table columnÀÇ
+// ½ÇÁ¦ µ¥ÀÌÅÍ¸¦ °¡Áö°íÀÖ´ÂÁö¸¦ ³ªÅ¸³½´Ù.
 # define SMI_COLUMN_COMPRESSION_TARGET_MASK    (0x00008000)
 # define SMI_COLUMN_COMPRESSION_TARGET_MEMORY  (0x00000000)
 # define SMI_COLUMN_COMPRESSION_TARGET_DISK    (0x00008000)
 
-// PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
-// ì£¼ì˜ SMI_COLUMN_TYPE_MASKì—ì„œ (0x000F0000)ë¥¼ ì‚¬ìš©í•˜ê³  ìˆë‹¤.
+// PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
+// ÁÖÀÇ SMI_COLUMN_TYPE_MASK¿¡¼­ (0x000F0000)¸¦ »ç¿ëÇÏ°í ÀÖ´Ù.
 
-/* PROJ-2435 ORDER BY NULLS OPTION 
- * Sort Temp ì—ì„œë§Œ ì‚¬ìš©. 
+/* PROJ-2435 ORDER BY NULLS OPTION
+ * Sort Temp ¿¡¼­¸¸ »ç¿ë.
  */
 # define SMI_COLUMN_NULLS_ORDER_MASK           (0x00300000)
 # define SMI_COLUMN_NULLS_ORDER_NONE           (0x00000000)
@@ -1135,15 +1169,17 @@ typedef enum
 # define SMI_TABLE_LOCK_ESCALATION_DISABLE (0x00000000)
 # define SMI_TABLE_LOCK_ESCALATION_ENABLE  (0x00000010)
 
+#if 0 // not used
 typedef enum smiDMLType
 {
     SMI_DML_INSERT,
     SMI_DML_UPDATE,
     SMI_DML_DELETE
 } smiDMLType;
+#endif
 
 # define SMI_TABLE_TYPE_COUNT              (7)
-# define SMI_TABLE_TYPE_TO_ID( aType )     ((aType & SMI_TABLE_TYPE_MASK) >> 12) 
+# define SMI_TABLE_TYPE_TO_ID( aType )     (((aType) & SMI_TABLE_TYPE_MASK) >> 12)
 # define SMI_TABLE_TYPE_MASK               (0x0000F000)
 # define SMI_TABLE_META                    (0x00000000) // Catalog Tables
 # define SMI_TABLE_TEMP_LEGACY             (0x00001000) // Temporary Tables
@@ -1154,8 +1190,8 @@ typedef enum smiDMLType
 # define SMI_TABLE_REMOTE                  (0x00006000) // Remote Query
 
 /* PROJ-2083 */
-/* Dual Table ì—¬ë¶€ */
-# define SMI_TABLE_DUAL_MASK               (0x00000100) 
+/* Dual Table ¿©ºÎ */
+# define SMI_TABLE_DUAL_MASK               (0x00000100)
 # define SMI_TABLE_DUAL_TRUE               (0x00000000)
 # define SMI_TABLE_DUAL_FALSE              (0x00000100)
 
@@ -1173,7 +1209,7 @@ typedef enum smiDMLType
 
 # define SMI_TABLE_TYPE_IS_META(a)     (((((a)->mFlag) & SMI_TABLE_TYPE_MASK) \
                                        == SMI_TABLE_META) ? ID_TRUE : ID_FALSE)
-/* not used 
+/* not used
 # define SMI_TABLE_TYPE_IS_TEMP(a)     (((((a)->mFlag) & SMI_TABLE_TYPE_MASK) \
                                        == SMI_TABLE_TEMP) ? ID_TRUE : ID_FALSE)
 */
@@ -1193,16 +1229,16 @@ typedef enum smiDMLType
                                        == SMI_TABLE_REMOTE) ? ID_TRUE : ID_FALSE)
 */
 /* PROJ-1665 */
-/* Tableìƒíƒœê°€ Consistent í•œì§€ ì—¬ë¶€ ì •ë³´ */
+/* Table»óÅÂ°¡ Consistent ÇÑÁö ¿©ºÎ Á¤º¸ */
 /*
 # define SMI_TABLE_CONSISTENT_MASK         (0x00010000)
 # define SMI_TABLE_CONSISTENT              (0x00000000)
 # define SMI_TABLE_INCONSISTENT            (0x00010000)
- * PROJ-2162 Suspended ( => FlagëŒ€ì‹  IsConsistentë¡œ ë…ë¦½ì ìœ¼ë¡œ ì‚¬ìš©ë¨ )
+ * PROJ-2162 Suspended ( => Flag´ë½Å IsConsistent·Î µ¶¸³ÀûÀ¸·Î »ç¿ëµÊ )
  */
 
 /* PROJ-1665 */
-/* Table Logging ì—¬ë¶€ ( Direct-Path INSERT ì‹œì—ë§Œ ìœ íš¨ ) */
+/* Table Logging ¿©ºÎ ( Direct-Path INSERT ½Ã¿¡¸¸ À¯È¿ ) */
 # define SMI_TABLE_LOGGING_MASK            (0x00020000)
 # define SMI_TABLE_LOGGING                 (0x00000000)
 # define SMI_TABLE_NOLOGGING               (0x00020000)
@@ -1212,45 +1248,45 @@ typedef enum smiDMLType
 
 /* TASK-2398 Log Compress */
 # define SMI_TABLE_LOG_COMPRESS_MASK       (0x00040000)
-// Maskì— í•´ë‹¹í•˜ëŠ” ëª¨ë“  Bitê°€ 0ì¸ í”Œë˜ê·¸ë¥¼ Defaultë¡œ ì‚¬ìš©í•œë‹¤.
-// Default => Tableì˜ ë¡œê·¸ë¥¼ ì••ì¶• ( ê°’ì´ 0 )
+// Mask¿¡ ÇØ´çÇÏ´Â ¸ğµç Bit°¡ 0ÀÎ ÇÃ·¡±×¸¦ Default·Î »ç¿ëÇÑ´Ù.
+// Default => TableÀÇ ·Î±×¸¦ ¾ĞÃà ( °ªÀÌ 0 )
 # define SMI_TABLE_LOG_COMPRESS_TRUE       (0x00000000)
 # define SMI_TABLE_LOG_COMPRESS_FALSE      (0x00040000)
 
 
-/* TASK-2401 Disk/Memory í…Œì´ë¸”ì˜ Logë¶„ë¦¬
-   Meta Tableì— ëŒ€í•´ Log Flushì—¬ë¶€ ê²°ì •
+/* TASK-2401 Disk/Memory Å×ÀÌºíÀÇ LogºĞ¸®
+   Meta Table¿¡ ´ëÇØ Log Flush¿©ºÎ °áÁ¤
 
-   LFG=2ë¡œ ì„¤ì •ëœ ê²½ìš° Hybrid Transactionì´ Commití•  ê²½ìš°
-   Dependentí•œ LFGì— ëŒ€í•´ Flushë¥¼ í•˜ì—¬ì•¼ í•œë‹¤.
+   LFG=2·Î ¼³Á¤µÈ °æ¿ì Hybrid TransactionÀÌ CommitÇÒ °æ¿ì
+   DependentÇÑ LFG¿¡ ´ëÇØ Flush¸¦ ÇÏ¿©¾ß ÇÑ´Ù.
 
-   ì´ë•Œ Disk Tableì˜ Validationê³¼ì •ì—ì„œ Meta Tableì„ ì ‘ê·¼í•˜ê²Œ ë˜ì–´
-   í•­ìƒ Hybrid Transactionìœ¼ë¡œ ë¶„ë¥˜ë˜ëŠ” ë¬¸ì œë¥¼ í•´ê²°í•˜ê¸° ìœ„í•œ Flagì´ë‹¤.
+   ÀÌ¶§ Disk TableÀÇ Validation°úÁ¤¿¡¼­ Meta TableÀ» Á¢±ÙÇÏ°Ô µÇ¾î
+   Ç×»ó Hybrid TransactionÀ¸·Î ºĞ·ùµÇ´Â ¹®Á¦¸¦ ÇØ°áÇÏ±â À§ÇÑ FlagÀÌ´Ù.
 
-   => ë¬¸ì œì  :
-      Disk Tableì— ëŒ€í•œ DMLì‹œ Validationê³¼ì •ì—ì„œ
-      Tableì˜ Meta Tableì„ ì°¸ì¡°í•˜ê²Œ ëœë‹¤
-      ê·¸ëŸ°ë° Meta Tableì€ Memory Tableì´ê¸° ë•Œë¬¸ì—,
-      Memory Table(Meta)ì„ ì½ê³  Disk Tableì— DMLì„ í•˜ê²Œ ë˜ë©´
-      Hybrid Transactionìœ¼ë¡œ ë¶„ë¥˜ê°€ ë˜ì–´
-      Memory ë¡œê·¸ê°€ í•­ìƒ Flushë˜ëŠ” ë¬¸ì œê°€ ë°œìƒí•œë‹¤.
+   => ¹®Á¦Á¡ :
+      Disk Table¿¡ ´ëÇÑ DML½Ã Validation°úÁ¤¿¡¼­
+      TableÀÇ Meta TableÀ» ÂüÁ¶ÇÏ°Ô µÈ´Ù
+      ±×·±µ¥ Meta TableÀº Memory TableÀÌ±â ¶§¹®¿¡,
+      Memory Table(Meta)À» ÀĞ°í Disk Table¿¡ DMLÀ» ÇÏ°Ô µÇ¸é
+      Hybrid TransactionÀ¸·Î ºĞ·ù°¡ µÇ¾î
+      Memory ·Î±×°¡ Ç×»ó FlushµÇ´Â ¹®Á¦°¡ ¹ß»ıÇÑ´Ù.
 
-      => í•´ê²°ì±… :
-        Meta Tableì„ ì½ëŠ” ê²½ìš° Hybrid Transactionìœ¼ë¡œ ë¶„ë¥˜í•˜ì§€ ì•ŠëŠ” ëŒ€ì‹ 
-        Meta Tableì˜ ë³€ê²½ì‹œì— Memory Logë¥¼ Flushí•˜ë„ë¡ í•œë‹¤.
+      => ÇØ°áÃ¥ :
+        Meta TableÀ» ÀĞ´Â °æ¿ì Hybrid TransactionÀ¸·Î ºĞ·ùÇÏÁö ¾Ê´Â ´ë½Å
+        Meta TableÀÇ º¯°æ½Ã¿¡ Memory Log¸¦ FlushÇÏµµ·Ï ÇÑ´Ù.
 
-   => ë˜ë‹¤ë¥¸ ë¬¸ì œì  :
-      Meta Tableì¤‘ Replicationì˜ XSNê³¼ ê°™ì´ DMLê³¼ ê´€ê³„ì—†ì´ ë¹ˆë²ˆí•˜ê²Œ
-      ìˆ˜ì •ë˜ëŠ” Meta Tableì˜ ê²½ìš° ë§¤ë²ˆ Logë¥¼ Flushí•  ê²½ìš° ì„±ëŠ¥ì €í•˜ë°œìƒ
+   => ¶Ç´Ù¸¥ ¹®Á¦Á¡ :
+      Meta TableÁß ReplicationÀÇ XSN°ú °°ÀÌ DML°ú °ü°è¾øÀÌ ºó¹øÇÏ°Ô
+      ¼öÁ¤µÇ´Â Meta TableÀÇ °æ¿ì ¸Å¹ø Log¸¦ FlushÇÒ °æ¿ì ¼º´ÉÀúÇÏ¹ß»ı
 
-      => í•´ê²°ì±… :
-         Meta Tableë§ˆë‹¤ ë³€ê²½ì´ ë˜ì—ˆì„ ë•Œ Logë¥¼ Flushí• ì§€ ì—¬ë¶€ë¥¼
-         Flagë¡œ ë‘”ë‹¤.
-         ì´ Flagê°€ ì¼œì ¸ ìˆëŠ” ê²½ìš°ì—ë§Œ Meta Tableë³€ê²½í•œ Transactionì˜
-         Commitì‹œì— ë¡œê·¸ë¥¼ Flushí•˜ë„ë¡ í•œë‹¤.
+      => ÇØ°áÃ¥ :
+         Meta Table¸¶´Ù º¯°æÀÌ µÇ¾úÀ» ¶§ Log¸¦ FlushÇÒÁö ¿©ºÎ¸¦
+         Flag·Î µĞ´Ù.
+         ÀÌ Flag°¡ ÄÑÁ® ÀÖ´Â °æ¿ì¿¡¸¸ Meta Tableº¯°æÇÑ TransactionÀÇ
+         Commit½Ã¿¡ ·Î±×¸¦ FlushÇÏµµ·Ï ÇÑ´Ù.
  */
 # define SMI_TABLE_META_LOG_FLUSH_MASK     (0x00080000)
-// ê¸°ë³¸ê°’ ( Flush ì‹¤ì‹œ )ì„ 0ìœ¼ë¡œ ì„¤ì •
+// ±âº»°ª ( Flush ½Ç½Ã )À» 0À¸·Î ¼³Á¤
 # define SMI_TABLE_META_LOG_FLUSH_TRUE     (0x00000000)
 # define SMI_TABLE_META_LOG_FLUSH_FALSE    (0x00080000)
 
@@ -1259,18 +1295,18 @@ typedef enum smiDMLType
 # define SMI_TABLE_ENABLE_ALL_INDEX        (0x00000000) // Fixed Tables
 # define SMI_TABLE_DISABLE_ALL_INDEX       (0x00100000) // Fixed Tables
 
-// PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
-// SUPPLEMENTAL LOGGINGí•´ì•¼í•˜ëŠ”ì§€ ì—¬ë¶€ í”Œë˜ê·¸ 
+// PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
+// SUPPLEMENTAL LOGGINGÇØ¾ßÇÏ´ÂÁö ¿©ºÎ ÇÃ·¡±×
 # define SMI_TABLE_SUPPLEMENTAL_LOGGING_MASK    (0x00200000)
-// Maskì— í•´ë‹¹í•˜ëŠ” ëª¨ë“  Bitê°€ 0ì¸ í”Œë˜ê·¸ë¥¼ Defaultë¡œ ì‚¬ìš©í•œë‹¤.
-// Default => Tableì— ëŒ€í•´ SUPPLEMENTAL LOGGINGí•˜ì§€ ì•ŠìŒ
+// Mask¿¡ ÇØ´çÇÏ´Â ¸ğµç Bit°¡ 0ÀÎ ÇÃ·¡±×¸¦ Default·Î »ç¿ëÇÑ´Ù.
+// Default => Table¿¡ ´ëÇØ SUPPLEMENTAL LOGGINGÇÏÁö ¾ÊÀ½
 # define SMI_TABLE_SUPPLEMENTAL_LOGGING_FALSE   (0x00000000)
 # define SMI_TABLE_SUPPLEMENTAL_LOGGING_TRUE    (0x00200000)
 
 // PROJ-2264
-// dictionary table ì—¬ë¶€ë¥¼ íŒë‹¨í•˜ë° í•„ìš”í•œ flag ì •ë³´
-// debug ìš©ë„ë¡œ ì‚¬ìš©í•˜ëŠ” flag
-// altibase.properties ì—ì„œ __FORCE_COMPRESSION_COLUMN = 1 ì¼ë•Œ ì‘ë™í•˜ëŠ” flag
+// dictionary table ¿©ºÎ¸¦ ÆÇ´ÜÇÏµ¥ ÇÊ¿äÇÑ flag Á¤º¸
+// debug ¿ëµµ·Î »ç¿ëÇÏ´Â flag
+// altibase.properties ¿¡¼­ __FORCE_COMPRESSION_COLUMN = 1 ÀÏ¶§ ÀÛµ¿ÇÏ´Â flag
 # define SMI_TABLE_DICTIONARY_MASK         (0x00800000)
 # define SMI_TABLE_DICTIONARY_FALSE        (0x00000000)
 # define SMI_TABLE_DICTIONARY_TRUE         (0x00800000)
@@ -1301,7 +1337,7 @@ typedef enum smiDMLType
 # define SMI_INDEX_LOCAL_UNIQUE_DISABLE    (0x00000000)
 # define SMI_INDEX_LOCAL_UNIQUE_ENABLE     (0x00000020)
 
-/* PROJ-2433 direct key index ì‚¬ìš© flag
+/* PROJ-2433 direct key index »ç¿ë flag
  * aFlag VON smiTable::createIndex */
 # define SMI_INDEX_DIRECTKEY_MASK          (0x00000040)
 # define SMI_INDEX_DIRECTKEY_FALSE         (0x00000000)
@@ -1311,14 +1347,14 @@ typedef enum smiDMLType
  * Index Bulid Flag
  *
  * - LOGGING, FORCE
- *  disk indexì˜ ê²½ìš°, logging, forceì— ëŒ€í•œ ì˜µì…˜ì„ ì§€ì •í•´ì„œ ìƒì„±í•  ìˆ˜ ìˆëŠ”ë°,
- * mem, vol indexì˜ ê²½ìš° loggingì´ë‚˜ forceì— ëŒ€í•œ ì˜µì…˜ì„ ì‚¬ìš©í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì—
- * CREATE INDEX êµ¬ë¬¸ì—ì„œ loggingì´ë‚˜ force ì˜µì…˜ì„ ì…ë ¥í•˜ì˜€ì„ ê²½ìš° êµ¬ë¬¸ ì˜¤ë¥˜ë¡œ
- * íŒë‹¨í•˜ì—¬ ì—ëŸ¬ ë©”ì„¸ì§€ë¥¼ ë°˜í™˜í•œë‹¤.
- * ë”°ë¼ì„œ build flagì—ì„œ logging, force ì˜µì…˜ì€ ì•„ë¬´ê²ƒë„ ì„¤ì •í•˜ì§€ ì•Šì€ ê²½ìš°ì™€
- * logging, nologgingì„ ì„¤ì •í•œ ê²½ìš°, force, noforceë¥¼ ì„¤ì •í•œ ê²½ìš°ê°€ êµ¬ë¶„ì´
- * ê°€ëŠ¥í•´ì•¼ í•œë‹¤. ë”°ë¼ì„œ logging ì˜µì…˜ê³¼ nologging ì˜µì…˜ì„ ë™ì‹œì— ì„¤ì •í•  ìˆ˜
- * ì—†ìŒì—ë„ ë¶ˆêµ¬í•˜ê³  ë³„ë„ì˜ bitë¡œ ê°’ì„ ì„¤ì •í•œë‹¤.
+ *  disk indexÀÇ °æ¿ì, logging, force¿¡ ´ëÇÑ ¿É¼ÇÀ» ÁöÁ¤ÇØ¼­ »ı¼ºÇÒ ¼ö ÀÖ´Âµ¥,
+ * mem, vol indexÀÇ °æ¿ì loggingÀÌ³ª force¿¡ ´ëÇÑ ¿É¼ÇÀ» »ç¿ëÇÏÁö ¾Ê±â ¶§¹®¿¡
+ * CREATE INDEX ±¸¹®¿¡¼­ loggingÀÌ³ª force ¿É¼ÇÀ» ÀÔ·ÂÇÏ¿´À» °æ¿ì ±¸¹® ¿À·ù·Î
+ * ÆÇ´ÜÇÏ¿© ¿¡·¯ ¸Ş¼¼Áö¸¦ ¹İÈ¯ÇÑ´Ù.
+ * µû¶ó¼­ build flag¿¡¼­ logging, force ¿É¼ÇÀº ¾Æ¹«°Íµµ ¼³Á¤ÇÏÁö ¾ÊÀº °æ¿ì¿Í
+ * logging, nologgingÀ» ¼³Á¤ÇÑ °æ¿ì, force, noforce¸¦ ¼³Á¤ÇÑ °æ¿ì°¡ ±¸ºĞÀÌ
+ * °¡´ÉÇØ¾ß ÇÑ´Ù. µû¶ó¼­ logging ¿É¼Ç°ú nologging ¿É¼ÇÀ» µ¿½Ã¿¡ ¼³Á¤ÇÒ ¼ö
+ * ¾øÀ½¿¡µµ ºÒ±¸ÇÏ°í º°µµÀÇ bit·Î °ªÀ» ¼³Á¤ÇÑ´Ù.
  ******************************************************************************/
 
 /* aBuildFlag VON smiTable::createIndex              */
@@ -1350,27 +1386,27 @@ typedef enum smiDMLType
 # define SMI_INDEX_BUILD_TOPDOWN                 (0x00000020) /* 00100000 */
 
 /* aBuildFlag VON smnManager::enableAllIndex          */
-// PROJ-2184 RP Sync ì„±ëŠ¥ í–¥ìƒ
+// PROJ-2184 RP Sync ¼º´É Çâ»ó
 # define SMI_INDEX_BUILD_DISK_DEFAULT (                                 \
                     SMI_INDEX_BUILD_DEFAULT                 |           \
                     SMI_INDEX_BUILD_NOFORCE                 |           \
                     SMI_INDEX_BUILD_LOGGING )
 
-/* BUG-44794 ì¸ë±ìŠ¤ ë¹Œë“œì‹œ ì¸ë±ìŠ¤ í†µê³„ ì •ë³´ë¥¼ ìˆ˜ì§‘í•˜ì§€ ì•ŠëŠ” íˆë“  í”„ë¡œí¼í‹° ì¶”ê°€
+/* BUG-44794 ÀÎµ¦½º ºôµå½Ã ÀÎµ¦½º Åë°è Á¤º¸¸¦ ¼öÁıÇÏÁö ¾Ê´Â È÷µç ÇÁ·ÎÆÛÆ¼ Ãß°¡
  * smuProperty::getGatherIndexStatOnDDL()
- *  - ID_TRUE: DDL ìˆ˜í–‰ ì‹œ Index runtime í†µê³„ ì €ì¥
- *  - ID_FALSE: DDL ìˆ˜í–‰ ì‹œ Index runtime í†µê³„ ì €ì¥ ì•ˆí•¨
+ *  - ID_TRUE: DDL ¼öÇà ½Ã Index runtime Åë°è ÀúÀå
+ *  - ID_FALSE: DDL ¼öÇà ½Ã Index runtime Åë°è ÀúÀå ¾ÈÇÔ
  * ENUM
- *  - SMI_INDEX_BUILD_RT_STAT_UPDATE: Index runtime í†µê³„ ì €ì¥
- *  - SMI_INDEX_BUILD_RT_STAT_NO_UPDATE: Index runtime í†µê³„ ì €ì¥ ì•ˆí•¨
+ *  - SMI_INDEX_BUILD_RT_STAT_UPDATE: Index runtime Åë°è ÀúÀå
+ *  - SMI_INDEX_BUILD_RT_STAT_NO_UPDATE: Index runtime Åë°è ÀúÀå ¾ÈÇÔ
  * SMI_INDEX_BUILD_NEED_RT_STAT :
- *  - Property ë° Transactionì˜ DDL ì—¬ë¶€ì— ë”°ë¼
- *    Index runtime í†µê³„ë¥¼ ì €ì¥í•˜ëŠ”ì§€ ì—¬ë¶€ ê²°ì • í›„ ê·¸ì— ë§ëŠ” __FLAG ê°’ ì„¤ì •
- *  - smuProperty::getGatherIndexStatOnDDL() == ID_TRUE ì¸ ê²½ìš°
- *   + runtime í†µê³„ ì €ì¥
- *  - smuProperty::getGatherIndexStatOnDDL() == ID_FALSE ì¸ ê²½ìš°
- *   + __TX == NULL ì¸ ê²½ìš° OR __TX->mIsDDL == ID_TRUE ì¸ ê²½ìš°ëŠ” runtime í†µê³„ ì €ì¥ ì•ˆí•¨
- *   + ê·¸ ì™¸ì˜ ê²½ìš° ( __TX != NULL AND __TX->mIsDDL == ID_FALSE ) runtime í†µê³„ ì €ì¥
+ *  - Property ¹× TransactionÀÇ DDL ¿©ºÎ¿¡ µû¶ó
+ *    Index runtime Åë°è¸¦ ÀúÀåÇÏ´ÂÁö ¿©ºÎ °áÁ¤ ÈÄ ±×¿¡ ¸Â´Â __FLAG °ª ¼³Á¤
+ *  - smuProperty::getGatherIndexStatOnDDL() == ID_TRUE ÀÎ °æ¿ì
+ *   + runtime Åë°è ÀúÀå
+ *  - smuProperty::getGatherIndexStatOnDDL() == ID_FALSE ÀÎ °æ¿ì
+ *   + __TX == NULL ÀÎ °æ¿ì OR __TX->mIsDDL == ID_TRUE ÀÎ °æ¿ì´Â runtime Åë°è ÀúÀå ¾ÈÇÔ
+ *   + ±× ¿ÜÀÇ °æ¿ì ( __TX != NULL AND __TX->mIsDDL == ID_FALSE ) runtime Åë°è ÀúÀå
  */
 # define SMI_INDEX_BUILD_RT_STAT_MASK            (0x00000001) /* 00000001 */
 # define SMI_INDEX_BUILD_RT_STAT_NO_UPDATE       (0x00000000) /* 00000000 */
@@ -1398,9 +1434,9 @@ typedef enum smiDMLType
 # define SMI_TRANSACTION_UNTOUCHABLE       (0x00000004)
 
 /* PROJ-1541 smiTrans::begin
- * transactionì˜ Flagì— Setë˜ë©°, MASKê°€ ê°€ë¦¬í‚¤ëŠ” 3 ë¹„íŠ¸ëŠ”
- * ì•„ë˜ì˜ ê°’ ì¤‘ í•˜ë‚˜ì˜ ê°’ë§Œì„ ê°€ì§ˆ ìˆ˜ ìˆìŒ
- * Noneì´ì™¸ì˜ ëª¨ë“œëŠ” ëª¨ë‘ REPICATIONëŒ€ìƒ íŠ¸ëœì­ì…˜ì„
+ * transactionÀÇ Flag¿¡ SetµÇ¸ç, MASK°¡ °¡¸®Å°´Â 3 ºñÆ®´Â
+ * ¾Æ·¡ÀÇ °ª Áß ÇÏ³ªÀÇ °ª¸¸À» °¡Áú ¼ö ÀÖÀ½
+ * NoneÀÌ¿ÜÀÇ ¸ğµå´Â ¸ğµÎ REPICATION´ë»ó Æ®·£Àè¼ÇÀÓ
  *+----------------------------------------------+
  *|TxMode / ReplMode| Lazy    |  Acked |  Eager  |
  *|----------------------------------------------|
@@ -1428,20 +1464,36 @@ typedef enum smiDMLType
 
 
 /* aFlag VON smiTrans::begin                         */
-/* BUG-15396 : commitì‹œ logë¥¼ diskì— syncí•˜ëŠ” ê²ƒì„ ê¸°ë‹¤ë¦´ì§€ì— ëŒ€í•œ flag */
+/* BUG-15396 : commit½Ã log¸¦ disk¿¡ syncÇÏ´Â °ÍÀ» ±â´Ù¸±Áö¿¡ ´ëÇÑ flag */
 # define SMI_COMMIT_WRITE_MASK             (0x00000100)
 # define SMI_COMMIT_WRITE_NOWAIT           (0x00000000)
 # define SMI_COMMIT_WRITE_WAIT             (0x00000100)
 
 /* aFlag VON smiTrans::begin
- * BUG-33539 : In-place update ë¥¼ ìˆ˜í–‰í• ì§€, ì•ˆ í• ì§€ ê²°ì • */
+ * BUG-33539 : In-place update ¸¦ ¼öÇàÇÒÁö, ¾È ÇÒÁö °áÁ¤ */
 # define SMI_TRANS_INPLACE_UPDATE_MASK     (0x00000600) //00011000000000
 # define SMI_TRANS_INPLACE_UPDATE_DISABLE  (0x00000200) //00001000000000
 # define SMI_TRANS_INPLACE_UPDATE_TRY      (0x00000400) //00010000000000
 
+/* BUG-47472 DBHang Çö»ó °ü·Ã µğ¹ö±× ÄÚµå */
+# define SMI_TRANS_LOCK_DEBUG_INFO_MASK         (0x00000800)
+# define SMI_TRANS_LOCK_DEBUG_INFO_ENABLE       (0x00000800)
+# define SMI_TRANS_LOCK_DEBUG_INFO_DISABLE      (0x00000000)
+
+# define SMI_IS_LOCK_DEBUG_INFO_ENABLE(aFlag) ( ((aFlag) & SMI_TRANS_LOCK_DEBUG_INFO_MASK)    \
+                                                == SMI_TRANS_LOCK_DEBUG_INFO_ENABLE ? ID_TRUE : ID_FALSE )
+
+/* PROJ-2733 GlobalConsistentTx : GLOBAL_TRANSACTION_LEVEL=3 À¸·Î ¼³Á¤µÈ Tx */
+# define SMI_TRANS_GCTX_MASK (0x00001000)
+# define SMI_TRANS_GCTX_OFF  (0x00000000)
+# define SMI_TRANS_GCTX_ON   (0x00001000)
+
+#define SMI_IS_GCTX_ON(aFlag) ( ((aFlag) & SMI_TRANS_GCTX_MASK)    \
+                                 == SMI_TRANS_GCTX_OFF ? ID_FALSE : ID_TRUE )
+
 /* aFlag VON smiStatement::begin                     */
-// PROJ-2199 SELECT func() FOR UPDATE ì§€ì›
-// SMI_STATEMENT_FORUPDATE ì¶”ê°€
+// PROJ-2199 SELECT func() FOR UPDATE Áö¿ø
+// SMI_STATEMENT_FORUPDATE Ãß°¡
 # define SMI_STATEMENT_MASK                (0x0000000C)
 # define SMI_STATEMENT_NORMAL              (0x00000000)
 # define SMI_STATEMENT_UNTOUCHABLE         (0x00000004)
@@ -1456,10 +1508,19 @@ typedef enum smiDMLType
 # define SMI_STATEMENT_ALL_CURSOR          (SMI_STATEMENT_MEMORY_CURSOR |\
                                             SMI_STATEMENT_DISK_CURSOR)
 
-/* foreign keyìš© statement::begin */
+/* foreign key¿ë statement::begin */
 # define SMI_STATEMENT_SELF_MASK           (0x00000020)
 # define SMI_STATEMENT_SELF_FALSE          (0x00000000)
 # define SMI_STATEMENT_SELF_TRUE           (0x00000020)
+
+/* PROJ-2733 ºĞ»ê Æ®·£Àè¼Ç Á¤ÇÕ¼º
+ * aFlag smiStatement::begin */ 
+# define SMI_STATEMENT_VIEWSCN_MASK        (0x00000040)
+# define SMI_STATEMENT_VIEWSCN_LASTEST     (0x00000000)  // ÃÖ½Åºä¸¦ º»´Ù.
+# define SMI_STATEMENT_VIEWSCN_REQUESTED   (0x00000040)  // ¿ä±¸ÀÚ SCN À» ÀÌ¿ëÇÑ´Ù. 
+
+# define SMI_STATEMENT_VIEWSCN_IS_REQUESTED(aFlag) ( ((aFlag) & SMI_STATEMENT_VIEWSCN_MASK) \
+                                                     == SMI_STATEMENT_VIEWSCN_LASTEST ? ID_FALSE : ID_TRUE )
 
 /* aFlag VON smiTrans::commit or smiStatement::open  */
 # define SMI_STATEMENT_LEGACY_MASK         (0x00000010)
@@ -1490,9 +1551,12 @@ typedef enum smiDMLType
 # define SMI_TRAVERSE_BACKWARD             (0x00000010)
 
 /* aFlag VON smiTableCursor::open                    */
-# define SMI_INPLACE_UPDATE_MASK          (0x00000020)
-# define SMI_INPLACE_UPDATE_ENABLE        (0x00000000)
-# define SMI_INPLACE_UPDATE_DISABLE       (0x00000020)
+# define SMI_INPLACE_UPDATE_MASK           (0x00000020)
+# define SMI_INPLACE_UPDATE_ENABLE         (0x00000000)
+# define SMI_INPLACE_UPDATE_DISABLE        (0x00000020)
+
+/* aFlag VON smiTableCursor::open    ( BUG-47758 )   */
+# define SMI_TRANS_ISOLATION_IGNORE        (0x00000040)
 
 /* aFlag VON smiTableCursor::readOldRow/readNewRow   */
 # define SMI_FIND_MODIFIED_MASK            (0x00000300)
@@ -1501,24 +1565,26 @@ typedef enum smiDMLType
 # define SMI_FIND_MODIFIED_NEW             (0x00000200)
 
 /* aFlag VON smiTableCursor::readOldRow/readNewRow   */
-/* readOldRow()/readNewRow() ìˆ˜í–‰ ì‹œ, í˜„ì¬ ì½ê³  ìˆëŠ” undo page list */
-# define SMI_READ_UNDO_PAGE_LIST_MASK     (0x00000C00)
-# define SMI_READ_UNDO_PAGE_LIST_NONE     (0x00000000)
-# define SMI_READ_UNDO_PAGE_LIST_INSERT   (0x00000400)
-# define SMI_READ_UNDO_PAGE_LIST_UPDATE   (0x00000800)
+/* readOldRow()/readNewRow() ¼öÇà ½Ã, ÇöÀç ÀĞ°í ÀÖ´Â undo page list */
+# define SMI_READ_UNDO_PAGE_LIST_MASK      (0x00000C00)
+# define SMI_READ_UNDO_PAGE_LIST_NONE      (0x00000000)
+# define SMI_READ_UNDO_PAGE_LIST_INSERT    (0x00000400)
+# define SMI_READ_UNDO_PAGE_LIST_UPDATE    (0x00000800)
 
 /* PROJ-1566 */
 /* smiTableCursor::mFlag */
-# define SMI_INSERT_METHOD_MASK           (0x00001000)
-# define SMI_INSERT_METHOD_NORMAL         (0x00000000)
-# define SMI_INSERT_METHOD_APPEND         (0x00001000)
+# define SMI_INSERT_METHOD_MASK            (0x00001000)
+# define SMI_INSERT_METHOD_NORMAL          (0x00000000)
+# define SMI_INSERT_METHOD_APPEND          (0x00001000)
 
+#if 0
 /* Proj-2059
- * Lob Nologging ì§€ì› */
+ * Lob Nologging Áö¿ø */
 /* smiTableCursor::mFlag */
-# define SMI_INSERT_LOBLOGGING_MASK       (0x00002000)
-# define SMI_INSERT_LOBLOGGING_ENABLE     (0x00000000)
-# define SMI_INSERT_LOBLOGGING_DISABLE    (0x00002000)
+# define SMI_INSERT_LOBLOGGING_MASK        (0x00002000)
+# define SMI_INSERT_LOBLOGGING_ENABLE      (0x00000000)
+# define SMI_INSERT_LOBLOGGING_DISABLE     (0x00002000)
+#endif
 
 /* aFlag VON smiTableCursor::readRow                 */
 # define SMI_FIND_MASK                     (0x00000003)
@@ -1565,6 +1631,22 @@ typedef enum smiDMLType
 # define SMI_SEQUENCE_TABLE_FALSE          (0x00000000)
 # define SMI_SEQUENCE_TABLE_TRUE           (0x00000020)
 
+/* TASK-7217 Sharded sequence */
+/* sequence locality flag */
+# define SMI_SEQUENCE_LOCALITY_MASK        (0x00000700)
+# define SMI_SEQUENCE_LOCALITY_LOCAL       (0x00000100)
+# define SMI_SEQUENCE_LOCALITY_SHARD       (0x00000200)
+# define SMI_SEQUENCE_LOCALITY_GLOBAL      (0x00000400)  // UNUSED
+
+/* TASK-7217 Sharded sequence */
+/* sequence scale of maxvalue for sharded sequence */
+# define SMI_SEQUENCE_SCALE_MASK           (0x0000000F)
+
+/* TASK-7217 Sharded sequence */
+# define SMI_SEQUENCE_SCALE_FIXED_MASK     (0x00001000)
+# define SMI_SEQUENCE_SCALE_FIXED_FALSE    (0x00000000)  // VARIABLE
+# define SMI_SEQUENCE_SCALE_FIXED_TRUE     (0x00001000)
+
 /* smiTimeStamp flag */
 # define SMI_TIMESTAMP_RETRAVERSE_MASK     (0x00000001)
 # define SMI_TIMESTAMP_RETRAVERSE_DISABLE  (0x00000000)
@@ -1578,7 +1660,7 @@ typedef enum smiDMLType
 # define SMI_DROP_TBLSPACE_CONSTRAINT      (0x00000100)
 
 
-/* FOR A4 : Startup Phaseë¡œ ì „ì´í• ë•Œ ACTION  flag */
+/* FOR A4 : Startup Phase·Î ÀüÀÌÇÒ¶§ ACTION  flag */
 # define SMI_STARTUP_ACTION_MASK            (0x00001111)
 # define SMI_STARTUP_NOACTION               (0x00000000)
 # define SMI_STARTUP_NORESETLOGS            (0x00000000)
@@ -1604,31 +1686,31 @@ typedef enum smiDMLType
 #define SMI_LOG_CONTINUE_MASK       (0x000000200)
 #define SMI_LOG_COMMIT_MASK         (0x000000100)
 
-// BUGBUG mtcDef.hì™€ ë™ì¼í•˜ê²Œ í•˜ê²Œ í•œë‹¤.
+// BUGBUG mtcDef.h¿Í µ¿ÀÏÇÏ°Ô ÇÏ°Ô ÇÑ´Ù.
 // MTD_OFFSET_USELESS,MTD_OFFSET_USE
 # define SMI_OFFSET_USELESS                (0x00000001)
 # define SMI_OFFSET_USE                    (0x00000000)
 
 /* PROJ-2433 Direct Key Index
- * partail direct key ì¸ê²½ìš° ì„¸íŒ…ëœë‹¤.
- * MTD_PARTIAL_KEY_ON, MTD_PARTIAL_KEY_OFFì™€ ë™ì¼í•˜ê²Œ í•´ì•¼ í•œë‹¤. */
+ * partail direct key ÀÎ°æ¿ì ¼¼ÆÃµÈ´Ù.
+ * MTD_PARTIAL_KEY_ON, MTD_PARTIAL_KEY_OFF¿Í µ¿ÀÏÇÏ°Ô ÇØ¾ß ÇÑ´Ù. */
 # define SMI_PARTIAL_KEY_MASK              (0x00000002)
 # define SMI_PARTIAL_KEY_ON                (0x00000002)
 # define SMI_PARTIAL_KEY_OFF               (0x00000000)
 
 /*
- * BUG-17123 [PRJ-1548] offlineëœ TableSpaceì— ëŒ€í•´ì„œ ë°ì´íƒ€íŒŒì¼ì„
- *           ì‚­ì œí•˜ë‹¤ê°€ Error ë°œìƒí•˜ì—¬ diff
+ * BUG-17123 [PRJ-1548] offlineµÈ TableSpace¿¡ ´ëÇØ¼­ µ¥ÀÌÅ¸ÆÄÀÏÀ»
+ *           »èÁ¦ÇÏ´Ù°¡ Error ¹ß»ıÇÏ¿© diff
  *
- * DML DDLì˜ Validation, Executionì‹œì—
- * í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì— ëŒ€í•œ lock validationì„ í•˜ê¸° ìœ„í•´ì„œ
- * ë‹¤ìŒê³¼ ê°™ì€ LV Option Typeì„ ì…ë ¥í•´ì•¼í•œë‹¤.
+ * DML DDLÀÇ Validation, Execution½Ã¿¡
+ * Å×ÀÌºí½ºÆäÀÌ½º¿¡ ´ëÇÑ lock validationÀ» ÇÏ±â À§ÇØ¼­
+ * ´ÙÀ½°ú °°Àº LV Option TypeÀ» ÀÔ·ÂÇØ¾ßÇÑ´Ù.
  */
 typedef enum smiTBSLockValidType
 {
     SMI_TBSLV_NONE = 0,
-    SMI_TBSLV_DDL_DML,  // OLINE TBSë§Œ Lock íšë“ ê°€ëŠ¥
-    SMI_TBSLV_DROP_TBS, // ONLINE/OFFLINE/DISCARDED TBS Lock íšë“ ê°€ëŠ¥
+    SMI_TBSLV_DDL_DML,  // OLINE TBS¸¸ Lock È¹µæ °¡´É
+    SMI_TBSLV_DROP_TBS, // ONLINE/OFFLINE/DISCARDED TBS Lock È¹µæ °¡´É
     SMI_TBSLV_OPER_MAXMAX
 } smiTBSLockValidType;
 
@@ -1644,29 +1726,29 @@ typedef struct smiColumn
     UInt         id;
     UInt         flag;
     UInt         offset;
-    UInt         varOrder;      /* Column ì¤‘ variable ì»¬ëŸ¼ë“¤ ê°„ì˜ ìˆœì„œ */
-    /* Variable Columnë°ì´íƒ€ê°€ In, Outìœ¼ë¡œ ì €ì¥ë ì§€ ê²°ì •í•˜ëŠ” ê¸¸ì´
-       ë¡œì„œ if Variable column length <= vcInOutBaseSize, in-mode,
+    UInt         varOrder;      /* Column Áß variable ÄÃ·³µé °£ÀÇ ¼ø¼­ */
+    /* Variable Columnµ¥ÀÌÅ¸°¡ In, OutÀ¸·Î ÀúÀåµÉÁö °áÁ¤ÇÏ´Â ±æÀÌ
+       ·Î¼­ if Variable column length <= vcInOutBaseSize, in-mode,
        else out-mode */
     UInt         vcInOutBaseSize;
     UInt         size;
     UShort       align;         /* BUG-43117 */
-    UShort       maxAlign;      /* BUG-43287 smiColumn Listì˜ Variable Column ì¤‘ ê°€ì¥ í° align ê°’ */
+    UShort       maxAlign;      /* BUG-43287 smiColumn ListÀÇ Variable Column Áß °¡Àå Å« align °ª */
     void       * value;
 
     /*
-     * PROJ-1362 LOB, LOB columnì—ì„œë§Œ ì˜ë¯¸ìˆë‹¤.
+     * PROJ-1362 LOB, LOB column¿¡¼­¸¸ ÀÇ¹ÌÀÖ´Ù.
      *
-     * Columnì´ ì €ì¥ëœ Tablespaceì˜ ID
-     * Memory Table : Tableì´ ì†í•œ SpaceIDì™€ í•­ìƒ ë™ì¼
-     * Disk Table   : LOBì˜ ê²½ìš° Tableì´ ì†í•œ SpaceIDì™€
-     *                ë‹¤ë¥¸ Tablespaceì— ì €ì¥ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
-     *                Table ì˜ Space IDì™€ ë‹¤ë¥¸ ê°’ì´ ë ìˆ˜ìˆë‹¤
+     * ColumnÀÌ ÀúÀåµÈ TablespaceÀÇ ID
+     * Memory Table : TableÀÌ ¼ÓÇÑ SpaceID¿Í Ç×»ó µ¿ÀÏ
+     * Disk Table   : LOBÀÇ °æ¿ì TableÀÌ ¼ÓÇÑ SpaceID¿Í
+     *                ´Ù¸¥ Tablespace¿¡ ÀúÀåµÉ ¼ö ÀÖÀ¸¹Ç·Î
+     *                Table ÀÇ Space ID¿Í ´Ù¸¥ °ªÀÌ µÉ¼öÀÖ´Ù
      */
     scSpaceID     colSpace;
     scGRID        colSeg;
     UInt          colType; /* PROJ-2047 Strengthening LOB (CLOB or BLOB) */
-    void        * descSeg; /* Disk Lob Segmentì— ëŒ€í•œ ê¸°ìˆ ì */
+    void        * descSeg; /* Disk Lob Segment¿¡ ´ëÇÑ ±â¼úÀÚ */
 
     smiColumnStat mStat;
     // PROJ-2264
@@ -1674,8 +1756,8 @@ typedef struct smiColumn
 } smiColumn;
 
 // BUG-30711
-// ALTER TABLE ... MODIFY COLUMN ... ìˆ˜í–‰ ì‹œì—
-// ë°”ë€Œì§€ ì•ŠëŠ” ì •ë³´ë¥¼ ì›ë³µí•´ì¤„ë•Œ ì‚¬ìš©í•¨ 
+// ALTER TABLE ... MODIFY COLUMN ... ¼öÇà ½Ã¿¡
+// ¹Ù²îÁö ¾Ê´Â Á¤º¸¸¦ ¿øº¹ÇØÁÙ¶§ »ç¿ëÇÔ
 #define SMI_COLUMN_LOB_INFO_COPY(  _dst_, _src_ )\
 {                                                \
     _dst_->colSpace  = _src_->colSpace;          \
@@ -1703,7 +1785,7 @@ typedef struct smiFetchColumnList
             SDC_GET_COLUMN_SEQ(aColumn)
 
 /* TASK-5030 Full XLog
- * MRDB DMLì—ì„œ column listë¥¼ sortí•˜ê¸° ìœ„í•œ êµ¬ì¡°ì²´ */
+ * MRDB DML¿¡¼­ column list¸¦ sortÇÏ±â À§ÇÑ ±¸Á¶Ã¼ */
 typedef struct smiUpdateColumnList
 {
     const smiColumn   * column;
@@ -1719,7 +1801,7 @@ typedef IDE_RC (*smiCallBackFunc)( idBool     * aResult,
 
 typedef struct smiCallBack
 {
-    // For A4 : Hash Indexì˜ ê²½ìš° Hash Valueë¡œ ì‚¬ìš©
+    // For A4 : Hash IndexÀÇ °æ¿ì Hash Value·Î »ç¿ë
     UInt            mHashVal; // Hash Value
     smiCallBackFunc callback;
     void*           data;
@@ -1732,7 +1814,7 @@ typedef struct smiRange
     smiRange*   prev;
     smiRange*   next;
 
-    // For A4 : Hash Indexì˜ ê²½ìš° hash valueë¥¼ í¬í•¨í•¨.
+    // For A4 : Hash IndexÀÇ °æ¿ì hash value¸¦ Æ÷ÇÔÇÔ.
     smiCallBack minimum;
     smiCallBack maximum;
 }
@@ -1769,27 +1851,27 @@ typedef struct smiRemoteTableParam
 
 /*
  * PROJ-1784 DML without retry
- * fetchì‹œ ì–´ë–¤ ë²„ì „ì˜ rowë¥¼ êµ¬ì„± í•  ì§€ ì—¬ë¶€
+ * fetch½Ã ¾î¶² ¹öÀüÀÇ row¸¦ ±¸¼º ÇÒ Áö ¿©ºÎ
  */
 typedef enum
 {
-    SMI_FETCH_VERSION_CONSISTENT,// í˜„ì¬ viewì˜ rowë¥¼ ì½ì–´ì˜¨ë‹¤.
-    SMI_FETCH_VERSION_LAST,      // ìµœì‹  rowë¥¼ ì½ì–´ì˜¨ë‹¤.
-    SMI_FETCH_VERSION_LASTPREV   // ìµœì‹  rowì˜ ë°”ë¡œ ì• ë²„ì „ì„ ì½ëŠ”ë‹¤.
-                                 //   index old keyë¥¼ ì œê±°í•˜ê¸° ìœ„í•´ í•„ìš”
+    SMI_FETCH_VERSION_CONSISTENT,// ÇöÀç viewÀÇ row¸¦ ÀĞ¾î¿Â´Ù.
+    SMI_FETCH_VERSION_LAST,      // ÃÖ½Å row¸¦ ÀĞ¾î¿Â´Ù.
+    SMI_FETCH_VERSION_LASTPREV   // ÃÖ½Å rowÀÇ ¹Ù·Î ¾Õ ¹öÀüÀ» ÀĞ´Â´Ù.
+                                 //   index old key¸¦ Á¦°ÅÇÏ±â À§ÇØ ÇÊ¿ä
 } smFetchVersion;
 
 /* PROJ-1784 DML without retry
- *  retry ìœ ë¬´ë¥¼ íŒë‹¨í•˜ê¸° ìœ„í•œ ì •ë³´
- *  QPì—ì„œ ì„¤ì •í•˜ê³  SMì—ì„œ ì‚¬ìš© */
+ *  retry À¯¹«¸¦ ÆÇ´ÜÇÏ±â À§ÇÑ Á¤º¸
+ *  QP¿¡¼­ ¼³Á¤ÇÏ°í SM¿¡¼­ »ç¿ë */
 typedef struct smiDMLRetryInfo
 {
-    idBool                mIsWithoutRetry;   // QPìš© retry info on/off flag
-    idBool                mIsRowRetry;       // row retryì¸ì§€ ì—¬ë¶€
-    const smiColumnList * mStmtRetryColLst;  // statement retry íŒë‹¨ì„ ìœ„í•œ column list
-    const smiValue      * mStmtRetryValLst;  // statement retry íŒë‹¨ì„ ìœ„í•œ value list
-    const smiColumnList * mRowRetryColLst;   // row retry íŒë‹¨ì„ ìœ„í•œ column list
-    const smiValue      * mRowRetryValLst;   // row retry íŒë‹¨ì„ ìœ„í•œ value list
+    idBool                mIsWithoutRetry;   // QP¿ë retry info on/off flag
+    idBool                mIsRowRetry;       // row retryÀÎÁö ¿©ºÎ
+    const smiColumnList * mStmtRetryColLst;  // statement retry ÆÇ´ÜÀ» À§ÇÑ column list
+    const smiValue      * mStmtRetryValLst;  // statement retry ÆÇ´ÜÀ» À§ÇÑ value list
+    const smiColumnList * mRowRetryColLst;   // row retry ÆÇ´ÜÀ» À§ÇÑ column list
+    const smiValue      * mRowRetryValLst;   // row retry ÆÇ´ÜÀ» À§ÇÑ value list
 
 }smiDMLRetryInfo;
 
@@ -1802,8 +1884,8 @@ typedef struct smiParallelReadProperties
 } smiParallelReadProperties;
 
 /* FOR A4 : smiCursorProperties
-   smiCursor::open í•¨ìˆ˜ì˜ ì¸ìë¥¼ ì¤„ì´ê¸°ìœ„í•´ ì¶”ê°€ë¨.
-   ë‚˜ì¤‘ì— Cursorê´€ë ¨ ê¸°ëŠ¥ ì¶”ê°€ì‹œì— ì´ êµ¬ì¡°ì²´ì— ë©¤ë²„ë¡œ ì¶”ê°€
+   smiCursor::open ÇÔ¼öÀÇ ÀÎÀÚ¸¦ ÁÙÀÌ±âÀ§ÇØ Ãß°¡µÊ.
+   ³ªÁß¿¡ Cursor°ü·Ã ±â´É Ãß°¡½Ã¿¡ ÀÌ ±¸Á¶Ã¼¿¡ ¸â¹ö·Î Ãß°¡
 */
 typedef struct smiCursorProperties
 {
@@ -1817,12 +1899,12 @@ typedef struct smiCursorProperties
     /* for remote table */
     smiRemoteTable       * mRemoteTable;
     smiRemoteTableParam    mRemoteTableParam;
-    
+
     // PROJ-1665
     UInt                   mHintParallelDegree;
 
     // PROJ-1705
-    smiFetchColumnList    *mFetchColumnList;   // íŒ¨ì¹˜ì‹œ ë³µì‚¬ê°€ í•„ìš”í•œ ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ì •ë³´
+    smiFetchColumnList    *mFetchColumnList;   // ÆĞÄ¡½Ã º¹»ç°¡ ÇÊ¿äÇÑ ÄÃ·³¸®½ºÆ®Á¤º¸
     UChar                 *mLockRowBuffer;
     UInt                   mLockRowBufferSize;
 
@@ -1831,9 +1913,10 @@ typedef struct smiCursorProperties
 
     // PROJ-2402
     smiParallelReadProperties mParallelReadProperties;
+
 } smiCursorProperties;
 
-// smiCursorPropertiesë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+// smiCursorProperties¸¦ ÃÊ±âÈ­ÇÑ´Ù.
 #define SMI_CURSOR_PROP_INIT_WITH_TYPE(aProp, aStat, aIndexType) \
     (aProp)->mLockWaitMicroSec = ID_ULONG_MAX;     \
     (aProp)->mFirstReadRecordPos = 0;              \
@@ -1849,24 +1932,24 @@ typedef struct smiCursorProperties
     (aProp)->mParallelReadProperties.mThreadCnt = 1; \
     (aProp)->mParallelReadProperties.mThreadID  = 1; \
     (aProp)->mParallelReadProperties.mParallelReadGroupID = 0;
- 
-// qp meta tableì˜ full scanì„ ìœ„í•˜ì—¬ smiCursorPropertiesë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+
+// qp meta tableÀÇ full scanÀ» À§ÇÏ¿© smiCursorProperties¸¦ ÃÊ±âÈ­ÇÑ´Ù.
 #define SMI_CURSOR_PROP_INIT_FOR_META_FULL_SCAN(aProp, aStat) \
     SMI_CURSOR_PROP_INIT_WITH_TYPE(aProp, aStat, SMI_BUILTIN_SEQUENTIAL_INDEXTYPE_ID)
 
-// qp meta tableì˜ index scanì„ ìœ„í•˜ì—¬ smiCursorPropertiesë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+// qp meta tableÀÇ index scanÀ» À§ÇÏ¿© smiCursorProperties¸¦ ÃÊ±âÈ­ÇÑ´Ù.
 #define SMI_CURSOR_PROP_INIT_FOR_META_INDEX_SCAN(aProp, aStat) \
     SMI_CURSOR_PROP_INIT_WITH_TYPE(aProp, aStat, SMI_BUILTIN_B_TREE_INDEXTYPE_ID)
 
-// qp tableì˜ full scanì„ ìœ„í•˜ì—¬ smiCursorPropertiesë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+// qp tableÀÇ full scanÀ» À§ÇÏ¿© smiCursorProperties¸¦ ÃÊ±âÈ­ÇÑ´Ù.
 #define SMI_CURSOR_PROP_INIT_FOR_FULL_SCAN(aProp, aStat) \
     SMI_CURSOR_PROP_INIT_WITH_TYPE(aProp, aStat, SMI_BUILTIN_SEQUENTIAL_INDEXTYPE_ID)
 
-// qp tableì˜ index scanì„ ìœ„í•˜ì—¬ smiCursorPropertiesë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+// qp tableÀÇ index scanÀ» À§ÇÏ¿© smiCursorProperties¸¦ ÃÊ±âÈ­ÇÑ´Ù.
 #define SMI_CURSOR_PROP_INIT_FOR_INDEX_SCAN(aProp, aStat, aIndexType) \
     SMI_CURSOR_PROP_INIT_WITH_TYPE(aProp, aStat, aIndexType)
 
-// index handleì„ ì´ìš©í•˜ì—¬ smiCursorPropertiesë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+// index handleÀ» ÀÌ¿ëÇÏ¿© smiCursorProperties¸¦ ÃÊ±âÈ­ÇÑ´Ù.
 #define SMI_CURSOR_PROP_INIT(aProp, aStat, aIndex) \
     SMI_CURSOR_PROP_INIT_WITH_TYPE(aProp, aStat, smiGetIndexType(aIndex))
 
@@ -1883,11 +1966,12 @@ typedef struct smiIterator
     UInt        flag;
 
     smiCursorProperties  * properties;
+    smiStatement         * mStatement;
 } smiIterator;
 
 //----------------------------
 // PROJ-1872
-// compare í• ë•Œ í•„ìš”í•œ ì •ë³´
+// compare ÇÒ¶§ ÇÊ¿äÇÑ Á¤º¸
 //----------------------------
 typedef struct smiValueInfo
 {
@@ -1899,14 +1983,14 @@ typedef struct smiValueInfo
 
 #define SMI_SET_VALUEINFO( aValueInfo1, aColumn1, aValue1, aLength1, aFlag1, \
                            aValueInfo2, aColumn2, aValue2, aLength2, aFlag2) \
-    (aValueInfo1)->column = aColumn1;                              \
-    (aValueInfo1)->value  = aValue1;                               \
-    (aValueInfo1)->length = aLength1;                              \
-    (aValueInfo1)->flag   = aFlag1;                                \
-    (aValueInfo2)->column = aColumn2;                              \
-    (aValueInfo2)->value  = aValue2;                               \
-    (aValueInfo2)->length = aLength2;                              \
-    (aValueInfo2)->flag   = aFlag2;                                             
+    (aValueInfo1)->column = (aColumn1);                                      \
+    (aValueInfo1)->value  = (aValue1);                                       \
+    (aValueInfo1)->length = (aLength1);                             \
+    (aValueInfo1)->flag   = (aFlag1);                               \
+    (aValueInfo2)->column = (aColumn2);                             \
+    (aValueInfo2)->value  = (aValue2);                              \
+    (aValueInfo2)->length = (aLength2);                             \
+    (aValueInfo2)->flag   = (aFlag2);
 
 /* BUG-42639 Monitoring query */
 typedef struct smiFixedTableProperties
@@ -1969,9 +2053,9 @@ typedef IDE_RC (*smiCopyDiskColumnValueFunc)( UInt              aColumnSize,
                                               UInt              aLength,
                                               const void      * aValue );
 
-// aColumnì€ ë°˜ë“œì‹œ NULLë¡œ ë„˜ê¸°ê³ ,
-// aRowëŠ” í•´ë‹¹ ì»¬ëŸ¼ì˜ value pointerë¥¼ ê°€ë¦¬í‚¤ê³ ,
-// aFlagì€ 1 ( MTD_OFFSET_USELESS ) ì„ ë„˜ê¸°ë„ë¡ í•œë‹¤.
+// aColumnÀº ¹İµå½Ã NULL·Î ³Ñ±â°í,
+// aRow´Â ÇØ´ç ÄÃ·³ÀÇ value pointer¸¦ °¡¸®Å°°í,
+// aFlagÀº 1 ( MTD_OFFSET_USELESS ) À» ³Ñ±âµµ·Ï ÇÑ´Ù.
 typedef  UInt (*smiActualSizeFunc)( const smiColumn* aColumn,
                                     const void*      aRow );
 
@@ -1994,13 +2078,13 @@ typedef IDE_RC (*smiFindCopyDiskColumnValueFunc)(
     const smiColumn            * aColumn,
     smiCopyDiskColumnValueFunc * aCopyDiskColumnValueFunc );
 
-// PROJ-2429 
-// smiStatistics.cpp ì—ì„œë§Œ ì‚¬ìš©ëœë‹¤.
+// PROJ-2429
+// smiStatistics.cpp ¿¡¼­¸¸ »ç¿ëµÈ´Ù.
 typedef IDE_RC (*smiFindCopyDiskColumnValue4DataTypeFunc)(
     const smiColumn            * aColumn,
     smiCopyDiskColumnValueFunc * aCopyDiskColumnValueFunc );
 
-typedef IDE_RC (*smiFindActualSizeFunc)( const smiColumn   * aColumn,                            
+typedef IDE_RC (*smiFindActualSizeFunc)( const smiColumn   * aColumn,
                                          smiActualSizeFunc * aActualSizeFunc );
 
 typedef IDE_RC (*smiFindPartialKeyFunc)( const smiColumn*   aColumn,
@@ -2031,7 +2115,7 @@ typedef UInt   (*smiGetCurrTimeFunc)();
 typedef void   (*smiDDLSwitchFunc)(SInt aFlag);
 
 /*
-    Disk Tablespaceë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜ íƒ€ì…
+    Disk Tablespace¸¦ »ı¼ºÇÏ´Â ÇÔ¼ö Å¸ÀÔ
  */
 typedef IDE_RC (*smiCreateDiskTBSFunc)(idvSQL             *aStatistics,
                                        smiTableSpaceAttr*  aTableSpaceAttr,
@@ -2052,12 +2136,12 @@ typedef IDE_RC (*smiCheckNeedUndoRecord)(smiStatement * aSmiStmt,
                                          void         * aTableHandle,
                                          idBool       * aIsNeed);
 
-/* BUG-19080: Old Versionì˜ ì–‘ì´ ì¼ì •ì´ìƒ ë§Œë“¤ë©´ í•´ë‹¹ Transactionì„
- * Abortí•˜ëŠ” ê¸°ëŠ¥ì´ í•„ìš”í•©ë‹ˆë‹¤.*/
+/* BUG-19080: Old VersionÀÇ ¾çÀÌ ÀÏÁ¤ÀÌ»ó ¸¸µé¸é ÇØ´ç TransactionÀ»
+ * AbortÇÏ´Â ±â´ÉÀÌ ÇÊ¿äÇÕ´Ï´Ù.*/
 typedef ULong (*smiGetUpdateMaxLogSize)( idvSQL* aStatistics );
 
-/* PROJ-2201 
- * Sessionìœ¼ë¡œë¶€í„° SQLì„ ì–»ì–´ì˜¤ëŠ” ê¸°ëŠ¥ì´ í•„ìš”í•©ë‹ˆë‹¤. */
+/* PROJ-2201
+ * SessionÀ¸·ÎºÎÅÍ SQLÀ» ¾ò¾î¿À´Â ±â´ÉÀÌ ÇÊ¿äÇÕ´Ï´Ù. */
 typedef IDE_RC (*smiGetSQLText)( idvSQL * aStatistics,
                                  UChar  * aStrBuffer,
                                  UInt     aStrBufferSize);
@@ -2067,7 +2151,7 @@ typedef IDE_RC (*smiGetSQLText)( idvSQL * aStatistics,
 typedef IDE_RC (*smiGetNonStoringSizeFunc)( const smiColumn *aColumn,
                                             UInt * aOutSize );
 
-// PROJ-2059 DB Upgrade ê¸°ëŠ¥
+// PROJ-2059 DB Upgrade ±â´É
 typedef void *(*smiGetColumnHeaderDescFunc)();
 typedef void *(*smiGetTableHeaderDescFunc)();
 typedef void *(*smiGetPartitionHeaderDescFunc)();
@@ -2082,6 +2166,8 @@ typedef IDE_RC (*smiGetColumnStoreLen)( const smiColumn * aColumn,
 
 typedef idBool (*smiIsUsablePartialDirectKey)( void *aColumn );
 
+typedef SInt (*smiGetDDLLockTimeout)(void * aMmSession);
+
 typedef struct smiGlobalCallBackList
 {
     smiFindCompareFunc                      findCompare;
@@ -2089,19 +2175,19 @@ typedef struct smiGlobalCallBackList
     smiFindNullFunc                         findNull;        // PROJ-1629
     smiFindCopyDiskColumnValueFunc          findCopyDiskColumnValue; // PROJ-1705
     smiFindCopyDiskColumnValue4DataTypeFunc findCopyDiskColumnValue4DataType; // PROJ-2429
-    smiFindActualSizeFunc                   findActualSize;    
-    smiFindHashKeyFunc                      findHash;      // Hash Key ìƒì„± í•¨ìˆ˜ë¥¼ ì°¾ëŠ” í•¨ìˆ˜
+    smiFindActualSizeFunc                   findActualSize;
+    smiFindHashKeyFunc                      findHash;      // Hash Key »ı¼º ÇÔ¼ö¸¦ Ã£´Â ÇÔ¼ö
     smiFindIsNullFunc                       findIsNull;
     smiGetAlignValueFunc                    getAlignValue;
-    smiGetValueLengthFromFetchBuffer        getValueLengthFromFetchBuffer; // PROJ-1705        
+    smiGetValueLengthFromFetchBuffer        getValueLengthFromFetchBuffer; // PROJ-1705
     smiLockWaitFunc                         waitLockFunc;
     smiLockWakeupFunc                       wakeupLockFunc;
-    smiSetEmergencyFunc                     setEmergencyFunc; // ë³µêµ¬ ê°€ëŠ¥í•œ ì—ëŸ¬ ë°œìƒì‹œ í˜¸ì¶œ.
-    smiSetEmergencyFunc                     clrEmergencyFunc; // ë³µêµ¬ ê°€ëŠ¥í•œ ì—ëŸ¬ í•´ê²°ì‹œ í˜¸ì¶œ.
+    smiSetEmergencyFunc                     setEmergencyFunc; // º¹±¸ °¡´ÉÇÑ ¿¡·¯ ¹ß»ı½Ã È£Ãâ.
+    smiSetEmergencyFunc                     clrEmergencyFunc; // º¹±¸ °¡´ÉÇÑ ¿¡·¯ ÇØ°á½Ã È£Ãâ.
     smiGetCurrTimeFunc                      getCurrTimeFunc;
     smiDDLSwitchFunc                        switchDDLFunc;
     smiMakeNullRowFunc                      makeNullRow;
-    smiCheckNeedUndoRecord                  checkNeedUndoRecord; // BUG-21895    
+    smiCheckNeedUndoRecord                  checkNeedUndoRecord; // BUG-21895
     smiGetUpdateMaxLogSize                  getUpdateMaxLogSize;
     smiGetSQLText                           getSQLText;
     smiGetNonStoringSizeFunc                getNonStoringSize;
@@ -2112,9 +2198,11 @@ typedef struct smiGlobalCallBackList
     smiNeedMinMaxStatistics                 needMinMaxStatistics; // BUG-37484
     smiGetColumnStoreLen                    getColumnStoreLen; // PROJ-2399
     smiIsUsablePartialDirectKey             isUsablePartialDirectKey; /* PROJ-2433 */
-
+    smiGetDDLLockTimeout                    getDDLLockTimeout;
 } smiGlobalCallBackList;
 
+
+/* not used
 // TASK-1421 SM UNIT enhancement , BUG-13124
 typedef IDE_RC (*smiCallbackRunSQLFunc)(smiStatement * aSmiStmt,
                                         SChar        * aSqlStr,
@@ -2134,20 +2222,22 @@ typedef struct smiUnitCallBackList
     smiCallbackRunSQLFunc mRunSQLFunc;
     smiCallbackGetTableHandleByNameFunc mGetTableHandleByNameFunc;
 }smiUnitCallBackList;
+*/
 
 /* ------------------------------------------------
- *  smiInit()ì„ ì‚¬ìš©í•˜ê¸° ìœ„í•œ Macros
- *  SMì„ ì‚¬ìš©í•˜ëŠ” ìœ í‹¸ë¦¬í‹° (altibase í¬í•¨)ë§ˆë‹¤
- *  smiInit()ì´ ë™ì‘í•˜ëŠ” ë°©ì‹ì´ ë‹¤ë¥´ê²Œ ê²°ì •ë¨
+ *  smiInit()À» »ç¿ëÇÏ±â À§ÇÑ Macros
+ *  SMÀ» »ç¿ëÇÏ´Â À¯Æ¿¸®Æ¼ (altibase Æ÷ÇÔ)¸¶´Ù
+ *  smiInit()ÀÌ µ¿ÀÛÇÏ´Â ¹æ½ÄÀÌ ´Ù¸£°Ô °áÁ¤µÊ
  * ----------------------------------------------*/
 
+/* not used
 typedef enum
 {
-    SMI_INIT_ACTION_MAKE_DB_NAME     = 0x00000001, // db name ìƒì„±
-    SMI_INIT_ACTION_MANAGER_INIT     = 0x00000002, // ê°ì¢… manager ì´ˆê¸°í™”
-    SMI_INIT_ACTION_RESTART_RECOVERY = 0x00000004, // restart recovery ìˆ˜í–‰
-    SMI_INIT_ACTION_REFINE_DB        = 0x00000008, // db refine ìˆ˜í–‰
-    SMI_INIT_ACTION_INDEX_REBUILDING = 0x00000010, // index ì¬êµ¬ì„±
+    SMI_INIT_ACTION_MAKE_DB_NAME     = 0x00000001, // db name »ı¼º
+    SMI_INIT_ACTION_MANAGER_INIT     = 0x00000002, // °¢Á¾ manager ÃÊ±âÈ­
+    SMI_INIT_ACTION_RESTART_RECOVERY = 0x00000004, // restart recovery ¼öÇà
+    SMI_INIT_ACTION_REFINE_DB        = 0x00000008, // db refine ¼öÇà
+    SMI_INIT_ACTION_INDEX_REBUILDING = 0x00000010, // index Àç±¸¼º
     SMI_INIT_ACTION_USE_SM_THREAD    = 0x00000020, // sm Thread startup
     SMI_INIT_ACTION_CREATE_LOG_FILE  = 0x00000040, // create log file
     SMI_INTI_ACTION_PRINT_INFO       = 0x00000080, // out manager info
@@ -2157,7 +2247,7 @@ typedef enum
     SMI_INIT_ACTION_MAX_END          = 0xFFFFFFFF
 } smiInitAction;
 
-// smiInit()ì˜ ì¸ìë¡œ ì…ë ¥ë¨
+// smiInit()ÀÇ ÀÎÀÚ·Î ÀÔ·ÂµÊ
 #define SMI_INIT_CREATE_DB  (SMI_INIT_ACTION_MAKE_DB_NAME |\
                              SMI_INIT_ACTION_MANAGER_INIT |\
                              SMI_INIT_ACTION_CREATE_LOG_FILE)
@@ -2175,9 +2265,10 @@ typedef enum
 
 #define SMI_INIT_SHMUTIL_DB (SMI_INIT_ACTION_MAKE_DB_NAME |\
                              SMI_INIT_ACTION_SHMUTIL_INIT)
+*/
 
 /* ------------------------------------------------
- *  A4ë¥¼ ìœ„í•œ Startup Flags
+ *  A4¸¦ À§ÇÑ Startup Flags
  * ----------------------------------------------*/
 typedef enum
 {
@@ -2192,7 +2283,7 @@ typedef enum
     SMI_STARTUP_MAX         = IDU_STARTUP_MAX,    // 7
 } smiStartupPhase;
 
-//lock Modeì˜ ìˆœì„œëŠ” smlLockModeì™€ ë™ì¼í•˜ê²Œ í•œë‹¤.
+//lock ModeÀÇ ¼ø¼­´Â smlLockMode¿Í µ¿ÀÏÇÏ°Ô ÇÑ´Ù.
 typedef enum
 {
     SMI_TABLE_NLOCK       = 0x00000000,
@@ -2230,63 +2321,25 @@ typedef struct smiCursorPosInfo
         {
             SLong    mIndexPos;
             void   * mRowPtr;
-        } mTRPos;  // Memory Temp Tableì„ ìœ„í•œ Cursor Information
+        } mTRPos;  // Memory Temp TableÀ» À§ÇÑ Cursor Information
         struct
         {
             void            * mPos;
-        } mDTPos;  // DiskTempTableì„ ìœ„í•œ CursorInformation
+        } mDTPos;  // DiskTempTableÀ» À§ÇÑ CursorInformation
     } mCursor;
 } smiCursorPosInfo;
 
-/*
-  PROJ-1677  DEQUEUE
-  smiRecordLockWaitInfoì˜ mRecordLockWaitFlagì˜ ê°’
-   SMI_RECORD_NO_LOCKWAIT - deleteì‹œ record lockì„ ëª»ì¡ëŠ” ê²½ìš°
-                            ëŒ€ê¸° í•˜ì§€ ì•Šê³  skipí•¨.
-                          - deleteì‹œ retryì—ëŸ¬ê°€ ë°œìƒí•˜ë©´
-                              ëŒ€ê¸° í•˜ì§€ ì•Šê³  skipí•¨.
-   SMI_RECORD_LOCKWAIT - í˜„ì¬ record lock schemeì„ ì¤€ìˆ˜í•˜ë¼ëŠ” í”Œë˜ê·¸
-*/
-enum
-{
-    SMI_RECORD_NO_LOCKWAIT=0,
-    SMI_RECORD_LOCKWAIT
-};
-/*
-  PROJ-1677  DEQUEUE
-  smiRecordLockWaitInfoì˜ mRecordLockWaitStatus  ê°’
-  SMI_ESCAPE_RECORD_LOCKWAIT - deleteì‹œ record lockì„ ëª»ì¡ëŠ” ê²½ìš°
-                            ëŒ€ê¸° í•˜ì§€ ì•Šê³  skipí•˜ì˜€ìŒì„ ë‚˜íƒ€ëƒ„.
-                             - deleteì‹œ retryì—ëŸ¬ê°€ ë°œìƒí•˜ë©´
-                              ëŒ€ê¸° í•˜ì§€ ì•Šê³  skipí•˜ì˜€ìŒì„ ë‚˜íƒ€ëƒ„.
- SMI_NO_ESCAPE_RECORD_LOCKWAIT - í˜„ì¬ record lock schemeì„ ì¤€ìˆ˜í•˜ì˜€ìŒì„ ë‚˜íƒ€ëƒ„.
-*/
-enum
-{
-    SMI_ESCAPE_RECORD_LOCKWAIT =0,
-    SMI_NO_ESCAPE_RECORD_LOCKWAIT
-};
-//PROJ-1677  DEQUEUE
-
-typedef UChar  smiRecordLockWaitFlag;
-
-typedef struct smiRecordLockWaitInfo
-{
-  UChar  mRecordLockWaitFlag;
-  UChar  mRecordLockWaitStatus;
-}smiRecordLockWaitInfo;
-
 //-----------------------------------------------
-// INDEX TYPEì˜ ê°œìˆ˜
-//    - ìµœëŒ€ ì¸ë±ìŠ¤ ì¢…ë¥˜ : 128 ê°œ
-// BUILT-IN INDEXì˜ ID
-//    - í•˜ìœ„ í˜¸í™˜ì„±ì„ ìœ„í•˜ì—¬ ê°’ì„ ê·¸ëŒ€ë¡œ ìœ ì§€í•œë‹¤.
+// INDEX TYPEÀÇ °³¼ö
+//    - ÃÖ´ë ÀÎµ¦½º Á¾·ù : 128 °³
+// BUILT-IN INDEXÀÇ ID
+//    - ÇÏÀ§ È£È¯¼ºÀ» À§ÇÏ¿© °ªÀ» ±×´ë·Î À¯ÁöÇÑ´Ù.
 //-----------------------------------------------
 
 #define SMI_MAX_INDEXTYPE_ID                    (128)
 #define SMI_BUILTIN_SEQUENTIAL_INDEXTYPE_ID       (0)
 #define SMI_BUILTIN_B_TREE_INDEXTYPE_ID           (1)
-#define SMI_BUILTIN_HV_B_TREE_INDEXTYPE_ID_LEGACY (2)
+#define SMI_BUILTIN_HV_B_TREE_INDEXTYPE_ID_LEGACY (2)    /* not used */
 #define SMI_BUILTIN_B_TREE2_INDEXTYPE_ID          (3)    /* Deprecated */
 #define SMI_BUILTIN_GRID_INDEXTYPE_ID             (4)
 #define SMI_ADDITIONAL_RTREE_INDEXTYPE_ID         (6)    /* TASK-3171 */
@@ -2295,19 +2348,19 @@ typedef struct smiRecordLockWaitInfo
 #define SMI_INDEXIBLE_TABLE_TYPES    (SMI_TABLE_TYPE_COUNT) // meta,temp,memory,disk,fixed,volatile,remote
 
 /* ----------------------------------------------------------------------------
- *  db dirì˜ ìµœëŒ€ ê°œìˆ˜
+ *  db dirÀÇ ÃÖ´ë °³¼ö
  * --------------------------------------------------------------------------*/
 #define SM_DB_DIR_MAX_COUNT       (8)
 
 /* ----------------------------------------------------------------------------
  * verify option
- * í˜„ì¬ëŠ” TBS verifyë§Œ ì§€ì›í•œë‹¤.
+ * ÇöÀç´Â TBS verify¸¸ Áö¿øÇÑ´Ù.
  * --------------------------------------------------------------------------*/
 // tbs, seg, ext verify
 #define SMI_VERIFY_TBS        (0x0001)
 // page verify
 #define SMI_VERIFY_PAGE       (0x0002)
-// sm logì— write
+// sm log¿¡ write
 #define SMI_VERIFY_WRITE_LOG  (0x0004)
 // dbf verify
 #define SMI_VERIFY_DBF        (0x0008)
@@ -2327,11 +2380,11 @@ typedef struct smiRecordLockWaitInfo
 // PROJ-1877
 // alter table modify column
 //
-// modify column ê¸°ëŠ¥ì¶”ê°€ë¡œ memory tableì˜ backup & restoreì‹œ
-// ë‹¤ë¥¸ typeìœ¼ë¡œ ë³€í™˜í•˜ì—¬ restoreí•˜ëŠ” ê¸°ëŠ¥ì´ í•„ìš”í•˜ê²Œ ë˜ì—ˆë‹¤.
+// modify column ±â´ÉÃß°¡·Î memory tableÀÇ backup & restore½Ã
+// ´Ù¸¥ typeÀ¸·Î º¯È¯ÇÏ¿© restoreÇÏ´Â ±â´ÉÀÌ ÇÊ¿äÇÏ°Ô µÇ¾ú´Ù.
 //
-// initilize, finalizeëŠ” record ë‹¨ìœ„ë¡œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ì´ë©°
-// convertValueëŠ” column ë§ˆë‹¤ ì›í•˜ëŠ” typeìœ¼ë¡œ ë³€í™˜í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+// initilize, finalize´Â record ´ÜÀ§·Î È£ÃâµÇ´Â ÇÔ¼öÀÌ¸ç
+// convertValue´Â column ¸¶´Ù ¿øÇÏ´Â typeÀ¸·Î º¯È¯ÇÏ´Â ÇÔ¼öÀÌ´Ù.
 //-----------------------------------------------
 
 typedef IDE_RC (*smiConvertInitializeForRestore)( void * aInfo );
@@ -2354,7 +2407,7 @@ typedef IDE_RC (*smiPrintProgressLogFuncForRestore)( void  * aInfo,
 
 struct smiAlterTableCallBack {
     void                              * info;   // qdbCallBackInfo
-    
+
     smiConvertInitializeForRestore      initializeConvert;
     smiConvertFinalizeForRestore        finalizeConvert;
     smiConvertValueFuncForRestore       convertValue;
@@ -2365,10 +2418,10 @@ struct smiAlterTableCallBack {
 
 
 
-/* Proj-2059 DB Upgrade ê¸°ëŠ¥
- * Server ì¤‘ì‹¬ì ìœ¼ë¡œ ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¤ê³  ë„£ëŠ” ê¸°ëŠ¥ */
+/* Proj-2059 DB Upgrade ±â´É
+ * Server Áß½ÉÀûÀ¸·Î µ¥ÀÌÅÍ¸¦ °¡Á®¿À°í ³Ö´Â ±â´É */
 
-// Header Structureë¥¼ Endianìƒê´€ì—†ì´ ì½ê³  ì“°ëŠ” ê·¸ë‹
+// Header Structure¸¦ Endian»ó°ü¾øÀÌ ÀĞ°í ¾²´Â ±×´×
 typedef UInt   smiHeaderType;
 
 #define SMI_DATAPORT_HEADER_OFFSETOF(s,m) (IDU_FT_OFFSETOF(s, m))
@@ -2400,30 +2453,30 @@ typedef UInt   smiHeaderType;
           SMI_DATAPORT_HEADER_FLAG_TYPE_YES     |\
           SMI_DATAPORT_HEADER_FLAG_SIZE_YES )
 
-//Validationìš© í•¨ìˆ˜ 
-typedef IDE_RC (*smiDataPortHeaderValidateFunc)( void * aDesc, 
+//Validation¿ë ÇÔ¼ö
+typedef IDE_RC (*smiDataPortHeaderValidateFunc)( void * aDesc,
                                                   UInt   aVersion,
                                                   void * aHeader  );
 
 typedef struct smiDataPortHeaderColDesc
 {
-    SChar         * mName;       // ì´ë¦„
+    SChar         * mName;       // ÀÌ¸§
     UInt            mOffset;     // Offset
     UInt            mSize;       // Size
-    ULong           mDefaultNum; // í•˜ìœ„ë²„ì „ì¼ ê²½ìš°, ì´ ê°’ì„ ëŒ€ì‹  ì„¤ì •í•œë‹¤
-    SChar         * mDefaultStr; // í•˜ìœ„ë²„ì „ì¼ ê²½ìš°, ì´ ê°’ì„ ëŒ€ì‹  ì„¤ì •í•œë‹¤
+    ULong           mDefaultNum; // ÇÏÀ§¹öÀüÀÏ °æ¿ì, ÀÌ °ªÀ» ´ë½Å ¼³Á¤ÇÑ´Ù
+    SChar         * mDefaultStr; // ÇÏÀ§¹öÀüÀÏ °æ¿ì, ÀÌ °ªÀ» ´ë½Å ¼³Á¤ÇÑ´Ù
     smiHeaderType   mType;       // DataType
 } smiDataPortHeaderColDesc;
 
 typedef struct smiDataPortHeaderDesc
 {
-    SChar                          * mName;          // ì´ë¦„
-    UInt                             mSize;          // ì›ë³¸ í—¤ë”ì˜ í¬ê¸°
-    smiDataPortHeaderColDesc       * mColumnDesc;    // columnì •ë³´
-    smiDataPortHeaderValidateFunc    mValidateFunc;  // Validationìš© í•¨ìˆ˜ 
+    SChar                          * mName;          // ÀÌ¸§
+    UInt                             mSize;          // ¿øº» Çì´õÀÇ Å©±â
+    smiDataPortHeaderColDesc       * mColumnDesc;    // columnÁ¤º¸
+    smiDataPortHeaderValidateFunc    mValidateFunc;  // Validation¿ë ÇÔ¼ö
 } smiDataPortHeaderDesc;
 
-/* ULongì„ BigEndianìœ¼ë¡œ Writeí•œë‹¤. */
+/* ULongÀ» BigEndianÀ¸·Î WriteÇÑ´Ù. */
 #define SMI_WRITE_ULONG(src, dst){                      \
      ((UChar*)(dst))[0] = (*((ULong*)(src)))>>(56) & 255; \
      ((UChar*)(dst))[1] = (*((ULong*)(src)))>>(48) & 255; \
@@ -2435,7 +2488,7 @@ typedef struct smiDataPortHeaderDesc
      ((UChar*)(dst))[7] = (*((ULong*)(src)))>>( 0) & 255; \
 }
 
-/* UIntì„ BigEndianìœ¼ë¡œ Writeí•œë‹¤. */
+/* UIntÀ» BigEndianÀ¸·Î WriteÇÑ´Ù. */
 #define  SMI_WRITE_UINT(src, dst){                     \
      ((UChar*)(dst))[0] = (*(UInt*)(src))>>(24) & 255; \
      ((UChar*)(dst))[1] = (*(UInt*)(src))>>(16) & 255; \
@@ -2443,13 +2496,13 @@ typedef struct smiDataPortHeaderDesc
      ((UChar*)(dst))[3] = (*(UInt*)(src))>>( 0) & 255; \
 }
 
-/* UShortì„ BigEndianìœ¼ë¡œ Writeí•œë‹¤. */
+/* UShortÀ» BigEndianÀ¸·Î WriteÇÑ´Ù. */
 #define  SMI_WRITE_USHORT(src, dst){                    \
     ((UChar*)(dst))[0] = (*(UShort*)(src))>>( 8) & 255; \
     ((UChar*)(dst))[1] = (*(UShort*)(src))>>( 0) & 255; \
 }
 
-/* BigEndianìœ¼ë¡œ ê¸°ë¡ëœ ULong ì„ Readí•œë‹¤. */
+/* BigEndianÀ¸·Î ±â·ÏµÈ ULong À» ReadÇÑ´Ù. */
 #define  SMI_READ_ULONG(src, dst){                         \
     *((ULong*)(dst)) = ((ULong)((UChar*)src)[0]<<56)       \
                    | ((ULong)((UChar*)src)[1]<<48)         \
@@ -2469,61 +2522,61 @@ typedef struct smiDataPortHeaderDesc
 }
 
 
-/* BigEndianìœ¼ë¡œ ê¸°ë¡ëœ UShortì„ Readí•œë‹¤. */
+/* BigEndianÀ¸·Î ±â·ÏµÈ UShortÀ» ReadÇÑ´Ù. */
 #define SMI_READ_USHORT(src, dst){                 \
     *((UShort*)(dst)) = (((UChar*)src)[0]<<8)      \
     | (((UChar*)src)[1]);                          \
 }
 
-/* Proj-2059 DB Upgrade ê¸°ëŠ¥
- * Server ì¤‘ì‹¬ì ìœ¼ë¡œ ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¤ê³  ë„£ëŠ” ê¸°ëŠ¥ */
+/* Proj-2059 DB Upgrade ±â´É
+ * Server Áß½ÉÀûÀ¸·Î µ¥ÀÌÅÍ¸¦ °¡Á®¿À°í ³Ö´Â ±â´É */
 
-// DataPortê¸°ëŠ¥ì„ ì œì–´í•˜ëŠ” Handle
+// DataPort±â´ÉÀ» Á¦¾îÇÏ´Â Handle
 
-// ì•„ì§ ì´ˆê¸°í™”ë˜ì§€ ì•Šì€ RowSeq
+// ¾ÆÁ÷ ÃÊ±âÈ­µÇÁö ¾ÊÀº RowSeq
 #define SMI_DATAPORT_NULL_ROWSEQ      (ID_SLONG_MAX)
 
-// DataPort Objectì˜ ì¢…ë¥˜
+// DataPort ObjectÀÇ Á¾·ù
 #define SMI_DATAPORT_TYPE_FILE        (0)
 #define SMI_DATAPORT_TYPE_MAX         (1)
- 
-//DataPortHeaderì˜ Version
+
+//DataPortHeaderÀÇ Version
 #define SMI_DATAPORT_VERSION_1        (1)
 
 #define SMI_DATAPORT_VERSION_BEGIN    (1)
 #define SMI_DATAPORT_VERSION_LATEST   (SMI_DATAPORT_VERSION_1)
 #define SMI_DATAPORT_VERSION_COUNT    (SMI_DATAPORT_VERSION_LATEST + 1)
 
-/* BUG-30503  [PROJ-2059] SYS_DATA_PORTS_ í…Œì´ë¸” ì»¬ëŸ¼ ê¸¸ì´ì™€ qcmDataPortInfo
- * êµ¬ì¡°ì²´ ë° ë¡œì»¬ ë°°ì—´ ê¸¸ì´ ë¶ˆì¼ì¹˜
- * QC_MAX_NAME_LENì™€ ì¼ì¹˜í•´ì•¼ í•¨. ë„ˆë¬´ í´ í•„ìš” ì—†ìŒ. */
+/* BUG-30503  [PROJ-2059] SYS_DATA_PORTS_ Å×ÀÌºí ÄÃ·³ ±æÀÌ¿Í qcmDataPortInfo
+ * ±¸Á¶Ã¼ ¹× ·ÎÄÃ ¹è¿­ ±æÀÌ ºÒÀÏÄ¡
+ * QC_MAX_NAME_LEN¿Í ÀÏÄ¡ÇØ¾ß ÇÔ. ³Ê¹« Å¬ ÇÊ¿ä ¾øÀ½. */
 #define SMI_DATAPORT_JOBNAME_SIZE     (40)
 
-// LobColumn ì—¬ë¶€
+// LobColumn ¿©ºÎ
 #define SMI_DATAPORT_LOB_COLUMN_TRUE  (true)
 #define SMI_DATAPORT_LOB_COLUMN_FALSE (false)
 
-// Objectì— ì €ì¥ë˜ëŠ” Header
+// Object¿¡ ÀúÀåµÇ´Â Header
 typedef struct smiDataPortHeader
 {
-    UInt               mVersion; // Objectì˜ Version.
-                                 // Versionë§Œì€ ì´í•˜ ë‹¤ë¥¸ ê°’ê³¼ ë‹¬ë¦¬
-                                 // ë”°ë¡œ 4Byte ì„ í–‰ë˜ì–´ ì½ëŠ”ë‹¤.
-                                 // ì™œëƒí•˜ë©´ mVersionì— ë”°ë¼ Headerì˜
-                                 // ëª¨ì–‘ì´ ë‹¬ë¼ì§ˆ ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤.
-    
-    idBool             mIsBigEndian;                // BigEndianì—¬ë¶€
-    UInt               mCompileBit;                 // 32Bitì¸ê°€ 64Bitì¸ê°€
-    SChar              mDBCharSet[ IDN_MAX_CHAR_SET_LEN ]; 
+    UInt               mVersion; // ObjectÀÇ Version.
+                                 // Version¸¸Àº ÀÌÇÏ ´Ù¸¥ °ª°ú ´Ş¸®
+                                 // µû·Î 4Byte ¼±ÇàµÇ¾î ÀĞ´Â´Ù.
+                                 // ¿Ö³ÄÇÏ¸é mVersion¿¡ µû¶ó HeaderÀÇ
+                                 // ¸ğ¾çÀÌ ´Ş¶óÁú ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù.
+
+    idBool             mIsBigEndian;                // BigEndian¿©ºÎ
+    UInt               mCompileBit;                 // 32BitÀÎ°¡ 64BitÀÎ°¡
+    SChar              mDBCharSet[ IDN_MAX_CHAR_SET_LEN ];
     SChar              mNationalCharSet[ IDN_MAX_CHAR_SET_LEN ];
 
-    UInt               mPartitionCount;   // Partitionì˜ ê°œìˆ˜
-    UInt               mColumnCount;      // Columnì˜ ê°œìˆ˜
-    UInt               mBasicColumnCount; // ì¼ë°˜Columnì˜ ê°œìˆ˜
-    UInt               mLobColumnCount;   // LobColumnì˜ ê°œìˆ˜
+    UInt               mPartitionCount;   // PartitionÀÇ °³¼ö
+    UInt               mColumnCount;      // ColumnÀÇ °³¼ö
+    UInt               mBasicColumnCount; // ÀÏ¹İColumnÀÇ °³¼ö
+    UInt               mLobColumnCount;   // LobColumnÀÇ °³¼ö
 
-    // ì´í•˜ ë³€ìˆ˜ë“¤ì€ ì„¸ë¶€ Headerë“¤ë¡œ, Encoderì˜ ë„ì›€ì„ ë°›ì•„
-    // ê¸°ë¡ëœë‹¤.
+    // ÀÌÇÏ º¯¼öµéÀº ¼¼ºÎ Headerµé·Î, EncoderÀÇ µµ¿òÀ» ¹Ş¾Æ
+    // ±â·ÏµÈ´Ù.
     void             * mObjectHeader;     // scp?Header
     void             * mTableHeader;      // qsfTableInfo
     void             * mColumnHeader;     // qsfColumnInfo
@@ -2531,72 +2584,72 @@ typedef struct smiDataPortHeader
 } smiDataPortHeader;
 
 extern smiDataPortHeaderDesc gSmiDataPortHeaderDesc[];
- 
+
 typedef struct smiRow4DP
 {
-    smiValue * mValueList;        // ì‚½ì…í•  Rowë‚´ì˜ Valueë“¤. 
-    idBool     mHasSupplementLob; // Lobì„ ë”°ë¡œ ì¶”ê°€ì ìœ¼ë¡œ ì½ì–´ì•¼ í•˜ëŠ”ì§€ ì—¬ë¶€
+    smiValue * mValueList;        // »ğÀÔÇÒ Row³»ÀÇ Valueµé.
+    idBool     mHasSupplementLob; // LobÀ» µû·Î Ãß°¡ÀûÀ¸·Î ÀĞ¾î¾ß ÇÏ´ÂÁö ¿©ºÎ
 } smiRow4DP;
 
 /* TASK-4990 changing the method of collecting index statistics
- * ìˆ˜ë™ í†µê³„ì •ë³´ ìˆ˜ì§‘ ê¸°ëŠ¥ */
+ * ¼öµ¿ Åë°èÁ¤º¸ ¼öÁı ±â´É */
 
-/* 1Byteì— ëª‡Bitì¸ê°€? */
+/* 1Byte¿¡ ¸îBitÀÎ°¡? */
 #define SMI_STAT_BYTE_BIT_COUNT  (8)
 
-/* 1Byteë¥¼ êµ¬í•˜ê¸° ìœ„í•œ BitMaskëŠ”? */
+/* 1Byte¸¦ ±¸ÇÏ±â À§ÇÑ BitMask´Â? */
 #define SMI_STAT_BYTE_BIT_MASK   (SMI_STAT_BYTE_BIT_COUNT-1)
 
-/* HashTableì— ì €ì¥ë˜ëŠ” Bitê°œìˆ˜ëŠ”? */
+/* HashTable¿¡ ÀúÀåµÇ´Â Bit°³¼ö´Â? */
 #define SMI_STAT_HASH_TBL_BIT_COUNT  (24)
 
-/* HashTableì˜ Byteí¬ê¸°ëŠ”? */
+/* HashTableÀÇ ByteÅ©±â´Â? */
 #define SMI_STAT_HASH_TBL_SIZE   ( 1<<SMI_STAT_HASH_TBL_BIT_COUNT )
 
-/* HashTableì˜ Byteí¬ê¸°ì˜ maskëŠ”? */
+/* HashTableÀÇ ByteÅ©±âÀÇ mask´Â? */
 #define SMI_STAT_HASH_TBL_MASK   ( SMI_STAT_HASH_TBL_SIZE - 1 )
 
-/* LocalHashê°€ ì´ˆê¸°í™”ë˜ëŠ” í¬ê¸° */
+/* LocalHash°¡ ÃÊ±âÈ­µÇ´Â Å©±â */
 #define SMI_STAT_HASH_THRESHOLD  ( SMI_STAT_HASH_TBL_SIZE / 8 )
 
-/* mtdHashì— ì˜í•´ 4Byte(32bit)ì¸ hashê°’ì„ SMI_STAT_HASH_TBL_BIT_COUNT Sizeë¡œ
- * ì¶•ì†Œí•¨ */
+/* mtdHash¿¡ ÀÇÇØ 4Byte(32bit)ÀÎ hash°ªÀ» SMI_STAT_HASH_TBL_BIT_COUNT Size·Î
+ * Ãà¼ÒÇÔ */
 #define SMI_STAT_HASH_COMPACT(i) ( ( ((UInt)i) & SMI_STAT_HASH_TBL_MASK ) ^ \
                                    ( ((UInt)i) >> SMI_STAT_HASH_TBL_BIT_COUNT ) )
 
-/* HashTableì—ì„œ ëª‡ë²ˆì§¸ Byteì¸ì§€ ì°¾ìŒ */
+/* HashTable¿¡¼­ ¸î¹øÂ° ByteÀÎÁö Ã£À½ */
 #define SMI_STAT_GET_HASH_IDX(i)     ( SMI_STAT_HASH_COMPACT(i) /  \
-                                       SMI_STAT_BYTE_BIT_COUNT ) 
+                                       SMI_STAT_BYTE_BIT_COUNT )
 
-/* HashTableì˜ í•´ë‹¹ Byteì— ì„¤ì •í•  Bitë¥¼ ì–»ìŒ */
+/* HashTableÀÇ ÇØ´ç Byte¿¡ ¼³Á¤ÇÒ Bit¸¦ ¾òÀ½ */
 #define SMI_STAT_GET_HASH_BIT(i)     ( 1 << ( SMI_STAT_HASH_COMPACT(i) \
                                               & SMI_STAT_BYTE_BIT_MASK ) )
 
-/* HashTableì— í•´ë‹¹ ê°’ì˜ Bitë¥¼ ì„¤ì •í•¨ */
+/* HashTable¿¡ ÇØ´ç °ªÀÇ Bit¸¦ ¼³Á¤ÇÔ */
 #define SMI_STAT_SET_HASH_VALUE(h,i) ( h[ SMI_STAT_GET_HASH_IDX(i) ] |= \
                                         SMI_STAT_GET_HASH_BIT(i) )
 
-/* HashTableì— í•´ë‹¹ ê°’ì˜ Bitë¥¼ ê°€ì ¸ì˜´í•¨ */
+/* HashTable¿¡ ÇØ´ç °ªÀÇ Bit¸¦ °¡Á®¿ÈÇÔ */
 #define SMI_STAT_GET_HASH_VALUE(h,i) ( h[ SMI_STAT_GET_HASH_IDX(i) ] & \
                                         SMI_STAT_GET_HASH_BIT(i) )
 
-/* Columnì— ëŒ€í•œ ë¶„ì„ìš© ìë£Œêµ¬ì¡° */
+/* Column¿¡ ´ëÇÑ ºĞ¼®¿ë ÀÚ·á±¸Á¶ */
 typedef struct smiStatSystemArgument
 {
-    SLong  mHashTime;          /* ëˆ„ì  hash ì‹œê°„ */
-    SLong  mHashCnt;           /* ëˆ„ì  hash íšŸìˆ˜ */
-    SLong  mCompareTime;       /* ëˆ„ì  compare ì‹œê°„ */
-    SLong  mCompareCnt;        /* ëˆ„ì  compare íšŸìˆ˜ */
+    SLong  mHashTime;          /* ´©Àû hash ½Ã°£ */
+    SLong  mHashCnt;           /* ´©Àû hash È½¼ö */
+    SLong  mCompareTime;       /* ´©Àû compare ½Ã°£ */
+    SLong  mCompareCnt;        /* ´©Àû compare È½¼ö */
 } smiStatSystemArgument;
 
-/* Columnì— ëŒ€í•œ ë¶„ì„ìš© ìë£Œêµ¬ì¡° */
+/* Column¿¡ ´ëÇÑ ºĞ¼®¿ë ÀÚ·á±¸Á¶ */
 typedef struct smiStatColumnArgument
 {
-    /* BUG-33548   [sm_transaction] The gather table statistics function 
+    /* BUG-33548   [sm_transaction] The gather table statistics function
      * doesn't consider SigBus error */
     /* Min max */
-    ULong  mMinValue[SMI_MAX_MINMAX_VALUE_SIZE/ID_SIZEOF(ULong)]; /*Minê°’ */
-    ULong  mMaxValue[SMI_MAX_MINMAX_VALUE_SIZE/ID_SIZEOF(ULong)]; /*Maxê°’ */
+    ULong  mMinValue[SMI_MAX_MINMAX_VALUE_SIZE/ID_SIZEOF(ULong)]; /*Min°ª */
+    ULong  mMaxValue[SMI_MAX_MINMAX_VALUE_SIZE/ID_SIZEOF(ULong)]; /*Max°ª */
     UInt   mMinLength;
     UInt   mMaxLength;
 
@@ -2620,42 +2673,42 @@ typedef struct smiStatColumnArgument
 
     /* Average Column Length */
     SLong mAccumulatedSize;
-          
+
     /* Result */
     SLong mNumDist;         /* NumberOfDinstinctValue(Cardinality) */
     SLong mNullCount;       /* NullValue Count   */
 } smiStatColumnArgument;
 
-/* Tableì— ëŒ€í•œ ë¶„ì„ìš© ìë£Œêµ¬ì¡° */
+/* Table¿¡ ´ëÇÑ ºĞ¼®¿ë ÀÚ·á±¸Á¶ */
 typedef struct smiStatTableArgument
 {
     SFloat mSampleSize;        /* 1~100     */
 
-    SLong  mAnalyzedRowCount;  /* ë¶„ì„í•œ ë¡œìš° ê°œìˆ˜    */
-    SLong  mAccumulatedSize;   /* ëˆ„ì  ë¡œìš° í¬ê¸°    */
+    SLong  mAnalyzedRowCount;  /* ºĞ¼®ÇÑ ·Î¿ì °³¼ö    */
+    SLong  mAccumulatedSize;   /* ´©Àû ·Î¿ì Å©±â    */
 
-    SLong  mReadRowTime;       /* ëˆ„ì  one row read time */
-    SLong  mReadRowCnt;        /* ëˆ„ì  one row read count */
+    SLong  mReadRowTime;       /* ´©Àû one row read time */
+    SLong  mReadRowCnt;        /* ´©Àû one row read count */
 
-    SLong  mAnalyzedPageCount; 
-    SLong  mMetaSpace;         /* PageHeader, ExtDirë“± Meta ê³µê°„ */
-    SLong  mUsedSpace;         /* í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ ê³µê°„ */
-    SLong  mAgableSpace;       /* ë‚˜ì¤‘ì— Agingê°€ëŠ¥í•œ ê³µê°„ */
-    SLong  mFreeSpace;         /* Dataì‚½ì…ì´ ê°€ëŠ¥í•œ ë¹ˆ ê³µê°„ */
+    SLong  mAnalyzedPageCount;
+    SLong  mMetaSpace;         /* PageHeader, ExtDirµî Meta °ø°£ */
+    SLong  mUsedSpace;         /* ÇöÀç »ç¿ëÁßÀÎ °ø°£ */
+    SLong  mAgableSpace;       /* ³ªÁß¿¡ Aging°¡´ÉÇÑ °ø°£ */
+    SLong  mFreeSpace;         /* Data»ğÀÔÀÌ °¡´ÉÇÑ ºó °ø°£ */
 
     smiStatColumnArgument * mColumnArgument;
 
     /* PROJ-2180 valueForModule
-       SMI_OFFSET_USELESS ìš© ì»¬ëŸ¼ */
+       SMI_OFFSET_USELESS ¿ë ÄÃ·³ */
     smiColumn             * mBlankColumn;
 } smiStatTableArgument;
 
 // BUG-40217
-// float íƒ€ì…ì˜ ê²½ìš° ìµœëŒ€ê¸¸ì´ê°€ 47ì´ë‹¤.
-// ì´ë¥¼ ê³ ë ¤í•˜ì—¬ 48ê¹Œì§€ ëŠ˜ë¦°ë‹¤.
+// float Å¸ÀÔÀÇ °æ¿ì ÃÖ´ë±æÀÌ°¡ 47ÀÌ´Ù.
+// ÀÌ¸¦ °í·ÁÇÏ¿© 48±îÁö ´Ã¸°´Ù.
 #define SMI_DBMSSTAT_STRING_VALUE_SIZE (48)
 
-/* X$DBMS_STAT ì„ êµ¬í˜„í•˜ê¸° ìœ„í•¨ */
+/* X$DBMS_STAT À» ±¸ÇöÇÏ±â À§ÇÔ */
 typedef struct smiDBMSStat4Perf
 {
     SChar   mCreateTime[SMI_DBMSSTAT_STRING_VALUE_SIZE];  /* TimeValue */
@@ -2689,11 +2742,11 @@ typedef struct smiDBMSStat4Perf
     SLong   mUsedSpace;
     SLong   mAgableSpace;
     SLong   mFreeSpace;
-            
-    /* BUG-33548   [sm_transaction] The gather table statistics function 
+
+    /* BUG-33548   [sm_transaction] The gather table statistics function
      * doesn't consider SigBus error */
-    ULong   mMinValue[SMI_DBMSSTAT_STRING_VALUE_SIZE/ID_SIZEOF(ULong)]; /*Minê°’ */
-    ULong   mMaxValue[SMI_DBMSSTAT_STRING_VALUE_SIZE/ID_SIZEOF(ULong)]; /*Maxê°’ */
+    ULong   mMinValue[SMI_DBMSSTAT_STRING_VALUE_SIZE/ID_SIZEOF(ULong)]; /*Min°ª */
+    ULong   mMaxValue[SMI_DBMSSTAT_STRING_VALUE_SIZE/ID_SIZEOF(ULong)]; /*Max°ª */
 } smiDBMSStat4Perf;
 
 /*****************************************************************************
@@ -2701,42 +2754,50 @@ typedef struct smiDBMSStat4Perf
  *****************************************************************************/
 
 /************************** TT Flag (TempTable) *****************************/
-/* Tableì˜ ì¢…ë¥˜ */
-#define SMI_TTFLAG_TYPE_MASK            (0x00000003)
-#define SMI_TTFLAG_TYPE_SORT            (0x00000000) /* SortTempë¡œ */
-#define SMI_TTFLAG_TYPE_HASH            (0x00000001) /* ì¼ë°˜ Hashë¡œ */
-#define SMI_TTFLAG_TYPE_CLUSTER_HASH    (0x00000002) /* ClusterHash */
 
-/* ì‚¬ìš©ìê°€ RangeScanì„ ì‚¬ìš©í•  ê²½ìš°(ex:SortJoin)
- * ì—­ìˆœìœ„ íƒìƒ‰ ë° MultipleIndexë„ ê°€ëŠ¥í•´ì§ */
+#define SMI_TTFLAG_NONE                 (0x00000000)
+
+/* TableÀÇ Á¾·ù */
+#define SMI_TTFLAG_TYPE_MASK            (0x00000003)
+#define SMI_TTFLAG_TYPE_SORT            (0x00000001) /* SortTemp·Î */
+#define SMI_TTFLAG_TYPE_HASH            (0x00000002) /* ÀÏ¹İ Hash·Î */
+
+/* »ç¿ëÀÚ°¡ RangeScanÀ» »ç¿ëÇÒ °æ¿ì(ex:SortJoin)
+ * ¿ª¼øÀ§ Å½»ö ¹× MultipleIndexµµ °¡´ÉÇØÁü */
 #define SMI_TTFLAG_RANGESCAN            (0x00000010)
-/* UniquenessViolationì„ ì¼ìœ¼í‚´ */
+/* UniquenessViolationÀ» ÀÏÀ¸Å´ */
 #define SMI_TTFLAG_UNIQUE               (0x00000020)
 
 /************************** TC Flag (TempCursor) ****************************/
-/* Defaultê°’ */
+/* Default°ª */
 #define SMI_TCFLAG_INIT           ( SMI_TCFLAG_FORWARD | \
                                     SMI_TCFLAG_ORDEREDSCAN )
 
-#define SMI_TCFLAG_DIRECTION_MASK (0x00000003)/*Scan ë°©í–¥  */
-#define SMI_TCFLAG_FORWARD        (0x00000001)/*ì •ë°©í–¥(LeftToRight) */
-#define SMI_TCFLAG_BACKWARD       (0x00000002)/*ì—­ë°©í–¥(RightToLeft) */
+#define SMI_TCFLAG_DIRECTION_MASK (0x00000003)/*Scan ¹æÇâ  */
+#define SMI_TCFLAG_FORWARD        (0x00000001)/*Á¤¹æÇâ(LeftToRight) */
+#define SMI_TCFLAG_BACKWARD       (0x00000002)/*¿ª¹æÇâ(RightToLeft) */
 
-#define SMI_TCFLAG_HIT_MASK       (0x0000000C)/*HitFlagì²´í¬ ì—¬ë¶€ */
-#define SMI_TCFLAG_IGNOREHIT      (0x00000000)/*ìƒê´€ì—†ì´ íƒìƒ‰ */
-#define SMI_TCFLAG_HIT            (0x00000004)/*Hitëœ ê²ƒë§Œ íƒìƒ‰ */
-#define SMI_TCFLAG_NOHIT          (0x00000008)/*Hitì•ˆëœ ê²ƒì€ ì œì™¸ */
+#define SMI_TCFLAG_HIT_MASK       (0x0000000C)/*HitFlagÃ¼Å© ¿©ºÎ */
+#define SMI_TCFLAG_IGNOREHIT      (0x00000000)/*»ó°ü¾øÀÌ Å½»ö */
+#define SMI_TCFLAG_HIT            (0x00000004)/*HitµÈ °Í¸¸ Å½»ö */
+#define SMI_TCFLAG_NOHIT          (0x00000008)/*Hit¾ÈµÈ °ÍÀº Á¦¿Ü */
 
-#define SMI_TCFLAG_SCAN_MASK      (0x00000070)/*Scaní•˜ëŠ” ë°©ë²• */
-#define SMI_TCFLAG_FULLSCAN       (0x00000000)/*ì¼ë°˜ì ì¸ Scan */
-#define SMI_TCFLAG_ORDEREDSCAN    (0x00000010)/*ì •ë ¬ëœ Scan */
-#define SMI_TCFLAG_RANGESCAN      (0x00000020)/*Range(ë˜ëŠ” HashValue)*/
-#define SMI_TCFLAG_HASHSCAN       (0x00000040)/*Hashê°’ìœ¼ë¡œ íƒìƒ‰)*/
+#define SMI_TCFLAG_SCAN_MASK      (0x00000070)/*ScanÇÏ´Â ¹æ¹ı */
+#define SMI_TCFLAG_FULLSCAN       (0x00000000)/*ÀÏ¹İÀûÀÎ Scan */
+#define SMI_TCFLAG_ORDEREDSCAN    (0x00000010)/*Á¤·ÄµÈ Scan */
+#define SMI_TCFLAG_RANGESCAN      (0x00000020)/*Range(¶Ç´Â HashValue)*/
+#define SMI_TCFLAG_HASHSCAN       (0x00000040)/*Hash°ªÀ¸·Î Å½»ö)*/
 
-#define SMI_TCFLAG_FILTER_MASK    (0x00000700)/*Filterë¥¼ ì‚¬ìš©ì—¬ë¶€*/
-#define SMI_TCFLAG_FILTER_RANGE   (0x00000100)/*RangeFilterë¥¼ ì‚¬ìš©í•¨*/
-#define SMI_TCFLAG_FILTER_KEY     (0x00000200)/*KeyFilterë¥¼ ì‚¬ìš©í•¨*/
-#define SMI_TCFLAG_FILTER_ROW     (0x00000400)/*RowFilterë¥¼ ì‚¬ìš©í•¨*/
+#define SMI_TCFLAG_FILTER_MASK    (0x00000700)/*Filter¸¦ »ç¿ë¿©ºÎ*/
+#define SMI_TCFLAG_FILTER_RANGE   (0x00000100)/*RangeFilter¸¦ »ç¿ëÇÔ*/
+#define SMI_TCFLAG_FILTER_KEY     (0x00000200)/*KeyFilter¸¦ »ç¿ëÇÔ*/
+#define SMI_TCFLAG_FILTER_ROW     (0x00000400)/*RowFilter¸¦ »ç¿ëÇÔ*/
+
+#define SMI_HASH_CURSOR_NONE         (0x00000000) /* Hash°¡ cursor¸¦ ¿­ ¼ö ¾ø´Â »óÅÂÀÌ´Ù */
+#define SMI_HASH_CURSOR_INIT         (0x00000001) /* Hash°¡ ÃÊ±âÈ­ µÇ¾î¼­ cursor¸¦ ¿­ ¼ö ÀÖ´Â »óÅÂ */
+#define SMI_HASH_CURSOR_FULL_SCAN    (0x00000002)
+#define SMI_HASH_CURSOR_HASH_SCAN    (0x00000003)
+#define SMI_HASH_CURSOR_HASH_UPDATE  (0x00000004)
 
 typedef enum
 {
@@ -2750,42 +2811,28 @@ typedef enum
     SMI_TTSTATE_SORT_MERGESCAN,
     SMI_TTSTATE_SORT_INDEXSCAN,
     SMI_TTSTATE_SORT_SCAN,
-    SMI_TTSTATE_CLUSTERHASH_PARTITIONING,
-    SMI_TTSTATE_CLUSTERHASH_SCAN,
-    SMI_TTSTATE_UNIQUEHASH
+    SMI_TTSTATE_HASH_INSERT,
+    SMI_TTSTATE_HASH_FETCH_FULLSCAN,
+    SMI_TTSTATE_HASH_FETCH_HASHSCAN,
+    SMI_TTSTATE_HASH_FETCH_UPDATE
 } smiTempState;
 
-/* TempTableìš© Module.
- * Fetch, Store/Restore Cursorë“±ì€ Cursorì— Moduleì´ ìˆìŒ */
-typedef IDE_RC (*smiTempInit)(void     * aHeader );
-typedef IDE_RC (*smiTempDestroy)(void     * aHeader );
-typedef IDE_RC (*smiTempInsert)(void     * aHeader,
-                                smiValue * aValue, 
-                                UInt       aHashValue,
-                                scGRID   * aGRID,
-                                idBool   * aResult );
-typedef IDE_RC (*smiTempSort)(void * aHeader );
-typedef IDE_RC (*smiTempOpenCursor)(void * aHeader,
-                                    void * aCursor );
-typedef IDE_RC (*smiTempCloseCursor)(void *aTempCursor);
+struct smiSortTempCursor;
+struct smiTempTableHeader;
+struct smiTempPosition;
 
-typedef IDE_RC (*smiTempFetch)(void    * aTempCursor,
-                               UChar  ** aRow,
-                               scGRID  * aRowGRID );
-typedef IDE_RC (*smiTempStoreCursor)(void * aCursor,
-                                     void * aPosition );
-typedef IDE_RC (*smiTempRestoreCursor)(void    * aCursor,
-                                       void    * aPosition );
+/* TempTable¿ë Module.
+ * Fetch, Store/Restore CursorµîÀº Cursor¿¡ ModuleÀÌ ÀÖÀ½ */
+typedef IDE_RC (*smiTempOpenCursor)( smiTempTableHeader * aHeader,
+                                     smiSortTempCursor  * aCursor );
 
-typedef struct smiTempModule
-{
-    smiTempInit          mInit;
-    smiTempDestroy       mDestroy;
-    smiTempInsert        mInsert;
-    smiTempSort          mSort;
-    smiTempOpenCursor    mOpenCursor;
-    smiTempCloseCursor   mCloseCursor;
-} smiTempModule;
+typedef IDE_RC (*smiTempFetch)( smiSortTempCursor  * aTempCursor,
+                                UChar  ** aRow,
+                                scGRID  * aRowGRID );
+typedef IDE_RC (*smiTempStoreCursor)( smiSortTempCursor * aCursor,
+                                      smiTempPosition   * aPosition );
+typedef IDE_RC (*smiTempRestoreCursor)( smiSortTempCursor * aCursor,
+                                        smiTempPosition   * aPosition );
 
 typedef struct smiTempColumn
 {
@@ -2799,18 +2846,23 @@ typedef struct smiTempColumn
     smiTempColumn             * mNextKeyColumn;
 } smiTempColumn;
 
-/* TempTableì—ì„œ ìˆ˜í–‰í•˜ëŠ” ì—°ì‚°ë“¤ 
+/* TempTable¿¡¼­ ¼öÇàÇÏ´Â ¿¬»êµé
  * TTOPR(TempTableOperation) */
 typedef enum
 {
     SMI_TTOPR_NONE,
     SMI_TTOPR_CREATE,
     SMI_TTOPR_DROP,
-    SMI_TTOPR_SORT,
+    SMI_TTOPR_SORT, 
     SMI_TTOPR_OPENCURSOR,
+    SMI_TTOPR_OPENCURSOR_HASH,
+    SMI_TTOPR_OPENCURSOR_FULL,
+    SMI_TTOPR_OPENCURSOR_UPDATE,
     SMI_TTOPR_RESTARTCURSOR,
     SMI_TTOPR_FETCH,
-    SMI_TTOPR_FETCHFROMGRID,
+    SMI_TTOPR_FETCH_HASH,
+    SMI_TTOPR_FETCH_FULL,
+    SMI_TTOPR_FETCH_FROMGRID,
     SMI_TTOPR_STORECURSOR,
     SMI_TTOPR_RESTORECURSOR,
     SMI_TTOPR_CLEAR,
@@ -2822,62 +2874,75 @@ typedef enum
     SMI_TTOPR_MAX
 } smiTempTableOpr;
 
-/* smiTempTable::checkSessionAndStats ì°¸ì¡°
- * í•´ë‹¹ ì—°ì‚°ì´ SMI_TT_STATS_INTERVALíšŒ ëˆ„ì ë˜ë©´, í†µê³„ì •ë³´ë¥¼ ê°±ì‹ í•¨ */
+/* ÇØ´ç ¿¬»êÀÌ SMI_TT_STATS_INTERVALÈ¸ ´©ÀûµÇ¸é, Åë°èÁ¤º¸¸¦ °»½ÅÇÔ */
 #define SMI_TT_STATS_INTERVAL (65536)
-/* ì´ TempTableì„ ìˆ˜í–‰í•œ SQLì„ ì €ì¥í•´ë‘˜ ë²„í¼ì˜ í¬ê¸° */
+/* ÀÌ TempTableÀ» ¼öÇàÇÑ SQLÀ» ÀúÀåÇØµÑ ¹öÆÛÀÇ Å©±â */
 #define SMI_TT_SQLSTRING_SIZE (16384)
-/* ê¸°íƒ€ TempTableìš© Stringì˜ ë²„í¼ í¬ê¸° */
-#define SMI_TT_STR_SIZE          (32)
+/* ±âÅ¸ TempTable¿ë StringÀÇ ¹öÆÛ Å©±â */
+#define SMI_TT_STR_SIZE          (36)
 
-/* TempTable í•˜ë‚˜ì— ëŒ€í•œ í†µê³„ ì •ë³´ */
+/* TempTable ÇÏ³ª¿¡ ´ëÇÑ Åë°è Á¤º¸ */
 typedef struct smiTempTableStats
 {
-    UChar             mSQLText[ SMI_TT_SQLSTRING_SIZE ];
 
-    ULong             mCount; /* mGlobalStatìš©. ëˆ„ì í•œ í†µê³„ì •ë³´ ê°¯ìˆ˜ */
-    ULong             mTime;  /* mGlobalStatìš©. ëˆ„ì  ì‹œê°„ */
+    ULong             mCount; /* mGlobalStat¿ë. ´©ÀûÇÑ Åë°èÁ¤º¸ °¹¼ö */
+    ULong             mTime;  /* mGlobalStat¿ë. ´©Àû ½Ã°£ */
 
     UInt              mCreateTV;
     UInt              mDropTV;
     UInt              mSpaceID;
     UInt              mTransID;
-    
-    smiTempTableOpr   mTTLastOpr;   /* ë§ˆì§€ë§‰ìœ¼ë¡œ ì‹¤í–‰í•œ Operation */
-    smiTempState      mTTState;
-    idvTime           mLastOprTime; /* ë§ˆì§€ë§‰ìœ¼ë¡œ OperationCheckí•œ ì‹œê°„*/
-    ULong             mOprCount[ SMI_TTOPR_MAX ];
-    ULong             mOprTime[ SMI_TTOPR_MAX ];
-    ULong             mOprPrepareTime[ SMI_TTOPR_MAX ];
-    UInt              mIOPassNo;    /* 0:InMemory, 1:OnePass, 2:.. */
-    ULong             mEstimatedOptimalSortSize; /* InMemorySort í¬ê¸° ì˜ˆì¸¡ */ 
-    ULong             mEstimatedOnepassSortSize; /* OnePassSort í¬ê¸° ì˜ˆì¸¡ */ 
-    ULong             mEstimatedOptimalHashSize; /* InMemoryHash í¬ê¸° ì˜ˆì¸¡ */ 
-    ULong             mReadCount;       /* Read íšŒìˆ˜ */
-    ULong             mWriteCount;      /* WriteíšŒìˆ˜ */
-    ULong             mWritePageCount;  /* Writeí•œ Pageê°œìˆ˜  */
-    ULong             mRedirtyCount;    /* Redirtyëœ íšŒìˆ˜  */
-    ULong             mAllocWaitCount;  /* Extentí• ë‹¹ì„   ëŒ€ê¸°í•œ íšŒìˆ˜   */
-    ULong             mWriteWaitCount;  /* Writeí•˜ê¸° ìœ„í•´ ëŒ€ê¸°í•œ íšŒìˆ˜   */
-    ULong             mQueueWaitCount;  /* Queueê°€ ê½‰ì°¨ì„œ ëŒ€ê¸°í•œ íšŒìˆ˜   */
 
-    SLong             mWorkAreaSize;   /*Byte */
+    smiTempTableOpr   mTTLastOpr;   /* ¸¶Áö¸·À¸·Î ½ÇÇàÇÑ Operation */
+    smiTempState      mTTState;
+
+    ULong             mReadCount;       /* Read È¸¼ö */
+    ULong             mWriteCount;      /* WriteÈ¸¼ö */
+    ULong             mWritePageCount;  /* WriteÇÑ Page°³¼ö  */
+    ULong             mOverAllocCount;  /* Extent¸¦ ÃÊ°ú ÇÒ´çÇÑ ¼ö   */
+    ULong             mAllocWaitCount;  /* Extent ÇÒ´ç ´ë±âÇÑ ¼ö   */
+
+    SLong             mExtraStat1;     /* (Sort½Ã, Á¤·ÄÀ» À§ÇÑ ºñ±³È¸¼ö),
+                                        * (Hash½Ã HashBucket °³¼ö) */
+    SLong             mExtraStat2;     /* (Sort½Ã, ¸¶Áö¸· RunÀÇ Slot°³¼ö),
+                                          (HashCollision ¹ß»ı È¸¼ö ) */
+
+    SLong             mMaxWorkAreaSize;/*Byte */
+    SLong             mUsedWorkAreaSize;
     SLong             mNormalAreaSize; /*Byte*/
+    SLong             mRuntimeMemSize; /*Byte*/
     SLong             mRecordCount;
     UInt              mRecordLength;
 
-    UInt              mMergeRunCount;  /* SortTempì˜ MergeRunì˜ ê°œìˆ˜ */
-    UInt              mHeight;         /* SortTempì˜ Indexì˜ ë†’ì´ */
-    SLong             mExtraStat1;     /* (Sortì‹œ, ì •ë ¬ì„ ìœ„í•œ ë¹„êµíšŒìˆ˜), 
-                                        * (Hashì‹œ HashBucket ê°œìˆ˜) */
-    SLong             mExtraStat2;     /* (Sortì‹œ, ë§ˆì§€ë§‰ Runì˜ Slotê°œìˆ˜), 
-                                          (HashCollision ë°œìƒ íšŒìˆ˜ ) */
+    UInt              mMergeRunCount;  /* SortTempÀÇ MergeRunÀÇ °³¼ö */
+    UInt              mHeight;         /* SortTempÀÇ IndexÀÇ ³ôÀÌ */
+
+    UInt              mIOPassNo;    /* 0:InMemory, 1:OnePass, 2:.. */
+    ULong             mEstimatedOptimalSize; /* InMemorySort Å©±â ¿¹Ãø */
+    ULong             mEstimatedSubOptimalSize; /* OnePassHash Å©±â ¿¹Ãø */
+
+    UChar             mSQLText[ SMI_TT_SQLSTRING_SIZE ];
+
 } smiTempTableStats;
 
+typedef struct smiTempTableIOStats
+{
+    SLong     mMaxUsedWorkAreaSize;
+    ULong     mReadCount;       /* Read È¸¼ö */
+    ULong     mWriteCount;      /* WriteÈ¸¼ö */
+    ULong     mWritePageCount;  /* WriteÇÑ Page°³¼ö  */
+
+    ULong     mEstimatedOptimalSize; /* InMemoryHash Å©±â ¿¹Ãø */
+    ULong     mEstimatedSubOptimalSize; /* OnePassHash Å©±â ¿¹Ãø */
+
+    UInt      mIOPassNo;    /* 0:InMemory, 1:OnePass, 2:.. */
+
+}smiTempTableIOStats;
+
 /* X$TEMPTABLE_STATS */
-/* PerformanceViewë¥¼ ìœ„í•œ ë³´ê¸° ì¢‹ì€ viewë¡œ ìˆ˜ì •í•¨ */
-/* ê°œê´„ì ì¸ í†µê³„ì •ë³´ ëŒ€ë¶€ë¶„ì„ ì¶œë ¥í•´ì¤Œ. 
- * ì¹¼ëŸ¼ì˜ ì˜ë¯¸ëŠ” ìœ„ smiTempTableStatsì™€ ë™ì¼*/
+/* PerformanceView¸¦ À§ÇÑ º¸±â ÁÁÀº view·Î ¼öÁ¤ÇÔ */
+/* °³°ıÀûÀÎ Åë°èÁ¤º¸ ´ëºÎºĞÀ» Ãâ·ÂÇØÁÜ.
+ * Ä®·³ÀÇ ÀÇ¹Ì´Â À§ smiTempTableStats¿Í µ¿ÀÏ*/
 typedef struct smiTempTableStats4Perf
 {
     UInt    mSlotIdx;
@@ -2892,19 +2957,18 @@ typedef struct smiTempTableStats4Perf
 
     SChar   mTTState[SMI_TT_STR_SIZE];
     UInt    mIOPassNo;
-    ULong   mEstimatedOptimalSortSize;
-    ULong   mEstimatedOnepassSortSize;
-    ULong   mEstimatedOptimalHashSize;
+    ULong   mEstimatedOptimalSize;
+    ULong   mEstimatedSubOptimalSize;
     ULong   mReadCount;
     ULong   mWriteCount;
     ULong   mWritePageCount;
-    ULong   mRedirtyCount;
+    ULong   mOverAllocCount;
     ULong   mAllocWaitCount;
-    ULong   mWriteWaitCount;
-    ULong   mQueueWaitCount;
 
-    SLong   mWorkAreaSize;   /*Byte */
+    SLong   mMaxWorkAreaSize;   /*Byte */
+    SLong   mUsedWorkAreaSize;   /*Byte */
     SLong   mNormalAreaSize; /*Byte*/
+    SLong   mRuntimeMemSize; /*Byte*/
     SLong   mRecordCount;
     UInt    mRecordLength;
 
@@ -2914,29 +2978,16 @@ typedef struct smiTempTableStats4Perf
     SLong   mExtraStat2;
 } smiTempTableStats4Perf;
 
-/* X$TEMPTABLE_OPER */
-/* ìœ„ TempTableí†µê³„ì •ë³´ ì¤‘ ê°™ì€ SlotIdxì˜ TempTableì˜, 
- * ì„¸ë¶€ Operationì˜ ìˆ˜í–‰ íšŒìˆ˜ ë° ìˆ˜í–‰ ì‹œê°„ì„ ê¸°ë¡í•¨ */
-typedef struct smiTempTableOprStats4Perf
-{
-    UInt    mSlotIdx;
-    SChar   mCreateTime[SMI_TT_STR_SIZE];
-    SChar   mName[SMI_TT_STR_SIZE];
-    ULong   mCount;
-    ULong   mTime;        /* USec */
-    ULong   mPrepareTime; /* USec */
-} smiTempTableOprStats4Perf;
-
 /* X$TEMPINFO */
-/* Tempê´€ë ¨ ì „ë°˜ì ì¸ ì •ë³´ ëª¨ë‘ì— ëŒ€í•œ PerformanceView */
+/* Temp°ü·Ã Àü¹İÀûÀÎ Á¤º¸ ¸ğµÎ¿¡ ´ëÇÑ PerformanceView */
 typedef struct smiTempInfo4Perf
 {
-    SChar   mName[SMI_TT_STR_SIZE];  /* ì •ë³´ì˜ ì´ë¦„ */
-    SChar   mValue[SMI_TT_STR_SIZE]; /* ì •ë³´ì˜ ê°’ */
-    SChar   mUnit[SMI_TT_STR_SIZE];  /* ì •ë³´ì˜ ë‹¨ìœ„ */
+    SChar   mName[SMI_TT_STR_SIZE];  /* Á¤º¸ÀÇ ÀÌ¸§ */
+    SChar   mValue[SMI_TT_STR_SIZE]; /* Á¤º¸ÀÇ °ª */
+    SChar   mUnit[SMI_TT_STR_SIZE];  /* Á¤º¸ÀÇ ´ÜÀ§ */
 } smiTempInfo4Perf;
 
-/* X$TEMPINFOì— Name, Value, Unitìœ¼ë¡œ Recordë¥¼ ë“±ë¡í•˜ëŠ” Macroë“¤ */
+/* X$TEMPINFO¿¡ Name, Value, UnitÀ¸·Î Record¸¦ µî·ÏÇÏ´Â Macroµé */
 #define SMI_TT_SET_TEMPINFO_UINT( name, value, unit )                       \
  idlOS::snprintf( sInfo.mName,  SMI_TT_STR_SIZE, name  );                   \
  idlOS::snprintf( sInfo.mValue, SMI_TT_STR_SIZE, "%"ID_UINT32_FMT, value ); \
@@ -2961,145 +3012,194 @@ typedef struct smiTempInfo4Perf
 typedef struct smiTempTableHeader
 {
     smiTempColumn   * mColumns;
-    smiTempColumn   * mKeyColumnList;  /* mColumnsë¥¼ ë°”íƒ•ìœ¼ë¡œí•œ KeyColumnList*/
-
-    /* PROJ-2180 valueForModule
-       SMI_OFFSET_USELESS ìš© ì»¬ëŸ¼ */
-    smiColumn       * mBlankColumn;
+    smiTempColumn   * mKeyColumnList;  /* mColumns¸¦ ¹ÙÅÁÀ¸·ÎÇÑ KeyColumnList*/
 
     void            * mWASegment;
     UInt              mColumnCount;
-    smiTempState      mTTState;        /* TempTableì˜ ìƒíƒœê°’ */
-    UInt              mTTFlag;         /* ì´ TempTableì„ ì •ì˜í•˜ëŠ” Flag */
-    scSpaceID         mSpaceID;        /* NormalExtentë¥¼ ê°€ì ¸ì˜¬ TablespaceID*/
-    ULong             mHitSequence;    /* clearHitFlagë¥¼ ìœ„í•œ HitSequenceê°’*/
-    UInt              mWorkGroupRatio; /* ì—°ì‚° Groupì˜ í¬ê¸° */
-    void            * mTempCursorList; /* TempCursor ëª©ë¡ */
-    smiTempModule     mModule;
+    UInt              mKeyEndOffset;
+    smiTempState      mTTState;        /* TempTableÀÇ »óÅÂ°ª */
+    UInt              mTTFlag;         /* ÀÌ TempTableÀ» Á¤ÀÇÇÏ´Â Flag */
+    scSpaceID         mSpaceID;        /* NormalExtent¸¦ °¡Á®¿Ã TablespaceID*/
+    UInt              mHitSequence;    /* clearHitFlag¸¦ À§ÇÑ HitSequence°ª*/
+    UInt              mWorkGroupRatio; /* ¿¬»ê GroupÀÇ Å©±â */
+    void            * mTempCursorList; /* TempCursor ¸ñ·Ï */
 
     /**************************************************************
-     * Rowê´€ë ¨ ì •ë³´
+     * Row°ü·Ã Á¤º¸
      ***************************************************************/
     UInt           mRowSize;
-    UInt           mMaxRowPageCount; /*Rowí•˜ë‚˜ê°€ ì‚¬ìš©í•œ ìµœëŒ€ í˜ì´ì§€ ê±´ìˆ˜ */
-    UInt           mFetchGroupID;    /*FetchFromGRIDì—ì„œ ì‚¬ìš©í•  GroupID */
+    UInt           mMaxRowPageCount; /*RowÇÏ³ª°¡ »ç¿ëÇÑ ÃÖ´ë ÆäÀÌÁö °Ç¼ö */
+    UInt           mFetchGroupID;    /*FetchFromGRID¿¡¼­ »ç¿ëÇÒ GroupID */
     SLong          mRowCount;
 
-    /* RowPiece í•˜ë‚˜ë¥¼ RowInfoë¡œ ê°€ì ¸ì˜¬ë•Œ Rowê°€ ìª¼ê°œì§„ ê²½ìš°ë¥¼ ì»¤ë²„í•˜ê¸° ìœ„í•´
-     * ìˆëŠ” ë²„í¼. ê¸°ë³¸ì ìœ¼ë¡œ RowSizeë§Œí¼ í• ë‹¹ë¨ */
+    /* RowPiece ÇÏ³ª¸¦ RowInfo·Î °¡Á®¿Ã¶§ Row°¡ ÂÉ°³Áø °æ¿ì¸¦ Ä¿¹öÇÏ±â À§ÇØ
+     * ÀÖ´Â ¹öÆÛ. ±âº»ÀûÀ¸·Î RowSize¸¸Å­ ÇÒ´çµÊ */
+    UChar        * mNullRow;
     UChar        * mRowBuffer4Fetch;
     UChar        * mRowBuffer4Compare;
     UChar        * mRowBuffer4CompareSub;
-    UChar        * mNullRow;
-                 
+
+
     /**************************************************************
-     * ì‹¤ì œ ì—°ì‚°ì‹œ ê°œë³„ ê°ì²´ì—ì„œ ì‚¬ìš©í•˜ëŠ” ìë£Œêµ¬ì¡°
+     * ½ÇÁ¦ ¿¬»ê½Ã °³º° °´Ã¼¿¡¼­ »ç¿ëÇÏ´Â ÀÚ·á±¸Á¶
      ***************************************************************/
-    /**************** insert(extract)NSortìš© **************/
-    /* extractNSort, insrtNSortì‹œ ì‚¬ìš©ë˜ëŠ”, í˜„ì¬ ì‚½ì…ë˜ëŠ” Sortê³µê°„*/
-    UChar         mSortGroupID; 
-
-    /**************** Mergeìš© **************/
-    smuQueueMgr   mRunQueue;      /* Runë“¤ì˜ FirstPageIDë¥¼ ë‹´ì•„ë‘ëŠ” Queue*/
-    UInt          mMergeRunSize;  /* Runì˜ í¬ê¸° */
-    UInt          mMergeRunCount; /* Runì˜ ê°œìˆ˜ */
-    UInt          mLeftBottomPos; /* Heapì˜ ê°€ì¥ ì•„ë˜ ì™¼ìª½ Slotì˜ ìœ„ì¹˜ */
-    iduStackMgr   mSortStack;     /* Sortí•˜ëŠ”ë° ì‚¬ìš©ë˜ëŠ” Stack */
+    /**************** insert(extract)NSort¿ë **************/
+    /* extractNSort, insrtNSort½Ã »ç¿ëµÇ´Â, ÇöÀç »ğÀÔµÇ´Â Sort°ø°£*/
+    UChar         mSortGroupID;
+    smiTempOpenCursor    mOpenCursor;   /* Sort¿¡¼­¸¸ »ç¿ëµÊ, open cursor func */
+    /**************** Merge¿ë **************/
+    smuQueueMgr   mRunQueue;      /* RunµéÀÇ FirstPageID¸¦ ´ã¾ÆµÎ´Â Queue*/
+    UInt          mMergeRunSize;  /* RunÀÇ Å©±â */
+    UInt          mMergeRunCount; /* RunÀÇ °³¼ö */
+    UInt          mLeftBottomPos; /* HeapÀÇ °¡Àå ¾Æ·¡ ¿ŞÂÊ SlotÀÇ À§Ä¡ */
+    iduStackMgr   mSortStack;     /* SortÇÏ´Âµ¥ »ç¿ëµÇ´Â Stack */
     void        * mInitMergePosition;
-    scGRID        mGRID;          /* ë§ˆì§€ë§‰ìœ¼ë¡œ ì ‘ê·¼í•œ GRIDë¥¼ ì €ì¥í•´ë‘  */
-                  
-    /**************** Indexìš© **************/
-    scPageID      mRootWPID;    /* Indexì˜ RootNode, */
-    UInt          mHeight;      /* Indexì˜ ë†’ì´ */
-    scPageID      mRowHeadNPID; /* Resortë¥¼ ëŒ€ë¹„í•´, LeafNodeì˜ HeadPageì˜
-                                 * ìœ„ì¹˜ë¥¼ ì €ì¥í•´ë‘  */
+    scGRID        mGRID;          /* ¸¶Áö¸·À¸·Î Á¢±ÙÇÑ GRID¸¦ ÀúÀåÇØµÒ */
 
-    /**************** Scanìš© **************/
-    scPageID    * mScanPosition; /* Runì˜ FirstPageIDë¥¼ ë‹´ì•„ë‘ëŠ” ë°°ì—´ */
+    /**************** Index¿ë **************/
+    scPageID      mRootWPID;    /* IndexÀÇ RootNode, */
+    UInt          mHeight;      /* IndexÀÇ ³ôÀÌ */
+    scPageID      mRowHeadNPID; /* Resort¸¦ ´ëºñÇØ, LeafNodeÀÇ HeadPageÀÇ
+                                 * À§Ä¡¸¦ ÀúÀåÇØµÒ */
 
-    /**************** í†µê³„ìš© **************/
-    UInt                 mCheckCnt;    /* í†µê³„ì •ë³´ ê°±ì‹ ì„ ìì£¼í•˜ì§€ ì•Šê¸° ìœ„í•œ
-                                        * ëˆ„ì ê°’ */
-    smiTempTableStats    mStatsBuffer; /* ì¼ë‹¨ ì—¬ê¸°ì— ê°±ì‹ í•˜ë‹¤ê°€, 
-                                        * TEMP_TABLE)WATCH_TIMEì„ ë„˜ì–´ê°€ë©´
-                                        * Arrayì— ë“±ë¡í•œë‹¤. */
-    smiTempTableStats  * mStatsPtr;    /* ì²˜ìŒì—ëŠ” mStatsBufferë¥¼ ê°€ë¦¬í‚¤ë‹¤ê°€
-                                        * TEMP_TABLE)WATCH_TIMEì„ ë„˜ì–´ê°€ë©´
-                                        * Arrayë¥¼ ê°€ë¦¬í‚¨ë‹¤. */
+    /**************** Scan¿ë **************/
+    scPageID    * mScanPosition; /* RunÀÇ FirstPageID¸¦ ´ã¾ÆµÎ´Â ¹è¿­ */
+
+    /**************** Åë°è¿ë **************/
+    UInt                 mCheckCnt;    /* Åë°èÁ¤º¸ °»½ÅÀ» ÀÚÁÖÇÏÁö ¾Ê±â À§ÇÑ
+                                        * ´©Àû°ª */
+    smiTempTableStats  * mStatsPtr;
+    smiTempTableStats    mStatsBuffer; /* ÀÏ´Ü ¿©±â¿¡ °»½ÅÇÏ´Ù°¡,
+                                        * TEMP_TABLE)WATCH_TIMEÀ» ³Ñ¾î°¡¸é
+                                        * Array¿¡ µî·ÏÇÑ´Ù. */
+
     idvSQL             * mStatistics;
 } smiTempTableHeader;
 
-#define SMI_TC_LOCATION_PARAMETER                                          \
-    /* Rowì˜ ìœ„ì¹˜. Update/SetHitFlagì‹œ ì´ GRIDì˜ Rowë¥¼ ì¦‰ì‹œ ê°±ì‹ í•¨*/       \
-    scGRID               mGRID;                                            \
-    UChar              * mRowPtr;                                          \
-    /* UniqueHashì—ì„œ ì“°ì„. ì´ì „ì— Fetchí•œ Rowì˜ ChildGRIDì„ */            \
-    scGRID               mChildGRID;                                       \
-    /* WAMapì˜ Sequence */                                                 \
-    UInt                 mSeq;                                             \
-    UInt                 mLastSeq;                                         \
-                                                                           \
-    /* Cache. ë§ˆì§€ë§‰ìœ¼ë¡œ ì ‘ê·¼í•œ í˜ì´ì§€ì— ëŒ€í•œ ì •ë³´.                        \
-     * ê°™ì€ í˜ì´ì§€ì˜ ë‹¤ìŒ Slotì— ì ‘ê·¼í•  ê²½ìš°, ì´ë¯¸ WPID, WAPagePtr,        \
-     * SlotCountë¥¼ ì•Œê³  ìˆê¸° ë•Œë¬¸ì— ë¹ ë¥´ê²Œ ì ‘ê·¼ ê°€ëŠ¥í•¨. */                 \
-    scPageID             mWPID;                                            \
-    UChar              * mWAPagePtr;                                       \
-    UInt                 mSlotCount;                                       \
-                                                                           \
-    /* (Scan í• ë•Œ) rowê°€ ìœ„ì¹˜í•œ runì˜ ì¸ë±ìŠ¤ */                            \
-    UInt                 mPinIdx;                                          \
-    /* run ì •ë³´ë¥¼ ì €ì¥ */                                                  \
-    void               * mMergePosition
-
-
-typedef struct smiTempCursor
+// Temp Table Cursor, 64Byte¾È¿¡ ÇÊ¿äÇÑ Á¤º¸ºÎÅÍ ¸ğÀº´Ù.
+typedef struct smiHashTempCursor
 {
-    SMI_TC_LOCATION_PARAMETER;
-
-    smiTempTableHeader * mTTHeader;
     UInt                 mTCFlag;
-    UInt                 mWAGroupID;  /* Fetchì‹œ ì‚¬ìš©í•˜ëŠ” GroupID */
-
-    /* íƒìƒ‰í•  ëŒ€ìƒ ì •ë³´ */
     UInt                 mHashValue;
-    smiColumnList      * mUpdateColumns;
+    void               * mWASegment;
+    UInt                 mHashSlotCount;
+    UInt                 mSeq;
+    /* ÀÌÀü¿¡ FetchÇÑ RowÀÇ ChildGRIDÀÓ */
+    UChar              * mChildRowPtr;
+    scPageID             mChildPageID;
+    scOffset             mChildOffset;
+
+    /* Cache. ¸¶Áö¸·À¸·Î Á¢±ÙÇÑ ÆäÀÌÁö¿¡ ´ëÇÑ Á¤º¸.
+     * °°Àº ÆäÀÌÁöÀÇ ´ÙÀ½ Slot¿¡ Á¢±ÙÇÒ °æ¿ì, ÀÌ¹Ì WPID, WAPagePtr,
+     * SlotCount¸¦ ¾Ë°í ÀÖ±â ¶§¹®¿¡ ºü¸£°Ô Á¢±Ù °¡´ÉÇÔ. */
+    UChar                mIsInMemory;
+    UChar                mSubHashIdx;
+
+    /* WAMapÀÇ Sequence */
+    void               * mSubHashPtr;
+    void               * mSubHashWCBPtr;
+    void               * mSubHashWCBPtr4Fetch;
+    UChar              * mRowPtr;
+    void               * mHashSlot;
+    smiTempTableHeader * mTTHeader;
+    UChar              * mWAPagePtr;
+
+    void               * mEndWCBPtr;
+    void               * mWCBPtr;
+
+    /* Å½»öÇÒ ´ë»ó Á¤º¸ */
+    const smiCallBack  * mRowFilter;
+    const smiColumnList* mUpdateColumns;
+    UInt                 mUpdateEndOffset;
+
+    scPageID             mNExtLstPID;
+    void               * mCurNExtentArr;
+
+    smiHashTempCursor  * mNext;         /* CursorList */
+} smiHashTempCursor;
+
+typedef struct smiSortTempCursor
+{
+    void               * mWASegment;
+    smiTempTableHeader * mTTHeader;
+
+    /* RowÀÇ À§Ä¡. Update/SetHitFlag½Ã ÀÌ GRIDÀÇ Row¸¦ Áï½Ã °»½ÅÇÔ*/
+    scGRID               mGRID;
+
+    UInt                 mTCFlag;
+    UInt                 mWAGroupID;  /* Fetch½Ã »ç¿ëÇÏ´Â GroupID */
+    /* Cache. ¸¶Áö¸·À¸·Î Á¢±ÙÇÑ ÆäÀÌÁö¿¡ ´ëÇÑ Á¤º¸.
+     * °°Àº ÆäÀÌÁöÀÇ ´ÙÀ½ Slot¿¡ Á¢±ÙÇÒ °æ¿ì, ÀÌ¹Ì WPID, WAPagePtr,
+     * SlotCount¸¦ ¾Ë°í ÀÖ±â ¶§¹®¿¡ ºü¸£°Ô Á¢±Ù °¡´ÉÇÔ. */
+    UInt                 mSlotCount;
+    scPageID             mWPID;
+    UChar              * mRowPtr;
+    UChar              * mWAPagePtr;
+    /* WAMapÀÇ Sequence */
+    SInt                 mSeq;
+
+    /* (Scan ÇÒ¶§) row°¡ À§Ä¡ÇÑ runÀÇ ÀÎµ¦½º */
+    UInt                 mPinIdx;
+    SInt                 mLastSeq;
+
+    /* Å½»öÇÒ ´ë»ó Á¤º¸ */
+    UInt                 mUpdateEndOffset;
+    const smiColumnList* mUpdateColumns;
     const smiRange     * mRange;
     const smiRange     * mKeyFilter;
     const smiCallBack  * mRowFilter;
 
-    smiTempCursor      * mNext;         /* CursorList */
-    void               * mPositionList; /* ì´ Cursorì˜ PositionList */
+    smiTempPosition    * mPositionList; /* ÀÌ CursorÀÇ PositionList */
+    /* run Á¤º¸¸¦ ÀúÀå */
+    void               * mMergePosition;
+
 
     /* Module */
     smiTempFetch         mFetch;
     smiTempStoreCursor   mStoreCursor;
     smiTempRestoreCursor mRestoreCursor;
+    smiSortTempCursor  * mNext;         /* CursorList */
 
-} smiTempCursor;
+} smiSortTempCursor;
 
 typedef struct smiTempPosition
 {
-    smiTempCursor      * mOwner;
+    smiSortTempCursor  * mOwner;
     smiTempPosition    * mNext;
-    smiTempState         mTTState;
-                       
-    /* MergeScanì‹œ Positionì„ ì €ì¥í•˜ê¸° ìœ„í•´ì„œëŠ”, ê° MergeRunì˜ ì •ë³´ë¥¼
-     * ëª¨ë‘ ì €ì¥í•´ì•¼ í•¨. í•˜ì§€ë§Œ MergeRunì´ ëª‡ê°œì¸ì§€ ëª¨ë¥´ê¸° ë•Œë¬¸ì—
-     * í•´ë‹¹ ë©”ëª¨ë¦¬ë¥¼ mallocí•˜ì—¬ ì—¬ê¸°ì— ë‹¬ì•„ë‘  */
+
+    /* MergeScan½Ã PositionÀ» ÀúÀåÇÏ±â À§ÇØ¼­´Â, °¢ MergeRunÀÇ Á¤º¸¸¦
+     * ¸ğµÎ ÀúÀåÇØ¾ß ÇÔ. ÇÏÁö¸¸ MergeRunÀÌ ¸î°³ÀÎÁö ¸ğ¸£±â ¶§¹®¿¡
+     * ÇØ´ç ¸Ş¸ğ¸®¸¦ mallocÇÏ¿© ¿©±â¿¡ ´Ş¾ÆµÒ */
     void               * mExtraInfo;
 
-    SMI_TC_LOCATION_PARAMETER;
+        /* RowÀÇ À§Ä¡. Update/SetHitFlag½Ã ÀÌ GRIDÀÇ Row¸¦ Áï½Ã °»½ÅÇÔ*/
+    scGRID               mGRID;
+    /* Cache. ¸¶Áö¸·À¸·Î Á¢±ÙÇÑ ÆäÀÌÁö¿¡ ´ëÇÑ Á¤º¸.
+     * °°Àº ÆäÀÌÁöÀÇ ´ÙÀ½ Slot¿¡ Á¢±ÙÇÒ °æ¿ì, ÀÌ¹Ì WPID, WAPagePtr,
+     * SlotCount¸¦ ¾Ë°í ÀÖ±â ¶§¹®¿¡ ºü¸£°Ô Á¢±Ù °¡´ÉÇÔ. */
+    UInt                 mSlotCount;
+    scPageID             mWPID;
+    /* WAMapÀÇ Sequence */
+    UInt                 mSeq;
+    smiTempState         mTTState;
+
+    UChar              * mRowPtr;
+    UChar              * mWAPagePtr;
+
+    /* (Scan ÇÒ¶§) row°¡ À§Ä¡ÇÑ runÀÇ ÀÎµ¦½º */
+    UInt                 mPinIdx;
+
 } smiTempPosition;
 
-typedef enum 
+typedef enum
 {
     SMI_BEFORE_LOCK_RELEASE,
-    SMI_AFTER_LOCK_RELEASE       
+    SMI_AFTER_LOCK_RELEASE
 } smiCallOrderInCommitFunc;
 
 /* PROJ-2365 sequence table
- * replicationì´ ê°€ëŠ¥í•˜ë„ë¡ sequenceë¥¼ tableë¡œ ë¶€í„° ì–»ëŠ”ë‹¤.
- * sequence.nextvalì„ ìœ„í•œ callback function
+ * replicationÀÌ °¡´ÉÇÏµµ·Ï sequence¸¦ table·Î ºÎÅÍ ¾ò´Â´Ù.
+ * sequence.nextvalÀ» À§ÇÑ callback function
  */
 typedef IDE_RC (*smiSelectCurrValFunc)( SLong * aCurrVal,
                                         void  * aInfo );
@@ -3110,6 +3210,7 @@ struct smiSeqTableCallBack {
     void                 * info;           /* qdsCallBackInfo */
     smiSelectCurrValFunc   selectCurrVal;  /* open cursor, select row */
     smiUpdateLastValFunc   updateLastVal;  /* update row, close cursor */
+    UInt                   scale;          /* for Sharded sequence */
 };
 
 typedef enum
@@ -3121,7 +3222,7 @@ typedef enum
     SMI_DTX_END
 } smiDtxLogType;
 
-/* dk ì—ì„œ MinLSN ì„ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©í•œë‹¤ */ 
+/* dk ¿¡¼­ MinLSN À» ±¸ÇÏ±â À§ÇØ »ç¿ëÇÑ´Ù */
 #define SMI_LSN_MAX(aLSN)                           \
 {                                                   \
     (aLSN).mFileNo = (aLSN).mOffset = ID_UINT_MAX;  \
@@ -3134,8 +3235,10 @@ typedef enum
 #define SMI_IS_LSN_INIT(aLSN)                       \
     (((aLSN).mFileNo == 0) && ((aLSN).mOffset == 0))
 
-/* BUG-37778 qp ì—ì„œ disk hash temp table ì‚¬ì´ì¦ˆë¥¼ ì˜ˆì¸¡í•˜ê¸° ìœ„í•´ì„œ ì‚¬ìš©í•œë‹¤ */
-#define SMI_TR_HEADER_SIZE_FULL     SDT_TR_HEADER_SIZE_FULL
+/* BUG-37778 qp ¿¡¼­ disk hash temp table »çÀÌÁî¸¦ ¿¹ÃøÇÏ±â À§ÇØ¼­ »ç¿ëÇÑ´Ù */
+/* XXX PROJ-2647 ·Î planÀÌ º¯°æµÇ¾î¼­ ÀÓ½Ã·Î ÀÌÀü°ªÀ» ³Ö¾ú´Ù.
+ * ÀÌÈÄ¿¡ PLANÀ» ¼öÁ¤ÇÏ¸é¼­ °°ÀÌ ¼öÁ¤ ÇÏ¿©¾ß ÇÑ´Ù. */
+#define SMI_TR_HEADER_SIZE_FULL     (32)  //  SDT_TR_HEADER_SIZE_FULL
 #define SMI_WAEXTENT_PAGECOUNT      SDT_WAEXTENT_PAGECOUNT
 #define SMI_WAMAP_SLOT_MAX_SIZE     SDT_WAMAP_SLOT_MAX_SIZE
 
@@ -3146,5 +3249,141 @@ typedef enum
 
 /* BUG-43408, BUG-45368 */
 #define SMI_ITERATOR_SIZE                  (50 * 1024)
+
+
+/* sessionÁ¤º¸¸¦ ¾ò±â À§ÇÑ mmcSessionÀÇ callback ÇÔ¼öµéÀÇ ÁıÇÕ.
+ * BUG-47655 sessionÀÇ transaction ÇÒ´ç Àç½Ãµµ È½¼ö¸¦ ¼³Á¤ÇÏ±â À§ÇÑ Callback ÇÔ¼ö */
+typedef struct smiSessionCallback
+{
+    void (*mSetAllocTransRetryCount)( void   * aSession,
+                                      ULong    aRetryCount );
+  
+    UInt (*mGetIndoubtFetchTimeout)( void * aMmSession ); 
+    UInt (*mGetIndoubtFetchMethod)( void * aMmSession );
+
+} smiSessionCallback;
+
+/* PROJ-2735 DDL Transaction */
+typedef struct smiDDLTargetTableInfo
+{
+    UInt           mTableID;
+    void         * mOldTableInfo;
+    void         * mNewTableInfo;
+    idBool         mIsReCreated;
+    iduList        mPartInfoList;
+    iduListNode    mNode;
+} smiDDLTargetTableInfo;
+
+typedef struct  smiTransactionalDDLCallback
+{
+    IDE_RC (*backupDDLTargetOldTableInfo)( smiTrans               * aTrans, 
+                                           smOID                    aTableOID,
+                                           UInt                     aPartOIDCount,
+                                           smOID                  * aPartOIDArray,
+                                           smiDDLTargetTableInfo ** aDDLTargetTableInfo );
+
+    IDE_RC (*backupDDLTargetNewTableInfo)( smiTrans               * aTrans, 
+                                           smOID                    aTableOID,
+                                           UInt                     aPartOIDCount,
+                                           smOID                  * aPartOIDArray,
+                                           smiDDLTargetTableInfo ** aDDLTargetTableInfo );
+
+    void   (*removeDDLTargetTableInfo)( smiTrans * aTrans, smiDDLTargetTableInfo * aDDLTargetTableInfo );
+
+    void   (*restoreDDLTargetOldTableInfo)( smiDDLTargetTableInfo * aDDLTargetTableInfo );
+
+    void   (*destroyDDLTargetNewTableInfo)( smiDDLTargetTableInfo * aDDLTargetTableInfo );
+} smiTrasactionalDDLCallback;
+
+/*
+   PROJ-2734
+   »şµåÇÉ °ü·Ã Á¤ÀÇ
+
+   ÁÖÀÇ!!!
+   ¾Æ·¡ »şµåÇÉ °ü·Ã Á¤ÀÇ´Âsdi.h ÆÄÀÏÀÇ sdiShardPin °ü·Ã Á¤ÀÇ¿Í ÀÏÄ¡ÇÏ¿©¾ß ÇÑ´Ù.
+ */
+typedef ULong  smiShardPin;
+
+#define SMI_SHARD_PIN_INVALID (0)
+
+typedef enum
+{
+    SMI_OFFSET_VERSION      = 56,   /* << 7 byte, sMmSharMPinInfo.mVersion                  */
+    SMI_OFFSET_RESERVED     = 48,   /* << 6 byte, sMmSharMPinInfo.mReserveM                 */
+    SMI_OFFSET_META_NODE_ID = 32,   /* << 4 byte, sMmSharMPinInfo.mMetaNoMeInfo.mMetaNoMeIM */
+    SMI_OFFSET_SEQEUNCE     = 0,    /* << 0 byte, sMmSharMPinInfo.mSeq                      */
+} smihardPinFactorOffset;
+
+#define SMI_MAX_SHARD_PIN_STR_LEN              (20) /* Without Null terminated */
+#define SMI_SHARD_PIN_FORMAT_STR   "%"ID_UINT32_FMT"-%"ID_UINT32_FMT"-%"ID_UINT32_FMT
+#define SMI_SHARD_PIN_FORMAT_ARG( __SHARD_PIN ) \
+    ( __SHARD_PIN & ( (smiShardPin)0xff       << SMI_OFFSET_VERSION      ) ) >> SMI_OFFSET_VERSION, \
+    ( __SHARD_PIN & ( (smiShardPin)0xffff     << SMI_OFFSET_META_NODE_ID ) ) >> SMI_OFFSET_META_NODE_ID, \
+    ( __SHARD_PIN & ( (smiShardPin)0xffffffff << SMI_OFFSET_SEQEUNCE     ) ) >> SMI_OFFSET_SEQEUNCE
+
+inline void SMI_DIVIDE_SHARD_PIN( smiShardPin aShardPIN,
+                                  UChar *aVersion,
+                                  UShort *aNodeId,
+                                  UInt *aSequence )
+{
+    if ( aVersion != NULL )
+    {
+        *aVersion  = ( aShardPIN & ( (smiShardPin)0xff       << SMI_OFFSET_VERSION      ) ) >> SMI_OFFSET_VERSION;
+    }
+
+    if ( aNodeId != NULL )
+    {
+        *aNodeId   = ( aShardPIN & ( (smiShardPin)0xffff     << SMI_OFFSET_META_NODE_ID ) ) >> SMI_OFFSET_META_NODE_ID;
+    }
+
+    if ( aSequence != NULL )
+    {
+        *aSequence = ( aShardPIN & ( (smiShardPin)0xffffffff << SMI_OFFSET_SEQEUNCE     ) ) >> SMI_OFFSET_SEQEUNCE;
+    }
+}
+
+/* PROJ-2734 
+   ºĞ»ê·¹º§
+   ·¹º§ SINGLE   : ÇÏ³ªÀÇ ³ëµå¿¡¼­¸¸ Statement°¡ ¼öÇàµÇ¾úÀ½
+   ·¹º§ MULTI    : ¿©·¯ ³ëµå¿¡¼­ Statement°¡ ¼öÇàµÇ¾úÀ¸³ª, µ¿½Ã°£¿¡ ÇÏ³ªÀÇ ³ëµå¿¡¼­¸¸ ¼öÇà.
+   ·¹º§ PARALLEL : µ¿½Ã¿¡ ¿©·¯ ³ëµå¿¡¼­ Statement°¡ ¼öÇàµÇ¾úÀ½ */
+typedef enum
+{
+    SMI_DIST_LEVEL_INIT = 0,
+    SMI_DIST_LEVEL_SINGLE,
+    SMI_DIST_LEVEL_MULTI,
+    SMI_DIST_LEVEL_PARALLEL,
+    SMI_DIST_LEVEL_MAX
+} smiDistLevel;
+
+/* À¯È¿ÇÑ ºĞ»ê·¹º§ÀÎÁö È®ÀÎÇÑ´Ù.
+   (ºĞ»ê·¹º§ÀÌ À¯È¿ÇÑ °æ¿ì, ºĞ»êÁ¤º¸°¡ ÀÖÀ½À» ³ªÅ¸³½´Ù.) */
+#define SMI_DIST_LEVEL_IS_VALID( aLevel )     \
+    ( ( aLevel == SMI_DIST_LEVEL_SINGLE ) ||  \
+      ( aLevel == SMI_DIST_LEVEL_MULTI )  ||  \
+      ( aLevel == SMI_DIST_LEVEL_PARALLEL ) )
+#define SMI_DIST_LEVEL_IS_NOT_VALID( aLevel ) \
+    ( ( aLevel != SMI_DIST_LEVEL_SINGLE ) &&  \
+      ( aLevel != SMI_DIST_LEVEL_MULTI )  &&  \
+      ( aLevel != SMI_DIST_LEVEL_PARALLEL ) )
+
+typedef struct smiDistTxInfo
+{
+    smSCN              mFirstStmtViewSCN;
+    PDL_Time_Value     mFirstStmtTime;
+    smiShardPin        mShardPin;
+    smiDistLevel       mDistLevel;
+} smiDistTxInfo;
+
+#define SMI_SET_SMI_DIST_TX_INFO( aTargetDistTxInfo, aFirstStmtViewSCN, aFirstStmtTime, aShardPin, aDistLevel ) \
+{ \
+    (aTargetDistTxInfo)->mFirstStmtViewSCN = aFirstStmtViewSCN; \
+    (aTargetDistTxInfo)->mFirstStmtTime    = aFirstStmtTime; \
+    (aTargetDistTxInfo)->mShardPin         = aShardPin; \
+    (aTargetDistTxInfo)->mDistLevel        = aDistLevel; \
+}
+
+#define SMI_MAX_ERR_MSG_LEN  (256)
+#define SMI_XID_STRING_LEN   (256)  /* XID_DATA_MAX_LEN ÂüÁ¶ */
 
 #endif /* _O_SMI_DEF_H_ */

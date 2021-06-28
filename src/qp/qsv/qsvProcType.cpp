@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qsvProcType.cpp 83113 2018-05-29 02:04:30Z ahra.cho $
+ * $Id: qsvProcType.cpp 89187 2020-11-09 05:19:18Z hykim $
  **********************************************************************/
 
 #include <idl.h>
@@ -44,16 +44,16 @@ IDE_RC qsvProcType::validateRecordTypeDeclare( qcStatement    * aStatement,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 row/record typeì˜ validate
- *               row/record typeì€ ëª¨ë“ˆidë§Œ ë‹¤ë¥´ê³  ë‚´ë¶€ êµ¬ì¡°ëŠ”
- *               ë™ì¼í•˜ë‹¤.
+ * Description : PROJ-1075 row/record typeÀÇ validate
+ *               row/record typeÀº ¸ðµâid¸¸ ´Ù¸£°í ³»ºÎ ±¸Á¶´Â
+ *               µ¿ÀÏÇÏ´Ù.
  *
  * Implementation :
- *         (1) íƒ€ìž…ì„ êµ¬ë¶„í•˜ì—¬ rowtype / recordtype moduleìƒì„±
- *         (2) ëª¨ë“ˆ ì´ë¦„ ë¶€ì—¬
- *         (3) ëª¨ë“ˆê³¼ íƒ€ìž…ì •ë³´ë¥¼ ì—°ê²°
- *         (4) type column ìƒì„±
- *         (5) null value ìƒì„±
+ *         (1) Å¸ÀÔÀ» ±¸ºÐÇÏ¿© rowtype / recordtype module»ý¼º
+ *         (2) ¸ðµâ ÀÌ¸§ ºÎ¿©
+ *         (3) ¸ðµâ°ú Å¸ÀÔÁ¤º¸¸¦ ¿¬°á
+ *         (4) type column »ý¼º
+ *         (5) null value »ý¼º
  *
  ***********************************************************************/
     
@@ -64,16 +64,16 @@ IDE_RC qsvProcType::validateRecordTypeDeclare( qcStatement    * aStatement,
     mtdModule        * sMtdModule = NULL;
     
     /* ------------------------------------------------
-     * (1) íƒ€ìž…ì„ êµ¬ë¶„í•˜ì—¬ rowtype / recordtype moduleìƒì„±
+     * (1) Å¸ÀÔÀ» ±¸ºÐÇÏ¿© rowtype / recordtype module»ý¼º
      * ----------------------------------------------*/
-    // module memory í• ë‹¹.
+    // module memory ÇÒ´ç.
     IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                             qtcModule,
                             &aType->typeModule )
               != IDE_SUCCESS );
 
-    // typeì— ë”°ë¼ ì‚¬ìš©ìž ì •ì˜ moduleì„ ìƒì„±.
-    // moduleìƒì„±í•˜ëŠ” ë¶€ë¶„ì€ ê³µí†µì ì¸ ë¶€ë¶„ìž„.
+    // type¿¡ µû¶ó »ç¿ëÀÚ Á¤ÀÇ moduleÀ» »ý¼º.
+    // module»ý¼ºÇÏ´Â ºÎºÐÀº °øÅëÀûÀÎ ºÎºÐÀÓ.
     if( aType->variableType == QS_ROW_TYPE )
     {
         idlOS::memcpy( aType->typeModule, &qtc::spRowTypeModule, ID_SIZEOF(mtdModule) );
@@ -84,14 +84,14 @@ IDE_RC qsvProcType::validateRecordTypeDeclare( qcStatement    * aStatement,
     }
     else
     {
-        // ì í•©ì„± ê²€ì‚¬. ë‹¤ë¥¸ typeì´ ì˜¤ë©´ ì—ëŸ¬
+        // ÀûÇÕ¼º °Ë»ç. ´Ù¸¥ typeÀÌ ¿À¸é ¿¡·¯
         IDE_ERROR( 0 );
     }
 
     /* ------------------------------------------------
-     * (2) ëª¨ë“ˆ ì´ë¦„ ë¶€ì—¬
+     * (2) ¸ðµâ ÀÌ¸§ ºÎ¿©
      * ----------------------------------------------*/
-    // module name ê³µê°„ í• ë‹¹
+    // module name °ø°£ ÇÒ´ç
     IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                             mtcName,
                             &aType->typeModule->module.names )
@@ -102,17 +102,17 @@ IDE_RC qsvProcType::validateRecordTypeDeclare( qcStatement    * aStatement,
     aType->typeModule->module.names->string = (void*)aType->name;
 
     /* ------------------------------------------------
-     * (3) ëª¨ë“ˆê³¼ íƒ€ìž…ì •ë³´ë¥¼ ì—°ê²°
+     * (3) ¸ðµâ°ú Å¸ÀÔÁ¤º¸¸¦ ¿¬°á
      * ----------------------------------------------*/
-    // qtcModuleë¡œ í™•ìž¥í•´ì•¼ ë³¼ ìˆ˜ ìžˆìŒ.
+    // qtcModule·Î È®ÀåÇØ¾ß º¼ ¼ö ÀÖÀ½.
     aType->typeModule->typeInfo = aType;
     
 
     /* ------------------------------------------------
-     * (4) type column ìƒì„±
+     * (4) type column »ý¼º
      * ----------------------------------------------*/
     // BUG-36772
-    // ì í•©ì„± ê²€ì‚¬ë¥¼ ì•žì—ì„œ í–ˆê¸° ë•Œë¬¸ì—, rowtype ì•„ë‹ˆë©´ record type ì´ë‹¤.
+    // ÀûÇÕ¼º °Ë»ç¸¦ ¾Õ¿¡¼­ Çß±â ¶§¹®¿¡, rowtype ¾Æ´Ï¸é record type ÀÌ´Ù.
     if( aType->variableType == QS_ROW_TYPE )
     {
         IDE_TEST( makeRowTypeColumn( aType,
@@ -127,13 +127,13 @@ IDE_RC qsvProcType::validateRecordTypeDeclare( qcStatement    * aStatement,
     }
 
     /* ------------------------------------------------
-     * (5) null value ìƒì„±
+     * (5) null value »ý¼º
      * ----------------------------------------------*/
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( aType->typeSize,
                                              (void**)&sNullValue )
               != IDE_SUCCESS );
 
-    // ê°ê°ì˜ ì»¬ëŸ¼ì— ëŒ€ì‘ë˜ëŠ” nullì„ ì„¸íŒ…í•œë‹¤.
+    // °¢°¢ÀÇ ÄÃ·³¿¡ ´ëÀÀµÇ´Â nullÀ» ¼¼ÆÃÇÑ´Ù.
     for( sCurrColumn = aType->columns;
          sCurrColumn != NULL;
          sCurrColumn = sCurrColumn->next )
@@ -144,7 +144,7 @@ IDE_RC qsvProcType::validateRecordTypeDeclare( qcStatement    * aStatement,
 
         sMtdModule = (mtdModule*)sCurrColumn->basicInfo->module;
 
-        // ë™ì¼ typeì„ ë‚´ë¶€ column typeì„ ê°–ì§€ ëª»í•˜ë„ë¡ í•œë‹¤.
+        // µ¿ÀÏ typeÀ» ³»ºÎ column typeÀ» °®Áö ¸øÇÏµµ·Ï ÇÑ´Ù.
         // ex) TYPE REC_TYPE1 IS RECORD (C1 REC_TYPE1);
         IDE_TEST_RAISE( ((qtcModule*)sMtdModule)->typeInfo == aType,
                         ERR_INVALID_DATATYPE );
@@ -185,8 +185,8 @@ IDE_RC qsvProcType::validateRecordTypeDeclare( qcStatement    * aStatement,
     IDE_EXCEPTION_END;
 
     // BUG-38883 print error position
-    // trigger variable(new/old row)ëŠ” í•´ë‹¹ variableì„ validateí•  ë•Œ
-    // error positionì„ ì„¤ì •í•©ë‹ˆë‹¤.
+    // trigger variable(new/old row)´Â ÇØ´ç variableÀ» validateÇÒ ¶§
+    // error positionÀ» ¼³Á¤ÇÕ´Ï´Ù.
     if ( ( ideHasErrorPosition() == ID_FALSE ) &&
          ( aIsTriggerVariable == ID_FALSE ) )
     {
@@ -223,18 +223,18 @@ IDE_RC qsvProcType::validateArrTypeDeclare( qcStatement    * aStatement,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 associative array typeì˜ declare
- *               array typeì€ index column( integer or varchar),
+ * Description : PROJ-1075 associative array typeÀÇ declare
+ *               array typeÀº index column( integer or varchar),
  *               element column(primitive or recordtype)
- *               ìœ¼ë¡œ êµ¬ì„±ëœë‹¤.
+ *               À¸·Î ±¸¼ºµÈ´Ù.
  *
  * Implementation :
- *         (1) arrtype module ìƒì„±
- *         (2) ëª¨ë“ˆ ì´ë¦„ ë¶€ì—¬
- *         (3) ëª¨ë“ˆê³¼ íƒ€ìž…ì •ë³´ë¥¼ ì—°ê²°
- *         (4) type column ìƒì„±
- *         (4.1) typeì´ primitiveì¸ ê²½ìš° íŒŒì‹±ë‹¨ê³„ì—ì„œ ê²°ì •ì´ ëœê²ƒ ê·¸ëŒ€ë¡œ ì´ìš©
- *         (4.2) typeì´ recordtypeì¸ ê²½ìš° íƒ€ìž…ê²€ìƒ‰í•˜ì—¬ columnì„ ìƒì„±
+ *         (1) arrtype module »ý¼º
+ *         (2) ¸ðµâ ÀÌ¸§ ºÎ¿©
+ *         (3) ¸ðµâ°ú Å¸ÀÔÁ¤º¸¸¦ ¿¬°á
+ *         (4) type column »ý¼º
+ *         (4.1) typeÀÌ primitiveÀÎ °æ¿ì ÆÄ½Ì´Ü°è¿¡¼­ °áÁ¤ÀÌ µÈ°Í ±×´ë·Î ÀÌ¿ë
+ *         (4.2) typeÀÌ recordtypeÀÎ °æ¿ì Å¸ÀÔ°Ë»öÇÏ¿© columnÀ» »ý¼º
  *
  ***********************************************************************/    
 
@@ -244,9 +244,9 @@ IDE_RC qsvProcType::validateArrTypeDeclare( qcStatement    * aStatement,
     qcuSqlSourceInfo   sqlInfo;
 
     /* ------------------------------------------------
-     * (1) arrtype module ìƒì„±
+     * (1) arrtype module »ý¼º
      * ----------------------------------------------*/
-    // module memory í• ë‹¹.
+    // module memory ÇÒ´ç.
     IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                             qtcModule,
                             &aType->typeModule )
@@ -257,9 +257,9 @@ IDE_RC qsvProcType::validateArrTypeDeclare( qcStatement    * aStatement,
     aType->flag |= QTC_UD_TYPE_HAS_ARRAY_TRUE;
 
     /* ------------------------------------------------
-     * (2) ëª¨ë“ˆ ì´ë¦„ ë¶€ì—¬
+     * (2) ¸ðµâ ÀÌ¸§ ºÎ¿©
      * ----------------------------------------------*/
-    // module name ê³µê°„ í• ë‹¹
+    // module name °ø°£ ÇÒ´ç
     IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                             mtcName,
                             &aType->typeModule->module.names )
@@ -270,20 +270,20 @@ IDE_RC qsvProcType::validateArrTypeDeclare( qcStatement    * aStatement,
     aType->typeModule->module.names->string = (void*)aType->name;
 
     /* ------------------------------------------------
-     * (3) ëª¨ë“ˆê³¼ íƒ€ìž…ì •ë³´ë¥¼ ì—°ê²°
+     * (3) ¸ðµâ°ú Å¸ÀÔÁ¤º¸¸¦ ¿¬°á
      * ----------------------------------------------*/
-    // qtcModuleë¡œ í™•ìž¥í•´ì•¼ ë³¼ ìˆ˜ ìžˆìŒ.
+    // qtcModule·Î È®ÀåÇØ¾ß º¼ ¼ö ÀÖÀ½.
     aType->typeModule->typeInfo = aType;
 
     /* ------------------------------------------------
-     * (4) type column ìƒì„±
+     * (4) type column »ý¼º
      * ----------------------------------------------*/
-    // arr typeì€ index column í•˜ë‚˜ì™€ ë‚˜ë¨¸ì§€ëŠ” row column( column 2ê°œ )
-    // index columnì€ integer/varchar
-    // row columnì€ primitive/record
-    // row columnì€ recordì¸ ê²½ìš° ê²€ìƒ‰í•´ ì™€ì•¼ í•¨.
+    // arr typeÀº index column ÇÏ³ª¿Í ³ª¸ÓÁö´Â row column( column 2°³ )
+    // index columnÀº integer/varchar
+    // row columnÀº primitive/record
+    // row columnÀº recordÀÎ °æ¿ì °Ë»öÇØ ¿Í¾ß ÇÔ.
 
-    // ì í•©ì„± ê²€ì‚¬. columnì€ ì´ 2ê°œë§Œ ìžˆì–´ì•¼ í•¨.
+    // ÀûÇÕ¼º °Ë»ç. columnÀº ÃÑ 2°³¸¸ ÀÖ¾î¾ß ÇÔ.
     IDE_DASSERT( aType->columns != NULL );
     IDE_DASSERT( aType->columns->next != NULL );
     IDE_DASSERT( aType->columns->next->next == NULL );
@@ -291,27 +291,27 @@ IDE_RC qsvProcType::validateArrTypeDeclare( qcStatement    * aStatement,
     sIdxColumn = aType->columns;
     sRowColumn = aType->columns->next;
 
-    // index columnì˜ validation
+    // index columnÀÇ validation
     if( sIdxColumn->basicInfo->module->id == MTD_INTEGER_ID )
     {
         // Nothing to do.
     }
     else if( sIdxColumn->basicInfo->module->id == MTD_VARCHAR_ID )
     {
-        // precisionì´ indexí—ˆìš© í¬ê¸°ë¥¼ ë„˜ìœ¼ë©´ ì—ëŸ¬ë‚´ì•¼ í•¨.
+        // precisionÀÌ indexÇã¿ë Å©±â¸¦ ³ÑÀ¸¸é ¿¡·¯³»¾ß ÇÔ.
     }
     else
     {
-        // ì—ëŸ¬. index columnì€ varchar, integerë§Œ í—ˆìš©
+        // ¿¡·¯. index columnÀº varchar, integer¸¸ Çã¿ë
         IDE_RAISE( ERR_NOT_SUPPORTED_INDEX_DATATYPE );
     }
 
-    // index columnì˜ offsetì€ í•­ìƒ 0ì´ ë¨.
+    // index columnÀÇ offsetÀº Ç×»ó 0ÀÌ µÊ.
     sIdxColumn->basicInfo->column.offset = 0;
 
     if( sRowColumn->basicInfo == NULL )
     {
-        // typeì´ ê²°ì •ë˜ì§€ ì•Šì•˜ìŒ.(record type)
+        // typeÀÌ °áÁ¤µÇÁö ¾Ê¾ÒÀ½.(record type)
         IDE_TEST( checkTypes( aStatement,
                               (qsVariableItems*)aType,
                               &sRowColumn->userNamePos,
@@ -320,7 +320,7 @@ IDE_RC qsvProcType::validateArrTypeDeclare( qcStatement    * aStatement,
                               &sNestedType )
                   != IDE_SUCCESS );
 
-        // mtcColumnì„ ìƒì„±.
+        // mtcColumnÀ» »ý¼º.
         IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                                 mtcColumn,
                                 &sRowColumn->basicInfo )
@@ -336,15 +336,8 @@ IDE_RC qsvProcType::validateArrTypeDeclare( qcStatement    * aStatement,
     }
     else
     {
-        // timestamp ë° ìƒì„± ë¶ˆê°€ëŠ¥ íƒ€ìž…ì€ í—ˆìš©í•˜ì§€ ì•ŠìŒ
-        if ( ( sRowColumn->basicInfo->flag & MTC_COLUMN_TIMESTAMP_MASK )
-             == MTC_COLUMN_TIMESTAMP_TRUE )
-        {
-            IDE_RAISE(ERR_INVALID_DATATYPE);
-        }
-        // PROJ-1904 Extend UDT
-        else if ( (sRowColumn->basicInfo->module->flag & MTD_PSM_TYPE_MASK )
-                  == MTD_PSM_TYPE_DISABLE )
+        // »ý¼º ºÒ°¡´É Å¸ÀÔÀº Çã¿ëÇÏÁö ¾ÊÀ½
+        if ( ( sRowColumn->basicInfo->module->flag & MTD_PSM_TYPE_MASK ) == MTD_PSM_TYPE_DISABLE )
         {
             IDE_RAISE(ERR_INVALID_DATATYPE);
         }
@@ -354,13 +347,13 @@ IDE_RC qsvProcType::validateArrTypeDeclare( qcStatement    * aStatement,
         }
     }
     
-    // row columnì˜ offsetë„ 0ìž„.
-    // templateê³¼ ë§µí•‘ì´ ë˜ì–´ì•¼ í•˜ë¯€ë¡œ.
+    // row columnÀÇ offsetµµ 0ÀÓ.
+    // template°ú ¸ÊÇÎÀÌ µÇ¾î¾ß ÇÏ¹Ç·Î.
     sRowColumn->basicInfo->column.offset = 0;
 
-    // type size, column count ì„¸íŒ….
-    // type sizeëŠ” 0ìœ¼ë¡œ ì„¸íŒ…í•´ë„ ìƒê´€ì—†ìŒ.(array typeì€ fixedí¬ê¸°ìž„.)
-    // columnCountëŠ” ë¬´ì¡°ê±´2ìž„.(index columní¬í•¨)
+    // type size, column count ¼¼ÆÃ.
+    // type size´Â 0À¸·Î ¼¼ÆÃÇØµµ »ó°ü¾øÀ½.(array typeÀº fixedÅ©±âÀÓ.)
+    // columnCount´Â ¹«Á¶°Ç2ÀÓ.(index columnÆ÷ÇÔ)
     aType->typeSize = 0;
     aType->columnCount = 2;
         
@@ -412,22 +405,22 @@ IDE_RC qsvProcType::validateRefCurTypeDeclare( qcStatement    * aStatement,
 {
 /***********************************************************************
  *
- * Description : PROJ-1386 ref cursor typeì˜ declare
- *               ref cursor íƒ€ìž…ì€ ë‹¨ìˆœí•œ statementì˜ ë§í¬ì´ë‹¤.
+ * Description : PROJ-1386 ref cursor typeÀÇ declare
+ *               ref cursor Å¸ÀÔÀº ´Ü¼øÇÑ statementÀÇ ¸µÅ©ÀÌ´Ù.
  *
  * Implementation :
- *         (1) ref cursor type module ìƒì„±
- *         (2) ëª¨ë“ˆ ì´ë¦„ ë¶€ì—¬
- *         (3) ëª¨ë“ˆê³¼ íƒ€ìž…ì •ë³´ë¥¼ ì—°ê²°
+ *         (1) ref cursor type module »ý¼º
+ *         (2) ¸ðµâ ÀÌ¸§ ºÎ¿©
+ *         (3) ¸ðµâ°ú Å¸ÀÔÁ¤º¸¸¦ ¿¬°á
  *
  ***********************************************************************/    
     
     qcuSqlSourceInfo   sqlInfo;
 
     /* ------------------------------------------------
-     * (1) ref cursor type module ìƒì„±
+     * (1) ref cursor type module »ý¼º
      * ----------------------------------------------*/
-    // module memory í• ë‹¹.
+    // module memory ÇÒ´ç.
     IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                             qtcModule,
                             &aType->typeModule )
@@ -436,9 +429,9 @@ IDE_RC qsvProcType::validateRefCurTypeDeclare( qcStatement    * aStatement,
     idlOS::memcpy( aType->typeModule, &qtc::spRefCurTypeModule, ID_SIZEOF(mtdModule) );
 
     /* ------------------------------------------------
-     * (2) ëª¨ë“ˆ ì´ë¦„ ë¶€ì—¬
+     * (2) ¸ðµâ ÀÌ¸§ ºÎ¿©
      * ----------------------------------------------*/
-    // module name ê³µê°„ í• ë‹¹
+    // module name °ø°£ ÇÒ´ç
     IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                             mtcName,
                             &aType->typeModule->module.names )
@@ -449,14 +442,14 @@ IDE_RC qsvProcType::validateRefCurTypeDeclare( qcStatement    * aStatement,
     aType->typeModule->module.names->string = (void*)aType->name;
 
     /* ------------------------------------------------
-     * (3) ëª¨ë“ˆê³¼ íƒ€ìž…ì •ë³´ë¥¼ ì—°ê²°
+     * (3) ¸ðµâ°ú Å¸ÀÔÁ¤º¸¸¦ ¿¬°á
      * ----------------------------------------------*/
-    // qtcModuleë¡œ í™•ìž¥í•´ì•¼ ë³¼ ìˆ˜ ìžˆìŒ.
+    // qtcModule·Î È®ÀåÇØ¾ß º¼ ¼ö ÀÖÀ½.
     aType->typeModule->typeInfo = aType;
   
-    // type size, column count ì„¸íŒ….
-    // type sizeëŠ”
-    // columnCountëŠ” ë¬´ì¡°ê±´0ìž„.
+    // type size, column count ¼¼ÆÃ.
+    // type size´Â
+    // columnCount´Â ¹«Á¶°Ç0ÀÓ.
     aType->typeSize = 0;
     aType->columnCount = 0;
         
@@ -501,20 +494,20 @@ IDE_RC qsvProcType::validateTypeDeclare( qcStatement    * aStatement,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 type declareë¬¸ì˜ validate
+ * Description : PROJ-1075 type declare¹®ÀÇ validate
  *
  * Implementation :
- *        typeì˜ ì¢…ë¥˜ëŠ” ë‹¤ìŒê³¼ ê°™ìŒ.
- *        (1) rowtype (rowtypeë³€ìˆ˜ ìƒì„±ì‹œ typeì„ ìƒì„±)
- *        (2) recordtype (typeì„ ì–¸ìœ¼ë¡œ ìƒì„±)
- *        (3) associative array type (type ì„ ì–¸ìœ¼ë¡œ ìƒì„±)
- *        (4) ref cursor type ( type ì„ ì–¸ìœ¼ë¡œ ìƒì„±) - PROJ-1386
- *      * rowtypeê³¼ recordtypeì€ ë™ì¼ ë£¨í‹´ì„ íƒ.
+ *        typeÀÇ Á¾·ù´Â ´ÙÀ½°ú °°À½.
+ *        (1) rowtype (rowtypeº¯¼ö »ý¼º½Ã typeÀ» »ý¼º)
+ *        (2) recordtype (type¼±¾ðÀ¸·Î »ý¼º)
+ *        (3) associative array type (type ¼±¾ðÀ¸·Î »ý¼º)
+ *        (4) ref cursor type ( type ¼±¾ðÀ¸·Î »ý¼º) - PROJ-1386
+ *      * rowtype°ú recordtypeÀº µ¿ÀÏ ·çÆ¾À» Å½.
  *
  ***********************************************************************/
 
-    // typeì— ë”°ë¼ ì‚¬ìš©ìž ì •ì˜ moduleì„ ìƒì„±.
-    // moduleìƒì„±í•˜ëŠ” ë¶€ë¶„ì€ ê³µí†µì ì¸ ë¶€ë¶„ìž„.
+    // type¿¡ µû¶ó »ç¿ëÀÚ Á¤ÀÇ moduleÀ» »ý¼º.
+    // module»ý¼ºÇÏ´Â ºÎºÐÀº °øÅëÀûÀÎ ºÎºÐÀÓ.
 
     switch( aType->variableType )
     {
@@ -547,7 +540,7 @@ IDE_RC qsvProcType::validateTypeDeclare( qcStatement    * aStatement,
         
         default:
         {
-            // ì í•©ì„± ê²€ì‚¬. ë‹¤ë¥¸ typeì´ ì˜¤ë©´ ë¬´ì¡°ê±´ ì—ëŸ¬
+            // ÀûÇÕ¼º °Ë»ç. ´Ù¸¥ typeÀÌ ¿À¸é ¹«Á¶°Ç ¿¡·¯
             IDE_DASSERT(0);
         }
     }
@@ -572,7 +565,7 @@ IDE_RC qsvProcType::checkTypes( qcStatement     * aStatement,
  * Description : PROJ-1075 type check
  *
  * Implementation :
- *            ì‚¬ìš©ìž ì •ì˜ typeì€ ë‹¤ìŒê³¼ ê°™ì€ ìœ í˜•ìœ¼ë¡œ ì˜¬ ìˆ˜ ìžˆìŒ.
+ *            »ç¿ëÀÚ Á¤ÀÇ typeÀº ´ÙÀ½°ú °°Àº À¯ÇüÀ¸·Î ¿Ã ¼ö ÀÖÀ½.
  *             (1) type_name
  *             (2) label_name.type_name
  *             (3) package_name.type_name
@@ -595,9 +588,9 @@ IDE_RC qsvProcType::checkTypes( qcStatement     * aStatement,
         // type_name
         if( QC_IS_NULL_NAME((*aLabelName)) == ID_TRUE )
         {
-            // blockì„ bottom-upìœ¼ë¡œ ë”°ë¼ê°€ë©° typeì„ ê²€ìƒ‰í•˜ë©´ì„œ
-            // ê°™ì€ ì´ë¦„ì´ ë‚˜ì˜¤ë©´ typeë°˜í™˜.
-            // í•´ë‹¹ ì¡°ê±´
+            // blockÀ» bottom-upÀ¸·Î µû¶ó°¡¸ç typeÀ» °Ë»öÇÏ¸é¼­
+            // °°Àº ÀÌ¸§ÀÌ ³ª¿À¸é type¹ÝÈ¯.
+            // ÇØ´ç Á¶°Ç
             // (1) single procedure
             // (2) subprogram in package
             for( sCurrVar = aStatement->spvEnv->allVariables,
@@ -614,7 +607,7 @@ IDE_RC qsvProcType::checkTypes( qcStatement     * aStatement,
                           != IDE_SUCCESS );            
             }
 
-            /* package localì˜ type ê²€ìƒ‰ */
+            /* package localÀÇ type °Ë»ö */
             if( (sIsFound == ID_FALSE) && (sPkgParseTree != NULL) )
             {
                 IDE_TEST( searchPkgLocalTypes( aStatement,
@@ -632,12 +625,12 @@ IDE_RC qsvProcType::checkTypes( qcStatement     * aStatement,
         // label_name.type_name or package_name.type_name or typeset_name.type_name
         else
         {
-            // ì í•©ì„± ê²€ì‚¬. íƒ€ìž…ì´ë¦„ì€ ê¼­ ìžˆì–´ì•¼ í•œë‹¤.
+            // ÀûÇÕ¼º °Ë»ç. Å¸ÀÔÀÌ¸§Àº ²À ÀÖ¾î¾ß ÇÑ´Ù.
             IDE_DASSERT( QC_IS_NULL_NAME((*aTypeName)) == ID_FALSE );
             
-            // blockì„ bottom-upìœ¼ë¡œ ë”°ë¼ê°€ë©´ì„œ ë™ì¼ labelì´ ìžˆëŠ”ì§€ ê²€ì‚¬
-            // ë™ì¼ labelì´ë¼ë©´ typeì´ ìžˆëŠ”ì§€ ê²€ìƒ‰
-            // ê°™ì€ ì´ë¦„ì´ ë‚˜ì˜¤ë©´ type ë°˜í™˜.
+            // blockÀ» bottom-upÀ¸·Î µû¶ó°¡¸é¼­ µ¿ÀÏ labelÀÌ ÀÖ´ÂÁö °Ë»ç
+            // µ¿ÀÏ labelÀÌ¶ó¸é typeÀÌ ÀÖ´ÂÁö °Ë»ö
+            // °°Àº ÀÌ¸§ÀÌ ³ª¿À¸é type ¹ÝÈ¯.
             for( sCurrVar = aStatement->spvEnv->allVariables,
                      sIsFound = ID_FALSE;
                  sCurrVar != NULL &&
@@ -670,9 +663,9 @@ IDE_RC qsvProcType::checkTypes( qcStatement     * aStatement,
             }
 
             /* BUG-41720 
-               ë™ì¼ packageì— ì„ ì–¸ëœ array typeì„ return valueì— ì‚¬ìš© ê°€ëŠ¥í•´ì•¼ í•œë‹¤.
+               µ¿ÀÏ package¿¡ ¼±¾ðµÈ array typeÀ» return value¿¡ »ç¿ë °¡´ÉÇØ¾ß ÇÑ´Ù.
                myPackage_name.type_name 
-               aLabelNameì´ myPackage ì´ë¦„ì¼ ìˆ˜ ë„ ìžˆë‹¤. */
+               aLabelNameÀÌ myPackage ÀÌ¸§ÀÏ ¼ö µµ ÀÖ´Ù. */
             if ( (sPkgParseTree != NULL) &&
                  (sIsFound == ID_FALSE ) )
             {
@@ -698,7 +691,7 @@ IDE_RC qsvProcType::checkTypes( qcStatement     * aStatement,
             
             if( sIsFound == ID_FALSE )
             {
-                // í•´ë‹¹ procedureë‚´ì— ì—†ìœ¼ë©´ package ë‚´ì—ì„œ ê²€ìƒ‰.
+                // ÇØ´ç procedure³»¿¡ ¾øÀ¸¸é package ³»¿¡¼­ °Ë»ö.
                 IDE_TEST( checkPkgTypes( aStatement,
                                          aUserName,
                                          aLabelName,
@@ -709,7 +702,7 @@ IDE_RC qsvProcType::checkTypes( qcStatement     * aStatement,
 
                 if( sIsFound == ID_FALSE)
                 {
-                    // í•´ë‹¹ procedureë‚´ì— ì—†ìœ¼ë©´ typesetë‚´ì—ì„œ ê²€ìƒ‰.
+                    // ÇØ´ç procedure³»¿¡ ¾øÀ¸¸é typeset³»¿¡¼­ °Ë»ö.
                     IDE_TEST( searchTypesFromTypeSet( aStatement,
                                                       aUserName,
                                                       aLabelName,
@@ -732,7 +725,7 @@ IDE_RC qsvProcType::checkTypes( qcStatement     * aStatement,
     else
     {
         /* BUG-41847
-           package localì— ìžˆëŠ” typeì„ ì°¾ì„ ìˆ˜ ìžˆì–´ì•¼ í•©ë‹ˆë‹¤. */
+           package local¿¡ ÀÖ´Â typeÀ» Ã£À» ¼ö ÀÖ¾î¾ß ÇÕ´Ï´Ù. */
         if ( (sPkgParseTree != NULL) &&
              (sIsFound == ID_FALSE ) )
         {
@@ -795,7 +788,7 @@ IDE_RC qsvProcType::checkTypes( qcStatement     * aStatement,
         if( (QC_IS_NULL_NAME((*aUserName))  == ID_TRUE) &&
             (QC_IS_NULL_NAME((*aLabelName)) == ID_TRUE) )
         {
-            // ìž¬ê·€ í˜¸ì¶œ ëª¨ìŠµì´ì§€ë§Œ ì´í›„ì—ëŠ” ìž¬ê·€ í˜¸ì¶œí•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // Àç±Í È£Ãâ ¸ð½ÀÀÌÁö¸¸ ÀÌÈÄ¿¡´Â Àç±Í È£ÃâÇÏÁö ¾Ê´Â´Ù.
             IDE_TEST( checkTypes( aStatement,
                                   aVariableItem,
                                   &gSysName,      // aUserName  (= "SYS")
@@ -839,13 +832,13 @@ IDE_RC qsvProcType::searchLocalTypes( qcStatement     * aStatement,
 {
 /***********************************************************************
  *
- * Description : PROJ-1075 local typeì„ ê²€ìƒ‰
+ * Description : PROJ-1075 local typeÀ» °Ë»ö
  *
  * Implementation :
- *         (1) variableItemsë¥¼ ê²€ìƒ‰í•˜ë©´ì„œ itemtypeì´
- *             QS_TYPEì¸ ê²ƒì„ ê²€ìƒ‰
- *         (2) ì´ë¦„ ë¹„êµí•˜ì—¬ ê°™ìœ¼ë©´ *aIsFoundë¥¼ ID_TRUEë¡œ ì„¸íŒ…í•˜ê³ 
- *             ì°¾ì€ qsTypesë¥¼ ë¦¬í„´.
+ *         (1) variableItems¸¦ °Ë»öÇÏ¸é¼­ itemtypeÀÌ
+ *             QS_TYPEÀÎ °ÍÀ» °Ë»ö
+ *         (2) ÀÌ¸§ ºñ±³ÇÏ¿© °°À¸¸é *aIsFound¸¦ ID_TRUE·Î ¼¼ÆÃÇÏ°í
+ *             Ã£Àº qsTypes¸¦ ¸®ÅÏ.
  *
  ***********************************************************************/
    
@@ -854,8 +847,8 @@ IDE_RC qsvProcType::searchLocalTypes( qcStatement     * aStatement,
 
     *aIsFound = ID_FALSE;
 
-    // typeì„ ì–¸ì€ ìˆœì„œê°€ ë°”ë€Œë©´ ì•ˆë˜ë¯€ë¡œ
-    // ì„ ì–¸ë¶€ì— ìžê¸° ìžì‹ ì´ ì˜¬ë•Œê¹Œì§€ë§Œ ê²€ìƒ‰í•œë‹¤.
+    // type¼±¾ðÀº ¼ø¼­°¡ ¹Ù²î¸é ¾ÈµÇ¹Ç·Î
+    // ¼±¾ðºÎ¿¡ ÀÚ±â ÀÚ½ÅÀÌ ¿Ã¶§±îÁö¸¸ °Ë»öÇÑ´Ù.
     for( sLocalVariableItem = aLocalVariableItems;
          (sLocalVariableItem != NULL) &&
          (*aIsFound == ID_FALSE) &&
@@ -906,7 +899,7 @@ IDE_RC qsvProcType::searchTypesFromTypeSet( qcStatement     * aStatement,
     idBool                sExists = ID_FALSE;
     qcmSynonymInfo        sSynonymInfo;    
 
-    // ì í•©ì„± ê²€ì‚¬. spvEnvê°€ ë°˜ë“œì‹œ ì¡´ìž¬í•´ì•¼ í•œë‹¤.
+    // ÀûÇÕ¼º °Ë»ç. spvEnv°¡ ¹Ýµå½Ã Á¸ÀçÇØ¾ß ÇÑ´Ù.
     IDE_DASSERT( aStatement->spvEnv != NULL );
 
     IDE_TEST( qcmSynonym::resolvePSM( aStatement,
@@ -920,7 +913,7 @@ IDE_RC qsvProcType::searchTypesFromTypeSet( qcStatement     * aStatement,
 
     if( sExists == ID_TRUE )
     {
-        // synonymìœ¼ë¡œ ì°¸ì¡°ë˜ëŠ” procì˜ ê¸°ë¡
+        // synonymÀ¸·Î ÂüÁ¶µÇ´Â procÀÇ ±â·Ï
         IDE_TEST( qsvProcStmts::makeProcSynonymList(
                       aStatement,
                       & sSynonymInfo,
@@ -963,7 +956,7 @@ IDE_RC qsvProcType::searchTypesFromTypeSet( qcStatement     * aStatement,
         
         if( sProcInfo->planTree->objType == QS_TYPESET )
         {
-            // ì í•©ì„± ê²€ì‚¬. typesetì˜ blockì€ ì¡´ìž¬í•´ì•¼ í•œë‹¤.
+            // ÀûÇÕ¼º °Ë»ç. typesetÀÇ blockÀº Á¸ÀçÇØ¾ß ÇÑ´Ù.
             IDE_DASSERT( sProcInfo->planTree->block != NULL );
                         
             IDE_TEST( searchLocalTypes( aStatement,
@@ -1006,11 +999,11 @@ IDE_RC qsvProcType::makeRowType( qcStatement     * aStatement,
 /***********************************************************************
  *
  * Description :
- *    rowtypeì˜ ìƒì„±.
+ *    rowtypeÀÇ »ý¼º.
  *
  * Implementation :
- *    1. tableInfoë¥¼ ì´ìš©í•˜ì—¬ íŒŒì‹±í›„ ë‹¨ê³„ì˜ qsTypesí•˜ë‚˜ ìƒì„±
- *    2. qsTypesë¥¼ validation
+ *    1. tableInfo¸¦ ÀÌ¿ëÇÏ¿© ÆÄ½ÌÈÄ ´Ü°èÀÇ qsTypesÇÏ³ª »ý¼º
+ *    2. qsTypes¸¦ validation
  *    
  ***********************************************************************/
 
@@ -1018,8 +1011,8 @@ IDE_RC qsvProcType::makeRowType( qcStatement     * aStatement,
     qcmColumn * sCurrColumn;
     qcmColumn * sTableColumn;
 
-    // typeì„ ìƒˆë¡œ í•˜ë‚˜ ìƒì„±.
-    // rowtypeì€ ë³„ë„ì˜ type referenceê³µê°„ì´ ì—†ë‹¤.
+    // typeÀ» »õ·Î ÇÏ³ª »ý¼º.
+    // rowtypeÀº º°µµÀÇ type reference°ø°£ÀÌ ¾ø´Ù.
     IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                             qsTypes,
                             &sType )
@@ -1040,8 +1033,8 @@ IDE_RC qsvProcType::makeRowType( qcStatement     * aStatement,
     sType->tableInfo    = aTableInfo;
     sType->flag         = QTC_UD_TYPE_HAS_ARRAY_FALSE;
 
-    // rowtypeì˜ ê²½ìš° targetì´ë¦„ì´ ì—†ìœ¼ë©´ ì—ëŸ¬.
-    // cursor rowtypeì¸ ê²½ìš° ì—†ì„ ìˆ˜ë„ ìžˆìŒ.
+    // rowtypeÀÇ °æ¿ì targetÀÌ¸§ÀÌ ¾øÀ¸¸é ¿¡·¯.
+    // cursor rowtypeÀÎ °æ¿ì ¾øÀ» ¼öµµ ÀÖÀ½.
     for( sCurrColumn = aTableInfo->columns;
          sCurrColumn != NULL;
          sCurrColumn = sCurrColumn->next )
@@ -1050,7 +1043,7 @@ IDE_RC qsvProcType::makeRowType( qcStatement     * aStatement,
                         ERR_NOT_EXIST_ALIAS_OF_TARGET );
     }
 
-    // qcmColumnì„ ë³µì‚¬í•˜ì—¬ typeInfoì— ì €ìž¥.
+    // qcmColumnÀ» º¹»çÇÏ¿© typeInfo¿¡ ÀúÀå.
     IDE_TEST( qcm::copyQcmColumns( QC_QMP_MEM(aStatement),
                                    aTableInfo->columns,
                                    &sType->columns,
@@ -1075,8 +1068,8 @@ IDE_RC qsvProcType::makeRowType( qcStatement     * aStatement,
         }
     }
 
-    /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì›
-     * LOB Columnì„ LOB Valueë¡œ ë³€í™˜í•œë‹¤.
+    /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø
+     * LOB ColumnÀ» LOB Value·Î º¯È¯ÇÑ´Ù.
      */
     for ( sCurrColumn = sType->columns, sTableColumn = aTableInfo->columns;
           (sCurrColumn != NULL) && (sTableColumn != NULL);
@@ -1092,7 +1085,7 @@ IDE_RC qsvProcType::makeRowType( qcStatement     * aStatement,
                                              0 )
                       != IDE_SUCCESS );
         }
-        /* BUG-44005 PSMì—ì„œ LOB Columnì„ í¬í•¨í•˜ëŠ” Cursorì˜ Rowtypeì„ ì§€ì›í•´ì•¼ í•©ë‹ˆë‹¤. */
+        /* BUG-44005 PSM¿¡¼­ LOB ColumnÀ» Æ÷ÇÔÇÏ´Â CursorÀÇ RowtypeÀ» Áö¿øÇØ¾ß ÇÕ´Ï´Ù. */
         else if ( sTableColumn->basicInfo->type.dataTypeId == MTD_BLOB_LOCATOR_ID )
         {
             IDE_TEST( mtc::initializeColumn( sCurrColumn->basicInfo,
@@ -1102,7 +1095,7 @@ IDE_RC qsvProcType::makeRowType( qcStatement     * aStatement,
                                              0 )
                       != IDE_SUCCESS );
         }
-        /* BUG-44005 PSMì—ì„œ LOB Columnì„ í¬í•¨í•˜ëŠ” Cursorì˜ Rowtypeì„ ì§€ì›í•´ì•¼ í•©ë‹ˆë‹¤. */
+        /* BUG-44005 PSM¿¡¼­ LOB ColumnÀ» Æ÷ÇÔÇÏ´Â CursorÀÇ RowtypeÀ» Áö¿øÇØ¾ß ÇÕ´Ï´Ù. */
         else if ( sTableColumn->basicInfo->type.dataTypeId == MTD_CLOB_LOCATOR_ID )
         {
             IDE_TEST( mtc::initializeColumn( sCurrColumn->basicInfo,
@@ -1184,8 +1177,8 @@ IDE_RC qsvProcType::copyQsType( qcStatement     * aStatement,
 
     sTypeName = aOriType->name;
 
-    // typeì„ ìƒˆë¡œ í•˜ë‚˜ ìƒì„±.
-    // rowtypeì€ ë³„ë„ì˜ type referenceê³µê°„ì´ ì—†ë‹¤.
+    // typeÀ» »õ·Î ÇÏ³ª »ý¼º.
+    // rowtypeÀº º°µµÀÇ type reference°ø°£ÀÌ ¾ø´Ù.
     IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                             qsTypes,
                             &sType )
@@ -1205,8 +1198,8 @@ IDE_RC qsvProcType::copyQsType( qcStatement     * aStatement,
     sType->typeSize     = 0;
     sType->tableInfo    = NULL;
 
-    // rowtypeì˜ ê²½ìš° targetì´ë¦„ì´ ì—†ìœ¼ë©´ ì—ëŸ¬.
-    // cursor rowtypeì¸ ê²½ìš° ì—†ì„ ìˆ˜ë„ ìžˆìŒ.
+    // rowtypeÀÇ °æ¿ì targetÀÌ¸§ÀÌ ¾øÀ¸¸é ¿¡·¯.
+    // cursor rowtypeÀÎ °æ¿ì ¾øÀ» ¼öµµ ÀÖÀ½.
     for( sCurrColumn = aOriType->columns;
          sCurrColumn != NULL;
          sCurrColumn = sCurrColumn->next )
@@ -1215,7 +1208,7 @@ IDE_RC qsvProcType::copyQsType( qcStatement     * aStatement,
                         ERR_NOT_EXIST_ALIAS_OF_TARGET );
     }
 
-    // qcmColumnì„ ë³µì‚¬í•˜ì—¬ typeInfoì— ì €ìž¥.
+    // qcmColumnÀ» º¹»çÇÏ¿© typeInfo¿¡ ÀúÀå.
     IDE_TEST( qcm::copyQcmColumns( QC_QMP_MEM(aStatement),
                                    aOriType->columns,
                                    &sType->columns,
@@ -1240,8 +1233,8 @@ IDE_RC qsvProcType::copyQsType( qcStatement     * aStatement,
         }
     }
 
-    /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì›
-     * LOB Columnì„ LOB Valueë¡œ ë³€í™˜í•œë‹¤.
+    /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø
+     * LOB ColumnÀ» LOB Value·Î º¯È¯ÇÑ´Ù.
      */
     for ( sCurrColumn = sType->columns, sOriColumn = aOriType->columns;
           (sCurrColumn != NULL) && (sOriColumn != NULL);
@@ -1257,7 +1250,7 @@ IDE_RC qsvProcType::copyQsType( qcStatement     * aStatement,
                                              0 )
                       != IDE_SUCCESS );
         }
-        /* BUG-44005 PSMì—ì„œ LOB Columnì„ í¬í•¨í•˜ëŠ” Cursorì˜ Rowtypeì„ ì§€ì›í•´ì•¼ í•©ë‹ˆë‹¤. */
+        /* BUG-44005 PSM¿¡¼­ LOB ColumnÀ» Æ÷ÇÔÇÏ´Â CursorÀÇ RowtypeÀ» Áö¿øÇØ¾ß ÇÕ´Ï´Ù. */
         else if ( sOriColumn->basicInfo->type.dataTypeId == MTD_BLOB_LOCATOR_ID )
         {
             IDE_TEST( mtc::initializeColumn( sCurrColumn->basicInfo,
@@ -1267,7 +1260,7 @@ IDE_RC qsvProcType::copyQsType( qcStatement     * aStatement,
                                              0 )
                       != IDE_SUCCESS );
         }
-        /* BUG-44005 PSMì—ì„œ LOB Columnì„ í¬í•¨í•˜ëŠ” Cursorì˜ Rowtypeì„ ì§€ì›í•´ì•¼ í•©ë‹ˆë‹¤. */
+        /* BUG-44005 PSM¿¡¼­ LOB ColumnÀ» Æ÷ÇÔÇÏ´Â CursorÀÇ RowtypeÀ» Áö¿øÇØ¾ß ÇÕ´Ï´Ù. */
         else if ( sOriColumn->basicInfo->type.dataTypeId == MTD_CLOB_LOCATOR_ID )
         {
             IDE_TEST( mtc::initializeColumn( sCurrColumn->basicInfo,
@@ -1328,7 +1321,7 @@ IDE_RC qsvProcType::checkPkgTypes( qcStatement     * aStatement,
 
     if( sExists == ID_TRUE )
     {
-        // synonymìœ¼ë¡œ ì°¸ì¡°ë˜ëŠ” procì˜ ê¸°ë¡
+        // synonymÀ¸·Î ÂüÁ¶µÇ´Â procÀÇ ±â·Ï
         IDE_TEST( qsvPkgStmts::makePkgSynonymList(
                           aStatement,
                           &sSynonymInfo,
@@ -1402,7 +1395,7 @@ IDE_RC qsvProcType::searchTypesFromPkg( qsxPkgInfo      * aPkgInfo,
 
     *aIsFound = ID_FALSE;
 
-    // package specì´ì–´ì•¼ í•œë‹¤.
+    // package specÀÌ¾î¾ß ÇÑ´Ù.
     IDE_DASSERT( aPkgInfo->objType == QS_PKG );
 
     for( sVariable = sPlanTree->block->variableItems;
@@ -1450,16 +1443,8 @@ IDE_RC qsvProcType::makeRowTypeColumn( qsTypes     * aType,
          sCurrColumn != NULL;
          sCurrColumn = sCurrColumn->next )
     {
-        // timestamp ë° tableë¡œ ìƒì„± ë¶ˆê°€ëŠ¥í•œ ë ˆì½”ë“œëŠ”
-        // ìƒì„± ë¶ˆê°€.
-        if ( ( sCurrColumn->basicInfo->flag & MTC_COLUMN_TIMESTAMP_MASK )
-             == MTC_COLUMN_TIMESTAMP_TRUE )
-        {
-            IDE_RAISE(ERR_INVALID_DATATYPE);
-        }
-        // PROJ-1904 Extend UDT
-        else if ( (sCurrColumn->basicInfo->module->flag & MTD_PSM_TYPE_MASK )
-                  == MTD_PSM_TYPE_DISABLE )
+        // table·Î »ý¼º ºÒ°¡´ÉÇÑ ·¹ÄÚµå´Â »ý¼º ºÒ°¡.
+        if ( ( sCurrColumn->basicInfo->module->flag & MTD_PSM_TYPE_MASK ) == MTD_PSM_TYPE_DISABLE )
         {
             IDE_RAISE(ERR_INVALID_DATATYPE);
         }
@@ -1468,14 +1453,14 @@ IDE_RC qsvProcType::makeRowTypeColumn( qsTypes     * aType,
                   ( aIsTriggerVariable == ID_FALSE ) )
         {
             /* PROJ-1090 Function-based Index */
-            /* rowtypeì¸ ê²½ìš° hidden columnì€ ë¬´ì‹œí•œë‹¤. */
+            /* rowtypeÀÎ °æ¿ì hidden columnÀº ¹«½ÃÇÑ´Ù. */
         }
         else
         {
-            // column typeì„ ë¬´ì¡°ê±´ fixedí•˜ê²Œ ë°”ê¾¸ê³ 
-            // offset, size, column count ê³„ì‚°.
+            // column typeÀ» ¹«Á¶°Ç fixedÇÏ°Ô ¹Ù²Ù°í
+            // offset, size, column count °è»ê.
 
-            // BUG-38078 TYPE_FIXEDë¡œ ê³ ì •í•˜ëŠ” ê²½ìš°, Compression ì†ì„±ë„ ì œê±°í•œë‹¤.
+            // BUG-38078 TYPE_FIXED·Î °íÁ¤ÇÏ´Â °æ¿ì, Compression ¼Ó¼ºµµ Á¦°ÅÇÑ´Ù.
             sCurrColumn->basicInfo->column.flag &= ~SMI_COLUMN_TYPE_MASK;
             sCurrColumn->basicInfo->column.flag |= SMI_COLUMN_TYPE_FIXED;
 
@@ -1486,7 +1471,7 @@ IDE_RC qsvProcType::makeRowTypeColumn( qsTypes     * aType,
                                     sCurrColumn->basicInfo->module->align );
             sCurrColumn->basicInfo->column.offset = sOffset;
 
-            /* BUG-36101 SInt ë²”ìœ„ë¥¼ ë²—ì–´ë‚˜ëŠ” ë©”ëª¨ë¦¬ í• ë‹¹ ë°©ì§€ */
+            /* BUG-36101 SInt ¹üÀ§¸¦ ¹þ¾î³ª´Â ¸Þ¸ð¸® ÇÒ´ç ¹æÁö */
             IDE_TEST_RAISE( (SLong)sOffset + (SLong)sCurrColumn->basicInfo->column.size >
                             (SLong)ID_SINT_MAX,
                             ERR_PSM_ROW_SIZE_EXCEED_LIMIT );
@@ -1508,7 +1493,7 @@ IDE_RC qsvProcType::makeRowTypeColumn( qsTypes     * aType,
         }
     }
 
-    /* hidden columnì— ì˜í•´ columnsê°€ ëª¨ë‘ ì‚¬ìš©ë˜ì§€ ì•Šì„ ìˆ˜ ìžˆë‹¤. */
+    /* hidden column¿¡ ÀÇÇØ columns°¡ ¸ðµÎ »ç¿ëµÇÁö ¾ÊÀ» ¼ö ÀÖ´Ù. */
     if( sLastColumn != NULL )
     {
         sLastColumn->next = NULL;
@@ -1518,7 +1503,7 @@ IDE_RC qsvProcType::makeRowTypeColumn( qsTypes     * aType,
         /* Nothing to do. */
     }
 
-    // typeSizeëŠ” ê³„ì‚°ëœ offsetí¬ê¸°ë§Œí¼ì´ ëœë‹¤.
+    // typeSize´Â °è»êµÈ offsetÅ©±â¸¸Å­ÀÌ µÈ´Ù.
     aType->typeSize = sOffset;
     aType->columnCount = sColumnCount;
 
@@ -1561,13 +1546,13 @@ IDE_RC qsvProcType::makeRecordTypeColumn( qcStatement     * aStatement,
                 aStatement, sColumn )
             != IDE_SUCCESS );
 
-        // 1. qcmColumn í• ë‹¹
+        // 1. qcmColumn ÇÒ´ç
         IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                                 qcmColumn,
                                 &sQcmColumn )
                   != IDE_SUCCESS );
 
-        // 2. qcmColum ì´ˆê¸°í™”
+        // 2. qcmColum ÃÊ±âÈ­
         QCM_COLUMN_INIT( sQcmColumn );
         SET_EMPTY_POSITION( sQcmColumn->userNamePos );
         SET_EMPTY_POSITION( sQcmColumn->tableNamePos );
@@ -1575,38 +1560,30 @@ IDE_RC qsvProcType::makeRecordTypeColumn( qcStatement     * aStatement,
         QC_STR_COPY( sQcmColumn->name, sQcmColumn->namePos );
         sQcmColumn->flag = QCM_COLUMN_TYPE_DEFAULT;
 
-        // 3. mtcColum ìƒì„± ë° ì´ˆê¸°í™”
+        // 3. mtcColum »ý¼º ¹× ÃÊ±âÈ­
         sMtcColumn = QTC_STMT_COLUMN( aStatement, sColumn->variableTypeNode );
-        // 3-1.mtcColumn ìƒì„±
+        // 3-1.mtcColumn »ý¼º
         IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                                 mtcColumn,
                                 &sNewMtcColumn )
                   != IDE_SUCCESS );
-        // 3-2. mtcColumn ë³µì‚¬
+        // 3-2. mtcColumn º¹»ç
         mtc::copyColumn( sNewMtcColumn, sMtcColumn );
 
-        // 4. í˜„ìž¬ ë…¸ë“œì˜ mtcColumnì •ë³´ ì„¤ì •
+        // 4. ÇöÀç ³ëµåÀÇ mtcColumnÁ¤º¸ ¼³Á¤
         sNewMtcColumn->flag &= ~MTC_COLUMN_NOTNULL_TRUE;
 
-        // timestamp ë° tableë¡œ ìƒì„± ë¶ˆê°€ëŠ¥í•œ ë ˆì½”ë“œëŠ”
-        // ìƒì„± ë¶ˆê°€.
-        if ( ( sNewMtcColumn->flag & MTC_COLUMN_TIMESTAMP_MASK )
-             == MTC_COLUMN_TIMESTAMP_TRUE )
-        {
-            IDE_RAISE(ERR_INVALID_DATATYPE);
-        }
-        // PROJ-1904 Extend UDT
-        else if ( (sNewMtcColumn->module->flag & MTD_PSM_TYPE_MASK )
-                  == MTD_PSM_TYPE_DISABLE )
+        // table·Î »ý¼º ºÒ°¡´ÉÇÑ ·¹ÄÚµå´Â »ý¼º ºÒ°¡.
+        if ( ( sNewMtcColumn->module->flag & MTD_PSM_TYPE_MASK ) == MTD_PSM_TYPE_DISABLE )
         {
             IDE_RAISE(ERR_INVALID_DATATYPE);
         }
         else
         {
-            // column typeì„ ë¬´ì¡°ê±´ fixedí•˜ê²Œ ë°”ê¾¸ê³ 
-            // offset, size, column count ê³„ì‚°.
+            // column typeÀ» ¹«Á¶°Ç fixedÇÏ°Ô ¹Ù²Ù°í
+            // offset, size, column count °è»ê.
 
-            // BUG-38078 TYPE_FIXEDë¡œ ê³ ì •í•˜ëŠ” ê²½ìš°, Compression ì†ì„±ë„ ì œê±°í•œë‹¤.
+            // BUG-38078 TYPE_FIXED·Î °íÁ¤ÇÏ´Â °æ¿ì, Compression ¼Ó¼ºµµ Á¦°ÅÇÑ´Ù.
             sNewMtcColumn->column.flag &= ~SMI_COLUMN_TYPE_MASK;
             sNewMtcColumn->column.flag |= SMI_COLUMN_TYPE_FIXED;
 
@@ -1617,7 +1594,7 @@ IDE_RC qsvProcType::makeRecordTypeColumn( qcStatement     * aStatement,
                                     sNewMtcColumn->module->align );
             sNewMtcColumn->column.offset = sOffset;
 
-            /* BUG-36101 SInt ë²”ìœ„ë¥¼ ë²—ì–´ë‚˜ëŠ” ë©”ëª¨ë¦¬ í• ë‹¹ ë°©ì§€ */
+            /* BUG-36101 SInt ¹üÀ§¸¦ ¹þ¾î³ª´Â ¸Þ¸ð¸® ÇÒ´ç ¹æÁö */
             IDE_TEST_RAISE( (SLong)sOffset + (SLong)sNewMtcColumn->column.size >
                             (SLong)ID_SINT_MAX,
                             ERR_PSM_ROW_SIZE_EXCEED_LIMIT );
@@ -1683,7 +1660,7 @@ IDE_RC qsvProcType::searchPkgLocalTypes( qcStatement     * aStatement,
         sBodyParseTree = aStatement->spvEnv->createPkg;
     }
 
-    /* package bodyì— ì„ ì–¸ëœ type ê²€ìƒ‰ */
+    /* package body¿¡ ¼±¾ðµÈ type °Ë»ö */
     if ( sBodyParseTree != NULL )
     {
         IDE_DASSERT ( sBodyParseTree->objType == QS_PKG_BODY );
@@ -1700,7 +1677,7 @@ IDE_RC qsvProcType::searchPkgLocalTypes( qcStatement     * aStatement,
         // Nothing to do.
     }
 
-    /* package specì— ì„ ì–¸ëœ type ê²€ìƒ‰  */
+    /* package spec¿¡ ¼±¾ðµÈ type °Ë»ö  */
     if ( (*aIsFound) == ID_FALSE )
     {
         IDE_DASSERT ( sSpecParseTree->objType == QS_PKG );

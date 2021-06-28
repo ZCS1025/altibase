@@ -44,11 +44,11 @@
  *              or SQL_ATTR_TRACEFILE,
  *              and a value had not been set for the connection attribute.
  *
- *      BUGBUG : í•´ì„í•˜ê¸° ìƒë‹¹ížˆ ë‚œê°í•˜ë‹¤-_-;
- *               ì¼ë‹¨, ì†ì„±ì´ ìœ„ì—ì„œ ì—´ê±°í•œ ì†ì„±ì´ ì•„ë‹ ë•Œì—ëŠ” ë¬´ì¡°ê±´ 08003 ì„ ë¦¬í„´í•´ ë³´ìž.
- *               ì•„ë¬´ëž˜ë„ ì†ì„±ì„ ì‚¬ìš©ìžê°€ ì„¸íŒ…í–ˆëŠ”ì§€ ì•ˆí–ˆëŠ”ì§€ë¥¼ êµ¬ë¶„í•˜ëŠ” ë¬´ì—‡ì¸ê°€ë¥¼
- *               ê°€ì§€ê³  ìžˆì–´ì•¼ í•  ê²ƒ ê°™ì§€ë§Œ,
- *               ì¼ë‹¨, ë“œë¼ì´ë²„ ë§¤ë‹ˆì ¸ê°€ ë‚´ì–´ì¤˜ì•¼ í•  ì—ëŸ¬ì½”ë“œì´ë¯€ë¡œ ã…‹ã…‹ ê·¸ëƒ¥ ëª¨ë¥¸ì²™ í•˜ìž -_-;
+ *      BUGBUG : ÇØ¼®ÇÏ±â »ó´çÈ÷ ³­°¨ÇÏ´Ù-_-;
+ *               ÀÏ´Ü, ¼Ó¼ºÀÌ À§¿¡¼­ ¿­°ÅÇÑ ¼Ó¼ºÀÌ ¾Æ´Ò ¶§¿¡´Â ¹«Á¶°Ç 08003 À» ¸®ÅÏÇØ º¸ÀÚ.
+ *               ¾Æ¹«·¡µµ ¼Ó¼ºÀ» »ç¿ëÀÚ°¡ ¼¼ÆÃÇß´ÂÁö ¾ÈÇß´ÂÁö¸¦ ±¸ºÐÇÏ´Â ¹«¾ùÀÎ°¡¸¦
+ *               °¡Áö°í ÀÖ¾î¾ß ÇÒ °Í °°Áö¸¸,
+ *               ÀÏ´Ü, µå¶óÀÌ¹ö ¸Å´ÏÁ®°¡ ³»¾îÁà¾ß ÇÒ ¿¡·¯ÄÚµåÀÌ¹Ç·Î ¤»¤» ±×³É ¸ð¸¥Ã´ ÇÏÀÚ -_-;
  */
 ACI_RC ulnSFID_77(ulnFnContext *aFnContext)
 {
@@ -172,7 +172,7 @@ SQLRETURN ulnGetConnectAttr(ulnDbc       *aDbc,
     ACI_TEST_RAISE( aValPtr == NULL, ERR_IH000);
 
     /*
-     * BUGBUG : DBC êµ¬ì¡°ì²´ì— ë°”ë¡œ access í•˜ì§€ ë§ê³ , í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ë„ë¡ ìˆ˜ì •
+     * BUGBUG : DBC ±¸Á¶Ã¼¿¡ ¹Ù·Î access ÇÏÁö ¸»°í, ÇÔ¼ö¸¦ »ç¿ëÇÏµµ·Ï ¼öÁ¤
      */
     switch(aAttrCode)
     {
@@ -234,13 +234,13 @@ SQLRETURN ulnGetConnectAttr(ulnDbc       *aDbc,
             break;
 
         // PROJ-1579 NCHAR
-        // ë°ì´í„°ë² ì´ìŠ¤ ìºë¦­í„° ì…‹ì„ ì˜ë¯¸í•œë‹¤.
+        // µ¥ÀÌÅÍº£ÀÌ½º Ä³¸¯ÅÍ ¼ÂÀ» ÀÇ¹ÌÇÑ´Ù.
         case ALTIBASE_NLS_CHARACTERSET:
             (void)getString( ulnDbcGetNlsCharsetString(sDbc), aValPtr, aValLen, aIndPtr);
             break;
 
         case ALTIBASE_NLS_NCHAR_CHARACTERSET:
-            // ë‚´ì…”ë„ ìºë¦­í„° ì…‹ì„ ì˜ë¯¸í•œë‹¤.
+            // ³»¼Å³Î Ä³¸¯ÅÍ ¼ÂÀ» ÀÇ¹ÌÇÑ´Ù.
             (void)getString( ulnDbcGetNlsNcharCharsetString(sDbc), aValPtr, aValLen, aIndPtr);
             break;
 
@@ -377,8 +377,8 @@ SQLRETURN ulnGetConnectAttr(ulnDbc       *aDbc,
 
             /* bug-29379
              * sql_attr_connection_dead promptly detects dead conn
-             * before: í˜„ìž¬ ì €ìž¥ëœ ì—°ê²°ìƒíƒœì •ë³´ ë°˜í™˜
-             * after : í˜„ìž¬ ì—°ê²°ìƒíƒœë¥¼ í™•ì¸í•˜ì—¬ ê²°ê³¼ ë°˜í™˜
+             * before: ÇöÀç ÀúÀåµÈ ¿¬°á»óÅÂÁ¤º¸ ¹ÝÈ¯
+             * after : ÇöÀç ¿¬°á»óÅÂ¸¦ È®ÀÎÇÏ¿© °á°ú ¹ÝÈ¯
              */
             if (ulnDbcIsConnected(sDbc) == ACP_FALSE)
             {
@@ -505,6 +505,160 @@ SQLRETURN ulnGetConnectAttr(ulnDbc       *aDbc,
             *(acp_sint32_t*)aValPtr = ulnDbcGetIBConChkSpin(sDbc);
             break;
 
+        /* BUG-47257 */
+        case ALTIBASE_GLOBAL_TRANSACTION_LEVEL:
+            *(acp_sint32_t*)aValPtr = ulnDbcGetGlobalTransactionLevel( sDbc );
+            break;
+            
+            // PROJ-2727 add connect attr
+        case ALTIBASE_COMMIT_WRITE_WAIT_MODE:
+            *(acp_sint32_t*)aValPtr = sDbc->mCommitWriteWaitMode;
+            break;
+
+        case ALTIBASE_ST_OBJECT_BUFFER_SIZE:
+            *(acp_sint32_t*)aValPtr = sDbc->mSTObjBufSize;
+            break;
+            
+        case ALTIBASE_TRX_UPDATE_MAX_LOGSIZE:
+            *(acp_uint64_t*)aValPtr = sDbc->mUpdateMaxLogSize;
+            break;            
+
+        case ALTIBASE_PARALLEL_DML_MODE:
+            *(acp_sint32_t*)aValPtr = sDbc->mParallelDmlMode;
+            break;
+            
+        case ALTIBASE_NLS_NCHAR_CONV_EXCP:
+            *(acp_sint32_t*)aValPtr = sDbc->mNlsNcharConvExcp;
+            break;
+            
+        case ALTIBASE_AUTO_REMOTE_EXEC:
+            *(acp_sint32_t*)aValPtr = sDbc->mAutoRemoteExec;
+            break;
+            
+        case ALTIBASE_TRCLOG_DETAIL_PREDICATE:
+            *(acp_sint32_t*)aValPtr = sDbc->mTrclogDetailPredicate;
+            break;
+            
+        case ALTIBASE_OPTIMIZER_DISK_INDEX_COST_ADJ:
+            *(acp_sint32_t*)aValPtr = sDbc->mOptimizerDiskIndexCostAdj;
+            break;
+            
+        case ALTIBASE_OPTIMIZER_MEMORY_INDEX_COST_ADJ:
+            *(acp_sint32_t*)aValPtr = sDbc->mOptimizerMemoryIndexCostAdj;
+            break;
+            
+        case ALTIBASE_NLS_TERRITORY:
+            (void)getString( sDbc->mNlsTerritory, aValPtr, aValLen, aIndPtr );
+            break;
+            
+        case ALTIBASE_NLS_ISO_CURRENCY:
+            (void)getString( sDbc->mNlsISOCurrency, aValPtr, aValLen, aIndPtr );
+            break;
+
+        case ALTIBASE_NLS_CURRENCY:
+            (void)getString( sDbc->mNlsCurrency, aValPtr, aValLen, aIndPtr );
+            break;
+            
+        case ALTIBASE_NLS_NUMERIC_CHARACTERS:
+            (void)getString( sDbc->mNlsNumChar, aValPtr, aValLen, aIndPtr );
+            break;
+            
+        case ALTIBASE_QUERY_REWRITE_ENABLE:
+            *(acp_sint32_t*)aValPtr = sDbc->mQueryRewriteEnable;
+            break;
+            
+        case ALTIBASE_DBLINK_REMOTE_STATEMENT_AUTOCOMMIT:
+            *(acp_sint32_t*)aValPtr = sDbc->mDblinkRemoteStatementAutoCommit;
+            break;
+            
+        case ALTIBASE_RECYCLEBIN_ENABLE:
+            *(acp_sint32_t*)aValPtr = sDbc->mRecyclebinEnable;
+            break;
+            
+        case ALTIBASE___USE_OLD_SORT:
+            *(acp_sint32_t*)aValPtr = sDbc->mUseOldSort;
+            break;
+            
+        case ALTIBASE_ARITHMETIC_OPERATION_MODE:
+            *(acp_sint32_t*)aValPtr = sDbc->mArithmeticOpMode;
+            break;
+            
+        case ALTIBASE_RESULT_CACHE_ENABLE:
+            *(acp_sint32_t*)aValPtr = sDbc->mResultCacheEnable;
+            break;
+            
+        case ALTIBASE_TOP_RESULT_CACHE_MODE:
+            *(acp_sint32_t*)aValPtr = sDbc->mTopResultCacheMode;
+            break;
+
+        case ALTIBASE_OPTIMIZER_AUTO_STATS:
+            *(acp_sint32_t*)aValPtr = sDbc->mOptimizerAutoStats;
+            break;
+            
+        case ALTIBASE___OPTIMIZER_TRANSITIVITY_OLD_RULE:
+            *(acp_sint32_t*)aValPtr = sDbc->mOptimizerTransitivityOldRule;
+            break;
+            
+        case ALTIBASE_OPTIMIZER_PERFORMANCE_VIEW:
+            *(acp_sint32_t*)aValPtr = sDbc->mOptimizerPerformanceView;
+            break;
+            
+        case ALTIBASE_REPLICATION_DDL_SYNC:
+            *(acp_sint32_t*)aValPtr = sDbc->mReplicationDDLSync;
+            break;
+            
+        case ALTIBASE_REPLICATION_DDL_SYNC_TIMEOUT:
+            *(acp_sint32_t*)aValPtr = sDbc->mReplicationDDLSyncTimeout;
+            break;
+            
+        case ALTIBASE___PRINT_OUT_ENABLE:
+            *(acp_sint32_t*)aValPtr = sDbc->mPrintOutEnable;
+            break;
+            
+        case ALTIBASE_TRCLOG_DETAIL_SHARD:
+            *(acp_sint32_t*)aValPtr = sDbc->mTrclogDetailShard;
+            break;
+            
+        case ALTIBASE_SERIAL_EXECUTE_MODE:
+            *(acp_sint32_t*)aValPtr = sDbc->mSerialExecuteMode;
+            break;
+            
+        case ALTIBASE_TRCLOG_DETAIL_INFORMATION:
+            *(acp_sint32_t*)aValPtr = sDbc->mTrcLogDetailInformation;
+            break;
+
+        case ALTIBASE___OPTIMIZER_DEFAULT_TEMP_TBS_TYPE:
+            *(acp_sint32_t*)aValPtr = sDbc->mOptimizerDefaultTempTbsType;
+            break;
+
+        case ALTIBASE_NORMALFORM_MAXIMUM:
+            *(acp_sint32_t*)aValPtr = sDbc->mNormalFormMaximum;
+            break;
+
+        case ALTIBASE___REDUCE_PARTITION_PREPARE_MEMORY:
+            *(acp_sint32_t*)aValPtr = sDbc->mReducePartPrepareMemory;
+            break;
+ 
+        case ALTIBASE_TRANSACTIONAL_DDL:
+            *(acp_uint32_t*)aValPtr = sDbc->mTransactionalDDL;
+            break;
+ 
+        case ALTIBASE_GLOBAL_DDL:
+            *(acp_uint32_t*)aValPtr = sDbc->mGlobalDDL;
+            break;
+          
+        case ALTIBASE_SHARD_STATEMENT_RETRY:
+            *(acp_sint32_t*)aValPtr = ulnDbcGetShardStatementRetry( sDbc );
+            break;
+
+         case ALTIBASE_INDOUBT_FETCH_TIMEOUT:
+            *(acp_sint32_t*)aValPtr = ulnDbcGetIndoubtFetchTimeout( sDbc );
+            break;
+            
+        case ALTIBASE_INDOUBT_FETCH_METHOD:
+            *(acp_sint32_t*)aValPtr = ulnDbcGetIndoubtFetchMethod( sDbc );
+            break;
+           
         default:
             ACI_RAISE(ERR_HY092);
     }
@@ -566,20 +720,20 @@ ACI_RC ulnCallbackDBPropertyGetResult(cmiProtocolContext *aProtocolContext,
     sOrgCursor = sCtx->mReadBlock->mCursor;
 
     /*
-     * Note : uln ì˜ function context ì•ˆì—ì„œ ì–¸ì œë“ ì§€ property get request ë¥¼ ë‚ ë¦´ ìˆ˜ ìžˆì„ë ¤ë©´,
-     *        function context ì˜ object ê°€ stmt ì¼ ê²½ìš°ë„ ê³ ë ¤í•´ì•¼ í•œë‹¤.
-     *        íŠ¹ížˆ, date format ì„ ê°€ì ¸ì™€ì„œ ë™ê¸°í™”ì‹œí‚¤ëŠ” ë¶€ë¶„ì—ì„œ ê·¸ë ‡ë‹¤.
+     * Note : uln ÀÇ function context ¾È¿¡¼­ ¾ðÁ¦µçÁö property get request ¸¦ ³¯¸± ¼ö ÀÖÀ»·Á¸é,
+     *        function context ÀÇ object °¡ stmt ÀÏ °æ¿ìµµ °í·ÁÇØ¾ß ÇÑ´Ù.
+     *        Æ¯È÷, date format À» °¡Á®¿Í¼­ µ¿±âÈ­½ÃÅ°´Â ºÎºÐ¿¡¼­ ±×·¸´Ù.
      *
-     *        ì•ˆê·¸ëŸ¬ë©´, í•¸ë“¤ íƒ€ìž…ì´ dbc ê°€ ì•„ë‹ˆë¯€ë¡œ ì—ëŸ¬ê°€ ë‚˜ëŠ”ë°,
-     *        ì´ ì—ëŸ¬ê°€ -_-;;;; 08s02, communication failure ë¡œ ë‚˜ì˜¨ë‹¤.
+     *        ¾È±×·¯¸é, ÇÚµé Å¸ÀÔÀÌ dbc °¡ ¾Æ´Ï¹Ç·Î ¿¡·¯°¡ ³ª´Âµ¥,
+     *        ÀÌ ¿¡·¯°¡ -_-;;;; 08s02, communication failure ·Î ³ª¿Â´Ù.
      *
-     * BUGBUG : ì½œë°±í•¨ìˆ˜ëŠ” ACI_FAILURE ë¥¼ ë¦¬í„´í•˜ë©´ ì•ˆëœë‹¤.
-     *          ì—ëŸ¬ë¥¼ ì„¸íŒ…í•˜ê³ , ACI_SUCCESS ë¥¼ ë¦¬í„´í•´ì•¼ í•œë‹¤.
+     * BUGBUG : ÄÝ¹éÇÔ¼ö´Â ACI_FAILURE ¸¦ ¸®ÅÏÇÏ¸é ¾ÈµÈ´Ù.
+     *          ¿¡·¯¸¦ ¼¼ÆÃÇÏ°í, ACI_SUCCESS ¸¦ ¸®ÅÏÇØ¾ß ÇÑ´Ù.
      *
-     *          ê·¸ëŸ¬ë‚˜ ì´ í•¨ìˆ˜ë¥¼ ë³´ì•„í•˜ë‹ˆ, ì—ëŸ¬ì½”ë“œ ì„¸íŒ…í•˜ëŠ” ë¶€ë¶„ì´ ì—†ë‹¤.
-     *          ì ì ˆí•œ ì—ëŸ¬ì½”ë“œë¥¼ ì„¸íŒ…í•˜ë„ë¡ ì†ŒìŠ¤ë¥¼ ë³´ê°•í•´ì•¼ í•œë‹¤.
-     *          ì¼ë‹¨, ACI_FAILURE ë¥¼ ë¦¬í„´í•˜ë„ë¡ ë‘” ìƒíƒœë¡œ ë¬´ì¡°ê±´ communication fail ì„ ë¦¬í„´í•˜ë„ë¡
-     *          í•´ ë‘ì—ˆë‹¤ê°€ ì†ŒìŠ¤ ë³´ê°• í›„ì— ACI_SUCCESS ë¥¼ ë¦¬í„´í•˜ë„ë¡ ê³ ì¹œë‹¤.
+     *          ±×·¯³ª ÀÌ ÇÔ¼ö¸¦ º¸¾ÆÇÏ´Ï, ¿¡·¯ÄÚµå ¼¼ÆÃÇÏ´Â ºÎºÐÀÌ ¾ø´Ù.
+     *          ÀûÀýÇÑ ¿¡·¯ÄÚµå¸¦ ¼¼ÆÃÇÏµµ·Ï ¼Ò½º¸¦ º¸°­ÇØ¾ß ÇÑ´Ù.
+     *          ÀÏ´Ü, ACI_FAILURE ¸¦ ¸®ÅÏÇÏµµ·Ï µÐ »óÅÂ·Î ¹«Á¶°Ç communication fail À» ¸®ÅÏÇÏµµ·Ï
+     *          ÇØ µÎ¾ú´Ù°¡ ¼Ò½º º¸°­ ÈÄ¿¡ ACI_SUCCESS ¸¦ ¸®ÅÏÇÏµµ·Ï °íÄ£´Ù.
      */
     if(ULN_OBJ_GET_TYPE(sDbc) == ULN_OBJ_TYPE_STMT)
     {
@@ -724,9 +878,178 @@ ACI_RC ulnCallbackDBPropertyGetResult(cmiProtocolContext *aProtocolContext,
             CMI_RD4(sCtx, &sDbc->mAttrLobCacheThreshold);
             break;
 
+        case ULN_PROPERTY_GLOBAL_TRANSACTION_LEVEL:
+            CMI_RD1( sCtx, sDbc->mAttrGlobalTransactionLevel );
+            break;
+
+            // PROJ-2727 add connect attr
+        case ULN_PROPERTY_COMMIT_WRITE_WAIT_MODE:
+            CMI_RD1( sCtx, sDbc->mCommitWriteWaitMode );
+            break;
+
+        case ULN_PROPERTY_ST_OBJECT_BUFFER_SIZE:
+            CMI_RD4(sCtx, &sDbc->mSTObjBufSize);
+            break;
+
+        case ULN_PROPERTY_TRX_UPDATE_MAX_LOGSIZE:
+            CMI_RD8(sCtx, &sDbc->mUpdateMaxLogSize);
+            break;
+
+        case ULN_PROPERTY_PARALLEL_DML_MODE:
+            CMI_RD4(sCtx, &sDbc->mParallelDmlMode);
+            break;
+            
+        case ULN_PROPERTY_NLS_NCHAR_CONV_EXCP:
+            CMI_RD4( sCtx, &sDbc->mNlsNcharConvExcp );
+            break;
+
+        case ULN_PROPERTY_AUTO_REMOTE_EXEC:
+            CMI_RD4( sCtx, &sDbc->mAutoRemoteExec );
+            break;
+
+        case ULN_PROPERTY_TRCLOG_DETAIL_PREDICATE:
+            CMI_RD4( sCtx, &sDbc->mTrclogDetailPredicate );
+            break;
+
+        case ULN_PROPERTY_OPTIMIZER_DISK_INDEX_COST_ADJ:
+            CMI_RD4(sCtx, &sDbc->mOptimizerDiskIndexCostAdj);
+            break;
+            
+        case ULN_PROPERTY_OPTIMIZER_MEMORY_INDEX_COST_ADJ:
+            CMI_RD4(sCtx, &sDbc->mOptimizerMemoryIndexCostAdj);
+            break;
+
+        case ULN_PROPERTY_NLS_TERRITORY:
+            CMI_RD4(sCtx, &sLen);
+            ACI_TEST(ulnDbcAttrMem( &sDbc->mNlsTerritory, sLen) != ACI_SUCCESS);
+            CMI_RCP(sCtx, sDbc->mNlsTerritory, sLen);
+            break;
+
+        case ULN_PROPERTY_NLS_ISO_CURRENCY:
+            CMI_RD4(sCtx, &sLen);
+            ACI_TEST(ulnDbcAttrMem( &sDbc->mNlsISOCurrency, sLen) != ACI_SUCCESS);
+            CMI_RCP(sCtx, sDbc->mNlsISOCurrency, sLen);
+            break;
+
+        case ULN_PROPERTY_NLS_CURRENCY:
+            CMI_RD4(sCtx, &sLen);
+            ACI_TEST(ulnDbcAttrMem( &sDbc->mNlsISOCurrency, sLen) != ACI_SUCCESS);
+            CMI_RCP(sCtx, sDbc->mNlsISOCurrency, sLen);
+            break;
+
+        case ULN_PROPERTY_NLS_NUMERIC_CHARACTERS:
+            CMI_RD4(sCtx, &sLen);
+            ACI_TEST(ulnDbcAttrMem( &sDbc->mNlsISOCurrency, sLen) != ACI_SUCCESS);
+            CMI_RCP(sCtx, sDbc->mNlsISOCurrency, sLen);
+            break;
+
+        case ULN_PROPERTY_QUERY_REWRITE_ENABLE:
+            CMI_RD4( sCtx, &sDbc->mNlsNcharConvExcp );
+            break;
+
+        case ULN_PROPERTY_DBLINK_REMOTE_STATEMENT_AUTOCOMMIT:
+            CMI_RD4( sCtx, &sDbc->mNlsNcharConvExcp );
+            break;
+
+        case ULN_PROPERTY_RECYCLEBIN_ENABLE:
+            CMI_RD4( sCtx, &sDbc->mNlsNcharConvExcp );
+            break;
+
+        case ULN_PROPERTY___USE_OLD_SORT:
+            CMI_RD4( sCtx, &sDbc->mNlsNcharConvExcp );
+            break;
+
+        case ULN_PROPERTY_ARITHMETIC_OPERATION_MODE:
+            CMI_RD4( sCtx, &sDbc->mNlsNcharConvExcp );
+            break;
+
+        case ULN_PROPERTY_RESULT_CACHE_ENABLE:
+            CMI_RD4( sCtx, &sDbc->mNlsNcharConvExcp );
+            break;
+
+        case ULN_PROPERTY_TOP_RESULT_CACHE_MODE:
+            CMI_RD4( sCtx, &sDbc->mNlsNcharConvExcp );
+            break;
+
+        case ULN_PROPERTY_OPTIMIZER_AUTO_STATS:
+            CMI_RD4( sCtx, &sDbc->mOptimizerAutoStats );
+            break;
+
+        case ULN_PROPERTY___OPTIMIZER_TRANSITIVITY_OLD_RULE:
+            CMI_RD4( sCtx, &sDbc->mOptimizerTransitivityOldRule );
+            break;
+
+        case ULN_PROPERTY_OPTIMIZER_PERFORMANCE_VIEW:
+            CMI_RD4( sCtx, &sDbc->mOptimizerPerformanceView );
+            break;
+
+        case ULN_PROPERTY_REPLICATION_DDL_SYNC:
+            CMI_RD4( sCtx, &sDbc->mReplicationDDLSync );
+            break;
+
+        case ULN_PROPERTY_REPLICATION_DDL_SYNC_TIMEOUT:
+            CMI_RD4( sCtx, &sDbc->mReplicationDDLSyncTimeout );
+            break;
+
+        case ULN_PROPERTY___PRINT_OUT_ENABLE:
+            CMI_RD4( sCtx, &sDbc->mPrintOutEnable );
+            break;
+
+        case ULN_PROPERTY_TRCLOG_DETAIL_SHARD:
+            CMI_RD4( sCtx, &sDbc->mTrclogDetailShard );
+            break;
+
+        case ULN_PROPERTY_SERIAL_EXECUTE_MODE:
+            CMI_RD4( sCtx, &sDbc->mSerialExecuteMode );
+            break;
+
+        case ULN_PROPERTY_TRCLOG_DETAIL_INFORMATION:
+            CMI_RD4( sCtx, &sDbc->mTrcLogDetailInformation );
+            break;
+
+        case ULN_PROPERTY___OPTIMIZER_DEFAULT_TEMP_TBS_TYPE:
+            CMI_RD4( sCtx, &sDbc->mOptimizerDefaultTempTbsType );
+            break;
+
+        case ULN_PROPERTY_NORMALFORM_MAXIMUM:
+            CMI_RD4( sCtx, &sDbc->mNormalFormMaximum );
+            break;
+
+        case ULN_PROPERTY___REDUCE_PARTITION_PREPARE_MEMORY:
+            CMI_RD4( sCtx, &sDbc->mReducePartPrepareMemory );
+            break;
+
+        case ULN_PROPERTY_TRANSACTIONAL_DDL:
+            CMI_RD4(sCtx, &sDbc->mTransactionalDDL);
+            break;
+
+        case ULN_PROPERTY_GLOBAL_DDL:
+            CMI_RD4(sCtx, &sDbc->mGlobalDDL);
+            break;
+
+        case ULN_PROPERTY_SHARD_STATEMENT_RETRY:
+            CMI_RD1( sCtx, sDbc->mShardStatementRetry );
+            break;
+
+        case ULN_PROPERTY_INDOUBT_FETCH_TIMEOUT:
+            CMI_RD4( sCtx, &sDbc->mIndoubtFetchTimeout );
+            break;
+
+        case ULN_PROPERTY_INDOUBT_FETCH_METHOD:
+            CMI_RD1( sCtx, sDbc->mIndoubtFetchMethod );
+            break;
+        case ULN_PROPERTY___OPTIMIZER_PLAN_HASH_OR_SORT_METHOD: /* BUG-48132 */
+            CMI_RD4( sCtx, &sDbc->mPlanHashOrSortMethod );
+            break;
+        case ULN_PROPERTY___OPTIMIZER_BUCKET_COUNT_MAX        : /* BUG-48161 */
+            CMI_RD4( sCtx, &sDbc->mBucketCountMax );
+            break;
+        case ULN_PROPERTY_DDL_LOCK_TIMEOUT:
+            CMI_RD4( sCtx, &sDbc->mDDLLockTimeout );
+            break;
         /*
-         * Warning : ì•žìœ¼ë¡œ ì¶”ê°€ë˜ëŠ” ì„œë²„-í´ë¼ì´ì–¸íŠ¸ í”„ë¡œí¼í‹°ëŠ” ë°˜ë“œì‹œ
-         *           ulnSetConnectAttrOff()ì— ì¶”ê°€ë˜ì–´ì•¼ í•œë‹¤.
+         * Warning : ¾ÕÀ¸·Î Ãß°¡µÇ´Â ¼­¹ö-Å¬¶óÀÌ¾ðÆ® ÇÁ·ÎÆÛÆ¼´Â ¹Ýµå½Ã
+         *           ulnSetConnectAttrOff()¿¡ Ãß°¡µÇ¾î¾ß ÇÑ´Ù.
          */
 
         default:
@@ -743,6 +1066,8 @@ ACI_RC ulnCallbackDBPropertyGetResult(cmiProtocolContext *aProtocolContext,
         case ULN_PROPERTY_AUTOCOMMIT              :
         case ULN_PROPERTY_EXPLAIN_PLAN            :
         case ULN_PROPERTY_ENDIAN                  :
+        case ULN_PROPERTY_SHARD_STATEMENT_RETRY   :
+        case ULN_PROPERTY_INDOUBT_FETCH_METHOD    :
             sCtx->mReadBlock->mCursor += 1;
             break;
 
@@ -757,6 +1082,10 @@ ACI_RC ulnCallbackDBPropertyGetResult(cmiProtocolContext *aProtocolContext,
         case ULN_PROPERTY_DDL_TIMEOUT             :
         case ULN_PROPERTY_MAX_STATEMENTS_PER_SESSION:
         case ULN_PROPERTY_LOB_CACHE_THRESHOLD     :  /* BUG-36966 */
+        case ULN_PROPERTY_TRANSACTIONAL_DDL       :
+        case ULN_PROPERTY_GLOBAL_DDL              :
+        case ULN_PROPERTY_INDOUBT_FETCH_TIMEOUT   :
+        case ULN_PROPERTY_DDL_LOCK_TIMEOUT        :
             sCtx->mReadBlock->mCursor += 4;
             break;
 

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfListagg.cpp 85313 2019-04-24 05:52:44Z andrew.shin $
+ * $Id: mtfListagg.cpp 85458 2019-05-16 07:13:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -39,23 +39,23 @@ extern mtdModule mtdBinary;
 
 typedef struct mtfListaggFuncData
 {
-    SLong               rowSize;       // value column + key columnì˜ rowSize.
-    UInt                resultLength;  // max checkë¥¼ ìœ„í•´.
+    SLong               rowSize;       // value column + key columnÀÇ rowSize.
+    UInt                resultLength;  // max check¸¦ À§ÇØ.
 
     // key column
     mtcColumn         * keyColumn[MTF_LISTAGG_COLUMN_MAX];    // key column.
-    UInt                keyIndex[MTF_LISTAGG_COLUMN_MAX];     // stack ìœ„ì¹˜.
-    UInt                keyOffset[MTF_LISTAGG_COLUMN_MAX];    // key columnì˜ offset.
+    UInt                keyIndex[MTF_LISTAGG_COLUMN_MAX];     // stack À§Ä¡.
+    UInt                keyOffset[MTF_LISTAGG_COLUMN_MAX];    // key columnÀÇ offset.
     idBool              keyOrderDesc[MTF_LISTAGG_COLUMN_MAX]; // key column direction.
-    UInt                keyCount;                             // key column ê°œìˆ˜.
+    UInt                keyCount;                             // key column °³¼ö.
 
     // value column
     mtcColumn         * valueColumn;
     UInt                valueIndex;
     UInt                valueOffset;
 
-    // finializeì˜ sorting 
-    SChar            ** index;  // data ( value ) ì˜ pointer.
+    // finializeÀÇ sorting 
+    SChar            ** index;  // data ( value ) ÀÇ pointer.
     SChar             * data;   // value.
     UInt                idx;    // value index.
     
@@ -63,8 +63,8 @@ typedef struct mtfListaggFuncData
 
 typedef struct mtfListaggSortStack
 {
-    SLong low;    // QuickSort Partitionì˜ Low ê°’
-    SLong high;   // QuickSort Partitionì˜ High ê°’
+    SLong low;    // QuickSort PartitionÀÇ Low °ª
+    SLong high;   // QuickSort PartitionÀÇ High °ª
 } mtfListaggSortStack;
 
 #define MTF_LISTAGG_SWAP( elem1, elem2 )  \
@@ -116,7 +116,7 @@ static IDE_RC mtfListaggEstimate( mtcNode     * aNode,
 mtfModule mtfListagg = {
     3 | MTC_NODE_OPERATOR_AGGREGATION | MTC_NODE_FUNCTION_WINDOWING_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfListaggFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -174,7 +174,7 @@ IDE_RC mtfListaggEstimate( mtcNode     * aNode,
     UInt              sCount;
     UInt              i = 0;
     
-    // within group byê°€ ìžˆì–´ì•¼ í•¨
+    // within group by°¡ ÀÖ¾î¾ß ÇÔ
     IDE_TEST_RAISE( aNode->funcArguments == NULL,
                     ERR_WITHIN_GORUP_MISSING_WITHIN_GROUP );
 
@@ -189,7 +189,7 @@ IDE_RC mtfListaggEstimate( mtcNode     * aNode,
     IDE_TEST_RAISE( ( sCount != 1 ) && ( sCount != 2 ),
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
-    // ì²«ë²ˆì§¸ ì¸ìž
+    // Ã¹¹øÂ° ÀÎÀÚ
     IDE_TEST( mtf::getCharFuncCharResultModule( &sModules[i],
                                                 aStack[i + 1].column->module )
               != IDE_SUCCESS );
@@ -197,7 +197,7 @@ IDE_RC mtfListaggEstimate( mtcNode     * aNode,
 
     if ( sCount == 2 )
     {
-        // ë‘ë²ˆì§¸ ì¸ìž (seperator)
+        // µÎ¹øÂ° ÀÎÀÚ (seperator)
         IDE_TEST( mtf::getCharFuncCharResultModule( &sModules[i],
                                                     aStack[i + 1].column->module )
                   != IDE_SUCCESS );
@@ -263,7 +263,7 @@ IDE_RC mtfListaggEstimate( mtcNode     * aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // funcData ì‚¬ìš©
+    // funcData »ç¿ë
     aNode->info = aTemplate->funcDataCnt;
     aTemplate->funcDataCnt++;
 
@@ -302,7 +302,7 @@ IDE_RC mtfListaggInitialize( mtcNode     * aNode,
     sBinary = (mtdBinaryType*)((UChar*)aTemplate->rows[aNode->table].row +
                                sColumn[1].column.offset);
     
-    // ìµœì´ˆ ë“±ë¡
+    // ÃÖÃÊ µî·Ï
     if ( aTemplate->funcData[aNode->info] == NULL )
     {
         IDE_TEST( mtf::allocFuncDataMemory( &sMemoryMgr )
@@ -320,19 +320,25 @@ IDE_RC mtfListaggInitialize( mtcNode     * aNode,
                                                     sMemoryMgr )
                   != IDE_SUCCESS );
 
-        // ë“±ë¡
+        // µî·Ï
         aTemplate->funcData[aNode->info] = sFuncData;
 
+        /* BUG-46938 */
+        sMemoryMgr = sFuncData->memoryMgr;
+
         /* BUG-46906 */
-        IDE_TEST( sFuncData->memoryMgr->getStatus( &( sFuncData->mMemStatus ) )
+        IDE_TEST( sMemoryMgr->getStatus( &( sFuncData->mMemStatus ) )
                   != IDE_SUCCESS);
     }
     else
     {
         sFuncData = aTemplate->funcData[aNode->info];
 
+        /* BUG-46938 */
+        sMemoryMgr = sFuncData->memoryMgr;
+
         /* BUG-46906 */
-        IDE_TEST( sFuncData->memoryMgr->setStatus( &( sFuncData->mMemStatus ) )
+        IDE_TEST( sMemoryMgr->setStatus( &( sFuncData->mMemStatus ) )
                   != IDE_SUCCESS);
     }
 
@@ -404,7 +410,7 @@ IDE_RC mtfListaggAggregate( mtcNode     * aNode,
         sFuncData = aTemplate->funcData[aNode->info];
         sListaggFuncData = *((mtfListaggFuncData**)sBinary->mValue);
         
-        // ì²«ë²ˆì§¸ ì¸ìž length concatenation check
+        // Ã¹¹øÂ° ÀÎÀÚ length concatenation check
         sListaggFuncData->resultLength +=
             ((mtdCharType*)aStack[1].value)->length;
 
@@ -426,7 +432,7 @@ IDE_RC mtfListaggAggregate( mtcNode     * aNode,
                 // Nothing To Do
             }
             
-            // ë‘ë²ˆì§¸ ì¸ìž length concatenation check
+            // µÎ¹øÂ° ÀÎÀÚ length concatenation check
             sListaggFuncData->resultLength += sSeperator->length;
         }
         else
@@ -490,7 +496,7 @@ IDE_RC mtfListaggFinalize( mtcNode     * aNode,
     mtdBinaryType         * sBinary;
     UInt                    i;
 
-    // function data, list agg function data  ì–»ì–´ì˜¨ë‹¤.
+    // function data, list agg function data  ¾ò¾î¿Â´Ù.
     sColumn = aTemplate->rows[aNode->table].columns + aNode->column;
     sBinary = (mtdBinaryType*)((UChar*)aTemplate->rows[aNode->table].row +
                                sColumn[1].column.offset);
@@ -500,8 +506,8 @@ IDE_RC mtfListaggFinalize( mtcNode     * aNode,
     sResult = (mtdCharType*)((UChar *)aTemplate->rows[aNode->table].row +
                              sColumn[0].column.offset);
 
-    // GROUP_SORT ëŠ” ë‘ê°œì˜ tupleì„ ë²ˆê°ˆì•„ ì‚¬ìš©í•˜ë¯€ë¡œ ì²«ë²ˆì§¸ ê²°ê³¼ ê°’ì´ ì¡´ìž¬
-    // í•˜ì—¬ ì´ˆê¸°í™” í•´ì•¼ í•œë‹¤.
+    // GROUP_SORT ´Â µÎ°³ÀÇ tupleÀ» ¹ø°¥¾Æ »ç¿ëÇÏ¹Ç·Î Ã¹¹øÂ° °á°ú °ªÀÌ Á¸Àç
+    // ÇÏ¿© ÃÊ±âÈ­ ÇØ¾ß ÇÑ´Ù.
     sResult->length = 0;
 
     if ( sListaggFuncData->idx > 0 )
@@ -512,7 +518,7 @@ IDE_RC mtfListaggFinalize( mtcNode     * aNode,
                                              sListaggFuncData )
                   != IDE_SUCCESS );
 
-        // ì—°ì‚° ìˆ˜í–‰
+        // ¿¬»ê ¼öÇà
         for ( i = 0; i < sListaggFuncData->idx; i++ )
         {
             sFirstString = (mtdCharType*)
@@ -588,7 +594,7 @@ IDE_RC makeListaggFuncData( mtcTemplate           * aTemplate,
  /***********************************************************************
  *
  * Description : 
- *      keyIndex, keyOrderDesc ì •ë³´ ì„¤ì •.
+ *      keyIndex, keyOrderDesc Á¤º¸ ¼³Á¤.
  *
  * Implementation :
  *
@@ -600,8 +606,8 @@ IDE_RC makeListaggFuncData( mtcTemplate           * aTemplate,
  *    stack[3] = i2
  *    stack[4] = i3
  *
- *    sIndex = 3 key columnì˜ ì‹œìž‘ stack ìœ„ì¹˜ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
- *    ìŠ¤íƒì˜ ìœ„ì¹˜ë¥¼ keyIndexì— ì €ìž¥ í•œë‹¤.
+ *    sIndex = 3 key columnÀÇ ½ÃÀÛ stack À§Ä¡¸¦ ³ªÅ¸³½´Ù.
+ *    ½ºÅÃÀÇ À§Ä¡¸¦ keyIndex¿¡ ÀúÀå ÇÑ´Ù.
  *    keyIndex[0] = 3
  *    keyIndex[1] = 4
  ***********************************************************************/
@@ -612,9 +618,9 @@ IDE_RC makeListaggFuncData( mtcTemplate           * aTemplate,
     UInt                  sIndex;  // stack index
 
     /* BUG-46892 */
-    IDE_TEST( mtf::getFuncDataMemorySize( aTemplate,
-                                          aFuncDataInfo->memoryMgr,
-                                          ID_SIZEOF( mtfListaggFuncData ) )
+    IDE_TEST( mtf::checkFuncDataMemoryMaximum( aTemplate,
+                                               aFuncDataInfo->memoryMgr,
+                                               ID_SIZEOF( mtfListaggFuncData ) )
               != IDE_SUCCESS );
 
     // listagg function date alloc
@@ -628,7 +634,7 @@ IDE_RC makeListaggFuncData( mtcTemplate           * aTemplate,
     // init
     sIndex = ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) + 1;
     
-    // order by keyë“¤ì€ í•¨ìˆ˜ì˜ ì¸ìž ë’¤ì— ì—°ê²°ë˜ì–´ ìžˆë‹¤.
+    // order by keyµéÀº ÇÔ¼öÀÇ ÀÎÀÚ µÚ¿¡ ¿¬°áµÇ¾î ÀÖ´Ù.
     for ( sNode = aNode->funcArguments;
           sNode != NULL;
           sNode = sNode->next, sIndex-- );
@@ -693,7 +699,7 @@ IDE_RC allocListaggFuncDataBuffer( mtcTemplate           * aTemplate,
     UInt                    i;
 
     //---------------------------------------
-    // offset, row size ê³„ì‚°
+    // offset, row size °è»ê
     //---------------------------------------
 
     // key
@@ -723,12 +729,12 @@ IDE_RC allocListaggFuncDataBuffer( mtcTemplate           * aTemplate,
     //---------------------------------------
 
     /* BUG-46892 */
-    IDE_TEST( mtf::getFuncDataMemorySize( aTemplate,
-                                          aFuncDataInfo->memoryMgr,
-                                          ( ID_SIZEOF(void*) * 4000 ) )
+    IDE_TEST( mtf::checkFuncDataMemoryMaximum( aTemplate,
+                                               aFuncDataInfo->memoryMgr,
+                                               ( ID_SIZEOF(void*) * 4000 ) )
               != IDE_SUCCESS );
 
-    // nullì„ ì œì™¸í•˜ê³  ìµœì†Œ 1byteë¥¼ ê°€ì •í•˜ë©´ ìµœëŒ€ 4000ê°œë¥¼ ì €ìž¥í•  ìˆ˜ ìžˆë‹¤.
+    // nullÀ» Á¦¿ÜÇÏ°í ÃÖ¼Ò 1byte¸¦ °¡Á¤ÇÏ¸é ÃÖ´ë 4000°³¸¦ ÀúÀåÇÒ ¼ö ÀÖ´Ù.
     IDU_FIT_POINT_RAISE( "allocListaggFuncDataBuffer::alloc::index",
                          ERR_MEMORY_ALLOCATION );
     IDE_TEST_RAISE( sFuncData->memoryMgr->alloc(
@@ -737,9 +743,9 @@ IDE_RC allocListaggFuncDataBuffer( mtcTemplate           * aTemplate,
                     != IDE_SUCCESS, ERR_MEMORY_ALLOCATION );
 
     /* BUG-46892 */
-    IDE_TEST( mtf::getFuncDataMemorySize( aTemplate,
-                                          aFuncDataInfo->memoryMgr,
-                                          ( aListaggFuncData->rowSize * 4000 ) )
+    IDE_TEST( mtf::checkFuncDataMemoryMaximum( aTemplate,
+                                               aFuncDataInfo->memoryMgr,
+                                               ( aListaggFuncData->rowSize * 4000 ) )
               != IDE_SUCCESS );
 
     IDU_FIT_POINT_RAISE( "allocListaggFuncDataBuffer::alloc::data",
@@ -813,14 +819,14 @@ IDE_RC sortListaggFuncDataBuffer( mtcTemplate          * aTemplate,
  /***********************************************************************
  *
  * Description : 
- *    ì§€ì •ëœ lowì™€ highê°„ì˜ Dataë“¤ì„ Quick Sortingí•œë‹¤.
+ *    ÁöÁ¤µÈ low¿Í high°£ÀÇ DataµéÀ» Quick SortingÇÑ´Ù.
  *
  * Implementation :
  *
- *    Stack Overflowê°€ ë°œìƒí•˜ì§€ ì•Šë„ë¡ Stackê³µê°„ì„ ë§ˆë ¨í•œë‹¤.
- *    Partitionì„ ë¶„í• í•˜ì—¬ í•´ë‹¹ Partition ë‹¨ìœ„ë¡œ Recursiveí•˜ê²Œ
- *    Quick Sortingí•œë‹¤.
- *    ìžì„¸í•œ ë‚´ìš©ì€ ì¼ë°˜ì ì¸ quick sorting algorithmì„ ì°¸ê³ .
+ *    Stack Overflow°¡ ¹ß»ýÇÏÁö ¾Êµµ·Ï Stack°ø°£À» ¸¶·ÃÇÑ´Ù.
+ *    PartitionÀ» ºÐÇÒÇÏ¿© ÇØ´ç Partition ´ÜÀ§·Î RecursiveÇÏ°Ô
+ *    Quick SortingÇÑ´Ù.
+ *    ÀÚ¼¼ÇÑ ³»¿ëÀº ÀÏ¹ÝÀûÀÎ quick sorting algorithmÀ» Âü°í.
  *
  ***********************************************************************/
 
@@ -832,9 +838,9 @@ IDE_RC sortListaggFuncDataBuffer( mtcTemplate          * aTemplate,
     idBool                 sAllEqual;
 
     /* BUG-46892 */
-    IDE_TEST( mtf::getFuncDataMemorySize( aTemplate,
-                                          aFuncDataInfo->memoryMgr,
-                                          ID_SIZEOF(mtfListaggSortStack) * aListaggFuncData->idx )
+    IDE_TEST( mtf::checkFuncDataMemoryMaximum( aTemplate,
+                                               aFuncDataInfo->memoryMgr,
+                                               ID_SIZEOF(mtfListaggSortStack) * aListaggFuncData->idx )
               != IDE_SUCCESS );
 
     IDU_FIT_POINT_RAISE( "sortListaggFuncDataBuffer::alloc::sSortStack",
@@ -882,7 +888,7 @@ IDE_RC sortListaggFuncDataBuffer( mtcTemplate          * aTemplate,
         sLow = sStack->low + 1;
         sHigh = sStack->high;
     }
-
+    
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_MEMORY_ALLOCATION )

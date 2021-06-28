@@ -36,7 +36,6 @@
 smmMemBase         smmDatabase::mMemBaseBackup;
 smmMemBase        *smmDatabase::mDicMemBase        = NULL;
 smSCN              smmDatabase::mLstSystemSCN;
-smSCN              smmDatabase::mInitSystemSCN;
 
 iduMutex           smmDatabase::mMtxSCN;
 
@@ -45,7 +44,6 @@ IDE_RC smmDatabase::initialize()
     mDicMemBase               = NULL;
 
     SM_INIT_SCN(&mLstSystemSCN);
-    SM_INIT_SCN(&mInitSystemSCN);
 
     IDE_TEST(mMtxSCN.initialize( (SChar*)"SMM_SCN_MUTEX",
                                  IDU_MUTEX_KIND_NATIVE,
@@ -72,12 +70,12 @@ IDE_RC smmDatabase::destroy()
 }
 
 
-/* ë°ì´í„°ë² ì´ìŠ¤ ìƒì„±ì‹œ membaseë¥¼ ì´ˆê¸°í™”í•œë‹¤.
- * aDBName           [IN] ë°ì´í„°ë² ì´ìŠ¤ ì´ë¦„
- * aDbFilePageCount  [IN] í•˜ë‚˜ì˜ ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ì´ ê°€ì§€ëŠ” Pageìˆ˜
- * aChunkPageCount   [IN] í•˜ë‚˜ì˜ Expand Chunkë‹¹ Pageìˆ˜
- * aDBCharSet        [IN] ë°ì´í„°ë² ì´ìŠ¤ ìºë¦­í„° ì…‹(PROJ-1579 NCHAR)
- * aNationalCharSet  [IN] ë‚´ì…”ë„ ìºë¦­í„° ì…‹(PROJ-1579 NCHAR)
+/* µ¥ÀÌÅÍº£ÀÌ½º »ı¼º½Ã membase¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * aDBName           [IN] µ¥ÀÌÅÍº£ÀÌ½º ÀÌ¸§
+ * aDbFilePageCount  [IN] ÇÏ³ªÀÇ µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏÀÌ °¡Áö´Â Page¼ö
+ * aChunkPageCount   [IN] ÇÏ³ªÀÇ Expand Chunk´ç Page¼ö
+ * aDBCharSet        [IN] µ¥ÀÌÅÍº£ÀÌ½º Ä³¸¯ÅÍ ¼Â(PROJ-1579 NCHAR)
+ * aNationalCharSet  [IN] ³»¼Å³Î Ä³¸¯ÅÍ ¼Â(PROJ-1579 NCHAR)
  */
 IDE_RC smmDatabase::initializeMembase( smmTBSNode * aTBSNode,
                                        SChar      * aDBName,
@@ -140,7 +138,7 @@ IDE_RC smmDatabase::initializeMembase( smmTBSNode * aTBSNode,
     aTBSNode->mMemBase->mNationalCharSet[ IDN_MAX_CHAR_SET_LEN - 1 ] = '\0';
 
 
-    // BUG-15197 sun 5.10 x86 ì—ì„œ createdbì‹œ SEGV ì‚¬ë§
+    // BUG-15197 sun 5.10 x86 ¿¡¼­ createdb½Ã SEGV »ç¸Á
     sTimeValue = idlOS::gettimeofday();
     aTBSNode->mMemBase->mTimestamp = (struct timeval)sTimeValue;
 
@@ -152,11 +150,11 @@ IDE_RC smmDatabase::initializeMembase( smmTBSNode * aTBSNode,
     aTBSNode->mMemBase->mAllocPersPageCount = 0;
 
 
-    // Expand Chunkê´€ë ¨ ì •ë³´ ì„¤ì •
+    // Expand Chunk°ü·Ã Á¤º¸ ¼³Á¤
     aTBSNode->mMemBase->mExpandChunkPageCnt = aChunkPageCount ;
     aTBSNode->mMemBase->mCurrentExpandChunkCnt = 0;
 
-    // Free Page Listë¥¼ ì´ˆê¸°í™” í•œë‹¤.
+    // Free Page List¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
     for ( i = 0; i< SMM_MAX_FPL_COUNT; i++ )
     {
         aTBSNode->mMemBase->mFreePageLists[ i ].mFirstFreePageID = SM_NULL_PID ;
@@ -169,14 +167,136 @@ IDE_RC smmDatabase::initializeMembase( smmTBSNode * aTBSNode,
     return IDE_SUCCESS;
 }
 
+/******************************************************************************
+ * mDicMemBase->mSystemSCN À» SCN_SYNC_INTERVAL ¸¸Å­ Áõ°¡ ½ÃÅ²´Ù.
+ * ÁÖÀÇÁÖÀÇ lockSCNMtx À» Àâ°í È£ÃâµÇ¾î¾ß ÇÑ´Ù.
+ *****************************************************************************/
+IDE_RC smmDatabase::setSystemSCN( smSCN * aSystemSCN )
+{
+    smSCN     sAddedSCN;
+
+    SM_SET_SCN( &sAddedSCN, aSystemSCN );
+    SM_ADD_SCN( &sAddedSCN, smuProperty::getSCNSyncInterval()); // 80000
+
+    // logging : SMR_SMM_MEMBASE_SET_SYSTEM_SCN
+    IDE_TEST( smLayerCallback::setSystemSCN( sAddedSCN ) != IDE_SUCCESS );
+
+    SM_SET_SCN( &(mDicMemBase->mSystemSCN), &sAddedSCN ); 
+    // dead code·Î ÀÇ½ÉµÈ´Ù .... ±Ùµ¥ ÀÖÀ¸´Ï±î ÀÏ´Ü ³ÖÀ½
+    SM_SET_SCN( &(mMemBaseBackup.mSystemSCN) , &sAddedSCN );
+
+    IDE_TEST( smmDirtyPageMgr::insDirtyPage(
+                                SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
+                                SMM_MEMBASE_PAGEID )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/******************************************************************************
+ * ÁÖ¾îÁø SCN À¸·Î LstSystemSCNÀ» ¼³Á¤ÇÑ´Ù.
+ *****************************************************************************/
+IDE_RC smmDatabase::setLstSystemSCN( smSCN * aLstSystemSCNPtr, smSCN * aNewLstSystemSCNPtr )
+{
+    smSCN     sLstSystemSCN;
+    smSCN   * sPersSysSCNPtr;
+    smSCN     sPrev;
+    SInt      sState = 0;
+
+    IDU_FIT_POINT_RAISE( "smmDatabase::setLstSystemSCN::invalidValueOfSystemSCN",
+                         err_invaild_SCN );
+    IDE_TEST_RAISE( SM_SCN_IS_SYSTEMSCN( (*aLstSystemSCNPtr) ) != ID_TRUE, err_invaild_SCN );
+    
+    while(1)
+    {
+        sLstSystemSCN  = getLstSystemSCN();
+        
+        /* ÁÖ¾îÁø SCNÀÌ SystemSCN º¸´Ù ÀÛÀ¸¸é ¹«½Ã ÇÑ´Ù. */
+        if ( SM_SCN_IS_GE( &sLstSystemSCN, aLstSystemSCNPtr ) )
+        {
+            if ( aNewLstSystemSCNPtr != NULL )
+            {
+                SM_SET_SCN( aNewLstSystemSCNPtr, &sLstSystemSCN );
+            }
+            break;           
+        }
+
+        sPersSysSCNPtr = getSystemSCN();
+
+        if ( SM_SCN_IS_GT( aLstSystemSCNPtr, sPersSysSCNPtr ) )
+        {
+            IDE_ASSERT( lockSCNMtx() == IDE_SUCCESS);
+            sState = 1;
+            /* ±×»çÀÌ¿¡ getSystemSCN() °ªÀÌ ´Ù¸¥ ¾²·¹µå¿¡ ÀÇÇØ Áõ°¡µÆÀ»¼ö ÀÖ´Ù.
+               LOCK Àâ°í ´Ù½ÃÈ®ÀÎ */
+            sPersSysSCNPtr = getSystemSCN();
+
+            if ( SM_SCN_IS_GT( aLstSystemSCNPtr, sPersSysSCNPtr ) )
+            {
+                IDE_TEST( setSystemSCN( aLstSystemSCNPtr ) != IDE_SUCCESS );
+            }
+            sState = 0;
+            IDE_ASSERT( unlockSCNMtx() == IDE_SUCCESS );
+        }
+
+        sPrev = acpAtomicCas64( &mLstSystemSCN, (*aLstSystemSCNPtr), sLstSystemSCN );
+
+        if ( sPrev == sLstSystemSCN ) /* CAS SUCCESS */
+        {
+            if ( aNewLstSystemSCNPtr != NULL )
+            {
+                SM_SET_SCN( aNewLstSystemSCNPtr, aLstSystemSCNPtr );
+            }
+            break;
+        }
+#ifdef DEBUG 
+        else /* CAS FAILURE */
+        {
+            /* Cas ½ÇÆĞÀÇ ÀÌÀ¯°¡
+               1.´Ù¸¥ Æ®·£Àè¼Ç¿¡ÀÇÇØ SystemSCNÀ» Áõ°¡½ÃÄÑ aLstSystemSCNPtrº¸´Ù Å©´Ù¸é ³¡.
+               2.´Ù¸¥ Æ®·£Àè¼ÇÀÌ SystemSCNÀ» Áõ°¡½ÃÄ×Áö¸¸ aLstSystemSCNPtrº¸´Ù ÀÛ´Ù¸é
+                  aLstSystemSCNPtr ±îÁö Áõ°¡½ÃÄÑ¾ß ÇÑ´Ù 
+               3.sPrev °¡ sLstSystemSCN º¸´Ù ÀÛÀ»¼ö ¾ø´Ù.. */
+            IDE_DASSERT_MSG ( sPrev > sLstSystemSCN,
+                              "sPrev : %"ID_UINT64_FMT","
+                              "sLstSystemSCN :"ID_UINT64_FMT","
+                              "aLstSystemSCNPtr :"ID_UINT64_FMT"\n",
+                              sPrev,
+                              sLstSystemSCN,
+                              aLstSystemSCNPtr );
+        }
+#endif
+    } // while
+
+    validateCommitSCN();
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( err_invaild_SCN )
+    {
+        IDE_SET( ideSetErrorCode( smERR_ABORT_INVALID_SCN, (*aLstSystemSCNPtr) ) )
+    }
+    IDE_EXCEPTION_END;
+
+    if( sState != 0 )
+    {
+        (void)unlockSCNMtx();
+    }
+
+    return IDE_FAILURE;
+}
 
 /*
- * Statement Beginì‹œ Viewë¥¼ ê²°ì •í•˜ê¸° ìœ„í•´ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜
- * ì£¼ì˜ : 32ë¹„íŠ¸ì— ëŒ€í•´ì„œë„ 64ë¹„íŠ¸ SCNì„ Atomicí•˜ê²Œ ì½ê¸° ìœ„í•´ ì–‘ìª½ LSB,MSBë¥¼ parity bitë¡œ
- *        ì´ìš©í•˜ê¸° ìœ„í•œ ì½”ë“œì´ë‹¤.
+ * Statement Begin½Ã View¸¦ °áÁ¤ÇÏ±â À§ÇØ È£ÃâµÇ´Â ÇÔ¼ö
+ * ÁÖÀÇ : 32ºñÆ®¿¡ ´ëÇØ¼­µµ 64ºñÆ® SCNÀ» AtomicÇÏ°Ô ÀĞ±â À§ÇØ ¾çÂÊ LSB,MSB¸¦ parity bit·Î
+ *        ÀÌ¿ëÇÏ±â À§ÇÑ ÄÚµåÀÌ´Ù.
  *
- *       64ë¹„íŠ¸ë¡œ ì»´íŒŒì¼ ë˜ì—ˆì„ ê²½ìš°ì—ëŠ” ì•„ë˜ì˜ ì½”ë“œê°€ ì‚¬ì‹¤ìƒ ì˜ë¯¸ê°€ ì—†ìœ¼ë‚˜,
- *       32ë¹„íŠ¸ì¼ ê²½ìš°ì—ëŠ” ëŒ€ë‹¨íˆ í° ì˜ë¯¸ë¥¼ ê°€ì§„ë‹¤.
+ *       64ºñÆ®·Î ÄÄÆÄÀÏ µÇ¾úÀ» °æ¿ì¿¡´Â ¾Æ·¡ÀÇ ÄÚµå°¡ »ç½Ç»ó ÀÇ¹Ì°¡ ¾øÀ¸³ª,
+ *       32ºñÆ®ÀÏ °æ¿ì¿¡´Â ´ë´ÜÈ÷ Å« ÀÇ¹Ì¸¦ °¡Áø´Ù.
  *
  *       if(SM_GET_SCN_HIGHVBIT(a_pSCN) == SM_GET_SCN_LOWVBIT(a_pSCN))
  *       {
@@ -203,35 +323,35 @@ void smmDatabase::getViewSCN(smSCN *a_pSCN)
 
 
 /*
- *  Txì˜ commitê³¼ ê´€ë ¨í•œ SCNê³¼ì˜ ì£¼ì˜ ì‚¬í•­
+ *  TxÀÇ commit°ú °ü·ÃÇÑ SCN°úÀÇ ÁÖÀÇ »çÇ×
  *
- *  - Non-Atomic tuple-set readingì„ ë°©ì§€í•˜ê¸° ìœ„í•´ ë‹¤ìŒê³¼ ê°™ì€ ìˆœì„œë¡œ
- *    Tx commitì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+ *  - Non-Atomic tuple-set readingÀ» ¹æÁöÇÏ±â À§ÇØ ´ÙÀ½°ú °°Àº ¼ø¼­·Î
+ *    Tx commitÀÛ¾÷À» ¼öÇàÇÑ´Ù.
  *
- *    1. Commit SCNì„ í• ë‹¹ ë°›ëŠ”ë‹¤.
+ *    1. Commit SCNÀ» ÇÒ´ç ¹Ş´Â´Ù.
  *
- *    2. Temporary SCNì´ Persistent SCNì— ë„ë‹¬í•˜ë©´, Persistent SCN + Gapì„
- *       ìˆ˜í–‰í•˜ê³ , ë¡œê¹…í•œë‹¤.
+ *    2. Temporary SCNÀÌ Persistent SCN¿¡ µµ´ŞÇÏ¸é, Persistent SCN + GapÀ»
+ *       ¼öÇàÇÏ°í, ·Î±ëÇÑ´Ù.
  *
- *    3. ì¦ê°€ëœ SCN(Commit-SCN)ì„ Temporary SCNìœ¼ë¡œ assigní•œë‹¤.
+ *    3. Áõ°¡µÈ SCN(Commit-SCN)À» Temporary SCNÀ¸·Î assignÇÑ´Ù.
  *
- *    4. callbackì„ ì´ìš©í•´ì„œ SCNê³¼ ì¸ìë¡œ ë„˜ì–´ì˜¨ Status ìƒìœ„ì—ì„œ í• ë‹¹í•˜ë˜,
- *       ë°˜ë“œì‹œ SCN, Status ìˆœì„œëŒ€ë¡œ assign í•œë‹¤. (smxTrans.cpp::setTransCommitSCN())
- *       ì™œëƒí•˜ë©´, íŠ¹ì • Tupleì˜ Validation ê³¼ì •ì—ì„œ í•´ë‹¹ Tupleì„ ì½ì„ ê²ƒì¸ì§€
- *       ë§ ê²ƒì¸ì§€ë¥¼ ê²°ì •í•  ë•Œ, non-blocking ì•Œê³ ë¦¬ì¦˜ì„ ì´ìš©í•˜ì—¬
- *       Transaction ê°ì²´ì˜ statusì™€ SCNì„ ì½ì–´ì„œ ì´ìš©í•˜ëŠ”ë°
- *       ì´ ë•ŒëŠ” Status -> SCNì˜ ìˆœì„œëŒ€ë¡œ ì½ê¸° ë•Œë¬¸ì´ë‹¤.
- *       [ ì°¸ê³  => smxTrans::getTransCommitSCN() ]
+ *    4. callbackÀ» ÀÌ¿ëÇØ¼­ SCN°ú ÀÎÀÚ·Î ³Ñ¾î¿Â Status »óÀ§¿¡¼­ ÇÒ´çÇÏµÇ,
+ *       ¹İµå½Ã SCN, Status ¼ø¼­´ë·Î assign ÇÑ´Ù. (smxTrans.cpp::setTransCommitSCN())
+ *       ¿Ö³ÄÇÏ¸é, Æ¯Á¤ TupleÀÇ Validation °úÁ¤¿¡¼­ ÇØ´ç TupleÀ» ÀĞÀ» °ÍÀÎÁö
+ *       ¸» °ÍÀÎÁö¸¦ °áÁ¤ÇÒ ¶§, non-blocking ¾Ë°í¸®ÁòÀ» ÀÌ¿ëÇÏ¿©
+ *       Transaction °´Ã¼ÀÇ status¿Í SCNÀ» ÀĞ¾î¼­ ÀÌ¿ëÇÏ´Âµ¥
+ *       ÀÌ ¶§´Â Status -> SCNÀÇ ¼ø¼­´ë·Î ÀĞ±â ¶§¹®ÀÌ´Ù.
+ *       [ Âü°í => smxTrans::getTransCommitSCN() ]
  *
  *         TX            SCN   Status
- *       Write ì‹œ :   ------------------> (commit ì‹œ)
- *       Read  ì‹œ :  <------------------  (tuple Validation ì‹œ)
+ *       Write ½Ã :   ------------------> (commit ½Ã)
+ *       Read  ½Ã :  <------------------  (tuple Validation ½Ã)
  *
- *       % Txì˜  statusê°€ commitì´ë¼ë„ txì˜ commitSCNì´ infiniteì¼ìˆ˜ ìˆë‹¤.
- *        Txì˜ commití›„ endë¥¼ í•˜ê²Œë˜ëŠ”ë° ì´ë•Œ  commitSCNì´ inifiniteë¡œ
- *        ì¬ì´ˆê¸°í™” ë˜ê¸°ë•Œë¬¸ì´ë‹¤.
+ *       % TxÀÇ  status°¡ commitÀÌ¶óµµ txÀÇ commitSCNÀÌ infiniteÀÏ¼ö ÀÖ´Ù.
+ *        TxÀÇ commitÈÄ end¸¦ ÇÏ°ÔµÇ´Âµ¥ ÀÌ¶§  commitSCNÀÌ inifinite·Î
+ *        ÀçÃÊ±âÈ­ µÇ±â¶§¹®ÀÌ´Ù.
  *
- *    5. ì¦ê°€ëœ Commit-SCNì„ Temporary SCN, System SCNì— ë°˜ì˜í•œë‹¤.
+ *    5. Áõ°¡µÈ Commit-SCNÀ» Temporary SCN, System SCN¿¡ ¹İ¿µÇÑ´Ù.
  *
  */
 
@@ -242,18 +362,24 @@ IDE_RC smmDatabase::getCommitSCN( void    * aTrans,
 {
 
     smSCN     sCommitSCN;
-    smSCN     sTransCommitSCN;
-    smSCN*    spTempSysSCN;
+    smSCN     spTempSysSCN;
     smSCN*    spPersSysSCN;
 
-    SInt      sState = 0;
+    smSCN     sCasNew;
+    smSCN     sCasOld;
 
+#ifdef ALTIBASE_FIT_CHECK
+    SInt      sState = 0;
+#endif
+
+#if 0
+    {
     IDE_ASSERT( lockSCNMtx() == IDE_SUCCESS);
     sState = 1;
 
     // 1. Get Last Temporary SYSTEM-SCN
     spTempSysSCN = getLstSystemSCN();
-    sCommitSCN  = *spTempSysSCN;
+    sCommitSCN  = spTempSysSCN;
 
     // 2. Increase for getting Commit-SCN
     SM_INCREASE_SCN(&sCommitSCN);
@@ -296,111 +422,137 @@ IDE_RC smmDatabase::getCommitSCN( void    * aTrans,
         SM_SET_SCN(spPersSysSCN, &sAddedSCN);
 
         IDE_TEST(smmDirtyPageMgr::insDirtyPage(
-                     SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC, (scPageID)0)
+                                     SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC, 
+                                     SMM_MEMBASE_PAGEID)
                  != IDE_SUCCESS);
     }
     IDL_MEM_BARRIER;
+    }
+#endif
 
-    /* CASE-6985 ì„œë²„ ì¢…ë£Œí›„ startupí•˜ë©´ userì™€ í…Œì´ë¸”,
-     * ë°ì´í„°ê°€ ëª¨ë‘ ì‚¬ë¼ì§*/
-    validateCommitSCN(ID_FALSE /* No Lock SCN Mutex */);
+    /* BUG-47367 TxÀÌ commitSCNÀ» ¼öÇàÇÏ±â Àü »óÅÂ¸¦ Status¿¡ Ç¥½ÃÇØ ÁØ´Ù.
+     * ÇØ´ç Ç¥½Ã°¡ µÇ¾î ÀÖ´Â TxÀÇ °æ¿ì checkSCN °úÁ¤¿¡¼­ getTransCommitSCN ÇÔ¼ö¸¦ ÅëÇØ
+     * Á¤»óÀûÀÎ commitSCNÀÌ ¼³Á¤µÇ±â¸¦ ±â´Ù·È´Ù °ªÀ» ÀĞ¾î°¡°Ô µÈ´Ù. */
+    if( aTrans != NULL )
+    {
+        smLayerCallback::setTransStatus( aTrans,
+                                         SMX_TX_PRECOMMIT );
+    }
+
+    /* BUG-47367 Ç×»ó LstSystemSCN < PersSystemSCN ÀÌ¾î¾ßÇÑ´Ù. */
+    while(1)
+    {
+        spTempSysSCN = getLstSystemSCN();
+        spPersSysSCN = getSystemSCN();
+
+        if ( SM_SCN_IS_GE( &spTempSysSCN, spPersSysSCN ) )
+        {
+            IDE_ASSERT( lockSCNMtx() == IDE_SUCCESS);
+#ifdef ALTIBASE_FIT_CHECK
+            sState = 1;
+#endif
+            /* ±×»çÀÌ¿¡ getSystemSCN() °ªÀÌ ´Ù¸¥ ¾²·¹µå¿¡ ÀÇÇØ Áõ°¡µÆÀ»¼ö ÀÖ´Ù.
+               LOCK Àâ°í ´Ù½ÃÈ®ÀÎ */
+
+            spTempSysSCN = getLstSystemSCN();
+            spPersSysSCN = getSystemSCN();
+
+            if ( SM_SCN_IS_GE( &spTempSysSCN, spPersSysSCN ) )
+            {
+                setSystemSCN( spPersSysSCN );
+            }
+#ifdef ALTIBASE_FIT_CHECK
+            sState = 0;
+#endif
+            IDE_ASSERT( unlockSCNMtx() == IDE_SUCCESS );
+        }
+
+        /* SM_INCREASE_SCN ¿Í °°Àº ´ÜÀ§·Î ¿Ã¶ó°¡¾ßÇÑ´Ù. */
+        sCasNew = spTempSysSCN + 8;
+        sCasOld = acpAtomicCas64( &mLstSystemSCN, sCasNew, spTempSysSCN );
+
+        if ( sCasOld == spTempSysSCN )
+        {
+            /* CAS SUCCESS */
+            sCommitSCN = sCasNew;
+            break;
+        }
+    }
+
+    /* CASE-6985 ¼­¹ö Á¾·áÈÄ startupÇÏ¸é user¿Í Å×ÀÌºí,
+     * µ¥ÀÌÅÍ°¡ ¸ğµÎ »ç¶óÁü*/
+    validateCommitSCN();
 
     /* 
      * 4. Callback for strict ordered setting of Tx SCN & Status
      *
-     * aTrans == NULLì¸ ê²½ìš°ëŠ” System SCNì„ ì¦ê°€ë§Œ ì‹œí‚¬ê²½ìš°ì´ë‹¤.
-     * Delete Threadì—ì„œ ë‚¨ì•„ ìˆëŠ” AgingëŒ€ìƒ OIDë“¤ì„ ì²˜ë¦¬í•˜ê¸°ìœ„í•´
-     * Commit SCNì„ ì¦ê°€ì‹œí‚¨ë‹¤.
+     * aTrans == NULLÀÎ °æ¿ì´Â System SCNÀ» Áõ°¡¸¸ ½ÃÅ³°æ¿ìÀÌ´Ù.
+     * Delete Thread¿¡¼­ ³²¾Æ ÀÖ´Â Aging´ë»ó OIDµéÀ» Ã³¸®ÇÏ±âÀ§ÇØ
+     * Commit SCNÀ» Áõ°¡½ÃÅ²´Ù.
      *
      * BUG-30911 - 2 rows can be selected during executing index scan
      *             on unique index. 
      *
-     * LstSystemSCNì„ ë¨¼ì € ì¦ê°€ì‹œí‚¤ê³  íŠ¸ëœì­ì…˜ì— CommitSCNì„ ì„¤ì •í•´ì•¼ í•œë‹¤.
-     * ë¡œ ìˆ˜ì •í–ˆì—ˆëŠ”ë°, BUG-31248 ë¡œ ì¸í•´ ë‹¤ì‹œ ì›ë³µ í•©ë‹ˆë‹¤.
+     * LstSystemSCNÀ» ¸ÕÀú Áõ°¡½ÃÅ°°í Æ®·£Àè¼Ç¿¡ CommitSCNÀ» ¼³Á¤ÇØ¾ß ÇÑ´Ù.
+     * ·Î ¼öÁ¤Çß¾ú´Âµ¥, BUG-31248 ·Î ÀÎÇØ ´Ù½Ã ¿øº¹ ÇÕ´Ï´Ù.
      */
     if( aTrans != NULL )
     {
-        SM_GET_SCN( &sTransCommitSCN, &sCommitSCN );
-
-        if( aIsLegacyTrans == ID_TRUE )
-        {
-            SM_SET_SCN_LEGACY_BIT( &sTransCommitSCN );
-        }
-        else
-        {
-            /* do nothing */
-        }
-
-        smLayerCallback::setTransCommitSCN( aTrans,
-                                            sTransCommitSCN,
-                                            aStatus );
+        smLayerCallback::setTransSCNnStatus( aTrans, aIsLegacyTrans, &sCommitSCN, aStatus );
     }
     else
     {
+        IDE_DASSERT( aTrans == NULL );
+        IDE_DASSERT( aStatus == NULL ); 
         IDE_DASSERT( aIsLegacyTrans == ID_FALSE );
     }
 
     IDU_FIT_POINT( "1.BUG-30911@smmDatabase::getCommitSCN" );
-    
-    // 5. Restore the Added Commit-SCN to Temporary-SCN
-    SM_SET_SCN(spTempSysSCN, &sCommitSCN);
-
-    SM_SET_SCN(&(mMemBaseBackup.mSystemSCN), &sCommitSCN);
-
-
-    sState = 0;
-    IDE_ASSERT( unlockSCNMtx() == IDE_SUCCESS);
 
     return IDE_SUCCESS;
 
+#ifdef ALTIBASE_FIT_CHECK
     IDE_EXCEPTION_END;
 
     IDE_PUSH();
     
     if( sState != 0 )
     {
-        IDE_ASSERT( unlockSCNMtx() == IDE_SUCCESS);
+        IDE_ASSERT( unlockSCNMtx() == IDE_SUCCESS );
     }
 
     IDE_POP();
-    
+
     return IDE_FAILURE;
+#endif
 }
 
 /*
- * í˜„ì¬ System Commit Numberê°€ Validí•œì§€ ê²€ì¦í•œë‹¤.
+ * ÇöÀç System Commit Number°¡ ValidÇÑÁö °ËÁõÇÑ´Ù.
  * 
- * aIsLock : ID_TRUE, ê²€ì¦ì „ì— mMtxSCNë¥¼ ì¡ëŠ”ë‹¤. ID_FALSEë¼ë©´
- *           mtxSCNë¥¼ ì¡ì§€ ì•ŠëŠ”ë‹¤.
+ * BUG-47367 getCommitSCN¿¡¼­ SCNMtxÀÇ ¿ªÇÒÀÌ persSystemSCNÀ» Áõ°¡½ÃÅ°´Â °ÍÀ¸·Î ÇÑÁ¤µÊ¿¡ µû¶ó
+ * LockÀ» ÀâÁö ¾Ê°í LstSystemSCNÀ» ¸ÕÀú °¡Á®¿ÂµÚ persSystemSCNÀ» °¡Á®¿Í È®ÀÎÇÏ´Â ¹æ½ÄÀ¸·Î ¹Ù²Û´Ù.
  * 
  */
-void smmDatabase::validateCommitSCN(idBool aIsLock)
+void smmDatabase::validateCommitSCN()
 {
-    if(aIsLock == ID_TRUE)
-    {
-        IDE_ASSERT( lockSCNMtx() == IDE_SUCCESS);
-    }
+    smSCN sSCN;
+    /* CASE-6985 ¼­¹ö Á¾·áÈÄ startupÇÏ¸é user¿Í Å×ÀÌºí,
+     * µ¥ÀÌÅÍ°¡ ¸ğµÎ »ç¶óÁü: ÇöÀç Membase¿¡ ÀÖ´Â SystemSCNÀº
+     * Ç×»ó Transaction¿¡°Ô ÇÒ´çµÇ´Â m_lstSystemSCNº¸´Ù Ç×»ó
+     * Ä¿¾ß ÇÑ´Ù. */
+    sSCN = getLstSystemSCN();
 
-    /* CASE-6985 ì„œë²„ ì¢…ë£Œí›„ startupí•˜ë©´ userì™€ í…Œì´ë¸”,
-     * ë°ì´í„°ê°€ ëª¨ë‘ ì‚¬ë¼ì§: í˜„ì¬ Membaseì— ìˆëŠ” SystemSCNì€
-     * í•­ìƒ Transactionì—ê²Œ í• ë‹¹ë˜ëŠ” m_lstSystemSCNë³´ë‹¤ í•­ìƒ
-     * ì»¤ì•¼ í•œë‹¤. */
-    if( SM_SCN_IS_GT(getLstSystemSCN(), getSystemSCN()) )
+    if( SM_SCN_IS_GT(&sSCN, getSystemSCN()) )
     {
         ideLog::log(SM_TRC_LOG_LEVEL_WARNNING,
                     "Invalid System SCN:%llu, \
                     Last SCN:%llu\n",
                     SM_SCN_TO_LONG( *(getSystemSCN()) ),
-                    SM_SCN_TO_LONG( *(getLstSystemSCN()) ));
-        IDE_ASSERT(SM_SCN_IS_LT(getLstSystemSCN(), getSystemSCN()));
-    }
-
-    if(aIsLock == ID_TRUE)
-    {
-        IDE_ASSERT( unlockSCNMtx() == IDE_SUCCESS);
+                    SM_SCN_TO_LONG( sSCN ));
+        IDE_ASSERT(SM_SCN_IS_LT(&sSCN, getSystemSCN()));
     }
 }
-
 
 IDE_RC smmDatabase::checkVersion(smmMemBase *aMembase)
 {
@@ -555,49 +707,49 @@ IDE_RC smmDatabase::checkMembaseIsValid()
 
 
 /*
- * Expand Chunkê´€ë ¨ëœ í”„ë¡œí¼í‹° ê°’ë“¤ì´ ì œëŒ€ë¡œ ëœ ê°’ì¸ì§€ ì²´í¬í•œë‹¤.
+ * Expand Chunk°ü·ÃµÈ ÇÁ·ÎÆÛÆ¼ °ªµéÀÌ Á¦´ë·Î µÈ °ªÀÎÁö Ã¼Å©ÇÑ´Ù.
  *
- * 1. í•˜ë‚˜ì˜ Chunkì•ˆì˜ ë°ì´í„° í˜ì´ì§€ë¥¼ ì—¬ëŸ¬ Free Page Listì— ë¶„ë°°í•  ë•Œ,
- *    ìµœì†Œí•œ í•œë²ˆì€ ë¶„ë°°ê°€ ë˜ëŠ”ì§€ ì²´í¬
+ * 1. ÇÏ³ªÀÇ Chunk¾ÈÀÇ µ¥ÀÌÅÍ ÆäÀÌÁö¸¦ ¿©·¯ Free Page List¿¡ ºĞ¹èÇÒ ¶§,
+ *    ÃÖ¼ÒÇÑ ÇÑ¹øÀº ºĞ¹è°¡ µÇ´ÂÁö Ã¼Å©
  *
- *    ë§Œì¡±ì¡°ê±´ : Chunkë‹¹ ë°ì´í„°í˜ì´ì§€ìˆ˜ >= 2 * Listë‹¹ ë¶„ë°°í•  Pageìˆ˜ * List ìˆ˜
+ *    ¸¸Á·Á¶°Ç : Chunk´ç µ¥ÀÌÅÍÆäÀÌÁö¼ö >= 2 * List´ç ºĞ¹èÇÒ Page¼ö * List ¼ö
  *
- * aChunkDataPageCount [IN] Expand Chunkì•ˆì˜ ë°ì´í„°í˜ì´ì§€ ìˆ˜
- *                          ( FLI Pageë¥¼ ì œì™¸í•œ Pageì˜ ìˆ˜ )
+ * aChunkDataPageCount [IN] Expand Chunk¾ÈÀÇ µ¥ÀÌÅÍÆäÀÌÁö ¼ö
+ *                          ( FLI Page¸¦ Á¦¿ÜÇÑ PageÀÇ ¼ö )
  */
 IDE_RC smmDatabase::checkExpandChunkProps(smmMemBase * aMemBase)
 {
     IDE_DASSERT( aMemBase != NULL );
 
-    // ë‹¤ì¤‘í™”ëœ Free Page Listìˆ˜ê°€  createdbì‹œì ê³¼ ë‹¤ë¥¸ ê²½ìš°
+    // ´ÙÁßÈ­µÈ Free Page List¼ö°¡  createdb½ÃÁ¡°ú ´Ù¸¥ °æ¿ì
     IDE_TEST_RAISE(aMemBase->mFreePageListCount !=
                    SMM_FREE_PAGE_LIST_COUNT,
                    different_page_list_count );
 
-    // Expand Chunkì•ˆì˜ Pageìˆ˜ê°€ createdbì‹œì ê³¼ ë‹¤ë¥¸ ê²½ìš°
+    // Expand Chunk¾ÈÀÇ Page¼ö°¡ createdb½ÃÁ¡°ú ´Ù¸¥ °æ¿ì
     IDE_TEST_RAISE(aMemBase->mExpandChunkPageCnt !=
                    smuProperty::getExpandChunkPageCount() ,
                    different_expand_chunk_page_count );
 
-    //  Expand Chunkê°€ ì¶”ê°€ë  ë•Œ
-    //  ( ë°ì´í„°ë² ì´ìŠ¤ Chunkê°€ ìƒˆë¡œ í• ë‹¹ë  ë•Œ  )
-    //  ê·¸ ì•ˆì˜ Free Pageë“¤ì€ ì—¬ëŸ¬ê°œì˜ ë‹¤ì¤‘í™”ëœ Free Page Listë¡œ ë¶„ë°°ëœë‹¤.
+    //  Expand Chunk°¡ Ãß°¡µÉ ¶§
+    //  ( µ¥ÀÌÅÍº£ÀÌ½º Chunk°¡ »õ·Î ÇÒ´çµÉ ¶§  )
+    //  ±× ¾ÈÀÇ Free PageµéÀº ¿©·¯°³ÀÇ ´ÙÁßÈ­µÈ Free Page List·Î ºĞ¹èµÈ´Ù.
     //
-    //  ì´ ë•Œ, ê°ê°ì˜ Free Page Listì— ìµœì†Œí•œ í•˜ë‚˜ì˜ Free Pageê°€
-    //  ë¶„ë°°ë˜ì–´ì•¼ í•˜ë„ë¡ ì‹œìŠ¤í…œì˜ ì•„í‚¤í…ì³ê°€ ì„¤ê³„ë˜ì–´ ìˆë‹¤.
+    //  ÀÌ ¶§, °¢°¢ÀÇ Free Page List¿¡ ÃÖ¼ÒÇÑ ÇÏ³ªÀÇ Free Page°¡
+    //  ºĞ¹èµÇ¾î¾ß ÇÏµµ·Ï ½Ã½ºÅÛÀÇ ¾ÆÅ°ÅØÃÄ°¡ ¼³°èµÇ¾î ÀÖ´Ù.
     //
-    //  ë§Œì•½ Expand Chunkì•ˆì˜ Free Pageìˆ˜ê°€ ì¶©ë¶„í•˜ì§€ ì•Šì•„ì„œ,
-    //  PER_LIST_DIST_PAGE_COUNT ê°œì”© ëª¨ë“  Free Page Listì— ë¶„ë°°í•  ìˆ˜ê°€
-    //  ì—†ë‹¤ë©´ ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¨ë‹¤.
+    //  ¸¸¾à Expand Chunk¾ÈÀÇ Free Page¼ö°¡ ÃæºĞÇÏÁö ¾Ê¾Æ¼­,
+    //  PER_LIST_DIST_PAGE_COUNT °³¾¿ ¸ğµç Free Page List¿¡ ºĞ¹èÇÒ ¼ö°¡
+    //  ¾ø´Ù¸é ¿¡·¯¸¦ ¹ß»ı½ÃÅ²´Ù.
     //
-    //  Expand Chunkì•ˆì˜ Free List Info Pageë¥¼ ì œì™¸í•œ
-    //  ë°ì´í„°í˜ì´ì§€ë§Œì´ Free Page Listì— ë¶„ë°°ë˜ë¯€ë¡œ, ì´ ê°¯ìˆ˜ë¥¼ ì²´í¬í•´ì•¼ í•œë‹¤.
-    //  ê·¸ëŸ¬ë‚˜, ì´ëŸ¬í•œ ëª¨ë“  ë‚´ìš©ì„ ì¼ë°˜ ì‚¬ìš©ìê°€ ì´í•´í•˜ê¸°ì—ëŠ” ë„ˆë¬´ ë‚œí•´í•˜ë‹¤.
+    //  Expand Chunk¾ÈÀÇ Free List Info Page¸¦ Á¦¿ÜÇÑ
+    //  µ¥ÀÌÅÍÆäÀÌÁö¸¸ÀÌ Free Page List¿¡ ºĞ¹èµÇ¹Ç·Î, ÀÌ °¹¼ö¸¦ Ã¼Å©ÇØ¾ß ÇÑ´Ù.
+    //  ±×·¯³ª, ÀÌ·¯ÇÑ ¸ğµç ³»¿ëÀ» ÀÏ¹İ »ç¿ëÀÚ°¡ ÀÌÇØÇÏ±â¿¡´Â ³Ê¹« ³­ÇØÇÏ´Ù.
     //
-    //  Expand Chunkì˜ í˜ì´ì§€ ìˆ˜ëŠ” Free Page Listì— ë‘ë²ˆì”© ë¶„ë°°í•  ìˆ˜ ìˆì„ë§Œí¼
-    //  ì¶©ë¶„í•œ í¬ê¸°ë¥¼ ê°€ì§€ë„ë¡ ê°•ì œí•œë‹¤.
+    //  Expand ChunkÀÇ ÆäÀÌÁö ¼ö´Â Free Page List¿¡ µÎ¹ø¾¿ ºĞ¹èÇÒ ¼ö ÀÖÀ»¸¸Å­
+    //  ÃæºĞÇÑ Å©±â¸¦ °¡Áöµµ·Ï °­Á¦ÇÑ´Ù.
     //
-    //  ì¡°ê±´ì‹ : EXPAND_CHUNK_PAGE_COUNT <=
+    //  Á¶°Ç½Ä : EXPAND_CHUNK_PAGE_COUNT <=
     //           2 * PER_LIST_DIST_PAGE_COUNT * PAGE_LIST_GROUP_COUNT
    IDE_TEST_RAISE(
         aMemBase->mExpandChunkPageCnt
@@ -701,12 +853,12 @@ void smmDatabase::dumpMembase()
 #ifdef DEBUG
 /***********************************************************************
  * Description : BUG-31862 resize transaction table without db migration
- *      MemBaseì™€ í”„ë¡œí¼í‹°ì˜ íŠ¸ëœì­ì…˜ í…Œì´ë¸” ì‚¬ì´ì¦ˆë¥¼ ë¹„êµí•œë‹¤.
- *      í”„ë¡œí¼í‹°ì˜ ê°’ì´ MemBaseì˜ ê°’ë³´ë‹¤ ì»¤ì•¼ í•˜ë©°, 2^N ê°’ì´ì–´ì•¼ í•œë‹¤.
+ *      MemBase¿Í ÇÁ·ÎÆÛÆ¼ÀÇ Æ®·£Àè¼Ç Å×ÀÌºí »çÀÌÁî¸¦ ºñ±³ÇÑ´Ù.
+ *      ÇÁ·ÎÆÛÆ¼ÀÇ °ªÀÌ MemBaseÀÇ °ªº¸´Ù Ä¿¾ß ÇÏ¸ç, 2^N °ªÀÌ¾î¾ß ÇÑ´Ù.
  *
  * Implementation :
  *
- * [IN] aMembase - í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ë©¤ë² ì´ìŠ¤
+ * [IN] aMembase - Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ¸âº£ÀÌ½º
  *
  **********************************************************************/
 IDE_RC smmDatabase::checkTransTblSize(smmMemBase * aMemBase)
@@ -722,9 +874,9 @@ IDE_RC smmDatabase::checkTransTblSize(smmMemBase * aMemBase)
 
 /***********************************************************************
  * Description : BUG-31862 resize transaction table without db migration
- *      í”„ë¡œí¼í‹°ì˜ TRANSACTION_TABLE_SIZE ê°’ìœ¼ë¡œ
- *      mDicMemBaseì˜ mTxTBLSizeë¥¼ í™•ì¥í•œë‹¤. 
- *      ê°’ì€ 2^Në§Œ ê°€ëŠ¥í•˜ë‹¤.
+ *      ÇÁ·ÎÆÛÆ¼ÀÇ TRANSACTION_TABLE_SIZE °ªÀ¸·Î
+ *      mDicMemBaseÀÇ mTxTBLSize¸¦ È®ÀåÇÑ´Ù. 
+ *      °ªÀº 2^N¸¸ °¡´ÉÇÏ´Ù.
  *
  * Implementation :
  *
@@ -740,7 +892,8 @@ IDE_RC smmDatabase::refineTransTblSize()
         setTxTBLSize(mDicMemBase, sTransTblSize);
 
         IDE_TEST( smmDirtyPageMgr::insDirtyPage(
-                        SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC, (scPageID)0)
+                                    SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC, 
+                                    SMM_MEMBASE_PAGEID)
                   != IDE_SUCCESS);
 
         makeMembaseBackup();

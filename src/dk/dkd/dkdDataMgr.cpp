@@ -23,13 +23,13 @@
 
 
 /***********************************************************************
- * Description: Data manager ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
- *              ì´ ê³¼ì •ì—ì„œ DK data buffer ë¡œë¶€í„° record buffer í• ë‹¹ì´ 
- *              ê°€ëŠ¥í•œì§€ ì²´í¬í•´ë³´ê³  í• ë‹¹ ê°€ëŠ¥í•œ ê²½ìš°ëŠ” record buffer 
- *              manager ë¥¼ ìƒì„±í•˜ê³ , ê·¸ë ‡ì§€ ì•Šë‹¤ë©´ disk temp table 
- *              manager ë¥¼ ìƒì„±í•œë‹¤.
+ * Description: Data manager ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ *              ÀÌ °úÁ¤¿¡¼­ DK data buffer ·ÎºÎÅÍ record buffer ÇÒ´çÀÌ 
+ *              °¡´ÉÇÑÁö Ã¼Å©ÇØº¸°í ÇÒ´ç °¡´ÉÇÑ °æ¿ì´Â record buffer 
+ *              manager ¸¦ »ı¼ºÇÏ°í, ±×·¸Áö ¾Ê´Ù¸é disk temp table 
+ *              manager ¸¦ »ı¼ºÇÑ´Ù.
  *
- *  aBuffSize  - [OUT] REMOTE_TABLE_STORE ì˜ record buffer size
+ *  aBuffSize  - [OUT] REMOTE_TABLE_STORE ÀÇ record buffer size
  *
  **********************************************************************/
 IDE_RC  dkdDataMgr::initialize( UInt * aBuffSize )
@@ -84,9 +84,9 @@ IDE_RC  dkdDataMgr::initialize( UInt * aBuffSize )
 }
 
 /************************************************************************
- * Description : Data manager ê°€ record buffer ì´ë©´ record buffer ìì›ì„ í• ë‹¹
+ * Description : Data manager °¡ record buffer ÀÌ¸é record buffer ÀÚ¿øÀ» ÇÒ´ç
  *               REMOTE_TABLE_STORE function
- *               initialize í•  ë•Œ memory record buffer ìì›ì„ í• ë‹¹í•œë‹¤.
+ *               initialize ÇÒ ¶§ memory record buffer ÀÚ¿øÀ» ÇÒ´çÇÑ´Ù.
  ************************************************************************/
 IDE_RC  dkdDataMgr::initializeRecordBuffer()
 {
@@ -149,9 +149,9 @@ IDE_RC  dkdDataMgr::initializeRecordBuffer()
 }
 
 /************************************************************************
- * Description : Data manager ëŠ” disk temp table ë¥¼ ì´ìš©í•˜ì—¬ í•„ìš”í•œ ìì›ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
+ * Description : Data manager ´Â disk temp table ¸¦ ÀÌ¿ëÇÏ¿© ÇÊ¿äÇÑ ÀÚ¿øÀ» ÇÒ´ç¹Ş´Â´Ù.
  *
- *  aQcStatement    - [IN] disk temp table ì˜ ìƒì„±ì„ ìœ„í•´ í•„ìš”í•œ ì •ë³´
+ *  aQcStatement    - [IN] disk temp table ÀÇ »ı¼ºÀ» À§ÇØ ÇÊ¿äÇÑ Á¤º¸
  *
  ************************************************************************/
 IDE_RC  dkdDataMgr::activate( void  *aQcStatement )
@@ -183,9 +183,9 @@ IDE_RC  dkdDataMgr::activate( void  *aQcStatement )
 }
 
 /************************************************************************
- * Description : Data manager ë¥¼ ì •ë¦¬í•œë‹¤.
+ * Description : Data manager ¸¦ Á¤¸®ÇÑ´Ù.
  *
- *  BUG-37487 : return ê°’ì„ IDE_RC --> void ë¡œ ë³€ê²½.
+ *  BUG-37487 : return °ªÀ» IDE_RC --> void ·Î º¯°æ.
  *
  ************************************************************************/
 void dkdDataMgr::finalize()
@@ -234,10 +234,10 @@ void dkdDataMgr::finalize()
 }
 
 /************************************************************************
- * Description : Record buffer í˜¹ì€ disk temp table ë¡œë¶€í„° record í•˜ë‚˜ë¥¼ 
- *               fetch í•œë‹¤.
+ * Description : Record buffer È¤Àº disk temp table ·ÎºÎÅÍ record ÇÏ³ª¸¦ 
+ *               fetch ÇÑ´Ù.
  *
- *  aEndFlag    - [OUT] ë” ì´ìƒ ê°€ì ¸ì˜¬ recordê°€ ì—†ìŒì„ ë‚˜íƒ€ë‚¸ë‹¤.
+ *  aEndFlag    - [OUT] ´õ ÀÌ»ó °¡Á®¿Ã record°¡ ¾øÀ½À» ³ªÅ¸³½´Ù.
  *
  ************************************************************************/
 IDE_RC dkdDataMgr::moveNextRow( idBool * aEndFlag )
@@ -284,12 +284,12 @@ IDE_RC dkdDataMgr::moveNextRow( idBool * aEndFlag )
 }
 
 /************************************************************************
- * Description : Record buffer í˜¹ì€ disk temp table ë¡œë¶€í„° record í•˜ë‚˜ë¥¼ 
- *               fetch í›„ ë³µì‚¬í•œë‹¤. 
+ * Description : Record buffer È¤Àº disk temp table ·ÎºÎÅÍ record ÇÏ³ª¸¦ 
+ *               fetch ÈÄ º¹»çÇÑ´Ù. 
  *
- *  aRow        - [OUT] fetch í•´ì˜¬ record ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°, 
- *                      NULL ì¸ ê²½ìš° ë”ì´ìƒ fetch í•  record ê°€ ì—†ìŒì„ 
- *                      ë‚˜íƒ€ë‚¸ë‹¤.
+ *  aRow        - [OUT] fetch ÇØ¿Ã record ¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ, 
+ *                      NULL ÀÎ °æ¿ì ´õÀÌ»ó fetch ÇÒ record °¡ ¾øÀ½À» 
+ *                      ³ªÅ¸³½´Ù.
  *
  ************************************************************************/
 IDE_RC  dkdDataMgr::fetchRow( void **aRow )
@@ -338,12 +338,12 @@ IDE_RC  dkdDataMgr::fetchRow( void **aRow )
 }
 
 /************************************************************************
- * Description : Record buffer í˜¹ì€ disk temp table ë¡œ record í•˜ë‚˜ë¥¼ 
- *               insert í•œë‹¤. ì´ ë•Œ, ì…ë ¥ë°›ëŠ” row ëŠ” cm block ìœ¼ë¡œë¶€í„° 
- *               ì–»ì–´ì˜¨ raw data ë¡œ mt type ìœ¼ë¡œ ë³€í™˜í•œ í›„ insert í•œë‹¤.
+ * Description : Record buffer È¤Àº disk temp table ·Î record ÇÏ³ª¸¦ 
+ *               insert ÇÑ´Ù. ÀÌ ¶§, ÀÔ·Â¹Ş´Â row ´Â cm block À¸·ÎºÎÅÍ 
+ *               ¾ò¾î¿Â raw data ·Î mt type À¸·Î º¯È¯ÇÑ ÈÄ insert ÇÑ´Ù.
  *
- *  aRow            - [IN] insert í•  record ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°
- *  aQcStatement    - [IN] disk temp table ë¡œ switch í•˜ëŠ” ê²½ìš° ì‚¬ìš©
+ *  aRow            - [IN] insert ÇÒ record ¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ
+ *  aQcStatement    - [IN] disk temp table ·Î switch ÇÏ´Â °æ¿ì »ç¿ë
  *
  ************************************************************************/
 IDE_RC  dkdDataMgr::insertRow( void *aRow, void *aQcStatement )
@@ -439,8 +439,8 @@ IDE_RC  dkdDataMgr::insertRow( void *aRow, void *aQcStatement )
 }
 
 /************************************************************************
- * Description : Record buffer í˜¹ì€ disk temp table ì˜ cursor ë¥¼ restart
- *               ì‹œí‚¨ë‹¤.
+ * Description : Record buffer È¤Àº disk temp table ÀÇ cursor ¸¦ restart
+ *               ½ÃÅ²´Ù.
  *
  ************************************************************************/
 IDE_RC  dkdDataMgr::restart()
@@ -479,9 +479,9 @@ IDE_RC dkdDataMgr::restartOnce( void )
 }
 
 /************************************************************************
- * Description : Record buffer manager ë¥¼ ìƒì„±í•œë‹¤.
+ * Description : Record buffer manager ¸¦ »ı¼ºÇÑ´Ù.
  *
- *  aAllocableBlockCnt - [IN] ì´ record buffer ì— í• ë‹¹í•  block ê°œìˆ˜
+ *  aAllocableBlockCnt - [IN] ÀÌ record buffer ¿¡ ÇÒ´çÇÒ block °³¼ö
  *
  ************************************************************************/
 IDE_RC  dkdDataMgr::createRecordBufferMgr( UInt aAllocableBlockCnt )
@@ -532,9 +532,9 @@ IDE_RC  dkdDataMgr::createRecordBufferMgr( UInt aAllocableBlockCnt )
 }
 
 /************************************************************************
- * Description : Record buffer manager ë¥¼ ì œê±°í•œë‹¤.
+ * Description : Record buffer manager ¸¦ Á¦°ÅÇÑ´Ù.
  *
- *  BUG-37487 : return ê°’ì„ IDE_RC --> void ë¡œ ë³€ê²½.
+ *  BUG-37487 : return °ªÀ» IDE_RC --> void ·Î º¯°æ.
  *
  ************************************************************************/
 void dkdDataMgr::destroyRecordBufferMgr()
@@ -549,9 +549,9 @@ void dkdDataMgr::destroyRecordBufferMgr()
 }
 
 /************************************************************************
- * Description : Disk temp table manager ë¥¼ ìƒì„±í•œë‹¤. 
+ * Description : Disk temp table manager ¸¦ »ı¼ºÇÑ´Ù. 
  *
- *  aQcStatement    - [IN] disk temp table ì˜ ìƒì„±ì„ ìœ„í•´ í•„ìš”
+ *  aQcStatement    - [IN] disk temp table ÀÇ »ı¼ºÀ» À§ÇØ ÇÊ¿ä
  *
  ************************************************************************/
 IDE_RC  dkdDataMgr::createDiskTempTableMgr( void    *aQcStatement )
@@ -645,9 +645,9 @@ IDE_RC  dkdDataMgr::createDiskTempTableMgr( void    *aQcStatement )
 }
 
 /************************************************************************
- * Description : Disk temp table manager ë¥¼ ì œê±°í•œë‹¤.
+ * Description : Disk temp table manager ¸¦ Á¦°ÅÇÑ´Ù.
  *
- *  BUG-37487 : return ê°’ì„ IDE_RC --> void ë¡œ ë³€ê²½.
+ *  BUG-37487 : return °ªÀ» IDE_RC --> void ·Î º¯°æ.
  *
  ************************************************************************/
 void dkdDataMgr::destroyDiskTempTableMgr()
@@ -670,8 +670,8 @@ void dkdDataMgr::destroyDiskTempTableMgr()
 }
 
 /************************************************************************
- * Description : Type converter ë¥¼ ìƒì„±í•œë‹¤. Type converter ëŠ” result
- *               set meta ì •ë³´ë¥¼ ê°–ê³  ìˆë‹¤. 
+ * Description : Type converter ¸¦ »ı¼ºÇÑ´Ù. Type converter ´Â result
+ *               set meta Á¤º¸¸¦ °®°í ÀÖ´Ù. 
  *
  ************************************************************************/
 IDE_RC  dkdDataMgr::createTypeConverter( dkpColumn   *aColMetaArr,
@@ -690,7 +690,7 @@ IDE_RC  dkdDataMgr::createTypeConverter( dkpColumn   *aColMetaArr,
 }
 
 /************************************************************************
- * Description : Type converter ë¥¼ ì œê±°í•œë‹¤.
+ * Description : Type converter ¸¦ Á¦°ÅÇÑ´Ù.
  *
  ************************************************************************/
 IDE_RC  dkdDataMgr::destroyTypeConverter()
@@ -705,10 +705,10 @@ IDE_RC  dkdDataMgr::destroyTypeConverter()
 }
 
 /************************************************************************
- * Description : Type converter ê°€ altibase type ìœ¼ë¡œ ë³€í™˜í•´ ê°–ê³  ìˆëŠ” 
- *               meta ì •ë³´ë¥¼ ìš”ì²­í•œë‹¤.
+ * Description : Type converter °¡ altibase type À¸·Î º¯È¯ÇØ °®°í ÀÖ´Â 
+ *               meta Á¤º¸¸¦ ¿äÃ»ÇÑ´Ù.
  *
- *  aMeta       - [IN] ìš”ì²­í•œ meta ì •ë³´ê°€ ë‹´ê¸¸ êµ¬ì¡°ì²´ í¬ì¸í„°
+ *  aMeta       - [IN] ¿äÃ»ÇÑ meta Á¤º¸°¡ ´ã±æ ±¸Á¶Ã¼ Æ÷ÀÎÅÍ
  *
  ************************************************************************/
 IDE_RC  dkdDataMgr::getConvertedMeta( mtcColumn **aMeta )
@@ -724,8 +724,8 @@ IDE_RC  dkdDataMgr::getConvertedMeta( mtcColumn **aMeta )
 }
 
 /************************************************************************
- * Description : Type converter ë¡œë¶€í„° converted row ì˜ ê¸¸ì´ë¥¼ ì–»ì–´ì™€ 
- *               ì‹¤ì œ DK ì—ì„œ ì €ì¥í•  record ì˜ ê¸¸ì´ë¥¼ êµ¬í•´ ì„¤ì •í•œë‹¤.
+ * Description : Type converter ·ÎºÎÅÍ converted row ÀÇ ±æÀÌ¸¦ ¾ò¾î¿Í 
+ *               ½ÇÁ¦ DK ¿¡¼­ ÀúÀåÇÒ record ÀÇ ±æÀÌ¸¦ ±¸ÇØ ¼³Á¤ÇÑ´Ù.
  *
  ************************************************************************/
 IDE_RC  dkdDataMgr::getRecordLength()
@@ -747,10 +747,10 @@ IDE_RC  dkdDataMgr::getRecordLength()
 }
 
 /************************************************************************
- * Description : Type converter ë¡œë¶€í„° converted row ì˜ ê¸¸ì´ë¥¼ ì–»ì–´ì™€ 
- *               ì‹¤ì œ DK ì—ì„œ ì €ì¥í•  record ì˜ ê¸¸ì´ë¥¼ êµ¬í•´ ì„¤ì •í•œë‹¤.
+ * Description : Type converter ·ÎºÎÅÍ converted row ÀÇ ±æÀÌ¸¦ ¾ò¾î¿Í 
+ *               ½ÇÁ¦ DK ¿¡¼­ ÀúÀåÇÒ record ÀÇ ±æÀÌ¸¦ ±¸ÇØ ¼³Á¤ÇÑ´Ù.
  *
- *  BUG-37487 : return ê°’ì„ IDE_RC --> void ë¡œ ë³€ê²½.
+ *  BUG-37487 : return °ªÀ» IDE_RC --> void ·Î º¯°æ.
  *
  ************************************************************************/
 void dkdDataMgr::switchToDiskTempTable()
@@ -790,8 +790,8 @@ IDE_RC  dkdDataMgr::getRecordBufferSize()
 }
 
 /************************************************************************
- * Description : Type converter ë¡œë¶€í„° converted row ì˜ ê¸¸ì´ë¥¼ ì–»ì–´ì™€ 
- *               ì‹¤ì œ DK ì—ì„œ ì €ì¥í•  record ì˜ ê¸¸ì´ë¥¼ êµ¬í•´ ì„¤ì •í•œë‹¤.
+ * Description : Type converter ·ÎºÎÅÍ converted row ÀÇ ±æÀÌ¸¦ ¾ò¾î¿Í 
+ *               ½ÇÁ¦ DK ¿¡¼­ ÀúÀåÇÒ record ÀÇ ±æÀÌ¸¦ ±¸ÇØ ¼³Á¤ÇÑ´Ù.
  *
  ************************************************************************/
 IDE_RC  dkdDataMgr::moveRecordToDiskTempTable()

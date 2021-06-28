@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smnbModule.cpp 84469 2018-11-29 06:56:05Z justin.kwon $
+ * $Id: smnbModule.cpp 89963 2021-02-09 05:22:10Z justin.kwon $
  **********************************************************************/
 
 #include <idl.h>
@@ -37,11 +37,10 @@
 extern smiGlobalCallBackList gSmiGlobalCallBackList;
 
 smmSlotList  smnbBTree::mSmnbNodePool;
-void*        smnbBTree::mSmnbFreeNodeList; /* AGER ê°€ ì •ë¦¬í•˜ê¸° ìœ„í•´ ë“¤ê³ ìˆëŠ” NODE LIST */
+void*        smnbBTree::mSmnbFreeNodeList; /* AGER °¡ Á¤¸®ÇÏ±â À§ÇØ µé°íÀÖ´Â NODE LIST */
 
 UInt         smnbBTree::mNodeSize;
 UInt         smnbBTree::mIteratorSize;
-UInt         smnbBTree::mDefaultMaxKeySize; /* PROJ-2433 */
 UInt         smnbBTree::mNodeSplitRate;     /* BUG-40509 */
 
 
@@ -65,7 +64,6 @@ smnIndexModule smnbModule =
     (smTableCursorLockRowFunc)  smnManager::lockRow,
     (smnDeleteFunc)             smnbBTree::deleteNA,
     (smnFreeFunc)               smnbBTree::freeSlot,
-    (smnExistKeyFunc)           smnbBTree::existKey,
     (smnInsertRollbackFunc)     NULL,
     (smnDeleteRollbackFunc)     NULL,
     (smnAgingFunc)              NULL,
@@ -546,25 +544,21 @@ static const  smSeekFunc smnbSeekFunctions[32][12] =
 void smnbBTree::setIndexProperties()
 {
     /* PROJ-2433
-     * NODE SIZEëŠ” property __MEM_BTREE_INDEX_NODE_SIZE ê°’ì´ë‹¤. */
+     * NODE SIZE´Â property __MEM_BTREE_INDEX_NODE_SIZE °ªÀÌ´Ù. */
 
     /* BUG-46402
-     * PAGE ë‹¨ìœ„ê°€ ì•„ë‹Œ NODE ë‹¨ìœ„ë¡œ mempool alloc ë°›ë„ë¡ ìˆ˜ì •í–ˆê¸° ë•Œë¬¸ì—
-     * PAGEì˜ ë‚­ë¹„ë˜ëŠ” ê³µê°„ì´ ì—†ë„ë¡ node sizeë¥¼ ë³´ì •í•˜ëŠ” ì‘ì—…ì€ í•„ìš”ì—†ê²Œ ë˜ì—ˆë‹¤. */
+     * PAGE ´ÜÀ§°¡ ¾Æ´Ñ NODE ´ÜÀ§·Î mempool alloc ¹Şµµ·Ï ¼öÁ¤Çß±â ¶§¹®¿¡
+     * PAGEÀÇ ³¶ºñµÇ´Â °ø°£ÀÌ ¾øµµ·Ï node size¸¦ º¸Á¤ÇÏ´Â ÀÛ¾÷Àº ÇÊ¿ä¾ø°Ô µÇ¾ú´Ù. */
     mNodeSize     = idlOS::align( smuProperty::getMemBtreeNodeSize() );
 
     /* PROJ-2433
-     * mIteratorSizeëŠ” btree index ê³µí†µìœ¼ë¡œ ì‚¬ìš©í•˜ëŠ” smnbIteratorì— í• ë‹¹í•  ë©”ëª¨ë¦¬ í¬ê¸°ì´ë‹¤.
-     * smnbIteratorëŠ” í—¤ë” + rows[] ë¡œ êµ¬ì„±ë˜ë©°,
-     * rows[]ì—ëŠ” fetchë  nodeì˜ row pointerë“¤ì´ ì €ì¥ëœë‹¤.
-     * ë”°ë¼ì„œ row[]ì˜ ìµœëŒ€í¬ê¸°ëŠ” (node í¬ê¸° - smnbLNode í¬ê¸°) ì´ë‹¤.
-     * highfenceë¥¼ ì‚¬ìš©í•˜ê¸°ë•Œë¬¸ì— row poniter + 1ê°œ ì¶”ê°€ìš©ëŸ‰ì„ í™•ë³´í•œë‹¤ */
-
+     * mIteratorSize´Â btree index °øÅëÀ¸·Î »ç¿ëÇÏ´Â smnbIterator¿¡ ÇÒ´çÇÒ ¸Ş¸ğ¸® Å©±âÀÌ´Ù.
+     * smnbIterator´Â Çì´õ + rows[] ·Î ±¸¼ºµÇ¸ç,
+     * rows[]¿¡´Â fetchµÉ nodeÀÇ row pointerµéÀÌ ÀúÀåµÈ´Ù.
+     * µû¶ó¼­ row[]ÀÇ ÃÖ´ëÅ©±â´Â (node Å©±â - smnbLNode Å©±â) ÀÌ´Ù.
+     * highfence¸¦ »ç¿ëÇÏ±â¶§¹®¿¡ row poniter + 1°³ Ãß°¡¿ë·®À» È®º¸ÇÑ´Ù */
     mIteratorSize = ( ID_SIZEOF( smnbIterator ) +
-                      mNodeSize - ID_SIZEOF( smnbLNode ) +
-                      ID_SIZEOF( SChar * ) );
-
-    mDefaultMaxKeySize = smuProperty::getMemBtreeDefaultMaxKeySize();
+                      mNodeSize - ID_SIZEOF( smnbLNode ) );
 
     smnbBTree::setNodeSplitRate(); /* BUG-40509 */
 }
@@ -621,9 +615,9 @@ IDE_RC smnbBTree::freeAllNodeList(idvSQL         * /*aStatistics*/,
                                   smnIndexHeader * aIndex,
                                   void           * /*aTrans*/)
 {
-    /* BUG-37643 Nodeì˜ arrayë¥¼ ì§€ì—­ë³€ìˆ˜ì— ì €ì¥í•˜ëŠ”ë°
-     * compiler ìµœì í™”ì— ì˜í•´ì„œ ì§€ì—­ë³€ìˆ˜ê°€ ì œê±°ë  ìˆ˜ ìˆë‹¤.
-     * ë”°ë¼ì„œ ì´ëŸ¬í•œ ë³€ìˆ˜ëŠ” volatileë¡œ ì„ ì–¸í•´ì•¼ í•œë‹¤. */
+    /* BUG-37643 NodeÀÇ array¸¦ Áö¿ªº¯¼ö¿¡ ÀúÀåÇÏ´Âµ¥
+     * compiler ÃÖÀûÈ­¿¡ ÀÇÇØ¼­ Áö¿ªº¯¼ö°¡ Á¦°ÅµÉ ¼ö ÀÖ´Ù.
+     * µû¶ó¼­ ÀÌ·¯ÇÑ º¯¼ö´Â volatile·Î ¼±¾ğÇØ¾ß ÇÑ´Ù. */
     volatile smnbLNode  * sCurLNode = NULL;
     volatile smnbINode  * sFstChildINode;
     volatile smnbINode  * sCurINode;
@@ -646,7 +640,7 @@ IDE_RC smnbBTree::freeAllNodeList(idvSQL         * /*aStatistics*/,
             sCurINode = sFstChildINode;
             sFstChildINode = (smnbINode*)(sFstChildINode->mChildPtrs[0]);
 
-            if ( (sCurINode->flag & SMNB_NODE_TYPE_MASK)== SMNB_NODE_TYPE_LEAF )
+            if ( SMNB_IS_LEAF_NODE ( sCurINode ) )
             {
                 sCurLNode = (smnbLNode*)sCurINode;
 
@@ -824,15 +818,15 @@ IDE_RC smnbBTree::create( idvSQL               */*aStatistics*/,
                           ERR_INSUFFICIENT_MEMORY );
 
     // fix BUG-22898
-    // ë©”ëª¨ë¦¬ b-tree Run Time Header ìƒì„±
+    // ¸Ş¸ğ¸® b-tree Run Time Header »ı¼º
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMN,
                                        ID_SIZEOF(smnbHeader),
                                        (void**)&sHeader ) != IDE_SUCCESS,
                     ERR_INSUFFICIENT_MEMORY );
     sStage = 1;
 
-    // BUG-28856 logging ë³‘ëª© ì œê±° (NATIVE -> POSIX)
-    // TASK-4102ì—ì„œ POSIXê°€ ë” íš¨ìœ¨ì ì¸ê²ƒìœ¼ë¡œ íŒë‹¨ë¨
+    // BUG-28856 logging º´¸ñ Á¦°Å (NATIVE -> POSIX)
+    // TASK-4102¿¡¼­ POSIX°¡ ´õ È¿À²ÀûÀÎ°ÍÀ¸·Î ÆÇ´ÜµÊ
     idlOS::snprintf(sBuffer, 
                     IDU_MUTEX_NAME_LEN, 
                     "SMNB_MUTEX_%"ID_UINT64_FMT,
@@ -854,7 +848,7 @@ IDE_RC smnbBTree::create( idvSQL               */*aStatistics*/,
                           ERR_INSUFFICIENT_MEMORY );
 
     // fix BUG-22898
-    // Index Headerì˜ Columns ìƒì„±
+    // Index HeaderÀÇ Columns »ı¼º
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMN,
                                  ID_SIZEOF(smnbColumn) * (aIndex->mColumnCount),
                                  (void**)&(sHeader->columns) ) != IDE_SUCCESS,
@@ -882,7 +876,7 @@ IDE_RC smnbBTree::create( idvSQL               */*aStatistics*/,
     sHeader->nodeCount     = 0;
     sHeader->tempPtr       = NULL;
     sHeader->cRef          = 0;
-    sHeader->mSpaceID      = aTable->mSpaceID; /* FIXED TABLE "X$MEM_BTREE_HEADER" ì—ì„œë§Œ ì‚¬ìš©ë¨. */
+    sHeader->mSpaceID      = aTable->mSpaceID; /* FIXED TABLE "X$MEM_BTREE_HEADER" ¿¡¼­¸¸ »ç¿ëµÊ. */
     sHeader->mIsMemTBS     = smLayerCallback::isMemTableSpace( aTable->mSpaceID );
 
     // To fix BUG-17726
@@ -937,8 +931,8 @@ IDE_RC smnbBTree::create( idvSQL               */*aStatistics*/,
         sOffset += sIndexColumn4Build->column.size;
 
         /* PROJ-2433
-         * direct key index ì¸ê²½ìš°
-         * ì²«ë²ˆì§¸ ì»¬ëŸ¼ì„ direct key compareë¡œ ì„¸íŒ…í•œë‹¤. */
+         * direct key index ÀÎ°æ¿ì
+         * Ã¹¹øÂ° ÄÃ·³À» direct key compare·Î ¼¼ÆÃÇÑ´Ù. */
         if ( ( sIndexCount == 0 ) &&
              ( ( aIndex->mFlag & SMI_INDEX_DIRECTKEY_MASK ) == SMI_INDEX_DIRECTKEY_TRUE ) )
         {
@@ -955,8 +949,8 @@ IDE_RC smnbBTree::create( idvSQL               */*aStatistics*/,
                   != IDE_SUCCESS );
 
         /* PROJ-2433 
-         * bottom-buildì‹œ ì‚¬ìš©ë˜ëŠ” compare í•¨ìˆ˜ëŠ”
-         * direct keyë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” compare í•¨ìˆ˜ë¡œ ì„¸íŒ…í•œë‹¤. */
+         * bottom-build½Ã »ç¿ëµÇ´Â compare ÇÔ¼ö´Â
+         * direct key¸¦ »ç¿ëÇÏÁö ¾Ê´Â compare ÇÔ¼ö·Î ¼¼ÆÃÇÑ´Ù. */
         IDE_TEST( gSmiGlobalCallBackList.findCompare( sColumn,
                                                       aIndex->mColumnFlags[sIndexCount],
                                                       &sIndexColumn4Build->compare )
@@ -981,11 +975,11 @@ IDE_RC smnbBTree::create( idvSQL               */*aStatistics*/,
         sIndexColumn4Build->null = sIndexColumn->null;
 
         /* BUG-24449
-         * í‚¤ì˜ í—¤ë” í¬ê¸°ëŠ” íƒ€ì…ì— ë”°ë¼ ë‹¤ë¥´ë‹¤. ë”°ë¼ì„œ MT í•¨ìˆ˜ë¡œ ê¸¸ì´ë¥¼ íšë“í•˜ê³ ,
-         * ê¸¸ì´ë¥¼ í¸ì§‘í•˜ê³ , ê¸¸ì´ë¥¼ ì €ì¥í•´ì•¼ í•œë‹¤.
-         * ActualSizeí•¨ìˆ˜ë¥¼ í†µí•´ ê¸¸ì´ë¥¼ ì•Œê³ , makeMtdValue í•¨ìˆ˜ë¥¼ í†µí•´ MT Typeìœ¼
-         * ë¡œ ë³µì›í•œë‹¤.
-         * ê·¸ë¦¬ê³  í—¤ë” ê¸¸ì´ë„ MT í•¨ìˆ˜ë¡œë¶€í„° ì–»ëŠ”ë‹¤
+         * Å°ÀÇ Çì´õ Å©±â´Â Å¸ÀÔ¿¡ µû¶ó ´Ù¸£´Ù. µû¶ó¼­ MT ÇÔ¼ö·Î ±æÀÌ¸¦ È¹µæÇÏ°í,
+         * ±æÀÌ¸¦ ÆíÁıÇÏ°í, ±æÀÌ¸¦ ÀúÀåÇØ¾ß ÇÑ´Ù.
+         * ActualSizeÇÔ¼ö¸¦ ÅëÇØ ±æÀÌ¸¦ ¾Ë°í, makeMtdValue ÇÔ¼ö¸¦ ÅëÇØ MT TypeÀ¸
+         * ·Î º¹¿øÇÑ´Ù.
+         * ±×¸®°í Çì´õ ±æÀÌµµ MT ÇÔ¼ö·ÎºÎÅÍ ¾ò´Â´Ù
          */
         IDE_TEST( gSmiGlobalCallBackList.findActualSize(
                       sColumn,
@@ -994,9 +988,9 @@ IDE_RC smnbBTree::create( idvSQL               */*aStatistics*/,
         sIndexColumn4Build->actualSize = sIndexColumn->actualSize;
 
         /* PROJ-2429 Dictionary based data compress for on-disk DB
-         * memory index ì˜ min/maxê°’ì€ smiGetCompressionColumnë¥¼ ì´ìš©í•´
-         * êµ¬í•œë‹¤ìŒ ì—°ì‚°í•œë‹¤. ë”°ë¼ì„œ dictionary compressionê³¼ ê´€ê³„ì—†ì´
-         * í•´ë‹¹ data typeì˜ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤. */
+         * memory index ÀÇ min/max°ªÀº smiGetCompressionColumn¸¦ ÀÌ¿ëÇØ
+         * ±¸ÇÑ´ÙÀ½ ¿¬»êÇÑ´Ù. µû¶ó¼­ dictionary compression°ú °ü°è¾øÀÌ
+         * ÇØ´ç data typeÀÇ ÇÔ¼ö¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù. */
         IDE_TEST( gSmiGlobalCallBackList.findCopyDiskColumnValue4DataType(
                       sColumn,
                       &sIndexColumn->makeMtdValue)
@@ -1017,7 +1011,7 @@ IDE_RC smnbBTree::create( idvSQL               */*aStatistics*/,
         if ( sIndexCount == 0 )
         {
             /* PROJ-2433
-             * ì—¬ê¸°ì„œ direct key index ê´€ë ¨ëœ ê°’ë“¤ì„ ì„¸íŒ…í•œë‹¤. */
+             * ¿©±â¼­ direct key index °ü·ÃµÈ °ªµéÀ» ¼¼ÆÃÇÑ´Ù. */
             IDE_TEST_RAISE ( setDirectKeyIndex( sHeader,
                                                 aIndex,
                                                 sColumn,
@@ -1178,7 +1172,7 @@ IDE_RC smnbBTree::buildIndex( idvSQL*               aStatistics,
 
     sKeyValueSize = getMaxKeyValueSize( aIndex );
 
-    // BUG-19249 : sKeySize = key value í¬ê¸° + row ptr í¬ê¸°
+    // BUG-19249 : sKeySize = key value Å©±â + row ptr Å©±â
     sKeySize      = getKeySize( sKeyValueSize );
 
     sMemoryIndexBuildValueThreshold =
@@ -1187,13 +1181,13 @@ IDE_RC smnbBTree::buildIndex( idvSQL*               aStatistics,
     sRunSize        = smuProperty::getMemoryIndexBuildRunSize();
 
     // PROJ-1629 : Memory Index Build
-    // ê¸°ì¡´ì˜ row pointerë¥¼ ì´ìš©í•˜ê±°ë‚˜ key valueë¥¼ ì´ìš©í•œ index buildë¥¼
-    // ì„ íƒì ìœ¼ë¡œ ì‚¬ìš©ê°€ëŠ¥.
-    // row pointerë¥¼ ì´ìš©í•˜ëŠ” ê²½ìš° :
-    // C-1. key value lenghtê°€ propertyì— ì •ì˜ëœ ê°’ë³´ë‹¤ í´ ë•Œ
-    // C-2. í•œê°œì˜ key sizeê°€ runì˜ í¬ê¸°ë³´ë‹¤ í´ ë•Œ
-    // C-3. persistent indexì¼ ë•Œ
-    // BUG-19249 : C-2 ì¶”ê°€
+    // ±âÁ¸ÀÇ row pointer¸¦ ÀÌ¿ëÇÏ°Å³ª key value¸¦ ÀÌ¿ëÇÑ index build¸¦
+    // ¼±ÅÃÀûÀ¸·Î »ç¿ë°¡´É.
+    // row pointer¸¦ ÀÌ¿ëÇÏ´Â °æ¿ì :
+    // C-1. key value lenght°¡ property¿¡ Á¤ÀÇµÈ °ªº¸´Ù Å¬ ¶§
+    // C-2. ÇÑ°³ÀÇ key size°¡ runÀÇ Å©±âº¸´Ù Å¬ ¶§
+    // C-3. persistent indexÀÏ ¶§
+    // BUG-19249 : C-2 Ãß°¡
     if ( ( sKeyValueSize > sMemoryIndexBuildValueThreshold ) ||   // C-1
          ( sKeySize > (sRunSize - ID_SIZEOF(UShort)) )      ||   // C-2
          ( (aIndex->mFlag & SMI_INDEX_PERSISTENT_MASK) ==        // C-3
@@ -1243,7 +1237,7 @@ IDE_RC smnbBTree::buildIndex( idvSQL*               aStatistics,
 
     return IDE_SUCCESS;
 
-    /* í•´ë‹¹ typeì˜ ì¸ë±ìŠ¤ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤. */
+    /* ÇØ´ç typeÀÇ ÀÎµ¦½º¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù. */
     IDE_EXCEPTION( ERR_NOT_FOUND );
     IDE_SET( ideSetErrorCode( smERR_FATAL_smnNotSupportedIndex ) );
 
@@ -1254,9 +1248,9 @@ IDE_RC smnbBTree::buildIndex( idvSQL*               aStatistics,
 
 IDE_RC smnbBTree::drop( smnIndexHeader * aIndex )
 {
-    /* BUG-37643 Nodeì˜ arrayë¥¼ ì§€ì—­ë³€ìˆ˜ì— ì €ì¥í•˜ëŠ”ë°
-     * compiler ìµœì í™”ì— ì˜í•´ì„œ ì§€ì—­ë³€ìˆ˜ê°€ ì œê±°ë  ìˆ˜ ìˆë‹¤.
-     * ë”°ë¼ì„œ ì´ëŸ¬í•œ ë³€ìˆ˜ëŠ” volatileë¡œ ì„ ì–¸í•´ì•¼ í•œë‹¤. */
+    /* BUG-37643 NodeÀÇ array¸¦ Áö¿ªº¯¼ö¿¡ ÀúÀåÇÏ´Âµ¥
+     * compiler ÃÖÀûÈ­¿¡ ÀÇÇØ¼­ Áö¿ªº¯¼ö°¡ Á¦°ÅµÉ ¼ö ÀÖ´Ù.
+     * µû¶ó¼­ ÀÌ·¯ÇÑ º¯¼ö´Â volatile·Î ¼±¾ğÇØ¾ß ÇÑ´Ù. */
     volatile smnbLNode  *s_pCurLNode;
     volatile smnbINode  *s_pFstChildINode;
     volatile smnbINode  *s_pCurINode;
@@ -1278,7 +1272,7 @@ IDE_RC smnbBTree::drop( smnIndexHeader * aIndex )
             s_pCurINode = s_pFstChildINode;
             s_pFstChildINode = (smnbINode*)(s_pFstChildINode->mChildPtrs[0]);
 
-            if ( (s_pCurINode->flag & SMNB_NODE_TYPE_MASK)== SMNB_NODE_TYPE_LEAF )
+            if ( SMNB_IS_LEAF_NODE( s_pCurINode ) )
             {
                 s_pCurLNode = (smnbLNode*)s_pCurINode;
 
@@ -1385,21 +1379,21 @@ IDE_RC smnbBTree::drop( smnIndexHeader * aIndex )
     return IDE_FAILURE;
 }
 
-IDE_RC smnbBTree::init( idvSQL *              /* aStatistics */,
-                        smnbIterator *        aIterator,
-                        void *                aTrans,
-                        smcTableHeader *      aTable,
-                        smnIndexHeader *      aIndex,
-                        void*                 /* aDumpObject */,
-                        const smiRange *      aKeyRange,
-                        const smiRange *      /* aKeyFilter */,
-                        const smiCallBack *   aRowFilter,
+IDE_RC smnbBTree::init( smnbIterator        * aIterator,
+                        void                * aTrans,
+                        smcTableHeader      * aTable,
+                        smnIndexHeader      * aIndex,
+                        void                * /* aDumpObject */,
+                        const smiRange      * aKeyRange,
+                        const smiRange      * /* aKeyFilter */,
+                        const smiCallBack   * aRowFilter,
                         UInt                  aFlag,
                         smSCN                 aSCN,
                         smSCN                 aInfinite,
                         idBool                aUntouchable,
                         smiCursorProperties * aProperties,
-                        const smSeekFunc **  aSeekFunc )
+                        const smSeekFunc   ** aSeekFunc,
+                        smiStatement        * aStatement )
 {
     idvSQL                    *sSQLStat;
 
@@ -1417,6 +1411,8 @@ IDE_RC smnbBTree::init( idvSQL *              /* aStatistics */,
     aIterator->index           = (smnbHeader*)aIndex->mHeader;
     aIterator->mKeyRange       = aKeyRange;
     aIterator->mRowFilter      = aRowFilter;
+    aIterator->mStatement      = aStatement;
+    
 
     IDL_MEM_BARRIER;
 
@@ -1440,16 +1436,16 @@ IDE_RC smnbBTree::dest( smnbIterator * /*aIterator*/ )
     return IDE_SUCCESS;
 }
 
-IDE_RC smnbBTree::isRowUnique( void*              aTrans,
-                               smnbStatistic*     aIndexStat,
-                               smSCN              aStmtSCN,
-                               void*              aRow,
-                               smTID*             aTid,
-                               SChar**            aExistUniqueRow )
+IDE_RC smnbBTree::isRowUnique( void             * aTrans,
+                               smnbStatistic    * aIndexStat,
+                               smSCN              aStmtViewSCN,
+                               void             * aRow,
+                               smTID            * aTid,
+                               SChar           ** aExistUniqueRow,
+                               idBool             aForbiddenToRetry )
 {
     smSCN sCreateSCN;
     smSCN sRowSCN;
-    smSCN sNullSCN;
     smTID sRowTID;
     smTID sMyTID;
 
@@ -1457,13 +1453,44 @@ IDE_RC smnbBTree::isRowUnique( void*              aTrans,
     smSCN sNxtSCN;
     smTID sNxtTID;
 
-    /* aTransê°€ NULLì´ë©´ uniquenessë¥¼ ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+    /* aTrans°¡ NULLÀÌ¸é uniqueness¸¦ °Ë»çÇÏÁö ¾Ê´Â´Ù. */
     IDE_TEST_CONT( aTrans == NULL, SKIP_UNIQUE_CHECK );
 
     sMyTID = smLayerCallback::getTransID( aTrans );
 
+
     SM_SET_SCN( &sCreateSCN, &(((smpSlotHeader*)aRow)->mCreateSCN) );
     SM_SET_SCN( &sLimitSCN,  &(((smpSlotHeader*)aRow)->mLimitSCN)  );
+
+    /* PROJ-2733 */
+    if ( ((smxTrans *)aTrans)->mIsGCTx == ID_TRUE )
+    {
+        if ( SM_SCN_IS_INFINITE( sCreateSCN ) &&
+             /* BUG-48244 : ³»(TX)°¡ 2PCÇÑ TX´Â Pending ¿Ï·á½Ã±îÁö ´ë±âÇÒ ÇÊ¿ä¾ø´Ù. */
+             ( SMP_GET_TID( sCreateSCN ) != smxTrans::getTransID( aTrans ) ) )
+        {
+            IDE_TEST( smxTrans::waitPendingTx( (smxTrans *)aTrans,
+                                               sCreateSCN,
+                                               aStmtViewSCN )
+                      != IDE_SUCCESS );
+        }
+
+        if ( SM_SCN_IS_INFINITE( sLimitSCN ) &&
+             /* BUG-48244 : ³»(TX)°¡ 2PCÇÑ TX´Â Pending ¿Ï·á½Ã±îÁö ´ë±âÇÒ ÇÊ¿ä¾ø´Ù. */
+             ( SMP_GET_TID( sLimitSCN ) != smxTrans::getTransID( aTrans ) ) )
+        {
+            IDE_TEST( smxTrans::waitPendingTx( (smxTrans *)aTrans,
+                                               sLimitSCN,
+                                               aStmtViewSCN )
+                      != IDE_SUCCESS );
+        }
+
+        /* BUG-48244 */
+        SM_SET_SCN( &sCreateSCN, &(((smpSlotHeader*)aRow)->mCreateSCN) );
+        SM_SET_SCN( &sLimitSCN,  &(((smpSlotHeader*)aRow)->mLimitSCN)  );
+    }
+
+    IDU_FIT_POINT( "PROJ-2733@smnbBTree::isRowUnique" );
 
     SMX_GET_SCN_AND_TID( sCreateSCN, sRowSCN, sRowTID );
     SMX_GET_SCN_AND_TID( sLimitSCN,  sNxtSCN, sNxtTID );
@@ -1471,9 +1498,9 @@ IDE_RC smnbBTree::isRowUnique( void*              aTrans,
     aIndexStat->mKeyValidationCount++;
 
     /* BUG-32655
-     * SCNì— DeleteBitê°€ ì„¤ì •ëœ ê²½ìš°. ì´ ê²½ìš°ëŠ” Rollbackë“±ìœ¼ë¡œ
-     * ì•„ì˜ˆ ìœ íš¨í•˜ì§€ ì•Šì€ Rowê°€ ëœ ê²½ìš°ì´ê¸°ì—
-     * ë¬´ì‹œí•´ì•¼ ëœë‹¤. */
+     * SCN¿¡ DeleteBit°¡ ¼³Á¤µÈ °æ¿ì. ÀÌ °æ¿ì´Â RollbackµîÀ¸·Î
+     * ¾Æ¿¹ À¯È¿ÇÏÁö ¾ÊÀº Row°¡ µÈ °æ¿ìÀÌ±â¿¡
+     * ¹«½ÃÇØ¾ß µÈ´Ù. */
     IDE_TEST_CONT( SM_SCN_IS_DELETED( sRowSCN ) , SKIP_UNIQUE_CHECK );
 
     if ( SM_SCN_IS_INFINITE( sRowSCN ) )
@@ -1492,19 +1519,19 @@ IDE_RC smnbBTree::isRowUnique( void*              aTrans,
     }
     else
     {
-        /* BUG-14953: PKê°€ ë‘ê°œ ë‘˜ì–´ê°: ì—¬ê¸°ì„œ Next OIDëŠ” ë‹¤ë¥¸
-           Transactionì½ê³  ìˆëŠ” ì¤‘ì— Updateê°€ ë ìˆ˜ ìˆê¸° ë•Œë¬¸ì— ê°’ì„
-           ë³µì‚¬í•´ì„œ Testí•´ì•¼í•œë‹¤.*/
+        /* BUG-14953: PK°¡ µÎ°³ µÑ¾î°¨: ¿©±â¼­ Next OID´Â ´Ù¸¥
+           TransactionÀĞ°í ÀÖ´Â Áß¿¡ Update°¡ µÉ¼ö ÀÖ±â ¶§¹®¿¡ °ªÀ»
+           º¹»çÇØ¼­ TestÇØ¾ßÇÑ´Ù.*/
 
         IDE_TEST_RAISE( SM_SCN_IS_FREE_ROW( sNxtSCN ),
                         ERR_UNIQUE_VIOLATION );
 
         if ( SM_SCN_IS_LOCK_ROW( sNxtSCN ) )
         {
-            //ìê¸° ìì‹ ì´ ì´ë¯¸ lockì„ ì¡ê³  ìˆëŠ” rowë¼ë©´ uniqueì—ëŸ¬
+            //ÀÚ±â ÀÚ½ÅÀÌ ÀÌ¹Ì lockÀ» Àâ°í ÀÖ´Â row¶ó¸é unique¿¡·¯
             IDE_TEST_RAISE( sNxtTID == sMyTID, ERR_UNIQUE_VIOLATION );
 
-            //ë‚¨ì´ rowë¥¼ ì¡ê³  ìˆë‹¤ë©´ ê·¸ íŠ¸ëœì­ì…˜ì´ ëë‚˜ê¸¸ ê¸°ë‹¤ë¦°ë‹¤.
+            //³²ÀÌ row¸¦ Àâ°í ÀÖ´Ù¸é ±× Æ®·£Àè¼ÇÀÌ ³¡³ª±æ ±â´Ù¸°´Ù.
             *aTid = sNxtTID;
             IDE_ERROR_RAISE( *aTid != 0, ERR_CORRUPTED_INDEX );
             IDE_ERROR_RAISE( *aTid != SM_NULL_TID, ERR_CORRUPTED_INDEX );
@@ -1521,17 +1548,14 @@ IDE_RC smnbBTree::isRowUnique( void*              aTrans,
                 }
             }
 
-            SM_INIT_SCN( &sNullSCN );
-
-            if ( SM_SCN_IS_NOT_INFINITE( sNxtSCN ) &&
-                 ( !SM_SCN_IS_EQ( &aStmtSCN, &sNullSCN ) ) &&
-                 SM_SCN_IS_LT( &aStmtSCN, &sNxtSCN ) )
+            if ( ( SM_SCN_IS_NOT_INFINITE( sNxtSCN ) ) &&
+                 ( SM_SCN_IS_NOT_INIT( aStmtViewSCN ) && SM_SCN_IS_LT( &aStmtViewSCN, &sNxtSCN ) ) )
             {
                 // BUG-15097
-                // unique checkì‹œ ë¨¼ì € ë“¤ì–´ê°„ rowì˜ commit scnì´
-                // í˜„ì¬ transactionì˜ begin scnë³´ë‹¤ í¬ë©´
-                // í˜„ì¬ transactionì€ ê·¸ rowë¥¼ ë³¼ ìˆ˜ ì—†ë‹¤.
-                // ì´ë• retry errorë¥¼ ë°œìƒì‹œì¼œì•¼ í•œë‹¤.
+                // unique check½Ã ¸ÕÀú µé¾î°£ rowÀÇ commit scnÀÌ
+                // ÇöÀç transactionÀÇ begin scnº¸´Ù Å©¸é
+                // ÇöÀç transactionÀº ±× row¸¦ º¼ ¼ö ¾ø´Ù.
+                // ÀÌ¶© retry error¸¦ ¹ß»ı½ÃÄÑ¾ß ÇÑ´Ù.
                 IDE_RAISE( ERR_ALREADY_MODIFIED );
             }
         }
@@ -1542,24 +1566,47 @@ IDE_RC smnbBTree::isRowUnique( void*              aTrans,
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_UNIQUE_VIOLATION );
-    IDE_SET( ideSetErrorCode( smERR_ABORT_smnUniqueViolation ) );
-
-    // PROJ-2264
-    if ( aExistUniqueRow != NULL )
     {
-        *aExistUniqueRow = (SChar*)aRow;
+        IDE_SET( ideSetErrorCode( smERR_ABORT_smnUniqueViolation ) );
+
+        // PROJ-2264
+        if ( aExistUniqueRow != NULL )
+        {
+            *aExistUniqueRow = (SChar*)aRow;
+        }
     }
-
     IDE_EXCEPTION( ERR_ALREADY_MODIFIED );
-    IDE_SET( ideSetErrorCode( smERR_RETRY_Already_Modified ) );
+    {
+        if( aForbiddenToRetry == ID_TRUE )
+        {
+            IDE_DASSERT( ((smxTrans*)aTrans)->mIsGCTx == ID_TRUE );
 
+            SChar sMsgBuf[SMI_MAX_ERR_MSG_LEN];
+            idlOS::snprintf( sMsgBuf,
+                             SMI_MAX_ERR_MSG_LEN,
+                             "[INDEX VALIDATION] "
+                             "ViewSCN:%"ID_UINT64_FMT", "
+                             "RowSCN:%"ID_UINT64_FMT", "
+                             "NxtSCN:%"ID_UINT64_FMT,
+                             SM_SCN_TO_LONG(aStmtViewSCN),
+                             SM_SCN_TO_LONG(sRowSCN),
+                             SM_SCN_TO_LONG(sNxtSCN) );
+
+            IDE_SET( ideSetErrorCode(smERR_ABORT_StatementTooOld, sMsgBuf) );
+
+            IDE_ERRLOG( IDE_SD_19 );
+        }
+        else
+        {
+            IDE_SET( ideSetErrorCode(smERR_RETRY_Already_Modified) );
+        }
+    }
     IDE_EXCEPTION( ERR_CORRUPTED_INDEX )
     {
         IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
 
         ideLog::log( IDE_SM_0, "Index Corrupted Detected : Wrong RID / SCN" );
     }
-
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -1567,12 +1614,12 @@ IDE_RC smnbBTree::isRowUnique( void*              aTrans,
 
 /*
    TASK-6743 
-   ê¸°ì¡´ compareRows() í•¨ìˆ˜ì˜ í˜¸ì¶œíšŸìˆ˜ê°€ ë§ì•„ì„œ,
-   ìš©ë„ì— ë§ê²Œ ì‚¬ìš©í•˜ë„ë¡ 3ê°œì˜ í•¨ìˆ˜ë¡œ ë‚˜ëˆ”.
+   ±âÁ¸ compareRows() ÇÔ¼öÀÇ È£ÃâÈ½¼ö°¡ ¸¹¾Æ¼­,
+   ¿ëµµ¿¡ ¸Â°Ô »ç¿ëÇÏµµ·Ï 3°³ÀÇ ÇÔ¼ö·Î ³ª´®.
 
-    compareRows()    : ê°’ë§Œ ë¹„êµ.
-    compareRowsAndPtr()  : ê°’ì´ ë™ì¼í•˜ë©´ í¬ì¸í„°ë¡œ ë¹„êµ.
-    compareRowsAndPtr2() : compareRowsAndPtr()ê³¼ ë™ì¼í•˜ë‚˜, ê°’ì´ ë™ì¼í•œì§€ë¥¼ ë§¤ê°œë³€ìˆ˜ë¡œ ì•Œë ¤ì¤Œ.
+    compareRows()    : °ª¸¸ ºñ±³.
+    compareRowsAndPtr()  : °ªÀÌ µ¿ÀÏÇÏ¸é Æ÷ÀÎÅÍ·Î ºñ±³.
+    compareRowsAndPtr2() : compareRowsAndPtr()°ú µ¿ÀÏÇÏ³ª, °ªÀÌ µ¿ÀÏÇÑÁö¸¦ ¸Å°³º¯¼ö·Î ¾Ë·ÁÁÜ.
  */
 SInt smnbBTree::compareRows( smnbStatistic    * aIndexStat,
                              const smnbColumn * aColumns,
@@ -1695,10 +1742,10 @@ SInt smnbBTree::compareRowsAndPtr( smnbStatistic    * aIndexStat,
         }
     }
 
-    /* BUG-39043 í‚¤ ê°’ì´ ë™ì¼ í•  ê²½ìš° pointer ìœ„ì¹˜ë¡œ ìˆœì„œë¥¼ ì •í•˜ë„ë¡ í•  ê²½ìš°
-     * ì„œë²„ë¥¼ ìƒˆë¡œ ì˜¬ë¦° ê²½ìš° ìœ„ì¹˜ê°€ ë³€ê²½ë˜ê¸° ë•Œë¬¸ì— persistent indexë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
-     * ì €ì¥ëœ indexì™€ ì‹¤ì œ ìˆœì„œê°€ ë§ì§€ ì•Šì•„ ë¬¸ì œê°€ ìƒê¸¸ ìˆ˜ ìˆë‹¤.
-     * ì´ë¥¼ í•´ê²°í•˜ê¸° ìœ„í•´ í‚¤ ê°’ì´ ë™ì¼ í•œ ê²½ìš° OIDë¡œ ìˆœì„œë¥¼ ì •í•˜ë„ë¡ í•œë‹¤. */
+    /* BUG-39043 Å° °ªÀÌ µ¿ÀÏ ÇÒ °æ¿ì pointer À§Ä¡·Î ¼ø¼­¸¦ Á¤ÇÏµµ·Ï ÇÒ °æ¿ì
+     * ¼­¹ö¸¦ »õ·Î ¿Ã¸° °æ¿ì À§Ä¡°¡ º¯°æµÇ±â ¶§¹®¿¡ persistent index¸¦ »ç¿ëÇÏ´Â °æ¿ì
+     * ÀúÀåµÈ index¿Í ½ÇÁ¦ ¼ø¼­°¡ ¸ÂÁö ¾Ê¾Æ ¹®Á¦°¡ »ı±æ ¼ö ÀÖ´Ù.
+     * ÀÌ¸¦ ÇØ°áÇÏ±â À§ÇØ Å° °ªÀÌ µ¿ÀÏ ÇÑ °æ¿ì OID·Î ¼ø¼­¸¦ Á¤ÇÏµµ·Ï ÇÑ´Ù. */
     if( SMP_SLOT_GET_OID( aRow1 ) > SMP_SLOT_GET_OID( aRow2 ) )
     {
         return 1;
@@ -1777,10 +1824,10 @@ SInt smnbBTree::compareRowsAndPtr2( smnbStatistic    * aIndexStat,
 
     *aIsEqual = ID_TRUE;
 
-    /* BUG-39043 í‚¤ ê°’ì´ ë™ì¼ í•  ê²½ìš° pointer ìœ„ì¹˜ë¡œ ìˆœì„œë¥¼ ì •í•˜ë„ë¡ í•  ê²½ìš°
-     * ì„œë²„ë¥¼ ìƒˆë¡œ ì˜¬ë¦° ê²½ìš° ìœ„ì¹˜ê°€ ë³€ê²½ë˜ê¸° ë•Œë¬¸ì— persistent indexë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
-     * ì €ì¥ëœ indexì™€ ì‹¤ì œ ìˆœì„œê°€ ë§ì§€ ì•Šì•„ ë¬¸ì œê°€ ìƒê¸¸ ìˆ˜ ìˆë‹¤.
-     * ì´ë¥¼ í•´ê²°í•˜ê¸° ìœ„í•´ í‚¤ ê°’ì´ ë™ì¼ í•œ ê²½ìš° OIDë¡œ ìˆœì„œë¥¼ ì •í•˜ë„ë¡ í•œë‹¤. */
+    /* BUG-39043 Å° °ªÀÌ µ¿ÀÏ ÇÒ °æ¿ì pointer À§Ä¡·Î ¼ø¼­¸¦ Á¤ÇÏµµ·Ï ÇÒ °æ¿ì
+     * ¼­¹ö¸¦ »õ·Î ¿Ã¸° °æ¿ì À§Ä¡°¡ º¯°æµÇ±â ¶§¹®¿¡ persistent index¸¦ »ç¿ëÇÏ´Â °æ¿ì
+     * ÀúÀåµÈ index¿Í ½ÇÁ¦ ¼ø¼­°¡ ¸ÂÁö ¾Ê¾Æ ¹®Á¦°¡ »ı±æ ¼ö ÀÖ´Ù.
+     * ÀÌ¸¦ ÇØ°áÇÏ±â À§ÇØ Å° °ªÀÌ µ¿ÀÏ ÇÑ °æ¿ì OID·Î ¼ø¼­¸¦ Á¤ÇÏµµ·Ï ÇÑ´Ù. */
     if( SMP_SLOT_GET_OID( aRow1 ) > SMP_SLOT_GET_OID( aRow2 ) )
     {
         return 1;
@@ -1797,18 +1844,18 @@ SInt smnbBTree::compareRowsAndPtr2( smnbStatistic    * aIndexStat,
  * FUNCTION DESCRIPTION : smnbBTree::compareKeys                     *
  * ------------------------------------------------------------------*
  * PROJ-2433 Direct Key Index
- * rowë¥¼ direct keyì™€ ë¹„êµí•˜ëŠ” í•¨ìˆ˜.
+ * row¸¦ direct key¿Í ºñ±³ÇÏ´Â ÇÔ¼ö.
  *
- *  - rowì™€ rowë¥¼ ë¹„êµí•˜ëŠ” compareRowsAndPtr() í•¨ìˆ˜ì™€ ëŒ€ì‘ë¨
- *  - direct keyë¥¼ í¬í•¨í•˜ëŠ” slotì´ ë¹„ì—ˆëŠ”ì§€ í™•ì¸í•˜ê¸°ìœ„í•´ aRow1ì´ í•„ìš”í•¨.
+ *  - row¿Í row¸¦ ºñ±³ÇÏ´Â compareRowsAndPtr() ÇÔ¼ö¿Í ´ëÀÀµÊ
+ *  - direct key¸¦ Æ÷ÇÔÇÏ´Â slotÀÌ ºñ¾ú´ÂÁö È®ÀÎÇÏ±âÀ§ÇØ aRow1ÀÌ ÇÊ¿äÇÔ.
  *
- * aIndexStat      - [IN]  í†µê³„ì •ë³´
- * aColumns        - [IN]  ì»¬ëŸ¼ì •ë³´
- * aFence          - [IN]  ì»¬ëŸ¼ì •ë³´ Fence (ë§ˆì§€ë§‰ ì»¬ëŸ¼ì •ë³´ ìœ„ì¹˜)
+ * aIndexStat      - [IN]  Åë°èÁ¤º¸
+ * aColumns        - [IN]  ÄÃ·³Á¤º¸
+ * aFence          - [IN]  ÄÃ·³Á¤º¸ Fence (¸¶Áö¸· ÄÃ·³Á¤º¸ À§Ä¡)
  * aKey1           - [IN]  direct key pointer
- * aRow1           - [IN]  direct keyì™€ ë™ì¼ slotì˜ row pointer
- * aPartialKeySize - [IN]  direct keyê°€ partial keyì¼ ê²½ìš°ì˜ ê¸¸ì´
- * aRow2           - [IN]  ë¹„êµí•  row pointer
+ * aRow1           - [IN]  direct key¿Í µ¿ÀÏ slotÀÇ row pointer
+ * aPartialKeySize - [IN]  direct key°¡ partial keyÀÏ °æ¿ìÀÇ ±æÀÌ
+ * aRow2           - [IN]  ºñ±³ÇÒ row pointer
  *********************************************************************/
 SInt smnbBTree::compareKeys( smnbStatistic      * aIndexStat,
                              const smnbColumn   * aColumns,
@@ -1917,14 +1964,14 @@ SInt smnbBTree::compareKeys( smnbStatistic      * aIndexStat,
  * FUNCTION DESCRIPTION : smnbBTree::compareKeyVarColumn             *
  * ------------------------------------------------------------------*
  * PROJ-2433 Direct Key Index
- * variable rowë¥¼ direct keyì™€ ë¹„êµí•˜ëŠ” í•¨ìˆ˜.
+ * variable row¸¦ direct key¿Í ºñ±³ÇÏ´Â ÇÔ¼ö.
  *
- *  - variable rowì™€ rowë¥¼ ë¹„êµí•˜ëŠ” compareVarColumn() í•¨ìˆ˜ì™€ ëŒ€ì‘ë¨
+ *  - variable row¿Í row¸¦ ºñ±³ÇÏ´Â compareVarColumn() ÇÔ¼ö¿Í ´ëÀÀµÊ
  *
- * aColumns        - [IN]  ì»¬ëŸ¼ì •ë³´
+ * aColumns        - [IN]  ÄÃ·³Á¤º¸
  * aKey            - [IN]  direct key pointer
- * aPartialKeySize - [IN]  direct keyê°€ partial keyì¼ ê²½ìš°ì˜ ê¸¸ì´
- * aRow            - [IN]  ë¹„êµí•  row pointer
+ * aPartialKeySize - [IN]  direct key°¡ partial keyÀÏ °æ¿ìÀÇ ±æÀÌ
+ * aRow            - [IN]  ºñ±³ÇÒ row pointer
  *********************************************************************/
 SInt smnbBTree::compareKeyVarColumn( smnbColumn * aColumn,
                                      void       * aKey,
@@ -1951,9 +1998,9 @@ SInt smnbBTree::compareKeyVarColumn( smnbColumn * aColumn,
     {
         if ( (sColumn.flag & SMI_COLUMN_TYPE_MASK) == SMI_COLUMN_TYPE_VARIABLE_LARGE )
         {
-            // BUG-30068 : malloc ì‹¤íŒ¨ì‹œ ë¹„ì •ìƒ ì¢…ë£Œí•©ë‹ˆë‹¤.
+            // BUG-30068 : malloc ½ÇÆĞ½Ã ºñÁ¤»ó Á¾·áÇÕ´Ï´Ù.
             sColumnVCDesc = (smVCDesc*)(aRow + sColumn.offset);
-            /* VARIABLE_LARGE ëŠ” êµ¬í˜• VARIABLE íƒ€ì…ì´ë‹¤. ê°„ë‹¨íˆ DASSERTë¡œë§Œ í™•ì¸í•œë‹¤. */
+            /* VARIABLE_LARGE ´Â ±¸Çü VARIABLE Å¸ÀÔÀÌ´Ù. °£´ÜÈ÷ DASSERT·Î¸¸ È®ÀÎÇÑ´Ù. */
             IDE_DASSERT( sColumnVCDesc->length <= SMP_VC_PIECE_MAX_SIZE );
         }
         else
@@ -1963,7 +2010,7 @@ SInt smnbBTree::compareKeyVarColumn( smnbColumn * aColumn,
     }
     else
     {
-        // compressed columnì´ë©´ smVCDescì˜ lengthë¥¼ ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // compressed columnÀÌ¸é smVCDescÀÇ length¸¦ °Ë»çÇÏÁö ¾Ê´Â´Ù.
     }
 #endif
 
@@ -2004,7 +2051,7 @@ SInt smnbBTree::compareKeyVarColumn( smnbColumn * aColumn,
 
 /********************************************************
  * To fix BUG-21235
- * OUT-VARCHARë¥¼ ìœ„í•œ Compare Function
+ * OUT-VARCHAR¸¦ À§ÇÑ Compare Function
  ********************************************************/
 SInt smnbBTree::compareVarColumn( const smnbColumn * aColumn,
                                   const void       * aRow1,
@@ -2032,13 +2079,13 @@ SInt smnbBTree::compareVarColumn( const smnbColumn * aColumn,
     {
         if ( ( sColumn1.flag & SMI_COLUMN_TYPE_MASK ) == SMI_COLUMN_TYPE_VARIABLE_LARGE )
         {
-            // BUG-30068 : malloc ì‹¤íŒ¨ì‹œ ë¹„ì •ìƒ ì¢…ë£Œí•©ë‹ˆë‹¤.
+            // BUG-30068 : malloc ½ÇÆĞ½Ã ºñÁ¤»ó Á¾·áÇÕ´Ï´Ù.
             sColumnVCDesc1 = (smVCDesc*)((SChar *)aRow1 + sColumn1.offset);
-            /* VARIABLE_LARGE ëŠ” êµ¬í˜• VARIABLE íƒ€ì…ì´ë‹¤. ê°„ë‹¨íˆ DASSERTë¡œë§Œ í™•ì¸í•œë‹¤. */
+            /* VARIABLE_LARGE ´Â ±¸Çü VARIABLE Å¸ÀÔÀÌ´Ù. °£´ÜÈ÷ DASSERT·Î¸¸ È®ÀÎÇÑ´Ù. */
             IDE_DASSERT( sColumnVCDesc1->length <= SMP_VC_PIECE_MAX_SIZE );
 
             sColumnVCDesc2 = (smVCDesc*)((SChar *)aRow2 + sColumn2.offset);
-            /* VARIABLE_LARGE ëŠ” êµ¬í˜• VARIABLE íƒ€ì…ì´ë‹¤. ê°„ë‹¨íˆ DASSERTë¡œë§Œ í™•ì¸í•œë‹¤. */
+            /* VARIABLE_LARGE ´Â ±¸Çü VARIABLE Å¸ÀÔÀÌ´Ù. °£´ÜÈ÷ DASSERT·Î¸¸ È®ÀÎÇÑ´Ù. */
             IDE_DASSERT( sColumnVCDesc2->length <= SMP_VC_PIECE_MAX_SIZE );
         }
         else
@@ -2048,7 +2095,7 @@ SInt smnbBTree::compareVarColumn( const smnbColumn * aColumn,
     }
     else
     {
-        // compressed columnì´ë©´ smVCDescì˜ lengthë¥¼ ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // compressed columnÀÌ¸é smVCDescÀÇ length¸¦ °Ë»çÇÏÁö ¾Ê´Â´Ù.
     }
 #endif
 
@@ -2092,7 +2139,7 @@ idBool smnbBTree::isNullColumn( smnbColumn * aColumn,
     else
     {
         // BUG-37464 
-        // compressed columnì— ëŒ€í•´ì„œ index ìƒì„±ì‹œ null ê²€ì‚¬ë¥¼ ì˜¬ë°”ë¡œ í•˜ì§€ ëª»í•¨
+        // compressed column¿¡ ´ëÇØ¼­ index »ı¼º½Ã null °Ë»ç¸¦ ¿Ã¹Ù·Î ÇÏÁö ¸øÇÔ
         sKeyPtr = (SChar*)smiGetCompressionColumn( aRow,
                                                    aSmiColumn,
                                                    ID_TRUE, // aUseColumnOffset
@@ -2113,7 +2160,7 @@ idBool smnbBTree::isNullColumn( smnbColumn * aColumn,
 
 /********************************************************
  * To fix BUG-21235
- * OUT-VARCHARë¥¼ ìœ„í•œ Is Null Function
+ * OUT-VARCHAR¸¦ À§ÇÑ Is Null Function
  ********************************************************/
 idBool smnbBTree::isVarNull( smnbColumn * aColumn,
                              smiColumn  * aSmiColumn,
@@ -2137,7 +2184,7 @@ idBool smnbBTree::isVarNull( smnbColumn * aColumn,
     {
         /* BUG-30068 */
         sColumnVCDesc = (smVCDesc*)(aRow + sColumn.offset);
-        /* VARIABLE_LARGE ëŠ” êµ¬í˜• VARIABLE íƒ€ì…ì´ë‹¤. ê°„ë‹¨íˆ DASSERTë¡œë§Œ í™•ì¸í•œë‹¤. */
+        /* VARIABLE_LARGE ´Â ±¸Çü VARIABLE Å¸ÀÔÀÌ´Ù. °£´ÜÈ÷ DASSERT·Î¸¸ È®ÀÎÇÑ´Ù. */
         IDE_DASSERT( sColumnVCDesc->length <= SMP_VC_PIECE_MAX_SIZE );
     }
 #endif
@@ -2161,10 +2208,10 @@ idBool smnbBTree::isVarNull( smnbColumn * aColumn,
     return sResult;
 }
 
-/* BUG-30074 disk tableì˜ unique indexì—ì„œ NULL key ì‚­ì œ ì‹œ/
- *           non-unique indexì—ì„œ deleted key ì¶”ê°€ ì‹œ
- *           Cardinalityì˜ ì •í™•ì„±ì´ ë§ì´ ë–¨ì–´ì§‘ë‹ˆë‹¤.
- * Key ì „ì²´ê°€ Nullì¸ì§€ í™•ì¸í•œë‹¤. ëª¨ë‘ Nullì´ì–´ì•¼ í•œë‹¤. */
+/* BUG-30074 disk tableÀÇ unique index¿¡¼­ NULL key »èÁ¦ ½Ã/
+ *           non-unique index¿¡¼­ deleted key Ãß°¡ ½Ã
+ *           CardinalityÀÇ Á¤È®¼ºÀÌ ¸¹ÀÌ ¶³¾îÁı´Ï´Ù.
+ * Key ÀüÃ¼°¡ NullÀÎÁö È®ÀÎÇÑ´Ù. ¸ğµÎ NullÀÌ¾î¾ß ÇÑ´Ù. */
 
 idBool smnbBTree::isNullKey( smnbHeader * aIndex,
                              SChar      * aRow )
@@ -2207,11 +2254,8 @@ IDE_RC smnbBTree::updateStat4Insert( smnIndexHeader   * aPersIndex,
                                      SChar            * aRow,
                                      idBool             aIsUniqueIndex )
 {
-    smnbLNode        * sPrevNode = NULL;
-    smnbLNode        * sNextNode = NULL;
     SChar            * sPrevRowPtr;
     SChar            * sNextRowPtr;
-    IDU_LATCH          sVersion;
     smnbColumn       * sColumn;
     SLong            * sNumDistPtr;
     SInt               sCompareResult;
@@ -2219,29 +2263,12 @@ IDE_RC smnbBTree::updateStat4Insert( smnIndexHeader   * aPersIndex,
     // get next slot
     if ( aSlotPos == ( aLeafNode->mSlotCount - 1 ) )
     {
-        if ( aLeafNode->nextSPtr == NULL )
-        {
-            sNextRowPtr = NULL;
-        }
-        else
-        {
-            while(1)
-            {
-                sNextNode = (smnbLNode*)aLeafNode->nextSPtr;
-                sVersion  = getLatchValueOfLNode( sNextNode ) & IDU_LATCH_UNMASK;
-
-                IDL_MEM_BARRIER;
-
-                sNextRowPtr = sNextNode->mRowPtrs[0];
-
-                IDL_MEM_BARRIER;
-
-                if ( sVersion == getLatchValueOfLNode(sNextNode) )
-                {
-                    break;
-                }
-            }
-        }
+        // BUG-47554 memory index ¿¡¼­ latch °ü¸®¸¦ IDL_MEM_BARRIER °¡ ¾Æ´Ñ atomic ÇÔ¼ö·Î º¯°æÇÕ´Ï´Ù.
+        // °»½Å ÇÒ KeyÀÇ À§Ä¡°¡ Leaf NodeÀÇ ¸¶Áö¸· SlotÀÏ ¶§,
+        // Next NodeÀÇ Ã¹¹øÂ° KeyÀÇ Row Pointer¸¦ °¡Á®¿Â´Ù.
+        // ÀÚÁÖ È£Ãâ µÇÁö ¾Ê°í, ÃÖÀûÈ­·Î ÀÎÇÑ ¹®Á¦°¡ ÀÖ¾î¼­
+        // º°µµÀÇ ÇÔ¼ö·Î ÃßÃâÇÑ´Ù.
+        sNextRowPtr = getNxtLNodeFstRow( aLeafNode );
     }
     else
     {
@@ -2250,29 +2277,12 @@ IDE_RC smnbBTree::updateStat4Insert( smnIndexHeader   * aPersIndex,
     // get prev slot
     if ( aSlotPos == 0 )
     {
-        if ( aLeafNode->prevSPtr == NULL )
-        {
-            sPrevRowPtr = NULL;
-        }
-        else
-        {
-            while(1)
-            {
-                sPrevNode = (smnbLNode*)aLeafNode->prevSPtr;
-                sVersion  = getLatchValueOfLNode( sPrevNode ) & IDU_LATCH_UNMASK;
-
-                IDL_MEM_BARRIER;
-
-                sPrevRowPtr = sPrevNode->mRowPtrs[sPrevNode->mSlotCount - 1];
-
-                IDL_MEM_BARRIER;
-
-                if ( sVersion == getLatchValueOfLNode(sPrevNode) )
-                {
-                    break;
-                }
-            }
-        }
+        // BUG-47554 memory index ¿¡¼­ latch °ü¸®¸¦ IDL_MEM_BARRIER °¡ ¾Æ´Ñ atomic ÇÔ¼ö·Î º¯°æÇÕ´Ï´Ù.
+        // °»½Å ÇÒ KeyÀÇ À§Ä¡°¡ Leaf NodeÀÇ Ã¹¹øÂ° SlotÀÏ ¶§,
+        // Prev NodeÀÇ ¸¶Áö¸· KeyÀÇ Row Pointer¸¦ °¡Á®¿Â´Ù.
+        // ÀÚÁÖ È£Ãâ µÇÁö ¾Ê°í, ÃÖÀûÈ­·Î ÀÎÇÑ ¹®Á¦°¡ ÀÖ¾î¼­
+        // º°µµÀÇ ÇÔ¼ö·Î ÃßÃâÇÑ´Ù.
+        sPrevRowPtr = getPrvLNodeLstRow( aLeafNode );
     }
     else
     {
@@ -2327,16 +2337,13 @@ IDE_RC smnbBTree::updateStat4Insert( smnIndexHeader   * aPersIndex,
                                           aIndex->fence,
                                           aRow,
                                           sPrevRowPtr ); 
-            if ( sCompareResult < 0 )
-            {
-                smnManager::logCommonHeader( aIndex->mIndexHeader );
-                logIndexNode( aIndex->mIndexHeader, (smnbNode*)sPrevNode );
-                IDE_ERROR_RAISE( 0, ERR_CORRUPTED_INDEX );
-            }
+
             if ( sCompareResult == 0 )
             {
                 break;
             }
+
+            IDE_ERROR_RAISE( sCompareResult > 0, ERR_CORRUPTED_INDEX );
         }
 
         if ( sNextRowPtr != NULL )
@@ -2346,24 +2353,21 @@ IDE_RC smnbBTree::updateStat4Insert( smnIndexHeader   * aPersIndex,
                                           aIndex->fence,
                                           aRow,
                                           sNextRowPtr );
-            if ( sCompareResult > 0 )
-            {
-                smnManager::logCommonHeader( aIndex->mIndexHeader );
-                logIndexNode( aIndex->mIndexHeader, (smnbNode*)sNextNode );
-                IDE_ERROR_RAISE( 0, ERR_CORRUPTED_INDEX );
-            }
+
             if ( sCompareResult == 0 )
             {
                 break;
             }
+
+            IDE_ERROR_RAISE( sCompareResult < 0, ERR_CORRUPTED_INDEX );
         }
 
-        /* BUG-30074 - disk tableì˜ unique indexì—ì„œ NULL key ì‚­ì œ ì‹œ/
-         *             non-unique indexì—ì„œ deleted key ì¶”ê°€ ì‹œ NumDistì˜
-         *             ì •í™•ì„±ì´ ë§ì´ ë–¨ì–´ì§‘ë‹ˆë‹¤.
+        /* BUG-30074 - disk tableÀÇ unique index¿¡¼­ NULL key »èÁ¦ ½Ã/
+         *             non-unique index¿¡¼­ deleted key Ãß°¡ ½Ã NumDistÀÇ
+         *             Á¤È®¼ºÀÌ ¸¹ÀÌ ¶³¾îÁı´Ï´Ù.
          *
-         * Null Keyì˜ ê²½ìš° NumDistë¥¼ ê°±ì‹ í•˜ì§€ ì•Šë„ë¡ í•œë‹¤.
-         * Memory indexì˜ NumDistë„ ë™ì¼í•œ ì •ì±…ìœ¼ë¡œ ë³€ê²½í•œë‹¤. */
+         * Null KeyÀÇ °æ¿ì NumDist¸¦ °»½ÅÇÏÁö ¾Êµµ·Ï ÇÑ´Ù.
+         * Memory indexÀÇ NumDistµµ µ¿ÀÏÇÑ Á¤Ã¥À¸·Î º¯°æÇÑ´Ù. */
         if ( smnbBTree::isNullKey( aIndex,
                                    aRow ) != ID_TRUE )
         {
@@ -2381,6 +2385,8 @@ IDE_RC smnbBTree::updateStat4Insert( smnIndexHeader   * aPersIndex,
 
     IDE_EXCEPTION( ERR_CORRUPTED_INDEX )
     {
+        smnbBTree::logIndexHeader( aIndex->mIndexHeader );
+
         IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
 
         ideLog::log( IDE_SM_0, "Index Corrupted Detected : Wrong Index Order" );
@@ -2388,6 +2394,86 @@ IDE_RC smnbBTree::updateStat4Insert( smnIndexHeader   * aPersIndex,
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
+}
+
+/*********************************************************************
+ * °»½Å ÇÒ KeyÀÇ À§Ä¡°¡ Leaf NodeÀÇ ¸¶Áö¸· SlotÀÏ ¶§,
+ * Next NodeÀÇ Ã¹¹øÂ° KeyÀÇ Row Pointer¸¦ °¡Á®¿Â´Ù.
+ *
+ * µ¿½Ã¼º¿¡¼­ dirty read¸¦ È°¿ëÇÑ non block ¼³°è µÇ¾ú´Âµ¥,
+ * ÃÖÀûÈ­·Î ÀÎÇÏ¿© ´Ù½Ã °¡Á®¿ÀÁö ¾Ê´Â ¹®Á¦°¡ ÀÖ°í,
+ * ÀÚÁÖ È£ÃâµÇÁö ¾Ê¾Æ¼­, º°µµÀÇ ÇÔ¼ö·Î ÃßÃâÇÑ´Ù.
+ * BUG-47554 memory index ¿¡¼­ latch °ü¸®¸¦
+ * IDL_MEM_BARRIER °¡ ¾Æ´Ñ atomic ÇÔ¼ö·Î º¯°æÇÕ´Ï´Ù.
+ *
+ * a_pLeafNode - [IN] Leaf Node
+ *********************************************************************/
+SChar* smnbBTree::getNxtLNodeFstRow( smnbLNode * a_pLeafNode )
+{
+    smnbLNode *sNextNode;
+    IDU_LATCH  sVersion;
+    SChar     *sNextRowPtr;
+
+    // cur node ¿¡ lockÀÌ ÀâÇô ÀÖ¾î¼­ next´Â º¯°æµÇÁö ¾Ê´Â´Ù.
+    sNextNode = (smnbLNode*)a_pLeafNode->nextSPtr;
+
+    if (( sNextNode == NULL ) ||
+        ( smuProperty::getSkipIdxStatNodeBound() == ID_TRUE ))
+    {
+        sNextRowPtr = NULL;
+    }
+    else
+    {
+        do
+        {
+            sVersion    = getLatchValueOfLNode( sNextNode ) & IDU_LATCH_UNMASK;
+            sNextRowPtr = (SChar*)acpAtomicGet64( &sNextNode->mRowPtrs[0] );
+
+        } while( sVersion != getLatchValueOfLNode(sNextNode) );
+    }
+    return sNextRowPtr;
+}
+
+/*********************************************************************
+ * °»½Å ÇÒ KeyÀÇ À§Ä¡°¡ Leaf NodeÀÇ Ã¹¹øÂ° SlotÀÏ ¶§,
+ * Prev NodeÀÇ ¸¶Áö¸· KeyÀÇ Row Pointer¸¦ °¡Á®¿Â´Ù.
+ *
+ * µ¿½Ã¼º¿¡¼­ dirty read¸¦ È°¿ëÇÑ non block ¼³°è µÇ¾ú´Âµ¥,
+ * ÃÖÀûÈ­·Î ÀÎÇÏ¿© ´Ù½Ã °¡Á®¿ÀÁö ¾Ê´Â ¹®Á¦°¡ ÀÖ°í,
+ * ÀÚÁÖ È£ÃâµÇÁö ¾Ê¾Æ¼­, º°µµÀÇ ÇÔ¼ö·Î ÃßÃâÇÑ´Ù.
+ * BUG-47554 memory index ¿¡¼­ latch °ü¸®¸¦
+ * IDL_MEM_BARRIER °¡ ¾Æ´Ñ atomic ÇÔ¼ö·Î º¯°æÇÕ´Ï´Ù.
+ *
+ * a_pLeafNode - [IN] Leaf Node
+ *********************************************************************/
+SChar* smnbBTree::getPrvLNodeLstRow( smnbLNode * a_pLeafNode )
+{
+    smnbLNode * sPrevNode;
+    IDU_LATCH   sVersion;
+    SChar     * sPrevRowPtr;
+
+    // cur node ¿¡ lockÀÌ ÀâÇô ÀÖ¾î¼­ prev´Â º¯°æµÇÁö ¾Ê´Â´Ù.
+    sPrevNode = (smnbLNode*)a_pLeafNode->prevSPtr;
+
+    if (( sPrevNode == NULL ) ||
+        ( smuProperty::getSkipIdxStatNodeBound() == ID_TRUE ))
+    {
+        sPrevRowPtr = NULL;
+    }
+    else
+    {
+        do
+        {
+            sVersion    = getLatchValueOfLNode( sPrevNode ) & IDU_LATCH_UNMASK;
+
+            // slot count°¡ º¯°æ µÉ ¼ö ÀÖÀ¸¹Ç·Î atomicÀ» »ç¿ëÇÏÁö ¸øÇÏ°í mem barrier ·Î °»½ÅÇØ¼­ °¡Á®¿È
+            IDL_MEM_BARRIER;
+            sPrevRowPtr = sPrevNode->mRowPtrs[sPrevNode->mSlotCount - 1];
+
+        }while( sVersion != getLatchValueOfLNode(sPrevNode) );
+    }
+
+    return sPrevRowPtr;
 }
 
 IDE_RC smnbBTree::insertIntoLeafNode( smnbHeader      * aHeader,
@@ -2411,9 +2497,9 @@ IDE_RC smnbBTree::insertIntoLeafNode( smnbHeader      * aHeader,
     setLeafSlot( aLeafNode,
                  (SShort)aSlotPos,
                  aRow,
-                 NULL ); /* direct keyëŠ” ì•„ë˜ì„œ ì„¸íŒ… */
+                 NULL ); /* direct key´Â ¾Æ·¡¼­ ¼¼ÆÃ */
 
-    if ( SMNB_IS_DIRECTKEY_IN_NODE( aLeafNode ) == ID_TRUE )
+    if ( SMNB_IS_DIRECTKEY_INDEX( aHeader ) == ID_TRUE )
     {
         IDE_TEST( smnbBTree::makeKeyFromRow( aHeader, 
                                              aRow,
@@ -2444,10 +2530,10 @@ IDE_RC smnbBTree::insertIntoInternalNode( smnbHeader  * aHeader,
 {
     SInt s_nSlotPos;
 
-    IDE_TEST( findSlotInInternal( aHeader,
-                                  a_pINode,
-                                  a_pRow,
-                                  &s_nSlotPos ) != IDE_SUCCESS );
+    IDE_TEST( findSlotInNode( aHeader,
+                              (smnbNode *)a_pINode,
+                              a_pRow,
+                              &s_nSlotPos ) != IDE_SUCCESS );
 
     /* PROJ-2433 */
     if ( s_nSlotPos <= ( a_pINode->mSlotCount - 1 ) )
@@ -2480,211 +2566,35 @@ IDE_RC smnbBTree::insertIntoInternalNode( smnbHeader  * aHeader,
 }
 
 /*********************************************************************
- * FUNCTION DESCRIPTION : smnbBTree::findSlotInInternal              *
+ * FUNCTION DESCRIPTION : smnbBTree::findSlotInNode                  *
  * ------------------------------------------------------------------*
- * INTERNAL NODE ë‚´ì—ì„œ rowì˜ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.
+ * NODE ³»¿¡¼­ rowÀÇ À§Ä¡¸¦ Ã£´Â´Ù.
  *
- * - ì¼ë°˜ INDEXì¸ ê²½ìš°
- *   í•¨ìˆ˜ findRowInInternal() ë¥¼ ì‚¬ìš©í•´ ê²€ìƒ‰í•œë‹¤.
+ * - ÀÏ¹İ INDEXÀÎ °æ¿ì
+ *   ÇÔ¼ö findRowInLeaf() ¸¦ »ç¿ëÇØ °Ë»öÇÑ´Ù.
  *
- * - (PROJ-2433) Direct Key Indexë¥¼ ì‚¬ìš©ì¤‘ì´ë¼ë©´
- *   í•¨ìˆ˜ findKeyInInternal() ë¥¼ ì‚¬ìš©í•´ direct key ê¸°ë°˜ìœ¼ë¡œ ê²€ìƒ‰í›„
- *   í•¨ìˆ˜ compareRowsAndPtr()ì™€ findRowInInternal() ë¥¼ ì‚¬ìš©í•´ row ê¸°ë°˜ìœ¼ë¡œ ì¬ê²€ìƒ‰í•œë‹¤.
+ * - (PROJ-2433) Direct Key Index¸¦ »ç¿ëÁßÀÌ¶ó¸é
+ *   ÇÔ¼ö findKeyInNode() ¸¦ »ç¿ëÇØ direct key ±â¹İÀ¸·Î °Ë»öÈÄ
+ *   ÇÔ¼ö compareRowsAndPtr()¿Í findRowInNode() ¸¦ »ç¿ëÇØ row ±â¹İÀ¸·Î Àç°Ë»öÇÑ´Ù.
  *
- *  => direct keyë¡œ ë¹„êµí›„ row ê¸°ë°˜ìœ¼ë¡œ ë˜ë‹¤ì‹œ ë¹„êµí•´ì•¼ í•˜ëŠ” ì´ìœ .
- *    1. ë™ì¼í•œ key ê°’ì´ ì—¬ëŸ¬ê°œì´ë©´ row pointerê¹Œì§€ ë¹„êµí•´ ì •í™•í•œ slotì„ ì°¾ì•„ì•¼í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
- *    2. direct keyê°€ partail key ì¸ê²½ìš° ì •í™•í•œ ìœ„ì¹˜ë¥¼ ì°¾ì„ìˆ˜ ì—†ê¸°ë•Œë¬¸ì´ë‹¤
+ *  => direct key·Î ºñ±³ÈÄ row ±â¹İÀ¸·Î ¶Ç´Ù½Ã ºñ±³ÇØ¾ß ÇÏ´Â ÀÌÀ¯.
+ *    1. direct key°¡ partail key ÀÎ°æ¿ì Á¤È®ÇÑ À§Ä¡¸¦ Ã£À»¼ö ¾ø±â¶§¹®ÀÌ´Ù
+ *    2. µ¿ÀÏÇÑ key °ªÀÌ ¿©·¯°³ÀÌ¸é row pointer±îÁö ºñ±³ÇØ Á¤È®ÇÑ slotÀ» Ã£¾Æ¾ßÇÏ±â ¶§¹®ÀÌ´Ù.
  *
- * aHeader   - [IN]  INDEX í—¤ë”
- * aNode     - [IN]  INTERNAL NODE
- * aRow      - [IN]  ê²€ìƒ‰í•  row pointer
- * aSlot     - [OUT] ì°¾ì•„ì§„ slot ìœ„ì¹˜
+ * aHeader   - [IN]  INDEX Çì´õ
+ * aNode     - [IN]  INDEX NODE
+ * aRow      - [IN]  °Ë»öÇÒ row pointer
+ * aSlot     - [OUT] Ã£¾ÆÁø slot À§Ä¡
  *********************************************************************/
-IDE_RC smnbBTree::findSlotInInternal( smnbHeader  * aHeader,
-                                      smnbINode   * aNode,
-                                      void        * aRow,
-                                      SInt        * aSlot )
-{
-    SInt    sMinimum = 0;
-    SInt    sMaximum = aNode->mSlotCount - 1;
-
-    if ( sMaximum == -1 )
-    {
-        *aSlot = 0;
-
-        return IDE_SUCCESS;
-    }
-    else
-    {
-        /* nothing to do */
-    }
-
-    if ( SMNB_IS_DIRECTKEY_IN_NODE( aNode ) == ID_TRUE )
-    {
-        IDE_TEST( findKeyInInternal( aHeader,
-                                     aNode,
-                                     sMinimum,
-                                     sMaximum,
-                                     (SChar *)aRow,
-                                     aSlot ) != IDE_SUCCESS );
-
-        if ( *aSlot > sMaximum )
-        {
-            /* ë²”ìœ„ë‚´ì— í•´ë‹¹í•˜ëŠ”ê°’ì´ì—†ë‹¤ */
-            return IDE_SUCCESS;
-        }
-        else
-        {
-            /* nothing to do */
-        }
-
-        if ( compareRowsAndPtr( &aHeader->mAgerStat,
-                                aHeader->columns,
-                                aHeader->fence,
-                                aNode->mRowPtrs[*aSlot],
-                                aRow )
-             >= 0 )
-        {
-            return IDE_SUCCESS;
-        }
-        else
-        {
-            sMinimum = *aSlot + 1;
-        }
-    }
-    else
-    {
-        /* nothing to do */
-    }
-
-    if ( sMinimum <= sMaximum )
-    {
-        findRowInInternal( aHeader,
-                           aNode,
-                           sMinimum,
-                           sMaximum,
-                           (SChar *)aRow,
-                           aSlot );
-    }
-    else
-    {
-        /* PROJ-2433
-         * node ë²”ìœ„ë‚´ì— ë§Œì¡±í•˜ëŠ”ê°’ì´ì—†ë‹¤. */
-        *aSlot = sMaximum + 1;
-    }
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-IDE_RC smnbBTree::findKeyInInternal( smnbHeader   * aHeader,
-                                   smnbINode    * aNode,
-                                   SInt           aMinimum,
-                                   SInt           aMaximum,
-                                   SChar        * aRow,
-                                   SInt         * aSlot )
-{
-    idBool  sIsSuccess = ID_TRUE;
-    SInt    sMedium = 0;
-    UInt    sPartialKeySize = ( aHeader->mIsPartialKey == ID_TRUE ) ? (aNode->mKeySize) : 0;
-
-    do
-    {
-        sMedium = (aMinimum + aMaximum) >> 1;
-
-        if ( compareKeys( &aHeader->mAgerStat,
-                          aHeader->columns,
-                          aHeader->fence,
-                          SMNB_GET_KEY_PTR( aNode, sMedium ),
-                          aNode->mRowPtrs[sMedium],
-                          sPartialKeySize,
-                          aRow,
-                          &sIsSuccess )
-             >= 0 )
-        {
-            aMaximum = sMedium - 1;
-            *aSlot   = sMedium;
-        }
-        else
-        {
-            aMinimum = sMedium + 1;
-            *aSlot   = aMinimum;
-        }
-
-        IDE_TEST( sIsSuccess != ID_TRUE );
-    }
-    while ( aMinimum <= aMaximum );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-void smnbBTree::findRowInInternal( smnbHeader   * aHeader,
-                                   smnbINode    * aNode,
-                                   SInt           aMinimum,
-                                   SInt           aMaximum,
-                                   SChar        * aRow,
-                                   SInt         * aSlot )
-{
-    SInt sMedium = 0;
-
-    do
-    {
-        sMedium = (aMinimum + aMaximum) >> 1;
-
-        if ( compareRowsAndPtr( &aHeader->mAgerStat,
-                                aHeader->columns,
-                                aHeader->fence,
-                                aNode->mRowPtrs[sMedium],
-                                aRow )
-             >= 0 )
-        {
-            aMaximum = sMedium - 1;
-            *aSlot   = sMedium;
-        }
-        else
-        {
-            aMinimum = sMedium + 1;
-            *aSlot   = aMinimum;
-        }
-    }
-    while ( aMinimum <= aMaximum );
-}
-
-/*********************************************************************
- * FUNCTION DESCRIPTION : smnbBTree::findSlotInLeaf                  *
- * ------------------------------------------------------------------*
- * LEAF NODE ë‚´ì—ì„œ rowì˜ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.
- *
- * - ì¼ë°˜ INDEXì¸ ê²½ìš°
- *   í•¨ìˆ˜ findRowInLeaf() ë¥¼ ì‚¬ìš©í•´ ê²€ìƒ‰í•œë‹¤.
- *
- * - (PROJ-2433) Direct Key Indexë¥¼ ì‚¬ìš©ì¤‘ì´ë¼ë©´
- *   í•¨ìˆ˜ findKeyInLeaf() ë¥¼ ì‚¬ìš©í•´ direct key ê¸°ë°˜ìœ¼ë¡œ ê²€ìƒ‰í›„
- *   í•¨ìˆ˜ compareRowsAndPtr()ì™€ findRowInLeaf() ë¥¼ ì‚¬ìš©í•´ row ê¸°ë°˜ìœ¼ë¡œ ì¬ê²€ìƒ‰í•œë‹¤.
- *
- *  => direct keyë¡œ ë¹„êµí›„ row ê¸°ë°˜ìœ¼ë¡œ ë˜ë‹¤ì‹œ ë¹„êµí•´ì•¼ í•˜ëŠ” ì´ìœ .
- *    1. direct keyê°€ partail key ì¸ê²½ìš° ì •í™•í•œ ìœ„ì¹˜ë¥¼ ì°¾ì„ìˆ˜ ì—†ê¸°ë•Œë¬¸ì´ë‹¤
- *    2. ë™ì¼í•œ key ê°’ì´ ì—¬ëŸ¬ê°œì´ë©´ row pointerê¹Œì§€ ë¹„êµí•´ ì •í™•í•œ slotì„ ì°¾ì•„ì•¼í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
- *
- * aHeader   - [IN]  INDEX í—¤ë”
- * aNode     - [IN]  LEAF NODE
- * aRow      - [IN]  ê²€ìƒ‰í•  row pointer
- * aSlot     - [OUT] ì°¾ì•„ì§„ slot ìœ„ì¹˜
- *********************************************************************/
-IDE_RC smnbBTree::findSlotInLeaf( smnbHeader  * aHeader,
-                                  smnbLNode   * aNode,
+IDE_RC smnbBTree::findSlotInNode( smnbHeader  * aHeader,
+                                  smnbNode    * aNode,
                                   void        * aRow,
                                   SInt        * aSlot )
 {
-    SInt        sMinimum = 0;
-    SInt        sMaximum = aNode->mSlotCount - 1;
+    SInt    sMinimum = 0;
+    SInt    sMaximum = 0;
+
+    sMaximum = aNode->mSlotCount - 1;
 
     if ( sMaximum == -1 )
     {
@@ -2692,14 +2602,10 @@ IDE_RC smnbBTree::findSlotInLeaf( smnbHeader  * aHeader,
 
         return IDE_SUCCESS;
     }
-    else
-    {
-        /* nothing to do */
-    }
 
-    if ( SMNB_IS_DIRECTKEY_IN_NODE( aNode ) == ID_TRUE )
+    if ( SMNB_IS_DIRECTKEY_INDEX( aHeader ) == ID_TRUE )
     {
-        IDE_TEST( findKeyInLeaf( aHeader,
+        IDE_TEST( findKeyInNode( aHeader,
                                  aNode,
                                  sMinimum,
                                  sMaximum,
@@ -2708,12 +2614,8 @@ IDE_RC smnbBTree::findSlotInLeaf( smnbHeader  * aHeader,
 
         if ( *aSlot > sMaximum )
         {
-            /* ë²”ìœ„ë‚´ì—ì—†ë‹¤. */
+            /* ¹üÀ§³»¿¡¾ø´Ù. */
             return IDE_SUCCESS;
-        }
-        else
-        {
-            /* nothing to do */
         }
  
         if ( compareRowsAndPtr( &aHeader->mAgerStat,
@@ -2727,18 +2629,13 @@ IDE_RC smnbBTree::findSlotInLeaf( smnbHeader  * aHeader,
         }
         else
         {
-            sMinimum = *aSlot + 1; /* *aSlotì€ ì°¾ëŠ” slotì´ ì•„ë‹Œê²ƒì„ í™•ì¸í–ˆë‹¤. skip í•œë‹¤. */
+            sMinimum = *aSlot + 1; /* *aSlotÀº Ã£´Â slotÀÌ ¾Æ´Ñ°ÍÀ» È®ÀÎÇß´Ù. skip ÇÑ´Ù. */
         }
-
-    }
-    else
-    {
-        /* nothing to do */
     }
 
     if ( sMinimum <= sMaximum )
     {
-        findRowInLeaf( aHeader,
+        findRowInNode( aHeader,
                        aNode,
                        sMinimum,
                        sMaximum,
@@ -2748,7 +2645,7 @@ IDE_RC smnbBTree::findSlotInLeaf( smnbHeader  * aHeader,
     else
     {
         /* PROJ-2433
-         * node ë²”ìœ„ë‚´ì— ë§Œì¡±í•˜ëŠ”ê°’ì´ì—†ë‹¤. */
+         * node ¹üÀ§³»¿¡ ¸¸Á·ÇÏ´Â°ªÀÌ¾ø´Ù. */
         *aSlot = sMaximum + 1;
     }
 
@@ -2759,16 +2656,21 @@ IDE_RC smnbBTree::findSlotInLeaf( smnbHeader  * aHeader,
     return IDE_FAILURE;
 }
 
-IDE_RC smnbBTree::findKeyInLeaf( smnbHeader   * aHeader,
-                                 smnbLNode    * aNode,
+IDE_RC smnbBTree::findKeyInNode( smnbHeader   * aHeader,
+                                 smnbNode     * aNode,
                                  SInt           aMinimum,
                                  SInt           aMaximum,
                                  SChar        * aRow,
                                  SInt         * aSlot )
 {
-    idBool  sIsSuccess = ID_TRUE;
-    SInt    sMedium = 0;
-    UInt    sPartialKeySize = ( aHeader->mIsPartialKey == ID_TRUE ) ? (aNode->mKeySize) : 0;
+    idBool  sIsSuccess      = ID_TRUE;
+    SInt    sMedium         = 0;
+    UInt    sPartialKeySize = 0;
+
+    if ( aHeader->mIsPartialKey == ID_TRUE )
+    {
+        sPartialKeySize = aNode->mKeySize;
+    }
 
     do
     {
@@ -2804,14 +2706,14 @@ IDE_RC smnbBTree::findKeyInLeaf( smnbHeader   * aHeader,
     return IDE_FAILURE;
 }
 
-void smnbBTree::findRowInLeaf( smnbHeader   * aHeader,
-                               smnbLNode    * aNode,
+void smnbBTree::findRowInNode( smnbHeader   * aHeader,
+                               smnbNode     * aNode,
                                SInt           aMinimum,
                                SInt           aMaximum,
                                SChar        * aRow,
                                SInt         * aSlot )
 {
-    SInt sMedium = 0;
+    SInt    sMedium = 0;
 
     do
     {
@@ -2834,173 +2736,6 @@ void smnbBTree::findRowInLeaf( smnbHeader   * aHeader,
         }
     }
     while ( aMinimum <= aMaximum );
-}
-
-IDE_RC smnbBTree::findPosition( const smnbHeader   * a_pHeader,
-                                SChar              * a_pRow,
-                                SInt               * a_pDepth,
-                                smnbStack          * a_pStack )
-{
-    /* BUG-37643 Nodeì˜ arrayë¥¼ ì§€ì—­ë³€ìˆ˜ì— ì €ì¥í•˜ëŠ”ë°
-     * compiler ìµœì í™”ì— ì˜í•´ì„œ ì§€ì—­ë³€ìˆ˜ê°€ ì œê±°ë  ìˆ˜ ìˆë‹¤.
-     * ë”°ë¼ì„œ ì´ëŸ¬í•œ ë³€ìˆ˜ëŠ” volatileë¡œ ì„ ì–¸í•´ì•¼ í•œë‹¤. */
-    volatile smnbINode * s_pCurINode;
-    volatile smnbINode * s_pChildINode;
-    volatile smnbINode * s_pCurSINode;
-    SInt                 s_nDepth;
-    smnbStack          * s_pStack;
-    SInt                 s_nLstReadPos;
-    IDU_LATCH            s_version;
-    SInt                 s_slotCount;
-
-retry:
-    s_nDepth = *a_pDepth;
-
-    while(1)
-    {
-        if ( s_nDepth < 0 )
-        {
-            s_pStack       = a_pStack;
-            s_pCurINode    = (smnbINode*)(a_pHeader->root);
-
-            if ( s_pCurINode != NULL )
-            {
-                IDL_MEM_BARRIER;
-                s_version = getLatchValueOfINode(s_pCurINode) & (~SMNB_SCAN_LATCH_BIT);
-                IDL_MEM_BARRIER;
-            }
-
-            break;
-        }
-        else
-        {
-            s_nDepth     = *a_pDepth;
-
-            while(s_nDepth >= 0)
-            {
-                s_pCurINode  = (smnbINode*)(a_pStack[s_nDepth].node);
-
-                IDL_MEM_BARRIER;
-                if ( getLatchValueOfINode(s_pCurINode)
-                      == a_pStack[s_nDepth].version )
-                {
-                    break;
-                }
-
-                s_nDepth--;
-            }
-
-            if ( s_nDepth < 0 )
-            {
-                continue;
-            }
-
-            s_pCurINode  = (smnbINode*)(a_pStack[s_nDepth].node);
-
-            IDL_MEM_BARRIER;
-            s_version = getLatchValueOfINode(s_pCurINode) & (~SMNB_SCAN_LATCH_BIT);
-            IDL_MEM_BARRIER;
-
-            s_pStack     = a_pStack + s_nDepth;
-            s_nDepth--;
-
-            break;
-        }
-    }
-
-    if ( s_pCurINode != NULL )
-    {
-        while((s_pCurINode->flag & SMNB_NODE_TYPE_MASK) == SMNB_NODE_TYPE_INTERNAL)
-        {
-            while(1)
-            {
-                IDL_MEM_BARRIER;
-                s_version = getLatchValueOfINode(s_pCurINode) & (~SMNB_SCAN_LATCH_BIT);
-                IDL_MEM_BARRIER;
-
-                IDE_TEST( findSlotInInternal( (smnbHeader *)a_pHeader,
-                                              (smnbINode *)s_pCurINode,
-                                              a_pRow,
-                                              &s_nLstReadPos ) != IDE_SUCCESS );
-
-                s_pChildINode   = (smnbINode*)(s_pCurINode->mChildPtrs[s_nLstReadPos]);
-                s_slotCount     = s_pCurINode->mSlotCount;
-                s_pCurSINode    = s_pCurINode->nextSPtr;
-
-                IDL_MEM_BARRIER;
-
-                if ( s_version == getLatchValueOfINode(s_pCurINode) )
-                {
-                    break;
-                }
-            }
-
-            /* freeëœ nodeì— ë“¤ì–´ì™”ë‹¤... ë‹¤ì‹œ. */
-            if ( s_slotCount == 0 )
-            {
-                goto retry;
-            }
-
-            if ( s_nLstReadPos >= s_slotCount )
-            {
-                if ( s_version != getLatchValueOfINode(s_pCurINode) )
-                {
-                    /* íƒìƒ‰ ì¤‘ íƒ€ Txì— ì˜í•´ key reorganizationì´ ìˆ˜í–‰ëœ ê²½ìš°
-                     * ë¦¬í”„ ë…¸ë“œê°€ í†µí•©ë˜ë©´ì„œ ì¸í„°ë„ ë…¸ë“œì˜ slotcountê°€ ì¤„ì–´ë“¤ì–´
-                     * ì´ì›ƒ ë…¸ë“œë¡œ ì´ë™í•˜ì§€ ì•Šì€ ìƒíƒœë¼ë„ í•´ë‹¹ slotì˜ ìœ„ì¹˜ê°€ slotcountë³´ë‹¤ í´ ìˆ˜ ìˆë‹¤.
-                     * ì´ ê²½ìš°ì—ëŠ” íƒìƒ‰ì„ ì¬ìˆ˜í–‰í•œë‹¤. */
-                    goto retry;
-                }
-                else
-                {
-                    if ( s_pCurSINode != NULL )
-                    {
-                        /* node split ì¸ê²½ìš° next nodeë¥¼ íƒìƒ‰ */
-                        s_pCurINode = s_pCurSINode;
-
-                        continue;
-                    }
-                    else
-                    {
-                        /* BUG-45573
-                           ë§¤ìš° ì ì€ í™•ë¥ ì´ì§€ë§Œ, ì•„ë˜ ë‘ì¡°ê±´ì„ ë§Œì¡±í•˜ë©´ ë°œìƒí• ìˆ˜ìˆë‹¤.
-                           ì´ê²½ìš° ì¬íƒìƒ‰í•œë‹¤.
-
-                           1. s_pCurINode ë…¸ë“œì˜ ê°€ì¥ í° keyê°€ Agerì— ì˜í•´ ì‚­ì œë˜ì—ˆê³ ,
-                           ì´ë²ˆì— ì¶”ê°€í•˜ë ¤ëŠ” ìƒˆë¡œìš´ keyê°€ ë…¸ë“œì—ì„œ ê°€ì¥ í°ê°’ì´ë‹¤.
-                           (s_nLstReadPos >= s_slotCount ì¡°ê±´ì„ ë§Œì¡±.)
-
-                           2. Agerì— ì˜í•´ next nodeê°€ ì‚­ì œë˜ì–´ s_pCurINode->nextSPtre = NULLë¡œ ì„¸íŒ…ë˜ì—ˆë‹¤.
-                         */
-                        goto retry;
-                    }
-                } 
-            }
-
-            s_pStack->version    = s_version;
-            s_pStack->node       = (smnbINode*)s_pCurINode;
-            s_pStack->lstReadPos = s_nLstReadPos;
-            s_pStack->slotCount  = s_slotCount;
-
-            s_nDepth++;
-            s_pStack++;
-
-            s_pCurINode = s_pChildINode;
-        }
-
-        IDL_MEM_BARRIER;
-        s_pStack->version    = getLatchValueOfINode(s_pCurINode);
-        s_pStack->node       = (smnbINode*)s_pCurINode;
-        s_nDepth++;
-    }
-
-    *a_pDepth = s_nDepth;
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
 }
 
 IDE_RC smnbBTree::splitInternalNode(smnbHeader      * a_pIndexHeader,
@@ -3017,7 +2752,7 @@ IDE_RC smnbBTree::splitInternalNode(smnbHeader      * a_pIndexHeader,
 
     IDL_MEM_BARRIER;
 
-    // BUG-18292 : V$MEM_BTREE_HEADER ì •ë³´ ì¶”ê°€
+    // BUG-18292 : V$MEM_BTREE_HEADER Á¤º¸ Ãß°¡
     a_pIndexHeader->nodeCount++;
 
     // To fix BUG-18671
@@ -3025,7 +2760,7 @@ IDE_RC smnbBTree::splitInternalNode(smnbHeader      * a_pIndexHeader,
                       a_pIndexHeader,
                       IDU_LATCH_UNLOCKED );
 
-    IDL_MEM_BARRIER; /* ë…¸ë“œì˜ ì´ˆê¸°í™”í›„ì— linkë¥¼ ìˆ˜í–‰í•´ì•¼ ë¨*/
+    IDL_MEM_BARRIER; /* ³ëµåÀÇ ÃÊ±âÈ­ÈÄ¿¡ link¸¦ ¼öÇàÇØ¾ß µÊ*/
 
     a_pNewINode->nextSPtr  = a_pINode->nextSPtr;
     a_pNewINode->prevSPtr  = a_pINode;
@@ -3052,7 +2787,7 @@ IDE_RC smnbBTree::splitInternalNode(smnbHeader      * a_pIndexHeader,
         }
         else
         {
-            /* ì—¬ê¸°ë¡œ ì˜¬ìˆ˜ ì—†ë‹¤. */
+            /* ¿©±â·Î ¿Ã¼ö ¾ø´Ù. */
             IDE_ERROR_RAISE( 0, ERR_CORRUPTED_INDEX );
         }
 
@@ -3094,7 +2829,7 @@ IDE_RC smnbBTree::splitInternalNode(smnbHeader      * a_pIndexHeader,
         }
         else
         {
-            /* ì—¬ê¸°ë¡œ ì˜¬ìˆ˜ ì—†ë‹¤. */
+            /* ¿©±â·Î ¿Ã¼ö ¾ø´Ù. */
             IDE_ERROR_RAISE( 0, ERR_CORRUPTED_INDEX );
         }
 
@@ -3149,10 +2884,14 @@ IDE_RC smnbBTree::splitLeafNode( smnbHeader    * a_pIndexHeader,
 {
     IDL_MEM_BARRIER;
 
-    // BUG-18292 : V$MEM_BTREE_HEADER ì •ë³´ ì¶”ê°€
+    // BUG-18292 : V$MEM_BTREE_HEADER Á¤º¸ Ãß°¡
     a_pIndexHeader->nodeCount++;
 
+#ifdef ALTIBASE_FIT_CHECK
+    a_pNewLeafNode->latch = IDU_LATCH_LOCKED;
+#endif
     IDU_FIT_POINT_RAISE( "BUG-46504@smnbBTree::splitLeafNode::initLeafNode", ERR_FAIL_TO_INITIALIZE_LEAF_NODE );
+
     // To fix BUG-18671
     IDE_ERROR_RAISE( initLeafNode( a_pNewLeafNode,
                                    a_pIndexHeader,
@@ -3161,13 +2900,13 @@ IDE_RC smnbBTree::splitLeafNode( smnbHeader    * a_pIndexHeader,
     
     SMNB_SCAN_UNLATCH( a_pNewLeafNode );
 
-    IDL_MEM_BARRIER; /* ë…¸ë“œì˜ ì´ˆê¸°í™”í›„ì— linkë¥¼ ìˆ˜í–‰í•´ì•¼ ë¨*/
+    IDL_MEM_BARRIER; /* ³ëµåÀÇ ÃÊ±âÈ­ÈÄ¿¡ link¸¦ ¼öÇàÇØ¾ß µÊ*/
 
-    /* new nodeì— key ë¶„ë°°ê°€ ì™„ë£Œë ë•Œê¹Œì§€ ì¡ì•„ë†”ì•¼í•œë‹¤.
-     * ê·¸ë ‡ì§€ ì•Šìœ¼ë©´, no latchë¡œ ì´ì „ ë…¸ë“œë¥¼ ë³´ë ¤í• ë•Œ ì•„ì§ key ë¶„ë°°ê°€ ì•ˆëœ
-     * ìƒíƒœì—ì„œ ë³¼ ìˆ˜ ìˆë‹¤.
-     * ì˜ˆë¥¼ ë“¤ë©´, í†µê³„ ê°±ì‹ ì‹œ ì´ì „ ë…¸ë“œë¥¼ ë³´ë ¤í• ë•Œ..
-     * ë”°ë¼ì„œ new nodeë¥¼ treeì— ì—°ê²°í•˜ê¸° ì „ì— latch bitë¥¼ ì„¤ì •í•´ì•¼ í•œë‹¤. */
+    /* new node¿¡ key ºĞ¹è°¡ ¿Ï·áµÉ¶§±îÁö Àâ¾Æ³ö¾ßÇÑ´Ù.
+     * ±×·¸Áö ¾ÊÀ¸¸é, no latch·Î ÀÌÀü ³ëµå¸¦ º¸·ÁÇÒ¶§ ¾ÆÁ÷ key ºĞ¹è°¡ ¾ÈµÈ
+     * »óÅÂ¿¡¼­ º¼ ¼ö ÀÖ´Ù.
+     * ¿¹¸¦ µé¸é, Åë°è °»½Å½Ã ÀÌÀü ³ëµå¸¦ º¸·ÁÇÒ¶§..
+     * µû¶ó¼­ new node¸¦ tree¿¡ ¿¬°áÇÏ±â Àü¿¡ latch bit¸¦ ¼³Á¤ÇØ¾ß ÇÑ´Ù. */
     SMNB_SCAN_LATCH( a_pNewLeafNode );
 
     a_pNewLeafNode->nextSPtr  = a_pLeafNode->nextSPtr;
@@ -3175,8 +2914,8 @@ IDE_RC smnbBTree::splitLeafNode( smnbHeader    * a_pIndexHeader,
 
     if ( a_pLeafNode->nextSPtr != NULL)
     {
-        /* splitì„ í•˜ê¸° ìœ„í•´ tree latch ì¡ì€ ìƒí™©ì´ë¼ Tree êµ¬ì¡°ê°€ ë³€ê²½ë˜ì§€
-         * ì•ŠëŠ”ë‹¤. backward scanì‹œì—ë„ tree latchë¥¼ ì¡ê¸° ë•Œë¬¸ì— ë¬¸ì œ ì—†ë‹¤. */
+        /* splitÀ» ÇÏ±â À§ÇØ tree latch ÀâÀº »óÈ²ÀÌ¶ó Tree ±¸Á¶°¡ º¯°æµÇÁö
+         * ¾Ê´Â´Ù. backward scan½Ã¿¡µµ tree latch¸¦ Àâ±â ¶§¹®¿¡ ¹®Á¦ ¾ø´Ù. */
         a_pLeafNode->nextSPtr->prevSPtr = a_pNewLeafNode;
     }
 
@@ -3234,7 +2973,7 @@ IDE_RC smnbBTree::splitLeafNode( smnbHeader    * a_pIndexHeader,
 
     IDE_EXCEPTION( ERR_FAIL_TO_INITIALIZE_LEAF_NODE )
     {
-        SMNB_SCAN_UNLATCH( a_pNewLeafNode ); /* LATCH í’€ì–´ì¤˜ì•¼í•¨ */
+        SMNB_SCAN_UNLATCH( a_pNewLeafNode ); /* LATCH Ç®¾îÁà¾ßÇÔ */
 
         IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
         ideLog::log( IDE_ERR_0, "[SM] fail to initialize leaf node" );
@@ -3252,13 +2991,14 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
                                    smnbLNode             * a_pLeafNode,
                                    SInt                    a_nSlotPos,
                                    SChar                 * a_pRow,
-                                   smSCN                   aStmtSCN,
+                                   smSCN                   aStmtViewSCN,
                                    idBool                  aIsTreeLatched,
                                    smTID                 * a_pTransID,
                                    idBool                * aIsRetraverse,
                                    SChar                ** aExistUniqueRow,
                                    SChar                ** a_diffRow,
-                                   SInt                  * a_diffSlotPos )
+                                   SInt                  * a_diffSlotPos,
+                                   idBool                  aForbiddenToRetry )
 {
     SInt          i;
     SInt          j;
@@ -3277,11 +3017,11 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
 
     sIsReplTx = smxTransMgr::isReplTrans( a_pTrans );
 
-    /* ì´ì›ƒ ë…¸ë“œë¥¼ ë´ì•¼í•  í•„ìš”ê°€ ìˆëŠ” ê²½ìš° Tree latchë¥¼ ì¡ì•„ì•¼ í•œë‹¤.
-     * í˜„ì¬ ì‚½ì…í•˜ê³ ì í•˜ëŠ” ë…¸ë“œì—ë§Œ latchê°€ ì¡í˜€ìˆëŠ” ìƒíƒœì´ë¯€ë¡œ
-     * í•´ë‹¹ ë…¸ë“œë§Œ ë³´ê³  ì¢Œìš° ì´ì›ƒë…¸ë“œë¥¼ ë´ì•¼í•˜ëŠ”ì§€ íŒë‹¨í•´ì•¼ í•œë‹¤.
-     * ì‚½ì…í•  ìœ„ì¹˜ê°€ ì²˜ìŒ ë˜ëŠ” ë§ˆì§€ë§‰ ì´ê±°ë‚˜ ì‚½ì…í•  rowì™€ ì²«ë²ˆì§¸, ë§ˆì§€ë§‰ rowì˜
-     * ê°’ì´ ë™ì¼í•˜ë©´ ì¢Œìš° ì´ì›ƒ ë…¸ë“œë¥¼ ë´ì•¼í•œë‹¤ê³  íŒë‹¨í•œë‹¤. */
+    /* ÀÌ¿ô ³ëµå¸¦ ºÁ¾ßÇÒ ÇÊ¿ä°¡ ÀÖ´Â °æ¿ì Tree latch¸¦ Àâ¾Æ¾ß ÇÑ´Ù.
+     * ÇöÀç »ğÀÔÇÏ°íÀÚ ÇÏ´Â ³ëµå¿¡¸¸ latch°¡ ÀâÇôÀÖ´Â »óÅÂÀÌ¹Ç·Î
+     * ÇØ´ç ³ëµå¸¸ º¸°í ÁÂ¿ì ÀÌ¿ô³ëµå¸¦ ºÁ¾ßÇÏ´ÂÁö ÆÇ´ÜÇØ¾ß ÇÑ´Ù.
+     * »ğÀÔÇÒ À§Ä¡°¡ Ã³À½ ¶Ç´Â ¸¶Áö¸· ÀÌ°Å³ª »ğÀÔÇÒ row¿Í Ã¹¹øÂ°, ¸¶Áö¸· rowÀÇ
+     * °ªÀÌ µ¿ÀÏÇÏ¸é ÁÂ¿ì ÀÌ¿ô ³ëµå¸¦ ºÁ¾ßÇÑ´Ù°í ÆÇ´ÜÇÑ´Ù. */
     if ( aIsTreeLatched == ID_FALSE )
     {
         if ( ( a_nSlotPos == a_pLeafNode->mSlotCount ) ||
@@ -3312,7 +3052,7 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
             /* nothing to do */
         }
 
-        /* Tree latch ì¡ê³  ë‹¤ì‹œ ì‹œë„í•´ì•¼ í•œë‹¤. */
+        /* Tree latch Àâ°í ´Ù½Ã ½ÃµµÇØ¾ß ÇÑ´Ù. */
         if ( *aIsRetraverse == ID_TRUE )
         {
             IDE_CONT( need_to_retraverse );
@@ -3320,35 +3060,35 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
     }
 
     /*
-     * uniqueness ì²´í¬ë¥¼ ì‹œì‘í•œë‹¤.
+     * uniqueness Ã¼Å©¸¦ ½ÃÀÛÇÑ´Ù.
      */
 
     s_pCurLeafNode = a_pLeafNode;
 
-    /* backward íƒìƒ‰
-     * backwardë¡œ lockë¥¼ ì¡ëŠ”ë°, Tree latchë¥¼ íšë“í•œ ìƒíƒœì´ê¸° ë•Œë¬¸ì—
-     * ë°ë“œë½ ë¬¸ì œëŠ” ì—†ë‹¤.
+    /* backward Å½»ö
+     * backward·Î lock¸¦ Àâ´Âµ¥, Tree latch¸¦ È¹µæÇÑ »óÅÂÀÌ±â ¶§¹®¿¡
+     * µ¥µå¶ô ¹®Á¦´Â ¾ø´Ù.
      *
-     * lockì„ ì¡ëŠ” ì´ìœ ëŠ” ì´ì „ ë§¨ ì²˜ìŒ ë…¸ë“œì—ëŠ” ë™ì¼ ê°’ì„ ê°€ì§„ keyì™€ ë‹¤ë¥¸ ê°’ì„
-     * ê°€ì§„ keyê°€ ì„ì—¬ìˆê¸° ë•Œë¬¸ì— Tree latchì—†ì´ insert/freeSlotì´ ìˆ˜í–‰ë  ìˆ˜
-     * ìˆê¸°ê³ , ì´ë•Œë¬¸ì— slot ìœ„ì¹˜ê°€ ë³€ê²½ë  ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤. */
+     * lockÀ» Àâ´Â ÀÌÀ¯´Â ÀÌÀü ¸Ç Ã³À½ ³ëµå¿¡´Â µ¿ÀÏ °ªÀ» °¡Áø key¿Í ´Ù¸¥ °ªÀ»
+     * °¡Áø key°¡ ¼¯¿©ÀÖ±â ¶§¹®¿¡ Tree latch¾øÀÌ insert/freeSlotÀÌ ¼öÇàµÉ ¼ö
+     * ÀÖ±â°í, ÀÌ¶§¹®¿¡ slot À§Ä¡°¡ º¯°æµÉ ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù. */
     while ( s_pCurLeafNode != NULL )
     {
-        /* ì‚½ì…í•  ë…¸ë“œëŠ” ì´ë¯¸ latchê°€ ì¡í˜€ìˆìœ¼ë¯€ë¡œ, ë˜ ì¡ìœ¼ë©´ ì•ˆëœë‹¤. */
+        /* »ğÀÔÇÒ ³ëµå´Â ÀÌ¹Ì latch°¡ ÀâÇôÀÖÀ¸¹Ç·Î, ¶Ç ÀâÀ¸¸é ¾ÈµÈ´Ù. */
         if ( a_pLeafNode != s_pCurLeafNode )
         {
-            /* ì´ì›ƒ ë…¸ë“œë¥¼ ë´ì•¼í•œë‹¤ë©´ Tree latchê°€ ì¡í˜€ìˆì–´ì•¼ í•œë‹¤. */
+            /* ÀÌ¿ô ³ëµå¸¦ ºÁ¾ßÇÑ´Ù¸é Tree latch°¡ ÀâÇôÀÖ¾î¾ß ÇÑ´Ù. */
             IDE_ERROR_RAISE( ( aIsTreeLatched == ID_TRUE ), ERR_NOT_TREE_LATCH );
 
             lockNode( s_pCurLeafNode );
             sState = 1;
 
-            /* ë§ˆì§€ë§‰ slotë¶€í„° ì‹œì‘. */
+            /* ¸¶Áö¸· slotºÎÅÍ ½ÃÀÛ. */
             s_nSlotPos = s_pCurLeafNode->mSlotCount;
         }
         else
         {
-            /* ì‚½ì…í•  ë…¸ë“œëŠ” ì‚½ì…í•  ìœ„ì¹˜ ë¶€í„° ì‹œì‘ */
+            /* »ğÀÔÇÒ ³ëµå´Â »ğÀÔÇÒ À§Ä¡ ºÎÅÍ ½ÃÀÛ */
             s_nSlotPos = a_nSlotPos;
         }
 
@@ -3366,17 +3106,18 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
 
             if ( sCompareResult != 0 )
             {
-                smnManager::logCommonHeader( aIndexHeader );
+                smnbBTree::logIndexHeader( aIndexHeader );
                 logIndexNode( aIndexHeader, (smnbNode*)s_pCurLeafNode );
                 IDE_ERROR_RAISE( 0, ERR_CORRUPTED_INDEX );
             }
 
             IDE_TEST( isRowUnique( a_pTrans,
                                    aIndexStat,
-                                   aStmtSCN,
+                                   aStmtViewSCN,
                                    s_pCurLeafNode->mRowPtrs[i],
                                    a_pTransID,
-                                   aExistUniqueRow )
+                                   aExistUniqueRow,
+                                   aForbiddenToRetry )
                       != IDE_SUCCESS );
 
             if ( *a_pTransID != SM_NULL_TID )
@@ -3384,22 +3125,22 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
                 *a_diffSlotPos = i;
                 *a_diffRow = (SChar*)s_pCurLeafNode->mRowPtrs[i];
 
-                /* BUG-45524 replication ì‚¬ìš©ì‹œ recieverìª½ì—ì„œëŠ” Tx ëŒ€ê¸°ë¥¼ í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì— 
-                 *           ì¼ì‹œì ìœ¼ë¡œ ë™ì¼í•œ í‚¤ê°€ ë‹¤ìˆ˜ ì¡´ì¬í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
-                 *           ì¤‘ë³µëœ í‚¤ëŠ” senderìª½ì˜ rollbackë¡œê·¸ì— ì˜í•´ ìì—°ì ìœ¼ë¡œ ì œê±° ë˜ê¸´í•˜ì§€ë§Œ
-                 *           ì œê±°ë  ì˜ˆì •ì¸ í‚¤ë¥¼ unique violation ì²´í¬ì‹œ ë¹„êµ ëŒ€ìƒìœ¼ë¡œ ì‚¼ì€ ìƒíƒœì—ì„œ
-                 *           local queryë‚˜ log ìœ ì‹¤ì´ ë°œìƒí•  ê²½ìš° ë¬¸ì œê°€ ë°œìƒí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
-                 *           ì´ë¥¼ ë§‰ê¸° ìœ„í•´ ë™ì¼í•œ í‚¤ê°€ ë‹¤ìˆ˜ ì¡´ì¬í•  ê²½ìš°ì— ì´ë“¤ ì¤‘
-                 *           ì´ë“¤ ëª¨ë‘ë¥¼ ëŒ€ìƒìœ¼ë¡œ ë¹„êµ ì—°ì‚°ì„ ìˆ˜í–‰í•´ì•¼ í•©ë‹ˆë‹¤. */
+                /* BUG-45524 replication »ç¿ë½Ã recieverÂÊ¿¡¼­´Â Tx ´ë±â¸¦ ÇÏÁö ¾Ê±â ¶§¹®¿¡ 
+                 *           ÀÏ½ÃÀûÀ¸·Î µ¿ÀÏÇÑ Å°°¡ ´Ù¼ö Á¸ÀçÇÒ ¼ö ÀÖ½À´Ï´Ù.
+                 *           Áßº¹µÈ Å°´Â senderÂÊÀÇ rollback·Î±×¿¡ ÀÇÇØ ÀÚ¿¬ÀûÀ¸·Î Á¦°Å µÇ±äÇÏÁö¸¸
+                 *           Á¦°ÅµÉ ¿¹Á¤ÀÎ Å°¸¦ unique violation Ã¼Å©½Ã ºñ±³ ´ë»óÀ¸·Î »ïÀº »óÅÂ¿¡¼­
+                 *           local query³ª log À¯½ÇÀÌ ¹ß»ıÇÒ °æ¿ì ¹®Á¦°¡ ¹ß»ıÇÒ ¼ö ÀÖ½À´Ï´Ù.
+                 *           ÀÌ¸¦ ¸·±â À§ÇØ µ¿ÀÏÇÑ Å°°¡ ´Ù¼ö Á¸ÀçÇÒ °æ¿ì¿¡ ÀÌµé Áß
+                 *           ÀÌµé ¸ğµÎ¸¦ ´ë»óÀ¸·Î ºñ±³ ¿¬»êÀ» ¼öÇàÇØ¾ß ÇÕ´Ï´Ù. */
                 if( sIsReplTx != ID_TRUE )
                 {
-                    /* replicationì´ ì•„ë‹ˆë¼ë©´ íƒ€ slotì„ íƒìƒ‰í•  í•„ìš”ê°€ ì—†ë‹¤. */
+                    /* replicationÀÌ ¾Æ´Ï¶ó¸é Å¸ slotÀ» Å½»öÇÒ ÇÊ¿ä°¡ ¾ø´Ù. */
                     break;
                 }
                 else
                 {
-                    /* ë™ì¼í•œ í‚¤ ê°’ì´ ìˆëŠ” rowê°€ ë” ìˆëŠ”ì§€ ì´ì „ slotì„ í™•ì¸í•œë‹¤.
-                     * ë™ì¼í•œ í‚¤ ê°’ì„ ê°€ì§„ rowì¤‘ commitëœ rowê°€ ìˆë‹¤ë©´ í•´ë‹¹ rowë¥¼ ìƒíƒœë¡œ unique checkë¥¼ í•´ì•¼ >í•œë‹¤. */
+                    /* µ¿ÀÏÇÑ Å° °ªÀÌ ÀÖ´Â row°¡ ´õ ÀÖ´ÂÁö ÀÌÀü slotÀ» È®ÀÎÇÑ´Ù.
+                     * µ¿ÀÏÇÑ Å° °ªÀ» °¡Áø rowÁß commitµÈ row°¡ ÀÖ´Ù¸é ÇØ´ç row¸¦ »óÅÂ·Î unique check¸¦ ÇØ¾ß >ÇÑ´Ù. */
                     j = i - 1;
 
                     while( j >= 0 )
@@ -3412,38 +3153,39 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
 
                         if( sCompareResult == 0 )
                         {
-                            /* ë™ì¼í•œ í‚¤ ê°’ì„ ê°€ì§„ rowê°€ ìˆë‹¤ë©´ isRowUniqueì—ì„œ unique ì²´í¬ë¥¼ í•œë‹¤. */
+                            /* µ¿ÀÏÇÑ Å° °ªÀ» °¡Áø row°¡ ÀÖ´Ù¸é isRowUnique¿¡¼­ unique Ã¼Å©¸¦ ÇÑ´Ù. */
                             IDE_TEST(isRowUnique(a_pTrans,
                                                  aIndexStat,
-                                                 aStmtSCN,
+                                                 aStmtViewSCN,
                                                  s_pCurLeafNode->mRowPtrs[j],
                                                  a_pTransID,
-                                                 aExistUniqueRow )
+                                                 aExistUniqueRow,
+                                                 aForbiddenToRetry)
                                      != IDE_SUCCESS);
 
-                            /* unique checkë¥¼ í†µê³¼ í–ˆë‹¤ë©´ ì´ì „ slotì— ëŒ€í•´ì„œë„ ë°˜ë³µí•œë‹¤. */
+                            /* unique check¸¦ Åë°ú Çß´Ù¸é ÀÌÀü slot¿¡ ´ëÇØ¼­µµ ¹İº¹ÇÑ´Ù. */
                             j--;
                         }
                         else
                         {
-                            /* ë™ì¼í•œ í‚¤ê°’ì„ ê°€ì§„ rowê°€ ì´ì „ slotì— ì—†ìŒ */
+                            /* µ¿ÀÏÇÑ Å°°ªÀ» °¡Áø row°¡ ÀÌÀü slot¿¡ ¾øÀ½ */
                             break;
                         }
                     }
 
                     if( ( j != -1 ) || ( s_pCurLeafNode->prevSPtr == NULL) )
                     {
-                        /* ë…¸ë“œ ë‚´ì—ì„œ ë™ì¼í•˜ì§€ ì•Šì€ í‚¤ë¥¼ ì°¾ì•˜ê±°ë‚˜ ì´ì „ ë…¸ë“œê°€ ì—†ë‹¤ë©´ 
-                         * ì´ì „ ë…¸ë“œì˜ íƒìƒ‰ì„ ìˆ˜í–‰ í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+                        /* ³ëµå ³»¿¡¼­ µ¿ÀÏÇÏÁö ¾ÊÀº Å°¸¦ Ã£¾Ò°Å³ª ÀÌÀü ³ëµå°¡ ¾ø´Ù¸é 
+                         * ÀÌÀü ³ëµåÀÇ Å½»öÀ» ¼öÇà ÇÏÁö ¾Ê´Â´Ù. */
                         break;
                     }
                     else
                     {
-                        /* í‚¤ ê°’ì´ íƒìƒ‰ëœ ë…¸ë“œ ì „ì²´ë¥¼ íƒìƒ‰í•œ í›„ì—ë„ ë™ì¼ í‚¤ ê°’ì´ ê³„ì† ë°œê²¬ëœë‹¤ë©´
-                         * ì´ì „ ë…¸ë“œì— ëŒ€í•´ì„œë„ íƒìƒ‰ì„ ìˆ˜í–‰í•´ì•¼ í•œë‹¤. */
+                        /* Å° °ªÀÌ Å½»öµÈ ³ëµå ÀüÃ¼¸¦ Å½»öÇÑ ÈÄ¿¡µµ µ¿ÀÏ Å° °ªÀÌ °è¼Ó ¹ß°ßµÈ´Ù¸é
+                         * ÀÌÀü ³ëµå¿¡ ´ëÇØ¼­µµ Å½»öÀ» ¼öÇàÇØ¾ß ÇÑ´Ù. */
                     }
 
-                    /* ë…¸ë“œì— lockì„ ê±¸ì–´ì•¼ í•˜ë¯€ë¡œ tree latchë¥¼ ì¡ê³  ìˆì§€ ì•Šë‹¤ë©´ tree latchë¥¼ ì¡ê³  ì¬ìˆ˜í–‰í•œë‹¤. */
+                    /* ³ëµå¿¡ lockÀ» °É¾î¾ß ÇÏ¹Ç·Î tree latch¸¦ Àâ°í ÀÖÁö ¾Ê´Ù¸é tree latch¸¦ Àâ°í Àç¼öÇàÇÑ´Ù. */
                     if( aIsTreeLatched == ID_FALSE )
                     {
                         if( sState == 1)
@@ -3474,7 +3216,7 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
 
                                 if( sCompareResult != 0 )
                                 {
-                                    /* ë™ì¼í•˜ì§€ ì•Šì€ í‚¤ê°€ ë°œê²¬ë  ê²½ìš° ë” ì´ìƒ íƒìƒ‰í•  í•„ìš” ì—†ë‹¤. */
+                                    /* µ¿ÀÏÇÏÁö ¾ÊÀº Å°°¡ ¹ß°ßµÉ °æ¿ì ´õ ÀÌ»ó Å½»öÇÒ ÇÊ¿ä ¾ø´Ù. */
                                     sTempLockState = 0;
                                     unlockNode( sTempNode );
 
@@ -3484,13 +3226,14 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
                                 }
                                 else
                                 {
-                                    /* ë™ì¼í•œ í‚¤ ê°’ì´ ë°œê²¬ë  ê²½ìš° unique checkë¥¼ ìˆ˜í–‰í•œë‹¤. */
+                                    /* µ¿ÀÏÇÑ Å° °ªÀÌ ¹ß°ßµÉ °æ¿ì unique check¸¦ ¼öÇàÇÑ´Ù. */
                                     IDE_TEST(isRowUnique(a_pTrans,
                                                          aIndexStat,
-                                                         aStmtSCN,
+                                                         aStmtViewSCN,
                                                          sTempNode->mRowPtrs[j],
                                                          a_pTransID,
-                                                         aExistUniqueRow )
+                                                         aExistUniqueRow,
+                                                         aForbiddenToRetry)
                                              != IDE_SUCCESS);
                                 }
                             }
@@ -3499,8 +3242,8 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
                             {
                                 break;
                             }
-                            /* ì´ì „ ë…¸ë“œ í•˜ë‚˜ë¥¼ ë‹¤ íƒìƒ‰í–ˆìŒì—ë„ ë™ì¼ í‚¤ ê°’ì´ ê³„ì† ë°œê²¬ëœë‹¤ë©´
-                             * ë‹¤ì‹œ ê·¸ ì• ë…¸ë“œì— ëŒ€í•´ì„œë„ íƒìƒ‰ì„ ìˆ˜í–‰í•œë‹¤.*/
+                            /* ÀÌÀü ³ëµå ÇÏ³ª¸¦ ´Ù Å½»öÇßÀ½¿¡µµ µ¿ÀÏ Å° °ªÀÌ °è¼Ó ¹ß°ßµÈ´Ù¸é
+                             * ´Ù½Ã ±× ¾Õ ³ëµå¿¡ ´ëÇØ¼­µµ Å½»öÀ» ¼öÇàÇÑ´Ù.*/
 
                             sTempLockState = 0;
                             unlockNode( sTempNode );
@@ -3539,18 +3282,18 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
     {
         if ( a_pLeafNode != s_pCurLeafNode )
         {
-            /* ì´ì›ƒ ë…¸ë“œë¥¼ ë´ì•¼í•œë‹¤ë©´ Tree latchê°€ ì¡í˜€ìˆì–´ì•¼ í•œë‹¤. */
+            /* ÀÌ¿ô ³ëµå¸¦ ºÁ¾ßÇÑ´Ù¸é Tree latch°¡ ÀâÇôÀÖ¾î¾ß ÇÑ´Ù. */
             IDE_ERROR_RAISE( ( aIsTreeLatched == ID_TRUE ), ERR_NOT_TREE_LATCH );
 
             lockNode( s_pCurLeafNode );
             sState = 1;
 
-            /* ì´ì›ƒ ë…¸ë“œì¸ ê²½ìš° ì²˜ìŒë¶€í„° ì‹œì‘ */
+            /* ÀÌ¿ô ³ëµåÀÎ °æ¿ì Ã³À½ºÎÅÍ ½ÃÀÛ */
             s_nSlotPos = -1;
         }
         else
         {
-            /* ì‚½ì…í•œ ë…¸ë“œëŠ” ì‚½ì…í•  ìœ„ì¹˜ë¶€í„° ì‹œì‘ */
+            /* »ğÀÔÇÑ ³ëµå´Â »ğÀÔÇÒ À§Ä¡ºÎÅÍ ½ÃÀÛ */
             s_nSlotPos = a_nSlotPos - 1;
         }
 
@@ -3570,17 +3313,18 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
 
             if ( sCompareResult != 0 )
             {
-                smnManager::logCommonHeader( aIndexHeader );
+                smnbBTree::logIndexHeader( aIndexHeader );
                 logIndexNode( aIndexHeader, (smnbNode*)s_pCurLeafNode );
                 IDE_ERROR_RAISE( 0, ERR_CORRUPTED_INDEX );
             }
 
             IDE_TEST( isRowUnique( a_pTrans,
                                    aIndexStat,
-                                   aStmtSCN,
+                                   aStmtViewSCN,
                                    s_pCurLeafNode->mRowPtrs[i],
                                    a_pTransID,
-                                   aExistUniqueRow )
+                                   aExistUniqueRow,
+                                   aForbiddenToRetry )
                       != IDE_SUCCESS );
 
             if ( *a_pTransID != SM_NULL_TID )
@@ -3588,22 +3332,22 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
                 *a_diffSlotPos = i;
                 *a_diffRow = s_pCurLeafNode->mRowPtrs[i];
 
-                /* BUG-45524 replication ì‚¬ìš©ì‹œ recieverìª½ì—ì„œëŠ” TxëŒ€ê¸°ë¥¼ í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì— 
-                 *           ì¼ì‹œì ìœ¼ë¡œ ë™ì¼í•œ í‚¤ê°€ ë‹¤ìˆ˜ ì¡´ì¬í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
-                 *           ì¤‘ë³µëœ í‚¤ëŠ” senderìª½ì˜ rollbackë¡œê·¸ì— ì˜í•´ ìì—°ì ìœ¼ë¡œ ì œê±° ë˜ê¸´í•˜ì§€ë§Œ
-                 *           ì œê±°ë  ì˜ˆì •ì¸ í‚¤ë¥¼ unique violation ì²´í¬ì‹œ ë¹„êµ ëŒ€ìƒìœ¼ë¡œ ì‚¼ì€ ìƒíƒœì—ì„œ
-                 *           local queryë‚˜ log ìœ ì‹¤ì´ ë°œìƒí•  ê²½ìš° ë¬¸ì œê°€ ë°œìƒí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
-                 *           ì´ë¥¼ ë§‰ê¸° ìœ„í•´ ë™ì¼í•œ í‚¤ê°€ ë‹¤ìˆ˜ ì¡´ì¬í•  ê²½ìš°ì— 
-                 *           ì´ë“¤ ëª¨ë‘ë¥¼ ëŒ€ìƒìœ¼ë¡œ ë¹„êµ ì—°ì‚°ì„ ìˆ˜í–‰í•´ì•¼ í•©ë‹ˆë‹¤. */
+                /* BUG-45524 replication »ç¿ë½Ã recieverÂÊ¿¡¼­´Â Tx´ë±â¸¦ ÇÏÁö ¾Ê±â ¶§¹®¿¡ 
+                 *           ÀÏ½ÃÀûÀ¸·Î µ¿ÀÏÇÑ Å°°¡ ´Ù¼ö Á¸ÀçÇÒ ¼ö ÀÖ½À´Ï´Ù.
+                 *           Áßº¹µÈ Å°´Â senderÂÊÀÇ rollback·Î±×¿¡ ÀÇÇØ ÀÚ¿¬ÀûÀ¸·Î Á¦°Å µÇ±äÇÏÁö¸¸
+                 *           Á¦°ÅµÉ ¿¹Á¤ÀÎ Å°¸¦ unique violation Ã¼Å©½Ã ºñ±³ ´ë»óÀ¸·Î »ïÀº »óÅÂ¿¡¼­
+                 *           local query³ª log À¯½ÇÀÌ ¹ß»ıÇÒ °æ¿ì ¹®Á¦°¡ ¹ß»ıÇÒ ¼ö ÀÖ½À´Ï´Ù.
+                 *           ÀÌ¸¦ ¸·±â À§ÇØ µ¿ÀÏÇÑ Å°°¡ ´Ù¼ö Á¸ÀçÇÒ °æ¿ì¿¡ 
+                 *           ÀÌµé ¸ğµÎ¸¦ ´ë»óÀ¸·Î ºñ±³ ¿¬»êÀ» ¼öÇàÇØ¾ß ÇÕ´Ï´Ù. */
                 if( sIsReplTx != ID_TRUE )
                 {    
-                    /* replicationì´ ì•„ë‹ˆë¼ë©´ íƒ€ slotì„ íƒìƒ‰í•  í•„ìš”ê°€ ì—†ë‹¤. */
+                    /* replicationÀÌ ¾Æ´Ï¶ó¸é Å¸ slotÀ» Å½»öÇÒ ÇÊ¿ä°¡ ¾ø´Ù. */
                     break;
                 }    
                 else 
                 {    
-                    /* ë™ì¼í•œ í‚¤ ê°’ì´ ìˆëŠ” rowê°€ ë” ìˆëŠ”ì§€ ë‹¤ìŒ slotì„ í™•ì¸í•œë‹¤.
-                     * ë™ì¼í•œ í‚¤ ê°’ì„ ê°€ì§„ rowì¤‘ commitëœ rowê°€ ìˆë‹¤ë©´ í•´ë‹¹ rowë¥¼ ìƒíƒœë¡œ unique checkë¥¼ í•´ì•¼ í•œë‹¤. */
+                    /* µ¿ÀÏÇÑ Å° °ªÀÌ ÀÖ´Â row°¡ ´õ ÀÖ´ÂÁö ´ÙÀ½ slotÀ» È®ÀÎÇÑ´Ù.
+                     * µ¿ÀÏÇÑ Å° °ªÀ» °¡Áø rowÁß commitµÈ row°¡ ÀÖ´Ù¸é ÇØ´ç row¸¦ »óÅÂ·Î unique check¸¦ ÇØ¾ß ÇÑ´Ù. */
                     j = i + 1;
 
                     while( j < sSlotCount )
@@ -3616,38 +3360,39 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
 
                         if( sCompareResult == 0 )
                         {   
-                            /* ë™ì¼í•œ í‚¤ ê°’ì„ ê°€ì§„ rowê°€ ìˆë‹¤ë©´ isRowUniqueì—ì„œ unique ì²´í¬ë¥¼ í•œë‹¤. */
+                            /* µ¿ÀÏÇÑ Å° °ªÀ» °¡Áø row°¡ ÀÖ´Ù¸é isRowUnique¿¡¼­ unique Ã¼Å©¸¦ ÇÑ´Ù. */
                             IDE_TEST(isRowUnique(a_pTrans,
                                                  aIndexStat,
-                                                 aStmtSCN,
+                                                 aStmtViewSCN,
                                                  s_pCurLeafNode->mRowPtrs[j],
                                                  a_pTransID,
-                                                 aExistUniqueRow ) 
+                                                 aExistUniqueRow,
+                                                 aForbiddenToRetry)
                                      != IDE_SUCCESS);
 
-                            /* unique checkë¥¼ í†µê³¼ í–ˆë‹¤ë©´ ë‹¤ìŒ slotì— ëŒ€í•´ì„œë„ ë°˜ë³µí•œë‹¤. */
+                            /* unique check¸¦ Åë°ú Çß´Ù¸é ´ÙÀ½ slot¿¡ ´ëÇØ¼­µµ ¹İº¹ÇÑ´Ù. */
                             j++;
                         }    
                         else 
                         {    
-                            /* ë™ì¼í•œ í‚¤ê°’ì„ ê°€ì§„ rowê°€ ë‹¤ìŒ slotì— ì—†ìŒ */
+                            /* µ¿ÀÏÇÑ Å°°ªÀ» °¡Áø row°¡ ´ÙÀ½ slot¿¡ ¾øÀ½ */
                             break;
                         }
                     }
 
                     if( ( j != sSlotCount ) || ( s_pCurLeafNode->nextSPtr == NULL) )
                     {
-                        /* ë…¸ë“œ ë‚´ì—ì„œ ë™ì¼í•˜ì§€ ì•Šì€ í‚¤ë¥¼ ì°¾ì•˜ê±°ë‚˜ ë‹¤ìŒ ë…¸ë“œê°€ ì—†ë‹¤ë©´ 
-                         * ë‹¤ìŒ ë…¸ë“œì˜ íƒìƒ‰ì„ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+                        /* ³ëµå ³»¿¡¼­ µ¿ÀÏÇÏÁö ¾ÊÀº Å°¸¦ Ã£¾Ò°Å³ª ´ÙÀ½ ³ëµå°¡ ¾ø´Ù¸é 
+                         * ´ÙÀ½ ³ëµåÀÇ Å½»öÀ» ¼öÇàÇÏÁö ¾Ê´Â´Ù. */
                         break;
                     }
                     else
                     {
-                        /* í‚¤ ê°’ì´ íƒìƒ‰ëœ ë…¸ë“œ ì „ì²´ë¥¼ íƒìƒ‰í•œ í›„ì—ë„ ë™ì¼ í‚¤ ê°’ì´ ê³„ì† ë°œê²¬ëœë‹¤ë©´
-                         * ë‹¤ìŒ ë…¸ë“œì— ëŒ€í•´ì„œë„ íƒìƒ‰ì„ ìˆ˜í–‰í•´ì•¼ í•œë‹¤. */
+                        /* Å° °ªÀÌ Å½»öµÈ ³ëµå ÀüÃ¼¸¦ Å½»öÇÑ ÈÄ¿¡µµ µ¿ÀÏ Å° °ªÀÌ °è¼Ó ¹ß°ßµÈ´Ù¸é
+                         * ´ÙÀ½ ³ëµå¿¡ ´ëÇØ¼­µµ Å½»öÀ» ¼öÇàÇØ¾ß ÇÑ´Ù. */
                     }
 
-                    /* ë…¸ë“œì— lockì„ ê±¸ì–´ì•¼ í•˜ë¯€ë¡œ tree latchë¥¼ ì¡ê³  ìˆì§€ ì•Šë‹¤ë©´ tree latchë¥¼ ì¡ê³  ì¬ìˆ˜í–‰í•œë‹¤. */
+                    /* ³ëµå¿¡ lockÀ» °É¾î¾ß ÇÏ¹Ç·Î tree latch¸¦ Àâ°í ÀÖÁö ¾Ê´Ù¸é tree latch¸¦ Àâ°í Àç¼öÇàÇÑ´Ù. */
                     if( aIsTreeLatched == ID_FALSE )
                     {
                         if( sState == 1 )
@@ -3679,7 +3424,7 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
 
                                 if( sCompareResult != 0)
                                 {
-                                    /* ë™ì¼í•˜ì§€ ì•Šì€ í‚¤ê°€ ë°œê²¬ë  ê²½ìš° ë” ì´ìƒ íƒìƒ‰í•  í•„ìš” ì—†ë‹¤. */
+                                    /* µ¿ÀÏÇÏÁö ¾ÊÀº Å°°¡ ¹ß°ßµÉ °æ¿ì ´õ ÀÌ»ó Å½»öÇÒ ÇÊ¿ä ¾ø´Ù. */
                                     sTempLockState = 0;
                                     unlockNode( sTempNode );
 
@@ -3689,13 +3434,14 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
                                 }
                                 else
                                 {
-                                    /* ë™ì¼í•œ í‚¤ ê°’ì´ ë°œê²¬ë  ê²½ìš° unique checkë¥¼ ìˆ˜í–‰í•œë‹¤. */
+                                    /* µ¿ÀÏÇÑ Å° °ªÀÌ ¹ß°ßµÉ °æ¿ì unique check¸¦ ¼öÇàÇÑ´Ù. */
                                     IDE_TEST(isRowUnique(a_pTrans,
                                                          aIndexStat,
-                                                         aStmtSCN,
+                                                         aStmtViewSCN,
                                                          sTempNode->mRowPtrs[j],
                                                          a_pTransID,
-                                                         aExistUniqueRow )
+                                                         aExistUniqueRow,
+                                                         aForbiddenToRetry)
                                              != IDE_SUCCESS);
                                 }
                             }
@@ -3704,8 +3450,8 @@ IDE_RC smnbBTree::checkUniqueness( smnIndexHeader        * aIndexHeader,
                             {
                                 break;
                             }
-                            /* ë‹¤ìŒ ë…¸ë“œ í•˜ë‚˜ë¥¼ ë‹¤ íƒìƒ‰í–ˆìŒì—ë„ ë™ì¼ í‚¤ ê°’ì´ ê³„ì† ë°œê²¬ëœë‹¤ë©´
-                             * ë‹¤ì‹œ ê·¸ ë‹¤ìŒ ë…¸ë“œì— ëŒ€í•´ì„œë„ íƒìƒ‰ì„ ìˆ˜í–‰í•œë‹¤.*/
+                            /* ´ÙÀ½ ³ëµå ÇÏ³ª¸¦ ´Ù Å½»öÇßÀ½¿¡µµ µ¿ÀÏ Å° °ªÀÌ °è¼Ó ¹ß°ßµÈ´Ù¸é
+                             * ´Ù½Ã ±× ´ÙÀ½ ³ëµå¿¡ ´ëÇØ¼­µµ Å½»öÀ» ¼öÇàÇÑ´Ù.*/
 
                             sTempLockState = 0;
                             unlockNode( sTempNode );
@@ -3836,18 +3582,18 @@ IDE_RC smnbBTree::prepareNodes( smnbHeader    * aIndexHeader,
     *aNewNodeList  = NULL;
     *aNewNodeCount = 0;
 
-    /* Leaf nodeê°€ full ë˜ì–´ split í•˜ëŠ” ê²ƒì´ê¸° ë•Œë¬¸ì— Leaf nodeë¥¼ ìœ„í•œ ìƒˆë¡œìš´
-     * ë…¸ë“œëŠ” ê¼­ í•„ìš”í•˜ê²Œ ëœë‹¤. ê·¸ë˜ì„œ í•„ìš”í•œ ë…¸ë“œ ê°¯ìˆ˜ëŠ” 1ë¶€í„° ì‹œì‘ */
+    /* Leaf node°¡ full µÇ¾î split ÇÏ´Â °ÍÀÌ±â ¶§¹®¿¡ Leaf node¸¦ À§ÇÑ »õ·Î¿î
+     * ³ëµå´Â ²À ÇÊ¿äÇÏ°Ô µÈ´Ù. ±×·¡¼­ ÇÊ¿äÇÑ ³ëµå °¹¼ö´Â 1ºÎÅÍ ½ÃÀÛ */
     sNewNodeCount = 1;
 
     for ( sCurDepth = aDepth; sCurDepth >= 0; sCurDepth-- )
     {
         sNode = (smnbNode*)sStack[sCurDepth].node;
 
-        if ( (sNode->flag & SMNB_NODE_TYPE_MASK) == SMNB_NODE_TYPE_INTERNAL )
+        if ( SMNB_IS_INTERNAL_NODE( sNode ) )
         {
-            /* slot countê°€ maxì— ë„ë‹¬í–ˆë‹¤ë©´ split ê³¼ì •ì—ì„œ ìƒˆë¡œìš´ nodeë¥¼
-             * í•„ìš”ë¡œí•˜ê²Œ ëœë‹¤. */
+            /* slot count°¡ max¿¡ µµ´ŞÇß´Ù¸é split °úÁ¤¿¡¼­ »õ·Î¿î node¸¦
+             * ÇÊ¿ä·ÎÇÏ°Ô µÈ´Ù. */
             if ( sStack[sCurDepth].slotCount == SMNB_INTERNAL_SLOT_MAX_COUNT( aIndexHeader ) )
             {
                 sNewNodeCount++;
@@ -3862,7 +3608,7 @@ IDE_RC smnbBTree::prepareNodes( smnbHeader    * aIndexHeader,
 
     IDE_ERROR_RAISE( sNewNodeCount >= 1, ERR_CORRUPTED_INDEX );
 
-    /* Root Nodeê¹Œì§€ split ë˜ì–´ì•¼ í•œë‹¤ë©´, ìƒˆë¡œìš´ Root Nodeë„ ìƒì„±ë˜ì–´ì•¼ í•œë‹¤. */
+    /* Root Node±îÁö split µÇ¾î¾ß ÇÑ´Ù¸é, »õ·Î¿î Root Nodeµµ »ı¼ºµÇ¾î¾ß ÇÑ´Ù. */
     if ( sCurDepth < 0 )
     {
         sNewNodeCount++;
@@ -3891,18 +3637,446 @@ IDE_RC smnbBTree::prepareNodes( smnbHeader    * aIndexHeader,
 
 }
 
-IDE_RC smnbBTree::insertRowUnique( idvSQL*           aStatistics,
-                                   void*             aTrans,
-                                   void *            aTable,
-                                   void*             aIndex,
+/*********************************************************************
+ * FUNCTION DESCRIPTION : smnbBTree::makeRootNode                    *
+ * ------------------------------------------------------------------*
+ * BUG-47303
+ *
+ * Root Node¸¦ »ı¼ºÇÑ´Ù.
+ *
+ * aIndex         - [IN] INDEX Á¤º¸
+ * aRow           - [IN] row pointer
+ * aIsUniqueIndex - [IN] UNIQUE INDEX ¿©ºÎ
+ *********************************************************************/
+IDE_RC smnbBTree::makeRootNode( smnIndexHeader * aIndex,
+                                SChar          * aRow,
+                                idBool           aIsUniqueIndex )
+{
+    smnbHeader * sIndexHeader = (smnbHeader *)(aIndex->mHeader);
+    smnbLNode  * sRootLNode   = NULL;
+
+    IDE_TEST( sIndexHeader->mNodePool.allocateSlots( 1,
+                                                     (smmSlot**)&sRootLNode,
+                                                     SMM_SLOT_LIST_MUTEX_NEEDLESS )
+              != IDE_SUCCESS );
+
+    /* BUG-18292 : V$MEM_BTREE_HEADER Á¤º¸ Ãß°¡ */
+    sIndexHeader->nodeCount++;
+
+    IDE_ERROR_RAISE( initLeafNode( sRootLNode,
+                                   sIndexHeader,
+                                   IDU_LATCH_UNLOCKED ) == IDE_SUCCESS,
+                     ERR_FAIL_TO_INITIALIZE_ROOT_NODE );
+
+    IDE_TEST( insertIntoLeafNode( sIndexHeader,
+                                  sRootLNode,
+                                  aRow,
+                                  0 ) != IDE_SUCCESS );
+
+    if ( needToUpdateStat( sIndexHeader->mIsMemTBS ) == ID_TRUE )
+    {
+        IDE_TEST( updateStat4Insert( aIndex,
+                                     sIndexHeader,
+                                     sRootLNode,
+                                     0,
+                                     aRow,
+                                     aIsUniqueIndex ) != IDE_SUCCESS );
+    }
+
+    IDL_MEM_BARRIER;
+
+    sIndexHeader->root = sRootLNode;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_FAIL_TO_INITIALIZE_ROOT_NODE )
+    {
+        IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
+        ideLog::log( IDE_ERR_0, "[SM] fail to initialize root node" );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/*********************************************************************
+ * FUNCTION DESCRIPTION : smnbBTree::processKeyRedistribution        *
+ * ------------------------------------------------------------------*
+ * BUG-47303
+ *
+ * Å° ÀçºĞ¹è¸¦ ¼öÇàÇÑ´Ù.
+ *
+ * aIndex         - [IN]     INDEX Á¤º¸
+ * aCurINode      - [IN]     Å° ÀçºĞ¹è¸¦ ¼öÇàÇÒ LEAF NODEÀÇ »óÀ§ INTERNAL NODE
+ * aCurLNode      - [IN]     Å° ÀçºĞ¹è¸¦ ¼öÇàÇÒ LEAF NODE
+ * aIsTreeLatched - [IN/OUT] TREE LATCH¸¦ Àâ¾Ò´ÂÁö ¿©ºÎ
+ * aIsNodeLatched - [IN/OUT] NODE LATCH¸¦ Àâ¾Ò´ÂÁö ¿©ºÎ
+ *********************************************************************/
+IDE_RC smnbBTree::processKeyRedistribution( smnIndexHeader * aIndex, 
+                                            smnbINode      * aCurINode,
+                                            smnbLNode      * aCurLNode,
+                                            idBool         * aIsTreeLatched,
+                                            idBool         * aIsNodeLatched )
+{
+    smnbHeader * sIndexHeader          = NULL;
+    smnbLNode  * sNxtLNode             = NULL;
+    idBool       sIsNxtNodeLatched     = ID_FALSE;
+    SInt         sKeyRedistributeCount = 0;
+    SChar      * sOldKeyRow            = NULL;
+
+    sIndexHeader = (smnbHeader*)(aIndex->mHeader);
+    sNxtLNode    = aCurLNode->nextSPtr;
+
+    lockNode( sNxtLNode );
+    sIsNxtNodeLatched = ID_TRUE;
+
+    IDU_FIT_POINT( "BUG-45283@smnbBTree::insertRow::lockNode" ); 
+
+    while(1) /* no loop */
+    {
+        if ( sNxtLNode->mSlotCount >= 
+             ( ( SMNB_LEAF_SLOT_MAX_COUNT( sIndexHeader ) *
+                 smuProperty::getMemIndexKeyRedistributionStandardRate() / 100 ) ) )
+        {
+            /* checkEnableKeyRedistribution ¼öÇà ÈÄ ÀÌ¿ô ³ëµå¿¡ lockÀ» Àâ´Â »çÀÌ¿¡ ÀÌ¿ô ³ëµå¿¡
+               »ğÀÔ¿¬»êÀÌ ¹ß»ıÇÏ¿© ±âÁØÀ» ÃÊ°úÇÒ °æ¿ì¿¡´Â Å° ÀçºĞ¹è¸¦ ¼öÇàÇÏÁö ¾Ê´Â´Ù. */
+            sIsNxtNodeLatched = ID_FALSE;
+            unlockNode( sNxtLNode );
+
+            *aIsNodeLatched = ID_FALSE;
+            unlockNode( aCurLNode );
+
+            *aIsTreeLatched = ID_FALSE;
+            unlockTree( sIndexHeader );
+
+            break;
+        }
+
+        /* Å° ÀçºĞ¹è·Î ÀÌµ¿ ½ÃÅ³ slotÀÇ ¼ö¸¦ ±¸ÇÑ´Ù. */
+        sKeyRedistributeCount = calcKeyRedistributionPosition( sIndexHeader,
+                                                               aCurLNode->mSlotCount,
+                                                               sNxtLNode->mSlotCount );
+
+        sOldKeyRow = aCurLNode->mRowPtrs[aCurLNode->mSlotCount - 1 ];
+
+        /* Å° ÀçºĞ¹è¸¦ ¼öÇàÇØ slotÀÇ ÀÏºÎ¸¦ ÀÌ¿ô ³ëµå·Î ÀÌµ¿ÇÑ´Ù. */
+        if ( keyRedistribute( sIndexHeader,
+                              aCurLNode, 
+                              sNxtLNode, 
+                              sKeyRedistributeCount ) != IDE_SUCCESS )
+        {
+            /* ÇØ´ç ³ëµå ÁøÀÔÀü ´Ù¸¥ Tx¿¡ ÀÇÇØ split/agingÀÌ ¹ß»ıÇÑ °æ¿ìÀÌ¹Ç·Î Àç¼öÇàÇÑ´Ù. */
+            sIsNxtNodeLatched = ID_FALSE;
+            unlockNode( sNxtLNode );
+
+            *aIsNodeLatched = ID_FALSE;
+            unlockNode( aCurLNode );
+
+            *aIsTreeLatched = ID_FALSE;
+            unlockTree( sIndexHeader );
+
+            break;
+        }
+
+        sIsNxtNodeLatched = ID_FALSE;
+        unlockNode( sNxtLNode );
+
+        IDE_ERROR_RAISE( *aIsNodeLatched == ID_TRUE, ERR_NOT_NODE_LATCH );
+
+        /* ºÎ¸ğ ³ëµå¸¦ °»½ÅÇÏ´Ù. */
+        IDE_TEST( keyRedistributionPropagate( sIndexHeader,
+                                              aCurINode,
+                                              aCurLNode,
+                                              sOldKeyRow) != IDE_SUCCESS );
+
+        /* »ğÀÔ ¿¬»êÀ» ¼öÇàÇÏ±â À§ÇØ latch¸¦ Ç®°í Àç½ÃÀÛÇÑ´Ù. */
+        *aIsNodeLatched = ID_FALSE;
+        unlockNode( aCurLNode );
+
+        *aIsTreeLatched = ID_FALSE;
+        unlockTree( sIndexHeader );
+
+        break;
+    }
+
+    if ( sIsNxtNodeLatched == ID_TRUE )
+    {
+        sIsNxtNodeLatched = ID_FALSE;
+        unlockNode( sNxtLNode );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NOT_NODE_LATCH )
+    {
+        IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
+        ideLog::log( IDE_ERR_0, "[SM] Node Latch is not latched." );
+    }
+    IDE_EXCEPTION_END;
+
+    if ( sIsNxtNodeLatched == ID_TRUE )
+    {
+        sIsNxtNodeLatched = ID_FALSE;
+        unlockNode( sNxtLNode );
+    }
+
+    return IDE_FAILURE;
+}
+
+
+/*********************************************************************
+ * FUNCTION DESCRIPTION : smnbBTree::processNodeSplit                *
+ * ------------------------------------------------------------------*
+ * BUG-47303
+ *
+ * NODE SPLIT À» ¼öÇàÇÑ´Ù.
+ *
+ * aIndex         - [IN] INDEX Á¤º¸
+ * aStack         - [IN] ÀÎµ¦½º Æ®¸® Å½»öÁ¤º¸¸¦ ÀúÀåÇÑ ½ºÅÃ
+ * aDepth         - [IN] Å½»öÇÑ ÀÎµ¦½º Æ®¸®ÀÇ ±íÀÌ (aStackÀÇ ±íÀÌ)
+ * aCurLNode      - [IN] SPLIT ÇÒ LEAF NODE
+ * aRow           - [IN] row pointer
+ * aSlotPos       - [IN] row pointer¸¦ ÀÔ·ÂÇÒ LEAF NODE³» À§Ä¡
+ * aIsUniqueIndex - [IN] UNIQUE INDEX ¿©ºÎ
+ *********************************************************************/
+IDE_RC smnbBTree::processNodeSplit( smnIndexHeader * aIndex,
+                                    smnbStack      * aStack,
+                                    SInt             aDepth,
+                                    smnbLNode      * aCurLNode,
+                                    SChar          * aRow,
+                                    SInt             aSlotPos,
+                                    idBool           aIsUniqueIndex )
+{
+    smnbHeader * sIndexHeader  = (smnbHeader *)(aIndex->mHeader);
+    SInt         sSlotPos      = -1;
+    void*        sLeftNode     = NULL;
+    smnbNode*    sNewNodeList  = NULL;
+    UInt         sNewNodeCount = 0;
+    void       * sNewNode      = NULL;
+    smnbINode  * sCurINode     = NULL;
+    smnbINode  * sRootINode    = NULL;
+    smnbLNode  * sTargetNode   = NULL;
+    SInt         sTargetSeq    = -1;
+    void       * sSepKeyRow1   = NULL;
+    void       * sSepKey1      = NULL;
+    idBool       sIsLeafScanLatched     = ID_FALSE;
+    idBool       sIsInternalScanLatched = ID_FALSE;
+
+    /* split½Ã ÇÊ¿äÇÑ ³ëµå °¹¼ö¸¸Å­ ¹Ì¸® ÇÒ´çÇØµĞ´Ù. */
+    IDE_TEST( prepareNodes( sIndexHeader,
+                            aStack,
+                            aDepth,
+                            &sNewNodeList,
+                            &sNewNodeCount )
+              != IDE_SUCCESS );
+
+    IDE_ERROR_RAISE( sNewNodeList != NULL, ERR_CORRUPTED_INDEX_NEWNODE );
+    IDE_ERROR_RAISE( sNewNodeCount > 0, ERR_CORRUPTED_INDEX_NEWNODE );
+
+
+    /* PROJ-1617 */
+    sIndexHeader->mStmtStat.mNodeSplitCount++;
+
+    getPreparedNode( &sNewNodeList,
+                     &sNewNodeCount,
+                     &sNewNode );
+
+    IDE_ERROR_RAISE( sNewNode != NULL, ERR_CORRUPTED_INDEX_NEWNODE );
+
+    SMNB_SCAN_LATCH(aCurLNode);
+    sIsLeafScanLatched = ID_TRUE;
+
+    IDE_TEST( splitLeafNode( sIndexHeader,
+                             aSlotPos,
+                             aCurLNode,
+                             (smnbLNode*)sNewNode,
+                             &sTargetNode,
+                             &sTargetSeq )
+              != IDE_SUCCESS );
+
+    IDE_TEST( insertIntoLeafNode( sIndexHeader,
+                                  sTargetNode,
+                                  aRow,
+                                  sTargetSeq ) != IDE_SUCCESS );
+
+    getLeafSlot( (SChar **)&sSepKeyRow1,
+                 &sSepKey1,
+                 aCurLNode,
+                 (SShort)( aCurLNode->mSlotCount - 1 ) );
+
+    sIsLeafScanLatched = ID_FALSE;
+    SMNB_SCAN_UNLATCH(aCurLNode);
+
+    if ( needToUpdateStat( sIndexHeader->mIsMemTBS ) == ID_TRUE )
+    {
+        IDE_TEST( updateStat4Insert( aIndex,
+                                     sIndexHeader,
+                                     sTargetNode,
+                                     sTargetSeq,
+                                     aRow,
+                                     aIsUniqueIndex ) != IDE_SUCCESS );
+    }
+
+    sLeftNode = aCurLNode;
+
+    aDepth--;
+
+    while (aDepth >= 0)
+    {
+        sCurINode = (smnbINode*)(aStack[aDepth].node);
+
+        SMNB_SCAN_LATCH(sCurINode);
+        sIsInternalScanLatched = ID_TRUE;
+
+        /* PROJ-2433
+         * »õ·Î¿î new splitÀ¸·Î child pointer º¯°æÇÔ */
+        sCurINode->mChildPtrs[aStack[aDepth].lstReadPos] = (smnbNode *)sNewNode;
+
+        IDE_TEST( findSlotInNode( sIndexHeader,
+                                  (smnbNode *)sCurINode,
+                                  sSepKeyRow1,
+                                  &sSlotPos ) != IDE_SUCCESS );
+        IDE_ERROR_RAISE(sSlotPos == aStack[aDepth].lstReadPos, ERR_CORRUPTED_INDEX_SLOTCOUNT);
+
+        if ( sCurINode->mSlotCount < SMNB_INTERNAL_SLOT_MAX_COUNT( sIndexHeader ) )
+        {
+            IDE_TEST( insertIntoInternalNode( sIndexHeader,
+                                              sCurINode,
+                                              sSepKeyRow1,
+                                              sSepKey1,
+                                              sLeftNode ) != IDE_SUCCESS );
+
+            sIsInternalScanLatched = ID_FALSE;
+            SMNB_SCAN_UNLATCH(sCurINode);
+
+            break;
+        }
+
+        IDE_ERROR_RAISE( sNewNodeCount > 0, ERR_CORRUPTED_INDEX_NEWNODE );
+
+        getPreparedNode( &sNewNodeList,
+                         &sNewNodeCount,
+                         &sNewNode );
+
+        IDE_ERROR_RAISE( sNewNode != NULL, ERR_CORRUPTED_INDEX_NEWNODE );
+
+        IDE_TEST( splitInternalNode( sIndexHeader,
+                                     sSepKeyRow1,
+                                     sSepKey1,
+                                     sLeftNode,
+                                     sSlotPos,
+                                     sCurINode,
+                                     (smnbINode*)sNewNode,
+                                     &sSepKeyRow1, 
+                                     &sSepKey1 ) != IDE_SUCCESS );
+
+        sIsInternalScanLatched = ID_FALSE;
+        SMNB_SCAN_UNLATCH(sCurINode);
+
+        sLeftNode = sCurINode;
+        aDepth--;
+    }
+
+    if ( aDepth < 0 )
+    {
+        IDE_ERROR_RAISE( sNewNodeCount > 0, ERR_CORRUPTED_INDEX_NEWNODE );
+
+        getPreparedNode( &sNewNodeList,
+                         &sNewNodeCount,
+                         (void**)&sRootINode );
+
+        IDE_ERROR_RAISE( sRootINode != NULL, ERR_CORRUPTED_INDEX_NEWNODE );
+
+        /* BUG-18292 : V$MEM_BTREE_HEADER Á¤º¸ Ãß°¡ */
+        sIndexHeader->nodeCount++;
+
+        initInternalNode( sRootINode,
+                          sIndexHeader,
+                          IDU_LATCH_UNLOCKED );
+
+        sRootINode->mSlotCount = 2;
+
+        setInternalSlot( sRootINode,
+                         0,
+                         (smnbNode *)sLeftNode,
+                         (SChar *)sSepKeyRow1,
+                         sSepKey1 );
+
+        setInternalSlot( sRootINode,
+                         1,
+                         (smnbNode *)sNewNode,
+                         (SChar *)NULL,
+                         (void *)NULL );
+
+        IDL_MEM_BARRIER;
+        sIndexHeader->root = sRootINode;
+    }
+
+    if ( sNewNodeCount > 0 )
+    {
+        IDE_DASSERT( 0 );
+        IDE_TEST( sIndexHeader->mNodePool.releaseSlots( sNewNodeCount,
+                                                        (smmSlot*)sNewNodeList,
+                                                        SMM_SLOT_LIST_MUTEX_NEEDLESS )
+                  != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_CORRUPTED_INDEX_SLOTCOUNT )
+    {
+        IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
+
+        ideLog::log( IDE_SM_0, "Index Corrupted Detected : Wrong Index Node SlotCount" );
+    }
+    IDE_EXCEPTION( ERR_CORRUPTED_INDEX_NEWNODE )
+    {
+        IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
+
+        ideLog::log( IDE_SM_0, "Index Corrupted Detected : Cannot Alloc New Node" );
+    }
+    IDE_EXCEPTION_END;
+
+    if ( sIsLeafScanLatched == ID_TRUE )
+    {
+        sIsLeafScanLatched = ID_FALSE;
+        SMNB_SCAN_UNLATCH( aCurLNode );
+    }
+
+    if ( sIsInternalScanLatched == ID_TRUE )
+    {
+        sIsInternalScanLatched = ID_FALSE;
+        SMNB_SCAN_UNLATCH( sCurINode );
+    }
+
+    if ( sNewNodeCount > 0 )
+    {
+        if ( sIndexHeader->mNodePool.releaseSlots( sNewNodeCount,
+                                                   (smmSlot*)sNewNodeList,
+                                                   SMM_SLOT_LIST_MUTEX_NEEDLESS )
+             != IDE_SUCCESS )
+        {
+            IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
+            ideLog::log( IDE_ERR_0, "[SM] fail to release index slots" );
+        }
+    }
+
+    return IDE_FAILURE;
+}
+
+IDE_RC smnbBTree::insertRowUnique( idvSQL          * aStatistics,
+                                   void            * aTrans,
+                                   void            * aTable,
+                                   void            * aIndex,
                                    smSCN             aInfiniteSCN,
-                                   SChar*            aRow,
-                                   SChar*            aNull,
+                                   SChar           * aRow,
+                                   SChar           * aNull,
                                    idBool            aUniqueCheck,
-                                   smSCN             aStmtSCN,
-                                   void*             aRowSID,
-                                   SChar**           aExistUniqueRow,
-                                   ULong             aInsertWaitTime )
+                                   smSCN             aStmtViewSCN,
+                                   void            * aRowSID,
+                                   SChar          ** aExistUniqueRow,
+                                   ULong             aInsertWaitTime,
+                                   idBool            aForbiddenToRetry )
 {
     smnbHeader* sHeader;
 
@@ -3926,10 +4100,11 @@ IDE_RC smnbBTree::insertRowUnique( idvSQL*           aStatistics,
                          aRow, 
                          aNull, 
                          aUniqueCheck, 
-                         aStmtSCN, 
+                         aStmtViewSCN, 
                          aRowSID,
                          aExistUniqueRow, 
-                         aInsertWaitTime )
+                         aInsertWaitTime,
+                         aForbiddenToRetry )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -3947,42 +4122,30 @@ IDE_RC smnbBTree::insertRow( idvSQL*           aStatistics,
                              SChar*            a_pRow,
                              SChar*            a_pNull,
                              idBool            aUniqueCheck,
-                             smSCN             aStmtSCN,
+                             smSCN             aStmtViewSCN,
                              void*             /*aRowSID*/,
                              SChar**           aExistUniqueRow,
-                             ULong             aInsertWaitTime )
+                             ULong             aInsertWaitTime, 
+                             idBool            aForbiddenToRetry )
+
 {
-    smnbHeader*  s_pIndexHeader;
-    SInt         s_nDepth;
-    SInt         s_nSlotPos;
-    smnbStack    s_stack[SMNB_STACK_DEPTH];
-    void*        s_pLeftNode;
-    void       * s_pNewNode     = NULL;
-    smnbNode*    s_pNewNodeList = NULL;
-    UInt         s_nNewNodeCount = 0;
-    smnbLNode  * s_pCurLNode    = NULL;
-    smnbINode  * s_pCurINode    = NULL;
-    smnbINode  * s_pRootINode   = NULL;
-    smnbLNode  * sTargetNode    = NULL;
-    SInt         sTargetSeq;
-    smTID        s_transID = SM_NULL_TID;
-    void       * s_pSepKeyRow1  = NULL;
-    void       * sSepKey1       = NULL;
-    idBool       sIsUniqueIndex;
-    idBool       sIsTreeLatched = ID_FALSE;
-    idBool       sIsNodeLatched = ID_FALSE;
-    idBool       sIsRetraverse = ID_FALSE;
-    idBool       sNeedTreeLatch = ID_FALSE;
-    idBool       sIsNxtNodeLatched = ID_FALSE;
-    idBool       sIsLeafScanLatched = ID_FALSE;
-    idBool       sIsInternalScanLatched = ID_FALSE;
-    smnIndexHeader * sIndex = ((smnIndexHeader*)a_pIndex);
-    SChar          * s_diffRow = NULL;
-    SInt             s_diffSlotPos = 0;
-    smpSlotHeader  * s_diffRowSlot = NULL;
-    SInt             s_pKeyRedistributeCount = 0;
-    smnbLNode      * s_pNxtLNode = NULL;
-    SChar          * s_pOldKeyRow = NULL;
+    smnbHeader     * s_pIndexHeader;
+    SInt             s_nDepth;
+    SInt             s_nSlotPos;
+    smnbStack        s_stack[SMNB_STACK_DEPTH];
+    smnbLNode      * s_pCurLNode        = NULL;
+    smnbINode      * s_pCurINode        = NULL;
+    smTID            s_transID          = SM_NULL_TID;
+    idBool           sIsUniqueIndex;
+    idBool           sIsTreeLatched     = ID_FALSE;
+    idBool           sIsNodeLatched     = ID_FALSE;
+    idBool           sIsRetraverse      = ID_FALSE;
+    idBool           sNeedTreeLatch     = ID_FALSE;
+    idBool           sIsLeafScanLatched = ID_FALSE;
+    smnIndexHeader * sIndex             = ((smnIndexHeader*)a_pIndex);
+    SChar          * s_diffRow          = NULL;
+    SInt             s_diffSlotPos      = 0;
+    smpSlotHeader  * s_diffRowSlot      = NULL;
 
     s_pIndexHeader = (smnbHeader*)sIndex->mHeader;
     sIsUniqueIndex = (((smnIndexHeader*)a_pIndex)->mFlag & SMI_INDEX_UNIQUE_MASK)
@@ -3990,9 +4153,9 @@ IDE_RC smnbBTree::insertRow( idvSQL*           aStatistics,
 
 restart:
     /* BUG-32742 [sm] Create DB fail in Altibase server
-     *           Solaris x86ì—ì„œ DB ìƒì„±ì‹œ ì„œë²„ hang ê±¸ë¦¼.
-     *           ì›ì¸ì€ ì»´íŒŒì¼ëŸ¬ ìµœì í™” ë¬¸ì œë¡œ ë³´ì´ê³ , ì´ë¥¼ íšŒí”¼í•˜ê¸° ìœ„í•´
-     *           ì•„ë˜ì™€ ê°™ì´ ìˆ˜ì •í•¨ */
+     *           Solaris x86¿¡¼­ DB »ı¼º½Ã ¼­¹ö hang °É¸².
+     *           ¿øÀÎÀº ÄÄÆÄÀÏ·¯ ÃÖÀûÈ­ ¹®Á¦·Î º¸ÀÌ°í, ÀÌ¸¦ È¸ÇÇÇÏ±â À§ÇØ
+     *           ¾Æ·¡¿Í °°ÀÌ ¼öÁ¤ÇÔ */
     if ( sNeedTreeLatch == ID_TRUE )
     {
         lockTree( s_pIndexHeader );
@@ -4004,13 +4167,15 @@ restart:
 
     //check version and retraverse.
     IDE_TEST( findPosition( s_pIndexHeader,
+                            NULL, /* smiCallBack */
                             a_pRow,
                             &s_nDepth,
-                            s_stack ) != IDE_SUCCESS );
+                            s_stack,
+                            &s_pCurLNode ) != IDE_SUCCESS );
 
     if ( s_nDepth < 0 )
     {
-        /* root nodeê°€ ì—†ëŠ” ê²½ìš°. Tree latchì¡ê³ , ë£¨íŠ¸ ë…¸ë“œ ìƒì„±í•œë‹¤. */
+        /* root node°¡ ¾ø´Â °æ¿ì. Tree latchÀâ°í, ·çÆ® ³ëµå »ı¼ºÇÑ´Ù. */
         if ( sIsTreeLatched == ID_FALSE )
         {
             lockTree( s_pIndexHeader );
@@ -4020,53 +4185,22 @@ restart:
         if ( s_pIndexHeader->root == NULL )
         {
             // Tree is empty...
-            IDE_TEST( s_pIndexHeader->mNodePool.allocateSlots(
-                                                1,
-                                                (smmSlot**)&s_pCurLNode,
-                                                SMM_SLOT_LIST_MUTEX_NEEDLESS )
+            IDE_TEST( makeRootNode( sIndex,
+                                    a_pRow,
+                                    sIsUniqueIndex )
                       != IDE_SUCCESS );
-
-            // BUG-18292 : V$MEM_BTREE_HEADER ì •ë³´ ì¶”ê°€
-            s_pIndexHeader->nodeCount++;
-
-            IDE_ERROR_RAISE( initLeafNode( s_pCurLNode,
-                                           s_pIndexHeader,
-                                           IDU_LATCH_UNLOCKED ) == IDE_SUCCESS,
-                             ERR_FAIL_TO_INITIALIZE_LEAF_NODE );
-
-            IDE_TEST( insertIntoLeafNode( s_pIndexHeader,
-                                          s_pCurLNode,
-                                          a_pRow,
-                                          0 ) != IDE_SUCCESS );
-
-            if ( needToUpdateStat( s_pIndexHeader->mIsMemTBS ) == ID_TRUE )
-            {
-                IDE_TEST( updateStat4Insert( sIndex,
-                                             s_pIndexHeader,
-                                             s_pCurLNode,
-                                             0,
-                                             a_pRow,
-                                             sIsUniqueIndex ) != IDE_SUCCESS );
-            }
-            else
-            {
-                /* nothing to do ... */
-            }
-
-            IDL_MEM_BARRIER;
-
-            s_pIndexHeader->root = s_pCurLNode;
         }
         else
         {
+            sIsTreeLatched = ID_FALSE;
+            unlockTree( s_pIndexHeader );
+
             goto restart;
         }
     }
     else
     {
-        s_pCurLNode = (smnbLNode*)(s_stack[s_nDepth].node);
-
-        IDE_ERROR_RAISE( ( s_pCurLNode->flag & SMNB_NODE_TYPE_MASK ) == SMNB_NODE_TYPE_LEAF, 
+        IDE_ERROR_RAISE( SMNB_IS_LEAF_NODE( s_pCurLNode ), 
                          ERR_CORRUPTED_INDEX_FLAG );
 
         IDU_FIT_POINT( "smnbBTree::insertRow::beforeLock" );
@@ -4076,8 +4210,8 @@ restart:
 
         IDU_FIT_POINT( "smnbBTree::insertRow::afterLock" );
 
-        /* ë¹ˆ ë…¸ë“œì— ë“¤ì–´ì™”ë‹¤.
-         * lock ì¡ê¸° ì „ì— ì´ë¯¸ ëª¨ë‘ freeSlotë˜ì—ˆì„ ìˆ˜ ìˆë‹¤. */
+        /* ºó ³ëµå¿¡ µé¾î¿Ô´Ù.
+         * lock Àâ±â Àü¿¡ ÀÌ¹Ì ¸ğµÎ freeSlotµÇ¾úÀ» ¼ö ÀÖ´Ù. */
         if ( ( s_pCurLNode->mSlotCount == 0 ) || 
              ( ( s_pCurLNode->flag & SMNB_NODE_VALID_MASK ) == SMNB_NODE_INVALID ) )
         {
@@ -4093,8 +4227,8 @@ restart:
             /* nothing to do */
         }
 
-        IDE_TEST( findSlotInLeaf( s_pIndexHeader,
-                                  s_pCurLNode,
+        IDE_TEST( findSlotInNode( s_pIndexHeader,
+                                  (smnbNode *)s_pCurLNode,
                                   a_pRow,
                                   &s_nSlotPos ) != IDE_SUCCESS );
 
@@ -4111,11 +4245,11 @@ restart:
         }
         else
         {
-            /* ì‚½ì…í•  leaf nodeë¥¼ ì°¾ê³  leaf nodeì—ì„œ ì‚½ì… ìœ„ì¹˜ë¥¼ ì°¾ê¸° ì „ì—
-             * splitì´ ë°œìƒí•˜ê²Œ ë˜ë©´, next nodeì— ì‚½ì…í•´ì•¼ í•˜ì§€ë§Œ
-             * ì œì¼ ë§ˆì§€ë§‰ slotì— ì‚½ì…ë  ìˆ˜ ìˆë‹¤.
-             * í˜„ ìƒíƒœë¡œëŠ” next node ì–´ë””ì— ì‚½ì…í•´ì•¼ í•˜ëŠ”ì§€ ì•Œ ìˆ˜ ì—†ìœ¼ë¯€ë¡œ
-             * ë‹¤ì‹œ ì‹œë„ í•œë‹¤. */
+            /* »ğÀÔÇÒ leaf node¸¦ Ã£°í leaf node¿¡¼­ »ğÀÔ À§Ä¡¸¦ Ã£±â Àü¿¡
+             * splitÀÌ ¹ß»ıÇÏ°Ô µÇ¸é, next node¿¡ »ğÀÔÇØ¾ß ÇÏÁö¸¸
+             * Á¦ÀÏ ¸¶Áö¸· slot¿¡ »ğÀÔµÉ ¼ö ÀÖ´Ù.
+             * Çö »óÅÂ·Î´Â next node ¾îµğ¿¡ »ğÀÔÇØ¾ß ÇÏ´ÂÁö ¾Ë ¼ö ¾øÀ¸¹Ç·Î
+             * ´Ù½Ã ½Ãµµ ÇÑ´Ù. */
             if ( s_pCurLNode->nextSPtr != NULL )
             {
                 IDE_ERROR_RAISE( sIsTreeLatched == ID_FALSE, ERR_NOT_TREE_UNLATCH );
@@ -4137,13 +4271,14 @@ restart:
                                        s_pCurLNode,
                                        s_nSlotPos,
                                        a_pRow,
-                                       aStmtSCN,
+                                       aStmtViewSCN,
                                        sIsTreeLatched,
                                        &s_transID,
                                        &sIsRetraverse,
                                        aExistUniqueRow,
                                        &s_diffRow,
-                                       &s_diffSlotPos )
+                                       &s_diffSlotPos,
+                                       aForbiddenToRetry )
                       != IDE_SUCCESS );
 
             if ( sIsRetraverse == ID_TRUE )
@@ -4159,10 +4294,10 @@ restart:
             }
 
             // PROJ-1553 Replication self-deadlock
-            // s_transIDê°€ 0ì´ ì•„ë‹ˆë©´ waití•´ì•¼ í•˜ì§€ë§Œ
-            // í˜„ì¬ transactionê³¼ sTransIDì˜ transactionì´
-            // ëª¨ë‘ replication txì´ê³ , ê°™ì€ IDì´ë©´
-            // ëŒ€ê¸°í•˜ì§€ ì•Šê³  ê·¸ëƒ¥ passí•œë‹¤.
+            // s_transID°¡ 0ÀÌ ¾Æ´Ï¸é waitÇØ¾ß ÇÏÁö¸¸
+            // ÇöÀç transaction°ú sTransIDÀÇ transactionÀÌ
+            // ¸ğµÎ replication txÀÌ°í, °°Àº IDÀÌ¸é
+            // ´ë±âÇÏÁö ¾Ê°í ±×³É passÇÑ´Ù.
             if ( s_transID != SM_NULL_TID )
             {
                 /* TASK-6548 duplicated unique key */
@@ -4220,7 +4355,7 @@ restart:
         }
         else
         {
-            /* split/key redistributionì´ í•„ìš”.. Tree latchë¥¼ ì•ˆì¡ì•˜ìœ¼ë©´ ì¡ê³  ë‹¤ì‹œ ì‹œë„. */
+            /* split/key redistributionÀÌ ÇÊ¿ä.. Tree latch¸¦ ¾ÈÀâ¾ÒÀ¸¸é Àâ°í ´Ù½Ã ½Ãµµ. */
             if ( sIsTreeLatched == ID_FALSE )
             {
                 sNeedTreeLatch = ID_TRUE;
@@ -4232,19 +4367,19 @@ restart:
             }
 
             /* PROJ-2613 Key Redistibution in MRDB Index */
-            /* checkEnableKeyRedistributionì˜ ë§ˆì§€ë§‰ ì¸ìë¡œ s_pCurINodeë¥¼ ë„£ì„ ê²½ìš°
-               compilerì˜ optimizingì— ì˜í•´ code reorderingì´ ë°œìƒí•˜ì—¬
-               s_pCurINodeê°€ ê°’ì„ ë°›ê¸°ì „ checkEnableKeyRedistributionì„ í˜¸ì¶œí•˜ì—¬ ì£½ëŠ” ê²½ìš°ê°€ ë°œìƒí•œë‹¤.
-               ì´ë¥¼ ë§‰ê¸° ìœ„í•´ checkEnableKeyRedistributionì—ëŠ” ì§ì ‘ stackì—ì„œ ë½‘ì€ ê°’ì„ ë„˜ê¸´ë‹¤. */
+            /* checkEnableKeyRedistributionÀÇ ¸¶Áö¸· ÀÎÀÚ·Î s_pCurINode¸¦ ³ÖÀ» °æ¿ì
+               compilerÀÇ optimizing¿¡ ÀÇÇØ code reorderingÀÌ ¹ß»ıÇÏ¿©
+               s_pCurINode°¡ °ªÀ» ¹Ş±âÀü checkEnableKeyRedistributionÀ» È£ÃâÇÏ¿© Á×´Â °æ¿ì°¡ ¹ß»ıÇÑ´Ù.
+               ÀÌ¸¦ ¸·±â À§ÇØ checkEnableKeyRedistribution¿¡´Â Á÷Á¢ stack¿¡¼­ »ÌÀº °ªÀ» ³Ñ±ä´Ù. */
 
-            /* BUG-42899 split ëŒ€ìƒ ë…¸ë“œê°€ ìµœìƒìœ„ ë…¸ë“œì¼ ê²½ìš° stackì—ì„œ ë¶€ëª¨ë…¸ë“œë¥¼ ê°€ì ¸ì˜¬ ìˆ˜ ì—†ë‹¤. */
+            /* BUG-42899 split ´ë»ó ³ëµå°¡ ÃÖ»óÀ§ ³ëµåÀÏ °æ¿ì stack¿¡¼­ ºÎ¸ğ³ëµå¸¦ °¡Á®¿Ã ¼ö ¾ø´Ù. */
             if ( s_nDepth > 0 )
             {
                 s_pCurINode = (smnbINode*)(s_stack[s_nDepth - 1].node);
             }
             else
             {
-                /* í•´ë‹¹ ë…¸ë“œê°€ ìµœìƒìœ„ ë…¸ë“œì¼ ê²½ìš° í‚¤ ì¬ë¶„ë°°ë¥¼ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤. */
+                /* ÇØ´ç ³ëµå°¡ ÃÖ»óÀ§ ³ëµåÀÏ °æ¿ì Å° ÀçºĞ¹è¸¦ ¼öÇàÇÒ ¼ö ¾ø´Ù. */
                 s_pCurINode = NULL;
             }
 
@@ -4254,257 +4389,27 @@ restart:
                                                  (smnbINode*)(s_stack[s_nDepth - 1].node) ) 
                    == ID_TRUE ) )
             {
-                /* í‚¤ ì¬ë¶„ë°°ë¥¼ ìˆ˜í–‰í•œë‹¤. */
-                s_pNxtLNode = s_pCurLNode->nextSPtr;
-
-                lockNode( s_pNxtLNode );
-                sIsNxtNodeLatched = ID_TRUE;
-                IDU_FIT_POINT( "BUG-45283@smnbBTree::insertRow::lockNode" ); 
-
-                if ( s_pNxtLNode->mSlotCount >= 
-                     ( ( SMNB_LEAF_SLOT_MAX_COUNT( s_pIndexHeader ) *
-                         smuProperty::getMemIndexKeyRedistributionStandardRate() / 100 ) ) )
-                {
-                    /* checkEnableKeyRedistribution ìˆ˜í–‰ í›„ ì´ì›ƒ ë…¸ë“œì— lockì„ ì¡ëŠ” ì‚¬ì´ì— ì´ì›ƒ ë…¸ë“œì—
-                       ì‚½ì…ì—°ì‚°ì´ ë°œìƒí•˜ì—¬ ê¸°ì¤€ì„ ì´ˆê³¼í•  ê²½ìš°ì—ëŠ” í‚¤ ì¬ë¶„ë°°ë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤. */
-                    sNeedTreeLatch = ID_FALSE;
-                    sIsTreeLatched = ID_FALSE;
-                    unlockTree( s_pIndexHeader );
-
-                    sIsNodeLatched = ID_FALSE;
-                    unlockNode( s_pNxtLNode );
-
-                    sIsNxtNodeLatched = ID_FALSE;
-                    unlockNode( s_pCurLNode );
-
-                    goto restart;
-                }
-                else
-                {
-                    /* do nothing... */
-                }
-
-                /* í‚¤ ì¬ë¶„ë°°ë¡œ ì´ë™ ì‹œí‚¬ slotì˜ ìˆ˜ë¥¼ êµ¬í•œë‹¤. */
-                s_pKeyRedistributeCount = calcKeyRedistributionPosition( s_pIndexHeader,
-                                                                         s_pCurLNode->mSlotCount,
-                                                                         s_pNxtLNode->mSlotCount );
-
-                s_pOldKeyRow = s_pCurLNode->mRowPtrs[s_pCurLNode->mSlotCount - 1 ];
-
-                /* í‚¤ ì¬ë¶„ë°°ë¥¼ ìˆ˜í–‰í•´ slotì˜ ì¼ë¶€ë¥¼ ì´ì›ƒ ë…¸ë“œë¡œ ì´ë™í•œë‹¤. */
-                if ( keyRedistribute( s_pIndexHeader,
-                                      s_pCurLNode, 
-                                      s_pNxtLNode, 
-                                      s_pKeyRedistributeCount ) != IDE_SUCCESS )
-                {
-                    /* í•´ë‹¹ ë…¸ë“œ ì§„ì…ì „ ë‹¤ë¥¸ Txì— ì˜í•´ split/agingì´ ë°œìƒí•œ ê²½ìš°ì´ë¯€ë¡œ ì¬ìˆ˜í–‰í•œë‹¤. */
-                    sNeedTreeLatch = ID_FALSE;
-                    sIsTreeLatched = ID_FALSE;
-                    unlockTree( s_pIndexHeader );
-
-                    sIsNodeLatched = ID_FALSE;
-                    unlockNode( s_pNxtLNode );
-
-                    sIsNxtNodeLatched = ID_FALSE;
-                    unlockNode( s_pCurLNode );
-
-                    goto restart; 
-                }
-                else
-                {
-                    /* do nothing... */
-                }
-
-                sIsNxtNodeLatched = ID_FALSE;
-                unlockNode( s_pNxtLNode );
-
-                IDE_ERROR_RAISE( sIsNodeLatched == ID_TRUE, ERR_NOT_NODE_LATCH );
-
-                /* ë¶€ëª¨ ë…¸ë“œë¥¼ ê°±ì‹ í•˜ë‹¤. */
-                IDE_TEST( keyRedistributionPropagate( s_pIndexHeader,
-                                                     s_pCurINode,
-                                                     s_pCurLNode,
-                                                     s_pOldKeyRow) != IDE_SUCCESS );
-
-                /* ì‚½ì… ì—°ì‚°ì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•´ latchë¥¼ í’€ê³  ì¬ì‹œì‘í•œë‹¤. */
-                sNeedTreeLatch = ID_FALSE;
-                sIsTreeLatched = ID_FALSE;
-                unlockTree( s_pIndexHeader );
-
-                sIsNodeLatched = ID_FALSE;
-                unlockNode( s_pCurLNode );
-
+                /* Å° ÀçºĞ¹è¸¦ ¼öÇàÇÑ´Ù. */
+                IDE_TEST( processKeyRedistribution( sIndex, 
+                                                    s_pCurINode,
+                                                    s_pCurLNode,
+                                                    &sIsTreeLatched,
+                                                    &sIsNodeLatched )
+                          != IDE_SUCCESS );
+                
                 goto restart;
             }
             else
-            {   
-                /* splitì„ ìˆ˜í–‰í•œë‹¤. */
-
-                /* splitì‹œ í•„ìš”í•œ ë…¸ë“œ ê°¯ìˆ˜ë§Œí¼ ë¯¸ë¦¬ í• ë‹¹í•´ë‘”ë‹¤. */
-                IDE_TEST( prepareNodes( s_pIndexHeader,
-                                        s_stack,
-                                        s_nDepth,
-                                        &s_pNewNodeList,
-                                        &s_nNewNodeCount )
+            {
+                /* splitÀ» ¼öÇàÇÑ´Ù. */
+                IDE_TEST( processNodeSplit( sIndex,
+                                            s_stack,
+                                            s_nDepth,
+                                            s_pCurLNode,
+                                            a_pRow,
+                                            s_nSlotPos,
+                                            sIsUniqueIndex )
                           != IDE_SUCCESS );
-
-                IDE_ERROR_RAISE( s_pNewNodeList != NULL, ERR_CORRUPTED_INDEX_NEWNODE );
-                IDE_ERROR_RAISE( s_nNewNodeCount > 0, ERR_CORRUPTED_INDEX_NEWNODE );
-
-
-                // PROJ-1617
-                s_pIndexHeader->mStmtStat.mNodeSplitCount++;
-
-                getPreparedNode( &s_pNewNodeList,
-                                 &s_nNewNodeCount,
-                                 &s_pNewNode );
-
-                IDE_ERROR_RAISE( s_pNewNode != NULL, ERR_CORRUPTED_INDEX_NEWNODE );
-
-                SMNB_SCAN_LATCH(s_pCurLNode);
-                sIsLeafScanLatched = ID_TRUE;
-
-                IDE_TEST( splitLeafNode( s_pIndexHeader,
-                                         s_nSlotPos,
-                                         s_pCurLNode,
-                                         (smnbLNode*)s_pNewNode,
-                                         &sTargetNode,
-                                         &sTargetSeq )
-                          != IDE_SUCCESS );
-
-                IDE_TEST( insertIntoLeafNode( s_pIndexHeader,
-                                              sTargetNode,
-                                              a_pRow,
-                                              sTargetSeq ) != IDE_SUCCESS );
-
-                /* PROJ-2433 */
-                s_pSepKeyRow1 = NULL;
-                sSepKey1      = NULL;
-
-                getLeafSlot( (SChar **)&s_pSepKeyRow1,
-                             &sSepKey1,
-                             s_pCurLNode,
-                             (SShort)( s_pCurLNode->mSlotCount - 1 ) );
-
-                sIsLeafScanLatched = ID_FALSE;
-                SMNB_SCAN_UNLATCH(s_pCurLNode);
-
-                if ( needToUpdateStat( s_pIndexHeader->mIsMemTBS ) == ID_TRUE )
-                {
-                    IDE_TEST( updateStat4Insert( sIndex,
-                                                 s_pIndexHeader,
-                                                 sTargetNode,
-                                                 sTargetSeq,
-                                                 a_pRow,
-                                                 sIsUniqueIndex ) != IDE_SUCCESS );
-                }
-                else
-                {
-                    /* nothing to do ... */
-                }
-
-                s_pLeftNode = s_pCurLNode;
-
-                s_nDepth--;
-
-                while (s_nDepth >= 0)
-                {
-                    s_pCurINode = (smnbINode*)(s_stack[s_nDepth].node);
-
-                    SMNB_SCAN_LATCH(s_pCurINode);
-                    sIsInternalScanLatched = ID_TRUE;
-
-                    /* PROJ-2433
-                     * ìƒˆë¡œìš´ new splitìœ¼ë¡œ child pointer ë³€ê²½í•¨ */
-                    s_pCurINode->mChildPtrs[s_stack[s_nDepth].lstReadPos] = (smnbNode *)s_pNewNode;
-
-                    IDE_TEST( findSlotInInternal( s_pIndexHeader,
-                                                  s_pCurINode,
-                                                  s_pSepKeyRow1,
-                                                  &s_nSlotPos ) != IDE_SUCCESS );
-                    IDE_ERROR_RAISE(s_nSlotPos == s_stack[s_nDepth].lstReadPos, ERR_CORRUPTED_INDEX_SLOTCOUNT);
-
-                    if ( s_pCurINode->mSlotCount < SMNB_INTERNAL_SLOT_MAX_COUNT( s_pIndexHeader ) )
-                    {
-                        IDE_TEST( insertIntoInternalNode( s_pIndexHeader,
-                                                          s_pCurINode,
-                                                          s_pSepKeyRow1,
-                                                          sSepKey1,
-                                                          s_pLeftNode ) != IDE_SUCCESS );
-
-                        sIsInternalScanLatched = ID_FALSE;
-                        SMNB_SCAN_UNLATCH(s_pCurINode);
-
-                        break;
-                    }
-                    else
-                    {
-                        /* nothing to do */
-                    }
-
-                    IDE_ERROR_RAISE( s_nNewNodeCount > 0, ERR_CORRUPTED_INDEX_NEWNODE );
-
-                    getPreparedNode( &s_pNewNodeList,
-                                     &s_nNewNodeCount,
-                                     &s_pNewNode );
-
-                    IDE_ERROR_RAISE( s_pNewNode != NULL, ERR_CORRUPTED_INDEX_NEWNODE );
-
-                    IDE_TEST( splitInternalNode( s_pIndexHeader,
-                                                 s_pSepKeyRow1,
-                                                 sSepKey1,
-                                                 s_pLeftNode,
-                                                 s_nSlotPos,
-                                                 s_pCurINode,
-                                                 (smnbINode*)s_pNewNode,
-                                                 &s_pSepKeyRow1, 
-                                                 &sSepKey1 ) != IDE_SUCCESS );
-
-                    sIsInternalScanLatched = ID_FALSE;
-                    SMNB_SCAN_UNLATCH(s_pCurINode);
-
-                    s_pLeftNode = s_pCurINode;
-                    s_nDepth--;
-                }
-
-                if ( s_nDepth < 0 )
-                {
-                    IDE_ERROR_RAISE( s_nNewNodeCount > 0, ERR_CORRUPTED_INDEX_NEWNODE );
-
-                    getPreparedNode( &s_pNewNodeList,
-                                     &s_nNewNodeCount,
-                                     (void**)&s_pRootINode );
-
-                    IDE_ERROR_RAISE( s_pRootINode != NULL, ERR_CORRUPTED_INDEX_NEWNODE );
-
-                    // BUG-18292 : V$MEM_BTREE_HEADER ì •ë³´ ì¶”ê°€
-                    s_pIndexHeader->nodeCount++;
-
-                    initInternalNode( s_pRootINode,
-                                      s_pIndexHeader,
-                                      IDU_LATCH_UNLOCKED );
-
-                    s_pRootINode->mSlotCount = 2;
-
-                    setInternalSlot( s_pRootINode,
-                                     0,
-                                     (smnbNode *)s_pLeftNode,
-                                     (SChar *)s_pSepKeyRow1,
-                                     sSepKey1 );
-
-                    setInternalSlot( s_pRootINode,
-                                     1,
-                                     (smnbNode *)s_pNewNode,
-                                     (SChar *)NULL,
-                                     (void *)NULL );
-
-                    IDL_MEM_BARRIER;
-                    s_pIndexHeader->root = s_pRootINode;
-                }
-                else
-                {
-                    /* nothing to do */
-                }
             }
         }
     }
@@ -4516,68 +4421,35 @@ restart:
         sIsNodeLatched = ID_FALSE;
         unlockNode( s_pCurLNode );
     }
-
-    if ( ( sIsNxtNodeLatched == ID_TRUE ) && ( s_pNxtLNode != NULL ) )
-    {
-        sIsNxtNodeLatched = ID_FALSE;
-        unlockNode( s_pNxtLNode );
-    }
-    else
-    {
-        /* do nothing... */
-    }
-
     if ( sIsTreeLatched == ID_TRUE )
     {
         sIsTreeLatched = ID_FALSE;
         unlockTree( s_pIndexHeader );
-    }
-
-    if ( s_nNewNodeCount > 0 )
-    {
-        IDE_DASSERT( 0 );
-        IDE_TEST( s_pIndexHeader->mNodePool.releaseSlots(
-                                             s_nNewNodeCount,
-                                             (smmSlot*)s_pNewNodeList,
-                                             SMM_SLOT_LIST_MUTEX_NEEDLESS )
-                  != IDE_SUCCESS );
     }
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_WAIT );
 
-    IDE_ERROR_RAISE( s_pNewNodeList == NULL, ERR_CORRUPTED_INDEX_NEWNODE );
-
     if ( sIsNodeLatched == ID_TRUE )
     {
         sIsNodeLatched = ID_FALSE;
         unlockNode( s_pCurLNode );
     }
-
-    if ( ( sIsNxtNodeLatched == ID_TRUE ) && ( s_pNxtLNode != NULL ) )
-    {
-        sIsNxtNodeLatched = ID_FALSE;
-        unlockNode( s_pNxtLNode );
-    }
-    else
-    {
-        /* do nothing... */
-    }
-
     if ( sIsTreeLatched == ID_TRUE )
     {
         sIsTreeLatched = ID_FALSE;
         unlockTree( s_pIndexHeader );
     }
 
-    /* BUG-38198 Sessionì´ ì•„ì§ ì‚´ì•„ìˆëŠ”ì§€ ì²´í¬í•˜ì—¬
-     * timeoutë“±ìœ¼ë¡œ ì‚¬ë¼ì¡Œë‹¤ë©´ í•´ë‹¹ ì •ë³´ë¥¼ dumpí›„ fail ì²˜ë¦¬í•œë‹¤. */
+    /* BUG-38198 SessionÀÌ ¾ÆÁ÷ »ì¾ÆÀÖ´ÂÁö Ã¼Å©ÇÏ¿©
+     * timeoutµîÀ¸·Î »ç¶óÁ³´Ù¸é ÇØ´ç Á¤º¸¸¦ dumpÈÄ fail Ã³¸®ÇÑ´Ù. */
     IDE_TEST_RAISE( iduCheckSessionEvent( aStatistics ) != IDE_SUCCESS, 
                     err_SESSIONEND );
 
     IDE_TEST( smLayerCallback::waitForTrans( a_pTrans,    /* aTrans        */ 
                                              s_transID,   /* aWaitTransID  */  
+                                             s_pIndexHeader->mSpaceID,
                                              aInsertWaitTime /* aLockWaitTime */)
               != IDE_SUCCESS);
 
@@ -4612,28 +4484,12 @@ restart:
     {
         IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
 
-        ideLog::log( IDE_SM_0, "Index Corrupted Detected : Wrong Index Node SlotCount" );
-    }
-    IDE_EXCEPTION( ERR_CORRUPTED_INDEX_NEWNODE )
-    {
-        IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
-
-        ideLog::log( IDE_SM_0, "Index Corrupted Detected : Cannot Alloc New Node" );
+        ideLog::log( IDE_SM_0, "Index Corrupted Detected : Index Node SlotCount is Zero" );
     }
     IDE_EXCEPTION( ERR_NOT_TREE_UNLATCH )
     {
         IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
         ideLog::log( IDE_ERR_0, "[SM] Tree Latch is not unlatched." );
-    }
-    IDE_EXCEPTION( ERR_NOT_NODE_LATCH )
-    {
-        IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
-        ideLog::log( IDE_ERR_0, "[SM] Node Latch is not latched." );
-    }
-    IDE_EXCEPTION( ERR_FAIL_TO_INITIALIZE_LEAF_NODE )
-    {
-        IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
-        ideLog::log( IDE_ERR_0, "[SM] fail to initialize leaf node" );
     }
     IDE_EXCEPTION( ERR_UNIQUE_VIOLATION_REPL )
     {
@@ -4647,41 +4503,15 @@ restart:
         SMNB_SCAN_UNLATCH( s_pCurLNode );
     }
 
-    if ( sIsInternalScanLatched == ID_TRUE )
-    {
-        sIsInternalScanLatched = ID_FALSE;
-        SMNB_SCAN_UNLATCH( s_pCurINode );
-    }
-
     if (sIsNodeLatched == ID_TRUE)
     {
         sIsNodeLatched = ID_FALSE;
         unlockNode( s_pCurLNode );
     }
-
-    if ( ( sIsNxtNodeLatched == ID_TRUE ) && ( s_pNxtLNode != NULL ) )
-    {
-        sIsNxtNodeLatched = ID_FALSE;
-        unlockNode( s_pNxtLNode );
-    }
-
     if ( sIsTreeLatched == ID_TRUE )
     {
         sIsTreeLatched = ID_FALSE;
         unlockTree( s_pIndexHeader );
-    }
-
-    if ( s_nNewNodeCount > 0 )
-    {
-        if ( s_pIndexHeader->mNodePool.releaseSlots(
-                                               s_nNewNodeCount,
-                                               (smmSlot*)s_pNewNodeList,
-                                               SMM_SLOT_LIST_MUTEX_NEEDLESS )
-             != IDE_SUCCESS )
-        {
-            IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
-            ideLog::log( IDE_ERR_0, "[SM] fail to release index slots" );
-        }
     }
 
     if ( ideGetErrorCode() == smERR_ABORT_INCONSISTENT_INDEX )
@@ -4693,296 +4523,65 @@ restart:
 }
 
 /*********************************************************************
- * FUNCTION DESCRIPTION : smnbBTree::findFirstSlotInInternal         *
+ * FUNCTION DESCRIPTION : smnbBTree::findFirstSlotInNode             *
  * ------------------------------------------------------------------*
- * INTERNAL NODE ë‚´ì—ì„œ ê°€ì¥ ì²«ë²ˆì§¸ë‚˜ì˜¤ëŠ” rowì˜ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.
- * ( ë™ì¼í•œ keyê°€ ì—¬ëŸ¬ì¸ê²½ìš° ê°€ì¥ ì™¼ìª½(ì²«ë²ˆì§¸)ì˜ slot ìœ„ì¹˜ë¥¼ ì°¾ìŒ )
+ * NODE ³»¿¡¼­ °¡Àå Ã¹¹øÂ°³ª¿À´Â rowÀÇ À§Ä¡¸¦ Ã£´Â´Ù.
+ * ( µ¿ÀÏÇÑ key°¡ ¿©·¯ÀÎ°æ¿ì °¡Àå ¿ŞÂÊ(Ã¹¹øÂ°)ÀÇ slot À§Ä¡¸¦ Ã£À½ )
  *
- * case1. ì¼ë°˜ indexì´ê±°ë‚˜, partial key indexê°€ ì•„ë‹Œê²½ìš°
- *   case1-1. direct key indexì¸ ê²½ìš°
- *            : í•¨ìˆ˜ findFirstKeyInInternal() ì‹¤í–‰í•´ direct key ê¸°ë°˜ìœ¼ë¡œ ê²€ìƒ‰
- *   case1-2. ì¼ë°˜ indexì¸ ê²½ìš°
- *            : í•¨ìˆ˜ findFirstRowInInternal() ì‹¤í–‰í•´ row ê¸°ë°˜ìœ¼ë¡œ ê²€ìƒ‰
+ * case1. ÀÏ¹İ indexÀÌ°Å³ª, partial key index°¡ ¾Æ´Ñ°æ¿ì
+ *   case1-1. direct key indexÀÎ °æ¿ì
+ *            : ÇÔ¼ö findFirstKeyInNode() ½ÇÇàÇØ direct key ±â¹İÀ¸·Î °Ë»ö
+ *   case1-2. ÀÏ¹İ indexÀÎ °æ¿ì
+ *            : ÇÔ¼ö findFirstRowInNode() ½ÇÇàÇØ row ±â¹İÀ¸·Î °Ë»ö
  *
- * case2. partial key indexì¸ê²½ìš°
- *        : í•¨ìˆ˜ findFirstKeyInInternal() ì‹¤í–‰í•´ direct key ê¸°ë°˜ìœ¼ë¡œ ê²€ìƒ‰í›„
- *          í•¨ìˆ˜ callback() ë˜ëŠ” findFirstRowInInternal() ì‹¤í–‰í•´ ì¬ê²€ìƒ‰
+ * case2. partial key indexÀÎ°æ¿ì
+ *        : ÇÔ¼ö findFirstKeyInNode() ½ÇÇàÇØ direct key ±â¹İÀ¸·Î °Ë»öÈÄ
+ *          ÇÔ¼ö callback() ¶Ç´Â findFirstRowInNode() ½ÇÇàÇØ Àç°Ë»ö
  *
- *  => partial key ì—ì„œ ì¬ê²€ìƒ‰ì´ í•„ìš”í•œ ì´ìœ 
- *    1. partial keyë¡œ ê²€ìƒ‰í•œ ìœ„ì¹˜ëŠ” ì •í™•í•œ ìœ„ì¹˜ê°€ ì•„ë‹ìˆ˜ìˆê¸°ë•Œë¬¸ì—
- *       full keyë¡œ ì¬ê²€ìƒ‰ì„ í•˜ì—¬ í™•ì¸í•˜ì—¬ì•¼ í•œë‹¤
+ *  => partial key ¿¡¼­ Àç°Ë»öÀÌ ÇÊ¿äÇÑ ÀÌÀ¯
+ *    1. partial key·Î °Ë»öÇÑ À§Ä¡´Â Á¤È®ÇÑ À§Ä¡°¡ ¾Æ´Ò¼öÀÖ±â¶§¹®¿¡
+ *       full key·Î Àç°Ë»öÀ» ÇÏ¿© È®ÀÎÇÏ¿©¾ß ÇÑ´Ù
  *
- * aHeader   - [IN]  INDEX í—¤ë”
+ * aHeader   - [IN]  INDEX Çì´õ
  * aCallBack - [IN]  Range Callback
- * aNode     - [IN]  INTERNAL NODE
- * aMinimum  - [IN]  ê²€ìƒ‰í•  slotë²”ìœ„ ìµœì†Œê°’
- * aMaximum  - [IN]  ê²€ìƒ‰í•  slotë²”ìœ„ ìµœëŒ€ê°’
- * aSlot     - [OUT] ì°¾ì•„ì§„ slot ìœ„ì¹˜
+ * aNode     - [IN]  INDEX NODE
+ * aMinimum  - [IN]  °Ë»öÇÒ slot¹üÀ§ ÃÖ¼Ò°ª
+ * aMaximum  - [IN]  °Ë»öÇÒ slot¹üÀ§ ÃÖ´ë°ª
+ * aSlot     - [OUT] Ã£¾ÆÁø slot À§Ä¡
  *********************************************************************/
-inline void smnbBTree::findFirstSlotInInternal( smnbHeader          * aHeader,
-                                                const smiCallBack   * aCallBack,
-                                                const smnbINode     * aNode,
-                                                SInt                  aMinimum,
-                                                SInt                  aMaximum,
-                                                SInt                * aSlot )
-{
-    idBool  sResult;
-
-    if ( aHeader->mIsPartialKey == ID_FALSE )
-    {
-        /* full direct key */
-        if ( SMNB_IS_DIRECTKEY_IN_NODE( aNode ) == ID_TRUE )
-        {
-            /* ë³µí•©í‚¤ì¸ê²½ìš° ì²«ì»¬ëŸ¼ì€keyë¡œ ë’·ì»¬ëŸ¼ë“¤ì€rowë¡œì²˜ë¦¬í•œë‹¤ */
-            findFirstKeyInInternal( aHeader,
-                                    aCallBack,
-                                    aNode,
-                                    aMinimum,
-                                    aMaximum,
-                                    aSlot );
-            return;
-        }
-        /* direct key ì—†ìŒ */
-        else
-        {
-            findFirstRowInInternal( aCallBack,
-                                    aNode,
-                                    aMinimum,
-                                    aMaximum,
-                                    aSlot );
-            return;
-        }
-    }
-    else
-    {
-        /* partial key */
-        findFirstKeyInInternal( aHeader,
-                                aCallBack,
-                                aNode,
-                                aMinimum,
-                                aMaximum,
-                                aSlot );
-
-        if ( *aSlot > aMaximum )
-        {
-            /* ë²”ìœ„ë‚´ì—ì—†ë‹¤. */
-            return;
-        }
-        else
-        {
-            if ( aNode->mRowPtrs[*aSlot] == NULL )
-            {
-                /* ë²”ìœ„ë‚´ì—ì—†ë‹¤. */
-                return;
-            }
-            else
-            {
-                /* nothing to do */
-            }
-        }
-
-        /* partial keyë¼ë„, í•´ë‹¹ nodeì˜ keyê°€ ëª¨ë‘ í¬í•¨ëœ ê²½ìš°ë¼ë©´, keyë¡œ ë¹„êµí•œë‹¤  */
-        if ( isFullKeyInInternalSlot( aHeader,
-                                      aNode,
-                                      (SShort)(*aSlot) ) == ID_TRUE )
-        {
-            aCallBack->callback( &sResult,
-                                 aNode->mRowPtrs[*aSlot],
-                                 SMNB_GET_KEY_PTR( aNode, *aSlot ),
-                                 0,
-                                 SC_NULL_GRID,
-                                 aCallBack->data );
-        }
-        else
-        {
-            aCallBack->callback( &sResult,
-                                 aNode->mRowPtrs[*aSlot],
-                                 NULL,
-                                 0,
-                                 SC_NULL_GRID,
-                                 aCallBack->data );
-        }
-
-        if ( sResult == ID_TRUE )
-        {
-            return;
-        }
-        else
-        {
-            aMinimum = *aSlot + 1; /* *aSlotì€ ì°¾ëŠ” slotì´ ì•„ë‹Œê²ƒì„ í™•ì¸í–ˆë‹¤. skip í•œë‹¤. */
-
-            if ( aMinimum <= aMaximum )
-            {
-                findFirstRowInInternal( aCallBack,
-                                        aNode,
-                                        aMinimum,
-                                        aMaximum,
-                                        aSlot );
-            }
-            else
-            {
-                /* PROJ-2433
-                 * node ë²”ìœ„ë‚´ì— ë§Œì¡±í•˜ëŠ”ê°’ì´ì—†ë‹¤. */
-                *aSlot = aMaximum + 1;
-            }
-
-            return;
-        }
-    }
-}
-
-void smnbBTree::findFirstRowInInternal( const smiCallBack   * aCallBack,
-                                        const smnbINode     * aNode,
-                                        SInt                  aMinimum,
-                                        SInt                  aMaximum,
-                                        SInt                * aSlot )
-{
-    SInt      sMedium = 0;
-    idBool    sResult;
-    SChar   * sRow    = NULL;
-
-    IDE_DASSERT( aNode->mRowPtrs != NULL );
-
-    do
-    {
-        sMedium = (aMinimum + aMaximum) >> 1;
-        sRow    = aNode->mRowPtrs[sMedium];
-
-        if ( sRow == NULL )
-        {
-            sResult = ID_TRUE;
-        }
-        else
-        {
-            // BUG-27948 ì´ë¯¸ ì‚­ì œëœ Rowë¥¼ ë³´ê³  ìˆëŠ”ì§€ í™•ì¸
-            IDE_DASSERT( !SM_SCN_IS_FREE_ROW(((smpSlotHeader *)sRow)->mCreateSCN) );
-
-            (void)aCallBack->callback( &sResult,
-                                       sRow,
-                                       NULL,
-                                       0,
-                                       SC_NULL_GRID,
-                                       aCallBack->data );
-        }
-
-        if ( sResult == ID_TRUE )
-        {
-            aMaximum = sMedium - 1;
-            *aSlot   = (UInt)sMedium;
-        }
-        else
-        {
-            aMinimum = sMedium + 1;
-            *aSlot   = (UInt)aMinimum;
-        }
-    }
-    while (aMinimum <= aMaximum);
-}
-
-void smnbBTree::findFirstKeyInInternal( smnbHeader          * aHeader,
-                                        const smiCallBack   * aCallBack,
-                                        const smnbINode     * aNode,
-                                        SInt                  aMinimum,
-                                        SInt                  aMaximum,
-                                        SInt                * aSlot )
-{
-    SInt      sMedium           = 0;
-    idBool    sResult;
-    SChar   * sRow              = NULL;
-    void    * sKey              = NULL;
-    UInt      sPartialKeySize   = ( aHeader->mIsPartialKey == ID_TRUE ) ? (aNode->mKeySize) : 0;
-
-    do
-    {
-        sMedium = (aMinimum + aMaximum) >> 1;
-        sKey    = SMNB_GET_KEY_PTR( aNode, sMedium );
-        sRow    = aNode->mRowPtrs[sMedium];
-     
-        if ( sRow == NULL )
-        {
-            sResult = ID_TRUE;
-        }
-        else
-        {
-            (void)aCallBack->callback( &sResult,
-                                       sRow,
-                                       sKey,
-                                       sPartialKeySize,
-                                       SC_NULL_GRID,
-                                       aCallBack->data );
-        }
-
-        if ( sResult == ID_TRUE )
-        {
-            aMaximum = sMedium - 1;
-            *aSlot   = (UInt)sMedium;
-        }
-        else
-        {
-            aMinimum = sMedium + 1;
-            *aSlot   = (UInt)aMinimum;
-        }
-    }
-    while (aMinimum <= aMaximum);
-}
-
-/*********************************************************************
- * FUNCTION DESCRIPTION : smnbBTree::findFirstSlotInLeaf             *
- * ------------------------------------------------------------------*
- * LEAF NODE ë‚´ì—ì„œ ê°€ì¥ ì²«ë²ˆì§¸ë‚˜ì˜¤ëŠ” rowì˜ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.
- * ( ë™ì¼í•œ keyê°€ ì—¬ëŸ¬ì¸ê²½ìš° ê°€ì¥ ì™¼ìª½(ì²«ë²ˆì§¸)ì˜ slot ìœ„ì¹˜ë¥¼ ì°¾ìŒ )
- *
- * case1. ì¼ë°˜ indexì´ê±°ë‚˜, partial key indexê°€ ì•„ë‹Œê²½ìš°
- *   case1-1. direct key indexì¸ ê²½ìš°
- *            : í•¨ìˆ˜ findFirstKeyInLeaf() ì‹¤í–‰í•´ direct key ê¸°ë°˜ìœ¼ë¡œ ê²€ìƒ‰
- *   case1-2. ì¼ë°˜ indexì¸ ê²½ìš°
- *            : í•¨ìˆ˜ findFirstRowInLeaf() ì‹¤í–‰í•´ row ê¸°ë°˜ìœ¼ë¡œ ê²€ìƒ‰
- *
- * case2. partial key indexì¸ê²½ìš°
- *        : í•¨ìˆ˜ findFirstKeyInLeaf() ì‹¤í–‰í•´ direct key ê¸°ë°˜ìœ¼ë¡œ ê²€ìƒ‰í›„
- *          í•¨ìˆ˜ callback() ë˜ëŠ” findFirstRowInLeaf() ì‹¤í–‰í•´ ì¬ê²€ìƒ‰
- *
- *  => partial key ì—ì„œ ì¬ê²€ìƒ‰ì´ í•„ìš”í•œ ì´ìœ 
- *    1. partial keyë¡œ ê²€ìƒ‰í•œ ìœ„ì¹˜ëŠ” ì •í™•í•œ ìœ„ì¹˜ê°€ ì•„ë‹ìˆ˜ìˆê¸°ë•Œë¬¸ì—
- *       full keyë¡œ ì¬ê²€ìƒ‰ì„ í•˜ì—¬ í™•ì¸í•˜ì—¬ì•¼ í•œë‹¤
- *
- * aHeader   - [IN]  INDEX í—¤ë”
- * aCallBack - [IN]  Range Callback
- * aNode     - [IN]  LEAF NODE
- * aMinimum  - [IN]  ê²€ìƒ‰í•  slotë²”ìœ„ ìµœì†Œê°’
- * aMaximum  - [IN]  ê²€ìƒ‰í•  slotë²”ìœ„ ìµœëŒ€ê°’
- * aSlot     - [OUT] ì°¾ì•„ì§„ slot ìœ„ì¹˜
- *********************************************************************/
-inline void smnbBTree::findFirstSlotInLeaf( smnbHeader          * aHeader,
+inline void smnbBTree::findFirstSlotInNode( smnbHeader          * aHeader,
                                             const smiCallBack   * aCallBack,
-                                            const smnbLNode     * aNode,
-                                            SInt                  aMinimum,
-                                            SInt                  aMaximum,
+                                            const smnbNode      * aNode,
                                             SInt                * aSlot )
 {
-    idBool  sResult;
+    idBool    sResult;
+    SChar   * sRow      = NULL;
+    SInt      sMinimum  = 0;
+    SInt      sMaximum  = 0;
+
+    sMaximum = aNode->mSlotCount - 1;
 
     if ( aHeader->mIsPartialKey == ID_FALSE )
     {
         /* full direct key */
-        if ( SMNB_IS_DIRECTKEY_IN_NODE( aNode ) == ID_TRUE )
+        if ( SMNB_IS_DIRECTKEY_INDEX( aHeader ) == ID_TRUE )
         {
-            /* ë³µí•©í‚¤ì¸ê²½ìš° ì²«ì»¬ëŸ¼ì€keyë¡œ ë’·ì»¬ëŸ¼ë“¤ì€ rowë¡œì²˜ë¦¬í•œë‹¤ */
-            findFirstKeyInLeaf( aHeader,
+            /* º¹ÇÕÅ°ÀÎ°æ¿ì Ã¹ÄÃ·³Àºkey·Î µŞÄÃ·³µéÀº row·ÎÃ³¸®ÇÑ´Ù */
+            findFirstKeyInNode( aHeader,
                                 aCallBack,
                                 aNode,
-                                aMinimum,
-                                aMaximum,
+                                sMinimum,
+                                sMaximum,
                                 aSlot );
             IDE_CONT( end );
         }
-        /* direct key ì—†ìŒ */
+        /* direct key ¾øÀ½ */
         else
         {
-            findFirstRowInLeaf( aCallBack,
+            findFirstRowInNode( aCallBack,
                                 aNode,
-                                aMinimum,
-                                aMaximum,
+                                sMinimum,
+                                sMaximum,
                                 aSlot );
             IDE_CONT( end );
         }
@@ -4990,37 +4589,35 @@ inline void smnbBTree::findFirstSlotInLeaf( smnbHeader          * aHeader,
     /* partial key */
     else
     {
-        findFirstKeyInLeaf( aHeader,
+        findFirstKeyInNode( aHeader,
                             aCallBack,
                             aNode,
-                            aMinimum,
-                            aMaximum,
+                            sMinimum,
+                            sMaximum,
                             aSlot );
 
-        if ( *aSlot > aMaximum )
+        if ( *aSlot > sMaximum )
         {
-            /* ë²”ìœ„ë‚´ì—ì—†ë‹¤. */
+            /* ¹üÀ§³»¿¡¾ø´Ù. */
             IDE_CONT( end );
         }
         else
         {
-            if ( aNode->mRowPtrs[*aSlot] == NULL )
+            sRow = aNode->mRowPtrs[*aSlot];
+
+            if ( sRow == NULL )
             {
-                /* ë²”ìœ„ë‚´ì—ì—†ë‹¤. */
+                /* ¹üÀ§³»¿¡¾ø´Ù. */
                 IDE_CONT( end );
-            }
-            else
-            {
-                /* nothing to do */
             }
         }
 
-        if ( isFullKeyInLeafSlot( aHeader,
-                                  aNode,
-                                  (SShort)(*aSlot) ) == ID_TRUE )
+        if ( isFullKey( aHeader,
+                        aNode,
+                        (SShort)(*aSlot) ) == ID_TRUE )
         {
             aCallBack->callback( &sResult,
-                                 aNode->mRowPtrs[*aSlot],
+                                 sRow,
                                  SMNB_GET_KEY_PTR( aNode, *aSlot ),
                                  0,
                                  SC_NULL_GRID,
@@ -5029,7 +4626,7 @@ inline void smnbBTree::findFirstSlotInLeaf( smnbHeader          * aHeader,
         else
         {
             aCallBack->callback( &sResult,
-                                 aNode->mRowPtrs[*aSlot],
+                                 sRow,
                                  NULL,
                                  0,
                                  SC_NULL_GRID,
@@ -5042,21 +4639,21 @@ inline void smnbBTree::findFirstSlotInLeaf( smnbHeader          * aHeader,
         }
         else
         {
-            aMinimum = *aSlot + 1; /* *aSlotì€ ì°¾ëŠ” slotì´ ì•„ë‹Œê²ƒì„ í™•ì¸í–ˆë‹¤. skip í•œë‹¤. */
+            sMinimum = *aSlot + 1; /* *aSlotÀº Ã£´Â slotÀÌ ¾Æ´Ñ°ÍÀ» È®ÀÎÇß´Ù. skip ÇÑ´Ù. */
 
-            if ( aMinimum <= aMaximum )
+            if ( sMinimum <= sMaximum )
             {
-                findFirstRowInLeaf( aCallBack,
+                findFirstRowInNode( aCallBack,
                                     aNode,
-                                    aMinimum,
-                                    aMaximum,
+                                    sMinimum,
+                                    sMaximum,
                                     aSlot );
             }
             else
             {
                 /* PROJ-2433
-                 * node ë²”ìœ„ë‚´ì— ë§Œì¡±í•˜ëŠ”ê°’ì´ì—†ë‹¤. */
-                *aSlot = aMaximum + 1;
+                 * node ¹üÀ§³»¿¡ ¸¸Á·ÇÏ´Â°ªÀÌ¾ø´Ù. */
+                *aSlot = sMaximum + 1;
             }
 
             IDE_CONT( end );
@@ -5068,8 +4665,8 @@ inline void smnbBTree::findFirstSlotInLeaf( smnbHeader          * aHeader,
     return;
 }
 
-void smnbBTree::findFirstRowInLeaf( const smiCallBack   * aCallBack,
-                                    const smnbLNode     * aNode,
+void smnbBTree::findFirstRowInNode( const smiCallBack   * aCallBack,
+                                    const smnbNode      * aNode,
                                     SInt                  aMinimum,
                                     SInt                  aMaximum,
                                     SInt                * aSlot )
@@ -5089,7 +4686,7 @@ void smnbBTree::findFirstRowInLeaf( const smiCallBack   * aCallBack,
         }
         else
         {
-            // BUG-27948 ì´ë¯¸ ì‚­ì œëœ Rowë¥¼ ë³´ê³  ìˆëŠ”ì§€ í™•ì¸
+            // BUG-27948 ÀÌ¹Ì »èÁ¦µÈ Row¸¦ º¸°í ÀÖ´ÂÁö È®ÀÎ
             IDE_DASSERT( !SM_SCN_IS_FREE_ROW(((smpSlotHeader *)sRow)->mCreateSCN) );
 
             (void)aCallBack->callback( &sResult,
@@ -5114,9 +4711,9 @@ void smnbBTree::findFirstRowInLeaf( const smiCallBack   * aCallBack,
     while (aMinimum <= aMaximum);
 }
 
-void smnbBTree::findFirstKeyInLeaf( smnbHeader          * aHeader,
+void smnbBTree::findFirstKeyInNode( smnbHeader          * aHeader,
                                     const smiCallBack   * aCallBack,
-                                    const smnbLNode     * aNode,
+                                    const smnbNode      * aNode,
                                     SInt                  aMinimum,
                                     SInt                  aMaximum,
                                     SInt                * aSlot )
@@ -5124,14 +4721,18 @@ void smnbBTree::findFirstKeyInLeaf( smnbHeader          * aHeader,
     SInt      sMedium           = 0;
     idBool    sResult;
     SChar   * sRow              = NULL;
-    void    * sKey              = NULL;
-    UInt      sPartialKeySize   = ( aHeader->mIsPartialKey == ID_TRUE ) ? (aNode->mKeySize) : 0;
+    UInt      sPartialKeySize   = 0;
+
+    if ( aHeader->mIsPartialKey == ID_TRUE )
+    {
+        sPartialKeySize = aNode->mKeySize;
+    }
 
     do
     {
         sMedium = (aMinimum + aMaximum) >> 1;
-        sKey    = SMNB_GET_KEY_PTR( aNode, sMedium );
-        sRow    = aNode->mRowPtrs[sMedium];
+
+        sRow = aNode->mRowPtrs[sMedium];
 
         if ( sRow == NULL )
         {
@@ -5140,8 +4741,8 @@ void smnbBTree::findFirstKeyInLeaf( smnbHeader          * aHeader,
         else
         {
             (void)aCallBack->callback( &sResult,
-                                       sRow, /* composite key indexì˜ ì²«ë²ˆì§¸ì´í›„ ì»¬ëŸ¼ì„ ë¹„êµí•˜ê¸°ìœ„í•´ì„œ*/
-                                       sKey,
+                                       sRow, /* composite key indexÀÇ Ã¹¹øÂ°ÀÌÈÄ ÄÃ·³À» ºñ±³ÇÏ±âÀ§ÇØ¼­*/
+                                       SMNB_GET_KEY_PTR( aNode, sMedium ),
                                        sPartialKeySize,
                                        SC_NULL_GRID,
                                        aCallBack->data );
@@ -5161,231 +4762,177 @@ void smnbBTree::findFirstKeyInLeaf( smnbHeader          * aHeader,
     while (aMinimum <= aMaximum);
 }
 
-IDE_RC smnbBTree::findFirst( smnbHeader        * a_pIndexHeader,
-                             const smiCallBack * a_pCallBack,
-                             SInt              * a_pDepth,
-                             smnbStack         * a_pStack )
+/* BUG-26625 [SN] ¸Ş¸ğ¸® ÀÎµ¦½º ½ºÄµ½Ã SMO¸¦ °ËÃâÇÏ´Â ·ÎÁ÷¿¡ ¹®Á¦°¡ ÀÖ½À´Ï´Ù.
+ *
+ * findPosition °æ¿ìÀÇ ¼ö Á¤¸®
+ *
+ * 1) slotCount == 0
+ *      ÇØ´ç ³ëµå¸¦ Å½»öÇÏ±â Á÷Àü ³ëµå°¡ »èÁ¦µÊ
+ *      1.1) Stack up, »óÀ§ ³ëµå ÀçÅ½»ö
+ *          (StackÀÌ ºñ¾úÀ¸¸é RootºÎÅÍ ´Ù½Ã)
+ *      1.2) 1.1ÀÇ °æ¿ìÀÌÁö¸¸ ÀçÅ½»öÇÒ ³ëµå°¡ ¾øÀ½
+ *          Å½»öÇÒ ´ë»óÀÌ »èÁ¦µÈ °æ¿ìÀÌ±â ¶§¹®¿¡ °á°ú°¡ »ç¶óÁø »óÅÂ.
+ *          Áï Å½»öÇÒ ÇÊ¿ä°¡ ¾øÀ½ -> ¸ø Ã£À½, LNode = NULL
+ *
+ *  2) slotPos == slotCount
+ *      ÇØ´ç ³ëµå¸¦ Å½»öÇÏ±â Á÷Àü SMO°¡ ÀÏ¾î³ª ¸ñÇ¥ Å°°¡ ÀÌ¿ô ³ëµå¿¡ ÀÖÀ½
+ *      2.1) ÀÌ¿ô ³ëµå°¡ ÀÖÀ½
+ *           Á¤»óÀûÀ¸·Î ÀÌ¿ô ³ëµå¸¦ ¶Ç Ã£¾Æµé¾î°¨. -> ÀÌ¿ô³ëµå ÀçÅ½»ö
+ *      2.2) ÀÌ¿ô ³ëµå°¡ ¾øÀ½
+ *           »óÀ§ ³ëµåºÎÅÍ ÀçÅ½»ö. (1.1°ú °°À½)
+ */
+IDE_RC smnbBTree::findPosition( smnbHeader         * aIndexHeader,
+                                const smiCallBack  * aCallBack,
+                                SChar              * aRow,
+                                SInt               * aDepth,
+                                smnbStack          * aStack,
+                                smnbLNode         ** aLNode )
 {
-    SInt          s_nDepth    = -1;
-    smnbLNode   * s_pCurLNode = NULL;
-
-    if ( a_pIndexHeader->root != NULL )
-    {
-        findFstLeaf( a_pIndexHeader,
-                     a_pCallBack,
-                     &s_nDepth,
-                     a_pStack,
-                     &s_pCurLNode );
-
-        if ( s_pCurLNode != NULL )
-        {
-            IDE_ERROR_RAISE( -1 <= s_nDepth, ERR_CORRUPTED_INDEX_NODE_DEPTH );
-
-            s_nDepth++;
-            a_pStack[s_nDepth].node = s_pCurLNode;
-        }
-        else
-        {
-            /* nothing to do */
-        }
-    }
-    else
-    {
-        /* nothing to do */
-    }
-
-    // BUG-26625 ë©”ëª¨ë¦¬ ì¸ë±ìŠ¤ ìŠ¤ìº”ì‹œ SMOë¥¼ ê²€ì¶œí•˜ëŠ” ë¡œì§ì— ë¬¸ì œê°€ ìˆìŠµë‹ˆë‹¤.
-    IDE_ERROR_RAISE( ( s_nDepth < 0 ) ||
-                     ( ( s_pCurLNode->flag & SMNB_NODE_TYPE_MASK ) == SMNB_NODE_TYPE_LEAF ),
-                     ERR_CORRUPTED_INDEX_FLAG );
-
-    *a_pDepth = s_nDepth;
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION( ERR_CORRUPTED_INDEX_NODE_DEPTH )
-    {
-        IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
-
-        ideLog::log( IDE_SM_0, "Index Corrupted Detected : Wrong Index Node Depth" ); 
-    }
-    IDE_EXCEPTION( ERR_CORRUPTED_INDEX_FLAG )
-    {
-        IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
-
-        ideLog::log( IDE_SM_0, "Index Corrupted Detected : Wrong Index Node Flag" ); 
-    }
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-/* BUG-26625 [SN] ë©”ëª¨ë¦¬ ì¸ë±ìŠ¤ ìŠ¤ìº”ì‹œ SMOë¥¼ ê²€ì¶œí•˜ëŠ” ë¡œì§ì— ë¬¸ì œê°€ ìˆìŠµë‹ˆë‹¤.
- *
- * findFstLeafì˜ ê²½ìš°ì˜ ìˆ˜ ì •ë¦¬
- * 1) 0 <= a_pDepth
- *      ì •ìƒì ìœ¼ë¡œ Traverseí•˜ì—¬ Leafë…¸ë“œë¥¼ íƒìƒ‰í•¨ -> ì •ìƒ
- *
- * 2) -1 == a_pDepth
- *      root node í•˜ë‚˜ë§Œ ì¡´ì¬í•˜ì—¬, rootê°€ leafì¸ ìƒí™©. whileì— ë“¤ì–´ê°€ì§€ ì•Šê³ 
- *      ë°”ë¡œ ì¢…ë£Œí•¨ -> ì •ìƒ
- *
- * 3) slotCount == 0
- *      í•´ë‹¹ ë…¸ë“œë¥¼ íƒìƒ‰í•˜ê¸° ì§ì „ ë…¸ë“œê°€ ì‚­ì œë¨
- *      3.1) Stack up, ìƒìœ„ ë…¸ë“œ ì¬íƒìƒ‰
- *          (Stackì´ ë¹„ì—ˆìœ¼ë©´ Rootë¶€í„° ë‹¤ì‹œ)
- *      3.2) 3.1ì˜ ê²½ìš°ì´ì§€ë§Œ ì¬íƒìƒ‰í•  ë…¸ë“œê°€ ì—†ìŒ
- *          íƒìƒ‰í•  ëŒ€ìƒì´ ì‚­ì œëœ ê²½ìš°ì´ê¸° ë•Œë¬¸ì— ê²°ê³¼ê°€ ì‚¬ë¼ì§„ ìƒíƒœ.
- *          ì¦‰ íƒìƒ‰í•  í•„ìš”ê°€ ì—†ìŒ -> ëª» ì°¾ìŒ, LNode = NULL
- *
- *  4) slotPos == slotCount
- *      í•´ë‹¹ ë…¸ë“œë¥¼ íƒìƒ‰í•˜ê¸° ì§ì „ SMOê°€ ì¼ì–´ë‚˜ ëª©í‘œ í‚¤ê°€ ì´ì›ƒ ë…¸ë“œì— ìˆìŒ
- *      4.1) ì´ì›ƒ ë…¸ë“œê°€ ìˆìŒ
- *           ì •ìƒì ìœ¼ë¡œ ì´ì›ƒ ë…¸ë“œë¥¼ ë˜ ì°¾ì•„ë“¤ì–´ê°. -> ì´ì›ƒë…¸ë“œ ì¬íƒìƒ‰
- *      4.2) ì´ì›ƒ ë…¸ë“œê°€ ì—†ìŒ
- *           ìƒìœ„ ë…¸ë“œë¶€í„° ì¬íƒìƒ‰. (3.1ê³¼ ê°™ìŒ)
- * */
-
-void smnbBTree::findFstLeaf( smnbHeader         * a_pIndexHeader,
-                             const smiCallBack  * a_pCallBack,
-                             SInt               * a_pDepth,
-                             smnbStack          * a_pStack,
-                             smnbLNode         ** a_pLNode)
-{
-    /* BUG-37643 Nodeì˜ arrayë¥¼ ì§€ì—­ë³€ìˆ˜ì— ì €ì¥í•˜ëŠ”ë°
-     * compiler ìµœì í™”ì— ì˜í•´ì„œ ì§€ì—­ë³€ìˆ˜ê°€ ì œê±°ë  ìˆ˜ ìˆë‹¤.
-     * ë”°ë¼ì„œ ì´ëŸ¬í•œ ë³€ìˆ˜ëŠ” volatileë¡œ ì„ ì–¸í•´ì•¼ í•œë‹¤. */
-    SInt                 s_nSlotCount;
-    SInt                 s_nLstReadPos;
-    SInt                 s_nDepth;
-    SInt                 s_nSlotPos;
-    volatile smnbINode * s_pCurINode;
-    volatile smnbINode * s_pChildINode;
-    volatile smnbINode * s_pCurSINode;
-    IDU_LATCH            s_version;
+    /* BUG-37643 NodeÀÇ array¸¦ Áö¿ªº¯¼ö¿¡ ÀúÀåÇÏ´Âµ¥
+     * compiler ÃÖÀûÈ­¿¡ ÀÇÇØ¼­ Áö¿ªº¯¼ö°¡ Á¦°ÅµÉ ¼ö ÀÖ´Ù.
+     * µû¶ó¼­ ÀÌ·¯ÇÑ º¯¼ö´Â volatile·Î ¼±¾ğÇØ¾ß ÇÑ´Ù. */
+    SInt                 sSlotCount;
+    SInt                 sDepth      = -1;
+    SInt                 sSlotPos;
+    volatile smnbINode * sCurINode   = (smnbINode*)aIndexHeader->root;
+    volatile smnbINode * sChildINode;
+    volatile smnbINode * sCurSINode;
+    IDU_LATCH            sVersion;
     IDU_LATCH            sNewVersion = IDU_LATCH_UNLOCKED;
 
-    s_nDepth = *a_pDepth;
-
-    if ( s_nDepth == -1 )
+    if ( sCurINode != NULL )
     {
-        s_pCurINode    = (smnbINode*)a_pIndexHeader->root;
-        s_nLstReadPos  = -1;
-    }
-    else
-    {
-        s_pCurINode    = (smnbINode*)(a_pStack->node);
-        s_nLstReadPos  = a_pStack->lstReadPos;
-    }
-
-    if ( s_pCurINode != NULL )
-    {
-        while((s_pCurINode->flag & SMNB_NODE_TYPE_MASK) == SMNB_NODE_TYPE_INTERNAL)
+        while ( SMNB_IS_INTERNAL_NODE( sCurINode ) )
         {
-            s_nLstReadPos++;
-            s_version     = getLatchValueOfINode(s_pCurINode) & (~SMNB_SCAN_LATCH_BIT);
+            sVersion     = getLatchValueOfINode(sCurINode) & (~SMNB_SCAN_LATCH_BIT);
             IDL_MEM_BARRIER;
 
             while(1)
             {
-                s_nSlotCount  = s_pCurINode->mSlotCount;
-                s_pCurSINode  = s_pCurINode->nextSPtr;
+                sSlotCount  = sCurINode->mSlotCount;
+                sCurSINode  = sCurINode->nextSPtr;
 
-                if ( s_nSlotCount != 0 )
+                if ( sSlotCount != 0 )
                 {
-                    findFirstSlotInInternal( a_pIndexHeader,
-                                             a_pCallBack,
-                                             (smnbINode*)s_pCurINode,
-                                             s_nLstReadPos,
-                                             s_nSlotCount - 1,
-                                             &s_nSlotPos );
-                    s_pChildINode = (smnbINode*)(s_pCurINode->mChildPtrs[s_nSlotPos]);
-                }
-                else
-                {
-                    s_pChildINode = NULL;
-                }
 
-                IDL_MEM_BARRIER;
-
-                sNewVersion = getLatchValueOfINode(s_pCurINode);
-
-                IDL_MEM_BARRIER;
-
-                if ( s_version == sNewVersion )
-                {
-                    break;
-                }
-                else
-                {
-                    s_version = sNewVersion & (~SMNB_SCAN_LATCH_BIT);
-                }
-
-                IDL_MEM_BARRIER;
-            }
-
-            s_nLstReadPos = -1;
-
-            if ( s_nSlotCount == 0 ) //Case 3)
-            {
-                if ( s_nDepth == -1 ) //Case 3.1)
-                {
-                    s_pCurINode = (smnbINode*)a_pIndexHeader->root;
-                }
-                else
-                {
-                    s_nDepth--;
-                    a_pStack--;
-                    s_pCurINode = (smnbINode*)(a_pStack->node);
-                }
-
-                if ( s_pCurINode == NULL ) //Case 3.2)
-                {
-                    s_nDepth = -1;
-                    break;
-                }
-
-                continue;
-            }
-
-            if ( s_nSlotCount == s_nSlotPos ) //Case 4
-            {
-                s_pCurINode = s_pCurSINode;
-
-                if ( s_pCurINode == NULL ) //Case 4.2
-                {
-                    if ( s_nDepth == -1 )
+                    /* BUG-47206 : aCallBack, aRow Áß ÇÏ³ª¸¸ »ç¿ëÇÔ.
+                                   beforFirstInternal() ¿¡¼­ È£Ãâ½Ã´Â aCallBack À» ÀÌ¿ëÇØ range minimum °ªÀ» Ã£°í,
+                                   insertKey(), freeSlot() µî ¿¡¼­ È£Ãâ½Ã´Â aRow °ªÀÇ À§Ä¡¸¦ Ã£´Â´Ù. */
+                    if ( aCallBack != NULL )
                     {
-                        s_pCurINode = (smnbINode*)a_pIndexHeader->root;
+                        IDE_DASSERT( aRow == NULL );
+
+                        findFirstSlotInNode( aIndexHeader,
+                                             aCallBack,
+                                             (smnbNode *)sCurINode,
+                                             &sSlotPos );
                     }
                     else
                     {
-                        s_nDepth--;
-                        a_pStack--;
-                        s_pCurINode = (smnbINode*)(a_pStack->node);
+                        IDE_DASSERT( aRow != NULL );
+
+                        IDE_TEST( findSlotInNode( (smnbHeader *)aIndexHeader,
+                                                  (smnbNode *)sCurINode,
+                                                  aRow,
+                                                  &sSlotPos ) != IDE_SUCCESS );
                     }
+
+                    sChildINode = (smnbINode*)(sCurINode->mChildPtrs[sSlotPos]);
+                }
+                else
+                {
+                    sChildINode = NULL;
+                }
+
+                sNewVersion = getLatchValueOfINode(sCurINode);
+
+                if ( sVersion == sNewVersion )
+                {
+                    break;
+                }
+                else
+                {
+                    sVersion = sNewVersion & (~SMNB_SCAN_LATCH_BIT);
+                }
+
+                IDL_MEM_BARRIER;
+            }
+
+            if ( sSlotCount == 0 ) /* Case 1 */
+            {
+                if ( sDepth == -1 ) /* Case 1.1 */
+                {
+                    sCurINode = (smnbINode*)aIndexHeader->root;
+                }
+                else
+                {
+                    sDepth--;
+                    aStack--;
+                    sCurINode = (smnbINode*)(aStack->node);
+                }
+
+                if ( sCurINode == NULL ) /* Case 1.2 */
+                {
+                    sDepth = -1;
+                    break;
                 }
 
                 continue;
             }
 
-            //Case 1)
-            a_pStack->node       = (smnbINode*)s_pCurINode;
-            a_pStack->version    = s_version;
-            a_pStack->lstReadPos = s_nSlotPos;
+            if ( sSlotCount == sSlotPos ) /* Case 2 */
+            {
+                sCurINode = sCurSINode;
 
-            s_nDepth++;
-            a_pStack++;
+                if ( sCurINode == NULL ) /* Case 2.2 */
+                {
+                    if ( sDepth == -1 )
+                    {
+                        sCurINode = (smnbINode*)aIndexHeader->root;
+                    }
+                    else
+                    {
+                        sDepth--;
+                        aStack--;
+                        sCurINode = (smnbINode*)(aStack->node);
+                    }
+                }
+                else
+                {
+                    /* Case 2. 1 */
+                }
 
-            s_pCurINode   = s_pChildINode;
-            s_nLstReadPos = -1;
+                continue;
+            }
 
-            // BUG-26625 ë©”ëª¨ë¦¬ ì¸ë±ìŠ¤ ìŠ¤ìº”ì‹œ SMOë¥¼ ê²€ì¶œí•˜ëŠ” ë¡œì§ì— ë¬¸ì œê°€ ìˆìŠµë‹ˆë‹¤.
+            aStack->node       = (smnbINode*)sCurINode;
+            aStack->lstReadPos = sSlotPos;
+            aStack->slotCount  = sSlotCount;
+
+            sDepth++;
+            aStack++;
+
+            sCurINode   = sChildINode;
+
+        } /* INTERNAL NODE LOOP */
+
+        IDL_MEM_BARRIER;
+
+        if ( sCurINode != NULL )
+        {
+            aStack->node = (smnbINode*)sCurINode;
+            sDepth++;
         }
     }
 
-    *a_pDepth = s_nDepth;
-    *a_pLNode = (smnbLNode*)s_pCurINode;
+    *aDepth = sDepth;
+    *aLNode = (smnbLNode*)sCurINode;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
 IDE_RC smnbBTree::updateStat4Delete( smnIndexHeader  * aPersIndex,
@@ -5396,11 +4943,8 @@ IDE_RC smnbBTree::updateStat4Delete( smnIndexHeader  * aPersIndex,
                                      idBool            aIsUniqueIndex )
 {
     SInt               s_nSlotPos;
-    smnbLNode        * sNextNode = NULL;
-    smnbLNode        * sPrevNode = NULL;
     SChar            * sPrevRowPtr;
     SChar            * sNextRowPtr;
-    IDU_LATCH          sVersion;
     smnbColumn       * sFirstColumn = &aIndex->columns[0];  // To fix BUG-26469
     SInt               sCompareResult;
     SChar            * sStatRow;
@@ -5408,79 +4952,38 @@ IDE_RC smnbBTree::updateStat4Delete( smnIndexHeader  * aPersIndex,
 
     s_nSlotPos = *a_pSlotPos;
 
-    if ( ( s_nSlotPos == a_pLeafNode->mSlotCount ) ||
-         ( a_pLeafNode->mRowPtrs[s_nSlotPos] != a_pRow ) )
-    {
-        IDE_CONT( skip_update_stat );
-    }
-    else
-    {
-        /* nothing to do */
-    }
+    IDE_TEST_CONT( ( ( s_nSlotPos == a_pLeafNode->mSlotCount ) ||
+                     ( a_pLeafNode->mRowPtrs[s_nSlotPos] != a_pRow ) ),
+                   skip_update_stat );
 
-    if ( smnbBTree::isNullKey( aIndex, a_pRow ) == ID_TRUE )
-    {
-        IDE_CONT( skip_update_stat );
-    }
+    IDE_TEST_CONT( ( smnbBTree::isNullKey( aIndex, a_pRow ) == ID_TRUE ),
+                   skip_update_stat );
 
     // get next slot
     if ( s_nSlotPos == ( a_pLeafNode->mSlotCount - 1 ) )
     {
-        if ( a_pLeafNode->nextSPtr == NULL )
-        {
-            sNextRowPtr = NULL;
-        }
-        else
-        {
-            while(1)
-            {
-                sNextNode = (smnbLNode*)a_pLeafNode->nextSPtr;
-                sVersion  = getLatchValueOfLNode( sNextNode ) & IDU_LATCH_UNMASK;
-
-                IDL_MEM_BARRIER;
-
-                sNextRowPtr = sNextNode->mRowPtrs[0];
-
-                IDL_MEM_BARRIER;
-
-                if ( sVersion == getLatchValueOfLNode(sNextNode) )
-                {
-                    break;
-                }
-            }
-        }
+        // BUG-47554 memory index ¿¡¼­ latch °ü¸®¸¦ IDL_MEM_BARRIER °¡ ¾Æ´Ñ atomic ÇÔ¼ö·Î º¯°æÇÕ´Ï´Ù.
+        // °»½Å ÇÒ KeyÀÇ À§Ä¡°¡ Leaf NodeÀÇ ¸¶Áö¸· SlotÀÏ ¶§,
+        // Next NodeÀÇ Ã¹¹øÂ° KeyÀÇ Row Pointer¸¦ °¡Á®¿Â´Ù.
+        // ÀÚÁÖ È£Ãâ µÇÁö ¾Ê°í, ÃÖÀûÈ­·Î ÀÎÇÑ ¹®Á¦°¡ ÀÖ¾î¼­
+        // º°µµÀÇ ÇÔ¼ö·Î ÃßÃâÇÑ´Ù.
+        sNextRowPtr = getNxtLNodeFstRow( a_pLeafNode );
     }
     else
     {
         IDE_DASSERT( ( s_nSlotPos + 1 ) >= 0 );
         sNextRowPtr = a_pLeafNode->mRowPtrs[s_nSlotPos + 1];
     }
+
     // get prev slot
     if ( s_nSlotPos == 0 )
     {
-        if ( a_pLeafNode->prevSPtr == NULL )
-        {
-            sPrevRowPtr = NULL;
-        }
-        else
-        {
-            while(1)
-            {
-                sPrevNode = (smnbLNode*)a_pLeafNode->prevSPtr;
-                sVersion  = getLatchValueOfLNode( sPrevNode ) & IDU_LATCH_UNMASK;
-
-                IDL_MEM_BARRIER;
-
-                sPrevRowPtr = sPrevNode->mRowPtrs[sPrevNode->mSlotCount - 1];
-
-                IDL_MEM_BARRIER;
-
-                if ( sVersion == getLatchValueOfLNode(sPrevNode) )
-                {
-                    break;
-                }
-            }
-        }
+        // BUG-47554 memory index ¿¡¼­ latch °ü¸®¸¦ IDL_MEM_BARRIER °¡ ¾Æ´Ñ atomic ÇÔ¼ö·Î º¯°æÇÕ´Ï´Ù.
+        // °»½Å ÇÒ KeyÀÇ À§Ä¡°¡ Leaf NodeÀÇ Ã¹¹øÂ° SlotÀÏ ¶§,
+        // Prev NodeÀÇ ¸¶Áö¸· KeyÀÇ Row Pointer¸¦ °¡Á®¿Â´Ù.
+        // ÀÚÁÖ È£Ãâ µÇÁö ¾Ê°í, ÃÖÀûÈ­·Î ÀÎÇÑ ¹®Á¦°¡ ÀÖ¾î¼­
+        // º°µµÀÇ ÇÔ¼ö·Î ÃßÃâÇÑ´Ù.
+        sPrevRowPtr = getPrvLNodeLstRow( a_pLeafNode );
     }
     else
     {
@@ -5490,9 +4993,9 @@ IDE_RC smnbBTree::updateStat4Delete( smnIndexHeader  * aPersIndex,
     // update index statistics
 
     // To fix BUG-26469
-    // sColumn[0] ì„ ì‚¬ìš©í•˜ë©´ ì•ˆëœë‹¤.
-    // sColumn ì€ ì „ì²´ í‚¤ì»¬ëŸ¼ì´ NULL ì¸ì§€ ì²´í¬í•˜ëŠ” ë¡œì§ì—ì„œ position ì´ ì˜®ê²¨ì¡Œë‹¤.
-    // ê·¸ë˜ì„œ sColumn[0] ì€ ì‹¤ì œ 0ë²ˆì§¸ê°€ ì•„ë‹Œ ì˜®ê²¨ì§„ position ì´ë‹¤.
+    // sColumn[0] À» »ç¿ëÇÏ¸é ¾ÈµÈ´Ù.
+    // sColumn Àº ÀüÃ¼ Å°ÄÃ·³ÀÌ NULL ÀÎÁö Ã¼Å©ÇÏ´Â ·ÎÁ÷¿¡¼­ position ÀÌ ¿Å°ÜÁ³´Ù.
+    // ±×·¡¼­ sColumn[0] Àº ½ÇÁ¦ 0¹øÂ°°¡ ¾Æ´Ñ ¿Å°ÜÁø position ÀÌ´Ù.
     if ( isNullColumn( sFirstColumn,
                        &(sFirstColumn->column),
                        a_pRow ) != ID_TRUE )
@@ -5504,7 +5007,7 @@ IDE_RC smnbBTree::updateStat4Delete( smnIndexHeader  * aPersIndex,
                                  &(sFirstColumn->column),
                                  sNextRowPtr ) == ID_TRUE ) )
             {
-                /* setMinMaxStat ì—ì„œ Rowê°€ NULLì´ë©´ í†µê³„ì •ë³´ ì´ˆê¸°í™”í•¨*/
+                /* setMinMaxStat ¿¡¼­ Row°¡ NULLÀÌ¸é Åë°èÁ¤º¸ ÃÊ±âÈ­ÇÔ*/
                 sStatRow = NULL;
             }
             else
@@ -5525,7 +5028,7 @@ IDE_RC smnbBTree::updateStat4Delete( smnIndexHeader  * aPersIndex,
         {
             if ( sPrevRowPtr == NULL )
             {
-                /* setMinMaxStat ì—ì„œ Rowê°€ NULLì´ë©´ í†µê³„ì •ë³´ ì´ˆê¸°í™”í•¨*/
+                /* setMinMaxStat ¿¡¼­ Row°¡ NULLÀÌ¸é Åë°èÁ¤º¸ ÃÊ±âÈ­ÇÔ*/
                 sStatRow = NULL;
             }
             else
@@ -5562,24 +5065,13 @@ IDE_RC smnbBTree::updateStat4Delete( smnIndexHeader  * aPersIndex,
                                           aIndex->fence,
                                           a_pRow,
                                           sPrevRowPtr ) ;
-            if ( sCompareResult < 0 )
-            {
-                smnManager::logCommonHeader( aIndex->mIndexHeader );
-                logIndexNode( aIndex->mIndexHeader, (smnbNode*)sPrevNode );
-                IDE_ERROR_RAISE( 0, ERR_CORRUPTED_INDEX );
-            }
-            else
-            {
-                /* nothing to do */
-            }
-
             if ( sCompareResult == 0 )
             {
                 break;
             }
             else
             {
-                /* nothing to do */
+                IDE_ERROR_RAISE( sCompareResult > 0, ERR_CORRUPTED_INDEX );
             }
         }
         else
@@ -5594,16 +5086,6 @@ IDE_RC smnbBTree::updateStat4Delete( smnIndexHeader  * aPersIndex,
                                           aIndex->fence,
                                           a_pRow,
                                           sNextRowPtr );
-            if ( sCompareResult > 0 )
-            {
-                smnManager::logCommonHeader( aIndex->mIndexHeader );
-                logIndexNode( aIndex->mIndexHeader, (smnbNode*)sNextNode );
-                IDE_ERROR_RAISE( 0, ERR_CORRUPTED_INDEX );
-            }
-            else
-            {
-                /* nothing to do */
-            }
 
             if ( sCompareResult == 0 )
             {
@@ -5611,7 +5093,7 @@ IDE_RC smnbBTree::updateStat4Delete( smnIndexHeader  * aPersIndex,
             }
             else
             {
-                /* nothing to do */
+                IDE_ERROR_RAISE( sCompareResult < 0, ERR_CORRUPTED_INDEX );
             }
         }
         else
@@ -5619,12 +5101,12 @@ IDE_RC smnbBTree::updateStat4Delete( smnIndexHeader  * aPersIndex,
             /* nothing to do */
         }
 
-        /* BUG-30074 - disk tableì˜ unique indexì—ì„œ NULL key ì‚­ì œ ì‹œ/
-         *             non-unique indexì—ì„œ deleted key ì¶”ê°€ ì‹œ Cardinalityì˜
-         *             ì •í™•ì„±ì´ ë§ì´ ë–¨ì–´ì§‘ë‹ˆë‹¤.
+        /* BUG-30074 - disk tableÀÇ unique index¿¡¼­ NULL key »èÁ¦ ½Ã/
+         *             non-unique index¿¡¼­ deleted key Ãß°¡ ½Ã CardinalityÀÇ
+         *             Á¤È®¼ºÀÌ ¸¹ÀÌ ¶³¾îÁı´Ï´Ù.
          *
-         * Null Keyì˜ ê²½ìš° NumDistë¥¼ ê°±ì‹ í•˜ì§€ ì•Šë„ë¡ í•œë‹¤.
-         * Memory indexì˜ NumDistë„ ë™ì¼í•œ ì •ì±…ìœ¼ë¡œ ë³€ê²½í•œë‹¤. */
+         * Null KeyÀÇ °æ¿ì NumDist¸¦ °»½ÅÇÏÁö ¾Êµµ·Ï ÇÑ´Ù.
+         * Memory indexÀÇ NumDistµµ µ¿ÀÏÇÑ Á¤Ã¥À¸·Î º¯°æÇÑ´Ù. */
         if ( smnbBTree::isNullColumn( &(aIndex->columns[0]),
                                       &(aIndex->columns[0].column),
                                       a_pRow ) != ID_TRUE )
@@ -5648,6 +5130,8 @@ IDE_RC smnbBTree::updateStat4Delete( smnIndexHeader  * aPersIndex,
 
     IDE_EXCEPTION( ERR_CORRUPTED_INDEX )
     {
+        smnbBTree::logIndexHeader( aIndex->mIndexHeader );
+
         IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
 
         ideLog::log( IDE_SM_0, "Index Corrupted Detected : Wrong Index Order" );
@@ -5684,8 +5168,8 @@ void smnbBTree::deleteSlotInLeafNode( smnbLNode     * a_pLeafNode,
             /* nothing to do */
         }
 
-        // BUG-29582: leaf nodeì—ì„œ ë§ˆì§€ë§‰ slotì´ deleteë ë•Œ, ì§€ì›Œì§„ slotì˜
-        // row pointerë¥¼ NULLë¡œ ì´ˆê¸°í™”í•œë‹¤.
+        // BUG-29582: leaf node¿¡¼­ ¸¶Áö¸· slotÀÌ deleteµÉ¶§, Áö¿öÁø slotÀÇ
+        // row pointer¸¦ NULL·Î ÃÊ±âÈ­ÇÑ´Ù.
         setLeafSlot( a_pLeafNode,
                      (SShort)( a_pLeafNode->mSlotCount - 1 ),
                      NULL,
@@ -5716,8 +5200,8 @@ IDE_RC smnbBTree::deleteSlotInInternalNode(smnbINode*        a_pInternalNode,
 
             /*
              * PROJ-2433
-             * child pointerëŠ” ê·¸ëŒ€ë¡œ ìœ ì§€í•˜ê³ 
-             * row pointer, direct key ì‚­ì œ
+             * child pointer´Â ±×´ë·Î À¯ÁöÇÏ°í
+             * row pointer, direct key »èÁ¦
              */
             setInternalSlot( a_pInternalNode,
                              (SShort)( a_nSlotPos - 1 ),
@@ -5748,8 +5232,8 @@ IDE_RC smnbBTree::deleteSlotInInternalNode(smnbINode*        a_pInternalNode,
         /* nothing to do */
     }
 
-    // BUG-29582: internal nodeì—ì„œ ë§ˆì§€ë§‰ slotì´ deleteë ë•Œ, ì§€ì›Œì§„ slotì˜
-    // row pointerë¥¼ NULLë¡œ ì´ˆê¸°í™”í•œë‹¤.
+    // BUG-29582: internal node¿¡¼­ ¸¶Áö¸· slotÀÌ deleteµÉ¶§, Áö¿öÁø slotÀÇ
+    // row pointer¸¦ NULL·Î ÃÊ±âÈ­ÇÑ´Ù.
     setInternalSlot( a_pInternalNode,
                      (SShort)( a_pInternalNode->mSlotCount - 1 ),
                      NULL,
@@ -5788,8 +5272,8 @@ IDE_RC smnbBTree::deleteNA( idvSQL          * /* aStatistics */,
                             smiIterator     * /* aIterator */,
                             sdSID             /* aRowSID */ )
 {
-    // memory b treeëŠ” rowì˜ deleteì‹œì— index keyì— delete markë¥¼
-    // í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // memory b tree´Â rowÀÇ delete½Ã¿¡ index key¿¡ delete mark¸¦
+    // ÇÏÁö ¾Ê´Â´Ù.
 
     return IDE_SUCCESS;
 }
@@ -5813,7 +5297,7 @@ IDE_RC smnbBTree::freeSlot( void            * a_pIndex,
     idBool            sIsUniqueIndex;
     idBool            sIsTreeLatched = ID_FALSE;
     idBool            sNeedTreeLatch = ID_FALSE;
-    smnbLNode       * sLatchedNode[3];   /* prev/curr/next ìµœëŒ€ 3ê°œ ì¡íìˆ˜ìˆë‹¤ */
+    smnbLNode       * sLatchedNode[3];   /* prev/curr/next ÃÖ´ë 3°³ ÀâÈú¼öÀÖ´Ù */
     UInt              sLatchedNodeCount = 0;
     UInt              sDeleteNodeCount = 0;
     smOID             sRowOID;
@@ -5828,11 +5312,24 @@ IDE_RC smnbBTree::freeSlot( void            * a_pIndex,
     sIsUniqueIndex = (((smnIndexHeader*)a_pIndex)->mFlag&SMI_INDEX_UNIQUE_MASK)
         == SMI_INDEX_UNIQUE_ENABLE ? ID_TRUE : ID_FALSE;
 
+/* freeSlotByLeafFullScan() ÇÔ¼ö Å×½ºÆ®¿ë ÄÚµå, ¹ß°ßÇÏ¸é free slotÇÏ°í
+ * ¹ß°ßÇÏÁö ¸øÇÏ°Å³ª È¤Àº node count 1 È¤Àº last keyÀÌ¸é ±âÁ¸ ÄÚµå¸¦ Å½»öÇÑ´Ù. */
+#if 0
+    if ( aIgnoreNotFoundKey == ID_FALSE )
+    {
+        if( freeSlotByLeafFullScan( s_pIndexHeader,
+                                    a_pRow ) == IDE_SUCCESS )
+        {
+             IDE_CONT( SKIP_FREE_SLOT );
+        }
+    }
+#endif
+
 restart:
     /* BUG-32742 [sm] Create DB fail in Altibase server
-     *           Solaris x86ì—ì„œ DB ìƒì„±ì‹œ ì„œë²„ hang ê±¸ë¦¼.
-     *           ì›ì¸ì€ ì»´íŒŒì¼ëŸ¬ ìµœì í™” ë¬¸ì œë¡œ ë³´ì´ê³ , ì´ë¥¼ íšŒí”¼í•˜ê¸° ìœ„í•´
-     *           ì•„ë˜ì™€ ê°™ì´ ìˆ˜ì •í•¨ */
+     *           Solaris x86¿¡¼­ DB »ı¼º½Ã ¼­¹ö hang °É¸².
+     *           ¿øÀÎÀº ÄÄÆÄÀÏ·¯ ÃÖÀûÈ­ ¹®Á¦·Î º¸ÀÌ°í, ÀÌ¸¦ È¸ÇÇÇÏ±â À§ÇØ
+     *           ¾Æ·¡¿Í °°ÀÌ ¼öÁ¤ÇÔ */
     if ( sNeedTreeLatch == ID_TRUE )
     {
         IDU_FIT_POINT( "smnbBTree::freeSlot::beforeLockTree" );
@@ -5847,40 +5344,49 @@ restart:
     s_nDepth = -1;
 
     IDE_TEST( findPosition( s_pIndexHeader,
+                            NULL, /* smiCallBack */
                             a_pRow,
                             &s_nDepth,
-                            s_stack ) != IDE_SUCCESS );
+                            s_stack,
+                            &s_pCurLeafNode ) != IDE_SUCCESS );
 
     /* BUG-32655 [sm-mem-index] The MMDB Ager must not ignore the failure of
      * index aging.
      * BUG-32984 [SM] during rollback after updateInplace in memory index,
      *                it attempts to delete a key that does not exist.
-     * updateInplace rollbackì¸ ê²½ìš° í‚¤ê°€ ì¡´ì¬í•˜ì§€ ì•Šì„ ìˆ˜ ìˆë‹¤. */
+     * updateInplace rollbackÀÎ °æ¿ì Å°°¡ Á¸ÀçÇÏÁö ¾ÊÀ» ¼ö ÀÖ´Ù. */
     if ( s_nDepth == -1 )
     {
         *aIsExistFreeKey = ID_FALSE;
 
-        if ( aIgnoreNotFoundKey == ID_TRUE )
+        if ( aIgnoreNotFoundKey == ID_FALSE )
         {
-            IDE_CONT( SKIP_FREE_SLOT );
+            if ( sIsTreeLatched == ID_TRUE )
+            {
+                sIsTreeLatched = ID_FALSE;
+                unlockTree(s_pIndexHeader) ;
+            }
+            /* BUG-47618 key¸¦ ¹İµå½Ã ¹ß°ßÇØ¾ß ÇÏ´Â »óÈ²¿¡¼­ ¹ß°ßÇÏÁö ¸øÇÏ¿´À» ¶§
+             * leaf node¸¦ fullscan ÇØ¼­ row pointer¸¦ Ã£½À´Ï´Ù.
+             * ¿¹¿Ü »óÈ²¿¡¼­¸¸ È£ÃâµÇ´Â ÇÔ¼ö·Î, ¹ß°ßÇÏ¸é Åë°úÇÏ°í,
+             * row¸¦ Ã£¾Æ¼­ delete ÇÏÁö ¸øÇÒ °æ¿ì Ãß°¡ ¿¹¿Ü°¡ ¹ß»ıÇÕ´Ï´Ù.*/
+            IDE_TEST( freeSlotByLeafFullScan( s_pIndexHeader,
+                                              a_pRow ) != IDE_SUCCESS );
+            *aIsExistFreeKey = ID_TRUE;
         }
-        else
-        {
-            /* goto exception */
-            IDE_TEST( 1 );
-        }
+
+        IDE_CONT( SKIP_FREE_SLOT );
     }
 
-    while(s_nDepth >= 0)
+    while(s_nDepth >= 0) /* no loop */
     {
-        s_pCurLeafNode = (smnbLNode*)(s_stack[s_nDepth].node);
         s_pDeleteRow   = a_pRow;
 
         /* BUG-32781 during update MMDB Index statistics, a reading slot 
          *           can be removed.
          *
-         * Tree latchë¥¼ ì¡ëŠ” ê²½ìš° prev/next/curr nodeë¥¼ ì¡ì•„ updateStat ì¤‘ì—
-         * row/nodeê°€ freeë˜ëŠ” ê²½ìš°ë¥¼ ì—†ì•¤ë‹¤. */
+         * Tree latch¸¦ Àâ´Â °æ¿ì prev/next/curr node¸¦ Àâ¾Æ updateStat Áß¿¡
+         * row/node°¡ freeµÇ´Â °æ¿ì¸¦ ¾ø¾Ø´Ù. */
         if ( sIsTreeLatched == ID_TRUE )
         {
             /* prev node */
@@ -5921,8 +5427,8 @@ restart:
 
         IDE_ERROR_RAISE( sLatchedNodeCount <= 3, ERR_INVALID_LATCH_NODE_COUNT );
 
-        /* node latchë¥¼ ì¡ê¸°ì „ split ë˜ì–´ ì‚­ì œí•  í‚¤ê°€ ë‹¤ë¥¸ ë…¸ë“œë¡œ ì´ë™í–ˆì„
-         * ìˆ˜ë„ ìˆë‹¤. ê·¸ë ‡ê²Œ ë˜ë©´ í˜„ ë…¸ë“œì˜ ëª¨ë“  Keyê°€ ì‚­ì œë  ìˆ˜ ìˆë‹¤. */
+        /* node latch¸¦ Àâ±âÀü split µÇ¾î »èÁ¦ÇÒ Å°°¡ ´Ù¸¥ ³ëµå·Î ÀÌµ¿ÇßÀ»
+         * ¼öµµ ÀÖ´Ù. ±×·¸°Ô µÇ¸é Çö ³ëµåÀÇ ¸ğµç Key°¡ »èÁ¦µÉ ¼ö ÀÖ´Ù. */
         if ( ( s_pCurLeafNode->mSlotCount == 0 ) ||
              ( ( s_pCurLeafNode->flag & SMNB_NODE_VALID_MASK ) == SMNB_NODE_INVALID ) )
         {
@@ -5939,7 +5445,7 @@ restart:
             /* nothing to do */
         }
 
-        /* ë…¸ë“œ ì‚­ì œê¹Œì§€ í•„ìš”í•œ ê²½ìš° Tree latchë¥¼ ì¡ì•„ì•¼ í•œë‹¤. */
+        /* ³ëµå »èÁ¦±îÁö ÇÊ¿äÇÑ °æ¿ì Tree latch¸¦ Àâ¾Æ¾ß ÇÑ´Ù. */
         if ( sIsTreeLatched == ID_FALSE )
         {
             if ( ( s_pCurLeafNode->mSlotCount - 1 ) == 0 )
@@ -5958,13 +5464,13 @@ restart:
             }
         }
 
-        /* í‚¤ ìœ„ì¹˜ë¥¼ ì°¾ê³  */
-        IDE_TEST( findSlotInLeaf( s_pIndexHeader,
-                                  s_pCurLeafNode,
+        /* Å° À§Ä¡¸¦ Ã£°í */
+        IDE_TEST( findSlotInNode( s_pIndexHeader,
+                                  (smnbNode *)s_pCurLeafNode,
                                   s_pDeleteRow,
                                   &s_nSlotPos ) != IDE_SUCCESS );
 
-        /* ì‚­ì œí•  í‚¤ë¥¼ ì°¾ëŠ” ë„ì¤‘ split ëœ ê²½ìš°.. */
+        /* »èÁ¦ÇÒ Å°¸¦ Ã£´Â µµÁß split µÈ °æ¿ì.. */
         if ( s_nSlotPos == s_pCurLeafNode->mSlotCount )
         {
             if ( s_pCurLeafNode->nextSPtr != NULL )
@@ -5983,8 +5489,8 @@ restart:
             /* nothing to do */
         }
 
-        /* ì‚­ì œí•  í‚¤ ìœ„ì¹˜ê°€ ë§ˆì§€ë§‰ slotì´ë©´ ìƒìœ„ ë…¸ë“œì˜ slotì´ ë³€ê²½ë˜ê¸° ë•Œë¬¸ì—
-         * Tree latchë¥¼ ì¡ëŠ”ë‹¤. */
+        /* »èÁ¦ÇÒ Å° À§Ä¡°¡ ¸¶Áö¸· slotÀÌ¸é »óÀ§ ³ëµåÀÇ slotÀÌ º¯°æµÇ±â ¶§¹®¿¡
+         * Tree latch¸¦ Àâ´Â´Ù. */
         if ( sIsTreeLatched == ID_FALSE )
         {
             if ( s_nSlotPos == ( s_pCurLeafNode->mSlotCount - 1 ) )
@@ -6030,20 +5536,34 @@ restart:
          * index aging.
          * BUG-32984 [SM] during rollback after updateInplace in memory index,
          *                it attempts to delete a key that does not exist.
-         * updateInplace rollbackì¸ ê²½ìš° í‚¤ê°€ ì¡´ì¬í•˜ì§€ ì•Šì„ ìˆ˜ ìˆë‹¤. */
+         * updateInplace rollbackÀÎ °æ¿ì Å°°¡ Á¸ÀçÇÏÁö ¾ÊÀ» ¼ö ÀÖ´Ù. */
         if ( s_nSlotPos == -1 )
         {
             *aIsExistFreeKey = ID_FALSE;
 
-            if ( aIgnoreNotFoundKey == ID_TRUE )
+            if ( aIgnoreNotFoundKey == ID_FALSE )
             {
-                IDE_CONT( SKIP_FREE_SLOT );
+                while ( sLatchedNodeCount > 0 )
+                {
+                    sLatchedNodeCount--;
+                    unlockNode(sLatchedNode[sLatchedNodeCount]);
+                }
+
+                if ( sIsTreeLatched == ID_TRUE )
+                {
+                    sIsTreeLatched = ID_FALSE;
+                    unlockTree(s_pIndexHeader);
+                }
+                /* BUG-47618 key¸¦ ¹İµå½Ã ¹ß°ßÇØ¾ß ÇÏ´Â »óÈ²¿¡¼­ ¹ß°ßÇÏÁö ¸øÇÏ¿´À» ¶§
+                 * leaf node¸¦ fullscan ÇØ¼­ row pointer¸¦ Ã£½À´Ï´Ù.
+                 * ¿¹¿Ü »óÈ²¿¡¼­¸¸ È£ÃâµÇ´Â ÇÔ¼ö·Î, ¹ß°ßÇÏ¸é Åë°úÇÏ°í,
+                 * row¸¦ Ã£¾Æ¼­ delete ÇÏÁö ¸øÇÒ °æ¿ì Ãß°¡ ¿¹¿Ü°¡ ¹ß»ıÇÕ´Ï´Ù.*/
+                IDE_TEST( freeSlotByLeafFullScan( s_pIndexHeader,
+                                                  a_pRow ) != IDE_SUCCESS );
+                *aIsExistFreeKey = ID_TRUE;
             }
-            else
-            {
-                /* goto exception */
-                IDE_TEST( 1 );
-            }
+
+            IDE_CONT( SKIP_FREE_SLOT );
         }
 
         if ( s_pCurLeafNode->mSlotCount == 0 )
@@ -6064,7 +5584,7 @@ restart:
             s_pCurLeafNode->freeNodeList = s_pFreeNode;
             s_pFreeNode = (smnbNode*)s_pCurLeafNode;
 
-            // BUG-18292 : V$MEM_BTREE_HEADER ì •ë³´ ì¶”ê°€
+            // BUG-18292 : V$MEM_BTREE_HEADER Á¤º¸ Ãß°¡
             sDeleteNodeCount++;
 
             if ( s_pCurLeafNode == s_pIndexHeader->root )
@@ -6105,8 +5625,8 @@ restart:
                 if ( s_pCurInternalNode->mRowPtrs[s_nSlotPos] != NULL )
                 {
                     /* PROJ-2433
-                     * child pointerëŠ” ìœ ì§€í•˜ê³ 
-                     * row pointerì™€ direct keyë¥¼ë³€ê²½ */
+                     * child pointer´Â À¯ÁöÇÏ°í
+                     * row pointer¿Í direct key¸¦º¯°æ */
                     setInternalSlot( s_pCurInternalNode,
                                      (SShort)s_nSlotPos,
                                      s_pCurInternalNode->mChildPtrs[s_nSlotPos],
@@ -6129,7 +5649,7 @@ restart:
 
             SMNB_SCAN_UNLATCH(s_pCurInternalNode);
 
-            // BUG-26625 ë©”ëª¨ë¦¬ ì¸ë±ìŠ¤ ìŠ¤ìº”ì‹œ SMOë¥¼ ê²€ì¶œí•˜ëŠ” ë¡œì§ì— ë¬¸ì œê°€ ìˆìŠµë‹ˆë‹¤.
+            // BUG-26625 ¸Ş¸ğ¸® ÀÎµ¦½º ½ºÄµ½Ã SMO¸¦ °ËÃâÇÏ´Â ·ÎÁ÷¿¡ ¹®Á¦°¡ ÀÖ½À´Ï´Ù.
 
             if ( s_pCurInternalNode->mSlotCount == 0 )
             {
@@ -6157,7 +5677,7 @@ restart:
 
                 s_pIndexHeader->mAgerStat.mNodeDeleteCount++;
 
-                // BUG-18292 : V$MEM_BTREE_HEADER ì •ë³´ ì¶”ê°€
+                // BUG-18292 : V$MEM_BTREE_HEADER Á¤º¸ Ãß°¡
                 sDeleteNodeCount++;
             }
             else
@@ -6182,7 +5702,7 @@ restart:
                         s_pCurInternalNode =
                             (smnbINode*)(s_pCurInternalNode->mChildPtrs[s_pCurInternalNode->mSlotCount - 1]);
 
-                        while((s_pCurInternalNode->flag & SMNB_NODE_TYPE_MASK) == SMNB_NODE_TYPE_INTERNAL)
+                        while ( SMNB_IS_INTERNAL_NODE( s_pCurInternalNode ) )
                         {
                             SMNB_SCAN_LATCH(s_pCurInternalNode);
 
@@ -6190,7 +5710,7 @@ restart:
 
                             /*
                              * PROJ-2433
-                             * child pointerëŠ” ìœ ì§€
+                             * child pointer´Â À¯Áö
                              */
                             setInternalSlot( s_pCurInternalNode,
                                              (SShort)( s_pCurInternalNode->mSlotCount - 1 ),
@@ -6235,7 +5755,7 @@ restart:
     {
         IDE_TEST( s_pFreeNode == s_pFreeNode->freeNodeList );
 
-        // BUG-18292 : V$MEM_BTREE_HEADER ì •ë³´ ì¶”ê°€
+        // BUG-18292 : V$MEM_BTREE_HEADER Á¤º¸ Ãß°¡
         s_pIndexHeader->nodeCount -= sDeleteNodeCount;
 
         smLayerCallback::addNodes2LogicalAger( mSmnbFreeNodeList,
@@ -6262,7 +5782,7 @@ restart:
     }
     IDE_EXCEPTION_END;
 
-    smnManager::logCommonHeader( (smnIndexHeader*)a_pIndex );
+    smnbBTree::logIndexHeader( (smnIndexHeader*)a_pIndex );
 
     if ( s_pCurInternalNode != NULL )
     {
@@ -6277,14 +5797,17 @@ restart:
     }
 
     sRowOID = SMP_SLOT_GET_OID( a_pRow );
-    ideLog::log( IDE_SM_0,
+
+    ideLog::log( IDE_ERR_0,
                  "RowPtr:%16"ID_vULONG_FMT" %16"ID_vULONG_FMT,
                  a_pRow,
                  sRowOID );
-    ideLog::logMem( IDE_SM_0,
+
+    ideLog::logMem( IDE_ERR_0,
                     (UChar*)a_pRow,
                     s_pIndexHeader->mFixedKeySize
                     + SMP_SLOT_HEADER_SIZE );
+
     IDE_DASSERT( 0 );
 
     while ( sLatchedNodeCount > 0 )
@@ -6307,9 +5830,8 @@ restart:
     return IDE_FAILURE;
 }
 
-IDE_RC smnbBTree::existKey( void   * aIndex,
-                            SChar  * aRow,
-                            idBool * aExistKey )
+IDE_RC smnbBTree::checkExistKey( void   * aIndex,
+                                 SChar  * aRow )
 
 {
     smnbHeader*  sIndexHeader;
@@ -6317,7 +5839,6 @@ IDE_RC smnbBTree::existKey( void   * aIndex,
     smnbLNode*   sCurLeafNode = NULL;
     SInt         sSlotPos;
     smnbStack    sStack[SMNB_STACK_DEPTH];
-    idBool       sExistKey = ID_FALSE;
     smOID        sRowOID;
     UInt         sState = 0;
 
@@ -6328,27 +5849,26 @@ IDE_RC smnbBTree::existKey( void   * aIndex,
     sState = 1;
 
     IDE_TEST( findPosition( sIndexHeader,
+                            NULL, /* smiCallBack */
                             aRow,
                             &sDepth,
-                            sStack ) != IDE_SUCCESS );
+                            sStack,
+                            &sCurLeafNode ) != IDE_SUCCESS );
 
     if ( sDepth != -1 )
     {
-        /* í•´ë‹¹ Node ì°¾ì•˜ìŒ */
-        sCurLeafNode = (smnbLNode*)(sStack[sDepth].node);
+        /* ÇØ´ç Node Ã£¾ÒÀ½ */
 
-        IDE_TEST( findSlotInLeaf( sIndexHeader,
-                                  sCurLeafNode,
+        IDE_TEST( findSlotInNode( sIndexHeader,
+                                  (smnbNode *)sCurLeafNode,
                                   aRow,
                                   &sSlotPos ) != IDE_SUCCESS );
 
         if ( ( sSlotPos != sCurLeafNode->mSlotCount ) &&
              ( sCurLeafNode->mRowPtrs[ sSlotPos ] == aRow ) )
         {
-            /* Deleteë˜ì—ˆëŠ”ì§€ í™•ì¸í•˜ëŸ¬ ë“¤ì–´ì™”ëŠ”ë°, ì¡´ì¬í•˜ë©´ ì´ìƒí•¨ */
-            sExistKey = ID_TRUE;
-
-            smnManager::logCommonHeader( (smnIndexHeader*)aIndex );
+            /* DeleteµÇ¾ú´ÂÁö È®ÀÎÇÏ·¯ µé¾î¿Ô´Âµ¥, Á¸ÀçÇÏ¸é ÀÌ»óÇÔ */
+            smnbBTree::logIndexHeader( (smnIndexHeader*)aIndex );
             logIndexNode( (smnIndexHeader*)aIndex,
                           (smnbNode*)sCurLeafNode );
             sRowOID = SMP_SLOT_GET_OID( aRow );
@@ -6360,27 +5880,22 @@ IDE_RC smnbBTree::existKey( void   * aIndex,
                             (UChar*)aRow,
                             sIndexHeader->mFixedKeySize 
                             + SMP_SLOT_HEADER_SIZE );
+
+            /* BUG-47526 Assert À§Ä¡¸¦ ¿Å±é´Ï´Ù.
+             * »óÀ§ ´Ü º¸´Ù´Â IndexÀÇ key¸¦ È®ÀÎÇÑ ½ÃÁ¡¿¡ AssertµÇ¾î¾ß
+             * ºñ±³ °Ë»ç°¡ °¡´ÉÇÑµí ÇÏ¿© ¾Æ·¡·Î ³»·Áº¸³À´Ï´Ù. */
+            IDE_ASSERT( 0 );
         }
-        else
-        {
-            sExistKey = ID_FALSE;
-        }
-    }
-    else
-    {
-        sExistKey = ID_FALSE;
     }
 
     sState = 0;
     unlockTree( sIndexHeader );
 
-    (*aExistKey) = sExistKey;
-
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 
-    smnManager::logCommonHeader( (smnIndexHeader*)aIndex );
+    smnbBTree::logIndexHeader( (smnIndexHeader*)aIndex );
 
     if ( sCurLeafNode != NULL )
     {
@@ -6410,8 +5925,6 @@ IDE_RC smnbBTree::existKey( void   * aIndex,
         setInconsistentIndex( (smnIndexHeader *)aIndex );
     }
 
-    (*aExistKey) = ID_FALSE;
-
     return IDE_FAILURE;
 }
 
@@ -6419,15 +5932,15 @@ IDE_RC smnbBTree::existKey( void   * aIndex,
  * FUNCTION DESCRIPTION : smnbBTree::gatherStat                      *
  * ------------------------------------------------------------------*
  * TASK-4990 changing the method of collecting index statistics
- * ìˆ˜ë™ í†µê³„ì •ë³´ ìˆ˜ì§‘ ê¸°ëŠ¥
- * indexì˜ í†µê³„ì •ë³´ë¥¼ êµ¬ì¶•í•œë‹¤.
+ * ¼öµ¿ Åë°èÁ¤º¸ ¼öÁı ±â´É
+ * indexÀÇ Åë°èÁ¤º¸¸¦ ±¸ÃàÇÑ´Ù.
  *
- * Statistics    - [IN]  IDLayer í†µê³„ì •ë³´
- * Trans         - [IN]  ì´ ì‘ì—…ì„ ìš”ì²­í•œ Transaction
+ * Statistics    - [IN]  IDLayer Åë°èÁ¤º¸
+ * Trans         - [IN]  ÀÌ ÀÛ¾÷À» ¿äÃ»ÇÑ Transaction
  * Percentage    - [IN]  Sampling Percentage
  * Degree        - [IN]  Parallel Degree
- * Header        - [IN]  ëŒ€ìƒ TableHeader
- * Index         - [IN]  ëŒ€ìƒ index
+ * Header        - [IN]  ´ë»ó TableHeader
+ * Index         - [IN]  ´ë»ó index
  *********************************************************************/
 IDE_RC smnbBTree::gatherStat( idvSQL         * /* aStatistics */, 
                               void           * aTrans,
@@ -6465,7 +5978,7 @@ IDE_RC smnbBTree::gatherStat( idvSQL         * /* aStatistics */,
     IDE_DASSERT( aIndex != NULL );
     IDE_DASSERT( aTotalTableArg == NULL ); 
 
-    /* BUG-44794 ì¸ë±ìŠ¤ ë¹Œë“œì‹œ ì¸ë±ìŠ¤ í†µê³„ ì •ë³´ë¥¼ ìˆ˜ì§‘í•˜ì§€ ì•ŠëŠ” íˆë“  í”„ë¡œí¼í‹° ì¶”ê°€ */
+    /* BUG-44794 ÀÎµ¦½º ºôµå½Ã ÀÎµ¦½º Åë°è Á¤º¸¸¦ ¼öÁıÇÏÁö ¾Ê´Â È÷µç ÇÁ·ÎÆÛÆ¼ Ãß°¡ */
     SMI_INDEX_BUILD_NEED_RT_STAT( sStatFlag, sSmxTrans );
 
     sIdxHdr       = (smnbHeader*)(aIndex->mHeader);
@@ -6476,15 +5989,15 @@ IDE_RC smnbBTree::gatherStat( idvSQL         * /* aStatistics */,
                                                aDynamicMode )
               != IDE_SUCCESS );
 
-    /* FreeNodeë¥¼ ë§‰ëŠ”ë‹¤. Nodeì¬í™œìš©ì„ ë§‰ì•„ì„œ TreeLatch ì—†ì´
-     * Nodeë¥¼ FullScan í•˜ê¸° ìœ„í•¨ì´ë‹¤. */
+    /* FreeNode¸¦ ¸·´Â´Ù. NodeÀçÈ°¿ëÀ» ¸·¾Æ¼­ TreeLatch ¾øÀÌ
+     * Node¸¦ FullScan ÇÏ±â À§ÇÔÀÌ´Ù. */
     smLayerCallback::blockFreeNode();
     sIsFreeNodeLocked = ID_TRUE;
 
     /************************************************************
-     * Node ë¶„ì„ì„ í†µí•œ í†µê³„ì •ë³´ íšë“ ì‹œì‘
+     * Node ºĞ¼®À» ÅëÇÑ Åë°èÁ¤º¸ È¹µæ ½ÃÀÛ
      ************************************************************/
-    /* BeforeFirstê²¸ ì²« í˜ì´ì§€ë¥¼ ì–»ì–´ì˜´ */
+    /* BeforeFirst°â Ã¹ ÆäÀÌÁö¸¦ ¾ò¾î¿È */
     sCurLeafNode = NULL;
     getNextNode4Stat( sIdxHdr,
                       ID_FALSE, /* BackTraverse */
@@ -6494,19 +6007,19 @@ IDE_RC smnbBTree::gatherStat( idvSQL         * /* aStatistics */,
 
     while( sCurLeafNode != NULL )
     {
-        /*Sampling Percentageê°€ Pë¼ í–ˆì„ë•Œ, ëˆ„ì ë˜ëŠ” ê°’ Cë¥¼ ë‘ê³  Cì— Pë¥¼
-         * ë”í–ˆì„ë•Œ 1ì„ ë„˜ì–´ê°€ëŠ” ê²½ìš°ì— Sampling í•˜ëŠ” ê²ƒìœ¼ë¡œ í•œë‹¤.
+        /*Sampling Percentage°¡ P¶ó ÇßÀ»¶§, ´©ÀûµÇ´Â °ª C¸¦ µÎ°í C¿¡ P¸¦
+         * ´õÇßÀ»¶§ 1À» ³Ñ¾î°¡´Â °æ¿ì¿¡ Sampling ÇÏ´Â °ÍÀ¸·Î ÇÑ´Ù.
          *
-         * ì˜ˆ)
+         * ¿¹)
          * P=1, C=0
-         * ì²«ë²ˆì§¸ í˜ì´ì§€ C+=P  C=>0.25
-         * ë‘ë²ˆì§¸ í˜ì´ì§€ C+=P  C=>0.50
-         * ì„¸ë²ˆì§¸ í˜ì´ì§€ C+=P  C=>0.75
-         * ë„¤ë²ˆì§¸ í˜ì´ì§€ C+=P  C=>1(Sampling!)  C--; C=>0
-         * ë‹¤ì„¯ë²ˆì§¸ í˜ì´ì§€ C+=P  C=>0.25
-         * ì—¬ì„¯ë²ˆì§¸ í˜ì´ì§€ C+=P  C=>0.50
-         * ì¼ê³±ë²ˆì§¸ í˜ì´ì§€ C+=P  C=>0.75
-         * ì—¬ëŸë²ˆì§¸ í˜ì´ì§€ C+=P  C=>1(Sampling!)  C--; C=>0 */
+         * Ã¹¹øÂ° ÆäÀÌÁö C+=P  C=>0.25
+         * µÎ¹øÂ° ÆäÀÌÁö C+=P  C=>0.50
+         * ¼¼¹øÂ° ÆäÀÌÁö C+=P  C=>0.75
+         * ³×¹øÂ° ÆäÀÌÁö C+=P  C=>1(Sampling!)  C--; C=>0
+         * ´Ù¼¸¹øÂ° ÆäÀÌÁö C+=P  C=>0.25
+         * ¿©¼¸¹øÂ° ÆäÀÌÁö C+=P  C=>0.50
+         * ÀÏ°ö¹øÂ° ÆäÀÌÁö C+=P  C=>0.75
+         * ¿©´ü¹øÂ° ÆäÀÌÁö C+=P  C=>1(Sampling!)  C--; C=>0 */
         if ( ( (UInt)( aPercentage * sTotalNodeCount
                        + SMI_STAT_SAMPLING_INITVAL ) ) !=
              ( (UInt)( aPercentage * (sTotalNodeCount+1)
@@ -6527,7 +6040,7 @@ IDE_RC smnbBTree::gatherStat( idvSQL         * /* aStatistics */,
         }
         else
         {
-            /* Skipí•¨ */
+            /* SkipÇÔ */
         }
         sTotalNodeCount ++;
 
@@ -6539,31 +6052,31 @@ IDE_RC smnbBTree::gatherStat( idvSQL         * /* aStatistics */,
     }
 
     /************************************************************
-     * í†µê³„ì •ë³´ ë³´ì •í•¨
+     * Åë°èÁ¤º¸ º¸Á¤ÇÔ
      ************************************************************/
     if ( sAnalyzedNodeCount == 0 )
     {
-        /* ì¡°íšŒëŒ€ìƒì´ ì—†ìœ¼ë‹ˆ ë³´ì • í•„ìš” ì—†ìŒ */
+        /* Á¶È¸´ë»óÀÌ ¾øÀ¸´Ï º¸Á¤ ÇÊ¿ä ¾øÀ½ */
     }
     else
     {
         if ( sKeyCount == sAnalyzedNodeCount )
         {
-            /* Nodeë‹¹ Keyê°€ í•˜ë‚˜ì”© ë“¤ì–´ê°„ ê²½ìš°. í¬ê¸°ë³´ì •ë§Œ í•¨ */
+            /* Node´ç Key°¡ ÇÏ³ª¾¿ µé¾î°£ °æ¿ì. Å©±âº¸Á¤¸¸ ÇÔ */
             sNumDist = sNumDist * sTotalNodeCount / sAnalyzedNodeCount; 
             sClusteringFactor = 
                 sClusteringFactor * sTotalNodeCount / sAnalyzedNodeCount; 
         }
         else
         {
-            /* NumDistë¥¼ ë³´ì •í•œë‹¤. í˜„ì¬ ê°’ì€ í˜ì´ì§€ì™€ í˜ì´ì§€ê°„ì— ê±¸ì¹œ í‚¤
-             * ê´€ê³„ëŠ” ê³„ì‚°ë˜ì§€ ì•Šê¸° ë•Œë¬¸ì—, ê·¸ ê°’ì„ ì¶”ì •í•œë‹¤.
+            /* NumDist¸¦ º¸Á¤ÇÑ´Ù. ÇöÀç °ªÀº ÆäÀÌÁö¿Í ÆäÀÌÁö°£¿¡ °ÉÄ£ Å°
+             * °ü°è´Â °è»êµÇÁö ¾Ê±â ¶§¹®¿¡, ±× °ªÀ» ÃßÁ¤ÇÑ´Ù.
              *
-             * C     = í˜„ì¬Cardinaliy
-             * K     = ë¶„ì„í•œ Keyê°œìˆ˜
-             * P     = ë¶„ì„í•œ Nodeê°œìˆ˜
-             * (K-P) = ë¶„ì„ëœ Keyê´€ê³„ ìˆ˜
-             * (K-1) = ì‹¤ì œ Keyê´€ê³„ ìˆ˜
+             * C     = ÇöÀçCardinaliy
+             * K     = ºĞ¼®ÇÑ Key°³¼ö
+             * P     = ºĞ¼®ÇÑ Node°³¼ö
+             * (K-P) = ºĞ¼®µÈ Key°ü°è ¼ö
+             * (K-1) = ½ÇÁ¦ Key°ü°è ¼ö
              *
              * C / ( K - P ) * ( K - 1 ) */
 
@@ -6597,13 +6110,13 @@ IDE_RC smnbBTree::gatherStat( idvSQL         * /* aStatistics */,
     sIndexStat.mFreeSpace         = sFreeSpace;
 
     /************************************************************
-     * MinMax í†µê³„ì •ë³´ êµ¬ì¶•
+     * MinMax Åë°èÁ¤º¸ ±¸Ãà
      ************************************************************/
     /* PROJ-2492 Dynamic sample selection */
-    // ë‹¤ì´ë‚˜ë¯¹ ëª¨ë“œì¼ë•Œ index ì˜ min,max ëŠ” ìˆ˜ì§‘í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // ´ÙÀÌ³ª¹Í ¸ğµåÀÏ¶§ index ÀÇ min,max ´Â ¼öÁıÇÏÁö ¾Ê´Â´Ù.
     if ( aDynamicMode == ID_FALSE )
     {
-        /* BUG-44794 ì¸ë±ìŠ¤ ë¹Œë“œì‹œ ì¸ë±ìŠ¤ í†µê³„ ì •ë³´ë¥¼ ìˆ˜ì§‘í•˜ì§€ ì•ŠëŠ” íˆë“  í”„ë¡œí¼í‹° ì¶”ê°€ */
+        /* BUG-44794 ÀÎµ¦½º ºôµå½Ã ÀÎµ¦½º Åë°è Á¤º¸¸¦ ¼öÁıÇÏÁö ¾Ê´Â È÷µç ÇÁ·ÎÆÛÆ¼ Ãß°¡ */
         if ( ( sStatFlag & SMI_INDEX_BUILD_RT_STAT_MASK )
                 == SMI_INDEX_BUILD_RT_STAT_UPDATE )
         {
@@ -6642,7 +6155,7 @@ IDE_RC smnbBTree::gatherStat( idvSQL         * /* aStatistics */,
 
     IDE_EXCEPTION_END;
 
-    smnManager::logCommonHeader( aIndex );
+    smnbBTree::logIndexHeader( aIndex );
 
     ideLog::log( IDE_SM_0,
                  "========================================\n"
@@ -6679,11 +6192,11 @@ IDE_RC smnbBTree::gatherStat( idvSQL         * /* aStatistics */,
  * FUNCTION DESCRIPTION : smnbBTree::rebuildMinMaxstat               *
  * ------------------------------------------------------------------*
  * TASK-4990 changing the method of collecting index statistics
- * MinMax í†µê³„ì •ë³´ë¥¼ êµ¬ì¶•í•œë‹¤.
+ * MinMax Åë°èÁ¤º¸¸¦ ±¸ÃàÇÑ´Ù.
  *
- * aPersistentIndexHeader - [IN]  ëŒ€ìƒ Indexì˜ PersistentHeader
- * aRuntimeIndexHeader    - [IN]  ëŒ€ìƒ Indexì˜ RuntimeHeader
- * aMinStat               - [IN]  MinStatì¸ê°€?
+ * aPersistentIndexHeader - [IN]  ´ë»ó IndexÀÇ PersistentHeader
+ * aRuntimeIndexHeader    - [IN]  ´ë»ó IndexÀÇ RuntimeHeader
+ * aMinStat               - [IN]  MinStatÀÎ°¡?
  *********************************************************************/
 IDE_RC smnbBTree::rebuildMinMaxStat( smnIndexHeader * aPersistentIndexHeader,
                                      smnbHeader     * aRuntimeIndexHeader,
@@ -6697,16 +6210,16 @@ IDE_RC smnbBTree::rebuildMinMaxStat( smnIndexHeader * aPersistentIndexHeader,
 
     if ( aMinStat == ID_TRUE )
     {
-        /* ì •ë°©í–¥ íƒìƒ‰í•˜ë©´ì„œ ê°€ì¥ ì‘ì€ í‚¤ë¥¼ ì°¾ìŒ */
+        /* Á¤¹æÇâ Å½»öÇÏ¸é¼­ °¡Àå ÀÛÀº Å°¸¦ Ã£À½ */
         sBacktraverse = ID_FALSE;
     }
     else
     {
-        /* ì •ë°©í–¥ íƒìƒ‰í•˜ë©´ì„œ ê°€ì¥ í° í‚¤ë¥¼ ì°¾ìŒ */
+        /* Á¤¹æÇâ Å½»öÇÏ¸é¼­ °¡Àå Å« Å°¸¦ Ã£À½ */
         sBacktraverse = ID_TRUE;
     }
 
-    /* MinValue ì°¾ì•„ êµ¬ì¶•í•¨ */
+    /* MinValue Ã£¾Æ ±¸ÃàÇÔ */
     sCurLeafNode = NULL;
     getNextNode4Stat( aRuntimeIndexHeader,
                       sBacktraverse, 
@@ -6718,33 +6231,33 @@ IDE_RC smnbBTree::rebuildMinMaxStat( smnIndexHeader * aPersistentIndexHeader,
     {
         if ( sCurLeafNode->mSlotCount > 0 )
         {
-            /* Keyê°€ ìˆëŠ” Nodeë¥¼ ì°¾ì•˜ìŒ. */
+            /* Key°¡ ÀÖ´Â Node¸¦ Ã£¾ÒÀ½. */
             if ( isNullColumn( aRuntimeIndexHeader->columns,
                                &(aRuntimeIndexHeader->columns->column),
                                sCurLeafNode->mRowPtrs[ 0 ] )
                  == ID_TRUE )
             {
-                /* ì²« Keyê°€ NULLì´ë©´ ì „ë¶€ NULL */
+                /* Ã¹ Key°¡ NULLÀÌ¸é ÀüºÎ NULL */
                 if ( aMinStat == ID_TRUE )
                 {
-                    /* Minê°’ì„ ì°¾ê¸° ìœ„í•´ ì •ë°©í–¥ íƒìƒ‰í–ˆëŠ”ë° ë‹¤ Nullì´ë€ê±´
-                     * Minê°’ì´ ì—†ë‹¤ëŠ” ì˜ë¯¸ */
+                    /* Min°ªÀ» Ã£±â À§ÇØ Á¤¹æÇâ Å½»öÇß´Âµ¥ ´Ù NullÀÌ¶õ°Ç
+                     * Min°ªÀÌ ¾ø´Ù´Â ÀÇ¹Ì */
                     sIsNodeLatched = ID_FALSE;
                     unlockNode( sCurLeafNode );
                     break;
                 }
                 else
                 {
-                    /*MaxStatì„ ì°¾ëŠ” ê²½ìš°ëŠ” ë‹¤ìŒ Nodeë¥¼ ì°¾ìœ¼ë©´ ë¨ */
+                    /*MaxStatÀ» Ã£´Â °æ¿ì´Â ´ÙÀ½ Node¸¦ Ã£À¸¸é µÊ */
                 }
                 
             }
             else
             {
-                /* Null ì•„ë‹Œ í‚¤ê°€ ìˆìŒ */
+                /* Null ¾Æ´Ñ Å°°¡ ÀÖÀ½ */
                 if ( aMinStat == ID_TRUE )
                 {
-                    /* Minì´ë©´ 0ë²ˆì§¸ Keyë¥¼ ë°”ë¡œ ì„¤ì • */
+                    /* MinÀÌ¸é 0¹øÂ° Key¸¦ ¹Ù·Î ¼³Á¤ */
                     IDE_TEST( setMinMaxStat( aPersistentIndexHeader,
                                              sCurLeafNode->mRowPtrs[ 0 ],
                                              aRuntimeIndexHeader->columns,
@@ -6753,7 +6266,7 @@ IDE_RC smnbBTree::rebuildMinMaxStat( smnIndexHeader * aPersistentIndexHeader,
                 }
                 else
                 {
-                    /* Maxë©´ Nullì´ ì•„ë‹Œ í‚¤ë¥¼ íƒìƒ‰ */
+                    /* Max¸é NullÀÌ ¾Æ´Ñ Å°¸¦ Å½»ö */
                     for ( i = sCurLeafNode->mSlotCount - 1 ; i >= 0 ; i-- )
                     {
                         if ( isNullColumn( 
@@ -6771,10 +6284,10 @@ IDE_RC smnbBTree::rebuildMinMaxStat( smnIndexHeader * aPersistentIndexHeader,
                         }
                         else
                         {
-                            /* Nullì„. ë‹¤ìŒ Rowë¡œ */
+                            /* NullÀÓ. ´ÙÀ½ Row·Î */
                         }
                     }
-                    /* ìˆœíšŒ ì¤‘ NULLì´ ì•„ë‹Œ ê°’ì„ ì°¾ì•„ì„œ iê°€ 0ê³¼ ê°™ê±°ë‚˜ ì»¤ì•¼í•¨*/
+                    /* ¼øÈ¸ Áß NULLÀÌ ¾Æ´Ñ °ªÀ» Ã£¾Æ¼­ i°¡ 0°ú °°°Å³ª Ä¿¾ßÇÔ*/
                     IDE_ERROR( i >= 0 );
                 }
                 sIsNodeLatched = ID_FALSE;
@@ -6784,7 +6297,7 @@ IDE_RC smnbBTree::rebuildMinMaxStat( smnIndexHeader * aPersistentIndexHeader,
         }
         else
         {
-            /* Nodeì— Keyê°€ ì—†ìŒ*/
+            /* Node¿¡ Key°¡ ¾øÀ½*/
         }
         getNextNode4Stat( aRuntimeIndexHeader,
                           sBacktraverse, 
@@ -6815,18 +6328,18 @@ IDE_RC smnbBTree::rebuildMinMaxStat( smnIndexHeader * aPersistentIndexHeader,
  * FUNCTION DESCRIPTION : smnbBTree::analyzeNode                     *
  * ------------------------------------------------------------------*
  * TASK-4990 changing the method of collecting index statistics
- * í•´ë‹¹ Nodeë¥¼ ë¶„ì„í•œë‹¤.
+ * ÇØ´ç Node¸¦ ºĞ¼®ÇÑ´Ù.
  *
- * aPersistentIndexHeader - [IN]  ëŒ€ìƒ Indexì˜ PersistentHeader
- * aRuntimeIndexHeader    - [IN]  ëŒ€ìƒ Indexì˜ RuntimeHeader
- * aTargetNode            - [IN]  ëŒ€ìƒ Node
- * aClusteringFactor      - [OUT] íšë“í•œ ClusteringFactor
- * aNumDist               - [OUT] íšë“í•œ NumDist
- * aKeyCount              - [OUT] íšë“í•œ KeyCount
- * aMetaSpace             - [OUT] PageHeader, ExtDirë“± Meta ê³µê°„
- * aUsedSpace             - [OUT] í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ ê³µê°„
- * aAgableSpace           - [OUT] ë‚˜ì¤‘ì— Agingê°€ëŠ¥í•œ ê³µê°„
- * aFreeSpace             - [OUT] Dataì‚½ì…ì´ ê°€ëŠ¥í•œ ë¹ˆ ê³µê°„
+ * aPersistentIndexHeader - [IN]  ´ë»ó IndexÀÇ PersistentHeader
+ * aRuntimeIndexHeader    - [IN]  ´ë»ó IndexÀÇ RuntimeHeader
+ * aTargetNode            - [IN]  ´ë»ó Node
+ * aClusteringFactor      - [OUT] È¹µæÇÑ ClusteringFactor
+ * aNumDist               - [OUT] È¹µæÇÑ NumDist
+ * aKeyCount              - [OUT] È¹µæÇÑ KeyCount
+ * aMetaSpace             - [OUT] PageHeader, ExtDirµî Meta °ø°£
+ * aUsedSpace             - [OUT] ÇöÀç »ç¿ëÁßÀÎ °ø°£
+ * aAgableSpace           - [OUT] ³ªÁß¿¡ Aging°¡´ÉÇÑ °ø°£
+ * aFreeSpace             - [OUT] Data»ğÀÔÀÌ °¡´ÉÇÑ ºó °ø°£
  *********************************************************************/
 IDE_RC smnbBTree::analyzeNode( smnIndexHeader * aPersistentIndexHeader,
                                smnbHeader     * aRuntimeIndexHeader,
@@ -6854,22 +6367,22 @@ IDE_RC smnbBTree::analyzeNode( smnIndexHeader * aPersistentIndexHeader,
         sPrevRow = sCurRow;
         sCurRow  = aTargetNode->mRowPtrs[ i ];
 
-        /* KeyCount ê³„ì‚° */
+        /* KeyCount °è»ê */
         if ( ( !( SM_SCN_IS_FREE_ROW( ((smpSlotHeader*)sCurRow)->mLimitSCN ) ) ) ||
              ( SM_SCN_IS_LOCK_ROW( ((smpSlotHeader*)sCurRow)->mLimitSCN ) ) )
         {
-            /* Nextê°€ ì„¤ì •ëœ ì§€ì›Œì§ˆ Row */
+            /* Next°¡ ¼³Á¤µÈ Áö¿öÁú Row */
             sDeletedKeyCount ++;
         }
 
-        /* NumDist ê³„ì‚° */
+        /* NumDist °è»ê */
         if ( sPrevRow != NULL )
         {
             if ( isNullColumn( aRuntimeIndexHeader->columns,
                               &(aRuntimeIndexHeader->columns->column),
                               sCurRow ) == ID_FALSE )
             {
-                /* Nullì´ ì•„ë‹Œê²½ìš°ì—ë§Œ NumDist ê³„ì‚°í•¨ */
+                /* NullÀÌ ¾Æ´Ñ°æ¿ì¿¡¸¸ NumDist °è»êÇÔ */
                 sCompareResult = compareRows( &aRuntimeIndexHeader->mStmtStat,
                                               aRuntimeIndexHeader->columns,
                                               aRuntimeIndexHeader->fence,
@@ -6882,7 +6395,7 @@ IDE_RC smnbBTree::analyzeNode( smnIndexHeader * aPersistentIndexHeader,
                 }
                 else
                 {
-                    /* ë™ì¼í•¨ */
+                    /* µ¿ÀÏÇÔ */
                 }
             }
             else
@@ -6925,13 +6438,13 @@ IDE_RC smnbBTree::analyzeNode( smnIndexHeader * aPersistentIndexHeader,
  * FUNCTION DESCRIPTION : smnbBTree::getNextNode4Stat                *
  * ------------------------------------------------------------------*
  * TASK-4990 changing the method of collecting index statistics
- * ë‹¤ìŒ Nodeë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+ * ´ÙÀ½ Node¸¦ °¡Á®¿Â´Ù.
  *
- * aIdxHdr       - [IN]     ëŒ€ìƒ Index
- * aBackTraverse - [IN]     ì—­íƒìƒ‰í•  ê²½ìš°.
- * aNodeLatched  - [IN/OUT] NodeLatchë¥¼ ì¡ì•˜ëŠ”ê°€?
- * aIndexHeight  - [OUT]    NULLì´ ì•„ë‹ ê²½ìš°, Index ë†’ì´ ë°˜í™˜í•¨.
- * aCurNode      - [OUT]    ë‹¤ìŒ Node
+ * aIdxHdr       - [IN]     ´ë»ó Index
+ * aBackTraverse - [IN]     ¿ªÅ½»öÇÒ °æ¿ì.
+ * aNodeLatched  - [IN/OUT] NodeLatch¸¦ Àâ¾Ò´Â°¡?
+ * aIndexHeight  - [OUT]    NULLÀÌ ¾Æ´Ò °æ¿ì, Index ³ôÀÌ ¹İÈ¯ÇÔ.
+ * aCurNode      - [OUT]    ´ÙÀ½ Node
  *********************************************************************/
 void smnbBTree::getNextNode4Stat( smnbHeader     * aIdxHdr,
                                   idBool           aBackTraverse,
@@ -6947,19 +6460,18 @@ void smnbBTree::getNextNode4Stat( smnbHeader     * aIdxHdr,
 
     if ( sCurLeafNode == NULL )
     {
-        /* ìµœì´ˆ íƒìƒ‰, BeforeFirst *
-         * TreeLatchë¥¼ ê±¸ì–´ SMOë¥¼ ë§‰ê³  Leftmostë¥¼ íƒ€ë©° ë‚´ë ¤ê° */
+        /* ÃÖÃÊ Å½»ö, BeforeFirst *
+         * TreeLatch¸¦ °É¾î SMO¸¦ ¸·°í Leftmost¸¦ Å¸¸ç ³»·Á°¨ */
         lockTree( aIdxHdr );
 
         if ( aIdxHdr->root == NULL )
         {
-            sCurLeafNode = NULL; /* ë¹„ì—ˆë‹¤ ! */
+            sCurLeafNode = NULL; /* ºñ¾ú´Ù ! */
         }
         else
         {
             sCurInternalNode = (smnbINode*)aIdxHdr->root;
-            while( (sCurInternalNode->flag & SMNB_NODE_TYPE_MASK ) 
-                   == SMNB_NODE_TYPE_INTERNAL )
+            while ( SMNB_IS_INTERNAL_NODE( sCurInternalNode ) )
             {
                 sIndexHeight ++;
                 if ( aBackTraverse == ID_FALSE )
@@ -6984,8 +6496,8 @@ void smnbBTree::getNextNode4Stat( smnbHeader     * aIdxHdr,
     }
     else
     {
-        /* ë‹¤ìŒ Node íƒìƒ‰.
-         * ê·¸ëƒ¥ ë§í¬ë¥¼ íƒ€ê³  ì¢‡ì•„ê°€ë©´ ë¨ */
+        /* ´ÙÀ½ Node Å½»ö.
+         * ±×³É ¸µÅ©¸¦ Å¸°í ÁÀ¾Æ°¡¸é µÊ */
         *aNodeLatched = ID_FALSE;
         unlockNode( sCurLeafNode );
 
@@ -6999,7 +6511,7 @@ void smnbBTree::getNextNode4Stat( smnbHeader     * aIdxHdr,
         }
         if ( sCurLeafNode == NULL )
         {
-            /* ë‹¤ì™”ë‹¤ ! */
+            /* ´Ù¿Ô´Ù ! */
         }
         else
         {
@@ -7008,8 +6520,8 @@ void smnbBTree::getNextNode4Stat( smnbHeader     * aIdxHdr,
         }
     }
 
-    /* NodeLatchë¥¼ ì•ˆì¡ì•˜ìœ¼ë©´ ë°˜í™˜í•  LeafNodeê°€ ì—†ì–´ì•¼ í•˜ê³ 
-     * NodeLatchë¥¼ ì¡ì•˜ìœ¼ë©´ LeafNodeê°€ ìˆì–´ì•¼ í•œë‹¤. */
+    /* NodeLatch¸¦ ¾ÈÀâ¾ÒÀ¸¸é ¹İÈ¯ÇÒ LeafNode°¡ ¾ø¾î¾ß ÇÏ°í
+     * NodeLatch¸¦ Àâ¾ÒÀ¸¸é LeafNode°¡ ÀÖ¾î¾ß ÇÑ´Ù. */
     IDE_DASSERT( 
         ( ( *aNodeLatched == ID_FALSE ) && ( sCurLeafNode == NULL ) ) ||
         ( ( *aNodeLatched == ID_TRUE  ) && ( sCurLeafNode != NULL ) ) );
@@ -7049,18 +6561,17 @@ IDE_RC smnbBTree::beforeFirst( smnbIterator* a_pIterator,
 
 IDE_RC smnbBTree::beforeFirstInternal( smnbIterator* a_pIterator )
 {
-    /* BUG-37643 Nodeì˜ arrayë¥¼ ì§€ì—­ë³€ìˆ˜ì— ì €ì¥í•˜ëŠ”ë°
-     * compiler ìµœì í™”ì— ì˜í•´ì„œ ì§€ì—­ë³€ìˆ˜ê°€ ì œê±°ë  ìˆ˜ ìˆë‹¤.
-     * ë”°ë¼ì„œ ì´ëŸ¬í•œ ë³€ìˆ˜ëŠ” volatileë¡œ ì„ ì–¸í•´ì•¼ í•œë‹¤. */
+    /* BUG-37643 NodeÀÇ array¸¦ Áö¿ªº¯¼ö¿¡ ÀúÀåÇÏ´Âµ¥
+     * compiler ÃÖÀûÈ­¿¡ ÀÇÇØ¼­ Áö¿ªº¯¼ö°¡ Á¦°ÅµÉ ¼ö ÀÖ´Ù.
+     * µû¶ó¼­ ÀÌ·¯ÇÑ º¯¼ö´Â volatile·Î ¼±¾ğÇØ¾ß ÇÑ´Ù. */
     const smiRange* s_pRange;
     volatile SChar* s_pRow;
     idBool          s_bResult;
-    SInt            s_nSlot;
+    SInt            s_nSlot = -1;
     SInt            s_cSlot;
     SInt            i = 0;
     SInt            s_nMin;
     SInt            s_nMax;
-    SInt            sLoop;
     IDU_LATCH       s_version;
     smnbStack       sStack[SMNB_STACK_DEPTH];
     SInt            sDepth = -1;
@@ -7069,24 +6580,28 @@ IDE_RC smnbBTree::beforeFirstInternal( smnbIterator* a_pIterator )
     smnbLNode*      s_pPrvLNode = NULL;
     void          * sKey        = NULL;
     SChar         * sRowPtr     = NULL;
+    idBool          sIsVisible  = ID_FALSE;
 
     s_pRange = a_pIterator->mKeyRange;
 
-    if ( a_pIterator->mProperties->mReadRecordCount > 0)
+    if ( a_pIterator->mProperties->mReadRecordCount > 0 )
     {
-        IDE_TEST( smnbBTree::findFirst( a_pIterator->index,
-                                        &s_pRange->minimum,
-                                        &sDepth,
-                                        sStack) != IDE_SUCCESS );
+        IDE_TEST( findPosition( a_pIterator->index,
+                                &s_pRange->minimum,
+                                NULL, /* aRow */
+                                &sDepth,
+                                sStack,
+                                &s_pCurLNode ) != IDE_SUCCESS );
 
         while( (sDepth < 0) && (s_pRange->next != NULL) )
         {
             s_pRange = s_pRange->next;
-
-            IDE_TEST( smnbBTree::findFirst( a_pIterator->index,
-                                            &s_pRange->minimum,
-                                            &sDepth,
-                                            sStack) != IDE_SUCCESS );
+            IDE_TEST( findPosition( a_pIterator->index,
+                                    &s_pRange->minimum,
+                                    NULL, /* aRow */
+                                    &sDepth,
+                                    sStack,
+                                    &s_pCurLNode ) != IDE_SUCCESS );
 
             a_pIterator->mKeyRange = s_pRange;
         }
@@ -7094,19 +6609,17 @@ IDE_RC smnbBTree::beforeFirstInternal( smnbIterator* a_pIterator )
 
     if ( ( sDepth >= 0 ) && ( a_pIterator->mProperties->mReadRecordCount > 0 ) )
     {
-        s_pCurLNode = (smnbLNode*)(sStack[sDepth].node);
-        s_version   = getLatchValueOfLNode(s_pCurLNode) & (~SMNB_SCAN_LATCH_BIT);
-        IDL_MEM_BARRIER;
-
         while(1)
         {
+            s_version   = getLatchValueOfLNode(s_pCurLNode) & (~SMNB_SCAN_LATCH_BIT);
+            IDL_MEM_BARRIER;
+
             s_cSlot      = s_pCurLNode->mSlotCount;
             s_pPrvLNode  = s_pCurLNode->prevSPtr;
             s_pNxtLNode  = s_pCurLNode->nextSPtr;
 
             if ( s_cSlot == 0 )
             {
-                IDL_MEM_BARRIER;
                 if ( s_version == getLatchValueOfLNode(s_pCurLNode) )
                 {
                     s_pCurLNode = s_pNxtLNode;
@@ -7117,21 +6630,14 @@ IDE_RC smnbBTree::beforeFirstInternal( smnbIterator* a_pIterator )
                     }
                 }
 
-                s_nSlot      = 0;
-
-                IDL_MEM_BARRIER;
-                s_version    = getLatchValueOfLNode(s_pCurLNode) & (~SMNB_SCAN_LATCH_BIT);
-                IDL_MEM_BARRIER;
-
+                s_nSlot = 0;
                 continue;
             }
             else
             {
-                findFirstSlotInLeaf( a_pIterator->index,
+                findFirstSlotInNode( a_pIterator->index,
                                      &s_pRange->minimum,
-                                     s_pCurLNode,
-                                     0,
-                                     s_cSlot - 1,
+                                     (smnbNode *)s_pCurLNode,
                                      &s_nSlot );
             }
 
@@ -7153,10 +6659,6 @@ IDE_RC smnbBTree::beforeFirstInternal( smnbIterator* a_pIterator )
 
                 if ( s_pRow == NULL )
                 {
-                    IDL_MEM_BARRIER;
-                    s_version = getLatchValueOfLNode(s_pCurLNode) & (~SMNB_SCAN_LATCH_BIT);
-                    IDL_MEM_BARRIER;
-
                     continue;
                 }
                 else
@@ -7166,12 +6668,12 @@ IDE_RC smnbBTree::beforeFirstInternal( smnbIterator* a_pIterator )
 
                 /*
                  * PROJ-2433
-                 * ì§€ê¸ˆê°’ì´ ìµœëŒ€ê°’ ì¡°ê±´ë„ ë§Œì¡±í•˜ëŠ”ì§€ í™•ì¸í•˜ëŠ”ë¶€ë¶„ì´ë‹¤.
-                 * direct keyê°€ full keyì—¬ì•¼ë§Œ ì œëŒ€ë¡œëœ ë¹„êµê°€ ê°€ëŠ¥í•˜ë‹¤.
+                 * Áö±İ°ªÀÌ ÃÖ´ë°ª Á¶°Çµµ ¸¸Á·ÇÏ´ÂÁö È®ÀÎÇÏ´ÂºÎºĞÀÌ´Ù.
+                 * direct key°¡ full key¿©¾ß¸¸ Á¦´ë·ÎµÈ ºñ±³°¡ °¡´ÉÇÏ´Ù.
                  */
-                if ( isFullKeyInLeafSlot( a_pIterator->index,
-                                          a_pIterator->node,
-                                          (SShort)s_nSlot ) == ID_TRUE )
+                if ( isFullKey( a_pIterator->index,
+                                (smnbNode *)(a_pIterator->node),
+                                (SShort)s_nSlot ) == ID_TRUE )
                 {
                     sKey = SMNB_GET_KEY_PTR( a_pIterator->node, s_nSlot );
                 }
@@ -7181,7 +6683,7 @@ IDE_RC smnbBTree::beforeFirstInternal( smnbIterator* a_pIterator )
                 }
 
 #ifdef DEBUG
-                // BUG-27948 ì´ë¯¸ ì‚­ì œëœ Rowë¥¼ ë³´ê³  ìˆëŠ”ì§€ í™•ì¸
+                // BUG-27948 ÀÌ¹Ì »èÁ¦µÈ Row¸¦ º¸°í ÀÖ´ÂÁö È®ÀÎ
                 // BUG-29106 debugging code
                 if ( SM_SCN_IS_FREE_ROW(((smpSlotHeader *)s_pRow)->mCreateSCN) )
                 {
@@ -7221,20 +6723,16 @@ IDE_RC smnbBTree::beforeFirstInternal( smnbIterator* a_pIterator )
 
                         if ( s_pRow == NULL )
                         {
-                            IDL_MEM_BARRIER;
-                            s_version = getLatchValueOfLNode(s_pCurLNode) & (~SMNB_SCAN_LATCH_BIT);
-                            IDL_MEM_BARRIER;
-
                             continue;
                         }
 
                         /* PROJ-2433
-                         * ìµœëŒ€ê°’ ì¡°ê±´ì— ë§Œì¡±í•˜ëŠ”ì§€ í™•ì¸í•˜ëŠ”ë¶€ë¶„ì´ë‹¤.
-                         * direct keyê°€ full keyì—¬ì•¼ë§Œ ì œëŒ€ë¡œëœ ë¹„êµê°€ ê°€ëŠ¥í•˜ë‹¤.
+                         * ÃÖ´ë°ª Á¶°Ç¿¡ ¸¸Á·ÇÏ´ÂÁö È®ÀÎÇÏ´ÂºÎºĞÀÌ´Ù.
+                         * direct key°¡ full key¿©¾ß¸¸ Á¦´ë·ÎµÈ ºñ±³°¡ °¡´ÉÇÏ´Ù.
                          */
-                        if ( isFullKeyInLeafSlot( a_pIterator->index,
-                                                  s_pCurLNode,
-                                                  (SShort)( s_nSlot + 1 ) ) == ID_TRUE )
+                        if ( isFullKey( a_pIterator->index,
+                                        (smnbNode *)s_pCurLNode,
+                                        (SShort)( s_nSlot + 1 ) ) == ID_TRUE )
                         {
                             sKey = SMNB_GET_KEY_PTR( s_pCurLNode, s_nSlot + 1 );
                         }
@@ -7244,7 +6742,7 @@ IDE_RC smnbBTree::beforeFirstInternal( smnbIterator* a_pIterator )
                         }
 
 #ifdef DEBUG
-                        // BUG-27948 ì´ë¯¸ ì‚­ì œëœ Rowë¥¼ ë³´ê³  ìˆëŠ”ì§€ í™•ì¸
+                        // BUG-27948 ÀÌ¹Ì »èÁ¦µÈ Row¸¦ º¸°í ÀÖ´ÂÁö È®ÀÎ
                         // BUG-29106 debugging code
                         if ( SM_SCN_IS_FREE_ROW(((smpSlotHeader *)s_pRow)->mCreateSCN) )
                         {
@@ -7304,10 +6802,6 @@ IDE_RC smnbBTree::beforeFirstInternal( smnbIterator* a_pIterator )
 
                 if ( s_pRow == NULL )
                 {
-                    IDL_MEM_BARRIER;
-                    s_version = getLatchValueOfLNode(s_pCurLNode) & (~SMNB_SCAN_LATCH_BIT);
-                    IDL_MEM_BARRIER;
-
                     continue;
                 }
                 else
@@ -7317,12 +6811,12 @@ IDE_RC smnbBTree::beforeFirstInternal( smnbIterator* a_pIterator )
 
                 /*
                  * PROJ-2433
-                 * ìµœëŒ€ê°’ ì¡°ê±´ì— ë§Œì¡±í•˜ëŠ”ì§€ í™•ì¸í•˜ëŠ”ë¶€ë¶„ì´ë‹¤.
-                 * direct keyê°€ full keyì—¬ì•¼ë§Œ ì œëŒ€ë¡œëœ ë¹„êµê°€ ê°€ëŠ¥í•˜ë‹¤.
+                 * ÃÖ´ë°ª Á¶°Ç¿¡ ¸¸Á·ÇÏ´ÂÁö È®ÀÎÇÏ´ÂºÎºĞÀÌ´Ù.
+                 * direct key°¡ full key¿©¾ß¸¸ Á¦´ë·ÎµÈ ºñ±³°¡ °¡´ÉÇÏ´Ù.
                  */
-                if ( isFullKeyInLeafSlot( a_pIterator->index,
-                                          s_pCurLNode,
-                                          SShort( s_cSlot - 1 ) ) == ID_TRUE )
+                if ( isFullKey( a_pIterator->index,
+                                (smnbNode *)s_pCurLNode,
+                                SShort( s_cSlot - 1 ) ) == ID_TRUE )
                 {
                     sKey = SMNB_GET_KEY_PTR( s_pCurLNode, s_cSlot - 1 );
                 }
@@ -7332,7 +6826,7 @@ IDE_RC smnbBTree::beforeFirstInternal( smnbIterator* a_pIterator )
                 }
 
 #ifdef DEBUG
-                // BUG-27948 ì´ë¯¸ ì‚­ì œëœ Rowë¥¼ ë³´ê³  ìˆëŠ”ì§€ í™•ì¸
+                // BUG-27948 ÀÌ¹Ì »èÁ¦µÈ Row¸¦ º¸°í ÀÖ´ÂÁö È®ÀÎ
                 // BUG-29106 debugging code
                 if ( SM_SCN_IS_FREE_ROW(((smpSlotHeader *)s_pRow)->mCreateSCN) )
                 {
@@ -7382,37 +6876,54 @@ IDE_RC smnbBTree::beforeFirstInternal( smnbIterator* a_pIterator )
             }
 
             /* BUG-44043
-               fetchNext()ê°€ ìµœì´ˆë¡œ í˜¸ì¶œë ë•Œ scnì„ ë§Œì¡±í•˜ëŠ” rowê°€ í•˜ë‚˜ë¼ë„ ìˆì–´ì•¼
-               aIterator->lstReturnRecPtr ê°’ìœ¼ë¡œ ì„¸íŒ…ë˜ì–´ì„œ,
-               Key Redistributionì´ ë°œìƒí•´ë„ ë‹¤ìŒë…¸ë“œë“¤ì„ íƒìƒ‰í•´ì„œ ì •í™•í•œ ë‹¤ìŒ rowë¥¼ ì°¾ì•„ë‚¼ìˆ˜ìˆë‹¤. */
-            i = -1;
-            for ( sLoop = s_nMin; sLoop <= s_nMax; sLoop++ )
+               fetchNext()°¡ ÃÖÃÊ·Î È£ÃâµÉ¶§ scnÀ» ¸¸Á·ÇÏ´Â row°¡ ÇÏ³ª¶óµµ ÀÖ¾î¾ß
+               aIterator->lstReturnRecPtr °ªÀ¸·Î ¼¼ÆÃµÇ¾î¼­,
+               Key RedistributionÀÌ ¹ß»ıÇØµµ ´ÙÀ½³ëµåµéÀ» Å½»öÇØ¼­ Á¤È®ÇÑ ´ÙÀ½ row¸¦ Ã£¾Æ³¾¼öÀÖ´Ù. */
+
+            /* BUG-48353
+               fetchNext() ¿¡¼­ ¾îÂ÷ÇÇ checkSCN() ¼öÇàÇÑ´Ù.
+               ¿©±â¼­´Â À§ÀÇ BUG-44043 À» °¨¾ÈÇÏ¿© ÃÖ¼Ò 1°³ÀÇ visibleÇÑ °ª¸¸ Ã£´Â´Ù.
+               checkSCN() ¼öÇà½Ã ¹ß»ıÇÒ¼öÀÖ´Â Pending Wait ¸¦ ÃÖ¼ÒÈ­ÇÏ±â À§ÇÔÀÌ´Ù.
+               => Ä³½¬³ëµå¸¦ ¸¸µå´Â ¿©±â¼­ ´ë·®ÀÇ Pending Wait°¡ ¹ß»ıÇÏ¸é,
+                  Node Latch Loop ¸¦ ºüÁ®³ª°¡Áö¸øÇØ °á°úÀûÀ¸·Î FETCH ¼º´É¿¡ ¾Ç¿µÇâÀ» ÁÙ¼öÀÖ´Ù.*/
+            sIsVisible = ID_FALSE;
+
+            for ( i = s_nMin; i <= s_nMax; i++ )
             {
-                sRowPtr = s_pCurLNode->mRowPtrs[sLoop];
+                sRowPtr = s_pCurLNode->mRowPtrs[i];
 
                 if ( sRowPtr == NULL )
                 {
                     break;
                 }
 
-                if ( smnManager::checkSCN( (smiIterator *)a_pIterator, sRowPtr, NULL )
-                     == ID_TRUE )
+                IDE_TEST( smnManager::checkSCN( (smiIterator *)a_pIterator,
+                                                sRowPtr,
+                                                NULL,
+                                                &sIsVisible )
+                          != IDE_SUCCESS );
+
+                if ( sIsVisible == ID_TRUE )
                 {
-                    i++;
-                    a_pIterator->rows[i] = sRowPtr;
+                    s_nMin = i; /* checSCNÀ» Åë°úÇÑ slotÀ» Min À¸·Î ¼³Á¤ÇÑ´Ù. */
+                    break;
                 }
             }
 
-            IDL_MEM_BARRIER;
+            /* checkSCNÀ» Åë°úÇÑ Ã¹¹øÂ° slot ºÎÅÍ s_nMax slot ±îÁö
+               Ä³½¬³ëµå·Î º¹»çÇÑ´Ù. */
+            if ( sIsVisible == ID_TRUE )
+            {
+                idlOS::memcpy( &(a_pIterator->rows[0]),
+                               &(s_pCurLNode->mRowPtrs[s_nMin]),
+                               ( s_nMax - s_nMin + 1 ) * ID_SIZEOF(s_pCurLNode->mRowPtrs[0]) );
+            }
+
             if ( s_version == getLatchValueOfLNode(s_pCurLNode) )
             {
-                if ( i != -1 )
+                if ( sIsVisible == ID_TRUE )
                 {
                     break;
-                }
-                else
-                {
-                    /* nothing to do */
                 }
 
                 s_pCurLNode = s_pNxtLNode;
@@ -7424,17 +6935,19 @@ IDE_RC smnbBTree::beforeFirstInternal( smnbIterator* a_pIterator )
                 }
             }
 
-            s_nSlot   = 0;
-
-            IDL_MEM_BARRIER;
-            s_version = getLatchValueOfLNode(s_pCurLNode) & (~SMNB_SCAN_LATCH_BIT);
-            IDL_MEM_BARRIER;
+            s_nSlot = 0;
         }
 
         /* PROJ-2433 */
         a_pIterator->lowFence  = a_pIterator->rows;
-        a_pIterator->highFence = a_pIterator->rows + i;
+        a_pIterator->highFence = ( ( sIsVisible == ID_TRUE ) ? 
+                                   ( a_pIterator->rows + ( s_nMax - s_nMin ) ) :
+                                   ( a_pIterator->rows - 1 ) );
         a_pIterator->slot      = a_pIterator->rows - 1;
+    }
+    else
+    {
+        s_pCurLNode = NULL;
     }
 
     if ( s_pCurLNode == NULL )
@@ -7477,7 +6990,7 @@ IDE_RC smnbBTree::findLast( smnbHeader       * aIndexHeader,
                      a_pStack,
                      &s_pCurLNode) != IDE_SUCCESS );
 
-        // backward scan(findLast)ëŠ” Tree ì „ì²´ë¥¼ Lock ì¡ê¸° ë•Œë¬¸
+        // backward scan(findLast)´Â Tree ÀüÃ¼¸¦ Lock Àâ±â ¶§¹®
         IDE_ERROR_RAISE( -1 <= s_nDepth, ERR_CORRUPTED_INDEX_NODE_DEPTH );
 
         s_nDepth++;
@@ -7488,9 +7001,9 @@ IDE_RC smnbBTree::findLast( smnbHeader       * aIndexHeader,
         /* nothing to do */
     }
 
-    // BUG-26625 ë©”ëª¨ë¦¬ ì¸ë±ìŠ¤ ìŠ¤ìº”ì‹œ SMOë¥¼ ê²€ì¶œí•˜ëŠ” ë¡œì§ì— ë¬¸ì œê°€ ìˆìŠµë‹ˆë‹¤.
+    // BUG-26625 ¸Ş¸ğ¸® ÀÎµ¦½º ½ºÄµ½Ã SMO¸¦ °ËÃâÇÏ´Â ·ÎÁ÷¿¡ ¹®Á¦°¡ ÀÖ½À´Ï´Ù.
     IDE_ERROR_RAISE( (s_nDepth < 0) ||
-                     ((s_pCurLNode->flag & SMNB_NODE_TYPE_MASK) == SMNB_NODE_TYPE_LEAF),
+                     ( SMNB_IS_LEAF_NODE( s_pCurLNode ) ),
                      ERR_CORRUPTED_INDEX_FLAG );
 
     *a_pDepth = s_nDepth;
@@ -7517,29 +7030,29 @@ IDE_RC smnbBTree::findLast( smnbHeader       * aIndexHeader,
 /*********************************************************************
  * FUNCTION DESCRIPTION : smnbBTree::findLastSlotInLeaf              *
  * ------------------------------------------------------------------*
- * LEAF NODE ë‚´ì—ì„œ ê°€ì¥ ë§ˆì§€ë§‰ì— ë‚˜ì˜¤ëŠ” rowì˜ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.
- * ( ë™ì¼í•œ keyê°€ ì—¬ëŸ¬ì¸ê²½ìš° ê°€ì¥ ì˜¤ë¥¸ìª½(ë§ˆì§€ë§‰)ì˜ slot ìœ„ì¹˜ë¥¼ ì°¾ìŒ )
+ * LEAF NODE ³»¿¡¼­ °¡Àå ¸¶Áö¸·¿¡ ³ª¿À´Â rowÀÇ À§Ä¡¸¦ Ã£´Â´Ù.
+ * ( µ¿ÀÏÇÑ key°¡ ¿©·¯ÀÎ°æ¿ì °¡Àå ¿À¸¥ÂÊ(¸¶Áö¸·)ÀÇ slot À§Ä¡¸¦ Ã£À½ )
  *
- * case1. ì¼ë°˜ indexì´ê±°ë‚˜, partial key indexê°€ ì•„ë‹Œê²½ìš°
- *   case1-1. direct key indexì¸ ê²½ìš°
- *            : í•¨ìˆ˜ findLastKeyInLeaf() ì‹¤í–‰í•´ direct key ê¸°ë°˜ìœ¼ë¡œ ê²€ìƒ‰
- *   case1-2. ì¼ë°˜ indexì¸ ê²½ìš°
- *            : í•¨ìˆ˜ findLastRowInLeaf() ì‹¤í–‰í•´ row ê¸°ë°˜ìœ¼ë¡œ ê²€ìƒ‰
+ * case1. ÀÏ¹İ indexÀÌ°Å³ª, partial key index°¡ ¾Æ´Ñ°æ¿ì
+ *   case1-1. direct key indexÀÎ °æ¿ì
+ *            : ÇÔ¼ö findLastKeyInLeaf() ½ÇÇàÇØ direct key ±â¹İÀ¸·Î °Ë»ö
+ *   case1-2. ÀÏ¹İ indexÀÎ °æ¿ì
+ *            : ÇÔ¼ö findLastRowInLeaf() ½ÇÇàÇØ row ±â¹İÀ¸·Î °Ë»ö
  *
- * case2. partial key indexì¸ê²½ìš°
- *        : í•¨ìˆ˜ findLastKeyInLeaf() ì‹¤í–‰í•´ direct key ê¸°ë°˜ìœ¼ë¡œ ê²€ìƒ‰í›„
- *          í•¨ìˆ˜ callback() ë˜ëŠ” findLastRowInLeaf() ì‹¤í–‰í•´ ì¬ê²€ìƒ‰
+ * case2. partial key indexÀÎ°æ¿ì
+ *        : ÇÔ¼ö findLastKeyInLeaf() ½ÇÇàÇØ direct key ±â¹İÀ¸·Î °Ë»öÈÄ
+ *          ÇÔ¼ö callback() ¶Ç´Â findLastRowInLeaf() ½ÇÇàÇØ Àç°Ë»ö
  *
- *  => partial key ì—ì„œ ì¬ê²€ìƒ‰ì´ í•„ìš”í•œ ì´ìœ 
- *    1. partial keyë¡œ ê²€ìƒ‰í•œ ìœ„ì¹˜ëŠ” ì •í™•í•œ ìœ„ì¹˜ê°€ ì•„ë‹ìˆ˜ìˆê¸°ë•Œë¬¸ì—
- *       full keyë¡œ ì¬ê²€ìƒ‰ì„ í•˜ì—¬ í™•ì¸í•˜ì—¬ì•¼ í•œë‹¤
+ *  => partial key ¿¡¼­ Àç°Ë»öÀÌ ÇÊ¿äÇÑ ÀÌÀ¯
+ *    1. partial key·Î °Ë»öÇÑ À§Ä¡´Â Á¤È®ÇÑ À§Ä¡°¡ ¾Æ´Ò¼öÀÖ±â¶§¹®¿¡
+ *       full key·Î Àç°Ë»öÀ» ÇÏ¿© È®ÀÎÇÏ¿©¾ß ÇÑ´Ù
  *
- * aHeader   - [IN]  INDEX í—¤ë”
+ * aHeader   - [IN]  INDEX Çì´õ
  * aCallBack - [IN]  Range Callback
  * aNode     - [IN]  LEAF NODE
- * aMinimum  - [IN]  ê²€ìƒ‰í•  slotë²”ìœ„ ìµœì†Œê°’
- * aMaximum  - [IN]  ê²€ìƒ‰í•  slotë²”ìœ„ ìµœëŒ€ê°’
- * aSlot     - [OUT] ì°¾ì•„ì§„ slot ìœ„ì¹˜
+ * aMinimum  - [IN]  °Ë»öÇÒ slot¹üÀ§ ÃÖ¼Ò°ª
+ * aMaximum  - [IN]  °Ë»öÇÒ slot¹üÀ§ ÃÖ´ë°ª
+ * aSlot     - [OUT] Ã£¾ÆÁø slot À§Ä¡
  *********************************************************************/
 inline void smnbBTree::findLastSlotInLeaf( smnbHeader          * aHeader,
                                            const smiCallBack   * aCallBack,
@@ -7553,9 +7066,9 @@ inline void smnbBTree::findLastSlotInLeaf( smnbHeader          * aHeader,
     if ( aHeader->mIsPartialKey == ID_FALSE )
     {
         /* full direct key */
-        if ( SMNB_IS_DIRECTKEY_IN_NODE( aNode ) == ID_TRUE )
+        if ( SMNB_IS_DIRECTKEY_INDEX( aHeader ) == ID_TRUE )
         {
-            /* ë³µí•©í‚¤ì¸ê²½ìš° ì²«ì»¬ëŸ¼ì€keyë¡œ ë’·ì»¬ëŸ¼ë“¤ì€ rowë¡œì²˜ë¦¬í•œë‹¤ */
+            /* º¹ÇÕÅ°ÀÎ°æ¿ì Ã¹ÄÃ·³Àºkey·Î µŞÄÃ·³µéÀº row·ÎÃ³¸®ÇÑ´Ù */
             findLastKeyInLeaf( aHeader,
                                aCallBack,
                                aNode,
@@ -7564,7 +7077,7 @@ inline void smnbBTree::findLastSlotInLeaf( smnbHeader          * aHeader,
                                aSlot );
             IDE_CONT( end );
         }
-        /* direct key ì—†ìŒ */
+        /* direct key ¾øÀ½ */
         else
         {
             findLastRowInLeaf( aCallBack,
@@ -7587,14 +7100,14 @@ inline void smnbBTree::findLastSlotInLeaf( smnbHeader          * aHeader,
 
         if ( *aSlot < aMinimum )
         {
-            /* ë²”ìœ„ë‚´ì—ì—†ë‹¤. */
+            /* ¹üÀ§³»¿¡¾ø´Ù. */
             IDE_CONT( end );
         }
         else
         {
             if ( aNode->mRowPtrs[*aSlot] == NULL )
             {
-                /* ë²”ìœ„ë‚´ì—ì—†ë‹¤. */
+                /* ¹üÀ§³»¿¡¾ø´Ù. */
                 IDE_CONT( end );
             }
             else
@@ -7603,10 +7116,10 @@ inline void smnbBTree::findLastSlotInLeaf( smnbHeader          * aHeader,
             }
         }
 
-        /* partial keyë¼ë„, í•´ë‹¹ nodeì˜ keyê°€ ëª¨ë‘ í¬í•¨ëœ ê²½ìš°ë¼ë©´, keyë¡œ ë¹„êµí•œë‹¤  */
-        if ( isFullKeyInLeafSlot( aHeader,
-                                  aNode,
-                                  (SShort)(*aSlot) ) == ID_TRUE )
+        /* partial key¶óµµ, ÇØ´ç nodeÀÇ key°¡ ¸ğµÎ Æ÷ÇÔµÈ °æ¿ì¶ó¸é, key·Î ºñ±³ÇÑ´Ù  */
+        if ( isFullKey( aHeader,
+                        (smnbNode *)aNode,
+                        (SShort)(*aSlot) ) == ID_TRUE )
         {
             aCallBack->callback( &sResult,
                                  aNode->mRowPtrs[*aSlot],
@@ -7627,7 +7140,7 @@ inline void smnbBTree::findLastSlotInLeaf( smnbHeader          * aHeader,
 
         if ( sResult == ID_TRUE )
         {
-            /* ì°¾ì€ slotê³¼ ë°”ë¡œë’¤ slot ì¤‘ ë§ëŠ”ê²ƒì„ ì°¾ê¸°ìœ„í•´ full keyë¡œ ë‹¤ì‹œ ê²€ìƒ‰í•œë‹¤ */
+            /* Ã£Àº slot°ú ¹Ù·ÎµÚ slot Áß ¸Â´Â°ÍÀ» Ã£±âÀ§ÇØ full key·Î ´Ù½Ã °Ë»öÇÑ´Ù */
 
             aMinimum = *aSlot;
 
@@ -7637,7 +7150,7 @@ inline void smnbBTree::findLastSlotInLeaf( smnbHeader          * aHeader,
             }
             else
             {
-                /* ì°¾ì€ slot ë’¤ë¡œ ë‹¤ë¥¸ slotì´ ì—†ë‹¤. ì°¾ì€ slotì´ ë§ë‹¤. */
+                /* Ã£Àº slot µÚ·Î ´Ù¸¥ slotÀÌ ¾ø´Ù. Ã£Àº slotÀÌ ¸Â´Ù. */
                 IDE_CONT( end );
             }
         }
@@ -7657,7 +7170,7 @@ inline void smnbBTree::findLastSlotInLeaf( smnbHeader          * aHeader,
         else
         {
             /* PROJ-2433
-             * node ë²”ìœ„ë‚´ì— ë§Œì¡±í•˜ëŠ”ê°’ì´ì—†ë‹¤. */
+             * node ¹üÀ§³»¿¡ ¸¸Á·ÇÏ´Â°ªÀÌ¾ø´Ù. */
             *aSlot = aMinimum - 1;
         }
     }
@@ -7673,9 +7186,9 @@ void smnbBTree::findLastRowInLeaf( const smiCallBack   * aCallBack,
                                    SInt                  aMaximum,
                                    SInt                * aSlot )
 {
-    /* BUG-37643 Nodeì˜ arrayë¥¼ ì§€ì—­ë³€ìˆ˜ì— ì €ì¥í•˜ëŠ”ë°
-     * compiler ìµœì í™”ì— ì˜í•´ì„œ ì§€ì—­ë³€ìˆ˜ê°€ ì œê±°ë  ìˆ˜ ìˆë‹¤.
-     * ë”°ë¼ì„œ ì´ëŸ¬í•œ ë³€ìˆ˜ëŠ” volatileë¡œ ì„ ì–¸í•´ì•¼ í•œë‹¤. */
+    /* BUG-37643 NodeÀÇ array¸¦ Áö¿ªº¯¼ö¿¡ ÀúÀåÇÏ´Âµ¥
+     * compiler ÃÖÀûÈ­¿¡ ÀÇÇØ¼­ Áö¿ªº¯¼ö°¡ Á¦°ÅµÉ ¼ö ÀÖ´Ù.
+     * µû¶ó¼­ ÀÌ·¯ÇÑ º¯¼ö´Â volatile·Î ¼±¾ğÇØ¾ß ÇÑ´Ù. */
     SInt              sMedium   = 0;
     idBool            sResult;
     volatile SChar  * sRow      = NULL;
@@ -7691,7 +7204,7 @@ void smnbBTree::findLastRowInLeaf( const smiCallBack   * aCallBack,
         }
         else
         {
-            // BUG-27948 ì´ë¯¸ ì‚­ì œëœ Rowë¥¼ ë³´ê³  ìˆëŠ”ì§€ í™•ì¸
+            // BUG-27948 ÀÌ¹Ì »èÁ¦µÈ Row¸¦ º¸°í ÀÖ´ÂÁö È®ÀÎ
             IDE_DASSERT( !SM_SCN_IS_FREE_ROW(((smpSlotHeader *)sRow)->mCreateSCN) );
 
             (void)aCallBack->callback( &sResult,
@@ -7769,9 +7282,9 @@ IDE_RC smnbBTree::findLstLeaf(smnbHeader       * aIndexHeader,
                               smnbStack*         a_pStack,
                               smnbLNode**        a_pLNode)
 {
-    /* BUG-37643 Nodeì˜ arrayë¥¼ ì§€ì—­ë³€ìˆ˜ì— ì €ì¥í•˜ëŠ”ë°
-     * compiler ìµœì í™”ì— ì˜í•´ì„œ ì§€ì—­ë³€ìˆ˜ê°€ ì œê±°ë  ìˆ˜ ìˆë‹¤.
-     * ë”°ë¼ì„œ ì´ëŸ¬í•œ ë³€ìˆ˜ëŠ” volatileë¡œ ì„ ì–¸í•´ì•¼ í•œë‹¤. */
+    /* BUG-37643 NodeÀÇ array¸¦ Áö¿ªº¯¼ö¿¡ ÀúÀåÇÏ´Âµ¥
+     * compiler ÃÖÀûÈ­¿¡ ÀÇÇØ¼­ Áö¿ªº¯¼ö°¡ Á¦°ÅµÉ ¼ö ÀÖ´Ù.
+     * µû¶ó¼­ ÀÌ·¯ÇÑ º¯¼ö´Â volatile·Î ¼±¾ğÇØ¾ß ÇÑ´Ù. */
     SInt                 s_nSlotCount   = 0;
     SInt                 s_nLstReadPos  = 0;
     SInt                 s_nDepth       = 0;
@@ -7797,7 +7310,7 @@ IDE_RC smnbBTree::findLstLeaf(smnbHeader       * aIndexHeader,
 
     if ( s_pCurINode != NULL )
     {
-        while ( ( s_pCurINode->flag & SMNB_NODE_TYPE_MASK ) == SMNB_NODE_TYPE_INTERNAL )
+        while ( SMNB_IS_INTERNAL_NODE( s_pCurINode ) )
         {
             s_nLstReadPos++;
 
@@ -7817,7 +7330,7 @@ IDE_RC smnbBTree::findLstLeaf(smnbHeader       * aIndexHeader,
             s_nLstReadPos = -1;
 
             IDE_ERROR_RAISE( ( s_nSlotCount != 0 ) ||
-                             ( s_nSlotCount != s_nSlotPos ), ERR_CORRUPTED_INDEX ); /* backward scan(findLast)ëŠ” Tree ì „ì²´ë¥¼ Lock ì¡ê¸° ë•Œë¬¸ */
+                             ( s_nSlotCount != s_nSlotPos ), ERR_CORRUPTED_INDEX ); /* backward scan(findLast)´Â Tree ÀüÃ¼¸¦ Lock Àâ±â ¶§¹® */
 
             a_pStack->node       = (smnbINode*)s_pCurINode;
             a_pStack->lstReadPos = s_nSlotPos;
@@ -7852,29 +7365,29 @@ IDE_RC smnbBTree::findLstLeaf(smnbHeader       * aIndexHeader,
 /*********************************************************************
  * FUNCTION DESCRIPTION : smnbBTree::findLastSlotInInternal          *
  * ------------------------------------------------------------------*
- * INTERNAL NODE ë‚´ì—ì„œ ê°€ì¥ ë§ˆì§€ë§‰ì— ë‚˜ì˜¤ëŠ” rowì˜ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.
- * ( ë™ì¼í•œ keyê°€ ì—¬ëŸ¬ì¸ê²½ìš° ê°€ì¥ ì˜¤ë¥¸ìª½(ë§ˆì§€ë§‰)ì˜ slot ìœ„ì¹˜ë¥¼ ì°¾ìŒ )
+ * INTERNAL NODE ³»¿¡¼­ °¡Àå ¸¶Áö¸·¿¡ ³ª¿À´Â rowÀÇ À§Ä¡¸¦ Ã£´Â´Ù.
+ * ( µ¿ÀÏÇÑ key°¡ ¿©·¯ÀÎ°æ¿ì °¡Àå ¿À¸¥ÂÊ(¸¶Áö¸·)ÀÇ slot À§Ä¡¸¦ Ã£À½ )
  *
- * case1. ì¼ë°˜ indexì´ê±°ë‚˜, partial key indexê°€ ì•„ë‹Œê²½ìš°
- *   case1-1. direct key indexì¸ ê²½ìš°
- *            : í•¨ìˆ˜ findLastInInternal() ì‹¤í–‰í•´ direct key ê¸°ë°˜ìœ¼ë¡œ ê²€ìƒ‰
- *   case1-2. ì¼ë°˜ indexì¸ ê²½ìš°
- *            : í•¨ìˆ˜ findLastRowInInternal() ì‹¤í–‰í•´ row ê¸°ë°˜ìœ¼ë¡œ ê²€ìƒ‰
+ * case1. ÀÏ¹İ indexÀÌ°Å³ª, partial key index°¡ ¾Æ´Ñ°æ¿ì
+ *   case1-1. direct key indexÀÎ °æ¿ì
+ *            : ÇÔ¼ö findLastInInternal() ½ÇÇàÇØ direct key ±â¹İÀ¸·Î °Ë»ö
+ *   case1-2. ÀÏ¹İ indexÀÎ °æ¿ì
+ *            : ÇÔ¼ö findLastRowInInternal() ½ÇÇàÇØ row ±â¹İÀ¸·Î °Ë»ö
  *
- * case2. partial key indexì¸ê²½ìš°
- *        : í•¨ìˆ˜ findLastInInternal() ì‹¤í–‰í•´ direct key ê¸°ë°˜ìœ¼ë¡œ ê²€ìƒ‰í›„
- *          í•¨ìˆ˜ callback() ë˜ëŠ” findLastRowInInternal() ì‹¤í–‰í•´ ì¬ê²€ìƒ‰
+ * case2. partial key indexÀÎ°æ¿ì
+ *        : ÇÔ¼ö findLastInInternal() ½ÇÇàÇØ direct key ±â¹İÀ¸·Î °Ë»öÈÄ
+ *          ÇÔ¼ö callback() ¶Ç´Â findLastRowInInternal() ½ÇÇàÇØ Àç°Ë»ö
  *
- *  => partial key ì—ì„œ ì¬ê²€ìƒ‰ì´ í•„ìš”í•œ ì´ìœ 
- *    1. partial keyë¡œ ê²€ìƒ‰í•œ ìœ„ì¹˜ëŠ” ì •í™•í•œ ìœ„ì¹˜ê°€ ì•„ë‹ìˆ˜ìˆê¸°ë•Œë¬¸ì—
- *       full keyë¡œ ì¬ê²€ìƒ‰ì„ í•˜ì—¬ í™•ì¸í•˜ì—¬ì•¼ í•œë‹¤
+ *  => partial key ¿¡¼­ Àç°Ë»öÀÌ ÇÊ¿äÇÑ ÀÌÀ¯
+ *    1. partial key·Î °Ë»öÇÑ À§Ä¡´Â Á¤È®ÇÑ À§Ä¡°¡ ¾Æ´Ò¼öÀÖ±â¶§¹®¿¡
+ *       full key·Î Àç°Ë»öÀ» ÇÏ¿© È®ÀÎÇÏ¿©¾ß ÇÑ´Ù
  *
- * aHeader   - [IN]  INDEX í—¤ë”
+ * aHeader   - [IN]  INDEX Çì´õ
  * aCallBack - [IN]  Range Callback
  * aNode     - [IN]  INTERNAL NODE
- * aMinimum  - [IN]  ê²€ìƒ‰í•  slotë²”ìœ„ ìµœì†Œê°’
- * aMaximum  - [IN]  ê²€ìƒ‰í•  slotë²”ìœ„ ìµœëŒ€ê°’
- * aSlot     - [OUT] ì°¾ì•„ì§„ slot ìœ„ì¹˜
+ * aMinimum  - [IN]  °Ë»öÇÒ slot¹üÀ§ ÃÖ¼Ò°ª
+ * aMaximum  - [IN]  °Ë»öÇÒ slot¹üÀ§ ÃÖ´ë°ª
+ * aSlot     - [OUT] Ã£¾ÆÁø slot À§Ä¡
  *********************************************************************/
 inline void smnbBTree::findLastSlotInInternal( smnbHeader          * aHeader,
                                                const smiCallBack   * aCallBack,
@@ -7888,9 +7401,9 @@ inline void smnbBTree::findLastSlotInInternal( smnbHeader          * aHeader,
     if ( aHeader->mIsPartialKey == ID_FALSE )
     {
         /* full direct key */
-        if ( SMNB_IS_DIRECTKEY_IN_NODE( aNode ) == ID_TRUE )
+        if ( SMNB_IS_DIRECTKEY_INDEX( aHeader ) == ID_TRUE )
         {
-            /* ë³µí•©í‚¤ì¸ê²½ìš° ì²«ì»¬ëŸ¼ì€keyë¡œ ë’·ì»¬ëŸ¼ë“¤ì€rowë¡œì²˜ë¦¬í•œë‹¤ */
+            /* º¹ÇÕÅ°ÀÎ°æ¿ì Ã¹ÄÃ·³Àºkey·Î µŞÄÃ·³µéÀºrow·ÎÃ³¸®ÇÑ´Ù */
             findLastKeyInInternal( aHeader,
                                    aCallBack,
                                    aNode,
@@ -7899,7 +7412,7 @@ inline void smnbBTree::findLastSlotInInternal( smnbHeader          * aHeader,
                                    aSlot );
             IDE_CONT( end );
         }
-        /* direct key ì—†ìŒ */
+        /* direct key ¾øÀ½ */
         else
         {
             findLastRowInInternal( aCallBack,
@@ -7922,14 +7435,14 @@ inline void smnbBTree::findLastSlotInInternal( smnbHeader          * aHeader,
 
         if ( *aSlot < aMinimum )
         {
-            /* ë²”ìœ„ë‚´ì—ì—†ë‹¤. */
+            /* ¹üÀ§³»¿¡¾ø´Ù. */
             IDE_CONT( end );
         }
         else
         {
             if ( aNode->mRowPtrs[*aSlot] == NULL )
             {
-                /* ë²”ìœ„ë‚´ì—ì—†ë‹¤. */
+                /* ¹üÀ§³»¿¡¾ø´Ù. */
                 IDE_CONT( end );
             }
             else
@@ -7938,10 +7451,10 @@ inline void smnbBTree::findLastSlotInInternal( smnbHeader          * aHeader,
             }
         }
 
-        /* partial keyë¼ë„, í•´ë‹¹ nodeì˜ keyê°€ ëª¨ë‘ í¬í•¨ëœ ê²½ìš°ë¼ë©´, keyë¡œ ë¹„êµí•œë‹¤  */
-        if ( isFullKeyInInternalSlot( aHeader,
-                                      aNode,
-                                      (SShort)(*aSlot) ) == ID_TRUE )
+        /* partial key¶óµµ, ÇØ´ç nodeÀÇ key°¡ ¸ğµÎ Æ÷ÇÔµÈ °æ¿ì¶ó¸é, key·Î ºñ±³ÇÑ´Ù  */
+        if ( isFullKey( aHeader,
+                        (smnbNode *)aNode,
+                        (SShort)(*aSlot) ) == ID_TRUE )
         {
             aCallBack->callback( &sResult,
                                  aNode->mRowPtrs[*aSlot],
@@ -7952,7 +7465,7 @@ inline void smnbBTree::findLastSlotInInternal( smnbHeader          * aHeader,
         }
         else
         {
-            /* ë‚˜ë¨¸ì§€ê²½ìš°ëŠ” indirect keyë¡œ ë¹„êµí•œë‹¤ */
+            /* ³ª¸ÓÁö°æ¿ì´Â indirect key·Î ºñ±³ÇÑ´Ù */
             aCallBack->callback( &sResult,
                                  aNode->mRowPtrs[*aSlot],
                                  NULL,
@@ -7963,7 +7476,7 @@ inline void smnbBTree::findLastSlotInInternal( smnbHeader          * aHeader,
 
         if ( sResult == ID_TRUE )
         {
-            /* ì°¾ì€ slotê³¼ ë°”ë¡œë’¤ slot ì¤‘ ë§ëŠ”ê²ƒì„ ì°¾ê¸°ìœ„í•´ full keyë¡œ ë‹¤ì‹œ ê²€ìƒ‰í•œë‹¤ */
+            /* Ã£Àº slot°ú ¹Ù·ÎµÚ slot Áß ¸Â´Â°ÍÀ» Ã£±âÀ§ÇØ full key·Î ´Ù½Ã °Ë»öÇÑ´Ù */
 
             aMinimum = *aSlot;
 
@@ -7973,7 +7486,7 @@ inline void smnbBTree::findLastSlotInInternal( smnbHeader          * aHeader,
             }
             else
             {
-                /* ì°¾ì€ slot ë’¤ë¡œ ë‹¤ë¥¸ slotì´ ì—†ë‹¤. ì°¾ì€ slotì´ ë§ë‹¤. */
+                /* Ã£Àº slot µÚ·Î ´Ù¸¥ slotÀÌ ¾ø´Ù. Ã£Àº slotÀÌ ¸Â´Ù. */
                 IDE_CONT( end );
             }
         }
@@ -7993,7 +7506,7 @@ inline void smnbBTree::findLastSlotInInternal( smnbHeader          * aHeader,
         else
         {
             /* PROJ-2433
-             * node ë²”ìœ„ë‚´ì— ë§Œì¡±í•˜ëŠ”ê°’ì´ì—†ë‹¤. */
+             * node ¹üÀ§³»¿¡ ¸¸Á·ÇÏ´Â°ªÀÌ¾ø´Ù. */
             *aSlot = aMinimum - 1;
         }
     }
@@ -8001,6 +7514,475 @@ inline void smnbBTree::findLastSlotInInternal( smnbHeader          * aHeader,
     IDE_EXCEPTION_CONT( end );
 
     return;
+}
+
+//BUG-48230
+IDE_RC smnbBTree::beforeFirstQ( void* aIterator )
+{
+    smnbIterator* a_pIterator = (smnbIterator*)aIterator;
+
+    for( a_pIterator->mKeyRange      = a_pIterator->mKeyRange;
+         a_pIterator->mKeyRange->prev != NULL;
+         a_pIterator->mKeyRange        = a_pIterator->mKeyRange->prev ) ;
+
+    IDE_TEST( beforeFirstInternalQ( a_pIterator ) != IDE_SUCCESS );
+
+    a_pIterator->flag  = a_pIterator->flag & (~SMI_RETRAVERSE_MASK);
+    a_pIterator->flag |= SMI_RETRAVERSE_BEFORE;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+
+IDE_RC smnbBTree::beforeFirstInternalQ( smnbIterator* a_pIterator )
+{
+   /* BUG-37643 NodeÀÇ array¸¦ Áö¿ªº¯¼ö¿¡ ÀúÀåÇÏ´Âµ¥
+     * compiler ÃÖÀûÈ­¿¡ ÀÇÇØ¼­ Áö¿ªº¯¼ö°¡ Á¦°ÅµÉ ¼ö ÀÖ´Ù.
+     * µû¶ó¼­ ÀÌ·¯ÇÑ º¯¼ö´Â volatile·Î ¼±¾ğÇØ¾ß ÇÑ´Ù. */
+    const smiRange* s_pRange;
+    volatile SChar* s_pRow;
+    idBool          s_bResult;
+    SInt            s_nSlot = -1;
+    SInt            s_cSlot;
+    SInt            i = 0;
+    SInt            s_nMin;
+    SInt            s_nMax;
+    SInt            sLoop;
+    IDU_LATCH       s_version;
+    smnbStack       sStack[SMNB_STACK_DEPTH];
+    SInt            sDepth = -1;
+    smnbLNode*      s_pCurLNode = NULL;
+    smnbLNode*      s_pNxtLNode = NULL;
+    smnbLNode*      s_pPrvLNode = NULL;
+    void          * sKey        = NULL;
+    SChar         * sRowPtr     = NULL;
+
+    smSCN           sLockRowSCN = SM_MAKE_SCN_LOCK_ROW( a_pIterator->tid );
+    smSCN           sBfrNextSCN;
+    smSCN           sRowSCN;
+    smpSlotHeader * sSlotHdr;
+
+    s_pRange = a_pIterator->mKeyRange;
+
+    if ( a_pIterator->mProperties->mReadRecordCount > 0 )
+    {
+        IDE_TEST( findPosition( a_pIterator->index,
+                                &s_pRange->minimum,
+                                NULL, /* aRow */
+                                &sDepth,
+                                sStack,
+                                &s_pCurLNode ) != IDE_SUCCESS );
+
+        while( (sDepth < 0) && (s_pRange->next != NULL) )
+        {
+            s_pRange = s_pRange->next;
+            IDE_TEST( findPosition( a_pIterator->index,
+                                    &s_pRange->minimum,
+                                    NULL, /* aRow */
+                                    &sDepth,
+                                    sStack,
+                                    &s_pCurLNode ) != IDE_SUCCESS );
+
+            a_pIterator->mKeyRange = s_pRange;
+        }
+    }
+
+    if ( ( sDepth >= 0 ) && ( a_pIterator->mProperties->mReadRecordCount > 0 ) )
+    {
+        while(1)
+        {
+            s_version   = getLatchValueOfLNode(s_pCurLNode) & (~SMNB_SCAN_LATCH_BIT);
+            IDL_MEM_BARRIER;
+
+            s_cSlot      = s_pCurLNode->mSlotCount;
+            s_pPrvLNode  = s_pCurLNode->prevSPtr;
+            s_pNxtLNode  = s_pCurLNode->nextSPtr;
+
+            if ( s_cSlot == 0 )
+            {
+                if ( s_version == getLatchValueOfLNode(s_pCurLNode) )
+                {
+                    s_pCurLNode = s_pNxtLNode;
+
+                    if ( s_pCurLNode == NULL )
+                    {
+                        break;
+                    }
+                }
+
+                s_nSlot = 0;
+                continue;
+            }
+            else
+            {
+                findFirstSlotInNode( a_pIterator->index,
+                                     &s_pRange->minimum,
+                                     (smnbNode *)s_pCurLNode,
+                                     &s_nSlot );
+            }
+
+            a_pIterator->version  = s_version;
+            a_pIterator->node     = s_pCurLNode;
+
+            a_pIterator->prvNode  = s_pPrvLNode;
+            a_pIterator->nxtNode  = s_pNxtLNode;
+
+            a_pIterator->least    = ID_TRUE;
+            a_pIterator->highest  = ID_FALSE;
+
+            s_nMin = s_nSlot;
+            s_nMax = s_cSlot - 1;
+
+            if ( ( s_nSlot + 1 ) < s_cSlot )
+            {
+                s_pRow  = a_pIterator->node->mRowPtrs[s_nSlot];
+
+                if ( s_pRow == NULL )
+                {
+                    continue;
+                }
+                else
+                {
+                    /* nothing to do */
+                }
+
+                /*
+                 * PROJ-2433
+                 * Áö±İ°ªÀÌ ÃÖ´ë°ª Á¶°Çµµ ¸¸Á·ÇÏ´ÂÁö È®ÀÎÇÏ´ÂºÎºĞÀÌ´Ù.
+                 * direct key°¡ full key¿©¾ß¸¸ Á¦´ë·ÎµÈ ºñ±³°¡ °¡´ÉÇÏ´Ù.
+                 */
+                if ( isFullKey( a_pIterator->index,
+                                (smnbNode *)(a_pIterator->node),
+                                (SShort)s_nSlot ) == ID_TRUE )
+                {
+                    sKey = SMNB_GET_KEY_PTR( a_pIterator->node, s_nSlot );
+                }
+                else
+                {
+                    sKey = NULL;
+                }
+
+#ifdef DEBUG
+                // BUG-27948 ÀÌ¹Ì »èÁ¦µÈ Row¸¦ º¸°í ÀÖ´ÂÁö È®ÀÎ
+                // BUG-29106 debugging code
+                if ( SM_SCN_IS_FREE_ROW(((smpSlotHeader *)s_pRow)->mCreateSCN) )
+                {
+                    int  sSlotIdx;
+
+                    ideLog::log( IDE_SERVER_0, "s_pRow : %lu\n", s_pRow );
+                    ideLog::log( IDE_SERVER_0,
+                                 "s_nSlot : %d, s_cSlot : %d\n",
+                                 s_nSlot, s_cSlot );
+                    for ( sSlotIdx = 0 ; sSlotIdx < s_cSlot ; sSlotIdx++ )
+                    {
+                        ideLog::logMem( IDE_SERVER_0,
+                                        (UChar *)(a_pIterator->node->mRowPtrs[sSlotIdx]),
+                                        64 );
+                    }
+                    ideLog::log( IDE_SERVER_0, "s_pCurLNode : %lu\n", s_pCurLNode);
+                    ideLog::logMem( IDE_SERVER_0, (UChar *)a_pIterator->node,
+                                    mNodeSize );
+                    ideLog::logMem( IDE_SERVER_0, (UChar *)a_pIterator,
+                                    mIteratorSize );
+                    IDE_DASSERT( 0 );
+                }
+#endif
+
+                s_pRange->maximum.callback( &s_bResult,
+                                            (SChar*)s_pRow,
+                                            sKey,
+                                            0,
+                                            SC_NULL_GRID,
+                                            s_pRange->maximum.data );
+
+                if ( s_bResult == ID_TRUE )
+                {
+                    if ( ( s_nSlot + 2 ) < s_cSlot )
+                    {
+                        s_pRow = s_pCurLNode->mRowPtrs[s_nSlot + 1];
+
+                        if ( s_pRow == NULL )
+                        {
+                            continue;
+                        }
+
+                        /* PROJ-2433
+                         * ÃÖ´ë°ª Á¶°Ç¿¡ ¸¸Á·ÇÏ´ÂÁö È®ÀÎÇÏ´ÂºÎºĞÀÌ´Ù.
+                         * direct key°¡ full key¿©¾ß¸¸ Á¦´ë·ÎµÈ ºñ±³°¡ °¡´ÉÇÏ´Ù.
+                         */
+                        if ( isFullKey( a_pIterator->index,
+                                        (smnbNode *)s_pCurLNode,
+                                        (SShort)( s_nSlot + 1 ) ) == ID_TRUE )
+                        {
+                            sKey = SMNB_GET_KEY_PTR( s_pCurLNode, s_nSlot + 1 );
+                        }
+                        else
+                        {
+                            sKey = NULL;
+                        }
+
+#ifdef DEBUG
+                        // BUG-27948 ÀÌ¹Ì »èÁ¦µÈ Row¸¦ º¸°í ÀÖ´ÂÁö È®ÀÎ
+                        // BUG-29106 debugging code
+                        if ( SM_SCN_IS_FREE_ROW(((smpSlotHeader *)s_pRow)->mCreateSCN) )
+                        {
+                            int sSlotIdx;
+
+                            ideLog::log( IDE_SERVER_0, "s_pRow : %lu\n", s_pRow );
+                            ideLog::log( IDE_SERVER_0,
+                                         "s_nSlot : %d, s_cSlot : %d\n",
+                                         s_nSlot, s_cSlot );
+                            for ( sSlotIdx = 0 ; sSlotIdx < s_cSlot ; sSlotIdx++ )
+                            {
+                                ideLog::logMem( IDE_SERVER_0,
+                                                (UChar *)(s_pCurLNode->mRowPtrs[sSlotIdx]),
+                                                64 );
+                            }
+                            ideLog::log( IDE_SERVER_0, "s_pCurLNode : %lu\n", s_pCurLNode);
+                            ideLog::logMem( IDE_SERVER_0, (UChar *)s_pCurLNode,
+                                            mNodeSize );
+                            ideLog::logMem( IDE_SERVER_0, (UChar *)a_pIterator,
+                                            mIteratorSize );
+                            IDE_DASSERT( 0 );
+                        }
+                        else
+                        {
+                            /* nothing to do */
+                        }
+#endif
+
+                        s_pRange->maximum.callback( &s_bResult,
+                                                    (SChar*)s_pRow,
+                                                    sKey,
+                                                    0,
+                                                    SC_NULL_GRID,
+                                                    s_pRange->maximum.data);
+
+                        if ( s_bResult == ID_FALSE )
+                        {
+                            a_pIterator->highest   = ID_TRUE;
+                            s_nMax                 = s_nSlot;
+                        }
+                        else
+                        {
+                            /* nothing to do */
+                        }
+                    }
+                }
+                else
+                {
+                    a_pIterator->highest  = ID_TRUE;
+                    s_nMax                = -1;
+                }
+            }
+
+            if ( a_pIterator->highest == ID_FALSE )
+            {
+                s_pRow = s_pCurLNode->mRowPtrs[s_cSlot - 1];
+
+                if ( s_pRow == NULL )
+                {
+                    continue;
+                }
+                else
+                {
+                    /* nothing to do */
+                }
+
+                /*
+                 * PROJ-2433
+                 * ÃÖ´ë°ª Á¶°Ç¿¡ ¸¸Á·ÇÏ´ÂÁö È®ÀÎÇÏ´ÂºÎºĞÀÌ´Ù.
+                 * direct key°¡ full key¿©¾ß¸¸ Á¦´ë·ÎµÈ ºñ±³°¡ °¡´ÉÇÏ´Ù.
+                 */
+                if ( isFullKey( a_pIterator->index,
+                                (smnbNode *)s_pCurLNode,
+                                SShort( s_cSlot - 1 ) ) == ID_TRUE )
+                {
+                    sKey = SMNB_GET_KEY_PTR( s_pCurLNode, s_cSlot - 1 );
+                }
+                else
+                {
+                    sKey = NULL;
+                }
+
+#ifdef DEBUG
+                // BUG-27948 ÀÌ¹Ì »èÁ¦µÈ Row¸¦ º¸°í ÀÖ´ÂÁö È®ÀÎ
+                // BUG-29106 debugging code
+                if ( SM_SCN_IS_FREE_ROW(((smpSlotHeader *)s_pRow)->mCreateSCN) )
+                {
+                    int sSlotIdx;
+
+                    ideLog::log( IDE_SERVER_0, "s_pRow : %lu\n", s_pRow );
+                    ideLog::log( IDE_SERVER_0,
+                                 "s_nSlot : %d, s_cSlot : %d\n",
+                                 s_nSlot, s_cSlot );
+                    for( sSlotIdx = 0; sSlotIdx < s_cSlot; sSlotIdx ++ )
+                    {
+                        ideLog::logMem( IDE_SERVER_0,
+                                        (UChar *)(s_pCurLNode->mRowPtrs[sSlotIdx]),
+                                        64 );
+                    }
+                    ideLog::log( IDE_SERVER_0, "s_pCurLNode : %lu\n", s_pCurLNode);
+                    ideLog::logMem( IDE_SERVER_0, (UChar *)s_pCurLNode,
+                                    mNodeSize );
+                    ideLog::logMem( IDE_SERVER_0, (UChar *)a_pIterator,
+                                    mIteratorSize );
+                    IDE_DASSERT( 0 );
+                }
+#endif
+
+                s_pRange->maximum.callback( &s_bResult,
+                                            (SChar*)s_pRow,
+                                            sKey,
+                                            0,
+                                            SC_NULL_GRID,
+                                            s_pRange->maximum.data );
+                if ( s_bResult == ID_TRUE )
+                {
+                    s_nMax = s_cSlot - 1;
+                }
+                else
+                {
+                    smnbBTree::findLastSlotInLeaf( a_pIterator->index,
+                                                   &(s_pRange->maximum),
+                                                   s_pCurLNode,
+                                                   0,
+                                                   s_cSlot - 1,
+                                                   &s_nSlot );
+
+                    a_pIterator->highest   = ID_TRUE;
+                    s_nMax = s_nSlot;
+                }
+            }
+
+            /* BUG-44043
+               fetchNext()°¡ ÃÖÃÊ·Î È£ÃâµÉ¶§ scnÀ» ¸¸Á·ÇÏ´Â row°¡ ÇÏ³ª¶óµµ ÀÖ¾î¾ß
+               aIterator->lstReturnRecPtr °ªÀ¸·Î ¼¼ÆÃµÇ¾î¼­,
+               Key RedistributionÀÌ ¹ß»ıÇØµµ ´ÙÀ½³ëµåµéÀ» Å½»öÇØ¼­ Á¤È®ÇÑ ´ÙÀ½ row¸¦ Ã£¾Æ³¾¼öÀÖ´Ù. */
+            i = -1;
+            for ( sLoop = s_nMin; sLoop <= s_nMax; sLoop++ )
+            {
+                sRowPtr = s_pCurLNode->mRowPtrs[sLoop];
+
+                if ( sRowPtr == NULL )
+                {
+                    break;
+                }
+                
+                sRowSCN = ((smpSlotHeader*)sRowPtr)->mCreateSCN;
+                if ( SM_SCN_IS_INFINITE( sRowSCN ) )
+                {
+                    if ( SMP_GET_TID( sRowSCN ) == a_pIterator->tid )
+                    {
+                        i++;
+                        a_pIterator->rows[i] = sRowPtr; 
+                    }
+                }
+                else
+                {
+                    if ( SM_SCN_IS_FREE_ROW( ((smpSlotHeader*)sRowPtr)->mLimitSCN ) )
+                    {
+                        i++;
+                        a_pIterator->rows[i] = sRowPtr;           
+                    }    
+                }
+            }
+
+            if ( s_version == getLatchValueOfLNode(s_pCurLNode) )
+            {
+                if ( i != -1 )
+                {
+                    sBfrNextSCN = SM_SCN_INIT;
+                    for ( sLoop = 0 ; sLoop <= i ; sLoop++ )
+                    {
+                        sSlotHdr = (smpSlotHeader*) a_pIterator->rows[sLoop];
+
+                        SC_MAKE_GRID( a_pIterator->mRowGRID,
+                                      a_pIterator->table->mSpaceID,
+                                      SMP_SLOT_GET_PID( sSlotHdr ),
+                                      SMP_SLOT_GET_OFFSET( sSlotHdr ) );
+
+                        IDE_TEST( a_pIterator->mRowFilter->callback( &s_bResult,
+                                                                     sSlotHdr,
+                                                                     NULL,
+                                                                     0,
+                                                                     a_pIterator->mRowGRID,
+                                                                     a_pIterator->mRowFilter->data )
+                                  != IDE_SUCCESS );
+                        if ( s_bResult == ID_TRUE )
+                        {
+                            sBfrNextSCN = idCore::acpAtomicCas64( &(sSlotHdr->mLimitSCN),
+                                                                  sLockRowSCN,
+                                                                  SM_SCN_FREE_ROW );
+                            if ( sBfrNextSCN == SM_SCN_FREE_ROW )
+                            {
+                                IDE_TEST( smLayerCallback::addOID( (smxTrans*)(a_pIterator->trans),
+                                                                   a_pIterator->table->mSelfOID,
+                                                                   SMI_CHANGE_GRID_TO_OID( a_pIterator->mRowGRID ),
+                                                                   a_pIterator->table->mSpaceID,
+                                                                   SM_OID_TYPE_UNLOCK_FIXED_SLOT )
+                                          != IDE_SUCCESS);
+
+                                a_pIterator->rows[0] = a_pIterator->rows[sLoop] ;
+                                a_pIterator->lowFence  = a_pIterator->rows;
+                                a_pIterator->highFence = a_pIterator->rows;
+                                a_pIterator->slot      = a_pIterator->rows - 1;
+                                return IDE_SUCCESS;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    /* nothing to do */
+                }
+
+                s_pCurLNode = s_pNxtLNode;
+
+                if ( ( s_pCurLNode == NULL ) || ( a_pIterator->highest == ID_TRUE ) )
+                {
+                    s_pCurLNode = NULL;
+                    break;
+                }
+            }
+
+            s_nSlot = 0;
+        }
+
+        /* PROJ-2433 */
+        a_pIterator->lowFence  = a_pIterator->rows;
+        a_pIterator->highFence = a_pIterator->rows + i;
+        a_pIterator->slot      = a_pIterator->rows - 1;
+    }
+    else
+    {
+        s_pCurLNode = NULL;
+    }
+
+    if ( s_pCurLNode == NULL )
+    {
+        a_pIterator->least     =
+        a_pIterator->highest   = ID_TRUE;
+        a_pIterator->slot      = (SChar**)&(a_pIterator->slot);
+        a_pIterator->lowFence  = a_pIterator->slot + 1;
+        a_pIterator->highFence = a_pIterator->slot - 1;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+    
+    if ( ideGetErrorCode() == smERR_ABORT_INCONSISTENT_INDEX )
+    {
+        setInconsistentIndex( a_pIterator->index->mIndexHeader );
+    }
+
+    return IDE_FAILURE;
+
 }
 
 void smnbBTree::findLastRowInInternal( const smiCallBack   * aCallBack,
@@ -8024,7 +8006,7 @@ void smnbBTree::findLastRowInInternal( const smiCallBack   * aCallBack,
         }
         else
         {
-            // BUG-27948 ì´ë¯¸ ì‚­ì œëœ Rowë¥¼ ë³´ê³  ìˆëŠ”ì§€ í™•ì¸
+            // BUG-27948 ÀÌ¹Ì »èÁ¦µÈ Row¸¦ º¸°í ÀÖ´ÂÁö È®ÀÎ
             IDE_DASSERT( !SM_SCN_IS_FREE_ROW(((smpSlotHeader *)sRow)->mCreateSCN) );
 
             (void)aCallBack->callback( &sResult,
@@ -8075,7 +8057,7 @@ void smnbBTree::findLastKeyInInternal( smnbHeader          * aHeader,
         else
         {
             (void)aCallBack->callback( &sResult,
-                                       sRow, /* composite key indexì˜ ì²«ë²ˆì§¸ì´í›„ ì»¬ëŸ¼ì„ ë¹„êµí•˜ê¸°ìœ„í•´ì„œ*/
+                                       sRow, /* composite key indexÀÇ Ã¹¹øÂ°ÀÌÈÄ ÄÃ·³À» ºñ±³ÇÏ±âÀ§ÇØ¼­*/
                                        sKey,
                                        sPartialKeySize,
                                        SC_NULL_GRID,
@@ -8115,11 +8097,35 @@ IDE_RC smnbBTree::afterLast( smnbIterator* a_pIterator,
     return IDE_FAILURE;
 }
 
+/*BUG-48230: afterLast´Â ÀÎµ¦½º ÀüÃ¼¿¡ LockÀ» Àâ¾Æ¾ß ÇÏ¹Ç·Î
+ *           beforeFirstInternalQ Ã³·³ ÃÖÀûÈ­ÇÏ´Â °ÍÀÌ ÀÇ¹Ì
+ *           ¾ø´Ù.
+ */
+IDE_RC smnbBTree::afterLastQ( void* aIterator )
+{
+    smnbIterator* a_pIterator = (smnbIterator*)aIterator;
+
+    for( a_pIterator->mKeyRange        = a_pIterator->mKeyRange;
+         a_pIterator->mKeyRange->next != NULL;
+         a_pIterator->mKeyRange        = a_pIterator->mKeyRange->next ) ;
+
+    IDE_TEST( afterLastInternal( a_pIterator ) != IDE_SUCCESS );
+
+    a_pIterator->flag  = a_pIterator->flag & (~SMI_RETRAVERSE_MASK);
+    a_pIterator->flag |= SMI_RETRAVERSE_AFTER;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 IDE_RC smnbBTree::afterLastInternal( smnbIterator* a_pIterator )
 {
-    /* BUG-37643 Nodeì˜ arrayë¥¼ ì§€ì—­ë³€ìˆ˜ì— ì €ì¥í•˜ëŠ”ë°
-     * compiler ìµœì í™”ì— ì˜í•´ì„œ ì§€ì—­ë³€ìˆ˜ê°€ ì œê±°ë  ìˆ˜ ìˆë‹¤.
-     * ë”°ë¼ì„œ ì´ëŸ¬í•œ ë³€ìˆ˜ëŠ” volatileë¡œ ì„ ì–¸í•´ì•¼ í•œë‹¤. */
+    /* BUG-37643 NodeÀÇ array¸¦ Áö¿ªº¯¼ö¿¡ ÀúÀåÇÏ´Âµ¥
+     * compiler ÃÖÀûÈ­¿¡ ÀÇÇØ¼­ Áö¿ªº¯¼ö°¡ Á¦°ÅµÉ ¼ö ÀÖ´Ù.
+     * µû¶ó¼­ ÀÌ·¯ÇÑ º¯¼ö´Â volatile·Î ¼±¾ğÇØ¾ß ÇÑ´Ù. */
     const smiRange* s_pRange;
     idBool          s_bResult;
     SInt            s_nSlot;
@@ -8166,12 +8172,12 @@ IDE_RC smnbBTree::afterLastInternal( smnbIterator* a_pIterator )
     {
         s_pCurLNode = (smnbLNode*)(sStack[sDepth].node);
         s_bNext     = ID_TRUE;
-        s_version   = getLatchValueOfLNode(s_pCurLNode) & (~SMNB_SCAN_LATCH_BIT);
-
-        IDL_MEM_BARRIER;
 
         while(1)
         {
+            s_version = getLatchValueOfLNode(s_pCurLNode) & (~SMNB_SCAN_LATCH_BIT);
+            IDL_MEM_BARRIER;
+
             s_cSlot      = s_pCurLNode->mSlotCount;
             s_pNxtLNode  = s_pCurLNode->nextSPtr;
             s_pPrvLNode  = s_pCurLNode->prevSPtr;
@@ -8201,21 +8207,17 @@ IDE_RC smnbBTree::afterLastInternal( smnbIterator* a_pIterator )
                 
                 if ( s_pRow == NULL )
                 {
-                    IDL_MEM_BARRIER;
-                    s_version = getLatchValueOfLNode(s_pCurLNode) & (~SMNB_SCAN_LATCH_BIT);
-                    IDL_MEM_BARRIER;
-
                     continue;
                 }
 
                 /*
                  * PROJ-2433
-                 * ì§€ê¸ˆê°’ì´ ìµœì†Œê°’ ì¡°ê±´ë„ ë§Œì¡±í•˜ëŠ”ì§€ í™•ì¸í•˜ëŠ”ë¶€ë¶„ì´ë‹¤.
-                 * direct keyê°€ full keyì—¬ì•¼ë§Œ ì œëŒ€ë¡œëœ ë¹„êµê°€ ê°€ëŠ¥í•˜ë‹¤.
+                 * Áö±İ°ªÀÌ ÃÖ¼Ò°ª Á¶°Çµµ ¸¸Á·ÇÏ´ÂÁö È®ÀÎÇÏ´ÂºÎºĞÀÌ´Ù.
+                 * direct key°¡ full key¿©¾ß¸¸ Á¦´ë·ÎµÈ ºñ±³°¡ °¡´ÉÇÏ´Ù.
                  */ 
-                if ( isFullKeyInLeafSlot( a_pIterator->index,
-                                          a_pIterator->node,
-                                          (SShort)s_nSlot ) == ID_TRUE )
+                if ( isFullKey( a_pIterator->index,
+                                (smnbNode *)(a_pIterator->node),
+                                (SShort)s_nSlot ) == ID_TRUE )
                 {
                     sKey = SMNB_GET_KEY_PTR( a_pIterator->node, s_nSlot );
                 }
@@ -8224,7 +8226,7 @@ IDE_RC smnbBTree::afterLastInternal( smnbIterator* a_pIterator )
                     sKey = NULL;
                 }
 
-                // BUG-27948 ì´ë¯¸ ì‚­ì œëœ Rowë¥¼ ë³´ê³  ìˆëŠ”ì§€ í™•ì¸
+                // BUG-27948 ÀÌ¹Ì »èÁ¦µÈ Row¸¦ º¸°í ÀÖ´ÂÁö È®ÀÎ
                 IDE_DASSERT( !SM_SCN_IS_FREE_ROW(((smpSlotHeader *)s_pRow)->mCreateSCN ));
 
                 /* PROJ-2433 */
@@ -8242,19 +8244,15 @@ IDE_RC smnbBTree::afterLastInternal( smnbIterator* a_pIterator )
 
                         if ( s_pRow == NULL )
                         {
-                            IDL_MEM_BARRIER;
-                            s_version = getLatchValueOfLNode(s_pCurLNode) & (~SMNB_SCAN_LATCH_BIT);
-                            IDL_MEM_BARRIER;
-
                             continue;
                         }
 
                         /* PROJ-2433
-                         * ì§€ê¸ˆê°’ì´ ìµœì†Œê°’ ì¡°ê±´ë„ ë§Œì¡±í•˜ëŠ”ì§€ í™•ì¸í•˜ëŠ”ë¶€ë¶„ì´ë‹¤.
-                         * direct keyê°€ full keyì—¬ì•¼ë§Œ ì œëŒ€ë¡œëœ ë¹„êµê°€ ê°€ëŠ¥í•˜ë‹¤. */
-                        if ( isFullKeyInLeafSlot( a_pIterator->index,
-                                                  a_pIterator->node,
-                                                  (SShort)( s_nSlot - 1 ) ) == ID_TRUE )
+                         * Áö±İ°ªÀÌ ÃÖ¼Ò°ª Á¶°Çµµ ¸¸Á·ÇÏ´ÂÁö È®ÀÎÇÏ´ÂºÎºĞÀÌ´Ù.
+                         * direct key°¡ full key¿©¾ß¸¸ Á¦´ë·ÎµÈ ºñ±³°¡ °¡´ÉÇÏ´Ù. */
+                        if ( isFullKey( a_pIterator->index,
+                                        (smnbNode *)a_pIterator->node,
+                                        (SShort)( s_nSlot - 1 ) ) == ID_TRUE )
                         {
                             sKey = SMNB_GET_KEY_PTR( a_pIterator->node, s_nSlot - 1 );
                         }
@@ -8263,7 +8261,7 @@ IDE_RC smnbBTree::afterLastInternal( smnbIterator* a_pIterator )
                             sKey = NULL;
                         }
 
-                        // BUG-27948 ì´ë¯¸ ì‚­ì œëœ Rowë¥¼ ë³´ê³  ìˆëŠ”ì§€ í™•ì¸
+                        // BUG-27948 ÀÌ¹Ì »èÁ¦µÈ Row¸¦ º¸°í ÀÖ´ÂÁö È®ÀÎ
                         IDE_DASSERT( !SM_SCN_IS_FREE_ROW(((smpSlotHeader *)s_pRow)->mCreateSCN ));
 
                         /* PROJ-2433 */
@@ -8293,19 +8291,15 @@ IDE_RC smnbBTree::afterLastInternal( smnbIterator* a_pIterator )
 
                 if ( s_pRow == NULL )
                 {
-                    IDL_MEM_BARRIER;
-                    s_version = getLatchValueOfLNode(s_pCurLNode) & (~SMNB_SCAN_LATCH_BIT);
-                    IDL_MEM_BARRIER;
-
                     continue;
                 }
 
                 /* PROJ-2433
-                 * ì§€ê¸ˆê°’ì´ ìµœì†Œê°’ ì¡°ê±´ë„ ë§Œì¡±í•˜ëŠ”ì§€ í™•ì¸í•˜ëŠ”ë¶€ë¶„ì´ë‹¤.
-                 * direct keyê°€ full keyì—¬ì•¼ë§Œ ì œëŒ€ë¡œëœ ë¹„êµê°€ ê°€ëŠ¥í•˜ë‹¤. */
-                if ( isFullKeyInLeafSlot( a_pIterator->index,
-                                          a_pIterator->node,
-                                          0 ) == ID_TRUE )
+                 * Áö±İ°ªÀÌ ÃÖ¼Ò°ª Á¶°Çµµ ¸¸Á·ÇÏ´ÂÁö È®ÀÎÇÏ´ÂºÎºĞÀÌ´Ù.
+                 * direct key°¡ full key¿©¾ß¸¸ Á¦´ë·ÎµÈ ºñ±³°¡ °¡´ÉÇÏ´Ù. */
+                if ( isFullKey( a_pIterator->index,
+                                (smnbNode *)(a_pIterator->node),
+                                0 ) == ID_TRUE )
                 {
                     sKey = SMNB_GET_KEY_PTR( a_pIterator->node, 0 );
                 }
@@ -8314,7 +8308,7 @@ IDE_RC smnbBTree::afterLastInternal( smnbIterator* a_pIterator )
                     sKey = NULL;
                 }
 
-                // BUG-27948 ì´ë¯¸ ì‚­ì œëœ Rowë¥¼ ë³´ê³  ìˆëŠ”ì§€ í™•ì¸
+                // BUG-27948 ÀÌ¹Ì »èÁ¦µÈ Row¸¦ º¸°í ÀÖ´ÂÁö È®ÀÎ
                 IDE_DASSERT( !SM_SCN_IS_FREE_ROW(((smpSlotHeader *)s_pRow)->mCreateSCN ));
 
                 /* PROJ-2433 */
@@ -8331,11 +8325,9 @@ IDE_RC smnbBTree::afterLastInternal( smnbIterator* a_pIterator )
                 }
                 else
                 {
-                    smnbBTree::findFirstSlotInLeaf( a_pIterator->index,
+                    smnbBTree::findFirstSlotInNode( a_pIterator->index,
                                                     &(s_pRange->minimum),
-                                                    a_pIterator->node,
-                                                    0,
-                                                    a_pIterator->node->mSlotCount - 1,
+                                                    (smnbNode *)(a_pIterator->node),
                                                     &s_nSlot );
 
                     a_pIterator->least  = ID_TRUE;
@@ -8362,8 +8354,6 @@ IDE_RC smnbBTree::afterLastInternal( smnbIterator* a_pIterator )
             a_pIterator->lowFence  = a_pIterator->rows;
             a_pIterator->highFence = a_pIterator->rows + i;
             a_pIterator->slot      = a_pIterator->highFence + 1;
-
-            IDL_MEM_BARRIER;
 
             if ( s_version == getLatchValueOfLNode(s_pCurLNode) )
             {
@@ -8413,10 +8403,6 @@ IDE_RC smnbBTree::afterLastInternal( smnbIterator* a_pIterator )
             }
 
             s_nSlot   = 0;
-
-            IDL_MEM_BARRIER;
-            s_version = getLatchValueOfLNode(s_pCurLNode) & (~SMNB_SCAN_LATCH_BIT);
-            IDL_MEM_BARRIER;
         }//while
     }
 
@@ -8504,11 +8490,11 @@ IDE_RC smnbBTree::beforeFirstR( smnbIterator*       aIterator,
     sIterator->highFence      = aIterator->highFence;
     sIterator->flag           = aIterator->flag;
 
-    /* (BUG-45368) ì „ì²´ ë³µì‚¬í•˜ì§€ì•Šê³  ë³€ê²½ë˜ëŠ” ê°’ë§Œ ì €ì¥í›„ ë³µì›. */
+    /* (BUG-45368) ÀüÃ¼ º¹»çÇÏÁö¾Ê°í º¯°æµÇ´Â °ª¸¸ ÀúÀåÈÄ º¹¿ø. */
     sCursorProperty.mReadRecordCount    = aIterator->mProperties->mReadRecordCount;
     sCursorProperty.mFirstReadRecordPos = aIterator->mProperties->mFirstReadRecordPos;
 
-    /* (BUG-45368) node cache ì „ì²´ë¥¼ ë³µì‚¬í•˜ì§€ ì•Šê³  ì‚¬ìš©ëœ ë§Œí¼ë§Œ ì €ì¥í›„ ë³µì›. */
+    /* (BUG-45368) node cache ÀüÃ¼¸¦ º¹»çÇÏÁö ¾Ê°í »ç¿ëµÈ ¸¸Å­¸¸ ÀúÀåÈÄ º¹¿ø. */
     if ( aIterator->highFence >= aIterator->lowFence )
     {
         idlOS::memcpy( sIterator->rows,
@@ -8597,6 +8583,7 @@ IDE_RC smnbBTree::fetchNext( smnbIterator    * a_pIterator,
     idBool     sResult;
     idBool     sCanReusableRollback;
     smxTrans * sTrans = (smxTrans*)a_pIterator->trans;
+    idBool     sIsVisible;
 
 restart:
 
@@ -8610,7 +8597,7 @@ restart:
         a_pIterator->lstFetchRecPtr = a_pIterator->curRecPtr;
 
         /* PROJ-2433 
-         * NULLì²´í¬ checkSCN ìœ„ì¹˜ë³€ê²½*/
+         * NULLÃ¼Å© checkSCN À§Ä¡º¯°æ*/
         if ( a_pIterator->curRecPtr == NULL )
         {
             a_pIterator->highFence = a_pIterator->slot - 1;
@@ -8620,11 +8607,12 @@ restart:
         {
             /* nothing to do */
         }
-
-        if ( smnManager::checkSCN( (smiIterator*)a_pIterator,
-                                   a_pIterator->curRecPtr,
-                                   &sCanReusableRollback )
-            == ID_FALSE )
+        IDE_TEST( smnManager::checkSCN( (smiIterator*)a_pIterator,
+                                        a_pIterator->curRecPtr,
+                                        &sCanReusableRollback,
+                                        &sIsVisible )
+                  != IDE_SUCCESS );
+        if( sIsVisible == ID_FALSE )
         {
             continue;
         }
@@ -8633,7 +8621,164 @@ restart:
             /* nothing to do */
         }
 
-        // BUG-27948 ì´ë¯¸ ì‚­ì œëœ Rowë¥¼ ë³´ê³  ìˆëŠ”ì§€ í™•ì¸
+        // BUG-27948 ÀÌ¹Ì »èÁ¦µÈ Row¸¦ º¸°í ÀÖ´ÂÁö È®ÀÎ
+        IDE_DASSERT( !SM_SCN_IS_FREE_ROW
+                     (((smpSlotHeader *)(a_pIterator->curRecPtr))->mCreateSCN) );
+
+        *aRow = a_pIterator->curRecPtr;
+        a_pIterator->lstReturnRecPtr = a_pIterator->curRecPtr;
+
+        SC_MAKE_GRID( a_pIterator->mRowGRID,
+                      a_pIterator->table->mSpaceID,
+                      SMP_SLOT_GET_PID( (smpSlotHeader*)*aRow ),
+                      SMP_SLOT_GET_OFFSET( (smpSlotHeader*)*aRow ) );
+
+        IDE_TEST( a_pIterator->mRowFilter->callback( &sResult,
+                                                     *aRow,
+                                                     NULL,
+                                                     0,
+                                                     a_pIterator->mRowGRID,
+                                                     a_pIterator->mRowFilter->data )
+                  != IDE_SUCCESS );
+
+        if ( sResult == ID_TRUE )
+        {
+            if( sCanReusableRollback == ID_FALSE )
+            {
+                sTrans->mIsReusableRollback = ID_FALSE;
+            }
+
+            if ( a_pIterator->mProperties->mFirstReadRecordPos == 0 )
+            {
+                if ( a_pIterator->mProperties->mReadRecordCount != 1 )
+                {
+                    a_pIterator->mProperties->mReadRecordCount--;
+
+                    return IDE_SUCCESS;
+                }
+                else
+                {
+                    a_pIterator->mProperties->mReadRecordCount--;
+
+                    a_pIterator->highFence = a_pIterator->slot;
+                    a_pIterator->highest   = ID_TRUE;
+
+                    return IDE_SUCCESS;
+                }
+            }
+            else
+            {
+                a_pIterator->mProperties->mFirstReadRecordPos--;
+            }
+        }
+    }
+
+    if ( a_pIterator->highest == ID_FALSE )
+    {
+        sIsRestart = ID_FALSE;
+
+        IDE_TEST( getNextNode( a_pIterator,
+                               &sIsRestart ) != IDE_SUCCESS );
+
+        if ( sIsRestart == ID_TRUE )
+        {
+            goto restart;
+        }
+        else
+        {
+            /* nothing to do */
+        }
+    }
+    else
+    {
+        /* nothing to do */
+    }
+
+    a_pIterator->highest = ID_TRUE;
+
+    if ( a_pIterator->mKeyRange->next != NULL )
+    {
+        a_pIterator->mKeyRange = a_pIterator->mKeyRange->next;
+        (void)beforeFirstInternal( a_pIterator );
+
+        IDE_TEST( iduCheckSessionEvent(a_pIterator->mProperties->mStatistics) != IDE_SUCCESS );
+
+        goto restart;
+    }
+    else
+    {
+        /* nothing to do */
+    }
+
+    a_pIterator->slot            = a_pIterator->highFence + 1;
+    a_pIterator->curRecPtr       = NULL;
+    a_pIterator->lstFetchRecPtr  = NULL;
+    a_pIterator->lstReturnRecPtr = NULL;
+    SC_MAKE_NULL_GRID( a_pIterator->mRowGRID );
+    *aRow                        = NULL;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC smnbBTree::fetchNextQ( smnbIterator    * a_pIterator,
+                              const void     ** aRow )
+{
+    idBool     sIsRestart;
+    idBool     sResult;
+    idBool     sCanReusableRollback;
+    smxTrans * sTrans = (smxTrans*)a_pIterator->trans;
+    smpSlotHeader     * sSlotHeader;
+    ULong               sNxtSCN;
+    smTID               sNxtTID;
+    UInt sState = 0;
+
+restart:
+
+    for( a_pIterator->slot++;
+         a_pIterator->slot <= a_pIterator->highFence;
+         a_pIterator->slot++ )
+    {
+        sCanReusableRollback = ID_TRUE;
+
+        a_pIterator->curRecPtr      = *a_pIterator->slot;
+        a_pIterator->lstFetchRecPtr = a_pIterator->curRecPtr;
+
+        /* PROJ-2433
+         * NULLÃ¼Å© checkSCN À§Ä¡º¯°æ*/
+        if ( a_pIterator->curRecPtr == NULL )
+        {
+            a_pIterator->highFence = a_pIterator->slot - 1;
+            sState |= 1;
+            break;
+        }
+        else
+        {
+            /* nothing to do */
+        }
+
+        sSlotHeader                 = (smpSlotHeader*)a_pIterator->curRecPtr;
+
+        /* PROJ-2433
+         * NULLÃ¼Å© checkSCN À§Ä¡º¯°æ*/
+        IDE_ASSERT( sSlotHeader != NULL );
+
+        SMX_GET_SCN_AND_TID( sSlotHeader->mLimitSCN, sNxtSCN, sNxtTID );
+        if(( SM_SCN_IS_NOT_LOCK_ROW( sNxtSCN ) ) ||
+           ( a_pIterator->tid != sNxtTID ))
+        {
+            sState |= 2;
+            continue;
+        }
+        else
+        {
+            /* nothing to do */
+        }
+
+        // BUG-27948 ÀÌ¹Ì »èÁ¦µÈ Row¸¦ º¸°í ÀÖ´ÂÁö È®ÀÎ
         IDE_DASSERT( !SM_SCN_IS_FREE_ROW
                      (((smpSlotHeader *)(a_pIterator->curRecPtr))->mCreateSCN) );
 
@@ -8747,10 +8892,11 @@ IDE_RC smnbBTree::getNextNode( smnbIterator   * aIterator,
     smnbLNode   * sNxtLNode   = NULL;
     SChar       * sRowPtr     = NULL;
     void        * sKey        = NULL;
-    SChar       * sLastReadRow  = NULL;     /* ì´ì „ ë…¸ë“œì—ì„œ ë§ˆì§€ë§‰ìœ¼ë¡œ ì½ì€ row pointer */
+    SChar       * sLastReadRow  = NULL;     /* ÀÌÀü ³ëµå¿¡¼­ ¸¶Áö¸·À¸·Î ÀĞÀº row pointer */
     idBool        isSetRowCache = ID_FALSE;
     SInt          sMin;
     SInt          sMax;
+    smnbLNode   * sNode         = NULL;
 
     IDE_DASSERT( aIterator->highest == ID_FALSE );
     *aIsRestart = ID_FALSE;
@@ -8763,21 +8909,21 @@ IDE_RC smnbBTree::getNextNode( smnbIterator   * aIterator,
 
     /* BUG-44043 
 
-       Key redistributionì˜ ì˜í–¥ìœ¼ë¡œ
-       ì´ì „ ë…¸ë“œì—ì„œ ë§ˆì§€ë§‰ ì½ì—ˆë˜ row ( = aIterator->lstReturnRecPtr ) ê°€
-       í˜„ì¬ë…¸ë“œ ë˜ëŠ” ë‹¤ìŒë…¸ë“œì— ì¡´ì¬í• ìˆ˜ìˆë‹¤.
+       Key redistributionÀÇ ¿µÇâÀ¸·Î
+       ÀÌÀü ³ëµå¿¡¼­ ¸¶Áö¸· ÀĞ¾ú´ø row ( = aIterator->lstReturnRecPtr ) °¡
+       ÇöÀç³ëµå ¶Ç´Â ´ÙÀ½³ëµå¿¡ Á¸ÀçÇÒ¼öÀÖ´Ù.
 
-       aIterator->lstReturnRecPtr ë³´ë‹¤ í° ì²«ë²ˆì§¸ row ìœ„ì¹˜ë¥¼ ë°œê²¬í• ë•Œê¹Œì§€
-       next nodeë¥¼ íƒìƒ‰í•œë‹¤.
+       aIterator->lstReturnRecPtr º¸´Ù Å« Ã¹¹øÂ° row À§Ä¡¸¦ ¹ß°ßÇÒ¶§±îÁö
+       next node¸¦ Å½»öÇÑ´Ù.
      */ 
 
     while ( sCurLNode != NULL )
     {
-        sVersion   = getLatchValueOfLNode(sCurLNode) & IDU_LATCH_UNMASK;
-        IDL_MEM_BARRIER;
-
         while ( 1 )
         {
+            sVersion = getLatchValueOfLNode(sCurLNode) & IDU_LATCH_UNMASK;
+            IDL_MEM_BARRIER;
+
             isSetRowCache = ID_FALSE;
             sSlotCount    = sCurLNode->mSlotCount;
             sNxtLNode     = sCurLNode->nextSPtr;
@@ -8792,10 +8938,6 @@ IDE_RC smnbBTree::getNextNode( smnbIterator   * aIterator,
                 }
                 else
                 {
-                    IDL_MEM_BARRIER;
-                    sVersion   = getLatchValueOfLNode( sCurLNode ) & IDU_LATCH_UNMASK;
-                    IDL_MEM_BARRIER;
-
                     continue;
                 }
             }
@@ -8813,9 +8955,8 @@ IDE_RC smnbBTree::getNextNode( smnbIterator   * aIterator,
 
             if ( sMin >= sSlotCount )
             { 
-                /* í˜„ì¬ë…¸ë“œì—ì„œ sLastReadRowë¥¼ ì°¾ì§€ëª»í•œê²½ìš°,
-                   ë‹¤ìŒë…¸ë“œì—ì„œ ë‹¤ì‹œ ì°¾ë„ë¡ í•œë‹¤. */
-                IDL_MEM_BARRIER;
+                /* ÇöÀç³ëµå¿¡¼­ sLastReadRow¸¦ Ã£Áö¸øÇÑ°æ¿ì,
+                   ´ÙÀ½³ëµå¿¡¼­ ´Ù½Ã Ã£µµ·Ï ÇÑ´Ù. */
                 if ( sVersion == getLatchValueOfLNode( sCurLNode ) )
                 {
                     sCurLNode = sNxtLNode;
@@ -8823,10 +8964,6 @@ IDE_RC smnbBTree::getNextNode( smnbIterator   * aIterator,
                 }
                 else
                 {
-                    IDL_MEM_BARRIER;
-                    sVersion   = getLatchValueOfLNode(sCurLNode) & IDU_LATCH_UNMASK;
-                    IDL_MEM_BARRIER;
-
                     continue;
                 }
             }
@@ -8847,10 +8984,6 @@ IDE_RC smnbBTree::getNextNode( smnbIterator   * aIterator,
 
             if ( sRowPtr == NULL )
             {
-                IDL_MEM_BARRIER;
-                sVersion   = getLatchValueOfLNode(sCurLNode) & IDU_LATCH_UNMASK;
-                IDL_MEM_BARRIER;
-
                 continue;
             }
             else
@@ -8859,12 +8992,12 @@ IDE_RC smnbBTree::getNextNode( smnbIterator   * aIterator,
             }
 
             /* PROJ-2433
-             * ìµœëŒ€ê°’ ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ”ì§€ í™•ì¸í•˜ëŠ”ë¶€ë¶„ì´ë‹¤.
-             * direct keyê°€ full keyì—¬ì•¼ë§Œ ì œëŒ€ë¡œëœ ë¹„êµê°€ ê°€ëŠ¥í•˜ë‹¤.
+             * ÃÖ´ë°ª Á¶°ÇÀ» ¸¸Á·ÇÏ´ÂÁö È®ÀÎÇÏ´ÂºÎºĞÀÌ´Ù.
+             * direct key°¡ full key¿©¾ß¸¸ Á¦´ë·ÎµÈ ºñ±³°¡ °¡´ÉÇÏ´Ù.
              */
-            if ( isFullKeyInLeafSlot( aIterator->index,
-                                      sCurLNode,
-                                      (SShort)( sSlotCount - 1 ) ) == ID_TRUE )
+            if ( isFullKey( aIterator->index,
+                            (smnbNode *)sCurLNode,
+                            (SShort)( sSlotCount - 1 ) ) == ID_TRUE )
             {
                 sKey = SMNB_GET_KEY_PTR( sCurLNode, sSlotCount - 1 );
             }
@@ -8873,7 +9006,7 @@ IDE_RC smnbBTree::getNextNode( smnbIterator   * aIterator,
                 sKey = NULL;
             }
 
-            /* BUG-27948 ì´ë¯¸ ì‚­ì œëœ Rowë¥¼ ë³´ê³  ìˆëŠ”ì§€ í™•ì¸ */
+            /* BUG-27948 ÀÌ¹Ì »èÁ¦µÈ Row¸¦ º¸°í ÀÖ´ÂÁö È®ÀÎ */
             IDE_DASSERT( !SM_SCN_IS_FREE_ROW(((smpSlotHeader *)sRowPtr)->mCreateSCN) );
 
             aIterator->mKeyRange->maximum.callback( &sResult,
@@ -8916,20 +9049,15 @@ IDE_RC smnbBTree::getNextNode( smnbIterator   * aIterator,
 
             isSetRowCache = ID_TRUE;
 
-            IDL_MEM_BARRIER;
             if ( sVersion == getLatchValueOfLNode( sCurLNode ) )
             {
                 break;
             }
-
-            IDL_MEM_BARRIER;
-            sVersion   = getLatchValueOfLNode(sCurLNode) & IDU_LATCH_UNMASK;
-            IDL_MEM_BARRIER;
         } /* loop for node latch */
 
         if ( isSetRowCache == ID_TRUE )
         {
-            /* row cacheê°€ ì„¸íŒ…ë˜ì—ˆìœ¼ë©´, ë‚˜ë¨¸ì§€ iteratorê°’ë“¤ë„ ì„¸íŒ…í•œë‹¤. */
+            /* row cache°¡ ¼¼ÆÃµÇ¾úÀ¸¸é, ³ª¸ÓÁö iterator°ªµéµµ ¼¼ÆÃÇÑ´Ù. */
 
             aIterator->highFence = aIterator->rows + i;
             aIterator->lowFence  = aIterator->rows;
@@ -8951,9 +9079,52 @@ IDE_RC smnbBTree::getNextNode( smnbIterator   * aIterator,
 
     } /* loop for next node */
 
+    IDE_TEST( iduCheckSessionEvent(aIterator->mProperties->mStatistics) != IDE_SUCCESS );
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    /* BUG-47385 fetchNext¿¡¼­ timeoutÀÌ ¹ß»ıÇÒ °æ¿ì ÀÎµ¦½º ¸µÅ©°¡ ±úÁ® ¹«ÇÑ·çÇÁ¸¦ µ¹ °¡´É¼ºÀÌ ÀÖ´Ù.
+     *           ÀÌ °æ¿ì Â÷ÈÄ ºĞ¼®À» À§ÇØ  ÇöÀç Å½»öÁßÀÎ ³ëµå¿Í
+     ÀÌÀü ³ëµå 2°³/ÀÌÈÄ ³ëµå 2°³ÀÇ ¸µÅ© Á¤º¸¸¦ trc·Î±×·Î ³²±âµµ·Ï ÇÑ´Ù. */
+    if( ( ideGetErrorCode() == idERR_ABORT_Query_Timeout ) ||
+        ( ideGetErrorCode() == idERR_ABORT_Session_Disconnected ) )
+    {
+        ideLog::log(IDE_SM_0,"A timeout occurred during index fetch. Index [%s] link error is suspected.\n",
+                    aIterator->index->mIndexHeader->mName );
+
+        sNode = aIterator->node;
+
+        lockTree( aIterator->index );
+
+        if( sNode != NULL )
+        {
+            if( sNode->prevSPtr != NULL )
+            {
+                if( sNode->prevSPtr->prevSPtr != NULL )
+                {
+                    dumpNodeLink( sNode->prevSPtr->prevSPtr );
+                }
+
+                dumpNodeLink( sNode->prevSPtr );
+            }
+
+            dumpNodeLink( sNode );
+
+            if( sNode->nextSPtr != NULL )
+            {
+                dumpNodeLink( sNode->nextSPtr );
+
+                if( sNode->nextSPtr->nextSPtr != NULL )
+                {
+                    dumpNodeLink( sNode->nextSPtr->nextSPtr );
+                }
+            }
+        }
+
+        unlockTree( aIterator->index );
+    }
 
     return IDE_FAILURE;
 }
@@ -8965,6 +9136,7 @@ IDE_RC smnbBTree::fetchPrev( smnbIterator* aIterator,
     idBool     sResult;
     idBool     sCanReusableRollback = ID_TRUE;
     smxTrans * sTrans               = (smxTrans*)aIterator->trans;
+    idBool     sIsVisible;
 
 restart:
 
@@ -8986,10 +9158,13 @@ restart:
         {
             /* nothing to do */
         }
-        if ( smnManager::checkSCN( (smiIterator*)aIterator,
-                                   aIterator->curRecPtr,
-                                   &sCanReusableRollback )
-             == ID_FALSE )
+
+        IDE_TEST( smnManager::checkSCN( (smiIterator*)aIterator,
+                                        aIterator->curRecPtr,
+                                        &sCanReusableRollback,
+                                        &sIsVisible )
+                  != IDE_SUCCESS );
+        if( sIsVisible == ID_FALSE )
         {
             continue;
         }
@@ -8998,7 +9173,7 @@ restart:
             /* nothing to do */
         }
 
-        // BUG-27948 ì´ë¯¸ ì‚­ì œëœ Rowë¥¼ ë³´ê³  ìˆëŠ”ì§€ í™•ì¸
+        // BUG-27948 ÀÌ¹Ì »èÁ¦µÈ Row¸¦ º¸°í ÀÖ´ÂÁö È®ÀÎ
         IDE_DASSERT( !SM_SCN_IS_FREE_ROW
                      (((smpSlotHeader *)(aIterator->curRecPtr))->mCreateSCN) );
 
@@ -9116,6 +9291,7 @@ IDE_RC smnbBTree::getPrevNode( smnbIterator   * aIterator,
     SChar       * sRowPtr    = NULL;
     void        * sKey       = NULL;
     SInt          sState     = 0;
+    smnbLNode   * sNode      = NULL;
 
     IDE_DASSERT( aIterator->least == ID_FALSE )
     *aIsRestart = ID_FALSE;
@@ -9129,7 +9305,6 @@ IDE_RC smnbBTree::getPrevNode( smnbIterator   * aIterator,
     {
         i = -1;
 
-        IDL_MEM_BARRIER;
         sVersion = getLatchValueOfLNode(sCurLNode) & IDU_LATCH_UNMASK;
         IDL_MEM_BARRIER;
 
@@ -9162,11 +9337,11 @@ IDE_RC smnbBTree::getPrevNode( smnbIterator   * aIterator,
         }
 
         /* PROJ-2433
-         * ìµœì†Œê°’ ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ”ì§€ í™•ì¸í•˜ëŠ”ë¶€ë¶„ì´ë‹¤.
-         * direct keyê°€ full keyì—¬ì•¼ë§Œ ì œëŒ€ë¡œëœ ë¹„êµê°€ ê°€ëŠ¥í•˜ë‹¤. */
-        if ( isFullKeyInLeafSlot( aIterator->index,
-                                  aIterator->node,
-                                  0 ) == ID_TRUE )
+         * ÃÖ¼Ò°ª Á¶°ÇÀ» ¸¸Á·ÇÏ´ÂÁö È®ÀÎÇÏ´ÂºÎºĞÀÌ´Ù.
+         * direct key°¡ full key¿©¾ß¸¸ Á¦´ë·ÎµÈ ºñ±³°¡ °¡´ÉÇÏ´Ù. */
+        if ( isFullKey( aIterator->index,
+                        (smnbNode *)(aIterator->node),
+                        0 ) == ID_TRUE )
         {
             sKey = SMNB_GET_KEY_PTR( aIterator->node, 0 );
         }
@@ -9175,7 +9350,7 @@ IDE_RC smnbBTree::getPrevNode( smnbIterator   * aIterator,
             sKey = NULL;
         }
 
-        // BUG-27948 ì´ë¯¸ ì‚­ì œëœ Rowë¥¼ ë³´ê³  ìˆëŠ”ì§€ í™•ì¸
+        // BUG-27948 ÀÌ¹Ì »èÁ¦µÈ Row¸¦ º¸°í ÀÖ´ÂÁö È®ÀÎ
         IDE_DASSERT( !SM_SCN_IS_FREE_ROW(((smpSlotHeader *)aIterator->node->mRowPtrs[0])->mCreateSCN) );
 
         /* PROJ-2433 */
@@ -9189,11 +9364,9 @@ IDE_RC smnbBTree::getPrevNode( smnbIterator   * aIterator,
 
         if ( sResult == ID_FALSE )
         {
-            smnbBTree::findFirstSlotInLeaf( aIterator->index,
+            smnbBTree::findFirstSlotInNode( aIterator->index,
                                             &aIterator->mKeyRange->minimum,
-                                            aIterator->node,
-                                            0,
-                                            sSlotCount - 1,
+                                            (smnbNode *)(aIterator->node),
                                             &sSlot );
             aIterator->least = ID_TRUE;
         }
@@ -9218,7 +9391,6 @@ IDE_RC smnbBTree::getPrevNode( smnbIterator   * aIterator,
             i = -1;
         }
 
-        IDL_MEM_BARRIER;
         if ( sVersion == getLatchValueOfLNode( sCurLNode ) )
         {
             break;
@@ -9237,8 +9409,8 @@ IDE_RC smnbBTree::getPrevNode( smnbIterator   * aIterator,
      */
 
     /* PROJ-2433
-     * ìœ„ì˜ ë§ ìƒê°í•˜ì§€ì•Šì•„ë„ë¨
-     * ë¹ˆ nodeê°€ ì•„ë‹ˆê³ , ìœ„ì—ì„œ checkSCN í•˜ì§€ì•Šê³  ëª¨ë‘ ë³µì‚¬í–ˆìœ¼ë¯€ë¡œ ê¼­í•˜ë‚˜ì´ìƒìˆë‹¤ */
+     * À§ÀÇ ¸» »ı°¢ÇÏÁö¾Ê¾ÆµµµÊ
+     * ºó node°¡ ¾Æ´Ï°í, À§¿¡¼­ checkSCN ÇÏÁö¾Ê°í ¸ğµÎ º¹»çÇßÀ¸¹Ç·Î ²ÀÇÏ³ªÀÌ»óÀÖ´Ù */
     if ( i >= 0 )
     {
         aIterator->highFence = aIterator->rows + i;
@@ -9259,9 +9431,57 @@ IDE_RC smnbBTree::getPrevNode( smnbIterator   * aIterator,
     sState = 0;
     unlockTree( aIterator->index );
 
+    IDE_TEST(iduCheckSessionEvent(aIterator->mProperties->mStatistics) != IDE_SUCCESS);
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    /* BUG-47385 fetchPrev¿¡¼­ timeoutÀÌ ¹ß»ıÇÒ °æ¿ì ÀÎµ¦½º ¸µÅ©°¡ ±úÁ® ¹«ÇÑ·çÇÁ¸¦ µ¹ °¡´É¼ºÀÌ ÀÖ´Ù.
+     *           ÀÌ °æ¿ì Â÷ÈÄ ºĞ¼®À» À§ÇØ  ÇöÀç Å½»öÁßÀÎ ³ëµå¿Í
+     ÀÌÀü ³ëµå 2°³/ÀÌÈÄ ³ëµå 2°³ÀÇ ¸µÅ© Á¤º¸¸¦ trc·Î±×·Î ³²±âµµ·Ï ÇÑ´Ù. */
+    if( ( ideGetErrorCode() == idERR_ABORT_Query_Timeout ) ||
+        ( ideGetErrorCode() == idERR_ABORT_Session_Disconnected ) )
+    {
+        ideLog::log(IDE_SM_0,"A timeout occurred during index fetch. Index [%s] link error is suspected.\n",
+                    aIterator->index->mIndexHeader->mName );
+
+        sNode = aIterator->node;
+
+        if( sState == 0 )
+        {
+            lockTree( aIterator->index );
+            sState = 1; 
+        }
+
+        if( sNode != NULL )
+        {
+            if( sNode->prevSPtr != NULL )
+            {
+                if( sNode->prevSPtr->prevSPtr != NULL )
+                {
+                    dumpNodeLink( sNode->prevSPtr->prevSPtr );
+                }
+
+                dumpNodeLink( sNode->prevSPtr );
+            }
+
+            dumpNodeLink( sNode );
+
+            if( sNode->nextSPtr != NULL )
+            {
+                dumpNodeLink( sNode->nextSPtr );
+
+                if( sNode->nextSPtr->nextSPtr != NULL )
+                {
+                    dumpNodeLink( sNode->nextSPtr->nextSPtr );
+                }
+            }
+        }
+
+        sState = 0;
+        unlockTree( aIterator->index );
+    }
 
     if ( sState != 0 )
     {
@@ -9284,6 +9504,7 @@ IDE_RC smnbBTree::fetchNextU( smnbIterator* aIterator,
     idBool     sResult;
     idBool     sCanReusableRollback = ID_TRUE;
     smxTrans * sTrans               = (smxTrans*)aIterator->trans;
+    idBool     sIsVisible;
 
   restart:
 
@@ -9297,7 +9518,7 @@ IDE_RC smnbBTree::fetchNextU( smnbIterator* aIterator,
         aIterator->lstFetchRecPtr = aIterator->curRecPtr;
 
         /* PROJ-2433 
-         * NULLì²´í¬ checkSCN ìœ„ì¹˜ë³€ê²½*/
+         * NULLÃ¼Å© checkSCN À§Ä¡º¯°æ*/
         if ( aIterator->curRecPtr == NULL )
         {
             aIterator->highFence = aIterator->slot - 1;
@@ -9307,10 +9528,13 @@ IDE_RC smnbBTree::fetchNextU( smnbIterator* aIterator,
         {
             /* nothing to do */
         }
-        if ( smnManager::checkSCN( (smiIterator*)aIterator,
-                                   aIterator->curRecPtr,
-                                   &sCanReusableRollback )
-             == ID_FALSE )
+
+        IDE_TEST( smnManager::checkSCN( (smiIterator*)aIterator,
+                                        aIterator->curRecPtr,
+                                        &sCanReusableRollback,
+                                        &sIsVisible )
+                  != IDE_SUCCESS );
+        if( sIsVisible == ID_FALSE )
         {
             continue;
         }
@@ -9319,7 +9543,7 @@ IDE_RC smnbBTree::fetchNextU( smnbIterator* aIterator,
             /* nothing to do */
         }
 
-        // BUG-27948 ì´ë¯¸ ì‚­ì œëœ Rowë¥¼ ë³´ê³  ìˆëŠ”ì§€ í™•ì¸
+        // BUG-27948 ÀÌ¹Ì »èÁ¦µÈ Row¸¦ º¸°í ÀÖ´ÂÁö È®ÀÎ
         IDE_DASSERT( !SM_SCN_IS_FREE_ROW
                      (((smpSlotHeader *)(aIterator->curRecPtr))->mCreateSCN) );
 
@@ -9436,6 +9660,7 @@ IDE_RC smnbBTree::fetchPrevU( smnbIterator* aIterator,
     idBool     sResult;
     idBool     sCanReusableRollback = ID_TRUE;
     smxTrans * sTrans               = (smxTrans*)aIterator->trans;
+    idBool     sIsVisible;
 
 restart:
 
@@ -9457,10 +9682,13 @@ restart:
         {
             /* nothing to do */
         }
-        if ( smnManager::checkSCN( (smiIterator*)aIterator,
-                                   aIterator->curRecPtr,
-                                   &sCanReusableRollback )
-             == ID_FALSE )
+
+        IDE_TEST( smnManager::checkSCN( (smiIterator*)aIterator,
+                                        aIterator->curRecPtr,
+                                        &sCanReusableRollback,
+                                        &sIsVisible )
+                  != IDE_SUCCESS );
+        if( sIsVisible == ID_FALSE )
         {
             continue;
         }
@@ -9469,7 +9697,7 @@ restart:
             /* nothing to do */
         }
 
-        // BUG-27948 ì´ë¯¸ ì‚­ì œëœ Rowë¥¼ ë³´ê³  ìˆëŠ”ì§€ í™•ì¸
+        // BUG-27948 ÀÌ¹Ì »èÁ¦µÈ Row¸¦ º¸°í ÀÖ´ÂÁö È®ÀÎ
         IDE_DASSERT( !SM_SCN_IS_FREE_ROW
                      (((smpSlotHeader *)(aIterator->curRecPtr))->mCreateSCN) );
 
@@ -9585,6 +9813,7 @@ IDE_RC smnbBTree::fetchNextR( smnbIterator* aIterator )
     idBool     sResult;
     idBool     sCanReusableRollback = ID_TRUE;
     smxTrans * sTrans               = (smxTrans*)aIterator->trans;
+    idBool     sIsVisible;
 
   restart:
 
@@ -9598,7 +9827,7 @@ IDE_RC smnbBTree::fetchNextR( smnbIterator* aIterator )
         aIterator->lstFetchRecPtr = aIterator->curRecPtr;
 
         /* PROJ-2433 
-         * NULLì²´í¬ checkSCN ìœ„ì¹˜ë³€ê²½*/
+         * NULLÃ¼Å© checkSCN À§Ä¡º¯°æ*/
         if ( aIterator->curRecPtr == NULL )
         {
             aIterator->highFence = aIterator->slot - 1;
@@ -9608,10 +9837,13 @@ IDE_RC smnbBTree::fetchNextR( smnbIterator* aIterator )
         {
             /* nothing to do */
         }
-        if ( smnManager::checkSCN( (smiIterator*)aIterator,
-                                   aIterator->curRecPtr,
-                                   &sCanReusableRollback )
-             == ID_FALSE )
+
+        IDE_TEST( smnManager::checkSCN( (smiIterator*)aIterator,
+                                        aIterator->curRecPtr,
+                                        &sCanReusableRollback,
+                                        &sIsVisible )
+                  != IDE_SUCCESS );
+        if( sIsVisible == ID_FALSE )
         {
             continue;
         }
@@ -9620,7 +9852,7 @@ IDE_RC smnbBTree::fetchNextR( smnbIterator* aIterator )
             /* nothing to do */
         }
 
-        // BUG-27948 ì´ë¯¸ ì‚­ì œëœ Rowë¥¼ ë³´ê³  ìˆëŠ”ì§€ í™•ì¸
+        // BUG-27948 ÀÌ¹Ì »èÁ¦µÈ Row¸¦ º¸°í ÀÖ´ÂÁö È®ÀÎ
         IDE_DASSERT( !SM_SCN_IS_FREE_ROW
                      (((smpSlotHeader *)(aIterator->curRecPtr))->mCreateSCN) );
 
@@ -9662,6 +9894,7 @@ IDE_RC smnbBTree::fetchNextR( smnbIterator* aIterator )
 
                     aIterator->highFence = aIterator->slot;
                     aIterator->highest   = ID_TRUE;
+
                     IDE_TEST( smnManager::lockRow( (smiIterator*)aIterator)
                               != IDE_SUCCESS );
                 }
@@ -9732,6 +9965,7 @@ IDE_RC smnbBTree::retraverse( idvSQL        * /* aStatistics */,
     void            * sTmpKey = NULL;
     smnbStack         sStack[SMNB_STACK_DEPTH];
     SInt              sDepth;
+    idBool            sIsVisible;
 
     sRowPtr  = aIterator->lstFetchRecPtr;
     sFlag    = aIterator->flag & SMI_RETRAVERSE_MASK;
@@ -9791,17 +10025,16 @@ IDE_RC smnbBTree::retraverse( idvSQL        * /* aStatistics */,
             sDepth = -1;
 
             IDE_TEST( findPosition( sHeader,
+                                    NULL, /* smiCallBack */
                                     sRowPtr,
                                     &sDepth,
-                                    sStack ) != IDE_SUCCESS );
+                                    sStack,
+                                    &sCurLNode ) != IDE_SUCCESS );
 
             IDE_ERROR_RAISE( sDepth >= 0, ERR_CORRUPTED_INDEX_NODE_DEPTH );
 
-            sCurLNode  = (smnbLNode*)(sStack[sDepth].node);
-
             while(1)
             {
-                IDL_MEM_BARRIER;
                 sVersion   = getLatchValueOfLNode(sCurLNode) & IDU_LATCH_UNMASK;
                 IDL_MEM_BARRIER;
 
@@ -9810,7 +10043,6 @@ IDE_RC smnbBTree::retraverse( idvSQL        * /* aStatistics */,
 
                 if ( sSlotCount == 0)
                 {
-                    IDL_MEM_BARRIER;
                     if ( sVersion == getLatchValueOfLNode(sCurLNode))
                     {
                         sCurLNode = sNxtLNode;
@@ -9833,11 +10065,11 @@ IDE_RC smnbBTree::retraverse( idvSQL        * /* aStatistics */,
                 }
 
                 /* PROJ-2433
-                 * ì§€ê¸ˆê°’ì´ ìµœëŒ€ê°’ ì¡°ê±´ë„ ë§Œì¡±í•˜ëŠ”ì§€ í™•ì¸í•˜ëŠ”ë¶€ë¶„ì´ë‹¤.
-                 * direct keyê°€ full keyì—¬ì•¼ë§Œ ì œëŒ€ë¡œëœ ë¹„êµê°€ ê°€ëŠ¥í•˜ë‹¤.  */
-                if ( isFullKeyInLeafSlot( aIterator->index,
-                                          aIterator->node,
-                                          (SShort)( sSlotCount - 1 ) ) == ID_TRUE )
+                 * Áö±İ°ªÀÌ ÃÖ´ë°ª Á¶°Çµµ ¸¸Á·ÇÏ´ÂÁö È®ÀÎÇÏ´ÂºÎºĞÀÌ´Ù.
+                 * direct key°¡ full key¿©¾ß¸¸ Á¦´ë·ÎµÈ ºñ±³°¡ °¡´ÉÇÏ´Ù.  */
+                if ( isFullKey( aIterator->index,
+                                (smnbNode *)(aIterator->node),
+                                (SShort)( sSlotCount - 1 ) ) == ID_TRUE )
                 {
                     sTmpKey = SMNB_GET_KEY_PTR( sCurLNode, sSlotCount - 1 );
                 }
@@ -9846,7 +10078,7 @@ IDE_RC smnbBTree::retraverse( idvSQL        * /* aStatistics */,
                     sTmpKey = NULL;
                 }
 
-                // BUG-27948 ì´ë¯¸ ì‚­ì œëœ Rowë¥¼ ë³´ê³  ìˆëŠ”ì§€ í™•ì¸
+                // BUG-27948 ÀÌ¹Ì »èÁ¦µÈ Row¸¦ º¸°í ÀÖ´ÂÁö È®ÀÎ
                 IDE_DASSERT( !SM_SCN_IS_FREE_ROW(((smpSlotHeader *)sTmpRowPtr)->mCreateSCN) );
 
                 /* PROJ-2433 */
@@ -9883,11 +10115,11 @@ IDE_RC smnbBTree::retraverse( idvSQL        * /* aStatistics */,
                 }
 
                 /* PROJ-2433
-                 * ì§€ê¸ˆê°’ì´ ìµœì†Œê°’ ì¡°ê±´ë„ ë§Œì¡±í•˜ëŠ”ì§€ í™•ì¸í•˜ëŠ”ë¶€ë¶„ì´ë‹¤.
-                 * direct keyê°€ full keyì—¬ì•¼ë§Œ ì œëŒ€ë¡œëœ ë¹„êµê°€ ê°€ëŠ¥í•˜ë‹¤.  */
-                if ( isFullKeyInLeafSlot( aIterator->index,
-                                          aIterator->node,
-                                          0 ) == ID_TRUE )
+                 * Áö±İ°ªÀÌ ÃÖ¼Ò°ª Á¶°Çµµ ¸¸Á·ÇÏ´ÂÁö È®ÀÎÇÏ´ÂºÎºĞÀÌ´Ù.
+                 * direct key°¡ full key¿©¾ß¸¸ Á¦´ë·ÎµÈ ºñ±³°¡ °¡´ÉÇÏ´Ù.  */
+                if ( isFullKey( aIterator->index,
+                                (smnbNode *)(aIterator->node),
+                                0 ) == ID_TRUE )
                 {
                     sTmpKey = SMNB_GET_KEY_PTR( aIterator->node, 0 );
                 }
@@ -9896,7 +10128,7 @@ IDE_RC smnbBTree::retraverse( idvSQL        * /* aStatistics */,
                     sTmpKey = NULL;
                 }
 
-                // BUG-27948 ì´ë¯¸ ì‚­ì œëœ Rowë¥¼ ë³´ê³  ìˆëŠ”ì§€ í™•ì¸
+                // BUG-27948 ÀÌ¹Ì »èÁ¦µÈ Row¸¦ º¸°í ÀÖ´ÂÁö È®ÀÎ
                 IDE_DASSERT( !SM_SCN_IS_FREE_ROW(((smpSlotHeader *)sTmpRowPtr)->mCreateSCN));
 
                 /* PROJ-2433 */
@@ -9911,11 +10143,9 @@ IDE_RC smnbBTree::retraverse( idvSQL        * /* aStatistics */,
 
                 if ( sResult == ID_FALSE )
                 {
-                    smnbBTree::findFirstSlotInLeaf( aIterator->index,
+                    smnbBTree::findFirstSlotInNode( aIterator->index,
                                                     &aIterator->mKeyRange->minimum,
-                                                    aIterator->node,
-                                                    0,
-                                                    sSlotCount - 1,
+                                                    (smnbNode *)(aIterator->node),
                                                     &sMin );
 
                     aIterator->least     = ID_TRUE;
@@ -9936,7 +10166,9 @@ IDE_RC smnbBTree::retraverse( idvSQL        * /* aStatistics */,
                         break;
                     }
 
-                    if ( smnManager::checkSCN( (smiIterator*)aIterator, sTmpRowPtr, NULL ) == ID_TRUE ) 
+                    IDE_TEST( smnManager::checkSCN( (smiIterator*)aIterator, sTmpRowPtr, NULL, &sIsVisible )
+                              != IDE_SUCCESS );
+                    if( sIsVisible == ID_TRUE ) 
                     {
                         j++;
                         aIterator->rows[j] = sTmpRowPtr;
@@ -9965,8 +10197,6 @@ IDE_RC smnbBTree::retraverse( idvSQL        * /* aStatistics */,
 
                     aIterator->lowFence  = aIterator->rows;
                     aIterator->highFence = aIterator->rows + j;
-
-                    IDL_MEM_BARRIER;
 
                     if ( sVersion == getLatchValueOfLNode(sCurLNode))
                     {
@@ -10020,9 +10250,9 @@ IDE_RC smnbBTree::retraverse( idvSQL        * /* aStatistics */,
 IDE_RC smnbBTree::makeDiskImage(smnIndexHeader* a_pIndex,
                                 smnIndexFile*   a_pIndexFile)
 {
-    /* BUG-37643 Nodeì˜ arrayë¥¼ ì§€ì—­ë³€ìˆ˜ì— ì €ì¥í•˜ëŠ”ë°
-     * compiler ìµœì í™”ì— ì˜í•´ì„œ ì§€ì—­ë³€ìˆ˜ê°€ ì œê±°ë  ìˆ˜ ìˆë‹¤.
-     * ë”°ë¼ì„œ ì´ëŸ¬í•œ ë³€ìˆ˜ëŠ” volatileë¡œ ì„ ì–¸í•´ì•¼ í•œë‹¤. */
+    /* BUG-37643 NodeÀÇ array¸¦ Áö¿ªº¯¼ö¿¡ ÀúÀåÇÏ´Âµ¥
+     * compiler ÃÖÀûÈ­¿¡ ÀÇÇØ¼­ Áö¿ªº¯¼ö°¡ Á¦°ÅµÉ ¼ö ÀÖ´Ù.
+     * µû¶ó¼­ ÀÌ·¯ÇÑ º¯¼ö´Â volatile·Î ¼±¾ğÇØ¾ß ÇÑ´Ù. */
     SInt                 i;
     smnbHeader         * s_pIndexHeader;
     volatile smnbLNode * s_pCurLNode;
@@ -10034,7 +10264,7 @@ IDE_RC smnbBTree::makeDiskImage(smnIndexHeader* a_pIndex,
 
     if ( s_pCurINode != NULL)
     {
-        while((s_pCurINode->flag & SMNB_NODE_TYPE_MASK) == SMNB_NODE_TYPE_INTERNAL)
+        while ( SMNB_IS_INTERNAL_NODE( s_pCurINode ) )
         {
             s_pCurINode = (smnbINode*)(s_pCurINode->mChildPtrs[0]);
         }
@@ -10064,9 +10294,9 @@ IDE_RC smnbBTree::makeDiskImage(smnIndexHeader* a_pIndex,
 
 IDE_RC smnbBTree::makeNodeListFromDiskImage(smcTableHeader *a_pTable, smnIndexHeader *a_pIndex)
 {
-    /* BUG-37643 Nodeì˜ arrayë¥¼ ì§€ì—­ë³€ìˆ˜ì— ì €ì¥í•˜ëŠ”ë°
-     * compiler ìµœì í™”ì— ì˜í•´ì„œ ì§€ì—­ë³€ìˆ˜ê°€ ì œê±°ë  ìˆ˜ ìˆë‹¤.
-     * ë”°ë¼ì„œ ì´ëŸ¬í•œ ë³€ìˆ˜ëŠ” volatileë¡œ ì„ ì–¸í•´ì•¼ í•œë‹¤. */
+    /* BUG-37643 NodeÀÇ array¸¦ Áö¿ªº¯¼ö¿¡ ÀúÀåÇÏ´Âµ¥
+     * compiler ÃÖÀûÈ­¿¡ ÀÇÇØ¼­ Áö¿ªº¯¼ö°¡ Á¦°ÅµÉ ¼ö ÀÖ´Ù.
+     * µû¶ó¼­ ÀÌ·¯ÇÑ º¯¼ö´Â volatile·Î ¼±¾ğÇØ¾ß ÇÑ´Ù. */
     smnIndexFile          s_indexFile;
     smnbHeader          * s_pIndexHeader = NULL;
     volatile smnbLNode  * s_pCurLNode    = NULL;
@@ -10114,10 +10344,10 @@ IDE_RC smnbBTree::makeNodeListFromDiskImage(smcTableHeader *a_pTable, smnIndexHe
             /* nothing to do */
         }
 
-        if ( SMNB_IS_DIRECTKEY_IN_NODE( s_pCurLNode ) == ID_TRUE )
+        if ( SMNB_IS_DIRECTKEY_INDEX( s_pIndexHeader ) == ID_TRUE )
         {
             /* PROJ-2433
-             * ë¡œë”©ëœ rowì— ëŒ€í•œ direct keyë¥¼ ìƒì„±í•œë‹¤ */
+             * ·ÎµùµÈ row¿¡ ´ëÇÑ direct key¸¦ »ı¼ºÇÑ´Ù */
             for ( i = 0 ; i < s_pCurLNode->mSlotCount ; i++ )
             {
                 IDE_TEST( makeKeyFromRow( s_pIndexHeader,
@@ -10168,8 +10398,8 @@ IDE_RC smnbBTree::makeNodeListFromDiskImage(smcTableHeader *a_pTable, smnIndexHe
 
     IDE_EXCEPTION( ERR_FAIL_TO_INITIALIZE_LEAF_NODE )
     {
-        /* inconsistent ìƒíƒœë¡œ ë³€ê²½í•˜ì§€ ì•Šê³ , trace log ë§Œ ë‚¨ê¸°ê³  fail return í•œë‹¤. 
-           ì´ í•¨ìˆ˜ëŠ” index build ì‹œì— í˜¸ì¶œë˜ë¯€ë¡œ index build ì‹¤íŒ¨ë¡œ ëë‚œë‹¤. */
+        /* inconsistent »óÅÂ·Î º¯°æÇÏÁö ¾Ê°í, trace log ¸¸ ³²±â°í fail return ÇÑ´Ù. 
+           ÀÌ ÇÔ¼ö´Â index build ½Ã¿¡ È£ÃâµÇ¹Ç·Î index build ½ÇÆĞ·Î ³¡³­´Ù. */
         ideLog::log( IDE_SM_0, "fail to initialize leaf node" );
     }
     IDE_EXCEPTION_END;
@@ -10191,6 +10421,18 @@ IDE_RC smnbBTree::makeNodeListFromDiskImage(smcTableHeader *a_pTable, smnIndexHe
     return IDE_FAILURE;
 }
 
+IDU_LATCH smnbBTree::getLatchValueOfINode(volatile smnbINode* aNodePtr)
+{
+    // latch ¸¦ °¡Á®¿Â´Ù
+    return idCore::acpAtomicGet32( &(aNodePtr->latch ));
+}
+
+IDU_LATCH  smnbBTree::getLatchValueOfLNode(volatile smnbLNode* aNodePtr)
+{
+    // latch ¸¦ °¡Á®¿Â´Ù
+    return idCore::acpAtomicGet32( &(aNodePtr->latch ));
+}
+
 IDE_RC smnbBTree::getPosition( smnbIterator *     aIterator,
                                smiCursorPosInfo * aPosInfo )
 {
@@ -10201,8 +10443,8 @@ IDE_RC smnbBTree::getPosition( smnbIterator *     aIterator,
 
     aPosInfo->mCursor.mMRPos.mLeafNode = aIterator->node;
 
-    /* BUG-39983 iteratorì— node ì •ë³´ë¥¼ ì €ì¥í•œ ì´í›„ getPositionì´ ë°œìƒí•˜ê¸° ì „ì— SMOê°€
-       ë°œìƒí•œ ê²½ìš°ì—ë„ setPositionì—ì„œ SMOê°€ ì¼ì–´ë‚œ ê²ƒì„ í™•ì¸ í•  ìˆ˜ ìˆì–´ì•¼ í•œë‹¤. */
+    /* BUG-39983 iterator¿¡ node Á¤º¸¸¦ ÀúÀåÇÑ ÀÌÈÄ getPositionÀÌ ¹ß»ıÇÏ±â Àü¿¡ SMO°¡
+       ¹ß»ıÇÑ °æ¿ì¿¡µµ setPosition¿¡¼­ SMO°¡ ÀÏ¾î³­ °ÍÀ» È®ÀÎ ÇÒ ¼ö ÀÖ¾î¾ß ÇÑ´Ù. */
     aPosInfo->mCursor.mMRPos.mPrevNode = aIterator->prvNode;
     aPosInfo->mCursor.mMRPos.mNextNode = aIterator->nxtNode;
     aPosInfo->mCursor.mMRPos.mVersion  = aIterator->version;
@@ -10245,6 +10487,7 @@ IDE_RC smnbBTree::setPosition( smnbIterator     * aIterator,
     idBool       sFound     = ID_FALSE;
     UInt         sFlag      = ( aIterator->flag & SMI_RETRAVERSE_MASK ) ;
     void       * sKey       = NULL;
+    idBool       sIsVisible;
 
     aIterator->mKeyRange = aPosInfo->mCursor.mMRPos.mKeyRange; /* BUG-43913 */
 
@@ -10257,9 +10500,9 @@ IDE_RC smnbBTree::setPosition( smnbIterator     * aIterator,
             ( (sNode->prevSPtr != aPosInfo->mCursor.mMRPos.mPrevNode) ||
               (sNode->nextSPtr != aPosInfo->mCursor.mMRPos.mNextNode) ) )
         {
-            /* iteratorì— node ì •ë³´ê°€ ì €ì¥ëœ ì´í›„ SMOê°€ ë°œìƒí–ˆì„ ê²½ìš°
-               ëª©í‘œ slotì´ í•´ë‹¹ nodeì— ì—†ì„ ê°€ëŠ¥ì„±ì´ ìˆìœ¼ë¯€ë¡œ getPositionì—ì„œ ì €ì¥í•œ ì •ë³´ë¥¼ ë²„ë¦¬ê³ 
-               retraverseë¡œ slotì˜ ìœ„ì¹˜ë¥¼ ë‹¤ì‹œ ì°¾ëŠ”ë‹¤. */
+            /* iterator¿¡ node Á¤º¸°¡ ÀúÀåµÈ ÀÌÈÄ SMO°¡ ¹ß»ıÇßÀ» °æ¿ì
+               ¸ñÇ¥ slotÀÌ ÇØ´ç node¿¡ ¾øÀ» °¡´É¼ºÀÌ ÀÖÀ¸¹Ç·Î getPosition¿¡¼­ ÀúÀåÇÑ Á¤º¸¸¦ ¹ö¸®°í
+               retraverse·Î slotÀÇ À§Ä¡¸¦ ´Ù½Ã Ã£´Â´Ù. */
             break; 
         }
 
@@ -10279,11 +10522,11 @@ IDE_RC smnbBTree::setPosition( smnbIterator     * aIterator,
         }
 
         /* PROJ-2433
-         * ì§€ê¸ˆê°’ì´ ìµœëŒ€ê°’ ì¡°ê±´ë„ ë§Œì¡±í•˜ëŠ”ì§€ í™•ì¸í•˜ëŠ”ë¶€ë¶„ì´ë‹¤.
-         * direct keyê°€ full keyì—¬ì•¼ë§Œ ì œëŒ€ë¡œëœ ë¹„êµê°€ ê°€ëŠ¥í•˜ë‹¤.  */
-        if ( isFullKeyInLeafSlot( aIterator->index,
-                                  aIterator->node,
-                                  (SShort)( sSlotCount - 1 ) ) == ID_TRUE )
+         * Áö±İ°ªÀÌ ÃÖ´ë°ª Á¶°Çµµ ¸¸Á·ÇÏ´ÂÁö È®ÀÎÇÏ´ÂºÎºĞÀÌ´Ù.
+         * direct key°¡ full key¿©¾ß¸¸ Á¦´ë·ÎµÈ ºñ±³°¡ °¡´ÉÇÏ´Ù.  */
+        if ( isFullKey( aIterator->index,
+                        (smnbNode *)(aIterator->node),
+                        (SShort)( sSlotCount - 1 ) ) == ID_TRUE )
         {
             sKey = SMNB_GET_KEY_PTR( aIterator->node, sSlotCount - 1 );
         }
@@ -10292,7 +10535,7 @@ IDE_RC smnbBTree::setPosition( smnbIterator     * aIterator,
             sKey = NULL;
         }
 
-        // BUG-27948 ì´ë¯¸ ì‚­ì œëœ Rowë¥¼ ë³´ê³  ìˆëŠ”ì§€ í™•ì¸
+        // BUG-27948 ÀÌ¹Ì »èÁ¦µÈ Row¸¦ º¸°í ÀÖ´ÂÁö È®ÀÎ
         IDE_DASSERT( !SM_SCN_IS_FREE_ROW(((smpSlotHeader *)sRowPtr)->mCreateSCN) );
 
         aIterator->mKeyRange->maximum.callback( &sResult,
@@ -10325,11 +10568,11 @@ IDE_RC smnbBTree::setPosition( smnbIterator     * aIterator,
         }
 
         /* PROJ-2433
-         * ì§€ê¸ˆê°’ì´ ìµœì†Œê°’ ì¡°ê±´ë„ ë§Œì¡±í•˜ëŠ”ì§€ í™•ì¸í•˜ëŠ”ë¶€ë¶„ì´ë‹¤.
-         * direct keyê°€ full keyì—¬ì•¼ë§Œ ì œëŒ€ë¡œëœ ë¹„êµê°€ ê°€ëŠ¥í•˜ë‹¤.  */
-        if ( isFullKeyInLeafSlot( aIterator->index,
-                                  aIterator->node,
-                                  0 ) == ID_TRUE )
+         * Áö±İ°ªÀÌ ÃÖ¼Ò°ª Á¶°Çµµ ¸¸Á·ÇÏ´ÂÁö È®ÀÎÇÏ´ÂºÎºĞÀÌ´Ù.
+         * direct key°¡ full key¿©¾ß¸¸ Á¦´ë·ÎµÈ ºñ±³°¡ °¡´ÉÇÏ´Ù.  */
+        if ( isFullKey( aIterator->index,
+                        (smnbNode *)(aIterator->node),
+                        0 ) == ID_TRUE )
         {
             sKey = SMNB_GET_KEY_PTR( aIterator->node, 0 );
         }
@@ -10338,7 +10581,7 @@ IDE_RC smnbBTree::setPosition( smnbIterator     * aIterator,
             sKey = NULL;
         }
 
-        // BUG-27948 ì´ë¯¸ ì‚­ì œëœ Rowë¥¼ ë³´ê³  ìˆëŠ”ì§€ í™•ì¸
+        // BUG-27948 ÀÌ¹Ì »èÁ¦µÈ Row¸¦ º¸°í ÀÖ´ÂÁö È®ÀÎ
         IDE_DASSERT( !SM_SCN_IS_FREE_ROW(((smpSlotHeader *)sRowPtr)->mCreateSCN) );
 
         /*PROJ-2433 */
@@ -10351,11 +10594,9 @@ IDE_RC smnbBTree::setPosition( smnbIterator     * aIterator,
         sFirstSlot = 0;
         if ( sResult == ID_FALSE )
         {
-            smnbBTree::findFirstSlotInLeaf( aIterator->index,
+            smnbBTree::findFirstSlotInNode( aIterator->index,
                                             &aIterator->mKeyRange->minimum,
-                                            aIterator->node,
-                                            0,
-                                            sSlotCount - 1,
+                                            (smnbNode *)(aIterator->node),
                                             &sFirstSlot );
             aIterator->least = ID_TRUE;
         }
@@ -10368,8 +10609,8 @@ IDE_RC smnbBTree::setPosition( smnbIterator     * aIterator,
         j = -1;
         aIterator->lowFence = &aIterator->rows[0];
    
-        /* íƒìƒ‰ ë²”ìœ„ ë°–ë¶€í„° íƒìƒ‰ì˜ ê¸°ì¤€ì ì„ ì¡ëŠ”ë‹¤.
-           ì´ ê¸°ì¤€ì ì€ ì°¨í›„ ì •ìƒì ìœ¼ë¡œ ê°’ì„ ì½ì—ˆëŠ”ì§€ ì²´í¬í• ë•Œ ì‚¬ìš©ëœë‹¤. */
+        /* Å½»ö ¹üÀ§ ¹ÛºÎÅÍ Å½»öÀÇ ±âÁØÁ¡À» Àâ´Â´Ù.
+           ÀÌ ±âÁØÁ¡Àº Â÷ÈÄ Á¤»óÀûÀ¸·Î °ªÀ» ÀĞ¾ú´ÂÁö Ã¼Å©ÇÒ¶§ »ç¿ëµÈ´Ù. */
         sStartPtr = aIterator->rows - 2;
         aIterator->slot = sStartPtr;
         for( i = sFirstSlot; i <= sLastSlot; i++ )
@@ -10380,10 +10621,12 @@ IDE_RC smnbBTree::setPosition( smnbIterator     * aIterator,
                 break;
             }
 
-            if ( smnManager::checkSCN( (smiIterator*)aIterator,
-                                       sRowPtr,
-                                       NULL )
-                == ID_TRUE )
+            IDE_TEST( smnManager::checkSCN( (smiIterator*)aIterator,
+                                            sRowPtr,
+                                            NULL,
+                                            &sIsVisible )
+                      != IDE_SUCCESS );
+            if( sIsVisible == ID_TRUE )
             {
                 j++;
                 aIterator->rows[j] = sRowPtr;
@@ -10403,18 +10646,16 @@ IDE_RC smnbBTree::setPosition( smnbIterator     * aIterator,
         }
         aIterator->highFence = &aIterator->rows[j];
 
-        IDL_MEM_BARRIER;
-   
         if ( sVersion == getLatchValueOfLNode( sNode ) )
         {
-            /* BUG-39983 íƒìƒ‰ì´ ì„±ê³µí–ˆì„ ê²½ìš° ë£¨í”„ë¥¼ ì¢…ë£Œí•œë‹¤.
-               íƒìƒ‰ì´ ì‹¤íŒ¨í–ˆì„ ê²½ìš°ì—ë„ retraverseë¡œ ê°€ê¸° ìœ„í•´ ë£¨í”„ë¥¼ ì¢…ë£Œí•œë‹¤. */
+            /* BUG-39983 Å½»öÀÌ ¼º°øÇßÀ» °æ¿ì ·çÇÁ¸¦ Á¾·áÇÑ´Ù.
+               Å½»öÀÌ ½ÇÆĞÇßÀ» °æ¿ì¿¡µµ retraverse·Î °¡±â À§ÇØ ·çÇÁ¸¦ Á¾·áÇÑ´Ù. */
             break;
         }
         else
         {
-            /* BUG-39983 íƒìƒ‰ ì¤‘ ë‹¤ë¥¸ Txê°€ í•´ë‹¹ nodeë¥¼ ìˆ˜ì •í–ˆì„ ê²½ìš°
-              ìœ„ì¹˜ê°€ ë³€ê²½ë  ê°€ëŠ¥ì„±ì´ ìˆìœ¼ë¯€ë¡œ ì¬íƒìƒ‰í•œë‹¤. */
+            /* BUG-39983 Å½»ö Áß ´Ù¸¥ Tx°¡ ÇØ´ç node¸¦ ¼öÁ¤ÇßÀ» °æ¿ì
+              À§Ä¡°¡ º¯°æµÉ °¡´É¼ºÀÌ ÀÖÀ¸¹Ç·Î ÀçÅ½»öÇÑ´Ù. */
             sFound = ID_FALSE;
             continue;
         }
@@ -10422,7 +10663,7 @@ IDE_RC smnbBTree::setPosition( smnbIterator     * aIterator,
 
     if ( sFound != ID_TRUE )
     {
-        /* BUG-39983 lstFetchRecPtrì„ NULLë¡œ ì„¸íŒ…í•´ ë…¸ë“œë¥¼ ì²˜ìŒë¶€í„° íƒìƒ‰í•˜ë„ë¡ í•œë‹¤.*/
+        /* BUG-39983 lstFetchRecPtrÀ» NULL·Î ¼¼ÆÃÇØ ³ëµå¸¦ Ã³À½ºÎÅÍ Å½»öÇÏµµ·Ï ÇÑ´Ù.*/
         aIterator->lstFetchRecPtr = NULL;
         IDE_TEST( retraverse( NULL,
                               aIterator,
@@ -10430,7 +10671,7 @@ IDE_RC smnbBTree::setPosition( smnbIterator     * aIterator,
                   != IDE_SUCCESS );
     }
 
-    /* íƒìƒ‰ ê²°ê³¼ê°€ ì‹œì‘ì ì¼ ê²½ìš° íƒìƒ‰ì— ì‹¤íŒ¨í•œ ê²ƒì´ë¯€ë¡œ assert ì²˜ë¦¬í•œë‹¤. */
+    /* Å½»ö °á°ú°¡ ½ÃÀÛÁ¡ÀÏ °æ¿ì Å½»ö¿¡ ½ÇÆĞÇÑ °ÍÀÌ¹Ç·Î assert Ã³¸®ÇÑ´Ù. */
     IDE_ERROR_RAISE( aIterator->slot != sStartPtr, ERR_CORRUPTED_INDEX );
 
     return IDE_SUCCESS;
@@ -10468,12 +10709,12 @@ IDE_RC smnbBTree::freeIterator( void * /* aIteratorMem */ )
  *
  *    To Fix BUG-15670
  *
- *    Row Pointer ì •ë³´ë¡œë¶€í„° Fixed/Variableì— ê´€ê³„ì—†ì´
- *    Key Valueì™€ Key Sizeë¥¼ íšë“í•œë‹¤.
+ *    Row Pointer Á¤º¸·ÎºÎÅÍ Fixed/Variable¿¡ °ü°è¾øÀÌ
+ *    Key Value¿Í Key Size¸¦ È¹µæÇÑ´Ù.
  *
  * Implementation
  *
- *    Null ì´ ì•„ë‹˜ì´ ë³´ì¥ë˜ëŠ” ìƒí™©ì—ì„œ í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
+ *    Null ÀÌ ¾Æ´ÔÀÌ º¸ÀåµÇ´Â »óÈ²¿¡¼­ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
  *
  *******************************************************************/
 IDE_RC smnbBTree::getKeyValueAndSize(  SChar         * aRowPtr,
@@ -10497,14 +10738,14 @@ IDE_RC smnbBTree::getKeyValueAndSize(  SChar         * aRowPtr,
     IDE_DASSERT( aKeySize     != NULL );
 
     //---------------------------------------
-    // Column Pointer ìœ„ì¹˜ íšë“
+    // Column Pointer À§Ä¡ È¹µæ
     //---------------------------------------
 
     sColumn    = &aIndexColumn->column;
     sColumnPtr =  aRowPtr + sColumn->offset;
 
     //---------------------------------------
-    // Key Value íšë“
+    // Key Value È¹µæ
     //---------------------------------------
     if ( ( sColumn->flag & SMI_COLUMN_COMPRESSION_MASK )
          != SMI_COLUMN_COMPRESSION_TRUE )
@@ -10514,11 +10755,11 @@ IDE_RC smnbBTree::getKeyValueAndSize(  SChar         * aRowPtr,
             case SMI_COLUMN_TYPE_FIXED:
                 if ( sColumn->size > MAX_MINMAX_VALUE_SIZE )
                 {
-                    // CHAR í˜¹ì€ VARCHAR type columnì´ë©´ì„œ columnì˜ ê¸¸ì´ê°€
-                    // MAX_MINMAX_VALUE_SIZEë³´ë‹¤ ê¸¸ ê²½ìš°,
-                    // key valueë¥¼ ì¡°ì •í•˜ê³  lengthë„ ìˆ˜ì •í•´ì•¼ í•¨.
+                    // CHAR È¤Àº VARCHAR type columnÀÌ¸é¼­ columnÀÇ ±æÀÌ°¡
+                    // MAX_MINMAX_VALUE_SIZEº¸´Ù ±æ °æ¿ì,
+                    // key value¸¦ Á¶Á¤ÇÏ°í lengthµµ ¼öÁ¤ÇØ¾ß ÇÔ.
     
-                    // BUG-24449 Keyí¬ê¸°ëŠ” MT í•¨ìˆ˜ë¥¼ í†µí•´ íšë“í•´ì•¼ í•¨.
+                    // BUG-24449 KeyÅ©±â´Â MT ÇÔ¼ö¸¦ ÅëÇØ È¹µæÇØ¾ß ÇÔ.
                     sKeySize = aIndexColumn->actualSize( sColumn,
                                                          sColumnPtr );
                     if ( sKeySize > MAX_MINMAX_VALUE_SIZE )
@@ -10538,8 +10779,8 @@ IDE_RC smnbBTree::getKeyValueAndSize(  SChar         * aRowPtr,
                 }
                 else
                 {
-                    // columnì˜ typeì´ ë¬´ì—‡ì´ë“  MAX_MINMAX_VALUE_SIZEë³´ë‹¤
-                    // ì‘ì„ ê²½ìš° : key valueë¥¼ ì¡°ì‘í•  í•„ìš” ì—†ìŒ
+                    // columnÀÇ typeÀÌ ¹«¾ùÀÌµç MAX_MINMAX_VALUE_SIZEº¸´Ù
+                    // ÀÛÀ» °æ¿ì : key value¸¦ Á¶ÀÛÇÒ ÇÊ¿ä ¾øÀ½
                     sMinMaxKeySize = sColumn->size;
                     idlOS::memcpy( (UChar*)aKeyValue,
                                 (UChar*)sColumnPtr,
@@ -10551,7 +10792,7 @@ IDE_RC smnbBTree::getKeyValueAndSize(  SChar         * aRowPtr,
     
                 sKeyPtr = sgmManager::getVarColumn( aRowPtr, sColumn , &sLength );
     
-                // Nullì´ ì•„ë‹˜ì´ ë³´ì¥ë˜ì–´ì•¼ í•¨.
+                // NullÀÌ ¾Æ´ÔÀÌ º¸ÀåµÇ¾î¾ß ÇÔ.
                 IDE_ERROR_RAISE( sLength != 0, ERR_CORRUPTED_INDEX_LENGTH );
     
                 //-------------------------------
@@ -10561,8 +10802,8 @@ IDE_RC smnbBTree::getKeyValueAndSize(  SChar         * aRowPtr,
     
                 if ( sLength > MAX_MINMAX_VALUE_SIZE )
                 {
-                    // VARCHAR type column keyì˜ ê¸¸ì´ê°€ MAX_MINMAX_VALUE_SIZEë³´ë‹¤
-                    // ê¸¸ ê²½ìš°, key valueë¥¼ ì¡°ì •í•˜ê³  lengthë„ ìˆ˜ì •í•´ì•¼ í•¨.
+                    // VARCHAR type column keyÀÇ ±æÀÌ°¡ MAX_MINMAX_VALUE_SIZEº¸´Ù
+                    // ±æ °æ¿ì, key value¸¦ Á¶Á¤ÇÏ°í lengthµµ ¼öÁ¤ÇØ¾ß ÇÔ.
                     sMinMaxKeySize = MAX_MINMAX_VALUE_SIZE;
     
                     sKeySize = sMinMaxKeySize - aIndexColumn->headerSize;
@@ -10589,7 +10830,7 @@ IDE_RC smnbBTree::getKeyValueAndSize(  SChar         * aRowPtr,
     }
     else
     {
-        // BUG-37489 compress column ì— ëŒ€í•´ index ë¥¼ ë§Œë“¤ë•Œ ì„œë²„ FATAL
+        // BUG-37489 compress column ¿¡ ´ëÇØ index ¸¦ ¸¸µé¶§ ¼­¹ö FATAL
         sColumnPtr = (SChar*)smiGetCompressionColumn( aRowPtr,
                                                       sColumn,
                                                       ID_TRUE, // aUseColumnOffset
@@ -10598,9 +10839,9 @@ IDE_RC smnbBTree::getKeyValueAndSize(  SChar         * aRowPtr,
 
         if ( sColumn->size > MAX_MINMAX_VALUE_SIZE )
         {
-            // CHAR í˜¹ì€ VARCHAR type columnì´ë©´ì„œ columnì˜ ê¸¸ì´ê°€
-            // MAX_MINMAX_VALUE_SIZEë³´ë‹¤ ê¸¸ ê²½ìš°,
-            // key valueë¥¼ ì¡°ì •í•˜ê³  lengthë„ ìˆ˜ì •í•´ì•¼ í•¨.
+            // CHAR È¤Àº VARCHAR type columnÀÌ¸é¼­ columnÀÇ ±æÀÌ°¡
+            // MAX_MINMAX_VALUE_SIZEº¸´Ù ±æ °æ¿ì,
+            // key value¸¦ Á¶Á¤ÇÏ°í lengthµµ ¼öÁ¤ÇØ¾ß ÇÔ.
 
             sKeySize = aIndexColumn->actualSize( sColumn,
                                                  sColumnPtr );
@@ -10622,8 +10863,8 @@ IDE_RC smnbBTree::getKeyValueAndSize(  SChar         * aRowPtr,
         }
         else
         {
-            // columnì˜ typeì´ ë¬´ì—‡ì´ë“  MAX_MINMAX_VALUE_SIZEë³´ë‹¤
-            // ì‘ì„ ê²½ìš° : key valueë¥¼ ì¡°ì‘í•  í•„ìš” ì—†ìŒ
+            // columnÀÇ typeÀÌ ¹«¾ùÀÌµç MAX_MINMAX_VALUE_SIZEº¸´Ù
+            // ÀÛÀ» °æ¿ì : key value¸¦ Á¶ÀÛÇÒ ÇÊ¿ä ¾øÀ½
             sMinMaxKeySize = sColumn->size;
             idlOS::memcpy( (UChar*)aKeyValue,
                            (UChar*)sColumnPtr,
@@ -10705,8 +10946,8 @@ IDE_RC smnbBTree::setMinMaxStat( smnIndexHeader * aCommonHeader,
 /* 
  * BUG-35163 - [sm_index] [SM] add some exception properties for __DBMS_STAT_METHOD
  *
- * __DBMS_STAT_METHODê°€ MANUALì¼ë•Œ ì•„ë˜ ë‘ í”„ë¡œí¼í‹°ë¡œ íŠ¹ì • íƒ€ì…ì˜ DBì— í†µê³„ ê°±ì‹ 
- * ë°©ë²•ì„ ë³€ê²½í•  ìˆ˜ ìˆë‹¤.
+ * __DBMS_STAT_METHOD°¡ MANUALÀÏ¶§ ¾Æ·¡ µÎ ÇÁ·ÎÆÛÆ¼·Î Æ¯Á¤ Å¸ÀÔÀÇ DB¿¡ Åë°è °»½Å
+ * ¹æ¹ıÀ» º¯°æÇÒ ¼ö ÀÖ´Ù.
  *
  * __DBMS_STAT_METHOD_FOR_MRDB
  * __DBMS_STAT_METHOD_FOR_VRDB
@@ -10768,7 +11009,7 @@ IDE_RC smnbBTree::dumpIndexNode( smnIndexHeader * aIndex,
     sState = 1;
 
 
-    if ( ( aNode->flag & SMNB_NODE_TYPE_MASK)== SMNB_NODE_TYPE_LEAF )
+    if ( SMNB_IS_LEAF_NODE( aNode ) )
     {
         /* Leaf Node */
         sLNode = (smnbLNode*)aNode;
@@ -10942,14 +11183,14 @@ void smnbBTree::logIndexNode( smnIndexHeader * aIndex,
  * FUNCTION DESCRIPTION : smnbBTree::makeKeyFromRow                  *
  * ------------------------------------------------------------------*
  * PROJ-2433 Direct Key Index
- * DIRECT KEY INDEXì—ì„œ ì‚¬ìš©í•  DIRECT KEYë¥¼ rowì—ì„œ ì¶”ì¶œí•˜ëŠ”í•¨ìˆ˜.
+ * DIRECT KEY INDEX¿¡¼­ »ç¿ëÇÒ DIRECT KEY¸¦ row¿¡¼­ ÃßÃâÇÏ´ÂÇÔ¼ö.
  *
- * - COMPOSITE KEY INDEXì˜ ê²½ìš°ëŠ” ì²«ë²ˆì§¸ì»¬ëŸ¼ë§Œ ì¶”ì¶œí•œë‹¤.
- * - partial keyê°€ ê°€ëŠ¥í•œ ìë£Œí˜•ì´ë©´ aIndex->mKeySize ë§Œí¼ partial ë˜ì–´ë“¤ì–´ê°„ë‹¤.
+ * - COMPOSITE KEY INDEXÀÇ °æ¿ì´Â Ã¹¹øÂ°ÄÃ·³¸¸ ÃßÃâÇÑ´Ù.
+ * - partial key°¡ °¡´ÉÇÑ ÀÚ·áÇüÀÌ¸é aIndex->mKeySize ¸¸Å­ partial µÇ¾îµé¾î°£´Ù.
  *
- * aIndex    - [IN]  INDEX í—¤ë”
+ * aIndex    - [IN]  INDEX Çì´õ
  * aRow      - [IN]  row pointer
- * aKey      - [OUT] ì¶”ì¶œëœ Direct Key
+ * aKey      - [OUT] ÃßÃâµÈ Direct Key
  *********************************************************************/
 IDE_RC smnbBTree::makeKeyFromRow( smnbHeader   * aIndex,
                                   SChar        * aRow,
@@ -10964,8 +11205,8 @@ IDE_RC smnbBTree::makeKeyFromRow( smnbHeader   * aIndex,
           == SMI_COLUMN_COMPRESSION_TRUE )
     {
         /* PROJ-2433
-         * compression tableì— ìƒì„±ë˜ëŠ” indexëŠ”
-         * ì¼ë°˜ indexë¥¼ ì‚¬ìš©í•œë‹¤. */
+         * compression table¿¡ »ı¼ºµÇ´Â index´Â
+         * ÀÏ¹İ index¸¦ »ç¿ëÇÑ´Ù. */
         ideLog::log( IDE_SERVER_0,
                      "ERROR! cannot make Direct Key Index in compression table [Index name:%s]",
                      aIndex->mIndexHeader->mName );
@@ -10997,8 +11238,8 @@ IDE_RC smnbBTree::makeKeyFromRow( smnbHeader   * aIndex,
                 /* PROJ-2419 */
                 if ( aIndex->mIsPartialKey == ID_TRUE )
                 {
-                    /* partial key ì¸ê²½ìš° buffë¥¼ í†µí•´ keyë¥¼ ë°›ì€í›„,
-                     * partial ê¸¸ì´ë§Œí¼ì˜ë¼ ë°˜í™˜í•œë‹¤ */
+                    /* partial key ÀÎ°æ¿ì buff¸¦ ÅëÇØ key¸¦ ¹ŞÀºÈÄ,
+                     * partial ±æÀÌ¸¸Å­Àß¶ó ¹İÈ¯ÇÑ´Ù */
                     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SMN, 1,
                                                  sFirstCol->column.size,
                                                  (void **)&sKeyBuf )
@@ -11028,12 +11269,12 @@ IDE_RC smnbBTree::makeKeyFromRow( smnbHeader   * aIndex,
                     }
                 }
 
-                /* variable columnì˜ valueê°€ NULLì¼ ê²½ìš°, NULL ê°’ì„ ì±„ì›€ */
+                /* variable columnÀÇ value°¡ NULLÀÏ °æ¿ì, NULL °ªÀ» Ã¤¿ò */
                 if ( sVarValuePtr == NULL )
                 {
                     /* PROJ-2433 
-                     * null ê°’ì„ì„¸íŒ…í•œë‹¤
-                     * mtdëª¨ë“ˆì˜ setNullì„ ì‹¤í–‰í•œë‹¤. */
+                     * null °ªÀ»¼¼ÆÃÇÑ´Ù
+                     * mtd¸ğµâÀÇ setNullÀ» ½ÇÇàÇÑ´Ù. */
                     sFirstCol->null( &(sFirstCol->column), aKey );
                 }
                 else
@@ -11072,7 +11313,7 @@ IDE_RC smnbBTree::makeKeyFromRow( smnbHeader   * aIndex,
     }
     IDE_EXCEPTION( ERR_FAIL_TO_FREE_BUFFER )
     {
-        sKeyBuf = NULL; /* ë‹¤ì‹œ free ì‹œë„í•˜ì§€ ì•Šê²Œ í•˜ê¸° ìœ„í•´ì„œ */
+        sKeyBuf = NULL; /* ´Ù½Ã free ½ÃµµÇÏÁö ¾Ê°Ô ÇÏ±â À§ÇØ¼­ */
         IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
         ideLog::log( IDE_ERR_0, "[SM] fail to free buffer - case 1" );
     }
@@ -11094,15 +11335,15 @@ IDE_RC smnbBTree::makeKeyFromRow( smnbHeader   * aIndex,
  * FUNCTION DESCRIPTION : smnbBTree::setDirectKeyIndex               *
  * ------------------------------------------------------------------*
  * PROJ-2433 Direct Key Index
- * BTREE INDEX ë™ì í—¤ë”ì— direct key index ê´€ë ¨ëœ ê°’ë“¤ì„ ì„¸íŒ…í•œë‹¤.
+ * BTREE INDEX µ¿ÀûÇì´õ¿¡ direct key index °ü·ÃµÈ °ªµéÀ» ¼¼ÆÃÇÑ´Ù.
  *
- * - composite indexì€ ì²«ë²ˆì§¸ ì»¬ëŸ¼ë§Œ direct keyë¡œ ì €ì¥ëœë‹¤.
- * - CHAR,VARCHAR,NCHAR,NVARCHAR ë°ì´í„°í˜•ì€ partial key indexë¥¼ í—ˆìš©í•œë‹¤.
+ * - composite indexÀº Ã¹¹øÂ° ÄÃ·³¸¸ direct key·Î ÀúÀåµÈ´Ù.
+ * - CHAR,VARCHAR,NCHAR,NVARCHAR µ¥ÀÌÅÍÇüÀº partial key index¸¦ Çã¿ëÇÑ´Ù.
  *
- * aHeader   - [IN]  BTREE INDEX ë™ì í—¤ë”
- * aIndex    - [IN]  INDEX í—¤ë”
- * aColumn   - [IN]  ì»¬ëŸ¼ì •ë³´
- * aMtdAlign - [IN]  ë°ì´í„°í˜•ë³„ MTDêµ¬ì¡°ì²´ Align
+ * aHeader   - [IN]  BTREE INDEX µ¿ÀûÇì´õ
+ * aIndex    - [IN]  INDEX Çì´õ
+ * aColumn   - [IN]  ÄÃ·³Á¤º¸
+ * aMtdAlign - [IN]  µ¥ÀÌÅÍÇüº° MTD±¸Á¶Ã¼ Align
  *********************************************************************/
 IDE_RC smnbBTree::setDirectKeyIndex( smnbHeader         * aHeader,
                                      smnIndexHeader     * aIndex,
@@ -11113,7 +11354,7 @@ IDE_RC smnbBTree::setDirectKeyIndex( smnbHeader         * aHeader,
 
     if ( ( aIndex->mFlag & SMI_INDEX_DIRECTKEY_MASK ) == SMI_INDEX_DIRECTKEY_TRUE ) 
     {
-        /* ì»¬ëŸ¼í¬ê¸°ë¥¼ êµ¬ì¡°ì²´ alignìœ¼ë¡œ ì¡°ì • */
+        /* ÄÃ·³Å©±â¸¦ ±¸Á¶Ã¼ alignÀ¸·Î Á¶Á¤ */
         sColumnSize = idlOS::align( aColumn->size, aMtdAlign );
 
         if ( gSmiGlobalCallBackList.isUsablePartialDirectKey( (void *)aColumn ) )
@@ -11128,14 +11369,14 @@ IDE_RC smnbBTree::setDirectKeyIndex( smnbHeader         * aHeader,
             {
                 /* partial-key */
                 aHeader->mIsPartialKey  = ID_TRUE;
-                /* mMaxKeySizeë³´ë‹¤ í¬ì§€ì•Šì€ ê°’ì¤‘ì— align ë§ëŠ” ê°€ì¥ í°ê°’ ì°¾ê¸° */
+                /* mMaxKeySizeº¸´Ù Å©Áö¾ÊÀº °ªÁß¿¡ align ¸Â´Â °¡Àå Å«°ª Ã£±â */
                 aHeader->mKeySize       = idlOS::align( aIndex->mMaxKeySize - aMtdAlign + 1, aMtdAlign );
             }
         }
-        /* ê¸°íƒ€ìë£Œí˜• */
+        /* ±âÅ¸ÀÚ·áÇü */
         else
         {
-            /* ë¬¸ìí˜• ì´ì™¸ì˜ ìë£Œí˜•ì— ëŒ€í•´ì„œëŠ” partial keyë¥¼ ì¸ì •í•˜ì§€ì•ŠëŠ”ë‹¤. */
+            /* ¹®ÀÚÇü ÀÌ¿ÜÀÇ ÀÚ·áÇü¿¡ ´ëÇØ¼­´Â partial key¸¦ ÀÎÁ¤ÇÏÁö¾Ê´Â´Ù. */
             IDE_TEST( aIndex->mMaxKeySize < sColumnSize );
 
             /* full-key */
@@ -11143,12 +11384,13 @@ IDE_RC smnbBTree::setDirectKeyIndex( smnbHeader         * aHeader,
             aHeader->mKeySize       = sColumnSize;
         }
 
-        /* DIRECT KEY INDEXì˜ INTERNAL NODE êµ¬ì¡° : smnbINode + child_pointers + row_pointers + direct_keys */
+        /* DIRECT KEY INDEXÀÇ INTERNAL NODE ±¸Á¶ : smnbINode + child_pointers + row_pointers + direct_keys */
         aHeader->mINodeMaxSlotCount = ( ( mNodeSize - ID_SIZEOF(smnbINode) + ID_SIZEOF(smnbNode *) ) /
                                         ( ID_SIZEOF(smnbNode *) + ID_SIZEOF(SChar *) + aHeader->mKeySize ) );
-        /* DIRECT KEY INDEXì˜ LEAF NODE êµ¬ì¡° : smnbLNode + row_pointers + direct_keys */
-        aHeader->mLNodeMaxSlotCount = ( ( mNodeSize - ID_SIZEOF(smnbLNode) + ID_SIZEOF(smnbNode *) ) /
+        /* DIRECT KEY INDEXÀÇ LEAF NODE ±¸Á¶ : smnbLNode + row_pointers + direct_keys */
+        aHeader->mLNodeMaxSlotCount = ( ( mNodeSize - ID_SIZEOF(smnbLNode) ) /
                                         ( ID_SIZEOF(SChar *) + aHeader->mKeySize ) );
+
     }
     else /* normal index (=no direct key index) */
     {
@@ -11156,7 +11398,7 @@ IDE_RC smnbBTree::setDirectKeyIndex( smnbHeader         * aHeader,
         aHeader->mKeySize           = 0;
         aHeader->mINodeMaxSlotCount = ( ( mNodeSize - ID_SIZEOF(smnbINode) + ID_SIZEOF(smnbNode *) ) /
                                         ( ID_SIZEOF(smnbNode *) + ID_SIZEOF(SChar *) ) );
-        aHeader->mLNodeMaxSlotCount = ( ( mNodeSize - ID_SIZEOF(smnbLNode) + ID_SIZEOF(smnbNode *) ) /
+        aHeader->mLNodeMaxSlotCount = ( ( mNodeSize - ID_SIZEOF(smnbLNode) ) /
                                         ( ID_SIZEOF(SChar *) ) );
     }
 
@@ -11167,90 +11409,38 @@ IDE_RC smnbBTree::setDirectKeyIndex( smnbHeader         * aHeader,
     return IDE_FAILURE;
 }
 
-
 /*********************************************************************
- * FUNCTION DESCRIPTION : smnbBTree::isFullKeyInLeafSlot             *
+ * FUNCTION DESCRIPTION : smnbBTree::isFullKey                       *
  * ------------------------------------------------------------------*
  * PROJ-2433 Direct Key Index
- * LEAF NODEì˜ aIdxë²ˆì§¸ slotì˜ direct keyê°€ full key ì¸ì§€ì—¬ë¶€ë¥¼ ë¦¬í„´í•œë‹¤.
+ * NODEÀÇ aIdx¹øÂ° slotÀÇ direct key°¡ full key ÀÎÁö¿©ºÎ¸¦ ¸®ÅÏÇÑ´Ù.
  *
- * aIndex    - [IN]  INDEX í—¤ë”
- * aNode     - [IN]  LEAF NODE
+ * aIndex    - [IN]  INDEX Çì´õ
+ * aNode     - [IN]  INDEX NODE
  * aIdx      - [IN]  slot index
  *********************************************************************/
-inline idBool smnbBTree::isFullKeyInLeafSlot( smnbHeader      * aIndex,
-                                              const smnbLNode * aNode,
-                                              SShort            aIdx )
+inline idBool smnbBTree::isFullKey( smnbHeader      * aIndex,
+                                    const smnbNode  * aNode,
+                                    SShort            aIdx )
 {
-    if ( SMNB_IS_DIRECTKEY_IN_NODE( aNode ) == ID_TRUE )
+    if ( SMNB_IS_DIRECTKEY_INDEX( aIndex ) == ID_TRUE )
     {
         if ( aIndex->mIsPartialKey == ID_FALSE )
         {
-            /* direct key index ì´ê³ , partial key indexê°€ ì•„ë‹˜ */
+            /* direct key index ÀÌ°í, partial key index°¡ ¾Æ´Ô */
             return ID_TRUE;
         }
         else
         {
             if ( aIndex->columns[0].actualSize( &(aIndex->columns[0].column),
-                                                SMNB_GET_KEY_PTR( aNode, aIdx ) ) <= aNode->mKeySize )
+                                                SMNB_GET_KEY_PTR( aNode, aIdx ) )
+                 <= aNode->mKeySize )
             {
-                /* partial key indexì´ì§€ë§Œ,
-                   ì´ slotì€ ëª¨ë“  direct keyë¥¼ í¬í•¨í•˜ê³ ìˆìŒ */
+                /* partial key indexÀÌÁö¸¸,
+                   ÀÌ slotÀº ¸ğµç direct key¸¦ Æ÷ÇÔÇÏ°íÀÖÀ½ */
                 return ID_TRUE;
             }
-            else
-            {
-                /* nothing to do */
-            }
         }
-    }
-    else
-    {
-        /* nothing to do */
-    }
-
-    return ID_FALSE;
-}
-
-/*********************************************************************
- * FUNCTION DESCRIPTION : smnbBTree::isFullKeyInInternalSlot         *
- * ------------------------------------------------------------------*
- * PROJ-2433 Direct Key Index
- * INTERNAL NODEì˜ aIdxë²ˆì§¸ slotì˜ direct keyê°€ full key ì¸ì§€ì—¬ë¶€ë¥¼ ë¦¬í„´í•œë‹¤.
- *
- * aIndex    - [IN]  INDEX í—¤ë”
- * aNode     - [IN]  LEAF NODE
- * aIdx      - [IN]  slot index
- *********************************************************************/
-inline idBool smnbBTree::isFullKeyInInternalSlot( smnbHeader      * aIndex,
-                                                  const smnbINode * aNode,
-                                                  SShort            aIdx )
-{
-    if ( SMNB_IS_DIRECTKEY_IN_NODE( aNode ) == ID_TRUE )
-    {
-        if ( aIndex->mIsPartialKey == ID_FALSE )
-        {
-            /* direct key index ì´ê³ , partial key indexê°€ ì•„ë‹˜ */
-            return ID_TRUE;
-        }
-        else
-        {
-            if ( aIndex->columns[0].actualSize( &(aIndex->columns[0].column),
-                                                SMNB_GET_KEY_PTR( aNode, aIdx ) ) <= aNode->mKeySize )
-            {
-                /* partial key indexì´ì§€ë§Œ,
-                   ì´ slotì€ ëª¨ë“  direct keyë¥¼ í¬í•¨í•˜ê³ ìˆìŒ */
-                return ID_TRUE;
-            }
-            else
-            {
-                /* nothing to do */
-            }
-        }
-    }
-    else
-    {
-        /* nothing to do */
     }
 
     return ID_FALSE;
@@ -11260,13 +11450,13 @@ inline idBool smnbBTree::isFullKeyInInternalSlot( smnbHeader      * aIndex,
  * FUNCTION DESCRIPTION : smnbBTree::keyRedistribute                 *
  * ------------------------------------------------------------------*
  * PROJ-2613 Key redistribution in MRDB index
- * í‚¤ ì¬ë¶„ë°°ë¥¼ ìˆ˜í–‰í•œë‹¤.
- * ì…ë ¥ ë°›ì€ ì¸ì ë§Œí¼ì˜ slotì„ ê¸°ì¡´ ë…¸ë“œì—ì„œ ë‹¤ìŒ ë…¸ë“œë¡œ ì´ë™ì‹œí‚¨ë‹¤.
+ * Å° ÀçºĞ¹è¸¦ ¼öÇàÇÑ´Ù.
+ * ÀÔ·Â ¹ŞÀº ÀÎÀÚ ¸¸Å­ÀÇ slotÀ» ±âÁ¸ ³ëµå¿¡¼­ ´ÙÀ½ ³ëµå·Î ÀÌµ¿½ÃÅ²´Ù.
  *
- * aIndex                 - [IN]  INDEX í—¤ë”
+ * aIndex                 - [IN]  INDEX Çì´õ
  * aCurNode               - [IN]  Src LEAF NODE
  * aNxtNode               - [IN]  Dest LEAF NODE
- * aKeyRedistributeCount  - [IN]  í‚¤ ì¬ë¶„ë°°ë¡œ ì´ë™ì‹œí‚¬ slotì˜ ìˆ˜
+ * aKeyRedistributeCount  - [IN]  Å° ÀçºĞ¹è·Î ÀÌµ¿½ÃÅ³ slotÀÇ ¼ö
  *********************************************************************/
 IDE_RC smnbBTree::keyRedistribute( smnbHeader * aIndex,
                                    smnbLNode  * aCurNode,
@@ -11277,35 +11467,35 @@ IDE_RC smnbBTree::keyRedistribute( smnbHeader * aIndex,
 
     IDE_ERROR( aKeyRedistributeCount > 0 );
 
-    /* ì¬ë¶„ë°° ë˜ëŠ” í‚¤ëŠ” ìµœëŒ€ slot ìˆ˜ì˜ 1/2ë¥¼ ë„˜ì„ ìˆ˜ ì—†ë‹¤. */
+    /* ÀçºĞ¹è µÇ´Â Å°´Â ÃÖ´ë slot ¼öÀÇ 1/2¸¦ ³ÑÀ» ¼ö ¾ø´Ù. */
     IDE_ERROR( aKeyRedistributeCount <= ( SMNB_LEAF_SLOT_MAX_COUNT( aIndex ) / 2 ) );
 
-    /* ì´ì›ƒ ë…¸ë“œì˜ slotìˆ˜ë¥¼ í™•ì¸í•´ í•´ë‹¹ ë…¸ë“œì˜ slotìˆ˜ê°€ 0ì¼ ê²½ìš°
-     * ì´ì›ƒ ë…¸ë“œê°€ ì œê±° ë˜ì—ˆì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ í‚¤ ì¬ë¶„ë°°ë¥¼ ì¤‘ì§€í•œë‹¤. */
+    /* ÀÌ¿ô ³ëµåÀÇ slot¼ö¸¦ È®ÀÎÇØ ÇØ´ç ³ëµåÀÇ slot¼ö°¡ 0ÀÏ °æ¿ì
+     * ÀÌ¿ô ³ëµå°¡ Á¦°Å µÇ¾úÀ» ¼ö ÀÖÀ¸¹Ç·Î Å° ÀçºĞ¹è¸¦ ÁßÁöÇÑ´Ù. */
     IDE_TEST( aNxtNode->mSlotCount == 0 );
 
-    /* í˜„ì¬ ë…¸ë“œê°€ ë‹¤ë¥¸ Txì— ì˜í•´ splitë˜ì—ˆì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ í‚¤ ì¬ë¶„ë°°ë¥¼ ì¤‘ì§€í•œë‹¤. */
+    /* ÇöÀç ³ëµå°¡ ´Ù¸¥ Tx¿¡ ÀÇÇØ splitµÇ¾úÀ» ¼ö ÀÖÀ¸¹Ç·Î Å° ÀçºĞ¹è¸¦ ÁßÁöÇÑ´Ù. */
     IDE_TEST( aCurNode->mSlotCount != SMNB_LEAF_SLOT_MAX_COUNT( aIndex ) );
 
-    /* í‚¤ë¥¼ ì¬ë¶„ë°° í•˜ê¸°ì „ ë‘ ë¦¬í”„ë…¸ë“œì—ê²Œ SCAN LATCHë¥¼ ê±´ë‹¤. */
+    /* Å°¸¦ ÀçºĞ¹è ÇÏ±âÀü µÎ ¸®ÇÁ³ëµå¿¡°Ô SCAN LATCH¸¦ °Ç´Ù. */
     SMNB_SCAN_LATCH( aCurNode );
     SMNB_SCAN_LATCH( aNxtNode );
 
 
-    /* ì´ì›ƒ ë…¸ë“œì˜ slotì„ ë’¤ë¡œ ì´ë™ì‹œì¼œ ì¬ë¶„ë°°ë  í‚¤ê°€ ë“¤ì–´ê°ˆ ìë¦¬ë¥¼ ë§Œë“ ë‹¤. */
+    /* ÀÌ¿ô ³ëµåÀÇ slotÀ» µÚ·Î ÀÌµ¿½ÃÄÑ ÀçºĞ¹èµÉ Å°°¡ µé¾î°¥ ÀÚ¸®¸¦ ¸¸µç´Ù. */
     shiftLeafSlots( aNxtNode,
                     0,
                     (SShort)( aNxtNode->mSlotCount - 1 ),
                     (SShort)( aKeyRedistributeCount ) ); 
 
-    /* í˜„ì¬ ë…¸ë“œì˜ slotì„ ì´ì›ƒ ë…¸ë“œì— ë³µì‚¬í•˜ì—¬ ì¬ë¶„ë°°ë¥¼ ìˆ˜í–‰í•œë‹¤. */
+    /* ÇöÀç ³ëµåÀÇ slotÀ» ÀÌ¿ô ³ëµå¿¡ º¹»çÇÏ¿© ÀçºĞ¹è¸¦ ¼öÇàÇÑ´Ù. */
     copyLeafSlots( aNxtNode,
                    0,
                    aCurNode,
                    (SShort)( SMNB_LEAF_SLOT_MAX_COUNT( aIndex ) - aKeyRedistributeCount ),
                    (SShort)( aCurNode->mSlotCount - 1 ) );
 
-    /* í˜„ì¬ ë…¸ë“œì— ë‚¨ì•„ìˆëŠ” slotì„ ì œê±°í•œë‹¤. */
+    /* ÇöÀç ³ëµå¿¡ ³²¾ÆÀÖ´Â slotÀ» Á¦°ÅÇÑ´Ù. */
     for ( i = 0; i < aKeyRedistributeCount; i++ )
     {
         setLeafSlot( aCurNode, 
@@ -11314,11 +11504,11 @@ IDE_RC smnbBTree::keyRedistribute( smnbHeader * aIndex,
                      NULL );
     }
     
-    /* í˜„ì¬ ë…¸ë“œì™€ ì´ì›ƒ ë…¸ë“œì˜ slotcountë¥¼ ê°±ì‹ í•œë‹¤.*/
+    /* ÇöÀç ³ëµå¿Í ÀÌ¿ô ³ëµåÀÇ slotcount¸¦ °»½ÅÇÑ´Ù.*/
     aNxtNode->mSlotCount = aNxtNode->mSlotCount + aKeyRedistributeCount;
     aCurNode->mSlotCount = aCurNode->mSlotCount - aKeyRedistributeCount;
 
-    /* ë‘ ë¦¬í”„ë…¸ë“œì— ê±¸ë¦° SCAN LATCHë¥¼ í‘¼ë‹¤. */
+    /* µÎ ¸®ÇÁ³ëµå¿¡ °É¸° SCAN LATCH¸¦ Ç¬´Ù. */
     SMNB_SCAN_UNLATCH( aNxtNode );
     SMNB_SCAN_UNLATCH( aCurNode );
 
@@ -11334,12 +11524,12 @@ IDE_RC smnbBTree::keyRedistribute( smnbHeader * aIndex,
  * FUNCTION DESCRIPTION : smnbBTree::keyRedistributionPropagate      *
  * ------------------------------------------------------------------*
  * PROJ-2613 Key redistribution in MRDB index
- * ë¦¬í”„ë…¸ë“œì˜ í‚¤ ì¬ë¶„ë°°ê°€ ìˆ˜í–‰ëœ í›„ ê·¸ì— ë§ì¶° ë¶€ëª¨ ë…¸ë“œë„ ê°±ì‹ í•œë‹¤.
+ * ¸®ÇÁ³ëµåÀÇ Å° ÀçºĞ¹è°¡ ¼öÇàµÈ ÈÄ ±×¿¡ ¸ÂÃç ºÎ¸ğ ³ëµåµµ °»½ÅÇÑ´Ù.
  *
- * aIndex      - [IN]  INDEX í—¤ë”
- * aINode      - [IN]  ê°±ì‹ í•  ë¶€ëª¨ ë…¸ë“œ
- * aLNode      - [IN]  í‚¤ ì¬ë¶„ë°°ê°€ ìˆ˜í–‰ëœ ë¦¬í”„ ë…¸ë“œ
- * aOldRowPtr  - [IN]  í‚¤ ì¬ë¶„ë°°ê°€ ìˆ˜í–‰ë˜ê¸°ì „ ë¦¬í”„ ë…¸ë“œì˜ ëŒ€í‘œ ê°’
+ * aIndex      - [IN]  INDEX Çì´õ
+ * aINode      - [IN]  °»½ÅÇÒ ºÎ¸ğ ³ëµå
+ * aLNode      - [IN]  Å° ÀçºĞ¹è°¡ ¼öÇàµÈ ¸®ÇÁ ³ëµå
+ * aOldRowPtr  - [IN]  Å° ÀçºĞ¹è°¡ ¼öÇàµÇ±âÀü ¸®ÇÁ ³ëµåÀÇ ´ëÇ¥ °ª
  *********************************************************************/
 IDE_RC smnbBTree::keyRedistributionPropagate( smnbHeader * aIndex,
                                               smnbINode  * aINode,
@@ -11356,21 +11546,21 @@ IDE_RC smnbBTree::keyRedistributionPropagate( smnbHeader * aIndex,
 
     IDE_ERROR( aOldRowPtr != NULL );
 
-    /* ë¦¬í”„ë…¸ë“œì—ì„œ ì¸í„°ë„ ë…¸ë“œë¡œ ì „íŒŒí•  ê°’ì„ ê°€ì ¸ì˜¨ë‹¤. */
+    /* ¸®ÇÁ³ëµå¿¡¼­ ÀÎÅÍ³Î ³ëµå·Î ÀüÆÄÇÒ °ªÀ» °¡Á®¿Â´Ù. */
     getLeafSlot( (SChar **)&sNewRowPtr,
                  &sNewKey,
                  aLNode,
                  (SShort)( aLNode->mSlotCount - 1 ) );
 
-    /* ì¸í„°ë„ ë…¸ë“œë‚´ ê°±ì‹ í•  ìœ„ì¹˜ë¥¼ ê°€ì ¸ì˜¨ë‹¤. */
-    IDE_TEST( findSlotInInternal( aIndex, 
-                                  aINode, 
-                                  aOldRowPtr, 
-                                  &s_pOldPos ) != IDE_SUCCESS );
+    /* ÀÎÅÍ³Î ³ëµå³» °»½ÅÇÒ À§Ä¡¸¦ °¡Á®¿Â´Ù. */
+    IDE_TEST( findSlotInNode( aIndex, 
+                              (smnbNode *)aINode, 
+                              aOldRowPtr, 
+                              &s_pOldPos ) != IDE_SUCCESS );
 
 #ifdef DEBUG 
-    /* ì¸í„°ë„ ë…¸ë“œì—ì„œ ê°€ì ¸ì˜¨ í‚¤ ê°’ì´ ì •ìƒì ì¸ì§€ í™•ì¸í•˜ëŠ” ë¶€ë¶„.
-       ë§¤ë²ˆ slotì„ íƒìƒ‰í•˜ëŠ” ê²ƒì€ ë¹„ìš©ì´ í¬ê¸°ë•Œë¬¸ì— debug modeì—ì„œë§Œ ì‘ë™í•˜ë„ë¡ í•œë‹¤. */
+    /* ÀÎÅÍ³Î ³ëµå¿¡¼­ °¡Á®¿Â Å° °ªÀÌ Á¤»óÀûÀÎÁö È®ÀÎÇÏ´Â ºÎºĞ.
+       ¸Å¹ø slotÀ» Å½»öÇÏ´Â °ÍÀº ºñ¿ëÀÌ Å©±â¶§¹®¿¡ debug mode¿¡¼­¸¸ ÀÛµ¿ÇÏµµ·Ï ÇÑ´Ù. */
     IDE_ERROR( aLNode == (smnbLNode*)(aINode->mChildPtrs[s_pOldPos]) );
 
     getInternalSlot( NULL,
@@ -11384,7 +11574,7 @@ IDE_RC smnbBTree::keyRedistributionPropagate( smnbHeader * aIndex,
 
     SMNB_SCAN_LATCH( aINode );
 
-    /* ì¸í„°ë„ ë…¸ë“œë¥¼ ê°±ì‹ í•œë‹¤. */
+    /* ÀÎÅÍ³Î ³ëµå¸¦ °»½ÅÇÑ´Ù. */
     setInternalSlot( aINode,
                      (SShort)s_pOldPos,
                      (smnbNode *)aLNode,
@@ -11404,9 +11594,9 @@ IDE_RC smnbBTree::keyRedistributionPropagate( smnbHeader * aIndex,
  * FUNCTION DESCRIPTION : smnbBTree::keyReorganization               *
  * ------------------------------------------------------------------*
  * PROJ-2614 Memory Index Reorganization
- * ë¦¬í”„ë…¸ë“œë¥¼ ìˆœíšŒí•˜ë©´ì„œ ì´ì›ƒ ë…¸ë“œì™€ í†µí•©ì´ ê°€ëŠ¥í•˜ë‹¤ë©´ í†µí•©í•œë‹¤.
+ * ¸®ÇÁ³ëµå¸¦ ¼øÈ¸ÇÏ¸é¼­ ÀÌ¿ô ³ëµå¿Í ÅëÇÕÀÌ °¡´ÉÇÏ´Ù¸é ÅëÇÕÇÑ´Ù.
  *
- * aIndex      - [IN]  INDEX í—¤ë”
+ * aIndex      - [IN]  INDEX Çì´õ
  *********************************************************************/
 IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
 {
@@ -11427,12 +11617,12 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
 
     sCurINode = ( smnbINode * )aIndex->root;
 
-    /* 1. ì²«ë²ˆì§¸ leaf nodeì™€ ê·¸ ë¶€ëª¨ê°€ ë˜ëŠ” internal nodeë¥¼ ì°¾ëŠ”ë‹¤. */
+    /* 1. Ã¹¹øÂ° leaf node¿Í ±× ºÎ¸ğ°¡ µÇ´Â internal node¸¦ Ã£´Â´Ù. */
 
-    /* í•´ë‹¹ ì¸ë±ìŠ¤ ì•ˆì— ë…¸ë“œê°€ ì—†ê±°ë‚˜ 1ê°œë§Œ ë‚¨ì•„ìˆì„ ê²½ìš°ì—ëŠ”
-     * í†µí•©ì„ ìˆ˜í–‰í• ìˆ˜ ì—†ìœ¼ë¯€ë¡œ reorganizationì„ ì¢…ë£Œí•œë‹¤. */
+    /* ÇØ´ç ÀÎµ¦½º ¾È¿¡ ³ëµå°¡ ¾ø°Å³ª 1°³¸¸ ³²¾ÆÀÖÀ» °æ¿ì¿¡´Â
+     * ÅëÇÕÀ» ¼öÇàÇÒ¼ö ¾øÀ¸¹Ç·Î reorganizationÀ» Á¾·áÇÑ´Ù. */
     IDE_TEST_CONT( ( sCurINode == NULL ) || 
-                   ( ( sCurINode->flag & SMNB_NODE_TYPE_MASK ) == SMNB_NODE_TYPE_LEAF ), 
+                   ( SMNB_IS_LEAF_NODE( sCurINode ) ), 
                    SKIP_KEY_REORGANIZATION );
 
     IDU_FIT_POINT( "smnbBTree::keyReorganization::findFirstLeafNode" );
@@ -11440,7 +11630,7 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
     lockTree( aIndex );
     sLockState = 1;
 
-    while ( ( sCurINode->mChildPtrs[0]->flag & SMNB_NODE_TYPE_MASK ) == SMNB_NODE_TYPE_INTERNAL )
+    while ( SMNB_IS_INTERNAL_NODE( sCurINode->mChildPtrs[0] ) )
     {
         sCurINode = (smnbINode*)sCurINode->mChildPtrs[0];
     }
@@ -11451,29 +11641,29 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
 
     while ( sCurLNode != NULL )
     {
-        /* í†µí•© ì‘ì—…ì€ lockTable ì‘ì—…ì„ ìˆ˜í–‰í•˜ì§€ ì•Šê³  ìˆ˜í–‰ë˜ê¸° ë•Œë¬¸ì—
-         * í†µí•© ì‘ì—… ìˆ˜í–‰ ì¤‘ í•´ë‹¹ ì¸ë±ìŠ¤ê°€ ì œê±°ë  ìˆ˜ ìˆë‹¤.
-         * ìˆ˜í–‰ ì¤‘ ì¸ë±ìŠ¤ ì œê±°ê°€ í™•ì¸ë  ê²½ìš° í†µí•© ì‘ì—…ì„ ì¢…ë£Œí•œë‹¤. */
+        /* ÅëÇÕ ÀÛ¾÷Àº lockTable ÀÛ¾÷À» ¼öÇàÇÏÁö ¾Ê°í ¼öÇàµÇ±â ¶§¹®¿¡
+         * ÅëÇÕ ÀÛ¾÷ ¼öÇà Áß ÇØ´ç ÀÎµ¦½º°¡ Á¦°ÅµÉ ¼ö ÀÖ´Ù.
+         * ¼öÇà Áß ÀÎµ¦½º Á¦°Å°¡ È®ÀÎµÉ °æ¿ì ÅëÇÕ ÀÛ¾÷À» Á¾·áÇÑ´Ù. */
         IDE_TEST_CONT( aIndex->mIndexHeader->mDropFlag == SMN_INDEX_DROP_TRUE,
                        SKIP_KEY_REORGANIZATION );
 
-        /* 2. ëŒ€ìƒ ë¦¬í”„ ë…¸ë“œê°€ ë‹¤ìŒ ë…¸ë“œì™€ í†µí•©ì´ ê°€ëŠ¥í•œì§€ í™•ì¸í•œë‹¤. */
+        /* 2. ´ë»ó ¸®ÇÁ ³ëµå°¡ ´ÙÀ½ ³ëµå¿Í ÅëÇÕÀÌ °¡´ÉÇÑÁö È®ÀÎÇÑ´Ù. */
         if ( checkEnableReorgInNode( sCurLNode,
                                      sCurINode,
                                      SMNB_LEAF_SLOT_MAX_COUNT( aIndex ) ) == ID_FALSE )
         {
-            /* í†µí•©ì´ ë¶ˆê°€ëŠ¥í•  ê²½ìš° ë‹¤ìŒ ë…¸ë“œë¡œ ì´ë™í•œë‹¤. */
+            /* ÅëÇÕÀÌ ºÒ°¡´ÉÇÒ °æ¿ì ´ÙÀ½ ³ëµå·Î ÀÌµ¿ÇÑ´Ù. */
             sCurLNode = sCurLNode->nextSPtr;
             if ( sCurLNode == NULL )
             {
-                /* ë¦¬í”„ë…¸ë“œì˜ ëê¹Œì§€ ì™”ì„ ê²½ìš° */
+                /* ¸®ÇÁ³ëµåÀÇ ³¡±îÁö ¿ÔÀ» °æ¿ì */
                 continue;
             }
             else
             {
                 if ( sCurLNode->mSlotCount == 0 )
                 {
-                    /* í¬ì¸í„°ë¥¼ íƒ€ê³  ë“¤ì–´ì˜¨ ë¦¬í”„ë…¸ë“œê°€ ì œê±°ë˜ì—ˆì„ ê²½ìš° */
+                    /* Æ÷ÀÎÅÍ¸¦ Å¸°í µé¾î¿Â ¸®ÇÁ³ëµå°¡ Á¦°ÅµÇ¾úÀ» °æ¿ì */
                     continue;
                 }
                 else
@@ -11484,24 +11674,24 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
 
             sOldKeyRow = sCurLNode->mRowPtrs[( sCurLNode->mSlotCount ) - 1];
 
-            IDE_TEST( findSlotInInternal( aIndex, 
-                                          sCurINode, 
-                                          sOldKeyRow, 
-                                          &sInternalSlotPos ) != IDE_SUCCESS );
+            IDE_TEST( findSlotInNode( aIndex, 
+                                      (smnbNode *)sCurINode, 
+                                      sOldKeyRow, 
+                                      &sInternalSlotPos ) != IDE_SUCCESS );
 
-            /* ì´ì›ƒ ë…¸ë“œë¡œ ì´ë™í•˜ë©´ì„œ ë¶€ëª¨ ë…¸ë“œê°€ ë³€ê²½ëœ ê²½ìš° */
+            /* ÀÌ¿ô ³ëµå·Î ÀÌµ¿ÇÏ¸é¼­ ºÎ¸ğ ³ëµå°¡ º¯°æµÈ °æ¿ì */
             if ( sCurINode->mSlotCount <= sInternalSlotPos )
             {
-                /* ë‹¤ìŒ ì¸í„°ë„ ë…¸ë“œê°€ ì—†ëŠ” ê²½ìš° */
+                /* ´ÙÀ½ ÀÎÅÍ³Î ³ëµå°¡ ¾ø´Â °æ¿ì */
                 IDE_TEST( sCurINode->nextSPtr == NULL );
 
                 sCurINode = sCurINode->nextSPtr;
 
-                /* ë‹¤ìŒ ë…¸ë“œì—ë„ ì—†ì„ ê²½ìš° ì¸í„°ë„ ë…¸ë“œì— ë¬¸ì œê°€ ë°œìƒí•œ ê²ƒì´ë¯€ë¡œ í†µí•©ì„ ì¤‘ì§€ */
-                IDE_TEST( findSlotInInternal( aIndex, 
-                                              sCurINode, 
-                                              sOldKeyRow,
-                                              &sInternalSlotPos ) != IDE_SUCCESS );
+                /* ´ÙÀ½ ³ëµå¿¡µµ ¾øÀ» °æ¿ì ÀÎÅÍ³Î ³ëµå¿¡ ¹®Á¦°¡ ¹ß»ıÇÑ °ÍÀÌ¹Ç·Î ÅëÇÕÀ» ÁßÁö */
+                IDE_TEST( findSlotInNode( aIndex, 
+                                          (smnbNode *)sCurINode, 
+                                          sOldKeyRow,
+                                          &sInternalSlotPos ) != IDE_SUCCESS );
 
                 IDE_TEST( sCurLNode != ( smnbLNode* )( sCurINode->mChildPtrs[sInternalSlotPos] ) );
             }
@@ -11519,7 +11709,7 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
             sNxtLNode = sCurLNode->nextSPtr;
             IDU_FIT_POINT( "smnbBTree::keyReorganization::beforeLock" );
 
-            /* 3. lockì„ ì¡ëŠ”ë‹¤. */
+            /* 3. lockÀ» Àâ´Â´Ù. */
             lockTree( aIndex );
             sLockState = 1;
 
@@ -11535,7 +11725,7 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
 
             IDU_FIT_POINT( "smnbBTree::keyReorganization::afterLock" );
 
-            /* 4. 2ë²ˆ ì‘ì—… í›„ treelockì„ ì¡ê¸° ì „ ì´ì›ƒ ë…¸ë“œê°€ ë³€ê²½ë  ìˆ˜ ìˆìœ¼ë‹ˆ ë‹¤ì‹œ í™•ì¸í•œë‹¤. */
+            /* 4. 2¹ø ÀÛ¾÷ ÈÄ treelockÀ» Àâ±â Àü ÀÌ¿ô ³ëµå°¡ º¯°æµÉ ¼ö ÀÖÀ¸´Ï ´Ù½Ã È®ÀÎÇÑ´Ù. */
             if ( checkEnableReorgInNode( sCurLNode,
                                          sCurINode,
                                          SMNB_LEAF_SLOT_MAX_COUNT( aIndex ) ) == ID_FALSE )       
@@ -11556,17 +11746,17 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
                 /* do nothing... */
             }
 
-            /* 5. í˜„ì¬ ë…¸ë“œì˜ ê°’ì„ ì €ì¥í•´ë‘”ë‹¤.
-             *    ì´ ê°’ì€ ì¸í„°ë„ ë…¸ë“œë¥¼ ê°±ì‹ í•˜ê¸° ìœ„í•œ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë° ì‚¬ìš©ëœë‹¤. */
+            /* 5. ÇöÀç ³ëµåÀÇ °ªÀ» ÀúÀåÇØµĞ´Ù.
+             *    ÀÌ °ªÀº ÀÎÅÍ³Î ³ëµå¸¦ °»½ÅÇÏ±â À§ÇÑ À§Ä¡¸¦ Ã£´Âµ¥ »ç¿ëµÈ´Ù. */
 
             sOldKeyRow = sCurLNode->mRowPtrs[( sCurLNode->mSlotCount ) - 1];
 
-            IDE_TEST( findSlotInInternal( aIndex, 
-                                          sCurINode, 
-                                          sOldKeyRow, 
-                                          &sInternalSlotPos ) != IDE_SUCCESS );
+            IDE_TEST( findSlotInNode( aIndex, 
+                                      (smnbNode *)sCurINode, 
+                                      sOldKeyRow, 
+                                      &sInternalSlotPos ) != IDE_SUCCESS );
 
-            /* 6. í˜„ì¬ ë…¸ë“œì™€ ë‹¤ìŒ ë…¸ë“œê°„ í†µí•© ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤. */
+            /* 6. ÇöÀç ³ëµå¿Í ´ÙÀ½ ³ëµå°£ ÅëÇÕ ÀÛ¾÷À» ¼öÇàÇÑ´Ù. */
             SMNB_SCAN_LATCH( sCurLNode );
             SMNB_SCAN_LATCH( sNxtLNode );
 
@@ -11579,7 +11769,7 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
             IDE_ERROR( sCurLNode->mSlotCount + sNxtLNode->mSlotCount 
                        <= SMNB_LEAF_SLOT_MAX_COUNT( aIndex ) );
 
-            /* 6.1 ë‹¤ìŒ ë…¸ë“œì˜ slotë“¤ì„ í˜„ì¬ ë…¸ë“œì— ë³µì‚¬í•œë‹¤. */
+            /* 6.1 ´ÙÀ½ ³ëµåÀÇ slotµéÀ» ÇöÀç ³ëµå¿¡ º¹»çÇÑ´Ù. */
             copyLeafSlots( sCurLNode, 
                            sCurLNode->mSlotCount,
                            sNxtLNode,
@@ -11590,10 +11780,10 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
 
             IDU_FIT_POINT( "smnbBTree::keyReorganization::exceptionPoint4" );
 
-            /* 6.2 í˜„ì¬ ë…¸ë“œì˜ ë©”íƒ€ ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤. */
+            /* 6.2 ÇöÀç ³ëµåÀÇ ¸ŞÅ¸ Á¤º¸¸¦ °»½ÅÇÑ´Ù. */
 
-            /* íŠ¸ë¦¬ì˜ ë§ˆì§€ë§‰ ë…¸ë“œì— ëŒ€í•´ì„œëŠ” ìˆ˜í–‰í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ
-             * í•­ìƒ ë‹¤ìŒ ë…¸ë“œì˜ nextë…¸ë“œì˜ prev pointerë¥¼ ì¡°ì ˆí•´ì•¼ í•œë‹¤. */
+            /* Æ®¸®ÀÇ ¸¶Áö¸· ³ëµå¿¡ ´ëÇØ¼­´Â ¼öÇàÇÏÁö ¾ÊÀ¸¹Ç·Î
+             * Ç×»ó ´ÙÀ½ ³ëµåÀÇ next³ëµåÀÇ prev pointer¸¦ Á¶ÀıÇØ¾ß ÇÑ´Ù. */
             IDE_ERROR( sNxtLNode->nextSPtr != NULL );
 
             lockNode( sNxtLNode->nextSPtr );
@@ -11629,7 +11819,7 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
 
             sLockState = 3;
 
-            /* 7. ì œê±°ë  ì´ì›ƒ ë…¸ë“œë¥¼ free node listì— ì—°ê²°í•œë‹¤. */
+            /* 7. Á¦°ÅµÉ ÀÌ¿ô ³ëµå¸¦ free node list¿¡ ¿¬°áÇÑ´Ù. */
             sNxtLNode->freeNodeList = sFreeNodeList;
             sFreeNodeList = (smnbNode*)sNxtLNode;
 
@@ -11639,7 +11829,7 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
 
             sDeleteNodeCount++;
 
-            /* 8. í•©ì³ì§„ ë…¸ë“œì˜ í‚¤ ê°’ì„ ê°€ì ¸ì˜¨ë‹¤. */
+            /* 8. ÇÕÃÄÁø ³ëµåÀÇ Å° °ªÀ» °¡Á®¿Â´Ù. */
             sNewKeyRow = NULL;
             sNewKey = NULL;
 
@@ -11648,14 +11838,14 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
                          sCurLNode,
                          (SShort)( sCurLNode->mSlotCount - 1 ) );
 
-            /* 9. ë¦¬í”„ ë…¸ë“œì˜ lockì„ í•´ì œí•œë‹¤. */
+            /* 9. ¸®ÇÁ ³ëµåÀÇ lockÀ» ÇØÁ¦ÇÑ´Ù. */
             sLockState = 2;
             unlockNode( sNxtLNode );
 
             sLockState = 1;
             unlockNode( sCurLNode );
 
-            /* 10. ì¸í„°ë„ ë…¸ë“œë¥¼ ê°±ì‹ í•œë‹¤. */
+            /* 10. ÀÎÅÍ³Î ³ëµå¸¦ °»½ÅÇÑ´Ù. */
             SMNB_SCAN_LATCH( sCurINode );
 
             shiftInternalSlots( sCurINode, 
@@ -11687,13 +11877,13 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
 
             SMNB_SCAN_UNLATCH( sCurINode );
 
-            /* 11. tree latchë¥¼ í•´ì œí•œë‹¤. */
+            /* 11. tree latch¸¦ ÇØÁ¦ÇÑ´Ù. */
             sLockState = 0;
             unlockTree( aIndex );
         }
     }
 
-    /* ì‘ì—…ì´ ì™„ë£Œ ëœ í›„ free listì˜ ë…¸ë“œë“¤ì„ ì •ë¦¬í•œë‹¤. */
+    /* ÀÛ¾÷ÀÌ ¿Ï·á µÈ ÈÄ free listÀÇ ³ëµåµéÀ» Á¤¸®ÇÑ´Ù. */
 
     if ( sFreeNodeList != NULL )
     {
@@ -11723,16 +11913,16 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
 
     switch ( sNodeState )
     {
-        case 5:     /* ì¸í„°ë„ ë…¸ë“œì˜ slotcounter ì •ë³´ ë³€ê²½ ë³µì› */
+        case 5:     /* ÀÎÅÍ³Î ³ëµåÀÇ slotcounter Á¤º¸ º¯°æ º¹¿ø */
             sCurINode->mSlotCount++;
-        case 4:     /* ì¸í„°ë„ ë…¸ë“œì˜ slot ë³€ê²½ ë³µì› */
-            /* ì¸í„°ë„ ë…¸ë“œì˜ slot shift ë³µì› */
+        case 4:     /* ÀÎÅÍ³Î ³ëµåÀÇ slot º¯°æ º¹¿ø */
+            /* ÀÎÅÍ³Î ³ëµåÀÇ slot shift º¹¿ø */
             shiftInternalSlots( sCurINode,
                                 ( SShort )( sInternalSlotPos + 1 ),
                                 ( SShort )( sCurINode->mSlotCount - 1 ),
                                 ( SShort )(1) );
 
-            /* í†µí•©ìœ¼ë¡œ ì‚¬ë¼ì§ˆ ë…¸ë“œì™€ì˜ ì—°ê²°ì„ ë³µì› */
+            /* ÅëÇÕÀ¸·Î »ç¶óÁú ³ëµå¿ÍÀÇ ¿¬°áÀ» º¹¿ø */
             getLeafSlot( (SChar **)&sNewKeyRow,
                          &sNewKey,
                          sNxtLNode,
@@ -11743,7 +11933,7 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
                              (SChar *)sNewKeyRow,
                              sNewKey );
 
-            /* í†µí•©ëŒ€ìƒì¸ ë¦¬í”„ë…¸ë“œì˜ í‚¤ ê°’ì„ ë³µì› */
+            /* ÅëÇÕ´ë»óÀÎ ¸®ÇÁ³ëµåÀÇ Å° °ªÀ» º¹¿ø */
             getLeafSlot( (SChar **)&sNewKeyRow,
                          &sNewKey,
                          sCurLNode,
@@ -11761,14 +11951,14 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
             sLockState = 3;
 
             sDeleteNodeCount--;
-        case 3:     /* ë‹¤ìŒ ë¦¬í”„ ë…¸ë“œë¥¼ freelistì— ì—°ê²°í•œ ë³€ê²½ì„ ë³µì› */
+        case 3:     /* ´ÙÀ½ ¸®ÇÁ ³ëµå¸¦ freelist¿¡ ¿¬°áÇÑ º¯°æÀ» º¹¿ø */
             sFreeNodeList = (smnbNode*)sNxtLNode->freeNodeList;
             sNxtLNode->freeNodeList = NULL;
 
             SMNB_SCAN_LATCH( sCurLNode );
             SMNB_SCAN_LATCH( sNxtLNode );
             sLockState = 4;
-        case 2:     /* í†µí•©ì´ ìˆ˜í–‰ëœ ë…¸ë“œì˜ ë©”íƒ€ì •ë³´ ê°±ì‹ ì„ ë³µì› */
+        case 2:     /* ÅëÇÕÀÌ ¼öÇàµÈ ³ëµåÀÇ ¸ŞÅ¸Á¤º¸ °»½ÅÀ» º¹¿ø */
             sNxtLNode->flag |= SMNB_NODE_VALID;
 
             SMNB_SCAN_LATCH( sNxtLNode->nextSPtr );
@@ -11778,7 +11968,7 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
             sCurLNode->mSlotCount = sNodeOldCount;
             sCurLNode->nextSPtr = sNxtLNode;
 
-        case 1:     /* ë‹¤ìŒ ë¦¬í”„ ë…¸ë“œì˜ slotì„ í˜„ì¬ ë¦¬í”„ë…¸ë“œì— í†µí•©í•œ ìˆ˜ì •ì„ ë³µì› */
+        case 1:     /* ´ÙÀ½ ¸®ÇÁ ³ëµåÀÇ slotÀ» ÇöÀç ¸®ÇÁ³ëµå¿¡ ÅëÇÕÇÑ ¼öÁ¤À» º¹¿ø */
             for ( i = 0; i < sNodeNewCount - sNodeOldCount; i++ )
             {
                 setLeafSlot( sCurLNode,
@@ -11811,7 +12001,7 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
             break;
     }
 
-    /* ì‘ì—…ì´ ì™„ë£Œ ëœ í›„ free listì˜ ë…¸ë“œë“¤ì„ ì •ë¦¬í•œë‹¤. */
+    /* ÀÛ¾÷ÀÌ ¿Ï·á µÈ ÈÄ free listÀÇ ³ëµåµéÀ» Á¤¸®ÇÑ´Ù. */
     if ( sFreeNodeList != NULL )
     {
         aIndex->nodeCount -= sDeleteNodeCount;
@@ -11835,16 +12025,16 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
  * ------------------------------------------------------------------*
  * BUG-44043, BUG-46428
  *
- * ë¦¬í”„ë…¸ë“œì—ì„œ aSearchRow ê°’ë³´ë‹¤ í° ì²«ë²ˆì§¸ ìŠ¬ë¡¯ ìœ„ì¹˜ë¥¼ ì°¾ì•„ì„œ
- * aSlot ìœ¼ë¡œ ë¦¬í„´í•œë‹¤.
- * ( ìœ„ì¹˜ë¥¼ ì°¾ì§€ ëª»í•˜ë©´ ë…¸ë“œì˜ mSlotCount ê°’ì„ ë¦¬í„´í•œë‹¤. )
+ * ¸®ÇÁ³ëµå¿¡¼­ aSearchRow °ªº¸´Ù Å« Ã¹¹øÂ° ½½·Ô À§Ä¡¸¦ Ã£¾Æ¼­
+ * aSlot À¸·Î ¸®ÅÏÇÑ´Ù.
+ * ( À§Ä¡¸¦ Ã£Áö ¸øÇÏ¸é ³ëµåÀÇ mSlotCount °ªÀ» ¸®ÅÏÇÑ´Ù. )
  *
- * aIndex     - [IN]  INDEX ì •ë³´
- * aNode      - [IN]  íƒìƒ‰í•  ë¦¬í”„ë…¸ë“œ
- * aMinimum   - [IN]  íƒìƒ‰í•  ë…¸ë“œë²”ìœ„ì˜ mimumum slot 
- * aMaximum   - [IN]  íƒìƒ‰í•  ë…¸ë“œë²”ìœ„ì˜ maximum slot
- * aSearchRow - [IN]  íƒìƒ‰í•  í‚¤
- * aSlot      - [OUT] íƒìƒ‰ëœ ìŠ¬ë¡¯ ìœ„ì¹˜
+ * aIndex     - [IN]  INDEX Á¤º¸
+ * aNode      - [IN]  Å½»öÇÒ ¸®ÇÁ³ëµå
+ * aMinimum   - [IN]  Å½»öÇÒ ³ëµå¹üÀ§ÀÇ mimumum slot 
+ * aMaximum   - [IN]  Å½»öÇÒ ³ëµå¹üÀ§ÀÇ maximum slot
+ * aSearchRow - [IN]  Å½»öÇÒ Å°
+ * aSlot      - [OUT] Å½»öµÈ ½½·Ô À§Ä¡
  *********************************************************************/
 inline void smnbBTree::findNextSlotInLeaf( smnbHeader       * index,
                                            const smnbLNode  * aNode,
@@ -11891,21 +12081,305 @@ inline void smnbBTree::findNextSlotInLeaf( smnbHeader       * index,
  * ------------------------------------------------------------------*
  * BUG-46504
  *
- * ì¸ë±ìŠ¤ë¥¼ inconsistent ìƒíƒœë¡œ ë³€ê²½í•œë‹¤.
- * (inconsistent ìƒíƒœê°€ ëœ ì¸ë±ìŠ¤ëŠ” rebuild í• ë•Œê¹Œì§€ ì‚¬ìš©í• ìˆ˜ì—†ë‹¤.)
+ * ÀÎµ¦½º¸¦ inconsistent »óÅÂ·Î º¯°æÇÑ´Ù.
+ * (inconsistent »óÅÂ°¡ µÈ ÀÎµ¦½º´Â rebuild ÇÒ¶§±îÁö »ç¿ëÇÒ¼ö¾ø´Ù.)
  *
- * aIndex     - [IN]  INDEX í—¤ë”
+ * aIndex     - [IN]  INDEX Çì´õ
  *********************************************************************/
 void smnbBTree::setInconsistentIndex( smnIndexHeader * aIndex )
 {
     IDE_DASSERT( aIndex != NULL );
 
-    /* inconsistent ë˜ì§€ ì•Šì€ indexë§Œ inconsistent ìƒíƒœë¡œ ë§Œë“ ë‹¤. */
-    /* inconsistentë¡œ ë³€ê²½ì¤‘ì— ë‹¤ë¥¸ TXê°€ ë¼ì–´ë“¤ìˆ˜ ìˆìœ¼ë‚˜,
-       TRACE LOGë¥¼ ì¤‘ë³µìœ¼ë¡œ ì°ê²Œ ë˜ëŠ”ê²ƒ ì´ì™¸ì—ëŠ” ë¬¸ì œë˜ì§€ ì•ŠëŠ”ë‹¤. */
+    /* inconsistent µÇÁö ¾ÊÀº index¸¸ inconsistent »óÅÂ·Î ¸¸µç´Ù. */
+    /* inconsistent·Î º¯°æÁß¿¡ ´Ù¸¥ TX°¡ ³¢¾îµé¼ö ÀÖÀ¸³ª,
+       TRACE LOG¸¦ Áßº¹À¸·Î Âï°Ô µÇ´Â°Í ÀÌ¿Ü¿¡´Â ¹®Á¦µÇÁö ¾Ê´Â´Ù. */
 
     if ( smnManager::getIsConsistentOfIndexHeader( aIndex ) == ID_TRUE )
     {
         smnManager::setIsConsistentOfIndexHeader( aIndex, ID_FALSE );
     }
+}
+
+void smnbBTree::dumpNodeLink( smnbLNode * aLNode )
+{
+    if( aLNode != NULL )
+    {
+        if( aLNode->prevSPtr != NULL )
+        {
+            if( aLNode->nextSPtr != NULL )
+            {
+                /* ´ë»ó ³ëµåÀÇ ÀÌÀü/ÀÌÈÄ ¸µÅ©°¡ ¸ğµÎ Á¸ÀçÇÒ °æ¿ì */
+                ideLog::log(IDE_SM_0,"NodePtr = %"ID_XPOINTER_FMT
+                                     ", PrevPtr = %"ID_XPOINTER_FMT
+                                     ", NextPtr = %"ID_XPOINTER_FMT"\n",
+                                     aLNode,
+                                     aLNode->prevSPtr,
+                                     aLNode->nextSPtr );
+            }
+            else
+            {
+                /* ´ë»ó ³ëµåÀÇ ÀÌÀü ¸µÅ©¸¸ Á¸ÀçÇÏ°í ÀÌÈÄ ¸µÅ©°¡ Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì */
+                ideLog::log(IDE_SM_0,"NodePtr = %"ID_XPOINTER_FMT
+                                     ", PrevPtr = %"ID_XPOINTER_FMT"\n",
+                                     aLNode,
+                                     aLNode->prevSPtr );
+            }
+        }
+        else
+        {
+            if( aLNode->nextSPtr != NULL )
+            {
+                /* ´ë»ó ³ëµåÀÇ ÀÌÈÄ ¸µÅ©¸¸ Á¸ÀçÇÏ°í ÀÌÀü ¸µÅ©°¡ Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì */
+                ideLog::log(IDE_SM_0,"NodePtr = %"ID_XPOINTER_FMT
+                                     ", nextPtr = %"ID_XPOINTER_FMT"\n",
+                                     aLNode,
+                                     aLNode->nextSPtr );
+            }
+            else
+            {
+                /* ´ë»ó ³ëµåÀÇ ÀÌÀü/ÀÌÈÄ ¸µÅ©°¡ ¸ğµÎ Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì */
+                ideLog::log(IDE_SM_0,"NodePtr = %"ID_XPOINTER_FMT"\n",
+                                     aLNode );
+            }
+        }
+    }
+
+    return;
+}
+ 
+/*********************************************************************
+ * Common Index Header ¹× smnbModule Index Header¸¦ Ãâ·ÂÇÑ´Ù.(BUG-47619)
+ *********************************************************************/
+void smnbBTree::logIndexHeader( smnIndexHeader * aCommonHeader )
+{
+    SChar      * sOutBuffer4Dump;
+
+    /* Common Index Header Ãâ·Â */
+    smnManager::logCommonHeader( aCommonHeader );
+
+    if ( aCommonHeader->mHeader != NULL )
+    {
+        if ( iduMemMgr::calloc( IDU_MEM_SM_SMN, 1,
+                                ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
+                                (void**)&sOutBuffer4Dump )
+             == IDE_SUCCESS )
+        {
+            /* smnbModule Index Header Ãâ·Â */
+            dumpIndexHeader( (smnbHeader*)(aCommonHeader->mHeader),
+                             sOutBuffer4Dump,
+                             IDE_DUMP_DEST_LIMIT );
+
+            ideLog::log( IDE_ERR_0, "%s\n", sOutBuffer4Dump );
+
+            (void) iduMemMgr::free( sOutBuffer4Dump );
+        }
+        else
+        {
+            /* alloc fail */
+        }
+    }
+    else
+    {
+        ideLog::log( IDE_ERR_0,
+                     "smnbIndexHeader* is NULL(smnbBTree::logIndexHeader())\n" );
+    }
+}
+
+void smnbBTree::dumpIndexHeader( smnbHeader * aHeader,
+                                 SChar      * aOutBuf,
+                                 UInt         aOutSize )
+{
+    idlOS::snprintf( aOutBuf,
+                     aOutSize,
+                     "Memory Index Header :\n"
+                     "Pointer             : 0x%"ID_xPOINTER_FMT"\n"
+                     "Root node ptr       : 0x%"ID_xPOINTER_FMT"\n"
+                     "First node ptr      : 0x%"ID_xPOINTER_FMT"\n"
+                     "Last node ptr       : 0x%"ID_xPOINTER_FMT"\n"
+                     "Node count          : %"ID_UINT32_FMT"\n"
+                     "Is not null         : %"ID_UINT32_FMT"\n"
+                     "Common header ptr   : 0x%"ID_xPOINTER_FMT"\n\n"
+                     "cRef                : %"ID_UINT32_FMT"\n"
+                     "Key size            : %"ID_UINT32_FMT"\n"
+                     "Is partial key      : %"ID_UINT32_FMT"\n"
+                     "I node max slot cnt : %"ID_INT32_FMT"\n"
+                     "L node max slot cnt : %"ID_INT32_FMT"\n"
+                     "Space ID            : %"ID_UINT32_FMT"\n"
+                     "Fixed key Size      : %"ID_UINT32_FMT"\n"
+                     "Slot align value    : %"ID_UINT32_FMT"\n"
+                     "Built type          : %"ID_UINT32_FMT"\n",
+                     aHeader,
+                     aHeader->root,
+                     aHeader->pFstNode,
+                     aHeader->pLstNode,
+                     aHeader->nodeCount,
+                     aHeader->mIsNotNull,
+                     aHeader->mIndexHeader,
+                     aHeader->cRef,
+                     aHeader->mKeySize,
+                     aHeader->mIsPartialKey,
+                     aHeader->mINodeMaxSlotCount,
+                     aHeader->mLNodeMaxSlotCount,
+                     aHeader->mSpaceID,
+                     aHeader->mFixedKeySize,
+                     aHeader->mSlotAlignValue,
+                     aHeader->mBuiltType );
+}
+
+/*********************************************************************
+ * index ¸¦ Å¾»öÇÏ¿© key¸¦ Ã£Áö ¸øÇÑ ¿¹¿Ü ¹ß»ı »óÈ²¿¡¼­ È£ÃâµÇ¾î
+ * leaf node¸¦ fullscan ÇØ¼­ key¸¦ Ã£¾Æ¼­ Á¤¸®ÇÑ´Ù.(BUG-47618)
+ *
+ * ¹İµå½Ã Ã£¾Æ¾ß¸¸ ÇÏ´Âµ¥ Ã£Áö ¸øÇÑ °æ¿ì¿¡ È£ÃâµÇ´Â ÇÔ¼öÀÌ´Ù.
+ * Å½»ö¿¡ ¹®Á¦°¡ ÀÖ°Å³ª Ã£Áö ¸øÇÏ¸é Ãß°¡ ¿¹¿Ü°¡ ¹ß»ıµÈ´Ù.
+ * 
+ * Ã£¾ÆÀ¸¸é Internal node ¹®Á¦ÀÌ´Ù.
+ * ¸øÃ£À¸¸é key°¡ ¾Æ¿¹ Á¸ÀçÇÏÁö ¾Ê´Â ¹®Á¦ÀÌ´Ù.
+ *
+ * internal node¸¦ Å½»öÇÏÁö ¾Ê¾Æ¼­ iNode StackÀÌ ¾ø´Ù.
+ * ±×·¯¹Ç·Î internal node°¡ º¯°æµÇÁö ¾Ê´Â ¼±¿¡¼­ ¼öÁ¤ÇÑ´Ù.
+ * (node¿¡ key°¡ 1°³ »ÓÀÌ°Å³ª, last keyÀÌ¸é Á¤¸®ÇÏÁö ¸øÇÑ´Ù.)
+ *********************************************************************/
+IDE_RC smnbBTree::freeSlotByLeafFullScan( smnbHeader   * aIndexHeader,
+                                          SChar        * aRow )
+{
+    smnbINode * sCurINode;
+    smnbLNode * sLeafNode;
+    SInt        i;
+    SInt        sKeyPos   = -1;
+    idBool      sIsTreeLocked = ID_FALSE;
+    idBool      sIsNodeLocked = ID_FALSE;
+    IDU_LATCH   sVersion   = IDU_LATCH_UNLOCKED;
+
+    /* 1. Tree LockÀ» Àâ´Â´Ù.
+     * 2. internal nodeÀÇ mChildPtrs[0] À¸·Î ³»·Á°£´Ù.
+     * 3. leaf node¸¦ ¹ß°ßÇÏ¸é Ã¹¹øÂ° ptrºÎÅÍ row ptr °ú ºñ±³,
+     * 4.  ¹ß°ßÇÏ¸é key¸¦ freeÇÑ´Ù. */
+    lockTree( aIndexHeader );
+    sIsTreeLocked = ID_TRUE;
+
+    sCurINode = (smnbINode*)(aIndexHeader->root);
+
+    IDE_ERROR( sCurINode != NULL );
+
+    /* Internal node scan, 0¹ø slotÀ» µû¶ó°¡¼­ IndexÀÇ Ã¹¹øÂ° leaf node¸¦ Ã£´Â´Ù.*/
+    while((sCurINode->flag & SMNB_NODE_TYPE_MASK)== SMNB_NODE_TYPE_INTERNAL)
+    {
+        sCurINode = (smnbINode*)(sCurINode->mChildPtrs[0]);
+        IDE_ERROR( sCurINode != NULL );
+    }
+
+    IDE_ERROR((sCurINode->flag & SMNB_NODE_TYPE_MASK) == SMNB_NODE_TYPE_LEAF);
+
+    sLeafNode = (smnbLNode*)sCurINode;
+
+    do
+    {
+        IDE_ERROR((sCurINode->flag & SMNB_NODE_TYPE_MASK) == SMNB_NODE_TYPE_LEAF);
+
+        /* leaf node full scan,
+         * Å½»ö ´Ü°è¿¡¼­ node lockÀ» ÀâÁö ¾Ê¾Æµµ µÈ´Ù.
+         * tree lock ÀÌ ÀâÇô ÀÖ¾î¼­ node °£ key ÀÌµ¿ÀÌ µÇÁö ¾Ê´Â´Ù.
+         * leaf node°£ key ÀÌµ¿ ÇÏ´Â °æ¿ì last key°¡ º¯°æµÇ¹Ç·Î
+         * internal nodeÀÇ º¯°æÀÌ ÀÏ¾î³­´Ù. tree lockÀ» Àâ¾Æ¾ß º¯°æ °¡´ÉÇÏ´Ù.*/
+         while(1)
+         {
+             sVersion  = getLatchValueOfLNode( sLeafNode ) & IDU_LATCH_UNMASK;
+
+             IDL_MEM_BARRIER;
+
+             for( i = 0 ; i< sLeafNode->mSlotCount ; i++ )
+             {
+                 if( sLeafNode->mRowPtrs[i] == aRow )
+                 {
+                     /* Ã£¾Ò´Ù. */
+                     sKeyPos = i;
+                     break;
+                 }
+             }
+
+             if( sVersion == getLatchValueOfLNode( sLeafNode ) )
+             {
+                 break;
+             }
+
+             sKeyPos = -1;
+         }
+
+        if ( sKeyPos != -1 )
+        {
+            break;
+        }
+
+        sLeafNode = sLeafNode->nextSPtr;
+
+    }while( sLeafNode != NULL );
+
+    /* 1. Key¸¦ Ã£Áö ¸øÇÏ¸é ¿¹¿Ü Ã³¸®
+     * 2. key°¡ ÇÏ³ª»ÓÀÎ Leaf node´Â Ã³¸® ÇÒ ¼ö ¾ø´Ù..
+     * 3. ³»°¡ ¸¶Áö¸· key ¿©¼­µµ Ã³¸® ÇÒ ¼ö ¾ø´Ù.
+     * 2,3 internalÀ» Å½»öÇÏÁö ¾Ê¾Æ¼­ internal node stack ÀÌ ¾ø´Ù.
+     *     leaf node¸¸ ¼öÁ¤ °¡´ÉÇÏ´Ù¸é Ã³¸®ÇÏ°í ¾Æ´Ï¸é ¿¹¿Ü ¹ß»ı ÇÑ´Ù.*/
+    IDE_ERROR( sLeafNode != NULL );
+    IDE_ERROR( sKeyPos != -1 );
+
+    lockNode( sLeafNode );
+    sIsNodeLocked = ID_TRUE;
+
+    /* lockÀ» Àâ±â Àü¿¡ À§Ä¡°¡ º¯°æ µÉ ¼ö ÀÖ´Ù. */
+    if( sLeafNode->mRowPtrs[sKeyPos] != aRow )
+    {
+        sKeyPos = -1 ;
+        for( i = 0 ; i< sLeafNode->mSlotCount ; i++ )
+        {
+            if( sLeafNode->mRowPtrs[i] == aRow )
+            {
+                /* Ã£¾Ò´Ù.*/
+                sKeyPos = i;
+                break;
+            }
+        }
+        IDE_ERROR( sKeyPos != -1 );
+    }
+
+    IDE_TEST( sLeafNode->mSlotCount <= 1 );
+    IDE_TEST(( sLeafNode->mSlotCount - 1 ) <= sKeyPos );
+
+    SMNB_SCAN_LATCH( sLeafNode );
+
+    deleteSlotInLeafNode( sLeafNode,
+                          aRow,
+                          &sKeyPos );
+
+    SMNB_SCAN_UNLATCH( sLeafNode );
+
+    IDE_ERROR( sKeyPos != -1 );
+
+    sIsNodeLocked = ID_FALSE;
+    unlockNode( sLeafNode );
+
+    sIsTreeLocked = ID_FALSE;
+    unlockTree( aIndexHeader );
+
+    ideLog::log(IDE_ERR_0,"remove key by leaf node fullscan\n");
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    if ( sIsNodeLocked == ID_TRUE )
+    {
+        sIsNodeLocked = ID_FALSE;
+        unlockNode( sLeafNode );
+    }
+
+    if ( sIsTreeLocked == ID_TRUE )
+    {
+        sIsTreeLocked = ID_FALSE;
+        unlockTree( aIndexHeader );
+    }
+
+    ideLog::log(IDE_ERR_0,"not found key by leaf node fullscan\n");
+
+    return IDE_FAILURE;
 }

@@ -16,7 +16,7 @@
 
 /***********************************************************************
  *
- * Spatio-Temporal Object ìƒì„± í•¨ìˆ˜ 
+ * Spatio-Temporal Object »ı¼º ÇÔ¼ö 
  *
  ***********************************************************************/
 
@@ -113,15 +113,15 @@ ulsCreateGeomCollection2D( ulsHandle               * aHandle,
                            ulvSLen                 * aObjLength );
 
 
-/* TODO - ë‹¤ì–‘í•œ ê°ì²´ ìƒì„±ì„ ìœ„í•œ í•¨ìˆ˜ë¥¼ ìƒì„±í•˜ì—¬ì•¼ í•¨.*/
+/* TODO - ´Ù¾çÇÑ °´Ã¼ »ı¼ºÀ» À§ÇÑ ÇÔ¼ö¸¦ »ı¼ºÇÏ¿©¾ß ÇÔ.*/
 /**/
 
 /**/
-/* Temporal 2D Geometryê°ì²´ì˜ ìƒì„±*/
+/* Temporal 2D Geometry°´Ã¼ÀÇ »ı¼º*/
 /**/
 
 /**/
-/* Temporal 3D Geometryê°ì²´ì˜ ìƒì„±*/
+/* Temporal 3D Geometry°´Ã¼ÀÇ »ı¼º*/
 /**/
 
 
@@ -129,24 +129,24 @@ ulsCreateGeomCollection2D( ulsHandle               * aHandle,
  *  Internal Interfaces
  *----------------------------------------------------------------*/
 
-/* Geometry Headerì˜ ì´ˆê¸°í™” */
+/* Geometry HeaderÀÇ ÃÊ±âÈ­ */
 ACI_RC
 ulsInitHeader( ulsHandle          * aHandle,
                stdGeometryHeader  * aObjectHeader );
 
-/* Geometry Typeì˜ ì„¤ì •*/
+/* Geometry TypeÀÇ ¼³Á¤*/
 ACI_RC
 ulsSetGeoType( ulsHandle          * aHandle,
                stdGeometryHeader  * aObjHeader,
                stdGeoTypes          aType );
 
-/* Geometry Typeì˜ íšë“*/
+/* Geometry TypeÀÇ È¹µæ*/
 ACI_RC
 ulsGetGeoType( ulsHandle          * aHandle,
                stdGeometryHeader  * aObjHeader,
                stdGeoTypes        * aType );
 
-/* ë‹¤ëª©ì  ë©€í‹°ê°ì²´ ìƒì„±í•¨ìˆ˜*/
+/* ´Ù¸ñÀû ¸ÖÆ¼°´Ã¼ »ı¼ºÇÔ¼ö*/
 ACSRETURN
 ulsCreateMultiGeometry( ulsHandle               * aHandle,
                         stdGeometryType         * aBuffer,
@@ -163,6 +163,11 @@ ACI_RC
 ulsRecalcMBR(  ulsHandle                * aHandle,
                stdGeometryType          * aObj,
                stdMBR                   * aMbr  );
+
+ACI_RC
+ulsGetSRID(  ulsHandle         * aHandle,
+             stdGeometryType   * aObj,
+             acp_sint32_t      * aSRID  );
 
 #endif /* _O_ULS_CREATE_OBJECT_H_ */
 

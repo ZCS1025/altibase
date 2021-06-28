@@ -106,7 +106,7 @@ public:
                                 SChar  *aStmtStr );
 
     /* BUG-37487 */
-    void            finalize(); /* <-- ë‚´ë¶€ì ìœ¼ë¡œ clean() í˜¸ì¶œ */
+    void            finalize(); /* <-- ³»ºÎÀûÀ¸·Î clean() È£Ãâ */
 
     /* BUG-37487 */
     void            clean();
@@ -176,8 +176,8 @@ public:
     /* PV: Get remote statement information for performance view */
     IDE_RC          getRemoteStmtInfo( dktRemoteStmtInfo    *aInfo );
 
-    /* Type converter : protocol operation ì„ í†µí•´ result set meta ë¥¼ 
-       ì–»ì€ í›„ì— type converter ë¥¼ ìƒì„±í•´ì•¼ í•œë‹¤. */
+    /* Type converter : protocol operation À» ÅëÇØ result set meta ¸¦ 
+       ¾òÀº ÈÄ¿¡ type converter ¸¦ »ý¼ºÇØ¾ß ÇÑ´Ù. */
     IDE_RC          createTypeConverter( dkpColumn  *aColMetaArr,
                                          UInt         aColCount );
 

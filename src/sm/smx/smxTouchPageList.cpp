@@ -16,11 +16,8 @@
  
 
 /***********************************************************************
- * $Id: smxTouchPageList.cpp 84923 2019-02-25 04:54:35Z djin $
+ * $Id: smxTouchPageList.cpp 88191 2020-07-27 03:08:54Z mason.lee $
  **********************************************************************/
-
-# include <idu.h>
-# include <sdb.h>
 
 # include <smxTrans.h>
 # include <smxTouchPageList.h>
@@ -35,11 +32,11 @@ UInt        smxTouchPageList::mTouchPageCntByNode;
 
 /***********************************************************************
  *
- * Description : íŠ¸ëœì­ì…˜ë“¤ê°„ì— ê³µìœ ìë£Œêµ¬ì¡° ì´ˆê¸°í™”
+ * Description : Æ®·£Àè¼Çµé°£¿¡ °øÀ¯ÀÚ·á±¸Á¶ ÃÊ±âÈ­
  *
- * íŠ¸ëœì­ì…˜ ê´€ë¦¬ì ì´ˆê¸°í™”ëŠ” PreProcess ë‹¨ê³„ì—ì„œ ì´ˆê¸°í™”ë˜ë©°, ì´ë•Œ Touch Page Listì˜
- * MemPool ë° í•´ì‰¬í…Œì´ë¸”ì„ ì´ˆê¸°í™”í•œë‹¤. ë˜í•œ, ë²„í¼í¬ê¸°ë¥¼ ê³ ë ¤í•˜ì—¬ Touch Page List
- * ì—ì„œ íŠ¸ëœì­ì…˜ë‹¹ ìµœëŒ€ Cacheí•  í˜ì´ì§€ ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤.
+ * Æ®·£Àè¼Ç °ü¸®ÀÚ ÃÊ±âÈ­´Â PreProcess ´Ü°è¿¡¼­ ÃÊ±âÈ­µÇ¸ç, ÀÌ¶§ Touch Page ListÀÇ
+ * MemPool ¹× ÇØ½¬Å×ÀÌºíÀ» ÃÊ±âÈ­ÇÑ´Ù. ¶ÇÇÑ, ¹öÆÛÅ©±â¸¦ °í·ÁÇÏ¿© Touch Page List
+ * ¿¡¼­ Æ®·£Àè¼Ç´ç ÃÖ´ë CacheÇÒ ÆäÀÌÁö °³¼ö¸¦ ±¸ÇÑ´Ù.
  *
  ***********************************************************************/
 IDE_RC smxTouchPageList::initializeStatic()
@@ -52,17 +49,17 @@ IDE_RC smxTouchPageList::initializeStatic()
                      ID_SIZEOF( smxTouchNode );
 
     /* BUG-46434
-       mempoolì—ì„œ IDU_MEMPOOL_TYPE_TIGHTë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•´ì„œëŠ”
-       size, align ê°’ì„ 2^n ê°’ìœ¼ë¡œ ì£¼ì–´ì•¼í•œë‹¤. 
-       2^n ê°’ì´ ë˜ë„ë¡ mTouchNodeSizeë¥¼ ìˆ˜ì •í•œë‹¤. */
+       mempool¿¡¼­ IDU_MEMPOOL_TYPE_TIGHT¸¦ »ç¿ëÇÏ±â À§ÇØ¼­´Â
+       size, align °ªÀ» 2^n °ªÀ¸·Î ÁÖ¾î¾ßÇÑ´Ù. 
+       2^n °ªÀÌ µÇµµ·Ï mTouchNodeSize¸¦ ¼öÁ¤ÇÑ´Ù. */
 
-    /* 1. mTouchNodeSize ë³´ë‹¤ ê°™ê±°ë‚˜ í° 2^n ê°’ êµ¬í•˜ê¸° */
+    /* 1. mTouchNodeSize º¸´Ù °°°Å³ª Å« 2^n °ª ±¸ÇÏ±â */
     sPowerOfTwo = smuUtility::getPowerofTwo( mTouchNodeSize );
 
-    /* 2. smxTouchInfoë¥¼ ë” ì¶”ê°€í• ìˆ˜ ìˆëŠ”ì§€ ê³„ì‚° */
+    /* 2. smxTouchInfo¸¦ ´õ Ãß°¡ÇÒ¼ö ÀÖ´ÂÁö °è»ê */
     mTouchPageCntByNode += ( ( sPowerOfTwo - mTouchNodeSize ) / ID_SIZEOF( smxTouchInfo ) );
 
-    /* 3. mTouchNodeSize ê°’ì„ ê°±ì‹ í•œë‹¤. */
+    /* 3. mTouchNodeSize °ªÀ» °»½ÅÇÑ´Ù. */
     mTouchNodeSize = sPowerOfTwo;
 
     IDE_TEST( mMemPool.initialize(
@@ -90,9 +87,9 @@ IDE_RC smxTouchPageList::initializeStatic()
 
 /***********************************************************************
  *
- * Description : íŠ¸ëœì­ì…˜ë“¤ê°„ì— ê³µìœ í•  ìë£Œêµ¬ì¡° í•´ì œ
+ * Description : Æ®·£Àè¼Çµé°£¿¡ °øÀ¯ÇÒ ÀÚ·á±¸Á¶ ÇØÁ¦
  *
- * MemPool ë° í•´ì‰¬í…Œì´ë¸”ì„ í•´ì œí•œë‹¤.
+ * MemPool ¹× ÇØ½¬Å×ÀÌºíÀ» ÇØÁ¦ÇÑ´Ù.
  *
  ***********************************************************************/
 IDE_RC smxTouchPageList::destroyStatic()
@@ -105,12 +102,12 @@ IDE_RC smxTouchPageList::destroyStatic()
 
 /***********************************************************************
  *
- * Description : íŠ¸ëœì­ì…˜ì˜ Touch Page ë¦¬ìŠ¤íŠ¸ ê°œì²´ ì´ˆê¸°í™”
+ * Description : Æ®·£Àè¼ÇÀÇ Touch Page ¸®½ºÆ® °³Ã¼ ÃÊ±âÈ­
  *
- * ì–‘ë°©í–¥ ë¦¬ìŠ¤íŠ¸ì¸ NodeListë¥¼ ì´ˆê¸°í™” ë° Hash ì´ˆê¸°í™”í•˜ë©°, Hash ìë£Œêµ¬ì¡°ëŠ” ì¤‘ë³µ
- * í˜ì´ì§€ ì •ë³´ë¥¼ ì œê±°í•˜ê¸° ìœ„í•´ì„œ ì‚¬ìš©í•œë‹¤.
+ * ¾ç¹æÇâ ¸®½ºÆ®ÀÎ NodeList¸¦ ÃÊ±âÈ­ ¹× Hash ÃÊ±âÈ­ÇÏ¸ç, Hash ÀÚ·á±¸Á¶´Â Áßº¹
+ * ÆäÀÌÁö Á¤º¸¸¦ Á¦°ÅÇÏ±â À§ÇØ¼­ »ç¿ëÇÑ´Ù.
  *
- * aTrans - [IN] Owner íŠ¸ëœì­ì…˜ í¬ì¸í„°
+ * aTrans - [IN] Owner Æ®·£Àè¼Ç Æ÷ÀÎÅÍ
  *
  ***********************************************************************/
 IDE_RC smxTouchPageList::initialize( smxTrans * aTrans )
@@ -124,7 +121,7 @@ IDE_RC smxTouchPageList::initialize( smxTrans * aTrans )
 
 /***********************************************************************
  *
- * Description : íŠ¸ëœì­ì…˜ì˜ Touch Page List í•´ì œ
+ * Description : Æ®·£Àè¼ÇÀÇ Touch Page List ÇØÁ¦
  *
  ***********************************************************************/
 IDE_RC smxTouchPageList::destroy()
@@ -134,13 +131,13 @@ IDE_RC smxTouchPageList::destroy()
 
 /***********************************************************************
  *
- * Description : íŠ¸ëœì­ì…˜ì˜ Touch Page List í•´ì œ
+ * Description : Æ®·£Àè¼ÇÀÇ Touch Page List ÇØÁ¦
  *
- * íŠ¸ëœì­ì…˜ ì™„ë£Œì‹œì— íŠ¸ëœì­ì…˜ì˜ Touch Page Listë¥¼ ëª¨ë‘ ë©”ëª¨ë¦¬ í•´ì œí•œë‹¤.
+ * Æ®·£Àè¼Ç ¿Ï·á½Ã¿¡ Æ®·£Àè¼ÇÀÇ Touch Page List¸¦ ¸ğµÎ ¸Ş¸ğ¸® ÇØÁ¦ÇÑ´Ù.
  *
  * (TASK-6950)
- * smxTouchPageList::runFastStamping() ì—ì„œ í• ë‹¹ëœ NODEë¥¼ ëª¨ë‘ freeí•˜ì§€ë§Œ,
- * í˜¹ì‹œë‚˜ free ì•ˆë ê²½ìš°ë¥¼ ëŒ€ë¹„í•´ NODE freeí•˜ëŠ” ì½”ë“œë¥¼ ë‚¨ê²¨ë‘”ë‹¤.
+ * smxTouchPageList::runFastStamping() ¿¡¼­ ÇÒ´çµÈ NODE¸¦ ¸ğµÎ freeÇÏÁö¸¸,
+ * È¤½Ã³ª free ¾ÈµÉ°æ¿ì¸¦ ´ëºñÇØ NODE freeÇÏ´Â ÄÚµå¸¦ ³²°ÜµĞ´Ù.
  *
  ***********************************************************************/
 IDE_RC smxTouchPageList::reset()
@@ -168,12 +165,12 @@ IDE_RC smxTouchPageList::reset()
 
 /***********************************************************************
  *
- * Description : íŠ¸ëœì­ì…˜ì˜ Touch Page Listì˜ ë…¸ë“œ ë©”ëª¨ë¦¬ í• ë‹¹
+ * Description : Æ®·£Àè¼ÇÀÇ Touch Page ListÀÇ ³ëµå ¸Ş¸ğ¸® ÇÒ´ç
  *
- * íŠ¸ëœì­ì…˜ì´ ê°±ì‹ í•œ ë°ì´íƒ€ í˜ì´ì§€ ì •ë³´ëŠ” í•˜ë‚˜ì˜ Touch Page ë…¸ë“œë§ˆë‹¤
- * TRANSACTION_TOUCH_PAGE_COUNT_BY_NODE_ í”„ë¡œí¼í‹°ë§Œí¼ë§Œ ì €ì¥í•  ìˆ˜ ìˆìœ¼ë©°
- * OverFlowê°€ ë°œìƒí•˜ë©´ ìƒˆë¡œìš´ Touch Page ë…¸ë“œë¥¼ ë©”ëª¨ë¦¬í• ë‹¹í•˜ì—¬ Touch Page List
- * ì— ì—°ê²°í•œë‹¤.
+ * Æ®·£Àè¼ÇÀÌ °»½ÅÇÑ µ¥ÀÌÅ¸ ÆäÀÌÁö Á¤º¸´Â ÇÏ³ªÀÇ Touch Page ³ëµå¸¶´Ù
+ * TRANSACTION_TOUCH_PAGE_COUNT_BY_NODE_ ÇÁ·ÎÆÛÆ¼¸¸Å­¸¸ ÀúÀåÇÒ ¼ö ÀÖÀ¸¸ç
+ * OverFlow°¡ ¹ß»ıÇÏ¸é »õ·Î¿î Touch Page ³ëµå¸¦ ¸Ş¸ğ¸®ÇÒ´çÇÏ¿© Touch Page List
+ * ¿¡ ¿¬°áÇÑ´Ù.
  *
  ***********************************************************************/
 IDE_RC smxTouchPageList::alloc()
@@ -209,11 +206,11 @@ IDE_RC smxTouchPageList::alloc()
 
 /***********************************************************************
  *
- * Description : íŠ¸ëœì­ì…˜ì˜ Touch Page Listì˜ ë…¸ë“œ ì¬ì‚¬ìš© (TASK-6950)
+ * Description : Æ®·£Àè¼ÇÀÇ Touch Page ListÀÇ ³ëµå Àç»ç¿ë (TASK-6950)
  *
- * Touch Page Listì— ë“±ë¡ëœ í˜ì´ì§€ ì •ë³´ ê°¯ìˆ˜ê°€
- * ìµœëŒ€ì¹˜(mMaxCachePageCnt)ì— ë„ë‹¬í•˜ë©´
- * ë”ì´ìƒ ë…¸ë“œë¥¼ í• ë‹¹í•˜ì§€ ì•Šê³  ê°€ì¥ ì˜¤ë˜ëœ ë…¸ë“œë¥¼ ì¬ì‚¬ìš©í•œë‹¤.
+ * Touch Page List¿¡ µî·ÏµÈ ÆäÀÌÁö Á¤º¸ °¹¼ö°¡
+ * ÃÖ´ëÄ¡(mMaxCachePageCnt)¿¡ µµ´ŞÇÏ¸é
+ * ´õÀÌ»ó ³ëµå¸¦ ÇÒ´çÇÏÁö ¾Ê°í °¡Àå ¿À·¡µÈ ³ëµå¸¦ Àç»ç¿ëÇÑ´Ù.
  *
  ***********************************************************************/
 void smxTouchPageList::reuse()
@@ -231,14 +228,14 @@ void smxTouchPageList::reuse()
 
 /***********************************************************************
  *
- * Description : í˜ì´ì§€ ì •ë³´ ì¶”ê°€
+ * Description : ÆäÀÌÁö Á¤º¸ Ãß°¡
  *
- * íŠ¸ëœì­ì…˜ì´ ê°±ì‹ í•œ ë°ì´íƒ€ í˜ì´ì§€ë¥¼ Touch Page ë…¸ë“œì— ì¶”ê°€í•œë‹¤.
- * ê°±ì‹ í•œ ë°ì´íƒ€ í˜ì´ì§€ ì •ë³´ëŠ” SpaceID, PageID, CTS ìˆœë²ˆì´ ì €ì¥ëœë‹¤.
+ * Æ®·£Àè¼ÇÀÌ °»½ÅÇÑ µ¥ÀÌÅ¸ ÆäÀÌÁö¸¦ Touch Page ³ëµå¿¡ Ãß°¡ÇÑ´Ù.
+ * °»½ÅÇÑ µ¥ÀÌÅ¸ ÆäÀÌÁö Á¤º¸´Â SpaceID, PageID, CTS ¼ø¹øÀÌ ÀúÀåµÈ´Ù.
  *
- * aSpaceID   - [IN] í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID
- * aPageID    - [IN] ë°ì´íƒ€í˜ì´ì§€ì˜ PID
- * aCTSlotIdx - [IN] ë°”ì¸ë”©í•œ CTS ë²ˆí˜¸
+ * aSpaceID   - [IN] Å×ÀÌºí½ºÆäÀÌ½º ID
+ * aPageID    - [IN] µ¥ÀÌÅ¸ÆäÀÌÁöÀÇ PID
+ * aCTSlotIdx - [IN] ¹ÙÀÎµùÇÑ CTS ¹øÈ£
  *
  ***********************************************************************/
 IDE_RC smxTouchPageList::add( scSpaceID     aSpaceID,
@@ -273,8 +270,8 @@ IDE_RC smxTouchPageList::add( scSpaceID     aSpaceID,
             }
             else
             {
-                /* ì €ì¥ëœ pageìˆ˜ê°€ ìƒí•œì— ë„ë‹¬í•˜ë©´,
-                   ê°€ì¥ ì˜¤ëœëœ nodeë¥¼ ì¬ì‚¬ìš©í•œë‹¤. */
+                /* ÀúÀåµÈ page¼ö°¡ »óÇÑ¿¡ µµ´ŞÇÏ¸é,
+                   °¡Àå ¿À·£µÈ node¸¦ Àç»ç¿ëÇÑ´Ù. */
                 reuse();
                 sCurNode = mNodeList;
             }
@@ -305,14 +302,14 @@ IDE_RC smxTouchPageList::add( scSpaceID     aSpaceID,
 
 /***********************************************************************
  *
- * Description : íŠ¸ëœì­ì…˜ Fast TimeStamping ìˆ˜í–‰
+ * Description : Æ®·£Àè¼Ç Fast TimeStamping ¼öÇà
  *
- * íŠ¸ëœì­ì…˜ ì»¤ë°‹ê³¼ì •ì—ì„œ ìˆ˜í–‰ë˜ëŠ” Fast Stampingì˜ ì¡°ê±´ì€ í˜ì´ì§€ê°€ ë²„í¼ìƒì— ì—†ê±°ë‚˜
- * ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ë‚˜ Flusherì— ì˜í•´ì„œ X-Latchê°€ íšë“ë˜ì–´ ìˆëŠ” ê²½ìš°ì—ëŠ” ì‹¤íŒ¨í•œë‹¤.
- * ì¦‰, ë²„í¼ìƒì—ì„œ Hitë˜ë©° X-Latchê°€ ë°”ë¡œ íšë“ë  ìˆ˜ ìˆëŠ” ì¸ë±ìŠ¤ í˜ì´ì§€ì™€ ë°ì´íƒ€
- * í˜ì´ì§€ì— ëŒ€í•´ì„œ êµ¬ë¶„ì§€ì–´ ê°ê° ìˆ˜í–‰í•œë‹¤.
+ * Æ®·£Àè¼Ç Ä¿¹Ô°úÁ¤¿¡¼­ ¼öÇàµÇ´Â Fast StampingÀÇ Á¶°ÇÀº ÆäÀÌÁö°¡ ¹öÆÛ»ó¿¡ ¾ø°Å³ª
+ * ´Ù¸¥ Æ®·£Àè¼ÇÀÌ³ª Flusher¿¡ ÀÇÇØ¼­ X-Latch°¡ È¹µæµÇ¾î ÀÖ´Â °æ¿ì¿¡´Â ½ÇÆĞÇÑ´Ù.
+ * Áï, ¹öÆÛ»ó¿¡¼­ HitµÇ¸ç X-Latch°¡ ¹Ù·Î È¹µæµÉ ¼ö ÀÖ´Â ÀÎµ¦½º ÆäÀÌÁö¿Í µ¥ÀÌÅ¸
+ * ÆäÀÌÁö¿¡ ´ëÇØ¼­ ±¸ºĞÁö¾î °¢°¢ ¼öÇàÇÑ´Ù.
  *
- *  aCommitSCN - [IN] íŠ¸ëœì­ì…˜ CommitSCN
+ *  aCommitSCN - [IN] Æ®·£Àè¼Ç CommitSCN
  *
  ***********************************************************************/
 IDE_RC smxTouchPageList::runFastStamping( smSCN * aCommitSCN )
@@ -332,11 +329,11 @@ IDE_RC smxTouchPageList::runFastStamping( smSCN * aCommitSCN )
 
     sCurNode = mNodeList;
 
-    /* (TASK-6950) ì•„ë˜ loop ì´í•´ë¥¼ ë•ê¸°ìœ„í•œ ì„¤ëª…
+    /* (TASK-6950) ¾Æ·¡ loop ÀÌÇØ¸¦ µ½±âÀ§ÇÑ ¼³¸í
 
-       - mNodeListì— í• ë‹¹ëœ NODEê°€ ì—†ë‹¤ë©´(=NULL), loopì— ë“¤ì–´ê°€ì§€ ì•ŠëŠ”ë‹¤.
-       - mNodeListê°€ NULLì´ ì•„ë‹Œê²½ìš°, sNxtNodeëŠ” ì´ˆê¸°ê°’ì´ NULLì´ë¯€ë¡œ í•­ìƒ loopì— ë“¤ì–´ê°„ë‹¤. 
-       - mNodeListì— í•˜ë‚˜ì˜ NODEê°€ í• ë‹¹ë˜ì–´ ìˆë‹¤ë©´ ê·¸ NODEì˜ mNxtNodeëŠ” ìê¸°ìì‹ ì„ ê°€ë¥´í‚¨ë‹¤. */
+       - mNodeList¿¡ ÇÒ´çµÈ NODE°¡ ¾ø´Ù¸é(=NULL), loop¿¡ µé¾î°¡Áö ¾Ê´Â´Ù.
+       - mNodeList°¡ NULLÀÌ ¾Æ´Ñ°æ¿ì, sNxtNode´Â ÃÊ±â°ªÀÌ NULLÀÌ¹Ç·Î Ç×»ó loop¿¡ µé¾î°£´Ù. 
+       - mNodeList¿¡ ÇÏ³ªÀÇ NODE°¡ ÇÒ´çµÇ¾î ÀÖ´Ù¸é ±× NODEÀÇ mNxtNode´Â ÀÚ±âÀÚ½ÅÀ» °¡¸£Å²´Ù. */
 
     while ( sNxtNode != mNodeList )
     {
@@ -346,10 +343,11 @@ IDE_RC smxTouchPageList::runFastStamping( smSCN * aCommitSCN )
             sTouchInfo = &(sCurNode->mArrTouchInfo[i]);
 
             IDE_TEST( sdbBufferMgr::fixPageWithoutIO(
-                         mStatistics,
-                         sTouchInfo->mSpaceID,
-                         sTouchInfo->mPageID,
-                         (UChar**)&sPage ) != IDE_SUCCESS );
+                                         mStatistics,
+                                         sTouchInfo->mSpaceID,
+                                         sTouchInfo->mPageID,
+                                         (UChar**)&sPage ) 
+                      != IDE_SUCCESS );
             sFixState = 1;
 
             if( sPage == NULL )
@@ -383,10 +381,10 @@ IDE_RC smxTouchPageList::runFastStamping( smSCN * aCommitSCN )
             }
             else
             {
-                /* BUG-29280 - non-auto commit D-Path Insert ê³¼ì •ì¤‘
-                 *             rollback ë°œìƒí•œ ê²½ìš° commit ì‹œ ì„œë²„ ì£½ëŠ” ë¬¸ì œ
+                /* BUG-29280 - non-auto commit D-Path Insert °úÁ¤Áß
+                 *             rollback ¹ß»ıÇÑ °æ¿ì commit ½Ã ¼­¹ö Á×´Â ¹®Á¦
                  *
-                 * DATA í˜ì´ì§€ê°€ ì•„ë‹ˆë©´ Index í˜ì´ì§€ì—¬ì•¼ í•œë‹¤. */
+                 * DATA ÆäÀÌÁö°¡ ¾Æ´Ï¸é Index ÆäÀÌÁö¿©¾ß ÇÑ´Ù. */
                 IDE_ASSERT( (sPage->mPageType == SDP_PAGE_INDEX_BTREE) ||
                             (sPage->mPageType == SDP_PAGE_INDEX_RTREE) );
 
@@ -410,7 +408,7 @@ IDE_RC smxTouchPageList::runFastStamping( smSCN * aCommitSCN )
 
         sNxtNode = sCurNode->mNxtNode;
 
-        /* FAST STAMPINGì„ ìˆ˜í–‰í•œ NODEëŠ” í•´ì œí•œë‹¤. (TASK-6950) */
+        /* FAST STAMPINGÀ» ¼öÇàÇÑ NODE´Â ÇØÁ¦ÇÑ´Ù. (TASK-6950) */
         IDE_TEST( mMemPool.memfree( (void *)sCurNode ) != IDE_SUCCESS );
 
         sCurNode = sNxtNode;

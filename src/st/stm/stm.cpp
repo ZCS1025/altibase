@@ -20,57 +20,20 @@
 
 #include <stm.h>
 
-const void * gStmColumns;
-const void * gStmUserColumns;
-const void * gStmSRS;
-const void * gStmProjCS;
-const void * gStmProjections;
-const void * gStmGeogCS;
-const void * gStmGeocCS;
-const void * gStmDatums;
-const void * gStmEllipsoids;
-const void * gStmPrimems;
-
-const void * gStmColumnsIndex       [STM_MAX_META_INDICES];
-const void * gStmUserColumnsIndex   [STM_MAX_META_INDICES];
-const void * gStmSRSIndex           [STM_MAX_META_INDICES];
-const void * gStmProjCSIndex        [STM_MAX_META_INDICES];
-const void * gStmProjectionsIndex   [STM_MAX_META_INDICES];
-const void * gStmGeogCSIndex        [STM_MAX_META_INDICES];
-const void * gStmGeocCSIndex        [STM_MAX_META_INDICES];
-const void * gStmDatumsIndex        [STM_MAX_META_INDICES];
-const void * gStmEllipsoidsIndex    [STM_MAX_META_INDICES];
-const void * gStmPrimemsIndex       [STM_MAX_META_INDICES];
-
+/* BUG-47809 USER_SRS meta handle */
+const void * gStmUserSrs;
+const void * gStmUserSrsIndex[STM_MAX_META_INDICES];
 
 IDE_RC
 stm::initializeGlobalVariables( void )
 {
     SInt              i;
 
-    gStmColumns     = NULL;
-    gStmUserColumns = NULL;
-    gStmSRS         = NULL;
-    gStmProjCS      = NULL;
-    gStmProjections = NULL;
-    gStmGeogCS      = NULL;
-    gStmGeocCS      = NULL;
-    gStmDatums      = NULL;
-    gStmEllipsoids  = NULL;
-    gStmPrimems     = NULL;
+    gStmUserSrs = NULL;
 
     for (i = 0; i < STM_MAX_META_INDICES; i ++)
     {
-        gStmColumnsIndex[i]     = NULL;
-        gStmUserColumnsIndex[i] = NULL;
-        gStmSRSIndex[i]         = NULL;
-        gStmProjCSIndex[i]      = NULL;
-        gStmProjectionsIndex[i] = NULL;
-        gStmGeogCSIndex[i]      = NULL;
-        gStmGeocCSIndex[i]      = NULL;
-        gStmDatumsIndex[i]      = NULL;
-        gStmEllipsoidsIndex[i]  = NULL;
-        gStmPrimemsIndex[i]     = NULL;
+        gStmUserSrsIndex[i] = NULL;
     }
 
     return IDE_SUCCESS;
@@ -82,83 +45,18 @@ stm::initMetaHandles( smiStatement * aSmiStmt )
     /**************************************************************
                         Get Table Handles
     **************************************************************/
+    /* BUG-47809 USER_SRS meta handle */
+    IDE_TEST( qcm::getMetaTable( STM_USER_SRS,
+                                 &gStmUserSrs,
+                                 aSmiStmt ) != IDE_SUCCESS );
     
-    IDE_TEST( qcm::getMetaTable( STM_STO_COLUMNS,
-                                 & gStmColumns,
-                                 aSmiStmt ) != IDE_SUCCESS );
-
-    IDE_TEST( qcm::getMetaTable( STM_STO_USER_COLUMNS,
-                                 & gStmUserColumns,
-                                 aSmiStmt ) != IDE_SUCCESS );
-
-    IDE_TEST( qcm::getMetaTable( STM_STO_SRS,
-                                 & gStmSRS,
-                                 aSmiStmt ) != IDE_SUCCESS );
-
-    IDE_TEST( qcm::getMetaTable( STM_STO_PROJCS,
-                                 & gStmProjCS,
-                                 aSmiStmt ) != IDE_SUCCESS );
-
-    IDE_TEST( qcm::getMetaTable( STM_STO_PROJECTIONS,
-                                 & gStmProjections,
-                                 aSmiStmt ) != IDE_SUCCESS );
-
-    IDE_TEST( qcm::getMetaTable( STM_STO_GEOGCS,
-                                 & gStmGeogCS,
-                                 aSmiStmt) != IDE_SUCCESS );
-
-    IDE_TEST( qcm::getMetaTable( STM_STO_GEOCCS,
-                                 & gStmGeocCS,
-                                 aSmiStmt ) != IDE_SUCCESS );
-
-    IDE_TEST( qcm::getMetaTable( STM_STO_DATUMS,
-                                 & gStmDatums,
-                                 aSmiStmt) != IDE_SUCCESS );
-
-    IDE_TEST( qcm::getMetaTable( STM_STO_ELLIPSOIDS,
-                                 & gStmEllipsoids,
-                                 aSmiStmt ) != IDE_SUCCESS );
-
-    IDE_TEST( qcm::getMetaTable( STM_STO_PRIMEMS,
-                                 & gStmPrimems,
-                                 aSmiStmt ) != IDE_SUCCESS );
-
     /**************************************************************
                         Get Index Handles
     **************************************************************/
+    /* BUG-47809 USER_SRS meta handle */
+    IDE_TEST( qcm::getMetaIndex( gStmUserSrsIndex,
+                            gStmUserSrs ) != IDE_SUCCESS );
 
-    /*
-    IDE_TEST( qcm::getMetaIndex( gStmColumnsIndex,
-                            gStmColumns ) != IDE_SUCCESS );
-
-    IDE_TEST( qcm::getMetaIndex( gStmUserColumnsIndex,
-                            gStmUserColumns ) != IDE_SUCCESS );
-
-    IDE_TEST( qcm::getMetaIndex( gStmSRSIndex,
-                            gStmSRS ) != IDE_SUCCESS );
-
-    IDE_TEST( qcm::getMetaIndex( gStmProjCSIndex,
-                            gStmProjCS ) != IDE_SUCCESS );
-
-    IDE_TEST( qcm::getMetaIndex( gStmProjectionsIndex,
-                            gStmProjections ) != IDE_SUCCESS );
-
-    IDE_TEST( qcm::getMetaIndex( gStmGeogCSIndex,
-                            gStmGeogCS ) != IDE_SUCCESS );
-
-    IDE_TEST( qcm::getMetaIndex( gStmGeocCSIndex,
-                            gStmGeocCS ) != IDE_SUCCESS );
-
-    IDE_TEST( qcm::getMetaIndex( gStmDatumsIndex,
-                            gStmDatums ) != IDE_SUCCESS );
-
-    IDE_TEST( qcm::getMetaIndex( gStmEllipsoidsIndex,
-                            gStmEllipsoids ) != IDE_SUCCESS);
-
-    IDE_TEST( qcm::getMetaIndex( gStmPrimemsIndex,
-                            gStmPrimems ) != IDE_SUCCESS );
-    */
-                            
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;

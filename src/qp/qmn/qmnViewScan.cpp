@@ -16,23 +16,23 @@
  
 
 /***********************************************************************
- * $Id: qmnViewScan.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmnViewScan.cpp 85333 2019-04-26 02:34:41Z et16 $
  *
  * Description :
  *     VSCN(View SCaN) Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ Materialized Viewì— ëŒ€í•œ
- *     Selectionì„ ìˆ˜í–‰í•˜ëŠ” Nodeì´ë‹¤.
+ *     °ü°èÇü ¸ðµ¨¿¡¼­ Materialized View¿¡ ´ëÇÑ
+ *     SelectionÀ» ¼öÇàÇÏ´Â NodeÀÌ´Ù.
  *
- *     í•˜ìœ„ VMTR ë…¸ë“œì˜ ì €ìž¥ ë§¤ì²´ì— ë”°ë¼ ë‹¤ë¥¸ ë™ìž‘ì„ í•˜ê²Œ ë˜ë©°,
- *     Memory Temp Tableì¼ ê²½ìš° Memory Sort Temp Table ê°ì²´ì˜
- *        interfaceë¥¼ ì§ì ‘ ì‚¬ìš©í•˜ì—¬ ì ‘ê·¼í•˜ë©°,
- *     Disk Temp Tableì¼ ê²½ìš° table handleê³¼ index handleì„ ì–»ì–´
- *        ë³„ë„ì˜ Cursorë¥¼ í†µí•´ Sequetial Accessí•œë‹¤.
+ *     ÇÏÀ§ VMTR ³ëµåÀÇ ÀúÀå ¸ÅÃ¼¿¡ µû¶ó ´Ù¸¥ µ¿ÀÛÀ» ÇÏ°Ô µÇ¸ç,
+ *     Memory Temp TableÀÏ °æ¿ì Memory Sort Temp Table °´Ã¼ÀÇ
+ *        interface¸¦ Á÷Á¢ »ç¿ëÇÏ¿© Á¢±ÙÇÏ¸ç,
+ *     Disk Temp TableÀÏ °æ¿ì table handle°ú index handleÀ» ¾ò¾î
+ *        º°µµÀÇ Cursor¸¦ ÅëÇØ Sequetial AccessÇÑ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -49,7 +49,7 @@ qmnVSCN::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    VSCN ë…¸ë“œì˜ ì´ˆê¸°í™”
+ *    VSCN ³ëµåÀÇ ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -74,7 +74,7 @@ qmnVSCN::init( qcTemplate * aTemplate,
     else
     {
         // PROJ-2415 Grouping Sets Clause
-        // VMTRì˜ Dependency ì²˜ë¦¬ì¶”ê°€ ì— ë”°ë¥¸ ë³€ê²½
+        // VMTRÀÇ Dependency Ã³¸®Ãß°¡ ¿¡ µû¸¥ º¯°æ
         IDE_TEST( initForChild( aTemplate, sCodePlan, sDataPlan ) != IDE_SUCCESS );
     }
          
@@ -105,10 +105,10 @@ qmnVSCN::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    VSCNì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
+ *    VSCNÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *    ì§€ì •ëœ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *    ÁöÁ¤µÈ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼öÇàÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -132,7 +132,7 @@ qmnVSCN::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ì €ìž¥ ë§¤ì²´ì— ë”°ë¼ null rowë¥¼ settingí•œë‹¤.
+ *    ÀúÀå ¸ÅÃ¼¿¡ µû¶ó null row¸¦ settingÇÑ´Ù.
  *
  * Implementation :
  *
@@ -161,12 +161,12 @@ qmnVSCN::padNull( qcTemplate * aTemplate,
          == QMN_PLAN_STORAGE_MEMORY )
     {
         //----------------------------------
-        // Memory Temp Tableì¸ ê²½ìš°
+        // Memory Temp TableÀÎ °æ¿ì
         //----------------------------------
 
         sDataPlan->plan.myTuple->row = sDataPlan->nullRow;
 
-        // PROJ-2362 memory temp ì €ìž¥ íš¨ìœ¨ì„± ê°œì„ 
+        // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
         sColumn = sDataPlan->plan.myTuple->columns;
         for ( i = 0; i < sDataPlan->plan.myTuple->columnCount; i++, sColumn++ )
         {
@@ -184,7 +184,7 @@ qmnVSCN::padNull( qcTemplate * aTemplate,
     else
     {
         //----------------------------------
-        // Disk Temp Tableì¸ ê²½ìš°
+        // Disk Temp TableÀÎ °æ¿ì
         //----------------------------------
 
         idlOS::memcpy( sDataPlan->plan.myTuple->row,
@@ -195,7 +195,7 @@ qmnVSCN::padNull( qcTemplate * aTemplate,
                        ID_SIZEOF(scGRID) );
     }
 
-    // Null Paddingë„ recordê°€ ë³€í•œ ê²ƒìž„
+    // Null Paddingµµ record°¡ º¯ÇÑ °ÍÀÓ
     sDataPlan->plan.myTuple->modify++;
 
     return IDE_SUCCESS;
@@ -217,7 +217,7 @@ qmnVSCN::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *   VSCN ë…¸ë“œì˜ ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *   VSCN ³ëµåÀÇ ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  * Implementation :
  *
@@ -242,7 +242,7 @@ qmnVSCN::printPlan( qcTemplate   * aTemplate,
     }
 
     //-------------------------------
-    // Viewì˜ ì´ë¦„ ë° alias name ì¶œë ¥
+    // ViewÀÇ ÀÌ¸§ ¹× alias name Ãâ·Â
     //-------------------------------
 
     iduVarStringAppend( aString,
@@ -286,7 +286,7 @@ qmnVSCN::printPlan( qcTemplate   * aTemplate,
                         sCodePlan->aliasName.size != QC_POS_EMPTY_SIZE &&
                         sCodePlan->aliasName.name != sCodePlan->viewName.name )
         {
-            // View ì´ë¦„ ì •ë³´ì™€ Alias ì´ë¦„ ì •ë³´ê°€ ë‹¤ë¥¼ ê²½ìš°
+            // View ÀÌ¸§ Á¤º¸¿Í Alias ÀÌ¸§ Á¤º¸°¡ ´Ù¸¦ °æ¿ì
             // (alias name)
             iduVarStringAppend( aString,
                                 " " );
@@ -308,7 +308,7 @@ qmnVSCN::printPlan( qcTemplate   * aTemplate,
         }
         else
         {
-            // Alias ì´ë¦„ ì •ë³´ê°€ ì—†ê±°ë‚˜ View ì´ë¦„ ì •ë³´ì™€ ë™ì¼í•œ ê²½ìš°
+            // Alias ÀÌ¸§ Á¤º¸°¡ ¾ø°Å³ª View ÀÌ¸§ Á¤º¸¿Í µ¿ÀÏÇÑ °æ¿ì
             // Nothing To Do
         }
 
@@ -321,7 +321,7 @@ qmnVSCN::printPlan( qcTemplate   * aTemplate,
     }
 
     //-------------------------------
-    // Access ì •ë³´ì˜ ì¶œë ¥
+    // Access Á¤º¸ÀÇ Ãâ·Â
     //-------------------------------
 
     if ( aMode == QMN_DISPLAY_ALL )
@@ -346,13 +346,13 @@ qmnVSCN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Cost ì¶œë ¥
+    // Cost Ãâ·Â
     //----------------------------
     qmn::printCost( aString,
                     sCodePlan->plan.qmgAllCost );
 
     //----------------------------
-    // Operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
+    // Operatorº° °á°ú Á¤º¸ Ãâ·Â
     //----------------------------
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
     {
@@ -364,7 +364,7 @@ qmnVSCN::printPlan( qcTemplate   * aTemplate,
     }
 
     //-------------------------------
-    // Child Planì˜ ì¶œë ¥
+    // Child PlanÀÇ Ãâ·Â
     //-------------------------------
 
     IDE_TEST( aPlan->left->printPlan( aTemplate,
@@ -390,7 +390,7 @@ qmnVSCN::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨.
+ *    ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ¸é ¾ÈµÊ.
  *
  * Implementation :
  *
@@ -414,7 +414,7 @@ qmnVSCN::doItFirstMem( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Memory Temp Table ì‚¬ìš© ì‹œ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
+ *    Memory Temp Table »ç¿ë ½Ã ÃÖÃÊ ¼öÇà ÇÔ¼ö
  *
  * Implementation :
  *
@@ -440,7 +440,7 @@ qmnVSCN::doItFirstMem( qcTemplate * aTemplate,
     {
         /* Nothing to do */
     }
-    // ìµœì´ˆ Record ìœ„ì¹˜ë¡œë¶€í„° íšë“
+    // ÃÖÃÊ Record À§Ä¡·ÎºÎÅÍ È¹µæ
     sDataPlan->recordPos = 0;
 
     sDataPlan->doIt = qmnVSCN::doItNextMem;
@@ -463,7 +463,7 @@ qmnVSCN::doItNextMem( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Memory Temp Table ì‚¬ìš© ì‹œ ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
+ *    Memory Temp Table »ç¿ë ½Ã ´ÙÀ½ ¼öÇà ÇÔ¼ö
  *
  * Implementation :
  *
@@ -518,7 +518,7 @@ qmnVSCN::doItFirstDisk( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Disk Temp Table ì‚¬ìš© ì‹œ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
+ *    Disk Temp Table »ç¿ë ½Ã ÃÖÃÊ ¼öÇà ÇÔ¼ö
  *
  * Implementation :
  *
@@ -556,7 +556,7 @@ qmnVSCN::doItNextDisk( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Disk Temp Table ì‚¬ìš© ì‹œ ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
+ *    Disk Temp Table »ç¿ë ½Ã ´ÙÀ½ ¼öÇà ÇÔ¼ö
  *
  * Implementation :
  *
@@ -572,19 +572,19 @@ qmnVSCN::doItNextDisk( qcTemplate * aTemplate,
     void * sOrgRow;
     void * sSearchRow;
 
-    // ì €ìž¥ ê³µê°„ ë³´ì¡´ì„ ìœ„í•œ Pointer ê¸°ë¡
+    // ÀúÀå °ø°£ º¸Á¸À» À§ÇÑ Pointer ±â·Ï
     sOrgRow = sSearchRow = sDataPlan->plan.myTuple->row;
 
-    // Cursorë¥¼ ì´ìš©í•˜ì—¬ Recordë¥¼ ì–»ìŒ
-    IDE_TEST( smiTempTable::fetch( sDataPlan->tempCursor,
-                                   (UChar**) & sSearchRow,
-                                   & sDataPlan->plan.myTuple->rid )
+    // Cursor¸¦ ÀÌ¿ëÇÏ¿© Record¸¦ ¾òÀ½
+    IDE_TEST( smiSortTempTable::fetch( sDataPlan->tempCursor,
+                                       (UChar**) & sSearchRow,
+                                       & sDataPlan->plan.myTuple->rid )
               != IDE_SUCCESS );
 
     if ( sSearchRow != NULL )
     {
         //------------------------------
-        // ë°ì´í„° ì¡´ìž¬í•˜ëŠ” ê²½ìš°
+        // µ¥ÀÌÅÍ Á¸ÀçÇÏ´Â °æ¿ì
         //------------------------------
 
         sDataPlan->plan.myTuple->row = sSearchRow;
@@ -596,7 +596,7 @@ qmnVSCN::doItNextDisk( qcTemplate * aTemplate,
     else
     {
         //------------------------------
-        // ë°ì´í„°ê°€ ì—†ëŠ” ê²½ìš°
+        // µ¥ÀÌÅÍ°¡ ¾ø´Â °æ¿ì
         //------------------------------
 
         sDataPlan->plan.myTuple->row = sOrgRow;
@@ -624,8 +624,8 @@ qmnVSCN::firstInit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    VMTR Childë¥¼ ìˆ˜í–‰í•œ í›„,
- *    VSCN nodeì˜ Data ì˜ì—­ì˜ ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•¨.
+ *    VMTR Child¸¦ ¼öÇàÇÑ ÈÄ,
+ *    VSCN nodeÀÇ Data ¿µ¿ªÀÇ ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇàÇÔ.
  *
  * Implementation :
  *
@@ -635,25 +635,25 @@ qmnVSCN::firstInit( qcTemplate * aTemplate,
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
     //---------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------
 
     IDE_DASSERT( aCodePlan->plan.left->type == QMN_VMTR );
 
     //---------------------------------
-    // Child ìˆ˜í–‰
+    // Child ¼öÇà
     //---------------------------------
 
     IDE_TEST( execChild( aTemplate, aCodePlan )
               != IDE_SUCCESS );
 
     //---------------------------------
-    // Data Memberì˜ ì´ˆê¸°í™”
+    // Data MemberÀÇ ÃÊ±âÈ­
     //---------------------------------
 
-    // Tuple ì˜ ì´ˆê¸°í™”
-    // Tupleì„ êµ¬ì„±í•˜ëŠ” columnì˜ offsetì„ ì¡°ì •í•˜ê³ ,
-    // Rowë¥¼ ìœ„í•œ sizeê³„ì‚° ë° ê³µê°„ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
+    // Tuple ÀÇ ÃÊ±âÈ­
+    // TupleÀ» ±¸¼ºÇÏ´Â columnÀÇ offsetÀ» Á¶Á¤ÇÏ°í,
+    // Row¸¦ À§ÇÑ size°è»ê ¹× °ø°£À» ÇÒ´ç¹Þ´Â´Ù.
     aDataPlan->plan.myTuple =
         & aTemplate->tmplate.rows[aCodePlan->tupleRowID];
 
@@ -665,18 +665,18 @@ qmnVSCN::firstInit( qcTemplate * aTemplate,
                                aCodePlan->tupleRowID )
               != IDE_SUCCESS );
 
-    // Row Size íšë“
+    // Row Size È¹µæ
     IDE_TEST( qmnVMTR::getNullRowSize( aTemplate,
                                        aCodePlan->plan.left,
                                        & aDataPlan->nullRowSize )
               != IDE_SUCCESS );
     
-    // Null Row ì´ˆê¸°í™”
+    // Null Row ÃÊ±âÈ­
     IDE_TEST( getNullRow( aTemplate, aCodePlan, aDataPlan )
               != IDE_SUCCESS );
 
     //---------------------------------
-    // Temp Table ì „ìš© ì •ë³´ì˜ ì´ˆê¸°í™”
+    // Temp Table Àü¿ë Á¤º¸ÀÇ ÃÊ±âÈ­
     //---------------------------------
 
     IDE_TEST( qmnVMTR::getCursorInfo( aTemplate,
@@ -690,7 +690,7 @@ qmnVSCN::firstInit( qcTemplate * aTemplate,
     if ( (aCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK)
          == QMN_PLAN_STORAGE_MEMORY )
     {
-        // ì í•©ì„± ê²€ì‚¬
+        // ÀûÇÕ¼º °Ë»ç
         IDE_DASSERT( aDataPlan->tableHandle == NULL );
         IDE_DASSERT( aDataPlan->indexHandle == NULL );
         IDE_DASSERT( aDataPlan->memSortMgr != NULL );
@@ -701,19 +701,19 @@ qmnVSCN::firstInit( qcTemplate * aTemplate,
     }
     else
     {
-        // ì í•©ì„± ê²€ì‚¬
+        // ÀûÇÕ¼º °Ë»ç
         IDE_DASSERT( aDataPlan->tableHandle != NULL );
         IDE_DASSERT( aDataPlan->memSortMgr == NULL );
 
-        // Temp Cursor ì´ˆê¸°í™”
+        // Temp Cursor ÃÊ±âÈ­
         aDataPlan->tempCursor = NULL;
 
-        // PROJ-1597 Temp record size ì œì•½ ì œê±°
+        // PROJ-1597 Temp record size Á¦¾à Á¦°Å
         aDataPlan->plan.myTuple->tableHandle = aDataPlan->tableHandle;
     }
 
     //---------------------------------
-    // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
+    // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
     //---------------------------------
 
     *aDataPlan->flag &= ~QMND_VSCN_INIT_DONE_MASK;
@@ -735,31 +735,31 @@ IDE_RC qmnVSCN::initForChild( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    PROJ-2415 Grouping Sets Clauseë¥¼ í†µí•´
- *    VMTRì´ Depedencyì— ë”°ë¼ ìž¬ìˆ˜í–‰ ë¨ìœ¼ë¡œ, ê¸°ì¡´ firstInitì—ì„œ í•œë²ˆë§Œ ìˆ˜í–‰í•˜ë˜
- *    VMTR Childë¥¼ ì´í›„ initì—ì„œë„ ìˆ˜í–‰í•˜ë„ë¡ ë³€ê²½.
+ *    PROJ-2415 Grouping Sets Clause¸¦ ÅëÇØ
+ *    VMTRÀÌ Depedency¿¡ µû¶ó Àç¼öÇà µÊÀ¸·Î, ±âÁ¸ firstInit¿¡¼­ ÇÑ¹ø¸¸ ¼öÇàÇÏ´ø
+ *    VMTR Child¸¦ ÀÌÈÄ init¿¡¼­µµ ¼öÇàÇÏµµ·Ï º¯°æ.
  *    
- *    VMTR Childë¥¼ ìˆ˜í–‰í•œ í›„,
- *    VSCN nodeì˜ Data ì˜ì—­ì˜ ë©¤ë²„ì— ëŒ€í•œ ìž¬ì„¤ì •ì„ ìˆ˜í–‰í•¨.
+ *    VMTR Child¸¦ ¼öÇàÇÑ ÈÄ,
+ *    VSCN nodeÀÇ Data ¿µ¿ªÀÇ ¸â¹ö¿¡ ´ëÇÑ Àç¼³Á¤À» ¼öÇàÇÔ.
  *
  * Implementation :
  *
  ***********************************************************************/
     //---------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------
 
     IDE_DASSERT( aCodePlan->plan.left->type == QMN_VMTR );
     
     //---------------------------------
-    // Child ìˆ˜í–‰
+    // Child ¼öÇà
     //---------------------------------
 
     IDE_TEST( execChild( aTemplate, aCodePlan )
               != IDE_SUCCESS );
 
     //---------------------------------
-    // Temp Table ì „ìš© ì •ë³´ì˜ ì´ˆê¸°í™”
+    // Temp Table Àü¿ë Á¤º¸ÀÇ ÃÊ±âÈ­
     //---------------------------------
 
     IDE_TEST( qmnVMTR::getCursorInfo( aTemplate,
@@ -773,7 +773,7 @@ IDE_RC qmnVSCN::initForChild( qcTemplate * aTemplate,
     if ( (aCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK)
          == QMN_PLAN_STORAGE_MEMORY )
     {
-        // ì í•©ì„± ê²€ì‚¬
+        // ÀûÇÕ¼º °Ë»ç
         IDE_DASSERT( aDataPlan->tableHandle == NULL );
         IDE_DASSERT( aDataPlan->indexHandle == NULL );
         IDE_DASSERT( aDataPlan->memSortMgr != NULL );
@@ -784,14 +784,14 @@ IDE_RC qmnVSCN::initForChild( qcTemplate * aTemplate,
     }
     else
     {
-        // ì í•©ì„± ê²€ì‚¬
+        // ÀûÇÕ¼º °Ë»ç
         IDE_DASSERT( aDataPlan->tableHandle != NULL );
         IDE_DASSERT( aDataPlan->memSortMgr == NULL );
 
-        // Temp Cursor ì´ˆê¸°í™”
+        // Temp Cursor ÃÊ±âÈ­
         aDataPlan->tempCursor = NULL;
 
-        // PROJ-1597 Temp record size ì œì•½ ì œê±°
+        // PROJ-1597 Temp record size Á¦¾à Á¦°Å
         aDataPlan->plan.myTuple->tableHandle = aDataPlan->tableHandle;
     }
 
@@ -810,12 +810,12 @@ qmnVSCN::refineOffset( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Tupleì„ êµ¬ì„±í•˜ëŠ” Columnì˜ offset ìž¬ì¡°ì •
+ *    TupleÀ» ±¸¼ºÇÏ´Â ColumnÀÇ offset ÀçÁ¶Á¤
  *
  * Implementation :
- *    qmc::refineOffsets()ì„ ì‚¬ìš©í•˜ì§€ ì•ŠìŒ.
- *    VSCN ë…¸ë“œëŠ” qmdMtrNodeê°€ ì—†ìœ¼ë©°, VMTRì˜ ëª¨ë“  ë‚´ìš©ì„ ë³µì‚¬í•˜ê¸°ë§Œ
- *    í•œë‹¤.  ë”°ë¼ì„œ, ë‚´ë¶€ì ìœ¼ë¡œ offsetì„ refineí•œë‹¤.
+ *    qmc::refineOffsets()À» »ç¿ëÇÏÁö ¾ÊÀ½.
+ *    VSCN ³ëµå´Â qmdMtrNode°¡ ¾øÀ¸¸ç, VMTRÀÇ ¸ðµç ³»¿ëÀ» º¹»çÇÏ±â¸¸
+ *    ÇÑ´Ù.  µû¶ó¼­, ³»ºÎÀûÀ¸·Î offsetÀ» refineÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -832,8 +832,8 @@ qmnVSCN::refineOffset( qcTemplate * aTemplate,
                                  & sVMTRTuple )
               != IDE_SUCCESS );
 
-    // PROJ-2362 memory temp ì €ìž¥ íš¨ìœ¨ì„± ê°œì„ 
-    // VMTRì˜ columnsë¥¼ ë³µì‚¬í•œë‹¤.
+    // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
+    // VMTRÀÇ columns¸¦ º¹»çÇÑ´Ù.
     IDE_DASSERT( aDataPlan->plan.myTuple->columnCount == sVMTRTuple->columnCount );
     
     idlOS::memcpy( (void*)aDataPlan->plan.myTuple->columns,
@@ -856,8 +856,8 @@ qmnVSCN::execChild( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Child Planì„ VMTRì„ ì´ˆê¸°í™”í•œë‹¤.
- *    ì´ ë•Œ, VMTRì€ ëª¨ë“  Dataë¥¼ ì €ìž¥í•˜ê²Œ ëœë‹¤.
+ *    Child PlanÀ» VMTRÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ *    ÀÌ ¶§, VMTRÀº ¸ðµç Data¸¦ ÀúÀåÇÏ°Ô µÈ´Ù.
  *
  * Implementation :
  *
@@ -867,10 +867,10 @@ qmnVSCN::execChild( qcTemplate * aTemplate,
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
     //---------------------------------
-    // Child VMTRì„ ìˆ˜í–‰
+    // Child VMTRÀ» ¼öÇà
     //---------------------------------
 
-    // VMTRì€ ì´ˆê¸°í™” ìžì²´ë¡œ ì €ìž¥ì´ ëœë‹¤.
+    // VMTRÀº ÃÊ±âÈ­ ÀÚÃ¼·Î ÀúÀåÀÌ µÈ´Ù.
     IDE_TEST( aCodePlan->plan.left->init( aTemplate,
                                           aCodePlan->plan.left )
               != IDE_SUCCESS);
@@ -892,14 +892,14 @@ qmnVSCN::getNullRow( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     VMTRë¡œë¶€í„° Null Rowë¥¼ íšë“í•œë‹¤.
+ *     VMTR·ÎºÎÅÍ Null Row¸¦ È¹µæÇÑ´Ù.
  *
  * Implementation :
  *
  ***********************************************************************/
     iduMemory * sMemory;
 
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     IDE_DASSERT( aDataPlan->nullRowSize > 0 );
 
     sMemory = aTemplate->stmt->qmxMem;
@@ -907,7 +907,7 @@ qmnVSCN::getNullRow( qcTemplate * aTemplate,
     if ( ( aCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK )
          == QMN_PLAN_STORAGE_DISK )
     {
-        // Null Rowë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
+        // Null Row¸¦ À§ÇÑ °ø°£ ÇÒ´ç
         IDU_FIT_POINT( "qmnVSCN::getNullRow::cralloc::nullRow",
                         idERR_ABORT_InsufficientMemory );
 
@@ -915,7 +915,7 @@ qmnVSCN::getNullRow( qcTemplate * aTemplate,
                                     & aDataPlan->nullRow )
                   != IDE_SUCCESS);
 
-        // Null Row íšë“
+        // Null Row È¹µæ
         IDE_TEST( qmnVMTR::getNullRowDisk( aTemplate,
                                            aCodePlan->plan.left,
                                            aDataPlan->nullRow,
@@ -924,7 +924,7 @@ qmnVSCN::getNullRow( qcTemplate * aTemplate,
     }
     else
     {
-        // Null Row íšë“
+        // Null Row È¹µæ
         IDE_TEST( qmnVMTR::getNullRowMemory( aTemplate,
                                              aCodePlan->plan.left,
                                              &aDataPlan->nullRow )
@@ -945,8 +945,8 @@ qmnVSCN::openCursor( qmndVSCN   * aDataPlan )
 /***********************************************************************
  *
  * Description :
- *     Disk Temp Table ì‚¬ìš© ì‹œ í˜¸ì¶œë˜ë©°,
- *     í•´ë‹¹ ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ Cursorë¥¼ ì—°ë‹¤.
+ *     Disk Temp Table »ç¿ë ½Ã È£ÃâµÇ¸ç,
+ *     ÇØ´ç Á¤º¸¸¦ ÀÌ¿ëÇÏ¿© Cursor¸¦ ¿¬´Ù.
  *
  * Implementation :
  *
@@ -958,35 +958,33 @@ qmnVSCN::openCursor( qmndVSCN   * aDataPlan )
     if( aDataPlan->tempCursor == NULL )
     {
         //-----------------------------------------
-        // 1. Cursorë¥¼ ìµœì´ˆ ì—¬ëŠ” ê²½ìš°
+        // 1. Cursor¸¦ ÃÖÃÊ ¿©´Â °æ¿ì
         //-----------------------------------------
-        IDE_TEST( smiTempTable::openCursor( 
+        IDE_TEST( smiSortTempTable::openCursor( 
                 aDataPlan->tableHandle,
                 SMI_TCFLAG_FORWARD | 
                 SMI_TCFLAG_ORDEREDSCAN |
                 SMI_TCFLAG_IGNOREHIT,
-                NULL,                         // Update Columnì •ë³´
+                NULL,                         // Update ColumnÁ¤º¸
                 smiGetDefaultKeyRange(),      // Key Range
                 smiGetDefaultKeyRange(),      // Key Filter
                 smiGetDefaultFilter(),        // Filter
-                0,                            /* HashValue */
                 &aDataPlan->tempCursor )
             != IDE_SUCCESS );
     }
     else
     {
         //-----------------------------------------
-        // 2. Cursorê°€ ì—´ë ¤ ìžˆëŠ” ê²½ìš°
+        // 2. Cursor°¡ ¿­·Á ÀÖ´Â °æ¿ì
         //-----------------------------------------
-        IDE_TEST( smiTempTable::restartCursor( 
+        IDE_TEST( smiSortTempTable::restartCursor( 
                 aDataPlan->tempCursor,
                 SMI_TCFLAG_FORWARD | 
                 SMI_TCFLAG_ORDEREDSCAN |
                 SMI_TCFLAG_IGNOREHIT,
                 smiGetDefaultKeyRange(),      // Key Range
                 smiGetDefaultKeyRange(),      // Key Filter
-                smiGetDefaultFilter(),        // Filter
-                0 )                           /* HashValue */
+                smiGetDefaultFilter() )         // Filter
             != IDE_SUCCESS );
 
     }
@@ -1008,10 +1006,10 @@ qmnVSCN::setTupleSet( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     VSCN tuple ë³µì›
+ *     VSCN tuple º¹¿ø
  *
  * Implementation :
- *     VMTR tupleì„ ë³µì›í•œë’¤ VSCNì„ ë³µì›(copy)í•œë‹¤.
+ *     VMTR tupleÀ» º¹¿øÇÑµÚ VSCNÀ» º¹¿ø(copy)ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1024,8 +1022,8 @@ qmnVSCN::setTupleSet( qcTemplate * aTemplate,
     mtcColumn  * sVMTRColumn;
     UInt         i;
     
-    // PROJ-2362 memory temp ì €ìž¥ íš¨ìœ¨ì„± ê°œì„ 
-    // VSCN tuple ë³µì›
+    // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
+    // VSCN tuple º¹¿ø
     if ( aDataPlan->memSortRecord != NULL )
     {
         for ( sNode = aDataPlan->memSortRecord;
@@ -1086,7 +1084,7 @@ IDE_RC qmnVSCN::touchDependency( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description : PROJ-2582 recursive with
- *    dependencyë¥¼ ë³€ê²½ì‹œí‚¨ë‹¤.
+ *    dependency¸¦ º¯°æ½ÃÅ²´Ù.
  *
  * Implementation :
  *

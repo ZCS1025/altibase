@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsvProcStmts.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsvProcStmts.h 87042 2020-03-26 08:29:59Z khkwak $
  **********************************************************************/
 
 #ifndef _Q_QSV_PROC_STMTS_H_
@@ -178,7 +178,7 @@ public:
         qsRelatedObjects ** aObject);
 
     // PROJ-1446
-    // synonymìœ¼ë¡œ ì°¸ì¡°ë˜ëŠ” PSMì˜ ê¸°ë¡
+    // synonymÀ¸·Î ÂüÁ¶µÇ´Â PSMÀÇ ±â·Ï
     static IDE_RC makeProcSynonymList(
         qcStatement           * aStatement,
         struct qcmSynonymInfo * aSynonymInfo,
@@ -221,7 +221,7 @@ public:
 
     /* PROJ-2197 PSM Renewal
      * BUG-36988 Query Trans
-     * PSM ë³€ìˆ˜ë¥¼ qsUsingParamì— ì¶”ê°€í•œë‹¤. */
+     * PSM º¯¼ö¸¦ qsUsingParam¿¡ Ãß°¡ÇÑ´Ù. */
     static IDE_RC makeUsingParam( qsVariables  * aVariable,
                                   qtcNode      * aQtcColumn,
                                   mtcCallBack  * aCallBack);
@@ -288,13 +288,13 @@ private:
         qtcNode     * aBound);
 
     // PROJ-1359 Trigger
-    // Trigger Action Bodyë¡œ ì í•©í•œ Statementì¸ì§€ ê²€ì‚¬í•˜ê³ 
-    // DML Statementì˜ ê²½ìš° Modify Table ëª©ë¡ì„ ì¶”ê°€í•œë‹¤.
+    // Trigger Action Body·Î ÀûÇÕÇÑ StatementÀÎÁö °Ë»çÇÏ°í
+    // DML StatementÀÇ °æ¿ì Modify Table ¸ñ·ÏÀ» Ãß°¡ÇÑ´Ù.
     static IDE_RC checkTriggerActionBody( qcStatement * aStatement,
                                           qsProcStmts * aProcStmts );
 
-    // PROJ-1335 GOTO ì§€ì›
-    // labelì„ parent stmtì— ì—°ê²°í•œë‹¤.
+    // PROJ-1335 GOTO Áö¿ø
+    // labelÀ» parent stmt¿¡ ¿¬°áÇÑ´Ù.
     static IDE_RC setLabelToParentStmt( qcStatement * aStatement,
                                         qsProcStmts * aParentStmt,
                                         qsLabels    * aLabel );
@@ -304,9 +304,12 @@ private:
                                qsProcStmtSql   * aSql,
                                iduVarMemString * aSqlBuffer,
                                qsUsingParam   ** aUsingParam,
-                               qcNamePosition ** aBindVars,
-                               SInt            * aBindCount,
-                               SInt            * aOrgSqlTextOffset );
+                               SInt            * aOrgSqlTextOffset,
+                               qcNamePosition ** aInBindVars,
+                               SInt            * aInBindCount,
+                               SInt            * aOutBindCount,
+                               SInt            * aRecIndex,
+                               SInt            * aRecFieldCount );
 
     // BUG-37501
     static IDE_RC connectChildLabel( qcStatement * aStatement,

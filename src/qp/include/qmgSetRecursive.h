@@ -19,7 +19,7 @@
  * $Id: qmgSetRecursive.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     UNION ALL RECRUSVIE Graphë¥¼ ìœ„í•œ ì •ì˜
+ *     UNION ALL RECRUSVIE Graph¸¦ À§ÇÑ Á¤ÀÇ
  *
  **********************************************************************/
 
@@ -31,29 +31,29 @@
 #include <qmsParseTree.h>
 
 //---------------------------------------------------
-// Set Graphì˜ Define ìƒìˆ˜
+// Set GraphÀÇ Define »ó¼ö
 //---------------------------------------------------
 
 //---------------------------------------------------
-// RECURSIVE VIEW Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+// RECURSIVE VIEW Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
 //---------------------------------------------------
 
 typedef struct qmgRUNION
 {
-    qmgGraph       graph;       // ê³µí†µ Graph ì •ë³´
+    qmgGraph       graph;       // °øÅë Graph Á¤º¸
 
-    qmgGraph     * recursiveViewGraph;   // right queryì˜ í•˜ìœ„ recursive view graph
+    qmgGraph     * recursiveViewGraph;   // right queryÀÇ ÇÏÀ§ recursive view graph
     
 } qmgRUNION;
 
 //---------------------------------------------------
-// RECURSIVE VIEW ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+// RECURSIVE VIEW ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
 //---------------------------------------------------
 
 class qmgSetRecursive
 {
 public:
-    // Graph ì˜ ì´ˆê¸°í™”
+    // Graph ÀÇ ÃÊ±âÈ­
     static IDE_RC  init( qcStatement * aStatement,
                          qmsQuerySet * aQuerySet,
                          qmgGraph    * aLeftGraph,
@@ -61,11 +61,11 @@ public:
                          qmgGraph    * aRecursiveViewGraph,
                          qmgGraph   ** aGraph );
 
-    // Graphì˜ ìµœì í™” ìˆ˜í–‰
+    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
     static IDE_RC  optimize( qcStatement * aStatement,
                              qmgGraph    * aGraph );
 
-    // Graphì˜ Plan Tree ìƒì„±
+    // GraphÀÇ Plan Tree »ı¼º
     static IDE_RC  makePlan( qcStatement    * aStatement,
                              const qmgGraph * aParent,
                              qmgGraph       * aGraph );
@@ -73,7 +73,7 @@ public:
     static IDE_RC  makeUnionAllRecursive( qcStatement * aStatement,
                                           qmgRUNION   * aMyGraph );
 
-    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
+    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
     static IDE_RC  printGraph( qcStatement  * aStatement,
                                qmgGraph     * aGraph,
                                ULong          aDepth,

@@ -30,7 +30,7 @@
 #include <idCore.h>
 #include <idtContainer.h>
 
-// Altibaseë‚´ì˜ ê° ëª¨ë“ˆë“¤ì˜ í†µê³„ì •ë³´ë¥¼ ì €ìž¥
+// Altibase³»ÀÇ °¢ ¸ðµâµéÀÇ Åë°èÁ¤º¸¸¦ ÀúÀå
 iduMemClientInfo iduMemMgr::mClientInfo[IDU_MEM_UPPERLIMIT] =
 {
     IDU_MEM_CLIENTINFO_STRUCT(IDU_MEM_MMA, "MM", "Main_Module_DirectAttach"),
@@ -76,6 +76,7 @@ iduMemClientInfo iduMemMgr::mClientInfo[IDU_MEM_UPPERLIMIT] =
     IDU_MEM_CLIENTINFO_STRUCT(IDU_MEM_QMBC, "QP", "Query_Conversion"),
     IDU_MEM_CLIENTINFO_STRUCT(IDU_MEM_QXC, "QP", "Query_Execute_Cache"),
     IDU_MEM_CLIENTINFO_STRUCT(IDU_MEM_QRC, "QP", "Query_Result_Cache"),
+    IDU_MEM_CLIENTINFO_STRUCT(IDU_MEM_QIX, "QP", "Query_PSM_Internal_Execute"),
     IDU_MEM_CLIENTINFO_STRUCT(IDU_MEM_MT, "MT", "Mathematics"),
     IDU_MEM_CLIENTINFO_STRUCT(IDU_MEM_SM_SDB, "SM", "Storage_Disk_Buffer"),
     IDU_MEM_CLIENTINFO_STRUCT(IDU_MEM_SM_SDC, "SM", "Storage_Disk_Collection"),
@@ -146,6 +147,7 @@ iduMemClientInfo iduMemMgr::mClientInfo[IDU_MEM_UPPERLIMIT] =
     IDU_MEM_CLIENTINFO_STRUCT(IDU_MEM_RCC, "RC", "Remote_Call_Client"),
     IDU_MEM_CLIENTINFO_STRUCT(IDU_MEM_QCR, "QP", "Query_Common_Remote_Call"),
     IDU_MEM_CLIENTINFO_STRUCT(IDU_MEM_SD_STMT, "SD", "Shard_Statement"),
+    IDU_MEM_CLIENTINFO_STRUCT(IDU_MEM_SDI, "SD", "Shard_Interface"),
     IDU_MEM_CLIENTINFO_STRUCT(IDU_MEM_OTHER, "--", "IDU_MEM_OTHER"),
     IDU_MEM_CLIENTINFO_STRUCT(IDU_MEM_MAPPED, "--", "MMAP"),
     IDU_MEM_CLIENTINFO_STRUCT(IDU_MEM_RAW, "--", "SYSTEM"),
@@ -153,7 +155,8 @@ iduMemClientInfo iduMemMgr::mClientInfo[IDU_MEM_UPPERLIMIT] =
     IDU_MEM_CLIENTINFO_STRUCT(IDU_MEM_RESERVED, "--", "Free Block"),
     IDU_MEM_CLIENTINFO_STRUCT(IDU_MAX_CLIENT_COUNT, "--", "IDU_MEM_MAX"),
     IDU_MEM_CLIENTINFO_STRUCT(IDU_MEM_ID_CHUNK, "ID", "Memory_Manager_Chunk"),
-    IDU_MEM_CLIENTINFO_STRUCT(IDU_MEM_SENTINEL, "ID", "Sentinel")
+    IDU_MEM_CLIENTINFO_STRUCT(IDU_MEM_SENTINEL, "ID", "Sentinel"),
+    IDU_MEM_CLIENTINFO_STRUCT(IDU_MEM_ID_MULTI_ERROR_MANAGER, "ID", "Multi_Error_Manager")
 
 };
 
@@ -246,7 +249,7 @@ void iduMemMgr::server_statupdate(iduMemoryClientIndex  aIndex,
  
         //===================================================================
         // To Fix PR-13959
-        // í˜„ìž¬ê¹Œì§€ ì‚¬ìš©í•œ ìµœëŒ€ ë©”ëª¨ë¦¬ ì‚¬ìš©ëŸ‰
+        // ÇöÀç±îÁö »ç¿ëÇÑ ÃÖ´ë ¸Þ¸ð¸® »ç¿ë·®
         //===================================================================
         sMaxTotalSize = sClientInfo[aIndex].mMaxTotSize;
         if ( sCurTotalSize > sMaxTotalSize )

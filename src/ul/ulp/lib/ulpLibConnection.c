@@ -22,9 +22,9 @@
 ulpLibConnMgr gUlpConnMgr;
 
 /* extern for ulpLibInterface.cpp */
-/* connection hash tableÏù¥ Ï¥àÍ∏∞Ìôî ÎêòÏóàÎäîÏßÄÏóêÎåÄÌïú flag*/
+/* connection hash table¿Ã √ ±‚»≠ µ«æ˙¥¬¡ˆø°¥Î«— flag*/
 extern acp_bool_t        gUlpLibDoInitProc;
-/* Ï¥àÍ∏∞Ìôî ÏΩîÎìú ÌïúÎ≤àÌò∏Ï∏®Ïö∏ Î≥¥Ïû•ÌïòÍ∏∞ ÏúÑÌïú latch*/
+/* √ ±‚»≠ ƒ⁄µÂ «—π¯»£√˙øÔ ∫∏¿Â«œ±‚ ¿ß«— latch*/
 extern acp_thr_rwlock_t  gUlpLibLatch4Init;
 
 /* initilizer */
@@ -99,7 +99,7 @@ void ulpLibConFinalize( void )
     ACI_TEST_RAISE( acpThrRwlockDestroy( & gUlpLibLatch4Init )
                     != ACP_RC_SUCCESS, ERR_LATCH_DESTROY )
 
-    /* Fix BUG-27644 Apre Ïùò ulpConnMgr::ulpInitialzie, finalizeÍ∞Ä ÏûòÎ™ªÎê®. */
+    /* Fix BUG-27644 Apre ¿« ulpConnMgr::ulpInitialzie, finalize∞° ¿ﬂ∏¯µ . */
     ACE_ASSERT(ulnFinalize() == ACI_SUCCESS);
 
     return;
@@ -126,21 +126,21 @@ ACI_RC ulpLibConInitConnMgr( void )
 /***********************************************************************
  *
  * Description :
- *    Ï≤òÏùå ulpDoEmsqlÏù¥ Ìò∏Ï∂úÎêòÎ©¥ Ïù¥Ìï®ÏàòÍ∞Ä Ìò∏Ï∂úÎêòÏñ¥ connection hash tableÍ≥º
- *    XAÎ•º Ï¥àÍ∏∞Ìôî ÏãúÏºúÏ§ÄÎã§.
+ *    √≥¿Ω ulpDoEmsql¿Ã »£√‚µ«∏È ¿Ã«‘ºˆ∞° »£√‚µ«æÓ connection hash table∞˙
+ *    XA∏¶ √ ±‚»≠ Ω√ƒ—¡ÿ¥Ÿ.
  * Implementation :
  *
  ***********************************************************************/
     ACI_RC sRes = ACI_FAILURE;
 
-    /* fix BUG-25597 APREÏóêÏÑú AIXÌîåÎû´Ìèº ÌÑ±ÏãúÎèÑ Ïó∞ÎèôÎ¨∏Ï†úÎ•º Ìï¥Í≤∞Ìï¥Ïïº Ìï©ÎãàÎã§.
-    ulConnMgr Ï¥àÍ∏∞ÌôîÏ†ÑÏóê Ïù¥ÎØ∏ ÏÉùÏÑ±Îêú CLI Ïùò XA ConnectionÎì§ÏùÑ
-    LoadingÌïúÎã§. */
+    /* fix BUG-25597 APREø°º≠ AIX«√∑ß∆˚ ≈ŒΩ√µµ ø¨µøπÆ¡¶∏¶ «ÿ∞·«ÿæﬂ «’¥œ¥Ÿ.
+    ulConnMgr √ ±‚»≠¿¸ø° ¿ÃπÃ ª˝º∫µ» CLI ¿« XA ConnectionµÈ¿ª
+    Loading«—¥Ÿ. */
     ULP_SERIAL_BEGIN(sRes = ulpLibConInitialize());
     ULP_SERIAL_EXEC(gUlpLibDoInitProc = ACP_FALSE,1);
-    /* ulpConnMgrÍ∞Ä Ï¥àÍ∏∞ÌôîÍ∞Ä ÏôÑÎ£åÎêúÌõÑ
-    CLIÏùò XA ConnectionÎì§Ïùò HDBC, HENVÎ•º APREÏùò
-    Connection listÏóê Îì±Î°ùÌïúÎã§ */
+    /* ulpConnMgr∞° √ ±‚»≠∞° øœ∑·µ»»ƒ
+    CLI¿« XA ConnectionµÈ¿« HDBC, HENV∏¶ APRE¿«
+    Connection listø° µÓ∑œ«—¥Ÿ */
 
     ULP_SERIAL_END(ulnLoadOpenedXaConnections2APRE());
     return sRes;
@@ -220,6 +220,15 @@ ulpLibConnNode* ulpLibConNewNode( acp_char_t *aConnName , acp_bool_t aValidInit 
         sConnNode->mCursorHashT.mTable[sI].mList = NULL;
     }
 
+    /* TASK-7218 Handling Multiple Errors */
+    ACI_TEST_RAISE( acpMemCalloc( (void**)&(sConnNode->mMultiErrorMgr.mErrorStack),
+                                  MULTI_ERROR_INIT_SIZE,
+                                  ACI_SIZEOF(ulpMultiErrorStack) )
+                    != ACP_RC_SUCCESS, ERR_MEMORY_ALLOC );
+
+    sConnNode->mMultiErrorMgr.mStackSize = MULTI_ERROR_INIT_SIZE;
+    sConnNode->mMultiErrorMgr.mErrorNum = 0;
+
     return sConnNode;
 
     ACI_EXCEPTION (ERR_MEMORY_ALLOC);
@@ -279,6 +288,9 @@ void ulpLibConInitDefaultConn( void )
         sDefaultConn->mConnOpt1 = NULL;
         sDefaultConn->mConnOpt2 = NULL;
         sDefaultConn->mIsXa     = ACP_FALSE;
+
+        /* TASK-7218 Handling Multiple Errors */
+        ulpLibInitMultiErrorMgr( &(sDefaultConn->mMultiErrorMgr) );
     }
     else
     {
@@ -286,7 +298,7 @@ void ulpLibConInitDefaultConn( void )
     }
 }
 
-/* default connection Í∞ùÏ≤¥Î•º ÏñªÏñ¥Ïò®Îã§ */
+/* default connection ∞¥√º∏¶ æÚæÓø¬¥Ÿ */
 ulpLibConnNode *ulpLibConGetDefaultConn()
 {
     return gUlpConnMgr.mConnHashTab.mTable[0];
@@ -298,7 +310,7 @@ ulpLibConnNode *ulpLibConLookupConn( acp_char_t* aConName )
 /***********************************************************************
  *
  * Description :
- *    connection Ïù¥Î¶ÑÏùÑ Í∞ÄÏßÄÍ≥† Ìï¥Îãπ connectionÍ∞ùÏ≤¥Î•º Ï∞æÎäîÎã§
+ *    connection ¿Ã∏ß¿ª ∞°¡ˆ∞Ì «ÿ¥Á connection∞¥√º∏¶ √£¥¬¥Ÿ
  * Implementation :
  *
  ***********************************************************************/
@@ -387,7 +399,7 @@ ulpLibConnNode *ulpLibConAddConn( ulpLibConnNode *aConnNode )
 /***********************************************************************
  *
  * Description :
- *    Ìï¥Îãπ connection Í∞ùÏ≤¥Î•º Ï∂îÍ∞ÄÌïúÎã§.
+ *    «ÿ¥Á connection ∞¥√º∏¶ √ﬂ∞°«—¥Ÿ.
  * Implementation :
  *
  ***********************************************************************/
@@ -425,7 +437,7 @@ ulpLibConnNode *ulpLibConAddConn( ulpLibConnNode *aConnNode )
     ACI_TEST( sConnNode != NULL );
 
     /* link */
-    /* list Ï†úÏùº ÏïûÏóêÎß§Îã¥.*/
+    /* list ¡¶¿œ æ’ø°∏≈¥„.*/
     aConnNode->mNext = gUlpConnMgr.mConnHashTab.mTable[ sI ];
     gUlpConnMgr.mConnHashTab.mTable[ sI ] = aConnNode;
 
@@ -480,7 +492,7 @@ ACI_RC ulpLibConDelConn( acp_char_t* aConName )
 /***********************************************************************
  *
  * Description :
- *    Ï£ºÏñ¥ÏßÑ Ïù¥Î¶ÑÏùò connectionÏùÑ Ï†úÍ±∞ÌïúÎã§
+ *    ¡÷æÓ¡¯ ¿Ã∏ß¿« connection¿ª ¡¶∞≈«—¥Ÿ
  * Implementation :
  *
  ***********************************************************************/
@@ -524,9 +536,9 @@ ACI_RC ulpLibConDelConn( acp_char_t* aConName )
     {
         sConnNodeP->mNext = sConnNode->mNext;
     }
-    /* BUG-28791 : multi-thread ÏÉÅÏóêÏÑú connectionÏù¥ ÎπÑÏ†ïÏÉÅÏ†ÅÏúºÎ°ú Ï£ΩÎäî Î¨∏Ï†ú. */
+    /* BUG-28791 : multi-thread ªÛø°º≠ connection¿Ã ∫Ò¡§ªÛ¿˚¿∏∑Œ ¡◊¥¬ πÆ¡¶. */
     else
-    {   /* sConnNodePÍ∞Ä nullÏù∏Í≤ΩÏö∞Îäî listÏùò Ï†úÏùº Ï≤òÏùåÏùº Í≤ΩÏö∞Ïù¥Îã§.*/
+    {   /* sConnNodeP∞° null¿Œ∞ÊøÏ¥¬ list¿« ¡¶¿œ √≥¿Ω¿œ ∞ÊøÏ¿Ã¥Ÿ.*/
         gUlpConnMgr.mConnHashTab.mTable[ sIndex ] = sConnNode->mNext;
     }
 
@@ -541,7 +553,7 @@ ACI_RC ulpLibConDelConn( acp_char_t* aConName )
         sIsLatched = ACP_FALSE;
     }
 
-    /* Î©îÎ™®Î¶¨ Ìï¥Ï†ú.*/
+    /* ∏ﬁ∏∏Æ «ÿ¡¶.*/
     ulpLibConFreeConnNode( sConnNode );
 
     return ACI_SUCCESS;
@@ -584,8 +596,8 @@ void ulpLibConFreeConnNode( ulpLibConnNode *aConnNode )
 /***********************************************************************
  *
  * Description :
- *    Ï£ºÏñ¥ÏßÑ connection nodeÏùò ÏûêÎ£åÍµ¨Ï°∞Îì§ÏùÑ Î™®Îëê Ìï¥Ï†úÌïúÎã§.
- *    stmt. hash node Ìï¥Ï†ú -> latch Ìï¥Ï†ú -> connection node Ìï¥Ï†ú
+ *    ¡÷æÓ¡¯ connection node¿« ¿⁄∑·±∏¡∂µÈ¿ª ∏µŒ «ÿ¡¶«—¥Ÿ.
+ *    stmt. hash node «ÿ¡¶ -> latch «ÿ¡¶ -> connection node «ÿ¡¶
  * Implementation :
  *
  ***********************************************************************/
@@ -628,6 +640,14 @@ void ulpLibConFreeConnNode( ulpLibConnNode *aConnNode )
             != ACP_RC_SUCCESS, ERR_LATCH_DESTROY );
     }
 
+    /* TASK-7218 Handling Multiple Errors
+     * thread local ∫Øºˆ gMultiErrorMgr∞° ªË¡¶«œ∑¡¥¬ ConnNode¿« mMultiErrorMgr∂Û∏È gMultiErrorMgr ¿ª NULL∑Œ πŸ≤„¡‡æﬂ «‘ */
+    if ( &(aConnNode->mMultiErrorMgr) == ulpLibGetMultiErrorMgr() )
+    {
+        ulpLibSetMultiErrorMgr(NULL);
+    }
+    acpMemFree(aConnNode->mMultiErrorMgr.mErrorStack);
+
     /* FREE CONNECTION NODE */
     acpMemFree(aConnNode);
 
@@ -656,7 +676,7 @@ void ulpLibConDelAllConn( void )
 /***********************************************************************
  *
  * Description :
- *    hash tableÏùò Î™®Îì† ConnNodeÎì§ÏùÑ Ï†úÍ±∞ÌïúÎã§.
+ *    hash table¿« ∏µÁ ConnNodeµÈ¿ª ¡¶∞≈«—¥Ÿ.
  * Implementation :
  *
  ***********************************************************************/
@@ -674,13 +694,13 @@ void ulpLibConDelAllConn( void )
             if (sConnNode->mNext != NULL)
             {
                 sConnNodeN = sConnNode->mNext;
-                /* ConnNode ÏûêÎ£åÍµ¨Ï°∞ Ìï¥Ï†ú.*/
+                /* ConnNode ¿⁄∑·±∏¡∂ «ÿ¡¶.*/
                 ulpLibConFreeConnNode( sConnNode );
                 sConnNode = sConnNodeN;
             }
             else
             {
-                /* ConnNode ÏûêÎ£åÍµ¨Ï°∞ Ìï¥Ï†ú.*/
+                /* ConnNode ¿⁄∑·±∏¡∂ «ÿ¡¶.*/
                 ulpLibConFreeConnNode( sConnNode );
                 sConnNode = NULL;
             }

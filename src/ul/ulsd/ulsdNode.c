@@ -32,6 +32,7 @@ void ulsdSetNodeInfo( ulsdNodeInfo * aShardNodeInfo,
                       acp_char_t   * aAlternateServerIP,
                       acp_uint16_t   aAlternatePortNo )
 {
+    aShardNodeInfo->mSMN    = 0;
     aShardNodeInfo->mNodeId = aNodeId;
 
     acpMemSet( aShardNodeInfo->mNodeName,
@@ -60,109 +61,6 @@ void ulsdSetNodeInfo( ulsdNodeInfo * aShardNodeInfo,
     aShardNodeInfo->mAlternatePortNo = aAlternatePortNo;
 
     return;
-}
-
-ACI_RC ulsdApplyNodesInfo( ulnFnContext  * aFnContext,
-                           ulsdNodeInfo ** aNodeInfo,
-                           acp_uint16_t    aNodeCount,
-                           acp_uint64_t    aShardPin,
-                           acp_uint64_t    aShardMetaNumber,
-                           acp_uint8_t     aIsTestEnable )
-{
-    ulnDbc        * sMetaDbc        = ulnFnContextGetDbc( aFnContext );
-    ulsdDbc       * sShard          = sMetaDbc->mShardDbcCxt.mShardDbc;
-    ulsdNodeInfo  * sRemoveNodeInfo = NULL;
-    acp_uint16_t    i               = 0;
-    acp_uint16_t    j               = 0;
-
-    if ( ulnDbcGetShardMetaNumber( sMetaDbc ) < aShardMetaNumber )
-    {
-        if ( aIsTestEnable == 0 )
-        {
-            sShard->mIsTestEnable = ACP_FALSE;
-        }
-        else
-        {
-            sShard->mIsTestEnable = ACP_TRUE;
-        }
-
-        ulnDbcSetShardPin( sMetaDbc, aShardPin );
-        ulnDbcSetShardMetaNumber( sMetaDbc, aShardMetaNumber );
-
-        if ( sShard->mNodeInfo != NULL )
-        {
-            /* Ex) Node ID 1, 3 ì œê±° & Node ID 4, 5 ì¶”ê°€
-             *  ê¸°ì¡´ Node ID : ( 1, 2, 3 )
-             *  ì‹ ê·œ Node ID :    ( 2,    4, 5 )
-             */
-
-            /* Node ì œê±° */
-            for ( i = 0, j = 0; i < sShard->mNodeCount; i++ )
-            {
-                if ( ( j < aNodeCount ) &&
-                     ( sShard->mNodeInfo[i]->mNodeId == aNodeInfo[j]->mNodeId ) )
-                {
-                    j++;
-                }
-                else
-                {
-                    sRemoveNodeInfo = sShard->mNodeInfo[i];
-                    ulsdRemoveNode( sMetaDbc,
-                                    sRemoveNodeInfo );
-                    acpMemFree( (void *)sRemoveNodeInfo );
-                    i--;
-                }
-            }
-
-            /* Node ì¶”ê°€ */
-            for ( ; j < aNodeCount; j++ )
-            {
-                ACI_TEST( ulsdAddNode( aFnContext,
-                                       sMetaDbc,
-                                       aNodeInfo[j] )
-                          != SQL_SUCCESS );
-                aNodeInfo[j] = NULL;
-            }
-
-            ACE_DASSERT( sShard->mNodeCount == aNodeCount );
-        }
-        else
-        {
-            sShard->mNodeCount = aNodeCount;
-            sShard->mNodeInfo  = aNodeInfo;
-        }
-    }
-    else
-    {
-        /* Nothing to do */
-    }
-
-    if ( sShard->mNodeInfo != aNodeInfo )
-    {
-        for ( i = 0; i < aNodeCount; i++ )
-        {
-            if ( aNodeInfo[i] != NULL )
-            {
-                acpMemFree( (void *)aNodeInfo[i] );
-            }
-            else
-            {
-                /* Nothing to do */
-            }
-        }
-
-        acpMemFree( (void *)aNodeInfo );
-    }
-    else
-    {
-        /* Nothing to do */
-    }
-
-    return ACI_SUCCESS;
-
-    ACI_EXCEPTION_END;
-
-    return ACI_FAILURE;
 }
 
 SQLRETURN ulsdNodeInfoFree(ulsdNodeInfo *aShardNodeInfo)
@@ -292,7 +190,7 @@ SQLRETURN ulsdGetRangeIndexFromHash(ulnStmt        *aMetaStmt,
         {
             sHashMax = aMetaStmt->mShardStmtCxt.mShardRangeInfo[i].mShardSubRange.mHashMax;
 
-            /* BUG-45462 mShardRangeì˜ ê°’ìœ¼ë¡œ new groupì„ íŒë‹¨í•œë‹¤. */
+            /* BUG-45462 mShardRangeÀÇ °ªÀ¸·Î new groupÀ» ÆÇ´ÜÇÑ´Ù. */
             if ( i == 0 )
             {
                 sNewPriorGroup = ACP_TRUE;
@@ -338,7 +236,7 @@ SQLRETURN ulsdGetRangeIndexFromHash(ulnStmt        *aMetaStmt,
 
     if ( sRangeIndexCount == *aRangeIndexCount )
     {
-        /* default nodeê°€ ìžˆë‹¤ë©´ ì„¤ì •í•œë‹¤ */
+        /* default node°¡ ÀÖ´Ù¸é ¼³Á¤ÇÑ´Ù */
         ACI_TEST_RAISE(aMetaStmt->mShardStmtCxt.mShardDefaultNodeID == ACP_UINT32_MAX,
                        LABEL_NO_NODE_FOUNDED);
 
@@ -379,24 +277,26 @@ SQLRETURN ulsdGetRangeIndexFromHash(ulnStmt        *aMetaStmt,
 SQLRETURN ulsdGetRangeIndexFromClone(ulnStmt         *aMetaStmt,
                                      acp_uint16_t    *aRangeIndex)
 {
-    acp_uint16_t    sRangeIndex;
-    acp_uint16_t    i;
+    ulsdDbcContext  * sDbcCtx        = &aMetaStmt->mParentDbc->mShardDbcCxt;
+    ulsdStmtContext * sStmtCtx       = &aMetaStmt->mShardStmtCxt;
+    acp_bool_t        sIsFound       = ACP_FALSE;
+    acp_uint32_t      sSeed;
+    acp_uint32_t      sTouchNode;
+    acp_uint16_t      sRangeIndex;
+    acp_uint16_t      i;
 
-    acp_uint32_t    sTouchNode;
-    acp_bool_t      sIsFound = ACP_FALSE;
-
-    acp_uint32_t     sSeed;
-
-    if ( aMetaStmt->mParentDbc->mShardDbcCxt.mShardIsNodeTransactionBegin == ACP_TRUE )
+    if ( ( sDbcCtx->mShardIsNodeTransactionBegin == ACP_TRUE ) &&
+         ( sDbcCtx->mShardOnTransactionNodeIndex < sDbcCtx->mShardDbc->mNodeCount ) )
     {
-        // Touch ëœ ë…¸ë“œê°€ ìžˆë‹¤.
-        sTouchNode = aMetaStmt->mParentDbc->mShardDbcCxt.mShardDbc->mNodeInfo[aMetaStmt->mParentDbc->mShardDbcCxt.mShardOnTransactionNodeIndex ]->mNodeId;
+        // Touch µÈ ³ëµå°¡ ÀÖ´Ù.
+        sTouchNode = sDbcCtx->mShardDbc->mNodeInfo
+            [ sDbcCtx->mShardOnTransactionNodeIndex ]->mNodeId;
 
-        for ( i = 0; i < aMetaStmt->mShardStmtCxt.mShardRangeInfoCnt; i++ )
+        for ( i = 0; i < sStmtCtx->mShardRangeInfoCnt; i++ )
         {
-            if ( sTouchNode == aMetaStmt->mShardStmtCxt.mShardRangeInfo[i].mShardNodeID )
+            if ( sTouchNode == sStmtCtx->mShardRangeInfo[i].mShardNodeID )
             {
-                // Touch ëœ ë…¸ë“œê°€ ìˆ˜í–‰ ê°€ëŠ¥í•œ ë…¸ë“œëª©ë¡ì— ìžˆë‹¤.
+                // Touch µÈ ³ëµå°¡ ¼öÇà °¡´ÉÇÑ ³ëµå¸ñ·Ï¿¡ ÀÖ´Ù.
                 sRangeIndex = i;
                 sIsFound = ACP_TRUE;
 
@@ -410,7 +310,7 @@ SQLRETURN ulsdGetRangeIndexFromClone(ulnStmt         *aMetaStmt,
     }
     else
     {
-        // Touch ëœ ë…¸ë“œê°€ ì—†ë‹¤.
+        // Touch µÈ ³ëµå°¡ ¾ø´Ù.
         /* Nothing to do. */
     }
 
@@ -418,7 +318,7 @@ SQLRETURN ulsdGetRangeIndexFromClone(ulnStmt         *aMetaStmt,
     {
         sSeed = acpRandSeedAuto();
 
-        sRangeIndex = ( acpRand(&sSeed) % aMetaStmt->mShardStmtCxt.mShardRangeInfoCnt );
+        sRangeIndex = ( acpRand(&sSeed) % sStmtCtx->mShardRangeInfoCnt );
     }
     else
     {
@@ -469,7 +369,7 @@ SQLRETURN ulsdGetRangeIndexFromRange(ulnStmt        *aMetaStmt,
     {
         for ( i = 0; i < aMetaStmt->mShardStmtCxt.mShardRangeInfoCnt; i++ )
         {
-            /* mtdModuleì˜ compareë¡œ ë¹„êµí•œë‹¤. */
+            /* mtdModuleÀÇ compare·Î ºñ±³ÇÑ´Ù. */
             sRangeValue1.column = NULL;
             sRangeValue1.value  = aMetaStmt->mShardStmtCxt.mShardRangeInfo[i].mShardRange.mMax;
             sRangeValue1.flag   = MTD_OFFSET_USELESS;
@@ -526,7 +426,7 @@ SQLRETURN ulsdGetRangeIndexFromRange(ulnStmt        *aMetaStmt,
 
         for ( i = 0; i < aMetaStmt->mShardStmtCxt.mShardRangeInfoCnt; i++ )
         {
-            /* BUG-45462 mShardRangeì˜ ê°’ìœ¼ë¡œ new groupì„ íŒë‹¨í•œë‹¤. */
+            /* BUG-45462 mShardRangeÀÇ °ªÀ¸·Î new groupÀ» ÆÇ´ÜÇÑ´Ù. */
             if ( i == 0 )
             {
                 sNewPriorGroup = ACP_TRUE;
@@ -552,7 +452,7 @@ SQLRETURN ulsdGetRangeIndexFromRange(ulnStmt        *aMetaStmt,
                 }
             }
 
-            /* mtdModuleì˜ compareë¡œ ë¹„êµí•œë‹¤. */
+            /* mtdModuleÀÇ compare·Î ºñ±³ÇÑ´Ù. */
             sRangeValue1.column = NULL;
             sRangeValue1.value  = aMetaStmt->mShardStmtCxt.mShardRangeInfo[i].mShardSubRange.mMax;
             sRangeValue1.flag   = MTD_OFFSET_USELESS;
@@ -578,7 +478,7 @@ SQLRETURN ulsdGetRangeIndexFromRange(ulnStmt        *aMetaStmt,
 
     if ( sRangeIndexCount == *aRangeIndexCount )
     {
-        /* default nodeê°€ ìžˆë‹¤ë©´ ì„¤ì •í•œë‹¤ */
+        /* default node°¡ ÀÖ´Ù¸é ¼³Á¤ÇÑ´Ù */
         ACI_TEST_RAISE(aMetaStmt->mShardStmtCxt.mShardDefaultNodeID == ACP_UINT32_MAX,
                        LABEL_NO_NODE_FOUNDED);
 
@@ -645,7 +545,7 @@ SQLRETURN ulsdGetRangeIndexFromList(ulnStmt        *aMetaStmt,
   
     for ( i = 0; i < aMetaStmt->mShardStmtCxt.mShardRangeInfoCnt; i++ )
     {
-        /* mtdModuleì˜ compareë¡œ ë¹„êµí•œë‹¤. */
+        /* mtdModuleÀÇ compare·Î ºñ±³ÇÑ´Ù. */
         if ( aIsSubKey == ACP_FALSE )
         {
             sListValue.value  = aMetaStmt->mShardStmtCxt.mShardRangeInfo[i].mShardRange.mMax;
@@ -673,7 +573,7 @@ SQLRETURN ulsdGetRangeIndexFromList(ulnStmt        *aMetaStmt,
 
     if ( sRangeIndexCount == *aRangeIndexCount )
     {
-        /* default nodeê°€ ìžˆë‹¤ë©´ ì„¤ì •í•œë‹¤ */
+        /* default node°¡ ÀÖ´Ù¸é ¼³Á¤ÇÑ´Ù */
         ACI_TEST_RAISE(aMetaStmt->mShardStmtCxt.mShardDefaultNodeID == ACP_UINT32_MAX,
                        LABEL_NO_NODE_FOUNDED);
 
@@ -780,10 +680,9 @@ SQLRETURN ulsdAddNode( ulnFnContext * aFnContext,
                                      aNewNodeInfo );
     ACI_TEST( sRet != SQL_SUCCESS );
 
-    sRet = ulsdDriverConnectToNodeInternal( aMetaDbc,
-                                            aFnContext,
+    sRet = ulsdDriverConnectToNodeInternal( aFnContext,
                                             aNewNodeInfo,
-                                            sShard->mIsTestEnable );
+                                            aMetaDbc->mShardDbcCxt.mOrgConnString );
     ACI_TEST( sRet != SQL_SUCCESS );
 
     sRet = ulsdAddNodeToDbc( aFnContext,
@@ -851,6 +750,7 @@ void ulsdRemoveNode( ulnDbc       * aMetaDbc,
     ulsdDbc         * sShard = NULL;
     SQLRETURN         sRet   = SQL_ERROR;
     acp_uint16_t      i      = 0;
+    acp_uint16_t      j      = 0;
 
     ulsdGetShardFromDbc( aMetaDbc, &sShard );
 
@@ -882,19 +782,22 @@ void ulsdRemoveNode( ulnDbc       * aMetaDbc,
         /* Nothing to do */
     }
 
-    for ( i = 0; i < (sShard->mNodeCount - 1); i++ )
+    for ( i = 0; i < sShard->mNodeCount; )
     {
-        if ( sShard->mNodeInfo[i]->mNodeId >= aRemoveNodeInfo->mNodeId )
+        if ( sShard->mNodeInfo[i]->mNodeId == aRemoveNodeInfo->mNodeId )
         {
-            sShard->mNodeInfo[i] = sShard->mNodeInfo[i + 1];
+            --sShard->mNodeCount;
+            for ( j = i; j < sShard->mNodeCount; ++j )
+            {
+                sShard->mNodeInfo[j] = sShard->mNodeInfo[j + 1];
+            }
         }
         else
         {
             /* Nothing to do */
+            ++i;
         }
     }
-
-    sShard->mNodeCount--;
 
     return;
 }

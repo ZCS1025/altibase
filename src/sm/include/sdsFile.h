@@ -42,13 +42,13 @@ typedef struct sdsFileHdr
 {
     /* SM Version */
     UInt     mSmVersion;
-    /* Recoveryë¥¼ ìœ„í•œ RedoLSN */
+    /* Recovery¸¦ À§ÇÑ RedoLSN */
     smLSN    mRedoLSN;
     /* */
     smLSN    mCreateLSN;
-    /* ìµìŠ¤í…íŠ¸ë‹¹ meta data ìˆ˜ */
+    /* ÀÍ½ºÅÙÆ®´ç meta data ¼ö */
     UInt     mFrameCntInExt;
-    /* ë§ˆì§€ë§‰ìœ¼ë¡œ ë‚´ë ¤ê°„ Groupì˜ ë²ˆí˜¸ */
+    /* ¸¶Áö¸·À¸·Î ³»·Á°£ GroupÀÇ ¹øÈ£ */
     UInt     mLstMetaTableSeqNum;
 } sdsFileHdr;
 
@@ -56,15 +56,15 @@ typedef struct sdsFileNode
 {
     sdsFileHdr       mFileHdr;
     smiDataFileState mState;        /* */
-    /* ìµœëŒ€ page ê°œìˆ˜: File Size + MetaTable */
+    /* ÃÖ´ë page °³¼ö: File Size + MetaTable */
     ULong            mPageCnt;
-    /* í™”ì¼ ì´ë¦„ */
+    /* È­ÀÏ ÀÌ¸§ */
     SChar            mName[SMI_MAX_SBUFFER_FILE_NAME_LEN];
-    /* íŒŒì¼ì´ ì—´ë ¤ìˆëŠ”ê°€. */
+    /* ÆÄÀÏÀÌ ¿­·ÁÀÖ´Â°¡. */
     idBool           mIsOpened;
 
     iduFile          mFile;         
-    /* Loganchor ë©”ëª¨ë¦¬ ë²„í¼ë‚´ì˜ DBF ì†ì„± ìœ„ì¹˜ */
+    /* Loganchor ¸Ş¸ğ¸® ¹öÆÛ³»ÀÇ DBF ¼Ó¼º À§Ä¡ */
     UInt             mAnchorOffset;         
 } sdsFileNode;
 
@@ -157,20 +157,20 @@ private:
     IDE_RC writeEmptyPages( idvSQL         * aStatistics,
                             sdsFileNode    * aFileNode );
 
-    /* HDRì„ ê²€ì‚¬í•¨ */ 
+    /* HDRÀ» °Ë»çÇÔ */ 
     IDE_RC checkValidationHdr( idvSQL       * aStatistics,  
                                sdsFileNode  * aFileNode,
                                idBool       * aCompatibleFrameCnt );
 
-    /* HDRì˜ ê°’ ë²”ìœ„ë¥¼ ê²€ì‚¬ í•¨ */
+    /* HDRÀÇ °ª ¹üÀ§¸¦ °Ë»ç ÇÔ */
     IDE_RC checkValuesOfHdr( sdsFileHdr  * aFileHdr );
 
-    /* í†µê³„ì •ë³´ë¥¼ ìœ„í•œ í•¨ìˆ˜  */ 
+    /* Åë°èÁ¤º¸¸¦ À§ÇÑ ÇÔ¼ö  */ 
     IDE_RC dumpSBufferNode( sdsFileNode  * aFileNode );
     
     IDE_RC makeValidABSPath( SChar*         aValidName );
 
-    /* íŒŒì¼ì˜ ìƒì„±ë° í™•ì¸ì‹œ ì“°ëŠ” í•¨ìˆ˜ë“¤ */
+    /* ÆÄÀÏÀÇ »ı¼º¹× È®ÀÎ½Ã ¾²´Â ÇÔ¼öµé */
     IDE_RC makeSureValidationNode( idvSQL       * aStatistics,
                                    sdsFileNode  * aFileNode,
                                    idBool       * aAlreadyExist,
@@ -180,9 +180,9 @@ public:
 
 private:
     SChar         * mSBufferDirName;
-    /* Groupì„ êµ¬ì„±í•˜ëŠ” í˜ì´ì§€ì˜ ìˆ˜ */
+    /* GroupÀ» ±¸¼ºÇÏ´Â ÆäÀÌÁöÀÇ ¼ö */
     UInt            mPageCntInGrp;
-    /* Group ë‹¹ í•˜ë‚˜ì”© ì¡´ì¬í•˜ëŠ” ë©”íƒ€ í…Œì´ë¸”ì„ êµ¬ì„±í•˜ëŠ” í˜ì´ì§€ ìˆ˜ */
+    /* Group ´ç ÇÏ³ª¾¿ Á¸ÀçÇÏ´Â ¸ŞÅ¸ Å×ÀÌºíÀ» ±¸¼ºÇÏ´Â ÆäÀÌÁö ¼ö */
     UInt            mPageCntInMetaTable;
     UInt            mGroupCnt;
     UInt            mFrameCntInExt;

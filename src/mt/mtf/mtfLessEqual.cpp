@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfLessEqual.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfLessEqual.cpp 86698 2020-02-18 07:17:43Z donovan.seo $
  **********************************************************************/
 
 #include <mte.h>
@@ -338,7 +338,7 @@ IDE_RC mtfLessEqualExtractRange( mtcNode*       aNode,
                  ( aInfo->compValueType == MTD_COMPARE_STOREDVAL_STOREDVAL ) )
             {
                 /* MTD_COMPARE_STOREDVAL_MTDVAL
-                   stored typeì˜ column valueì— ëŒ€í•œ range callback */
+                   stored typeÀÇ column value¿¡ ´ëÇÑ range callback */
                 aRange->minimum.callback     = mtk::rangeCallBackGT4Stored;
                 aRange->maximum.callback     = mtk::rangeCallBackLT4Stored;
             }
@@ -369,13 +369,13 @@ IDE_RC mtfLessEqualExtractRange( mtcNode*       aNode,
             if( aInfo->direction == MTD_COMPARE_ASCENDING )
             {
                 //---------------------------
-                // RangeCallBack ì„¤ì •
+                // RangeCallBack ¼³Á¤
                 //---------------------------
                 
                 if ( aInfo->compValueType == MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL ||
                      aInfo->compValueType == MTD_COMPARE_MTDVAL_MTDVAL )
                 {
-                    // mtd typeì˜ column valueì— ëŒ€í•œ range callback
+                    // mtd typeÀÇ column value¿¡ ´ëÇÑ range callback
                     aRange->minimum.callback     = mtk::rangeCallBackGE4Mtd;
                     aRange->maximum.callback     = mtk::rangeCallBackLE4Mtd;
                 }
@@ -385,7 +385,7 @@ IDE_RC mtfLessEqualExtractRange( mtcNode*       aNode,
                          ( aInfo->compValueType == MTD_COMPARE_STOREDVAL_STOREDVAL ) )
                     {
                         /* MTD_COMPARE_STOREDVAL_MTDVAL
-                           stored typeì˜ column valueì— ëŒ€í•œ range callback */
+                           stored typeÀÇ column value¿¡ ´ëÇÑ range callback */
                         aRange->minimum.callback     = mtk::rangeCallBackGE4Stored;
                         aRange->maximum.callback     = mtk::rangeCallBackLE4Stored;
                     }
@@ -398,7 +398,7 @@ IDE_RC mtfLessEqualExtractRange( mtcNode*       aNode,
                 }
 
                 //---------------------------
-                // MinimumCallBack ì •ë³´ ì„¤ì •
+                // MinimumCallBack Á¤º¸ ¼³Á¤
                 //---------------------------
                 
                 sMinimumCallBack->compare    = mtk::compareMinimumLimit;
@@ -408,12 +408,18 @@ IDE_RC mtfLessEqualExtractRange( mtcNode*       aNode,
                 sMinimumCallBack->value      = NULL;
 
                 //---------------------------
-                // MaximumCallBack ì •ë³´ ì„¤ì •
+                // MaximumCallBack Á¤º¸ ¼³Á¤
                 //---------------------------
                 
                 sMaximumCallBack->columnIdx  = aInfo->columnIdx;
-                sMaximumCallBack->columnDesc = *aInfo->column;
-                sMaximumCallBack->valueDesc  = *sValueColumn;
+                if ( MTC_COLUMN_IS_NOT_SAME( sMaximumCallBack->columnDesc, aInfo->column ) )
+                {
+                    sMaximumCallBack->columnDesc = *aInfo->column;
+                }
+                if ( MTC_COLUMN_IS_NOT_SAME( sMaximumCallBack->valueDesc, sValueColumn ) )
+                {
+                    sMaximumCallBack->valueDesc  = *sValueColumn;
+                }
                 sMaximumCallBack->value      = sValue;
 
                 // PROJ-1364
@@ -447,13 +453,13 @@ IDE_RC mtfLessEqualExtractRange( mtcNode*       aNode,
             else
             {
                 //---------------------------
-                // RangeCallBack ì„¤ì •
+                // RangeCallBack ¼³Á¤
                 //---------------------------
                 
                 if ( aInfo->compValueType == MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL ||
                      aInfo->compValueType == MTD_COMPARE_MTDVAL_MTDVAL )
                 {
-                    // mtd typeì˜ column valueì— ëŒ€í•œ range callback
+                    // mtd typeÀÇ column value¿¡ ´ëÇÑ range callback
                     aRange->minimum.callback     = mtk::rangeCallBackGE4Mtd;
                     aRange->maximum.callback     = mtk::rangeCallBackLT4Mtd;
                 }
@@ -463,7 +469,7 @@ IDE_RC mtfLessEqualExtractRange( mtcNode*       aNode,
                          ( aInfo->compValueType == MTD_COMPARE_STOREDVAL_STOREDVAL ) )
                     {
                         /* MTD_COMPARE_STOREDVAL_MTDVAL
-                           stored typeì˜ column valueì— ëŒ€í•œ range callback */
+                           stored typeÀÇ column value¿¡ ´ëÇÑ range callback */
                         aRange->minimum.callback     = mtk::rangeCallBackGE4Stored;
                         aRange->maximum.callback     = mtk::rangeCallBackLT4Stored;
                     }
@@ -476,12 +482,18 @@ IDE_RC mtfLessEqualExtractRange( mtcNode*       aNode,
                 }
 
                 //---------------------------
-                // MinimumCallBack ì •ë³´ ì„¤ì •
+                // MinimumCallBack Á¤º¸ ¼³Á¤
                 //---------------------------
                 
                 sMinimumCallBack->columnIdx  = aInfo->columnIdx;
-                sMinimumCallBack->columnDesc = *aInfo->column;
-                sMinimumCallBack->valueDesc  = *sValueColumn;
+                if ( MTC_COLUMN_IS_NOT_SAME( sMinimumCallBack->columnDesc, aInfo->column ) )
+                {
+                    sMinimumCallBack->columnDesc = *aInfo->column;
+                }
+                if ( MTC_COLUMN_IS_NOT_SAME( sMinimumCallBack->valueDesc, sValueColumn ) )
+                {
+                    sMinimumCallBack->valueDesc = *sValueColumn;
+                }
                 sMinimumCallBack->value      = sValue;
 
                 // PROJ-1364
@@ -513,11 +525,14 @@ IDE_RC mtfLessEqualExtractRange( mtcNode*       aNode,
                 }
 
                 //---------------------------
-                // MaximumCallBack ì •ë³´ ì„¤ì •
+                // MaximumCallBack Á¤º¸ ¼³Á¤
                 //---------------------------
                 
                 sMaximumCallBack->columnIdx  = aInfo->columnIdx;
-                sMaximumCallBack->columnDesc = *aInfo->column;
+                if ( MTC_COLUMN_IS_NOT_SAME( sMaximumCallBack->columnDesc, aInfo->column ) )
+                {
+                    sMaximumCallBack->columnDesc = *aInfo->column;
+                }
                 //sMaximumCallBack->valueDesc  = NULL;
                 sMaximumCallBack->value      = NULL;
                 
@@ -539,13 +554,13 @@ IDE_RC mtfLessEqualExtractRange( mtcNode*       aNode,
             if( aInfo->direction == MTD_COMPARE_ASCENDING )
             {
                 //---------------------------
-                // RangeCallBack ì„¤ì •
+                // RangeCallBack ¼³Á¤
                 //---------------------------
                 
                 if ( aInfo->compValueType == MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL ||
                      aInfo->compValueType == MTD_COMPARE_MTDVAL_MTDVAL )
                 {
-                    // mtd typeì˜ column valueì— ëŒ€í•œ range callback
+                    // mtd typeÀÇ column value¿¡ ´ëÇÑ range callback
                     aRange->minimum.callback     = mtk::rangeCallBackGE4Mtd;
                     aRange->maximum.callback     = mtk::rangeCallBackLT4Mtd;
                 }
@@ -555,7 +570,7 @@ IDE_RC mtfLessEqualExtractRange( mtcNode*       aNode,
                          ( aInfo->compValueType == MTD_COMPARE_STOREDVAL_STOREDVAL ) )
                     {
                         /* MTD_COMPARE_STOREDVAL_MTDVAL
-                           stored typeì˜ column valueì— ëŒ€í•œ range callback */
+                           stored typeÀÇ column value¿¡ ´ëÇÑ range callback */
                         aRange->minimum.callback     = mtk::rangeCallBackGE4Stored;
                         aRange->maximum.callback     = mtk::rangeCallBackLT4Stored;
                     }
@@ -568,12 +583,18 @@ IDE_RC mtfLessEqualExtractRange( mtcNode*       aNode,
                 }
 
                 //---------------------------
-                // MinimumCallBack ì •ë³´ ì„¤ì •
+                // MinimumCallBack Á¤º¸ ¼³Á¤
                 //---------------------------
             
                 sMinimumCallBack->columnIdx  = aInfo->columnIdx;
-                sMinimumCallBack->columnDesc = *aInfo->column;
-                sMinimumCallBack->valueDesc  = *sValueColumn;
+                if ( MTC_COLUMN_IS_NOT_SAME( sMinimumCallBack->columnDesc, aInfo->column ) )
+                {
+                    sMinimumCallBack->columnDesc = *aInfo->column;
+                }
+                if ( MTC_COLUMN_IS_NOT_SAME( sMinimumCallBack->valueDesc, sValueColumn ) )
+                {
+                    sMinimumCallBack->valueDesc  = *sValueColumn;
+                }
                 sMinimumCallBack->value      = sValue;
 
                 // PROJ-1364
@@ -605,11 +626,14 @@ IDE_RC mtfLessEqualExtractRange( mtcNode*       aNode,
                 }
 
                 //---------------------------
-                // MaximumCallBack ì •ë³´ ì„¤ì •
+                // MaximumCallBack Á¤º¸ ¼³Á¤
                 //---------------------------
                 
                 sMaximumCallBack->columnIdx  = aInfo->columnIdx;
-                sMaximumCallBack->columnDesc = *aInfo->column;
+                if ( MTC_COLUMN_IS_NOT_SAME( sMaximumCallBack->columnDesc, aInfo->column ) )
+                {
+                    sMaximumCallBack->columnDesc = *aInfo->column;
+                }
                 //sMaximumCallBack->valueDesc  = NULL;
                 sMaximumCallBack->value      = NULL;
                 
@@ -628,13 +652,13 @@ IDE_RC mtfLessEqualExtractRange( mtcNode*       aNode,
             else
             {
                 //---------------------------
-                // RangeCallBack ì„¤ì •
+                // RangeCallBack ¼³Á¤
                 //---------------------------
                 
                 if ( aInfo->compValueType == MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL ||
                      aInfo->compValueType == MTD_COMPARE_MTDVAL_MTDVAL )
                 {
-                    // mtd typeì˜ column valueì— ëŒ€í•œ range callback
+                    // mtd typeÀÇ column value¿¡ ´ëÇÑ range callback
                     aRange->minimum.callback     = mtk::rangeCallBackGE4Mtd;
                     aRange->maximum.callback     = mtk::rangeCallBackLE4Mtd;
                 }
@@ -644,7 +668,7 @@ IDE_RC mtfLessEqualExtractRange( mtcNode*       aNode,
                          ( aInfo->compValueType == MTD_COMPARE_STOREDVAL_STOREDVAL ) )
                     {
                         /* MTD_COMPARE_STOREDVAL_MTDVAL
-                           stored typeì˜ column valueì— ëŒ€í•œ range callback */
+                           stored typeÀÇ column value¿¡ ´ëÇÑ range callback */
                         aRange->minimum.callback     = mtk::rangeCallBackGE4Stored;
                         aRange->maximum.callback     = mtk::rangeCallBackLE4Stored;
                     }
@@ -657,7 +681,7 @@ IDE_RC mtfLessEqualExtractRange( mtcNode*       aNode,
                 }                
 
                 //---------------------------
-                // MinimumCallBack ì •ë³´ ì„¤ì •
+                // MinimumCallBack Á¤º¸ ¼³Á¤
                 //---------------------------
                 
                 sMinimumCallBack->compare    = mtk::compareMinimumLimit;
@@ -667,12 +691,18 @@ IDE_RC mtfLessEqualExtractRange( mtcNode*       aNode,
                 sMinimumCallBack->value      = NULL;
 
                 //---------------------------
-                // MaximumCallBack ì •ë³´ ì„¤ì •
+                // MaximumCallBack Á¤º¸ ¼³Á¤
                 //---------------------------
                 
                 sMaximumCallBack->columnIdx  = aInfo->columnIdx;
-                sMaximumCallBack->columnDesc = *aInfo->column;
-                sMaximumCallBack->valueDesc  = *sValueColumn;
+                if ( MTC_COLUMN_IS_NOT_SAME( sMaximumCallBack->columnDesc, aInfo->column ) )
+                {
+                    sMaximumCallBack->columnDesc = *aInfo->column;
+                }
+                if ( MTC_COLUMN_IS_NOT_SAME( sMaximumCallBack->valueDesc, sValueColumn ) )
+                {
+                    sMaximumCallBack->valueDesc  = *sValueColumn;
+                }
                 sMaximumCallBack->value      = sValue;
 
                 // PROJ-1364

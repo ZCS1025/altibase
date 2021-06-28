@@ -22,48 +22,48 @@
 class svrLogMgr
 {
   public:
-    /* svrLogMgrì„ ì‚¬ìš©í•˜ê¸° ìœ„í•´ static ë©¤ë²„ë“¤ì„ ì´ˆê¸°í™”í•œë‹¤. */
+    /* svrLogMgrÀ» »ç¿ëÇÏ±â À§ÇØ static ¸â¹öµéÀ» ÃÊ±âÈ­ÇÑ´Ù. */
     static IDE_RC initializeStatic();
 
-    /* svrLogMgrì´ ì‚¬ìš©í–ˆë˜ ìžì›ì„ í•´ì œí•œë‹¤. */
+    /* svrLogMgrÀÌ »ç¿ëÇß´ø ÀÚ¿øÀ» ÇØÁ¦ÇÑ´Ù. */
     static IDE_RC destroyStatic();
 
-    /* writeLogë¥¼ í•˜ê¸° ìœ„í•´ í•„ìš”í•œ ìžë£Œêµ¬ì¡°ë¥¼ ì´ˆê¸°í™”í•œë‹¤. */
+    /* writeLog¸¦ ÇÏ±â À§ÇØ ÇÊ¿äÇÑ ÀÚ·á±¸Á¶¸¦ ÃÊ±âÈ­ÇÑ´Ù. */
     static IDE_RC initEnv(svrLogEnv *aEnv, idBool aAlignForce);
 
-    /* writeLogë¥¼ í•˜ë©´ì„œ ìƒì„±ëœ ë¡œê·¸ ë²„í¼ ë©”ëª¨ë¦¬ë¥¼ ëª¨ë‘ í•´ì œí•œë‹¤. */
+    /* writeLog¸¦ ÇÏ¸é¼­ »ý¼ºµÈ ·Î±× ¹öÆÛ ¸Þ¸ð¸®¸¦ ¸ðµÎ ÇØÁ¦ÇÑ´Ù. */
     static IDE_RC destroyEnv(svrLogEnv *aEnv);
 
-    /* svrLogEnvì—ì„œ ë¡œê·¸ë¥¼ ê¸°ë¡í•˜ê¸° ìœ„í•´ í• ë‹¹í•œ ë©”ëª¨ë¦¬ì˜ ì´í•© */
+    /* svrLogEnv¿¡¼­ ·Î±×¸¦ ±â·ÏÇÏ±â À§ÇØ ÇÒ´çÇÑ ¸Þ¸ð¸®ÀÇ ÃÑÇÕ */
     static UInt getAllocMemSize(svrLogEnv *aEnv);
 
-    /* ë¡œê·¸ ë²„í¼ì— ë¡œê·¸ë¥¼ ê¸°ë¡í•œë‹¤. */
+    /* ·Î±× ¹öÆÛ¿¡ ·Î±×¸¦ ±â·ÏÇÑ´Ù. */
     static IDE_RC writeLog(svrLogEnv *aEnv, svrLog *aLogData, UInt aLogSize);
 
-    /* ë¡œê·¸ ë²„í¼ì— sub ë¡œê·¸ë¥¼ ê¸°ë¡í•œë‹¤. */
+    /* ·Î±× ¹öÆÛ¿¡ sub ·Î±×¸¦ ±â·ÏÇÑ´Ù. */
     static IDE_RC writeSubLog(svrLogEnv *aEnv, svrLog *aLogData, UInt aLogSize);
 
-    /* ì‚¬ìš©ìžê°€ í• ë‹¹í•œ ë©”ëª¨ë¦¬ ê³µê°„ì— ë¡œê·¸ ë‚´ìš©ì„ ì½ì–´  ë³µì‚¬í•œë‹¤. */
+    /* »ç¿ëÀÚ°¡ ÇÒ´çÇÑ ¸Þ¸ð¸® °ø°£¿¡ ·Î±× ³»¿ëÀ» ÀÐ¾î  º¹»çÇÑ´Ù. */
     static IDE_RC readLogCopy(svrLogEnv *aEnv,
                               svrLSN     aLSNToRead,
                               svrLog    *aBufToLoadAt,
                               svrLSN    *aUndoNextLSN,
                               svrLSN    *aNextSubLSN);
 
-    /* ë¡œê·¸ ë‚´ìš©ì´ ê¸°ë¡ëœ ë©”ëª¨ë¦¬ ì£¼ì†Œë¥¼ ë°˜í™˜í•œë‹¤. */
+    /* ·Î±× ³»¿ëÀÌ ±â·ÏµÈ ¸Þ¸ð¸® ÁÖ¼Ò¸¦ ¹ÝÈ¯ÇÑ´Ù. */
     static IDE_RC readLog(svrLogEnv *aEnv,
                           svrLSN     aLSNToRead,
                           svrLog   **aLogData,
                           svrLSN    *aUndoNextLSN,
                           svrLSN    *aNextSubLSN);
 
-    /* ì£¼ì–´ì§„ LSN ì´í›„ì˜ ëª¨ë“  ë¡œê·¸ë“¤ì„ ì§€ìš°ê³  ë¡œê·¸ íŽ˜ì´ì§€ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤.*/
+    /* ÁÖ¾îÁø LSN ÀÌÈÄÀÇ ¸ðµç ·Î±×µéÀ» Áö¿ì°í ·Î±× ÆäÀÌÁö ¸Þ¸ð¸®¸¦ ÇØÁ¦ÇÑ´Ù.*/
     static IDE_RC removeLogHereafter(svrLogEnv *aEnv, svrLSN aThisLSN);
 
-    /* ì‚¬ìš©ìžê°€ ê¸°ë¡í•œ ë§ˆì§€ë§‰ ë¡œê·¸ ë ˆì½”ë“œì˜ LSNì„ êµ¬í•œë‹¤. */
+    /* »ç¿ëÀÚ°¡ ±â·ÏÇÑ ¸¶Áö¸· ·Î±× ·¹ÄÚµåÀÇ LSNÀ» ±¸ÇÑ´Ù. */
     static svrLSN getLastLSN(svrLogEnv *aEnv);
 
-    /* í˜„ìž¬ log envì— ëŒ€í•´ ê°±ì‹ í•œ ì ì´ í•œë²ˆì´ë¼ë„ ìžˆëŠ”ì§€ ë¬»ëŠ”ë‹¤. */
+    /* ÇöÀç log env¿¡ ´ëÇØ °»½ÅÇÑ ÀûÀÌ ÇÑ¹øÀÌ¶óµµ ÀÖ´ÂÁö ¹¯´Â´Ù. */
     static idBool isOnceUpdated(svrLogEnv *aEnv);
 };
 

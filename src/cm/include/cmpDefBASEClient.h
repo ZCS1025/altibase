@@ -19,21 +19,21 @@
 
 
 /*
- * í”„ë¡œí† ì½œ ë²„ì „ì—…ìœ¼ë¡œ ìƒìˆ˜ë¥¼ ì¶”ê°€í•  ë•ŒëŠ” ë‹¤ìŒì²˜ëŸ¼ ì¶”ê°€í•œë‹¤.
+ * ÇÁ·ÎÅäÄÝ ¹öÀü¾÷À¸·Î »ó¼ö¸¦ Ãß°¡ÇÒ ¶§´Â ´ÙÀ½Ã³·³ Ãß°¡ÇÑ´Ù.
  *
  *    enum {
  *        CM_ID_NONE = 0,
  *        ...
  *        CM_ID_MAX_VER1
- *    };  <-- í”„ë¡œí† ì½œ ë²„ì „1ì˜ ê¸°ì¡´ ì •ì˜
+ *    };  <-- ÇÁ·ÎÅäÄÝ ¹öÀü1ÀÇ ±âÁ¸ Á¤ÀÇ
  *
  *    enum {
  *        CM_ID_NEW = CM_ID_MAX_VER1,
  *        ...
  *        CM_ID_MAX_VER2
- *    };  <-- í”„ë¡œí† ì½œ ë²„ì „2ì˜ ìƒˆë¡œìš´ ìƒìˆ˜ ì •ì˜
+ *    };  <-- ÇÁ·ÎÅäÄÝ ¹öÀü2ÀÇ »õ·Î¿î »ó¼ö Á¤ÀÇ
  *
- *    #define CM_ID_MAX CM_ID_MAX_VER2  <-- ë§ˆì§€ë§‰ í”„ë¡œí† ì½œ ë²„ì „ì˜ MAXë¡œ ì •ì˜
+ *    #define CM_ID_MAX CM_ID_MAX_VER2  <-- ¸¶Áö¸· ÇÁ·ÎÅäÄÝ ¹öÀüÀÇ MAX·Î Á¤ÀÇ
  */
 
 

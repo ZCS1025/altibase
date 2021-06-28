@@ -18,7 +18,7 @@
 /***********************************************************************
  * $Id: sdptbSpaceDDL.h 27220 2008-07-23 14:56:22Z newdaily $
  *
- * DDLì— ê´€ë ¨ëœ í•¨ìˆ˜ë“¤ì´ë‹¤.
+ * DDL¿¡ °ü·ÃµÈ ÇÔ¼öµéÀÌ´Ù.
  ***********************************************************************/
 
 # ifndef _O_SDPTB_SPACE_DDL_H_
@@ -32,7 +32,7 @@ public:
     static IDE_RC initialize(){ return IDE_SUCCESS; }
     static IDE_RC destroy(){ return IDE_SUCCESS; }
 
-    /* ëª¨ë“  ì¢…ë¥˜ì˜ tablespace ìƒì„±ê³¼ì •ì—ì„œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ */
+    /* ¸ğµç Á¾·ùÀÇ tablespace »ı¼º°úÁ¤¿¡¼­ È£ÃâµÇ´Â ÇÔ¼ö */
     static IDE_RC createTBS(idvSQL             *aStatistics,
                             sdrMtxStartInfo    *aStartInfo,
                             smiTableSpaceAttr*  aTableSpaceAttr,
@@ -40,39 +40,39 @@ public:
                             UInt                aDataFileAttrCount );
 
     /* PROJ-1923
-     * tablespace ìƒì„±ê³¼ì •ì— ëŒ€í•œ redoì‹œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ */
+     * tablespace »ı¼º°úÁ¤¿¡ ´ëÇÑ redo½Ã È£ÃâµÇ´Â ÇÔ¼ö */
     static IDE_RC createTBS4Redo( void                * aTrans,
                                   smiTableSpaceAttr   * aTableSpaceAttr );
 
     /* PROJ-1923
-     * tablespace ìƒì„±ê³¼ì •ì— ëŒ€í•œ redoì‹œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ */
+     * tablespace »ı¼º°úÁ¤¿¡ ´ëÇÑ redo½Ã È£ÃâµÇ´Â ÇÔ¼ö */
     static IDE_RC createDBF4Redo( void            * aTrans,
                                   smLSN             aCurLSN,
                                   scSpaceID         aSpaceID,
                                   smiDataFileAttr * aTableSpaceAttr );
 
-    /* [ INTERFACE ] User Tablespace ìƒì„± */
+    /* [ INTERFACE ] User Tablespace »ı¼º */
     static IDE_RC createUserTBS(idvSQL             *aStatistics,
                                 void*               aTransForMtx,
                                 smiTableSpaceAttr*  aTableSpaceAttr,
                                 smiDataFileAttr**   aDataFileAttr,
                                 UInt                aDataFileAttrCount );
 
-    /* [ INTERFACE ] Temporary Tablespace ìƒì„± */
+    /* [ INTERFACE ] Temporary Tablespace »ı¼º */
     static IDE_RC createTempTBS(idvSQL             *aStatistics,
                                 void*               aTransForMtx,
                                 smiTableSpaceAttr*  aTableSpaceAttr,
                                 smiDataFileAttr**   aDataFileAttr,
                                 UInt                aDataFileAttrCount );
 
-    /* [ INTERFACE ] System Tablespace ìƒì„± */
+    /* [ INTERFACE ] System Tablespace »ı¼º */
     static IDE_RC createSystemTBS(idvSQL             *aStatistics,
                                   void*               aTransForMtx,
                                   smiTableSpaceAttr*  aTableSpaceAttr,
                                   smiDataFileAttr**   aDataFileAttr,
                                   UInt                aDataFileAttrCount );
 
-    /* [ INTERFACE ] Undo Tablespace ìƒì„± */
+    /* [ INTERFACE ] Undo Tablespace »ı¼º */
     static IDE_RC createUndoTBS(idvSQL             *aStatistics,
                                 void*               aTransForMtx,
                                 smiTableSpaceAttr*  aTableSpaceAttr,
@@ -121,32 +121,61 @@ public:
                                     UInt                aPagesPerExt );
 
 
-    /* [INTERFACE] TSSRIDë¥¼ ì„¸íŠ¸í•œë‹¤. */
+    /* [INTERFACE] TSSRID¸¦ ¼¼Æ®ÇÑ´Ù. */
     static IDE_RC setTSSPID( idvSQL        * aStatistics,
                              sdrMtx        * aMtx,
                              scSpaceID       aSpaceID,
                              UInt            aIndex,
-                             scPageID        aTSSPID );
+                             scPageID        aTSSPID )
+    {
+        return setPIDCore( aStatistics,
+                           aMtx,
+                           aSpaceID,
+                           aIndex,
+                           aTSSPID,
+                           SDPTB_RID_TYPE_TSS );
+    };
 
-    /* [INTERFACE] TSSRIDë¥¼ ì–»ì–´ë‚¸ë‹¤ */
+    /* [INTERFACE] TSSRID¸¦ ¾ò¾î³½´Ù */
     static IDE_RC getTSSPID( idvSQL        * aStatistics,
                              scSpaceID       aSpaceID,
                              UInt            aIndex,
-                             scPageID      * aTSSPID );
+                             scPageID      * aTSSPID )
+    {
+        return getPIDCore( aStatistics,
+                           aSpaceID,
+                           aIndex,
+                           SDPTB_RID_TYPE_TSS,
+                           aTSSPID);
+    };
 
-
-    /* [INTERFACE] UDSRIDë¥¼ ì„¸íŠ¸í•œë‹¤. */
+    /* [INTERFACE] UDSRID¸¦ ¼¼Æ®ÇÑ´Ù. */
     static IDE_RC setUDSPID( idvSQL        * aStatistics,
                              sdrMtx        * aMtx,
                              scSpaceID       aSpaceID,
                              UInt            aIndex,
-                             scPageID        aUDSPID );
+                             scPageID        aUDSPID )
+    {
+        return setPIDCore( aStatistics,
+                           aMtx,
+                           aSpaceID,
+                           aIndex,
+                           aUDSPID,
+                           SDPTB_RID_TYPE_UDS ) ;
+    };
 
-    /* [INTERFACE] UDSRIDë¥¼ ì–»ì–´ë‚¸ë‹¤ */
+    /* [INTERFACE] UDSRID¸¦ ¾ò¾î³½´Ù */
     static IDE_RC getUDSPID( idvSQL        * aStatistics,
                              scSpaceID       aSpaceID,
                              UInt            aIndex,
-                             scPageID      * aUDSPID );
+                             scPageID      * aUDSPID )
+    {
+        return getPIDCore( aStatistics,
+                           aSpaceID,
+                           aIndex,
+                           SDPTB_RID_TYPE_UDS,
+                           aUDSPID);
+    }
 
 
     static IDE_RC getSpaceNodeAndFileNode(
@@ -157,38 +186,38 @@ public:
                           SChar                 * aValidDataFileName );
 
     /* 
-     * dropTBS, alterTBSStatus,alterTBSdiscard,alterDataFileNameì€
-     * sdptlì—ì„œ ë³µì‚¬í•œ ì½”ë“œì´ë‹¤. ì°¨í›„ì— ì´ì½”ë“œë“¤ì€ ë³€ê²½ë ìˆ˜ë„ ìˆë‹¤.
+     * dropTBS, alterTBSStatus,alterTBSdiscard,alterDataFileNameÀº
+     * sdptl¿¡¼­ º¹»çÇÑ ÄÚµåÀÌ´Ù. Â÷ÈÄ¿¡ ÀÌÄÚµåµéÀº º¯°æµÉ¼öµµ ÀÖ´Ù.
      */
 
-    /* [ INTERFACE ] Tablespace ì‚­ì œ */
+    /* [ INTERFACE ] Tablespace »èÁ¦ */
     static IDE_RC dropTBS( idvSQL       *aStatistics,
                            void*         aTrans,
                            scSpaceID     aSpaceID,
                            smiTouchMode  aTouchMode );
 
     // PRJ-1548 User Memory TableSpace - D1
-    // Disk Tablespaceì— ëŒ€í•´ Alter Tablespace Online/Offlineì„ ìˆ˜í–‰
+    // Disk Tablespace¿¡ ´ëÇØ Alter Tablespace Online/OfflineÀ» ¼öÇà
     static IDE_RC alterTBSStatus( idvSQL*             aStatistics,
                                   void              * aTrans,
                                   sddTableSpaceNode * aSpaceNode,
                                   UInt                aState );
 
-    /* [ INTERFACE ] Tablespace ë¬´íš¨í™” */
+    /* [ INTERFACE ] Tablespace ¹«È¿È­ */
     static IDE_RC alterTBSdiscard( sddTableSpaceNode * aTBSNode );
 
-    /* [ INTERFACE ] ë°ì´íƒ€íŒŒì¼ ê²½ë¡œ ë³€ê²½ */
+    /* [ INTERFACE ] µ¥ÀÌÅ¸ÆÄÀÏ °æ·Î º¯°æ */
     static IDE_RC alterDataFileName( idvSQL*      aStatistics,
                                      scSpaceID    aSpaceID,
                                      SChar       *aOldName,
                                      SChar       *aNewName );
 
-    /* [ INTERFACE ] META/SERVICEë‹¨ê³„ì—ì„œ Tablespaceë¥¼ Onlineìƒíƒœë¡œ ë³€ê²½í•œë‹¤. */
+    /* [ INTERFACE ] META/SERVICE´Ü°è¿¡¼­ Tablespace¸¦ Online»óÅÂ·Î º¯°æÇÑ´Ù. */
     static IDE_RC alterTBSonline( idvSQL*              aStatistics,
                                   void               * aTrans,
                                   sddTableSpaceNode  * aSpaceNode );
 
-    /* [ INTERFACE ] META/SERVICEë‹¨ê³„ì—ì„œ Tablespaceë¥¼ Offlineìƒíƒœë¡œ ë³€ê²½í•œë‹¤.*/
+    /* [ INTERFACE ] META/SERVICE´Ü°è¿¡¼­ Tablespace¸¦ Offline»óÅÂ·Î º¯°æÇÑ´Ù.*/
     static IDE_RC alterTBSoffline( idvSQL*             aStatistics,
                                    void              * aTrans,
                                    sddTableSpaceNode * aSpaceNode );
@@ -218,7 +247,7 @@ private:
     static void alignSizeWithOSFileLimit( ULong *aAlignDest,
                                           UInt   aFileHdrPageCnt );
 
-    /* RIDë¥¼ ì„¸íŠ¸í•˜ëŠ” í•µì‹¬í•¨ìˆ˜ */
+    /* RID¸¦ ¼¼Æ®ÇÏ´Â ÇÙ½ÉÇÔ¼ö */
     static IDE_RC setPIDCore( idvSQL        * aStatistics,
                               sdrMtx        * aMtx,
                               scSpaceID       aSpaceID,
@@ -226,7 +255,7 @@ private:
                               scPageID        aTSSPID,
                               sdptbRIDType    aRIDType);
 
-    /* RIDë¥¼ ì–»ì–´ë‚´ëŠ” í•µì‹¬í•¨ìˆ˜ */
+    /* RID¸¦ ¾ò¾î³»´Â ÇÙ½ÉÇÔ¼ö */
     static IDE_RC getPIDCore( idvSQL        * aStatistics,
                               scSpaceID       aSpaceID,
                               UInt            aIndex,

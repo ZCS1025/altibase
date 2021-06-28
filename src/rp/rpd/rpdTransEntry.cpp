@@ -51,15 +51,13 @@ IDE_RC rpdTransEntry::rollback( smTID aTID )
 
 IDE_RC rpdTransEntry::commit( smTID aTID )
 {
-    //PROJ- 1677 DEQ
-    smSCN      sDummySCN = SM_SCN_INIT;
-
     IDE_ASSERT( mRpdTrans != NULL );
 
     if ( mTransForConflictResolution != NULL )
     {
         IDE_TEST_RAISE( mTransForConflictResolution->mSmiTrans.commit(
-                            &sDummySCN, SMI_DO_NOT_RELEASE_TRANSACTION )
+                                        NULL, /* aCommitSCN */
+                                        SMI_DO_NOT_RELEASE_TRANSACTION )
                         != IDE_SUCCESS, ERR_TX_CONFLICT_RESOLUTION_COMMIT );
     }
     else
@@ -67,7 +65,8 @@ IDE_RC rpdTransEntry::commit( smTID aTID )
         /* Nothing to do */
     }
 
-    IDE_TEST_RAISE( mRpdTrans->mSmiTrans.commit( &sDummySCN, SMI_DO_NOT_RELEASE_TRANSACTION )
+    IDE_TEST_RAISE( mRpdTrans->mSmiTrans.commit( NULL, /* aCommitSCN */
+                                                 SMI_DO_NOT_RELEASE_TRANSACTION )
                     != IDE_SUCCESS, ERR_TX_COMMIT );
 
     return IDE_SUCCESS;
@@ -94,17 +93,17 @@ IDE_RC rpdTransEntry::setSavepoint( smTID aTID, rpSavepointType  aType, SChar * 
         case RP_SAVEPOINT_PSM:
             if ( mTransForConflictResolution != NULL )
             {
-                mTransForConflictResolution->mSmiTrans.reservePsmSvp();
+                mTransForConflictResolution->mSmiTrans.reservePsmSvp( ID_FALSE );
             }
             else
             {
                 /* Nothing to do */
             }
-            /* BUG-21800 [RP] PSM SAVEPIONTì¼ ê²½ìš° ë”°ë¡œ ì²˜ë¦¬í•´ì¤ë‹ˆë‹¤
-             * PSM SVPëŠ” ì‹œìž‘ ë¶€ë¶„ì—ì„œ reserveë§Œ í•´ë‘ì—ˆë‹¤ê°€ DMLì´ ì¼ì–´ë‚˜ëŠ” ë¶€ë¶„ì—ì„œ
-             * ì‹¤ì œ writeê°€ ë˜ì–´ ê¸°ë¡ ë˜ë¯€ë¡œ ì´ ê³³ì—ì„œ reserveë§Œ í˜¸ì¶œí•œë‹¤.
+            /* BUG-21800 [RP] PSM SAVEPIONTÀÏ °æ¿ì µû·Î Ã³¸®ÇØÁÝ´Ï´Ù
+             * PSM SVP´Â ½ÃÀÛ ºÎºÐ¿¡¼­ reserve¸¸ ÇØµÎ¾ú´Ù°¡ DMLÀÌ ÀÏ¾î³ª´Â ºÎºÐ¿¡¼­
+             * ½ÇÁ¦ write°¡ µÇ¾î ±â·Ï µÇ¹Ç·Î ÀÌ °÷¿¡¼­ reserve¸¸ È£ÃâÇÑ´Ù.
              */
-            mRpdTrans->mSmiTrans.reservePsmSvp();
+            mRpdTrans->mSmiTrans.reservePsmSvp( ID_FALSE );
             mSetPSMSavepoint = ID_TRUE;;
             break;
         case RP_SAVEPOINT_IMPLICIT:
@@ -179,9 +178,9 @@ IDE_RC rpdTransEntry::abortSavepoint( rpSavepointType  aType, SChar * aSavepoint
                      != IDE_SUCCESS )
                 {
                      IDE_ERRLOG( IDE_RP_0 );
-                    /* savepointë¥¼ ì°¾ì„ ìˆ˜ ì—†ì„ ê²½ìš°, ì „ì²´ rollback ì‹œí‚¨ë‹¤. conflict resolution ì‹œìž‘
-                       ì´ì „ì— set savepoint í–ˆë˜ ê²ƒì— ëŒ€í•´ì„œëŠ” mTransForConflictResolutionì— SVPì •ë³´ê°€
-                       ì €ìž¥ë˜ì§€ ì•ŠëŠ”ë‹¤ */
+                    /* savepoint¸¦ Ã£À» ¼ö ¾øÀ» °æ¿ì, ÀüÃ¼ rollback ½ÃÅ²´Ù. conflict resolution ½ÃÀÛ
+                       ÀÌÀü¿¡ set savepoint Çß´ø °Í¿¡ ´ëÇØ¼­´Â mTransForConflictResolution¿¡ SVPÁ¤º¸°¡
+                       ÀúÀåµÇÁö ¾Ê´Â´Ù */
                     IDE_TEST_RAISE( mTransForConflictResolution->mSmiTrans.rollback(
                                         RP_CONFLICT_RESOLUTION_BEGIN_SVP_NAME )
                                     != IDE_SUCCESS, ERR_ABORT_SVP );

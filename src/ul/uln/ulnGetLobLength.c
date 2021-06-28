@@ -45,20 +45,25 @@ static ACI_RC ulnGetLobLengthCheckArgs(ulnFnContext *aFnContext,
     return ACI_FAILURE;
 }
 
-SQLRETURN ulnGetLobLength(ulnStmt      *aStmt,
+SQLRETURN ulnGetLobLength(acp_sint16_t  aHandleType,
+                          ulnObject    *aObject,
                           acp_uint64_t  aLocator,
                           acp_sint16_t  aLocatorType,
-                          acp_uint32_t *aLengthPtr)
+                          acp_uint32_t *aLengthPtr,
+                          acp_uint16_t *aIsNull)
 {
     ULN_FLAG(sNeedFinPtContext);
     ULN_FLAG(sNeedExit);
 
     ulnFnContext  sFnContext;
+    ulnDbc       *sDbc;
 
-    ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_GETLOBLENGTH, aStmt, ULN_OBJ_TYPE_STMT);
+    ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_GETLOBLENGTH, aObject, aHandleType);
 
     ACI_TEST(ulnEnter(&sFnContext, NULL) != ACI_SUCCESS);
     ULN_FLAG_UP(sNeedExit);
+
+    ULN_FNCONTEXT_GET_DBC(&sFnContext, sDbc); // PROJ-2728
 
     /*
      * ===========================================
@@ -69,8 +74,8 @@ SQLRETURN ulnGetLobLength(ulnStmt      *aStmt,
     ACI_TEST(ulnGetLobLengthCheckArgs(&sFnContext, aLocatorType, aLengthPtr) != ACI_SUCCESS);
     //fix BUG-17722
     ACI_TEST(ulnInitializeProtocolContext(&sFnContext,
-                                          &(aStmt->mParentDbc->mPtContext),
-                                          &aStmt->mParentDbc->mSession) != ACI_SUCCESS);
+                                          &(sDbc->mPtContext),
+                                          &(sDbc->mSession)) != ACI_SUCCESS);
     ULN_FLAG_UP(sNeedFinPtContext);
 
     /*
@@ -78,8 +83,8 @@ SQLRETURN ulnGetLobLength(ulnStmt      *aStmt,
      * Protocol Context
      */
 
-    ACI_TEST(ulnLobGetSize(&sFnContext, &(aStmt->mParentDbc->mPtContext),
-                 aLocator, aLengthPtr) != ACI_SUCCESS);
+    ACI_TEST(ulnLobGetSize(&sFnContext, &(sDbc->mPtContext),
+                 aLocator, aLengthPtr, aIsNull) != ACI_SUCCESS);
 
     /*
      * Protocol Context
@@ -89,7 +94,7 @@ SQLRETURN ulnGetLobLength(ulnStmt      *aStmt,
     ULN_FLAG_DOWN(sNeedFinPtContext);
     //fix BUG-17722
     ACI_TEST(ulnFinalizeProtocolContext(&sFnContext,
-                          &(aStmt->mParentDbc->mPtContext)) != ACI_SUCCESS);
+                          &(sDbc->mPtContext)) != ACI_SUCCESS);
 
     /*
      * ===========================================
@@ -107,7 +112,7 @@ SQLRETURN ulnGetLobLength(ulnStmt      *aStmt,
     if (sNeedFinPtContext == ACP_TRUE)
     {
         //fix BUG-17722
-        ulnFinalizeProtocolContext(&sFnContext, &(aStmt->mParentDbc->mPtContext));
+        ulnFinalizeProtocolContext(&sFnContext, &(sDbc->mPtContext));
     }
 
     if (sNeedExit == ACP_TRUE)

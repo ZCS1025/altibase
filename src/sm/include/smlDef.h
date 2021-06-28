@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smlDef.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smlDef.h 89120 2020-11-02 06:06:28Z donlet $
  **********************************************************************/
 
 #ifndef _O_SML_DEF_H_
@@ -41,30 +41,26 @@ struct smlLockItem;
 
 typedef enum 
 {
-    SML_NLOCK   = 0x00000000,// ë„ë½
-    SML_SLOCK   = 0x00000001,// ê³µìœ ë½
-    SML_XLOCK   = 0x00000002,// ë°°ì œë½
-    SML_ISLOCK  = 0x00000003,// ì˜ë„ ê³µìœ ë½
-    SML_IXLOCK  = 0x00000004,// ì˜ë„ ë°°ì œë½
-    SML_SIXLOCK = 0x00000005 // ê³µìœ  ì˜ë„ ë°°ì œë½
+    SML_NLOCK   = 0x00000000,// ³Î¶ô
+    SML_SLOCK   = 0x00000001,// °øÀ¯¶ô
+    SML_XLOCK   = 0x00000002,// ¹èÁ¦¶ô
+    SML_ISLOCK  = 0x00000003,// ÀÇµµ °øÀ¯¶ô
+    SML_IXLOCK  = 0x00000004,// ÀÇµµ ¹èÁ¦¶ô
+    SML_SIXLOCK = 0x00000005 // °øÀ¯ ÀÇµµ ¹èÁ¦¶ô
 } smlLockMode;
 
 struct smlLockItem
 {
     iduMutex            mMutex;
 
-    smiLockItemType     mLockItemType;  // ì ê¸ˆì„ íšë“í•œ Itemì˜ íƒ€ì…
-    scSpaceID           mSpaceID;       // ì ê¸ˆì„ íšë“í•œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID
-    ULong               mItemID;        // í…Œì´ë¸”íƒ€ì…ì´ë¼ë©´ Table OID
-                                        // ë””ìŠ¤í¬ ë°ì´íƒ€íŒŒì¼ì¸ ê²½ìš° File ID
-};
-
-struct smlLockItemMutex : public smlLockItem
-{
+    smiLockItemType     mLockItemType;  // Àá±İÀ» È¹µæÇÑ ItemÀÇ Å¸ÀÔ
+    scSpaceID           mSpaceID;       // Àá±İÀ» È¹µæÇÑ Å×ÀÌºí½ºÆäÀÌ½º ID
+    ULong               mItemID;        // Å×ÀÌºíÅ¸ÀÔÀÌ¶ó¸é Table OID
+                                        // µğ½ºÅ© µ¥ÀÌÅ¸ÆÄÀÏÀÎ °æ¿ì File ID
     smlLockMode         mGrantLockMode;
     SInt                mGrantCnt;
     SInt                mRequestCnt;
-    SInt                mFlag;         // table ëŒ€í‘œë½
+    SInt                mFlag;         // table ´ëÇ¥¶ô
     SInt                mArrLockCount[SML_NUMLOCKTYPES];
 
     smlLockNode*        mFstLockGrant; 
@@ -73,32 +69,24 @@ struct smlLockItemMutex : public smlLockItem
     smlLockNode*        mLstLockRequest;
 };
 
-struct smlLockItemSpin : public smlLockItem
-{
-    SLong               mLock;
-    SInt                mPendingCnt[SML_NUMLOCKTYPES];
-    ULong               mOwner[1];
-};
-
-
-// lock nodeìƒì„±ì„ ì¤„ì´ê¸° ìœ„í•˜ì—¬ ë„ì…ëœ êµ¬ì¡°.
-// í…Œì´ë¸”ì— íŠ¹ì • transactionì˜ grantëœ lockë…¸ë“œë§Œ
-// ì¡´ì¬í•˜ê³ , ë˜ ê·¸ transactionì´  ë‹¤ë¥¸  lock conflict
-// modeë¥¼ ìš”ì²­í• ë•Œ request listì— ë‹¬ lock nodeë¥¼
-// ìƒì„±í•˜ì§€ ì•Šê³ ,
-// grantëœ lockë…¸ë“œì˜ lock modeë¥¼ ë³€ê²½í•˜ê³ , lockSlot
-// ì— ì—°ê²°í•œë‹¤.
+// lock node»ı¼ºÀ» ÁÙÀÌ±â À§ÇÏ¿© µµÀÔµÈ ±¸Á¶.
+// Å×ÀÌºí¿¡ Æ¯Á¤ transactionÀÇ grantµÈ lock³ëµå¸¸
+// Á¸ÀçÇÏ°í, ¶Ç ±× transactionÀÌ  ´Ù¸¥  lock conflict
+// mode¸¦ ¿äÃ»ÇÒ¶§ request list¿¡ ´Ş lock node¸¦
+// »ı¼ºÇÏÁö ¾Ê°í,
+// grantµÈ lock³ëµåÀÇ lock mode¸¦ º¯°æÇÏ°í, lockSlot
+// ¿¡ ¿¬°áÇÑ´Ù.
 typedef struct smlLockSlot
 {
     smlLockNode     *mLockNode;
     smlLockSlot     *mPrvLockSlot;
     smlLockSlot     *mNxtLockSlot;
 
-    /* BUG-15906: non-autocommitëª¨ë“œì—ì„œ Selectì™„ë£Œí›„ IS_LOCKì´ í•´ì œë˜ë©´
-     * ì¢‹ê² ìŠµë‹ˆë‹¤.
-     * Partial Rollbackì´ë‚˜ Select Stmt Endí• ë•Œ Lockì„ ì–´ë””ê¹Œì§€ í’€ì–´ì•¼
-     * í• ì§€ë¥¼ ê²°ì •í•˜ê¸° ìœ„í•´ Transactionì˜ Lock Slotì˜ Sequence Numberë¥¼
-     * ì €ì¥í•´ ë‘”ë‹¤. */
+    /* BUG-15906: non-autocommit¸ğµå¿¡¼­ Select¿Ï·áÈÄ IS_LOCKÀÌ ÇØÁ¦µÇ¸é
+     * ÁÁ°Ú½À´Ï´Ù.
+     * Partial RollbackÀÌ³ª Select Stmt EndÇÒ¶§ LockÀ» ¾îµğ±îÁö Ç®¾î¾ß
+     * ÇÒÁö¸¦ °áÁ¤ÇÏ±â À§ÇØ TransactionÀÇ Lock SlotÀÇ Sequence Number¸¦
+     * ÀúÀåÇØ µĞ´Ù. */
     ULong            mLockSequence;
     
     SInt             mMask;
@@ -110,28 +98,28 @@ typedef struct smlLockNode
 {
     SInt             mIndex;
     smiLockItemType  mLockItemType;
-    scSpaceID        mSpaceID;      // ì ê¸ˆì„ íšë“í•œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID
-    ULong            mItemID;       // í…Œì´ë¸”íƒ€ì…ì´ë¼ë©´ Table OID
-                                    // ë””ìŠ¤í¬ ë°ì´íƒ€íŒŒì¼ì¸ ê²½ìš° File ID
+    scSpaceID        mSpaceID;      // Àá±İÀ» È¹µæÇÑ Å×ÀÌºí½ºÆäÀÌ½º ID
+    ULong            mItemID;       // Å×ÀÌºíÅ¸ÀÔÀÌ¶ó¸é Table OID
+                                    // µğ½ºÅ© µ¥ÀÌÅ¸ÆÄÀÏÀÎ °æ¿ì File ID
     smTID            mTransID;
-    SInt             mSlotID;      // lockì„ ìš”ì²­í•œ transactionì˜ slot id
-    smlLockMode      mLockMode;    // transactionì´ ìš”ì²­í•œ lock mode.
-    smlLockNode     *mPrvLockNode; // grantë˜ëŠ” request listì—°ê²°í¬ì¸í„°
-    smlLockNode     *mNxtLockNode; // grantë˜ëŠ” request listì—°ê²°í¬ì¸í„°
+    SInt             mSlotID;      // lockÀ» ¿äÃ»ÇÑ transactionÀÇ slot id
+    smlLockMode      mLockMode;    // transactionÀÌ ¿äÃ»ÇÑ lock mode.
+    smlLockNode     *mPrvLockNode; // grant¶Ç´Â request list¿¬°áÆ÷ÀÎÅÍ
+    smlLockNode     *mNxtLockNode; // grant¶Ç´Â request list¿¬°áÆ÷ÀÎÅÍ
     smlLockNode     *mCvsLockNode;
-    // mCvsLockNode-> lock conflictë°œìƒì‹œ  í•´ë‹¹ tableì— grant
-    // ëœ lockì„ ì†Œìœ í•œ Txì— ëŒ€í•˜ì—¬,  ì´ì „ grantëœ lock nodeì˜ pointerë¥¼
-    // request listì— ë‹¬ lock nodeì— ì´ë¥¼ ì €ì¥í•œë‹¤.
-    // ->ë‚˜ì¤‘ì— ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì—ì„œ  unlock tableì‹œì—
-    // request listì— ìˆëŠ” lock nodeì™€
-    // ê°±ì‹ ëœ table grant modeì™€ í˜¸í™˜ë ë•Œ, grant listì— ë³„ë„ë¡œ
-    // insertí•˜ì§€ ì•Šê³  , ê¸°ì¡´ cvs lock nodeì˜ lock modeë§Œ ê°±ì‹ ì‹œì¼œ
-    // list ì—°ì‚°ì„ ì¤„ì´ë ¤ëŠ” ì˜ë„ì—ì„œ ë„ì…ë˜ì—ˆìŒ.
+    // mCvsLockNode-> lock conflict¹ß»ı½Ã  ÇØ´ç table¿¡ grant
+    // µÈ lockÀ» ¼ÒÀ¯ÇÑ Tx¿¡ ´ëÇÏ¿©,  ÀÌÀü grantµÈ lock nodeÀÇ pointer¸¦
+    // request list¿¡ ´Ş lock node¿¡ ÀÌ¸¦ ÀúÀåÇÑ´Ù.
+    // ->³ªÁß¿¡ ´Ù¸¥ Æ®·£Àè¼Ç¿¡¼­  unlock table½Ã¿¡
+    // request list¿¡ ÀÖ´Â lock node¿Í
+    // °»½ÅµÈ table grant mode¿Í È£È¯µÉ¶§, grant list¿¡ º°µµ·Î
+    // insertÇÏÁö ¾Ê°í , ±âÁ¸ cvs lock nodeÀÇ lock mode¸¸ °»½Å½ÃÄÑ
+    // list ¿¬»êÀ» ÁÙÀÌ·Á´Â ÀÇµµ¿¡¼­ µµÀÔµÇ¾úÀ½.
     UInt             mLockCnt;
-    idBool           mBeGrant;   // grantë˜ì—ˆëŠ”ì§€ë¥¼ ë‚˜íƒ€ë‚´ëŠ” flag, BeGranted
+    idBool           mBeGrant;   // grantµÇ¾ú´ÂÁö¸¦ ³ªÅ¸³»´Â flag, BeGranted
     smlLockItem     *mLockItem;   
-    SInt             mFlag; // lock nodeì˜ ëŒ€í‘œë½.
-    idBool           mIsExplicitLock; // BUG-28752 implicit/explicit lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
+    SInt             mFlag; // lock nodeÀÇ ´ëÇ¥¶ô.
+    idBool           mIsExplicitLock; // BUG-28752 implicit/explicit lockÀ» ±¸ºĞÇÕ´Ï´Ù.
     
     //For Transaction
     smlLockNode     *mPrvTransLockNode;
@@ -143,15 +131,15 @@ typedef struct smlLockNode
 
 typedef struct smlLockMatrixItem
 {
-    UShort           mIndex;               // ê²½ë¡œ ê¸¸ì´.
+    UShort           mIndex;               // °æ·Î ±æÀÌ.
     UShort           mNxtWaitTransItem ;
-    // ì£¼ë¡œ table lockì˜ë¯¸ë¡œ
-    // ì‚¬ìš©ë ìˆ˜ ìˆì§€ë§Œ,record lockì—ì„œëŠ”
-    // ìì‹ ì´ ëŒ€ê¸°í•˜ê³  ìˆëŠ” íŠ¸ëœì­ì…˜ì˜ ë¦¬ìŠ¤íŠ¸ì—°ê²°ë¡œ
-    // ì‚¬ìš©ëœë‹¤.
+    // ÁÖ·Î table lockÀÇ¹Ì·Î
+    // »ç¿ëµÉ¼ö ÀÖÁö¸¸,record lock¿¡¼­´Â
+    // ÀÚ½ÅÀÌ ´ë±âÇÏ°í ÀÖ´Â Æ®·£Àè¼ÇÀÇ ¸®½ºÆ®¿¬°á·Î
+    // »ç¿ëµÈ´Ù.
     UShort           mNxtWaitRecTransItem;
-   // record lockì´ë¯¸, ìì‹ ì—ê²Œ record lockì„ ê¸°ë‹¤ë¦¬ê³  ìˆëŠ”
-    // ë¦¬ìŠ¤íŠ¸ë¡œ ì‚¬ìš©ëœë‹¤.
+   // record lockÀÌ¹Ì, ÀÚ½Å¿¡°Ô record lockÀ» ±â´Ù¸®°í ÀÖ´Â
+    // ¸®½ºÆ®·Î »ç¿ëµÈ´Ù.
 } smlLockMtxItem;
 
 typedef struct smlTableLockInfo
@@ -160,22 +148,38 @@ typedef struct smlTableLockInfo
     smlLockMode mLockMode;
 } smlTableLockInfo;
 
-// sml, smx ì˜ì¡´ì„±ì„ ì œê±°í•˜ê¸° ìœ„í•˜ì—¬,
-// ë„ì…ë¨.
-// íŠ¸ëœì­ì…˜ì´ lockì„ ì¡ì€ lock node list(mLockNodeHeader),
-// lock slit list(mLockSlotHeader)ì˜ í—¤ë”ë¥¼ ê°€ì§€ê³  ìˆë‹¤.
-// ê·¸ë¦¬ê³  waiting tableì—ì„œ íŠ¸ëœì­ì…˜ì˜ ê°€ì¥ ì²˜ìŒ table lockëŒ€ê¸°slot id,
-// record lock ëŒ€ê¸° slot idë¥¼ ì €ì¥í•˜ê³  ìˆë‹¤. 
+// sml, smx ÀÇÁ¸¼ºÀ» Á¦°ÅÇÏ±â À§ÇÏ¿©,
+// µµÀÔµÊ.
+// Æ®·£Àè¼ÇÀÌ lockÀ» ÀâÀº lock node list(mLockNodeHeader),
+// lock slit list(mLockSlotHeader)ÀÇ Çì´õ¸¦ °¡Áö°í ÀÖ´Ù.
+// ±×¸®°í waiting table¿¡¼­ Æ®·£Àè¼ÇÀÇ °¡Àå Ã³À½ table lock´ë±âslot id,
+// record lock ´ë±â slot id¸¦ ÀúÀåÇÏ°í ÀÖ´Ù. 
 typedef struct smlTransLockList
 {
     smlLockNode       mLockNodeHeader; // Lock Node Header
     smlLockSlot       mLockSlotHeader; // Lock Slot Header
-    UShort            mFstWaitTblTransItem; // ì²«ë²ˆì§¸ Table Lock Wait Transaction
-    UShort            mFstWaitRecTransItem; // ì²«ë²ˆì§¸ Record Lock Wait Transaction
-    UShort            mLstWaitRecTransItem; // ë§ˆì§€ë§‰ Record Lock Wait Transaction
+    UShort            mFstWaitTblTransItem; // Ã¹¹øÂ° Table Lock Wait Transaction
+    UShort            mFstWaitRecTransItem; // Ã¹¹øÂ° Record Lock Wait Transaction
+    UShort            mLstWaitRecTransItem; // ¸¶Áö¸· Record Lock Wait Transaction
     iduList           mLockNodeCache; /* BUG-43408 */
 
 } smlTransLockList;
+
+/* PROJ-2734 
+ * ºĞ»êµ¥µå¶ô Ã¼Å©´ë»óÀÌ µÇ´Â TXÀ» ¼±º°ÇÏ´Â °úÁ¤¿¡¼­ »ç¿ëÇÑ´Ù.
+ * ÀÚ¼¼ÇÑ ³»¿ëÀº smlLockMgr::isCycle() ÁÖ¼® ÂüÁ¶ */
+typedef enum
+{
+    SML_DIST_DEADLOCK_TX_NON_DIST_INFO = 0, /* ºĞ»êÁ¤º¸¾ø´ÂTX. ºĞ»êµ¥µå¶ô Ã¼Å©´ë»óÀº ¾Æ´Ï³ª, ºĞ»êÁ¤º¸ÀÖ´ÂTX ³ª¿Ã¶§±îÁö Å½»öÇØ¾ß ÇÑ´Ù. */
+    SML_DIST_DEADLOCK_TX_FIRST_DIST_INFO,   /* ´ë±â°ü°è¿¡¼­ Ã¹¹øÂ° ÀÖ´Â ºĞ»êÁ¤º¸ÀÖ´ÂTX. ºĞ»êµ¥µå¶ô Ã¼Å©´ë»óÀÌ´Ù. */
+    SML_DIST_DEADLOCK_TX_UNKNOWN            /* FIRST_DIST_INFO ÀÌÈÄ¿¡ ÀÖ´Â TXµé. ºĞ»êµ¥µå¶ô Ã¼Å©´ë»óÀÌ ¾Æ´Ï´Ù. */
+} smlDistDeadlockTxType;
+
+typedef struct smlDistDeadlockNode
+{
+    smTID                 mTransID;
+    smlDistDeadlockTxType mDistTxType;
+} smlDistDeadlockNode;
 
 typedef struct smlLockMode2StrTBL
 {

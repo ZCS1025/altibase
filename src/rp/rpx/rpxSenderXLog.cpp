@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxSenderXLog.cpp 84317 2018-11-12 00:39:24Z minku.kang $
+ * $Id: rpxSenderXLog.cpp 90152 2021-03-09 01:59:25Z yoonhee.kim $
  **********************************************************************/
 
 #include <idl.h>
@@ -38,10 +38,10 @@ smSN rpxSender::getNextRestartSN()
     smSN sTmpSN = SM_SN_NULL;
 
     mReplicator.getMinTransFirstSN( &sRestartSN );
-    if(sRestartSN == SM_SN_NULL)    // Transaction Tableì´ ë¹„ì—ˆì„ ê²½ìš°
+    if(sRestartSN == SM_SN_NULL)    // Transaction TableÀÌ ºñ¾úÀ» °æ¿ì
     {
-        // mXSNì„ ì‚¬ìš©í•˜ë©´, Active Transactionì´ ì—†ì„ ë•Œ Restart SNì´ ë§¤ìš° ë¹ˆë²ˆí•˜ê²Œ ê°±ì‹ ëœë‹¤.
-        // (mXSN ì¦ê°€ -> mXSN ì „ì†¡ -> ACK ìˆ˜ì‹  -> Restart SN ê°±ì‹  -> mXSN ì¦ê°€ -> ...)
+        // mXSNÀ» »ç¿ëÇÏ¸é, Active TransactionÀÌ ¾øÀ» ¶§ Restart SNÀÌ ¸Å¿ì ºó¹øÇÏ°Ô °»½ÅµÈ´Ù.
+        // (mXSN Áõ°¡ -> mXSN Àü¼Û -> ACK ¼ö½Å -> Restart SN °»½Å -> mXSN Áõ°¡ -> ...)
         sRestartSN = mCommitXSN;
     }
     if(isParallelParent() == ID_TRUE)
@@ -86,7 +86,7 @@ IDE_RC rpxSender::addXLogKeepAlive()
     IDE_TEST_RAISE( checkHBTFault() != IDE_SUCCESS, NORMAL_EXIT);
 
     /* PROJ-2453 */
-    if ( mMeta.mReplication.mReplMode == RP_EAGER_MODE )
+    if ( mMeta.getReplMode() == RP_EAGER_MODE )
     {
         sNeedMessengerLock = ID_TRUE;
     }
@@ -132,11 +132,11 @@ IDE_RC rpxSender::addXLogKeepAlive()
 }
 
 /***********************************************************************
- * Description : Networkë¥¼ ì¢…ë£Œí•˜ì§€ ì•Šê³  Handshakeë¥¼ ë‹¤ì‹œ ìˆ˜í–‰í•¨ì„
- *              Receiverì— ì•Œë¦°ë‹¤.
+ * Description : Network¸¦ Á¾·áÇÏÁö ¾Ê°í Handshake¸¦ ´Ù½Ã ¼öÇàÇÔÀ»
+ *              Receiver¿¡ ¾Ë¸°´Ù.
  *
  ***********************************************************************/
-IDE_RC rpxSender::addXLogHandshake()
+IDE_RC rpxSender::addXLogHandshake( smTID aTID )
 {
     IDE_RC sRC;
     idBool sNeedMessengerLock = ID_FALSE;
@@ -144,7 +144,7 @@ IDE_RC rpxSender::addXLogHandshake()
     IDE_TEST_RAISE( checkHBTFault() != IDE_SUCCESS, NORMAL_EXIT);
 
     /* PROJ-2453 */
-    if ( mMeta.mReplication.mReplMode == RP_EAGER_MODE )
+    if ( mMeta.getReplMode() == RP_EAGER_MODE )
     {
         sNeedMessengerLock = ID_TRUE;
     }
@@ -153,7 +153,10 @@ IDE_RC rpxSender::addXLogHandshake()
         sNeedMessengerLock = ID_FALSE;
     }
     
-    sRC = mMessenger.sendXLogHandshake( mXSN, mReplicator.getFlushSN(), sNeedMessengerLock );
+    sRC = mMessenger.sendXLogHandshake( aTID,
+                                        mXSN,
+                                        mReplicator.getFlushSN(),
+                                        sNeedMessengerLock );
     if(sRC != IDE_SUCCESS)
     {
         IDE_TEST_RAISE((ideGetErrorCode() == cmERR_ABORT_CONNECTION_CLOSED) ||
@@ -187,8 +190,8 @@ IDE_RC rpxSender::addXLogHandshake()
 }
 
 /******************************************************************************
- * Description : Incremental Sync Primary Key Beginë¥¼ ì „ì†¡í•˜ì—¬,
- *               Incremental Syncë¥¼ ìœ„í•œ Primary Keyë¥¼ ì „ì†¡í•  ê²ƒìž„ì„ ì•Œë¦°ë‹¤.
+ * Description : Incremental Sync Primary Key Begin¸¦ Àü¼ÛÇÏ¿©,
+ *               Incremental Sync¸¦ À§ÇÑ Primary Key¸¦ Àü¼ÛÇÒ °ÍÀÓÀ» ¾Ë¸°´Ù.
  *               (Failback Slave -> Failback Master)
  *
  ******************************************************************************/
@@ -196,7 +199,8 @@ IDE_RC rpxSender::addXLogSyncPKBegin()
 {
     IDE_RC sRC = IDE_SUCCESS;
 
-    IDE_DASSERT(mStatus == RP_SENDER_FAILBACK_SLAVE);
+    IDE_DASSERT( ( mStatus == RP_SENDER_FAILBACK_SLAVE ) || 
+                 ( mCurrentType == RP_XLOGFILE_FAILBACK_SLAVE ) );
 
     IDE_TEST_RAISE( checkHBTFault() != IDE_SUCCESS, NORMAL_EXIT);
 
@@ -234,8 +238,8 @@ IDE_RC rpxSender::addXLogSyncPKBegin()
 }
 
 /******************************************************************************
- * Description : Incremental Sync Primary Key Endë¥¼ ì „ì†¡í•˜ì—¬,
- *               Incremental Syncë¥¼ ìœ„í•œ Primary Keyê°€ ë” ì´ìƒ ì—†ìŒì„ ì•Œë¦°ë‹¤.
+ * Description : Incremental Sync Primary Key End¸¦ Àü¼ÛÇÏ¿©,
+ *               Incremental Sync¸¦ À§ÇÑ Primary Key°¡ ´õ ÀÌ»ó ¾øÀ½À» ¾Ë¸°´Ù.
  *               (Failback Slave -> Failback Master)
  *
  ******************************************************************************/
@@ -243,7 +247,8 @@ IDE_RC rpxSender::addXLogSyncPKEnd()
 {
     IDE_RC sRC = IDE_SUCCESS;
 
-    IDE_DASSERT(mStatus == RP_SENDER_FAILBACK_SLAVE);
+    IDE_DASSERT( ( mStatus == RP_SENDER_FAILBACK_SLAVE ) || 
+                 ( mCurrentType == RP_XLOGFILE_FAILBACK_SLAVE ) );
 
     IDE_TEST_RAISE( checkHBTFault() != IDE_SUCCESS, NORMAL_EXIT);
 
@@ -281,7 +286,7 @@ IDE_RC rpxSender::addXLogSyncPKEnd()
 }
 
 /******************************************************************************
- * Description : Failback Endë¥¼ ì „ì†¡í•˜ì—¬, Failbackì´ ì™„ë£Œë˜ì—ˆìŒì„ ì•Œë¦°ë‹¤.
+ * Description : Failback End¸¦ Àü¼ÛÇÏ¿©, FailbackÀÌ ¿Ï·áµÇ¾úÀ½À» ¾Ë¸°´Ù.
  *               (Failback Master -> Failback Slave)
  *
  ******************************************************************************/
@@ -289,7 +294,8 @@ IDE_RC rpxSender::addXLogFailbackEnd()
 {
     IDE_RC sRC = IDE_SUCCESS;
 
-    IDE_DASSERT(mStatus == RP_SENDER_FAILBACK_MASTER);
+    IDE_DASSERT( ( mStatus == RP_SENDER_FAILBACK_MASTER ) || 
+                 ( mCurrentType == RP_XLOGFILE_FAILBACK_MASTER ) );
 
     IDE_TEST_RAISE( checkHBTFault() != IDE_SUCCESS, NORMAL_EXIT);
 
@@ -332,7 +338,7 @@ IDE_RC rpxSender::addXLogAckOnDML()
 }
 
 /*******************************************************************************
- * Description : Incremental Sync Rowì„ ì „ì†¡í•œë‹¤.
+ * Description : Incremental Sync RowÀ» Àü¼ÛÇÑ´Ù.
  *               (Failback Master -> Failback Slave)
  *
  ******************************************************************************/
@@ -341,7 +347,9 @@ IDE_RC rpxSender::addXLogSyncRow(rpdSyncPKEntry *aSyncPKEntry)
     IDE_RC       sRC       = IDE_SUCCESS;
     rpdMetaItem *sMetaItem = NULL;
 
-    IDE_DASSERT(mStatus == RP_SENDER_FAILBACK_MASTER);
+    IDE_DASSERT( ( mStatus == RP_SENDER_FAILBACK_MASTER ) || 
+                 ( mCurrentType == RP_XLOGFILE_FAILBACK_MASTER ) );
+    
     IDE_DASSERT(aSyncPKEntry->mType == RP_SYNC_PK);
 
     // check existence of TABLE
@@ -350,7 +358,7 @@ IDE_RC rpxSender::addXLogSyncRow(rpdSyncPKEntry *aSyncPKEntry)
 
     IDE_TEST_RAISE( checkHBTFault() != IDE_SUCCESS, NORMAL_EXIT);
 
-    // Deleteë¥¼ ì „ì†¡í•œë‹¤.
+    // Delete¸¦ Àü¼ÛÇÑ´Ù.
     sRC = mMessenger.sendXLogDelete( aSyncPKEntry->mTableOID,
                                      aSyncPKEntry->mPKColCnt,
                                      aSyncPKEntry->mPKCols,
@@ -365,7 +373,7 @@ IDE_RC rpxSender::addXLogSyncRow(rpdSyncPKEntry *aSyncPKEntry)
                         ERR_NETWORK);
         IDE_RAISE(ERR_ETC);
     }
-    // Rowê°€ ìžˆìœ¼ë©´, Insert(LOB í¬í•¨)ë¥¼ ì „ì†¡í•œë‹¤.
+    // Row°¡ ÀÖÀ¸¸é, Insert(LOB Æ÷ÇÔ)¸¦ Àü¼ÛÇÑ´Ù.
     sRC = syncRow(sMetaItem, aSyncPKEntry->mPKCols);
 
     if(sRC != IDE_SUCCESS)
@@ -400,7 +408,7 @@ IDE_RC rpxSender::addXLogSyncRow(rpdSyncPKEntry *aSyncPKEntry)
 }
 
 /*******************************************************************************
- * Description : Incremental Sync Commitì„ ì „ì†¡í•œë‹¤.
+ * Description : Incremental Sync CommitÀ» Àü¼ÛÇÑ´Ù.
  *               (Failback Master -> Failback Slave)
  *
  ******************************************************************************/
@@ -408,8 +416,9 @@ IDE_RC rpxSender::addXLogSyncCommit()
 {
     IDE_RC sRC = IDE_SUCCESS;
 
-    IDE_DASSERT(mStatus == RP_SENDER_FAILBACK_MASTER);
-
+    IDE_DASSERT( ( mStatus == RP_SENDER_FAILBACK_MASTER ) || 
+                 ( mCurrentType == RP_XLOGFILE_FAILBACK_MASTER ) );
+ 
     IDE_TEST_RAISE( checkHBTFault() != IDE_SUCCESS, NORMAL_EXIT);
 
     sRC = mMessenger.sendXLogTrCommit();
@@ -446,7 +455,7 @@ IDE_RC rpxSender::addXLogSyncCommit()
 }
 
 /*******************************************************************************
- * Description : Incremental Sync Abortë¥¼ ì „ì†¡í•œë‹¤.
+ * Description : Incremental Sync Abort¸¦ Àü¼ÛÇÑ´Ù.
  *               (Failback Master -> Failback Slave)
  *
  ******************************************************************************/
@@ -454,7 +463,8 @@ IDE_RC rpxSender::addXLogSyncAbort()
 {
     IDE_RC sRC = IDE_SUCCESS;
 
-    IDE_DASSERT(mStatus == RP_SENDER_FAILBACK_MASTER);
+    IDE_DASSERT( ( mStatus == RP_SENDER_FAILBACK_MASTER ) || 
+                 ( mCurrentType == RP_XLOGFILE_FAILBACK_MASTER ) );
 
     IDE_TEST_RAISE( checkHBTFault() != IDE_SUCCESS, NORMAL_EXIT);
 
@@ -492,7 +502,7 @@ IDE_RC rpxSender::addXLogSyncAbort()
 }
 
 /***********************************************************************
- * Description : Rowë¥¼ Selectí•˜ê³ , ìžˆìœ¼ë©´ Insert(LOB í¬í•¨)ë¡œ ì „ì†¡í•œë‹¤.
+ * Description : Row¸¦ SelectÇÏ°í, ÀÖÀ¸¸é Insert(LOB Æ÷ÇÔ)·Î Àü¼ÛÇÑ´Ù.
  *
  **********************************************************************/
 IDE_RC rpxSender::syncRow(rpdMetaItem *aMetaItem,
@@ -502,7 +512,6 @@ IDE_RC rpxSender::syncRow(rpdMetaItem *aMetaItem,
     SInt                 sTxStage            = 0;
     idBool               sIsTxBegin          = ID_FALSE;
     smiStatement       * spRootStmt          = NULL;
-    smSCN                sDummySCN;
     UInt                 sFlag               = 0;
     smiStatement         sSmiStmt;
     smiRange             sKeyRange;
@@ -539,8 +548,22 @@ IDE_RC rpxSender::syncRow(rpdMetaItem *aMetaItem,
     sFlag = (sFlag & ~SMI_TRANSACTION_REPL_MASK) | SMI_TRANSACTION_REPL_NONE;
     sFlag = (sFlag & ~SMI_COMMIT_WRITE_MASK) | SMI_COMMIT_WRITE_NOWAIT;
 
-    IDE_TEST(sTrans.begin(&spRootStmt, NULL, sFlag, SMX_NOT_REPL_TX_ID)
-             != IDE_SUCCESS);
+    if ( mCurrentType == RP_XLOGFILE_FAILBACK_MASTER )
+    {
+        sFlag = (sFlag & ~SMI_TRANS_GCTX_MASK) | SMI_TRANS_GCTX_ON;
+
+        IDE_TEST(sTrans.begin(&spRootStmt, NULL, sFlag, SMX_NOT_REPL_TX_ID)
+                 != IDE_SUCCESS);
+
+        sTrans.setIndoubtFetchTimeout(1);
+        sTrans.setIndoubtFetchMethod(1);
+    }
+    else
+    {
+        IDE_TEST(sTrans.begin(&spRootStmt, NULL, sFlag, SMX_NOT_REPL_TX_ID )
+                 != IDE_SUCCESS);
+    }
+        
     sIsTxBegin = ID_TRUE;
     sTxStage = 2;
 
@@ -551,7 +574,8 @@ IDE_RC rpxSender::syncRow(rpdMetaItem *aMetaItem,
               != IDE_SUCCESS );
     sTxStage = 3;
 
-    // Tableì„ ì ‘ê·¼í•˜ê¸° ì „ì— IS LOCKì„ ìž¡ëŠ”ë‹¤.
+
+    // TableÀ» Á¢±ÙÇÏ±â Àü¿¡ IS LOCKÀ» Àâ´Â´Ù.
     IDE_TEST( aMetaItem->lockReplItem( &sTrans,
                                        &sSmiStmt,
                                        SMI_TBSLV_DDL_DML,
@@ -562,7 +586,7 @@ IDE_RC rpxSender::syncRow(rpdMetaItem *aMetaItem,
     sTable = (void *)smiGetTable( (smOID)aMetaItem->mItem.mTableOID );
     sSCN   = smiGetRowSCN(sTable);
 
-    // Table OIDì™€ PKë¡œ Key Rangeë¥¼ ì–»ëŠ”ë‹¤.
+    // Table OID¿Í PK·Î Key Range¸¦ ¾ò´Â´Ù.
     IDE_TEST( getKeyRange( (smOID)aMetaItem->mItem.mTableOID,
                            aPKCols,
                            &sKeyRange,
@@ -576,20 +600,20 @@ IDE_RC rpxSender::syncRow(rpdMetaItem *aMetaItem,
     if((SMI_MISC_TABLE_HEADER(sTable)->mFlag & SMI_TABLE_TYPE_MASK)
        == SMI_TABLE_DISK)
     {
-        /* PROJ-1705 Fetch Column Listë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ í• ë‹¹ */
+        /* PROJ-1705 Fetch Column List¸¦ À§ÇÑ ¸Þ¸ð¸® ÇÒ´ç */
         IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_RP_RPX_SENDER,
                                          ID_SIZEOF(smiFetchColumnList) * sColCount,
                                          (void **)&sFetchColumnList,
                                          IDU_MEM_IMMEDIATE)
                        != IDE_SUCCESS, ERR_MEMORY_ALLOC_FETCH_COLUMN_LIST);
 
-        // PROJ-1705 Fetch Column List êµ¬ì„±
+        // PROJ-1705 Fetch Column List ±¸¼º
         IDE_TEST(makeFetchColumnList((smOID)aMetaItem->mItem.mTableOID,
                                      sFetchColumnList)
                  != IDE_SUCCESS);
     }
 
-    // smiCursorPropertiesì— fetch Column List ì •ë³´ ì„¤ì •
+    // smiCursorProperties¿¡ fetch Column List Á¤º¸ ¼³Á¤
     sProperty.mFetchColumnList = sFetchColumnList;
 
     sCursor.initialize();
@@ -613,12 +637,12 @@ IDE_RC rpxSender::syncRow(rpdMetaItem *aMetaItem,
     if((SMI_MISC_TABLE_HEADER(sTable)->mFlag & SMI_TABLE_TYPE_MASK)
        == SMI_TABLE_DISK)
     {
-        /* ë©”ëª¨ë¦¬ í• ë‹¹ì„ ìœ„í•´ì„œ, í˜„ìž¬ ì½ì–´ì•¼ í•  Rowì˜ sizeë¥¼ ë¨¼ì € ì–»ì–´ì™€ì•¼ í•¨ */
+        /* ¸Þ¸ð¸® ÇÒ´çÀ» À§ÇØ¼­, ÇöÀç ÀÐ¾î¾ß ÇÒ RowÀÇ size¸¦ ¸ÕÀú ¾ò¾î¿Í¾ß ÇÔ */
         IDE_TEST(qciMisc::getDiskRowSize(sTable,
                                          &sRowSize)
                  != IDE_SUCCESS);
 
-        /* Rowë¥¼ ì €ìž¥í•  Memoryë¥¼ í• ë‹¹í•´ì•¼ í•¨ */
+        /* Row¸¦ ÀúÀåÇÒ Memory¸¦ ÇÒ´çÇØ¾ß ÇÔ */
         IDE_TEST_RAISE(iduMemMgr::calloc(IDU_MEM_RP_RPX_SENDER,
                                          1,
                                          sRowSize,
@@ -629,7 +653,7 @@ IDE_RC rpxSender::syncRow(rpdMetaItem *aMetaItem,
         sRow = (void *)sRealRow;
     }
 
-    /* mtcColumnì„ ìœ„í•œ Memoryë¥¼ í• ë‹¹í•´ì•¼ í•¨ */
+    /* mtcColumnÀ» À§ÇÑ Memory¸¦ ÇÒ´çÇØ¾ß ÇÔ */
     IDE_TEST_RAISE(iduMemMgr::calloc(IDU_MEM_RP_RPX_SENDER,
                                      sColCount,
                                      ID_SIZEOF(mtcColumn),
@@ -637,7 +661,7 @@ IDE_RC rpxSender::syncRow(rpdMetaItem *aMetaItem,
                                      IDU_MEM_IMMEDIATE)
                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_MTC_COL);
 
-    /* mtcColumn ì •ë³´ì˜ copyë³¸ì„ ìƒì„± */
+    /* mtcColumn Á¤º¸ÀÇ copyº»À» »ý¼º */
     IDE_TEST(qciMisc::copyMtcColumns( sTable, sMtcCol ) != IDE_SUCCESS);
 
     if((SMI_MISC_TABLE_HEADER(sTable)->mFlag & SMI_TABLE_TYPE_MASK)
@@ -648,7 +672,7 @@ IDE_RC rpxSender::syncRow(rpdMetaItem *aMetaItem,
         {
             sColumn = sMtcCol + i;
             // To fix BUG-24356
-            // geometryì— ëŒ€í•´ì„œë§Œ bufferí• ë‹¹
+            // geometry¿¡ ´ëÇØ¼­¸¸ bufferÇÒ´ç
             if( ( (sColumn->column.flag & SMI_COLUMN_TYPE_MASK)
                    == SMI_COLUMN_TYPE_VARIABLE_LARGE ) &&
                 (sColumn->module->id == MTD_GEOMETRY_ID) )
@@ -676,7 +700,7 @@ IDE_RC rpxSender::syncRow(rpdMetaItem *aMetaItem,
                 sColumn = sMtcCol + i;
 
                 // To fix BUG-24356
-                // geometryì— ëŒ€í•´ì„œë§Œ value bufferí• ë‹¹
+                // geometry¿¡ ´ëÇØ¼­¸¸ value bufferÇÒ´ç
                 if ( ( (sColumn->column.flag & SMI_COLUMN_TYPE_MASK)
                        == SMI_COLUMN_TYPE_VARIABLE_LARGE ) &&
                      (sColumn->module->id == MTD_GEOMETRY_ID) )
@@ -756,8 +780,8 @@ IDE_RC rpxSender::syncRow(rpdMetaItem *aMetaItem,
     sTxStage = 3;
     IDE_TEST(sCursor.close() != IDE_SUCCESS);
 
-    sTxStage = 2;
     IDE_TEST(sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
+    sTxStage = 2;
 
     if(sFetchColumnList != NULL)
     {
@@ -766,7 +790,7 @@ IDE_RC rpxSender::syncRow(rpdMetaItem *aMetaItem,
     }
 
     sTxStage = 1;
-    IDE_TEST(sTrans.commit(&sDummySCN) != IDE_SUCCESS);
+    IDE_TEST(sTrans.commit() != IDE_SUCCESS);
     sIsTxBegin = ID_FALSE;
 
     sTxStage = 0;
@@ -860,13 +884,13 @@ void rpxSender::setNetworkErrorAndDeactivate( void )
     IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_SENDER_SEND_ERROR ) );
     
     mRetryError = ID_TRUE;
-    mSenderInfo->deActivate(); //isDisconnect()
+    mSenderInfo->checkAndRunDeactivate(); //isDisconnect()
 }
 
 void rpxSender::setRestartErrorAndDeactivate( void )
 {
     mRetryError = ID_TRUE;
-    mSenderInfo->deActivate(); 
+    mSenderInfo->checkAndRunDeactivate(); 
 }
 /*
  *
@@ -891,7 +915,7 @@ IDE_RC rpxSender::checkHBTFault( void )
         IDE_SET( ideSetErrorCode( rpERR_ABORT_HBT_DETECT_PEER_SERVER_ERROR ) );
 
         mRetryError = ID_TRUE;
-        mSenderInfo->deActivate(); //isDisconnect()
+        mSenderInfo->checkAndRunDeactivate(); //isDisconnect()
     }
     IDE_EXCEPTION_END;
 

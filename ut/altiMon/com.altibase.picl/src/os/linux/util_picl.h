@@ -45,6 +45,13 @@
 #define CP_WAIT 3
 #define CP_IDLE 4
 
+/* PrcCpu_Update */
+#define PROC_USER 0
+#define PROC_SYS  1
+#define CPU_USER  2
+#define CPU_SYS   3
+#define CPU_TOTAL 4 
+
 #define DECIMALBASE 10
 
 #define PROC "/proc/"

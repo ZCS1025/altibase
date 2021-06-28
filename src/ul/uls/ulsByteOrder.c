@@ -16,7 +16,7 @@
 
 /***********************************************************************
  *
- * Spatio-Temporal Byte Order ì¡°ì • í•¨ìˆ˜
+ * Spatio-Temporal Byte Order Á¶Á¤ ÇÔ¼ö
  *
  ***********************************************************************/
 
@@ -32,7 +32,7 @@
  *
  * Description:
  *
- *   ì „ì†¡ë°›ì€ Geometry ê°ì²´ë¥¼ Systemì— ë§ë„ë¡ Byte Orderë¥¼ ì¡°ì •í•œë‹¤.
+ *   Àü¼Û¹ŞÀº Geometry °´Ã¼¸¦ System¿¡ ¸Âµµ·Ï Byte Order¸¦ Á¶Á¤ÇÑ´Ù.
  *
  * Implementation:
  *
@@ -54,7 +54,7 @@ ulsAdjustByteOrder( ulsHandle         * aHandle,
     ACI_TEST_RAISE( aObject == NULL, ERR_NULL_PARAMETER );
 
     /*------------------------------*/
-    /* Endian ë³€ê²½ì´ í•„ìš”í•œì§€ë¥¼ ê²€ì‚¬*/
+    /* Endian º¯°æÀÌ ÇÊ¿äÇÑÁö¸¦ °Ë»ç*/
     /*------------------------------*/
 
     ACI_TEST( ulsIsEquiEndian( aHandle,
@@ -62,16 +62,16 @@ ulsAdjustByteOrder( ulsHandle         * aHandle,
                                & sEquiEndian ) != ACI_SUCCESS );
 
     /*------------------------------*/
-    /* Endian ë³€ê²½*/
+    /* Endian º¯°æ*/
     /*------------------------------*/
 
     if ( sEquiEndian == ACP_TRUE )
     {
-        /* ë™ì¼í•œ Byte Orderì„.*/
+        /* µ¿ÀÏÇÑ Byte OrderÀÓ.*/
     }
     else
     {
-        /* ì„œë¡œ ë‹¤ë¥¸ Byte Orderë¡œ Endianì„ ë³€ê²½í•¨.*/
+        /* ¼­·Î ´Ù¸¥ Byte Order·Î EndianÀ» º¯°æÇÔ.*/
         ACI_TEST( ulsEndian( aHandle, aObject ) != ACS_SUCCESS );
     }
     
@@ -97,7 +97,7 @@ ulsAdjustByteOrder( ulsHandle         * aHandle,
  *
  * Description:
  *
- *   Geometry ê°ì²´ì˜ Endianì„ ë³€ê²½í•œë‹¤.
+ *   Geometry °´Ã¼ÀÇ EndianÀ» º¯°æÇÑ´Ù.
  *
  * Implementation:
  *
@@ -136,42 +136,70 @@ ulsEndian( ulsHandle         * aHandle,
         case STD_UNKNOWN_TYPE:
             ACI_RAISE( ERR_INVALID_DATA_TYPE );
             break;
+        case STD_POINT_2D_EXT_TYPE:
+            ACI_TEST( ulsEndianSRID( aHandle,
+                                     &(((stdPoint2DExtType*) aObject)->mSRID) )
+                      != ACI_SUCCESS );
         case STD_POINT_2D_TYPE:
             ACI_TEST( ulsEndianPoint2D( aHandle,
                                         sEquiEndian,
                                         (stdPoint2DType*) aObject )
                       != ACI_SUCCESS );
             break;
+        case STD_LINESTRING_2D_EXT_TYPE:
+            ACI_TEST( ulsEndianSRID( aHandle,
+                                     &(((stdLineString2DExtType*) aObject)->mSRID) )
+                      != ACI_SUCCESS );
         case STD_LINESTRING_2D_TYPE:
             ACI_TEST( ulsEndianLineString2D( aHandle,
                                              sEquiEndian,
                                              (stdLineString2DType*) aObject )
                       != ACI_SUCCESS );
             break;
+        case STD_POLYGON_2D_EXT_TYPE:
+            ACI_TEST( ulsEndianSRID( aHandle,
+                                     &(((stdPolygon2DExtType*) aObject)->mSRID) )
+                      != ACI_SUCCESS );
         case STD_POLYGON_2D_TYPE:
             ACI_TEST( ulsEndianPolygon2D( aHandle,
                                           sEquiEndian,
                                           (stdPolygon2DType*) aObject )
                       != ACI_SUCCESS );
             break;
+        case STD_MULTIPOINT_2D_EXT_TYPE:
+            ACI_TEST( ulsEndianSRID( aHandle,
+                                     &(((stdMultiPoint2DExtType*) aObject)->mSRID) )
+                      != ACI_SUCCESS );
         case STD_MULTIPOINT_2D_TYPE:
             ACI_TEST( ulsEndianMultiPoint2D( aHandle,
                                              sEquiEndian,
                                              (stdMultiPoint2DType*) aObject )
                       != ACI_SUCCESS );
             break;
+        case STD_MULTILINESTRING_2D_EXT_TYPE:
+            ACI_TEST( ulsEndianSRID( aHandle,
+                                     &(((stdMultiLineString2DExtType*) aObject)->mSRID) )
+                      != ACI_SUCCESS );
         case STD_MULTILINESTRING_2D_TYPE:
             ACI_TEST( ulsEndianMultiLineString2D( aHandle,
                                                   sEquiEndian,
                                                   (stdMultiLineString2DType*) aObject )
                       != ACI_SUCCESS );
             break;
+        case STD_MULTIPOLYGON_2D_EXT_TYPE:
+            ACI_TEST( ulsEndianSRID( aHandle,
+                                     &(((stdMultiPolygon2DExtType*) aObject)->mSRID) )
+                      != ACI_SUCCESS );
         case STD_MULTIPOLYGON_2D_TYPE:
             ACI_TEST( ulsEndianMultiPolygon2D( aHandle,
                                                sEquiEndian,
                                                (stdMultiPolygon2DType*) aObject )
                       != ACI_SUCCESS );
             break;
+        case STD_GEOCOLLECTION_2D_EXT_TYPE:
+            ACI_TEST( ulsEndianSRID( aHandle,
+                                     &(((stdGeoCollection2DExtType*) aObject)->mSRID) )
+                      != ACI_SUCCESS );
         case STD_GEOCOLLECTION_2D_TYPE:
             ACI_TEST( ulsEndianGeomCollection2D( aHandle,
                                                  sEquiEndian,
@@ -218,7 +246,7 @@ ulsEndian( ulsHandle         * aHandle,
  *
  * Description:
  *
- *   Double Dataì˜ Endianì„ ë³€ê²½
+ *   Double DataÀÇ EndianÀ» º¯°æ
  *
  * Implementation:
  *
@@ -257,7 +285,7 @@ ulsEndianDouble( void* aValue )
  *
  * Description:
  *
- *   Integer Dataì˜ Endianì„ ë³€ê²½
+ *   Integer DataÀÇ EndianÀ» º¯°æ
  *
  * Implementation:
  *
@@ -292,7 +320,7 @@ ulsEndianInteger( void* aValue )
  *
  * Description:
  *
- *   Short Dataì˜ Endianì„ ë³€ê²½
+ *   Short DataÀÇ EndianÀ» º¯°æ
  *
  * Implementation:
  *
@@ -324,7 +352,7 @@ ulsEndianShort( void* aValue )
  *
  * Description:
  *
- *   Systemì˜ Endianê³¼ Dataì˜ Endianì´ ë™ì¼í•œì§€ë¥¼ íŒë‹¨
+ *   SystemÀÇ Endian°ú DataÀÇ EndianÀÌ µ¿ÀÏÇÑÁö¸¦ ÆÇ´Ü
  *
  * Implementation:
  *
@@ -398,7 +426,7 @@ ulsIsEquiEndian( ulsHandle         * aHandle,
  *
  * Description:
  *
- *   Geometry Headerì˜ Endianì„ ë³€ê²½í•œë‹¤.
+ *   Geometry HeaderÀÇ EndianÀ» º¯°æÇÑ´Ù.
  *
  * Implementation:
  *
@@ -437,12 +465,41 @@ ulsEndianHeader( ulsHandle         * aHandle,
     return ACI_SUCCESS;
 }
 
+/*----------------------------------------------------------------*
+ *
+ * Description: PROJ-2422 SRID
+ *
+ *   SRIDÀÇ EndianÀ» º¯°æÇÑ´Ù.
+ *
+ * Implementation:
+ *
+ *---------------------------------------------------------------*/
+ACI_RC
+ulsEndianSRID( ulsHandle     * aHandle,
+               acp_sint32_t  * aSRID )
+{
+    /*------------------------------*/
+    /* Parameter Validation*/
+    /*------------------------------*/
+    
+    ACE_ASSERT( aHandle != NULL );
+    ACE_ASSERT( aSRID != NULL );
+
+    /*------------------------------*/
+    /* Change Object Body*/
+    /*------------------------------*/
+
+    ulsEndianInteger( aSRID );
+    
+    return ACI_SUCCESS;
+}
+
 
 /*----------------------------------------------------------------*
  *
  * Description:
  *
- *   2D Point Geometry ê°ì²´ì˜ Endianì„ ë³€ê²½í•œë‹¤.
+ *   2D Point Geometry °´Ã¼ÀÇ EndianÀ» º¯°æÇÑ´Ù.
  *
  * Implementation:
  *
@@ -547,7 +604,7 @@ ulsEndianLinearRing2D(  ulsHandle        * aHandle,
     /* Parameter Validation*/
     /*------------------------------*/
 
-    /* BUG-28414 : warnning ì œê±° */ 
+    /* BUG-28414 : warnning Á¦°Å */ 
     ACE_ASSERT( aHandle != NULL );
     ACE_ASSERT( aObject != NULL );
 

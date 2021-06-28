@@ -213,7 +213,7 @@ SECTION = 12
 # *Cause:
 #   - An AltiLinker process execution file does not exist or the wrong file path is used.
 # *Action:
-#   - Can not find or access 'ALTIBASE_HOME/bin/altilinker.jar' file.
+#   - Can not find or access 'ALTIBASE_HOME/bin/altilinker.jar' file. 
 
 32,dkERR_ABORT_DKA_FORK_EXEC_LINKER_PROCESS = Unable to execute Altilinker process.
 # *Cause:

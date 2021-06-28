@@ -18,11 +18,11 @@
 /***********************************************************************
  * $Id$
  *
- * Description : ShardDML Graphë¥¼ ìœ„í•œ ìˆ˜í–‰ í•¨ìˆ˜
+ * Description : ShardDML Graph¸¦ À§ÇÑ ¼öÇà ÇÔ¼ö
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -33,16 +33,16 @@
 #include <qmgShardDML.h>
 #include <qmoOneNonPlan.h>
 
-IDE_RC qmgShardDML::init( qcStatement     * aStatement,
-                          qcNamePosition  * aShardQuery,
-                          sdiAnalyzeInfo  * aShardAnalysis,
-                          UShort            aShardParamOffset,
-                          UShort            aShardParamCount,
-                          qmgGraph       ** aGraph )
+IDE_RC qmgShardDML::init( qcStatement      * aStatement,
+                          qcNamePosition   * aShardQuery,
+                          sdiAnalyzeInfo   * aShardAnalysis,
+                          qcShardParamInfo * aShardParamInfo,  /* TASK-7219 Non-shard DML */
+                          UShort             aShardParamCount,
+                          qmgGraph        ** aGraph )
 {
 /***********************************************************************
  *
- * Description : qmgShardDML Graphì˜ ì´ˆê¸°í™”
+ * Description : qmgShardDML GraphÀÇ ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -56,22 +56,22 @@ IDE_RC qmgShardDML::init( qcStatement     * aStatement,
     IDU_FIT_POINT_FATAL( "qmgShardDML::init::__FT__" );
 
     //---------------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
     IDE_FT_ASSERT( aShardQuery != NULL );
 
     //---------------------------------------------------
-    // ShardDML Graphë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
+    // ShardDML Graph¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
     //---------------------------------------------------
 
-    // qmgShardDMLì„ ìœ„í•œ ê³µê°„ í• ë‹¹
+    // qmgShardDMLÀ» À§ÇÑ °ø°£ ÇÒ´ç
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmgSHARDDML ),
                                              (void**) &sMyGraph )
               != IDE_SUCCESS );
 
-    // Graph ê³µí†µ ì •ë³´ì˜ ì´ˆê¸°í™”
+    // Graph °øÅë Á¤º¸ÀÇ ÃÊ±âÈ­
     IDE_TEST( qmg::initGraph( & sMyGraph->graph ) != IDE_SUCCESS );
 
     sMyGraph->graph.type = QMG_SHARD_DML;
@@ -84,7 +84,7 @@ IDE_RC qmgShardDML::init( qcStatement     * aStatement,
     sMyGraph->graph.flag |=  QMG_GRAPH_TYPE_DISK;
 
     //---------------------------------------------------
-    // ShardDML ê³ ìœ  ì •ë³´ì˜ ì´ˆê¸°í™”
+    // ShardDML °íÀ¯ Á¤º¸ÀÇ ÃÊ±âÈ­
     //---------------------------------------------------
 
     sMyGraph->shardQuery.stmtText = aShardQuery->stmtText;
@@ -92,12 +92,12 @@ IDE_RC qmgShardDML::init( qcStatement     * aStatement,
     sMyGraph->shardQuery.size     = aShardQuery->size;
 
     sMyGraph->shardAnalysis = aShardAnalysis;
-    sMyGraph->shardParamOffset = aShardParamOffset;
+    sMyGraph->shardParamInfo = aShardParamInfo; /* TASK-7219 Non-shard DML */
     sMyGraph->shardParamCount = aShardParamCount;
 
     sMyGraph->flag = QMG_SHARDDML_FLAG_CLEAR;
 
-    // out ì„¤ì •
+    // out ¼³Á¤
     *aGraph = (qmgGraph *)sMyGraph;
 
     return IDE_SUCCESS;
@@ -112,11 +112,11 @@ IDE_RC qmgShardDML::optimize( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgShardDML ì˜ ìµœì í™”
+ * Description : qmgShardDML ÀÇ ÃÖÀûÈ­
  *
  * Implementation :
  *
- *      - ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì •
+ *      - °øÅë ºñ¿ë Á¤º¸ ¼³Á¤
  *
  ***********************************************************************/
 
@@ -125,20 +125,20 @@ IDE_RC qmgShardDML::optimize( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgShardDML::optimize::__FT__" );
 
     //---------------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
     IDE_FT_ASSERT( aGraph != NULL );
 
     //---------------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //---------------------------------------------------
 
     sMyGraph = (qmgSHARDDML *)aGraph;
 
     //---------------------------------------------------
-    // ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì • (recordSize, inputRecordCnt)
+    // °øÅë ºñ¿ë Á¤º¸ ¼³Á¤ (recordSize, inputRecordCnt)
     //---------------------------------------------------
 
     // inputRecordCnt
@@ -164,7 +164,7 @@ IDE_RC qmgShardDML::optimize( qcStatement * aStatement,
     sMyGraph->graph.costInfo.totalAllCost = 0;
 
     //---------------------------------------------------
-    // Preserved Order ì„¤ì •
+    // Preserved Order ¼³Á¤
     //---------------------------------------------------
 
     sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
@@ -178,7 +178,7 @@ IDE_RC qmgShardDML::makePlan( qcStatement    * aStatement,
 {
 /***********************************************************************
  *
- *  Description : qmgShardDML ë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
+ *  Description : qmgShardDML ·Î ºÎÅÍ PlanÀ» »ý¼ºÇÑ´Ù.
  *
  *  Implementation :
  *
@@ -190,7 +190,7 @@ IDE_RC qmgShardDML::makePlan( qcStatement    * aStatement,
     IDU_FIT_POINT_FATAL( "qmgShardDML::makePlan::__FT__" );
 
     //---------------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
@@ -199,11 +199,11 @@ IDE_RC qmgShardDML::makePlan( qcStatement    * aStatement,
     sMyGraph = (qmgSHARDDML*)aGraph;
 
     //---------------------------------------------------
-    // Current CNFì˜ ë“±ë¡
+    // Current CNFÀÇ µî·Ï
     //---------------------------------------------------
 
     // PROJ-2179
-    // UPDATE êµ¬ë¬¸ì˜ ê²½ìš° parentê°€ NULLì¼ ìˆ˜ ìžˆë‹¤.
+    // UPDATE ±¸¹®ÀÇ °æ¿ì parent°¡ NULLÀÏ ¼ö ÀÖ´Ù.
     if ( aParent != NULL )
     {
         sMyGraph->graph.myPlan = aParent->myPlan;
@@ -228,7 +228,7 @@ IDE_RC qmgShardDML::makePlan( qcStatement    * aStatement,
     IDE_TEST( qmoOneNonPlan::makeSDEX( aStatement,
                                        &(sMyGraph->shardQuery),
                                        sMyGraph->shardAnalysis,
-                                       sMyGraph->shardParamOffset,
+                                       sMyGraph->shardParamInfo, /* TASK-7219 Non-shard DML */
                                        sMyGraph->shardParamCount,
                                        sSDEX )
               != IDE_SUCCESS );
@@ -249,7 +249,7 @@ IDE_RC qmgShardDML::printGraph( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : Graphë¥¼ êµ¬ì„±í•˜ëŠ” ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ * Description : Graph¸¦ ±¸¼ºÇÏ´Â °øÅë Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  * Implementation :
  *
@@ -261,7 +261,7 @@ IDE_RC qmgShardDML::printGraph( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgShardDML::printGraph::__FT__" );
 
     //-----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //-----------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
@@ -271,7 +271,7 @@ IDE_RC qmgShardDML::printGraph( qcStatement  * aStatement,
     sMyGraph = (qmgSHARDDML*)aGraph;
 
     //-----------------------------------
-    // Graphì˜ ì‹œìž‘ ì¶œë ¥
+    // GraphÀÇ ½ÃÀÛ Ãâ·Â
     //-----------------------------------
 
     if (aDepth == 0)
@@ -286,7 +286,7 @@ IDE_RC qmgShardDML::printGraph( qcStatement  * aStatement,
     }
 
     //-----------------------------------
-    // Graph ê³µí†µ ì •ë³´ì˜ ì¶œë ¥
+    // Graph °øÅë Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
     IDE_TEST( qmg::printGraph( aStatement,
@@ -296,7 +296,7 @@ IDE_RC qmgShardDML::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // shard ì •ë³´ ì¶œë ¥
+    // shard Á¤º¸ Ãâ·Â
     //-----------------------------------
 
     IDE_TEST( printShardInfo( aStatement,
@@ -307,7 +307,7 @@ IDE_RC qmgShardDML::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Graphì˜ ë§ˆì§€ë§‰ ì¶œë ¥
+    // GraphÀÇ ¸¶Áö¸· Ãâ·Â
     //-----------------------------------
 
     if (aDepth == 0)
@@ -336,7 +336,7 @@ IDE_RC qmgShardDML::printShardInfo( qcStatement    * aStatement,
 {
 /***********************************************************************
  *
- * Description : Graphë¥¼ êµ¬ì„±í•˜ëŠ” ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ * Description : Graph¸¦ ±¸¼ºÇÏ´Â °øÅë Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  * Implementation :
  *
@@ -348,14 +348,14 @@ IDE_RC qmgShardDML::printShardInfo( qcStatement    * aStatement,
     UInt               i;
 
     /* PROJ-2646 New shard analyzer */
-    UShort             sShardValueIndex = 0;
-    UShort             sSubValueIndex = 0;
+    UShort             sShardValuePtrIndex = 0;
+    UShort             sSubValuePtrIndex = 0;
     UShort             sBindParamCount = 0;
 
     IDU_FIT_POINT_FATAL( "qmgShardDML::printShardInfo::__FT__" );
 
     //-----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //-----------------------------------
 
     IDE_FT_ASSERT( aStatement  != NULL );
@@ -364,16 +364,16 @@ IDE_RC qmgShardDML::printShardInfo( qcStatement    * aStatement,
     IDE_FT_ASSERT( aStatement->session != NULL );
 
     //-----------------------------------
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     //-----------------------------------
 
-    // shard linker ê²€ì‚¬ & ì´ˆê¸°í™”
+    // shard linker °Ë»ç & ÃÊ±âÈ­
     IDE_TEST( sdi::checkShardLinker( aStatement ) != IDE_SUCCESS );
 
     sClientInfo = aStatement->session->mQPSpecific.mClientInfo;
 
     //-----------------------------------
-    // shard analysis ì •ë³´ ì¶œë ¥
+    // shard analysis Á¤º¸ Ãâ·Â
     //-----------------------------------
 
     QMG_PRINT_LINE_FEED( i, aDepth, aString );
@@ -386,14 +386,12 @@ IDE_RC qmgShardDML::printShardInfo( qcStatement    * aStatement,
         // bind param ID
         //----------------------------------
 
-        for ( sShardValueIndex = 0;
-              sShardValueIndex < aAnalyzeInfo->mValueCount;
-              sShardValueIndex++ )
+        for ( sShardValuePtrIndex = 0;
+              sShardValuePtrIndex < aAnalyzeInfo->mValuePtrCount;
+              sShardValuePtrIndex++ )
         {
-            if ( ( aAnalyzeInfo->mValue[sShardValueIndex].mType == 1 ) || // const value
-                 ( aAnalyzeInfo->mSplitMethod == SDI_SPLIT_CLONE ) || // split clone
-                 ( aAnalyzeInfo->mSplitMethod == SDI_SPLIT_SOLO ) || // split solo
-                 ( aAnalyzeInfo->mSplitMethod == SDI_SPLIT_NONE ) ) // splie none 
+            if ( ( aAnalyzeInfo->mValuePtrArray[sShardValuePtrIndex]->mType == 1 ) || // const value
+                 ( sdi::getSplitType( aAnalyzeInfo->mSplitMethod ) != SDI_SPLIT_TYPE_DIST ) ) // split clone, solo, none
             {
                 // Nothing to do.
             }
@@ -402,7 +400,7 @@ IDE_RC qmgShardDML::printShardInfo( qcStatement    * aStatement,
                 QMG_PRINT_LINE_FEED( i, aDepth, aString );
                 iduVarStringAppendFormat(
                     aString, "BIND PARAMETER   : %"ID_UINT32_FMT,
-                    (UInt)aAnalyzeInfo->mValue[sShardValueIndex].mValue.mBindParamId + 1 );
+                    (UInt)aAnalyzeInfo->mValuePtrArray[sShardValuePtrIndex]->mValue.mBindParamId + 1 );
 
                 sBindParamCount++;
             }
@@ -410,14 +408,12 @@ IDE_RC qmgShardDML::printShardInfo( qcStatement    * aStatement,
 
         if ( aAnalyzeInfo->mSubKeyExists == ID_TRUE )
         {
-            for ( sSubValueIndex = 0;
-                  sSubValueIndex < aAnalyzeInfo->mSubValueCount;
-                  sSubValueIndex++ )
+            for ( sSubValuePtrIndex = 0;
+                  sSubValuePtrIndex < aAnalyzeInfo->mSubValuePtrCount;
+                  sSubValuePtrIndex++ )
             {
-                if ( ( aAnalyzeInfo->mSubValue[sSubValueIndex].mType == 1 ) || // const value
-                     ( aAnalyzeInfo->mSubSplitMethod == SDI_SPLIT_CLONE ) || // split clone
-                     ( aAnalyzeInfo->mSubSplitMethod == SDI_SPLIT_SOLO ) || // split solo
-                     ( aAnalyzeInfo->mSubSplitMethod == SDI_SPLIT_NONE ) ) // splie none 
+                if ( ( aAnalyzeInfo->mSubValuePtrArray[sSubValuePtrIndex]->mType == 1 ) || // const value
+                     ( sdi::getSplitType( aAnalyzeInfo->mSubSplitMethod ) != SDI_SPLIT_TYPE_DIST ) ) // split clone, solo, none
                 {
                     // Nothing to do.
                 }
@@ -426,7 +422,7 @@ IDE_RC qmgShardDML::printShardInfo( qcStatement    * aStatement,
                     QMG_PRINT_LINE_FEED( i, aDepth, aString );
                     iduVarStringAppendFormat(
                         aString, "BIND PARAMETER   : %"ID_UINT32_FMT,
-                        (UInt)aAnalyzeInfo->mSubValue[sSubValueIndex].mValue.mBindParamId + 1 );
+                        (UInt)aAnalyzeInfo->mSubValuePtrArray[sSubValuePtrIndex]->mValue.mBindParamId + 1 );
                 }
             }
         }
@@ -503,7 +499,7 @@ IDE_RC qmgShardDML::printShardInfo( qcStatement    * aStatement,
     }
 
     //-----------------------------------
-    // shard query ì •ë³´ ì¶œë ¥
+    // shard query Á¤º¸ Ãâ·Â
     //-----------------------------------
 
     QMG_PRINT_LINE_FEED( i, aDepth, aString );

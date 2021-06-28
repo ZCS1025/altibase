@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfReverse_str.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfReverse_str.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -43,7 +43,7 @@ static IDE_RC mtfReverse_strEstimate( mtcNode*     aNode,
 mtfModule mtfReverse_str = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfReverse_strFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -136,11 +136,11 @@ IDE_RC mtfReverse_strCalculate( mtcNode*     aNode,
  * Implementation :
  *    REVERSE_STR (char)
  *
- *    aStack[0] : ì¸ìžë¡œ ë°›ì€ ë¬¸ìžë¥¼ ê±°ê¾¸ë¡œ ì¶œë ¥í•˜ì—¬ ì €ìž¥
- *    aStack[1] : char ( ë¬¸ìžê°’ )
+ *    aStack[0] : ÀÎÀÚ·Î ¹ÞÀº ¹®ÀÚ¸¦ °Å²Ù·Î Ãâ·ÂÇÏ¿© ÀúÀå
+ *    aStack[1] : char ( ¹®ÀÚ°ª )
  *
  *    Ex) REVERSE2 ('KSKIM') ==> 'MIKSK'
- *        REVERSE2 ('ì•ˆë…•?') ==> '?ë…•ì•ˆ'
+ *        REVERSE2 ('¾È³ç?') ==> '?³ç¾È'
  *
  ***********************************************************************/
     

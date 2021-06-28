@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iloProgOption.h 80545 2017-07-19 08:05:23Z daramix $
+ * $Id: iloProgOption.h 90270 2021-03-21 23:20:18Z bethy $
  **********************************************************************/
 
 #ifndef _O_ILO_PROGOPTION_H
@@ -24,6 +24,16 @@
 #include <ute.h>
 #include <iloApi.h>
 #include <utString.h>
+#include <uttEnv.h>
+
+/* BUG-47608 stmt_prefix */
+#define SQUARE_BRACKET_L        "["
+#define SQUARE_BRACKET_R        "]"
+#define HELP_WITHOUT_NEWLINE(x) SQUARE_BRACKET_L x SQUARE_BRACKET_R    
+#define HELP_WITH_NEWLINE(x)    SQUARE_BRACKET_L x SQUARE_BRACKET_R "\n"
+#define OPT_STMT_PREFIX         "-stmt_prefix"
+#define NODE_META               "NODE [META]"
+#define OPT_GEOM                "-geom"
 
 class iloProgOption
 {
@@ -44,11 +54,11 @@ public:
     
     SChar* GetDataFileName( iloBool isUpload );  //PROJ-1714
 
-    // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
-    void ReadEnvironment();
+    // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
+    IDE_RC ReadEnvironment( ALTIBASE_ILOADER_HANDLE aHandle );
     void ReadServerProperties();
 
-    /* BUG-31387: ConnTypeì„ ì¡°ì •í•˜ê³  ê²½ìš°ì— ë”°ë¼ ê²½ê³  ì¶œë ¥ */
+    /* BUG-31387: ConnTypeÀ» Á¶Á¤ÇÏ°í °æ¿ì¿¡ µû¶ó °æ°í Ãâ·Â */
     void AdjustConnType( ALTIBASE_ILOADER_HANDLE aHandle );
 
     SInt IsValidOption( ALTIBASE_ILOADER_HANDLE aHandle );
@@ -61,7 +71,7 @@ public:
 
     void StrToUpper(SChar *aStr);
 
-    // BUG-17932: ë„ì›€ë§ í†µì¼
+    // BUG-17932: µµ¿ò¸» ÅëÀÏ
     static void PrintHelpScreen(ECommandType aType);
 
     SInt ExistError()   { return m_bErrorExist; }
@@ -96,9 +106,13 @@ public:
     SChar * GetSslCipher()   { return m_SslCipher; }
     SChar * GetSslVerify()   { return m_SslVerify; }
 
-    /* BUG-30693 : table ì´ë¦„ë“¤ê³¼ owner ì´ë¦„ì„ mtlMakeNameInFunc í•¨ìˆ˜ë¥¼ ì´ìš©í•˜ì—¬
-       ëŒ€ë¬¸ìë¡œ ë³€ê²½í•´ì•¼ í•  ê²½ìš° ë³€ê²½í•¨. */
+    /* BUG-30693 : table ÀÌ¸§µé°ú owner ÀÌ¸§À» mtlMakeNameInFunc ÇÔ¼ö¸¦ ÀÌ¿ëÇÏ¿©
+       ´ë¹®ÀÚ·Î º¯°æÇØ¾ß ÇÒ °æ¿ì º¯°æÇÔ. */
     void   makeTableNameInCLI(void);
+    
+    /* BUG-47652 Set file permission */
+    idBool   IsExistFilePerm() { return mbExistFilePerm; }
+    
 private:
     IDE_RC ValidateLOBOptions();
 
@@ -114,8 +128,8 @@ public:
     SInt         m_ShmId;
     SInt         m_SemId;
     
-    // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
-    // -NLS_USE ì˜µì…˜ ì¶”ê°€
+    // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
+    // -NLS_USE ¿É¼Ç Ãß°¡
     iloBool  m_bExist_NLS;
 
     SInt    m_bExist_b; // bad input checker
@@ -176,14 +190,14 @@ public:
     SInt    m_ArrayCount;
     
     SInt    m_bExist_parallel;      // PROJ-1714
-    SInt    m_ParallelCount;        // -Parallel ì˜µì…˜ ì‚¬ìš©ì‹œ ì‚¬ìš©ë˜ë©°, ì„œë²„ì— ì ‘ì†í•˜ì—¬ í•´ë‹¹ Queryë¥¼ ì‹¤í–‰í•˜ëŠ” Sessionì˜ ìˆ˜ë¥¼ ë‚˜íƒ€ëƒ„
+    SInt    m_ParallelCount;        // -Parallel ¿É¼Ç »ç¿ë½Ã »ç¿ëµÇ¸ç, ¼­¹ö¿¡ Á¢¼ÓÇÏ¿© ÇØ´ç Query¸¦ ½ÇÇàÇÏ´Â SessionÀÇ ¼ö¸¦ ³ªÅ¸³¿
     
     // PROJ-1760
     SInt    m_bExist_direct;   
-    SInt    m_directLogging;        //Direct Path Loadì‹œ Logging Modeì¸ì§€ No Logging Modeì¸ì§€ êµ¬ë¶„..
+    SInt    m_directLogging;        //Direct Path Load½Ã Logging ModeÀÎÁö No Logging ModeÀÎÁö ±¸ºĞ..
     SInt    m_bExist_ioParallel;       
-    SInt    m_ioParallelCount;      // -ioParallel ì˜µì…˜ ì‚¬ìš©ì‹œ ì‚¬ìš©ë˜ë©°, Direct-Path Load ì‹œì— 
-                                    // DPath Queueì—ì„œ Pageë¡œ ì“°ëŠ” Thread ìˆ˜ë¥¼ ë‚˜íƒ€ëƒ„
+    SInt    m_ioParallelCount;      // -ioParallel ¿É¼Ç »ç¿ë½Ã »ç¿ëµÇ¸ç, Direct-Path Load ½Ã¿¡ 
+                                    // DPath Queue¿¡¼­ Page·Î ¾²´Â Thread ¼ö¸¦ ³ªÅ¸³¿
 
     SInt    m_bExist_commit;
     SInt    m_CommitUnit;
@@ -191,7 +205,7 @@ public:
     SInt    m_bExist_errors;
     SInt    m_ErrorCount;
 
-    // BUG-18803 readsize ì˜µì…˜ ì¶”ê°€
+    // BUG-18803 readsize ¿É¼Ç Ãß°¡
     SInt    mReadSizeExist;
     SInt    mReadSzie;
 
@@ -227,24 +241,24 @@ public:
     SChar   mCSVFieldTerm;
     SChar   mCSVEnclosing;
 
-    /* use_lob_file ì˜µì…˜ ì…ë ¥ ì—¬ë¶€ */
+    /* use_lob_file ¿É¼Ç ÀÔ·Â ¿©ºÎ */
     iloBool  mExistUseLOBFile;
-    /* use_lob_file ì˜µì…˜ */
+    /* use_lob_file ¿É¼Ç */
     iloBool  mUseLOBFile;
 
-    /* lob_file_size ì˜µì…˜ ì…ë ¥ ì—¬ë¶€ */
+    /* lob_file_size ¿É¼Ç ÀÔ·Â ¿©ºÎ */
     iloBool  mExistLOBFileSize;
-    /* lob_file_size ì˜µì…˜ */
+    /* lob_file_size ¿É¼Ç */
     ULong   mLOBFileSize;
 
-    /* use_separate_files ì˜µì…˜ ì…ë ¥ ì—¬ë¶€ */
+    /* use_separate_files ¿É¼Ç ÀÔ·Â ¿©ºÎ */
     iloBool  mExistUseSeparateFiles;
-    /* use_separate_files ì˜µì…˜ */
+    /* use_separate_files ¿É¼Ç */
     iloBool  mUseSeparateFiles;
 
-    /* lob_indicator ì˜µì…˜ ì…ë ¥ ì—¬ë¶€ */
+    /* lob_indicator ¿É¼Ç ÀÔ·Â ¿©ºÎ */
     iloBool  mExistLOBIndicator;
-    /* lob_indicator ì˜µì…˜ */
+    /* lob_indicator ¿É¼Ç */
     SChar   mLOBIndicator[11];
 
     /* BUG-21332 */
@@ -287,6 +301,25 @@ public:
     /* BUG-44187 Support Asynchronous Prefetch */
     idBool            m_bExist_async_prefetch;
     asyncPrefetchType m_AsyncPrefetchType;
+   
+    /* BUG-47608 stmt_prefix: node_meta */
+    idBool  m_bExist_StmtPrefix;
+    SChar   m_StmtPrefix[MAX_WORD_LEN + 1];
+    
+    /* BUG-48016 Fix skipped commit */
+    idBool   m_bExist_ShowCommit;
+
+    /* BUG-47652 Set file permission */
+    idBool   mbExistFilePerm;
+
+    /* BUG-48357 WKB compatibility option */
+    idBool   m_bExist_geom;
+    /* At this moment, boolean type is enough */
+    idBool   m_bIsGeomWKB;
+
+    /* TASK-7307 for Shard Clone Table */
+    SInt    mExistTxLevel;
+    SInt    mTxLevel;
 };
 
 #endif /* _O_ILO_PROGOPTION_H */

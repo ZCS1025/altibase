@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfConcat.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfConcat.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -44,7 +44,7 @@ mtfModule mtfConcat = {
     1|MTC_NODE_OPERATOR_FUNCTION|
         MTC_NODE_PRINT_FMT_INFIX_SP,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfConcatFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -97,9 +97,9 @@ IDE_RC mtfConcatEstimate( mtcNode*     aNode,
                                             aStack[2].column->module )
               != IDE_SUCCESS );
 
-    // concatì˜ ë‘ ì¸ìžëŠ” char ì•„ë‹ˆë©´ varchar íƒ€ìž…ì´ë‹¤.
-    // ë‘˜ë‹¤ char íƒ€ìž…ì´ë©´ ê²°ê³¼ëŠ” charê°€ ë˜ê³ ,
-    // ì•„ë‹Œ ê²½ìš°ì—” varchar íƒ€ìž…ì´ ëœë‹¤.
+    // concatÀÇ µÎ ÀÎÀÚ´Â char ¾Æ´Ï¸é varchar Å¸ÀÔÀÌ´Ù.
+    // µÑ´Ù char Å¸ÀÔÀÌ¸é °á°ú´Â char°¡ µÇ°í,
+    // ¾Æ´Ñ °æ¿ì¿£ varchar Å¸ÀÔÀÌ µÈ´Ù.
     IDE_TEST( mtf::getComparisonModule( &sConcatResultModule,
                                         sModules[0]->no,
                                         sModules[1]->no )
@@ -189,9 +189,9 @@ IDE_RC mtfConcatCalculate( mtcNode*     aNode,
  * Implementation :
  *    CONCAT( char1, char2 )
  *
- *    aStack[0] : ì²«ë²ˆì§¸ ë¬¸ìžê°’ì— ë‘ë²ˆì§¸ ë¬¸ìžê°’ì„ ì—°ê²°í•œ ê°’
- *    aStack[1] : char1 ( ì²«ë²ˆì§¸ ë¬¸ìžê°’ )
- *    aStack[2] : char2 ( ë‘ë²ˆì§¸ ë¬¸ìžê°’ )
+ *    aStack[0] : Ã¹¹øÂ° ¹®ÀÚ°ª¿¡ µÎ¹øÂ° ¹®ÀÚ°ªÀ» ¿¬°áÇÑ °ª
+ *    aStack[1] : char1 ( Ã¹¹øÂ° ¹®ÀÚ°ª )
+ *    aStack[2] : char2 ( µÎ¹øÂ° ¹®ÀÚ°ª )
  *
  ***********************************************************************/
     
@@ -214,12 +214,12 @@ IDE_RC mtfConcatCalculate( mtcNode*     aNode,
                     MTD_CHAR_PRECISION_MAXIMUM,
                     ERR_INVALID_LENGTH );
 
-    // ì²«ë²ˆì§¸ ë¬¸ìžê°’ì„ ê²°ê³¼ì— ë³µì‚¬
+    // Ã¹¹øÂ° ¹®ÀÚ°ªÀ» °á°ú¿¡ º¹»ç
     idlOS::memcpy( sResult->value,
                    sFirstString->value,
                    sFirstString->length );
 
-    // ì²«ë²ˆì§¸ ë¬¸ìžê°’ ë³µì‚¬í•œ ë‹¤ìŒ ìœ„ì¹˜ì— ë‘ë²ˆì§¸ ë¬¸ìžê°’ ë³µì‚¬
+    // Ã¹¹øÂ° ¹®ÀÚ°ª º¹»çÇÑ ´ÙÀ½ À§Ä¡¿¡ µÎ¹øÂ° ¹®ÀÚ°ª º¹»ç
     idlOS::memcpy( sResult->value + sFirstString->length,
                    sSecondString->value,
                    sSecondString->length );

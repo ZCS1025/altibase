@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduFile.cpp 84646 2018-12-24 04:40:35Z emlee $
+ * $Id: iduFile.cpp 90315 2021-03-25 02:04:41Z jiwon.kim $
  **********************************************************************/
 
 #include <idl.h>
@@ -15,19 +15,19 @@
 #include <iduMemMgr.h>
 #include <iduFitManager.h>
 
-/* BUG-17818: DIRECT I/Oì— ëŒ€í•´ì„œ ì •ë¦¬í•œë‹¤.
+/* BUG-17818: DIRECT I/O¿¡ ´ëÇØ¼­ Á¤¸®ÇÑ´Ù.
  *
- * # OS Levelì—ì„œ Fileë‹¨ìœ„ë¡œ DirectIOë¥¼ í•˜ëŠ” ë°©ë²•
+ * # OS Level¿¡¼­ File´ÜÀ§·Î DirectIO¸¦ ÇÏ´Â ¹æ¹ı
  * # OS Name           How can use?
  *   Solaris           directio per file.
- *   Windows NT/2000   CreateFileì˜ flagë¡œ FILE_FLAG_NO_BUFFERINGì„ ë„˜ê¸´ë‹¤.
- *   Tru64 Unix        AdvFS-Only File Flag, openì‹œ flagë¡œ  O_DIRECTIOë¥¼ ì‚¬ìš©
+ *   Windows NT/2000   CreateFileÀÇ flag·Î FILE_FLAG_NO_BUFFERINGÀ» ³Ñ±ä´Ù.
+ *   Tru64 Unix        AdvFS-Only File Flag, open½Ã flag·Î  O_DIRECTIO¸¦ »ç¿ë
  *   AIX               none
  *   Linux             available (2.4 kernels), when open, use O_DIRECT
  *   HP-UX             only when OnlineJFS, use VX_SETCACHE by ioctl
  *   QNX               none
  *
- * # File Systemì—ì„œ Mount Optionì„ í†µí•œ DirectIOì‚¬ìš©
+ * # File System¿¡¼­ Mount OptionÀ» ÅëÇÑ DirectIO»ç¿ë
  * # File System         Mount option
  *   Solaris UFS         forcedirectio
  *   HP-UX HFS           none
@@ -40,26 +40,26 @@
  *   Tru64 Unix UFS      none
  *   QNX                 none
  *
- * # Altibaseì—ì„œ DirectIO ì‚¬ìš©ë°©ë²• (ì•„ë˜ FlagëŠ” ê¸°ë³¸ )
- * : DirectIOë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•´ì„œëŠ” 
- *    - LOG_IO_TYPE : LogFileì— ëŒ€í•´ì„œ DirectIO ì‚¬ìš© ê²°ì •
+ * # Altibase¿¡¼­ DirectIO »ç¿ë¹æ¹ı (¾Æ·¡ Flag´Â ±âº» )
+ * : DirectIO¸¦ »ç¿ëÇÏ±â À§ÇØ¼­´Â 
+ *    - LOG_IO_TYPE : LogFile¿¡ ´ëÇØ¼­ DirectIO »ç¿ë °áÁ¤
  *      0 : Normal
  *      1 : DirectIO
- *    - DATABASE_IO_TYPE : Database Fileì— ëŒ€í•´ì„œ Direct IO ì‚¬ìš© ê²°ì •
- *      0 : Normal
- *      1 : DirectIO
- *
- *    - DIRECT_IO_ENABLED : DirectIOì˜ ìµœìƒìœ„ Property. ì´ Flagê°€ DirectIOê°€
- *      ì•„ë‹ˆë©´ ë‚˜ë¨¸ì§€ FlagëŠ” ë¬´ì‹œë˜ê³  Normalí•˜ê²Œ ì²˜ë¦¬ëœë‹¤.
+ *    - DATABASE_IO_TYPE : Database File¿¡ ´ëÇØ¼­ Direct IO »ç¿ë °áÁ¤
  *      0 : Normal
  *      1 : DirectIO
  *
- *   ex) Log Fileì— ëŒ€í•´ì„œë§Œ DirectIOë¥¼ í•˜ê³  ì‹¶ë‹¤ë©´
+ *    - DIRECT_IO_ENABLED : DirectIOÀÇ ÃÖ»óÀ§ Property. ÀÌ Flag°¡ DirectIO°¡
+ *      ¾Æ´Ï¸é ³ª¸ÓÁö Flag´Â ¹«½ÃµÇ°í NormalÇÏ°Ô Ã³¸®µÈ´Ù.
+ *      0 : Normal
+ *      1 : DirectIO
+ *
+ *   ex) Log File¿¡ ´ëÇØ¼­¸¸ DirectIO¸¦ ÇÏ°í ½Í´Ù¸é
  *       DIRECT_IO_ENABLED = 1
  *       LOG_IO_TYPE = 1
  *       DATABASE_IO_TYPE = 0
  *
- * ìœ„ Propertyì„¤ì •ì´ì™¸ì— DirectIOë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•´ì„œ ë³„ë„ë¡œ í•´ì•¼í•˜ëŠ” ì¼.
+ * À§ Property¼³Á¤ÀÌ¿Ü¿¡ DirectIO¸¦ »ç¿ëÇÏ±â À§ÇØ¼­ º°µµ·Î ÇØ¾ßÇÏ´Â ÀÏ.
  * # OS          # File System        # something that you have to do.
  * Solaris         UFS                 none
  * HP-UX           Veritas VxFS        use convosync=direct when mount.
@@ -70,16 +70,16 @@
  * Tru64 Unix      AdvFS               none
  * Linux(2.4 > k)  *                   none
  *
- * ìœ„ì—ì„œ ì œì‹œëœ OSì™¸ì—ëŠ” DirectIOë¥¼ ì§€ì›í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. ì§€ì›ë˜ì§€ ì•ŠëŠ” Platformì—ì„œ
- * Direct IOë¥¼ ì‚¬ìš©í•  ê²½ìš° ê¸°ë³¸ì ìœ¼ë¡œ Buffered IOì— Synchronous I/Oë¥¼ ìˆ˜í–‰.
+ * À§¿¡¼­ Á¦½ÃµÈ OS¿Ü¿¡´Â DirectIO¸¦ Áö¿øÇÏÁö ¾Ê½À´Ï´Ù. Áö¿øµÇÁö ¾Ê´Â Platform¿¡¼­
+ * Direct IO¸¦ »ç¿ëÇÒ °æ¿ì ±âº»ÀûÀ¸·Î Buffered IO¿¡ Synchronous I/O¸¦ ¼öÇà.
  *
- * # DirectIOì— ëŒ€í•œ OSë³„ ì œì•½ ì‚¬í•­
+ * # DirectIO¿¡ ´ëÇÑ OSº° Á¦¾à »çÇ×
  * - Solaris :  1. the application's buffer have to be  aligned  on  a  two-byte  (short)
  *                 boundary
  *              2. the offset into the file have to be  on a device sector boundary.
  *              3. and the size of  the operation have to be a multiple of device sectors
  *
- * - HP-UX   :  finfoë‚˜ ffinfoë¥¼ í†µí•´ì„œ ë‹¤ìŒê°’ì„ ê°€ì ¸ì˜´
+ * - HP-UX   :  finfo³ª ffinfo¸¦ ÅëÇØ¼­ ´ÙÀ½°ªÀ» °¡Á®¿È
  *              1. dio_offset : the offset into the file have to be aligned on dio_offset
  *              2. dio_max : max dio request size
  *              3. dio_min : min dio request size
@@ -102,20 +102,20 @@
  *             the file system. Under Linux 2.6 alignment  to  512-byte  bound-
  *             aries suffices.
  * # Caution
- * - DirectIOëŠ” ê¸°ë³¸ì ìœ¼ë¡œ Kernel Bufferë¥¼ ê±°ì¹˜ì§€ ì•Šê³  ë°ì´íƒ€ë¥¼ ë°”ë¡œ Diskì— ë‚´ë¦¬ê¸°ë•Œë¬¸ì—
- *   ë³„ë„ì˜ syncê°€ ë¶ˆí•„ìš”í•˜ì§€ë§Œ File Metaë³€ê²½ì— ëŒ€í•´ì„œëŠ” DirectIOê°€ ìˆ˜í–‰ë˜ì§€ ì•Šê³ 
- *   ì¼ë°˜ì ìœ¼ë¡œ Buffered IOê°€ ìˆ˜í–‰ì´ëœë‹¤.
- *   Dataê°€ Diskì— Syncëœ ê²ƒì„ ë³´ì¥í•˜ê³  fileì˜ Metaê¹Œì§€ syncë˜ëŠ” ê²ƒì„ ë³´ì¥í•˜ê¸°ìœ„í•´ì„ 
- *   fsyncë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤. OSë§ˆë‹¤ ë‹¤ë¥´ê¸°ë•Œë¬¸ì— ì•Œí‹°ë² ì´ìŠ¤ì—ì„œëŠ” ìœ ì§€ë³´ìˆ˜ í¸ì˜ì„±ì„ ìœ„í•´ì„œ
- *   ë¬´ì¡°ê±´ fsyncë¥¼ í•œë‹¤. í•˜ì§€ë§Œ ì´ê²ƒì„ O_DSYNCì™€ ê°™ì€ Flagë¥¼ ì´ìš©í•´ì„œ ë³€ê²½í• ìˆ˜ ìˆì§€
- *   ì•Šì„ê¹Œ ìƒê°í•©ë‹ˆë‹¤. í–¥í›„ì— fsyncê°€ ë¬¸ì œê°€ ëœë‹¤ë©´ ìˆ˜ì •í•  í•„ìš”ê°€ ìˆì„êº¼ ê°™ìŠµë‹ˆë‹¤.
+ * - DirectIO´Â ±âº»ÀûÀ¸·Î Kernel Buffer¸¦ °ÅÄ¡Áö ¾Ê°í µ¥ÀÌÅ¸¸¦ ¹Ù·Î Disk¿¡ ³»¸®±â¶§¹®¿¡
+ *   º°µµÀÇ sync°¡ ºÒÇÊ¿äÇÏÁö¸¸ File Metaº¯°æ¿¡ ´ëÇØ¼­´Â DirectIO°¡ ¼öÇàµÇÁö ¾Ê°í
+ *   ÀÏ¹İÀûÀ¸·Î Buffered IO°¡ ¼öÇàÀÌµÈ´Ù.
+ *   Data°¡ Disk¿¡ SyncµÈ °ÍÀ» º¸ÀåÇÏ°í fileÀÇ Meta±îÁö syncµÇ´Â °ÍÀ» º¸ÀåÇÏ±âÀ§ÇØ¼±
+ *   fsync¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù. OS¸¶´Ù ´Ù¸£±â¶§¹®¿¡ ¾ËÆ¼º£ÀÌ½º¿¡¼­´Â À¯Áöº¸¼ö ÆíÀÇ¼ºÀ» À§ÇØ¼­
+ *   ¹«Á¶°Ç fsync¸¦ ÇÑ´Ù. ÇÏÁö¸¸ ÀÌ°ÍÀ» O_DSYNC¿Í °°Àº Flag¸¦ ÀÌ¿ëÇØ¼­ º¯°æÇÒ¼ö ÀÖÁö
+ *   ¾ÊÀ»±î »ı°¢ÇÕ´Ï´Ù. ÇâÈÄ¿¡ fsync°¡ ¹®Á¦°¡ µÈ´Ù¸é ¼öÁ¤ÇÒ ÇÊ¿ä°¡ ÀÖÀ»²¨ °°½À´Ï´Ù.
  *
  */
 
 // To fix BUG-4378
 //#define IDU_FILE_COPY_BUFFER (256 * 1024 * 1024)
 // #define IDU_FILE_COPY_BUFFER (256 * 1024)
-// A3ì™€ copyì™€ ë§ˆì¶”ê¸° ìœ„í•˜ì—¬ ë‹¤ìŒê³¼ ê°™ì´ í•¨.
+// A3¿Í copy¿Í ¸¶Ãß±â À§ÇÏ¿© ´ÙÀ½°ú °°ÀÌ ÇÔ.
 #define IDU_FILE_COPY_BUFFER (8 * 1024 * 1024)
 
 /*
@@ -143,12 +143,12 @@ iduFIOStatFunc iduFile::mStatFunc[ IDU_FIO_STAT_ONOFF_MAX ] =
 };
 
 /***********************************************************************
- * Description : ì´ˆê¸°í™” ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+ * Description : ÃÊ±âÈ­ ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
  *
- * aIndex               - [IN] iduFileì„ ì–´ëŠ Mduleì—ì„œ ì‚¬ìš©í•˜ëŠ”ê°€?
- * aMaxMaxFDCnt         - [IN] openë  ìˆ˜ ìˆëŠ” ìµœëŒ€ FDê°œìˆ˜
- * aIOStatOnOff         - [IN] File IOì˜ í†µê³„ì •ë³´ë¥¼ ìˆ˜ì§‘í• ì§€ ê²°ì •
- * aIOMutexWaitEventID  - [IN] IO Eventë¡œ ë“±ë¡í• 
+ * aIndex               - [IN] iduFileÀ» ¾î´À Mdule¿¡¼­ »ç¿ëÇÏ´Â°¡?
+ * aMaxMaxFDCnt         - [IN] openµÉ ¼ö ÀÖ´Â ÃÖ´ë FD°³¼ö
+ * aIOStatOnOff         - [IN] File IOÀÇ Åë°èÁ¤º¸¸¦ ¼öÁıÇÒÁö °áÁ¤
+ * aIOMutexWaitEventID  - [IN] IO Event·Î µî·ÏÇÒ
  ***********************************************************************/
 IDE_RC iduFile::initialize( iduMemoryClientIndex aIndex,
                             UInt                 aMaxMaxFDCnt,
@@ -163,7 +163,7 @@ IDE_RC iduFile::initialize( iduMemoryClientIndex aIndex,
     mIsDirectIO = ID_FALSE;
     mPermission = O_RDWR;
 
-    // íŒŒì¼ IO í†µê³„ì •ë³´ ì´ˆê¸°í™”
+    // ÆÄÀÏ IO Åë°èÁ¤º¸ ÃÊ±âÈ­
     if( aIOStatOnOff == IDU_FIO_STAT_ON )
     {
         idlOS::memset( &mStat, 0x00, ID_SIZEOF( iduFIOStat ) );
@@ -179,8 +179,8 @@ IDE_RC iduFile::initialize( iduMemoryClientIndex aIndex,
     mIOStatOnOff = aIOStatOnOff;
     mWaitEventID = aIOMutexWaitEventID;
 
-    /* Stackí¬ê¸°ê°€ ê³ ì •ë˜ì–´ ìˆìœ¼ë¯€ë¡œ ì´ í¬ê¸°ë³´ë‹¤ ì‘ì•„ì•¼ í•œë‹¤.
-     * ê³ ì • í¬ê¸°ë¡œ í•œì´ìœ ëŠ” mallocì„ í•˜ì§€ ì•Šê¸°ìœ„í•´ì„œ ì´ë‹¤. */
+    /* StackÅ©±â°¡ °íÁ¤µÇ¾î ÀÖÀ¸¹Ç·Î ÀÌ Å©±âº¸´Ù ÀÛ¾Æ¾ß ÇÑ´Ù.
+     * °íÁ¤ Å©±â·Î ÇÑÀÌÀ¯´Â mallocÀ» ÇÏÁö ¾Ê±âÀ§ÇØ¼­ ÀÌ´Ù. */
     IDE_ASSERT( aMaxMaxFDCnt <= ID_MAX_FILE_DESCRIPTOR_COUNT );
 
     mMaxFDCount = aMaxMaxFDCnt;
@@ -200,15 +200,15 @@ IDE_RC iduFile::initialize( iduMemoryClientIndex aIndex,
 }
 
 /***********************************************************************
- * Description : ë‹¤ìŒê³¼ ê°™ì€ ì •ë¦¬ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+ * Description : ´ÙÀ½°ú °°Àº Á¤¸®ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
  *
- *  1. ëª¨ë“  Open FDë¥¼ Closeí•œë‹¤.
- *  2. mIOOpenMutexë¥¼ ì •ë¦¬í•œë‹¤.
- *  3. mFDStackInfoë¥¼ ì •ë¦¬í•œë‹¤.
+ *  1. ¸ğµç Open FD¸¦ CloseÇÑ´Ù.
+ *  2. mIOOpenMutex¸¦ Á¤¸®ÇÑ´Ù.
+ *  3. mFDStackInfo¸¦ Á¤¸®ÇÑ´Ù.
  ***********************************************************************/
 IDE_RC iduFile::destroy()
 {
-    /* í˜„ì¬ Openë˜ì–´ ìˆëŠ” ëª¨ë“  FDë¥¼ Closeí•œë‹¤. */
+    /* ÇöÀç OpenµÇ¾î ÀÖ´Â ¸ğµç FD¸¦ CloseÇÑ´Ù. */
     IDE_TEST( closeAll() != IDE_SUCCESS );
 
     IDE_TEST( mIOOpenMutex.destroy() != IDE_SUCCESS );
@@ -223,14 +223,14 @@ IDE_RC iduFile::destroy()
 }
 
 /***********************************************************************
- * Description : mFilenameì— í•´ë‹¹í•˜ëŠ” Fileì„ ìƒì„±í•œë‹¤.
+ * Description : mFilename¿¡ ÇØ´çÇÏ´Â FileÀ» »ı¼ºÇÑ´Ù.
  ***********************************************************************/
 IDE_RC iduFile::create()
 {
     PDL_HANDLE sCreateFd;
     SInt       sSystemErrno = 0;
 
-    /* BUG-24519 logfile ìƒì„±ì‹œ group-read ê¶Œí•œì´ í•„ìš”í•©ë‹ˆë‹¤. */
+    /* BUG-24519 logfile »ı¼º½Ã group-read ±ÇÇÑÀÌ ÇÊ¿äÇÕ´Ï´Ù. */
     sCreateFd = idf::creat( mFilename, IDU_FILE_PERM );
 
     IDE_TEST_RAISE( sCreateFd == IDL_INVALID_HANDLE , CREATEFAILED);
@@ -363,9 +363,9 @@ IDE_RC iduFile::createUntilSuccess(iduEmergencyFuncType aSetEmergencyFunc,
 }
 
 /***********************************************************************
- * Description : ìƒˆë¡œìš´ FDë¥¼ Opení•œë‹¤.
+ * Description : »õ·Î¿î FD¸¦ OpenÇÑ´Ù.
  *
- * aFD - [OUT] ìƒˆë¡œ Openëœ FDë¥¼ ì„¤ì •ëœë‹¤.
+ * aFD - [OUT] »õ·Î OpenµÈ FD¸¦ ¼³Á¤µÈ´Ù.
  ***********************************************************************/
 IDE_RC iduFile::open( PDL_HANDLE *aFD )
 {
@@ -441,6 +441,7 @@ IDE_RC iduFile::open( PDL_HANDLE *aFD )
             IDE_SET(ideSetErrorCode(idERR_ABORT_FILENAME_TOO_LONG, mFilename));
             break;
 #endif
+
 #if defined(ETXTBSY)
         case ETXTBSY:
 #endif
@@ -465,8 +466,9 @@ IDE_RC iduFile::open( PDL_HANDLE *aFD )
 }
 
 /***********************************************************************
- * Description : ìƒˆë¡œìš´ FDë¥¼ Opení•œë‹¤. 
- * DiskFullì´ë‚˜ File Descriptor Fullë¡œ ì¸í•´ openì´ ì‹¤íŒ¨í•  ê²½ìš° ì„±ê³µí•  ë•Œê¹Œì§€ ì¬ì‹œë„í•œë‹¤.
+ * Description : »õ·Î¿î FD¸¦ OpenÇÑ´Ù. 
+ * DiskFullÀÌ³ª File Descriptor Full·Î ÀÎÇØ openÀÌ ½ÇÆĞÇÒ °æ¿ì ¼º°øÇÒ ¶§±îÁö Àç½ÃµµÇÑ´Ù.
+ * BUG-48761 : Permission denied ( ERRNO 13 ) Ãß°¡ 
  ***********************************************************************/
 IDE_RC iduFile::openUntilSuccess( idBool aIsDirectIO, SInt aPermission )
 {
@@ -479,7 +481,7 @@ IDE_RC iduFile::openUntilSuccess( idBool aIsDirectIO, SInt aPermission )
     mIsDirectIO = aIsDirectIO;
     mPermission = aPermission;
 
-    /* BUG-15961: DirectIOë¥¼ ì“°ì§€ ì•ŠëŠ” System Propertyê°€ í•„ìš”í•¨ */
+    /* BUG-15961: DirectIO¸¦ ¾²Áö ¾Ê´Â System Property°¡ ÇÊ¿äÇÔ */
     if ( iduProperty::getDirectIOEnabled() == 0 ) 
     {   
         mIsDirectIO = ID_FALSE;
@@ -507,16 +509,18 @@ IDE_RC iduFile::openUntilSuccess( idBool aIsDirectIO, SInt aPermission )
             sSystemErrno = errno;
 
 #if defined(EDQUOT) && defined(ETXTBSY)
-            IDE_TEST_RAISE( ( sSystemErrno != ENOMEM ) && // Not enough space, Out of memory 
+            IDE_TEST_RAISE( ( sSystemErrno != ENOMEM ) && // Not enough space, Out of memory
+                            ( sSystemErrno != EACCES ) && // Permission denied 
                             ( sSystemErrno != ENOSPC ) && // No space left on device 
                             ( sSystemErrno != EDQUOT ) && // Disc quota exceeded
                             ( sSystemErrno != ENFILE ) && // Too many open files
                             ( sSystemErrno != EMFILE ) && // Too many open files
                             ( sSystemErrno != EAGAIN ) && // Resource temporarily unavailable
-                            ( sSystemErrno != ETXTBSY ) , // Resource busy 
+                            ( sSystemErrno != ETXTBSY ),  // Resource busy 
                             open_error );
 #elif !defined(EDQUOT) && defined(ETXTBSY)
             IDE_TEST_RAISE( ( sSystemErrno != ENOMEM ) && // Not enough space, Out of memory 
+                            ( sSystemErrno != EACCES ) && // Permission denied
                             ( sSystemErrno != ENOSPC ) && // No space left on device 
                             ( sSystemErrno != ENFILE ) && // Too many open files
                             ( sSystemErrno != EMFILE ) && // Too many open files
@@ -524,7 +528,8 @@ IDE_RC iduFile::openUntilSuccess( idBool aIsDirectIO, SInt aPermission )
                             ( sSystemErrno != ETXTBSY ),  // Resource busy 
                             open_error );
 #elif defined(EDQUOT) && !defined(ETXTBSY)
-            IDE_TEST_RAISE( ( sSystemErrno != ENOMEM ) && // Not enough space, Out of memory 
+            IDE_TEST_RAISE( ( sSystemErrno != ENOMEM ) && // Not enough space, Out of memory
+                            ( sSystemErrno != EACCES ) && // Permission denied
                             ( sSystemErrno != ENOSPC ) && // No space left on device 
                             ( sSystemErrno != EDQUOT ) && // Disc quota exceeded
                             ( sSystemErrno != ENFILE ) && // Too many open files
@@ -533,6 +538,7 @@ IDE_RC iduFile::openUntilSuccess( idBool aIsDirectIO, SInt aPermission )
                             open_error );
 #else
             IDE_TEST_RAISE( ( sSystemErrno != ENOMEM ) && 
+                            ( sSystemErrno != EACCES ) &&
                             ( sSystemErrno != ENOSPC ) && 
                             ( sSystemErrno != ENFILE ) &&
                             ( sSystemErrno != EMFILE ) &&
@@ -545,9 +551,10 @@ IDE_RC iduFile::openUntilSuccess( idBool aIsDirectIO, SInt aPermission )
             IDE_EXCEPTION_CONT( exception_test );
 #endif
 
-            ideLog::log(IDE_SERVER_0, "File Open Fail for Disk Full or File Descriptor Full" );
+            ideLog::log(IDE_SERVER_0, "File: [%s] Open Fail caused by ( errno = %"ID_INT32_FMT" )."
+                                      "Retry now.", mFilename, sSystemErrno );
 
-            /* Disk Full/FileDescriptor Fullë¡œ ì¸í•´ ì‹¤íŒ¨í•  ê²½ìš° 2ì´ˆ ëŒ€ê¸° í›„ ì¬ìˆ˜í–‰ */
+            /* Disk Full/FileDescriptor Full·Î ÀÎÇØ ½ÇÆĞÇÒ °æ¿ì 2ÃÊ ´ë±â ÈÄ Àç¼öÇà */
             idlOS::sleep(2);
 
             continue;
@@ -567,11 +574,11 @@ IDE_RC iduFile::openUntilSuccess( idBool aIsDirectIO, SInt aPermission )
     IDE_ASSERT( mFDStackInfo->mItemSize == ID_SIZEOF(PDL_HANDLE) );
 #endif
 
-    /* ìƒˆë¡œìš´ FDë¥¼ FDStackInfoì— ë“±ë¡í•œë‹¤. */
+    /* »õ·Î¿î FD¸¦ FDStackInfo¿¡ µî·ÏÇÑ´Ù. */
     IDE_TEST( iduFXStack::push( NULL /* idvSQL */, mFDStackInfo, &sFD )
               != IDE_SUCCESS );
 
-    /* ì²«ë²ˆì§¸ Openì´ë¯€ë¡œ mIOOpenMutexì„ ì¡ì„ í•„ìš”ê°€ ì—†ë‹¤. */
+    /* Ã¹¹øÂ° OpenÀÌ¹Ç·Î mIOOpenMutexÀ» ÀâÀ» ÇÊ¿ä°¡ ¾ø´Ù. */
     mCurFDCount++;
 
     return IDE_SUCCESS;
@@ -594,9 +601,6 @@ IDE_RC iduFile::openUntilSuccess( idBool aIsDirectIO, SInt aPermission )
             break;
         case ENOENT:
             IDE_SET(ideSetErrorCode(idERR_ABORT_NO_SUCH_FILE, mFilename));
-            break;
-        case EACCES:
-            IDE_SET(ideSetErrorCode(idERR_ABORT_INVALID_ACCESS, mFilename));
             break;
 #if defined(ENAMETOOLONG)
         case ENAMETOOLONG:
@@ -668,13 +672,13 @@ IDE_RC iduFile::closeAll()
 
 
 /***********************************************************************
- * Description : í˜„ì¬ íŒŒì¼ì˜ aWhereì—ì„œ aSizeë§Œí¼ Readë¥¼ í•´ì„œ aBuffer
- *               ë³µì‚¬í•´ì¤€ë‹¤.
+ * Description : ÇöÀç ÆÄÀÏÀÇ aWhere¿¡¼­ aSize¸¸Å­ Read¸¦ ÇØ¼­ aBuffer
+ *               º¹»çÇØÁØ´Ù.
  *
- * aStatSQL - [IN] í†µê³„ì •ë³´
- * aWhere   - [IN] Read ì‹œì‘ ìœ„ì¹˜ (Byte)
+ * aStatSQL - [IN] Åë°èÁ¤º¸
+ * aWhere   - [IN] Read ½ÃÀÛ À§Ä¡ (Byte)
  * aBuffer  - [IN] Read Memory Buffer
- * aSize    - [IN] Read í¬ê¸°(Byte)
+ * aSize    - [IN] Read Å©±â(Byte)
  ***********************************************************************/
 IDE_RC iduFile::read ( idvSQL   * aStatSQL,
                        PDL_OFF_T  aWhere,
@@ -705,15 +709,15 @@ IDE_RC iduFile::read ( idvSQL   * aStatSQL,
 }
 
 /***********************************************************************
- * Description : í˜„ì¬ íŒŒì¼ì˜ aWhereì—ì„œ aSizeë§Œí¼ Readë¥¼ í•´ì„œ aBuffer
- *               ë³µì‚¬í•´ì¤€ë‹¤.
+ * Description : ÇöÀç ÆÄÀÏÀÇ aWhere¿¡¼­ aSize¸¸Å­ Read¸¦ ÇØ¼­ aBuffer
+ *               º¹»çÇØÁØ´Ù.
  *
- * aStatSQL         - [IN] í†µê³„ì •ë³´
- * aWhere           - [IN] Read ì‹œì‘ ìœ„ì¹˜ (Byte)
+ * aStatSQL         - [IN] Åë°èÁ¤º¸
+ * aWhere           - [IN] Read ½ÃÀÛ À§Ä¡ (Byte)
  * aBuffer          - [IN] Read Memory Buffer
- * aSize            - [IN] ìš”ì²­í•œ Read í¬ê¸°(Byte)
- * aRealReadSize    - [OUT] aSizeë§Œí¼ Readë¥¼ ìš”ì²­í–ˆì„ë•Œ ì‹¤ì œ ëª‡ Byte Read
- *                          í–ˆëŠ”ì§€.
+ * aSize            - [IN] ¿äÃ»ÇÑ Read Å©±â(Byte)
+ * aRealReadSize    - [OUT] aSize¸¸Å­ Read¸¦ ¿äÃ»ÇßÀ»¶§ ½ÇÁ¦ ¸î Byte Read
+ *                          Çß´ÂÁö.
  ***********************************************************************/
 IDE_RC iduFile::read( idvSQL    * aStatSQL,
                       PDL_OFF_T   aWhere,
@@ -726,7 +730,7 @@ IDE_RC iduFile::read( idvSQL    * aStatSQL,
     PDL_HANDLE  sFD;
     SInt        sState = 0;
 
-    /* Readì‹œ ì‚¬ìš©í•  FDë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤ .*/
+    /* Read½Ã »ç¿ëÇÒ FD¸¦ ÇÒ´ç¹Ş´Â´Ù .*/
     IDE_TEST( allocFD( aStatSQL, &sFD ) != IDE_SUCCESS );
     sState = 1;
 
@@ -736,7 +740,7 @@ IDE_RC iduFile::read( idvSQL    * aStatSQL,
     IDE_TEST_RAISE( (ssize_t)sRS == -1, read_error);
 
     sState = 0;
-    /* Readì‹œ ì‚¬ìš©í•œ FDë¥¼ ë°˜í™˜í•œë‹¤ .*/
+    /* Read½Ã »ç¿ëÇÑ FD¸¦ ¹İÈ¯ÇÑ´Ù .*/
     IDE_TEST( freeFD( sFD ) != IDE_SUCCESS );
 
     mStatFunc[ mIOStatOnOff ].mEndStat( &mStat,
@@ -772,7 +776,7 @@ IDE_RC iduFile::readv( idvSQL*              aStatSQL,
     PDL_HANDLE  sFD;
     SInt        sState = 0;
 
-    /* Readì‹œ ì‚¬ìš©í•  FDë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤ .*/
+    /* Read½Ã »ç¿ëÇÒ FD¸¦ ÇÒ´ç¹Ş´Â´Ù .*/
     IDE_TEST( allocFD( aStatSQL, &sFD ) != IDE_SUCCESS );
     sState = 1;
 
@@ -782,7 +786,7 @@ IDE_RC iduFile::readv( idvSQL*              aStatSQL,
                     == -1, read_error );
 
     sState = 0;
-    /* Readì‹œ ì‚¬ìš©í•œ FDë¥¼ ë°˜í™˜í•œë‹¤ .*/
+    /* Read½Ã »ç¿ëÇÑ FD¸¦ ¹İÈ¯ÇÑ´Ù .*/
     IDE_TEST( freeFD( sFD ) != IDE_SUCCESS );
 
     mStatFunc[ mIOStatOnOff ].mEndStat( &mStat,
@@ -806,12 +810,12 @@ IDE_RC iduFile::readv( idvSQL*              aStatSQL,
 }
 
 /***********************************************************************
- * Description : Fileì˜ aWhereìœ„ì¹˜ì— aBufferì˜ ë‚´ìš©ì„ aSizeë§Œí¼ ê¸°ë¡í•œë‹¤.
+ * Description : FileÀÇ aWhereÀ§Ä¡¿¡ aBufferÀÇ ³»¿ëÀ» aSize¸¸Å­ ±â·ÏÇÑ´Ù.
  *
- * aStatSQL - [IN] í†µê³„ì •ë³´
- * aWhere   - [IN] Write ì‹œì‘ ìœ„ì¹˜ (Byte)
+ * aStatSQL - [IN] Åë°èÁ¤º¸
+ * aWhere   - [IN] Write ½ÃÀÛ À§Ä¡ (Byte)
  * aBuffer  - [IN] Write Memory Buffer
- * aSize    - [IN] Write í¬ê¸°(Byte)
+ * aSize    - [IN] Write Å©±â(Byte)
  ***********************************************************************/
 IDE_RC iduFile::write(idvSQL    * aStatSQL,
                       PDL_OFF_T   aWhere,
@@ -824,7 +828,7 @@ IDE_RC iduFile::write(idvSQL    * aStatSQL,
     PDL_HANDLE sFD = PDL_INVALID_HANDLE;
     SInt       sState = 0;
 
-    /* Writeì‹œ ì‚¬ìš©í•  FDë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤ .*/
+    /* Write½Ã »ç¿ëÇÒ FD¸¦ ÇÒ´ç¹Ş´Â´Ù .*/
     IDE_TEST( allocFD( aStatSQL, &sFD ) != IDE_SUCCESS );
     sState = 1;
 
@@ -841,14 +845,14 @@ IDE_RC iduFile::write(idvSQL    * aStatSQL,
     {
         sSystemErrno = errno;
 
-        // ENOSPC : disk ê³µê°„ ë¶€ì¡±
-        // EDQUOT : user disk ì¿¼í„° ë¶€ì¡±
+        // ENOSPC : disk °ø°£ ºÎÁ·
+        // EDQUOT : user disk ÄõÅÍ ºÎÁ·
         IDE_TEST_RAISE( (sSystemErrno == ENOSPC) ||
                         (sSystemErrno == EDQUOT),
                         no_space_error );
 
-        // EFBIG  : í”„ë¡œë ˆìŠ¤ì˜ í™”ì¼ í¬ê¸° í•œê³„ ì´ˆê³¼,
-        //          ì‹œìŠ¤í…œ max í™”ì¼ í¬ê¸° í•œê³„ ì´ˆê³¼
+        // EFBIG  : ÇÁ·Î·¹½ºÀÇ È­ÀÏ Å©±â ÇÑ°è ÃÊ°ú,
+        //          ½Ã½ºÅÛ max È­ÀÏ Å©±â ÇÑ°è ÃÊ°ú
         IDE_TEST_RAISE( sSystemErrno == EFBIG,
                         exceeed_limit_error );
 
@@ -856,7 +860,7 @@ IDE_RC iduFile::write(idvSQL    * aStatSQL,
     }
 
     sState = 0;
-    /* Writeì‹œ ì‚¬ìš©í•œ FDë¥¼ ë°˜í™˜í•œë‹¤ .*/
+    /* Write½Ã »ç¿ëÇÑ FD¸¦ ¹İÈ¯ÇÑ´Ù .*/
     IDE_TEST( freeFD( sFD ) != IDE_SUCCESS );
 
     mStatFunc[ mIOStatOnOff ].mEndStat( &mStat,
@@ -985,7 +989,11 @@ IDE_RC iduFile::writev( idvSQL*              aStatSQL,
     PDL_HANDLE  sFD;
     SInt        sState = 0;
 
-    /* Readì‹œ ì‚¬ìš©í•  FDë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤ .*/
+    IDE_TEST( checkDirectIOArgument( aWhere,
+                                     aVec )
+              != IDE_SUCCESS );
+
+    /* Read½Ã »ç¿ëÇÒ FD¸¦ ÇÒ´ç¹Ş´Â´Ù .*/
     IDE_TEST( allocFD( aStatSQL, &sFD ) != IDE_SUCCESS );
     sState = 1;
 
@@ -995,7 +1003,7 @@ IDE_RC iduFile::writev( idvSQL*              aStatSQL,
                     == -1, write_error );
 
     sState = 0;
-    /* Readì‹œ ì‚¬ìš©í•œ FDë¥¼ ë°˜í™˜í•œë‹¤ .*/
+    /* Read½Ã »ç¿ëÇÑ FD¸¦ ¹İÈ¯ÇÑ´Ù .*/
     IDE_TEST( freeFD( sFD ) != IDE_SUCCESS );
 
     mStatFunc[ mIOStatOnOff ].mEndStat( &mStat,
@@ -1018,6 +1026,71 @@ IDE_RC iduFile::writev( idvSQL*              aStatSQL,
     return IDE_FAILURE;
 }
 
+/***********************************************************************
+ * Description : WriteVÀÇ UntilSuccess ¹öÀü (PROJ-2647 ·Î Ãß°¡)
+ *               iduFile::writeUntilSuccess()¸¦ ¿Å°Ü¿Í¼­ ¸¸µë,
+ *               ÄÚµå ¼öÁ¤ ½Ã ÇÔ²² ¼öÁ¤ ÇØ¾ß ÇÔ
+ ***********************************************************************/
+IDE_RC iduFile::writevUntilSuccess(idvSQL  *     aStatSQL,
+                                   PDL_OFF_T     aWhere,
+                                   iduFileIOVec& aVec,
+                                   iduEmergencyFuncType aSetEmergencyFunc,
+                                   idBool        aKillServer )
+{
+    IDE_RC  sRet;
+    SInt    sErrorCode;
+    SChar   sErrorMsg[100];
+
+    while(1)
+    {
+        sRet = writev( aStatSQL,
+                       aWhere,
+                       aVec );
+
+        if( sRet != IDE_SUCCESS )
+        {
+            sErrorCode = ideGetErrorCode();
+
+            if(sErrorCode == idERR_ABORT_DISK_SPACE_EXHAUSTED)
+            {
+                aSetEmergencyFunc(ID_TRUE);
+
+                idlOS::snprintf(sErrorMsg, ID_SIZEOF(sErrorMsg),
+                                "Extending DataFile : from %"ID_UINT32_FMT"\n",
+                                aWhere );
+
+                if( aKillServer == ID_TRUE )
+                {
+                    ideLog::log(IDE_SERVER_0, ID_TRC_SERVER_ABNORMAL_SHUTDOWN, sErrorMsg);
+                    idlOS::exit(0);
+                }
+                else
+                {
+                    ideLog::log(IDE_SERVER_0, ID_TRC_FILE_EXTEND_FAILED, sErrorMsg);
+                    idlOS::sleep(2);
+                    continue;
+                }
+            }
+            else
+            {
+                aSetEmergencyFunc(ID_FALSE);
+                IDE_TEST(sRet != IDE_SUCCESS);
+            }
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    aSetEmergencyFunc(ID_FALSE);
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
 
 /***********************************************************************
  * Description : 
@@ -1317,15 +1390,15 @@ IDE_RC iduFile::copy(idvSQL  * aStatSQL,
 }
 
 /***********************************************************************
- * Description : DirectIOë¡œ Fileì´ openë˜ì—ˆì„ ê²½ìš° ê°ê°ì˜ OSë§ˆë‹¤ ì¢€ ë‹¤ë¥´ì§€ë§Œ
- *               ë™ì¼í•˜ê²Œ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ì„œ ë‹¤ìŒê³¼ ê°™ì€ ì œì•½ì‚¬í•­ì„ ë‘¡ë‹ˆë‹¤.
+ * Description : DirectIO·Î FileÀÌ openµÇ¾úÀ» °æ¿ì °¢°¢ÀÇ OS¸¶´Ù Á» ´Ù¸£Áö¸¸
+ *               µ¿ÀÏÇÏ°Ô Ã³¸®ÇÏ±â À§ÇØ¼­ ´ÙÀ½°ú °°Àº Á¦¾à»çÇ×À» µÓ´Ï´Ù.
  *
- *               * read or writeì‹œ ë„˜ê²¨ì§€ëŠ” ì¸ìëŠ” DIRECT_IO_PAGE_SIZEë¡œ
- *                 Alignë˜ì–´ì•¼ í•©ë‹ˆë‹¤. 
+ *               * read or write½Ã ³Ñ°ÜÁö´Â ÀÎÀÚ´Â DIRECT_IO_PAGE_SIZE·Î
+ *                 AlignµÇ¾î¾ß ÇÕ´Ï´Ù. 
  *
- * aWhere  - [IN] ì–´ë””ë¶€í„° read or writeí• ì§€ë¥¼ ì˜ë¯¸í•˜ëŠ” offset
- * aBuffer - [IN] ì‚¬ìš©ì ë²„í¼ì˜ ì‹œì‘ì£¼ì†Œ
- * aSize   - [IN] ì–¼ë§ˆë‚˜ read or writeí• ì§€ë¥¼ ì˜ë¯¸í•˜ëŠ” size
+ * aWhere  - [IN] ¾îµğºÎÅÍ read or writeÇÒÁö¸¦ ÀÇ¹ÌÇÏ´Â offset
+ * aBuffer - [IN] »ç¿ëÀÚ ¹öÆÛÀÇ ½ÃÀÛÁÖ¼Ò
+ * aSize   - [IN] ¾ó¸¶³ª read or writeÇÒÁö¸¦ ÀÇ¹ÌÇÏ´Â size
  * 
  ***********************************************************************/
 IDE_RC iduFile::checkDirectIOArgument( PDL_OFF_T  aWhere,
@@ -1363,13 +1436,66 @@ IDE_RC iduFile::checkDirectIOArgument( PDL_OFF_T  aWhere,
 }
 
 /***********************************************************************
- * BUG-14625 [WIN-ATAF] natc/TC/Server/sm4/sm4.tsê°€
- * ë™ì‘í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+ * Description : DirectIO·Î FileÀÌ openµÇ¾úÀ» °æ¿ì °¢°¢ÀÇ OS¸¶´Ù Á» ´Ù¸£Áö¸¸
+ *               µ¿ÀÏÇÏ°Ô Ã³¸®ÇÏ±â À§ÇØ¼­ ´ÙÀ½°ú °°Àº Á¦¾à»çÇ×À» µÓ´Ï´Ù.
  *
- * ë§Œì•½ Direct I/Oë¥¼ í•œë‹¤ë©´ Log Bufferì˜ ì‹œì‘ ì£¼ì†Œ ë˜í•œ
- * Direct I/O Pageí¬ê¸°ì— ë§ê²Œ Alignì„ í•´ì£¼ì–´ì•¼ í•œë‹¤.
- * ì´ì— ëŒ€ë¹„í•˜ì—¬ ë¡œê·¸ ë²„í¼ í• ë‹¹ì‹œ Direct I/O Page í¬ê¸°ë§Œí¼
- * ë” í• ë‹¹í•œë‹¤.
+ *               * read or write½Ã ³Ñ°ÜÁö´Â ÀÎÀÚ´Â DIRECT_IO_PAGE_SIZE·Î
+ *                 AlignµÇ¾î¾ß ÇÕ´Ï´Ù. 
+ *
+ * aWhere  - [IN] ¾îµğºÎÅÍ read or writeÇÒÁö¸¦ ÀÇ¹ÌÇÏ´Â offset
+ * aVec    - [IN] writev system call¿¡ »ç¿ëµÇ´Â IO Vector
+ * 
+ ***********************************************************************/
+IDE_RC iduFile::checkDirectIOArgument( PDL_OFF_T      aWhere,
+                                       iduFileIOVec&  aVec )
+{
+    SInt        i;
+    iovec     * sIOVec;
+
+    if( mIsDirectIO == ID_TRUE )
+    {
+        i = 0;
+        sIOVec = aVec.getIOVec();
+
+        IDE_TEST_RAISE( ( aWhere %
+                          iduProperty::getDirectIOPageSize() ) != 0,
+                        err_invalid_argument_directio );
+
+        for( ; i < aVec.getCount() ; i++ )
+        {
+            IDE_TEST_RAISE( ( (vULong)sIOVec[i].iov_base %
+                              iduProperty::getDirectIOPageSize() ) != 0,
+                            err_invalid_argument_directio );
+
+            IDE_TEST_RAISE( ( (ULong)sIOVec[i].iov_len %
+                              iduProperty::getDirectIOPageSize() ) != 0,
+                            err_invalid_argument_directio );
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( err_invalid_argument_directio )
+    {
+        IDE_SET(ideSetErrorCode(idERR_FATAL_DirectIO_Invalid_Argument,
+                                mFilename,
+                                aWhere,
+                                sIOVec[i].iov_base,
+                                sIOVec[i].iov_len ));
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * BUG-14625 [WIN-ATAF] natc/TC/Server/sm4/sm4.ts°¡
+ * µ¿ÀÛÇÏÁö ¾Ê½À´Ï´Ù.
+ *
+ * ¸¸¾à Direct I/O¸¦ ÇÑ´Ù¸é Log BufferÀÇ ½ÃÀÛ ÁÖ¼Ò ¶ÇÇÑ
+ * Direct I/O PageÅ©±â¿¡ ¸Â°Ô AlignÀ» ÇØÁÖ¾î¾ß ÇÑ´Ù.
+ * ÀÌ¿¡ ´ëºñÇÏ¿© ·Î±× ¹öÆÛ ÇÒ´ç½Ã Direct I/O Page Å©±â¸¸Å­
+ * ´õ ÇÒ´çÇÑ´Ù.
 ***********************************************************************/
 IDE_RC iduFile::allocBuff4DirectIO( iduMemoryClientIndex   aIndex,
                                     UInt                   aSize,
@@ -1395,9 +1521,9 @@ IDE_RC iduFile::allocBuff4DirectIO( iduMemoryClientIndex   aIndex,
 }
 
 /***********************************************************************
- * Description : í•´ë‹¹ ë²„í¼ê°€ Direct IOë¥¼ í• ìˆ˜ ìˆëŠ” ë²„í¼ì¸ì§€ íŒë‹¨í•œë‹¤.
+ * Description : ÇØ´ç ¹öÆÛ°¡ Direct IO¸¦ ÇÒ¼ö ÀÖ´Â ¹öÆÛÀÎÁö ÆÇ´ÜÇÑ´Ù.
  *
- * aMemPtr - [IN] ë²„í¼ì˜ ì‹œì‘ì£¼ì†Œ
+ * aMemPtr - [IN] ¹öÆÛÀÇ ½ÃÀÛÁÖ¼Ò
  *
  ***********************************************************************/
 idBool iduFile::canDirectIO( PDL_OFF_T  aWhere,
@@ -1425,13 +1551,13 @@ idBool iduFile::canDirectIO( PDL_OFF_T  aWhere,
 }
 
 /***********************************************************************
- * Description : DirectIOë¥¼ ìˆ˜í–‰í• ë ¤ëŠ” Fileì˜ Flagê°’ì„ ë¦¬í„´í•œë‹¤.
+ * Description : DirectIO¸¦ ¼öÇàÇÒ·Á´Â FileÀÇ Flag°ªÀ» ¸®ÅÏÇÑ´Ù.
  *
- * aIsDirectIO - [IN] opení• ë ¤ëŠ” Fileì— ëŒ€í•´ì„œ DirectIOë¥¼ í•œë‹¤ë©´ ID_TRUE,
- *                    ì•„ë‹ˆë©´ ID_FALSE
+ * aIsDirectIO - [IN] openÇÒ·Á´Â File¿¡ ´ëÇØ¼­ DirectIO¸¦ ÇÑ´Ù¸é ID_TRUE,
+ *                    ¾Æ´Ï¸é ID_FALSE
  *
  * + Related Issue
- *   - BUG-17818 : DirectIOì— ëŒ€í•´ ì •ë¦¬í•©ë‹ˆë‹¤.
+ *   - BUG-17818 : DirectIO¿¡ ´ëÇØ Á¤¸®ÇÕ´Ï´Ù.
  *
  ***********************************************************************/
 SInt iduFile::getOpenFlag( idBool aIsDirectIO )
@@ -1485,11 +1611,11 @@ SInt iduFile::getOpenFlag( idBool aIsDirectIO )
 }
 
 /***********************************************************************
- * Description : IOì— ëŒ€í•œ í†µê³„ì •ë³´ë¥¼ ìˆ˜ì§‘í•œë‹¤.
+ * Description : IO¿¡ ´ëÇÑ Åë°èÁ¤º¸¸¦ ¼öÁıÇÑ´Ù.
  *
- * aStatPtr    - [IN] í†µê³„ì •ë³´
+ * aStatPtr    - [IN] Åë°èÁ¤º¸
  * aFIOType    - [IN] IO Type:IDU_FIO_TYPE_READ, IDU_FIO_TYPE_WRITE
- * aBeginTime  - [IN] IO ì‹œì‘ ì‹œê°„.
+ * aBeginTime  - [IN] IO ½ÃÀÛ ½Ã°£.
  ***********************************************************************/
 void iduFile::endFIOStat( iduFIOStat    * aStatPtr,
                           iduFIOType      aFIOType,
@@ -1508,7 +1634,7 @@ void iduFile::endFIOStat( iduFIOStat    * aStatPtr,
     {
         case IDU_FIO_TYPE_READ:
             IDU_FIO_STAT_ADD( aStatPtr, mReadTime, sTimeDiff );
-            // ì•Œí‹°ë² ì´ìŠ¤ëŠ” Disk ReadëŠ” ëª¨ë‘ ë‹¨ì¼ Block Read ì´ë‹¤. 
+            // ¾ËÆ¼º£ÀÌ½º´Â Disk Read´Â ¸ğµÎ ´ÜÀÏ Block Read ÀÌ´Ù. 
             IDU_FIO_STAT_ADD( aStatPtr, mSingleBlockReadTime, sTimeDiff );
 
             if ( aStatPtr->mMaxIOReadTime < sTimeDiff )
@@ -1533,25 +1659,25 @@ void iduFile::endFIOStat( iduFIOStat    * aStatPtr,
             break;
 
         default:
-            // 2ê°€ì§€ Type ì´ì™¸ì—ëŠ” ì„œë²„ ì£½ì„!!
+            // 2°¡Áö Type ÀÌ¿Ü¿¡´Â ¼­¹ö Á×ÀÓ!!
             IDE_ASSERT( 0 );
             break;
     }
 
-    // I/O ìµœì†Œ ì†Œìš”ì‹œê°„ ì„¤ì •
+    // I/O ÃÖ¼Ò ¼Ò¿ä½Ã°£ ¼³Á¤
     if ( aStatPtr->mMinIOTime > sTimeDiff )
     {
         IDU_FIO_STAT_SET( aStatPtr, mMinIOTime, sTimeDiff );
     }
 
-    // I/O ë§ˆì§€ë§‰ ì†Œìš”ì‹œê°„ ì„¤ì •
+    // I/O ¸¶Áö¸· ¼Ò¿ä½Ã°£ ¼³Á¤
     IDU_FIO_STAT_SET( aStatPtr, mLstIOTime, sTimeDiff );
 }
 
 /***********************************************************************
- * Description : FDë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.
+ * Description : FD¸¦ ÇÒ´ç¹Ş´Â´Ù.
  *
- * aFD - [OUT] í• ë‹¹ëœ FDê°€ ì €ì¥ë  out ì¸ì.
+ * aFD - [OUT] ÇÒ´çµÈ FD°¡ ÀúÀåµÉ out ÀÎÀÚ.
  *
  ***********************************************************************/
 IDE_RC iduFile::allocFD( idvSQL     *aStatSQL,
@@ -1574,8 +1700,8 @@ IDE_RC iduFile::allocFD( idvSQL     *aStatSQL,
         IDE_ASSERT( mFDStackInfo->mItemSize == ID_SIZEOF(PDL_HANDLE) );
 #endif
 
-        /* mFDStackInfoì— í˜„ì¬ ì‚¬ìš©ì¤‘ì´ì§€ ì•ŠëŠ” FDê°€ ìˆëŠ”ì§€ë¥¼
-           NO Wait Modeë¡œ ì‚´í´ë³¸ë‹¤. */
+        /* mFDStackInfo¿¡ ÇöÀç »ç¿ëÁßÀÌÁö ¾Ê´Â FD°¡ ÀÖ´ÂÁö¸¦
+           NO Wait Mode·Î »ìÆìº»´Ù. */
         IDE_TEST( iduFXStack::pop( aStatSQL,
                                    mFDStackInfo,
                                    sWaitMode,
@@ -1585,29 +1711,29 @@ IDE_RC iduFile::allocFD( idvSQL     *aStatSQL,
 
         if( sIsEmpty == ID_TRUE )
         {
-            /* ë¹„ì–´ ìˆë‹¤ë©´ í˜„ì¬ Openëœ FDê°¯ìˆ˜ê°€ openì´ í—ˆìš©ëœ
-               ìµœëŒ€ FDê°¯ìˆ˜ë¥¼ ì´ˆê³¼í–ˆëŠ”ì§€ë¥¼ ê²€ì¦í•œë‹¤. */
+            /* ºñ¾î ÀÖ´Ù¸é ÇöÀç OpenµÈ FD°¹¼ö°¡ openÀÌ Çã¿ëµÈ
+               ÃÖ´ë FD°¹¼ö¸¦ ÃÊ°úÇß´ÂÁö¸¦ °ËÁõÇÑ´Ù. */
             IDE_TEST( mIOOpenMutex.lock( NULL ) != IDE_SUCCESS );
             sState = 1;
 
             if( mCurFDCount < mMaxFDCount )
             {
-                /* í˜„ì¬ Openëœ FDê°¯ìˆ˜ê°€ ìµœëŒ€ FDê°¯ìˆ˜ë³´ë‹¤ ì‘ìœ¼ë¯€ë¡œ
-                 * ìƒˆë¡œìš´ FDë¥¼ ì–»ê¸°ìœ„í•´ Opení•œë‹¤. */
+                /* ÇöÀç OpenµÈ FD°¹¼ö°¡ ÃÖ´ë FD°¹¼öº¸´Ù ÀÛÀ¸¹Ç·Î
+                 * »õ·Î¿î FD¸¦ ¾ò±âÀ§ÇØ OpenÇÑ´Ù. */
 
                 mCurFDCount++;
 
-                /* ë™ì‹œì„± í–¥ìƒì„ ìœ„í•´ì„œ open system callì„ mutexë¥¼
-                   í’€ê³  ìˆ˜í–‰í•œë‹¤. mCurFDCountë¥¼ ì¦ê°€ì‹œì¼œë†“ê³  í•˜ê¸°
-                   ë•Œë¬¸ì— ë‹¤ë¥¸ Threadì— ì˜í•´ì„œ Maxê°œë¥¼ ì´ˆê³¼í•´ì„œ
-                   Opení•˜ëŠ” ê²½ìš°ëŠ” ë°œìƒí•˜ì§€ ì•ŠëŠ”ë‹¤. */
+                /* µ¿½Ã¼º Çâ»óÀ» À§ÇØ¼­ open system callÀ» mutex¸¦
+                   Ç®°í ¼öÇàÇÑ´Ù. mCurFDCount¸¦ Áõ°¡½ÃÄÑ³õ°í ÇÏ±â
+                   ¶§¹®¿¡ ´Ù¸¥ Thread¿¡ ÀÇÇØ¼­ Max°³¸¦ ÃÊ°úÇØ¼­
+                   OpenÇÏ´Â °æ¿ì´Â ¹ß»ıÇÏÁö ¾Ê´Â´Ù. */
                 sState = 0;
                 IDE_TEST( mIOOpenMutex.unlock() != IDE_SUCCESS );
 
                 IDE_TEST_RAISE( open( &sFD ) != IDE_SUCCESS,
                                 err_file_open );
 
-                /* ìƒˆë¡œ Opení•œ FDë¥¼ ë°”ë¡œ í• ë‹¹í•´ ì¤€ë‹¤. */
+                /* »õ·Î OpenÇÑ FD¸¦ ¹Ù·Î ÇÒ´çÇØ ÁØ´Ù. */
                 *aFD = sFD;
                 break;
             }
@@ -1616,8 +1742,8 @@ IDE_RC iduFile::allocFD( idvSQL     *aStatSQL,
                 sState = 0;
                 IDE_TEST( mIOOpenMutex.unlock() != IDE_SUCCESS );
 
-                /* ë” ì´ìƒ Opení•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ ëŒ€ê¸° Modeë¡œ Stackì—
-                 * Popì„ ìš”ì²­í•œë‹¤. */
+                /* ´õ ÀÌ»ó OpenÇÒ ¼ö ¾øÀ¸¹Ç·Î ´ë±â Mode·Î Stack¿¡
+                 * PopÀ» ¿äÃ»ÇÑ´Ù. */
                 sWaitMode = IDU_FXSTACK_POP_WAIT;
             }
         }
@@ -1630,8 +1756,8 @@ IDE_RC iduFile::allocFD( idvSQL     *aStatSQL,
 
     IDE_EXCEPTION( err_file_open );
     {
-        /* mCurFDCountì„ ì¦ê°€ì‹œí‚¤ê³  Openì„ í•˜ê¸°ë•Œë¬¸ì— ì‹¤íŒ¨í•˜ë©´
-           ê°ì†Œì‹œí‚¨ë‹¤. */
+        /* mCurFDCountÀ» Áõ°¡½ÃÅ°°í OpenÀ» ÇÏ±â¶§¹®¿¡ ½ÇÆĞÇÏ¸é
+           °¨¼Ò½ÃÅ²´Ù. */
         IDE_ASSERT( mIOOpenMutex.lock( NULL ) == IDE_SUCCESS );
         mCurFDCount--;
         IDE_ASSERT( mIOOpenMutex.unlock() == IDE_SUCCESS );
@@ -1647,7 +1773,7 @@ IDE_RC iduFile::allocFD( idvSQL     *aStatSQL,
 }
 
 /***********************************************************************
- * Description : read, writeë“±ì„ ìœ„í•´ì„œ í• ë‹¹í–ˆë˜ FDë¥¼ ë°˜í™˜í•œë‹¤.
+ * Description : read, writeµîÀ» À§ÇØ¼­ ÇÒ´çÇß´ø FD¸¦ ¹İÈ¯ÇÑ´Ù.
  *
  * aFD - [IN] File Descriptor
  *
@@ -1672,8 +1798,8 @@ IDE_RC iduFile::freeFD( PDL_HANDLE aFD )
 
             IDE_TEST( close( aFD ) != IDE_SUCCESS );
 
-            /* FDë¥¼  OSì—ê²Œ ë°˜í™˜í•˜ì˜€ìœ¼ë¯€ë¡œ Stackì—
-               ë„£ì§€ ì•ŠëŠ”ë‹¤. */
+            /* FD¸¦  OS¿¡°Ô ¹İÈ¯ÇÏ¿´À¸¹Ç·Î Stack¿¡
+               ³ÖÁö ¾Ê´Â´Ù. */
             IDE_RAISE( skip_push_fd_to_stack );
         }
         else
@@ -1708,9 +1834,9 @@ IDE_RC iduFile::freeFD( PDL_HANDLE aFD )
 }
 
 /***********************************************************************
- * Description : aMaxFDCntë¡œ iduFileì˜ ìµœëŒ€ FD ê°¯ìˆ˜ë¥¼ ì„¤ì •í•œë‹¤.
+ * Description : aMaxFDCnt·Î iduFileÀÇ ÃÖ´ë FD °¹¼ö¸¦ ¼³Á¤ÇÑ´Ù.
  *
- * aMaxFDCnt - [IN] ìƒˆë¡œ ì„¤ì •ë  FD ìµœëŒ€ ê°¯ìˆ˜
+ * aMaxFDCnt - [IN] »õ·Î ¼³Á¤µÉ FD ÃÖ´ë °¹¼ö
  *
  ***********************************************************************/
 IDE_RC iduFile::setMaxFDCnt( SInt aMaxFDCnt )
@@ -1718,7 +1844,7 @@ IDE_RC iduFile::setMaxFDCnt( SInt aMaxFDCnt )
     SInt        sState = 0;
     PDL_HANDLE  sFD;
 
-    /* ìµœëŒ€ FDê°œìˆ˜ëŠ” ID_MAX_FILE_DESCRIPTOR_COUNTë³´ë‹¤ í´ìˆ˜ ì—†ë‹¤.*/
+    /* ÃÖ´ë FD°³¼ö´Â ID_MAX_FILE_DESCRIPTOR_COUNTº¸´Ù Å¬¼ö ¾ø´Ù.*/
     IDE_ASSERT( aMaxFDCnt <= ID_MAX_FILE_DESCRIPTOR_COUNT );
 
     IDE_TEST( mIOOpenMutex.lock( NULL ) != IDE_SUCCESS );
@@ -1757,9 +1883,9 @@ IDE_RC iduFile::setMaxFDCnt( SInt aMaxFDCnt )
 }
 
 /***********************************************************************
- * Description : aFileSizeë¡œ Truncateë¥¼ ìˆ˜í–‰í•œë‹¤.
+ * Description : aFileSize·Î Truncate¸¦ ¼öÇàÇÑ´Ù.
  *
- * aFileSize - [IN] Fileì´ Truncateë  í¬ê¸°.
+ * aFileSize - [IN] FileÀÌ TruncateµÉ Å©±â.
  *
  ***********************************************************************/
 IDE_RC iduFile::truncate( ULong aFileSize )
@@ -1798,7 +1924,7 @@ IDE_RC iduFile::truncate( ULong aFileSize )
 /***********************************************************************
  * Description : manipulate file space
  *
- * aSize    - [IN] Write í¬ê¸°(Byte)
+ * aSize    - [IN] Write Å©±â(Byte)
  ***********************************************************************/
 IDE_RC iduFile::fallocate( SLong  aSize )
 {
@@ -1807,7 +1933,7 @@ IDE_RC iduFile::fallocate( SLong  aSize )
     PDL_HANDLE sFD = PDL_INVALID_HANDLE;
     SInt       sState = 0;
 
-    /* ì‚¬ìš©í•  FDë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤ .*/
+    /* »ç¿ëÇÒ FD¸¦ ÇÒ´ç¹Ş´Â´Ù .*/
     IDE_TEST( allocFD( NULL/* idvSQL */, &sFD ) != IDE_SUCCESS );
     sState = 1;
 
@@ -1817,7 +1943,7 @@ IDE_RC iduFile::fallocate( SLong  aSize )
                     error_fallocate );
         
     sState = 0;
-    /* ì‚¬ìš©í•œ FDë¥¼ ë°˜í™˜í•œë‹¤ .*/
+    /* »ç¿ëÇÑ FD¸¦ ¹İÈ¯ÇÑ´Ù .*/
     IDE_TEST( freeFD( sFD ) != IDE_SUCCESS );
 
     mStatFunc[ mIOStatOnOff ].mEndStat( &mStat,
@@ -1889,10 +2015,10 @@ IDE_RC iduFile::fallocate( SLong  aSize )
 
 
 /***********************************************************************
- * Description : aSizeë¥¼ aWrite Modeë¡œ mmapí•œë‹¤.
+ * Description : aSize¸¦ aWrite Mode·Î mmapÇÑ´Ù.
  *
- * aSize   - [IN] mmapë  ì˜ì—­ì˜ í¬ê¸°.
- * aWrite  - [IN] mmapë  ì˜ì—­ì— ëŒ€í•´ì„œ writeí• ì§€ë¥¼ ê²°ì •.
+ * aSize   - [IN] mmapµÉ ¿µ¿ªÀÇ Å©±â.
+ * aWrite  - [IN] mmapµÉ ¿µ¿ª¿¡ ´ëÇØ¼­ writeÇÒÁö¸¦ °áÁ¤.
  ***********************************************************************/
 IDE_RC iduFile::mmap( idvSQL     *aStatSQL,
                       UInt        aSize,
@@ -1941,10 +2067,10 @@ IDE_RC iduFile::mmap( idvSQL     *aStatSQL,
 
             if ( errno == ENOMEM )
             {
-                // To Fix PR-14859 redhat90ì—ì„œ redoë„ì¤‘ hangë°œìƒ
-                // Hangë°œìƒì„ ë§‰ì„ë°©ë²•ì€ ì—†ë‹¤. ë©”ëª¨ë¦¬ ë¶€ì¡±ì´ë¼ëŠ”
-                // ë©”ì„¸ì§€ë¥¼ ì½˜ì†”ì— ë¿Œë ¤ì£¼ì–´ ì‚¬ìš©ìê°€ Hangìƒí™©ì´
-                // ì•„ë‹ˆë¼ ë©”ëª¨ë¦¬ ë¶€ì¡±ìƒí™©ì„ì„ íŒŒì•…í•˜ë„ë¡ ì•Œë ¤ì¤€ë‹¤.
+                // To Fix PR-14859 redhat90¿¡¼­ redoµµÁß hang¹ß»ı
+                // Hang¹ß»ıÀ» ¸·À»¹æ¹ıÀº ¾ø´Ù. ¸Ş¸ğ¸® ºÎÁ·ÀÌ¶ó´Â
+                // ¸Ş¼¼Áö¸¦ ÄÜ¼Ö¿¡ »Ñ·ÁÁÖ¾î »ç¿ëÀÚ°¡ Hang»óÈ²ÀÌ
+                // ¾Æ´Ï¶ó ¸Ş¸ğ¸® ºÎÁ·»óÈ²ÀÓÀ» ÆÄ¾ÇÇÏµµ·Ï ¾Ë·ÁÁØ´Ù.
                 idlOS::memset( sMsgBuf, 0, 256 );
                 idlOS::snprintf( sMsgBuf, 256, "Failed to mmmap log file"
                                  "( errno=ENOMEM(%"ID_UINT32_FMT"),"
@@ -1956,6 +2082,8 @@ IDE_RC iduFile::mmap( idvSQL     *aStatSQL,
             idlOS::sleep(2);
         }
     }
+
+    (void)idlOS::madvise((caddr_t)sMMapPtr, (size_t)aSize, MADV_WILLNEED | MADV_SEQUENTIAL);
 
     sState = 0;
     IDE_TEST( freeFD( sFD ) != IDE_SUCCESS );
@@ -1989,7 +2117,7 @@ IDE_RC iduFile::munmap(void* aPtr, UInt aSize)
 #if !defined(VC_WIN32) && !defined(IA64_HP_HPUX)
     (void)idlOS::madvise((caddr_t)aPtr, (size_t)aSize, MADV_DONTNEED);
 #else
-    //í•´ë‹¹ ì—­í• ì„ ìˆ˜í–‰í•  í•¨ìˆ˜ë¥¼ ì°¾ì•„ ë„£ì–´ì•¼ í•©ë‹ˆë‹¤.
+    //ÇØ´ç ¿ªÇÒÀ» ¼öÇàÇÒ ÇÔ¼ö¸¦ Ã£¾Æ ³Ö¾î¾ß ÇÕ´Ï´Ù.
 #endif
 
     IDE_TEST(idlOS::munmap(aPtr, aSize ) != 0);

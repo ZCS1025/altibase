@@ -31,24 +31,111 @@
 #include <qmoOuterJoinOper.h>
 #include <qmoOuterJoinElimination.h>
 #include <qmoInnerJoinPushDown.h>
+#include <mtv.h>
 
 extern mtfModule mtfOr;
 extern mtfModule mtfEqual;
+extern mtfModule mtfEqualAny;
 extern mtfModule sdfShardKey;
+extern mtfModule mtfList;
 
-IDE_RC sda::checkStmt( qcStatement * aStatement )
+IDE_RC sda::checkStmtTypeBeforeAnalysis( qcStatement * aStatement )
 {
 /***********************************************************************
  *
  * Description :
- *      ìˆ˜í–‰ ê°€ëŠ¥í•œ statement typeì¸ì§€ í™•ì¸í•œë‹¤.
+ *      »şµå ºĞ¼® Àü¿¡ »şµå ºĞ¼®ÀÌ °¡´ÉÇÑÁö(ÇÊ¿äÇÑÁö) ¸ÕÀú È®ÀÎ
  *
- *     *  ìˆ˜í–‰ ê°€ëŠ¥í•œ statement type
- *           1. QCI_STMT_SELECT
- *              QCI_STMT_SELECT_FOR_UPDATE
- *           2. QCI_STMT_INSERT
- *           3. QCI_STMT_UPDATE
- *           4. QCI_STMT_DELETE
+ * Implementation :
+ *      1. ºĞ¼® °¡´ÉÇÑ Statement typeÀÎÁö È®ÀÎÇÑ´Ù.
+ *      2. ºĞ¼®ÀÌ ÇÊ¿ä¾ø´Â Shard prefixÀÎÁö È®ÀÎÇÑ´Ù.
+ *
+ * Arguments :
+ *
+ ***********************************************************************/
+
+    qciStmtType      sStmtType  = aStatement->myPlan->parseTree->stmtKind;
+    qcShardStmtType  sPrefixType = aStatement->myPlan->parseTree->stmtShard;
+    qcuSqlSourceInfo sqlInfo;
+
+    /* TASK-7219 Shard Transformer Refactoring */
+    switch( qciMisc::getStmtType( sStmtType ) )
+    {
+        case QCI_STMT_MASK_DML:
+        case QCI_STMT_MASK_SP:
+            break;
+        default :
+            IDE_RAISE( ERR_UNSUPPORTED_STMT );
+            break;
+    }
+
+    switch( sStmtType )
+    {
+        case QCI_STMT_SELECT :
+        case QCI_STMT_SELECT_FOR_UPDATE :
+        case QCI_STMT_INSERT :
+        case QCI_STMT_UPDATE :
+        case QCI_STMT_DELETE :
+        case QCI_STMT_EXEC_PROC :
+            break;
+        default :
+            /* TASK-7219 Shard Transformer Refactoring */
+            sqlInfo.setSourceInfo( aStatement, &( aStatement->myPlan->parseTree->stmtPos ) );
+
+            IDE_RAISE( ERR_UNSUPPORTED_STMT_WITH_POS );
+            break;
+    }
+
+    switch( sPrefixType )
+    {
+        case QC_STMT_SHARD_NONE :
+        case QC_STMT_SHARD_ANALYZE :
+            break;
+        default :
+            IDE_RAISE( ERR_SHARD_PREFIX_EXISTS );
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+
+    /* TASK-7219 Shard Transformer Refactoring */
+    IDE_EXCEPTION( ERR_UNSUPPORTED_STMT_WITH_POS )
+    {
+        (void)sqlInfo.init( aStatement->qmeMem );
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
+                                  "Unsupported statement type",
+                                  sqlInfo.getErrMessage() ) );
+        (void)sqlInfo.fini();
+    }
+    IDE_EXCEPTION( ERR_UNSUPPORTED_STMT )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
+                                  "Unsupported statement type",
+                                  "" ) );
+    }
+    IDE_EXCEPTION( ERR_SHARD_PREFIX_EXISTS )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
+                                  sdi::getNonShardQueryReasonArr( SDI_SHARD_KEYWORD_EXISTS ),
+                                  "" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::checkDCLStmt( qcStatement * aStatement )
+{
+/***********************************************************************
+ *
+ * Description :
+ *     PROJ-2727
+ *      ¼öÇà °¡´ÉÇÑ DCL statement typeÀÎÁö È®ÀÎÇÑ´Ù.
+ *
+ *     *  ¼öÇà °¡´ÉÇÑ statement type
+ *           1. QCI_STMT_SET_SESSION_PROPERTY
+ *           2. QCI_STMT_SET_SYSTEM_PROPERTY
  *
  * Implementation :
  *
@@ -59,22 +146,27 @@ IDE_RC sda::checkStmt( qcStatement * aStatement )
     qciStmtType     sType  = aStatement->myPlan->parseTree->stmtKind;
     qcShardStmtType sShard = aStatement->myPlan->parseTree->stmtShard;
 
-    IDE_TEST_RAISE( !( ( sType == QCI_STMT_SELECT ) ||
-                       ( sType == QCI_STMT_SELECT_FOR_UPDATE ) ||
-                       ( sType == QCI_STMT_INSERT ) ||
-                       ( sType == QCI_STMT_UPDATE ) ||
-                       ( sType == QCI_STMT_DELETE ) ||
-                       ( sType == QCI_STMT_EXEC_PROC ) ), ERR_UNSUPPORTED_STMT );
-
-    IDE_TEST_RAISE( ( sShard == QC_STMT_SHARD_META ) ||
-                    ( sShard == QC_STMT_SHARD_DATA ), ERR_UNSUPPORTED_STMT );
-
+    if (( sType == QCI_STMT_SET_SESSION_PROPERTY ) ||
+        ( sType == QCI_STMT_SET_SYSTEM_PROPERTY ))
+    {
+        IDE_TEST_RAISE( sShard == QC_STMT_SHARD_DATA, ERR_UNSUPPORTED_STMT );
+    }
+    else
+    {
+        IDE_TEST_RAISE( ( sShard == QC_STMT_SHARD_ANALYZE ) ||
+                        ( sShard == QC_STMT_SHARD_META ) ||
+                        ( sShard == QC_STMT_SHARD_DATA ),
+                        ERR_UNSUPPORTED_STMT );
+    }
+    
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(ERR_UNSUPPORTED_STMT)
+    /* TASK-7219 Shard Transformer Refactoring */
+    IDE_EXCEPTION( ERR_UNSUPPORTED_STMT )
     {
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "Unsupported shard SQL"));
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
+                                  "Unsupported shard SQL",
+                                  "" ) );
     }
     IDE_EXCEPTION_END;
 
@@ -84,63 +176,45 @@ IDE_RC sda::checkStmt( qcStatement * aStatement )
 IDE_RC sda::analyze( qcStatement * aStatement,
                      ULong         aSMN )
 {
-    qciStmtType sType = aStatement->myPlan->parseTree->stmtKind;
+    qciStmtType sStmtType = aStatement->myPlan->parseTree->stmtKind;
 
-    switch ( sType )
+    switch ( sStmtType )
     {
         case QCI_STMT_SELECT:
         case QCI_STMT_SELECT_FOR_UPDATE:
 
             IDE_TEST( analyzeSelect( aStatement,
-                                     aSMN,
-                                     ID_FALSE )
+                                     aSMN )
                       != IDE_SUCCESS );
-
-            if ( ((qmsParseTree*)aStatement->myPlan->parseTree)->querySet->
-                 mShardAnalysis->mCantMergeReason[SDI_SUB_KEY_EXISTS] == ID_TRUE )
-            {
-                //------------------------------------------
-                // PROJ-2655 Composite shard key
-                //
-                // Shard keyì— ëŒ€í•´ì„œ ë¶„ì„ í•œ ê²°ê³¼ ë¥¼ ë³´ê³ ,
-                // Sub-shard keyë¥¼ ê°€ì§„ objectê°€ ì¡´ì¬í•˜ë©´,
-                // Sub-shard keyì— ëŒ€í•´ì„œ ë¶„ì„ì„ ìˆ˜í–‰í•œë‹¤.
-                //
-                //------------------------------------------
-                IDE_TEST( analyzeSelect( aStatement,
-                                         aSMN,
-                                         ID_TRUE )
-                          != IDE_SUCCESS );
-            }
-            else
-            {
-                // Nothing to do.
-            }
 
             break;
 
         case QCI_STMT_INSERT:
 
             IDE_TEST( analyzeInsert( aStatement,
-                                     aSMN ) != IDE_SUCCESS );
+                                     aSMN )
+                      != IDE_SUCCESS );
             break;
 
         case QCI_STMT_UPDATE:
 
             IDE_TEST( analyzeUpdate( aStatement,
-                                     aSMN ) != IDE_SUCCESS );
+                                     aSMN )
+                      != IDE_SUCCESS );
             break;
 
         case QCI_STMT_DELETE:
 
             IDE_TEST( analyzeDelete( aStatement,
-                                     aSMN ) != IDE_SUCCESS );
+                                     aSMN )
+                      != IDE_SUCCESS );
             break;
 
         case QCI_STMT_EXEC_PROC:
 
             IDE_TEST( analyzeExecProc( aStatement,
-                                       aSMN ) != IDE_SUCCESS );
+                                       aSMN )
+                      != IDE_SUCCESS );
             break;
 
         default:
@@ -163,199 +237,347 @@ IDE_RC sda::analyze( qcStatement * aStatement,
 }
 
 IDE_RC sda::analyzeSelect( qcStatement * aStatement,
-                           ULong         aSMN,
-                           idBool        aIsSubKey )
+                           ULong         aSMN )
 {
 /***********************************************************************
  *
- * Description : SELECT êµ¬ë¬¸ì˜ ë¶„ì„ ê³¼ì •
+ * Description : SELECT ±¸¹®ÀÇ ºĞ¼® °úÁ¤
  *
  * Implementation :
  *
  ***********************************************************************/
 
-    //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
-    //------------------------------------------
+    qmsParseTree * sParseTree = (qmsParseTree*)aStatement->myPlan->parseTree;
 
-    IDE_TEST_RAISE( aStatement == NULL, ERR_NULL_STATEMENT );
+    //------------------------------------------
+    // Analyze SELECT statement
+    //------------------------------------------
+    IDE_TEST ( analyzeSelectCore( aStatement,
+                                  aSMN,
+                                  NULL,
+                                  ID_FALSE )
+               != IDE_SUCCESS );
+
+    if ( sParseTree->querySet->mShardAnalysis->mAnalysisFlag.mTopQueryFlag[ SDI_TQ_SUB_KEY_EXISTS ] == ID_TRUE )
+    {
+        //------------------------------------------
+        // PROJ-2655 Composite shard key
+        //
+        // Shard key¿¡ ´ëÇØ¼­ ºĞ¼® ÇÑ °á°ú ¸¦ º¸°í,
+        // Sub-shard key¸¦ °¡Áø object°¡ Á¸ÀçÇÏ¸é,
+        // Sub-shard key¿¡ ´ëÇØ¼­ ºĞ¼®À» ¼öÇàÇÑ´Ù.
+        //
+        //------------------------------------------
+        IDE_TEST ( analyzeSelectCore( aStatement,
+                                      aSMN,
+                                      NULL,
+                                      ID_TRUE )
+                   != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::analyzeSelectCore( qcStatement * aStatement,
+                               ULong         aSMN,
+                               sdiKeyInfo  * aOutRefInfo,
+                               idBool        aIsSubKey )
+{
+    /* TASK-7219 Shard Transformer Refactoring */
+    qcShardStmtType    sStmtType  = aStatement->myPlan->parseTree->stmtShard;
+    qmsParseTree     * sParseTree = (qmsParseTree * ) (aStatement->myPlan->parseTree );
+    sdiShardAnalysis * sAnalysis  = NULL;
 
     /* BUG-45823 */
     increaseAnalyzeCount( aStatement );
 
-    if ( aIsSubKey == ID_FALSE )
+    /* TASK-7219 Shard Transformer Refactoring
+     *  Shard ¿©ºÎ¿¡ »ó°ü¾øÀÌ ¼öÇàµÇ´Â
+     *   DATA, META Å°¿öµåÀÎ ±¸¹®Àº ´õÀÌ»ó ºĞ¼®ÇÏÁö ¾Ê´Â´Ù.
+     */
+    switch ( sStmtType )
+    {
+        case QC_STMT_SHARD_DATA:
+        case QC_STMT_SHARD_META:
+            IDE_TEST( allocAnalysis( aStatement,
+                                     &( sAnalysis ) )
+                      != IDE_SUCCESS );
+
+            sAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_SHARD_KEYWORD_EXISTS ] = ID_TRUE;
+
+            if ( aIsSubKey == ID_FALSE )
+            {
+                sParseTree->querySet->mShardAnalysis = sAnalysis;
+                sParseTree->mShardAnalysis           = sAnalysis;
+            }
+            else
+            {
+                sParseTree->querySet->mShardAnalysis->mNext = sAnalysis;
+                sParseTree->mShardAnalysis->mNext           = sAnalysis;
+            }
+
+            IDE_CONT( NORMAL_EXIT );
+            break;
+
+        default:
+            break;
+    }
+
+    /* BUG-48872 */
+    if ( ( aIsSubKey == ID_FALSE )
+         &&
+         ( SDI_CHECK_QUERYSET_LIST_STATE( aStatement->mShardQuerySetList,
+                                          SDI_QUERYSET_LIST_STATE_DUMMY_ANALYZE )
+           == ID_TRUE ) )
     {
         //------------------------------------------
         // PROJ-1413
-        // Query Transformation ìˆ˜í–‰
+        // Query Transformation ¼öÇà
         //------------------------------------------
-
         IDE_TEST( qmo::doTransform( aStatement ) != IDE_SUCCESS );
     }
     else
     {
-        // Nothing to do.
+        /* Nothing to do. */
     }
 
     //------------------------------------------
     // PROJ-2646 shard analyzer enhancement
-    // ParseTreeì˜ ë¶„ì„
+    // ParseTreeÀÇ ºĞ¼®
     //------------------------------------------
     IDE_TEST( analyzeParseTree( aStatement,
                                 aSMN,
+                                aOutRefInfo,
                                 aIsSubKey )
               != IDE_SUCCESS );
 
+    /* TASK-7219 Shard Transformer Refactoring */
+    IDE_EXCEPTION_CONT( NORMAL_EXIT );
+
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(ERR_NULL_STATEMENT)
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::makeAndSetAnalyzeInfo( qcStatement      * aStatement,
+                                   sdiShardAnalysis * aAnalysis,
+                                   sdiAnalyzeInfo  ** aAnalyzeInfo )
+{
+/***********************************************************************
+ *
+ * Description : TASK-7219 Shard Transformer Refactoring
+ *                sda:setAnalysis ÇÔ¼ö ÀÌ¸§, ¿¹¿ÜÃ³¸® º¯°æ
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+    sdiAnalyzeInfo * sAnalysisResult  = NULL;
+    sdiAnalysisFlag  sAnalysisFlag;
+
+    IDE_TEST_RAISE( aStatement == NULL, ERR_NULL_STATEMENT );
+    IDE_TEST_RAISE( aAnalysis == NULL, ERR_NULL_ANALYSIS );
+
+    SDI_INIT_ANALYSIS_FLAG( sAnalysisFlag );
+
+    IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( sdiAnalyzeInfo ),
+                                             (void **)&( sAnalysisResult ) )
+              != IDE_SUCCESS );
+
+    SDI_INIT_ANALYZE_INFO( sAnalysisResult );
+
+    IDE_TEST( setAnalysisCommonInfo( aStatement,
+                                     aAnalysis,
+                                     sAnalysisResult )
+              != IDE_SUCCESS );
+
+    IDE_TEST( setAnalysisCombinedInfo( aAnalysis,
+                                       sAnalysisResult,
+                                       &( sAnalysisFlag ) )
+              != IDE_SUCCESS );
+
+    IDE_TEST( setAnalysisIndividualInfo( aStatement,
+                                         aAnalysis,
+                                         &( sAnalysisResult->mValuePtrCount ),
+                                         &( sAnalysisResult->mValuePtrArray ),
+                                         &( sAnalysisResult->mSplitMethod ),
+                                         &( sAnalysisResult->mKeyDataType ) )
+              != IDE_SUCCESS );
+
+    if ( sAnalysisResult->mSubKeyExists == ID_TRUE )
     {
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
-                                "sda::analyzeSelect",
-                                "The statement is NULL."));
+        IDE_TEST( setAnalysisIndividualInfo( aStatement,
+                                             aAnalysis->mNext,
+                                             &( sAnalysisResult->mSubValuePtrCount ),
+                                             &( sAnalysisResult->mSubValuePtrArray ),
+                                             &( sAnalysisResult->mSubSplitMethod ),
+                                             &( sAnalysisResult->mSubKeyDataType ) )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
+
+    if ( sAnalysisResult->mIsShardQuery == ID_FALSE )
+    {
+        setNonShardQueryReasonErr( &( sAnalysisFlag ),
+                                   &( sAnalysisResult->mNonShardQueryReason ) );
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
+
+    if ( aAnalyzeInfo != NULL )
+    {
+        *aAnalyzeInfo = sAnalysisResult;
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_STATEMENT )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::makeAndSetAnalyzeInfo",
+                                  "statement is NULL" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_ANALYSIS )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::makeAndSetAnalyzeInfo",
+                                  "analysis is NULL" ) );
     }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 }
 
-IDE_RC sda::setAnalysis( qcStatement  * aStatement,
-                         sdiQuerySet  * aAnalysis,
-                         idBool       * aCantMergeReason,
-                         idBool       * aCantMergeReasonSub )
+IDE_RC sda::setAnalysisCommonInfo( qcStatement      * aStatement,
+                                   sdiShardAnalysis * aAnalysis,
+                                   sdiAnalyzeInfo   * aAnalysisResult )
 {
-/***********************************************************************
- *
- * Description :
- *      analyze infoë¥¼ qciStatementì— ì„¸íŒ…í•œë‹¤.
- *
- * Implementation :
- *
- * Arguments :
- *
- ***********************************************************************/
+    // Default nodeID
+    aAnalysisResult->mDefaultNodeId = aAnalysis->mShardInfo.mDefaultNodeId;
 
-    sdiAnalyzeInfo     * sAnalyzeInfo    = NULL;
-
-    sdiKeyInfo         * sKeyInfo        = NULL;
-    UInt                 sKeyInfoCount   = 0;
-
-    sdaValueList       * sCurrValue      = NULL;
-
-    sdaValueList       * sValueList      = NULL;
-    UShort               sValueListCount = 0;
-
-    sdaValueList       * sSubValueList      = NULL;
-    UShort               sSubValueListCount = 0;
-
-    UShort               i = 0;
-
-    idBool             * sErrorReason = NULL;
-
-    //---------------------------------------
-    // í• ë‹¹
-    //---------------------------------------
-    IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiAnalyzeInfo),
-                                             (void**) & sAnalyzeInfo )
-              != IDE_SUCCESS );
-    SDI_INIT_ANALYZE_INFO( sAnalyzeInfo );
-
-    //---------------------------------------
-    // ì„¤ì •
-    //---------------------------------------
-    sAnalyzeInfo->mSplitMethod   = aAnalysis->mShardInfo.mSplitMethod;
-    sAnalyzeInfo->mKeyDataType   = aAnalysis->mShardInfo.mKeyDataType;
-    sAnalyzeInfo->mDefaultNodeId = aAnalysis->mShardInfo.mDefaultNodeId;
-
-    if ( aAnalysis->mCantMergeReason[SDI_SUB_KEY_EXISTS] == ID_TRUE )
-    {
-        // Sub-shard key exists
-        sAnalyzeInfo->mSubKeyExists   = ID_TRUE;
-        sAnalyzeInfo->mSubSplitMethod = aAnalysis->mShardInfo4SubKey.mSplitMethod;
-        sAnalyzeInfo->mSubKeyDataType = aAnalysis->mShardInfo4SubKey.mKeyDataType;
-    }
-    else
-    {
-        // Sub-shard key doesn't exist
-        // Aleardy initialized.
-        // Nothing to do.
-    }
-
+    // Range info
     IDE_TEST( sdi::allocAndCopyRanges( aStatement,
-                                       &sAnalyzeInfo->mRangeInfo,
-                                       &aAnalysis->mShardInfo.mRangeInfo )
+                                       &aAnalysisResult->mRangeInfo,
+                                       aAnalysis->mShardInfo.mRangeInfo )
               != IDE_SUCCESS );
 
-    //---------------------------------------
-    // PROJ-2685 online rebuild
-    // shard tableì„ analysisì— ë“±ë¡
-    //---------------------------------------
-    sAnalyzeInfo->mTableInfoList = aAnalysis->mTableInfoList;
-
-    //---------------------------------------
-    // Shard query ì—¬ë¶€ ì„¤ì •
-    //   Non-shard query ë¼ë©´
-    //     1. Error reason ê²°ì •
-    //     2. Aggregation Transform ê°€ëŠ¥ì—¬ë¶€ ê²°ì •
-    //---------------------------------------
-    IDE_TEST( isCanMerge( aCantMergeReason,
-                          &sAnalyzeInfo->mIsCanMerge )
-              != IDE_SUCCESS );
-
-    if ( sAnalyzeInfo->mIsCanMerge == ID_FALSE )
+    // Sub shard key existence
+    if ( aAnalysis->mAnalysisFlag.mTopQueryFlag[ SDI_TQ_SUB_KEY_EXISTS ] == ID_TRUE )
     {
-        // For main shard key
-        sErrorReason = aCantMergeReason;
+        IDE_DASSERT( aAnalysis->mNext != NULL );
 
-        // PROJ-2687 Shard aggregation transform
-        // Set transformAble
-        IDE_TEST( isTransformAble( aCantMergeReason,
-                                   &sAnalyzeInfo->mIsTransformAble )
-                  != IDE_SUCCESS );
+        // Sub-shard key exists
+        aAnalysisResult->mSubKeyExists   = ID_TRUE;
     }
     else
     {
-        if ( sAnalyzeInfo->mSubKeyExists == ID_TRUE )
+        /* Nothing to do. */
+    }
+
+    // Table reference info
+    aAnalysisResult->mTableInfoList = aAnalysis->mTableInfoList;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::setAnalysisCombinedInfo( sdiShardAnalysis * aAnalysis,
+                                     sdiAnalyzeInfo   * aAnalysisResult,
+                                     sdiAnalysisFlag  * aAnalysisFlag )
+{
+    sdiShardAnalysis * sAnalysis = NULL;
+
+    //---------------------------------------
+    // Shard query ¿©ºÎ ¼³Á¤
+    //   Non-shard query ¶ó¸é
+    //     1. Error reason °áÁ¤
+    //     2. Aggregation Transform °¡´É¿©ºÎ °áÁ¤
+    //---------------------------------------
+
+    for ( sAnalysis  = aAnalysis;
+          sAnalysis != NULL;
+          sAnalysis  = sAnalysis->mNext )
+    {
+        // Ã¹¹øÂ° Å° ÀÌ°Å³ª,
+        // ÀÌÀü °á°ú°¡ TRUEÀÎ °æ¿ì¿¡¸¸ ¼öÇà
+        if ( ( sAnalysis == aAnalysis ) ||
+             ( aAnalysisResult->mIsShardQuery == ID_TRUE ) )
         {
-            // For sub-shard key
-            IDE_TEST( isCanMerge( aCantMergeReasonSub,
-                                  &sAnalyzeInfo->mIsCanMerge )
+            // Set Shard query or not
+            IDE_TEST( isShardQuery( &( sAnalysis->mAnalysisFlag ),
+                                    &( aAnalysisResult->mIsShardQuery ) )
                       != IDE_SUCCESS );
-
-            if ( sAnalyzeInfo->mIsCanMerge == ID_FALSE )
-            {
-                sErrorReason = aCantMergeReasonSub;
-
-                if ( sAnalyzeInfo->mIsTransformAble == ID_TRUE )
-                {
-                    // Set transformAble
-                    IDE_TEST( isTransformAble( aCantMergeReasonSub,
-                                               &sAnalyzeInfo->mIsTransformAble )
-                              != IDE_SUCCESS );
-                }
-                else
-                {
-                    // Nothing to do.
-                }
-            }
         }
         else
         {
-            // Nothing to do.
+            /* Nothing to do. */
         }
+
+        /* TASK-7219 Shard Transformer Refactoring */
+        IDE_TEST( mergeAnalysisFlag( &( sAnalysis->mAnalysisFlag ),
+                                     aAnalysisFlag,
+                                     SDI_ANALYSIS_FLAG_NON_TRUE |
+                                     SDI_ANALYSIS_FLAG_TOP_TRUE |
+                                     SDI_ANALYSIS_FLAG_SET_TRUE |
+                                     SDI_ANALYSIS_FLAG_CUR_TRUE )
+                  != IDE_SUCCESS );
     }
 
-    //---------------------------------------
-    // Non-shard queryì— ëŒ€í•´ì„œ
-    // ê·¸ ì´ìœ (error reason)ì„ ì„¸íŒ…í•˜ê³ ,
-    // IDE_FAILUREë¥¼ returní•˜ë„ë¡ í•œë‹¤.
-    //---------------------------------------
-    IDE_TEST_RAISE( sAnalyzeInfo->mIsCanMerge == ID_FALSE, ERR_CANNOT_MERGE );
+    return IDE_SUCCESS;
 
-    //---------------------------------------
-    // Shard key value ì„¤ì •
-    //---------------------------------------
-    if ( sAnalyzeInfo->mSplitMethod == SDI_SPLIT_CLONE )
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::setAnalysisIndividualInfo( qcStatement      * aStatement,
+                                       sdiShardAnalysis * aAnalysis,
+                                       UShort           * aValuePtrCount,
+                                       sdiValueInfo*   ** aValuePtrArray,
+                                       sdiSplitMethod   * aSplitMethod,
+                                       UInt             * aKeyDataType )
+{
+    sdiKeyInfo * sKeyInfo = NULL;
+
+    sdiValueInfo * sValueInfo = NULL;
+
+    UShort sKeyInfoCount = 0;
+    UShort sValueIdx = 0;
+
+    /* TASK-7219 Shard Transformer Refactoring
+     *  Shard ¿©ºÎ¿¡ »ó°ü¾øÀÌ Analyze Info¸¦ »ı¼ºÇÑ´Ù.
+     */
+
+    // Set split method
+    *aSplitMethod = aAnalysis->mShardInfo.mSplitMethod;
+
+    // Set shrad key data type
+    *aKeyDataType = aAnalysis->mShardInfo.mKeyDataType;
+
+    // Set shard key value info
+    if ( *aSplitMethod == SDI_SPLIT_CLONE )
     {
         //---------------------------------------
         // Split CLONE
@@ -363,14 +585,18 @@ IDE_RC sda::setAnalysis( qcStatement  * aStatement,
         if ( ( aStatement->myPlan->parseTree->stmtKind != QCI_STMT_SELECT ) &&
              ( aStatement->myPlan->parseTree->stmtKind != QCI_STMT_SELECT_FOR_UPDATE )  )
         {
-            sAnalyzeInfo->mValueCount = 1;
+            *aValuePtrCount = 1;
 
-            IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiValueInfo),
-                                                     (void**) & sAnalyzeInfo->mValue )
+            IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiValueInfo*),
+                                                     (void**) aValuePtrArray )
                       != IDE_SUCCESS );
 
-            sAnalyzeInfo->mValue[0].mType = 0;
-            sAnalyzeInfo->mValue[0].mValue.mBindParamId = 0;
+            IDE_TEST( allocAndSetShardHostValueInfo( aStatement,
+                                                     0,
+                                                     &sValueInfo )
+                      != IDE_SUCCESS );
+
+            (*aValuePtrArray)[0] = sValueInfo;
         }
         else
         {
@@ -379,146 +605,111 @@ IDE_RC sda::setAnalysis( qcStatement  * aStatement,
     }
     else
     {
+        /* TASJ-7219
+         *   BUG-47903 ÀÌÈÄ, Àü ³ëµå ¼öÇà Non-Shard Query ¸¦ °í·ÁÇØ¼­ ¼öÁ¤ÇÔ
+         */
         //---------------------------------------
         // Split HASH, LIST, RANGE, SOLO, COMPOSITE
         //---------------------------------------
-        for ( sKeyInfo = aAnalysis->mKeyInfo, sKeyInfoCount = 0;
+        for ( sKeyInfo = aAnalysis->mKeyInfo;
               sKeyInfo != NULL;
-              sKeyInfo = sKeyInfo->mNext, sKeyInfoCount++ )
+              sKeyInfo = sKeyInfo->mNext )
         {
-            IDE_TEST( makeShardValueList( aStatement,
-                                          sKeyInfo,
-                                          &sValueList,
-                                          &sValueListCount )
-                      != IDE_SUCCESS );
-        }
-
-        if ( sAnalyzeInfo->mSubKeyExists == ID_TRUE )
-        {
-            for ( sKeyInfo = aAnalysis->mKeyInfo4SubKey, sKeyInfoCount = 0;
-                  sKeyInfo != NULL;
-                  sKeyInfo = sKeyInfo->mNext, sKeyInfoCount++ )
+            if ( sdi::getSplitType( sKeyInfo->mShardInfo.mSplitMethod ) == SDI_SPLIT_TYPE_DIST )
             {
-                IDE_TEST( makeShardValueList( aStatement,
-                                              sKeyInfo,
-                                              &sSubValueList,
-                                              &sSubValueListCount )
-                          != IDE_SUCCESS );
-            }
-        }
-        else
-        {
-            // Nothing to do.
-        }
-
-        if ( sValueListCount > 0 )
-        {
-            IDE_TEST_RAISE( sValueListCount >= SDI_VALUE_MAX_COUNT, ERR_SHARD_VALUE_MAX );
-
-            IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiValueInfo) * sValueListCount,
-                                                     (void**) & sAnalyzeInfo->mValue )
-                      != IDE_SUCCESS );
-
-            for ( sCurrValue  = sValueList, i = 0;
-                  sCurrValue != NULL;
-                  sCurrValue  = sCurrValue->mNext, i++ )
-            {
-                if ( sCurrValue->mValue->mType == 0 )
-                {
-                    sAnalyzeInfo->mValue[i].mType  = 0;
-                    sAnalyzeInfo->mValue[i].mValue.mBindParamId =
-                        sCurrValue->mValue->mValue.mBindParamId;
-                }
-                else if ( sCurrValue->mValue->mType == 1 )
-                {
-                    idlOS::memcpy( (void*) &sAnalyzeInfo->mValue[i],
-                                   (void*) sCurrValue->mValue,
-                                   ID_SIZEOF(sdiValueInfo) );
-                }
-                else
-                {
-                    IDE_RAISE(ERR_INVALID_SHARD_VALUE_TYPE);
-                }
-            }
-
-            sAnalyzeInfo->mValueCount = sValueListCount;
-        }
-        else
-        {
-            // Nothing to do.
-        }
-
-        if ( sAnalyzeInfo->mSubKeyExists == ID_TRUE )
-        {
-            IDE_TEST_RAISE( sSubValueListCount >= SDI_VALUE_MAX_COUNT, ERR_SHARD_VALUE_MAX );
-
-            if ( sSubValueListCount > 0 )
-            {
-                IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiValueInfo) * sSubValueListCount,
-                                                         (void**) & sAnalyzeInfo->mSubValue )
-                          != IDE_SUCCESS );
-
-                for ( sCurrValue  = sSubValueList, i = 0;
-                      sCurrValue != NULL;
-                      sCurrValue  = sCurrValue->mNext, i++ )
-                {
-                    if ( sCurrValue->mValue->mType == 0 )
-                    {
-                        sAnalyzeInfo->mSubValue[i].mType  = 0;
-                        sAnalyzeInfo->mSubValue[i].mValue.mBindParamId =
-                            sCurrValue->mValue->mValue.mBindParamId;
-                    }
-                    else if ( sCurrValue->mValue->mType == 1 )
-                    {
-                        idlOS::memcpy( (void*) &sAnalyzeInfo->mSubValue[i],
-                                       (void*) sCurrValue->mValue,
-                                       ID_SIZEOF(sdiValueInfo) );
-                    }
-                    else
-                    {
-                        IDE_RAISE(ERR_INVALID_SHARD_VALUE_TYPE);
-                    }
-                }
-
-                sAnalyzeInfo->mSubValueCount = sSubValueListCount;
+                sKeyInfoCount++;
             }
             else
             {
-                // Nothing to do.
+                /* Nothing to do. */
+            }
+        }
+
+        if ( sKeyInfoCount <= 1 )
+        {
+            for ( sKeyInfo = aAnalysis->mKeyInfo;
+                  sKeyInfo != NULL;
+                  sKeyInfo = sKeyInfo->mNext )
+            {
+                if ( sdi::getSplitType( sKeyInfo->mShardInfo.mSplitMethod ) == SDI_SPLIT_TYPE_DIST )
+                {
+                    *aValuePtrCount = sKeyInfo->mValuePtrCount;
+
+                    if ( *aValuePtrCount > 0 )
+                    {
+                        IDE_TEST_RAISE( sKeyInfo->mValuePtrCount >= SDI_VALUE_MAX_COUNT, ERR_SHARD_VALUE_MAX );
+
+                        IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiValueInfo*) * sKeyInfo->mValuePtrCount,
+                                                                 (void**) aValuePtrArray )
+                                  != IDE_SUCCESS );
+
+                        for ( sValueIdx = 0;
+                              sValueIdx < sKeyInfo->mValuePtrCount;
+                              sValueIdx++ )
+                        {
+                            if ( sKeyInfo->mValuePtrArray[sValueIdx]->mType == SDI_VALUE_INFO_HOST_VAR )
+                            {
+                                IDE_TEST( allocAndSetShardHostValueInfo(
+                                              aStatement,
+                                              sKeyInfo->mValuePtrArray[sValueIdx]->mValue.mBindParamId,
+                                              &( sValueInfo ) )
+                                          != IDE_SUCCESS );
+                            }
+                            else
+                            {
+                                IDE_DASSERT( sKeyInfo->mValuePtrArray[sValueIdx]->mType == SDI_VALUE_INFO_CONST_VAL );
+
+                                /* TASK-7219 Shard Transformer Refactoring
+                                 *  Shard ¿©ºÎ¿¡ »ó°ü¾øÀÌ, Analyze Info ¸¦ »ı¼ºÇÏ¿©,
+                                 *   Shard Info ±¸¼º ½ÇÆĞ ½Ã aKeyDataType ÀÌ ±âº»°ªÀÎ °æ¿ì°¡ ¹ß»ıÇÏ°í,
+                                 *    sKeyInfo ¿¡ mValuePtrArray °¡ Á¸ÀçÇÏ´õ¶óµµ sValueInfo ¸¦ »ı¼ºÇÏÁö ¾Ê°í ¹«½ÃÇÑ´Ù.
+                                 *
+                                 *     ÀÌÈÄ¿¡ ÇØ´ç Query Set À» Shard View ·Î º¯È¯ÇÑ´Ù¸é,
+                                 *      qmgShardSelect::setShardKeyValue ¿¡¼­ Shard Analyze ¸¦ Àç¼öÇàÇÒ ¶§¿¡
+                                 *       ÀûÀıÇÑ sValueInfo ·Î »ı¼ºÇÏ±â¸¦ ±â´ëÇÑ´Ù.
+                                 */
+                                if ( *aKeyDataType != ID_UINT_MAX )
+                                {
+                                    IDE_TEST( allocAndSetShardConstValueInfo(
+                                                  aStatement,
+                                                  *aKeyDataType,
+                                                  (void *)&( sKeyInfo->mValuePtrArray[sValueIdx]->mValue ),
+                                                  &( sValueInfo ) )
+                                              != IDE_SUCCESS );
+                                }
+                                else
+                                {
+                                    sValueInfo = NULL;
+                                }
+                            }
+
+                            (*aValuePtrArray)[sValueIdx] = sValueInfo;
+                        }
+                    }
+                    else
+                    {
+                        /* Nothing to do. */
+                    }
+                }
+                else
+                {
+                    /* Nothing to do. */
+                }
             }
         }
         else
         {
-            // Nothing to do.
+            /* Nothing to do. */
         }
     }
-
-    //---------------------------------------
-    // ê¸°ë¡
-    //---------------------------------------
-    aStatement->myPlan->mShardAnalysis = sAnalyzeInfo;
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(ERR_SHARD_VALUE_MAX)
     {
         IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
-                                "sda::setAnalysis",
+                                "sda::setAnalysisIndividualInfo",
                                 "The number of shard values exceeds the maximum(1000)."));
-    }
-    IDE_EXCEPTION(ERR_INVALID_SHARD_VALUE_TYPE)
-    {
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
-                                "sda::setAnalysis",
-                                "Invalid shard value type"));
-    }
-    IDE_EXCEPTION(ERR_CANNOT_MERGE)
-    {
-        setCanNotMergeReasonErr( sErrorReason, &(sAnalyzeInfo->mNonShardQueryReason) );
-
-        // shard queryê°€ ì•„ë‹ˆì§€ë§Œ, shard view ìˆ˜í–‰ì„ ìœ„í•´ analysisëŠ” ê¸°ë¡í•œë‹¤.
-        sAnalyzeInfo->mIsCanMerge = ID_FALSE;
-        aStatement->myPlan->mShardAnalysis = sAnalyzeInfo;
     }
     IDE_EXCEPTION_END;
 
@@ -528,6 +719,8 @@ IDE_RC sda::setAnalysis( qcStatement  * aStatement,
 IDE_RC sda::subqueryAnalysis4NodeTree( qcStatement          * aStatement,
                                        ULong                  aSMN,
                                        qtcNode              * aNode,
+                                       sdiKeyInfo           * aOutRefInfo,
+                                       idBool                 aIsSubKey,
                                        sdaSubqueryAnalysis ** aSubqueryAnalysis )
 {
 /***********************************************************************
@@ -543,40 +736,17 @@ IDE_RC sda::subqueryAnalysis4NodeTree( qcStatement          * aStatement,
 
     if ( aNode != NULL )
     {
-        IDE_TEST( subqueryAnalysis4NodeTree( aStatement,
-                                             aSMN,
-                                             (qtcNode*)aNode->node.next,
-                                             aSubqueryAnalysis )
-                  != IDE_SUCCESS );
-
-        if ( QTC_HAVE_SUBQUERY( aNode ) == ID_TRUE )
-        {
-            IDE_TEST( subqueryAnalysis4NodeTree( aStatement,
-                                                 aSMN,
-                                                 (qtcNode*)aNode->node.arguments,
-                                                 aSubqueryAnalysis )
-                      != IDE_SUCCESS );
-        }
-        else
-        {
-            // Nothing to do.
-        }
-
         if ( QTC_IS_SUBQUERY( aNode ) == ID_TRUE )
         {
-            IDE_TEST( checkStmt( aNode->subquery ) != IDE_SUCCESS );
-
-            IDE_TEST( analyzeSelect( aNode->subquery,
-                                     aSMN,
-                                     ID_FALSE )
+            IDE_TEST( analyzeSelectCore( aNode->subquery,
+                                         aSMN,
+                                         aOutRefInfo,
+                                         aIsSubKey )
                       != IDE_SUCCESS );
 
             IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdaSubqueryAnalysis),
                                                      (void**) & sSubqueryAnalysis )
                       != IDE_SUCCESS );
-
-            IDE_DASSERT( aNode->subquery->myPlan != NULL );
-            IDE_DASSERT( aNode->subquery->myPlan->parseTree != NULL );
 
             sSubqueryAnalysis->mShardAnalysis =
                 ( (qmsParseTree*)aNode->subquery->myPlan->parseTree )->mShardAnalysis;
@@ -587,12 +757,101 @@ IDE_RC sda::subqueryAnalysis4NodeTree( qcStatement          * aStatement,
         }
         else
         {
-            // Nothing to do.
+            if ( QTC_HAVE_SUBQUERY( aNode ) == ID_TRUE )
+            {
+                IDE_TEST( subqueryAnalysis4NodeTree( aStatement,
+                                                     aSMN,
+                                                     (qtcNode*)aNode->node.arguments,
+                                                     aOutRefInfo,
+                                                     aIsSubKey,
+                                                     aSubqueryAnalysis )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
+
+            if ( aNode->overClause != NULL )
+            {
+                IDE_TEST( traverseOverColumn4SubqueryAnalysis( aStatement,
+                                                               aSMN,
+                                                               aNode->overClause->overColumn,
+                                                               aOutRefInfo,
+                                                               aIsSubKey,
+                                                               aSubqueryAnalysis )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
         }
+      
+        if ( ( ( aNode->node.module == &mtfEqual ) ||
+               ( aNode->node.module == &mtfEqualAny ) ) &&
+             ( QTC_HAVE_SUBQUERY( aNode ) == ID_TRUE ) )
+        {
+            IDE_TEST( traversePredForCheckingShardKeyJoin( aStatement,
+                                                           aNode,
+                                                           (qtcNode*)aNode->node.arguments,
+                                                           (qtcNode*)aNode->node.arguments->next,
+                                                           aOutRefInfo,
+                                                           aIsSubKey )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing to do. */
+        }
+
+        IDE_TEST( subqueryAnalysis4NodeTree( aStatement,
+                                             aSMN,
+                                             (qtcNode*)aNode->node.next,
+                                             aOutRefInfo,
+                                             aIsSubKey,
+                                             aSubqueryAnalysis )
+                  != IDE_SUCCESS );
     }
     else
     {
-        // Nothing to do.
+        /* Nothing to do. */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::traverseOverColumn4SubqueryAnalysis( qcStatement          * aStatement,
+                                                 ULong                  aSMN,
+                                                 qtcOverColumn        * aOverColumn,
+                                                 sdiKeyInfo           * aOutRefInfo,
+                                                 idBool                 aIsSubKey,
+                                                 sdaSubqueryAnalysis ** aSubqueryAnalysis )
+{
+    qtcOverColumn * sOverColumn = NULL;
+
+    for ( sOverColumn  = aOverColumn;
+          sOverColumn != NULL;
+          sOverColumn  = sOverColumn->next )
+    {
+        if ( QTC_HAVE_SUBQUERY( sOverColumn->node ) == ID_TRUE )
+        {
+            IDE_TEST( subqueryAnalysis4NodeTree( aStatement,
+                                                 aSMN,
+                                                 sOverColumn->node,
+                                                 aOutRefInfo,
+                                                 aIsSubKey,
+                                                 aSubqueryAnalysis )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing to do. */
+        }
     }
 
     return IDE_SUCCESS;
@@ -603,182 +862,569 @@ IDE_RC sda::subqueryAnalysis4NodeTree( qcStatement          * aStatement,
 }
 
 IDE_RC sda::setShardInfo4Subquery( qcStatement         * aStatement,
-                                   sdiQuerySet         * aQuerySetAnalysis,
+                                   sdiShardAnalysis    * aQuerySetAnalysis,
                                    sdaSubqueryAnalysis * aSubqueryAnalysis,
-                                   idBool              * aCantMergeReason )
+                                   idBool                aIsSelect,
+                                   idBool                aIsSubKey,
+                                   sdiAnalysisFlag     * aAnalysisFlag )
 {
-    sdaSubqueryAnalysis * sSubqueryAnalysis = NULL;
+/***********************************************************************
+ *
+ * Description :
+ *
+ * Implementation :
+ *
+ *  OUTER QUERY BLOCK | SUBQUERY BLOCK |           ANALYSIS
+ *  ------------------|----------------|--------------------------------
+ *  1.    H/R/L       |      H/R/L     | 1. SubQÀÇ out ref join È®ÀÎ
+ *  ------------------|----------------|--------------------------------
+ *  2.    H/R/L       |       C/S      | 1. Range°¡ C/S includes H/R/L ÀÎÁö È®ÀÎ
+ *  ------------------|----------------|--------------------------------
+ *
+ *  ------------------|----------------|--------------------------------
+ *  3.      C         |      H/R/L     | 1. ºÒ°¡ ÆÇÁ¤
+ *  ------------------|----------------|--------------------------------
+ *  4.      C         |       C/S      | 1. SELECTÀÇ °æ¿ì
+ *                    |                |    Range¸¦ intersect
+ *                    |                |
+ *                    |                | 2. DMLÀÇ °æ¿ì
+ *                    |                |    Range°¡ C = C/S ÀÎÁö È®ÀÎ
+ *  ------------------|----------------|--------------------------------
+ *
+ *  ------------------|----------------|--------------------------------
+ *  5.      S         |     H/R/L/S    | 1. Range°¡ S = H/R/L/S ÀÎÁö È®ÀÎ
+ *  ------------------|----------------|--------------------------------
+ *  6.      S         |       C        | 1. Range°¡ C include S ÀÎÁö È®ÀÎ
+ *  ------------------|----------------|--------------------------------
+ *  7.             COMMON              | 1. SubQÀÇ non-shard reason È®ÀÎ
+ *  ------------------|----------------|--------------------------------
+ *
+ * Arguments :
+ *
+ ***********************************************************************/
 
-    sdiShardInfo * sSubqueryShardInfo;
-    sdiRangeInfo   sRangeInfo;
-    sdiRangeInfo   sRangeInfoTmp;
+    sdaSubqueryAnalysis * sSubqueryAnalysis  = NULL;
+    sdiShardInfo        * sSubqueryShardInfo = NULL;
+    sdiShardInfo        * sOuterQueryShardInfo = NULL;
+    sdiAnalysisFlag     * sSubqueryFlag = NULL;
+    sdiRangeInfo        * sOutRangeInfo = NULL; /* TASK-7219 Shard Transformer Refactoring */
+    idBool                sOutRefReasonBack  = ID_FALSE;
+    idBool                sIsSameShardInfo = ID_FALSE;
 
-    IDE_DASSERT( aCantMergeReason != NULL );
+    //---------------------------------------
+    // Check arguments
+    //---------------------------------------
+    IDE_DASSERT( aStatement != NULL );
+    IDE_DASSERT( aQuerySetAnalysis != NULL );
+    IDE_DASSERT( aSubqueryAnalysis != NULL );
+    IDE_DASSERT( aAnalysisFlag != NULL );
 
-    if ( ( aQuerySetAnalysis->mShardInfo.mSplitMethod == SDI_SPLIT_CLONE ) ||
-         ( aQuerySetAnalysis->mShardInfo.mSplitMethod == SDI_SPLIT_SOLO ) )
+    sOuterQueryShardInfo = &aQuerySetAnalysis->mShardInfo;
+
+    for ( sSubqueryAnalysis  = aSubqueryAnalysis;
+          sSubqueryAnalysis != NULL;
+          sSubqueryAnalysis  = sSubqueryAnalysis->mNext )
     {
-        sRangeInfo.mCount     = 0;
-        sRangeInfo.mRanges    = NULL;
-        sRangeInfoTmp.mCount  = 0;
-        sRangeInfoTmp.mRanges = NULL;
-
-        IDE_TEST( sdi::allocAndCopyRanges( aStatement,
-                                           &sRangeInfo,
-                                           &aQuerySetAnalysis->mShardInfo.mRangeInfo )
-                  != IDE_SUCCESS );
-
-        for ( sSubqueryAnalysis  = aSubqueryAnalysis;
-              sSubqueryAnalysis != NULL;
-              sSubqueryAnalysis  = sSubqueryAnalysis->mNext )
+        if ( aIsSubKey == ID_FALSE )
         {
-            IDE_DASSERT( sSubqueryAnalysis->mShardAnalysis != NULL );
-            IDE_DASSERT( sSubqueryAnalysis->mShardAnalysis->mQuerySetAnalysis != NULL );
             sSubqueryShardInfo =
-                &(sSubqueryAnalysis->mShardAnalysis->mQuerySetAnalysis->mShardInfo);
+                &(sSubqueryAnalysis->mShardAnalysis->mShardInfo);
 
-            IDE_TEST( canMergeOr(  aCantMergeReason,
-                                   sSubqueryAnalysis->mShardAnalysis->mCantMergeReason )
-                      != IDE_SUCCESS );
+            sSubqueryFlag =
+                &( sSubqueryAnalysis->mShardAnalysis->mAnalysisFlag );
 
-            IDE_DASSERT( sSubqueryShardInfo != NULL );
-            if ( ( sSubqueryShardInfo->mSplitMethod != SDI_SPLIT_CLONE ) &&
-                 ( sSubqueryShardInfo->mSplitMethod != SDI_SPLIT_SOLO ) )
+            if ( ( sdi::getSplitType( aQuerySetAnalysis->mShardInfo.mSplitMethod ) == SDI_SPLIT_TYPE_DIST ) &&
+                 ( sdi::getSplitType( sSubqueryShardInfo->mSplitMethod ) == SDI_SPLIT_TYPE_DIST ) &&
+                 ( aQuerySetAnalysis->mAnalysisFlag.mTopQueryFlag[ SDI_TQ_SUB_KEY_EXISTS ] !=
+                   sSubqueryFlag->mTopQueryFlag[ SDI_TQ_SUB_KEY_EXISTS ] ) )
             {
-                if ( sSubqueryShardInfo->mSplitMethod == SDI_SPLIT_NONE )
-                {
-                    aCantMergeReason[ SDI_MULTI_SHARD_INFO_EXISTS ] = ID_TRUE;
-                }
-                else
-                {
-                    aCantMergeReason[ SDI_SUBQUERY_EXISTS ] = ID_TRUE;
-                }
-
-                break;
+                aAnalysisFlag->mNonShardFlag[ SDI_MULTI_SHARD_INFO_EXISTS ] = ID_TRUE;
+                aAnalysisFlag->mNonShardFlag[ SDI_NON_SHARD_SUBQUERY_EXISTS ] = ID_TRUE;
             }
             else
             {
-                // ì„ì‹œë¡œ ë³µì‚¬í•œ ë’¤ mergeí•œë‹¤.
-                IDE_TEST( sdi::allocAndCopyRanges( aStatement,
-                                                   &sRangeInfoTmp,
-                                                   &sRangeInfo )
-                          != IDE_SUCCESS );
+                /* Nothing to do. */
+            }
+        }
+        else
+        {
+            IDE_DASSERT( sSubqueryAnalysis->mShardAnalysis->mNext != NULL );
 
-                andRangeInfo( &sRangeInfoTmp,
-                              &(sSubqueryShardInfo->mRangeInfo),
-                              &sRangeInfo );
+            sSubqueryShardInfo =
+                &(sSubqueryAnalysis->mShardAnalysis->mNext->mShardInfo);
 
-                if ( sRangeInfo.mCount == 0 )
+            sSubqueryFlag =
+                &( sSubqueryAnalysis->mShardAnalysis->mNext->mAnalysisFlag );
+        }
+
+        if ( aAnalysisFlag->mNonShardFlag[ SDI_MULTI_SHARD_INFO_EXISTS ] == ID_FALSE )
+        {
+            if ( sdi::getSplitType( sOuterQueryShardInfo->mSplitMethod ) == SDI_SPLIT_TYPE_DIST )
+            {
+                if ( sOuterQueryShardInfo->mSplitMethod == sSubqueryShardInfo->mSplitMethod )
                 {
-                    aCantMergeReason[ SDI_MULTI_SHARD_INFO_EXISTS ] = ID_TRUE;
-                    break;
+                    sIsSameShardInfo = ID_FALSE;
+
+                    IDE_TEST( isSameShardInfo( sOuterQueryShardInfo,
+                                               sSubqueryShardInfo,
+                                               aIsSubKey,
+                                               &sIsSameShardInfo )
+                              != IDE_SUCCESS );
+
+                    if ( sIsSameShardInfo == ID_TRUE )
+                    {
+                        /*  OUTER QUERY BLOCK | SUBQUERY BLOCK |           ANALYSIS
+                         *  ------------------|----------------|--------------------------------
+                         *  1.    H/R/L       |      H/R/L     | 1. SubQÀÇ out ref join È®ÀÎ
+                         *  ------------------|----------------|--------------------------------
+                         */
+                        if ( sSubqueryFlag->mSetQueryFlag[ SDI_SQ_OUT_REF_NOT_EXISTS ] == ID_TRUE )
+                        {
+                            aAnalysisFlag->mNonShardFlag[ SDI_NON_SHARD_SUBQUERY_EXISTS ] = ID_TRUE;
+                        }
+                        else
+                        {
+                            /* Nothing to do. */
+                        }
+                    }
+                    else
+                    {
+                        aAnalysisFlag->mNonShardFlag[ SDI_MULTI_SHARD_INFO_EXISTS ] = ID_TRUE;
+                        aAnalysisFlag->mNonShardFlag[ SDI_NON_SHARD_SUBQUERY_EXISTS ] = ID_TRUE;
+                    }
+                }
+                else if ( sdi::getSplitType( sSubqueryShardInfo->mSplitMethod ) == SDI_SPLIT_TYPE_NO_DIST )
+                {
+                    /*  OUTER QUERY BLOCK | SUBQUERY BLOCK |           ANALYSIS
+                     *  ------------------|----------------|--------------------------------
+                     *  2.    H/R/L       |       C/S      |  1. Range°¡ C/S include H/R/L ÀÎÁö È®ÀÎ
+                     *  ------------------|----------------|--------------------------------
+                     */
+                    if ( isSubRangeInfo( sSubqueryShardInfo->mRangeInfo,
+                                         sOuterQueryShardInfo->mRangeInfo,
+                                         sOuterQueryShardInfo->mDefaultNodeId ) == ID_FALSE )
+                    {
+                        aAnalysisFlag->mNonShardFlag[ SDI_MULTI_SHARD_INFO_EXISTS ] = ID_TRUE;
+                        aAnalysisFlag->mNonShardFlag[ SDI_NON_SHARD_SUBQUERY_EXISTS ] = ID_TRUE;
+                    }
+                    else
+                    {
+                        /* Nothing to do. */
+                    }
                 }
                 else
                 {
-                    // Nothing to do.
+                    aAnalysisFlag->mNonShardFlag[ SDI_MULTI_SHARD_INFO_EXISTS ] = ID_TRUE;
+                    aAnalysisFlag->mNonShardFlag[ SDI_NON_SHARD_SUBQUERY_EXISTS ] = ID_TRUE;
                 }
             }
+            else if ( sOuterQueryShardInfo->mSplitMethod == SDI_SPLIT_CLONE )
+            {
+                if ( sdi::getSplitType( sSubqueryShardInfo->mSplitMethod ) == SDI_SPLIT_TYPE_DIST )
+                {
+                    /*  OUTER QUERY BLOCK | SUBQUERY BLOCK |           ANALYSIS
+                     *  ------------------|----------------|--------------------------------
+                     *  3.      C         |      H/R/L     | 1. ºÒ°¡ ÆÇÁ¤
+                     *  ------------------|----------------|--------------------------------
+                     */
+                    aAnalysisFlag->mNonShardFlag[ SDI_NON_SHARD_SUBQUERY_EXISTS ] = ID_TRUE;
+                }
+                else if ( sdi::getSplitType( sSubqueryShardInfo->mSplitMethod ) == SDI_SPLIT_TYPE_NO_DIST )
+                {
+                    /*  OUTER QUERY BLOCK | SUBQUERY BLOCK |           ANALYSIS
+                     *  ------------------|----------------|--------------------------------
+                     *  4.      C         |       C/S      | 1. SELECTÀÇ °æ¿ì
+                     *                    |                |    Range¸¦ intersect
+                     *                    |                |
+                     *                    |                | 2. DMLÀÇ °æ¿ì
+                     *                    |                |    Range°¡ C = C/S ÀÎÁö È®ÀÎ
+                     *  ------------------|----------------|--------------------------------
+                     */
+                    if ( aIsSelect == ID_TRUE )
+                    {
+                        /* TASK-7219 Shard Transformer Refactoring */
+                        IDE_TEST( getRangeIntersection( aStatement,
+                                                        sOuterQueryShardInfo->mRangeInfo,
+                                                        sSubqueryShardInfo->mRangeInfo,
+                                                        &( sOutRangeInfo ) )
+                                  != IDE_SUCCESS );
 
-            //---------------------------------------
-            // PROJ-2685 online rebuild
-            // shard tableì„ analysisì— ë“±ë¡
-            //---------------------------------------
-            IDE_TEST( addTableInfoList(
-                          aStatement,
-                          aQuerySetAnalysis,
-                          sSubqueryAnalysis->mShardAnalysis->mQuerySetAnalysis->mTableInfoList )
-                      != IDE_SUCCESS );
+                        if ( sOutRangeInfo->mCount == 0 )
+                        {
+                            aAnalysisFlag->mNonShardFlag[ SDI_MULTI_SHARD_INFO_EXISTS ] = ID_TRUE;
+                            aAnalysisFlag->mNonShardFlag[ SDI_NON_SHARD_SUBQUERY_EXISTS ] = ID_TRUE;
+                        }
+                        else
+                        {
+                            sOuterQueryShardInfo->mRangeInfo = sOutRangeInfo;
+                        }
+                    }
+                    else
+                    {
+                        if ( isSameRangesForCloneAndSolo( sOuterQueryShardInfo->mRangeInfo,
+                                                          sSubqueryShardInfo->mRangeInfo ) == ID_FALSE )
+                        {
+                            /* DMLÀÇ °æ¿ì range°¡ C = C/S ÀÎÁö È®ÀÎ */
+                            aAnalysisFlag->mNonShardFlag[ SDI_MULTI_SHARD_INFO_EXISTS ] = ID_TRUE;
+                            aAnalysisFlag->mNonShardFlag[ SDI_NON_SHARD_SUBQUERY_EXISTS ] = ID_TRUE;
+                        }
+                        else
+                        {
+                            /* Nothing to do. */
+                        }
+                    }
+                }
+                else
+                {
+                    IDE_DASSERT( sSubqueryShardInfo->mSplitMethod == SDI_SPLIT_NONE );
+                }
+            
+            }
+            else if ( sOuterQueryShardInfo->mSplitMethod == SDI_SPLIT_SOLO )
+            {
+                if ( ( sdi::getSplitType( sSubqueryShardInfo->mSplitMethod ) == SDI_SPLIT_TYPE_DIST ) ||
+                     ( sSubqueryShardInfo->mSplitMethod == SDI_SPLIT_SOLO ) )
+                {
+                    /*  OUTER QUERY BLOCK | SUBQUERY BLOCK |           ANALYSIS
+                     *  ------------------|----------------|--------------------------------
+                     *  5.      S         |     H/R/L/S    | 1. Range°¡ S = H/R/L/S ÀÎÁö È®ÀÎ
+                     *  ------------------|----------------|--------------------------------
+                     */
+                    if ( isSubRangeInfo( sOuterQueryShardInfo->mRangeInfo, // SOLO
+                                         sSubqueryShardInfo->mRangeInfo,
+                                         sSubqueryShardInfo->mDefaultNodeId ) == ID_FALSE ) // H/R/L/S
+                    {
+                        /* Range°¡ S = H/R/L/S ÀÎÁö È®ÀÎ */
+                        aAnalysisFlag->mNonShardFlag[ SDI_MULTI_SHARD_INFO_EXISTS ] = ID_TRUE;
+                        aAnalysisFlag->mNonShardFlag[ SDI_NON_SHARD_SUBQUERY_EXISTS ] = ID_TRUE;
+                    }
+                    else
+                    {
+                        /* Nothing to do. */
+                    }
+                }
+                else if ( sSubqueryShardInfo->mSplitMethod == SDI_SPLIT_CLONE )
+                {
+                    /*  OUTER QUERY BLOCK | SUBQUERY BLOCK |           ANALYSIS
+                     *  ------------------|----------------|--------------------------------
+                     *  6.      S         |       C        | 1. Range°¡ C include S ÀÎÁö È®ÀÎ
+                     *  ------------------|----------------|--------------------------------
+                     */
+                    if ( isSubRangeInfo( sSubqueryShardInfo->mRangeInfo, // SOLO
+                                         sOuterQueryShardInfo->mRangeInfo,
+                                         sOuterQueryShardInfo->mDefaultNodeId ) == ID_FALSE ) // CLONE
+                    {
+                        /* Range°¡ C include S ÀÎÁö È®ÀÎ */
+                        aAnalysisFlag->mNonShardFlag[ SDI_MULTI_SHARD_INFO_EXISTS ] = ID_TRUE;
+                        aAnalysisFlag->mNonShardFlag[ SDI_NON_SHARD_SUBQUERY_EXISTS ] = ID_TRUE;
+                    }
+                    else
+                    {
+                        /* Nothing to do. */
+                    }
+                }
+                else
+                {
+                    IDE_DASSERT( sSubqueryShardInfo->mSplitMethod == SDI_SPLIT_NONE );
+                }
+            }
+            else
+            {
+                IDE_DASSERT( sOuterQueryShardInfo->mSplitMethod == SDI_SPLIT_NONE );
+                aAnalysisFlag->mNonShardFlag[ SDI_NON_SHARD_SUBQUERY_EXISTS ] = ID_TRUE;
+            }
+        }
+        else
+        {
+            /* Nothing to do. */
         }
 
-        if ( ( aCantMergeReason[ SDI_SUBQUERY_EXISTS ] == ID_FALSE ) &&
-             ( aCantMergeReason[ SDI_MULTI_SHARD_INFO_EXISTS ] == ID_FALSE ) )
+        /* 7. SubQÀÇ non-shard reason È®ÀÎ */
+        sOutRefReasonBack = aAnalysisFlag->mSetQueryFlag[ SDI_SQ_OUT_REF_NOT_EXISTS ];
+
+        /* TASK-7219 Shard Transformer Refactoring */
+        IDE_TEST( mergeAnalysisFlag( sSubqueryFlag,
+                                     aAnalysisFlag,
+                                     SDI_ANALYSIS_FLAG_NON_TRUE |
+                                     SDI_ANALYSIS_FLAG_TOP_TRUE )
+                  != IDE_SUCCESS );
+
+        aAnalysisFlag->mSetQueryFlag[ SDI_SQ_OUT_REF_NOT_EXISTS ] = sOutRefReasonBack;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::traversePredForCheckingShardKeyJoin( qcStatement * aStatement,
+                                                 qtcNode     * aCompareNode,
+                                                 qtcNode     * aLeftNode,
+                                                 qtcNode     * aRightNode,
+                                                 sdiKeyInfo  * aOutRefInfo,
+                                                 idBool        aIsSubKey )
+{
+    qtcNode * sLeftArgs  = NULL;
+    qtcNode * sRightArgs = NULL;
+
+    if ( aLeftNode->node.module == &mtfList )
+    {
+        if ( aRightNode->node.module == &mtfList )
         {
-            IDE_TEST( sdi::allocAndCopyRanges( aStatement,
-                                               &aQuerySetAnalysis->mShardInfo.mRangeInfo,
-                                               &sRangeInfo )
+            /* QTC_IS_LIST ´Â mtfList¿Í returnÀÌ µÎ °³ ÀÌ»óÀÎ qtc::subqueryModuleÀ» Æ÷ÇÔÇÑ´Ù. */
+            if ( QTC_IS_LIST( (qtcNode*)aRightNode->node.arguments ) == ID_TRUE )
+            {
+                //---------------------------------------
+                // ( I1, I2 ) IN ( ( ( SELECT I1 FROM T1 ), I2 ), ( I2, I3 ) )
+                // ^             ^ 
+                //
+                // ( I1, I2 ) IN ( ( SELECT I1, I1 FROM T1 ), ( I2, I3 ) )
+                // ^             ^
+                //---------------------------------------
+                for ( sRightArgs  = (qtcNode*)aRightNode->node.arguments;
+                      sRightArgs != NULL;
+                      sRightArgs  = (qtcNode*)sRightArgs->node.next )
+                {
+                    // Recursive call
+                    IDE_TEST( traversePredForCheckingShardKeyJoin( aStatement,
+                                                                   aCompareNode,
+                                                                   aLeftNode, // aLeftArgs
+                                                                   sRightArgs,
+                                                                   aOutRefInfo,
+                                                                   aIsSubKey )
+                              != IDE_SUCCESS );
+                }
+            }
+            else
+            {
+                //---------------------------------------
+                // ( I1, I2 ) = ( ( SELECT I1 FROM T1 ), I1 )
+                // ^            ^
+                //
+                // ( I1, I2 ) IN ( ( ( SELECT I1 FROM T1 ), I2 ), ( I2, I3 ) )
+                // ^               ^                              ^
+                //---------------------------------------
+                for ( sLeftArgs  = (qtcNode*)aLeftNode->node.arguments,
+                          sRightArgs = (qtcNode*)aRightNode->node.arguments;
+                      ( ( sLeftArgs != NULL ) ||
+                        ( sRightArgs != NULL ) );
+                      sLeftArgs  = (qtcNode*)sLeftArgs->node.next,
+                          sRightArgs  = (qtcNode*)sRightArgs->node.next )
+                {
+                    // Conversion error
+                    IDE_TEST_CONT( sLeftArgs->node.module == &mtfList, NORMAL_EXIT );
+
+                    // Recursive call
+                    IDE_TEST( traversePredForCheckingShardKeyJoin( aStatement,
+                                                                   aCompareNode,
+                                                                   sLeftArgs, // sLeftArgs ( an argument of aLeftNode)
+                                                                   sRightArgs,
+                                                                   aOutRefInfo,
+                                                                   aIsSubKey )
+                              != IDE_SUCCESS );
+                }
+            }
+        }
+        else if ( QTC_IS_SUBQUERY( aRightNode ) == ID_TRUE )
+        {
+            //---------------------------------------
+            // ( I1, I2 ) IN ( SELECT I1, I2 FROM T1 )
+            // ^             ^
+            //
+            // ( I1, I2 ) IN ( ( SELECT I1, I2 FROM T1 ), ( I1, I2 ) )
+            // ^               ^
+            //---------------------------------------
+            IDE_TEST( checkSubqueryAndTheOtherSideNode( aStatement,
+                                                        aRightNode,
+                                                        aLeftNode,
+                                                        aOutRefInfo,
+                                                        aIsSubKey )
                       != IDE_SUCCESS );
         }
         else
         {
-            aQuerySetAnalysis->mShardInfo.mSplitMethod = SDI_SPLIT_NONE;
+            /* Nothing to do. */
+        }
+    }
+    else if ( QTC_IS_SUBQUERY( aLeftNode ) )
+    {
+        if ( aCompareNode->node.module == &mtfEqual )
+        {
+            //---------------------------------------
+            // ( SELECT I1 FROM T1 ) = I1
+            // ^                       ^
+            //
+            // ( SELECT I1,I2 FROM T1 ) = ( I1, I2 )
+            // ^                          ^
+            //
+            // ( ( SELECT I1 FROM T1 ), I2 ) = ( I1, I2 )
+            //   ^                               ^
+            //---------------------------------------
+            if ( ( aRightNode->node.module == &mtfList ) ||
+                 QTC_IS_COLUMN( aStatement, aRightNode ) )
+            {
+                IDE_TEST( checkSubqueryAndTheOtherSideNode( aStatement,
+                                                            aLeftNode,
+                                                            aRightNode,
+                                                            aOutRefInfo,
+                                                            aIsSubKey )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
+        }
+        else
+        {
+            //---------------------------------------
+            // ( ( SELECT I1 FROM T1 ), I2 ) IN ( ( I1, I2 ), ( I3, I4 ) )
+            //   ^                              ^
+            //---------------------------------------
+            /* Nothing to do. */
+        }
+    }
+    else if ( QTC_IS_COLUMN( aStatement, aLeftNode ) == ID_TRUE )
+    {
+        if ( aRightNode->node.module == &mtfList )
+        {
+            //---------------------------------------
+            // I1 IN ( ( SELECT I1 FROM T1), I2 )
+            // ^     ^
+            //---------------------------------------
+            for ( sRightArgs  = (qtcNode*)aRightNode->node.arguments;
+                  sRightArgs != NULL;
+                  sRightArgs  = (qtcNode*)sRightArgs->node.next )
+            {
+                // Recursive call
+                IDE_TEST( traversePredForCheckingShardKeyJoin( aStatement,
+                                                               aCompareNode,
+                                                               aLeftNode,
+                                                               sRightArgs,
+                                                               aOutRefInfo,
+                                                               aIsSubKey )
+                          != IDE_SUCCESS );
+            }
+        }
+        else if ( QTC_IS_SUBQUERY( aRightNode ) == ID_TRUE )
+        {
+            //---------------------------------------
+            // I1 IN ( SELECT I1 FROM T1 )
+            // ^     ^
+            //
+            // ( I1, I2 ) IN ( ( ( SELECT I1 FROM T1 ), I2 ), ( I2, I3 ) )
+            //   ^               ^                           
+            //---------------------------------------
+            IDE_TEST( checkSubqueryAndTheOtherSideNode( aStatement,
+                                                        aRightNode,
+                                                        aLeftNode,
+                                                        aOutRefInfo,
+                                                        aIsSubKey )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing to do. */
         }
     }
     else
     {
-        for ( sSubqueryAnalysis  = aSubqueryAnalysis;
-              sSubqueryAnalysis != NULL;
-              sSubqueryAnalysis  = sSubqueryAnalysis->mNext )
+        /* Nothing to do. */
+    }
+
+    IDE_EXCEPTION_CONT( NORMAL_EXIT );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::checkSubqueryAndTheOtherSideNode( qcStatement * aStatement,
+                                              qtcNode     * aSubquery,
+                                              qtcNode     * aOuterColumn,
+                                              sdiKeyInfo  * aOutRefInfo,
+                                              idBool        aIsSubKey )
+{
+    sdiShardAnalysis *sSubQAnalysis = NULL;
+    qtcNode          *sListArgs     = NULL;
+
+    sdaQtcNodeType  sQtcNodeType        = SDA_NONE;
+    sdiKeyInfo     *sOuterColumnKeyInfo = NULL;
+    UShort          sShardKeyColumnIdx  = 0;
+
+    IDE_DASSERT( ( QTC_IS_COLUMN( aStatement, aOuterColumn ) == ID_TRUE ||
+                   aOuterColumn->node.module == &mtfList ) );
+
+    IDE_DASSERT( QTC_IS_SUBQUERY( aSubquery ) == ID_TRUE );
+
+    sSubQAnalysis =
+        ((qmsParseTree*)aSubquery->subquery->myPlan->parseTree)->mShardAnalysis;
+
+    if ( aOuterColumn->node.module == &mtfList )
+    {
+        //---------------------------------------
+        // ( I1, I2 ) IN ( SELECT I1, I2 FROM T1 )
+        // ^             ^
+        //---------------------------------------
+        for ( sListArgs  = (qtcNode*)aOuterColumn->node.arguments, sShardKeyColumnIdx = 0;
+              sListArgs != NULL;
+              sListArgs  = (qtcNode*)sListArgs->node.next, sShardKeyColumnIdx++ )
         {
-            IDE_DASSERT( sSubqueryAnalysis->mShardAnalysis != NULL );
-            IDE_DASSERT( sSubqueryAnalysis->mShardAnalysis->mQuerySetAnalysis != NULL );
-
-            sSubqueryShardInfo =
-                &(sSubqueryAnalysis->mShardAnalysis->mQuerySetAnalysis->mShardInfo);
-
-            IDE_TEST( canMergeOr( aCantMergeReason,
-                                  sSubqueryAnalysis->mShardAnalysis->mCantMergeReason )
+            IDE_TEST( getQtcNodeTypeWithKeyInfo( aStatement,
+                                                 aOutRefInfo,
+                                                 sListArgs,
+                                                 &sQtcNodeType,
+                                                 &sOuterColumnKeyInfo )
                       != IDE_SUCCESS );
 
-            if ( ( sSubqueryShardInfo->mSplitMethod != SDI_SPLIT_CLONE ) &&
-                 ( sSubqueryShardInfo->mSplitMethod != SDI_SPLIT_SOLO ) )
+            if ( sQtcNodeType == SDA_KEY_COLUMN )
             {
-                if ( sSubqueryShardInfo->mSplitMethod == SDI_SPLIT_NONE )
-                {
-                    aCantMergeReason[ SDI_MULTI_SHARD_INFO_EXISTS ] = ID_TRUE;
-                }
-                else
-                {
-                    aCantMergeReason[ SDI_SUBQUERY_EXISTS ] = ID_TRUE;
-                }
-
-                break;
+                IDE_TEST( resetSubqueryAnalysisReasonForTargetLink( sSubQAnalysis,
+                                                                    &sOuterColumnKeyInfo->mShardInfo,
+                                                                    sShardKeyColumnIdx,
+                                                                    aIsSubKey,
+                                                                    NULL )
+                          != IDE_SUCCESS );
             }
             else
             {
-                // Nothing to do.
+                /* Nothing to do. */
             }
+        }
+    }
+    else
+    {
+        //---------------------------------------
+        // I1 IN ( SELECT I1 FROM T1 )
+        // ^     ^
+        //
+        // ( I1, I2 ) IN ( ( SELECT I1 FROM T1 ), I1 )
+        //   ^             ^
+        //---------------------------------------
+        IDE_TEST( getQtcNodeTypeWithKeyInfo( aStatement,
+                                             aOutRefInfo,
+                                             aOuterColumn,
+                                             &sQtcNodeType,
+                                             &sOuterColumnKeyInfo )
+                  != IDE_SUCCESS );
 
-            if ( isSubRangeInfo( &(sSubqueryShardInfo->mRangeInfo),
-                                 &(aQuerySetAnalysis->mShardInfo.mRangeInfo) )
-                 == ID_FALSE )
-            {
-                aCantMergeReason[ SDI_MULTI_SHARD_INFO_EXISTS ] = ID_TRUE;
-                break;
-            }
-            else
-            {
-                // Nothing to do.
-            }
-
-            // Default node checking
-            if ( aQuerySetAnalysis->mShardInfo.mDefaultNodeId != ID_UINT_MAX )
-            {
-                if ( findRangeInfo( &(sSubqueryShardInfo->mRangeInfo),
-                                    aQuerySetAnalysis->mShardInfo.mDefaultNodeId )
-                     == ID_FALSE )
-                {
-                    aCantMergeReason[ SDI_MULTI_SHARD_INFO_EXISTS ] = ID_TRUE;
-                    break;
-                }
-                else
-                {
-                    // Nothing to do.
-                }
-            }
-            else
-            {
-                // Nothing to do.
-            }
-
-            //---------------------------------------
-            // PROJ-2685 online rebuild
-            // shard tableì„ analysisì— ë“±ë¡
-            //---------------------------------------
-            IDE_TEST( addTableInfoList(
-                          aStatement,
-                          aQuerySetAnalysis,
-                          sSubqueryAnalysis->mShardAnalysis->mQuerySetAnalysis->mTableInfoList )
+        if ( sQtcNodeType == SDA_KEY_COLUMN )
+        {
+            // The subquery target column count is the only one
+            IDE_TEST( resetSubqueryAnalysisReasonForTargetLink( sSubQAnalysis,
+                                                                &sOuterColumnKeyInfo->mShardInfo,
+                                                                sShardKeyColumnIdx, // Initial value 0 
+                                                                aIsSubKey,
+                                                                NULL )
                       != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing to do. */
         }
     }
 
@@ -789,14 +1435,143 @@ IDE_RC sda::setShardInfo4Subquery( qcStatement         * aStatement,
     return IDE_FAILURE;
 }
 
-IDE_RC sda::subqueryAnalysis4ParseTree( qcStatement          * aStatement,
-                                        ULong                  aSMN,
-                                        qmsParseTree         * aParseTree,
-                                        sdaSubqueryAnalysis ** aSubqueryAnalysis )
+IDE_RC sda::resetSubqueryAnalysisReasonForTargetLink( sdiShardAnalysis * aSubQAnalysis,
+                                                      sdiShardInfo     * aShardInfo,
+                                                      UShort             aShardKeyColumnIdx,
+                                                      idBool             aIsSubKey,
+                                                      sdiKeyInfo      ** aKeyInfoRet  )
 {
-    qmsSortColumns * sSortColumn = NULL;
+    sdiShardAnalysis * sSubQAnalysis = NULL;
+    sdiKeyInfo       * sSubQKeyInfo  = NULL;
+    UShort             sKeyTargetIdx = 0;
+    idBool             sIsSameShardInfo = ID_FALSE;
+    idBool             sIsFound = ID_FALSE;
+
+    sSubQAnalysis = ( aIsSubKey == ID_FALSE )?
+        (aSubQAnalysis):
+        (aSubQAnalysis->mNext);
+
+    sSubQKeyInfo = sSubQAnalysis->mKeyInfo;
+
+    for (;
+         sSubQKeyInfo != NULL;
+         sSubQKeyInfo  = sSubQKeyInfo->mNext )
+    {
+        for ( sKeyTargetIdx = 0;              
+              sKeyTargetIdx < sSubQKeyInfo->mKeyTargetCount;
+              sKeyTargetIdx++ )
+        {
+            if ( sSubQKeyInfo->mKeyTarget[sKeyTargetIdx] == aShardKeyColumnIdx )
+            {
+                IDE_TEST( isSameShardInfo( &sSubQKeyInfo->mShardInfo,
+                                           aShardInfo,
+                                           aIsSubKey,
+                                           &sIsSameShardInfo )
+                          != IDE_SUCCESS );
+
+                if ( sIsSameShardInfo == ID_TRUE )
+                {
+                    sSubQAnalysis->mAnalysisFlag.mSetQueryFlag[ SDI_SQ_OUT_REF_NOT_EXISTS ] = ID_FALSE;
+
+                    if ( aKeyInfoRet != NULL )
+                    {
+                        *aKeyInfoRet = sSubQKeyInfo;
+                    }
+                    else
+                    {
+                        /* Nothing to do. */
+                    }
+                }
+                else
+                {
+                    /* Nothing to do. */
+                }
+
+                sIsFound = ID_TRUE;
+                break;
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
+        }
+
+        if ( sIsFound == ID_TRUE )
+        {
+            break;
+        }
+        else
+        {
+            /* Nothing to do. */
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+idBool sda::isSameRangesForCloneAndSolo( sdiRangeInfo * aRangeInfo1,
+                                         sdiRangeInfo * aRangeInfo2 )
+{
+    idBool sIsSameRanges = ID_FALSE;
+    UShort idx1 = 0;
+    UShort idx2 = 0;
+    UShort sFoundCount = 0;
+
+    if ( aRangeInfo1->mCount == aRangeInfo2->mCount )
+    {
+        for ( ;
+              idx1 < aRangeInfo1->mCount;
+              idx1++ )
+        {
+            for( idx2 = 0;
+                 idx2 < aRangeInfo2->mCount;
+                 idx2++ )
+            {
+                if ( aRangeInfo1->mRanges[idx1].mNodeId == aRangeInfo2->mRanges[idx2].mNodeId )
+                {
+                    sFoundCount++;
+                }
+                else
+                {
+                    /* Nothing to do. */
+                }
+            }
+        }
+
+        if ( sFoundCount == aRangeInfo1->mCount )
+        {
+            sIsSameRanges = ID_TRUE;
+        }
+        else
+        {
+            /* Nothing to do. */
+        }
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
+
+    return sIsSameRanges;
+}
+
+IDE_RC sda::subqueryAnalysis4ParseTree( qcStatement             * aStatement,
+                                        ULong                     aSMN,
+                                        qmsParseTree            * aParseTree,
+                                        idBool                    aIsSubKey )
+{
+    sdiShardAnalysis    * sAnalysis = NULL;
+    qmsSortColumns      * sSortColumn = NULL;
+    sdaSubqueryAnalysis * sSubqueryAnalysis = NULL;
 
     IDE_DASSERT( aParseTree != NULL );
+
+    // SET OUT REF INFO
+    sAnalysis = aParseTree->mShardAnalysis;
 
     // ORDER BY
     for ( sSortColumn = aParseTree->orderBy;
@@ -806,12 +1581,26 @@ IDE_RC sda::subqueryAnalysis4ParseTree( qcStatement          * aStatement,
         IDE_TEST( subqueryAnalysis4NodeTree( aStatement,
                                              aSMN,
                                              sSortColumn->sortColumn,
-                                             aSubqueryAnalysis )
+                                             sAnalysis->mKeyInfo,
+                                             aIsSubKey,
+                                             &sSubqueryAnalysis )
                   != IDE_SUCCESS );
     }
 
-    // LIMIT subquery is not allowed here.
-    // LOOP  subquery is not allowed here.
+    if ( sSubqueryAnalysis != NULL )
+    {
+        IDE_TEST( setShardInfo4Subquery( aStatement,
+                                         sAnalysis,
+                                         sSubqueryAnalysis,
+                                         ID_TRUE, // aIsSelect
+                                         aIsSubKey,
+                                         &( sAnalysis->mAnalysisFlag ) )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
 
     return IDE_SUCCESS;
 
@@ -820,20 +1609,29 @@ IDE_RC sda::subqueryAnalysis4ParseTree( qcStatement          * aStatement,
     return IDE_FAILURE;
 }
 
-
-IDE_RC sda::subqueryAnalysis4SFWGH( qcStatement          * aStatement,
-                                    ULong                  aSMN,
-                                    qmsSFWGH             * aSFWGH,
-                                    sdaSubqueryAnalysis ** aSubqueryAnalysis )
+IDE_RC sda::subqueryAnalysis4SFWGH( qcStatement              * aStatement,
+                                    ULong                      aSMN,
+                                    qmsSFWGH                 * aSFWGH,
+                                    sdiShardAnalysis         * aQuerySetAnalysis,
+                                    idBool                     aIsSubKey )
 {
+    sdaSubqueryAnalysis * sSubqueryAnalysis = NULL;
+
     qmsSortColumns * sSiblings = NULL;
     qmsFrom        * sFrom     = NULL;
+
+    sdiAnalysisFlag * sAnalysisFlag = NULL;
+
+    // SET OUT REF INFO
+    sAnalysisFlag = &( aQuerySetAnalysis->mAnalysisFlag );
 
     // SELECT
     IDE_TEST( subqueryAnalysis4NodeTree( aStatement,
                                          aSMN,
                                          aSFWGH->target->targetColumn,
-                                         aSubqueryAnalysis )
+                                         aQuerySetAnalysis->mKeyInfo,
+                                         aIsSubKey,
+                                         &sSubqueryAnalysis )
               != IDE_SUCCESS );
 
     // FROM
@@ -842,7 +1640,9 @@ IDE_RC sda::subqueryAnalysis4SFWGH( qcStatement          * aStatement,
         IDE_TEST( subqueryAnalysis4FromTree( aStatement,
                                              aSMN,
                                              sFrom,
-                                             aSubqueryAnalysis )
+                                             aQuerySetAnalysis->mKeyInfo,
+                                             aIsSubKey,
+                                             &sSubqueryAnalysis )
                   != IDE_SUCCESS );
     }
 
@@ -850,10 +1650,10 @@ IDE_RC sda::subqueryAnalysis4SFWGH( qcStatement          * aStatement,
     IDE_TEST( subqueryAnalysis4NodeTree( aStatement,
                                          aSMN,
                                          aSFWGH->where,
-                                         aSubqueryAnalysis )
+                                         aQuerySetAnalysis->mKeyInfo,
+                                         aIsSubKey,
+                                         &sSubqueryAnalysis )
               != IDE_SUCCESS );
-
-    // GROUP BY(X) subquery is not allowed here.
 
     // HIERARCHY
     if ( aSFWGH->hierarchy != NULL )
@@ -861,13 +1661,17 @@ IDE_RC sda::subqueryAnalysis4SFWGH( qcStatement          * aStatement,
         IDE_TEST( subqueryAnalysis4NodeTree( aStatement,
                                              aSMN,
                                              aSFWGH->hierarchy->startWith,
-                                             aSubqueryAnalysis )
+                                             aQuerySetAnalysis->mKeyInfo,
+                                             aIsSubKey,
+                                             &sSubqueryAnalysis )
                   != IDE_SUCCESS );
 
         IDE_TEST( subqueryAnalysis4NodeTree( aStatement,
                                              aSMN,
                                              aSFWGH->hierarchy->connectBy,
-                                             aSubqueryAnalysis )
+                                             aQuerySetAnalysis->mKeyInfo,
+                                             aIsSubKey,
+                                             &sSubqueryAnalysis )
                   != IDE_SUCCESS );
 
         for ( sSiblings  = aSFWGH->hierarchy->siblings;
@@ -877,21 +1681,40 @@ IDE_RC sda::subqueryAnalysis4SFWGH( qcStatement          * aStatement,
             IDE_TEST( subqueryAnalysis4NodeTree( aStatement,
                                                  aSMN,
                                                  sSiblings->sortColumn,
-                                                 aSubqueryAnalysis )
+                                                 aQuerySetAnalysis->mKeyInfo,
+                                                 aIsSubKey,
+                                                 &sSubqueryAnalysis )
                       != IDE_SUCCESS );
         }
     }
     else
     {
-        // Nothing to do.
+        /* Nothing to do. */
     }
 
     // HAVING
     IDE_TEST( subqueryAnalysis4NodeTree( aStatement,
                                          aSMN,
                                          aSFWGH->having,
-                                         aSubqueryAnalysis )
+                                         aQuerySetAnalysis->mKeyInfo,
+                                         aIsSubKey,
+                                         &sSubqueryAnalysis )
               != IDE_SUCCESS );
+
+    if ( sSubqueryAnalysis != NULL )
+    {
+        IDE_TEST( setShardInfo4Subquery( aStatement,
+                                         aQuerySetAnalysis,
+                                         sSubqueryAnalysis,
+                                         ID_TRUE, // aIsSelect
+                                         aIsSubKey,
+                                         sAnalysisFlag )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
 
     return IDE_SUCCESS;
 
@@ -903,6 +1726,8 @@ IDE_RC sda::subqueryAnalysis4SFWGH( qcStatement          * aStatement,
 IDE_RC sda::subqueryAnalysis4FromTree( qcStatement          * aStatement,
                                        ULong                  aSMN,
                                        qmsFrom              * aFrom,
+                                       sdiKeyInfo           * aOutRefInfo,
+                                       idBool                 aIsSubKey,
                                        sdaSubqueryAnalysis ** aSubqueryAnalysis )
 {
     if ( aFrom != NULL )
@@ -912,29 +1737,35 @@ IDE_RC sda::subqueryAnalysis4FromTree( qcStatement          * aStatement,
             IDE_TEST( subqueryAnalysis4FromTree( aStatement,
                                                  aSMN,
                                                  aFrom->left,
+                                                 aOutRefInfo,
+                                                 aIsSubKey,
                                                  aSubqueryAnalysis )
                       != IDE_SUCCESS );
 
             IDE_TEST( subqueryAnalysis4FromTree( aStatement,
                                                  aSMN,
                                                  aFrom->right,
+                                                 aOutRefInfo,
+                                                 aIsSubKey,
                                                  aSubqueryAnalysis )
                       != IDE_SUCCESS );
 
             IDE_TEST( subqueryAnalysis4NodeTree( aStatement,
                                                  aSMN,
                                                  aFrom->onCondition,
+                                                 aOutRefInfo,
+                                                 aIsSubKey,
                                                  aSubqueryAnalysis )
                       != IDE_SUCCESS );
         }
         else
         {
-            // Nothing to do.
+            /* Nothing to do. */
         }
     }
     else
     {
-        // Nothing to do.
+        /* Nothing to do. */
     }
 
     return IDE_SUCCESS;
@@ -946,47 +1777,30 @@ IDE_RC sda::subqueryAnalysis4FromTree( qcStatement          * aStatement,
 
 IDE_RC sda::analyzeParseTree( qcStatement * aStatement,
                               ULong         aSMN,
+                              sdiKeyInfo  * aOutRefInfo,
                               idBool        aIsSubKey )
 {
     qmsParseTree * sParseTree = (qmsParseTree*)aStatement->myPlan->parseTree;
-    qmsQuerySet  * sQuerySet = sParseTree->querySet;
-
-    sdiParseTree * sAnalysis = NULL;
-
-    sdaSubqueryAnalysis * sSubqueryAnalysis = NULL;
+    qmsQuerySet  * sQuerySet  = sParseTree->querySet;
 
     //------------------------------------------
-    // Set parseTree analysis
-    //------------------------------------------
-    if ( aIsSubKey == ID_FALSE )
-    {
-        IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
-                                sdiParseTree,
-                                (void*) & sAnalysis )
-                  != IDE_SUCCESS );
-
-        sParseTree->mShardAnalysis = sAnalysis;
-    }
-    else
-    {
-        sAnalysis = sParseTree->mShardAnalysis;
-    }
-
-    //------------------------------------------
-    // QuerySetì˜ ë¶„ì„
+    // QuerySetÀÇ ºĞ¼®
     //------------------------------------------
     IDE_TEST( analyzeQuerySet( aStatement,
                                aSMN,
                                sQuerySet,
+                               aOutRefInfo,
                                aIsSubKey ) != IDE_SUCCESS );
 
-    //------------------------------------------
-    // Analysisì˜ ì´ˆê¸°í™”
-    //------------------------------------------
-    sAnalysis->mQuerySetAnalysis = sQuerySet->mShardAnalysis;
-
-    SDI_INIT_CAN_NOT_MERGE_REASON(sAnalysis->mCantMergeReason);
-    SDI_INIT_CAN_NOT_MERGE_REASON(sAnalysis->mCantMergeReason4SubKey);
+    if ( aIsSubKey == ID_FALSE )
+    {
+        IDE_DASSERT( sQuerySet->mShardAnalysis != NULL );
+        sParseTree->mShardAnalysis = sQuerySet->mShardAnalysis;
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
 
     //------------------------------------------
     // Analyze SUB-QUERY
@@ -994,89 +1808,19 @@ IDE_RC sda::analyzeParseTree( qcStatement * aStatement,
     IDE_TEST( subqueryAnalysis4ParseTree( aStatement,
                                           aSMN,
                                           sParseTree,
-                                          &sSubqueryAnalysis )
-              != IDE_SUCCESS );
-
-    if ( sSubqueryAnalysis != NULL )
-    {
-        IDE_TEST( setShardInfo4Subquery( aStatement,
-                                         sAnalysis->mQuerySetAnalysis,
-                                         sSubqueryAnalysis,
-                                         sAnalysis->mCantMergeReason )
-                  != IDE_SUCCESS );
-    }
-    else
-    {
-        // Nothing to do.
-    }
-
-    //------------------------------------------
-    // Check CAN-MERGE for parseTree
-    //------------------------------------------
-    IDE_TEST( canMergeOr( sAnalysis->mCantMergeReason,
-                          sQuerySet->mShardAnalysis->mCantMergeReason )
-              != IDE_SUCCESS );
-
-    if ( aIsSubKey == ID_TRUE )
-    {
-        IDE_TEST( canMergeOr( sAnalysis->mCantMergeReason4SubKey,
-                              sQuerySet->mShardAnalysis->mCantMergeReason4SubKey )
-                  != IDE_SUCCESS );
-    }
-    else
-    {
-        // Nothing to do.
-    }
-
-    if ( ( sAnalysis->mQuerySetAnalysis->mShardInfo.mSplitMethod != SDI_SPLIT_CLONE ) &&
-         ( sAnalysis->mQuerySetAnalysis->mShardInfo.mSplitMethod != SDI_SPLIT_SOLO ) )
-    {
-        IDE_TEST( setCantMergeReasonParseTree( sParseTree,
-                                               sAnalysis->mQuerySetAnalysis->mKeyInfo,
-                                               sAnalysis->mCantMergeReason )
-                  != IDE_SUCCESS );
-
-        if ( aIsSubKey == ID_TRUE )
-        {
-            IDE_TEST( setCantMergeReasonParseTree( sParseTree,
-                                                   sAnalysis->mQuerySetAnalysis->mKeyInfo4SubKey,
-                                                   sAnalysis->mCantMergeReason4SubKey )
-                      != IDE_SUCCESS );
-        }
-        else
-        {
-            // Nothing to do.
-        }
-    }
-    else
-    {
-        // Nothing to do.
-    }
-
-    IDE_TEST( isCanMerge( sAnalysis->mCantMergeReason,
-                          &sAnalysis->mIsCanMerge )
+                                          aIsSubKey )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // ì—°ê²°
+    // Check nonShardReason for parseTree
     //------------------------------------------
-
-    if ( aIsSubKey == ID_TRUE )
-    {
-        IDE_TEST( isCanMerge( sAnalysis->mCantMergeReason4SubKey,
-                              &sAnalysis->mIsCanMerge4SubKey )
-                  != IDE_SUCCESS );
-    }
-    else
-    {
-        // Nothing to do.
-    }
+    IDE_TEST( setAnalysisFlag4ParseTree( sParseTree,
+                                         aIsSubKey )
+              != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
-
-    setNonShardQueryReasonOfQuerySet( &(aStatement->mShardPrintInfo), sQuerySet->mShardAnalysis );
 
     return IDE_FAILURE;
 }
@@ -1084,24 +1828,27 @@ IDE_RC sda::analyzeParseTree( qcStatement * aStatement,
 IDE_RC sda::analyzeQuerySet( qcStatement * aStatement,
                              ULong         aSMN,
                              qmsQuerySet * aQuerySet,
+                             sdiKeyInfo  * aOutRefInfo,
                              idBool        aIsSubKey )
 {
     if ( aQuerySet->setOp != QMS_NONE )
     {
         //------------------------------------------
-        // SET operatorì¼ ê²½ìš°
-        // Left, right query setì„ ê°ê° analyze í•œ í›„
-        // ë‘ ê°œì˜ analysis infoë¡œ SET operatorì˜ analyze ì •ë³´ë¥¼ ìƒì„±í•œë‹¤.
+        // SET operatorÀÏ °æ¿ì
+        // Left, right query setÀ» °¢°¢ analyze ÇÑ ÈÄ
+        // µÎ °³ÀÇ analysis info·Î SET operatorÀÇ analyze Á¤º¸¸¦ »ı¼ºÇÑ´Ù.
         //------------------------------------------
         IDE_TEST( analyzeQuerySet( aStatement,
                                    aSMN,
                                    aQuerySet->left,
+                                   aOutRefInfo,
                                    aIsSubKey )
                   != IDE_SUCCESS );
 
         IDE_TEST( analyzeQuerySet( aStatement,
                                    aSMN,
                                    aQuerySet->right,
+                                   aOutRefInfo,
                                    aIsSubKey )
                   != IDE_SUCCESS );
 
@@ -1115,14 +1862,20 @@ IDE_RC sda::analyzeQuerySet( qcStatement * aStatement,
     else
     {
         //------------------------------------------
-        // SELECT ~ HAVINGì˜ ë¶„ì„
+        // SELECT ~ HAVINGÀÇ ºĞ¼®
         //------------------------------------------
         IDE_TEST( analyzeSFWGH( aStatement,
                                 aSMN,
                                 aQuerySet,
+                                aOutRefInfo,
                                 aIsSubKey )
                   != IDE_SUCCESS );
     }
+
+    /* TASK-7219 Shard Transformer Refactoring */
+    IDE_TEST( setAnalysisFlag( aQuerySet,
+                               aIsSubKey )
+              != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -1134,106 +1887,73 @@ IDE_RC sda::analyzeQuerySet( qcStatement * aStatement,
 IDE_RC sda::analyzeSFWGH( qcStatement * aStatement,
                           ULong         aSMN,
                           qmsQuerySet * aQuerySet,
+                          sdiKeyInfo  * aOutRefInfo,
                           idBool        aIsSubKey )
 {
-    sdiQuerySet         * sQuerySetAnalysis = NULL;
-    sdaFrom             * sShardFromInfo    = NULL;
-    sdiKeyInfo          * sKeyInfo          = NULL;
-
-    idBool                sIsCanMergeAble   = ID_TRUE;
-
-    sdaSubqueryAnalysis * sSubqueryAnalysis = NULL;
-
-    sdaCNFList          * sCNFList          = NULL;
-
-    qmsFrom             * sFrom             = NULL;
-
-    sdiShardInfo        * sShardInfo        = NULL;
-    idBool              * sCantMergeReason  = NULL;
-    idBool              * sIsCanMerge       = NULL;
-    idBool                sChanged          = ID_FALSE;
-    idBool                sIsOneNodeSQL     = ID_TRUE;
+    sdiShardAnalysis * sQuerySetAnalysis = NULL;
+    qtcNode          * sShardPredicate   = NULL;
 
     //------------------------------------------
-    // ì •í•©ì„±
+    // Á¤ÇÕ¼º
     //------------------------------------------
 
     IDE_TEST_RAISE( aQuerySet->SFWGH == NULL, ERR_NULL_SFWGH );
 
     //------------------------------------------
-    // í• ë‹¹
+    // ÇÒ´ç
     //------------------------------------------
 
-    if ( aIsSubKey == ID_FALSE )
-    {
-        IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiQuerySet),
-                                                 (void**) & sQuerySetAnalysis )
-                  != IDE_SUCCESS );
-        SDI_INIT_QUERY_SET( sQuerySetAnalysis );
-
-        aQuerySet->mShardAnalysis = sQuerySetAnalysis;
-
-        sCantMergeReason = sQuerySetAnalysis->mCantMergeReason;
-        sShardInfo       = &sQuerySetAnalysis->mShardInfo;
-        sIsCanMerge      = &sQuerySetAnalysis->mIsCanMerge;
-    }
-    else
-    {
-        IDE_TEST_RAISE( aQuerySet->mShardAnalysis == NULL, ERR_NULL_SHARD_ANALYSIS );
-
-        sQuerySetAnalysis = aQuerySet->mShardAnalysis;
-
-        sCantMergeReason = sQuerySetAnalysis->mCantMergeReason4SubKey;
-        sShardInfo       = &sQuerySetAnalysis->mShardInfo4SubKey;
-        sIsCanMerge      = &sQuerySetAnalysis->mIsCanMerge4SubKey;
-    }
-
-    //------------------------------------------
-    // Normalize Where and Transform2ANSIJoin
-    //------------------------------------------
-    // Normalize predicate
-    IDE_TEST( normalizePredicate( aStatement,
-                                  aQuerySet,
-                                  &aQuerySet->mShardPredicate )
+    /* TASK-7219 Shard Transformer Refactoring */
+    IDE_TEST( allocAndSetAnalysis( aStatement,
+                                   aStatement->myPlan->parseTree,
+                                   aQuerySet,
+                                   aIsSubKey,
+                                   &( sQuerySetAnalysis ) )
               != IDE_SUCCESS );
 
-    // Transform2ANSIJoin
-    if ( aIsSubKey == ID_FALSE )
-    {
-        if ( aQuerySet->mShardPredicate != NULL )
-        {
-            if ( ( aQuerySet->mShardPredicate->lflag & QTC_NODE_JOIN_OPERATOR_MASK )
-                 == QTC_NODE_JOIN_OPERATOR_EXIST )
-            {
-                IDE_TEST( qmoOuterJoinOper::transform2ANSIJoin( aStatement,
-                                                                aQuerySet,
-                                                                &aQuerySet->mShardPredicate )
-                          != IDE_SUCCESS );
-            }
-            else
-            {
-                // Nothing to do.
-            }
+    IDE_TEST( getShardPredicate( aStatement,
+                                 aQuerySet,
+                                 ID_TRUE,
+                                 aIsSubKey,
+                                 &( sShardPredicate ) )
+              != IDE_SUCCESS );
 
-            //------------------------------------------
-            // BUG-38375 Outer Join Elimination OracleStyle Join
-            //------------------------------------------
+    IDE_TEST ( analyzeSFWGHCore( aStatement,
+                                 aSMN,
+                                 aQuerySet,
+                                 sQuerySetAnalysis,
+                                 sShardPredicate,
+                                 aOutRefInfo,
+                                 aIsSubKey )
+               != IDE_SUCCESS );
 
-            IDE_TEST( qmoOuterJoinElimination::doTransform(
-                          aStatement,
-                          aQuerySet,
-                          &sChanged )
-                      != IDE_SUCCESS );
-        }
-        else
-        {
-            // Nothing to do.
-        }
-    }
-    else
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(ERR_NULL_SFWGH)
     {
-        // Nothing to do.
+        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                "sda::analyzeSFWGH",
+                                "The SFWGH is NULL."));
     }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::analyzeSFWGHCore( qcStatement      * aStatement,
+                              ULong              aSMN,
+                              qmsQuerySet      * aQuerySet,
+                              sdiShardAnalysis * aQuerySetAnalysis,
+                              qtcNode          * aShardPredicate,
+                              sdiKeyInfo       * aOutRefInfo,
+                              idBool             aIsSubKey )
+{
+    sdaFrom    * sShardFromInfo    = NULL;
+    idBool       sIsShardQueryAble = ID_TRUE;
+    sdaCNFList * sCNFList          = NULL;
+    qmsFrom    * sFrom             = NULL;
+    idBool       sIsOneNodeSQL     = ID_TRUE;
+    UInt         sDistKeyCount     = 0;
 
     //------------------------------------------
     // Analyze FROM
@@ -1244,9 +1964,8 @@ IDE_RC sda::analyzeSFWGH( qcStatement * aStatement,
         IDE_TEST( analyzeFrom( aStatement,
                                aSMN,
                                sFrom,
-                               sQuerySetAnalysis,
+                               aQuerySetAnalysis,
                                &sShardFromInfo,
-                               sCantMergeReason,
                                aIsSubKey )
                   != IDE_SUCCESS );
     }
@@ -1254,15 +1973,16 @@ IDE_RC sda::analyzeSFWGH( qcStatement * aStatement,
     if ( sShardFromInfo != NULL )
     {
         /*
-         * Queryì— ì‚¬ìš© ëœ shard tableë“¤ì˜ ë¶„ì‚° ì†ì„±ì´
-         * ëª¨ë‘ cloneì´ê±°ë‚˜, soloê°€ í¬í•¨ ë˜ì–´ ìˆìœ¼ë©´
-         * Shard analysisì˜ ê²°ê³¼ëŠ” ìˆ˜í–‰ ë…¸ë“œê°€ ë‹¨ì¼ ë…¸ë“œë¡œ íŒë³„ë˜ê±°ë‚˜,
-         * ìˆ˜í–‰ë  ìˆ˜ ì—†ëŠ” ê²ƒ ìœ¼ë¡œ íŒë³„ ë˜ê¸° ë•Œë¬¸ì—
-         * Semi/anti-joinê³¼ outer-joinì˜ ì¼ë¶€ ì œì•½ì‚¬í•­ì˜ ì˜í–¥ì„ ë°›ì§€ ì•ŠëŠ”ë‹¤.
+         * Query¿¡ »ç¿ë µÈ shard tableµéÀÇ ºĞ»ê ¼Ó¼ºÀÌ
+         * ¸ğµÎ cloneÀÌ°Å³ª, solo°¡ Æ÷ÇÔ µÇ¾î ÀÖÀ¸¸é
+         * Shard analysisÀÇ °á°ú´Â ¼öÇà ³ëµå°¡ ´ÜÀÏ ³ëµå·Î ÆÇº°µÇ°Å³ª,
+         * ¼öÇàµÉ ¼ö ¾ø´Â °Í À¸·Î ÆÇº° µÇ±â ¶§¹®¿¡
+         * Semi/anti-join°ú outer-joinÀÇ ÀÏºÎ Á¦¾à»çÇ×ÀÇ ¿µÇâÀ» ¹ŞÁö ¾Ê´Â´Ù.
          */
         IDE_TEST( isOneNodeSQL( sShardFromInfo,
                                 NULL,
-                                &sIsOneNodeSQL )
+                                &sIsOneNodeSQL,
+                                &sDistKeyCount )
                   != IDE_SUCCESS );
 
         if ( sIsOneNodeSQL == ID_FALSE )
@@ -1276,8 +1996,8 @@ IDE_RC sda::analyzeSFWGH( qcStatement * aStatement,
                                            aQuerySet,
                                            sFrom,
                                            sShardFromInfo,
-                                           &sCNFList,
-                                           sCantMergeReason )
+                                           &( sCNFList ),
+                                           &( aQuerySetAnalysis->mAnalysisFlag ) )
                           != IDE_SUCCESS );
             }
         }
@@ -1291,12 +2011,13 @@ IDE_RC sda::analyzeSFWGH( qcStatement * aStatement,
         //------------------------------------------
 
         IDE_TEST( analyzePredicate( aStatement,
-                                    aQuerySet->mShardPredicate,
+                                    aShardPredicate,
                                     sCNFList,
                                     sShardFromInfo,
                                     sIsOneNodeSQL,
-                                    &sKeyInfo,
-                                    sCantMergeReason,
+                                    aOutRefInfo,
+                                    &( aQuerySetAnalysis->mKeyInfo ),
+                                    &( aQuerySetAnalysis->mAnalysisFlag ),
                                     aIsSubKey )
                   != IDE_SUCCESS );
 
@@ -1305,151 +2026,129 @@ IDE_RC sda::analyzeSFWGH( qcStatement * aStatement,
         //------------------------------------------
 
         IDE_TEST( setShardInfoWithKeyInfo( aStatement,
-                                           sKeyInfo,
-                                           sShardInfo,
+                                           aQuerySetAnalysis->mKeyInfo,
+                                           &aQuerySetAnalysis->mShardInfo,
                                            aIsSubKey )
                   != IDE_SUCCESS );
 
-        if ( sShardInfo->mSplitMethod != SDI_SPLIT_NONE )
+        if ( aQuerySetAnalysis->mShardInfo.mSplitMethod != SDI_SPLIT_NONE )
         {
+            /* TASJ-7219
+             *   BUG-47903 ÀÌÈÄ, Àü ³ëµå ¼öÇà Non-Shard Query ¸¦ °í·ÁÇØ¼­ ¼öÁ¤ÇÔ 
+             */
             //------------------------------------------
-            // Check CAN-MERGE able
+            // Check candidate shard query
             //------------------------------------------
-            IDE_TEST( isCanMergeAble( sCantMergeReason,
-                                      &sIsCanMergeAble )
+            IDE_TEST( isShardQuery( &( aQuerySetAnalysis->mAnalysisFlag ),
+                                    &( sIsShardQueryAble ) )
                       != IDE_SUCCESS );
 
-            if ( sIsCanMergeAble == ID_TRUE )
+            if ( sIsShardQueryAble == ID_TRUE )
             {
                 //------------------------------------------
-                // Set CAN-MERGE
+                // Set Non-shard query reason
                 //------------------------------------------
-                if ( ( sShardInfo->mSplitMethod != SDI_SPLIT_CLONE ) &&
-                     ( sShardInfo->mSplitMethod != SDI_SPLIT_SOLO ) )
+                IDE_TEST( setAnalysisFlag4SFWGH( aStatement,
+                                                 aQuerySet->SFWGH,
+                                                 aQuerySetAnalysis->mKeyInfo,
+                                                 &( aQuerySetAnalysis->mAnalysisFlag ) )
+                          != IDE_SUCCESS );
+
+                //---------------------------------------
+                // BUG-47642 Check window function
+                //---------------------------------------
+                IDE_TEST( setAnalysisFlag4WindowFunc( aQuerySet->analyticFuncList,
+                                                      aQuerySetAnalysis->mKeyInfo,
+                                                      &( aQuerySetAnalysis->mAnalysisFlag ) )
+                          != IDE_SUCCESS );
+
+                /* TASJ-7219
+                 *   BUG-47903 ÀÌÈÄ, Àü ³ëµå ¼öÇà Non-Shard Query ¸¦ °í·ÁÇØ¼­ ¼öÁ¤ÇÔ 
+                 */
+                //------------------------------------------
+                // Check candidate shard query
+                //------------------------------------------
+                IDE_TEST( isShardQuery( &( aQuerySetAnalysis->mAnalysisFlag ),
+                                        &( sIsShardQueryAble ) )
+                          != IDE_SUCCESS );
+
+                if ( sIsShardQueryAble == ID_TRUE )
                 {
-                    IDE_TEST( setCantMergeReasonSFWGH( aStatement,
-                                                       aQuerySet->SFWGH,
-                                                       sKeyInfo,
-                                                       sCantMergeReason )
-                              != IDE_SUCCESS );
-
-                    IDE_TEST( isCanMergeAble( sCantMergeReason,
-                                              &sIsCanMergeAble )
-                              != IDE_SUCCESS );
-
-                    if ( sIsCanMergeAble == ID_TRUE )
+                    if ( sdi::getSplitType( aQuerySetAnalysis->mShardInfo.mSplitMethod ) == SDI_SPLIT_TYPE_DIST )
                     {
                         //------------------------------------------
                         // Analyze TARGET
                         //------------------------------------------
                         IDE_TEST( analyzeTarget( aStatement,
                                                  aQuerySet,
-                                                 sKeyInfo )
+                                                 aQuerySetAnalysis->mKeyInfo )
                                   != IDE_SUCCESS );
                     }
                     else
                     {
-                        // Nothing to do.
+                        /* Nothing to do. */
                     }
                 }
                 else
                 {
-                    // Nothing to do.
-                }
-
-                //------------------------------------------
-                // Analyze SUB-QUERY
-                //------------------------------------------
-                IDE_TEST( subqueryAnalysis4SFWGH( aStatement,
-                                                  aSMN,
-                                                  aQuerySet->SFWGH,
-                                                  &sSubqueryAnalysis )
-                          != IDE_SUCCESS );
-
-                if ( sSubqueryAnalysis != NULL )
-                {
-                    IDE_TEST( setShardInfo4Subquery( aStatement,
-                                                     sQuerySetAnalysis,
-                                                     sSubqueryAnalysis,
-                                                     sCantMergeReason )
-                              != IDE_SUCCESS );
-                }
-                else
-                {
-                    // Nothing to do.
+                    /* Non-shard reason was aleady set. */
+                    /* Nothing to do. */
                 }
             }
             else
             {
-                // Nothing to do.
+                /* Non-shard reason was aleady set. */
+                /* Nothing to do. */
             }
         }
         else
         {
-            sCantMergeReason[ SDI_MULTI_SHARD_INFO_EXISTS ] = ID_TRUE;
-        }
-
-        //------------------------------------------
-        // Make Query set analysis
-        //------------------------------------------
-
-        IDE_TEST( isCanMerge( sCantMergeReason,
-                              sIsCanMerge )
-                  != IDE_SUCCESS );
-
-        if ( aIsSubKey == ID_FALSE )
-        {
-            sQuerySetAnalysis->mKeyInfo = sKeyInfo;
-        }
-        else
-        {
-            sQuerySetAnalysis->mKeyInfo4SubKey = sKeyInfo;
+            aQuerySetAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_MULTI_SHARD_INFO_EXISTS ] = ID_TRUE;
         }
     }
     else
     {
         //------------------------------------------
-        // Shard tableì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” SFWGH
+        // Shard tableÀÌ Á¸ÀçÇÏÁö ¾Ê´Â SFWGH
         //------------------------------------------
-        if ( aIsSubKey == ID_FALSE )
-        {
-            sQuerySetAnalysis->mCantMergeReason[SDI_NO_SHARD_OBJECT] = ID_TRUE;
-        }
-        else
-        {
-            sQuerySetAnalysis->mCantMergeReason4SubKey[SDI_NO_SHARD_OBJECT] = ID_TRUE;
-        }
+        aQuerySetAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_NON_SHARD_OBJECT_EXISTS ] = ID_TRUE;
     }
+
+    /* TASK-7219 Shard Transformer Refactoring */
+    //------------------------------------------
+    // Analyze SUB-QUERY
+    //------------------------------------------
+    IDE_TEST( subqueryAnalysis4SFWGH( aStatement,
+                                      aSMN,
+                                      aQuerySet->SFWGH,
+                                      aQuerySetAnalysis,
+                                      aIsSubKey )
+              != IDE_SUCCESS );
+
+    //------------------------------------------
+    // Make Query set analysis
+    //------------------------------------------
+
+    IDE_TEST( isShardQuery( &( aQuerySetAnalysis->mAnalysisFlag ),
+                            &( aQuerySetAnalysis->mIsShardQuery ) )
+              != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(ERR_NULL_SFWGH)
-    {
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
-                                "sda::analyzeSFWGH",
-                                "The SFWGH is NULL."));
-    }
-    IDE_EXCEPTION(ERR_NULL_SHARD_ANALYSIS)
-    {
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
-                                "sda::analyzeSFWGH",
-                                "The shard analysis is NULL."));
-    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 }
 
-IDE_RC sda::analyzeFrom( qcStatement  * aStatement,
-                         ULong          aSMN,
-                         qmsFrom      * aFrom,
-                         sdiQuerySet  * aQuerySetAnalysis,
-                         sdaFrom     ** aShardFromInfo,
-                         idBool       * aCantMergeReason,
-                         idBool         aIsSubKey )
+IDE_RC sda::analyzeFrom( qcStatement       * aStatement,
+                         ULong               aSMN,
+                         qmsFrom           * aFrom,
+                         sdiShardAnalysis  * aQuerySetAnalysis,
+                         sdaFrom          ** aShardFromInfo,
+                         idBool              aIsSubKey )
 {
-    qmsParseTree * sViewParseTree = NULL;
-    sdiParseTree * sViewAnalysis  = NULL;
+    qmsParseTree     * sViewParseTree = NULL;
+    sdiShardAnalysis * sViewAnalysis  = NULL;
 
     if ( aFrom != NULL )
     {
@@ -1458,32 +2157,44 @@ IDE_RC sda::analyzeFrom( qcStatement  * aStatement,
             //---------------------------------------
             // Check unsupported from operation
             //---------------------------------------
-            IDE_TEST( checkTableRef( aStatement, aFrom->tableRef )
+            IDE_TEST( checkTableRef( aStatement,
+                                     aFrom->tableRef,
+                                     aQuerySetAnalysis )
                       != IDE_SUCCESS );
 
             if ( aFrom->tableRef->view != NULL )
             {
                 sViewParseTree = (qmsParseTree*)aFrom->tableRef->view->myPlan->parseTree;
 
-                // ëª…ì‹œì ìœ¼ë¡œ ì‚¬ìš©í•œ FROM SHARD(...) ì— ëŒ€í•´ì„œëŠ” ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¨ë‹¤.
-                IDE_TEST_RAISE( sViewParseTree->isShardView == ID_TRUE,
-                                ERR_SHARD_VIEW_EXISTS );
+                if ( sViewParseTree->isShardView == ID_TRUE )
+                {
+                    aQuerySetAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_SHARD_KEYWORD_EXISTS ] = ID_TRUE;
+                }
+                else
+                {
+                    /* Nothing to do. */
+                }
 
                 //---------------------------------------
-                // View statementì˜ analyze ìˆ˜í–‰
+                // View statementÀÇ analyze ¼öÇà
                 //---------------------------------------
-                IDE_TEST( analyzeSelect( aFrom->tableRef->view,
-                                         aSMN,
-                                         aIsSubKey ) != IDE_SUCCESS );
+                IDE_TEST( analyzeSelectCore( aFrom->tableRef->view,
+                                             aSMN,
+                                             NULL,
+                                             aIsSubKey ) != IDE_SUCCESS );
 
                 sViewAnalysis = sViewParseTree->mShardAnalysis;
 
-                IDE_TEST( canMergeOr( aCantMergeReason,
-                                      sViewAnalysis->mCantMergeReason )
+                /* TASK-7219 Shard Transformer Refactoring */
+                IDE_TEST( mergeAnalysisFlag( &( sViewAnalysis->mAnalysisFlag ),
+                                             &( aQuerySetAnalysis->mAnalysisFlag ),
+                                             SDI_ANALYSIS_FLAG_NON_TRUE |
+                                             SDI_ANALYSIS_FLAG_TOP_TRUE |
+                                             SDI_ANALYSIS_FLAG_SET_TRUE )
                           != IDE_SUCCESS );
 
                 //---------------------------------------
-                // Viewì— ëŒ€í•œ shard from infoë¥¼ ìƒì„±í•˜ê³ , listì— ì—°ê²°í•œë‹¤.
+                // View¿¡ ´ëÇÑ shard from info¸¦ »ı¼ºÇÏ°í, list¿¡ ¿¬°áÇÑ´Ù.
                 //---------------------------------------
                 IDE_TEST( makeShardFromInfo4View( aStatement,
                                                   aFrom,
@@ -1495,11 +2206,11 @@ IDE_RC sda::analyzeFrom( qcStatement  * aStatement,
             }
             else
             {
+                /* TASK-7219 Shard Transformer Refactoring */
                 //---------------------------------------
-                // Tableì— ëŒ€í•œ shard from infoë¥¼ ìƒì„±í•˜ê³ , listì— ì—°ê²°í•œë‹¤.
+                // Table¿¡ ´ëÇÑ shard from info¸¦ »ı¼ºÇÏ°í, list¿¡ ¿¬°áÇÑ´Ù.
                 //---------------------------------------
-                if ( ( aFrom->tableRef->mShardObjInfo != NULL ) &&
-                     ( aStatement->myPlan->parseTree->stmtShard != QC_STMT_SHARD_META ) )
+                if ( aStatement->myPlan->parseTree->stmtShard != QC_STMT_SHARD_META )
                 {
                     IDE_TEST( makeShardFromInfo4Table( aStatement,
                                                        aSMN,
@@ -1508,19 +2219,10 @@ IDE_RC sda::analyzeFrom( qcStatement  * aStatement,
                                                        aShardFromInfo,
                                                        aIsSubKey )
                               != IDE_SUCCESS );
-
-                    if ( (*aShardFromInfo)->mCantMergeReason[SDI_SUB_KEY_EXISTS] == ID_TRUE )
-                    {
-                        aCantMergeReason[SDI_SUB_KEY_EXISTS] = ID_TRUE;
-                    }
-                    else
-                    {
-                        // Nothing to do.
-                    }
                 }
                 else
                 {
-                    aCantMergeReason[SDI_NON_SHARD_OBJECT_EXISTS] = ID_TRUE;
+                    /* Nothing to do. */
                 }
             }
         }
@@ -1535,7 +2237,6 @@ IDE_RC sda::analyzeFrom( qcStatement  * aStatement,
                                    aFrom->left,
                                    aQuerySetAnalysis,
                                    aShardFromInfo,
-                                   aCantMergeReason,
                                    aIsSubKey )
                       != IDE_SUCCESS );
 
@@ -1544,7 +2245,6 @@ IDE_RC sda::analyzeFrom( qcStatement  * aStatement,
                                    aFrom->right,
                                    aQuerySetAnalysis,
                                    aShardFromInfo,
-                                   aCantMergeReason,
                                    aIsSubKey )
                       != IDE_SUCCESS );
         }
@@ -1556,56 +2256,81 @@ IDE_RC sda::analyzeFrom( qcStatement  * aStatement,
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(ERR_SHARD_VIEW_EXISTS)
-    {
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "SHARD VIEW"));
-    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 }
 
-IDE_RC sda::checkTableRef( qcStatement * aStatement, qmsTableRef * aTableRef )
+IDE_RC sda::checkTableRef( qcStatement      * aStatement,
+                           qmsTableRef      * aTableRef,
+                           sdiShardAnalysis * aQuerySetAnalysis )
 {
-    IDE_TEST_RAISE( ( ( aTableRef->flag & QMS_TABLE_REF_LATERAL_VIEW_MASK ) ==
-                      QMS_TABLE_REF_LATERAL_VIEW_TRUE ), ERR_LATERAL_VIEW_EXIST );
+    qcuSqlSourceInfo sqlInfo;
 
-    IDE_TEST_RAISE( aTableRef->pivot   != NULL, ERR_PVIOT_UNPIVOT_EXIST );
-    IDE_TEST_RAISE( aTableRef->unpivot != NULL, ERR_PVIOT_UNPIVOT_EXIST );
-    IDE_TEST_RAISE( aTableRef->recursiveView != NULL, ERR_RECURSIVE_VIEW_EXIST );
+    if ( ( aTableRef->flag & QMS_TABLE_REF_LATERAL_VIEW_MASK ) ==
+         QMS_TABLE_REF_LATERAL_VIEW_TRUE )
+    {
+        aQuerySetAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_LATERAL_VIEW_EXISTS ] = ID_TRUE;
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
+
+    if ( ( aTableRef->pivot != NULL ) ||
+         ( aTableRef->unpivot != NULL ) )
+    {
+        aQuerySetAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_PIVOT_EXISTS ] = ID_TRUE;
+    }
+    else
+    {
+        /* Nohting to do. */
+    }
+
+    if ( aTableRef->recursiveView != NULL )
+    {
+        /* TASK-7219 Shard Transformer Refactoring */
+        if ( QC_IS_NULL_NAME( aTableRef->recursiveView->myPlan->parseTree->stmtPos ) == ID_FALSE )
+        {
+            sqlInfo.setSourceInfo( aStatement, &( aTableRef->recursiveView->myPlan->parseTree->stmtPos ) );
+        }
+        else
+        {
+            sqlInfo.setSourceInfo( aStatement, &( aStatement->myPlan->parseTree->stmtPos ) );
+        }
+
+        IDE_RAISE( ERR_RECURSIVE_VIEW_EXISTS );
+
+        aQuerySetAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_RECURSIVE_VIEW_EXISTS ] = ID_TRUE;
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(ERR_LATERAL_VIEW_EXIST)
+    /* TASK-7219 Shard Transformer Refactoring */
+    IDE_EXCEPTION( ERR_RECURSIVE_VIEW_EXISTS )
     {
-        setNonShardQueryReason( &(aStatement->mShardPrintInfo), SDI_LATERAL_VIEW_EXISTS );
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "LATERAL VIEW"));
-    }
-    IDE_EXCEPTION(ERR_PVIOT_UNPIVOT_EXIST)
-    {
-        setNonShardQueryReason( &(aStatement->mShardPrintInfo), SDI_PIVOT_EXISTS );
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "PIVOT or UNPIVOT"));
-    }
-    IDE_EXCEPTION(ERR_RECURSIVE_VIEW_EXIST)
-    {
-        setNonShardQueryReason( &(aStatement->mShardPrintInfo), SDI_RECURSIVE_VIEW_EXISTS );
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "Common Table Expression"));
+        (void)sqlInfo.init( aStatement->qmeMem );
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
+                                  sdi::getNonShardQueryReasonArr( SDI_RECURSIVE_VIEW_EXISTS ),
+                                  sqlInfo.getErrMessage() ) );
+        (void)sqlInfo.fini();
     }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
+
 }
 
-IDE_RC sda::makeShardFromInfo4Table( qcStatement  * aStatement,
-                                     ULong          aSMN,
-                                     qmsFrom      * aFrom,
-                                     sdiQuerySet  * aQuerySetAnalysis,
-                                     sdaFrom     ** aShardFromInfo,
-                                     idBool         aIsSubKey )
+IDE_RC sda::makeShardFromInfo4Table( qcStatement       * aStatement,
+                                     ULong               aSMN,
+                                     qmsFrom           * aFrom,
+                                     sdiShardAnalysis  * aQuerySetAnalysis,
+                                     sdaFrom          ** aShardFromInfo,
+                                     idBool              aIsSubKey )
 {
     sdaFrom    * sShardFrom      = NULL;
     UInt         sColumnOrder    = 0;
@@ -1613,17 +2338,22 @@ IDE_RC sda::makeShardFromInfo4Table( qcStatement  * aStatement,
 
     sdiObjectInfo * sShardObjInfo = NULL;
 
+    /* TASK-7219 Shard Transformer Refactoring */
     //---------------------------------------
-    // Shard objectì˜ íšë“
+    // Shard objectÀÇ È¹µæ
     //---------------------------------------
-    sdi::getShardObjInfoForSMN( aSMN,
-                                aFrom->tableRef->mShardObjInfo,
-                                &sShardObjInfo );
+    IDE_TEST( checkAndGetShardObjInfo( aSMN,
+                                       &( aQuerySetAnalysis->mAnalysisFlag ),
+                                       aFrom->tableRef->mShardObjInfo,
+                                       ID_TRUE, /* aIsSelect */
+                                       aIsSubKey,
+                                       &( sShardObjInfo ) )
+              != IDE_SUCCESS );
 
-    IDE_TEST_RAISE( sShardObjInfo == NULL, ERR_NULL_OBJECT_INFO );
+    IDE_TEST_CONT( sShardObjInfo == NULL, NORMAL_EXIT );
 
     //---------------------------------------
-    // Shard fromì˜ í• ë‹¹
+    // Shard fromÀÇ ÇÒ´ç
     //---------------------------------------
     IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                             sdaFrom,
@@ -1633,11 +2363,11 @@ IDE_RC sda::makeShardFromInfo4Table( qcStatement  * aStatement,
     SDA_INIT_SHARD_FROM( sShardFrom );
 
     //---------------------------------------
-    // Shard fromì˜ ì„¤ì •
+    // Shard fromÀÇ ¼³Á¤
     //---------------------------------------
     sShardFrom->mTupleId  = aFrom->tableRef->table;
 
-    // Table infoì˜ shard keyë¡œ shardFromInfoì˜ shard keyë¥¼ ì„¸íŒ…í•œë‹¤.
+    // Table infoÀÇ shard key·Î shardFromInfoÀÇ shard key¸¦ ¼¼ÆÃÇÑ´Ù.
     for ( sColumnOrder = 0;
           sColumnOrder < aFrom->tableRef->tableInfo->columnCount;
           sColumnOrder++ )
@@ -1646,12 +2376,12 @@ IDE_RC sda::makeShardFromInfo4Table( qcStatement  * aStatement,
              ( sShardObjInfo->mKeyFlags[sColumnOrder] == 1 ) )
         {
             /*
-             * ì²« ë²ˆ ì§¸ shard keyë¥¼ analyze ëŒ€ìƒìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+             * Ã¹ ¹ø Â° shard key¸¦ analyze ´ë»óÀ¸·Î ¼³Á¤ÇÑ´Ù.
              */
 
             sShardFrom->mKeyCount++;
 
-            // Shard keyê°€ ë‘ ê°œì¸ tableì€ ì¡´ì¬ í•  ìˆ˜ ì—†ë‹¤. ( break í•˜ì§€ ì•Šê³  ê²€ì‚¬ )
+            // Shard key°¡ µÎ °³ÀÎ tableÀº Á¸Àç ÇÒ ¼ö ¾ø´Ù. ( break ÇÏÁö ¾Ê°í °Ë»ç )
             IDE_TEST_RAISE( sShardFrom->mKeyCount != 1, ERR_MULTI_SHARD_KEY_ON_TABLE);
 
             IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
@@ -1665,22 +2395,24 @@ IDE_RC sda::makeShardFromInfo4Table( qcStatement  * aStatement,
                   ( sShardObjInfo->mKeyFlags[sColumnOrder] == 2 ) )
         {
             /*
-             * ì²« ë²ˆ ì§¸ shard keyì— ëŒ€í•´ì„œ analyze í•  ë•Œ, ì°¸ì¡°ë˜ëŠ” tableë“¤ì— sub-shard keyê°€ ìˆëŠ”ì§€ í‘œì‹œí•œë‹¤.
+             * Ã¹ ¹ø Â° shard key¿¡ ´ëÇØ¼­ analyze ÇÒ ¶§, ÂüÁ¶µÇ´Â tableµé¿¡ sub-shard key°¡ ÀÖ´ÂÁö Ç¥½ÃÇÑ´Ù.
              */
 
-            sShardFrom->mCantMergeReason[SDI_SUB_KEY_EXISTS] = ID_TRUE;
+            sShardFrom->mAnalysisFlag.mTopQueryFlag[ SDI_TQ_SUB_KEY_EXISTS ] = ID_TRUE;
 
+            /* TASK-7219 Shard Transformer Refactoring */
+            aQuerySetAnalysis->mAnalysisFlag.mTopQueryFlag[ SDI_TQ_SUB_KEY_EXISTS ] = ID_TRUE;
         }
         else if ( ( aIsSubKey == ID_TRUE ) &&
                   ( sShardObjInfo->mKeyFlags[sColumnOrder] == 2 ) )
         {
             /*
-             * ë‘ ë²ˆ ì§¸ shard keyë¥¼ analyze ëŒ€ìƒìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+             * µÎ ¹ø Â° shard key¸¦ analyze ´ë»óÀ¸·Î ¼³Á¤ÇÑ´Ù.
              */
 
             sShardFrom->mKeyCount++;
 
-            // Shard keyê°€ ë‘ ê°œì¸ tableì€ ì¡´ì¬ í•  ìˆ˜ ì—†ë‹¤. ( break í•˜ì§€ ì•Šê³  ê²€ì‚¬ )
+            // Shard key°¡ µÎ °³ÀÎ tableÀº Á¸Àç ÇÒ ¼ö ¾ø´Ù. ( break ÇÏÁö ¾Ê°í °Ë»ç )
             IDE_TEST_RAISE( sShardFrom->mKeyCount != 1, ERR_MULTI_SUB_SHARD_KEY_ON_TABLE);
 
             IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
@@ -1698,34 +2430,30 @@ IDE_RC sda::makeShardFromInfo4Table( qcStatement  * aStatement,
 
     sShardFrom->mKey = sKeyColumnOrder;
 
-    // ë‚˜ë¨¸ì§€ ì •ë³´ëŠ” tableRefë¡œ ë¶€í„° ê·¸ëŒ€ë¡œ assign
-    if ( ( sShardObjInfo->mTableInfo.mSplitMethod == SDI_SPLIT_CLONE ) ||
-         ( sShardObjInfo->mTableInfo.mSplitMethod == SDI_SPLIT_SOLO ) )
+    // ³ª¸ÓÁö Á¤º¸´Â tableRef·Î ºÎÅÍ ±×´ë·Î assign
+    if ( sdi::getSplitType( sShardObjInfo->mTableInfo.mSplitMethod ) == SDI_SPLIT_TYPE_NO_DIST )
     {
-        IDE_TEST( copyShardInfoFromObjectInfo( aStatement,
-                                               &sShardFrom->mShardInfo,
-                                               sShardObjInfo,
-                                               ID_FALSE )
-                  != IDE_SUCCESS );
+        copyShardInfoFromObjectInfo( &sShardFrom->mShardInfo,
+                                     sShardObjInfo,
+                                     ID_FALSE );
+        
     }
     else
     {
-        IDE_TEST( copyShardInfoFromObjectInfo( aStatement,
-                                               &sShardFrom->mShardInfo,
-                                               sShardObjInfo,
-                                               aIsSubKey )
-                  != IDE_SUCCESS );
+        copyShardInfoFromObjectInfo( &sShardFrom->mShardInfo,
+                                     sShardObjInfo,
+                                     aIsSubKey );
     }
 
     //---------------------------------------
-    // Shard from infoì— ì—°ê²° ( tail to head )
+    // Shard from info¿¡ ¿¬°á ( tail to head )
     //---------------------------------------
     sShardFrom->mNext = *aShardFromInfo;
     *aShardFromInfo   = sShardFrom;
 
     //---------------------------------------
     // PROJ-2685 online rebuild
-    // shard tableì„ querySetAnalysisì— ë“±ë¡
+    // shard tableÀ» querySetAnalysis¿¡ µî·Ï
     //---------------------------------------
     if ( aIsSubKey == ID_FALSE )
     {
@@ -1738,6 +2466,9 @@ IDE_RC sda::makeShardFromInfo4Table( qcStatement  * aStatement,
     {
         // Nothing to do.
     }
+
+    /* TASK-7219 Shard Transformer Refactoring */
+    IDE_EXCEPTION_CONT( NORMAL_EXIT );
 
     return IDE_SUCCESS;
 
@@ -1753,48 +2484,41 @@ IDE_RC sda::makeShardFromInfo4Table( qcStatement  * aStatement,
                                 "sda::makeShardFromInfo4Table",
                                 "Multiple sub-shard keys exist on the table"));
     }
-    IDE_EXCEPTION(ERR_NULL_OBJECT_INFO)
-    {
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
-                                "sda::makeShardFromInfo4Table",
-                                "The shard object information of the SMN does not exist."));
-    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 }
 
-IDE_RC sda::makeShardFromInfo4View( qcStatement  * aStatement,
-                                    qmsFrom      * aFrom,
-                                    sdiQuerySet  * aQuerySetAnalysis,
-                                    sdiParseTree * aViewAnalysis,
-                                    sdaFrom     ** aShardFromInfo,
-                                    idBool         aIsSubKey )
+IDE_RC sda::makeShardFromInfo4View( qcStatement       * aStatement,
+                                    qmsFrom           * aFrom,
+                                    sdiShardAnalysis  * aQuerySetAnalysis,
+                                    sdiShardAnalysis  * aViewAnalysis,
+                                    sdaFrom          ** aShardFromInfo,
+                                    idBool              aIsSubKey )
 {
     sdiKeyInfo   * sKeyInfo = NULL;
     sdaFrom      * sShardFrom = NULL;
 
     IDE_DASSERT( aViewAnalysis != NULL );
-    IDE_DASSERT( aViewAnalysis->mQuerySetAnalysis != NULL );
 
     if ( aIsSubKey == ID_FALSE )
     {
-        sKeyInfo = aViewAnalysis->mQuerySetAnalysis->mKeyInfo;
+        sKeyInfo = aViewAnalysis->mKeyInfo;
     }
     else
     {
-        sKeyInfo = aViewAnalysis->mQuerySetAnalysis->mKeyInfo4SubKey;
+        sKeyInfo = aViewAnalysis->mNext->mKeyInfo;
     }
 
     //---------------------------------------
-    // Individualí•œ shard key ì˜ ê°¯ìˆ˜ë§Œí¼ from listë¥¼ ìƒì„±í•œë‹¤.
+    // IndividualÇÑ shard key ÀÇ °¹¼ö¸¸Å­ from list¸¦ »ı¼ºÇÑ´Ù.
     //---------------------------------------
     for ( ;
           sKeyInfo != NULL;
           sKeyInfo  = sKeyInfo->mNext )
     {
         //---------------------------------------
-        // Shard fromì˜ í• ë‹¹
+        // Shard fromÀÇ ÇÒ´ç
         //---------------------------------------
         IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                                 sdaFrom,
@@ -1804,11 +2528,11 @@ IDE_RC sda::makeShardFromInfo4View( qcStatement  * aStatement,
         SDA_INIT_SHARD_FROM( sShardFrom );
 
         //---------------------------------------
-        // Shard fromì˜ ì„¤ì •
+        // Shard fromÀÇ ¼³Á¤
         //---------------------------------------
         sShardFrom->mTupleId = aFrom->tableRef->table;
 
-        // Viewì˜ targetìƒì˜ shard keyë¡œ shardFromInfoì˜ shard keyë¥¼ ì„¸íŒ…í•œë‹¤.
+        // ViewÀÇ target»óÀÇ shard key·Î shardFromInfoÀÇ shard key¸¦ ¼¼ÆÃÇÑ´Ù.
         sShardFrom->mKeyCount = sKeyInfo->mKeyTargetCount;
 
         if ( sShardFrom->mKeyCount > 0 )
@@ -1828,30 +2552,24 @@ IDE_RC sda::makeShardFromInfo4View( qcStatement  * aStatement,
             // Nothing to do.
         }
 
-        // Viewì˜ value infoë¥¼ ì·¨í•œë‹¤.
-        IDE_TEST( sdi::allocAndCopyValues( aStatement,
-                                           &sShardFrom->mValue,
-                                           &sShardFrom->mValueCount,
-                                           sKeyInfo->mValue,
-                                           sKeyInfo->mValueCount )
-                  != IDE_SUCCESS );
+        // ViewÀÇ value info¸¦ ÃëÇÑ´Ù.
+        sShardFrom->mValuePtrCount = sKeyInfo->mValuePtrCount;
+        sShardFrom->mValuePtrArray = sKeyInfo->mValuePtrArray;
 
-        // Viewì˜ can-merge reasonì„ shardFromInfoê°€ ì´ì–´ë°›ëŠ”ë‹¤.
+        // ViewÀÇ non-shard query reasonÀ» shardFromInfo°¡ ÀÌ¾î¹Ş´Â´Ù.
         IDE_DASSERT( aViewAnalysis != NULL );
-        sShardFrom->mIsCanMerge = aViewAnalysis->mIsCanMerge;
+        sShardFrom->mIsShardQuery = aViewAnalysis->mIsShardQuery;
 
-        idlOS::memcpy( (void*) sShardFrom->mCantMergeReason ,
-                       (void*) aViewAnalysis->mCantMergeReason,
-                       ID_SIZEOF(idBool) * SDI_CAN_NOT_MERGE_REASON_MAX );
+        idlOS::memcpy( (void*) sShardFrom->mAnalysisFlag.mNonShardFlag,
+                       (void*) aViewAnalysis->mAnalysisFlag.mNonShardFlag,
+                       ID_SIZEOF(idBool) * SDI_NON_SHARD_QUERY_REASON_MAX );
 
-        // ë‚˜ë¨¸ì§€ ì •ë³´ëŠ” viewì˜ analysis infoë¡œ ë¶€í„° ê·¸ëŒ€ë¡œ assign
-        IDE_TEST( copyShardInfoFromShardInfo( aStatement,
-                                              &sShardFrom->mShardInfo,
-                                              &sKeyInfo->mShardInfo )
-                  != IDE_SUCCESS );
+        // ³ª¸ÓÁö Á¤º¸´Â viewÀÇ analysis info·Î ºÎÅÍ ±×´ë·Î assign
+        copyShardInfoFromShardInfo( &sShardFrom->mShardInfo,
+                                    &sKeyInfo->mShardInfo );
 
         //---------------------------------------
-        // Shard from infoì— ì—°ê²° ( tail to head )
+        // Shard from info¿¡ ¿¬°á ( tail to head )
         //---------------------------------------
         sShardFrom->mNext = *aShardFromInfo;
         *aShardFromInfo   = sShardFrom;
@@ -1859,13 +2577,13 @@ IDE_RC sda::makeShardFromInfo4View( qcStatement  * aStatement,
 
     //---------------------------------------
     // PROJ-2685 online rebuild
-    // shard tableì„ querySetAnalysisì— ë“±ë¡
+    // shard tableÀ» querySetAnalysis¿¡ µî·Ï
     //---------------------------------------
     if ( aIsSubKey == ID_FALSE )
     {
         IDE_TEST( addTableInfoList( aStatement,
                                     aQuerySetAnalysis,
-                                    aViewAnalysis->mQuerySetAnalysis->mTableInfoList )
+                                    aViewAnalysis->mTableInfoList )
                   != IDE_SUCCESS );
     }
     else
@@ -1880,14 +2598,15 @@ IDE_RC sda::makeShardFromInfo4View( qcStatement  * aStatement,
     return IDE_FAILURE;
 }
 
-IDE_RC sda::analyzePredicate( qcStatement  * aStatement,
-                              qtcNode      * aCNF,
-                              sdaCNFList   * aCNFOnCondition,
-                              sdaFrom      * aShardFromInfo,
-                              idBool         aIsOneNodeSQL,
-                              sdiKeyInfo  ** aKeyInfo,
-                              idBool       * aCantMergeReason,
-                              idBool         aIsSubKey )
+IDE_RC sda::analyzePredicate( qcStatement     * aStatement,
+                              qtcNode         * aCNF,
+                              sdaCNFList      * aCNFOnCondition,
+                              sdaFrom         * aShardFromInfo,
+                              idBool            aIsOneNodeSQL,
+                              sdiKeyInfo      * aOutRefInfo,
+                              sdiKeyInfo     ** aKeyInfo,
+                              sdiAnalysisFlag * aAnalysisFlag,
+                              idBool            aIsSubKey )
 {
     sdaCNFList * sCNFOnCondition = NULL;
 
@@ -1900,14 +2619,14 @@ IDE_RC sda::analyzePredicate( qcStatement  * aStatement,
         if ( aIsOneNodeSQL == ID_FALSE )
         {
             /*
-             * CNFë¡œ normalizeëœ where predicateì„ ìˆœíšŒí•˜ë©°
-             * Outer-joinê³¼ semi/anti-joinì˜ ì œì•½ì„ ê²€ì‚¬í•œë‹¤.
+             * CNF·Î normalizeµÈ where predicateÀ» ¼øÈ¸ÇÏ¸ç
+             * Outer-join°ú semi/anti-joinÀÇ Á¦¾àÀ» °Ë»çÇÑ´Ù.
              *
              */
             IDE_TEST( analyzePredJoin( aStatement,
                                        aCNF,
                                        aShardFromInfo,
-                                       aCantMergeReason,
+                                       aAnalysisFlag,
                                        aIsSubKey )
                       != IDE_SUCCESS );
         }
@@ -1955,6 +2674,18 @@ IDE_RC sda::analyzePredicate( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //---------------------------------------
+    // Check Out reference shard join pred
+    //---------------------------------------
+    IDE_TEST( checkOutRefShardJoin( aStatement,
+                                    aCNF,
+                                    sCNFOnCondition,
+                                    *aKeyInfo,
+                                    aOutRefInfo,
+                                    aAnalysisFlag,
+                                    aIsSubKey )
+              != IDE_SUCCESS );
+
+    //---------------------------------------
     // Set equivalent value list from shard key predicate
     //---------------------------------------
 
@@ -1970,11 +2701,11 @@ IDE_RC sda::analyzePredicate( qcStatement  * aStatement,
     return IDE_FAILURE;
 }
 
-IDE_RC sda::makeKeyInfoFromJoin( qcStatement  * aStatement,
-                                 qtcNode      * aCNF,
-                                 sdaFrom      * aShardFromInfo,
-                                 sdiKeyInfo  ** aKeyInfo,
-                                 idBool         aIsSubKey )
+IDE_RC sda::makeKeyInfoFromJoin( qcStatement              * aStatement,
+                                 qtcNode                  * aCNF,
+                                 sdaFrom                  * aShardFromInfo,
+                                 sdiKeyInfo              ** aKeyInfo,
+                                 idBool                     aIsSubKey )
 {
     qtcNode * sCNFOr          = NULL;
 
@@ -1991,7 +2722,7 @@ IDE_RC sda::makeKeyInfoFromJoin( qcStatement  * aStatement,
     idBool    sIsSame         = ID_FALSE;
 
     //---------------------------------------
-    // CNF treeë¥¼ ìˆœíšŒí•˜ë©° shard join conditionì„ ì°¾ëŠ”ë‹¤.
+    // CNF tree¸¦ ¼øÈ¸ÇÏ¸ç shard join conditionÀ» Ã£´Â´Ù.
     //---------------------------------------
     for ( sCNFOr  = (qtcNode*)aCNF->node.arguments;
           sCNFOr != NULL;
@@ -2030,8 +2761,8 @@ IDE_RC sda::makeKeyInfoFromJoin( qcStatement  * aStatement,
                      ( sRightShardFrom->mShardInfo.mSplitMethod != SDI_SPLIT_NONE ) )
                 {
                     //---------------------------------------
-                    // Join ëœ left shard fromê³¼ right shard fromì˜
-                    // ë¶„ì‚°ì •ì˜ê°€ ë™ì¼í•œì§€ í™•ì¸í•œë‹¤.
+                    // Join µÈ left shard from°ú right shard fromÀÇ
+                    // ºĞ»êÁ¤ÀÇ°¡ µ¿ÀÏÇÑÁö È®ÀÎÇÑ´Ù.
                     //---------------------------------------
                     IDE_TEST( isSameShardInfo( &sLeftShardFrom->mShardInfo,
                                                &sRightShardFrom->mShardInfo,
@@ -2055,8 +2786,8 @@ IDE_RC sda::makeKeyInfoFromJoin( qcStatement  * aStatement,
                                                aKeyInfo )
                                   != IDE_SUCCESS );
 
-                        // ë‘ shard fromì´ shard key equi-join ë˜ì—ˆìŒì´ í™•ì •
-                        // Shard joinìœ¼ë¡œ ë¶€í„° ì´ë¯¸ key infoê°€ ìƒì„± ëœ shard fromì„ì„ í‘œì‹œ
+                        // µÎ shard fromÀÌ shard key equi-join µÇ¾úÀ½ÀÌ È®Á¤
+                        // Shard joinÀ¸·Î ºÎÅÍ ÀÌ¹Ì key info°¡ »ı¼º µÈ shard fromÀÓÀ» Ç¥½Ã
                         sLeftShardFrom->mIsJoined  = ID_TRUE;
                         sRightShardFrom->mIsJoined = ID_TRUE;
                     }
@@ -2106,11 +2837,11 @@ IDE_RC sda::getShardJoinTupleColumn( qcStatement * aStatement,
 
     idBool           sIsShardEquivalent = ID_TRUE;
 
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     *aIsFound = ID_FALSE;
 
     //---------------------------------------
-    // Shard join conditionì„ ì°¾ëŠ”ë‹¤.
+    // Shard join conditionÀ» Ã£´Â´Ù.
     //---------------------------------------
     IDE_TEST( getQtcNodeTypeWithShardFrom( aStatement,
                                            aShardFromInfo,
@@ -2139,13 +2870,13 @@ IDE_RC sda::getShardJoinTupleColumn( qcStatement * aStatement,
                       != IDE_SUCCESS );
 
             //---------------------------------------
-            // Shard join conditionì„ ì°¾ìŒ
+            // Shard join conditionÀ» Ã£À½
             //---------------------------------------
             if ( sQtcNodeType == SDA_KEY_COLUMN )
             {
                 //---------------------------------------
-                // Shard join conditionì— ORê°€ ìˆìœ¼ë©´(equal->next != NULL),
-                // shard equivalent expressionì´ì–´ì•¼ í•œë‹¤.
+                // Shard join condition¿¡ OR°¡ ÀÖÀ¸¸é(equal->next != NULL),
+                // shard equivalent expressionÀÌ¾î¾ß ÇÑ´Ù.
                 //---------------------------------------
                 if ( aCNF->node.next != NULL )
                 {
@@ -2184,7 +2915,7 @@ IDE_RC sda::getShardJoinTupleColumn( qcStatement * aStatement,
                 }
                 else
                 {
-                    // shard join predicateìœ¼ë¡œ ì·¨ê¸‰í•˜ì§€ ì•ŠìŒ.
+                    // shard join predicateÀ¸·Î Ãë±ŞÇÏÁö ¾ÊÀ½.
                     // Nothing to do.
                 }
             }
@@ -2236,7 +2967,7 @@ IDE_RC sda::getShardFromInfo( sdaFrom     * aShardFromInfo,
     sdaFrom * sShardFrom = NULL;
     UInt      sKeyCount  = ID_UINT_MAX;
 
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     *aRetShardFrom = NULL;
 
     for ( sShardFrom  = aShardFromInfo;
@@ -2289,17 +3020,17 @@ IDE_RC sda::makeKeyInfo( qcStatement * aStatement,
     if ( aLinkShardFrom != NULL )
     {
         //---------------------------------------
-        // keyListë¥¼ ì¶”ê°€í•  ëŒ€ìƒ keyInfoë¥¼ ì–»ì–´ì˜¨ë‹¤.
+        // keyList¸¦ Ãß°¡ÇÒ ´ë»ó keyInfo¸¦ ¾ò¾î¿Â´Ù.
         //---------------------------------------
 
-        // Link shard fromì˜ key listê°€ ë“¤ì–´ìˆëŠ” key infoë¥¼ ì°¾ëŠ”ë‹¤.
+        // Link shard fromÀÇ key list°¡ µé¾îÀÖ´Â key info¸¦ Ã£´Â´Ù.
         IDE_TEST( getKeyInfoForAddingKeyList( aLinkShardFrom,
                                               *aKeyInfo,
                                               aIsSubKey,
                                               &sKeyInfoForAddingKeyList )
                   != IDE_SUCCESS );
 
-        // ëª» ì°¾ì•˜ìœ¼ë©´, my shard fromì˜ key listê°€ ë“¤ì–´ìˆëŠ” key infoë¥¼ ì°¾ëŠ”ë‹¤.
+        // ¸ø Ã£¾ÒÀ¸¸é, my shard fromÀÇ key list°¡ µé¾îÀÖ´Â key info¸¦ Ã£´Â´Ù.
         if ( sKeyInfoForAddingKeyList == NULL )
         {
             IDE_TEST( getKeyInfoForAddingKeyList( aMyShardFrom,
@@ -2319,7 +3050,7 @@ IDE_RC sda::makeKeyInfo( qcStatement * aStatement,
     }
 
     //---------------------------------------
-    // KeyInfoì— key listë¥¼ ì¶”ê°€í•œë‹¤.
+    // KeyInfo¿¡ key list¸¦ Ãß°¡ÇÑ´Ù.
     //---------------------------------------
     IDE_TEST( addKeyList( aStatement,
                           aMyShardFrom,
@@ -2350,11 +3081,11 @@ IDE_RC sda::getKeyInfoForAddingKeyList( sdaFrom     * aShardFrom,
 
     IDE_DASSERT( aRetKeyInfo != NULL );
 
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     *aRetKeyInfo = NULL;
 
     //---------------------------------------
-    // shard fromì˜ key listê°€ ë“¤ì–´ìˆëŠ” key infoë¥¼ ì°¾ëŠ”ë‹¤.
+    // shard fromÀÇ key list°¡ µé¾îÀÖ´Â key info¸¦ Ã£´Â´Ù.
     //---------------------------------------
     for ( sKeyCount = 0;
           sKeyCount < aShardFrom->mKeyCount;
@@ -2365,8 +3096,8 @@ IDE_RC sda::getKeyInfoForAddingKeyList( sdaFrom     * aShardFrom,
               sKeyInfo  = sKeyInfo->mNext )
         {
             //---------------------------------------
-            // shard fromì˜ ë¶„ì‚°ì •ì˜ì™€ keyInfoì˜ ë¶„ì‚°ì •ì˜ê°€
-            // join ë  ìˆ˜ ìˆëŠ” ê²ƒ ì¸ì§€ í™•ì¸í•œë‹¤.
+            // shard fromÀÇ ºĞ»êÁ¤ÀÇ¿Í keyInfoÀÇ ºĞ»êÁ¤ÀÇ°¡
+            // join µÉ ¼ö ÀÖ´Â °Í ÀÎÁö È®ÀÎÇÑ´Ù.
             //---------------------------------------
             IDE_TEST( isSameShardInfo( &aShardFrom->mShardInfo,
                                        &sKeyInfo->mShardInfo,
@@ -2386,7 +3117,7 @@ IDE_RC sda::getKeyInfoForAddingKeyList( sdaFrom     * aShardFrom,
                            sKeyInfo->mKey[sKeyInfoKeyCount].mColumn ) )
                     {
                         //---------------------------------------
-                        // ì°¾ì•˜ìœ¼ë©´, key listëŠ” ì´ ê³³ ì— ì¶”ê°€ë˜ì–´ì•¼ í•œë‹¤.
+                        // Ã£¾ÒÀ¸¸é, key list´Â ÀÌ °÷ ¿¡ Ãß°¡µÇ¾î¾ß ÇÑ´Ù.
                         //---------------------------------------
                         sKeyInfoForAddingKeyList = sKeyInfo;
                         break;
@@ -2431,9 +3162,10 @@ IDE_RC sda::getKeyInfoForAddingKeyList( sdaFrom     * aShardFrom,
     return IDE_FAILURE;
 }
 
-idBool sda::isSameShardHashInfo( sdiShardInfo * aShardInfo1,
+IDE_RC sda::isSameShardHashInfo( sdiShardInfo * aShardInfo1,
                                  sdiShardInfo * aShardInfo2,
-                                 idBool         aIsSubKey )
+                                 idBool         aIsSubKey,
+                                 idBool       * aOutResult )
 {
     idBool     sIsSame = ID_TRUE;
     sdiRange * sRange1;
@@ -2443,19 +3175,21 @@ idBool sda::isSameShardHashInfo( sdiShardInfo * aShardInfo1,
     IDE_DASSERT( aShardInfo1 != NULL );
     IDE_DASSERT( aShardInfo2 != NULL );
 
-    if ( aShardInfo1->mRangeInfo.mCount == aShardInfo2->mRangeInfo.mCount )
+    if ( aShardInfo1->mRangeInfo->mCount == aShardInfo2->mRangeInfo->mCount )
     {
-        for ( i = 0; i < aShardInfo1->mRangeInfo.mCount; i++ )
+        for ( i = 0; i < aShardInfo1->mRangeInfo->mCount; i++ )
         {
-            sRange1 = &(aShardInfo1->mRangeInfo.mRanges[i]);
-            sRange2 = &(aShardInfo2->mRangeInfo.mRanges[i]);
+            sRange1 = &(aShardInfo1->mRangeInfo->mRanges[i]);
+            sRange2 = &(aShardInfo2->mRangeInfo->mRanges[i]);
 
             if ( sRange1->mNodeId == sRange2->mNodeId )
             {
                 if ( ( ( aIsSubKey == ID_FALSE ) && ( sRange1->mValue.mHashMax == sRange2->mValue.mHashMax ) ) ||
                      ( ( aIsSubKey == ID_TRUE ) && ( sRange1->mSubValue.mHashMax == sRange2->mSubValue.mHashMax ) ) )
                 {
-                    // Nothing to do.
+                    /* TASJ-7219
+                     *   BUG-47879 ÀÌÈÄ, mPartitionName °ËÁõ ÄÚµå Á¦°Å
+                     */
                 }
                 else
                 {
@@ -2475,12 +3209,19 @@ idBool sda::isSameShardHashInfo( sdiShardInfo * aShardInfo1,
         sIsSame = ID_FALSE;
     }
 
-    return sIsSame;
+    *aOutResult = sIsSame;
+
+    return IDE_SUCCESS;
+
+    /* IDE_EXCEPTION_END; */
+
+    return IDE_FAILURE;
 }
 
-idBool sda::isSameShardRangeInfo( sdiShardInfo * aShardInfo1,
+IDE_RC sda::isSameShardRangeInfo( sdiShardInfo * aShardInfo1,
                                   sdiShardInfo * aShardInfo2,
-                                  idBool         aIsSubKey )
+                                  idBool         aIsSubKey,
+                                  idBool       * aOutResult )
 {
     idBool     sIsSame = ID_TRUE;
     sdiRange * sRange1;
@@ -2490,12 +3231,12 @@ idBool sda::isSameShardRangeInfo( sdiShardInfo * aShardInfo1,
     IDE_DASSERT( aShardInfo1 != NULL );
     IDE_DASSERT( aShardInfo2 != NULL );
 
-    if ( aShardInfo1->mRangeInfo.mCount == aShardInfo2->mRangeInfo.mCount )
+    if ( aShardInfo1->mRangeInfo->mCount == aShardInfo2->mRangeInfo->mCount )
     {
-        for ( i = 0; i < aShardInfo1->mRangeInfo.mCount; i++ )
+        for ( i = 0; i < aShardInfo1->mRangeInfo->mCount; i++ )
         {
-            sRange1 = &(aShardInfo1->mRangeInfo.mRanges[i]);
-            sRange2 = &(aShardInfo2->mRangeInfo.mRanges[i]);
+            sRange1 = &(aShardInfo1->mRangeInfo->mRanges[i]);
+            sRange2 = &(aShardInfo2->mRangeInfo->mRanges[i]);
 
             if ( sRange1->mNodeId == sRange2->mNodeId )
             {
@@ -2506,7 +3247,9 @@ idBool sda::isSameShardRangeInfo( sdiShardInfo * aShardInfo1,
                          ( ( aIsSubKey == ID_TRUE ) &&
                            ( sRange1->mSubValue.mSmallintMax == sRange2->mSubValue.mSmallintMax ) ) )
                     {
-                        // Nothing to do.
+                        /* TASJ-7219
+                         *   BUG-47879 ÀÌÈÄ, mPartitionName °ËÁõ ÄÚµå Á¦°Å
+                         */
                     }
                     else
                     {
@@ -2521,7 +3264,9 @@ idBool sda::isSameShardRangeInfo( sdiShardInfo * aShardInfo1,
                          ( ( aIsSubKey == ID_TRUE ) &&
                            ( sRange1->mSubValue.mIntegerMax == sRange2->mSubValue.mIntegerMax ) ) )
                     {
-                        // Nothing to do.
+                        /* TASJ-7219
+                         *   BUG-47879 ÀÌÈÄ, mPartitionName °ËÁõ ÄÚµå Á¦°Å
+                         */
                     }
                     else
                     {
@@ -2536,7 +3281,9 @@ idBool sda::isSameShardRangeInfo( sdiShardInfo * aShardInfo1,
                          ( ( aIsSubKey == ID_TRUE ) &&
                            ( sRange1->mSubValue.mBigintMax == sRange2->mSubValue.mBigintMax ) ) )
                     {
-                        // Nothing to do.
+                        /* TASJ-7219
+                         *   BUG-47879 ÀÌÈÄ, mPartitionName °ËÁõ ÄÚµå Á¦°Å
+                         */
                     }
                     else
                     {
@@ -2557,7 +3304,9 @@ idBool sda::isSameShardRangeInfo( sdiShardInfo * aShardInfo1,
                                      (void*) &(sRange2->mValue.mCharMax.value),
                                      sRange1->mValue.mCharMax.length ) == 0 )
                             {
-                                // Nothing to do.
+                                /* TASJ-7219
+                                 *   BUG-47879 ÀÌÈÄ, mPartitionName °ËÁõ ÄÚµå Á¦°Å
+                                 */
                             }
                             else
                             {
@@ -2612,7 +3361,13 @@ idBool sda::isSameShardRangeInfo( sdiShardInfo * aShardInfo1,
         sIsSame = ID_FALSE;
     }
 
-    return sIsSame;
+    *aOutResult = sIsSame;
+
+    return IDE_SUCCESS;
+
+    /* IDE_EXCEPTION_END; */
+
+    return IDE_FAILURE;
 }
 
 IDE_RC sda::isSameShardInfo( sdiShardInfo * aShardInfo1,
@@ -2624,7 +3379,7 @@ IDE_RC sda::isSameShardInfo( sdiShardInfo * aShardInfo1,
     IDE_DASSERT( aShardInfo2 != NULL );
     IDE_DASSERT( aIsSame != NULL );
 
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     *aIsSame = ID_FALSE;
 
     if ( ( aShardInfo1->mSplitMethod   == aShardInfo2->mSplitMethod ) &&
@@ -2635,32 +3390,41 @@ IDE_RC sda::isSameShardInfo( sdiShardInfo * aShardInfo1,
         {
             case SDI_SPLIT_HASH:
             {
-                if ( isSameShardHashInfo( aShardInfo1,
-                                          aShardInfo2,
-                                          aIsSubKey ) == ID_TRUE )
-                {
-                    *aIsSame = ID_TRUE;
-                }
-                else
-                {
-                    // Nothing to do.
-                }
+                IDE_TEST( isSameShardHashInfo( aShardInfo1,
+                                               aShardInfo2,
+                                               aIsSubKey,
+                                               aIsSame ) != IDE_SUCCESS);
                 break;
             }
 
             case SDI_SPLIT_RANGE:
             case SDI_SPLIT_LIST:
             {
-                if ( isSameShardRangeInfo( aShardInfo1,
-                                           aShardInfo2,
-                                           aIsSubKey ) == ID_TRUE )
+                IDE_TEST( isSameShardRangeInfo( aShardInfo1,
+                                                aShardInfo2,
+                                                aIsSubKey,
+                                                aIsSame ) != IDE_SUCCESS);
+                break;
+            }
+
+            /* TASK-7219 Shard Transformer Refactoring
+             *  ±âÁ¸¿¡ Shard Analyze ½ÇÆĞ ÈÄ, Query Set ¸¦ Á¼Çô¼­ Àç¼öÇàÇÏ±â ¶§¹®¿¡
+             *   È®ÀÎÇÏÁö ¸øÇÏ¿´´ø Á¦¿ÜµÈ Á¶°ÇÀ» ¹ß°ßÇÏ¿© Ãß°¡ÇÏ¿´´Ù.
+             */
+            case SDI_SPLIT_CLONE:
+            case SDI_SPLIT_SOLO:
+            {
+                if ( isSameRangesForCloneAndSolo( aShardInfo1->mRangeInfo,
+                                                  aShardInfo2->mRangeInfo )
+                     == ID_TRUE )
                 {
                     *aIsSame = ID_TRUE;
                 }
                 else
                 {
-                    // Nothing to do.
+                    /* Nothing to do */
                 }
+
                 break;
             }
 
@@ -2713,13 +3477,13 @@ IDE_RC sda::addKeyList( qcStatement * aStatement,
     if ( aKeyInfoForAdding != NULL )
     {
         //---------------------------------------
-        // Key listë¥¼ ì¶”ê°€í•  key infoê°€ ì§€ì • ë˜ì–´ìˆëŠ” ê²½ìš°
-        // í•´ë‹¹ key infoì— ì¤‘ë³µì—†ì´ ì¶”ê°€í•œë‹¤.
+        // Key list¸¦ Ãß°¡ÇÒ key info°¡ ÁöÁ¤ µÇ¾îÀÖ´Â °æ¿ì
+        // ÇØ´ç key info¿¡ Áßº¹¾øÀÌ Ãß°¡ÇÑ´Ù.
         //---------------------------------------
 
-        // ì¤‘ë³µê²€ì‚¬.
-        // Shard fromì˜ key listë¥¼ í†µì§¸ë¡œ ë“±ë¡í•˜ê¸° ë•Œë¬¸ì—
-        // Key list ì¤‘ í•˜ë‚˜ë¼ë„ ë°œê²¬ë˜ë©´, ì „ë¶€ ì¤‘ë³µì¸ ê²ƒ ìœ¼ë¡œ íŒë‹¨í•˜ê³  ë„˜ì–´ê°„ë‹¤.
+        // Áßº¹°Ë»ç.
+        // Shard fromÀÇ key list¸¦ ÅëÂ°·Î µî·ÏÇÏ±â ¶§¹®¿¡
+        // Key list Áß ÇÏ³ª¶óµµ ¹ß°ßµÇ¸é, ÀüºÎ Áßº¹ÀÎ °Í À¸·Î ÆÇ´ÜÇÏ°í ³Ñ¾î°£´Ù.
 
         for ( sKeyInfoKeyCount = 0;
               sKeyInfoKeyCount < aKeyInfoForAdding->mKeyCount;
@@ -2736,27 +3500,27 @@ IDE_RC sda::addKeyList( qcStatement * aStatement,
 
         if ( sIsFound == ID_FALSE )
         {
-            // ì¤‘ë³µì—†ìŒ, 
+            // Áßº¹¾øÀ½, 
 
             //---------------------------------------
-            // key listë¥¼ ìƒˆë¡œ ì¶”ê°€
+            // key list¸¦ »õ·Î Ãß°¡
             //---------------------------------------
             sKeyInfoKeyCount = aKeyInfoForAdding->mKeyCount;
             sMyKeyCount      = aFrom->mKeyCount;
 
-            // KeyInfoì˜ key listê°¯ìˆ˜ì™€ shard fromì˜ key list ê°¯ìˆ˜ë¥¼
-            // ë”í•œ í¬ê¸° ë§Œí¼ key list ë¥¼ í• ë‹¹í•œë‹¤.
+            // KeyInfoÀÇ key list°¹¼ö¿Í shard fromÀÇ key list °¹¼ö¸¦
+            // ´õÇÑ Å©±â ¸¸Å­ key list ¸¦ ÇÒ´çÇÑ´Ù.
             IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiKeyTupleColumn) *
                                                      ( sKeyInfoKeyCount + sMyKeyCount ),
                                                      (void**) & sNewKeyList )
                       != IDE_SUCCESS );
 
-            // ê¸°ì¡´ keyInfoì— ìˆë˜ key listë“¤ì„ ë³µì‚¬
+            // ±âÁ¸ keyInfo¿¡ ÀÖ´ø key listµéÀ» º¹»ç
             idlOS::memcpy( (void*) sNewKeyList,
                            (void*) aKeyInfoForAdding->mKey,
                            ID_SIZEOF(sdiKeyTupleColumn) * sKeyInfoKeyCount );
 
-            // ì´ì–´ì„œ shard fromì˜ key listë“¤ì„ ì¶”ê°€
+            // ÀÌ¾î¼­ shard fromÀÇ key listµéÀ» Ãß°¡
             for ( sCurrKeyIdx = sKeyInfoKeyCount;
                   sCurrKeyIdx < ( sKeyInfoKeyCount + sMyKeyCount );
                   sCurrKeyIdx++ )
@@ -2767,31 +3531,27 @@ IDE_RC sda::addKeyList( qcStatement * aStatement,
                 sNewKeyList[sCurrKeyIdx].mIsAntiJoinInner = aFrom->mIsAntiJoinInner;
             }
 
-            // ìƒˆë¡œë§Œë“  key listë¥¼ key infoì— ì—°ê²°
+            // »õ·Î¸¸µç key list¸¦ key info¿¡ ¿¬°á
             aKeyInfoForAdding->mKeyCount = (sKeyInfoKeyCount + sMyKeyCount);
             aKeyInfoForAdding->mKey      = sNewKeyList;
 
             //---------------------------------------
-            // Value listë¥¼ ê°±ì‹ 
+            // Value list¸¦ °»½Å
             //---------------------------------------
-            if ( aFrom->mValueCount > 0 )
+            if ( aFrom->mValuePtrCount > 0 )
             {
                 //---------------------------------------
-                // CNF treeì˜ AND's ORs ì¤‘ ë¨¼ì € ìˆ˜í–‰ë˜ì–´ keyInfoì— êµ¬ì„± ëœ value infoì™€
-                // ìƒˆë¡œìš´ CNF treeì˜ AND's ORsìƒì˜ value infoì™€ ANDì˜ ê°œë…ì´ë‹¤.
-                // ë” ì ì€ ê²ƒìœ¼ë¡œ ë®ì–´ì”Œìš´ë‹¤.
+                // CNF treeÀÇ AND's ORs Áß ¸ÕÀú ¼öÇàµÇ¾î keyInfo¿¡ ±¸¼º µÈ value info¿Í
+                // »õ·Î¿î CNF treeÀÇ AND's ORs»óÀÇ value info¿Í ANDÀÇ °³³äÀÌ´Ù.
+                // ´õ ÀûÀº °ÍÀ¸·Î µ¤¾î¾º¿î´Ù.
                 //
-                // ë®ì–´ì“°ì§€ ì•Šê³ , ê¸°ì¡´ value infoë¥¼ ìœ ì§€ í•´ë„ëœë‹¤.
+                // µ¤¾î¾²Áö ¾Ê°í, ±âÁ¸ value info¸¦ À¯Áö ÇØµµµÈ´Ù.
                 //---------------------------------------
-                if ( ( aFrom->mValueCount < aKeyInfoForAdding->mValueCount ) ||
-                     ( aKeyInfoForAdding->mValueCount == 0 ) )
+                if ( ( aFrom->mValuePtrCount < aKeyInfoForAdding->mValuePtrCount ) ||
+                     ( aKeyInfoForAdding->mValuePtrCount == 0 ) )
                 {
-                    IDE_TEST( sdi::allocAndCopyValues( aStatement,
-                                                       &aKeyInfoForAdding->mValue,
-                                                       &aKeyInfoForAdding->mValueCount,
-                                                       aFrom->mValue,
-                                                       aFrom->mValueCount )
-                              != IDE_SUCCESS );
+                    aKeyInfoForAdding->mValuePtrCount = aFrom->mValuePtrCount;
+                    aKeyInfoForAdding->mValuePtrArray = aFrom->mValuePtrArray;
                 }
                 else
                 {
@@ -2805,27 +3565,27 @@ IDE_RC sda::addKeyList( qcStatement * aStatement,
         }
         else
         {
-            // ì´ë¯¸ ìˆëŠ” key list
+            // ÀÌ¹Ì ÀÖ´Â key list
             // Nothing to do.
         }
     }
     else
     {
         //---------------------------------------
-        // Key listë¥¼ ì¶”ê°€í•  key infoê°€ ì§€ì • ë˜ì§€ ì•Šì€ ê²½ìš°
-        // ìƒˆë¡œìš´ Key infoë¥¼ ìƒì„±í•˜ì—¬ key listë¥¼ ì¶”ê°€í•œë‹¤.
+        // Key list¸¦ Ãß°¡ÇÒ key info°¡ ÁöÁ¤ µÇÁö ¾ÊÀº °æ¿ì
+        // »õ·Î¿î Key info¸¦ »ı¼ºÇÏ¿© key list¸¦ Ãß°¡ÇÑ´Ù.
         //---------------------------------------
 
-        // ìƒˆë¡œìš´ key info êµ¬ì¡°ì²´ í• ë‹¹
+        // »õ·Î¿î key info ±¸Á¶Ã¼ ÇÒ´ç
         IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                                 sdiKeyInfo,
                                 (void*) &sNewKeyInfo )
                   != IDE_SUCCESS );
 
-        // ìƒˆë¡œìš´ key infoì˜ ì •ë³´ ì´ˆê¸°í™”
+        // »õ·Î¿î key infoÀÇ Á¤º¸ ÃÊ±âÈ­
         SDI_INIT_KEY_INFO( sNewKeyInfo );
 
-        // ìƒˆë¡œìš´ key infoì— shard fromì˜ key listë¥¼ ì¶”ê°€
+        // »õ·Î¿î key info¿¡ shard fromÀÇ key list¸¦ Ãß°¡
         sNewKeyInfo->mKeyCount = aFrom->mKeyCount;
 
         if ( sNewKeyInfo->mKeyCount > 0 )
@@ -2852,20 +3612,14 @@ IDE_RC sda::addKeyList( qcStatement * aStatement,
 
         sNewKeyInfo->mKey = sNewKeyList;
 
-        // Shard Fromì—ì„œ ì˜¬ë¼ì˜¨ valueInfoë¥¼ ì „ë‹¬.
-        IDE_TEST( sdi::allocAndCopyValues( aStatement,
-                                           &sNewKeyInfo->mValue,
-                                           &sNewKeyInfo->mValueCount,
-                                           aFrom->mValue,
-                                           aFrom->mValueCount )
-                  != IDE_SUCCESS );
+        // Shard From¿¡¼­ ¿Ã¶ó¿Â valueInfo¸¦ Àü´Ş.
+        sNewKeyInfo->mValuePtrCount = aFrom->mValuePtrCount;
+        sNewKeyInfo->mValuePtrArray = aFrom->mValuePtrArray;
 
-        IDE_TEST( copyShardInfoFromShardInfo( aStatement,
-                                              &sNewKeyInfo->mShardInfo,
-                                              &aFrom->mShardInfo )
-                  != IDE_SUCCESS );
+        copyShardInfoFromShardInfo( &sNewKeyInfo->mShardInfo,
+                                    &aFrom->mShardInfo );
 
-        // ì—°ê²° ( tail to head )
+        // ¿¬°á ( tail to head )
         sNewKeyInfo->mNext      = *aKeyInfo;
         *aKeyInfo               = sNewKeyInfo;
     }
@@ -2889,11 +3643,10 @@ IDE_RC sda::makeKeyInfoFromNoJoin( qcStatement * aStatement,
           sShardFrom  = sShardFrom->mNext )
     {
         //---------------------------------------
-        // Shard join predicateì— ì˜í•´ ì´ë¯¸ ë“±ë¡ ë˜ì§€ ì•Šì€
-        // Non-shard joined shard from( split clone í¬í•¨ )ì— ëŒ€í•´ì„œ key infoë¥¼ ìƒì„±í•œë‹¤.
+        // Shard join predicate¿¡ ÀÇÇØ ÀÌ¹Ì µî·Ï µÇÁö ¾ÊÀº
+        // Non-shard joined shard from( split clone Æ÷ÇÔ )¿¡ ´ëÇØ¼­ key info¸¦ »ı¼ºÇÑ´Ù.
         //---------------------------------------
-        if ( ( sShardFrom->mIsJoined == ID_FALSE ) &&
-             ( sShardFrom->mShardInfo.mSplitMethod != SDI_SPLIT_NONE ) )
+        if ( sShardFrom->mIsJoined == ID_FALSE )
         {
             IDE_TEST( makeKeyInfo( aStatement,
                                    sShardFrom,
@@ -2915,6 +3668,294 @@ IDE_RC sda::makeKeyInfoFromNoJoin( qcStatement * aStatement,
     return IDE_FAILURE;
 }
 
+IDE_RC sda::checkOutRefShardJoin( qcStatement     * aStatement,
+                                  qtcNode         * aCNF,
+                                  sdaCNFList      * aCNFOnCondition,
+                                  sdiKeyInfo      * aKeyInfo,
+                                  sdiKeyInfo      * aOutRefInfo,
+                                  sdiAnalysisFlag * aAnalysisFlag,
+                                  idBool            aIsSubKey )
+{
+    sdaCNFList     * sCNFOnCondition = NULL;
+    idBool           sIsOutRefJoinFound = ID_FALSE;
+
+    if ( aOutRefInfo != NULL )
+    {
+        //---------------------------------------
+        // CHECK ON PREDICATES
+        //---------------------------------------
+        for ( sCNFOnCondition  = aCNFOnCondition;
+              sCNFOnCondition != NULL;
+              sCNFOnCondition  = sCNFOnCondition->mNext )
+        {
+            IDE_TEST( findShardJoinWithOutRefKey( aStatement,
+                                                  aKeyInfo,
+                                                  (qtcNode*)sCNFOnCondition->mCNF,
+                                                  aOutRefInfo,
+                                                  aAnalysisFlag,
+                                                  aIsSubKey,
+                                                  &( sIsOutRefJoinFound ) )
+                      != IDE_SUCCESS );
+
+            if ( sIsOutRefJoinFound == ID_TRUE )
+            {
+                break;
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
+        }
+
+        if ( sIsOutRefJoinFound == ID_FALSE )
+        {
+            //---------------------------------------
+            // CHECK WHERE PREDICATES
+            //---------------------------------------
+            IDE_TEST( findShardJoinWithOutRefKey( aStatement,
+                                                  aKeyInfo,
+                                                  (qtcNode*)aCNF,
+                                                  aOutRefInfo,
+                                                  aAnalysisFlag,
+                                                  aIsSubKey,
+                                                  &( sIsOutRefJoinFound ) )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing to do. */
+        }
+
+        if ( sIsOutRefJoinFound == ID_FALSE )
+        {
+            aAnalysisFlag->mSetQueryFlag[ SDI_SQ_OUT_REF_NOT_EXISTS ] = ID_TRUE;
+        }
+        else
+        {
+            /* Nothing to do. */
+        }
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::findShardJoinWithOutRefKey( qcStatement     * aStatement,
+                                        sdiKeyInfo      * aKeyInfo,
+                                        qtcNode         * aCNFOr,
+                                        sdiKeyInfo      * aOutRefInfo,
+                                        sdiAnalysisFlag * aAnalysisFlag,
+                                        idBool            aIsSubKey,
+                                        idBool          * aIsOutRefJoinFound )
+{
+    qtcNode        * sCNFOr = NULL;
+    sdaQtcNodeType   sQtcNodeType = SDA_NONE;
+
+    qtcNode        * sLeftQtcNode = NULL;
+    qtcNode        * sRightQtcNode = NULL;
+
+    idBool           sIsOutRefKeyExists = ID_FALSE;
+
+    qtcNode        * sOrList = NULL;
+    idBool           sIsShardEquivalent = ID_TRUE;
+
+    sdiKeyInfo     * sKeyInfoRef = NULL;
+    sdiKeyInfo     * sOutKeyInfoRef = NULL;
+
+    idBool           sIsSameShardInfo = ID_FALSE;
+
+    // Initialization for return value
+    *aIsOutRefJoinFound = ID_FALSE;
+
+    if ( aCNFOr != NULL )
+    {
+        for ( sCNFOr  = (qtcNode*)aCNFOr->node.arguments; // AND's OR list
+              sCNFOr != NULL;
+              sCNFOr  = (qtcNode*)sCNFOr->node.next )
+        {
+            sIsOutRefKeyExists = ID_FALSE;
+
+            IDE_TEST( getQtcNodeTypeWithKeyInfo( aStatement,
+                                                 aKeyInfo,
+                                                 (qtcNode*)sCNFOr->node.arguments,
+                                                 &sQtcNodeType,
+                                                 &sKeyInfoRef )
+                      != IDE_SUCCESS );
+
+            if ( sQtcNodeType == SDA_EQUAL )
+            {
+                sLeftQtcNode = (qtcNode*)sCNFOr->node.arguments->arguments;
+
+                IDE_TEST( getQtcNodeTypeWithKeyInfo( aStatement,
+                                                     aKeyInfo,
+                                                     sLeftQtcNode,
+                                                     &sQtcNodeType,
+                                                     &sKeyInfoRef )
+                          != IDE_SUCCESS );
+
+                if ( sQtcNodeType != SDA_KEY_COLUMN )
+                {
+                    IDE_TEST( getQtcNodeTypeWithKeyInfo( aStatement,
+                                                         aOutRefInfo,
+                                                         sLeftQtcNode,
+                                                         &sQtcNodeType,
+                                                         &sOutKeyInfoRef )
+                              != IDE_SUCCESS );
+
+                    if ( sQtcNodeType == SDA_KEY_COLUMN )
+                    {
+                        sIsOutRefKeyExists = ID_TRUE;
+                    }
+                    else
+                    {
+                        /* Nothing to do. */
+                    }
+                }
+                else
+                {
+                    /* Nothing to do. */
+                }
+
+                if ( sQtcNodeType == SDA_KEY_COLUMN )
+                {
+                    sRightQtcNode = (qtcNode*)sLeftQtcNode->node.next;
+
+                    if ( sIsOutRefKeyExists == ID_TRUE )
+                    {
+                        IDE_TEST( getQtcNodeTypeWithKeyInfo( aStatement,
+                                                             aKeyInfo,
+                                                             sRightQtcNode,
+                                                             &sQtcNodeType,
+                                                             &sKeyInfoRef )
+                                  != IDE_SUCCESS );
+                    }
+                    else
+                    {
+                        IDE_TEST( getQtcNodeTypeWithKeyInfo( aStatement,
+                                                             aOutRefInfo,
+                                                             sRightQtcNode,
+                                                             &sQtcNodeType,
+                                                             &sOutKeyInfoRef )
+                                  != IDE_SUCCESS );
+
+                        if ( sQtcNodeType == SDA_KEY_COLUMN )
+                        {
+                            sIsOutRefKeyExists = ID_TRUE;
+                        }
+                        else
+                        {
+                            /* Nothing to do. */
+                        }   
+                    }
+                }
+                else
+                {
+                    /* Nothing to do. */
+                }
+
+                //---------------------------------------
+                // Shard out ref join cond¸¦ Ã£À½
+                //---------------------------------------
+                if ( ( sQtcNodeType == SDA_KEY_COLUMN ) &&
+                     ( sIsOutRefKeyExists == ID_TRUE ) )
+                {
+                    //---------------------------------------
+                    // Shard join condition¿¡ OR°¡ ÀÖÀ¸¸é(equal->next != NULL),
+                    // shard equivalent expressionÀÌ¾î¾ß ÇÑ´Ù.
+                    //---------------------------------------
+                    if ( sCNFOr->node.arguments->next != NULL )
+                    {
+                        for( sOrList  = (qtcNode*)sCNFOr->node.arguments->next;
+                             sOrList != NULL;
+                             sOrList  = (qtcNode*)sOrList->node.next )
+                        {
+                            IDE_TEST( isShardEquivalentExpression( aStatement,
+                                                                   sCNFOr,
+                                                                   sOrList,
+                                                                   &sIsShardEquivalent )
+                                      != IDE_SUCCESS );
+
+                            if ( sIsShardEquivalent == ID_FALSE )
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                /* Nothing to do. */
+                            }
+                        }
+                    }
+                    else
+                    {
+                        /* Nothing to do. */
+                    }
+
+                    if ( sIsShardEquivalent == ID_TRUE )
+                    {
+                        IDE_TEST ( isSameShardInfo( &sKeyInfoRef->mShardInfo,
+                                                    &sOutKeyInfoRef->mShardInfo,
+                                                    aIsSubKey,
+                                                    &sIsSameShardInfo )
+                                   != IDE_SUCCESS );
+
+                        if ( sIsSameShardInfo == ID_TRUE )
+                        {
+                            *aIsOutRefJoinFound = ID_TRUE;
+
+                            if ( ( sOutKeyInfoRef->mValuePtrCount > 0 ) &&
+                                 ( ( sKeyInfoRef->mValuePtrCount > sOutKeyInfoRef->mValuePtrCount ) ||
+                                   ( sKeyInfoRef->mValuePtrCount == 0 ) ) )
+                            {
+                                sKeyInfoRef->mValuePtrCount = sOutKeyInfoRef->mValuePtrCount;
+                                sKeyInfoRef->mValuePtrArray = sOutKeyInfoRef->mValuePtrArray;
+                            }
+                            else
+                            {
+                                /* Nothing to do. */
+                            }
+                    
+                            break;
+                        }
+                        else
+                        {
+                            aAnalysisFlag->mNonShardFlag[ SDI_MULTI_SHARD_INFO_EXISTS ] = ID_TRUE;
+                        }
+                    }
+                    else
+                    {
+                        /* Nothing to do. */
+                    }
+                }
+                else
+                {
+                    /* Nothing to do. */
+                }
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
+        }
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 IDE_RC sda::makeValueInfo( qcStatement * aStatement,
                            qtcNode     * aCNF,
                            sdiKeyInfo  * aKeyInfo )
@@ -2923,8 +3964,8 @@ IDE_RC sda::makeValueInfo( qcStatement * aStatement,
     sdaValueList     * sValueList = NULL;
 
     //---------------------------------------
-    // CNF treeë¥¼ ìˆœíšŒí•˜ë©° shard predicateì„ ì°¾ê³ ,
-    // Shard value listë¥¼ í•´ë‹¹í•˜ëŠ” key infoì— ì„¸íŒ…í•œë‹¤.
+    // CNF tree¸¦ ¼øÈ¸ÇÏ¸ç shard predicateÀ» Ã£°í,
+    // Shard value list¸¦ ÇØ´çÇÏ´Â key info¿¡ ¼¼ÆÃÇÑ´Ù.
     //---------------------------------------
     if ( aCNF != NULL )
     {
@@ -2982,16 +4023,18 @@ IDE_RC sda::getShardValue( qcStatement       * aStatement,
     sdaValueList    * sValueList   = NULL;
     sdiValueInfo    * sValueInfo   = NULL;
 
+    sdiShardInfo    * sShardInfo   = NULL;
+    
     const mtdModule * sKeyModule   = NULL;
     const void      * sKeyValue    = NULL;
 
-    sdiShardInfo    * sShardInfo   = NULL;
+    sdiKeyInfo      * sKeyInfoRef  = NULL;
 
-    //ì´ˆê¸°í™”
+    //ÃÊ±âÈ­
     *aValueList = NULL;
 
     //---------------------------------------
-    // OR list ì „ì²´ê°€ shard conditionì¸ì§€ í™•ì¸í•œë‹¤.
+    // OR list ÀüÃ¼°¡ shard conditionÀÎÁö È®ÀÎÇÑ´Ù.
     //---------------------------------------
     for ( sOrList  = aCNF;
           sOrList != NULL;
@@ -3014,8 +4057,8 @@ IDE_RC sda::getShardValue( qcStatement       * aStatement,
     }
 
     //---------------------------------------
-    // OR list ì „ì²´ê°€ shard conditionì´ì–´ì•¼ë§Œ,
-    // í•´ë‹¹ predicateì´ shard predicateì´ë‹¤.
+    // OR list ÀüÃ¼°¡ shard conditionÀÌ¾î¾ß¸¸,
+    // ÇØ´ç predicateÀÌ shard predicateÀÌ´Ù.
     //---------------------------------------
     if ( sIsShardCond == ID_TRUE )
     {
@@ -3026,7 +4069,8 @@ IDE_RC sda::getShardValue( qcStatement       * aStatement,
             IDE_TEST( getQtcNodeTypeWithKeyInfo( aStatement,
                                                  aKeyInfo,
                                                  (qtcNode*)sOrList->node.arguments,
-                                                 &sQtcNodeType )
+                                                 &sQtcNodeType,
+                                                 &sKeyInfoRef )
                       != IDE_SUCCESS );
 
             if ( sQtcNodeType == SDA_KEY_COLUMN )
@@ -3046,7 +4090,7 @@ IDE_RC sda::getShardValue( qcStatement       * aStatement,
             }
 
             //---------------------------------------
-            // Value listì˜ í• ë‹¹
+            // Value listÀÇ ÇÒ´ç
             //---------------------------------------
             IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                                     sdaValueList,
@@ -3054,69 +4098,61 @@ IDE_RC sda::getShardValue( qcStatement       * aStatement,
                       != IDE_SUCCESS );
 
             //---------------------------------------
-            // Value infoì˜ í• ë‹¹
-            //---------------------------------------
-            IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
-                                    sdiValueInfo,
-                                    (void*) &sValueInfo )
-                      != IDE_SUCCESS );
-
-            //---------------------------------------
-            // Value infoì˜ ì„¤ì •
+            // Value infoÀÇ ¼³Á¤
             //---------------------------------------
             IDE_TEST( getQtcNodeTypeWithKeyInfo( aStatement,
                                                  aKeyInfo,
                                                  sValue,
-                                                 &sQtcNodeType )
+                                                 &sQtcNodeType,
+                                                 &sKeyInfoRef )
                       != IDE_SUCCESS );
 
-            if ( sQtcNodeType == SDA_HOST_VAR )
+            switch ( sQtcNodeType )
             {
-                sValueInfo->mType = 0;
-                sValueInfo->mValue.mBindParamId = sValue->node.column;
-            }
-            else if ( sQtcNodeType == SDA_CONSTANT_VALUE )
-            {
-                sValueInfo->mType = 1;
+                case SDA_HOST_VAR:
+                    IDE_TEST( allocAndSetShardHostValueInfo( aStatement,
+                                                             sValue->node.column,
+                                                             &sValueInfo )
+                              != IDE_SUCCESS );
+                    break;
 
-                /*
-                 * Constant valueë¥¼ ê³„ì‚°í•˜ì—¬,
-                 * Shard valueì— ë‹¬ì•„ì¤€ë‹¤.
-                 */
-                IDE_TEST( getShardInfo( sKeyColumn,
-                                        aKeyInfo,
-                                        &sShardInfo )
-                          != IDE_SUCCESS );
+                case SDA_CONSTANT_VALUE:
+                    IDE_TEST( getShardInfo( sKeyColumn,
+                                            aKeyInfo,
+                                            &sShardInfo )
+                              != IDE_SUCCESS );
 
-                IDE_TEST( mtd::moduleById( &sKeyModule,
-                                           sShardInfo->mKeyDataType )
-                          != IDE_SUCCESS );
+                    IDE_TEST( mtd::moduleById( &sKeyModule,
+                                               sShardInfo->mKeyDataType )
+                              != IDE_SUCCESS );
 
-                IDE_TEST( getKeyConstValue( aStatement,
-                                            sValue,
-                                            sKeyModule,
-                                            & sKeyValue )
-                          != IDE_SUCCESS );
+                    IDE_TEST( getKeyConstValue( aStatement,
+                                                sValue,
+                                                sKeyModule,
+                                                &sKeyValue )
+                              != IDE_SUCCESS );
 
-                IDE_TEST( setKeyValue( sShardInfo->mKeyDataType,
-                                       sKeyValue,
-                                       sValueInfo )
-                          != IDE_SUCCESS );
-            }
-            else
-            {
-                IDE_RAISE( ERR_INVALID_SHARD_VALUE_TYPE );
+                    IDE_TEST( allocAndSetShardConstValueInfo( aStatement,
+                                                              sShardInfo->mKeyDataType,
+                                                              sKeyValue,
+                                                              &sValueInfo )
+                              != IDE_SUCCESS );
+                    break;
+
+                default:
+                    IDE_RAISE( ERR_INVALID_SHARD_VALUE_TYPE );
+                    break;
             }
 
             //---------------------------------------
-            // Value listì˜ ì„¤ì •
+            // Value listÀÇ ¼³Á¤
             //---------------------------------------
 
             sValueList->mValue     = sValueInfo;
             sValueList->mKeyColumn = sKeyColumn;
 
             //---------------------------------------
-            // ì—°ê²°
+            // ¿¬°á
             //---------------------------------------
 
             sValueList->mNext = *aValueList;
@@ -3125,7 +4161,7 @@ IDE_RC sda::getShardValue( qcStatement       * aStatement,
     }
     else
     {
-        // Shard conditionì´ ì•„ë‹ˆë‹¤.
+        // Shard conditionÀÌ ¾Æ´Ï´Ù.
         // Nothing to do.
     }
 
@@ -3155,7 +4191,7 @@ IDE_RC sda::getShardInfo( qtcNode       * aNode,
     sdiKeyInfo * sKeyInfo = NULL;
     UInt         sKeyIdx  = 0;
 
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     *aShardInfo = NULL;
 
     for ( sKeyInfo  = aKeyInfo;
@@ -3205,14 +4241,16 @@ IDE_RC sda::isShardCondition( qcStatement  * aStatement,
     qtcNode       * sCurrNode = NULL;
 
     idBool          sIsAntiJoinInner = ID_FALSE;
+    sdiKeyInfo    * sKeyInfoRef = NULL;
 
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     *aIsShardCond = ID_FALSE;
 
     IDE_TEST( getQtcNodeTypeWithKeyInfo( aStatement,
                                          aKeyInfo,
                                          aCNF,
-                                         &sQtcNodeType )
+                                         &sQtcNodeType,
+                                         &sKeyInfoRef )
               != IDE_SUCCESS );
 
     if ( ( sQtcNodeType == SDA_EQUAL ) ||
@@ -3221,7 +4259,8 @@ IDE_RC sda::isShardCondition( qcStatement  * aStatement,
         IDE_TEST( getQtcNodeTypeWithKeyInfo( aStatement,
                                              aKeyInfo,
                                              (qtcNode*)aCNF->node.arguments,
-                                             &sQtcNodeType )
+                                             &sQtcNodeType,
+                                             &sKeyInfoRef )
                   != IDE_SUCCESS );
 
         if ( sQtcNodeType == SDA_KEY_COLUMN )
@@ -3231,8 +4270,8 @@ IDE_RC sda::isShardCondition( qcStatement  * aStatement,
             /*
              * BUG-45391
              *
-             * Anti-joinì˜ inner tableì— ëŒ€í•œ shard condition( shard_key = value )ì€
-             * ìˆ˜í–‰ ë…¸ë“œë¥¼ í•œì • í•  ìˆ˜ ìˆëŠ” shard conditionìœ¼ë¡œ ì·¨ê¸‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+             * Anti-joinÀÇ inner table¿¡ ´ëÇÑ shard condition( shard_key = value )Àº
+             * ¼öÇà ³ëµå¸¦ ÇÑÁ¤ ÇÒ ¼ö ÀÖ´Â shard conditionÀ¸·Î Ãë±ŞÇÏÁö ¾Ê´Â´Ù.
              *
              */
             IDE_TEST( checkAntiJoinInner( aKeyInfo,
@@ -3246,7 +4285,8 @@ IDE_RC sda::isShardCondition( qcStatement  * aStatement,
                 IDE_TEST( getQtcNodeTypeWithKeyInfo( aStatement,
                                                      aKeyInfo,
                                                      (qtcNode*)sCurrNode->node.next,
-                                                     &sQtcNodeType )
+                                                     &sQtcNodeType,
+                                                     &sKeyInfoRef )
                           != IDE_SUCCESS );
 
                 if ( ( sQtcNodeType == SDA_HOST_VAR ) ||
@@ -3272,7 +4312,8 @@ IDE_RC sda::isShardCondition( qcStatement  * aStatement,
             IDE_TEST( getQtcNodeTypeWithKeyInfo( aStatement,
                                                  aKeyInfo,
                                                  (qtcNode*)sCurrNode->node.next,
-                                                 &sQtcNodeType )
+                                                 &sQtcNodeType,
+                                                 &sKeyInfoRef )
                       != IDE_SUCCESS );
 
             if ( sQtcNodeType == SDA_KEY_COLUMN )
@@ -3326,14 +4367,14 @@ IDE_RC sda::addValueListOnKeyInfo( qcStatement  * aStatement,
 
     sdaValueList      * sValueList        = NULL;
 
-    UInt                sValueCount       = 0;
+    UInt                sValuePtrCount    = 0;
     UInt                sValueIdx         = 0;
 
     for ( sValueList  = aValueList;
           sValueList != NULL;
           sValueList  = sValueList->mNext )
     {
-        sValueCount++;
+        sValuePtrCount++;
 
         for ( sKeyInfo  = aKeyInfo;
               sKeyInfo != NULL;
@@ -3357,18 +4398,18 @@ IDE_RC sda::addValueListOnKeyInfo( qcStatement  * aStatement,
                         if ( sKeyInfoForAdding != sKeyInfo )
                         {
                             /*
-                             * valueListì˜ shard key columnì´ ê°™ì€ keyInfoì— ìˆì„ ìˆ˜ ë„ ìˆê³ ,
-                             * ë‹¤ë¥¸ keyInfoì— ìˆì„ ìˆ˜ ë„ ìˆë‹¤.
+                             * valueListÀÇ shard key columnÀÌ °°Àº keyInfo¿¡ ÀÖÀ» ¼ö µµ ÀÖ°í,
+                             * ´Ù¸¥ keyInfo¿¡ ÀÖÀ» ¼ö µµ ÀÖ´Ù.
                              *
-                             * valueListëŠ” shard valueì˜ OR listì´ê¸° ë•Œë¬¸ì—,
-                             * shard joinë˜ì§€ ì•Šì•„ì„œ ë³„ê°œë¡œ êµ¬ì„±ëœ keyInfoì— valueë¡œ ì¶”ê°€ë  ìˆ˜ ì—†ë‹¤.
+                             * valueList´Â shard valueÀÇ OR listÀÌ±â ¶§¹®¿¡,
+                             * shard joinµÇÁö ¾Ê¾Æ¼­ º°°³·Î ±¸¼ºµÈ keyInfo¿¡ value·Î Ãß°¡µÉ ¼ö ¾ø´Ù.
                              *
                              * SELECT *
                              *   FROM T1, T2
                              *  WHERE T1.I1 = a OR T2.I1 = c;
                              *
-                             * ìœ„ì™€ ê°™ì´ shard joinë˜ì§€ ì•Šì€ ë‘ í…Œì´ë¸”ì˜ shard key conditionì´
-                             * orë¡œ ì“°ì˜€ì„ ê²½ìš°ëŠ” Shard valueë¡œ ì·¨ê¸‰í•˜ì§€ ì•ŠëŠ” ê²ƒ ì´ ë§ë‹¤.
+                             * À§¿Í °°ÀÌ shard joinµÇÁö ¾ÊÀº µÎ Å×ÀÌºíÀÇ shard key conditionÀÌ
+                             * or·Î ¾²¿´À» °æ¿ì´Â Shard value·Î Ãë±ŞÇÏÁö ¾Ê´Â °Í ÀÌ ¸Â´Ù.
                              */
                             sKeyInfoForAdding = NULL;
                             break;
@@ -3390,37 +4431,36 @@ IDE_RC sda::addValueListOnKeyInfo( qcStatement  * aStatement,
     if ( sKeyInfoForAdding != NULL )
     {
         //---------------------------------------
-        // CNF treeì˜ AND's ORs ì¤‘ ë¨¼ì € ìˆ˜í–‰ë˜ì–´ keyInfoì— êµ¬ì„± ëœ value infoì™€
-        // View analysisë¥¼ í†µí•´ ì˜¬ë¼ì˜¨ value infoëŠ”
-        // ìƒˆë¡œìš´ CNF treeì˜ AND's ORsì™€ ANDì˜ ê°œë…ì´ë‹¤.
-        // ë” ì ì€ ê²ƒìœ¼ë¡œ ë®ì–´ì”Œìš´ë‹¤.
+        // CNF treeÀÇ AND's ORs Áß ¸ÕÀú ¼öÇàµÇ¾î keyInfo¿¡ ±¸¼º µÈ value info¿Í
+        // View analysis¸¦ ÅëÇØ ¿Ã¶ó¿Â value info´Â
+        // »õ·Î¿î CNF treeÀÇ AND's ORs¿Í ANDÀÇ °³³äÀÌ´Ù.
+        // ´õ ÀûÀº °ÍÀ¸·Î µ¤¾î¾º¿î´Ù.
         //
-        // ë®ì–´ì“°ì§€ ì•Šê³ , ê¸°ì¡´ value infoë¥¼ ìœ ì§€ í•´ë„ëœë‹¤.
+        // µ¤¾î¾²Áö ¾Ê°í, ±âÁ¸ value info¸¦ À¯Áö ÇØµµµÈ´Ù.
         //
         // SELECT *
         //   FROM T1
         //  WHERE ( I1 = ? OR I1 = ? OR I1 = ? ) AND ( I1 = ? OR I1 = ? ) AND ( I1 = ? )
         //
-        // ìœ„ì™€ ê°™ì€ ê²½ìš° ì²˜ìŒì— ?,?,?ì´ key infoì— valueë¡œ ë“±ë¡ë˜ì—ˆë‹¤ê°€,
-        // ë‹¤ìŒ CNF treeë¥¼ ëŒë©´ì„œ ë“¤ì–´ì˜¨ ?,?ê°€ ê°¯ ìˆ˜ê°€ ë” ì ê¸° ë•Œë¬¸ì— ?,? ë¡œ ê°±ì‹ ë˜ê³ ,
-        // ê·¸ ë‹¤ìŒ ë“¤ì–´ì˜¤ëŠ” ?ê°€ ?,?ë³´ë‹¤ valueì˜ ê°¯ìˆ˜ê°€ ë” ì ìœ¼ë¯€ë¡œ
-        // ìµœì¢…ì ìœ¼ë¡œ ë§¨ ë’¤ì˜ ? í•˜ë‚˜ë§Œ shard valueë¡œì„œ ìœ ì§€ëœë‹¤.
+        // À§¿Í °°Àº °æ¿ì Ã³À½¿¡ ?,?,?ÀÌ key info¿¡ value·Î µî·ÏµÇ¾ú´Ù°¡,
+        // ´ÙÀ½ CNF tree¸¦ µ¹¸é¼­ µé¾î¿Â ?,?°¡ °¹ ¼ö°¡ ´õ Àû±â ¶§¹®¿¡ ?,? ·Î °»½ÅµÇ°í,
+        // ±× ´ÙÀ½ µé¾î¿À´Â ?°¡ ?,?º¸´Ù valueÀÇ °¹¼ö°¡ ´õ ÀûÀ¸¹Ç·Î
+        // ÃÖÁ¾ÀûÀ¸·Î ¸Ç µÚÀÇ ? ÇÏ³ª¸¸ shard value·Î¼­ À¯ÁöµÈ´Ù.
         //---------------------------------------
-        if ( ( sValueCount < sKeyInfoForAdding->mValueCount ) ||
-             ( sKeyInfoForAdding->mValueCount == 0 ) )
+        if ( ( sValuePtrCount < sKeyInfoForAdding->mValuePtrCount ) ||
+             ( sKeyInfoForAdding->mValuePtrCount == 0 ) )
         {
-            sKeyInfoForAdding->mValueCount = sValueCount;
+            sKeyInfoForAdding->mValuePtrCount = sValuePtrCount;
 
-            IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiValueInfo) * sValueCount,
-                                                     (void**) & sKeyInfoForAdding->mValue )
+            IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiValueInfo*) * sValuePtrCount,
+                                                     (void**) & sKeyInfoForAdding->mValuePtrArray )
                       != IDE_SUCCESS );
 
             for ( sValueList  = aValueList, sValueIdx = 0;
                   sValueList != NULL;
                   sValueList  = sValueList->mNext, sValueIdx++ )
             {
-                sKeyInfoForAdding->mValue[sValueIdx].mType  = sValueList->mValue->mType;
-                sKeyInfoForAdding->mValue[sValueIdx].mValue = sValueList->mValue->mValue;
+                sKeyInfoForAdding->mValuePtrArray[sValueIdx] = sValueList->mValue;
             }
         }
         else
@@ -3453,6 +4493,8 @@ IDE_RC sda::analyzeTarget( qcStatement * aStatement,
 
     qtcNode * sTargetColumn = NULL;
 
+    sdiKeyInfo * sKeyInfoRef = NULL;
+
     for ( sQmsTarget = aQuerySet->target, sTargetOrder = 0;
           sQmsTarget != NULL;
           sQmsTarget  = sQmsTarget->next, sTargetOrder++ )
@@ -3467,7 +4509,8 @@ IDE_RC sda::analyzeTarget( qcStatement * aStatement,
         IDE_TEST( getQtcNodeTypeWithKeyInfo( aStatement,
                                              aKeyInfo,
                                              sTargetColumn,
-                                             &sQtcNodeType )
+                                             &sQtcNodeType,
+                                             &sKeyInfoRef )
                   != IDE_SUCCESS );
 
         if ( sQtcNodeType == SDA_KEY_COLUMN )
@@ -3512,7 +4555,7 @@ IDE_RC sda::getKeyInfoForAddingKeyTarget( qtcNode     * aTargetColumn,
     sdiKeyInfo        * sKeyInfo        = NULL;
     UInt                sKeyColumnCount = 0;
 
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     *aKeyInfoForAdding = NULL;
 
     for ( sKeyInfo  = aKeyInfo;
@@ -3589,259 +4632,199 @@ IDE_RC sda::setShardInfoWithKeyInfo( qcStatement  * aStatement,
                                      sdiShardInfo * aShardInfo,
                                      idBool         aIsSubKey )
 {
-    sdiKeyInfo   * sKeyInfo           = NULL;
+    sdiKeyInfo   * sKeyInfo = NULL;
+    sdiShardInfo * sShardInfo = NULL;
+    sdiRangeInfo * sOutRangeInfo = NULL; /* TASK-7219 Shard Transformer Refactoring */
+    idBool         sIsValid = ID_FALSE;
 
-    sdiShardInfo * sBaseShardInfo     = NULL;
-
-    sdiRangeInfo   sCloneRangeInfo;
-    sdiRangeInfo   sCloneRangeTmp;
-
-    idBool         sIsSame            = ID_TRUE;
-    idBool         sIsCloneExists     = ID_FALSE;
-    idBool         sIsSoloExists      = ID_FALSE;
-
-    sCloneRangeInfo.mCount  = 0;
-    sCloneRangeInfo.mRanges = NULL;
-    sCloneRangeTmp.mCount   = 0;
-    sCloneRangeTmp.mRanges  = NULL;
-
+    /*
+     * H/R/L + SOLO  = H/R/L
+     * H/R/L + CLONE = H/R/L
+     * CLONE + SOLO  = SOLO
+     */
     for ( sKeyInfo  = aKeyInfo;
           sKeyInfo != NULL;
           sKeyInfo  = sKeyInfo->mNext )
     {
-        switch ( sKeyInfo->mShardInfo.mSplitMethod )
+        if ( sKeyInfo == aKeyInfo )
         {
-            case SDI_SPLIT_SOLO:
-                sIsSoloExists = ID_TRUE;
-                /* fall through */
+            sIsValid = ID_TRUE;
+            sShardInfo = &aKeyInfo->mShardInfo;
+        }
+        else
+        {
+            /* Nothing to do. */
+        }       
+        
+        if ( ( sdi::getSplitType( sShardInfo->mSplitMethod ) == SDI_SPLIT_TYPE_DIST ) &&
+             ( sdi::getSplitType( sKeyInfo->mShardInfo.mSplitMethod ) == SDI_SPLIT_TYPE_DIST ) )
+        {
+            IDE_TEST( isSameShardInfo( sShardInfo,
+                                       &sKeyInfo->mShardInfo,
+                                       aIsSubKey,
+                                       &sIsValid )
+                      != IDE_SUCCESS );
+        }
+        else if ( ( sdi::getSplitType( sShardInfo->mSplitMethod ) == SDI_SPLIT_TYPE_DIST ) &&
+                  ( sdi::getSplitType( sKeyInfo->mShardInfo.mSplitMethod ) == SDI_SPLIT_TYPE_NO_DIST ) )
+        {
+            if ( isSubRangeInfo( sKeyInfo->mShardInfo.mRangeInfo,
+                                 sShardInfo->mRangeInfo,
+                                 sShardInfo->mDefaultNodeId ) == ID_FALSE )
+            {
+                sIsValid = ID_FALSE;
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
+        }
+        else if ( ( sdi::getSplitType( sShardInfo->mSplitMethod ) == SDI_SPLIT_TYPE_NO_DIST ) &&
+                  ( sdi::getSplitType( sKeyInfo->mShardInfo.mSplitMethod ) == SDI_SPLIT_TYPE_DIST ) )
+        {
+            if ( isSubRangeInfo( sShardInfo->mRangeInfo,
+                                 sKeyInfo->mShardInfo.mRangeInfo,
+                                 sKeyInfo->mShardInfo.mDefaultNodeId ) == ID_FALSE )
+            {
+                sIsValid = ID_FALSE;
+            }
+            else
+            {
+                // CLONE with HASH = HASH
+                sShardInfo = &sKeyInfo->mShardInfo;
+            }
+        }
+        else if ( ( sdi::getSplitType( sShardInfo->mSplitMethod ) == SDI_SPLIT_TYPE_NO_DIST ) &&
+                  ( sdi::getSplitType( sKeyInfo->mShardInfo.mSplitMethod ) == SDI_SPLIT_TYPE_NO_DIST ) )
+        {
+            if ( isSameRangesForCloneAndSolo( sShardInfo->mRangeInfo,
+                                              sKeyInfo->mShardInfo.mRangeInfo ) == ID_FALSE)
+            {
+                /* TASK-7219 Shard Transformer Refactoring */
+                IDE_TEST( getRangeIntersection( aStatement,
+                                                sShardInfo->mRangeInfo,
+                                                sKeyInfo->mShardInfo.mRangeInfo,
+                                                &( sOutRangeInfo ) )
+                          != IDE_SUCCESS );
 
-            case SDI_SPLIT_CLONE:
-                //---------------------------------------
-                // SPLIT CLONE
-                //---------------------------------------
-                if ( sIsCloneExists == ID_FALSE )
+                if ( sOutRangeInfo->mCount == 0 )
                 {
-                    sIsCloneExists = ID_TRUE;
-
-                    IDE_TEST( sdi::allocAndCopyRanges( aStatement,
-                                                       &sCloneRangeInfo,
-                                                       &sKeyInfo->mShardInfo.mRangeInfo )
-                              != IDE_SUCCESS );
+                    sIsValid = ID_FALSE;
                 }
                 else
                 {
-                    // ì„ì‹œë¡œ ë³µì‚¬í•œ ë’¤ mergeí•œë‹¤.
-                    IDE_TEST( sdi::allocAndCopyRanges( aStatement,
-                                                       &sCloneRangeTmp,
-                                                       &sCloneRangeInfo )
-                              != IDE_SUCCESS );
-
-                    andRangeInfo( &sCloneRangeTmp,
-                                  &(sKeyInfo->mShardInfo.mRangeInfo),
-                                  &sCloneRangeInfo );
-
-                    if ( sCloneRangeInfo.mCount == 0 )
-                    {
-                        sIsSame = ID_FALSE;
-                    }
-                    else
-                    {
-                        // Nothing to do.
-                    }
+                    sShardInfo->mRangeInfo = sOutRangeInfo;
                 }
-                break;
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
 
-            case SDI_SPLIT_HASH:
-            case SDI_SPLIT_RANGE:
-            case SDI_SPLIT_LIST:
-                //---------------------------------------
-                // SPLIT HASH, RANGE, LIST
-                //---------------------------------------
-                if ( sBaseShardInfo == NULL )
-                {
-                    // ì²« ë²ˆ ì§¸ shardInfo ( ë¹„êµí•  ê²ƒ ì´ ì—†ë‹¤. )
-                    sBaseShardInfo = &sKeyInfo->mShardInfo;
-                }
-                else
-                {
-                    IDE_TEST( isSameShardInfo( sBaseShardInfo,
-                                               &sKeyInfo->mShardInfo,
-                                               aIsSubKey,
-                                               &sIsSame )
-                              != IDE_SUCCESS );
-                }
-                break;
-
-            case SDI_SPLIT_NONE:
-                sIsSame = ID_FALSE;
-                break;
-
-            default:
-                IDE_RAISE(ERR_INVALID_SPLIT_METHOD);
+            if ( sKeyInfo->mShardInfo.mSplitMethod == SDI_SPLIT_SOLO )
+            {
+                sShardInfo->mSplitMethod = SDI_SPLIT_SOLO;
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
+        }
+        else
+        {
+            sIsValid = ID_FALSE;
+            break;
         }
 
-        if ( sIsSame == ID_FALSE )
+        if ( sIsValid == ID_FALSE )
         {
             break;
         }
         else
         {
-            // Nothing to do.
+            /* Nothing to do. */
         }
     }
 
-    // SDI_SPLIT_NONE
-    if ( ( sBaseShardInfo == NULL ) && ( sIsCloneExists == ID_FALSE ) )
+    if ( sIsValid == ID_TRUE )
     {
-        sIsSame = ID_FALSE;
+        aShardInfo->mSplitMethod   = sShardInfo->mSplitMethod;
+        aShardInfo->mDefaultNodeId = sShardInfo->mDefaultNodeId;
+        aShardInfo->mKeyDataType   = sShardInfo->mKeyDataType;
+        aShardInfo->mRangeInfo     = sShardInfo->mRangeInfo;
     }
     else
     {
-        // Nothing to do.
-    }
-
-    if ( sIsSame == ID_TRUE )
-    {
-        IDE_DASSERT( aShardInfo != NULL);
-
-        if ( sBaseShardInfo != NULL )
-        {
-            //---------------------------------------
-            // SDI_SPLIT_HASH or SDI_SPLIT_LIST or SDI_SPLIT_RANGE
-            //---------------------------------------
-            if ( sIsCloneExists == ID_TRUE )
-            {
-                if ( isSubRangeInfo( &sCloneRangeInfo,
-                                     &(sBaseShardInfo->mRangeInfo) ) == ID_FALSE )
-                {
-                    sIsSame = ID_FALSE;
-                }
-                else
-                {
-                    // Nothing to do.
-                }
-
-                // Default node checking
-                if ( sBaseShardInfo->mDefaultNodeId != ID_UINT_MAX )
-                {
-                    if ( findRangeInfo( &sCloneRangeInfo,
-                                        sBaseShardInfo->mDefaultNodeId ) == ID_FALSE )
-                    {
-                        sIsSame = ID_FALSE;
-                    }
-                    else
-                    {
-                        // Nothing to do.
-                    }
-                }
-                else
-                {
-                    // Nothing to do.
-                }
-            }
-            else
-            {
-                // Nothing to do.
-            }
-
-            if ( sIsSame == ID_TRUE )
-            {
-                if ( sIsSoloExists == ID_FALSE )
-                {
-                    aShardInfo->mSplitMethod   = sBaseShardInfo->mSplitMethod;
-                    aShardInfo->mKeyDataType   = sBaseShardInfo->mKeyDataType;
-                    aShardInfo->mDefaultNodeId = sBaseShardInfo->mDefaultNodeId;
-
-                    IDE_TEST( sdi::allocAndCopyRanges( aStatement,
-                                                       &aShardInfo->mRangeInfo,
-                                                       &sBaseShardInfo->mRangeInfo )
-                              != IDE_SUCCESS );
-                }
-                else
-                {
-                    /*
-                     *  SOLO split relationì´ ì¡´ì¬í•˜ë©´,
-                     *  Split methodë¥¼ SOLOë¡œ ì •ì˜í•œë‹¤.
-                     */
-                    aShardInfo->mSplitMethod   = SDI_SPLIT_SOLO;
-                    aShardInfo->mDefaultNodeId = ID_UINT_MAX;
-                    aShardInfo->mKeyDataType   = ID_UINT_MAX;
-
-                    IDE_TEST( sdi::allocAndCopyRanges( aStatement,
-                                                       &aShardInfo->mRangeInfo,
-                                                       &sCloneRangeInfo )
-                              != IDE_SUCCESS );
-                }
-            }
-            else
-            {
-                //---------------------------------------
-                // Shard infoê°€ ì¼ì¹˜í•˜ì§€ ì•ŠëŠ”ë‹¤.
-                //---------------------------------------
-                // Nothing to do.
-            }
-        }
-        else
-        {
-            //---------------------------------------
-            // SDI_SPLIT_CLONE
-            //---------------------------------------
-            if ( sIsSoloExists == ID_TRUE )
-            {
-                aShardInfo->mSplitMethod   = SDI_SPLIT_SOLO;
-            }
-            else
-            {
-                aShardInfo->mSplitMethod   = SDI_SPLIT_CLONE;
-            }
-
-            aShardInfo->mDefaultNodeId = ID_UINT_MAX;
-            aShardInfo->mKeyDataType   = ID_UINT_MAX;
-
-            IDE_TEST( sdi::allocAndCopyRanges( aStatement,
-                                               &aShardInfo->mRangeInfo,
-                                               &sCloneRangeInfo )
-                      != IDE_SUCCESS );
-        }
-    }
-    else
-    {
-        //---------------------------------------
-        // Shard infoê°€ ì¼ì¹˜í•˜ì§€ ì•ŠëŠ”ë‹¤.
-        //---------------------------------------
-        // Nothing to do.
-    }
-
-    if ( sIsSame == ID_FALSE )
-    {
-        IDE_DASSERT( aShardInfo != NULL);
-
-        aShardInfo->mSplitMethod      = SDI_SPLIT_NONE;
-        aShardInfo->mDefaultNodeId    = ID_UINT_MAX;
-        aShardInfo->mKeyDataType      = ID_UINT_MAX;
-        aShardInfo->mRangeInfo.mCount = 0;
-    }
-    else
-    {
-        // Nothing to do.
+        aShardInfo->mSplitMethod   = SDI_SPLIT_NONE;
+        aShardInfo->mDefaultNodeId = SDI_NODE_NULL_ID;
+        aShardInfo->mKeyDataType   = ID_UINT_MAX;
+        aShardInfo->mRangeInfo     = NULL;
     }
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(ERR_INVALID_SPLIT_METHOD)
-    {
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
-                                "sda::setShardInfoWithKeyInfo",
-                                "Invalid split method"));
-    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 }
 
-IDE_RC sda::copyShardInfoFromShardInfo( qcStatement  * aStatement,
-                                        sdiShardInfo * aTo,
-                                        sdiShardInfo * aFrom )
+IDE_RC sda::getRangeIntersection( qcStatement   * aStatement,
+                                  sdiRangeInfo  * aRangeInfo1,
+                                  sdiRangeInfo  * aRangeInfo2,
+                                  sdiRangeInfo ** aOutRangeInfo )
+{
+/***********************************************************************
+ *
+ * Description : TASK-7219 Shard Transformer Refactoring
+ *                getRangeIntersection ÇÔ¼öÀÇ ÀÔÃâ·Â Argument º¯Çü
+ *
+ * Implementation : ±âÁ¸ getRangeIntersection ¸¦ ÀÔ·Â, Ãâ·Â Argument ·Î ³ª´©¾î Ã³¸®
+ *
+ ***********************************************************************/
+
+    sdiRangeInfo * sOutRangeInfo = NULL;
+
+    if ( isSubRangeInfo( aRangeInfo1,
+                         aRangeInfo2,
+                         ID_UINT_MAX )
+         == ID_TRUE )
+    {
+        sOutRangeInfo = aRangeInfo2;
+    }
+    else if ( isSubRangeInfo( aRangeInfo2,
+                              aRangeInfo1,
+                              ID_UINT_MAX )
+         == ID_TRUE )
+    {
+        sOutRangeInfo = aRangeInfo1;
+    }
+    else
+    {
+        IDE_TEST( andRangeInfo( aStatement,
+                                aRangeInfo1,
+                                aRangeInfo2,
+                                &( sOutRangeInfo ) )
+                  != IDE_SUCCESS );
+    }
+
+    if ( aOutRangeInfo != NULL )
+    {
+        *aOutRangeInfo = sOutRangeInfo;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+void sda::copyShardInfoFromShardInfo( sdiShardInfo * aTo,
+                                      sdiShardInfo * aFrom )
 {
     IDE_DASSERT( aTo   != NULL);
     IDE_DASSERT( aFrom != NULL);
@@ -3849,23 +4832,12 @@ IDE_RC sda::copyShardInfoFromShardInfo( qcStatement  * aStatement,
     aTo->mKeyDataType   = aFrom->mKeyDataType;
     aTo->mDefaultNodeId = aFrom->mDefaultNodeId;
     aTo->mSplitMethod   = aFrom->mSplitMethod;
-
-    IDE_TEST( sdi::allocAndCopyRanges( aStatement,
-                                       &aTo->mRangeInfo,
-                                       &aFrom->mRangeInfo )
-              != IDE_SUCCESS );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
+    aTo->mRangeInfo     = aFrom->mRangeInfo;
 }
 
-IDE_RC sda::copyShardInfoFromObjectInfo( qcStatement   * aStatement,
-                                         sdiShardInfo  * aTo,
-                                         sdiObjectInfo * aFrom,
-                                         idBool          aIsSubKey )
+void sda::copyShardInfoFromObjectInfo( sdiShardInfo  * aTo,
+                                       sdiObjectInfo * aFrom,
+                                       idBool          aIsSubKey )
 {
     IDE_DASSERT( aTo   != NULL);
     IDE_DASSERT( aFrom != NULL);
@@ -3883,11 +4855,84 @@ IDE_RC sda::copyShardInfoFromObjectInfo( qcStatement   * aStatement,
         aTo->mSplitMethod   = aFrom->mTableInfo.mSubSplitMethod;
     }
 
-    IDE_TEST( sdi::allocAndCopyRanges( aStatement,
-                                       &aTo->mRangeInfo,
-                                       &aFrom->mRangeInfo )
+    aTo->mRangeInfo = &aFrom->mRangeInfo;
+}
+
+IDE_RC sda::allocAndCopyValue( qcStatement      * aStatement,
+                               sdiValueInfo     * aFromValueInfo,
+                               sdiValueInfo    ** aToValueInfo )
+{
+    switch( aFromValueInfo->mType )
+    {
+        case SDI_VALUE_INFO_HOST_VAR:
+             IDE_TEST( allocAndSetShardHostValueInfo( aStatement,
+                                                      aFromValueInfo->mValue.mBindParamId,
+                                                      aToValueInfo )
+                       != IDE_SUCCESS );
+            break;
+
+        case SDI_VALUE_INFO_CONST_VAL:
+            IDE_TEST( allocAndSetShardConstValueInfo( aStatement,
+                                                      aFromValueInfo->mDataValueType,
+                                                      &aFromValueInfo->mValue,
+                                                      aToValueInfo )
+              != IDE_SUCCESS );
+            break;
+
+        default:
+            IDE_RAISE( ERR_INVALID_SHARD_VALUE_TYPE );
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_INVALID_SHARD_VALUE_TYPE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::allocAndCopyValue",
+                                  "Invalid shard value type" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::allocAndMergeValues( qcStatement         * aStatement,
+                                 sdiValueInfo       ** aSrcValueInfoPtrArray1,
+                                 UShort                aSrcValueInfoPtrCount1,
+                                 sdiValueInfo       ** aSrcValueInfoPtrArray2,
+                                 UShort                aSrcValueInfoPtrCount2,
+                                 sdiValueInfo *     ** aNewValueInfoPtrArray,
+                                 UShort              * aNewValueInfoPtrCount )
+{
+    UInt               i = 0;
+    sdiValueInfo    ** sNewValueInfoPtrArray = NULL;
+    UInt               sNewValueInfoPtrIndex = 0;
+
+    IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiValueInfo*) * 
+                                             ( aSrcValueInfoPtrCount1 + aSrcValueInfoPtrCount2 ),
+                                             (void**) &sNewValueInfoPtrArray )
               != IDE_SUCCESS );
 
+    for ( i = 0; i < aSrcValueInfoPtrCount1; i++, sNewValueInfoPtrIndex++ )
+    {
+        IDE_TEST( allocAndCopyValue( aStatement,
+                                     aSrcValueInfoPtrArray1[i],
+                                     &sNewValueInfoPtrArray[sNewValueInfoPtrIndex] )
+                  != IDE_SUCCESS );
+    }
+
+    for ( i = 0; i < aSrcValueInfoPtrCount2; i++, sNewValueInfoPtrIndex++ )
+    {
+        IDE_TEST( allocAndCopyValue( aStatement,
+                                     aSrcValueInfoPtrArray2[i],
+                                     &sNewValueInfoPtrArray[sNewValueInfoPtrIndex] )
+                  != IDE_SUCCESS );
+    }
+
+    *aNewValueInfoPtrArray = sNewValueInfoPtrArray;
+    *aNewValueInfoPtrCount = sNewValueInfoPtrIndex;
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -3895,143 +4940,63 @@ IDE_RC sda::copyShardInfoFromObjectInfo( qcStatement   * aStatement,
     return IDE_FAILURE;
 }
 
-IDE_RC sda::allocAndCopyRanges( qcStatement  * aStatement,
-                                sdiRangeInfo * aTo,
-                                sdiRangeInfo * aFrom )
+IDE_RC sda::andRangeInfo( qcStatement   * aStatement,
+                          sdiRangeInfo  * aRangeInfo1,
+                          sdiRangeInfo  * aRangeInfo2,
+                          sdiRangeInfo ** aAndRangeInfo )
 {
-    IDE_DASSERT( aTo   != NULL);
-    IDE_DASSERT( aFrom != NULL);
-
-    if ( aFrom->mCount > 0 )
-    {
-        IDE_TEST_RAISE( aFrom->mRanges == NULL, ERR_NULL_SRC_RANGES );
-
-        if ( aFrom->mCount > aTo->mCount )
-        {
-            IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiRange) *
-                                                     aFrom->mCount,
-                                                     (void**) & aTo->mRanges )
-                      != IDE_SUCCESS );
-        }
-        else
-        {
-            IDE_TEST_RAISE( aTo->mRanges == NULL, ERR_NULL_DEST_RANGES );
-        }
-
-        idlOS::memcpy( aTo->mRanges,
-                       aFrom->mRanges,
-                       ID_SIZEOF(sdiRange) * aFrom->mCount );
-    }
-    else
-    {
-        aTo->mRanges = NULL;
-    }
-
-    aTo->mCount = aFrom->mCount;
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION( ERR_NULL_SRC_RANGES )
-    {
-        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
-                                  "sdi::allocAndCopyRanges",
-                                  "The range-of-source is null." ) );
-    }
-    IDE_EXCEPTION( ERR_NULL_DEST_RANGES )
-    {
-        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
-                                  "sdi::allocAndCopyRanges",
-                                  "The range-of-destination is null." ) );
-    }
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-IDE_RC sda::allocAndCopyValues( qcStatement   * aStatement,
-                                sdiValueInfo ** aTo,
-                                UShort        * aToCount,
-                                sdiValueInfo  * aFrom,
-                                UShort          aFromCount )
-{
-    IDE_DASSERT( aTo != NULL );
-
-    if ( aFromCount > 0 )
-    {
-        IDE_TEST_RAISE( aFrom == NULL, ERR_NULL_SRC_VALUE );
-
-        if ( aFromCount > *aToCount )
-        {
-            IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiValueInfo) *
-                                                     aFromCount,
-                                                     (void**) aTo )
-                      != IDE_SUCCESS );
-        }
-        else
-        {
-            IDE_TEST_RAISE( *aTo == NULL, ERR_NULL_DEST_VALUE );
-        }
-
-        idlOS::memcpy( *aTo,
-                       aFrom,
-                       ID_SIZEOF(sdiValueInfo) * aFromCount );
-    }
-    else
-    {
-        *aTo = NULL;
-    }
-
-    *aToCount = aFromCount;
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION( ERR_NULL_SRC_VALUE )
-    {
-        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
-                                  "sdi::allocAndCopyValues",
-                                  "The value-of-source is null." ) );
-    }
-    IDE_EXCEPTION( ERR_NULL_DEST_VALUE )
-    {
-        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
-                                  "sdi::allocAndCopyValues",
-                                  "The value-of-destination is null." ) );
-    }
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-void sda::andRangeInfo( sdiRangeInfo * aRangeInfo1,
-                        sdiRangeInfo * aRangeInfo2,
-                        sdiRangeInfo * aResult )
-{
+    UShort sMinRangeCount = 0;
     UShort i = 0;
     UShort j = 0;
 
-    IDE_DASSERT( aResult     != NULL);
     IDE_DASSERT( aRangeInfo1 != NULL);
     IDE_DASSERT( aRangeInfo2 != NULL);
 
-    aResult->mCount = 0;
+    sMinRangeCount = (aRangeInfo1->mCount < aRangeInfo2->mCount)?
+        aRangeInfo1->mCount:aRangeInfo2->mCount ;
+    
+    IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiRangeInfo),
+                                             (void**) aAndRangeInfo )
+              != IDE_SUCCESS );
 
-    for ( i = 0; i < aRangeInfo1->mCount; i++ )
+    (*aAndRangeInfo)->mCount = 0;
+    (*aAndRangeInfo)->mRanges = NULL;
+
+    if ( sMinRangeCount > 0  )
     {
-        for ( j = 0; j < aRangeInfo2->mCount; j++ )
+        IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiRange) *
+                                                 sMinRangeCount,
+                                                 (void**) & (*aAndRangeInfo)->mRanges )
+                  != IDE_SUCCESS );
+
+        for ( i = 0; i < aRangeInfo1->mCount; i++ )
         {
-            if ( aRangeInfo1->mRanges[i].mNodeId ==
-                 aRangeInfo2->mRanges[j].mNodeId )
+            for ( j = 0; j < aRangeInfo2->mCount; j++ )
             {
-                aResult->mRanges[aResult->mCount].mNodeId =
-                    aRangeInfo1->mRanges[i].mNodeId;
-                aResult->mCount++;
-            }
-            else
-            {
-                // Nothing to do.
+                if ( aRangeInfo1->mRanges[i].mNodeId ==
+                     aRangeInfo2->mRanges[j].mNodeId )
+                {
+                    (*aAndRangeInfo)->mRanges[(*aAndRangeInfo)->mCount].mNodeId =
+                        aRangeInfo1->mRanges[i].mNodeId;
+                    (*aAndRangeInfo)->mCount++;
+                }
+                else
+                {
+                    /* Nothing to do. */
+                }
             }
         }
     }
+    else
+    {
+        /* Nothing to do. */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
 idBool sda::findRangeInfo( sdiRangeInfo * aRangeInfo,
@@ -4059,7 +5024,8 @@ idBool sda::findRangeInfo( sdiRangeInfo * aRangeInfo,
 }
 
 idBool sda::isSubRangeInfo( sdiRangeInfo * aRangeInfo,
-                            sdiRangeInfo * aSubRangeInfo )
+                            sdiRangeInfo * aSubRangeInfo,
+                            UInt           aSubRangeDefaultNode )
 {
     idBool sIsSubset = ID_TRUE;
     UShort i;
@@ -4080,33 +5046,47 @@ idBool sda::isSubRangeInfo( sdiRangeInfo * aRangeInfo,
         }
     }
 
+    // Default node checking
+    if ( ( sIsSubset == ID_TRUE ) &&
+         ( aSubRangeDefaultNode != ID_UINT_MAX ) )
+    {
+        if ( findRangeInfo( aRangeInfo,
+                            aSubRangeDefaultNode ) == ID_FALSE )
+        {
+            sIsSubset = ID_FALSE;
+        }
+        else
+        {
+            // Nothing to do.
+        }
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
     return sIsSubset;
 }
 
-IDE_RC sda::isCanMerge( idBool * aCantMergeReason,
-                        idBool * aIsCanMerge )
+/* TASJ-7219
+ *   BUG-47903 ÀÌÈÄ, Àü ³ëµå ¼öÇà Non-Shard Query ¸¦ °í·ÁÇØ¼­ ¼öÁ¤ÇÔ 
+ */
+IDE_RC sda::isShardQuery( sdiAnalysisFlag * aAnalysisFlag,
+                          idBool          * aIsShardQuery )
 {
-    UShort sCanMergeIdx = 0;
+    UShort sIdx = 0;
 
-    // ì´ˆê¸°í™”
-    *aIsCanMerge = ID_TRUE;
+    // ÃÊ±âÈ­
+    *aIsShardQuery = ID_TRUE;
 
-    for ( sCanMergeIdx = 0;
-          sCanMergeIdx < SDI_CAN_NOT_MERGE_REASON_MAX;
-          sCanMergeIdx++ )
+    for ( sIdx = 0;
+          sIdx < SDI_NON_SHARD_QUERY_REASON_MAX;
+          sIdx++ )
     {
-        if ( aCantMergeReason[sCanMergeIdx] == ID_TRUE)
+        if ( aAnalysisFlag->mNonShardFlag[ sIdx ] == ID_TRUE)
         {
-            // Sub-key existsëŠ” non-shard queryì˜ ì´ìœ ë¡œ ë³´ì§€ ì•ŠëŠ”ë‹¤.
-            if ( sCanMergeIdx != SDI_SUB_KEY_EXISTS )
-            {
-                *aIsCanMerge = ID_FALSE;
-                break;
-            }
-            else
-            {
-                // Nothing to do.
-            }
+            *aIsShardQuery = ID_FALSE;
+            break;
         }
         else
         {
@@ -4117,163 +5097,260 @@ IDE_RC sda::isCanMerge( idBool * aCantMergeReason,
     return IDE_SUCCESS;
 }
 
-IDE_RC sda::isCanMergeAble( idBool * aCantMergeReason,
-                            idBool * aIsCanMergeAble )
+IDE_RC sda::mergeAnalysisFlag( sdiAnalysisFlag * aFlag1,
+                               sdiAnalysisFlag * aFlag2,
+                               UShort            aType )
 {
-    // ì´ˆê¸°í™”
-    *aIsCanMergeAble = ID_FALSE;
+/***********************************************************************
+ *
+ * Description : TASK-7219 Shard Transformer Refactoring
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
 
-    if ( ( aCantMergeReason[ SDI_NON_SHARD_OBJECT_EXISTS       ] == ID_FALSE ) &&
-         ( aCantMergeReason[ SDI_NO_SHARD_OBJECT               ] == ID_FALSE ) &&
-         ( aCantMergeReason[ SDI_MULTI_SHARD_INFO_EXISTS       ] == ID_FALSE ) &&
-         // Except SDI_MULTI_NODES_JOIN_EXISTS
-         ( aCantMergeReason[ SDI_HIERARCHY_EXISTS              ] == ID_FALSE ) &&
-         ( aCantMergeReason[ SDI_DISTINCT_EXISTS               ] == ID_FALSE ) &&
-         ( aCantMergeReason[ SDI_GROUP_AGGREGATION_EXISTS      ] == ID_FALSE ) &&
-         ( aCantMergeReason[ SDI_NESTED_AGGREGATION_EXISTS     ] == ID_FALSE ) &&
-         ( aCantMergeReason[ SDI_SUBQUERY_EXISTS               ] == ID_FALSE ) &&
-         ( aCantMergeReason[ SDI_ORDER_BY_EXISTS               ] == ID_FALSE ) &&
-         ( aCantMergeReason[ SDI_LIMIT_EXISTS                  ] == ID_FALSE ) &&
-         ( aCantMergeReason[ SDI_MULTI_NODES_SET_OP_EXISTS     ] == ID_FALSE ) &&
-         ( aCantMergeReason[ SDI_LOOP_EXISTS                   ] == ID_FALSE ) &&
-         ( aCantMergeReason[ SDI_INVALID_OUTER_JOIN_EXISTS     ] == ID_FALSE ) &&
-         ( aCantMergeReason[ SDI_INVALID_SEMI_ANTI_JOIN_EXISTS ] == ID_FALSE ) &&
-         ( aCantMergeReason[ SDI_GROUP_BY_EXTENSION_EXISTS     ] == ID_FALSE ) )
+    IDE_TEST_RAISE( aFlag1 == NULL, ERR_NULL_FLAG_1 );
+    IDE_TEST_RAISE( aFlag2 == NULL, ERR_NULL_FLAG_2 );
+
+    if ( ( aType & SDI_ANALYSIS_FLAG_NON_MASK )
+         == SDI_ANALYSIS_FLAG_NON_TRUE )
     {
-        *aIsCanMergeAble = ID_TRUE;
+        IDE_TEST( mergeFlag( aFlag1->mNonShardFlag,
+                             aFlag2->mNonShardFlag,
+                             SDI_NON_SHARD_QUERY_REASON_MAX )
+                  != IDE_SUCCESS );
     }
     else
     {
-        // Nothing to do.
+        /* Nothing to do */
     }
 
-    return IDE_SUCCESS;
-}
-
-IDE_RC sda::isTransformAble( idBool * aCantMergeReason,
-                             idBool * aIsTransformAble )
-{
-    // ì´ˆê¸°í™”
-    *aIsTransformAble = ID_FALSE;
-
-    if ( ( aCantMergeReason[ SDI_GROUP_AGGREGATION_EXISTS      ] == ID_TRUE  ) &&
-         ( aCantMergeReason[ SDI_NON_SHARD_OBJECT_EXISTS       ] == ID_FALSE ) &&
-         ( aCantMergeReason[ SDI_NO_SHARD_OBJECT               ] == ID_FALSE ) &&
-         ( aCantMergeReason[ SDI_MULTI_SHARD_INFO_EXISTS       ] == ID_FALSE ) &&
-         // Except SDI_MULTI_NODES_JOIN_EXISTS
-         ( aCantMergeReason[ SDI_HIERARCHY_EXISTS              ] == ID_FALSE ) &&
-         ( aCantMergeReason[ SDI_DISTINCT_EXISTS               ] == ID_FALSE ) &&
-         ( aCantMergeReason[ SDI_NESTED_AGGREGATION_EXISTS     ] == ID_FALSE ) &&
-         // Except SDI_SUBQUERY_EXISTS
-         // Except SDI_ORDER_BY_EXISTS
-         // Except SDI_LIMIT_EXISTS
-         ( aCantMergeReason[ SDI_MULTI_NODES_SET_OP_EXISTS     ] == ID_FALSE ) &&
-         // Except SDI_LOOP_EXISTS
-         ( aCantMergeReason[ SDI_INVALID_OUTER_JOIN_EXISTS     ] == ID_FALSE ) &&
-         ( aCantMergeReason[ SDI_INVALID_SEMI_ANTI_JOIN_EXISTS ] == ID_FALSE ) &&
-         ( aCantMergeReason[ SDI_GROUP_BY_EXTENSION_EXISTS     ] == ID_FALSE ) )
+    if ( ( aType & SDI_ANALYSIS_FLAG_TOP_MASK )
+         == SDI_ANALYSIS_FLAG_TOP_TRUE )
     {
-        *aIsTransformAble = ID_TRUE;
+        IDE_TEST_RAISE( ( ( aType & SDI_ANALYSIS_FLAG_NON_MASK ) == SDI_ANALYSIS_FLAG_NON_FALSE ),
+                        ERR_NULL_FLAG );
+
+        IDE_TEST( mergeFlag( aFlag1->mTopQueryFlag,
+                             aFlag2->mTopQueryFlag,
+                             SDI_ANALYSIS_TOP_QUERY_FLAG_MAX )
+                  != IDE_SUCCESS );
     }
     else
     {
-        // Nothing to do.
+        /* Nothing to do */
+    }
+
+    if ( ( aType & SDI_ANALYSIS_FLAG_SET_MASK )
+         == SDI_ANALYSIS_FLAG_SET_TRUE )
+    {
+        IDE_TEST_RAISE( ( ( aType & SDI_ANALYSIS_FLAG_NON_MASK ) == SDI_ANALYSIS_FLAG_NON_FALSE )
+                        ||
+                        ( ( aType & SDI_ANALYSIS_FLAG_TOP_MASK ) == SDI_ANALYSIS_FLAG_TOP_FALSE ),
+                        ERR_NULL_FLAG );
+
+        IDE_TEST( mergeFlag( aFlag1->mSetQueryFlag,
+                             aFlag2->mSetQueryFlag,
+                             SDI_ANALYSIS_SET_QUERY_FLAG_MAX )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    if ( ( aType & SDI_ANALYSIS_FLAG_CUR_MASK )
+         == SDI_ANALYSIS_FLAG_CUR_TRUE )
+    {
+        IDE_TEST_RAISE( ( ( aType & SDI_ANALYSIS_FLAG_CUR_MASK ) == SDI_ANALYSIS_FLAG_NON_FALSE )
+                        ||
+                        ( ( aType & SDI_ANALYSIS_FLAG_CUR_MASK ) == SDI_ANALYSIS_FLAG_TOP_FALSE )
+                        ||
+                        ( ( aType & SDI_ANALYSIS_FLAG_CUR_MASK ) == SDI_ANALYSIS_FLAG_SET_FALSE ),
+                        ERR_NULL_FLAG );
+
+        IDE_TEST( mergeFlag( aFlag1->mCurQueryFlag,
+                             aFlag2->mCurQueryFlag,
+                             SDI_ANALYSIS_CUR_QUERY_FLAG_MAX )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
     }
 
     return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_FLAG_1 )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::mergeAnalysisFlag",
+                                  "AnalysisfFlag 1 is NULL." ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_FLAG_2 )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::mergeAnalysisFlag",
+                                  "Analysis flag 2 is NULL." ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_FLAG )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::mergeAnalysisFlag",
+                                  "flag is invalid." ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
-IDE_RC sda::canMergeOr( idBool  * aCantMergeReason1,
-                        idBool  * aCantMergeReason2 )
+IDE_RC sda::mergeFlag( idBool * aFlag1,
+                       idBool * aFlag2,
+                       UInt     aIdx )
 {
-    UShort sCanMergeIdx = 0;
+/***********************************************************************
+ *
+ * Description : TASK-7219 Shard Transformer Refactoring
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
 
-    for ( sCanMergeIdx = 0;
-          sCanMergeIdx < SDI_CAN_NOT_MERGE_REASON_MAX;
-          sCanMergeIdx++ )
+    UInt sIdx = 0;
+
+    IDE_TEST_RAISE( aFlag1 == NULL, ERR_NULL_FLAG_1 );
+    IDE_TEST_RAISE( aFlag2 == NULL, ERR_NULL_FLAG_2 );
+
+    for ( sIdx = 0;
+          sIdx < aIdx;
+          sIdx++ )
     {
-        if ( ( aCantMergeReason1[sCanMergeIdx] == ID_TRUE ) ||
-             ( aCantMergeReason2[sCanMergeIdx] == ID_TRUE ) )
+        if ( ( aFlag1[ sIdx ] == ID_TRUE )
+             ||
+             ( aFlag2[ sIdx ] == ID_TRUE ) )
         {
-            aCantMergeReason1[sCanMergeIdx] = ID_TRUE;
+            aFlag2[ sIdx ] = ID_TRUE;
         }
         else
         {
-            // Nothing to do.
+            /*Nothing to do */
         }
     }
 
     return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_FLAG_1 )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::mergeFlag",
+                                  "AnalysisfFlag 1 is NULL." ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_FLAG_2 )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::mergeFlag",
+                                  "Analysis flag 2 is NULL." ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
-IDE_RC sda::setCantMergeReasonSFWGH( qcStatement * aStatement,
-                                     qmsSFWGH    * aSFWGH,
-                                     sdiKeyInfo  * aKeyInfo,
-                                     idBool      * aCantMergeReason )
+IDE_RC sda::setAnalysisFlag4SFWGH( qcStatement     * aStatement,
+                                   qmsSFWGH        * aSFWGH,
+                                   sdiKeyInfo      * aKeyInfo,
+                                   sdiAnalysisFlag * aAnalysisFlag )
 {
-    sdiKeyInfo * sKeyInfo      = NULL;
-    sdiKeyInfo * sCheckKeyInfo = NULL;
-    UInt         sKeyInfoCount = 0;
+    idBool sIsOneNodeSQL = ID_FALSE;
+    UInt   sDistKeyCount = 0;
 
-    IDE_DASSERT( aCantMergeReason != NULL );
+    /* TASK-7219 Shard Transformer Refactoring */
+    IDE_TEST( setAnalysisFlag4Target( aStatement,
+                                      aSFWGH->target,
+                                      aAnalysisFlag )
+              != IDE_SUCCESS );
+
+    /* TASK-7219 Shard Transformer Refactoring */
+    IDE_TEST( setAnalysisFlag4GroupPsmBind( aSFWGH->group,
+                                            aAnalysisFlag )
+              != IDE_SUCCESS );
 
     //---------------------------------------
     // Check join needed multi-nodes
     //---------------------------------------
-    for ( sKeyInfo  = aKeyInfo;
-          sKeyInfo != NULL;
-          sKeyInfo  = sKeyInfo->mNext )
-    {
-        if ( ( sKeyInfo->mShardInfo.mSplitMethod != SDI_SPLIT_CLONE ) &&
-             ( sKeyInfo->mShardInfo.mSplitMethod != SDI_SPLIT_SOLO ) )
-        {
-            sCheckKeyInfo = sKeyInfo;
-            sKeyInfoCount++;
-        }
-        else
-        {
-            // Nothing to do.
-        }
-    }
+    IDE_TEST( isOneNodeSQL( NULL,
+                            aKeyInfo,
+                            &sIsOneNodeSQL,
+                            &sDistKeyCount )
+              != IDE_SUCCESS );
 
-    if ( sKeyInfoCount == 1 )
+    if ( ( sDistKeyCount > 1 ) &&
+         ( aAnalysisFlag->mNonShardFlag[ SDI_NODE_TO_NODE_JOIN_EXISTS ] == ID_FALSE ) )
     {
-        aCantMergeReason[SDI_MULTI_NODES_JOIN_EXISTS] = ID_FALSE;
+        aAnalysisFlag->mNonShardFlag[ SDI_NODE_TO_NODE_JOIN_EXISTS ] = ID_TRUE;
     }
     else
     {
-        // Shard keyê°€ ì—†ê±°ë‚˜, 2ê°œ ì´ìƒì´ë‹¤.
-        aCantMergeReason[SDI_MULTI_NODES_JOIN_EXISTS] = ID_TRUE;
+        /* Nothing to do. */
     }
 
-    //---------------------------------------
-    // Check distinct
-    //---------------------------------------
-    if ( aSFWGH->selectType == QMS_DISTINCT )
+    if ( sIsOneNodeSQL == ID_FALSE )
     {
-        if ( sKeyInfoCount == 1 )
+        //---------------------------------------
+        // Check distinct
+        //---------------------------------------
+        if ( aSFWGH->selectType == QMS_DISTINCT )
         {
-            if ( sCheckKeyInfo->mValueCount == 1 )
+            IDE_TEST( setAnalysisFlag4Distinct( aStatement,
+                                                aSFWGH,
+                                                aKeyInfo,
+                                                aAnalysisFlag )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing to do. */
+        }
+
+        //---------------------------------------
+        // Check group-aggregation
+        //---------------------------------------
+        if ( aSFWGH->aggsDepth2 == NULL )
+        { 
+            if ( aSFWGH->group != NULL )
             {
-                // already, aCantMergeReason[SDI_DISTINCT_EXISTS] = ID_FALSE;
+                IDE_TEST( setAnalysisFlag4GroupBy( aStatement,
+                                                   aSFWGH,
+                                                   aKeyInfo,
+                                                   aAnalysisFlag )
+                          != IDE_SUCCESS );
             }
             else
             {
-                IDE_TEST( setCantMergeReasonDistinct( aStatement,
-                                                      aSFWGH,
-                                                      aKeyInfo,
-                                                      aCantMergeReason )
-                          != IDE_SUCCESS );
+                if ( aSFWGH->aggsDepth1 != NULL )
+                {
+                    aAnalysisFlag->mNonShardFlag[ SDI_NODE_TO_NODE_GROUP_AGGREGATION_EXISTS ] = ID_TRUE;
+
+                    /* TASK-7219 Shard Transformer Refactoring
+                     *  TransformAble ¼Ó¼ºÀº Query Set ºĞ¼®ÀÌ ¿Ï·áµÇ¾î ÀÖÀ» ¶§¿¡ È®Á¤ÇÒ ¼ö ÀÖÀ¸¸ç,
+                     *   ¿©±â¼­´Â º¯Çü °¡´ÉÇÑ Group By ÇüÅÂÀÎÁö¸¸ °Ë»çÇÏ¿© ³²±ä´Ù.
+                     */
+                    aAnalysisFlag->mCurQueryFlag[ SDI_CQ_AGGR_TRANSFORMABLE ] = ID_TRUE;
+                }
+                else
+                {
+                    /* Nothing to do. */
+                }
             }
         }
         else
         {
-            // Nothing to do.
+            aAnalysisFlag->mNonShardFlag[ SDI_NODE_TO_NODE_NESTED_AGGREGATION_EXISTS ] = ID_TRUE;
         }
     }
     else
     {
-        // Nothing to do.
+        /* Nothing to do. */
     }
 
     //---------------------------------------
@@ -4281,59 +5358,11 @@ IDE_RC sda::setCantMergeReasonSFWGH( qcStatement * aStatement,
     //---------------------------------------
     if ( aSFWGH->hierarchy != NULL )
     {
-        aCantMergeReason[SDI_HIERARCHY_EXISTS] = ID_TRUE;
+        aAnalysisFlag->mNonShardFlag[ SDI_HIERARCHY_EXISTS ] = ID_TRUE;
     }
     else
     {
-        // Nothing to do.
-    }
-
-    //---------------------------------------
-    // Check group-aggregation
-    //---------------------------------------
-    if ( sKeyInfoCount == 1 )
-    {
-        if ( sCheckKeyInfo->mValueCount == 1 )
-        {
-            // Nothing to do.
-            // already, aCantMergeReason[SDI_GROUP_AGGREGATION_EXISTS] = ID_FALSE;
-        }
-        else
-        {
-            if ( aSFWGH->group != NULL )
-            {
-                IDE_TEST( setCantMergeReasonGroupBy( aStatement,
-                                                     aSFWGH,
-                                                     aKeyInfo,
-                                                     aCantMergeReason )
-                          != IDE_SUCCESS );
-            }
-            else
-            {
-                if ( aSFWGH->aggsDepth1 != NULL )
-
-                {
-                    aCantMergeReason[SDI_GROUP_AGGREGATION_EXISTS] = ID_TRUE;
-                }
-                else
-                {
-                    // Nothing to do.
-                }
-
-                if ( aSFWGH->aggsDepth2 != NULL )
-                {
-                    aCantMergeReason[SDI_NESTED_AGGREGATION_EXISTS] = ID_TRUE;
-                }
-                else
-                {
-                    // Nothing to do.
-                }
-            }
-        }
-    }
-    else
-    {
-        // Nothing to do.
+        /* Nothing to do. */
     }
 
     return IDE_SUCCESS;
@@ -4343,10 +5372,10 @@ IDE_RC sda::setCantMergeReasonSFWGH( qcStatement * aStatement,
     return IDE_FAILURE;
 }
 
-IDE_RC sda::setCantMergeReasonDistinct( qcStatement * aStatement,
-                                        qmsSFWGH    * aSFWGH,
-                                        sdiKeyInfo  * aKeyInfo,
-                                        idBool      * aCantMergeReason )
+IDE_RC sda::setAnalysisFlag4Distinct( qcStatement     * aStatement,
+                                      qmsSFWGH        * aSFWGH,
+                                      sdiKeyInfo      * aKeyInfo,
+                                      sdiAnalysisFlag * aAnalysisFlag )
 {
     sdiKeyInfo * sKeyInfo  = NULL;
     idBool       sIsFound  = ID_FALSE;
@@ -4355,13 +5384,13 @@ IDE_RC sda::setCantMergeReasonDistinct( qcStatement * aStatement,
     sdaQtcNodeType     sQtcNodeType = SDA_NONE;
     qmsTarget        * sTarget = NULL;
     qtcNode          * sTargetColumn = NULL;
+    sdiKeyInfo       * sKeyInfoRef = NULL;
 
     for ( sKeyInfo  = aKeyInfo;
           sKeyInfo != NULL;
           sKeyInfo  = sKeyInfo->mNext )
     {
-        if ( ( sKeyInfo->mShardInfo.mSplitMethod != SDI_SPLIT_CLONE ) &&
-             ( sKeyInfo->mShardInfo.mSplitMethod != SDI_SPLIT_SOLO ) )
+        if ( sdi::getSplitType( sKeyInfo->mShardInfo.mSplitMethod ) == SDI_SPLIT_TYPE_DIST )
         {
             sIsFound = ID_FALSE;
 
@@ -4385,7 +5414,8 @@ IDE_RC sda::setCantMergeReasonDistinct( qcStatement * aStatement,
                     IDE_TEST( getQtcNodeTypeWithKeyInfo( aStatement,
                                                          aKeyInfo,
                                                          sTargetColumn,
-                                                         &sQtcNodeType )
+                                                         &sQtcNodeType,
+                                                         &sKeyInfoRef )
                               != IDE_SUCCESS );
 
                     if ( sQtcNodeType == SDA_KEY_COLUMN )
@@ -4423,10 +5453,10 @@ IDE_RC sda::setCantMergeReasonDistinct( qcStatement * aStatement,
 
             if ( sIsFound == ID_FALSE )
             {
-                // Target ì— ì˜¬ë¼ì˜¤ì§€ ì•Šì€ shard keyê°€ ìˆë‹¤ë©´,
-                // Distinct ê°€ ë¶„ì‚°ìˆ˜í–‰ ë¶ˆê°€ëŠ¥ í•œ ê²ƒìœ¼ë¡œ íŒë‹¨í•œë‹¤.
-                IDE_DASSERT( aCantMergeReason != NULL );
-                aCantMergeReason[SDI_DISTINCT_EXISTS] = ID_TRUE;
+                // Target ¿¡ ¿Ã¶ó¿ÀÁö ¾ÊÀº shard key°¡ ÀÖ´Ù¸é,
+                // Distinct °¡ ºĞ»ê¼öÇà ºÒ°¡´É ÇÑ °ÍÀ¸·Î ÆÇ´ÜÇÑ´Ù.
+                IDE_DASSERT( aAnalysisFlag != NULL );
+                aAnalysisFlag->mNonShardFlag[ SDI_NODE_TO_NODE_DISTINCT_EXISTS ] = ID_TRUE;
                 break;
             }
             else
@@ -4448,10 +5478,10 @@ IDE_RC sda::setCantMergeReasonDistinct( qcStatement * aStatement,
     return IDE_FAILURE;
 }
 
-IDE_RC sda::setCantMergeReasonGroupBy( qcStatement * aStatement,
-                                       qmsSFWGH    * aSFWGH,
-                                       sdiKeyInfo  * aKeyInfo,
-                                       idBool      * aCantMergeReason )
+IDE_RC sda::setAnalysisFlag4GroupBy( qcStatement     * aStatement,
+                                     qmsSFWGH        * aSFWGH,
+                                     sdiKeyInfo      * aKeyInfo,
+                                     sdiAnalysisFlag * aAnalysisFlag )
 {
     sdiKeyInfo * sKeyInfo  = NULL;
     idBool       sIsFound  = ID_FALSE;
@@ -4461,19 +5491,20 @@ IDE_RC sda::setCantMergeReasonGroupBy( qcStatement * aStatement,
     sdaQtcNodeType     sQtcNodeType = SDA_NONE;
     qmsConcatElement * sGroupKey = NULL;
 
-    if ( ( aSFWGH->flag & QMV_SFWGH_GBGS_TRANSFORM_MASK )
+    sdiKeyInfo       * sKeyInfoRef = NULL;
+
+    if ( ( aSFWGH->lflag & QMV_SFWGH_GBGS_TRANSFORM_MASK )
          == QMV_SFWGH_GBGS_TRANSFORM_NONE )
     {
         for ( sKeyInfo  = aKeyInfo;
               sKeyInfo != NULL;
               sKeyInfo  = sKeyInfo->mNext )
         {
-            if ( ( sKeyInfo->mShardInfo.mSplitMethod != SDI_SPLIT_CLONE ) &&
-                 ( sKeyInfo->mShardInfo.mSplitMethod != SDI_SPLIT_SOLO ) )
+            if ( sdi::getSplitType( sKeyInfo->mShardInfo.mSplitMethod ) == SDI_SPLIT_TYPE_DIST )
             {
                 sIsFound = ID_FALSE;
 
-                IDE_DASSERT( aCantMergeReason != NULL );
+                IDE_DASSERT( aAnalysisFlag != NULL );
 
                 for ( sGroupKey  = aSFWGH->group;
                       sGroupKey != NULL;
@@ -4488,7 +5519,8 @@ IDE_RC sda::setCantMergeReasonGroupBy( qcStatement * aStatement,
                             IDE_TEST( getQtcNodeTypeWithKeyInfo( aStatement,
                                                                  aKeyInfo,
                                                                  sGroupKey->arithmeticOrList,
-                                                                 &sQtcNodeType )
+                                                                 &sQtcNodeType,
+                                                                 &sKeyInfoRef )
                                       != IDE_SUCCESS );
 
                             if ( sQtcNodeType == SDA_KEY_COLUMN )
@@ -4524,7 +5556,7 @@ IDE_RC sda::setCantMergeReasonGroupBy( qcStatement * aStatement,
 
                 if ( sNotNormalGroupExists == ID_TRUE )
                 {
-                    aCantMergeReason[SDI_GROUP_BY_EXTENSION_EXISTS] = ID_TRUE;
+                    aAnalysisFlag->mNonShardFlag[ SDI_NODE_TO_NODE_GROUP_BY_EXTENSION_EXISTS ] = ID_TRUE;
                     break;
                 }
                 else
@@ -4534,7 +5566,14 @@ IDE_RC sda::setCantMergeReasonGroupBy( qcStatement * aStatement,
 
                 if ( sIsFound == ID_FALSE )
                 {
-                    aCantMergeReason[SDI_GROUP_AGGREGATION_EXISTS] = ID_TRUE;
+                    aAnalysisFlag->mNonShardFlag[ SDI_NODE_TO_NODE_GROUP_AGGREGATION_EXISTS ] = ID_TRUE;
+
+                    /* TASK-7219 Shard Transformer Refactoring
+                     *  TransformAble ¼Ó¼ºÀº Query Set ºĞ¼®ÀÌ ¿Ï·áµÇ¾î ÀÖÀ» ¶§¿¡ È®Á¤ÇÒ ¼ö ÀÖÀ¸¸ç,
+                     *   ¿©±â¼­´Â º¯Çü °¡´ÉÇÑ Group By ÇüÅÂÀÎÁö¸¸ °Ë»çÇÏ¿© ³²±ä´Ù.
+                     */
+                    aAnalysisFlag->mCurQueryFlag[ SDI_CQ_AGGR_TRANSFORMABLE ] = ID_TRUE;
+
                     break;
                 }
                 else
@@ -4551,7 +5590,7 @@ IDE_RC sda::setCantMergeReasonGroupBy( qcStatement * aStatement,
     else
     {
         // Group by extension( GROUPING SETS )
-        aCantMergeReason[SDI_GROUP_BY_EXTENSION_EXISTS] = ID_TRUE;
+        aAnalysisFlag->mNonShardFlag[ SDI_NODE_TO_NODE_GROUP_BY_EXTENSION_EXISTS ] = ID_TRUE;
     }
 
     return IDE_SUCCESS;
@@ -4561,206 +5600,174 @@ IDE_RC sda::setCantMergeReasonGroupBy( qcStatement * aStatement,
     return IDE_FAILURE;
 }
 
+IDE_RC sda::setAnalysisFlag4WindowFunc( qmsAnalyticFunc * aAnalyticFuncList,
+                                        sdiKeyInfo      * aKeyInfo,
+                                        sdiAnalysisFlag * aAnalysisFlag )
+{
+    qmsAnalyticFunc * sAnalyticFunc = NULL;
+    qtcNode         * sAnalyticFuncNode = NULL;
+    qtcOverColumn   * sOrderCol = NULL;
+    qtcOverColumn   * sPartitionCol = NULL;
+    qtcNode         * sTarget = NULL;
+    sdiKeyInfo      * sKeyInfo  = NULL;
+    UInt              sKeyCount = 0;
+    idBool            sIsFound = ID_FALSE;
+
+    IDE_DASSERT( aAnalysisFlag != NULL );
+
+    for ( sAnalyticFunc = aAnalyticFuncList; sAnalyticFunc != NULL; sAnalyticFunc = sAnalyticFunc->next )
+    {
+        IDE_DASSERT( sAnalyticFunc->analyticFuncNode != NULL );
+        sAnalyticFuncNode = sAnalyticFunc->analyticFuncNode;
+
+        if ( sAnalyticFuncNode->overClause != NULL )
+        {
+            if ( sAnalyticFuncNode->overClause->partitionByColumn != NULL )
+            {
+                sOrderCol = sAnalyticFuncNode->overClause->orderByColumn;
+
+                for ( sKeyInfo = aKeyInfo; sKeyInfo != NULL; sKeyInfo = sKeyInfo->mNext )
+                {
+                    if ( ( sKeyInfo->mShardInfo.mSplitMethod != SDI_SPLIT_CLONE ) &&
+                         ( sKeyInfo->mShardInfo.mSplitMethod != SDI_SPLIT_SOLO ) )
+                    {
+                        sIsFound = ID_FALSE;
+
+                        for ( sPartitionCol = sAnalyticFuncNode->overClause->partitionByColumn;
+                              ( sPartitionCol != NULL ) && ( sPartitionCol != sOrderCol );
+                              sPartitionCol = sPartitionCol->next )
+                        {
+                            sTarget = (qtcNode*)(sPartitionCol->node);
+                            while ( sTarget->node.module == &qtc::passModule )
+                            {
+                                sTarget = (qtcNode*)(sTarget->node.arguments);
+                            }
+
+                            if ( sTarget->node.module == &qtc::columnModule )
+                            {
+                                for ( sKeyCount = 0;
+                                      sKeyCount < sKeyInfo->mKeyCount;
+                                      sKeyCount++ )
+                                {
+                                    if ( ( sTarget->node.table == sKeyInfo->mKey[sKeyCount].mTupleId ) &&
+                                         ( sTarget->node.column == sKeyInfo->mKey[sKeyCount].mColumn ) &&
+                                         ( sKeyInfo->mKey[sKeyCount].mIsNullPadding == ID_FALSE ) )
+                                    {
+                                        sIsFound = ID_TRUE;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        if ( sIsFound == ID_FALSE )
+                        {
+                            aAnalysisFlag->mNonShardFlag[ SDI_NODE_TO_NODE_WINDOW_FUNCTION_EXISTS ] = ID_TRUE;
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                aAnalysisFlag->mNonShardFlag[ SDI_NODE_TO_NODE_WINDOW_FUNCTION_EXISTS ] = ID_TRUE;
+            }
+        }
+        else
+        {
+            aAnalysisFlag->mNonShardFlag[ SDI_NODE_TO_NODE_WINDOW_FUNCTION_EXISTS ] = ID_TRUE;
+        }
+    }
+
+    return IDE_SUCCESS;
+}
+
 IDE_RC sda::analyzeQuerySetAnalysis( qcStatement * aStatement,
                                      qmsQuerySet * aMyQuerySet,
                                      qmsQuerySet * aLeftQuerySet,
                                      qmsQuerySet * aRightQuerySet,
                                      idBool        aIsSubKey )
 {
-    sdiQuerySet    * sQuerySetAnalysis      = NULL;
-    sdiQuerySet    * sLeftQuerySetAnalysis  = NULL;
-    sdiQuerySet    * sRightQuerySetAnalysis = NULL;
-
-    sdiKeyInfo     * sKeyInfo               = NULL;
-    sdiKeyInfo     * sKeyInfoCheck          = NULL;
-
-    sdiShardInfo   * sShardInfo        = NULL;
-    idBool         * sCantMergeReason  = NULL;
-    idBool         * sIsCanMerge       = NULL;
-
-    idBool           sIsOneNodeSQL     = ID_TRUE;
-    idBool           sDoRemoveValues   = ID_FALSE;
+    sdiShardAnalysis * sQuerySetAnalysis      = NULL;
+    sdiShardAnalysis * sLeftQuerySetAnalysis  = NULL;
+    sdiShardAnalysis * sRightQuerySetAnalysis = NULL;
 
     //------------------------------------------
-    // í• ë‹¹
+    // ÇÒ´ç
+    //------------------------------------------
+    IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiShardAnalysis),
+                                             (void**) & sQuerySetAnalysis )
+              != IDE_SUCCESS );
+
+    SDI_INIT_SHARD_ANALYSIS( sQuerySetAnalysis );
+
+    //------------------------------------------
+    // ÃÊ±âÈ­
     //------------------------------------------
     if ( aIsSubKey == ID_FALSE )
     {
-        IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiQuerySet),
-                                                 (void**) & sQuerySetAnalysis )
-                  != IDE_SUCCESS );
-        SDI_INIT_QUERY_SET( sQuerySetAnalysis );
-
         aMyQuerySet->mShardAnalysis = sQuerySetAnalysis;
-
-        sCantMergeReason = sQuerySetAnalysis->mCantMergeReason;
-        sShardInfo       = &sQuerySetAnalysis->mShardInfo;
-        sIsCanMerge      = &sQuerySetAnalysis->mIsCanMerge;
+        sLeftQuerySetAnalysis = aLeftQuerySet->mShardAnalysis;
+        sRightQuerySetAnalysis = aRightQuerySet->mShardAnalysis;
     }
     else
     {
         IDE_TEST_RAISE( aMyQuerySet->mShardAnalysis == NULL, ERR_NULL_SHARD_ANALYSIS );
 
-        sQuerySetAnalysis = aMyQuerySet->mShardAnalysis;
-
-        sCantMergeReason = sQuerySetAnalysis->mCantMergeReason4SubKey;
-        sShardInfo       = &sQuerySetAnalysis->mShardInfo4SubKey;
-        sIsCanMerge      = &sQuerySetAnalysis->mIsCanMerge4SubKey;
+        aMyQuerySet->mShardAnalysis->mNext = sQuerySetAnalysis;
+        sLeftQuerySetAnalysis = aLeftQuerySet->mShardAnalysis->mNext;
+        sRightQuerySetAnalysis = aRightQuerySet->mShardAnalysis->mNext;
     }
 
+     /* TASK-7219 Shard Transformer Refactoring */
     //------------------------------------------
-    // ì´ˆê¸°í™”
+    // Get NON-SHARD QUERY REASON
     //------------------------------------------
-    sLeftQuerySetAnalysis  = aLeftQuerySet->mShardAnalysis;
-    sRightQuerySetAnalysis = aRightQuerySet->mShardAnalysis;
-
-    //------------------------------------------
-    // Get CAN-MERGE
-    //------------------------------------------
-    IDE_TEST( canMergeOr( sCantMergeReason,
-                          sLeftQuerySetAnalysis->mCantMergeReason )
+    IDE_TEST( mergeAnalysisFlag( &( sLeftQuerySetAnalysis->mAnalysisFlag ),
+                                 &( sQuerySetAnalysis->mAnalysisFlag ),
+                                 SDI_ANALYSIS_FLAG_NON_TRUE |
+                                 SDI_ANALYSIS_FLAG_TOP_TRUE |
+                                 SDI_ANALYSIS_FLAG_SET_TRUE )
               != IDE_SUCCESS );
 
-    IDE_TEST( canMergeOr( sCantMergeReason,
-                          sRightQuerySetAnalysis->mCantMergeReason )
+    IDE_TEST( mergeAnalysisFlag( &( sRightQuerySetAnalysis->mAnalysisFlag ),
+                                 &( sQuerySetAnalysis->mAnalysisFlag ),
+                                 SDI_ANALYSIS_FLAG_NON_TRUE |
+                                 SDI_ANALYSIS_FLAG_TOP_TRUE |
+                                 SDI_ANALYSIS_FLAG_SET_TRUE )
               != IDE_SUCCESS );
 
     //------------------------------------------
     // Analyze left, right of SET
     //------------------------------------------
-
     IDE_TEST( analyzeSetLeftRight( aStatement,
                                    sLeftQuerySetAnalysis,
                                    sRightQuerySetAnalysis,
-                                   &sKeyInfo,
+                                   &sQuerySetAnalysis->mKeyInfo,
                                    aIsSubKey )
               != IDE_SUCCESS );
 
     //------------------------------------------
     // Make Shard Info regarding for clone
     //------------------------------------------
-
     IDE_TEST( setShardInfoWithKeyInfo( aStatement,
-                                       sKeyInfo,
-                                       sShardInfo,
+                                       sQuerySetAnalysis->mKeyInfo,
+                                       &sQuerySetAnalysis->mShardInfo,
                                        aIsSubKey )
               != IDE_SUCCESS );
 
-    if ( sKeyInfo != NULL )
-    {
-        IDE_TEST( isOneNodeSQL( NULL,
-                                sKeyInfo,
-                                &sIsOneNodeSQL )
-                  != IDE_SUCCESS );
-    }
-    else
-    {
-        // Nothing to do.
-    }
-
-    if ( sShardInfo->mSplitMethod != SDI_SPLIT_NONE )
-    {
-        if ( sIsOneNodeSQL == ID_FALSE )
-        {
-            for ( sKeyInfoCheck  = sKeyInfo;
-                  sKeyInfoCheck != NULL;
-                  sKeyInfoCheck  = sKeyInfoCheck->mNext )
-            {
-                if ( sKeyInfoCheck->mShardInfo.mSplitMethod != SDI_SPLIT_CLONE )
-                {
-                    // Targetì— ëª¨ë“  shard keyê°€ ì˜¬ë¼ì˜¤ë©´ union allê³¼ ë™ì¼í•˜ê²Œ ì·¨ê¸‰ ë  ìˆ˜ ìˆë‹¤.
-                    if ( ( sKeyInfoCheck->mLeft == NULL ) || ( sKeyInfoCheck->mRight == NULL ) )
-                    {
-                        if ( aMyQuerySet->setOp != QMS_UNION_ALL )
-                        {
-                            sCantMergeReason[SDI_MULTI_NODES_SET_OP_EXISTS] = ID_TRUE;
-
-                            if ( sKeyInfoCheck->mValueCount == 0 )
-                            {
-                                // Union allì´ ì•„ë‹Œ set operators(union,intersect,minus)ì˜
-                                // left, right analysisì—ì„œ Targetì— ì˜¬ë¼ì˜¤ì§€ ì•Šê³ ,
-                                // shard valueê°€ ì§€ì •ë˜ì§€ë„ ì•Šì€ key infoê°€ ìˆë‹¤ë©´,
-                                // í•´ë‹¹ query set ë¶€í„°ëŠ” shard relationì´ ì•„ë‹ˆê²Œ ëœë‹¤.
-
-                                sShardInfo->mSplitMethod      = SDI_SPLIT_NONE;
-                                sShardInfo->mDefaultNodeId    = ID_UINT_MAX;
-                                sShardInfo->mKeyDataType      = ID_UINT_MAX;
-                                sShardInfo->mRangeInfo.mCount = 0;
-                                break;
-                            }
-                            else
-                            {
-                                // Nothing to do.
-                            }
-                        }
-                        else
-                        {
-                            if ( sKeyInfoCheck->mValueCount == 0 )
-                            {
-                                sDoRemoveValues = ID_TRUE;
-                            }
-                            else
-                            {
-                                // Nothing to do.
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // Nothing to do.
-                    }
-                }
-                else
-                {
-                    // HASH, RANGE, LISTì™€ í•¨ê»˜ CLONE tableì´ SET operationë˜ì—ˆë‹¤.
-                    // Node ë³„ë¡œ clone tableì˜ ë°ì´í„°ê°€ ë™ì›ë˜ì–´ í‹€ë¦° ê²°ê³¼ë¥¼ ìƒì„±í•  ìˆ˜ ìˆë‹¤.
-                    //
-                    // BUGBUG
-                    // SET-UNION, SET-DIFFERENCE(MINUS), SET-INTERCETì˜ ê²½ìš°
-                    // SET operatorì˜ right query setì— cloneì´ ì˜¤ëŠ” ê²ƒ ì€ í—ˆìš© í•  ìˆ˜ ìˆë‹¤. ( UNION ALLì€ ì•ˆë¨ )
-
-                    sCantMergeReason[SDI_MULTI_NODES_SET_OP_EXISTS] = ID_TRUE;
-                }
-            }
-
-            if ( ( sDoRemoveValues == ID_TRUE ) &&
-                 ( sCantMergeReason[SDI_MULTI_NODES_SET_OP_EXISTS] == ID_FALSE ) )
-            {
-                /*
-                 * BUG-45895
-                 * UNION ALL ì¼ ê²½ìš° keyInfo ì¤‘ shard valueê°€ í•˜ë‚˜ë„ ì—†ëŠ” keyInfoê°€ ì¡´ì¬ í•˜ë©´,
-                 * ëª¨ë“  keyInfoì˜ shard value countë¥¼ 0ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
-                 */
-                for ( sKeyInfoCheck  = sKeyInfo;
-                      sKeyInfoCheck != NULL;
-                      sKeyInfoCheck  = sKeyInfoCheck->mNext )
-                {
-                    sKeyInfoCheck->mValueCount = 0;
-                    sKeyInfoCheck->mValue = NULL;
-                }
-            }
-            else
-            {
-                // Nothing to do.
-            }
-        }
-        else
-        {
-            // CLONEë§Œ ìˆê±°ë‚˜, SOLOê°€ í¬í•¨ë˜ì–´ one node executionì´ ë³´ì¥ë˜ëŠ” ê²½ìš°.
-            // Nothing to do.
-        }
-    }
-    else
-    {
-        sCantMergeReason[ SDI_MULTI_SHARD_INFO_EXISTS ] = ID_TRUE;
-    }
+    IDE_TEST( setQuerySetAnalysis( aMyQuerySet,
+                                   sLeftQuerySetAnalysis->mShardInfo.mSplitMethod,
+                                   sRightQuerySetAnalysis->mShardInfo.mSplitMethod,
+                                   sQuerySetAnalysis )
+              != IDE_SUCCESS );  
 
     //------------------------------------------
     // Make Query set analysis
     //------------------------------------------
 
-    IDE_TEST( isCanMerge( sCantMergeReason,
-                          sIsCanMerge )
+    IDE_TEST( isShardQuery( &( sQuerySetAnalysis->mAnalysisFlag ),
+                            &( sQuerySetAnalysis->mIsShardQuery ) )
               != IDE_SUCCESS );
 
     //------------------------------------------
@@ -4777,20 +5784,7 @@ IDE_RC sda::analyzeQuerySetAnalysis( qcStatement * aStatement,
     }
     else
     {
-        // Nothing to do.
-    }
-
-    //------------------------------------------
-    // ì—°ê²°
-    //------------------------------------------
-
-    if ( aIsSubKey == ID_FALSE )
-    {
-        sQuerySetAnalysis->mKeyInfo = sKeyInfo;
-    }
-    else
-    {
-        sQuerySetAnalysis->mKeyInfo4SubKey = sKeyInfo;
+        /* Nothing to do. */
     }
 
     return IDE_SUCCESS;
@@ -4806,11 +5800,151 @@ IDE_RC sda::analyzeQuerySetAnalysis( qcStatement * aStatement,
     return IDE_FAILURE;
 }
 
-IDE_RC sda::analyzeSetLeftRight( qcStatement  * aStatement,
-                                 sdiQuerySet  * aLeftQuerySetAnalysis,
-                                 sdiQuerySet  * aRightQuerySetAnalysis,
-                                 sdiKeyInfo  ** aKeyInfo,
-                                 idBool         aIsSubKey )
+IDE_RC sda::setQuerySetAnalysis( qmsQuerySet      * aQuerySet,
+                                 sdiSplitMethod     aLeftQuerySetSplit,
+                                 sdiSplitMethod     aRightQuerySetSplit,
+                                 sdiShardAnalysis * aSetAnalysis )
+{
+    idBool sIsOneNodeSQL = ID_TRUE;
+    sdiKeyInfo * sKeyInfoCheck = NULL;
+    UInt sDistKeyCount = 0;
+
+    if ( aSetAnalysis->mShardInfo.mSplitMethod != SDI_SPLIT_NONE )
+    {
+        IDE_TEST( isOneNodeSQL( NULL,
+                                aSetAnalysis->mKeyInfo,
+                                &sIsOneNodeSQL,
+                                &sDistKeyCount )
+                  != IDE_SUCCESS );
+
+        if ( sIsOneNodeSQL == ID_FALSE )
+        {
+            IDE_TEST_RAISE( ( sdi::getSplitType( aLeftQuerySetSplit ) == SDI_SPLIT_TYPE_NO_DIST ) &&
+                            ( sdi::getSplitType( aRightQuerySetSplit ) == SDI_SPLIT_TYPE_NO_DIST ),
+                            ERR_SET_ANALYSIS_WAS_FAILED );
+            
+            if ( aQuerySet->setOp == QMS_UNION_ALL )
+            {
+                /*
+                 * SHARD QUERY     : H/R/L UNION ALL H/R/L
+                 *                   C     UNION ALL C ( sIsOneNodeSQL == ID_TRUE )
+                 *
+                 * NON-SHARD QUERY : H/R/L UNION ALL C
+                 *                   C     UNION ALL H/R/L
+                 *
+                 */
+
+                if ( ( sdi::getSplitType( aLeftQuerySetSplit ) == SDI_SPLIT_TYPE_DIST ) &&
+                     ( sdi::getSplitType( aRightQuerySetSplit ) == SDI_SPLIT_TYPE_DIST ) )
+                {
+                    for ( sKeyInfoCheck  = aSetAnalysis->mKeyInfo;
+                          sKeyInfoCheck != NULL;
+                          sKeyInfoCheck  = sKeyInfoCheck->mNext )
+                    {
+                        // H/R/L UNION ALL H/R/L
+                        if ( ( sKeyInfoCheck->mLeft == NULL ) || ( sKeyInfoCheck->mRight == NULL ) )
+                        {
+                            /*
+                             * SELECT SKEY_I1     << this is not a shard key, must be unset as a non-shard key.
+                             *   FROM HASH_T1
+                             *  WHERE SKEY_I1 = 1 << this is not a shard value, must be removed.
+                             * UNION ALL
+                             * SELECT I2
+                             *   FROM HASH_T1
+                             */
+
+                            sKeyInfoCheck->mKeyTargetCount = 0;
+                            sKeyInfoCheck->mKeyTarget = NULL;
+                            sKeyInfoCheck->mValuePtrCount = 0;
+                            sKeyInfoCheck->mValuePtrArray = NULL;
+                        }
+                        else
+                        {
+                            /* Nothing to do. */
+                        }
+                    }
+                }
+                else
+                {
+                    aSetAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_NODE_TO_NODE_SET_OP_EXISTS ] = ID_TRUE;
+                }
+                
+            }
+            else
+            {
+                /*
+                 * SHARD QUERY     : H/R/L UNION H/R/L ( The shard keies were joined. )
+                 *                   H/R/L INTERSECT C
+                 *                   H/R/L MINUS C
+                 *                   C     UNION C ( sIsOneNodeSQL == ID_TRUE )
+                 *
+                 * NON-SHARD QUERY : H/R/L UNION H/R/L ( The shard keies were not joined. )
+                 *                   C     UNION H/R/L
+                 *                   H/R/L UNION C
+                 *
+                 */
+
+                if ( ( sdi::getSplitType( aLeftQuerySetSplit ) == SDI_SPLIT_TYPE_DIST ) &&
+                     ( sdi::getSplitType( aRightQuerySetSplit ) == SDI_SPLIT_TYPE_DIST ) )
+                {
+                    for ( sKeyInfoCheck  = aSetAnalysis->mKeyInfo;
+                          sKeyInfoCheck != NULL;
+                          sKeyInfoCheck  = sKeyInfoCheck->mNext )
+                    {
+                        if ( ( sKeyInfoCheck->mLeft == NULL ) || ( sKeyInfoCheck->mRight == NULL ) )
+                        {
+                            aSetAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_NODE_TO_NODE_SET_OP_EXISTS ] = ID_TRUE;
+                        }
+                        else
+                        {
+                            // Target¿¡ ¸ğµç shard key°¡ shard joinµÇ¸é union all°ú µ¿ÀÏÇÏ°Ô Ãë±Ş µÉ ¼ö ÀÖ´Ù.
+                            /* Nothing to do */
+                        }
+                    }
+                }
+                else if ( ( sdi::getSplitType( aLeftQuerySetSplit ) == SDI_SPLIT_TYPE_DIST ) &&
+                          ( sdi::getSplitType( aRightQuerySetSplit ) == SDI_SPLIT_TYPE_NO_DIST ) &&
+                          ( ( aQuerySet->setOp == QMS_INTERSECT ) ||
+                            ( aQuerySet->setOp == QMS_MINUS ) ) )
+                {
+                    // SET-DIFFERENCE(MINUS), SET-INTERSECTÀÇ °æ¿ì
+                    // SET operatorÀÇ right query set¿¡ cloneÀÌ ¿À´Â °Í Àº Çã¿ë ÇÒ ¼ö ÀÖ´Ù. ( UNION, UNION ALLÀº ¾ÈµÊ )
+                    /* Nothing to do. */
+                }
+                else
+                {
+                    aSetAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_NODE_TO_NODE_SET_OP_EXISTS ] = ID_TRUE;
+                }
+            }
+        }
+        else
+        {
+            /* Nothing to do. */
+        }
+    }
+    else
+    {
+        aSetAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_MULTI_SHARD_INFO_EXISTS ] = ID_TRUE;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(ERR_SET_ANALYSIS_WAS_FAILED)
+    {
+        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                "sda::setQuerySetAnalysis",
+                                "SET analysis was failed."));
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::analyzeSetLeftRight( qcStatement       * aStatement,
+                                 sdiShardAnalysis  * aLeftQuerySetAnalysis,
+                                 sdiShardAnalysis  * aRightQuerySetAnalysis,
+                                 sdiKeyInfo       ** aKeyInfo,
+                                 idBool              aIsSubKey )
 {
     sdiKeyInfo * sLeftKeyInfo  = NULL;
     sdiKeyInfo * sRightKeyInfo = NULL;
@@ -4821,7 +5955,7 @@ IDE_RC sda::analyzeSetLeftRight( qcStatement  * aStatement,
     sdiKeyInfo * sKeyInfoTmp = NULL;
 
     //---------------------------------------
-    // Leftì˜ key infoë¡œ ë¶€í„° SETì˜ key infoë¥¼ ìƒì„±í•œë‹¤.
+    // LeftÀÇ key info·Î ºÎÅÍ SETÀÇ key info¸¦ »ı¼ºÇÑ´Ù.
     //---------------------------------------
 
     /*
@@ -4842,31 +5976,20 @@ IDE_RC sda::analyzeSetLeftRight( qcStatement  * aStatement,
      * RIGHT :   T1.I1   T2.I1  T2.I1  T1.I1
      *
      *
-     * ì´ë ‡ê²Œ ì„œë¡œë‹¤ë¥¸ key groupë¼ë¦¬ SET-target merging ë  ìˆ˜ ìˆë‹¤
+     * ÀÌ·¸°Ô ¼­·Î´Ù¸¥ key group³¢¸® SET-target merging µÉ ¼ö ÀÖ´Ù
      *
-     * ë•Œë¬¸ì— ì¼ë‹¨ key groupì„ ë¶„í• í•´ì„œ SETì˜ key infoë¥¼ êµ¬ì„±í•˜ê³ ,
+     * ¶§¹®¿¡ ÀÏ´Ü key groupÀ» ºĞÇÒÇØ¼­ SETÀÇ key info¸¦ ±¸¼ºÇÏ°í,
      * (debideKeyInfo + mergeKeyInfo4Set)
      *
-     * ë‹¤ì‹œ í•©ì¹  ìˆ˜ ìˆëŠ” key infoë“¤ì„ í•©ì¹˜ëŠ” ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+     * ´Ù½Ã ÇÕÄ¥ ¼ö ÀÖ´Â key infoµéÀ» ÇÕÄ¡´Â ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
      * (mergeSameKeyInfo)
      */
 
-    if ( aIsSubKey == ID_FALSE )
-    {
-        sLeftKeyInfo  = aLeftQuerySetAnalysis->mKeyInfo;
-        sRightKeyInfo = aRightQuerySetAnalysis->mKeyInfo;
-    }
-    else
-    {
-        sLeftKeyInfo  = aLeftQuerySetAnalysis->mKeyInfo4SubKey;
-        sRightKeyInfo = aRightQuerySetAnalysis->mKeyInfo4SubKey;
-    }
-
-    for ( ;
+    for ( sLeftKeyInfo  = aLeftQuerySetAnalysis->mKeyInfo;
           sLeftKeyInfo != NULL;
           sLeftKeyInfo  = sLeftKeyInfo->mNext )
     {
-        // Left query analysisì—ì„œ ì˜¬ë¼ì˜¨ key info ë¥¼ ê° key infoì˜ target ë³„ë¡œ ë¶„í• í•œë‹¤.
+        // Left query analysis¿¡¼­ ¿Ã¶ó¿Â key info ¸¦ °¢ key infoÀÇ target º°·Î ºĞÇÒÇÑ´Ù.
         IDE_TEST( devideKeyInfo( aStatement,
                                  sLeftKeyInfo,
                                  &sLeftDevidedKeyInfo )
@@ -4874,18 +5997,18 @@ IDE_RC sda::analyzeSetLeftRight( qcStatement  * aStatement,
 
     }
 
-    for ( ;
+    for ( sRightKeyInfo  = aRightQuerySetAnalysis->mKeyInfo;
           sRightKeyInfo != NULL;
           sRightKeyInfo  = sRightKeyInfo->mNext )
     {
-        // Right query analysis ì˜¬ë¼ì˜¨ key info ë¥¼ ê° key infoì˜ target ë³„ë¡œ ë¶„í• í•œë‹¤.
+        // Right query analysis ¿Ã¶ó¿Â key info ¸¦ °¢ key infoÀÇ target º°·Î ºĞÇÒÇÑ´Ù.
         IDE_TEST( devideKeyInfo( aStatement,
                                  sRightKeyInfo,
                                  &sRightDevidedKeyInfo )
                   != IDE_SUCCESS );
     }
 
-    // Leftì™€ rightì˜ keyInfoë¥¼ ë³‘í•©í•œë‹¤.
+    // Left¿Í rightÀÇ keyInfo¸¦ º´ÇÕÇÑ´Ù.
     IDE_TEST( mergeKeyInfo4Set( aStatement,
                                 sLeftDevidedKeyInfo,
                                 sRightDevidedKeyInfo,
@@ -4894,8 +6017,8 @@ IDE_RC sda::analyzeSetLeftRight( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     /*
-     * Key infoì˜ left ë¼ë¦¬, ë˜ right ë¼ë¦¬ ê°™ì€ key groupìœ¼ë¡œë¶€í„° ìƒì„±ëœ key infoë“¤ì€
-     * ë‹¤ì‹œ ë¬¶ì–´ì¤€ë‹¤.
+     * Key infoÀÇ left ³¢¸®, ¶Ç right ³¢¸® °°Àº key groupÀ¸·ÎºÎÅÍ »ı¼ºµÈ key infoµéÀº
+     * ´Ù½Ã ¹­¾îÁØ´Ù.
      */
     IDE_TEST( mergeSameKeyInfo( aStatement,
                                 sKeyInfoTmp,
@@ -4920,10 +6043,10 @@ IDE_RC sda::devideKeyInfo( qcStatement * aStatement,
         /*
          * SELECT I1,I1,I1...
          *
-         * ìœ„ì™€ê°™ì´ ë™ì¼í•œ shard keyê°€ ì—¬ëŸ¬ë²ˆ ì‚¬ìš© ë˜ì—ˆì„ ë•Œ
-         * í•œ ê°œ ì˜ KeyInfo ì— keyTargetCountê°€ 3ê°œë¡œ êµ¬ì„±ë˜ì–´ ì˜¬ë¼ì˜¤ì§€ë§Œ,
+         * À§¿Í°°ÀÌ µ¿ÀÏÇÑ shard key°¡ ¿©·¯¹ø »ç¿ë µÇ¾úÀ» ¶§
+         * ÇÑ °³ ÀÇ KeyInfo ¿¡ keyTargetCount°¡ 3°³·Î ±¸¼ºµÇ¾î ¿Ã¶ó¿ÀÁö¸¸,
          *
-         * SETì„ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ ë™ì¼í•œ key groupì„ ë‹¤ì‹œ keyTargetë³„ë¡œ ë¶„í• í•œë‹¤.
+         * SETÀ» Ã³¸®ÇÏ±â À§ÇØ µ¿ÀÏÇÑ key groupÀ» ´Ù½Ã keyTargetº°·Î ºĞÇÒÇÑ´Ù.
          *
          */
         for ( sKeyTargetCount = 0;
@@ -4941,7 +6064,7 @@ IDE_RC sda::devideKeyInfo( qcStatement * aStatement,
     }
     else
     {
-        /* Targetì— ì—†ëŠ” keyInfoì— ëŒ€í•´ì„œë„ ìƒì„±í•´ì¤€ë‹¤. */
+        /* Target¿¡ ¾ø´Â keyInfo¿¡ ´ëÇØ¼­µµ »ı¼ºÇØÁØ´Ù. */
         IDE_TEST( makeKeyInfo4SetTarget( aStatement,
                                          aKeyInfo,
                                          ID_UINT_MAX,
@@ -4967,13 +6090,13 @@ IDE_RC sda::makeKeyInfo4SetTarget( qcStatement * aStatement,
 
     IDE_DASSERT( aKeyInfo != NULL );
 
-    // ìƒˆë¡œìš´ key info êµ¬ì¡°ì²´ í• ë‹¹
+    // »õ·Î¿î key info ±¸Á¶Ã¼ ÇÒ´ç
     IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                             sdiKeyInfo,
                             (void*) &sNewKeyInfo )
               != IDE_SUCCESS );
     
-    // ìƒˆë¡œìš´ key infoì˜ ì •ë³´ ì´ˆê¸°í™”
+    // »õ·Î¿î key infoÀÇ Á¤º¸ ÃÊ±âÈ­
     SDI_INIT_KEY_INFO( sNewKeyInfo );
 
     // Set key target
@@ -5013,20 +6136,14 @@ IDE_RC sda::makeKeyInfo4SetTarget( qcStatement * aStatement,
     }
 
     // Set value
-    IDE_TEST( sdi::allocAndCopyValues( aStatement,
-                                       &sNewKeyInfo->mValue,
-                                       &sNewKeyInfo->mValueCount,
-                                       aKeyInfo->mValue,
-                                       aKeyInfo->mValueCount )
-              != IDE_SUCCESS );
+    sNewKeyInfo->mValuePtrCount = aKeyInfo->mValuePtrCount;
+    sNewKeyInfo->mValuePtrArray = aKeyInfo->mValuePtrArray;
 
     // Set shard info
-    IDE_TEST( copyShardInfoFromShardInfo( aStatement,
-                                          &sNewKeyInfo->mShardInfo,
-                                          &aKeyInfo->mShardInfo )
-              != IDE_SUCCESS );
+    copyShardInfoFromShardInfo( &sNewKeyInfo->mShardInfo,
+                                &aKeyInfo->mShardInfo );
 
-    // ì—°ê²°
+    // ¿¬°á
     sNewKeyInfo->mNext = *aDevidedKeyInfo;
     *aDevidedKeyInfo = sNewKeyInfo;
 
@@ -5054,14 +6171,14 @@ IDE_RC sda::mergeKeyInfo4Set( qcStatement * aStatement,
           sLeftKeyInfo != NULL;
           sLeftKeyInfo  = sLeftKeyInfo->mNext )
     {
-        // Devided ëœ keyInfoì˜ keyTargetCountëŠ” 1ì´ê±°ë‚˜ 0 ì¼ ìˆ˜ ìˆë‹¤.
+        // Devided µÈ keyInfoÀÇ keyTargetCount´Â 1ÀÌ°Å³ª 0 ÀÏ ¼ö ÀÖ´Ù.
         if ( sLeftKeyInfo->mKeyTargetCount == 1 )
         {
             for ( sRightKeyInfo  = aRightKeyInfo;
                   sRightKeyInfo != NULL;
                   sRightKeyInfo  = sRightKeyInfo->mNext )
             {
-                // Devided ëœ keyInfoì˜ keyTargetCountëŠ” 1ì´ê±°ë‚˜ 0 ì¼ ìˆ˜ ìˆë‹¤.
+                // Devided µÈ keyInfoÀÇ keyTargetCount´Â 1ÀÌ°Å³ª 0 ÀÏ ¼ö ÀÖ´Ù.
                 if ( sRightKeyInfo->mKeyTargetCount == 1 )
                 {
                     if ( sLeftKeyInfo->mKeyTarget[0] == sRightKeyInfo->mKeyTarget[0] )
@@ -5090,7 +6207,7 @@ IDE_RC sda::mergeKeyInfo4Set( qcStatement * aStatement,
                         // Nothing to do.
                     }
                 }
-                else if ( sLeftKeyInfo->mKeyTargetCount > 1 )
+                else if ( sRightKeyInfo->mKeyTargetCount > 1 )
                 {
                     IDE_RAISE(ERR_INVALID_SHARD_KEY_INFO);
                 }
@@ -5187,13 +6304,13 @@ IDE_RC sda::mergeKeyInfo( qcStatement * aStatement,
     IDE_DASSERT( aLeftKeyInfo  != NULL );
     IDE_DASSERT( aRightKeyInfo != NULL );
 
-    // ìƒˆë¡œìš´ key info êµ¬ì¡°ì²´ í• ë‹¹
+    // »õ·Î¿î key info ±¸Á¶Ã¼ ÇÒ´ç
     IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                             sdiKeyInfo,
                             (void*) &sNewKeyInfo )
               != IDE_SUCCESS );
 
-    // ìƒˆë¡œìš´ key infoì˜ ì •ë³´ ì´ˆê¸°í™”
+    // »õ·Î¿î key infoÀÇ Á¤º¸ ÃÊ±âÈ­
     SDI_INIT_KEY_INFO( sNewKeyInfo );
 
     // Set key target
@@ -5243,24 +6360,20 @@ IDE_RC sda::mergeKeyInfo( qcStatement * aStatement,
     }
 
     // Set value
-    if ( ( aLeftKeyInfo->mValueCount > 0 ) &&
-         ( aRightKeyInfo->mValueCount > 0 ) )
+    if ( ( aLeftKeyInfo->mValuePtrCount > 0 ) &&
+         ( aRightKeyInfo->mValuePtrCount > 0 ) )
     {
-        sNewKeyInfo->mValueCount =
-            ( aLeftKeyInfo->mValueCount + aRightKeyInfo->mValueCount );
+        IDE_DASSERT( aLeftKeyInfo->mShardInfo.mKeyDataType == 
+                     aRightKeyInfo->mShardInfo.mKeyDataType );
 
-        IDE_TEST( QC_QMP_MEM(aStatement)->alloc(
-                      ID_SIZEOF(sdiValueInfo) * sNewKeyInfo->mValueCount,
-                      (void**) & sNewKeyInfo->mValue )
+        IDE_TEST( allocAndMergeValues( aStatement,
+                                       aLeftKeyInfo->mValuePtrArray,
+                                       aLeftKeyInfo->mValuePtrCount,
+                                       aRightKeyInfo->mValuePtrArray,
+                                       aRightKeyInfo->mValuePtrCount,
+                                       &(sNewKeyInfo->mValuePtrArray),
+                                       &(sNewKeyInfo->mValuePtrCount) )
                   != IDE_SUCCESS );
-
-        idlOS::memcpy( (void*) sNewKeyInfo->mValue,
-                       (void*) aLeftKeyInfo->mValue,
-                       ID_SIZEOF(sdiValueInfo) * aLeftKeyInfo->mValueCount );
-
-        idlOS::memcpy( (void*) ( sNewKeyInfo->mValue + aLeftKeyInfo->mValueCount ),
-                       (void*) aRightKeyInfo->mValue,
-                       ID_SIZEOF(sdiValueInfo) * aRightKeyInfo->mValueCount );
     }
     else
     {
@@ -5268,10 +6381,8 @@ IDE_RC sda::mergeKeyInfo( qcStatement * aStatement,
     }
 
     // Set shard info
-    IDE_TEST( copyShardInfoFromShardInfo( aStatement,
-                                          &sNewKeyInfo->mShardInfo,
-                                          &aLeftKeyInfo->mShardInfo )
-              != IDE_SUCCESS );
+    copyShardInfoFromShardInfo( &sNewKeyInfo->mShardInfo,
+                                &aLeftKeyInfo->mShardInfo );
 
     // Set left,right
     sNewKeyInfo->mLeft       = aLeftKeyInfo;
@@ -5279,7 +6390,7 @@ IDE_RC sda::mergeKeyInfo( qcStatement * aStatement,
     aLeftKeyInfo->mIsJoined  = ID_TRUE;
     aRightKeyInfo->mIsJoined = ID_TRUE;
 
-    // ì—°ê²°
+    // ¿¬°á
     sNewKeyInfo->mNext = *aKeyInfo;
     *aKeyInfo = sNewKeyInfo;
 
@@ -5296,7 +6407,6 @@ IDE_RC sda::appendKeyInfo( qcStatement * aStatement,
 {
     UShort             * sNewTarget;
     sdiKeyTupleColumn  * sNewKey;
-    sdiValueInfo       * sNewValue;
 
     IDE_DASSERT( aKeyInfo  != NULL );
     IDE_DASSERT( aArgument != NULL );
@@ -5390,43 +6500,21 @@ IDE_RC sda::appendKeyInfo( qcStatement * aStatement,
     // append value
     //-------------------------
 
-    if ( aKeyInfo->mValueCount + aArgument->mValueCount > 0 )
+    if ( aKeyInfo->mValuePtrCount + aArgument->mValuePtrCount > 0 )
     {
-        IDE_TEST( QC_QMP_MEM(aStatement)->alloc(
-                      ID_SIZEOF(sdiValueInfo) *
-                      ( aKeyInfo->mValueCount + aArgument->mValueCount ),
-                      (void**) & sNewValue )
+        IDE_TEST( allocAndMergeValues( aStatement,
+                                       aKeyInfo->mValuePtrArray,
+                                       aKeyInfo->mValuePtrCount,
+                                       aArgument->mValuePtrArray,
+                                       aArgument->mValuePtrCount,
+                                       &(aKeyInfo->mValuePtrArray),
+                                       &(aKeyInfo->mValuePtrCount) )
                   != IDE_SUCCESS );
-
-        if ( aKeyInfo->mValueCount > 0 )
-        {
-            idlOS::memcpy( (void*) sNewValue,
-                           (void*) aKeyInfo->mValue,
-                           ID_SIZEOF(sdiValueInfo) * aKeyInfo->mValueCount );
-        }
-        else
-        {
-            // Nothing to do.
-        }
-
-        if ( aArgument->mValueCount > 0 )
-        {
-            idlOS::memcpy( (void*) ( sNewValue + aKeyInfo->mValueCount ),
-                           (void*) aArgument->mValue,
-                           ID_SIZEOF(sdiValueInfo) * aArgument->mValueCount );
-        }
-        else
-        {
-            // Nothing to do.
-        }
-
-        aKeyInfo->mValueCount = aKeyInfo->mValueCount + aArgument->mValueCount;
-        aKeyInfo->mValue      = sNewValue;
     }
     else
     {
-        aKeyInfo->mValueCount = 0;
-        aKeyInfo->mValue      = NULL;
+        aKeyInfo->mValuePtrCount = 0;
+        aKeyInfo->mValuePtrArray = NULL;
     }
 
     return IDE_SUCCESS;
@@ -5495,9 +6583,9 @@ IDE_RC sda::mergeSameKeyInfo( qcStatement * aStatement,
                      *       right1   right1   right2  right2   right1
                      *
                      *
-                     *      A,B,C,DëŠ” ê°™ì€ leftë¼ë¦¬ ë˜, right ë¼ë¦¬ ê°™ì€ key groupìœ¼ë¡œë¶€í„°
-                     *      ìƒì„±ë˜ì—ˆë‹¤.
-                     *      ë•Œë¬¸ì—, ì´ A,B,C,D key infoë“¤ì€ ë‹¤ì‹œ í•˜ë‚˜ì˜ keyë¡œ merge ë  ìˆ˜ ìˆë‹¤.
+                     *      A,B,C,D´Â °°Àº left³¢¸® ¶Ç, right ³¢¸® °°Àº key groupÀ¸·ÎºÎÅÍ
+                     *      »ı¼ºµÇ¾ú´Ù.
+                     *      ¶§¹®¿¡, ÀÌ A,B,C,D key infoµéÀº ´Ù½Ã ÇÏ³ªÀÇ key·Î merge µÉ ¼ö ÀÖ´Ù.
                      *
                      *      keyInfo1   keyInfo2
                      *
@@ -5554,9 +6642,9 @@ IDE_RC sda::mergeSameKeyInfo( qcStatement * aStatement,
      * SELECT I1  ,'C'
      *   FROM T1;
      *
-     * ì—ì„œ Bì™€ ê°™ì´ í™€ë¡œ ì“°ì¸ Shard key column ì— ëŒ€í•´ì„œ
-     * Set merge ëœ shard keyì¤‘ ë™ì¼í•œ keyê°€ ìˆìœ¼ë©´ í•©ì³ì£¼ê³ ,
-     * ì—†ìœ¼ë©´, ë³„ë„ì˜ keyë¡œ ìƒì„±í•œë‹¤.
+     * ¿¡¼­ B¿Í °°ÀÌ È¦·Î ¾²ÀÎ Shard key column ¿¡ ´ëÇØ¼­
+     * Set merge µÈ shard keyÁß µ¿ÀÏÇÑ key°¡ ÀÖÀ¸¸é ÇÕÃÄÁÖ°í,
+     * ¾øÀ¸¸é, º°µµÀÇ key·Î »ı¼ºÇÑ´Ù.
      *
      */
     for ( sKeyInfoTmp  = aKeyInfoTmp;
@@ -5677,309 +6765,139 @@ IDE_RC sda::getSameKey4Set( sdiKeyInfo  * aKeyInfo,
     }
     
     return IDE_SUCCESS;
-}                             
-
-IDE_RC sda::setCantMergeReasonParseTree( qmsParseTree * aParseTree,
-                                         sdiKeyInfo   * aKeyInfo,
-                                         idBool       * aCantMergeReason )
-{
-    sdiKeyInfo * sKeyInfo      = NULL;
-    sdiKeyInfo * sCheckKeyInfo = NULL;
-
-    UInt         sKeyInfoCount = 0;
-    idBool       sSkipLimit    = ID_FALSE;
-
-    for ( sKeyInfo  = aKeyInfo;
-          sKeyInfo != NULL;
-          sKeyInfo  = sKeyInfo->mNext )
-    {
-        if ( ( sKeyInfo->mShardInfo.mSplitMethod != SDI_SPLIT_CLONE ) &&
-             ( sKeyInfo->mShardInfo.mSplitMethod != SDI_SPLIT_SOLO ) )
-        {
-            sCheckKeyInfo = sKeyInfo;
-            sKeyInfoCount++;
-        }
-        else
-        {
-            // Nothing to do.
-        }
-    }
-
-    if ( aParseTree->orderBy != NULL )
-    {
-        if ( sKeyInfoCount == 1 )
-        {
-            if ( sCheckKeyInfo->mValueCount == 1 )
-            {
-                // Already aCantMergeReason[SDI_ORDER_BY_EXISTS] = ID_FALSE;
-                // Nothing to do.
-            }
-            else
-            {
-                aCantMergeReason[SDI_ORDER_BY_EXISTS] = ID_TRUE;
-            }
-        }
-        else
-        {
-            aCantMergeReason[SDI_ORDER_BY_EXISTS] = ID_TRUE;
-        }
-    }
-    else
-    {
-        // Nothing to do.
-    }
-
-    if ( aParseTree->limit != NULL )
-    {
-        if ( aParseTree->forUpdate != NULL )
-        {
-            if ( aParseTree->forUpdate->isMoveAndDelete == ID_TRUE )
-            {
-                // select for move and deleteëŠ” limitì„ í—ˆìš©í•œë‹¤.
-                sSkipLimit = ID_TRUE;
-            }
-            else
-            {
-                // Nothing to do.
-            }
-        }
-        else
-        {
-            // Nothing to do.
-        }
-
-        if ( sSkipLimit == ID_FALSE )
-        {
-            if ( sKeyInfoCount == 1 )
-            {
-                if ( sCheckKeyInfo->mValueCount == 1 )
-                {
-                    // Already aCantMergeReason[SDI_LIMIT_EXISTS] = ID_FALSE;
-                    // Nothing to do.
-                }
-                else
-                {
-                    aCantMergeReason[SDI_LIMIT_EXISTS] = ID_TRUE;
-                }
-            }
-            else
-            {
-                aCantMergeReason[SDI_LIMIT_EXISTS] = ID_TRUE;
-            }
-        }
-        else
-        {
-            // Nothing to do.
-        }
-    }
-    else
-    {
-        // Nothing to do.
-    }
-
-    if ( aParseTree->loopNode != NULL )
-    {
-        if ( sKeyInfoCount == 1 )
-        {
-            if ( sCheckKeyInfo->mValueCount == 1 )
-            {
-                // Already aCantMergeReason[SDI_LOOP_EXISTS] = ID_FALSE;
-                // Nothing to do.
-            }
-            else
-            {
-                aCantMergeReason[SDI_LOOP_EXISTS] = ID_TRUE;
-            }
-        }
-        else
-        {
-            aCantMergeReason[SDI_LOOP_EXISTS] = ID_TRUE;
-        }
-    }
-    else
-    {
-        // Nothing to do.
-    }
-
-    return IDE_SUCCESS;
 }
 
-IDE_RC sda::makeShardValueList( qcStatement   * aStatement,
-                                sdiKeyInfo    * aKeyInfo,
-                                sdaValueList ** aValueList,
-                                UShort        * aValueListCount )
+IDE_RC sda::setAnalysisFlag4ParseTree( qmsParseTree * aParseTree,
+                                       idBool         aIsSubKey )
 {
-    sdaValueList * sValueList  = NULL;
-    sdaValueList * sNewValue   = NULL;
-    UInt           sValueCount = 0;
+    sdiShardAnalysis * sShardAnalysis  = NULL;
+    idBool             sSkipLimitCheck = ID_FALSE;
+    idBool             sIsOneNodeQuery = ID_FALSE;
+    UInt               sDistKeyCount   = 0;
 
-    idBool         sIsSameValueExist = ID_FALSE;
-
-    SInt           sCompareResult;
-
-    for ( sValueCount = 0;
-          sValueCount < aKeyInfo->mValueCount;
-          sValueCount++ )
+    if ( aIsSubKey == ID_FALSE )
     {
-        sIsSameValueExist = ID_FALSE;
+        sShardAnalysis = aParseTree->mShardAnalysis;
+    }
+    else
+    {
+        sShardAnalysis = aParseTree->mShardAnalysis->mNext;
+    }
 
-        for ( sValueList  = *aValueList;
-              sValueList != NULL;
-              sValueList  = sValueList->mNext )
+    IDE_TEST( isOneNodeSQL( NULL,
+                            sShardAnalysis->mKeyInfo,
+                            &sIsOneNodeQuery,
+                            &sDistKeyCount )
+              != IDE_SUCCESS );
+
+    if ( sIsOneNodeQuery == ID_FALSE )
+    {
+        /* TASK-7219 Shard Transformer Refactoring */
+        IDE_TEST( setAnalysisFlag4OrderBy( aParseTree->orderBy,
+                                           &( sShardAnalysis->mAnalysisFlag ) )
+                  != IDE_SUCCESS );
+
+        // Checking limit
+        if ( aParseTree->limit != NULL )
         {
-            if ( aKeyInfo->mValue[sValueCount].mType == sValueList->mValue->mType )
+            if ( aParseTree->limit->mIsShard == ID_TRUE )
             {
-                if ( sValueList->mValue->mType == 0 )
-                {
-                    if ( aKeyInfo->mValue[sValueCount].mValue.mBindParamId ==
-                         sValueList->mValue->mValue.mBindParamId )
-                    {
-                        // Already, the same value exists
-                        sIsSameValueExist = ID_TRUE;
-                        break;
-                    }
-                    else
-                    {
-                        // Nothing to do.
-                    }
-                }
-                else if ( sValueList->mValue->mType == 1 )
-                {
-                    IDE_TEST( compareSdiValue( aKeyInfo->mShardInfo.mKeyDataType,
-                                               &aKeyInfo->mValue[sValueCount],
-                                               sValueList->mValue,
-                                               &sCompareResult )
-                              != IDE_SUCCESS );
+                /* TASK-7219
+                 *  Shard Transform °¡ Push ÇÑ Limit ´Â Çã¿ëÇÑ´Ù.
+                 */
+                sSkipLimitCheck = ID_TRUE;
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
 
-                    if ( sCompareResult == 0 )
-                    {
-                        // Already, the same value exists
-                        sIsSameValueExist = ID_TRUE;
-                        break;
-                    }
-                    else
-                    {
-                        // Nothing to do.
-                    }
+            if ( aParseTree->forUpdate != NULL )
+            {
+                if ( aParseTree->forUpdate->isMoveAndDelete == ID_TRUE )
+                {
+                    // select for move and delete´Â limitÀ» Çã¿ëÇÑ´Ù.
+                    sSkipLimitCheck = ID_TRUE;
                 }
                 else
                 {
-                    IDE_RAISE(ERR_INVALID_SHARD_VALUE_TYPE);
+                    /* Nothing to do. */
                 }
             }
             else
             {
-                // Nothing to do.
+                /* Nothing to do. */
             }
-        }
 
-        if ( sIsSameValueExist == ID_FALSE )
-        {
-            IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdaValueList),
-                                                     (void**) & sNewValue )
-                      != IDE_SUCCESS );
-
-            sNewValue->mKeyColumn = NULL;
-            sNewValue->mValue     = &aKeyInfo->mValue[sValueCount];
-
-            sNewValue->mNext = *aValueList;
-            *aValueList = sNewValue;
-
-            (*aValueListCount)++;
+            if ( sSkipLimitCheck == ID_FALSE )
+            {
+                sShardAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_NODE_TO_NODE_LIMIT_EXISTS ] = ID_TRUE;
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
         }
         else
         {
-            // Nothing to do.
+            /* Nothing to do. */
+        }
+
+        // Checking loop
+        if ( aParseTree->loopNode != NULL )
+        {
+            sShardAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_NODE_TO_NODE_LOOP_EXISTS ] = ID_TRUE;
+        }
+        else
+        {
+            /* Nothing to do. */
         }
     }
+    else
+    {
+        /* Nothing to do. */
+    }
+
+    // Shard query ¿©ºÎ¸¦ ¼¼ÆÃÇÑ´Ù.
+    IDE_TEST( isShardQuery( &( sShardAnalysis->mAnalysisFlag ),
+                            &( sShardAnalysis->mIsShardQuery ) )
+              != IDE_SUCCESS );
 
     return IDE_SUCCESS;
-
-    IDE_EXCEPTION(ERR_INVALID_SHARD_VALUE_TYPE)
-    {
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
-                                "sda::makeShardValueList",
-                                "Invalid shard value type"));
-    }
+    
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 }
 
-void sda::setCanNotMergeReasonErr( idBool * aCanNotMergeReason,
-                                   UShort * aErrIdx )
+void sda::setNonShardQueryReasonErr( sdiAnalysisFlag * aAnalysisFlag,
+                                     UShort          * aErrIdx )
 {
     // BUG-45899
     UShort sArrIdx = 0;
 
-    for ( sArrIdx = 0; sArrIdx < SDI_CAN_NOT_MERGE_REASON_MAX; sArrIdx++ )
+    for ( sArrIdx = 0; sArrIdx < SDI_NON_SHARD_QUERY_REASON_MAX; sArrIdx++ )
     {
-        // Sub-key existsëŠ” non-shard queryì˜ ì´ìœ ë¡œ ë³´ì§€ ì•ŠëŠ”ë‹¤.
-        if ( ( aCanNotMergeReason[sArrIdx] == ID_TRUE ) &&
-             ( sArrIdx != SDI_SUB_KEY_EXISTS ) )
+        // Sub-key exists´Â non-shard queryÀÇ ÀÌÀ¯·Î º¸Áö ¾Ê´Â´Ù.
+        if ( aAnalysisFlag->mNonShardFlag[ sArrIdx ] == ID_TRUE )
         {
             *aErrIdx = sArrIdx;
             IDE_SET( ideSetErrorCode( sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                      sdi::getCanNotMergeReasonArr( sArrIdx ) ) );
+                                      sdi::getNonShardQueryReasonArr( sArrIdx ),
+                                      "" ) );
             break;
         }
     }
 
-    if ( ( sArrIdx > SDI_GROUP_BY_EXTENSION_EXISTS ) &&
-         ( sArrIdx != SDI_SUB_KEY_EXISTS ) )
+    if ( sArrIdx == SDI_NON_SHARD_QUERY_REASON_MAX )
     {
-        *aErrIdx = SDI_CAN_NOT_MERGE_REASON_MAX;
+        *aErrIdx = SDI_UNKNOWN_REASON;
 
         // Avoid null error message
         IDE_SET( ideSetErrorCode( sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                  "Unknown error" ) );
+                                  sdi::getNonShardQueryReasonArr( SDI_UNKNOWN_REASON ),
+                                  "" ) );
     }
-}
-
-IDE_RC sda::setAnalysisResult( qcStatement * aStatement )
-{
-    qciStmtType     sType = aStatement->myPlan->parseTree->stmtKind;
-    qmsParseTree  * sParseTree;
-
-    switch ( sType )
-    {
-        case QCI_STMT_SELECT:
-        case QCI_STMT_SELECT_FOR_UPDATE:
-            IDE_DASSERT( aStatement != NULL );
-            IDE_DASSERT( aStatement->myPlan != NULL );
-
-            sParseTree = (qmsParseTree*)aStatement->myPlan->parseTree;
-
-            IDE_TEST( setAnalysis( aStatement,
-                                   sParseTree->mShardAnalysis->mQuerySetAnalysis,
-                                   sParseTree->mShardAnalysis->mCantMergeReason,
-                                   sParseTree->mShardAnalysis->mCantMergeReason4SubKey )
-                      != IDE_SUCCESS );
-            break;
-
-        case QCI_STMT_INSERT:
-        case QCI_STMT_UPDATE:
-        case QCI_STMT_DELETE:
-        case QCI_STMT_EXEC_PROC:
-            /* the analysisResult already was set */
-            break;
-
-        default:
-            IDE_RAISE(ERR_INVALID_STMT_TYPE);
-            break;
-    }
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION(ERR_INVALID_STMT_TYPE)
-    {
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
-                                "sda::analyze",
-                                "Invalid stmt type"));
-    }
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
 }
 
 IDE_RC sda::analyzeInsert( qcStatement * aStatement,
@@ -5987,45 +6905,68 @@ IDE_RC sda::analyzeInsert( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : INSERT êµ¬ë¬¸ì˜ ìµœì í™”
+ * Description : INSERT ±¸¹®ÀÇ ºĞ¼®
  *
  * Implementation :
  *    (1) CASE 1 : INSERT...VALUE(...(subquery)...)
- *        qmoSubquery::optimizeExpr()ì˜ ìˆ˜í–‰
+ *        qmoSubquery::optimizeExpr()ÀÇ ¼öÇà
  *    (2) CASE 2 : INSERT...SELECT...
- *        qmoSubquery::optimizeSubquery()ì˜ ìˆ˜í–‰ (ë¯¸êµ¬í˜„)
+ *        qmoSubquery::optimizeSubquery()ÀÇ ¼öÇà
  *
  ***********************************************************************/
 
-    qmmInsParseTree * sInsParseTree;
-
+    qmmInsParseTree  * sInsParseTree = NULL;
+    sdiShardAnalysis * sAnalysis = NULL;
+    sdiObjectInfo    * sShardObjInfo = NULL;
+   
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_TEST_RAISE( aStatement == NULL, ERR_NULL_STATEMENT );
 
     //------------------------------------------
-    // Parse Tree íšë“
+    // Parse Tree È¹µæ
     //------------------------------------------
 
     sInsParseTree = (qmmInsParseTree*) aStatement->myPlan->parseTree;
+    /* TASK-7219 Shard Transformer Refactoring */
+    sShardObjInfo = sInsParseTree->tableRef->mShardObjInfo;
 
     /* BUG-45823 */
     increaseAnalyzeCount( aStatement );
 
     //------------------------------------------
-    // ê²€ì‚¬
+    // °Ë»ç
     //------------------------------------------
 
     IDE_TEST( checkInsert( aStatement, sInsParseTree ) != IDE_SUCCESS );
 
     //------------------------------------------
-    // ë¶„ì„
+    // ºĞ¼®
     //------------------------------------------
 
-    IDE_TEST( setInsertAnalysis( aStatement,
-                                 aSMN ) != IDE_SUCCESS );
+    /* TASK-7219 Shard Transformer Refactoring */
+    IDE_TEST( analyzeInsertCore( aStatement,
+                                 aSMN,
+                                 sShardObjInfo,
+                                 ID_FALSE )
+              != IDE_SUCCESS );
+
+    sAnalysis = sInsParseTree->mShardAnalysis;
+
+    if ( sAnalysis->mAnalysisFlag.mTopQueryFlag[ SDI_TQ_SUB_KEY_EXISTS ] == ID_TRUE )
+    {
+        IDE_TEST( analyzeInsertCore( aStatement,
+                                     aSMN,
+                                     sShardObjInfo,
+                                     ID_TRUE )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
 
     return IDE_SUCCESS;
 
@@ -6045,22 +6986,24 @@ IDE_RC sda::analyzeUpdate( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : UPDATE êµ¬ë¬¸ì˜ ë¶„ì„
+ * Description : UPDATE ±¸¹®ÀÇ ºĞ¼®
  *
  * Implementation :
  *
  ***********************************************************************/
 
-    qmmUptParseTree * sUptParseTree;
+    qmmUptParseTree  * sUptParseTree  = NULL;
+    sdiShardAnalysis * sAnalysis = NULL;
+    sdiObjectInfo    * sShardObjInfo = NULL;
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_TEST_RAISE( aStatement == NULL, ERR_NULL_STATEMENT );
 
     //------------------------------------------
-    // Parse Tree íšë“
+    // Parse Tree È¹µæ
     //------------------------------------------
 
     IDE_DASSERT( aStatement->myPlan != NULL );
@@ -6070,7 +7013,7 @@ IDE_RC sda::analyzeUpdate( qcStatement * aStatement,
     increaseAnalyzeCount( aStatement );
 
     //------------------------------------------
-    // PROJ-1718 Whereì ˆì— ëŒ€í•˜ì—¬ subquery predicateì„ transformí•œë‹¤.
+    // PROJ-1718 WhereÀı¿¡ ´ëÇÏ¿© subquery predicateÀ» transformÇÑ´Ù.
     //------------------------------------------
 
     IDE_TEST( qmo::doTransformSubqueries( aStatement,
@@ -6078,22 +7021,38 @@ IDE_RC sda::analyzeUpdate( qcStatement * aStatement,
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // ê²€ì‚¬
+    // °Ë»ç
     //------------------------------------------
 
-    IDE_TEST( checkUpdate( aStatement, sUptParseTree ) != IDE_SUCCESS );
+    IDE_TEST( checkUpdate( aStatement, sUptParseTree, aSMN ) != IDE_SUCCESS );
 
     //------------------------------------------
-    // ë¶„ì„
+    // ºĞ¼®
     //------------------------------------------
 
-    IDE_TEST( normalizePredicate( aStatement,
-                                  sUptParseTree->querySet,
-                                  &(sUptParseTree->mShardPredicate) )
+    /* TASK-7219 Shard Transformer Refactoring */
+    sShardObjInfo = sUptParseTree->updateTableRef->mShardObjInfo;
+
+    IDE_TEST( analyzeUpdateCore( aStatement,
+                                 aSMN,
+                                 sShardObjInfo,
+                                 ID_FALSE )
               != IDE_SUCCESS );
 
-    IDE_TEST( setUpdateAnalysis( aStatement,
-                                 aSMN ) != IDE_SUCCESS );
+    sAnalysis = sUptParseTree->mShardAnalysis;
+
+    if ( sAnalysis->mAnalysisFlag.mTopQueryFlag[ SDI_TQ_SUB_KEY_EXISTS ] == ID_TRUE )
+    {
+        IDE_TEST( analyzeUpdateCore( aStatement,
+                                     aSMN,
+                                     sShardObjInfo,
+                                     ID_TRUE )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
 
     return IDE_SUCCESS;
 
@@ -6113,22 +7072,24 @@ IDE_RC sda::analyzeDelete( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : DELETE êµ¬ë¬¸ì˜ ë¶„ì„
+ * Description : DELETE ±¸¹®ÀÇ ºĞ¼®
  *
  * Implementation :
  *
  ***********************************************************************/
 
-    qmmDelParseTree * sDelParseTree;
+    qmmDelParseTree  * sDelParseTree = NULL;
+    sdiShardAnalysis * sAnalysis = NULL;
+    sdiObjectInfo    * sShardObjInfo = NULL;
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_TEST_RAISE( aStatement == NULL, ERR_NULL_STATEMENT );
 
     //------------------------------------------
-    // Parse Tree íšë“
+    // Parse Tree È¹µæ
     //------------------------------------------
 
     IDE_DASSERT( aStatement->myPlan != NULL );
@@ -6138,30 +7099,38 @@ IDE_RC sda::analyzeDelete( qcStatement * aStatement,
     increaseAnalyzeCount( aStatement );
 
     //------------------------------------------
-    // PROJ-1718 Whereì ˆì— ëŒ€í•˜ì—¬ subquery predicateì„ transformí•œë‹¤.
-    //------------------------------------------
-
-    IDE_TEST( qmo::doTransformSubqueries( aStatement,
-                                          sDelParseTree->querySet->SFWGH->where )
-              != IDE_SUCCESS );
-
-    //------------------------------------------
-    // ê²€ì‚¬
+    // °Ë»ç
     //------------------------------------------
 
     IDE_TEST( checkDelete( aStatement, sDelParseTree ) != IDE_SUCCESS );
 
     //------------------------------------------
-    // ë¶„ì„
+    // ºĞ¼®
     //------------------------------------------
 
-    IDE_TEST( normalizePredicate( aStatement,
-                                  sDelParseTree->querySet,
-                                  &(sDelParseTree->mShardPredicate) )
+    /* TASK-7219 Shard Transformer Refactoring */
+    sShardObjInfo = sDelParseTree->deleteTableRef->mShardObjInfo;
+
+    IDE_TEST( analyzeDeleteCore( aStatement,
+                                 aSMN,
+                                 sShardObjInfo,
+                                 ID_FALSE )
               != IDE_SUCCESS );
 
-    IDE_TEST( setDeleteAnalysis( aStatement,
-                                 aSMN ) != IDE_SUCCESS );
+    sAnalysis = sDelParseTree->mShardAnalysis;
+
+    if ( sAnalysis->mAnalysisFlag.mTopQueryFlag[ SDI_TQ_SUB_KEY_EXISTS ] == ID_TRUE )
+    {
+        IDE_TEST( analyzeDeleteCore( aStatement,
+                                     aSMN,
+                                     sShardObjInfo,
+                                     ID_TRUE )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
 
     return IDE_SUCCESS;
 
@@ -6181,41 +7150,64 @@ IDE_RC sda::analyzeExecProc( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : EXEC êµ¬ë¬¸ì˜ ë¶„ì„
+ * Description : EXEC ±¸¹®ÀÇ ºĞ¼®
  *
  * Implementation :
  *
  ***********************************************************************/
 
-    qsExecParseTree * sExecParseTree;
+    qsExecParseTree  * sExecParseTree = NULL;
+    sdiShardAnalysis * sAnalysis = NULL;
+    sdiObjectInfo * sShardObjInfo = NULL;
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_TEST_RAISE( aStatement == NULL, ERR_NULL_STATEMENT );
 
     //------------------------------------------
-    // Parse Tree íšë“
+    // Parse Tree È¹µæ
     //------------------------------------------
 
     sExecParseTree = (qsExecParseTree*) aStatement->myPlan->parseTree;
+    /* TASK-7219 Shard Transformer Refactoring */
+    sShardObjInfo  = sExecParseTree->mShardObjInfo;
 
     /* BUG-45823 */
     increaseAnalyzeCount( aStatement );
 
     //------------------------------------------
-    // ê²€ì‚¬
+    // °Ë»ç
     //------------------------------------------
 
     IDE_TEST( checkExecProc( aStatement, sExecParseTree ) != IDE_SUCCESS );
 
     //------------------------------------------
-    // ë¶„ì„
+    // ºĞ¼®
     //------------------------------------------
 
-    IDE_TEST( setExecProcAnalysis( aStatement,
-                                   aSMN ) != IDE_SUCCESS );
+    /* TASK-7219 Shard Transformer Refactoring */
+    IDE_TEST( analyzeExecProcCore( aStatement,
+                                   aSMN,
+                                   sShardObjInfo,
+                                   ID_FALSE )
+              != IDE_SUCCESS );
+
+    sAnalysis = sExecParseTree->mShardAnalysis;
+
+    if ( sAnalysis->mAnalysisFlag.mTopQueryFlag[ SDI_TQ_SUB_KEY_EXISTS ] == ID_TRUE )
+    {
+        IDE_TEST( analyzeExecProcCore( aStatement,
+                                       aSMN,
+                                       sShardObjInfo,
+                                       ID_TRUE )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
 
     return IDE_SUCCESS;
 
@@ -6230,24 +7222,22 @@ IDE_RC sda::analyzeExecProc( qcStatement * aStatement,
     return IDE_FAILURE;
 }
 
-IDE_RC sda::checkUpdate( qcStatement * aStatement, qmmUptParseTree * aUptParseTree )
+IDE_RC sda::checkUpdate( qcStatement * aStatement, qmmUptParseTree * aUptParseTree, ULong aSMN )
 {
 /***********************************************************************
  *
  * Description :
- *      ìˆ˜í–‰ ê°€ëŠ¥í•œ SQLì¸ì§€ íŒë‹¨í•œë‹¤.
+ *      ¼öÇà °¡´ÉÇÑ SQLÀÎÁö ÆÇ´ÜÇÑ´Ù.
  *
- *     *  ìˆ˜í–‰ ê°€ëŠ¥í•œ SQLì˜ ì¡°ê±´
+ *     *  ¼öÇà °¡´ÉÇÑ SQLÀÇ Á¶°Ç
  *
  *         < UPDATE >
  *
- *             1. Non shard objectê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤.
- *             2. Triggerê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤.
- *             3. Updatable viewë¥¼ ì‚¬ìš© í•  ìˆ˜ ì—†ë‹¤. ( must check )
- *             - 4. Return intoê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( optionally check )  20160608 ì œì•½ì¡°ê±´ì œê±°
- *             - 5. Limitì´ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( optionally check ) 20160608 ì œì•½ì¡°ê±´ì œê±°
- *             6. InsteadOfTriggerê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( must check )
- *             7. key columnì€ update ë  ìˆ˜ ì—†ë‹¤. ( must check )
+ *             X. DML target Å×ÀÌºíÀº non-shard table ÀÌ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
+ *              - TASK-7219 Shard Transformer Refactoring / sda::checkAndGetShardObjInfo Ã³¸®
+ *             1. Multiple Update ¹ÌÁö¿ø
+ *             2. DML target Å×ÀÌºíÀÌ view °¡ ¾Æ´Ï¾î¾ß ÇÑ´Ù. ( Updatable view ¹ÌÁö¿ø )
+ *             3. key columnÀº update µÉ ¼ö ¾ø´Ù.
  *
  * Implementation :
  *
@@ -6255,90 +7245,144 @@ IDE_RC sda::checkUpdate( qcStatement * aStatement, qmmUptParseTree * aUptParseTr
  *
  ***********************************************************************/
 
-    qcmColumn       * sUpdateColumn = NULL;
-    UInt              sColOrder;
+    qcmColumn        * sUpdateColumn = NULL;
+    UInt               sColOrder;
+    qcuSqlSourceInfo   sqlInfo;
+    sdiObjectInfo    * sShardObjInfo = NULL;
 
-    /* 1. Non shard objectê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. */
-    IDE_TEST_RAISE( aUptParseTree->updateTableRef->mShardObjInfo == NULL,
-                    ERR_NON_SHARD_OBJECT_EXIST );
-
-    /* 2. Triggerê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. */
-    IDE_TEST_RAISE( aUptParseTree->updateTableRef->tableInfo->triggerCount != 0,
-                    ERR_TRIGGER_EXIST );
-
-    /* 3. setì ˆì— subqueryë¥¼ ì‚¬ìš© í•  ìˆ˜ ì—†ë‹¤. */
-    IDE_TEST_RAISE( aUptParseTree->subqueries != NULL, ERR_SET_SUBQUERY_EXIST );
-
-    /* 3. Updatable viewë¥¼ ì‚¬ìš© í•  ìˆ˜ ì—†ë‹¤. */
-    IDE_TEST_RAISE( aUptParseTree->querySet->SFWGH->from->tableRef->view != NULL,
-                    ERR_VIEW_EXIST );
-
-    /* 4. Return intoê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. 20160608 ì œì•½ì¡°ê±´ì œê±°  */
-
-    /* 5. Limitì´ ìˆìœ¼ë©´ ì•ˆëœë‹¤. 20160608 ì œì•½ì¡°ê±´ì œê±° */
-
-    /* 6. InsteadOfTriggerê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. */
-    IDE_TEST_RAISE( aUptParseTree->insteadOfTrigger != ID_FALSE,
-                    ERR_INSTEAD_OF_TRIGGER_EXIST );
-
-    /* 7.  Key columnì€ update ë  ìˆ˜ ì—†ë‹¤. */
-    for ( sUpdateColumn  = aUptParseTree->updateColumns;
-          sUpdateColumn != NULL;
-          sUpdateColumn  = sUpdateColumn->next )
+    /* TASK-7219 Shard Transformer Refactoring
+     *  1. Multiple Update ¹ÌÁö¿ø
+     */
+    if ( aUptParseTree->mTableList != NULL )
     {
-        sColOrder = sUpdateColumn->basicInfo->column.id & SMI_COLUMN_ID_MASK;
+        if ( aUptParseTree->mTableList->mNext == NULL )
+        {
+            sqlInfo.setSourceInfo( aStatement, &( aStatement->myPlan->parseTree->stmtPos ) );
 
-        if ( aUptParseTree->updateTableRef->mShardObjInfo->mKeyFlags[sColOrder] == 1 )
-        {
-            IDE_RAISE(ERR_SHARD_KEY_CAN_NOT_BE_UPDATED);
-        }
-        else if ( aUptParseTree->updateTableRef->mShardObjInfo->mKeyFlags[sColOrder] == 2 )
-        {
-            IDE_RAISE(ERR_SHARD_KEY_CAN_NOT_BE_UPDATED);
+            IDE_RAISE( ERR_MULTIPLE_UPDATE );
         }
         else
         {
-            // Nothing to do.
+            if ( aUptParseTree->mTableList->mNext->mTableRef == NULL )
+            {
+                sqlInfo.setSourceInfo( aStatement, &( aStatement->myPlan->parseTree->stmtPos ) );
+
+                IDE_RAISE( ERR_MULTIPLE_UPDATE );
+            }
+            else
+            {
+                if ( QC_IS_NULL_NAME( aUptParseTree->mTableList->mNext->mTableRef->position ) == ID_FALSE )
+                {
+                    sqlInfo.setSourceInfo( aStatement, &( aUptParseTree->mTableList->mNext->mTableRef->position ) );
+
+                    IDE_RAISE( ERR_MULTIPLE_UPDATE );
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+            }
         }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    /* 2. DML target Å×ÀÌºíÀÌ view °¡ ¾Æ´Ï¾î¾ß ÇÑ´Ù. ( Updatable view ¹ÌÁö¿ø ) */
+    if ( aUptParseTree->querySet->SFWGH->from->tableRef->view != NULL )
+    {
+        if ( QC_IS_NULL_NAME( aUptParseTree->querySet->SFWGH->from->tableRef->position ) == ID_FALSE )
+        {
+            sqlInfo.setSourceInfo( aStatement, &( aUptParseTree->querySet->SFWGH->from->tableRef->position ) );
+        }
+        else
+        {
+            sqlInfo.setSourceInfo( aStatement, &( aStatement->myPlan->parseTree->stmtPos ) );
+        }
+
+        IDE_RAISE( ERR_VIEW_EXIST );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    /* TASK-7219 Shard Transformer Refactoring
+     *  3. Key columnÀº update µÉ ¼ö ¾ø´Ù.
+     */
+    if ( aUptParseTree->updateTableRef->mShardObjInfo != NULL )
+    {
+        sdi::getShardObjInfoForSMN( aSMN,
+                                    aUptParseTree->updateTableRef->mShardObjInfo,
+                                    &( sShardObjInfo ) );
+
+        IDE_TEST_RAISE( sShardObjInfo == NULL, ERR_INVALID_SHARD_OBJECT_INFO );
+
+        for ( sUpdateColumn  = aUptParseTree->updateColumns;
+              sUpdateColumn != NULL;
+              sUpdateColumn  = sUpdateColumn->next )
+        {
+            sColOrder = sUpdateColumn->basicInfo->column.id & SMI_COLUMN_ID_MASK;
+
+            if ( ( sShardObjInfo->mKeyFlags[sColOrder] == 1 ) ||
+                 ( sShardObjInfo->mKeyFlags[sColOrder] == 2 ) )
+            {
+                if ( ( QC_IS_NULL_NAME( sUpdateColumn->namePos ) == ID_FALSE )
+                     &&
+                     ( sUpdateColumn->namePos.stmtText == aUptParseTree->common.stmtPos.stmtText ) )
+                {
+                    sqlInfo.setSourceInfo( aStatement, &( sUpdateColumn->namePos ) );
+                }
+                else
+                {
+                    sqlInfo.setSourceInfo( aStatement, &( aStatement->myPlan->parseTree->stmtPos ) );
+                }
+
+                IDE_RAISE( ERR_SHARD_KEY_CAN_NOT_BE_UPDATED );
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
+        }
+    }
+    else
+    {
+        /* Nothing to do. */
     }
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(ERR_NON_SHARD_OBJECT_EXIST)
+    IDE_EXCEPTION( ERR_VIEW_EXIST )
     {
-        setNonShardQueryReason( &(aStatement->mShardPrintInfo), SDI_NON_SHARD_OBJECT_EXISTS );
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "NON SHARD OBJECT"));
+        (void)sqlInfo.init( aStatement->qmeMem );
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
+                                  "DML for view",
+                                  sqlInfo.getErrMessage() ) );
+        (void)sqlInfo.fini();
     }
-    IDE_EXCEPTION(ERR_TRIGGER_EXIST)
+    IDE_EXCEPTION( ERR_SHARD_KEY_CAN_NOT_BE_UPDATED )
     {
-        setNonShardQueryReason( &(aStatement->mShardPrintInfo), SDI_TRIGGER_EXISTS );
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "TRIGGER"));
+        (void)sqlInfo.init( aStatement->qmeMem );
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
+                                  "Update for the shard key column",
+                                  sqlInfo.getErrMessage() ) );
+        (void)sqlInfo.fini();
     }
-    IDE_EXCEPTION(ERR_SET_SUBQUERY_EXIST)
+    IDE_EXCEPTION( ERR_MULTIPLE_UPDATE )
     {
-        setNonShardQueryReason( &(aStatement->mShardPrintInfo), SDI_SUBQUERY_EXISTS );
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "SET SUBQUERY"));
+        (void)sqlInfo.init( aStatement->qmeMem );
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
+                                  "Multiple Update",
+                                  sqlInfo.getErrMessage() ) );
+        (void)sqlInfo.fini();
     }
-    IDE_EXCEPTION(ERR_VIEW_EXIST)
+    IDE_EXCEPTION(ERR_INVALID_SHARD_OBJECT_INFO)
     {
-        setNonShardQueryReason( &(aStatement->mShardPrintInfo), SDI_VIEW_EXISTS );
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "UPDATABLE VIEW"));
-    }
-    IDE_EXCEPTION(ERR_INSTEAD_OF_TRIGGER_EXIST)
-    {
-        setNonShardQueryReason( &(aStatement->mShardPrintInfo), SDI_INSTEAD_OF_TRIGGER_EXISTS );
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "INSTEAD OF TRIGGER"));
-    }
-    IDE_EXCEPTION(ERR_SHARD_KEY_CAN_NOT_BE_UPDATED)
-    {
-        // real error message
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "SHARD KEY COLUMN UPDATE"));
+        IDE_SET(ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                 "sda::checkUpdate",
+                                 "Invalid shard object information" ));
     }
     IDE_EXCEPTION_END;
 
@@ -6350,17 +7394,15 @@ IDE_RC sda::checkDelete( qcStatement * aStatement, qmmDelParseTree * aDelParseTr
 /***********************************************************************
  *
  * Description :
- *      ìˆ˜í–‰ ê°€ëŠ¥í•œ SQLì¸ì§€ íŒë‹¨í•œë‹¤.
+ *      ¼öÇà °¡´ÉÇÑ SQLÀÎÁö ÆÇ´ÜÇÑ´Ù.
  *
- *     *  ìˆ˜í–‰ ê°€ëŠ¥í•œ SQLì˜ ì¡°ê±´
+ *     *  ¼öÇà °¡´ÉÇÑ SQLÀÇ Á¶°Ç
  *
  *         < DELETE  >
- *             1. Non shard objectê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤.
- *             2. Triggerê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤.
- *             3. Updatable viewë¥¼ ì‚¬ìš© í•  ìˆ˜ ì—†ë‹¤. ( must check )
- *             - 4. Return intoê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( optionally check )  20160608 ì œì•½ì¡°ê±´ì œê±°
- *             - 5. Limitì´ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( optionally check ) 20160608 ì œì•½ì¡°ê±´ì œê±°
- *             6. InsteadOfTriggerê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( must check )
+ *             X. DML target Å×ÀÌºíÀº non-shard table ÀÌ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
+ *              - TASK-7219 Shard Transformer Refactoring / sda::checkAndGetShardObjInfo Ã³¸®
+ *             1. Multiple Delete ¹ÌÁö¿ø
+ *             2. DML target Å×ÀÌºíÀÌ view °¡ ¾Æ´Ï¾î¾ß ÇÑ´Ù. ( Updatable view ¹ÌÁö¿ø )
  *
  * Implementation :
  *
@@ -6368,50 +7410,85 @@ IDE_RC sda::checkDelete( qcStatement * aStatement, qmmDelParseTree * aDelParseTr
  *
  ***********************************************************************/
 
-    /* 1. Non shard objectê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. */
-    IDE_TEST_RAISE( aDelParseTree->deleteTableRef->mShardObjInfo == NULL,
-                    ERR_NON_SHARD_OBJECT_EXIST );
+    qcuSqlSourceInfo sqlInfo;
 
-    /* 2. Triggerê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. */
-    IDE_TEST_RAISE( aDelParseTree->deleteTableRef->tableInfo->triggerCount != 0,
-                    ERR_TRIGGER_EXIST );
+    /*  TASK-7219 Shard Transformer Refactoring
+     *   1. Multiple Delete ¹ÌÁö¿ø
+     */
+    if ( aDelParseTree->mTableList != NULL )
+    {
+        if ( aDelParseTree->mTableList->mNext == NULL )
+        {
+            sqlInfo.setSourceInfo( aStatement, &( aStatement->myPlan->parseTree->stmtPos ) );
 
-    /* 3. Updatable viewë¥¼ ì‚¬ìš© í•  ìˆ˜ ì—†ë‹¤. */
-    IDE_TEST_RAISE( aDelParseTree->deleteTableRef->view != NULL, ERR_VIEW_EXIST );
+            IDE_RAISE( ERR_MULTIPLE_DELETE );
+        }
+        else
+        {
+            if ( aDelParseTree->mTableList->mNext->mTableRef == NULL )
+            {
+                sqlInfo.setSourceInfo( aStatement, &( aStatement->myPlan->parseTree->stmtPos ) );
 
-    /* 4. Return intoê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( optionally check )  20160608 ì œì•½ì¡°ê±´ì œê±° */
+                IDE_RAISE( ERR_MULTIPLE_DELETE );
+            }
+            else
+            {
+                if ( QC_IS_NULL_NAME( aDelParseTree->mTableList->mNext->mTableRef->position ) == ID_FALSE )
+                {
+                    sqlInfo.setSourceInfo( aStatement, &( aDelParseTree->mTableList->mNext->mTableRef->position ) );
 
-    /* 5. Limitì´ ìˆìœ¼ë©´ ì•ˆëœë‹¤. 20160608 ì œì•½ì¡°ê±´ì œê±° */
+                    IDE_RAISE( ERR_MULTIPLE_DELETE );
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+            }
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
-    /* 6. InsteadOfTriggerê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. */
-    IDE_TEST_RAISE( aDelParseTree->insteadOfTrigger != ID_FALSE,
-                    ERR_INSTEAD_OF_TRIGGER_EXIST );
+    /* 2. DML target Å×ÀÌºíÀÌ view °¡ ¾Æ´Ï¾î¾ß ÇÑ´Ù. ( Updatable view ¹ÌÁö¿ø )
+     *  - IDE_TEST_RAISE( aDelParseTree->deleteTableRef->view != NULL, ERR_VIEW_EXIST );
+     */
+    if ( aDelParseTree->querySet->SFWGH->from->tableRef->view != NULL )
+    {
+        if ( QC_IS_NULL_NAME( aDelParseTree->querySet->SFWGH->from->tableRef->position ) == ID_FALSE )
+        {
+            sqlInfo.setSourceInfo( aStatement, &( aDelParseTree->querySet->SFWGH->from->tableRef->position ) );
+        }
+        else
+        {
+            sqlInfo.setSourceInfo( aStatement, &( aStatement->myPlan->parseTree->stmtPos ) );
+        }
+
+        IDE_RAISE( ERR_VIEW_EXIST );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(ERR_NON_SHARD_OBJECT_EXIST)
+    IDE_EXCEPTION( ERR_VIEW_EXIST )
     {
-        setNonShardQueryReason( &(aStatement->mShardPrintInfo), SDI_NON_SHARD_OBJECT_EXISTS );
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "NON SHARD OBJECT"));
+        (void)sqlInfo.init( aStatement->qmeMem );
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
+                                  "DML for view",
+                                  sqlInfo.getErrMessage() ) );
+        (void)sqlInfo.fini();
     }
-    IDE_EXCEPTION(ERR_TRIGGER_EXIST)
+    IDE_EXCEPTION( ERR_MULTIPLE_DELETE )
     {
-        setNonShardQueryReason( &(aStatement->mShardPrintInfo), SDI_TRIGGER_EXISTS );
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "TRIGGER"));
-    }
-    IDE_EXCEPTION(ERR_VIEW_EXIST)
-    {
-        setNonShardQueryReason( &(aStatement->mShardPrintInfo), SDI_VIEW_EXISTS );
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "UPDATABLE VIEW"));
-    }
-    IDE_EXCEPTION(ERR_INSTEAD_OF_TRIGGER_EXIST)
-    {
-        setNonShardQueryReason( &(aStatement->mShardPrintInfo), SDI_INSTEAD_OF_TRIGGER_EXISTS );
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "INSTEAD OF TRIGGER"));
+        (void)sqlInfo.init( aStatement->qmeMem );
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
+                                  "Multiple Delete",
+                                  sqlInfo.getErrMessage() ) );
+        (void)sqlInfo.fini();
     }
     IDE_EXCEPTION_END;
 
@@ -6423,20 +7500,21 @@ IDE_RC sda::checkInsert( qcStatement * aStatement, qmmInsParseTree * aInsParseTr
 /***********************************************************************
  *
  * Description :
- *      ìˆ˜í–‰ ê°€ëŠ¥í•œ SQLì¸ì§€ íŒë‹¨í•œë‹¤.
+ *      ¼öÇà °¡´ÉÇÑ SQLÀÎÁö ÆÇ´ÜÇÑ´Ù.
  *
- *     *  ìˆ˜í–‰ ê°€ëŠ¥í•œ SQLì˜ ì¡°ê±´
+ *     *  ¼öÇà °¡´ÉÇÑ SQLÀÇ Á¶°Ç
  *
  *         < INSERT  >
  *
- *             1. Insert Valuesë§Œ ìˆ˜í–‰ ê°€ëŠ¥í•˜ë‹¤. ( must check )
- *             2. Non shard objectê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤.
- *             3. Triggerê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤.
- *             4. Updatable viewë¥¼ ì‚¬ìš© í•  ìˆ˜ ì—†ë‹¤. ( must check )
- *             - 5. Return intoê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( optionally check )  20160608 ì œì•½ì¡°ê±´ì œê±°
- *             6. InsteadOfTriggerê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( must check )
- *             7. Multi-rowsê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( must check ) 20160123 ì œì•½ì¡°ê±´ì¶”ê°€
- *             8. Multi-tablesê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( must check ) 20160123 ì œì•½ì¡°ê±´ì¶”ê°€
+ *             1.1. Multi-tables insert ¹ÌÁö¿ø
+ *             1.2. 
+ *             2.   Insert Values¿Í Insert Select, Insert Default Áö¿ø
+ *                   - ¹ÌÁö¿ø : Multi insert select
+ *             X.   Multi-rows insert ¹ÌÁö¿ø
+ *                   -Transform À¸·Î Áö¿øÁß
+ *             X.   DML target Å×ÀÌºíÀº non-shard table ÀÌ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
+ *                   - TASK-7219 Shard Transformer Refactoring / sda::checkAndGetShardObjInfo Ã³¸®
+ *             3.   DML target Å×ÀÌºíÀÌ view °¡ ¾Æ´Ï¾î¾ß ÇÑ´Ù. ( Updatable view ¹ÌÁö¿ø )
  *
  * Implementation :
  *
@@ -6444,97 +7522,97 @@ IDE_RC sda::checkInsert( qcStatement * aStatement, qmmInsParseTree * aInsParseTr
  *
  ***********************************************************************/
 
-    qmmValueNode  * sCurrValue;
+    qcuSqlSourceInfo sqlInfo;
 
     // BUG-42764
     IDE_TEST_RAISE( aInsParseTree == NULL, ERR_NULL_PARSE_TREE );
     IDE_TEST_RAISE( aInsParseTree->rows == NULL, ERR_NULL_ROWS );
 
-    /* 1. InsertValuesë§Œ ìˆ˜í–‰ ê°€ëŠ¥í•˜ë‹¤. */
-    IDE_TEST_RAISE( aInsParseTree->common.parse != qmv::parseInsertValues,
-                    ERR_NOT_INSERT_VALUES );
-
-    /* 2. Non shard objectê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. */
-    IDE_TEST_RAISE( aInsParseTree->tableRef->mShardObjInfo == NULL,
-                    ERR_NON_SHARD_OBJECT_EXIST );
-    for ( sCurrValue = aInsParseTree->rows->values;
-          sCurrValue != NULL;
-          sCurrValue = sCurrValue->next )
+    /* TASK-7219 Shard Transformer Refactoring
+     *  1.1. Multi-tables insert ¹ÌÁö¿ø
+     */
+    if ( aInsParseTree->next != NULL )
     {
-        if ( sCurrValue->value != NULL )
+        if ( aInsParseTree->next->tableRef != NULL )
         {
-            IDE_TEST_RAISE( ( sCurrValue->value->lflag & QTC_NODE_SEQUENCE_MASK )
-                            == QTC_NODE_SEQUENCE_EXIST,
-                            ERR_NON_SHARD_OBJECT_EXIST );
+            sqlInfo.setSourceInfo( aStatement, &( aInsParseTree->next->tableRef->position ) );
         }
         else
         {
-            /* Nothing to do */
+            sqlInfo.setSourceInfo( aStatement, &( aInsParseTree->common.stmtPos ) );
         }
+
+        IDE_RAISE( ERR_UNSUPPORTED_INSERT_TYPE );
+    }
+    else
+    {
+        /* Nothing to do */
     }
 
-    /* 3. Triggerê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. */
-    IDE_TEST_RAISE( aInsParseTree->tableRef->tableInfo->triggerCount != 0,
-                    ERR_TRIGGER_EXIST );
+    /* 1.2. Á¶°Ç °Ë»ç Ãß°¡·Î ¿ÀÀÛµ¿ ¹æÁö */
+    if ( ( aInsParseTree->flag & QMM_MULTI_INSERT_MASK ) == QMM_MULTI_INSERT_TRUE )
+    {
+        sqlInfo.setSourceInfo( aStatement, &( aInsParseTree->common.stmtPos ) );
 
-    /* 4. Updatable viewë¥¼ ì‚¬ìš© í•  ìˆ˜ ì—†ë‹¤. */
-    IDE_TEST_RAISE( aInsParseTree->tableRef->view != NULL, ERR_VIEW_EXIST );
+        IDE_RAISE( ERR_UNSUPPORTED_INSERT_TYPE );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
-    /* 5. ReturnIntoê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. 20160608 ì œì•½ì¡°ê±´ì œê±° */
+    /* 2.   Insert Values¿Í Insert Select, Insert Default Áö¿ø */
+    if ( ( aInsParseTree->common.parse != qmv::parseInsertValues )
+         &&
+         ( aInsParseTree->common.parse != qmv::parseInsertSelect )
+         &&
+         ( aInsParseTree->common.parse != qmv::parseInsertAllDefault ) )
+    {
+        sqlInfo.setSourceInfo( aStatement, &( aInsParseTree->common.stmtPos ) );
 
-    /* 6. InsteadOfTriggerê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. */
-    IDE_TEST_RAISE( aInsParseTree->insteadOfTrigger != ID_FALSE,
-                    ERR_INSTEAD_OF_TRIGGER_EXIST );
+        IDE_RAISE( ERR_UNSUPPORTED_INSERT_TYPE );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
-    /* 7. Multi-rowsê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( must check ) 20160123 ì œì•½ì¡°ê±´ì¶”ê°€ */
-    IDE_TEST_RAISE( aInsParseTree->rows->next != NULL, ERR_MULTI_ROWS_INSERT );
+    /* 3.   DML target Å×ÀÌºíÀÌ view °¡ ¾Æ´Ï¾î¾ß ÇÑ´Ù. */
+    if ( aInsParseTree->tableRef->view != NULL )
+    {
+        if ( QC_IS_NULL_NAME( aInsParseTree->tableRef->position  ) == ID_FALSE )
+        {
+            sqlInfo.setSourceInfo( aStatement, &( aInsParseTree->tableRef->position ) );
+        }
+        else
+        {
+            sqlInfo.setSourceInfo( aStatement, &( aInsParseTree->common.stmtPos ) );
+        }
 
-    /* 8. Multi-tablesê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. ( must check ) 20160123 ì œì•½ì¡°ê±´ì¶”ê°€ */
-    IDE_TEST_RAISE( aInsParseTree->next != NULL, ERR_MULTI_TABLES_INSERT );
+        IDE_RAISE( ERR_VIEW_EXIST );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(ERR_NOT_INSERT_VALUES)
+    IDE_EXCEPTION( ERR_UNSUPPORTED_INSERT_TYPE )
     {
-        setNonShardQueryReason( &(aStatement->mShardPrintInfo), SDI_MULTIPLE_ROW_INSERT );
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "Unsupported shard SQL"));
+        (void)sqlInfo.init( aStatement->qmeMem );
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
+                                  "Multiple INSERT or INSERT DEFAULT clause",
+                                  sqlInfo.getErrMessage() ) );
+        (void)sqlInfo.fini();
     }
-    IDE_EXCEPTION(ERR_NON_SHARD_OBJECT_EXIST)
+    IDE_EXCEPTION( ERR_VIEW_EXIST )
     {
-        setNonShardQueryReason( &(aStatement->mShardPrintInfo), SDI_NON_SHARD_OBJECT_EXISTS );
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "NON SHARD OBJECT"));
-    }
-    IDE_EXCEPTION(ERR_TRIGGER_EXIST)
-    {
-        setNonShardQueryReason( &(aStatement->mShardPrintInfo), SDI_TRIGGER_EXISTS );
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "TRIGGER"));
-    }
-    IDE_EXCEPTION(ERR_VIEW_EXIST)
-    {
-        setNonShardQueryReason( &(aStatement->mShardPrintInfo), SDI_VIEW_EXISTS );
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "VIEW"));
-    }
-    IDE_EXCEPTION(ERR_INSTEAD_OF_TRIGGER_EXIST)
-    {
-        setNonShardQueryReason( &(aStatement->mShardPrintInfo), SDI_INSTEAD_OF_TRIGGER_EXISTS );
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "INTEAD OF TRIGGER"));
-    }
-    IDE_EXCEPTION(ERR_MULTI_ROWS_INSERT)
-    {
-        setNonShardQueryReason( &(aStatement->mShardPrintInfo), SDI_MULTIPLE_ROW_INSERT );
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "MULTIPLE ROWS INSERT"));
-    }
-    IDE_EXCEPTION(ERR_MULTI_TABLES_INSERT)
-    {
-        setNonShardQueryReason( &(aStatement->mShardPrintInfo), SDI_MULTIPLE_OBJECT_INSERT );
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "MULTIPLE TABLES INSERT"));
+        (void)sqlInfo.init( aStatement->qmeMem );
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
+                                  "DML for view",
+                                  sqlInfo.getErrMessage() ) );
+        (void)sqlInfo.fini();
     }
     IDE_EXCEPTION(ERR_NULL_PARSE_TREE)
     {
@@ -6553,19 +7631,19 @@ IDE_RC sda::checkInsert( qcStatement * aStatement, qmmInsParseTree * aInsParseTr
     return IDE_FAILURE;
 }
 
-IDE_RC sda::checkExecProc( qcStatement * aStatement, qsExecParseTree * aExecParseTree )
+IDE_RC sda::checkExecProc( qcStatement * /* aStatement */, qsExecParseTree * aExecParseTree )
 {
 /***********************************************************************
  *
  * Description :
- *      ìˆ˜í–‰ ê°€ëŠ¥í•œ SQLì¸ì§€ íŒë‹¨í•œë‹¤.
+ *      ¼öÇà °¡´ÉÇÑ SQLÀÎÁö ÆÇ´ÜÇÑ´Ù.
  *
- *     *  ìˆ˜í–‰ ê°€ëŠ¥í•œ SQLì˜ ì¡°ê±´
+ *     *  ¼öÇà °¡´ÉÇÑ SQLÀÇ Á¶°Ç
  *
  *         < EXEC >
  *
- *             1. Non shard objectê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤.
- *             2. EXEC procedureë§Œ ì§€ì›í•œë‹¤.
+ *             X. Shard procedure ¿©¾ß ÇÑ´Ù.
+ *              - TASK-7219 Shard Transformer Refactoring / sda::checkAndGetShardObjInfo Ã³¸®
  *
  * Implementation :
  *
@@ -6576,28 +7654,8 @@ IDE_RC sda::checkExecProc( qcStatement * aStatement, qsExecParseTree * aExecPars
     // BUG-42764
     IDE_TEST_RAISE( aExecParseTree == NULL, ERR_NULL_PARSE_TREE );
 
-    /* 1. Non shard objectê°€ ìˆìœ¼ë©´ ì•ˆëœë‹¤. */
-    IDE_TEST_RAISE( aExecParseTree->mShardObjInfo == NULL,
-                    ERR_NON_SHARD_OBJECT_EXIST );
-
-    /* 2. packageëŠ” ì•ˆëœë‹¤. */
-    IDE_TEST_RAISE( aExecParseTree->subprogramID != QS_PSM_SUBPROGRAM_ID,
-                    ERR_UNSUPPORTED_PACKAGE );
-
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(ERR_NON_SHARD_OBJECT_EXIST)
-    {
-        setNonShardQueryReason( &(aStatement->mShardPrintInfo), SDI_NON_SHARD_OBJECT_EXISTS );
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "NON SHARD OBJECT"));
-    }
-    IDE_EXCEPTION(ERR_UNSUPPORTED_PACKAGE)
-    {
-        setNonShardQueryReason( &(aStatement->mShardPrintInfo), SDI_PACKAGE_EXISTS );
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "UNSUPPORTED OBJECT"));
-    }
     IDE_EXCEPTION(ERR_NULL_PARSE_TREE)
     {
         IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
@@ -6609,57 +7667,51 @@ IDE_RC sda::checkExecProc( qcStatement * aStatement, qsExecParseTree * aExecPars
     return IDE_FAILURE;
 }
 
-IDE_RC sda::setUpdateAnalysis( qcStatement * aStatement,
-                               ULong         aSMN )
+IDE_RC sda::analyzeUpdateCore( qcStatement       * aStatement,
+                               ULong               aSMN,
+                               sdiObjectInfo     * aShardObjInfo,
+                               idBool              aIsSubKey )
 {
-    qmmUptParseTree     * sParseTree        = (qmmUptParseTree*)aStatement->myPlan->parseTree;
-    sdiQuerySet         * sAnalysis         = NULL;
+    qmmUptParseTree  * sParseTree = (qmmUptParseTree*)aStatement->myPlan->parseTree;
 
-    sdaSubqueryAnalysis * sSubqueryAnalysis = NULL;
-    qmmValueNode        * sUpdateValue      = NULL;
+    /* TASK-7219 Shard Transformer Refactoring */
+    sdiShardAnalysis * sAnalysis       = NULL;
+    qtcNode          * sShardPredicate = NULL;
 
-    sdiObjectInfo       * sShardObjInfo       = NULL;
+    IDE_TEST( allocAndSetAnalysis( aStatement,
+                                   aStatement->myPlan->parseTree,
+                                   NULL,
+                                   aIsSubKey,
+                                   &( sAnalysis ) )
+              != IDE_SUCCESS );
 
-    //---------------------------------------
-    // Shard objectì˜ íšë“
-    //---------------------------------------
-    sdi::getShardObjInfoForSMN( aSMN,
-                                sParseTree->updateTableRef->mShardObjInfo,
-                                &sShardObjInfo );
-
-    IDE_TEST_RAISE( sShardObjInfo == NULL, ERR_NULL_OBJECT_INFO );
+    IDE_TEST( getShardPredicate( aStatement,
+                                 sParseTree->querySet,
+                                 ID_FALSE,
+                                 aIsSubKey,
+                                 &( sShardPredicate ) )
+              != IDE_SUCCESS );
 
     //------------------------------------------
     // Set common information (add keyInfo & tableInfo)
     //------------------------------------------
     IDE_TEST( setDMLCommonAnalysis( aStatement,
-                                    sShardObjInfo,
+                                    aSMN,
+                                    aShardObjInfo,
                                     sParseTree->updateTableRef,
-                                    &sAnalysis )
+                                    sAnalysis,
+                                    aIsSubKey )
               != IDE_SUCCESS );
 
     //------------------------------------------
     // Analyze predicate
     //------------------------------------------
-    if ( ( sAnalysis->mShardInfo.mSplitMethod != SDI_SPLIT_CLONE ) &&
-         ( sAnalysis->mShardInfo.mSplitMethod != SDI_SPLIT_SOLO ) )
+    if ( sdi::getSplitType( sAnalysis->mShardInfo.mSplitMethod ) == SDI_SPLIT_TYPE_DIST )
     {
         IDE_TEST( makeValueInfo( aStatement,
-                                 sParseTree->mShardPredicate,
+                                 sShardPredicate,
                                  sAnalysis->mKeyInfo )
                   != IDE_SUCCESS );
-
-        if ( sShardObjInfo->mTableInfo.mSubKeyExists == ID_TRUE )
-        {
-            IDE_TEST( makeValueInfo( aStatement,
-                                     sParseTree->mShardPredicate,
-                                     sAnalysis->mKeyInfo4SubKey )
-                      != IDE_SUCCESS );
-        }
-        else
-        {
-            // Nothing to do.
-        }
     }
     else
     {
@@ -6669,170 +7721,107 @@ IDE_RC sda::setUpdateAnalysis( qcStatement * aStatement,
     //------------------------------------------
     // Analyze sub-query
     //------------------------------------------
-    if ( sParseTree->querySet->SFWGH->where != NULL )
-    {
-        if ( ( sParseTree->querySet->SFWGH->where->lflag & QTC_NODE_SUBQUERY_MASK ) ==
-             QTC_NODE_SUBQUERY_EXIST )
-        {
-            IDE_TEST( subqueryAnalysis4NodeTree( aStatement,
-                                                 aSMN,
-                                                 sParseTree->querySet->SFWGH->where,
-                                                 &sSubqueryAnalysis )
-                      != IDE_SUCCESS );
-        }
-        else
-        {
-            // Nothing to do.
-        }
-    }
-    else
-    {
-        // Nothing to do.
-    }
-
-    for ( sUpdateValue  = sParseTree->values;
-          sUpdateValue != NULL;
-          sUpdateValue  = sUpdateValue->next )
-    {
-        if ( ( sUpdateValue->value->lflag & QTC_NODE_SUBQUERY_MASK ) ==
-             QTC_NODE_SUBQUERY_EXIST )
-        {
-            IDE_TEST( subqueryAnalysis4NodeTree( aStatement,
-                                                 aSMN,
-                                                 sUpdateValue->value,
-                                                 &sSubqueryAnalysis )
-                      != IDE_SUCCESS );
-        }
-        else
-        {
-            // Nothing to do.
-        }
-    }
-
-    if ( sSubqueryAnalysis != NULL )
-    {
-        IDE_TEST( setShardInfo4Subquery( aStatement,
-                                         sAnalysis,
-                                         sSubqueryAnalysis,
-                                         sAnalysis->mCantMergeReason )
-                  != IDE_SUCCESS );
-    }
-    else
-    {
-        // Nothing to do.
-    }
+    IDE_TEST( subqueryAnalysis4DML( aStatement,
+                                    aSMN,
+                                    sAnalysis,
+                                    aIsSubKey ) /* aIsSubKey */
+              != IDE_SUCCESS );
 
     //------------------------------------------
     // Check Limit
     //------------------------------------------
-    // ë‹¨ì¼ ë…¸ë“œ ìˆ˜í–‰ìœ¼ë¡œ í™•ì •ë˜ì§€ ì•Šì€ ìƒíƒœì—ì„œ
-    // LIMITì„ ìˆ˜í–‰í•˜ê²Œ ë˜ë©´ ë¶„ì‚° ì •ì˜ì— ë§ì§€ ì•Šì•„
-    // Can-merge ë  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ flag checking
-    if ( ( sParseTree->limit != NULL ) && ( sAnalysis->mKeyInfo->mValueCount != 1 ) )
-    {
-        sAnalysis->mCantMergeReason[SDI_LIMIT_EXISTS] = ID_TRUE;
-    }
-    else
-    {
-        // Nothing to do.
-    }
+    // ´ÜÀÏ ³ëµå ¼öÇàÀ¸·Î È®Á¤µÇÁö ¾ÊÀº »óÅÂ¿¡¼­
+    // LIMITÀ» ¼öÇàÇÏ°Ô µÇ¸é ºĞ»ê Á¤ÀÇ¿¡ ¸ÂÁö ¾Ê¾Æ
+    // Non-shard query ÀÌ¹Ç·Î flag checking
 
-    IDE_TEST( isCanMerge( sAnalysis->mCantMergeReason,
-                          &sAnalysis->mIsCanMerge )
-              != IDE_SUCCESS );
-
-    if ( sShardObjInfo->mTableInfo.mSubKeyExists == ID_TRUE )
+    // BUG-47196
+    if ( sParseTree->limit != NULL )
     {
-        if ( (  sParseTree->limit != NULL ) && ( sAnalysis->mKeyInfo4SubKey->mValueCount != 1 ) )
+        if ( sdi::getSplitType( sAnalysis->mShardInfo.mSplitMethod ) == SDI_SPLIT_TYPE_DIST )
         {
-            sAnalysis->mCantMergeReason4SubKey[SDI_LIMIT_EXISTS] = ID_TRUE;
+            if ( sAnalysis->mKeyInfo->mValuePtrCount != 1 )
+            {
+                sAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_NODE_TO_NODE_LIMIT_EXISTS ] = ID_TRUE;
+                IDE_TEST( isShardQuery( &( sAnalysis->mAnalysisFlag ),
+                                        &( sAnalysis->mIsShardQuery ) )
+                          != IDE_SUCCESS );
+            }
+        }
+        else if ( sAnalysis->mShardInfo.mSplitMethod == SDI_SPLIT_CLONE )
+        {
+            sAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_NODE_TO_NODE_LIMIT_EXISTS ] = ID_TRUE;
+            IDE_TEST( isShardQuery( &( sAnalysis->mAnalysisFlag ),
+                                    &( sAnalysis->mIsShardQuery ) )
+                      != IDE_SUCCESS );
+        }
+        else if ( sAnalysis->mShardInfo.mSplitMethod == SDI_SPLIT_SOLO )
+        {
+            // Nothing to do for solo.
         }
         else
         {
-            // Nothing to do.
+            IDE_RAISE( ERR_UNSUPPORTED_SPLIT_METHOD );
         }
-
-        IDE_TEST( isCanMerge( sAnalysis->mCantMergeReason4SubKey,
-                              &sAnalysis->mIsCanMerge4SubKey )
-                  != IDE_SUCCESS );
     }
-    else
-    {
-        // Nothing to do.
-    }
-
-    //------------------------------------------
-    // Set analysis result
-    //------------------------------------------
-    IDE_TEST( setAnalysis( aStatement,
-                           sAnalysis,
-                           sAnalysis->mCantMergeReason,
-                           sAnalysis->mCantMergeReason4SubKey )
-              != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(ERR_NULL_OBJECT_INFO)
+    IDE_EXCEPTION( ERR_UNSUPPORTED_SPLIT_METHOD )
     {
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
-                                "sda::setUpdateAnalysis",
-                                "The shard object information of the SMN does not exist."));
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::analyzeUpdateCore",
+                                  "Unsupported split method." ) );
     }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 }
 
-IDE_RC sda::setDeleteAnalysis( qcStatement * aStatement,
-                               ULong         aSMN )
+IDE_RC sda::analyzeDeleteCore( qcStatement       * aStatement,
+                               ULong               aSMN,
+                               sdiObjectInfo     * aShardObjInfo,
+                               idBool              aIsSubKey )
 {
-    qmmDelParseTree     * sParseTree        = (qmmDelParseTree*)aStatement->myPlan->parseTree;
-    sdiQuerySet         * sAnalysis         = NULL;
+    qmmDelParseTree * sParseTree = (qmmDelParseTree*)aStatement->myPlan->parseTree;
 
-    sdaSubqueryAnalysis * sSubqueryAnalysis = NULL;
+    /* TASK-7219 Shard Transformer Refactoring */
+    sdiShardAnalysis * sAnalysis       = NULL;
+    qtcNode          * sShardPredicate = NULL;
 
-    sdiObjectInfo       * sShardObjInfo       = NULL;
+    IDE_TEST( allocAndSetAnalysis( aStatement,
+                                   aStatement->myPlan->parseTree,
+                                   NULL,
+                                   aIsSubKey,
+                                   &( sAnalysis ) )
+              != IDE_SUCCESS );
 
-    //---------------------------------------
-    // Shard objectì˜ íšë“
-    //---------------------------------------
-    sdi::getShardObjInfoForSMN( aSMN,
-                                sParseTree->deleteTableRef->mShardObjInfo,
-                                &sShardObjInfo );
-
-    IDE_TEST_RAISE( sShardObjInfo == NULL, ERR_NULL_OBJECT_INFO );
+    IDE_TEST( getShardPredicate( aStatement,
+                                 sParseTree->querySet,
+                                 ID_FALSE,
+                                 aIsSubKey,
+                                 &( sShardPredicate ) )
+              != IDE_SUCCESS );
 
     //------------------------------------------
     // Set common information (add keyInfo & tableInfo)
     //------------------------------------------
     IDE_TEST( setDMLCommonAnalysis( aStatement,
-                                    sShardObjInfo,
+                                    aSMN,
+                                    aShardObjInfo,
                                     sParseTree->deleteTableRef,
-                                    &sAnalysis )
+                                    sAnalysis,
+                                    aIsSubKey )
               != IDE_SUCCESS );
 
     //------------------------------------------
     // Analyze predicate
     //------------------------------------------
-    if ( ( sAnalysis->mShardInfo.mSplitMethod != SDI_SPLIT_CLONE ) &&
-         ( sAnalysis->mShardInfo.mSplitMethod != SDI_SPLIT_SOLO ) )
+    if ( sdi::getSplitType( sAnalysis->mShardInfo.mSplitMethod ) == SDI_SPLIT_TYPE_DIST )
     {
         IDE_TEST( makeValueInfo( aStatement,
-                                 sParseTree->mShardPredicate,
+                                 sShardPredicate,
                                  sAnalysis->mKeyInfo )
                   != IDE_SUCCESS );
-
-        if ( sShardObjInfo->mTableInfo.mSubKeyExists == ID_TRUE )
-        {
-            IDE_TEST( makeValueInfo( aStatement,
-                                     sParseTree->mShardPredicate,
-                                     sAnalysis->mKeyInfo4SubKey )
-                      != IDE_SUCCESS );
-        }
-        else
-        {
-            // Nothing to do.
-        }
     }
     else
     {
@@ -6842,157 +7831,167 @@ IDE_RC sda::setDeleteAnalysis( qcStatement * aStatement,
     //------------------------------------------
     // Analyze sub-query
     //------------------------------------------
-    if ( sParseTree->querySet->SFWGH->where != NULL )
-    {
-        if ( ( sParseTree->querySet->SFWGH->where->lflag & QTC_NODE_SUBQUERY_MASK ) ==
-             QTC_NODE_SUBQUERY_EXIST )
-        {
-            IDE_TEST( subqueryAnalysis4NodeTree( aStatement,
-                                                 aSMN,
-                                                 sParseTree->querySet->SFWGH->where,
-                                                 &sSubqueryAnalysis )
-                      != IDE_SUCCESS );
-        }
-        else
-        {
-            // Nothing to do.
-        }
-    }
-    else
-    {
-        // Nothing to do.
-    }
-
-    if ( sSubqueryAnalysis != NULL )
-    {
-        IDE_TEST( setShardInfo4Subquery( aStatement,
-                                         sAnalysis,
-                                         sSubqueryAnalysis,
-                                         sAnalysis->mCantMergeReason )
-                  != IDE_SUCCESS );
-    }
-    else
-    {
-        // Nothing to do.
-    }
+    IDE_TEST ( subqueryAnalysis4DML( aStatement,
+                                     aSMN,
+                                     sAnalysis,
+                                     aIsSubKey )
+               != IDE_SUCCESS );
 
     //------------------------------------------
     // Check Limit
     //------------------------------------------
-    // ë‹¨ì¼ ë…¸ë“œ ìˆ˜í–‰ìœ¼ë¡œ í™•ì •ë˜ì§€ ì•Šì€ ìƒíƒœì—ì„œ
-    // LIMITì„ ìˆ˜í–‰í•˜ê²Œ ë˜ë©´ ë¶„ì‚° ì •ì˜ì— ë§ì§€ ì•Šì•„
-    // Can-merge ë  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ flag checking
-    if ( ( sParseTree->limit != NULL ) && ( sAnalysis->mKeyInfo->mValueCount != 1 ) )
-    {
-        sAnalysis->mCantMergeReason[SDI_LIMIT_EXISTS] = ID_TRUE;
-    }
-    else
-    {
-        // Nothing to do.
-    }
+    // ´ÜÀÏ ³ëµå ¼öÇàÀ¸·Î È®Á¤µÇÁö ¾ÊÀº »óÅÂ¿¡¼­
+    // LIMITÀ» ¼öÇàÇÏ°Ô µÇ¸é ºĞ»ê Á¤ÀÇ¿¡ ¸ÂÁö ¾Ê¾Æ
+    // Non-shard queryÀÌ¹Ç·Î flag checking
 
-    IDE_TEST( isCanMerge( sAnalysis->mCantMergeReason,
-                          &sAnalysis->mIsCanMerge )
-              != IDE_SUCCESS );
-
-    if ( sShardObjInfo->mTableInfo.mSubKeyExists == ID_TRUE )
+    // BUG-47196
+    if ( sParseTree->limit != NULL )
     {
-        if ( ( sParseTree->limit != NULL ) && ( sAnalysis->mKeyInfo4SubKey->mValueCount != 1 ) )
+        if ( sdi::getSplitType( sAnalysis->mShardInfo.mSplitMethod ) == SDI_SPLIT_TYPE_DIST )
         {
-            sAnalysis->mCantMergeReason4SubKey[SDI_LIMIT_EXISTS] = ID_TRUE;
+            if ( sAnalysis->mKeyInfo->mValuePtrCount != 1 )
+            {
+                sAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_NODE_TO_NODE_LIMIT_EXISTS ] = ID_TRUE;
+                IDE_TEST( isShardQuery( &( sAnalysis->mAnalysisFlag ),
+                                        &( sAnalysis->mIsShardQuery ) )
+                          != IDE_SUCCESS );
+            }
+        }
+        else if ( sAnalysis->mShardInfo.mSplitMethod == SDI_SPLIT_CLONE )
+        {
+            sAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_NODE_TO_NODE_LIMIT_EXISTS ] = ID_TRUE;
+            IDE_TEST( isShardQuery( &( sAnalysis->mAnalysisFlag ),
+                                    &( sAnalysis->mIsShardQuery ) )
+                      != IDE_SUCCESS );
+        }
+        else if ( sAnalysis->mShardInfo.mSplitMethod == SDI_SPLIT_SOLO )
+        {
+            // Nothing to do for solo.
         }
         else
         {
-            // Nothing to do.
+            IDE_RAISE( ERR_UNSUPPORTED_SPLIT_METHOD );
         }
-
-        IDE_TEST( isCanMerge( sAnalysis->mCantMergeReason4SubKey,
-                              &sAnalysis->mIsCanMerge4SubKey )
-                  != IDE_SUCCESS );
     }
-    else
-    {
-        // Nothing to do.
-    }
-
-    //------------------------------------------
-    // Set analysis result
-    //------------------------------------------
-    IDE_TEST( setAnalysis( aStatement,
-                           sAnalysis,
-                           sAnalysis->mCantMergeReason,
-                           sAnalysis->mCantMergeReason4SubKey )
-              != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(ERR_NULL_OBJECT_INFO)
+    IDE_EXCEPTION( ERR_UNSUPPORTED_SPLIT_METHOD )
     {
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
-                                "sda::setDeleteAnalysis",
-                                "The shard object information of the SMN does not exist."));
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::analyzeDeleteCore",
+                                  "Unsupported split method." ) );
     }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 }
 
-IDE_RC sda::setInsertAnalysis( qcStatement * aStatement,
-                               ULong         aSMN )
+IDE_RC sda::analyzeInsertCore( qcStatement       * aStatement,
+                               ULong               aSMN,
+                               sdiObjectInfo     * aShardObjInfo,
+                               idBool              aIsSubKey )
 {
-    qmmInsParseTree     * sParseTree        = (qmmInsParseTree*)aStatement->myPlan->parseTree;
-    sdiQuerySet         * sAnalysis         = NULL;
+    qmmInsParseTree * sParseTree = (qmmInsParseTree*)aStatement->myPlan->parseTree;
 
-    sdaSubqueryAnalysis * sSubqueryAnalysis = NULL;
-    qmmValueNode        * sInsertValue      = NULL;
+    /* TASK-7219 Shard Transformer Refactoring */
+    sdiShardAnalysis * sAnalysis = NULL;
 
-    sdiObjectInfo       * sShardObjInfo       = NULL;
-
-    //---------------------------------------
-    // Shard objectì˜ íšë“
-    //---------------------------------------
-    sdi::getShardObjInfoForSMN( aSMN,
-                                sParseTree->tableRef->mShardObjInfo,
-                                &sShardObjInfo );
-
-    IDE_TEST_RAISE( sShardObjInfo == NULL, ERR_NULL_OBJECT_INFO );
+    IDE_TEST( allocAndSetAnalysis( aStatement,
+                                   aStatement->myPlan->parseTree,
+                                   NULL,
+                                   aIsSubKey,
+                                   &( sAnalysis ) )
+              != IDE_SUCCESS );
 
     //------------------------------------------
     // Set common information (add keyInfo & tableInfo)
     //------------------------------------------
     IDE_TEST( setDMLCommonAnalysis( aStatement,
-                                    sShardObjInfo,
+                                    aSMN,
+                                    aShardObjInfo,
                                     sParseTree->tableRef,
-                                    &sAnalysis )
+                                    sAnalysis,
+                                    aIsSubKey )
               != IDE_SUCCESS );
+
+    /* TASK-7219 Shard Transformer Refactoring
+     *  Transform À¸·Î Áö¿øÇÏ°í ÀÖÀ¸¸ç,
+     *   Non-Shard ÆÇ´ÜÀ» À§ÇØ¼­ Reason ¸¦ ¼³Á¤ÇÑ´Ù.
+     */
+    if ( sParseTree->rows->next != NULL )
+    {
+        sAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_UNKNOWN_REASON ] = ID_TRUE;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    if ( sParseTree->common.parse == qmv::parseInsertValues )
+    {
+        IDE_TEST( setInsertValueAnalysis( aStatement,
+                                          aSMN,
+                                          sParseTree,
+                                          sAnalysis,
+                                          aIsSubKey )
+                  != IDE_SUCCESS );
+    }
+    else if ( sParseTree->common.parse == qmv::parseInsertSelect )
+    {
+        IDE_TEST( setInsertSelectAnalysis( aStatement,
+                                           aSMN,
+                                           sParseTree,
+                                           sAnalysis,
+                                           aIsSubKey )
+                  != IDE_SUCCESS );
+    }
+    else if ( sParseTree->common.parse == qmv::parseInsertAllDefault )
+    {
+        sAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_UNSPECIFIED_SHARD_KEY_VALUE ] = ID_TRUE;
+    }
+    else
+    {
+        IDE_RAISE( ERR_INVALID_INSERTION_STMT_TYPE );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(ERR_INVALID_INSERTION_STMT_TYPE)
+    {
+        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                "sda::analyzeInsertCore",
+                                "Invalid insertion statement type."));
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::setInsertValueAnalysis( qcStatement      * aStatement,
+                                    UShort             aSMN,
+                                    qmmInsParseTree  * aParseTree,
+                                    sdiShardAnalysis * aAnalysis,
+                                    idBool             aIsSubKey )
+{
+    IDE_DASSERT( aParseTree->common.parse == qmv::parseInsertValues );
 
     //------------------------------------------
     // Analyze shard key value
     //------------------------------------------
-    if ( ( sAnalysis->mShardInfo.mSplitMethod != SDI_SPLIT_CLONE ) &&
-         ( sAnalysis->mShardInfo.mSplitMethod != SDI_SPLIT_SOLO ) )
+    if ( sdi::getSplitType( aAnalysis->mShardInfo.mSplitMethod ) == SDI_SPLIT_TYPE_DIST )
     {
+        /* TASK-7219 Shard Transformer Refactoring */
         IDE_TEST( getKeyValueID4InsertValue( aStatement,
-                                             sParseTree->tableRef,
-                                             sParseTree->insertColumns,
-                                             sParseTree->rows,   // BUG-42764
-                                             sAnalysis->mKeyInfo,
-                                             ID_FALSE )
+                                             aSMN,
+                                             aParseTree->tableRef,
+                                             aParseTree->insertColumns,
+                                             aParseTree->rows,   // BUG-42764
+                                             aAnalysis->mKeyInfo,
+                                             &aAnalysis->mIsShardQuery,
+                                             &( aAnalysis->mAnalysisFlag ),
+                                             aIsSubKey )
                   != IDE_SUCCESS );
-        if ( sShardObjInfo->mTableInfo.mSubKeyExists == ID_TRUE )
-        {
-            IDE_TEST( getKeyValueID4InsertValue( aStatement,
-                                                 sParseTree->tableRef,
-                                                 sParseTree->insertColumns,
-                                                 sParseTree->rows,   // BUG-42764
-                                                 sAnalysis->mKeyInfo4SubKey,
-                                                 ID_TRUE )
-                      != IDE_SUCCESS );
-        }
-        else
-        {
-            // Nothing to do.
-        }
     }
     else
     {
@@ -7002,81 +8001,316 @@ IDE_RC sda::setInsertAnalysis( qcStatement * aStatement,
     //------------------------------------------
     // Analyze sub-query
     //------------------------------------------
-    for ( sInsertValue  = sParseTree->rows->values;
-          sInsertValue != NULL;
-          sInsertValue  = sInsertValue->next )
-    {
-        if ( ( sInsertValue->value->lflag & QTC_NODE_SUBQUERY_MASK ) ==
-             QTC_NODE_SUBQUERY_EXIST )
-        {
-            IDE_TEST( subqueryAnalysis4NodeTree( aStatement,
-                                                 aSMN,
-                                                 sInsertValue->value,
-                                                 &sSubqueryAnalysis )
-                      != IDE_SUCCESS );
-        }
-        else
-        {
-            // Nothing to do.
-        }
-    }
-
-    if ( sSubqueryAnalysis != NULL )
-    {
-        IDE_TEST( setShardInfo4Subquery( aStatement,
-                                         sAnalysis,
-                                         sSubqueryAnalysis,
-                                         sAnalysis->mCantMergeReason )
-                  != IDE_SUCCESS );
-    }
-    else
-    {
-        // Nothing to do.
-    }
-
-    //------------------------------------------
-    // Set analysis result
-    //------------------------------------------
-    IDE_TEST( setAnalysis( aStatement,
-                           sAnalysis,
-                           sAnalysis->mCantMergeReason,
-                           sAnalysis->mCantMergeReason4SubKey )
+    IDE_TEST( subqueryAnalysis4DML( aStatement,
+                                    aSMN,
+                                    aAnalysis,
+                                    aIsSubKey )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(ERR_NULL_OBJECT_INFO)
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::setInsertSelectAnalysis( qcStatement      * aStatement,
+                                     UShort             aSMN,
+                                     qmmInsParseTree  * aParseTree,
+                                     sdiShardAnalysis * aAnalysis,
+                                     idBool             aIsSubKey )
+{
+    sdaSubqueryAnalysis   sSubqueryAnalysis;
+    sdiShardAnalysis    * sSubqueryMainKeyAnalysis = NULL;
+    idBool                sIsSameShardInfo = ID_FALSE;
+    qcmColumn           * sInsertColumn = NULL;
+    UInt                  sColOrderOnTable;
+    UShort                sColOrderOnInsert;
+    sdiKeyInfo          * sKeyInfoRef = NULL;
+    idBool                sKeyAppears = ID_FALSE;
+    idBool                sOutRefReasonBack = ID_FALSE;
+
+    qmsTarget           * sSelectTarget = NULL;
+    UInt                  sColOrder = 0;
+    idBool                sPartialTransformable = ID_FALSE;
+
+    mtcColumn           * sMtcColumn = NULL;
+    const mtvTable      * sTable;
+    ULong                 sCost = ID_ULONG(0);
+
+    sdiObjectInfo       * sShardObjInfo = NULL;
+
+    IDE_DASSERT( aParseTree->common.parse == qmv::parseInsertSelect );
+
+    //------------------------------------------
+    // Analyze sub-query
+    //------------------------------------------
+
+    IDE_TEST_RAISE( analyzeSelectCore( aParseTree->select,
+                                       aSMN,
+                                       aAnalysis->mKeyInfo,
+                                       aIsSubKey )
+                    != IDE_SUCCESS, ERR_PARTIAL_SELECT_ANALYSIS_FAIL );
+
+    sSubqueryMainKeyAnalysis = ((qmsParseTree*)aParseTree->select->myPlan->parseTree)->mShardAnalysis;
+
+    if ( aIsSubKey == ID_FALSE )
     {
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
-                                "sda::setInsertAnalysis",
-                                "The shard object information of the SMN does not exist."));
+        sSubqueryAnalysis.mShardAnalysis = sSubqueryMainKeyAnalysis;
+    }
+    else
+    {
+        sSubqueryAnalysis.mShardAnalysis = sSubqueryMainKeyAnalysis->mNext;
+    }
+
+    sSubqueryAnalysis.mNext = NULL;
+
+    sOutRefReasonBack = aAnalysis->mAnalysisFlag.mSetQueryFlag[ SDI_SQ_OUT_REF_NOT_EXISTS ];
+
+    /* TASK-7219 Shard Transformer Refactoring */
+    IDE_TEST( mergeAnalysisFlag( &( sSubqueryAnalysis.mShardAnalysis->mAnalysisFlag ),
+                                 &( aAnalysis->mAnalysisFlag ),
+                                 SDI_ANALYSIS_FLAG_NON_TRUE |
+                                 SDI_ANALYSIS_FLAG_TOP_TRUE )
+              != IDE_SUCCESS );
+
+    aAnalysis->mAnalysisFlag.mSetQueryFlag[ SDI_SQ_OUT_REF_NOT_EXISTS ] = sOutRefReasonBack;
+
+    if ( aAnalysis->mAnalysisFlag.mTopQueryFlag[ SDI_TQ_SUB_KEY_EXISTS ] ==
+         sSubqueryAnalysis.mShardAnalysis->mAnalysisFlag.mTopQueryFlag[ SDI_TQ_SUB_KEY_EXISTS ] )
+    {
+        IDE_TEST( isSameShardInfo( &aAnalysis->mShardInfo,
+                                   &sSubqueryAnalysis.mShardAnalysis->mShardInfo,
+                                   aIsSubKey,
+                                   &sIsSameShardInfo )
+                  != IDE_SUCCESS );
+
+        if ( sIsSameShardInfo == ID_TRUE )
+        {
+            if ( sdi::getSplitType( aAnalysis->mShardInfo.mSplitMethod ) == SDI_SPLIT_TYPE_DIST )
+            {
+                sdi::getShardObjInfoForSMN( aSMN,
+                                            aParseTree->tableRef->mShardObjInfo,
+                                            &( sShardObjInfo ) );
+
+                IDE_TEST_RAISE( sShardObjInfo == NULL, ERR_NULL_SHARD_OBJECT_INFO );
+
+                //------------------------------------------
+                // Analyze shard key link
+                //------------------------------------------
+                for ( sInsertColumn  = aParseTree->insertColumns, sColOrderOnInsert = 0;
+                      sInsertColumn != NULL;
+                      sInsertColumn  = sInsertColumn->next, sColOrderOnInsert++ )
+                {
+                    sColOrderOnTable = sInsertColumn->basicInfo->column.id & SMI_COLUMN_ID_MASK;
+
+                    if ( ( ( aIsSubKey == ID_FALSE ) && ( sShardObjInfo->mKeyFlags[sColOrderOnTable] == 1 ) ) ||
+                         ( ( aIsSubKey == ID_TRUE ) && ( sShardObjInfo->mKeyFlags[sColOrderOnTable] == 2 ) ) )
+                    {
+                        IDE_TEST( resetSubqueryAnalysisReasonForTargetLink( sSubqueryMainKeyAnalysis,
+                                                                            &aAnalysis->mShardInfo,
+                                                                            sColOrderOnInsert,
+                                                                            aIsSubKey,
+                                                                            &sKeyInfoRef ) 
+                                  != IDE_SUCCESS );
+
+                        if ( sSubqueryAnalysis.mShardAnalysis->mAnalysisFlag.mSetQueryFlag[ SDI_SQ_OUT_REF_NOT_EXISTS ] == ID_TRUE )
+                        {
+                            aAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_NON_SHARD_SUBQUERY_EXISTS ] = ID_TRUE;
+                        }
+                        else
+                        {
+                            //------------------------------------------
+                            // Make shard key value
+                            //------------------------------------------
+                            aAnalysis->mKeyInfo->mValuePtrCount = sKeyInfoRef->mValuePtrCount;
+                            aAnalysis->mKeyInfo->mValuePtrArray = sKeyInfoRef->mValuePtrArray;
+                        }
+
+                        sKeyAppears = ID_TRUE;
+                        break;
+                    }
+                    else
+                    {
+                        /* Nothing to do. */
+                    }
+                }
+
+                if ( sKeyAppears == ID_FALSE )
+                {
+                    aAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_NON_SHARD_SUBQUERY_EXISTS ] = ID_TRUE;
+                    aAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_UNSPECIFIED_SHARD_KEY_VALUE ] = ID_TRUE;
+                }
+                else
+                {
+                    /* Nothing to do. */
+                }
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
+        }
+        else
+        {
+            aAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_MULTI_SHARD_INFO_EXISTS ] = ID_TRUE;
+            aAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_NON_SHARD_SUBQUERY_EXISTS ] = ID_TRUE;
+        }
+    }
+    else
+    {
+        aAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_MULTI_SHARD_INFO_EXISTS ] = ID_TRUE;
+        aAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_NON_SHARD_SUBQUERY_EXISTS ] = ID_TRUE;
+    }
+
+    //------------------------------------------
+    // Analyze partial non-shard DML executable
+    //------------------------------------------
+
+    if ( aParseTree->tableRef->mShardObjInfo != NULL )
+    {
+        for ( sSelectTarget  = ((qmsParseTree*)aParseTree->select->myPlan->parseTree)->querySet->target,
+                  sInsertColumn = aParseTree->insertColumns;
+              sSelectTarget != NULL;
+              sSelectTarget  = sSelectTarget->next,
+                  sInsertColumn = sInsertColumn->next )
+        {
+            sColOrder = sInsertColumn->basicInfo->column.id & SMI_COLUMN_ID_MASK;
+
+            if ( ( ( aIsSubKey == ID_FALSE ) &&
+                   ( aParseTree->tableRef->mShardObjInfo->mKeyFlags[sColOrder] == 1 ) ) ||
+                 ( ( aIsSubKey == ID_TRUE ) &&
+                   ( aParseTree->tableRef->mShardObjInfo->mKeyFlags[sColOrder] == 2 ) ) )
+            {
+                sPartialTransformable = ID_FALSE;
+
+                /* insert... select ¿¡¼­ insert target Å×ÀÌºíÀÇ °ÅÁÖ³ëµåµéÀÌ
+                   select¸¦ Áßº¹À¸·Î ¼öÇàÇÑ ÈÄ, ÀÚ½ÅÀÇ ³ëµå¿¡ ÇØ´çÇÏ´Â µ¥ÀÌÅÍ¸¸À» insertÇÒ °ÍÀÌ±â ¶§¹®¿¡
+                   selectÀÇ Áßº¹ÀûÀÎ ¼öÇàÀ¸·Î ÀÎÇØ source data°¡ multiple µÉ ¼ö ÀÖ´Â »óÈ²À» ¹æÁöÇØ¾ß ÇÑ´Ù.
+                   ¿¹¸¦µé¾î rand(), sequence°°Àº °æ¿ì°¡ ±×·²¼ö ÀÖ´Ù.  */
+                if ( ( ( sSelectTarget->targetColumn->lflag & QTC_NODE_PROC_FUNCTION_MASK )
+                       == QTC_NODE_PROC_FUNCTION_TRUE )
+                     ||
+                     ( ( sSelectTarget->targetColumn->lflag & QTC_NODE_SEQUENCE_MASK )
+                       == QTC_NODE_SEQUENCE_EXIST )
+                     ||
+                     ( ( sSelectTarget->targetColumn->lflag & QTC_NODE_VAR_FUNCTION_MASK )
+                       == QTC_NODE_VAR_FUNCTION_EXIST )
+                     ||
+                     ( ( sSelectTarget->targetColumn->lflag & QTC_NODE_PRIOR_MASK )
+                       == QTC_NODE_PRIOR_EXIST )
+                     ||
+                     ( ( sSelectTarget->targetColumn->lflag & QTC_NODE_LEVEL_MASK )
+                       == QTC_NODE_LEVEL_EXIST )
+                     ||
+                     ( ( sSelectTarget->targetColumn->lflag & QTC_NODE_ROWNUM_MASK )
+                       == QTC_NODE_ROWNUM_EXIST )
+                     ||
+                     ( ( sSelectTarget->targetColumn->lflag & QTC_NODE_ISLEAF_MASK )
+                       == QTC_NODE_ISLEAF_EXIST )
+                     ||
+                     ( ( sSelectTarget->targetColumn->lflag & QTC_NODE_COLUMN_RID_MASK )
+                       == QTC_NODE_COLUMN_RID_EXIST ) )
+                {
+                    sPartialTransformable = ID_FALSE;
+                }
+                else
+                {
+                    sPartialTransformable = ID_TRUE;
+                }
+
+                /* insert target tableÀÇ shard key column °ú
+                   selectÀÇ ÇØ´ç À§Ä¡ÀÇ targetÀÌ conversion°¡´ÉÇÑ mtdTypeÀÌ¾î¾ß ÇÑ´Ù.
+                */
+                if ( sPartialTransformable == ID_TRUE )
+                {
+                    sMtcColumn = QTC_STMT_COLUMN( aStatement, sSelectTarget->targetColumn );
+
+                    IDE_TEST( mtv::tableByNo( &sTable,
+                                              sInsertColumn->basicInfo->module->no,
+                                              sMtcColumn->module->no )
+                              != IDE_SUCCESS );
+
+                    sCost += sTable->cost;
+
+                    if ( sCost >=  MTV_COST_INFINITE )
+                    {
+                        sPartialTransformable = ID_FALSE;
+                    }
+                    else
+                    {
+                        sPartialTransformable = ID_TRUE;
+                    }
+                }
+                else
+                {
+                    /* already sPartialTransformable = ID_FALSE; */
+                    /* Nothing to do. */
+                }
+
+                if ( sPartialTransformable == ID_FALSE )
+                {
+                    aAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_UNSPECIFIED_SHARD_KEY_VALUE ] = ID_TRUE;
+                }
+                else
+                {
+                    /* Nothing to do. */
+                }
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
+        }
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_PARTIAL_SELECT_ANALYSIS_FAIL )
+    {
+        if ( ( aStatement->mShardPrintInfo.mNonShardQueryReason == SDI_NON_SHARD_QUERY_REASON_MAX ) &&
+             ( aParseTree->select != NULL ) )
+        {
+            aStatement->mShardPrintInfo.mNonShardQueryReason = aParseTree->select->mShardPrintInfo.mNonShardQueryReason;
+        }
+        else
+        {
+            /* Nothing to do. */
+        }
+    }
+    IDE_EXCEPTION(ERR_NULL_SHARD_OBJECT_INFO)
+    {
+        IDE_SET(ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                 "sda::setInsertSelectAnalysis",
+                                 "Invalid shard object information" ));
     }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 }
 
-IDE_RC sda::setExecProcAnalysis( qcStatement * aStatement,
-                                 ULong         aSMN )
+IDE_RC sda::analyzeExecProcCore( qcStatement       * aStatement,
+                                 ULong               aSMN,
+                                 sdiObjectInfo     * aShardObjInfo,
+                                 idBool              aIsSubKey )
 {
     qsExecParseTree     * sExecParseTree    = (qsExecParseTree*)aStatement->myPlan->parseTree;
     qsProcParseTree     * sProcPlanTree     = NULL;
     qsxProcPlanList     * sFoundProcPlan    = NULL;
-    qtcNode             * sArgument         = NULL;
 
-    sdiQuerySet         * sAnalysis         = NULL;
-    sdaSubqueryAnalysis * sSubqueryAnalysis = NULL;
+    /* TASK-7219 Shard Transformer Refactoring */
+    sdiShardAnalysis * sAnalysis = NULL;
 
-    sdiObjectInfo       * sShardObjInfo       = NULL;
-
-    //---------------------------------------
-    // Shard objectì˜ íšë“
-    //---------------------------------------
-    sdi::getShardObjInfoForSMN( aSMN,
-                                sExecParseTree->mShardObjInfo,
-                                &sShardObjInfo );
-
-    IDE_TEST_RAISE( sShardObjInfo == NULL, ERR_NULL_OBJECT_INFO );
+    IDE_TEST( allocAndSetAnalysis( aStatement,
+                                   aStatement->myPlan->parseTree,
+                                   NULL,
+                                   aIsSubKey,
+                                   &( sAnalysis ) )
+              != IDE_SUCCESS );
 
     //------------------------------------------
     // get procPlanTree
@@ -7092,156 +8326,94 @@ IDE_RC sda::setExecProcAnalysis( qcStatement * aStatement,
     // Set common information (add keyInfo & tableInfo)
     //------------------------------------------
     IDE_TEST( setDMLCommonAnalysis( aStatement,
-                                    sShardObjInfo,
+                                    aSMN,
+                                    aShardObjInfo,
                                     NULL,
-                                    &sAnalysis )
+                                    sAnalysis,
+                                    aIsSubKey )
               != IDE_SUCCESS );
 
     //------------------------------------------
     // Analyze shard key value
     //------------------------------------------
-    if ( ( sAnalysis->mShardInfo.mSplitMethod != SDI_SPLIT_CLONE ) &&
-         ( sAnalysis->mShardInfo.mSplitMethod != SDI_SPLIT_SOLO ) )
+    if ( sdi::getSplitType( sAnalysis->mShardInfo.mSplitMethod ) == SDI_SPLIT_TYPE_DIST )
     {
         IDE_TEST( getKeyValueID4ProcArguments( aStatement,
+                                               aSMN,
                                                sProcPlanTree,
                                                sExecParseTree,
                                                sAnalysis->mKeyInfo,
-                                               ID_FALSE )
-                  != IDE_SUCCESS );
-
-        if ( sShardObjInfo->mTableInfo.mSubKeyExists == ID_TRUE )
-        {
-            IDE_TEST( getKeyValueID4ProcArguments( aStatement,
-                                                   sProcPlanTree,
-                                                   sExecParseTree,
-                                                   sAnalysis->mKeyInfo4SubKey,
-                                                   ID_TRUE )
-                      != IDE_SUCCESS );
-        }
-        else
-        {
-            // Nothing to do.
-        }
-    }
-    else
-    {
-        // Nothing to do.
-    }
-
-    //------------------------------------------
-    // Analyze sub-query
-    //------------------------------------------
-    for ( sArgument = (qtcNode*)sExecParseTree->callSpecNode->node.arguments;
-          sArgument != NULL;
-          sArgument = (qtcNode*)sArgument->node.next )
-    {
-        if ( ( sArgument->lflag & QTC_NODE_SUBQUERY_MASK ) ==
-             QTC_NODE_SUBQUERY_EXIST )
-        {
-            IDE_TEST( subqueryAnalysis4NodeTree( aStatement,
-                                                 aSMN,
-                                                 sArgument,
-                                                 &sSubqueryAnalysis )
-                      != IDE_SUCCESS );
-        }
-        else
-        {
-            // Nothing to do.
-        }
-    }
-
-    if ( sSubqueryAnalysis != NULL )
-    {
-        IDE_TEST( setShardInfo4Subquery( aStatement,
-                                         sAnalysis,
-                                         sSubqueryAnalysis,
-                                         sAnalysis->mCantMergeReason )
+                                               &( sAnalysis->mAnalysisFlag ),
+                                               aIsSubKey )
                   != IDE_SUCCESS );
     }
     else
     {
         // Nothing to do.
     }
-
-    //------------------------------------------
-    // Set analysis result
-    //------------------------------------------
-    IDE_TEST( setAnalysis( aStatement,
-                           sAnalysis,
-                           sAnalysis->mCantMergeReason,
-                           sAnalysis->mCantMergeReason4SubKey )
-              != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(ERR_NULL_OBJECT_INFO)
-    {
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
-                                "sda::setExecProcAnalysis",
-                                "The shard object information of the SMN does not exist."));
-    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 }
 
-IDE_RC sda::setDMLCommonAnalysis( qcStatement    * aStatement,
-                                  sdiObjectInfo  * aShardObjInfo,
-                                  qmsTableRef    * aTableRef,
-                                  sdiQuerySet   ** aAnalysis )
+IDE_RC sda::setDMLCommonAnalysis( qcStatement      * aStatement,
+                                  ULong              aSMN,
+                                  sdiObjectInfo    * aShardObjInfo,
+                                  qmsTableRef      * aTableRef,
+                                  sdiShardAnalysis * aAnalysis,
+                                  idBool             aIsSubKey )
 {
-    sdiQuerySet         * sAnalysis = NULL;
-    sdiKeyInfo          * sKeyInfo = NULL;
-    UInt                  sColumnOrder = 0;
-    sdiKeyTupleColumn   * sKeyColumn = NULL;
+    sdiKeyInfo        * sKeyInfo = NULL;
+    UInt                sColumnOrder = 0;
+    sdiKeyTupleColumn * sKeyColumn = NULL;
 
-    idBool                sTableRefExists = ID_FALSE;
-    UInt                  sCandidateKeyCnt = 0;
-    UShort                sTableId = 0;
-    UShort                sKeyOrder = 0;
+    UInt                sCandidateKeyCnt = 0;
+    UShort              sTableId = 0;
 
-    //------------------------------------------
-    // Make basic analysis infomation
-    //------------------------------------------
-    IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiQuerySet),
-                                             (void**) aAnalysis )
+    /* TASK-7219 Shard Transformer Refactoring */
+    sdiObjectInfo     * sShardObjInfo = NULL;
+
+    /* TASK-7219 Shard Transformer Refactoring */
+    //---------------------------------------
+    // Shard objectÀÇ È¹µæ
+    //---------------------------------------
+    IDE_TEST( checkAndGetShardObjInfo( aSMN,
+                                       &( aAnalysis->mAnalysisFlag ),
+                                       aShardObjInfo,
+                                       ID_FALSE, /* aIsSelect */
+                                       aIsSubKey,
+                                       &( sShardObjInfo ) )
               != IDE_SUCCESS );
 
-    sAnalysis = *aAnalysis;
+    IDE_TEST_CONT( sShardObjInfo == NULL, NORMAL_EXIT );
 
-    SDI_INIT_QUERY_SET( sAnalysis );
-
-    IDE_TEST( copyShardInfoFromObjectInfo( aStatement,
-                                           &sAnalysis->mShardInfo,
-                                           aShardObjInfo,
-                                           ID_FALSE )
-              != IDE_SUCCESS );
+    copyShardInfoFromObjectInfo( &( aAnalysis->mShardInfo ),
+                                 sShardObjInfo,
+                                 aIsSubKey );
 
     //------------------------------------------
     // Make shard key information
     //------------------------------------------
-    if ( ( sAnalysis->mShardInfo.mSplitMethod != SDI_SPLIT_CLONE ) &&
-         ( sAnalysis->mShardInfo.mSplitMethod != SDI_SPLIT_SOLO ) )
+    if ( sdi::getSplitType( aAnalysis->mShardInfo.mSplitMethod ) == SDI_SPLIT_TYPE_DIST )
     {
         //------------------------------------------
         // Set variables
         //------------------------------------------
         if ( aTableRef != NULL )
         {
-            // tableRefê°€ ìˆìœ¼ë©´
-            // í•´ë‹¹ tableì˜ column ë“¤ ì¤‘ì—ì„œ shard keyë¥¼ ì°¾ê³ , í•´ë‹¹ columnì˜ ì •ë³´ë¡œ keyInfoë¥¼ ì„¤ì •í•œë‹¤.
-            sTableRefExists = ID_TRUE;
+            // tableRef°¡ ÀÖÀ¸¸é
+            // ÇØ´ç tableÀÇ column µé Áß¿¡¼­ shard key¸¦ Ã£°í, ÇØ´ç columnÀÇ Á¤º¸·Î keyInfo¸¦ ¼³Á¤ÇÑ´Ù.
             sCandidateKeyCnt = aTableRef->tableInfo->columnCount;
             sTableId = aTableRef->table;
         }
         else
         {
-            // tableRefê°€ ì—†ìœ¼ë©´
-            // sub-shard key ì—¬ë¶€ì— ë”°ë¼ 1ê°œ(sub-keyê°€ ì—†ì„ ê²½ìš°) ë˜ëŠ” 2ê°œ(sub-keyê°€ ìˆì„ ê²½ìš°)ì˜ dummy keyInfoë¥¼ ìƒì„±í•˜ê³ 
-            // ì´ˆê¸° ê°’(dummy value)ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
-            sTableRefExists = ID_FALSE;
-            sCandidateKeyCnt = (aShardObjInfo->mTableInfo.mSubKeyExists == ID_TRUE) ? 2 : 1;
+            // tableRef°¡ ¾øÀ¸¸é( exec proc )
+            // dummy keyInfo¸¦ »ı¼ºÇÏ°í, ÃÊ±â °ª(dummy value)À¸·Î ¼³Á¤ÇÑ´Ù.
+            sCandidateKeyCnt = 1;
             sTableId = 0;
         }
 
@@ -7249,93 +8421,65 @@ IDE_RC sda::setDMLCommonAnalysis( qcStatement    * aStatement,
               sColumnOrder < sCandidateKeyCnt;
               sColumnOrder++ )
         {
-            if ( sTableRefExists == ID_TRUE )
+            if ( ( ( sShardObjInfo->mKeyFlags[sColumnOrder] == 1 ) && ( aIsSubKey == ID_FALSE ) )
+                 ||
+                 ( ( sShardObjInfo->mKeyFlags[sColumnOrder] == 2 ) && ( aIsSubKey == ID_TRUE ) )
+                 ||
+                 ( aTableRef == NULL ) )
             {
-                if ( ( aShardObjInfo->mKeyFlags[sColumnOrder] == 1 ) ||
-                     ( aShardObjInfo->mKeyFlags[sColumnOrder] == 2 ) )
-                {
-                    sKeyOrder = aShardObjInfo->mKeyFlags[sColumnOrder];
-                }
-                else
-                {
-                    continue;
-                }
-            }
-            else
-            {
-                sKeyOrder = sColumnOrder + 1;
-            }
+                IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiKeyInfo),
+                                                         (void**) & sKeyInfo )
+                          != IDE_SUCCESS );
 
-            IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiKeyInfo),
-                                                     (void**) & sKeyInfo )
-                      != IDE_SUCCESS );
+                SDI_INIT_KEY_INFO( sKeyInfo );
 
-            SDI_INIT_KEY_INFO( sKeyInfo );
+                IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
+                                        sdiKeyTupleColumn,
+                                        (void*) &sKeyColumn )
+                          != IDE_SUCCESS );
 
-            IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
-                                    sdiKeyTupleColumn,
-                                    (void*) &sKeyColumn )
-                      != IDE_SUCCESS );
+                sKeyColumn->mTupleId         = sTableId;
+                sKeyColumn->mColumn          = ( aTableRef != NULL )?sColumnOrder:0;
+                sKeyColumn->mIsNullPadding   = ID_FALSE;
+                sKeyColumn->mIsAntiJoinInner = ID_FALSE;
 
-            sKeyColumn->mTupleId         = sTableId;
-            sKeyColumn->mColumn          = (sTableRefExists == ID_TRUE)?sColumnOrder:0;
-            sKeyColumn->mIsNullPadding   = ID_FALSE;
-            sKeyColumn->mIsAntiJoinInner = ID_FALSE;
+                sKeyInfo->mKeyCount = 1;
+                sKeyInfo->mKey = sKeyColumn;
 
-            sKeyInfo->mKeyCount = 1;
-            sKeyInfo->mKey = sKeyColumn;
-
-            if ( sKeyOrder == 1 )
-            {
                 // Set shard info for shard key
-                IDE_TEST( copyShardInfoFromShardInfo( aStatement,
-                                                      &sKeyInfo->mShardInfo,
-                                                      &sAnalysis->mShardInfo )
-                          != IDE_SUCCESS );
+                copyShardInfoFromShardInfo( &( sKeyInfo->mShardInfo ),
+                                            &( aAnalysis->mShardInfo ) );
 
-                sAnalysis->mKeyInfo = sKeyInfo;
+                aAnalysis->mKeyInfo = sKeyInfo;
 
-                if ( ( aShardObjInfo->mTableInfo.mSubKeyExists == ID_FALSE ) ||
-                     ( sAnalysis->mKeyInfo4SubKey != NULL ) )
+                if ( ( sShardObjInfo->mTableInfo.mSubKeyExists == ID_FALSE )
+                     ||
+                     ( aIsSubKey == ID_TRUE ) )
                 {
                     break;
                 }
                 else
                 {
-                    // Nothing to do.
+                    /* Nothing to do. */
                 }
+
             }
             else
             {
-                // Set shard info for sub-shard key
-                IDE_TEST( copyShardInfoFromObjectInfo( aStatement,
-                                                       &sAnalysis->mShardInfo4SubKey,
-                                                       aShardObjInfo,
-                                                       ID_TRUE )
-                          != IDE_SUCCESS );
-
-                IDE_TEST( copyShardInfoFromShardInfo( aStatement,
-                                                      &sKeyInfo->mShardInfo,
-                                                      &sAnalysis->mShardInfo4SubKey )
-                          != IDE_SUCCESS );
-
-                sAnalysis->mKeyInfo4SubKey = sKeyInfo;
-                sAnalysis->mCantMergeReason[SDI_SUB_KEY_EXISTS] = ID_TRUE;
-
-                if ( sAnalysis->mKeyInfo != NULL )
+                if ( ( sShardObjInfo->mKeyFlags[sColumnOrder] == 2 ) && ( aIsSubKey == ID_FALSE ) )
                 {
-                    break;
+                    aAnalysis->mAnalysisFlag.mTopQueryFlag[ SDI_TQ_SUB_KEY_EXISTS ] = ID_TRUE;
                 }
                 else
                 {
-                    // Nothing to do.
+                    /* Nothing to do. */
                 }
             }
         }
     }
     else
     {
-        // CLONE and SOLO split ì€ shard keyê°€ ì—†ë‹¤.
+        // CLONE and SOLO split Àº shard key°¡ ¾ø´Ù.
         // Nothing to do.
     }
 
@@ -7344,12 +8488,15 @@ IDE_RC sda::setDMLCommonAnalysis( qcStatement    * aStatement,
     //------------------------------------------
     //------------------------------------------
     // PROJ-2685 online rebuild
-    // shard tableì„ analysisì— ë“±ë¡
+    // shard tableÀ» analysis¿¡ µî·Ï
     //------------------------------------------
     IDE_TEST( addTableInfo( aStatement,
-                            sAnalysis,
-                            &aShardObjInfo->mTableInfo )
+                            aAnalysis,
+                            &( sShardObjInfo->mTableInfo ) )
               != IDE_SUCCESS );
+
+    /* TASK-7219 Shard Transformer Refactoring */
+    IDE_EXCEPTION_CONT( NORMAL_EXIT );
 
     return IDE_SUCCESS;
 
@@ -7358,18 +8505,197 @@ IDE_RC sda::setDMLCommonAnalysis( qcStatement    * aStatement,
     return IDE_FAILURE;
 }
 
-IDE_RC sda::getKeyValueID4InsertValue( qcStatement   * aStatement,
-                                       qmsTableRef   * aInsertTableRef,
-                                       qcmColumn     * aInsertColumns,
-                                       qmmMultiRows  * aInsertRows,
-                                       sdiKeyInfo    * aKeyInfo,
-                                       idBool          aIsSubKey )
+IDE_RC sda::subqueryAnalysis4DML( qcStatement      * aStatement,
+                                  UShort             aSMN,
+                                  sdiShardAnalysis * aAnalysis,
+                                  idBool             aIsSubKey )
+{
+    qciStmtType               sStmtType = aStatement->myPlan->parseTree->stmtKind;
+    qtcNode                 * sNode = NULL;
+    sdaSubqueryAnalysis     * sSubqueryAnalysis = NULL;
+    sdiAnalysisFlag         * sAnalysisFlag = NULL;
+    qmmValueNode            * sValues = NULL;
+    qmmSubqueries           * sSetSubqueries = NULL;
+
+    sAnalysisFlag = &( aAnalysis->mAnalysisFlag );
+
+    switch ( sStmtType )
+    {
+        case QCI_STMT_INSERT :
+
+            if ( ((qmmInsParseTree*)aStatement->myPlan->parseTree)->common.parse == qmv::parseInsertValues )
+            {
+                sValues = ((qmmInsParseTree*)aStatement->myPlan->parseTree)->rows->values;
+
+                for ( ;
+                      sValues != NULL;
+                      sValues  = sValues->next )
+                {
+                    if ( ( sValues->value->lflag & QTC_NODE_SUBQUERY_MASK ) ==
+                         QTC_NODE_SUBQUERY_EXIST )
+                    {
+                        IDE_TEST( subqueryAnalysis4NodeTree( aStatement,
+                                                             aSMN,
+                                                             sValues->value,
+                                                             aAnalysis->mKeyInfo,
+                                                             aIsSubKey,
+                                                             &sSubqueryAnalysis )
+                                  != IDE_SUCCESS );
+                    }
+                    else
+                    {
+                        /* Nothing to do. */
+                    }
+                }
+            }
+            else
+            {
+                IDE_RAISE(ERR_INVALID_STMT_TYPE);
+            }
+
+            break;
+        case QCI_STMT_UPDATE :
+
+            sNode = ((qmmUptParseTree*)aStatement->myPlan->parseTree)->querySet->SFWGH->where;
+            sValues = ((qmmUptParseTree*)aStatement->myPlan->parseTree)->values;
+            sSetSubqueries = ((qmmUptParseTree*)aStatement->myPlan->parseTree)->subqueries;
+
+            if ( sNode != NULL )
+            {
+                if ( ( sNode->lflag & QTC_NODE_SUBQUERY_MASK ) ==
+                     QTC_NODE_SUBQUERY_EXIST )
+                {
+                    IDE_TEST( subqueryAnalysis4NodeTree( aStatement,
+                                                         aSMN,
+                                                         sNode,
+                                                         aAnalysis->mKeyInfo,
+                                                         aIsSubKey,
+                                                         &sSubqueryAnalysis )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    /* Nothing to do. */
+                }
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
+
+            for ( ;
+                  sValues != NULL;
+                  sValues  = sValues->next )
+            {
+                if ( ( sValues->value->lflag & QTC_NODE_SUBQUERY_MASK ) ==
+                     QTC_NODE_SUBQUERY_EXIST )
+                {
+                    IDE_TEST( subqueryAnalysis4NodeTree( aStatement,
+                                                         aSMN,
+                                                         sValues->value,
+                                                         aAnalysis->mKeyInfo,
+                                                         aIsSubKey,
+                                                         &sSubqueryAnalysis )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    /* Nothing to do. */
+                }
+            }
+
+            for ( ;
+                  sSetSubqueries != NULL;
+                  sSetSubqueries = sSetSubqueries->next )
+            {
+                IDE_TEST( subqueryAnalysis4NodeTree( aStatement,
+                                                     aSMN,
+                                                     sSetSubqueries->subquery,
+                                                     aAnalysis->mKeyInfo,
+                                                     aIsSubKey,
+                                                     &sSubqueryAnalysis )
+                          != IDE_SUCCESS );
+            }
+
+            break;
+        case QCI_STMT_DELETE :
+
+            sNode = ((qmmDelParseTree*)aStatement->myPlan->parseTree)->querySet->SFWGH->where;
+
+            if ( sNode != NULL )
+            {
+                if ( ( sNode->lflag & QTC_NODE_SUBQUERY_MASK ) ==
+                     QTC_NODE_SUBQUERY_EXIST )
+                {
+                    IDE_TEST( subqueryAnalysis4NodeTree( aStatement,
+                                                         aSMN,
+                                                         sNode,
+                                                         aAnalysis->mKeyInfo,
+                                                         aIsSubKey,
+                                                         &sSubqueryAnalysis )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    /* Nothing to do. */
+                }
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
+            
+            break;
+        case QCI_STMT_EXEC_PROC :
+            break;
+        default :
+            IDE_RAISE(ERR_INVALID_STMT_TYPE);
+            break;
+    }
+
+    if ( sSubqueryAnalysis != NULL )
+    {
+        IDE_TEST( setShardInfo4Subquery( aStatement,
+                                         aAnalysis,
+                                         sSubqueryAnalysis,
+                                         ID_FALSE, // aIsSelect
+                                         aIsSubKey,
+                                         sAnalysisFlag )
+                  != IDE_SUCCESS );      
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(ERR_INVALID_STMT_TYPE)
+    {
+        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                "sda::subqueryAnalysis4DML",
+                                "Invalid stmt type"));
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}                                 
+
+IDE_RC sda::getKeyValueID4InsertValue( qcStatement     * aStatement,
+                                       ULong             aSMN,
+                                       qmsTableRef     * aInsertTableRef,
+                                       qcmColumn       * aInsertColumns,
+                                       qmmMultiRows    * aInsertRows,
+                                       sdiKeyInfo      * aKeyInfo,
+                                       idBool          * aIsShardQuery,
+                                       sdiAnalysisFlag * aAnalysisFlag,
+                                       idBool            aIsSubKey )
 {
 /***********************************************************************
  *
  * Description :
- *     Insert column ì¤‘ shard key columnì— ëŒ€ì‘í•˜ëŠ” insert value( shard key value )
- *     ë¥¼ ì°¾ê³ , í•´ë‹¹ insert valueê°€ host variableì´ë©´ bind parameter IDë¥¼ ë°˜í™˜í•œë‹¤.
+ *     Insert column Áß shard key column¿¡ ´ëÀÀÇÏ´Â insert value( shard key value )
+ *     ¸¦ Ã£°í, ÇØ´ç insert value°¡ host variableÀÌ¸é bind parameter ID¸¦ ¹İÈ¯ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -7383,11 +8709,21 @@ IDE_RC sda::getKeyValueID4InsertValue( qcStatement   * aStatement,
     sdaQtcNodeType sQtcNodeType  = SDA_NONE;
     UInt           sColOrder;
 
-    const mtdModule * sKeyModule = NULL;
-    const void      * sKeyValue  = NULL;
+    const mtdModule     * sKeyModule   = NULL;
+    const void          * sKeyValue    = NULL;
+
+    sdiKeyInfo      * sKeyInfoRef = NULL;
+
+    sdiObjectInfo   * sShardObjInfo = NULL;
 
     // BUG-42764
     IDE_TEST_RAISE( aInsertRows == NULL, ERR_NULL_INSERT_ROWS );
+
+    sdi::getShardObjInfoForSMN( aSMN,
+                                aInsertTableRef->mShardObjInfo,
+                                &( sShardObjInfo ) );
+
+    IDE_TEST_RAISE( sShardObjInfo == NULL, ERR_NULL_SHARD_OBJECT_INFO );
 
     for ( sInsertColumn = aInsertColumns, sInsertValue = aInsertRows->values;
           sInsertColumn != NULL;
@@ -7396,42 +8732,43 @@ IDE_RC sda::getKeyValueID4InsertValue( qcStatement   * aStatement,
         sColOrder = sInsertColumn->basicInfo->column.id & SMI_COLUMN_ID_MASK;
 
         if ( ( ( aIsSubKey == ID_FALSE ) &&
-               ( aInsertTableRef->mShardObjInfo->mKeyFlags[sColOrder] == 1 ) ) ||
+               ( sShardObjInfo->mKeyFlags[sColOrder] == 1 ) ) ||
              ( ( aIsSubKey == ID_TRUE ) &&
-               ( aInsertTableRef->mShardObjInfo->mKeyFlags[sColOrder] == 2 ) ) )
+               ( sShardObjInfo->mKeyFlags[sColOrder] == 2 ) ) )
         {
             IDE_TEST( getQtcNodeTypeWithKeyInfo( aStatement,
                                                  aKeyInfo,
                                                  sInsertValue->value,
-                                                 &sQtcNodeType )
+                                                 &sQtcNodeType,
+                                                 &sKeyInfoRef )
                       != IDE_SUCCESS );
 
             if ( ( sQtcNodeType == SDA_HOST_VAR ) ||
                  ( sQtcNodeType == SDA_CONSTANT_VALUE ) )
             {
-                aKeyInfo->mValueCount = 1;
-
-                IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiValueInfo),
-                                                         (void**) & aKeyInfo->mValue )
+                IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMP_MEM( aStatement ),
+                                                  sdiValueInfo,
+                                                  ID_SIZEOF(sdiValueInfo*),
+                                                  (void*)&aKeyInfo->mValuePtrArray )
                           != IDE_SUCCESS );
 
-                if ( sQtcNodeType == SDA_HOST_VAR )
-                {
-                    /* Host variable */
+                aKeyInfo->mValuePtrCount = 1;
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
 
-                    aKeyInfo->mValue->mType = 0;
-                    aKeyInfo->mValue->mValue.mBindParamId = sInsertValue->value->node.column;
-                }
-                else
-                {
-                    /* Constant value */
+            switch ( sQtcNodeType )
+            {
+                case SDA_HOST_VAR:
+                    IDE_TEST( allocAndSetShardHostValueInfo( aStatement,
+                                                             sInsertValue->value->node.column,
+                                                             aKeyInfo->mValuePtrArray )
+                              != IDE_SUCCESS );
+                    break;
 
-                    aKeyInfo->mValue->mType = 1;
-
-                    /*
-                     * Constant valueë¥¼ ê³„ì‚°í•˜ì—¬,
-                     * Shard valueì— ë‹¬ì•„ì¤€ë‹¤.
-                     */
+                case SDA_CONSTANT_VALUE:
                     IDE_TEST( mtd::moduleById( &sKeyModule,
                                                aKeyInfo->mShardInfo.mKeyDataType )
                               != IDE_SUCCESS );
@@ -7439,22 +8776,28 @@ IDE_RC sda::getKeyValueID4InsertValue( qcStatement   * aStatement,
                     IDE_TEST( getKeyConstValue( aStatement,
                                                 sInsertValue->value,
                                                 sKeyModule,
-                                                & sKeyValue )
+                                                &sKeyValue )
                               != IDE_SUCCESS );
 
-                    IDE_TEST( setKeyValue( aKeyInfo->mShardInfo.mKeyDataType,
-                                           sKeyValue,
-                                           aKeyInfo->mValue )
+                    IDE_TEST( allocAndSetShardConstValueInfo( aStatement,
+                                                              aKeyInfo->mShardInfo.mKeyDataType,
+                                                              sKeyValue,
+                                                              aKeyInfo->mValuePtrArray )
                               != IDE_SUCCESS );
-                }
 
-                sHasKeyColumn = ID_TRUE;
-                break;
+                    break;
+
+                default:
+                    /* TASK-7219 Non-shard DML */
+                    *aIsShardQuery = ID_FALSE;
+                    /* TASK-7219 Shard Transformer Refactoring */
+                    aAnalysisFlag->mNonShardFlag[ SDI_UNSPECIFIED_SHARD_KEY_VALUE ] = ID_TRUE;
+                    break;
             }
-            else
-            {
-                IDE_RAISE(ERR_INVALID_SHARD_KEY_CONDITION);
-            }
+
+            sHasKeyColumn = ID_TRUE;
+
+            break;
         }
         else
         {
@@ -7473,11 +8816,6 @@ IDE_RC sda::getKeyValueID4InsertValue( qcStatement   * aStatement,
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(ERR_INVALID_SHARD_KEY_CONDITION)
-    {
-        setNonShardQueryReason( &(aStatement->mShardPrintInfo), SDI_INVALID_SHARD_KEY_CONDITION );
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_INVALID_SHARD_KEY_CONDITION));
-    }
     IDE_EXCEPTION(ERR_SHARD_KEY_CONDITION_NOT_EXIST)
     {
         IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
@@ -7490,22 +8828,30 @@ IDE_RC sda::getKeyValueID4InsertValue( qcStatement   * aStatement,
                                 "sda::getKeyValueID4InsertValue",
                                 "The insert rows are NULL."));
     }
+    IDE_EXCEPTION(ERR_NULL_SHARD_OBJECT_INFO)
+    {
+        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                "sda::getKeyValueID4InsertValue",
+                                "Invalid shard object information"));
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 }
 
 IDE_RC sda::getKeyValueID4ProcArguments( qcStatement     * aStatement,
+                                         ULong             aSMN,
                                          qsProcParseTree * aPlanTree,
                                          qsExecParseTree * aParseTree,
                                          sdiKeyInfo      * aKeyInfo,
+                                         sdiAnalysisFlag * aAnalysisFlag,
                                          idBool            aIsSubKey )
 {
 /***********************************************************************
  *
  * Description :
- *     Procedure arguments ì¤‘ shard key columnì— ëŒ€ì‘í•˜ëŠ” value( shard key value )
- *     ë¥¼ ì°¾ê³ , í•´ë‹¹ valueê°€ host variableì´ë©´ bind parameter IDë¥¼ ë°˜í™˜í•œë‹¤.
+ *     Procedure arguments Áß shard key column¿¡ ´ëÀÀÇÏ´Â value( shard key value )
+ *     ¸¦ Ã£°í, ÇØ´ç value°¡ host variableÀÌ¸é bind parameter ID¸¦ ¹İÈ¯ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -7519,9 +8865,18 @@ IDE_RC sda::getKeyValueID4ProcArguments( qcStatement     * aStatement,
     idBool             sHasKeyColumn = ID_FALSE;
     sdaQtcNodeType     sQtcNodeType  = SDA_NONE;
     UInt               sColOrder;
+    const mtdModule  * sKeyModule   = NULL;
+    const void       * sKeyValue    = NULL;
 
-    const mtdModule  * sKeyModule = NULL;
-    const void       * sKeyValue  = NULL;
+    sdiKeyInfo       * sKeyInfoRef = NULL;
+
+    sdiObjectInfo    * sShardObjInfo = NULL;
+
+    sdi::getShardObjInfoForSMN( aSMN,
+                                aParseTree->mShardObjInfo,
+                                &( sShardObjInfo ) );
+
+    IDE_TEST_RAISE( sShardObjInfo == NULL, ERR_NULL_SHARD_OBJECT_INFO );
 
     for ( sParaDecls = aPlanTree->paraDecls,
               sArgument = (qtcNode*)aParseTree->callSpecNode->node.arguments,
@@ -7531,41 +8886,32 @@ IDE_RC sda::getKeyValueID4ProcArguments( qcStatement     * aStatement,
               sArgument = (qtcNode*)sArgument->node.next,
               sColOrder++ )
     {
-        if ( ( ( aIsSubKey == ID_FALSE ) && ( aParseTree->mShardObjInfo->mKeyFlags[sColOrder] == 1 ) ) ||
-             ( ( aIsSubKey == ID_TRUE  ) && ( aParseTree->mShardObjInfo->mKeyFlags[sColOrder] == 2 ) ) )
+        if ( ( ( aIsSubKey == ID_FALSE ) && ( sShardObjInfo->mKeyFlags[sColOrder] == 1 ) ) ||
+             ( ( aIsSubKey == ID_TRUE  ) && ( sShardObjInfo->mKeyFlags[sColOrder] == 2 ) ) )
         {
             IDE_TEST( getQtcNodeTypeWithKeyInfo( aStatement,
                                                  aKeyInfo,
                                                  sArgument,
-                                                 &sQtcNodeType )
+                                                 &sQtcNodeType,
+                                                 &sKeyInfoRef )
                       != IDE_SUCCESS );
 
-            if ( ( sQtcNodeType == SDA_HOST_VAR ) ||
-                 ( sQtcNodeType == SDA_CONSTANT_VALUE ) )
+            IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMP_MEM( aStatement ),
+                                              sdiValueInfo,
+                                              ID_SIZEOF(sdiValueInfo*),
+                                              (void*)&aKeyInfo->mValuePtrArray )
+                      != IDE_SUCCESS );
+
+            switch ( sQtcNodeType )
             {
-                aKeyInfo->mValueCount = 1;
+                case SDA_HOST_VAR:
+                    IDE_TEST( allocAndSetShardHostValueInfo( aStatement,
+                                                             sArgument->node.column,
+                                                             aKeyInfo->mValuePtrArray )
+                              != IDE_SUCCESS );
+                    break;
 
-                IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiValueInfo),
-                                                         (void**) & aKeyInfo->mValue )
-                          != IDE_SUCCESS );
-
-                if ( sQtcNodeType == SDA_HOST_VAR )
-                {
-                    /* Host variable */
-
-                    aKeyInfo->mValue->mType = 0;
-                    aKeyInfo->mValue->mValue.mBindParamId = sArgument->node.column;
-                }
-                else
-                {
-                    /* Constant value */
-
-                    aKeyInfo->mValue->mType = 1;
-
-                    /*
-                     * Constant valueë¥¼ ê³„ì‚°í•˜ì—¬,
-                     * Shard valueì— ë‹¬ì•„ì¤€ë‹¤.
-                     */
+                case SDA_CONSTANT_VALUE:
                     IDE_TEST( mtd::moduleById( &sKeyModule,
                                                aKeyInfo->mShardInfo.mKeyDataType )
                               != IDE_SUCCESS );
@@ -7573,23 +8919,28 @@ IDE_RC sda::getKeyValueID4ProcArguments( qcStatement     * aStatement,
                     IDE_TEST( getKeyConstValue( aStatement,
                                                 sArgument,
                                                 sKeyModule,
-                                                & sKeyValue )
+                                                &sKeyValue )
                               != IDE_SUCCESS );
 
-                    IDE_TEST( setKeyValue( aKeyInfo->mShardInfo.mKeyDataType,
-                                           sKeyValue,
-                                           aKeyInfo->mValue )
+                    IDE_TEST( allocAndSetShardConstValueInfo( aStatement,
+                                                              aKeyInfo->mShardInfo.mKeyDataType,
+                                                              sKeyValue,
+                                                              aKeyInfo->mValuePtrArray )
                               != IDE_SUCCESS );
+                    break;
 
-                }
+                default:
+                    /* TASK-7219 Shard Transformer Refactoring */
+                    aAnalysisFlag->mNonShardFlag[ SDI_UNSPECIFIED_SHARD_KEY_VALUE ] = ID_TRUE;
+                    IDE_CONT( NORMAL_EXIT );
+                    break;
 
-                sHasKeyColumn = ID_TRUE;
-                break;
             }
-            else
-            {
-                IDE_RAISE(ERR_INVALID_SHARD_KEY_CONDITION);
-            }
+
+            aKeyInfo->mValuePtrCount = 1;
+            sHasKeyColumn = ID_TRUE;
+
+            break;
         }
         else
         {
@@ -7606,25 +8957,29 @@ IDE_RC sda::getKeyValueID4ProcArguments( qcStatement     * aStatement,
         // Nothing to do.
     }
 
+    /* TASK-7219 Shard Transformer Refactoring */
+    IDE_EXCEPTION_CONT( NORMAL_EXIT );
+
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(ERR_INVALID_SHARD_KEY_CONDITION)
-    {
-        setNonShardQueryReason( &(aStatement->mShardPrintInfo), SDI_INVALID_SHARD_KEY_CONDITION );
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_INVALID_SHARD_KEY_CONDITION));
-    }
     IDE_EXCEPTION(ERR_SHARD_KEY_CONDITION_NOT_EXIST)
     {
         IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_EXIST_SHARD_KEY_CONDITION));
+    }
+    IDE_EXCEPTION(ERR_NULL_SHARD_OBJECT_INFO)
+    {
+        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                "sda::getKeyValueID4ProcArguments",
+                                "Invalid shard object information"));
     }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 }
 
-IDE_RC sda::normalizePredicate( qcStatement  * aStatement,
-                                qmsQuerySet  * aQuerySet,
-                                qtcNode     ** aPredicate )
+IDE_RC sda::normalizePredicate( qcStatement * aStatement,
+                                qmsQuerySet * aQuerySet,
+                                qtcNode    ** aPredicate )
 {
 /***********************************************************************
  *
@@ -7641,7 +8996,7 @@ IDE_RC sda::normalizePredicate( qcStatement  * aStatement,
     qtcNode       * sNNFFilter  = NULL;
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_TEST_RAISE( aStatement == NULL, ERR_NULL_STATEMENT );
@@ -7657,7 +9012,7 @@ IDE_RC sda::normalizePredicate( qcStatement  * aStatement,
     IDE_TEST_CONT( sQuerySet->SFWGH->where == NULL,
                    NORMAL_EXIT );
 
-    // PROJ-1413 constant exprssionì˜ ìƒìˆ˜ ë³€í™˜
+    // PROJ-1413 constant exprssionÀÇ »ó¼ö º¯È¯
     IDE_TEST( qmoConstExpr::processConstExpr( aStatement,
                                               sQuerySet->SFWGH )
               != IDE_SUCCESS );
@@ -7670,24 +9025,40 @@ IDE_RC sda::normalizePredicate( qcStatement  * aStatement,
                                                      &sNormalType )
               != IDE_SUCCESS );
 
-    IDE_TEST_RAISE( sNormalType != QMO_NORMAL_TYPE_CNF,
-                    ERR_CNF_NORMALIZATION );
+    /* TASK-7219 Shard Transformer Refactoring */
+    if ( sNormalType != QMO_NORMAL_TYPE_CNF )
+    {
+        sQuerySet->mShardAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_CNF_NORMALIZATION_FAIL ] = ID_TRUE;
+        IDE_CONT( NORMAL_EXIT );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
-    // where ì ˆì„ CNF Normalization
+    // where ÀıÀ» CNF Normalization
     IDE_TEST( qmoNormalForm::normalizeCNF( aStatement,
                                            sQuerySet->SFWGH->where,
                                            &sNormalForm )
               != IDE_SUCCESS );
 
     // BUG-35155 Partial CNF
-    // Partial CNF ì—ì„œ ì œì™¸ëœ qtcNode ë¥¼ NNF í•„í„°ë¡œ ë§Œë“ ë‹¤.
+    // Partial CNF ¿¡¼­ Á¦¿ÜµÈ qtcNode ¸¦ NNF ÇÊÅÍ·Î ¸¸µç´Ù.
     IDE_TEST( qmoNormalForm::extractNNFFilter4CNF( aStatement,
                                                    sQuerySet->SFWGH->where,
                                                    &sNNFFilter )
               != IDE_SUCCESS );
 
-    IDE_TEST_RAISE( sNNFFilter != NULL,
-                    ERR_EXIST_NNF_FILTER );
+    /* TASK-7219 Shard Transformer Refactoring */
+    if ( sNNFFilter != NULL )
+    {
+        sQuerySet->mShardAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_CNF_NORMALIZATION_FAIL ] = ID_TRUE;
+        IDE_CONT( NORMAL_EXIT );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
     //------------------------------------------
     // set normal form
@@ -7701,18 +9072,9 @@ IDE_RC sda::normalizePredicate( qcStatement  * aStatement,
 
     IDE_EXCEPTION( ERR_NOT_SUPPORT_SET )
     {
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "SET"));
-    }
-    IDE_EXCEPTION( ERR_CNF_NORMALIZATION )
-    {
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "CNF"));
-    }
-    IDE_EXCEPTION( ERR_EXIST_NNF_FILTER )
-    {
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "NNF"));
+        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                "sda::normalizePredicate",
+                                "Invalid queryset type"));
     }
     IDE_EXCEPTION(ERR_NULL_STATEMENT)
     {
@@ -7720,7 +9082,7 @@ IDE_RC sda::normalizePredicate( qcStatement  * aStatement,
                                 "sda::normalizePredicate",
                                 "The statement is NULL."));
     }
-        IDE_EXCEPTION(ERR_NULL_QUERYSET)
+    IDE_EXCEPTION(ERR_NULL_QUERYSET)
     {
         IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
                                 "sda::normalizePredicate",
@@ -7740,7 +9102,7 @@ IDE_RC sda::getQtcNodeTypeWithShardFrom( qcStatement         * aStatement,
 /***********************************************************************
  *
  * Description :
- *     qtcNodeì˜ shard typeì„ ë°˜í™˜í•œë‹¤.
+ *     qtcNodeÀÇ shard typeÀ» ¹İÈ¯ÇÑ´Ù.
  *
  *         < shard predicate type >
  *
@@ -7759,24 +9121,30 @@ IDE_RC sda::getQtcNodeTypeWithShardFrom( qcStatement         * aStatement,
 
     sdaFrom * sShardFrom = NULL;
     UInt      sKeyCount = 0;
-
+    qtcNode * sNode = aNode;
+    
     *aQtcNodeType = SDA_NONE;
+
+    while ( sNode->node.module == &qtc::passModule )
+    {
+        sNode = (qtcNode*)sNode->node.arguments;
+    }
 
     /* Check shard column kind */
 
-    if ( aNode->node.module == &qtc::columnModule )
+    if ( sNode->node.module == &qtc::columnModule )
     {
         for ( sShardFrom  = aShardFrom;
               sShardFrom != NULL;
               sShardFrom  = sShardFrom->mNext )
         {
-            if ( sShardFrom->mTupleId == aNode->node.table )
+            if ( sShardFrom->mTupleId == sNode->node.table )
             {
                 for ( sKeyCount = 0;
                       sKeyCount < sShardFrom->mKeyCount;
                       sKeyCount++ )
                 {
-                    if ( sShardFrom->mKey[sKeyCount] == aNode->node.column )
+                    if ( sShardFrom->mKey[sKeyCount] == sNode->node.column )
                     {
                         *aQtcNodeType = SDA_KEY_COLUMN;
                         break;
@@ -7804,31 +9172,31 @@ IDE_RC sda::getQtcNodeTypeWithShardFrom( qcStatement         * aStatement,
     }
     else
     {
-        if ( qtc::isHostVariable( QC_SHARED_TMPLATE( aStatement ), aNode ) == ID_TRUE )
+        if ( qtc::isHostVariable( QC_SHARED_TMPLATE( aStatement ), sNode ) == ID_TRUE )
         {
             *aQtcNodeType = SDA_HOST_VAR;
         }
         else
         {
-            if ( aNode->node.module == &mtfEqual )
+            if ( sNode->node.module == &mtfEqual )
             {
                 *aQtcNodeType = SDA_EQUAL;
             }
             else
             {
-                if ( aNode->node.module == &mtfOr )
+                if ( sNode->node.module == &mtfOr )
                 {
                     *aQtcNodeType = SDA_OR;
                 }
                 else
                 {
-                    if ( qtc::isConstValue( QC_SHARED_TMPLATE( aStatement ), aNode ) == ID_TRUE )
+                    if ( qtc::isConstValue( QC_SHARED_TMPLATE( aStatement ), sNode ) == ID_TRUE )
                     {
                         *aQtcNodeType = SDA_CONSTANT_VALUE;
                     }
                     else
                     {
-                        if ( aNode->node.module == &sdfShardKey )
+                        if ( sNode->node.module == &sdfShardKey )
                         {
                             *aQtcNodeType = SDA_SHARD_KEY_FUNC;
                         }
@@ -7849,12 +9217,13 @@ IDE_RC sda::getQtcNodeTypeWithShardFrom( qcStatement         * aStatement,
 IDE_RC sda::getQtcNodeTypeWithKeyInfo( qcStatement         * aStatement,
                                        sdiKeyInfo          * aKeyInfo,
                                        qtcNode             * aNode,
-                                       sdaQtcNodeType      * aQtcNodeType )
+                                       sdaQtcNodeType      * aQtcNodeType,
+                                       sdiKeyInfo         ** aKeyInfoRef )
 {
 /***********************************************************************
  *
  * Description :
- *     qtcNodeì˜ shard typeì„ ë°˜í™˜í•œë‹¤.
+ *     qtcNodeÀÇ shard typeÀ» ¹İÈ¯ÇÑ´Ù.
  *
  *         < shard predicate type >
  *
@@ -7873,12 +9242,19 @@ IDE_RC sda::getQtcNodeTypeWithKeyInfo( qcStatement         * aStatement,
 
     sdiKeyInfo * sKeyInfo = NULL;
     UInt         sKeyCount = 0;
+    qtcNode    * sNode = aNode;
 
     *aQtcNodeType = SDA_NONE;
+    *aKeyInfoRef = NULL;
+
+    while ( sNode->node.module == &qtc::passModule )
+    {
+        sNode = (qtcNode*)sNode->node.arguments;
+    }
 
     /* Check shard column kind */
 
-    if ( aNode->node.module == &qtc::columnModule )
+    if ( sNode->node.module == &qtc::columnModule )
     {
         for ( sKeyInfo  = aKeyInfo;
               sKeyInfo != NULL;
@@ -7888,10 +9264,11 @@ IDE_RC sda::getQtcNodeTypeWithKeyInfo( qcStatement         * aStatement,
                   sKeyCount < sKeyInfo->mKeyCount;
                   sKeyCount++ )
             {
-                if ( ( sKeyInfo->mKey[sKeyCount].mTupleId == aNode->node.table ) &&
-                     ( sKeyInfo->mKey[sKeyCount].mColumn == aNode->node.column ) )
+                if ( ( sKeyInfo->mKey[sKeyCount].mTupleId == sNode->node.table ) &&
+                     ( sKeyInfo->mKey[sKeyCount].mColumn == sNode->node.column ) )
                 {
                     *aQtcNodeType = SDA_KEY_COLUMN;
+                    *aKeyInfoRef = sKeyInfo;
                     break;
                 }
                 else
@@ -7912,31 +9289,31 @@ IDE_RC sda::getQtcNodeTypeWithKeyInfo( qcStatement         * aStatement,
     }
     else
     {
-        if ( qtc::isHostVariable( QC_SHARED_TMPLATE( aStatement ), aNode ) == ID_TRUE )
+        if ( qtc::isHostVariable( QC_SHARED_TMPLATE( aStatement ), sNode ) == ID_TRUE )
         {
             *aQtcNodeType = SDA_HOST_VAR;
         }
         else
         {
-            if ( aNode->node.module == &mtfEqual )
+            if ( sNode->node.module == &mtfEqual )
             {
                 *aQtcNodeType = SDA_EQUAL;
             }
             else
             {
-                if ( aNode->node.module == &mtfOr )
+                if ( sNode->node.module == &mtfOr )
                 {
                     *aQtcNodeType = SDA_OR;
                 }
                 else
                 {
-                    if ( qtc::isConstValue( QC_SHARED_TMPLATE( aStatement ), aNode ) == ID_TRUE )
+                    if ( qtc::isConstValue( QC_SHARED_TMPLATE( aStatement ), sNode ) == ID_TRUE )
                     {
                         *aQtcNodeType = SDA_CONSTANT_VALUE;
                     }
                     else
                     {
-                        if ( aNode->node.module == &sdfShardKey )
+                        if ( sNode->node.module == &sdfShardKey )
                         {
                             *aQtcNodeType = SDA_SHARD_KEY_FUNC;
                         }
@@ -8017,12 +9394,12 @@ IDE_RC sda::getKeyConstValue( qcStatement      * aStatement,
     return IDE_FAILURE;
 }
 
-IDE_RC sda::analyzeAnsiJoin( qcStatement * aStatement,
-                             qmsQuerySet * aQuerySet,
-                             qmsFrom     * aFrom,
-                             sdaFrom     * aShardFrom,
-                             sdaCNFList ** aCNFList,
-                             idBool      * aCantMergeReason )
+IDE_RC sda::analyzeAnsiJoin( qcStatement     * aStatement,
+                             qmsQuerySet     * aQuerySet,
+                             qmsFrom         * aFrom,
+                             sdaFrom         * aShardFrom,
+                             sdaCNFList     ** aCNFList,
+                             sdiAnalysisFlag * aAnalysisFlag )
 {
     sdaCNFList    * sCNFList = NULL;
 
@@ -8042,7 +9419,7 @@ IDE_RC sda::analyzeAnsiJoin( qcStatement * aStatement,
                                        aFrom->left,
                                        aShardFrom,
                                        aCNFList,
-                                       aCantMergeReason)
+                                       aAnalysisFlag )
                       != IDE_SUCCESS );
 
             IDE_TEST( analyzeAnsiJoin( aStatement,
@@ -8050,7 +9427,7 @@ IDE_RC sda::analyzeAnsiJoin( qcStatement * aStatement,
                                        aFrom->right,
                                        aShardFrom,
                                        aCNFList,
-                                       aCantMergeReason )
+                                       aAnalysisFlag )
                       != IDE_SUCCESS );
 
             //---------------------------------------
@@ -8072,12 +9449,20 @@ IDE_RC sda::analyzeAnsiJoin( qcStatement * aStatement,
                                                            aFrom,
                                                            aFrom->onCondition,
                                                            aQuerySet->SFWGH->hints,
-                                                           ID_TRUE, // CNF Onlyì„
+                                                           ID_TRUE, // CNF OnlyÀÓ
                                                            & sNormalType )
                           != IDE_SUCCESS );
 
-                IDE_TEST_RAISE( sNormalType != QMO_NORMAL_TYPE_CNF,
-                                ERR_CNF_NORMALIZATION );
+                /* TASK-7219 Shard Transformer Refactoring */
+                if ( sNormalType != QMO_NORMAL_TYPE_CNF )
+                {
+                    aAnalysisFlag->mNonShardFlag[ SDI_CNF_NORMALIZATION_FAIL ] = ID_TRUE;
+                    IDE_CONT( NORMAL_EXIT );
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
 
                 IDE_TEST( qmoNormalForm::normalizeCNF( aStatement,
                                                        aFrom->onCondition,
@@ -8089,17 +9474,25 @@ IDE_RC sda::analyzeAnsiJoin( qcStatement * aStatement,
                                                                &sNNFFilter )
                           != IDE_SUCCESS );
 
-                IDE_TEST_RAISE( sNNFFilter != NULL,
-                                ERR_EXIST_NNF_FILTER );
+                /* TASK-7219 Shard Transformer Refactoring */
+                if ( sNNFFilter != NULL )
+                {
+                    aAnalysisFlag->mNonShardFlag[ SDI_CNF_NORMALIZATION_FAIL ] = ID_TRUE;
+                    IDE_CONT( NORMAL_EXIT );
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
 
                 //------------------------------------------
-                // ì—°ê²°
+                // ¿¬°á
                 //------------------------------------------
                 sCNFList->mNext = *aCNFList;
                 *aCNFList = sCNFList;
 
                 //------------------------------------------
-                // Shard key columnì´ NULL-padding ë˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
+                // Shard key columnÀÌ NULL-padding µÇ´ÂÁö È®ÀÎÇÑ´Ù.
                 //------------------------------------------
                 if ( aFrom->joinType == QMS_LEFT_OUTER_JOIN )
                 {
@@ -8109,32 +9502,32 @@ IDE_RC sda::analyzeAnsiJoin( qcStatement * aStatement,
                               != IDE_SUCCESS );
 
                     if ( ( sIsShardNullPadding == ID_TRUE ) &&
-                         ( aCantMergeReason[SDI_INVALID_OUTER_JOIN_EXISTS] == ID_FALSE ) )
+                         ( aAnalysisFlag->mNonShardFlag[ SDI_NODE_TO_NODE_OUTER_JOIN_EXISTS ] == ID_FALSE ) )
                     {
                         /*
                          * BUG-45338
                          *
-                         * hash, range, list í…Œì´ë¸”ì˜ outer join null-paddingì„ ì§€ì›í•˜ë©´ì„œ,
-                         * clone tableê³¼ì˜ outer-joinì— ì˜í•´ hash, range, list tableì´ null-padding ë˜ë©´ ê²°ê³¼ê°€ ë‹¤ë¦„
-                         * ì´ì—ëŒ€í•´ ìˆ˜í–‰ ë¶ˆê°€ë¡œ íŒë³„(SDI_INVALID_OUTER_JOIN_EXISTS) í•œë‹¤.
+                         * hash, range, list Å×ÀÌºíÀÇ outer join null-paddingÀ» Áö¿øÇÏ¸é¼­,
+                         * clone table°úÀÇ outer-join¿¡ ÀÇÇØ hash, range, list tableÀÌ null-padding µÇ¸é °á°ú°¡ ´Ù¸§
+                         * ÀÌ¿¡´ëÇØ ¼öÇà ºÒ°¡·Î ÆÇº°(SDI_NODE_TO_NODE_OUTER_JOIN_EXISTS) ÇÑ´Ù.
                          *
-                         * hash, range, list í…Œì´ë¸”ì´ outer joinì— ì˜í•´ null-padding ë  ê²½ìš°
-                         * join-tree ìƒ ë°˜ëŒ€ìª½ì— clone tableì´ "ìˆìœ¼ë©´ì„œ",
-                         * hash, range, list í…Œì´ë¸”ì´ "ì—†ìœ¼ë©´" ìˆ˜í–‰ ë¶ˆê°€ë¡œ íŒë‹¨í•œë‹¤.
+                         * hash, range, list Å×ÀÌºíÀÌ outer join¿¡ ÀÇÇØ null-padding µÉ °æ¿ì
+                         * join-tree »ó ¹İ´ëÂÊ¿¡ clone tableÀÌ "ÀÖÀ¸¸é¼­",
+                         * hash, range, list Å×ÀÌºíÀÌ "¾øÀ¸¸é" ¼öÇà ºÒ°¡·Î ÆÇ´ÜÇÑ´Ù.
                          *
-                         *   LEFT     >> ìˆ˜í–‰ê°€ëŠ¥
+                         *   LEFT     >> ¼öÇà°¡´É
                          *   /  \
                          *  H    C    
                          *
-                         *   LEFT     >> ìˆ˜í–‰ë¶ˆê°€
+                         *   LEFT     >> ¼öÇàºÒ°¡
                          *   /  \     
                          *  C    H    
                          *
-                         *   FULL     >> ìˆ˜í–‰ë¶ˆê°€
+                         *   FULL     >> ¼öÇàºÒ°¡
                          *   /  \
                          *  H    C    
                          *
-                         *   FULL     >> ìˆ˜í–‰ê°€ëŠ¥( hash, range, list ê°€ null-paddingë˜ì§€ ì•ŠìŒ)
+                         *   FULL     >> ¼öÇà°¡´É( hash, range, list °¡ null-paddingµÇÁö ¾ÊÀ½)
                          *   /  \
                          *  C    C
                          *
@@ -8146,7 +9539,7 @@ IDE_RC sda::analyzeAnsiJoin( qcStatement * aStatement,
 
                         if ( ( sIsCloneExists == ID_TRUE ) && ( sIsShardExists == ID_FALSE ) )
                         {
-                            aCantMergeReason[SDI_INVALID_OUTER_JOIN_EXISTS] = ID_TRUE;
+                            aAnalysisFlag->mNonShardFlag[ SDI_NODE_TO_NODE_OUTER_JOIN_EXISTS ] = ID_TRUE;
                         }
                         else
                         {
@@ -8166,7 +9559,7 @@ IDE_RC sda::analyzeAnsiJoin( qcStatement * aStatement,
                               != IDE_SUCCESS );
 
                     if ( ( sIsShardNullPadding == ID_TRUE ) &&
-                         ( aCantMergeReason[SDI_INVALID_OUTER_JOIN_EXISTS] == ID_FALSE ) )
+                         ( aAnalysisFlag->mNonShardFlag[ SDI_NODE_TO_NODE_OUTER_JOIN_EXISTS ] == ID_FALSE ) )
                     {
                         IDE_TEST( isCloneAndShardExists( aFrom->right,
                                                          &sIsCloneExists,
@@ -8175,7 +9568,7 @@ IDE_RC sda::analyzeAnsiJoin( qcStatement * aStatement,
 
                         if ( ( sIsCloneExists == ID_TRUE ) && ( sIsShardExists == ID_FALSE ) )
                         {
-                            aCantMergeReason[SDI_INVALID_OUTER_JOIN_EXISTS] = ID_TRUE;
+                            aAnalysisFlag->mNonShardFlag[ SDI_NODE_TO_NODE_OUTER_JOIN_EXISTS ] = ID_TRUE;
                         }
                         else
                         {
@@ -8195,7 +9588,7 @@ IDE_RC sda::analyzeAnsiJoin( qcStatement * aStatement,
                               != IDE_SUCCESS );
 
                     if ( ( sIsShardNullPadding == ID_TRUE ) &&
-                         ( aCantMergeReason[SDI_INVALID_OUTER_JOIN_EXISTS] == ID_FALSE ) )
+                         ( aAnalysisFlag->mNonShardFlag[ SDI_NODE_TO_NODE_OUTER_JOIN_EXISTS ] == ID_FALSE ) )
                     {
                         IDE_TEST( isCloneAndShardExists( aFrom->right,
                                                          &sIsCloneExists,
@@ -8204,7 +9597,7 @@ IDE_RC sda::analyzeAnsiJoin( qcStatement * aStatement,
 
                         if ( ( sIsCloneExists == ID_TRUE ) && ( sIsShardExists == ID_FALSE ) )
                         {
-                            aCantMergeReason[SDI_INVALID_OUTER_JOIN_EXISTS] = ID_TRUE;
+                            aAnalysisFlag->mNonShardFlag[ SDI_NODE_TO_NODE_OUTER_JOIN_EXISTS ] = ID_TRUE;
                         }
                         else
                         {
@@ -8224,7 +9617,7 @@ IDE_RC sda::analyzeAnsiJoin( qcStatement * aStatement,
                               != IDE_SUCCESS );
 
                     if ( ( sIsShardNullPadding == ID_TRUE ) &&
-                         ( aCantMergeReason[SDI_INVALID_OUTER_JOIN_EXISTS] == ID_FALSE ) )
+                         ( aAnalysisFlag->mNonShardFlag[ SDI_NODE_TO_NODE_OUTER_JOIN_EXISTS ] == ID_FALSE ) )
                     {
                         sIsCloneExists = ID_FALSE;
                         sIsShardExists = ID_FALSE;
@@ -8236,7 +9629,7 @@ IDE_RC sda::analyzeAnsiJoin( qcStatement * aStatement,
 
                         if ( ( sIsCloneExists == ID_TRUE ) && ( sIsShardExists == ID_FALSE ) )
                         {
-                            aCantMergeReason[SDI_INVALID_OUTER_JOIN_EXISTS] = ID_TRUE;
+                            aAnalysisFlag->mNonShardFlag[ SDI_NODE_TO_NODE_OUTER_JOIN_EXISTS ] = ID_TRUE;
                         }
                         else
                         {
@@ -8268,18 +9661,11 @@ IDE_RC sda::analyzeAnsiJoin( qcStatement * aStatement,
         // Nothing to do.
     }
 
+    /* TASK-7219 Shard Transformer Refactoring */
+    IDE_EXCEPTION_CONT( NORMAL_EXIT );
+
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION( ERR_CNF_NORMALIZATION )
-    {
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "CNF"));
-    }
-    IDE_EXCEPTION( ERR_EXIST_NNF_FILTER )
-    {
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
-                                "NNF"));
-    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -8289,12 +9675,11 @@ IDE_RC sda::setNullPaddedShardFrom( qmsFrom * aFrom,
                                     sdaFrom * aShardFrom,
                                     idBool  * aIsShardNullPadding )
 {
-    qmsParseTree * sViewParseTree = NULL;
-    sdiParseTree * sViewAnalysis  = NULL;
-    sdiShardInfo * sShardInfo     = NULL;
+    qmsParseTree     * sViewParseTree = NULL;
+    sdiShardAnalysis * sViewAnalysis  = NULL;
+    sdiShardInfo     * sShardInfo     = NULL;
 
     sdaFrom      * sShardFrom     = NULL;
-    idBool         sIsFound       = ID_FALSE;
 
     if ( aFrom != NULL )
     {
@@ -8308,14 +9693,10 @@ IDE_RC sda::setNullPaddedShardFrom( qmsFrom * aFrom,
                 sViewAnalysis = sViewParseTree->mShardAnalysis;
 
                 IDE_TEST_RAISE( sViewAnalysis == NULL, ERR_NULL_ANALYSIS);
-                
-                IDE_DASSERT( sViewAnalysis->mQuerySetAnalysis != NULL );
 
-                sShardInfo = &(sViewAnalysis->mQuerySetAnalysis->mShardInfo);
+                sShardInfo = &(sViewAnalysis->mShardInfo);
 
-                if ( ( sShardInfo->mSplitMethod != SDI_SPLIT_CLONE ) &&
-                     ( sShardInfo->mSplitMethod != SDI_SPLIT_SOLO ) &&
-                     ( sShardInfo->mSplitMethod != SDI_SPLIT_NONE ) )
+                if ( sdi::getSplitType( sShardInfo->mSplitMethod ) == SDI_SPLIT_TYPE_DIST )
                 {
                     for ( sShardFrom = aShardFrom; sShardFrom != NULL; sShardFrom = sShardFrom->mNext )
                     {
@@ -8323,7 +9704,6 @@ IDE_RC sda::setNullPaddedShardFrom( qmsFrom * aFrom,
                         {
                             sShardFrom->mIsNullPadding = ID_TRUE;
                             *aIsShardNullPadding = ID_TRUE;
-                            sIsFound = ID_TRUE;
                             break;
                         }
                         else
@@ -8332,7 +9712,13 @@ IDE_RC sda::setNullPaddedShardFrom( qmsFrom * aFrom,
                         }
                     }
 
-                    IDE_TEST_RAISE( sIsFound == ID_FALSE, ERR_SHARD_FROM_INFO_NOT_FOUND );
+                    /* TASK-7219 Shard Transformer Refactoring
+                     *  Analyze ÃÖ¼Ò ¼öÇà ±¸Á¶·Î ¼öÁ¤ÇÏ¸é¼­,
+                     *   Non Shard Object Error ¸¦ Non Shard Reason À¸·Î Ã³¸®ÇÏ°Ô µÇ¾ú´Ù.
+                     *
+                     *    sda::setNullPaddedShardFrom ³» Shard Object °¡ ¾Æ´Ñ ´ë»óµµ °Ë»çÇÏ°Ô µÇ¹Ç·Î,
+                     *     Inner, Outer ´ë»óÀÌ ¾øÀ» ¼ö ÀÖ´Ù.
+                     */
                 }
                 else
                 {
@@ -8343,8 +9729,7 @@ IDE_RC sda::setNullPaddedShardFrom( qmsFrom * aFrom,
             {
                 if ( aFrom->tableRef->mShardObjInfo != NULL )
                 {
-                    if ( ( aFrom->tableRef->mShardObjInfo->mTableInfo.mSplitMethod != SDI_SPLIT_CLONE ) &&
-                         ( aFrom->tableRef->mShardObjInfo->mTableInfo.mSplitMethod != SDI_SPLIT_SOLO ) )
+                    if ( sdi::getSplitType( aFrom->tableRef->mShardObjInfo->mTableInfo.mSplitMethod ) == SDI_SPLIT_TYPE_DIST )
                     {
                         for ( sShardFrom = aShardFrom; sShardFrom != NULL; sShardFrom = sShardFrom->mNext )
                         {
@@ -8352,7 +9737,6 @@ IDE_RC sda::setNullPaddedShardFrom( qmsFrom * aFrom,
                             {
                                 sShardFrom->mIsNullPadding = ID_TRUE;
                                 *aIsShardNullPadding = ID_TRUE;
-                                sIsFound = ID_TRUE;
                                 break;
                             }
                             else
@@ -8361,7 +9745,13 @@ IDE_RC sda::setNullPaddedShardFrom( qmsFrom * aFrom,
                             }
                         }
 
-                        IDE_TEST_RAISE( sIsFound == ID_FALSE, ERR_SHARD_FROM_INFO_NOT_FOUND );
+                        /* TASK-7219 Shard Transformer Refactoring
+                         *  Analyze ÃÖ¼Ò ¼öÇà ±¸Á¶·Î ¼öÁ¤ÇÏ¸é¼­,
+                         *   Non Shard Object Error ¸¦ Non Shard Reason À¸·Î Ã³¸®ÇÏ°Ô µÇ¾ú´Ù.
+                         *
+                         *    sda::setNullPaddedShardFrom ³» Shard Object °¡ ¾Æ´Ñ ´ë»óµµ °Ë»çÇÏ°Ô µÇ¹Ç·Î,
+                         *     Inner, Outer ´ë»óÀÌ ¾øÀ» ¼ö ÀÖ´Ù.
+                         */
                     }
                     else
                     {
@@ -8400,12 +9790,6 @@ IDE_RC sda::setNullPaddedShardFrom( qmsFrom * aFrom,
                                 "sda::isShardTableExistOnFrom",
                                 "The view analysis info is null."));
     }
-    IDE_EXCEPTION(ERR_SHARD_FROM_INFO_NOT_FOUND)
-    {
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
-                                "sda::isShardTableExistOnFrom",
-                                "Invalid shard from info"));
-    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -8415,9 +9799,9 @@ IDE_RC sda::isCloneAndShardExists( qmsFrom * aFrom,
                                    idBool  * aIsCloneExists,
                                    idBool  * aIsShardExists )
 {
-    qmsParseTree * sViewParseTree = NULL;
-    sdiParseTree * sViewAnalysis  = NULL;
-    sdiShardInfo * sShardInfo     = NULL;
+    qmsParseTree     * sViewParseTree = NULL;
+    sdiShardAnalysis * sViewAnalysis  = NULL;
+    sdiShardInfo     * sShardInfo     = NULL;
 
     if ( aFrom != NULL )
     {
@@ -8431,18 +9815,14 @@ IDE_RC sda::isCloneAndShardExists( qmsFrom * aFrom,
                 sViewAnalysis = sViewParseTree->mShardAnalysis;
 
                 IDE_TEST_RAISE( sViewAnalysis == NULL, ERR_NULL_ANALYSIS);
-                
-                IDE_DASSERT( sViewAnalysis->mQuerySetAnalysis != NULL );
 
-                sShardInfo = &(sViewAnalysis->mQuerySetAnalysis->mShardInfo);
+                sShardInfo = &(sViewAnalysis->mShardInfo);
 
                 if ( sShardInfo->mSplitMethod == SDI_SPLIT_CLONE )
                 {
                     *aIsCloneExists = ID_TRUE;
                 }
-                else if ( ( sShardInfo->mSplitMethod == SDI_SPLIT_HASH ) ||
-                          ( sShardInfo->mSplitMethod == SDI_SPLIT_RANGE ) ||
-                          ( sShardInfo->mSplitMethod == SDI_SPLIT_LIST ) )
+                else if ( sdi::getSplitType( sShardInfo->mSplitMethod ) == SDI_SPLIT_TYPE_DIST )
                 {
                     *aIsShardExists = ID_TRUE;
                 }
@@ -8459,9 +9839,7 @@ IDE_RC sda::isCloneAndShardExists( qmsFrom * aFrom,
                     {
                         *aIsCloneExists = ID_TRUE;
                     }
-                    else if ( ( aFrom->tableRef->mShardObjInfo->mTableInfo.mSplitMethod == SDI_SPLIT_HASH ) ||
-                               ( aFrom->tableRef->mShardObjInfo->mTableInfo.mSplitMethod == SDI_SPLIT_RANGE ) ||
-                               ( aFrom->tableRef->mShardObjInfo->mTableInfo.mSplitMethod == SDI_SPLIT_LIST ) )
+                    else if ( sdi::getSplitType( aFrom->tableRef->mShardObjInfo->mTableInfo.mSplitMethod ) == SDI_SPLIT_TYPE_DIST )
                     {
                         *aIsShardExists = ID_TRUE;
                     }
@@ -8507,132 +9885,34 @@ IDE_RC sda::isCloneAndShardExists( qmsFrom * aFrom,
     return IDE_FAILURE;
 }
 
-IDE_RC sda::analyzePredJoin( qcStatement * aStatement,
-                             qtcNode     * aNode,
-                             sdaFrom     * aShardFromInfo,
-                             idBool      * aCantMergeReason,
-                             idBool        aIsSubKey )
+IDE_RC sda::analyzePredJoin( qcStatement     * aStatement,
+                             qtcNode         * aNode,
+                             sdaFrom         * aShardFromInfo,
+                             sdiAnalysisFlag * aAnalysisFlag,
+                             idBool            aIsSubKey )
 {
-    qcTableMap   * sTableMap      = NULL;
-    qmsFrom      * sFrom          = NULL;
-    qmsParseTree * sViewParseTree = NULL;
-    sdiParseTree * sViewAnalysis  = NULL;
-    sdiShardInfo * sShardInfo     = NULL;
-    sdaFrom      * sShardFrom     = NULL;
-
     if ( aNode != NULL )
     {
         /*
          * BUG-45391
          *
-         * SEMI/ANTI JOIN ì—ì„œ Shard SQLíŒë³„ ê·œì¹™ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
+         * SEMI/ANTI JOIN ¿¡¼­ Shard SQLÆÇº° ±ÔÄ¢Àº ´ÙÀ½°ú °°´Ù.
          *
          * OUTER RELATION / INNER RELATION / SHARD SQL
          *        H               H             O
          *        H               C             O
-         *        C               H             X   << ì´ë†ˆì„ ì°¾ì•„ì„œ ìˆ˜í–‰ë¶ˆê°€ ì²˜ë¦¬í•œë‹¤.
+         *        C               H             X   << ÀÌ³ğÀ» Ã£¾Æ¼­ ¼öÇàºÒ°¡ Ã³¸®ÇÑ´Ù.
          *        C               C             O
          *
          */
         if ( ( ( aNode->lflag & QTC_NODE_JOIN_TYPE_MASK ) == QTC_NODE_JOIN_TYPE_SEMI ) ||
              ( ( aNode->lflag & QTC_NODE_JOIN_TYPE_MASK ) == QTC_NODE_JOIN_TYPE_ANTI ) )
         {
-            IDE_TEST( checkInnerOuterTable( aStatement, aNode, aShardFromInfo, aCantMergeReason )
+            IDE_TEST( checkInnerOuterTable( aStatement,
+                                            aNode,
+                                            aShardFromInfo,
+                                            aAnalysisFlag )
                       != IDE_SUCCESS );
-        }
-        else
-        {
-            // Nothing to do.
-        }
-
-        if ( aNode->node.module == &qtc::columnModule )
-        {
-            if ( ( aNode->lflag & QTC_NODE_JOIN_OPERATOR_MASK )
-                == QTC_NODE_JOIN_OPERATOR_EXIST )
-            {
-                sTableMap = QC_SHARED_TMPLATE(aStatement)->tableMap;
-                sFrom = sTableMap[aNode->node.table].from;
-
-                if ( sFrom != NULL )
-                {
-                    if ( sFrom->tableRef->view != NULL )
-                    {
-                        IDE_DASSERT( sFrom->tableRef->view->myPlan != NULL );
-                        sViewParseTree = (qmsParseTree*)sFrom->tableRef->view->myPlan->parseTree;
-                        sViewAnalysis = sViewParseTree->mShardAnalysis;
-
-                        IDE_DASSERT( sViewAnalysis->mQuerySetAnalysis != NULL );
-                        sShardInfo = &(sViewAnalysis->mQuerySetAnalysis->mShardInfo);
-
-                        if ( ( sShardInfo->mSplitMethod != SDI_SPLIT_CLONE ) &&
-                             ( sShardInfo->mSplitMethod != SDI_SPLIT_SOLO ) )
-                        {
-                            /*
-                             * SDI_SPLIT_HASH, SDI_SPLIT_RANGE, SDI_SPLIT_LIST ì¼ ìˆ˜ ë„ ìˆê³ ,
-                             * SDI_SPLIT_NONE ì¼ ìˆ˜ ìˆë‹¤.
-                             *
-                             * SDI_PLIT_NONEì€ ë³¸ë˜ SPLIT HASH, RANGE, LIST, CLONE ì´ì—ˆì§€ë§Œ,
-                             * ë¶„ì‚° ìˆ˜í–‰ì´ ë¶ˆê°€ëŠ¥í•˜ë‹¤ê³  íŒë‹¨ ë¼ NONEìœ¼ë¡œ ë³€ê²½ ëœ viewë‹¤.
-                             *
-                             */
-                            for ( sShardFrom = aShardFromInfo; sShardFrom != NULL; sShardFrom = sShardFrom->mNext )
-                            {
-                                if ( sShardFrom->mTupleId == sFrom->tableRef->table )
-                                {
-                                    sShardFrom->mIsNullPadding = ID_TRUE;
-                                    break;
-                                }
-                                else
-                                {
-                                    // Nothing to do.
-                                }
-                            }
-                        }
-                        else
-                        {
-                            // Nothing to do.
-                        }
-                    }
-                    else
-                    {
-                        if ( sFrom->tableRef->mShardObjInfo != NULL )
-                        {
-                            if ( ( sFrom->tableRef->mShardObjInfo->mTableInfo.mSplitMethod != SDI_SPLIT_CLONE ) &&
-                                 ( sFrom->tableRef->mShardObjInfo->mTableInfo.mSplitMethod != SDI_SPLIT_SOLO ) )
-                            {
-                                for ( sShardFrom = aShardFromInfo; sShardFrom != NULL; sShardFrom = sShardFrom->mNext )
-                                {
-                                    if ( sShardFrom->mTupleId == sFrom->tableRef->table )
-                                    {
-                                        sShardFrom->mIsNullPadding = ID_TRUE;
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        // Nothing to do.
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                // Nothing to do.
-                            }
-                        }
-                        else
-                        {
-                            // Nothing to do.
-                        }
-                    }
-                }
-                else
-                {
-                    // Nothing to do.
-                }
-            }
-            else
-            {
-                // Nothing to do.
-            }
         }
         else
         {
@@ -8642,7 +9922,7 @@ IDE_RC sda::analyzePredJoin( qcStatement * aStatement,
         IDE_TEST( analyzePredJoin( aStatement,
                                    (qtcNode*)aNode->node.next,
                                    aShardFromInfo,
-                                   aCantMergeReason,
+                                   aAnalysisFlag,
                                    aIsSubKey )
                   != IDE_SUCCESS );
 
@@ -8651,7 +9931,7 @@ IDE_RC sda::analyzePredJoin( qcStatement * aStatement,
             IDE_TEST( analyzePredJoin( aStatement,
                                        (qtcNode*)aNode->node.arguments,
                                        aShardFromInfo,
-                                       aCantMergeReason,
+                                       aAnalysisFlag,
                                        aIsSubKey )
                       != IDE_SUCCESS );
         }
@@ -8670,6 +9950,95 @@ IDE_RC sda::analyzePredJoin( qcStatement * aStatement,
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
+}
+
+IDE_RC sda::allocAndSetShardHostValueInfo( qcStatement      * aStatement,
+                                           UInt               aBindParamId,
+                                           sdiValueInfo    ** aValueInfo )
+{
+    sdiValueInfo    * sValueInfo = NULL;
+
+    IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
+                            sdiValueInfo,
+                            (void*) &sValueInfo )
+              != IDE_SUCCESS );
+
+    sValueInfo->mType = SDI_VALUE_INFO_HOST_VAR;
+    sValueInfo->mDataValueType = MTD_SMALLINT_ID;
+    sValueInfo->mValue.mBindParamId = aBindParamId;
+
+    *aValueInfo = sValueInfo;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::allocAndSetShardConstValueInfo( qcStatement      * aStatement,
+                                            UInt               aKeyDataType,
+                                            const void       * aKeyValue,
+                                            sdiValueInfo    ** aValueInfo )
+{
+    sdiValueInfo        * sValueInfo   = NULL;
+    UInt                  sValueInfoSize = 0;
+
+    sValueInfoSize = calculateValueInfoSize( aKeyDataType, aKeyValue );
+
+    IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMP_MEM( aStatement ),
+                                      sdiValueInfo,
+                                      sValueInfoSize,
+                                      (void*) &sValueInfo )
+              != IDE_SUCCESS );
+
+    sValueInfo->mType = SDI_VALUE_INFO_CONST_VAL;
+
+    IDE_TEST( setKeyValue( aKeyDataType,
+                           aKeyValue,
+                           sValueInfo )
+              != IDE_SUCCESS );
+
+    *aValueInfo = sValueInfo;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+UInt sda::calculateValueInfoSize( UInt             aKeyDataType,
+                                  const void     * aConstValue )
+{
+    UInt    sSize = 0;
+
+    switch ( aKeyDataType )
+    {
+        case MTD_CHAR_ID:
+        case MTD_VARCHAR_ID:
+
+            // char varchar ´Â sdiValueInfo ÀÇ Á¤Àû Å©±â º¸´Ù Å¬¼ö ÀÖ´Ù.
+            if ( (((mtdCharType*)aConstValue)->length + 2) <= ID_SIZEOF( sdiValue ) )
+            {
+                sSize = idlOS::align8(ID_SIZEOF( sdiValueInfo ));
+            }
+            else
+            {
+                sSize = idlOS::align8(ID_SIZEOF( sdiValueInfo )) + ((mtdCharType*)aConstValue)->length;
+            }
+            break;
+
+        case MTD_SMALLINT_ID:
+        case MTD_INTEGER_ID:
+        case MTD_BIGINT_ID:
+        default:
+            sSize = idlOS::align8(ID_SIZEOF( sdiValueInfo ));
+            break;
+
+    }
+
+    return sSize;
 }
 
 IDE_RC sda::setKeyValue( UInt           aKeyDataType,
@@ -8700,112 +10069,14 @@ IDE_RC sda::setKeyValue( UInt           aKeyDataType,
         IDE_RAISE( ERR_INVALID_SHARD_KEY_DATA_TYPE );
     }
 
+    aValue->mDataValueType = aKeyDataType;
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(ERR_INVALID_SHARD_KEY_DATA_TYPE)
     {
         IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
                                 "sda::setKeyValue",
-                                "Invalid shard key data type"));
-    }
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-IDE_RC sda::compareSdiValue( UInt           aKeyDataType,
-                             sdiValueInfo * aValue1,
-                             sdiValueInfo * aValue2,
-                             SInt         * aResult )
-{
-    const mtdModule * sKeyModule   = NULL;
-
-    mtdValueInfo      sValueInfo1;
-    mtdValueInfo      sValueInfo2;
-
-    IDE_TEST_RAISE( ( ( aValue1 == NULL ) || ( aValue2 == NULL ) ),
-                    ERR_NULL_SHARD_VALUE );
-
-    IDE_TEST_RAISE( ( ( aValue1->mType != 1 ) || ( aValue2->mType != 1 ) ),
-                    ERR_NON_CONSTANT_VALUE );
-
-    IDE_TEST( mtd::moduleById( &sKeyModule,
-                               aKeyDataType )
-              != IDE_SUCCESS );
-
-    switch ( aKeyDataType )
-    {
-        case MTD_SMALLINT_ID :
-        {
-            sValueInfo1.column = NULL;
-            sValueInfo1.value  = &(aValue1->mValue.mSmallintMax);
-            sValueInfo1.flag   = MTD_OFFSET_USELESS;
-
-            sValueInfo2.column = NULL;
-            sValueInfo2.value  = &(aValue2->mValue.mSmallintMax);
-            sValueInfo2.flag   = MTD_OFFSET_USELESS;
-            break;
-        }
-        case MTD_INTEGER_ID :
-        {
-            sValueInfo1.column = NULL;
-            sValueInfo1.value  = &(aValue1->mValue.mIntegerMax);
-            sValueInfo1.flag   = MTD_OFFSET_USELESS;
-
-            sValueInfo2.column = NULL;
-            sValueInfo2.value  = &(aValue2->mValue.mIntegerMax);
-            sValueInfo2.flag   = MTD_OFFSET_USELESS;
-            break;
-        }
-        case MTD_BIGINT_ID :
-        {
-            sValueInfo1.column = NULL;
-            sValueInfo1.value  = &(aValue1->mValue.mBigintMax);
-            sValueInfo1.flag   = MTD_OFFSET_USELESS;
-
-            sValueInfo2.column = NULL;
-            sValueInfo2.value  = &(aValue2->mValue.mBigintMax);
-            sValueInfo2.flag   = MTD_OFFSET_USELESS;
-            break;
-        }
-        case MTD_CHAR_ID :
-        case MTD_VARCHAR_ID :
-        {
-            sValueInfo1.column = NULL;
-            sValueInfo1.value  = &(aValue1->mValue.mCharMax);
-            sValueInfo1.flag   = MTD_OFFSET_USELESS;
-
-            sValueInfo2.column = NULL;
-            sValueInfo2.value  = &(aValue2->mValue.mCharMax);
-            sValueInfo2.flag   = MTD_OFFSET_USELESS;
-            break;
-        }
-        default :
-        {
-            IDE_RAISE( ERR_INVALID_SHARD_KEY_DATA_TYPE );
-        }
-    }
-
-    *aResult = sKeyModule->logicalCompare[MTD_COMPARE_ASCENDING]( &sValueInfo1, &sValueInfo2 );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION(ERR_NULL_SHARD_VALUE)
-    {
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
-                                "sda::compareSdiValue",
-                                "The shard value is null"));
-    }
-    IDE_EXCEPTION(ERR_NON_CONSTANT_VALUE)
-    {
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
-                                "sda::compareSdiValue",
-                                "The shard value is not constant"));
-    }
-    IDE_EXCEPTION(ERR_INVALID_SHARD_KEY_DATA_TYPE)
-    {
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
-                                "sda::compareSdiValue",
                                 "Invalid shard key data type"));
     }
     IDE_EXCEPTION_END;
@@ -8826,7 +10097,7 @@ IDE_RC sda::getRangeIndexByValue( qcTemplate     * aTemplate,
     /*
      * PROJ-2655 Composite shard key
      *
-     * shard range infoì—ì„œ shard valueì˜ ê°’ ì— í•´ë‹¹í•˜ëŠ” indexë¥¼ ì°¾ì•„ ë°˜í™˜í•œë‹¤.
+     * shard range info¿¡¼­ shard valueÀÇ °ª ¿¡ ÇØ´çÇÏ´Â index¸¦ Ã£¾Æ ¹İÈ¯ÇÑ´Ù.
      *
      * < sdiRangeInfo >
      *
@@ -8834,8 +10105,8 @@ IDE_RC sda::getRangeIndexByValue( qcTemplate     * aTemplate,
      *  sub value : [ A ][ B ][ C ][ A ][ B ][ C ][ A ][ B ][ C ]...
      *  nodeId    : [ 1 ][ 2 ][ 1 ][ 3 ][ 1 ][ 3 ][ 2 ][ 2 ][ 3 ]...
      *
-     *  value = '100' ì´ë¼ë©´
-     *  aRangeIndex ëŠ” 0,1,2 ì´ 3ê°œê°€ ì„¸íŒ…ëœë‹¤.
+     *  value = '100' ÀÌ¶ó¸é
+     *  aRangeIndex ´Â 0,1,2 ÃÑ 3°³°¡ ¼¼ÆÃµÈ´Ù.
      *
      */
 
@@ -8857,9 +10128,12 @@ IDE_RC sda::getRangeIndexByValue( qcTemplate     * aTemplate,
 
     UInt sHashValue;
 
+    /* TASK-7219 Non-shard DML */
+    mtcTuple    * sTuple = NULL;
+
     IDE_TEST_RAISE( aValue == NULL, ERR_NULL_SHARD_VALUE );
 
-    IDE_TEST_RAISE( ( ( aValue->mType == 0 ) &&
+    IDE_TEST_RAISE( ( ( ( aValue->mType == 0 ) || ( aValue->mType == 2 ) ) &&
                       ( ( aTemplate == NULL ) || ( aShardKeyTuple == NULL ) ) ),
                     ERR_NULL_TUPLE );
 
@@ -8877,22 +10151,33 @@ IDE_RC sda::getRangeIndexByValue( qcTemplate     * aTemplate,
     sPriorSplitMethod = aShardAnalysis->mSplitMethod;
     sPriorKeyDataType = aShardAnalysis->mKeyDataType;
 
-    IDE_TEST_RAISE( !( ( sSplitMethod == SDI_SPLIT_HASH ) ||
-                       ( sSplitMethod == SDI_SPLIT_RANGE ) ||
-                       ( sSplitMethod == SDI_SPLIT_LIST ) ),
+    IDE_TEST_RAISE( !( sdi::getSplitType( sSplitMethod ) == SDI_SPLIT_TYPE_DIST ),
                     ERR_INVALID_SPLIT_METHOD );
 
-    if ( aValue->mType == 0 ) // bind param
+    if ( ( aValue->mType == 0 ) || // bind param
+         ( aValue->mType == 2 ) /* TASK-7219 Transformed out column bind */
+         )
     {
-        IDE_DASSERT( aValue->mValue.mBindParamId <
-                     aShardKeyTuple->columnCount );
+        if ( aValue->mType == 0 )
+        {
+            sTuple = aShardKeyTuple;
+            
+            IDE_DASSERT( aValue->mValue.mBindParamId <
+                         sTuple->columnCount );
 
-        sKeyColumn = aShardKeyTuple->columns +
-            aValue->mValue.mBindParamId;
+            sKeyColumn = sTuple->columns +
+                aValue->mValue.mBindParamId;
+        }
+        else
+        {
+            sTuple = & aTemplate->tmplate.rows[ *aValue->mValue.mOutRefInfo.mTuple ];
+            sKeyColumn = sTuple->columns +
+                *aValue->mValue.mOutRefInfo.mColumn;
+        }
 
         // BUG-45752
         sKeyValue = (UChar*)mtc::value( sKeyColumn,
-                                        aShardKeyTuple->row,
+                                        sTuple->row,
                                         MTD_OFFSET_USE );
 
         if ( sKeyColumn->module->id != sKeyDataType )
@@ -9109,7 +10394,7 @@ IDE_RC sda::getRangeIndexFromHash( sdiRangeInfo    * aRangeInfo,
         {
             sHashMax = aRangeInfo->mRanges[i].mSubValue.mHashMax;
 
-            // BUG-45462 mValueì˜ ê°’ìœ¼ë¡œ new groupì„ íŒë‹¨í•œë‹¤.
+            // BUG-45462 mValueÀÇ °ªÀ¸·Î new groupÀ» ÆÇ´ÜÇÑ´Ù.
             if ( i == 0 )
             {
                 sNewPriorHashGroup = ID_TRUE;
@@ -9542,14 +10827,14 @@ IDE_RC sda::checkValuesSame( qcTemplate   * aTemplate,
 
 IDE_RC sda::isOneNodeSQL( sdaFrom      * aShardFrom,
                           sdiKeyInfo   * aKeyInfo,
-                          idBool       * aIsOneNodeSQL )
+                          idBool       * aIsOneNodeSQL,
+                          UInt         * aDistKeyCount )
 {
     sdaFrom    * sCurrShardFrom = NULL;
     sdiKeyInfo * sCurrKeyInfo   = NULL;
+    UInt         sExecNodeCntPrediction = 0;
 
-    IDE_DASSERT( ( ( aShardFrom != NULL ) && ( aKeyInfo == NULL ) ) ||
-                 ( ( aShardFrom == NULL ) && ( aKeyInfo != NULL ) ) );
-
+    *aDistKeyCount = 0;
     *aIsOneNodeSQL = ID_TRUE;
 
     if ( aShardFrom != NULL )
@@ -9563,11 +10848,7 @@ IDE_RC sda::isOneNodeSQL( sdaFrom      * aShardFrom,
                 *aIsOneNodeSQL = ID_TRUE;
                 break;
             }
-            else if ( sCurrShardFrom->mShardInfo.mSplitMethod == SDI_SPLIT_CLONE )
-            {
-                // Nothing to do.
-            }
-            else
+            else if ( sdi::getSplitType( sCurrShardFrom->mShardInfo.mSplitMethod ) == SDI_SPLIT_TYPE_DIST )
             {
                 /*
                  * SDI_SPLIT_NONE
@@ -9577,6 +10858,10 @@ IDE_RC sda::isOneNodeSQL( sdaFrom      * aShardFrom,
                  * SDI_SPLIT_NODES
                  */
                 *aIsOneNodeSQL = ID_FALSE;
+            }
+            else
+            {
+                /* Nothing to do. */
             }
         }
     }
@@ -9588,34 +10873,55 @@ IDE_RC sda::isOneNodeSQL( sdaFrom      * aShardFrom,
         {
             if ( sCurrKeyInfo->mShardInfo.mSplitMethod == SDI_SPLIT_SOLO )
             {
-                *aIsOneNodeSQL = ID_TRUE;
+                sExecNodeCntPrediction = 0;
                 break;
             }
-            else if ( sCurrKeyInfo->mShardInfo.mSplitMethod == SDI_SPLIT_CLONE )
+            else if ( sdi::getSplitType( sCurrKeyInfo->mShardInfo.mSplitMethod ) == SDI_SPLIT_TYPE_DIST )
             {
-                // Nothing to do.
+                sExecNodeCntPrediction++;
+
+                if ( sCurrKeyInfo->mKeyCount > 0 )
+                {
+                    (*aDistKeyCount)++;
+                }
+                else
+                {
+                    /* Nothing to do. */
+                }
+
+                if ( sCurrKeyInfo->mValuePtrCount != 1 )
+                {
+                    sExecNodeCntPrediction++;
+                }
+                else
+                {
+                    /* Nothing to do. */
+                }
             }
             else
             {
-                /*
-                 * SDI_SPLIT_NONE
-                 * SDI_SPLIT_HASH
-                 * SDI_SPLIT_RANGE
-                 * SDI_SPLIT_LIST
-                 * SDI_SPLIT_NODES
-                 */
-                *aIsOneNodeSQL = ID_FALSE;
+                /* Nothing to do. */
             }
+        }
+
+        if ( sExecNodeCntPrediction <= 1 )
+        {
+            // CLONE OR SOLO OR SINGLE DIST KEY EXIST.
+            *aIsOneNodeSQL = ID_TRUE;
+        }
+        else
+        {
+            *aIsOneNodeSQL = ID_FALSE;
         }
     }
 
     return IDE_SUCCESS;
 }
 
-IDE_RC sda::checkInnerOuterTable( qcStatement * aStatement,
-                                  qtcNode     * aNode,
-                                  sdaFrom     * aShardFrom,
-                                  idBool      * aCantMergeReason )
+IDE_RC sda::checkInnerOuterTable( qcStatement     * aStatement,
+                                  qtcNode         * aNode,
+                                  sdaFrom         * aShardFrom,
+                                  sdiAnalysisFlag * aAnalysisFlag )
 {
     SInt      sTable;
     qmsFrom * sFrom;
@@ -9626,9 +10932,6 @@ IDE_RC sda::checkInnerOuterTable( qcStatement * aStatement,
     sdiSplitMethod sInnerSplit2 = SDI_SPLIT_NONE;
     sdiSplitMethod sOuterSplit1 = SDI_SPLIT_NONE;
     sdiSplitMethod sOuterSplit2 = SDI_SPLIT_NONE;
-
-    idBool    sIsInnerFound = ID_FALSE;
-    idBool    sIsOuterFound = ID_FALSE;
 
     IDE_DASSERT( ( ( aNode->lflag & QTC_NODE_JOIN_TYPE_MASK ) == QTC_NODE_JOIN_TYPE_SEMI ) ||
                  ( ( aNode->lflag & QTC_NODE_JOIN_TYPE_MASK ) == QTC_NODE_JOIN_TYPE_ANTI ) );
@@ -9655,7 +10958,6 @@ IDE_RC sda::checkInnerOuterTable( qcStatement * aStatement,
                     }
 
                     sShardFrom->mIsAntiJoinInner = ID_TRUE;
-                    sIsInnerFound = ID_TRUE;
                 }
                 else
                 {
@@ -9678,8 +10980,6 @@ IDE_RC sda::checkInnerOuterTable( qcStatement * aStatement,
                     {
                         sOuterSplit2 = sShardFrom->mShardInfo.mSplitMethod;
                     }
-
-                    sIsOuterFound = ID_TRUE;
                 }
                 else
                 {
@@ -9691,13 +10991,18 @@ IDE_RC sda::checkInnerOuterTable( qcStatement * aStatement,
         sTable = qtc::getPosNextBitSet( &aNode->depInfo, sTable );
     }
 
-    IDE_TEST_RAISE( ( ( sIsInnerFound == ID_FALSE ) || ( sIsOuterFound == ID_FALSE ) ),
-                    INNER_OUTER_TABLE_NOT_FOUND );
+    /* TASK-7219 Shard Transformer Refactoring
+     *  Analyze ÃÖ¼Ò ¼öÇà ±¸Á¶·Î ¼öÁ¤ÇÏ¸é¼­,
+     *   Non Shard Object Error ¸¦ Non Shard Reason À¸·Î Ã³¸®ÇÏ°Ô µÇ¾ú´Ù.
+     *
+     *    sda::setNullPaddedShardFrom ³» Shard Object °¡ ¾Æ´Ñ ´ë»óµµ °Ë»çÇÏ°Ô µÇ¹Ç·Î,
+     *     Inner, Outer ´ë»óÀÌ ¾øÀ» ¼ö ÀÖ´Ù.
+     */
 
     if ( ( ( sOuterSplit1 == SDI_SPLIT_CLONE ) && ( sOuterSplit2 == SDI_SPLIT_NONE ) ) &&
          ( ( sInnerSplit1 != SDI_SPLIT_CLONE ) || ( sInnerSplit2 != SDI_SPLIT_NONE ) ) )
     {
-        aCantMergeReason[SDI_INVALID_SEMI_ANTI_JOIN_EXISTS] = ID_TRUE;
+        aAnalysisFlag->mNonShardFlag[ SDI_NODE_TO_NODE_SEMI_ANTI_JOIN_EXISTS ] = ID_TRUE;
     }
     else
     {
@@ -9706,14 +11011,7 @@ IDE_RC sda::checkInnerOuterTable( qcStatement * aStatement,
     
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(INNER_OUTER_TABLE_NOT_FOUND)
-    {
-        setNonShardQueryReason( &(aStatement->mShardPrintInfo), SDI_UNSUPPORT_SHARD_QUERY );
-        IDE_SET(ideSetErrorCode(sdERR_ABORT_INVALID_SHARD_QUERY,
-                                "sda::getInnerOuterTable",
-                                "The inner or outer table was not found."));
-    }
-    IDE_EXCEPTION_END;
+    /* IDE_EXCEPTION_END; */
 
     return IDE_FAILURE;
 }
@@ -9770,9 +11068,9 @@ IDE_RC sda::checkAntiJoinInner( sdiKeyInfo * aKeyInfo,
     return IDE_SUCCESS;
 }
 
-IDE_RC sda::addTableInfo( qcStatement  * aStatement,
-                          sdiQuerySet  * aQuerySetAnalysis,
-                          sdiTableInfo * aTableInfo )
+IDE_RC sda::addTableInfo( qcStatement      * aStatement,
+                          sdiShardAnalysis * aQuerySetAnalysis,
+                          sdiTableInfo     * aTableInfo )
 {
     sdiTableInfoList * sTableInfoList;
     idBool             sFound = ID_FALSE;
@@ -9817,7 +11115,7 @@ IDE_RC sda::addTableInfo( qcStatement  * aStatement,
 }
 
 IDE_RC sda::addTableInfoList( qcStatement      * aStatement,
-                              sdiQuerySet      * aQuerySetAnalysis,
+                              sdiShardAnalysis * aQuerySetAnalysis,
                               sdiTableInfoList * aTableInfoList )
 {
     sdiTableInfoList * sTableInfoList;
@@ -9839,10 +11137,10 @@ IDE_RC sda::addTableInfoList( qcStatement      * aStatement,
     return IDE_FAILURE;
 }
 
-IDE_RC sda::mergeTableInfoList( qcStatement * aStatement,
-                                sdiQuerySet * aQuerySetAnalysis,
-                                sdiQuerySet * aLeftQuerySetAnalysis,
-                                sdiQuerySet * aRightQuerySetAnalysis )
+IDE_RC sda::mergeTableInfoList( qcStatement      * aStatement,
+                                sdiShardAnalysis * aQuerySetAnalysis,
+                                sdiShardAnalysis * aLeftQuerySetAnalysis,
+                                sdiShardAnalysis * aRightQuerySetAnalysis )
 {
     aQuerySetAnalysis->mTableInfoList = NULL;
 
@@ -9876,30 +11174,14 @@ void sda::setPrintInfoFromAnalyzeInfo( sdiPrintInfo   * aPrintInfo,
 
     if ( aPrintInfo->mQueryType == SDI_QUERY_TYPE_NONE )
     {
-        IDE_DASSERT( ( aAnalyzeInfo->mIsCanMerge != ID_FALSE ) ||
-                     ( ( aAnalyzeInfo->mIsCanMerge == ID_FALSE ) &&
-                       ( aAnalyzeInfo->mNonShardQueryReason < SDI_SUB_KEY_EXISTS ) ) );
+        // BUG-47247
+        IDE_DASSERT( ( aAnalyzeInfo->mIsShardQuery == ID_TRUE ) ||
+        		     ( ( aAnalyzeInfo->mIsShardQuery == ID_FALSE ) &&
+                       ( aAnalyzeInfo->mNonShardQueryReason <= SDI_NON_SHARD_QUERY_REASON_MAX ) ) );
 
-        aPrintInfo->mQueryType = ( aAnalyzeInfo->mIsCanMerge == ID_TRUE ) ? SDI_QUERY_TYPE_SHARD: SDI_QUERY_TYPE_NONSHARD;
+        aPrintInfo->mQueryType = ( aAnalyzeInfo->mIsShardQuery == ID_TRUE ) ? SDI_QUERY_TYPE_SHARD: SDI_QUERY_TYPE_NONSHARD;
         setNonShardQueryReason( aPrintInfo, aAnalyzeInfo->mNonShardQueryReason ); 
-        aPrintInfo->mTransformable = aAnalyzeInfo->mIsTransformAble;
     }
-}
-
-void sda::setPrintInfoFromPrintInfo( sdiPrintInfo * aDst,
-                                     sdiPrintInfo * aSrc )
-{
-    if ( ( aDst->mNonShardQueryReason == SDI_CAN_NOT_MERGE_REASON_MAX ) &&
-         ( aSrc->mNonShardQueryReason < SDI_SUB_KEY_EXISTS ) )
-    {
-        aDst->mQueryType = SDI_QUERY_TYPE_NONSHARD;
-        setNonShardQueryReason( aDst, aSrc->mNonShardQueryReason );
-        aDst->mTransformable = aSrc->mTransformable;
-    }
-
-    IDE_DASSERT( ( aDst->mQueryType != SDI_QUERY_TYPE_NONSHARD ) ||
-                 ( ( aDst->mQueryType == SDI_QUERY_TYPE_NONSHARD ) &&
-                   ( aDst->mNonShardQueryReason < SDI_SUB_KEY_EXISTS ) ) );
 }
 
 void sda::setNonShardQueryReason( sdiPrintInfo * aPrintInfo,
@@ -9907,40 +11189,1289 @@ void sda::setNonShardQueryReason( sdiPrintInfo * aPrintInfo,
 {
     IDE_DASSERT( aPrintInfo != NULL );
 
-    if ( ( aPrintInfo->mNonShardQueryReason >= SDI_SUB_KEY_EXISTS ) &&
-         ( aReason < SDI_SUB_KEY_EXISTS ) )
+    if ( ( aPrintInfo->mNonShardQueryReason >= SDI_NON_SHARD_QUERY_REASON_MAX ) &&
+         ( aReason < SDI_NON_SHARD_QUERY_REASON_MAX ) )
     {
         aPrintInfo->mQueryType = SDI_QUERY_TYPE_NONSHARD;
         aPrintInfo->mNonShardQueryReason = aReason;
     }
 }
 
-void sda::setNonShardQueryReasonOfQuerySet( sdiPrintInfo * aPrintInfo,
-                                            sdiQuerySet  * aQuerySet )
+/* TASK-7219 Shard Transformer Refactoring */
+IDE_RC sda::allocAnalysis( qcStatement       * aStatement,
+                           sdiShardAnalysis ** aAnalysis )
 {
-    UShort i = 0;
+/***********************************************************************
+ *
+ * Description : TASK-7219 Shard Transformer Refactoring
+ *                Analysis ±¸Á¶Ã¼ µ¿ÀûÇÒ´ç Áßº¹ ÄÚµå ÇÔ¼öÈ­
+ *
+ *                 ÄÚµå Àç»ç¿ë ¸ñÀûÀ¸·Î ±¸Çö
+ *                  - sda::allocAndSetAnalysis
+ *                  - sda::analyzeSelectCore
+ *                  - sdo::allocAndCopyAnalysis
+ *
+ * Implementation : 1. sdiShardAnalysis ¸¦ µ¿ÀûÇÒ´çÇÑ´Ù.
+ *                  2. ÃÊ±âÈ­ÇÑ´Ù.
+ *                  3. ¹İÈ¯ÇÑ´Ù.
+ *
+ ***********************************************************************/
 
-    if ( aQuerySet != NULL )
+    sdiShardAnalysis * sAnalysis = NULL;
+
+    IDE_TEST_RAISE( aStatement == NULL, ERR_NULL_STATEMENT );
+
+    /* 1. sdiShardAnalysis ¸¦ µ¿ÀûÇÒ´çÇÑ´Ù. */
+    IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( sdiShardAnalysis ),
+                                               (void **) &( sAnalysis ) )
+              != IDE_SUCCESS );
+
+    /* 2. ÃÊ±âÈ­ÇÑ´Ù. */
+    SDI_INIT_SHARD_ANALYSIS( sAnalysis );
+
+    /* 3. ¹İÈ¯ÇÑ´Ù. */
+    if ( aAnalysis != NULL )
     {
-        for ( i = 0; i < SDI_SUB_KEY_EXISTS; i++ )
-        {
-            if ( aQuerySet->mCantMergeReason[i] == ID_FALSE )
-            {
-                setNonShardQueryReason( aPrintInfo, i );
-                break;
-            }
-        }
+        *aAnalysis = sAnalysis;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
-        if ( i == SDI_SUB_KEY_EXISTS )
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_STATEMENT )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::allocAnalysis",
+                                  "statement is NULL" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::getParseTreeAnalysis( qcParseTree       * aParseTree,
+                                  sdiShardAnalysis ** aAnalysis )
+{
+/***********************************************************************
+ *
+ * Description : TASK-7219 Shard Transformer Refactoring
+ *                Analysis Á¢±Ù Áßº¹ ÄÚµå ÇÔ¼öÈ­
+ *
+ *                 ÄÚµå Àç»ç¿ë ¸ñÀûÀ¸·Î ±¸Çö
+ *                  - sda::allocAndSetAnalysis
+ *                  - sdo::allocAndCopyAnalysisParseTree
+ *                  - sdo::allocAndCopyAnalysisPartialStatement
+ *                  - sdo::makeAndSetAnalyzeInfoFromStatement
+ *                  - sdo::makeAndSetAnalyzeInfoFromParseTree
+ *                  - sdo::isShardParseTree
+ *                  - sdo::isShardObject
+ *                  - sdo::raiseInvalidShardQueryError
+ *
+ * Implementation : 1. StmtKind µû¶ó ParseTree Çüº¯È¯ÇÏ¿©, sAnalysis ¸¦ Á¢±ÙÇÑ´Ù.
+ *
+ ***********************************************************************/
+
+    qmsParseTree     * sSelect   = NULL;
+    qmmInsParseTree  * sInsert   = NULL;
+    qmmUptParseTree  * sUpdate   = NULL;
+    qmmDelParseTree  * sDelete   = NULL;
+    qsExecParseTree  * sExecProc = NULL;
+    sdiShardAnalysis * sAnalysis = NULL;
+
+    IDE_TEST_RAISE( aParseTree == NULL, ERR_NULL_PARSETREE );
+
+    /* 1. StmtKind µû¶ó ParseTree Çüº¯È¯ÇÏ¿©, sAnalysis ¸¦ Á¢±ÙÇÑ´Ù. */
+    switch ( aParseTree->stmtKind )
+    {
+        case QCI_STMT_SELECT:
+        case QCI_STMT_SELECT_FOR_UPDATE:
+            sSelect   = (qmsParseTree *)( aParseTree );
+            sAnalysis = sSelect->querySet->mShardAnalysis;
+            break;
+
+        case QCI_STMT_INSERT:
+            sInsert   = (qmmInsParseTree *)( aParseTree );
+            sAnalysis = sInsert->mShardAnalysis;
+            break;
+
+        case QCI_STMT_UPDATE:
+            sUpdate   = (qmmUptParseTree *)( aParseTree );
+            sAnalysis = sUpdate->mShardAnalysis;
+            break;
+
+        case QCI_STMT_DELETE:
+            sDelete   = (qmmDelParseTree *)( aParseTree );
+            sAnalysis = sDelete->mShardAnalysis;
+            break;
+
+        case QCI_STMT_EXEC_PROC:
+            sExecProc = (qsExecParseTree *)( aParseTree );
+            sAnalysis = sExecProc->mShardAnalysis;
+            break;
+
+        default:
+            IDE_RAISE( ERR_UNEXPECTED );
+            break;
+    }
+
+    /* 2.   ¹İÈ¯ÇÑ´Ù. */
+    if ( aAnalysis != NULL )
+    {
+        *aAnalysis = sAnalysis;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_PARSETREE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::getParseTreeAnalysis",
+                                  "parse tree is NULL" ) );
+    }
+    IDE_EXCEPTION( ERR_UNEXPECTED )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::getParseTreeAnalysis",
+                                  "statement type is invalid" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::setParseTreeAnalysis( qcParseTree      * aParseTree,
+                                  sdiShardAnalysis * aAnalysis )
+{
+ /***********************************************************************
+ *
+ * Description : TASK-7219 Shard Transformer Refactoring
+ *                Analysis ¿¬°á ÄÚµå ÇÔ¼öÈ­
+ *
+ *                 ÄÚµå Àç»ç¿ë ¸ñÀûÀ¸·Î ±¸Çö
+ *                  - sda::allocAndSetAnalysis
+ *                  - sdo::allocAndCopyAnalysisParseTree
+ *
+ * Implementation : 1. StmtKind µû¶ó ParseTree Çüº¯È¯ÇÏ¿©, sAnalysis ¸¦ ¿¬°áÇÑ´Ù.
+ *
+ ***********************************************************************/
+
+    qmsParseTree    * sSelect   = NULL;
+    qmmInsParseTree * sInsert   = NULL;
+    qmmUptParseTree * sUpdate   = NULL;
+    qmmDelParseTree * sDelete   = NULL;
+    qsExecParseTree * sExecProc = NULL;
+
+    IDE_TEST_RAISE( aParseTree == NULL, ERR_NULL_PARSETREE );
+    IDE_TEST_RAISE( aAnalysis == NULL, ERR_NULL_ANALYSIS );
+
+    /* 1. StmtKind µû¶ó ParseTree Çüº¯È¯ÇÏ¿©, sAnalysis ¸¦ ¿¬°áÇÑ´Ù. */
+    switch ( aParseTree->stmtKind )
+    {
+        case QCI_STMT_SELECT:
+        case QCI_STMT_SELECT_FOR_UPDATE:
+            sSelect = (qmsParseTree *)( aParseTree );
+            sSelect->mShardAnalysis = aAnalysis;
+            sSelect->querySet->mShardAnalysis = aAnalysis;
+            break;
+
+        case QCI_STMT_INSERT:
+            sInsert = (qmmInsParseTree *)( aParseTree );
+            sInsert->mShardAnalysis = aAnalysis;
+            break;
+
+        case QCI_STMT_UPDATE:
+            sUpdate = (qmmUptParseTree *)( aParseTree );
+            sUpdate->mShardAnalysis = aAnalysis;
+            sUpdate->querySet->mShardAnalysis = aAnalysis;
+            break;
+
+        case QCI_STMT_DELETE:
+            sDelete = (qmmDelParseTree *)( aParseTree );
+            sDelete->mShardAnalysis = aAnalysis;
+            sDelete->querySet->mShardAnalysis = aAnalysis;
+            break;
+
+        case QCI_STMT_EXEC_PROC:
+            sExecProc = (qsExecParseTree *)( aParseTree );
+            sExecProc->mShardAnalysis = aAnalysis;
+            break;
+
+        default:
+            IDE_RAISE( ERR_UNEXPECTED );
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_PARSETREE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::setParseTreeAnalysis",
+                                  "parse tree is NULL" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_ANALYSIS )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::setParseTreeAnalysis",
+                                  "analysis is NULL" ) );
+    }
+    IDE_EXCEPTION( ERR_UNEXPECTED )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::setParseTreeAnalysis",
+                                  "statement type is invalid" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::preAnalyzeQuerySet( qcStatement * aStatement,
+                                qmsQuerySet * aQuerySet,
+                                ULong         aSMN )
+{
+/***********************************************************************
+ *
+ * Description : TASK-7219 Shard Transformer Refactoring
+ *                Partial Analyze ¸¦ ¼öÇàÇÏ´Â ÇÔ¼ö.
+ *
+ *                 Unnesting, View Merging, CFS Optimize ·Î
+ *                  ¿øº» Parse Tree ÀÇ ¼öÁ¤ ¹× Á¦¿Ü°¡ ¹ß»ıÇÏ¿©,
+ *                   ºĞ¼®ÇÏÁö ¸øÇÏ°í, Analysis ¸¦ »ı¼º ¸øÇÒ ¼ö ÀÖ´Ù.
+ *
+ *                    ÀÌ¶§¿¡ ÇØ´çÇÏ´Â Query Set ºÎÅÍ ÇÏÀ§·Î Pre Analyze À» ¼öÇàÇÏ°í
+ *                     Pre Analysis ¸¦ »ı¼ºÇÑ´Ù.
+ *
+ *                      ºĞ¼®¿¡ »ç¿ëµÇ´Â ÇÔ¼ö´Â ÀÏ¹İ Analyze ÇÔ¼ö¿Í µ¿ÀÏÇÏ´Ù.
+ *
+ * Implementation : 1. ºĞ¼® ºñ¿ë Áõ°¡
+ *                  2. ºĞ¼®
+ *                  3. ºĞ¼® ºñ¿ë Áõ°¡
+ *                  4. SubKey ºĞ¼®
+ *
+ ***********************************************************************/
+
+    IDE_TEST_RAISE( aStatement == NULL, ERR_NULL_STATEMENT );
+    IDE_TEST_RAISE( aQuerySet == NULL, ERR_NULL_QUERYSET );
+
+    /* 1. ºĞ¼® ºñ¿ë Áõ°¡ */
+    increaseAnalyzeCount( aStatement );
+
+    /* 2. ºĞ¼® */
+    IDE_TEST( analyzeQuerySet( aStatement,
+                               aSMN,
+                               aQuerySet,
+                               NULL,
+                               ID_FALSE )
+              != IDE_SUCCESS );
+
+    if ( aQuerySet->mShardAnalysis->mAnalysisFlag.mTopQueryFlag[ SDI_TQ_SUB_KEY_EXISTS ] == ID_TRUE )
+    {
+        /* 3. ºĞ¼® ºñ¿ë Áõ°¡ */
+        increaseAnalyzeCount( aStatement );
+
+        /* 4. SubKey ºĞ¼® */
+        IDE_TEST( analyzeQuerySet( aStatement,
+                                   aSMN,
+                                   aQuerySet,
+                                   NULL,
+                                   ID_TRUE )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_STATEMENT )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::preAnalyzeQuerySet",
+                                  "statement is NULL" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_QUERYSET )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::analyzePartialQuerySet",
+                                  "queryset is NULL" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::allocAndSetAnalysis( qcStatement       * aStatement,
+                                 qcParseTree       * aParseTree,
+                                 qmsQuerySet       * aQuerySet,
+                                 idBool              aIsSubKey,
+                                 sdiShardAnalysis ** aAnalysis )
+{
+/***********************************************************************
+ *
+ * Description : TASK-7219 Shard Transformer Refactoring
+ *                »ı¼ºÇÑ Analysis ¸¦ ¿¬°áÇÏ´Â ÇÔ¼ö
+ *
+ *                 »õ·Î¿î Analysis Àº setAnalysis ·Î ¿¬°áÇÏ¸ç
+ *                  SubKey ¿¡ ÇØ´çÇÏ´Â °æ¿ì´Â Main Analysis Ã£¾Æ¼­ ¿¬°á,
+ *                   Partial Analysis ÀÎ °æ¿ì´Â mPreAnalysis ¿¡ ¿¬°áÇÑ´Ù.
+ *
+ *                    ÄÚµå Àç»ç¿ë ¸ñÀûÀ¸·Î ±¸Çö
+ *                     - sda::analyzeSFWGH
+ *                     - sda::analyzeInsertCore
+ *                     - sda::analyzeUpdateCore
+ *                     - sda::analyzeDeleteCore
+ *                     - sda::analyzeExecProcCore
+ *
+ * Implementation : 1. Analysis »ı¼º
+ *                  2. Analysis ¿¬°á
+ *                  3. Partial Analyze ÁßÀÌ¸é mPreAnalysis ¿¡ ¹é¾÷
+ *                  4. SubKey ÀÎ °æ¿ì, Main Analysis ¸¦ Ã£À½
+ *                  5. Main ¿¡ SubKey Analysis ¿¬°á
+ *                  6. Partial Analyze ÁßÀÌ¸é mPreAnalysis ¿¡ ¹é¾÷
+ *                  7. »ı¼ºÇÑ Analysis ¹İÈ¯
+ *
+ ***********************************************************************/
+
+    sdiShardAnalysis * sAnalysis = NULL;
+    sdiShardAnalysis * sMain     = NULL;
+
+    /* 1. Analysis »ı¼º */
+    IDE_TEST( allocAnalysis( aStatement,
+                             &( sAnalysis ) )
+              != IDE_SUCCESS );
+
+    if ( aIsSubKey == ID_FALSE )
+    {
+        /* 2. Analysis ¿¬°á */
+        if ( aQuerySet == NULL )
         {
-            for ( i = 0; i < SDI_SUB_KEY_EXISTS; i++ )
+            IDE_TEST( setParseTreeAnalysis( aParseTree,
+                                            sAnalysis )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            aQuerySet->mShardAnalysis = sAnalysis;
+
+            /* 3. Partial Analyze ÁßÀÌ¸é mPreAnalysis ¿¡ ¹é¾÷ */
+            if ( SDI_CHECK_QUERYSET_LIST_STATE( aStatement->mShardQuerySetList,
+                                                SDI_QUERYSET_LIST_STATE_DUMMY_PRE_ANALYZE )
+                 == ID_TRUE )
             {
-                if ( aQuerySet->mCantMergeReason4SubKey[i] == ID_FALSE )
-                {
-                    setNonShardQueryReason( aPrintInfo, i );
-                    break;
-                }
+                aQuerySet->mPreAnalysis = sAnalysis;
+            }
+            else
+            {
+                /* Nothing to do */
             }
         }
     }
+    else
+    {
+        if ( aQuerySet == NULL )
+        {
+            /* 4. SubKey ÀÎ °æ¿ì, Main Analysis ¸¦ Ã£À½ */
+            IDE_TEST( getParseTreeAnalysis( aParseTree,
+                                            &( sMain ) )
+                      != IDE_SUCCESS );
+
+            IDE_TEST_RAISE( sMain == NULL, ERR_NULL_SHARD_ANALYSIS_1 );
+
+            /* 5. Main ¿¡ SubKey Analysis ¿¬°á */
+            sMain->mNext = sAnalysis;
+        }
+        else
+        {
+            /* 4. SubKey ÀÎ °æ¿ì, Main Analysis ¸¦ Ã£À½ */
+            sMain = aQuerySet->mShardAnalysis;
+
+            IDE_TEST_RAISE( sMain == NULL, ERR_NULL_SHARD_ANALYSIS_2 );
+
+            /* 5. Main ¿¡ SubKey Analysis ¿¬°á */
+            sMain->mNext = sAnalysis;
+
+            /* 6. Partial Analyze ÁßÀÌ¸é mPreAnalysis ¿¡ ¹é¾÷ */
+            if ( SDI_CHECK_QUERYSET_LIST_STATE( aStatement->mShardQuerySetList,
+                                                SDI_QUERYSET_LIST_STATE_DUMMY_PRE_ANALYZE )
+                 == ID_TRUE )
+            {
+                aQuerySet->mPreAnalysis->mNext = sAnalysis;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+    }
+
+    /* 7. »ı¼ºÇÑ Analysis ¹İÈ¯ */
+    if ( aAnalysis != NULL )
+    {
+        *aAnalysis = sAnalysis;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_SHARD_ANALYSIS_1 )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::allocAndSetAnalysis",
+                                  "parse tree analysis is null.") );
+    }
+    IDE_EXCEPTION( ERR_NULL_SHARD_ANALYSIS_2 )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::allocAndSetAnalysis",
+                                  "query set analysis is null.") );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::getShardPredicate( qcStatement * aStatement,
+                               qmsQuerySet * aQuerySet,
+                               idBool        aIsSelect,
+                               idBool        aIsSubKey,
+                               qtcNode    ** aPredicate )
+{
+/***********************************************************************
+ *
+ * Description : TASK-7219 Shard Transformer Refactoring
+ *                Query Set ¿¡ Unnesting, View Merging, CFS Optimize ·Î º¯È¯ÇÏ´Â °æ¿ì,
+ *                 º¯È¯ Àü¿¡ Partial Analyze ¸¦ ¼öÇàÇÒ ¼ö ÀÖÀ¸¸ç,
+ *                  ÀÌ¶§¿¡ ANSI Transform À» ÀÌ¹Ì ¼öÇàÇÏ¿´À» ¼ö ÀÖ´Ù.
+ *
+ *                   ANSI Transform Àº Where Àı CNF ÇüÅÂÀÇ Predicate ¸¦ °¡Áö°í,
+ *                    From °ú OnCondition ´ë»óÀ» ANSI Style ·Î Àç±¸¼ºÇÏ°í
+ *                     Transform À» ¾ß±âÇÑ Predicate ´Â ±×´ë·Î À¯ÁöÇÑ´Ù.
+ *
+ *                      µû¶ó¼­ Partial Analyze ÀÌÈÄ Analyze Àç¼öÇàÀ¸·Î
+ *                       ´Ù½Ã ANSI Transform À» ½ÃµµÇÒ ¼ö ÀÖ°í, ÀÌ¶§¿¡ Validate À» ½ÇÆĞÇÑ´Ù.
+ *
+ *                         ÀÌ ÇÔ¼ö´Â Partial Analyze À¸·Î ¹ß»ıÇÏ´Â Validate ½ÇÆĞ ¹æÁöÇÏ±â À§ÇØ¼­
+ *                          Ã¹ ¼öÇà ¶§ SFWGH Flag, ÀÌÈÄ¿¡ È®ÀÎÇÏ¿© ANSI Transform À» ¿ìÈ¸ÇÑ´Ù.
+ *
+ * Implementation : 1. Where ÀıÀ» CNF Predicate À¸·Î º¯È¯ÇÑ´Ù.
+ *                  2. Select ÀÌ°í Predicate ´ë»óÀÌ ÀÖ´Ù¸é, ANSI Transform À» ½ÃµµÇÑ´Ù.
+ *                  3. ÀÌ¹Ì ANSI Transform À» ¼öÇàÇÏ¿´´Ù¸é, ¹«½ÃÇÑ´Ù.
+ *                  4. ANSI Transform À» ¼öÇàÇÑ´Ù.
+ *                  5. Outer Join À» Á¦°ÅÇÑ´Ù.
+ *
+ ***********************************************************************/
+
+    qtcNode * sShardPredicate = NULL;
+    idBool    sChanged        = ID_FALSE;
+
+    IDE_TEST_RAISE( aQuerySet == NULL, ERR_NULL_QUERYSET );
+    IDE_TEST_RAISE( aQuerySet->mShardAnalysis == NULL, ERR_NULL_ANALYSIS );
+
+    /* Normalize Where and Transform2ANSIJoin */
+    if ( aIsSubKey == ID_FALSE )
+    {
+        /* 1. Where ÀıÀ» CNF Predicate À¸·Î º¯È¯ÇÑ´Ù. */
+        IDE_TEST( normalizePredicate( aStatement,
+                                      aQuerySet,
+                                      &( sShardPredicate ) )
+                  != IDE_SUCCESS );
+
+        /* 2. Select ÀÌ°í Predicate ´ë»óÀÌ ÀÖ´Ù¸é, ANSI Transform À» ½ÃµµÇÑ´Ù. */
+        if ( ( aIsSelect == ID_TRUE )
+             &&
+             ( sShardPredicate != NULL ) )
+        {
+            IDE_TEST_RAISE( aQuerySet->SFWGH == NULL, ERR_NULL_SFWGH );
+
+            /* 3. ÀÌ¹Ì ANSI Transform À» ¼öÇàÇÏ¿´´Ù¸é, ¹«½ÃÇÑ´Ù. */
+            if ( ( aQuerySet->SFWGH->lflag & QMV_SFWGH_SHARD_ANSI_TRANSFORM_MASK )
+                 == QMV_SFWGH_SHARD_ANSI_TRANSFORM_FALSE )
+            {
+                /* 4. ANSI Transform À» ¼öÇàÇÑ´Ù. */
+                if ( ( sShardPredicate->lflag & QTC_NODE_JOIN_OPERATOR_MASK )
+                     == QTC_NODE_JOIN_OPERATOR_EXIST )
+                {
+                    IDE_TEST( qmoOuterJoinOper::transform2ANSIJoin( aStatement,
+                                                                    aQuerySet,
+                                                                    &( sShardPredicate ) )
+                              != IDE_SUCCESS );
+
+                    aQuerySet->SFWGH->lflag &= ~QMV_SFWGH_SHARD_ANSI_TRANSFORM_MASK;
+                    aQuerySet->SFWGH->lflag |= QMV_SFWGH_SHARD_ANSI_TRANSFORM_TRUE;
+                }
+                else
+                {
+                    /* Nothing to do. */
+                }
+
+                /* 5. Outer Join À» Á¦°ÅÇÑ´Ù.
+                 *  BUG-38375 Outer Join Elimination OracleStyle Join
+                 */
+                IDE_TEST( qmoOuterJoinElimination::doTransform( aStatement,
+                                                                aQuerySet,
+                                                                &( sChanged ) )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
+        }
+        else
+        {
+            /* Nothing to do. */
+        }
+
+        aQuerySet->mShardAnalysis->mShardPredicate = sShardPredicate;
+    }
+    else
+    {
+        sShardPredicate = aQuerySet->mShardAnalysis->mShardPredicate;
+    }
+
+    if ( aPredicate != NULL )
+    {
+        *aPredicate = sShardPredicate;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_QUERYSET )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::getShardPredicate",
+                                  "queryset is NULL") );
+    }
+    IDE_EXCEPTION( ERR_NULL_ANALYSIS )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::getShardPredicate",
+                                  "analysis is NULL") );
+    }
+    IDE_EXCEPTION( ERR_NULL_SFWGH )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::getShardPredicate",
+                                  "sfwgh is NULL") );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::checkAndGetShardObjInfo( ULong             aSMN,
+                                     sdiAnalysisFlag * aAnalysisFlag,
+                                     sdiObjectInfo   * aShardObjList,
+                                     idBool            aIsSelect,
+                                     idBool            aIsSubKey,
+                                     sdiObjectInfo  ** aShardObjInfo )
+{
+ /***********************************************************************
+ *
+ * Description : TASK-7219 Shard Transformer Refactoring
+ *                ShardObjInfo °Ë»çÇÏ°í °¡Á®¿À´Â ÇÔ¼ö
+ *
+ *                 ÀûÀıÇÑ Info¸¦ Ã£Áö ¸øÇÏ¸é, NonShardQueryReason, Flag ¸¦ ¼³Á¤
+ *
+ *                  ÄÚµå Àç»ç¿ë ¸ñÀûÀ¸·Î ±¸Çö
+ *                   - sda::makeShardFromInfo4Table
+ *                   - sda::setDMLCommonAnalysis
+ *
+ *                   ¼³Á¤ÇÏ´Â Flag ¸ñ·Ï
+ *                    - SDI_NON_SHARD_OBJECT_TARGET_DML_EXISTS
+ *
+ * Implementation : 1. aShardObjList °Ë»ç
+ *                  2. aShardObjList ¿¡¼­ sShardObjInfo Ã£±â
+ *                  3. sShardObjInfo °Ë»ç
+ *                  4. ÀûÀıÇÑ Á¤º¸°¡ ¾øÀ»½Ã, Select ±¸¹® ¿Ü¿¡´Â Flag ¼³Á¤
+ *                  5. Á¤º¸¿¡ ¿À·ù°¡ ÀÖÀ»½Ã, Select ±¸¹® ¿Ü¿¡´Â NonShardQueryReason ¸¦ ¼³Á¤
+ *                  6. Ã£Àº sShardObjInfo ¹İÈ¯
+ *
+ ***********************************************************************/
+
+    sdiObjectInfo * sShardObjInfo = NULL;
+
+    IDE_TEST_RAISE( aAnalysisFlag == NULL, ERR_NULL_FLAG );
+
+    /* 1. aShardObjList °Ë»ç */
+    if ( aShardObjList == NULL )
+    {
+        aAnalysisFlag->mNonShardFlag[ SDI_NON_SHARD_OBJECT_EXISTS ] = ID_TRUE;
+
+        if ( aIsSelect == ID_FALSE )
+        {
+            aAnalysisFlag->mCurQueryFlag[ SDI_CQ_LOCAL_TABLE ] = ID_TRUE;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        /* 2. aShardObjList ¿¡¼­ sShardObjInfo Ã£±â */
+        sdi::getShardObjInfoForSMN( aSMN,
+                                    aShardObjList,
+                                    &( sShardObjInfo ) );
+
+        /* 3. sShardObjInfo °Ë»ç */
+        if ( sShardObjInfo == NULL )
+        {
+            aAnalysisFlag->mNonShardFlag[ SDI_NON_SHARD_OBJECT_EXISTS ] = ID_TRUE;
+
+            /* 4. ÀûÀıÇÑ Á¤º¸°¡ ¾øÀ»½Ã, Select ±¸¹® ¿Ü¿¡´Â Flag ¼³Á¤ */
+            if ( aIsSelect == ID_FALSE )
+            {
+                aAnalysisFlag->mCurQueryFlag[ SDI_CQ_LOCAL_TABLE ] = ID_TRUE;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        else
+        {
+            /* 5. Á¤º¸¿¡ ¿À·ù°¡ ÀÖÀ»½Ã, Select ±¸¹® ¿Ü¿¡´Â NonShardQueryReason ¸¦ ¼³Á¤ */
+            if ( ( aIsSelect == ID_FALSE )
+                 &&
+                 ( aIsSubKey == ID_TRUE )
+                 &&
+                 ( sShardObjInfo->mTableInfo.mSubKeyExists == ID_FALSE ) )
+            {
+                aAnalysisFlag->mNonShardFlag[ SDI_MULTI_SHARD_INFO_EXISTS ] = ID_TRUE;
+                aAnalysisFlag->mTopQueryFlag[ SDI_TQ_SUB_KEY_EXISTS ] = ID_FALSE;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+    }
+
+    /* 6. Ã£Àº sShardObjInfo ¹İÈ¯ */
+    if ( aShardObjInfo != NULL )
+    {
+        *aShardObjInfo = sShardObjInfo;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_FLAG )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::checkAndGetShardObjInfo",
+                                  "analysis flag is NULL" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::setAnalysisFlag( qmsQuerySet * aQuerySet,
+                             idBool        aIsSubKey )
+{
+/***********************************************************************
+ *
+ * Description : TASK-7219 Shard Transformer Refactoring
+ *                º¯È¯¿¡¼­ ÀÌ¿ëÇÒ Flag ¸¦ ¼³Á¤ÇÏ´Â ÇÔ¼ö
+ *
+ *                 ÀÌÈÄ¿¡ Flag ¼³Á¤¿¡ µû¶ó¼­ Non-Shard Ã³¸®¸¦ ¼öÇàÇÑ´Ù.
+ *
+ *                  ¼³Á¤ÇÏ´Â Flag ¸ñ·Ï
+ *                   - SDI_SQ_OUT_DEP_INFO
+ *                   - SDI_SQ_NON_SHARD
+ *                   - SDI_SQ_UNSUPPORTED
+ *                   - SDI_CQ_AGGR_TRANSFORMABLE
+ *
+ * Implementation : 1. Main, SubKey Reason °áÁ¤
+ *                  2. Outer Dependency Á¶°Ç °Ë»ç
+ *                  3. Shard Query Set Á¶°Ç °Ë»ç
+ *                  4. Grouping Set ÀÎ °æ¿ì
+ *                  5. Pivot, Unpivot ÀÎ °æ¿ì
+ *                  6. From Flag Á¶°Ç °Ë»ç
+ *                  7. TransformAble Á¶°Ç °Ë»ç
+ *
+ ***********************************************************************/
+
+    sdiAnalysisFlag * sAnalysisFlag = NULL;
+    idBool            sIsShardQuery = ID_FALSE;
+
+    IDE_TEST_RAISE( aQuerySet == NULL, ERR_NULL_QUERYSET );
+
+    /* 1. Main, SubKey Reason °áÁ¤ */
+    if ( aIsSubKey == ID_FALSE )
+    {
+        sAnalysisFlag = &( aQuerySet->mShardAnalysis->mAnalysisFlag );
+    }
+    else
+    {
+        sAnalysisFlag = &( aQuerySet->mShardAnalysis->mNext->mAnalysisFlag );
+    }
+
+    /* 2. Outer Dependency Á¶°Ç °Ë»ç
+     *  SELECT I1
+     *   FROM T1 TA
+     *    WHERE EXISTS ( SELECT I2 FROM T1 TB WHERE TA.I2 = TB.I1 );
+     *                                              *************
+     *                                                    \
+     *                                             Outer Dependency
+     */
+    if ( qtc::haveDependencies( &( aQuerySet->outerDepInfo ) ) == ID_TRUE )
+    {
+        sAnalysisFlag->mSetQueryFlag[ SDI_SQ_OUT_DEP_INFO ]       = ID_TRUE;
+        sAnalysisFlag->mSetQueryFlag[ SDI_SQ_NON_SHARD ]          = ID_TRUE;
+        sAnalysisFlag->mCurQueryFlag[ SDI_CQ_AGGR_TRANSFORMABLE ] = ID_FALSE;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    /* 3. Shard Query Set Á¶°Ç °Ë»ç */
+    if ( sAnalysisFlag->mSetQueryFlag[ SDI_SQ_NON_SHARD ] == ID_FALSE )
+    {
+        IDE_TEST( isShardQuery( sAnalysisFlag,
+                                &( sIsShardQuery ) )
+                  != IDE_SUCCESS );
+
+        if ( sIsShardQuery == ID_FALSE )
+        {
+            sAnalysisFlag->mSetQueryFlag[ SDI_SQ_NON_SHARD ] = ID_TRUE;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
+
+    if ( aQuerySet->setOp == QMS_NONE )
+    {
+        IDE_TEST_RAISE( aQuerySet->SFWGH == NULL, ERR_NULL_SFWGH );
+
+        /* 4. Grouping Set ÀÎ °æ¿ì
+         *  Grouping Set Group By Àı µÚ·Î ÀÛ¼ºµÇ¾î ÀÖÁö¸¸,
+         *   Parse ´Ü°è¿¡ ÇØ´ç ±¸Á¶°¡ Statement ·Î º¯È¯µÇ°í,
+         *    Analyze, Transform ´Â Parse ÀÌÈÄÀÇ °á°ú¹°·Î Á¢±ÙÇÏ±â ¶§¹®¿¡
+         *     Query Set ³» Grouping Set Á¸Àç ¿©ºÎ¸¦ ¾Ë ¼ö ¾ø´Ù.
+         *
+         *      Grouping Set ÀüÃ¼°¡ Shard ·Î ÆÇ´ÜµÇ¸é ¹®Á¦¾øÀ¸³ª,
+         *       º¯È¯µÈ Statement ºÎºĞÀÌ Shard ·Î ÆÇ´ÜµÉ ¶§¿¡´Â
+         *        Shard Query ·Î º¯È¯ÇÒ Query String ÀÌ ¾ø´Ù.
+         *
+         *         µû¶ó¼­ From Àı¿¡ »õ·Î¿î Flag ¸¦ ±¸¼ºÇÏ°í
+         *          ÇØ´ç ±¸Á¶°¡ ÀÖ¾ú´ÂÁö Parse ´Ü°è¿¡ Flag ¸¦ ³²±â¾î
+         *           ÀÌ°÷¿¡¼­ Flag ¸¦ Analysis ¿¡ Àü´ŞÇÑ ÈÄ
+         *            Transform ½Ã Non-Shard Ã³¸®ÇÏµµ·Ï ÇÑ´Ù.
+         */
+        if ( ( aQuerySet->SFWGH->lflag & QMV_SFWGH_GBGS_TRANSFORM_MASK ) == QMV_SFWGH_GBGS_TRANSFORM_BOTTOM_MTR )
+        {
+            sAnalysisFlag->mNonShardFlag[ SDI_NON_SHARD_GROUPING_SET_EXISTS ] = ID_TRUE;
+            sAnalysisFlag->mSetQueryFlag[ SDI_SQ_NON_SHARD ]                  = ID_TRUE;
+            sAnalysisFlag->mCurQueryFlag[ SDI_CQ_AGGR_TRANSFORMABLE ]         = ID_FALSE;
+        }
+        else
+        {
+            /* Nothing to do. */
+        }
+
+        /* 5. Pivot, Unpivot ÀÎ °æ¿ì
+         *  Pivot °ú Unpivot µµ Grouping Set ¿Í µ¿ÀÏÇÑ ÀÌÀ¯·Î
+         *   Parse Tree ·Î ½Äº°ÇÏ±â ¾î·Æ´Ù.
+         *
+         *    ´ÙÇàÈ÷ »ç¿ë ¸ñÀû ¶§¹®¿¡ º¯È¯µÈ Statement ´Â Non-Shard ·Î ÆÇ´ÜµÈ´Ù.
+         *
+         *     ÇÏÁö¸¸ º¯È¯À¸·Î »ı¼ºµÈ Group By ·Î ÀÎÇØ TransformAble Query ·Î ÆÇ´ÜÇÏ¿©
+         *      ¿øº» Query String ºÎºĞÀ» Shard Query È­ ÇÏ·Á°í ½ÃµµÇÑ´Ù.
+         *
+         *       ÀÌ¶§¿¡ Parse Tree ¿¡ ¾øÀ¸³ª, Query String ¿¡ ÀÖ´Â
+         *        Pivot °ú Unpivot ¸¦ Á¦¿ÜÇÒ ÇÊ¿ä°¡ ÀÖ´Ù.
+         *
+         *         À§¿¡ ¾ğ±ŞÇÑ °Í°ú °°ÀÌ ½Äº°ÇÒ ¼ö ¾ø´Âµ¥,
+         *          Query String ³» Á¤È®ÇÑ À§Ä¡¸¦ Ã£¾Æ
+         *           Á¦¿ÜÇÏ´Â °ÍÀº ½Äº°ÇÏ´Â °Íº¸´Ù ´õ¿í ¾î·Æ´Ù.
+         *
+         *            µû¶ó¼­ Non-Shard Ã³¸®¸¦ ÇÏµµ·Ï Flag ¸¦ Àü´ŞÇÑ´Ù.
+         */
+        if ( ( ( aQuerySet->SFWGH->lflag & QMV_SFWGH_PIVOT_MASK ) == QMV_SFWGH_PIVOT_TRUE )
+             ||
+             ( ( aQuerySet->SFWGH->lflag & QMV_SFWGH_UNPIVOT_MASK ) == QMV_SFWGH_UNPIVOT_TRUE ) )
+        {
+            sAnalysisFlag->mSetQueryFlag[ SDI_SQ_NON_SHARD ]          = ID_TRUE;
+            sAnalysisFlag->mCurQueryFlag[ SDI_CQ_AGGR_TRANSFORMABLE ] = ID_FALSE;
+        }
+        else
+        {
+            /* Nothing to do. */
+        }
+
+        /*  6. From Flag Á¶°Ç °Ë»ç
+         *   SDI_CQ_AGGR_TRANSFORMABLE °ªÀÌ ¼öÁ¤µÉ ¼ö ÀÖÀ¸¹Ç·Î,
+         *    setAnalysisFlag4TransformAble ÀÌÀü¿¡ ¼öÇàÇÑ´Ù.
+         */
+        IDE_TEST( setAnalysisFlag4From( aQuerySet->SFWGH->from,
+                                        sAnalysisFlag )
+                  != IDE_SUCCESS );
+
+        /* 7. TransformAble Á¶°Ç °Ë»ç */
+        if ( sAnalysisFlag->mCurQueryFlag[ SDI_CQ_AGGR_TRANSFORMABLE ] == ID_TRUE )
+        {
+            IDE_TEST( setAnalysisFlag4TransformAble( sAnalysisFlag )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_QUERYSET )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::setAnalysisFlag",
+                                  "queryset is NULL" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_SFWGH )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::setAnalysisFlag",
+                                  "sfwgh is NULL" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::setAnalysisFlag4From( qmsFrom         * aFrom,
+                                  sdiAnalysisFlag * aAnalysisFlag )
+{
+/***********************************************************************
+ *
+ * Description : TASK-7219 Shard Transformer Refactoring
+ *                From Flag ¸¦ °Ë»çÇÏ°í Flag ¼³Á¤ÇÏ´Â ÇÔ¼ö
+ *
+ *                 ÀÌÈÄ¿¡ Flag ¼³Á¤¿¡ µû¶ó¼­ Non-Shard Ã³¸®¸¦ ¼öÇàÇÑ´Ù.
+ *
+ *                  ¼³Á¤ÇÏ´Â Flag ¸ñ·Ï
+ *                   - SDI_NON_SHARD_QUERYSET
+ *                   - SDI_UNSUPPORTED_QUERY
+ *                   - SDI_CQ_TRANSFORMABLE
+ *
+ * Implementation : 1. Join ÀÇ °æ¿ì, Left, Right ·Î Àç±Í
+ *                  2. With Statement ÀÎ °æ¿ì
+ *
+ ***********************************************************************/
+
+    qmsFrom * sFrom = NULL;
+
+    for ( sFrom  = aFrom;
+          sFrom != NULL;
+          sFrom  = sFrom->next )
+    {
+        /* 1. Join ÀÇ °æ¿ì, Left, Right ·Î Àç±Í */
+        if ( sFrom->joinType != QMS_NO_JOIN )
+        {
+            IDE_TEST( setAnalysisFlag4From( sFrom->left,
+                                            aAnalysisFlag )
+                      != IDE_SUCCESS );
+
+            IDE_TEST( setAnalysisFlag4From( sFrom->right,
+                                            aAnalysisFlag )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            IDE_TEST_RAISE( aAnalysisFlag == NULL, ERR_NULL_FLAG );
+
+            /* 2. With Statement ÀÎ °æ¿ì
+             *  With Statement µµ Grouping Set ¿Í µ¿ÀÏÇÑ ÀÌÀ¯¸¦ °¡Áø´Ù.
+             *
+             *   With Alias ¸¦ Æ÷ÇÔÇØ¼­ Shard ·Î ÆÇ´ÜµÉ ¶§¿¡ ¹®Á¦µÇ°í
+             *    ¿øº» Query String ÀÇ With Alias ¸¦ With Statement ·Î ´ëÃ¼ÇÒ ÇÊ¿ä°¡ ÀÖ´Ù.
+             *
+             *     ´ÙÁß With ±¸¹®°ú Recursive With, Same View Reference ±îÁö °í·ÁÇØ¾ß ÇÏ±â ¶§¹®¿¡,
+             *      With Alias ¸¦ Æ÷ÇÔÇÑ Shard View º¯È¯À» Áö¿øÇÏÁö ¾Ê°í,
+             *       Non-Shard Ã³¸®¸¦ ÇÏµµ·Ï Flag ¸¦ Àü´ŞÇÑ´Ù.
+             */
+            if ( sFrom->tableRef->withStmt != NULL )
+            {
+                aAnalysisFlag->mSetQueryFlag[ SDI_SQ_UNSUPPORTED ]        = ID_TRUE;
+                aAnalysisFlag->mSetQueryFlag[ SDI_SQ_NON_SHARD ]          = ID_TRUE;
+                aAnalysisFlag->mCurQueryFlag[ SDI_CQ_AGGR_TRANSFORMABLE ] = ID_FALSE;
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_FLAG )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::setAnalysisFlag4From",
+                                  "analysis flag is NULL" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::setAnalysisFlag4TransformAble( sdiAnalysisFlag * aAnalysisFlag )
+{
+/***********************************************************************
+ *
+ * Description : TASK-7219 Shard Transformer Refactoring
+ *                Transform Able Á¶°ÇÀ» °Ë»çÇÏ´Â ÇÔ¼ö
+ *
+ *                 TransformAble ¼Ó¼ºÀº Query Set ºĞ¼®ÀÌ ¿Ï·áµÇ¾î ÀÖÀ» ¶§¿¡ È®Á¤ÇÒ ¼ö ÀÖ´Ù.
+ *                  1. Shard QuerySet ¼Ó¼ºÀÌ ¾Æ´Ï¿©¾ß ÇÏ°í
+ *                  2. ÇÏÀ§ View ¶Ç´Â QuerySet ¿¡´Â SDI_NODE_TO_NODE_GROUP_AGGREGATION_EXISTS = FALSE
+ *                  3. ÇöÀç QuerySet ¿¡´Â SDI_NODE_TO_NODE_GROUP_AGGREGATION_EXISTS = TRUE
+ *
+ *                   ÀÌ¶§¿¡ SDI_NODE_TO_NODE_GROUP_AGGREGATION_EXISTS À» ¹Ì¸® °Ë»çÇÏ°í,
+ *                    1¹ø, 2¹øÀº setAnalysisFlag ¸¦ ¼öÇàÇÏ¸é¼­,
+ *                     3¹øÀº ÀÌ ÇÔ¼ö¿¡¼­ °Ë»çÇÑ´Ù.
+ *
+ *                      SDI_NODE_TO_NODE_GROUP_AGGREGATION_EXISTS Á¶°ÇÀ» °Ë»çÇÏ´Â ÇÔ¼ö
+ *                       - sda::setAnalysisFlag4SFWGH
+ *                       - sda::setAnalysisFlag4GroupBy
+ *
+ * Implementation : 1. SDI_NODE_TO_NODE_GROUP_AGGREGATION_EXISTS ¿Ü Á¶°ÇÀÎ °æ¿ì ºÒ°¡´ÉÇÏ´Ù.
+ *
+ ***********************************************************************/
+    UShort sIdx = 0;
+
+    IDE_TEST_RAISE( aAnalysisFlag == NULL, ERR_NULL_FLAG );
+
+    /* 1. SDI_NODE_TO_NODE_GROUP_AGGREGATION_EXISTS ¿Ü Á¶°ÇÀÎ °æ¿ì ºÒ°¡´ÉÇÏ´Ù. */
+    for ( sIdx = 0;
+          sIdx < SDI_NON_SHARD_QUERY_REASON_MAX;
+          sIdx++ )
+    {
+        if ( aAnalysisFlag->mNonShardFlag[ sIdx ] == ID_TRUE )
+        {
+            if ( sIdx == SDI_NODE_TO_NODE_GROUP_AGGREGATION_EXISTS )
+            {
+                /* Nothing to do */
+            }
+            else
+            {
+                break;
+            }
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    if ( sIdx == SDI_NON_SHARD_QUERY_REASON_MAX )
+    {
+        aAnalysisFlag->mCurQueryFlag[ SDI_CQ_AGGR_TRANSFORMABLE ] = ID_TRUE;
+    }
+    else
+    {
+        aAnalysisFlag->mCurQueryFlag[ SDI_CQ_AGGR_TRANSFORMABLE ] = ID_FALSE;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_FLAG )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::setAnalysisFlag4TransformAble",
+                                  "analysis flag is NULL" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::setAnalysisFlag4Target( qcStatement     * aStatement,
+                                    qmsTarget       * aTarget,
+                                    sdiAnalysisFlag * aAnalysisFlag )
+{
+/***********************************************************************
+ *
+ * Description : TASK-7219 Shard Transformer Refactoring
+ *                Target ÀıÀÇ Non-Shard Á¶°ÇÀ» °Ë»çÇÏ´Â ÇÔ¼ö
+ *
+ *                 PSM º¯¼ö³ª, LOB Colunm ¸¦ Æ÷ÇÔÇÑ Shard Query String À» Áö¿øÇÒ ¼ö ¾ø±â ¶§¹®¿¡,
+ *                  ¿©±â¼­ °Ë»çÇÏ¿© Non-Shard Ã³¸®¸¦ ÇÏµµ·Ï Flag¸¦ Àü´ŞÇÑ´Ù.
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+    qmsTarget * sTarget       = NULL;
+    qtcNode   * sTargetColumn = NULL;
+
+    for ( sTarget  = aTarget;
+          sTarget != NULL;
+          sTarget  = sTarget->next )
+    {
+        sTargetColumn = sTarget->targetColumn;
+
+        IDE_TEST( setAnalysisFlag4PsmBind( sTargetColumn,
+                                           aAnalysisFlag )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( setAnalysisFlag4PsmLob( aStatement,
+                                          sTargetColumn,
+                                          aAnalysisFlag )
+                  != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::setAnalysisFlag4OrderBy( qmsSortColumns  * aOrderBy,
+                                     sdiAnalysisFlag * aAnalysisFlag )
+{
+/***********************************************************************
+ *
+ * Description : TASK-7219 Shard Transformer Refactoring
+ *                Order By ÀıÀÇ Non-Shard Á¶°ÇÀ» °Ë»çÇÏ´Â ÇÔ¼ö
+ *
+ *                 PSM º¯¼ö¸¦ Æ÷ÇÔÇÑ Shard Query String À» Áö¿øÇÒ ¼ö ¾ø±â ¶§¹®¿¡,
+ *                  ¿©±â¼­ °Ë»çÇÏ¿© Non-Shard Ã³¸®¸¦ ÇÏµµ·Ï Flag¸¦ Àü´ŞÇÑ´Ù.
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+    qmsSortColumns * sOrderBy    = NULL;
+    qtcNode        * sSortColumn = NULL;
+
+    if ( aOrderBy != NULL )
+    {
+        IDE_TEST_RAISE( aAnalysisFlag == NULL, ERR_NULL_FLAG );
+
+        aAnalysisFlag->mNonShardFlag[ SDI_NODE_TO_NODE_ORDER_BY_EXISTS ] = ID_TRUE;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    for ( sOrderBy  = aOrderBy;
+          sOrderBy != NULL;
+          sOrderBy  = sOrderBy->next )
+    {
+        sSortColumn = sOrderBy->sortColumn;
+
+        IDE_TEST( setAnalysisFlag4PsmBind( sSortColumn,
+                                           aAnalysisFlag )
+                  != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_FLAG )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::setAnalysisFlag4OrderBy",
+                                  "analysis flag is NULL" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::setAnalysisFlag4GroupPsmBind( qmsConcatElement * aGroupBy,
+                                          sdiAnalysisFlag  * aAnalysisFlag )
+{
+/***********************************************************************
+ *
+ * Description : TASK-7219 Shard Transformer Refactoring
+ *                Group By ÀıÀÇ Non-Shard Á¶°ÇÀ» °Ë»çÇÏ´Â ÇÔ¼ö
+ *
+ *                 PSM º¯¼ö¸¦ Æ÷ÇÔÇÑ Shard Query String À» Áö¿øÇÒ ¼ö ¾ø±â ¶§¹®¿¡,
+ *                  ¿©±â¼­ °Ë»çÇÏ¿© Non-Shard Ã³¸®¸¦ ÇÏµµ·Ï Flag¸¦ Àü´ŞÇÑ´Ù.
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+    qmsConcatElement * sGroupBy     = NULL;
+    qtcNode          * sGroupColumn = NULL;
+
+    for ( sGroupBy  = aGroupBy;
+          sGroupBy != NULL;
+          sGroupBy  = sGroupBy->next )
+    {
+        if ( sGroupBy->type == QMS_GROUPBY_NORMAL )
+        {
+            sGroupColumn = sGroupBy->arithmeticOrList;
+
+            IDE_TEST( setAnalysisFlag4PsmBind( sGroupColumn,
+                                               aAnalysisFlag )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* setAnalysisFlag4GroupBy ¿¡¼­ ÀÌ¹Ì Ã³¸®ÇÔ */
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::setAnalysisFlag4PsmBind( qtcNode         * aNode,
+                                     sdiAnalysisFlag * aAnalysisFlag )
+{
+/***********************************************************************
+ *
+ * Description : TASK-7219 Shard Transformer Refactoring
+ *                PSM º¯¼öÀÎÁö °Ë»çÇÏ´Â ÇÔ¼ö
+ *
+ *                 PSM º¯¼ö¸¦ Æ÷ÇÔÇÑ Shard Query String À» Áö¿øÇÒ ¼ö ¾ø±â ¶§¹®¿¡,
+ *                  ¿©±â¼­ °Ë»çÇÏ¿© Non-Shard Ã³¸®¸¦ ÇÏµµ·Ï Flag¸¦ Àü´ŞÇÑ´Ù.
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+    qtcNode * sNode = NULL;
+
+    IDE_TEST_RAISE( aNode == NULL, ERR_NULL_NODE );
+    IDE_TEST_RAISE( aAnalysisFlag == NULL, ERR_NULL_FLAG );
+
+    sNode = aNode;
+
+    while ( sNode->node.module == &( qtc::passModule ) )
+    {
+        sNode = (qtcNode *)( sNode->node.arguments );
+    }
+
+    if ( MTC_NODE_IS_DEFINED_TYPE( &( sNode->node ) ) == ID_FALSE )
+    {
+        aAnalysisFlag->mNonShardFlag[ SDI_NON_SHARD_PSM_BIND_EXISTS ] = ID_TRUE;
+        aAnalysisFlag->mSetQueryFlag[ SDI_SQ_NON_SHARD ]              = ID_TRUE;
+        aAnalysisFlag->mCurQueryFlag[ SDI_CQ_AGGR_TRANSFORMABLE ]     = ID_FALSE;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_NODE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::setAnalysisFlag4PsmBind",
+                                  "node is NULL" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_FLAG )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::setAnalysisFlag4PsmBind",
+                                  "aAnalysisFlag is NULL" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sda::setAnalysisFlag4PsmLob( qcStatement     * aStatement,
+                                    qtcNode         * aNode,
+                                    sdiAnalysisFlag * aAnalysisFlag )
+{
+/***********************************************************************
+ *
+ * Description : TASK-7219 Shard Transformer Refactoring
+ *                Lob Column ÀÎÁö °Ë»çÇÏ´Â ÇÔ¼ö
+ *
+ *                 Lob Column ¸¦ Æ÷ÇÔÇÑ Shard Query String À» Áö¿øÇÒ ¼ö ¾ø±â ¶§¹®¿¡,
+ *                  ¿©±â¼­ °Ë»çÇÏ¿© Non-Shard Ã³¸®¸¦ ÇÏµµ·Ï Flag¸¦ Àü´ŞÇÑ´Ù.
+ *
+ * Implementation :
+ *
+***********************************************************************/
+
+    mtcColumn * sMtcColumn = NULL;
+
+    IDE_TEST_RAISE( aStatement == NULL, ERR_NULL_STATEMENT );
+    IDE_TEST_RAISE( aNode == NULL, ERR_NULL_NODE );
+    IDE_TEST_RAISE( aAnalysisFlag == NULL, ERR_NULL_FLAG );
+
+    sMtcColumn = QTC_STMT_COLUMN( aStatement, aNode );
+
+    if ( ( sMtcColumn->module->id == MTD_BLOB_ID )
+         ||
+         ( sMtcColumn->module->id == MTD_CLOB_ID ) )
+    {
+        aAnalysisFlag->mNonShardFlag[ SDI_NON_SHARD_PSM_LOB_EXISTS ] = ID_TRUE;
+        aAnalysisFlag->mSetQueryFlag[ SDI_SQ_NON_SHARD ]             = ID_TRUE;
+        aAnalysisFlag->mCurQueryFlag[ SDI_CQ_AGGR_TRANSFORMABLE ]    = ID_FALSE;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_STATEMENT )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::setAnalysisFlag4PsmLob",
+                                  "statement is NULL" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_NODE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::setAnalysisFlag4PsmLob",
+                                  "node is NULL" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_FLAG )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::setAnalysisFlag4PsmLob",
+                                  "analysis flag is NULL" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }

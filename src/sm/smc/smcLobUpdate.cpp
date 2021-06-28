@@ -25,11 +25,11 @@
 #include <smr.h>
 
 /**********************************************************************
- * lobCursorë¥¼ opení•œ ê²ƒì— ëŒ€í•œ replication ë¡œê·¸ë¥¼ ë‚¨ê¸´ë‹¤.
+ * lobCursor¸¦ openÇÑ °Í¿¡ ´ëÇÑ replication ·Î±×¸¦ ³²±ä´Ù.
  *
- * aTrans      [IN] ì‘ì—…í•˜ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
- * aLobLocator [IN] ì‘ì—…í•˜ë ¤ëŠ” Lob Locator
- * aLobViewEnv [IN] ì‘ì—…í•˜ë ¤ëŠ” LobViewEnv ê°ì²´
+ * aTrans      [IN] ÀÛ¾÷ÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
+ * aLobLocator [IN] ÀÛ¾÷ÇÏ·Á´Â Lob Locator
+ * aLobViewEnv [IN] ÀÛ¾÷ÇÏ·Á´Â LobViewEnv °´Ã¼
  **********************************************************************/
 IDE_RC smcLobUpdate::writeLog4CursorOpen(idvSQL*        /*aStatistics*/,
                                          void*          aTrans,
@@ -134,9 +134,10 @@ IDE_RC smcLobUpdate::writeLog4CursorOpen(idvSQL*        /*aStatistics*/,
     IDE_TEST( smrLogMgr::writeLog( NULL, /* idvSQL* */
                                    aTrans,
                                    smLayerCallback::getLogBufferOfTrans( aTrans ),
+                                   NULL,     // Previous LSN Ptr
                                    NULL,     // Log LSN Ptr
-                                   NULL,     // aBeginLSN
-                                   NULL ) != IDE_SUCCESS );
+                                   NULL,     // End LSN Ptr
+                                   sTable->mSelfOID ) != IDE_SUCCESS );
     
     return IDE_SUCCESS;
 
@@ -147,21 +148,21 @@ IDE_RC smcLobUpdate::writeLog4CursorOpen(idvSQL*        /*aStatistics*/,
 }
 
 /**********************************************************************
- * lob ë°ì´íƒ€ë¥¼ writeí•œ ì‘ì—…ì— ëŒ€í•œ ë¡œê·¸ ì‘ì„±
+ * lob µ¥ÀÌÅ¸¸¦ writeÇÑ ÀÛ¾÷¿¡ ´ëÇÑ ·Î±× ÀÛ¼º
  *
  * SMR_SMC_PERS_WRITE_LOB_PIECE
  * smrUpdateLog | after image | LobLocator(4Repl)
  *
- * aTrans            [IN] ì‘ì—…í•˜ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
- * aTable            [IN] ì‘ì—…í•˜ë ¤ëŠ” í…Œì´ë¸” í—¤ë”
- * aLobLocator       [IN] ì‘ì—…í•˜ë ¤ëŠ” Lob Locator
- * aLobSpaceID       [IN] lob pieceê°€ ì €ì¥ë˜ëŠ” tablespaceì˜ ID
- * aPageID           [IN] lob pieceê°€ ì†í•˜ëŠ” page id
- * aPageOffset       [IN] pageì—ì„œ writeí•˜ëŠ” ìœ„ì¹˜
- * aLobOffset        [IN] ì „ì²´ lobì—ì„œ writeí•˜ëŠ” ìœ„ì¹˜
- * aPieceLen         [IN] ì €ì¥í•  lob pieceì˜ ê¸¸ì´
- * aPiece            [IN] ì €ì¥í•  lob piece
- * aIsReplSenderSend [IN] Replication Senderê°€ ë¡œê·¸ë¥¼ ë³´ë‚´ëŠ”ì§€ ì—¬ë¶€
+ * aTrans            [IN] ÀÛ¾÷ÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
+ * aTable            [IN] ÀÛ¾÷ÇÏ·Á´Â Å×ÀÌºí Çì´õ
+ * aLobLocator       [IN] ÀÛ¾÷ÇÏ·Á´Â Lob Locator
+ * aLobSpaceID       [IN] lob piece°¡ ÀúÀåµÇ´Â tablespaceÀÇ ID
+ * aPageID           [IN] lob piece°¡ ¼ÓÇÏ´Â page id
+ * aPageOffset       [IN] page¿¡¼­ writeÇÏ´Â À§Ä¡
+ * aLobOffset        [IN] ÀüÃ¼ lob¿¡¼­ writeÇÏ´Â À§Ä¡
+ * aPieceLen         [IN] ÀúÀåÇÒ lob pieceÀÇ ±æÀÌ
+ * aPiece            [IN] ÀúÀåÇÒ lob piece
+ * aIsReplSenderSend [IN] Replication Sender°¡ ·Î±×¸¦ º¸³»´ÂÁö ¿©ºÎ
  **********************************************************************/
 IDE_RC smcLobUpdate::writeLog4LobWrite(void*           aTrans,
                                        smcTableHeader* aTable,
@@ -180,9 +181,9 @@ IDE_RC smcLobUpdate::writeLog4LobWrite(void*           aTrans,
     UInt              sLobOffset;
     smrUpdateLog      sUpdateLog;
     smrLogType        sLogType;
-    /* BUG-16345: Replication LOB basic_testì—ì„œ diffë°œìƒí•©ë‹ˆë‹¤.
-     * sMakeLogFlagê°€ ì´ˆê¸°í™”ë˜ì§€ ì•Šì•„ì„œ ì•„ë˜ìª½ì—ì„œ Logì˜ Replication
-     * Flagê°€ ì˜ëª» ê²°ì •ë˜ê³  ìˆìŠµë‹ˆë‹¤. */
+    /* BUG-16345: Replication LOB basic_test¿¡¼­ diff¹ß»ıÇÕ´Ï´Ù.
+     * sMakeLogFlag°¡ ÃÊ±âÈ­µÇÁö ¾Ê¾Æ¼­ ¾Æ·¡ÂÊ¿¡¼­ LogÀÇ Replication
+     * Flag°¡ Àß¸ø °áÁ¤µÇ°í ÀÖ½À´Ï´Ù. */
     smcMakeLogFlagOpt sMakeLogFlag = SMC_MKLOGFLAG_NONE; 
     
     IDE_ERROR( aTrans != NULL );
@@ -201,7 +202,7 @@ IDE_RC smcLobUpdate::writeLog4LobWrite(void*           aTrans,
         sLogSize += ID_SIZEOF(smLobLocator) + ID_SIZEOF(UInt);
     }
 
-    /* Log Header ì´ˆê¸°í™” */
+    /* Log Header ÃÊ±âÈ­ */
     smrLogHeadI::setType(&sUpdateLog.mHead, SMR_LT_UPDATE);
     smrLogHeadI::setTransID( &sUpdateLog.mHead,
                              smLayerCallback::getTransID( aTrans ) );
@@ -213,9 +214,9 @@ IDE_RC smcLobUpdate::writeLog4LobWrite(void*           aTrans,
 
     if( aIsReplSenderSend == ID_FALSE )
     {
-        /* BUG-16013: Rowì˜ ê°’ì— ëŒ€í•œ ë³€ê²½ì´ ì—†ìŒì—ë„ ë¶ˆêµ¬í•˜ê³  Replication
-         * ê°±ì‹  ë¡œê·¸ë¥¼ ê¸°ë¡í•˜ê³  ìˆìŠµë‹ˆë‹¤.
-         * aIsReplSenderSendê°€ FALSEì´ë©´ ì´ LogëŠ” Senderê°€ Skipí•œë‹¤. */
+        /* BUG-16013: RowÀÇ °ª¿¡ ´ëÇÑ º¯°æÀÌ ¾øÀ½¿¡µµ ºÒ±¸ÇÏ°í Replication
+         * °»½Å ·Î±×¸¦ ±â·ÏÇÏ°í ÀÖ½À´Ï´Ù.
+         * aIsReplSenderSend°¡ FALSEÀÌ¸é ÀÌ Log´Â Sender°¡ SkipÇÑ´Ù. */
         sMakeLogFlag = (smcMakeLogFlagOpt)(SMC_MKLOGFLAG_REPL_SKIP_LOG);
     }
 
@@ -298,7 +299,7 @@ IDE_RC smcLobUpdate::writeLog4LobWrite(void*           aTrans,
               != IDE_SUCCESS );
     smrLogHeadI::setType(&sUpdateLog.mHead, sLogType);
 
-    IDE_TEST( smLayerCallback::writeTransLog( aTrans ) != IDE_SUCCESS );
+    IDE_TEST( smLayerCallback::writeTransLog( aTrans, sUpdateLog.mData ) != IDE_SUCCESS );
 
 
     return IDE_SUCCESS;
@@ -308,7 +309,7 @@ IDE_RC smcLobUpdate::writeLog4LobWrite(void*           aTrans,
     return IDE_FAILURE;
 }
 
-// SMR_SMC_PERS_WRITE_LOB_PIECE ë¡œê·¸ì— ëŒ€í•œ redo, undo ì‘ì—…
+// SMR_SMC_PERS_WRITE_LOB_PIECE ·Î±×¿¡ ´ëÇÑ redo, undo ÀÛ¾÷
 IDE_RC smcLobUpdate::redo_SMC_PERS_WRITE_LOB_PIECE(smTID    /*aTID*/,
                                                    scSpaceID  aSpaceID,
                                                    scPageID   aPID,

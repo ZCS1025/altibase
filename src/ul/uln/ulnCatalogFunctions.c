@@ -22,7 +22,7 @@
  * Append single parameter by format
  */
 // bug-25905: conn nls not applied to client lang module
-// ì¸ì aFnContext ì¶”ê°€
+// ÀÎÀÚ aFnContext Ãß°¡
 acp_sint32_t ulnAppendFormatParameter(ulnFnContext     *aFnContext,
                                       acp_char_t       *aBuffer,
                                       acp_sint32_t      aBufferSize,
@@ -99,9 +99,9 @@ acp_sint32_t ulnAppendFormatParameter(ulnFnContext     *aFnContext,
             // To Fix BUG-17430
             //
             // bug-25905: conn nls not applied to client lang module
-            // ë³€ê²½ì „: mtl::makeNameInSQL í˜¸ì¶œ
-            // ë³€ê²½í›„: ìœ„ì˜ í•¨ìˆ˜ ë³µì‚¬í•˜ì—¬ ìƒˆë¡œ ë§Œë“  ulnMakeNameInSQL í˜¸ì¶œ
-            // why: mtlì€ USASCIIë¡œ ê³ ì •ëœ defModuleë§Œì„ ì‚¬ìš© (ë³€ê²½ ë¶ˆê°€)
+            // º¯°æÀü: mtl::makeNameInSQL È£Ãâ
+            // º¯°æÈÄ: À§ÀÇ ÇÔ¼ö º¹»çÇÏ¿© »õ·Î ¸¸µç ulnMakeNameInSQL È£Ãâ
+            // why: mtlÀº USASCII·Î °íÁ¤µÈ defModule¸¸À» »ç¿ë (º¯°æ ºÒ°¡)
             ACI_TEST( mtlMakeNameInSQL(sDbc->mClientCharsetLangModule,
                                        sName,
                                        (acp_char_t*)s,
@@ -134,12 +134,12 @@ acp_sint32_t ulnAppendFormatParameter(ulnFnContext     *aFnContext,
 
 
 /*
- * old cli2 ì˜ MAKE_NTS ë§¤í¬ë¡œì´ë‹¤.
- * SQL ë¬¸ì¥ì—ì„œ ì‚¬ìš©ë  Null Terminated Nameì„ ìƒì„±í•œë‹¤.
+ * old cli2 ÀÇ MAKE_NTS ¸ÅÅ©·ÎÀÌ´Ù.
+ * SQL ¹®Àå¿¡¼­ »ç¿ëµÉ Null Terminated NameÀ» »ı¼ºÇÑ´Ù.
  */
 
 // bug-25905: conn nls not applied to client lang module
-// ì¸ì aMtlModule ì¶”ê°€
+// ÀÎÀÚ aMtlModule Ãß°¡
 ACI_RC ulnMakeNullTermNameInSQL(mtlModule        * aMtlModule,
                                 acp_char_t       * aDest,
                                 acp_uint32_t       aDestLen,
@@ -190,14 +190,14 @@ ACI_RC ulnMakeNullTermNameInSQL(mtlModule        * aMtlModule,
     ACI_TEST(aSrcLen < 0);
 
     // To Fix BUG-17430
-    //   SQL êµ¬ë¬¸ì„ ìƒì„±í•˜ê¸° ìœ„í•œ ë¬¸ìì—´ë¡œ ì‚¬ìš©ë¨
+    //   SQL ±¸¹®À» »ı¼ºÇÏ±â À§ÇÑ ¹®ÀÚ¿­·Î »ç¿ëµÊ
     // To Fix BUG-17803
-    //   SQL_NTS ë¡œ ì·¨ê¸‰ë˜ì„œëŠ” ì•ˆë¨.
+    //   SQL_NTS ·Î Ãë±ŞµÇ¼­´Â ¾ÈµÊ.
 
     // bug-25905: conn nls not applied to client lang module
-    // ë³€ê²½ì „: mtl::makeNameInSQL í˜¸ì¶œ
-    // ë³€ê²½í›„: ìœ„ì˜ í•¨ìˆ˜ ë³µì‚¬í•˜ì—¬ ìƒˆë¡œ ë§Œë“  ulnMakeNameInSQL í˜¸ì¶œ
-    // why: mtlì€ USASCIIë¡œ ê³ ì •ëœ defModuleë§Œì„ ì‚¬ìš©
+    // º¯°æÀü: mtl::makeNameInSQL È£Ãâ
+    // º¯°æÈÄ: À§ÀÇ ÇÔ¼ö º¹»çÇÏ¿© »õ·Î ¸¸µç ulnMakeNameInSQL È£Ãâ
+    // why: mtlÀº USASCII·Î °íÁ¤µÈ defModule¸¸À» »ç¿ë
     ACI_TEST( mtlMakeNameInSQL(aMtlModule, aDest, (acp_char_t*) s, aSrcLen)
               != ACI_SUCCESS);
 

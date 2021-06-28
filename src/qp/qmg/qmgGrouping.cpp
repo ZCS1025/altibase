@@ -16,14 +16,14 @@
  
 
 /***********************************************************************
- * $Id: qmgGrouping.cpp 85262 2019-04-17 01:37:36Z andrew.shin $
+ * $Id: qmgGrouping.cpp 89835 2021-01-22 10:10:02Z andrew.shin $
  *
  * Description :
- *     Grouping GraphÎ•º ÏúÑÌïú ÏàòÌñâ Ìï®Ïàò
+ *     Grouping Graph∏¶ ¿ß«— ºˆ«‡ «‘ºˆ
  *
- * Ïö©Ïñ¥ ÏÑ§Î™Ö :
+ * øÎæÓ º≥∏Ì :
  *
- * ÏïΩÏñ¥ :
+ * æ‡æÓ :
  *
  **********************************************************************/
 
@@ -38,6 +38,12 @@
 #include <qcgPlan.h>
 #include <qmoParallelPlan.h>
 #include <qmv.h>
+#include <qcg.h>
+
+/* BUG-46906 */
+extern mtfModule mtfListagg;
+extern mtfModule mtfPercentileDisc;
+extern mtfModule mtfPercentileCont;
 
 IDE_RC
 qmgGrouping::init( qcStatement * aStatement,
@@ -48,12 +54,12 @@ qmgGrouping::init( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgGrouping GraphÏùò Ï¥àÍ∏∞Ìôî
+ * Description : qmgGrouping Graph¿« √ ±‚»≠
  *
  * Implementation :
- *    (1) qmgGroupingÏùÑ ÏúÑÌïú Í≥µÍ∞Ñ Ìï†Îãπ
- *    (2) graph( Î™®Îì† GraphÎ•º ÏúÑÌïú Í≥µÌÜµ ÏûêÎ£å Íµ¨Ï°∞) Ï¥àÍ∏∞Ìôî
- *    (3) out ÏÑ§Ï†ï
+ *    (1) qmgGrouping¿ª ¿ß«— ∞¯∞£ «“¥Á
+ *    (2) graph( ∏µÁ Graph∏¶ ¿ß«— ∞¯≈Î ¿⁄∑· ±∏¡∂) √ ±‚»≠
+ *    (3) out º≥¡§
  *
  ***********************************************************************/
 
@@ -68,7 +74,7 @@ qmgGrouping::init( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgGrouping::init::__FT__" );
 
     //---------------------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -76,16 +82,16 @@ qmgGrouping::init( qcStatement * aStatement,
     IDE_DASSERT( aChildGraph != NULL );
 
     //---------------------------------------------------
-    // Grouping GraphÎ•º ÏúÑÌïú Í∏∞Î≥∏ Ï¥àÍ∏∞Ìôî
+    // Grouping Graph∏¶ ¿ß«— ±‚∫ª √ ±‚»≠
     //---------------------------------------------------
 
-    // qmgGroupingÏùÑ ÏúÑÌïú Í≥µÍ∞Ñ Ìï†Îãπ
+    // qmgGrouping¿ª ¿ß«— ∞¯∞£ «“¥Á
     IDU_FIT_POINT( "qmgGrouping::init::alloc::Graph" );
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmgGROP),
                                              (void**) &sMyGraph )
               != IDE_SUCCESS );
 
-    // Graph Í≥µÌÜµ Ï†ïÎ≥¥Ïùò Ï¥àÍ∏∞Ìôî
+    // Graph ∞¯≈Î ¡§∫∏¿« √ ±‚»≠
     IDE_TEST( qmg::initGraph( &sMyGraph->graph ) != IDE_SUCCESS );
 
     sMyGraph->graph.type = QMG_GROUPING;
@@ -100,11 +106,11 @@ qmgGrouping::init( qcStatement * aStatement,
     sMyGraph->graph.makePlan = qmgGrouping::makePlan;
     sMyGraph->graph.printGraph = qmgGrouping::printGraph;
 
-    // Disk/Memory Ï†ïÎ≥¥ ÏÑ§Ï†ï
+    // Disk/Memory ¡§∫∏ º≥¡§
     switch(  aQuerySet->SFWGH->hints->interResultType )
     {
         case QMO_INTER_RESULT_TYPE_NOT_DEFINED :
-            // Ï§ëÍ∞Ñ Í≤∞Í≥º Type HintÍ∞Ä ÏóÜÎäî Í≤ΩÏö∞, ÌïòÏúÑÏùò TypeÏùÑ Îî∞Î•∏Îã§.
+            // ¡ﬂ∞£ ∞·∞˙ Type Hint∞° æ¯¥¬ ∞ÊøÏ, «œ¿ß¿« Type¿ª µ˚∏•¥Ÿ.
             if ( ( aChildGraph->flag & QMG_GRAPH_TYPE_MASK )
                  == QMG_GRAPH_TYPE_DISK )
             {
@@ -131,7 +137,7 @@ qmgGrouping::init( qcStatement * aStatement,
     }
 
     //---------------------------------------------------
-    // Grouping Graph ÎßåÏùÑ ÏúÑÌïú Í∏∞Î≥∏ Ï¥àÍ∏∞Ìôî
+    // Grouping Graph ∏∏¿ª ¿ß«— ±‚∫ª √ ±‚»≠
     //---------------------------------------------------
 
     if ( aIsNested == ID_TRUE )
@@ -147,7 +153,7 @@ qmgGrouping::init( qcStatement * aStatement,
     }
     else
     {
-        // ÏùºÎ∞ò Aggregation
+        // ¿œπ› Aggregation
         sMyGraph->graph.flag &= ~QMG_GROP_TYPE_MASK;
         sMyGraph->graph.flag |= QMG_GROP_TYPE_GENERAL;
         sMyGraph->aggregation = aQuerySet->SFWGH->aggsDepth1;
@@ -156,13 +162,13 @@ qmgGrouping::init( qcStatement * aStatement,
         // To Fix BUG-8287
         if ( aQuerySet->SFWGH->having != NULL )
         {
-            // To Fix PR-12743 NNF FilterÏßÄÏõê
+            // To Fix PR-12743 NNF Filter¡ˆø¯
             IDE_TEST( qmoCrtPathMgr
                       ::decideNormalType( aStatement,
                                           sMyGraph->graph.myFrom,
                                           aQuerySet->SFWGH->having,
                                           aQuerySet->SFWGH->hints,
-                                          ID_TRUE, // CNF OnlyÏûÑ
+                                          ID_TRUE, // CNF Only¿”
                                           & sNormalType )
                       != IDE_SUCCESS );
 
@@ -243,7 +249,7 @@ qmgGrouping::init( qcStatement * aStatement,
     sMyGraph->hashBucketCnt = 0;
     sMyGraph->distAggArg = NULL;
 
-    // out ÏÑ§Ï†ï
+    // out º≥¡§
     *aGraph = (qmgGraph *)sMyGraph;
 
     return IDE_SUCCESS;
@@ -259,20 +265,20 @@ qmgGrouping::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- * Description : qmgGroupingÏùò ÏµúÏ†ÅÌôî
+ * Description : qmgGrouping¿« √÷¿˚»≠
  *
  * Implementation :
- *    (1) ÏùºÎ∞ò GroupingÏù∏ Í≤ΩÏö∞ Îã§ÏùåÏùÑ ÏàòÌñâ
- *       A. Subquery graph ÏÉùÏÑ±
- *         - ÏùºÎ∞ò Grouping : havingÏ†à,aggsDepth1Ïùò subquery Ï≤òÎ¶¨
- *         - nested Grouping :  aggsDepth2Ïùò subquery Ï≤òÎ¶¨
- *       B. Grouping ÏµúÏ†ÅÌôî Ï†ÅÏö©
- *         ( ÏµúÏ†ÅÌôî Ï†ÅÏö© Ïãú Preserved Order ÏÉùÏÑ± Î∞è ÏÑ§Ï†ïÎê® )
- *    (2) groupingMethod ÏÑ†ÌÉù Î∞è Preserved Order flag ÏÑ§Ï†ï
+ *    (1) ¿œπ› Grouping¿Œ ∞ÊøÏ ¥Ÿ¿Ω¿ª ºˆ«‡
+ *       A. Subquery graph ª˝º∫
+ *         - ¿œπ› Grouping : having¿˝,aggsDepth1¿« subquery √≥∏Æ
+ *         - nested Grouping :  aggsDepth2¿« subquery √≥∏Æ
+ *       B. Grouping √÷¿˚»≠ ¿˚øÎ
+ *         ( √÷¿˚»≠ ¿˚øÎ Ω√ Preserved Order ª˝º∫ π◊ º≥¡§µ  )
+ *    (2) groupingMethod º±≈√ π◊ Preserved Order flag º≥¡§
  *        - Hash Based Grouping : Never Preserved Order
  *        - Sort Based Grouping : Preserved Order Defined
- *    (3) hash based groupingÏù∏ Í≤ΩÏö∞, hashBucketCnt ÏÑ§Ï†ï
- *    (4) Í≥µÌÜµ ÎπÑÏö© Ï†ïÎ≥¥ ÏÑ§Ï†ï
+ *    (3) hash based grouping¿Œ ∞ÊøÏ, hashBucketCnt º≥¡§
+ *    (4) ∞¯≈Î ∫ÒøÎ ¡§∫∏ º≥¡§
  *
  ***********************************************************************/
 
@@ -292,20 +298,19 @@ qmgGrouping::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     SDouble              sRecordSize;
     SDouble              sAggrCost;
     idBool               sIsFuncData = ID_FALSE; /* BUG-46906 */
-
-    extern mtfModule     mtfListagg; /* BUG-46906 */
+    qtcNode            * sArgument   = NULL;     /* BUG-46922 */
 
     IDU_FIT_POINT_FATAL( "qmgGrouping::optimize::__FT__" );
 
     //------------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //------------------------------------------
-    // Í∏∞Î≥∏ Ï¥àÍ∏∞Ìôî
+    // ±‚∫ª √ ±‚»≠
     //------------------------------------------
 
     sMyGraph       = (qmgGROP*)aGraph;
@@ -321,8 +326,8 @@ qmgGrouping::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                                    PLAN_PROPERTY_OPTIMIZER_COUNT_COLUMN_TO_COUNT_ASTAR );
 
     //------------------------------------------
-    //    - recordSize Í≥ÑÏÇ∞
-    //    - Subquery GraphÏùò Ï≤òÎ¶¨ Î∞è distAggArg ÏÑ§Ï†ï
+    //    - recordSize ∞ËªÍ
+    //    - Subquery Graph¿« √≥∏Æ π◊ distAggArg º≥¡§
     //------------------------------------------
 
     if ( sAggr != NULL )
@@ -334,17 +339,38 @@ qmgGrouping::optimize( qcStatement * aStatement, qmgGraph * aGraph )
             sMtcColumn   = QTC_TMPL_COLUMN(QC_SHARED_TMPLATE(aStatement), sNode);
             sRecordSize += sMtcColumn->column.size;
 
-            /* BUG-46906 */
-            if ( sNode->node.module == & mtfListagg )
+            /* BUG-46906 BUG-46922 */
+            if ( ( sNode->node.module == & mtfListagg ) ||
+                 ( sNode->node.module == & mtfPercentileDisc ) ||
+                 ( sNode->node.module == & mtfPercentileCont ) )
             {
                 sIsFuncData = ID_TRUE;
             }
             else
             {
-                /* Nothing to do */
+                /* BUG-46906 */
+                sArgument = (qtcNode*)sAggr->aggr->node.arguments;
+
+                if ( sArgument != NULL )
+                {
+                    if ( ( sArgument->node.module == & mtfListagg ) ||
+                         ( sArgument->node.module == & mtfPercentileDisc ) ||
+                         ( sArgument->node.module == & mtfPercentileCont ) )
+                    {
+                        sIsFuncData = ID_TRUE;
+                    }
+                    else
+                    {
+                        /* Nothing to do */
+                    }
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
             }
 
-            // aggregationÏùò subquery ÏµúÏ†ÅÌôî
+            // aggregation¿« subquery √÷¿˚»≠
             IDE_TEST(
                 qmoPred::optimizeSubqueryInNode( aStatement,
                                                  sAggr->aggr,
@@ -352,7 +378,7 @@ qmgGrouping::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                                                  ID_FALSE ) //No ConstantFilter
                 != IDE_SUCCESS );
 
-            // distAggArg ÏÑ§Ï†ï
+            // distAggArg º≥¡§
             if ( ( sAggr->aggr->node.lflag & MTC_NODE_DISTINCT_MASK )
                  == MTC_NODE_DISTINCT_TRUE )
             {
@@ -393,13 +419,13 @@ qmgGrouping::optimize( qcStatement * aStatement, qmgGraph * aGraph )
          == QMG_GROP_TYPE_GENERAL )
     {
         //------------------------------------------
-        // ÏùºÎ∞ò Grouping Ïù∏ Í≤ΩÏö∞
-        //    - group by ÏπºÎüºÏùò subquery Ï≤òÎ¶¨
-        //    - havingÏùò subquery Ï≤òÎ¶¨
-        //    - Grouping Optimization Tip Ï†ÅÏö©
+        // ¿œπ› Grouping ¿Œ ∞ÊøÏ
+        //    - group by ƒÆ∑≥¿« subquery √≥∏Æ
+        //    - having¿« subquery √≥∏Æ
+        //    - Grouping Optimization Tip ¿˚øÎ
         //------------------------------------------
 
-        // groupÏùò subquery Ï≤òÎ¶¨
+        // group¿« subquery √≥∏Æ
         for ( sGroup = sMyGraph->groupBy;
               sGroup != NULL;
               sGroup = sGroup->next )
@@ -472,7 +498,7 @@ qmgGrouping::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 
         if ( sMyGraph->having != NULL )
         {
-            // havingÏùò subquery Ï≤òÎ¶¨
+            // having¿« subquery √≥∏Æ
             IDE_TEST(
                 qmoPred::optimizeSubqueryInNode( aStatement,
                                                  sMyGraph->having,
@@ -487,18 +513,18 @@ qmgGrouping::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
     else
     {
-        // Nested Grouping Ïù∏ Í≤ΩÏö∞
+        // Nested Grouping ¿Œ ∞ÊøÏ
         // nothing to do
     }
-    // BUG-36463 sRecordSize Îäî 0Ïù¥ ÎêòÏñ¥ÏÑúÎäî ÏïàÎêúÎã§.
+    // BUG-36463 sRecordSize ¥¬ 0¿Ã µ«æÓº≠¥¬ æ»µ»¥Ÿ.
     sRecordSize = IDL_MAX( sRecordSize, 1 );
 
     //------------------------------------------
-    // Grouping Method ÏÑ†ÌÉù Î∞è Preserved Order ÏÑ§Ï†ï
+    // Grouping Method º±≈√ π◊ Preserved Order º≥¡§
     //------------------------------------------
 
-    // TASK-6699 TPC-H ÏÑ±Îä• Í∞úÏÑ†
-    // AGGR Ìï®ÏàòÍ∞Ä ÎäòÏñ¥ÎÇ†ÏàòÎ°ù ÏàòÌñâÏãúÍ∞ÑÏù¥ Ï¶ùÍ∞ÄÌï®
+    // TASK-6699 TPC-H º∫¥… ∞≥º±
+    // AGGR «‘ºˆ∞° ¥√æÓ≥Øºˆ∑œ ºˆ«‡Ω√∞£¿Ã ¡ı∞°«‘
     sAggrCost = qmoCost::getAggrCost( aStatement->mSysStat,
                                       sMyGraph->aggregation,
                                       sMyGraph->graph.left->costInfo.outputRecordCnt );
@@ -506,10 +532,10 @@ qmgGrouping::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     if ( sIsGroupExt == ID_FALSE )
     {
         //------------------------------------------
-        // Hash Bucket Count ÏÑ§Ï†ï
+        // Hash Bucket Count º≥¡§
         //------------------------------------------
 
-        // BUG-38132 group byÏùò temp table ÏùÑ Î©îÎ™®Î¶¨Î°ú Í≥†Ï†ïÌïòÎäî ÌîÑÎ°úÌçºÌã∞
+        // BUG-38132 group by¿« temp table ¿ª ∏ﬁ∏∏Æ∑Œ ∞Ì¡§«œ¥¬ «¡∑Œ∆€∆º
         if ( (QCU_OPTIMIZER_FIXED_GROUP_MEMORY_TEMP == 1) &&
              (sMyGraph->distAggArg == NULL) )
         {
@@ -537,13 +563,13 @@ qmgGrouping::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         else
         {
             // BUG-37074
-            // group by Í∞Ä ÏóÜÏùÑÎïåÎäî bucket Í∞ØÏàòÎäî 1
+            // group by ∞° æ¯¿ª∂ß¥¬ bucket ∞πºˆ¥¬ 1
             sMyGraph->hashBucketCnt = 1;
         }
 
         if ( sMyGraph->groupBy != NULL )
         {
-            // GROUP BY Í∞Ä Ï°¥Ïû¨ÌïòÎäî Í≤ΩÏö∞ Grouping MethodÎ•º Í≤∞Ï†ïÌï®.
+            // GROUP BY ∞° ¡∏¿Á«œ¥¬ ∞ÊøÏ Grouping Method∏¶ ∞·¡§«‘.
             IDE_TEST( setGroupingMethod( aStatement,
                                          sMyGraph,
                                          sRecordSize,
@@ -551,11 +577,11 @@ qmgGrouping::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         }
         else
         {
-            // GROUP BYÍ∞Ä Ï°¥Ïû¨ÌïòÏßÄ ÏïäÎäî Í≤ΩÏö∞
+            // GROUP BY∞° ¡∏¿Á«œ¡ˆ æ ¥¬ ∞ÊøÏ
             sMyGraph->graph.flag &= ~QMG_GROUPBY_NONE_MASK;
             sMyGraph->graph.flag |= QMG_GROUPBY_NONE_TRUE;
 
-            // Îã§ÏñëÌïú ÏµúÏ†ÅÌôî TipÏùò Ï†ÅÏö©Ïù¥ Í∞ÄÎä•Ìïú ÏßÄ Í≤ÄÏÇ¨
+            // ¥ŸæÁ«— √÷¿˚»≠ Tip¿« ¿˚øÎ¿Ã ∞°¥…«— ¡ˆ ∞ÀªÁ
             IDE_TEST( nonGroupOptTip( aStatement,
                                       sMyGraph,
                                       sRecordSize,
@@ -587,7 +613,7 @@ qmgGrouping::optimize( qcStatement * aStatement, qmgGraph * aGraph )
              sCurDistAggr != NULL;
              sCurDistAggr = sCurDistAggr->next )
         {
-            // group by Î•º Í≥†Î†§ÌïòÏó¨ distinct Ïùò bucket Í∞ØÏàòÎ•º ÏßÄÏ†ï.
+            // group by ∏¶ ∞Ì∑¡«œø© distinct ¿« bucket ∞πºˆ∏¶ ¡ˆ¡§.
             IDE_TEST( qmg::getBucketCnt4DistAggr(
                           aStatement,
                           sMyGraph->graph.left->costInfo.outputRecordCnt,
@@ -604,7 +630,7 @@ qmgGrouping::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //------------------------------------------
-    // Í≥µÌÜµ ÎπÑÏö© Ï†ïÎ≥¥Ïùò ÏÑ§Ï†ï
+    // ∞¯≈Î ∫ÒøÎ ¡§∫∏¿« º≥¡§
     //------------------------------------------
 
     // recordSize = group by column size + aggregation column size
@@ -633,7 +659,7 @@ qmgGrouping::optimize( qcStatement * aStatement, qmgGraph * aGraph )
               != IDE_SUCCESS );
 
     //----------------------------------
-    // Ìï¥Îãπ GraphÏùò ÎπÑÏö© Ï†ïÎ≥¥ ÏÑ§Ï†ï
+    // «ÿ¥Á Graph¿« ∫ÒøÎ ¡§∫∏ º≥¡§
     //----------------------------------
 
     // totalCost
@@ -735,52 +761,52 @@ qmgGrouping::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGr
 {
 /***********************************************************************
  *
- * Description : qmgGroupingÏúºÎ°ú Î∂ÄÌÑ∞ PlanÏùÑ ÏÉùÏÑ±ÌïúÎã§.
+ * Description : qmgGrouping¿∏∑Œ ∫Œ≈Õ Plan¿ª ª˝º∫«—¥Ÿ.
  *
  * Implementation :
- *     - qmgGroupingÏúºÎ°ú Î∂ÄÌÑ∞ ÏÉùÏÑ±Í∞ÄÎä•Ìïú Plan
- *         1.  ÏµúÏ†ÅÌôî Tip Ïù¥ Ï†ÅÏö©Îêú Í≤ΩÏö∞
+ *     - qmgGrouping¿∏∑Œ ∫Œ≈Õ ª˝º∫∞°¥…«— Plan
+ *         1.  √÷¿˚»≠ Tip ¿Ã ¿˚øÎµ» ∞ÊøÏ
  *
- *             A.  Indexable Distinct AggregationÏù∏ Í≤ΩÏö∞
- *                 Ïòà) SELECT SUM(DISTINCT I1) FROM T1;
+ *             A.  Indexable Distinct Aggregation¿Œ ∞ÊøÏ
+ *                 øπ) SELECT SUM(DISTINCT I1) FROM T1;
  *
- *                       [GRAG]        : SUM(I1)ÏùÑ Ï≤òÎ¶¨
+ *                       [GRAG]        : SUM(I1)¿ª √≥∏Æ
  *                         |
- *                       [GRBY]        : DISTINCT I1Ïùò Ï≤òÎ¶¨
- *                                     : distinct optionÏùÑ ÏÇ¨Ïö©
+ *                       [GRBY]        : DISTINCT I1¿« √≥∏Æ
+ *                                     : distinct option¿ª ªÁøÎ
  *
- *             B.  COUNT ASTERISK ÏµúÏ†ÅÌôîÍ∞Ä Ï†ÅÏö©Îêú Í≤ΩÏö∞
+ *             B.  COUNT ASTERISK √÷¿˚»≠∞° ¿˚øÎµ» ∞ÊøÏ
  *
  *                    [CUNT]
  *
- *             C.  Indexable Min-Max ÏµúÏ†ÅÌôîÍ∞Ä Ï†ÅÏö©Îêú Í≤ΩÏö∞
+ *             C.  Indexable Min-Max √÷¿˚»≠∞° ¿˚øÎµ» ∞ÊøÏ
  *
- *                    ÏóÜÏùå
+ *                    æ¯¿Ω
  *
- *         2.  GROUP BYÏùò Ï≤òÎ¶¨
+ *         2.  GROUP BY¿« √≥∏Æ
  *
- *             - Sort-basedÏù∏ Í≤ΩÏö∞
+ *             - Sort-based¿Œ ∞ÊøÏ
  *
  *                    [GRBY]
  *                      |
- *                  ( [SORT] ) : Indexable Group ByÏù∏ Í≤ΩÏö∞ ÏÉùÏÑ±ÎêòÏßÄ ÏïäÏùå
+ *                  ( [SORT] ) : Indexable Group By¿Œ ∞ÊøÏ ª˝º∫µ«¡ˆ æ ¿Ω
  *
- *             - Hash-basedÏù∏ Í≤ΩÏö∞
+ *             - Hash-based¿Œ ∞ÊøÏ
  *
- *                    ÏóÜÏùå
+ *                    æ¯¿Ω
  *
- *             - Group By Í∞Ä ÏóÜÎäî Í≤ΩÏö∞
+ *             - Group By ∞° æ¯¥¬ ∞ÊøÏ
  *
- *                    ÏóÜÏùå
+ *                    æ¯¿Ω
  *
- *         3.  AggregationÏùò Ï≤òÎ¶¨
- *             - Sort-basedÏù∏ Í≤ΩÏö∞ ( Distinct AggregationÎèÑ Ìè¨Ìï® )
+ *         3.  Aggregation¿« √≥∏Æ
+ *             - Sort-based¿Œ ∞ÊøÏ ( Distinct Aggregationµµ ∆˜«‘ )
  *
  *                    [AGGR]
  *                      |
- *                    Group ByÏùò Ï≤òÎ¶¨
+ *                    Group By¿« √≥∏Æ
  *
- *             - Hash-basedÏù∏ Í≤ΩÏö∞
+ *             - Hash-based¿Œ ∞ÊøÏ
  *
  *                    [GRAG]
  *
@@ -793,7 +819,7 @@ qmgGrouping::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGr
     IDU_FIT_POINT_FATAL( "qmgGrouping::makePlan::__FT__" );
 
     //------------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -804,7 +830,7 @@ qmgGrouping::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGr
     sMyGraph->graph.myPlan = aParent->myPlan;
 
     //----------------------------
-    // HavingÏ†àÏùò Ï≤òÎ¶¨
+    // Having¿˝¿« √≥∏Æ
     //----------------------------
 
     if( sMyGraph->having != NULL )
@@ -826,9 +852,9 @@ qmgGrouping::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGr
     aGraph->flag |= (aParent->flag & QMG_PARALLEL_IMPOSSIBLE_MASK);
 
     // BUG-38410
-    // Materialize Îê† Í≤ΩÏö∞ ÌïòÏúÑ ÎÖ∏ÎìúÎì§ÏùÄ ÌïúÎ≤àÎßå Ïã§ÌñâÎêòÍ≥†
-    // materialized Îêú ÎÇ¥Ïö©Îßå Ï∞∏Ï°∞ÌïúÎã§.
-    // Îî∞ÎùºÏÑú ÏûêÏãù ÎÖ∏ÎìúÏóêÍ≤å SCAN Ïóê ÎåÄÌïú parallel ÏùÑ ÌóàÏö©ÌïúÎã§.
+    // Materialize µ… ∞ÊøÏ «œ¿ß ≥ÎµÂµÈ¿∫ «—π¯∏∏ Ω««‡µ«∞Ì
+    // materialized µ» ≥ªøÎ∏∏ ¬¸¡∂«—¥Ÿ.
+    // µ˚∂Ûº≠ ¿⁄Ωƒ ≥ÎµÂø°∞‘ SCAN ø° ¥Î«— parallel ¿ª «„øÎ«—¥Ÿ.
     aGraph->left->flag &= ~QMG_PLAN_EXEC_REPEATED_MASK;
     aGraph->left->flag |= QMG_PLAN_EXEC_REPEATED_FALSE;
 
@@ -879,7 +905,7 @@ qmgGrouping::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGr
     }
 
     //----------------------------
-    // HavingÏ†àÏùò Ï≤òÎ¶¨
+    // Having¿˝¿« √≥∏Æ
     //----------------------------
 
     if( sMyGraph->having != NULL )
@@ -914,7 +940,7 @@ qmgGrouping::makeChildPlan( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgGrouping::makeChildPlan::__FT__" );
 
     //---------------------------------------------------
-    // ÌïòÏúÑ planÏùò ÏÉùÏÑ±
+    // «œ¿ß plan¿« ª˝º∫
     //---------------------------------------------------
     IDE_TEST( aMyGraph->graph.left->makePlan( aStatement ,
                                               &aMyGraph->graph,
@@ -923,7 +949,7 @@ qmgGrouping::makeChildPlan( qcStatement * aStatement,
     aMyGraph->graph.myPlan = aMyGraph->graph.left->myPlan;
 
     //---------------------------------------------------
-    // Process ÏÉÅÌÉú ÏÑ§Ï†ï
+    // Process ªÛ≈¬ º≥¡§
     //---------------------------------------------------
     aMyGraph->graph.myQuerySet->processPhase = QMS_MAKEPLAN_GROUPBY;
 
@@ -958,7 +984,7 @@ qmgGrouping::makeHashGroup( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgGrouping::makeHashGroup::__FT__" );
 
     //----------------------------
-    // Top-down Ï¥àÍ∏∞Ìôî
+    // Top-down √ ±‚»≠
     //----------------------------
 
     //----------------------------
@@ -976,16 +1002,16 @@ qmgGrouping::makeHashGroup( qcStatement * aStatement,
     aMyGraph->graph.myPlan = sGRAG;
 
     //----------------------------
-    // ÌïòÏúÑ plan ÏÉùÏÑ±
+    // «œ¿ß plan ª˝º∫
     //----------------------------
     IDE_TEST( makeChildPlan( aStatement, aMyGraph ) != IDE_SUCCESS );
 
     // PROJ-2444
-    // Parallel ÌîåÎûúÏùò ÏÉùÏÑ±Ïó¨Î∂ÄÎ•º Í≤∞Ï†ïÌïúÎã§.
+    // Parallel «√∑£¿« ª˝º∫ø©∫Œ∏¶ ∞·¡§«—¥Ÿ.
     sMakeParallel = checkParallelEnable( aMyGraph );
 
     //----------------------------
-    // Bottom-up ÏÉùÏÑ±
+    // Bottom-up ª˝º∫
     //----------------------------
 
     //----------------------------
@@ -994,16 +1020,16 @@ qmgGrouping::makeHashGroup( qcStatement * aStatement,
 
     sFlag = 0;
 
-    //Ï†ÄÏû• Îß§Ï≤¥Ïùò ÏÑ†ÌÉù
+    //¿˙¿Â ∏≈√º¿« º±≈√
     if( aMyGraph->groupBy == NULL )
     {
-        //Group by Ïª¨ÎüºÏù¥ ÏóÜÎã§Î©¥ Ï†ÄÏû• Îß§Ï≤¥Î•º memoryÎ°ú ÏÑ†ÌÉù
+        //Group by ƒ√∑≥¿Ã æ¯¥Ÿ∏È ¿˙¿Â ∏≈√º∏¶ memory∑Œ º±≈√
         sFlag &= ~QMO_MAKEGRAG_TEMP_TABLE_MASK;
         sFlag |= QMO_MAKEGRAG_MEMORY_TEMP_TABLE;
     }
     else
     {
-        //GraphÏóêÏÑú ÏßÄÏ†ï
+        //Graphø°º≠ ¡ˆ¡§
         if( (aMyGraph->graph.flag & QMG_GRAPH_TYPE_MASK) ==
             QMG_GRAPH_TYPE_MEMORY )
         {
@@ -1039,7 +1065,7 @@ qmgGrouping::makeHashGroup( qcStatement * aStatement,
                   sChildren != NULL;
                   sChildren  = sChildren->next )
             {
-                // Í∏∞Ï°¥ GRAG ÎÖ∏ÎìúÎ•º Î≥µÏÇ¨ÌïúÎã§.
+                // ±‚¡∏ GRAG ≥ÎµÂ∏¶ ∫πªÁ«—¥Ÿ.
                 IDE_TEST( qmoParallelPlan::copyGRAG( aStatement,
                                                      aMyGraph->graph.myQuerySet,
                                                      sDestTable,
@@ -1047,8 +1073,8 @@ qmgGrouping::makeHashGroup( qcStatement * aStatement,
                                                      &sParallelGRAG )
                           != IDE_SUCCESS );
 
-                // initGRAG ÏóêÏÑú ResultDesc->expr Node Ïùò Í∞íÏù¥ Î≥ÄÍ≤ΩÎêúÎã§.
-                // Îî∞ÎùºÏÑú NodeÎ•º Î≥µÏÇ¨Î•º Ìï¥ÏïºÌïúÎã§.
+                // initGRAG ø°º≠ ResultDesc->expr Node ¿« ∞™¿Ã ∫Ø∞Êµ»¥Ÿ.
+                // µ˚∂Ûº≠ Node∏¶ ∫πªÁ∏¶ «ÿæﬂ«—¥Ÿ.
                 for( sResultDescOrg  = sGRAG->resultDesc,
                          sResultDesc     = sParallelGRAG->resultDesc;
                      sResultDescOrg != NULL;
@@ -1078,7 +1104,7 @@ qmgGrouping::makeHashGroup( qcStatement * aStatement,
 
                 qmg::setPlanInfo( aStatement, sParallelGRAG, &(aMyGraph->graph) );
 
-                // PSCRD Ïùò Í≤ΩÏö∞Îäî PRLQ-SCAN ÏàúÏúºÎ°ú Îã¨Î†§ÏûàÎã§.
+                // PSCRD ¿« ∞ÊøÏ¥¬ PRLQ-SCAN º¯¿∏∑Œ ¥ﬁ∑¡¿÷¥Ÿ.
                 IDE_DASSERT( sChildren->childPlan->type       == QMN_PRLQ );
                 IDE_DASSERT( sChildren->childPlan->left->type == QMN_SCAN );
 
@@ -1124,8 +1150,8 @@ qmgGrouping::makeHashGroup( qcStatement * aStatement,
                      sResultDescOrg  = sResultDescOrg->next,
                          sResultDesc     = sResultDesc->next )
                 {
-                    // ÌååÌã∞ÏÖòÏùò Í≤ΩÏö∞ SCAN ÎÖ∏ÎìúÏùò tuple Í∞íÏù¥ ÏÑúÎ°ú Îã§Î•¥Îã§.
-                    // Îî∞ÎùºÏÑú ÏÉàÎ°ú ÏÉùÏÑ±Îêú Node Í∞Ä Ìï¥Îãπ ÌååÌã∞ÏÖòÏùò tupleÏùÑ Î∞îÎùºÎ≥¥ÎèÑÎ°ù ÏàòÏ†ïÌï¥Ï£ºÏñ¥Ïïº ÌïúÎã§.
+                    // ∆ƒ∆ºº«¿« ∞ÊøÏ SCAN ≥ÎµÂ¿« tuple ∞™¿Ã º≠∑Œ ¥Ÿ∏£¥Ÿ.
+                    // µ˚∂Ûº≠ ªı∑Œ ª˝º∫µ» Node ∞° «ÿ¥Á ∆ƒ∆ºº«¿« tuple¿ª πŸ∂Û∫∏µµ∑œ ºˆ¡§«ÿ¡÷æÓæﬂ «—¥Ÿ.
                     IDE_TEST( qtc::cloneQTCNodeTree4Partition(
                                   QC_QMP_MEM(aStatement),
                                   sResultDescOrg->expr,
@@ -1135,8 +1161,8 @@ qmgGrouping::makeHashGroup( qcStatement * aStatement,
                                   ID_FALSE )
                               != IDE_SUCCESS );
 
-                    // cloneQTCNodeTree4Partition Ìï®ÏàòÏóêÏÑú Ïª®Î≤ÑÏ†º ÎÖ∏ÎìúÎ•º ÏÇ≠Ï†úÌïúÎã§.
-                    // Ïû¨ ÏÉùÏÑ±Ìï¥Ïïº ÌïúÎã§.
+                    // cloneQTCNodeTree4Partition «‘ºˆø°º≠ ƒ¡πˆ¡Ø ≥ÎµÂ∏¶ ªË¡¶«—¥Ÿ.
+                    // ¿Á ª˝º∫«ÿæﬂ «—¥Ÿ.
                     IDE_TEST( qtc::estimate(
                                   sResultDesc->expr,
                                   QC_SHARED_TMPLATE(aStatement),
@@ -1160,7 +1186,7 @@ qmgGrouping::makeHashGroup( qcStatement * aStatement,
 
                 qmg::setPlanInfo( aStatement, sParallelGRAG, &(aMyGraph->graph) );
 
-                // PPCRD Ïùò Í≤ΩÏö∞Îäî SCAN Îßå Îã¨Î†§ÏûàÎã§.
+                // PPCRD ¿« ∞ÊøÏ¥¬ SCAN ∏∏ ¥ﬁ∑¡¿÷¥Ÿ.
                 IDE_DASSERT( sChildren->childPlan->type       == QMN_SCAN );
 
                 sParallelGRAG->left     = sChildren->childPlan;
@@ -1233,7 +1259,7 @@ qmgGrouping::makeSortGroup( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgGrouping::makeSortGroup::__FT__" );
 
     //----------------------------
-    // Top-down Ï¥àÍ∏∞Ìôî
+    // Top-down √ ±‚»≠
     //----------------------------
 
     if( aMyGraph->aggregation != NULL )
@@ -1295,7 +1321,7 @@ qmgGrouping::makeSortGroup( qcStatement * aStatement,
     }
 
     //----------------------------
-    // ÌïòÏúÑ plan ÏÉùÏÑ±
+    // «œ¿ß plan ª˝º∫
     //----------------------------
 
     IDE_TEST( makeChildPlan( aStatement,
@@ -1303,7 +1329,7 @@ qmgGrouping::makeSortGroup( qcStatement * aStatement,
               != IDE_SUCCESS );
 
     //----------------------------
-    // Bottom-up ÏÉùÏÑ±
+    // Bottom-up ª˝º∫
     //----------------------------
 
     if( aMyGraph->groupBy != NULL )
@@ -1322,7 +1348,7 @@ qmgGrouping::makeSortGroup( qcStatement * aStatement,
             sFlag &= ~QMO_MAKESORT_PRESERVED_ORDER_MASK;
             sFlag |= QMO_MAKESORT_PRESERVED_FALSE;
 
-            //Ï†ÄÏû• Îß§Ï≤¥Ïùò ÏÑ†ÌÉù
+            //¿˙¿Â ∏≈√º¿« º±≈√
             if( (aMyGraph->graph.flag & QMG_GRAPH_TYPE_MASK) ==
                 QMG_GRAPH_TYPE_MEMORY )
             {
@@ -1388,7 +1414,7 @@ qmgGrouping::makeSortGroup( qcStatement * aStatement,
         // make AGGR
         //-----------------------
         sFlag = 0;
-        //Ï†ÄÏû• Îß§Ï≤¥Ïùò ÏÑ†ÌÉù
+        //¿˙¿Â ∏≈√º¿« º±≈√
         if( (aMyGraph->graph.flag & QMG_GRAPH_TYPE_MASK) ==
             QMG_GRAPH_TYPE_MEMORY )
         {
@@ -1435,7 +1461,7 @@ qmgGrouping::makeCountAll( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgGrouping::makeCountAll::__FT__" );
 
     //----------------------------
-    // Top-down Ï¥àÍ∏∞Ìôî
+    // Top-down √ ±‚»≠
     //----------------------------
 
     //----------------------------
@@ -1449,15 +1475,15 @@ qmgGrouping::makeCountAll( qcStatement * aStatement,
               != IDE_SUCCESS );
 
     //----------------------------
-    // ÌïòÏúÑ planÏùÑ ÏÉùÏÑ±ÌïòÏßÄ ÏïäÎäîÎã§.
+    // «œ¿ß plan¿ª ª˝º∫«œ¡ˆ æ ¥¬¥Ÿ.
     //----------------------------
 
     //----------------------------
-    // Bottom-up ÏÉùÏÑ±
+    // Bottom-up ª˝º∫
     //----------------------------
 
     //---------------------------------------------------
-    // Current CNFÏùò Îì±Î°ù
+    // Current CNF¿« µÓ∑œ
     //---------------------------------------------------
 
     if ( aMyGraph->graph.left->myCNF != NULL )
@@ -1476,7 +1502,7 @@ qmgGrouping::makeCountAll( qcStatement * aStatement,
     sLeafInfo.preservedOrder    = aMyGraph->graph.preservedOrder;
     sLeafInfo.ridPredicate      = aMyGraph->graph.left->ridPredicate;
 
-    // BUG-17483 ÌååÌã∞ÏÖò ÌÖåÏù¥Î∏î count(*) ÏßÄÏõê
+    // BUG-17483 ∆ƒ∆ºº« ≈◊¿Ã∫Ì count(*) ¡ˆø¯
     if( aMyGraph->graph.left->type == QMG_SELECTION )
     {
         sLeafInfo.index             = ((qmgSELT*)aMyGraph->graph.left)->selectedIndex;
@@ -1525,24 +1551,24 @@ qmgGrouping::makeIndexMinMax( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgGrouping::makeIndexMinMax::__FT__" );
 
     //----------------------------
-    // ÌïòÏúÑ plan ÏÉùÏÑ±
+    // «œ¿ß plan ª˝º∫
     //----------------------------
 
     IDE_TEST( makeChildPlan( aStatement,
                              aMyGraph )
               != IDE_SUCCESS );
 
-    //Ìï¥Îãπ graphÎ°ú ÏÉùÏÑ±ÎêòÎäî nodeÍ∞Ä ÏóÜÏúºÎØÄÎ°ú ÌïòÏúÑÏùò childplanÏùÑ
-    //ÌòÑÏû¨ graphÏùò myPlanÏúºÎ°ú Îì±Î°ùÌï¥ÎëîÎã§.
-    //Îî∞ÎùºÏÑú ÏÉÅÏúÑÏóêÏÑú ÌïòÏúÑ PlanÏùÑ Ï∞æÏùÑÏàò ÏûàÎã§.
+    //«ÿ¥Á graph∑Œ ª˝º∫µ«¥¬ node∞° æ¯¿∏π«∑Œ «œ¿ß¿« childplan¿ª
+    //«ˆ¿Á graph¿« myPlan¿∏∑Œ µÓ∑œ«ÿµ–¥Ÿ.
+    //µ˚∂Ûº≠ ªÛ¿ßø°º≠ «œ¿ß Plan¿ª √£¿ªºˆ ¿÷¥Ÿ.
     aMyGraph->graph.myPlan = aMyGraph->graph.left->myPlan;
 
     // To Fix PR-9602
-    // Îã§ÏùåÍ≥º Í∞ôÏùÄ ÏßàÏùòÎ•º Ï≤òÎ¶¨ÌïòÍ∏∞ ÏúÑÌï¥ÏÑúÎäî
-    // INDEXABLE MINMAX ÏµúÏ†ÅÌôîÍ∞Ä Ï†ÅÏö©Îêú Í≤ΩÏö∞,
-    // Conversion Ïú†Î¨¥Ïóê Í¥ÄÍ≥Ñ ÏóÜÏù¥ Ï†ïÏÉÅ ÎèôÏûëÌïòÍ≤å ÌïòÎ†§Î©¥,
-    // Aggregation NodeÏùò IDÎ•º
-    // Ìï¥Îãπ argumentÏùò IDÎ°ú Î≥ÄÍ≤ΩÏãúÏºú Ï£ºÏñ¥Ïïº ÌïúÎã§.
+    // ¥Ÿ¿Ω∞˙ ∞∞¿∫ ¡˙¿«∏¶ √≥∏Æ«œ±‚ ¿ß«ÿº≠¥¬
+    // INDEXABLE MINMAX √÷¿˚»≠∞° ¿˚øÎµ» ∞ÊøÏ,
+    // Conversion ¿Øπ´ø° ∞¸∞Ë æ¯¿Ã ¡§ªÛ µø¿€«œ∞‘ «œ∑¡∏È,
+    // Aggregation Node¿« ID∏¶
+    // «ÿ¥Á argument¿« ID∑Œ ∫Ø∞ÊΩ√ƒ— ¡÷æÓæﬂ «—¥Ÿ.
     //     SELECT MIN(i1) FROM T1;
     //     SELECT MIN(i1) + 0.1 FROM T1;
 
@@ -1577,7 +1603,7 @@ qmgGrouping::makeIndexDistAggr( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgGrouping::makeIndexDistAggr::__FT__" );
 
     //----------------------------
-    // Top-down Ï¥àÍ∏∞Ìôî
+    // Top-down √ ±‚»≠
     //----------------------------
 
     //----------------------------
@@ -1598,8 +1624,8 @@ qmgGrouping::makeIndexDistAggr( qcStatement * aStatement,
     //----------------------------
 
     // To Fix PR-7960
-    // AggregationÏùò ArgumentÎ•º Ïù¥Ïö©ÌïòÏó¨
-    // Grouping ÎåÄÏÉÅ ColumnÏùÑ Íµ¨ÏÑ±ÌïúÎã§.
+    // Aggregation¿« Argument∏¶ ¿ÃøÎ«œø©
+    // Grouping ¥ÎªÛ Column¿ª ±∏º∫«—¥Ÿ.
 
     IDU_FIT_POINT( "qmgGrouping::makeIndexDistAggr::alloc::Group" );
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmsConcatElement),
@@ -1617,7 +1643,7 @@ qmgGrouping::makeIndexDistAggr( qcStatement * aStatement,
     aMyGraph->graph.myPlan = sGRBY;
 
     //----------------------------
-    // ÌïòÏúÑ plan ÏÉùÏÑ±
+    // «œ¿ß plan ª˝º∫
     //----------------------------
 
     IDE_TEST( makeChildPlan( aStatement,
@@ -1632,7 +1658,7 @@ qmgGrouping::makeIndexDistAggr( qcStatement * aStatement,
     sFlag &= ~QMO_MAKEGRBY_SORT_BASED_METHOD_MASK;
     sFlag |= QMO_MAKEGRBY_SORT_BASED_DISTAGGR;
 
-    // GRBY ÎÖ∏ÎìúÏùò ÏÉùÏÑ±
+    // GRBY ≥ÎµÂ¿« ª˝º∫
     IDE_TEST( qmoOneNonPlan::makeGRBY( aStatement ,
                                        aMyGraph->graph.myQuerySet ,
                                        sFlag ,
@@ -1643,14 +1669,14 @@ qmgGrouping::makeIndexDistAggr( qcStatement * aStatement,
     qmg::setPlanInfo( aStatement, sGRBY, &(aMyGraph->graph) );
 
     //----------------------------
-    // GRAG ÎÖ∏ÎìúÏùò ÏÉùÏÑ±
-    // - AggregationÏùÑ Ï≤òÎ¶¨ ÌïúÎã§.
+    // GRAG ≥ÎµÂ¿« ª˝º∫
+    // - Aggregation¿ª √≥∏Æ «—¥Ÿ.
     //----------------------------
 
     sFlag = 0;
 
-    //Ï†ÄÏû• Îß§Ï≤¥Ïùò ÏÑ†ÌÉù
-    //GROUP BYÍ∞Ä ÏóÜÎäî Í≤ΩÏö∞ Ïù¥Îã§.(bug-7696)
+    //¿˙¿Â ∏≈√º¿« º±≈√
+    //GROUP BY∞° æ¯¥¬ ∞ÊøÏ ¿Ã¥Ÿ.(bug-7696)
     sFlag &= ~QMO_MAKEGRAG_TEMP_TABLE_MASK;
     sFlag |= QMO_MAKEGRAG_MEMORY_TEMP_TABLE;
 
@@ -1678,10 +1704,10 @@ qmgGrouping::makeIndexDistAggr( qcStatement * aStatement,
 /**
  * PROJ-1353 makeRollup
  *
- * - Rollup ÏùÄ ÌïòÏúÑÏóê Sort PlanÏù¥ ÏÉùÏÑ±ÎêòÎ©∞ ÎßåÏïΩ IndexÍ∞Ä ÏÑ§Ï†ïÎê† ÏãúÏóêÎäî SortÎ•º ÏÉùÏÑ±ÌïòÏßÄ ÏïäÎäîÎã§.
- * - Memory TableÏùº Í≤ΩÏö∞ ÏÉÅÏúÑ Plan( Sort, Window Sort, Limit Sort )ÏóêÏÑú Îç∞Ïù¥ÌÑ∞Î•º ÏåìÏïÑÏÑú
- *   Ï≤òÎ¶¨Ìï† ÌïÑÏöîÍ∞Ä ÏûàÏùÑ Í≤ΩÏö∞ Memory TableÏùò valueÎ•º STOREÌïòÎäî Temp TableÏùÑ ÏÉùÏÑ±Ìï¥ÏÑú
- *   Ïù¥ TableÏùò Row PointerÎ•º ÏåìÏïÑÏÑú Ï≤òÎ¶¨ÌïòÎèÑÎ°ù ÌïúÎã§.
+ * - Rollup ¿∫ «œ¿ßø° Sort Plan¿Ã ª˝º∫µ«∏Á ∏∏æ‡ Index∞° º≥¡§µ… Ω√ø°¥¬ Sort∏¶ ª˝º∫«œ¡ˆ æ ¥¬¥Ÿ.
+ * - Memory Table¿œ ∞ÊøÏ ªÛ¿ß Plan( Sort, Window Sort, Limit Sort )ø°º≠ µ•¿Ã≈Õ∏¶ Ω◊æ∆º≠
+ *   √≥∏Æ«“ « ø‰∞° ¿÷¿ª ∞ÊøÏ Memory Table¿« value∏¶ STORE«œ¥¬ Temp Table¿ª ª˝º∫«ÿº≠
+ *   ¿Ã Table¿« Row Pointer∏¶ Ω◊æ∆º≠ √≥∏Æ«œµµ∑œ «—¥Ÿ.
  */
 IDE_RC qmgGrouping::makeRollup( qcStatement    * aStatement,
                                 qmgGROP        * aMyGraph )
@@ -1766,9 +1792,9 @@ IDE_RC qmgGrouping::makeRollup( qcStatement    * aStatement,
 /**
  * PROJ-1353 makeCube
  *
- * - Memory TableÏùº Í≤ΩÏö∞ ÏÉÅÏúÑ Plan( Sort, Window Sort, Limit Sort )ÏóêÏÑú Îç∞Ïù¥ÌÑ∞Î•º ÏåìÏïÑÏÑú
- *   Ï≤òÎ¶¨Ìï† ÌïÑÏöîÍ∞Ä ÏûàÏùÑ Í≤ΩÏö∞ Memory TableÏùò valueÎ•º STOREÌïòÎäî Temp TableÏùÑ ÏÉùÏÑ±Ìï¥ÏÑú
- *   Ïù¥ TableÏùò Row PointerÎ•º ÏåìÏïÑÏÑú Ï≤òÎ¶¨ÌïòÎèÑÎ°ù ÌïúÎã§.
+ * - Memory Table¿œ ∞ÊøÏ ªÛ¿ß Plan( Sort, Window Sort, Limit Sort )ø°º≠ µ•¿Ã≈Õ∏¶ Ω◊æ∆º≠
+ *   √≥∏Æ«“ « ø‰∞° ¿÷¿ª ∞ÊøÏ Memory Table¿« value∏¶ STORE«œ¥¬ Temp Table¿ª ª˝º∫«ÿº≠
+ *   ¿Ã Table¿« Row Pointer∏¶ Ω◊æ∆º≠ √≥∏Æ«œµµ∑œ «—¥Ÿ.
  */
 IDE_RC qmgGrouping::makeCube( qcStatement    * aStatement,
                               qmgGROP        * aMyGraph )
@@ -1847,7 +1873,7 @@ qmgGrouping::printGraph( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    GraphÎ•º Íµ¨ÏÑ±ÌïòÎäî Í≥µÌÜµ Ï†ïÎ≥¥Î•º Ï∂úÎ†•ÌïúÎã§.
+ *    Graph∏¶ ±∏º∫«œ¥¬ ∞¯≈Î ¡§∫∏∏¶ √‚∑¬«—¥Ÿ.
  *
  *
  * Implementation :
@@ -1858,7 +1884,7 @@ qmgGrouping::printGraph( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgGrouping::printGraph::__FT__" );
 
     //-----------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //-----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1866,7 +1892,7 @@ qmgGrouping::printGraph( qcStatement  * aStatement,
     IDE_DASSERT( aString != NULL );
 
     //-----------------------------------
-    // Graph Í≥µÌÜµ Ï†ïÎ≥¥Ïùò Ï∂úÎ†•
+    // Graph ∞¯≈Î ¡§∫∏¿« √‚∑¬
     //-----------------------------------
 
     IDE_TEST( qmg::printGraph( aStatement,
@@ -1876,12 +1902,12 @@ qmgGrouping::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Graph Í≥†Ïú† Ï†ïÎ≥¥Ïùò Ï∂úÎ†•
+    // Graph ∞Ì¿Ø ¡§∫∏¿« √‚∑¬
     //-----------------------------------
 
 
     //-----------------------------------
-    // Child Graph Í≥†Ïú† Ï†ïÎ≥¥Ïùò Ï∂úÎ†•
+    // Child Graph ∞Ì¿Ø ¡§∫∏¿« √‚∑¬
     //-----------------------------------
 
     IDE_TEST( aGraph->left->printGraph( aStatement,
@@ -1906,7 +1932,7 @@ qmgGrouping::setGroupingMethod( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : GROUP BY Ïª¨ÎüºÏóê ÎåÄÌïú ÏµúÏ†ÅÌôîÎ•º ÏàòÌñâÌï®.
+ * Description : GROUP BY ƒ√∑≥ø° ¥Î«— √÷¿˚»≠∏¶ ºˆ«‡«‘.
  *
  * Implementation :
  *
@@ -1931,7 +1957,7 @@ qmgGrouping::setGroupingMethod( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgGrouping::setGroupingMethod::__FT__" );
 
     //-------------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //-------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1939,7 +1965,7 @@ qmgGrouping::setGroupingMethod( qcStatement * aStatement,
     IDE_DASSERT( aGroupGraph->groupBy != NULL );
 
     //-------------------------------------------
-    // GROUPING METHOD HINT Ï∂îÏ∂ú
+    // GROUPING METHOD HINT √ﬂ√‚
     //-------------------------------------------
     sGraph = &(aGroupGraph->graph);
 
@@ -1984,14 +2010,23 @@ qmgGrouping::setGroupingMethod( qcStatement * aStatement,
     }
     else
     {
-        sGroupMethodHint =
-            aGroupGraph->graph.myQuerySet->SFWGH->hints->groupMethodType;
+        // BUG-48132 group method property √ﬂ∞° / grouping hint øÏº±
+        if ( aGroupGraph->graph.myQuerySet->SFWGH->hints->groupMethodType == QMO_GROUP_METHOD_TYPE_NOT_DEFINED )
+        {
+            getPropertyGroupingMethod( aStatement,
+                                       &sGroupMethodHint ); 
+        }
+        else
+        {
+            sGroupMethodHint =
+                aGroupGraph->graph.myQuerySet->SFWGH->hints->groupMethodType;
+        }
     }
 
     /* BUG-44250
-     * aggregationÏóê group by Í∞Ä ÏûàÍ≥† ÌïòÏúÑÏóê hierarchy queryÍ∞Ä
-     * Ï°¥Ïû¨ ÌïòÎäîÎç∞ aggregationÏùò Ïù∏ÏûêÎ°ú priorÍ∞Ä Ïì∞ÏòÄÎã§Î©¥ SortÎ°ú
-     * ÌíÄÎ¶¨ÏßÄ ÏïäÎèÑÎ°ù ÌïúÎã§. hintÍ∞Ä ÏÇ¨Ïö©ÎêêÏùÑ ÏßÄÎùºÎèÑ
+     * aggregationø° group by ∞° ¿÷∞Ì «œ¿ßø° hierarchy query∞°
+     * ¡∏¿Á «œ¥¬µ• aggregation¿« ¿Œ¿⁄∑Œ prior∞° æ≤ø¥¥Ÿ∏È Sort∑Œ
+     * «Æ∏Æ¡ˆ æ µµ∑œ «—¥Ÿ. hint∞° ªÁøÎµ∆¿ª ¡ˆ∂Ûµµ
      */
     if ( ( aGroupGraph->aggregation != NULL ) &&
          ( aGroupGraph->groupBy != NULL ) &&
@@ -2018,25 +2053,42 @@ qmgGrouping::setGroupingMethod( qcStatement * aStatement,
         /* Nothing to do */
     }
 
+    // BUG-48128
+    // outer queryø° aggregation + group by ¿Ã∞Ì,
+    // target or having ¿˝ø° ªÁøÎ«— subquery ( scalar subquery)ø°º≠ outer column¿ª ªÁøÎ«— ∞ÊøÏ 
+    // sort ∏ﬁº“µÂ∏¶ ªÁøÎ«œ¡ˆ æ µµ∑œ «’¥œ¥Ÿ.
+    if ( ( sGroupMethodHint != QMO_GROUP_METHOD_TYPE_HASH ) &&
+         ( aGroupGraph->aggregation != NULL ) &&
+         ( aGroupGraph->groupBy != NULL ) &&
+         ( (aGroupGraph->graph.myQuerySet->lflag & QMV_QUERYSET_SCALAR_SUBQ_OUTER_COL_MASK)
+           == QMV_QUERYSET_SCALAR_SUBQ_OUTER_COL_TRUE ) )
+    {
+        sGroupMethodHint = QMO_GROUP_METHOD_TYPE_HASH;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
     switch( sGroupMethodHint )
     {
         case QMO_GROUP_METHOD_TYPE_NOT_DEFINED :
-            // Group Method HintÍ∞Ä ÏóÜÎäî Í≤ΩÏö∞
+            // Group Method Hint∞° æ¯¥¬ ∞ÊøÏ
 
             // To Fix PR-12394
-            // GROUPING Í¥ÄÎ†® ÌûåÌä∏Í∞Ä ÏóÜÎäî Í≤ΩÏö∞ÏóêÎßå
-            // ÏµúÏ†ÅÌôî TipÏùÑ Ï†ÅÏö©Ìï¥Ïïº Ìï®.
+            // GROUPING ∞¸∑√ »˘∆Æ∞° æ¯¥¬ ∞ÊøÏø°∏∏
+            // √÷¿˚»≠ Tip¿ª ¿˚øÎ«ÿæﬂ «‘.
 
             //------------------------------------------
             // To Fix PR-12396
-            // ÎπÑÏö© Í≥ÑÏÇ∞ÏùÑ ÌÜµÌï¥ ÏàòÌñâ Î∞©Î≤ïÏùÑ Í≤∞Ï†ïÌïúÎã§.
+            // ∫ÒøÎ ∞ËªÍ¿ª ≈Î«ÿ ºˆ«‡ πÊπ˝¿ª ∞·¡§«—¥Ÿ.
             //------------------------------------------
 
             //------------------------------------------
-            // Sorting ÏùÑ Ïù¥Ïö©Ìïú Î∞©ÏãùÏùò ÎπÑÏö© Í≥ÑÏÇ∞
+            // Sorting ¿ª ¿ÃøÎ«— πÊΩƒ¿« ∫ÒøÎ ∞ËªÍ
             //------------------------------------------
 
-            // Î™®Îì† GroupingÏùÄ SortingÎ∞©ÏãùÏùÑ ÏÇ¨Ïö©Ìï† Ïàò ÏûàÎã§.
+            // ∏µÁ Grouping¿∫ SortingπÊΩƒ¿ª ªÁøÎ«“ ºˆ ¿÷¥Ÿ.
             if( sIsDisk == ID_FALSE )
             {
                 sSelTotalCost = qmoCost::getMemSortTempCost( aStatement->mSysStat,
@@ -2058,7 +2110,7 @@ qmgGrouping::setGroupingMethod( qcStatement * aStatement,
             /* BUG-39284 The sys_connect_by_path function with Aggregate
              * function is not correct. 
              */
-            if ( ( aGroupGraph->graph.myQuerySet->SFWGH->flag & QMV_SFWGH_CONNECT_BY_FUNC_MASK )
+            if ( ( aGroupGraph->graph.myQuerySet->SFWGH->lflag & QMV_SFWGH_CONNECT_BY_FUNC_MASK )
                  == QMV_SFWGH_CONNECT_BY_FUNC_TRUE ) 
             {
                 IDE_TEST_RAISE( aGroupGraph->distAggArg != NULL, ERR_NOT_DIST_AGGR_WITH_CONNECT_BY_FUNC );
@@ -2073,7 +2125,7 @@ qmgGrouping::setGroupingMethod( qcStatement * aStatement,
             }
 
             //------------------------------------------
-            // Hashing ÏùÑ Ïù¥Ïö©Ìïú Î∞©ÏãùÏùò ÎπÑÏö©Í≥ÑÏÇ∞
+            // Hashing ¿ª ¿ÃøÎ«— πÊΩƒ¿« ∫ÒøÎ∞ËªÍ
             //------------------------------------------
             if ( aGroupGraph->distAggArg == NULL )
             {
@@ -2088,8 +2140,8 @@ qmgGrouping::setGroupingMethod( qcStatement * aStatement,
                 else
                 {
                     // BUG-37752
-                    // DiskHashGroup ÏùºÎïå ÎèôÏûëÎ∞©ÏãùÏù¥ Îã§Î•¥ÎØÄÎ°ú Î≥ÑÎèÑÏùò cost Î•º Í≥ÑÏÇ∞ÌïúÎã§.
-                    // hashBucketCnt Ïóê ÏòÅÌñ•ÏùÑ Î∞õÎäîÎã§.
+                    // DiskHashGroup ¿œ∂ß µø¿€πÊΩƒ¿Ã ¥Ÿ∏£π«∑Œ ∫∞µµ¿« cost ∏¶ ∞ËªÍ«—¥Ÿ.
+                    // hashBucketCnt ø° øµ«‚¿ª πﬁ¥¬¥Ÿ.
                     sTotalCost = qmoCost::getDiskHashGroupCost( aStatement->mSysStat,
                                                                 &(sGraph->left->costInfo),
                                                                 aGroupGraph->hashBucketCnt,
@@ -2107,7 +2159,7 @@ qmgGrouping::setGroupingMethod( qcStatement * aStatement,
 
             if (QMO_COST_IS_EQUAL(sTotalCost, QMO_COST_INVALID_COST) == ID_TRUE)
             {
-                // Hashing Î∞©ÏãùÏùÑ Ï†ÅÏö©Ìï† Ïàò ÏóÜÎäî Í≤ΩÏö∞ÏûÑ
+                // Hashing πÊΩƒ¿ª ¿˚øÎ«“ ºˆ æ¯¥¬ ∞ÊøÏ¿”
             }
             else
             {
@@ -2117,7 +2169,7 @@ qmgGrouping::setGroupingMethod( qcStatement * aStatement,
                 }
                 else
                 {
-                    // Hashing Î∞©ÏãùÏù¥ Î≥¥Îã§ ÎÇòÏùå
+                    // Hashing πÊΩƒ¿Ã ∫∏¥Ÿ ≥™¿Ω
                     sSelTotalCost  = sTotalCost;
                     sSelDiskCost   = sDiskCost;
                     sSelAccessCost = sAccessCost;
@@ -2133,7 +2185,7 @@ qmgGrouping::setGroupingMethod( qcStatement * aStatement,
             }
 
             //------------------------------------------
-            // Preserved Order Î•º Ïù¥Ïö©Ìïú Î∞©ÏãùÏùò ÎπÑÏö©Í≥ÑÏÇ∞
+            // Preserved Order ∏¶ ¿ÃøÎ«— πÊΩƒ¿« ∫ÒøÎ∞ËªÍ
             //------------------------------------------
 
             IDE_TEST( getCostByPrevOrder( aStatement,
@@ -2145,7 +2197,7 @@ qmgGrouping::setGroupingMethod( qcStatement * aStatement,
 
             if (QMO_COST_IS_EQUAL(sTotalCost, QMO_COST_INVALID_COST) == ID_TRUE)
             {
-                // Preserved Order Î∞©ÏãùÏùÑ Ï†ÅÏö©Ìï† Ïàò ÏóÜÎäî Í≤ΩÏö∞ÏûÑ
+                // Preserved Order πÊΩƒ¿ª ¿˚øÎ«“ ºˆ æ¯¥¬ ∞ÊøÏ¿”
             }
             else
             {
@@ -2155,14 +2207,14 @@ qmgGrouping::setGroupingMethod( qcStatement * aStatement,
                 }
                 else
                 {
-                    // Preserved Order Î∞©ÏãùÏù¥ Î≥¥Îã§ ÎÇòÏùå
+                    // Preserved Order πÊΩƒ¿Ã ∫∏¥Ÿ ≥™¿Ω
                     sSelTotalCost  = sTotalCost;
                     sSelDiskCost   = sDiskCost;
                     sSelAccessCost = sAccessCost;
 
                     // To Fix PR-12394
-                    // GROUPING Í¥ÄÎ†® ÌûåÌä∏Í∞Ä ÏóÜÎäî Í≤ΩÏö∞ÏóêÎßå
-                    // ÏµúÏ†ÅÌôî TipÏùÑ Ï†ÅÏö©Ìï¥Ïïº Ìï®.
+                    // GROUPING ∞¸∑√ »˘∆Æ∞° æ¯¥¬ ∞ÊøÏø°∏∏
+                    // √÷¿˚»≠ Tip¿ª ¿˚øÎ«ÿæﬂ «‘.
                     IDE_TEST( indexableGroupBy( aStatement,
                                                 aGroupGraph,
                                                 & sIndexable )
@@ -2170,7 +2222,7 @@ qmgGrouping::setGroupingMethod( qcStatement * aStatement,
 
                     IDE_DASSERT( sIndexable == ID_TRUE );
 
-                    // Indexable Group By Í∞Ä Í∞ÄÎä•Ìïú Í≤ΩÏö∞
+                    // Indexable Group By ∞° ∞°¥…«— ∞ÊøÏ
                     sGraph->flag &= ~QMG_GROP_OPT_TIP_MASK;
                     sGraph->flag
                         |= QMG_GROP_OPT_TIP_INDEXABLE_GROUPBY;
@@ -2178,7 +2230,7 @@ qmgGrouping::setGroupingMethod( qcStatement * aStatement,
                     sGraph->flag &= ~QMG_SORT_HASH_METHOD_MASK;
                     sGraph->flag |= QMG_SORT_HASH_METHOD_SORT;
 
-                    // Ïù¥ÎØ∏ Preserved OrderÍ∞Ä ÏÑ§Ï†ïÎê®
+                    // ¿ÃπÃ Preserved Order∞° º≥¡§µ 
 
                     sGraph->flag &= ~QMG_PRESERVED_ORDER_MASK;
                     sGraph->flag |= QMG_PRESERVED_ORDER_DEFINED_FIXED;
@@ -2186,10 +2238,10 @@ qmgGrouping::setGroupingMethod( qcStatement * aStatement,
             }
 
             //------------------------------------------
-            // ÎßàÎ¨¥Î¶¨
+            // ∏∂π´∏Æ
             //------------------------------------------
 
-            // Sorting Î∞©ÏãùÏù¥ ÏÑ†ÌÉùÎêú Í≤ΩÏö∞ Preserved Order ÏÉùÏÑ±
+            // Sorting πÊΩƒ¿Ã º±≈√µ» ∞ÊøÏ Preserved Order ª˝º∫
             if ( ( ( sGraph->flag & QMG_SORT_HASH_METHOD_MASK )
                    == QMG_SORT_HASH_METHOD_SORT )
                  &&
@@ -2199,7 +2251,7 @@ qmgGrouping::setGroupingMethod( qcStatement * aStatement,
                 sGraph->flag &= ~QMG_SORT_HASH_METHOD_MASK;
                 sGraph->flag |= QMG_SORT_HASH_METHOD_SORT;
 
-                // Group By Ïª¨ÎüºÏùÑ Ïù¥Ïö©ÌïòÏó¨ Preserved OrderÎ•º ÏÉùÏÑ±Ìï®.
+                // Group By ƒ√∑≥¿ª ¿ÃøÎ«œø© Preserved Order∏¶ ª˝º∫«‘.
                 IDE_TEST(
                     makeGroupByOrder( aStatement,
                                       aGroupGraph->groupBy,
@@ -2211,13 +2263,13 @@ qmgGrouping::setGroupingMethod( qcStatement * aStatement,
             }
             else
             {
-                // Îã§Î•∏ MethodÍ∞Ä ÏÑ†ÌÉùÎê®
+                // ¥Ÿ∏• Method∞° º±≈√µ 
             }
 
             break;
 
         case QMO_GROUP_METHOD_TYPE_HASH :
-            // Group Method HintÍ∞Ä Hash based Ïù∏ Í≤ΩÏö∞
+            // Group Method Hint∞° Hash based ¿Œ ∞ÊøÏ
 
             if ( aGroupGraph->distAggArg == NULL )
             {
@@ -2232,8 +2284,8 @@ qmgGrouping::setGroupingMethod( qcStatement * aStatement,
                 else
                 {
                     // BUG-37752
-                    // DiskHashGroup ÏùºÎïå ÎèôÏûëÎ∞©ÏãùÏù¥ Îã§Î•¥ÎØÄÎ°ú Î≥ÑÎèÑÏùò cost Î•º Í≥ÑÏÇ∞ÌïúÎã§.
-                    // hashBucketCnt Ïóê ÏòÅÌñ•ÏùÑ Î∞õÎäîÎã§.
+                    // DiskHashGroup ¿œ∂ß µø¿€πÊΩƒ¿Ã ¥Ÿ∏£π«∑Œ ∫∞µµ¿« cost ∏¶ ∞ËªÍ«—¥Ÿ.
+                    // hashBucketCnt ø° øµ«‚¿ª πﬁ¥¬¥Ÿ.
                     sSelTotalCost = qmoCost::getDiskHashGroupCost( aStatement->mSysStat,
                                                                    &(sGraph->left->costInfo),
                                                                    aGroupGraph->hashBucketCnt,
@@ -2256,14 +2308,14 @@ qmgGrouping::setGroupingMethod( qcStatement * aStatement,
             }
             else
             {
-                // Distinct AggregationÏùò Í≤ΩÏö∞
-                // Hash-based GroupingÏùÑ ÏÇ¨Ïö©Ìï† Ïàò ÏóÜÎã§.
-                // ÏïÑÎûòÏùò Sort-based GroupingÏùÑ ÏÇ¨Ïö©ÌïúÎã§.
+                // Distinct Aggregation¿« ∞ÊøÏ
+                // Hash-based Grouping¿ª ªÁøÎ«“ ºˆ æ¯¥Ÿ.
+                // æ∆∑°¿« Sort-based Grouping¿ª ªÁøÎ«—¥Ÿ.
             }
             /* fall through  */
         case QMO_GROUP_METHOD_TYPE_SORT :
 
-            // Group Method HintÍ∞Ä Sort based Ïù∏ Í≤ΩÏö∞
+            // Group Method Hint∞° Sort based ¿Œ ∞ÊøÏ
             if( sIsDisk == ID_FALSE )
             {
                 sSelTotalCost = qmoCost::getMemSortTempCost( aStatement->mSysStat,
@@ -2285,7 +2337,7 @@ qmgGrouping::setGroupingMethod( qcStatement * aStatement,
             sGraph->flag &= ~QMG_SORT_HASH_METHOD_MASK;
             sGraph->flag |= QMG_SORT_HASH_METHOD_SORT;
 
-            // Group By Ïª¨ÎüºÏùÑ Ïù¥Ïö©ÌïòÏó¨ Preserved OrderÎ•º ÏÉùÏÑ±Ìï®.
+            // Group By ƒ√∑≥¿ª ¿ÃøÎ«œø© Preserved Order∏¶ ª˝º∫«‘.
             IDE_TEST( makeGroupByOrder( aStatement,
                                         aGroupGraph->groupBy,
                                         & sGraph->preservedOrder )
@@ -2302,13 +2354,13 @@ qmgGrouping::setGroupingMethod( qcStatement * aStatement,
     /* BUG-39284 The sys_connect_by_path function with Aggregate
      * function is not correct. 
      */
-    IDE_TEST_RAISE( ( ( aGroupGraph->graph.myQuerySet->SFWGH->flag & QMV_SFWGH_CONNECT_BY_FUNC_MASK )
+    IDE_TEST_RAISE( ( ( aGroupGraph->graph.myQuerySet->SFWGH->lflag & QMV_SFWGH_CONNECT_BY_FUNC_MASK )
                       == QMV_SFWGH_CONNECT_BY_FUNC_TRUE ) &&
                     ( ( sGraph->flag & QMG_SORT_HASH_METHOD_MASK )
                       == QMG_SORT_HASH_METHOD_SORT ), 
                     ERR_NOT_DIST_AGGR_WITH_CONNECT_BY_FUNC );
 
-    // ÎπÑÏö© Ï†ïÎ≥¥ ÏÑ§Ï†ï
+    // ∫ÒøÎ ¡§∫∏ º≥¡§
     sGraph->costInfo.myAccessCost = sSelAccessCost + aAggrCost;
     sGraph->costInfo.myDiskCost   = sSelDiskCost;
     sGraph->costInfo.myAllCost    = sSelTotalCost  + aAggrCost;
@@ -2332,8 +2384,8 @@ qmgGrouping::makeGroupByOrder( qcStatement        * aStatement,
 {
 /***********************************************************************
  *
- * Description : Group By Ïª¨ÎüºÏùÑ Ïù¥Ïö©ÌïòÏó¨
- *               Preserved Order ÏûêÎ£å Íµ¨Ï°∞Î•º Íµ¨Ï∂ïÌï®.
+ * Description : Group By ƒ√∑≥¿ª ¿ÃøÎ«œø©
+ *               Preserved Order ¿⁄∑· ±∏¡∂∏¶ ±∏√‡«‘.
  *
  *
  * Implementation :
@@ -2350,20 +2402,20 @@ qmgGrouping::makeGroupByOrder( qcStatement        * aStatement,
     IDU_FIT_POINT_FATAL( "qmgGrouping::makeGroupByOrder::__FT__" );
 
     //------------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //------------------------------------------
-    // Í∏∞Î≥∏ Ï¥àÍ∏∞Ìôî
+    // ±‚∫ª √ ±‚»≠
     //------------------------------------------
 
     sWantOrder = NULL;
     sCurOrder  = NULL;
 
     //------------------------------------------
-    // Group by ÏπºÎüºÏóê ÎåÄÌïú want orderÎ•º ÏÉùÏÑ±
+    // Group by ƒÆ∑≥ø° ¥Î«— want order∏¶ ª˝º∫
     //------------------------------------------
 
     for ( sGroupBy = aGroupBy; sGroupBy != NULL; sGroupBy = sGroupBy->next )
@@ -2371,7 +2423,7 @@ qmgGrouping::makeGroupByOrder( qcStatement        * aStatement,
         sNode = sGroupBy->arithmeticOrList;
 
         //------------------------------------------
-        // Group by ÏπºÎüºÏóê ÎåÄÌïú want orderÎ•º ÏÉùÏÑ±
+        // Group by ƒÆ∑≥ø° ¥Î«— want order∏¶ ª˝º∫
         //------------------------------------------
         IDU_FIT_POINT( "qmgGrouping::makeGroupByOrder::alloc::NewOrder" );
         IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmgPreservedOrder ),
@@ -2411,11 +2463,11 @@ qmgGrouping::indexableGroupBy( qcStatement        * aStatement,
 {
 /***********************************************************************
  *
- * Description : Indexable Group By ÏµúÏ†ÅÌôî Í∞ÄÎä•Ìïú Í≤ΩÏö∞, Ï†ÅÏö©
+ * Description : Indexable Group By √÷¿˚»≠ ∞°¥…«— ∞ÊøÏ, ¿˚øÎ
  *
  * Implementation :
  *
- *    Preserved Order ÏÇ¨Ïö© Í∞ÄÎä•Ìïú Í≤ΩÏö∞, Ï†ÅÏö©
+ *    Preserved Order ªÁøÎ ∞°¥…«— ∞ÊøÏ, ¿˚øÎ
  *
  ***********************************************************************/
 
@@ -2427,7 +2479,7 @@ qmgGrouping::indexableGroupBy( qcStatement        * aStatement,
     IDU_FIT_POINT_FATAL( "qmgGrouping::indexableGroupBy::__FT__" );
 
     //------------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2435,14 +2487,14 @@ qmgGrouping::indexableGroupBy( qcStatement        * aStatement,
     IDE_DASSERT( aGroupGraph->groupBy != NULL );
 
     //------------------------------------------
-    // Í∏∞Î≥∏ Ï¥àÍ∏∞Ìôî
+    // ±‚∫ª √ ±‚»≠
     //------------------------------------------
 
     sSuccess   = ID_FALSE;
     sWantOrder = NULL;
 
     //------------------------------------------
-    // Group by ÏπºÎüºÏóê ÎåÄÌïú want orderÎ•º ÏÉùÏÑ±
+    // Group by ƒÆ∑≥ø° ¥Î«— want order∏¶ ª˝º∫
     //------------------------------------------
 
     IDE_TEST( makeGroupByOrder( aStatement,
@@ -2451,7 +2503,7 @@ qmgGrouping::indexableGroupBy( qcStatement        * aStatement,
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // Preserved OrderÏùò ÏÇ¨Ïö© Í∞ÄÎä• Ïó¨Î∂ÄÎ•º Í≤ÄÏÇ¨
+    // Preserved Order¿« ªÁøÎ ∞°¥… ø©∫Œ∏¶ ∞ÀªÁ
     //------------------------------------------
 
     IDE_TEST( qmg::tryPreservedOrder( aStatement,
@@ -2487,17 +2539,17 @@ qmgGrouping::countStar( qcStatement      * aStatement,
 {
 /***********************************************************************
  *
- * Description : Count(*) ÏµúÏ†ÅÌôî Í∞ÄÎä•Ìïú Í≤ΩÏö∞, Ï†ÅÏö©
+ * Description : Count(*) √÷¿˚»≠ ∞°¥…«— ∞ÊøÏ, ¿˚øÎ
  *
  * Implementation :
- *    (1) CNFÏù∏ Í≤ΩÏö∞
- *    (2) ÌïòÎÇòÏùò base tableÏóê ÎåÄÌïú ÏßàÏùò
- *    (3) limitÏù¥ ÏóÜÎäî Í≤ΩÏö∞
- *    (4) hierarchy queryÍ∞Ä ÏóÜÎäî Í≤ΩÏö∞
- *    (5) distinctÍ∞Ä ÏóÜÎäî Í≤ΩÏö∞
- *    (6) order byÍ∞Ä ÏóÜÎäî Í≤ΩÏö∞
- *    (7) subquery filterÍ∞Ä ÏóÜÎäî Í≤ΩÏö∞
- *    (8) rownumÏù¥ ÏÇ¨Ïö©ÎêòÏßÄ ÏïäÏùÄ Í≤ΩÏö∞
+ *    (1) CNF¿Œ ∞ÊøÏ
+ *    (2) «œ≥™¿« base tableø° ¥Î«— ¡˙¿«
+ *    (3) limit¿Ã æ¯¥¬ ∞ÊøÏ
+ *    (4) hierarchy query∞° æ¯¥¬ ∞ÊøÏ
+ *    (5) distinct∞° æ¯¥¬ ∞ÊøÏ
+ *    (6) order by∞° æ¯¥¬ ∞ÊøÏ
+ *    (7) subquery filter∞° æ¯¥¬ ∞ÊøÏ
+ *    (8) rownum¿Ã ªÁøÎµ«¡ˆ æ ¿∫ ∞ÊøÏ
  *
  ***********************************************************************/
 
@@ -2511,14 +2563,14 @@ qmgGrouping::countStar( qcStatement      * aStatement,
     IDU_FIT_POINT_FATAL( "qmgGrouping::countStar::__FT__" );
 
     //------------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGroupGraph != NULL );
 
     //------------------------------------------
-    // Í∏∞Î≥∏ Ï¥àÍ∏∞Ìôî
+    // ±‚∫ª √ ±‚»≠
     //------------------------------------------
 
     sTemp = ID_TRUE;
@@ -2529,7 +2581,7 @@ qmgGrouping::countStar( qcStatement      * aStatement,
     {
         sTemp = ID_FALSE;
 
-        // CNFÏù∏ Í≤ΩÏö∞
+        // CNF¿Œ ∞ÊøÏ
         if ( sMySFWGH->crtPath->normalType != QMO_NORMAL_TYPE_CNF )
         {
             sIsCountStar = ID_FALSE;
@@ -2541,8 +2593,8 @@ qmgGrouping::countStar( qcStatement      * aStatement,
         }
 
         // BUG-35155 Partial CNF
-        // NNF ÌïÑÌÑ∞Í∞Ä Ï°¥Ïû¨ÌïòÎ©¥ count star ÏµúÏ†ÅÌôîÎ•º ÏàòÌñâÌïòÎ©¥ ÏïàÎêúÎã§.
-        // (Ïó¨Í∏∞ Ïò¨ Í≤ΩÏö∞ Ìï≠ÏÉÅ CNF Ïù¥Îã§)
+        // NNF « ≈Õ∞° ¡∏¿Á«œ∏È count star √÷¿˚»≠∏¶ ºˆ«‡«œ∏È æ»µ»¥Ÿ.
+        // (ø©±‚ ø√ ∞ÊøÏ «◊ªÛ CNF ¿Ã¥Ÿ)
         if ( sMySFWGH->crtPath->crtCNF->nnfFilter != NULL )
         {
             sIsCountStar = ID_FALSE;
@@ -2553,7 +2605,7 @@ qmgGrouping::countStar( qcStatement      * aStatement,
             // nothing to do
         }
 
-        // ÌïòÎÇòÏùò base tableÏóê ÎåÄÌïú ÏßàÏùò
+        // «œ≥™¿« base tableø° ¥Î«— ¡˙¿«
         if ( sMySFWGH->from->next != NULL )
         {
             sIsCountStar = ID_FALSE;
@@ -2565,7 +2617,7 @@ qmgGrouping::countStar( qcStatement      * aStatement,
         }
 
         // To Fix BUG-9072
-        // base graphÏùò typeÏù¥ joinÏù¥ ÏïÑÎãå Í≤ΩÏö∞
+        // base graph¿« type¿Ã join¿Ã æ∆¥— ∞ÊøÏ
         if ( sMySFWGH->from->joinType != QMS_NO_JOIN )
         {
             sIsCountStar = ID_FALSE;
@@ -2577,7 +2629,7 @@ qmgGrouping::countStar( qcStatement      * aStatement,
         }
 
         // To Fix BUG-9148, 8753, 8745, 8786
-        // viewÍ∞Ä ÏïÑÎãå Í≤ΩÏö∞
+        // view∞° æ∆¥— ∞ÊøÏ
         if ( sMySFWGH->from->tableRef->view != NULL )
         {
             sIsCountStar = ID_FALSE;
@@ -2591,9 +2643,9 @@ qmgGrouping::countStar( qcStatement      * aStatement,
             {
                 sChild = aGroupGraph->graph.left->children;
 
-                // BUG-17483 ÌååÌã∞ÏÖò ÌÖåÏù¥Î∏î count(*) ÏßÄÏõê
-                // ÌååÌã∞ÏÖò ÌÖåÏù¥Î∏îÏùò Í≤ΩÏö∞ ÌïÑÌÑ∞Í∞Ä Îã¨Î†§ÏûàÎäî Í≤ΩÏö∞ÏóêÎäî count(*) ÏµúÏ†ÅÌôîÎ•º ÏïàÌï®
-                // ÌååÌã∞ÏÖò ÌÖåÏù¥Î∏îÏùÄ QMND_CUNT_METHOD_HANDLE Î∞©ÏãùÎßå ÏßÄÏõêÌïúÎã§.
+                // BUG-17483 ∆ƒ∆ºº« ≈◊¿Ã∫Ì count(*) ¡ˆø¯
+                // ∆ƒ∆ºº« ≈◊¿Ã∫Ì¿« ∞ÊøÏ « ≈Õ∞° ¥ﬁ∑¡¿÷¥¬ ∞ÊøÏø°¥¬ count(*) √÷¿˚»≠∏¶ æ»«‘
+                // ∆ƒ∆ºº« ≈◊¿Ã∫Ì¿∫ QMND_CUNT_METHOD_HANDLE πÊΩƒ∏∏ ¡ˆø¯«—¥Ÿ.
                 if( ((qmsParseTree*)(aStatement->myPlan->parseTree))->querySet->setOp != QMS_NONE )
                 {
                     sIsCountStar = ID_FALSE;
@@ -2637,7 +2689,7 @@ qmgGrouping::countStar( qcStatement      * aStatement,
         }
 
         // To Fix BUG-8711
-        // select typeÏù¥ distinctÍ∞Ä ÏïÑÎãå Í≤ΩÏö∞
+        // select type¿Ã distinct∞° æ∆¥— ∞ÊøÏ
         if ( sMySFWGH->selectType == QMS_DISTINCT )
         {
             sIsCountStar = ID_FALSE;
@@ -2647,7 +2699,7 @@ qmgGrouping::countStar( qcStatement      * aStatement,
             // nothing to do
         }
 
-        // limitÏù¥ ÏóÜÎäî Í≤ΩÏö∞
+        // limit¿Ã æ¯¥¬ ∞ÊøÏ
         if ( ((qmsParseTree*)(aStatement->myPlan->parseTree))->limit != NULL )
         {
             sIsCountStar = ID_FALSE;
@@ -2658,7 +2710,7 @@ qmgGrouping::countStar( qcStatement      * aStatement,
             // nothing to do
         }
 
-        // hierarchyÍ∞Ä ÏóÜÎäî Í≤ΩÏö∞
+        // hierarchy∞° æ¯¥¬ ∞ÊøÏ
         if ( sMySFWGH->hierarchy != NULL )
         {
             sIsCountStar = ID_FALSE;
@@ -2669,7 +2721,7 @@ qmgGrouping::countStar( qcStatement      * aStatement,
             // nothing to do
         }
 
-        // distinct aggregationÏù¥ ÏóÜÎäî Í≤ΩÏö∞
+        // distinct aggregation¿Ã æ¯¥¬ ∞ÊøÏ
         if ( aGroupGraph->distAggArg != NULL )
         {
             sIsCountStar = ID_FALSE;
@@ -2680,7 +2732,7 @@ qmgGrouping::countStar( qcStatement      * aStatement,
             // nothing to do
         }
 
-        // order byÍ∞Ä ÏóÜÎäî Í≤ΩÏö∞
+        // order by∞° æ¯¥¬ ∞ÊøÏ
         if ( ((qmsParseTree*)(aStatement->myPlan->parseTree))->orderBy != NULL )
         {
             sIsCountStar = ID_FALSE;
@@ -2691,7 +2743,7 @@ qmgGrouping::countStar( qcStatement      * aStatement,
             // nothing to do
         }
 
-        // subquery filterÍ∞Ä ÏóÜÎäî Í≤ΩÏö∞
+        // subquery filter∞° æ¯¥¬ ∞ÊøÏ
         if ( sMySFWGH->where != NULL )
         {
             if ( ( sMySFWGH->where->lflag & QTC_NODE_SUBQUERY_MASK )
@@ -2710,7 +2762,7 @@ qmgGrouping::countStar( qcStatement      * aStatement,
             // nothing to do
         }
 
-        // rownumÏù¥ ÏÇ¨Ïö©ÎêòÏßÄ ÏïäÏùÄ Í≤ΩÏö∞
+        // rownum¿Ã ªÁøÎµ«¡ˆ æ ¿∫ ∞ÊøÏ
         if ( sMySFWGH->rownum != NULL )
         {
             sIsCountStar = ID_FALSE;
@@ -2747,7 +2799,7 @@ qmgGrouping::nonGroupOptTip( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : GROUP BYÍ∞Ä ÏóÜÎäî Í≤ΩÏö∞Ïùò tip Ï†ÅÏö©
+ * Description : GROUP BY∞° æ¯¥¬ ∞ÊøÏ¿« tip ¿˚øÎ
  *
  * Implementation :
  *
@@ -2773,7 +2825,7 @@ qmgGrouping::nonGroupOptTip( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgGrouping::nonGroupOptTip::__FT__" );
 
     //------------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
@@ -2781,15 +2833,15 @@ qmgGrouping::nonGroupOptTip( qcStatement * aStatement,
     IDE_FT_ASSERT( aGroupGraph->aggregation != NULL );
 
     //------------------------------------------
-    // Í∏∞Î≥∏ Ï¥àÍ∏∞Ìôî
+    // ±‚∫ª √ ±‚»≠
     //------------------------------------------
 
     sSuccess = ID_FALSE;
     sGraph   = &(aGroupGraph->graph);
 
     //------------------------------------------
-    //  aggregationÏù¥ ÌïòÎÇòÎßå Ï°¥Ïû¨ÌïòÎ©¥ÏÑú
-    //  Í∑∏ aggregation ÎåÄÏÉÅ ÏπºÎüºÏù¥ ÏàúÏàòÌïú ÏπºÎüºÏù∏ Í≤ΩÏö∞
+    //  aggregation¿Ã «œ≥™∏∏ ¡∏¿Á«œ∏Èº≠
+    //  ±◊ aggregation ¥ÎªÛ ƒÆ∑≥¿Ã º¯ºˆ«— ƒÆ∑≥¿Œ ∞ÊøÏ
     //------------------------------------------
 
     if ( aGroupGraph->aggregation->next == NULL )
@@ -2803,7 +2855,7 @@ qmgGrouping::nonGroupOptTip( qcStatement * aStatement,
             {
 
                 //------------------------------------------
-                // count(*) ÏµúÏ†ÅÌôî
+                // count(*) √÷¿˚»≠
                 //------------------------------------------
 
                 IDE_TEST( countStar( aStatement,
@@ -2824,13 +2876,13 @@ qmgGrouping::nonGroupOptTip( qcStatement * aStatement,
             else
             {
                 // BUG-12542
-                // COUNT(*) ÏûÑÏóêÎèÑ Î∂àÍµ¨ÌïòÍ≥† Ïù¥Í≥≥ÏúºÎ°ú Ïò§Îäî Í≤ΩÏö∞Í∞Ä ÏûàÏùå.
+                // COUNT(*) ¿”ø°µµ ∫“±∏«œ∞Ì ¿Ã∞˜¿∏∑Œ ø¿¥¬ ∞ÊøÏ∞° ¿÷¿Ω.
                 // Nothing To Do
             }
         }
         else
         {
-            // want order ÏÉùÏÑ±
+            // want order ª˝º∫
             IDU_FIT_POINT( "qmgGrouping::nonGroupOptTip::alloc::NewOrder" );
             IDE_TEST(
                 QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmgPreservedOrder ),
@@ -2846,7 +2898,7 @@ qmgGrouping::nonGroupOptTip( qcStatement * aStatement,
                  == MTC_NODE_DISTINCT_TRUE )
             {
                 //------------------------------------------
-                //  indexable Distinct Aggregation ÏµúÏ†ÅÌôî
+                //  indexable Distinct Aggregation √÷¿˚»≠
                 //------------------------------------------
 
                 IDE_TEST( qmg::tryPreservedOrder( aStatement,
@@ -2872,21 +2924,21 @@ qmgGrouping::nonGroupOptTip( qcStatement * aStatement,
                      ( sAggNode->node.module == & mtfMax ) )
                 {
                     // To Fix PR-11562
-                    // Indexable MIN-MAX ÏµúÏ†ÅÌôîÏùò Í≤ΩÏö∞,
-                    // DirectionÏù¥ Ï†ïÏùòÎêòÏñ¥Ïïº Ìï®.
+                    // Indexable MIN-MAX √÷¿˚»≠¿« ∞ÊøÏ,
+                    // Direction¿Ã ¡§¿«µ«æÓæﬂ «‘.
                     if ( sAggNode->node.module == & mtfMin )
                     {
-                        // MIN() Ïù∏ Í≤ΩÏö∞ ASC OrderÍ∞Ä ÏÇ¨Ïö©Í∞ÄÎä•ÌïúÏßÄ Í≤ÄÏÇ¨
+                        // MIN() ¿Œ ∞ÊøÏ ASC Order∞° ªÁøÎ∞°¥…«—¡ˆ ∞ÀªÁ
                         sNewOrder->direction = QMG_DIRECTION_ASC;
                     }
                     else
                     {
-                        // MAX() Ïù∏ Í≤ΩÏö∞ DESC OrderÍ∞Ä ÏÇ¨Ïö©Í∞ÄÎä•ÌïúÏßÄ Í≤ÄÏÇ¨
+                        // MAX() ¿Œ ∞ÊøÏ DESC Order∞° ªÁøÎ∞°¥…«—¡ˆ ∞ÀªÁ
                         sNewOrder->direction = QMG_DIRECTION_DESC;
                     }
 
                     //------------------------------------------
-                    //  indexable Min Max ÏµúÏ†ÅÌôî
+                    //  indexable Min Max √÷¿˚»≠
                     //------------------------------------------
 
                     IDE_TEST( qmg::tryPreservedOrder( aStatement,
@@ -2930,13 +2982,13 @@ qmgGrouping::nonGroupOptTip( qcStatement * aStatement,
                     }
                     else
                     {
-                        // preserved order Ïã§Ìå®Ìïú Í≤ΩÏö∞
+                        // preserved order Ω«∆–«— ∞ÊøÏ
                         // nothing to
                     }
                 }
                 else
                 {
-                    // min ÎòêÎäî maxÍ∞Ä ÏïÑÎãå Í≤ΩÏö∞
+                    // min ∂«¥¬ max∞° æ∆¥— ∞ÊøÏ
                     // nothing to do
                 }
             }
@@ -2944,17 +2996,17 @@ qmgGrouping::nonGroupOptTip( qcStatement * aStatement,
     }
     else
     {
-        // aggregationÏù¥ ÎëêÍ∞ú Ïù¥ÏÉÅÏù∏ Í≤ΩÏö∞,
+        // aggregation¿Ã µŒ∞≥ ¿ÃªÛ¿Œ ∞ÊøÏ,
         // nothing to do
     }
 
     IDE_TEST( qmg::isDiskTempTable( sGraph, & sIsDisk ) != IDE_SUCCESS );
 
-    // TASK-6699 TPC-H ÏÑ±Îä• Í∞úÏÑ†
-    // group by Í∞Ä ÏóÜÏùÑÎïåÏóêÎèÑ cost Î•º Í≥ÑÏÇ∞Ìï®
+    // TASK-6699 TPC-H º∫¥… ∞≥º±
+    // group by ∞° æ¯¿ª∂ßø°µµ cost ∏¶ ∞ËªÍ«‘
     if ( aGroupGraph->distAggArg != NULL )
     {
-        // Distinct AggregationÏùò Í≤ΩÏö∞ sort-basedÎ°ú ÏàòÌñâÌï¥Ïïº Ìï®.
+        // Distinct Aggregation¿« ∞ÊøÏ sort-based∑Œ ºˆ«‡«ÿæﬂ «‘.
         sGraph->flag &= ~QMG_SORT_HASH_METHOD_MASK;
         sGraph->flag |= QMG_SORT_HASH_METHOD_SORT;
 
@@ -2989,7 +3041,7 @@ qmgGrouping::nonGroupOptTip( qcStatement * aStatement,
     }
     else
     {
-        // Grouping MethodÎ•º hash-basedÎ°ú ÏÑ†ÌÉù
+        // Grouping Method∏¶ hash-based∑Œ º±≈√
         sGraph->flag &= ~QMG_SORT_HASH_METHOD_MASK;
         sGraph->flag |= QMG_SORT_HASH_METHOD_HASH;
 
@@ -3058,14 +3110,14 @@ qmgGrouping::getBucketCnt4Group( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : hash bucket countÏùò ÏÑ§Ï†ï
+ * Description : hash bucket count¿« º≥¡§
  *
  * Implementation :
- *    - hash bucket count hintÍ∞Ä Ï°¥Ïû¨ÌïòÏßÄ ÏïäÏùÑ Í≤ΩÏö∞
- *      hash bucket count = MIN( ÌïòÏúÑ graphÏùò outputRecordCnt / 2,
- *                               Group ColumnÎì§Ïùò cardinality Í≥± )
- *    - hash bucket count hintÍ∞Ä Ï°¥Ïû¨Ìï† Í≤ΩÏö∞
- *      hash bucket count = hash bucket count hint Í∞í
+ *    - hash bucket count hint∞° ¡∏¿Á«œ¡ˆ æ ¿ª ∞ÊøÏ
+ *      hash bucket count = MIN( «œ¿ß graph¿« outputRecordCnt / 2,
+ *                               Group ColumnµÈ¿« cardinality ∞ˆ )
+ *    - hash bucket count hint∞° ¡∏¿Á«“ ∞ÊøÏ
+ *      hash bucket count = hash bucket count hint ∞™
  *
  ***********************************************************************/
 
@@ -3083,14 +3135,14 @@ qmgGrouping::getBucketCnt4Group( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgGrouping::getBucketCnt4Group::__FT__" );
 
     //------------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGroupGraph != NULL );
 
     //------------------------------------------
-    // Í∏∞Î≥∏ Ï¥àÍ∏∞Ìôî
+    // ±‚∫ª √ ±‚»≠
     //------------------------------------------
 
     sAllColumn = ID_TRUE;
@@ -3101,14 +3153,14 @@ qmgGrouping::getBucketCnt4Group( qcStatement  * aStatement,
     {
 
         //------------------------------------------
-        // hash bucket count hintÍ∞Ä Ï°¥Ïû¨ÌïòÏßÄ ÏïäÎäî Í≤ΩÏö∞
+        // hash bucket count hint∞° ¡∏¿Á«œ¡ˆ æ ¥¬ ∞ÊøÏ
         //------------------------------------------
 
         sBucketCnt = aGroupGraph->graph.left->costInfo.outputRecordCnt / 2.0;
         sBucketCnt = ( sBucketCnt < 1 ) ? 1 : sBucketCnt;
 
         //------------------------------------------
-        // group columnÎì§Ïùò cardinality Í∞íÏùÑ Íµ¨ÌïúÎã§.
+        // group columnµÈ¿« cardinality ∞™¿ª ±∏«—¥Ÿ.
         //------------------------------------------
 
         for ( sGroup = aGroupGraph->groupBy;
@@ -3119,7 +3171,7 @@ qmgGrouping::getBucketCnt4Group( qcStatement  * aStatement,
 
             if ( QTC_IS_COLUMN( aStatement, sNode ) == ID_TRUE )
             {
-                // group ÎåÄÏÉÅÏù¥ ÏàúÏàòÌïú ÏπºÎüºÏù∏ Í≤ΩÏö∞
+                // group ¥ÎªÛ¿Ã º¯ºˆ«— ƒÆ∑≥¿Œ ∞ÊøÏ
                 sColCardInfo = QC_SHARED_TMPLATE(aStatement)->
                     tableMap[sNode->node.table].
                     from->tableRef->statInfo->colCardInfo;
@@ -3129,7 +3181,7 @@ qmgGrouping::getBucketCnt4Group( qcStatement  * aStatement,
             else
             {
                 // BUG-37778 disk hash temp table size estimate
-                // tpc-H Q9 ÏóêÏÑú group by ÏòàÏ∏°ÏùÑ Ï†úÎåÄÎ°ú ÌïòÏßÄ Î™ªÌï®
+                // tpc-H Q9 ø°º≠ group by øπ√¯¿ª ¡¶¥Î∑Œ «œ¡ˆ ∏¯«‘
                 // EXTRACT(O_ORDERDATE,'year') AS O_YEAR
                 // group by O_YEAR
                 if( (sNode->node.arguments != NULL) &&
@@ -3152,8 +3204,8 @@ qmgGrouping::getBucketCnt4Group( qcStatement  * aStatement,
         if ( sAllColumn == ID_TRUE )
         {
             //------------------------------------------
-            // MIN( ÌïòÏúÑ graphÏùò outputRecordCnt / 2,
-            //      Group ColumnÎì§Ïùò cardinality Í≥± )
+            // MIN( «œ¿ß graph¿« outputRecordCnt / 2,
+            //      Group ColumnµÈ¿« cardinality ∞ˆ )
             //------------------------------------------
 
             if ( sBucketCnt > sCardinality )
@@ -3170,19 +3222,20 @@ qmgGrouping::getBucketCnt4Group( qcStatement  * aStatement,
             // nothing to do
         }
 
-        //  hash bucket countÏùò Î≥¥Ï†ï
+        //  hash bucket count¿« ∫∏¡§
         if ( sBucketCnt < QCU_OPTIMIZER_BUCKET_COUNT_MIN )
         {
             sBucketCnt = QCU_OPTIMIZER_BUCKET_COUNT_MIN;
         }
         else
         {
-            if( (aGroupGraph->graph.flag & QMG_GRAPH_TYPE_MASK) == QMG_GRAPH_TYPE_MEMORY )
+            if ( (aGroupGraph->graph.flag & QMG_GRAPH_TYPE_MASK) == QMG_GRAPH_TYPE_MEMORY )
             {
-                // QMC_MEM_HASH_MAX_BUCKET_CNT Í∞íÏúºÎ°ú Î≥¥Ï†ïÌï¥Ï§ÄÎã§.
-                if( sBucketCnt > QMC_MEM_HASH_MAX_BUCKET_CNT )
+                // QMC_MEM_HASH_MAX_BUCKET_CNT ∞™¿∏∑Œ ∫∏¡§«ÿ¡ÿ¥Ÿ.
+                /* BUG-48161 */
+                if ( sBucketCnt > QCG_GET_BUCKET_COUNT_MAX( aStatement )  )
                 {
-                    sBucketCnt = QMC_MEM_HASH_MAX_BUCKET_CNT;
+                    sBucketCnt = QCG_GET_BUCKET_COUNT_MAX( aStatement );
                 }
                 else
                 {
@@ -3197,11 +3250,11 @@ qmgGrouping::getBucketCnt4Group( qcStatement  * aStatement,
     }
     else
     {
-        // bucket count hintÍ∞Ä Ï°¥Ïû¨ÌïòÎäî Í≤ΩÏö∞
+        // bucket count hint∞° ¡∏¿Á«œ¥¬ ∞ÊøÏ
         sBucketCnt = aHintBucketCnt;
     }
 
-    // BUG-36403 ÌîåÎû´ÌèºÎßàÎã§ BucketCnt Í∞Ä Îã¨ÎùºÏßÄÎäî Í≤ΩÏö∞Í∞Ä ÏûàÏäµÎãàÎã§.
+    // BUG-36403 «√∑ß∆˚∏∂¥Ÿ BucketCnt ∞° ¥ﬁ∂Û¡ˆ¥¬ ∞ÊøÏ∞° ¿÷Ω¿¥œ¥Ÿ.
     sBucketCntOutput = DOUBLE_TO_UINT64( sBucketCnt );
     *aBucketCnt      = (UInt)sBucketCntOutput;
 
@@ -3220,15 +3273,15 @@ qmgGrouping::getCostByPrevOrder( qcStatement      * aStatement,
  *
  * Description :
  *
- *    Preserved Order Î∞©ÏãùÏùÑ ÏÇ¨Ïö©Ìïú Grouping ÎπÑÏö©ÏùÑ Í≥ÑÏÇ∞ÌïúÎã§.
+ *    Preserved Order πÊΩƒ¿ª ªÁøÎ«— Grouping ∫ÒøÎ¿ª ∞ËªÍ«—¥Ÿ.
  *
  * Implementation :
  *
- *    Ïù¥ÎØ∏ ChildÍ∞Ä ÏõêÌïòÎäî Preserved OrderÎ•º Í∞ÄÏßÄÍ≥† ÏûàÎã§Î©¥
- *    Î≥ÑÎèÑÏùò ÎπÑÏö© ÏóÜÏù¥ GroupingÏù¥ Í∞ÄÎä•ÌïòÎã§.
+ *    ¿ÃπÃ Child∞° ø¯«œ¥¬ Preserved Order∏¶ ∞°¡ˆ∞Ì ¿÷¥Ÿ∏È
+ *    ∫∞µµ¿« ∫ÒøÎ æ¯¿Ã Grouping¿Ã ∞°¥…«œ¥Ÿ.
  *
- *    Î∞òÎ©¥ ChildÏóê ÌäπÏ†ï Ïù∏Îç±Ïä§Î•º Ï†ÅÏö©ÌïòÎäî Í≤ΩÏö∞ÎùºÎ©¥,
- *    ChildÏùò Ïù∏Îç±Ïä§Î•º Ïù¥Ïö©Ìïú ÎπÑÏö©Ïù¥ Ìè¨Ìï®ÎêòÍ≤å ÎêúÎã§.
+ *    π›∏È Childø° ∆Ø¡§ ¿Œµ¶Ω∫∏¶ ¿˚øÎ«œ¥¬ ∞ÊøÏ∂Û∏È,
+ *    Child¿« ¿Œµ¶Ω∫∏¶ ¿ÃøÎ«— ∫ÒøÎ¿Ã ∆˜«‘µ«∞‘ µ»¥Ÿ.
  *
  ***********************************************************************/
 
@@ -3247,24 +3300,24 @@ qmgGrouping::getCostByPrevOrder( qcStatement      * aStatement,
     IDU_FIT_POINT_FATAL( "qmgGrouping::getCostByPrevOrder::__FT__" );
 
     //------------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGroupGraph != NULL );
 
     //------------------------------------------
-    // Preserved OrderÎ•º ÏÇ¨Ïö©Ìï† Ïàò ÏûàÎäî ÏßÄÎ•º Í≤ÄÏÇ¨
+    // Preserved Order∏¶ ªÁøÎ«“ ºˆ ¿÷¥¬ ¡ˆ∏¶ ∞ÀªÁ
     //------------------------------------------
 
-    // Group by ÏπºÎüºÏóê ÎåÄÌïú want orderÎ•º ÏÉùÏÑ±
+    // Group by ƒÆ∑≥ø° ¥Î«— want order∏¶ ª˝º∫
     sWantOrder = NULL;
     IDE_TEST( makeGroupByOrder( aStatement,
                                 aGroupGraph->groupBy,
                                 & sWantOrder )
               != IDE_SUCCESS );
 
-    // preserved order Ï†ÅÏö© Í∞ÄÎä• Í≤ÄÏÇ¨
+    // preserved order ¿˚øÎ ∞°¥… ∞ÀªÁ
     IDE_TEST( qmg::checkUsableOrder( aStatement,
                                      sWantOrder,
                                      aGroupGraph->graph.left,
@@ -3274,7 +3327,7 @@ qmgGrouping::getCostByPrevOrder( qcStatement      * aStatement,
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // ÎπÑÏö© Í≥ÑÏÇ∞
+    // ∫ÒøÎ ∞ËªÍ
     //------------------------------------------
 
     if ( sUsable == ID_TRUE )
@@ -3283,24 +3336,24 @@ qmgGrouping::getCostByPrevOrder( qcStatement      * aStatement,
         {
             if ( (sOrgMethod == NULL) || (sSelMethod == NULL) )
             {
-                // BUG-43824 sorting ÎπÑÏö©ÏùÑ Í≥ÑÏÇ∞Ìï† Îïå access methodÍ∞Ä NULLÏùº Ïàò ÏûàÏäµÎãàÎã§
-                // Í∏∞Ï°¥Ïùò Í≤ÉÏùÑ Ïù¥Ïö©ÌïòÎäî Í≤ΩÏö∞Ïù¥ÎØÄÎ°ú 0ÏùÑ ÏÑ§Ï†ïÌïúÎã§.
+                // BUG-43824 sorting ∫ÒøÎ¿ª ∞ËªÍ«“ ∂ß access method∞° NULL¿œ ºˆ ¿÷Ω¿¥œ¥Ÿ
+                // ±‚¡∏¿« ∞Õ¿ª ¿ÃøÎ«œ¥¬ ∞ÊøÏ¿Ãπ«∑Œ 0¿ª º≥¡§«—¥Ÿ.
                 sAccessCost = 0;
                 sDiskCost   = 0;
             }
             else
             {
-                // ÏÑ†ÌÉùÎêú Access MethodÏôÄ Í∏∞Ï°¥Ïùò AccessMethod Ï∞®Ïù¥ÎßåÌÅº
-                // Ï∂îÍ∞Ä ÎπÑÏö©Ïù¥ Î∞úÏÉùÌïúÎã§.
+                // º±≈√µ» Access MethodøÕ ±‚¡∏¿« AccessMethod ¬˜¿Ã∏∏≈≠
+                // √ﬂ∞° ∫ÒøÎ¿Ã πﬂª˝«—¥Ÿ.
                 sAccessCost = IDL_MAX( ( sSelMethod->accessCost - sOrgMethod->accessCost ), 0 );
                 sDiskCost   = IDL_MAX( ( sSelMethod->diskCost   - sOrgMethod->diskCost   ), 0 );
             }
         }
         else
         {
-            // Ïù¥ÎØ∏ ChildÍ∞Ä OrderingÏùÑ ÌïòÍ≥† ÏûàÏùå.
-            // Î†àÏΩîÎìú Í±¥ÏàòÎßåÌÅºÏùò ÎπÑÍµê ÎπÑÏö©ÎßåÏù¥ ÏÜåÏöîÎê®.
-            // BUG-41237 compare ÎπÑÏö©Îßå Ï∂îÍ∞ÄÌïúÎã§.
+            // ¿ÃπÃ Child∞° Ordering¿ª «œ∞Ì ¿÷¿Ω.
+            // ∑πƒ⁄µÂ ∞«ºˆ∏∏≈≠¿« ∫Ò±≥ ∫ÒøÎ∏∏¿Ã º“ø‰µ .
+            // BUG-41237 compare ∫ÒøÎ∏∏ √ﬂ∞°«—¥Ÿ.
             sAccessCost = aGroupGraph->graph.left->costInfo.outputRecordCnt *
                 aStatement->mSysStat->mCompareTime;
             sDiskCost   = 0;
@@ -3309,7 +3362,7 @@ qmgGrouping::getCostByPrevOrder( qcStatement      * aStatement,
     }
     else
     {
-        // Preserved OrderÎ•º ÏÇ¨Ïö©Ìï† Ïàò ÏóÜÎäî Í≤ΩÏö∞ÏûÑ.
+        // Preserved Order∏¶ ªÁøÎ«“ ºˆ æ¯¥¬ ∞ÊøÏ¿”.
         sAccessCost = QMO_COST_INVALID_COST;
         sDiskCost   = QMO_COST_INVALID_COST;
         sTotalCost  = QMO_COST_INVALID_COST;
@@ -3332,14 +3385,14 @@ qmgGrouping::finalizePreservedOrder( qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- *  Description : Preserved OrderÏùò directionÏùÑ Í≤∞Ï†ïÌïúÎã§.
- *                directionÏù¥ NOT_DEFINED Ïùº Í≤ΩÏö∞ÏóêÎßå Ìò∏Ï∂úÌïòÏó¨Ïïº ÌïúÎã§.
+ *  Description : Preserved Order¿« direction¿ª ∞·¡§«—¥Ÿ.
+ *                direction¿Ã NOT_DEFINED ¿œ ∞ÊøÏø°∏∏ »£√‚«œø©æﬂ «—¥Ÿ.
  *
  *  Implementation :
- *    - ÌïòÏúÑÏùò preserved orderÏôÄ Í∞ôÏùÄ Í≤ΩÏö∞,
- *      Child graphÏùò Preserved order directionÏùÑ Î≥µÏÇ¨ÌïúÎã§.
- *    - ÌïòÏúÑÏùò preserved orderÏôÄ Îã§Î•∏ Í≤ΩÏö∞,
- *      AscendingÏúºÎ°ú directionÏùÑ ÏÑ§Ï†ïÌïúÎã§.
+ *    - «œ¿ß¿« preserved orderøÕ ∞∞¿∫ ∞ÊøÏ,
+ *      Child graph¿« Preserved order direction¿ª ∫πªÁ«—¥Ÿ.
+ *    - «œ¿ß¿« preserved orderøÕ ¥Ÿ∏• ∞ÊøÏ,
+ *      Ascending¿∏∑Œ direction¿ª º≥¡§«—¥Ÿ.
  *
  ***********************************************************************/
 
@@ -3359,7 +3412,7 @@ qmgGrouping::finalizePreservedOrder( qmgGraph * aGraph )
 
     if ( sIsSamePrevOrderWithChild == ID_TRUE )
     {
-        // Child graphÏùò Preserved order directionÏùÑ Î≥µÏÇ¨ÌïúÎã§.
+        // Child graph¿« Preserved order direction¿ª ∫πªÁ«—¥Ÿ.
         IDE_TEST( qmg::copyPreservedOrderDirection(
                       aGraph->preservedOrder,
                       aGraph->left->preservedOrder )
@@ -3367,16 +3420,16 @@ qmgGrouping::finalizePreservedOrder( qmgGraph * aGraph )
     }
     else
     {
-        // ÌïòÏúÑ preserved orderÎ•º Îî∞Î•¥ÏßÄ ÏïäÍ≥†
-        // ÏÉàÎ°ú preserved orderÎ•º ÏÉùÏÑ±Ìïú Í≤ΩÏö∞,
-        // Preserved OrderÏùò directionÏùÑ acsendingÏúºÎ°ú ÏÑ§Ï†ï
+        // «œ¿ß preserved order∏¶ µ˚∏£¡ˆ æ ∞Ì
+        // ªı∑Œ preserved order∏¶ ª˝º∫«— ∞ÊøÏ,
+        // Preserved Order¿« direction¿ª acsending¿∏∑Œ º≥¡§
         sPreservedOrder = aGraph->preservedOrder;
 
-        // Ï≤´Î≤àÏß∏ ÏπºÎüºÏùÄ ascendingÏúºÎ°ú ÏÑ§Ï†ï
+        // √ππ¯¬∞ ƒÆ∑≥¿∫ ascending¿∏∑Œ º≥¡§
         sPreservedOrder->direction = QMG_DIRECTION_ASC;
         sPrevDirection = QMG_DIRECTION_ASC;
 
-        // ÎëêÎ≤àÏß∏ ÏπºÎüºÏùÄ Ïù¥Ï†Ñ ÏπºÎüºÏùò direction Ï†ïÎ≥¥Ïóê Îî∞Îùº ÏàòÌñâÌï®
+        // µŒπ¯¬∞ ƒÆ∑≥¿∫ ¿Ã¿¸ ƒÆ∑≥¿« direction ¡§∫∏ø° µ˚∂Û ºˆ«‡«‘
         for ( sPreservedOrder = sPreservedOrder->next;
               sPreservedOrder != NULL;
               sPreservedOrder = sPreservedOrder->next )
@@ -3390,7 +3443,7 @@ qmgGrouping::finalizePreservedOrder( qmgGraph * aGraph )
                     sPreservedOrder->direction = sPrevDirection;
                     break;
                 case QMG_DIRECTION_DIFF_WITH_PREV :
-                    // directionÏù¥ Ïù¥Ï†Ñ ÏπºÎüºÏùò directionÍ≥º Îã§Î•º Í≤ΩÏö∞
+                    // direction¿Ã ¿Ã¿¸ ƒÆ∑≥¿« direction∞˙ ¥Ÿ∏¶ ∞ÊøÏ
                     if ( sPrevDirection == QMG_DIRECTION_ASC )
                     {
                         sPreservedOrder->direction = QMG_DIRECTION_DESC;
@@ -3438,9 +3491,9 @@ qmgGrouping::finalizePreservedOrder( qmgGraph * aGraph )
 /**
  * setGroupExtensionMethod
  *
- *   RollupÏùº Í≤ΩÏö∞ Preserved OrderÎ•º ÏàòÌñâÌï¥ÏÑú Sort PlanÏùò ÏÉùÏÑ± Ïó¨Î∂ÄÎ•º Í≤∞Ï†ïÌïòÍ≥†
- *   Output order Î•º ÏÑ§Ï†ïÍ≥º Cost Í≥ÑÏÇ∞ÏùÑ ÏàòÌñâÌïúÎã§.
- *   CubeÏùº Í≤ΩÏö∞Îäî Cust Í≥ÑÏÇ∞Îßå ÏàòÌñâÌïúÎã§.
+ *   Rollup¿œ ∞ÊøÏ Preserved Order∏¶ ºˆ«‡«ÿº≠ Sort Plan¿« ª˝º∫ ø©∫Œ∏¶ ∞·¡§«œ∞Ì
+ *   Output order ∏¶ º≥¡§∞˙ Cost ∞ËªÍ¿ª ºˆ«‡«—¥Ÿ.
+ *   Cube¿œ ∞ÊøÏ¥¬ Cust ∞ËªÍ∏∏ ºˆ«‡«—¥Ÿ.
  */
 IDE_RC qmgGrouping::setPreOrderGroupExtension( qcStatement * aStatement,
                                                qmgGROP     * aGroupGraph,
@@ -3578,7 +3631,7 @@ IDE_RC qmgGrouping::setPreOrderGroupExtension( qcStatement * aStatement,
                                           & sSuccess )
                   != IDE_SUCCESS );
 
-        /* Child PlanÏóê Preserved OrderÍ∞Ä ÏÇ¨Ïö©Îê† Ïàò ÏûàÎäîÏßÄ ÏÑ§Ï†ïÌïúÎã§. */
+        /* Child Planø° Preserved Order∞° ªÁøÎµ… ºˆ ¿÷¥¬¡ˆ º≥¡§«—¥Ÿ. */
         if ( sSuccess == ID_TRUE )
         {
             sGraph->flag &= ~QMG_CHILD_PRESERVED_ORDER_USE_MASK;
@@ -3611,7 +3664,7 @@ IDE_RC qmgGrouping::setPreOrderGroupExtension( qcStatement * aStatement,
                 sSelDiskCost   = sSelTotalCost;
             }
         }
-        /* RollupÏùÄ Ìï≠ÏÉÅ preservedOrderÍ∞Ä ÏÉùÏÑ±ÎêúÎã§ */
+        /* Rollup¿∫ «◊ªÛ preservedOrder∞° ª˝º∫µ»¥Ÿ */
         sGraph->preservedOrder = sWantOrder;
         sGraph->flag &= ~QMG_PRESERVED_ORDER_MASK;
         sGraph->flag |= QMG_PRESERVED_ORDER_DEFINED_FIXED;
@@ -3664,7 +3717,7 @@ IDE_RC qmgGrouping::setPreOrderGroupExtension( qcStatement * aStatement,
 
         if (sCount > 0)
         {
-            /* CubeÎäî 2^(n-1) ÎßåÌÅº Sorting ÏùÑ ÏàòÌñâÌïúÎã§. */
+            /* Cube¥¬ 2^(n-1) ∏∏≈≠ Sorting ¿ª ºˆ«‡«—¥Ÿ. */
             sCount = 0x1 << ( sCount - 1 );
             sSelAccessCost = sSelAccessCost * sCount;
             sSelDiskCost   = sSelDiskCost   * sCount;
@@ -3692,7 +3745,7 @@ idBool qmgGrouping::checkParallelEnable( qmgGROP * aMyGraph )
 /***********************************************************************
  *
  * Description : PROJ-2444 Parallel Aggreagtion
- *    Group ÎÖ∏ÎìúÍ∞Ä parallel Ïù¥ Í∞ÄÎä•ÌïúÏßÄ Ïó¨Î∂ÄÎ•º ÌåêÎã®ÌïúÎã§.
+ *    Group ≥ÎµÂ∞° parallel ¿Ã ∞°¥…«—¡ˆ ø©∫Œ∏¶ ∆«¥‹«—¥Ÿ.
  *
  * Implementation :
  *
@@ -3702,8 +3755,8 @@ idBool qmgGrouping::checkParallelEnable( qmgGROP * aMyGraph )
     SDouble sCost;
     SDouble sGroupCount;
 
-    // Group Í∞ØÏàòÎ•º Íµ¨ÌïúÎã§.
-    // output Í∞íÏùÄ Group Í∞ØÏàò * selectivity Î°ú Í≥ÑÏÇ∞ÎêúÎØÄÎ°ú Ïù¥Î•º Ïó≠ÏÇ∞ÌïúÎã§.
+    // Group ∞πºˆ∏¶ ±∏«—¥Ÿ.
+    // output ∞™¿∫ Group ∞πºˆ * selectivity ∑Œ ∞ËªÍµ»π«∑Œ ¿Ã∏¶ ø™ªÍ«—¥Ÿ.
     sGroupCount = aMyGraph->graph.costInfo.outputRecordCnt /
         aMyGraph->graph.costInfo.selectivity;
 
@@ -3715,7 +3768,7 @@ idBool qmgGrouping::checkParallelEnable( qmgGROP * aMyGraph )
         if ( (aMyGraph->graph.left->myPlan->type == QMN_PSCRD) ||
              (aMyGraph->graph.left->myPlan->type == QMN_PPCRD) )
         {
-            // MERGE Îã®Í≥ÑÏùò ÏûëÏóÖÎüâÏù¥ ÎßéÏúºÎ©¥ parallel Ìï¥ÏÑúÎäî ÏïàÎêúÎã§.
+            // MERGE ¥‹∞Ë¿« ¿€æ˜∑Æ¿Ã ∏π¿∏∏È parallel «ÿº≠¥¬ æ»µ»¥Ÿ.
             sCost = ( aMyGraph->graph.costInfo.inputRecordCnt /
                       aMyGraph->graph.myPlan->mParallelDegree ) +
                 ( aMyGraph->graph.myPlan->mParallelDegree *
@@ -3730,7 +3783,7 @@ idBool qmgGrouping::checkParallelEnable( qmgGROP * aMyGraph )
                 //nothing to do
             }
 
-            // PPCRD Ïóê ÌïÑÌÑ∞Í∞Ä ÏûàÏúºÎ©¥ parallel Ìï¥ÏÑúÎäî ÏïàÎêúÎã§.
+            // PPCRD ø° « ≈Õ∞° ¿÷¿∏∏È parallel «ÿº≠¥¬ æ»µ»¥Ÿ.
             if (aMyGraph->graph.left->myPlan->type == QMN_PPCRD)
             {
                 if ( (((qmncPPCRD*)aMyGraph->graph.left->myPlan)->subqueryFilter != NULL) ||
@@ -3759,4 +3812,29 @@ idBool qmgGrouping::checkParallelEnable( qmgGROP * aMyGraph )
     }
 
     return sMakeParallel;
+}
+
+// BUG-48132 grouping method property
+void qmgGrouping::getPropertyGroupingMethod( qcStatement        * aStatement,
+                                             qmoGroupMethodType * aGroupingMethod )
+{
+    qmoGroupMethodType sGroupingMethod = QMO_GROUP_METHOD_TYPE_NOT_DEFINED;
+
+    switch ( QCG_GET_PLAN_HASH_OR_SORT_METHOD( aStatement ) & QMG_HASH_OR_SORT_METHOD_GROUPING_MASK )
+    {
+        case QMG_HASH_OR_SORT_METHOD_GROUPING_HASH:
+            sGroupingMethod = QMO_GROUP_METHOD_TYPE_HASH;
+            break;
+        case QMG_HASH_OR_SORT_METHOD_GROUPING_SORT:
+            sGroupingMethod =QMO_GROUP_METHOD_TYPE_SORT;
+            break;
+        default:
+            sGroupingMethod = QMO_GROUP_METHOD_TYPE_NOT_DEFINED;
+            break;
+    }
+
+    qcgPlan::registerPlanProperty( aStatement,
+                                   PLAN_PROPERTY_OPTIMIZER_PLAN_HASH_OR_SORT_METHOD );
+
+    *aGroupingMethod = sGroupingMethod;
 }

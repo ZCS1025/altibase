@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduMemList.cpp 84587 2018-12-12 03:47:17Z kclee $
+ * $Id: iduMemList.cpp 84564 2018-12-10 05:40:03Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -78,8 +78,8 @@ void iduCheckMemConsistency(iduMemList * aMemList)
     while(sCur != NULL)
     {
         /*
-         *ÌòÑÏû¨ ÏïåÍ≥†Î¶¨Ï¶òÏóêÏÑú slotÏù¥ ÌïúÍ∞úÏù∏ chunkÎäî partial chunk list
-         *Ïóê Ï°¥Ïû¨Ìï†ÏàòÍ∞Ä ÏóÜÏùå. freeÏôÄ full chunk listÏóêÎßå Ï°¥Ïû¨Ìï¥ÏïºÌï®.
+         *«ˆ¿Á æÀ∞Ì∏Æ¡Úø°º≠ slot¿Ã «—∞≥¿Œ chunk¥¬ partial chunk list
+         *ø° ¡∏¿Á«“ºˆ∞° æ¯¿Ω. freeøÕ full chunk listø°∏∏ ¡∏¿Á«ÿæﬂ«‘.
          */
         IDE_ASSERT( sCur->mMaxSlotCnt > 1 );
 
@@ -128,21 +128,21 @@ iduMemList::~iduMemList(void)
            NULL<- |_____| <- |_____|
 
 
-  mFreeChunk    : Î™®Îì† slotÏù¥ freeÏù∏ chunk
-  mPartialChunk : ÏùºÎ∂ÄÏùò slotÎßå ÏÇ¨Ïö©Ï§ëÏù∏ chunk
-  mFullChunk    : Î™®Îì† slotÏù¥ ÏÇ¨Ïö©Ï§ëÏù∏ chunk
+  mFreeChunk    : ∏µÁ slot¿Ã free¿Œ chunk
+  mPartialChunk : ¿œ∫Œ¿« slot∏∏ ªÁøÎ¡ﬂ¿Œ chunk
+  mFullChunk    : ∏µÁ slot¿Ã ªÁøÎ¡ﬂ¿Œ chunk
 
-  *Ï≤òÏùå chunkÎ•º Ìï†ÎãπÎ∞õÏúºÎ©¥ mFreeChunkÏóê Îß§Îã¨Î¶¨Í≤åÎêòÍ≥†
-   slotÌï†ÎãπÏù¥ Ïù¥Î§ÑÏßÄÎ©¥ mPartialChunkÎ•º Í±∞Ï≥êÏÑú mFullchunkÎ°ú Ïù¥ÎèôÌï®.
-  *mFullChunkÏóê ÏûàÎäî chunkÎäî slotÎ∞òÎÇ©Ïãú mPartialchunkÎ•º Í±∞Ï≥êÏÑú mFreeChunkÎ°ú Ïù¥Îèô.
-  *mFreeChunkÏóê ÏûàÎäî chunkÎì§ÏùÄ Î©îÎ™®Î¶¨Í∞Ä Î∂ÄÏ°±Ìïú ÌïúÍ≥ÑÏÉÅÌô©ÏóêÏÑúÎäî OSÏóê Î∞òÎÇ©ÎêòÏñ¥ÏßàÏàò ÏûàÏùå.
+  *√≥¿Ω chunk∏¶ «“¥Áπﬁ¿∏∏È mFreeChunkø° ∏≈¥ﬁ∏Æ∞‘µ«∞Ì
+   slot«“¥Á¿Ã ¿Ã∑Ô¡ˆ∏È mPartialChunk∏¶ ∞≈√ƒº≠ mFullchunk∑Œ ¿Ãµø«‘.
+  *mFullChunkø° ¿÷¥¬ chunk¥¬ slotπ›≥≥Ω√ mPartialchunk∏¶ ∞≈√ƒº≠ mFreeChunk∑Œ ¿Ãµø.
+  *mFreeChunkø° ¿÷¥¬ chunkµÈ¿∫ ∏ﬁ∏∏Æ∞° ∫Œ¡∑«— «—∞ËªÛ»≤ø°º≠¥¬ OSø° π›≥≥µ«æÓ¡˙ºˆ ¿÷¿Ω.
   
   chunk:
    _________________________________
   |iduMemChunk |Slot|Slot|... | Slot|
   |____________|____|____|____|_____|
 
-  iduMemChunk        : chunk Ìó§Îçî(ÌòÑÏû¨ chunkÏóê ÎåÄÌïú ÎÇ¥Ïö©ÏùÑ Îã¥Í≥† ÏûàÎã§.)
+  iduMemChunk        : chunk «Ï¥ı(«ˆ¿Á chunkø° ¥Î«— ≥ªøÎ¿ª ¥„∞Ì ¿÷¥Ÿ.)
   
   
   
@@ -151,38 +151,38 @@ iduMemList::~iduMemList(void)
   |momory element |iduMemChunk pointer|
   |_______________|___________________|
 
-  memory element      : ÏÇ¨Ïö©ÏûêÍ∞Ä Ïã§Ï†ú Î©îÎ™®Î¶¨Î•º ÏÇ¨Ïö©ÌïòÎäî ÏòÅÏó≠
-             Ïù¥ ÏòÅÏó≠ÏùÄ ÏÇ¨Ïö©ÏûêÏóêÍ≤å Ìï†ÎãπÎêòÏñ¥ ÏûàÏßÄ ÏïäÏùÑÎïåÎäî, Îã§Ïùå
-             (free)slotÏòÅÏó≠ÏùÑ Í∞ÄÎ¶¨ÌÇ§Îäî Ìè¨Ïù∏ÌÑ∞ Ïó≠ÌôúÏùÑ ÌïúÎã§.
-  iduMemChunk pointer : slotÏù¥ ÏÜçÌïú chunkÏùò Ìó§Îçî(chunkÏùò iduMemChunkÏòÅÏó≠)ÏùÑ
-                        Ìè¨Ïù∏ÌåÖ ÌïòÍ≥† ÏûàÎã§.
+  memory element      : ªÁøÎ¿⁄∞° Ω«¡¶ ∏ﬁ∏∏Æ∏¶ ªÁøÎ«œ¥¬ øµø™
+             ¿Ã øµø™¿∫ ªÁøÎ¿⁄ø°∞‘ «“¥Áµ«æÓ ¿÷¡ˆ æ ¿ª∂ß¥¬, ¥Ÿ¿Ω
+             (free)slotøµø™¿ª ∞°∏Æ≈∞¥¬ ∆˜¿Œ≈Õ ø™»∞¿ª «—¥Ÿ.
+  iduMemChunk pointer : slot¿Ã º”«— chunk¿« «Ï¥ı(chunk¿« iduMemChunkøµø™)¿ª
+                        ∆˜¿Œ∆√ «œ∞Ì ¿÷¥Ÿ.
   -----------------------------------------------------------*/
 /*-----------------------------------------------------------
- * task-2440 iduMemPoolÏóêÏÑú Î©îÎ™®Î¶¨Î•º ÏñªÏñ¥Ïò¨Îïå alignÎêú Î©îÎ™®Î¶¨ Ï£ºÏÜåÎ•º ÏñªÏñ¥
- *          Ïò¨ Ïàò ÏûàÍ≤å ÌïòÏûê.
+ * task-2440 iduMemPoolø°º≠ ∏ﬁ∏∏Æ∏¶ æÚæÓø√∂ß alignµ» ∏ﬁ∏∏Æ ¡÷º“∏¶ æÚæÓ
+ *          ø√ ºˆ ¿÷∞‘ «œ¿⁄.
  *          
- * chunkÎÇ¥ÏóêÏÑú alignÏù¥ ÏùºÏñ¥ÎÇòÎäî Í≥≥ÏùÑ ÏÑ§Î™ÖÌïòÍ≤†Îã§.
+ * chunk≥ªø°º≠ align¿Ã ¿œæÓ≥™¥¬ ∞˜¿ª º≥∏Ì«œ∞⁄¥Ÿ.
  * ___________________________________________
   |iduMemChunk |   |  Slot|  Slot|... |   Slot|
   |____________|___|______|______|____|_______|
   ^            ^   ^      ^
   1            2   3      4
   
-  ÏùºÎã® chunkÎ•º Ìï†ÎãπÌïòÎ©¥ 1Î≤àÏùÄ ÏûÑÏùòÏùò Ï£ºÏÜåÍ∞íÏúºÎ°ú ÏÑ§Ï†ïÎêúÎã§.  Ïù¥ Ï£ºÏÜåÍ∞íÏùÄ
-  ÏÇ¨Ïö©ÏûêÍ∞Ä alignÎêòÍ∏∞Î•º ÏõêÌïòÎäî Ï£ºÏÜåÍ∞Ä ÏïÑÎãàÍ∏∞ ÎïåÎ¨∏Ïóê Í∑∏ÎÉ• ÎÜîÎëîÎã§.
-  2Î≤àÏ£ºÏÜå = 1Î≤à Ï£ºÏÜå + SIZEOF(iduMemChunk)
-  2Î≤à Ï£ºÏÜåÎäî ÏúÑÏôÄ Í∞ôÏù¥ Íµ¨Ìï¥ÏßÄÍ≥†, 2Î≤àÏ£ºÏÜåÎ•º align upÏãúÌÇ§Î©¥ 3Î≤àÏ≤òÎüº Îí∑ Í≥µÍ∞ÑÏùÑ
-  Í∞ÄÎ¶¨ÌÇ§Í≤å ÎêúÎã§. Í∑∏Îü¨Î©¥ 3Î≤àÏùÄ alignÏù¥ ÎêòÏñ¥ÏûàÍ≤å ÎêúÎã§.
-  Ïã§Ï†úÎ°ú ÏÇ¨Ïö©ÏûêÏóêÍ≤å Ìï†Îãπ ÎêòÎäî Í≥µÍ∞ÑÏùÄ 3Î≤à Í≥µÍ∞Ñ Î∂ÄÌÑ∞Ïù¥Îã§.
-  4Î≤àÏù¥ alignÎêòÏñ¥ ÏûàÍ∏∞ ÏúÑÌï¥ÏÑúÎäî slotSizeÍ∞Ä align ÎêòÏñ¥ ÏûàÏñ¥Ïïº ÌïúÎã§.
-  Í∑∏Î†áÍ∏∞ ÎïåÎ¨∏Ïóê SlotSizeÎèÑ Ïã§Ï†ú sizeÎ≥¥Îã§ align upÎêú Í∞íÏùÑ ÏÇ¨Ïö©ÌïúÎã§.
-  Í∑∏Îü¨Î©¥ Î™®Îì† slotÏùò Ï£ºÏÜåÎäî alignÎêòÏñ¥ÏûàÏùåÏùÑ Ïïå ÏàòÏûàÎã§.
+  ¿œ¥‹ chunk∏¶ «“¥Á«œ∏È 1π¯¿∫ ¿”¿«¿« ¡÷º“∞™¿∏∑Œ º≥¡§µ»¥Ÿ.  ¿Ã ¡÷º“∞™¿∫
+  ªÁøÎ¿⁄∞° alignµ«±‚∏¶ ø¯«œ¥¬ ¡÷º“∞° æ∆¥œ±‚ ∂ßπÆø° ±◊≥… ≥ˆµ–¥Ÿ.
+  2π¯¡÷º“ = 1π¯ ¡÷º“ + SIZEOF(iduMemChunk)
+  2π¯ ¡÷º“¥¬ ¿ßøÕ ∞∞¿Ã ±∏«ÿ¡ˆ∞Ì, 2π¯¡÷º“∏¶ align upΩ√≈∞∏È 3π¯√≥∑≥ µﬁ ∞¯∞£¿ª
+  ∞°∏Æ≈∞∞‘ µ»¥Ÿ. ±◊∑Ø∏È 3π¯¿∫ align¿Ã µ«æÓ¿÷∞‘ µ»¥Ÿ.
+  Ω«¡¶∑Œ ªÁøÎ¿⁄ø°∞‘ «“¥Á µ«¥¬ ∞¯∞£¿∫ 3π¯ ∞¯∞£ ∫Œ≈Õ¿Ã¥Ÿ.
+  4π¯¿Ã alignµ«æÓ ¿÷±‚ ¿ß«ÿº≠¥¬ slotSize∞° align µ«æÓ ¿÷æÓæﬂ «—¥Ÿ.
+  ±◊∑∏±‚ ∂ßπÆø° SlotSizeµµ Ω«¡¶ size∫∏¥Ÿ align upµ» ∞™¿ª ªÁøÎ«—¥Ÿ.
+  ±◊∑Ø∏È ∏µÁ slot¿« ¡÷º“¥¬ alignµ«æÓ¿÷¿Ω¿ª æÀ ºˆ¿÷¥Ÿ.
 
-  ÏúÑÏùò 2Î≤àÍ≥º 3Î≤àÏÇ¨Ïù¥ Í≥µÍ∞ÑÏùò ÏµúÎåÄ ÌÅ¨Í∏∞Îäî alignByteÏù¥Îã§.
-  Í∑∏Î†áÍ∏∞ ÎïåÎ¨∏Ïóê
+  ¿ß¿« 2π¯∞˙ 3π¯ªÁ¿Ã ∞¯∞£¿« √÷¥Î ≈©±‚¥¬ alignByte¿Ã¥Ÿ.
+  ±◊∑∏±‚ ∂ßπÆø°
   chunkSize = SIZEOF(iduMemChunk)+ alignByte +
-              ('alignByteÎ°ú align upÎêú SIZEOF(slot)' * 'slotÏùò Í∞úÏàò')
-  Ïù¥Îã§.
+              ('alignByte∑Œ align upµ» SIZEOF(slot)' * 'slot¿« ∞≥ºˆ')
+  ¿Ã¥Ÿ.
  * ---------------------------------------------------------*/
 
 /****************************************************** 
@@ -210,17 +210,17 @@ iduMemList::~iduMemList(void)
 
 ******************************************************/
 /*-----------------------------------------------------------
- * Description: iduMemListÎ•º Ï¥àÍ∏∞Ìôî ÌïúÎã§.
+ * Description: iduMemList∏¶ √ ±‚»≠ «—¥Ÿ.
  *
- * aSeqNumber        - [IN] iduMemList ÏãùÎ≥Ñ Î≤àÌò∏
- * aParent           - [IN] ÏûêÏã†Ïù¥ ÏÜçÌïú iduMemPool
+ * aSeqNumber        - [IN] iduMemList Ωƒ∫∞ π¯»£
+ * aParent           - [IN] ¿⁄Ω≈¿Ã º”«— iduMemPool
  * ---------------------------------------------------------*/
 /*-----------------------------------------------------------
- * task-2440 iduMemPoolÏóêÏÑú Î©îÎ™®Î¶¨Î•º ÏñªÏñ¥Ïò¨Îïå alignÎêú Î©îÎ™®Î¶¨ Ï£ºÏÜåÎ•º ÏñªÏñ¥
- *          Ïò¨ Ïàò ÏûàÍ≤å ÌïòÏûê.
+ * task-2440 iduMemPoolø°º≠ ∏ﬁ∏∏Æ∏¶ æÚæÓø√∂ß alignµ» ∏ﬁ∏∏Æ ¡÷º“∏¶ æÚæÓ
+ *          ø√ ºˆ ¿÷∞‘ «œ¿⁄.
  *          
  * chunkSize = SIZEOF(iduMemChunk)+ alignByte +
- *             ('alignByteÎ°ú align upÎêú SIZEOF(slot)' * 'slotÏùò Í∞úÏàò')
+ *             ('alignByte∑Œ align upµ» SIZEOF(slot)' * 'slot¿« ∞≥ºˆ')
  */
 
 IDE_RC iduMemList::initialize( UInt         aSeqNumber,
@@ -279,18 +279,18 @@ IDE_RC iduMemList::initialize( UInt         aSeqNumber,
 
 /* ---------------------------------------------------------------------------
  * BUG-19253
- * iduMemListÎäî mFreeChunkÏôÄ mFullChunkÏùò ÎëêÍ∞úÏùò chunk listÎ•º Ïú†ÏßÄÌïúÎã§.
- * iduMemPoolÏùÑ ÏÇ¨Ïö©ÌïòÎäî Î™®ÎìàÏóêÏÑú iduMemPoolÏùÑ destroyÌïòÍ∏∞ Ï†ÑÏóê
- * Î™®Îì† iduMemPoolÏùò slotÏùÑ memfreeÌñàÏùÑ ÎïåÎßå Ï†ïÏÉÅÏ†ÅÏù∏ destroyÍ∞Ä ÏàòÌñâÎêúÎã§.
- * ÎßåÏïΩ, ÌïòÎÇòÏùò slotÏù¥ÎùºÎèÑ freeÎêòÏßÄ ÏïäÏùÄ Ï±Ñ destroyÍ∞Ä ÏöîÏ≤≠ÎêòÎ©¥ debug modeÏóêÏÑúÎäî
- * DASSERT()Î°ú Ï£ΩÍ≥†, release modeÏóêÏÑúÎäî mFullChunkÏóê Ïó∞Í≤∞Îêú chunkÎßåÌÅºÏùò
- * memory leakÏù¥ Î∞úÏÉùÌïòÍ≤å ÎêúÎã§.
- * debug modeÏóêÏÑúÎäî memory leakÏùÑ Í∞êÏßÄÌïòÍ∏∞ ÏúÑÌï¥ DASSERTÎ¨∏ÏùÑ Ïú†ÏßÄÌïòÍ≥†,
- * release modeÏóêÏÑúÎäî mFullChunkÏóê Ïó∞Í≤∞Îêú chunkÎì§ÎèÑ free ÏãúÌÇ§ÎèÑÎ°ù ÌïúÎã§.
+ * iduMemList¥¬ mFreeChunkøÕ mFullChunk¿« µŒ∞≥¿« chunk list∏¶ ¿Ø¡ˆ«—¥Ÿ.
+ * iduMemPool¿ª ªÁøÎ«œ¥¬ ∏µ‚ø°º≠ iduMemPool¿ª destroy«œ±‚ ¿¸ø°
+ * ∏µÁ iduMemPool¿« slot¿ª memfree«ﬂ¿ª ∂ß∏∏ ¡§ªÛ¿˚¿Œ destroy∞° ºˆ«‡µ»¥Ÿ.
+ * ∏∏æ‡, «œ≥™¿« slot¿Ã∂Ûµµ freeµ«¡ˆ æ ¿∫ √§ destroy∞° ø‰√ªµ«∏È debug modeø°º≠¥¬
+ * DASSERT()∑Œ ¡◊∞Ì, release modeø°º≠¥¬ mFullChunkø° ø¨∞·µ» chunk∏∏≈≠¿«
+ * memory leak¿Ã πﬂª˝«œ∞‘ µ»¥Ÿ.
+ * debug modeø°º≠¥¬ memory leak¿ª ∞®¡ˆ«œ±‚ ¿ß«ÿ DASSERTπÆ¿ª ¿Ø¡ˆ«œ∞Ì,
+ * release modeø°º≠¥¬ mFullChunkø° ø¨∞·µ» chunkµÈµµ free Ω√≈∞µµ∑œ «—¥Ÿ.
  *
- * index buildÏôÄ Í∞ôÏù¥ ÏÇ¨Ïö©Ìïú iduMemPoolÏùÑ ÏôÑÎ£å ÌõÑ ÌïúÍ∫ºÎ≤àÏóê free ÏãúÌÇ§Îäî Í≤ΩÏö∞
- * mFullChunkÎ•º Ï∂îÍ∞ÄÏ†ÅÏúºÎ°ú free ÏãúÌÇ§ÎèÑÎ°ù ÌïúÎã§. ÌïúÍ∫ºÎ≤àÏóê free ÏãúÌÇ§Îäî Í≤ΩÏö∞Îäî
- * aBCheckÍ∞Ä ID_FALSEÎ°ú ÏÑ§Ï†ïÎêòÏñ¥Ïïº ÌïúÎã§.
+ * index buildøÕ ∞∞¿Ã ªÁøÎ«— iduMemPool¿ª øœ∑· »ƒ «—≤®π¯ø° free Ω√≈∞¥¬ ∞ÊøÏ
+ * mFullChunk∏¶ √ﬂ∞°¿˚¿∏∑Œ free Ω√≈∞µµ∑œ «—¥Ÿ. «—≤®π¯ø° free Ω√≈∞¥¬ ∞ÊøÏ¥¬
+ * aBCheck∞° ID_FALSE∑Œ º≥¡§µ«æÓæﬂ «—¥Ÿ.
  * ---------------------------------------------------------------------------*/
 IDE_RC iduMemList::destroy(idBool aBCheck)
 {
@@ -390,7 +390,7 @@ IDE_RC iduMemList::destroy(idBool aBCheck)
     }
 
     // BUG-19253
-    // mFullChunk listÏóê Ïó∞Í≤∞Îêú chunkÍ∞Ä ÏûàÏúºÎ©¥ freeÏãúÌÇ®Îã§.
+    // mFullChunk listø° ø¨∞·µ» chunk∞° ¿÷¿∏∏È freeΩ√≈≤¥Ÿ.
     for (i = 0; i < mFullChunkCnt; i++)
     {
         sCur = mFullChunk.mNext;
@@ -498,8 +498,8 @@ IDE_RC iduMemList::grow(void)
     sChunk->mFreeSlotCnt = mP->mElemCnt;
     sChunk->mTop       = NULL;
 
-    /*chunkÎÇ¥Ïùò Í∞Å slotÏùÑ mNextÎ°ú Ïó∞Í≤∞ÌïúÎã§. Í∞ÄÏû• ÎßàÏßÄÎßâÏóê ÏûàÎäî slotÏù¥ sChunk->mTopÏóê Ïó∞Í≤∞ÎêúÎã§.
-     * mNextÎäî ÏÇ¨Ïö©ÏûêÏóêÍ≤å Ìï†ÎãπÎê†ÎïåÎäî Ïã§Ï†ú ÏÇ¨Ïö©ÌïòÎäî ÏòÅÏó≠ÏúºÎ°ú Ïì∞Ïù∏Îã§.*/
+    /*chunk≥ª¿« ∞¢ slot¿ª mNext∑Œ ø¨∞·«—¥Ÿ. ∞°¿Â ∏∂¡ˆ∏∑ø° ¿÷¥¬ slot¿Ã sChunk->mTopø° ø¨∞·µ»¥Ÿ.
+     * mNext¥¬ ªÁøÎ¿⁄ø°∞‘ «“¥Áµ…∂ß¥¬ Ω«¡¶ ªÁøÎ«œ¥¬ øµø™¿∏∑Œ æ≤¿Œ¥Ÿ.*/
     if( mP->mType == IDU_MEMPOOL_TYPE_TIGHT )
     {
         sFirstSlot = (iduMemSlot*)( (ULong)sChunk - mP->mChunkSize );
@@ -540,7 +540,7 @@ IDE_RC iduMemList::grow(void)
     iduCheckMemConsistency(this);
 
     /* ------------------------------------------------
-     *  mFreeChunkÏóê Ïó∞Í≤∞
+     *  mFreeChunkø° ø¨∞·
      * ----------------------------------------------*/
     link(&mFreeChunk, sChunk);
     mFreeChunkCnt++;
@@ -570,7 +570,7 @@ IDE_RC iduMemList::alloc(void **aMem)
     
     iduCheckMemConsistency(this);
 
-    //victim chunkÎ•º ÏÑ†ÌÉù.
+    //victim chunk∏¶ º±≈√.
     if (mPartialChunk.mNext != NULL) 
     {
         sMyChunk = mPartialChunk.mNext;
@@ -671,7 +671,7 @@ IDE_RC iduMemList::memfree(void *aFreeElem)
         
         mPartialChunkCnt--;
 
-        //LimitÏùÑ ÎÑòÏñ¥ÏÑ∞ÏùÑ Í≤ΩÏö∞ autofree
+        //Limit¿ª ≥—æÓºπ¿ª ∞ÊøÏ autofree
         if (mFreeChunkCnt <= mP->mAutoFreeChunkLimit)
         {
             link(&mFreeChunk, sCur);
@@ -761,7 +761,7 @@ IDE_RC iduMemList::shrink( UInt *aSize)
         sCur = sNxt;
     }
 
-    IDE_ASSERT( mFreeChunkCnt == 0 ); //ÎãπÏó∞.
+    IDE_ASSERT( mFreeChunkCnt == 0 ); //¥Áø¨.
 
     *aSize = sFreeSizeDone;
 
@@ -794,7 +794,7 @@ void iduMemList::status()
 }
 
 /*
- * X$MEMPOOLÎ•º ÏúÑÌï¥ÏÑú ÌïÑÏöîÌïú Ï†ïÎ≥¥Î•º Ï±ÑÏõÄ.
+ * X$MEMPOOL∏¶ ¿ß«ÿº≠ « ø‰«— ¡§∫∏∏¶ √§øÚ.
  */
 void iduMemList::fillMemPoolInfo( struct iduMemPoolInfo * aInfo )
 {

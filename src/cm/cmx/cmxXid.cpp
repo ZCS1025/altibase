@@ -42,7 +42,7 @@ IDE_RC cmxXidRead(cmiProtocolContext *aProtocolContext, ID_XID *aXid)
     sDataLen = cmtVariableGetSize(&sArg->mData);
 
     /* BUG-18981 */
-    IDE_TEST_RAISE(sDataLen != ID_XIDDATASIZE, InvalidXidDataSize);
+    IDE_TEST_RAISE(sDataLen != ID_MAXXIDDATASIZE, InvalidXidDataSize);
 
     IDE_TEST(cmtVariableGetData(&sArg->mData, (UChar *)aXid->data, sDataLen) != IDE_SUCCESS);
 
@@ -75,7 +75,7 @@ IDE_RC cmxXidWrite(cmiProtocolContext *aProtocolContext, ID_XID *aXid)
     sArg->mGTRIDLength = aXid->gtrid_length;
     sArg->mBQUALLength = aXid->bqual_length;
 
-    IDE_TEST(cmtVariableSetData(&sArg->mData, (UChar *)aXid->data, ID_XIDDATASIZE) != IDE_SUCCESS);
+    IDE_TEST(cmtVariableSetData(&sArg->mData, (UChar *)aXid->data, ID_MAXXIDDATASIZE) != IDE_SUCCESS);
 
     IDE_TEST(cmiWriteProtocol(aProtocolContext, &sProtocol) != IDE_SUCCESS);
 

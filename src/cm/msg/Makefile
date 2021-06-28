@@ -1,6 +1,6 @@
 include ../cmEnv.mk
 
-# NLS ì¤‘ ì˜ì–´ ì—ëŸ¬ ë©”ì‹œì§€ í™”ì¼ ì •ì˜ 
+# NLS Áß ¿µ¾î ¿¡·¯ ¸Þ½ÃÁö È­ÀÏ Á¤ÀÇ 
 E_CM_US_MSG    = E_CM_US7ASCII.msg
 ALLMSG         = $(E_CM_US_MSG)
 
@@ -22,6 +22,7 @@ all: $(ALLMSB) $(E_CM_US_C)
 $(E_CM_US_MSB) : $(E_CM_US_MSG) $(GENERRMSG)
 	$(GENERRMSG) -i $(E_CM_US_MSG) -o $(E_CM_HEADER)
 	cp -f CM_TRC_CODE.ih CM_TRC_CODE.ic $(E_CM_HEADER) ../include
+	sync
 
 $(E_CM_US_C) : $(E_CM_US_MSG)
 	$(GENERRMSG) -m -c -i $(E_CM_US_MSG) -o $(E_CM_HEADER)

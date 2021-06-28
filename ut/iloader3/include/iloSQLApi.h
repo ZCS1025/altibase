@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iloSQLApi.h 80545 2017-07-19 08:05:23Z daramix $
+ * $Id: iloSQLApi.h 90308 2021-03-24 08:32:25Z donlet $
  **********************************************************************/
 
 #ifndef _O_ILO_SQLAPI_H_
@@ -44,7 +44,7 @@ public:
     SChar *GetName(SInt nCol)
     { return (nCol >= m_nCol) ? NULL : m_Name[nCol]; }
 
-    /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
+    /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
     SChar *GetTransName(SInt nCol, SChar *aName, UInt aLen);
 
     SInt SetName(SInt nCol, SChar *szName);
@@ -71,20 +71,20 @@ public:
     SChar                (*m_Name)[256];
     UInt                 *m_Precision;
     SShort               *m_Scale;
-    /* * ì´í•˜ ì„¸ ê°œì˜ ë³€ìˆ˜ëŠ” iLoaderì˜ out ëª…ë ¹ ì‹œ ì‚¬ìš© * */
-    /* SQLBindCol()ì— ì˜í•´ ì»¬ëŸ¼ ê°’ì´ ì €ì¥ë  ë²„í¼.
-     * ì´ì¤‘ í¬ì¸í„°ì´ë‚˜ ì‹¤ì œë¡œëŠ” ê° ì›ì†Œì˜ í¬ê¸°ê°€ ë‹¤ë¥¸ 1ì°¨ì› ë°°ì—´ì´ë‹¤. */
+    /* * ÀÌÇÏ ¼¼ °³ÀÇ º¯¼ö´Â iLoaderÀÇ out ¸í·É ½Ã »ç¿ë * */
+    /* SQLBindCol()¿¡ ÀÇÇØ ÄÃ·³ °ªÀÌ ÀúÀåµÉ ¹öÆÛ.
+     * ÀÌÁß Æ÷ÀÎÅÍÀÌ³ª ½ÇÁ¦·Î´Â °¢ ¿ø¼ÒÀÇ Å©±â°¡ ´Ù¸¥ 1Â÷¿ø ¹è¿­ÀÌ´Ù. */
     void                **m_Value;
-    /* m_Valueì˜ ê° ì›ì†Œ(void *)ê°€ ê°€ë¦¬í‚¤ëŠ” ë²„í¼ì˜ í¬ê¸° */
+    /* m_ValueÀÇ °¢ ¿ø¼Ò(void *)°¡ °¡¸®Å°´Â ¹öÆÛÀÇ Å©±â */
     UInt                 *mBufLen;
-    /* m_Valueì˜ ê° ì›ì†Œ(void *)ê°€ ê°€ë¦¬í‚¤ëŠ” ë²„í¼ì— ì €ì¥ëœ ê°’ì˜ ê¸¸ì´ */
+    /* m_ValueÀÇ °¢ ¿ø¼Ò(void *)°¡ °¡¸®Å°´Â ¹öÆÛ¿¡ ÀúÀåµÈ °ªÀÇ ±æÀÌ */
     SQLLEN               **m_Len;
-    SInt                 *m_DisplayPos; /* ì¸ì‡„í•  ìœ„ì¹˜, ì¸ì‡„ê°€ ì™„ë£Œë˜ë©´ -1 */
+    SInt                 *m_DisplayPos; /* ÀÎ¼âÇÒ À§Ä¡, ÀÎ¼â°¡ ¿Ï·áµÇ¸é -1 */
     
     //PROJ-1714 
     //Array Fetch
-    SQLUINTEGER           m_RowsFetched;        //Fetchëœ Row Count
-    SQLUSMALLINT         *m_RowStatusArray;     //Fetchëœ Rowì˜ Status
+    SQLUINTEGER           m_RowsFetched;        //FetchµÈ Row Count
+    SQLUSMALLINT         *m_RowStatusArray;     //FetchµÈ RowÀÇ Status
     SInt                  m_ArrayCount;
     /* BUG-30467 */
     SChar                 (*m_ArrayPartName)[MAX_OBJNAME_LEN];
@@ -98,7 +98,7 @@ private:
 class iloSQLApi
 {
 public:
-    /* Formout ì‹œì— ì‚¬ìš©ë¨, Data-Downloadì‹œì—ëŠ” Column ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ”ë° ì‚¬ìš©í•¨ */
+    /* Formout ½Ã¿¡ »ç¿ëµÊ, Data-Download½Ã¿¡´Â Column Á¤º¸¸¦ ÀúÀåÇÏ´Âµ¥ »ç¿ëÇÔ */
     iloColumns m_Column;        
 
 private:
@@ -106,32 +106,33 @@ private:
     SQLHDBC      m_ICon;
     SQLHSTMT     m_IStmt;
 
-
-    /* mErrorMgr ë°°ì—´ì˜ ì›ì†Œ ìˆ˜ */
+    /* mErrorMgr ¹è¿­ÀÇ ¿ø¼Ò ¼ö */
     SInt         mNErrorMgr;
     /* Caution:
      * Right 3 nibbles of mErrorMgr[].mErrorCode must not be read,
      * because they can have dummy values. */
     uteErrorMgr *mErrorMgr;
-    /* Fetch() í•¨ìˆ˜ê°€ SQL_FALSE ë¦¬í„´ ì‹œ,
-     * SQL_NO_DATAì™€ ì‹¤ì œ ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš°ë¥¼ êµ¬ë¶„í•˜ê¸° ìœ„í•œ ë³€ìˆ˜.
-     * ì‹¤ì œ ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš° ë³¸ ë³€ìˆ˜ê°€ ID_TRUEë¡œ ì„¤ì •ëœë‹¤. */
+    /* Fetch() ÇÔ¼ö°¡ SQL_FALSE ¸®ÅÏ ½Ã,
+     * SQL_NO_DATA¿Í ½ÇÁ¦ ¿¡·¯°¡ ¹ß»ıÇÑ °æ¿ì¸¦ ±¸ºĞÇÏ±â À§ÇÑ º¯¼ö.
+     * ½ÇÁ¦ ¿¡·¯°¡ ¹ß»ıÇÑ °æ¿ì º» º¯¼ö°¡ ID_TRUE·Î ¼³Á¤µÈ´Ù. */
     iloBool       mIsFetchError;
     SChar       *m_SQLStatement;
     SInt         mSqlLength;
     SInt         mSqlBufferLength;
 
-    SQLHSTMT     m_IStmtRetry;
+    SQLHSTMT      m_IStmtRetry;
     iloBool       m_UseStmtRetry;
-    UInt         m_ParamSetSize;
+    UInt          m_ParamSetSize;
     SQLUSMALLINT *m_ParamStatusPtr;
+
+    iloBool       mShardEnable;  /* BUG-47891 */
 
 public:
     iloSQLApi();
    
     SInt InitOption( ALTIBASE_ILOADER_HANDLE aHandle );
     //PROJ-1714
-    //BUG-22429 CopyConstureë¥¼ í•¨ìˆ˜ë¡œ ì²˜ë¦¬..
+    //BUG-22429 CopyConsture¸¦ ÇÔ¼ö·Î Ã³¸®..
     iloSQLApi& CopyConstructure(const iloSQLApi& o)
     {
         mNErrorMgr = o.mNErrorMgr;
@@ -142,7 +143,7 @@ public:
     }
     
     //PROJ-1760
-    // INSERT SQL Statementë¥¼ ë³µì‚¬í•œë‹¤.
+    // INSERT SQL Statement¸¦ º¹»çÇÑ´Ù.
 
     void CopySQLStatement(const iloSQLApi& o)
     {
@@ -150,8 +151,8 @@ public:
         mSqlLength = o.mSqlLength;
         
         /* PROJ-1714
-         * m_SQLStatementë¥¼ ì´ˆê¸°í™” í• ë•ŒëŠ” ILO_DEFAULT_QUERY_LENGTHë¡œ í•˜ì§€ë§Œ.. AppendQueryString()ì—ì„œ
-         * Sizeë¥¼ í™•ì¥í•˜ê²Œ ëœë‹¤. ë”°ë¼ì„œ ì•„ë˜ì™€ ê°™ì´ ì²˜ë¦¬í•œë‹¤.
+         * m_SQLStatement¸¦ ÃÊ±âÈ­ ÇÒ¶§´Â ILO_DEFAULT_QUERY_LENGTH·Î ÇÏÁö¸¸.. AppendQueryString()¿¡¼­
+         * Size¸¦ È®ÀåÇÏ°Ô µÈ´Ù. µû¶ó¼­ ¾Æ·¡¿Í °°ÀÌ Ã³¸®ÇÑ´Ù.
          */
         if(m_SQLStatement != NULL)
         {
@@ -181,7 +182,7 @@ public:
                 SChar  *aSslVerify,
                 SChar  *aSslCipher);
 
-    // BUG-27284: userê°€ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸
+    // BUG-27284: user°¡ Á¸ÀçÇÏ´ÂÁö È®ÀÎ
     SInt CheckUserExist(SChar *aUserName);
 
     SInt CheckIsQueue( ALTIBASE_ILOADER_HANDLE  aHandle,
@@ -241,8 +242,8 @@ public:
 
     SChar *getSqlStatement();
     
-    /* Fetch() í•¨ìˆ˜ê°€ SQL_FALSE ë¦¬í„´ ì‹œ í˜¸ì¶œ ê°€ëŠ¥í•˜ë©°,
-     * ì‹¤ì œ ì—ëŸ¬ ë°œìƒ ì—¬ë¶€ë¥¼ ë¦¬í„´í•œë‹¤. */
+    /* Fetch() ÇÔ¼ö°¡ SQL_FALSE ¸®ÅÏ ½Ã È£Ãâ °¡´ÉÇÏ¸ç,
+     * ½ÇÁ¦ ¿¡·¯ ¹ß»ı ¿©ºÎ¸¦ ¸®ÅÏÇÑ´Ù. */
     iloBool IsFetchError() { return mIsFetchError; }
 
     IDE_RC SetColwiseParamBind( ALTIBASE_ILOADER_HANDLE  aHandle,
@@ -276,6 +277,8 @@ public:
     IDE_RC NumParams(SQLSMALLINT  *aParamCntPtr);
     IDE_RC SetPrefetchRows( SInt aPrefetchRows ); /* BUG-43277 */
     IDE_RC SetAsyncPrefetch( asyncPrefetchType aType ); /* BUG-44187 */
+    IDE_RC SetGlobalTransactionLevel( SInt aTxLevel ); /* TASK-7307 */
+    IDE_RC GetShardEnable();  /* BUG-47891 */
 
 private:
     IDE_RC SetErrorMsgAfterAllocEnv();

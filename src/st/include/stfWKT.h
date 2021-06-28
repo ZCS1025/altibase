@@ -19,8 +19,8 @@
  * $Id: stfWKT.h 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * WKT(Well Known Text)Î°úÎ∂ÄÌÑ∞ Geometry Í∞ùÏ≤¥ ÏÉùÏÑ±ÌïòÎäî Ìï®Ïàò
- * ÏÉÅÏÑ∏ Íµ¨ÌòÑÏùÄ stdParsing.cpp Ïóê ÏûàÎã§.
+ * WKT(Well Known Text)∑Œ∫Œ≈Õ Geometry ∞¥√º ª˝º∫«œ¥¬ «‘ºˆ
+ * ªÛºº ±∏«ˆ¿∫ stdParsing.cpp ø° ¿÷¥Ÿ.
  **********************************************************************/
 
 #ifndef _O_STF_WKT_H_
@@ -39,64 +39,82 @@ public:
                                 void*        aBuf,
                                 void*        aFence,
                                 IDE_RC*      aResult,
-                                UInt         aValidateOption );
+                                UInt         aValidateOption,
+                                idBool       aSRIDOption,
+                                SInt         aSRID );
     
     static IDE_RC pointFromText( iduMemory*   aQmxMem,
                                  void*        aWKT,
                                  void*        aBuf,
                                  void*        aFence,
                                  IDE_RC*      aResult,
-                                 UInt         aValidateOption );
+                                 UInt         aValidateOption,
+                                 idBool       aSRIDOption,
+                                 SInt         aSRID );
     
     static IDE_RC lineFromText( iduMemory*   aQmxMem,
                                 void*        aWKT,
                                 void*        aBuf,
                                 void*        aFence,
                                 IDE_RC*      aResult,
-                                UInt         aValidateOption );
+                                UInt         aValidateOption,
+                                idBool       aSRIDOption,
+                                SInt         aSRID );
     
     static IDE_RC polyFromText( iduMemory*   aQmxMem,
                                 void*        aWKT,
                                 void*        aBuf,
                                 void*        aFence,
                                 IDE_RC*      aResult,
-                                UInt         aValidateOption );
+                                UInt         aValidateOption,
+                                idBool       aSRIDOption,
+                                SInt         aSRID );
     
-    /* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()Î•º ÏßÄÏõêÌï¥Ïïº Ìï©ÎãàÎã§. */
+    /* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()∏¶ ¡ˆø¯«ÿæﬂ «’¥œ¥Ÿ. */
     static IDE_RC rectFromText( iduMemory  * aQmxMem,
                                 void       * aWKT,
                                 void       * aBuf,
                                 void       * aFence,
                                 IDE_RC     * aResult,
-                                UInt         aValidateOption );
+                                UInt         aValidateOption,
+                                idBool       aSRIDOption,
+                                SInt         aSRID );
 
     static IDE_RC mpointFromText( iduMemory*   aQmxMem,
                                   void*        aWKT,
                                   void*        aBuf,
                                   void*        aFence,
                                   IDE_RC*      aResult,
-                                  UInt         aValidateOption );
+                                  UInt         aValidateOption,
+                                  idBool       aSRIDOption,
+                                  SInt         aSRID );
     
     static IDE_RC mlineFromText( iduMemory*   aQmxMem,
                                  void*        aWKT,
                                  void*        aBuf,
                                  void*        aFence,
                                  IDE_RC*      aResult,
-                                 UInt         aValidateOption );
+                                 UInt         aValidateOption,
+                                 idBool       aSRIDOption,
+                                 SInt         aSRID );
     
     static IDE_RC mpolyFromText( iduMemory*   aQmxMem,
                                  void*        aWKT,
                                  void*        aBuf,
                                  void*        aFence,
                                  IDE_RC*      aResult,
-                                 UInt         aValidateOption );
+                                 UInt         aValidateOption,
+                                 idBool       aSRIDOption,
+                                 SInt         aSRID );
     
     static IDE_RC geoCollFromText( iduMemory*   aQmxMem,
                                    void*        aWKT,
                                    void*        aBuf,
                                    void*        aFence,
                                    IDE_RC*      aResult,
-                                   UInt         aValidateOption );
+                                   UInt         aValidateOption,
+                                   idBool       aSRIDOption,
+                                   SInt         aSRID );
 };
 
 #endif /* _O_STF_WKT_H_ */

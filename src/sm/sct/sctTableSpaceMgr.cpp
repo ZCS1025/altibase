@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ê´€ë¦¬ì ( TableSpace Manager : sctTableSpaceMgr )
+ * Å×ÀÌºí½ºÆäÀÌ½º °ü¸®ÀÚ ( TableSpace Manager : sctTableSpaceMgr )
  *
  **********************************************************************/
 
@@ -37,25 +37,24 @@
 #include <sctReq.h>
 #include <sctTableSpaceMgr.h>
 
-iduMutex            sctTableSpaceMgr::mMutex;
 iduMutex            sctTableSpaceMgr::mMtxCrtTBS;
 iduMutex            sctTableSpaceMgr::mGlobalPageCountCheckMutex;
-sctTableSpaceNode **sctTableSpaceMgr::mSpaceNodeArray;
+sctTableSpaceNode * sctTableSpaceMgr::mSpaceNodeArray[SC_MAX_SPACE_ARRAY_SIZE];
 scSpaceID           sctTableSpaceMgr::mNewTableSpaceID;
 
 
 // PRJ-1149 BACKUP & RECOVERY
-// ë¯¸ë””ì–´ë³µêµ¬ì— í•„ìš”í•œ RedoLSN
+// ¹Ìµğ¾îº¹±¸¿¡ ÇÊ¿äÇÑ RedoLSN
 smLSN          sctTableSpaceMgr::mDiskRedoLSN;
- // ë¯¸ë””ì–´ë³µêµ¬ì— í•„ìš”í•œ RedoLSN
+ // ¹Ìµğ¾îº¹±¸¿¡ ÇÊ¿äÇÑ RedoLSN
 smLSN          sctTableSpaceMgr::mMemRedoLSN;
-
+extern smiGlobalCallBackList gSmiGlobalCallBackList;
 /*
  * BUG-17285,17123
- * [PRJ-1548] offlineëœ TableSpaceì— ëŒ€í•´ì„œ ë°ì´íƒ€íŒŒì¼ì„
- *            ì‚­ì œí•˜ë‹¤ê°€ Error ë°œìƒí•˜ì—¬ diff
+ * [PRJ-1548] offlineµÈ TableSpace¿¡ ´ëÇØ¼­ µ¥ÀÌÅ¸ÆÄÀÏÀ»
+ *            »èÁ¦ÇÏ´Ù°¡ Error ¹ß»ıÇÏ¿© diff
  *
- * í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ Lock Validation Option ì •ì˜
+ * Å×ÀÌºí½ºÆäÀÌ½ºÀÇ Lock Validation Option Á¤ÀÇ
  */
 sctTBSLockValidOpt sctTableSpaceMgr::mTBSLockValidOpt[ SMI_TBSLV_OPER_MAXMAX ] =
 {
@@ -67,7 +66,7 @@ sctTBSLockValidOpt sctTableSpaceMgr::mTBSLockValidOpt[ SMI_TBSLV_OPER_MAXMAX ] =
 
 
 /***********************************************************************
- * Description : í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ê´€ë¦¬ì ì´ˆê¸°í™”
+ * Description : Å×ÀÌºí½ºÆäÀÌ½º °ü¸®ÀÚ ÃÊ±âÈ­
  **********************************************************************/
 IDE_RC sctTableSpaceMgr::initialize( )
 {
@@ -77,27 +76,14 @@ IDE_RC sctTableSpaceMgr::initialize( )
                                   IDV_WAIT_INDEX_NULL )
               != IDE_SUCCESS );
 
-    IDE_TEST( mMutex.initialize( (SChar*)"TABLESPACE_MANAGER_MUTEX",
-                                 IDU_MUTEX_KIND_POSIX,
-                                 IDV_WAIT_INDEX_LATCH_FREE_DRDB_TBS_LIST )
-              != IDE_SUCCESS );
-
     IDE_TEST( mMtxCrtTBS.initialize( (SChar*)"CREATE_TABLESPACE_MUTEX",
                                      IDU_MUTEX_KIND_POSIX,
                                      IDV_WAIT_INDEX_LATCH_FREE_DRDB_TBS_CREATION )
               != IDE_SUCCESS );
 
-    /* sctTableSpaceMgr_initialize_malloc_SpaceNodeArray.tc */
-    IDU_FIT_POINT("sctTableSpaceMgr::initialize::malloc::SpaceNodeArray");
-    IDE_TEST( iduMemMgr::malloc( IDU_MEM_SM_SCT,
-                                 ID_SIZEOF(sctTableSpaceNode*) * SC_MAX_SPACE_COUNT,
-                                 (void**)&mSpaceNodeArray,
-                                 IDU_MEM_FORCE) 
-              != IDE_SUCCESS );
-
     idlOS::memset( mSpaceNodeArray,
                    0x00,
-                   ID_SIZEOF(sctTableSpaceNode*) * SC_MAX_SPACE_COUNT );
+                   ID_SIZEOF( mSpaceNodeArray ) );
 
     mNewTableSpaceID      = 0;
 
@@ -116,21 +102,16 @@ IDE_RC sctTableSpaceMgr::initialize( )
 
 /***********************************************************************
  * Description :
- * initializeì—ì„œ ìƒì„±í–ˆë˜ ëª¨ë“  ìì›ì„ íŒŒê´´í•œë‹¤.
+ * initialize¿¡¼­ »ı¼ºÇß´ø ¸ğµç ÀÚ¿øÀ» ÆÄ±«ÇÑ´Ù.
  **********************************************************************/
 IDE_RC sctTableSpaceMgr::destroy()
 {
-
-    UInt               sState = 0;
     UInt               i;
     sctTableSpaceNode *sSpaceNode;
 
-    IDE_TEST( lock( NULL /* idvSQL* */) != IDE_SUCCESS );
-    sState = 1;
-
     /* ------------------------------------------------
-     * tablespace ë°°ì—´ì„ ìˆœíšŒí•˜ë©´ì„œ ëª¨ë“  tablespace ë…¸ë“œë¥¼
-     * destroyí•œë‹¤. (SMI_ALL_NOTOUCH ëª¨ë“œ)
+     * tablespace ¹è¿­À» ¼øÈ¸ÇÏ¸é¼­ ¸ğµç tablespace ³ëµå¸¦
+     * destroyÇÑ´Ù. (SMI_ALL_NOTOUCH ¸ğµå)
      * ----------------------------------------------*/
     for( i = 0 ; i < mNewTableSpaceID ; i++ )
     {
@@ -141,51 +122,49 @@ IDE_RC sctTableSpaceMgr::destroy()
             continue;
         }
 
-        if ( (isMemTableSpace(i) == ID_TRUE) ||
-             (isVolatileTableSpace(i) == ID_TRUE) )
+        switch( getTBSLocation( sSpaceNode ) )
         {
-            // do nothing
-            // Memory, Volatile Tablespaceì˜ ê²½ìš°
-            // smm/svmTBSStartupShutdown::destroyAllTBSNodeì—ì„œ
-            // ëª¨ë“  TBSì˜ ìì›ì„ íŒŒê´´í•˜ê³ 
-            // Tablespace Nodeë©”ëª¨ë¦¬ë„ í•´ì œí•œë‹¤.
-            //
-            // sctTableSpaceMgrì€ sctTableSpaceNodeë§Œ ê´€ë¦¬í•  ë¿,
-            // ê·¸ ì•ˆì˜ ResourceëŠ” smm/svmManagerê°€ í• ë‹¹í•˜ì˜€ìœ¼ë¯€ë¡œ,
-            // smm/svmManagerê°€ í•´ì œí•˜ëŠ” ê²ƒì´ ì›ì¹™ìƒ ë§ë‹¤.
+            case SMI_TBS_MEMORY:
+            case SMI_TBS_VOLATILE:
+                {
+                    // do nothing
+                    // Memory, Volatile TablespaceÀÇ °æ¿ì
+                    // smm/svmTBSStartupShutdown::destroyAllTBSNode¿¡¼­
+                    // ¸ğµç TBSÀÇ ÀÚ¿øÀ» ÆÄ±«ÇÏ°í
+                    // Tablespace Node¸Ş¸ğ¸®µµ ÇØÁ¦ÇÑ´Ù.
+                    //
+                    // sctTableSpaceMgrÀº sctTableSpaceNode¸¸ °ü¸®ÇÒ »Ó,
+                    // ±× ¾ÈÀÇ Resource´Â smm/svmManager°¡ ÇÒ´çÇÏ¿´À¸¹Ç·Î,
+                    // smm/svmManager°¡ ÇØÁ¦ÇÏ´Â °ÍÀÌ ¿øÄ¢»ó ¸Â´Ù.
 
-            IDE_ASSERT(0);
-        }
+                    IDE_ASSERT(0);
+                }
+            case SMI_TBS_DISK:
+                {
+                    IDE_TEST( sddTableSpace::removeAllDataFiles(
+                                  NULL, /* idvSQL* */
+                                  NULL,
+                                  (sddTableSpaceNode*)sSpaceNode,
+                                  SMI_ALL_NOTOUCH,
+                                  ID_FALSE) /* Don't ghost mark */
+                              != IDE_SUCCESS );
 
-        if ( isDiskTableSpace(i) == ID_TRUE )
-        {
-            IDE_TEST( sddTableSpace::removeAllDataFiles(
-                                              NULL, /* idvSQL* */
-                                              NULL,
-                                              (sddTableSpaceNode*)sSpaceNode,
-                                              SMI_ALL_NOTOUCH,
-                                              ID_FALSE) /* Don't ghost mark */
-                      != IDE_SUCCESS );
+                    //bug-15653
+                    IDE_TEST( sctTableSpaceMgr::destroyTBSNode( sSpaceNode )
+                              != IDE_SUCCESS );
 
-            //bug-15653
-            IDE_TEST( sctTableSpaceMgr::destroyTBSNode( sSpaceNode )
-                      != IDE_SUCCESS );
-
-            /* BUG-18236 DBìƒì„±ì‹œì— ì„œë²„ ë¹„ì •ìƒ ì¢…ë£Œí•©ë‹ˆë‹¤.
-             *
-             * mSpaceNodeArrayì˜ Memory Tablespace NodeëŠ” ì´ë¯¸ Freeë˜ì—ˆìŠµë‹ˆë‹¤.*/
-            IDE_TEST( iduMemMgr::free(sSpaceNode) != IDE_SUCCESS );
+                    /* BUG-18236 DB»ı¼º½Ã¿¡ ¼­¹ö ºñÁ¤»ó Á¾·áÇÕ´Ï´Ù.
+                     *
+                     * mSpaceNodeArrayÀÇ Memory Tablespace Node´Â ÀÌ¹Ì FreeµÇ¾ú½À´Ï´Ù.*/
+                    IDE_TEST( iduMemMgr::free(sSpaceNode) != IDE_SUCCESS );
+                }
+                break;
+            default:
+                break;
         }
     }
 
-    IDE_TEST( iduMemMgr::free(mSpaceNodeArray) != IDE_SUCCESS );
-
-    sState = 0;
-    IDE_TEST( unlock() != IDE_SUCCESS );
-
     IDE_TEST( mMtxCrtTBS.destroy() != IDE_SUCCESS );
-
-    IDE_TEST( mMutex.destroy() != IDE_SUCCESS );
 
     IDE_TEST( mGlobalPageCountCheckMutex.destroy() != IDE_SUCCESS );
 
@@ -193,23 +172,18 @@ IDE_RC sctTableSpaceMgr::destroy()
 
     IDE_EXCEPTION_END;
 
-    if ( sState != 0 )
-    {
-        IDE_ASSERT( unlock() == IDE_SUCCESS );
-    }
-
     return IDE_FAILURE;
 
 }
 
 /*
-    ( Disk/Memory ê³µí†µ ) Tablespace Nodeë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+    ( Disk/Memory °øÅë ) Tablespace Node¸¦ ÃÊ±âÈ­ÇÑ´Ù.
 
-    [ì•Œê³ ë¦¬ì¦˜]
-    (010) Tablespace ì´ë¦„ì„ ë³µì‚¬
-    (020) Tablespace Attributeë“¤ì„ ë³µì‚¬
-    (030) Mutex ì´ˆê¸°í™”
-    (040) Lock Item ë©”ëª¨ë¦¬ í• ë‹¹, ì´ˆê¸°í™”
+    [¾Ë°í¸®Áò]
+    (010) Tablespace ÀÌ¸§À» º¹»ç
+    (020) Tablespace AttributeµéÀ» º¹»ç
+    (030) Mutex ÃÊ±âÈ­
+    (040) Lock Item ¸Ş¸ğ¸® ÇÒ´ç, ÃÊ±âÈ­
 */
 IDE_RC sctTableSpaceMgr::initializeTBSNode( sctTableSpaceNode * aSpaceNode,
                                             smiTableSpaceAttr * aSpaceAttr )
@@ -222,7 +196,7 @@ IDE_RC sctTableSpaceMgr::initializeTBSNode( sctTableSpaceNode * aSpaceNode,
 
 
     ///////////////////////////////////////////////////////////
-    // (010) Tablespace ì´ë¦„ì„ ë³µì‚¬
+    // (010) Tablespace ÀÌ¸§À» º¹»ç
     aSpaceNode->mName = NULL;
 
     /* sctTableSpaceMgr_initializeTBSNode_malloc_Name.tc */
@@ -238,18 +212,18 @@ IDE_RC sctTableSpaceMgr::initializeTBSNode( sctTableSpaceNode * aSpaceNode,
     idlOS::strcpy( aSpaceNode->mName, aSpaceAttr->mName );
 
     ///////////////////////////////////////////////////////////
-    // (020) Tablespace Attributeë“¤ì„ ë³µì‚¬
-    // tablespaceì˜ ID
+    // (020) Tablespace AttributeµéÀ» º¹»ç
+    // tablespaceÀÇ ID
     aSpaceNode->mID  = aSpaceAttr->mID;
-    // tablespace íƒ€ì…
+    // tablespace Å¸ÀÔ
     aSpaceNode->mType =  aSpaceAttr->mType;
-    // tablespaceì˜ online ì—¬ë¶€
+    // tablespaceÀÇ online ¿©ºÎ
     aSpaceNode->mState = aSpaceAttr->mTBSStateOnLA;
-    // table create SCNì„ 0ìœ¼ë¡œ ì´ˆê¸°í™” í•œë‹¤.
+    // table create SCNÀ» 0À¸·Î ÃÊ±âÈ­ ÇÑ´Ù.
     SM_INIT_SCN( &( aSpaceNode->mMaxTblDDLCommitSCN ) );
 
     ///////////////////////////////////////////////////////////
-    // (030) Mutex ì´ˆê¸°í™”
+    // (030) Mutex ÃÊ±âÈ­
     idlOS::sprintf( sMutexName, "TABLESPACE_%"ID_UINT32_FMT"_SYNC_MUTEX",
                     aSpaceAttr->mID );
 
@@ -260,7 +234,7 @@ IDE_RC sctTableSpaceMgr::initializeTBSNode( sctTableSpaceNode * aSpaceNode,
     sState = 2;
 
     ///////////////////////////////////////////////////////////
-    // (040) Lock Item ì´ˆê¸°í™”
+    // (040) Lock Item ÃÊ±âÈ­
     IDE_TEST( smLayerCallback::allocLockItem( &(aSpaceNode->mLockItem4TBS) )
               != IDE_SUCCESS );
     sState = 3;
@@ -273,14 +247,38 @@ IDE_RC sctTableSpaceMgr::initializeTBSNode( sctTableSpaceNode * aSpaceNode,
               != IDE_SUCCESS );
     sState = 4;
 
+    idlOS::sprintf( sMutexName, "TABLESPACE_NODE_MUTEX_%"ID_UINT32_FMT"",
+                    aSpaceAttr->mID );
+
+    IDE_TEST( aSpaceNode->mMutex.initialize( sMutexName,
+                                             IDU_MUTEX_KIND_POSIX,
+                                             IDV_WAIT_INDEX_NULL )
+              != IDE_SUCCESS );
+    sState = 5;
+
+    idlOS::sprintf( sMutexName, "TABLESPACE_BACKUP_COND_%"ID_UINT32_FMT"",
+                    aSpaceAttr->mID );
+
+    IDE_TEST_RAISE( aSpaceNode->mBackupCV.initialize( sMutexName )
+                    != IDE_SUCCESS, error_cond_init);
+    sState = 6;
+
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION(error_cond_init);
+    {
+        IDE_SET( ideSetErrorCode( smERR_FATAL_ThrCondInit ));
+    }
     IDE_EXCEPTION_END;
 
     IDE_PUSH();
 
     switch( sState )
     {
+        case 6:
+            IDE_ASSERT( aSpaceNode->mBackupCV.destroy() == IDE_SUCCESS );
+        case 5:
+            IDE_ASSERT( aSpaceNode->mMutex.destroy() == IDE_SUCCESS );
         case 4:
             IDE_ASSERT( smLayerCallback::destroyLockItem( aSpaceNode->mLockItem4TBS )
                         == IDE_SUCCESS );
@@ -300,30 +298,28 @@ IDE_RC sctTableSpaceMgr::initializeTBSNode( sctTableSpaceNode * aSpaceNode,
             break;
     }
 
-
     IDE_POP();
-
 
     return IDE_FAILURE;
 }
 
 
 /*
-    ( Disk/Memory ê³µí†µ ) Tablespace Nodeë¥¼ íŒŒê´´í•œë‹¤.
+    ( Disk/Memory °øÅë ) Tablespace Node¸¦ ÆÄ±«ÇÑ´Ù.
 
-    initializeTBSNodeì˜ ì´ˆê¸°í™” ìˆœì„œì˜ ì—­ìˆœìœ¼ë¡œ íŒŒê´´
+    initializeTBSNodeÀÇ ÃÊ±âÈ­ ¼ø¼­ÀÇ ¿ª¼øÀ¸·Î ÆÄ±«
 
-    [ì•Œê³ ë¦¬ì¦˜]
-    (010) Lock Item íŒŒê´´, ë©”ëª¨ë¦¬ í•´ì œ
-    (020) Mutex íŒŒê´´
-    (030) Tablespace ì´ë¦„ ë©”ëª¨ë¦¬ ê³µê°„ ë°˜ë‚©
+    [¾Ë°í¸®Áò]
+    (010) Lock Item ÆÄ±«, ¸Ş¸ğ¸® ÇØÁ¦
+    (020) Mutex ÆÄ±«
+    (030) Tablespace ÀÌ¸§ ¸Ş¸ğ¸® °ø°£ ¹İ³³
 */
 IDE_RC sctTableSpaceMgr::destroyTBSNode(sctTableSpaceNode * aSpaceNode )
 {
     IDE_DASSERT( aSpaceNode != NULL );
 
     /////////////////////////////////////////////////////////////
-    // (010) Lock Item íŒŒê´´, ë©”ëª¨ë¦¬ í•´ì œ
+    // (010) Lock Item ÆÄ±«, ¸Ş¸ğ¸® ÇØÁ¦
     IDE_ASSERT( aSpaceNode->mLockItem4TBS != NULL );
 
     IDE_ASSERT( smLayerCallback::destroyLockItem( aSpaceNode->mLockItem4TBS )
@@ -334,11 +330,13 @@ IDE_RC sctTableSpaceMgr::destroyTBSNode(sctTableSpaceNode * aSpaceNode )
     aSpaceNode->mLockItem4TBS = NULL;
 
     /////////////////////////////////////////////////////////////
-    // (020) Mutex íŒŒê´´
+    // (020) Mutex ÆÄ±«
+    IDE_ASSERT( aSpaceNode->mBackupCV.destroy() == IDE_SUCCESS );
+    IDE_ASSERT( aSpaceNode->mMutex.destroy() == IDE_SUCCESS );
     IDE_ASSERT( aSpaceNode->mSyncMutex.destroy() == IDE_SUCCESS );
 
     /////////////////////////////////////////////////////////////
-    // (030) Tablespace ì´ë¦„ ë©”ëª¨ë¦¬ ê³µê°„ ë°˜ë‚©
+    // (030) Tablespace ÀÌ¸§ ¸Ş¸ğ¸® °ø°£ ¹İ³³
     IDE_ASSERT( aSpaceNode->mName != NULL );
     IDE_ASSERT( iduMemMgr::free( aSpaceNode->mName )
                 == IDE_SUCCESS );
@@ -349,11 +347,11 @@ IDE_RC sctTableSpaceMgr::destroyTBSNode(sctTableSpaceNode * aSpaceNode )
 }
 
 /*
-    Tablespaceì˜ Sync Mutexë¥¼ íšë“í•œë‹¤.
+    TablespaceÀÇ Sync Mutex¸¦ È¹µæÇÑ´Ù.
 
-    Checkpoint Threadê°€ í•´ë‹¹ Tablespaceì— Checkpointingì„ í•˜ì§€ ëª»í•˜ë„ë¡í•œë‹¤
+    Checkpoint Thread°¡ ÇØ´ç Tablespace¿¡ CheckpointingÀ» ÇÏÁö ¸øÇÏµµ·ÏÇÑ´Ù
 
-    [IN] aSpaceNode - Sync Mutexë¥¼ íšë“í•  Tablespace Node
+    [IN] aSpaceNode - Sync Mutex¸¦ È¹µæÇÒ Tablespace Node
 
  */
 IDE_RC sctTableSpaceMgr::latchSyncMutex( sctTableSpaceNode * aSpaceNode )
@@ -372,11 +370,11 @@ IDE_RC sctTableSpaceMgr::latchSyncMutex( sctTableSpaceNode * aSpaceNode )
 }
 
 /*
-    Tablespaceì˜ Sync Mutexë¥¼ í’€ì–´ì¤€ë‹¤.
+    TablespaceÀÇ Sync Mutex¸¦ Ç®¾îÁØ´Ù.
 
-    Checkpoint Threadê°€ í•´ë‹¹ Tablesapceì— Checkpointingì„ í•˜ë„ë¡ í—ˆìš©í•œë‹¤.
+    Checkpoint Thread°¡ ÇØ´ç Tablesapce¿¡ CheckpointingÀ» ÇÏµµ·Ï Çã¿ëÇÑ´Ù.
 
-    [IN] aSpaceNode - Sync Mutexë¥¼ í’€ì–´ì¤„ Tablespace Node
+    [IN] aSpaceNode - Sync Mutex¸¦ Ç®¾îÁÙ Tablespace Node
 */
 IDE_RC sctTableSpaceMgr::unlatchSyncMutex( sctTableSpaceNode * aSpaceNode )
 {
@@ -416,19 +414,19 @@ void sctTableSpaceMgr::removeTableSpaceNode( sctTableSpaceNode *aSpaceNode )
 
 
 /*
-   ê¸°ëŠ¥ : í…Œì´ë¸”ì˜ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì— ëŒ€í•˜ì—¬ INTENTION
+   ±â´É : Å×ÀÌºíÀÇ Å×ÀÌºí½ºÆäÀÌ½º¿¡ ´ëÇÏ¿© INTENTION
           Lock And Validation
 
-          smiValidateAndLockTable(), smiTable::lockTable, ì»¤ì„œ openì‹œ í˜¸ì¶œ
+          smiValidateAndLockTable(), smiTable::lockTable, Ä¿¼­ open½Ã È£Ãâ
 
-   ì¸ì
+   ÀÎÀÚ
 
-   [IN]  aTrans        : íŠ¸ëœì­ì…˜(smxTrans)ì˜ void* í˜•
-   [IN]  aSpaceID      : Lockì„ íšë“í•  TBS ID
-   [IN]  aTBSLvType    : í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ Lock Validation íƒ€ì…
-   [IN]  aIsIntent     : ìƒìœ„ë…¸ë“œì— ëŒ€í•œ INTENTION ì—¬ë¶€
-   [IN]  aIsExclusive  : ìƒìœ„ë…¸ë“œì— ëŒ€í•œ Exclusive ì—¬ë¶€
-   [IN]  aLockWaitMicroSec : ì ê¸ˆìš”ì²­í›„ Wait ì‹œê°„
+   [IN]  aTrans        : Æ®·£Àè¼Ç(smxTrans)ÀÇ void* Çü
+   [IN]  aSpaceID      : LockÀ» È¹µæÇÒ TBS ID
+   [IN]  aTBSLvType    : Å×ÀÌºí½ºÆäÀÌ½º Lock Validation Å¸ÀÔ
+   [IN]  aIsIntent     : »óÀ§³ëµå¿¡ ´ëÇÑ INTENTION ¿©ºÎ
+   [IN]  aIsExclusive  : »óÀ§³ëµå¿¡ ´ëÇÑ Exclusive ¿©ºÎ
+   [IN]  aLockWaitMicroSec : Àá±İ¿äÃ»ÈÄ Wait ½Ã°£
 
 */
 IDE_RC sctTableSpaceMgr::lockAndValidateTBS(
@@ -444,7 +442,7 @@ IDE_RC sctTableSpaceMgr::lockAndValidateTBS(
     IDE_DASSERT( aTrans != NULL );
 
     // PRJ-1548 User Memory Tablespace
-    // ì ê¸ˆê³„ì¸µì— ëŒ€í•œ ì¬ì¡°ì •
+    // Àá±İ°èÃş¿¡ ´ëÇÑ ÀçÁ¶Á¤
     //
     IDE_TEST( lockTBSNodeByID( aTrans,
                                aSpaceID,
@@ -455,8 +453,8 @@ IDE_RC sctTableSpaceMgr::lockAndValidateTBS(
                                &sLocked,
                                NULL) != IDE_SUCCESS );
 
-    // ë§Œì•½, Trylockì„ ì‹œë„í•´ë³´ê³  ì ê¸ˆì„ íšë“í•˜ì§€ ëª»í•œ ê²½ìš° ë‹¤ìŒê³¼
-    // ê°™ì´ ì²´í¬í•´ì„œ Exceptionì„ ë°œìƒì‹œí‚¨ë‹¤.
+    // ¸¸¾à, TrylockÀ» ½ÃµµÇØº¸°í Àá±İÀ» È¹µæÇÏÁö ¸øÇÑ °æ¿ì ´ÙÀ½°ú
+    // °°ÀÌ Ã¼Å©ÇØ¼­ ExceptionÀ» ¹ß»ı½ÃÅ²´Ù.
     IDE_TEST( sLocked != ID_TRUE );
 
     return IDE_SUCCESS;
@@ -468,22 +466,22 @@ IDE_RC sctTableSpaceMgr::lockAndValidateTBS(
 
 
 /*
-   ê¸°ëŠ¥ : í…Œì´ë¸”ì˜ Index Lob ì»¬ëŸ¼ê´€ë ¨ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë“¤ì— ëŒ€í•˜ì—¬
+   ±â´É : Å×ÀÌºíÀÇ Index Lob ÄÃ·³°ü·Ã Å×ÀÌºí½ºÆäÀÌ½ºµé¿¡ ´ëÇÏ¿©
           INTENTION Lock And Validation
 
-          smiValidateAndLockTable(), smiTable::lockTable, ì»¤ì„œ openì‹œ í˜¸ì¶œ
+          smiValidateAndLockTable(), smiTable::lockTable, Ä¿¼­ open½Ã È£Ãâ
 
-          ë³¸ í•¨ìˆ˜ëŠ” Tableì— ëŒ€í•œ LockAnd Validateë¥¼ ìˆ˜í–‰í•œ í›„ì—
-          ìˆ˜í–‰ë˜ì–´ì•¼ í•œë‹¤
+          º» ÇÔ¼ö´Â Table¿¡ ´ëÇÑ LockAnd Validate¸¦ ¼öÇàÇÑ ÈÄ¿¡
+          ¼öÇàµÇ¾î¾ß ÇÑ´Ù
 
-   ì¸ì
+   ÀÎÀÚ
 
-   [IN]  aTrans        : íŠ¸ëœì­ì…˜(smxTrans)ì˜ void* í˜•
-   [IN]  aTable        : í…Œì´ë¸”í—¤ë”(smcTableHeader)ì˜  void* í˜•
-   [IN]  aTBSLvOpt     : í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ Lock Validation Option
-   [IN]  aIsIntent     : ìƒìœ„ë…¸ë“œì— ëŒ€í•œ INTENTION ì—¬ë¶€
-   [IN]  aIsExclusive  : ìƒìœ„ë…¸ë“œì— ëŒ€í•œ Exclusive ì—¬ë¶€
-   [IN]  aLockWaitMicroSec : ì ê¸ˆìš”ì²­í›„ Wait ì‹œê°„
+   [IN]  aTrans        : Æ®·£Àè¼Ç(smxTrans)ÀÇ void* Çü
+   [IN]  aTable        : Å×ÀÌºíÇì´õ(smcTableHeader)ÀÇ  void* Çü
+   [IN]  aTBSLvOpt     : Å×ÀÌºí½ºÆäÀÌ½º Lock Validation Option
+   [IN]  aIsIntent     : »óÀ§³ëµå¿¡ ´ëÇÑ INTENTION ¿©ºÎ
+   [IN]  aIsExclusive  : »óÀ§³ëµå¿¡ ´ëÇÑ Exclusive ¿©ºÎ
+   [IN]  aLockWaitMicroSec : Àá±İ¿äÃ»ÈÄ Wait ½Ã°£
 
 */
 IDE_RC sctTableSpaceMgr::lockAndValidateRelTBSs(
@@ -514,25 +512,25 @@ IDE_RC sctTableSpaceMgr::lockAndValidateRelTBSs(
     sIndexHeader = NULL;
     sIndexCount  = 0;
 
-    // 1. í…Œì´ë¸” ê´€ë ¨ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œì— ëŒ€í•œ ì ê¸ˆ ìš”ì²­
+    // 1. Å×ÀÌºí °ü·Ã Å×ÀÌºí½ºÆäÀÌ½º ³ëµå¿¡ ´ëÇÑ Àá±İ ¿äÃ»
     sTableTBSID = smLayerCallback::getTableSpaceID( aTable );
 
-    sLockedTBSID  = sTableTBSID; // ì´ë¯¸ ì ê¸ˆì´ íšë“ëœ TableSpace
+    sLockedTBSID  = sTableTBSID; // ÀÌ¹Ì Àá±İÀÌ È¹µæµÈ TableSpace
 
-    if ( sctTableSpaceMgr::isDiskTableSpace( sTableTBSID ) == ID_TRUE )
+    if ( isDiskTableSpace( sTableTBSID ) == ID_TRUE )
     {
-        // 2. í…Œì´ë¸”ì˜ ì¸ë±ìŠ¤ ê´€ë ¨ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œì— ëŒ€í•œ ì ê¸ˆ ìš”ì²­
-        //    í…Œì´ë¸”ì— ê´€ë ¨ëœ ì¸ë±ìŠ¤ê°€ ì €ì¥ëœ ëª¨ë“  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œì—
-        //    ëŒ€í•´ ì ê¸ˆì„ íšë“í•œë‹¤.
-        //    ì ê¸ˆì„ íšë“í•œ TBS Nodeì— ëŒ€í•´ì„œ ì¤‘ë³µ ì ê¸ˆíšë“ì„ í—ˆìš©í•œë‹¤.        i
-        //    (ì„±ëŠ¥ì´ìŠˆ)
+        // 2. Å×ÀÌºíÀÇ ÀÎµ¦½º °ü·Ã Å×ÀÌºí½ºÆäÀÌ½º ³ëµå¿¡ ´ëÇÑ Àá±İ ¿äÃ»
+        //    Å×ÀÌºí¿¡ °ü·ÃµÈ ÀÎµ¦½º°¡ ÀúÀåµÈ ¸ğµç Å×ÀÌºí½ºÆäÀÌ½º ³ëµå¿¡
+        //    ´ëÇØ Àá±İÀ» È¹µæÇÑ´Ù.
+        //    Àá±İÀ» È¹µæÇÑ TBS Node¿¡ ´ëÇØ¼­ Áßº¹ Àá±İÈ¹µæÀ» Çã¿ëÇÑ´Ù.        i
+        //    (¼º´ÉÀÌ½´)
         //
-        //    ë‹¨, ë©”ëª¨ë¦¬ ì¸ë±ìŠ¤ì— ëŒ€í•œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œëŠ” ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ
-        //    ì ê¸ˆì´ í•„ìš”í•˜ì§€ ì•Šë‹¤.
+        //    ´Ü, ¸Ş¸ğ¸® ÀÎµ¦½º¿¡ ´ëÇÑ Å×ÀÌºí½ºÆäÀÌ½º ³ëµå´Â Á¸ÀçÇÏÁö ¾ÊÀ¸¹Ç·Î
+        //    Àá±İÀÌ ÇÊ¿äÇÏÁö ¾Ê´Ù.
 
         sIndexCount  = smLayerCallback::getIndexCount( aTable );
 
-        // ì¸ë±ìŠ¤ TBS Nodeì— ì ê¸ˆì„ íšë“í•œë‹¤.
+        // ÀÎµ¦½º TBS Node¿¡ Àá±İÀ» È¹µæÇÑ´Ù.
         for ( sIdx = 0 ; sIdx < sIndexCount ; sIdx++ )
         {
             sIndexHeader = (void*)smLayerCallback::getTableIndex( aTable, sIdx );
@@ -541,8 +539,8 @@ IDE_RC sctTableSpaceMgr::lockAndValidateRelTBSs(
 
             sIndexTBSID  = SC_MAKE_SPACE( *sGRID );
 
-            // ì¼ë‹¨, ì—°ì†ì ìœ¼ë¡œ ì¤‘ë³µëœ ê²½ìš°ì— ëŒ€í•´ì„œ ì ê¸ˆì„ íšŒí”¼í•˜ë„ë¡
-            // ê°„ë‹¨íˆ ì²˜ë¦¬í•˜ê¸°í•œë‹¤. (ì„±ëŠ¥ì´ìŠˆ)
+            // ÀÏ´Ü, ¿¬¼ÓÀûÀ¸·Î Áßº¹µÈ °æ¿ì¿¡ ´ëÇØ¼­ Àá±İÀ» È¸ÇÇÇÏµµ·Ï
+            // °£´ÜÈ÷ Ã³¸®ÇÏ±âÇÑ´Ù. (¼º´ÉÀÌ½´)
 
             if ( sLockedTBSID != sIndexTBSID )
             {
@@ -555,31 +553,31 @@ IDE_RC sctTableSpaceMgr::lockAndValidateRelTBSs(
                                            &sLocked,
                                            NULL ) != IDE_SUCCESS );
 
-                // ë§Œì•½, Trylockì„ ì‹œë„í•´ë³´ê³  ì ê¸ˆì„ íšë“í•˜ì§€ ëª»í•œ ê²½ìš° ë‹¤ìŒê³¼
-                // ê°™ì´ ì²´í¬í•´ì„œ Exceptionì„ ë°œìƒì‹œí‚¨ë‹¤.
+                // ¸¸¾à, TrylockÀ» ½ÃµµÇØº¸°í Àá±İÀ» È¹µæÇÏÁö ¸øÇÑ °æ¿ì ´ÙÀ½°ú
+                // °°ÀÌ Ã¼Å©ÇØ¼­ ExceptionÀ» ¹ß»ı½ÃÅ²´Ù.
                 IDE_TEST( sLocked != ID_TRUE );
 
                 sLockedTBSID = sIndexTBSID;
             }
         }
 
-        // 3. í…Œì´ë¸”ì˜ LOB Column ê´€ë ¨ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œì— ëŒ€í•œ ì ê¸ˆ ìš”ì²­
-        //    í…Œì´ë¸”ì— ê´€ë ¨ëœ LOB Column ì´ ì €ì¥ëœ ëª¨ë“  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œì—
-        //    ëŒ€í•´ ì ê¸ˆì„ íšë“í•œë‹¤.
-        //    ì ê¸ˆì„ íšë“í•œ TBS Nodeì— ëŒ€í•´ì„œ ì¤‘ë³µ ì ê¸ˆíšë“ì„ í—ˆìš©í•œë‹¤.
-        //    (ì„±ëŠ¥ì´ìŠˆ)
+        // 3. Å×ÀÌºíÀÇ LOB Column °ü·Ã Å×ÀÌºí½ºÆäÀÌ½º ³ëµå¿¡ ´ëÇÑ Àá±İ ¿äÃ»
+        //    Å×ÀÌºí¿¡ °ü·ÃµÈ LOB Column ÀÌ ÀúÀåµÈ ¸ğµç Å×ÀÌºí½ºÆäÀÌ½º ³ëµå¿¡
+        //    ´ëÇØ Àá±İÀ» È¹µæÇÑ´Ù.
+        //    Àá±İÀ» È¹µæÇÑ TBS Node¿¡ ´ëÇØ¼­ Áßº¹ Àá±İÈ¹µæÀ» Çã¿ëÇÑ´Ù.
+        //    (¼º´ÉÀÌ½´)
         //
-        //    ë‹¨, ë©”ëª¨ë¦¬ LOB ColumnëŒ€í•œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œëŠ” í…Œì´ë¸”ê³¼ ë™ì¼í•œ
-        //    í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë¯€ë¡œ ì ê¸ˆì´ í•„ìš”ì—†ë‹¤.
-        //    í…Œì´ë¸”ì— ì¸ë±ìŠ¤ ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤.
+        //    ´Ü, ¸Ş¸ğ¸® LOB Column´ëÇÑ Å×ÀÌºí½ºÆäÀÌ½º ³ëµå´Â Å×ÀÌºí°ú µ¿ÀÏÇÑ
+        //    Å×ÀÌºí½ºÆäÀÌ½º¹Ç·Î Àá±İÀÌ ÇÊ¿ä¾ø´Ù.
+        //    Å×ÀÌºí¿¡ ÀÎµ¦½º °³¼ö¸¦ ±¸ÇÑ´Ù.
 
         sLockedTBSID = sTableTBSID;
 
-        // í…Œì´ë¸”ì— Lob Column ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤.
+        // Å×ÀÌºí¿¡ Lob Column °³¼ö¸¦ ±¸ÇÑ´Ù.
         sColCount    = smLayerCallback::getColumnCount( aTable );
         sLobColCount = smLayerCallback::getTableLobColumnCount( aTable );
 
-        // Lob Columnì˜ TBS Nodeì— ì ê¸ˆì„ íšë“í•œë‹¤.
+        // Lob ColumnÀÇ TBS Node¿¡ Àá±İÀ» È¹µæÇÑ´Ù.
         for ( sIdx = 0 ; sIdx < sColCount ; sIdx++ )
         {
             if ( sLobColCount == 0 )
@@ -599,8 +597,8 @@ IDE_RC sctTableSpaceMgr::lockAndValidateRelTBSs(
                 sLobTBSID  = sColumn->colSpace;
                 IDE_ASSERT( sColumn->colSpace == SC_MAKE_SPACE(sColumn->colSeg) );
 
-                // ì¼ë‹¨, ì—°ì†ì ìœ¼ë¡œ ì¤‘ë³µëœ ê²½ìš°ì— ëŒ€í•´ì„œ ì ê¸ˆì„ íšŒí”¼í•˜ë„ë¡
-                // ê°„ë‹¨íˆ ì²˜ë¦¬í•˜ê¸°í•œë‹¤. (ì„±ëŠ¥ì´ìŠˆ)
+                // ÀÏ´Ü, ¿¬¼ÓÀûÀ¸·Î Áßº¹µÈ °æ¿ì¿¡ ´ëÇØ¼­ Àá±İÀ» È¸ÇÇÇÏµµ·Ï
+                // °£´ÜÈ÷ Ã³¸®ÇÏ±âÇÑ´Ù. (¼º´ÉÀÌ½´)
 
                 if ( sLockedTBSID != sLobTBSID )
                 {
@@ -613,8 +611,8 @@ IDE_RC sctTableSpaceMgr::lockAndValidateRelTBSs(
                                                &sLocked,
                                                NULL ) != IDE_SUCCESS );
 
-                    // ë§Œì•½, Trylockì„ ì‹œë„í•´ë³´ê³  ì ê¸ˆì„ íšë“í•˜ì§€ ëª»í•œ ê²½ìš° ë‹¤ìŒê³¼
-                    // ê°™ì´ ì²´í¬í•´ì„œ Exceptionì„ ë°œìƒì‹œí‚¨ë‹¤.
+                    // ¸¸¾à, TrylockÀ» ½ÃµµÇØº¸°í Àá±İÀ» È¹µæÇÏÁö ¸øÇÑ °æ¿ì ´ÙÀ½°ú
+                    // °°ÀÌ Ã¼Å©ÇØ¼­ ExceptionÀ» ¹ß»ı½ÃÅ²´Ù.
                     IDE_TEST( sLocked != ID_TRUE );
 
                     sLockedTBSID = sLobTBSID;
@@ -634,10 +632,10 @@ IDE_RC sctTableSpaceMgr::lockAndValidateRelTBSs(
     }
     else
     {
-        // Memory TableSpaceì˜ ê²½ìš°ëŠ” Indexì™€ Lob Column TableSpaceê°€
-        // í…Œì´ë¸”ê³¼ ë™ì¼í•˜ê¸° ë•Œë¬¸ì— ê³ ë ¤í•˜ì§€ ì•ŠëŠ”ë‹¤.
-        IDE_DASSERT( ( sctTableSpaceMgr::isMemTableSpace( sTableTBSID ) == ID_TRUE ) ||
-                     ( sctTableSpaceMgr::isVolatileTableSpace( sTableTBSID ) == ID_TRUE ) );
+        // Memory TableSpaceÀÇ °æ¿ì´Â Index¿Í Lob Column TableSpace°¡
+        // Å×ÀÌºí°ú µ¿ÀÏÇÏ±â ¶§¹®¿¡ °í·ÁÇÏÁö ¾Ê´Â´Ù.
+        IDE_DASSERT( ( isMemTableSpace( sTableTBSID ) == ID_TRUE ) ||
+                     ( isVolatileTableSpace( sTableTBSID ) == ID_TRUE ) );
     }
 
     return IDE_SUCCESS;
@@ -648,8 +646,8 @@ IDE_RC sctTableSpaceMgr::lockAndValidateRelTBSs(
 }
 
 /*
-   ê¸°ëŠ¥ : í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œì— ëŒ€í•œ ì ê¸ˆì„ íšë“í•œë‹¤.
-   ì¸ìì£¼ì„ : lockTBSNodeì™€ ë™ì¼
+   ±â´É : Å×ÀÌºí½ºÆäÀÌ½º ³ëµå¿¡ ´ëÇÑ Àá±İÀ» È¹µæÇÑ´Ù.
+   ÀÎÀÚÁÖ¼® : lockTBSNode¿Í µ¿ÀÏ
 */
 IDE_RC sctTableSpaceMgr::lockTBSNodeByID( void             * aTrans,
                                           scSpaceID          aSpaceID,
@@ -664,10 +662,10 @@ IDE_RC sctTableSpaceMgr::lockTBSNodeByID( void             * aTrans,
 
     IDE_DASSERT( aTrans != NULL );
 
-    // 1. ì‹œìŠ¤í…œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œëŠ” ì ê¸ˆì„ íšë“í•˜ì§€ ì•ŠëŠ”ë‹¤.
-    //    ë‹¨, DBF Nodeì— ëŒ€í•´ì„œë§Œ ì ê¸ˆì„ íšë“í•´ì£¼ë©´
-    //    CREATE DBFì™€ AUTOEXTEND MODE, ìë™í™•ì¥, RESIZE ì—°ì‚°ê°„ì˜
-    //    ë™ì‹œì„±ì„ ì œì–´í•  ìˆ˜ ìˆë‹¤.
+    // 1. ½Ã½ºÅÛ Å×ÀÌºí½ºÆäÀÌ½º ³ëµå´Â Àá±İÀ» È¹µæÇÏÁö ¾Ê´Â´Ù.
+    //    ´Ü, DBF Node¿¡ ´ëÇØ¼­¸¸ Àá±İÀ» È¹µæÇØÁÖ¸é
+    //    CREATE DBF¿Í AUTOEXTEND MODE, ÀÚµ¿È®Àå, RESIZE ¿¬»ê°£ÀÇ
+    //    µ¿½Ã¼ºÀ» Á¦¾îÇÒ ¼ö ÀÖ´Ù.
     if ( isSystemTableSpace( aSpaceID ) == ID_TRUE )
     {
         if ( aLocked != NULL )
@@ -678,11 +676,11 @@ IDE_RC sctTableSpaceMgr::lockTBSNodeByID( void             * aTrans,
         IDE_CONT( skip_lock_system_tbs );
     }
 
-    // 2. í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œ í¬ì¸í„°ë¥¼ íšë“
-    // BUG-28748 ê³¼ê±°ì—ëŠ” SpaceNodeë¥¼ No Latch Hashë¡œ ê´€ë¦¬í•˜ì—¬
-    // Space Nodeì˜ íƒìƒ‰ì„ ìœ„í•´ì„œ Mutexê°€ í•„ìš”í•˜ì˜€ìœ¼ë‚˜,
-    // ì´ì œëŠ” Arrayë¡œ ê´€ë¦¬ í•˜ë¯€ë¡œ Space Nodeë¥¼ ê°€ì ¸ì˜¤ê¸° ìœ„í•´ì„œ
-    // Mutexë¥¼ ì¡ì§€ ì•Šì•„ë„ ë©ë‹ˆë‹¤.
+    // 2. Å×ÀÌºí ½ºÆäÀÌ½º ³ëµå Æ÷ÀÎÅÍ¸¦ È¹µæ
+    // BUG-28748 °ú°Å¿¡´Â SpaceNode¸¦ No Latch Hash·Î °ü¸®ÇÏ¿©
+    // Space NodeÀÇ Å½»öÀ» À§ÇØ¼­ Mutex°¡ ÇÊ¿äÇÏ¿´À¸³ª,
+    // ÀÌÁ¦´Â Array·Î °ü¸® ÇÏ¹Ç·Î Space Node¸¦ °¡Á®¿À±â À§ÇØ¼­
+    // Mutex¸¦ ÀâÁö ¾Ê¾Æµµ µË´Ï´Ù.
     IDE_TEST( findSpaceNodeBySpaceID( aSpaceID,
                                       (void**)&sSpaceNode )
               != IDE_SUCCESS );
@@ -708,20 +706,20 @@ IDE_RC sctTableSpaceMgr::lockTBSNodeByID( void             * aTrans,
 }
 
 /*
-   ê¸°ëŠ¥ : í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œì— ëŒ€í•œ ì ê¸ˆì„ íšë“í•œë‹¤.
-          TBS IDë¥¼ ê²€ìƒ‰í•˜ì—¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œë¥¼ ë°˜í™˜í•˜ì—¬ì•¼ í•œë‹¤.
-          ê·¸ëŸ¬ë¯€ë¡œ, TBS List Mutexë¥¼ íšë“í•  í•„ìš”ê°€ ìˆë‹¤.
+   ±â´É : Å×ÀÌºí½ºÆäÀÌ½º ³ëµå¿¡ ´ëÇÑ Àá±İÀ» È¹µæÇÑ´Ù.
+          TBS ID¸¦ °Ë»öÇÏ¿© Å×ÀÌºí½ºÆäÀÌ½º ³ëµå¸¦ ¹İÈ¯ÇÏ¿©¾ß ÇÑ´Ù.
+          ±×·¯¹Ç·Î, TBS List Mutex¸¦ È¹µæÇÒ ÇÊ¿ä°¡ ÀÖ´Ù.
 
-   ì¸ì
+   ÀÎÀÚ
 
-   [IN]  aTrans             : íŠ¸ëœì­ì…˜(smxTrans)ì˜ void* í˜•
-   [IN]  aSpaceID           : í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID
-   [IN]  aIsIntent          : ìƒìœ„ë…¸ë“œì— ëŒ€í•œ INTENTION ì—¬ë¶€
-   [IN]  aIsExclusive       : ìƒìœ„ë…¸ë“œì— ëŒ€í•œ Exclusive ì—¬ë¶€
-   [IN]  aLockWaitMicroSec  : ì ê¸ˆìš”ì²­í›„ Wait ì‹œê°„
-   [IN]  aTBSLvOpt        : Lockíšë“í›„ Tablespaceì— ëŒ€í•´ ì²´í¬í•  ì‚¬í•­ë“¤
-   [OUT] aLocked            : Lockíšë“ì—¬ë¶€
-   [OUT] aLockHier          : ì ê¸ˆíšë“í•œ LockSlot í¬ì¸í„°
+   [IN]  aTrans             : Æ®·£Àè¼Ç(smxTrans)ÀÇ void* Çü
+   [IN]  aSpaceID           : Å×ÀÌºí½ºÆäÀÌ½º ID
+   [IN]  aIsIntent          : »óÀ§³ëµå¿¡ ´ëÇÑ INTENTION ¿©ºÎ
+   [IN]  aIsExclusive       : »óÀ§³ëµå¿¡ ´ëÇÑ Exclusive ¿©ºÎ
+   [IN]  aLockWaitMicroSec  : Àá±İ¿äÃ»ÈÄ Wait ½Ã°£
+   [IN]  aTBSLvOpt        : LockÈ¹µæÈÄ Tablespace¿¡ ´ëÇØ Ã¼Å©ÇÒ »çÇ×µé
+   [OUT] aLocked            : LockÈ¹µæ¿©ºÎ
+   [OUT] aLockHier          : Àá±İÈ¹µæÇÑ LockSlot Æ÷ÀÎÅÍ
 
 */
 IDE_RC sctTableSpaceMgr::lockTBSNode( void              * aTrans,
@@ -740,10 +738,10 @@ IDE_RC sctTableSpaceMgr::lockTBSNode( void              * aTrans,
 
     sLockSlot  = NULL;
 
-    // 2. ì‹œìŠ¤í…œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œëŠ” ì ê¸ˆì„ íšë“í•˜ì§€ ì•ŠëŠ”ë‹¤.
-    //    ë‹¨, DBF Nodeì— ëŒ€í•´ì„œë§Œ ì ê¸ˆì„ íšë“í•´ì£¼ë©´
-    //    CREATE DBFì™€ AUTOEXTEND MODE, ìë™í™•ì¥, RESIZE ì—°ì‚°ê°„ì˜
-    //    ë™ì‹œì„±ì„ ì œì–´í•  ìˆ˜ ìˆë‹¤.
+    // 2. ½Ã½ºÅÛ Å×ÀÌºí½ºÆäÀÌ½º ³ëµå´Â Àá±İÀ» È¹µæÇÏÁö ¾Ê´Â´Ù.
+    //    ´Ü, DBF Node¿¡ ´ëÇØ¼­¸¸ Àá±İÀ» È¹µæÇØÁÖ¸é
+    //    CREATE DBF¿Í AUTOEXTEND MODE, ÀÚµ¿È®Àå, RESIZE ¿¬»ê°£ÀÇ
+    //    µ¿½Ã¼ºÀ» Á¦¾îÇÒ ¼ö ÀÖ´Ù.
     if ( isSystemTableSpace( aSpaceNode->mID ) == ID_TRUE )
     {
         if ( aLocked != NULL )
@@ -753,7 +751,7 @@ IDE_RC sctTableSpaceMgr::lockTBSNode( void              * aTrans,
     }
     else
     {
-        // 3. Lock ê´€ë¦¬ìì— ì ê¸ˆìš”ì²­ì„ íšë“í•œë‹¤.
+        // 3. Lock °ü¸®ÀÚ¿¡ Àá±İ¿äÃ»À» È¹µæÇÑ´Ù.
         IDE_TEST( smLayerCallback::lockItem( aTrans,
                                              aSpaceNode->mLockItem4TBS,
                                              aIsIntent,
@@ -765,15 +763,15 @@ IDE_RC sctTableSpaceMgr::lockTBSNode( void              * aTrans,
 
         if ( aLocked != NULL )
         {
-            // ë§Œì•½, Trylockì„ ì‹œë„í•´ë³´ê³  ì ê¸ˆì„ íšë“í•˜ì§€ ëª»í•œ ê²½ìš°
-            // ë‹¤ìŒê³¼ ê°™ì´ ì²´í¬í•´ì„œ Exceptionì„ ë°œìƒì‹œí‚¨ë‹¤.
+            // ¸¸¾à, TrylockÀ» ½ÃµµÇØº¸°í Àá±İÀ» È¹µæÇÏÁö ¸øÇÑ °æ¿ì
+            // ´ÙÀ½°ú °°ÀÌ Ã¼Å©ÇØ¼­ ExceptionÀ» ¹ß»ı½ÃÅ²´Ù.
             IDE_TEST( *aLocked == ID_FALSE );
         }
 
         if ( aLockHier != NULL )
         {
-            // Short-Duration ì ê¸ˆì„ íšë“í•˜ì—¬ ì‚¬ìš©í•˜ê¸° ì›í•œë‹¤ë©´
-            // ì ê¸ˆíšë“í•œ LockSlot í¬ì¸í„°ë¥¼ LockHierì— ì¶œë ¥í•œë‹¤.
+            // Short-Duration Àá±İÀ» È¹µæÇÏ¿© »ç¿ëÇÏ±â ¿øÇÑ´Ù¸é
+            // Àá±İÈ¹µæÇÑ LockSlot Æ÷ÀÎÅÍ¸¦ LockHier¿¡ Ãâ·ÂÇÑ´Ù.
             aLockHier->mTBSNodeSlot = sLockSlot;
         }
 
@@ -789,8 +787,8 @@ IDE_RC sctTableSpaceMgr::lockTBSNode( void              * aTrans,
 }
 
 /*
-   ê¸°ëŠ¥ : í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œì— ëŒ€í•œ ì ê¸ˆì„ íšë“í•œë‹¤.
-   ì¸ìì£¼ì„ : ìœ„ì˜ lockTBSNodeì™€ ë™ì¼
+   ±â´É : Å×ÀÌºí½ºÆäÀÌ½º ³ëµå¿¡ ´ëÇÑ Àá±İÀ» È¹µæÇÑ´Ù.
+   ÀÎÀÚÁÖ¼® : À§ÀÇ lockTBSNode¿Í µ¿ÀÏ
 */
 
 IDE_RC sctTableSpaceMgr::lockTBSNodeByID( void              * aTrans,
@@ -803,15 +801,15 @@ IDE_RC sctTableSpaceMgr::lockTBSNodeByID( void              * aTrans,
                             aSpaceID,
                             aIsIntent,
                             aIsExclusive,
-                            sctTableSpaceMgr::getDDLLockTimeOut(),
+                            sctTableSpaceMgr::getDDLLockTimeOut( (smxTrans*)aTrans ),
                             aTBSLvOpt,
                             NULL,
                             NULL );
 }
 
 /*
-   ê¸°ëŠ¥ : í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œì— ëŒ€í•œ ì ê¸ˆì„ íšë“í•œë‹¤.
-   ì¸ìì£¼ì„ : ìœ„ì˜ lockTBSNodeì™€ ë™ì¼
+   ±â´É : Å×ÀÌºí½ºÆäÀÌ½º ³ëµå¿¡ ´ëÇÑ Àá±İÀ» È¹µæÇÑ´Ù.
+   ÀÎÀÚÁÖ¼® : À§ÀÇ lockTBSNode¿Í µ¿ÀÏ
 */
 IDE_RC sctTableSpaceMgr::lockTBSNode( void              * aTrans,
                                       sctTableSpaceNode * aSpaceNode,
@@ -823,22 +821,22 @@ IDE_RC sctTableSpaceMgr::lockTBSNode( void              * aTrans,
                         aSpaceNode,
                         aIsIntent,
                         aIsExclusive,
-                        sctTableSpaceMgr::getDDLLockTimeOut(),
+                        sctTableSpaceMgr::getDDLLockTimeOut((smxTrans*)aTrans),
                         aTBSLvOpt,
                         NULL,
                         NULL );
 }
 
 /***********************************************************************
- * Description : tablespaceì˜ new ID í• ë‹¹
+ * Description : tablespaceÀÇ new ID ÇÒ´ç
  *
- * tablespace IDë¥¼ ë°˜í™˜í•œë‹¤. ì•„ì´ë””ëŠ” 1ì”© ì¦ê°€í•˜ëŠ” ì •ìˆ˜ì´ê³  tablespace IDëŠ”
- * ì¬ì‚¬ìš©ë˜ëŠ” ê²½ìš°ê°€ ì—†ë‹¤ê³  ì •í•œë‹¤. ë¡œê·¸ë¥¼ ë³´ê³ 
- * ì´ tablespaceê°€ ì¬ì‚¬ìš©ëœê²ƒì¸ì§€ íŒë‹¨í•  ë°©ë²•ì´ ì—†ê¸° ë•Œë¬¸ì´ë‹¤.
- * ë”°ë¼ì„œ Max Tablespaceê°œê°€ createsë˜ë©´ ê·¸ í›„ì—ëŠ” tablespaceë¥¼ createí•  ìˆ˜ ì—†ë‹¤.
+ * tablespace ID¸¦ ¹İÈ¯ÇÑ´Ù. ¾ÆÀÌµğ´Â 1¾¿ Áõ°¡ÇÏ´Â Á¤¼öÀÌ°í tablespace ID´Â
+ * Àç»ç¿ëµÇ´Â °æ¿ì°¡ ¾ø´Ù°í Á¤ÇÑ´Ù. ·Î±×¸¦ º¸°í
+ * ÀÌ tablespace°¡ Àç»ç¿ëµÈ°ÍÀÎÁö ÆÇ´ÜÇÒ ¹æ¹ıÀÌ ¾ø±â ¶§¹®ÀÌ´Ù.
+ * µû¶ó¼­ Max Tablespace°³°¡ createsµÇ¸é ±× ÈÄ¿¡´Â tablespace¸¦ createÇÒ ¼ö ¾ø´Ù.
  *
  * + 2nd. code design
- *   - mNewTableSpaceIDë¥¼ +1 í•œë‹¤.
+ *   - mNewTableSpaceID¸¦ +1 ÇÑ´Ù.
  **********************************************************************/
 IDE_RC sctTableSpaceMgr::allocNewTableSpaceID( scSpaceID*   aNewID )
 {
@@ -864,98 +862,55 @@ IDE_RC sctTableSpaceMgr::allocNewTableSpaceID( scSpaceID*   aNewID )
 }
 
 /**********************************************************************
- * Description : tablespace ì´ë¦„ì— í•´ë‹¹í•˜ëŠ” tablespace ID ë°˜í™˜
- *               mutexê°€ ì¡í˜€ìˆë‹¤.
- **********************************************************************/
-IDE_RC sctTableSpaceMgr::getTableSpaceIDByNameLow( SChar*     aTableSpaceName,
-                                                   scSpaceID* aTableSpaceID )
-{
-
-    UInt               i;
-    idBool             sIsExist = ID_FALSE;
-    sctTableSpaceNode *sSpaceNode;
-
-    IDE_DASSERT( aTableSpaceName != NULL );
-    IDE_DASSERT( aTableSpaceID != NULL );
-
-    *aTableSpaceID = 0;
-
-    for ( i = 0 ; i < mNewTableSpaceID ; i++ )
-    {
-        sSpaceNode = mSpaceNodeArray[i];
-
-        if ( sSpaceNode == NULL )
-        {
-            continue;
-        }
-
-        if ( SMI_TBS_IS_DROPPED(sSpaceNode->mState) )
-        {
-            continue;
-        }
-
-        if ( idlOS::strcmp(sSpaceNode->mName, aTableSpaceName) == 0 )
-        {
-            *aTableSpaceID = sSpaceNode->mID;
-            sIsExist = ID_TRUE;
-            break;
-        }
-    }
-
-    IDE_TEST_RAISE( sIsExist == ID_FALSE,
-                    error_not_found_tablespace_node_by_name );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION( error_not_found_tablespace_node_by_name );
-    {
-        IDE_SET( ideSetErrorCode( smERR_ABORT_NotFoundTableSpaceNodeByName,
-                                  aTableSpaceName) );
-    }
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-
-}
-
-
-/**********************************************************************
- * Description : Tablespace IDë¡œ SpaceNodeë¥¼ ì°¾ëŠ”ë‹¤.
- * - í•´ë‹¹ Tablespaceê°€ DROPëœ ê²½ìš° ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¨ë‹¤.
+ * Description : Tablespace ID·Î SpaceNode¸¦ Ã£´Â´Ù.
+ * - ÇØ´ç Tablespace°¡ DROPµÈ °æ¿ì ¿¡·¯¸¦ ¹ß»ı½ÃÅ²´Ù.
  *
- * BUG-28748 ê³¼ê±°ì—ëŠ” SpaceNodeë¥¼ No Latch Hashë¡œ ê´€ë¦¬í•˜ì—¬
- * SpaceNodeë¥¼ íƒìƒ‰í•˜ê¸° ìœ„í•´ì„œëŠ” ë°˜ë“œì‹œ Mutexë¥¼ ì¡ì•„ì•¼ í•˜ì˜€ì§€ë§Œ,
- * ì´ì œëŠ” Arrayë¡œ ê´€ë¦¬í•˜ë¯€ë¡œ, Space Nodeë¥¼ ì°¾ëŠ” ê²ƒì— ëŒ€í•´ì„œëŠ”
- * Mutexë¥¼ ì¡ì§€ ì•Šì•„ë„ ë©ë‹ˆë‹¤.
+ * BUG-28748 °ú°Å¿¡´Â SpaceNode¸¦ No Latch Hash·Î °ü¸®ÇÏ¿©
+ * SpaceNode¸¦ Å½»öÇÏ±â À§ÇØ¼­´Â ¹İµå½Ã Mutex¸¦ Àâ¾Æ¾ß ÇÏ¿´Áö¸¸,
+ * ÀÌÁ¦´Â Array·Î °ü¸®ÇÏ¹Ç·Î, Space Node¸¦ Ã£´Â °Í¿¡ ´ëÇØ¼­´Â
+ * Mutex¸¦ ÀâÁö ¾Ê¾Æµµ µË´Ï´Ù.
  *
  * [IN]  aSpaceID   - Tablespace ID
  * [OUT] aSpaceNode - Tablespace Node
  **********************************************************************/
-IDE_RC sctTableSpaceMgr::findSpaceNodeBySpaceID( scSpaceID  aSpaceID,
-                                                 void**     aSpaceNode )
+IDE_RC sctTableSpaceMgr::findSpaceNodeBySpaceID( idvSQL   * aStatistics,
+                                                 scSpaceID  aSpaceID,
+                                                 void**     aSpaceNode,
+                                                 idBool     aLockSpace )
 {
+    sctTableSpaceNode * sSpaceNode ;
+    idBool              sIsLocked = ID_FALSE;
+
     IDE_ERROR( aSpaceNode != NULL );
 
     IDE_TEST_RAISE( aSpaceID >= mNewTableSpaceID,
                     error_not_found_tablespace_node );
 
-    *aSpaceNode = mSpaceNodeArray[aSpaceID];
+    sSpaceNode  = mSpaceNodeArray[aSpaceID];
+    *aSpaceNode = sSpaceNode; 
 
-    IDE_TEST_RAISE( *aSpaceNode == NULL,
+    IDE_TEST_RAISE( sSpaceNode == NULL,
                     error_not_found_tablespace_node );
 
-    IDE_ASSERT_MSG( (*(sctTableSpaceNode**)aSpaceNode)->mID == aSpaceID,
+    IDE_ASSERT_MSG( sSpaceNode->mID == aSpaceID,
                     "Node Space ID : %"ID_UINT32_FMT"\n"
                     "Req Space ID  : %"ID_UINT32_FMT"\n",
                     (*(sctTableSpaceNode**)aSpaceNode)->mID,
                     aSpaceID );
 
-    IDE_TEST_RAISE( SMI_TBS_IS_DROPPED( (*(sctTableSpaceNode**)aSpaceNode)->mState ),
+    if ( aLockSpace == ID_TRUE )
+    {
+        lockSpaceNode( aStatistics,
+                       sSpaceNode );
+        sIsLocked = ID_TRUE;
+    }
+
+    IDE_TEST_RAISE( SMI_TBS_IS_DROPPED( sSpaceNode->mState ),
                     error_not_found_tablespace_node );
 
-    // Tablespace Drop Pending ìˆ˜í–‰ë„ì¤‘ ì‚¬ë§í•œ ê²½ìš°ì—ë„
-    // Dropëœê²ƒìœ¼ë¡œ ê°„ì£¼
-    IDE_TEST_RAISE( SMI_TBS_IS_DROP_PENDING( (*(sctTableSpaceNode**)aSpaceNode)->mState ),
+    // Tablespace Drop Pending ¼öÇàµµÁß »ç¸ÁÇÑ °æ¿ì¿¡µµ
+    // DropµÈ°ÍÀ¸·Î °£ÁÖ
+    IDE_TEST_RAISE( SMI_TBS_IS_DROP_PENDING( sSpaceNode->mState ),
                     error_not_found_tablespace_node );
 
     return IDE_SUCCESS;
@@ -967,34 +922,35 @@ IDE_RC sctTableSpaceMgr::findSpaceNodeBySpaceID( scSpaceID  aSpaceID,
     }
     IDE_EXCEPTION_END;
 
+    if ( sIsLocked == ID_TRUE )
+    {
+        unlockSpaceNode( sSpaceNode );
+    }
+
     return IDE_FAILURE;
 
 }
 
 /*
    PRJ-1548 User Memory Tablespace
-   í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œ ê²€ìƒ‰
-   ì¡´ì¬í•˜ì§€ ì•Šê±°ë‚˜ DROPPED ìƒíƒœì˜ ê²½ìš°ëŠ” NULLì„ ë°˜í™˜í•œë‹¤.
+   Å×ÀÌºí½ºÆäÀÌ½º ³ëµå °Ë»ö
+   Á¸ÀçÇÏÁö ¾Ê°Å³ª DROPPED »óÅÂÀÇ °æ¿ì´Â NULLÀ» ¹İÈ¯ÇÑ´Ù.
 
  [IN]  aSpaceID   - Tablespace ID
  [OUT] aSpaceNode - Tablespace Node
 */
-void sctTableSpaceMgr::findSpaceNodeWithoutException( scSpaceID  aSpaceID,
-                                                      void**     aSpaceNode,
-                                                      idBool     aUsingTBSAttr )
+sctTableSpaceNode* sctTableSpaceMgr::findSpaceNodeWithoutException( scSpaceID  aSpaceID,
+                                                                    idBool     aUsingTBSAttr )
 {
     sctTableSpaceNode *sSpaceNode;
     UInt               sTBSState;
-
-    IDE_DASSERT( aSpaceNode != NULL );
-    IDE_DASSERT( mSpaceNodeArray != NULL );
 
     sSpaceNode = mSpaceNodeArray[aSpaceID];
 
     if ( sSpaceNode != NULL )
     {
         if ( (aUsingTBSAttr == ID_TRUE) &&
-             (isMemTableSpace(aSpaceID) == ID_TRUE) )
+             (isMemTableSpace( sSpaceNode ) == ID_TRUE) )
         { 
             sTBSState = ((smmTBSNode*)sSpaceNode)->mTBSAttr.mTBSStateOnLA;
         }
@@ -1003,8 +959,8 @@ void sctTableSpaceMgr::findSpaceNodeWithoutException( scSpaceID  aSpaceID,
             sTBSState = sSpaceNode->mState;
         }
 
-        // Tablespace Drop Pending ìˆ˜í–‰ë„ì¤‘ ì‚¬ë§í•œ ê²½ìš°ì—ë„
-        // Dropëœê²ƒìœ¼ë¡œ ê°„ì£¼
+        // Tablespace Drop Pending ¼öÇàµµÁß »ç¸ÁÇÑ °æ¿ì¿¡µµ
+        // DropµÈ°ÍÀ¸·Î °£ÁÖ
         if ( SMI_TBS_IS_DROPPED(sTBSState) ||
              SMI_TBS_IS_DROP_PENDING(sTBSState) )
         {
@@ -1012,44 +968,25 @@ void sctTableSpaceMgr::findSpaceNodeWithoutException( scSpaceID  aSpaceID,
         }
     }
 
-    *aSpaceNode = (void*)sSpaceNode;
+    return sSpaceNode;
 }
 
-/*
-   // Tablespace IDë¡œ SpaceNodeë¥¼ ì°¾ëŠ”ë‹¤.
-   // í•´ë‹¹ Tablespaceê°€ DROPëœ ê²½ìš°ì—ë„ aSpaceNodeì— í•´ë‹¹ TBSë¥¼ ë¦¬í„´.
-
-   [IN]  aSpaceID   - Tablespace ID
-   [OUT] aSpaceNode - Tablespace Node
-*/
-void sctTableSpaceMgr::findSpaceNodeIncludingDropped( scSpaceID  aSpaceID,
-                                                      void**     aSpaceNode )
-{
-    sctTableSpaceNode *sSpaceNode;
-
-    IDE_DASSERT( aSpaceNode != NULL );
-    IDE_DASSERT( mSpaceNodeArray != NULL );
-
-    sSpaceNode = mSpaceNodeArray[aSpaceID];
-
-    *aSpaceNode = (void*)sSpaceNode;
-}
 
 /*
-   Tablespaceê°€ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬í•œë‹¤.
+   Tablespace°¡ Á¸ÀçÇÏ´ÂÁö Ã¼Å©ÇÑ´Ù.
 
-   ë‹¤ìŒì˜ ê²½ìš° ID_FALSEë¥¼ ë°˜í™˜í•œë‹¤.
-     - ì¡´ì¬í•˜ì§€ ì•ŠëŠ” Tablespace
-     - Dropëœ Tablespace
-   ê·¸ ì™¸ì—ëŠ” ID_TRUEë¥¼ ë°˜í™˜í•œë‹¤.
-     ( Offline, Discardëœ Tablespaceì˜ ê²½ìš°ì—ë„ ID_TRUEë¥¼ ë°˜í™˜ )
+   ´ÙÀ½ÀÇ °æ¿ì ID_FALSE¸¦ ¹İÈ¯ÇÑ´Ù.
+     - Á¸ÀçÇÏÁö ¾Ê´Â Tablespace
+     - DropµÈ Tablespace
+   ±× ¿Ü¿¡´Â ID_TRUE¸¦ ¹İÈ¯ÇÑ´Ù.
+     ( Offline, DiscardµÈ TablespaceÀÇ °æ¿ì¿¡µµ ID_TRUE¸¦ ¹İÈ¯ )
  */
 idBool sctTableSpaceMgr::isExistingTBS( scSpaceID aSpaceID )
 {
     sctTableSpaceNode *sSpaceNode;
     idBool             sExist;
 
-    findSpaceNodeWithoutException( aSpaceID, (void**) & sSpaceNode );
+    sSpaceNode = findSpaceNodeWithoutException( aSpaceID );
 
     if ( sSpaceNode == NULL )
     {
@@ -1066,20 +1003,20 @@ idBool sctTableSpaceMgr::isExistingTBS( scSpaceID aSpaceID )
 
 
 /*
-   Tablespaceê°€ Memoryì— Loadë˜ì—ˆëŠ”ì§€ ì²´í¬í•œë‹¤.
+   Tablespace°¡ Memory¿¡ LoadµÇ¾ú´ÂÁö Ã¼Å©ÇÑ´Ù.
 
-   ë‹¤ìŒì˜ ê²½ìš° ID_FALSEë¥¼ ë°˜í™˜í•œë‹¤.
-     - ì¡´ì¬í•˜ì§€ ì•ŠëŠ” Tablespace
-     - Dropëœ Tablespace
-     - OFFLINEëœ Tablespace
-   ê·¸ ì™¸ì—ëŠ” ID_TRUEë¥¼ ë°˜í™˜í•œë‹¤.
+   ´ÙÀ½ÀÇ °æ¿ì ID_FALSE¸¦ ¹İÈ¯ÇÑ´Ù.
+     - Á¸ÀçÇÏÁö ¾Ê´Â Tablespace
+     - DropµÈ Tablespace
+     - OFFLINEµÈ Tablespace
+   ±× ¿Ü¿¡´Â ID_TRUE¸¦ ¹İÈ¯ÇÑ´Ù.
  */
 idBool sctTableSpaceMgr::isOnlineTBS( scSpaceID aSpaceID )
 {
     idBool sIsOnline;
 
     sctTableSpaceNode *sSpaceNode;
-    findSpaceNodeWithoutException( aSpaceID, (void**) & sSpaceNode );
+    sSpaceNode = findSpaceNodeWithoutException( aSpaceID );
 
     if ( sSpaceNode == NULL )
     {
@@ -1087,9 +1024,9 @@ idBool sctTableSpaceMgr::isOnlineTBS( scSpaceID aSpaceID )
     }
     else
     {
-        // findSpaceNodeWithoutException ì€ Dropëœ Tablespaceì˜ ê²½ìš°
-        // TBSNodeë¡œ NULLì„ ë¦¬í„´í•œë‹¤.
-        // TBSNodeê°€ NULLì´ ì•„ë‹ˆë¯€ë¡œ, TBSì˜ ìƒíƒœê°€ DROPPEDì¼ ìˆ˜ ì—†ë‹¤.
+        // findSpaceNodeWithoutException Àº DropµÈ TablespaceÀÇ °æ¿ì
+        // TBSNode·Î NULLÀ» ¸®ÅÏÇÑ´Ù.
+        // TBSNode°¡ NULLÀÌ ¾Æ´Ï¹Ç·Î, TBSÀÇ »óÅÂ°¡ DROPPEDÀÏ ¼ö ¾ø´Ù.
         IDE_ASSERT( ( sSpaceNode->mState & SMI_TBS_DROPPED )
                     != SMI_TBS_DROPPED );
 
@@ -1099,7 +1036,7 @@ idBool sctTableSpaceMgr::isOnlineTBS( scSpaceID aSpaceID )
         }
         else
         {
-            // OFFLINEì´ê±°ë‚˜ DISCARDëœ TABLESPACE
+            // OFFLINEÀÌ°Å³ª DISCARDµÈ TABLESPACE
             sIsOnline = ID_FALSE;
         }
     }
@@ -1107,10 +1044,10 @@ idBool sctTableSpaceMgr::isOnlineTBS( scSpaceID aSpaceID )
     return sIsOnline;
 }
 
-/* Tablespaceê°€ ì—¬ëŸ¬ Stateì¤‘ í•˜ë‚˜ì˜ Stateë¥¼ ì§€ë‹ˆëŠ”ì§€ ì²´í¬í•œë‹¤.
+/* Tablespace°¡ ¿©·¯ StateÁß ÇÏ³ªÀÇ State¸¦ Áö´Ï´ÂÁö Ã¼Å©ÇÑ´Ù.
 
-   [IN] aSpaceID  - ìƒíƒœë¥¼ ì²´í¬í•  Tablespaceì˜ ID
-   [IN] aStateSet - í•˜ë‚˜ì´ìƒì˜ Tablespaceìƒíƒœë¥¼ ORë¡œ ë¬¶ì€ State Set
+   [IN] aSpaceID  - »óÅÂ¸¦ Ã¼Å©ÇÒ TablespaceÀÇ ID
+   [IN] aStateSet - ÇÏ³ªÀÌ»óÀÇ Tablespace»óÅÂ¸¦ OR·Î ¹­Àº State Set
  */
 idBool sctTableSpaceMgr::hasState( scSpaceID   aSpaceID,
                                    sctStateSet aStateSet,
@@ -1122,12 +1059,12 @@ idBool sctTableSpaceMgr::hasState( scSpaceID   aSpaceID,
 
     IDE_DASSERT( aStateSet != SCT_SS_INVALID );
 
-    findSpaceNodeWithoutException( aSpaceID, (void**) & sSpaceNode, aUsingTBSAttr );
+    sSpaceNode = findSpaceNodeWithoutException( aSpaceID, aUsingTBSAttr );
 
-    // DROPëœ Tablespace
+    // DROPµÈ Tablespace
     if ( sSpaceNode == NULL )
     {
-        // StateSetì— DROPPEDê°€ ìˆìœ¼ë©´ ID_TRUEë¦¬í„´
+        // StateSet¿¡ DROPPED°¡ ÀÖÀ¸¸é ID_TRUE¸®ÅÏ
         if ( SMI_TBS_IS_DROPPED( aStateSet) )
         {
             sRet = ID_TRUE;
@@ -1149,8 +1086,8 @@ idBool sctTableSpaceMgr::hasState( scSpaceID   aSpaceID,
             sTBSState = sSpaceNode->mState;
         }
 
-        // Tablespaceì˜ Stateê°€ aStateSetì´ ì§€ë‹ˆëŠ” ì—¬ëŸ¬
-        // Stateì¤‘ í•˜ë‚˜ë¥¼ ì§€ë‹ˆëŠ” ê²½ìš° ID_TRUEë¦¬í„´
+        // TablespaceÀÇ State°¡ aStateSetÀÌ Áö´Ï´Â ¿©·¯
+        // StateÁß ÇÏ³ª¸¦ Áö´Ï´Â °æ¿ì ID_TRUE¸®ÅÏ
         if ( ( sTBSState & aStateSet ) != 0 )
         {
             sRet = ID_TRUE;
@@ -1164,10 +1101,10 @@ idBool sctTableSpaceMgr::hasState( scSpaceID   aSpaceID,
     return sRet;
 }
 
-/* Tablespaceê°€ ì—¬ëŸ¬ Stateì¤‘ í•˜ë‚˜ì˜ Stateë¥¼ ì§€ë‹ˆëŠ”ì§€ ì²´í¬í•œë‹¤.
+/* Tablespace°¡ ¿©·¯ StateÁß ÇÏ³ªÀÇ State¸¦ Áö´Ï´ÂÁö Ã¼Å©ÇÑ´Ù.
 
-   [IN] aSpaceNode - ìƒíƒœë¥¼ ì²´í¬í•  Tablespaceì˜ Node
-   [IN] aStateSet  - í•˜ë‚˜ì´ìƒì˜ Tablespaceìƒíƒœë¥¼ ORë¡œ ë¬¶ì€ State Set
+   [IN] aSpaceNode - »óÅÂ¸¦ Ã¼Å©ÇÒ TablespaceÀÇ Node
+   [IN] aStateSet  - ÇÏ³ªÀÌ»óÀÇ Tablespace»óÅÂ¸¦ OR·Î ¹­Àº State Set
  */
 idBool sctTableSpaceMgr::hasState( sctTableSpaceNode * aSpaceNode,
                                    sctStateSet         aStateSet )
@@ -1180,18 +1117,18 @@ idBool sctTableSpaceMgr::hasState( sctTableSpaceNode * aSpaceNode,
 
 
 
-/* Tablespaceì˜ Stateì— aStateSetì•ˆì˜ Stateê°€ í•˜ë‚˜ë¼ë„ ìˆëŠ”ì§€ ì²´í¬í•œë‹¤.
+/* TablespaceÀÇ State¿¡ aStateSet¾ÈÀÇ State°¡ ÇÏ³ª¶óµµ ÀÖ´ÂÁö Ã¼Å©ÇÑ´Ù.
 
-   [IN] aTBSState  - ìƒíƒœë¥¼ ì²´í¬í•  Tablespaceì˜ State
-   [IN] aStateSet  - í•˜ë‚˜ì´ìƒì˜ Tablespaceìƒíƒœë¥¼ ORë¡œ ë¬¶ì€ State Set
+   [IN] aTBSState  - »óÅÂ¸¦ Ã¼Å©ÇÒ TablespaceÀÇ State
+   [IN] aStateSet  - ÇÏ³ªÀÌ»óÀÇ Tablespace»óÅÂ¸¦ OR·Î ¹­Àº State Set
  */
 idBool sctTableSpaceMgr::isStateInSet( UInt        aTBSState,
                                        sctStateSet aStateSet )
 {
     idBool sHasState ;
 
-    // Tablespaceì˜ Stateê°€ aStateSetì´ ì§€ë‹ˆëŠ” ì—¬ëŸ¬
-    // Stateì¤‘ í•˜ë‚˜ë¥¼ ì§€ë‹ˆëŠ” ê²½ìš° ID_TRUEë¦¬í„´
+    // TablespaceÀÇ State°¡ aStateSetÀÌ Áö´Ï´Â ¿©·¯
+    // StateÁß ÇÏ³ª¸¦ Áö´Ï´Â °æ¿ì ID_TRUE¸®ÅÏ
     if ( ( aTBSState & aStateSet ) != 0 )
     {
         sHasState = ID_TRUE;
@@ -1206,19 +1143,19 @@ idBool sctTableSpaceMgr::isStateInSet( UInt        aTBSState,
 
 
 /*
-   Tablespaceì•ˆì˜ Table/Indexë¥¼ Opení•˜ê¸° ì „ì— Tablespaceê°€
-   ì‚¬ìš© ê°€ëŠ¥í•œì§€ ì²´í¬í•œë‹¤.
+   Tablespace¾ÈÀÇ Table/Index¸¦ OpenÇÏ±â Àü¿¡ Tablespace°¡
+   »ç¿ë °¡´ÉÇÑÁö Ã¼Å©ÇÑ´Ù.
 
-   [IN] aSpaceNode - Tablespaceì˜ Node
+   [IN] aSpaceNode - TablespaceÀÇ Node
    [IN] aValidate  -
 
-   [ì£¼ì˜] í•´ë‹¹ Tablespaceì— Lockì´ ì¡íŒ ì±„ë¡œ ì´ í•¨ìˆ˜ê°€ ë¶ˆë ¤ì•¼
-           ì´ í•¨ìˆ˜í˜¸ì¶œì‹œì ì˜ ìƒí™©ì´ ê·¸ëŒ€ë¡œ ìœ ì§€ë¨ì„ ë³´ì¥í•  ìˆ˜ ìˆë‹¤.
+   [ÁÖÀÇ] ÇØ´ç Tablespace¿¡ LockÀÌ ÀâÈù Ã¤·Î ÀÌ ÇÔ¼ö°¡ ºÒ·Á¾ß
+           ÀÌ ÇÔ¼öÈ£Ãâ½ÃÁ¡ÀÇ »óÈ²ÀÌ ±×´ë·Î À¯ÁöµÊÀ» º¸ÀåÇÒ ¼ö ÀÖ´Ù.
 
-   ë‹¤ìŒì˜ ê²½ìš° ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¨ë‹¤.
-     - ì¡´ì¬í•˜ì§€ ì•ŠëŠ” Tablespace
-     - Dropëœ Tablespace
-     - Discardëœ Tablespace
+   ´ÙÀ½ÀÇ °æ¿ì ¿¡·¯¸¦ ¹ß»ı½ÃÅ²´Ù.
+     - Á¸ÀçÇÏÁö ¾Ê´Â Tablespace
+     - DropµÈ Tablespace
+     - DiscardµÈ Tablespace
      - Offline Tablespace
  */
 IDE_RC sctTableSpaceMgr::validateTBSNode( sctTableSpaceNode * aSpaceNode,
@@ -1228,8 +1165,8 @@ IDE_RC sctTableSpaceMgr::validateTBSNode( sctTableSpaceNode * aSpaceNode,
 
     if ( ( aTBSLvOpt & SCT_VAL_CHECK_DROPPED ) == SCT_VAL_CHECK_DROPPED )
     {
-        // DROPëœ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ê²½ìš° í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ê°€
-        // ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤ëŠ” Exceptionìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤.
+        // DROPµÈ Å×ÀÌºí½ºÆäÀÌ½ºÀÇ °æ¿ì Å×ÀÌºí½ºÆäÀÌ½º°¡
+        // Á¸ÀçÇÏÁö ¾Ê´Â´Ù´Â ExceptionÀ¸·Î Ã³¸®ÇÑ´Ù.
         IDE_TEST_RAISE( SMI_TBS_IS_DROPPED(aSpaceNode->mState),
                         error_not_found_tablespace_node );
     }
@@ -1239,7 +1176,7 @@ IDE_RC sctTableSpaceMgr::validateTBSNode( sctTableSpaceNode * aSpaceNode,
     if ( ( aTBSLvOpt & SCT_VAL_CHECK_DISCARDED ) ==
          SCT_VAL_CHECK_DISCARDED )
     {
-        // Discardëœ Tablespaceì˜ ê²½ìš°
+        // DiscardµÈ TablespaceÀÇ °æ¿ì
         IDE_TEST_RAISE( SMI_TBS_IS_DISCARDED(aSpaceNode->mState),
                         error_unable_to_use_discarded_tbs );
     }
@@ -1248,7 +1185,7 @@ IDE_RC sctTableSpaceMgr::validateTBSNode( sctTableSpaceNode * aSpaceNode,
     if ( ( aTBSLvOpt & SCT_VAL_CHECK_OFFLINE ) ==
          SCT_VAL_CHECK_OFFLINE )
     {
-        // Offline Tablespaceì¸ ê²½ìš°
+        // Offline TablespaceÀÎ °æ¿ì
         IDE_TEST_RAISE( SMI_TBS_IS_OFFLINE(aSpaceNode->mState),
                         error_unable_to_use_offline_tbs );
     }
@@ -1277,40 +1214,88 @@ IDE_RC sctTableSpaceMgr::validateTBSNode( sctTableSpaceNode * aSpaceNode,
 }
 
 /**********************************************************************
- * Description : TBSëª…ì„ ì…ë ¥ë°›ì•„ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ Nodeë¥¼ ë°˜í™˜í•œë‹¤.
- *               ì´ì „ì—ëŠ” TBS Nodeê°€ ì—†ì„ ê²½ìš° NULLì„ ë°˜í™˜ í•˜ì˜€ìœ¼ë‚˜
- *               BUG-26695ì— ì˜í•˜ì—¬ isExistTBSNodeByName()ì™€ ìš©ë„ì— ë”°ë¼
- *               ë‘˜ë¡œ ë‚˜ëˆ„ì–´ì§€ë˜ë©´ì„œ TBS Nodeê°€ ì—†ì„ ê²½ìš° ì˜¤ë¥˜ë¥¼ ë°˜í™˜í•˜ëŠ” ê²ƒìœ¼ë¡œ
- *               ìˆ˜ì •ë˜ì—ˆë‹¤.
+ * Description : TBS¸íÀ» ÀÔ·Â¹Ş¾Æ Å×ÀÌºí½ºÆäÀÌ½º Node¸¦ ¹İÈ¯ÇÑ´Ù.
+ *               ÀÌÀü¿¡´Â TBS Node°¡ ¾øÀ» °æ¿ì NULLÀ» ¹İÈ¯ ÇÏ¿´À¸³ª
+ *               BUG-26695¿¡ ÀÇÇÏ¿© isExistTBSNodeByName()¿Í ¿ëµµ¿¡ µû¶ó
+ *               µÑ·Î ³ª´©¾îÁöµÇ¸é¼­ TBS Node°¡ ¾øÀ» °æ¿ì ¿À·ù¸¦ ¹İÈ¯ÇÏ´Â °ÍÀ¸·Î
+ *               ¼öÁ¤µÇ¾ú´Ù.
  *
- *   aName      - [IN]  TBS Nodeë¥¼ ì°¾ì„ TBSì˜ ì´ë¦„
- *   aSpaceNode - [OUT] ì°¾ì€ TBS Nodeë¥¼ ë°˜í™˜
+ *   aName      - [IN]  TBS Node¸¦ Ã£À» TBSÀÇ ÀÌ¸§
+ *   aSpaceNode - [OUT] Ã£Àº TBS Node¸¦ ¹İÈ¯
  **********************************************************************/
-IDE_RC sctTableSpaceMgr::findSpaceNodeByName(SChar* aName,
-                                             void** aSpaceNode)
+IDE_RC sctTableSpaceMgr::findSpaceNodeByName( SChar* aName,
+                                              void** aSpaceNode,
+                                              idBool aLockSpace )
 {
-    scSpaceID sSpaceID;
+    idBool             sIsLocked = ID_FALSE;
+    UInt               i;
+    idBool             sIsExist = ID_FALSE;
+    sctTableSpaceNode *sSpaceNode;
 
     IDE_DASSERT( aName != NULL );
     IDE_DASSERT( aSpaceNode != NULL );
 
-    IDE_TEST( getTableSpaceIDByNameLow( aName, &sSpaceID ) != IDE_SUCCESS );
+    for ( i = 0 ; i < mNewTableSpaceID ; i++ )
+    {
+        sSpaceNode = mSpaceNodeArray[i];
 
-    IDE_TEST( findSpaceNodeBySpaceID( sSpaceID,
-                                      aSpaceNode )
-              != IDE_SUCCESS );
+        if ( sSpaceNode == NULL )
+        {
+            continue;
+        }
+
+        if ( aLockSpace == ID_TRUE )
+        {
+            lockSpaceNode( NULL, sSpaceNode );
+            sIsLocked = ID_TRUE;
+        }
+
+        if ( !SMI_TBS_IS_DROPPED(sSpaceNode->mState) )
+        {
+            if ( idlOS::strcmp( sSpaceNode->mName, aName) == 0 )
+            {
+                *aSpaceNode = sSpaceNode;
+                sIsExist = ID_TRUE;
+                break;
+            }
+        }
+
+        if ( aLockSpace == ID_TRUE )
+        {
+            sIsLocked = ID_FALSE;
+            unlockSpaceNode( sSpaceNode );
+        }
+    }
+
+    IDE_TEST_RAISE( sIsExist == ID_FALSE,
+                    error_not_found_tablespace_node_by_name );
+
+    // Tablespace Drop Pending ¼öÇàµµÁß »ç¸ÁÇÑ °æ¿ì¿¡µµ
+    // DropµÈ°ÍÀ¸·Î °£ÁÖ
+    IDE_TEST_RAISE( SMI_TBS_IS_DROP_PENDING( sSpaceNode->mState ),
+                    error_not_found_tablespace_node_by_name );
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( error_not_found_tablespace_node_by_name );
+    {
+        IDE_SET( ideSetErrorCode( smERR_ABORT_NotFoundTableSpaceNodeByName,
+                                  aName) );
+    }
     IDE_EXCEPTION_END;
+
+    if ( sIsLocked == ID_TRUE )
+    {
+        unlockSpaceNode( sSpaceNode );
+    }
 
     return IDE_FAILURE;
 }
 
 /**********************************************************************
- * Description : TBS Node Nameì„ ë„˜ê²¨ë°›ì•„ ì¡´ì¬í•˜ëŠ”ì§€ë§Œ í™•ì¸í•œë‹¤.
+ * Description : TBS Node NameÀ» ³Ñ°Ü¹Ş¾Æ Á¸ÀçÇÏ´ÂÁö¸¸ È®ÀÎÇÑ´Ù.
  *
- *   aName - [IN] TBS Nodeê°€ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•  TBSì˜ Name
+ *   aName - [IN] TBS Node°¡ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÒ TBSÀÇ Name
  **********************************************************************/
 idBool sctTableSpaceMgr::checkExistSpaceNodeByName( SChar* aTableSpaceName )
 {
@@ -1358,41 +1343,37 @@ IDE_RC sctTableSpaceMgr::getTBSAttrByName( SChar*              aName,
     IDE_DASSERT( aName != NULL );
     IDE_DASSERT( aSpaceAttr != NULL );
 
-    IDE_TEST( lock( NULL /* idvSQL* */) != IDE_SUCCESS );
-    sState = 1;
-
     IDE_TEST( findSpaceNodeByName( aName,
-                                   (void**)&sSpaceNode )
+                                   (void**)&sSpaceNode,
+                                   ID_TRUE ) // Lock
               != IDE_SUCCESS );
+    sState = 1;
 
     IDE_TEST( sSpaceNode == NULL );
 
     IDE_TEST_RAISE( SMI_TBS_IS_CREATING(sSpaceNode->mState),
                     error_not_found_tablespace_node_by_name );
 
-    if ( isDiskTableSpace(sSpaceNode->mID) == ID_TRUE )
+    switch( getTBSLocation( sSpaceNode ) )
     {
-        sddTableSpace::getTableSpaceAttr( (sddTableSpaceNode*)sSpaceNode,
+        case SMI_TBS_DISK:
+            sddTableSpace::getTableSpaceAttr( (sddTableSpaceNode*)sSpaceNode,
+                                               aSpaceAttr );
+            break;
+        case SMI_TBS_VOLATILE:
+            svmManager::getTableSpaceAttr( (svmTBSNode*)sSpaceNode,
                                           aSpaceAttr );
-    }
-    /* PROJ-1594 Volatile TBS */
-    else if ( isVolatileTableSpace(sSpaceNode->mID) == ID_TRUE )
-    {
-        svmManager::getTableSpaceAttr((svmTBSNode*)sSpaceNode,
-                                      aSpaceAttr);
-    }
-    else if ( isMemTableSpace(sSpaceNode->mID) == ID_TRUE )
-    {
-        smmManager::getTableSpaceAttr( (smmTBSNode*)sSpaceNode,
-                                       aSpaceAttr );
-    }
-    else
-    {
-        IDE_ASSERT(0);
+            break;
+        case SMI_TBS_MEMORY:
+            smmManager::getTableSpaceAttr( (smmTBSNode*)sSpaceNode,
+                                           aSpaceAttr );
+            break;
+        default:
+            break;
     }
 
     sState = 0;
-    IDE_TEST( unlock() != IDE_SUCCESS );
+    unlockSpaceNode( sSpaceNode );
 
     return IDE_SUCCESS;
 
@@ -1405,7 +1386,7 @@ IDE_RC sctTableSpaceMgr::getTBSAttrByName( SChar*              aName,
 
     if ( sState != 0 )
     {
-        (void)unlock();
+        unlockSpaceNode( sSpaceNode );
     }
 
     return IDE_FAILURE;
@@ -1413,9 +1394,10 @@ IDE_RC sctTableSpaceMgr::getTBSAttrByName( SChar*              aName,
 }
 
 /**********************************************************************
- * Description : í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ IDì— í•´ë‹¹í•˜ëŠ” í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì†ì„±ì„ ë°˜í™˜
+ * Description : Å×ÀÌºí½ºÆäÀÌ½º ID¿¡ ÇØ´çÇÏ´Â Å×ÀÌºí½ºÆäÀÌ½º ¼Ó¼ºÀ» ¹İÈ¯
  **********************************************************************/
-IDE_RC sctTableSpaceMgr::getTBSAttrByID( scSpaceID          aID,
+IDE_RC sctTableSpaceMgr::getTBSAttrByID( idvSQL           * aStatistics,
+                                         scSpaceID          aID,
                                          smiTableSpaceAttr* aSpaceAttr )
 {
     UInt               sState = 0;
@@ -1423,43 +1405,32 @@ IDE_RC sctTableSpaceMgr::getTBSAttrByID( scSpaceID          aID,
 
     IDE_DASSERT( aSpaceAttr != NULL );
 
-    IDE_TEST( lock( NULL /* idvSQL* */) != IDE_SUCCESS );
+    IDE_TEST( findAndLockSpaceNodeBySpaceID( aStatistics,
+                                             aID,
+                                             (void**)&sSpaceNode )
+              != IDE_SUCCESS );
     sState = 1;
 
-    IDE_TEST( findSpaceNodeBySpaceID( aID,
-                                      (void**)&sSpaceNode )
-              != IDE_SUCCESS );
-
-    if ( isDiskTableSpace(sSpaceNode->mID) == ID_TRUE )
+    switch( sctTableSpaceMgr::getTBSLocation( sSpaceNode ) )
     {
-        sddTableSpace::getTableSpaceAttr( (sddTableSpaceNode*)sSpaceNode,
-                                          aSpaceAttr );
-    }
-    else
-    {
-        if ( isMemTableSpace( sSpaceNode->mID ) == ID_TRUE )
-        {
+        case SMI_TBS_DISK:
+            sddTableSpace::getTableSpaceAttr( (sddTableSpaceNode*)sSpaceNode,
+                                               aSpaceAttr );
+            break;
+        case SMI_TBS_MEMORY:
             smmManager::getTableSpaceAttr( (smmTBSNode*)sSpaceNode,
                                            aSpaceAttr );
-
-        }
-        else
-        {
-            if ( isVolatileTableSpace( sSpaceNode->mID ) == ID_TRUE )
-            {
-                // íœ˜ë°œì„± TBS Nodeì˜ ì†ì„± êµ¬í•˜ê¸°
-                svmManager::getTableSpaceAttr( (svmTBSNode*)sSpaceNode,
-                                               aSpaceAttr );
-            }
-            else
-            {
-                IDE_ASSERT(0);
-            }
-        }
+            break;
+        case SMI_TBS_VOLATILE:
+            svmManager::getTableSpaceAttr( (svmTBSNode*)sSpaceNode,
+                                          aSpaceAttr );
+            break;
+        default:
+            break;
     }
 
     sState = 0;
-    IDE_TEST( unlock() != IDE_SUCCESS );
+    unlockSpaceNode( sSpaceNode );
 
     return IDE_SUCCESS;
 
@@ -1467,56 +1438,28 @@ IDE_RC sctTableSpaceMgr::getTBSAttrByID( scSpaceID          aID,
 
     if ( sState != 0 )
     {
-        IDE_ASSERT( unlock() == IDE_SUCCESS );
+        unlockSpaceNode( sSpaceNode );
     }
 
     return IDE_FAILURE;
 
 }
 
-/**
-    Tablespace Attributeì˜ Pointerë¥¼ ë°˜í™˜í•œë‹¤.
-    íŠ¹ì • Tablespaceì˜ Attributeë¥¼ ë³€ê²½í•˜ê³ ì í•  ë•Œ ì‚¬ìš©í•œë‹¤.
+/*
+    Tablespace AttributeÀÇ flag ¸¦ ¹İÈ¯ÇÑ´Ù.
  */
-IDE_RC sctTableSpaceMgr::getTBSAttrFlagPtrByID( scSpaceID    aID,
-                                                UInt      ** aAttrFlagPtr )
+IDE_RC sctTableSpaceMgr::getTBSAttrFlagByID( scSpaceID   aSpaceID,
+                                             UInt      * aAttrFlagPtr )
 {
     sctTableSpaceNode* sSpaceNode;
 
     IDE_DASSERT( aAttrFlagPtr != NULL );
 
-    IDE_TEST( findSpaceNodeBySpaceID( aID,
+    IDE_TEST( findSpaceNodeBySpaceID( aSpaceID,
                                       (void**)&sSpaceNode )
               != IDE_SUCCESS );
 
-    if ( isDiskTableSpace(sSpaceNode->mID) == ID_TRUE )
-    {
-        sddTableSpace::getTBSAttrFlagPtr( (sddTableSpaceNode*)sSpaceNode,
-                                          aAttrFlagPtr );
-    }
-    else
-    {
-        if ( isMemTableSpace( sSpaceNode->mID ) == ID_TRUE )
-        {
-            smmManager::getTBSAttrFlagPtr( (smmTBSNode*)sSpaceNode,
-                                            aAttrFlagPtr );
-
-        }
-        else
-        {
-            if ( sctTableSpaceMgr::isVolatileTableSpace( sSpaceNode->mID )
-                 == ID_TRUE )
-            {
-                // íœ˜ë°œì„± TBS Nodeì˜ ì†ì„± êµ¬í•˜ê¸°
-                svmManager::getTBSAttrFlagPtr( (svmTBSNode*)sSpaceNode,
-                                               aAttrFlagPtr );
-            }
-            else
-            {
-                IDE_ASSERT(0);
-            }
-        }
-    }
+    *aAttrFlagPtr = getTBSAttrFlag( sSpaceNode );
 
     return IDE_SUCCESS;
 
@@ -1525,27 +1468,73 @@ IDE_RC sctTableSpaceMgr::getTBSAttrFlagPtrByID( scSpaceID    aID,
     return IDE_FAILURE;
 }
 
+UInt sctTableSpaceMgr::getTBSAttrFlag( sctTableSpaceNode* aSpaceNode )
+{
+    UInt sAttrFlag = SMI_TBS_NONE;
+
+    switch( sctTableSpaceMgr::getTBSLocation( aSpaceNode ) )
+    {
+        case SMI_TBS_DISK:
+            sAttrFlag = sddTableSpace::getTBSAttrFlag( (sddTableSpaceNode*)aSpaceNode );
+            break;
+        case SMI_TBS_MEMORY:
+            sAttrFlag = smmManager::getTBSAttrFlag( (smmTBSNode*)aSpaceNode );
+            break;
+        case SMI_TBS_VOLATILE:
+            sAttrFlag = svmManager::getTBSAttrFlag( (svmTBSNode*)aSpaceNode );
+            break;
+        default:
+            break;
+    }
+
+    return sAttrFlag;
+}
 
 /*
-    Tablespaceì˜ Attribute Flagë¡œë¶€í„° ë¡œê·¸ ì••ì¶•ì—¬ë¶€ë¥¼ ì–»ì–´ì˜¨ë‹¤
+    Tablespace AttributeÀÇ flag ¸¦ ¼¼ÆÃÇÑ´Ù.
+ */
+void sctTableSpaceMgr::setTBSAttrFlag( sctTableSpaceNode* aSpaceNode,
+                                       UInt               aAttrFlag )
+{
+    switch( sctTableSpaceMgr::getTBSLocation( aSpaceNode ) )
+    {
+        case SMI_TBS_DISK:
+            sddTableSpace::setTBSAttrFlag( (sddTableSpaceNode*)aSpaceNode,
+                                           aAttrFlag );
+            break;
+        case SMI_TBS_MEMORY:
+            smmManager::setTBSAttrFlag( (smmTBSNode*)aSpaceNode,
+                                        aAttrFlag );
+            break;
+        case SMI_TBS_VOLATILE:
+            svmManager::setTBSAttrFlag( (svmTBSNode*)aSpaceNode,
+                                        aAttrFlag );
+            break;
+        default:
+            break;
+    }
+}
 
-    [IN] aSpaceID - Tablespaceì˜ ID
-    [OUT] aDoComp - Logì••ì¶• ì—¬ë¶€
+
+/*
+    TablespaceÀÇ Attribute Flag·ÎºÎÅÍ ·Î±× ¾ĞÃà¿©ºÎ¸¦ ¾ò¾î¿Â´Ù
+
+    [IN] aSpaceID - TablespaceÀÇ ID
+    [OUT] aDoComp - Log¾ĞÃà ¿©ºÎ
  */
 IDE_RC sctTableSpaceMgr::getSpaceLogCompFlag( scSpaceID aSpaceID,
-                                              idBool *aDoComp )
+                                              idBool   *aDoComp )
 {
     IDE_DASSERT( aDoComp != NULL );
 
-    UInt * sAttrFlagPtr;
-    idBool sDoComp;
+    UInt        sAttrFlag;
+    idBool      sDoComp;
 
-
-    if ( sctTableSpaceMgr::getTBSAttrFlagPtrByID( aSpaceID,
-                                                  &sAttrFlagPtr )
+    if ( sctTableSpaceMgr::getTBSAttrFlagByID( aSpaceID,
+                                               &sAttrFlag )
          == IDE_SUCCESS )
     {
-        if ( ( (*sAttrFlagPtr) & SMI_TBS_ATTR_LOG_COMPRESS_MASK )
+        if ( ( sAttrFlag & SMI_TBS_ATTR_LOG_COMPRESS_MASK )
              == SMI_TBS_ATTR_LOG_COMPRESS_TRUE )
         {
             sDoComp = ID_TRUE;
@@ -1557,11 +1546,11 @@ IDE_RC sctTableSpaceMgr::getSpaceLogCompFlag( scSpaceID aSpaceID,
     }
     else
     {
-        // ì•„ì§ Tablespaceê°€ ìƒê¸°ì§€ë„ ì•Šì€ ìƒíƒœ
+        // ¾ÆÁ÷ Tablespace°¡ »ı±âÁöµµ ¾ÊÀº »óÅÂ
         if ( ideGetErrorCode() == smERR_ABORT_NotFoundTableSpaceNode )
         {
             IDE_CLEAR();
-            // ê¸°ë³¸ì ìœ¼ë¡œ ê°€ëŠ¥í•˜ë©´ ë¡œê·¸ ì••ì¶• ì‹¤ì‹œ
+            // ±âº»ÀûÀ¸·Î °¡´ÉÇÏ¸é ·Î±× ¾ĞÃà ½Ç½Ã
             sDoComp = ID_TRUE;
         }
         else
@@ -1583,231 +1572,9 @@ IDE_RC sctTableSpaceMgr::getSpaceLogCompFlag( scSpaceID aSpaceID,
     return IDE_FAILURE;
 
 }
-#if 0 //not used.
-/***********************************************************************
- * Description : tablespace ë…¸ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ì¶œë ¥
- ***********************************************************************/
-IDE_RC sctTableSpaceMgr::dumpTableSpaceList()
-{
-
-    UInt               sState = 0;
-    UInt               i;
-    sctTableSpaceNode *sSpaceNode;
-
-    IDE_TEST( lock( NULL /* idvSQL* */) != IDE_SUCCESS );
-    sState = 1;
-
-    for(i = 0; i < mNewTableSpaceID; i++)
-    {
-        sSpaceNode = mSpaceNodeArray[i];
-
-        if ( sSpaceNode == NULL )
-        {
-            continue;
-        }
-
-        if ( isMemTableSpace(i) == ID_TRUE )
-        {
-            // smmManager::dumpsctTableSpaceNode((smmsctTableSpaceNode*)sSpaceNode);
-        }
-        else if ( isVolatileTableSpace(i) == ID_TRUE )
-        {
-            // nothing to do...
-        }
-        else if ( isDiskTableSpace(i) == ID_TRUE )// disk tablespace
-        {
-            (void)sddTableSpace::dumpTableSpaceNode((sddTableSpaceNode*)sSpaceNode);
-        }
-        else
-        {
-            IDE_ASSERT(0);
-        }
-    }
-
-    sState = 0;
-    IDE_TEST( unlock() != IDE_SUCCESS );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    if ( sState != 0 )
-    {
-        IDE_ASSERT( unlock() == IDE_SUCCESS );
-    }
-
-    return IDE_FAILURE;
-
-}
-#endif
-
-/**********************************************************************
- * Description :
- **********************************************************************/
-
-void sctTableSpaceMgr::getFirstSpaceNode( void **aSpaceNode )
-{
-
-    IDE_DASSERT( aSpaceNode != NULL );
-
-    *(sctTableSpaceNode**)aSpaceNode = mSpaceNodeArray[0];
-
-}
-
-/**********************************************************************
- * Description :
- **********************************************************************/
-
-void sctTableSpaceMgr::getNextSpaceNode( void  *aCurrSpaceNode,
-                                         void **aNextSpaceNode )
-{
-    findNextSpaceNode( aCurrSpaceNode,
-                       aNextSpaceNode,
-                       SMI_TBS_DROPPED );
-}
-
-void sctTableSpaceMgr::getNextSpaceNodeIncludingDropped( void  *aCurrSpaceNode,
-                                                         void **aNextSpaceNode )
-{
-    findNextSpaceNode( aCurrSpaceNode,
-                       aNextSpaceNode,
-                       0/* Do Not Skip Any TBS
-                           (Including Dropped) */ );
-}
-
-void sctTableSpaceMgr::getNextSpaceNodeWithoutDropped( void  *aCurrSpaceNode,
-                                                       void **aNextSpaceNode )
-{
-    findNextSpaceNode( aCurrSpaceNode,
-                       aNextSpaceNode,
-                       ( SMI_TBS_DROPPED | 
-                         SMI_TBS_CREATING |
-                         SMI_TBS_DROP_PENDING )  );
-}
-
-
-void sctTableSpaceMgr::findNextSpaceNode( void  *aCurrSpaceNode,
-                                          void **aNextSpaceNode,
-                                          UInt   aSkipStateSet )
-{
-    sctTableSpaceNode* sSpaceNode;
-    scSpaceID          sSpaceID;
-
-    sSpaceNode = (sctTableSpaceNode*)aCurrSpaceNode;
-    sSpaceID = sSpaceNode->mID;
-
-    while( 1 )
-    {
-        sSpaceID = sSpaceID + 1;
-
-        sSpaceNode = mSpaceNodeArray[sSpaceID];
-
-        if ( sSpaceID >= mNewTableSpaceID )
-        {
-            *aNextSpaceNode = NULL;
-            break;
-        }
-
-        if ( sSpaceNode == NULL )
-        {
-            continue;
-        }
-
-        if ( (sSpaceNode->mState & aSkipStateSet) != 0 )
-        {
-            continue;
-        }
-
-        break;
-    }
-
-    if ( sSpaceNode != NULL )
-    {
-        IDE_DASSERT( sSpaceID == sSpaceNode->mID );
-        *aNextSpaceNode = sSpaceNode;
-    }
-    else
-    {
-        IDE_DASSERT( *aNextSpaceNode == NULL );
-    }
-}
-
-/**********************************************************************
- * Description : TBSì˜ ì €ì¥ ì˜ì—­(ë©”ëª¨ë¦¬, ë””ìŠ¤í¬, ì„ì‹œ)ì„ ë°˜í™˜í•œë‹¤.
- *
- *   aSpaceID - [IN] ê´€ë¦¬ ì˜ì—­ì„ í™•ì¸í•  TBSì˜ ID
- **********************************************************************/
-smiTBSLocation sctTableSpaceMgr::getTBSLocation( scSpaceID aSpaceID )
-{
-    smiTBSLocation  sTBSLocation;
-    UInt            sType        = sctTableSpaceMgr::getTableSpaceType( aSpaceID );
-
-    switch( sType & SMI_TBS_LOCATION_MASK )
-    {
-        case SMI_TBS_LOCATION_DISK:
-            sTBSLocation = SMI_TBS_DISK;
-            break;
-        case SMI_TBS_LOCATION_MEMORY:
-            sTBSLocation = SMI_TBS_MEMORY;
-            break;
-        case SMI_TBS_LOCATION_VOLATILE:
-            sTBSLocation = SMI_TBS_VOLATILE;
-            break;
-        default:
-            /* ìœ„ íƒ€ì… ì¤‘ í•˜ë‚˜ì—¬ì•¼ í•¨ */
-            sTBSLocation = SMI_TBS_NONE;
-           break;
-    }
-
-    return sTBSLocation;
-}
-
-/**********************************************************************
- * Description : ì‹œìŠ¤í…œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì—¬ë¶€ ë°˜í™˜
- **********************************************************************/
-idBool sctTableSpaceMgr::isSystemTableSpace( scSpaceID aSpaceID )
-{
-    idBool  sIsSystemSpace  = ID_FALSE;
-
-    if ( (aSpaceID == SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC)  ||
-         (aSpaceID == SMI_ID_TABLESPACE_SYSTEM_MEMORY_DATA) ||
-         (aSpaceID == SMI_ID_TABLESPACE_SYSTEM_DISK_DATA)   ||
-         (aSpaceID == SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO)   ||
-         (aSpaceID == SMI_ID_TABLESPACE_SYSTEM_DISK_TEMP) )
-    {
-        sIsSystemSpace = ID_TRUE;
-    }
-    else
-    {
-        sIsSystemSpace = ID_FALSE;
-    }
-
-    return sIsSystemSpace;
-}
-
-
-/**********************************************************************
- * Description :
- **********************************************************************/
-idBool sctTableSpaceMgr::isSystemMemTableSpace( scSpaceID aSpaceID )
-{
-    idBool  sIsSystemMemSpace;
-    
-    if ( (aSpaceID  == SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC) ||
-         (aSpaceID  == SMI_ID_TABLESPACE_SYSTEM_MEMORY_DATA) )
-    {
-        sIsSystemMemSpace = ID_TRUE;
-    }
-    else
-    {
-        sIsSystemMemSpace = ID_FALSE;
-    }
-
-    return sIsSystemMemSpace;
-}
 
 /***********************************************************************
- * Description : refine ë‹¨ê³„ì—ì„œ í˜¸ì¶œ:ëª¨ë“  temp tablespaceë¥¼ ì´ˆê¸°í™”ì‹œí‚¨ë‹¤.
+ * Description : refine ´Ü°è¿¡¼­ È£Ãâ:¸ğµç temp tablespace¸¦ ÃÊ±âÈ­½ÃÅ²´Ù.
  **********************************************************************/
 IDE_RC sctTableSpaceMgr::resetAllTempTBS( void *aTrans )
 {
@@ -1838,8 +1605,8 @@ IDE_RC sctTableSpaceMgr::resetAllTempTBS( void *aTrans )
             else
             {
                 // fix BUG-17501
-                // ì„œë²„êµ¬ë™ì‹œ user disk temp tablespace resetê³¼ì •ì—ì„œ
-                // DROOPED ìƒíƒœì˜ TBSì— ëŒ€í•´ Assert ê±¸ë©´ ì•ˆë¨.
+                // ¼­¹ö±¸µ¿½Ã user disk temp tablespace reset°úÁ¤¿¡¼­
+                // DROOPED »óÅÂÀÇ TBS¿¡ ´ëÇØ Assert °É¸é ¾ÈµÊ.
             }
         }
     }
@@ -1853,19 +1620,18 @@ IDE_RC sctTableSpaceMgr::resetAllTempTBS( void *aTrans )
 }
 
 /***********************************************************************
- * Description : ë°ì´íƒ€ íŒŒì¼ í•´ë” ê°±ì‹ .
- * ë°ì´íƒ€ fileì´ë¦„ìœ¼ë¡œ ë°ì´íƒ€ íŒŒì¼ ë…¸ë“œë¥¼ ì°¾ëŠ”ë‹¤.
- * -> smiMediaRecovery classì— ì˜í•˜ì—¬ ë¶ˆë¦°ë‹¤.
+ * Description : µ¥ÀÌÅ¸ ÆÄÀÏ ÇØ´õ °»½Å.
+ * µ¥ÀÌÅ¸ fileÀÌ¸§À¸·Î µ¥ÀÌÅ¸ ÆÄÀÏ ³ëµå¸¦ Ã£´Â´Ù.
+ * -> smiMediaRecovery class¿¡ ÀÇÇÏ¿© ºÒ¸°´Ù.
  **********************************************************************/
-IDE_RC  sctTableSpaceMgr::getDataFileNodeByName( SChar            * aFileName,
-                                                 sddDataFileNode ** aFileNode,
-                                                 scSpaceID        * aSpaceID,
-                                                 scPageID         * aFstPageID,
-                                                 scPageID         * aLstPageID,
-                                                 SChar           ** aSpaceName )
+void  sctTableSpaceMgr::getDataFileNodeByName( SChar            * aFileName,
+                                               sddDataFileNode ** aFileNode,
+                                               scSpaceID        * aSpaceID,
+                                               scPageID         * aFstPageID,
+                                               scPageID         * aLstPageID,
+                                               SChar           ** aSpaceName )
 {
     UInt                i;
-    UInt                sState = 0;
     scPageID            sFstPageID;
     scPageID            sLstPageID;
     sctTableSpaceNode*  sSpaceNode;
@@ -1876,9 +1642,6 @@ IDE_RC  sctTableSpaceMgr::getDataFileNodeByName( SChar            * aFileName,
 
     *aFileNode = NULL;
 
-    IDE_TEST( lock( NULL /* idvSQL* */) != IDE_SUCCESS );
-    sState = 1;
-
     for ( i = 0 ; i < mNewTableSpaceID ; i++ )
     {
         sSpaceNode = mSpaceNodeArray[i];
@@ -1888,79 +1651,61 @@ IDE_RC  sctTableSpaceMgr::getDataFileNodeByName( SChar            * aFileName,
             continue;
         }
 
-        if ( isMemTableSpace(i) == ID_TRUE )
+        if ( isDiskTableSpace( sSpaceNode ) == ID_FALSE )
         {
             continue;
-        }
-        else if ( isVolatileTableSpace(i) == ID_TRUE )
-        {
-            continue;
-        }
-        else 
-        {
-            IDE_ERROR(isDiskTableSpace(i) == ID_TRUE );
         }
 
-        if ( SMI_TBS_IS_DROPPED(sSpaceNode->mState) )
+        lockSpaceNode( NULL /* idvSQL* */,
+                       sSpaceNode );
+
+        if ( SMI_TBS_IS_DROPPED( sSpaceNode->mState ) )
         {
+            unlockSpaceNode( sSpaceNode );
             continue;
         }
+
         if ( sddTableSpace::getPageRangeByName( (sddTableSpaceNode*)sSpaceNode,
                                                 aFileName,
                                                 aFileNode,
                                                 &sFstPageID,
                                                 &sLstPageID) == IDE_SUCCESS )
-         {
-             if ( aFstPageID != NULL )
-             {
-                 *aFstPageID = sFstPageID;
-             }
-
-             if ( aLstPageID != NULL )
-             {
-                 *aLstPageID = sLstPageID;
-             }
-
-             if ( aSpaceName != NULL )
-             {
-                 *aSpaceName = sSpaceNode->mName;
-             }
-
-             *aSpaceID = sSpaceNode->mID;
-             break;
-         }
-    }
-
-    sState = 0;
-    IDE_TEST( unlock() != IDE_SUCCESS );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    IDE_PUSH();
-    {
-        if ( sState != 0 )
         {
-            IDE_ASSERT( unlock() == IDE_SUCCESS );
-        }
-    }
-    IDE_POP();
+            if ( aFstPageID != NULL )
+            {
+                *aFstPageID = sFstPageID;
+            }
 
-    return IDE_FAILURE;
+            if ( aLstPageID != NULL )
+            {
+                *aLstPageID = sLstPageID;
+            }
+
+            if ( aSpaceName != NULL )
+            {
+                *aSpaceName = sSpaceNode->mName;
+            }
+
+            *aSpaceID = sSpaceNode->mID;
+            unlockSpaceNode( sSpaceNode );
+            break;
+        }
+
+        unlockSpaceNode( sSpaceNode );
+    }
 }
 
 /***********************************************************************
- * Description : íŠ¸ëœì­ì…˜ ì»¤ë°‹ ì§ì „ì— ìˆ˜í–‰í•˜ê¸° ìœ„í•œ ì—°ì‚°ì„ ë“±ë¡
+ * Description : Æ®·£Àè¼Ç Ä¿¹Ô Á÷Àü¿¡ ¼öÇàÇÏ±â À§ÇÑ ¿¬»êÀ» µî·Ï
  *
- * Disk Tablespace, Memory Tablespaceëª¨ë‘ ì´ ë£¨í‹´ì„ ì´ìš©í•œë‹¤.
+ * Disk Tablespace, Memory Tablespace¸ğµÎ ÀÌ ·çÆ¾À» ÀÌ¿ëÇÑ´Ù.
  *
- * [IN] aTrans     : Pending Operationì„ ìˆ˜í–‰í•˜ê²Œ ë  Transaction
- * [IN] aSpaceID   : Pending Operationìˆ˜í–‰ ëŒ€ìƒì´ ë˜ëŠ” Tablespace
- * [IN] aIsCommit  : Commitì‹œì— ë™ì‘í•˜ëŠ” Pending Operationì´ë¼ë©´ ID_TRUE
- * [IN] aPendingOpType : Pending Operationì˜ ì¢…ë¥˜
- * [OUT] aPendingOp : ìƒˆë¡œ ë“±ë¡í•œ Pending Operation
- *                    aPendingOp != NULLì¸ ê²½ìš°ì—ë§Œ ì„¤ì •ëœë‹¤.
+ * [IN] aTrans     : Pending OperationÀ» ¼öÇàÇÏ°Ô µÉ Transaction
+ * [IN] aSpaceID   : Pending Operation¼öÇà ´ë»óÀÌ µÇ´Â Tablespace
+ * [IN] aIsCommit  : Commit½Ã¿¡ µ¿ÀÛÇÏ´Â Pending OperationÀÌ¶ó¸é ID_TRUE
+ * [IN] aPendingOpType : Pending OperationÀÇ Á¾·ù
+ * [OUT] aPendingOp : »õ·Î µî·ÏÇÑ Pending Operation
+ *                    aPendingOp != NULLÀÎ °æ¿ì¿¡¸¸ ¼³Á¤µÈ´Ù.
  **********************************************************************/
 IDE_RC sctTableSpaceMgr::addPendingOperation( void               * aTrans,
                                               scSpaceID            aSpaceID,
@@ -2003,8 +1748,8 @@ IDE_RC sctTableSpaceMgr::addPendingOperation( void               * aTrans,
 
     SM_LSN_INIT( sPendingOp->mOnlineTBSLSN );
 
-    sPendingOp->mPendingOpFunc  = NULL; // NULLì´ë©´ í•¨ìˆ˜ í˜¸ì¶œ ì•ˆí•¨
-    sPendingOp->mPendingOpParam = NULL; // NULLì´ë©´ ì „ë‹¬ì¸ì ì—†ìŒ
+    sPendingOp->mPendingOpFunc  = NULL; // NULLÀÌ¸é ÇÔ¼ö È£Ãâ ¾ÈÇÔ
+    sPendingOp->mPendingOpParam = NULL; // NULLÀÌ¸é Àü´ŞÀÎÀÚ ¾øÀ½
 
     sPendingOpList->mData = sPendingOp;
 
@@ -2038,11 +1783,11 @@ IDE_RC sctTableSpaceMgr::addPendingOperation( void               * aTrans,
 
 
 /*
-   ê¸°ëŠ¥ : íŠ¸ëœì­ì…˜ì˜ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ê´€ë ¨ ì—°ì‚°ì— ëŒ€í•œ
-   Commit/Rollback Pending Operationì„ ìˆ˜í–‰í•œë‹¤.
+   ±â´É : Æ®·£Àè¼ÇÀÇ Å×ÀÌºí½ºÆäÀÌ½º °ü·Ã ¿¬»ê¿¡ ´ëÇÑ
+   Commit/Rollback Pending OperationÀ» ¼öÇàÇÑ´Ù.
 
-   [IN] aPendingOp : Pending ì•„ì´í…œ
-   [IN] aIsCommit  : Commit/Rollback ì—¬ë¶€
+   [IN] aPendingOp : Pending ¾ÆÀÌÅÛ
+   [IN] aIsCommit  : Commit/Rollback ¿©ºÎ
 */
 IDE_RC sctTableSpaceMgr::executePendingOperation( idvSQL  * aStatistics,
                                                    void   * aPendingOp,
@@ -2062,23 +1807,21 @@ IDE_RC sctTableSpaceMgr::executePendingOperation( idvSQL  * aStatistics,
 
     IDE_TEST_CONT( sPendingOp->mIsCommit != aIsCommit, CONT_SKIP_PENDING );
 
- retry:
-
-    IDE_TEST( lock( aStatistics ) != IDE_SUCCESS );
-    sState = 1;
-
-    // TBS Nodeê°€ ì¡´ì¬í•˜ì§€ ì•Šê±°ë‚˜ DROPPED ìƒíƒœì˜ ê²½ìš°ëŠ” NULLì´ ë°˜í™˜ëœë‹¤.
-    findSpaceNodeWithoutException( sPendingOp->mSpaceID,
-                                   (void**)&sSpaceNode );
+    // TBS Node°¡ Á¸ÀçÇÏÁö ¾Ê°Å³ª DROPPED »óÅÂÀÇ °æ¿ì´Â NULLÀÌ ¹İÈ¯µÈ´Ù.
+    sSpaceNode = findSpaceNodeWithoutException( sPendingOp->mSpaceID );
 
     IDE_TEST_CONT( sSpaceNode == NULL, CONT_SKIP_PENDING );
 
-    // Memory TBSì˜ Drop Pendingì²˜ë¦¬ëŠ” Pendingí•¨ìˆ˜ì—ì„œ ìˆ˜í–‰í•œë‹¤.
+    lockSpaceNode( aStatistics,
+                   sSpaceNode );
+    sState = 1;
+
+    // Memory TBSÀÇ Drop PendingÃ³¸®´Â PendingÇÔ¼ö¿¡¼­ ¼öÇàÇÑ´Ù.
     if ( (isMemTableSpace( sPendingOp->mSpaceID ) == ID_TRUE) ||
          (isVolatileTableSpace( sPendingOp->mSpaceID ) == ID_TRUE) )
     {
         sState = 0;
-        IDE_TEST( unlock() != IDE_SUCCESS );
+        unlockSpaceNode( sSpaceNode );
 
         IDE_CONT( CONT_RUN_PENDING );
     }
@@ -2087,8 +1830,8 @@ IDE_RC sctTableSpaceMgr::executePendingOperation( idvSQL  * aStatistics,
         IDE_ERROR( isDiskTableSpace(sPendingOp->mSpaceID )  == ID_TRUE );
     }
 
-    // ë¶ˆí•„ìš”í•œ DIFFë¥¼ ë°œìƒì‹œí‚¤ì§€ ì•Šê²Œ í•˜ê¸° ìœ„í•´ indendingí•˜ì§€ ì•ŠìŒ
-    // ì•„ë˜ ì½”ë“œëŠ” ëª¨ë‘ Disk Tablespaceì˜ Pendingí•¨ìˆ˜ë¡œ ì˜®ê²¨ê°ˆ ë‚´ìš©ë“¤ì„
+    // ºÒÇÊ¿äÇÑ DIFF¸¦ ¹ß»ı½ÃÅ°Áö ¾Ê°Ô ÇÏ±â À§ÇØ indendingÇÏÁö ¾ÊÀ½
+    // ¾Æ·¡ ÄÚµå´Â ¸ğµÎ Disk TablespaceÀÇ PendingÇÔ¼ö·Î ¿Å°Ü°¥ ³»¿ëµéÀÓ
     switch( sPendingOp->mPendingOpType )
     {
         case SCT_POP_CREATE_TBS:
@@ -2099,19 +1842,19 @@ IDE_RC sctTableSpaceMgr::executePendingOperation( idvSQL  * aStatistics,
             break;
 
         case SCT_POP_DROP_TBS:
-            // lock -> sync lock ìš”ì²­í•˜ëŠ” ê³¼ì •
-            // sync lock -> lock í•˜ëŠ” ê³¼ì •ì€ ì¡´ì¬í•˜ì§€ ì•Šë„ë¡ í•˜ì—¬
-            // êµì°©ìƒíƒœê°€ ë°œìƒí•˜ì§€ ì•Šë„ë¡ í•œë‹¤.
+            // lock -> sync lock ¿äÃ»ÇÏ´Â °úÁ¤
+            // sync lock -> lock ÇÏ´Â °úÁ¤Àº Á¸ÀçÇÏÁö ¾Êµµ·Ï ÇÏ¿©
+            // ±³Âø»óÅÂ°¡ ¹ß»ıÇÏÁö ¾Êµµ·Ï ÇÑ´Ù.
 
-            // syncê°€ ì§„í–‰ì¤‘ì¼ë•Œê¹Œì§€ ëŒ€ê¸°í•˜ë‹¤ê°€ lockì´ íšë“ëœë‹¤.
-            // sync lockì„ íšë“í•˜ë©´ ì–´ë– í•œ DBF Nodeì˜ íŒŒì¼ë„ syncê°€
-            // ì§„í–‰ë  ìˆ˜ ì—†ê³ ,
-            // sync lockì— ëŒ€ê¸°í•œë‹¤.
-            // íŒŒì¼ì„ ì œê±°í•˜ê³  sync í•˜ëŠ” ì—°ì‚°ì´ sync lockì„
-            // íšë“í•˜ê²Œ ë˜ë©´
-            // DROPPED ìƒíƒœì´ê¸°ë•Œë¬¸ì— ì ‘ê·¼í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // sync°¡ ÁøÇàÁßÀÏ¶§±îÁö ´ë±âÇÏ´Ù°¡ lockÀÌ È¹µæµÈ´Ù.
+            // sync lockÀ» È¹µæÇÏ¸é ¾î¶°ÇÑ DBF NodeÀÇ ÆÄÀÏµµ sync°¡
+            // ÁøÇàµÉ ¼ö ¾ø°í,
+            // sync lock¿¡ ´ë±âÇÑ´Ù.
+            // ÆÄÀÏÀ» Á¦°ÅÇÏ°í sync ÇÏ´Â ¿¬»êÀÌ sync lockÀ»
+            // È¹µæÇÏ°Ô µÇ¸é
+            // DROPPED »óÅÂÀÌ±â¶§¹®¿¡ Á¢±ÙÇÏÁö ¾Ê´Â´Ù.
 
-            // ONLINE/OFFLINE/DISCARD ìƒíƒœì—¬ì•¼ í•œë‹¤.
+            // ONLINE/OFFLINE/DISCARD »óÅÂ¿©¾ß ÇÑ´Ù.
             IDE_ASSERT( hasState( sSpaceNode,
                                   SCT_SS_HAS_DROP_TABLESPACE ) == ID_TRUE );
             IDE_ASSERT( SMI_TBS_IS_DROPPING(sSpaceNode->mState) );
@@ -2128,7 +1871,7 @@ IDE_RC sctTableSpaceMgr::executePendingOperation( idvSQL  * aStatistics,
         case SCT_POP_ALTER_TBS_OFFLINE:
             IDE_ASSERT( (sSpaceNode->mState & SMI_TBS_DROPPING)
                         != SMI_TBS_DROPPING );
-            // do nothing.  Pending í•¨ìˆ˜ì—ì„œ ëª¨ë“  ì²˜ë¦¬ ì‹¤ì‹œ.
+            // do nothing.  Pending ÇÔ¼ö¿¡¼­ ¸ğµç Ã³¸® ½Ç½Ã.
             break;
 
         case SCT_POP_ALTER_DBF_RESIZE:
@@ -2139,10 +1882,10 @@ IDE_RC sctTableSpaceMgr::executePendingOperation( idvSQL  * aStatistics,
 
             if ( sFileNode != NULL )
             {
-                // Commit Pending ìˆ˜í–‰ì—ì„œ ì œê±°í•´ì¤€ë‹¤.
+                // Commit Pending ¼öÇà¿¡¼­ Á¦°ÅÇØÁØ´Ù.
                 sFileNode->mState &= ~SMI_FILE_RESIZING;
 
-                // RUNTIMEì— Commit ì—°ì‚°ì— ëŒ€í•´ì„œë§Œ ê°œìˆ˜ë¥¼ ê°ì†Œì‹œí‚¨ë‹¤
+                // RUNTIME¿¡ Commit ¿¬»ê¿¡ ´ëÇØ¼­¸¸ °³¼ö¸¦ °¨¼Ò½ÃÅ²´Ù
                 if ( ( smLayerCallback::isRestart() == ID_FALSE ) &&
                      ( aIsCommit == ID_TRUE ) )
                 {
@@ -2167,12 +1910,12 @@ IDE_RC sctTableSpaceMgr::executePendingOperation( idvSQL  * aStatistics,
                 IDE_ASSERT( SMI_FILE_STATE_IS_ONLINE( sFileNode->mState ) );
                 IDE_ASSERT( SMI_FILE_STATE_IS_CREATING( sFileNode->mState ) );
 
-                // create tablespaceë¡œ ì¸í•´ ìƒì„±ëœ dbfëŠ” SMI_FILE_CREATINGìƒíƒœê°€ ì•„ë‹ˆë©°,
-                // add datafileë¡œ ì¸í•´ ìƒì„±ëœ dbfëŠ” SMI_FILE_CREATINGì´ì—¬ì•¼ í•œë‹¤.
+                // create tablespace·Î ÀÎÇØ »ı¼ºµÈ dbf´Â SMI_FILE_CREATING»óÅÂ°¡ ¾Æ´Ï¸ç,
+                // add datafile·Î ÀÎÇØ »ı¼ºµÈ dbf´Â SMI_FILE_CREATINGÀÌ¿©¾ß ÇÑ´Ù.
 
                 sFileNode->mState &= ~SMI_FILE_CREATING;
 
-                // RUNTIMEì— Commit ì—°ì‚°ì— ëŒ€í•´ì„œë§Œ ê°œìˆ˜ë¥¼ ê°ì†Œì‹œí‚¨ë‹¤
+                // RUNTIME¿¡ Commit ¿¬»ê¿¡ ´ëÇØ¼­¸¸ °³¼ö¸¦ °¨¼Ò½ÃÅ²´Ù
                 if ( ( smLayerCallback::isRestart() == ID_FALSE ) &&
                      ( aIsCommit == ID_TRUE ) )
                 {
@@ -2199,31 +1942,16 @@ IDE_RC sctTableSpaceMgr::executePendingOperation( idvSQL  * aStatistics,
 
                 IDE_ASSERT( SMI_FILE_STATE_IS_DROPPING( sFileNode->mState ) );
 
-                if ( sFileNode->mIOCount != 0 )
-                {
-                    sState = 0;
-                    IDE_TEST( unlock() != IDE_SUCCESS );
-
-                    // SYNC ì—°ì‚° ì¤‘ì´ê¸° ë•Œë¬¸ì— ë‹¤ì‹œ ì‹œë„í•´ì•¼í•œë‹¤.
-                    idlOS::sleep(1);
-
-                    goto retry;
-                }
-                else
-                {
-                    // SYNC ì—°ì‚°ì¤‘ì´ ì•„ë‹ˆë¯€ë¡œ DROPPED ì²˜ë¦¬í•œë‹¤.
-                }
-
-                // FIX BUG-13125 DROP TABLESPACEì‹œì— ê´€ë ¨ í˜ì´ì§€ë“¤ì„
-                // Invalidì‹œì¼œì•¼ í•œë‹¤.
-                // DBF ìƒíƒœë³€ê²½ì€ removeFilePendingì—ì„œ ì²˜ë¦¬í•œë‹¤.
+                // FIX BUG-13125 DROP TABLESPACE½Ã¿¡ °ü·Ã ÆäÀÌÁöµéÀ»
+                // Invalid½ÃÄÑ¾ß ÇÑ´Ù.
+                // DBF »óÅÂº¯°æÀº removeFilePending¿¡¼­ Ã³¸®ÇÑ´Ù.
 
                 IDE_ASSERT( sPendingOp->mPendingOpFunc != NULL );
 
                 IDE_ASSERT( (UChar*)(sPendingOp->mPendingOpParam)
                             == (UChar*)sFileNode );
 
-                // RUNTIMEì— Commit ì—°ì‚°ì— ëŒ€í•´ì„œë§Œ ê°œìˆ˜ë¥¼ ê°ì†Œì‹œí‚¨ë‹¤
+                // RUNTIME¿¡ Commit ¿¬»ê¿¡ ´ëÇØ¼­¸¸ °³¼ö¸¦ °¨¼Ò½ÃÅ²´Ù
                 if ( ( smLayerCallback::isRestart() == ID_FALSE ) &&
                      ( aIsCommit == ID_TRUE ) )
                 {
@@ -2232,7 +1960,7 @@ IDE_RC sctTableSpaceMgr::executePendingOperation( idvSQL  * aStatistics,
                 }
                 else
                 {
-                    // Restart Recovery ìˆ˜í–‰ì¤‘ Pending ìˆ˜í–‰í•¨.
+                    // Restart Recovery ¼öÇàÁß Pending ¼öÇàÇÔ.
                 }
             }
             else
@@ -2249,11 +1977,11 @@ IDE_RC sctTableSpaceMgr::executePendingOperation( idvSQL  * aStatistics,
 
             if ( sFileNode != NULL )
             {
-                /* BUG-21056: Restart Redoì‹œ DBFë¥¼ Onlineìœ¼ë¡œ ìˆ˜í–‰ì‹œ FileNodeê°€
-                 * Onlineìœ¼ë¡œ ë˜ì–´ìˆì„ ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+                /* BUG-21056: Restart Redo½Ã DBF¸¦ OnlineÀ¸·Î ¼öÇà½Ã FileNode°¡
+                 * OnlineÀ¸·Î µÇ¾îÀÖÀ» ¼ö ÀÖ½À´Ï´Ù.
                  *
-                 * ì´ìœ : Restart Redo Pointê°€ DBF Onlineì´ì „ìœ¼ë¡œ ì¡í˜€ìˆì„ ìˆ˜ ìˆê¸°
-                 * ë•Œë¬¸. */
+                 * ÀÌÀ¯: Restart Redo Point°¡ DBF OnlineÀÌÀüÀ¸·Î ÀâÇôÀÖÀ» ¼ö ÀÖ±â
+                 * ¶§¹®. */
                 if ( smLayerCallback::isRestart() == ID_FALSE )
                 {
                     IDE_ASSERT( SMI_FILE_STATE_IS_OFFLINE( sFileNode->mState ) );
@@ -2299,15 +2027,15 @@ IDE_RC sctTableSpaceMgr::executePendingOperation( idvSQL  * aStatistics,
     }
 
     sState = 0;
-    IDE_TEST( unlock() != IDE_SUCCESS );
+    unlockSpaceNode( sSpaceNode );
 
-    // Loganchor ê°±ì‹ 
+    // Loganchor °»½Å
     switch( sPendingOp->mPendingOpType )
     {
         case SCT_POP_CREATE_TBS:
         case SCT_POP_DROP_TBS:
             /* PROJ-2386 DR
-             * DR standbyë„ activeì™€ ë™ì¼í•œ ì‹œì ì— loganchorë¥¼ updateí•œë‹¤. */
+             * DR standbyµµ active¿Í µ¿ÀÏÇÑ ½ÃÁ¡¿¡ loganchor¸¦ updateÇÑ´Ù. */
             if ( ((sddTableSpaceNode*)sSpaceNode)->mAnchorOffset
                  != SCT_UNSAVED_ATTRIBUTE_OFFSET )
             {
@@ -2315,19 +2043,19 @@ IDE_RC sctTableSpaceMgr::executePendingOperation( idvSQL  * aStatistics,
             }
             else
             {
-                // create TBS ìƒì„±í•˜ë‹¤ ì‹¤íŒ¨í•œ ê²½ìš°
-                // ì €ì¥ì´ ì•ˆëœ ê²½ìš°ê°€ ìˆë‹¤.
-                // ì¦‰, Create TBSì˜ Undo ê³¼ì •ì—ì„œ ë“±ë¡ëœ
-                // Pending(DROP_TBS)ì— ì˜í•´ì„œ ì €ì¥í•˜ì§€ë„ ì•Šì€
-                // TBS Node ì†ì„±ì„ updateí•˜ë ¤ë‹¤ Loganchorë¥¼
-                // ê¹¨ë¨¹ì„ ìˆ˜ ìˆë‹¤.
+                // create TBS »ı¼ºÇÏ´Ù ½ÇÆĞÇÑ °æ¿ì
+                // ÀúÀåÀÌ ¾ÈµÈ °æ¿ì°¡ ÀÖ´Ù.
+                // Áï, Create TBSÀÇ Undo °úÁ¤¿¡¼­ µî·ÏµÈ
+                // Pending(DROP_TBS)¿¡ ÀÇÇØ¼­ ÀúÀåÇÏÁöµµ ¾ÊÀº
+                // TBS Node ¼Ó¼ºÀ» updateÇÏ·Á´Ù Loganchor¸¦
+                // ±ú¸ÔÀ» ¼ö ÀÖ´Ù.
                 IDE_ASSERT( (sPendingOp->mPendingOpType == SCT_POP_DROP_TBS) &&
                             (aIsCommit == ID_FALSE) );
             }
             break;
 
         case SCT_POP_DROP_DBF:
-            // pending ë‚´ì—ì„œ loganchor flush
+            // pending ³»¿¡¼­ loganchor flush
             break;
         case SCT_POP_CREATE_DBF:
         case SCT_POP_ALTER_DBF_RESIZE:
@@ -2335,10 +2063,10 @@ IDE_RC sctTableSpaceMgr::executePendingOperation( idvSQL  * aStatistics,
         case SCT_POP_ALTER_DBF_ONLINE:
             if ( sFileNode != NULL )
             {
-                /* BUG-24086: [SD] Restartì‹œì—ë„ Fileì´ë‚˜ TBSì— ëŒ€í•œ ìƒíƒœê°€ ë°”ë€Œì—ˆì„ ê²½ìš°
-                 * LogAnchorì— ìƒíƒœë¥¼ ë°˜ì˜í•´ì•¼ í•œë‹¤.
+                /* BUG-24086: [SD] Restart½Ã¿¡µµ FileÀÌ³ª TBS¿¡ ´ëÇÑ »óÅÂ°¡ ¹Ù²î¾úÀ» °æ¿ì
+                 * LogAnchor¿¡ »óÅÂ¸¦ ¹İ¿µÇØ¾ß ÇÑ´Ù.
                  *
-                 * Restart Recoveryì‹œì—ëŠ” updateDBFNodeAndFlushí•˜ì§€ ì•Šë˜ê²ƒì„ í•˜ë„ë¡ ë³€ê²½.
+                 * Restart Recovery½Ã¿¡´Â updateDBFNodeAndFlushÇÏÁö ¾Ê´ø°ÍÀ» ÇÏµµ·Ï º¯°æ.
                  * */
                 if ( sFileNode->mAnchorOffset != SCT_UNSAVED_ATTRIBUTE_OFFSET )
                 {
@@ -2346,18 +2074,18 @@ IDE_RC sctTableSpaceMgr::executePendingOperation( idvSQL  * aStatistics,
                 }
                 else
                 {
-                    // create DBF ìƒì„±í•˜ë‹¤ ì‹¤íŒ¨í•œ ê²½ìš°
-                    // ì €ì¥ì´ ì•ˆëœ ê²½ìš°ê°€ ìˆë‹¤.
-                    // ì¦‰, Create DBFì˜ Undo ê³¼ì •ì—ì„œ ë“±ë¡ëœ
-                    // Pending(DROP_DBF)ì— ì˜í•´ì„œ ì €ì¥í•˜ì§€ë„ ì•Šì€
-                    // DBF Node ì†ì„±ì„ updateí•˜ë ¤ë‹¤ Loganchorë¥¼
-                    // ê¹¨ë¨¹ì„ ìˆ˜ ìˆë‹¤.
+                    // create DBF »ı¼ºÇÏ´Ù ½ÇÆĞÇÑ °æ¿ì
+                    // ÀúÀåÀÌ ¾ÈµÈ °æ¿ì°¡ ÀÖ´Ù.
+                    // Áï, Create DBFÀÇ Undo °úÁ¤¿¡¼­ µî·ÏµÈ
+                    // Pending(DROP_DBF)¿¡ ÀÇÇØ¼­ ÀúÀåÇÏÁöµµ ¾ÊÀº
+                    // DBF Node ¼Ó¼ºÀ» updateÇÏ·Á´Ù Loganchor¸¦
+                    // ±ú¸ÔÀ» ¼ö ÀÖ´Ù.
                     IDE_ASSERT( aIsCommit == ID_FALSE );
                 }
             }
             else
             {
-                // FileNodeê°€ ê²€ìƒ‰ì´ ì•ˆëœ ê²½ìš° Nothing To Do...
+                // FileNode°¡ °Ë»öÀÌ ¾ÈµÈ °æ¿ì Nothing To Do...
                 IDE_ASSERT( sDoPending == ID_FALSE );
             }
             break;
@@ -2365,7 +2093,7 @@ IDE_RC sctTableSpaceMgr::executePendingOperation( idvSQL  * aStatistics,
         case SCT_POP_ALTER_TBS_ONLINE:
         case SCT_POP_ALTER_TBS_OFFLINE:
         case SCT_POP_UPDATE_SPACECACHE:
-            // do nothing.  Pending í•¨ìˆ˜ì—ì„œ ëª¨ë“  ì²˜ë¦¬ ì‹¤ì‹œ.
+            // do nothing.  Pending ÇÔ¼ö¿¡¼­ ¸ğµç Ã³¸® ½Ç½Ã.
             break;
 
         default:
@@ -2374,7 +2102,7 @@ IDE_RC sctTableSpaceMgr::executePendingOperation( idvSQL  * aStatistics,
 
     }
 
-    // ë¶ˆí•„ìš”í•œ DIFFë¥¼ ë°œìƒì‹œí‚¤ì§€ ì•Šê²Œ í•˜ê¸° ìœ„í•´ indendingí•˜ì§€ ì•ŠìŒ
+    // ºÒÇÊ¿äÇÑ DIFF¸¦ ¹ß»ı½ÃÅ°Áö ¾Ê°Ô ÇÏ±â À§ÇØ indendingÇÏÁö ¾ÊÀ½
 
     IDE_EXCEPTION_CONT( CONT_RUN_PENDING );
 
@@ -2383,7 +2111,7 @@ IDE_RC sctTableSpaceMgr::executePendingOperation( idvSQL  * aStatistics,
     if ( ( sDoPending == ID_TRUE ) &&
          ( sPendingOp->mPendingOpFunc != NULL ) )
     {
-        // ë“±ë¡ë˜ì–´ ìˆëŠ” Pending Operationì„ ìˆ˜í–‰í•œë‹¤.
+        // µî·ÏµÇ¾î ÀÖ´Â Pending OperationÀ» ¼öÇàÇÑ´Ù.
         IDE_TEST( (*sPendingOp->mPendingOpFunc) ( aStatistics,
                                                   sSpaceNode,
                                                   sPendingOp )
@@ -2391,18 +2119,10 @@ IDE_RC sctTableSpaceMgr::executePendingOperation( idvSQL  * aStatistics,
     }
     else
     {
-        // ë“±ë¡ëœ Pending Operationì´ NULL ì¸ê²½ìš°
+        // µî·ÏµÈ Pending OperationÀÌ NULL ÀÎ°æ¿ì
     }
-
 
     IDE_EXCEPTION_CONT( CONT_SKIP_PENDING );
-
-    if ( sState != 0 )
-    {
-        // SpaceNodeê°€ ê²€ìƒ‰ì´ ì•ˆëœ ê²½ìš° Nothing To Do...
-        sState = 0;
-        IDE_TEST( unlock() != IDE_SUCCESS );
-    }
 
     return IDE_SUCCESS;
 
@@ -2410,20 +2130,20 @@ IDE_RC sctTableSpaceMgr::executePendingOperation( idvSQL  * aStatistics,
 
     if ( sState != 0 )
     {
-        IDE_ASSERT( unlock() == IDE_SUCCESS );
+        unlockSpaceNode( sSpaceNode );
     }
 
     return IDE_FAILURE;
 }
 
 /*
-    ê°ê°ì˜ Tablespaceì— ëŒ€í•´ íŠ¹ì • Actionì„ ìˆ˜í–‰í•œë‹¤.
+    °¢°¢ÀÇ Tablespace¿¡ ´ëÇØ Æ¯Á¤ ActionÀ» ¼öÇàÇÑ´Ù.
 
-    aAction    [IN] ìˆ˜í–‰í•  Actioní•¨ìˆ˜
-    aActionArg [IN] Actioní•¨ìˆ˜ì— ë³´ë‚¼ Argument
-    aFilter    [IN] Actionìˆ˜í–‰ ì—¬ë¶€ë¥¼ ê²°ì •í•˜ëŠ” Filter
+    aAction    [IN] ¼öÇàÇÒ ActionÇÔ¼ö
+    aActionArg [IN] ActionÇÔ¼ö¿¡ º¸³¾ Argument
+    aFilter    [IN] Action¼öÇà ¿©ºÎ¸¦ °áÁ¤ÇÏ´Â Filter
 
-    - ì‚¬ìš©ì˜ˆì œ
+    - »ç¿ë¿¹Á¦
       smmManager::restoreTBS
  */
 IDE_RC sctTableSpaceMgr::doAction4EachTBS( idvSQL            * aStatistics,
@@ -2431,58 +2151,53 @@ IDE_RC sctTableSpaceMgr::doAction4EachTBS( idvSQL            * aStatistics,
                                            void              * aActionArg,
                                            sctActionExecMode   aActionExecMode )
 {
-    UInt sState = 0;
+    UInt                sState = 0;
+    UInt                sSpaceID;
     sctTableSpaceNode * sCurTBS;
-    idBool              sDoLatch;
 
-    sDoLatch = ( aActionExecMode & SCT_ACT_MODE_LATCH ) ? ID_TRUE : ID_FALSE ;
-
-    if ( sDoLatch == ID_TRUE )
+    for( sSpaceID = 0 ; sSpaceID < mNewTableSpaceID ; sSpaceID++ )
     {
-        IDE_TEST( lock( aStatistics ) != IDE_SUCCESS );
-        sState = 1;
-    }
+        sCurTBS = mSpaceNodeArray[sSpaceID];
 
-    sctTableSpaceMgr::getFirstSpaceNode( (void**)&sCurTBS );
+        if ( sCurTBS != NULL )
+        {
+            if ( aActionExecMode == SCT_ACT_MODE_LATCH )
+            {
+                lockSpaceNode( aStatistics,
+                               sCurTBS );
+                sState = 1;
+            }
 
-    while( sCurTBS != NULL )
-    {
-        IDE_TEST( (*aAction)( aStatistics,
-                              sCurTBS,
-                              aActionArg )
-                  != IDE_SUCCESS );
-
-        sctTableSpaceMgr::getNextSpaceNode( sCurTBS, (void**)&sCurTBS );
-    }
-
-    if ( sDoLatch == ID_TRUE )
-    {
-        sState = 0;
-        IDE_TEST( unlock() != IDE_SUCCESS );
+            if ( SMI_TBS_IS_NOT_DROPPED( sCurTBS->mState ) )
+            {
+                IDE_TEST( (*aAction)( aStatistics,
+                                      sCurTBS,
+                                      aActionArg )
+                          != IDE_SUCCESS );
+            }
+            
+            if ( sState == 1 )
+            {
+                sState = 0;
+                unlockSpaceNode( sCurTBS );
+            }
+        }
     }
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    if ( sState != 0 )
     {
-        IDE_PUSH();
-
-        if ( sDoLatch == ID_TRUE )
-        {
-            if ( sState != 0 )
-            {
-                IDE_ASSERT( unlock() == IDE_SUCCESS );
-            }
-        }
-
-        IDE_POP();
+        unlockSpaceNode( sCurTBS );
     }
 
     return IDE_FAILURE;
 }
 
 /*
- * BUG-34187 ìœˆë„ìš° í™˜ê²½ì—ì„œ ìŠ¬ëŸ¬ì‹œì™€ ì—­ìŠ¬ëŸ¬ì‹œë¥¼ í˜¼ìš©í•´ì„œ ì‚¬ìš© ë¶ˆê°€ëŠ¥ í•©ë‹ˆë‹¤.
+ * BUG-34187 À©µµ¿ì È¯°æ¿¡¼­ ½½·¯½Ã¿Í ¿ª½½·¯½Ã¸¦ È¥¿ëÇØ¼­ »ç¿ë ºÒ°¡´É ÇÕ´Ï´Ù.
  */
 #if defined(VC_WIN32)
 void sctTableSpaceMgr::adjustFileSeparator( SChar * aPath )
@@ -2504,30 +2219,30 @@ void sctTableSpaceMgr::adjustFileSeparator( SChar * aPath )
 #endif
 
 /*
- * ê¸°ëŠ¥ datafile path ëª… validataion í™•ì¸ ë° ì ˆëŒ€ê²½ë¡œ ìƒì„±
+ * ±â´É datafile path ¸í validataion È®ÀÎ ¹× Àı´ë°æ·Î »ı¼º
  *
- * ìƒëŒ€ê²½ë¡œ ì…ë ¥ì‹œ default db dirì„ pathì— ì¶”ê°€í•˜ì—¬ ì ˆëŒ€ê²½ë¡œë¥¼ ë§Œë“ ë‹¤.
- * ë˜í•œ, datafile pathê°€ ìœ íš¨í•œì§€ ê²€ì‚¬í•˜ê³ 
- * datafile ëª…ì´ ì‹œìŠ¤í…œì˜ˆì•½ì–´ì¸ "system", "temp", "undo"ë¡œ ì‹œì‘í•˜ë©´ ì•ˆëœë‹¤.
- * sdsFileì— ë™ì¼ ê¸°ëŠ¥ì˜ í•¨ìˆ˜ê°€ ì¡´ì¬ í•©ë‹ˆë‹¤.  ìˆ˜ì •ë‚´ìš©ë°œìƒì‹œ ì ìš© í•„ìš”í•©ë‹ˆë‹¤.
+ * »ó´ë°æ·Î ÀÔ·Â½Ã default db dirÀ» path¿¡ Ãß°¡ÇÏ¿© Àı´ë°æ·Î¸¦ ¸¸µç´Ù.
+ * ¶ÇÇÑ, datafile path°¡ À¯È¿ÇÑÁö °Ë»çÇÏ°í
+ * datafile ¸íÀÌ ½Ã½ºÅÛ¿¹¾à¾îÀÎ "system", "temp", "undo"·Î ½ÃÀÛÇÏ¸é ¾ÈµÈ´Ù.
+ * sdsFile¿¡ µ¿ÀÏ ±â´ÉÀÇ ÇÔ¼ö°¡ Á¸Àç ÇÕ´Ï´Ù.  ¼öÁ¤³»¿ë¹ß»ı½Ã Àû¿ë ÇÊ¿äÇÕ´Ï´Ù.
  *
  * + 2nd. code design
- * - filenameì— íŠ¹ìˆ˜ë¬¸ìê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
- * - ì‹œìŠ¤í…œ ì˜ˆì•½ì–´ë¥¼ datafile ì´ë¦„ìœ¼ë¡œ ì‚¬ìš©í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
- *   for( system keyword ê°œìˆ˜ë§Œí¼ )
+ * - filename¿¡ Æ¯¼ö¹®ÀÚ°¡ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù.
+ * - ½Ã½ºÅÛ ¿¹¾à¾î¸¦ datafile ÀÌ¸§À¸·Î »ç¿ëÇÏ´ÂÁö °Ë»çÇÑ´Ù.
+ *   for( system keyword °³¼ö¸¸Å­ )
  *   {
- *      if( í™”ì¼ ì´ë¦„ì˜ prefixê°€ ì •ì˜ëœ ê²ƒì´ë‹¤)
+ *      if( È­ÀÏ ÀÌ¸§ÀÇ prefix°¡ Á¤ÀÇµÈ °ÍÀÌ´Ù)
  *      {
  *          return falure;
  *      }
  *   }
- * - ìƒëŒ€ê²½ë¡œë¼ë©´ ì ˆëŒ€ê²½ë¡œë¡œ ë³€ê²½í•˜ì—¬ ì €ì¥í•œë‹¤.
- * - ì ˆëŒ€ê²½ë¡œì— ëŒ€í•´ì„œ fileëª…ì„ ì œì™¸í•œ dirì´ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
+ * - »ó´ë°æ·Î¶ó¸é Àı´ë°æ·Î·Î º¯°æÇÏ¿© ÀúÀåÇÑ´Ù.
+ * - Àı´ë°æ·Î¿¡ ´ëÇØ¼­ file¸íÀ» Á¦¿ÜÇÑ dirÀÌ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
  *
- * [IN]     aCheckPerm   : íŒŒì¼ ê¶Œí•œ ê²€ì‚¬ ì—¬ë¶€
- * [IN/OUT] aValidName   : ìƒëŒ€ê²½ë¡œë¥¼ ë°›ì•„ì„œ ì ˆëŒ€ê²½ë¡œë¡œ ë³€ê²½í•˜ì—¬ ë°˜í™˜
- * [OUT]    aNameLength  : ì ˆëŒ€ê²½ë¡œì˜ ê¸¸ì´
- * [IN]     aTBSLocation : í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ì˜ ì¢…ë¥˜[SMI_TBS_MEMORY | SMI_TBS_DISK]
+ * [IN]     aCheckPerm   : ÆÄÀÏ ±ÇÇÑ °Ë»ç ¿©ºÎ
+ * [IN/OUT] aValidName   : »ó´ë°æ·Î¸¦ ¹Ş¾Æ¼­ Àı´ë°æ·Î·Î º¯°æÇÏ¿© ¹İÈ¯
+ * [OUT]    aNameLength  : Àı´ë°æ·ÎÀÇ ±æÀÌ
+ * [IN]     aTBSLocation : Å×ÀÌºí ½ºÆäÀÌ½ºÀÇ Á¾·ù[SMI_TBS_MEMORY | SMI_TBS_DISK]
  */
 IDE_RC sctTableSpaceMgr::makeValidABSPath( idBool         aCheckPerm,
                                            SChar*         aValidName,
@@ -2551,7 +2266,7 @@ IDE_RC sctTableSpaceMgr::makeValidABSPath( idBool         aCheckPerm,
     IDE_DASSERT( idlOS::strlen(aValidName) == *aNameLength );
 
     // BUG-29812
-    // aTBSLocationì€ SMI_TBS_MEMORYì™€ SMI_TBS_DISKì´ì–´ì•¼ í•œë‹¤.
+    // aTBSLocationÀº SMI_TBS_MEMORY¿Í SMI_TBS_DISKÀÌ¾î¾ß ÇÑ´Ù.
     IDE_ASSERT( (aTBSLocation == SMI_TBS_MEMORY) ||
                 (aTBSLocation == SMI_TBS_DISK) );
 
@@ -2569,7 +2284,7 @@ IDE_RC sctTableSpaceMgr::makeValidABSPath( idBool         aCheckPerm,
     }
 
     /* ------------------------------------------------
-     * datafile ì´ë¦„ì— ëŒ€í•œ ì‹œìŠ¤í…œ ì˜ˆì•½ì–´ ê²€ì‚¬
+     * datafile ÀÌ¸§¿¡ ´ëÇÑ ½Ã½ºÅÛ ¿¹¾à¾î °Ë»ç
      * ----------------------------------------------*/
 #if defined(VC_WIN32)
     SInt  sIterator;
@@ -2589,7 +2304,7 @@ IDE_RC sctTableSpaceMgr::makeValidABSPath( idBool         aCheckPerm,
     sPtr = idlOS::strrchr(aValidName, IDL_FILE_SEPARATOR);
     if ( sPtr == NULL )
     {
-        sPtr = aValidName; // datafile ëª…ë§Œ ì¡´ì¬
+        sPtr = aValidName; // datafile ¸í¸¸ Á¸Àç
     }
     else
     {
@@ -2601,8 +2316,8 @@ IDE_RC sctTableSpaceMgr::makeValidABSPath( idBool         aCheckPerm,
     if ( sPtr != &aValidName[0] )
 #else
     /* BUG-38278 invalid datafile path at windows server
-     * ìœˆë„ìš°ì¦ˆ í™˜ê²½ì—ì„œ '/' ë‚˜ '\' ë¡œ ì‹œì‘ë˜ëŠ”
-     * ê²½ë¡œ ì…ë ¥ì€ ì˜¤ë¥˜ë¡œ ì²˜ë¦¬í•œë‹¤. */
+     * À©µµ¿ìÁî È¯°æ¿¡¼­ '/' ³ª '\' ·Î ½ÃÀÛµÇ´Â
+     * °æ·Î ÀÔ·ÂÀº ¿À·ù·Î Ã³¸®ÇÑ´Ù. */
     IDE_TEST_RAISE( sPtr == &aValidName[0], error_invalid_filepath_abs );
 
     if ( ( (aValidName[1] == ':') && (sPtr != &aValidName[2]) ) ||
@@ -2610,10 +2325,10 @@ IDE_RC sctTableSpaceMgr::makeValidABSPath( idBool         aCheckPerm,
 #endif
     {
         /* ------------------------------------------------
-         * ìƒëŒ€ê²½ë¡œ(relative-path)ì¸ ê²½ìš°
-         * Disk TBSì´ë©´ default disk db dirì„
-         * Memory TBSì´ë©´ home dir ($ALTIBASE_HOME)ì„
-         * ë¶™ì—¬ì„œ ì ˆëŒ€ê²½ë¡œ(absolute-path)ë¡œ ë§Œë“ ë‹¤.
+         * »ó´ë°æ·Î(relative-path)ÀÎ °æ¿ì
+         * Disk TBSÀÌ¸é default disk db dirÀ»
+         * Memory TBSÀÌ¸é home dir ($ALTIBASE_HOME)À»
+         * ºÙ¿©¼­ Àı´ë°æ·Î(absolute-path)·Î ¸¸µç´Ù.
          * ----------------------------------------------*/
         if ( aTBSLocation == SMI_TBS_MEMORY )
         {
@@ -2673,15 +2388,15 @@ IDE_RC sctTableSpaceMgr::makeValidABSPath( idBool         aCheckPerm,
     }
 
     /* ------------------------------------------------
-     * ì˜ë¬¸ì, ìˆ«ì + '/'ëŠ” í—ˆìš©í•˜ê³  ê·¸ì™¸ ë¬¸ìëŠ” í—ˆìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
-     * (ì ˆëŒ€ê²½ë¡œì„)
+     * ¿µ¹®ÀÚ, ¼ıÀÚ + '/'´Â Çã¿ëÇÏ°í ±×¿Ü ¹®ÀÚ´Â Çã¿ëÇÏÁö ¾Ê´Â´Ù.
+     * (Àı´ë°æ·ÎÀÓ)
      * ----------------------------------------------*/
     for ( i = 0 ; i < *aNameLength ; i++ )
     {
         if ( smuUtility::isAlNum(aValidName[i]) != ID_TRUE )
         {
-            /* BUG-16283: Windowsì—ì„œ Altibase Homeì´ '(', ')' ê°€ ë“¤ì–´ê°ˆ
-               ê²½ìš° DB ìƒì„±ì‹œ ì˜¤ë¥˜ê°€ ë°œìƒí•©ë‹ˆë‹¤. */
+            /* BUG-16283: Windows¿¡¼­ Altibase HomeÀÌ '(', ')' °¡ µé¾î°¥
+               °æ¿ì DB »ı¼º½Ã ¿À·ù°¡ ¹ß»ıÇÕ´Ï´Ù. */
             IDE_TEST_RAISE( (aValidName[i] != IDL_FILE_SEPARATOR) &&
                             (aValidName[i] != '-') &&
                             (aValidName[i] != '_') &&
@@ -2718,12 +2433,12 @@ IDE_RC sctTableSpaceMgr::makeValidABSPath( idBool         aCheckPerm,
         }
     } // end of for
 
-    // [BUG-29812] IDL_FILE_SEPARATORê°€ í•œê°œë„ ì—†ë‹¤ë©´ ì ˆëŒ€ê²½ë¡œê°€ ì•„ë‹ˆë‹¤.
+    // [BUG-29812] IDL_FILE_SEPARATOR°¡ ÇÑ°³µµ ¾ø´Ù¸é Àı´ë°æ·Î°¡ ¾Æ´Ï´Ù.
    IDE_TEST_RAISE( (sPtr = idlOS::strrchr(aValidName, IDL_FILE_SEPARATOR))
                    == NULL,
                    error_invalid_filepath_abs );
 
-    // [BUG-29812] dirì´ ì¡´ì¬í•˜ëŠ” í™•ì¸í•œë‹¤.
+    // [BUG-29812] dirÀÌ Á¸ÀçÇÏ´Â È®ÀÎÇÑ´Ù.
     if ( (aCheckPerm == ID_TRUE) && (aTBSLocation == SMI_TBS_DISK) )
     {
         idlOS::strncpy( sPath, aValidName, SM_MAX_FILE_NAME );
@@ -2821,18 +2536,18 @@ IDE_RC sctTableSpaceMgr::makeValidABSPath( idBool         aCheckPerm,
 
     return IDE_FAILURE;
 #else
-    // Windows CEì—ì„œëŠ” íŒŒì¼ì˜ ì ˆëŒ€ê²½ë¡œê°€ C:ë¡œ ì‹œì‘í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // Windows CE¿¡¼­´Â ÆÄÀÏÀÇ Àı´ë°æ·Î°¡ C:·Î ½ÃÀÛÇÏÁö ¾Ê´Â´Ù.
     return IDE_SUCCESS;
 #endif
 }
 
 /* BUG-38621 
- * - ì ˆëŒ€ê²½ë¡œë¥¼ ìƒëŒ€ê²½ë¡œë¡œ ë³€í™˜ 
- * - makeValidABSPath(4)ë¥¼ ì°¸ì¡°í•´ì„œ ë§Œë“¬.
+ * - Àı´ë°æ·Î¸¦ »ó´ë°æ·Î·Î º¯È¯ 
+ * - makeValidABSPath(4)¸¦ ÂüÁ¶ÇØ¼­ ¸¸µë.
  *
- * [IN/OUT] aName        : ì ˆëŒ€ê²½ë¡œë¥¼ ë°›ì•„ì„œ ìƒëŒ€ê²½ë¡œë¡œ ë³€ê²½í•˜ì—¬ ë°˜í™˜
- * [OUT]    aNameLength  : ìƒëŒ€ê²½ë¡œì˜ ê¸¸ì´
- * [IN]     aTBSLocation : í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ì˜ ì¢…ë¥˜[SMI_TBS_MEMORY | SMI_TBS_DISK]
+ * [IN/OUT] aName        : Àı´ë°æ·Î¸¦ ¹Ş¾Æ¼­ »ó´ë°æ·Î·Î º¯°æÇÏ¿© ¹İÈ¯
+ * [OUT]    aNameLength  : »ó´ë°æ·ÎÀÇ ±æÀÌ
+ * [IN]     aTBSLocation : Å×ÀÌºí ½ºÆäÀÌ½ºÀÇ Á¾·ù[SMI_TBS_MEMORY | SMI_TBS_DISK]
  */
 IDE_RC sctTableSpaceMgr::makeRELPath( SChar         * aName,
                                       UInt          * aNameLength,
@@ -2958,75 +2673,63 @@ IDE_RC sctTableSpaceMgr::makeRELPath( SChar         * aName,
     
     return IDE_FAILURE;
 #else
-    // Windows CEì—ì„œëŠ” íŒŒì¼ì˜ ì ˆëŒ€ê²½ë¡œê°€ C:ë¡œ ì‹œì‘í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // Windows CE¿¡¼­´Â ÆÄÀÏÀÇ Àı´ë°æ·Î°¡ C:·Î ½ÃÀÛÇÏÁö ¾Ê´Â´Ù.
     return IDE_SUCCESS;
 #endif
 }
 
 /*
- [  ë©”ëª¨ë¦¬/ë””ìŠ¤í¬ ê³µí†µ ]
+ [  ¸Ş¸ğ¸®/µğ½ºÅ© °øÅë ]
 
- ë°±ì—… ì§„í–‰ì„ ìœ„í•´ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ìƒíƒœë¥¼ ë°±ì—…ìƒíƒœë¡œ ì„¤ì •í•œë‹¤.
+ ¹é¾÷ ÁøÇàÀ» À§ÇØ Å×ÀÌºí½ºÆäÀÌ½ºÀÇ »óÅÂ¸¦ ¹é¾÷»óÅÂ·Î ¼³Á¤ÇÑ´Ù.
 
- [ ì•Œê³ ë¦¬ì¦˜ ]
- 1. Mgr Latchë¥¼ ì¡ëŠ”ë‹¤.
- 2. ì£¼ì–´ì§„ í…Œì´ë¸” ìŠ¤í­ì´ìŠ¤ IDë¡œ table space node ë¥¼ ì°¾ëŠ”ë‹¤.
- 3. í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ ìƒíƒœë¥¼  backupìœ¼ë¡œ ë³€ê²½í•œë‹¤.
- 4. í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ ì²«ë²ˆì§¸ ë°ì´íƒ€ íŒŒì¼ì˜ ìƒíƒœë¥¼ backup beginìœ¼ë¡œ ë³€ê²½í•œë‹¤.
- 5. ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ê²½ìš° MIN PI ë…¸ë“œë¥¼ ì¶”ê°€í•œë‹¤.
- 5. Mgr Latchë¥¼ í‘¼ë‹¤.
+ [ ¾Ë°í¸®Áò ]
+ 1. Mgr Latch¸¦ Àâ´Â´Ù.
+ 2. ÁÖ¾îÁø Å×ÀÌºí ½ºÆëÀÌ½º ID·Î table space node ¸¦ Ã£´Â´Ù.
+ 3. Å×ÀÌºí ½ºÆäÀÌ½º »óÅÂ¸¦  backupÀ¸·Î º¯°æÇÑ´Ù.
+ 4. Å×ÀÌºí ½ºÆäÀÌ½º Ã¹¹øÂ° µ¥ÀÌÅ¸ ÆÄÀÏÀÇ »óÅÂ¸¦ backup beginÀ¸·Î º¯°æÇÑ´Ù.
+ 5. µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½ºÀÇ °æ¿ì MIN PI ³ëµå¸¦ Ãß°¡ÇÑ´Ù.
+ 5. Mgr Latch¸¦ Ç¬´Ù.
 
- [ ì¸ì ]
- [IN]  aSpaceID   : ë°±ì—…ì„ ì§„í–‰í•  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID
- [OUT] aSpaceNode : ë°±ì—…ê°€ëŠ¥í•œ ê²½ìš° í•´ë‹¹ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œ ë°˜í™˜
-
+ [ ÀÎÀÚ ]
+ [IN]  aStatistics : Åë°èÁ¤º¸
+ [IN]  aSpaceNode  : ¹é¾÷À» ÁøÇàÇÒ Å×ÀÌºí½ºÆäÀÌ½º
 */
-IDE_RC sctTableSpaceMgr::startTableSpaceBackup( scSpaceID           aSpaceID,
-                                                sctTableSpaceNode** aSpaceNode )
+IDE_RC sctTableSpaceMgr::startTableSpaceBackup( idvSQL            * aStatistics,
+                                                sctTableSpaceNode * aSpaceNode )
 {
-    idBool               sLockedMgr;
-    sctTableSpaceNode  * sSpaceNode;
+    idBool sIsLocked = ID_FALSE;
 
     IDE_DASSERT( aSpaceNode != NULL );
 
-    sLockedMgr  = ID_FALSE;
-
+    // temp table space´Â ¹é¾÷¹ŞÀ» ÇÊ¿ä°¡ ¾ø´Ù.
+    IDE_TEST_RAISE( (aSpaceNode->mType == SMI_DISK_SYSTEM_TEMP) ||
+                    (aSpaceNode->mType == SMI_DISK_USER_TEMP),
+                    error_dont_need_backup_tempTableSpace);
   retry:
+    lockSpaceNode( aStatistics,
+                   aSpaceNode );
+    sIsLocked = ID_TRUE;
 
-    IDE_TEST( lock( NULL /* idvSQL* */) != IDE_SUCCESS );
-    sLockedMgr = ID_TRUE;
-
-    IDE_TEST( findSpaceNodeBySpaceID( aSpaceID,
-                                      (void**)&sSpaceNode)
-              != IDE_SUCCESS );
-
-    // BACKUP ì§„í–‰ì´ ê°€ëŠ¥í•œ ê²½ìš°
-    *aSpaceNode = sSpaceNode;
-
-    IDE_TEST_RAISE( SMI_TBS_IS_BACKUP(sSpaceNode->mState),
+    IDE_TEST_RAISE( SMI_TBS_IS_BACKUP( aSpaceNode->mState ),
                     error_already_backup_begin );
 
-    if ( ( sSpaceNode->mState & SMI_TBS_BLOCK_BACKUP ) ==
+    if ( ( aSpaceNode->mState & SMI_TBS_BLOCK_BACKUP ) ==
          SMI_TBS_BLOCK_BACKUP )
     {
-        sLockedMgr = ID_FALSE;
-        IDE_TEST( unlock() != IDE_SUCCESS );
+        sIsLocked = ID_FALSE;
+        unlockSpaceNode( aSpaceNode );
 
         idlOS::sleep(1);
 
         goto retry;
     }
 
-    // temp table spaceëŠ” ë°±ì—…ë°›ì„ í•„ìš”ê°€ ì—†ë‹¤.
-    IDE_TEST_RAISE( (sSpaceNode->mType == SMI_DISK_SYSTEM_TEMP) ||
-                    (sSpaceNode->mType == SMI_DISK_USER_TEMP),
-                    error_dont_need_backup_tempTableSpace);
+    // BACKUP »óÅÂ ¼³Á¤
+    aSpaceNode->mState |= SMI_TBS_BACKUP;
 
-    // BACKUP ìƒíƒœ ì„¤ì •
-    sSpaceNode->mState |= SMI_TBS_BACKUP;
-
-    sLockedMgr = ID_FALSE;
-    IDE_TEST( unlock() != IDE_SUCCESS );
+    sIsLocked = ID_FALSE;
+    unlockSpaceNode( aSpaceNode );
 
     return IDE_SUCCESS;
 
@@ -3037,100 +2740,80 @@ IDE_RC sctTableSpaceMgr::startTableSpaceBackup( scSpaceID           aSpaceID,
     IDE_EXCEPTION( error_already_backup_begin );
     {
         IDE_SET( ideSetErrorCode( smERR_ABORT_AlreadyBeginBackup,
-                                  sSpaceNode->mID ) );
+                                  aSpaceNode->mID ) );
     }
     IDE_EXCEPTION_END;
 
-    IDE_PUSH();
+    if ( sIsLocked == ID_TRUE )
     {
-        if ( sLockedMgr == ID_TRUE )
-        {
-            IDE_ASSERT( sctTableSpaceMgr::unlock()
-                        == IDE_SUCCESS );
-        }
+        unlockSpaceNode( aSpaceNode );
     }
-    IDE_POP();
 
     return IDE_FAILURE;
 }
 
 
 /*
-  [ ë©”ëª¨ë¦¬/ë””ìŠ¤í¬ ê³µí†µ ]
-  ALTER TABLESPACE END BACKUP.. êµ¬ë¬¸ ìˆ˜í–‰ì‹œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ë°±ì—…ìƒíƒœë¥¼
-  í•´ì œí•œë‹¤.
+  [ ¸Ş¸ğ¸®/µğ½ºÅ© °øÅë ]
+  ALTER TABLESPACE END BACKUP.. ±¸¹® ¼öÇà½Ã Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ¹é¾÷»óÅÂ¸¦
+  ÇØÁ¦ÇÑ´Ù.
 
-  ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ê²½ìš° MIN PI ë…¸ë“œë„ í•¨ê»˜ ì œê±°í•œë‹¤.(ì°¸ê³  BUG-15003)
-
-  [IN] aSpaceID : ë°±ì—…ìƒíƒœë¥¼ í•´ì œí•˜ê³ ìí•˜ëŠ” í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ID
+  µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½ºÀÇ °æ¿ì MIN PI ³ëµåµµ ÇÔ²² Á¦°ÅÇÑ´Ù.(Âü°í BUG-15003)
+  [IN] aStatistics : Åë°èÁ¤º¸
+  [IN] aSpaceNode  : ¹é¾÷»óÅÂ¸¦ ÇØÁ¦ÇÏ°íÀÚÇÏ´Â Å×ÀÌºí½ºÆäÀÌ½º
 
 */
-IDE_RC sctTableSpaceMgr::endTableSpaceBackup( scSpaceID aSpaceID )
+IDE_RC sctTableSpaceMgr::endTableSpaceBackup( idvSQL            * aStatistics,
+                                              sctTableSpaceNode * aSpaceNode )
 {
-    idBool              sLockedMgr;
-    sctTableSpaceNode*  sSpaceNode;
+    idBool sIsLocked = ID_FALSE;
 
-    sLockedMgr = ID_FALSE;
+    lockSpaceNode( aStatistics,
+                   aSpaceNode );
+    sIsLocked = ID_TRUE;
 
-    IDE_TEST( lock( NULL /* idvSQL* */) != IDE_SUCCESS );
-    sLockedMgr = ID_TRUE;
-
-    IDE_TEST( findSpaceNodeBySpaceID( aSpaceID,
-                                      (void**)&sSpaceNode )
-              != IDE_SUCCESS );
-
-    IDE_TEST_RAISE( sSpaceNode == NULL,
-                    error_not_found_tablespace_node );
-
-    // alter tablespace  backup begin Aë¥¼ í•˜ê³ ë‚˜ì„œ,
-    // alter tablespace  backup end Bë¥¼ í•˜ëŠ” ê²½ìš°ë¥¼ ë§‰ê¸°ìœ„í•¨ì´ë‹¤.
-    IDE_TEST_RAISE( (sSpaceNode->mState & SMI_TBS_BACKUP) != SMI_TBS_BACKUP,
+    // alter tablespace  backup begin A¸¦ ÇÏ°í³ª¼­,
+    // alter tablespace  backup end B¸¦ ÇÏ´Â °æ¿ì¸¦ ¸·±âÀ§ÇÔÀÌ´Ù.
+    IDE_TEST_RAISE( SMI_TBS_IS_NOT_BACKUP( aSpaceNode->mState ),
                     error_not_begin_backup );
 
-    sSpaceNode->mState &= ~SMI_TBS_BACKUP;
+    aSpaceNode->mState &= ~SMI_TBS_BACKUP;
 
-    sLockedMgr = ID_FALSE;
-    IDE_TEST( unlock() != IDE_SUCCESS );
+    wakeup4Backup( aSpaceNode );
+
+    sIsLocked = ID_FALSE;
+    unlockSpaceNode( aSpaceNode );
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( error_not_begin_backup);
     {
         IDE_SET( ideSetErrorCode( smERR_ABORT_NotBeginBackup,
-                                  aSpaceID) );
-    }
-    IDE_EXCEPTION( error_not_found_tablespace_node );
-    {
-        IDE_SET( ideSetErrorCode( smERR_ABORT_NotFoundTableSpaceNode,
-                                 aSpaceID) );
+                                  aSpaceNode->mID ) );
     }
     IDE_EXCEPTION_END;
 
-    IDE_PUSH();
+    if ( sIsLocked == ID_TRUE )
     {
-        if ( sLockedMgr == ID_TRUE )
-        {
-            IDE_ASSERT( sctTableSpaceMgr::unlock()
-                        == IDE_SUCCESS );
-        }
+        unlockSpaceNode( aSpaceNode );
     }
-    IDE_POP();
 
     return IDE_FAILURE;
 }
 
-/*
-   ë°ì´íƒ€íŒŒì¼ í—¤ë”ì— ê¸°ë¡í•  ì²´í¬í¬ì¸íŠ¸ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
 
-   [IN] aDiskRedoLSN   : ì²´í¬í¬ì¸íŠ¸ê³¼ì •ì—ì„œ ê²°ì •ëœ ë””ìŠ¤í¬ Redo LSN
-   [IN] aMemRedoLSN : ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ Redo LSN ë°°ì—´
+/*
+   µ¥ÀÌÅ¸ÆÄÀÏ Çì´õ¿¡ ±â·ÏÇÒ Ã¼Å©Æ÷ÀÎÆ® Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
+
+   [IN] aDiskRedoLSN   : Ã¼Å©Æ÷ÀÎÆ®°úÁ¤¿¡¼­ °áÁ¤µÈ µğ½ºÅ© Redo LSN
+   [IN] aMemRedoLSN : ¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½ºÀÇ Redo LSN ¹è¿­
 */
 void sctTableSpaceMgr::setRedoLSN4DBFileMetaHdr( smLSN* aDiskRedoLSN,
                                                  smLSN* aMemRedoLSN )
 {
     if ( aDiskRedoLSN != NULL  )
     {
-        // Disk Redo LSNì„ ì„¤ì •í•œë‹¤.
+        // Disk Redo LSNÀ» ¼³Á¤ÇÑ´Ù.
         SM_GET_LSN( mDiskRedoLSN, *aDiskRedoLSN);
     }
 
@@ -3139,7 +2822,7 @@ void sctTableSpaceMgr::setRedoLSN4DBFileMetaHdr( smLSN* aDiskRedoLSN,
         IDE_ASSERT( (aMemRedoLSN->mFileNo != ID_UINT_MAX) &&
                     (aMemRedoLSN->mOffset != ID_UINT_MAX) );
 
-        //  ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ Redo LSNì„ ì„¤ì •í•œë‹¤.
+        //  ¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½ºÀÇ Redo LSNÀ» ¼³Á¤ÇÑ´Ù.
         SM_GET_LSN( mMemRedoLSN, *aMemRedoLSN );
     }
     else
@@ -3151,45 +2834,42 @@ void sctTableSpaceMgr::setRedoLSN4DBFileMetaHdr( smLSN* aDiskRedoLSN,
 }
 
 /*
-    Alter Tablespace Online/Offlineì— ëŒ€í•œ ì—ëŸ¬ì²˜ë¦¬ë¥¼ ìˆ˜í–‰í•œë‹¤.
+    Alter Tablespace Online/Offline¿¡ ´ëÇÑ ¿¡·¯Ã³¸®¸¦ ¼öÇàÇÑ´Ù.
 
-    [IN] aTBSNode  - Alter Online/Offlineí•˜ë ¤ëŠ” Tablespace
-    [IN] aNewTBSState - ìƒˆë¡œ ì „ì´í•˜ë ¤ëŠ” ìƒíƒœ ( Online or Offline )
+    [IN] aTBSNode  - Alter Online/OfflineÇÏ·Á´Â Tablespace
+    [IN] aNewTBSState - »õ·Î ÀüÀÌÇÏ·Á´Â »óÅÂ ( Online or Offline )
 
-    [ ì„ ê²°ì¡°ê±´ ]
-      Tablespaceì— X Lockì„ ì¡ì€ ìƒíƒœì—ì„œ í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
-      ì´ìœ  : Tablespaceì— X Lockì„ ì¡ì€ ìƒíƒœì—ì„œ
-              ë‹¤ë¥¸ DDLì´ í•¨ê»˜ ë™ì‘í•˜ì§€ ì•ŠìŒì„ ë³´ì¥í•´ì•¼
-              ìƒíƒœ ì²´í¬ê°€ ìœ íš¨í•˜ë‹¤.
+    [ ¼±°áÁ¶°Ç ]
+      Tablespace¿¡ X LockÀ» ÀâÀº »óÅÂ¿¡¼­ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
+      ÀÌÀ¯ : Tablespace¿¡ X LockÀ» ÀâÀº »óÅÂ¿¡¼­
+              ´Ù¸¥ DDLÀÌ ÇÔ²² µ¿ÀÛÇÏÁö ¾ÊÀ½À» º¸ÀåÇØ¾ß
+              »óÅÂ Ã¼Å©°¡ À¯È¿ÇÏ´Ù.
 
-    [ ì•Œê³ ë¦¬ì¦˜ ]
-      (e-010) system tablespace ì´ë©´ ì—ëŸ¬
-      (e-020) Tablespaceì˜ ìƒíƒœê°€ ì´ë¯¸ ìƒˆë¡œìš´ ìƒíƒœì´ë©´ ì—ëŸ¬
+    [ ¾Ë°í¸®Áò ]
+      (e-010) system tablespace ÀÌ¸é ¿¡·¯
+      (e-020) TablespaceÀÇ »óÅÂ°¡ ÀÌ¹Ì »õ·Î¿î »óÅÂÀÌ¸é ¿¡·¯
 
-    [ ì°¸ê³  ]
-      DROP/DISCARD/OFFLINEëœ Tablespaceì˜ ê²½ìš° lockTBSNodeì—ì„œ
-      ì—ëŸ¬ì²˜ë¦¬ëœ ìƒíƒœì´ë‹¤.
+    [ Âü°í ]
+      DROP/DISCARD/OFFLINEµÈ TablespaceÀÇ °æ¿ì lockTBSNode¿¡¼­
+      ¿¡·¯Ã³¸®µÈ »óÅÂÀÌ´Ù.
  */
 IDE_RC sctTableSpaceMgr::checkError4AlterStatus( sctTableSpaceNode  * aTBSNode,
                                                  smiTableSpaceState   aNewTBSState )
 {
-    UInt sStage = 0;
-
     IDE_DASSERT( aTBSNode != NULL );
 
-
-    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì— ì ê¸ˆì„ íšë“í•˜ê³  ìƒíƒœë¥¼ ë³´ê¸° ë•Œë¬¸ì—
-    // ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì— ì˜í•´ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ìƒíƒœê°€ ë³€ê²½ë˜ì§€ ì•ŠëŠ”ë‹¤.
-    // latch íšë“ì´ í•„ìš”ì—†ìŒ.
+    // Å×ÀÌºí½ºÆäÀÌ½º¿¡ Àá±İÀ» È¹µæÇÏ°í »óÅÂ¸¦ º¸±â ¶§¹®¿¡
+    // ´Ù¸¥ Æ®·£Àè¼Ç¿¡ ÀÇÇØ Å×ÀÌºí½ºÆäÀÌ½º »óÅÂ°¡ º¯°æµÇÁö ¾Ê´Â´Ù.
+    // latch È¹µæÀÌ ÇÊ¿ä¾øÀ½.
 
     ///////////////////////////////////////////////////////////////////////////
-    // (e-010) system tablespace ì´ë©´ ì—ëŸ¬
+    // (e-010) system tablespace ÀÌ¸é ¿¡·¯
     IDE_TEST_RAISE( aTBSNode->mID <= SMI_ID_TABLESPACE_SYSTEM_DISK_TEMP,
                     error_alter_status_of_system_tablespace);
 
     ///////////////////////////////////////////////////////////////////////////
-    // (e-020) Tablespaceì˜ ìƒíƒœê°€ ì´ë¯¸ ìƒˆë¡œìš´ ìƒíƒœì´ë©´ ì—ëŸ¬
-    //         Ex> ì´ë¯¸ ONLINEìƒíƒœì¸ë° ONLINEìƒíƒœë¡œ ì „ì´í•˜ë ¤ê³  í•˜ë©´ ì—ëŸ¬
+    // (e-020) TablespaceÀÇ »óÅÂ°¡ ÀÌ¹Ì »õ·Î¿î »óÅÂÀÌ¸é ¿¡·¯
+    //         Ex> ÀÌ¹Ì ONLINE»óÅÂÀÎµ¥ ONLINE»óÅÂ·Î ÀüÀÌÇÏ·Á°í ÇÏ¸é ¿¡·¯
     switch( aNewTBSState )
     {
         case SMI_TBS_ONLINE :
@@ -3227,96 +2907,68 @@ IDE_RC sctTableSpaceMgr::checkError4AlterStatus( sctTableSpaceNode  * aTBSNode,
 
     IDE_EXCEPTION_END;
 
-    IDE_PUSH();
-
-    switch( sStage)
-    {
-        case 1:
-            IDE_ASSERT( unlock() == IDE_SUCCESS );
-                break;
-        default:
-            break;
-    }
-
-    IDE_POP();
-
     return IDE_FAILURE;
 }
 
-/*  Tablespaceì— ëŒ€í•´ ì§„í–‰ì¤‘ì¸ Backupì´ ì™„ë£Œë˜ê¸°ë¥¼ ê¸°ë‹¤ë¦° í›„,
-    Tablespaceë¥¼ ë°±ì—… ë¶ˆê°€ëŠ¥í•œ ìƒíƒœë¡œ ë³€ê²½í•œë‹¤.
+/*  Tablespace¿¡ ´ëÇØ ÁøÇàÁßÀÎ BackupÀÌ ¿Ï·áµÇ±â¸¦ ±â´Ù¸° ÈÄ,
+    Tablespace¸¦ ¹é¾÷ ºÒ°¡´ÉÇÑ »óÅÂ·Î º¯°æÇÑ´Ù.
 
-    [IN] aTBSNode           - ìƒíƒœë¥¼ ë³€ê²½í•  Tablespaceì˜ Node
-    [IN] aTBSSwitchingState - ìƒíƒœì „ì´ í”Œë˜ê·¸
+    [IN] aTBSNode           - »óÅÂ¸¦ º¯°æÇÒ TablespaceÀÇ Node
+    [IN] aTBSSwitchingState - »óÅÂÀüÀÌ ÇÃ·¡±×
                               (SMI_TBS_SWITCHING_TO_OFFLINE,
                                SMI_TBS_SWITCHING_TO_ONLINE )
  */
-IDE_RC sctTableSpaceMgr::wait4BackupAndBlockBackup(
-                             sctTableSpaceNode  * aTBSNode,
-                             smiTableSpaceState   aTBSSwitchingState )
+IDE_RC sctTableSpaceMgr::wait4BackupAndBlockBackup( idvSQL            * aStatistics,
+                                                    sctTableSpaceNode * aTBSNode,
+                                                    smiTableSpaceState  aTBSSwitchingState )
 {
-    UInt            sStage = 0;
+    idBool sIsLocked = ID_FALSE;
 
     IDE_DASSERT( aTBSNode != NULL );
 
-    while(1)
+    lockSpaceNode( aStatistics,
+                   aTBSNode );
+    sIsLocked = ID_TRUE;
+
+    while ( SMI_TBS_IS_BACKUP( aTBSNode->mState ) )
     {
-        IDE_TEST( lock( NULL /* idvSQL* */) != IDE_SUCCESS );
-        sStage = 1;
+        wait4Backup( aTBSNode );
 
-        if ( SMI_TBS_IS_BACKUP( aTBSNode->mState ) )
-        {
-            sStage = 0;
-            IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS );
-
-            // CPUë¥¼ ë°˜ë‚©í•˜ê³  1ì´ˆí›„ ë‹¤ì‹œ ì²´í¬
-            idlOS::sleep(1);
-
-            continue; // ë‹¤ì‹œ ì‹œë„
-        }
-        else // Backupì´ ì§„í–‰ì¤‘ì´ì§€ ì•ŠìŒ
-        {
-            // Backupì´ ë“¤ì–´ì˜¬ ìˆ˜ ì—†ë„ë¡ Tablespaceì˜ ìƒíƒœë¥¼ ë³€ê²½
-
-            // ìƒˆë¡œ Oringí•˜ì—¬ Addí•  ìƒíƒœëŠ” Tablespace Backupì„
-            // Blockingí•˜ëŠ” ë¹„íŠ¸ê°€ ì¼œì ¸ìˆì–´ì•¼ í•¨
-            IDE_ASSERT( ( aTBSSwitchingState & SMI_TBS_BLOCK_BACKUP )
-                        == SMI_TBS_BLOCK_BACKUP );
-
-            aTBSNode->mState |= aTBSSwitchingState ;
-        }
-
-        sStage = 0;
-        IDE_TEST( unlock() != IDE_SUCCESS );
-
-        break; // ìƒí™© ì¢…ë£Œ
+        IDE_TEST( iduCheckSessionEvent( aStatistics ) != IDE_SUCCESS );
     }
+
+    // BackupÀÌ ÁøÇàÁßÀÌÁö ¾ÊÀ½
+    // BackupÀÌ µé¾î¿Ã ¼ö ¾øµµ·Ï TablespaceÀÇ »óÅÂ¸¦ º¯°æ
+
+    // »õ·Î OringÇÏ¿© AddÇÒ »óÅÂ´Â Tablespace BackupÀ»
+    // BlockingÇÏ´Â ºñÆ®°¡ ÄÑÁ®ÀÖ¾î¾ß ÇÔ
+    IDE_ASSERT( ( aTBSSwitchingState & SMI_TBS_BLOCK_BACKUP )
+                == SMI_TBS_BLOCK_BACKUP );
+
+    aTBSNode->mState |= aTBSSwitchingState ;
+
+    sIsLocked = ID_FALSE;
+    unlockSpaceNode( aTBSNode );
+
+    // »óÈ² Á¾·á
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 
-    IDE_PUSH();
-
-    switch( sStage)
+    if ( sIsLocked == ID_TRUE )
     {
-        case 1:
-            IDE_ASSERT( unlock() == IDE_SUCCESS );
-                break;
-        default:
-            break;
+        unlockSpaceNode( aTBSNode );
     }
-
-    IDE_POP();
 
     return IDE_FAILURE;
 }
 
-/*  Table DDL(Create, Drop, Alter )ë¥¼ ìˆ˜í–‰í•˜ëŠ” Transactionì´ Commití• ë•Œ
-    tablespaceì˜ mMaxTblDDLCommitSCNìœ¼ë¡œ ë³€ê²½í•œë‹¤.
+/*  Table DDL(Create, Drop, Alter )¸¦ ¼öÇàÇÏ´Â TransactionÀÌ CommitÇÒ¶§
+    tablespaceÀÇ mMaxTblDDLCommitSCNÀ¸·Î º¯°æÇÑ´Ù.
 
-    [IN] aSpaceID      - ìƒíƒœë¥¼ ë³€ê²½í•  Tablespaceì˜ Node
-    [IN] aCommitSCN    - Tableì— DDLì„ ìˆ˜í–‰í•˜ëŠ” Transactionì˜
+    [IN] aSpaceID      - »óÅÂ¸¦ º¯°æÇÒ TablespaceÀÇ Node
+    [IN] aCommitSCN    - Table¿¡ DDLÀ» ¼öÇàÇÏ´Â TransactionÀÇ
                          CommitSCN
  */
 void sctTableSpaceMgr::updateTblDDLCommitSCN( scSpaceID aSpaceID,
@@ -3324,13 +2976,13 @@ void sctTableSpaceMgr::updateTblDDLCommitSCN( scSpaceID aSpaceID,
 {
     sctTableSpaceNode *sSpaceNode;
 
-    IDE_ASSERT( lock( NULL /* idvSQL* */) == IDE_SUCCESS );
-
-    IDE_ASSERT( findSpaceNodeBySpaceID( aSpaceID , (void**)&sSpaceNode )
+    IDE_ASSERT( findAndLockSpaceNodeBySpaceID( NULL,
+                                               aSpaceID,
+                                               (void**)&sSpaceNode )
                 == IDE_SUCCESS );
 
-    /* ì´ì „ì— ì„¤ì •ëœ SCNì´ í¬ë‹¤ë©´ ê·¸ë˜ë¡œ ë‘”ë‹¤. í•­ìƒ CrtTblCommitSCNì€
-     * ì¦ê°€ë§Œ í•œë‹¤. */
+    /* ÀÌÀü¿¡ ¼³Á¤µÈ SCNÀÌ Å©´Ù¸é ±×·¡·Î µĞ´Ù. Ç×»ó CrtTblCommitSCNÀº
+     * Áõ°¡¸¸ ÇÑ´Ù. */
     if ( SM_SCN_IS_LT( &( sSpaceNode->mMaxTblDDLCommitSCN ),
                        &(aCommitSCN) ) )
     {
@@ -3338,16 +2990,16 @@ void sctTableSpaceMgr::updateTblDDLCommitSCN( scSpaceID aSpaceID,
                     &aCommitSCN );
     }
 
-    IDE_ASSERT( unlock() == IDE_SUCCESS );
+    unlockSpaceNode( sSpaceNode );
 }
 
-/*  TableSpaceì— ëŒ€í•´ì„œ Drop Tablespaceë¥¼ ìˆ˜í–‰í•˜ëŠ” Transactionì€
-    ìì‹ ì˜ ViewSCNì„ ë”°ê³  LockTableì„ í•˜ëŠ” ì‚¬ì´ì— ë‹¤ë¥¸ Transactionì´
-    ì´ Tablespaceì— ëŒ€í•´ì„œ CreateTable, Drop Tableì„ í–ˆëŠ”ì§€ë¥¼
-    ê²€ì‚¬í•´ì•¼í•œë‹¤.
+/*  TableSpace¿¡ ´ëÇØ¼­ Drop Tablespace¸¦ ¼öÇàÇÏ´Â TransactionÀº
+    ÀÚ½ÅÀÇ ViewSCNÀ» µû°í LockTableÀ» ÇÏ´Â »çÀÌ¿¡ ´Ù¸¥ TransactionÀÌ
+    ÀÌ Tablespace¿¡ ´ëÇØ¼­ CreateTable, Drop TableÀ» Çß´ÂÁö¸¦
+    °Ë»çÇØ¾ßÇÑ´Ù.
 
-    [IN] aSpaceID - ìƒíƒœë¥¼ ë³€ê²½í•  Tablespaceì˜ Node
-    [IN] aViewSCN - Tablespaceì— ëŒ€í•´ì„œ DDLì„ ìˆ˜í–‰í•˜ëŠ” Transactionì˜
+    [IN] aSpaceID - »óÅÂ¸¦ º¯°æÇÒ TablespaceÀÇ Node
+    [IN] aViewSCN - Tablespace¿¡ ´ëÇØ¼­ DDLÀ» ¼öÇàÇÏ´Â TransactionÀÇ
                     ViewSCN
  */
 IDE_RC sctTableSpaceMgr::canDropByViewSCN( scSpaceID aSpaceID,
@@ -3359,10 +3011,10 @@ IDE_RC sctTableSpaceMgr::canDropByViewSCN( scSpaceID aSpaceID,
                                         (void**)&sSpaceNode )
                 == IDE_SUCCESS );
 
-    /* ViewSCNì´ MaxTblDDLCommitSCNë³´ë‹¤ ì‘ë‹¤ëŠ” ê²ƒì€
-       ViewSCNì„ ë”°ê³  Lock Tablespaceë¥¼ í•˜ëŠ” ì‚¬ì´ì— ì´ Tablespaceì—
-       ëŒ€í•´ì„œ Create Table, Drop Table, Alter Tableê³¼ ê°™ì€ ì—°ì‚°ì´
-       ë°œìƒí•œ ê²ƒì´ë‹¤. */
+    /* ViewSCNÀÌ MaxTblDDLCommitSCNº¸´Ù ÀÛ´Ù´Â °ÍÀº
+       ViewSCNÀ» µû°í Lock Tablespace¸¦ ÇÏ´Â »çÀÌ¿¡ ÀÌ Tablespace¿¡
+       ´ëÇØ¼­ Create Table, Drop Table, Alter Table°ú °°Àº ¿¬»êÀÌ
+       ¹ß»ıÇÑ °ÍÀÌ´Ù. */
     if ( SM_SCN_IS_LT( &( aViewSCN ),
                        &( sSpaceNode->mMaxTblDDLCommitSCN ) ) )
     {
@@ -3381,21 +3033,16 @@ IDE_RC sctTableSpaceMgr::canDropByViewSCN( scSpaceID aSpaceID,
 }
 
 /***********************************************************************
- * Description : ëª¨ë“  ë””ìŠ¤í¬ Tablesapceì˜ Tablespaceì— ì†í•´
- *               ìˆëŠ” ëª¨ë“  Datafileì˜ Max Open FD Countë¥¼ aMaxFDCnt4File
- *               ë¡œ ë³€ê²½í•œë‹¤.
+ * Description : ¸ğµç µğ½ºÅ© TablesapceÀÇ Tablespace¿¡ ¼ÓÇØ
+ *               ÀÖ´Â ¸ğµç DatafileÀÇ Max Open FD Count¸¦ aMaxFDCnt4File
+ *               ·Î º¯°æÇÑ´Ù.
  *
  * aMaxFDCnt4File - [IN] Max FD Count
  **********************************************************************/
 IDE_RC sctTableSpaceMgr::setMaxFDCntAllDFileOfAllDiskTBS( UInt aMaxFDCnt4File )
 {
-
-    UInt               sState = 0;
     UInt               i;
     sctTableSpaceNode *sSpaceNode;
-
-    IDE_TEST( lock( NULL /* idvSQL* */) != IDE_SUCCESS );
-    sState = 1;
 
     for ( i = 0 ; i < mNewTableSpaceID ; i++ )
     {
@@ -3406,23 +3053,45 @@ IDE_RC sctTableSpaceMgr::setMaxFDCntAllDFileOfAllDiskTBS( UInt aMaxFDCnt4File )
             continue;
         }
 
-        /* ê° Tablespaceë³„ë¡œ Max Open FD Countë¥¼ ë³€ê²½í•œë‹¤. */
-        IDE_TEST( sddDiskMgr::setMaxFDCnt4AllDFileOfTBS( sSpaceNode,
-                                                         aMaxFDCnt4File )
+        if ( isDiskTableSpace( sSpaceNode ) == ID_TRUE )
+        {
+            /* °¢ Tablespaceº°·Î Max Open FD Count¸¦ º¯°æÇÑ´Ù. */
+            IDE_TEST( sddDiskMgr::setMaxFDCnt4AllDFileOfTBS( sSpaceNode,
+                                                             aMaxFDCnt4File )
                   != IDE_SUCCESS );
+        }
     }
-
-    sState = 0;
-    IDE_TEST( unlock() != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 
-    if ( sState != 0 )
-    {
-        IDE_ASSERT( unlock() == IDE_SUCCESS );
-    }
-
     return IDE_FAILURE;
+}
+
+/*
+   PROJ-1548
+   DDL_LOCK_TIMEOUT ÇÁ·ÎÆÛÆ¼¿¡ µû¶ó ´ë±â½Ã°£À» ¹İÈ¯ÇÑ´Ù.
+*/
+ULong sctTableSpaceMgr::getDDLLockTimeOut( smxTrans * aTrans )
+{
+    SInt sDDLLockTimeout = 0;
+    if ( aTrans != NULL )
+    {
+        if ( aTrans->mStatistics != NULL )
+        {
+            IDE_DASSERT(aTrans->mStatistics->mSess != NULL);
+            if( aTrans->mStatistics->mSess->mSession != NULL )
+            {
+                sDDLLockTimeout = gSmiGlobalCallBackList.getDDLLockTimeout(aTrans->mStatistics->mSess->mSession);
+            }
+        }
+    }
+    else 
+    {
+        sDDLLockTimeout = smuProperty::getDDLLockTimeOut();
+    }
+    return (((sDDLLockTimeout == -1) ?
+             ID_ULONG_MAX :
+             sDDLLockTimeout *1000000) );
 }

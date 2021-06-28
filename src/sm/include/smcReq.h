@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: smcReq.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smcReq.h 89495 2020-12-14 05:19:22Z emlee $
  **********************************************************************/
 
 #ifndef _O_SMC_REQ_H_
@@ -170,17 +170,6 @@ class smcReqFunc
             smxTrans::addToUpdateSizeOfTrans( aTrans, aSize );
         };
 
-        static void getTransInfo( void   * aTrans,
-                                  SChar ** aTransLogBuffer,
-                                  smTID  * aTID,
-                                  UInt   * aTransLogType )
-        {
-            smxTrans::getTransInfo( aTrans,
-                                    aTransLogBuffer,
-                                    aTID,
-                                    aTransLogType );
-        };
-
         static void * getTransByTID( smTID aTID )
         {
             return smxTransMgr::getTransByTID2Void( aTID );
@@ -188,10 +177,12 @@ class smcReqFunc
 
         static IDE_RC waitLockForTrans( void    * aTrans,
                                         smTID     aWaitTransID, 
+                                        scSpaceID aSpaceID,
                                         ULong     aLockWaitTime )
         {
             return smxTransMgr::waitForTrans( aTrans,
                                               aWaitTransID, 
+                                              aSpaceID,
                                               aLockWaitTime );
         };
 
@@ -215,11 +206,6 @@ class smcReqFunc
             smxTrans::setIsTransWaitRepl( aTrans, aIsWaitRepl );
         };
 
-        static IDE_RC syncToEnd()
-        {
-            return smxTrans::syncToEnd();
-        };
-
         static UInt getMemLobCursorCnt( void    * aTrans,
                                         UInt      aColumnID,
                                         void    * aRow )
@@ -234,9 +220,9 @@ class smcReqFunc
             return smxTrans::getLstReplStmtDepth( aTrans );
         };
 
-        static IDE_RC writeTransLog( void * aTrans )
+        static IDE_RC writeTransLog( void * aTrans, smOID aTableOID )
         {
-            return smxTrans::writeTransLog( aTrans );
+            return smxTrans::writeTransLog( aTrans, aTableOID );
         };
 
         static IDE_RC setImpSavepoint( void     * aTrans,
@@ -302,6 +288,10 @@ class smcReqFunc
         static IDE_RC lockTableModeIS( void * aTrans, void * aLockItem )
         {
             return smlLockMgr::lockTableModeIS( aTrans, aLockItem );
+        };
+        static IDE_RC lockTableModeIS4FixedTable( void * aTrans, void * aLockItem )
+        {
+            return smlLockMgr::lockTableModeIS4FixedTable( aTrans, aLockItem );
         };
 
         static IDE_RC lockTableModeXAndCheckLocked( void    * aTrans, 
@@ -407,27 +397,6 @@ class smcReqFunc
                                             aSegAttr );
         };
 
-        static IDE_RC indexInsertFunc( idvSQL   * aStatistics, 
-                                       void     * aTrans,
-                                       void     * aTable,
-                                       void     * aIndexHeader,
-                                       smSCN      aInfiniteSCN,
-                                       SChar    * aRow, 
-                                       SChar    * aNull, 
-                                       idBool     aUniqueCheck,
-                                       smSCN      aStmtSCN )
-        {
-            return smnManager::indexInsertFunc( aStatistics, 
-                                                aTrans,
-                                                aTable,
-                                                aIndexHeader,
-                                                aInfiniteSCN,
-                                                aRow, 
-                                                aNull, 
-                                                aUniqueCheck,
-                                                aStmtSCN );
-        };
-
         static IDE_RC indexDeleteFunc( void     * aIndexHeader, 
                                        SChar    * aRow, 
                                        idBool     aIgnoreNotFoundKey,
@@ -441,7 +410,6 @@ class smcReqFunc
 
         static void initIndexHeader( void                * aIndexHeader,
                                      smOID                 aTableSelfOID,
-                                     smSCN                 aCommitSCN,
                                      SChar               * aName, 
                                      UInt                  aID,
                                      UInt                  aType,
@@ -453,7 +421,6 @@ class smcReqFunc
         {
             smnManager::initIndexHeader( aIndexHeader,
                                          aTableSelfOID,
-                                         aCommitSCN,
                                          aName, 
                                          aID,
                                          aType,
@@ -462,27 +429,6 @@ class smcReqFunc
                                          aSegAttr,
                                          aSegStoAttr,
                                          aDirectKeyMaxSize );
-        };
-
-        static void InitTempIndexHeader( void                   * aIndexHeader,
-                                         smOID                    aTableSelfOID,
-                                         smSCN                    aStmtSCN,
-                                         UInt                     aID,
-                                         UInt                     aType,
-                                         UInt                     aFlag,
-                                         const smiColumnList    * aColumns,
-                                         smiSegAttr             * aSegAttr,
-                                         smiSegStorageAttr      * aSegStoAttr )
-        {
-            smnManager::initTempIndexHeader( aIndexHeader,
-                                             aTableSelfOID,
-                                             aStmtSCN,
-                                             aID,
-                                             aType,
-                                             aFlag,
-                                             aColumns,
-                                             aSegAttr,
-                                             aSegStoAttr );
         };
 
         static IDE_RC reInitIndex( idvSQL * aStatistics, void * aIndex )
@@ -539,7 +485,7 @@ class smcReqFunc
 
         static IDE_RC deleteRowFromIndex( SChar          * aRow, 
                                           smcTableHeader * aHeader,
-                                          ULong          * aModifyIdxBit )
+                                          ULong            aModifyIdxBit )
         {
             return smnManager::deleteRowFromIndex( aRow, 
                                                    aHeader,

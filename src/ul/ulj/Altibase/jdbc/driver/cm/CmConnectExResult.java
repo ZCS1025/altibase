@@ -18,12 +18,12 @@ package Altibase.jdbc.driver.cm;
 
 public class CmConnectExResult extends CmResult
 {
-    static final byte MY_OP = CmOperation.DB_OP_CONNECT_EX_RESULT;
+    static final byte MY_OP = CmOperation.DB_OP_CONNECT_V3_RESULT;
     
     private int mSessionID;
     private int mResultCode;
     private int mResultInfo;
-    private long mReserved;
+    private long mSCN;        // TASK-7220 고성능 분산공유트랜잭션 정합성 
 
     public CmConnectExResult()
     {
@@ -64,13 +64,13 @@ public class CmConnectExResult extends CmResult
         mResultInfo = aResultInfo;
     }
 
-    public long getReserved() 
+    public long getSCN() 
     {
-        return mReserved;
+        return mSCN;
     }
 
-    void setReserved(long aReserved) 
+    void setSCN(long aSCN) 
     {
-        mReserved = aReserved;
+        mSCN = aSCN;
     }
 }

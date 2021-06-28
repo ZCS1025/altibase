@@ -25,7 +25,7 @@ import java.util.HashMap;
 
 public enum ShardSplitMethod
 {
-    HASH((byte)1), RANGE((byte)2), LIST((byte)3), CLONE((byte)4), SOLO((byte)5);
+    NONE((byte)0), HASH((byte)1), RANGE((byte)2), LIST((byte)3), CLONE((byte)4), SOLO((byte)5);
 
     byte mValue;
     private static final HashMap<Byte, ShardSplitMethod> mShardSplitMap = new HashMap<Byte, ShardSplitMethod>();

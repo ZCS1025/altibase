@@ -44,31 +44,31 @@ public:
     mmcEventManager() {};
     ~mmcEventManager() {};
 
-    // ì´ˆê¸°í™” ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+    // ÃÊ±âÈ­ ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
     IDE_RC         initialize( mmcSession * aSession );
 
-    // ë§ˆë¬´ë¦¬ ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+    // ¸¶¹«¸® ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
     IDE_RC         finalize();
 
-    // ì´ë²¤íŠ¸ ë“±ë¡ í•´ì‰¬ì— ì´ë²¤íŠ¸ë¥¼ ë“±ë¡í•œë‹¤.
+    // ÀÌº¥Æ® µî·Ï ÇØ½¬¿¡ ÀÌº¥Æ®¸¦ µî·ÏÇÑ´Ù.
     IDE_RC         regist( const SChar * aName,
                            UShort        aNameSize );
 
-    // ì´ë²¤íŠ¸ ë“±ë¡ í•´ì‰¬ì— ì£¼ì–´ì§„ ì´ë¦„ì´ ë“±ë¡ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
+    // ÀÌº¥Æ® µî·Ï ÇØ½¬¿¡ ÁÖ¾îÁø ÀÌ¸§ÀÌ µî·ÏµÇ¾î ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
     idBool         isRegistered( const SChar * aName,
                                  UShort        aNameSize );
 
-    // ì´ë²¤íŠ¸ ë“±ë¡ í•´ì‰¬ì—ì„œ ì£¼ì–´ì§„ ì´ë¦„ì˜ ì´ë²¤íŠ¸ë¥¼ ì œê±°í•œë‹¤.
+    // ÀÌº¥Æ® µî·Ï ÇØ½¬¿¡¼­ ÁÖ¾îÁø ÀÌ¸§ÀÇ ÀÌº¥Æ®¸¦ Á¦°ÅÇÑ´Ù.
     IDE_RC         remove(  const SChar * aName,
                             UShort        aNameSize );
 
-    // ì´ë²¤íŠ¸ ë“±ë¡ í•´ì‰¬ë¥¼ ì´ˆê¸°í™” í•œë‹¤.
+    // ÀÌº¥Æ® µî·Ï ÇØ½¬¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
     IDE_RC         removeall();
 
-    // polling intervalì˜ ê°’ì„ ì§€ì •í•œë‹¤.
+    // polling intervalÀÇ °ªÀ» ÁöÁ¤ÇÑ´Ù.
     IDE_RC         setDefaults( SInt aPollingInterval );
 
-    // ì´ë²¤íŠ¸ pending ë¦¬ìŠ¤íŠ¸ì— ì´ë²¤íŠ¸ë¥¼ ì¶”ê°€í•œë‹¤.
+    // ÀÌº¥Æ® pending ¸®½ºÆ®¿¡ ÀÌº¥Æ®¸¦ Ãß°¡ÇÑ´Ù.
     IDE_RC         signal( const SChar * aName,
                            UShort        aNameSize,
                            const SChar * aMessage,
@@ -77,7 +77,7 @@ public:
     mmcEventInfo * isSignaled( const SChar * aName,
                                UShort        aNameSize );
 
-    // ì„ì˜ì˜ ì´ë²¤íŠ¸ë¥¼ ê¸°ë‹¤ë¦°ë‹¤.
+    // ÀÓÀÇÀÇ ÀÌº¥Æ®¸¦ ±â´Ù¸°´Ù.
     IDE_RC         waitany( idvSQL   * aStatistics,
                             SChar    * aName,
                             UShort   * aNameSize,
@@ -86,7 +86,7 @@ public:
                             SInt     * aStatus,
                             const SInt aTimeout );
 
-    // ì£¼ì–´ì§„ ì´ë¦„ì˜ ì´ë²¤íŠ¸ë¥¼ ê¸°ë‹¤ë¦°ë‹¤.
+    // ÁÖ¾îÁø ÀÌ¸§ÀÇ ÀÌº¥Æ®¸¦ ±â´Ù¸°´Ù.
     IDE_RC         waitone( idvSQL       * aStatistics,
                             const SChar  * aName,
                             const UShort * aNameSize,
@@ -114,44 +114,44 @@ public:
     inline IDE_RC  unlockForCV();
 
 private:
-    // ì´ë²¤íŠ¸ pending ë¦¬ìŠ¤íŠ¸
+    // ÀÌº¥Æ® pending ¸®½ºÆ®
     iduList        mPendingList;
 
-    // ì´ë²¤íŠ¸ ë“±ë¡ ë¦¬ìŠ¤íŠ¸
+    // ÀÌº¥Æ® µî·Ï ¸®½ºÆ®
     // BUGBUG 
-    // hashë¥¼ ì‚¬ìš©í•˜ë„ë¡ ë³€ê²½ í•´ì•¼í•¨.
+    // hash¸¦ »ç¿ëÇÏµµ·Ï º¯°æ ÇØ¾ßÇÔ.
     iduList        mList;
 
-    // ì´ë²¤íŠ¸ í
+    // ÀÌº¥Æ® Å¥
     iduList        mQueue;
 
     // Polling Interval
     SInt           mPollingInterval;
 
-    // alloc/freeê°€ ììœ ë¡œìš´ ë©”ëª¨ë¦¬ ê´€ë¦¬ì
+    // alloc/free°¡ ÀÚÀ¯·Î¿î ¸Ş¸ğ¸® °ü¸®ÀÚ
     iduVarMemList  mMemory;
 
-    // ì„¸ì…˜ ì •ë³´
+    // ¼¼¼Ç Á¤º¸
     mmcSession   * mSession;
 
-    // cond_timedwait í˜¸ì¶œì‹œì— ì‚¬ìš©
+    // cond_timedwait È£Ãâ½Ã¿¡ »ç¿ë
     iduCond        mCV;
 
     PDL_Time_Value mTV;
 
     iduMutex       mMutex;
 
-    // ë‚´ë¶€ ìë£Œêµ¬ì¡°ì— ëŒ€í•œ ë™ì‹œì„± ì œì–´ì‹œì— ì‚¬ìš©
+    // ³»ºÎ ÀÚ·á±¸Á¶¿¡ ´ëÇÑ µ¿½Ã¼º Á¦¾î½Ã¿¡ »ç¿ë
     iduMutex       mSync;
 
-    // ë“±ë¡ëœ ì´ë²¤íŠ¸ì˜ ê°œìˆ˜
+    // µî·ÏµÈ ÀÌº¥Æ®ÀÇ °³¼ö
     SInt           mSize;
 
-    // pendingëœ ì´ë²¤íŠ¸ì˜ ê°œìˆ˜
+    // pendingµÈ ÀÌº¥Æ®ÀÇ °³¼ö
     SInt           mPendingSize;
 
 private:
-    // pending ë¦¬ìŠ¤íŠ¸ì—ì„œ savepoint ì •ë³´ë¥¼ ì œê±°í•œë‹¤.
+    // pending ¸®½ºÆ®¿¡¼­ savepoint Á¤º¸¸¦ Á¦°ÅÇÑ´Ù.
     IDE_RC removeSvp( SChar * aSvpName );
 
     IDE_RC freeNode( iduListNode * aNode );

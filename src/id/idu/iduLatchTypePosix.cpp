@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduLatchTypePosix.cpp 84983 2019-03-08 11:08:24Z yoonhee.kim $
+ * $Id: iduLatchTypePosix.cpp 84854 2019-01-31 09:47:48Z yoonhee.kim $
  **********************************************************************/
 
 #include <idl.h>
@@ -148,7 +148,7 @@ IDE_RC iduLatchPosix::lockRead(void*  aStatSQL, void* aWeArgs)
             idlOS::thr_yield();
             IDE_TEST(tryLockRead(&sSuccess, NULL) != IDE_SUCCESS);
         } while(sSuccess == ID_FALSE);
-        /* ÎåÄÍ∏∞Ïù¥Î≤§Ìä∏ Wait Time Ï∏°Ï†ïÏùÑ ÏôÑÎ£åÌïúÎã§. */
+        /* ¥Î±‚¿Ã∫•∆Æ Wait Time √¯¡§¿ª øœ∑·«—¥Ÿ. */
         IDV_END_WAIT_EVENT( aStatSQL, aWeArgs );
     
         IDE_ASSERT(mMode > 0);
@@ -176,7 +176,7 @@ IDE_RC iduLatchPosix::lockWrite(void* aStatSQL, void* aWeArgs)
             idlOS::thr_yield();
             IDE_TEST(tryLockWrite(&sSuccess, NULL) != IDE_SUCCESS);
         } while(sSuccess == ID_FALSE);
-        /* ÎåÄÍ∏∞Ïù¥Î≤§Ìä∏ Wait Time Ï∏°Ï†ïÏùÑ ÏôÑÎ£åÌïúÎã§. */
+        /* ¥Î±‚¿Ã∫•∆Æ Wait Time √¯¡§¿ª øœ∑·«—¥Ÿ. */
         IDV_END_WAIT_EVENT( aStatSQL, aWeArgs );
 
         IDE_ASSERT(mMode < 0);

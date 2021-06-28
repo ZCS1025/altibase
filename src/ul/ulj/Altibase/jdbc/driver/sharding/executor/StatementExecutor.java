@@ -17,6 +17,8 @@
 
 package Altibase.jdbc.driver.sharding.executor;
 
+import Altibase.jdbc.driver.AltibaseStatement;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -33,18 +35,17 @@ public class StatementExecutor
         this.mExecutorEngine = aExecutorEngine;
     }
 
-    public int executeUpdate(List<? extends BaseStatementUnit> aStatementUnits) throws SQLException
+    public int executeUpdate(List<Statement> aStatements) throws SQLException
     {
         return executeUpdate(new Updater() {
             public int executeUpdate(final Statement aStatement, final String aSql) throws SQLException
             {
                 return aStatement.executeUpdate(aSql);
             }
-        }, aStatementUnits);
+        }, aStatements);
     }
 
-    public int executeUpdate(final int[] aColumnIndexes,
-                             List<? extends BaseStatementUnit> aStatementUnits) throws SQLException
+    public int executeUpdate(final int[] aColumnIndexes, List<Statement> aStatements) throws SQLException
     {
         return executeUpdate(new Updater()
         {
@@ -52,11 +53,10 @@ public class StatementExecutor
             {
                 return aStatement.executeUpdate(aSql, aColumnIndexes);
             }
-        }, aStatementUnits);
+        }, aStatements);
     }
 
-    public int executeUpdate(final String[] aColumnNames,
-                             List<? extends BaseStatementUnit> aStatementUnits) throws SQLException
+    public int executeUpdate(final String[] aColumnNames, List<Statement> aStatements) throws SQLException
     {
         return executeUpdate(new Updater()
         {
@@ -64,18 +64,17 @@ public class StatementExecutor
             {
                 return aStatement.executeUpdate(aSql, aColumnNames);
             }
-        }, aStatementUnits);
+        }, aStatements);
     }
 
-    private int executeUpdate(final Updater aUpdater, List<? extends BaseStatementUnit> aStatementUnits) throws SQLException
+    private int executeUpdate(final Updater aUpdater, List<Statement> aStatements) throws SQLException
     {
-        List<Integer> sResults = mExecutorEngine.executeStatement(aStatementUnits, new ExecuteCallback<Integer>()
+        List<Integer> sResults = mExecutorEngine.executeStatement(aStatements, new ExecuteCallback<Integer>()
         {
-            public Integer execute(BaseStatementUnit aBaseStatement) throws SQLException
+            public Integer execute(Statement aStatement) throws SQLException
             {
-                shard_log("(NODE DIRECT EXECUTEUPDATE) {0}", aBaseStatement);
-                return aUpdater.executeUpdate(aBaseStatement.getStatement(), aBaseStatement
-                        .getSqlExecutionUnit().getSql());
+                shard_log("(NODE DIRECT EXECUTEUPDATE) {0}", aStatement);
+                return aUpdater.executeUpdate(aStatement, ((AltibaseStatement)aStatement).getSql());
             }
         });
         return accumulate(sResults);
@@ -93,19 +92,19 @@ public class StatementExecutor
         return sResult;
     }
 
-    public List<ResultSet> executeQuery(List<? extends BaseStatementUnit> aStatementUnits) throws SQLException
+    public List<ResultSet> executeQuery(List<Statement> aStatements) throws SQLException
     {
-        return mExecutorEngine.executeStatement(aStatementUnits, new ExecuteCallback<ResultSet>()
+        return mExecutorEngine.executeStatement(aStatements, new ExecuteCallback<ResultSet>()
         {
-            public ResultSet execute(BaseStatementUnit aBaseStatement) throws SQLException
+            public ResultSet execute(Statement aStatement) throws SQLException
             {
-                shard_log("(NODE DIRECT EXECUTEQUERY) {0}", aBaseStatement);
-                return aBaseStatement.getStatement().executeQuery(aBaseStatement.getSqlExecutionUnit().getSql());
+                shard_log("(NODE DIRECT EXECUTEQUERY) {0}", aStatement);
+                return aStatement.executeQuery(((AltibaseStatement)aStatement).getSql());
             }
         });
     }
 
-    public boolean execute(List<? extends BaseStatementUnit> aStatementUnits) throws SQLException
+    public boolean execute(List<Statement> aStatements) throws SQLException
     {
         return execute(new Executor()
         {
@@ -113,11 +112,11 @@ public class StatementExecutor
             {
                 return aStatement.execute(aSql);
             }
-        }, aStatementUnits);
+        }, aStatements);
     }
 
     public boolean execute(final int[] aColumnIndexes,
-                           List<? extends BaseStatementUnit> aStatementUnits) throws SQLException
+                           List<Statement> aStatements) throws SQLException
     {
         return execute(new Executor()
         {
@@ -125,11 +124,10 @@ public class StatementExecutor
             {
                 return aStatement.execute(aSql, aColumnIndexes);
             }
-        }, aStatementUnits);
+        }, aStatements);
     }
 
-    public boolean execute(final String[] aColumnNames,
-                           List<? extends BaseStatementUnit> aStatementUnits) throws SQLException
+    public boolean execute(final String[] aColumnNames, List<Statement> aStatements) throws SQLException
     {
         return execute(new Executor()
         {
@@ -137,18 +135,17 @@ public class StatementExecutor
             {
                 return aStatement.execute(aSql, aColumnNames);
             }
-        }, aStatementUnits);
+        }, aStatements);
     }
 
-    private boolean execute(final Executor aExecutor, List<? extends BaseStatementUnit> aStatementUnits) throws SQLException
+    private boolean execute(final Executor aExecutor, List<Statement> aStatements) throws SQLException
     {
-        List<Boolean> sResult = mExecutorEngine.executeStatement(aStatementUnits, new ExecuteCallback<Boolean>()
+        List<Boolean> sResult = mExecutorEngine.executeStatement(aStatements, new ExecuteCallback<Boolean>()
         {
-            public Boolean execute(BaseStatementUnit aBaseStatementUnit) throws SQLException
+            public Boolean execute(Statement aStatement) throws SQLException
             {
-                shard_log("(NODE DIRECT EXECUTE) {0}", aBaseStatementUnit);
-                return aExecutor.execute(aBaseStatementUnit.getStatement(),
-                                         aBaseStatementUnit.getSqlExecutionUnit().getSql());
+                shard_log("(NODE DIRECT EXECUTE) {0}", aStatement);
+                return aExecutor.execute(aStatement, ((AltibaseStatement)aStatement).getSql());
             }
         });
 

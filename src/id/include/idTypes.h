@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: idTypes.h 84855 2019-02-01 00:06:57Z minku.kang $
+ * $Id: idTypes.h 90605 2021-04-15 05:43:22Z justin.kwon $
  **********************************************************************/
 
 /***********************************************************************
@@ -45,7 +45,7 @@ typedef LONGLONG  SLong;  /* Signed   64-bits */
 typedef ULONGLONG ULong;  /* Unsigned 64-bits */
 # if !defined(COMPILE_64BIT) /* && !(_MSC_VER >= 1300) */
 typedef LONG      vSLong; /* variable Signed   32,[64]-bits */
-typedef ULONG     vULong; /* varibale Unsigned 32,[64]-bits */
+typedef ULONG     vULong; /* variable Unsigned 32,[64]-bits */
 # else
 typedef LONGLONG  vSLong; /* Signed   64-bits */
 typedef ULONGLONG vULong; /* Unsigned 64-bits */
@@ -61,10 +61,10 @@ typedef long long SLong;           /* Signed   64-bits */
 typedef unsigned long long ULong;  /* Unsigned 64-bits */
 # if defined(COMPILE_64BIT)
 typedef long long vSLong;          /* variable Signed   32,[64]-bits */
-typedef unsigned long long vULong; /* varibale Unsigned 32,[64]-bits */
+typedef unsigned long long vULong; /* variable Unsigned 32,[64]-bits */
 # else
 typedef long vSLong;               /* variable Signed   32,[64]-bits */
-typedef unsigned long vULong;      /* varibale Unsigned 32,[64]-bits */
+typedef unsigned long vULong;      /* variable Unsigned 32,[64]-bits */
 # endif
 
 #elif defined(ITRON)
@@ -79,22 +79,22 @@ typedef unsigned int UInt;      /* Unsigned 32-bits */
 /* typedef long SLong; */               /* Signed   64-bits */
 /* typedef unsigned long ULong; */      /* Unsigned 64-bits */
 /* typedef long vSLong; */              /* variable Signed   32,[64]-bits */
-/* typedef unsigned long vULong; */     /* varibale Unsigned 32,[64]-bits */
+/* typedef unsigned long vULong; */     /* variable Unsigned 32,[64]-bits */
 /* # else */
 /* typedef long long SLong; */          /* Signed   64-bits */
 /* typedef unsigned long long ULong; */ /* Unsigned 64-bits */
 /* typedef long long vSLong; */         /* variable Signed   32,[64]-bits */
-/* typedef unsigned long long vULong;*/ /* varibale Unsigned 32,[64]-bits */
+/* typedef unsigned long long vULong;*/ /* variable Unsigned 32,[64]-bits */
 /* # endif */
 
 typedef long long SLong;           /* Signed   64-bits */
 typedef unsigned long long ULong;  /* Unsigned 64-bits */
 
 /* typedef long long vSLong; */          /* variable Signed   32,[64]-bits */
-/* typedef unsigned long long vULong; */ /* varibale Unsigned 32,[64]-bits */
+/* typedef unsigned long long vULong; */ /* variable Unsigned 32,[64]-bits */
 
 typedef long vSLong;          /* variable Signed   32,[64]-bits */
-typedef unsigned long vULong; /* varibale Unsigned 32,[64]-bits */
+typedef unsigned long vULong; /* variable Unsigned 32,[64]-bits */
 
 #else /* !(ITRON + WRS_VXWORKS + VC_WIN32 + VC_WIN64) */
 
@@ -216,22 +216,22 @@ typedef uint64_t ULong;   /* Unsigned 64-bits */
 # endif   /* INTEL_LINUX */
 
 /*
- * vSLong, vULongì€ ì»´íŒŒì¼ í™˜ê²½ 32, 64 ë¹„íŠ¸ì˜ í¬ê¸°ì— ë§ê²Œ
- * ì¡°ì ˆë¨.
+ * vSLong, vULongÀº ÄÄÆÄÀÏ È¯°æ 32, 64 ºñÆ®ÀÇ Å©±â¿¡ ¸Â°Ô
+ * Á¶ÀıµÊ.
  */
 
 # ifdef COMPILE_64BIT
 # ifdef DEC_TRU64
 typedef long          vSLong;  /* variable Signed   32,[64]-bits */
-typedef unsigned long vULong;  /* varibale Unsigned 32,[64]-bits */
+typedef unsigned long vULong;  /* variable Unsigned 32,[64]-bits */
 # else /* DEC_TRU64 */
 #   if __CSURF__
 typedef long long          vSLong;  /* variable Signed   32,[64]-bits */
-typedef unsigned long long vULong;  /* varibale Unsigned 32,[64]-bits */
+typedef unsigned long long vULong;  /* variable Unsigned 32,[64]-bits */
 #   else
 #     if !defined(POWERPC64_LINUX)
 typedef int64_t       vSLong;  /* variable Signed   32,[64]-bits */
-typedef uint64_t      vULong;  /* varibale Unsigned 32,[64]-bits */
+typedef uint64_t      vULong;  /* variable Unsigned 32,[64]-bits */
 #     else
 typedef ULong         vULong;
 #     endif /* POWERPC64_LINUX */
@@ -240,20 +240,20 @@ typedef ULong         vULong;
 # else /* COMPILE_64BIT */
 # ifdef DEC_TRU64
 typedef long          vSLong;  /* variable Signed   32,[64]-bits */
-typedef unsigned long vULong;  /* varibale Unsigned 32,[64]-bits */
+typedef unsigned long vULong;  /* variable Unsigned 32,[64]-bits */
 # else /* DEC_TRU64 */
 # if defined(SPARC_SOLARIS) && (OS_MAJORVER == 2) && (OS_MINORVER == 5)
 typedef long          vSLong;  /* variable Signed   32,[64]-bits */
-typedef unsigned long vULong;  /* varibale Unsigned 32,[64]-bits */
+typedef unsigned long vULong;  /* variable Unsigned 32,[64]-bits */
 # elif defined(POWERPC64_LINUX)
 typedef LONGLONG vSLong;  /* variable Signed   32,[64]-bits */
 # elif defined(CYGWIN32)
 #  include <sys/types.h>
 typedef __int32_t     vSLong;  /* variable Signed   [32],64-bits */
-typedef __uint32_t    vULong;  /* varibale Unsigned [32],64-bits */
+typedef __uint32_t    vULong;  /* variable Unsigned [32],64-bits */
 # else /* defined(SPARC_SOLARIS) && (OS_MAJORVER == 2) && (OS_MINORVER == 5) */
 typedef int32_t       vSLong;  /* variable Signed   [32],64-bits */
-typedef uint32_t      vULong;  /* varibale Unsigned [32],64-bits */
+typedef uint32_t      vULong;  /* variable Unsigned [32],64-bits */
 # endif /* defined(SPARC_SOLARIS) && (OS_MAJORVER == 2) && (OS_MINORVER == 5) */
 # endif   /* DEC_TRU64 */
 # endif   /* COMPILE_64BIT */
@@ -261,24 +261,24 @@ typedef uint32_t      vULong;  /* varibale Unsigned [32],64-bits */
 # endif   /* VC_WIN32 | VC_WIN64 */
 
 /* ------------------------------------------------------------
- *            64ë¹„íŠ¸ Literal ì •ì˜ì‹œ ì‚¬ìš©ë¨
- * (ì»´íŒŒì¼ëŸ¬ í™˜ê²½ì— ë”°ë¼ ì¡°ê±´ì ìœ¼ë¡œ ì •ì˜)
- * ex) #define MYLONG   0x1234567812345678 (í‹€ë¦¼)
- *     #define MYLONG   ID_ULONG(0x1234567812345678) (ë§ìŒ)
+ *            64ºñÆ® Literal Á¤ÀÇ½Ã »ç¿ëµÊ
+ * (ÄÄÆÄÀÏ·¯ È¯°æ¿¡ µû¶ó Á¶°ÇÀûÀ¸·Î Á¤ÀÇ)
+ * ex) #define MYLONG   0x1234567812345678 (Æ²¸²)
+ *     #define MYLONG   ID_ULONG(0x1234567812345678) (¸ÂÀ½)
  * ------------------------------------------------------------*/
 
-/* 1. Windows í™˜ê²½ (ULL ì´ ì—†ì–´ì•¼ í•¨) */
+/* 1. Windows È¯°æ (ULL ÀÌ ¾ø¾î¾ß ÇÔ) */
 # if defined(VC_WIN32) || defined(VC_WIN64)
  
 #define ID_LONG(a)  a ## i64
 #define ID_ULONG(a) a ## ui64
 
-# elif defined( __GNUC__ ) /* 2. GNU ì»´íŒŒì¼ëŸ¬ (ULLì´ ìˆì–´ì•¼ í•¨) */
+# elif defined( __GNUC__ ) /* 2. GNU ÄÄÆÄÀÏ·¯ (ULLÀÌ ÀÖ¾î¾ß ÇÔ) */
 
 #define ID_LONG(a)  a ## LL
 #define ID_ULONG(a) a ## ULL
 
-# else                     /* 3. ê¸°íƒ€ ì»´íŒŒì¼ëŸ¬ : ì¶”ê°€ì˜ì—­ */
+# else                     /* 3. ±âÅ¸ ÄÄÆÄÀÏ·¯ : Ãß°¡¿µ¿ª */
 
 #define ID_LONG(a)  a ## LL
 #define ID_ULONG(a) a ## ULL
@@ -386,20 +386,20 @@ typedef uint32_t      vULong;  /* varibale Unsigned [32],64-bits */
 #define ID_vSLONG_MAX (0x7FFFFFFF)
 #endif
 
-typedef enum
+typedef enum idBool
 {
     ID_FALSE = 0,
     ID_TRUE  = 1
 } idBool;
 
-typedef enum
+typedef enum IDE_RC
 {
     IDE_FAILURE = -1,
     IDE_SUCCESS =  0,
     IDE_CM_STOP =  1
 } IDE_RC;
 
-// Shared Memoryì˜ ìƒëŒ€ ì£¼ì†Œë¥¼ ì•Œì•„ë‚´ê¸° ìœ„í•œ Type
+// Shared MemoryÀÇ »ó´ë ÁÖ¼Ò¸¦ ¾Ë¾Æ³»±â À§ÇÑ Type
 typedef ULong  idShmAddr;
 
 typedef UInt   idLPID;
@@ -408,8 +408,8 @@ typedef UInt   idGblThrID;
 
 
 /* ------------------------------------------------
- *  BUGBUG : Float, Doubleì„ ìœ„í•œ ì„ì‹œ ì„¤ì •
- *  ë‚˜ì¤‘ì—ëŠ” ê° í”Œë«í¼ ì˜ì—­ì— ì ì ˆí•˜ê²Œ ì •ì˜í•´ì•¼ í•¨.
+ *  BUGBUG : Float, DoubleÀ» À§ÇÑ ÀÓ½Ã ¼³Á¤
+ *  ³ªÁß¿¡´Â °¢ ÇÃ·§Æû ¿µ¿ª¿¡ ÀûÀıÇÏ°Ô Á¤ÀÇÇØ¾ß ÇÔ.
  * ----------------------------------------------*/
 
 typedef float  SFloat;
@@ -428,13 +428,19 @@ typedef struct idMBR
  * XA XID
  */
 /* BUG-18981 */    
-#define ID_XIDDATASIZE    128      /* size in bytes */
+#define ID_MAXXIDDATASIZE  128      /* size in bytes */
 #define ID_MAXGTRIDSIZE    64      /* maximum size in bytes of gtrid */
 #define ID_MAXBQUALSIZE    64      /* maximum size in bytes of bqual */
 
+
+#define ID_XID_DATA_MAX_LEN 256
+#define ID_GTRIDSIZE    18      
+#define ID_BQUALSIZE    4      
+#define ID_XIDDATASIZE  (ID_GTRIDSIZE + ID_BQUALSIZE)
+
 /*
- * fix BUG-23656 session,xid ,transactionì„ ì—°ê³„í•œ performance viewë¥¼ ì œê³µí•˜ê³ ,
- * ê·¸ë“¤ê°„ì˜ ê´€ê³„ë¥¼ ì •í™•íˆ ìœ ì§€í•´ì•¼ í•¨.
+ * fix BUG-23656 session,xid ,transactionÀ» ¿¬°èÇÑ performance view¸¦ Á¦°øÇÏ°í,
+ * ±×µé°£ÀÇ °ü°è¸¦ Á¤È®È÷ À¯ÁöÇØ¾ß ÇÔ.
  */
 #define ID_NULL_SESSION_ID  ID_UINT_MAX
 #define ID_NULL_TRANS_ID    ID_UINT_MAX
@@ -443,7 +449,7 @@ struct id_xid_t
     vSLong formatID;            /* format identifier */
     vSLong gtrid_length;        /* value from 1 through 64 */
     vSLong bqual_length;        /* value from 1 through 64 */
-    SChar  data[ID_XIDDATASIZE];
+    SChar  data[ID_MAXXIDDATASIZE];
 };
 
 typedef struct id_xid_t ID_XID;
@@ -474,9 +480,9 @@ typedef struct id_host_id_t
 #define ID_MAX_HOST_ID_NUM 256
 #define ID_MAX_HOST_NAME_LEN 29
 
-/* BUG-21307: VS6.0ì—ì„œ Compile Errorë°œìƒ.
+/* BUG-21307: VS6.0¿¡¼­ Compile Error¹ß»ı.
  *
- * ULongì´ doubleë¡œ castingì‹œ win32ì—ì„œ ì—ëŸ¬ ë°œìƒ */
+ * ULongÀÌ double·Î casting½Ã win32¿¡¼­ ¿¡·¯ ¹ß»ı */
 #ifdef _MSC_VER
 /* Conversion from unsigned __int64 to double is not implemented in windows
  * and results in a compile error, thus the value must first be cast to

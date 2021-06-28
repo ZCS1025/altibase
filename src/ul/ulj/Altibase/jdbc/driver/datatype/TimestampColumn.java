@@ -50,15 +50,15 @@ public class TimestampColumn extends CommonDateTimeColumn
     }
 
     /*
-     * ì´ ë©”ì†Œë“œì˜ ìŠ¤í™ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
+     * ÀÌ ¸Ş¼ÒµåÀÇ ½ºÆåÀº ´ÙÀ½°ú °°´Ù.
      * 
-     * [0]~[1] : ì—°ë„
-     * [2]     : ì›”
-     * [3]     : ì¼
-     * [4]     : ì‹œ
-     * [5]     : ë¶„
-     * [6]     : ì´ˆ
-     * [7]~[10]: ë‚˜ë…¸ì´ˆ
+     * [0]~[1] : ¿¬µµ
+     * [2]     : ¿ù
+     * [3]     : ÀÏ
+     * [4]     : ½Ã
+     * [5]     : ºĞ
+     * [6]     : ÃÊ
+     * [7]~[10]: ³ª³ëÃÊ
      */
     protected byte[] getBytesSub() throws SQLException
     {
@@ -79,8 +79,8 @@ public class TimestampColumn extends CommonDateTimeColumn
         String sResult;
         Timestamp sTimestamp = getTimestampSub();
         String sDateFormat = getDateFormat();
-        /* BUG-46513 date_formatì´ nullì´ë¼ë©´ timestampì˜ toStringì„ í˜¸ì¶œí•˜ê³  ê·¸ë ‡ì§€ ì•Šì€ ê²½ìš°ì—ëŠ”
-           SimpleDateFormatìœ¼ë¡œ ê°’ì„ formattingí•œë‹¤.  */
+        /* BUG-46513 date_formatÀÌ nullÀÌ¶ó¸é timestampÀÇ toStringÀ» È£ÃâÇÏ°í ±×·¸Áö ¾ÊÀº °æ¿ì¿¡´Â
+           SimpleDateFormatÀ¸·Î °ªÀ» formattingÇÑ´Ù.  */
         if (sDateFormat == null)
         {
             sResult = sTimestamp.toString();
@@ -94,7 +94,7 @@ public class TimestampColumn extends CommonDateTimeColumn
             }
             catch (IllegalArgumentException aEx)
             {
-                // BUG-46513 formattingì‹œ ì˜¤ë¥˜ê°€ ë°œìƒí•œ ê²½ìš°ì—ëŠ” ì›ë³¸ timestampê°ì²´ì˜ toStringì„ í˜¸ì¶œí•œë‹¤.
+                // BUG-46513 formatting½Ã ¿À·ù°¡ ¹ß»ıÇÑ °æ¿ì¿¡´Â ¿øº» timestamp°´Ã¼ÀÇ toStringÀ» È£ÃâÇÑ´Ù.
                 sResult = sTimestamp.toString();
             }
         }
@@ -125,7 +125,7 @@ public class TimestampColumn extends CommonDateTimeColumn
         }
         else if (aValue instanceof Date)
         {
-            // Oracleì€ Date íƒ€ì…ìœ¼ë¡œ ê°’ì„ ì„¤ì •í•  ë•Œ yyyy-mm-ddë§Œ ë°›ì•„ë“¤ì¸ë‹¤.
+            // OracleÀº Date Å¸ÀÔÀ¸·Î °ªÀ» ¼³Á¤ÇÒ ¶§ yyyy-mm-dd¸¸ ¹Ş¾ÆµéÀÎ´Ù.
             mCalendar.setTime((Date)aValue);
             int sYY = mCalendar.get(Calendar.YEAR);
             int sMM = mCalendar.get(Calendar.MONTH);
@@ -134,7 +134,7 @@ public class TimestampColumn extends CommonDateTimeColumn
             mCalendar.set(sYY, sMM, sDD);
             sTimeInMillis = mCalendar.getTimeInMillis();
         }
-        // Oracleì€ Timestampì— Timeì„ ë„£ì„ ìˆ˜ ì—†ë‹¤.
+        // OracleÀº Timestamp¿¡ TimeÀ» ³ÖÀ» ¼ö ¾ø´Ù.
 /*
         else if (aValue instanceof Time)
         {

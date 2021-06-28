@@ -30,7 +30,7 @@
 /**
  * Startup.
  *
- * ë°ì´í„°ë² ì´ìŠ¤ ì„œë²„ë¥¼ ê¸°ë™í•˜ê³ , ê´€ë¦¬ìž ëª¨ë“œë¡œ ì„œë²„ì— ì—°ê²°í•œë‹¤.
+ * µ¥ÀÌÅÍº£ÀÌ½º ¼­¹ö¸¦ ±âµ¿ÇÏ°í, °ü¸®ÀÚ ¸ðµå·Î ¼­¹ö¿¡ ¿¬°áÇÑ´Ù.
  */
 IDE_RC utISPApi::Startup(SChar * aHost,
                          SChar * aUser,
@@ -45,13 +45,13 @@ IDE_RC utISPApi::Startup(SChar * aHost,
 
     IDE_TEST_RAISE(m_ICon == SQL_NULL_HDBC, InvalidHandle);
 
-    /* Startup í•˜ê¸° ìœ„í•´ì„œëŠ” connectëœ ìƒíƒœì´ë©´ ì•ˆë¨. */
+    /* Startup ÇÏ±â À§ÇØ¼­´Â connectµÈ »óÅÂÀÌ¸é ¾ÈµÊ. */
     IDE_TEST_RAISE(mIsConnToIdleInstance == ID_FALSE, AlreadyRunning);
 
-    /* ì„œë²„ ê¸°ë™ */
+    /* ¼­¹ö ±âµ¿ */
     IDE_TEST(ForkExecServer(aRunWServer) != IDE_SUCCESS);
 
-    /* ì„œë²„ ì—°ê²° */
+    /* ¼­¹ö ¿¬°á */
     IDE_TEST_RAISE(AdminConnect(aHost,
                                 aUser,
                                 aPasswd,
@@ -62,12 +62,12 @@ IDE_RC utISPApi::Startup(SChar * aHost,
                                 aRetryMax)
                    != IDE_SUCCESS, AdminConnectError);
 
-    /* Connectë˜ì—ˆìŒ. */
+    /* ConnectµÇ¾úÀ½. */
     mIsConnToIdleInstance = ID_FALSE;
 
     (void)SetAltiDateFmt();
 
-    /* Statement í• ë‹¹ */
+    /* Statement ÇÒ´ç */
     if (m_IStmt == SQL_NULL_HSTMT)
     {
         IDE_TEST_RAISE(AllocStmt(0x3F) != IDE_SUCCESS, AllocStmtError);
@@ -125,7 +125,7 @@ IDE_RC utISPApi::Startup(SChar * aHost,
 /**
  * ForkExecServer.
  *
- * ë°ì´í„°ë² ì´ìŠ¤ ì„œë²„ë¥¼ ê¸°ë™í•œë‹¤.
+ * µ¥ÀÌÅÍº£ÀÌ½º ¼­¹ö¸¦ ±âµ¿ÇÑ´Ù.
  */
 IDE_RC utISPApi::ForkExecServer( iSQLForkRunType aRunWServer )
 {
@@ -146,7 +146,7 @@ IDE_RC utISPApi::ForkExecServer( iSQLForkRunType aRunWServer )
     pid_t        sChild;
     UInt         sArgCount = 0;
 
-    /* 1.ì¸ìž ë¦¬ìŠ¤íŠ¸ ìƒì„± */
+    /* 1.ÀÎÀÚ ¸®½ºÆ® »ý¼º */
     
     sHomeDir = idlOS::getenv(IDP_HOME_ENV);
 
@@ -160,7 +160,7 @@ IDE_RC utISPApi::ForkExecServer( iSQLForkRunType aRunWServer )
                     "%s" IDL_FILE_SEPARATORS "bin" IDL_FILE_SEPARATORS SERVER_BINARY_NAME,
                     sHomeDir);
 
-    /* í•´ë‹¹ í™”ì¼ì´ ì¡´ìž¬í•˜ëŠ”ì§€ ê²€ì‚¬ */
+    /* ÇØ´ç È­ÀÏÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç */
     IDE_TEST_RAISE(idlOS::access(sISPDir, R_OK | X_OK) == -1,
                    AccessError);
 
@@ -206,7 +206,7 @@ IDE_RC utISPApi::ForkExecServer( iSQLForkRunType aRunWServer )
                     sHomeDir, IDL_FILE_SEPARATOR, IDL_FILE_SEPARATOR, SERVER_BINARY_NAME);
 # endif /* VC_WIN32 */
 
-    /* í•´ë‹¹ í™”ì¼ì´ ì¡´ìž¬í•˜ëŠ”ì§€ ê²€ì‚¬ */
+    /* ÇØ´ç È­ÀÏÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç */
 # if (_MSC_VER >= 1400)
     IDE_TEST_RAISE(idlOS::access(sISPDir, R_OK | W_OK) == -1,
                    AccessError);
@@ -239,8 +239,8 @@ IDE_RC utISPApi::ForkExecServer( iSQLForkRunType aRunWServer )
 
 #endif /* ALTIBASE_USE_VALGRIND */
 
-    /* 2.ì„œë²„ ê¸°ë™.
-     * í˜¸í™˜ì„±ì„ ìœ„í•´ fork(), exec() ë³´ë‹¤ PDLì˜ fork_exec()ë¥¼ ì´ìš©í•¨! */
+    /* 2.¼­¹ö ±âµ¿.
+     * È£È¯¼ºÀ» À§ÇØ fork(), exec() º¸´Ù PDLÀÇ fork_exec()¸¦ ÀÌ¿ëÇÔ! */
 
 /* BUGBUG_NT */
 #if !defined(_DEBUG_SPADMIN)
@@ -249,7 +249,7 @@ IDE_RC utISPApi::ForkExecServer( iSQLForkRunType aRunWServer )
 #endif /* !_DEBUG_SPADMIN */
 /* BUGBUG_NT */
 
-    /* WIN32ì˜ ê²½ìš° altibase.exeê°€ demonizeí•˜ì§€ ì•ŠìŒ */
+    /* WIN32ÀÇ °æ¿ì altibase.exe°¡ demonizeÇÏÁö ¾ÊÀ½ */
 #if !defined(VC_WIN32)
     if (idlOS::waitpid(sChild) == -1)
     {
@@ -279,13 +279,13 @@ IDE_RC utISPApi::ForkExecServer( iSQLForkRunType aRunWServer )
 /**
  * AdminConnect.
  *
- * ë°ì´í„°ë² ì´ìŠ¤ ì„œë²„ ê¸°ë™ ì§í›„, ê´€ë¦¬ìž ëª¨ë“œë¡œ ì„œë²„ì— ì—°ê²°í•œë‹¤.
+ * µ¥ÀÌÅÍº£ÀÌ½º ¼­¹ö ±âµ¿ Á÷ÈÄ, °ü¸®ÀÚ ¸ðµå·Î ¼­¹ö¿¡ ¿¬°áÇÑ´Ù.
  *
  * @param[out] aErrCode
- *  ì„œë²„ ì—°ê²°ì—ì„œ ì˜¤ë¥˜ ë°œìƒ(IDE_FAILURE ë¦¬í„´) ì‹œ ì˜¤ë¥˜ì˜ ì´ìœ ê°€ ì„¤ì •ëœë‹¤.
- *  1ì´ ì„¤ì •ëœ ê²½ìš°, í™˜ê²½ ì„¤ì •(ì„œë²„ ì£¼ì†Œ, ì‚¬ìš©ìž ì´ë¦„, ì•”í˜¸ ë“±)ì´ ìž˜ëª»ë˜ì—ˆê±°ë‚˜ í•˜ì—¬
- *  ì„œë²„ ì ‘ì†ì— ì‹¤íŒ¨í–ˆìŒì„ ì˜ë¯¸í•œë‹¤.
- *  2ê°€ ì„¤ì •ëœ ê²½ìš°, dbadminì´ ì´ë¯¸ ì‹¤í–‰ì¤‘ìž„ì„ ì˜ë¯¸í•œë‹¤.
+ *  ¼­¹ö ¿¬°á¿¡¼­ ¿À·ù ¹ß»ý(IDE_FAILURE ¸®ÅÏ) ½Ã ¿À·ùÀÇ ÀÌÀ¯°¡ ¼³Á¤µÈ´Ù.
+ *  1ÀÌ ¼³Á¤µÈ °æ¿ì, È¯°æ ¼³Á¤(¼­¹ö ÁÖ¼Ò, »ç¿ëÀÚ ÀÌ¸§, ¾ÏÈ£ µî)ÀÌ Àß¸øµÇ¾ú°Å³ª ÇÏ¿©
+ *  ¼­¹ö Á¢¼Ó¿¡ ½ÇÆÐÇßÀ½À» ÀÇ¹ÌÇÑ´Ù.
+ *  2°¡ ¼³Á¤µÈ °æ¿ì, dbadminÀÌ ÀÌ¹Ì ½ÇÇàÁßÀÓÀ» ÀÇ¹ÌÇÑ´Ù.
  */
 IDE_RC utISPApi::AdminConnect(SChar * aHost,
                               SChar * aUser,
@@ -338,7 +338,7 @@ IDE_RC utISPApi::AdminConnect(SChar * aHost,
         }
     }
 
-    /* ADM_CONNECT_RETRY_MAX ì´ˆê°€ ì§€ë‚˜ë„ë¡ ì ‘ì†í•˜ì§€ ëª»í•¨. */
+    /* ADM_CONNECT_RETRY_MAX ÃÊ°¡ Áö³ªµµ·Ï Á¢¼ÓÇÏÁö ¸øÇÔ. */
     IDE_TEST_RAISE(sSqlRC != SQL_SUCCESS, ConnectFail);
 
     *aErrCode = 0;
@@ -370,7 +370,7 @@ IDE_RC utISPApi::AdminConnect(SChar * aHost,
  * ShutdownAbort.
  *
  * (don't used now)
- * í˜„ìž¬ ì—°ê²°ë˜ì–´ìžˆëŠ” ë°ì´í„°ë² ì´ìŠ¤ ì„œë²„ë¥¼ ê°•ì œë¡œ ì¢…ë£Œí•œë‹¤.
+ * ÇöÀç ¿¬°áµÇ¾îÀÖ´Â µ¥ÀÌÅÍº£ÀÌ½º ¼­¹ö¸¦ °­Á¦·Î Á¾·áÇÑ´Ù.
  */
 IDE_RC utISPApi::ShutdownAbort()
 {
@@ -380,10 +380,10 @@ IDE_RC utISPApi::ShutdownAbort()
 
     IDE_TEST_RAISE(m_ICon == SQL_NULL_HDBC, InvalidHandle);
 
-    /* Shutdowní•˜ê¸° ìœ„í•´ì„œëŠ” ì„œë²„ê°€ êµ¬ë™ì¤‘ì´ì–´ì•¼ í•¨. */
+    /* ShutdownÇÏ±â À§ÇØ¼­´Â ¼­¹ö°¡ ±¸µ¿ÁßÀÌ¾î¾ß ÇÔ. */
     IDE_TEST_RAISE(mIsConnToIdleInstance == ID_TRUE, NotRunning);
 
-    /* í˜„ìž¬ ì—°ê²°ë˜ì–´ìžˆëŠ” ì„œë²„ì˜ pidë¥¼ ì–»ëŠ”ë‹¤. */
+    /* ÇöÀç ¿¬°áµÇ¾îÀÖ´Â ¼­¹öÀÇ pid¸¦ ¾ò´Â´Ù. */
     IDE_TEST_RAISE(SQLGetConnectAttr(m_ICon, SQL_ATTR_SERVER_PID,
                                      (SQLPOINTER)&sServerPid,
                                      (SQLINTEGER)ID_SIZEOF(sServerPid),
@@ -391,14 +391,14 @@ IDE_RC utISPApi::ShutdownAbort()
                    != SQL_SUCCESS,
                    GetServerPidError);
 
-    /* ì„œë²„ê°€ ì‚´ì•„ìžˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤. */
+    /* ¼­¹ö°¡ »ì¾ÆÀÖ´ÂÁö °Ë»çÇÑ´Ù. */
     IDE_TEST_RAISE(idlOS::kill(sServerPid, 0) != 0,
                    DeadServerError);
 
     /* BUGBUG - PR-998 workaround for LINUX-THREAD --> BUG-5186
      * BUG-5186 wait for server die. */
 
-    /* ì„œë²„ë¥¼ ê°•ì œë¡œ ì¢…ë£Œí•œë‹¤. */
+    /* ¼­¹ö¸¦ °­Á¦·Î Á¾·áÇÑ´Ù. */
     while (1)
     {
 #if defined(INTEL_LINUX) || defined(ALPHA_LINUX) || defined(POWERPC_LINUX)

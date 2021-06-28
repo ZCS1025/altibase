@@ -65,7 +65,7 @@ IDE_RC cmnOpenssl::initialize()
     *(void**)&mFuncs.TLSv1_client_method = idlOS::dlsym(mSslHandle, "TLSv1_client_method");
     IDE_TEST_RAISE(mFuncs.TLSv1_client_method == NULL, ERR_DLSYM_LIBSSL);
 
-#if (DEBUG && (OPENSSL_VERSION_NUMBER >= 0x00909000L))
+#if (DEBUG)  /* BUG-47037 OPENSSL_VERSION_NUMBER >= 0x00909000L */
     /* This function can be null depending on the library version
      * and is used only for debugging. */
     *(void**)&mFuncs.SSL_CTX_set_info_callback = idlOS::dlsym(mSslHandle, "SSL_CTX_set_info_callback");
@@ -174,10 +174,8 @@ IDE_RC cmnOpenssl::initialize()
     *(void**)&mFuncs.CRYPTO_num_locks = idlOS::dlsym(mCryptoHandle, "CRYPTO_num_locks");
     IDE_TEST_RAISE(mFuncs.CRYPTO_num_locks == NULL, ERR_DLSYM_LIBCRYPTO);
 
-#if (OPENSSL_VERSION_NUMBER >= 0x1000200fL)
+    /* BUG-47037 OPENSSL_VERSION_NUMBER >= 0x1000200fL */
     *(void**)&mFuncs.SSL_COMP_free_compression_methods = idlOS::dlsym(mSslHandle, "SSL_COMP_free_compression_methods");
-    IDE_TEST_RAISE(mFuncs.SSL_COMP_free_compression_methods == NULL, ERR_DLSYM_LIBSSL);
-#endif
 
     /* BUG-41166 SSL multi platform */
     *(void**)&mFuncs.ERR_error_string = idlOS::dlsym(mSslHandle, "ERR_error_string");
@@ -309,10 +307,13 @@ IDE_RC cmnOpenssl::initialize()
 
 static IDE_RC cleanupSslLibrary(cmnOpensslFuncs *aFuncs)
 {
-#if (OPENSSL_VERSION_NUMBER >= 0x1000200fL)
-    /* Release the internal table of compression methods built internally */
-    aFuncs->SSL_COMP_free_compression_methods();
-#endif
+    IDE_TEST(aFuncs == NULL);
+
+    if (aFuncs->SSL_COMP_free_compression_methods != NULL)  /* BUG-47037 */
+    {
+        /* Release the internal table of compression methods built internally */
+        aFuncs->SSL_COMP_free_compression_methods();
+    }
 
     /* Exit the FIPS mode of operation */
     if (aFuncs->FIPS_mode_set != NULL) /* BUG-44362 */
@@ -347,6 +348,10 @@ static IDE_RC cleanupSslLibrary(cmnOpensslFuncs *aFuncs)
     aFuncs->CONF_modules_unload(1);
 
     return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
 IDE_RC cmnOpenssl::destroy()

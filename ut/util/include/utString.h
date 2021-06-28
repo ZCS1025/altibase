@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: utString.h 84392 2018-11-21 00:08:16Z bethy $
+ * $Id: utString.h 84391 2018-11-20 23:29:28Z bethy $
  **********************************************************************/
 
 #ifndef _O_UTSTRING_H_
@@ -35,7 +35,7 @@ public:
     static IDE_RC toUpper(SChar *a_Str);
 
     // To Fix BUG-17803
-    // í˜„ì¬ Error Handling í•  ë°©ë²•ì´ ì—†ë‹¤.
+    // ÇöÀç Error Handling ÇÒ ¹æ¹ıÀÌ ¾ø´Ù.
     static void    makeNameInSQL( SChar * aDstName,
                                   SInt    aDstLen,
                                   SChar * aSrcName,

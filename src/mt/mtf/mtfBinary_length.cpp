@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfBinary_length.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfBinary_length.cpp 90192 2021-03-12 02:01:03Z jayce.park $
  **********************************************************************/
 
 #include <mte.h>
@@ -48,7 +48,7 @@ static IDE_RC mtfBinary_lengthEstimate( mtcNode*     aNode,
 mtfModule mtfBinary_length = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞ÏûêÍ∞Ä ÏïÑÎãò)
+    1.0,  // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄∞° æ∆¥‘)
     mtfBinary_lengthFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -150,7 +150,7 @@ IDE_RC mtfBinary_lengthEstimate( mtcNode*     aNode,
         }
         else
         {
-            /* PROJ-1530 PSM/TriggerÏóêÏÑú LOB Îç∞Ïù¥ÌÉÄ ÌÉÄÏûÖ ÏßÄÏõê */
+            /* PROJ-1530 PSM/Triggerø°º≠ LOB µ•¿Ã≈∏ ≈∏¿‘ ¡ˆø¯ */
             aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
         }
     }
@@ -195,8 +195,8 @@ IDE_RC mtfBinary_lengthCalculate( mtcNode*     aNode,
  * Implementation :
  *    BINARY_LENGTH( char )
  *
- *    aStack[0] : ÏûÖÎ†•Îêú Î¨∏ÏûêÏó¥Ïùò Í∏∏Ïù¥ 
- *    aStack[1] : char ( ÏûÖÎ†•Îêú Î¨∏ÏûêÏó¥ )
+ *    aStack[0] : ¿‘∑¬µ» πÆ¿⁄ø≠¿« ±Ê¿Ã 
+ *    aStack[1] : char ( ¿‘∑¬µ» πÆ¿⁄ø≠ )
  *
  ***********************************************************************/
 
@@ -285,7 +285,8 @@ IDE_RC mtfBinary_lengthCalculateBlobLocator( mtcNode*     aNode,
     
     IDE_TEST( mtc::getLobLengthLocator( sLocator,
                                         & sIsNull,
-                                        & sLength )
+                                        & sLength,
+                                        mtc::getStatistics(aTemplate) )
               != IDE_SUCCESS );
     
     if ( sIsNull == ID_TRUE )

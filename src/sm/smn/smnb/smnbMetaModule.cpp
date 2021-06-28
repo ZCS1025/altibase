@@ -16,7 +16,7 @@
  
 
 /*******************************************************************************
- * $Id: smnbMetaModule.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smnbMetaModule.cpp 86324 2019-11-01 09:11:29Z et16 $
  ******************************************************************************/
 
 #include <idl.h>
@@ -45,7 +45,6 @@ smnIndexModule smnbMetaModule =
     (smTableCursorLockRowFunc)  smnManager::lockRow,
     (smnDeleteFunc)             smnbBTree::deleteNA,
     (smnFreeFunc)               smnbBTree::freeSlot,
-    (smnExistKeyFunc)           smnbBTree::existKey,
     (smnInsertRollbackFunc)     NULL,
     (smnDeleteRollbackFunc)     NULL,
     (smnAgingFunc)              NULL,

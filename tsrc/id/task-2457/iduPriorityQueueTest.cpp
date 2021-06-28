@@ -26,7 +26,7 @@ SInt verifyAscArray(SInt *array, SInt size)
 
     for(i=1; i< size; i++)
     {
-        //ì•žì—ê²ƒì´ ë” í¬ë©´ ì—ëŸ¬, ë’¤ì—ê²ƒì´ ë” ì»¤ì•¼ í•œë‹¤.
+        //¾Õ¿¡°ÍÀÌ ´õ Å©¸é ¿¡·¯, µÚ¿¡°ÍÀÌ ´õ Ä¿¾ß ÇÑ´Ù.
         if( array[i-1] > array[i]){
             IDE_ASSERT(0);
             return -1;
@@ -53,8 +53,8 @@ void PrioriQueueTest1()
     SInt            sResult[ARRAY_SIZE];
     idBool          sError=ID_FALSE;
 
-    //priority queueëŠ” ê°’ì„ memcpyí•´ì„œ ë°°ì—´ì˜ í˜•íƒœë¡œ ì €ìž¥í•œë‹¤.
-    //ê·¸ë ‡ê¸° ë•Œë¬¸ì— ë°ì´í„°ì˜ í¬ê¸°ë¥¼ ë°˜ë“œì‹œ ì§€ì •í•´ì£¼ì–´ì•¼ í•œë‹¤.
+    //priority queue´Â °ªÀ» memcpyÇØ¼­ ¹è¿­ÀÇ ÇüÅÂ·Î ÀúÀåÇÑ´Ù.
+    //±×·¸±â ¶§¹®¿¡ µ¥ÀÌÅÍÀÇ Å©±â¸¦ ¹Ýµå½Ã ÁöÁ¤ÇØÁÖ¾î¾ß ÇÑ´Ù.
     IDE_TEST( sPQueue.initialize( IDU_MEM_OTHER,
                                   ARRAY_SIZE,
                                   ID_SIZEOF(SInt),
@@ -67,15 +67,15 @@ void PrioriQueueTest1()
         {
             sValue = rand()%ARRAY_SIZE;
 
-            //priority queueëŠ” ê°’ì„ memcpyí•´ì„œ ë°°ì—´ì˜ í˜•íƒœë¡œ ì €ìž¥í•œë‹¤.
-            //ê·¸ëŸ¬ë¯€ë¡œ í˜„ìž¬ í¬ì¸í„°ì˜ ê°’ì„ ìœ ì§€í•˜ê³  ìžˆì„ í•„ìš”ê°€ ì—†ë‹¤.
+            //priority queue´Â °ªÀ» memcpyÇØ¼­ ¹è¿­ÀÇ ÇüÅÂ·Î ÀúÀåÇÑ´Ù.
+            //±×·¯¹Ç·Î ÇöÀç Æ÷ÀÎÅÍÀÇ °ªÀ» À¯ÁöÇÏ°í ÀÖÀ» ÇÊ¿ä°¡ ¾ø´Ù.
             sPQueue.enqueue(&sValue, &sError);
             
             IDE_ASSERT( sError == ID_FALSE);
         }
         for(i=0; i<ARRAY_SIZE; i++)
         {
-            //priority queueëŠ” ê°’ì„ memcpyí•´ì„œ ë¦¬í„´í•œë‹¤.
+            //priority queue´Â °ªÀ» memcpyÇØ¼­ ¸®ÅÏÇÑ´Ù.
             sPQueue.dequeue((void*)&sResult[i], &sError);
             IDE_ASSERT( sError == ID_FALSE);
         }
@@ -133,9 +133,9 @@ void PrioriQueueTest2()
 
     for( k=0; k<TEST_RETRY_CNT;k++)
     {
-        //sInputì˜ ê°œìˆ˜ë¥¼ ARRAY_SIZEë³´ë‹¤ ìž‘ì€ randomìœ¼ë¡œ ê²°ì •
+        //sInputÀÇ °³¼ö¸¦ ARRAY_SIZEº¸´Ù ÀÛÀº randomÀ¸·Î °áÁ¤
         sInputCnt = rand()%ARRAY_SIZE;
-        //overflowë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•´ emptyë¥¼ ìˆ˜í–‰
+        //overflow¸¦ ¹æÁöÇÏ±â À§ÇØ empty¸¦ ¼öÇà
         sPQueue.empty();
         for(i=0; i<sInputCnt; i++)
         {
@@ -143,7 +143,7 @@ void PrioriQueueTest2()
             sPQueue.enqueue((void*)&sData, &sError);
             IDE_ASSERT( sError == ID_FALSE);
         }
-        //sOutputì˜ ê°œìˆ˜ë¥¼ sInputCntë³´ë‹¤ ìž‘ì€ randomìœ¼ë¡œ ê²°ì •
+        //sOutputÀÇ °³¼ö¸¦ sInputCntº¸´Ù ÀÛÀº randomÀ¸·Î °áÁ¤
         sOutputCnt =rand()%sInputCnt;
         for(i=0; i<sOutputCnt; i++)
         {
@@ -167,7 +167,7 @@ void PrioriQueueTest2()
   PrioriQueueTest3
   pointer test
   -------------------------------------------------------------------*/
-//Priority queueê°€ í¬ì¸í„°ë¥¼ ì €ìž¥í•˜ê³  ìžˆê¸° ë•Œë¬¸ì— ì•„ëž˜ì™€ ê°™ì´ ìºìŠ¤íŒ…ì„ í•´ì•¼ í•œë‹¤.
+//Priority queue°¡ Æ÷ÀÎÅÍ¸¦ ÀúÀåÇÏ°í ÀÖ±â ¶§¹®¿¡ ¾Æ·¡¿Í °°ÀÌ Ä³½ºÆÃÀ» ÇØ¾ß ÇÑ´Ù.
 SInt saTestAscIntCmpPoint(const void *a,const void *b)
 {
     SInt sNumA,sNumB;
@@ -187,7 +187,7 @@ void PrioriQueueTest3()
     iduPriorityQueue sPQueue;
     idBool           sError;
 
-    //saTestì˜ í¬ì¸í„°ë¥¼ ì €ìž¥í•¨
+    //saTestÀÇ Æ÷ÀÎÅÍ¸¦ ÀúÀåÇÔ
     IDE_TEST( sPQueue.initialize( IDU_MEM_OTHER,
                                   ARRAY_SIZE,
                                   ID_SIZEOF(saTest*),
@@ -196,9 +196,9 @@ void PrioriQueueTest3()
 
     for( k=0; k<TEST_RETRY_CNT;k++)
     {
-        //sInputì˜ ê°œìˆ˜ë¥¼ ARRAY_SIZEë³´ë‹¤ ìž‘ì€ randomìœ¼ë¡œ ê²°ì •
+        //sInputÀÇ °³¼ö¸¦ ARRAY_SIZEº¸´Ù ÀÛÀº randomÀ¸·Î °áÁ¤
         sInputCnt = rand()%ARRAY_SIZE;
-        //overflowë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•´ emptyë¥¼ ìˆ˜í–‰
+        //overflow¸¦ ¹æÁöÇÏ±â À§ÇØ empty¸¦ ¼öÇà
         sPQueue.empty();
         for(i=0; i<sInputCnt; i++)
         {
@@ -208,20 +208,20 @@ void PrioriQueueTest3()
                      != IDE_SUCCESS);
         
             sData->mNum = rand()%ARRAY_SIZE;
-            //í¬ì¸í„°ë¥¼ ì§ì ‘ê±´ë„¤ì£¼ì§€ ë§ê³ , ì´ê²½ìš°ì—” ë³€ìˆ˜ì˜ ì£¼ì†Œê°’ì„
-            //ë„˜ê²¨ ì£¼ì–´ì•¼ í•œë‹¤.
+            //Æ÷ÀÎÅÍ¸¦ Á÷Á¢°Ç³×ÁÖÁö ¸»°í, ÀÌ°æ¿ì¿£ º¯¼öÀÇ ÁÖ¼Ò°ªÀ»
+            //³Ñ°Ü ÁÖ¾î¾ß ÇÑ´Ù.
             sPQueue.enqueue((void*)&sData, &sError);
             IDE_ASSERT(sError == ID_FALSE);
         
         }
-        //sOutputì˜ ê°œìˆ˜ë¥¼ sInputCntë³´ë‹¤ ìž‘ì€ randomìœ¼ë¡œ ê²°ì •
+        //sOutputÀÇ °³¼ö¸¦ sInputCntº¸´Ù ÀÛÀº randomÀ¸·Î °áÁ¤
         sOutputCnt =rand()%sInputCnt;
         for(i=0; i<sOutputCnt; i++)
         {
             sPQueue.dequeue((void*)&sData, &sError);
             sResult[i] = sData->mNum;
-            //mallocí•œ ì£¼ì†Œê°’ì„ queueì— ì§‘ì–´ë„£ê³ , êº¼ë‚´ ì™”ìœ¼ë¯€ë¡œ
-            //ê·¸ëŒ€ë¡œ freeê°€ ê°€ëŠ¥í•˜ë‹¤.
+            //mallocÇÑ ÁÖ¼Ò°ªÀ» queue¿¡ Áý¾î³Ö°í, ²¨³» ¿ÔÀ¸¹Ç·Î
+            //±×´ë·Î free°¡ °¡´ÉÇÏ´Ù.
             IDE_TEST(iduMemMgr::free( sData) != IDE_SUCCESS);
         }
         if( verifyAscArray( sResult, sOutputCnt) < 0)
@@ -262,7 +262,7 @@ void PrioriQueueTest4()
 
     for(i=0; i<ARRAY_SIZE; i++)
     {
-        //ì•ŒíŒŒë²³ì¤‘ ì•„ë¬´ê±°ë‚˜ ê²°ì •
+        //¾ËÆÄºªÁß ¾Æ¹«°Å³ª °áÁ¤
         sData = rand()%('z' - 'A' ) + 'A';
         sPQueue.enqueue(&sData, &sError);
         IDE_ASSERT(sError == ID_FALSE);

@@ -16,17 +16,17 @@
  
 
 /***********************************************************************
- * $Id: qtc.cpp 85120 2019-04-02 01:27:30Z khkwak $
+ * $Id: qtc.cpp 90923 2021-05-31 01:27:54Z donovan.seo $
  *
  * Description :
- *     QP layerì™€ MT layerì˜ ì¤‘ê°„ì— ìœ„ì¹˜í•˜ëŠ” layerë¡œ
- *     ê°œë…ìƒ MT interface layer ì—­í• ì„ í•œë‹¤.
+ *     QP layer¿Í MT layerÀÇ Áß°£¿¡ À§Ä¡ÇÏ´Â layer·Î
+ *     °³³ä»ó MT interface layer ¿ªÇÒÀ» ÇÑ´Ù.
  *
- *     ì—¬ê¸°ì—ëŠ” QP ì „ì²´ì— ê±¸ì³ ê³µí†µì ìœ¼ë¡œ ì‚¬ìš©ë˜ëŠ” í•¨ìˆ˜ê°€ ì •ì˜ë˜ì–´ ìˆë‹¤.
+ *     ¿©±â¿¡´Â QP ÀüÃ¼¿¡ °ÉÃÄ °øÅëÀûÀ¸·Î »ç¿ëµÇ´Â ÇÔ¼ö°¡ Á¤ÀÇµÇ¾î ÀÖ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -146,25 +146,25 @@ mtdCompareFunc qtc::compareFuncs[] = {
 /***********************************************************************
  * [qtc::templateRowFlags]
  *
- * Tuple Setì˜ ê° Tupleì€ í¬ê²Œ ë‹¤ìŒê³¼ ê°™ì€ ë„¤ ì¢…ë¥˜ë¡œ êµ¬ë¶„í•  ìˆ˜ ìˆë‹¤.
- *    - MTC_TUPLE_TYPE_CONSTANT     : ìƒìˆ˜ Tuple
- *    - MTC_TUPLE_TYPE_VARIABLE     : ê°€ë³€ Tuple(Hostë³€ìˆ˜ë¥¼ í¬í•¨)
- *    - MTC_TUPLE_TYPE_INTERMEDIATE : ì¤‘ê°„ ê²°ê³¼ Tuple
+ * Tuple SetÀÇ °¢ TupleÀº Å©°Ô ´ÙÀ½°ú °°Àº ³× Á¾·ù·Î ±¸ºĞÇÒ ¼ö ÀÖ´Ù.
+ *    - MTC_TUPLE_TYPE_CONSTANT     : »ó¼ö Tuple
+ *    - MTC_TUPLE_TYPE_VARIABLE     : °¡º¯ Tuple(Hostº¯¼ö¸¦ Æ÷ÇÔ)
+ *    - MTC_TUPLE_TYPE_INTERMEDIATE : Áß°£ °á°ú Tuple
  *    - MTC_TUPLE_TYPE_TABLE        : Table Tuple
  *
- * Stored Procedureì˜ ìˆ˜í–‰ì„ ìœ„í•˜ì—¬ Tuple Setì— ëŒ€í•œ Clone ì‘ì—…ì´ í•„ìš”í• 
- * ê²½ìš°, ìœ„ì™€ ê°™ì€ ë‹¤ì–‘í•œ Tupleì— ëŒ€í•˜ì—¬ ë‹¤ì–‘í•œ ì²˜ë¦¬ê°€ ê°€ëŠ¥í•˜ë‹¤.
- * í•´ë‹¹ Const Structureì—ëŠ” ê° Tupleì— ëŒ€í•œ ì²˜ë¦¬ ë°©ë²•ì— ëŒ€í•œ ê¸°ìˆ ì„
- * í•œ flagê°€ ì •ì˜ë˜ì–´ ìˆë‹¤.
+ * Stored ProcedureÀÇ ¼öÇàÀ» À§ÇÏ¿© Tuple Set¿¡ ´ëÇÑ Clone ÀÛ¾÷ÀÌ ÇÊ¿äÇÒ
+ * °æ¿ì, À§¿Í °°Àº ´Ù¾çÇÑ Tuple¿¡ ´ëÇÏ¿© ´Ù¾çÇÑ Ã³¸®°¡ °¡´ÉÇÏ´Ù.
+ * ÇØ´ç Const Structure¿¡´Â °¢ Tuple¿¡ ´ëÇÑ Ã³¸® ¹æ¹ı¿¡ ´ëÇÑ ±â¼úÀ»
+ * ÇÑ flag°¡ Á¤ÀÇµÇ¾î ÀÖ´Ù.
  **********************************************************************/
 
-/* BUG-44490 mtcTuple flag í™•ì¥ í•´ì•¼ í•©ë‹ˆë‹¤. */
-/* 32bit flag ê³µê°„ ëª¨ë‘ ì†Œëª¨í•´ 64bitë¡œ ì¦ê°€ */
-/* typeì„ UIntì—ì„œ ULongìœ¼ë¡œ ë³€ê²½ */
+/* BUG-44490 mtcTuple flag È®Àå ÇØ¾ß ÇÕ´Ï´Ù. */
+/* 32bit flag °ø°£ ¸ğµÎ ¼Ò¸ğÇØ 64bit·Î Áõ°¡ */
+/* typeÀ» UInt¿¡¼­ ULongÀ¸·Î º¯°æ */
 const ULong qtc::templateRowFlags[MTC_TUPLE_TYPE_MAXIMUM] = {
     /* MTC_TUPLE_TYPE_CONSTANT                                       */
-    // ìƒìˆ˜ Tupleì˜ ê²½ìš°,
-    // Column ì •ë³´, Execute ì •ë³´, Row ì •ë³´ëŠ” ë³€ê²½ë˜ì§€ ì•ŠëŠ”ë‹¤.
+    // »ó¼ö TupleÀÇ °æ¿ì,
+    // Column Á¤º¸, Execute Á¤º¸, Row Á¤º¸´Â º¯°æµÇÁö ¾Ê´Â´Ù.
     MTC_TUPLE_TYPE_CONSTANT|
     MTC_TUPLE_COLUMN_SET_TRUE|        /* COLUMN  : set pointer       */
     MTC_TUPLE_COLUMN_ALLOCATE_FALSE|  /* COLUMN  : no allocation     */
@@ -177,9 +177,9 @@ const ULong qtc::templateRowFlags[MTC_TUPLE_TYPE_MAXIMUM] = {
     MTC_TUPLE_ROW_COPY_FALSE,         /* ROW     : no copy           */
 
     /* MTC_TUPLE_TYPE_VARIABLE                                       */
-    // Host ë³€ìˆ˜ë¥¼ í¬í•¨í•œ Tupleì˜ ê²½ìš°,
-    // Column ì •ë³´, Execute ì •ë³´, Row ì •ë³´ëŠ” Host Bindingì´ ì´ë£¨ì–´ì§€ê¸°
-    // ì „ê¹Œì§€ ì–´ë– í•œ ì •ë³´ë„ ê²°ì •ë˜ì–´ ìˆì§€ ì•Šë‹¤.
+    // Host º¯¼ö¸¦ Æ÷ÇÔÇÑ TupleÀÇ °æ¿ì,
+    // Column Á¤º¸, Execute Á¤º¸, Row Á¤º¸´Â Host BindingÀÌ ÀÌ·ç¾îÁö±â
+    // Àü±îÁö ¾î¶°ÇÑ Á¤º¸µµ °áÁ¤µÇ¾î ÀÖÁö ¾Ê´Ù.
     MTC_TUPLE_TYPE_VARIABLE|
     MTC_TUPLE_COLUMN_SET_TRUE|        /* COLUMN  : set pointer       */
     MTC_TUPLE_COLUMN_ALLOCATE_FALSE|  /* COLUMN  : no allocation     */
@@ -192,9 +192,9 @@ const ULong qtc::templateRowFlags[MTC_TUPLE_TYPE_MAXIMUM] = {
     MTC_TUPLE_ROW_COPY_FALSE,         /* ROW     : no copy           */
 
     /* MTC_TUPLE_TYPE_INTERMEDIATE                                   */
-    // ì¤‘ê°„ ê²°ê³¼ë¥¼ ì˜ë¯¸í•˜ëŠ” Tupleì˜ ê²½ìš°,
-    // Column ì •ë³´, Execute ì •ë³´, Row ì •ë³´ëŠ” ì—°ì‚°ì´ ìˆ˜í–‰ë˜ê¸° ì „ê¹Œì§€ëŠ”
-    // ê·¸ ì •ë³´ì˜ ì •í™•ì„±ì„ ë³´ì¥í•  ìˆ˜ ì—†ë‹¤.
+    // Áß°£ °á°ú¸¦ ÀÇ¹ÌÇÏ´Â TupleÀÇ °æ¿ì,
+    // Column Á¤º¸, Execute Á¤º¸, Row Á¤º¸´Â ¿¬»êÀÌ ¼öÇàµÇ±â Àü±îÁö´Â
+    // ±× Á¤º¸ÀÇ Á¤È®¼ºÀ» º¸ÀåÇÒ ¼ö ¾ø´Ù.
     MTC_TUPLE_TYPE_INTERMEDIATE|
     MTC_TUPLE_COLUMN_SET_TRUE|        /* COLUMN  : set pointer       */
     MTC_TUPLE_COLUMN_ALLOCATE_FALSE|  /* COLUMN  : no allocation     */
@@ -207,10 +207,10 @@ const ULong qtc::templateRowFlags[MTC_TUPLE_TYPE_MAXIMUM] = {
     MTC_TUPLE_ROW_COPY_FALSE,         /* ROW     : no copy           */
 
     /* MTC_TUPLE_TYPE_TABLE                                          */
-    // Table ì„ ì˜ë¯¸í•˜ëŠ” Tupleì˜ ê²½ìš°,
-    // Column ì •ë³´ ë° Execute ì •ë³´ëŠ” ë³€í•˜ì§€ ì•ŠëŠ”ë‹¤.
-    // ê·¸ëŸ¬ë‚˜, Disk Variable Columnì„ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ì„œëŠ”
-    // Column ì •ë³´ë¥¼ ë³µì‚¬í•˜ì—¬ì•¼ í•œë‹¤.
+    // Table À» ÀÇ¹ÌÇÏ´Â TupleÀÇ °æ¿ì,
+    // Column Á¤º¸ ¹× Execute Á¤º¸´Â º¯ÇÏÁö ¾Ê´Â´Ù.
+    // ±×·¯³ª, Disk Variable ColumnÀ» Ã³¸®ÇÏ±â À§ÇØ¼­´Â
+    // Column Á¤º¸¸¦ º¹»çÇÏ¿©¾ß ÇÑ´Ù.
     MTC_TUPLE_TYPE_TABLE|
     MTC_TUPLE_COLUMN_SET_TRUE|        /* COLUMN  : set pointer       */
     MTC_TUPLE_COLUMN_ALLOCATE_FALSE|  /* COLUMN  : no allocation     */
@@ -223,12 +223,12 @@ const ULong qtc::templateRowFlags[MTC_TUPLE_TYPE_MAXIMUM] = {
     MTC_TUPLE_ROW_COPY_FALSE          /* ROW     : no copy           */
 };
 
-/* BUG-44382 clone tuple ì„±ëŠ¥ê°œì„  */
+/* BUG-44382 clone tuple ¼º´É°³¼± */
 void qtc::setTupleColumnFlag( mtcTuple * aTuple,
                               idBool     aCopyColumn,
                               idBool     aMemsetRow )
 {
-    // column ë³µì‚¬ê°€ í•„ìš”í•œ ê²½ìš° (columnì˜ value buffer, offsetë“±ì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°)
+    // column º¹»ç°¡ ÇÊ¿äÇÑ °æ¿ì (columnÀÇ value buffer, offsetµîÀ» »ç¿ëÇÏ´Â °æ¿ì)
     if ( aCopyColumn == ID_TRUE )
     {
         aTuple->lflag &= ~MTC_TUPLE_COLUMN_SET_MASK;
@@ -243,7 +243,7 @@ void qtc::setTupleColumnFlag( mtcTuple * aTuple,
         // Nothing to do.
     }
 
-    // rowí• ë‹¹ì‹œ memsetì´ í•„ìš”í•œ ê²½ìš° (ì´ˆê¸°í™”ê°€ í•„ìš”í•œ ê²½ìš°)
+    // rowÇÒ´ç½Ã memsetÀÌ ÇÊ¿äÇÑ °æ¿ì (ÃÊ±âÈ­°¡ ÇÊ¿äÇÑ °æ¿ì)
     if ( aMemsetRow == ID_TRUE )
     {
         aTuple->lflag &= ~MTC_TUPLE_ROW_MEMSET_MASK;
@@ -266,8 +266,8 @@ IDE_RC qtc::rangeMinimumCallBack4Mtd( idBool     * aResult,
  *
  * Description :
  *
- *    Meta ê´€ë¦¬ë¥¼ ìœ„í•œ Minimum Key Range CallBackìœ¼ë¡œë§Œ ì‚¬ìš©ëœë‹¤.
- *    ë”°ë¼ì„œ, Disk Variable Columnì— ëŒ€í•œ ê³ ë ¤ê°€ í•„ìš”ì—†ë‹¤.
+ *    Meta °ü¸®¸¦ À§ÇÑ Minimum Key Range CallBackÀ¸·Î¸¸ »ç¿ëµÈ´Ù.
+ *    µû¶ó¼­, Disk Variable Column¿¡ ´ëÇÑ °í·Á°¡ ÇÊ¿ä¾ø´Ù.
  *
  * Implementation :
  *
@@ -298,8 +298,8 @@ IDE_RC qtc::rangeMinimumCallBack4Mtd( idBool     * aResult,
                                  &sValueInfo2 );
     }
 
-    // Column ê°’ì´ Min Valueê°’ë³´ë‹¤ ì˜¤ë¥¸ìª½ì— ìˆê±°ë‚˜ ê°™ì„ ê²½ìš°
-    // TRUE ê°’ì„ Settingí•œë‹¤.
+    // Column °ªÀÌ Min Value°ªº¸´Ù ¿À¸¥ÂÊ¿¡ ÀÖ°Å³ª °°À» °æ¿ì
+    // TRUE °ªÀ» SettingÇÑ´Ù.
     //     ------------- Column -------------
     //     |                                |
     //     V                                V
@@ -335,8 +335,8 @@ IDE_RC qtc::rangeMinimumCallBack4GTMtd( idBool       * aResult,
  *
  * Description :
  *
- *    Meta ê´€ë¦¬ë¥¼ ìœ„í•œ Minimum Key Range CallBackìœ¼ë¡œë§Œ ì‚¬ìš©ëœë‹¤.
- *    ë”°ë¼ì„œ, Disk Variable Columnì— ëŒ€í•œ ê³ ë ¤ê°€ í•„ìš”ì—†ë‹¤.
+ *    Meta °ü¸®¸¦ À§ÇÑ Minimum Key Range CallBackÀ¸·Î¸¸ »ç¿ëµÈ´Ù.
+ *    µû¶ó¼­, Disk Variable Column¿¡ ´ëÇÑ °í·Á°¡ ÇÊ¿ä¾ø´Ù.
  *
  * Implementation :
  *
@@ -367,8 +367,8 @@ IDE_RC qtc::rangeMinimumCallBack4GTMtd( idBool       * aResult,
                                  &sValueInfo2 );
     }
 
-    // Column ê°’ì´ Min Valueê°’ë³´ë‹¤ ì˜¤ë¥¸ìª½ì— ìˆì„ ê²½ìš°
-    // TRUE ê°’ì„ Settingí•œë‹¤.
+    // Column °ªÀÌ Min Value°ªº¸´Ù ¿À¸¥ÂÊ¿¡ ÀÖÀ» °æ¿ì
+    // TRUE °ªÀ» SettingÇÑ´Ù.
     //     ------------- Column -------------
     //     |                                |
     //     V                                V
@@ -389,8 +389,8 @@ IDE_RC qtc::rangeMinimumCallBack4Stored( idBool     * aResult,
  *
  * Description :
  *
- *    Meta ê´€ë¦¬ë¥¼ ìœ„í•œ Minimum Key Range CallBackìœ¼ë¡œë§Œ ì‚¬ìš©ëœë‹¤.
- *    ë”°ë¼ì„œ, Disk Variable Columnì— ëŒ€í•œ ê³ ë ¤ê°€ í•„ìš”ì—†ë‹¤.
+ *    Meta °ü¸®¸¦ À§ÇÑ Minimum Key Range CallBackÀ¸·Î¸¸ »ç¿ëµÈ´Ù.
+ *    µû¶ó¼­, Disk Variable Column¿¡ ´ëÇÑ °í·Á°¡ ÇÊ¿ä¾ø´Ù.
  *
  * Implementation :
  *
@@ -422,8 +422,8 @@ IDE_RC qtc::rangeMinimumCallBack4Stored( idBool     * aResult,
                                  &sValueInfo2 );
     }
 
-    // Column ê°’ì´ Min Valueê°’ë³´ë‹¤ ì˜¤ë¥¸ìª½ì— ìˆê±°ë‚˜ ê°™ì„ ê²½ìš°
-    // TRUE ê°’ì„ Settingí•œë‹¤.
+    // Column °ªÀÌ Min Value°ªº¸´Ù ¿À¸¥ÂÊ¿¡ ÀÖ°Å³ª °°À» °æ¿ì
+    // TRUE °ªÀ» SettingÇÑ´Ù.
     //     ------------- Column -------------
     //     |                                |
     //     V                                V
@@ -479,8 +479,8 @@ IDE_RC qtc::rangeMaximumCallBack4Mtd( idBool     * aResult,
  *
  * Description :
  *
- *    Meta ê´€ë¦¬ë¥¼ ìœ„í•œ Maximum Key Range CallBackìœ¼ë¡œë§Œ ì‚¬ìš©ëœë‹¤.
- *    ë”°ë¼ì„œ, Disk Variable Columnì— ëŒ€í•œ ê³ ë ¤ê°€ í•„ìš”ì—†ë‹¤.
+ *    Meta °ü¸®¸¦ À§ÇÑ Maximum Key Range CallBackÀ¸·Î¸¸ »ç¿ëµÈ´Ù.
+ *    µû¶ó¼­, Disk Variable Column¿¡ ´ëÇÑ °í·Á°¡ ÇÊ¿ä¾ø´Ù.
  *
  * Implementation :
  *
@@ -511,8 +511,8 @@ IDE_RC qtc::rangeMaximumCallBack4Mtd( idBool     * aResult,
                                  &sValueInfo2 );
     }
 
-    // Column ê°’ì´ Max Valueê°’ë³´ë‹¤ ì™¼ìª½ì— ìˆê±°ë‚˜ ê°™ì„ ê²½ìš°
-    // TRUE ê°’ì„ Settingí•œë‹¤.
+    // Column °ªÀÌ Max Value°ªº¸´Ù ¿ŞÂÊ¿¡ ÀÖ°Å³ª °°À» °æ¿ì
+    // TRUE °ªÀ» SettingÇÑ´Ù.
     //     ------------- Column -------------
     //     |                                |
     //     V                                V
@@ -549,8 +549,8 @@ IDE_RC qtc::rangeMaximumCallBack4LTMtd( idBool     * aResult,
  *
  * Description :
  *
- *    Meta ê´€ë¦¬ë¥¼ ìœ„í•œ Maximum Key Range CallBackìœ¼ë¡œë§Œ ì‚¬ìš©ëœë‹¤.
- *    ë”°ë¼ì„œ, Disk Variable Columnì— ëŒ€í•œ ê³ ë ¤ê°€ í•„ìš”ì—†ë‹¤.
+ *    Meta °ü¸®¸¦ À§ÇÑ Maximum Key Range CallBackÀ¸·Î¸¸ »ç¿ëµÈ´Ù.
+ *    µû¶ó¼­, Disk Variable Column¿¡ ´ëÇÑ °í·Á°¡ ÇÊ¿ä¾ø´Ù.
  *
  * Implementation :
  *
@@ -581,8 +581,8 @@ IDE_RC qtc::rangeMaximumCallBack4LTMtd( idBool     * aResult,
                                  &sValueInfo2 );
     }
 
-    // Column ê°’ì´ Max Valueê°’ë³´ë‹¤ ì™¼ìª½ì— ìˆì„ ê²½ìš°
-    // TRUE ê°’ì„ Settingí•œë‹¤.
+    // Column °ªÀÌ Max Value°ªº¸´Ù ¿ŞÂÊ¿¡ ÀÖÀ» °æ¿ì
+    // TRUE °ªÀ» SettingÇÑ´Ù.
     //     ------------- Column -------------
     //     |                                |
     //     V                                V
@@ -604,8 +604,8 @@ IDE_RC qtc::rangeMaximumCallBack4Stored( idBool     * aResult,
  *
  * Description :
  *
- *    Meta ê´€ë¦¬ë¥¼ ìœ„í•œ Maximum Key Range CallBackìœ¼ë¡œë§Œ ì‚¬ìš©ëœë‹¤.
- *    ë”°ë¼ì„œ, Disk Variable Columnì— ëŒ€í•œ ê³ ë ¤ê°€ í•„ìš”ì—†ë‹¤.
+ *    Meta °ü¸®¸¦ À§ÇÑ Maximum Key Range CallBackÀ¸·Î¸¸ »ç¿ëµÈ´Ù.
+ *    µû¶ó¼­, Disk Variable Column¿¡ ´ëÇÑ °í·Á°¡ ÇÊ¿ä¾ø´Ù.
  *
  * Implementation :
  *
@@ -637,8 +637,8 @@ IDE_RC qtc::rangeMaximumCallBack4Stored( idBool     * aResult,
                                  &sValueInfo2 );
     }
 
-    // Column ê°’ì´ Max Valueê°’ë³´ë‹¤ ì™¼ìª½ì— ìˆê±°ë‚˜ ê°™ì„ ê²½ìš°
-    // TRUE ê°’ì„ Settingí•œë‹¤.
+    // Column °ªÀÌ Max Value°ªº¸´Ù ¿ŞÂÊ¿¡ ÀÖ°Å³ª °°À» °æ¿ì
+    // TRUE °ªÀ» SettingÇÑ´Ù.
     //     ------------- Column -------------
     //     |                                |
     //     V                                V
@@ -651,9 +651,9 @@ IDE_RC qtc::rangeMaximumCallBack4Stored( idBool     * aResult,
 
 /*
  * PROJ-2433
- * Direct key Indexì˜ direct keyì™€ mtdë¥¼ ë¹„êµí•˜ëŠ” range callback í•¨ìˆ˜
- * - indexì˜ ì²«ë²ˆì§¸ ì»¬ëŸ¼ë§Œ direct keyë¡œ ë¹„êµí•¨
- * - partial direct keyë¥¼ ì²˜ë¦¬í•˜ëŠ”ë¶€ë¶„ ì¶”ê°€
+ * Direct key IndexÀÇ direct key¿Í mtd¸¦ ºñ±³ÇÏ´Â range callback ÇÔ¼ö
+ * - indexÀÇ Ã¹¹øÂ° ÄÃ·³¸¸ direct key·Î ºñ±³ÇÔ
+ * - partial direct key¸¦ Ã³¸®ÇÏ´ÂºÎºĞ Ãß°¡
  */
 IDE_RC qtc::rangeMinimumCallBack4IndexKey( idBool     * aResult,
                                            const void * aRow,
@@ -678,13 +678,13 @@ IDE_RC qtc::rangeMinimumCallBack4IndexKey( idBool     * aResult,
         {
             /*
              * PROJ-2433 Direct Key Index
-             * direct keyê°€ NULL ì´ ì•„ë‹Œê²½ìš°, ì²«ë²ˆì§¸ ì»¬ëŸ¼ì€ direct keyì™€ ë¹„êµí•œë‹¤.
+             * direct key°¡ NULL ÀÌ ¾Æ´Ñ°æ¿ì, Ã¹¹øÂ° ÄÃ·³Àº direct key¿Í ºñ±³ÇÑ´Ù.
              *
-             * - aDirectKeyPartialSizeê°€ 0 ì´ ì•„ë‹Œê²½ìš°,
-             *   partial direct key ì´ë¯€ë¡œ MTD_PARTIAL_KEY_ON ì„ flagì— ì„¸íŒ…í•œë‹¤.
+             * - aDirectKeyPartialSize°¡ 0 ÀÌ ¾Æ´Ñ°æ¿ì,
+             *   partial direct key ÀÌ¹Ç·Î MTD_PARTIAL_KEY_ON À» flag¿¡ ¼¼ÆÃÇÑ´Ù.
              *
-             * - partial direct keyì¸ ê²½ìš°,
-             *   ê·¸ ê²°ê³¼ê°€ ì •í™•í•œ ê°’ì´ ì•„ë‹ˆë¯€ë¡œ ë‘ë²ˆì§¸ ì»¬ëŸ¼ ë¹„êµì—†ì´ ë°”ë¡œ ì¢…ë£Œí•œë‹¤.
+             * - partial direct keyÀÎ °æ¿ì,
+             *   ±× °á°ú°¡ Á¤È®ÇÑ °ªÀÌ ¾Æ´Ï¹Ç·Î µÎ¹øÂ° ÄÃ·³ ºñ±³¾øÀÌ ¹Ù·Î Á¾·áÇÑ´Ù.
              */
             sDummyColumn.column.offset = 0;
             sDummyColumn.module = sData->valueDesc.module; /* BUG-40530 & valgirnd */
@@ -715,13 +715,13 @@ IDE_RC qtc::rangeMinimumCallBack4IndexKey( idBool     * aResult,
 
             if ( aDirectKeyPartialSize != 0 )
             {
-                /* partial key ì´ë©´,
-                 * ë‹¤ìŒ ì»¬ëŸ¼ì˜ ë¹„êµëŠ”ì˜ë¯¸ì—†ë‹¤. ë°”ë¡œëë‚¸ë‹¤ */
+                /* partial key ÀÌ¸é,
+                 * ´ÙÀ½ ÄÃ·³ÀÇ ºñ±³´ÂÀÇ¹Ì¾ø´Ù. ¹Ù·Î³¡³½´Ù */
                 break;
             }
             else
             {
-                aDirectKey = NULL; /* direct keyëŠ” í•œë²ˆë§Œ ì‚¬ìš©ë¨ */
+                aDirectKey = NULL; /* direct key´Â ÇÑ¹ø¸¸ »ç¿ëµÊ */
             }
         }
         else
@@ -741,8 +741,8 @@ IDE_RC qtc::rangeMinimumCallBack4IndexKey( idBool     * aResult,
         }
     }
 
-    // Column ê°’ì´ Min Valueê°’ë³´ë‹¤ ì˜¤ë¥¸ìª½ì— ìˆê±°ë‚˜ ê°™ì„ ê²½ìš°
-    // TRUE ê°’ì„ Settingí•œë‹¤.
+    // Column °ªÀÌ Min Value°ªº¸´Ù ¿À¸¥ÂÊ¿¡ ÀÖ°Å³ª °°À» °æ¿ì
+    // TRUE °ªÀ» SettingÇÑ´Ù.
     //     ------------- Column -------------
     //     |                                |
     //     V                                V
@@ -775,13 +775,13 @@ IDE_RC qtc::rangeMaximumCallBack4IndexKey( idBool     * aResult,
         {
             /*
              * PROJ-2433 Direct Key Index
-             * direct keyê°€ NULL ì´ ì•„ë‹Œê²½ìš°, ì²«ë²ˆì§¸ ì»¬ëŸ¼ì€ direct keyì™€ ë¹„êµí•œë‹¤.
+             * direct key°¡ NULL ÀÌ ¾Æ´Ñ°æ¿ì, Ã¹¹øÂ° ÄÃ·³Àº direct key¿Í ºñ±³ÇÑ´Ù.
              *
-             * - aDirectKeyPartialSizeê°€ 0 ì´ ì•„ë‹Œê²½ìš°,
-             *   partial direct key ì´ë¯€ë¡œ MTD_PARTIAL_KEY_ON ì„ flagì— ì„¸íŒ…í•œë‹¤.
+             * - aDirectKeyPartialSize°¡ 0 ÀÌ ¾Æ´Ñ°æ¿ì,
+             *   partial direct key ÀÌ¹Ç·Î MTD_PARTIAL_KEY_ON À» flag¿¡ ¼¼ÆÃÇÑ´Ù.
              *
-             * - partial direct keyì¸ ê²½ìš°,
-             *   ê·¸ ê²°ê³¼ê°€ ì •í™•í•œ ê°’ì´ ì•„ë‹ˆë¯€ë¡œ ë‘ë²ˆì§¸ ì»¬ëŸ¼ ë¹„êµì—†ì´ ë°”ë¡œ ì¢…ë£Œí•œë‹¤.
+             * - partial direct keyÀÎ °æ¿ì,
+             *   ±× °á°ú°¡ Á¤È®ÇÑ °ªÀÌ ¾Æ´Ï¹Ç·Î µÎ¹øÂ° ÄÃ·³ ºñ±³¾øÀÌ ¹Ù·Î Á¾·áÇÑ´Ù.
              */
             sDummyColumn.column.offset = 0;
             sDummyColumn.module = sData->valueDesc.module; /* BUG-40530 & valgirnd */
@@ -812,13 +812,13 @@ IDE_RC qtc::rangeMaximumCallBack4IndexKey( idBool     * aResult,
 
             if ( aDirectKeyPartialSize != 0 )
             {
-                /* partial key ì´ë©´,
-                 * ë‹¤ìŒ ì»¬ëŸ¼ì˜ ë¹„êµëŠ”ì˜ë¯¸ì—†ë‹¤. ë°”ë¡œëë‚¸ë‹¤ */
+                /* partial key ÀÌ¸é,
+                 * ´ÙÀ½ ÄÃ·³ÀÇ ºñ±³´ÂÀÇ¹Ì¾ø´Ù. ¹Ù·Î³¡³½´Ù */
                 break;
             }
             else
             {
-                aDirectKey = NULL; /* direct keyëŠ” í•œë²ˆë§Œ ì‚¬ìš©ë¨ */
+                aDirectKey = NULL; /* direct key´Â ÇÑ¹ø¸¸ »ç¿ëµÊ */
             }
         }
         else
@@ -838,8 +838,8 @@ IDE_RC qtc::rangeMaximumCallBack4IndexKey( idBool     * aResult,
         }
     }
 
-    // Column ê°’ì´ Max Valueê°’ë³´ë‹¤ ì™¼ìª½ì— ìˆê±°ë‚˜ ê°™ì„ ê²½ìš°
-    // TRUE ê°’ì„ Settingí•œë‹¤.
+    // Column °ªÀÌ Max Value°ªº¸´Ù ¿ŞÂÊ¿¡ ÀÖ°Å³ª °°À» °æ¿ì
+    // TRUE °ªÀ» SettingÇÑ´Ù.
     //     ------------- Column -------------
     //     |                                |
     //     V                                V
@@ -858,17 +858,17 @@ IDE_RC qtc::initConversionNodeIntermediate( mtcNode** aConversionNode,
  *
  * Description :
  *
- *    Conversion Nodeë¥¼ Intermediate Tupleì— ìƒì„±í•˜ê³  ì´ˆê¸°í™”í•¨
- *    mtcCallBack.initConversionNode ì˜ í•¨ìˆ˜ í¬ì¸í„°ì— ì…‹íŒ…ë¨.
- *    HOST ë³€ìˆ˜ê°€ ì—†ëŠ” ê²½ìš°ì˜ Conversionì„ ìœ„í•´ ì‚¬ìš©í•œë‹¤.
- *    Prepare ì‹œì (P-V-O)ì—ì„œ ì‚¬ìš©ë¨
+ *    Conversion Node¸¦ Intermediate Tuple¿¡ »ı¼ºÇÏ°í ÃÊ±âÈ­ÇÔ
+ *    mtcCallBack.initConversionNode ÀÇ ÇÔ¼ö Æ÷ÀÎÅÍ¿¡ ¼ÂÆÃµÊ.
+ *    HOST º¯¼ö°¡ ¾ø´Â °æ¿ìÀÇ ConversionÀ» À§ÇØ »ç¿ëÇÑ´Ù.
+ *    Prepare ½ÃÁ¡(P-V-O)¿¡¼­ »ç¿ëµÊ
  *
  *    Ex) int1 = double1
  *
  * Implementation :
  *
- *    Conversion Nodeë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹ë°›ê³ , ëŒ€ìƒ Nodeë¥¼ ë³µì‚¬í•¨.
- *    Tuple Setì—ì„œ INTERMEDIATE TUPLEì˜ ê³µê°„ì„ ì‚¬ìš©í•¨.
+ *    Conversion Node¸¦ À§ÇÑ °ø°£À» ÇÒ´ç¹Ş°í, ´ë»ó Node¸¦ º¹»çÇÔ.
+ *    Tuple Set¿¡¼­ INTERMEDIATE TUPLEÀÇ °ø°£À» »ç¿ëÇÔ.
  *
  ***********************************************************************/
 
@@ -898,8 +898,8 @@ IDE_RC qtc::initConversionNodeIntermediate( mtcNode** aConversionNode,
                                1 )
               != IDE_SUCCESS );
 
-    /* BUG-44526 INTERMEDIATE Tuple Rowë¥¼ ì´ˆê¸°í™”í•˜ì§€ ì•Šì•„ì„œ, valgrind warning ë°œìƒ */
-    // ì´ˆê¸°í™”ê°€ í•„ìš”í•¨
+    /* BUG-44526 INTERMEDIATE Tuple Row¸¦ ÃÊ±âÈ­ÇÏÁö ¾Ê¾Æ¼­, valgrind warning ¹ß»ı */
+    // ÃÊ±âÈ­°¡ ÇÊ¿äÇÔ
     setTupleColumnFlag( &(sInfo->tmplate->tmplate.rows[((qtcNode *)*aConversionNode)->node.table]),
                         ID_FALSE,
                         ID_TRUE );
@@ -922,11 +922,11 @@ IDE_RC qtc::estimateNode( qtcNode*     aNode,
 /***********************************************************************
  *
  * Description :
- *    í•´ë‹¹ Nodeì˜ estimate ë¥¼ ìˆ˜í–‰í•¨
+ *    ÇØ´ç NodeÀÇ estimate ¸¦ ¼öÇàÇÔ
  *
  * Implementation :
- *    í•´ë‹¹ Nodeì˜ estimateë¥¼ ìˆ˜í–‰í•˜ê³ 
- *    PRIOR Columnì— ëŒ€í•œ Validationì„ ìˆ˜í–‰í•¨.
+ *    ÇØ´ç NodeÀÇ estimate¸¦ ¼öÇàÇÏ°í
+ *    PRIOR Column¿¡ ´ëÇÑ ValidationÀ» ¼öÇàÇÔ.
  *
  ***********************************************************************/
 #define IDE_FN "IDE_RC qtc::estimateNode"
@@ -943,7 +943,7 @@ IDE_RC qtc::estimateNode( qtcNode*     aNode,
                     aRemain,
                     ERR_STACK_OVERFLOW );
 
-    // í•´ë‹¹ Nodeì˜ estimate ë¥¼ ìˆ˜í–‰í•¨.
+    // ÇØ´ç NodeÀÇ estimate ¸¦ ¼öÇàÇÔ.
     if ( aNode->node.module->estimate( (mtcNode*)aNode,
                                        aTemplate,
                                        aStack,
@@ -951,7 +951,7 @@ IDE_RC qtc::estimateNode( qtcNode*     aNode,
                                        aCallBack )
          != IDE_SUCCESS )
     {
-        // subqueryì¸ ê²½ìš° QPìˆ˜ì¤€ì—ì„œ ì—ëŸ¬ë¥¼ ì²˜ë¦¬í–ˆìœ¼ë¯€ë¡œ skipí•œë‹¤.
+        // subqueryÀÎ °æ¿ì QP¼öÁØ¿¡¼­ ¿¡·¯¸¦ Ã³¸®ÇßÀ¸¹Ç·Î skipÇÑ´Ù.
         IDE_TEST( ( aNode->node.lflag & MTC_NODE_OPERATOR_MASK )
                   == MTC_NODE_OPERATOR_SUBQUERY );
 
@@ -965,7 +965,7 @@ IDE_RC qtc::estimateNode( qtcNode*     aNode,
     }
 
     // BUG-39683
-    // ì¸ìê°€ undef typeì´ë©´ ë¦¬í„´ë„ undef typeì´ì–´ì•¼ í•œë‹¤.
+    // ÀÎÀÚ°¡ undef typeÀÌ¸é ¸®ÅÏµµ undef typeÀÌ¾î¾ß ÇÑ´Ù.
     if ( ( ( aNode->node.lflag & MTC_NODE_UNDEF_TYPE_MASK )
            == MTC_NODE_UNDEF_TYPE_EXIST ) &&
          ( ( ( aNode->node.module->lflag & MTC_NODE_OPERATOR_MASK )
@@ -987,8 +987,8 @@ IDE_RC qtc::estimateNode( qtcNode*     aNode,
     }
 
     //----------------------------------------------------------------
-    // Hierarchy êµ¬ë¬¸ì´ ì—†ëŠ” ì§ˆì˜ì—ì„œ PRIOR keywordë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
-    // ì´ì— ëŒ€í•œ Validationì„ ìˆ˜í–‰í•¨
+    // Hierarchy ±¸¹®ÀÌ ¾ø´Â ÁúÀÇ¿¡¼­ PRIOR keyword¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù.
+    // ÀÌ¿¡ ´ëÇÑ ValidationÀ» ¼öÇàÇÔ
     //----------------------------------------------------------------
     if (sSFWGHOfCallBack != NULL)
     {
@@ -1013,8 +1013,8 @@ IDE_RC qtc::estimateNode( qtcNode*     aNode,
              ( ( aNode->lflag & QTC_NODE_COLUMN_RID_MASK )
                == QTC_NODE_COLUMN_RID_EXIST ) )
         {
-            sQuerySetCallBack->flag &= ~QMV_QUERYSET_RESULT_CACHE_INVALID_MASK;
-            sQuerySetCallBack->flag |= QMV_QUERYSET_RESULT_CACHE_INVALID_TRUE;
+            sQuerySetCallBack->lflag &= ~QMV_QUERYSET_RESULT_CACHE_INVALID_MASK;
+            sQuerySetCallBack->lflag |= QMV_QUERYSET_RESULT_CACHE_INVALID_TRUE;
         }
         else
         {
@@ -1071,7 +1071,7 @@ IDE_RC qtc::estimateNode( qtcNode*     aNode,
     }
     IDE_EXCEPTION( ERR_PASS );
     {
-        // sqlSourceInfoê°€ ì—†ëŠ” errorë¼ë©´.
+        // sqlSourceInfo°¡ ¾ø´Â error¶ó¸é.
         if ( ideHasErrorPosition() == ID_FALSE )
         {
             sSqlCode = ideGetErrorCode();
@@ -1101,11 +1101,11 @@ IDE_RC qtc::estimateNode( qtcNode*     aNode,
 
 // To Fix BUG-11921(A3) 11920(A4)
 //
-// estimateInternal ì—ì„œ argumentsì— ëŒ€í•´
-// recursiveí•˜ê²Œ estimateInternal ë¥¼ í•˜ë‚˜ì”© í˜¸ì¶œí•´ì£¼ê¸° ì „ì—,
-// ë§Œì•½ ì‚¬ìš©ìê°€ ì§€ì •í•˜ì§€ ì•Šì€ ê¸°ë³¸ ì¸ìë¥¼ aNode->arguments ì—
-// ë§ë¶™ì—¬ ì£¼ì–´ì•¼ í•˜ëŠ”ì§€ íŒë‹¨í•˜ê³ , í•„ìš”í•˜ë‹¤ë©´ ë””í´íŠ¸ ê°’ë“¤ ê°€ë¦¬í‚¤ëŠ”
-// qtcNodeë“¤ì„ ë§Œë“¤ì–´ì„œ aNode->argumentsì˜ ë§¨ ëì— ë§¤ë‹¬ë„ë¡ í•œë‹¤.
+// estimateInternal ¿¡¼­ arguments¿¡ ´ëÇØ
+// recursiveÇÏ°Ô estimateInternal ¸¦ ÇÏ³ª¾¿ È£ÃâÇØÁÖ±â Àü¿¡,
+// ¸¸¾à »ç¿ëÀÚ°¡ ÁöÁ¤ÇÏÁö ¾ÊÀº ±âº» ÀÎÀÚ¸¦ aNode->arguments ¿¡
+// µ¡ºÙ¿© ÁÖ¾î¾ß ÇÏ´ÂÁö ÆÇ´ÜÇÏ°í, ÇÊ¿äÇÏ´Ù¸é µğÆúÆ® °ªµé °¡¸®Å°´Â
+// qtcNodeµéÀ» ¸¸µé¾î¼­ aNode->argumentsÀÇ ¸Ç ³¡¿¡ ¸Å´Şµµ·Ï ÇÑ´Ù.
 
 IDE_RC qtc::appendDefaultArguments( qtcNode*     aNode,
                                     mtcTemplate* aTemplate,
@@ -1120,10 +1120,10 @@ IDE_RC qtc::appendDefaultArguments( qtcNode*     aNode,
     if ( aNode->node.module == & qtc::spFunctionCallModule )
     {
         // BUG-41262 PSM overloading
-        // PSM ì¸ìì˜ ê²½ìš° ë¯¸ë¦¬ estimate ë¥¼ í•´ì•¼ overloading ì´ ê°€ëŠ¥í•˜ë‹¤.
-        // ëª¨ë“  ê²½ìš°ì— ë¯¸ë¦¬ ì²˜ë¦¬í• ìˆ˜ ì—†ìœ¼ë¯€ë¡œ column ë§Œ ì²˜ë¦¬í•œë‹¤.
+        // PSM ÀÎÀÚÀÇ °æ¿ì ¹Ì¸® estimate ¸¦ ÇØ¾ß overloading ÀÌ °¡´ÉÇÏ´Ù.
+        // ¸ğµç °æ¿ì¿¡ ¹Ì¸® Ã³¸®ÇÒ¼ö ¾øÀ¸¹Ç·Î column ¸¸ Ã³¸®ÇÑ´Ù.
 
-        // BUG-44518 Stack ì„ ì œëŒ€ë¡œ ì„¤ì •í•´ì•¼ í•œë‹¤.
+        // BUG-44518 Stack À» Á¦´ë·Î ¼³Á¤ÇØ¾ß ÇÑ´Ù.
         for( sNode  = (qtcNode*)aNode->node.arguments,
              sStack = aStack + 1, sRemain = aRemain - 1;
              sNode != NULL;
@@ -1132,8 +1132,8 @@ IDE_RC qtc::appendDefaultArguments( qtcNode*     aNode,
             if ( sNode->node.module == &qtc::columnModule )
             {
                 // PROJ-2533
-                // arrayì˜ indexì— primitive typeì˜ ë³€ìˆ˜ë§Œ ì˜¤ëŠ”ê²ƒì€ ì•„ë‹ˆê¸° ë•Œë¬¸ì—,
-                // argumentsì— ëŒ€í•œ estimateê°€ í•„ìš”í•˜ë‹¤.
+                // arrayÀÇ index¿¡ primitive typeÀÇ º¯¼ö¸¸ ¿À´Â°ÍÀº ¾Æ´Ï±â ¶§¹®¿¡,
+                // arguments¿¡ ´ëÇÑ estimate°¡ ÇÊ¿äÇÏ´Ù.
                 // e.g. func1( arrayVar[ func2() ] )
                 IDE_TEST( estimateInternal( sNode,
                                             aTemplate,
@@ -1201,14 +1201,14 @@ IDE_RC qtc::addLobValueFuncForSP( qtcNode      * aNode,
 
                 if ( sGetLobModule != NULL )
                 {
-                    // get_lob_value í•¨ìˆ˜ë¥¼ ë§Œë“ ë‹¤.
+                    // get_lob_value ÇÔ¼ö¸¦ ¸¸µç´Ù.
                     IDE_TEST( makeNode( sTemplate->stmt,
                                         sNewNode,
                                         & sNode->columnName,
                                         sGetLobModule )
                               != IDE_SUCCESS );
                     
-                    // í•¨ìˆ˜ë¥¼ ì—°ê²°í•œë‹¤.
+                    // ÇÔ¼ö¸¦ ¿¬°áÇÑ´Ù.
                     sNewNode[0]->node.arguments = (mtcNode*)sNode;
                     sNewNode[0]->node.next = sNode->node.next;
                     sNewNode[0]->node.arguments->next = NULL;
@@ -1222,7 +1222,7 @@ IDE_RC qtc::addLobValueFuncForSP( qtcNode      * aNode,
                     // input argument
                     sInternalStack[1] = *sStack;
                     
-                    // get_lob_valueëŠ” stackì„ 1ê°œë§Œ ì‚¬ìš©í•´ì•¼í•œë‹¤.
+                    // get_lob_value´Â stackÀ» 1°³¸¸ »ç¿ëÇØ¾ßÇÑ´Ù.
                     IDE_TEST( estimateNode( sNewNode[0],
                                             aTemplate,
                                             sInternalStack,
@@ -1277,14 +1277,14 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
 /***********************************************************************
  *
  * Description :
- *    Node Treeë¥¼ estimateí•œë‹¤.
+ *    Node Tree¸¦ estimateÇÑ´Ù.
  *
  * Implementation :
- *    Node Treeë¥¼ Traverseí•˜ë©´ Node Treeì „ì²´ë¥¼ estimate í•œë‹¤.
- *    Aggregation ì—°ì‚°ìì™€ ê°™ì€ íŠ¹ìˆ˜í•œ ì—°ì‚°ìëŠ” ê·¸ íŠ¹ì§•ì— ë§ê²Œ ë¶„ë¥˜í•œë‹¤.
- *    (1) Argument Nodeë“¤ì— ëŒ€í•œ estimate ìˆ˜í–‰
- *    (2) over clause ì ˆì— ëŒ€í•œ estimate ìˆ˜í–‰
- *    (3) í˜„ì¬ Nodeì— ëŒ€í•œ estimate ìˆ˜í–‰
+ *    Node Tree¸¦ TraverseÇÏ¸é Node TreeÀüÃ¼¸¦ estimate ÇÑ´Ù.
+ *    Aggregation ¿¬»êÀÚ¿Í °°Àº Æ¯¼öÇÑ ¿¬»êÀÚ´Â ±× Æ¯Â¡¿¡ ¸Â°Ô ºĞ·ùÇÑ´Ù.
+ *    (1) Argument Nodeµé¿¡ ´ëÇÑ estimate ¼öÇà
+ *    (2) over clause Àı¿¡ ´ëÇÑ estimate ¼öÇà
+ *    (3) ÇöÀç Node¿¡ ´ëÇÑ estimate ¼öÇà
  ***********************************************************************/
 
 #define IDE_FN "IDE_RC qtc::estimateInternal"
@@ -1305,16 +1305,16 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
     qtcOverColumn     * sOverColumn;
 
     // PROJ-2533
-    // array(columnModule/member function) ì¸ì§€
-    // proc/func(spFunctionCallModule)ì¸ì§€ë¥¼ estimateì „ì— ê²°ì • í•´ì•¼í•œë‹¤.
+    // array(columnModule/member function) ÀÎÁö
+    // proc/func(spFunctionCallModule)ÀÎÁö¸¦ estimateÀü¿¡ °áÁ¤ ÇØ¾ßÇÑ´Ù.
     IDE_TEST( qmvQTC::changeModuleToArray ( aNode,
                                             aCallBack ) 
               != IDE_SUCCESS);
 
-    // Nodeì˜ dependencies ì´ˆê¸°í™”
+    // NodeÀÇ dependencies ÃÊ±âÈ­
     dependencyClear( & aNode->depInfo );
 
-    // sLflag ì´ˆê¸°í™”
+    // sLflag ÃÊ±âÈ­
     sLflag = MTC_NODE_BIND_TYPE_TRUE;
 
     if( ( aNode->node.lflag & MTC_NODE_OPERATOR_MASK )
@@ -1330,20 +1330,20 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
     }
 
     // BUG-41243 
-    // spFunctionCallModuleì´ ì•„ë‹Œ ê²½ìš°, Name-based Argumentê°€ ì¡´ì¬í•˜ë©´ ì•ˆ ëœë‹¤.
-    // (e.g. replace(P1=>'P', 'a')ë¥¼ í•˜ë©´ P1, 'P', 'a' 3ê°œì˜ argumentë¡œ ì¸ì‹)
+    // spFunctionCallModuleÀÌ ¾Æ´Ñ °æ¿ì, Name-based Argument°¡ Á¸ÀçÇÏ¸é ¾È µÈ´Ù.
+    // (e.g. replace(P1=>'P', 'a')¸¦ ÇÏ¸é P1, 'P', 'a' 3°³ÀÇ argument·Î ÀÎ½Ä)
     IDE_TEST_RAISE( ( aNode->node.module != & qtc::spFunctionCallModule ) &&
                     ( qtc::hasNameArgumentForPSM( aNode ) == ID_TRUE ),
                     NAME_NOTATION_NOT_ALLOWED );
 
     // To Fix BUG-11921(A3) 11920(A4)
-    // Argument Nodeë“¤ì— ëŒ€í•œ estimateInternal ìˆ˜í–‰ ì „ì— Default Argumentë¥¼ ìƒì„±í•œë‹¤.
+    // Argument Nodeµé¿¡ ´ëÇÑ estimateInternal ¼öÇà Àü¿¡ Default Argument¸¦ »ı¼ºÇÑ´Ù.
     IDE_TEST( appendDefaultArguments(aNode, aTemplate, aStack,
                                      aRemain, aCallBack   )
               != IDE_SUCCESS );
 
 
-    // Analytic Functionì— ì†í•˜ëŠ” ì¹¼ëŸ¼ì¸ì§€ ì—¬ë¶€ ì •ë³´ ì„¤ì •
+    // Analytic Function¿¡ ¼ÓÇÏ´Â Ä®·³ÀÎÁö ¿©ºÎ Á¤º¸ ¼³Á¤
     if ( aNode->overClause != NULL )
     {
         sIsAnalyticFuncNode = ID_TRUE;
@@ -1352,7 +1352,7 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
     }
     else
     {
-        // analytic functionì— ì†í•˜ëŠ” ì¹¼ëŸ¼ì¸ ê²½ìš°
+        // analytic function¿¡ ¼ÓÇÏ´Â Ä®·³ÀÎ °æ¿ì
         if ( ( aNode->lflag & QTC_NODE_ANAL_FUNC_COLUMN_MASK )
              == QTC_NODE_ANAL_FUNC_COLUMN_TRUE )
         {
@@ -1365,7 +1365,7 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
     }
    
     //-----------------------------------------
-    // Argument Nodeë“¤ì— ëŒ€í•œ estimateInternal ìˆ˜í–‰
+    // Argument Nodeµé¿¡ ´ëÇÑ estimateInternal ¼öÇà
     //-----------------------------------------
 
     for( sNode  = (qtcNode*)aNode->node.arguments,
@@ -1399,24 +1399,24 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
         }
 
         //-----------------------------------------------------
-        // BUG-28223 CASE expr WHEN .. THEN .. êµ¬ë¬¸ì˜ exprì— subquery ì‚¬ìš©ì‹œ ì—ëŸ¬ë°œìƒ
-        //  ì¦‰, <SIMPLE CASE>ì˜ exprì— subquery ì‚¬ìš©ì‹œ ì—ëŸ¬ë°œìƒ.
+        // BUG-28223 CASE expr WHEN .. THEN .. ±¸¹®ÀÇ expr¿¡ subquery »ç¿ë½Ã ¿¡·¯¹ß»ı
+        //  Áï, <SIMPLE CASE>ÀÇ expr¿¡ subquery »ç¿ë½Ã ¿¡·¯¹ß»ı.
         // 
-        // ì•„ë˜ ì½”ë“œê°€ ì´ìƒí•´ ë³´ì´ê² ì§€ë§Œ,
-        // branchì—ì„œ íŒ¨ì¹˜ í˜¸í™˜ì„± ë¬¸ì œë¡œ
-        // ì•„ë˜ êµ¬ë¬¸ì„ ì—ëŸ¬ì²˜ë¦¬í•  ìˆ˜ ì—†ê³  ë¶€ë“ì´ ì§€ì›í•´ì•¼ í•˜ëŠ” ê´€ê³„ë¡œ
-        // ê¼¼ìˆ˜ì²˜ëŸ¼ ë³´ì´ëŠ” ì½”ë“œê°€ ì¶”ê°€ë¨.
+        // ¾Æ·¡ ÄÚµå°¡ ÀÌ»óÇØ º¸ÀÌ°ÚÁö¸¸,
+        // branch¿¡¼­ ÆĞÄ¡ È£È¯¼º ¹®Á¦·Î
+        // ¾Æ·¡ ±¸¹®À» ¿¡·¯Ã³¸®ÇÒ ¼ö ¾ø°í ºÎµæÀÌ Áö¿øÇØ¾ß ÇÏ´Â °ü°è·Î
+        // ²Ä¼öÃ³·³ º¸ÀÌ´Â ÄÚµå°¡ Ãß°¡µÊ.
         // 
-        // ì˜ˆ) case ( select count(*) from dual )
+        // ¿¹) case ( select count(*) from dual )
         //     when 0 then '000'
         //     when 1 then '111'
         //     else 'asdf'
-        //     ìœ„ ì¿¼ë¦¬ëŠ” íŒŒì‹±ê³¼ì •ì—ì„œ ë…¸ë“œë³µì‚¬ë¥¼ í†µí•´ ë‹¤ìŒê³¼ ê°™ì€ ë…¸ë“œê°€ ë§Œë“¤ì–´ì§„ë‹¤.
-        //     í•˜ì§€ë§Œ, í˜„ì¬ êµ¬ì¡°ì—ì„œ subQueryëŠ” ë…¸ë“œë³µì‚¬ë¥¼ í•  ìˆ˜ ì—†ë‹¤.
+        //     À§ Äõ¸®´Â ÆÄ½Ì°úÁ¤¿¡¼­ ³ëµåº¹»ç¸¦ ÅëÇØ ´ÙÀ½°ú °°Àº ³ëµå°¡ ¸¸µé¾îÁø´Ù.
+        //     ÇÏÁö¸¸, ÇöÀç ±¸Á¶¿¡¼­ subQuery´Â ³ëµåº¹»ç¸¦ ÇÒ ¼ö ¾ø´Ù.
         // 
-        //      [ CASE ] <--MTC_NODE_CASE_TYPE_SIMPLE í”Œë˜ê·¸ê°€ ì§€ì •ë¨.
+        //      [ CASE ] <--MTC_NODE_CASE_TYPE_SIMPLE ÇÃ·¡±×°¡ ÁöÁ¤µÊ.
         //          |
-        //          |                     / pass nodeë¥¼ ë‹¬ì•„ì•¼ í•œë‹¤ëŠ” í”Œë˜ê·¸ê°€ ì§€ì •ë¨.
+        //          |                     / pass node¸¦ ´Ş¾Æ¾ß ÇÑ´Ù´Â ÇÃ·¡±×°¡ ÁöÁ¤µÊ.
         //          |                    / (QTC_NODE_CASE_EXPRESSION_MAKE_PASSNODE_TRUE)
         //          |                   \/
         //         [=]  ---  ['000'] - [=] --- ['111'] -  ['asdf']
@@ -1424,11 +1424,11 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
         //          |                   |
         //        [subQ] - [0]        [subQ] - [1]
         //
-        //     estimateê³¼ì •ì—ì„œ
-        //     CASEë…¸ë“œì˜ ì²«ë²ˆì§¸ = (ì¦‰, [subQ]=[0])ì—ì„œë§Œ subQueryì˜ estimateë¥¼ ìˆ˜í–‰í•˜ê³ ,
-        //     ì´í›„ì˜ = (ì¦‰, [subQ]=[1])ì€ ì²«ë²ˆì§¸ subQueryë¥¼ PASS nodeë¡œ ì—°ê²°í•˜ê³ ,
-        //     subQueryëŠ” ì¤‘ë³µ estimateë˜ì§€ ì•Šë„ë¡ í•œë‹¤.
-        //     ë”°ë¼ì„œ, subQueryë¥¼ ë³µì‚¬í•˜ì§€ ì•Šê³  ì²˜ë¦¬í•  ìˆ˜ ìˆë‹¤.
+        //     estimate°úÁ¤¿¡¼­
+        //     CASE³ëµåÀÇ Ã¹¹øÂ° = (Áï, [subQ]=[0])¿¡¼­¸¸ subQueryÀÇ estimate¸¦ ¼öÇàÇÏ°í,
+        //     ÀÌÈÄÀÇ = (Áï, [subQ]=[1])Àº Ã¹¹øÂ° subQuery¸¦ PASS node·Î ¿¬°áÇÏ°í,
+        //     subQuery´Â Áßº¹ estimateµÇÁö ¾Êµµ·Ï ÇÑ´Ù.
+        //     µû¶ó¼­, subQuery¸¦ º¹»çÇÏÁö ¾Ê°í Ã³¸®ÇÒ ¼ö ÀÖ´Ù.
         //
         //      [ CASE ]
         //          |
@@ -1463,16 +1463,16 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
                 // BUG-28446 [valgrind], BUG-38133
                 // qtcCalculate_Pass(mtcNode*, mtcStack*, int, void*, mtcTemplate*)
                 // (qtcPass.cpp:333)
-                // SIMPLE CASEì²˜ë¦¬ë¥¼ ìœ„í•´ í•„ìš”ì— ì˜í•´ ìƒì„±ëœ PASS NODEì„ì„ í‘œì‹œ
-                // skipModuleì´ë©° sizeëŠ” 0ì´ë‹¤.
+                // SIMPLE CASEÃ³¸®¸¦ À§ÇØ ÇÊ¿ä¿¡ ÀÇÇØ »ı¼ºµÈ PASS NODEÀÓÀ» Ç¥½Ã
+                // skipModuleÀÌ¸ç size´Â 0ÀÌ´Ù.
                 sPassNode->node.lflag &= ~MTC_NODE_CASE_EXPRESSION_PASSNODE_MASK;
                 sPassNode->node.lflag |= MTC_NODE_CASE_EXPRESSION_PASSNODE_TRUE;
                 
                 sPassNode->node.next = sNextNodePtr;
                 sNode->node.arguments = (mtcNode*)sPassNode;
 
-                // BUG-44518 order by êµ¬ë¬¸ì˜ ESTIMATE ì¤‘ë³µ ìˆ˜í–‰í•˜ë©´ ì•ˆë©ë‹ˆë‹¤.
-                // Alias ê°€ ìˆì„ë•Œ fatal ì´ ë°œìƒí• ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+                // BUG-44518 order by ±¸¹®ÀÇ ESTIMATE Áßº¹ ¼öÇàÇÏ¸é ¾ÈµË´Ï´Ù.
+                // Alias °¡ ÀÖÀ»¶§ fatal ÀÌ ¹ß»ıÇÒ¼ö ÀÖ½À´Ï´Ù.
                 // select i1 as i2 , i2 as i1 from t1 order by func1(i1,1);
                 // SELECT  i1+i1 AS i1 FROM t1 order by func1(i1,1);
                 if ( (sNode->lflag & QTC_NODE_ORDER_BY_ESTIMATE_MASK)
@@ -1492,14 +1492,14 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
             }
             else
             {
-                // BUG-28223 CASE expr WHEN .. THEN .. êµ¬ë¬¸ì˜ exprì— subquery ì‚¬ìš©ì‹œ ì—ëŸ¬ë°œìƒ
-                // <SIMPLE CASE>ì˜ exprê°€ subqueryê°€ ì•„ë‹Œ ê²½ìš°,
-                // PASS NODEë¥¼ ë§Œë“¤ë¼ëŠ” í”Œë˜ê·¸ë¥¼ ì‚­ì œí•œë‹¤.
+                // BUG-28223 CASE expr WHEN .. THEN .. ±¸¹®ÀÇ expr¿¡ subquery »ç¿ë½Ã ¿¡·¯¹ß»ı
+                // <SIMPLE CASE>ÀÇ expr°¡ subquery°¡ ¾Æ´Ñ °æ¿ì,
+                // PASS NODE¸¦ ¸¸µé¶ó´Â ÇÃ·¡±×¸¦ »èÁ¦ÇÑ´Ù.
                 sNode->node.lflag &= ~MTC_NODE_CASE_EXPRESSION_MAKE_PASSNODE_MASK;
                 sNode->node.lflag |= MTC_NODE_CASE_EXPRESSION_MAKE_PASSNODE_FALSE;
 
-                // BUG-44518 order by êµ¬ë¬¸ì˜ ESTIMATE ì¤‘ë³µ ìˆ˜í–‰í•˜ë©´ ì•ˆë©ë‹ˆë‹¤.
-                // Alias ê°€ ìˆì„ë•Œ fatal ì´ ë°œìƒí• ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+                // BUG-44518 order by ±¸¹®ÀÇ ESTIMATE Áßº¹ ¼öÇàÇÏ¸é ¾ÈµË´Ï´Ù.
+                // Alias °¡ ÀÖÀ»¶§ fatal ÀÌ ¹ß»ıÇÒ¼ö ÀÖ½À´Ï´Ù.
                 // select i1 as i2 , i2 as i1 from t1 order by func1(i1,1);
                 // SELECT  i1+i1 AS i1 FROM t1 order by func1(i1,1);
                 if ( (sNode->lflag & QTC_NODE_ORDER_BY_ESTIMATE_MASK)
@@ -1532,12 +1532,12 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
             }
             else
             {
-                /* PSM Arrayì˜ Index NodeëŠ” bind ë³€ìˆ˜ë¡œ ë³€ê²½í•˜ì§€ ì•ŠëŠ”ë‹¤.
-                 * ì™œëƒí•˜ë©´ Arrayê·¸ëŒ€ë¡œ binding í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+                /* PSM ArrayÀÇ Index Node´Â bind º¯¼ö·Î º¯°æÇÏÁö ¾Ê´Â´Ù.
+                 * ¿Ö³ÄÇÏ¸é Array±×´ë·Î binding ÇÏ±â ¶§¹®ÀÌ´Ù.
                  * ex) SELECT I1 INTO V1 FROM T1 WHERE I1 = ARR1[INDEX1];
                  *                                          ^^   ^^
                  *  -> SELECT I1         FROM T1 WHERE I1 = ?           ;
-                 *     ?ëŠ” ARR1[INDEX1] */
+                 *     ?´Â ARR1[INDEX1] */
                 if( ( ( aNode->lflag & QTC_NODE_SP_ARRAY_INDEX_VAR_MASK )
                       == QTC_NODE_SP_ARRAY_INDEX_VAR_EXIST ) &&
                     ( ( sNode->lflag & QTC_NODE_COLUMN_CONVERT_MASK )
@@ -1547,8 +1547,8 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
                     sNode->lflag |= QTC_NODE_COLUMN_CONVERT_FALSE;
                 }
 
-                // BUG-44518 order by êµ¬ë¬¸ì˜ ESTIMATE ì¤‘ë³µ ìˆ˜í–‰í•˜ë©´ ì•ˆë©ë‹ˆë‹¤.
-                // Alias ê°€ ìˆì„ë•Œ fatal ì´ ë°œìƒí• ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+                // BUG-44518 order by ±¸¹®ÀÇ ESTIMATE Áßº¹ ¼öÇàÇÏ¸é ¾ÈµË´Ï´Ù.
+                // Alias °¡ ÀÖÀ»¶§ fatal ÀÌ ¹ß»ıÇÒ¼ö ÀÖ½À´Ï´Ù.
                 // select i1 as i2 , i2 as i1 from t1 order by func1(i1,1);
                 // SELECT  i1+i1 AS i1 FROM t1 order by func1(i1,1);
                 if ( (sNode->lflag & QTC_NODE_ORDER_BY_ESTIMATE_MASK)
@@ -1569,12 +1569,12 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
         }
 
         //------------------------------------------------------
-        // Argumentì˜ ì •ë³´ ì¤‘ í•„ìš”í•œ ì •ë³´ë¥¼ ëª¨ë‘ ì¶”ì¶œí•œë‹¤.
-        //    [Index ì‚¬ìš© ê°€ëŠ¥ ì •ë³´]
-        //     aNode->module->mask : í•˜ìœ„ Nodeì¤‘ columnì´ ìˆì„ ê²½ìš°,
-        //     í•˜ìœ„ ë…¸ë“œì˜ flagì€ indexë¥¼ ì‚¬ìš©í•  ìˆ˜ ìˆìŒì´ Settingë˜ì–´ ìˆìŒ.
-        //     ì´ ë•Œ, ì—°ì‚°ì ë…¸ë“œì˜ íŠ¹ì„±ì„ ì˜ë¯¸í•˜ëŠ” maskë¥¼ ì´ìš©í•´ flagì„
-        //     ì¬ìƒì„±í•¨ìœ¼ë¡œì„œ indexë¥¼ íƒˆ ìˆ˜ ìˆìŒì„ í‘œí˜„í•  ìˆ˜ ìˆë‹¤.
+        // ArgumentÀÇ Á¤º¸ Áß ÇÊ¿äÇÑ Á¤º¸¸¦ ¸ğµÎ ÃßÃâÇÑ´Ù.
+        //    [Index »ç¿ë °¡´É Á¤º¸]
+        //     aNode->module->mask : ÇÏÀ§ NodeÁß columnÀÌ ÀÖÀ» °æ¿ì,
+        //     ÇÏÀ§ ³ëµåÀÇ flagÀº index¸¦ »ç¿ëÇÒ ¼ö ÀÖÀ½ÀÌ SettingµÇ¾î ÀÖÀ½.
+        //     ÀÌ ¶§, ¿¬»êÀÚ ³ëµåÀÇ Æ¯¼ºÀ» ÀÇ¹ÌÇÏ´Â mask¸¦ ÀÌ¿ëÇØ flagÀ»
+        //     Àç»ı¼ºÇÔÀ¸·Î¼­ index¸¦ Å» ¼ö ÀÖÀ½À» Ç¥ÇöÇÒ ¼ö ÀÖ´Ù.
         //------------------------------------------------------
 
         aNode->node.lflag |=
@@ -1583,8 +1583,8 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
 
         //------------------------------------------------------
         // PROJ-1492
-        // Argumentì˜ bindê´€ë ¨ lflagë¥¼ ëª¨ë‘ ëª¨ì€ë‹¤.
-        //    1. BIND_TYPE_FALSEê°€ í•˜ë‚˜ë¼ë„ ìˆìœ¼ë©´ BIND_TYPE_FALSEê°€ ëœë‹¤.
+        // ArgumentÀÇ bind°ü·Ã lflag¸¦ ¸ğµÎ ¸ğÀº´Ù.
+        //    1. BIND_TYPE_FALSE°¡ ÇÏ³ª¶óµµ ÀÖÀ¸¸é BIND_TYPE_FALSE°¡ µÈ´Ù.
         //------------------------------------------------------
 
         if( ( sNode->node.lflag & MTC_NODE_BIND_MASK ) == MTC_NODE_BIND_EXIST )
@@ -1601,7 +1601,7 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
             // Nothing to do.
         }
 
-        // Argumentì˜ dependenciesë¥¼ ëª¨ë‘ í¬í•¨í•œë‹¤.
+        // ArgumentÀÇ dependencies¸¦ ¸ğµÎ Æ÷ÇÔÇÑ´Ù.
         IDE_TEST( dependencyOr( & aNode->depInfo,
                                 & sNode->depInfo,
                                 & aNode->depInfo ) != IDE_SUCCESS );
@@ -1613,9 +1613,9 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
         {
             //------------------------------------------------------
             // PROJ-1492
-            // í•˜ìœ„ ë…¸ë“œê°€ ìˆëŠ” í•´ë‹¹ Nodeì˜ bindê´€ë ¨ lflagë¥¼ ì„¤ì •í•œë‹¤.
-            //    1. Argumentì— BIND_TYPE_FALSEê°€ í•˜ë‚˜ë¼ë„ ìˆìœ¼ë©´ BIND_TYPE_FALSEê°€ ëœë‹¤.
-            //       (ë‹¨, í•´ë‹¹ Nodeê°€ CASTí•¨ìˆ˜ ë…¸ë“œì¼ ê²½ìš° í•­ìƒ BIND_TYPE_TRUEê°€ ëœë‹¤.)
+            // ÇÏÀ§ ³ëµå°¡ ÀÖ´Â ÇØ´ç NodeÀÇ bind°ü·Ã lflag¸¦ ¼³Á¤ÇÑ´Ù.
+            //    1. Argument¿¡ BIND_TYPE_FALSE°¡ ÇÏ³ª¶óµµ ÀÖÀ¸¸é BIND_TYPE_FALSE°¡ µÈ´Ù.
+            //       (´Ü, ÇØ´ç Node°¡ CASTÇÔ¼ö ³ëµåÀÏ °æ¿ì Ç×»ó BIND_TYPE_TRUE°¡ µÈ´Ù.)
             //------------------------------------------------------
             aNode->node.lflag |= sLflag & MTC_NODE_BIND_TYPE_MASK;
 
@@ -1647,8 +1647,8 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
     }
 
     //-----------------------------------------
-    // func1(c1) ì²˜ëŸ¼ lob columnì„ ì¸ìë¡œ ë°›ëŠ” functionë“¤ì„ ì²˜ë¦¬í•˜ê¸° ìœ„í•˜ì—¬
-    // func1(get_clob_value(c1)) í˜•ì‹ìœ¼ë¡œ get_clob_value í•¨ìˆ˜ë¥¼ ë¶™ì—¬ë„£ëŠ”ë‹¤.
+    // func1(c1) Ã³·³ lob columnÀ» ÀÎÀÚ·Î ¹Ş´Â functionµéÀ» Ã³¸®ÇÏ±â À§ÇÏ¿©
+    // func1(get_clob_value(c1)) Çü½ÄÀ¸·Î get_clob_value ÇÔ¼ö¸¦ ºÙ¿©³Ö´Â´Ù.
     //-----------------------------------------
     
     IDE_TEST( addLobValueFuncForSP( aNode,
@@ -1659,7 +1659,7 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
               != IDE_SUCCESS );
     
     //-----------------------------------------
-    // í˜„ì¬ Nodeì— ëŒ€í•œ estimate ìˆ˜í–‰
+    // ÇöÀç Node¿¡ ´ëÇÑ estimate ¼öÇà
     //-----------------------------------------
 
     IDE_TEST( estimateNode( aNode,
@@ -1670,8 +1670,8 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
               != IDE_SUCCESS );
 
     //----------------------------------------------------
-    // over ì ˆì´ ìˆìœ¼ë©´ analytic function ì„
-    // validation ë° partition by columnì— ëŒ€í•œ estimate
+    // over ÀıÀÌ ÀÖÀ¸¸é analytic function ÀÓ
+    // validation ¹× partition by column¿¡ ´ëÇÑ estimate
     //----------------------------------------------------
 
     if( aNode->overClause != NULL )
@@ -1684,12 +1684,12 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
                   != IDE_SUCCESS );
 
         // BUG-27457
-        // analytic functionì´ ìˆìŒì„ ì„¤ì •
+        // analytic functionÀÌ ÀÖÀ½À» ¼³Á¤
         aNode->lflag &= ~QTC_NODE_ANAL_FUNC_MASK;
         aNode->lflag |= QTC_NODE_ANAL_FUNC_EXIST;
 
         // BUG-41013
-        // over ì ˆ ì•ˆì— ì‚¬ìš©ëœ _prowid ë„ flag ì„¸íŒ…ì´ í•„ìš”í•˜ë‹¤.
+        // over Àı ¾È¿¡ »ç¿ëµÈ _prowid µµ flag ¼¼ÆÃÀÌ ÇÊ¿äÇÏ´Ù.
         for ( sOverColumn = aNode->overClause->overColumn;
               sOverColumn != NULL;
               sOverColumn = sOverColumn->next )
@@ -1720,9 +1720,9 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
     }
 
     // PROJ-1789 PROWID
-    // Aggregation í•¨ìˆ˜ì— PROWID ì‚¬ìš© ë¶ˆê°€
-    // BUG-41013 sum(_prowid) + 1 ì˜ ê²½ìš°ì— ì œëŒ€ë¡œ ë§‰ì§€ ëª»í•˜ê³  ìˆë‹¤.
-    // ê²€ì‚¬í•˜ëŠ” ìœ„ì¹˜ë¥¼ ë³€ê²½í•¨
+    // Aggregation ÇÔ¼ö¿¡ PROWID »ç¿ë ºÒ°¡
+    // BUG-41013 sum(_prowid) + 1 ÀÇ °æ¿ì¿¡ Á¦´ë·Î ¸·Áö ¸øÇÏ°í ÀÖ´Ù.
+    // °Ë»çÇÏ´Â À§Ä¡¸¦ º¯°æÇÔ
     if ((aNode->node.lflag & MTC_NODE_OPERATOR_MASK)
         == MTC_NODE_OPERATOR_AGGREGATION)
     {
@@ -1735,7 +1735,7 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
 
     //------------------------------------------------------
     // BUG-16000
-    // Columnì´ë‚˜ Functionì˜ Typeì´ Lob or Binary Typeì´ë©´ flagì„¤ì •
+    // ColumnÀÌ³ª FunctionÀÇ TypeÀÌ Lob or Binary TypeÀÌ¸é flag¼³Á¤
     //------------------------------------------------------
 
     aNode->lflag &= ~QTC_NODE_BINARY_MASK;
@@ -1751,7 +1751,7 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
 
     //------------------------------------------------------
     // PROJ-1404
-    // variable built-in functionì„ ì‚¬ìš©í•œ ê²½ìš° ì„¤ì •í•œë‹¤.
+    // variable built-in functionÀ» »ç¿ëÇÑ °æ¿ì ¼³Á¤ÇÑ´Ù.
     //------------------------------------------------------
 
     if ( ( aNode->node.lflag & MTC_NODE_VARIABLE_MASK )
@@ -1767,12 +1767,12 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
 
     //-----------------------------------------
     // PROJ-1653 Outer Join Operator (+)
-    // terminal node ì¤‘ì—ì„œ ì»¬ëŸ¼ë…¸ë“œë§Œì´ (+)ë¥¼ ì‚¬ìš©í•  ìˆ˜ ìˆë‹¤.
+    // terminal node Áß¿¡¼­ ÄÃ·³³ëµå¸¸ÀÌ (+)¸¦ »ç¿ëÇÒ ¼ö ÀÖ´Ù.
     //-----------------------------------------
     if ( ( ( aNode->lflag & QTC_NODE_JOIN_OPERATOR_MASK )
            == QTC_NODE_JOIN_OPERATOR_EXIST )
          &&
-         ( ( aNode->lflag & QTC_NODE_PRIOR_MASK)  // BUG-34370 prior columnì€ skip
+         ( ( aNode->lflag & QTC_NODE_PRIOR_MASK)  // BUG-34370 prior columnÀº skip
            == QTC_NODE_PRIOR_ABSENT )
          &&
          ( QTC_IS_TERMINAL(aNode) == ID_TRUE ) )
@@ -1803,7 +1803,7 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
     }
 
     //-----------------------------------------
-    // íŠ¹ìˆ˜í•œ ì—°ì‚°ìì— ì²˜ë¦¬
+    // Æ¯¼öÇÑ ¿¬»êÀÚ¿¡ Ã³¸®
     //-----------------------------------------
     
     if( ((aNode->node.lflag & MTC_NODE_OPERATOR_MASK) ==
@@ -1813,10 +1813,10 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
         (sIsAggrNode == ID_TRUE) )
     {
         //----------------------------------------------------
-        // [ í•´ë‹¹ Nodeê°€ Aggregation ì—°ì‚°ìì¸ ê²½ìš° ]
+        // [ ÇØ´ç Node°¡ Aggregation ¿¬»êÀÚÀÎ °æ¿ì ]
         //
-        // ì¼ë°˜ Aggregationê³¼ Nested Aggregationì„ ë¶„ë¥˜í•œë‹¤.
-        // ë˜í•œ, ì‚¼ì¤‘ ì¤‘ì²© Aggregationì€ Validation Errorë¡œ ê±¸ëŸ¬ë‚¸ë‹¤.
+        // ÀÏ¹İ Aggregation°ú Nested AggregationÀ» ºĞ·ùÇÑ´Ù.
+        // ¶ÇÇÑ, »ïÁß ÁßÃ¸ AggregationÀº Validation Error·Î °É·¯³½´Ù.
         //----------------------------------------------------
 
         IDE_TEST( estimateAggregation( aNode, aCallBack )
@@ -1829,14 +1829,14 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
     }
 
     //------------------------------------------------------
-    // [ ì¼ë°˜ ì—°ì‚°ìì¸ ê²½ìš° ]
-    // Constant Expressionì— ëŒ€í•œ ì„ ì²˜ë¦¬ë¥¼ ì‹œë„í•œë‹¤.
+    // [ ÀÏ¹İ ¿¬»êÀÚÀÎ °æ¿ì ]
+    // Constant Expression¿¡ ´ëÇÑ ¼±Ã³¸®¸¦ ½ÃµµÇÑ´Ù.
     //------------------------------------------------------
 
     sInfo = (qtcCallBackInfo*)aCallBack->info;
     if ( sInfo->statement != NULL )
     {
-        // ì •ìƒì ì¸ Validation ê³¼ì •ì¸ ê²½ìš°
+        // Á¤»óÀûÀÎ Validation °úÁ¤ÀÎ °æ¿ì
         IDE_TEST( preProcessConstExpr( sInfo->statement,
                                        aNode,
                                        aTemplate,
@@ -1865,8 +1865,8 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
             }
 
             // PROJ-1413
-            // re-estimateë¥¼ ìˆ˜í–‰í–ˆìœ¼ë¯€ë¡œ ë‹¤ìŒ estimateë¥¼ ìœ„í•´
-            // re-estimateë¥¼ êº¼ë‘”ë‹¤.
+            // re-estimate¸¦ ¼öÇàÇßÀ¸¹Ç·Î ´ÙÀ½ estimate¸¦ À§ÇØ
+            // re-estimate¸¦ ²¨µĞ´Ù.
             aNode->node.lflag &= ~MTC_NODE_REESTIMATE_MASK;
             aNode->node.lflag |= MTC_NODE_REESTIMATE_FALSE;
         }
@@ -1884,7 +1884,7 @@ IDE_RC qtc::estimateInternal( qtcNode*     aNode,
 
     IDE_EXCEPTION( ERR_PASS );
     {
-        // sqlSourceInfoê°€ ì—†ëŠ” errorë¼ë©´.
+        // sqlSourceInfo°¡ ¾ø´Â error¶ó¸é.
         if ( ideHasErrorPosition() == ID_FALSE )
         {
             sSqlCode = ideGetErrorCode();
@@ -1951,9 +1951,9 @@ qtc::isEquiValidType( qtcNode     * aNode,
  *
  * Description :
  *     BUG-16000
- *     Equalì—°ì‚°ì´ ê°€ëŠ¥í•œ íƒ€ì…ì¸ì§€ ê²€ì‚¬í•œë‹¤.
- *     Columnì´ë‚˜ Functionì˜ Typeì´ Lob or Binary Typeì´ë©´ ID_FALSEë¥¼ ë°˜í™˜
- *     (BUG: MT functionë§Œ ê°€ëŠ¥, PSM functionì˜ Typeì€ ê²€ì‚¬í•˜ì§€ ëª»í•¨)
+ *     Equal¿¬»êÀÌ °¡´ÉÇÑ Å¸ÀÔÀÎÁö °Ë»çÇÑ´Ù.
+ *     ColumnÀÌ³ª FunctionÀÇ TypeÀÌ Lob or Binary TypeÀÌ¸é ID_FALSE¸¦ ¹İÈ¯
+ *     (BUG: MT function¸¸ °¡´É, PSM functionÀÇ TypeÀº °Ë»çÇÏÁö ¸øÇÔ)
  *
  * Implementation :
  *
@@ -2033,10 +2033,10 @@ qtc::registerTupleVariable( qcStatement    * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1413 Simple View Merging
- *               tuple variableì„ ë“±ë¡í•œë‹¤.
+ *               tuple variableÀ» µî·ÏÇÑ´Ù.
  *
  * Implementation :
- *     $$ë¡œ ì‹œì‘í•˜ëŠ” tuple variableë§Œ ë“±ë¡í•œë‹¤.
+ *     $$·Î ½ÃÀÛÇÏ´Â tuple variable¸¸ µî·ÏÇÑ´Ù.
  *
  **********************************************************************/
 #define IDE_FN "qtc::registerTupleVariable"
@@ -2083,13 +2083,13 @@ qtc::estimateAggregation( qtcNode     * aNode,
 /***********************************************************************
  *
  * Description :
- *    Aggregation Expressionì— ëŒ€í•œ estimate ë¥¼
- *    ìˆ˜í–‰í•œë‹¤.
+ *    Aggregation Expression¿¡ ´ëÇÑ estimate ¸¦
+ *    ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *     [í•´ë‹¹ Nodeê°€ Aggregation ì—°ì‚°ìì¸ ê²½ìš°]
- *     - Aggregation ì¢…ë¥˜
- *       (1) ì¼ë°˜ Aggregation
+ *     [ÇØ´ç Node°¡ Aggregation ¿¬»êÀÚÀÎ °æ¿ì]
+ *     - Aggregation Á¾·ù
+ *       (1) ÀÏ¹İ Aggregation
  *       (2) Nested Aggregation
  *       (3) Analytic Function 
  *
@@ -2107,35 +2107,39 @@ qtc::estimateAggregation( qtcNode     * aNode,
     qcuSqlSourceInfo      sqlInfo;
     idBool                sOuterHavingCase = ID_FALSE;
 
-    // í•˜ìœ„ Nodeê°€ Nested Aggregationì´ë©´ ì‚¼ì¤‘ ì¤‘ì²©ì´ë©°
-    // ì´ëŠ” Validation Error
+    // ÇÏÀ§ Node°¡ Nested AggregationÀÌ¸é »ïÁß ÁßÃ¸ÀÌ¸ç
+    // ÀÌ´Â Validation Error
     IDE_TEST_RAISE( ( aNode->lflag & QTC_NODE_AGGREGATE2_MASK )
                     == QTC_NODE_AGGREGATE2_EXIST,
                     ERR_INVALID_AGGREGATION );
 
     // BUG-16000
-    // Aggregation ì—°ì‚°ì€ Lob or Binary Typeì„ ì¸ìë¡œ ë°›ì„ ìˆ˜ ì—†ë‹¤.
-    // ë‹¨, distinctê°€ ì—†ëŠ” countì—°ì‚°ì€ ì˜ˆì™¸
+    // Aggregation ¿¬»êÀº Lob or Binary TypeÀ» ÀÎÀÚ·Î ¹ŞÀ» ¼ö ¾ø´Ù.
+    // ´Ü, distinct°¡ ¾ø´Â count¿¬»êÀº ¿¹¿Ü
     if ( ( (aNode->node.lflag & MTC_NODE_DISTINCT_MASK) ==
            MTC_NODE_DISTINCT_FALSE ) &&
          ( ( aNode->node.module == & mtfCount ) ||
            ( aNode->node.module == & mtfCountKeep ) ) )
     {
         /* PROJ-2528 KeepAggregaion
-         * Countê°€ lobì„ í—ˆìš©í•˜ëŠ”ê²ƒê³¼ ê°™ì´
-         * CountKeepë„ ì²« ë²ˆì§¸ ArgumentëŠ” lobì„ í—ˆìš©í•˜ì§€ë§Œ ë‘ ë²ˆì§¸
-         * ì¦‰ keepì˜ order byì— ì“°ì¸ lobì€ í—ˆìš©í•  ìˆ˜ ì—†ë‹¤.
-         * lobì€ ë¹„êµëŒ€ìƒì´ ì•„ë‹ˆê¸° ë•Œë¬¸ì´ë‹¤.
+         * Count°¡ lobÀ» Çã¿ëÇÏ´Â°Í°ú °°ÀÌ
+         * CountKeepµµ Ã¹ ¹øÂ° Argument´Â lobÀ» Çã¿ëÇÏÁö¸¸ µÎ ¹øÂ°
+         * Áï keepÀÇ order by¿¡ ¾²ÀÎ lobÀº Çã¿ëÇÒ ¼ö ¾ø´Ù.
+         * lobÀº ºñ±³´ë»óÀÌ ¾Æ´Ï±â ¶§¹®ÀÌ´Ù.
          */
         if ( aNode->node.module == &mtfCountKeep )
         {
-            for ( sNode  = (qtcNode*)aNode->node.arguments->next;
-                  sNode != NULL;
-                  sNode  = (qtcNode*)sNode->node.next )
+            /* BUG-49029 */
+            if ( aNode->node.arguments != NULL )
             {
-                IDE_TEST_RAISE( (sNode->lflag & QTC_NODE_BINARY_MASK) ==
-                                QTC_NODE_BINARY_EXIST,
-                                ERR_ABORT_QMV_USE_INCOMPARABLE_DATA_TYPE_WITH_DISTINCT );
+                for ( sNode  = (qtcNode*)aNode->node.arguments->next;
+                      sNode != NULL;
+                      sNode  = (qtcNode*)sNode->node.next )
+                {
+                    IDE_TEST_RAISE( (sNode->lflag & QTC_NODE_BINARY_MASK) ==
+                                    QTC_NODE_BINARY_EXIST,
+                                    ERR_ABORT_QMV_USE_INCOMPARABLE_DATA_TYPE_WITH_DISTINCT );
+                }
             }
         }
         else
@@ -2160,7 +2164,7 @@ qtc::estimateAggregation( qtcNode     * aNode,
     sSFWGH = sInfo->SFWGH;
 
     //---------------------------------------------------
-    // Argumentì˜ dependenciesë¥¼ ì´ìš©í•´ í•´ë‹¹ SFWGHë¥¼ ì°¾ëŠ”ë‹¤.
+    // ArgumentÀÇ dependencies¸¦ ÀÌ¿ëÇØ ÇØ´ç SFWGH¸¦ Ã£´Â´Ù.
     //---------------------------------------------------
 
     while (sSFWGH != NULL)
@@ -2188,15 +2192,15 @@ qtc::estimateAggregation( qtcNode     * aNode,
 
     if (sSFWGH == NULL)
     {
-        // ë‹¤ìŒê³¼ ê°™ì€ ê²½ìš°ê°€ ì´ì— í•´ë‹¹í•œë‹¤.
+        // ´ÙÀ½°ú °°Àº °æ¿ì°¡ ÀÌ¿¡ ÇØ´çÇÑ´Ù.
         // SUM( 1 ), COUNT(*)
-        // ì¦‰, ì •ìƒì ì¸ ê²½ìš°ë¼ í•  ìˆ˜ ìˆë‹¤.
+        // Áï, Á¤»óÀûÀÎ °æ¿ì¶ó ÇÒ ¼ö ÀÖ´Ù.
         sSFWGH = sInfo->SFWGH;
     }
 
     if (sSFWGH == NULL)
     {
-        // order byì— ì¹¼ëŸ¼ì— ëŒ€í•œ estimate ì¸ ê²½ìš°
+        // order by¿¡ Ä®·³¿¡ ´ëÇÑ estimate ÀÎ °æ¿ì
         if ( aNode->overClause == NULL )
         {
             sqlInfo.setSourceInfo( sInfo->statement,
@@ -2206,8 +2210,8 @@ qtc::estimateAggregation( qtcNode     * aNode,
         else
         {
             // BUG-21807
-            // analytic functionì€ aggregate functionì´ ì•„ë‹ˆë©°,
-            // order by êµ¬ë¬¸ì— ì˜¬ ìˆ˜ ìˆìŒ
+            // analytic functionÀº aggregate functionÀÌ ¾Æ´Ï¸ç,
+            // order by ±¸¹®¿¡ ¿Ã ¼ö ÀÖÀ½
         }
     }
     else
@@ -2223,8 +2227,8 @@ qtc::estimateAggregation( qtcNode     * aNode,
     }
 
     //---------------------------------------------------
-    // TODO - ë²„ê·¸ ìˆ˜ì •ì— ëŒ€í•œ ì½”ë“œ ë°˜ì˜í•´ì•¼ í•¨.
-    // PR-6353ê³¼ ê´€ë ¨í•œ BUGê°€ ì¡´ì¬í•¨.
+    // TODO - ¹ö±× ¼öÁ¤¿¡ ´ëÇÑ ÄÚµå ¹İ¿µÇØ¾ß ÇÔ.
+    // PR-6353°ú °ü·ÃÇÑ BUG°¡ Á¸ÀçÇÔ.
     //---------------------------------------------------
 
     if( sOuterHavingCase == ID_TRUE )
@@ -2256,10 +2260,10 @@ qtc::estimateAggregation( qtcNode     * aNode,
                 else
                 {
                     // BUG-21808
-                    // aggregationì˜ argumentë¡œ analytic functionì´
-                    // ì˜¬ ìˆ˜ ì—†ìŒ
-                    // ( aggregation ìˆ˜í–‰ í›„ì— analytic functionì´
-                    // ìˆ˜í–‰ë˜ê¸° ë•Œë¬¸)
+                    // aggregationÀÇ argument·Î analytic functionÀÌ
+                    // ¿Ã ¼ö ¾øÀ½
+                    // ( aggregation ¼öÇà ÈÄ¿¡ analytic functionÀÌ
+                    // ¼öÇàµÇ±â ¶§¹®)
                     sqlInfo.setSourceInfo( sInfo->statement,
                             &sNode->position );
                     IDE_RAISE( ERR_INVALID_WINDOW_FUNCTION );
@@ -2284,7 +2288,7 @@ qtc::estimateAggregation( qtcNode     * aNode,
         if ( aNode->overClause != NULL )
         {
             //--------------------------
-            // Analytic Functionì¸ ê²½ìš° ( PROJ-1762 )
+            // Analytic FunctionÀÎ °æ¿ì ( PROJ-1762 )
             //--------------------------
             aNode->lflag |= QTC_NODE_AGGREGATE_EXIST;
             
@@ -2320,9 +2324,9 @@ qtc::estimateAggregation( qtcNode     * aNode,
                     if ( ( sNode->lflag & QTC_NODE_ANAL_FUNC_MASK )
                          == QTC_NODE_ANAL_FUNC_ABSENT )
                     {
-                        // í•˜ìœ„ Nodeì— Aggregationì´ ì¡´ì¬í•˜ê³ ,
-                        // analytic functionì˜ aggregationì´ ì•„ë‹Œ ê²½ìš°,
-                        // Nested Aggregationì„ì„ ì„¤ì •í•¨.
+                        // ÇÏÀ§ Node¿¡ AggregationÀÌ Á¸ÀçÇÏ°í,
+                        // analytic functionÀÇ aggregationÀÌ ¾Æ´Ñ °æ¿ì,
+                        // Nested AggregationÀÓÀ» ¼³Á¤ÇÔ.
                         aNode->lflag |= QTC_NODE_AGGREGATE2_EXIST;
                     
                         // set all child aggregation with the indexArgument value of 1.
@@ -2336,8 +2340,8 @@ qtc::estimateAggregation( qtcNode     * aNode,
                     else
                     {
                         // BUG-21808
-                        // aggregationì˜ argumentë¡œ analytic functionì´
-                        // ì˜¬ ìˆ˜ ì—†ìŒ
+                        // aggregationÀÇ argument·Î analytic functionÀÌ
+                        // ¿Ã ¼ö ¾øÀ½
                         sqlInfo.setSourceInfo( sInfo->statement,
                                                & sNode->position );
                         IDE_RAISE( ERR_INVALID_WINDOW_FUNCTION );
@@ -2351,11 +2355,11 @@ qtc::estimateAggregation( qtcNode     * aNode,
             else
             {
                 //------------------------------------------------------
-                // í•˜ìœ„ Nodeì— Aggregationì´ ì—†ì„ ê²½ìš°,
-                // ì¼ë°˜ Aggregationì„ì„ ì„¤ì •í•¨.
+                // ÇÏÀ§ Node¿¡ AggregationÀÌ ¾øÀ» °æ¿ì,
+                // ÀÏ¹İ AggregationÀÓÀ» ¼³Á¤ÇÔ.
                 // TODO -
-                // ë‹¤ìŒê³¼ ê°™ì´ GROUP BY Columnì— ëŒ€í•œ Aggregationì¼ ê²½ìš°,
-                // Nested Aggregationìœ¼ë¡œ ì„¤ì •í•˜ì—¬ì•¼ í•œë‹¤.
+                // ´ÙÀ½°ú °°ÀÌ GROUP BY Column¿¡ ´ëÇÑ AggregationÀÏ °æ¿ì,
+                // Nested AggregationÀ¸·Î ¼³Á¤ÇÏ¿©¾ß ÇÑ´Ù.
                 //
                 // Ex)  SELECT SUM(I1), MAX(SUM(I2)) FROM T1 GROUP BY I1;
                 //             ^^^^^^^
@@ -2419,12 +2423,12 @@ qtc::estimate4OverClause( qtcNode     * aNode,
 /***********************************************************************
  *
  * Description :
- *    Analytic Function Expressionì— ëŒ€í•œ estimate ë¥¼
- *    ìˆ˜í–‰í•œë‹¤.
+ *    Analytic Function Expression¿¡ ´ëÇÑ estimate ¸¦
+ *    ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *    (1) Aggregation ì—°ì‚° ì¤‘, sum ì—°ì‚° ë§Œ ê°€ëŠ¥
- *    (2) Partition By Columnì— analytic functionì´ ì˜¬ ìˆ˜ ì—†ìŒ
+ *    (1) Aggregation ¿¬»ê Áß, sum ¿¬»ê ¸¸ °¡´É
+ *    (2) Partition By Column¿¡ analytic functionÀÌ ¿Ã ¼ö ¾øÀ½
  *
  ***********************************************************************/
 
@@ -2444,7 +2448,7 @@ qtc::estimate4OverClause( qtcNode     * aNode,
     IDE_TEST_RAISE( sCallBackInfo->querySet == NULL,
                     ERR_INVALID_CALLBACK );
     
-    // Aggregationë§Œ ê°€ëŠ¥
+    // Aggregation¸¸ °¡´É
     if ( ( aNode->node.lflag & MTC_NODE_OPERATOR_MASK )
          != MTC_NODE_OPERATOR_AGGREGATION )
     {
@@ -2459,7 +2463,7 @@ qtc::estimate4OverClause( qtcNode     * aNode,
     }
 
     // BUG-33663 Ranking Function
-    // ranking functionì€ order by expressionì´ ë°˜ë“œì‹œ ìˆì–´ì•¼ í•¨
+    // ranking functionÀº order by expressionÀÌ ¹İµå½Ã ÀÖ¾î¾ß ÇÔ
     if ( ( ( aNode->node.lflag & MTC_NODE_FUNCTION_RANKING_MASK )
            == MTC_NODE_FUNCTION_RANKING_TRUE )
          &&
@@ -2502,7 +2506,7 @@ qtc::estimate4OverClause( qtcNode     * aNode,
         /* Nothing to do */
     }
 
-    // Analytic Functionì€ Targetê³¼ Order By ì ˆì—ë§Œ ì˜¬ ìˆ˜ ìˆìŒ
+    // Analytic FunctionÀº Target°ú Order By Àı¿¡¸¸ ¿Ã ¼ö ÀÖÀ½
     if ( ( sCallBackInfo->querySet->processPhase != QMS_VALIDATE_TARGET ) &&
          ( sCallBackInfo->querySet->processPhase != QMS_VALIDATE_ORDERBY ) )
     {
@@ -2516,7 +2520,7 @@ qtc::estimate4OverClause( qtcNode     * aNode,
         // nothing to do 
     }
 
-    // Argument Columnë“¤ì— analytic functionì´ ì˜¬ìˆ˜ ì—†ìŒ
+    // Argument Columnµé¿¡ analytic functionÀÌ ¿Ã¼ö ¾øÀ½
     for ( sCurArgument = (qtcNode*)aNode->node.arguments;
           sCurArgument != NULL;
           sCurArgument = (qtcNode*)sCurArgument->node.next )
@@ -2534,7 +2538,7 @@ qtc::estimate4OverClause( qtcNode     * aNode,
         }
     }
 
-    // Partition By column ë“¤ì— ëŒ€í•œ estimate
+    // Partition By column µé¿¡ ´ëÇÑ estimate
     for ( sCurOverColumn = aNode->overClause->overColumn, 
             sStack = aStack + 1, sRemain = aRemain - 1;
           sCurOverColumn != NULL;
@@ -2544,7 +2548,7 @@ qtc::estimate4OverClause( qtcNode     * aNode,
         sCurOverColumn->node->lflag |= QTC_NODE_ANAL_FUNC_COLUMN_TRUE;
 
         /* BUG-39678
-           overì ˆì— ì‚¬ìš©í•œ psm ë³€ìˆ˜ë¥¼ bind ë³€ìˆ˜ë¡œ ì¹˜í™˜ */
+           overÀı¿¡ »ç¿ëÇÑ psm º¯¼ö¸¦ bind º¯¼ö·Î Ä¡È¯ */
         sCurOverColumn->node->lflag &= ~QTC_NODE_PROC_VAR_MASK;
         sCurOverColumn->node->lflag |= QTC_NODE_COLUMN_CONVERT_TRUE;
 
@@ -2555,7 +2559,10 @@ qtc::estimate4OverClause( qtcNode     * aNode,
                                     aCallBack )
                   != IDE_SUCCESS );
 
-        // BUG-32358 ë¦¬ìŠ¤íŠ¸ íƒ€ì…ì˜ ì‚¬ìš© ì—¬ë¶€ í™•ì¸
+        /* TASK-7219 Shard Transformer Refactoring */
+        aNode->lflag |= sCurOverColumn->node->lflag & QTC_NODE_MASK;
+
+        // BUG-32358 ¸®½ºÆ® Å¸ÀÔÀÇ »ç¿ë ¿©ºÎ È®ÀÎ
         if ( (sCurOverColumn->node->node.lflag & MTC_NODE_OPERATOR_MASK) ==
              MTC_NODE_OPERATOR_LIST )
         {
@@ -2568,7 +2575,7 @@ qtc::estimate4OverClause( qtcNode     * aNode,
             // Nothing to do.
         }
 
-        // ì„œë¸Œì¿¼ë¦¬ê°€ ì‚¬ìš© ë˜ì—ˆì„ë•Œ íƒ€ê²Ÿ ì»¬ëŸ¼ì´ ë‘ê°œì´ìƒì¸ì§€ í™•ì¸
+        // ¼­ºêÄõ¸®°¡ »ç¿ë µÇ¾úÀ»¶§ Å¸°Ù ÄÃ·³ÀÌ µÎ°³ÀÌ»óÀÎÁö È®ÀÎ
         if ( ( sCurOverColumn->node->node.lflag & MTC_NODE_OPERATOR_MASK )
                 == MTC_NODE_OPERATOR_SUBQUERY )
         {
@@ -2588,7 +2595,7 @@ qtc::estimate4OverClause( qtcNode     * aNode,
             // Nothing to do.
         }
 
-        // BUG-35670 over ì ˆì— lob, geometry type ì‚¬ìš© ë¶ˆê°€
+        // BUG-35670 over Àı¿¡ lob, geometry type »ç¿ë ºÒ°¡
         if ( (sCurOverColumn->node->lflag & QTC_NODE_BINARY_MASK) ==
              QTC_NODE_BINARY_EXIST)
         {
@@ -2601,7 +2608,7 @@ qtc::estimate4OverClause( qtcNode     * aNode,
             // Nothing to do.
         }
 
-        // Partition By Columnì— analytic functionì´ ì˜¬ ìˆ˜ ì—†ìŒ
+        // Partition By Column¿¡ analytic functionÀÌ ¿Ã ¼ö ¾øÀ½
         if ( ( sCurOverColumn->node->lflag & QTC_NODE_ANAL_FUNC_MASK )
              == QTC_NODE_ANAL_FUNC_EXIST )
         {
@@ -2614,7 +2621,7 @@ qtc::estimate4OverClause( qtcNode     * aNode,
             // Nothing to do.
         }
 
-        // partition by columnì˜ dependenciesë¥¼ ëª¨ë‘ í¬í•¨í•œë‹¤.
+        // partition by columnÀÇ dependencies¸¦ ¸ğµÎ Æ÷ÇÔÇÑ´Ù.
         IDE_TEST( dependencyOr( & aNode->depInfo,
                                 & sCurOverColumn->node->depInfo,
                                 & aNode->depInfo )
@@ -2748,13 +2755,13 @@ IDE_RC qtc::makeConversionNode( qtcNode*         aNode,
 /***********************************************************************
  *
  * Description :
- *    DMLë“±ì—ì„œ Destine Columnì˜ ì •ë³´ì— ë§ë„ë¡ Valueë° Columnì„
- *    Conversion í•œë‹¤.
- *    ë‹¤ìŒê³¼ ê°™ì€ DMLì—ì„œ Conversion Nodeë¥¼ ë§Œë“¤ê¸° ìœ„í•˜ì—¬ ì‚¬ìš©í•œë‹¤.
+ *    DMLµî¿¡¼­ Destine ColumnÀÇ Á¤º¸¿¡ ¸Âµµ·Ï Value¹× ColumnÀ»
+ *    Conversion ÇÑ´Ù.
+ *    ´ÙÀ½°ú °°Àº DML¿¡¼­ Conversion Node¸¦ ¸¸µé±â À§ÇÏ¿© »ç¿ëÇÑ´Ù.
  *        - INSERT INTO T1(double_1) VALUES ( 1 );
  *                                            ^^
  * Implementation :
- *    ì ì ˆí•œ Conversion Nodeë¥¼ ìƒì„±í•œë‹¤.
+ *    ÀûÀıÇÑ Conversion Node¸¦ »ı¼ºÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -2769,18 +2776,18 @@ IDE_RC qtc::makeConversionNode( qtcNode*         aNode,
 
     qtcCallBackInfo sCallBackInfo = {
         aTemplate,               // Template
-        QC_QMP_MEM(aStatement),  // Memory ê´€ë¦¬ì
+        QC_QMP_MEM(aStatement),  // Memory °ü¸®ÀÚ
         NULL,                // Statement
         NULL,                // Query Set
         NULL,                // SFWGH
-        NULL                 // From ì •ë³´
+        NULL                 // From Á¤º¸
     };
 
     mtcCallBack sCallBack = {
-        &sCallBackInfo,                 // CallBack ì •ë³´
-        MTC_ESTIMATE_ARGUMENTS_DISABLE, // Childì— ëŒ€í•œ Estimation Disable
-        qtc::alloc,                     // Memory í• ë‹¹ í•¨ìˆ˜
-        initConversionNodeIntermediate  // Conversion Node ìƒì„± í•¨ìˆ˜
+        &sCallBackInfo,                 // CallBack Á¤º¸
+        MTC_ESTIMATE_ARGUMENTS_DISABLE, // Child¿¡ ´ëÇÑ Estimation Disable
+        qtc::alloc,                     // Memory ÇÒ´ç ÇÔ¼ö
+        initConversionNodeIntermediate  // Conversion Node »ı¼º ÇÔ¼ö
     };
 
     for( sNode = &aNode->node;
@@ -2788,16 +2795,16 @@ IDE_RC qtc::makeConversionNode( qtcNode*         aNode,
          sNode = sNode->arguments ) ;
 
     //---------------------------------------------------------
-    // í•´ë‹¹ Nodeì™€ Column ì‚¬ì´ì— Conversionì´ í•„ìš”í•œì§€ë¥¼ ê²€ì‚¬í•˜ê³ ,
-    // í•„ìš”í•  ê²½ìš°, Conversion Nodeë¥¼ ìƒì„±í•œë‹¤.
+    // ÇØ´ç Node¿Í Column »çÀÌ¿¡ ConversionÀÌ ÇÊ¿äÇÑÁö¸¦ °Ë»çÇÏ°í,
+    // ÇÊ¿äÇÒ °æ¿ì, Conversion Node¸¦ »ı¼ºÇÑ´Ù.
     // INSERT INTO T1(double_1) VALUES (3);
     //                ^^^^^^^^          ^^
     //                |                 |
-    //               Column ì •ë³´       í˜„ì¬ Node
+    //               Column Á¤º¸       ÇöÀç Node
     //
     // PROJ-1492
-    // í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ê°€ ì¡´ì¬í•˜ë”ë¼ë„ ê·¸ íƒ€ì…ì„ ì•Œ ìˆ˜ ìˆëŠ” ê²½ìš°
-    // Conversion Nodeë¥¼ ìƒì„±í•œë‹¤.
+    // È£½ºÆ® º¯¼ö°¡ Á¸ÀçÇÏ´õ¶óµµ ±× Å¸ÀÔÀ» ¾Ë ¼ö ÀÖ´Â °æ¿ì
+    // Conversion Node¸¦ »ı¼ºÇÑ´Ù.
     //---------------------------------------------------------
 
     sCost = 0;
@@ -2810,8 +2817,8 @@ IDE_RC qtc::makeConversionNode( qtcNode*         aNode,
          ( ( sStack[0].column->module->id == MTD_CLOB_LOCATOR_ID ) &&
            ( aModule->id == MTD_CLOB_ID ) ) )
     {
-        /* DMLì—ì„œ lob_locatorë¥¼ ì§ì ‘ì²˜ë¦¬í•˜ë¯€ë¡œ
-         * lob_locatorë¥¼ lob typeìœ¼ë¡œ conversioní•  í•„ìš”ê°€ ì—†ë‹¤.
+        /* DML¿¡¼­ lob_locator¸¦ Á÷Á¢Ã³¸®ÇÏ¹Ç·Î
+         * lob_locator¸¦ lob typeÀ¸·Î conversionÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
          *
          * Nothing to do.
          */
@@ -2828,8 +2835,8 @@ IDE_RC qtc::makeConversionNode( qtcNode*         aNode,
         IDE_TEST_RAISE( sCost >= MTV_COST_INFINITE, ERR_CONVERT );
 
         //----------------------------------------------
-        // Conversion ìƒì„± í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
-        // ìœ„ì—ì„œ ì •ì˜í•œ CallBack ì •ë³´ë¥¼ ì´ìš©í•´ Conversionì„ ìƒì„±í•œë‹¤.
+        // Conversion »ı¼º ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+        // À§¿¡¼­ Á¤ÀÇÇÑ CallBack Á¤º¸¸¦ ÀÌ¿ëÇØ ConversionÀ» »ı¼ºÇÑ´Ù.
         //----------------------------------------------
 
         IDE_TEST( mtf::makeConversionNode( &sConversionNode,
@@ -2841,7 +2848,7 @@ IDE_RC qtc::makeConversionNode( qtcNode*         aNode,
                   != IDE_SUCCESS );
 
         //----------------------------------------------
-        // Conversionì„ ì—°ê²°í•œë‹¤.
+        // ConversionÀ» ¿¬°áÇÑ´Ù.
         //----------------------------------------------
 
         if( sNode->conversion == NULL )
@@ -2873,7 +2880,7 @@ SInt qtc::getCountBitSet( qcDepInfo * aOperand1 )
 /***********************************************************************
  *
  * Description :
- *    í•´ë‹¹ dependenciesë‚´ì— í¬í•¨ëœ dependencyì˜ ê°œìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.
+ *    ÇØ´ç dependencies³»¿¡ Æ÷ÇÔµÈ dependencyÀÇ °³¼ö¸¦ ¸®ÅÏÇÑ´Ù.
  *
  * Implementation :
  *
@@ -2894,7 +2901,7 @@ SInt qtc::getCountJoinOperator( qcDepInfo  * aOperand )
  * PROJ-1653 Outer Join Operator (+)
  *
  * Description :
- *    í•´ë‹¹ dependenciesë‚´ì— í¬í•¨ëœ Outer join Operator ì˜ ê°œìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.
+ *    ÇØ´ç dependencies³»¿¡ Æ÷ÇÔµÈ Outer join Operator ÀÇ °³¼ö¸¦ ¸®ÅÏÇÑ´Ù.
  *
  * Implementation :
  *
@@ -2927,7 +2934,7 @@ qtc::dependencyAndJoinOperSet( UShort      aTupleID,
  *
  * Description :
  *
- *    Internal Tuple ID ë¡œ dependenciesë¥¼ Setting
+ *    Internal Tuple ID ·Î dependencies¸¦ Setting
  *    Set If Outer Join Operator Exists
  *
  * Implementation :
@@ -2952,10 +2959,10 @@ void qtc::dependencyJoinOperAnd( qcDepInfo * aOperand1,
  *
  * Description :
  *
- *    AND of (Dependencies & Join Oper)ë¥¼ êµ¬í•¨
- *    depend ì •ë³´ì™€ outer join operator ì •ë³´ê°€ ëª¨ë‘ ê°™ì€ ê²ƒì— ëŒ€í•´ì„œë§Œ return.
- *    outer join operator ì—ì„œ QMO_JOIN_OPER_TRUE ì™€ QMO_JOIN_OPER_BOTH ëŠ”
- *    ê°™ì€ ê²ƒìœ¼ë¡œ ê°„ì£¼í•œë‹¤.
+ *    AND of (Dependencies & Join Oper)¸¦ ±¸ÇÔ
+ *    depend Á¤º¸¿Í outer join operator Á¤º¸°¡ ¸ğµÎ °°Àº °Í¿¡ ´ëÇØ¼­¸¸ return.
+ *    outer join operator ¿¡¼­ QMO_JOIN_OPER_TRUE ¿Í QMO_JOIN_OPER_BOTH ´Â
+ *    °°Àº °ÍÀ¸·Î °£ÁÖÇÑ´Ù.
  *
  * Implementation :
  *
@@ -3011,14 +3018,14 @@ qtc::dependencyJoinOperEqual( qcDepInfo * aOperand1,
  *
  * Description :
  *
- *    Dependencies & Outer Join Operator Status ê°€ ëª¨ë‘ ì •í™•íˆ
- *    ë™ì¼í•œ ì§€ë¥¼ íŒë‹¨
+ *    Dependencies & Outer Join Operator Status °¡ ¸ğµÎ Á¤È®È÷
+ *    µ¿ÀÏÇÑ Áö¸¦ ÆÇ´Ü
  *
  * Implementation :
- *    ì£¼ì˜í•  ê²ƒì€ outer join operator ê°’ë„ ì •í™•íˆ ê°™ì•„ì•¼í•œë‹¤ëŠ” ê²ƒì´ë‹¤.
- *    QMO_JOIN_OPER_TRUE != QMO_JOIN_OPER_BOTH ì´ë‹¤.
- *    ë§Œì•½, QMO_JOIN_OPER_TRUE ì™€ QMO_JOIN_OPER_BOTH ë¥¼ ê°™ì€ ê²ƒìœ¼ë¡œ ê°„ì£¼í•˜ë ¤ë©´
- *    ë³„ë„ì˜ í•¨ìˆ˜ë¥¼ ë§Œë“¤ê±°ë‚˜ ì´ í•¨ìˆ˜ì—ì„œ argument ë¥¼ ì¶”ê°€í•˜ì—¬ ìˆ˜ì •í•œë‹¤.
+ *    ÁÖÀÇÇÒ °ÍÀº outer join operator °ªµµ Á¤È®È÷ °°¾Æ¾ßÇÑ´Ù´Â °ÍÀÌ´Ù.
+ *    QMO_JOIN_OPER_TRUE != QMO_JOIN_OPER_BOTH ÀÌ´Ù.
+ *    ¸¸¾à, QMO_JOIN_OPER_TRUE ¿Í QMO_JOIN_OPER_BOTH ¸¦ °°Àº °ÍÀ¸·Î °£ÁÖÇÏ·Á¸é
+ *    º°µµÀÇ ÇÔ¼ö¸¦ ¸¸µé°Å³ª ÀÌ ÇÔ¼ö¿¡¼­ argument ¸¦ Ãß°¡ÇÏ¿© ¼öÁ¤ÇÑ´Ù.
  *
  *
  ***********************************************************************/
@@ -3058,7 +3065,7 @@ void qtc::getJoinOperCounter( qcDepInfo  * aOperand1,
  *
  * Description :
  *
- *    dep ì •ë³´ì¤‘ Outer join operator ì˜ ìœ ë¬´ê°€ ë°˜ëŒ€ì¸ dep ë¥¼ ë¦¬í„´
+ *    dep Á¤º¸Áß Outer join operator ÀÇ À¯¹«°¡ ¹İ´ëÀÎ dep ¸¦ ¸®ÅÏ
  *
  * Implementation :
  *
@@ -3068,8 +3075,8 @@ void qtc::getJoinOperCounter( qcDepInfo  * aOperand1,
 
     aOperand1->depend[0] = aOperand2->depend[0];
     aOperand1->depend[1] = aOperand2->depend[1];
-    aOperand1->depJoinOper[0] = aOperand2->depJoinOper[1]; // ë°˜ëŒ€
-    aOperand1->depJoinOper[1] = aOperand2->depJoinOper[0]; // ë°˜ëŒ€
+    aOperand1->depJoinOper[0] = aOperand2->depJoinOper[1]; // ¹İ´ë
+    aOperand1->depJoinOper[1] = aOperand2->depJoinOper[0]; // ¹İ´ë
 }
 
 
@@ -3080,8 +3087,8 @@ qtc::isOneTableOuterEachOther( qcDepInfo   * aDepInfo )
  *
  * Description :
  *
- *    í•˜ë‚˜ì˜ predicate ì—ì„œ í•˜ë‚˜ì˜ dependency table ì´ ì„œë¡œ
- *    outer join ë˜ëŠ”ì§€ ê²€ì‚¬
+ *    ÇÏ³ªÀÇ predicate ¿¡¼­ ÇÏ³ªÀÇ dependency table ÀÌ ¼­·Î
+ *    outer join µÇ´ÂÁö °Ë»ç
  *    (t1.i1(+) = t1.i2)
  *
  * Implementation :
@@ -3134,13 +3141,13 @@ SInt qtc::getPosFirstBitSet( qcDepInfo * aOperand1 )
  *
  * Description :
  *
- *    Dependenciesì— ë“±ì¥í•˜ëŠ” ìµœì´ˆ Dependency ê°’ì„ ë¦¬í„´í•œë‹¤.
+ *    Dependencies¿¡ µîÀåÇÏ´Â ÃÖÃÊ Dependency °ªÀ» ¸®ÅÏÇÑ´Ù.
  *
  * Implementation :
  *
- *    ìµœì´ˆ Dependency ê°’ì„ Returní•˜ê³ ,
- *    Dependencyê°€ ì¡´ì¬í•˜ì§€ ì•Šì„ ê²½ìš°,
- *    QTC_DEPENDENCIES_END(-1) ë¥¼ ë¦¬í„´í•œë‹¤.
+ *    ÃÖÃÊ Dependency °ªÀ» ReturnÇÏ°í,
+ *    Dependency°¡ Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì,
+ *    QTC_DEPENDENCIES_END(-1) ¸¦ ¸®ÅÏÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -3166,13 +3173,13 @@ SInt qtc::getPosNextBitSet( qcDepInfo * aOperand1,
  *
  * Description :
  *
- *    Dependenciesì—ì„œ ë‹¤ìŒ ìœ„ì¹˜ì— ë“±ì¥í•˜ëŠ” Dependency ê°’ì„ ë¦¬í„´í•œë‹¤.
+ *    Dependencies¿¡¼­ ´ÙÀ½ À§Ä¡¿¡ µîÀåÇÏ´Â Dependency °ªÀ» ¸®ÅÏÇÑ´Ù.
  *
  * Implementation :
  *
- *    í˜„ì¬ ìœ„ì¹˜(aPos)ìœ¼ë¡œë¶€í„° ë‹¤ìŒì— ì¡´ì¬í•˜ëŠ” Dependency ê°’ì„ Returní•˜ê³ ,
- *    Dependencyê°€ ì¡´ì¬í•˜ì§€ ì•Šì„ ê²½ìš°,
- *    QTC_DEPENDENCIES_END(-1) ë¥¼ ë¦¬í„´í•œë‹¤.
+ *    ÇöÀç À§Ä¡(aPos)À¸·ÎºÎÅÍ ´ÙÀ½¿¡ Á¸ÀçÇÏ´Â Dependency °ªÀ» ReturnÇÏ°í,
+ *    Dependency°¡ Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì,
+ *    QTC_DEPENDENCIES_END(-1) ¸¦ ¸®ÅÏÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -3213,12 +3220,12 @@ IDE_RC qtc::alloc( void* aInfo,
  *
  * Description :
  *
- *    ì£¼ì–´ì§„ Memory ê´€ë¦¬ìë¥¼ ì´ìš©í•˜ì—¬ Memoryë¥¼ í• ë‹¹í•œë‹¤.
+ *    ÁÖ¾îÁø Memory °ü¸®ÀÚ¸¦ ÀÌ¿ëÇÏ¿© Memory¸¦ ÇÒ´çÇÑ´Ù.
  *
  * Implementation :
  *
- *    CallBack informationìœ¼ë¡œë¶€í„° memory ê´€ë¦¬ìë¥¼ íšë“í•˜ê³ ,
- *    ì´ë¡œë¶€í„° Memoryë¥¼ í• ë‹¹í•œë‹¤.
+ *    CallBack informationÀ¸·ÎºÎÅÍ memory °ü¸®ÀÚ¸¦ È¹µæÇÏ°í,
+ *    ÀÌ·ÎºÎÅÍ Memory¸¦ ÇÒ´çÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -3240,12 +3247,12 @@ IDE_RC qtc::getOpenedCursor( mtcTemplate*     aTemplate,
  *
  * Description :
  *
- *    tableIDë¡œ ì»¤ì„œì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+ *    tableID·Î Ä¿¼­Á¤º¸¸¦ °¡Á®¿Â´Ù.
  *
  * Implementation :
  *
- *    qmcCursorì— ì €ì¥ëœ ì»¤ì„œì •ë³´ë¥¼ tableIDë¡œ íšë“í•˜ê³ ,
- *    ì´ë¡œë¶€í„° lob-locatorë¥¼ opení•œë‹¤.
+ *    qmcCursor¿¡ ÀúÀåµÈ Ä¿¼­Á¤º¸¸¦ tableID·Î È¹µæÇÏ°í,
+ *    ÀÌ·ÎºÎÅÍ lob-locator¸¦ openÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -3280,9 +3287,9 @@ IDE_RC qtc::addOpenedLobCursor( mtcTemplate  * aTemplate,
  *
  * Implementation :
  *
- *    qmcCursorì— openëœ lob locator 1ê°œë¥¼ ë“±ë¡í•œë‹¤.
- *    ìµœì´ˆë¡œ openëœ lob locator 1ê°œë§Œ í•„ìš”í•˜ë¯€ë¡œ,
- *    ì´ë¯¸ ë“±ë¡ëœ ê²½ìš° qmcCursorì—ì„œëŠ” ì•„ë¬´ ì¼ë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *    qmcCursor¿¡ openµÈ lob locator 1°³¸¦ µî·ÏÇÑ´Ù.
+ *    ÃÖÃÊ·Î openµÈ lob locator 1°³¸¸ ÇÊ¿äÇÏ¹Ç·Î,
+ *    ÀÌ¹Ì µî·ÏµÈ °æ¿ì qmcCursor¿¡¼­´Â ¾Æ¹« ÀÏµµ ÇÏÁö ¾Ê´Â´Ù.
  *
  ***********************************************************************/
 
@@ -3294,8 +3301,8 @@ IDE_RC qtc::addOpenedLobCursor( mtcTemplate  * aTemplate,
     sTemplate = (qcTemplate*) aTemplate;
 
     /* BUG-38290
-     * addOpenedLobCursor ëŠ” lob locator ë¥¼ ì–»ì„ ë•Œ ì‹¤í–‰ë˜ë¯€ë¡œ
-     * parallel query ì˜ ëŒ€ìƒì´ ì•„ë‹ˆì–´ì„œ ë™ì‹œì„± ë¬¸ì œê°€ ë°œìƒí•˜ì§€ ì•ŠëŠ”ë‹¤.
+     * addOpenedLobCursor ´Â lob locator ¸¦ ¾òÀ» ¶§ ½ÇÇàµÇ¹Ç·Î
+     * parallel query ÀÇ ´ë»óÀÌ ¾Æ´Ï¾î¼­ µ¿½Ã¼º ¹®Á¦°¡ ¹ß»ıÇÏÁö ¾Ê´Â´Ù.
      */
     return ( sTemplate->cursorMgr->addOpenedLobCursor( aLocator ) );
 
@@ -3312,10 +3319,10 @@ idBool qtc::isBaseTable( mtcTemplate * aTemplate,
     {
         sFrom = ((qcTemplate*)aTemplate)->tableMap[aTable].from;
 
-        /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+        /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
         if ( sFrom != NULL )
         {
-            // BUG-38943 viewëŠ” base tableì´ ì•„ë‹ˆë‹¤.
+            // BUG-38943 view´Â base tableÀÌ ¾Æ´Ï´Ù.
             if ( sFrom->tableRef->view == NULL )
             {
                 sIsBaseTable = ID_TRUE;
@@ -3344,7 +3351,7 @@ IDE_RC qtc::closeLobLocator( smLobLocator  aLocator )
  *
  * Description :
  *
- *    locatorë¥¼ ë‹«ëŠ”ë‹¤.
+ *    locator¸¦ ´İ´Â´Ù.
  *
  * Implementation :
  *
@@ -3352,7 +3359,8 @@ IDE_RC qtc::closeLobLocator( smLobLocator  aLocator )
 
 #define IDE_FN "void* qtc::closeLobLocator"
 
-    return qmx::closeLobLocator( aLocator );
+    return qmx::closeLobLocator( NULL, /* idvSQL* */
+                                 aLocator );
 
 #undef IDE_FN
 }
@@ -3366,16 +3374,16 @@ IDE_RC qtc::nextRow( iduVarMemList * aMemory,
  *
  * Description :
  *
- *    Tuple Setì—ì„œ ì£¼ì–´ì§„ Tuple ì¢…ë¥˜ì˜ ë‹¤ìŒ Tupleì„ í• ë‹¹ë°›ëŠ”ë‹¤.
+ *    Tuple Set¿¡¼­ ÁÖ¾îÁø Tuple Á¾·ùÀÇ ´ÙÀ½ TupleÀ» ÇÒ´ç¹Ş´Â´Ù.
  *
  * Implementation :
  *
- *    aFlag ì¸ìë¥¼ ì´ìš©í•˜ì—¬ ë‹¤ìŒê³¼ ê°™ì€ Tuple ì¢…ë¥˜ë¥¼ íŒë‹¨í•˜ê³ ,
- *    ì•„ë˜ì™€ ê°™ì´ ê°ê°ì˜ Tupleì— ë”°ë¼ ìƒˆë¡œìš´ Tupleì„ í• ë‹¹ë°›ëŠ”ë‹¤.
+ *    aFlag ÀÎÀÚ¸¦ ÀÌ¿ëÇÏ¿© ´ÙÀ½°ú °°Àº Tuple Á¾·ù¸¦ ÆÇ´ÜÇÏ°í,
+ *    ¾Æ·¡¿Í °°ÀÌ °¢°¢ÀÇ Tuple¿¡ µû¶ó »õ·Î¿î TupleÀ» ÇÒ´ç¹Ş´Â´Ù.
  *        - MTC_TUPLE_TYPE_CONSTANT
  *        - MTC_TUPLE_TYPE_VARIABLE
  *        - MTC_TUPLE_TYPE_INTERMEDIATE
- *    MTC_TUPLE_TYPE_TABLEì˜ ê²½ìš°, í•´ë‹¹ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ì§€ ì•ŠëŠ”ë‹¤.
+ *    MTC_TUPLE_TYPE_TABLEÀÇ °æ¿ì, ÇØ´ç ÇÔ¼ö°¡ È£ÃâµÇÁö ¾Ê´Â´Ù.
  *
  ***********************************************************************/
 
@@ -3387,11 +3395,11 @@ IDE_RC qtc::nextRow( iduVarMemList * aMemory,
     IDE_TEST_RAISE( aTemplate->tmplate.rowCount >= MTC_TUPLE_ROW_MAX_CNT,
                     ERR_TUPLE_SHORTAGE );
 
-    // PROJ-1358 Tuple Setì„ ìë™ìœ¼ë¡œ í™•ì¥í•œë‹¤.
+    // PROJ-1358 Tuple SetÀ» ÀÚµ¿À¸·Î È®ÀåÇÑ´Ù.
     if ( aTemplate->tmplate.rowCount >= aTemplate->tmplate.rowArrayCount )
     {
-        // í• ë‹¹ëœ ê³µê°„ë³´ë‹¤ ë” í° ê³µê°„ì´ í•„ìš”í•œ ê²½ìš°
-        // í˜„ì¬ rowArrayCount ë§Œí¼ ë” í™•ì¥í•œë‹¤. (2ë°°ë¡œ í™•ì¥)
+        // ÇÒ´çµÈ °ø°£º¸´Ù ´õ Å« °ø°£ÀÌ ÇÊ¿äÇÑ °æ¿ì
+        // ÇöÀç rowArrayCount ¸¸Å­ ´õ È®ÀåÇÑ´Ù. (2¹è·Î È®Àå)
         IDE_TEST( increaseInternalTuple( aStatement,
                                          aTemplate->tmplate.rowArrayCount )
                   != IDE_SUCCESS );
@@ -3401,8 +3409,8 @@ IDE_RC qtc::nextRow( iduVarMemList * aMemory,
         // Nothing To Do
     }
 
-    // ìµœì´ˆë¡œ í•´ë‹¹ Tupleì´ í• ë‹¹ë˜ëŠ” ì§€ë¥¼ íŒë‹¨í•˜ê³ ,
-    // í•´ë‹¹ Tupleì¢…ë¥˜ê°€ í˜„ì¬ ì‚¬ìš©í•˜ê³  ìˆëŠ” ìœ„ì¹˜ë¥¼ ì„¤ì •í•œë‹¤.
+    // ÃÖÃÊ·Î ÇØ´ç TupleÀÌ ÇÒ´çµÇ´Â Áö¸¦ ÆÇ´ÜÇÏ°í,
+    // ÇØ´ç TupleÁ¾·ù°¡ ÇöÀç »ç¿ëÇÏ°í ÀÖ´Â À§Ä¡¸¦ ¼³Á¤ÇÑ´Ù.
 
     sFirst = aTemplate->tmplate.currentRow[aFlag] == ID_USHORT_MAX? ID_TRUE : ID_FALSE ;
 
@@ -3410,14 +3418,14 @@ IDE_RC qtc::nextRow( iduVarMemList * aMemory,
 
     sCurRowID = aTemplate->tmplate.currentRow[aFlag];
 
-    // í•´ë‹¹ Tupleì˜ ì •ë³´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
-    /* BUGBUG: columnMaximumì´ ì§€ë‚˜ì¹˜ê²Œ í¬ê²Œ ì±…ì •ë˜ì–´ ìˆìŠµë‹ˆë‹¤. */
+    // ÇØ´ç TupleÀÇ Á¤º¸¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    /* BUGBUG: columnMaximumÀÌ Áö³ªÄ¡°Ô Å©°Ô Ã¥Á¤µÇ¾î ÀÖ½À´Ï´Ù. */
     aTemplate->tmplate.rows[sCurRowID].lflag
         = templateRowFlags[aFlag];
     aTemplate->tmplate.rows[sCurRowID].columnCount   = 0;
-    // PROJ-1362  SMI_COLUMN_ID_MAXIMUMì´ 256ìœ¼ë¡œ ì¤„ì–´ì„œ,
-    // 256ê°œ ì´ìƒì˜ ì»¬ëŸ¼ì„ ê°–ëŠ” Viewìƒì„±ì´ ì‹¤íŒ¨í• ìˆ˜ ìˆì–´ì„œ
-    // SMI_COLUMN_ID_MAXIMUM ëŒ€ì‹  1024ê°’ì„ ê°–ëŠ” ë³„ë„ì˜ defineì„ ì‚¬ìš©.
+    // PROJ-1362  SMI_COLUMN_ID_MAXIMUMÀÌ 256À¸·Î ÁÙ¾î¼­,
+    // 256°³ ÀÌ»óÀÇ ÄÃ·³À» °®´Â View»ı¼ºÀÌ ½ÇÆĞÇÒ¼ö ÀÖ¾î¼­
+    // SMI_COLUMN_ID_MAXIMUM ´ë½Å 1024°ªÀ» °®´Â º°µµÀÇ defineÀ» »ç¿ë.
     aTemplate->tmplate.rows[sCurRowID].columnMaximum = MTC_TUPLE_COLUMN_ID_MAXIMUM;
 
     // PROJ-1502 PARTITIONED DISK TABLE
@@ -3427,26 +3435,26 @@ IDE_RC qtc::nextRow( iduVarMemList * aMemory,
     switch( aFlag )
     {
         //-------------------------------------------------
-        // CONSTANT TUPLEì— ëŒ€í•œ Tuple ì´ˆê¸°í™”
+        // CONSTANT TUPLE¿¡ ´ëÇÑ Tuple ÃÊ±âÈ­
         //-------------------------------------------------
         case MTC_TUPLE_TYPE_CONSTANT:
             {
                 aTemplate->tmplate.rows[sCurRowID].rowOffset  = 0;
                 if( sFirst == ID_TRUE )
                 {
-                    // ìµœì´ˆ CONSTANT ì²˜ë¦¬ì‹œì—ëŠ” 4096 Bytes ê³µê°„ì„ í• ë‹¹í•¨.
+                    // ÃÖÃÊ CONSTANT Ã³¸®½Ã¿¡´Â 4096 Bytes °ø°£À» ÇÒ´çÇÔ.
                     aTemplate->tmplate.rows[sCurRowID].rowMaximum
                         = QC_CONSTANT_FIRST_ROW_SIZE;
                 }
                 else
                 {
-                    // ì´í›„ì˜ CONSTANT ì²˜ë¦¬ì‹œì—ëŠ” 65536 Bytes ê³µê°„ì„ í• ë‹¹í•¨.
+                    // ÀÌÈÄÀÇ CONSTANT Ã³¸®½Ã¿¡´Â 65536 Bytes °ø°£À» ÇÒ´çÇÔ.
                     aTemplate->tmplate.rows[sCurRowID].rowMaximum
                         = QC_CONSTANT_ROW_SIZE;
                 }
 
-                // Column ê³µê°„ì˜ í• ë‹¹
-                // To fix PR-14793 column ë©”ëª¨ë¦¬ëŠ” ì´ˆê¸°í™” ë˜ì–´ì•¼ í•¨.
+                // Column °ø°£ÀÇ ÇÒ´ç
+                // To fix PR-14793 column ¸Ş¸ğ¸®´Â ÃÊ±âÈ­ µÇ¾î¾ß ÇÔ.
                 IDU_LIMITPOINT("qtc::nextRow::malloc1");
                 IDE_TEST( aMemory->cralloc(
                               idlOS::align8((UInt)ID_SIZEOF(mtcColumn))
@@ -3461,10 +3469,10 @@ IDE_RC qtc::nextRow( iduVarMemList * aMemory,
                               sCurRowID )
                           != IDE_SUCCESS );
 
-                // A3ì—ì„œëŠ” Executeì— ëŒ€í•œ ê³µê°„ í• ë‹¹ì€ Parsingí›„ì— ì´ë£¨ì–´ì§
+                // A3¿¡¼­´Â Execute¿¡ ´ëÇÑ °ø°£ ÇÒ´çÀº ParsingÈÄ¿¡ ÀÌ·ç¾îÁü
                 //     qci2::fixAfterParsing()
-                // ê·¸ëŸ¬ë‚˜, A4ì—ì„œëŠ” Constant Expressionì˜ ì²˜ë¦¬ë¥¼ ìœ„í•´
-                // ë¯¸ë¦¬ í• ë‹¹ë°›ìŒ
+                // ±×·¯³ª, A4¿¡¼­´Â Constant ExpressionÀÇ Ã³¸®¸¦ À§ÇØ
+                // ¹Ì¸® ÇÒ´ç¹ŞÀ½
                 IDU_LIMITPOINT("qtc::nextRow::malloc2");
                 IDE_TEST( aMemory->alloc(
                               ID_SIZEOF(mtcExecute)
@@ -3472,7 +3480,7 @@ IDE_RC qtc::nextRow( iduVarMemList * aMemory,
                               (void**)&(aTemplate->tmplate.rows[sCurRowID].execute) )
                           != IDE_SUCCESS);
 
-                // Row ê³µê°„ì˜ í• ë‹¹
+                // Row °ø°£ÀÇ ÇÒ´ç
                 IDU_LIMITPOINT("qtc::nextRow::malloc3");
                 IDE_TEST(aMemory->alloc(
                              aTemplate->tmplate.rows[sCurRowID].rowMaximum,
@@ -3482,20 +3490,20 @@ IDE_RC qtc::nextRow( iduVarMemList * aMemory,
                 break;
             }
             //-------------------------------------------------
-            // VARIABLE TUPLEì— ëŒ€í•œ Tuple ì´ˆê¸°í™”
+            // VARIABLE TUPLE¿¡ ´ëÇÑ Tuple ÃÊ±âÈ­
             //-------------------------------------------------
         case MTC_TUPLE_TYPE_VARIABLE:
             {
                 if( sFirst == ID_TRUE  && aTemplate->tmplate.variableRow == ID_USHORT_MAX )
                 {
-                    // ìµœì´ˆ Bindingì´ í•„ìš”í•œ Tupleì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•¨.
+                    // ÃÖÃÊ BindingÀÌ ÇÊ¿äÇÑ TupleÀÇ À§Ä¡¸¦ ÀúÀåÇÔ.
                     aTemplate->tmplate.variableRow = aTemplate->tmplate.rowCount;
                 }
                 aTemplate->tmplate.rows[sCurRowID].rowOffset  = 0;
                 aTemplate->tmplate.rows[sCurRowID].rowMaximum = 0;
 
-                // Column ê³µê°„ì˜ í• ë‹¹
-                // To fix PR-14793 column ë©”ëª¨ë¦¬ëŠ” ì´ˆê¸°í™” ë˜ì–´ì•¼ í•¨.
+                // Column °ø°£ÀÇ ÇÒ´ç
+                // To fix PR-14793 column ¸Ş¸ğ¸®´Â ÃÊ±âÈ­ µÇ¾î¾ß ÇÔ.
                 IDU_LIMITPOINT("qtc::nextRow::malloc4");
                 IDE_TEST( aMemory->cralloc(
                               idlOS::align8((UInt)ID_SIZEOF(mtcColumn))
@@ -3510,7 +3518,7 @@ IDE_RC qtc::nextRow( iduVarMemList * aMemory,
                               sCurRowID )
                     != IDE_SUCCESS );
 
-                // Execute ê³µê°„ì˜ í• ë‹¹
+                // Execute °ø°£ÀÇ ÇÒ´ç
                 IDU_LIMITPOINT("qtc::nextRow::malloc5");
                 IDE_TEST( aMemory->alloc(
                               ID_SIZEOF(mtcExecute)
@@ -3518,20 +3526,20 @@ IDE_RC qtc::nextRow( iduVarMemList * aMemory,
                               (void**)&(aTemplate->tmplate.rows[sCurRowID].execute) )
                           != IDE_SUCCESS);
 
-                // Rowê³µê°„ì€ Bindingí›„ì— ì²˜ë¦¬ëœë‹¤.
+                // Row°ø°£Àº BindingÈÄ¿¡ Ã³¸®µÈ´Ù.
 
                 break;
             }
             //-------------------------------------------------
-            // INTERMEDIATE TUPLEì— ëŒ€í•œ Tuple ì´ˆê¸°í™”
+            // INTERMEDIATE TUPLE¿¡ ´ëÇÑ Tuple ÃÊ±âÈ­
             //-------------------------------------------------
         case MTC_TUPLE_TYPE_INTERMEDIATE:
             {
                 aTemplate->tmplate.rows[sCurRowID].rowOffset  = 0;
                 aTemplate->tmplate.rows[sCurRowID].rowMaximum = 0;
 
-                // Column ê³µê°„ì˜ í• ë‹¹
-                // To fix PR-14793 column ë©”ëª¨ë¦¬ëŠ” ì´ˆê¸°í™” ë˜ì–´ì•¼ í•¨.
+                // Column °ø°£ÀÇ ÇÒ´ç
+                // To fix PR-14793 column ¸Ş¸ğ¸®´Â ÃÊ±âÈ­ µÇ¾î¾ß ÇÔ.
                 IDU_LIMITPOINT("qtc::nextRow::malloc6");
                 IDE_TEST( aMemory->cralloc(
                               idlOS::align8((UInt)ID_SIZEOF(mtcColumn))
@@ -3546,7 +3554,7 @@ IDE_RC qtc::nextRow( iduVarMemList * aMemory,
                               sCurRowID )
                           != IDE_SUCCESS );
 
-                // Execute ê³µê°„ì˜ í• ë‹¹
+                // Execute °ø°£ÀÇ ÇÒ´ç
                 IDU_LIMITPOINT("qtc::nextRow::malloc7");
                 IDE_TEST( aMemory->alloc(
                               ID_SIZEOF(mtcExecute)
@@ -3554,7 +3562,7 @@ IDE_RC qtc::nextRow( iduVarMemList * aMemory,
                               (void**) & (aTemplate->tmplate.rows[sCurRowID].execute))
                           != IDE_SUCCESS);
 
-                // Row ê³µê°„ì€ Validationí›„ì— ì²˜ë¦¬ë¨
+                // Row °ø°£Àº ValidationÈÄ¿¡ Ã³¸®µÊ
                 // qtc::fixAfterValidation()
 
                 break;
@@ -3598,11 +3606,11 @@ IDE_RC qtc::nextLargeConstColumn( iduVarMemList * aMemory,
     IDE_TEST_RAISE( aTemplate->tmplate.rowCount >= MTC_TUPLE_ROW_MAX_CNT,
                     ERR_TUPLE_SHORTAGE );
 
-    // PROJ-1358 Tuple Setì„ ìë™ìœ¼ë¡œ í™•ì¥í•œë‹¤.
+    // PROJ-1358 Tuple SetÀ» ÀÚµ¿À¸·Î È®ÀåÇÑ´Ù.
     if ( aTemplate->tmplate.rowCount >= aTemplate->tmplate.rowArrayCount )
     {
-        // í• ë‹¹ëœ ê³µê°„ë³´ë‹¤ ë” í° ê³µê°„ì´ í•„ìš”í•œ ê²½ìš°
-        // í˜„ì¬ rowArrayCount ë§Œí¼ ë” í™•ì¥í•œë‹¤. (2ë°°ë¡œ í™•ì¥)
+        // ÇÒ´çµÈ °ø°£º¸´Ù ´õ Å« °ø°£ÀÌ ÇÊ¿äÇÑ °æ¿ì
+        // ÇöÀç rowArrayCount ¸¸Å­ ´õ È®ÀåÇÑ´Ù. (2¹è·Î È®Àå)
         IDE_TEST( increaseInternalTuple( aStatement,
                                          aTemplate->tmplate.rowArrayCount )
                   != IDE_SUCCESS );
@@ -3614,7 +3622,7 @@ IDE_RC qtc::nextLargeConstColumn( iduVarMemList * aMemory,
 
     sCurRowID = aTemplate->tmplate.rowCount;
 
-    // í•´ë‹¹ Tupleì˜ ì •ë³´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+    // ÇØ´ç TupleÀÇ Á¤º¸¸¦ ÃÊ±âÈ­ÇÑ´Ù.
     aTemplate->tmplate.rows[sCurRowID].lflag = templateRowFlags[sFlag];
     aTemplate->tmplate.rows[sCurRowID].columnCount   = 0;
     aTemplate->tmplate.rows[sCurRowID].columnMaximum = 1;
@@ -3623,14 +3631,14 @@ IDE_RC qtc::nextLargeConstColumn( iduVarMemList * aMemory,
     aTemplate->tmplate.rows[sCurRowID].partitionTupleID = sCurRowID;
 
     //-------------------------------------------------
-    // CONSTANT TUPLEì— ëŒ€í•œ Tuple ì´ˆê¸°í™”
+    // CONSTANT TUPLE¿¡ ´ëÇÑ Tuple ÃÊ±âÈ­
     //-------------------------------------------------
     aTemplate->tmplate.rows[sCurRowID].rowOffset  = 0;
 
     aTemplate->tmplate.rows[sCurRowID].rowMaximum = aSize;
 
-    // Column ê³µê°„ì˜ í• ë‹¹
-    // To fix PR-14793 column ë©”ëª¨ë¦¬ëŠ” ì´ˆê¸°í™” ë˜ì–´ì•¼ í•¨.
+    // Column °ø°£ÀÇ ÇÒ´ç
+    // To fix PR-14793 column ¸Ş¸ğ¸®´Â ÃÊ±âÈ­ µÇ¾î¾ß ÇÔ.
     IDU_LIMITPOINT("qtc::nextLargeConstColumn::malloc1");
     IDE_TEST( aMemory->cralloc(
                   idlOS::align8((UInt)ID_SIZEOF(mtcColumn))
@@ -3645,10 +3653,10 @@ IDE_RC qtc::nextLargeConstColumn( iduVarMemList * aMemory,
                   sCurRowID )
               != IDE_SUCCESS );
     
-    // A3ì—ì„œëŠ” Executeì— ëŒ€í•œ ê³µê°„ í• ë‹¹ì€ Parsingí›„ì— ì´ë£¨ì–´ì§
+    // A3¿¡¼­´Â Execute¿¡ ´ëÇÑ °ø°£ ÇÒ´çÀº ParsingÈÄ¿¡ ÀÌ·ç¾îÁü
     //     qci2::fixAfterParsing()
-    // ê·¸ëŸ¬ë‚˜, A4ì—ì„œëŠ” Constant Expressionì˜ ì²˜ë¦¬ë¥¼ ìœ„í•´
-    // ë¯¸ë¦¬ í• ë‹¹ë°›ìŒ
+    // ±×·¯³ª, A4¿¡¼­´Â Constant ExpressionÀÇ Ã³¸®¸¦ À§ÇØ
+    // ¹Ì¸® ÇÒ´ç¹ŞÀ½
     IDU_LIMITPOINT("qtc::nextLargeConstColumn::malloc2");
     IDE_TEST( aMemory->cralloc(
                   ID_SIZEOF(mtcExecute)
@@ -3656,14 +3664,14 @@ IDE_RC qtc::nextLargeConstColumn( iduVarMemList * aMemory,
                   (void**)&(aTemplate->tmplate.rows[sCurRowID].execute) )
               != IDE_SUCCESS);
 
-    // Row ê³µê°„ì˜ í• ë‹¹
+    // Row °ø°£ÀÇ ÇÒ´ç
     IDU_LIMITPOINT("qtc::nextLargeConstColumn::malloc3");
     IDE_TEST(aMemory->cralloc(
                  aTemplate->tmplate.rows[sCurRowID].rowMaximum,
                  (void**)&(aTemplate->tmplate.rows[sCurRowID].row) )
              != IDE_SUCCESS);
 
-    // ìƒˆë¡œìš´ Column ê³µê°„ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
+    // »õ·Î¿î Column °ø°£À» ÇÒ´ç¹Ş´Â´Ù.
     aNode->node.table  = sCurRowID;
     aNode->node.column = aTemplate->tmplate.rows[sCurRowID].columnCount;
 
@@ -3699,19 +3707,19 @@ IDE_RC qtc::nextColumn( iduVarMemList * aMemory,
  *
  * Description :
  *
- *    ì£¼ì–´ì§„ Tupleì—ì„œ ë‹¤ìŒ Columnì„ í• ë‹¹ë°›ëŠ”ë‹¤.
+ *    ÁÖ¾îÁø Tuple¿¡¼­ ´ÙÀ½ ColumnÀ» ÇÒ´ç¹Ş´Â´Ù.
  *
  * Implementation :
  *
- *    aFlag ì¸ìë¥¼ ì´ìš©í•˜ì—¬ ë‹¤ìŒê³¼ ê°™ì€ Tuple ì¢…ë¥˜ë¥¼ íŒë‹¨í•˜ê³ ,
- *    ì•„ë˜ì™€ ê°™ì´ ê°ê°ì˜ Tupleì— ë”°ë¼ Columnì„ í• ë‹¹ë°›ëŠ”ë‹¤.
+ *    aFlag ÀÎÀÚ¸¦ ÀÌ¿ëÇÏ¿© ´ÙÀ½°ú °°Àº Tuple Á¾·ù¸¦ ÆÇ´ÜÇÏ°í,
+ *    ¾Æ·¡¿Í °°ÀÌ °¢°¢ÀÇ Tuple¿¡ µû¶ó ColumnÀ» ÇÒ´ç¹Ş´Â´Ù.
  *        - MTC_TUPLE_TYPE_CONSTANT
  *        - MTC_TUPLE_TYPE_VARIABLE
  *        - MTC_TUPLE_TYPE_INTERMEDIATE
- *    MTC_TUPLE_TYPE_TABLEì˜ ê²½ìš°, í•´ë‹¹ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ì§€ ì•ŠëŠ”ë‹¤.
+ *    MTC_TUPLE_TYPE_TABLEÀÇ °æ¿ì, ÇØ´ç ÇÔ¼ö°¡ È£ÃâµÇÁö ¾Ê´Â´Ù.
  *
- *    í•´ë‹¹ Node(aNode)ì— Table IDì™€ Column IDë¥¼ ë¶€ì—¬í•¨ìœ¼ë¡œì„œ,
- *    Column ê³µê°„ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
+ *    ÇØ´ç Node(aNode)¿¡ Table ID¿Í Column ID¸¦ ºÎ¿©ÇÔÀ¸·Î¼­,
+ *    Column °ø°£À» ÇÒ´ç¹Ş´Â´Ù.
  *
  ***********************************************************************/
 
@@ -3722,7 +3730,7 @@ IDE_RC qtc::nextColumn( iduVarMemList * aMemory,
 
     aFlag &= MTC_TUPLE_TYPE_MASK;
 
-    // ì•„ì§ í•´ë‹¹ Tuple Rowê°€ ì—†ëŠ” ê²½ìš° ìƒˆë¡œìš´ Rowë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.
+    // ¾ÆÁ÷ ÇØ´ç Tuple Row°¡ ¾ø´Â °æ¿ì »õ·Î¿î Row¸¦ ÇÒ´ç¹Ş´Â´Ù.
     if( aTemplate->tmplate.currentRow[aFlag] == ID_USHORT_MAX )
     {
         IDE_TEST( qtc::nextRow( aMemory, aStatement, aTemplate, aFlag )
@@ -3731,7 +3739,7 @@ IDE_RC qtc::nextColumn( iduVarMemList * aMemory,
 
     sCurrRowID = aTemplate->tmplate.currentRow[aFlag];
 
-    // Column ê³µê°„ì´ ë¶€ì¡±í•œ ê²½ìš°, ìƒˆë¡œìš´ Rowë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.
+    // Column °ø°£ÀÌ ºÎÁ·ÇÑ °æ¿ì, »õ·Î¿î Row¸¦ ÇÒ´ç¹Ş´Â´Ù.
     if( aTemplate->tmplate.rows[sCurrRowID].columnCount + aColumns
         > aTemplate->tmplate.rows[sCurrRowID].columnMaximum )
     {
@@ -3751,7 +3759,7 @@ IDE_RC qtc::nextColumn( iduVarMemList * aMemory,
                         ERR_TUPLE_SHORTAGE );
     }
 
-    // ìƒˆë¡œìš´ Column ê³µê°„ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
+    // »õ·Î¿î Column °ø°£À» ÇÒ´ç¹Ş´Â´Ù.
     aNode->node.table  = aTemplate->tmplate.currentRow[aFlag];
     aNode->node.column = aTemplate->tmplate.rows[sCurrRowID].columnCount;
 
@@ -3791,17 +3799,17 @@ IDE_RC qtc::nextTable( UShort          *aRow,
  *
  * Description :
  *
- *    Tableì„ ìœ„í•œ Tuple ê³µê°„ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
+ *    TableÀ» À§ÇÑ Tuple °ø°£À» ÇÒ´ç¹Ş´Â´Ù.
  *
  * Implementation :
  *
- *    ì¼ë°˜ Tableì— ëŒ€í•œ ê³µê°„ì¼ ê²½ìš°(aTableInfo != NULL),
- *        Meta Cacheì˜ Column ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ Tupleì˜ Column ì •ë³´ë¥¼ êµ¬ì¶•
- *        - Disk Tableì„ ìœ„í•œ ê³ ë ¤ê°€ ë˜ì–´ì•¼ í•¨.
- *             : Column ì •ë³´ë¥¼ ë³µì‚¬í•´ì•¼ í•¨.
- *             : Tupleì— Disk/Memoryì¸ì§€ì˜ ì •ë³´ë¥¼ ì„¤ì •í•´ì•¼ í•¨.
- *    ì¼ë°˜ Tableì´ ì•„ë‹Œ ê²½ìš°(aTableInfo == NULL),
- *        Column ì •ë³´ëŠ” Execution ì‹œì ì— ê²°ì •ëœë‹¤.
+ *    ÀÏ¹İ Table¿¡ ´ëÇÑ °ø°£ÀÏ °æ¿ì(aTableInfo != NULL),
+ *        Meta CacheÀÇ Column Á¤º¸¸¦ ÀÌ¿ëÇÏ¿© TupleÀÇ Column Á¤º¸¸¦ ±¸Ãà
+ *        - Disk TableÀ» À§ÇÑ °í·Á°¡ µÇ¾î¾ß ÇÔ.
+ *             : Column Á¤º¸¸¦ º¹»çÇØ¾ß ÇÔ.
+ *             : Tuple¿¡ Disk/MemoryÀÎÁöÀÇ Á¤º¸¸¦ ¼³Á¤ÇØ¾ß ÇÔ.
+ *    ÀÏ¹İ TableÀÌ ¾Æ´Ñ °æ¿ì(aTableInfo == NULL),
+ *        Column Á¤º¸´Â Execution ½ÃÁ¡¿¡ °áÁ¤µÈ´Ù.
  *
  ***********************************************************************/
 
@@ -3816,17 +3824,17 @@ IDE_RC qtc::nextTable( UShort          *aRow,
     IDE_TEST_RAISE( sTemplate->tmplate.rowCount >= MTC_TUPLE_ROW_MAX_CNT,
                     ERR_TUPLE_SHORTAGE );
 
-    // PROJ-1358 Tuple Setì„ ìë™ìœ¼ë¡œ í™•ì¥í•œë‹¤.
+    // PROJ-1358 Tuple SetÀ» ÀÚµ¿À¸·Î È®ÀåÇÑ´Ù.
     if ( sTemplate->tmplate.rowCount >= sTemplate->tmplate.rowArrayCount )
     {
-        // í• ë‹¹ëœ ê³µê°„ë³´ë‹¤ ë” í° ê³µê°„ì´ í•„ìš”í•œ ê²½ìš°
-        // í˜„ì¬ rowArrayCount ë§Œí¼ ë” í™•ì¥í•œë‹¤. (2ë°°ë¡œ í™•ì¥)
+        // ÇÒ´çµÈ °ø°£º¸´Ù ´õ Å« °ø°£ÀÌ ÇÊ¿äÇÑ °æ¿ì
+        // ÇöÀç rowArrayCount ¸¸Å­ ´õ È®ÀåÇÑ´Ù. (2¹è·Î È®Àå)
         IDE_TEST( increaseInternalTuple( aStatement,
                                          sTemplate->tmplate.rowArrayCount )
                   != IDE_SUCCESS );
     }
 
-    // Tuple IDë¥¼ í• ë‹¹í•œë‹¤.
+    // Tuple ID¸¦ ÇÒ´çÇÑ´Ù.
     sTemplate->tmplate.currentRow[MTC_TUPLE_TYPE_TABLE]
         = sCurRowID
         = sTemplate->tmplate.rowCount;
@@ -3840,8 +3848,8 @@ IDE_RC qtc::nextTable( UShort          *aRow,
     if( aTableInfo != NULL )
     {
         //--------------------------------------------------------
-        // ì¼ë°˜ Tableì¸ ê²½ìš°,
-        // Column ì •ë³´ë¥¼ êµ¬ì¶•í•˜ê³ , Executeë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹í•œë‹¤.
+        // ÀÏ¹İ TableÀÎ °æ¿ì,
+        // Column Á¤º¸¸¦ ±¸ÃàÇÏ°í, Execute¸¦ À§ÇÑ °ø°£À» ÇÒ´çÇÑ´Ù.
         //--------------------------------------------------------
 
         sTemplate->tmplate.rows[sCurRowID].lflag
@@ -3851,11 +3859,11 @@ IDE_RC qtc::nextTable( UShort          *aRow,
             = aTableInfo->columnCount;
 
         //------------------------------------------------------------
-        // Column ì •ë³´ì˜ ë³µì‚¬
-        // Disk Variable Columnì„ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ì„œëŠ” Column ì •ë³´ë¥¼ ë³µì‚¬í•´ì•¼ í•¨.
-        // ì°¸ì¡°) Memory Tableì˜ ê²½ìš°, ë³„ë„ë¡œ ë³µì‚¬í•  í•„ìš”ê°€ ì—†ìœ¼ë‚˜
-        //       Stored Procedureë¥¼ ìœ„í•œ Tuple Set ë³µì‚¬ë¥¼ ìœ„í•´
-        //       Tuple Setêµ¬ì¡°ë¥¼ ì§€ë‚˜ì¹˜ê²Œ ì„¸ë¶„í™”í•˜ëŠ” ë¬¸ì œê°€ ë°œìƒí•˜ê²Œ ëœë‹¤.
+        // Column Á¤º¸ÀÇ º¹»ç
+        // Disk Variable ColumnÀ» Ã³¸®ÇÏ±â À§ÇØ¼­´Â Column Á¤º¸¸¦ º¹»çÇØ¾ß ÇÔ.
+        // ÂüÁ¶) Memory TableÀÇ °æ¿ì, º°µµ·Î º¹»çÇÒ ÇÊ¿ä°¡ ¾øÀ¸³ª
+        //       Stored Procedure¸¦ À§ÇÑ Tuple Set º¹»ç¸¦ À§ÇØ
+        //       Tuple Set±¸Á¶¸¦ Áö³ªÄ¡°Ô ¼¼ºĞÈ­ÇÏ´Â ¹®Á¦°¡ ¹ß»ıÇÏ°Ô µÈ´Ù.
         //       ( mtc::cloneTuple(), qtc::templateRowFlags )
         //------------------------------------------------------------
 
@@ -3882,7 +3890,7 @@ IDE_RC qtc::nextTable( UShort          *aRow,
             }
             else
             {
-                // ê·¸ëƒ¥ ì›ë˜ì˜ ê°’ìœ¼ë¡œ ë‘ .
+                // ±×³É ¿ø·¡ÀÇ °ªÀ¸·Î µÒ.
             }
 
             /* PROJ-2160 */
@@ -3891,12 +3899,12 @@ IDE_RC qtc::nextTable( UShort          *aRow,
                 sTemplate->tmplate.rows[sCurRowID].lflag &= ~(MTC_TUPLE_ROW_GEOMETRY_MASK);
                 sTemplate->tmplate.rows[sCurRowID].lflag |= (MTC_TUPLE_ROW_GEOMETRY_TRUE);
 
-                /* BUG-44382 clone tuple ì„±ëŠ¥ê°œì„  */
-                /* geometry tupleì—ë§Œ columnì„ ë³µì‚¬í•œë‹¤. */
+                /* BUG-44382 clone tuple ¼º´É°³¼± */
+                /* geometry tuple¿¡¸¸ columnÀ» º¹»çÇÑ´Ù. */
                 if ( ((aTableInfo->columns[i].basicInfo)->column.flag & SMI_COLUMN_TYPE_MASK)
                      == SMI_COLUMN_TYPE_VARIABLE_LARGE )
                 {
-                    // ë³µì‚¬ê°€ í•„ìš”í•¨
+                    // º¹»ç°¡ ÇÊ¿äÇÔ
                     setTupleColumnFlag( &(sTemplate->tmplate.rows[sCurRowID]),
                                         ID_TRUE,
                                         ID_FALSE );
@@ -3919,7 +3927,7 @@ IDE_RC qtc::nextTable( UShort          *aRow,
                       sCurRowID )
             != IDE_SUCCESS );
 
-        // Execute ì •ë³´ì˜ Settingì„ ìœ„í•œ ë©”ëª¨ë¦¬ í• ë‹¹
+        // Execute Á¤º¸ÀÇ SettingÀ» À§ÇÑ ¸Ş¸ğ¸® ÇÒ´ç
         IDU_LIMITPOINT("qtc::nextTable::malloc2");
         IDE_TEST(QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(mtcExecute)
                                                 * sTemplate->tmplate.rows[sCurRowID].columnCount,
@@ -3928,39 +3936,39 @@ IDE_RC qtc::nextTable( UShort          *aRow,
 
 
         //----------------------------------------------
-        // [Cursor Flag ì˜ ì„¤ì •]
-        // ì ‘ê·¼í•˜ëŠ” í…Œì´ë¸”ì˜ ì¢…ë¥˜ì— ë”°ë¼, Agerì˜ ë™ì‘ì´ ë‹¤ë¥´ê²Œ ëœë‹¤.
-        // ì´ë¥¼ ìœ„í•´ Memory, Disk, Memoryì™€ Diskì— ì ‘ê·¼í•˜ëŠ” ì§€ë¥¼
-        // ì •í™•í•˜ê²Œ íŒë‹¨í•˜ì—¬ì•¼ í•œë‹¤.
-        // ì§ˆì˜ë¬¸ì— ì—¬ëŸ¬ê°œì˜ ë‹¤ë¥¸ í…Œì´ë¸”ì´ ì¡´ì¬í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
-        // í•´ë‹¹ Cursor Flagì„ ORingí•˜ì—¬ ê·¸ ì •ë³´ê°€ ëˆ„ì ë˜ê²Œ í•œë‹¤.
+        // [Cursor Flag ÀÇ ¼³Á¤]
+        // Á¢±ÙÇÏ´Â Å×ÀÌºíÀÇ Á¾·ù¿¡ µû¶ó, AgerÀÇ µ¿ÀÛÀÌ ´Ù¸£°Ô µÈ´Ù.
+        // ÀÌ¸¦ À§ÇØ Memory, Disk, Memory¿Í Disk¿¡ Á¢±ÙÇÏ´Â Áö¸¦
+        // Á¤È®ÇÏ°Ô ÆÇ´ÜÇÏ¿©¾ß ÇÑ´Ù.
+        // ÁúÀÇ¹®¿¡ ¿©·¯°³ÀÇ ´Ù¸¥ Å×ÀÌºíÀÌ Á¸ÀçÇÒ ¼ö ÀÖÀ¸¹Ç·Î,
+        // ÇØ´ç Cursor FlagÀ» ORingÇÏ¿© ±× Á¤º¸°¡ ´©ÀûµÇ°Ô ÇÑ´Ù.
         //----------------------------------------------
 
-        // Disk/Memory Table ì—¬ë¶€ë¥¼ ì„¤ì •
+        // Disk/Memory Table ¿©ºÎ¸¦ ¼³Á¤
         if(ID_TRUE == aIsDiskTable)
         {
-            // Disk Tableì¸ ê²½ìš°
+            // Disk TableÀÎ °æ¿ì
             sTemplate->tmplate.rows[sCurRowID].lflag &= ~MTC_TUPLE_STORAGE_MASK;
             sTemplate->tmplate.rows[sCurRowID].lflag |= MTC_TUPLE_STORAGE_DISK;
 
-            // Cursor Flagì˜ ëˆ„ì 
+            // Cursor FlagÀÇ ´©Àû
             sTemplate->smiStatementFlag |= SMI_STATEMENT_DISK_CURSOR;
         }
         else
         {
-            // Memory Tableì¸ ê²½ìš°
+            // Memory TableÀÎ °æ¿ì
             sTemplate->tmplate.rows[sCurRowID].lflag &= ~MTC_TUPLE_STORAGE_MASK;
             sTemplate->tmplate.rows[sCurRowID].lflag |= MTC_TUPLE_STORAGE_MEMORY;
 
-            // Cursor Flagì˜ ëˆ„ì 
+            // Cursor FlagÀÇ ´©Àû
             sTemplate->smiStatementFlag |= SMI_STATEMENT_MEMORY_CURSOR;
         }
     }
     else
     {
         //--------------------------------------------------------
-        // ì„ì‹œ Table ì˜ì—­ìœ¼ë¡œ,
-        // Execution ì‹œì ì— ëª¨ë“  ì •ë³´ê°€ ê²°ì •ëœë‹¤.
+        // ÀÓ½Ã Table ¿µ¿ªÀ¸·Î,
+        // Execution ½ÃÁ¡¿¡ ¸ğµç Á¤º¸°¡ °áÁ¤µÈ´Ù.
         //--------------------------------------------------------
         sTemplate->tmplate.rows[sCurRowID].lflag = 0;
         sTemplate->tmplate.rows[sCurRowID].lflag &= ~MTC_TUPLE_TYPE_MASK;
@@ -3982,7 +3990,7 @@ IDE_RC qtc::nextTable( UShort          *aRow,
 
     // set out param
     *aRow = sTemplate->tmplate.rowCount;
-    // rowCount ì¦ê°€ì‹œí‚´
+    // rowCount Áõ°¡½ÃÅ´
     sTemplate->tmplate.rowCount++;
 
     return IDE_SUCCESS;
@@ -3999,7 +4007,6 @@ IDE_RC qtc::nextTable( UShort          *aRow,
 #undef IDE_FN
 }
 
-
 IDE_RC
 qtc::increaseInternalTuple( qcStatement* aStatement,
                             UShort       aIncreaseCount )
@@ -4009,7 +4016,7 @@ qtc::increaseInternalTuple( qcStatement* aStatement,
  * Description :
  *
  *     PROJ-1358
- *     Internal Tuple Setì„ í™•ì¥í•œë‹¤.
+ *     Internal Tuple SetÀ» È®ÀåÇÑ´Ù.
  *
  * Implementation :
  *
@@ -4028,11 +4035,11 @@ qtc::increaseInternalTuple( qcStatement* aStatement,
     qcTemplate * sTemplate = NULL;
     
     //---------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------
 
-    // BUG-45666 DDL ë§ì€ ìˆ˜ì˜ partition tableì— ëŒ€í•œ fk constraint ìƒì„± ì‹œ
-    // execution ë‹¨ê³„ì—ì„œì˜ tuple setì´ í•„ìš”.
+    // BUG-45666 DDL ¸¹Àº ¼öÀÇ partition table¿¡ ´ëÇÑ fk constraint »ı¼º ½Ã
+    // execution ´Ü°è¿¡¼­ÀÇ tuple setÀÌ ÇÊ¿ä.
     if ( QC_SHARED_TMPLATE(aStatement) == NULL )
     {
         if ( ( aStatement->myPlan->parseTree->stmtKind & QCI_STMT_MASK_MASK )
@@ -4043,7 +4050,7 @@ qtc::increaseInternalTuple( qcStatement* aStatement,
         else
         {
             // BUG-21627
-            // executionì‹œì— tuple í™•ì¥ì€ planì„ ë³€ê²½ì‹œí‚¤ë¯€ë¡œ í—ˆìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // execution½Ã¿¡ tuple È®ÀåÀº planÀ» º¯°æ½ÃÅ°¹Ç·Î Çã¿ëÇÏÁö ¾Ê´Â´Ù.
             IDE_RAISE( ERR_TUPLE_SHORTAGE );
         }
     }
@@ -4056,23 +4063,29 @@ qtc::increaseInternalTuple( qcStatement* aStatement,
                  sTemplate->tmplate.rowArrayCount );
 
     //---------------------------------------------
-    // ìƒˆë¡œìš´ Internal Tupleì˜ ê³µê°„ í™•ë³´
+    // »õ·Î¿î Internal TupleÀÇ °ø°£ È®º¸
     //---------------------------------------------
 
     // To Fix PR-12659
-    // Internal Tuple Setì€ allocStatement() ì‹œì ì— ë¬´ì¡°ê±´ í• ë‹¹ë°›ì§€ ì•Šê³ ,
-    // í•„ìš”ì— ì˜í•˜ì—¬ í• ë‹¹ë°›ë„ë¡ í•œë‹¤.
+    // Internal Tuple SetÀº allocStatement() ½ÃÁ¡¿¡ ¹«Á¶°Ç ÇÒ´ç¹ŞÁö ¾Ê°í,
+    // ÇÊ¿ä¿¡ ÀÇÇÏ¿© ÇÒ´ç¹Şµµ·Ï ÇÑ´Ù.
 
     if ( aIncreaseCount == 0 )
     {
-        // ìµœì´ˆ í• ë‹¹ ë°›ëŠ” ê²½ìš°
+        // ÃÖÃÊ ÇÒ´ç ¹Ş´Â °æ¿ì
         sNewArrayCnt = MTC_TUPLE_ROW_INIT_CNT;
     }
     else
     {
         // BUG-21627
-        // aIncreaseCountë§Œí¼ í™•ì¥í•¨
+        // aIncreaseCount¸¸Å­ È®ÀåÇÔ
         sNewArrayCnt = (UInt)sTemplate->tmplate.rowArrayCount + (UInt)aIncreaseCount;
+    }
+
+    /* BUG-48299 */
+    if ( sNewArrayCnt == MTC_TUPLE_ROW_MAX_CNT + 1 )
+    {
+        sNewArrayCnt = MTC_TUPLE_ROW_MAX_CNT;
     }
 
     IDE_TEST_RAISE( sNewArrayCnt > MTC_TUPLE_ROW_MAX_CNT, ERR_TUPLE_SHORTAGE );
@@ -4083,8 +4096,8 @@ qtc::increaseInternalTuple( qcStatement* aStatement,
               != IDE_SUCCESS );
 
     //---------------------------------------------
-    // Internal Tupleì˜ ì •ë³´ ì„¤ì •
-    // ê¸°ì¡´ì˜ ê³µê°„ì€ ì¬ì‚¬ìš©í•˜ì§€ ì•ŠìŒ.
+    // Internal TupleÀÇ Á¤º¸ ¼³Á¤
+    // ±âÁ¸ÀÇ °ø°£Àº Àç»ç¿ëÇÏÁö ¾ÊÀ½.
     //---------------------------------------------
 
     sOldArrayCnt = sTemplate->tmplate.rowArrayCount;
@@ -4092,18 +4105,18 @@ qtc::increaseInternalTuple( qcStatement* aStatement,
     if ( sOldArrayCnt == 0 )
     {
         // To Fix PR-12659
-        // ìµœì´ˆ í• ë‹¹ë°›ëŠ” ê²½ìš°ë¡œ ì´ì „ Internal Tuple Setì´ ì¡´ì¬í•˜ì§€ ì•ŠìŒ.
+        // ÃÖÃÊ ÇÒ´ç¹Ş´Â °æ¿ì·Î ÀÌÀü Internal Tuple SetÀÌ Á¸ÀçÇÏÁö ¾ÊÀ½.
     }
     else
     {
         sOldTuple = sTemplate->tmplate.rows;
         
-        // ê¸°ì¡´ Internal Tuple ì •ë³´ì˜ ë³µì‚¬
+        // ±âÁ¸ Internal Tuple Á¤º¸ÀÇ º¹»ç
         idlOS::memcpy( sNewTuple,
                        sOldTuple,
                        ID_SIZEOF(mtcTuple) * sOldArrayCnt );
         
-        // ì´ì „ tupleì€ í•´ì œí•œë‹¤.
+        // ÀÌÀü tupleÀº ÇØÁ¦ÇÑ´Ù.
         IDE_TEST( QC_QMP_MEM(aStatement)->free( (void*) sOldTuple )
                   != IDE_SUCCESS );
     }
@@ -4112,7 +4125,7 @@ qtc::increaseInternalTuple( qcStatement* aStatement,
     sTemplate->tmplate.rows = sNewTuple;
 
     //---------------------------------------------
-    // ìƒˆë¡œìš´ Table Mapì˜ ê³µê°„ í™•ë³´
+    // »õ·Î¿î Table MapÀÇ °ø°£ È®º¸
     //---------------------------------------------
 
     IDU_LIMITPOINT("qtc::increaseInternalTuple::malloc2");
@@ -4124,18 +4137,18 @@ qtc::increaseInternalTuple( qcStatement* aStatement,
     if ( sOldArrayCnt == 0 )
     {
         // To Fix PR-12659
-        // ìµœì´ˆ í• ë‹¹ë°›ëŠ” ê²½ìš°ë¡œ ì´ì „ Internal Tuple Setì´ ì¡´ì¬í•˜ì§€ ì•ŠìŒ.
+        // ÃÖÃÊ ÇÒ´ç¹Ş´Â °æ¿ì·Î ÀÌÀü Internal Tuple SetÀÌ Á¸ÀçÇÏÁö ¾ÊÀ½.
     }
     else
     {
         sOldTableMap = sTemplate->tableMap;
 
-        // ê¸°ì¡´ Table Map ì •ë³´ì˜ ë³µì‚¬
+        // ±âÁ¸ Table Map Á¤º¸ÀÇ º¹»ç
         idlOS::memcpy( sNewTableMap,
                        sOldTableMap,
                        ID_SIZEOF(qcTableMap) * sOldArrayCnt );
 
-        // ì´ì „ tableMapì€ í•´ì œí•œë‹¤.
+        // ÀÌÀü tableMapÀº ÇØÁ¦ÇÑ´Ù.
         IDE_TEST( QC_QMP_MEM(aStatement)->free( (void*) sOldTableMap )
                   != IDE_SUCCESS );
     }
@@ -4167,18 +4180,18 @@ IDE_RC qtc::smiCallBack( idBool       * aResult,
  *
  * Description :
  *
- *    Storage Managerì— ì˜í•´ í˜¸ì¶œë˜ëŠ” Filterë¥¼ ìœ„í•œ CallBack í•¨ìˆ˜
- *    CallBack Filterì˜ ê¸°ë³¸ ë‹¨ìœ„ì´ë©°, smiCallBackAndì™€ í•¨ê»˜
- *    ì—¬ëŸ¬ ê°œì˜ CallBackì„ êµ¬ì¶• ê°€ëŠ¥í•˜ë‹¤.
- *    Filterê°€ í•˜ë‚˜ë§Œ ìˆì„ ê²½ìš°, í˜¸ì¶œëœë‹¤.
+ *    Storage Manager¿¡ ÀÇÇØ È£ÃâµÇ´Â Filter¸¦ À§ÇÑ CallBack ÇÔ¼ö
+ *    CallBack FilterÀÇ ±âº» ´ÜÀ§ÀÌ¸ç, smiCallBackAnd¿Í ÇÔ²²
+ *    ¿©·¯ °³ÀÇ CallBackÀ» ±¸Ãà °¡´ÉÇÏ´Ù.
+ *    Filter°¡ ÇÏ³ª¸¸ ÀÖÀ» °æ¿ì, È£ÃâµÈ´Ù.
  *
  *    BUG-16318
- *    Lobì§€ì› í•¨ìˆ˜ì˜ ê²½ìš° Locatorë¥¼ ì—´ê¸°ìœ„í•´ ridë¥¼ í•„ìš”ë¡œ í•˜ë¯€ë¡œ
- *    aRidê°€ ì¶”ê°€ë˜ì—ˆë‹¤.
+ *    LobÁö¿ø ÇÔ¼öÀÇ °æ¿ì Locator¸¦ ¿­±âÀ§ÇØ rid¸¦ ÇÊ¿ä·Î ÇÏ¹Ç·Î
+ *    aRid°¡ Ãß°¡µÇ¾ú´Ù.
  *
  * Implementation :
  *
- *    Filterì˜ ìˆ˜í–‰ ê²°ê³¼ë¥¼ ë¦¬í„´í•œë‹¤.
+ *    FilterÀÇ ¼öÇà °á°ú¸¦ ¸®ÅÏÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -4204,8 +4217,8 @@ IDE_RC qtc::smiCallBack( idBool       * aResult,
               != IDE_SUCCESS );
 
     /* PROJ-2180
-       qp ì—ì„œëŠ” mtc::value ë¥¼ ì‚¬ìš©í•œë‹¤.
-       ë‹¤ë§Œ ì—¬ê¸°ì—ì„œëŠ” ì„±ëŠ¥ì„ ìœ„í•´ì„œ valueForModule ë¥¼ ì‚¬ìš©í•œë‹¤. */
+       qp ¿¡¼­´Â mtc::value ¸¦ »ç¿ëÇÑ´Ù.
+       ´Ù¸¸ ¿©±â¿¡¼­´Â ¼º´ÉÀ» À§ÇØ¼­ valueForModule ¸¦ »ç¿ëÇÑ´Ù. */
     sValueTemp = (void*)mtd::valueForModule( (smiColumn*)sData->column,
                                              sData->tuple->row,
                                              MTD_OFFSET_USE,
@@ -4238,18 +4251,18 @@ IDE_RC qtc::smiCallBackAnd( idBool       * aResult,
  *
  * Description :
  *
- *    Storage Managerì— ì˜í•´ í˜¸ì¶œë˜ëŠ” Filterë¥¼ ìœ„í•œ CallBack í•¨ìˆ˜
- *    2ê°œ ì´ìƒì˜ Filterê°€ ìˆì„ ê²½ìš°, ì‚¬ìš©ëœë‹¤.
+ *    Storage Manager¿¡ ÀÇÇØ È£ÃâµÇ´Â Filter¸¦ À§ÇÑ CallBack ÇÔ¼ö
+ *    2°³ ÀÌ»óÀÇ Filter°¡ ÀÖÀ» °æ¿ì, »ç¿ëµÈ´Ù.
  *
  *    BUG-16318
- *    Lobì§€ì› í•¨ìˆ˜ì˜ ê²½ìš° Locatorë¥¼ ì—´ê¸°ìœ„í•´ ridë¥¼ í•„ìš”ë¡œ í•˜ë¯€ë¡œ
- *    aRidê°€ ì¶”ê°€ë˜ì—ˆë‹¤.
+ *    LobÁö¿ø ÇÔ¼öÀÇ °æ¿ì Locator¸¦ ¿­±âÀ§ÇØ rid¸¦ ÇÊ¿ä·Î ÇÏ¹Ç·Î
+ *    aRid°¡ Ãß°¡µÇ¾ú´Ù.
  *
  * Implementation :
  *
- *    ë‹¨ìœ„ Filterì˜ ìˆ˜í–‰ ê²°ê³¼ê°€ TRUEì¼ ê²½ìš°,
- *    ë‹¤ìŒ Filterë¥¼ ìˆ˜í–‰í•œë‹¤.
- *    A4ì—ì„œëŠ” 3ê°œì˜ Filterê°€ ì¡°í•©ë  ìˆ˜ ìˆë‹¤.
+ *    ´ÜÀ§ FilterÀÇ ¼öÇà °á°ú°¡ TRUEÀÏ °æ¿ì,
+ *    ´ÙÀ½ Filter¸¦ ¼öÇàÇÑ´Ù.
+ *    A4¿¡¼­´Â 3°³ÀÇ Filter°¡ Á¶ÇÕµÉ ¼ö ÀÖ´Ù.
  *
  ***********************************************************************/
 
@@ -4258,7 +4271,7 @@ IDE_RC qtc::smiCallBackAnd( idBool       * aResult,
 
     qtcSmiCallBackDataAnd* sData = (qtcSmiCallBackDataAnd*)aData;
 
-    // ì²« ë²ˆì§¸ Filter ìˆ˜í–‰
+    // Ã¹ ¹øÂ° Filter ¼öÇà
     IDE_TEST( smiCallBack( aResult,
                            aRow,
                            NULL,
@@ -4269,7 +4282,7 @@ IDE_RC qtc::smiCallBackAnd( idBool       * aResult,
 
     if (*aResult == ID_TRUE && sData->argu2 != NULL )
     {
-        // ë‘ ë²ˆì§¸ Filter ìˆ˜í–‰
+        // µÎ ¹øÂ° Filter ¼öÇà
         IDE_TEST( smiCallBack( aResult,
                                aRow,
                                NULL,
@@ -4280,7 +4293,7 @@ IDE_RC qtc::smiCallBackAnd( idBool       * aResult,
 
         if ( *aResult == ID_TRUE && sData->argu3 != NULL )
         {
-            // ì„¸ ë²ˆì§¸ Filter ìˆ˜í–‰
+            // ¼¼ ¹øÂ° Filter ¼öÇà
             IDE_TEST( smiCallBack( aResult,
                                    aRow,
                                    NULL,
@@ -4309,7 +4322,7 @@ void qtc::setSmiCallBack( qtcSmiCallBackData* aData,
  *
  * Description :
  *
- *    Storage Managerì—ì„œ ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡ CallBack Dataë¥¼ êµ¬ì„±í•¨.
+ *    Storage Manager¿¡¼­ »ç¿ëÇÒ ¼ö ÀÖµµ·Ï CallBack Data¸¦ ±¸¼ºÇÔ.
  *
  * Implementation :
  *
@@ -4340,8 +4353,8 @@ void qtc::setSmiCallBackAnd( qtcSmiCallBackDataAnd* aData,
  *
  * Description :
  *
- *    Storage Managerì—ì„œ ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡
- *    ì—¬ëŸ¬ ê°œì˜ CallBack Dataë¥¼ ì¡°í•©í•¨.
+ *    Storage Manager¿¡¼­ »ç¿ëÇÒ ¼ö ÀÖµµ·Ï
+ *    ¿©·¯ °³ÀÇ CallBack Data¸¦ Á¶ÇÕÇÔ.
  *
  * Implementation :
  *
@@ -4365,10 +4378,10 @@ void qtc::setCharValue( mtdCharType* aValue,
  *
  * Description :
  *
- *    ì£¼ì–´ì§„ Stringìœ¼ë¡œë¶€í„° CHAR type valueë¥¼ ìƒì„±í•¨.
+ *    ÁÖ¾îÁø StringÀ¸·ÎºÎÅÍ CHAR type value¸¦ »ı¼ºÇÔ.
  *
  * Implementation :
- *    Dataê°€ ì—†ëŠ” ë¶€ë¶„ì€ ' 'ë¡œ canonizeí•œë‹¤.
+ *    Data°¡ ¾ø´Â ºÎºĞÀº ' '·Î canonizeÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -4391,11 +4404,11 @@ void qtc::setVarcharValue( mtdCharType* aValue,
  *
  * Description :
  *
- *    ì£¼ì–´ì§„ Stringìœ¼ë¡œë¶€í„° VARCHAR type valueë¥¼ ìƒì„±í•¨.
+ *    ÁÖ¾îÁø StringÀ¸·ÎºÎÅÍ VARCHAR type value¸¦ »ı¼ºÇÔ.
  *
  * Implementation :
  *
- *    ì‹¤ì œ ê¸¸ì´ë§Œí¼ë§Œ ê´€ë¦¬í•œë‹¤.
+ *    ½ÇÁ¦ ±æÀÌ¸¸Å­¸¸ °ü¸®ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -4423,7 +4436,7 @@ void qtc::initializeMetaRange( smiRange * aRange,
  *
  * Description :
  *
- *    Meta Key Rangeë¥¼ ì´ˆê¸°í™”
+ *    Meta Key Range¸¦ ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -4465,11 +4478,11 @@ void qtc::setMetaRangeIsNullColumn(qtcMetaRangeColumn* aRangeColumn,
  *
  * Description :
  *
- *    Metaë¥¼ ìœ„í•œIs null Key Range ì •ë³´ë¥¼ êµ¬ì„±
+ *    Meta¸¦ À§ÇÑIs null Key Range Á¤º¸¸¦ ±¸¼º
  *
  * Implementation :
- *    Column ì •ë³´ì™€ Value ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ Key Range ì •ë³´ë¥¼ êµ¬ì„±
- *    ì¦‰, í•˜ë‚˜ì˜ Columnì— ëŒ€í•œ key range ì •ë³´ê°€ êµ¬ì„±ëœë‹¤.
+ *    Column Á¤º¸¿Í Value Á¤º¸¸¦ ÀÌ¿ëÇÏ¿© Key Range Á¤º¸¸¦ ±¸¼º
+ *    Áï, ÇÏ³ªÀÇ Column¿¡ ´ëÇÑ key range Á¤º¸°¡ ±¸¼ºµÈ´Ù.
  *
  ***********************************************************************/
     
@@ -4502,18 +4515,18 @@ void qtc::setMetaRangeColumn( qtcMetaRangeColumn* aRangeColumn,
  *
  * Description :
  *
- *    Metaë¥¼ ìœ„í•œ Key Range ì •ë³´ë¥¼ êµ¬ì„±
+ *    Meta¸¦ À§ÇÑ Key Range Á¤º¸¸¦ ±¸¼º
  *
  * Implementation :
- *    Column ì •ë³´ì™€ Value ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ Key Range ì •ë³´ë¥¼ êµ¬ì„±
- *    ì¦‰, í•˜ë‚˜ì˜ Columnì— ëŒ€í•œ key range ì •ë³´ê°€ êµ¬ì„±ëœë‹¤.
+ *    Column Á¤º¸¿Í Value Á¤º¸¸¦ ÀÌ¿ëÇÏ¿© Key Range Á¤º¸¸¦ ±¸¼º
+ *    Áï, ÇÏ³ªÀÇ Column¿¡ ´ëÇÑ key range Á¤º¸°¡ ±¸¼ºµÈ´Ù.
  *
  ***********************************************************************/
     UInt    sCompareType;
 
     // PROJ-1872
-    // indexê°€ ìˆëŠ” ì¹¼ëŸ¼ì— meta rangeë¥¼ ì“°ê²Œ ë˜ë©°
-    // disk index columnì˜ compareëŠ” stored typeê³¼ mt type ê°„ì˜ ë¹„êµì´ë‹¤.
+    // index°¡ ÀÖ´Â Ä®·³¿¡ meta range¸¦ ¾²°Ô µÇ¸ç
+    // disk index columnÀÇ compare´Â stored type°ú mt type °£ÀÇ ºñ±³ÀÌ´Ù.
     if( ( aColumnDesc->column.flag & SMI_COLUMN_STORAGE_MASK )
         == SMI_COLUMN_STORAGE_DISK )
     {
@@ -4562,8 +4575,8 @@ void qtc::changeMetaRangeColumn( qtcMetaRangeColumn* aRangeColumn,
  *
  * Description : PROJ-1502 PARTITIONED DISK TABLE
  *
- *    Metaë¥¼ ìœ„í•œ Key Range ì •ë³´ë¥¼ ë³€ê²½
- *    Key Rangeì˜ columnì •ë³´ë¥¼ ê°ê°ì˜ íŒŒí‹°ì…˜ì— ë§ëŠ” ì»¬ëŸ¼ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
+ *    Meta¸¦ À§ÇÑ Key Range Á¤º¸¸¦ º¯°æ
+ *    Key RangeÀÇ columnÁ¤º¸¸¦ °¢°¢ÀÇ ÆÄÆ¼¼Ç¿¡ ¸Â´Â ÄÃ·³À¸·Î º¯°æÇÑ´Ù.
  *
  * Implementation :
  *
@@ -4585,19 +4598,19 @@ void qtc::addMetaRangeColumn( smiRange*           aRange,
  *
  * Description :
  *
- *    Metaë¥¼ ìœ„í•œ í•˜ë‚˜ì˜ Key Rangeì •ë³´ë¥¼ smiRangeì— ë“±ë¡í•¨
+ *    Meta¸¦ À§ÇÑ ÇÏ³ªÀÇ Key RangeÁ¤º¸¸¦ smiRange¿¡ µî·ÏÇÔ
  *
  * Implementation :
  *
- *    Metaì— ëŒ€í•œ KeyRangeëŠ” '='ì— ëŒ€í•œ Rangeë§Œì´ ì¡´ì¬í•˜ë©°,
- *    Key Rangeêµ¬ê°„ì´ ì—¬ëŸ¬ê°œ ì¡´ì¬í•˜ëŠ” Multiple Key Rangeë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
- *    ë”°ë¼ì„œ, Minimum Rangeì™€ Maximum RangeëŠ” ë™ì¼í•˜ë‹¤ëŠ” ê°€ì •í•˜ì—ì„œ,
- *    Rangeë¥¼ ì—°ê²°í•˜ê²Œ ëœë‹¤.
+ *    Meta¿¡ ´ëÇÑ KeyRange´Â '='¿¡ ´ëÇÑ Range¸¸ÀÌ Á¸ÀçÇÏ¸ç,
+ *    Key Range±¸°£ÀÌ ¿©·¯°³ Á¸ÀçÇÏ´Â Multiple Key Range¸¦ »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+ *    µû¶ó¼­, Minimum Range¿Í Maximum Range´Â µ¿ÀÏÇÏ´Ù´Â °¡Á¤ÇÏ¿¡¼­,
+ *    Range¸¦ ¿¬°áÇÏ°Ô µÈ´Ù.
  *
- *    ìµœì´ˆ Columnì— ëŒ€í•œ RangeëŠ” minimum/maximum rangeë¡œ,
- *    ë‹¤ìŒ Columnì— ëŒ€í•œ RangeëŠ” ë’¤ë¡œ ì—°ê²°í•œë‹¤.
+ *    ÃÖÃÊ Column¿¡ ´ëÇÑ Range´Â minimum/maximum range·Î,
+ *    ´ÙÀ½ Column¿¡ ´ëÇÑ Range´Â µÚ·Î ¿¬°áÇÑ´Ù.
  *
- *    ë‘ ê°œì˜ Rangeê°€ ì—°ê²°ëœ ê²½ìš°ì˜ êµ¬ì„±ì€ ë‹¤ìŒê³¼ ê°™ë‹¤
+ *    µÎ °³ÀÇ Range°¡ ¿¬°áµÈ °æ¿ìÀÇ ±¸¼ºÀº ´ÙÀ½°ú °°´Ù
  *    ex) A[user_id = 'abc'] and B[table_name = 't1']
  *
  *        smiRange->min-------          ->max
@@ -4605,9 +4618,9 @@ void qtc::addMetaRangeColumn( smiRange*           aRange,
  *                           V             V
  *                        [A Range] --> [B Range]
  *
- *        max rangeì˜ ê²½ìš°, ë‹¤ìŒ Rangeì˜ ì¶”ê°€ë¥¼ ìœ„í•´ ê´€ë¦¬ë˜ë©°,
- *        Rangeì˜ ì¶”ê°€ê°€ ë” ì´ìƒ ì—†ì„ ê²½ìš°, qtc::fixMetaRange()ì˜ í˜¸ì¶œì„
- *        í†µí•´, minê³¼ ë™ì¼í•œ ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚¤ê²Œ ëœë‹¤.
+ *        max rangeÀÇ °æ¿ì, ´ÙÀ½ RangeÀÇ Ãß°¡¸¦ À§ÇØ °ü¸®µÇ¸ç,
+ *        RangeÀÇ Ãß°¡°¡ ´õ ÀÌ»ó ¾øÀ» °æ¿ì, qtc::fixMetaRange()ÀÇ È£ÃâÀ»
+ *        ÅëÇØ, min°ú µ¿ÀÏÇÑ À§Ä¡¸¦ °¡¸®Å°°Ô µÈ´Ù.
  *
  ***********************************************************************/
 
@@ -4635,13 +4648,13 @@ void qtc::fixMetaRange( smiRange* aRange )
  *
  * Description :
  *
- *    Metaë¥¼ ìœ„í•œ smiRangeì˜ Key Range êµ¬ì„±ì„ ì™„ë£Œí•¨.
+ *    Meta¸¦ À§ÇÑ smiRangeÀÇ Key Range ±¸¼ºÀ» ¿Ï·áÇÔ.
  *
  * Implementation :
  *
- *    qtc::addMetaRangeColumn()ì—ì„œ ì‚´í´ ë³´ì•˜ë“¯ì´, maximum ì •ë³´ëŠ”
- *    Rangeì˜ ì¶”ê°€ë¥¼ ìœ„í•´ ê°€ì¥ ë§ˆì§€ë§‰ Rangeë¥¼ ê´€ë¦¬í•˜ê³  ìˆë‹¤.
- *    ì´ë¥¼ ìµœì´ˆ ìœ„ì¹˜ë¡œ ëŒë ¤ Key Range êµ¬ì„±ì„ ì™„ë£Œí•˜ê²Œ ëœë‹¤.
+ *    qtc::addMetaRangeColumn()¿¡¼­ »ìÆì º¸¾ÒµíÀÌ, maximum Á¤º¸´Â
+ *    RangeÀÇ Ãß°¡¸¦ À§ÇØ °¡Àå ¸¶Áö¸· Range¸¦ °ü¸®ÇÏ°í ÀÖ´Ù.
+ *    ÀÌ¸¦ ÃÖÃÊ À§Ä¡·Î µ¹·Á Key Range ±¸¼ºÀ» ¿Ï·áÇÏ°Ô µÈ´Ù.
  *
  ***********************************************************************/
 
@@ -4659,11 +4672,11 @@ IDE_RC qtc::fixAfterParsing( qcTemplate    * aTemplate )
  *
  * Description :
  *
- *    Parsingì´ ì™„ë£Œëœ í›„, Tuple Setì„ ìœ„í•œ ì²˜ë¦¬ë¥¼ í•¨
+ *    ParsingÀÌ ¿Ï·áµÈ ÈÄ, Tuple SetÀ» À§ÇÑ Ã³¸®¸¦ ÇÔ
  *
  * Implementation :
  *
- *    CONSTANT TUPLEì˜ Executeë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
+ *    CONSTANT TUPLEÀÇ Execute¸¦ À§ÇÑ °ø°£À» ÇÒ´ç¹Ş´Â´Ù.
  *
  ***********************************************************************/
 
@@ -4690,13 +4703,13 @@ IDE_RC qtc::createColumn( qcStatement*    aStatement,
  *
  * Description :
  *
- *    CREATE TABLE êµ¬ë¬¸ ë“±ê³¼ ê°™ì´ COLUMN TYPEì˜ ì •ì˜ë¥¼ ì´ìš©í•˜ì—¬
- *    Column ì •ë³´ë¥¼ ìƒì„±í•œë‹¤.
+ *    CREATE TABLE ±¸¹® µî°ú °°ÀÌ COLUMN TYPEÀÇ Á¤ÀÇ¸¦ ÀÌ¿ëÇÏ¿©
+ *    Column Á¤º¸¸¦ »ı¼ºÇÑ´Ù.
  *
  * Implementation :
  *
- *    Column ì •ì˜ë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹ë°›ê³ ,
- *    Column Typeì˜ data type ëª¨ë“ˆì„ ì°¾ì•„, precision ë° scaleì„ ì„¤ì •í•œë‹¤.
+ *    Column Á¤ÀÇ¸¦ À§ÇÑ °ø°£À» ÇÒ´ç¹Ş°í,
+ *    Column TypeÀÇ data type ¸ğµâÀ» Ã£¾Æ, precision ¹× scaleÀ» ¼³Á¤ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -4730,12 +4743,12 @@ IDE_RC qtc::createColumn( qcStatement*    aStatement,
         IDE_TEST(STRUCT_CRALLOC(QC_QMP_MEM(aStatement), mtcColumn, aColumn)
                  != IDE_SUCCESS);
 
-        // initialize : mtc::initializeColumn()ì—ì„œ arguementsë¡œ ì´ˆê¸°í™”ë¨
+        // initialize : mtc::initializeColumn()¿¡¼­ arguements·Î ÃÊ±âÈ­µÊ
         (*aColumn)->flag = 0;
 
         // find mtdModule
-        // mtdModuleì´ mtdNumber Typeì¸ ê²½ìš°,
-        // arguementì— ë”°ë¼ mtdFloat ë˜ëŠ” mtdNummericìœ¼ë¡œ ì´ˆê¸°í™” í•´ì•¼í•¨
+        // mtdModuleÀÌ mtdNumber TypeÀÎ °æ¿ì,
+        // arguement¿¡ µû¶ó mtdFloat ¶Ç´Â mtdNummericÀ¸·Î ÃÊ±âÈ­ ÇØ¾ßÇÔ
         IDE_TEST(
             mtd::moduleByName( & sModule,
                                (void*)(aPosition->stmtText+aPosition->offset),
@@ -4759,9 +4772,9 @@ IDE_RC qtc::createColumn( qcStatement*    aStatement,
                   (sModule->id == MTD_CLOB_ID) )
         {
             // PROJ-1362
-            // clobì— argumentsëŠ” í•­ìƒ 0ì´ì–´ì•¼ í•œë‹¤.
-            // ê·¸ëŸ¬ë‚˜ estimateì‹œì—ëŠ” 1ë„ í—ˆìš©í•˜ê¸° ë•Œë¬¸ì—
-            // ê³ ì˜ë¡œ ì—ëŸ¬ë¥¼ ë‚´ê¸° ìœ„í•´ 2ë¡œ ë°”ê¾¼ë‹¤.
+            // clob¿¡ arguments´Â Ç×»ó 0ÀÌ¾î¾ß ÇÑ´Ù.
+            // ±×·¯³ª estimate½Ã¿¡´Â 1µµ Çã¿ëÇÏ±â ¶§¹®¿¡
+            // °íÀÇ·Î ¿¡·¯¸¦ ³»±â À§ÇØ 2·Î ¹Ù²Û´Ù.
             if ( aArguments != 0 )
             {
                 aArguments = 2;
@@ -4770,12 +4783,12 @@ IDE_RC qtc::createColumn( qcStatement*    aStatement,
             {
                 if ( aIsForSP != ID_TRUE )
                 {
-                    /* BUG-36429 LOB Columnì„ ìƒì„±í•˜ëŠ” ê²½ìš°, Precisionì„ 0ìœ¼ë¡œ ì§€ì •í•œë‹¤. */
+                    /* BUG-36429 LOB ColumnÀ» »ı¼ºÇÏ´Â °æ¿ì, PrecisionÀ» 0À¸·Î ÁöÁ¤ÇÑ´Ù. */
                     aArguments = 1;
                 }
                 else
                 {
-                    /* BUG-36429 LOB Valueë¥¼ ìƒì„±í•˜ëŠ” ê²½ìš°, Precisionì„ í”„ë¼í¼í‹° ê°’ìœ¼ë¡œ ì§€ì •í•œë‹¤. */
+                    /* BUG-36429 LOB Value¸¦ »ı¼ºÇÏ´Â °æ¿ì, PrecisionÀ» ÇÁ¶óÆÛÆ¼ °ªÀ¸·Î ÁöÁ¤ÇÑ´Ù. */
                 }
             }
         }
@@ -4783,7 +4796,7 @@ IDE_RC qtc::createColumn( qcStatement*    aStatement,
                   (sModule->id == MTD_EVARCHAR_ID) )
         {
             // PROJ-2002 Column Security
-            // createì‹œ echar, evarcharë¥¼ ëª…ì‹œí•  ìˆ˜ ì—†ë‹¤.
+            // create½Ã echar, evarchar¸¦ ¸í½ÃÇÒ ¼ö ¾ø´Ù.
             IDE_RAISE( ERR_INVALID_ENCRYPTION_DATATYPE );
         }
         else
@@ -4877,13 +4890,13 @@ IDE_RC qtc::createColumn( qcStatement*    aStatement,
  *
  * Description :
  *
- *    ì£¼ì–´ì§„ Columnì˜ data type moduleì„ ì´ìš©í•˜ì—¬
- *    Column ì •ë³´ë¥¼ ìƒì„±í•œë‹¤.
+ *    ÁÖ¾îÁø ColumnÀÇ data type moduleÀ» ÀÌ¿ëÇÏ¿©
+ *    Column Á¤º¸¸¦ »ı¼ºÇÑ´Ù.
  *
  * Implementation :
  *
- *    Column ì •ì˜ë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹ë°›ê³ ,
- *    ì£¼ì–´ì§„ module ì •ë³´ë¥¼ ì„¤ì •í•˜ê³ , precision ë° scaleì„ ì„¤ì •í•œë‹¤.
+ *    Column Á¤ÀÇ¸¦ À§ÇÑ °ø°£À» ÇÒ´ç¹Ş°í,
+ *    ÁÖ¾îÁø module Á¤º¸¸¦ ¼³Á¤ÇÏ°í, precision ¹× scaleÀ» ¼³Á¤ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -4898,13 +4911,13 @@ IDE_RC qtc::createColumn( qcStatement*    aStatement,
     IDE_TEST(STRUCT_CRALLOC(QC_QMP_MEM(aStatement), mtcColumn, aColumn)
              != IDE_SUCCESS);
 
-    // initialize : mtc::initializeColumn()ì—ì„œ arguementsë¡œ ì´ˆê¸°í™”ë¨
+    // initialize : mtc::initializeColumn()¿¡¼­ arguements·Î ÃÊ±âÈ­µÊ
     (*aColumn)->flag = 0;
 
     // PROJ-1362
-    // clobì— argumentsëŠ” í•­ìƒ 0ì´ì–´ì•¼ í•œë‹¤.
-    // ê·¸ëŸ¬ë‚˜ estimateì‹œì—ëŠ” 1ë„ í—ˆìš©í•˜ê¸° ë•Œë¬¸ì—
-    // ê³ ì˜ë¡œ ì—ëŸ¬ë¥¼ ë‚´ê¸° ìœ„í•´ 2ë¡œ ë°”ê¾¼ë‹¤.
+    // clob¿¡ arguments´Â Ç×»ó 0ÀÌ¾î¾ß ÇÑ´Ù.
+    // ±×·¯³ª estimate½Ã¿¡´Â 1µµ Çã¿ëÇÏ±â ¶§¹®¿¡
+    // °íÀÇ·Î ¿¡·¯¸¦ ³»±â À§ÇØ 2·Î ¹Ù²Û´Ù.
     if ( (aModule->id == MTD_BLOB_ID) ||
          (aModule->id == MTD_CLOB_ID) )
     {
@@ -4921,7 +4934,7 @@ IDE_RC qtc::createColumn( qcStatement*    aStatement,
               (aModule->id == MTD_EVARCHAR_ID) )
     {
         // PROJ-2002 Column Security
-        // createì‹œ echar, evarcharë¥¼ ëª…ì‹œí•  ìˆ˜ ì—†ë‹¤.
+        // create½Ã echar, evarchar¸¦ ¸í½ÃÇÒ ¼ö ¾ø´Ù.
         IDE_RAISE( ERR_INVALID_ENCRYPTION_DATATYPE );
     }
     else
@@ -4974,15 +4987,15 @@ IDE_RC qtc::createColumn4TimeStamp( qcStatement*    aStatement,
     IDE_TEST(STRUCT_CRALLOC(QC_QMP_MEM(aStatement), mtcColumn, aColumn)
              != IDE_SUCCESS);
 
-    // initialize : mtc::initializeColum()ì—ì„œ arguementsë¡œ ì´ˆê¸°í™”ë¨
+    // initialize : mtc::initializeColum()¿¡¼­ arguements·Î ÃÊ±âÈ­µÊ
     //(*aColumn)->flag = 0;
 
-    // precision, scale ì„¤ì •
+    // precision, scale ¼³Á¤
     sPrecision = QC_BYTE_PRECISION_FOR_TIMESTAMP;
     sScale     = 0;
 
-    // aColumnì˜ ì´ˆê¸°í™”
-    // : dataTypeì€ byte, languageëŠ”  sessionì˜ languageë¡œ ì„¤ì •
+    // aColumnÀÇ ÃÊ±âÈ­
+    // : dataTypeÀº byte, language´Â  sessionÀÇ language·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn(
                   *aColumn,
                   MTD_BYTE_ID,
@@ -5003,13 +5016,35 @@ IDE_RC qtc::createColumn4TimeStamp( qcStatement*    aStatement,
 #undef IDE_FN
 }
 
-IDE_RC qtc::changeColumn4Encrypt( qcStatement           * aStatement,
-                                  qdEncryptedColumnAttr * aColumnAttr,
-                                  mtcColumn             * aColumn )
+IDE_RC qtc::changeColumn4SRID( qcStatement     * /*aStatement*/,
+                               qdExtColumnAttr * aColumnAttr,
+                               mtcColumn       * aColumn )
 {
-#define IDE_FN "IDE_RC qtc::changeColumn4Encrypt"
-    IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
+    IDE_ASSERT( aColumn     != NULL );
+    IDE_ASSERT( aColumnAttr != NULL );
 
+    // srid´Â geometry¸¸ Áö¿øÇÔ
+    IDE_TEST_RAISE( aColumn->module->id != MTD_GEOMETRY_ID,
+                    ERR_INVALID_SRID_DATATYPE );
+
+    // srid¸¦ ÀúÀå
+    aColumn->mColumnAttr.mSridAttr.mSrid = aColumnAttr->mSrid;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_INVALID_SRID_DATATYPE );
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QTC_INVALID_SRID_DATATYPE ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qtc::changeColumn4Encrypt( qcStatement     * aStatement,
+                                  qdExtColumnAttr * aColumnAttr,
+                                  mtcColumn       * aColumn )
+{
     const mtdModule * sModule;
     SChar             sPolicy[MTC_POLICY_NAME_SIZE + 1] = { 0, };
     idBool            sIsExist;
@@ -5022,15 +5057,15 @@ IDE_RC qtc::changeColumn4Encrypt( qcStatement           * aStatement,
     IDE_ASSERT( aColumn     != NULL );
     IDE_ASSERT( aColumnAttr != NULL );
 
-    // encryption typeì€ char, varcharë§Œ ì§€ì›í•¨
+    // encryption typeÀº char, varchar¸¸ Áö¿øÇÔ
     IDE_TEST_RAISE( ( aColumn->module->id != MTD_CHAR_ID ) &&
                     ( aColumn->module->id != MTD_VARCHAR_ID ),
                     ERR_INVALID_ENCRYPTION_DATATYPE );
 
-    // policy name ê¸¸ì´ ê²€ì‚¬
-    if ( aColumnAttr->policyPosition.size > MTC_POLICY_NAME_SIZE )
+    // policy name ±æÀÌ °Ë»ç
+    if ( aColumnAttr->mPolicyPosition.size > MTC_POLICY_NAME_SIZE )
     {
-        sqlInfo.setSourceInfo( aStatement, & aColumnAttr->policyPosition );
+        sqlInfo.setSourceInfo( aStatement, & aColumnAttr->mPolicyPosition );
         IDE_RAISE( ERR_TOO_LONG_POLICY_NAME );
     }
     else
@@ -5038,7 +5073,7 @@ IDE_RC qtc::changeColumn4Encrypt( qcStatement           * aStatement,
         // Nothing to do.
     }
     
-    if ( aColumnAttr->policyPosition.size == 0 )
+    if ( aColumnAttr->mPolicyPosition.size == 0 )
     {
         IDE_RAISE( ERR_NOT_EXIST_POLICY );
     }
@@ -5058,8 +5093,8 @@ IDE_RC qtc::changeColumn4Encrypt( qcStatement           * aStatement,
                   != IDE_SUCCESS );
     }
 
-    // policy ê²€ì‚¬
-    QC_STR_COPY( sPolicy, aColumnAttr->policyPosition );
+    // policy °Ë»ç
+    QC_STR_COPY( sPolicy, aColumnAttr->mPolicyPosition );
 
     IDE_TEST( qcsModule::getPolicyInfo( sPolicy,
                                         & sIsExist,
@@ -5073,7 +5108,7 @@ IDE_RC qtc::changeColumn4Encrypt( qcStatement           * aStatement,
     IDE_TEST_RAISE( sIsEncodeECC == ID_TRUE,
                     ERR_INVALID_POLICY );
 
-    // aColumnì˜ ì´ˆê¸°í™”
+    // aColumnÀÇ ÃÊ±âÈ­
     IDE_TEST( mtc::initializeColumn(
                   aColumn,
                   sModule,
@@ -5082,7 +5117,7 @@ IDE_RC qtc::changeColumn4Encrypt( qcStatement           * aStatement,
                   0 )
               != IDE_SUCCESS );
     
-    // encryted size ê²€ì‚¬
+    // encryted size °Ë»ç
     IDE_TEST( qcsModule::getEncryptedSize( sPolicy,
                                            aColumn->precision,  // 1
                                            & sEncryptedSize )
@@ -5092,7 +5127,7 @@ IDE_RC qtc::changeColumn4Encrypt( qcStatement           * aStatement,
                                      & sECCSize )
               != IDE_SUCCESS );
 
-    // aColumnì˜ ë‘ë²ˆì§¸ ì´ˆê¸°í™”
+    // aColumnÀÇ µÎ¹øÂ° ÃÊ±âÈ­
     IDE_TEST( mtc::initializeEncryptColumn(
                   aColumn,
                   sPolicy,
@@ -5124,8 +5159,6 @@ IDE_RC qtc::changeColumn4Encrypt( qcStatement           * aStatement,
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
-
-#undef IDE_FN
 }
 
 IDE_RC qtc::changeColumn4Decrypt( mtcColumn    * aColumn )
@@ -5138,7 +5171,7 @@ IDE_RC qtc::changeColumn4Decrypt( mtcColumn    * aColumn )
 
     IDE_ASSERT( aColumn != NULL );
 
-    // encryption typeì€ char, varcharë§Œ ì§€ì›í•¨
+    // encryption typeÀº char, varchar¸¸ Áö¿øÇÔ
     IDE_TEST_RAISE( ( aColumn->module->id != MTD_ECHAR_ID ) &&
                     ( aColumn->module->id != MTD_EVARCHAR_ID ),
                     ERR_INVALID_ENCRYPTION_DATATYPE );
@@ -5154,7 +5187,7 @@ IDE_RC qtc::changeColumn4Decrypt( mtcColumn    * aColumn )
                   != IDE_SUCCESS );
     }
 
-    // aColumnì˜ ì´ˆê¸°í™”
+    // aColumnÀÇ ÃÊ±âÈ­
     IDE_TEST( mtc::initializeColumn(
                   aColumn,
                   sModule,
@@ -5183,9 +5216,9 @@ IDE_RC qtc::changeColumn4Decrypt( mtcColumn    * aSrcColumn,
  *
  * Description : PROJ-1584 DML Return Clause
  *               DestColumn : Plain Column
- *               SrcColumn  : ì•”í˜¸í™” Column
+ *               SrcColumn  : ¾ÏÈ£È­ Column
  *
- *               ì•”í˜¸í™” Columnì„ Decrypt í•˜ì—¬ initializeColumn ìˆ˜í–‰.
+ *               ¾ÏÈ£È­ ColumnÀ» Decrypt ÇÏ¿© initializeColumn ¼öÇà.
  * Implementation :
  *
  **********************************************************************/
@@ -5193,7 +5226,7 @@ IDE_RC qtc::changeColumn4Decrypt( mtcColumn    * aSrcColumn,
 
     IDE_ASSERT( aSrcColumn != NULL );
 
-    // encryption typeì€ char, varcharë§Œ ì§€ì›í•¨
+    // encryption typeÀº char, varchar¸¸ Áö¿øÇÔ
     IDE_TEST_RAISE( ( aSrcColumn->module->id != MTD_ECHAR_ID ) &&
                     ( aSrcColumn->module->id != MTD_EVARCHAR_ID ),
                     ERR_INVALID_ENCRYPTION_DATATYPE );
@@ -5209,7 +5242,7 @@ IDE_RC qtc::changeColumn4Decrypt( mtcColumn    * aSrcColumn,
                   != IDE_SUCCESS );
     }
 
-    // aColumnì˜ ì´ˆê¸°í™”
+    // aColumnÀÇ ÃÊ±âÈ­
     IDE_TEST( mtc::initializeColumn(
                   aDestColumn,
                   sModule,
@@ -5238,11 +5271,11 @@ IDE_RC qtc::addOrArgument( qcStatement* aStatement,
  *
  * Description :
  *
- *    Parsing ë‹¨ê³„ì—ì„œ OR keywordë¥¼ ë§Œë‚¬ì„ ë•Œ, í•´ë‹¹ Nodeë¥¼ ìƒì„±í•œë‹¤.
+ *    Parsing ´Ü°è¿¡¼­ OR keyword¸¦ ¸¸³µÀ» ¶§, ÇØ´ç Node¸¦ »ı¼ºÇÑ´Ù.
  *
  * Implementation :
  *
- *    ë‘ ê°œì˜ argumentë¥¼ OR Nodeì˜ argumentë¡œ ì—°ê²°í•œë‹¤.
+ *    µÎ °³ÀÇ argument¸¦ OR NodeÀÇ argument·Î ¿¬°áÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -5255,8 +5288,8 @@ IDE_RC qtc::addOrArgument( qcStatement* aStatement,
           ( MTC_NODE_LOGICAL_CONDITION_MASK | MTC_NODE_OPERATOR_MASK )
             ) == ( MTC_NODE_LOGICAL_CONDITION_TRUE | MTC_NODE_OPERATOR_OR ) )
     {
-        // ORê°€ ì¤‘ì²©ëœ ê²½ìš°, ê¸°ì¡´ì˜ OR Nodeë¥¼ ì‚¬ìš©í•œë‹¤.
-        // ë‹¤ìŒê³¼ ê°™ì€ ì—°ê²° ì •ë³´ê°€ êµ¬ì„±ëœë‹¤.
+        // OR°¡ ÁßÃ¸µÈ °æ¿ì, ±âÁ¸ÀÇ OR Node¸¦ »ç¿ëÇÑ´Ù.
+        // ´ÙÀ½°ú °°Àº ¿¬°á Á¤º¸°¡ ±¸¼ºµÈ´Ù.
         //
         //       aNode[0]                            aNode[1]
         //         |                                    |
@@ -5266,8 +5299,8 @@ IDE_RC qtc::addOrArgument( qcStatement* aStatement,
         //         V                                    V
         //       [Argument]---->[Argument]-- ... -->[Argument2]
         //
-        // ìœ„ì™€ ê°™ì´ aNode[1]ì— ë‹¤ìŒ argumentë¥¼ ì¶”ê°€í•˜ì—¬
-        // ì¤‘ì²© ORë¥¼ ì²˜ë¦¬í•œë‹¤.
+        // À§¿Í °°ÀÌ aNode[1]¿¡ ´ÙÀ½ argument¸¦ Ãß°¡ÇÏ¿©
+        // ÁßÃ¸ OR¸¦ Ã³¸®ÇÑ´Ù.
 
         aNode[0] = aArgument1[0];
         aNode[1] = aArgument1[1];
@@ -5275,18 +5308,18 @@ IDE_RC qtc::addOrArgument( qcStatement* aStatement,
     }
     else
     {
-        // ìƒˆë¡œìš´ OR Nodeë¥¼ ìƒì„±í•œë‹¤.
+        // »õ·Î¿î OR Node¸¦ »ı¼ºÇÑ´Ù.
         IDU_LIMITPOINT("qtc::addOrArgument::malloc");
         IDE_TEST(STRUCT_ALLOC(QC_QMP_MEM(aStatement), qtcNode, &(aNode[0]))
                  != IDE_SUCCESS);
-        // OR Node ì´ˆê¸°í™”
+        // OR Node ÃÊ±âÈ­
         QTC_NODE_INIT( aNode[0] );        
 
         aNode[1] = NULL;
 
         IDE_TEST_RAISE( aNode[0] == NULL, ERR_MEMORY_SHORTAGE );
 
-        // OR Node ì •ë³´ ì„¤ì •
+        // OR Node Á¤º¸ ¼³Á¤
         aNode[0]->node.lflag          = mtfOr.lflag
                                       & ~MTC_NODE_COLUMN_COUNT_MASK;
         aNode[0]->position.stmtText   = aArgument1[0]->position.stmtText;
@@ -5305,7 +5338,7 @@ IDE_RC qtc::addOrArgument( qcStatement* aStatement,
 
         aNode[0]->node.module = &mtfOr;
 
-        // Argumentë¥¼ ì—°ê²°í•œë‹¤.
+        // Argument¸¦ ¿¬°áÇÑ´Ù.
         IDE_TEST( qtc::addArgument( aNode, aArgument1 ) != IDE_SUCCESS );
         IDE_TEST( qtc::addArgument( aNode, aArgument2 ) != IDE_SUCCESS );
     }
@@ -5331,11 +5364,11 @@ IDE_RC qtc::addAndArgument( qcStatement* aStatement,
  *
  * Description :
  *
- *    Parsing ë‹¨ê³„ì—ì„œ AND keywordë¥¼ ë§Œë‚¬ì„ ë•Œ, í•´ë‹¹ Nodeë¥¼ ìƒì„±í•œë‹¤.
+ *    Parsing ´Ü°è¿¡¼­ AND keyword¸¦ ¸¸³µÀ» ¶§, ÇØ´ç Node¸¦ »ı¼ºÇÑ´Ù.
  *
  * Implementation :
  *
- *    ë‘ ê°œì˜ argumentë¥¼ OR Nodeì˜ argumentë¡œ ì—°ê²°í•œë‹¤.
+ *    µÎ °³ÀÇ argument¸¦ OR NodeÀÇ argument·Î ¿¬°áÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -5348,8 +5381,8 @@ IDE_RC qtc::addAndArgument( qcStatement* aStatement,
           ( MTC_NODE_LOGICAL_CONDITION_MASK | MTC_NODE_OPERATOR_MASK )
             ) == ( MTC_NODE_LOGICAL_CONDITION_TRUE | MTC_NODE_OPERATOR_AND ) )
     {
-        // ANDê°€ ì¤‘ì²©ëœ ê²½ìš°, ê¸°ì¡´ì˜ AND Nodeë¥¼ ì‚¬ìš©í•œë‹¤.
-        // ë‹¤ìŒê³¼ ê°™ì€ ì—°ê²° ì •ë³´ê°€ êµ¬ì„±ëœë‹¤.
+        // AND°¡ ÁßÃ¸µÈ °æ¿ì, ±âÁ¸ÀÇ AND Node¸¦ »ç¿ëÇÑ´Ù.
+        // ´ÙÀ½°ú °°Àº ¿¬°á Á¤º¸°¡ ±¸¼ºµÈ´Ù.
         //
         //       aNode[0]                            aNode[1]
         //         |                                    |
@@ -5359,8 +5392,8 @@ IDE_RC qtc::addAndArgument( qcStatement* aStatement,
         //         V                                    V
         //       [Argument]---->[Argument]-- ... -->[Argument2]
         //
-        // ìœ„ì™€ ê°™ì´ aNode[1]ì— ë‹¤ìŒ argumentë¥¼ ì¶”ê°€í•˜ì—¬
-        // ì¤‘ì²© ANDë¥¼ ì²˜ë¦¬í•œë‹¤.
+        // À§¿Í °°ÀÌ aNode[1]¿¡ ´ÙÀ½ argument¸¦ Ãß°¡ÇÏ¿©
+        // ÁßÃ¸ AND¸¦ Ã³¸®ÇÑ´Ù.
 
         aNode[0] = aArgument1[0];
         aNode[1] = aArgument1[1];
@@ -5368,18 +5401,18 @@ IDE_RC qtc::addAndArgument( qcStatement* aStatement,
     }
     else
     {
-        // ìƒˆë¡œìš´ AND Nodeë¥¼ ìƒì„±í•œë‹¤.
+        // »õ·Î¿î AND Node¸¦ »ı¼ºÇÑ´Ù.
         IDU_LIMITPOINT("qtc::addAndArgument::malloc");
         IDE_TEST(STRUCT_ALLOC(QC_QMP_MEM(aStatement), qtcNode, &(aNode[0]))
                  != IDE_SUCCESS);
 
-        // AND Node ì´ˆê¸°í™”
+        // AND Node ÃÊ±âÈ­
         QTC_NODE_INIT( aNode[0] );
         aNode[1] = NULL;
 
         IDE_TEST_RAISE( aNode[0] == NULL, ERR_MEMORY_SHORTAGE );
 
-        // AND Node ì •ë³´ ì„¤ì •
+        // AND Node Á¤º¸ ¼³Á¤
         aNode[0]->node.lflag          = mtfAnd.lflag
                                       & ~MTC_NODE_COLUMN_COUNT_MASK;
         aNode[0]->position.stmtText   = aArgument1[0]->position.stmtText;
@@ -5398,7 +5431,7 @@ IDE_RC qtc::addAndArgument( qcStatement* aStatement,
 
         aNode[0]->node.module = &mtfAnd;
 
-        // Argumentë¥¼ ì—°ê²°í•œë‹¤.
+        // Argument¸¦ ¿¬°áÇÑ´Ù.
         IDE_TEST( qtc::addArgument( aNode, aArgument1 ) != IDE_SUCCESS );
         IDE_TEST( qtc::addArgument( aNode, aArgument2 ) != IDE_SUCCESS );
     }
@@ -5422,21 +5455,21 @@ IDE_RC qtc::lnnvlNode( qcStatement  * aStatement,
  *
  * Description :
  *     BUG-36125
- *     LNNVLí•¨ìˆ˜ë¥¼ ì£¼ì–´ì§„ predicateì— ì ìš©ì‹œí‚¨ë‹¤.
+ *     LNNVLÇÔ¼ö¸¦ ÁÖ¾îÁø predicate¿¡ Àû¿ë½ÃÅ²´Ù.
  *
  * Implementation :
- *     ë…¼ë¦¬ ì—°ì‚°ìëŠ” notNodeì—ì„œì™€ ë™ì¼í•˜ê²Œ counter operatorë¡œ ë³€í™˜í•˜ê³ ,
- *     ê·¸ ì™¸ ê° predicateaë“¤ì—ëŠ” LNNVLì„ ì”Œìš´ë‹¤.
+ *     ³í¸® ¿¬»êÀÚ´Â notNode¿¡¼­¿Í µ¿ÀÏÇÏ°Ô counter operator·Î º¯È¯ÇÏ°í,
+ *     ±× ¿Ü °¢ predicateaµé¿¡´Â LNNVLÀ» ¾º¿î´Ù.
  *     ex) i1 < 0 AND i1 > 1 => LNNVL(i1 <0) OR LNNVL(i1 > 1)
  *
  *     BUG-41294
- *     ROWNUM Predicateì´ Copyí•´ ê°„ qtcNodeTreeì™€ êµ¬ë¶„ë˜ì–´ì•¼ í•˜ë¯€ë¡œ
- *     ë…¼ë¦¬ ì—°ì‚°ìë¼ë„ ë³µì‚¬ í›„ counter operatorë¡œ ë³€ê²½í•´ì•¼ í•œë‹¤.
+ *     ROWNUM PredicateÀÌ CopyÇØ °£ qtcNodeTree¿Í ±¸ºĞµÇ¾î¾ß ÇÏ¹Ç·Î
+ *     ³í¸® ¿¬»êÀÚ¶óµµ º¹»ç ÈÄ counter operator·Î º¯°æÇØ¾ß ÇÑ´Ù.
  *
- *     [ ì°¸ê³  ]
- *     ì´ í•¨ìˆ˜ì˜ callerëŠ” 2ê°œê°€ ìˆëŠ”ë°, ê°ì estimateë¥¼ ìˆ˜í–‰í•œë‹¤.
- *     - qtc::notNode() => Parsing Phaseì—ì„œ estimate
- *     - qmoDnfMgr::makeDnfNotNormal=> lnnvlNode() ì§í›„ estimate
+ *     [ Âü°í ]
+ *     ÀÌ ÇÔ¼öÀÇ caller´Â 2°³°¡ ÀÖ´Âµ¥, °¢ÀÚ estimate¸¦ ¼öÇàÇÑ´Ù.
+ *     - qtc::notNode() => Parsing Phase¿¡¼­ estimate
+ *     - qmoDnfMgr::makeDnfNotNormal=> lnnvlNode() Á÷ÈÄ estimate
  *
  ***********************************************************************/
 
@@ -5446,7 +5479,7 @@ IDE_RC qtc::lnnvlNode( qcStatement  * aStatement,
     if( ( aNode->node.lflag & MTC_NODE_LOGICAL_CONDITION_MASK )
           == MTC_NODE_LOGICAL_CONDITION_TRUE )
     {
-        // ë…¼ë¦¬ì—°ì‚°ì
+        // ³í¸®¿¬»êÀÚ
         if( aNode->node.module->counter != NULL )
         {
             IDE_TEST( qtc::nextColumn( QC_QMP_MEM(aStatement),
@@ -5481,8 +5514,8 @@ IDE_RC qtc::lnnvlNode( qcStatement  * aStatement,
     }
     else
     {
-        // ë¹„êµ ì—°ì‚°ì
-        // sNodeë¥¼ í• ë‹¹í•˜ì—¬ aNodeë¥¼ ë³µì‚¬í•˜ê³ , aNodeì—ëŠ” LNNVLì„ ìƒì„±í•œë‹¤.
+        // ºñ±³ ¿¬»êÀÚ
+        // sNode¸¦ ÇÒ´çÇÏ¿© aNode¸¦ º¹»çÇÏ°í, aNode¿¡´Â LNNVLÀ» »ı¼ºÇÑ´Ù.
 
         IDE_TEST(STRUCT_ALLOC(QC_QMP_MEM(aStatement), qtcNode, &sNode)
                  != IDE_SUCCESS);
@@ -5491,7 +5524,7 @@ IDE_RC qtc::lnnvlNode( qcStatement  * aStatement,
 
         QTC_NODE_INIT( aNode );
 
-        // Node ì •ë³´ ì„¤ì •
+        // Node Á¤º¸ ¼³Á¤
         aNode->node.module = &mtfLnnvl;
         aNode->node.lflag  = mtfLnnvl.lflag & ~MTC_NODE_COLUMN_COUNT_MASK;
 
@@ -5503,7 +5536,7 @@ IDE_RC qtc::lnnvlNode( qcStatement  * aStatement,
                                    mtfLnnvl.lflag & MTC_NODE_COLUMN_COUNT_MASK )
                   != IDE_SUCCESS );
 
-        // aNodeì— ìƒì„±ëœ LNNVLì˜ argumentë¡œ sNodeë¥¼ ì„¤ì •í•œë‹¤.
+        // aNode¿¡ »ı¼ºµÈ LNNVLÀÇ argument·Î sNode¸¦ ¼³Á¤ÇÑ´Ù.
         aNode->node.arguments  = (mtcNode *)sNode;
 
         aNode->node.next = (mtcNode *)sNode->node.next;
@@ -5534,13 +5567,13 @@ IDE_RC qtc::notNode( qcStatement* aStatement,
  *
  * Description :
  *
- *    Parsing ë‹¨ê³„ì—ì„œ NOT keywordë¥¼ ë§Œë‚¬ì„ ë•Œì˜ ì²˜ë¦¬ë¥¼ í•œë‹¤.
+ *    Parsing ´Ü°è¿¡¼­ NOT keyword¸¦ ¸¸³µÀ» ¶§ÀÇ Ã³¸®¸¦ ÇÑ´Ù.
  *
  * Implementation :
  *
- *    ë³„ë„ì˜ NOT Nodeë¥¼ ìƒì„±í•˜ì§€ ì•Šê³  Node Treeë¥¼ Traverseí•˜ë©°,
- *    ë…¼ë¦¬ ì—°ì‚°ì ë° ë¹„êµ ì—°ì‚°ìì— ëŒ€í•˜ì—¬
- *    NOTì— í•´ë‹¹í•˜ëŠ” Counter ì—°ì‚°ìë¡œ ë³€ê²½í•œë‹¤.
+ *    º°µµÀÇ NOT Node¸¦ »ı¼ºÇÏÁö ¾Ê°í Node Tree¸¦ TraverseÇÏ¸ç,
+ *    ³í¸® ¿¬»êÀÚ ¹× ºñ±³ ¿¬»êÀÚ¿¡ ´ëÇÏ¿©
+ *    NOT¿¡ ÇØ´çÇÏ´Â Counter ¿¬»êÀÚ·Î º¯°æÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -5579,13 +5612,13 @@ IDE_RC qtc::notNode( qcStatement* aStatement,
         else
         {
             // Nothing To Do
-            // A3ì—ì„œëŠ” Subqueryì— Predicateì˜ ì¢…ë¥˜ë¥¼ ìœ ì§€í•˜ì˜€ì§€ë§Œ,
-            // A4ì—ì„œëŠ” ìœ ì§€í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // A3¿¡¼­´Â Subquery¿¡ PredicateÀÇ Á¾·ù¸¦ À¯ÁöÇÏ¿´Áö¸¸,
+            // A4¿¡¼­´Â À¯ÁöÇÏÁö ¾Ê´Â´Ù.
         }
     }
     else
     {
-        // BUG-36125 NOT LNNVL(condition)ì€ LNNVL(LNNVL(condition))ë¡œ ë³€í™˜í•œë‹¤.
+        // BUG-36125 NOT LNNVL(condition)Àº LNNVL(LNNVL(condition))·Î º¯È¯ÇÑ´Ù.
         if( aNode[0]->node.module == &mtfLnnvl )
         {
             IDE_TEST( lnnvlNode( aStatement, aNode[0] ) != IDE_SUCCESS );
@@ -5619,12 +5652,12 @@ IDE_RC qtc::priorNode( qcStatement* aStatement,
  *
  * Description :
  *
- *    Parsing ë‹¨ê³„ì—ì„œ PRIOR keywordë¥¼ ë§Œë‚¬ì„ ë•Œì˜ ì²˜ë¦¬ë¥¼ í•œë‹¤.
+ *    Parsing ´Ü°è¿¡¼­ PRIOR keyword¸¦ ¸¸³µÀ» ¶§ÀÇ Ã³¸®¸¦ ÇÑ´Ù.
  *
  * Implementation :
  *
- *       ex) PRIOR (i1 + 1) : ìì‹  ë¿ ì•„ë‹ˆë¼, argumentì—ë„ priorë¥¼
- *           ì„¤ì •í•˜ì—¬ì•¼ í•œë‹¤.
+ *       ex) PRIOR (i1 + 1) : ÀÚ½Å »Ó ¾Æ´Ï¶ó, argument¿¡µµ prior¸¦
+ *           ¼³Á¤ÇÏ¿©¾ß ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -5635,19 +5668,19 @@ IDE_RC qtc::priorNode( qcStatement* aStatement,
 
     aNode[0]->lflag |= QTC_NODE_PRIOR_EXIST;
 
-    // Prior Columnì€ Columnì„ì—ë„ ë¶ˆêµ¬í•˜ê³  ê·¸ íŠ¹ì„± ìƒ
-    // ìƒìˆ˜ì— ê°€ê¹Œìš´ íŠ¹ì„±ì„ ê°–ëŠ”ë‹¤.  ì¦‰, Indexable Predicateì˜ ë¶„ë¥˜ ë“±ê³¼
-    // Key Rangeìƒì„±ì— ëŒ€í•œ íŒë‹¨ì„ í•  ë•Œ ìƒìˆ˜ë¡œ ì·¨ê¸‰ë˜ì–´ì•¼ í•œë‹¤.
+    // Prior ColumnÀº ColumnÀÓ¿¡µµ ºÒ±¸ÇÏ°í ±× Æ¯¼º »ó
+    // »ó¼ö¿¡ °¡±î¿î Æ¯¼ºÀ» °®´Â´Ù.  Áï, Indexable PredicateÀÇ ºĞ·ù µî°ú
+    // Key Range»ı¼º¿¡ ´ëÇÑ ÆÇ´ÜÀ» ÇÒ ¶§ »ó¼ö·Î Ãë±ŞµÇ¾î¾ß ÇÑ´Ù.
     //     Ex) WHERE i1 = prior i2
-    //         : prior i2ëŠ” indexë¥¼ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” columnì´
-    //           ì•„ë‹ˆë‚˜, ì´ëŸ¬í•œ êµ¬ë¶„ì´ ìš©ì´í•˜ì§€ í•œë‹¤.
-    // ì´ëŸ¬í•œ ì²˜ë¦¬ë¥¼ ìš©ì´í•˜ê²Œ í•˜ê¸° ìœ„í•´, ë‹¤ìŒê³¼ ê°™ì´
-    // Dependency ë° Indexableì— ëŒ€í•œ ì²˜ë¦¬ë¥¼ í•œë‹¤.
+    //         : prior i2´Â index¸¦ »ç¿ëÇÒ ¼ö ÀÖ´Â columnÀÌ
+    //           ¾Æ´Ï³ª, ÀÌ·¯ÇÑ ±¸ºĞÀÌ ¿ëÀÌÇÏÁö ÇÑ´Ù.
+    // ÀÌ·¯ÇÑ Ã³¸®¸¦ ¿ëÀÌÇÏ°Ô ÇÏ±â À§ÇØ, ´ÙÀ½°ú °°ÀÌ
+    // Dependency ¹× Indexable¿¡ ´ëÇÑ Ã³¸®¸¦ ÇÑ´Ù.
 
-    // Dependencies ë¥¼ ì œê±°
+    // Dependencies ¸¦ Á¦°Å
     qtc::dependencyClear( & aNode[0]->depInfo );
 
-    // ì¸ë±ìŠ¤ë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ëŠ” Columnì„ì„ í‘œì‹œ.
+    // ÀÎµ¦½º¸¦ »ç¿ëÇÒ ¼ö ¾ø´Â ColumnÀÓÀ» Ç¥½Ã.
     aNode[0]->node.lflag &= ~MTC_NODE_INDEX_MASK;
     aNode[0]->node.lflag |= MTC_NODE_INDEX_UNUSABLE;
 
@@ -5676,14 +5709,14 @@ IDE_RC qtc::priorNodeSetWithNewTuple( qcStatement* aStatement,
  *
  * Description :
  *
- *    Optimization ë‹¨ê³„ì—ì„œ ì²˜ë¦¬ë˜ë©°,
- *    PRIOR Nodeë¥¼ ìƒˆë¡œìš´ Tupleì„ ê¸°ì¤€ìœ¼ë¡œ ì¬êµ¬ì„±í•œë‹¤.
+ *    Optimization ´Ü°è¿¡¼­ Ã³¸®µÇ¸ç,
+ *    PRIOR Node¸¦ »õ·Î¿î TupleÀ» ±âÁØÀ¸·Î Àç±¸¼ºÇÑ´Ù.
  *
  *
  * Implementation :
  *
- *   í•´ë‹¹ Nodeë¥¼ Traverseí•˜ë©´ì„œ,
- *   PRIOR Nodeì˜ Table IDë¥¼ ìƒˆë¡œìš´ Table ID(aTable)ë¡œ ë³€ê²½í•œë‹¤.
+ *   ÇØ´ç Node¸¦ TraverseÇÏ¸é¼­,
+ *   PRIOR NodeÀÇ Table ID¸¦ »õ·Î¿î Table ID(aTable)·Î º¯°æÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -5732,12 +5765,12 @@ IDE_RC qtc::makeNode( qcStatement*    aStatement,
  *
  * Description :
  *
- *    ì—°ì‚°ìë¥¼ ìœ„í•œ Nodeë¥¼ ìƒì„±í•¨.
+ *    ¿¬»êÀÚ¸¦ À§ÇÑ Node¸¦ »ı¼ºÇÔ.
  *
  * Implementation :
  *
- *    ì£¼ì–´ì§„ String(aOperator)ìœ¼ë¡œë¶€í„° í•´ë‹¹ function moduleì„ íšë“í•˜ê³ ,
- *    ì´ë¥¼ ì´ìš©í•˜ì—¬ Nodeë¥¼ ìƒì„±í•œë‹¤.
+ *    ÁÖ¾îÁø String(aOperator)À¸·ÎºÎÅÍ ÇØ´ç function moduleÀ» È¹µæÇÏ°í,
+ *    ÀÌ¸¦ ÀÌ¿ëÇÏ¿© Node¸¦ »ı¼ºÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -5747,16 +5780,16 @@ IDE_RC qtc::makeNode( qcStatement*    aStatement,
     const mtfModule* sModule;
     idBool           sExist;
 
-    // Node ìƒì„±
+    // Node »ı¼º
     IDU_LIMITPOINT("qtc::makeNode::malloc1");
     IDE_TEST(STRUCT_ALLOC(QC_QMP_MEM(aStatement), qtcNode, &(aNode[0]))
              != IDE_SUCCESS);
 
-    // Node ì´ˆê¸°í™”
+    // Node ÃÊ±âÈ­
     QTC_NODE_INIT( aNode[0] );
     aNode[1] = NULL;
 
-    // Node ì •ë³´ ì„¤ì •
+    // Node Á¤º¸ ¼³Á¤
     // if you change this code, you should change qmvQTC::setColumnID
     if( aOperatorLength != 0 )
     {
@@ -5822,18 +5855,18 @@ IDE_RC qtc::makeNodeForMemberFunc( qcStatement     * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1075
- *       array typeì˜ member functionì„ ê³ ë ¤í•˜ì—¬ nodeë¥¼ ìƒì„±í•œë‹¤.
- *       ì¼ë°˜ functionì€ ê²€ìƒ‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *       array typeÀÇ member functionÀ» °í·ÁÇÏ¿© node¸¦ »ı¼ºÇÑ´Ù.
+ *       ÀÏ¹İ functionÀº °Ë»öÇÏÁö ¾Ê´Â´Ù.
  *
  * Implementation :
- *       ì´ í•¨ìˆ˜ë¡œ ì˜¬ ìˆ˜ ìˆëŠ” ê²½ìš°ì˜ í•¨ìˆ˜ ìœ í˜•
+ *       ÀÌ ÇÔ¼ö·Î ¿Ã ¼ö ÀÖ´Â °æ¿ìÀÇ ÇÔ¼ö À¯Çü
  *           (1) arrvar_name.memberfunc_name()            - aUserNamePos(x)
  *           (2) user_name.spfunc_name()                  - aUserNamePos(x)
- *           (3) label_name.arrvar_name.memberfunc_name() - ëª¨ë‘ ì¡´ì¬
- *           (4) user_name.package_name.spfunc_name()     - ëª¨ë‘ ì¡´ì¬
+ *           (3) label_name.arrvar_name.memberfunc_name() - ¸ğµÎ Á¸Àç
+ *           (4) user_name.package_name.spfunc_name()     - ¸ğµÎ Á¸Àç
  *            // BUG-38243 support array method at package
  *           (5) user_name.package_name.array_name.memberfunc_name
- *                -> (5)ëŠ” í•­ìƒ memberber functionì¼ ìˆ˜ ë°–ì— ì—†ìŒ
+ *                -> (5)´Â Ç×»ó memberber functionÀÏ ¼ö ¹Û¿¡ ¾øÀ½
  ***********************************************************************/
 
     const mtfModule* sModule;
@@ -5842,22 +5875,22 @@ IDE_RC qtc::makeNodeForMemberFunc( qcStatement     * aStatement,
     SChar            sNameBuffer[256];
     UInt             sLength;
 
-    // Node ìƒì„±
+    // Node »ı¼º
     IDU_LIMITPOINT("qtc::makeNodeForMemberFunc::malloc");
     IDE_TEST(STRUCT_ALLOC(QC_QMP_MEM(aStatement), qtcNode, &(aNode[0]))
              != IDE_SUCCESS);
 
-    // Node ì´ˆê¸°í™”
+    // Node ÃÊ±âÈ­
     QTC_NODE_INIT( aNode[0] );
     aNode[1] = NULL;
 
-    // ì í•©ì„± ê²€ì‚¬. ì ì–´ë„ tableName, columnNameì´ ì¡´ì¬í•´ì•¼ í•¨.
+    // ÀûÇÕ¼º °Ë»ç. Àû¾îµµ tableName, columnNameÀÌ Á¸ÀçÇØ¾ß ÇÔ.
     IDE_DASSERT( QC_IS_NULL_NAME( (*aTableNamePos) ) == ID_FALSE );
     IDE_DASSERT( QC_IS_NULL_NAME( (*aColumnNamePos) ) == ID_FALSE );
 
     if ( QC_IS_NULL_NAME( (*aPkgNamePos) ) == ID_TRUE )
     {
-        // Node ì •ë³´ ì„¤ì •
+        // Node Á¤º¸ ¼³Á¤
         IDE_TEST( qsf::moduleByName( &sModule,
                                      &sExist,
                                      (void*)(aColumnNamePos->stmtText +
@@ -5966,27 +5999,27 @@ IDE_RC qtc::makeNode( qcStatement*    aStatement,
  *
  * Description :
  *
- *    Module ì •ë³´(aModule)ë¡œë¶€í„° Nodeë¥¼ ìƒì„±í•¨.
+ *    Module Á¤º¸(aModule)·ÎºÎÅÍ Node¸¦ »ı¼ºÇÔ.
  *
  * Implementation :
  *
- *    ì£¼ì–´ì§„ Module ì •ë³´(aModule)ë¥¼ ì´ìš©í•˜ì—¬ Nodeë¥¼ ìƒì„±í•œë‹¤.
+ *    ÁÖ¾îÁø Module Á¤º¸(aModule)¸¦ ÀÌ¿ëÇÏ¿© Node¸¦ »ı¼ºÇÑ´Ù.
  *
  ***********************************************************************/
 
 #define IDE_FN "IDE_RC qtc::makeNode"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
-    // Node ìƒì„±
+    // Node »ı¼º
     IDU_LIMITPOINT("qtc::makeNode::malloc2");
     IDE_TEST(STRUCT_ALLOC(QC_QMP_MEM(aStatement), qtcNode, &(aNode[0]))
              != IDE_SUCCESS);
 
-    // Node ì´ˆê¸°í™”
+    // Node ÃÊ±âÈ­
     QTC_NODE_INIT( aNode[0] );
     aNode[1] = NULL;
 
-    // Node ì •ë³´ ì„¤ì •
+    // Node Á¤º¸ ¼³Á¤
     aNode[0]->node.lflag  = aModule->lflag & ~MTC_NODE_COLUMN_COUNT_MASK;
     aNode[0]->node.module = aModule;
 
@@ -6022,13 +6055,13 @@ IDE_RC qtc::addArgument( qtcNode** aNode,
  *
  * Description :
  *
- *    í•´ë‹¹ Node(aNode)ì— Argumentë¥¼ ì¶”ê°€í•¨.
+ *    ÇØ´ç Node(aNode)¿¡ Argument¸¦ Ãß°¡ÇÔ.
  *
  * Implementation :
  *
- *    í•´ë‹¹ Nodeì— Argumentë¥¼ ì¶”ê°€í•œë‹¤.
- *    Argumentê°€ ì „í˜€ ì—†ëŠ” ê²½ìš°ì™€ Argumentê°€ ì´ë¯¸ ì¡´ì¬í•˜ëŠ” ê²½ìš°ë¥¼
- *    êµ¬ë¶„í•˜ì—¬ ì²˜ë¦¬í•œë‹¤.
+ *    ÇØ´ç Node¿¡ Argument¸¦ Ãß°¡ÇÑ´Ù.
+ *    Argument°¡ ÀüÇô ¾ø´Â °æ¿ì¿Í Argument°¡ ÀÌ¹Ì Á¸ÀçÇÏ´Â °æ¿ì¸¦
+ *    ±¸ºĞÇÏ¿© Ã³¸®ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -6088,52 +6121,52 @@ IDE_RC qtc::addWithinArguments( qcStatement  * aStatement,
  *
  * Description : PROJ-2527 WITHIN GROUP AGGR
  *
- *    í•´ë‹¹ Node(aNode)ì— Function Argumentsë¥¼ ì¶”ê°€í•¨.
+ *    ÇØ´ç Node(aNode)¿¡ Function Arguments¸¦ Ãß°¡ÇÔ.
  *
- *    BUG-41771 í•„ë… ì‚¬í•­
- *      í˜„ì¬(2015.06.15) PERCENT_RANK í•¨ìˆ˜ëŠ”
- *                      Aggregation (WITHIN GROUP) í•¨ìˆ˜ë§Œ ìˆê³ ,
- *                      Analytic (OVER) í•¨ìˆ˜ê°€ ì—†ë‹¤.
+ *    BUG-41771 ÇÊµ¶ »çÇ×
+ *      ÇöÀç(2015.06.15) PERCENT_RANK ÇÔ¼ö´Â
+ *                      Aggregation (WITHIN GROUP) ÇÔ¼ö¸¸ ÀÖ°í,
+ *                      Analytic (OVER) ÇÔ¼ö°¡ ¾ø´Ù.
  *
- *      PERCENT_RANK() OVER(..) í•¨ìˆ˜ë¥¼ ì¶”ê°€í•œë‹¤ë©´,
- *         PERCENT_RANK() OVER(..)           --> í•¨ìˆ˜ëª… : "PERCENT_RANK"
- *                                               ëª¨ë“ˆëª… : mtfPercentRank
- *         PERCENT_RANK(..) WITHIN GROUP(..) --> í•¨ìˆ˜ëª… : "PERCENT_RANK_WITHIN_GROUP"
- *                                               ëª¨ë“ˆëª… : mtfPercentRankWithinGroup
- *        ì´ë ‡ê²Œ ì‘ì—…í•˜ê³ , ì•„ë˜ì˜ ì½”ë“œ ì¤‘,
+ *      PERCENT_RANK() OVER(..) ÇÔ¼ö¸¦ Ãß°¡ÇÑ´Ù¸é,
+ *         PERCENT_RANK() OVER(..)           --> ÇÔ¼ö¸í : "PERCENT_RANK"
+ *                                               ¸ğµâ¸í : mtfPercentRank
+ *         PERCENT_RANK(..) WITHIN GROUP(..) --> ÇÔ¼ö¸í : "PERCENT_RANK_WITHIN_GROUP"
+ *                                               ¸ğµâ¸í : mtfPercentRankWithinGroup
+ *        ÀÌ·¸°Ô ÀÛ¾÷ÇÏ°í, ¾Æ·¡ÀÇ ÄÚµå Áß,
  *
  *        ( aNode[0]->node.module != &mtfPercentRankWithinGroup ), // BUG-41771
  *        -->
  *        ( aNode[0]->node.module != &mtfPercentRank ),
  *
- *        ë¡œ ìˆ˜ì •í•œë‹¤.
+ *        ·Î ¼öÁ¤ÇÑ´Ù.
  *
- *      ( qtc::changeWithinGroupNode ì½”ë“œë„ í•„ë… )
+ *      ( qtc::changeWithinGroupNode ÄÚµåµµ ÇÊµ¶ )
  *
  *    BUG-41800
- *      í˜„ì¬(2015.06.15) CUME_DIST í•¨ìˆ˜ëŠ”
- *                      Aggregation (WITHIN GROUP) í•¨ìˆ˜ë§Œ ìˆê³ ,
- *                      Analytic (OVER) í•¨ìˆ˜ê°€ ì—†ë‹¤.
+ *      ÇöÀç(2015.06.15) CUME_DIST ÇÔ¼ö´Â
+ *                      Aggregation (WITHIN GROUP) ÇÔ¼ö¸¸ ÀÖ°í,
+ *                      Analytic (OVER) ÇÔ¼ö°¡ ¾ø´Ù.
  *
- *      CUME_DIST() OVER(..) í•¨ìˆ˜ë¥¼ ì¶”ê°€í•œë‹¤ë©´,
- *         CUME_DIST() OVER(..)           --> í•¨ìˆ˜ëª… : "CUME_DIST"
- *                                            ëª¨ë“ˆëª… : mtfCumeDist
- *         CUME_DIST(..) WITHIN GROUP(..) --> í•¨ìˆ˜ëª… : "CUME_DIST_WITHIN_GROUP"
- *                                            ëª¨ë“ˆëª… : mtfCumeDistWithinGroup
- *        ì´ë ‡ê²Œ ì‘ì—…í•˜ê³ , ì•„ë˜ì˜ ì½”ë“œ ì¤‘,
+ *      CUME_DIST() OVER(..) ÇÔ¼ö¸¦ Ãß°¡ÇÑ´Ù¸é,
+ *         CUME_DIST() OVER(..)           --> ÇÔ¼ö¸í : "CUME_DIST"
+ *                                            ¸ğµâ¸í : mtfCumeDist
+ *         CUME_DIST(..) WITHIN GROUP(..) --> ÇÔ¼ö¸í : "CUME_DIST_WITHIN_GROUP"
+ *                                            ¸ğµâ¸í : mtfCumeDistWithinGroup
+ *        ÀÌ·¸°Ô ÀÛ¾÷ÇÏ°í, ¾Æ·¡ÀÇ ÄÚµå Áß,
  *
  *        ( aNode[0]->node.module != &mtfCumeDistWithinGroup ), // BUG-417800
  *        -->
  *        ( aNode[0]->node.module != &mtfCumeDist ),
  *
- *        ë¡œ ìˆ˜ì •í•œë‹¤.
+ *        ·Î ¼öÁ¤ÇÑ´Ù.
  *
- *      ( qtc::changeWithinGroupNode ì½”ë“œë„ í•„ë… )
+ *      ( qtc::changeWithinGroupNode ÄÚµåµµ ÇÊµ¶ )
  *
  * Implementation :
  *
- *    aNodeì— within group ì¸ìë¥¼ funcArgumentsì— ì¶”ê°€í•˜ê³ 
- *    aNode->node.argumentsì— ë³µì‚¬ ì—°ê²°í•œë‹¤.
+ *    aNode¿¡ within group ÀÎÀÚ¸¦ funcArguments¿¡ Ãß°¡ÇÏ°í
+ *    aNode->node.arguments¿¡ º¹»ç ¿¬°áÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -6162,12 +6195,12 @@ IDE_RC qtc::addWithinArguments( qcStatement  * aStatement,
         sCount = ( aArguments[0]->node.lflag & MTC_NODE_ARGUMENT_COUNT_MASK );
     }
     
-    // ìµœëŒ€ ê°¯ìˆ˜ëŠ” ë„˜ì„ ìˆ˜ ì—†ë‹¤.
+    // ÃÖ´ë °¹¼ö´Â ³ÑÀ» ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( ( aNode[0]->node.lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) + sCount >
                     MTC_NODE_ARGUMENT_COUNT_MAXIMUM,
                     ERR_INVALID_FUNCTION_ARGUMENT );
     
-    // funcArgumentsì˜ node.lflagë¥¼ ë³´ì¡´í•˜ê¸° ìœ„í•´ ë³µì‚¬í•œë‹¤.
+    // funcArgumentsÀÇ node.lflag¸¦ º¸Á¸ÇÏ±â À§ÇØ º¹»çÇÑ´Ù.
     IDE_TEST( copyNodeTree( aStatement,
                             (qtcNode*) aNode[0]->node.funcArguments,
                             & sCopyNode,
@@ -6175,7 +6208,7 @@ IDE_RC qtc::addWithinArguments( qcStatement  * aStatement,
                             ID_FALSE )
               != IDE_SUCCESS );
 
-    // argumentsì— ë¶™ì—¬ë„£ëŠ”ë‹¤.
+    // arguments¿¡ ºÙ¿©³Ö´Â´Ù.
     if ( aNode[0]->node.arguments == NULL )
     {
         aNode[0]->node.arguments = (mtcNode*) sCopyNode;
@@ -6189,7 +6222,7 @@ IDE_RC qtc::addWithinArguments( qcStatement  * aStatement,
         sNode->node.next = (mtcNode*) sCopyNode;
     }
 
-    //argument countë¥¼ ì¦ê°€
+    //argument count¸¦ Áõ°¡
     aNode[0]->node.lflag += sCount;
     
     return IDE_SUCCESS;
@@ -6212,19 +6245,19 @@ IDE_RC qtc::modifyQuantifiedExpression( qcStatement* aStatement,
  *
  * Description :
  *
- *    Parsing ë‹¨ê³„ì—ì„œ
- *    Quantified Expression ì²˜ë¦¬ë¥¼ ìœ„í•´ ìƒì„±í•œ ì‰ì—¬ Nodeë¥¼ ì œê±°í•œë‹¤.
+ *    Parsing ´Ü°è¿¡¼­
+ *    Quantified Expression Ã³¸®¸¦ À§ÇØ »ı¼ºÇÑ À×¿© Node¸¦ Á¦°ÅÇÑ´Ù.
  *
  * Implementation :
  *
- *    Parsingì„ ìœ„í•´ ìƒì„±í•œ ì‰ì—¬ Nodeê°€ ì¡´ì¬í•  ê²½ìš°, ì´ë¥¼ ì œê±°í•œë‹¤.
+ *    ParsingÀ» À§ÇØ »ı¼ºÇÑ À×¿© Node°¡ Á¸ÀçÇÒ °æ¿ì, ÀÌ¸¦ Á¦°ÅÇÑ´Ù.
  *
  *    ex) i1 in ( select a1 ... )
  *
  *          [IN]                          [IN]
  *           |                             |
  *           V                             V
- *          [i1] --> [ì‰ì—¬ Node]    ==>   [i1] --> [subquery]
+ *          [i1] --> [À×¿© Node]    ==>   [i1] --> [subquery]
  *                       |
  *                       V
  *                    [subquery]
@@ -6286,12 +6319,12 @@ IDE_RC qtc::makeValue( qcStatement*    aStatement,
  *
  * Description :
  *
- *    Valueë¥¼ ìœ„í•œ Nodeë¥¼ ìƒì„±í•¨.
+ *    Value¸¦ À§ÇÑ Node¸¦ »ı¼ºÇÔ.
  *
  * Implementation :
  *
- *   Data Type ì •ë³´(aTypeName)ê³¼ Value ì •ë³´(aValue)ë¥¼ ì´ìš©í•˜ì—¬
- *   Value Nodeë¥¼ ìƒì„±í•œë‹¤.
+ *   Data Type Á¤º¸(aTypeName)°ú Value Á¤º¸(aValue)¸¦ ÀÌ¿ëÇÏ¿©
+ *   Value Node¸¦ »ı¼ºÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -6306,16 +6339,16 @@ IDE_RC qtc::makeValue( qcStatement*    aStatement,
 
     sMtcTemplate = & QC_SHARED_TMPLATE(aStatement)->tmplate;
 
-    // Node ìƒì„±
+    // Node »ı¼º
     IDU_LIMITPOINT("qtc::makeValue::malloc");
     IDE_TEST(STRUCT_ALLOC(QC_QMP_MEM(aStatement), qtcNode, &(aNode[0]))
              != IDE_SUCCESS);
 
-    // Node ì´ˆê¸°í™”
+    // Node ÃÊ±âÈ­
     QTC_NODE_INIT( aNode[0] );
     aNode[1] = NULL;
 
-    // Node ì •ë³´ ì„¤ì •
+    // Node Á¤º¸ ¼³Á¤
     aNode[0]->node.lflag          = valueModule.lflag
                                   & ~MTC_NODE_COLUMN_COUNT_MASK;
     aNode[0]->position            = *aPosition;
@@ -6333,10 +6366,10 @@ IDE_RC qtc::makeValue( qcStatement*    aStatement,
                                valueModule.lflag & MTC_NODE_COLUMN_COUNT_MASK );
 
     // PROJ-1579 NCHAR
-    // ë¦¬í„°ëŸ´ì˜ ì¢…ë¥˜ì— ë”°ë¼ì„œ ì•„ë˜ì™€ ê°™ì´ ë¶„ë¥˜í•œë‹¤.
-    // NCHAR ë¦¬í„°ëŸ´    : N'ì•ˆ'
-    // ìœ ë‹ˆì½”ë“œ ë¦¬í„°ëŸ´ : U'\C548'
-    // ì¼ë°˜ ë¦¬í„°ëŸ´     : 'ABC' or CHAR'ABC'
+    // ¸®ÅÍ·²ÀÇ Á¾·ù¿¡ µû¶ó¼­ ¾Æ·¡¿Í °°ÀÌ ºĞ·ùÇÑ´Ù.
+    // NCHAR ¸®ÅÍ·²    : N'¾È'
+    // À¯´ÏÄÚµå ¸®ÅÍ·² : U'\C548'
+    // ÀÏ¹İ ¸®ÅÍ·²     : 'ABC' or CHAR'ABC'
     if( aLiteralType == MTC_COLUMN_NCHAR_LITERAL )
     {
         sMtcColumnFlag |= MTC_COLUMN_LITERAL_TYPE_NCHAR;
@@ -6347,7 +6380,7 @@ IDE_RC qtc::makeValue( qcStatement*    aStatement,
     }
     else
     {
-        // mtcColumn.flag = 0ìœ¼ë¡œ ì´ˆê¸°í™”
+        // mtcColumn.flag = 0À¸·Î ÃÊ±âÈ­
         sMtcColumnFlag = MTC_COLUMN_LITERAL_TYPE_NORMAL;
     }
 
@@ -6367,8 +6400,8 @@ IDE_RC qtc::makeValue( qcStatement*    aStatement,
                   != IDE_SUCCESS );
 
         // PROJ-1579 NCHAR
-        // íŒŒì‹± ë‹¨ê³„ì—ì„œ LITERAL_TYPE_NCHARì™€ LITERAL_TYPE_UNICODEê°€
-        // ì„¤ì •ë  ìˆ˜ ìˆë‹¤.
+        // ÆÄ½Ì ´Ü°è¿¡¼­ LITERAL_TYPE_NCHAR¿Í LITERAL_TYPE_UNICODE°¡
+        // ¼³Á¤µÉ ¼ö ÀÖ´Ù.
         sColumn->flag |= sMtcColumnFlag;
 
         // To Fix BUG-12925
@@ -6387,9 +6420,9 @@ IDE_RC qtc::makeValue( qcStatement*    aStatement,
     }
 
     //---------------------------------------------------------
-    // sResult != IDE_SUCCESSì¸ ê²½ìš°ëŠ” ë‘ ê²½ìš°ê°€ ìˆë‹¤.
-    // qtc::nextColumn()ìœ¼ë¡œ Next Columnì„ í• ë‹¹ë°›ì§€ ëª»í•œ ê²½ìš°,
-    // sModule->value() í˜¸ì¶œ ì‹œ ë‚¨ì€ row ê³µê°„ì´ ë¶€ì¡±í•œ ê²½ìš°
+    // sResult != IDE_SUCCESSÀÎ °æ¿ì´Â µÎ °æ¿ì°¡ ÀÖ´Ù.
+    // qtc::nextColumn()À¸·Î Next ColumnÀ» ÇÒ´ç¹ŞÁö ¸øÇÑ °æ¿ì,
+    // sModule->value() È£Ãâ ½Ã ³²Àº row °ø°£ÀÌ ºÎÁ·ÇÑ °æ¿ì
     //---------------------------------------------------------
     if( sResult != IDE_SUCCESS )
     {
@@ -6421,8 +6454,8 @@ IDE_RC qtc::makeValue( qcStatement*    aStatement,
                   != IDE_SUCCESS );
 
         // PROJ-1579 NCHAR
-        // íŒŒì‹± ë‹¨ê³„ì—ì„œ LITERAL_TYPE_NCHARì™€ LITERAL_TYPE_UNICODEê°€
-        // ì„¤ì •ë  ìˆ˜ ìˆë‹¤.
+        // ÆÄ½Ì ´Ü°è¿¡¼­ LITERAL_TYPE_NCHAR¿Í LITERAL_TYPE_UNICODE°¡
+        // ¼³Á¤µÉ ¼ö ÀÖ´Ù.
         sColumn->flag |= sMtcColumnFlag;
 
         // To Fix BUG-12925
@@ -6461,11 +6494,11 @@ IDE_RC qtc::makeNullValue( qcStatement     * aStatement,
 /***********************************************************************
  *
  * Description : BUG-38952 type null
- *    NULL Valueë¥¼ ìœ„í•œ Nodeë¥¼ ìƒì„±í•¨.
+ *    NULL Value¸¦ À§ÇÑ Node¸¦ »ı¼ºÇÔ.
  *
  * Implementation :
- *    TYPE_NULL propertyì— ë”°ë¼ null typeì˜ NULLì„ ìƒì„±í•˜ê±°ë‚˜
- *    varchar typeì˜ NULLì„ ìƒì„±í•œë‹¤.
+ *    TYPE_NULL property¿¡ µû¶ó null typeÀÇ NULLÀ» »ı¼ºÇÏ°Å³ª
+ *    varchar typeÀÇ NULLÀ» »ı¼ºÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -6511,12 +6544,12 @@ IDE_RC qtc::makeProcVariable( qcStatement*     aStatement,
  *
  * Description :
  *
- *    Procedure Variableì„ ìœ„í•œ Nodeë¥¼ ìƒì„±í•¨.
+ *    Procedure VariableÀ» À§ÇÑ Node¸¦ »ı¼ºÇÔ.
  *
  * Implementation :
  *
- *    Column ì •ë³´(aColumn)ë¥¼ ì´ìš©í•˜ì—¬ Procedure Variableì„ ìœ„í•œ
- *    Nodeë¥¼ ìƒì„±í•œë‹¤.
+ *    Column Á¤º¸(aColumn)¸¦ ÀÌ¿ëÇÏ¿© Procedure VariableÀ» À§ÇÑ
+ *    Node¸¦ »ı¼ºÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -6530,16 +6563,16 @@ IDE_RC qtc::makeProcVariable( qcStatement*     aStatement,
     UShort             sColumnIndex;
     UInt               sOffset;
 
-    // Node ìƒì„±
+    // Node »ı¼º
     IDU_LIMITPOINT("qtc::makeProcVariable::malloc");
     IDE_TEST(STRUCT_ALLOC(QC_QMP_MEM(aStatement), qtcNode, &(aNode[0]))
              != IDE_SUCCESS);
 
-    // Node ì´ˆê¸°í™”
+    // Node ÃÊ±âÈ­
     QTC_NODE_INIT( aNode[0] );
     aNode[1] = NULL;
 
-    // Node ì •ë³´ ì„¤ì •
+    // Node Á¤º¸ ¼³Á¤
     aNode[0]->node.lflag          = columnModule.lflag
                                   & ~MTC_NODE_COLUMN_COUNT_MASK;
     aNode[0]->position            = *aPosition;
@@ -6553,11 +6586,11 @@ IDE_RC qtc::makeProcVariable( qcStatement*     aStatement,
 
     if ( aProcVarOp & QTC_PROC_VAR_OP_NEXT_COLUMN )
     {
-        /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì›
-         * Intermediate Tuple Rowê°€ ìˆê³  ë¹„ì–´ ìˆì§€ ì•Šì€ ìƒíƒœì—ì„œ,
-         * Intermediate Tuple Rowì— Lob Columnì„ í• ë‹¹í•  ë•Œ,
-         * (Old Offset + New Size) > Property ì´ë©´,
-         * ìƒˆë¡œìš´ Intermediate Tuple Rowë¥¼ í• ë‹¹í•œë‹¤.
+        /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø
+         * Intermediate Tuple Row°¡ ÀÖ°í ºñ¾î ÀÖÁö ¾ÊÀº »óÅÂ¿¡¼­,
+         * Intermediate Tuple Row¿¡ Lob ColumnÀ» ÇÒ´çÇÒ ¶§,
+         * (Old Offset + New Size) > Property ÀÌ¸é,
+         * »õ·Î¿î Intermediate Tuple Row¸¦ ÇÒ´çÇÑ´Ù.
          */
         if ( ( sQcTemplate->tmplate.currentRow[MTC_TUPLE_TYPE_INTERMEDIATE] != ID_USHORT_MAX ) &&
              ( aColumn != NULL ) )
@@ -6668,13 +6701,13 @@ IDE_RC qtc::makeInternalProcVariable( qcStatement*    aStatement,
  *
  * Description :
  *    For PR-11391
- *    Internal Procedure Variableì„ ìœ„í•œ Nodeë¥¼ ìƒì„±í•¨.
- *    Internal Procedure Variableì€ tableì˜ columnì¸ì§€ procedure variableì¸ì§€
- *    ê²€ì‚¬í•˜ë©´ ì•ˆë¨.
+ *    Internal Procedure VariableÀ» À§ÇÑ Node¸¦ »ı¼ºÇÔ.
+ *    Internal Procedure VariableÀº tableÀÇ columnÀÎÁö procedure variableÀÎÁö
+ *    °Ë»çÇÏ¸é ¾ÈµÊ.
  * Implementation :
  *
- *    Column ì •ë³´(aColumn)ë¥¼ ì´ìš©í•˜ì—¬ Procedure Variableì„ ìœ„í•œ
- *    Nodeë¥¼ ìƒì„±í•œë‹¤.
+ *    Column Á¤º¸(aColumn)¸¦ ÀÌ¿ëÇÏ¿© Procedure VariableÀ» À§ÇÑ
+ *    Node¸¦ »ı¼ºÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -6683,16 +6716,16 @@ IDE_RC qtc::makeInternalProcVariable( qcStatement*    aStatement,
 
     mtcTemplate * sMtcTemplate;
 
-    // Node ìƒì„±
+    // Node »ı¼º
     IDU_LIMITPOINT("qtc::makeInternalProcVariable::malloc");
     IDE_TEST(STRUCT_ALLOC(QC_QMP_MEM(aStatement), qtcNode, &(aNode[0]))
              != IDE_SUCCESS);
 
-    // Node ì´ˆê¸°í™”
+    // Node ÃÊ±âÈ­
     QTC_NODE_INIT( aNode[0] );
     aNode[1] = NULL;
 
-    // Node ì •ë³´ ì„¤ì •
+    // Node Á¤º¸ ¼³Á¤
     aNode[0]->node.lflag          = columnModule.lflag
                                   & ~MTC_NODE_COLUMN_COUNT_MASK;
     aNode[0]->lflag               = QTC_NODE_INTERNAL_PROC_VAR_EXIST;
@@ -6765,12 +6798,12 @@ IDE_RC qtc::makeVariable( qcStatement*    aStatement,
  *
  * Description :
  *
- *    Host Variableì„ ìœ„í•œ Nodeë¥¼ ìƒì„±í•¨.
+ *    Host VariableÀ» À§ÇÑ Node¸¦ »ı¼ºÇÔ.
  *
  * Implementation :
  *
- *    Host ë³€ìˆ˜ê°€ ì¡´ì¬í•¨ì„ Settingí•˜ê³ ,
- *    Value Moduleë¡œ ì—°ì‚°ì Moduleì„ Settingí•œë‹¤.
+ *    Host º¯¼ö°¡ Á¸ÀçÇÔÀ» SettingÇÏ°í,
+ *    Value Module·Î ¿¬»êÀÚ ModuleÀ» SettingÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -6791,16 +6824,16 @@ IDE_RC qtc::makeVariable( qcStatement*    aStatement,
 
     sStmtListMgr = aStatement->myPlan->stmtListMgr;
 
-    // Node ìƒì„±
+    // Node »ı¼º
     IDU_LIMITPOINT("qtc::makeVariable::malloc");
     IDE_TEST(STRUCT_ALLOC(QC_QMP_MEM(aStatement), qtcNode, &(aNode[0]))
              != IDE_SUCCESS);
 
-    // Node ì´ˆê¸°í™”
+    // Node ÃÊ±âÈ­
     QTC_NODE_INIT( aNode[0] );
     aNode[1] = NULL;
 
-    // Node ì •ë³´ ì„¤ì •
+    // Node Á¤º¸ ¼³Á¤
     aNode[0]->node.lflag          = ( valueModule.lflag
                                   | MTC_NODE_BIND_EXIST )
                                   & ~MTC_NODE_COLUMN_COUNT_MASK;
@@ -6811,13 +6844,13 @@ IDE_RC qtc::makeVariable( qcStatement*    aStatement,
     sHostVarCnt = qcg::getBindCount( aStatement );
     
     // PROJ-2415 Grouping Sets Clause
-    for ( sHostVarIdx = 0;
+    for ( sHostVarIdx = sStmtListMgr->mHostVarOffset; /* TASK-7219 */
           sHostVarIdx < sHostVarCnt;
           sHostVarIdx++ )
     {
         if ( sStmtListMgr->hostVarOffset[ sHostVarIdx ] == aPosition->offset )
         {
-            // reparsing í• ë•Œ ì´ë¯¸ í• ë‹¹ëœ columnì„ ë‹¤ì‹œ ì‚¬ìš© í•œë‹¤.
+            // reparsing ÇÒ¶§ ÀÌ¹Ì ÇÒ´çµÈ columnÀ» ´Ù½Ã »ç¿ë ÇÑ´Ù.
             aNode[0]->node.table  = QC_SHARED_TMPLATE(aStatement)->tmplate.variableRow;
             aNode[0]->node.column = sHostVarIdx;
 
@@ -6833,7 +6866,7 @@ IDE_RC qtc::makeVariable( qcStatement*    aStatement,
 
     if ( sIsSameVar == ID_FALSE )
     {
-        // ìµœì´ˆ parsing í• ë•Œ
+        // ÃÖÃÊ parsing ÇÒ¶§
         IDE_TEST( qtc::nextColumn( QC_QMP_MEM(aStatement),
                                    aNode[0],
                                    aStatement,
@@ -6844,24 +6877,26 @@ IDE_RC qtc::makeVariable( qcStatement*    aStatement,
         
         aStatement->myPlan->stmtListMgr->hostVarOffset[ aNode[0]->node.column ] =
             aPosition->offset;
-        
+        aStatement->myPlan->stmtListMgr->mHostVarNode[ aNode[0]->node.column ] =
+            aNode[0]; /* TASK-7219 */
+
         IDE_DASSERT( aNode[0]->node.column == sHostVarCnt );
     }
     else
     {
-        /* Nothing to do */
-
+        aStatement->myPlan->stmtListMgr->mHostVarNode[ aNode[0]->node.column ] =
+            aNode[0]; /* TASK-7219 */
     }
 
     // BUG-36986
-    // PSM ì— í•œí•´ parsing ê³¼ì •ì—ì„œ variable ì— ëŒ€í•œ qtcNode ìƒì„±ì‹œ
-    // ì¤‘ë³µíšŒí”¼ë¥¼ ìœ„í•´ table, column position ì€ ê¸°ì¡´ì˜ ê²ƒìœ¼ë¡œ ì„¸íŒ…í•œë‹¤.
-    // BUGBUG : ì¼ë°˜ì ìœ¼ë¡œ CLI, JDBC, ODBC ë“±ì—ì„œ
-    //          name base biding ì„ ì§€ì›í•˜ê²Œ ë˜ë©´ ìˆ˜ì •í•´ì•¼ í•¨
+    // PSM ¿¡ ÇÑÇØ parsing °úÁ¤¿¡¼­ variable ¿¡ ´ëÇÑ qtcNode »ı¼º½Ã
+    // Áßº¹È¸ÇÇ¸¦ À§ÇØ table, column position Àº ±âÁ¸ÀÇ °ÍÀ¸·Î ¼¼ÆÃÇÑ´Ù.
+    // BUGBUG : ÀÏ¹İÀûÀ¸·Î CLI, JDBC, ODBC µî¿¡¼­
+    //          name base biding À» Áö¿øÇÏ°Ô µÇ¸é ¼öÁ¤ÇØ¾ß ÇÔ
 
-    // reparsing í•  ë•Œ column position ì´ ìˆœì°¨ì ì´ë¯€ë¡œ
-    // makeVariable ì´ ëë‚œ í›„ QCP_SET_HOST_VAR_OFFSET ì˜ ì¸ìë¡œ ì“°ê¸° ìœ„í•´
-    // ì›ë˜ì˜ column position ì„ baseColumn ì— copy í•œë‹¤.
+    // reparsing ÇÒ ¶§ column position ÀÌ ¼øÂ÷ÀûÀÌ¹Ç·Î
+    // makeVariable ÀÌ ³¡³­ ÈÄ QCP_SET_HOST_VAR_OFFSET ÀÇ ÀÎÀÚ·Î ¾²±â À§ÇØ
+    // ¿ø·¡ÀÇ column position À» baseColumn ¿¡ copy ÇÑ´Ù.
     aNode[0]->node.baseColumn = aNode[0]->node.column;
 
     if( aStatement->calledByPSMFlag == ID_TRUE )
@@ -6887,7 +6922,7 @@ IDE_RC qtc::makeVariable( qcStatement*    aStatement,
  
         if( aStatement->namedVarNode == NULL )
         {
-            // ìµœì´ˆìƒì„±
+            // ÃÖÃÊ»ı¼º
             IDE_TEST( STRUCT_ALLOC( QC_QME_MEM( aStatement ),
                                     qcNamedVarNode,
                                     &aStatement->namedVarNode )
@@ -6898,7 +6933,7 @@ IDE_RC qtc::makeVariable( qcStatement*    aStatement,
         }
         else
         {
-            // ê¸°ì¡´ì— ë“±ë¡ëœ variable ê²€ì‚¬
+            // ±âÁ¸¿¡ µî·ÏµÈ variable °Ë»ç
             for( sNamedVarNode = aStatement->namedVarNode;
                  sNamedVarNode != NULL;
                  sNamedVarNode = sNamedVarNode->next )
@@ -6924,13 +6959,13 @@ IDE_RC qtc::makeVariable( qcStatement*    aStatement,
 
             if( sIsFound == ID_TRUE )
             {
-                // ë™ì¼í•œ host variable ì˜ table, column position set
+                // µ¿ÀÏÇÑ host variable ÀÇ table, column position set
                 aNode[0]->node.table  = sNamedVarNode->varNode->node.table;
                 aNode[0]->node.column = sNamedVarNode->varNode->node.column;
             }
             else
             {
-                // namedVarNode ì— ì¶”ê°€
+                // namedVarNode ¿¡ Ãß°¡
                 IDE_TEST( STRUCT_ALLOC( QC_QME_MEM( aStatement ),
                                         qcNamedVarNode,
                                         &sNamedVarNode )
@@ -6968,25 +7003,25 @@ IDE_RC qtc::makeColumn( qcStatement*    aStatement,
  *
  * Description :
  *
- *    Columnì„ ìœ„í•œ Nodeë¥¼ ìƒì„±í•¨.
+ *    ColumnÀ» À§ÇÑ Node¸¦ »ı¼ºÇÔ.
  *
  * Implementation :
  *
- *    User Name, Table Nameì˜ ì¡´ì¬ ìœ ë¬´ì— ë”°ë¼ ê°ê°ì— ì•Œë§ì€
- *    ì •ë³´ë¥¼ ì„¤ì •í•˜ê³ , Column Moduleë¡œ ì—°ì‚°ì ëª¨ë“ˆì„ settingí•œë‹¤.
+ *    User Name, Table NameÀÇ Á¸Àç À¯¹«¿¡ µû¶ó °¢°¢¿¡ ¾Ë¸ÂÀº
+ *    Á¤º¸¸¦ ¼³Á¤ÇÏ°í, Column Module·Î ¿¬»êÀÚ ¸ğµâÀ» settingÇÑ´Ù.
  *
  ***********************************************************************/
 
-    // Node ìƒì„±
+    // Node »ı¼º
     IDU_LIMITPOINT("qtc::makeColumn::malloc");
     IDE_TEST(STRUCT_ALLOC(QC_QMP_MEM(aStatement), qtcNode, &(aNode[0]))
              != IDE_SUCCESS);
 
-    // Node ì´ˆê¸°í™”
+    // Node ÃÊ±âÈ­
     QTC_NODE_INIT( aNode[0] );
     aNode[1] = NULL;
 
-    // Node ì •ë³´ ì„¤ì •
+    // Node Á¤º¸ ¼³Á¤
     aNode[0]->node.lflag          = columnModule.lflag
                                   & ~MTC_NODE_COLUMN_COUNT_MASK;
 
@@ -7076,22 +7111,22 @@ IDE_RC qtc::makeAssign( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Assignì„ ìœ„í•œ Nodeë¥¼ ìƒì„±í•¨.
- *    Indirectì™€ ë‹¬ë¦¬ aNodeë¥¼ ì´ˆê¸°í™”í•˜ì§€ ì•Šê³  ê·¸ëŒ€ë¡œ ì´ìš©í•œë‹¤.
+ *    AssignÀ» À§ÇÑ Node¸¦ »ı¼ºÇÔ.
+ *    Indirect¿Í ´Ş¸® aNode¸¦ ÃÊ±âÈ­ÇÏÁö ¾Ê°í ±×´ë·Î ÀÌ¿ëÇÑ´Ù.
  *
  * Implementation :
- *    TODO - ì™¸ë¶€ì—ì„œ Argumentë¥¼ ì²˜ë¦¬í•˜ì§€ ì•Šë„ë¡ ìˆ˜ì •í•´ì•¼ í•¨.
- *    ì¦‰, makeIndirectì™€ ê°™ì´ argumentì— ëŒ€í•œ ì—°ê²°ì„ ê³ ë ¤í•´ì•¼ í•˜ë©°,
- *    Host ë³€ìˆ˜ bindingë“±ì„ ê³ ë ¤í•˜ì—¬,
- *    argumentì˜ node.flag ì •ë³´ë“±ì„ estimateInternal()ê³¼ ê°™ì´
- *    ìŠ¹ê³„í•  ìˆ˜ ìˆë„ë¡ í•´ì•¼ í•œë‹¤.
+ *    TODO - ¿ÜºÎ¿¡¼­ Argument¸¦ Ã³¸®ÇÏÁö ¾Êµµ·Ï ¼öÁ¤ÇØ¾ß ÇÔ.
+ *    Áï, makeIndirect¿Í °°ÀÌ argument¿¡ ´ëÇÑ ¿¬°áÀ» °í·ÁÇØ¾ß ÇÏ¸ç,
+ *    Host º¯¼ö bindingµîÀ» °í·ÁÇÏ¿©,
+ *    argumentÀÇ node.flag Á¤º¸µîÀ» estimateInternal()°ú °°ÀÌ
+ *    ½Â°èÇÒ ¼ö ÀÖµµ·Ï ÇØ¾ß ÇÑ´Ù.
  *
  ***********************************************************************/
 
 #define IDE_FN "IDE_RC qtc::makeAssign"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
-    // Node ì •ë³´ ì„¤ì •
+    // Node Á¤º¸ ¼³Á¤
     aNode->node.module    = &assignModule;
     aNode->node.arguments = &aArgument->node;
     aNode->node.lflag     = ( assignModule.lflag
@@ -7131,8 +7166,8 @@ IDE_RC qtc::makeIndirect( qcStatement* aStatement,
  *
  * Description :
  *
- *    Indirectionì„ ìœ„í•œ Nodeë¥¼ ìƒì„±í•¨.
- *    (ì°¸ì¡°, qtcIndirect.cpp)
+ *    IndirectionÀ» À§ÇÑ Node¸¦ »ı¼ºÇÔ.
+ *    (ÂüÁ¶, qtcIndirect.cpp)
  *
  * Implementation :
  *
@@ -7182,27 +7217,27 @@ qtc::makePassNode( qcStatement* aStatement,
  *
  * Description :
  *
- *    Pass Nodeë¥¼ ìƒì„±í•¨.
- *    (ì°¸ì¡°, qtcPass.cpp)
+ *    Pass Node¸¦ »ı¼ºÇÔ.
+ *    (ÂüÁ¶, qtcPass.cpp)
  *
  * Implementation :
  *
- *    Current Nodeê°€ ì¡´ì¬í•  ê²½ìš°, ì´ ê³µê°„ì„ Pass Nodeë¡œ ëŒ€ì²´í•¨.
- *    Current Nodeê°€ ì—†ì„ ê²½ìš°, ìƒˆë¡œìš´ Pass Nodeë¥¼ ìƒì„±í•¨.
+ *    Current Node°¡ Á¸ÀçÇÒ °æ¿ì, ÀÌ °ø°£À» Pass Node·Î ´ëÃ¼ÇÔ.
+ *    Current Node°¡ ¾øÀ» °æ¿ì, »õ·Î¿î Pass Node¸¦ »ı¼ºÇÔ.
  *
- *    Current Nodeê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+ *    Current Node°¡ Á¸ÀçÇÏ´Â °æ¿ì
  *        - SELECT i1 + 1 FROM T1 GROUP BY i1 + 1 HAVING i1 + 1 > ?;
  *                 ^^^^^^                                ^^^^^^
- *        - í•´ë‹¹ i1 + 1ì„ Pass Nodeë¡œ ëŒ€ì²´í•˜ê³  Pass Nodeì˜ argumentë¡œ
- *          GROUP BY i1 + 1ì˜ (i1 + 1)ì„ ì·¨í•˜ê²Œ ëœë‹¤.
- *        - Pass Nodeì— Conversionì´ ì¡´ì¬í•  ìˆ˜ ìˆìœ¼ë©°, indirection ë˜ì§€
- *          ì•Šë„ë¡ í•´ì•¼ í•œë‹¤.
- *    Current Node ê°€ ì—†ëŠ” ê²½ìš°
+ *        - ÇØ´ç i1 + 1À» Pass Node·Î ´ëÃ¼ÇÏ°í Pass NodeÀÇ argument·Î
+ *          GROUP BY i1 + 1ÀÇ (i1 + 1)À» ÃëÇÏ°Ô µÈ´Ù.
+ *        - Pass Node¿¡ ConversionÀÌ Á¸ÀçÇÒ ¼ö ÀÖÀ¸¸ç, indirection µÇÁö
+ *          ¾Êµµ·Ï ÇØ¾ß ÇÑ´Ù.
+ *    Current Node °¡ ¾ø´Â °æ¿ì
  *        - SELECT i1 + 1 FROM T1 ORDER BY 1;
- *        - Sortingì„ ìœ„í•´ ìƒˆë¡œ ìƒì„±í•œ (i1 + 1)ì„ Argumentë¡œ í•˜ì—¬ Pass
- *          Node ë¥¼ ìƒì„±í•˜ê²Œ ëœë‹¤.
- *        - Pass Nodeì— Conversionì´ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©°,
- *          indirectionì´ ë˜ë„ë¡ í•˜ì—¬ì•¼ í•œë‹¤.
+ *        - SortingÀ» À§ÇØ »õ·Î »ı¼ºÇÑ (i1 + 1)À» Argument·Î ÇÏ¿© Pass
+ *          Node ¸¦ »ı¼ºÇÏ°Ô µÈ´Ù.
+ *        - Pass Node¿¡ ConversionÀÌ Á¸ÀçÇÏÁö ¾ÊÀ¸¸ç,
+ *          indirectionÀÌ µÇµµ·Ï ÇÏ¿©¾ß ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -7213,18 +7248,18 @@ qtc::makePassNode( qcStatement* aStatement,
 
     if ( aCurrentNode != NULL )
     {
-        // Pass Node ê¸°ë³¸ ì •ë³´ Setting
+        // Pass Node ±âº» Á¤º¸ Setting
         aCurrentNode->node.module = &passModule;
 
-        // flag ì •ë³´ ë³€ê²½
-        // ê¸°ì¡´ ì •ë³´ëŠ” ê·¸ëŒ€ë¡œ ìœ ì§€í•˜ê³ , pass nodeì˜ ì •ë³´ë§Œ ì¶”ê°€
+        // flag Á¤º¸ º¯°æ
+        // ±âÁ¸ Á¤º¸´Â ±×´ë·Î À¯ÁöÇÏ°í, pass nodeÀÇ Á¤º¸¸¸ Ãß°¡
         aCurrentNode->node.lflag &= ~MTC_NODE_COLUMN_COUNT_MASK;
         aCurrentNode->node.lflag |= 1;
 
         aCurrentNode->node.lflag &= ~MTC_NODE_OPERATOR_MASK;
         aCurrentNode->node.lflag |= MTC_NODE_OPERATOR_MISC;
 
-        // Indirectionì´ ì•„ë‹˜ì„ Setting
+        // IndirectionÀÌ ¾Æ´ÔÀ» Setting
         aCurrentNode->node.lflag &= ~MTC_NODE_INDIRECT_MASK;
         aCurrentNode->node.lflag |= MTC_NODE_INDIRECT_FALSE;
 
@@ -7236,27 +7271,27 @@ qtc::makePassNode( qcStatement* aStatement,
     }
     else
     {
-        // ìƒˆë¡œìš´ Pass Node ìƒì„±
+        // »õ·Î¿î Pass Node »ı¼º
         IDU_LIMITPOINT("qtc::makePassNode::malloc");
         IDE_TEST(STRUCT_ALLOC(QC_QMP_MEM(aStatement), qtcNode, & sPassNode)
                  != IDE_SUCCESS);
 
-        // Argument Nodeë¥¼ ê·¸ëŒ€ë¡œ ë³µì‚¬
+        // Argument Node¸¦ ±×´ë·Î º¹»ç
         idlOS::memcpy( sPassNode, aArgumentNode, ID_SIZEOF(qtcNode) );
 
-        // Pass Node ê¸°ë³¸ ì •ë³´ Setting
+        // Pass Node ±âº» Á¤º¸ Setting
         sPassNode->node.module    = &passModule;
 
-        // flag ì •ë³´ ë³€ê²½
-        // Argument ë…¸ë“œì˜ ê¸°ì¡´ ì •ë³´ëŠ” ê·¸ëŒ€ë¡œ ìœ ì§€í•˜ê³ ,
-        // Pass nodeì˜ ì •ë³´ë§Œ ì¶”ê°€
+        // flag Á¤º¸ º¯°æ
+        // Argument ³ëµåÀÇ ±âÁ¸ Á¤º¸´Â ±×´ë·Î À¯ÁöÇÏ°í,
+        // Pass nodeÀÇ Á¤º¸¸¸ Ãß°¡
         sPassNode->node.lflag &= ~MTC_NODE_COLUMN_COUNT_MASK;
         sPassNode->node.lflag |= 1;
 
         sPassNode->node.lflag &= ~MTC_NODE_OPERATOR_MASK;
         sPassNode->node.lflag |= MTC_NODE_OPERATOR_MISC;
 
-        // Indirectionì„ì„ Setting
+        // IndirectionÀÓÀ» Setting
         sPassNode->node.lflag &= ~MTC_NODE_INDIRECT_MASK;
         sPassNode->node.lflag |= MTC_NODE_INDIRECT_TRUE;
 
@@ -7270,7 +7305,7 @@ qtc::makePassNode( qcStatement* aStatement,
         sPassNode->indexArgument       = 0;
     }
 
-    // ìƒˆë¡œìš´ ID Setting
+    // »õ·Î¿î ID Setting
     IDE_TEST( qtc::nextColumn( QC_QMP_MEM(aStatement),
                                sPassNode,
                                aStatement,
@@ -7312,100 +7347,100 @@ qtc::preProcessConstExpr( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Validation ë‹¨ê³„ì—ì„œ í•­ìƒ ì¼ì •í•œ ê°’ì„ ê°–ê²Œ ë˜ëŠ”
- *    Constant Expressionì— ëŒ€í•˜ì—¬ ë¯¸ë¦¬ ìˆ˜í–‰í•œë‹¤.
+ *    Validation ´Ü°è¿¡¼­ Ç×»ó ÀÏÁ¤ÇÑ °ªÀ» °®°Ô µÇ´Â
+ *    Constant Expression¿¡ ´ëÇÏ¿© ¹Ì¸® ¼öÇàÇÑ´Ù.
  *
- *    ì´ëŸ¬í•œ ì²˜ë¦¬ëŠ” ë‹¤ìŒê³¼ ê°™ì€ ì´ì ì„ ì–»ê¸° ìœ„í•´ì„œì´ë‹¤.
- *        1.  Expressionì˜ ë°˜ë³µ ìˆ˜í–‰ ë°©ì§€
+ *    ÀÌ·¯ÇÑ Ã³¸®´Â ´ÙÀ½°ú °°Àº ÀÌÁ¡À» ¾ò±â À§ÇØ¼­ÀÌ´Ù.
+ *        1.  ExpressionÀÇ ¹İº¹ ¼öÇà ¹æÁö
  *            ex) i1 = 1 + 1
  *                ^^^^^^^^^^
- *          ë™ì¼ ê²°ê³¼ë¥¼ ìƒì‚°í•¨ì—ë„ ë¶ˆêµ¬í•˜ê³  ê³„ì† ë°˜ë³µ ìˆ˜í–‰ë˜ëŠ” ê²ƒì„
- *          ë°©ì§€í•˜ê¸° ìœ„í•¨ì´ë‹¤.
- *        2.  Selectivity ì¶”ì¶œ
+ *          µ¿ÀÏ °á°ú¸¦ »ı»êÇÔ¿¡µµ ºÒ±¸ÇÏ°í °è¼Ó ¹İº¹ ¼öÇàµÇ´Â °ÍÀ»
+ *          ¹æÁöÇÏ±â À§ÇÔÀÌ´Ù.
+ *        2.  Selectivity ÃßÃâ
  *            ex) double1 > 3
  *                         ^^
- *           ìœ„ì™€ ê°™ì´ Column Typeì´ doubleì´ê³  Value Typeì´ integerì¼
- *           ê²½ìš° 3ê°’ì´ doubleí˜•ìœ¼ë¡œ ë³€í™˜ë˜ì–´ì•¼ selectivityë¥¼ ê³„ì‚°í•  ìˆ˜
- *           ìˆë‹¤.  ì´ëŸ¬í•œ predicateì˜ selectivityë¥¼ ì¶”ì¶œí•˜ê¸° ìœ„í•´ Value
- *           ì˜ì—­ì— ëŒ€í•œ ê°’ì„ ë¯¸ë¦¬ ê³„ì‚°í•¨ìœ¼ë¡œì„œ ê·¸ íš¨ê³¼ë¥¼ ì–»ì„ ìˆ˜ ìˆë‹¤.
- *        3.  Fixed Key Range ì‚¬ìš© íš¨ê³¼ì˜ ì¦ëŒ€
+ *           À§¿Í °°ÀÌ Column TypeÀÌ doubleÀÌ°í Value TypeÀÌ integerÀÏ
+ *           °æ¿ì 3°ªÀÌ doubleÇüÀ¸·Î º¯È¯µÇ¾î¾ß selectivity¸¦ °è»êÇÒ ¼ö
+ *           ÀÖ´Ù.  ÀÌ·¯ÇÑ predicateÀÇ selectivity¸¦ ÃßÃâÇÏ±â À§ÇØ Value
+ *           ¿µ¿ª¿¡ ´ëÇÑ °ªÀ» ¹Ì¸® °è»êÇÔÀ¸·Î¼­ ±× È¿°ú¸¦ ¾òÀ» ¼ö ÀÖ´Ù.
+ *        3.  Fixed Key Range »ç¿ë È¿°úÀÇ Áõ´ë
  *            ex) double1 = 3 + 4
  *                          ^^^^^
- *            ì•ì˜ ê²½ìš°ì™€ ë§ˆì°¬ê°€ì§€ë¡œ Valueì˜ì—­ì€ ì—°ì‚°ì´ í•„ìš”í•˜ê³ ,
- *            ê°’ì˜ conversionë˜ì–´ì•¼ í•˜ê¸° ë•Œë¬¸ì—
- *            Key Rangeë¥¼ ë¯¸ë¦¬ ìƒì„±í•  ìˆ˜ ì—†ë‹¤.  ê·¸ëŸ¬ë‚˜, ì´ëŠ” ì—°ì‚°ì˜ ê²°ê³¼ì™€
- *            Conversion ê²°ê³¼ê°€ í•­ìƒ ì¼ì •í•˜ê¸° ë•Œë¬¸ì— Fixed Key Rangeë¡œ
- *            ìƒì„±í•  ìˆ˜ ìˆê²Œ ëœë‹¤.
+ *            ¾ÕÀÇ °æ¿ì¿Í ¸¶Âù°¡Áö·Î Value¿µ¿ªÀº ¿¬»êÀÌ ÇÊ¿äÇÏ°í,
+ *            °ªÀÇ conversionµÇ¾î¾ß ÇÏ±â ¶§¹®¿¡
+ *            Key Range¸¦ ¹Ì¸® »ı¼ºÇÒ ¼ö ¾ø´Ù.  ±×·¯³ª, ÀÌ´Â ¿¬»êÀÇ °á°ú¿Í
+ *            Conversion °á°ú°¡ Ç×»ó ÀÏÁ¤ÇÏ±â ¶§¹®¿¡ Fixed Key Range·Î
+ *            »ı¼ºÇÒ ¼ö ÀÖ°Ô µÈ´Ù.
  *
- *    ì´ëŸ¬í•œ ì²˜ë¦¬ê°€ ê°€ëŠ¥í•˜ê¸° ìœ„í•´ì„œëŠ” ë‹¤ìŒê³¼ ê°™ì€ ë¬¸ì œë¥¼ í•´ê²°í•˜ì—¬ì•¼ í•œë‹¤.
+ *    ÀÌ·¯ÇÑ Ã³¸®°¡ °¡´ÉÇÏ±â À§ÇØ¼­´Â ´ÙÀ½°ú °°Àº ¹®Á¦¸¦ ÇØ°áÇÏ¿©¾ß ÇÑ´Ù.
  *
- *        - ì¼ë°˜ ìƒìˆ˜ëŠ” Tuple Setì˜ [Constant ì˜ì—­]ì— ì €ì¥ëœë‹¤.  ì´ ì˜ì—­ì€
- *          ì ˆëŒ€ ë³€í•˜ì§€ ì•ŠëŠ” ì˜ì—­ì´ê¸° ë•Œë¬¸ì— ê°’ì„ ì €ì¥í•˜ê¸° ìœ„í•œ ë©”ëª¨ë¦¬ ê³µê°„ì´
- *          í• ë‹¹ë˜ì–´ ìˆë‹¤.
- *          ê·¸ëŸ¬ë‚˜, ì—°ì‚° ë˜ëŠ”  Conversionì€ ê·¸ ê²°ê³¼ê°€ ê°€ë³€ì ì´ë©° Data Type
- *          ë˜í•œ ê°€ë³€ì ì¼ ìˆ˜ ìˆìœ¼ë¯€ë¡œ [Intermediate ì˜ì—­]ì—ì„œ ê´€ë¦¬ë˜ë©°,
- *          ê°’ì„ ìœ„í•œ ë©”ëª¨ë¦¬ë¥¼ Execution ì‹œì ì— í• ë‹¹ë°›ê²Œ ëœë‹¤.
- *          ì¦‰, í•­ìƒ ê°™ì€ ê²°ê³¼ë¥¼ ìƒì„±í•˜ëŠ” ì—°ì‚°ì´ë¼ í•  ì§€ë¼ë„ ê°’ì„ ê´€ë¦¬í• 
- *          ê³µê°„ì´ ì—†ê¸° ë•Œë¬¸ì— ë¯¸ë¦¬ ìˆ˜í–‰í•  ìˆ˜ ì—†ê²Œ ëœë‹¤.
- *        - ë”°ë¼ì„œ, Constant Expressionì— ëŒ€í•œ ì„ ì²˜ë¦¬ë¥¼ ìœ„í•´ì„œëŠ”
- *          Intermediate ì˜ì—­ì—ì„œ ê´€ë¦¬ë˜ëŠ” ì—°ì‚°ì„ Constant ì˜ì—­ìœ¼ë¡œ
- *          ì´ë™ì‹œì¼œì•¼ í•˜ë©°, ì—°ì‚°ì˜ ìˆ˜í–‰ê³¼ Nodeê°„ì˜ ì—°ê²° ê´€ê³„ì˜ í‘œí˜„,
- *          ì—°ì‚°ì˜ ì†ì„± ë³€ê²½(ì¼ë°˜ ìƒìˆ˜í˜•)ì„ ê³ ë ¤í•˜ì—¬ì•¼ í•œë‹¤.
+ *        - ÀÏ¹İ »ó¼ö´Â Tuple SetÀÇ [Constant ¿µ¿ª]¿¡ ÀúÀåµÈ´Ù.  ÀÌ ¿µ¿ªÀº
+ *          Àı´ë º¯ÇÏÁö ¾Ê´Â ¿µ¿ªÀÌ±â ¶§¹®¿¡ °ªÀ» ÀúÀåÇÏ±â À§ÇÑ ¸Ş¸ğ¸® °ø°£ÀÌ
+ *          ÇÒ´çµÇ¾î ÀÖ´Ù.
+ *          ±×·¯³ª, ¿¬»ê ¶Ç´Â  ConversionÀº ±× °á°ú°¡ °¡º¯ÀûÀÌ¸ç Data Type
+ *          ¶ÇÇÑ °¡º¯ÀûÀÏ ¼ö ÀÖÀ¸¹Ç·Î [Intermediate ¿µ¿ª]¿¡¼­ °ü¸®µÇ¸ç,
+ *          °ªÀ» À§ÇÑ ¸Ş¸ğ¸®¸¦ Execution ½ÃÁ¡¿¡ ÇÒ´ç¹Ş°Ô µÈ´Ù.
+ *          Áï, Ç×»ó °°Àº °á°ú¸¦ »ı¼ºÇÏ´Â ¿¬»êÀÌ¶ó ÇÒ Áö¶óµµ °ªÀ» °ü¸®ÇÒ
+ *          °ø°£ÀÌ ¾ø±â ¶§¹®¿¡ ¹Ì¸® ¼öÇàÇÒ ¼ö ¾ø°Ô µÈ´Ù.
+ *        - µû¶ó¼­, Constant Expression¿¡ ´ëÇÑ ¼±Ã³¸®¸¦ À§ÇØ¼­´Â
+ *          Intermediate ¿µ¿ª¿¡¼­ °ü¸®µÇ´Â ¿¬»êÀ» Constant ¿µ¿ªÀ¸·Î
+ *          ÀÌµ¿½ÃÄÑ¾ß ÇÏ¸ç, ¿¬»êÀÇ ¼öÇà°ú Node°£ÀÇ ¿¬°á °ü°èÀÇ Ç¥Çö,
+ *          ¿¬»êÀÇ ¼Ó¼º º¯°æ(ÀÏ¹İ »ó¼öÇü)À» °í·ÁÇÏ¿©¾ß ÇÑ´Ù.
  *
  * Implementation :
- *     Constant Expressionì˜ ì„ ì²˜ë¦¬ê°€ ê°€ëŠ¥í•œ ì¡°ê±´
- *        - í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ê°€ ì—†ì–´ì•¼ í•œë‹¤.
+ *     Constant ExpressionÀÇ ¼±Ã³¸®°¡ °¡´ÉÇÑ Á¶°Ç
+ *        - È£½ºÆ® º¯¼ö°¡ ¾ø¾î¾ß ÇÑ´Ù.
  *            * i1 = 1 + ?
  *                  ^^^^^^
- *              ìœ„ì™€ ê°™ì´ Host ë³€ìˆ˜ê°€ ìˆëŠ” ê²½ìš° ê·¸ ì—°ì‚° ê²°ê³¼ë¥¼ ì˜ˆë‹¨í•  ìˆ˜ ì—†ë‹¤.
+ *              À§¿Í °°ÀÌ Host º¯¼ö°¡ ÀÖ´Â °æ¿ì ±× ¿¬»ê °á°ú¸¦ ¿¹´ÜÇÒ ¼ö ¾ø´Ù.
  *            * i1 + ? = 1 + 1
  *                       ^^^^^
- *              ì—°ì‚° ê²°ê³¼ëŠ” ì¼ì •í•˜ì§€ë§Œ, ì¢Œì¸¡ì˜ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë¡œ ì¸í•´ ë°ì´í„°
- *              íƒ€ì…ì´ ë³€í•  ìˆ˜ë„ ìˆë‹¤.
- *        - ì—°ì‚° ë° Conversionì´ ë°œìƒí•´ì•¼ í•œë‹¤.
+ *              ¿¬»ê °á°ú´Â ÀÏÁ¤ÇÏÁö¸¸, ÁÂÃøÀÇ È£½ºÆ® º¯¼ö·Î ÀÎÇØ µ¥ÀÌÅÍ
+ *              Å¸ÀÔÀÌ º¯ÇÒ ¼öµµ ÀÖ´Ù.
+ *        - ¿¬»ê ¹× ConversionÀÌ ¹ß»ıÇØ¾ß ÇÑ´Ù.
  *            * i1 = 1
  *                   ^^
- *              ì´ë¯¸ [Constant ì˜ì—­]ì— ì¡´ì¬í•˜ë©° ì²˜ë¦¬í•  ì´ìœ ê°€ ì—†ë‹¤.
- *        - Aggregationì´ ì—†ì–´ì•¼ í•œë‹¤.
+ *              ÀÌ¹Ì [Constant ¿µ¿ª]¿¡ Á¸ÀçÇÏ¸ç Ã³¸®ÇÒ ÀÌÀ¯°¡ ¾ø´Ù.
+ *        - AggregationÀÌ ¾ø¾î¾ß ÇÑ´Ù.
  *            * i1 = 1 + SUM(1)
  *                   ^^^^^^^^^^
- *              ìƒìˆ˜ í˜•íƒœë¡œ ë³´ì´ë‚˜, Recordì˜ ê°œìˆ˜ì— ë”°ë¼ ê²°ê³¼ê°€ ë‹¬ë¼ì§„ë‹¤.
- *        - Subqueryê°€ ì—†ì–´ì•¼ í•œë‹¤.
+ *              »ó¼ö ÇüÅÂ·Î º¸ÀÌ³ª, RecordÀÇ °³¼ö¿¡ µû¶ó °á°ú°¡ ´Ş¶óÁø´Ù.
+ *        - Subquery°¡ ¾ø¾î¾ß ÇÑ´Ù.
  *            * i1 = 1 + (select sum(a1) from t2 );
  *                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
- *              Dependenciesê°€ ì¡´ì¬í•˜ì§€ ì•Šì•„ ìƒìˆ˜ì²˜ëŸ¼ íŒë‹¨ë  ìˆ˜ ìˆë‹¤.
- *        - ìƒìˆ˜ë¡œë§Œ êµ¬ì„±ë˜ì–´ì•¼ í•œë‹¤.
+ *              Dependencies°¡ Á¸ÀçÇÏÁö ¾Ê¾Æ »ó¼öÃ³·³ ÆÇ´ÜµÉ ¼ö ÀÖ´Ù.
+ *        - »ó¼ö·Î¸¸ ±¸¼ºµÇ¾î¾ß ÇÑ´Ù.
  *            * i1 = 1 + 1
- *        - PRIOR Columnì´ ì—†ì–´ì•¼ í•œë‹¤.
+ *        - PRIOR ColumnÀÌ ¾ø¾î¾ß ÇÑ´Ù.
  *            * i1 = prior i2 + 1
  *                   ^^^^^^^^^^^^
- *              Dependenciesê°€ ì—†ì–´ ìƒìˆ˜ì²˜ëŸ¼ ë³´ì´ë‚˜, Recordì˜ ë³€í™”ì— ë”°ë¼
- *              ê²°ê³¼ê°€ ë°”ë€ë‹¤.
+ *              Dependencies°¡ ¾ø¾î »ó¼öÃ³·³ º¸ÀÌ³ª, RecordÀÇ º¯È­¿¡ µû¶ó
+ *              °á°ú°¡ ¹Ù²ï´Ù.
  *
- *    ì²˜ë¦¬ ì ˆì°¨
+ *    Ã³¸® ÀıÂ÷
  *
- *        - í˜„ì¬ ë…¸ë“œê°€ ì•„ë‹Œ Argumentì— ëŒ€í•´ì„œë§Œ ì²˜ë¦¬í•œë‹¤.
+ *        - ÇöÀç ³ëµå°¡ ¾Æ´Ñ Argument¿¡ ´ëÇØ¼­¸¸ Ã³¸®ÇÑ´Ù.
  *            i1 + ? = 1 + 1
  *                     ^^^^^
- *            ì¦‰, (1 + 1)ì— ëŒ€í•œ ì²˜ë¦¬ëŠ” (+) ë…¸ë“œê°€ ì•„ë‹Œ (=) ë…¸ë“œì—ì„œ
- *            ì²˜ë¦¬ë˜ì–´ì•¼ í•œë‹¤.
- *        - ì²˜ë¦¬ ê°€ëŠ¥ ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
- *            - í˜„ì¬ ë…¸ë“œë¥¼ ê¸°ì¤€ìœ¼ë¡œ ë‹¤ìŒì„ íŒë‹¨í•œë‹¤.
- *                - Host ë³€ìˆ˜ê°€ ì¡´ì¬í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
- *                - Argumentê°€ ìˆì–´ì•¼ í•œë‹¤.
- *                - subqueryê°€ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
- *                - Listê°€ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
- *            - í˜„ì¬ ë…¸ë“œì™€ Argumentë¥¼ ê¸°ì¤€ìœ¼ë¡œ ë‹¤ìŒì„ íŒë‹¨í•œë‹¤.
- *                - dependeciesê°€ zeroì´ì–´ì•¼ í•œë‹¤.
- *                - argumentë‚˜ conversionì´ ìˆì–´ì•¼ í•œë‹¤.
- *                - priorê°€ ì—†ì–´ì•¼ í•œë‹¤.
- *                - aggregationì´ ì—†ì–´ì•¼ í•œë‹¤.
- *                - subqueryê°€ ì—†ì–´ì•¼ í•œë‹¤.
- *                - listì— ëŒ€í•œ ì²˜ë¦¬ë¥¼ ê³ ë ¤í•´ì•¼ í•œë‹¤.
- *        - ìœ„ ì¡°ê±´ì„ ë§Œì¡±í•  ê²½ìš° í•´ë‹¹ argument ë…¸ë“œë¥¼ ìœ„í•œ
- *          Constant ì˜ì—­ì„ í• ë‹¹í•œë‹¤.
- *            - Argumentê°€ ìˆë‹¤ë©´ ìì‹ ì„ ìœ„í•œ ì˜ì—­ í• ë‹¹
- *            - Conversionì´ ìˆë‹¤ë©´ ëª¨ë“  Conversionì„ ìœ„í•œ ì˜ì—­ í• ë‹¹
+ *            Áï, (1 + 1)¿¡ ´ëÇÑ Ã³¸®´Â (+) ³ëµå°¡ ¾Æ´Ñ (=) ³ëµå¿¡¼­
+ *            Ã³¸®µÇ¾î¾ß ÇÑ´Ù.
+ *        - Ã³¸® °¡´É ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
+ *            - ÇöÀç ³ëµå¸¦ ±âÁØÀ¸·Î ´ÙÀ½À» ÆÇ´ÜÇÑ´Ù.
+ *                - Host º¯¼ö°¡ Á¸ÀçÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
+ *                - Argument°¡ ÀÖ¾î¾ß ÇÑ´Ù.
+ *                - subquery°¡ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
+ *                - List°¡ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
+ *            - ÇöÀç ³ëµå¿Í Argument¸¦ ±âÁØÀ¸·Î ´ÙÀ½À» ÆÇ´ÜÇÑ´Ù.
+ *                - dependecies°¡ zeroÀÌ¾î¾ß ÇÑ´Ù.
+ *                - argument³ª conversionÀÌ ÀÖ¾î¾ß ÇÑ´Ù.
+ *                - prior°¡ ¾ø¾î¾ß ÇÑ´Ù.
+ *                - aggregationÀÌ ¾ø¾î¾ß ÇÑ´Ù.
+ *                - subquery°¡ ¾ø¾î¾ß ÇÑ´Ù.
+ *                - list¿¡ ´ëÇÑ Ã³¸®¸¦ °í·ÁÇØ¾ß ÇÑ´Ù.
+ *        - À§ Á¶°ÇÀ» ¸¸Á·ÇÒ °æ¿ì ÇØ´ç argument ³ëµå¸¦ À§ÇÑ
+ *          Constant ¿µ¿ªÀ» ÇÒ´çÇÑ´Ù.
+ *            - Argument°¡ ÀÖ´Ù¸é ÀÚ½ÅÀ» À§ÇÑ ¿µ¿ª ÇÒ´ç
+ *            - ConversionÀÌ ÀÖ´Ù¸é ¸ğµç ConversionÀ» À§ÇÑ ¿µ¿ª ÇÒ´ç
  *              double1 = 1 + 1
  *                        ^^^^^
  *              [+]--conv-->[bigint=>double]--conv-->[int=>bigint]
@@ -7413,12 +7448,12 @@ qtc::preProcessConstExpr( qcStatement  * aStatement,
  *               V
  *              [1]-->[1]
  *
- *              ìœ„ì™€ ê°™ì€ ê²½ìš° ìì‹ ì„ ìœ„í•œ ì˜ì—­ 1, Conversionì„ ìœ„í•œ ì˜ì—­ 2ê°œ,
- *              ì´ 3ê°œì˜ ì˜ì—­ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
+ *              À§¿Í °°Àº °æ¿ì ÀÚ½ÅÀ» À§ÇÑ ¿µ¿ª 1, ConversionÀ» À§ÇÑ ¿µ¿ª 2°³,
+ *              ÃÑ 3°³ÀÇ ¿µ¿ªÀ» ÇÒ´ç¹Ş´Â´Ù.
  *
- *        - Argument ë…¸ë“œì˜ ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
- *             ì—°ì‚°ì„ ìˆ˜í–‰í•¨ìœ¼ë¡œì„œ Constant ì˜ì—­ì— ê²°ê³¼ê°€ ê¸°ë¡ëœë‹¤.
- *        - Nodeì˜ ì—°ê²° ê´€ê³„ë¥¼ ë³´ì •
+ *        - Argument ³ëµåÀÇ ¿¬»êÀ» ¼öÇàÇÑ´Ù.
+ *             ¿¬»êÀ» ¼öÇàÇÔÀ¸·Î¼­ Constant ¿µ¿ª¿¡ °á°ú°¡ ±â·ÏµÈ´Ù.
+ *        - NodeÀÇ ¿¬°á °ü°è¸¦ º¸Á¤
  *
  *             [=]
  *              |
@@ -7437,11 +7472,11 @@ qtc::preProcessConstExpr( qcStatement  * aStatement,
  *              V
  *             [double1]-->[B=>D]
  *
- *         - Value ëª¨ë“ˆë¡œ ì „í™˜
- *             ì—°ê²° ê´€ê³„ì— ì˜í•´ ì„ íƒëœ Nodeë¥¼ Value Moduleë¡œ ì „í™˜í•œë‹¤.
+ *         - Value ¸ğµâ·Î ÀüÈ¯
+ *             ¿¬°á °ü°è¿¡ ÀÇÇØ ¼±ÅÃµÈ Node¸¦ Value Module·Î ÀüÈ¯ÇÑ´Ù.
  *
- *   ìœ„ì™€ ê°™ì€ ì²˜ë¦¬ ê³¼ì •ì€ ::estimateInternal()ì— ì˜í•´
- *   ìƒìœ„ ë…¸ë“œë¡œ ì˜¬ë¼ê°€ë©´ì„œ ì²˜ë¦¬ë˜ê²Œ ëœë‹¤.
+ *   À§¿Í °°Àº Ã³¸® °úÁ¤Àº ::estimateInternal()¿¡ ÀÇÇØ
+ *   »óÀ§ ³ëµå·Î ¿Ã¶ó°¡¸é¼­ Ã³¸®µÇ°Ô µÈ´Ù.
  *
  ***********************************************************************/
 
@@ -7463,7 +7498,7 @@ qtc::preProcessConstExpr( qcStatement  * aStatement,
     idBool     sAbleProcess;
 
     //-------------------------------------------
-    // í˜„ì¬ ë…¸ë“œë¥¼ ì´ìš©í•œ ì í•©ì„± ê²€ì‚¬
+    // ÇöÀç ³ëµå¸¦ ÀÌ¿ëÇÑ ÀûÇÕ¼º °Ë»ç
     //-------------------------------------------
 
     if ( (aNode->subquery == NULL) &&
@@ -7471,7 +7506,7 @@ qtc::preProcessConstExpr( qcStatement  * aStatement,
          (aNode->node.module != &mtfList) )
     {
         //-------------------------------------------
-        // ê° Argumentì— ëŒ€í•œ Pre-Processing ì²˜ë¦¬
+        // °¢ Argument¿¡ ´ëÇÑ Pre-Processing Ã³¸®
         //-------------------------------------------
 
         for ( sCurNode = (qtcNode*) aNode->node.arguments, sPrevNode = NULL,
@@ -7479,11 +7514,11 @@ qtc::preProcessConstExpr( qcStatement  * aStatement,
               sCurNode != NULL;
               sCurNode = (qtcNode*) sCurNode->node.next, sStack++, sRemain-- )
         {
-            // BUG-40892 host ë³€ìˆ˜ê°€ ìˆì„ë•Œ runConstExpr ë¥¼ ìˆ˜í–‰í•˜ì§€ ëª»í•¨
-            // host ë³€ìˆ˜ë¥¼ ì²´í¬í•˜ëŠ” ìœ„ì¹˜ë¥¼ ë³€ê²½í•˜ì—¬ ê°€ëŠ¥í•œ runConstExprë¥¼ ìˆ˜í–‰í•¨
+            // BUG-40892 host º¯¼ö°¡ ÀÖÀ»¶§ runConstExpr ¸¦ ¼öÇàÇÏÁö ¸øÇÔ
+            // host º¯¼ö¸¦ Ã¼Å©ÇÏ´Â À§Ä¡¸¦ º¯°æÇÏ¿© °¡´ÉÇÑ runConstExpr¸¦ ¼öÇàÇÔ
             if( MTC_NODE_IS_DEFINED_VALUE( (mtcNode*)sCurNode ) == ID_TRUE )
             {
-                // Argumentì˜ ì í•©ì„± ê²€ì‚¬
+                // ArgumentÀÇ ÀûÇÕ¼º °Ë»ç
                 IDE_TEST( isConstExpr( QC_SHARED_TMPLATE(aStatement),
                                        sCurNode,
                                        &sAbleProcess )
@@ -7498,8 +7533,8 @@ qtc::preProcessConstExpr( qcStatement  * aStatement,
             {
                 if ( sCurNode->node.module == & mtfList )
                 {
-                    // Listì¸ ê²½ìš°
-                    // Listì˜ argumentì— ëŒ€í•˜ì—¬ ì„ ì²˜ë¦¬ë¥¼ ìˆ˜í–‰í•¨.
+                    // ListÀÎ °æ¿ì
+                    // ListÀÇ argument¿¡ ´ëÇÏ¿© ¼±Ã³¸®¸¦ ¼öÇàÇÔ.
                     for ( sListCurNode = (qtcNode*) sCurNode->node.arguments,
                               sListPrevNode = NULL,
                               sListStack = sStack + 1,
@@ -7508,14 +7543,14 @@ qtc::preProcessConstExpr( qcStatement  * aStatement,
                           sListCurNode = (qtcNode*) sListCurNode->node.next,
                               sListStack++, sListRemain-- )
                     {
-                        // ìƒìˆ˜í™”í•˜ê¸° ì „ ì›ë˜ ë…¸ë“œë¥¼ ë°±ì—… í•œë‹¤.
+                        // »ó¼öÈ­ÇÏ±â Àü ¿ø·¡ ³ëµå¸¦ ¹é¾÷ ÇÑ´Ù.
                         IDU_LIMITPOINT("qtc::preProcessConstExpr::malloc1");
                         IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement), qtcNode, & sOrgNode )
                                   != IDE_SUCCESS);
 
                         idlOS::memcpy( sOrgNode, sListCurNode, ID_SIZEOF(qtcNode) );
 
-                        // ìƒìˆ˜ Expressionì„ ìˆ˜í–‰í•¨
+                        // »ó¼ö ExpressionÀ» ¼öÇàÇÔ
                         IDE_TEST( runConstExpr( aStatement,
                                                 QC_SHARED_TMPLATE(aStatement),
                                                 sListCurNode,
@@ -7554,21 +7589,21 @@ qtc::preProcessConstExpr( qcStatement  * aStatement,
                     }
 
                     // PROJ-1436
-                    // LIST ìì²´ë¥¼ ìƒìˆ˜í™”í•˜ì§€ëŠ” ì•ŠëŠ”ë‹¤. LISTë¥¼ ìƒìˆ˜í™”í•˜ë©´
-                    // LISTì— ëŒ€í•œ stackì„ ìƒìˆ˜ tupleì— ê¸°ë¡í•˜ê²Œ ë˜ë¯€ë¡œ ìƒìˆ˜
-                    // tupleì˜ rowê°€ ì˜¤ì—¼ëœë‹¤.
+                    // LIST ÀÚÃ¼¸¦ »ó¼öÈ­ÇÏÁö´Â ¾Ê´Â´Ù. LIST¸¦ »ó¼öÈ­ÇÏ¸é
+                    // LIST¿¡ ´ëÇÑ stackÀ» »ó¼ö tuple¿¡ ±â·ÏÇÏ°Ô µÇ¹Ç·Î »ó¼ö
+                    // tupleÀÇ row°¡ ¿À¿°µÈ´Ù.
                     sPrevNode = sCurNode;
                 }
                 else
                 {
-                    // ìƒìˆ˜í™”í•˜ê¸° ì „ ì›ë˜ ë…¸ë“œë¥¼ ë°±ì—… í•œë‹¤.
+                    // »ó¼öÈ­ÇÏ±â Àü ¿ø·¡ ³ëµå¸¦ ¹é¾÷ ÇÑ´Ù.
                     IDU_LIMITPOINT("qtc::preProcessConstExpr::malloc2");
                     IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement), qtcNode, & sOrgNode )
                               != IDE_SUCCESS);
                     
                     idlOS::memcpy( sOrgNode, sCurNode, ID_SIZEOF(qtcNode) );
                     
-                    // ìƒìˆ˜ Expressionì„ ìˆ˜í–‰í•¨
+                    // »ó¼ö ExpressionÀ» ¼öÇàÇÔ
                     IDE_TEST( runConstExpr( aStatement,
                                             QC_SHARED_TMPLATE(aStatement),
                                             sCurNode,
@@ -7578,7 +7613,7 @@ qtc::preProcessConstExpr( qcStatement  * aStatement,
                                             aCallBack,
                                             & sResultNode ) != IDE_SUCCESS );
                     
-                    // ì—°ê²°ê´€ê³„ ì •ë¦¬
+                    // ¿¬°á°ü°è Á¤¸®
                     if ( sPrevNode != NULL )
                     {
                         sPrevNode->node.next = (mtcNode *) sResultNode;
@@ -7590,7 +7625,7 @@ qtc::preProcessConstExpr( qcStatement  * aStatement,
                     sResultNode->node.next = sCurNode->node.next;
                     sResultNode->node.conversion = NULL;
                     
-                    // Listë“±ì˜ ì²˜ë¦¬ë¥¼ ìœ„í•˜ì—¬ Argumentì •ë³´ëŠ” ë‚¨ê²¨ ë‘”ë‹¤.
+                    // ListµîÀÇ Ã³¸®¸¦ À§ÇÏ¿© ArgumentÁ¤º¸´Â ³²°Ü µĞ´Ù.
                     sResultNode->node.arguments =
                         sCurNode->node.arguments;
                     sResultNode->node.leftConversion =
@@ -7604,13 +7639,13 @@ qtc::preProcessConstExpr( qcStatement  * aStatement,
                     sResultNode->node.baseColumn =
                         sCurNode->node.baseColumn;
 
-                    // ì´ë¯¸ ì¹˜í™˜ëœ Nodeë¥¼ ì´ìš©í•˜ì—¬ì•¼ í•œë‹¤.
+                    // ÀÌ¹Ì Ä¡È¯µÈ Node¸¦ ÀÌ¿ëÇÏ¿©¾ß ÇÑ´Ù.
                     sPrevNode = sResultNode;
                 }
             }
             else
             {
-                // ì‚¬ì „ ì²˜ë¦¬í•  ìˆ˜ ì—†ìŒ.
+                // »çÀü Ã³¸®ÇÒ ¼ö ¾øÀ½.
                 sPrevNode = sCurNode;
                 continue;
             }
@@ -7638,14 +7673,14 @@ qtc::setColumnExecutionPosition( mtcTemplate * aTemplate,
 {
 /***********************************************************************
  *
- * Description : column ìˆ˜í–‰ ìœ„ì¹˜ ì„¤ì •
+ * Description : column ¼öÇà À§Ä¡ ¼³Á¤
  *
  * Implementation :
  *     ex) SELECT i1 FROM t1 ORDER BY i1;
- *         i1 columnì—ëŠ” targetê³¼ order byì—ì„œ ìˆ˜í–‰ëœë‹¤ëŠ” ì •ë³´ê°€ ì„¤ì •ë¨
+ *         i1 column¿¡´Â target°ú order by¿¡¼­ ¼öÇàµÈ´Ù´Â Á¤º¸°¡ ¼³Á¤µÊ
  *
- *      aColumnSFWGH : ì‹¤ì œ columnì´ ì†í•´ ìˆëŠ” SFWGH
- *     aCurrentSFWGH : í˜„ì¬ ì²˜ë¦¬ì¤‘ì¸ SFWGH
+ *      aColumnSFWGH : ½ÇÁ¦ columnÀÌ ¼ÓÇØ ÀÖ´Â SFWGH
+ *     aCurrentSFWGH : ÇöÀç Ã³¸®ÁßÀÎ SFWGH
  ***********************************************************************/
 
     mtcColumn       * sMtcColumn;
@@ -7656,12 +7691,12 @@ qtc::setColumnExecutionPosition( mtcTemplate * aTemplate,
         sMtcColumn = QTC_TUPLE_COLUMN(&aTemplate->rows[aNode->node.table],
                                       aNode);
 
-        // 1) ì§ˆì˜ì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì¸ì§€ì˜ ì •ë³´ë¥¼ ì €ì¥í•œë‹¤.
+        // 1) ÁúÀÇ¿¡ »ç¿ëµÈ ÄÃ·³ÀÎÁöÀÇ Á¤º¸¸¦ ÀúÀåÇÑ´Ù.
         sMtcColumn->flag |= MTC_COLUMN_USE_COLUMN_TRUE;
 
         /*
          * PROJ-1789 PROWID
-         * í˜„ì¬ëŠ” _PROWIDê°€ targetì— ìˆëŠ”ì§€ whereì ˆì— ìˆëŠ”ì§€ êµ¬ë¶„ X
+         * ÇöÀç´Â _PROWID°¡ target¿¡ ÀÖ´ÂÁö whereÀı¿¡ ÀÖ´ÂÁö ±¸ºĞ X
          */
         if( aNode->node.column == MTC_RID_COLUMN_ID )
         {
@@ -7671,16 +7706,16 @@ qtc::setColumnExecutionPosition( mtcTemplate * aTemplate,
                 |= MTC_TUPLE_TARGET_RID_EXIST;
         }
 
-        // 2) ì»¬ëŸ¼ì˜ ìœ„ì¹˜ ì •ë³´ ì„¤ì •
+        // 2) ÄÃ·³ÀÇ À§Ä¡ Á¤º¸ ¼³Á¤
         if( aColumnSFWGH->thisQuerySet != NULL )
         {
-            // 2) ì»¬ëŸ¼ì˜ ìœ„ì¹˜ê°€ targetì¸ì§€ì˜ì •ë³´ë¥¼ì €ì¥í•œë‹¤.
+            // 2) ÄÃ·³ÀÇ À§Ä¡°¡ targetÀÎÁöÀÇÁ¤º¸¸¦ÀúÀåÇÑ´Ù.
             if( aColumnSFWGH->thisQuerySet->processPhase
                 == QMS_VALIDATE_TARGET )
             {
                 // BUG-37841
-                // window functionì—ì„œ ì°¸ì¡°í•˜ëŠ” ì»¬ëŸ¼ì€ targetì ˆ ì´ì™¸ì—ì„œë„ ì‚¬ìš©í•œë‹¤ê³ 
-                // ì„¤ì •í•˜ì—¬ view push projectionì—ì„œ ì œê±°ë˜ì§€ ì•Šë„ë¡ í•œë‹¤.
+                // window function¿¡¼­ ÂüÁ¶ÇÏ´Â ÄÃ·³Àº targetÀı ÀÌ¿Ü¿¡¼­µµ »ç¿ëÇÑ´Ù°í
+                // ¼³Á¤ÇÏ¿© view push projection¿¡¼­ Á¦°ÅµÇÁö ¾Êµµ·Ï ÇÑ´Ù.
                 if ( ( aNode->lflag & QTC_NODE_ANAL_FUNC_COLUMN_MASK )
                      == QTC_NODE_ANAL_FUNC_COLUMN_FALSE )
                 {
@@ -7722,7 +7757,7 @@ qtc::setColumnExecutionPosition( mtcTemplate * aTemplate,
             }
 
             // BUG-25470
-            // OUTER COLUMN REFERENCEê°€ ìˆëŠ” ê²½ìš° flagì„¸íŒ…í•œë‹¤.
+            // OUTER COLUMN REFERENCE°¡ ÀÖ´Â °æ¿ì flag¼¼ÆÃÇÑ´Ù.
             if( aColumnSFWGH != aCurrentSFWGH )
             {
                 sMtcColumn->flag
@@ -7735,15 +7770,15 @@ qtc::setColumnExecutionPosition( mtcTemplate * aTemplate,
         }
         else
         {
-            // SELECT êµ¬ë¬¸ ì™¸ì˜ êµ¬ë¬¸ ì¹¼ëŸ¼ì¸ ê²½ìš°
-            // ex) DELETE êµ¬ë¬¸ì˜ where ì ˆ column
+            // SELECT ±¸¹® ¿ÜÀÇ ±¸¹® Ä®·³ÀÎ °æ¿ì
+            // ex) DELETE ±¸¹®ÀÇ where Àı column
             // nothing to do
         }
 
         //-----------------------------------
-        // LOB, GEOMETRY TYPE ë“±
-        // binary ì»¬ëŸ¼ì´ í¬í•¨ëœ ì§ˆì˜ë¬¸ì€
-        // rid ì €ì¥ë°©ì‹ìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤.
+        // LOB, GEOMETRY TYPE µî
+        // binary ÄÃ·³ÀÌ Æ÷ÇÔµÈ ÁúÀÇ¹®Àº
+        // rid ÀúÀå¹æ½ÄÀ¸·Î Ã³¸®ÇÑ´Ù.
         //-----------------------------------
         if( qtc::isEquiValidType(aNode, aTemplate)
             == ID_TRUE )
@@ -7758,7 +7793,7 @@ qtc::setColumnExecutionPosition( mtcTemplate * aTemplate,
                 |= MTC_TUPLE_BINARY_COLUMN_EXIST;
         }
 
-        // materialize ë°©ì‹ì´ Push Projection ì¸ ê²½ìš°
+        // materialize ¹æ½ÄÀÌ Push Projection ÀÎ °æ¿ì
         if( ( ( aTemplate->rows[aNode->node.table].lflag &
                 MTC_TUPLE_STORAGE_MASK )
               == MTC_TUPLE_STORAGE_DISK )
@@ -7769,12 +7804,12 @@ qtc::setColumnExecutionPosition( mtcTemplate * aTemplate,
         {
             if( aColumnSFWGH->hints->materializeType == QMO_MATERIALIZE_TYPE_VALUE )
             {
-                // tuple setì—ë„
-                // ë ˆì½”ë“œì €ì¥ë°©ì‹ìœ¼ë¡œ ì²˜ë¦¬ë˜ì–´ì•¼ í• 
-                // tupleì„ì„ ì €ì¥í•œë‹¤.
-                // ì´í›„, rid ë˜ëŠ” record ì €ì¥ë°©ì‹ì˜ ì²˜ë¦¬ë¥¼
-                // hint ë˜ëŠ” memory table êµ¬ë¶„ì— ë”°ë¥¸ ë³µì¡í•¨ì„
-                // ì¤„ì´ê¸° ìœ„í•´ì„œ.
+                // tuple set¿¡µµ
+                // ·¹ÄÚµåÀúÀå¹æ½ÄÀ¸·Î Ã³¸®µÇ¾î¾ß ÇÒ
+                // tupleÀÓÀ» ÀúÀåÇÑ´Ù.
+                // ÀÌÈÄ, rid ¶Ç´Â record ÀúÀå¹æ½ÄÀÇ Ã³¸®¸¦
+                // hint ¶Ç´Â memory table ±¸ºĞ¿¡ µû¸¥ º¹ÀâÇÔÀ»
+                // ÁÙÀÌ±â À§ÇØ¼­.
                 if (((aTemplate->rows[aNode->node.table].lflag &
                       MTC_TUPLE_BINARY_COLUMN_MASK) ==
                      MTC_TUPLE_BINARY_COLUMN_ABSENT) &&
@@ -7790,7 +7825,7 @@ qtc::setColumnExecutionPosition( mtcTemplate * aTemplate,
                 else
                 {
                     // BUG-35585
-                    // tupleë¿ë§Œì•„ë‹ˆë¼ SFWGH, querySetë„ ridë¡œ ì²˜ë¦¬í•˜ê²Œ í•œë‹¤.
+                    // tuple»Ó¸¸¾Æ´Ï¶ó SFWGH, querySetµµ rid·Î Ã³¸®ÇÏ°Ô ÇÑ´Ù.
                     aColumnSFWGH->hints->materializeType = QMO_MATERIALIZE_TYPE_RID;
 
                     aTemplate->rows[aNode->node.table].lflag
@@ -7809,13 +7844,13 @@ qtc::setColumnExecutionPosition( mtcTemplate * aTemplate,
         }
         else
         {
-            // DISKì™€ VIEWê°€ ì•„ë‹Œ ê²½ìš°
+            // DISK¿Í VIEW°¡ ¾Æ´Ñ °æ¿ì
             // Nothing To Do
         }
     }
     else
     {
-        // SFWGHê°€ NULL ì¸ ê²½ìš°
+        // SFWGH°¡ NULL ÀÎ °æ¿ì
         // Nothing To Do 
     }
 
@@ -7889,16 +7924,16 @@ idBool qtc::isConstValue( qcTemplate  * aTemplate,
 /***********************************************************************
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
- *                constant value(ì •ì  ê³ ì • í‘œí˜„ì‹)ì¸ì§€ ì•„ë‹Œì§€ ê²€ì‚¬.
+ *                constant value(Á¤Àû °íÁ¤ Ç¥Çö½Ä)ÀÎÁö ¾Æ´ÑÁö °Ë»ç.
  *
  *  Implementation :
- *            (1) conversionì´ ì—†ì–´ì•¼ í•œë‹¤.
- *               - ìœ„ì—ì„œ ì´ë¯¸ conversionë¶™ì—¬ì„œ calculateí•œ ê²ƒì„.
- *            (2) valueModuleì´ì–´ì•¼ í•œë‹¤.
- *               - ê³„ì‚°ëœ ê°’ì€ í•˜ë‚˜ì˜ íŠ¹ì • ê°’ìœ¼ë¡œ ì €ì¥ë¨.
- *            (3) constant tuple ì˜ì—­ì— ìˆì–´ì•¼ í•œë‹¤.
- *               - constant expressionì²˜ë¦¬ê°€ ë˜ì—ˆë‹¤ë©´
- *                 constant tupleì˜ì—­ì— ê°’ì´ ìƒê¸´ë‹¤.
+ *            (1) conversionÀÌ ¾ø¾î¾ß ÇÑ´Ù.
+ *               - À§¿¡¼­ ÀÌ¹Ì conversionºÙ¿©¼­ calculateÇÑ °ÍÀÓ.
+ *            (2) valueModuleÀÌ¾î¾ß ÇÑ´Ù.
+ *               - °è»êµÈ °ªÀº ÇÏ³ªÀÇ Æ¯Á¤ °ªÀ¸·Î ÀúÀåµÊ.
+ *            (3) constant tuple ¿µ¿ª¿¡ ÀÖ¾î¾ß ÇÑ´Ù.
+ *               - constant expressionÃ³¸®°¡ µÇ¾ú´Ù¸é
+ *                 constant tuple¿µ¿ª¿¡ °ªÀÌ »ı±ä´Ù.
  *
  ***********************************************************************/
 
@@ -7920,7 +7955,7 @@ idBool qtc::isHostVariable( qcTemplate  * aTemplate,
 {
 /***********************************************************************
  *
- *  Description : host variable nodeì¸ì§€ ê²€ì‚¬í•œë‹¤.
+ *  Description : host variable nodeÀÎÁö °Ë»çÇÑ´Ù.
  *
  *  Implementation :
  *
@@ -7947,24 +7982,24 @@ qtc::isConstExpr( qcTemplate  * aTemplate,
  *
  * Description :
  *
- *    Constant Expressionì¸ì§€ì˜ íŒë‹¨
+ *    Constant ExpressionÀÎÁöÀÇ ÆÇ´Ü
  *
  * Implementation :
  *
- *     [Argumentì˜ ì í•©ì„± ê²€ì‚¬]
- *          - argumentë‚˜ conversionì´ ìˆì–´ì•¼ í•œë‹¤.
- *          - dependeciesê°€ zeroì´ì–´ì•¼ í•œë‹¤.
- *          - priorê°€ ì—†ì–´ì•¼ í•œë‹¤.
- *          - aggregationì´ ì—†ì–´ì•¼ í•œë‹¤.
- *          - subqueryê°€ ì—†ì–´ì•¼ í•œë‹¤.
- *          - ì´ë¯¸ conversionì´ ë°œìƒí•œ ë…¸ë“œê°€ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
- *          - columnì´ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
- *            : PROJ-1075 array typeì€ column nodeì— argumentê°€ ì˜¬ ìˆ˜ ìˆìŒ.
+ *     [ArgumentÀÇ ÀûÇÕ¼º °Ë»ç]
+ *          - argument³ª conversionÀÌ ÀÖ¾î¾ß ÇÑ´Ù.
+ *          - dependecies°¡ zeroÀÌ¾î¾ß ÇÑ´Ù.
+ *          - prior°¡ ¾ø¾î¾ß ÇÑ´Ù.
+ *          - aggregationÀÌ ¾ø¾î¾ß ÇÑ´Ù.
+ *          - subquery°¡ ¾ø¾î¾ß ÇÑ´Ù.
+ *          - ÀÌ¹Ì conversionÀÌ ¹ß»ıÇÑ ³ëµå°¡ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
+ *          - columnÀÌ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
+ *            : PROJ-1075 array typeÀº column node¿¡ argument°¡ ¿Ã ¼ö ÀÖÀ½.
  *
- *     [ì œì•½ ì¡°ê±´ì˜ ì •ë¦¬]
- *          - Argumentê°€ ìˆë‹¤ë©´, ëª¨ë“  argumentê°€ ìƒìˆ˜ì´ì–´ì•¼ í•œë‹¤.
- *          - Argumentê°€ ì—†ê³  Conversionì´ ìˆë‹¤ë©´,
- *          - í˜„ì¬ Nodeê°€ ìƒìˆ˜ì´ì–´ì•¼ í•œë‹¤.
+ *     [Á¦¾à Á¶°ÇÀÇ Á¤¸®]
+ *          - Argument°¡ ÀÖ´Ù¸é, ¸ğµç argument°¡ »ó¼öÀÌ¾î¾ß ÇÑ´Ù.
+ *          - Argument°¡ ¾ø°í ConversionÀÌ ÀÖ´Ù¸é,
+ *          - ÇöÀç Node°¡ »ó¼öÀÌ¾î¾ß ÇÑ´Ù.
  *
  ***********************************************************************/
 #define IDE_FN "qtc::isConstExpr"
@@ -7979,19 +8014,19 @@ qtc::isConstExpr( qcTemplate  * aTemplate,
     sCurNode = aNode;
 
     // BUG-15995
-    // random, sendmsg ê°™ì€ í•¨ìˆ˜ë“¤ì€ constantë¡œ
-    // ì²˜ë¦¬ë˜ì–´ì„œëŠ” ì•ˆë¨.
+    // random, sendmsg °°Àº ÇÔ¼öµéÀº constant·Î
+    // Ã³¸®µÇ¾î¼­´Â ¾ÈµÊ.
     if ( (sCurNode->node.module->lflag & MTC_NODE_VARIABLE_MASK)
          == MTC_NODE_VARIABLE_FALSE )
     {
         if ( sCurNode->node.arguments != NULL )
         {
             // To Fix PR-8724
-            // SUM(4) ì™€ ê°™ì´ Aggregationì¸ ê²½ìš°ì—ëŠ”
-            // ì„ ì²˜ë¦¬í•´ì„œëŠ” ì•ˆë¨.
+            // SUM(4) ¿Í °°ÀÌ AggregationÀÎ °æ¿ì¿¡´Â
+            // ¼±Ã³¸®ÇØ¼­´Â ¾ÈµÊ.
             // PROJ-1075
-            // column nodeì¸ ê²½ìš° argumentê°€ ìˆë‹¤ í•˜ë”ë¼ë„
-            // constant expressionì´ ë  ìˆ˜ ì—†ìŒ.
+            // column nodeÀÎ °æ¿ì argument°¡ ÀÖ´Ù ÇÏ´õ¶óµµ
+            // constant expressionÀÌ µÉ ¼ö ¾øÀ½.
             if ( ( sCurNode->subquery == NULL )
                  &&
                  ( (aNode->lflag & QTC_NODE_AGGREGATE_MASK)
@@ -8009,7 +8044,7 @@ qtc::isConstExpr( qcTemplate  * aTemplate,
                    == 1 )
                  )
             {
-                // Argumentê°€ ìˆëŠ” ê²½ìš°
+                // Argument°¡ ÀÖ´Â °æ¿ì
                 for ( sArgNode = (qtcNode*) sCurNode->node.arguments;
                       sArgNode != NULL;
                       sArgNode = (qtcNode*) sArgNode->node.next )
@@ -8034,7 +8069,7 @@ qtc::isConstExpr( qcTemplate  * aTemplate,
         }
         else
         {
-            // Argumentê°€ ì—†ëŠ” ê²½ìš°
+            // Argument°¡ ¾ø´Â °æ¿ì
             if ( ( sCurNode->node.conversion != NULL ) &&
                  ( sCurNode->node.module == & qtc::valueModule ) &&
                  ( (aTemplate->tmplate.rows[sCurNode->node.table].lflag &
@@ -8050,7 +8085,7 @@ qtc::isConstExpr( qcTemplate  * aTemplate,
     }
     else
     {
-        // í•­ìƒ Variableë¡œ ì²˜ë¦¬ë˜ì–´ì•¼ í•˜ëŠ” ê²½ìš°
+        // Ç×»ó Variable·Î Ã³¸®µÇ¾î¾ß ÇÏ´Â °æ¿ì
         sAbleProcess = ID_FALSE;
     }
 
@@ -8075,8 +8110,8 @@ qtc::runConstExpr( qcStatement * aStatement,
  *
  * Description :
  *
- *    Constant Expressionì„ ìˆ˜í–‰í•˜ê³  ë³€í™˜ëœ ê²°ê³¼ ë…¸ë“œë¥¼
- *    ë¦¬í„´í•œë‹¤.
+ *    Constant ExpressionÀ» ¼öÇàÇÏ°í º¯È¯µÈ °á°ú ³ëµå¸¦
+ *    ¸®ÅÏÇÑ´Ù.
  *
  * Implementation :
  *
@@ -8100,7 +8135,7 @@ qtc::runConstExpr( qcStatement * aStatement,
     sStack = aTemplate->tmplate.stack;
     sRemain = aTemplate->tmplate.stackRemain;
 
-    // í˜„ì¬ ë…¸ë“œë¥¼ ìœ„í•œ Constant ì˜ì—­ í• ë‹¹
+    // ÇöÀç ³ëµå¸¦ À§ÇÑ Constant ¿µ¿ª ÇÒ´ç
     if ( sCurNode->node.arguments != NULL )
     {
         IDE_TEST( getConstColumn( aStatement,
@@ -8108,7 +8143,7 @@ qtc::runConstExpr( qcStatement * aStatement,
                                   sCurNode ) != IDE_SUCCESS );
     }
 
-    // Conversionì„ ìœ„í•œ Constant ì˜ì—­ í• ë‹¹
+    // ConversionÀ» À§ÇÑ Constant ¿µ¿ª ÇÒ´ç
     for ( sConvertNode = (qtcNode*) sCurNode->node.conversion;
           sConvertNode != NULL;
           sConvertNode = (qtcNode*) sConvertNode->node.conversion )
@@ -8119,12 +8154,12 @@ qtc::runConstExpr( qcStatement * aStatement,
     }
 
     // PROJ-1346
-    // list conversionì€ í˜„ì¬ ë…¸ë“œì˜ ìƒìˆ˜í™”ì™€ ë¬´ê´€í•˜ì—¬ ì£¼ì„ì²˜ë¦¬í•˜ì˜€ë‹¤.
-    // runConstExpr ìˆ˜í–‰í›„ì— ì›ë˜ ë…¸ë“œì˜ leftConversionì„ ì—°ê²°í•œë‹¤.
+    // list conversionÀº ÇöÀç ³ëµåÀÇ »ó¼öÈ­¿Í ¹«°üÇÏ¿© ÁÖ¼®Ã³¸®ÇÏ¿´´Ù.
+    // runConstExpr ¼öÇàÈÄ¿¡ ¿ø·¡ ³ëµåÀÇ leftConversionÀ» ¿¬°áÇÑ´Ù.
     
     // To Fix PR-12938
-    // Left Conversionì´ ì¡´ì¬í•  ê²½ìš° ì´ì— ëŒ€í•œ Constant ì˜ì—­ì„ í• ë‹¹í•¨.
-    // Left Conversionì˜ ì—°ì†ëœ conversionì€ node.conversionì„.
+    // Left ConversionÀÌ Á¸ÀçÇÒ °æ¿ì ÀÌ¿¡ ´ëÇÑ Constant ¿µ¿ªÀ» ÇÒ´çÇÔ.
+    // Left ConversionÀÇ ¿¬¼ÓµÈ conversionÀº node.conversionÀÓ.
     //for ( sConvertNode = (qtcNode*) sCurNode->node.leftConversion;
     //      sConvertNode != NULL;
     //      sConvertNode = (qtcNode*) sConvertNode->node.conversion )
@@ -8134,8 +8169,8 @@ qtc::runConstExpr( qcStatement * aStatement,
     //                              sConvertNode ) != IDE_SUCCESS );
     //}
 
-    // Constant Expressionì— ëŒ€í•œ ì—°ì‚°ì„ ìˆ˜í–‰
-    // Valueì˜ì—­ì— ê°’ì´ ì €ì¥ëœë‹¤.
+    // Constant Expression¿¡ ´ëÇÑ ¿¬»êÀ» ¼öÇà
+    // Value¿µ¿ª¿¡ °ªÀÌ ÀúÀåµÈ´Ù.
     aTemplate->tmplate.stack = aStack;
     aTemplate->tmplate.stackRemain = aRemain;
 
@@ -8152,17 +8187,17 @@ qtc::runConstExpr( qcStatement * aStatement,
         // Nothing to do.
     }
 
-    // ìµœì¢… ì—°ì‚°ì˜ ê²°ê³¼ì— í•´ë‹¹í•˜ëŠ” ë…¸ë“œ íšë“
+    // ÃÖÁ¾ ¿¬»êÀÇ °á°ú¿¡ ÇØ´çÇÏ´Â ³ëµå È¹µæ
     sConvertNode = (qtcNode *)
         mtf::convertedNode( (mtcNode *) sCurNode,
                             & aTemplate->tmplate );
 
-    // Value Moduleë¡œ ì¹˜í™˜
+    // Value Module·Î Ä¡È¯
     if ( sConvertNode->node.module != &valueModule )
     {
         sConvertNode->node.module = &valueModule;
 
-        // ë…¸ë“œë³€í™˜ì´ ë°œìƒí•¨ì„ í”Œë˜ê·¸ë¡œ ì„¤ì •
+        // ³ëµåº¯È¯ÀÌ ¹ß»ıÇÔÀ» ÇÃ·¡±×·Î ¼³Á¤
         sConvertNode->lflag &= ~QTC_NODE_CONVERSION_MASK;
         sConvertNode->lflag |= QTC_NODE_CONVERSION_TRUE;
     }
@@ -8172,9 +8207,9 @@ qtc::runConstExpr( qcStatement * aStatement,
     }
 
     // PROJ-1413
-    // Value Nameì˜ ë³´ì¡´
-    // ì´ë¯¸ ìƒì„±ëœ conversion ë…¸ë“œë“¤ì— ì£¼ì–´ì§„ positionì´ ì•„ë‹ˆë¼
-    // ì›ë˜ ë…¸ë“œê°€ ê°€ì§„ position ì •ë³´ë¥¼ ìœ ì§€í•´ì•¼ í•œë‹¤.
+    // Value NameÀÇ º¸Á¸
+    // ÀÌ¹Ì »ı¼ºµÈ conversion ³ëµåµé¿¡ ÁÖ¾îÁø positionÀÌ ¾Æ´Ï¶ó
+    // ¿ø·¡ ³ëµå°¡ °¡Áø position Á¤º¸¸¦ À¯ÁöÇØ¾ß ÇÑ´Ù.
     if ( sCurNode != sConvertNode )
     {
         SET_POSITION( sConvertNode->position, sCurNode->position );
@@ -8204,7 +8239,7 @@ qtc::runConstExpr( qcStatement * aStatement,
 
     IDE_EXCEPTION( ERR_PASS );
     {
-        // sqlSourceInfoê°€ ì—†ëŠ” errorë¼ë©´.
+        // sqlSourceInfo°¡ ¾ø´Â error¶ó¸é.
         if ( ideHasErrorPosition() == ID_FALSE )
         {
             sSqlCode = ideGetErrorCode();
@@ -8243,8 +8278,8 @@ qtc::getConstColumn( qcStatement * aStatement,
  *
  * Description :
  *
- *    Constant Expressionì˜ ì‚¬ì „ ì²˜ë¦¬ë¥¼ ìœ„í•œ
- *    Constant Columnì˜ì—­ì˜ íšŒë“
+ *    Constant ExpressionÀÇ »çÀü Ã³¸®¸¦ À§ÇÑ
+ *    Constant Column¿µ¿ªÀÇ È¸µæ
  *
  * Implementation :
  *
@@ -8265,15 +8300,15 @@ qtc::getConstColumn( qcStatement * aStatement,
 
     sMtcTemplate = & aTemplate->tmplate;
 
-    // ê¸°ì¡´ ì •ë³´ì˜ ì €ì¥
+    // ±âÁ¸ Á¤º¸ÀÇ ÀúÀå
     sOrgTupleID = aNode->node.table;
     sOrgColumnID = aNode->node.column;
     sColumnCnt = aNode->node.module->lflag & MTC_NODE_COLUMN_COUNT_MASK;
 
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     IDE_DASSERT( sColumnCnt == 1 );
 
-    // ìƒˆë¡œìš´ Constant ì˜ì—­ì˜ í• ë‹¹
+    // »õ·Î¿î Constant ¿µ¿ªÀÇ ÇÒ´ç
     sResult = qtc::nextColumn( QC_QMP_MEM(aStatement),
                                aNode,
                                aStatement,
@@ -8282,7 +8317,7 @@ qtc::getConstColumn( qcStatement * aStatement,
                                sColumnCnt );
 
     // PROJ-1358
-    // Internal Tupleì˜ ì¦ê°€ë¡œ ê¸°ì¡´ì˜ Tuple Pointerê°€ ë³€ê²½ë  ìˆ˜ ìˆë‹¤.
+    // Internal TupleÀÇ Áõ°¡·Î ±âÁ¸ÀÇ Tuple Pointer°¡ º¯°æµÉ ¼ö ÀÖ´Ù.
     sNewTupleID = aNode->node.table;
 
     sMtcTemplate->rows[sNewTupleID].rowOffset = idlOS::align(
@@ -8294,15 +8329,15 @@ qtc::getConstColumn( qcStatement * aStatement,
            +  sMtcTemplate->rows[sOrgTupleID].columns[sOrgColumnID].column.size
            >  sMtcTemplate->rows[sNewTupleID].rowMaximum ) )
     {
-        // Constant Tupleì˜ ê³µê°„ í¬ê¸° ê²€ì‚¬
+        // Constant TupleÀÇ °ø°£ Å©±â °Ë»ç
         sResult = IDE_FAILURE;
     }
 
-    // ê³µê°„ì´ ë¶€ì¡±í•  ê²½ìš° ìƒˆë¡œì´ Constant Tuple í• ë‹¹ í›„ ì²˜ë¦¬
+    // °ø°£ÀÌ ºÎÁ·ÇÒ °æ¿ì »õ·ÎÀÌ Constant Tuple ÇÒ´ç ÈÄ Ã³¸®
     if( sResult != IDE_SUCCESS )
     {
         // PROJ-1583 large geometry
-        /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+        /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
         if( (sMtcTemplate->rows[sOrgTupleID].columns[sOrgColumnID].module->id == MTD_GEOMETRY_ID) ||
             (sMtcTemplate->rows[sOrgTupleID].columns[sOrgColumnID].module->id == MTD_BINARY_ID) ||
             (sMtcTemplate->rows[sOrgTupleID].columns[sOrgColumnID].module->id == MTD_BLOB_ID) ||
@@ -8333,7 +8368,7 @@ qtc::getConstColumn( qcStatement * aStatement,
         }
 
         // PROJ-1358
-        // Internal Tupleì˜ ì¦ê°€ë¡œ ê¸°ì¡´ì˜ Tuple Pointerê°€ ë³€ê²½ë  ìˆ˜ ìˆë‹¤.
+        // Internal TupleÀÇ Áõ°¡·Î ±âÁ¸ÀÇ Tuple Pointer°¡ º¯°æµÉ ¼ö ÀÖ´Ù.
         sNewTupleID = aNode->node.table;
 
         sMtcTemplate->rows[sNewTupleID].rowOffset = idlOS::align(
@@ -8341,15 +8376,15 @@ qtc::getConstColumn( qcStatement * aStatement,
             sMtcTemplate->rows[sOrgTupleID].columns[sOrgColumnID].module
             ->align );
 
-        // ì í•©ì„± ê²€ì‚¬
+        // ÀûÇÕ¼º °Ë»ç
         IDE_DASSERT(
             sMtcTemplate->rows[sNewTupleID].rowOffset
             + sMtcTemplate->rows[sOrgTupleID].columns[sOrgColumnID].column.size
             <=  sMtcTemplate->rows[sNewTupleID].rowMaximum );
     }
 
-    // ì—°ì‚°ì„ ìˆ˜í–‰í•  ìˆ˜ ìˆë„ë¡
-    // ê¸°ì¡´ ì •ë³´ë¥¼ ìƒˆë¡œ í• ë‹¹ ë°›ì€ Contant ì˜ì—­ì— ë³µì‚¬
+    // ¿¬»êÀ» ¼öÇàÇÒ ¼ö ÀÖµµ·Ï
+    // ±âÁ¸ Á¤º¸¸¦ »õ·Î ÇÒ´ç ¹ŞÀº Contant ¿µ¿ª¿¡ º¹»ç
     sNewColumnID = aNode->node.column;
 
     idlOS::memcpy( & sMtcTemplate->rows[sNewTupleID].columns[sNewColumnID],
@@ -8359,7 +8394,7 @@ qtc::getConstColumn( qcStatement * aStatement,
                    &  sMtcTemplate->rows[sOrgTupleID].execute[sOrgColumnID],
                    ID_SIZEOF(mtcExecute) * sColumnCnt );
 
-    // Columnì˜ offsetë° Tupleì˜ offset ì¬ì¡°ì •
+    // ColumnÀÇ offset¹× TupleÀÇ offset ÀçÁ¶Á¤
     sMtcTemplate->rows[sNewTupleID].columns[sNewColumnID].column.offset
         =  sMtcTemplate->rows[sNewTupleID].rowOffset;
     sMtcTemplate->rows[sNewTupleID].rowOffset
@@ -8383,19 +8418,19 @@ qtc::makeConstantWrapper( qcStatement * aStatement,
  *
  * Description :
  *
- *    Host Constant Wrapper Nodeë¥¼ ìƒì„±í•¨.
- *    (ì°¸ì¡°, qtcConstantWrapper.cpp)
+ *    Host Constant Wrapper Node¸¦ »ı¼ºÇÔ.
+ *    (ÂüÁ¶, qtcConstantWrapper.cpp)
  *
  * Implementation :
  *
- *    í˜„ì¬ Nodeë¥¼ ë³µì‚¬í•˜ê³ ,
- *    í˜„ì¬ Nodeë¥¼ Constant Wrapper Nodeë¡œ ëŒ€ì²´í•¨.
- *    ì´ë ‡ê²Œ í•¨ìœ¼ë¡œì„œ ì™¸ë¶€ì—ì„œ ë³„ë„ì˜ ê³ ë ¤ ì—†ì´ ì²˜ë¦¬ê°€ ê°€ëŠ¥í•¨.
+ *    ÇöÀç Node¸¦ º¹»çÇÏ°í,
+ *    ÇöÀç Node¸¦ Constant Wrapper Node·Î ´ëÃ¼ÇÔ.
+ *    ÀÌ·¸°Ô ÇÔÀ¸·Î¼­ ¿ÜºÎ¿¡¼­ º°µµÀÇ °í·Á ¾øÀÌ Ã³¸®°¡ °¡´ÉÇÔ.
  *
  *    [aNode]      =>      [Wrapper]
  *                             |
  *                             V
- *                         ['aNode'] : ë³µì‚¬ëœ Node
+ *                         ['aNode'] : º¹»çµÈ Node
  *
  ***********************************************************************/
 
@@ -8407,7 +8442,7 @@ qtc::makeConstantWrapper( qcStatement * aStatement,
     UShort        sVariableRow;
 
     //---------------------------------------
-    // ì…ë ¥ëœ Nodeë¥¼ ë³µì‚¬
+    // ÀÔ·ÂµÈ Node¸¦ º¹»ç
     //---------------------------------------
 
     if( aNode->node.module == & hostConstantWrapperModule )
@@ -8422,7 +8457,7 @@ qtc::makeConstantWrapper( qcStatement * aStatement,
     idlOS::memcpy( sNode, aNode, ID_SIZEOF(qtcNode) );
 
     //---------------------------------------
-    // í˜„ì¬ Nodeë¥¼ Wrapper Nodeë¡œ ëŒ€ì²´í•¨.
+    // ÇöÀç Node¸¦ Wrapper Node·Î ´ëÃ¼ÇÔ.
     //---------------------------------------
 
     aNode->node.module = & hostConstantWrapperModule;
@@ -8430,14 +8465,14 @@ qtc::makeConstantWrapper( qcStatement * aStatement,
     aNode->node.leftConversion = NULL;
     aNode->node.funcArguments  = NULL;
     aNode->node.orgNode        = NULL;
-    aNode->node.arguments      = & sNode->node; // ë³µì‚¬í•œ ë…¸ë“œë¥¼ ì—°ê²°
+    aNode->node.arguments      = & sNode->node; // º¹»çÇÑ ³ëµå¸¦ ¿¬°á
     aNode->node.cost           = 0;
     aNode->subquery            = NULL;
     aNode->indexArgument       = 0;
 
     // fix BUG-11545
-    // ë³µì‚¬ëœ ë…¸ë“œ(wrapper nodeì˜ arguments)ì˜ nextì˜ ì—°ê²°ì€ ëŠëŠ”ë‹¤.
-    // constantWrapperë…¸ë“œì˜ nextì— ì´ nextì˜ ì—°ê²°ì •ë³´ë¥¼ ìœ ì§€.
+    // º¹»çµÈ ³ëµå(wrapper nodeÀÇ arguments)ÀÇ nextÀÇ ¿¬°áÀº ²÷´Â´Ù.
+    // constantWrapper³ëµåÀÇ next¿¡ ÀÌ nextÀÇ ¿¬°áÁ¤º¸¸¦ À¯Áö.
     sNode->node.next           = NULL;
 
     aNode->node.lflag  = hostConstantWrapperModule.lflag;
@@ -8446,22 +8481,22 @@ qtc::makeConstantWrapper( qcStatement * aStatement,
     aNode->lflag |= sNode->lflag & QTC_NODE_MASK;
 
     // PROJ-1492
-    // bindê´€ë ¨ lflagë¥¼ ë³µì‚¬í•œë‹¤.
+    // bind°ü·Ã lflag¸¦ º¹»çÇÑ´Ù.
     aNode->node.lflag |= sNode->node.lflag & MTC_NODE_BIND_TYPE_MASK;
 
     //---------------------------------------
-    // Node IDë¥¼ ìƒˆë¡œ í• ë‹¹ë°›ìŒ
+    // Node ID¸¦ »õ·Î ÇÒ´ç¹ŞÀ½
     //---------------------------------------
 
     // fix BUG-18868
-    // BUG-17506ì˜ ìˆ˜ì •ìœ¼ë¡œ (sysdate, PSMë³€ìˆ˜, Bindë³€ìˆ˜)ë„
-    // execution ì¤‘ì— constantë¡œ ì²˜ë¦¬í•  ìˆ˜ ìˆê²Œ ë˜ì—ˆë‹¤.
-    // ê·¸ëŸ°ë° í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” ì§ˆì˜ì˜ ê²½ìš° íŒŒì‹±ê³¼ì •ì—ì„œ
-    // í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë¥¼ ìœ„í•œ ë…¸ë“œë¥¼ ë§Œë“¤ì§€ ì•ŠëŠ”ë‹¤.
-    // í•˜ì§€ë§Œ constant wrapper ë…¸ë“œë„ variable tuple typeì„ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì—
-    // nextColumn() í˜¸ì¶œ í›„ì— variableRowì˜ ê°’ì´ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ê°€ ìˆëŠ” ê²ƒì²˜ëŸ¼
-    // ë³€ê²½ë˜ê²Œ ëœë‹¤.
-    // ì´ ê°’ì„ nextColumn() í˜¸ì¶œ í›„ì— ì›ë³µí•´ì¤€ë‹¤.
+    // BUG-17506ÀÇ ¼öÁ¤À¸·Î (sysdate, PSMº¯¼ö, Bindº¯¼ö)µµ
+    // execution Áß¿¡ constant·Î Ã³¸®ÇÒ ¼ö ÀÖ°Ô µÇ¾ú´Ù.
+    // ±×·±µ¥ È£½ºÆ® º¯¼ö¸¦ »ç¿ëÇÏÁö ¾Ê´Â ÁúÀÇÀÇ °æ¿ì ÆÄ½Ì°úÁ¤¿¡¼­
+    // È£½ºÆ® º¯¼ö¸¦ À§ÇÑ ³ëµå¸¦ ¸¸µéÁö ¾Ê´Â´Ù.
+    // ÇÏÁö¸¸ constant wrapper ³ëµåµµ variable tuple typeÀ» »ç¿ëÇÏ±â ¶§¹®¿¡
+    // nextColumn() È£Ãâ ÈÄ¿¡ variableRowÀÇ °ªÀÌ È£½ºÆ® º¯¼ö°¡ ÀÖ´Â °ÍÃ³·³
+    // º¯°æµÇ°Ô µÈ´Ù.
+    // ÀÌ °ªÀ» nextColumn() È£Ãâ ÈÄ¿¡ ¿øº¹ÇØÁØ´Ù.
 
     sVariableRow = sTemplate->variableRow;
 
@@ -8482,7 +8517,7 @@ qtc::makeConstantWrapper( qcStatement * aStatement,
               != IDE_SUCCESS );
 
     //---------------------------------------
-    // Execute ì—¬ë¶€ë¥¼ í‘œí˜„í•  ì •ë³´ ê³µê°„ì˜ ìœ„ì¹˜ë¥¼ ì§€ì •í•¨.
+    // Execute ¿©ºÎ¸¦ Ç¥ÇöÇÒ Á¤º¸ °ø°£ÀÇ À§Ä¡¸¦ ÁöÁ¤ÇÔ.
     //---------------------------------------
 
     aNode->node.info = sTemplate->execInfoCnt;
@@ -8505,15 +8540,15 @@ qtc::optimizeHostConstExpression( qcStatement * aStatement,
  *
  * Description :
  *
- *    Node Tree ë‚´ì—ì„œ Host Constant Expressionì„ ì°¾ì•„ë‚´ê³ ,
- *    ì´ì— ëŒ€í•˜ì—¬ Constant Wrapper Nodeë¥¼ ë§Œë“¦.
- *    (ì°¸ì¡°, qtcConstantWrapper.cpp)
+ *    Node Tree ³»¿¡¼­ Host Constant ExpressionÀ» Ã£¾Æ³»°í,
+ *    ÀÌ¿¡ ´ëÇÏ¿© Constant Wrapper Node¸¦ ¸¸µê.
+ *    (ÂüÁ¶, qtcConstantWrapper.cpp)
  *
  * Implementation :
  *
- *    ë‹¤ìŒ ê²½ìš°ë¥¼ Host Constant Expressionìœ¼ë¡œ íŒë‹¨í•œë‹¤.
- *        - Dependenciesê°€ 0ì´ì–´ì•¼ í•¨.
- *        - Argumentê°€ ìˆê±°ë‚˜ Conversionì´ ìˆì–´ì•¼ í•¨.
+ *    ´ÙÀ½ °æ¿ì¸¦ Host Constant ExpressionÀ¸·Î ÆÇ´ÜÇÑ´Ù.
+ *        - Dependencies°¡ 0ÀÌ¾î¾ß ÇÔ.
+ *        - Argument°¡ ÀÖ°Å³ª ConversionÀÌ ÀÖ¾î¾ß ÇÔ.
  *        - Ex)
  *            - 5 + ?         [+] : Host Constant Expression
  *                             |
@@ -8525,12 +8560,12 @@ qtc::optimizeHostConstExpression( qcStatement * aStatement,
  *                             V              |
  *                            [double]-------[?]  : Host Constant Expression
  *
- *    ë‹¤ìŒê³¼ ê°™ì€ ê²½ìš°ëŠ” ë” ì´ìƒ ì§„í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
- *        - HOST ë³€ìˆ˜ê°€ ì—†ëŠ” ê²½ìš°
- *        - Indirectionì´ ìˆëŠ” ê²½ìš°
- *        - Listí˜•ì¸ ê²½ìš°
- *        - ì´ëŠ” Host Constant Expressionì´ë¼ í•˜ë”ë¼ë„,
- *          ê²°ê³¼ê°€ í•˜ë‚˜ ì´ìƒì¼ ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤.
+ *    ´ÙÀ½°ú °°Àº °æ¿ì´Â ´õ ÀÌ»ó ÁøÇàÇÏÁö ¾Ê´Â´Ù.
+ *        - HOST º¯¼ö°¡ ¾ø´Â °æ¿ì
+ *        - IndirectionÀÌ ÀÖ´Â °æ¿ì
+ *        - ListÇüÀÎ °æ¿ì
+ *        - ÀÌ´Â Host Constant ExpressionÀÌ¶ó ÇÏ´õ¶óµµ,
+ *          °á°ú°¡ ÇÏ³ª ÀÌ»óÀÏ ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù.
  *
  *
  ***********************************************************************/
@@ -8541,25 +8576,25 @@ qtc::optimizeHostConstExpression( qcStatement * aStatement,
     qtcNode * sNode;
 
     if ( ( (aNode->node.lflag & MTC_NODE_INDIRECT_MASK)
-           == MTC_NODE_INDIRECT_TRUE )                // Indirectionì¸ ê²½ìš°
+           == MTC_NODE_INDIRECT_TRUE )                // IndirectionÀÎ °æ¿ì
          ||
-         ( aNode->node.module == & mtfList )          // List ì¸ ê²½ìš°
+         ( aNode->node.module == & mtfList )          // List ÀÎ °æ¿ì
          ||
-         ( aNode->node.module == & subqueryModule )   // Subqueryì¸ ê²½ìš°
+         ( aNode->node.module == & subqueryModule )   // SubqueryÀÎ °æ¿ì
          ||
-         ( ( (aNode->lflag & QTC_NODE_AGGREGATE_MASK) // Aggregationì´ ì¡´ì¬
+         ( ( (aNode->lflag & QTC_NODE_AGGREGATE_MASK) // AggregationÀÌ Á¸Àç
              == QTC_NODE_AGGREGATE_EXIST ) ||
            ( (aNode->lflag & QTC_NODE_AGGREGATE2_MASK)
              == QTC_NODE_AGGREGATE2_EXIST ) ) )
     {
         // Nothing To Do
-        // ë” ì´ìƒ ì§„í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // ´õ ÀÌ»ó ÁøÇàÇÏÁö ¾Ê´Â´Ù.
     }
     else
     {
         // BUG-17506
-        // Executionì¤‘ì—ëŠ” ìƒìˆ˜ë¡œ ì·¨ê¸‰í•  ìˆ˜ ìˆëŠ” ë…¸ë“œë¥¼ Dynamic Constantë¼ê³ 
-        // ë¶€ë¥¸ë‹¤. (sysdate, PSMë³€ìˆ˜, Bindë³€ìˆ˜)
+        // ExecutionÁß¿¡´Â »ó¼ö·Î Ãë±ŞÇÒ ¼ö ÀÖ´Â ³ëµå¸¦ Dynamic Constant¶ó°í
+        // ºÎ¸¥´Ù. (sysdate, PSMº¯¼ö, Bindº¯¼ö)
         if ( QTC_IS_DYNAMIC_CONSTANT( aNode ) == ID_TRUE )
         {
             if ( ( qtc::dependencyEqual( & aNode->depInfo,
@@ -8569,14 +8604,14 @@ qtc::optimizeHostConstExpression( qcStatement * aStatement,
                    aNode->node.conversion != NULL )
                  )
             {
-                // Constant Expressionì¸ ê²½ìš°ë¡œ Wrapper Nodeë¥¼ ìƒì„±í•˜ê³ 
-                // ë” ì´ìƒ ì§„í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                // Constant ExpressionÀÎ °æ¿ì·Î Wrapper Node¸¦ »ı¼ºÇÏ°í
+                // ´õ ÀÌ»ó ÁøÇàÇÏÁö ¾Ê´Â´Ù.
                 IDE_TEST( qtc::makeConstantWrapper( aStatement, aNode )
                           != IDE_SUCCESS );
             }
             else
             {
-                // í•˜ìœ„ Node ì˜ì—­ì— ëŒ€í•œ Traverseë¥¼ ì§„í–‰í•œë‹¤.
+                // ÇÏÀ§ Node ¿µ¿ª¿¡ ´ëÇÑ Traverse¸¦ ÁøÇàÇÑ´Ù.
                 for ( sNode = (qtcNode*) aNode->node.arguments;
                       sNode != NULL;
                       sNode = (qtcNode*) sNode->node.next )
@@ -8589,7 +8624,7 @@ qtc::optimizeHostConstExpression( qcStatement * aStatement,
         else
         {
             // Nothing To Do
-            // ë” ì´ìƒ ì§„í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // ´õ ÀÌ»ó ÁøÇàÇÏÁö ¾Ê´Â´Ù.
         }
     }
 
@@ -8611,11 +8646,11 @@ qtc::makeSubqueryWrapper( qcStatement * aStatement,
  *
  * Description :
  *
- *    Subquery Wrapper Nodeë¥¼ ìƒì„±í•¨.
- *    (ì°¸ì¡°, qtcSubqueryWrapper.cpp)
+ *    Subquery Wrapper Node¸¦ »ı¼ºÇÔ.
+ *    (ÂüÁ¶, qtcSubqueryWrapper.cpp)
  *
  * Implementation :
- *    ë°˜ë“œì‹œ Subquery Nodeë§Œì„ ì¸ìë¡œ ë°›ëŠ”ë‹¤.
+ *    ¹İµå½Ã Subquery Node¸¸À» ÀÎÀÚ·Î ¹Ş´Â´Ù.
  *
  *                           [Wrapper]
  *                             |
@@ -8630,12 +8665,12 @@ qtc::makeSubqueryWrapper( qcStatement * aStatement,
     qtcNode * sWrapperNode;
     mtcTemplate * sTemplate = & QC_SHARED_TMPLATE(aStatement)->tmplate;
 
-    // ë°˜ë“œì‹œ Subquery Nodeë¥¼ ì¸ìë¡œ ë°›ëŠ”ë‹¤.
+    // ¹İµå½Ã Subquery Node¸¦ ÀÎÀÚ·Î ¹Ş´Â´Ù.
     IDE_DASSERT( aSubqueryNode->subquery != NULL );
 
     //---------------------------------------
-    // ì…ë ¥ëœ Subquery Nodeë¥¼ ë³µì‚¬
-    // dependenciesë° flag ì •ë³´ë¥¼ ìœ ì§€í•˜ê¸° ìœ„í•¨.
+    // ÀÔ·ÂµÈ Subquery Node¸¦ º¹»ç
+    // dependencies¹× flag Á¤º¸¸¦ À¯ÁöÇÏ±â À§ÇÔ.
     //---------------------------------------
 
     IDU_LIMITPOINT("qtc::makeSubqueryWrapper::malloc");
@@ -8645,7 +8680,7 @@ qtc::makeSubqueryWrapper( qcStatement * aStatement,
     idlOS::memcpy( sWrapperNode, aSubqueryNode, ID_SIZEOF(qtcNode) );
 
     //---------------------------------------
-    // Wrapper Nodeì˜ ì •ë³´ë¥¼ ì„¤ì •
+    // Wrapper NodeÀÇ Á¤º¸¸¦ ¼³Á¤
     //---------------------------------------
 
     sWrapperNode->node.module = & subqueryWrapperModule;
@@ -8659,20 +8694,20 @@ qtc::makeSubqueryWrapper( qcStatement * aStatement,
     sWrapperNode->subquery            = NULL;
     sWrapperNode->indexArgument       = 0;
 
-    // flag ì •ë³´ ë³€ê²½
-    // ê¸°ì¡´ ì •ë³´ëŠ” ê·¸ëŒ€ë¡œ ìœ ì§€í•˜ê³ , pass nodeì˜ ì •ë³´ë§Œ ì¶”ê°€
+    // flag Á¤º¸ º¯°æ
+    // ±âÁ¸ Á¤º¸´Â ±×´ë·Î À¯ÁöÇÏ°í, pass nodeÀÇ Á¤º¸¸¸ Ãß°¡
     sWrapperNode->node.lflag &= ~MTC_NODE_COLUMN_COUNT_MASK;
     sWrapperNode->node.lflag |= 1;
 
     sWrapperNode->node.lflag &= ~MTC_NODE_OPERATOR_MASK;
     sWrapperNode->node.lflag |= MTC_NODE_OPERATOR_MISC;
 
-    // Indirection ì„ì„ Setting
+    // Indirection ÀÓÀ» Setting
     sWrapperNode->node.lflag &= ~MTC_NODE_INDIRECT_MASK;
     sWrapperNode->node.lflag |= MTC_NODE_INDIRECT_TRUE;
 
     //---------------------------------------
-    // Node IDë¥¼ ìƒˆë¡œ í• ë‹¹ë°›ìŒ
+    // Node ID¸¦ »õ·Î ÇÒ´ç¹ŞÀ½
     //---------------------------------------
 
     IDE_TEST(
@@ -8690,7 +8725,7 @@ qtc::makeSubqueryWrapper( qcStatement * aStatement,
               != IDE_SUCCESS );
 
     //---------------------------------------
-    // Execute ì—¬ë¶€ë¥¼ í‘œí˜„í•  ì •ë³´ ê³µê°„ì˜ ìœ„ì¹˜ë¥¼ ì§€ì •í•¨.
+    // Execute ¿©ºÎ¸¦ Ç¥ÇöÇÒ Á¤º¸ °ø°£ÀÇ À§Ä¡¸¦ ÁöÁ¤ÇÔ.
     //---------------------------------------
 
     sWrapperNode->node.info = sTemplate->execInfoCnt;
@@ -8717,7 +8752,7 @@ IDE_RC qtc::makeTargetColumn( qtcNode* aNode,
  *
  * Description :
  *
- *    Asterisk Target Columnì„ ìœ„í•œ Nodeë¥¼ ìƒì„±í•¨.
+ *    Asterisk Target ColumnÀ» À§ÇÑ Node¸¦ »ı¼ºÇÔ.
  *
  * Implementation :
  *
@@ -8750,14 +8785,14 @@ IDE_RC qtc::makeInternalColumn( qcStatement* aStatement,
  *
  * Description :
  *
- *    SETë“±ì˜ í‘œí˜„ì„ ìœ„í•´ ì¤‘ê°„ Columnì„ ìƒì„±í•¨.
+ *    SETµîÀÇ Ç¥ÇöÀ» À§ÇØ Áß°£ ColumnÀ» »ı¼ºÇÔ.
  *
  *    ex) SELECT i1 FROM T1 INTERSECT SELECT a1 FROM T2;
- *    SETì˜ Targetì„ ìœ„í•œ ë³„ë„ì˜ Column ì •ë³´ë¥¼ êµ¬ì„±í•˜ì—¬ì•¼ í•œë‹¤.
+ *    SETÀÇ TargetÀ» À§ÇÑ º°µµÀÇ Column Á¤º¸¸¦ ±¸¼ºÇÏ¿©¾ß ÇÑ´Ù.
  *
  * Implementation :
  *
- *    ì •ë³´ê°€ ì—†ëŠ” Column Nodeë¥¼ ìƒì„±í•œë‹¤.
+ *    Á¤º¸°¡ ¾ø´Â Column Node¸¦ »ı¼ºÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -8794,11 +8829,11 @@ void qtc::resetTupleOffset( mtcTemplate* aTemplate, UShort aTupleID )
  *
  * Description :
  *
- *    í•´ë‹¹ Tupleì˜ ìµœëŒ€ offsetì„ ì¬ì¡°ì •í•œë‹¤.
+ *    ÇØ´ç TupleÀÇ ÃÖ´ë offsetÀ» ÀçÁ¶Á¤ÇÑ´Ù.
  *
  * Implementation :
  *
- *    Alignmentë¥¼ ê³ ë ¤í•˜ì—¬ í•´ë‹¹ Tupleì˜ ìµœëŒ€ Offsetì„ ì¬ì¡°ì •í•œë‹¤.
+ *    Alignment¸¦ °í·ÁÇÏ¿© ÇØ´ç TupleÀÇ ÃÖ´ë OffsetÀ» ÀçÁ¶Á¤ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -8819,8 +8854,8 @@ void qtc::resetTupleOffset( mtcTemplate* aTemplate, UShort aTupleID )
         sOffset +=  aTemplate->rows[aTupleID].columns[sColumn].column.size;
 
         // To Fix PR-8528
-        // ì„ì˜ë¡œ ìƒì„±ë˜ëŠ” Tupleì˜ ê²½ìš° Column IDë¥¼ ì„ì˜ë¡œ ì„¤ì •í•œë‹¤.
-        // ì ˆëŒ€ ì¡´ì¬í•  ìˆ˜ ì—†ëŠ” Tableì˜ ID(0)ë¥¼ ê¸°ì¤€ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+        // ÀÓÀÇ·Î »ı¼ºµÇ´Â TupleÀÇ °æ¿ì Column ID¸¦ ÀÓÀÇ·Î ¼³Á¤ÇÑ´Ù.
+        // Àı´ë Á¸ÀçÇÒ ¼ö ¾ø´Â TableÀÇ ID(0)¸¦ ±âÁØÀ¸·Î ¼³Á¤ÇÑ´Ù.
         aTemplate->rows[aTupleID].columns[sColumn].column.id = sColumn;
     }
 
@@ -8839,11 +8874,11 @@ IDE_RC qtc::allocIntermediateTuple( qcStatement* aStatement,
  *
  * Description :
  *
- *    Intermediate Tupleì„ ìœ„í•œ ê³µê°„ì„ í• ë‹¹í•œë‹¤.
+ *    Intermediate TupleÀ» À§ÇÑ °ø°£À» ÇÒ´çÇÑ´Ù.
  *
  * Implementation :
  *
- *    Intermediate Tupleì„ ìœ„í•œ Columnë° Executeê³µê°„ì„ í™•ë³´í•œë‹¤.
+ *    Intermediate TupleÀ» À§ÇÑ Column¹× Execute°ø°£À» È®º¸ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -8857,8 +8892,8 @@ IDE_RC qtc::allocIntermediateTuple( qcStatement* aStatement,
         aTemplate->rows[aTupleID].columnCount   = aColCount;
         aTemplate->rows[aTupleID].columnMaximum = aColCount;
 
-        /* BUG-44382 clone tuple ì„±ëŠ¥ê°œì„  */
-        // ë³µì‚¬ê°€ í•„ìš”í•¨
+        /* BUG-44382 clone tuple ¼º´É°³¼± */
+        // º¹»ç°¡ ÇÊ¿äÇÔ
         setTupleColumnFlag( &(aTemplate->rows[aTupleID]),
                             ID_TRUE,
                             ID_FALSE );
@@ -8906,12 +8941,12 @@ IDE_RC qtc::changeNode( qcStatement*    aStatement,
  *
  * Description :
  *
- *    List Expressionì˜ ì •ë³´ë¥¼ ì¬ì¡°ì •í•œë‹¤.
+ *    List ExpressionÀÇ Á¤º¸¸¦ ÀçÁ¶Á¤ÇÑ´Ù.
  *
  * Implementation :
  *
- *    List Expressionì˜ ì˜ë¯¸ë¥¼ ê°–ë„ë¡ ì •ë³´ë¥¼ Settingí•˜ë©°,
- *    í•´ë‹¹ Stringì˜ ìœ„ì¹˜ë¥¼ ì¬ì¡°ì •í•œë‹¤.
+ *    List ExpressionÀÇ ÀÇ¹Ì¸¦ °®µµ·Ï Á¤º¸¸¦ SettingÇÏ¸ç,
+ *    ÇØ´ç StringÀÇ À§Ä¡¸¦ ÀçÁ¶Á¤ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -8933,15 +8968,15 @@ IDE_RC qtc::changeNode( qcStatement*    aStatement,
         sModule = & qtc::spFunctionCallModule;
     }
 
-    // sModuleì´ mtfListê°€ ì•„ë‹Œ ê²½ìš°ëŠ” í•¨ìˆ˜í˜•ì‹ìœ¼ë¡œ ì‚¬ìš©ëœ ê²½ìš°ì„.
-    // ì´ ê²½ìš° node changeê°€ ì¼ì–´ë‚¨.
+    // sModuleÀÌ mtfList°¡ ¾Æ´Ñ °æ¿ì´Â ÇÔ¼öÇü½ÄÀ¸·Î »ç¿ëµÈ °æ¿ìÀÓ.
+    // ÀÌ °æ¿ì node change°¡ ÀÏ¾î³².
     // ex) sum(i1) or to_date(i1, 'yy-mm-dd')
     if( (sModule != &mtfList) || (aNode[0]->node.module == NULL) )
     {
-        // nodeì˜ moduleì´ nullì´ ì•„ë‹Œ ê²½ìš°ëŠ” ë‹¨ì¼ expressionì¸ ê²½ìš°.
+        // nodeÀÇ moduleÀÌ nullÀÌ ¾Æ´Ñ °æ¿ì´Â ´ÜÀÏ expressionÀÎ °æ¿ì.
         // ex) sum(i1)
         //
-        // i1ìì²´ê°€ ë‹¬ë ¤ìˆê¸° ë•Œë¬¸ì— ë‹¤ìŒê³¼ ê°™ì´ ìƒˆë¡œ nodeë¥¼ ìƒì„±.
+        // i1ÀÚÃ¼°¡ ´Ş·ÁÀÖ±â ¶§¹®¿¡ ´ÙÀ½°ú °°ÀÌ »õ·Î node¸¦ »ı¼º.
         //
         // i1   =>   ( )
         //            |
@@ -8950,12 +8985,12 @@ IDE_RC qtc::changeNode( qcStatement*    aStatement,
         {
             sNode    = &aNode[0]->node;
 
-            // Node ìƒì„±
+            // Node »ı¼º
             IDU_LIMITPOINT("qtc::changeNode::malloc");
             IDE_TEST(STRUCT_ALLOC(QC_QMP_MEM(aStatement), qtcNode, &(aNode[0]))
                      != IDE_SUCCESS);
 
-            // Node ì´ˆê¸°í™”
+            // Node ÃÊ±âÈ­
             QTC_NODE_INIT( aNode[0] );
             aNode[1] = NULL;
 
@@ -8963,12 +8998,12 @@ IDE_RC qtc::changeNode( qcStatement*    aStatement,
             aNode[0]->node.lflag          = 1;
         }
 
-        // nodeì˜ moduleì´ nullì¸ ê²½ìš°ëŠ” listí˜•ì‹ìœ¼ë¡œ expressionì´ ë§¤ë‹¬ë ¤ ìˆëŠ” ê²½ìš°.
-        // nodeì˜ moduleì´ nullì´ ì•„ë‹Œ ê²½ìš° ì´ë¯¸ ìœ„ì—ì„œ ë¹ˆ nodeë¥¼ ë§Œë“¤ì–´ ë†“ì•˜ìŒ.
+        // nodeÀÇ moduleÀÌ nullÀÎ °æ¿ì´Â listÇü½ÄÀ¸·Î expressionÀÌ ¸Å´Ş·Á ÀÖ´Â °æ¿ì.
+        // nodeÀÇ moduleÀÌ nullÀÌ ¾Æ´Ñ °æ¿ì ÀÌ¹Ì À§¿¡¼­ ºó node¸¦ ¸¸µé¾î ³õ¾ÒÀ½.
         // ex) to_date( i1, 'yy-mm-dd' )
         //
-        // listí˜•ì‹ì¸ ê²½ìš° ìµœìƒìœ„ì— ë¹ˆ nodeê°€ ë‹¬ë ¤ìˆìœ¼ë¯€ë¡œ
-        // ë‹¤ìŒê³¼ ê°™ì´ ë¹ˆ nodeë¥¼ change
+        // listÇü½ÄÀÎ °æ¿ì ÃÖ»óÀ§¿¡ ºó node°¡ ´Ş·ÁÀÖÀ¸¹Ç·Î
+        // ´ÙÀ½°ú °°ÀÌ ºó node¸¦ change
         //
         //  ( )                    to_date
         //   |                =>     |
@@ -8995,7 +9030,7 @@ IDE_RC qtc::changeNode( qcStatement*    aStatement,
     }
     else
     {
-        // BUG-38935 display nameì„ ìœ„í•´ ì„¤ì •í•œë‹¤.
+        // BUG-38935 display nameÀ» À§ÇØ ¼³Á¤ÇÑ´Ù.
         aNode[0]->node.lflag &= ~MTC_NODE_REMOVE_ARGUMENTS_MASK;
         aNode[0]->node.lflag |= MTC_NODE_REMOVE_ARGUMENTS_TRUE;
     }
@@ -9024,12 +9059,12 @@ IDE_RC qtc::changeNodeByModule( qcStatement*    aStatement,
  *
  * Description : BUG-41310
  *
- *    List Expressionì˜ ì •ë³´ë¥¼ ì¬ì¡°ì •í•œë‹¤.
+ *    List ExpressionÀÇ Á¤º¸¸¦ ÀçÁ¶Á¤ÇÑ´Ù.
  *
  * Implementation :
  *
- *    List Expressionì˜ ì˜ë¯¸ë¥¼ ê°–ë„ë¡ ì •ë³´ë¥¼ Settingí•˜ë©°,
- *    í•´ë‹¹ Stringì˜ ìœ„ì¹˜ë¥¼ ì¬ì¡°ì •í•œë‹¤.
+ *    List ExpressionÀÇ ÀÇ¹Ì¸¦ °®µµ·Ï Á¤º¸¸¦ SettingÇÏ¸ç,
+ *    ÇØ´ç StringÀÇ À§Ä¡¸¦ ÀçÁ¶Á¤ÇÑ´Ù.
  *
  ***********************************************************************/
     const mtfModule* sModule;
@@ -9039,15 +9074,15 @@ IDE_RC qtc::changeNodeByModule( qcStatement*    aStatement,
 
     sModule = aModule;
 
-    // sModuleì´ mtfListê°€ ì•„ë‹Œ ê²½ìš°ëŠ” í•¨ìˆ˜í˜•ì‹ìœ¼ë¡œ ì‚¬ìš©ëœ ê²½ìš°ì„.
-    // ì´ ê²½ìš° node changeê°€ ì¼ì–´ë‚¨.
+    // sModuleÀÌ mtfList°¡ ¾Æ´Ñ °æ¿ì´Â ÇÔ¼öÇü½ÄÀ¸·Î »ç¿ëµÈ °æ¿ìÀÓ.
+    // ÀÌ °æ¿ì node change°¡ ÀÏ¾î³².
     // ex) sum(i1) or to_date(i1, 'yy-mm-dd')
     if ( ( sModule != &mtfList ) || ( aNode[0]->node.module == NULL ) )
     {
-        // nodeì˜ moduleì´ nullì´ ì•„ë‹Œ ê²½ìš°ëŠ” ë‹¨ì¼ expressionì¸ ê²½ìš°.
+        // nodeÀÇ moduleÀÌ nullÀÌ ¾Æ´Ñ °æ¿ì´Â ´ÜÀÏ expressionÀÎ °æ¿ì.
         // ex) sum(i1)
         //
-        // i1ìì²´ê°€ ë‹¬ë ¤ìˆê¸° ë•Œë¬¸ì— ë‹¤ìŒê³¼ ê°™ì´ ìƒˆë¡œ nodeë¥¼ ìƒì„±.
+        // i1ÀÚÃ¼°¡ ´Ş·ÁÀÖ±â ¶§¹®¿¡ ´ÙÀ½°ú °°ÀÌ »õ·Î node¸¦ »ı¼º.
         //
         // i1   =>   ( )
         //            |
@@ -9056,11 +9091,11 @@ IDE_RC qtc::changeNodeByModule( qcStatement*    aStatement,
         {
             sNode    = &aNode[0]->node;
 
-            // Node ìƒì„±
+            // Node »ı¼º
             IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM( aStatement ), qtcNode, &( aNode[0] ) )
                      != IDE_SUCCESS );
 
-            // Node ì´ˆê¸°í™”
+            // Node ÃÊ±âÈ­
             QTC_NODE_INIT( aNode[0] );
             aNode[1] = NULL;
 
@@ -9068,12 +9103,12 @@ IDE_RC qtc::changeNodeByModule( qcStatement*    aStatement,
             aNode[0]->node.lflag          = 1;
         }
 
-        // nodeì˜ moduleì´ nullì¸ ê²½ìš°ëŠ” listí˜•ì‹ìœ¼ë¡œ expressionì´ ë§¤ë‹¬ë ¤ ìˆëŠ” ê²½ìš°.
-        // nodeì˜ moduleì´ nullì´ ì•„ë‹Œ ê²½ìš° ì´ë¯¸ ìœ„ì—ì„œ ë¹ˆ nodeë¥¼ ë§Œë“¤ì–´ ë†“ì•˜ìŒ.
+        // nodeÀÇ moduleÀÌ nullÀÎ °æ¿ì´Â listÇü½ÄÀ¸·Î expressionÀÌ ¸Å´Ş·Á ÀÖ´Â °æ¿ì.
+        // nodeÀÇ moduleÀÌ nullÀÌ ¾Æ´Ñ °æ¿ì ÀÌ¹Ì À§¿¡¼­ ºó node¸¦ ¸¸µé¾î ³õ¾ÒÀ½.
         // ex) to_date( i1, 'yy-mm-dd' )
         //
-        // listí˜•ì‹ì¸ ê²½ìš° ìµœìƒìœ„ì— ë¹ˆ nodeê°€ ë‹¬ë ¤ìˆìœ¼ë¯€ë¡œ
-        // ë‹¤ìŒê³¼ ê°™ì´ ë¹ˆ nodeë¥¼ change
+        // listÇü½ÄÀÎ °æ¿ì ÃÖ»óÀ§¿¡ ºó node°¡ ´Ş·ÁÀÖÀ¸¹Ç·Î
+        // ´ÙÀ½°ú °°ÀÌ ºó node¸¦ change
         //
         //  ( )                    to_date
         //   |                =>     |
@@ -9100,7 +9135,7 @@ IDE_RC qtc::changeNodeByModule( qcStatement*    aStatement,
     }
     else
     {
-        // BUG-38935 display nameì„ ìœ„í•´ ì„¤ì •í•œë‹¤.
+        // BUG-38935 display nameÀ» À§ÇØ ¼³Á¤ÇÑ´Ù.
         aNode[0]->node.lflag &= ~MTC_NODE_REMOVE_ARGUMENTS_MASK;
         aNode[0]->node.lflag |= MTC_NODE_REMOVE_ARGUMENTS_TRUE;
     }
@@ -9130,20 +9165,20 @@ IDE_RC qtc::changeNodeForMemberFunc( qcStatement    * aStatement,
 /**********************************************************************************
  *
  * Description : PROJ-1075
- *    List Expressionì˜ ì •ë³´ë¥¼ ì¬ì¡°ì •í•œë‹¤.
- *    ì¼ë°˜ functionì€ ì°¾ì§€ ì•Šê³  í•­ìƒ member functionì„ ë¨¼ì € ê²€ìƒ‰í•œë‹¤.
+ *    List ExpressionÀÇ Á¤º¸¸¦ ÀçÁ¶Á¤ÇÑ´Ù.
+ *    ÀÏ¹İ functionÀº Ã£Áö ¾Ê°í Ç×»ó member functionÀ» ¸ÕÀú °Ë»öÇÑ´Ù.
  *
  * Implementation :
- *    List Expressionì˜ ì˜ë¯¸ë¥¼ ê°–ë„ë¡ ì •ë³´ë¥¼ Settingí•˜ë©°,
- *    í•´ë‹¹ Stringì˜ ìœ„ì¹˜ë¥¼ ì¬ì¡°ì •í•œë‹¤.
- *    ì´ í•¨ìˆ˜ë¡œ ì˜¬ ìˆ˜ ìˆëŠ” ê²½ìš°ì˜ í•¨ìˆ˜ ìœ í˜•
+ *    List ExpressionÀÇ ÀÇ¹Ì¸¦ °®µµ·Ï Á¤º¸¸¦ SettingÇÏ¸ç,
+ *    ÇØ´ç StringÀÇ À§Ä¡¸¦ ÀçÁ¶Á¤ÇÑ´Ù.
+ *    ÀÌ ÇÔ¼ö·Î ¿Ã ¼ö ÀÖ´Â °æ¿ìÀÇ ÇÔ¼ö À¯Çü
  *        (1) arrvar_name.memberfunc_name( list_expr )  - aUserNamePos(X)
  *        (2) user_name.spfunc_name( list_expr )        - aUserNamePos(X)
- *        (3) label_name.arrvar_name.memberfunc_name( list_expr ) - ëª¨ë‘ ì¡´ì¬
- *        (4) user_name.package_name.spfunc_name( list_exor ) - ëª¨ë‘ ì¡´ì¬
+ *        (3) label_name.arrvar_name.memberfunc_name( list_expr ) - ¸ğµÎ Á¸Àç
+ *        (4) user_name.package_name.spfunc_name( list_exor ) - ¸ğµÎ Á¸Àç
  *        // BUG-38243 support array method at package
  *        (5) user_name.package_name.arrvar_name.memberfunc_name( list_expr )
- *             -> (5)ëŠ” í•­ìƒ member funcì¼ ìˆ˜ ë°–ì— ì—†ìŒ
+ *             -> (5)´Â Ç×»ó member funcÀÏ ¼ö ¹Û¿¡ ¾øÀ½
  *********************************************************************************/
 
     const mtfModule* sModule;
@@ -9155,13 +9190,13 @@ IDE_RC qtc::changeNodeForMemberFunc( qcStatement    * aStatement,
 
     if ( aIsBracket == ID_FALSE )
     {
-        // ì í•©ì„± ê²€ì‚¬. ì ì–´ë„ tableName, columnNameì´ ì¡´ì¬í•´ì•¼ í•¨.
+        // ÀûÇÕ¼º °Ë»ç. Àû¾îµµ tableName, columnNameÀÌ Á¸ÀçÇØ¾ß ÇÔ.
         IDE_DASSERT( QC_IS_NULL_NAME( (*aTableNamePos) ) == ID_FALSE );
         IDE_DASSERT( QC_IS_NULL_NAME( (*aColumnNamePos) ) == ID_FALSE );
 
         if ( QC_IS_NULL_NAME((*aPkgNamePos)) == ID_TRUE )
         {
-            // spFunctionCallì´ ë  ìˆ˜ë„ ìˆìŒ.
+            // spFunctionCallÀÌ µÉ ¼öµµ ÀÖÀ½.
             IDE_TEST( qsf::moduleByName( &sModule,
                                          &sExist,
                                          (void*)(aColumnNamePos->stmtText +
@@ -9184,7 +9219,7 @@ IDE_RC qtc::changeNodeForMemberFunc( qcStatement    * aStatement,
         }
         else
         {
-            // (5)ì˜ ê²½ìš° ë¬´ì¡°ê±´ member functionì´ì–´ì•¼ë§Œ í•¨
+            // (5)ÀÇ °æ¿ì ¹«Á¶°Ç member functionÀÌ¾î¾ß¸¸ ÇÔ
             IDE_TEST( qsf::moduleByName( &sModule,
                                          &sExist,
                                          (void*)(aPkgNamePos->stmtText +
@@ -9220,10 +9255,10 @@ IDE_RC qtc::changeNodeForMemberFunc( qcStatement    * aStatement,
             }
         }
 
-        // nodeì˜ moduleì´ nullì´ ì•„ë‹Œ ê²½ìš°ëŠ” ë‹¨ì¼ expressionì¸ ê²½ìš°.
+        // nodeÀÇ moduleÀÌ nullÀÌ ¾Æ´Ñ °æ¿ì´Â ´ÜÀÏ expressionÀÎ °æ¿ì.
         // ex) sum(i1)
         //
-        // i1ìì²´ê°€ ë‹¬ë ¤ìˆê¸° ë•Œë¬¸ì— ë‹¤ìŒê³¼ ê°™ì´ ìƒˆë¡œ nodeë¥¼ ìƒì„±.
+        // i1ÀÚÃ¼°¡ ´Ş·ÁÀÖ±â ¶§¹®¿¡ ´ÙÀ½°ú °°ÀÌ »õ·Î node¸¦ »ı¼º.
         //
         // i1   =>   ( )
         //            |
@@ -9232,16 +9267,16 @@ IDE_RC qtc::changeNodeForMemberFunc( qcStatement    * aStatement,
         {
             sNode    = &aNode[0]->node;
 
-            // Node ìƒì„±
+            // Node »ı¼º
             IDU_LIMITPOINT("qtc::changeNodeForMemberFunc::malloc");
             IDE_TEST(STRUCT_ALLOC(QC_QMP_MEM(aStatement), qtcNode, &(aNode[0]))
                      != IDE_SUCCESS);
 
-            // Node ì´ˆê¸°í™”
+            // Node ÃÊ±âÈ­
             QTC_NODE_INIT( aNode[0] );
             aNode[1] = NULL;
 
-            // Node ì •ë³´ ì„¤ì •
+            // Node Á¤º¸ ¼³Á¤
             aNode[0]->node.arguments      = sNode;
             aNode[0]->node.lflag          = 1;
         }
@@ -9250,12 +9285,12 @@ IDE_RC qtc::changeNodeForMemberFunc( qcStatement    * aStatement,
             // Nothing to do.
         }
 
-        // nodeì˜ moduleì´ nullì¸ ê²½ìš°ëŠ” listí˜•ì‹ìœ¼ë¡œ expressionì´ ë§¤ë‹¬ë ¤ ìˆëŠ” ê²½ìš°.
-        // nodeì˜ moduleì´ nullì´ ì•„ë‹Œ ê²½ìš° ì´ë¯¸ ìœ„ì—ì„œ ë¹ˆ nodeë¥¼ ë§Œë“¤ì–´ ë†“ì•˜ìŒ.
+        // nodeÀÇ moduleÀÌ nullÀÎ °æ¿ì´Â listÇü½ÄÀ¸·Î expressionÀÌ ¸Å´Ş·Á ÀÖ´Â °æ¿ì.
+        // nodeÀÇ moduleÀÌ nullÀÌ ¾Æ´Ñ °æ¿ì ÀÌ¹Ì À§¿¡¼­ ºó node¸¦ ¸¸µé¾î ³õ¾ÒÀ½.
         // ex) to_date( i1, 'yy-mm-dd' )
         //
-        // listí˜•ì‹ì¸ ê²½ìš° ìµœìƒìœ„ì— ë¹ˆ nodeê°€ ë‹¬ë ¤ìˆìœ¼ë¯€ë¡œ
-        // ë‹¤ìŒê³¼ ê°™ì´ ë¹ˆ nodeë¥¼ change
+        // listÇü½ÄÀÎ °æ¿ì ÃÖ»óÀ§¿¡ ºó node°¡ ´Ş·ÁÀÖÀ¸¹Ç·Î
+        // ´ÙÀ½°ú °°ÀÌ ºó node¸¦ change
         //
         //  ( )                    to_date
         //   |                =>     |
@@ -9316,7 +9351,7 @@ IDE_RC qtc::changeIgnoreNullsNode( qtcNode     * aNode,
  *
  * Description :
  *
- *    analytic functionì˜ ignore nulls í•¨ìˆ˜ë¡œ ë³€ê²½í•œë‹¤.
+ *    analytic functionÀÇ ignore nulls ÇÔ¼ö·Î º¯°æÇÑ´Ù.
  *
  * Implementation :
  *
@@ -9368,37 +9403,37 @@ IDE_RC qtc::changeWithinGroupNode( qcStatement * aStatement,
  *
  * Description :
  *    BUG-41631
- *    ê°™ì€ ì´ë¦„ì˜ Within Group Aggregation í•¨ìˆ˜ë¡œ ë³€ê²½í•œë‹¤.
+ *    °°Àº ÀÌ¸§ÀÇ Within Group Aggregation ÇÔ¼ö·Î º¯°æÇÑ´Ù.
  *
  *    ------------------------------------------------------------------------
  *    BUG-41771 PERCENT_RANK WITHIN GROUP
- *      RANK ì— ëŒ€í•´ ë³´ë©´,
- *        RANK(..) WITHIN GROUP --> í•¨ìˆ˜ëª… : "RANK_WITHIN_GROUP"
- *                                  ëª¨ë“ˆëª… : mtfRankWithinGroup
- *        RANK() OVER()         --> í•¨ìˆ˜ëª… : "RANK"
- *                                  ëª¨ë“ˆëª… : mtfRank
+ *      RANK ¿¡ ´ëÇØ º¸¸é,
+ *        RANK(..) WITHIN GROUP --> ÇÔ¼ö¸í : "RANK_WITHIN_GROUP"
+ *                                  ¸ğµâ¸í : mtfRankWithinGroup
+ *        RANK() OVER()         --> ÇÔ¼ö¸í : "RANK"
+ *                                  ¸ğµâ¸í : mtfRank
  *
- *       RANKëŠ” WITHIIN GROUP ì ˆê³¼ ì‚¬ìš© ì‹œ, ê·¸ê²ƒì˜ ëª¨ë“ˆì´ ì´ê³³ì—ì„œ,
+ *       RANK´Â WITHIIN GROUP Àı°ú »ç¿ë ½Ã, ±×°ÍÀÇ ¸ğµâÀÌ ÀÌ°÷¿¡¼­,
  *       mtfRank -> mtfRankWithinGroup
- *       ì´ë ‡ê²Œ êµì²´ëœë‹¤.
+ *       ÀÌ·¸°Ô ±³Ã¼µÈ´Ù.
  *
- *       ê·¸ëŸ¬ë‚˜, PERCENT_RANK ëŠ”
- *       RANK ì²˜ëŸ¼ Over ì ˆì„ ì‚¬ìš©í•˜ëŠ”, Analytic ëª¨ë“ˆì´ ì—†ì–´, ë°”ë¡œ mtfPercentRankWithinGroup ì´
- *       ë‹¬ë¦¬ê²Œ ë˜ì–´ ì´ê³³ì—ì„œ ëª¨ë“ˆì„ êµì²´í•  í•„ìš”ê°€ ì—†ë‹¤.(ì´ê²ƒë°–ì— ì—†ìœ¼ë‹ˆ í• ìˆ˜ë„ ì—†ë‹¤.)
- *       í•¨ìˆ˜ëª…ì„ 'PERCENT_RANK_WITHIN_GROUP' ì´ ì•„ë‹Œ 'PERCENT_RANK' ë¡œ í•œ ì´ìœ ëŠ”,
- *       íŒŒì„œê°€ sql ë¬¸ì—ì„œ í•¨ìˆ˜ëª…ì„ ì–»ë„ë¡ í•˜ê¸° ìœ„í•¨ì´ë‹¤.
+ *       ±×·¯³ª, PERCENT_RANK ´Â
+ *       RANK Ã³·³ Over ÀıÀ» »ç¿ëÇÏ´Â, Analytic ¸ğµâÀÌ ¾ø¾î, ¹Ù·Î mtfPercentRankWithinGroup ÀÌ
+ *       ´Ş¸®°Ô µÇ¾î ÀÌ°÷¿¡¼­ ¸ğµâÀ» ±³Ã¼ÇÒ ÇÊ¿ä°¡ ¾ø´Ù.(ÀÌ°Í¹Û¿¡ ¾øÀ¸´Ï ÇÒ¼öµµ ¾ø´Ù.)
+ *       ÇÔ¼ö¸íÀ» 'PERCENT_RANK_WITHIN_GROUP' ÀÌ ¾Æ´Ñ 'PERCENT_RANK' ·Î ÇÑ ÀÌÀ¯´Â,
+ *       ÆÄ¼­°¡ sql ¹®¿¡¼­ ÇÔ¼ö¸íÀ» ¾òµµ·Ï ÇÏ±â À§ÇÔÀÌ´Ù.
  *
- *       PERCENT_RANK() OVER(..)  í•¨ìˆ˜ê°€ ì¶”ê°€ëœë‹¤ë©´,
- *         PERCENT_RANK() OVER(..)           --> í•¨ìˆ˜ëª… : "PERCENT_RANK"
- *                                               ëª¨ë“ˆëª… : mtfPercentRank
- *         PERCENT_RANK(..) WITHIN GROUP(..) --> í•¨ìˆ˜ëª… : "PERCENT_RANK_WITHIN_GROUP"
- *                                               ëª¨ë“ˆëª… : mtfPercentRankWithinGroup
- *       ì´ëŸ° í˜•íƒœë¡œ ì‘ì—…í•œë‹¤.
+ *       PERCENT_RANK() OVER(..)  ÇÔ¼ö°¡ Ãß°¡µÈ´Ù¸é,
+ *         PERCENT_RANK() OVER(..)           --> ÇÔ¼ö¸í : "PERCENT_RANK"
+ *                                               ¸ğµâ¸í : mtfPercentRank
+ *         PERCENT_RANK(..) WITHIN GROUP(..) --> ÇÔ¼ö¸í : "PERCENT_RANK_WITHIN_GROUP"
+ *                                               ¸ğµâ¸í : mtfPercentRankWithinGroup
+ *       ÀÌ·± ÇüÅÂ·Î ÀÛ¾÷ÇÑ´Ù.
  *
- *       ì´í›„ì—ëŠ”, PERCENT_RANK ì— ëŒ€í•œ ê¸°ë³¸ ëª¨ë“ˆì€,
- *       WITHIN GROUP ì ˆ/OVER ì ˆ êµ¬ë¶„ì—†ì´ mtfPercentRank ê°€ ë‹¬ë¦¬ê²Œ ë˜ë©°,
- *       ë”°ë¼ì„œ, WITHIN GROUP ì ˆê³¼ ì‚¬ìš©ë˜ë©´ ì´ê³³ì—ì„œ mtfPercentRankWithinGroup ë¡œ
- *       êµì²´í•´ì¤€ë‹¤.
+ *       ÀÌÈÄ¿¡´Â, PERCENT_RANK ¿¡ ´ëÇÑ ±âº» ¸ğµâÀº,
+ *       WITHIN GROUP Àı/OVER Àı ±¸ºĞ¾øÀÌ mtfPercentRank °¡ ´Ş¸®°Ô µÇ¸ç,
+ *       µû¶ó¼­, WITHIN GROUP Àı°ú »ç¿ëµÇ¸é ÀÌ°÷¿¡¼­ mtfPercentRankWithinGroup ·Î
+ *       ±³Ã¼ÇØÁØ´Ù.
  *
  *       PERCENT_RANK() OVER(..)
  *             |
@@ -9428,18 +9463,18 @@ IDE_RC qtc::changeWithinGroupNode( qcStatement * aStatement,
  *
  *    ------------------------------------------------------------------------
  *    BUG-41800 CUME_DIST WITHIN GROUP
- *      PERCENT_RANK ì™€ ë§ˆì°¬ê°€ì§€ë¡œ,
- *        CUME_DIST() OVER(..)  í•¨ìˆ˜ê°€ ì¶”ê°€ëœë‹¤ë©´,
- *          CUME_DIST() OVER(..)           --> í•¨ìˆ˜ëª… : "CUME_DIST"
- *                                             ëª¨ë“ˆëª… : mtfCumeDist
- *          CUME_DIST(..) WITHIN GROUP(..) --> í•¨ìˆ˜ëª… : "CUME_DIST_WITHIN_GROUP"
- *                                             ëª¨ë“ˆëª… : mtfCumeDistWithinGroup
- *       ì´ëŸ° í˜•íƒœë¡œ ì‘ì—…í•œë‹¤.
+ *      PERCENT_RANK ¿Í ¸¶Âù°¡Áö·Î,
+ *        CUME_DIST() OVER(..)  ÇÔ¼ö°¡ Ãß°¡µÈ´Ù¸é,
+ *          CUME_DIST() OVER(..)           --> ÇÔ¼ö¸í : "CUME_DIST"
+ *                                             ¸ğµâ¸í : mtfCumeDist
+ *          CUME_DIST(..) WITHIN GROUP(..) --> ÇÔ¼ö¸í : "CUME_DIST_WITHIN_GROUP"
+ *                                             ¸ğµâ¸í : mtfCumeDistWithinGroup
+ *       ÀÌ·± ÇüÅÂ·Î ÀÛ¾÷ÇÑ´Ù.
  *
- *       ì´í›„ì—ëŠ”, CUME_DIST ì— ëŒ€í•œ ê¸°ë³¸ ëª¨ë“ˆì€,
- *       WITHIN GROUP ì ˆ/OVER ì ˆ êµ¬ë¶„ì—†ì´ mtfCumeDist ê°€ ë‹¬ë¦¬ê²Œ ë˜ë©°,
- *       ë”°ë¼ì„œ, WITHIN GROUP ì ˆê³¼ ì‚¬ìš©ë˜ë©´ ì´ê³³ì—ì„œ mtfCumeDistWithinGroup ë¡œ
- *       êµì²´í•´ì¤€ë‹¤.
+ *       ÀÌÈÄ¿¡´Â, CUME_DIST ¿¡ ´ëÇÑ ±âº» ¸ğµâÀº,
+ *       WITHIN GROUP Àı/OVER Àı ±¸ºĞ¾øÀÌ mtfCumeDist °¡ ´Ş¸®°Ô µÇ¸ç,
+ *       µû¶ó¼­, WITHIN GROUP Àı°ú »ç¿ëµÇ¸é ÀÌ°÷¿¡¼­ mtfCumeDistWithinGroup ·Î
+ *       ±³Ã¼ÇØÁØ´Ù.
  *
  *       CUME_DIST() OVER(..)
  *             |
@@ -9491,16 +9526,16 @@ IDE_RC qtc::changeWithinGroupNode( qcStatement * aStatement,
 
     if ( sChanged == ID_TRUE )
     {
-        // ì¸ì ê°¯ìˆ˜ ë°±ì—…
+        // ÀÎÀÚ °¹¼ö ¹é¾÷
         sNodeArgCnt = aNode->node.lflag & MTC_NODE_ARGUMENT_COUNT_MASK;
 
-        // ì´ì „ module Flag ì œê±°
+        // ÀÌÀü module Flag Á¦°Å
         aNode->node.lflag &= ~(aNode->node.module->lflag);
 
-        // ìƒˆ module flag ì„¤ì¹˜
+        // »õ module flag ¼³Ä¡
         aNode->node.lflag |= sModule->lflag & ~MTC_NODE_ARGUMENT_COUNT_MASK;
 
-        // ë°±ì—…ëœ ì¸ì ê°¯ìˆ˜ ë³µì›
+        // ¹é¾÷µÈ ÀÎÀÚ °¹¼ö º¹¿ø
         aNode->node.lflag |= sNodeArgCnt;
 
         aNode->node.module = sModule;
@@ -9549,7 +9584,7 @@ idBool qtc::canHasOverClause( qtcNode * aNode )
  *
  * Description :
  *
- *    Over (..) êµ¬ë¬¸ì„ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” Within Group í•¨ìˆ˜ì¸ì§€ í™•ì¸í•œë‹¤.
+ *    Over (..) ±¸¹®À» »ç¿ëÇÒ ¼ö ÀÖ´Â Within Group ÇÔ¼öÀÎÁö È®ÀÎÇÑ´Ù.
  *
  * Implementation :
  *
@@ -9579,7 +9614,7 @@ IDE_RC qtc::getBigint( SChar*          aStmtText,
  *
  * Description :
  *
- *    ì£¼ì–´ì§„ Stringì„ ì´ìš©í•´ BIGINT Valueë¥¼ ìƒì„±í•œë‹¤.
+ *    ÁÖ¾îÁø StringÀ» ÀÌ¿ëÇØ BIGINT Value¸¦ »ı¼ºÇÑ´Ù.
  *
  * Implementation :
  *
@@ -9635,11 +9670,11 @@ IDE_RC qtc::fixAfterValidation( iduVarMemList * aMemory,
  *
  * Description :
  *
- *    Validation ì™„ë£Œ í›„ì˜ ì²˜ë¦¬
+ *    Validation ¿Ï·á ÈÄÀÇ Ã³¸®
  *
  * Implementation :
  *
- *    Intermediate Tupleì— ëŒ€í•˜ì—¬ row ê³µê°„ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
+ *    Intermediate Tuple¿¡ ´ëÇÏ¿© row °ø°£À» ÇÒ´ç¹Ş´Â´Ù.
  *
  ***********************************************************************/
 
@@ -9675,12 +9710,12 @@ IDE_RC qtc::fixAfterValidation( iduVarMemList * aMemory,
                 }
                 else
                 {
-                    // í”„ë¡œì‹œì €ì˜ 0ë²ˆ tmplateì—ëŠ” ì´ˆê¸°í™” ë˜ì§€ ì•Šì€ ì»¬ëŸ¼ì´
-                    // ì¡´ì¬í•  ìˆ˜ ìˆë‹¤.
-                    // ì»¬ëŸ¼ í• ë‹¹ì‹œì— crallocì„ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì— moduleì€
-                    // NULLì˜ ê°’ì„ ê°–ê²Œ ëœë‹¤.
+                    // ÇÁ·Î½ÃÀúÀÇ 0¹ø tmplate¿¡´Â ÃÊ±âÈ­ µÇÁö ¾ÊÀº ÄÃ·³ÀÌ
+                    // Á¸ÀçÇÒ ¼ö ÀÖ´Ù.
+                    // ÄÃ·³ ÇÒ´ç½Ã¿¡ crallocÀ» »ç¿ëÇÏ±â ¶§¹®¿¡ moduleÀº
+                    // NULLÀÇ °ªÀ» °®°Ô µÈ´Ù.
 
-                    // ì˜ˆ)
+                    // ¿¹)
                     // create or replace procedure proc1 as
                     // v1 integer;
                     // v2 integer;
@@ -9699,8 +9734,8 @@ IDE_RC qtc::fixAfterValidation( iduVarMemList * aMemory,
                 sOffset = (UInt)sRowSize;
 
                 // To Fix PR-8528
-                // ì„ì˜ë¡œ ìƒì„±ë˜ëŠ” Tupleì˜ ê²½ìš° Column IDë¥¼ ì„ì˜ë¡œ ì„¤ì •í•œë‹¤.
-                // ì ˆëŒ€ ì¡´ì¬í•  ìˆ˜ ì—†ëŠ” Tableì˜ ID(0)ë¥¼ ê¸°ì¤€ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+                // ÀÓÀÇ·Î »ı¼ºµÇ´Â TupleÀÇ °æ¿ì Column ID¸¦ ÀÓÀÇ·Î ¼³Á¤ÇÑ´Ù.
+                // Àı´ë Á¸ÀçÇÒ ¼ö ¾ø´Â TableÀÇ ID(0)¸¦ ±âÁØÀ¸·Î ¼³Á¤ÇÑ´Ù.
                 aTemplate->tmplate.rows[sRow].columns[sColumn].column.id =
                         sColumn;
             }
@@ -9766,11 +9801,11 @@ void qtc::fixAfterValidationForCreateInvalidView( qcTemplate* aTemplate )
  *
  * Description :
  *
- *    Invalid Viewì— ëŒ€í•œ ì²˜ë¦¬
+ *    Invalid View¿¡ ´ëÇÑ Ã³¸®
  *
  * Implementation :
  *
- *    ë¶ˆí•„ìš”í•œ Memoryë¥¼ í• ë‹¹ë°›ì§€ ì•Šë„ë¡ Intermediate Tuple ì„ ì´ˆê¸°í™”í•œë‹¤.
+ *    ºÒÇÊ¿äÇÑ Memory¸¦ ÇÒ´ç¹ŞÁö ¾Êµµ·Ï Intermediate Tuple À» ÃÊ±âÈ­ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -9808,11 +9843,11 @@ IDE_RC qtc::setVariableTupleRowSize( qcTemplate    * aTemplate )
  *
  * Description : PROJ-2163
  *
- *    Type Binding ì™„ë£Œ í›„ì˜ ì²˜ë¦¬
+ *    Type Binding ¿Ï·á ÈÄÀÇ Ã³¸®
  *
  * Implementation :
  *
- *    Variable Tuple ì˜ row ì˜ offset ê³¼ max size ë¥¼ ì„¸íŒ…í•œë‹¤.
+ *    Variable Tuple ÀÇ row ÀÇ offset °ú max size ¸¦ ¼¼ÆÃÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -9832,7 +9867,7 @@ IDE_RC qtc::setVariableTupleRowSize( qcTemplate    * aTemplate )
         }
     }
 
-    // Variable Tuple row count ëŠ” í•­ìƒ 1 ì´ë‹¤.
+    // Variable Tuple row count ´Â Ç×»ó 1 ÀÌ´Ù.
     IDE_DASSERT( sCount == 1 );
 #endif
 
@@ -9879,13 +9914,13 @@ IDE_RC qtc::estimateNode( qcStatement* aStatement,
 /***********************************************************************
  *
  * Description :
- *    ê°œë…ìƒ í•„ìš”ì— ì˜í•´ ì¶”ê°€ë˜ëŠ” Nodeë“¤ì— ëŒ€í•œ Estimationì„ ìˆ˜í–‰í•œë‹¤.
- *    ì˜ˆë¥¼ ë“¤ì–´, Indirect Node, Prior Node ë“±ì´ ì´ì— í•´ë‹¹í•œë‹¤.
+ *    °³³ä»ó ÇÊ¿ä¿¡ ÀÇÇØ Ãß°¡µÇ´Â Nodeµé¿¡ ´ëÇÑ EstimationÀ» ¼öÇàÇÑ´Ù.
+ *    ¿¹¸¦ µé¾î, Indirect Node, Prior Node µîÀÌ ÀÌ¿¡ ÇØ´çÇÑ´Ù.
  *
  * Implementation :
- *    TODO - ê°œë…ìƒ Private Functionìœ¼ë¡œ êµ¬í˜„ëœ í•¨ìˆ˜ì´ë‹¤.
- *    ì™¸ë¶€ì—ì„œ ì‚¬ìš©í•˜ì§€ ì•Šë„ë¡ í•´ì•¼ í•¨.
- *    ëŒ€ì²´ í•¨ìˆ˜ë¡œ ë‹¤ìŒ ë‘ í•¨ìˆ˜ ì¤‘ í•˜ë‚˜ë¥¼ ì„ íƒí•˜ì—¬ ì‚¬ìš©í•˜ë„ë¡ í•´ì•¼ í•¨.
+ *    TODO - °³³ä»ó Private FunctionÀ¸·Î ±¸ÇöµÈ ÇÔ¼öÀÌ´Ù.
+ *    ¿ÜºÎ¿¡¼­ »ç¿ëÇÏÁö ¾Êµµ·Ï ÇØ¾ß ÇÔ.
+ *    ´ëÃ¼ ÇÔ¼ö·Î ´ÙÀ½ µÎ ÇÔ¼ö Áß ÇÏ³ª¸¦ ¼±ÅÃÇÏ¿© »ç¿ëÇÏµµ·Ï ÇØ¾ß ÇÔ.
  *        - qtc::estimateNodeWithoutArgument()
  *        - qtc::estimateNodeWithArgument()
  *
@@ -9904,7 +9939,7 @@ IDE_RC qtc::estimateNode( qcStatement* aStatement,
     };
     mtcCallBack sCallBack = {
         &sCallBackInfo,
-        MTC_ESTIMATE_ARGUMENTS_ENABLE, // TODO - DISABLEë¡œ ì²˜ë¦¬í•´ì•¼ í• ë“¯.
+        MTC_ESTIMATE_ARGUMENTS_ENABLE, // TODO - DISABLE·Î Ã³¸®ÇØ¾ß ÇÒµí.
         qtc::alloc,
         NULL
     };
@@ -9931,14 +9966,14 @@ IDE_RC qtc::estimateNodeWithoutArgument( qcStatement* aStatement,
 /***********************************************************************
  *
  * Description :
- *    Argumentì˜ ì •ë³´ì— ê´€ê³„ ì—†ì´ Estimate ë¥¼ ìˆ˜í–‰í•œë‹¤.
- *    AND, ORë“±ê³¼ ê°™ì´ Argumentì˜ ì¢…ë¥˜ê°€ í° ì˜ë¯¸ë¥¼ ê°–ì§€ ì•ŠëŠ”
- *    Nodeë“¤ì„ ìƒì„±í•  ê²½ìš° ì´ë¥¼ í˜¸ì¶œí•œë‹¤.
+ *    ArgumentÀÇ Á¤º¸¿¡ °ü°è ¾øÀÌ Estimate ¸¦ ¼öÇàÇÑ´Ù.
+ *    AND, ORµî°ú °°ÀÌ ArgumentÀÇ Á¾·ù°¡ Å« ÀÇ¹Ì¸¦ °®Áö ¾Ê´Â
+ *    NodeµéÀ» »ı¼ºÇÒ °æ¿ì ÀÌ¸¦ È£ÃâÇÑ´Ù.
  *
  * Implementation :
  *
- *    TODO - ìˆ˜ì • ê²€í†  í•„ìš”
- *    Argumentë¥¼ ì°¸ì¡°í•˜ê¸° ì•Šê¸° ë•Œë¬¸ì— Conversionë“±ì´ ë°œìƒí•  ìˆ˜ ì—†ë‹¤.
+ *    TODO - ¼öÁ¤ °ËÅä ÇÊ¿ä
+ *    Argument¸¦ ÂüÁ¶ÇÏ±â ¾Ê±â ¶§¹®¿¡ ConversionµîÀÌ ¹ß»ıÇÒ ¼ö ¾ø´Ù.
  *
  ***********************************************************************/
 
@@ -9947,30 +9982,30 @@ IDE_RC qtc::estimateNodeWithoutArgument( qcStatement* aStatement,
 
     qtcCallBackInfo sCallBackInfo = {
         QC_SHARED_TMPLATE(aStatement),  // Template
-        QC_QMP_MEM(aStatement),   // Memory ê´€ë¦¬ì
+        QC_QMP_MEM(aStatement),   // Memory °ü¸®ÀÚ
         NULL,                 // Statement
         NULL,                 // Query Set
         NULL,                 // SFWGH
-        NULL                  // From ì •ë³´
+        NULL                  // From Á¤º¸
     };
     mtcCallBack sCallBack = {
-        &sCallBackInfo,                  // CallBack ì •ë³´
-        MTC_ESTIMATE_ARGUMENTS_DISABLE,  // Childì— ëŒ€í•œ Estimation Disable
-        qtc::alloc,                      // Memory í• ë‹¹ í•¨ìˆ˜
-        initConversionNodeIntermediate   // Conversion Node ìƒì„± í•¨ìˆ˜
-        // TODO - Conversionì´ ë°œìƒí•  ìˆ˜ ì—†ë‹¤.
-        // ë”°ë¼ì„œ, Conversion Node ìƒì„± í•¨ìˆ˜ë“¤ì€ ëª¨ë‘ NULLë¡œ Settingë˜ì–´ì•¼
-        // ê·¸ ê°œë…ì´ ì •í™•í•˜ë‹¤.
+        &sCallBackInfo,                  // CallBack Á¤º¸
+        MTC_ESTIMATE_ARGUMENTS_DISABLE,  // Child¿¡ ´ëÇÑ Estimation Disable
+        qtc::alloc,                      // Memory ÇÒ´ç ÇÔ¼ö
+        initConversionNodeIntermediate   // Conversion Node »ı¼º ÇÔ¼ö
+        // TODO - ConversionÀÌ ¹ß»ıÇÒ ¼ö ¾ø´Ù.
+        // µû¶ó¼­, Conversion Node »ı¼º ÇÔ¼öµéÀº ¸ğµÎ NULL·Î SettingµÇ¾î¾ß
+        // ±× °³³äÀÌ Á¤È®ÇÏ´Ù.
     };
 
     qtcNode * sNode;
     UInt      sArgCnt;
     ULong     sLflag;
 
-    // Argumentë¥¼ ì´ìš©í•œ Dependencies ë° Flag ì„¤ì •
+    // Argument¸¦ ÀÌ¿ëÇÑ Dependencies ¹× Flag ¼³Á¤
     qtc::dependencyClear( & aNode->depInfo );
 
-    // sLflag ì´ˆê¸°í™”
+    // sLflag ÃÊ±âÈ­
     sLflag = MTC_NODE_BIND_TYPE_TRUE;
 
     for ( sNode = (qtcNode *) aNode->node.arguments, sArgCnt = 0;
@@ -9982,7 +10017,7 @@ IDE_RC qtc::estimateNodeWithoutArgument( qcStatement* aStatement,
         aNode->lflag |= sNode->lflag & QTC_NODE_MASK;
 
         // PROJ-1404
-        // variable built-in functionì„ ì‚¬ìš©í•œ ê²½ìš° ì„¤ì •í•œë‹¤.
+        // variable built-in functionÀ» »ç¿ëÇÑ °æ¿ì ¼³Á¤ÇÑ´Ù.
         if ( ( sNode->node.lflag & MTC_NODE_VARIABLE_MASK )
              == MTC_NODE_VARIABLE_TRUE )
         {
@@ -9995,7 +10030,7 @@ IDE_RC qtc::estimateNodeWithoutArgument( qcStatement* aStatement,
         }
 
         // PROJ-1492
-        // Argumentì˜ bindê´€ë ¨ lflagë¥¼ ëª¨ë‘ ëª¨ì€ë‹¤.
+        // ArgumentÀÇ bind°ü·Ã lflag¸¦ ¸ğµÎ ¸ğÀº´Ù.
         if( ( sNode->node.lflag & MTC_NODE_BIND_MASK ) == MTC_NODE_BIND_EXIST )
         {
             if( ( sNode->node.lflag & MTC_NODE_BIND_TYPE_MASK ) ==
@@ -10010,7 +10045,7 @@ IDE_RC qtc::estimateNodeWithoutArgument( qcStatement* aStatement,
             // Nothing to do.
         }
 
-        // Argumentì˜ dependenciesë¥¼ ëª¨ë‘ í¬í•¨í•œë‹¤.
+        // ArgumentÀÇ dependencies¸¦ ¸ğµÎ Æ÷ÇÔÇÑ´Ù.
         IDE_TEST( dependencyOr( & aNode->depInfo,
                                 & sNode->depInfo,
                                 & aNode->depInfo )
@@ -10021,7 +10056,7 @@ IDE_RC qtc::estimateNodeWithoutArgument( qcStatement* aStatement,
         ( QTC_IS_TERMINAL( aNode ) == ID_FALSE ) )
     {
         // PROJ-1492
-        // í•˜ìœ„ ë…¸ë“œê°€ ìˆëŠ” í•´ë‹¹ Nodeì˜ bindê´€ë ¨ lflagë¥¼ ì„¤ì •í•œë‹¤.
+        // ÇÏÀ§ ³ëµå°¡ ÀÖ´Â ÇØ´ç NodeÀÇ bind°ü·Ã lflag¸¦ ¼³Á¤ÇÑ´Ù.
         aNode->node.lflag |= sLflag & MTC_NODE_BIND_TYPE_MASK;
 
         if( aNode->node.module == & mtfCast )
@@ -10071,14 +10106,14 @@ IDE_RC qtc::estimateNodeWithArgument( qcStatement* aStatement,
 /***********************************************************************
  *
  * Description :
- *    ì´ë¯¸ estimate ëœ Argumentì˜ ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ Estimate í•œë‹¤.
- *    Argumentì— ëŒ€í•˜ì—¬ ì¶”ê°€ì ì¸ Conversionì´ í•„ìš”í•  ê²½ìš° ì‚¬ìš©í•œë‹¤.
+ *    ÀÌ¹Ì estimate µÈ ArgumentÀÇ Á¤º¸¸¦ ÀÌ¿ëÇÏ¿© Estimate ÇÑ´Ù.
+ *    Argument¿¡ ´ëÇÏ¿© Ãß°¡ÀûÀÎ ConversionÀÌ ÇÊ¿äÇÒ °æ¿ì »ç¿ëÇÑ´Ù.
  *
  * Implementation :
  *
- *    ì´ë¯¸ estimateëœ ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ ì²˜ë¦¬í•˜ê¸° ë•Œë¬¸ì—,
- *    Argumentì— ëŒ€í•˜ì—¬ traverseí•˜ë©´ì„œ ì²˜ë¦¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
- *    TODO - ì¶”í›„ Bindingì— ëŒ€í•œ ê³ ë ¤ê°€ í•„ìš”í•˜ë‹¤.
+ *    ÀÌ¹Ì estimateµÈ Á¤º¸¸¦ ÀÌ¿ëÇÏ¿© Ã³¸®ÇÏ±â ¶§¹®¿¡,
+ *    Argument¿¡ ´ëÇÏ¿© traverseÇÏ¸é¼­ Ã³¸®ÇÏÁö ¾Ê´Â´Ù.
+ *    TODO - ÃßÈÄ Binding¿¡ ´ëÇÑ °í·Á°¡ ÇÊ¿äÇÏ´Ù.
  *
  ***********************************************************************/
 
@@ -10087,17 +10122,17 @@ IDE_RC qtc::estimateNodeWithArgument( qcStatement* aStatement,
 
     qtcCallBackInfo sCallBackInfo = {
         QC_SHARED_TMPLATE(aStatement),  // Template
-        QC_QMP_MEM(aStatement),   // Memory ê´€ë¦¬ì
+        QC_QMP_MEM(aStatement),   // Memory °ü¸®ÀÚ
         NULL,                 // Statement
         NULL,                 // Query Set
         NULL,                 // SFWGH
-        NULL                  // From ì •ë³´
+        NULL                  // From Á¤º¸
     };
     mtcCallBack sCallBack = {
-        &sCallBackInfo,                  // CallBack ì •ë³´
-        MTC_ESTIMATE_ARGUMENTS_ENABLE,   // Childì— ëŒ€í•œ Estimationì´ í•„ìš”í•¨
-        qtc::alloc,                      // Memory í• ë‹¹ í•¨ìˆ˜
-        initConversionNodeIntermediate   // Conversion Node ìƒì„± í•¨ìˆ˜
+        &sCallBackInfo,                  // CallBack Á¤º¸
+        MTC_ESTIMATE_ARGUMENTS_ENABLE,   // Child¿¡ ´ëÇÑ EstimationÀÌ ÇÊ¿äÇÔ
+        qtc::alloc,                      // Memory ÇÒ´ç ÇÔ¼ö
+        initConversionNodeIntermediate   // Conversion Node »ı¼º ÇÔ¼ö
     };
 
     qmsParseTree      * sParseTree;
@@ -10121,15 +10156,15 @@ IDE_RC qtc::estimateNodeWithArgument( qcStatement* aStatement,
         // BUG-33674
         IDE_TEST_RAISE( sRemain < 1, ERR_STACK_OVERFLOW );
         
-        // INDIRECT ê°€ ìˆëŠ” ê²½ìš° í•˜ìœ„ Nodeì˜ column ì •ë³´ë¥¼ ì‚¬ìš©í•´ì•¼ í•¨
-        // TODO - Argumentì— ì´ë¯¸ Conversionì´ ìˆì„ ê²½ìš°ì— ëŒ€í•œ ê³ ë ¤ê°€ ì—†ìŒ
+        // INDIRECT °¡ ÀÖ´Â °æ¿ì ÇÏÀ§ NodeÀÇ column Á¤º¸¸¦ »ç¿ëÇØ¾ß ÇÔ
+        // TODO - Argument¿¡ ÀÌ¹Ì ConversionÀÌ ÀÖÀ» °æ¿ì¿¡ ´ëÇÑ °í·Á°¡ ¾øÀ½
         for( sOrgNode = sNode;
              ( sOrgNode->node.lflag & MTC_NODE_INDIRECT_MASK )
                  == MTC_NODE_INDIRECT_TRUE;
              sOrgNode = (qtcNode *) sOrgNode->node.arguments ) ;
 
         // PROJ-1718 Subquery unnesting
-        // List typeì´ argumentì¸ ê²½ìš° ë°˜ë“œì‹œ argumentë„ estimateí•´ì•¼ í•œë‹¤.
+        // List typeÀÌ argumentÀÎ °æ¿ì ¹İµå½Ã argumentµµ estimateÇØ¾ß ÇÑ´Ù.
         if( QTC_IS_LIST( sOrgNode ) == ID_TRUE )
         {
             sOrgStack  = QC_SHARED_TMPLATE(aStatement)->tmplate.stack;
@@ -10148,7 +10183,7 @@ IDE_RC qtc::estimateNodeWithArgument( qcStatement* aStatement,
             else
             {
                 // BUG-38415 Subquery Argument
-                // ì´ ê²½ìš°, SELECT êµ¬ë¬¸ì´ì–´ì•¼ í•œë‹¤.
+                // ÀÌ °æ¿ì, SELECT ±¸¹®ÀÌ¾î¾ß ÇÑ´Ù.
                 IDE_ERROR( aStatement->myPlan->parseTree->stmtKind == QCI_STMT_SELECT );
 
                 sParseTree = (qmsParseTree *)aStatement->myPlan->parseTree;
@@ -10173,10 +10208,10 @@ IDE_RC qtc::estimateNodeWithArgument( qcStatement* aStatement,
             + sOrgNode->node.column;
     }
 
-    // Argumentë¥¼ ì´ìš©í•œ Dependencies ë° Flag ì„¤ì •
+    // Argument¸¦ ÀÌ¿ëÇÑ Dependencies ¹× Flag ¼³Á¤
     qtc::dependencyClear( & aNode->depInfo );
 
-    // sLflag ì´ˆê¸°í™”
+    // sLflag ÃÊ±âÈ­
     sLflag = MTC_NODE_BIND_TYPE_TRUE;
 
     for ( sNode = (qtcNode *) aNode->node.arguments, sArgCnt = 0;
@@ -10188,7 +10223,7 @@ IDE_RC qtc::estimateNodeWithArgument( qcStatement* aStatement,
         aNode->lflag |= sNode->lflag & QTC_NODE_MASK;
 
         // PROJ-1404
-        // variable built-in functionì„ ì‚¬ìš©í•œ ê²½ìš° ì„¤ì •í•œë‹¤.
+        // variable built-in functionÀ» »ç¿ëÇÑ °æ¿ì ¼³Á¤ÇÑ´Ù.
         if ( ( sNode->node.lflag & MTC_NODE_VARIABLE_MASK )
              == MTC_NODE_VARIABLE_TRUE )
         {
@@ -10201,7 +10236,7 @@ IDE_RC qtc::estimateNodeWithArgument( qcStatement* aStatement,
         }
 
         // PROJ-1492
-        // Argumentì˜ bindê´€ë ¨ lflagë¥¼ ëª¨ë‘ ëª¨ì€ë‹¤.
+        // ArgumentÀÇ bind°ü·Ã lflag¸¦ ¸ğµÎ ¸ğÀº´Ù.
         if( ( sNode->node.lflag & MTC_NODE_BIND_MASK ) == MTC_NODE_BIND_EXIST )
         {
             if( ( sNode->node.lflag & MTC_NODE_BIND_TYPE_MASK ) ==
@@ -10216,7 +10251,7 @@ IDE_RC qtc::estimateNodeWithArgument( qcStatement* aStatement,
             // Nothing to do.
         }
 
-        // Argumentì˜ dependenciesë¥¼ ëª¨ë‘ í¬í•¨í•œë‹¤.
+        // ArgumentÀÇ dependencies¸¦ ¸ğµÎ Æ÷ÇÔÇÑ´Ù.
         IDE_TEST( dependencyOr( & aNode->depInfo,
                                 & sNode->depInfo,
                                 & aNode->depInfo )
@@ -10227,7 +10262,7 @@ IDE_RC qtc::estimateNodeWithArgument( qcStatement* aStatement,
         ( QTC_IS_TERMINAL( aNode ) == ID_FALSE ) )
     {
         // PROJ-1492
-        // í•˜ìœ„ ë…¸ë“œê°€ ìˆëŠ” í•´ë‹¹ Nodeì˜ bindê´€ë ¨ lflagë¥¼ ì„¤ì •í•œë‹¤.
+        // ÇÏÀ§ ³ëµå°¡ ÀÖ´Â ÇØ´ç NodeÀÇ bind°ü·Ã lflag¸¦ ¼³Á¤ÇÑ´Ù.
         aNode->node.lflag |= sLflag & MTC_NODE_BIND_TYPE_MASK;
 
         if( aNode->node.module == & mtfCast )
@@ -10264,8 +10299,8 @@ IDE_RC qtc::estimateNodeWithArgument( qcStatement* aStatement,
                                  &sCallBack )
               != IDE_SUCCESS);
 
-    // BUG-42113 LOB type ì— ëŒ€í•œ subquery ë³€í™˜ì´ ìˆ˜í–‰ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
-    // estimateNode ì˜ ê²°ê³¼ì— ë”°ë¼ì„œ ì¬ ì„¤ì •í•´ì£¼ì–´ì•¼ í•œë‹¤.
+    // BUG-42113 LOB type ¿¡ ´ëÇÑ subquery º¯È¯ÀÌ ¼öÇàµÇ¾î¾ß ÇÕ´Ï´Ù.
+    // estimateNode ÀÇ °á°ú¿¡ µû¶ó¼­ Àç ¼³Á¤ÇØÁÖ¾î¾ß ÇÑ´Ù.
     // Ex : LENGTH( lobColumn )
     aNode->lflag &= ~QTC_NODE_BINARY_MASK;
 
@@ -10299,8 +10334,8 @@ IDE_RC qtc::estimateWindowFunction( qcStatement * aStatement,
  *
  * Description :
  *     PROJ-1718 Subquery unnesting
- *     Transformation ê³¼ì •ì—ì„œ ìƒˆë¡œ ìƒì„±ëœ window functionì„
- *     estimationí•œë‹¤.
+ *     Transformation °úÁ¤¿¡¼­ »õ·Î »ı¼ºµÈ window functionÀ»
+ *     estimationÇÑ´Ù.
  *
  * Implementation :
  *
@@ -10308,17 +10343,17 @@ IDE_RC qtc::estimateWindowFunction( qcStatement * aStatement,
 
     qtcCallBackInfo sCallBackInfo = {
         QC_SHARED_TMPLATE(aStatement),  // Template
-        QC_QMP_MEM(aStatement),   // Memory ê´€ë¦¬ì
+        QC_QMP_MEM(aStatement),   // Memory °ü¸®ÀÚ
         NULL,                 // Statement
         aSFWGH->thisQuerySet, // Query Set
         NULL,                 // SFWGH
-        NULL                  // From ì •ë³´
+        NULL                  // From Á¤º¸
     };
     mtcCallBack sCallBack = {
-        &sCallBackInfo,                  // CallBack ì •ë³´
-        MTC_ESTIMATE_ARGUMENTS_ENABLE,   // Childì— ëŒ€í•œ Estimationì´ í•„ìš”í•¨
-        qtc::alloc,                      // Memory í• ë‹¹ í•¨ìˆ˜
-        initConversionNodeIntermediate   // Conversion Node ìƒì„± í•¨ìˆ˜
+        &sCallBackInfo,                  // CallBack Á¤º¸
+        MTC_ESTIMATE_ARGUMENTS_ENABLE,   // Child¿¡ ´ëÇÑ EstimationÀÌ ÇÊ¿äÇÔ
+        qtc::alloc,                      // Memory ÇÒ´ç ÇÔ¼ö
+        initConversionNodeIntermediate   // Conversion Node »ı¼º ÇÔ¼ö
     };
 
     qtcNode         * sNode;
@@ -10342,8 +10377,8 @@ IDE_RC qtc::estimateWindowFunction( qcStatement * aStatement,
         // BUG-33674
         IDE_TEST_RAISE( sRemain < 1, ERR_STACK_OVERFLOW );
         
-        // INDIRECT ê°€ ìˆëŠ” ê²½ìš° í•˜ìœ„ Nodeì˜ column ì •ë³´ë¥¼ ì‚¬ìš©í•´ì•¼ í•¨
-        // TODO - Argumentì— ì´ë¯¸ Conversionì´ ìˆì„ ê²½ìš°ì— ëŒ€í•œ ê³ ë ¤ê°€ ì—†ìŒ
+        // INDIRECT °¡ ÀÖ´Â °æ¿ì ÇÏÀ§ NodeÀÇ column Á¤º¸¸¦ »ç¿ëÇØ¾ß ÇÔ
+        // TODO - Argument¿¡ ÀÌ¹Ì ConversionÀÌ ÀÖÀ» °æ¿ì¿¡ ´ëÇÑ °í·Á°¡ ¾øÀ½
         for( sOrgNode = sNode;
              ( sOrgNode->node.lflag & MTC_NODE_INDIRECT_MASK )
                  == MTC_NODE_INDIRECT_TRUE;
@@ -10354,10 +10389,10 @@ IDE_RC qtc::estimateWindowFunction( qcStatement * aStatement,
             + sOrgNode->node.column;
     }
 
-    // Argumentë¥¼ ì´ìš©í•œ Dependencies ë° Flag ì„¤ì •
+    // Argument¸¦ ÀÌ¿ëÇÑ Dependencies ¹× Flag ¼³Á¤
     qtc::dependencyClear( & aNode->depInfo );
 
-    // sLflag ì´ˆê¸°í™”
+    // sLflag ÃÊ±âÈ­
     sLflag = MTC_NODE_BIND_TYPE_TRUE;
 
     for ( sNode = (qtcNode *) aNode->node.arguments, sArgCnt = 0;
@@ -10369,7 +10404,7 @@ IDE_RC qtc::estimateWindowFunction( qcStatement * aStatement,
         aNode->lflag |= sNode->lflag & QTC_NODE_MASK;
 
         // PROJ-1404
-        // variable built-in functionì„ ì‚¬ìš©í•œ ê²½ìš° ì„¤ì •í•œë‹¤.
+        // variable built-in functionÀ» »ç¿ëÇÑ °æ¿ì ¼³Á¤ÇÑ´Ù.
         if ( ( sNode->node.lflag & MTC_NODE_VARIABLE_MASK )
              == MTC_NODE_VARIABLE_TRUE )
         {
@@ -10382,7 +10417,7 @@ IDE_RC qtc::estimateWindowFunction( qcStatement * aStatement,
         }
 
         // PROJ-1492
-        // Argumentì˜ bindê´€ë ¨ lflagë¥¼ ëª¨ë‘ ëª¨ì€ë‹¤.
+        // ArgumentÀÇ bind°ü·Ã lflag¸¦ ¸ğµÎ ¸ğÀº´Ù.
         if( ( sNode->node.lflag & MTC_NODE_BIND_MASK ) == MTC_NODE_BIND_EXIST )
         {
             if( ( sNode->node.lflag & MTC_NODE_BIND_TYPE_MASK ) ==
@@ -10397,7 +10432,7 @@ IDE_RC qtc::estimateWindowFunction( qcStatement * aStatement,
             // Nothing to do.
         }
 
-        // Argumentì˜ dependenciesë¥¼ ëª¨ë‘ í¬í•¨í•œë‹¤.
+        // ArgumentÀÇ dependencies¸¦ ¸ğµÎ Æ÷ÇÔÇÑ´Ù.
         IDE_TEST( dependencyOr( & aNode->depInfo,
                                 & sNode->depInfo,
                                 & aNode->depInfo )
@@ -10408,7 +10443,7 @@ IDE_RC qtc::estimateWindowFunction( qcStatement * aStatement,
         ( QTC_IS_TERMINAL( aNode ) == ID_FALSE ) )
     {
         // PROJ-1492
-        // í•˜ìœ„ ë…¸ë“œê°€ ìˆëŠ” í•´ë‹¹ Nodeì˜ bindê´€ë ¨ lflagë¥¼ ì„¤ì •í•œë‹¤.
+        // ÇÏÀ§ ³ëµå°¡ ÀÖ´Â ÇØ´ç NodeÀÇ bind°ü·Ã lflag¸¦ ¼³Á¤ÇÑ´Ù.
         aNode->node.lflag |= sLflag & MTC_NODE_BIND_TYPE_MASK;
 
         if( aNode->node.module == & mtfCast )
@@ -10436,8 +10471,8 @@ IDE_RC qtc::estimateWindowFunction( qcStatement * aStatement,
                                  &sCallBack )
               != IDE_SUCCESS);
 
-    // Window functionì€ SELECT/ORDER BYì ˆì—ì„œë§Œ ì‚¬ìš© ê°€ëŠ¥í•˜ë¯€ë¡œ
-    // ì¼ì‹œì ìœ¼ë¡œ í˜„ì¬ì˜ validation ë‹¨ê³„ë¥¼ SELECTì ˆë¡œ ì „í™˜í•œë‹¤.
+    // Window functionÀº SELECT/ORDER BYÀı¿¡¼­¸¸ »ç¿ë °¡´ÉÇÏ¹Ç·Î
+    // ÀÏ½ÃÀûÀ¸·Î ÇöÀçÀÇ validation ´Ü°è¸¦ SELECTÀı·Î ÀüÈ¯ÇÑ´Ù.
     sProcessPhase = aSFWGH->thisQuerySet->processPhase;
     aSFWGH->thisQuerySet->processPhase = QMS_VALIDATE_TARGET;
 
@@ -10474,11 +10509,11 @@ IDE_RC qtc::estimateConstExpr( qtcNode     * aNode,
 /***********************************************************************
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
- *                ìµœìƒìœ„ ë…¸ë“œì— ëŒ€í•œ constant expressionì²˜ë¦¬
+ *                ÃÖ»óÀ§ ³ëµå¿¡ ´ëÇÑ constant expressionÃ³¸®
  *
  *  Implementation :
- *                ìµœìƒìœ„ ë…¸ë“œê°€ aggregationì´ ì•„ë‹Œ ê²½ìš°
- *                constant expressionì²˜ë¦¬ê°€ ê°€ëŠ¥í•˜ë©´ ì²˜ë¦¬
+ *                ÃÖ»óÀ§ ³ëµå°¡ aggregationÀÌ ¾Æ´Ñ °æ¿ì
+ *                constant expressionÃ³¸®°¡ °¡´ÉÇÏ¸é Ã³¸®
  *
  ***********************************************************************/
 
@@ -10511,20 +10546,20 @@ IDE_RC qtc::estimateConstExpr( qtcNode     * aNode,
          &&
          (aNode->node.module != &mtfList) )
     {
-        // Argumentì˜ ì í•©ì„± ê²€ì‚¬
+        // ArgumentÀÇ ÀûÇÕ¼º °Ë»ç
         IDE_TEST( isConstExpr( aTemplate, aNode, &sAbleProcess )
                   != IDE_SUCCESS );
 
         if ( sAbleProcess == ID_TRUE )
         {
-            // ìƒìˆ˜í™”í•˜ê¸° ì „ ì›ë˜ ë…¸ë“œë¥¼ ë°±ì—… í•œë‹¤.
+            // »ó¼öÈ­ÇÏ±â Àü ¿ø·¡ ³ëµå¸¦ ¹é¾÷ ÇÑ´Ù.
             IDU_LIMITPOINT("qtc::estimateConstExpr::malloc");
             IDE_TEST( STRUCT_ALLOC( QC_QMP_MEM(aStatement), qtcNode, & sOrgNode )
                       != IDE_SUCCESS);
 
             idlOS::memcpy( sOrgNode, aNode, ID_SIZEOF(qtcNode) );
 
-            // ìƒìˆ˜ Expressionì„ ìˆ˜í–‰í•¨
+            // »ó¼ö ExpressionÀ» ¼öÇàÇÔ
             IDE_TEST( runConstExpr( aStatement,
                                     aTemplate,
                                     aNode,
@@ -10586,11 +10621,11 @@ IDE_RC qtc::estimate( qtcNode*     aNode,
  *
  * Description :
  *
- *    Node Treeì— ëŒ€í•œ Estimationì„ ìˆ˜í–‰í•¨.
+ *    Node Tree¿¡ ´ëÇÑ EstimationÀ» ¼öÇàÇÔ.
  *
  * Implementation :
  *
- *    Node Treeë¥¼ ëª¨ë‘ Traverseí•˜ë©´ì„œ Estimate ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *    Node Tree¸¦ ¸ğµÎ TraverseÇÏ¸é¼­ Estimate ¸¦ ¼öÇàÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -10635,12 +10670,12 @@ IDE_RC qtc::getSortColumnPosition( qmsSortColumns* aSortColumn,
  *
  * Description :
  *
- *    ORDER BY indicatorì— ëŒ€í•œ ì •ë³´ë¥¼ ì„¤ì •í•¨.
+ *    ORDER BY indicator¿¡ ´ëÇÑ Á¤º¸¸¦ ¼³Á¤ÇÔ.
  *
  * Implementation :
  *
- *    ORDER BY Expression ì´ value integerì¼ ê²½ìš°,
- *    ì´ë¥¼ Indicatorë¡œ í•´ì„í•œë‹¤.
+ *    ORDER BY Expression ÀÌ value integerÀÏ °æ¿ì,
+ *    ÀÌ¸¦ Indicator·Î ÇØ¼®ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -10684,7 +10719,7 @@ IDE_RC qtc::initialize( qtcNode*    aNode,
  *
  * Description :
  *
- *    í•´ë‹¹ Aggregation Nodeì˜ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *    ÇØ´ç Aggregation NodeÀÇ ÃÊ±âÈ­¸¦ ¼öÇàÇÑ´Ù.
  *
  * Implementation :
  *
@@ -10725,7 +10760,7 @@ IDE_RC qtc::aggregate( qtcNode*    aNode,
  *
  * Description :
  *
- *    í•´ë‹¹ Aggregation Nodeì˜ ì§‘í•© ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
+ *    ÇØ´ç Aggregation NodeÀÇ ÁıÇÕ ¿¬»êÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
  *
@@ -10767,7 +10802,7 @@ IDE_RC qtc::aggregateWithInfo( qtcNode*    aNode,
  *
  * Description :
  *
- *    í•´ë‹¹ Aggregation Nodeì˜ ì§‘í•© ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
+ *    ÇØ´ç Aggregation NodeÀÇ ÁıÇÕ ¿¬»êÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
  *
@@ -10806,7 +10841,7 @@ IDE_RC qtc::finalize( qtcNode*    aNode,
  *
  * Description :
  *
- *    í•´ë‹¹ Aggregation Nodeì˜ ë§ˆë¬´ë¦¬ ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+ *    ÇØ´ç Aggregation NodeÀÇ ¸¶¹«¸® ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
  *
@@ -10846,21 +10881,21 @@ IDE_RC qtc::calculate(qtcNode* aNode, qcTemplate* aTemplate)
  *
  * Description :
  *
- *    í•´ë‹¹ Nodeì˜ ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
+ *    ÇØ´ç NodeÀÇ ¿¬»êÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
  *
- *    í•´ë‹¹ Nodeì˜ ì—°ì‚°ì„ ìˆ˜í–‰í•˜ê³ ,
- *    Conversionì´ ìˆì„ ê²½ìš°, Conversion ì²˜ë¦¬ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *    ÇØ´ç NodeÀÇ ¿¬»êÀ» ¼öÇàÇÏ°í,
+ *    ConversionÀÌ ÀÖÀ» °æ¿ì, Conversion Ã³¸®¸¦ ¼öÇàÇÑ´Ù.
  *
  ***********************************************************************/
 
     /*
-      í”„ë¡œì‹œì € ì‹¤í–‰ì‹œì— í…Œì´ë¸”ì˜ ì»¬ëŸ¼ ê°œìˆ˜ê°€ ì¤„ì–´ë“  ê²½ìš° ì—ëŸ¬ ì²˜ë¦¬í•œë‹¤.
-      Assign ë¬¸ì˜ ê²½ìš° ë™ì ìœ¼ë¡œ í˜•ë³€í™˜ì´ ì´ë£¨ì–´ ì§€ê¸° ë•Œë¬¸ì— í˜¸í™˜ë˜ì§€ ì•ŠëŠ”
-      íƒ€ì…ìœ¼ë¡œ ë³€ê²½ë˜ëŠ” ê²½ìš° ì‹¤í–‰ì¤‘ì— ì—ëŸ¬ê°€ ë°œìƒí•œë‹¤.
+      ÇÁ·Î½ÃÀú ½ÇÇà½Ã¿¡ Å×ÀÌºíÀÇ ÄÃ·³ °³¼ö°¡ ÁÙ¾îµç °æ¿ì ¿¡·¯ Ã³¸®ÇÑ´Ù.
+      Assign ¹®ÀÇ °æ¿ì µ¿ÀûÀ¸·Î Çüº¯È¯ÀÌ ÀÌ·ç¾î Áö±â ¶§¹®¿¡ È£È¯µÇÁö ¾Ê´Â
+      Å¸ÀÔÀ¸·Î º¯°æµÇ´Â °æ¿ì ½ÇÇàÁß¿¡ ¿¡·¯°¡ ¹ß»ıÇÑ´Ù.
 
-      ì˜ˆ)
+      ¿¹)
       drop table t2;
       create table t2 ( a integer, b integer );
 
@@ -10949,12 +10984,12 @@ IDE_RC qtc::judge( idBool*     aJudgement,
  *
  * Description :
  *
- *    í•´ë‹¹ Nodeì˜ ë…¼ë¦¬ê°’ì„ íŒë‹¨í•œë‹¤.
+ *    ÇØ´ç NodeÀÇ ³í¸®°ªÀ» ÆÇ´ÜÇÑ´Ù.
  *
  * Implementation :
  *
- *    í•´ë‹¹ Nodeì˜ ì—°ì‚°ì„ ìˆ˜í–‰í•˜ê³ ,
- *    ë…¼ë¦¬ê°’ì´ TRUEì¸ì§€ë¥¼ íŒë‹¨í•œë‹¤.
+ *    ÇØ´ç NodeÀÇ ¿¬»êÀ» ¼öÇàÇÏ°í,
+ *    ³í¸®°ªÀÌ TRUEÀÎÁö¸¦ ÆÇ´ÜÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -10981,12 +11016,12 @@ IDE_RC qtc::judge( idBool*     aJudgement,
  *
  * Description :
  *
- *    ìˆ˜í–‰ ì‹œì ì˜ System Timeì„ íšë“.
+ *    ¼öÇà ½ÃÁ¡ÀÇ System TimeÀ» È¹µæ.
  *
  * Implementation :
  *
- *    gettimeofday()ë¥¼ ì´ìš©í•´ System Timeì„ íšë“í•˜ê³ ,
- *    ì´ë¥¼ Data Typeì˜ ì •ë³´ë¡œ ë³€í™˜ì‹œí‚´
+ *    gettimeofday()¸¦ ÀÌ¿ëÇØ System TimeÀ» È¹µæÇÏ°í,
+ *    ÀÌ¸¦ Data TypeÀÇ Á¤º¸·Î º¯È¯½ÃÅ´
  *
  *    1. unixdate    : gmtime_r() , makeDate()
  *    2. currentdate : gmtime_r() , makeDate() + addSecond( session tz offset )
@@ -11064,7 +11099,7 @@ IDE_RC qtc::setDatePseudoColumn( qcTemplate * aTemplate )
                           + aTemplate->tmplate.rows[sNode->table].columns[sNode->column].column.offset );
 
             /* PROJ-2207 Password policy support
-               sysdate_for_natcê°€ ì‹¤íŒ¨í•˜ë©´ sysdateë¥¼ ë°˜í™˜í•œë‹¤. */
+               sysdate_for_natc°¡ ½ÇÆĞÇÏ¸é sysdate¸¦ ¹İÈ¯ÇÑ´Ù. */
             if ( QCU_SYSDATE_FOR_NATC[0] != '\0' )
             {
                 sDate->year         = 0;
@@ -11116,12 +11151,12 @@ IDE_RC qtc::sysdate( mtdDateType* aDate )
  *
  * Description :
  *
- *    ìˆ˜í–‰ ì‹œì ì˜ System Timeì„ íšë“í•¨.
+ *    ¼öÇà ½ÃÁ¡ÀÇ System TimeÀ» È¹µæÇÔ.
  *
  * Implementation :
  *
- *    gettimeofday()ë¥¼ ì´ìš©í•´ System Timeì„ íšë“í•˜ê³ ,
- *    ì´ë¥¼ Data Typeì˜ ì •ë³´ë¡œ ë³€í™˜ì‹œí‚´
+ *    gettimeofday()¸¦ ÀÌ¿ëÇØ System TimeÀ» È¹µæÇÏ°í,
+ *    ÀÌ¸¦ Data TypeÀÇ Á¤º¸·Î º¯È¯½ÃÅ´
  *
  ***********************************************************************/
 
@@ -11169,7 +11204,7 @@ IDE_RC qtc::initSubquery( mtcNode*     aNode,
  *
  * Description :
  *
- *    Subquery Nodeì˜ Plan ì´ˆê¸°í™”
+ *    Subquery NodeÀÇ Plan ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -11195,7 +11230,7 @@ IDE_RC qtc::fetchSubquery( mtcNode*     aNode,
  *
  * Description :
  *
- *    Subquery Nodeì˜ Plan ìˆ˜í–‰
+ *    Subquery NodeÀÇ Plan ¼öÇà
  *
  * Implementation :
  *
@@ -11238,7 +11273,7 @@ IDE_RC qtc::finiSubquery( mtcNode*     /* aNode */,
  *
  * Description :
  *
- *    Subquery Nodeì˜ Plan ì¢…ë£Œ
+ *    Subquery NodeÀÇ Plan Á¾·á
  *
  * Implementation :
  *
@@ -11260,7 +11295,7 @@ IDE_RC qtc::setCalcSubquery( mtcNode     * aNode,
  *
  * Description : PROJ-2448 Subquery caching
  *
- *    Subquery Nodeì˜ calculate í•¨ìˆ˜ ì„¤ì •
+ *    Subquery NodeÀÇ calculate ÇÔ¼ö ¼³Á¤
  *
  * Implementation :
  *
@@ -11308,15 +11343,15 @@ IDE_RC qtc::cloneQTCNodeTree4Partition(
 /***********************************************************************
  *
  * Description : PROJ-1502 PARTITIONED DISK TABLE
- *    source(partitioned table)ì˜ ë…¸ë“œë¥¼ destination(partition) ë…¸ë“œë¡œ
- *    ë³€í™˜í•˜ì—¬ ë³µì‚¬í•¨
+ *    source(partitioned table)ÀÇ ³ëµå¸¦ destination(partition) ³ëµå·Î
+ *    º¯È¯ÇÏ¿© º¹»çÇÔ
  *
- *    - rootì˜ nextëŠ” ë³µì‚¬í•˜ì§€ ì•ŠìŒ
- *    - conversionì€ clear
+ *    - rootÀÇ next´Â º¹»çÇÏÁö ¾ÊÀ½
+ *    - conversionÀº clear
  *
  * Implementation :
  *
- *    Source Node Treeë¥¼ Traverseí•˜ë©´ì„œ Nodeë¥¼ ë³µì‚¬í•œë‹¤.
+ *    Source Node Tree¸¦ TraverseÇÏ¸é¼­ Node¸¦ º¹»çÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -11334,7 +11369,7 @@ IDE_RC qtc::cloneQTCNodeTree4Partition(
     if ((sNode->node.module == &qtc::columnModule) ||
         (sNode->node.module == &gQtcRidModule))
     {
-        // sourceì™€ destê°€ ë‹¤ë¥¼ ë•Œì—ë§Œ ìˆ˜í–‰.
+        // source¿Í dest°¡ ´Ù¸¦ ¶§¿¡¸¸ ¼öÇà.
         if( (sNode->node.table == aSourceTable) &&
             (aSourceTable != aDestTable) )
         {
@@ -11346,7 +11381,7 @@ IDE_RC qtc::cloneQTCNodeTree4Partition(
         }
 
         // BUG-27291
-        // ì´ë¯¸ estimateí–ˆìœ¼ë¯€ë¡œ estimateí•  í•„ìš”ì—†ìŒ.
+        // ÀÌ¹Ì estimateÇßÀ¸¹Ç·Î estimateÇÒ ÇÊ¿ä¾øÀ½.
         sNode->lflag &= ~QTC_NODE_COLUMN_ESTIMATE_MASK;
         sNode->lflag |= QTC_NODE_COLUMN_ESTIMATE_TRUE;
     }
@@ -11360,7 +11395,7 @@ IDE_RC qtc::cloneQTCNodeTree4Partition(
         if( ( aSource->node.lflag & MTC_NODE_OPERATOR_MASK )
             == MTC_NODE_OPERATOR_SUBQUERY )
         {
-            // Subqueryë…¸ë“œì¼ ê²½ìš°ì—” argumentsë¥¼ ë³µì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // Subquery³ëµåÀÏ °æ¿ì¿£ arguments¸¦ º¹»çÇÏÁö ¾Ê´Â´Ù.
         }
         else
         {
@@ -11380,9 +11415,9 @@ IDE_RC qtc::cloneQTCNodeTree4Partition(
     }
 
     // To fix BUG-21243
-    // pass nodeëŠ” ë³µì‚¬í•˜ì§€ ì•Šê³  ì‚­ì œí•œë‹¤.
-    // view target columnì„ ë³µì‚¬í•˜ëŠ” ê²½ìš° passnodeê¹Œì§€ ë³µì‚¬ë˜ì–´ì„œ
-    // view push selectionì„ í•˜ëŠ” ê²½ìš° ì˜ëª»ëœ ê²°ê³¼ë¥¼ ì½ìŒ.
+    // pass node´Â º¹»çÇÏÁö ¾Ê°í »èÁ¦ÇÑ´Ù.
+    // view target columnÀ» º¹»çÇÏ´Â °æ¿ì passnode±îÁö º¹»çµÇ¾î¼­
+    // view push selectionÀ» ÇÏ´Â °æ¿ì Àß¸øµÈ °á°ú¸¦ ÀĞÀ½.
     if( aSource->node.module == &qtc::passModule )
     {
         idlOS::memcpy( sNode,
@@ -11438,18 +11473,18 @@ IDE_RC qtc::cloneQTCNodeTree( iduVarMemList * aMemory,
  *
  * Description :
  *
- *    Source Nodeë¥¼ Desinationìœ¼ë¡œ ë³µì‚¬í•¨.
+ *    Source Node¸¦ DesinationÀ¸·Î º¹»çÇÔ.
  *
- *    - aContainRootsNext: ID_TRUEì´ë©´ aDestinationì˜ nextë„ ëª¨ë‘ ë³µì‚¬
- *    - aConversionClear: ID_TRUEì´ë©´ conversionì„ ëª¨ë‘ NULLë¡œ ì„¸íŒ…
- *                        ( push selectionì—ì„œ ì‚¬ìš©í•¨)
- *    - aConstCopy       : ID_TRUEì´ë©´ constant nodeë¼ë„ ë³µì‚¬í•œë‹¤.
- *    - aConstRevoke     : ID_TRUEì´ë©´ runConstExprë¡œ constantì²˜ë¦¬ë˜ê¸°
- *                         ì „ì˜ ì›ë˜ ë…¸ë“œë¡œ ì›ë³µí•˜ì—¬ ë³µì‚¬í•œë‹¤.
+ *    - aContainRootsNext: ID_TRUEÀÌ¸é aDestinationÀÇ nextµµ ¸ğµÎ º¹»ç
+ *    - aConversionClear: ID_TRUEÀÌ¸é conversionÀ» ¸ğµÎ NULL·Î ¼¼ÆÃ
+ *                        ( push selection¿¡¼­ »ç¿ëÇÔ)
+ *    - aConstCopy       : ID_TRUEÀÌ¸é constant node¶óµµ º¹»çÇÑ´Ù.
+ *    - aConstRevoke     : ID_TRUEÀÌ¸é runConstExpr·Î constantÃ³¸®µÇ±â
+ *                         ÀüÀÇ ¿ø·¡ ³ëµå·Î ¿øº¹ÇÏ¿© º¹»çÇÑ´Ù.
  *
  * Implementation :
  *
- *    Source Node Treeë¥¼ Traverseí•˜ë©´ì„œ Nodeë¥¼ ë³µì‚¬í•œë‹¤.
+ *    Source Node Tree¸¦ TraverseÇÏ¸é¼­ Node¸¦ º¹»çÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -11462,7 +11497,7 @@ IDE_RC qtc::cloneQTCNodeTree( iduVarMemList * aMemory,
     IDE_ASSERT( aSource != NULL );
     
     //--------------------------------------------------
-    // clone ëŒ€ìƒ source node
+    // clone ´ë»ó source node
     //--------------------------------------------------
     if ( ( ( aSource->lflag & QTC_NODE_CONVERSION_MASK )
            == QTC_NODE_CONVERSION_TRUE ) &&
@@ -11470,7 +11505,7 @@ IDE_RC qtc::cloneQTCNodeTree( iduVarMemList * aMemory,
     {
         //--------------------------------------------------
         // PROJ-1404
-        // ì´ë¯¸ constantì²˜ë¦¬ëœ ë…¸ë“œëŠ” ì›ë³µí•˜ì—¬ ë³µì‚¬í•œë‹¤.
+        // ÀÌ¹Ì constantÃ³¸®µÈ ³ëµå´Â ¿øº¹ÇÏ¿© º¹»çÇÑ´Ù.
         //--------------------------------------------------
         IDE_DASSERT( aConstCopy == ID_TRUE );
         IDE_DASSERT( aSource->node.orgNode != NULL );
@@ -11483,7 +11518,7 @@ IDE_RC qtc::cloneQTCNodeTree( iduVarMemList * aMemory,
     }
     
     //--------------------------------------------------
-    // source node ë³µì‚¬
+    // source node º¹»ç
     //--------------------------------------------------
     IDU_LIMITPOINT("qtc::cloneQTCNodeTree::malloc");
     IDE_TEST(STRUCT_ALLOC(aMemory, qtcNode, &sNode) != IDE_SUCCESS);
@@ -11501,7 +11536,7 @@ IDE_RC qtc::cloneQTCNodeTree( iduVarMemList * aMemory,
     }
 
     // PROJ-1404
-    // columnì— ëŒ€í•´ ë‘ ë²ˆ estimateí•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // column¿¡ ´ëÇØ µÎ ¹ø estimateÇÏÁö ¾Ê´Â´Ù.
     if((sSrcNode->node.module == & qtc::columnModule) ||
        (sSrcNode->node.module == &gQtcRidModule))
     {
@@ -11514,7 +11549,7 @@ IDE_RC qtc::cloneQTCNodeTree( iduVarMemList * aMemory,
     }    
 
     //--------------------------------------------------
-    // source nodeì˜ argumentê°€ ìˆìœ¼ë©´ ì´ë¥¼ ë³µì‚¬
+    // source nodeÀÇ argument°¡ ÀÖÀ¸¸é ÀÌ¸¦ º¹»ç
     //--------------------------------------------------
 
     if( sSrcNode->node.arguments != NULL )
@@ -11522,13 +11557,13 @@ IDE_RC qtc::cloneQTCNodeTree( iduVarMemList * aMemory,
         if( ( sSrcNode->node.lflag & MTC_NODE_OPERATOR_MASK )
             == MTC_NODE_OPERATOR_SUBQUERY )
         {
-            // Subqueryë…¸ë“œì¼ ê²½ìš°ì—” argumentsë¥¼ ë³µì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // Subquery³ëµåÀÏ °æ¿ì¿£ arguments¸¦ º¹»çÇÏÁö ¾Ê´Â´Ù.
         }
         else
         {
             // BUG-22045
-            // aSource->node.arguments->nextê¹Œì§€ ê³ ë ¤í•˜ê¸° ìœ„í•´ì„œ aSourceë¡œ
-            // dependencyë¥¼ ê²€ì‚¬í•œë‹¤.
+            // aSource->node.arguments->next±îÁö °í·ÁÇÏ±â À§ÇØ¼­ aSource·Î
+            // dependency¸¦ °Ë»çÇÑ´Ù.
             if( ( qtc::dependencyEqual( & sSrcNode->depInfo,
                                         & qtc::zeroDependencies )
                   == ID_FALSE )
@@ -11556,10 +11591,10 @@ IDE_RC qtc::cloneQTCNodeTree( iduVarMemList * aMemory,
     }
     
     // To fix BUG-21243
-    // pass nodeëŠ” ë³µì‚¬í•˜ì§€ ì•Šê³  ì‚­ì œí•œë‹¤.
-    // view target columnì„ ë³µì‚¬í•˜ëŠ” ê²½ìš° passnodeê¹Œì§€ ë³µì‚¬ë˜ì–´ì„œ
-    // view push selectionì„ í•˜ëŠ” ê²½ìš° ì˜ëª»ëœ ê²°ê³¼ë¥¼ ì½ìŒ.
-    // ì•ˆì „ì„ ìœ„í•´ conversionì„ ë ì–´ë‚´ëŠ” ê²½ìš°ë§Œ passnodeë¥¼ ì‚­ì œ.
+    // pass node´Â º¹»çÇÏÁö ¾Ê°í »èÁ¦ÇÑ´Ù.
+    // view target columnÀ» º¹»çÇÏ´Â °æ¿ì passnode±îÁö º¹»çµÇ¾î¼­
+    // view push selectionÀ» ÇÏ´Â °æ¿ì Àß¸øµÈ °á°ú¸¦ ÀĞÀ½.
+    // ¾ÈÀüÀ» À§ÇØ conversionÀ» ¶ì¾î³»´Â °æ¿ì¸¸ passnode¸¦ »èÁ¦.
     if( (aConversionClear == ID_TRUE) &&
         (sSrcNode->node.module == &qtc::passModule) )
     {
@@ -11571,12 +11606,12 @@ IDE_RC qtc::cloneQTCNodeTree( iduVarMemList * aMemory,
     }
 
     //--------------------------------------------------
-    // sourceì˜ nextê°€ ìˆìœ¼ë©´ ì´ë¥¼ ë³µì‚¬
+    // sourceÀÇ next°¡ ÀÖÀ¸¸é ÀÌ¸¦ º¹»ç
     // 
-    // ì´ë•Œ, constantì²˜ë¦¬ëœ ë…¸ë“œë„ orgNodeê°€ ì•„ë‹Œ
-    // ì›ë˜ sourceì˜ nextë¥¼ ë”°ë¼ê°€ì•¼í•œë‹¤.
-    // ì´ëŠ” aSource->node.orgNodeì˜ nextê°€ ì•„ë‹ˆë¼
-    // ì›ë˜ sourceì˜ linkë¥¼ ì§€ê¸°í‚¤ ìœ„í•¨ì´ë‹¤. ( BUG-22927 )
+    // ÀÌ¶§, constantÃ³¸®µÈ ³ëµåµµ orgNode°¡ ¾Æ´Ñ
+    // ¿ø·¡ sourceÀÇ next¸¦ µû¶ó°¡¾ßÇÑ´Ù.
+    // ÀÌ´Â aSource->node.orgNodeÀÇ next°¡ ¾Æ´Ï¶ó
+    // ¿ø·¡ sourceÀÇ link¸¦ Áö±âÅ° À§ÇÔÀÌ´Ù. ( BUG-22927 )
     //--------------------------------------------------
         
     if( aSource->node.next != NULL )
@@ -11633,10 +11668,10 @@ IDE_RC qtc::copyNodeTree( qcStatement*    aStatement,
 {
 /***********************************************************************
  *
- * Description : parsingê³¼ì •ì—ì„œ í•„ìš”í•œ nodetreeë¥¼ ë³µì‚¬í•œë‹¤.
+ * Description : parsing°úÁ¤¿¡¼­ ÇÊ¿äÇÑ nodetree¸¦ º¹»çÇÑ´Ù.
  *
  *
- * Implementation : subqueryê°€ ì˜¤ëŠ” ê²½ìš°ëŠ” ì—ëŸ¬.
+ * Implementation : subquery°¡ ¿À´Â °æ¿ì´Â ¿¡·¯.
  *
  ***********************************************************************/
 
@@ -11646,13 +11681,13 @@ IDE_RC qtc::copyNodeTree( qcStatement*    aStatement,
     IDE_ASSERT( aSource != NULL );
     
     //--------------------------------------------------
-    // clone ëŒ€ìƒ source node
+    // clone ´ë»ó source node
     //--------------------------------------------------
     
     sSrcNode = aSource;
 
     //--------------------------------------------------
-    // source node ë³µì‚¬
+    // source node º¹»ç
     //--------------------------------------------------
     
     if ( ( ( sSrcNode->node.lflag & MTC_NODE_OPERATOR_MASK )
@@ -11660,7 +11695,7 @@ IDE_RC qtc::copyNodeTree( qcStatement*    aStatement,
          &&
          ( aSubqueryCopy == ID_TRUE ) )
     {
-        // subquery node ë³µì‚¬
+        // subquery node º¹»ç
         IDE_TEST( copySubqueryNodeTree( aStatement,
                                         sSrcNode,
                                         & sNode )
@@ -11678,7 +11713,7 @@ IDE_RC qtc::copyNodeTree( qcStatement*    aStatement,
     }
 
     //--------------------------------------------------
-    // source nodeì˜ argumentê°€ ìˆìœ¼ë©´ ì´ë¥¼ ë³µì‚¬
+    // source nodeÀÇ argument°¡ ÀÖÀ¸¸é ÀÌ¸¦ º¹»ç
     //--------------------------------------------------
 
     if( sSrcNode->node.arguments != NULL )
@@ -11696,7 +11731,7 @@ IDE_RC qtc::copyNodeTree( qcStatement*    aStatement,
     }
     
     //--------------------------------------------------
-    // sourceì˜ nextê°€ ìˆìœ¼ë©´ ì´ë¥¼ ë³µì‚¬
+    // sourceÀÇ next°¡ ÀÖÀ¸¸é ÀÌ¸¦ º¹»ç
     //--------------------------------------------------
         
     if( sSrcNode->node.next != NULL )
@@ -11735,7 +11770,7 @@ IDE_RC qtc::copySubqueryNodeTree( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : parsingê³¼ì •ì—ì„œ í•„ìš”í•œ subquery nodetreeë¥¼ ë³µì‚¬í•œë‹¤.
+ * Description : parsing°úÁ¤¿¡¼­ ÇÊ¿äÇÑ subquery nodetree¸¦ º¹»çÇÑ´Ù.
  *
  * Implementation : 
  *
@@ -11749,7 +11784,7 @@ IDE_RC qtc::copySubqueryNodeTree( qcStatement  * aStatement,
                 == MTC_NODE_OPERATOR_SUBQUERY );
     
     //--------------------------------------------------
-    // parsing ì¤€ë¹„
+    // parsing ÁØºñ
     //--------------------------------------------------
 
     // set meber of qcStatement
@@ -11787,25 +11822,25 @@ idBool qtc::isConstNode4OrderBy( qtcNode * aNode )
 /***********************************************************************
  *
  * Description :
- *    ìƒìˆ˜ ë…¸ë“œì¸ì§€ ê²€ì‚¬í•œë‹¤.
- *    BUG-25528 PSMë³€ìˆ˜ì™€ hostë³€ìˆ˜ëŠ” ìƒìˆ˜ê°€ ì•„ë‹Œ ê²ƒìœ¼ë¡œ íŒë‹¨í•˜ë„ë¡ ë³€ê²½
- *    Constant Nodeì— ëŒ€í•œ ì™„ì „í•œ ì •ì˜ë¼ê³  ë³´ê¸° ì–´ë ¤ìš°ë¯€ë¡œ
- *    qmvOrderBy::disconnectConstantNode() íŒë‹¨ì„ ìœ„í•´ì„œë§Œ ì‚¬ìš©
+ *    »ó¼ö ³ëµåÀÎÁö °Ë»çÇÑ´Ù.
+ *    BUG-25528 PSMº¯¼ö¿Í hostº¯¼ö´Â »ó¼ö°¡ ¾Æ´Ñ °ÍÀ¸·Î ÆÇ´ÜÇÏµµ·Ï º¯°æ
+ *    Constant Node¿¡ ´ëÇÑ ¿ÏÀüÇÑ Á¤ÀÇ¶ó°í º¸±â ¾î·Á¿ì¹Ç·Î
+ *    qmvOrderBy::disconnectConstantNode() ÆÇ´ÜÀ» À§ÇØ¼­¸¸ »ç¿ë
  *
  * Implementation :
- *    ìƒìˆ˜ê°€ ì•„ë‹Œ ë…¸ë“œë“¤
+ *    »ó¼ö°¡ ¾Æ´Ñ ³ëµåµé
  *    - column
  *    - SUM(4), COUNT(*)
  *    - subquery
- *    - user-defined function (variable functionì´ë¼ê³  ê°€ì •í•œë‹¤.)
+ *    - user-defined function (variable functionÀÌ¶ó°í °¡Á¤ÇÑ´Ù.)
  *    - sequence
  *    - prior
  *    - level, rownum
  *    - variable built-in function (random, sendmsg)
- *    - PSM ë³€ìˆ˜
- *    - host ë³€ìˆ˜
+ *    - PSM º¯¼ö
+ *    - host º¯¼ö
  *
- *    ìƒìˆ˜ ë…¸ë“œë“¤
+ *    »ó¼ö ³ëµåµé
  *    - value
  *    - sysdate
  *
@@ -11873,22 +11908,22 @@ idBool qtc::isConstNode4LikePattern( qcStatement * aStatement,
  *
  * Description :
  *    BUG-25594
- *    like pattern stringì´ ìƒìˆ˜ ë…¸ë“œì¸ì§€ ê²€ì‚¬í•œë‹¤.
+ *    like pattern stringÀÌ »ó¼ö ³ëµåÀÎÁö °Ë»çÇÑ´Ù.
  *
  * Implementation :
- *    ìƒìˆ˜ê°€ ì•„ë‹Œ ë…¸ë“œë“¤
+ *    »ó¼ö°¡ ¾Æ´Ñ ³ëµåµé
  *    - column
  *    - SUM(4), COUNT(*)
  *    - subquery
- *    - user-defined function (variable functionì´ë¼ê³  ê°€ì •í•œë‹¤.)
+ *    - user-defined function (variable functionÀÌ¶ó°í °¡Á¤ÇÑ´Ù.)
  *    - sequence
  *    - prior
  *    - level, rownum
  *    - variable built-in function (random, sendmsg)
  *
- *    ìƒìˆ˜ ë…¸ë“œë“¤
- *    - PSM ë³€ìˆ˜
- *    - host ë³€ìˆ˜
+ *    »ó¼ö ³ëµåµé
+ *    - PSM º¯¼ö
+ *    - host º¯¼ö
  *    - value
  *    - sysdate
  *    - outer column ( BUG-43495 )
@@ -11938,7 +11973,7 @@ idBool qtc::isConstNode4LikePattern( qcStatement * aStatement,
     else
     {
         /* BUG-43495
-           outer columnì´ë©´ ìƒìˆ˜ë¡œ íŒë‹¨ */
+           outer columnÀÌ¸é »ó¼ö·Î ÆÇ´Ü */
         if ( (qtc::dependencyContains( aOuterDependencies,
                                        &aNode->depInfo )
               == ID_TRUE) &&
@@ -11967,19 +12002,19 @@ IDE_RC qtc::copyAndForDnfFilter( qcStatement* aStatement,
  *
  * Description :
  *
- *    DNF Filterë¥¼ ìœ„í•´ í•„ìš”í•œ Nodeë¥¼ ë³µì‚¬í•¨.
+ *    DNF Filter¸¦ À§ÇØ ÇÊ¿äÇÑ Node¸¦ º¹»çÇÔ.
  *
  * Implementation :
  *
- *    DNF Filterë¥¼ êµ¬ì„±í•˜ê¸° ìœ„í•˜ì—¬ ìµœìƒìœ„ AND Node(aSource)ë¥¼ ë³µì‚¬í•˜ê³ ,
- *    í•˜ìœ„ì˜ DNF_NOT Nodeë¥¼ ë³µì‚¬í•˜ì—¬ ì´ë¥¼ ì—°ê²°í•œë‹¤.
+ *    DNF Filter¸¦ ±¸¼ºÇÏ±â À§ÇÏ¿© ÃÖ»óÀ§ AND Node(aSource)¸¦ º¹»çÇÏ°í,
+ *    ÇÏÀ§ÀÇ DNF_NOT Node¸¦ º¹»çÇÏ¿© ÀÌ¸¦ ¿¬°áÇÑ´Ù.
  *
  *        [AND]       : aSource
  *          |
  *          V
  *        [DNF_NOT]
  *
- *    TODO - A4ì—ì„œëŠ” ë³´ë‹¤ ëª…í™•í•˜ê²Œ ëª¨ë“ˆí™”ë˜ì–´ ì²˜ë¦¬ë˜ì•¼ í•¨.
+ *    TODO - A4¿¡¼­´Â º¸´Ù ¸íÈ®ÇÏ°Ô ¸ğµâÈ­µÇ¾î Ã³¸®µÇ¾ß ÇÔ.
  *
  ***********************************************************************/
 
@@ -12046,19 +12081,19 @@ qtc::makeSameDataType4TwoNode( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     ë‘ Nodeì˜ êµ¬ì¡° ë³€ê²½ ì—†ì´ ë™ì¼í•œ Data Typeì˜ ê²°ê³¼ë¥¼
- *     ì–»ì„ ìˆ˜ ìˆë„ë¡ ë³€ê²½í•œë‹¤.
+ *     µÎ NodeÀÇ ±¸Á¶ º¯°æ ¾øÀÌ µ¿ÀÏÇÑ Data TypeÀÇ °á°ú¸¦
+ *     ¾òÀ» ¼ö ÀÖµµ·Ï º¯°æÇÑ´Ù.
  *
  * Implementation :
  *
- *     ë‹¤ìŒê³¼ ê°™ì€ ê°œë…ì„ ì´ìš©í•´ ê° SELECT êµ¬ë¬¸ì˜ Targetì„
- *     Conversionì‹œì¼œ ì„œë¡œ ë‹¤ë¥¸ Type ì˜ Targetì´ë¼ í•  ì§€ë¼ë„
- *     SET ê´€ë ¨ êµ¬ë¬¸ì„ ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡ í•¨.
+ *     ´ÙÀ½°ú °°Àº °³³äÀ» ÀÌ¿ëÇØ °¢ SELECT ±¸¹®ÀÇ TargetÀ»
+ *     Conversion½ÃÄÑ ¼­·Î ´Ù¸¥ Type ÀÇ TargetÀÌ¶ó ÇÒ Áö¶óµµ
+ *     SET °ü·Ã ±¸¹®À» »ç¿ëÇÒ ¼ö ÀÖµµ·Ï ÇÔ.
  *
- *     ì•„ë˜ ê·¸ë¦¼ê³¼ ê°™ì´ ê°€ìƒì˜ (=) ì—°ì‚°ìë¥¼ êµ¬ì„±í•˜ì—¬,
- *     Targetì˜ ê° Columnì„ ì—°ê²°í•œ í›„,
- *     (=)ì— ëŒ€í•´ì„œ estimate í•¨ìœ¼ë¡œì„œ ì–‘ìª½ Columnì´ ë™ì¼í•œ
- *     Data Type ì´ ë˜ë„ë¡ Type Conversionì‹œí‚¨ë‹¤.
+ *     ¾Æ·¡ ±×¸²°ú °°ÀÌ °¡»óÀÇ (=) ¿¬»êÀÚ¸¦ ±¸¼ºÇÏ¿©,
+ *     TargetÀÇ °¢ ColumnÀ» ¿¬°áÇÑ ÈÄ,
+ *     (=)¿¡ ´ëÇØ¼­ estimate ÇÔÀ¸·Î¼­ ¾çÂÊ ColumnÀÌ µ¿ÀÏÇÑ
+ *     Data Type ÀÌ µÇµµ·Ï Type Conversion½ÃÅ²´Ù.
  *             ( = )
  *               |
  *               V
@@ -12073,8 +12108,8 @@ qtc::makeSameDataType4TwoNode( qcStatement * aStatement,
 #define IDE_FN "qtc::makeSameDataType4TwoNode"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY("qtc::makeSameDataType4TwoNode"));
 
-    // TYPEì´ ë‹¤ë¥¸ Targetì— ëŒ€í•œ Conversionì„ ìœ„í•˜ì—¬
-    // í•„ìš”í•œ ì§€ì—­ ë³€ìˆ˜ì„.
+    // TYPEÀÌ ´Ù¸¥ Target¿¡ ´ëÇÑ ConversionÀ» À§ÇÏ¿©
+    // ÇÊ¿äÇÑ Áö¿ª º¯¼öÀÓ.
     qtcNode         * sEqualNode[2];
     qcNamePosition    sNullPosition;
     qtcNode         * sLeftIndirect;
@@ -12091,7 +12126,7 @@ qtc::makeSameDataType4TwoNode( qcStatement * aStatement,
     //fix BUG-17610
     sEqualNode[0]->node.lflag |= MTC_NODE_EQUI_VALID_SKIP_TRUE;
 
-    // 1. Leftì˜ SELECT Targetì„ ì—°ê²°í•¨
+    // 1. LeftÀÇ SELECT TargetÀ» ¿¬°áÇÔ
     IDU_LIMITPOINT("qtc::makeSameDataType4TwoNode::malloc1");
     IDE_TEST ( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                              qtcNode,
@@ -12101,7 +12136,7 @@ qtc::makeSameDataType4TwoNode( qcStatement * aStatement,
                                  aNode1 )
               != IDE_SUCCESS );
 
-    // 2. Rightì˜ SELECT Targetì„ ì—°ê²°í•¨
+    // 2. RightÀÇ SELECT TargetÀ» ¿¬°áÇÔ
     IDU_LIMITPOINT("qtc::makeSameDataType4TwoNode::malloc2");
     IDE_TEST ( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                              qtcNode,
@@ -12111,13 +12146,13 @@ qtc::makeSameDataType4TwoNode( qcStatement * aStatement,
                                  aNode2 )
               != IDE_SUCCESS );
 
-    // 3. (=) ì—°ì‚°ìì— Leftì™€ Right Targetì„ Indirect Node ì„
-    //    ì¤‘ê°„ì— ë‘ì–´ ì—°ê²°í•¨.
+    // 3. (=) ¿¬»êÀÚ¿¡ Left¿Í Right TargetÀ» Indirect Node À»
+    //    Áß°£¿¡ µÎ¾î ¿¬°áÇÔ.
     sEqualNode[0]->node.arguments = (mtcNode *) sLeftIndirect;
     sEqualNode[0]->node.arguments->next = (mtcNode *) sRightIndirect;
 
-    // 4. estimate í˜¸ì¶œì„ í•˜ì—¬, Left Targetê³¼ Right Targetì˜
-    //    Data Type ì„ í†µì¼ì‹œí‚´
+    // 4. estimate È£ÃâÀ» ÇÏ¿©, Left Target°ú Right TargetÀÇ
+    //    Data Type À» ÅëÀÏ½ÃÅ´
     IDE_TEST(qtc::estimateNodeWithArgument( aStatement,
                                             sEqualNode[0] )
              != IDE_SUCCESS );
@@ -12138,13 +12173,13 @@ IDE_RC qtc::makeLeftDataType4TwoNode( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-2582 recursive with
- *     ë‘ Nodeì˜ êµ¬ì¡° ë³€ê²½ ì—†ì´ ì™¼ìª½ê³¼ ë™ì¼í•œ Data Typeì˜ ê²°ê³¼ë¥¼
- *     ì–»ì„ ìˆ˜ ìˆë„ë¡ ë³€ê²½í•œë‹¤.
+ *     µÎ NodeÀÇ ±¸Á¶ º¯°æ ¾øÀÌ ¿ŞÂÊ°ú µ¿ÀÏÇÑ Data TypeÀÇ °á°ú¸¦
+ *     ¾òÀ» ¼ö ÀÖµµ·Ï º¯°æÇÑ´Ù.
  *
  * Implementation :
  *
- *     ì•„ë˜ ê·¸ë¦¼ê³¼ ê°™ì´ cast ì—°ì‚°ìë¥¼ êµ¬ì„±í•˜ì—¬, ì˜¤ë¥¸ìª½ì˜ target columnì—
- *     ì™¼ìª½ê³¼ ë™ì¼í•œ typeì´ ë˜ë„ë¡ conversion nodeë¥¼ ìƒì„±í•œë‹¤.
+ *     ¾Æ·¡ ±×¸²°ú °°ÀÌ cast ¿¬»êÀÚ¸¦ ±¸¼ºÇÏ¿©, ¿À¸¥ÂÊÀÇ target column¿¡
+ *     ¿ŞÂÊ°ú µ¿ÀÏÇÑ typeÀÌ µÇµµ·Ï conversion node¸¦ »ı¼ºÇÑ´Ù.
  *
  *                                 CAST( .. as column1_type)
  *                                       |
@@ -12156,8 +12191,8 @@ IDE_RC qtc::makeLeftDataType4TwoNode( qcStatement * aStatement,
  *
  ***********************************************************************/
 
-    // TYPEì´ ë‹¤ë¥¸ Targetì— ëŒ€í•œ Conversionì„ ìœ„í•˜ì—¬
-    // í•„ìš”í•œ ì§€ì—­ ë³€ìˆ˜ì„.
+    // TYPEÀÌ ´Ù¸¥ Target¿¡ ´ëÇÑ ConversionÀ» À§ÇÏ¿©
+    // ÇÊ¿äÇÑ Áö¿ª º¯¼öÀÓ.
     qtcNode         * sCastNode[2];
     qcNamePosition    sNullPosition;
     qtcNode           sIndirect;
@@ -12170,17 +12205,17 @@ IDE_RC qtc::makeLeftDataType4TwoNode( qcStatement * aStatement,
                              (const UChar *) "CAST",
                              4 ) != IDE_SUCCESS );
 
-    // SELECT Targetì„ ì—°ê²°í•¨
+    // SELECT TargetÀ» ¿¬°áÇÔ
     IDE_TEST( qtc::makeIndirect( aStatement,
                                  & sIndirect,
                                  aNode2 )
               != IDE_SUCCESS );
 
-    // cast ì—°ì‚°ìì— ì—°ê²°í•¨
+    // cast ¿¬»êÀÚ¿¡ ¿¬°áÇÔ
     sCastNode[0]->node.arguments = (mtcNode *) & sIndirect;
     sCastNode[0]->node.funcArguments = (mtcNode *) aNode1;
 
-    // estimate í˜¸ì¶œì„ í•˜ì—¬, Data Type ì„ í†µì¼ì‹œí‚´
+    // estimate È£ÃâÀ» ÇÏ¿©, Data Type À» ÅëÀÏ½ÃÅ´
     IDE_TEST( qtc::estimateNodeWithArgument( aStatement,
                                              sCastNode[0] )
               != IDE_SUCCESS );
@@ -12202,8 +12237,8 @@ IDE_RC qtc::makeRecursiveTargetInfo( qcStatement * aStatement,
  * Description : PROJ-2582 recursive with
  *
  * Implementation :
- *     ë°œì‚°í•˜ëŠ” targetê³¼ ìˆ˜ë ´í•˜ëŠ” targetì„ êµ¬ë³„í•˜ì—¬ target columnì˜
- *     precisionì„ ë³´ì •í•œë‹¤.
+ *     ¹ß»êÇÏ´Â target°ú ¼ö·ÅÇÏ´Â targetÀ» ±¸º°ÇÏ¿© target columnÀÇ
+ *     precisionÀ» º¸Á¤ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -12215,18 +12250,18 @@ IDE_RC qtc::makeRecursiveTargetInfo( qcStatement * aStatement,
     sViewColumn = QTC_STMT_COLUMN( aStatement, aViewNode  );
 
     //---------------------------------------------
-    // typeì€ ì´ë¯¸ ê°™ë‹¤.
+    // typeÀº ÀÌ¹Ì °°´Ù.
     //---------------------------------------------
 
     IDE_DASSERT( sViewColumn->module->id == sWithColumn->module->id );
 
     //---------------------------------------------
-    // columnInfoì˜ type,precisionì„ ì¡°ì •í•œë‹¤.
+    // columnInfoÀÇ type,precisionÀ» Á¶Á¤ÇÑ´Ù.
     //---------------------------------------------
     
     if ( sWithColumn->column.size < sViewColumn->column.size )
     {
-        // ë°œì‚°í•˜ëŠ” ê²½ìš° ëª‡ê°€ì§€ typeì— ëŒ€í•´ ë³€ê²½í•œë‹¤.
+        // ¹ß»êÇÏ´Â °æ¿ì ¸î°¡Áö type¿¡ ´ëÇØ º¯°æÇÑ´Ù.
         // bit->varbit, byte->varbyte, char->varchar, echar->evarchar,
         // nchar->nvarchar, numeric->float
         sModule = sViewColumn->module;
@@ -12263,7 +12298,7 @@ IDE_RC qtc::makeRecursiveTargetInfo( qcStatement * aStatement,
         IDE_DASSERT( ( sModule->flag & MTD_CREATE_PARAM_MASK )
                      != MTD_CREATE_PARAM_NONE );
         
-        // í•´ë‹¹ typeì˜ ê°€ì¥ í° precisionìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+        // ÇØ´ç typeÀÇ °¡Àå Å« precisionÀ¸·Î ¼³Á¤ÇÑ´Ù.
         IDE_TEST( mtc::initializeColumn( aColumnInfo->basicInfo,
                                          sModule,
                                          1,
@@ -12273,7 +12308,7 @@ IDE_RC qtc::makeRecursiveTargetInfo( qcStatement * aStatement,
     }
     else
     {
-        // ìˆ˜ë ´í•˜ëŠ” ê²½ìš°, í° ê²ƒìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+        // ¼ö·ÅÇÏ´Â °æ¿ì, Å« °ÍÀ¸·Î ¼³Á¤ÇÑ´Ù.
         mtc::copyColumn( aColumnInfo->basicInfo, sWithColumn );
     }
 
@@ -12286,7 +12321,7 @@ IDE_RC qtc::makeRecursiveTargetInfo( qcStatement * aStatement,
 
 //-------------------------------------------------
 // PROJ-1358
-// Bit Dependency ì—°ì‚°ì„ ë°”ë€ ìë£Œ êµ¬ì¡°ë¡œ í‘œí˜„í•¨.
+// Bit Dependency ¿¬»êÀ» ¹Ù²ï ÀÚ·á ±¸Á¶·Î Ç¥ÇöÇÔ.
 //-------------------------------------------------
 
 void
@@ -12297,7 +12332,7 @@ qtc::dependencySet( UShort      aTupleID,
  *
  * Description :
  *
- *    Internal Tuple ID ë¡œ dependenciesë¥¼ Setting
+ *    Internal Tuple ID ·Î dependencies¸¦ Setting
  *
  * Implementation :
  *
@@ -12327,11 +12362,11 @@ qtc::dependencyChange( UShort      aSourceTupleID,
  *
  * Description : PROJ-1502 PARTITIONED DISK TABLE
  *
- *    partitioned tableì˜ tuple idë¥¼
- *    partitionì˜ tuple idë¡œ ë³€ê²½í•œë‹¤.
- *    partitionê·¸ë˜í”„ í•˜ìœ„ selection graphëŠ” fromì˜
- *    dependencyë¥¼ ë”°ë¥´ì§€ë§Œ, partitioned tableì˜ dependencyë¥¼ ë”°ë¥´ì§€
- *    ì•Šê³  partitionì˜ dependencyë¥¼ ë”°ë¥´ë„ë¡ ë³€ê²½í•´ ì£¼ì–´ì•¼ í•œë‹¤.
+ *    partitioned tableÀÇ tuple id¸¦
+ *    partitionÀÇ tuple id·Î º¯°æÇÑ´Ù.
+ *    partition±×·¡ÇÁ ÇÏÀ§ selection graph´Â fromÀÇ
+ *    dependency¸¦ µû¸£Áö¸¸, partitioned tableÀÇ dependency¸¦ µû¸£Áö
+ *    ¾Ê°í partitionÀÇ dependency¸¦ µû¸£µµ·Ï º¯°æÇØ ÁÖ¾î¾ß ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -12345,7 +12380,7 @@ qtc::dependencyChange( UShort      aSourceTupleID,
 
     if ( aSourceTupleID != aDestTupleID )
     {
-        // source tuple idì™€ dest tuple idê°€ ë‹¤ë¥´ë‹¤.
+        // source tuple id¿Í dest tuple id°¡ ´Ù¸£´Ù.
         sResult.depCount = 0;
 
         for ( i = 0; i < aOperand1->depCount; i++ )
@@ -12371,11 +12406,11 @@ qtc::dependencyChange( UShort      aSourceTupleID,
 
         if ( sSourceExist == ID_TRUE )
         {
-            // source tuple idê°€ ìˆë‹¤.
+            // source tuple id°¡ ÀÖ´Ù.
 
             if ( sDestExist == ID_TRUE )
             {
-                // dest tuple idê°€ ì´ë¯¸ ìˆë‹¤. source tuple idê°€ ìˆë‹¤ë©´ ì œê±°í•œë‹¤.
+                // dest tuple id°¡ ÀÌ¹Ì ÀÖ´Ù. source tuple id°¡ ÀÖ´Ù¸é Á¦°ÅÇÑ´Ù.
                 for ( i = 0; i < aOperand1->depCount; i++ )
                 {
                     if ( aOperand1->depend[i] != aSourceTupleID )
@@ -12391,8 +12426,8 @@ qtc::dependencyChange( UShort      aSourceTupleID,
             }
             else
             {
-                // dest tuple idê°€ ì—†ë‹¤. source tuple idë¥¼ ë°”ê¾¼ë‹¤.
-                // (ë‹¨, ì •ë ¬ ìˆœì„œë¥¼ ìœ ì§€í•´ì•¼ í•œë‹¤.)
+                // dest tuple id°¡ ¾ø´Ù. source tuple id¸¦ ¹Ù²Û´Ù.
+                // (´Ü, Á¤·Ä ¼ø¼­¸¦ À¯ÁöÇØ¾ß ÇÑ´Ù.)
 
                 if ( aSourceTupleID < aDestTupleID )
                 {
@@ -12405,7 +12440,7 @@ qtc::dependencyChange( UShort      aSourceTupleID,
                         sResult.depCount++;
                     }
 
-                    // source tuple idë¥¼ ì œì™¸í•œë‹¤.
+                    // source tuple id¸¦ Á¦¿ÜÇÑ´Ù.
                     i++;
 
                     for ( ;
@@ -12417,7 +12452,7 @@ qtc::dependencyChange( UShort      aSourceTupleID,
                         sResult.depCount++;
                     }
 
-                    // dest tuple idë¥¼ ì¶”ê°€í•œë‹¤.
+                    // dest tuple id¸¦ Ãß°¡ÇÑ´Ù.
                     sResult.depend[sResult.depCount] = aDestTupleID;
                     sResult.depCount++;
 
@@ -12440,7 +12475,7 @@ qtc::dependencyChange( UShort      aSourceTupleID,
                         sResult.depCount++;
                     }
 
-                    // dest tuple idë¥¼ ì¶”ê°€í•œë‹¤.
+                    // dest tuple id¸¦ Ãß°¡ÇÑ´Ù.
                     sResult.depend[sResult.depCount] = aDestTupleID;
                     sResult.depCount++;
 
@@ -12453,7 +12488,7 @@ qtc::dependencyChange( UShort      aSourceTupleID,
                         sResult.depCount++;
                     }
 
-                    // source tuple idë¥¼ ì œì™¸í•œë‹¤.
+                    // source tuple id¸¦ Á¦¿ÜÇÑ´Ù.
                     i++;
 
                     for ( ;
@@ -12470,13 +12505,13 @@ qtc::dependencyChange( UShort      aSourceTupleID,
         }
         else
         {
-            // source tuple idê°€ ì—†ë‹¤.
+            // source tuple id°¡ ¾ø´Ù.
             qtc::dependencySetWithDep( aResult, aOperand1 );
         }
     }
     else
     {
-        // source tuple idì™€ dest tuple idê°€ ê°™ë‹¤.
+        // source tuple id¿Í dest tuple id°¡ °°´Ù.
         qtc::dependencySetWithDep( aResult, aOperand1 );
     }
 }
@@ -12488,7 +12523,7 @@ void qtc::dependencySetWithDep( qcDepInfo * aOperand1,
  *
  * Description :
  *
- *    Dependenciesë¡œ dependenciesë¥¼ Setting
+ *    Dependencies·Î dependencies¸¦ Setting
  *
  * Implementation :
  *
@@ -12537,7 +12572,7 @@ void qtc::dependencyAnd( qcDepInfo * aOperand1,
  *
  * Description :
  *
- *    AND Dependenciesë¥¼ êµ¬í•¨
+ *    AND Dependencies¸¦ ±¸ÇÔ
  *
  * Implementation :
  *
@@ -12598,7 +12633,7 @@ qtc::dependencyOr( qcDepInfo * aOperand1,
  *
  * Description :
  *
- *    OR Dependenciesë¥¼ êµ¬í•¨
+ *    OR Dependencies¸¦ ±¸ÇÔ
  *
  * Implementation :
  *
@@ -12661,7 +12696,7 @@ qtc::dependencyOr( qcDepInfo * aOperand1,
         sResult.depCount++;
     }
 
-    // Left Operandì— ë‚¨ì•„ ìˆëŠ” ê²ƒ Or-ing
+    // Left Operand¿¡ ³²¾Æ ÀÖ´Â °Í Or-ing
     for ( ; sLeft < aOperand1->depCount; sLeft++ )
     {
         IDE_TEST_RAISE( sResult.depCount >= QC_MAX_REF_TABLE_CNT,
@@ -12673,11 +12708,11 @@ qtc::dependencyOr( qcDepInfo * aOperand1,
         sResult.depCount++;
     }
 
-    // Right Operandì— ë‚¨ì•„ ìˆëŠ” ê²ƒ Or-ing
+    // Right Operand¿¡ ³²¾Æ ÀÖ´Â °Í Or-ing
     for ( ; sRight < aOperand2->depCount; sRight++ )
     {
         // To Fix PR-12758
-        // ê²€ì‚¬ë¥¼ ë¨¼ì € ìˆ˜í–‰í•˜ì—¬ì•¼ ABWê°€ ë°œìƒí•˜ì§€ ì•ŠìŒ.
+        // °Ë»ç¸¦ ¸ÕÀú ¼öÇàÇÏ¿©¾ß ABW°¡ ¹ß»ıÇÏÁö ¾ÊÀ½.
         IDE_TEST_RAISE( sResult.depCount >= QC_MAX_REF_TABLE_CNT,
                         err_too_many_table_ref );
 
@@ -12710,7 +12745,7 @@ void qtc::dependencyRemove( UShort      aTupleID,
 /***********************************************************************
  *
  * Description :
- *     aOperand1ì—ì„œ aTupleIDì˜ dependencyë¥¼ ì œê±°
+ *     aOperand1¿¡¼­ aTupleIDÀÇ dependency¸¦ Á¦°Å
  *
  * Implementation :
  *
@@ -12750,7 +12785,7 @@ void qtc::dependencyClear( qcDepInfo * aOperand1 )
  *
  * Description :
  *
- *    Dependenciesë¥¼ ì´ˆê¸°í™”í•¨.
+ *    Dependencies¸¦ ÃÊ±âÈ­ÇÔ.
  *
  * Implementation :
  *
@@ -12772,7 +12807,7 @@ idBool qtc::dependencyEqual( qcDepInfo * aOperand1,
  *
  * Description :
  *
- *    Dependenciesê°€ ë™ì¼í•œ ì§€ë¥¼ íŒë‹¨
+ *    Dependencies°¡ µ¿ÀÏÇÑ Áö¸¦ ÆÇ´Ü
  *
  * Implementation :
  *
@@ -12810,7 +12845,7 @@ idBool qtc::haveDependencies( qcDepInfo * aOperand1 )
  *
  * Description :
  *
- *    Dependency ê°€ ì¡´ì¬í•˜ëŠ”ì§€ë¥¼ íŒë‹¨
+ *    Dependency °¡ Á¸ÀçÇÏ´ÂÁö¸¦ ÆÇ´Ü
  *
  * Implementation :
  *
@@ -12838,7 +12873,7 @@ idBool qtc::dependencyContains( qcDepInfo * aSubject, qcDepInfo * aTarget )
  *
  * Description :
  *
- *     aTargetì˜ Dependencyê°€ aSubjectì˜ Dependencyì— í¬í•¨ë˜ëŠ”ì§€ íŒë‹¨
+ *     aTargetÀÇ Dependency°¡ aSubjectÀÇ Dependency¿¡ Æ÷ÇÔµÇ´ÂÁö ÆÇ´Ü
  *
  * Implementation :
  *
@@ -12878,7 +12913,7 @@ idBool qtc::dependencyContains( qcDepInfo * aSubject, qcDepInfo * aTarget )
     }
     else
     {
-        // í¬í•¨ê´€ê³„ë¥¼ ë§Œì¡±í•  ìˆ˜ ì—†ìŒ.
+        // Æ÷ÇÔ°ü°è¸¦ ¸¸Á·ÇÒ ¼ö ¾øÀ½.
     }
 
     if ( sRight == aTarget->depCount )
@@ -12903,7 +12938,7 @@ void qtc::dependencyMinus( qcDepInfo * aOperand1,
  *
  *     ( aOperand1 - aOperand2 ) = aOperand1;
  * 
- *     aOperand1ì—ì„œ aOperand2ì— ê²¹ì¹˜ëŠ” dependencyëŠ” ì œê±°
+ *     aOperand1¿¡¼­ aOperand2¿¡ °ãÄ¡´Â dependency´Â Á¦°Å
  *
  * Implementation :
  *
@@ -12953,12 +12988,12 @@ IDE_RC qtc::isEquivalentExpression(
 
     if ( (aNode1 != NULL) && (aNode2 != NULL) )
     {   
-        // PROJ-2242 : constant filter ë¹„êµë¥¼ ìœ„í•œ ì¡°ê±´ ì¶”ê°€
-        // random í•¨ìˆ˜ë“±ì´ ìˆ˜í–‰ëœ ê²½ìš°ëŠ” ë°°ì œ
+        // PROJ-2242 : constant filter ºñ±³¸¦ À§ÇÑ Á¶°Ç Ãß°¡
+        // random ÇÔ¼öµîÀÌ ¼öÇàµÈ °æ¿ì´Â ¹èÁ¦
 
         // PROJ-2415 Grouping Sets Clause
-        // ê¸°ì¡´ Null Valueì™€ Empty Groupìœ¼ë¡œ ìƒì„± ëœ Null Valueê°€ ë¹„êµë˜ëŠ” ê²ƒ ì„ ë§‰ê¸°ìœ„í•´
-        // QTC_NODE_EMPTY_GROUP_TRUE ë¥¼ ê²€ì‚¬í•œë‹¤.
+        // ±âÁ¸ Null Value¿Í Empty GroupÀ¸·Î »ı¼º µÈ Null Value°¡ ºñ±³µÇ´Â °Í À» ¸·±âÀ§ÇØ
+        // QTC_NODE_EMPTY_GROUP_TRUE ¸¦ °Ë»çÇÑ´Ù.
         if ( ( aNode1->node.arguments != NULL ) &&
              ( aNode2->node.arguments != NULL ) &&
              ( ( aNode1->lflag & QTC_NODE_CONVERSION_MASK )
@@ -12977,7 +13012,7 @@ IDE_RC qtc::isEquivalentExpression(
                 sIsTrue = ID_TRUE;
 
                 //-------------------------------
-                // arguments ê²€ì‚¬
+                // arguments °Ë»ç
                 //-------------------------------
 
                 sArgu1 = (qtcNode *)(aNode1->node.arguments);
@@ -13002,7 +13037,7 @@ IDE_RC qtc::isEquivalentExpression(
 
                 if ( (sArgu1 != NULL) || (sArgu2 != NULL) )
                 {
-                    // arguments->nextì˜ ìˆ˜ê°€ ë§ì§€ ì•ŠëŠ” ê²½ìš°
+                    // arguments->nextÀÇ ¼ö°¡ ¸ÂÁö ¾Ê´Â °æ¿ì
                     sIsTrue = ID_FALSE;
                 }
                 else
@@ -13013,8 +13048,8 @@ IDE_RC qtc::isEquivalentExpression(
                 if( sIsTrue == ID_FALSE )
                 {
                     // BUG-31777
-                    // êµí™˜ë²•ì¹™ ê°€ëŠ¥í•œ +, * ì—°ì‚°ìì˜ ê²½ìš° ë‘ ë¹„êµ ëŒ€ìƒ expressionì˜
-                    // argument ìˆœì„œë¥¼ ë°”ê¿”ê°€ë©° ë‹¤ì‹œ ë¹„êµí•´ë³¸ë‹¤.
+                    // ±³È¯¹ıÄ¢ °¡´ÉÇÑ +, * ¿¬»êÀÚÀÇ °æ¿ì µÎ ºñ±³ ´ë»ó expressionÀÇ
+                    // argument ¼ø¼­¸¦ ¹Ù²ã°¡¸ç ´Ù½Ã ºñ±³ÇØº»´Ù.
                     if( ( aNode1->node.module->lflag & MTC_NODE_COMMUTATIVE_MASK ) ==
                             MTC_NODE_COMMUTATIVE_TRUE )
                     {
@@ -13040,7 +13075,7 @@ IDE_RC qtc::isEquivalentExpression(
                 if ( sIsTrue == ID_TRUE )
                 {
                     // PROJ-2179
-                    // Aggregate functionì—ì„œ DISTINCT ì ˆì˜ ì¡´ì¬ ì—¬ë¶€ê°€ ê°™ì•„ì•¼ í•œë‹¤.
+                    // Aggregate function¿¡¼­ DISTINCT ÀıÀÇ Á¸Àç ¿©ºÎ°¡ °°¾Æ¾ß ÇÑ´Ù.
                     if( ( aNode1->node.lflag & MTC_NODE_DISTINCT_MASK ) !=
                         ( aNode2->node.lflag & MTC_NODE_DISTINCT_MASK ) )
                     {
@@ -13054,56 +13089,75 @@ IDE_RC qtc::isEquivalentExpression(
                     if ( ( aNode1->node.lflag & MTC_NODE_OPERATOR_MASK )
                         == MTC_NODE_OPERATOR_SUBQUERY ) // subquery
                     {
-                        if ( ( aNode1->subquery->myPlan->graph != NULL ) &&
-                             ( aNode2->subquery->myPlan->graph != NULL ) )
+                        // BUG-48381 copyµÈ subquery´Â µ¿ÀÏÇÑ ¼­ºêÄõ¸®ÀÌ´Ù.
+                        if ( ( aNode1->node.table != aNode2->node.table ) ||
+                             ( aNode1->node.column != aNode2->node.column ) )
                         {
-                            if ( ( aNode1->subquery->myPlan->graph->myQuerySet->SFWGH->where != NULL ) ||
-                                 ( aNode2->subquery->myPlan->graph->myQuerySet->SFWGH->where != NULL ) )
+                            if ( ( aNode1->subquery->myPlan->graph != NULL ) &&
+                                 ( aNode2->subquery->myPlan->graph != NULL ) )
                             {
-                                 if ( ( aNode1->subquery->myPlan->graph->myQuerySet->SFWGH->where != NULL ) &&
-                                      ( aNode2->subquery->myPlan->graph->myQuerySet->SFWGH->where != NULL ) )
+                                // BUG-48381 key predicate Áß¿¡ set op°¡ Æ÷ÇÔµÈ ¼­ºêÄõ¸® ÇÁ¸®µğÅ¶ÀÌ ÀÖ°í
+                                //           key predicate°¡ DNF·Î Ç®¸± °æ¿ì ºñ>Á¤»óÁ¾·á
+                                if ( ( aNode1->subquery->myPlan->graph->myQuerySet->SFWGH != NULL ) &&
+                                     ( aNode2->subquery->myPlan->graph->myQuerySet->SFWGH != NULL ) )
                                 {
-                                    sArgu1 = (qtcNode *)aNode1->subquery->myPlan->graph->myQuerySet->SFWGH->where;
-                                    sArgu2 = (qtcNode *)aNode2->subquery->myPlan->graph->myQuerySet->SFWGH->where;
-
-                                    while ( ( sArgu1 != NULL ) && ( sArgu2 != NULL ) )
+                                    if ( ( aNode1->subquery->myPlan->graph->myQuerySet->SFWGH->where != NULL ) ||
+                                         ( aNode2->subquery->myPlan->graph->myQuerySet->SFWGH->where != NULL ) )
                                     {
-                                        IDE_TEST(isEquivalentExpression( aStatement, sArgu1, sArgu2, &sIsTrue)
-                                                 != IDE_SUCCESS);
-
-                                        if ( sIsTrue == ID_TRUE)
+                                        if ( ( aNode1->subquery->myPlan->graph->myQuerySet->SFWGH->where != NULL ) &&
+                                             ( aNode2->subquery->myPlan->graph->myQuerySet->SFWGH->where != NULL ) )
                                         {
-                                            if ( ( sArgu1->node.lflag & MTC_NODE_OPERATOR_MASK )
-                                                == MTC_NODE_OPERATOR_SUBQUERY ) // subquery
+                                            sArgu1 = (qtcNode *)aNode1->subquery->myPlan->graph->myQuerySet->SFWGH->where;
+                                            sArgu2 = (qtcNode *)aNode2->subquery->myPlan->graph->myQuerySet->SFWGH->where;
+
+                                            while ( ( sArgu1 != NULL ) && ( sArgu2 != NULL ) )
                                             {
+                                                IDE_TEST(isEquivalentExpression( aStatement, sArgu1, sArgu2, &sIsTrue)
+                                                         != IDE_SUCCESS);
+
+                                                if ( sIsTrue == ID_TRUE)
+                                                {
+                                                    if ( ( sArgu1->node.lflag & MTC_NODE_OPERATOR_MASK )
+                                                         == MTC_NODE_OPERATOR_SUBQUERY ) // subquery
+                                                    {
+                                                        sIsTrue = ID_FALSE;
+                                                        break;
+                                                    }
+                                                    else
+                                                    {
+                                                        sArgu1 = (qtcNode *)(sArgu1->node.next);
+                                                        sArgu2 = (qtcNode *)(sArgu2->node.next);
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    break; // exit while loop
+                                                }
+                                            }
+
+                                            if ( (sArgu1 != NULL) || (sArgu2 != NULL) )
+                                            {
+                                                // arguments->nextÀÇ ¼ö°¡ ¸ÂÁö ¾Ê´Â °æ¿ì
                                                 sIsTrue = ID_FALSE;
-                                                break;
                                             }
                                             else
                                             {
-                                                sArgu1 = (qtcNode *)(sArgu1->node.next);
-                                                sArgu2 = (qtcNode *)(sArgu2->node.next);
+                                                // Nothing to do.
                                             }
                                         }
                                         else
                                         {
-                                            break; // exit while loop
+                                            sIsTrue = ID_FALSE;
                                         }
-                                    }
-
-                                    if ( (sArgu1 != NULL) || (sArgu2 != NULL) )
-                                    {
-                                        // arguments->nextì˜ ìˆ˜ê°€ ë§ì§€ ì•ŠëŠ” ê²½ìš°
-                                        sIsTrue = ID_FALSE;
                                     }
                                     else
                                     {
-                                        // Nothing to do.
+                                        /* Nothing to do */
                                     }
                                 }
                                 else
                                 {
-                                    sIsTrue = ID_FALSE;
+                                    /* Nothing to do */
                                 }
                             }
                             else
@@ -13134,11 +13188,11 @@ IDE_RC qtc::isEquivalentExpression(
             }
         }
         // PROJ-2415 Grouping Sets Clause
-        // ê¸°ì¡´ Null Valueì™€ Empty Groupìœ¼ë¡œ ìƒì„± ëœ Null Valueê°€ ë¹„êµë˜ëŠ” ê²ƒ ì„ ë§‰ê¸°ìœ„í•´
-        // QTC_NODE_EMPTY_GROUP_TRUE ë¥¼ ê²€ì‚¬í•œë‹¤.
+        // ±âÁ¸ Null Value¿Í Empty GroupÀ¸·Î »ı¼º µÈ Null Value°¡ ºñ±³µÇ´Â °Í À» ¸·±âÀ§ÇØ
+        // QTC_NODE_EMPTY_GROUP_TRUE ¸¦ °Ë»çÇÑ´Ù.
 
-        // PROJ-2242 : constant filter ë¹„êµë¥¼ ìœ„í•œ ì¡°ê±´ ì¶”ê°€
-        // random í•¨ìˆ˜ë“±ì´ ìˆ˜í–‰ëœ ê²½ìš°ëŠ” ë°°ì œ
+        // PROJ-2242 : constant filter ºñ±³¸¦ À§ÇÑ Á¶°Ç Ãß°¡
+        // random ÇÔ¼öµîÀÌ ¼öÇàµÈ °æ¿ì´Â ¹èÁ¦
         else if ( ( ( (aNode1->node.arguments == NULL) &&
                       (aNode2->node.arguments == NULL) )
                     ||
@@ -13158,7 +13212,7 @@ IDE_RC qtc::isEquivalentExpression(
                 sIsTrue = ID_TRUE;
                 
                 //-------------------------------
-                // terminal nodes ê²€ì‚¬
+                // terminal nodes °Ë»ç
                 //-------------------------------
                 
                 // terminal nodes : subquery,
@@ -13193,7 +13247,7 @@ IDE_RC qtc::isEquivalentExpression(
                                == MTC_TUPLE_TYPE_VARIABLE ) )
                         {
                             // BUG-22045
-                            // variable tupleì´ë¼ í•˜ë”ë¼ë„ bind tupleì¸ ê²½ìš°ëŠ” ê²€ì‚¬ê°€ëŠ¥í•˜ë‹¤.
+                            // variable tupleÀÌ¶ó ÇÏ´õ¶óµµ bind tupleÀÎ °æ¿ì´Â °Ë»ç°¡´ÉÇÏ´Ù.
                             if ( ( aNode1->node.table ==
                                    QC_SHARED_TMPLATE(aStatement)->tmplate.variableRow ) &&
                                  ( aNode1->node.table == aNode2->node.table ) &&
@@ -13208,7 +13262,7 @@ IDE_RC qtc::isEquivalentExpression(
                         }
                         else
                         {
-                            /* PROJ-1361 : data moduleê³¼ language module ë¶„ë¦¬
+                            /* PROJ-1361 : data module°ú language module ºĞ¸®
                                if (sColumn1->type.type == sColumn2->type.type &&
                                sColumn1->type.language ==
                                sColumn2->type.language)
@@ -13220,7 +13274,7 @@ IDE_RC qtc::isEquivalentExpression(
                                    ex) WHERE OVERLAPS(F2, GEOMETRY'MULTIPOINT(0 0)')
                                           OR OVERLAPS(F2, GEOMETRY'MULTIPOINT(1 1, 2 2)')
                                                           |
-                                                   ì•„ë˜ ì¡°ê±´ì—ì„œ ë‘ ë…¸ë“œë¥¼ ê°™ë‹¤ê³  íŒë‹¨
+                                                   ¾Æ·¡ Á¶°Ç¿¡¼­ µÎ ³ëµå¸¦ °°´Ù°í ÆÇ´Ü
                                 */
                                 sIsTrue = ID_FALSE;
                             }
@@ -13263,7 +13317,7 @@ IDE_RC qtc::isEquivalentExpression(
                              (aNode1->node.column == aNode2->node.column) )
                         {
                             // PROJ-2179
-                            // PRIOR ì ˆì˜ ì¡´ì¬ ì—¬ë¶€ê°€ ê°™ì•„ì•¼ í•œë‹¤.
+                            // PRIOR ÀıÀÇ Á¸Àç ¿©ºÎ°¡ °°¾Æ¾ß ÇÑ´Ù.
                             if( ( aNode1->lflag & QTC_NODE_PRIOR_MASK ) !=
                                 ( aNode2->lflag & QTC_NODE_PRIOR_MASK ) )
                             {
@@ -13275,7 +13329,7 @@ IDE_RC qtc::isEquivalentExpression(
                             }
 
                             // PROJ-2527 WITHIN GROUP AGGR
-                            // WITHIN GROUP ì˜ OREDER BY directionì— ë”°ë¼ ê°™ì€ì§€ êµ¬ë¶„..
+                            // WITHIN GROUP ÀÇ OREDER BY direction¿¡ µû¶ó °°ÀºÁö ±¸ºĞ..
                             if( ( aNode1->node.lflag & MTC_NODE_WITHIN_GROUP_ORDER_MASK ) !=
                                 ( aNode2->node.lflag & MTC_NODE_WITHIN_GROUP_ORDER_MASK ) )
                             {
@@ -13289,7 +13343,7 @@ IDE_RC qtc::isEquivalentExpression(
                         else
                         {
                             // BUG-31961
-                            // Procedure ë³€ìˆ˜ëŠ” procedure templateì˜ columnì„ ë¹„êµí•œë‹¤.
+                            // Procedure º¯¼ö´Â procedure templateÀÇ columnÀ» ºñ±³ÇÑ´Ù.
                             if ( ( ( aNode1->lflag & QTC_NODE_PROC_VAR_MASK )
                                      == QTC_NODE_PROC_VAR_EXIST ) &&
                                  ( ( aNode2->lflag & QTC_NODE_PROC_VAR_MASK )
@@ -13326,7 +13380,7 @@ IDE_RC qtc::isEquivalentExpression(
                     else if (aNode1->node.module == &(qtc::spFunctionCallModule))
                     {
                         // BUG-21065
-                        // PSMì¸ ê²½ìš° ë™ì¼ expressionì¸ì§€ ê²€ì‚¬í•œë‹¤.
+                        // PSMÀÎ °æ¿ì µ¿ÀÏ expressionÀÎÁö °Ë»çÇÑ´Ù.
                         sExecPlanTree1 = (qsExecParseTree*)
                             aNode1->subquery->myPlan->parseTree;
                         sExecPlanTree2 = (qsExecParseTree*)
@@ -13353,13 +13407,13 @@ IDE_RC qtc::isEquivalentExpression(
                     }
                     else if (aNode1->node.module == &mtfCount )
                     {
-                        // PROJ-2179 COUNT(*)ì™€ ê°™ì´ ì¸ìê°€ ì—†ëŠ” aggregate functino
+                        // PROJ-2179 COUNT(*)¿Í °°ÀÌ ÀÎÀÚ°¡ ¾ø´Â aggregate functino
                         // Nothing to do.
                     }
                     else
                     {
                         // BUG-34382
-                        // ë‚˜ë¨¸ì§€ ëª¨ë“ˆì€ table, column ìœ¼ë¡œ ë¹„êµí•œë‹¤.
+                        // ³ª¸ÓÁö ¸ğµâÀº table, column À¸·Î ºñ±³ÇÑ´Ù.
                         if ( (aNode1->node.table == aNode2->node.table) &&
                              (aNode1->node.column == aNode2->node.column) )
                         {
@@ -13390,14 +13444,14 @@ IDE_RC qtc::isEquivalentExpression(
     }
 
     //-------------------------------
-    // overì ˆ ê²€ì‚¬
+    // overÀı °Ë»ç
     //-------------------------------    
     if( *aIsTrue == ID_TRUE )
     {
         if ( ( aNode1->overClause != NULL ) &&
              ( aNode2->overClause != NULL ) )
         {
-            // ë‘ ë…¸ë“œ ëª¨ë‘ overì ˆì´ ìˆëŠ” ê²½ìš°
+            // µÎ ³ëµå ¸ğµÎ overÀıÀÌ ÀÖ´Â °æ¿ì
             
             sCurOverColumn1 = aNode1->overClause->overColumn;
             sCurOverColumn2 = aNode2->overClause->overColumn;
@@ -13412,7 +13466,7 @@ IDE_RC qtc::isEquivalentExpression(
                           != IDE_SUCCESS);
 
                 // PROJ-2179
-                // OVERì ˆì˜ ORDER BYì˜ ì¡°ê±´ì„ í™•ì¸í•œë‹¤.
+                // OVERÀıÀÇ ORDER BYÀÇ Á¶°ÇÀ» È®ÀÎÇÑ´Ù.
 
                 sFlag1 = ( sCurOverColumn1->flag & QTC_OVER_COLUMN_MASK );
                 sFlag2 = ( sCurOverColumn2->flag & QTC_OVER_COLUMN_MASK );
@@ -13456,7 +13510,7 @@ IDE_RC qtc::isEquivalentExpression(
 
             if ( (sCurOverColumn1 != NULL) || (sCurOverColumn2 != NULL) )
             {
-                // overColumn->nextì˜ ìˆ˜ê°€ ë§ì§€ ì•ŠëŠ” ê²½ìš°
+                // overColumn->nextÀÇ ¼ö°¡ ¸ÂÁö ¾Ê´Â °æ¿ì
                 sIsTrue = ID_FALSE;
             }
             else
@@ -13467,13 +13521,13 @@ IDE_RC qtc::isEquivalentExpression(
         else if ( ( aNode1->overClause == NULL ) &&
                   ( aNode2->overClause == NULL ) )
         {
-            // ë‘ ë…¸ë“œ ëª¨ë‘ overì ˆì´ ì—†ëŠ” ê²½ìš°
+            // µÎ ³ëµå ¸ğµÎ overÀıÀÌ ¾ø´Â °æ¿ì
             
             // Nothing to do.
         }
         else
         {
-            // ì–´ëŠ í•œìª½ì—ë§Œ overì ˆì´ ìˆëŠ” ê²½ìš°
+            // ¾î´À ÇÑÂÊ¿¡¸¸ overÀıÀÌ ÀÖ´Â °æ¿ì
             
             sIsTrue = ID_FALSE;
         }
@@ -13535,11 +13589,11 @@ IDE_RC qtc::isEquivalentPredicate( qcStatement * aStatement,
         {
             if( ( sArg1 == NULL ) && ( sArg2 == NULL ) )
             {
-                // Argumentë“¤ì˜ ê°œìˆ˜ê°€ ë™ì¼í•œ ê²½ìš°
+                // ArgumentµéÀÇ °³¼ö°¡ µ¿ÀÏÇÑ °æ¿ì
             }
             else
             {
-                // Argumentë“¤ì˜ ê°œìˆ˜ê°€ ë‹¤ë¥¸ ê²½ìš°
+                // ArgumentµéÀÇ °³¼ö°¡ ´Ù¸¥ °æ¿ì
                 *aResult = ID_FALSE;
             }
         }
@@ -13556,7 +13610,7 @@ IDE_RC qtc::isEquivalentPredicate( qcStatement * aStatement,
     if( *aResult == ID_FALSE )
     {
         /******************************************************
-         * ë‹¤ìŒì€ ê°ê° ë™ì¼í•œ ì¡°ê±´ì´ë¯€ë¡œ í™•ì¸í•œë‹¤.
+         * ´ÙÀ½Àº °¢°¢ µ¿ÀÏÇÑ Á¶°ÇÀÌ¹Ç·Î È®ÀÎÇÑ´Ù.
          * | A = B  | B = A  |
          * | A <> B | B <> A |
          * | A < B  | B > A  |
@@ -13639,7 +13693,7 @@ IDE_RC qtc::isEquivalentPredicate( qcStatement * aStatement,
 
 /***********************************************************************
  *
- * Description : (parsingì€ í–ˆìœ¼ë‚˜) estimateí•˜ê¸° ì „ì˜ expressionì— ëŒ€í•´ equivalent ê²€ì‚¬
+ * Description : (parsingÀº ÇßÀ¸³ª) estimateÇÏ±â ÀüÀÇ expression¿¡ ´ëÇØ equivalent °Ë»ç
  *
  ***********************************************************************/
 IDE_RC qtc::isEquivalentExpressionByName( qtcNode * aNode1,
@@ -13657,8 +13711,8 @@ IDE_RC qtc::isEquivalentExpressionByName( qtcNode * aNode1,
     if ( ( aNode1 != NULL ) && ( aNode2 != NULL ) )
     {
         /* PROJ-2415 Grouping Sets Clause
-         * ê¸°ì¡´ Null Valueì™€ Empty Groupìœ¼ë¡œ ìƒì„± ëœ Null Valueê°€ ë¹„êµë˜ëŠ” ê²ƒ ì„ ë§‰ê¸°ìœ„í•´
-         * QTC_NODE_EMPTY_GROUP_TRUE ë¥¼ ê²€ì‚¬í•œë‹¤.
+         * ±âÁ¸ Null Value¿Í Empty GroupÀ¸·Î »ı¼º µÈ Null Value°¡ ºñ±³µÇ´Â °Í À» ¸·±âÀ§ÇØ
+         * QTC_NODE_EMPTY_GROUP_TRUE ¸¦ °Ë»çÇÑ´Ù.
          */
         if ( ( aNode1->node.arguments != NULL ) &&
              ( aNode2->node.arguments != NULL ) &&
@@ -13672,7 +13726,7 @@ IDE_RC qtc::isEquivalentExpressionByName( qtcNode * aNode1,
                 sIsEquivalent = ID_TRUE;
 
                 //-------------------------------
-                // arguments ê²€ì‚¬
+                // arguments °Ë»ç
                 //-------------------------------
 
                 sArgu1 = (qtcNode *)(aNode1->node.arguments);
@@ -13705,8 +13759,8 @@ IDE_RC qtc::isEquivalentExpressionByName( qtcNode * aNode1,
                 if ( sIsEquivalent == ID_FALSE )
                 {
                     /* BUG-31777
-                     * êµí™˜ë²•ì¹™ ê°€ëŠ¥í•œ +, * ì—°ì‚°ìì˜ ê²½ìš° ë‘ ë¹„êµ ëŒ€ìƒ expressionì˜
-                     * argument ìˆœì„œë¥¼ ë°”ê¿”ê°€ë©° ë‹¤ì‹œ ë¹„êµí•´ë³¸ë‹¤.
+                     * ±³È¯¹ıÄ¢ °¡´ÉÇÑ +, * ¿¬»êÀÚÀÇ °æ¿ì µÎ ºñ±³ ´ë»ó expressionÀÇ
+                     * argument ¼ø¼­¸¦ ¹Ù²ã°¡¸ç ´Ù½Ã ºñ±³ÇØº»´Ù.
                      */
                     if ( ( aNode1->node.module->lflag & MTC_NODE_COMMUTATIVE_MASK ) ==
                                                         MTC_NODE_COMMUTATIVE_TRUE )
@@ -13743,7 +13797,7 @@ IDE_RC qtc::isEquivalentExpressionByName( qtcNode * aNode1,
                 if ( sIsEquivalent == ID_TRUE )
                 {
                     /* PROJ-2179
-                     * Aggregate functionì—ì„œ DISTINCT ì ˆì˜ ì¡´ì¬ ì—¬ë¶€ê°€ ê°™ì•„ì•¼ í•œë‹¤.
+                     * Aggregate function¿¡¼­ DISTINCT ÀıÀÇ Á¸Àç ¿©ºÎ°¡ °°¾Æ¾ß ÇÑ´Ù.
                      */
                     if ( ( aNode1->node.lflag & MTC_NODE_DISTINCT_MASK ) !=
                          ( aNode2->node.lflag & MTC_NODE_DISTINCT_MASK ) )
@@ -13768,8 +13822,8 @@ IDE_RC qtc::isEquivalentExpressionByName( qtcNode * aNode1,
             }
         }
         /* PROJ-2415 Grouping Sets Clause
-         * ê¸°ì¡´ Null Valueì™€ Empty Groupìœ¼ë¡œ ìƒì„± ëœ Null Valueê°€ ë¹„êµë˜ëŠ” ê²ƒ ì„ ë§‰ê¸°ìœ„í•´
-         * QTC_NODE_EMPTY_GROUP_TRUE ë¥¼ ê²€ì‚¬í•œë‹¤.
+         * ±âÁ¸ Null Value¿Í Empty GroupÀ¸·Î »ı¼º µÈ Null Value°¡ ºñ±³µÇ´Â °Í À» ¸·±âÀ§ÇØ
+         * QTC_NODE_EMPTY_GROUP_TRUE ¸¦ °Ë»çÇÑ´Ù.
          */
         else if ( ( aNode1->node.arguments == NULL ) &&
                   ( aNode2->node.arguments == NULL ) &&
@@ -13803,7 +13857,7 @@ IDE_RC qtc::isEquivalentExpressionByName( qtcNode * aNode1,
                     else if ( aNode1->node.module == &(qtc::columnModule) )
                     {
                         /* PROJ-2179
-                         * PRIOR ì ˆì˜ ì¡´ì¬ ì—¬ë¶€ê°€ ê°™ì•„ì•¼ í•œë‹¤.
+                         * PRIOR ÀıÀÇ Á¸Àç ¿©ºÎ°¡ °°¾Æ¾ß ÇÑ´Ù.
                          */
                         if( ( aNode1->lflag & QTC_NODE_PRIOR_MASK ) !=
                             ( aNode2->lflag & QTC_NODE_PRIOR_MASK ) )
@@ -13841,7 +13895,7 @@ IDE_RC qtc::isEquivalentExpressionByName( qtcNode * aNode1,
                     }
                     else if ( aNode1->node.module == &mtfCount )
                     {
-                        /* PROJ-2179 COUNT(*)ì™€ ê°™ì´ ì¸ìê°€ ì—†ëŠ” aggregate function */
+                        /* PROJ-2179 COUNT(*)¿Í °°ÀÌ ÀÎÀÚ°¡ ¾ø´Â aggregate function */
                         /* Nothing to do */
                     }
                     else
@@ -13875,14 +13929,14 @@ IDE_RC qtc::isEquivalentExpressionByName( qtcNode * aNode1,
     }
 
     //-------------------------------
-    // overì ˆ ê²€ì‚¬
+    // overÀı °Ë»ç
     //-------------------------------
     if ( *aIsEquivalent == ID_TRUE )
     {
         if ( ( aNode1->overClause != NULL ) &&
              ( aNode2->overClause != NULL ) )
         {
-            /* ë‘ ë…¸ë“œ ëª¨ë‘ overì ˆì´ ìˆëŠ” ê²½ìš° */
+            /* µÎ ³ëµå ¸ğµÎ overÀıÀÌ ÀÖ´Â °æ¿ì */
 
             sCurOverColumn1 = aNode1->overClause->overColumn;
             sCurOverColumn2 = aNode2->overClause->overColumn;
@@ -13896,7 +13950,7 @@ IDE_RC qtc::isEquivalentExpressionByName( qtcNode * aNode1,
                           != IDE_SUCCESS );
 
                 /* PROJ-2179
-                 * OVERì ˆì˜ ORDER BYì˜ ì¡°ê±´ì„ í™•ì¸í•œë‹¤.
+                 * OVERÀıÀÇ ORDER BYÀÇ Á¶°ÇÀ» È®ÀÎÇÑ´Ù.
                  */
 
                 sFlag1 = sCurOverColumn1->flag & QTC_OVER_COLUMN_MASK;
@@ -13941,7 +13995,7 @@ IDE_RC qtc::isEquivalentExpressionByName( qtcNode * aNode1,
 
             if ( ( sCurOverColumn1 != NULL ) || ( sCurOverColumn2 != NULL ) )
             {
-                /* overColumn->nextì˜ ìˆ˜ê°€ ë§ì§€ ì•ŠëŠ” ê²½ìš° */
+                /* overColumn->nextÀÇ ¼ö°¡ ¸ÂÁö ¾Ê´Â °æ¿ì */
                 sIsEquivalent = ID_FALSE;
             }
             else
@@ -13952,12 +14006,12 @@ IDE_RC qtc::isEquivalentExpressionByName( qtcNode * aNode1,
         else if ( ( aNode1->overClause == NULL ) &&
                   ( aNode2->overClause == NULL ) )
         {
-            /* ë‘ ë…¸ë“œ ëª¨ë‘ overì ˆì´ ì—†ëŠ” ê²½ìš° */
+            /* µÎ ³ëµå ¸ğµÎ overÀıÀÌ ¾ø´Â °æ¿ì */
             /* Nothing to do */
         }
         else
         {
-            /* ì–´ëŠ í•œìª½ì—ë§Œ overì ˆì´ ìˆëŠ” ê²½ìš° */
+            /* ¾î´À ÇÑÂÊ¿¡¸¸ overÀıÀÌ ÀÖ´Â °æ¿ì */
             sIsEquivalent = ID_FALSE;
         }
 
@@ -13977,7 +14031,7 @@ IDE_RC qtc::isEquivalentExpressionByName( qtcNode * aNode1,
 
 /***********************************************************************
  *
- * Description : moduleì´ ê°™ì€ì§€ ë¹„êµ(isEquivalentExpressionByNameì—ì„œ ì‚¬ìš©)
+ * Description : moduleÀÌ °°ÀºÁö ºñ±³(isEquivalentExpressionByName¿¡¼­ »ç¿ë)
  *
  ***********************************************************************/
 idBool qtc::isSameModuleByName( qtcNode * aNode1,
@@ -14025,7 +14079,7 @@ IDE_RC qtc::changeNodeFromColumnToSP( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *    column nodeë¥¼ stored function nodeë¡œ ë³€ê²½í•œë‹¤.
+ *    column node¸¦ stored function node·Î º¯°æÇÑ´Ù.
  *
  * Implementation :
  *    1. change module
@@ -14069,7 +14123,7 @@ IDE_RC qtc::changeNodeFromColumnToSP( qcStatement * aStatement,
         sErrCode = ideGetErrorCode();
 
         // PROJ-1083 Package
-        // sErrCode ì¶”ê°€
+        // sErrCode Ãß°¡
         if ( sErrCode == qpERR_ABORT_QSV_NOT_EXIST_PROC_SQLTEXT ||
              sErrCode == qpERR_ABORT_QCM_NOT_EXIST_USER ||
              sErrCode == qpERR_ABORT_QSV_INVALID_IDENTIFIER ||
@@ -14130,11 +14184,11 @@ IDE_RC qtc::getDataOffset( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : aOffsetPtrì— templateì˜ data ìœ„ì¹˜ë¥¼ í™•ë³´í•œë‹¤.
- *               templateì˜ dataSizeì˜ consistencyë¥¼ ë³´ì¥í•˜ê¸° ìœ„í•´
- *               ì´ í•¨ìˆ˜ë¥¼ í†µí•´ì„œ offset ìœ„ì¹˜ë¥¼ ì–»ì–´ì•¼ í•œë‹¤.
+ * Description : aOffsetPtr¿¡ templateÀÇ data À§Ä¡¸¦ È®º¸ÇÑ´Ù.
+ *               templateÀÇ dataSizeÀÇ consistency¸¦ º¸ÀåÇÏ±â À§ÇØ
+ *               ÀÌ ÇÔ¼ö¸¦ ÅëÇØ¼­ offset À§Ä¡¸¦ ¾ò¾î¾ß ÇÑ´Ù.
  *
- * Implementation : datasizeëŠ” í•­ìƒ 8ë°”ì´íŠ¸ alignë˜ì–´ ìˆë„ë¡ í•œë‹¤.
+ * Implementation : datasize´Â Ç×»ó 8¹ÙÀÌÆ® alignµÇ¾î ÀÖµµ·Ï ÇÑ´Ù.
  *
  **********************************************************************/
 
@@ -14146,7 +14200,7 @@ IDE_RC qtc::getDataOffset( qcStatement * aStatement,
     *aOffsetPtr = QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize;
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize += aSize;
 
-    // align ì¡°ì •
+    // align Á¶Á¤
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize =
         idlOS::align8( QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize );
 
@@ -14162,10 +14216,10 @@ IDE_RC qtc::addSDF( qcStatement * aStatement, qmoScanDecisionFactor * aSDF )
 
     IDE_DASSERT( aStatement != NULL );
 
-    // Optimize ê³¼ì •ì—ì„œ viewë“±ì€ í•˜ìœ„ statementë¡œ ë§Œë“¤ì–´ì§„ë‹¤.
-    // í•˜ìœ„ statementì˜ sdfì— ì¶”ê°€í•˜ë©´ ì•ˆë˜ê³ ,
-    // í•­ìƒ ìµœ ìƒìœ„ statementì—ì„œ sdfë¥¼ ê´€ë¦¬í•´ì•¼ í•˜ë¯€ë¡œ
-    // ìƒìœ„ statementë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+    // Optimize °úÁ¤¿¡¼­ viewµîÀº ÇÏÀ§ statement·Î ¸¸µé¾îÁø´Ù.
+    // ÇÏÀ§ statementÀÇ sdf¿¡ Ãß°¡ÇÏ¸é ¾ÈµÇ°í,
+    // Ç×»ó ÃÖ »óÀ§ statement¿¡¼­ sdf¸¦ °ü¸®ÇØ¾ß ÇÏ¹Ç·Î
+    // »óÀ§ statement¸¦ °¡Á®¿Â´Ù.
 
     sTopStatement = QC_SHARED_TMPLATE(aStatement)->stmt;
 
@@ -14192,10 +14246,10 @@ IDE_RC qtc::removeSDF( qcStatement * aStatement, qmoScanDecisionFactor * aSDF )
 
     IDE_DASSERT( aStatement != NULL );
 
-    // Optimize ê³¼ì •ì—ì„œ viewë“±ì€ í•˜ìœ„ statementë¡œ ë§Œë“¤ì–´ì§„ë‹¤.
-    // í•˜ìœ„ statementì˜ sdfì— ì¶”ê°€í•˜ë©´ ì•ˆë˜ê³ ,
-    // í•­ìƒ ìµœ ìƒìœ„ statementì—ì„œ sdfë¥¼ ê´€ë¦¬í•´ì•¼ í•˜ë¯€ë¡œ
-    // ìƒìœ„ statementë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+    // Optimize °úÁ¤¿¡¼­ viewµîÀº ÇÏÀ§ statement·Î ¸¸µé¾îÁø´Ù.
+    // ÇÏÀ§ statementÀÇ sdf¿¡ Ãß°¡ÇÏ¸é ¾ÈµÇ°í,
+    // Ç×»ó ÃÖ »óÀ§ statement¿¡¼­ sdf¸¦ °ü¸®ÇØ¾ß ÇÏ¹Ç·Î
+    // »óÀ§ statement¸¦ °¡Á®¿Â´Ù.
     sTopStatement = QC_SHARED_TMPLATE(aStatement)->stmt;
 
     IDE_ASSERT( sTopStatement->myPlan->scanDecisionFactors != NULL );
@@ -14226,7 +14280,7 @@ idBool qtc::getConstPrimitiveNumberValue( qcTemplate  * aTemplate,
 /***********************************************************************
  *
  * Description : PROJ-1405 ROWNUM
- *               ì •ìˆ˜í˜• constant valueì˜ ê°’ì„ ê°€ì ¸ì˜¨ë‹¤.
+ *               Á¤¼öÇü constant valueÀÇ °ªÀ» °¡Á®¿Â´Ù.
  *
  * Implementation :
  *
@@ -14354,7 +14408,7 @@ qtc::getSTObjBufSize( mtcCallBack * aCallBack )
             
             sObjBufSize = QCG_GET_SESSION_ST_OBJECT_SIZE( sStatement );
 
-            // environmentì˜ ê¸°ë¡
+            // environmentÀÇ ±â·Ï
             qcgPlan::registerPlanProperty( sStatement,
                                            PLAN_PROPERTY_ST_OBJECT_SIZE );
         }
@@ -14410,11 +14464,11 @@ IDE_RC qtc::setBindParamInfoByNode( qcStatement * aStatement,
 {
 /***********************************************************************
  * 
- * Description : Bind Param Info ì •ë³´ë¥¼ ì„¤ì •í•¨
+ * Description : Bind Param Info Á¤º¸¸¦ ¼³Á¤ÇÔ
  *
  * Implementation :
- *    aColumnNodeë¥¼ í†µí•´ Column Infoë¥¼ íšë“í•˜ì—¬
- *    aBindNodeì— ëŒ€ì‘ë˜ëŠ” BindParam ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
+ *    aColumnNode¸¦ ÅëÇØ Column Info¸¦ È¹µæÇÏ¿©
+ *    aBindNode¿¡ ´ëÀÀµÇ´Â BindParam Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
  ***********************************************************************/
 
     qciBindParam * sBindParam;
@@ -14425,18 +14479,18 @@ IDE_RC qtc::setBindParamInfoByNode( qcStatement * aStatement,
     IDE_DASSERT( aBindNode != NULL );
     
     //-------------------
-    // Column Info íšë“
+    // Column Info È¹µæ
     //-------------------
     
     sColumnInfo = QTC_STMT_COLUMN( aStatement, aColumnNode );
     
     //-------------------
-    // Column Infoë¥¼ ë³´ê³  Bind Parameter ì •ë³´ ì„¤ì •
+    // Column Info¸¦ º¸°í Bind Parameter Á¤º¸ ¼³Á¤
     //-------------------
     sBindParam = &aStatement->myPlan->sBindParam[aBindNode->node.column].param;
 
     // PROJ-2002 Column Security
-    // ì•”í˜¸ ë°ì´íƒ€ íƒ€ì…ì€ ì›ë³¸ ë°ì´íƒ€ íƒ€ì…ìœ¼ë¡œ Bind Parameter ì •ë³´ ì„¤ì •
+    // ¾ÏÈ£ µ¥ÀÌÅ¸ Å¸ÀÔÀº ¿øº» µ¥ÀÌÅ¸ Å¸ÀÔÀ¸·Î Bind Parameter Á¤º¸ ¼³Á¤
     if( sColumnInfo->type.dataTypeId == MTD_ECHAR_ID )
     {
         sBindParam->type      = MTD_CHAR_ID;
@@ -14479,23 +14533,23 @@ IDE_RC qtc::setDescribeParamInfo4Where( qcStatement     * aStatement,
 {
 /***********************************************************************
  * 
- * Description : WHERE ì ˆì—ì„œ DescribeParamInfo ì„¤ì • ê°€ëŠ¥í•œ ê²½ìš°,
- *               ì´ë¥¼ ì°¾ì•„ ì„¤ì •
+ * Description : WHERE Àı¿¡¼­ DescribeParamInfo ¼³Á¤ °¡´ÉÇÑ °æ¿ì,
+ *               ÀÌ¸¦ Ã£¾Æ ¼³Á¤
  *
  * Implementation :
- *    WHERE ì ˆì—ì„œ DescribeParamInfo ì„¤ì • ê°€ëŠ¥í•œ ê²½ìš°,
- *    - í•˜ìœ„ nodeì— bind nodeê°€ ìˆìŒ
- *    - ë¹„êµ ì—°ì‚°ìì„  ( =, >, <, >=, <= )
- *    - (Column)(ë¹„êµì—°ì‚°ì)(Bind) or (Bind)(ë¹„êµì—°ì‚°ì)(Column) í˜•íƒœì„
+ *    WHERE Àı¿¡¼­ DescribeParamInfo ¼³Á¤ °¡´ÉÇÑ °æ¿ì,
+ *    - ÇÏÀ§ node¿¡ bind node°¡ ÀÖÀ½
+ *    - ºñ±³ ¿¬»êÀÚÀÓ  ( =, >, <, >=, <= )
+ *    - (Column)(ºñ±³¿¬»êÀÚ)(Bind) or (Bind)(ºñ±³¿¬»êÀÚ)(Column) ÇüÅÂÀÓ
  *
- *    í˜„ì¬ nodeë¥¼ nextë¥¼ ë”°ë¼ ì§„í–‰í•˜ë©´ì„œ ì•„ë˜ì™€ ê°™ì€ ì‘ì—… ìˆ˜í–‰í•¨
- *    (1) í•˜ìœ„ nodeì— bind nodeê°€ ìˆëŠ”ì§€ ê²€ì‚¬
- *    (2) ë¹„êµ ì—°ì‚°ìì¸ì§€ ê²€ì‚¬
- *        - ë¹„êµ ì—°ì‚°ì ì´ë©´ (3) ìœ¼ë¡œ ì§„í–‰
- *        - ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹ˆë©´, í˜„ì¬ nodeì˜ argumentì— ëŒ€í•˜ì—¬
- *          recursiveí•˜ê²Œ (1)ì„ ìˆ˜í–‰í•¨
- *    (3) (Column)(ë¹„êµì—°ì‚°ì)(Bind) or (Bind)(ë¹„êµì—°ì‚°ì)(Column) í˜•íƒœ
- *         ì´ë©´ Columnì •ë³´ë¥¼ íšë“í•˜ì—¬ Bind Param ì •ë³´ ì„¤ì •
+ *    ÇöÀç node¸¦ next¸¦ µû¶ó ÁøÇàÇÏ¸é¼­ ¾Æ·¡¿Í °°Àº ÀÛ¾÷ ¼öÇàÇÔ
+ *    (1) ÇÏÀ§ node¿¡ bind node°¡ ÀÖ´ÂÁö °Ë»ç
+ *    (2) ºñ±³ ¿¬»êÀÚÀÎÁö °Ë»ç
+ *        - ºñ±³ ¿¬»êÀÚ ÀÌ¸é (3) À¸·Î ÁøÇà
+ *        - ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ï¸é, ÇöÀç nodeÀÇ argument¿¡ ´ëÇÏ¿©
+ *          recursiveÇÏ°Ô (1)À» ¼öÇàÇÔ
+ *    (3) (Column)(ºñ±³¿¬»êÀÚ)(Bind) or (Bind)(ºñ±³¿¬»êÀÚ)(Column) ÇüÅÂ
+ *         ÀÌ¸é ColumnÁ¤º¸¸¦ È¹µæÇÏ¿© Bind Param Á¤º¸ ¼³Á¤
  *
  ***********************************************************************/
 
@@ -14513,12 +14567,12 @@ IDE_RC qtc::setDescribeParamInfo4Where( qcStatement     * aStatement,
              == MTC_NODE_BIND_EXIST )
         {
             //----------------------------
-            // bind nodeê°€ ìˆëŠ” ê²½ìš°,
+            // bind node°¡ ÀÖ´Â °æ¿ì,
             //----------------------------
 
             // BUG-34327
-            // >ALLë„ MTC_NODE_OPERATOR_GREATERì´ë¯€ë¡œ flagë¡œ ë¹„êµí•˜ì§€ ì•Šê³ 
-            // mtfModuleë¡œ ì§ì ‘ ë¹„êµí•œë‹¤.
+            // >ALLµµ MTC_NODE_OPERATOR_GREATERÀÌ¹Ç·Î flag·Î ºñ±³ÇÏÁö ¾Ê°í
+            // mtfModule·Î Á÷Á¢ ºñ±³ÇÑ´Ù.
             if ( ( sCurNode->node.module == & mtfEqual )       ||
                  ( sCurNode->node.module == & mtfNotEqual )    ||
                  ( sCurNode->node.module == & mtfLessThan )    ||
@@ -14527,15 +14581,15 @@ IDE_RC qtc::setDescribeParamInfo4Where( qcStatement     * aStatement,
                  ( sCurNode->node.module == & mtfGreaterEqual ) )
             {
                 //----------------------------
-                // í˜„ì¬ nodeê°€ ë¹„êµ ì—°ì‚°ìì¸ ê²½ìš° ( =, !=, >, <, >=, <= )
+                // ÇöÀç node°¡ ºñ±³ ¿¬»êÀÚÀÎ °æ¿ì ( =, !=, >, <, >=, <= )
                 //----------------------------
 
                 sLeftOperand = (qtcNode*)sCurNode->node.arguments;
                 sRightOperand = (qtcNode*)sCurNode->node.arguments->next;
 
                 //----------------------------
-                // (Column)(ë¹„êµì—°ì‚°ì)(Bind) or
-                // (Bind)(ë¹„êµì—°ì‚°ì)(Column) í˜•íƒœë¥¼ ì°¾ìŒ
+                // (Column)(ºñ±³¿¬»êÀÚ)(Bind) or
+                // (Bind)(ºñ±³¿¬»êÀÚ)(Column) ÇüÅÂ¸¦ Ã£À½
                 //----------------------------
                 sColumnNode = NULL;
                 sBindNode   = NULL;
@@ -14546,8 +14600,8 @@ IDE_RC qtc::setDescribeParamInfo4Where( qcStatement     * aStatement,
                     if ( ( sLeftOperand->node.lflag & MTC_NODE_BIND_MASK )
                          == MTC_NODE_BIND_EXIST )
                     {
-                        // Left operandê°€ bind nodeì¸ ê²½ìš°,
-                        // Right operandëŠ” column ì´ì–´ì•¼ í•¨
+                        // Left operand°¡ bind nodeÀÎ °æ¿ì,
+                        // Right operand´Â column ÀÌ¾î¾ß ÇÔ
                         if ( QTC_IS_COLUMN( aStatement, sRightOperand )
                              == ID_TRUE )
                         {
@@ -14556,14 +14610,14 @@ IDE_RC qtc::setDescribeParamInfo4Where( qcStatement     * aStatement,
                         }
                         else
                         {
-                            // constant ì—°ì‚°ì, bind node ë“±ë“±ì˜
-                            // ê²½ìš°ì„
+                            // constant ¿¬»êÀÚ, bind node µîµîÀÇ
+                            // °æ¿ìÀÓ
                         }
                     }
                     else
                     {
-                        // Right operandê°€ bind nodeì¸ ê²½ìš°,
-                        // Left operandê°€ column ì´ì–´ì•¼ í•¨
+                        // Right operand°¡ bind nodeÀÎ °æ¿ì,
+                        // Left operand°¡ column ÀÌ¾î¾ß ÇÔ
                         if ( QTC_IS_COLUMN( aStatement, sLeftOperand )
                              == ID_TRUE )
                         {
@@ -14572,27 +14626,27 @@ IDE_RC qtc::setDescribeParamInfo4Where( qcStatement     * aStatement,
                         }
                         else
                         {
-                            // constant ì—°ì‚°ì, bind node ë“±ë“±ì˜
-                            // ê²½ìš°ì„
+                            // constant ¿¬»êÀÚ, bind node µîµîÀÇ
+                            // °æ¿ìÀÓ
                         }
                     }
                 }
                 else
                 {    
-                    // left operand ë˜ëŠ” right operandê°€
-                    // terminalì´ ì•„ë‹Œ ê²½ìš°,
-                    // next nodeë¡œ ì§„í–‰
+                    // left operand ¶Ç´Â right operand°¡
+                    // terminalÀÌ ¾Æ´Ñ °æ¿ì,
+                    // next node·Î ÁøÇà
                 }
 
                 //-------------------
-                // Bind Param ì •ë³´ ì„¤ì •
+                // Bind Param Á¤º¸ ¼³Á¤
                 //-------------------
 
                 if ( ( sColumnNode != NULL ) && ( sBindNode != NULL ) )
                 {
-                    // (Column)(ë¹„êµì—°ì‚°ì)(Bind) or
-                    // (Bind)(ë¹„êµì—°ì‚°ì)(Column) í˜•íƒœë¥¼ ì°¾ì€ ê²½ìš°,
-                    // BindParamInfo ì„¤ì •
+                    // (Column)(ºñ±³¿¬»êÀÚ)(Bind) or
+                    // (Bind)(ºñ±³¿¬»êÀÚ)(Column) ÇüÅÂ¸¦ Ã£Àº °æ¿ì,
+                    // BindParamInfo ¼³Á¤
                     IDE_TEST( setBindParamInfoByNode( aStatement,
                                                       sColumnNode,
                                                       sBindNode )
@@ -14616,14 +14670,14 @@ IDE_RC qtc::setDescribeParamInfo4Where( qcStatement     * aStatement,
                  ( sCurNode->node.module == & mtfNotLike ) )
             {
                 //----------------------------
-                // í˜„ì¬ nodeê°€ like ì—°ì‚°ìì¸ ê²½ìš° (like, not like)
+                // ÇöÀç node°¡ like ¿¬»êÀÚÀÎ °æ¿ì (like, not like)
                 //----------------------------
                     
                 sLeftOperand = (qtcNode*)sCurNode->node.arguments;
                 sRightOperand = (qtcNode*)sCurNode->node.arguments->next;
 
                 //----------------------------
-                // (Column)(ë¹„êµì—°ì‚°ì)(Bind) í˜•íƒœë¥¼ ì°¾ìŒ
+                // (Column)(ºñ±³¿¬»êÀÚ)(Bind) ÇüÅÂ¸¦ Ã£À½
                 //----------------------------
                 sColumnNode = NULL;
                 sBindNode   = NULL;
@@ -14634,8 +14688,8 @@ IDE_RC qtc::setDescribeParamInfo4Where( qcStatement     * aStatement,
                     if ( ( sRightOperand->node.lflag & MTC_NODE_BIND_MASK )
                          == MTC_NODE_BIND_EXIST )
                     {
-                        // Right operandê°€ bind nodeì¸ ê²½ìš°,
-                        // Left operandê°€ column ì´ì–´ì•¼ í•¨
+                        // Right operand°¡ bind nodeÀÎ °æ¿ì,
+                        // Left operand°¡ column ÀÌ¾î¾ß ÇÔ
                         if ( QTC_IS_COLUMN( aStatement, sLeftOperand )
                              == ID_TRUE )
                         {
@@ -14644,31 +14698,31 @@ IDE_RC qtc::setDescribeParamInfo4Where( qcStatement     * aStatement,
                         }
                         else
                         {
-                            // constant ì—°ì‚°ì, bind node ë“±ë“±ì˜
-                            // ê²½ìš°ì„
+                            // constant ¿¬»êÀÚ, bind node µîµîÀÇ
+                            // °æ¿ìÀÓ
                         }
                     }
                     else
                     {
-                        // Left operandê°€ bind nodeì¸ ê²½ìš°
+                        // Left operand°¡ bind nodeÀÎ °æ¿ì
                     }
                 }
                 else
                 {    
-                    // left operand ë˜ëŠ” right operandê°€
-                    // terminalì´ ì•„ë‹Œ ê²½ìš°,
-                    // next nodeë¡œ ì§„í–‰
+                    // left operand ¶Ç´Â right operand°¡
+                    // terminalÀÌ ¾Æ´Ñ °æ¿ì,
+                    // next node·Î ÁøÇà
                 }
                     
                 //-------------------
-                // Bind Param ì •ë³´ ì„¤ì •
+                // Bind Param Á¤º¸ ¼³Á¤
                 //-------------------
 
                 if ( ( sColumnNode != NULL ) && ( sBindNode != NULL ) )
                 {
-                    // (Column)(ë¹„êµì—°ì‚°ì)(Bind) or
-                    // (Bind)(ë¹„êµì—°ì‚°ì)(Column) í˜•íƒœë¥¼ ì°¾ì€ ê²½ìš°,
-                    // BindParamInfo ì„¤ì •
+                    // (Column)(ºñ±³¿¬»êÀÚ)(Bind) or
+                    // (Bind)(ºñ±³¿¬»êÀÚ)(Column) ÇüÅÂ¸¦ Ã£Àº °æ¿ì,
+                    // BindParamInfo ¼³Á¤
                     IDE_TEST( setBindParamInfoByNode( aStatement,
                                                       sColumnNode,
                                                       sBindNode )
@@ -14690,13 +14744,13 @@ IDE_RC qtc::setDescribeParamInfo4Where( qcStatement     * aStatement,
             if ( sCurNode->node.module == & mtfCast )
             {
                 //----------------------------
-                // í˜„ì¬ nodeê°€ cast ì—°ì‚°ìì¸ ê²½ìš°
+                // ÇöÀç node°¡ cast ¿¬»êÀÚÀÎ °æ¿ì
                 //----------------------------
                     
                 sLeftOperand = (qtcNode*)sCurNode->node.arguments;
 
                 //----------------------------
-                // cast((Bind) as (Column)) í˜•íƒœë¥¼ ì°¾ìŒ
+                // cast((Bind) as (Column)) ÇüÅÂ¸¦ Ã£À½
                 //----------------------------
                 sColumnNode = NULL;
                 sBindNode   = NULL;
@@ -14706,7 +14760,7 @@ IDE_RC qtc::setDescribeParamInfo4Where( qcStatement     * aStatement,
                      ( (sLeftOperand->node.lflag & MTC_NODE_BIND_MASK)
                        == MTC_NODE_BIND_EXIST ) )
                 {
-                    // Left operandê°€ bind nodeì¸ ê²½ìš°,
+                    // Left operand°¡ bind nodeÀÎ °æ¿ì,
                     sColumnNode = (qtcNode*)sCurNode->node.funcArguments;
                     sBindNode   = sLeftOperand;
                 }
@@ -14716,14 +14770,14 @@ IDE_RC qtc::setDescribeParamInfo4Where( qcStatement     * aStatement,
                 }
                         
                 //-------------------
-                // Bind Param ì •ë³´ ì„¤ì •
+                // Bind Param Á¤º¸ ¼³Á¤
                 //-------------------
 
                 if ( ( sColumnNode != NULL ) && ( sBindNode != NULL ) )
                 {
-                    // (Column)(ë¹„êµì—°ì‚°ì)(Bind) or
-                    // (Bind)(ë¹„êµì—°ì‚°ì)(Column) í˜•íƒœë¥¼ ì°¾ì€ ê²½ìš°,
-                    // BindParamInfo ì„¤ì •
+                    // (Column)(ºñ±³¿¬»êÀÚ)(Bind) or
+                    // (Bind)(ºñ±³¿¬»êÀÚ)(Column) ÇüÅÂ¸¦ Ã£Àº °æ¿ì,
+                    // BindParamInfo ¼³Á¤
                     IDE_TEST( setBindParamInfoByNode( aStatement,
                                                       sColumnNode,
                                                       sBindNode )
@@ -14742,7 +14796,7 @@ IDE_RC qtc::setDescribeParamInfo4Where( qcStatement     * aStatement,
                 // nothing to do 
             }
             
-            // ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹Œ ê²½ìš°,
+            // ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ñ °æ¿ì,
             IDE_TEST(
                 setDescribeParamInfo4Where(
                     aStatement,
@@ -14751,7 +14805,7 @@ IDE_RC qtc::setDescribeParamInfo4Where( qcStatement     * aStatement,
         }
         else
         {
-            // bind nodeê°€ ì—†ëŠ” ê²½ìš°,
+            // bind node°¡ ¾ø´Â °æ¿ì,
             // nothing to do 
         }
     }
@@ -14769,11 +14823,11 @@ IDE_RC qtc::fixAfterOptimization( qcStatement * aStatement )
  *
  * Description :
  *
- *    Optimization ì™„ë£Œ í›„ì˜ ì²˜ë¦¬
+ *    Optimization ¿Ï·á ÈÄÀÇ Ã³¸®
  *
  * Implementation :
  *
- *    Tupleì— í• ë‹¹ëœ ë¶ˆí•„ìš”í•œ ê³µê°„ì„ í•´ì œí•˜ì—¬ ìµœì í™”í•œë‹¤.
+ *    Tuple¿¡ ÇÒ´çµÈ ºÒÇÊ¿äÇÑ °ø°£À» ÇØÁ¦ÇÏ¿© ÃÖÀûÈ­ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -14795,7 +14849,7 @@ IDE_RC qtc::fixAfterOptimization( qcStatement * aStatement )
             IDE_DASSERT( sTuple->columnCount <= sTuple->columnMaximum );
  
             //------------------------------------------------
-            // ì‚¬ìš©í•˜ì§€ ì•Šì€ column, executeë¥¼ ì œê±°
+            // »ç¿ëÇÏÁö ¾ÊÀº column, execute¸¦ Á¦°Å
             //------------------------------------------------
  
             if ( sTuple->columnCount < sTuple->columnMaximum )
@@ -14854,13 +14908,13 @@ IDE_RC qtc::fixAfterOptimization( qcStatement * aStatement )
             }
  
             //------------------------------------------------
-            // mtcColumnLocateë¥¼ ì œê±°
+            // mtcColumnLocate¸¦ Á¦°Å
             //------------------------------------------------
  
             if ( sTuple->columnLocate != NULL )
             {
-                // mtcColumnLocateëŠ” optimizationì´í›„ì—ëŠ”
-                // ë”ì´ìƒ ì‚¬ìš©ë˜ì§€ ì•Šìœ¼ë¯€ë¡œ ì‚­ì œí•œë‹¤.
+                // mtcColumnLocate´Â optimizationÀÌÈÄ¿¡´Â
+                // ´õÀÌ»ó »ç¿ëµÇÁö ¾ÊÀ¸¹Ç·Î »èÁ¦ÇÑ´Ù.
                 IDE_TEST( QC_QMP_MEM(aStatement)->free( sTuple->columnLocate )
                           != IDE_SUCCESS );
  
@@ -14871,9 +14925,9 @@ IDE_RC qtc::fixAfterOptimization( qcStatement * aStatement )
                 // Nothing to do.
             }
 
-            /* BUG-42639 Fixed Table + Disk Temp ì‚¬ìš©ì‹œFATAL
-             * Fiexed Tableë§Œ ìˆëŠ” ì¿¼ë¦¬ì˜ ê²½ìš° Transaction ì—†ì´ ë™ì‘í•˜ë„ë¡
-             * í–ˆëŠ”ë° Disk Temp ìƒì„±ì‹œì—ëŠ” Transactionì´ í•„ìš”í•˜ë‹¤
+            /* BUG-42639 Fixed Table + Disk Temp »ç¿ë½ÃFATAL
+             * Fiexed Table¸¸ ÀÖ´Â Äõ¸®ÀÇ °æ¿ì Transaction ¾øÀÌ µ¿ÀÛÇÏµµ·Ï
+             * Çß´Âµ¥ Disk Temp »ı¼º½Ã¿¡´Â TransactionÀÌ ÇÊ¿äÇÏ´Ù
              */
             if ( ( sTuple->lflag & MTC_TUPLE_STORAGE_MASK )
                  == MTC_TUPLE_STORAGE_DISK )
@@ -14892,9 +14946,9 @@ IDE_RC qtc::fixAfterOptimization( qcStatement * aStatement )
         // Skip refining prepare memory
         // It reduces prepare time but causes wasting prepare memory.
 
-        /* BUG-42639 Fixed Table + Disk Temp ì‚¬ìš©ì‹œFATAL
-         * Fiexed Tableë§Œ ìˆëŠ” ì¿¼ë¦¬ì˜ ê²½ìš° Transaction ì—†ì´ ë™ì‘í•˜ë„ë¡
-         * í–ˆëŠ”ë° Disk Temp ìƒì„±ì‹œì—ëŠ” Transactionì´ í•„ìš”í•˜ë‹¤
+        /* BUG-42639 Fixed Table + Disk Temp »ç¿ë½ÃFATAL
+         * Fiexed Table¸¸ ÀÖ´Â Äõ¸®ÀÇ °æ¿ì Transaction ¾øÀÌ µ¿ÀÛÇÏµµ·Ï
+         * Çß´Âµ¥ Disk Temp »ı¼º½Ã¿¡´Â TransactionÀÌ ÇÊ¿äÇÏ´Ù
          */
         for ( sRow = 0; sRow < sTemplate->tmplate.rowCount; sRow++ )
         {
@@ -14928,13 +14982,13 @@ qtc::isSameModule( qtcNode* aNode1,
 {
 /***********************************************************************
  *
- * Description : moduleì´ ê°™ì€ì§€ ë¹„êµ(isEquivalentExpressionì—ì„œ ì‚¬ìš©)
+ * Description : moduleÀÌ °°ÀºÁö ºñ±³(isEquivalentExpression¿¡¼­ »ç¿ë)
  *               To fix BUG-21441
  *
  * Implementation :
- *    (1) moduleì´ ë‹¤ë¥´ë©´ false
- *    (2) moduleì€ ê°™ì§€ë§Œ, spì¸ê²½ìš° oidê°€ ë‹¤ë¥´ë©´ false
- *    (3) moduleì´ ê°™ê³ , ë§Œì•½ spì¸ ê²½ìš° oidê°€ ê°™ìœ¼ë©´ true
+ *    (1) moduleÀÌ ´Ù¸£¸é false
+ *    (2) moduleÀº °°Áö¸¸, spÀÎ°æ¿ì oid°¡ ´Ù¸£¸é false
+ *    (3) moduleÀÌ °°°í, ¸¸¾à spÀÎ °æ¿ì oid°¡ °°À¸¸é true
  *
  ***********************************************************************/
 
@@ -14978,9 +15032,9 @@ qtc::getCaseSubExpNode( mtcNode* aNode )
 {
 /***********************************************************************
  *
- * Description : case expression nodeë°˜í™˜
+ * Description : case expression node¹İÈ¯
  *
- * BUG-28223 CASE expr WHEN .. THEN .. êµ¬ë¬¸ì˜ exprì— subquery ì‚¬ìš©ì‹œ ì—ëŸ¬ë°œìƒ
+ * BUG-28223 CASE expr WHEN .. THEN .. ±¸¹®ÀÇ expr¿¡ subquery »ç¿ë½Ã ¿¡·¯¹ß»ı
  *
  * Implementation :
  *
@@ -15024,7 +15078,7 @@ idBool qtc::isQuotedName( qcNamePosition * aPosition )
         {
             if ( aPosition->stmtText[aPosition->offset - 1] == '"' )
             {
-                // stmtTextëŠ” NTSë¡œ 1byteëŠ” ë” ì½ì–´ë„ ê´œì°®ë‹¤.
+                // stmtText´Â NTS·Î 1byte´Â ´õ ÀĞ¾îµµ ±¦Âú´Ù.
                 if ( aPosition->stmtText[aPosition->offset + aPosition->size] == '"' )
                 {
                     sIsQuotedName = ID_TRUE;
@@ -15055,9 +15109,9 @@ idBool qtc::isQuotedName( qcNamePosition * aPosition )
 /**
  * PROJ-2208 getNLSCurrencyCallback
  *
- *  MT ìª½ì— ë“±ë¡ë˜ëŠ” callback í•¨ìˆ˜ë¡œ mtcTemplateë¥¼ ì¸ìë¡œ ë°›ì•„ ì„¸ì…˜ì„ ì°¾ê³  ì´ ì„¸ì…˜ì—
- *  í•´ë‹¹í•˜ëŠ” Currencyë¥¼ ì°¾ì•„ì„œ ì„¤ì •í•œë‹¤. ë§Œì•½ ì„¸ì…˜ì´ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´
- *  Property ê°’ì„ ì„¤ì •í•œë‹¤.
+ *  MT ÂÊ¿¡ µî·ÏµÇ´Â callback ÇÔ¼ö·Î mtcTemplate¸¦ ÀÎÀÚ·Î ¹Ş¾Æ ¼¼¼ÇÀ» Ã£°í ÀÌ ¼¼¼Ç¿¡
+ *  ÇØ´çÇÏ´Â Currency¸¦ Ã£¾Æ¼­ ¼³Á¤ÇÑ´Ù. ¸¸¾à ¼¼¼ÇÀÌ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é
+ *  Property °ªÀ» ¼³Á¤ÇÑ´Ù.
  *
  */
 IDE_RC qtc::getNLSCurrencyCallback( mtcTemplate * aTemplate,
@@ -15098,9 +15152,9 @@ IDE_RC qtc::getNLSCurrencyCallback( mtcTemplate * aTemplate,
 /**
  * PROJ-1353
  *
- *   GROUPING, GROUPING_ID ì™€ ê°™ì´ íŠ¹ìˆ˜í•˜ê²Œ 2ë²ˆ estimateê°€ í•„ìš”í•œê²½ìš° ë°”ë¡œ ë…¸ë“œë¥¼
- *   estimateí•˜ê¸° ìœ„í•´ í•„ìš”í•˜ë‹¤. estimateInternal ì´ 2ë²ˆ ìˆ˜í–‰ë˜ë©´ ê¼¬ì´ê²Œ ë˜ëŠ” ê²ƒì„
- *   ë°©ì§€í•˜ê¸° ìœ„í•´ì„œì„.
+ *   GROUPING, GROUPING_ID ¿Í °°ÀÌ Æ¯¼öÇÏ°Ô 2¹ø estimate°¡ ÇÊ¿äÇÑ°æ¿ì ¹Ù·Î ³ëµå¸¦
+ *   estimateÇÏ±â À§ÇØ ÇÊ¿äÇÏ´Ù. estimateInternal ÀÌ 2¹ø ¼öÇàµÇ¸é ²¿ÀÌ°Ô µÇ´Â °ÍÀ»
+ *   ¹æÁöÇÏ±â À§ÇØ¼­ÀÓ.
  */
 IDE_RC qtc::estimateNodeWithSFWGH( qcStatement * aStatement,
                                    qmsSFWGH    * aSFWGH,
@@ -15145,7 +15199,7 @@ IDE_RC qtc::getLoopCount( qcTemplate  * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    LOOP clauseì˜ expressionì„ ì—°ì‚°í•˜ì—¬ ê°’ì„ ë°˜í™˜í•œë‹¤.
+ *    LOOP clauseÀÇ expressionÀ» ¿¬»êÇÏ¿© °ªÀ» ¹İÈ¯ÇÑ´Ù.
  * 
  * Implementation :
  *
@@ -15189,8 +15243,8 @@ IDE_RC qtc::getLoopCount( qcTemplate  * aTemplate,
     }
     else
     {
-        // ì´ë¯¸ validationì—ì„œ ê²€ì‚¬í–ˆìœ¼ë¯€ë¡œ
-        // ì—¬ê¸°ë¡œ ë“¤ì–´ì˜¬ ê²½ìš°ëŠ” ì—†ë‹¤.
+        // ÀÌ¹Ì validation¿¡¼­ °Ë»çÇßÀ¸¹Ç·Î
+        // ¿©±â·Î µé¾î¿Ã °æ¿ì´Â ¾ø´Ù.
         IDE_RAISE( ERR_LOOP_TYPE );
     }
 
@@ -15250,14 +15304,14 @@ IDE_RC qtc::changeNodeForArray( qcStatement*    aStatement,
 /***********************************************************************
  *
  * Description : PROJ-2533
- *    List Expressionì˜ ì •ë³´ë¥¼ ì¬ì¡°ì •í•œë‹¤.
- *    name( arguments ) í˜•íƒœì˜ function/arrayì— ëŒ€í•´ ì •ë³´ë¥¼ ì¬ì¡°ì •í•œë‹¤.
- *    name[ index ] í˜•íƒœì˜ arrayì— ëŒ€í•œ ì •ë³´ë¥¼ ì¬ì¡°ì •í•œë‹¤.
+ *    List ExpressionÀÇ Á¤º¸¸¦ ÀçÁ¶Á¤ÇÑ´Ù.
+ *    name( arguments ) ÇüÅÂÀÇ function/array¿¡ ´ëÇØ Á¤º¸¸¦ ÀçÁ¶Á¤ÇÑ´Ù.
+ *    name[ index ] ÇüÅÂÀÇ array¿¡ ´ëÇÑ Á¤º¸¸¦ ÀçÁ¶Á¤ÇÑ´Ù.
  *
  * Implementation :
- *    List Expressionì˜ ì˜ë¯¸ë¥¼ ê°–ë„ë¡ ì •ë³´ë¥¼ Settingí•˜ë©°,
- *    í•´ë‹¹ Stringì˜ ìœ„ì¹˜ë¥¼ ì¬ì¡°ì •í•œë‹¤.
- *    ì´ í•¨ìˆ˜ë¡œ ì˜¬ ìˆ˜ ìˆëŠ” ê²½ìš°ì˜ ìœ í˜•
+ *    List ExpressionÀÇ ÀÇ¹Ì¸¦ °®µµ·Ï Á¤º¸¸¦ SettingÇÏ¸ç,
+ *    ÇØ´ç StringÀÇ À§Ä¡¸¦ ÀçÁ¶Á¤ÇÑ´Ù.
+ *    ÀÌ ÇÔ¼ö·Î ¿Ã ¼ö ÀÖ´Â °æ¿ìÀÇ À¯Çü
  *        (1) func_name ()
  *            proc_name ()
  *            func_name ( list_expr )
@@ -15289,21 +15343,21 @@ IDE_RC qtc::changeNodeForArray( qcStatement*    aStatement,
             // Nothing to do.
         }
 
-        // sModuleì´ mtfListê°€ ì•„ë‹Œ ê²½ìš°ëŠ” í•¨ìˆ˜í˜•ì‹ìœ¼ë¡œ ì‚¬ìš©ëœ ê²½ìš°ì„.
-        // ì´ ê²½ìš° node changeê°€ ì¼ì–´ë‚¨.
+        // sModuleÀÌ mtfList°¡ ¾Æ´Ñ °æ¿ì´Â ÇÔ¼öÇü½ÄÀ¸·Î »ç¿ëµÈ °æ¿ìÀÓ.
+        // ÀÌ °æ¿ì node change°¡ ÀÏ¾î³².
         // ex) sum(i1) or to_date(i1, 'yy-mm-dd')
         if ( (sModule != &mtfList) || (aNode[0]->node.module == NULL) )
         {
             IDE_DASSERT( aNode[0]->node.module == NULL );
 
-            // nodeì˜ moduleì´ nullì¸ ê²½ìš°ëŠ” listí˜•ì‹ìœ¼ë¡œ
-            // expressionì´ ë§¤ë‹¬ë ¤ ìˆëŠ” ê²½ìš°.
-            // nodeì˜ moduleì´ nullì´ ì•„ë‹Œ ê²½ìš°,
-            //  ì´ë¯¸ ìœ„ì—ì„œ ë¹ˆ nodeë¥¼ ë§Œë“¤ì–´ ë†“ì•˜ìŒ.
+            // nodeÀÇ moduleÀÌ nullÀÎ °æ¿ì´Â listÇü½ÄÀ¸·Î
+            // expressionÀÌ ¸Å´Ş·Á ÀÖ´Â °æ¿ì.
+            // nodeÀÇ moduleÀÌ nullÀÌ ¾Æ´Ñ °æ¿ì,
+            //  ÀÌ¹Ì À§¿¡¼­ ºó node¸¦ ¸¸µé¾î ³õ¾ÒÀ½.
             // ex) to_date( i1, 'yy-mm-dd' )
             //
-            // listí˜•ì‹ì¸ ê²½ìš° ìµœìƒìœ„ì— ë¹ˆ nodeê°€ ë‹¬ë ¤ìˆìœ¼ë¯€ë¡œ
-            // ë‹¤ìŒê³¼ ê°™ì´ ë¹ˆ nodeë¥¼ change
+            // listÇü½ÄÀÎ °æ¿ì ÃÖ»óÀ§¿¡ ºó node°¡ ´Ş·ÁÀÖÀ¸¹Ç·Î
+            // ´ÙÀ½°ú °°ÀÌ ºó node¸¦ change
             //
             //  ( )                    to_date
             //   |                =>     |
@@ -15332,7 +15386,7 @@ IDE_RC qtc::changeNodeForArray( qcStatement*    aStatement,
         }
         else
         {
-            // BUG-38935 display nameì„ ìœ„í•´ ì„¤ì •í•œë‹¤.
+            // BUG-38935 display nameÀ» À§ÇØ ¼³Á¤ÇÑ´Ù.
             aNode[0]->node.lflag &= ~MTC_NODE_REMOVE_ARGUMENTS_MASK;
             aNode[0]->node.lflag |= MTC_NODE_REMOVE_ARGUMENTS_TRUE;
         }
@@ -15365,8 +15419,8 @@ IDE_RC qtc::changeColumn( qtcNode        ** aNode,
 {
 /*******************************************************************
  * Description :
- *     PROJ-2533 array ë³€ìˆ˜ë¥¼ ê³ ë ¤í•œ changeNode
- *     columnì„ ìœ„í•œ ì •ë³´ë¡œ ì¬ì¡°ì •í•œë‹¤.
+ *     PROJ-2533 array º¯¼ö¸¦ °í·ÁÇÑ changeNode
+ *     columnÀ» À§ÇÑ Á¤º¸·Î ÀçÁ¶Á¤ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -15446,7 +15500,7 @@ IDE_RC qtc::addKeepArguments( qcStatement  * aStatement,
         sNewNode[0]->node.lflag += ( sCount - 1 );
     }
 
-    // funcArgumentsì˜ node.lflagë¥¼ ë³´ì¡´í•˜ê¸° ìœ„í•´ ë³µì‚¬í•œë‹¤.
+    // funcArgumentsÀÇ node.lflag¸¦ º¸Á¸ÇÏ±â À§ÇØ º¹»çÇÑ´Ù.
     IDE_TEST( copyNodeTree( aStatement,
                             (qtcNode*) aNode[0]->node.funcArguments,
                             & sCopyNode,
@@ -15454,7 +15508,7 @@ IDE_RC qtc::addKeepArguments( qcStatement  * aStatement,
                             ID_FALSE )
               != IDE_SUCCESS );
 
-    // argumentsì— ë¶™ì—¬ë„£ëŠ”ë‹¤.
+    // arguments¿¡ ºÙ¿©³Ö´Â´Ù.
     if ( aNode[0]->node.arguments == NULL )
     {
         aNode[0]->node.arguments = (mtcNode*) sCopyNode;
@@ -15468,7 +15522,7 @@ IDE_RC qtc::addKeepArguments( qcStatement  * aStatement,
         sNode->node.next = (mtcNode*) sCopyNode;
     }
 
-    //argument countë¥¼ ì¦ê°€
+    //argument count¸¦ Áõ°¡
     aNode[0]->node.lflag += sCount;
 
     return IDE_SUCCESS;
@@ -15529,16 +15583,16 @@ IDE_RC qtc::changeKeepNode( qcStatement  * aStatement,
         IDE_RAISE( ERR_INVALID_FUNC );
     }
 
-    // ì¸ì ê°¯ìˆ˜ ë°±ì—…
+    // ÀÎÀÚ °¹¼ö ¹é¾÷
     sNodeArgCnt = aNode[0]->node.lflag & MTC_NODE_ARGUMENT_COUNT_MASK;
 
-    // ì´ì „ module Flag ì œê±°
+    // ÀÌÀü module Flag Á¦°Å
     aNode[0]->node.lflag &= ~(aNode[0]->node.module->lflag);
 
-    // ìƒˆ module flag ì„¤ì¹˜
+    // »õ module flag ¼³Ä¡
     aNode[0]->node.lflag |= sModule->lflag & ~MTC_NODE_ARGUMENT_COUNT_MASK;
 
-    // ë°±ì—…ëœ ì¸ì ê°¯ìˆ˜ ë³µì›
+    // ¹é¾÷µÈ ÀÎÀÚ °¹¼ö º¹¿ø
     aNode[0]->node.lflag |= sNodeArgCnt;
 
     aNode[0]->node.module = sModule;
@@ -16340,6 +16394,7 @@ IDE_RC qtc::setParentSerializeFilter( UChar                  aType,
         case QTC_ENTRY_TYPE_OR_SINGLE:
         case QTC_ENTRY_TYPE_NOT:
         case QTC_ENTRY_TYPE_LNNVL:
+        case QTC_ENTRY_TYPE_SINGLE:
             IDE_TEST( setSerializeFilter( aType,
                                           QTC_ENTRY_COUNT_ONE,
                                           aNode,

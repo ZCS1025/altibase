@@ -16,14 +16,14 @@
  
 
 /***********************************************************************
- * $Id: sdpTableSpace.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdpTableSpace.h 86110 2019-09-02 04:52:04Z et16 $
  *
- * í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ê´€ë¦¬ì
+ * Å×ÀÌºí½ºÆäÀÌ½º °ü¸®ÀÚ
  *
- * # ëª©ì 
+ * # ¸ñÀû
  *
- * í•˜ë‚˜ ì´ìƒì˜ ë¬¼ë¦¬ì ì¸ ë°ì´íƒ€ íŒŒì¼ë¡œ êµ¬ì„±ëœ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜
- * í˜ì´ì§€ levelì˜ ë…¼ë¦¬ì ì¸ ìë£Œêµ¬ì¡°ì˜ ê´€ë¦¬ì
+ * ÇÏ³ª ÀÌ»óÀÇ ¹°¸®ÀûÀÎ µ¥ÀÌÅ¸ ÆÄÀÏ·Î ±¸¼ºµÈ Å×ÀÌºí½ºÆäÀÌ½ºÀÇ
+ * ÆäÀÌÁö levelÀÇ ³í¸®ÀûÀÎ ÀÚ·á±¸Á¶ÀÇ °ü¸®ÀÚ
  *
  **********************************************************************/
 
@@ -32,61 +32,108 @@
 
 #include <sdpDef.h>
 #include <sddDef.h>
-#include <sddDiskMgr.h>
-#include <sdpModule.h>
+#include <sdptbSpaceDDL.h>
+#include <sdptbGroup.h>
+#include <sdptbVerifyAndDump.h>
 
 class sdpTableSpace
 {
 public:
 
-    /* ëª¨ë“  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ëª¨ë“ˆ ì´ˆê¸°í™” */
+    /* ¸ğµç Å×ÀÌºí½ºÆäÀÌ½º ¸ğµâ ÃÊ±âÈ­ */
     static IDE_RC initialize();
-    /* ëª¨ë“  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ëª¨ë“ˆ í•´ì œ */
+    /* ¸ğµç Å×ÀÌºí½ºÆäÀÌ½º ¸ğµâ ÇØÁ¦ */
     static IDE_RC destroy();
 
     static IDE_RC createTBS( idvSQL            * aStatistics,
                              smiTableSpaceAttr * aTableSpaceAttr,
                              smiDataFileAttr  ** aDataFileAttr,
                              UInt                aDataFileAttrCount,
-                             void*               aTrans );
+                             void*               aTrans )
+    {
+        sdrMtxStartInfo   sStartInfo;
 
-    /* Tablespace ì‚­ì œ */
+        IDE_DASSERT( aTableSpaceAttr    != NULL );
+        IDE_DASSERT( aDataFileAttr      != NULL );
+        IDE_DASSERT( aDataFileAttrCount != 0 );
+        IDE_DASSERT( aTrans             != NULL );
+
+        sStartInfo.mTrans = aTrans;
+        sStartInfo.mLogMode = SDR_MTX_LOGGING;
+
+        return sdptbSpaceDDL::createTBS( aStatistics,
+                                         &sStartInfo,
+                                         aTableSpaceAttr,
+                                         aDataFileAttr,
+                                         aDataFileAttrCount );
+    };
+
+    /* Tablespace »èÁ¦ */
     static IDE_RC dropTBS( idvSQL       *aStatistics,
                            void*         aTrans,
                            scSpaceID     aSpaceID,
-                           smiTouchMode  aTouchMode );
+                           smiTouchMode  aTouchMode )
+    {
+        return sdptbSpaceDDL::dropTBS( aStatistics,
+                                       aTrans,
+                                       aSpaceID,
+                                       aTouchMode );
+    };
 
-    /* Tablespace ë¦¬ì…‹ */
+    /* Tablespace ¸®¼Â */
     static IDE_RC resetTBS( idvSQL           *aStatistics,
                             scSpaceID         aSpaceID,
                             void             *aTrans );
 
-    /* Tablespace ë¬´íš¨í™” */
-    static IDE_RC alterTBSdiscard( sddTableSpaceNode * aTBSNode );
+    /* Tablespace ¹«È¿È­ */
+    static IDE_RC alterTBSdiscard( sddTableSpaceNode * aTBSNode )
+    {
+        return sdptbSpaceDDL::alterTBSdiscard( aTBSNode );
+    };
 
 
     // PRJ-1548 User Memory TableSpace
-    /* Disk Tablespaceì— ëŒ€í•´ Alter Tablespace Online/Offlineì„ ìˆ˜í–‰ */
+    /* Disk Tablespace¿¡ ´ëÇØ Alter Tablespace Online/OfflineÀ» ¼öÇà */
     static IDE_RC alterTBSStatus( idvSQL*             aStatistics,
                                   void              * aTrans,
                                   sddTableSpaceNode * aSpaceNode,
-                                  UInt                aState );
+                                  UInt                aState )
+    {
+        return sdptbSpaceDDL::alterTBSStatus( aStatistics,
+                                              aTrans,
+                                              aSpaceNode,
+                                              aState );
+    };
 
-    /* ë°ì´íƒ€íŒŒì¼ ìƒì„± */
+    /* µ¥ÀÌÅ¸ÆÄÀÏ »ı¼º */
     static IDE_RC createDataFiles( idvSQL            *aStatistics,
                                    void*              aTrans,
                                    scSpaceID          aSpaceID,
                                    smiDataFileAttr  **aDataFileAttr,
-                                   UInt               aDataFileAttrCount );
+                                   UInt               aDataFileAttrCount )
+    {
+        return sdptbSpaceDDL::createDataFilesFEBT( aStatistics,
+                                                   aTrans,
+                                                   aSpaceID,
+                                                   aDataFileAttr,
+                                                   aDataFileAttrCount ) ;
+    };
 
-    /* ë°ì´íƒ€íŒŒì¼ ì‚­ì œ */
+    /* µ¥ÀÌÅ¸ÆÄÀÏ »èÁ¦ */
     static IDE_RC removeDataFile( idvSQL         *aStatistics,
                                   void*           aTrans,
                                   scSpaceID       aSpaceID,
                                   SChar          *aFileName,
-                                  SChar          *aValidDataFileName );
+                                  SChar          *aValidDataFileName )
+    {
+        return sdptbSpaceDDL::removeDataFile( aStatistics,
+                                              aTrans,
+                                              aSpaceID,
+                                              aFileName,
+                                              aValidDataFileName );
+    };
 
-    /* ë°ì´íƒ€íŒŒì¼ ìë™í™•ì¥ ëª¨ë“œ ë³€ê²½ */
+    /* µ¥ÀÌÅ¸ÆÄÀÏ ÀÚµ¿È®Àå ¸ğµå º¯°æ */
     static IDE_RC alterDataFileAutoExtend( idvSQL     *aStatistics,
                                            void*       aTrans,
                                            scSpaceID   aSpaceID,
@@ -94,22 +141,47 @@ public:
                                            idBool      aAutoExtend,
                                            ULong       aNextSize,
                                            ULong       aMaxSize,
-                                           SChar      *aValidDataFileName );
+                                           SChar      *aValidDataFileName )
+    {
+        return sdptbSpaceDDL::alterDataFileAutoExtendFEBT( aStatistics,
+                                                           aTrans,
+                                                           aSpaceID,
+                                                           aFileName,
+                                                           aAutoExtend,
+                                                           aNextSize,
+                                                           aMaxSize,
+                                                           aValidDataFileName );
+    };
 
-    /* ë°ì´íƒ€íŒŒì¼ ê²½ë¡œ ë³€ê²½ */
+    /* µ¥ÀÌÅ¸ÆÄÀÏ °æ·Î º¯°æ */
     static IDE_RC alterDataFileName( idvSQL*      aStatistics,
                                      scSpaceID    aSpaceID,
                                      SChar       *aOldName,
-                                     SChar       *aNewName );
+                                     SChar       *aNewName )
+    {
+        return sdptbSpaceDDL::alterDataFileName( aStatistics,
+                                                 aSpaceID,
+                                                 aOldName,
+                                                 aNewName );
+    };
 
-    /* ë°ì´íƒ€íŒŒì¼ í¬ê¸° ë³€ê²½ */
+    /* µ¥ÀÌÅ¸ÆÄÀÏ Å©±â º¯°æ */
     static IDE_RC alterDataFileReSize( idvSQL       *aStatistics,
                                        void         *aTrans,
                                        scSpaceID     aSpaceID,
                                        SChar        *aFileName,
                                        ULong         aSizeWanted,
                                        ULong        *aSizeChanged,
-                                       SChar        *aValidDataFileName );
+                                       SChar        *aValidDataFileName )
+    {
+        return sdptbSpaceDDL::alterDataFileReSizeFEBT( aStatistics,
+                                                       aTrans,
+                                                       aSpaceID,
+                                                       aFileName,
+                                                       aSizeWanted,
+                                                       aSizeChanged,
+                                                       aValidDataFileName );
+    };
 
 
     /*
@@ -117,57 +189,61 @@ public:
      * Request Function
      * ================================================================
      */
-    // callback ìœ¼ë¡œ ë“±ë¡í•˜ê¸° ìœ„í•´ publicì— ì„ ì–¸
-    // Tablespaceë¥¼ OFFLINEì‹œí‚¨ Txê°€ Commitë˜ì—ˆì„ ë•Œ ë¶ˆë¦¬ëŠ” Pendingí•¨ìˆ˜
+    // callback À¸·Î µî·ÏÇÏ±â À§ÇØ public¿¡ ¼±¾ğ
+    // Tablespace¸¦ OFFLINE½ÃÅ² Tx°¡ CommitµÇ¾úÀ» ¶§ ºÒ¸®´Â PendingÇÔ¼ö
     static IDE_RC alterOfflineCommitPending(
                       idvSQL            * aStatistics,
                       sctTableSpaceNode * aTBSNode,
-                      sctPendingOp      * aPendingOp );
+                      sctPendingOp      * aPendingOp )
+    {
+        return sdptbSpaceDDL::alterOfflineCommitPending( aStatistics,
+                                                         aTBSNode,
+                                                         aPendingOp ) ;
+    };
 
-    // Tablespaceë¥¼ ONLINEì‹œí‚¨ Txê°€ Commitë˜ì—ˆì„ ë•Œ ë¶ˆë¦¬ëŠ” Pendingí•¨ìˆ˜
+    // Tablespace¸¦ ONLINE½ÃÅ² Tx°¡ CommitµÇ¾úÀ» ¶§ ºÒ¸®´Â PendingÇÔ¼ö
     static IDE_RC alterOnlineCommitPending(
                       idvSQL            * aStatistics,
                       sctTableSpaceNode * aTBSNode,
-                      sctPendingOp      * aPendingOp );
+                      sctPendingOp      * aPendingOp )
+    {
+        return sdptbSpaceDDL::alterOnlineCommitPending( aStatistics,
+                                                        aTBSNode,
+                                                        aPendingOp ) ;
+    };
 
-    /* BUG-15564 í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ì´ ë¬¼ë¦¬ì ì¸ í˜ì´ì§€ ê°œìˆ˜ ë°˜í™˜ */
+    /* BUG-15564 Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ÃÑ ¹°¸®ÀûÀÎ ÆäÀÌÁö °³¼ö ¹İÈ¯ */
     static IDE_RC getTotalPageCount( idvSQL*      aStatistics,
                                      scSpaceID    aSpaceID,
-                                     ULong       *aTotalPageCount );
-
-    // usedPageLimitì—ì„œ allocPageCountë¡œ í•¨ìˆ˜ì™€ ì¸ì ì´ë¦„ì„ ë°”ê¾¼ë‹¤.
-    static IDE_RC getAllocPageCount( idvSQL*      aStatistics,
-                                     scSpaceID    aSpaceID,
-                                     ULong       *aAllocPageCount );
-
-    static ULong getCachedFreeExtCount( scSpaceID aSpaceID );
-
-    static IDE_RC allocExts( idvSQL          * aStatistics,
-                             sdrMtxStartInfo * aStartInfo,
-                             scSpaceID         aSpaceID,
-                             UInt              aOrgNrExts,
-                             sdpExtDesc      * aExtSlot );
-
-    static IDE_RC freeExt( idvSQL       * aStatistics,
-                           sdrMtx       * aMtx,
-                           scSpaceID      aSpaceID,
-                           scPageID       aExtFstPID,
-                           UInt         * aNrDone );
+                                     ULong       *aTotalPageCount )
+    {
+        return  sdptbGroup::getTotalPageCount( aStatistics,
+                                               aSpaceID,
+                                               aTotalPageCount );
+    };
 
     static UInt  getExtPageCount( UChar * aPagePtr );
 
     static IDE_RC verify( idvSQL*    aStatistics,
                           scSpaceID  aSpaceID,
-                          UInt       aFlag );
+                          UInt       aFlag )
+    {
+        return sdptbVerifyAndDump::verify( aStatistics,
+                                           aSpaceID,
+                                           aFlag );
+    };
 
     static IDE_RC dump( scSpaceID  aSpaceID,
-                        UInt       aDumpFlag );
+                        UInt       aDumpFlag )
+    {
+        return sdptbVerifyAndDump::dump( aSpaceID, aDumpFlag );
+    };
 
-    /* Space Cache í• ë‹¹ ë° ì´ˆê¸°í™” */
+    /* Space Cache ÇÒ´ç ¹× ÃÊ±âÈ­ */
     static IDE_RC  doActAllocSpaceCache( idvSQL            * aStatistics,
                                          sctTableSpaceNode * aSpaceNode,
                                          void              * /*aActionArg*/ );
-    /* Space Cache í•´ì œ */
+    /* Space Cache ÇØÁ¦ */
     static IDE_RC  doActFreeSpaceCache( idvSQL            * aStatistics,
                                         sctTableSpaceNode * aSpaceNode,
                                         void              * /*aActionArg*/ );
@@ -182,47 +258,20 @@ public:
                                       sctTableSpaceNode * aSpaceNode,
                                       void              * /*aActionArg*/ );
 
-    //  Tablespaceì—ì„œ ì‚¬ìš©í•˜ëŠ” extent ê³µê°„ ê´€ë¦¬ ë°©ì‹ ë°˜í™˜
+    //  Tablespace¿¡¼­ »ç¿ëÇÏ´Â extent °ø°£ °ü¸® ¹æ½Ä ¹İÈ¯
     static smiExtMgmtType getExtMgmtType( scSpaceID aSpaceID );
 
-    /* Tablespace ê³µê°„ê´€ë¦¬ ë°©ì‹ì— ë”°ë¥¸ Segment ê³µê°„ê´€ë¦¬ ë°©ì‹ ë°˜í™˜ */
+    /* Tablespace °ø°£°ü¸® ¹æ½Ä¿¡ µû¸¥ Segment °ø°£°ü¸® ¹æ½Ä ¹İÈ¯ */
     static smiSegMgmtType getSegMgmtType( scSpaceID aSpaceID );
 
-    // Tablespaceì˜ extentë‹¹ pageìˆ˜ë¥¼ ë°˜í™˜í•œë‹¤.
+    // TablespaceÀÇ extent´ç page¼ö¸¦ ¹İÈ¯ÇÑ´Ù.
     static UInt getPagesPerExt( scSpaceID     aSpaceID );
-
-    inline static sdpExtMgmtOp* getTBSMgmtOP( scSpaceID aSpaceID );
-    inline static sdpExtMgmtOp* getTBSMgmtOP( sddTableSpaceNode * aSpaceNode );
-    inline static sdpExtMgmtOp* getTBSMgmtOP( smiExtMgmtType aExtMgmtType );
 
     static IDE_RC checkPureFileSize(
                            smiDataFileAttr   ** aDataFileAttr,
                            UInt                 aDataFileAttrCount,
                            UInt                 aValidSmallSize );
-
 };
 
-inline sdpExtMgmtOp* sdpTableSpace::getTBSMgmtOP( scSpaceID aSpaceID )
-{
-    sdpSpaceCacheCommon *sSpaceCache;
-
-    sSpaceCache = (sdpSpaceCacheCommon*) sddDiskMgr::getSpaceCache( aSpaceID );
-    IDE_ASSERT( sSpaceCache != NULL );
-    IDE_ASSERT( sSpaceCache->mExtMgmtOp != NULL );
-    
-    return sSpaceCache->mExtMgmtOp;
-}
-
-inline sdpExtMgmtOp* sdpTableSpace::getTBSMgmtOP( sddTableSpaceNode * aSpaceNode )
-{
-    return getTBSMgmtOP( aSpaceNode->mExtMgmtType );
-}
-
-inline sdpExtMgmtOp* sdpTableSpace::getTBSMgmtOP( smiExtMgmtType aExtMgmtType )
-{
-    IDE_ASSERT( aExtMgmtType == SMI_EXTENT_MGMT_BITMAP_TYPE );
-
-    return &gSdptbOp;
-}
 
 #endif // _O_SDP_TABLE_SPACE_H_

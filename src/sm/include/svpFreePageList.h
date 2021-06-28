@@ -23,136 +23,138 @@
 class svpFreePageList
 {
 public:
-    // Runtime Itemì„ NULLë¡œ ì„¤ì •í•œë‹¤.
+    // Runtime ItemÀ» NULL·Î ¼³Á¤ÇÑ´Ù.
     static IDE_RC setRuntimeNull( smpPageListEntry* aPageListEntry );
 
-    // PageListEntryì—ì„œ FreePageì™€ ê´€ë ¨ëœ RuntimeEntryì— ëŒ€í•œ ì´ˆê¸°í™”
+    // PageListEntry¿¡¼­ FreePage¿Í °ü·ÃµÈ RuntimeEntry¿¡ ´ëÇÑ ÃÊ±âÈ­
     static IDE_RC initEntryAtRuntime( smpPageListEntry* aPageListEntry );
 
-    // RuntimeEntry ì œê±°
+    // RuntimeEntry Á¦°Å
     static IDE_RC finEntryAtRuntime( smpPageListEntry* aPageListEntry );
 
-    // PageListEntryì—ì„œ RuntimeEntry ì •ë³´ í•´ì œ
+    // PageListEntry¿¡¼­ RuntimeEntry Á¤º¸ ÇØÁ¦
     static void   initializeFreePageListAndPool(
         smpPageListEntry* aPageListEntry );
 
-    // FreePagePoolì—ì„œ FreePageë¥¼ í• ë‹¹ë°›ì„ ìˆ˜ ìˆëŠ”ì§€ ì‹œë„
+    // FreePagePool¿¡¼­ FreePage¸¦ ÇÒ´ç¹ŞÀ» ¼ö ÀÖ´ÂÁö ½Ãµµ
     static IDE_RC tryForAllocPagesFromPool( smpPageListEntry * aPageListEntry,
                                             UInt               aPageListID,
                                             idBool           * aIsPageAlloced );
     
-    // FreePageListì— FreePage í• ë‹¹
+    // FreePageList¿¡ FreePage ÇÒ´ç
     // FreePagePool -> FreePageList
     static IDE_RC getPagesFromFreePagePool( smpPageListEntry  * aPageListEntry,
                                             UInt                aPageListID );
 
-    // FreePagePoolì— FreePage ì¶”ê°€
+    // FreePagePool¿¡ FreePage Ãß°¡
     static IDE_RC addPageToFreePagePool( smpPageListEntry   * aPageListEntry,
                                          smpFreePageHeader  * aFreePageHeader );
 
-    // FreePageë“¤ì„ PageListEntryì—ì„œ ì œê±°
+    // FreePageµéÀ» PageListEntry¿¡¼­ Á¦°Å
     static IDE_RC freePagesFromFreePagePoolToDB(
                                             void              * aTrans,
                                             scSpaceID           aSpaceID,
                                             smpPageListEntry  * aPageListEntry,
                                             UInt                aPages );
 
-    // FreePageHeader ìƒì„± í˜¹ì€ DBì—ì„œ í˜ì´ì§€ í• ë‹¹ì‹œ ì´ˆê¸°í™”
+    // FreePageHeader »ı¼º È¤Àº DB¿¡¼­ ÆäÀÌÁö ÇÒ´ç½Ã ÃÊ±âÈ­
     static void   initializeFreePageHeader(
                                         smpFreePageHeader  * aFreePageHeader );
 
-    // PageListEntryì˜ ëª¨ë“  FreePageHeader ì´ˆê¸°í™”
+    // PageListEntryÀÇ ¸ğµç FreePageHeader ÃÊ±âÈ­
     static void   initAllFreePageHeader( scSpaceID           aSpaceID,
                                          smpPageListEntry  * aPageListEntry );
     
-    // FreePageHeader ì´ˆê¸°í™”
-    // svmManagerì—ì„œ PCHì´ˆê¸°í™”ì‹œ Callbackìœ¼ë¡œ í˜¸ì¶œ
+    // FreePageHeader ÃÊ±âÈ­
+    // svmManager¿¡¼­ PCHÃÊ±âÈ­½Ã CallbackÀ¸·Î È£Ãâ
     static IDE_RC initializeFreePageHeaderAtPCH( scSpaceID aSpaceID,
                                                  scPageID  aPageID );
 
-    // FreePageHeader í•´ì œ
+    // FreePageHeader ÇØÁ¦
     static IDE_RC destroyFreePageHeaderAtPCH( scSpaceID aSpaceID,
                                               scPageID  aPageID );
 
-    // FreePageì— ëŒ€í•œ SizeClass ë³€ê²½
+    // FreePage¿¡ ´ëÇÑ SizeClass º¯°æ
     static IDE_RC modifyPageSizeClass( void               * aTrans,
                                        smpPageListEntry   * aPageListEntry,
                                        smpFreePageHeader  * aFreePageHeader );
 
-    // FreePageë¥¼ FreePageListì—ì„œ ì œê±°
+    // FreePage¸¦ FreePageList¿¡¼­ Á¦°Å
     static IDE_RC removePageFromFreePageList(
                                         smpPageListEntry  * aPageListEntry,
                                         UInt                aPageListID,
                                         UInt                aSizeClassID,
                                         smpFreePageHeader * aFreePageHeader );
 
-    // FreePageë¥¼ FreePageListì— ì¶”ê°€
+    // FreePage¸¦ FreePageList¿¡ Ãß°¡
     static IDE_RC addPageToFreePageListTail(
                                         smpPageListEntry  * aPageListEntry,
                                         UInt                aPageListID,
                                         UInt                aSizeClassID,
                                         smpFreePageHeader * aFreePageHeader );
 
-    // FreePageë¥¼ FreePageListì˜ Headì— ì¶”ê°€
+    // FreePage¸¦ FreePageListÀÇ Head¿¡ Ãß°¡
     static IDE_RC addPageToFreePageListHead(
                                         smpPageListEntry  * aPageListEntry,
                                         UInt                aPageListID,
                                         UInt                aSizeClassID,
                                         smpFreePageHeader * aFreePageHeader );
 
-    // refineDBë•Œ FreePageë¥¼ FreePageListì— ì¶”ê°€
+    // refineDB¶§ FreePage¸¦ FreePageList¿¡ Ãß°¡
     static IDE_RC addPageToFreePageListAtInit(
                                         smpPageListEntry  * aPageListEntry,
                                         smpFreePageHeader * aFreePageHeader );
 
-    // PrivatePageListì˜ FreePageë“¤ì„ Tableì˜ PageListEntryë¡œ ë³‘í•©
+    // PrivatePageListÀÇ FreePageµéÀ» TableÀÇ PageListEntry·Î º´ÇÕ
     static IDE_RC addFreePagesToTable( void               * aTrans,
                                        smpPageListEntry   * aPageListEntry,
                                        smpFreePageHeader  * aFreePageHead );
 
-    // FreeSlotList ì´ˆê¸°í™”
+    // FreeSlotList ÃÊ±âÈ­
     static void   initializeFreeSlotListAtPage(
                                         scSpaceID           aSpaceID,
                                         smpPageListEntry  * aPageListEntry,
                                         smpPersPage       * aPagePtr );
 
-    // PCHì˜ì—­ì— ìˆëŠ” aPageì˜ FreePageHeaderë¥¼ ë¦¬í„´í•œë‹¤.
+    // PCH¿µ¿ª¿¡ ÀÖ´Â aPageÀÇ FreePageHeader¸¦ ¸®ÅÏÇÑ´Ù.
     static inline smpFreePageHeader* getFreePageHeader( scSpaceID    aSpaceID,
                                                         smpPersPage* aPage );
 
-    // PCHì˜ì—­ì— ìˆëŠ” aPageIDì˜ FreePageHeaderë¥¼ ë¦¬í„´í•œë‹¤.
-    static inline smpFreePageHeader* getFreePageHeader( scSpaceID aSpaceID,
-                                                        scPageID  aPageID );
+    // PCH¿µ¿ª¿¡ ÀÖ´Â aPageIDÀÇ FreePageHeader¸¦ ¸®ÅÏÇÑ´Ù.
+    static smpFreePageHeader* getFreePageHeader( scSpaceID aSpaceID,
+                                                 scPageID  aPageID );
 
-    // PrivatePageListì— FreePage ì—°ê²°
+    // PrivatePageList¿¡ FreePage ¿¬°á
     static void   addFreePageToPrivatePageList( scSpaceID aSpaceID,
                                                 scPageID  aCurPID,
                                                 scPageID  aPrevPID,
                                                 scPageID  aNextPID );
 
-    // PrivatePageListì—ì„œ FreePageì œê±°
+    // PrivatePageList¿¡¼­ FreePageÁ¦°Å
     static void   removeFixedFreePageFromPrivatePageList(
                                     smpPrivatePageListEntry * aPrivatePageList,
                                     smpFreePageHeader       * aFreePageHeader );
 
+#ifdef DEBUG    
+    /* aHeadFreePage~aTailFreePage±îÁöÀÇ FreePageListÀÇ ¿¬°áÀÌ ¿Ã¹Ù¸¥Áö °Ë»çÇÑ´Ù. */
+    static idBool isValidFreePageList( smpFreePageHeader* aHeadFreePage,
+                                       smpFreePageHeader* aTailFreePage,
+                                       vULong             aPageCount );
+#endif
+
 private:
 
-    // SizeClassë¥¼ ê³„ì‚°í•œë‹¤.
+    // SizeClass¸¦ °è»êÇÑ´Ù.
     static inline UInt   getSizeClass( smpRuntimeEntry * aEntry,
                                        UInt              aTotalSlotCnt,
                                        UInt              aFreeSlotCnt );
-    
-    // aHeadFreePage~aTailFreePageê¹Œì§€ì˜ FreePageListì˜ ì—°ê²°ì´ ì˜¬ë°”ë¥¸ì§€ ê²€ì‚¬í•œë‹¤.
-    static inline idBool isValidFreePageList( smpFreePageHeader* aHeadFreePage,
-                                              smpFreePageHeader* aTailFreePage,
-                                              vULong             aPageCount );
 };
 
 /**********************************************************************
- * Pageì˜ SizeClassë¥¼ ê³„ì‚°í•œë‹¤.
+ * PageÀÇ SizeClass¸¦ °è»êÇÑ´Ù.
  *
- * aTotalSlotCnt : Pageì˜ ì „ì²´ Slot ê°¯ìˆ˜
- * aFreeSlotCnt  : Pageì˜ FreeSlot ê°¯ìˆ˜
+ * aTotalSlotCnt : PageÀÇ ÀüÃ¼ Slot °¹¼ö
+ * aFreeSlotCnt  : PageÀÇ FreeSlot °¹¼ö
  **********************************************************************/
 
 UInt svpFreePageList::getSizeClass( smpRuntimeEntry * aEntry,
@@ -167,30 +169,9 @@ UInt svpFreePageList::getSizeClass( smpRuntimeEntry * aEntry,
 }
 
 /**********************************************************************
- * PCHì˜ì—­ì— ìˆëŠ” aPageIDì˜ FreePageHeaderë¥¼ ë¦¬í„´í•œë‹¤.
+ * PCH¿µ¿ª¿¡ ÀÖ´Â aPageÀÇ FreePageHeader¸¦ ¸®ÅÏÇÑ´Ù.
  *
- * aPageID : FreePageHeaderê°€ í•„ìš”í•œ PageID
- **********************************************************************/
-
-smpFreePageHeader* svpFreePageList::getFreePageHeader( scSpaceID aSpaceID,
-                                                       scPageID aPageID )
-{
-    svmPCH* sPCH;
-
-    // BUGBUG : aPageIDì— ëŒ€í•œ DASSERT í•„ìš”
-    
-    sPCH = (svmPCH*)(svmManager::getPCH(aSpaceID,
-                                        aPageID));
-
-    IDE_DASSERT( sPCH != NULL );
-
-    return (smpFreePageHeader*)(sPCH->mFreePageHeader);
-}
-
-/**********************************************************************
- * PCHì˜ì—­ì— ìˆëŠ” aPageì˜ FreePageHeaderë¥¼ ë¦¬í„´í•œë‹¤.
- *
- * aPage : FreePageHeaderê°€ í•„ìš”í•œ Page
+ * aPage : FreePageHeader°¡ ÇÊ¿äÇÑ Page
  **********************************************************************/
 
 smpFreePageHeader* svpFreePageList::getFreePageHeader( scSpaceID    aSpaceID,

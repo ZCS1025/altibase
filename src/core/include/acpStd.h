@@ -141,6 +141,7 @@ ACP_EXPORT acp_rc_t acpStdPutCString(acp_std_file_t*    aFile,
                                      acp_char_t*        aStr,
                                      acp_size_t         aMaxLen,
                                      acp_size_t*        aWritten);
+ACP_EXPORT acp_bool_t acpStdDupStderr(acp_std_file_t    aFile);
 
 ACP_EXTERN_C_END
 

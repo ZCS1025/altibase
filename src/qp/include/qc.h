@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qc.h 85332 2019-04-26 01:19:42Z ahra.cho $
+ * $Id: qc.h 90861 2021-05-18 07:41:58Z jake.jang $
  **********************************************************************/
 
 #ifndef _O_QC_H_
@@ -54,6 +54,7 @@ struct sdiClientInfo;
 
 // for mm
 #define QC_MAX_NAME_LEN                               (40)
+#define QC_MAX_NAME_LEN_STR                           "40"
 #define QC_MAX_OBJECT_NAME_LEN                        (SMI_MAX_NAME_LEN) //BUG-39579
 
 /* _NEXT_MSG_ID */
@@ -67,6 +68,9 @@ struct sdiClientInfo;
 // PROJ-1502 PARTITIONED DISK TABLE
 #define QC_MAX_PARTKEY_COND_COUNT                  (2000)
 #define QC_MAX_PARTKEY_COND_VALUE_LEN              (SMI_MAX_PARTKEY_COND_VALUE_LEN) //BUG-45943
+
+/* QC_MAX_OBJECT_FULL_STR_LEN: (user + table + partition name) + (".") + (" partition ") add "+8 */
+#define QC_MAX_OBJECT_FULL_STR_LEN                 ((((QC_MAX_OBJECT_NAME_LEN) * (3))) + 1 + 11 + 8)
 
 // PROJ-1638 Selection Replication
 #define QC_CONDITION_LEN                           (1000)
@@ -94,17 +98,17 @@ struct sdiClientInfo;
 /* ~$IDX32 */
 #define QC_MAX_FUNCTION_BASED_INDEX_NAME_LEN       (QC_MAX_OBJECT_NAME_LEN - 6)
 
-/* PROJ-2677 DDL synchronization ÏóêÏÑú Partition Í¥ÄÎ†® DDL Ïùò  OID Îäî ÏµúÎåÄ 2Í∞úÍπåÏßÄ Ïò¨ Ïàò ÏûàÎã§  */
-#define QC_DDL_REPL_PART_OID_COUNT                 (2)
+/* PROJ-2677 DDL synchronization ø°º≠ Partition ∞¸∑√ DDL ¿«  OID ¥¬ √÷¥Î 2∞≥±Ó¡ˆ ø√ ºˆ ¿÷¥Ÿ  */
+#define QC_DDL_INFO_PART_OID_COUNT                 (2)
 
 /* BUG-11561
- * Ìï®ÏàòÏùò Î°úÏª¨Î≥ÄÏàòÎ°ú Char sBuffer [ QC_MAX_OBJECT_NAME_LEN + 2 ] Î°ú Î≤ÑÌçºÎ•º Ïû°ÏïÑÏÑú
- * Í∑∏ Î≥ÄÏàòÎ•º Î∞îÎ°ú mtdCharType * ÏúºÎ°ú ÌÉÄÏûÖ Ï∫êÏä§ÌåÖ ÌïòÏó¨ ÏÇ¨Ïö©Ìï† Îïå
- * sBuffer Í∞Ä alignÎêòÏßÄ ÏïäÏïÑÏÑú Î≤ÑÏä§Ïò§Î•òÍ∞Ä Î∞úÏÉùÌï©ÎãàÎã§.
+ * «‘ºˆ¿« ∑Œƒ√∫Øºˆ∑Œ Char sBuffer [ QC_MAX_OBJECT_NAME_LEN + 2 ] ∑Œ πˆ∆€∏¶ ¿‚æ∆º≠
+ * ±◊ ∫Øºˆ∏¶ πŸ∑Œ mtdCharType * ¿∏∑Œ ≈∏¿‘ ƒ≥Ω∫∆√ «œø© ªÁøÎ«“ ∂ß
+ * sBuffer ∞° alignµ«¡ˆ æ æ∆º≠ πˆΩ∫ø¿∑˘∞° πﬂª˝«’¥œ¥Ÿ.
  *
- * Í∑∏ÎûòÏÑú QC_MAX_OBJECT_NAME_LENÎßåÌÅºÏùò Î¨∏ÏûêÏó¥ÏùÑ Ï†ÄÏû• Ìï† Ïàò ÏûàÎäî mtdCharType Î≤ÑÌçºÎ•º
- * Î°úÏª¨ Ïä§ÌÉùÏóê Ïû°Í≥†Ïûê Ìï† ÎïåÏóêÎäî ÏïÑÎûò qcNameCharBufferÎ°ú ÏÑ†Ïñ∏ÌïòÏó¨Ïïº
- * mtdCharType * Î°ú Ï∫êÏä§ÌåÖÌõÑ ÏÇ¨Ïö©ÏãúÏóê Î≤ÑÏä§ Ïò§Î•òÍ∞Ä Î∞úÏÉùÌïòÏßÄ ÏïäÏäµÎãàÎã§.
+ * ±◊∑°º≠ QC_MAX_OBJECT_NAME_LEN∏∏≈≠¿« πÆ¿⁄ø≠¿ª ¿˙¿Â «“ ºˆ ¿÷¥¬ mtdCharType πˆ∆€∏¶
+ * ∑Œƒ√ Ω∫≈√ø° ¿‚∞Ì¿⁄ «“ ∂ßø°¥¬ æ∆∑° qcNameCharBuffer∑Œ º±æ«œø©æﬂ
+ * mtdCharType * ∑Œ ƒ≥Ω∫∆√»ƒ ªÁøÎΩ√ø° πˆΩ∫ ø¿∑˘∞° πﬂª˝«œ¡ˆ æ Ω¿¥œ¥Ÿ.
  *
  * by kmkim
  */
@@ -131,23 +135,9 @@ typedef struct qcCondValueCharBuffer {
 /* mtcTuple->row size of constant row */
 #define QC_CONSTANT_FIRST_ROW_SIZE                 (4096)
 #define QC_CONSTANT_ROW_SIZE                      (65536)
-
-// for referential action
-#define QC_REF_ACT_MASK                      (0x000000FF)
-#define QC_REF_ACT_DEL_MASK                  (0x0000000F)
-#define QC_REF_ACT_UPD_MASK                  (0x000000F0)
-#define QC_REF_ACT_DEL_NOACT                 (0x00000001)
-#define QC_REF_ACT_DEL_RESTR                 (0x00000002)
-#define QC_REF_ACT_UPD_NOACT                 (0x00000010)
-#define QC_REF_ACT_UPD_RESTR                 (0x00000020)
-
-// for qcmPrivilege
-#define QC_PRIV_MASK                         (0x000000FF)
-#define QC_PRIV_SEL                          (0x00000001)
-#define QC_PRIV_INS                          (0x00000002)
-#define QC_PRIV_UPD                          (0x00000004)
-#define QC_PRIV_DEL                          (0x00000008)
-#define QC_PRIV_DDL                          (0x00000010)
+#define QC_UCHAR_BIT                                  (8)
+#define QC_PSM_POOL_DEFAULT                         (128)
+#define QC_PSM_POOL_DEFAULT_STATUS_SIZE              (16) /* QC_PSM_POOL_DEFAULT / QC_UCHAR_BIT */
 
 // for qcTemplate.flag
 #define QC_TMP_INITIALIZE                    (0x00000000)
@@ -165,9 +155,9 @@ typedef struct qcCondValueCharBuffer {
 
 // PROJ-1436
 // for qcTemplate.flag
-// plan cache ÎåÄÏÉÅÏù¥ÏßÄÎßå cacheÌï† Ïàò ÏóÜÎäî DMLÏóê ÎåÄÌïòÏó¨
-// plan cache Ìï† Ïàò ÏóÜÏùåÏùÑ ÌëúÏãúÌïúÎã§.
-// Ïòà) select * from D$TBS_FREE_EXTLIST(...);
+// plan cache ¥ÎªÛ¿Ã¡ˆ∏∏ cache«“ ºˆ æ¯¥¬ DMLø° ¥Î«œø©
+// plan cache «“ ºˆ æ¯¿Ω¿ª «•Ω√«—¥Ÿ.
+// øπ) select * from D$TBS_FREE_EXTLIST(...);
 //     select * from t1@link1;
 //     select /* no_plan_cache */ * from t1;
 #define QC_TMP_PLAN_CACHE_IN_MASK            (0x00000008)
@@ -176,23 +166,23 @@ typedef struct qcCondValueCharBuffer {
 
 // PROJ-1436
 // for qcTemplate.flag
-// ÏÉùÏÑ±Îêú planÏóê ÎåÄÌïòÏó¨ ÌÜµÍ≥ÑÏ†ïÎ≥¥ Î≥ÄÍ≤ΩÏóêÎèÑ ÏÉùÏÑ±Îêú planÏùÑ
-// Í∑∏ÎåÄÎ°ú ÏÇ¨Ïö©Ìï† Ïàò ÏûàÍ≤å ÌïúÎã§. ÏõêÎûòÎäî cacheÎêú planÏóê
-// ÎåÄÌïòÏó¨ ÌÜµÍ≥ÑÏ†ïÎ≥¥ Î≥ÄÍ≤ΩÏóêÎèÑ planÏùÑ Í≥ÑÏÜç Ïû¨ÏÇ¨Ïö©Ìï† Î™©Ï†ÅÏúºÎ°ú
-// ÏÑ§Í≥ÑÎêòÏóàÏúºÎÇò, cacheÎêòÏßÄ ÏïäÏùÄ planÏù¥ÎçîÎùºÎèÑ prepare-
-// executeÎ°ú Ïã§ÌñâÎêòÎäî ÏøºÎ¶¨Ïóê ÎåÄÌïòÏó¨ ÌÜµÍ≥ÑÏ†ïÎ≥¥ Î≥ÄÍ≤ΩÏóêÎèÑ
-// planÏùÑ Í∑∏ÎåÄÎ°ú ÏÇ¨Ïö©Ìï† Ïàò ÏûàÎèÑÎ°ù ÌïúÎã§.
-// Ïòà) select /* no_plan_cache keep_plan */ * from t1;
+// ª˝º∫µ» planø° ¥Î«œø© ≈Î∞Ë¡§∫∏ ∫Ø∞Êø°µµ ª˝º∫µ» plan¿ª
+// ±◊¥Î∑Œ ªÁøÎ«“ ºˆ ¿÷∞‘ «—¥Ÿ. ø¯∑°¥¬ cacheµ» planø°
+// ¥Î«œø© ≈Î∞Ë¡§∫∏ ∫Ø∞Êø°µµ plan¿ª ∞Ëº” ¿ÁªÁøÎ«“ ∏Ò¿˚¿∏∑Œ
+// º≥∞Ëµ«æ˙¿∏≥™, cacheµ«¡ˆ æ ¿∫ plan¿Ã¥ı∂Ûµµ prepare-
+// execute∑Œ Ω««‡µ«¥¬ ƒı∏Æø° ¥Î«œø© ≈Î∞Ë¡§∫∏ ∫Ø∞Êø°µµ
+// plan¿ª ±◊¥Î∑Œ ªÁøÎ«“ ºˆ ¿÷µµ∑œ «—¥Ÿ.
+// øπ) select /* no_plan_cache keep_plan */ * from t1;
 #define QC_TMP_PLAN_KEEP_MASK                (0x00000010)
 #define QC_TMP_PLAN_KEEP_FALSE               (0x00000000)
 #define QC_TMP_PLAN_KEEP_TRUE                (0x00000010)
 
 // BUG-35037
-// CREATE VIEW AS SELECT Íµ¨Î¨∏ÏùÑ ÏÇ¨Ïö©Ìï† Îïå WIHTÍ∞Ä ÏÇ¨Ïö©Îêò
-// RELATED OBJECTÍ∞Ä Î™®Îì† Ïù¥Ï†Ñ VIEWÏùò RELATED OBJECTÎ•º Ìè¨Ìï® ÌïòÍ≤å ÎêúÎã§.
-// FLAGÎ•º ÏÑ§Ï†ï ÌïòÎ©¥ parseSelect()Ìï®ÏàòÍ∞Ä ÌïòÏúÑ parseViewInFromClause()
-// Ìï®ÏàòÏóêÏÑú parseSelect()Î•º Ïû¨Í∑Ä Ìò∏Ï∂ú ÌïòÏßÄ ÏïäÍ≤å ÎêòÍ≥† REALTED OBJECTÍ∞Ä
-// Ìè¨Ìï®ÎêòÏßÄ ÏïäÎäîÎã§.
+// CREATE VIEW AS SELECT ±∏πÆ¿ª ªÁøÎ«“ ∂ß WIHT∞° ªÁøÎµ«
+// RELATED OBJECT∞° ∏µÁ ¿Ã¿¸ VIEW¿« RELATED OBJECT∏¶ ∆˜«‘ «œ∞‘ µ»¥Ÿ.
+// FLAG∏¶ º≥¡§ «œ∏È parseSelect()«‘ºˆ∞° «œ¿ß parseViewInFromClause()
+// «‘ºˆø°º≠ parseSelect()∏¶ ¿Á±Õ »£√‚ «œ¡ˆ æ ∞‘ µ«∞Ì REALTED OBJECT∞°
+// ∆˜«‘µ«¡ˆ æ ¥¬¥Ÿ.
 #define QC_PARSE_CREATE_VIEW_MASK            (0x00000020)
 #define QC_PARSE_CREATE_VIEW_FALSE           (0x00000000)
 #define QC_PARSE_CREATE_VIEW_TRUE            (0x00000020)
@@ -203,7 +193,7 @@ typedef struct qcCondValueCharBuffer {
 #define QC_TMP_REF_FIXED_TABLE_TRUE          (0x00000040)
 
 /*
- * BUG-39441 replication table Ï∞∏Ï°∞Ïó¨Î∂Ä
+ * BUG-39441 replication table ¬¸¡∂ø©∫Œ
  * qcTemplate.flag
  */
 #define QC_TMP_REF_REPL_TABLE_MASK           (0x00000080)
@@ -217,31 +207,21 @@ typedef struct qcCondValueCharBuffer {
 #define QC_TMP_EXEC_FAST_FALSE               (0x00000200)
 
 /* BUG-42639 Monitoring query
- * QueyrÍ∞Ä Î™®Îëê X$ÎÇò V$ Fixed TableÎ°ú Ïù¥Î£®Ïñ¥Ï†∏ ÏûàÎäîÏßÄ Ï≤¥ÌÅ¨
- * X$ Ï§ëÏóêÏÑúÎèÑ TractionÏùÑ ÏÇ¨Ïö©ÌïòÎäî Í≤ÉÏùÄ Ï†úÏô∏ÌïòÍ≥†
- * QueryÏóê FunctionÏù¥ÎÇò SequenceÍ∞Ä ÏÇ¨Ïö©ÎêòÎäî Í≤ÉÎèÑ Ï†úÏô∏ÌïúÎã§.
- * Îòê userÏóê ÏùòÌï¥ ÏÉùÏÑ±Îêú created view ÎÇò ÏùºÎ∞ò ÌÖåÏù¥Î∏îÏù¥ Ìè¨Ìï®Îêú
- * Í≤ΩÏö∞ÏóêÎèÑ Ï†úÏô∏ÌïúÎã§.
- * Ïù¥ flagÍ∞Ä TRUE Í∞Ä ÎêòÎ©¥ MMÏóêÏÑú TransctionÏùÑ Ìï†ÎãπÌïòÏßÄ ÏïäÍ≤åÎêúÎã§.
+ * Queyr∞° ∏µŒ X$≥™ V$ Fixed Table∑Œ ¿Ã∑ÁæÓ¡Æ ¿÷¥¬¡ˆ √º≈©
+ * X$ ¡ﬂø°º≠µµ Traction¿ª ªÁøÎ«œ¥¬ ∞Õ¿∫ ¡¶ø‹«œ∞Ì
+ * Queryø° Function¿Ã≥™ Sequence∞° ªÁøÎµ«¥¬ ∞Õµµ ¡¶ø‹«—¥Ÿ.
+ * ∂« userø° ¿««ÿ ª˝º∫µ» created view ≥™ ¿œπ› ≈◊¿Ã∫Ì¿Ã ∆˜«‘µ»
+ * ∞ÊøÏø°µµ ¡¶ø‹«—¥Ÿ.
+ * ¿Ã flag∞° TRUE ∞° µ«∏È MMø°º≠ Transction¿ª «“¥Á«œ¡ˆ æ ∞‘µ»¥Ÿ.
  */
 #define QC_TMP_ALL_FIXED_TABLE_MASK          (0x00000400)
 #define QC_TMP_ALL_FIXED_TABLE_FALSE         (0x00000400)
 #define QC_TMP_ALL_FIXED_TABLE_TRUE          (0x00000000)
 
-// shard transform ÏàòÌñâ Ïó¨Î∂Ä
-#define QC_TMP_SHARD_TRANSFORM_MASK          (0x00000800)
-#define QC_TMP_SHARD_TRANSFORM_DISABLE       (0x00000800)
-#define QC_TMP_SHARD_TRANSFORM_ENABLE        (0x00000000)
-
 // BUG-46137
 #define QC_TMP_PLAN_CACHE_KEEP_MASK          (0x00001000)
 #define QC_TMP_PLAN_CACHE_KEEP_FALSE         (0x00000000)
 #define QC_TMP_PLAN_CACHE_KEEP_TRUE          (0x00001000)
-
-// BUG-46498
-#define QC_TMP_RECOMPILE_VIEW_MASK           (0x00002000)
-#define QC_TMP_RECOMPILE_VIEW_FALSE          (0x00000000)
-#define QC_TMP_RECOMPILE_VIEW_TRUE           (0x00002000)
 
 #define QC_TMP_UNNEST_SUBQUERY_MASK          (0x00004000)
 #define QC_TMP_UNNEST_SUBQUERY_FALSE         (0x00000000)
@@ -257,26 +237,51 @@ typedef struct qcCondValueCharBuffer {
 #define QC_TMP_DISABLE_SERIAL_FILTER_FALSE   (0x00000000)
 #define QC_TMP_DISABLE_SERIAL_FILTER_TRUE    (0x00010000)
 
-// PROJ-2551 simple query ÏµúÏ†ÅÌôî
-// simple queryÏù∏Í∞Ä
+/* BUG-47786 Unnesting ∞·∞˙ ø¿∑˘ */
+#define QC_TMP_UNNEST_INVERSE_JOIN_DISABLE_MASK  (0x00020000)
+#define QC_TMP_UNNEST_INVERSE_JOIN_DISABLE_FALSE (0x00000000)
+#define QC_TMP_UNNEST_INVERSE_JOIN_DISABLE_TRUE  (0x00020000)
+
+/* PROJ-2750 Left Outer Skip Right */
+#define QC_TMP_LEFT_OUTER_SKIP_RIGHT_MASK    (0x00040000)
+#define QC_TMP_LEFT_OUTER_SKIP_RIGHT_FALSE   (0x00000000)
+#define QC_TMP_LEFT_OUTER_SKIP_RIGHT_TRUE    (0x00040000)
+
+/* TASK-7219 Non-shard DML */
+#define QC_TMP_SHARD_OUT_REF_COL_TO_BIND_MASK  (0x00080000)
+#define QC_TMP_SHARD_OUT_REF_COL_TO_BIND_FALSE (0x00000000)
+#define QC_TMP_SHARD_OUT_REF_COL_TO_BIND_TRUE  (0x00080000)
+
+/* BUG-48941 OBYE mode1 */
+#define QC_TMP_OBYE_1_MASK                   (0x00100000)
+#define QC_TMP_OBYE_1_FALSE                  (0x00000000)
+#define QC_TMP_OBYE_1_TRUE                   (0x00100000)
+
+/* BUG-48941 OBYE mode2 */
+#define QC_TMP_OBYE_2_MASK                   (0x00200000)
+#define QC_TMP_OBYE_2_FALSE                  (0x00000000)
+#define QC_TMP_OBYE_2_TRUE                   (0x00200000)
+
+// PROJ-2551 simple query √÷¿˚»≠
+// simple query¿Œ∞°
 // qcStatement.mFlag
 #define QC_STMT_FAST_EXEC_MASK               (0x00000001)
 #define QC_STMT_FAST_EXEC_FALSE              (0x00000000)
 #define QC_STMT_FAST_EXEC_TRUE               (0x00000001)
 
-// simple queryÏùò simple bindÏù∏Í∞Ä
+// simple query¿« simple bind¿Œ∞°
 // qcStatement.mFlag
 #define QC_STMT_FAST_BIND_MASK               (0x00000002)
 #define QC_STMT_FAST_BIND_FALSE              (0x00000000)
 #define QC_STMT_FAST_BIND_TRUE               (0x00000002)
 
-// simple queryÏùò Ï≤´Î≤àÏß∏ resultÏù∏Í∞Ä
+// simple query¿« √ππ¯¬∞ result¿Œ∞°
 // qcStatement.mFlag
 #define QC_STMT_FAST_FIRST_RESULT_MASK       (0x00000004)
 #define QC_STMT_FAST_FIRST_RESULT_FALSE      (0x00000000)
 #define QC_STMT_FAST_FIRST_RESULT_TRUE       (0x00000004)
 
-// simple queryÏùò Í≤∞Í≥ºÎ•º ÏßÅÏ†ë Î≥µÏÇ¨ÌñàÎÇò
+// simple query¿« ∞·∞˙∏¶ ¡˜¡¢ ∫πªÁ«ﬂ≥™
 // qcStatement.mFlag
 #define QC_STMT_FAST_COPY_RESULT_MASK        (0x00000008)
 #define QC_STMT_FAST_COPY_RESULT_FALSE       (0x00000000)
@@ -289,12 +294,48 @@ typedef struct qcCondValueCharBuffer {
 #define QC_STMT_SHARD_OBJ_EXIST              (0x00000010)
 
 // PROJ-2701 Sharding online date rebuild
-// Rebuild transformationÎ°ú Ïù∏Ìï¥
-// Execution phaseÏóêÏÑú plan rebuildÍ∞Ä ÌïÑÏöîÌïúÍ∞Ä
+// Rebuild transformation∑Œ ¿Œ«ÿ
+// Execution phaseø°º≠ plan rebuild∞° « ø‰«—∞°
 // qcStatement.mFlag
 #define QC_STMT_SHARD_REBUILD_FORCE_MASK     (0x00000020)
 #define QC_STMT_SHARD_REBUILD_FORCE_FALSE    (0x00000000)
 #define QC_STMT_SHARD_REBUILD_FORCE_TRUE     (0x00000020)
+
+// BUG-47148 
+// [sharding] shard meta ∞° ∫Ø∞Êµ«¥¬ procedure ºˆ«‡Ω√ trc log ø° ¡§∫∏∏¶ ≥≤∞‹æﬂ «’¥œ¥Ÿ.  
+// qcStatement.mFlag
+#define QC_STMT_SHARD_META_CHANGE_MASK       (0x00000040)
+#define QC_STMT_SHARD_META_CHANGE_FALSE      (0x00000000)
+#define QC_STMT_SHARD_META_CHANGE_TRUE       (0x00000040)
+
+/* BUG-47648  disk partitionø°º≠ ªÁøÎµ«¥¬ prepared memory ªÁøÎ∑Æ ∞≥º± */
+// qcStatement.mFlag
+#define QC_STMT_NO_PART_COLUMN_REDUCE_MASK   (0x00000080)
+#define QC_STMT_NO_PART_COLUMN_REDUCE_FALSE  (0x00000000)
+#define QC_STMT_NO_PART_COLUMN_REDUCE_TRUE   (0x00000080)
+
+/* TASK-7219 Shard Transformer Refactoring */
+#define QC_STMT_SHARD_KEYWORD_MASK           (0x00000300)
+#define QC_STMT_SHARD_KEYWORD_NO_USE         (0x00000000)
+#define QC_STMT_SHARD_KEYWORD_USE            (0x00000100)
+#define QC_STMT_SHARD_KEYWORD_DUPLICATE      (0x00000200)
+
+// qcStatement.mFlag
+#define QC_STMT_SHARD_DBMS_PKG_MASK          (0x00000400)
+#define QC_STMT_SHARD_DBMS_PKG_FALSE         (0x00000000)
+#define QC_STMT_SHARD_DBMS_PKG_TRUE          (0x00000400)
+
+/* BUG-48443 */
+// qcStatement.mFlag
+#define QC_STMT_PACKAGE_RECOMPILE_MASK       (0x00000800)
+#define QC_STMT_PACKAGE_RECOMPILE_FALSE      (0x00000000)
+#define QC_STMT_PACKAGE_RECOMPILE_TRUE       (0x00000800)
+
+/* BUG-48792 Distinct cube wrong result */
+// qcStatement.mFlag
+#define QC_STMT_VIEW_MASK                    (0x00001000)
+#define QC_STMT_VIEW_FALSE                   (0x00000000)
+#define QC_STMT_VIEW_TRUE                    (0x00001000)
 
 // for qcSession.flag
 #define QC_SESSION_ALTER_META_MASK           (0x00000001)
@@ -302,17 +343,17 @@ typedef struct qcCondValueCharBuffer {
 #define QC_SESSION_ALTER_META_ENABLE         (0x00000001)
 
 // for qcSession.flag
-// qcg::allocStatement() ÏóêÏÑú
-// Ïù∏ÏûêÎ°ú ÎÑòÏñ¥Ïò§Îäî session Í∞ùÏ≤¥Í∞Ä nullÏù∏ Í≤ΩÏö∞,
-// ÎÇ¥Î∂ÄÏóêÏÑú sessionÍ∞ùÏ≤¥Î•º Ìï†ÎãπÎ∞õÍ≥†
-// session Ï†ïÎ≥¥ Ï†ëÍ∑ºÏãú default Í∞íÎì§ÏùÑ ÏñªÎèÑÎ°ù ÌïúÎã§.
+// qcg::allocStatement() ø°º≠
+// ¿Œ¿⁄∑Œ ≥—æÓø¿¥¬ session ∞¥√º∞° null¿Œ ∞ÊøÏ,
+// ≥ª∫Œø°º≠ session∞¥√º∏¶ «“¥Áπﬁ∞Ì
+// session ¡§∫∏ ¡¢±ŸΩ√ default ∞™µÈ¿ª æÚµµ∑œ «—¥Ÿ.
 #define QC_SESSION_INTERNAL_ALLOC_MASK       (0x00000002)
 #define QC_SESSION_INTERNAL_ALLOC_FALSE      (0x00000000)
 #define QC_SESSION_INTERNAL_ALLOC_TRUE       (0x00000002)
 
 // BUG-26017
-// [PSM] server restartÏãú ÏàòÌñâÎêòÎäî
-// psm loadÍ≥ºÏ†ïÏóêÏÑú Í¥ÄÎ†®ÌîÑÎ°úÌçºÌã∞Î•º Ï∞∏Ï°∞ÌïòÏßÄ Î™ªÌïòÎäî Í≤ΩÏö∞ ÏûàÏùå.
+// [PSM] server restartΩ√ ºˆ«‡µ«¥¬
+// psm load∞˙¡§ø°º≠ ∞¸∑√«¡∑Œ∆€∆º∏¶ ¬¸¡∂«œ¡ˆ ∏¯«œ¥¬ ∞ÊøÏ ¿÷¿Ω.
 #define QC_SESSION_INTERNAL_LOAD_PROC_MASK   (0x00000004)
 #define QC_SESSION_INTERNAL_LOAD_PROC_FALSE  (0x00000000)
 #define QC_SESSION_INTERNAL_LOAD_PROC_TRUE   (0x00000004)
@@ -328,22 +369,294 @@ typedef struct qcCondValueCharBuffer {
 
 // BUG-45385
 // for qcSession.flag
-// ÌòÑÏû¨ txÏóêÏÑú shard metaÎ•º Î≥ÄÍ≤ΩÌñàÎã§. tx endÏãú Ï¥àÍ∏∞ÌôîÌïúÎã§.
+// «ˆ¿Á txø°º≠ shard meta∏¶ ∫Ø∞Ê«ﬂ¥Ÿ. tx endΩ√ √ ±‚»≠«—¥Ÿ.
 #define QC_SESSION_SHARD_META_TOUCH_MASK     (0x00000020)
 #define QC_SESSION_SHARD_META_TOUCH_FALSE    (0x00000000)
 #define QC_SESSION_SHARD_META_TOUCH_TRUE     (0x00000020)
 
 // BUG-45385
 // for qcSession.flag
-// ÌòÑÏû¨ sessionÏóêÏÑú plan cacheÎ•º ÏÇ¨Ïö©ÌïòÏßÄ ÏïäÎäîÎã§.
+// «ˆ¿Á sessionø°º≠ plan cache∏¶ ªÁøÎ«œ¡ˆ æ ¥¬¥Ÿ.
 #define QC_SESSION_PLAN_CACHE_MASK           (0x00000040)
 #define QC_SESSION_PLAN_CACHE_ENABLE         (0x00000000)
 #define QC_SESSION_PLAN_CACHE_DISABLE        (0x00000040)
 
-/* PROJ-2677 DDL synchronization ÎÇ¥Î∂ÄÏ†ÅÏúºÎ°ú DDL ÏùÑ ÏàòÌñâÌïòÍ∏∞ ÏúÑÌïòÏó¨ Mask Ï∂îÍ∞Ä */
-#define QC_SESSION_INTERNAL_DDL_SYNC_MASK        (0x00000080)
-#define QC_SESSION_INTERNAL_DDL_SYNC_FALSE       (0x00000000)
-#define QC_SESSION_INTERNAL_DDL_SYNC_TRUE        (0x00000080)
+/* PROJ-2677 DDL synchronization ≥ª∫Œ¿˚¿∏∑Œ DDL ¿ª ºˆ«‡«œ±‚ ¿ß«œø© Mask √ﬂ∞° */
+#define QC_SESSION_INTERNAL_DDL_SYNC_MASK    (0x00000080)
+#define QC_SESSION_INTERNAL_DDL_SYNC_FALSE   (0x00000000)
+#define QC_SESSION_INTERNAL_DDL_SYNC_TRUE    (0x00000080)
+
+/* PROJ-2737 Internal replication */ 
+#define QC_SESSION_INTERNAL_DDL_MASK         (0x00000100)
+#define QC_SESSION_INTERNAL_DDL_FALSE        (0x00000000)
+#define QC_SESSION_INTERNAL_DDL_TRUE         (0x00000100)
+
+/* BUG-48586
+ * «ˆ¿Á Txø°º≠ (data ¿Ãµø¿Ã ¿÷¥¬) table ∫Ø∞Ê¿Ã ¿÷æ˙¥Ÿ. tx endΩ√ √ ±‚»≠«—¥Ÿ. */ 
+#define QC_SESSION_INTERNAL_TABLE_SWAP_MASK  (0x00000200)
+#define QC_SESSION_INTERNAL_TABLE_SWAP_FALSE (0x00000000)
+#define QC_SESSION_INTERNAL_TABLE_SWAP_TRUE  (0x00000200)
+
+
+
+// PROJ-2727
+// for qcSession.flag NODE[META] ALTER SESSION flag
+#define QC_SESSION_ATTR_SHARD_META_MASK     (0x00020000)
+#define QC_SESSION_ATTR_SHARD_META_FALSE    (0x00000000)
+#define QC_SESSION_ATTR_SHARD_META_TRUE     (0x00020000)
+
+// for qcSession.flag
+#define QC_SESSION_ATTR_CHANGE_MASK         (0x00040000)
+#define QC_SESSION_ATTR_CHANGE_FALSE        (0x00000000)
+#define QC_SESSION_ATTR_CHANGE_TRUE         (0x00040000)
+
+// BUG-47765
+// for qcSession.flag 
+#define QC_SESSION_ATTR_SET_NODE_MASK       (0x00080000)
+#define QC_SESSION_ATTR_SET_NODE_FALSE      (0x00000000)
+#define QC_SESSION_ATTR_SET_NODE_TRUE       (0x00080000)
+
+// BUG-47790
+// for qcSession.flag
+#define QC_SESSION_SHARD_DDL_MASK           (0x00100000)
+#define QC_SESSION_SHARD_DDL_FALSE          (0x00000000)
+#define QC_SESSION_SHARD_DDL_TRUE           (0x00100000)
+
+#define QC_SESSION_ROLLBACKABLE_DDL_MASK    (0x00200000)
+#define QC_SESSION_ROLLBACKABLE_DDL_FALSE   (0x00000000)
+#define QC_SESSION_ROLLBACKABLE_DDL_TRUE    (0x00200000)
+
+// for qcSession.flag
+#define QC_SESSION_TEMP_SQL_MASK            (0x00400000)
+#define QC_SESSION_TEMP_SQL_FALSE           (0x00000000)
+#define QC_SESSION_TEMP_SQL_TRUE            (0x00400000)
+
+// for qcSession.flag
+#define QC_SESSION_HANDOVER_SHARD_DDL_MASK  (0x00800000)
+#define QC_SESSION_HANDOVER_SHARD_DDL_FALSE (0x00000000)
+#define QC_SESSION_HANDOVER_SHARD_DDL_TRUE  (0x00800000)
+
+// BUG-48616
+// for qcSession.flag
+#define QC_SESSION_SAHRD_ADD_CLONE_MASK  (0x01000000)
+#define QC_SESSION_SAHRD_ADD_CLONE_FALSE (0x00000000)
+#define QC_SESSION_SAHRD_ADD_CLONE_TRUE  (0x01000000)
+
+// for qcSession mPropertylFlag 
+#define QC_SESSION_ATTR___OPTIMIZER_DEFAULT_TEMP_TBS_TYPE_MASK   ID_ULONG(0x0000000000000001)
+#define QC_SESSION_ATTR___OPTIMIZER_DEFAULT_TEMP_TBS_TYPE_TRUE   ID_ULONG(0x0000000000000001)
+#define QC_SESSION_ATTR___OPTIMIZER_DEFAULT_TEMP_TBS_TYPE_FALSE  ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR___OPTIMIZER_TRANSITIVITY_OLD_RULE_MASK   ID_ULONG(0x0000000000000002)
+#define QC_SESSION_ATTR___OPTIMIZER_TRANSITIVITY_OLD_RULE_TRUE   ID_ULONG(0x0000000000000002)
+#define QC_SESSION_ATTR___OPTIMIZER_TRANSITIVITY_OLD_RULE_FALSE  ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR___PRINT_OUT_ENABLE_MASK                  ID_ULONG(0x0000000000000004)
+#define QC_SESSION_ATTR___PRINT_OUT_ENABLE_TRUE                  ID_ULONG(0x0000000000000004)
+#define QC_SESSION_ATTR___PRINT_OUT_ENABLE_FALSE                 ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR___USE_OLD_SORT_MASK                      ID_ULONG(0x0000000000000008)
+#define QC_SESSION_ATTR___USE_OLD_SORT_TRUE                      ID_ULONG(0x0000000000000008)
+#define QC_SESSION_ATTR___USE_OLD_SORT_FALSE                     ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_ARITHMETIC_OPERATION_MODE_MASK           ID_ULONG(0x0000000000000010)
+#define QC_SESSION_ATTR_ARITHMETIC_OPERATION_MODE_TRUE           ID_ULONG(0x0000000000000010)
+#define QC_SESSION_ATTR_ARITHMETIC_OPERATION_MODE_FALSE          ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_AUTO_REMOTE_EXEC_MASK                    ID_ULONG(0x0000000000000020)
+#define QC_SESSION_ATTR_AUTO_REMOTE_EXEC_TRUE                    ID_ULONG(0x0000000000000020)
+#define QC_SESSION_ATTR_AUTO_REMOTE_EXEC_FALSE                   ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_COMMIT_WRITE_WAIT_MODE_MASK              ID_ULONG(0x0000000000000040)
+#define QC_SESSION_ATTR_COMMIT_WRITE_WAIT_MODE_TRUE              ID_ULONG(0x0000000000000040)
+#define QC_SESSION_ATTR_COMMIT_WRITE_WAIT_MODE_FALSE             ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_DBLINK_REMOTE_STATEMENT_AUTOCOMMIT_MASK  ID_ULONG(0x0000000000000080)
+#define QC_SESSION_ATTR_DBLINK_REMOTE_STATEMENT_AUTOCOMMIT_TRUE  ID_ULONG(0x0000000000000080)
+#define QC_SESSION_ATTR_DBLINK_REMOTE_STATEMENT_AUTOCOMMIT_FALSE ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_DDL_TIMEOUT_MASK                         ID_ULONG(0x0000000000000100)
+#define QC_SESSION_ATTR_DDL_TIMEOUT_TRUE                         ID_ULONG(0x0000000000000100)
+#define QC_SESSION_ATTR_DDL_TIMEOUT_FALSE                        ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_FETCH_TIMEOUT_MASK                       ID_ULONG(0x0000000000000200)
+#define QC_SESSION_ATTR_FETCH_TIMEOUT_TRUE                       ID_ULONG(0x0000000000000200)
+#define QC_SESSION_ATTR_FETCH_TIMEOUT_FALSE                      ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_GLOBAL_TRANSACTION_LEVEL_MASK            ID_ULONG(0x0000000000000400)
+#define QC_SESSION_ATTR_GLOBAL_TRANSACTION_LEVEL_TRUE            ID_ULONG(0x0000000000000400)
+#define QC_SESSION_ATTR_GLOBAL_TRANSACTION_LEVEL_FALSE           ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_IDLE_TIMEOUT_MASK                        ID_ULONG(0x0000000000000800)
+#define QC_SESSION_ATTR_IDLE_TIMEOUT_TRUE                        ID_ULONG(0x0000000000000800)
+#define QC_SESSION_ATTR_IDLE_TIMEOUT_FALSE                       ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_LOB_CACHE_THRESHOLD_MASK                 ID_ULONG(0x0000000000001000)
+#define QC_SESSION_ATTR_LOB_CACHE_THRESHOLD_TRUE                 ID_ULONG(0x0000000000001000)
+#define QC_SESSION_ATTR_LOB_CACHE_THRESHOLD_FALSE                ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_MAX_STATEMENTS_PER_SESSION_MASK          ID_ULONG(0x0000000000002000)
+#define QC_SESSION_ATTR_MAX_STATEMENTS_PER_SESSION_TRUE          ID_ULONG(0x0000000000002000)
+#define QC_SESSION_ATTR_MAX_STATEMENTS_PER_SESSION_FALSE         ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_NLS_CURRENCY_MASK                        ID_ULONG(0x0000000000004000)
+#define QC_SESSION_ATTR_NLS_CURRENCY_TRUE                        ID_ULONG(0x0000000000004000)
+#define QC_SESSION_ATTR_NLS_CURRENCY_FALSE                       ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_NLS_ISO_CURRENCY_MASK                    ID_ULONG(0x0000000000008000)
+#define QC_SESSION_ATTR_NLS_ISO_CURRENCY_TRUE                    ID_ULONG(0x0000000000008000)
+#define QC_SESSION_ATTR_NLS_ISO_CURRENCY_FALSE                   ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_NLS_NCHAR_CONV_EXCP_MASK                 ID_ULONG(0x0000000000010000)
+#define QC_SESSION_ATTR_NLS_NCHAR_CONV_EXCP_TRUE                 ID_ULONG(0x0000000000010000)
+#define QC_SESSION_ATTR_NLS_NCHAR_CONV_EXCP_FALSE                ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_NLS_NUMERIC_CHARACTERS_MASK              ID_ULONG(0x0000000000020000)
+#define QC_SESSION_ATTR_NLS_NUMERIC_CHARACTERS_TRUE              ID_ULONG(0x0000000000020000)
+#define QC_SESSION_ATTR_NLS_NUMERIC_CHARACTERS_FALSE             ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_NLS_TERRITORY_MASk                       ID_ULONG(0x0000000000040000)
+#define QC_SESSION_ATTR_NLS_TERRITORY_TRUE                       ID_ULONG(0x0000000000040000)
+#define QC_SESSION_ATTR_NLS_TERRITORY_FALSE                      ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_NORMALFORM_MAXIMUM_MASK                  ID_ULONG(0x0000000000080000)
+#define QC_SESSION_ATTR_NORMALFORM_MAXIMUM_TRUE                  ID_ULONG(0x0000000000080000)
+#define QC_SESSION_ATTR_NORMALFORM_MAXIMUM_FALSE                 ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_OPTIMIZER_AUTO_STATS_MASK                ID_ULONG(0x0000000000100000)
+#define QC_SESSION_ATTR_OPTIMIZER_AUTO_STATS_TRUE                ID_ULONG(0x0000000000100000)
+#define QC_SESSION_ATTR_OPTIMIZER_AUTO_STATS_FALSE               ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_OPTIMIZER_DISK_INDEX_COST_ADJ_MASK       ID_ULONG(0x0000000000200000)
+#define QC_SESSION_ATTR_OPTIMIZER_DISK_INDEX_COST_ADJ_TRUE       ID_ULONG(0x0000000000200000)
+#define QC_SESSION_ATTR_OPTIMIZER_DISK_INDEX_COST_ADJ_FALSE      ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_OPTIMIZER_MEMORY_INDEX_COST_ADJ_MASK     ID_ULONG(0x0000000000400000)
+#define QC_SESSION_ATTR_OPTIMIZER_MEMORY_INDEX_COST_ADJ_TRUE     ID_ULONG(0x0000000000400000)
+#define QC_SESSION_ATTR_OPTIMIZER_MEMORY_INDEX_COST_ADJ_FALSE    ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_OPTIMIZER_MODE_MASK                      ID_ULONG(0x0000000000800000)
+#define QC_SESSION_ATTR_OPTIMIZER_MODE_TRUE                      ID_ULONG(0x0000000000800000)
+#define QC_SESSION_ATTR_OPTIMIZER_MODE_FALSE                     ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_OPTIMIZER_PERFORMANCE_VIEW_MASK          ID_ULONG(0x0000000001000000)
+#define QC_SESSION_ATTR_OPTIMIZER_PERFORMANCE_VIEW_TRUE          ID_ULONG(0x0000000001000000)
+#define QC_SESSION_ATTR_OPTIMIZER_PERFORMANCE_VIEW_FALSE         ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_PARALLEL_DML_MODE_MASK                   ID_ULONG(0x0000000002000000)
+#define QC_SESSION_ATTR_PARALLEL_DML_MODE_TRUE                   ID_ULONG(0x0000000002000000)
+#define QC_SESSION_ATTR_PARALLEL_DML_MODE_FALSE                  ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_QUERY_REWRITE_ENABLE_MASK                ID_ULONG(0x0000000004000000)
+#define QC_SESSION_ATTR_QUERY_REWRITE_ENABLE_TRUE                ID_ULONG(0x0000000004000000)
+#define QC_SESSION_ATTR_QUERY_REWRITE_ENABLE_FALSE               ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_QUERY_TIMEOUT_MASK                       ID_ULONG(0x0000000008000000)
+#define QC_SESSION_ATTR_QUERY_TIMEOUT_TRUE                       ID_ULONG(0x0000000008000000)
+#define QC_SESSION_ATTR_QUERY_TIMEOUT_FALSE                      ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_RECYCLEBIN_ENABLE_MASK                   ID_ULONG(0x0000000010000000)
+#define QC_SESSION_ATTR_RECYCLEBIN_ENABLE_TRUE                   ID_ULONG(0x0000000010000000)
+#define QC_SESSION_ATTR_RECYCLEBIN_ENABLE_FALSE                  ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_REPLICATION_DDL_SYNC_MASK                ID_ULONG(0x0000000020000000)
+#define QC_SESSION_ATTR_REPLICATION_DDL_SYNC_TRUE                ID_ULONG(0x0000000020000000)
+#define QC_SESSION_ATTR_REPLICATION_DDL_SYNC_FALSE               ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_REPLICATION_DDL_SYNC_TIMEOUT_MASK        ID_ULONG(0x0000000040000000)
+#define QC_SESSION_ATTR_REPLICATION_DDL_SYNC_TIMEOUT_TRUE        ID_ULONG(0x0000000040000000)
+#define QC_SESSION_ATTR_REPLICATION_DDL_SYNC_TIMEOUT_FALSE       ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_RESULT_CACHE_ENABLE_MASK                 ID_ULONG(0x0000000080000000)
+#define QC_SESSION_ATTR_RESULT_CACHE_ENABLE_TRUE                 ID_ULONG(0x0000000080000000)
+#define QC_SESSION_ATTR_RESULT_CACHE_ENABLE_FALSE                ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_SELECT_HEADER_DISPLAY_MASK               ID_ULONG(0x0000000100000000)
+#define QC_SESSION_ATTR_SELECT_HEADER_DISPLAY_TRUE               ID_ULONG(0x0000000100000000)
+#define QC_SESSION_ATTR_SELECT_HEADER_DISPLAY_FALSE              ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_SERIAL_EXECUTE_MODE_MASK                 ID_ULONG(0x0000000200000000)
+#define QC_SESSION_ATTR_SERIAL_EXECUTE_MODE_TRUE                 ID_ULONG(0x0000000200000000)
+#define QC_SESSION_ATTR_SERIAL_EXECUTE_MODE_FALSE                ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_ST_OBJECT_BUFFER_SIZE_MASK               ID_ULONG(0x0000000400000000)
+#define QC_SESSION_ATTR_ST_OBJECT_BUFFER_SIZE_TRUE               ID_ULONG(0x0000000400000000)
+#define QC_SESSION_ATTR_ST_OBJECT_BUFFER_SIZE_FALSE              ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_TIME_ZONE_MASK                           ID_ULONG(0x0000000800000000)
+#define QC_SESSION_ATTR_TIME_ZONE_TRUE                           ID_ULONG(0x0000000800000000)
+#define QC_SESSION_ATTR_TIME_ZONE_FALSE                          ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_TOP_RESULT_CACHE_MODE_MASK               ID_ULONG(0x0000001000000000)
+#define QC_SESSION_ATTR_TOP_RESULT_CACHE_MODE_TRUE               ID_ULONG(0x0000001000000000)
+#define QC_SESSION_ATTR_TOP_RESULT_CACHE_MODE_FALSE              ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_TRCLOG_DETAIL_INFORMATION_MASK           ID_ULONG(0x0000002000000000)
+#define QC_SESSION_ATTR_TRCLOG_DETAIL_INFORMATION_TRUE           ID_ULONG(0x0000002000000000)
+#define QC_SESSION_ATTR_TRCLOG_DETAIL_INFORMATION_FALSE          ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_TRCLOG_DETAIL_PREDICATE_MASK             ID_ULONG(0x0000004000000000)
+#define QC_SESSION_ATTR_TRCLOG_DETAIL_PREDICATE_TRUE             ID_ULONG(0x0000004000000000)
+#define QC_SESSION_ATTR_TRCLOG_DETAIL_PREDICATE_FALSE            ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_TRCLOG_DETAIL_SHARD_MASK                 ID_ULONG(0x0000008000000000)
+#define QC_SESSION_ATTR_TRCLOG_DETAIL_SHARD_TRUE                 ID_ULONG(0x0000008000000000)
+#define QC_SESSION_ATTR_TRCLOG_DETAIL_SHARD_FALSE                ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_TRX_UPDATE_MAX_LOGSIZE_MASK              ID_ULONG(0x0000010000000000)
+#define QC_SESSION_ATTR_TRX_UPDATE_MAX_LOGSIZE_TRUE              ID_ULONG(0x0000010000000000)
+#define QC_SESSION_ATTR_TRX_UPDATE_MAX_LOGSIZE_FALSE             ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_UTRANS_TIMEOUT_MASK                      ID_ULONG(0x0000020000000000)
+#define QC_SESSION_ATTR_UTRANS_TIMEOUT_TRUE                      ID_ULONG(0x0000020000000000)
+#define QC_SESSION_ATTR_UTRANS_TIMEOUT_FALSE                     ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR___REDUCE_PARTITION_PREPARE_MEMORY_MASK   ID_ULONG(0x0000040000000000)
+#define QC_SESSION_ATTR___REDUCE_PARTITION_PREPARE_MEMORY_TRUE   ID_ULONG(0x0000040000000000)
+#define QC_SESSION_ATTR___REDUCE_PARTITION_PREPARE_MEMORY_FALSE  ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_DATE_FORMAT_MASK                         ID_ULONG(0x0000080000000000)
+#define QC_SESSION_ATTR_DATE_FORMAT_TRUE                         ID_ULONG(0x0000080000000000)
+#define QC_SESSION_ATTR_DATE_FORMAT_FALSE                        ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_INVOKE_USER_MASK                         ID_ULONG(0x0000100000000000)
+#define QC_SESSION_ATTR_INVOKE_USER_TRUE                         ID_ULONG(0x0000100000000000)
+#define QC_SESSION_ATTR_INVOKE_USER_FALSE                        ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_TRANSACTIONAL_DDL_MASK                   ID_ULONG(0x0000200000000000)
+#define QC_SESSION_ATTR_TRANSACTIONAL_DDL_TRUE                   ID_ULONG(0x0000200000000000)
+#define QC_SESSION_ATTR_TRANSACTIONAL_DDL_FALSE                  ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_SHARD_STATEMENT_RETRY_MASK               ID_ULONG(0x0000400000000000)
+#define QC_SESSION_ATTR_SHARD_STATEMENT_RETRY_TRUE               ID_ULONG(0x0000400000000000)
+#define QC_SESSION_ATTR_SHARD_STATEMENT_RETRY_FALSE              ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_INDOUBT_FETCH_TIMEOUT_MASK               ID_ULONG(0x0000800000000000)
+#define QC_SESSION_ATTR_INDOUBT_FETCH_TIMEOUT_TRUE               ID_ULONG(0x0000800000000000)
+#define QC_SESSION_ATTR_INDOUBT_FETCH_TIMEOUT_FALSE              ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_INDOUBT_FETCH_METHOD_MASK                ID_ULONG(0x0001000000000000)
+#define QC_SESSION_ATTR_INDOUBT_FETCH_METHOD_TRUE                ID_ULONG(0x0001000000000000)
+#define QC_SESSION_ATTR_INDOUBT_FETCH_METHOD_FALSE               ID_ULONG(0x0000000000000000)
+
+/* BUG-48132 */
+#define QC_SESSION_ATTR___OPTIMIZER_PLAN_HASH_OR_SORT_METHOD_MASK  ID_ULONG(0x0002000000000000)
+#define QC_SESSION_ATTR___OPTIMIZER_PLAN_HASH_OR_SORT_METHOD_TRUE  ID_ULONG(0x0002000000000000)
+#define QC_SESSION_ATTR___OPTIMIZER_PLAN_HASH_OR_SORT_METHOD_FALSE ID_ULONG(0x0000000000000000)
+
+#define QC_SESSION_ATTR_DDL_LOCK_TIMEOUT_MASK                    ID_ULONG(0x0004000000000000)
+#define QC_SESSION_ATTR_DDL_LOCK_TIMEOUT_TRUE                    ID_ULONG(0x0004000000000000)
+#define QC_SESSION_ATTR_DDL_LOCK_TIMEOUT_FALSE                   ID_ULONG(0x0000000000000000)
+
+/* BUG-48161 */
+#define QC_SESSION_ATTR___OPTIMIZER_BUCKET_COUNT_MAX_MASK        ID_ULONG(0x0008000000000000)
+#define QC_SESSION_ATTR___OPTIMIZER_BUCKET_COUNT_MAX_TRUE        ID_ULONG(0x0008000000000000)
+#define QC_SESSION_ATTR___OPTIMIZER_BUCKET_COUNT_MAX_FALSE       ID_ULONG(0x0000000000000000)
+
+/* BUG-48348 */
+#define QC_SESSION_ATTR___OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION_MASK  ID_ULONG(0x0010000000000000)
+#define QC_SESSION_ATTR___OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION_TRUE  ID_ULONG(0x0010000000000000)
+#define QC_SESSION_ATTR___OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION_FALSE ID_ULONG(0x0000000000000000)
 
 #define SET_POSITION(_DESTINATION_, _SOURCE_)       \
 {                                                   \
@@ -404,6 +717,15 @@ typedef struct qcCondValueCharBuffer {
       ( ( ( _position1_.size <= QC_POS_EMPTY_SIZE ) && ( _position2_.size <= QC_POS_EMPTY_SIZE ) ) ? \
         ID_TRUE : ID_FALSE ) )
 
+/* TASK-7219 */
+#define QC_IS_NAME_MATCHED_POS_N_TARGET( _position_, _target_ )                                  \
+    ( ( ( _position_.size > QC_POS_EMPTY_SIZE ) && ( _target_.size > QC_POS_EMPTY_SIZE ) ) ?     \
+      ( ( idlOS::strMatch( _position_.stmtText + _position_.offset, _position_.size,             \
+                           _target_.name, _target_.size ) == 0 ) ?                               \
+        ID_TRUE : ID_FALSE ) :                                                                   \
+      ( ( ( _position_.size <= QC_POS_EMPTY_SIZE ) && ( _target_.size <= QC_POS_EMPTY_SIZE ) ) ? \
+        ID_TRUE : ID_FALSE ) )
+
 #define QC_IS_STR_CASELESS_MATCHED( _position_, _str_ )                         \
     ( (idlOS::strCaselessMatch(_position_.stmtText+_position_.offset,           \
                                _position_.size,                                 \
@@ -450,6 +772,7 @@ typedef struct qcCondValueCharBuffer {
     (_dst_)->myPlan->scanDecisionFactors = NULL;                            \
     (_dst_)->myPlan->procPlanList        = NULL;                            \
     (_dst_)->myPlan->mShardAnalysis      = NULL;                            \
+    (_dst_)->myPlan->mShardParamInfo     = NULL;                            \
     (_dst_)->myPlan->mShardParamOffset   = ID_USHORT_MAX;                   \
     (_dst_)->myPlan->mShardParamCount    = 0;                               \
     (_dst_)->myPlan->sTmplate            = (_src_)->myPlan->sTmplate;       \
@@ -470,7 +793,7 @@ typedef struct qcCondValueCharBuffer {
     (_dst_)->qmbMem                      = (_src_)->qmbMem;                 \
     (_dst_)->qmtMem                      = (_src_)->qmtMem;                 \
     (_dst_)->qxcMem                      = (_src_)->qxcMem;                 \
-    (_dst_)->qmsConvMem                  = (_src_)->qmsConvMem;             \
+    (_dst_)->qixMem                      = (_src_)->qixMem;                 \
     (_dst_)->qmpStackPosition            = (_src_)->qmpStackPosition;       \
     (_dst_)->qmeStackPosition            = (_src_)->qmeStackPosition;       \
     (_dst_)->pBindParam                  = NULL;                            \
@@ -491,21 +814,25 @@ typedef struct qcCondValueCharBuffer {
     (_dst_)->simpleInfo                  = (_src_)->simpleInfo;             \
     (_dst_)->mFlag                       = (_src_)->mFlag;                  \
     (_dst_)->mStmtList                   = (_src_)->mStmtList;              \
+    (_dst_)->mStmtList2                  = (_src_)->mStmtList2;             \
     (_dst_)->mRandomPlanInfo             = (_src_)->mRandomPlanInfo;        \
     (_dst_)->mShardPrintInfo             = (_src_)->mShardPrintInfo;        \
+    (_dst_)->mShardQuerySetList          = (_src_)->mShardQuerySetList;     \
+    (_dst_)->mShardPartialExecType       = (_src_)->mShardPartialExecType;  \
 }
 
 #define QC_SET_INIT_PARSE_TREE(_dst_, _stmtPos_)                    \
 {                                                                   \
     SET_POSITION( ((qcParseTree *)_dst_)->stmtPos, _stmtPos_ );     \
     ((qcParseTree *)(_dst_))->stmtShard   = QC_STMT_SHARD_NONE;     \
+    ((qcParseTree *)(_dst_))->nodes       = NULL;                   \
     ((qcParseTree *)(_dst_))->currValSeqs = NULL;                   \
     ((qcParseTree *)(_dst_))->nextValSeqs = NULL;                   \
 }
 
 /* BUG-37981
-   templateÏùò stackBuffer, stack , stackCount , stackRemain
-   Ïó∞Í≤∞ Î∞è Ìï¥Ï†ú */
+   template¿« stackBuffer, stack , stackCount , stackRemain
+   ø¨∞· π◊ «ÿ¡¶ */
 #define QC_CONNECT_TEMPLATE_STACK( _detTemplate_ , _oriStackBuffer_ , _oriStack_ , _oriStackCount_ , _oriStackRemain_ )\
 {                                                                                                                   \
     _detTemplate_->tmplate.stackBuffer = _oriStackBuffer_;                                                          \
@@ -541,6 +868,7 @@ struct qsxArrayInfo;
 
 // BUG-43158 Enhance statement list caching in PSM
 struct qsxStmtList;
+struct qsxStmtList2;
 
 typedef IDE_RC (*qcParseFunc)    ( qcStatement * );
 typedef IDE_RC (*qcValidateFunc) ( qcStatement * );
@@ -549,7 +877,7 @@ typedef IDE_RC (*qcExecuteFunc)  ( qcStatement * );
 
 //-----------------------------------------------
 // PROJ-1407 Temporary Table
-// session temporary tableÏùÑ Ï†ÄÏû•ÌïòÍ∏∞ÏúÑÌïú ÏûêÎ£åÍµ¨Ï°∞
+// session temporary table¿ª ¿˙¿Â«œ±‚¿ß«— ¿⁄∑·±∏¡∂
 //-----------------------------------------------
 typedef struct qcTempIndex
 {
@@ -585,19 +913,19 @@ typedef struct qcTemporaryObjInfo
 
 //-----------------------------------------------
 // [qcUserInfo]
-// StatementÎ•º ÏàòÌñâÏ§ëÏù∏ User Ïùò Ï†ïÎ≥¥
+// Statement∏¶ ºˆ«‡¡ﬂ¿Œ User ¿« ¡§∫∏
 //-----------------------------------------------
 
 typedef struct qcUserInfo
 {
-    UInt            userID;          // SessionÏùò User ID
-    scSpaceID       tableSpaceID;    // UserÏùò Table Space ID
-    scSpaceID       tempSpaceID;     // UserÏùò Temp Table Space ID
+    UInt            userID;          // Session¿« User ID
+    scSpaceID       tableSpaceID;    // User¿« Table Space ID
+    scSpaceID       tempSpaceID;     // User¿« Temp Table Space ID
     idBool          mIsSysdba;
 } qcUserInfo;
 
-// SYSTEM USERÎ•º ÏúÑÌïú Ï†ïÎ≥¥
-// qcmUser.cpp Ïóê Ï†ïÏùòÎê®.
+// SYSTEM USER∏¶ ¿ß«— ¡§∫∏
+// qcmUser.cpp ø° ¡§¿«µ .
 //extern qcUserInfo gQcmSystemUserInfo;
 
 // BUG-41248 DBMS_SQL package
@@ -633,13 +961,14 @@ typedef struct qcStmtListInfo
     UInt           mStmtListCount;
     UInt           mStmtListCursor;
     UInt           mStmtListFreedCount;
-
     UInt           mStmtPoolCount;
-
+    UInt           mStmtPoolStatusSize;
+    idBool         mUsePtr;
     qsxStmtList  * mStmtList;
+    qsxStmtList2 * mStmtList2;
 } qcStmtListInfo;
 
-/* BUG-43605 [mt] randomÌï®ÏàòÏùò seed ÏÑ§Ï†ïÏùÑ session Îã®ÏúÑÎ°ú Î≥ÄÍ≤ΩÌï¥Ïïº Ìï©ÎãàÎã§. */
+/* BUG-43605 [mt] random«‘ºˆ¿« seed º≥¡§¿ª session ¥‹¿ß∑Œ ∫Ø∞Ê«ÿæﬂ «’¥œ¥Ÿ. */
 #define QC_RAND_MT_N (624)
 
 typedef struct qcRandomInfo
@@ -649,11 +978,17 @@ typedef struct qcRandomInfo
     UInt   mMap[QC_RAND_MT_N];
 } qcRandomInfo;
 
-// sessionÏúºÎ°ú Í≥µÏú†Ìï¥Ïïº ÌïòÎäî Ï†ïÎ≥¥Ïù¥ÏßÄÎßå,
-// qpÏóêÏÑúÎßå ÏÇ¨Ïö©ÌïòÎäî Ï†ïÎ≥¥Îì§Ïùò ÏßëÌï©.
+typedef struct qcBakSessionProperty
+{
+    UInt mTransactionalDDL;
+    UInt mGlobalTransactionLevel;
+} qcBakSessionProperty;
+
+// session¿∏∑Œ ∞¯¿Ø«ÿæﬂ «œ¥¬ ¡§∫∏¿Ã¡ˆ∏∏,
+// qpø°º≠∏∏ ªÁøÎ«œ¥¬ ¡§∫∏µÈ¿« ¡˝«’.
 typedef struct qcSessionSpecific
 {
-    UInt                       mFlag;   // QC_SESSION_ALTER_META_MASK Ï†ïÎ≥¥
+    UInt                       mFlag;   // QC_SESSION_ALTER_META_MASK ¡§∫∏
 
     // PROJ-1371 PSM File Handling
     struct qcSessionObjInfo  * mSessionObj;
@@ -686,37 +1021,45 @@ typedef struct qcSessionSpecific
     // BUG-43158 Enhance statement list caching in PSM
     qcStmtListInfo             mStmtListInfo;
 
-    /* BUG-43605 [mt] randomÌï®ÏàòÏùò seed ÏÑ§Ï†ïÏùÑ session Îã®ÏúÑÎ°ú Î≥ÄÍ≤ΩÌï¥Ïïº Ìï©ÎãàÎã§. */
+    /* BUG-43605 [mt] random«‘ºˆ¿« seed º≥¡§¿ª session ¥‹¿ß∑Œ ∫Ø∞Ê«ÿæﬂ «’¥œ¥Ÿ. */
     qcRandomInfo               mRandomInfo;
 
     // PROJ-2638
     struct sdiClientInfo     * mClientInfo;
 
+    // PROJ-2727
+    // shard coordinatorø° ¿¸∆ƒ∏¶ ¿ß«— property∫Ø∞Ê ø©∫Œ º≥¡§
+    ULong                      mPropertyFlag;
+
+    idBool                     mIsGTx;
+    idBool                     mIsGCTx;
 } qcSessionSpecific;
 
-// session Ï†ïÎ≥¥
+// session ¡§∫∏
 typedef struct qcSession
 {
     void                * mMmSession;
     qcSessionSpecific     mQPSpecific;
 
     // BUG-24407
-    // ÎÇ¥Î∂ÄÏóêÏÑú ÏÉùÏÑ±Îêú sessionÏù¥ÎùºÎèÑ setSessionUserIDÍ∞Ä Ìò∏Ï∂úÎêòÎäî
-    // Í≤ΩÏö∞Í∞Ä ÏûàÏúºÎØÄÎ°ú userIDÎ•º Î≥ÑÎèÑÎ°ú Ï†ÄÏû•ÌïúÎã§.
+    // ≥ª∫Œø°º≠ ª˝º∫µ» session¿Ã∂Ûµµ setSessionUserID∞° »£√‚µ«¥¬
+    // ∞ÊøÏ∞° ¿÷¿∏π«∑Œ userID∏¶ ∫∞µµ∑Œ ¿˙¿Â«—¥Ÿ.
     UInt                  mUserID;
 
     /*
      * BUG-37093
-     * ÎÇ¥Î∂ÄÏóêÏÑú ÏÉùÏÑ±Îêú sessionÏù¥ÎùºÎèÑ MM SessionÏùÑ Ï∞∏Ï°∞ÌïòÎäî Í≤ΩÏö∞Í∞Ä ÏûàÏñ¥
-     * Î≥ÑÎèÑÎ°ú Ï†ÄÏû•ÌïúÎã§.
+     * ≥ª∫Œø°º≠ ª˝º∫µ» session¿Ã∂Ûµµ MM Session¿ª ¬¸¡∂«œ¥¬ ∞ÊøÏ∞° ¿÷æÓ
+     * ∫∞µµ∑Œ ¿˙¿Â«—¥Ÿ.
      */
     void                * mMmSessionForDatabaseLink;
+
+    qcBakSessionProperty  mBakSessionProperty;
 
 } qcSession;
 
 typedef struct qcStmtInfo
 {
-    // qpÏóêÏÑú prepare/executeÏãú ÌïÑÏöîÌïú smiStatement
+    // qpø°º≠ prepare/executeΩ√ « ø‰«— smiStatement
     smiStatement        * mSmiStmtForExecute;
     void                * mMmStatement;
     idBool                mIsQpAlloc;
@@ -729,7 +1072,7 @@ typedef struct qcNamePosition
     SInt    size;
 } qcNamePosition;
 
-// sessionÏ†ïÎ≥¥Î•º ÏñªÍ∏∞ ÏúÑÌïú mmcSessionÏùò callback Ìï®ÏàòÎì§Ïùò ÏßëÌï©.
+// session¡§∫∏∏¶ æÚ±‚ ¿ß«— mmcSession¿« callback «‘ºˆµÈ¿« ¡˝«’.
 typedef struct qcSessionCallback
 {
     const mtlModule *(*mGetLanguage)(void * aMmSession);
@@ -776,7 +1119,7 @@ typedef struct qcSessionCallback
                                  UInt    aPropValueSize );
     void         (*mMemoryCompact)();
 
-    // qsxEnv, qsfPrintÏóêÏÑú ÏÇ¨Ïö©Ìï®.
+    // qsxEnv, qsfPrintø°º≠ ªÁøÎ«‘.
     IDE_RC       (*mPrintToClient)(void   * aMmSession,
                                    UChar  * aMessage,
                                    UInt     aMessageLen );
@@ -787,7 +1130,7 @@ typedef struct qcSessionCallback
 
     UInt         (*mGetSTObjBufSize)(void * aMmSession);
 
-    /* PROJ-2446: BUG-24361 ST_ALLOW_HINT (XDB Î≤ÑÍ∑∏) Î∞òÏòÅ */
+    /* PROJ-2446: BUG-24361 ST_ALLOW_HINT (XDB πˆ±◊) π›øµ */
     UInt         (*mGetSTAllowLev)(void * aMmSession);
 
     idBool       (*mIsParallelDml)(void * aMmSession);
@@ -809,7 +1152,7 @@ typedef struct qcSessionCallback
     UInt         (*mGetNcharLiteralReplace)(void * aMmSession);
     //BUG-21122
     UInt         (*mGetAutoRemoteExec)(void * aMmSession);
-    /* PROJ-2446: BUG-24957 plan Ï°∞ÌöåÏãú Í∞ùÏ≤¥Ïùò ÏÇ¨Ïö©Ïûê ÌëúÏãú(XDB Î≤ÑÍ∑∏) Î∞òÏòÅ */
+    /* PROJ-2446: BUG-24957 plan ¡∂»∏Ω√ ∞¥√º¿« ªÁøÎ¿⁄ «•Ω√(XDB πˆ±◊) π›øµ */
     UInt         (*mGetDetailSchema)(void * aMmSession);
 
     // BUG-25999
@@ -874,7 +1217,7 @@ typedef struct qcSessionCallback
     /* PROJ-2441 flashback */
     UInt         (*mGetRecyclebinEnable)(void  * aMmSession);
 
-    /* BUG-42853 LOCK TABLEÏóê UNTIL NEXT DDL Í∏∞Îä• Ï∂îÍ∞Ä */
+    /* BUG-42853 LOCK TABLEø° UNTIL NEXT DDL ±‚¥… √ﬂ∞° */
     idBool       (*mGetLockTableUntilNextDDL)( void * aMmSession );
     void         (*mSetLockTableUntilNextDDL)( void * aMmSession, idBool aValue );
     UInt         (*mGetTableIDOfLockTableUntilNextDDL)( void * aMmSession );
@@ -948,11 +1291,13 @@ typedef struct qcSessionCallback
     /* BUG-42639 Monitoring query */
     UInt         (*mGetOptimizerPerformanceView)(void * aMmSession);
 
-    /* PROJ-2624 [Í∏∞Îä•ÏÑ±] MM - Ïú†Ïó∞Ìïú access_list Í¥ÄÎ¶¨Î∞©Î≤ï Ï†úÍ≥µ */
+    /* PROJ-2624 [±‚¥…º∫] MM - ¿Øø¨«— access_list ∞¸∏ÆπÊπ˝ ¡¶∞¯ */
     IDE_RC       (*mReloadAccessList)();
 
     /* PROJ-2701 Sharding online data rebuild */
-    idBool       (*mIsShardDataSession)(void * aMmSession);
+    idBool       (*mIsShardUserSession)(void * aMmSession);
+    /* TASK-7219 Analyzer/Transformer/Executor º∫¥…∞≥º± */
+    idBool       (*mCallByShardAnalyzeProtocol)(void * aMmSession);
     // PROJ-2638
     ULong        (*mGetShardPIN)(void * aMmSession);
     ULong        (*mGetShardMetaNumber)(void * aMmSession);
@@ -963,11 +1308,14 @@ typedef struct qcSessionCallback
     UInt         (*mGetTrclogDetailShard)(void * aMmSession);
     UChar        (*mGetExplainPlan)(void * aMmSession);
 
-    /* BUG-45844 (Server-Side) (Autocommit Mode) Multi-TransactionÏùÑ ÏßÄÏõêÌï¥Ïïº Ìï©ÎãàÎã§. */
-    UInt         (*mGetDBLinkGTXLevel)( void * aMmSession );
+    /* BUG-45844 (Server-Side) (Autocommit Mode) Multi-Transaction¿ª ¡ˆø¯«ÿæﬂ «’¥œ¥Ÿ. */
+    UInt         (*mGetGTXLevel)( void * aMmSession );
 
     /* PROJ-2677 DDL synchronization */
     UInt         (*mGetReplicationDDLSync)( void *aMmSession );
+
+    idBool       (*mTransactionalDDL)(void * aMmSession);
+    idBool       (*mGlobalDDL)(void * aMmSession);
 
     UInt         (*mGetPrintOutEnable)( void *aMmSession );    
 
@@ -983,6 +1331,107 @@ typedef struct qcSessionCallback
     /* PROJ-2632 */
     UInt         (*mGetSerialExecuteMode)( void * aMmSession );
     UInt         (*mGetTrclogDetailInformation)(void * aMmSession );
+
+    /* BUG-47648  disk partitionø°º≠ ªÁøÎµ«¥¬ prepared memory ªÁøÎ∑Æ ∞≥º± */
+    UInt         (*mGetReducePartPrepareMemory)( void * aMmSession );
+
+    sdiSessionType (*mGetShardSessionType)(void * aMmSession);
+
+    // PROJ-2727 get session property callback    
+    void         (*mGetSessionPropertyInfo)( void   * aMmSession,
+                                             UShort * aSessionPropID,
+                                             SChar  **aSessionPropValue,
+                                             UInt   * aSessionPropValueLen );
+    UInt         (*mGetCommitWriteWaitMode)( void * aMmSession );
+    UInt         (*mGetDblinkRemoteStatementAutoCommit)( void * aMmSession );
+    UInt         (*mGetDdlTimeout)( void * aMmSession );
+    UInt         (*mGetFetchTimeout)( void * aMmSession );
+    UInt         (*mGetIdleTimeout)( void * aMmSession );
+    UInt         (*mGetMaxStatementsPerSession)( void * aMmSession );
+    UInt         (*mGetNlsNcharConvExcp)( void * aMmSession );
+    void         (*mGetNlsTerritory)( void * aMmSession, SChar * aNlsTerritory );
+    UInt         (*mGetQueryTimeout)( void * aMmSession );
+    UInt         (*mGetReplicationDDLSyncTimeout)( void * aMmSession );
+    ULong        (*mGetUpdateMaxLogSize)( void * aMmSession );    
+    UInt         (*mGetUTransTimeout)( void * aMmSession );
+    UInt         (*mGetPropertyAttribute)( void * aMmSession );
+    void         (*mSetPropertyAttribute)( void * aMmSession, UInt aValue );
+    idBool       (*mGetShardInPSMEnable)( void * aMmSession );
+    void         (*mSetShardInPSMEnable)( void * aMmSession, idBool aValue );
+
+    /* PROJ-2728 Sharding LOB */
+    UInt         (*mGetStmtId)( void * aUserContext );
+    void       * (*mFindShardStmt)( void * aMmSession, UInt aStmtId );
+
+    sdiInternalOperation (*mGetShardInternalLocalOperation)( void * aMmSession );
+    IDE_RC       (*mSetShardInternalLocalOperation)( void * aMmSession, sdiInternalOperation aValue );
+
+    // BUG-47861 INVOKE_USER_ID, INVOKE_USER_NAME function
+    SChar       *(*mGetInvokeUserName)(void * aMmSession);
+    void         (*mSetInvokeUserName)(void * aMmSession, SChar * aInvokeUserName);
+    IDE_RC       (*mSetInvokeUserPropertyInternal)(void  * aMmSession,
+                                                   SChar * aPropName,
+                                                   UInt    aPropNameSize,
+                                                   SChar * aPropValueStr,
+                                                   UInt    aPropValueSize );
+    /* TASK-7219 */
+    void       * (*mGetPlanString)( void * aUserContext );    
+
+    /* PROJ-2733 */
+    void         (*mGetStatementRequestSCN)(void *aMmStatement, smSCN *aSCN);
+    void         (*mSetStatementRequestSCN)(void *aMmStatement, smSCN *aSCN);
+    void         (*mGetStatementTxFirstStmtSCN)(void *aMmStatement, smSCN *aTxFirstStmtSCN);
+    ULong        (*mGetStatementTxFirstStmtTime)(void *aMmStatement);
+    sdiDistLevel (*mGetStatementDistLevel)(void *aMmStatement);
+    idBool       (*mIsGTx)(void *aMmSession);
+    idBool       (*mIsGCTx)(void *aMmSession);
+    UChar       *(*mGetSessionTypeString)(void *aMmSession);
+    UInt         (*mGetShardStatementRetry)(void *aMmSession);
+    UInt         (*mGetIndoubtFetchTimeout)( void * aMmSession ); 
+    UInt         (*mGetIndoubtFetchMethod)( void * aMmSession );
+
+    IDE_RC       (*mCommitInternal)( void  * aMmSession,
+                                     void * aUserContext );
+
+    void         (*mSetShardMetaNumber)( void  * aMmSession,
+                                         ULong   aSMN );
+
+    void         (*mPauseShareTransFix)( void * aMmSession );
+    void         (*mResumeShareTransFix)( void * aMmSession );
+
+    /* BUG-48132 */
+    UInt         (*mGetPlanHashOrSortMethod)( void * aMmSession );
+
+    /* BUG-48162 */
+    UInt         (*mGetBucketCountMax)( void * aMmSession );
+
+    UInt         (*mGetShardDDLLockTimeout)(void * aMmSession);
+    UInt         (*mGetShardDDLLockTryCount)(void * aMmSession);
+    SInt         (*mGetDDLLockTimeout)(void * aMmSession);
+
+    IDE_RC       (*mAllocInternalSessionWithUserInfo )( void ** aSession, void * aUserInfo );
+
+    void         (*mSetNewShardPIN)(void * aSession );
+
+    void         (*mGetUserInfo)( void * aSession, void * aUserInfo );
+    smiTrans   * (*mGetTransWithBegin)(void * aMmSession);
+
+    /* BUG-48348 */
+    UInt         (*mGetEliminateCommonSubexpression)( void * aMmSession );
+
+    ULong        (*mGetLastShardMetaNumber)( void * aMmSession );
+    idBool       (*mDetectShardMetaChange)( void * aMmSession );
+    
+    UShort       (*mGetClientTouchNodeCount)(void *aMmSession);  /* BUG-48384 */
+
+    /* TASK-7219 Non-shard DML */
+    void         (*mIncreaseStmtExecSeqForShardTx)( void* aMmSession );
+    void         (*mDecreaseStmtExecSeqForShardTx)( void* aMmSession );
+    UInt         (*mGetStmtExecSeqForShardTx)( void* aMmSession );
+    sdiShardPartialExecType (*mGetStatementShardPartialExecType)( void *aMmStatement );
+
+    /* BUG-48770 */
+    UInt         (*mCheckSessionCount)();
 } qcSessionCallback;
 
 /*
@@ -1034,9 +1483,10 @@ typedef struct qcDatabaseLinkCallback
 
     void   (* mCloseShardConnection)( void * aDataNode );
 
-    IDE_RC (* mAddShardTransaction)( idvSQL * aStatistics,
-                                     smTID    aTransID,
-                                     void   * aDataNode );
+    IDE_RC (* mAddShardTransaction)( idvSQL        * aStatistics,
+                                     smTID           aTransID,
+                                     sdiClientInfo * aClientInfo,
+                                     void          * aDataNode );
 
     void   (* mDelShardTransaction)( void * aDataNode );
 
@@ -1044,6 +1494,16 @@ typedef struct qcDatabaseLinkCallback
     IDE_RC (* mSetTransactionBrokenOnGlobalCoordinator)( void  * aDataNode,
                                                          smTID   aTransID );
 
+    IDE_RC (* mCheckGlobalTransactionStatus)( void * aDataNode );
+    
+    IDE_RC ( * mAddDtxBranchTx)( void   * aDtxInfo,
+                                 UChar    aCoordinatorType,
+                                 SChar  * aNodeName,
+                                 SChar  * aUserName,
+                                 SChar  * aUserPassword,
+                                 SChar  * aDataServerIP,
+                                 UShort   aDataPortNo,
+                                 UShort   aConnectType );
 } qcDatabaseLinkCallback;
 
 /*
@@ -1084,7 +1544,7 @@ typedef struct qcRemoteTableCallback
 //---------------------------------------------------
 // BUG-16422
 // [qcTableInfoMgr]
-// executeÏ§ë ÏûÑÏãú ÏÉùÏÑ±Îêú tableInfoÏùò Í¥ÄÎ¶¨
+// execute¡ﬂ ¿”Ω√ ª˝º∫µ» tableInfo¿« ∞¸∏Æ
 //---------------------------------------------------
 typedef struct qcTableInfoMgr
 {
@@ -1099,54 +1559,54 @@ typedef struct qcTableInfoMgr
 //---------------------------------------------------
 // PROJ-1358
 // [qcDepInfo]
-// Ï∞∏Ï°∞ ÌÖåÏù¥Î∏îÏùò Ï†ïÎ≥¥Î•º Í¥ÄÎ¶¨
+// ¬¸¡∂ ≈◊¿Ã∫Ì¿« ¡§∫∏∏¶ ∞¸∏Æ
 //---------------------------------------------------
 
 // PROJ-1358
-// ÌïòÎÇòÏùò Íµ¨Î¨∏Ïù¥ Ï∞∏Ï°∞Ìï† Ïàò ÏûàÎäî ÌÖåÏù¥Î∏îÏùò Í∞úÏàò
+// «œ≥™¿« ±∏πÆ¿Ã ¬¸¡∂«“ ºˆ ¿÷¥¬ ≈◊¿Ã∫Ì¿« ∞≥ºˆ
 #define QC_MAX_REF_TABLE_CNT                         (32)
 
 //---------------------------------------------------
 // PROJ-1653 Outer Join Operator (+)
 //
-// joinOper Îäî validation ÏùÑ ÏúÑÌïú ÏûêÎ£åÍµ¨Ï°∞Î°ú validation Ïù¥ÌõÑÏóêÎäî
-// Ï∞∏Ï°∞ÎêòÏßÄ ÏïäÎäîÎã§.
-// joinOper ÏóêÎäî Í∞ÅÍ∞ÅÏùò dependency ÌÖåÏù¥Î∏îÏóê ÎåÄÌï¥ Outer Join Operator Í∞Ä
-// Ïñ¥ÎñªÍ≤å Î∂ôÏñ¥ÏûàÎäîÏßÄÎ•º ÏÑ§Ï†ïÌïúÎã§.
-// Ïù¥ Í∞íÏùÄ qmsQuerySet Ïùò SFWGH Ïùò Í∞Å Ï†à(from,where,...)ÎÇ¥ÏóêÏÑúÎßå
-// Ï†ïÌôïÌûà oring ÎêòÏñ¥ ÏûàÍ∏∞ ÎïåÎ¨∏Ïóê, Í∑∏ ÏÉÅÏúÑÏùò ÏûêÎ£åÍµ¨Ï°∞Ïóê ÏûàÎäî
-// depInfo.depJoinOper Í∞íÏùÄ ÏÇ¨Ïö©ÌïòÎ©¥ ÏïàÎêúÎã§.
+// joinOper ¥¬ validation ¿ª ¿ß«— ¿⁄∑·±∏¡∂∑Œ validation ¿Ã»ƒø°¥¬
+// ¬¸¡∂µ«¡ˆ æ ¥¬¥Ÿ.
+// joinOper ø°¥¬ ∞¢∞¢¿« dependency ≈◊¿Ã∫Ìø° ¥Î«ÿ Outer Join Operator ∞°
+// æÓ∂ª∞‘ ∫ŸæÓ¿÷¥¬¡ˆ∏¶ º≥¡§«—¥Ÿ.
+// ¿Ã ∞™¿∫ qmsQuerySet ¿« SFWGH ¿« ∞¢ ¿˝(from,where,...)≥ªø°º≠∏∏
+// ¡§»Æ»˜ oring µ«æÓ ¿÷±‚ ∂ßπÆø°, ±◊ ªÛ¿ß¿« ¿⁄∑·±∏¡∂ø° ¿÷¥¬
+// depInfo.depJoinOper ∞™¿∫ ªÁøÎ«œ∏È æ»µ»¥Ÿ.
 //---------------------------------------------------
 
 typedef struct qcDepInfo
 {
-    UInt   depCount;                            // Ï∞∏Ï°∞ ÌÖåÏù¥Î∏î Í∞úÏàò
-    UShort depend[QC_MAX_REF_TABLE_CNT];        // Ï∞∏Ï°∞ ÌÖåÏù¥Î∏î Ï†ïÎ≥¥
-    UChar  depJoinOper[QC_MAX_REF_TABLE_CNT];   // Ï∞∏Ï°∞ ÌÖåÏù¥Î∏îÎ≥Ñ Outer Join Operator(+) Ï°¥Ïû¨Ïó¨Î∂Ä
+    UInt   depCount;                            // ¬¸¡∂ ≈◊¿Ã∫Ì ∞≥ºˆ
+    UShort depend[QC_MAX_REF_TABLE_CNT];        // ¬¸¡∂ ≈◊¿Ã∫Ì ¡§∫∏
+    UChar  depJoinOper[QC_MAX_REF_TABLE_CNT];   // ¬¸¡∂ ≈◊¿Ã∫Ì∫∞ Outer Join Operator(+) ¡∏¿Áø©∫Œ
 } qcDepInfo;
 
 //---------------------------------------------------
 // [qcTableMap]
-//  StatementÏóê Ï°¥Ïû¨ÌïòÎäî Î™®Îì† TableÎì§Ïùò Map Ï†ïÎ≥¥
-//  Îã§ÏùåÍ≥º Í∞ôÏùÄ Ï≤òÎ¶¨Ïùò Ìö®Ïú®ÏùÑ ÏúÑÌï¥ Table MapÏùÑ ÎëîÎã§.
-//  1. Dependency Í≤∞Ï†ï
-//  2. Ìï¥Îãπ TableÎ∞è ColumnÏùò Îπ†Î•∏ Ï†ïÎ≥¥ Ï∂îÏ∂ú
-//  3. Plan TreeÏùò ÏûêÎèô Ïû¨Íµ¨ÏÑ±
+//  Statementø° ¡∏¿Á«œ¥¬ ∏µÁ TableµÈ¿« Map ¡§∫∏
+//  ¥Ÿ¿Ω∞˙ ∞∞¿∫ √≥∏Æ¿« »ø¿≤¿ª ¿ß«ÿ Table Map¿ª µ–¥Ÿ.
+//  1. Dependency ∞·¡§
+//  2. «ÿ¥Á Tableπ◊ Column¿« ∫¸∏• ¡§∫∏ √ﬂ√‚
+//  3. Plan Tree¿« ¿⁄µø ¿Á±∏º∫
 //---------------------------------------------------
 
 typedef struct qcTableMap
 {
-    ULong             dependency;   // Î≥¥Ï†ïÎêú dependency Í∞í
-    struct qmsFrom  * from;         // Ìï¥Îãπ Table IDÏóê Ìï¥ÎãπÌïòÎäî From Ï†ïÎ≥¥
+    ULong             dependency;   // ∫∏¡§µ» dependency ∞™
+    struct qmsFrom  * from;         // «ÿ¥Á Table IDø° «ÿ¥Á«œ¥¬ From ¡§∫∏
 } qcTableMap;
 
 //---------------------------------------------------
 // PROJ-1413 Simple View Merging
 // [qcTupleVarList]
-// from Ï†àÏùò relationÏùÑ mergeÌïòÍ∏∞ ÏúÑÌï¥ ÏûÑÏùòÏùò uniqueÌïú
-// tuple variableÏùÑ ÏÉùÏÑ±Ìï¥Ïïº ÌïòÎäîÎç∞, Ïù¥Î•º ÏúÑÌï¥ queryÏóêÏÑú
-// ÏÇ¨Ïö©Ìïú Î™®Îì† tuple variableÏùÑ Í∏∞Î°ùÌï¥Ïïº ÌïúÎã§.
-// (Ïã§Ï†úÎ°úÎäî $$Î°ú ÏãúÏûëÌïòÎäî tuple variableÎßå Í∏∞Î°ùÌïúÎã§.)
+// from ¿˝¿« relation¿ª merge«œ±‚ ¿ß«ÿ ¿”¿«¿« unique«—
+// tuple variable¿ª ª˝º∫«ÿæﬂ «œ¥¬µ•, ¿Ã∏¶ ¿ß«ÿ queryø°º≠
+// ªÁøÎ«— ∏µÁ tuple variable¿ª ±‚∑œ«ÿæﬂ «—¥Ÿ.
+// (Ω«¡¶∑Œ¥¬ $$∑Œ Ω√¿€«œ¥¬ tuple variable∏∏ ±‚∑œ«—¥Ÿ.)
 //---------------------------------------------------
 
 typedef struct qcTupleVarList
@@ -1163,8 +1623,8 @@ typedef struct qcComponentInfo
 {
     UInt              planID;
     idBool            isVMTR;
-    UInt              count;       /* Íµ¨ÏÑ± ÌÖåÏù¥Î∏î Í∞ØÏàò */
-    UShort          * components; /*  Íµ¨ÏÑ± ÌÖåÏù¥Î∏îÏùò Tuples */
+    UInt              count;       /* ±∏º∫ ≈◊¿Ã∫Ì ∞πºˆ */
+    UShort          * components; /*  ±∏º∫ ≈◊¿Ã∫Ì¿« Tuples */
     qcComponentInfo * next;
 } qcComponentInfo;
 
@@ -1222,21 +1682,21 @@ typedef struct qcTableModifyMap
 
 typedef struct qcResultCache
 {
-    UShort              flag;         // Result CacheÏóê ÏÇ¨Ïö©ÎêòÎäî flag
-    smTID               transID;      // Transction IDÎ•º Ï†ÄÏû•Ìï¥ÎÜìÍ≥† AutoCommit OffÏãú check
-    UInt                count;        // Ï†ÑÏ≤¥ QueryÏóê ÏÇ¨Ïö©Îêú cache count
+    UShort              flag;         // Result Cacheø° ªÁøÎµ«¥¬ flag
+    smTID               transID;      // Transction ID∏¶ ¿˙¿Â«ÿ≥ı∞Ì AutoCommit OffΩ√ check
+    UInt                count;        // ¿¸√º Queryø° ªÁøÎµ» cache count
     qcComponentInfo   * stack;        // ComponentInfo Stack
     qcComponentInfo   * list;         // ComponentInfo List
-    qcTableModifyMap  * modifyMap;    // ÏøºÎ¶¨Ïóê ÏÇ¨Ïö©Îêú TableÎì§ÏùòModifyCount Map
-    UChar             * data;         // Result CacheÏùò DataÏòÅÏó≠
-    UInt              * dataFlag;     // Result CacheÏùò Data Flag ÏòÅÏó≠
-    void              * bindValues;   // Bind ValueÎ•º Î≥µÏÇ¨Ìï¥ ÎÜìÎäîÎã§.
-    idBool              isBindChanged;// Bind Ï†ïÎ≥¥Í∞Ä Î∞îÎÄåÏóàÎäîÏßÄÎ•º Ï≤¥ÌÅ¨
-    iduMemory        ** memArray;     // Í∞ÅÍ∞ÅÏùò CacheÍ∞Ä ÏÇ¨Ïö©ÌïòÎäî Memory Î∞∞Ïó¥
-    ULong             * memSizeArray; // Í∞ÅÍ∞ÅÏùò CacheÍ∞Ä ÏÇ¨Ïö©ÌïòÎäî Memory ÌÅ¨Í∏∞ Î∞∞Ïó¥
-    ULong               qrcMemMaximum;// QCU_RESULT_CACHE_MEMORY_MAXIMUM ÌÅ¨Í∏∞
-    ULong               qmxMemMaximum;// iduProperty::getExecuteMemoryMax  ÌÅ¨Í∏∞
-    ULong               qmxMemSize;   // execution Memory MaxÏ≤¥ÌÅ¨Î•º ÏúÑÌïú qmxMemSize
+    qcTableModifyMap  * modifyMap;    // ƒı∏Æø° ªÁøÎµ» TableµÈ¿«ModifyCount Map
+    UChar             * data;         // Result Cache¿« Dataøµø™
+    UInt              * dataFlag;     // Result Cache¿« Data Flag øµø™
+    void              * bindValues;   // Bind Value∏¶ ∫πªÁ«ÿ ≥ı¥¬¥Ÿ.
+    idBool              isBindChanged;// Bind ¡§∫∏∞° πŸ≤Óæ˙¥¬¡ˆ∏¶ √º≈©
+    iduMemory        ** memArray;     // ∞¢∞¢¿« Cache∞° ªÁøÎ«œ¥¬ Memory πËø≠
+    ULong             * memSizeArray; // ∞¢∞¢¿« Cache∞° ªÁøÎ«œ¥¬ Memory ≈©±‚ πËø≠
+    ULong               qrcMemMaximum;// QCU_RESULT_CACHE_MEMORY_MAXIMUM ≈©±‚
+    ULong               qmxMemMaximum;// iduProperty::getExecuteMemoryMax  ≈©±‚
+    ULong               qmxMemSize;   // execution Memory Max√º≈©∏¶ ¿ß«— qmxMemSize
 } qcResultCache;
 
 typedef struct qcShardExecData
@@ -1245,12 +1705,19 @@ typedef struct qcShardExecData
     UChar    * execInfo;
     UInt       dataSize;
     UChar    * data;
+    idBool     partialStmt;
+    smSCN      leadingRequestSCN;      /* leading Request SCN for partial statement
+                                          OR Reqeust SCN for not-partial statement */
+    UInt       leadingPlanIndex;       /* first execute plan index for partial statement */
+    idBool     globalPSM;
+
+    sdiShardPartialExecType partialExecType; /* TASK-7219 Non-shard DML */
 } qcShardExecData;
 
 //---------------------------------------------------
 // PROJ-1436 SQL-Plan Cache
 // [qcgPlanProperty]
-// plan ÏÉùÏÑ±Ïóê Í¥ÄÎ†®Ìïú Î™®Îì† system & session property
+// plan ª˝º∫ø° ∞¸∑√«— ∏µÁ system & session property
 //---------------------------------------------------
 
 enum qcPlanPropertyKind
@@ -1316,12 +1783,25 @@ enum qcPlanPropertyKind
     PLAN_PROPERTY_OPTIMIZER_SEMI_JOIN_REMOVE,
     PLAN_PROPERTY_SHARD_META_NUMBER_FOR_DATA,    /* PROJ-2701 */
     PLAN_PROPERTY_SHARD_META_NUMBER_FOR_SESSION, /* PROJ-2701 */
-    PLAN_PROPERTY_SHARD_IS_DATA_SESSION,         /* PROJ-2701 */
-    PLAN_PROPERTY_SHARD_AGGREGATION_TRANSFORM_DISABLE,
+    PLAN_PROPERTY_SHARD_IS_USER_SESSION,         /* PROJ-2701 */
+    PLAN_PROPERTY_CALL_BY_SHARD_ANALYZE_PROTOCOL,/* TASK-7219 */
+    PLAN_PROPERTY_SHARD_PARTIAL_EXEC_TYPE,       /* TASK-7219 Non-shard DML */
+    PLAN_PROPERTY_SHARD_AGGREGATION_TRANSFORM_ENABLE,
+    PLAN_PROPERTY_SHARD_TRANSFORM_MODE, /* TASK-7219 */
     PLAN_PROPERTY_KEY_PRESERVED_TABLE,
     PLAN_PROPERTY_OPTIMIZER_UNNEST_COMPATIBILITY,
     PLAN_PROPERTY_SERIAL_EXECUTE_MODE,
     PLAN_PROPERTY_OPTIMIZER_INVERSE_JOIN_ENABLE,  /* BUG-46932 */
+    PLAN_PROPERTY_REDUCE_PART_PREPARE_MEMORY,
+    PLAN_PROPERTY_SHARD_IN_PSM_ENABLE,
+    PLAN_PROPERTY_OPTIMIZER_OR_VALUE_INDEX, /* BUG-47986 */
+    PLAN_PROPERTY_OPTIMIZER_PLAN_HASH_OR_SORT_METHOD, /* BUG-48132 */
+    PLAN_PROPERTY_OPTIMIZER_INDEX_NL_JOIN_PENALTY, /* BUG-48135 */
+    PLAN_PROPERTY_OPTIMIZER_INDEX_COST_MODE, /* BUG-48120 */
+    PLAN_PROPERTY_OPTIMIZER_BUCKET_COUNT_MAX, /* BUG-48161 */
+    PLAN_PROPERTY_SHARD_STATUS,    
+    PLAN_PROPERTY_SHARD_INTERNAL_LOCAL_OPERATION,
+    PLAN_PROPERTY_LEFT_OUTER_SKIP_RIGHT_ENABLE, /* PROJ-2750 */
     PLAN_PROPERTY_MAX
 };
 
@@ -1346,7 +1826,7 @@ typedef struct qcPlanProperty
     UInt    normalFormMaximum;
 
     idBool  defaultDateFormatRef;
-    SChar   defaultDateFormat[IDP_MAX_VALUE_LEN];  // MTC_TO_CHAR_MAX_PRECISION Î≥¥Îã§ ÌÅ¨Îã§.
+    SChar   defaultDateFormat[IDP_MAX_VALUE_LEN];  // MTC_TO_CHAR_MAX_PRECISION ∫∏¥Ÿ ≈©¥Ÿ.
 
     idBool  STObjBufSizeRef;
     UInt    STObjBufSize;
@@ -1354,7 +1834,7 @@ typedef struct qcPlanProperty
     idBool  optimizerSimpleViewMergingDisableRef;
     UInt    optimizerSimpleViewMergingDisable;
 
-    // BUG-23780 TEMP_TBS_MEMORY ÌûåÌä∏ Ï†ÅÏö©Ïó¨Î∂ÄÎ•º propertyÎ°ú Ï†úÍ≥µ
+    // BUG-23780 TEMP_TBS_MEMORY »˘∆Æ ¿˚øÎø©∫Œ∏¶ property∑Œ ¡¶∞¯
     idBool  optimizerDefaultTempTbsTypeRef;
     UInt    optimizerDefaultTempTbsType;
 
@@ -1507,7 +1987,7 @@ typedef struct qcPlanProperty
     idBool  optimizerInnerJoinPushDownRef;
     UInt    optimizerInnerJoinPushDown;
 
-    // BUG-43068 Indexable order by Í∞úÏÑ†
+    // BUG-43068 Indexable order by ∞≥º±
     idBool  optimizerOrderPushDownRef;
     UInt    optimizerOrderPushDown;
 
@@ -1538,7 +2018,7 @@ typedef struct qcPlanProperty
     idBool optimizerDBMSStatPolicyRef;
     UInt   optimizerDBMSStatPolicy;
 
-    /* BUG-44850 Index NL , Inverse index NL Ï°∞Ïù∏ ÏµúÏ†ÅÌôî ÏàòÌñâÏãú ÎπÑÏö©Ïù¥ ÎèôÏùºÌïòÎ©¥ primary keyÎ•º Ïö∞ÏÑ†Ï†ÅÏúºÎ°ú ÏÑ†ÌÉù. */
+    /* BUG-44850 Index NL , Inverse index NL ¡∂¿Œ √÷¿˚»≠ ºˆ«‡Ω√ ∫ÒøÎ¿Ã µø¿œ«œ∏È primary key∏¶ øÏº±¿˚¿∏∑Œ º±≈√. */
     idBool optimizerIndexNLJoinAccessMethodPolicyRef;
     UInt   optimizerIndexNLJoinAccessMethodPolicy;
 
@@ -1550,12 +2030,24 @@ typedef struct qcPlanProperty
     ULong  mSMNForDataNode;
     idBool mSMNForSessionRef;
     ULong  mSMNForSession;
-    idBool mIsShardDataSessionRef;
-    idBool mIsShardDataSession;
+    idBool mIsShardUserSessionRef;
+    idBool mIsShardUserSession;
+
+    /* TASK-7219 Non-shard DML */
+    idBool mShardPartialExecTypeRef;
+    sdiShardPartialExecType mShardPartialExecType;
+
+    /* TASK-7219 Analyzer/Transformer/Executor º∫¥…∞≥º± */
+    idBool mCallByShardAnalyzeProtocolRef;
+    idBool mCallByShardAnalyzeProtocol;
 
     /* PROJ-2687 */
-    idBool mShardAggregationTransformDisableRef;
-    UInt   mShardAggregationTransformDisable;
+    idBool mShardAggregationTransformEnableRef;
+    UInt   mShardAggregationTransformEnable;
+
+    /* TASK-7219 */
+    idBool mShardTransformModeRef;
+    UInt   mShardTransformMode;
 
     // key preserved property
     idBool mKeyPreservedTableRef;
@@ -1572,6 +2064,44 @@ typedef struct qcPlanProperty
     /* BUG-46932 */ 
     idBool mInverseJoinEnableRef;
     UInt   mInverseJoinEnable;
+
+    /* BUG-47648  disk partitionø°º≠ ªÁøÎµ«¥¬ prepared memory ªÁøÎ∑Æ ∞≥º± */
+    idBool mReducePartPrepareMemoryRef;
+    UInt   mReducePartPrepareMemory;
+
+    idBool mShardInPSMEnableRef;
+    idBool mShardInPSMEnable;
+
+    /* BUG-47986 */
+    idBool mOrValueIndexRef;
+    UInt   mOrValueIndex;
+
+    /* BUG-48132 */
+    idBool mPlanHashOrSortMethodRef;
+    UInt   mPlanHashOrSortMethod;
+
+    /* BUG-48135 NL Join Penalty ∞™¿ª ¡∂¿˝«“ºˆ ¿÷¥¬ property √ﬂ∞° */
+    idBool mIndexNlJoinPenaltyRef;
+    UInt   mIndexNlJoinPenalty;
+
+    /* BUG-48120 */
+    idBool mIndexCostModeRef;
+    UInt   mIndexCostMode;
+
+    /* BUG-48162 */
+    idBool mBucketCountMaxRef;
+    UInt   mBucketCountMax;
+
+    idBool mShardStatusRef;
+    UInt   mShardStatus;
+
+    /* TASK-7307 */
+    idBool mShardInternalLocalOperationRef;
+    idBool mShardInternalLocalOperation;
+
+    /* PROJ-2750 */
+    idBool mLeftOuterSkipRightEnableRef;
+    UInt   mLeftOuterSkipRightEnable;
 } qcPlanProperty;
 
 typedef struct qcTemplate
@@ -1579,19 +2109,19 @@ typedef struct qcTemplate
     mtcTemplate        tmplate;
 
     // PROJ-1358
-    // Internal TupleÏùò ÏûêÎèô ÌôïÏû•ÏúºÎ°ú Ïù∏Ìï¥ Ìï®Íªò ÌôïÏû•ÎêòÏñ¥Ïïº Ìï®.
+    // Internal Tuple¿« ¿⁄µø »Æ¿Â¿∏∑Œ ¿Œ«ÿ «‘≤≤ »Æ¿Âµ«æÓæﬂ «‘.
     qcTableMap       * tableMap;     // Table Map
 
     UInt               planCount;
-    UInt             * planFlag;     // ÏßàÏùò ÏàòÌñâÏ†ÑÏóê Ìï†Îãπ Î∞è Ï¥àÍ∏∞ÌôîÎêòÏñ¥Ïïº Ìï®.
+    UInt             * planFlag;     // ¡˙¿« ºˆ«‡¿¸ø° «“¥Á π◊ √ ±‚»≠µ«æÓæﬂ «‘.
 
-    qmcCursor        * cursorMgr;    // ÏßàÏùò Ï≤òÎ¶¨Ïãú ÏÉùÏÑ±Îêú Cursor Í¥ÄÎ¶¨
-    qmcdTempTableMgr * tempTableMgr; // ÏßàÏùò Ï≤òÎ¶¨Ïãú ÏÉùÏÑ±Îêú Temp Table Í¥ÄÎ¶¨
-    qcTableInfoMgr   * tableInfoMgr; // ÏßàÏùò Ï≤òÎ¶¨Ïãú ÏÉùÏÑ±Îêú tableInfo Í¥ÄÎ¶¨
+    qmcCursor        * cursorMgr;    // ¡˙¿« √≥∏ÆΩ√ ª˝º∫µ» Cursor ∞¸∏Æ
+    qmcdTempTableMgr * tempTableMgr; // ¡˙¿« √≥∏ÆΩ√ ª˝º∫µ» Temp Table ∞¸∏Æ
+    qcTableInfoMgr   * tableInfoMgr; // ¡˙¿« √≥∏ÆΩ√ ª˝º∫µ» tableInfo ∞¸∏Æ
 
     vSLong             numRows;      // for NON-SELECT DML
 
-    // BUG-44536 Affected row countÍ≥º fetched row countÎ•º Î∂ÑÎ¶¨Ìï©ÎãàÎã§.
+    // BUG-44536 Affected row count∞˙ fetched row count∏¶ ∫–∏Æ«’¥œ¥Ÿ.
     qciStmtType        stmtType;
 
     UInt               fixedTableAutomataStatus;
@@ -1610,24 +2140,24 @@ typedef struct qcTemplate
     qtcNode          * currentdate;
 
     UInt               tupleVarGenNumber; // PROJ-1413
-    qcTupleVarList   * tupleVarList;      // queryÏóêÏÑú ÏÇ¨Ïö©Ìïú tuple variableÏùÑ Í∏∞Î°ù
+    qcTupleVarList   * tupleVarList;      // queryø°º≠ ªÁøÎ«— tuple variable¿ª ±‚∑œ
 
-    idBool             indirectRef;  // PROJ-1436 Í∞ÑÏ†ë Ï∞∏Ï°∞ ÏøºÎ¶¨(Í∞ùÏ≤¥)Ïùò ÌëúÏãú
+    idBool             indirectRef;  // PROJ-1436 ∞£¡¢ ¬¸¡∂ ƒı∏Æ(∞¥√º)¿« «•Ω√
 
     /* PROJ-2448 Subquery caching */
-    UInt               forceSubqueryCacheDisable;  // QCU_FORCE_SUBQUERY_CACHE_DISABLE Í∏∞Î°ù
+    UInt               forceSubqueryCacheDisable;  // QCU_FORCE_SUBQUERY_CACHE_DISABLE ±‚∑œ
 
     /* PROJ-2452 Caching for DETERMINISTIC Function */
-    UInt               cacheMaxCnt;     // QCU_QUERY_EXECUTION_CACHE_MAX_COUNT    Í∏∞Î°ù
-    UInt               cacheMaxSize;    // QCU_QUERY_EXECUTION_CACHE_MAX_SIZE     Í∏∞Î°ù
-    UInt               cacheBucketCnt;  // QCU_QUERY_EXECUTION_CACHE_BUCKET_COUNT Í∏∞Î°ù
-    UInt               cacheObjCnt;     // Ïã§Ï†ú ÏÇ¨Ïö©Îêú cache object count
+    UInt               cacheMaxCnt;     // QCU_QUERY_EXECUTION_CACHE_MAX_COUNT    ±‚∑œ
+    UInt               cacheMaxSize;    // QCU_QUERY_EXECUTION_CACHE_MAX_SIZE     ±‚∑œ
+    UInt               cacheBucketCnt;  // QCU_QUERY_EXECUTION_CACHE_BUCKET_COUNT ±‚∑œ
+    UInt               cacheObjCnt;     // Ω«¡¶ ªÁøÎµ» cache object count
     qtcCacheObj      * cacheObjects;    // cache object array
 
     /* PROJ-2553 Cache-aware Memory Hash Temp Table */
-    idBool             memHashTempPartDisable;     // QCU_HSJN_MEM_TEMP_PARTITIONING_DISABLE   Í∏∞Î°ù
-    idBool             memHashTempManualBucketCnt; // QCU_HSJN_MEM_TEMP_AUTO_BUCKETCNT_DISABLE Í∏∞Î°ù
-    UInt               memHashTempTlbCount;        // QCU_HSJN_MEM_TEMP_TLB_COUNT              Í∏∞Î°ù
+    idBool             memHashTempPartDisable;     // QCU_HSJN_MEM_TEMP_PARTITIONING_DISABLE   ±‚∑œ
+    idBool             memHashTempManualBucketCnt; // QCU_HSJN_MEM_TEMP_AUTO_BUCKETCNT_DISABLE ±‚∑œ
+    UInt               memHashTempTlbCount;        // QCU_HSJN_MEM_TEMP_TLB_COUNT              ±‚∑œ
 
     /* PROJ-2462 Result Cache */
     qcResultCache      resultCache;
@@ -1638,21 +2168,28 @@ typedef struct qcTemplate
 
     // BUG-44795
     UInt               optimizerDBMSStatPolicy;
+
+    /* BUG-48052 */
+    UInt               mUnnestViewNameIdx;
+
+    /* BUG-48776 */
+    UInt               mSubqueryMode;
+
 } qcTemplate;
 
 //---------------------------------------------------
 // PROJ-1436 SQL-Plan Cache
 // [qcPrepTemplate]
-// Í≥µÏú†Îêú planÏùÑ executeÌïòÍ∏∞ ÏúÑÌï¥ÏÑúÎäî private templateÏùÑ
-// ÏÉùÏÑ±Ìï¥Ïïº ÌïúÎã§. prepared private templateÏùÄ ÎØ∏Î¶¨ ÏÉùÏÑ±Ìïú
-// private templateÏùÑ ÏÇ¨Ïö©ÌïòÏó¨ clone templateÏùÑ ÌïòÏßÄ ÏïäÍ≥†
-// Î∞îÎ°ú ÏÇ¨Ïö©ÌïòÍ≤å ÌïòÏó¨ ÏÑ±Îä•ÏùÑ Ìñ•ÏÉÅ ÏãúÌÇ®Îã§.
+// ∞¯¿Øµ» plan¿ª execute«œ±‚ ¿ß«ÿº≠¥¬ private template¿ª
+// ª˝º∫«ÿæﬂ «—¥Ÿ. prepared private template¿∫ πÃ∏Æ ª˝º∫«—
+// private template¿ª ªÁøÎ«œø© clone template¿ª «œ¡ˆ æ ∞Ì
+// πŸ∑Œ ªÁøÎ«œ∞‘ «œø© º∫¥…¿ª «‚ªÛ Ω√≈≤¥Ÿ.
 //
 // [qcPrepTemplateHeader]
-// prepared private templateÏùÄ propertyÏóê ÏùòÌï¥ ÎØ∏Î¶¨ ÏÉùÏÑ±Ìï†
-// Í∞ØÏàòÎ•º Í≤∞Ï†ïÌï† Ïàò ÏûàÏßÄÎßå Í∑∏Î≥¥Îã§ Îçî ÎπàÎ≤àÌûà ÏÇ¨Ïö©ÎêòÎäî Í≤ΩÏö∞
-// Ï∂îÍ∞Ä ÏÉùÏÑ±Ìïú private templateÏùÑ qcPrepTemplateHeaderÏúºÎ°ú
-// Í¥ÄÎ¶¨ÌïòÏó¨ Ïû¨ÏÇ¨Ïö©Ìï† Ïàò ÏûàÎèÑÎ°ù ÌïúÎã§.
+// prepared private template¿∫ propertyø° ¿««ÿ πÃ∏Æ ª˝º∫«“
+// ∞πºˆ∏¶ ∞·¡§«“ ºˆ ¿÷¡ˆ∏∏ ±◊∫∏¥Ÿ ¥ı ∫Ûπ¯»˜ ªÁøÎµ«¥¬ ∞ÊøÏ
+// √ﬂ∞° ª˝º∫«— private template¿ª qcPrepTemplateHeader¿∏∑Œ
+// ∞¸∏Æ«œø© ¿ÁªÁøÎ«“ ºˆ ¿÷µµ∑œ «—¥Ÿ.
 //---------------------------------------------------
 
 typedef struct qcPrepTemplate
@@ -1666,10 +2203,10 @@ typedef struct qcPrepTemplate
 
 typedef struct qcPrepTemplateHeader
 {
-    /* fix BUG-29965 SQL Plan CacheÏóêÏÑú plan execution template Í¥ÄÎ¶¨Í∞Ä
-       Dynamic SQL ÌôòÍ≤ΩÏóêÏÑúÎäî Í∞úÏÑ†Ïù¥ ÌïÑÏöîÌïòÎã§.
-       template Ìï†Îãπ, Ìï¥Ï†úÏãú list full scanÏùÑ Î∞©ÏßÄ ÌïòÍ∏∞ ÏúÑÌïòÏó¨
-       Îã§ÏùåÍ≥º Í∞ôÏù¥  free list, used listÏùÑ Î∂ÑÎ¶¨ÌïúÎã§.
+    /* fix BUG-29965 SQL Plan Cacheø°º≠ plan execution template ∞¸∏Æ∞°
+       Dynamic SQL »Ø∞Êø°º≠¥¬ ∞≥º±¿Ã « ø‰«œ¥Ÿ.
+       template «“¥Á, «ÿ¡¶Ω√ list full scan¿ª πÊ¡ˆ «œ±‚ ¿ß«œø©
+       ¥Ÿ¿Ω∞˙ ∞∞¿Ã  free list, used list¿ª ∫–∏Æ«—¥Ÿ.
      */
     iduMutex           prepMutex;
     iduList            freeList;
@@ -1681,7 +2218,7 @@ typedef struct qcPrepTemplateHeader
 
 //---------------------------------------------------
 // PROJ-2206 With clause
-// with ÏûêÎ£åÍµ¨Ï°∞
+// with ¿⁄∑·±∏¡∂
 //---------------------------------------------------
 typedef struct qcWithStmt
 {
@@ -1693,8 +2230,8 @@ typedef struct qcWithStmt
     qcStatement         * stmt;
     idBool                isRecursiveView;
     idBool                isTop;
-    struct qcmTableInfo * tableInfo;       // recursive viewÏùò ÌïòÏúÑ tableInfo
-    UInt                  tableID;        // stmtÏóê Ìï†ÎãπÎêú table id
+    struct qcmTableInfo * tableInfo;       // recursive view¿« «œ¿ß tableInfo
+    UInt                  tableID;        // stmtø° «“¥Áµ» table id
 
     qcWithStmt          * next;
 } qcWithStmt;
@@ -1702,27 +2239,28 @@ typedef struct qcWithStmt
 typedef struct qcStmtListMgr
 {
     // PROJ-2415 Grouping Sets Statement
-    // Re-ParsingÏãú Host VariableÏ†ïÎ≥¥Î•º Í∏∞Ï°¥ WithÎßå ÏÇ¨Ïö© ÌïòÎçò Í≤ÉÏóêÏÑú
-    // Í≥µÏö©ÏúºÎ°ú Î∞îÍæ∏Í∏∞ ÏúÑÌï¥ qcWithStmtListMgr -> qcStmtListMgr Ïù¥Î¶Ñ Î≥ÄÍ≤Ω
+    // Re-ParsingΩ√ Host Variable¡§∫∏∏¶ ±‚¡∏ With∏∏ ªÁøÎ «œ¥¯ ∞Õø°º≠
+    // ∞¯øÎ¿∏∑Œ πŸ≤Ÿ±‚ ¿ß«ÿ qcWithStmtListMgr -> qcStmtListMgr ¿Ã∏ß ∫Ø∞Ê
 
     // For With
-    qcWithStmt     * head;           // withStmt Ï∞æÍ∏∞ ÏãúÏûë head
-    qcWithStmt     * current;        // withStmt Ï∞æÍ∏∞ ÌòÑÏû¨
-    UInt             tableIDSeqNext; // Îã§ÏùåÏóê Ìï†ÎãπÌï† table id
+    qcWithStmt     * head;           // withStmt √£±‚ Ω√¿€ head
+    qcWithStmt     * current;        // withStmt √£±‚ «ˆ¿Á
+    UInt             tableIDSeqNext; // ¥Ÿ¿Ωø° «“¥Á«“ table id
 
     // For HostVariable    
     SInt             hostVarOffset[ MTC_TUPLE_COLUMN_ID_MAXIMUM ];
-    
+    qtcNode        * mHostVarNode[ MTC_TUPLE_COLUMN_ID_MAXIMUM ]; /* TASK-7219 */
+    UShort           mHostVarOffset;                              /* TASK-7219 */
 } qcStmtListMgr;
 
 // BUG-36986
 typedef struct qcNamedVarNode
 {
-    qtcNode          * varNode;      // PSM ÏóêÏÑú Ï§ëÎ≥µÏùÑ Î∞∞Ïû¨Ìïú variable node
+    qtcNode          * varNode;      // PSM ø°º≠ ¡ﬂ∫π¿ª πË¿Á«— variable node
     qcNamedVarNode   * next;
 } qcNamedVarNode;
 
-// PROJ-2551 simple query ÏµúÏ†ÅÌôî
+// PROJ-2551 simple query √÷¿˚»≠
 typedef struct qcSimpleInfo
 {
     iduMemoryStatus           status;    // qmxMem status
@@ -1734,8 +2272,8 @@ typedef struct qcSimpleInfo
 //---------------------------------------------------
 // PROJ-1436 SQL-Plan Cache
 // [qcSharedPlan]
-// planÏùÑ Í≥µÏú†ÌïòÍ∏∞ ÏúÑÌï¥ qcStatementÏóêÏÑú planÏúºÎ°úÏç®
-// Í≥µÏú†Ìï¥ÏïºÌïòÎäî ÏòÅÏó≠ÏùÑ Íµ¨Î∂ÑÌïúÎã§.
+// plan¿ª ∞¯¿Ø«œ±‚ ¿ß«ÿ qcStatementø°º≠ plan¿∏∑ŒΩ·
+// ∞¯¿Ø«ÿæﬂ«œ¥¬ øµø™¿ª ±∏∫–«—¥Ÿ.
 //---------------------------------------------------
 
 typedef struct qcOffset
@@ -1749,7 +2287,7 @@ typedef struct qcOffset
 
 #define QC_PLAN_FLAG_INIT                     (0x00000000)
 
-// BUG-43524 hint Íµ¨Î¨∏Ïù¥ Ïò§Î•òÍ∞Ä ÎÇ¨ÏùÑÎïå ÏïåÏàò ÏûàÏúºÎ©¥ Ï¢ãÍ≤†ÏäµÎãàÎã§.
+// BUG-43524 hint ±∏πÆ¿Ã ø¿∑˘∞° ≥µ¿ª∂ß æÀºˆ ¿÷¿∏∏È ¡¡∞⁄Ω¿¥œ¥Ÿ.
 #define QC_PLAN_HINT_PARSE_MASK               (0x00000001)
 #define QC_PLAN_HINT_PARSE_SUCCESS            (0x00000000)
 #define QC_PLAN_HINT_PARSE_FAIL               (0x00000001)
@@ -1767,9 +2305,9 @@ typedef struct qcSharedPlan
     qcOffset                 * mHintOffset;
 
     /* PROJ-2550 PSM Encryption
-       encrypted textÏùò Ï†ïÎ≥¥Î°ú Ï≤´Î≤àÏß∏ parsing Ïãú
-       encrypted textÎ•º decryptionÌïú ÌõÑ
-       qss::setStmtTextÏóêÏÑú ÏÖãÌåÖÎêúÎã§. */
+       encrypted text¿« ¡§∫∏∑Œ √ππ¯¬∞ parsing Ω√
+       encrypted text∏¶ decryption«— »ƒ
+       qss::setStmtTextø°º≠ º¬∆√µ»¥Ÿ. */
     SChar                    * encryptedText;
     SInt                       encryptedTextLen;
 
@@ -1785,10 +2323,11 @@ typedef struct qcSharedPlan
 
     /* PROJ-2598 Shard pilot(shard Analyze) */
     struct sdiAnalyzeInfo    * mShardAnalysis;
+    struct qcShardParamInfo  * mShardParamInfo; /* TASK-7219 Non-shard DML */
     UShort                     mShardParamOffset;
     UShort                     mShardParamCount;
 
-    // ÏõêÎ≥∏ template
+    // ø¯∫ª template
     qcTemplate               * sTmplate;    // alloc from qmpMem
 
     // BUG-20652
@@ -1806,17 +2345,24 @@ typedef struct qcSharedPlan
     qcBindNode               * bindNode;
 } qcSharedPlan;
 
-typedef struct qcDDLReplInfo
+typedef struct qcDDLInfo
 {
-    smOID   mTableOID;
-    smOID   mPartTableOID[QC_DDL_REPL_PART_OID_COUNT];
-} qcDDLReplInfo;
+    idBool   mTransactionalDDLAvailable;
+    UInt     mSrcTableOIDCount;
+    smOID  * mSrcTableOIDArray;
+    UInt     mSrcPartOIDCountPerTable;
+    smOID  * mSrcPartOIDArray;
+    UInt     mDestTableOIDCount;
+    smOID  * mDestTableOIDArray;
+    UInt     mDestPartOIDCountPerTable;
+    smOID  * mDestPartOIDArray;
+} qcDDLInfo;
 
 typedef struct qcStatement
 {
     // PROJ-1436 shared plan
-    qcSharedPlan               privatePlan;  // qcStatementÏùò plan
-    qcSharedPlan               sharedPlan;   // Í≥µÏú†Îêú plan
+    qcSharedPlan               privatePlan;  // qcStatement¿« plan
+    qcSharedPlan               sharedPlan;   // ∞¯¿Øµ» plan
     qcSharedPlan             * myPlan;       // privatePlan or sharedPlan
     qcPlanProperty           * propertyEnv;  // alloc from qmeMem (for soft-prepare)
 
@@ -1839,7 +2385,7 @@ typedef struct qcStatement
     iduVarMemList            * qmbMem;      // Bind Memory
     iduMemory                * qmtMem;      // Trigger template memory
     iduMemory                * qxcMem;      // PROJ-2452 Execution Cache Memory
-    iduMemory                * qmsConvMem;  // server conversion memory
+    iduVarMemList            * qixMem;      // PROJ-2717 Internal procedure
 
     iduVarMemListStatus        qmpStackPosition;  // Stack Position to clear
     iduVarMemListStatus        mQmpStackPositionForCheckInFailure;
@@ -1857,17 +2403,17 @@ typedef struct qcStatement
     qsxEnvInfo               * spxEnv;   // for execution
 
     /* PROJ-2197 PSM Renewal
-     * PSMÏùò return bulk intoÎ•º Ï≤òÎ¶¨ÌïòÍ∏∞ ÏúÑÌï¥ÏÑú Ï∂îÍ∞Ä */
+     * PSM¿« return bulk into∏¶ √≥∏Æ«œ±‚ ¿ß«ÿº≠ √ﬂ∞° */
     qsxEnvParentInfo         * parentInfo;
 
     // To fix PR-4073 check memory
     iduMutex                   stmtMutex;
 
     /* BUG-38290
-     * SM cursor open Í≥º addOpenedCursor Ïã§Ìñâ ÏãúÏùò ÎèôÏãúÏÑ± Ï†úÏñ¥Î•º ÏúÑÌïú mutex
+     * SM cursor open ∞˙ addOpenedCursor Ω««‡ Ω√¿« µøΩ√º∫ ¡¶æÓ∏¶ ¿ß«— mutex
      */
     // BUG-38932 alloc, free cost of cursor mutex is too expensive.
-    // qmcCursor Ïóê ÏûàÎäî mutex Î•º qcStatement Î°ú ÏòÆÍ∏¥Îã§.
+    // qmcCursor ø° ¿÷¥¬ mutex ∏¶ qcStatement ∑Œ ø≈±‰¥Ÿ.
     iduMutex                   mCursorMutex;
 
     /* PROJ-2109 : Remove the bottleneck of alloc/free stmts. */
@@ -1883,7 +2429,7 @@ typedef struct qcStatement
     idBool                     disableLeftStore;
     idBool                     mInplaceUpdateDisableFlag;
 
-    idvSQL                   * mStatistics; /* ÌÜµÍ≥Ñ Ï†ïÎ≥¥*/
+    idvSQL                   * mStatistics; /* ≈Î∞Ë ¡§∫∏*/
     qmoSystemStatistics      * mSysStat; // PROJ-2242
 
     // BUG-36986
@@ -1896,21 +2442,28 @@ typedef struct qcStatement
     iduList                  * mPRLQMemList;
     iduList                  * mPRLQChdTemplateList;
 
-    // PROJ-2551 simple query ÏµúÏ†ÅÌôî
+    // PROJ-2551 simple query √÷¿˚»≠
     qcSimpleInfo               simpleInfo;
 
     UInt                       mFlag;
 
     qsxStmtList              * mStmtList;
+    qsxStmtList2             * mStmtList2;
 
     /* TASK-6744 */
     struct qmgRandomPlanInfo * mRandomPlanInfo;
 
     /* PROJ-2677 DDL synchronization */
-    qcDDLReplInfo              mDDLReplInfo;
-
+    qcDDLInfo                  mDDLInfo;
+    
     /* BUG-45899 */
     sdiPrintInfo               mShardPrintInfo;
+
+    /* TASK-7219 Shard Transformer Refactoring */
+    struct sdiQuerySetList   * mShardQuerySetList;
+
+    /* TASK-7219 Non-shard DML */
+    sdiShardPartialExecType    mShardPartialExecType;
 } qcStatement;
 
 #define QC_SMI_STMT( _QcStmt_ )  ( ( _QcStmt_ )->stmtInfo->mSmiStmtForExecute )
@@ -1943,9 +2496,19 @@ typedef struct qcStatement
             ? ID_TRUE : ID_FALSE                                \
         )
 
+#define QC_SESSION_IS_TEMP_SQL( _QcStmt_ )                   \
+        (                                                       \
+            ( ( ( _QcStmt_ )->session->mQPSpecific.mFlag        \
+                & QC_SESSION_TEMP_SQL_MASK )                 \
+              == QC_SESSION_TEMP_SQL_TRUE )                  \
+            ? ID_TRUE : ID_FALSE                                \
+        )
+
 // PROJ-2446
 #define QC_STMTTEXT( _QcStmt_ )    ( ( _QcStmt_ )->myPlan->stmtText )
 #define QC_STMTTEXTLEN( _QcStmt_ ) ( ( _QcStmt_ )->myPlan->stmtTextLen )
+
+#define QC_SHARD_CLIENT_INFO( _QcSession_ ) ( (_QcSession_)->mQPSpecific.mClientInfo )
 
 typedef struct qcParseSeqCaches
 {
@@ -1956,7 +2519,7 @@ typedef struct qcParseSeqCaches
     // This node is a representative node
     //      for getting tupleRowID and setting error position.
 
-    // PROJ-2365 sequence table Ï†ïÎ≥¥
+    // PROJ-2365 sequence table ¡§∫∏
     idBool                sequenceTable;
     struct qcmTableInfo * tableInfo;
     void                * tableHandle;
@@ -1976,9 +2539,9 @@ typedef struct qcNamePosList
 typedef enum qcShardStmtType
 {
     QC_STMT_SHARD_NONE = 0,
-    QC_STMT_SHARD_ANALYZE,  // Î∂ÑÏÑùÍ≤∞Í≥ºÏóê Îî∞Îùº ÏàòÌñâ
-    QC_STMT_SHARD_META,     // meta nodeÏóêÏÑú ÏàòÌñâ
-    QC_STMT_SHARD_DATA      // data nodesÏóêÏÑú ÏàòÌñâ
+    QC_STMT_SHARD_ANALYZE,  // ∫–ºÆ∞·∞˙ø° µ˚∂Û ºˆ«‡
+    QC_STMT_SHARD_META,     // meta nodeø°º≠ ºˆ«‡
+    QC_STMT_SHARD_DATA      // data nodesø°º≠ ºˆ«‡
 } qcShardStmtType;
 
 // BUG-45359
@@ -2034,7 +2597,7 @@ typedef struct qcConnectionNode
 {
     PDL_SOCKET socket;
     SLong      connectNodeKey;
-    /* PROJ-2657 UTL_SMTP ÏßÄÏõê */
+    /* PROJ-2657 UTL_SMTP ¡ˆø¯ */
     SInt       connectState;
     struct qcConnectionNode * next;
 }qcConnectionNode;
@@ -2045,7 +2608,7 @@ typedef struct qcConnectionList
     qcConnectionNode * connectionNode;
 }qcConnectionList;
 
-/* BUG-41307 User Lock ÏßÄÏõê */
+/* BUG-41307 User Lock ¡ˆø¯ */
 typedef struct qcUserLockNode
 {
     SInt     id;
@@ -2068,7 +2631,7 @@ typedef struct qcSessionObjInfo
     qcUserLockList   userLockList;
 } qcSessionObjInfo;
 
-/* PROJ-2657 UTL_SMTP ÏßÄÏõê */
+/* PROJ-2657 UTL_SMTP ¡ˆø¯ */
 enum qcConnectionState
 {
     QC_CONNECTION_STATE_NOCONNECT = 0,
@@ -2081,16 +2644,16 @@ enum qcConnectionState
     QC_CONNECTION_STATE_SMTP_CRLF
 };
 
-/* PROJ-2657 UTL_SMTP ÏßÄÏõê */
+/* PROJ-2657 UTL_SMTP ¡ˆø¯ */
 enum qcProtocolType
 {
     QC_PROTOCOL_TYPE_NONE = 0,
     QC_PROTOCOL_TYPE_SMTP
 };
 
-// PROJ-2163 : Ï∂îÍ∞Ä
-// Plan cache Îì±Î°ù, Í≤ÄÏÉâÏóê ÌïÑÏöîÌïú bind param
-// (ÏÑ±Îä• Ìñ•ÏÉÅÏùÑ ÏúÑÌï¥ Bitmap ÏúºÎ°ú Î≥ÄÍ≤ΩÌï† Ïàò ÏûàÏùå)
+// PROJ-2163 : √ﬂ∞°
+// Plan cache µÓ∑œ, ∞Àªˆø° « ø‰«— bind param
+// (º∫¥… «‚ªÛ¿ª ¿ß«ÿ Bitmap ¿∏∑Œ ∫Ø∞Ê«“ ºˆ ¿÷¿Ω)
 typedef struct qcPlanBindParam {
     UShort          id;
     UInt            type;
@@ -2098,8 +2661,8 @@ typedef struct qcPlanBindParam {
     SInt            scale;
 } qcPlanBindParam;
 
-// PROJ-2163 : Ï∂îÍ∞Ä
-// Plan cache Îì±Î°ù, Í≤ÄÏÉâÏóê ÌïÑÏöîÌïú bind info
+// PROJ-2163 : √ﬂ∞°
+// Plan cache µÓ∑œ, ∞Àªˆø° « ø‰«— bind info
 typedef struct qcPlanBindInfo
 {
     qcPlanBindParam      * bindParam;
@@ -2124,25 +2687,25 @@ typedef struct qcPRLQMemObj
     iduMemory  * mMemory;
 } qcPRLQMemObj;
 
-/* PROJ-2551 simple query ÏµúÏ†ÅÌôî
+/* PROJ-2551 simple query √÷¿˚»≠
  *
- * [sql-daÎ°ú Ìò∏Ï∂úÌïòÎäî Í≤ΩÏö∞]
- * 1. Í≤∞Í≥ºÍ∞Ä Ìïú Í±¥ÏûÑÏù¥ Î≥¥Ïû•ÎêòÎäî Í≤ΩÏö∞ qcSimpleResultÎ•º ÏÉùÏÑ±ÌïòÏßÄ ÏïäÍ≥†
- *    ÏßÅÏ†ë ÏÇ¨Ïö©ÏûêÏùò Î≥ÄÏàòÏóê Í∞íÏùÑ Î≥µÏÇ¨ÌïúÎã§.
- * 2. Í≤∞Í≥ºÍ∞Ä Ìïú Í±¥Ïù¥ ÏïÑÎãåÍ≤ΩÏö∞ executeÏãúÏ†êÏóêÏÑú fetchÍπåÏßÄ Î™®Îëê ÏàòÌñâÌïòÍ≥†
- *    qcSimpleResult chunkÎ•º ÏÉùÏÑ±ÌïòÏó¨ Îã¥ÏïÑÎÜìÎäîÎã§. Ïù¥ÌõÑ fetchÏãú
- *    idxÎ•º Î≥ÄÍ≤ΩÌï¥Í∞ÄÎ©∞ Îã§Ïãú clientÎ°ú Î≥µÏÇ¨ÌïúÎã§.
+ * [sql-da∑Œ »£√‚«œ¥¬ ∞ÊøÏ]
+ * 1. ∞·∞˙∞° «— ∞«¿”¿Ã ∫∏¿Âµ«¥¬ ∞ÊøÏ qcSimpleResult∏¶ ª˝º∫«œ¡ˆ æ ∞Ì
+ *    ¡˜¡¢ ªÁøÎ¿⁄¿« ∫Øºˆø° ∞™¿ª ∫πªÁ«—¥Ÿ.
+ * 2. ∞·∞˙∞° «— ∞«¿Ã æ∆¥—∞ÊøÏ executeΩ√¡°ø°º≠ fetch±Ó¡ˆ ∏µŒ ºˆ«‡«œ∞Ì
+ *    qcSimpleResult chunk∏¶ ª˝º∫«œø© ¥„æ∆≥ı¥¬¥Ÿ. ¿Ã»ƒ fetchΩ√
+ *    idx∏¶ ∫Ø∞Ê«ÿ∞°∏Á ¥ŸΩ√ client∑Œ ∫πªÁ«—¥Ÿ.
  *
- * [sql-daÍ∞Ä ÏïÑÎãàÏßÄÎßå fast executeÏù∏ Í≤ΩÏö∞]
- * 1. executeÏãúÏ†êÏóêÏÑú fetchÍπåÏßÄ Î™®Îëê ÏàòÌñâÌïòÍ≥†
- *    qcSimpleResult chunkÎ•º ÏÉùÏÑ±ÌïòÏó¨ Îã¥ÏïÑÎÜìÎäîÎã§. Ïù¥ÌõÑ fetchÏãú
- *    idxÎ•º Î≥ÄÍ≤ΩÌï¥Í∞ÄÎ©∞ Îã§Ïãú clientÎ°ú Î≥µÏÇ¨ÌïúÎã§.
+ * [sql-da∞° æ∆¥œ¡ˆ∏∏ fast execute¿Œ ∞ÊøÏ]
+ * 1. executeΩ√¡°ø°º≠ fetch±Ó¡ˆ ∏µŒ ºˆ«‡«œ∞Ì
+ *    qcSimpleResult chunk∏¶ ª˝º∫«œø© ¥„æ∆≥ı¥¬¥Ÿ. ¿Ã»ƒ fetchΩ√
+ *    idx∏¶ ∫Ø∞Ê«ÿ∞°∏Á ¥ŸΩ√ client∑Œ ∫πªÁ«—¥Ÿ.
  */
 typedef struct qcSimpleResult
 {
-    SChar           * result;  // ÏÑúÎ≤ÑÏóê Ï†ÄÏû•ÌïòÎäî results buffer
-    UInt              count;   // ÏÑúÎ≤ÑÏóê Ï†ÄÏû•Ìïú result count
-    UInt              idx;     // ÌÅ¥ÎùºÏù¥Ïñ∏Ìä∏ÏóêÏÑú fetchÌï† record index
+    SChar           * result;  // º≠πˆø° ¿˙¿Â«œ¥¬ results buffer
+    UInt              count;   // º≠πˆø° ¿˙¿Â«— result count
+    UInt              idx;     // ≈¨∂Û¿Ãæ∆Æø°º≠ fetch«“ record index
     qcSimpleResult  * next;
 } qcSimpleResult;
 
@@ -2153,5 +2716,26 @@ extern qcNamePosition gStandardName;
 
 // BUG-46074 PSM Trigger with multiple triggering events
 extern qcNamePosition gDBMSStandardName;
+
+/* TASK-7219 */
+typedef struct qcShardParamInfo 
+{
+    idBool mIsOutRefColumnBind;
+    UShort mOffset;
+    UShort mOutRefTuple;
+} qcShardParamInfo;
+
+/* TASK-7219 */
+typedef struct qcParamOffsetInfo {
+
+    UShort           mCount;
+    qcShardParamInfo mShardParamInfo[ MTC_TUPLE_COLUMN_ID_MAXIMUM ];
+
+} qcParamOffsetInfo;
+
+#define QC_INIT_PARAM_OFFSET_INFO( _info_ ) \
+{                                           \
+    (_info_)->mCount = 0;                   \
+}
 
 #endif /* _O_QC_H_ */

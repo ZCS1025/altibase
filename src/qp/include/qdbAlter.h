@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdbAlter.h 83334 2018-06-22 07:50:32Z donovan.seo $
+ * $Id: qdbAlter.h 90311 2021-03-24 09:46:45Z ahra.cho $
  **********************************************************************/
 #ifndef _O_QDB_ALTER_H_
 #define  _O_QDB_ALTER_H_  1
@@ -52,7 +52,7 @@ public:
     static IDE_RC validateNullable(qcStatement * aStatement);
     static IDE_RC validateAllIndexEnable(qcStatement * aStatement);
     static IDE_RC validateAlterMaxRows(qcStatement * aStatement);
-    // PROJ-1665 table option ë³€ê²½
+    // PROJ-1665 table option º¯°æ
     static IDE_RC validateAlterTableOptions(qcStatement * aStatement);
     // PROJ-1362
     static IDE_RC validateAlterLobAttributes(qcStatement * aStatement);
@@ -83,9 +83,17 @@ public:
     /* PROJ-2359 Table/Partition Access Option */
     static IDE_RC validateAccessPartition( qcStatement * aStatement );
 
+    // BUG-47599 
+    static IDE_RC validateAddRangePartition( qcStatement * aStatement );
+
     // validate common
     static IDE_RC validateAlterCommon( qcStatement * aStatement,
                                        idBool        aIsRepCheck );
+
+    /* TASK-7307 DML Data Consistency in Shard */
+    static IDE_RC validateUsableTable( qcStatement * aStatement );
+    static IDE_RC validateUsablePartition( qcStatement * aStatement );
+    static IDE_RC validateShardFlag( qcStatement * aStatement );
 
     // exection.
     static IDE_RC executeAddCol( qcStatement * aStatement);
@@ -130,6 +138,14 @@ public:
     /* PROJ-2359 Table/Partition Access Option */
     static IDE_RC executeAccessPartition( qcStatement * aStatement );
 
+    /* TASK-7307 DML Data Consistency in Shard */
+    static IDE_RC executeUsableTable( qcStatement * aStatement );
+    static IDE_RC executeUsablePartition( qcStatement * aStatement );
+    static IDE_RC executeShardFlag( qcStatement * aStatement );
+
+    // BUG-47599
+    static IDE_RC executeAddRangePartition( qcStatement * aStatement );
+
     static IDE_RC addColInfoIntoParseTree(
         qcStatement      * aStatement,
         qcmTableInfo     * aTableInfo,
@@ -143,7 +159,7 @@ public:
 
     // PR-4360
     static IDE_RC moveRow(qcStatement      * aStatement,
-                          qmsTableRef      * aTableRef,  /* add columnì‹œ ì‚¬ìš©í•¨ */
+                          qmsTableRef      * aTableRef,  /* add column½Ã »ç¿ëÇÔ */
                           qcmTableInfo     * aTableInfo,
                           const void       * aSrcTable,
                           const void       * aDstTable,
@@ -170,6 +186,10 @@ public:
         qcStatement    * aStatement,
         UInt             aTableID);
 
+    /* PROJ-2422 SRID */
+    static IDE_RC updateColumnSpecSRID( qcStatement * aStatement,
+                                        qcmColumn   * aColumns );
+
     static IDE_RC updateColumnSpecDefault(
         qcStatement * aStatement,
         qcmColumn   * aColumns);
@@ -192,7 +212,7 @@ public:
                                    qcmColumn   * aOldColumn,
                                    qcmColumn   * aNewColumn);
 
-    /* PROJ-1107 Check Constraint ì§€ì› */
+    /* PROJ-1107 Check Constraint Áö¿ø */
     static IDE_RC updateCheckCondition( qcStatement * aStatement,
                                         UInt          aConstraintID,
                                         SChar       * aCheckCondition );
@@ -251,24 +271,24 @@ public:
                                                    qcmTableInfo   * aTableInfo );
 
     // TASK-2398 Log Compression
-    // Tableì˜ Flagë¥¼ ë³€ê²½í•˜ëŠ” Alterêµ¬ë¬¸ì— ëŒ€í•œ Validation
+    // TableÀÇ Flag¸¦ º¯°æÇÏ´Â Alter±¸¹®¿¡ ´ëÇÑ Validation
     static IDE_RC validateAttrFlag(qcStatement * aStatement);
 
-    // Tableì˜ Flagë¥¼ ë³€ê²½í•˜ëŠ” Alterêµ¬ë¬¸ì— ëŒ€í•œ Validation
+    // TableÀÇ Flag¸¦ º¯°æÇÏ´Â Alter±¸¹®¿¡ ´ëÇÑ Validation
     static IDE_RC executeAttrFlag(qcStatement * aStatement);
 
-    // PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
-    // Supplemental Loggingí• ì§€ ì—¬ë¶€ì— ëŒ€í•œ
-    // Tableì˜ Flagë¥¼ ë³€ê²½í•˜ëŠ” Alterêµ¬ë¬¸ì— ëŒ€í•œ Validation
+    // PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
+    // Supplemental LoggingÇÒÁö ¿©ºÎ¿¡ ´ëÇÑ
+    // TableÀÇ Flag¸¦ º¯°æÇÏ´Â Alter±¸¹®¿¡ ´ëÇÑ Validation
     static IDE_RC validateAlterTableSuppLogging(qcStatement * aStatement);
-    // Supplemental Loggingí• ì§€ ì—¬ë¶€ì— ëŒ€í•œ
-    // Tableì˜ Flagë¥¼ ë³€ê²½í•˜ëŠ” Alterêµ¬ë¬¸ì— ëŒ€í•œ Execution
+    // Supplemental LoggingÇÒÁö ¿©ºÎ¿¡ ´ëÇÑ
+    // TableÀÇ Flag¸¦ º¯°æÇÏ´Â Alter±¸¹®¿¡ ´ëÇÑ Execution
     static IDE_RC executeAlterTableSuppLogging(qcStatement * aStatement);
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     static IDE_RC validateAlterPartition( qcStatement * aStatement );
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     static IDE_RC executeAlterPartition( qcStatement * aStatement );
 
     /* PROJ-2465 Tablespace Alteration for Table */
@@ -277,7 +297,7 @@ public:
     /* PROJ-2465 Tablespace Alteration for Table */
     static IDE_RC executeAlterTablespace( qcStatement * aStatement );
 
-    // BUG-42594 alter table í…Œì´ë¸”ëª… touch êµ¬ë¬¸ ì§€ì›
+    // BUG-42594 alter table Å×ÀÌºí¸í touch ±¸¹® Áö¿ø
     static IDE_RC validateTouchTable(qcStatement * aStatement);
     static IDE_RC executeTouchTable(qcStatement * aStatement);
 
@@ -291,10 +311,10 @@ private:
 
     //-----------------------------------------
     // PROJ-1877
-    // alter column modifyì—ì„œ ì‚¬ìš©í•˜ëŠ” í•¨ìˆ˜
+    // alter column modify¿¡¼­ »ç¿ëÇÏ´Â ÇÔ¼ö
     //-----------------------------------------
     
-    // memory tableì— ëŒ€í•œ modify columnì‹œ alter method ê²°ì •
+    // memory table¿¡ ´ëÇÑ modify column½Ã alter method °áÁ¤
     static IDE_RC decideModifyMethodForMemory(
                                  qcStatement           * aStatement,
                                  qcmColumn             * aTableColumns,
@@ -302,7 +322,7 @@ private:
                                  qdTblColModifyMethod  * aMethod,
                                  qdVerifyColumn       ** aVerifyColumn );
     
-    // disk tableì— ëŒ€í•œ modify columnì‹œ alter method ê²°ì •
+    // disk table¿¡ ´ëÇÑ modify column½Ã alter method °áÁ¤
     static IDE_RC decideModifyMethodForDisk(
                                  qcStatement           * aStatement,
                                  qcmColumn             * aTableColumns,
@@ -311,7 +331,7 @@ private:
                                  qdVerifyColumn       ** aVerifyColumn );
 
     // PROJ-1911
-    // disk tableì— ëŒ€í•œ modify column ì‹œ, index columnì˜ ì •ë³´ ë³€ê²½
+    // disk table¿¡ ´ëÇÑ modify column ½Ã, index columnÀÇ Á¤º¸ º¯°æ
     static IDE_RC modifyIndexColumnInfo( qcStatement     * aStatement,
                                          qdVerifyColumn  * aVerifyColumns,
                                          idBool            aIsTablePartition,
@@ -326,15 +346,15 @@ private:
                                            qdIndexTableList ** aDelIndexTables );
     
     // PROJ-1911
-    // disk tableì— ëŒ€í•œ modify column ì‹œ,
-    // modify columnê´€ë ¨ indexì˜ metaë¥¼ ë³€ê²½í•¨ìœ¼ë¡œì¨ index column ì •ë³´ ë³€ê²½
+    // disk table¿¡ ´ëÇÑ modify column ½Ã,
+    // modify column°ü·Ã indexÀÇ meta¸¦ º¯°æÇÔÀ¸·Î½á index column Á¤º¸ º¯°æ
     static IDE_RC alterIndexMetaForDisk( qcStatement   * aStatement,
                                          idBool          aIsTablePartition,
                                          qcmTableInfo ** aNewTableInfo );
 
     // PROJ-1911
-    // disk tableì— ëŒ€í•œ modify column ì‹œ,
-    // modify columnê´€ë ¨ indexë¥¼ ì¬ìƒì„± í•¨ìœ¼ë¡œì¨ index column ì •ë³´ ë³€ê²½
+    // disk table¿¡ ´ëÇÑ modify column ½Ã,
+    // modify column°ü·Ã index¸¦ Àç»ı¼º ÇÔÀ¸·Î½á index column Á¤º¸ º¯°æ
     static IDE_RC recreateIndexForDisk( qcStatement       * aStatement,
                                         const void        * aIndexHandle,
                                         qcmIndex          * aIndex,
@@ -345,7 +365,7 @@ private:
                                         qdIndexTableList ** aNewIndexTables,
                                         qdIndexTableList ** aDelIndexTables );
 
-    // ê²€ì‚¬í•  columnì„ ë“±ë¡í•œë‹¤.
+    // °Ë»çÇÒ columnÀ» µî·ÏÇÑ´Ù.
     static IDE_RC addVerifyColumn( qcStatement         * aStatement,
                                    qcmColumn           * aTableColumn,
                                    qdVerifyCommand       aCommand,
@@ -355,59 +375,59 @@ private:
                                    qdChangeStoredType    aChangeStoredType,
                                    qdVerifyColumn     ** aVerifyColumn );
     
-    // null_only commandë§Œìœ¼ë¡œ êµ¬ì„±ë˜ì—ˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+    // null_only command¸¸À¸·Î ±¸¼ºµÇ¾ú´ÂÁö °Ë»çÇÑ´Ù.
     static idBool isNullOnlyCommand( qdVerifyColumn * aVerifyColumn );
 
-    // columnì˜ value ê°’ì„ tableì—ì„œ ì½ì–´ ê²€ì‚¬í•œë‹¤.
+    // columnÀÇ value °ªÀ» table¿¡¼­ ÀĞ¾î °Ë»çÇÑ´Ù.
     static IDE_RC verifyColumnValue( qcStatement          * aStatement,
                                      qcmTableInfo         * aTableInfo,
                                      qdVerifyColumn       * aVerifyColumn,
                                      qdTblColModifyMethod * aMethod );
 
-    // columnì˜ value ê°’ì„ rowì—ì„œ ì½ì–´ ê²€ì‚¬í•œë‹¤.
+    // columnÀÇ value °ªÀ» row¿¡¼­ ÀĞ¾î °Ë»çÇÑ´Ù.
     static IDE_RC verifyColumnValueForRow(
                                      qcStatement          * aStatement,
                                      qdVerifyColumn       * aVerifyColumn,
                                      const void           * aRow,
                                      qdTblColModifyMethod * aMethod );
 
-    // columnì˜ value ê°’ì„ rowì—ì„œ ì½ì–´ nullì¸ì§€ ê²€ì‚¬í•œë‹¤.
+    // columnÀÇ value °ªÀ» row¿¡¼­ ÀĞ¾î nullÀÎÁö °Ë»çÇÑ´Ù.
     static IDE_RC verifyColumnValueNullOnlyForRow(
                                      qdVerifyColumn       * aVerifyColumn,
                                      const void           * aRow,
                                      qdTblColModifyMethod * aMethod );
 
-    // numeric typeì˜ length í™•ëŒ€ì¸ì§€ ê²€ì‚¬
+    // numeric typeÀÇ length È®´ëÀÎÁö °Ë»ç
     static idBool isEnlargingLengthForNumericType( SInt aTablePrecision,
                                                    SInt aTableScale,
                                                    SInt aModifyPrecision,
                                                    SInt aModifyScale );
 
-    // data lossê°€ ë°œìƒí•  ìˆ˜ ìˆëŠ” type ë³€í™˜ì¸ì§€ ê²€ì‚¬
+    // data loss°¡ ¹ß»ıÇÒ ¼ö ÀÖ´Â type º¯È¯ÀÎÁö °Ë»ç
     static IDE_RC isDataLossConversion( UInt     aFromTypeId,
                                         UInt     aToTypeId,
                                         idBool * aIsDataLoss );
 
-    // meta ë³€ê²½ë§Œìœ¼ë¡œ alter table modify column ê¸°ëŠ¥ìˆ˜í–‰
+    // meta º¯°æ¸¸À¸·Î alter table modify column ±â´É¼öÇà
     static IDE_RC alterMetaForMemory( qcStatement       * aStatement,
                                       qdTableParseTree  * aParseTree,
                                       qcmTableInfo     ** aNewTableInfo,
                                       qcmTableInfo     ** aNewPartInfo );
 
-    // table ì¬ìƒì„±ìœ¼ë¡œ alter table modify column ê¸°ëŠ¥ìˆ˜í–‰
+    // table Àç»ı¼ºÀ¸·Î alter table modify column ±â´É¼öÇà
     static IDE_RC recreateTableForMemory( qcStatement       * aStatement,
                                           qdTableParseTree  * aParseTree,
                                           qcmTableInfo     ** aNewTableInfo,
                                           qcmTableInfo     ** aNewPartInfo );
 
-    // meta ë³€ê²½ë§Œìœ¼ë¡œ alter table modify column ê¸°ëŠ¥ìˆ˜í–‰
+    // meta º¯°æ¸¸À¸·Î alter table modify column ±â´É¼öÇà
     static IDE_RC alterMetaForDisk( qcStatement       * aStatement,
                                     qdTableParseTree  * aParseTree,
                                     qcmTableInfo     ** aNewTableInfo,
                                     qcmTableInfo     ** aNewPartInfo );
     
     // PROJ-1877
-    // table ì¬ìƒì„±ìœ¼ë¡œ alter table modify column ê¸°ëŠ¥ìˆ˜í–‰
+    // table Àç»ı¼ºÀ¸·Î alter table modify column ±â´É¼öÇà
     static IDE_RC recreateTableForDisk( qcStatement       * aStatement,
                                         qdTableParseTree  * aParseTree,
                                         qcmTableInfo     ** aNewTableInfo,
@@ -415,35 +435,35 @@ private:
                                         qcmTableInfo     ** aNewPartInfo,
                                         UInt                aNewPartIdx );
 
-    // metaì—ì„œ not null constraint ì œê±°
+    // meta¿¡¼­ not null constraint Á¦°Å
     static IDE_RC deleteNotNullConstraint( qcStatement   * aStatement,
                                            qcmTableInfo  * aTableInfo,
                                            UInt            aColID );
     
-    // metaì—ì„œ not null constraint ì¶”ê°€
+    // meta¿¡¼­ not null constraint Ãß°¡
     static IDE_RC insertNotNullConstraint( qcStatement      * aStatement,
                                            qdTableParseTree * aParseTree,
                                            qcmColumn        * aColumn );
 
     //-----------------------------------------
     // PROJ-1877
-    // alter column modifyì—ì„œ memory tableì˜ backup & restoreì‹œ
-    // ì‚¬ìš©ë˜ëŠ” callbackí•¨ìˆ˜
+    // alter column modify¿¡¼­ memory tableÀÇ backup & restore½Ã
+    // »ç¿ëµÇ´Â callbackÇÔ¼ö
     //-----------------------------------------
 
-    // convert context ìƒì„±
+    // convert context »ı¼º
     static IDE_RC makeConvertContext( qcStatement       * aStatement,
                                       mtcColumn         * aSrcColumn,
                                       mtcColumn         * aDestColumn,
                                       qdbConvertContext * aContext );
     
-    // memory tableì˜ alterì‹œ ì‚¬ìš©ë˜ëŠ” callback
+    // memory tableÀÇ alter½Ã »ç¿ëµÇ´Â callback
     static IDE_RC initializeConvert( void * aInfo );
     
-    // memory tableì˜ alterì‹œ ì‚¬ìš©ë˜ëŠ” callback
+    // memory tableÀÇ alter½Ã »ç¿ëµÇ´Â callback
     static IDE_RC finalizeConvert( void * aInfo );
     
-    // memory tableì˜ alterì‹œ ì‚¬ìš©ë˜ëŠ” callback
+    // memory tableÀÇ alter½Ã »ç¿ëµÇ´Â callback
     static IDE_RC convertSmiValue( idvSQL          * aStatistics,
                                    const smiColumn * aSrcColumn,
                                    const smiColumn * aDestColumn,
@@ -451,7 +471,7 @@ private:
                                    void            * aInfo );
 
     /* PROJ-1090 Function-based Index
-     *  memory tableì˜ alterì‹œ ì‚¬ìš©ë˜ëŠ” callback
+     *  memory tableÀÇ alter½Ã »ç¿ëµÇ´Â callback
      */
     static IDE_RC calculateSmiValueArray( smiValue * aValueArr,
                                           void     * aInfo );
@@ -460,14 +480,14 @@ private:
     static IDE_RC printProgressLog( void  * aInfo,
                                     idBool  aIsProgressComplete );
     
-    // PROJ-1911 Add Column ìˆ˜í–‰ ë°©ë²•ì„
-    // ( drop & create new table )ë¡œ ìˆ˜í–‰í•  ê²ƒì¸ì§€
-    // column ì •ë³´ë§Œì„ ë³€ê²½í•˜ë„ë¡ ìˆ˜í–‰í•  ê²ƒì¸ì§€ ê²°ì •
+    // PROJ-1911 Add Column ¼öÇà ¹æ¹ıÀ»
+    // ( drop & create new table )·Î ¼öÇàÇÒ °ÍÀÎÁö
+    // column Á¤º¸¸¸À» º¯°æÇÏµµ·Ï ¼öÇàÇÒ °ÍÀÎÁö °áÁ¤
     static IDE_RC decideAddColExeMethod( qcStatement      * aStatement,
                                          qdTableParseTree * aParseTree,
                                          idBool           * aRecreateTable );
 
-    // PROJ-1911 Recreate Table ë°©ì‹ìœ¼ë¡œ Add Column
+    // PROJ-1911 Recreate Table ¹æ½ÄÀ¸·Î Add Column
     static IDE_RC executeAddColByRecreateTable(
         qcStatement           * aStatement,
         qdTableParseTree      * aParseTree,
@@ -482,7 +502,7 @@ private:
         qcmTableInfo         ** aNewTableInfo,
         qcmPartitionInfoList ** aNewPartInfoList );
 
-    // PROJ-1911 Meta ë³€ê²½ ë°©ì‹ìœ¼ë¡œ Add Column
+    // PROJ-1911 Meta º¯°æ ¹æ½ÄÀ¸·Î Add Column
     static IDE_RC executeAddColByAlterMeta(
         qcStatement           * aStatement,
         qdTableParseTree      * aParseTree,
@@ -498,7 +518,7 @@ private:
         qcmPartitionInfoList ** aNewPartInfoList );
 
     // PROJ-1911
-    // add column ìˆ˜í–‰ ì‹œ, column ì •ë³´ ë³€ê²½í•˜ëŠ” í•¨ìˆ˜
+    // add column ¼öÇà ½Ã, column Á¤º¸ º¯°æÇÏ´Â ÇÔ¼ö
     static IDE_RC alterColumnInfo4AddCol(
         qcStatement       * aStatement,
         qdTableParseTree  * aParseTree,
@@ -512,7 +532,7 @@ private:
         mtcColumn        ** aNewPartitionMtcColumn);
     
     // PROJ-1911
-    // add column ìˆ˜í–‰ ì‹œ, table headerë‚´ì˜ column list ë³€ê²½í•˜ëŠ” í•¨ìˆ˜
+    // add column ¼öÇà ½Ã, table header³»ÀÇ column list º¯°æÇÏ´Â ÇÔ¼ö
     static IDE_RC alterTableHeaderColumnList( qcStatement * aStatement,
                                               void        * aTableHandle,
                                               UInt          aTotalColCnt,
@@ -542,7 +562,7 @@ private:
                                                    UInt               aPartitionID,
                                                    qcmAccessOption    aAccessOption );
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     static IDE_RC validateIndexAlterationForPartition( qcStatement          * aStatement,
                                                        qcmTableInfo         * aTableInfo,
                                                        qcmTableInfo         * aPartInfo,
@@ -554,11 +574,11 @@ private:
                                                          qcmColumn    * aNewTableColumn,
                                                          UInt           aNewTableType );
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     static IDE_RC validateTablespaceRestriction( qcmTableInfo      * aTableInfo,
                                                  smiTableSpaceType   aTBSType );
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     static IDE_RC validateTableReferenceForPartitions( qcStatement          * aStatement,
                                                        qcmTableInfo         * aTableInfo,
                                                        qdPartitionAttribute * aSrcAttrList,
@@ -569,17 +589,17 @@ private:
                                                         qcmTableInfo * aTableInfo,
                                                         UInt           aNewTableType );
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     static IDE_RC checkVolatileTableForParent( qcStatement  * aStatement,
                                                qcmTableInfo * aTableInfo,
                                                idBool       * aIsVolatile );
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     static IDE_RC checkVolatileTableForChild( qcStatement  * aStatement,
                                               qcmTableInfo * aTableInfo,
                                               idBool       * aIsVolatile );
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     static IDE_RC checkVolatileTableForPartitions( qcStatement          * aStatement,
                                                    qcmTableInfo         * aTableInfo,
                                                    qdPartitionAttribute * aSrcAttrList,
@@ -594,7 +614,7 @@ private:
                                                     idBool       * aIsVolatileAsSelf,
                                                     idBool       * aIsVolatileAsParent );
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     static IDE_RC makeIndexPartAttr( qcStatement           * aStatement,
                                      qcmTableInfo          * aTableInfo,
                                      qcmTableInfo          * aPartInfo,
@@ -606,12 +626,12 @@ private:
                                  qcNamePosition               aTableTBSName,
                                  qdIndexPartitionAttribute ** aUserDefinedIndexTBSAttr );
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     static IDE_RC changeIndexAttr( qcStatement               * aStatement,
                                    qdIndexPartitionAttribute * aUserDefinedIndexTBSAttr,
                                    qdIndexPartitionAttribute * aAllIndexTBSAttr );
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     static IDE_RC copyRowForAlterTablespace( qcStatement      * aStatement,
                                              qcmTableInfo     * aSrcTableInfo,
                                              qcmTableInfo     * aDstTableInfo,
@@ -628,11 +648,27 @@ private:
                                                              qcmTableInfo       *** aDictionaryTableInfoArr,
                                                              qcmDictionaryTable  ** aDictionaryTable );
 
-    /* BUG-44230 ADD, DROP, MODIFY, REORGANIZE DDLì˜ INDEX, CONSTRAINT ìƒì„± ìˆœì„œ ë³€ê²½ */
+    /* BUG-44230 ADD, DROP, MODIFY, REORGANIZE DDLÀÇ INDEX, CONSTRAINT »ı¼º ¼ø¼­ º¯°æ */
     static IDE_RC recreateIndexForReorganize( qcStatement       * aStatement,
                                               qdTableParseTree  * aParseTree,
                                               smOID               aNewTableOID,
                                               qcmTableInfo     ** aNewTableInfo );
+
+    /* TASK-7307 DML Data Consistency in Shard */
+    static IDE_RC updateTableUsable( qcStatement          * aStatement,
+                                     UInt                   aTableID,
+                                     idBool                 aIsUsable );
+
+    /* TASK-7307 DML Data Consistency in Shard */
+    static IDE_RC updatePartitionUsable( qcStatement          * aStatement,
+                                         idBool                 aAll,
+                                         UInt                   aObjectID,
+                                         idBool                 aIsUsable );
+
+    /* TASK-7307 DML Data Consistency in Shard */
+    static IDE_RC updateTableShardFlag( qcStatement   * aStatement,
+                                        UInt            aTableID,
+                                        UInt            aShardFlag );
 };
 
 

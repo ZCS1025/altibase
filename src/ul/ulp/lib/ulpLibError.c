@@ -14,6 +14,7 @@
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <ulpLibMultiErrorMgr.h>
 #include <ulpLibError.h>
 
 void ulpSetErrorInfo4PCOMP( ulpSqlca          *aSqlca,
@@ -26,8 +27,8 @@ void ulpSetErrorInfo4PCOMP( ulpSqlca          *aSqlca,
 /***********************************************************************
  *
  * Description :
- *    ë‚´ì¥ SQLë¬¸ ìˆ˜í–‰ ê²°ê³¼ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” sqlca, sqlcode, sqlstateë¥¼
- *    ëª…ì‹œì ìœ¼ë¡œ ì¸ìë¡œ ë„˜ê²¨ì¤€ ê°’ìœ¼ë¡œ ì„¤ì • í•´ì£¼ëŠ” í•¨ìˆ˜. precompiler ë‚´ë¶€ ì—ëŸ¬ ì„¤ì • ë‹´ë‹¹.
+ *    ³»Àå SQL¹® ¼öÇà °á°úÁ¤º¸¸¦ ÀúÀåÇÏ´Â sqlca, sqlcode, sqlstate¸¦
+ *    ¸í½ÃÀûÀ¸·Î ÀÎÀÚ·Î ³Ñ°ÜÁØ °ªÀ¸·Î ¼³Á¤ ÇØÁÖ´Â ÇÔ¼ö. precompiler ³»ºÎ ¿¡·¯ ¼³Á¤ ´ã´ç.
  *
  * Implementation :
  *
@@ -52,8 +53,8 @@ void ulpSetErrorInfo4PCOMP( ulpSqlca          *aSqlca,
     {
         switch ( aErrCode )
         {
-        /* SQL_ERROR, SQL_SUCCESS, SQL_INVALID_HANDLE ... ì— ë”°ë¼ *
-         * SQLCODE, sqlca->sqlcodeë¥¼ ëª…ì‹œëœ ê°’ìœ¼ë¡œ ì„¤ì •í•´ì¤Œ.         */
+        /* SQL_ERROR, SQL_SUCCESS, SQL_INVALID_HANDLE ... ¿¡ µû¶ó *
+         * SQLCODE, sqlca->sqlcode¸¦ ¸í½ÃµÈ °ªÀ¸·Î ¼³Á¤ÇØÁÜ.         */
             case SQL_SUCCESS:
                 aSqlca->sqlcode = SQL_SUCCESS;
                 *(aSqlcode) = SQL_SUCCESS;
@@ -92,7 +93,7 @@ void ulpSetErrorInfo4PCOMP( ulpSqlca          *aSqlca,
     {
         (*aSqlstate)[0] = '\0';
     }
-    /* fetch ê±°ë‚˜ selectì¼ê²½ìš° sqlerrd[2]ì—ëŠ” fetchëœ rowìˆ˜ê°€ ì €ì¥ë¼ì•¼í•œë‹¤.*/
+    /* fetch °Å³ª selectÀÏ°æ¿ì sqlerrd[2]¿¡´Â fetchµÈ row¼ö°¡ ÀúÀåµÅ¾ßÇÑ´Ù.*/
     aSqlca->sqlerrd[2] = 0;
     aSqlca->sqlerrd[3] = 0;
 }
@@ -109,10 +110,10 @@ ACI_RC ulpSetErrorInfo4CLI( ulpLibConnNode    *aConnNode,
 /***********************************************************************
  *
  * Description :
- *     ë‚´ì¥ SQLë¬¸ ìˆ˜í–‰ ê²°ê³¼ì •ë³´ë¥¼ ODBC CLI í•¨ìˆ˜ë¥¼ ì´ìš©í•´ ì„¤ì • í•´ì£¼ëŠ” í•¨ìˆ˜.
- *    CLIì—ì„œ ë°œìƒí•œ ì—ëŸ¬ ì„¤ì • ë‹´ë‹¹.
- *     ulpSetErrorInfo4CLI í•¨ìˆ˜ ë‚´ì—ì„œ CLIí˜¸ì¶œ ì¤‘ ì—ëŸ¬ê°€ ë°œìƒí•˜ë©´ SQL_FAILURE ë¦¬í„´,
- *    ê·¸ì™¸ì˜ ê²½ìš° SQL_SUCCESS ë¦¬í„´.
+ *     ³»Àå SQL¹® ¼öÇà °á°úÁ¤º¸¸¦ ODBC CLI ÇÔ¼ö¸¦ ÀÌ¿ëÇØ ¼³Á¤ ÇØÁÖ´Â ÇÔ¼ö.
+ *    CLI¿¡¼­ ¹ß»ıÇÑ ¿¡·¯ ¼³Á¤ ´ã´ç.
+ *     ulpSetErrorInfo4CLI ÇÔ¼ö ³»¿¡¼­ CLIÈ£Ãâ Áß ¿¡·¯°¡ ¹ß»ıÇÏ¸é SQL_FAILURE ¸®ÅÏ,
+ *    ±×¿ÜÀÇ °æ¿ì SQL_SUCCESS ¸®ÅÏ.
  *
  * Implementation :
  *
@@ -122,16 +123,23 @@ ACI_RC ulpSetErrorInfo4CLI( ulpLibConnNode    *aConnNode,
     SQLRETURN    sRc;
     SQLHENV     *sHenv;
     SQLHDBC     *sHdbc;
-    /* BUG-31405 : Failoverì„±ê³µí›„ Failure of finding statement ì—ëŸ¬ ë°œìƒ. */
+    /* BUG-31405 : Failover¼º°øÈÄ Failure of finding statement ¿¡·¯ ¹ß»ı. */
     SQLSMALLINT sRecordNo;
-    /* sqlcliìˆ˜í–‰ê²°ê³¼ì •ë³´ë¥¼ ì„ì‹œë¡œ ì €ì¥í•´ë‘ê¸°ìœ„í•œ ë³€ìˆ˜ë“¤ */
+    /* sqlcli¼öÇà°á°úÁ¤º¸¸¦ ÀÓ½Ã·Î ÀúÀåÇØµÎ±âÀ§ÇÑ º¯¼öµé */
     ulpSqlcode   sSqlcode;
     ulpSqlstate  sSqlstate;
     acp_char_t   sErrMsg[MAX_ERRMSG_LEN];
     acp_sint16_t sErrMsgLen;
 
+    acp_bool_t        sExistFailOverSuccess;
+    ulpMultiErrorMgr *sMultiErrMgr; /* TASK-7218 */
+
     sHenv = &(aConnNode->mHenv);
     sHdbc = &(aConnNode->mHdbc);
+    sMultiErrMgr = &(aConnNode->mMultiErrorMgr);
+
+    ulpLibInitMultiErrorMgr(sMultiErrMgr);
+    ulpLibSetMultiErrorMgr(NULL);
 
     switch ( aSqlca->sqlcode = aSqlRes )
     {
@@ -210,7 +218,7 @@ ACI_RC ulpSetErrorInfo4CLI( ulpLibConnNode    *aConnNode,
                 case ERR_TYPE1 :
                 case ERR_TYPE1_DML :
                 case ERR_TYPE2 :
-                    /* SQLError í•¨ìˆ˜ë¥¼ í†µí•´ SQLSTATE, SQLCODE, ì—ëŸ¬ ë©”ì‹œì§€ ì–»ì–´ì˜´. */
+                    /* SQLError ÇÔ¼ö¸¦ ÅëÇØ SQLSTATE, SQLCODE, ¿¡·¯ ¸Ş½ÃÁö ¾ò¾î¿È. */
                     sRc = SQLError(*sHenv,
                                    *sHdbc,
                                    aHstmt,
@@ -248,10 +256,10 @@ ACI_RC ulpSetErrorInfo4CLI( ulpLibConnNode    *aConnNode,
 /* goto */
 GOTO_DEFAULT:
         sRecordNo = 1;
-        /* BUG-31405 : Failoverì„±ê³µí›„ Failure of finding statement ì—ëŸ¬ ë°œìƒ. */
-        /* SQLGetDiagRec í•¨ìˆ˜ë¥¼ í†µí•´ SQLSTATE, SQLCODE, ì—ëŸ¬ ë©”ì‹œì§€ ì–»ì–´ì˜´. */
-        /* failoverì„±ê³µí›„ ë˜ë‹¤ë¥¸ SQLCLIí•¨ìˆ˜ê°€ í˜¸ì¶œë˜ì–´ ë‹¤ë¥¸ì—ëŸ¬ë¡œ ì—ëŸ¬ê°’ì„ ë®ì–´ ì”Œìš¸ ìˆ˜ ìˆê¸°ë•Œë¬¸ì—
-           SQLGetDiagRec í•¨ìˆ˜ë¡œ ì´ì „ ìƒí™©ì˜ ì—ëŸ¬ê°’ë„ í™•ì¸í•¨. */
+        /* BUG-31405 : Failover¼º°øÈÄ Failure of finding statement ¿¡·¯ ¹ß»ı. */
+        /* SQLGetDiagRec ÇÔ¼ö¸¦ ÅëÇØ SQLSTATE, SQLCODE, ¿¡·¯ ¸Ş½ÃÁö ¾ò¾î¿È. */
+        /* failover¼º°øÈÄ ¶Ç´Ù¸¥ SQLCLIÇÔ¼ö°¡ È£ÃâµÇ¾î ´Ù¸¥¿¡·¯·Î ¿¡·¯°ªÀ» µ¤¾î ¾º¿ï ¼ö ÀÖ±â¶§¹®¿¡
+           SQLGetDiagRec ÇÔ¼ö·Î ÀÌÀü »óÈ²ÀÇ ¿¡·¯°ªµµ È®ÀÎÇÔ. */
         if( aHstmt == SQL_NULL_HSTMT )
         {
             sRc = SQLGetDiagRec(SQL_HANDLE_DBC,
@@ -265,11 +273,19 @@ GOTO_DEFAULT:
         }
         else
         {
-            /* ì—ëŸ¬ or SQL_NO_DATAê°€ ë¦¬í„´ë ë•Œê¹Œì§€ ë°˜ë³µí•´ì„œ í˜¸ì¶œí•˜ë©°, FAILOVER_SUCCESSê°€ ë¦¬í„´ë˜ë©´
-               ë‚´ì¥ êµ¬ë¬¸ ì¬ìˆ˜í–‰ì‹œ reprepareë¥¼ í•˜ê¸°ìœ„í•œ ì²˜ë¦¬ë¥¼ í•˜ë©°, ê·¸ì™¸ì˜ ê²½ìš°ì—ëŠ” ê°€ì¥ ìµœê·¼ì˜ errorì •ë³´ë¥¼
-               ì €ì¥í•¨. */
-            /* ë°˜ë³µí•´ì„œ SQL_ERRORê°€ ë¦¬í„´ë˜ì§€ëŠ” ì•ŠëŠ”ë‹¤ê³  ê°€ì •í•¨.
-               ê°€ë”ì´ë¼ë„ ì •ìƒì²˜ë¦¬ê°€ ë˜ë©´ ì–¸ì  ê°€ëŠ” SQL_NO_DATAê°€ ë¦¬í„´ë¨. */
+            /* TASK-7218 Handling Multiple Errors */
+            ACI_TEST( ulpLibMultiErrorMgrSetNumber( aHstmt, sMultiErrMgr )
+                      != ACI_SUCCESS );
+
+            /* TASK-7218 Handling Multiple Errors 
+               FAILOVER_SUCCESS°¡ ¸®ÅÏµÇ´õ¶óµµ Multi-Error¸¦ ¸ğµÎ ¼ÂÆÃÇÏ±â À§ÇØ
+               break ´ë½Å¿¡ flag¸¦ µÎ¾î °è¼Ó ¹İº¹ÇÏµµ·Ï ÇÔ */
+            /* ¿¡·¯ or SQL_NO_DATA°¡ ¸®ÅÏµÉ¶§±îÁö ¹İº¹ÇØ¼­ È£ÃâÇÏ¸ç, FAILOVER_SUCCESS°¡ ¸®ÅÏµÇ¸é
+               ³»Àå ±¸¹® Àç¼öÇà½Ã reprepare¸¦ ÇÏ±âÀ§ÇÑ Ã³¸®¸¦ ÇÏ¸ç, ±×¿ÜÀÇ °æ¿ì¿¡´Â °¡Àå ÃÖ±ÙÀÇ errorÁ¤º¸¸¦
+               ÀúÀåÇÔ. */
+            /* ¹İº¹ÇØ¼­ SQL_ERROR°¡ ¸®ÅÏµÇÁö´Â ¾Ê´Â´Ù°í °¡Á¤ÇÔ.
+               °¡²ûÀÌ¶óµµ Á¤»óÃ³¸®°¡ µÇ¸é ¾ğÁ¨°¡´Â SQL_NO_DATA°¡ ¸®ÅÏµÊ. */
+            sExistFailOverSuccess = ACP_FALSE;
             while ((sRc = SQLGetDiagRec(SQL_HANDLE_STMT,
                                         aHstmt,
                                         sRecordNo,
@@ -284,17 +300,18 @@ GOTO_DEFAULT:
                     break;
                 }
 
-                if(sSqlcode == ALTIBASE_FAILOVER_SUCCESS)
+                if ( sSqlcode == ALTIBASE_FAILOVER_SUCCESS &&
+                     sExistFailOverSuccess == ACP_FALSE )
                 {
                     *aSqlcode = sSqlcode;
                     acpSnprintf(*aSqlstate, MAX_SQLSTATE_LEN, "%s", sSqlstate);
                     acpSnprintf(aSqlca->sqlerrm.sqlerrmc, MAX_ERRMSG_LEN, "%s", sErrMsg);
                     aSqlca->sqlerrm.sqlerrml = sErrMsgLen;
-                    break;
+                    sExistFailOverSuccess = ACP_TRUE;
                 }
                 else
                 {
-                    /* ê°€ì¥ ìµœê·¼ì˜ errorì •ë³´ë¥¼ ì €ì¥í•´ë‘”ë‹¤. */
+                    /* °¡Àå ÃÖ±ÙÀÇ errorÁ¤º¸¸¦ ÀúÀåÇØµĞ´Ù. */
                     if(sRecordNo==1)
                     {
                         *aSqlcode = sSqlcode;
@@ -303,8 +320,20 @@ GOTO_DEFAULT:
                         aSqlca->sqlerrm.sqlerrml = sErrMsgLen;
                     }
                 }
+
+                /* TASK-7218 Handling Multiple Errors */
+                ulpLibMultiErrorMgrSetDiagRec( aHstmt,
+                                         sMultiErrMgr,
+                                         sRecordNo,
+                                         sSqlcode,
+                                         sSqlstate,
+                                         sErrMsg );
+
                 sRecordNo++;
             }
+
+            /* TASK-7218 Handling Multiple Errors */
+            ulpLibSetMultiErrorMgr(sMultiErrMgr);
         }
 
         ACI_TEST_RAISE ( sRc == SQL_INVALID_HANDLE, ERR_INVALID_HANDLE );
@@ -315,8 +344,9 @@ GOTO_DEFAULT:
                 *(aSqlcode) = SQL_ERROR;
                 break;
             case ALTIBASE_FAILOVER_SUCCESS:
-                /* ë¹ ë¥¸ reprepareë¥¼ ìœ„í•¨, ulpSetFailoverFlagì—ì„œ unsetë¨. */
-                aConnNode -> mFailoveredJustnow = ACP_TRUE;
+                /* BUG-47239 mFailoveredJustnow¸¦ »èÁ¦ÇÏ°í FAILOVER_SUCCESS°¡ 
+                 * °¨ÁöµÇ´Â´ë·Î ulpSetFailoverFlagÀ» ÅëÇØ¼­ mNeedReprepare¸¦ ¹Ù·Î ¼ÂÆÃÇØÁØ´Ù. */
+                (void) ulpSetFailoverFlag( aConnNode );
                 *(aSqlcode) *= -1;
                 break;
             default:
@@ -383,7 +413,7 @@ ACI_RC ulpGetConnErrorMsg( ulpLibConnNode *aConnNode, acp_char_t *aMsg )
 /***********************************************************************
  *
  * Description :
- *    Connection ì¤‘ ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš°, ì´ í•¨ìˆ˜ë¥¼ ì´ìš©í•´ ì—ëŸ¬ ë©”ì„¸ì§€ë¥¼ ì–»ì–´ì˜¨ë‹¤.
+ *    Connection Áß ¿¡·¯°¡ ¹ß»ıÇÑ °æ¿ì, ÀÌ ÇÔ¼ö¸¦ ÀÌ¿ëÇØ ¿¡·¯ ¸Ş¼¼Áö¸¦ ¾ò¾î¿Â´Ù.
  * 
  * Implementation :
  *

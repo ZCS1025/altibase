@@ -160,6 +160,12 @@ echo "DEMO CPOOL" | tee -a run.out
 echo "==========" | tee -a run.out
 ./demo_cpool | tee -a run.out
 
+echo "============" | tee -a run.out
+echo "DEMO MESSAGE" | tee -a run.out
+echo "============" | tee -a run.out
+is -f demo_message.sql
+./demo_message | tee -a run.out
+
 make clean
 is -f drop_schema.sql
 

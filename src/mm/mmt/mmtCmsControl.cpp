@@ -39,7 +39,7 @@ static IDE_RC answerCancelResult(cmiProtocolContext *aProtocolContext)
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§Žì€ í…Œì´ë¸” */
+    /* BUG-44124 ipcda ¸ðµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -65,7 +65,7 @@ static IDE_RC answerTransactionResult(cmiProtocolContext *aProtocolContext)
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§Žì€ í…Œì´ë¸” */
+    /* BUG-44124 ipcda ¸ðµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
     if( (sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED) && (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA) )
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG, CMB_BLOCK_DEFAULT_SIZE));
@@ -92,7 +92,7 @@ static IDE_RC answerSetSavepointResult( cmiProtocolContext *aProtocolContext )
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§Žì€ í…Œì´ë¸” */
+    /* BUG-44124 ipcda ¸ðµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
     if( ( sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED ) &&
         ( cmiGetLinkImpl( aProtocolContext ) == CMI_LINK_IMPL_IPCDA ) )
     {
@@ -120,7 +120,7 @@ static IDE_RC answerRollbackToSavepointResult( cmiProtocolContext *aProtocolCont
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§Žì€ í…Œì´ë¸” */
+    /* BUG-44124 ipcda ¸ðµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
     if( ( sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED ) &&
         ( cmiGetLinkImpl( aProtocolContext ) == CMI_LINK_IMPL_IPCDA ) )
     {
@@ -131,7 +131,7 @@ static IDE_RC answerRollbackToSavepointResult( cmiProtocolContext *aProtocolCont
 }
 
 /* BUG-46785 Shard statement partial rollback */
-static IDE_RC answerSetTransactionBrokenResult( cmiProtocolContext  * aProtocolContext )
+static IDE_RC answerShardNodeReportResult( cmiProtocolContext  * aProtocolContext )
 {
     cmiWriteCheckState sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
 
@@ -139,7 +139,7 @@ static IDE_RC answerSetTransactionBrokenResult( cmiProtocolContext  * aProtocolC
     CMI_WRITE_CHECK( aProtocolContext, 1 );
     sWriteCheckState = CMI_WRITE_CHECK_DEACTIVATED;
 
-    CMI_WOP( aProtocolContext, CMP_OP_DB_ShardStmtPartialRollbackResult );
+    CMI_WOP( aProtocolContext, CMP_OP_DB_ShardNodeReportResult );
 
     /* PROJ-2616 */
     MMT_IPCDA_INCREASE_DATA_COUNT( aProtocolContext );
@@ -148,7 +148,7 @@ static IDE_RC answerSetTransactionBrokenResult( cmiProtocolContext  * aProtocolC
 
     IDE_EXCEPTION_END;
 
-    /* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§Žì€ í…Œì´ë¸” */
+    /* BUG-44124 ipcda ¸ðµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
     if( ( sWriteCheckState == CMI_WRITE_CHECK_ACTIVATED ) &&
         ( cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA ) )
     {
@@ -171,8 +171,8 @@ IDE_RC mmtServiceThread::cancelProtocol(cmiProtocolContext *aProtocolContext,
 
     UInt          sStatementID;
 
-    /* PROJ-2160 CM íƒ€ìž…ì œê±°
-       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
+    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
+       ¸ðµÎ ÀÐÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄÝÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
     CMI_RD4(aProtocolContext, &sStatementID);
 
     IDE_CLEAR();
@@ -203,16 +203,16 @@ IDE_RC mmtServiceThread::cancelByCIDProtocol(cmiProtocolContext *aProtocolContex
 
     IDE_CLEAR();
 
-    /* PROJ-2160 CM íƒ€ìž…ì œê±°
-       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
+    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
+       ¸ðµÎ ÀÐÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄÝÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
     CMI_RD4(aProtocolContext, &sStmtCID);
 
     sSessionID = MMC_STMT_CID_SESSION(sStmtCID);
     IDE_TEST(mmtSessionManager::findSession(&sSession, sSessionID) != IDE_SUCCESS);
 
-    /* StmtCIDë¡œ Cancelì„ ì‹œë„í•  ë•ŒëŠ”, ì•„ì§ Stmtê°€ ì—†ì„ ìˆ˜ë„ ìžˆë‹¤.
-     * ì´ë•ŒëŠ” ì¡°ìš©ížˆ ë„˜ì–´ê°€ë©°, SUCCESSë¥¼ ë°˜í™˜í•œë‹¤. (ERRORê°€ ì•„ë‹ˆë‹¤.)
-     * ì˜ˆ) Alloc í•˜ìžë§ˆìž Cancelì„ ì‹œë„í•œ ê²½ìš° */
+    /* StmtCID·Î CancelÀ» ½ÃµµÇÒ ¶§´Â, ¾ÆÁ÷ Stmt°¡ ¾øÀ» ¼öµµ ÀÖ´Ù.
+     * ÀÌ¶§´Â Á¶¿ëÈ÷ ³Ñ¾î°¡¸ç, SUCCESS¸¦ ¹ÝÈ¯ÇÑ´Ù. (ERROR°¡ ¾Æ´Ï´Ù.)
+     * ¿¹) Alloc ÇÏÀÚ¸¶ÀÚ CancelÀ» ½ÃµµÇÑ °æ¿ì */
     sStmtID = sSession->getStmtIDFromMap(sStmtCID);
     if (sStmtID != MMC_STMT_ID_NONE)
     {
@@ -239,8 +239,8 @@ IDE_RC mmtServiceThread::transactionProtocol(cmiProtocolContext *aProtocolContex
 
     UChar       sOperation;
 
-    /* PROJ-2160 CM íƒ€ìž…ì œê±°
-       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
+    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
+       ¸ðµÎ ÀÐÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄÝÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
     CMI_RD1(aProtocolContext, sOperation);
 
     IDE_CLEAR();
@@ -268,10 +268,15 @@ IDE_RC mmtServiceThread::transactionProtocol(cmiProtocolContext *aProtocolContex
             break;
     }
 
-    /* BUG-45967 Data Nodeì˜ Shard Session ì •ë¦¬ */
-    IDE_TEST( sSession->checkSMNForDataNode( "TransactionResult" ) != IDE_SUCCESS );
+    IDE_TEST( answerTransactionResult(aProtocolContext) != IDE_SUCCESS )
 
-    return answerTransactionResult(aProtocolContext);
+    if ( sSession->isNeedRebuildNoti() == ID_TRUE )
+    {
+        IDE_TEST( sendShardRebuildNoti( aProtocolContext )
+                  != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
 
     IDE_EXCEPTION(DCLNotAllowedError);
     {
@@ -403,6 +408,9 @@ IDE_RC mmtServiceThread::shardNodeReport( cmiProtocolContext *aProtocolContext,
 
     IDE_TEST( checkSessionState( sSession, MMC_SESSION_STATE_SERVICE ) != IDE_SUCCESS) ;
 
+    IDU_FIT_POINT_RAISE( "mmtServiceThread::shardNodeReport::InvalidType",
+                         InvalidType );
+
     switch( sType )
     {
         case CMP_DB_SHARD_NODE_CONNECTION_REPORT:
@@ -420,7 +428,7 @@ IDE_RC mmtServiceThread::shardNodeReport( cmiProtocolContext *aProtocolContext,
             break;
     }
 
-    return answerSetTransactionBrokenResult( aProtocolContext );
+    return answerShardNodeReportResult( aProtocolContext );
 
     IDE_EXCEPTION( InvalidType )
     {

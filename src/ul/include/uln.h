@@ -41,7 +41,7 @@ typedef struct ulnDescRec ulnDescRec;
 typedef struct ulnIndLenPtrPair ulnIndLenPtrPair;
 /*
  * ---------------------------
- * cli2 ì—ì„œ ë„˜ì–´ì˜¨ ìƒìˆ˜ë“¤
+ * cli2 ¿¡¼­ ³Ñ¾î¿Â »ó¼öµé
  * ---------------------------
  */
 
@@ -55,7 +55,7 @@ typedef struct ulnIndLenPtrPair ulnIndLenPtrPair;
 
 /* fix BUG-17606 ,BUG-17724*/
 #if defined(HP_HPUX) ||  defined(IA64_HP_HPUX)
-/* fix BUG-22936 64bit SQLLENì´ 32bit , 64bit ëª¨ë‘ ì œê³µí•´ì•¼ í•©ë‹ˆë‹¤. */
+/* fix BUG-22936 64bit SQLLENÀÌ 32bit , 64bit ¸ğµÎ Á¦°øÇØ¾ß ÇÕ´Ï´Ù. */
 #if defined(COMPILE_64BIT)
 #if defined(BUILD_REAL_64_BIT_MODE)
 #define ALTIBASE_ODBC_NAME "libaltibase_odbc-64bit-ul64.sl"
@@ -66,7 +66,7 @@ typedef struct ulnIndLenPtrPair ulnIndLenPtrPair;
 #define ALTIBASE_ODBC_NAME "libaltibase_odbc.sl"
 #endif /* COMPILE_64BIT */
 #else /* HP_HPUX  */
-/* fix BUG-22936 64bit SQLLENì´ 32bit , 64bit ëª¨ë‘ ì œê³µí•´ì•¼ í•©ë‹ˆë‹¤. */
+/* fix BUG-22936 64bit SQLLENÀÌ 32bit , 64bit ¸ğµÎ Á¦°øÇØ¾ß ÇÕ´Ï´Ù. */
 #if defined(COMPILE_64BIT)
 #if defined(BUILD_REAL_64_BIT_MODE)
 #define ALTIBASE_ODBC_NAME "libaltibase_odbc-64bit-ul64.so"
@@ -99,40 +99,29 @@ typedef struct ulnIndLenPtrPair ulnIndLenPtrPair;
 
 #define ULN_MAX_CONVERSION_RATIO              (3)
 
-// 1ë¬¸ìì˜ ìµœëŒ€ í¬ê¸° (ê°€ì¥ í° ë¬¸ìëŠ” UTF-EBCDICìœ¼ë¡œ ìµœëŒ€ 5ë°”ì´íŠ¸)
+// 1¹®ÀÚÀÇ ÃÖ´ë Å©±â (°¡Àå Å« ¹®ÀÚ´Â UTF-EBCDICÀ¸·Î ÃÖ´ë 5¹ÙÀÌÆ®)
 #define ULN_MAX_CHARSIZE                      5
-
-/*
- * BUGBUG : ì ì ˆí•œ ìœ„ì¹˜ë¥¼ ì°¾ì•„ì„œ ì˜ blend ì‹œì¼œì•¼ í•  í…ë°...
- * ì„œë²„ ë©”ì„¸ì§€ê°€ ì™”ì„ ë•Œ ì½œë°±ë˜ëŠ” í•¨ìˆ˜ë¥¼ ì •í•˜ëŠ” DBC ì˜ attribute.
- * ulnSetConnectAttr() í•¨ìˆ˜ì—ì„œ ì‚¬ìš©ëœë‹¤.
- */
-#define ALTIBASE_MESSAGE_CALLBACK       1501
 
 /*
    Define initial values of Handles
 */
 #define ULN_INVALID_HANDLE        -1 
 
-/*
- * ì„œë²„ì—ì„œ ì˜¤ëŠ” ë©”ì„¸ì§€ë¥¼ ì‚¬ìš©ì application ì— ë„˜ê²¨ì£¼ëŠ” ì½œë°± êµ¬ì¡°ì²´ì´ë‹¤.
- * iSQL ì—ì„œ ì‚¬ìš©ì„ í•˜ê²Œ ë˜ëŠ”ë°, ì´ê²ƒì„ ulo ì— ë„£ì„ì§€, uln ì— ë„£ì„ì§€ ë§ì´ ì• ë§¤í•˜ë‹¤.
- *
- * BUGBUG : ìƒê°ì„ ì¢€ í•´ ë´ì•¼ í•˜ëŠ”ë° ì§€ê¸ˆì€ ì‹œê°„ì´ ì—†ìœ¼ë¯€ë¡œ ì—¬ê¸°ë‹¤ê°€ ë°”ë¡œ ë„£ê³ ,
- *          ulo.h ì—ì„œ uln.h ë¥¼ include í•˜ë„ë¡ í•˜ì.
- */
-typedef ACI_RC (*ulnServerMessageCallback)(acp_char_t *aMessage, acp_uint32_t aLength, void *aArgument);
+/* BUG-46019 ¼­¹ö¿¡¼­ ¿À´Â ¸Ş¼¼Áö¸¦ »ç¿ëÀÚ APP¿¡ Àü´ŞÇÏ´Â Callback Struct */
+typedef void (*ulnMessageCallback)(acp_uint8_t  *aMessage,
+                                   acp_uint32_t  aLength,
+                                   void         *aUserData);
 
-typedef struct ulnServerMessageCallbackStruct
+typedef struct ulnMessageCallbackStruct
 {
-    ulnServerMessageCallback  mFunction;
+    ulnMessageCallback  mFunction;
 
     /*
-     * ì‚¬ìš©ìê°€ ì„ì˜ì˜ argument ë¥¼ ì„¸íŒ…í•  ìˆ˜ ìˆë‹¤.
-     * ì´ argument ëŠ” mFunction ì´ í˜¸ì¶œ ë  ë•Œ aArgument ë¡œ ë„˜ì–´ê°€ê²Œ ëœë‹¤.
+     * »ç¿ëÀÚ°¡ ÀÓÀÇÀÇ Userdata¸¦ ¼³Á¤ÇÒ ¼ö ÀÖ´Ù.
+     * ÀÌ Userdata´Â mFunctionÀÌ È£Ãâ µÉ ¶§ aUserData·Î ³Ñ¾î°¡°Ô µÈ´Ù.
      */
-    void                     *mArgument;
-} ulnServerMessageCallbackStruct;
+    void               *mUserData;
+} ulnMessageCallbackStruct;
 
 /*
  * ODBC 3.x functions
@@ -183,7 +172,7 @@ SQLRETURN ulnBindCol(ulnStmt      *aStmt,
                      ulvSLen      *aStrLenOrIndPtr);
 
 /*
- * ì•„ë˜ì˜ ë‘ í•¨ìˆ˜ëŠ” SQLError() í•¨ìˆ˜ì˜ SQLGetDiagRec() í•¨ìˆ˜ë¡œì˜ ë§¤í•‘ë•Œë¬¸ì— ì¡´ì¬í•œë‹¤.
+ * ¾Æ·¡ÀÇ µÎ ÇÔ¼ö´Â SQLError() ÇÔ¼öÀÇ SQLGetDiagRec() ÇÔ¼ö·ÎÀÇ ¸ÅÇÎ¶§¹®¿¡ Á¸ÀçÇÑ´Ù.
  */
 acp_sint32_t ulnObjectGetSqlErrorRecordNumber(ulnObject    *aHandle);
 ACI_RC       ulnObjectSetSqlErrorRecordNumber(ulnObject    *aHandle,
@@ -492,7 +481,8 @@ SQLRETURN ulnRollbackToSavepoint( ulnDbc             * aDbc,
 /*
  * Functions dealing with LOB
  */
-SQLRETURN ulnGetLob(ulnStmt      *aStmt,
+SQLRETURN ulnGetLob(acp_sint16_t  aHandleType,
+                    ulnObject    *aObject,
                     acp_sint16_t  aLocatorCType,
                     acp_uint64_t  aSrcLocator,
                     acp_uint32_t  aFromPosition,
@@ -502,7 +492,8 @@ SQLRETURN ulnGetLob(ulnStmt      *aStmt,
                     acp_uint32_t  aBufferSize,
                     acp_uint32_t *aLengthWritten);
 
-SQLRETURN ulnPutLob(ulnStmt      *aStmt,
+SQLRETURN ulnPutLob(acp_sint16_t  aHandleType,
+                    ulnObject    *aObject,
                     acp_sint16_t  aLocatorCType,
                     acp_uint64_t  aLocator,
                     acp_uint32_t  aFromPosition,
@@ -511,10 +502,12 @@ SQLRETURN ulnPutLob(ulnStmt      *aStmt,
                     void         *aBuffer,
                     acp_uint32_t  aBufferSize);
 
-SQLRETURN ulnGetLobLength(ulnStmt      *aStmt,
+SQLRETURN ulnGetLobLength(acp_sint16_t  aHandleType,
+                          ulnObject    *aObject,
                           acp_uint64_t  aLocator,
                           acp_sint16_t  aLocatorType,
-                          acp_uint32_t *aLengthPtr);
+                          acp_uint32_t *aLengthPtr,
+                          acp_uint16_t *aIsNull);
 
 SQLRETURN ulnBindFileToCol(ulnStmt       *aStmt,
                            acp_sint16_t   aColumnNumber,
@@ -533,14 +526,16 @@ SQLRETURN ulnBindFileToParam(ulnStmt       *aStmt,
                              ulvSLen        aMaxFileNameLength,
                              ulvSLen       *aIndicator);
 
-SQLRETURN ulnFreeLob(ulnStmt      *aStmt,
+SQLRETURN ulnFreeLob(acp_sint16_t  aHandleType,
+                     ulnObject    *aObject,
                      acp_uint64_t  aLocator);
 
 /* PROJ-2047 Strengthening LOB - Added Interfaces */
-SQLRETURN ulnTrimLob(ulnStmt     *aStmt,
-                     acp_sint16_t aLocatorCType,
-                     acp_uint64_t aLocator,
-                     acp_uint32_t aStartOffset);
+SQLRETURN ulnTrimLob(acp_sint16_t   aHandleType,
+                     ulnObject     *aObject,
+                     acp_sint16_t   aLocatorCType,
+                     acp_uint64_t   aLocator,
+                     acp_uint32_t   aStartOffset);
 
 
 SQLRETURN ulnCloseCursor(ulnStmt *aStmt);
@@ -589,7 +584,7 @@ extern acp_bool_t gTrace;
 #endif
 
 /* ------------------------------------------------
- *  SQLConnect* ê´€ë ¨ Framework
+ *  SQLConnect* °ü·Ã Framework
  * ----------------------------------------------*/
 
 // =================== SQLConnect
@@ -638,6 +633,16 @@ typedef struct ulnSQLDriverConnectFrameWork
 
 // bug-26661: nls_use not applied to nls module for ut
 extern mtlModule* gNlsModuleForUT;
+
+/* PROJ-2733-DistTxInfo Shard DistTxInfo for NATC */
+typedef struct ulnShardDistTxInfoStruct
+{
+    acp_uint64_t  mEnvSCN;
+    acp_uint64_t  mSCN;
+    acp_uint64_t  mTxFirstStmtSCN;
+    acp_uint64_t  mTxFirstStmtTime;
+    acp_uint8_t   mDistLevel;
+} ulnShardDistTxInfoStruct;
 
 ACP_EXTERN_C_END
 

@@ -28,6 +28,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
 
+import static Altibase.jdbc.driver.sharding.core.ShardValueType.*;
 import static Altibase.jdbc.driver.sharding.util.ShardingTraceLogger.shard_log;
 
 public class CmShardOperation extends CmOperationDef
@@ -39,12 +40,44 @@ public class CmShardOperation extends CmOperationDef
     CmShardOperation(CmChannel aChannel)
     {
         mChannel = aChannel;
-        // BUG-46513 ColumnFactoryê°ì²´ë¥¼ ì±„ë„ë¡œë¶€í„° í• ë‹¹ ë°›ëŠ”ë‹¤.
+        // BUG-46513 ColumnFactory°´Ã¼¸¦ Ã¤³Î·ÎºÎÅÍ ÇÒ´ç ¹Ş´Â´Ù.
         mColumnFactory = aChannel.getColumnFactory();
     }
-    
+
+    void readProtocolResult(CmProtocolContext aContext) throws SQLException
+    {
+        CmChannel sChannel = aContext.channel();
+        byte sOp = sChannel.readOp();
+        
+        if (sOp == DB_OP_ERROR_V3_RESULT)
+        {
+            CmOperation.readErrorV3Result(sChannel, aContext, sOp);
+            return;
+        }
+
+        switch (sOp)
+        {
+            case DB_OP_SHARD_NODE_GET_LIST_RESULT:
+                readGetNodeListResult((CmProtocolContextShardConnect)aContext);
+                break;
+            case DB_OP_SHARD_NODE_UPDATE_LIST_RESULT:
+                readUpdateNodeListResult((CmProtocolContextShardConnect)aContext);
+                break;
+            case DB_OP_SHARD_TRANSACTION_V3_RESULT:
+                readShardTransactionResult(aContext);
+                break;
+            case DB_OP_SET_PROPERTY_V3_RESULT:
+            case DB_OP_SHARD_STMT_PARTIAL_ROLLBACK_RESULT:
+            case DB_OP_SHARD_NODE_REPORT_RESULT:
+                break;
+            default:
+                Error.throwInternalError(ErrorDef.INVALID_OPERATION_PROTOCOL, String.valueOf(sOp));
+                break;
+        }
+    }
+
     /**
-     * í†µì‹ ë²„í¼ì— DB ShardNodeGetList(91) í”„ë¡œí† ì½œì„ ì“´ë‹¤.
+     * Åë½Å¹öÆÛ¿¡ DB ShardNodeGetList(91) ÇÁ·ÎÅäÄİÀ» ¾´´Ù.
      */
     void writeGetNodeList() throws SQLException
     {
@@ -53,7 +86,7 @@ public class CmShardOperation extends CmOperationDef
     }
 
     /**
-     * í†µì‹ ë²„í¼ì— DB ShardNodeUpdateList(89) í”„ë¡œí† ì½œì„ ì“´ë‹¤.
+     * Åë½Å¹öÆÛ¿¡ DB ShardNodeUpdateList(89) ÇÁ·ÎÅäÄİÀ» ¾´´Ù.
      */
     void writeUpdateNodeList() throws SQLException
     {
@@ -62,67 +95,45 @@ public class CmShardOperation extends CmOperationDef
     }
 
     /**
-     * í”„ë¡œí† ì½œì„ í†µí•´ DB ShardNodeUpdateList(89)ì˜ ê²°ê³¼ë¥¼ ì €ì¥í•œë‹¤.
-     * @param aShardContextConnect ìƒ¤ë“œì»¨í…ìŠ¤íŠ¸ ê°ì²´
+     * ÇÁ·ÎÅäÄİÀ» ÅëÇØ DB ShardNodeUpdateList(89)ÀÇ °á°ú¸¦ ÀúÀåÇÑ´Ù.
+     * @param aShardContextConnect »şµåÄÁÅØ½ºÆ® °´Ã¼
      */
     void readUpdateNodeListResult(CmProtocolContextShardConnect aShardContextConnect) throws SQLException
     {
         shard_log("(Update Node List Result) Shard Node List Update Result");
-        ShardNodeConfig sShardNodeConfig = makeShardNodeConfig(aShardContextConnect,
-                                                               DB_OP_SHARD_NODE_UPDATE_LIST_RESULT);
-        if (sShardNodeConfig != null) // BUG-46513 getNodeListí”„ë¡œí† ì½œì˜ ê²°ê³¼ë¡œ ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš°ì—ëŠ” ê±´ë„ˆë›´ë‹¤.
+        ShardNodeConfig sShardNodeConfig = makeShardNodeConfig();
+        aShardContextConnect.setShardNodeConfig(sShardNodeConfig);
+        aShardContextConnect.setShardMetaNumber(mChannel.readLong());
+        if (sShardNodeConfig.getNodeCount() == 0)
         {
-            aShardContextConnect.setShardNodeConfig(sShardNodeConfig);
-            aShardContextConnect.setShardMetaNumber(mChannel.readLong());
-            if (sShardNodeConfig.getNodeCount() == 0)
-            {
-                Error.throwSQLException(ErrorDef.SHARD_NO_NODES);
-            }
+            Error.throwSQLException(ErrorDef.SHARD_NO_NODES);
         }
     }
 
     /**
-     * í”„ë¡œí† ì½œì„ í†µí•´ DB ShardNodeGetList(91)ì˜ ê²°ê³¼ë¥¼ ì €ì¥í•œë‹¤.
-     * @param aShardContextConnect ìƒ¤ë“œì»¨í…ìŠ¤íŠ¸ ê°ì²´
+     * ÇÁ·ÎÅäÄİÀ» ÅëÇØ DB ShardNodeGetList(91)ÀÇ °á°ú¸¦ ÀúÀåÇÑ´Ù.
+     * @param aShardContextConnect »şµåÄÁÅØ½ºÆ® °´Ã¼
      */
     void readGetNodeListResult(CmProtocolContextShardConnect aShardContextConnect) throws SQLException
     {
-        ShardNodeConfig sShardNodeConfig = makeShardNodeConfig(aShardContextConnect,
-                                                               DB_OP_SHARD_NODE_GET_LIST_RESULT);
-        if (sShardNodeConfig != null) // BUG-46513 getNodeListí”„ë¡œí† ì½œì˜ ê²°ê³¼ë¡œ ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš°ì—ëŠ” ê±´ë„ˆë›´ë‹¤.
+        ShardNodeConfig sShardNodeConfig = makeShardNodeConfig();
+        long sShardPin = mChannel.readLong();
+        long sShardMetaNumber = mChannel.readLong();
+        aShardContextConnect.setShardNodeConfig(sShardPin, sShardMetaNumber, sShardNodeConfig);
+        if (sShardNodeConfig.getNodeCount() == 0)
         {
-            long sShardPin = mChannel.readLong();
-            long sShardMetaNumber = mChannel.readLong();
-            aShardContextConnect.setShardNodeConfig(sShardPin, sShardMetaNumber, sShardNodeConfig);
-            if (sShardNodeConfig.getNodeCount() == 0)
-            {
-                Error.throwSQLException(ErrorDef.SHARD_NO_NODES);
-            }
+            Error.throwSQLException(ErrorDef.SHARD_NO_NODES);
         }
         shard_log("(READ GET NODELIST RESULT) {0} ", aShardContextConnect);
     }
 
     /**
-     * ë°ì´í„° ë…¸ë“œì˜ ì •ë³´ë¥¼ í”„ë¡œí† ì½œì„ í†µí•´ ë°›ì•„ì™€ êµ¬ì„±í•œë‹¤.
-     * @param aContext ShardConnect ì»¨í…ìŠ¤íŠ¸ ê°ì²´
-     * @param aOp SHARD_NODE_GET_LIST_RESULT ë˜ëŠ” SHARD_NODE_UPDATE_LIST_RESULT op ì½”ë“œ
-     * @return ShardNodeConfigê°ì²´
-     * @throws SQLException ì„œë²„ì™€ í†µì‹  ì¤‘ ì—ëŸ¬ê°€ ë°œìƒí–ˆì„ ë•Œ
+     * µ¥ÀÌÅÍ ³ëµåÀÇ Á¤º¸¸¦ ÇÁ·ÎÅäÄİÀ» ÅëÇØ ¹Ş¾Æ¿Í ±¸¼ºÇÑ´Ù.
+     * @return ShardNodeConfig°´Ã¼
+     * @throws SQLException ¼­¹ö¿Í Åë½Å Áß ¿¡·¯°¡ ¹ß»ıÇßÀ» ¶§
      */
-    private ShardNodeConfig makeShardNodeConfig(CmProtocolContextShardConnect aContext, byte aOp) throws SQLException
+    private ShardNodeConfig makeShardNodeConfig() throws SQLException
     {
-        byte sOp = mChannel.readOp();
-        if (sOp == DB_OP_ERROR_RESULT)
-        {
-            // BUG-46513 getNodeList í”„ë¡œí† ì½œì˜ ê²°ê³¼ë¡œ ì—ëŸ¬ê°€ ë¦¬í„´ë˜ë©´ ì—ëŸ¬ê°’ì„ ì…‹íŒ…í•˜ê³  nullì„ ë¦¬í„´í•œë‹¤.
-            CmOperation.readErrorResult(mChannel, aContext);
-            return null;
-        }
-        else if (sOp != aOp)
-        {
-            Error.throwInternalError(ErrorDef.INVALID_OPERATION_PROTOCOL, String.valueOf(sOp));
-        }
-
         ShardNodeConfig sShardNodeConfig = new ShardNodeConfig();
         byte sIsTestEnable = mChannel.readByte();
         sShardNodeConfig.setTestEnable(sIsTestEnable == 1);
@@ -148,47 +159,42 @@ public class CmShardOperation extends CmOperationDef
     }
 
     /**
-     * í†µì‹ ë²„í¼ì— DB ShardAnalyze(87) í”„ë¡œí† ì½œì„ ì“´ë‹¤.
+     * Åë½Å¹öÆÛ¿¡ DB ShardAnalyze(87) ÇÁ·ÎÅäÄİÀ» ¾´´Ù.
      * @param aSql sql string
+     * @param aStmtID Statement ID
      */
-    void writeShardAnalyze(String aSql) throws SQLException
+    void writeShardAnalyze(String aSql, int aStmtID) throws SQLException
     {
         int sBytesLen = mChannel.prepareToWriteString(aSql, WRITE_STRING_MODE_DB);
 
         mChannel.checkWritable(10);
         mChannel.writeOp(DB_OP_SHARD_ANALYZE);
-        mChannel.writeInt(0);             // statement id
+        mChannel.writeInt(aStmtID);       // BUG-47274 ¹«Á¶°Ç 0À¸·Î º¸³»Áö ¾Ê°í ¼­¹ö¿¡¼­ ¹Ş¾Æ¿Â °ªÀ» º¸³½´Ù.
         mChannel.writeByte((byte)0);      // mode : dummy(0)
         mChannel.writeInt(sBytesLen);     // statement string length
         mChannel.writePreparedString();   // statement string
     }
 
     /**
-     * í”„ë¡œí† ì½œ DB ShardAnalyze(87)ì˜ ê²°ê³¼ë¥¼ ì €ì¥í•œë‹¤.
-     * @param aShardContextStmt shard statement context ê°ì²´
+     * ÇÁ·ÎÅäÄİ DB ShardAnalyze(87)ÀÇ °á°ú¸¦ ÀúÀåÇÑ´Ù.
+     * @param aShardContextStmt shard statement context °´Ã¼
      */
     void readShardAnalyze(CmProtocolContextShardStmt aShardContextStmt) throws SQLException
     {
-        if (mChannel.readOp() != DB_OP_SHARD_ANALYZE_RESULT)
+        byte sOp = mChannel.readOp();
+        if (sOp != DB_OP_SHARD_ANALYZE_RESULT)
         {
-            CmOperation.readErrorResult(mChannel, aShardContextStmt);
-            // analyzeì— ì‹¤í•´í•˜ë©´ serverside flagë¥¼ í™œì„±í™” í•œë‹¤.
+            CmOperation.readErrorV3Result(mChannel, aShardContextStmt, sOp);
+            // analyze¿¡ ½ÇÇØÇÏ¸é serverside flag¸¦ È°¼ºÈ­ ÇÑ´Ù.
             aShardContextStmt.getShardAnalyzeResult().setShardCoordinate(true);
             shard_log("(SHARD ANALYZE FAILED) use coordinator");
             return;
         }
+
         makeShardPrepareResult(aShardContextStmt.getShardPrepareResult());
         CmShardAnalyzeResult sShardAnalyzeResult = aShardContextStmt.getShardAnalyzeResult();
         makeShardAnalyzeResult(sShardAnalyzeResult);
-        makeShardValueMetaInfo(new ShardValueInfoPrimaryStrategy(sShardAnalyzeResult),
-                sShardAnalyzeResult.getShardKeyDataType());
 
-        if (sShardAnalyzeResult.isShardSubKeyExists())
-        {
-            makeShardSubKeyAnalyzeResult(sShardAnalyzeResult);
-            makeShardValueMetaInfo(new ShardValueInfoSubKeyStrategy(sShardAnalyzeResult),
-                    sShardAnalyzeResult.getShardSubKeyDataType());
-        }
         shard_log("(SHARD ANALZE RESULT) {0}", sShardAnalyzeResult);
 
         ShardNodeConfig sShardNodeConfig = aShardContextStmt.getShardContextConnect().getShardNodeConfig();
@@ -205,10 +211,10 @@ public class CmShardOperation extends CmOperationDef
         }
         else
         {
-            // BUG-45640 autocommit on ì´ê³  global transaction ìƒíƒœì¸ ê²½ìš° server sideë¡œ ìˆ˜í–‰í•œë‹¤.
+            // BUG-45640 autocommit on ÀÌ°í global transaction »óÅÂÀÎ °æ¿ì server side·Î ¼öÇàÇÑ´Ù.
             int sShardRangeInfoCnt = sShardAnalyzeResult.getShardRangeInfoCnt();
             if (aShardContextStmt.isAutoCommitMode() &&
-                aShardContextStmt.getShardTransactionLevel() == ShardTransactionLevel.GLOBAL &&
+                aShardContextStmt.getGlobalTransactionLevel() == GlobalTransactionLevel.GLOBAL &&
                     sShardRangeInfoCnt > 1)
             {
                 ShardSplitMethod sShardSplitMethod = sShardAnalyzeResult.getShardSplitMethod();
@@ -244,10 +250,10 @@ public class CmShardOperation extends CmOperationDef
     }
 
     /**
-     * ìƒ¤ë“œí‚¤ ê°’ì— ëŒ€í•œ Range ì •ë³´ë¥¼ ë°›ì•„ì˜¨ë‹¤.
-     * @param aShardAnalyzeResult shard statement analyze ê°ì²´
-     * @param aShardNodeConfig ìƒ¤ë“œ ë°ì´í„° ë…¸ë“œ êµ¬ì„± ì •ë³´
-     * @throws SQLException ì„œë²„ì™€ì˜ í†µì‹  ì¤‘ ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš°
+     * »şµåÅ° °ª¿¡ ´ëÇÑ Range Á¤º¸¸¦ ¹Ş¾Æ¿Â´Ù.
+     * @param aShardAnalyzeResult shard statement analyze °´Ã¼
+     * @param aShardNodeConfig »şµå µ¥ÀÌÅÍ ³ëµå ±¸¼º Á¤º¸
+     * @throws SQLException ¼­¹ö¿ÍÀÇ Åë½Å Áß ¿¡·¯°¡ ¹ß»ıÇÑ °æ¿ì
      */
     private void makeShardValueRangeInfo(CmShardAnalyzeResult aShardAnalyzeResult,
                                          ShardNodeConfig aShardNodeConfig) throws SQLException
@@ -267,7 +273,7 @@ public class CmShardOperation extends CmOperationDef
             if (aShardAnalyzeResult.isShardSubKeyExists())
             {
                 Range aCurrRange = sShardRangeList.getCurrRange();
-                // subkeyê°€ trueì¼ ê²½ìš° primary rangeì˜ ë²”ìœ„ê°€ ë³€ê²½ë˜ì—ˆì„ë•Œ flagë¥¼ ì…‹íŒ…í•´ ì¤˜ì•¼ í•œë‹¤.
+                // subkey°¡ trueÀÏ °æ¿ì primary rangeÀÇ ¹üÀ§°¡ º¯°æµÇ¾úÀ»¶§ flag¸¦ ¼ÂÆÃÇØ Áà¾ß ÇÑ´Ù.
                 if (aCurrRange != null && !sRange.equals(aCurrRange))
                 {
                     sShardRangeList.setPrimaryRangeChanged(true);
@@ -290,17 +296,17 @@ public class CmShardOperation extends CmOperationDef
                                      ShardSplitMethod aShardSplitMethod) throws SQLException
     {
         Range sRange = null;
-        // hashì¸ ê²½ìš°ì—ëŠ” ìƒ¤ë“œí‚¤ê°’ì„ Integerë¡œ ì„¤ì •í•œë‹¤.
+        // hashÀÎ °æ¿ì¿¡´Â »şµåÅ°°ªÀ» Integer·Î ¼³Á¤ÇÑ´Ù.
         if (aShardSplitMethod == ShardSplitMethod.HASH)
         {
             if (aPrevRange == null)
             {
                 aPrevRange = Range.getNullRange();
             }
-            // BUG-46642 HP Unixìš© JDK1.5.0.30 ì—ì„œ ì»´íŒŒì¼ì´ ì•ˆë˜ëŠ” ë¬¸ì œê°€ ìˆì–´ ì œë„ˆë¦­ë©”ì†Œë“œ í˜¸ì¶œì‹œ íƒ€ì…ì„ ëª…ì‹œí•œë‹¤.
+            // BUG-46642 HP Unix¿ë JDK1.5.0.30 ¿¡¼­ ÄÄÆÄÀÏÀÌ ¾ÈµÇ´Â ¹®Á¦°¡ ÀÖ¾î Á¦³Ê¸¯¸Ş¼Òµå È£Ãâ½Ã Å¸ÀÔÀ» ¸í½ÃÇÑ´Ù.
             sRange = Range.<Integer>between(aPrevRange, mChannel.readInt());
         }
-        // cloneì´ë‚˜ soloì¸ ê²½ìš°ì—ëŠ” shard range ì •ë³´ê°€ ì—†ê¸° ë•Œë¬¸ì— Rangeì •ë³´ë¥¼ ìƒì„±í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // cloneÀÌ³ª soloÀÎ °æ¿ì¿¡´Â shard range Á¤º¸°¡ ¾ø±â ¶§¹®¿¡ RangeÁ¤º¸¸¦ »ı¼ºÇÏÁö ¾Ê´Â´Ù.
         else if (aShardSplitMethod == ShardSplitMethod.LIST || aShardSplitMethod == ShardSplitMethod.RANGE)
         {
             aPrevRange = (aPrevRange == null) ? Range.getNullRange() : aPrevRange;
@@ -327,96 +333,109 @@ public class CmShardOperation extends CmOperationDef
         return sRange;
     }
 
-    private void makeShardSubKeyAnalyzeResult(CmShardAnalyzeResult aShardAnalyzeResult) throws SQLException
-    {
-        aShardAnalyzeResult.setShardSubSplitMethod(ShardSplitMethod.get(mChannel.readByte()));
-        aShardAnalyzeResult.setShardSubKeyDataType(ShardKeyDataType.get(mChannel.readInt()));
-        aShardAnalyzeResult.setShardSubValueCount(mChannel.readShort());
-    }
-
     /**
-     * loopë¥¼ ëŒë©´ì„œ shard value ê°’ì˜ ë©”íƒ€ ì •ë³´ë¥¼ êµ¬ì„±í•œë‹¤.
-     * @param aStrategy shard value infoë¥¼ ì €ì¥í•  ì „ëµê°ì²´(primary or subkey)
-     * @param aShardKeyDataType ìƒ¤ë“œ í‚¤ ë°ì´í„° íƒ€ì…
-     * @throws SQLException ì„œë²„ì™€ í†µì‹  ì¤‘ ì˜¤ë¥˜ê°€ ë°œìƒí•œ ê²½ìš°
+     * loop¸¦ µ¹¸é¼­ shard value °ªÀÇ ¸ŞÅ¸ Á¤º¸¸¦ ±¸¼ºÇÑ´Ù.
+     * @param aStrategy shard value info¸¦ ÀúÀåÇÒ Àü·«°´Ã¼(primary or subkey)
+     * @throws SQLException ¼­¹ö¿Í Åë½Å Áß ¿À·ù°¡ ¹ß»ıÇÑ °æ¿ì
      */
-    private void makeShardValueMetaInfo(ShardValueInfoStrategy aStrategy,
-                                        ShardKeyDataType aShardKeyDataType) throws SQLException
+    private void makeShardValueMetaInfo(ShardValueInfoStrategy aStrategy) throws SQLException
     {
         for (int i = 0; i < aStrategy.getShardValueCount(); i++)
         {
             ShardValueInfo sShardValueInfo = new ShardValueInfo();
-            byte sType = mChannel.readByte();  // type
-            sShardValueInfo.setType(sType);
-            if (sType == 0)         // prepared execute
-            {
-                sShardValueInfo.setBindParamid(mChannel.readShort());
-            }
-            else if (sType == 1)    // direct execute
-            {
-                ShardSplitMethod sShardSplitMethod = aStrategy.getShardSplitMethod();
-                if (sShardSplitMethod == ShardSplitMethod.HASH  ||
-                    sShardSplitMethod == ShardSplitMethod.RANGE ||
-                    sShardSplitMethod == ShardSplitMethod.LIST)
-                {
-                    // direct executeì¸ ê²½ìš°ì—ëŠ” ë°”ë¡œ shard ê°’ì„ ë°›ì•„ì˜¨ë‹¤.
-                    readShardValue(sShardValueInfo, aShardKeyDataType);
-                }
-            }
+            sShardValueInfo.setType(mChannel.readByte());
+
+            readShardValue(sShardValueInfo);
 
             aStrategy.addShardValue(sShardValueInfo);
+
             shard_log("(SHARD VALUE META INFO) {0} ", sShardValueInfo);
         }
     }
 
-    private void readShardValue(ShardValueInfo sShardValueInfo,
-                                ShardKeyDataType aShardKeyDataType) throws SQLException
+    /**
+     * »şµå ÇÁ·ÎÅäÄİÀ» ÅëÇØ »şµå °ª¿¡ ´ëÇÑ Á¤º¸¸¦ ¹Ş¾Æ¿Â´Ù. <br/>
+     * »şµå °ªÀÌ È£½ºÆ® º¯¼ö ÀÏ ¶§´Â »şµå°ªÀÇ ÀÎµ¦½º°¡, È£½ºÆ® º¯¼ö°¡ ¾Æ´Ò ¶§´Â »şµå°ª ÀÚÃ¼°¡ ³Ñ¾î¿Â´Ù.
+     * @param aShardValueInfo ¼ÂÆÃ ÇÒ »şµå °ª °´Ã¼
+     * @throws SQLException ¼­¹ö¿Í Åë½Å Áß ¿¹¿Ü°¡ ¹ß»ıÇÑ °æ¿ì
+     */
+    private void readShardValue(ShardValueInfo aShardValueInfo) throws SQLException
     {
-        Column sColumn = null;
-
-        switch (aShardKeyDataType)
+        // BUG-47855 ÇÁ·ÎÅäÄİ º¯°æ¿¡ µû¶ó host º¯¼ö, »ó¼ö ¸ğµÎ type, length, value ÇüÅÂ·Î °ªÀÌ ³Ñ¾î¿Â´Ù.
+        ShardKeyDataType sShardValueType = ShardKeyDataType.get(mChannel.readInt());
+        int sShardValueLength = mChannel.readInt();
+        if (aShardValueInfo.getType() == HOST_VAR)
         {
-            case SMALLINT:
-                sColumn = mColumnFactory.getInstance(Types.SMALLINT);
-                sColumn.setValue(mChannel.readShort());
-                break;
-            case INTEGER:
-                sColumn = mColumnFactory.getInstance(Types.INTEGER);
-                sColumn.setValue(mChannel.readInt());
-                break;
-            case BIGINT:
-                sColumn = mColumnFactory.getInstance(Types.BIGINT);
-                sColumn.setValue(mChannel.readUnsignedLong());
-                break;
-            case CHAR:
-            case VARCHAR:
-                sColumn = mColumnFactory.getInstance(Types.VARCHAR);
-                int sLength = mChannel.readShort();
-                sColumn.setValue(mChannel.readString(sLength));
-                break;
+            // BUG-47855 host º¯¼ö ¹æ½ÄÀÏ¶§´Â shard value index°¡ short °ªÀ¸·Î ³Ñ¾î¿Â´Ù.
+            aShardValueInfo.setBindParamid(mChannel.readShort());
         }
-        sShardValueInfo.setValue(sColumn);
+        else
+        {
+            Column sColumn = null;
+            switch (sShardValueType)
+            {
+                case SMALLINT:
+                    sColumn = mColumnFactory.getInstance(Types.SMALLINT);
+                    sColumn.setValue(mChannel.readShort());
+                    break;
+                case INTEGER:
+                    sColumn = mColumnFactory.getInstance(Types.INTEGER);
+                    sColumn.setValue(mChannel.readInt());
+                    break;
+                case BIGINT:
+                    sColumn = mColumnFactory.getInstance(Types.BIGINT);
+                    sColumn.setValue(mChannel.readUnsignedLong());
+                    break;
+                case CHAR:
+                case VARCHAR:
+                    sColumn = mColumnFactory.getInstance(Types.VARCHAR);
+                    sColumn.setValue(mChannel.readString(sShardValueLength));
+                    break;
+            }
+            aShardValueInfo.setValue(sColumn);
+        }
     }
 
     /**
-     * ìƒ¤ë“œ ë©”íƒ€ ì •ë³´ë¥¼ ë°›ì•„ì˜¨ë‹¤.
-     * @param aShardAnalyzeResult ìƒ¤ë“œ ë©”íƒ€ ì •ë³´ë¥¼ ì €ì¥í•  ê°ì²´
-     * @throws SQLException ì„œë²„ì™€ í†µì‹  ì¤‘ ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš°
+     * Shard Analyze ÇÁ·ÎÅäÄİÀÇ °á°ú¸¦ ¼ö½ÅÇÏ°í ÇØ¼®ÇØ¼­ °ü·ÃµÈ °´Ã¼¿¡ ¼ÂÆÃÇÑ´Ù.
+     * @param aShardAnalyzeResult »şµå ¸ŞÅ¸ Á¤º¸¸¦ ÀúÀåÇÒ °´Ã¼
+     * @throws SQLException ¼­¹ö¿Í Åë½Å Áß ¿¡·¯°¡ ¹ß»ıÇÑ °æ¿ì
      */
     private void makeShardAnalyzeResult(CmShardAnalyzeResult aShardAnalyzeResult) throws SQLException
     {
         aShardAnalyzeResult.setShardSplitMethod(ShardSplitMethod.get(mChannel.readByte()));
+        // TASK-7219 Non-shard DML TEMPCODE (mmtCmsShard.cpp:685)
+        mChannel.readByte();
         aShardAnalyzeResult.setShardKeyDataType(ShardKeyDataType.get(mChannel.readInt()));
-        aShardAnalyzeResult.setShardDefaultNodeID(mChannel.readInt());
         aShardAnalyzeResult.setShardSubKeyExists(mChannel.readByte());
+
+        if (aShardAnalyzeResult.isShardSubKeyExists())
+        {
+            aShardAnalyzeResult.setShardSubSplitMethod(ShardSplitMethod.get(mChannel.readByte()));
+            aShardAnalyzeResult.setShardSubKeyDataType(ShardKeyDataType.get(mChannel.readInt()));
+        }
+
+        aShardAnalyzeResult.setShardDefaultNodeID(mChannel.readInt());
         aShardAnalyzeResult.setShardCanMerge(mChannel.readByte());
         aShardAnalyzeResult.setShardValueCount(mChannel.readShort());
+
+        if (aShardAnalyzeResult.isShardSubKeyExists())
+        {
+            aShardAnalyzeResult.setShardSubValueCount(mChannel.readShort());
+        }
+
+        makeShardValueMetaInfo(new ShardValueInfoPrimaryStrategy(aShardAnalyzeResult));
+
+        if (aShardAnalyzeResult.isShardSubKeyExists())
+        {
+            makeShardValueMetaInfo(new ShardValueInfoSubKeyStrategy(aShardAnalyzeResult));
+        }
     }
 
     /**
-     * prepare ê²°ê³¼ë¥¼ ë°›ì•„ì˜¨ë‹¤.
-     * @param aPrepareResult prepareê²°ê³¼ë¥¼ ì €ì¥í•˜ëŠ” ê°ì²´
-     * @throws SQLException ì„œë²„ì™€ í†µì‹  ì¤‘ ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš°
+     * prepare °á°ú¸¦ ¹Ş¾Æ¿Â´Ù.
+     * @param aPrepareResult prepare°á°ú¸¦ ÀúÀåÇÏ´Â °´Ã¼
+     * @throws SQLException ¼­¹ö¿Í Åë½Å Áß ¿¡·¯°¡ ¹ß»ıÇÑ °æ¿ì
      */
     private void makeShardPrepareResult(CmPrepareResult aPrepareResult) throws SQLException
     {
@@ -431,7 +450,7 @@ public class CmShardOperation extends CmOperationDef
     {
         short sTouchedNodeCount = (short)aTouchedNodeList.size();
         mChannel.checkWritable(2 + 2 + sTouchedNodeCount * 4);
-        mChannel.writeOp(CmOperation.DB_OP_SHARD_TRANSACTION);
+        mChannel.writeOp(CmOperation.DB_OP_SHARD_TRANSACTION_V3);
         mChannel.writeByte((byte)1);  // commit
         mChannel.writeShort(sTouchedNodeCount);
         for (DataNode sEach : aTouchedNodeList)
@@ -440,17 +459,65 @@ public class CmShardOperation extends CmOperationDef
         }
     }
 
-    void readShardTransactionCommitRequest(CmProtocolContextShardConnect aContext) throws SQLException
+    /* PROJ-2733 */
+    void writeShardTransaction(CmChannel aChannel, boolean aIsCommit) throws SQLException
     {
-        byte sOp = mChannel.readOp();
-        if (sOp == DB_OP_ERROR_RESULT)
+        short sTouchedNodeCount = 0;
+        aChannel.checkWritable(2 + 2 + sTouchedNodeCount * 4);
+        aChannel.writeOp(DB_OP_SHARD_TRANSACTION_V3);
+        if (aIsCommit)
         {
-            CmOperation.readErrorResult(mChannel, aContext);
+            aChannel.writeByte((byte)1);  // commit
         }
-        else if (sOp != DB_OP_SHARD_TRANSACTION_RESULT)
+        else
         {
-            Error.throwInternalError(ErrorDef.INVALID_OPERATION_PROTOCOL,
-                                     String.valueOf(DB_OP_SHARD_TRANSACTION_RESULT));
+            aChannel.writeByte((byte)2);  // rollback
         }
+        aChannel.writeShort(sTouchedNodeCount);
+    }
+
+    void readShardTransactionResult(CmProtocolContext aContext) throws SQLException
+    {
+        CmChannel sChannel = aContext.channel();
+        long sSCN = sChannel.readLong();
+        if (sSCN > 0) 
+        {
+            aContext.updateSCN(sSCN);
+        }
+    }
+
+    void writeShardNodeReport(NodeConnectionReport aReport) throws SQLException
+    {
+        NodeConnectionReport.NodeReportType sType = aReport.getNodeReportType();
+        
+        if (sType == NodeConnectionReport.NodeReportType.SHARD_NODE_REPORT_TYPE_CONNECTION)
+        {
+            mChannel.checkWritable(10);
+            mChannel.writeOp(DB_OP_SHARD_NODE_REPORT);
+            mChannel.writeInt(SHARD_NODE_REPORT_TYPE_CONNECTION);
+            mChannel.writeInt(aReport.getNodeId());
+            mChannel.writeByte(aReport.getDestination().getValue());
+        }
+        else if (sType == NodeConnectionReport.NodeReportType.SHARD_NODE_REPORT_TYPE_TRANSACTION_BROKEN)
+        {
+            mChannel.checkWritable(5);
+            mChannel.writeOp(DB_OP_SHARD_NODE_REPORT);
+            mChannel.writeInt(SHARD_NODE_REPORT_TYPE_TRANSACTION_BROKEN);
+        }
+        else
+        {
+            Error.throwInternalError(ErrorDef.INVALID_OPERATION_PROTOCOL, "Invalid NodeConnectionReportType");
+        }
+    }
+
+    void writeShardStmtPartialRollback(CmChannel aChannel) throws SQLException
+    {
+        aChannel.checkWritable(1);
+        aChannel.writeOp(DB_OP_SHARD_STMT_PARTIAL_ROLLBACK);
+    }
+
+    public void setChannel(CmChannel aChannel)
+    {
+        mChannel = aChannel;
     }
 }

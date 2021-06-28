@@ -26,14 +26,14 @@
 #include <smDef.h>
 
 /*
- *  SM ë‚´ë¶€ì—ì„œ ì‚¬ìš©ë˜ëŠ” ë©”ëª¨ë¦¬ ë¦¬ìŠ¤íŠ¸ ë…¸ë“œì— ëŒ€í•œ ë¼ì´ë¸ŒëŸ¬ë¦¬ë¥¼ ì œê³µí•œë‹¤.
- *  smuListë¥¼ ì‚¬ìš©í•˜ì—¬, ì„œë¡œê°„ì˜ ë§í¬ë¥¼ ìœ ì§€í•œë‹¤.
+ *  SM ³»ºÎ¿¡¼­ »ç¿ëµÇ´Â ¸Þ¸ð¸® ¸®½ºÆ® ³ëµå¿¡ ´ëÇÑ ¶óÀÌºê·¯¸®¸¦ Á¦°øÇÑ´Ù.
+ *  smuList¸¦ »ç¿ëÇÏ¿©, ¼­·Î°£ÀÇ ¸µÅ©¸¦ À¯ÁöÇÑ´Ù.
  *
- *  ì£¼ì˜ : !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
- *           BaseNodeì˜ ê²½ìš°ì—ëŠ” ë°˜ë“œì‹œ ì´ˆê¸°í™” ë§¤í¬ë¡œë¥¼ ì´ìš©í•˜ì—¬,
+ *  ÁÖÀÇ : !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ *           BaseNodeÀÇ °æ¿ì¿¡´Â ¹Ýµå½Ã ÃÊ±âÈ­ ¸ÅÅ©·Î¸¦ ÀÌ¿ëÇÏ¿©,
  *                                    (SMU_LIST_INIT_BASE)
- *           Circular í˜•íƒœì˜ ë§í¬ë¥¼ ìœ ì§€í•˜ë„ë¡ í•´ì•¼ í•œë‹¤. ê·¸ë ‡ì§€ ì•Šìœ¼ë©´,
- *           ì•„ëž˜ì— ì •ì˜ëœ ì¡°ìž‘ ë§¤í¬ë¡œì˜ ì •í™•ì„±ì„ ë³´ìž¥í•  ìˆ˜ ì—†ë‹¤.
+ *           Circular ÇüÅÂÀÇ ¸µÅ©¸¦ À¯ÁöÇÏµµ·Ï ÇØ¾ß ÇÑ´Ù. ±×·¸Áö ¾ÊÀ¸¸é,
+ *           ¾Æ·¡¿¡ Á¤ÀÇµÈ Á¶ÀÛ ¸ÅÅ©·ÎÀÇ Á¤È®¼ºÀ» º¸ÀåÇÒ ¼ö ¾ø´Ù.
  *         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  *
  * Sample)
@@ -45,7 +45,7 @@
  *  void initializeSampleObject(struct SampleNode *aNode)
  *  {
  *       aNode->mCount = 0;
- *       SMU_LIST_INIT_BASE( &(aNode->mBaseNode) );  <== ì°¸ì¡°!!!!!!!!!
+ *       SMU_LIST_INIT_BASE( &(aNode->mBaseNode) );  <== ÂüÁ¶!!!!!!!!!
  *  }
  *
  *  void operateNode(struct SampleNode *aNode)
@@ -54,13 +54,13 @@
  *      smuList  sSample2;
  *
  *      SMU_LIST_ADD_AFTER( &(aNode->mBaseNode), &sSample1);
- *      // í˜„ìž¬ ìƒíƒœ : BASE-->Sample1
+ *      // ÇöÀç »óÅÂ : BASE-->Sample1
  *
  *      SMU_LIST_ADD_BEFORE( &(aNode->mBaseNode)->mNext, &sSample2);
- *      // í˜„ìž¬ ìƒíƒœ : BASE-->Sample2-->Sample1 
+ *      // ÇöÀç »óÅÂ : BASE-->Sample2-->Sample1 
  *      
  *      SMU_LIST_DELETE(&sSample1);
- *      // í˜„ìž¬ ìƒíƒœ : BASE-->Sample2
+ *      // ÇöÀç »óÅÂ : BASE-->Sample2
  *
  *      SMU_LIST_GET_PREV(&sSample1) = NULL;
  *      SMU_LIST_GET_NEXT(&sSample1) = NULL;
@@ -82,9 +82,9 @@ typedef struct smuList
  *      SMU_LIST_ITERATE(&sBar.mList, sIterator)
  *      {
  *          ..... whatever you want to do
- *          ë‹¨ì§€, ë¦¬ìŠ¤íŠ¸ì˜ êµ¬ì„± ë©¤ë²„ì¤‘ í•˜ë‚˜ë¥¼ ì‚­ì œí•˜ëŠ” ì¼ì„ í•´ì„œëŠ” ì•ˆëœë‹¤.
- *          ë¦¬ìŠ¤íŠ¸ì˜ ë©¤ë²„ë¥¼ ì‚­ì œí•˜ê³ ìž í•  ë•Œì—ëŠ”
- *          SMU_LIST_ITERATE_SAFE() ë¥¼ ì“°ë„ë¡ í•´ì•¼ í•œë‹¤.
+ *          ´ÜÁö, ¸®½ºÆ®ÀÇ ±¸¼º ¸â¹öÁß ÇÏ³ª¸¦ »èÁ¦ÇÏ´Â ÀÏÀ» ÇØ¼­´Â ¾ÈµÈ´Ù.
+ *          ¸®½ºÆ®ÀÇ ¸â¹ö¸¦ »èÁ¦ÇÏ°íÀÚ ÇÒ ¶§¿¡´Â
+ *          SMU_LIST_ITERATE_SAFE() ¸¦ ¾²µµ·Ï ÇØ¾ß ÇÑ´Ù.
  *      }
  */
 
@@ -121,7 +121,7 @@ typedef struct smuList
 
 
 
-//  Base Nodeì— ëŒ€í•œ ì´ˆê¸°í™” ë§¤í¬ë¡œ 
+//  Base Node¿¡ ´ëÇÑ ÃÊ±âÈ­ ¸ÅÅ©·Î 
 
 #define SMU_LIST_INIT_BASE(node) { \
         (node)->mPrev = (node);    \
@@ -138,21 +138,21 @@ typedef struct smuList
         (node)->mNext = NULL;      \
 }
 
-// Previous ì–»ê¸°
+// Previous ¾ò±â
 #define SMU_LIST_GET_PREV(node)  ((node)->mPrev)
 
-// Next ì–»ê¸°
+// Next ¾ò±â
 #define SMU_LIST_GET_NEXT(node)  ((node)->mNext)
 
 
-// ì²˜ìŒ ë…¸ë“œë¡œ ê°€ê¸°
+// Ã³À½ ³ëµå·Î °¡±â
 #define SMU_LIST_GET_FIRST(base)  ((base)->mNext)
 
-// ë§ˆì§€ë§‰ ë…¸ë“œë¡œ ê°€ê¸°
+// ¸¶Áö¸· ³ëµå·Î °¡±â
 #define SMU_LIST_GET_LAST(base)  ((base)->mPrev)
 
 
-// tnodeì˜ ì•žì— ë…¸ë“œë¥¼ ë„£ëŠ”ë‹¤.
+// tnodeÀÇ ¾Õ¿¡ ³ëµå¸¦ ³Ö´Â´Ù.
 #define SMU_LIST_ADD_BEFORE(tnode, node) {   \
             (node)->mNext = (tnode);         \
             (node)->mPrev = (tnode)->mPrev;  \
@@ -160,7 +160,7 @@ typedef struct smuList
             (tnode)->mPrev = (node);         \
 }
 
-// tnodeì˜ ë’¤ì— ë…¸ë“œë¥¼ ë„£ëŠ”ë‹¤.
+// tnodeÀÇ µÚ¿¡ ³ëµå¸¦ ³Ö´Â´Ù.
 #define SMU_LIST_ADD_AFTER(tnode, node)   {  \
             (node)->mPrev = (tnode);         \
             (node)->mNext = (tnode)->mNext;  \
@@ -168,7 +168,7 @@ typedef struct smuList
             (tnode)->mNext = (node);         \
 }
 
-// tnodeì˜ ë’¤ì— ë…¸ë“œë¥¼ ë„£ëŠ”ë‹¤.
+// tnodeÀÇ µÚ¿¡ ³ëµå¸¦ ³Ö´Â´Ù.
 #define SMU_LIST_ADD_AFTER_SERIAL_OP(tnode, node)   {  \
         ID_SERIAL_BEGIN((node)->mPrev = (tnode));      \
         ID_SERIAL_END((node)->mNext = (tnode)->mNext); \
@@ -199,7 +199,7 @@ typedef struct smuList
             (base)->mNext = (first);                           \
 }
 
-// ë…¸ë“œë¥¼ ë¦¬ìŠ¤íŠ¸ë¡œë¶€í„° ì œê±°í•œë‹¤. 
+// ³ëµå¸¦ ¸®½ºÆ®·ÎºÎÅÍ Á¦°ÅÇÑ´Ù. 
 #define SMU_LIST_DELETE(node)  {                  \
             (node)->mPrev->mNext = (node)->mNext; \
             (node)->mNext->mPrev = (node)->mPrev; \

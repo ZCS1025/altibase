@@ -1,14 +1,14 @@
 # Makefile with Genernal Options
 #
-# CVS Info : $Id: ibm_aix_vac.mk 53594 2012-06-05 02:47:52Z djin $
+# CVS Info : $Id: ibm_aix_vac.mk 88304 2020-08-07 06:18:48Z kclee $
 #
 
-# ì „ë‹¬ë˜ëŠ” ì™¸ë¶€ ë³€ìˆ˜ë“¤ : GCC
+# Àü´ŞµÇ´Â ¿ÜºÎ º¯¼öµé : GCC
 
-# ID_DIR      : SM ë””ë ‰í† ë¦¬ 
-# ID_ACE_ROOT : ë¼ì´ë¸ŒëŸ¬ë¦¬ íŒ¨ìŠ¤
-# compile64   : ì»´íŒŒì¼ í™˜ê²½
-# compat5     : CC 5.0 ìœ¼ë¡œ?
+# ID_DIR      : SM µğ·ºÅä¸® 
+# ID_ACE_ROOT : ¶óÀÌºê·¯¸® ÆĞ½º
+# compile64   : ÄÄÆÄÀÏ È¯°æ
+# compat5     : CC 5.0 À¸·Î?
 
 ifndef	BUILD_MODE
 	@echo "ERROR BUILD_MODE!!!!"
@@ -33,7 +33,7 @@ PURIFYCOV   = $(PURIFY) $(PURECOV)
 # IDL(ACE) Library
 # Library
 
-# readline library ì„¤ì •
+# readline library ¼³Á¤
 
 ifeq "$(USE_READLINE)" "1"
 READLINE_INCLUDES = -I/usr/local/include/readline
@@ -42,14 +42,19 @@ endif # use readline library
 
 
 ifeq "$(OS_MAJORVER)" "5"
-LIBS        = $(READLINE_LIBRARY) -lpthreads -lhm
+ifeq "$(USE_HEAPMIN)" "no"
+LIBS           = $(READLINE_LIBRARY) -lpthreads
+else
+LIBS           = $(READLINE_LIBRARY) -lpthreads -lhm
+endif
+
 LIBS_SHIP	=
 else
 LIBS        = $(READLINE_LIBRARY) -lpthreads
 LIBS_SHIP	=
 endif # "$(OS_MAJORVER)" "5"
 
-# ë™ì  ì»´íŒŒì¼ ì˜µì…˜ ì„ ì–¸
+# µ¿Àû ÄÄÆÄÀÏ ¿É¼Ç ¼±¾ğ
 #
 CXXOPT_DEPENDANCY = -MM
 
@@ -61,15 +66,15 @@ endif
 
 # Build Mode file for Makefile 
 #
-# CVS Info : $Id: ibm_aix_vac.mk 53594 2012-06-05 02:47:52Z djin $
+# CVS Info : $Id: ibm_aix_vac.mk 88304 2020-08-07 06:18:48Z kclee $
 #
 
-# BUILD_MODEì˜ ì¢…ë¥˜
-#	debug		: Debug ëª¨ë“œ
+# BUILD_MODEÀÇ Á¾·ù
+#	debug		: Debug ¸ğµå
 #   prerelease      : -DDEBUG(x) -g (o)
-#	release		: release ë²„ì ¼, ì‹¤ì œ productì— í•´ë‹¹
+#	release		: release ¹öÁ¯, ½ÇÁ¦ product¿¡ ÇØ´ç
 
-# LINK MODE ì¢…ë¥˜ 
+# LINK MODE Á¾·ù 
 #	purify		: purify version
 #	quantify	: quantify version
 #	purecov		: purecov version

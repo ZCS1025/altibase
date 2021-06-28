@@ -35,7 +35,7 @@ IDE_RC getMinimumSN(const UInt * /*aRestartRedoFileNo*/,
 IDE_RC
 rpi::initREPLICATION()
 {
-    (void)smiSetCallbackFunction(getMinimumSN, NULL, NULL, NULL, NULL);
+    (void)smiSetCallbackFunction(getMinimumSN, NULL, NULL, NULL, NULL, NULL);
 
     return IDE_SUCCESS;
 }
@@ -140,14 +140,16 @@ rpi::dropReplication( void        * /*aStatement*/ )
 }
 
 IDE_RC
-rpi::startSenderThread(smiStatement  * /*aSmiStmt*/,
-                       SChar         * /*aReplName*/,
-                       RP_SENDER_TYPE  /*aMode*/,
-                       idBool          /*aTryHandshakeOnce*/,
-                       smSN            /*aStartSN*/,
-                       qciSyncItems  * /*aSyncItemList*/,
-                       SInt            /*aParallelFactor*/,
-                       idvSQL        * /*aStatistics*/)
+rpi::startSenderThread( idvSQL               * /* aStatistics */,
+                        iduVarMemList        * /* aMemory */,
+                        smiStatement         * /* aSmiStmt */,
+                        SChar                * /* aReplName */,
+                        RP_SENDER_TYPE         /* astartType */,
+                        idBool                 /* aTryHandshakeOnce */,
+                        smSN                   /* aStartSN */,
+                        qciSyncItems         * /* aSyncItemList */,
+                        SInt                   /* aParallelFactor */,
+                        void                 * /* aLockTable */ )
 {
     IDE_SET(ideSetErrorCode(idERR_ABORT_MODULE_IS_NOT_LOADED, "REPLICATION"));
 

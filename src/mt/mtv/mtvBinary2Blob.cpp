@@ -22,7 +22,7 @@
  *
  *   PR-15636 (GEOMETRY=>BINARY=>BLOB)
  *
- *   Binary ==> Blob Conversion ëª¨ë“ˆ
+ *   Binary ==> Blob Conversion ¸ðµâ
  *
  **********************************************************************/
 
@@ -109,7 +109,7 @@ IDE_RC mtvCalculate_Binary2Blob( mtcNode*,
     }
     else
     {
-        /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
+        /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
         IDE_TEST_RAISE( (UInt)aStack[0].column->precision < ((mtdBinaryType *)aStack[1].value)->mLength,
                         ERR_CONVERT );
 

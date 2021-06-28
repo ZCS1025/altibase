@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfIsNotNull.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfIsNotNull.cpp 90192 2021-03-12 02:01:03Z jayce.park $
  **********************************************************************/
 
 #include <mte.h>
@@ -31,6 +31,9 @@
 extern mtfModule mtfIsNull;
 
 extern mtfModule mtfIsNotNull;
+
+/* PROJ-2632 */
+extern mtxModule mtxIsNotNull;
 
 static mtcName mtfIsNotNullFunctionName[1] = {
     { NULL, 11, (void*)"IS NOT NULL" }
@@ -89,7 +92,7 @@ static const mtcExecute mtfExecute = {
     mtfIsNotNullExtractRange
 };
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 static const mtcExecute mtfExecuteXlobValue = {
     mtf::calculateNA,
     mtf::calculateNA,
@@ -187,7 +190,7 @@ IDE_RC mtfIsNotNullEstimate( mtcNode*     aNode,
         }
         else
         {
-            /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
+            /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
             aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecuteXlobValue;
         }
     }
@@ -200,6 +203,11 @@ IDE_RC mtfIsNotNullEstimate( mtcNode*     aNode,
     else
     {
         aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
+        
+        /* PROJ-2632 */
+        aTemplate->rows[aNode->table].execute[aNode->column].mSerialExecute
+            = mtxIsNotNull.mGetExecute( aStack[1].column->module->id,
+                                        aStack[1].column->module->id );
     }
 
     return IDE_SUCCESS;
@@ -233,7 +241,7 @@ IDE_RC mtfIsNotNullExtractRange( mtcNode*,
     aRange->next                 = NULL;
 
     //---------------------------
-    // RangeCallBack ì„¤ì • 
+    // RangeCallBack ¼³Á¤ 
     //---------------------------
     
     if ( aInfo->compValueType == MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL ||
@@ -262,7 +270,7 @@ IDE_RC mtfIsNotNullExtractRange( mtcNode*,
     aRange->maximum.data         = sMaximumCallBack;
 
     //---------------------------
-    // MinimumCallBack ì •ë³´ ì„¤ì •
+    // MinimumCallBack Á¤º¸ ¼³Á¤
     //---------------------------
             
     sMinimumCallBack->next       = NULL;
@@ -273,11 +281,14 @@ IDE_RC mtfIsNotNullExtractRange( mtcNode*,
     sMinimumCallBack->value      = NULL;
 
     //---------------------------
-    // MaximumCallBack ì •ë³´ ì„¤ì •
+    // MaximumCallBack Á¤º¸ ¼³Á¤
     //---------------------------
     
     sMaximumCallBack->next       = NULL;
-    sMaximumCallBack->columnDesc = *aInfo->column;
+    if ( MTC_COLUMN_IS_NOT_SAME( sMaximumCallBack->columnDesc, aInfo->column ) )
+    {
+        sMaximumCallBack->columnDesc = *aInfo->column;
+    }
     sMaximumCallBack->columnIdx  = aInfo->columnIdx;
     //sMaximumCallBack->valueDesc  = NULL;
     sMaximumCallBack->value      = NULL;
@@ -349,7 +360,7 @@ IDE_RC mtfIsNotNullCalculateXlobColumn( mtcNode*     aNode,
               != IDE_SUCCESS );
 
     // PROJ-1362
-    // Lob Locatorë¥¼ ì–»ëŠ”ë° í•„ìš”í•œ ì»¤ì„œì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+    // Lob Locator¸¦ ¾ò´Âµ¥ ÇÊ¿äÇÑ Ä¿¼­Á¤º¸¸¦ °¡Á®¿Â´Ù.
     IDE_TEST( aTemplate->getOpenedCursor( aTemplate,
                                           aNode->arguments->table,
                                           & sCursor,
@@ -417,7 +428,8 @@ IDE_RC mtfIsNotNullCalculateXlobLocator( mtcNode*     aNode,
     
     IDE_TEST( mtc::getLobLengthLocator( sLocator,
                                         & sIsNull,
-                                        & sLength )
+                                        & sLength,
+                                        mtc::getStatistics(aTemplate) )
               != IDE_SUCCESS );
     
     if ( sIsNull == ID_TRUE )

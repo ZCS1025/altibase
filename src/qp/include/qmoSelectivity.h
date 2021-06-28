@@ -19,16 +19,16 @@
  *
  * Description : Selectivity Manager
  *
- *        - Unit predicate ì— ëŒ€í•œ selectivity ê³„ì‚°
- *        - qmoPredicate ì— ëŒ€í•œ selectivity ê³„ì‚°
- *        - qmoPredicate list ì— ëŒ€í•œ í†µí•© selectivity ê³„ì‚°
- *        - qmoPredicate wrapper list ì— ëŒ€í•œ í†µí•© selectivity ê³„ì‚°
- *        - ê° graph ì— ëŒ€í•œ selectivity ê³„ì‚°
- *        - ê° graph ì— ëŒ€í•œ output record count ê³„ì‚°
+ *        - Unit predicate ¿¡ ´ëÇÑ selectivity °è»ê
+ *        - qmoPredicate ¿¡ ´ëÇÑ selectivity °è»ê
+ *        - qmoPredicate list ¿¡ ´ëÇÑ ÅëÇÕ selectivity °è»ê
+ *        - qmoPredicate wrapper list ¿¡ ´ëÇÑ ÅëÇÕ selectivity °è»ê
+ *        - °¢ graph ¿¡ ´ëÇÑ selectivity °è»ê
+ *        - °¢ graph ¿¡ ´ëÇÑ output record count °è»ê
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -42,24 +42,24 @@
 #define _Q_QMO_NEW_SELECTIVITY_H_ 1
 
 //---------------------------------------------------
-// feasibilityë¡œ ìˆ˜í–‰ê°€ëŠ¥í•œ predicateì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°,
-// selectivityë¥¼ ê³„ì‚°í•  ìˆ˜ ì—†ìŒì„ ë°˜í™˜í•œë‹¤.
+// feasibility·Î ¼öÇà°¡´ÉÇÑ predicateÀÌ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì,
+// selectivity¸¦ °è»êÇÒ ¼ö ¾øÀ½À» ¹İÈ¯ÇÑ´Ù.
 //---------------------------------------------------
 # define QMO_SELECTIVITY_NOT_EXIST               (1)
 
 //---------------------------------------------------
-// selectivityë¥¼ ì˜ˆì¸¡í• ìˆ˜ ì—†ì„ë•Œ ì‚¬ìš©í•œë‹¤.
+// selectivity¸¦ ¿¹ÃøÇÒ¼ö ¾øÀ»¶§ »ç¿ëÇÑ´Ù.
 //---------------------------------------------------
 # define QMO_SELECTIVITY_UNKNOWN               (0.05)
 
 //---------------------------------------------------
 // PROJ-1353 
-// qmgGrouping ì— ëŒ€í•œ ROLLUP factor
+// qmgGrouping ¿¡ ´ëÇÑ ROLLUP factor
 //---------------------------------------------------
 # define QMO_SELECTIVITY_ROLLUP_FACTOR           (0.75)
 
 //---------------------------------------------------
-// Selectivityë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+// Selectivity¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
 //---------------------------------------------------
 
 class qmoSelectivity
@@ -67,33 +67,33 @@ class qmoSelectivity
 public:
 
     //-----------------------------------------------
-    // SCAN ê´€ë ¨ selectivity ê³„ì‚°
+    // SCAN °ü·Ã selectivity °è»ê
     //-----------------------------------------------
 
-    // qmoPredicate.mySelectivity ê³„ì‚°
-    // (BUGBUG : host ë³€ìˆ˜ ê°’ì´ ë°”ì¸ë”© ì „, í›„ ë¬´ê´€)
+    // qmoPredicate.mySelectivity °è»ê
+    // (BUGBUG : host º¯¼ö °ªÀÌ ¹ÙÀÎµù Àü, ÈÄ ¹«°ü)
     static IDE_RC setMySelectivity( qcStatement   * aStatement ,
                                     qmoStatistics * aStatInfo,
                                     qcDepInfo     * aDepInfo,
                                     qmoPredicate  * aPredicate );
 
-    // qmoPredicate.totalSelectivity ê³„ì‚°
-    // (BUGBUG : host ë³€ìˆ˜ ê°’ì´ ë°”ì¸ë”© ì „, í›„ ë¬´ê´€)
+    // qmoPredicate.totalSelectivity °è»ê
+    // (BUGBUG : host º¯¼ö °ªÀÌ ¹ÙÀÎµù Àü, ÈÄ ¹«°ü)
     static IDE_RC setTotalSelectivity( qcStatement   * aStatement,
                                        qmoStatistics * aStatInfo,
                                        qmoPredicate  * aPredicate );
 
-    // execution timeì— selectivity ë‹¤ì‹œ ê³„ì‚°
-    // host ë³€ìˆ˜ê°€ ìˆëŠ” ê²½ìš° ë°”ì¸ë”©ëœ ê°’ì„ ì°¸ì¡°í•˜ì—¬ êµ¬í•œë‹¤.
-    // qmoPredicate.mySelectivityOffset ê³¼
-    // qmoPredicate.totalSelectivityOffset ì„ íšë“í•œë‹¤.
+    // execution time¿¡ selectivity ´Ù½Ã °è»ê
+    // host º¯¼ö°¡ ÀÖ´Â °æ¿ì ¹ÙÀÎµùµÈ °ªÀ» ÂüÁ¶ÇÏ¿© ±¸ÇÑ´Ù.
+    // qmoPredicate.mySelectivityOffset °ú
+    // qmoPredicate.totalSelectivityOffset À» È¹µæÇÑ´Ù.
     static IDE_RC recalculateSelectivity( qcTemplate    * aTemplate,
                                           qmoStatistics * aStatInfo,
                                           qcDepInfo     * aDepInfo,
                                           qmoPredicate  * aRootPredicate );
 
-    // indexì˜ keyNDV ë¥¼ ì´ìš©í•˜ì—¬ selectivity ë¥¼ ê³„ì‚°í•œë‹¤.
-    // ì‚¬ìš©í•˜ì§€ ëª»í•˜ëŠ” ê²½ìš°ì—ëŠ” getSelectivity4PredWrapper ë¥¼ í˜¸ì¶œí•¨
+    // indexÀÇ keyNDV ¸¦ ÀÌ¿ëÇÏ¿© selectivity ¸¦ °è»êÇÑ´Ù.
+    // »ç¿ëÇÏÁö ¸øÇÏ´Â °æ¿ì¿¡´Â getSelectivity4PredWrapper ¸¦ È£ÃâÇÔ
     static IDE_RC getSelectivity4KeyRange( qcTemplate      * aTemplate,
                                            qmoStatistics   * aStatInfo,
                                            qmoIdxCardInfo  * aIdxCardInfo,
@@ -101,36 +101,36 @@ public:
                                            SDouble         * aSelectivity,
                                            idBool            aInExecutionTime );
 
-    // scan method ì™€ ê´€ë ¨ëœ qmoPredWrapper list ì— ëŒ€í•œ í†µí•© selectivity ë°˜í™˜
+    // scan method ¿Í °ü·ÃµÈ qmoPredWrapper list ¿¡ ´ëÇÑ ÅëÇÕ selectivity ¹İÈ¯
     static IDE_RC getSelectivity4PredWrapper( qcTemplate     * aTemplate,
                                               qmoPredWrapper * aPredWrapper,
                                               SDouble        * aSelectivity,
                                               idBool           aInExecutionTime );
 
-    // qmoPredicate list ì— ëŒ€í•œ í†µí•© totalSelectivity ë°˜í™˜
-    // qmgSelection and qmgHierarchy ìµœì í™” ê³¼ì •ì—ì„œ ì´ìš©
+    // qmoPredicate list ¿¡ ´ëÇÑ ÅëÇÕ totalSelectivity ¹İÈ¯
+    // qmgSelection and qmgHierarchy ÃÖÀûÈ­ °úÁ¤¿¡¼­ ÀÌ¿ë
     static IDE_RC getTotalSelectivity4PredList( qcStatement  * aStatement,
                                                 qmoPredicate * aPredList,
                                                 SDouble      * aSelectivity,
                                                 idBool         aInExecutionTime );
 
     //-----------------------------------------------
-    // JOIN ê´€ë ¨ selectivity, output record count, joinOrderFactor ê³„ì‚°
+    // JOIN °ü·Ã selectivity, output record count, joinOrderFactor °è»ê
     //-----------------------------------------------
 
-    // Join ì— ëŒ€í•œ qmoPredicate.mySelectivity ê³„ì‚°
+    // Join ¿¡ ´ëÇÑ qmoPredicate.mySelectivity °è»ê
     static IDE_RC setMySelectivity4Join( qcStatement  * aStatement,
                                          qmgGraph     * aGraph,
                                          qmoPredicate * aJoinPredList,
                                          idBool         aIsSetNext );
 
-    // qmgJoin ì— ëŒ€í•œ selectivity ê³„ì‚°
+    // qmgJoin ¿¡ ´ëÇÑ selectivity °è»ê
     static IDE_RC setJoinSelectivity( qcStatement  * aStatement,
                                       qmgGraph     * aGraph,
                                       qmoPredicate * aJoinPred,
                                       SDouble      * aSelectivity );
 
-    // qmgLeftOuter, qmgFullOuter ì— ëŒ€í•œ selectivity ê³„ì‚°
+    // qmgLeftOuter, qmgFullOuter ¿¡ ´ëÇÑ selectivity °è»ê
     static IDE_RC setOuterJoinSelectivity( qcStatement  * aStatement,
                                            qmgGraph     * aGraph,
                                            qmoPredicate * aWherePred,
@@ -138,7 +138,7 @@ public:
                                            qmoPredicate * aOneTablePred,
                                            SDouble      * aSelectivity );
 
-    // qmgLeftOuter ì— ëŒ€í•œ output record count ê³„ì‚°
+    // qmgLeftOuter ¿¡ ´ëÇÑ output record count °è»ê
     static IDE_RC setLeftOuterOutputCnt( qcStatement  * aStatement,
                                          qmgGraph     * aGraph,
                                          qcDepInfo    * aLeftDepInfo,
@@ -149,7 +149,7 @@ public:
                                          SDouble        aRightOutputCnt,
                                          SDouble      * aOutputRecordCnt );
 
-    // qmgFullOuter ì— ëŒ€í•œ output record count ê³„ì‚°
+    // qmgFullOuter ¿¡ ´ëÇÑ output record count °è»ê
     static IDE_RC setFullOuterOutputCnt( qcStatement  * aStatement,
                                          qmgGraph     * aGraph,
                                          qcDepInfo    * aLeftDepInfo,
@@ -160,7 +160,7 @@ public:
                                          SDouble        aRightOutputCnt,
                                          SDouble      * aOutputRecordCnt );
 
-    // Join ordering ê´€ë ¨ JoinOrderFactor, JoinSize ê³„ì‚°
+    // Join ordering °ü·Ã JoinOrderFactor, JoinSize °è»ê
     static IDE_RC setJoinOrderFactor( qcStatement  * aStatement,
                                       qmgGraph     * aJoinGraph,
                                       qmoPredicate * aJoinPred,
@@ -168,10 +168,10 @@ public:
                                       SDouble      * aJoinSize );
 
     //-----------------------------------------------
-    // ì´ ì™¸ graph ì— ëŒ€í•œ selectivity, output record count ê³„ì‚°
+    // ÀÌ ¿Ü graph ¿¡ ´ëÇÑ selectivity, output record count °è»ê
     //-----------------------------------------------
 
-    // qmgHierarchy ì— ëŒ€í•œ selectivity ê³„ì‚°
+    // qmgHierarchy ¿¡ ´ëÇÑ selectivity °è»ê
     static IDE_RC setHierarchySelectivity( qcStatement  * aStatement,
                                            qmoPredicate * aWherePredList,
                                            qmoCNF       * aConnectByCNF,
@@ -179,30 +179,30 @@ public:
                                            idBool         aInExecutionTime,
                                            SDouble      * aSelectivity );
 
-    // qmgCounting ì— ëŒ€í•œ selectivity ê³„ì‚°
+    // qmgCounting ¿¡ ´ëÇÑ selectivity °è»ê
     static IDE_RC setCountingSelectivity( qmoPredicate * aStopkeyPred,
                                           SLong          aStopRecordCnt,
                                           SDouble        aInputRecordCnt,
                                           SDouble      * aSelectivity );
 
-    // qmgCounting ì— ëŒ€í•œ output record count ê³„ì‚°
+    // qmgCounting ¿¡ ´ëÇÑ output record count °è»ê
     static IDE_RC setCountingOutputCnt( qmoPredicate * aStopkeyPred,
                                         SLong          aStopRecordCnt,
                                         SDouble        aInputRecordCnt,
                                         SDouble      * aOutputRecordCnt );
 
-    // qmgProjection ì— ëŒ€í•œ selectivity ê³„ì‚°
+    // qmgProjection ¿¡ ´ëÇÑ selectivity °è»ê
     static IDE_RC setProjectionSelectivity( qmsLimit * aLimit,
                                             SDouble    aInputRecordCnt,
                                             SDouble  * aSelectivity );
 
-    // qmgGrouping ì— ëŒ€í•œ selectivity ê³„ì‚°
+    // qmgGrouping ¿¡ ´ëÇÑ selectivity °è»ê
     static IDE_RC setGroupingSelectivity( qmgGraph     * aGraph,
                                           qmoPredicate * aHavingPred,
                                           SDouble        aInputRecordCnt,
                                           SDouble      * aSelectivity );
 
-    // qmgGrouping ì— ëŒ€í•œ output record count ê³„ì‚°
+    // qmgGrouping ¿¡ ´ëÇÑ output record count °è»ê
     static IDE_RC setGroupingOutputCnt( qcStatement      * aStatement,
                                         qmgGraph         * aGraph,
                                         qmsConcatElement * aGroupBy,
@@ -210,19 +210,19 @@ public:
                                         SDouble            aSelectivity,
                                         SDouble          * aOutputRecordCnt );
 
-    // qmgDistinction ì— ëŒ€í•œ output record count ê³„ì‚°
+    // qmgDistinction ¿¡ ´ëÇÑ output record count °è»ê
     static IDE_RC setDistinctionOutputCnt( qcStatement * aStatement,
                                            qmsTarget   * aTarget,
                                            SDouble       aInputRecordCnt,
                                            SDouble     * aOutputRecordCnt );
 
-    // qmgSet ì— ëŒ€í•œ output record count ê³„ì‚°
+    // qmgSet ¿¡ ´ëÇÑ output record count °è»ê
     static IDE_RC setSetOutputCnt( qmsSetOpType   aSetOpType,
                                    SDouble        aLeftOutputRecordCnt,
                                    SDouble        aRightOutputRecordCnt,
                                    SDouble      * aOutputRecordCnt );
 
-    // qmoPredicate ì— ëŒ€í•œ mySelectivity ê°’ ë°˜í™˜
+    // qmoPredicate ¿¡ ´ëÇÑ mySelectivity °ª ¹İÈ¯
     static SDouble getMySelectivity( qcTemplate   * aTemplate,
                                      qmoPredicate * aPredicate,
                                      idBool         aInExecutionTime );
@@ -235,15 +235,15 @@ public:
 private:
 
     //-----------------------------------------------
-    // SCAN ê´€ë ¨ selectivity ê³„ì‚°
+    // SCAN °ü·Ã selectivity °è»ê
     //-----------------------------------------------
 
     /* qmoPredicate.mySelectivity */
 
-    // execution timeë•Œ ë¶ˆë¦¬ëŠ” setMySelectivity í•¨ìˆ˜
-    // host ë³€ìˆ˜ì— ê°’ì´ ë°”ì¸ë”©ëœ í›„ scan method ì¬êµ¬ì¶•ì„ ìœ„í•´
-    // template->data + qmoPredicate.mySelectivityOffset ì—
-    // mySelectivity ë¥¼ ì¬ì„¤ì •í•œë‹¤. (qmo::optimizeForHost ì°¸ì¡°)
+    // execution time¶§ ºÒ¸®´Â setMySelectivity ÇÔ¼ö
+    // host º¯¼ö¿¡ °ªÀÌ ¹ÙÀÎµùµÈ ÈÄ scan method Àç±¸ÃàÀ» À§ÇØ
+    // template->data + qmoPredicate.mySelectivityOffset ¿¡
+    // mySelectivity ¸¦ Àç¼³Á¤ÇÑ´Ù. (qmo::optimizeForHost ÂüÁ¶)
     static IDE_RC setMySelectivityOffset( qcTemplate    * aTemplate,
                                           qmoStatistics * aStatInfo,
                                           qcDepInfo     * aDepInfo,
@@ -251,20 +251,20 @@ private:
 
     /* qmoPredicate.totalSelectivity */
 
-    // execution timeë•Œ ë¶ˆë¦¬ëŠ” setTotalSelectivity í•¨ìˆ˜
-    // host ë³€ìˆ˜ì— ê°’ì´ ë°”ì¸ë”©ëœ í›„ scan method ì¬êµ¬ì¶•ì„ ìœ„í•´
-    // template->data + qmoPredicate.totalSelectivityOffset ì—
-    // totalSelectivity ë¥¼ ì¬ì„¤ì •í•œë‹¤. (qmo::optimizeForHost ì°¸ì¡°)
+    // execution time¶§ ºÒ¸®´Â setTotalSelectivity ÇÔ¼ö
+    // host º¯¼ö¿¡ °ªÀÌ ¹ÙÀÎµùµÈ ÈÄ scan method Àç±¸ÃàÀ» À§ÇØ
+    // template->data + qmoPredicate.totalSelectivityOffset ¿¡
+    // totalSelectivity ¸¦ Àç¼³Á¤ÇÑ´Ù. (qmo::optimizeForHost ÂüÁ¶)
     static IDE_RC setTotalSelectivityOffset( qcTemplate    * aTemplate,
                                              qmoStatistics * aStatInfo,
                                              qmoPredicate  * aPredicate );
 
-    // qmoPredicate ì— ëŒ€í•œ totalSelectivity ê°’ ë°˜í™˜
+    // qmoPredicate ¿¡ ´ëÇÑ totalSelectivity °ª ¹İÈ¯
     inline static SDouble getTotalSelectivity( qcTemplate   * aTemplate,
                                                qmoPredicate * aPredicate,
                                                idBool         aInExecutionTime );
 
-    // setTotalSelectivity ì—ì„œ í˜¸ì¶œë˜ì–´ í†µí•©ëœ total selectivity ê³„ì‚°
+    // setTotalSelectivity ¿¡¼­ È£ÃâµÇ¾î ÅëÇÕµÈ total selectivity °è»ê
     static IDE_RC getIntegrateMySelectivity( qcTemplate    * aTemplate,
                                              qmoStatistics * aStatInfo,
                                              qmoPredicate  * aPredicate,
@@ -273,7 +273,7 @@ private:
 
     /* Unit selectivity */
 
-    // Unit predicate ì— ëŒ€í•œ scan selectivity ê³„ì‚°
+    // Unit predicate ¿¡ ´ëÇÑ scan selectivity °è»ê
     static IDE_RC getUnitSelectivity( qcTemplate    * aTemplate,
                                       qmoStatistics * aStatInfo,
                                       qcDepInfo     * aDepInfo,
@@ -282,7 +282,7 @@ private:
                                       SDouble       * aSelectivity,
                                       idBool          aInExecutionTime );
                                        
-    // =, !=(<>) ì— ëŒ€í•œ unit selectivity ê³„ì‚°
+    // =, !=(<>) ¿¡ ´ëÇÑ unit selectivity °è»ê
     static IDE_RC getEqualSelectivity( qcTemplate    * aTemplate,
                                        qmoStatistics * aStatInfo,
                                        qcDepInfo     * aDepInfo,
@@ -290,14 +290,14 @@ private:
                                        qtcNode       * aCompareNode,
                                        SDouble       * aSelectivity );
 
-    // IS NULL, IS NOT NULL ì— ëŒ€í•œ unit selectivity ê³„ì‚°
+    // IS NULL, IS NOT NULL ¿¡ ´ëÇÑ unit selectivity °è»ê
     static IDE_RC getIsNullSelectivity( qcTemplate    * aTemplate,
                                         qmoStatistics * aStatInfo,
                                         qmoPredicate  * aPredicate,
                                         qtcNode       * aCompareNode,
                                         SDouble       * aSelectivity );
 
-    // >, >=, <, <=, BETWEEN, NOT BETWEEN ì— ëŒ€í•œ unit selectivity ê³„ì‚°
+    // >, >=, <, <=, BETWEEN, NOT BETWEEN ¿¡ ´ëÇÑ unit selectivity °è»ê
     static IDE_RC getGreaterLessBeetweenSelectivity( qcTemplate    * aTemplate,
                                                      qmoStatistics * aStatInfo,
                                                      qmoPredicate  * aPredicate,
@@ -305,7 +305,7 @@ private:
                                                      SDouble       * aSelectivity,
                                                      idBool          aInExecutionTime );
 
-    // getGreaterLessBeetweenSelectivity ì—ì„œ í˜¸ì¶œë˜ì–´ MIN, MAX selectivity ê³„ì‚°
+    // getGreaterLessBeetweenSelectivity ¿¡¼­ È£ÃâµÇ¾î MIN, MAX selectivity °è»ê
     static IDE_RC getMinMaxSelectivity( qcTemplate    * aTemplate,
                                         qmoStatistics * aStatInfo,
                                         qtcNode       * aCompareNode,
@@ -313,8 +313,8 @@ private:
                                         qtcNode       * aValueNode,
                                         SDouble       * aSelectivity );
 
-    // getMinMaxSelectivity, getIntegrateSelectivity ì—ì„œ í˜¸ì¶œ
-    // NUMBER group ì˜ min-max selectivity ê³„ì‚°ì„ ìœ„í•´ double í˜• ë³€í™˜ê°’ ë°˜í™˜
+    // getMinMaxSelectivity, getIntegrateSelectivity ¿¡¼­ È£Ãâ
+    // NUMBER group ÀÇ min-max selectivity °è»êÀ» À§ÇØ double Çü º¯È¯°ª ¹İÈ¯
     static IDE_RC getConvertToDoubleValue( mtcColumn     * aColumnColumn,
                                            mtcColumn     * aMaxValueColumn,
                                            mtcColumn     * aMinValueColumn,
@@ -327,7 +327,7 @@ private:
                                            mtdDoubleType * aDoubleMaxValue,
                                            mtdDoubleType * aDoubleMinValue );
 
-    // LIKE, NOT LIKE ì— ëŒ€í•œ unit selectivity ê³„ì‚°
+    // LIKE, NOT LIKE ¿¡ ´ëÇÑ unit selectivity °è»ê
     static IDE_RC getLikeSelectivity( qcTemplate    * aTemplate,
                                       qmoStatistics * aStatInfo,
                                       qmoPredicate  * aPredicate,
@@ -335,12 +335,12 @@ private:
                                       SDouble       * aSelectivity,
                                       idBool          aInExecutionTime );
 
-    // getLikeSelectivity ì—ì„œ í˜¸ì¶œë˜ì–´ keyLength ë°˜í™˜
+    // getLikeSelectivity ¿¡¼­ È£ÃâµÇ¾î keyLength ¹İÈ¯
     static IDE_RC getLikeKeyLength( const mtdCharType   * aSource,
                                     const mtdCharType   * aEscape,
                                     UShort              * aKeyLength );
 
-    // IN, NOT IN ì— ëŒ€í•œ unit selectivity ê³„ì‚°
+    // IN, NOT IN ¿¡ ´ëÇÑ unit selectivity °è»ê
     static IDE_RC getInSelectivity( qcTemplate    * aTemplate,
                                     qmoStatistics * aStatInfo,
                                     qcDepInfo     * aDepInfo,
@@ -348,13 +348,13 @@ private:
                                     qtcNode       * aCompareNode,
                                     SDouble       * aSelectivity );
 
-    // EQUALS, NOTEQUALS ì— ëŒ€í•œ unit selectivity ê³„ì‚°
+    // EQUALS, NOTEQUALS ¿¡ ´ëÇÑ unit selectivity °è»ê
     static IDE_RC getEqualsSelectivity( qmoStatistics * aStatInfo,
                                         qmoPredicate  * aPredicate,
                                         qtcNode       * aCompareNode,
                                         SDouble       * aSelectivity );
 
-    // LNNVL ì— ëŒ€í•œ unit selectivity ê³„ì‚°
+    // LNNVL ¿¡ ´ëÇÑ unit selectivity °è»ê
     static IDE_RC getLnnvlSelectivity( qcTemplate    * aTemplate,
                                        qmoStatistics * aStatInfo,
                                        qcDepInfo     * aDepInfo,
@@ -364,34 +364,34 @@ private:
                                        idBool          aInExecutionTime );
 
     //-----------------------------------------------
-    // JOIN ê´€ë ¨ selectivity ê³„ì‚°
+    // JOIN °ü·Ã selectivity °è»ê
     //-----------------------------------------------
 
-    // Outer join ON ì ˆì˜ one table predicate ì— ëŒ€í•œ mySelectivity ê³„ì‚°
+    // Outer join ON ÀıÀÇ one table predicate ¿¡ ´ëÇÑ mySelectivity °è»ê
     static IDE_RC setMySelectivity4OneTable( qcStatement  * aStatement,
                                              qmgGraph     * aLeftGraph,
                                              qmgGraph     * aRightGraph,
                                              qmoPredicate * aOneTablePred );
 
-    // Join predicate list ì— ëŒ€í•œ í†µí•© mySelectivity ë°˜í™˜
+    // Join predicate list ¿¡ ´ëÇÑ ÅëÇÕ mySelectivity ¹İÈ¯
     static IDE_RC getMySelectivity4PredList( qmoPredicate  * aPredList,
                                              SDouble       * aSelectivity );
 
-    // BUG-37918 join selectivity ê°œì„ 
+    // BUG-37918 join selectivity °³¼±
     static SDouble getEnhanceSelectivity4Join( qcStatement  * aStatement,
                                                qmgGraph     * aGraph,
                                                qmoStatistics* aStatInfo,
                                                qtcNode      * aNode);
 
-    // Join predicate ì— ëŒ€í•œ unit selectivity ë¥¼ ë°˜í™˜í•˜ê³ 
-    // ë‹¤ìŒ ì¸ë±ìŠ¤ ì‚¬ìš©ê°€ëŠ¥ì—¬ë¶€ë¥¼ ì„¸íŒ…í•œë‹¤.
+    // Join predicate ¿¡ ´ëÇÑ unit selectivity ¸¦ ¹İÈ¯ÇÏ°í
+    // ´ÙÀ½ ÀÎµ¦½º »ç¿ë°¡´É¿©ºÎ¸¦ ¼¼ÆÃÇÑ´Ù.
     static IDE_RC getUnitSelectivity4Join( qcStatement * aStatement,
                                            qmgGraph    * aGraph,
                                            qtcNode     * aCompareNode,
                                            idBool      * aIsEqual,
                                            SDouble     * aSelectivity );
 
-    // qmoPredicate list ì— ëŒ€í•œ í†µí•© semi join selectivity ë°˜í™˜
+    // qmoPredicate list ¿¡ ´ëÇÑ ÅëÇÕ semi join selectivity ¹İÈ¯
     static IDE_RC getSemiJoinSelectivity( qcStatement   * aStatement,
                                           qmgGraph      * aGraph,
                                           qcDepInfo     * aLeftDepInfo,
@@ -400,7 +400,7 @@ private:
                                           idBool          aIsSetNext,
                                           SDouble       * aSelectivity );
 
-    // Join predicate ì— ëŒ€í•œ semi join unit selectivity ë°˜í™˜
+    // Join predicate ¿¡ ´ëÇÑ semi join unit selectivity ¹İÈ¯
     static IDE_RC getUnitSelectivity4Semi( qcStatement  * aStatement,
                                            qmgGraph     * aGraph,
                                            qcDepInfo    * aLeftDepInfo,
@@ -408,7 +408,7 @@ private:
                                            idBool         aIsLeftSemi,
                                            SDouble      * aSelectivity );
 
-    // qmoPredicate list ì— ëŒ€í•œ í†µí•© anti join selectivity ë°˜í™˜
+    // qmoPredicate list ¿¡ ´ëÇÑ ÅëÇÕ anti join selectivity ¹İÈ¯
     static IDE_RC getAntiJoinSelectivity( qcStatement   * aStatement,
                                           qmgGraph      * aGraph,
                                           qcDepInfo     * aLeftDepInfo,
@@ -417,7 +417,7 @@ private:
                                           idBool          aIsSetNext,
                                           SDouble       * aSelectivity );
 
-    // Join predicate ì— ëŒ€í•œ anti join unit selectivity ë°˜í™˜
+    // Join predicate ¿¡ ´ëÇÑ anti join unit selectivity ¹İÈ¯
     static IDE_RC getUnitSelectivity4Anti( qcStatement  * aStatement,
                                            qmgGraph     * aGraph,
                                            qcDepInfo    * aLeftDepInfo,
@@ -426,18 +426,18 @@ private:
                                            SDouble      * aSelectivity );
 
     //-----------------------------------------------
-    // JOIN ordering ê´€ë ¨
+    // JOIN ordering °ü·Ã
     //-----------------------------------------------
 
-    // setJoinOrderFactor í•¨ìˆ˜ì—ì„œ í˜¸ì¶œ
-    // ìµœì í™” ì´ì „(predicate ë¯¸êµ¬ë¶„ ìƒíƒœ) join predicateì˜ selectivity ê³„ì‚°
+    // setJoinOrderFactor ÇÔ¼ö¿¡¼­ È£Ãâ
+    // ÃÖÀûÈ­ ÀÌÀü(predicate ¹Ì±¸ºĞ »óÅÂ) join predicateÀÇ selectivity °è»ê
     static IDE_RC getSelectivity4JoinOrder( qcStatement  * aStatement,
                                             qmgGraph     * aJoinGraph,
                                             qmoPredicate * aJoinPred,
                                             SDouble      * aSelectivity );
 
-    // getSelectivity4JoinOrder í•¨ìˆ˜ì—ì„œ í˜¸ì¶œ
-    // ìµœì í™” ì´ì „(predicate ë¯¸êµ¬ë¶„ ìƒíƒœ) join predicateì˜ selectivity ë³´ì •
+    // getSelectivity4JoinOrder ÇÔ¼ö¿¡¼­ È£Ãâ
+    // ÃÖÀûÈ­ ÀÌÀü(predicate ¹Ì±¸ºĞ »óÅÂ) join predicateÀÇ selectivity º¸Á¤
     static IDE_RC getReviseSelectivity4JoinOrder (
                                           qcStatement    * aStatement,
                                           qmgGraph       * aJoinGraph,
@@ -447,8 +447,8 @@ private:
                                           SDouble        * aSelectivity,
                                           idBool         * aIsRevise );
 
-    // getReviseSelectivity4JoinOrder í•¨ìˆ˜ì—ì„œ í˜¸ì¶œ
-    // Equal Predicate ì¸ì§€ ê²€ì‚¬
+    // getReviseSelectivity4JoinOrder ÇÔ¼ö¿¡¼­ È£Ãâ
+    // Equal Predicate ÀÎÁö °Ë»ç
     static IDE_RC isEqualPredicate( qmoPredicate * aPredicate,
                                     idBool       * aIsEqual );
 };

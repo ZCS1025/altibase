@@ -52,3 +52,14 @@ void sdiStatementManager::finalizeStatement( sdiStatement * aSdStmt )
     sdlStatementManager::finalizeStatement( aSdStmt );
 }
 
+void sdiStatementManager::findRemoteStatement(
+                                       sdiStatement   * aSdStmt,
+                                       UInt             aNodeId,
+                                       UInt             aRemoteStmtId,
+                                       sdlRemoteStmt ** aRemoteStmt )
+{
+    sdlStatementManager::findRemoteStatement( aSdStmt,
+                                              aNodeId,
+                                              aRemoteStmtId,
+                                              aRemoteStmt );
+}

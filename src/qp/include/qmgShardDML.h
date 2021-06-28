@@ -18,11 +18,11 @@
 /***********************************************************************
  * $Id$
  *
- * Description : ShardDML graphë¥¼ ìœ„í•œ ì •ì˜
+ * Description : ShardDML graph¸¦ À§ÇÑ Á¤ÀÇ
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -35,61 +35,61 @@
 #include <sdi.h>
 
 //---------------------------------------------------
-// ShardDML graphì˜ Define ìƒìˆ˜
+// ShardDML graphÀÇ Define »ó¼ö
 //---------------------------------------------------
 
 #define QMG_SHARDDML_FLAG_CLEAR                  (0x00000000)
 
 //---------------------------------------------------
-// ShardDML graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+// ShardDML graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
 //---------------------------------------------------
 
 typedef struct qmgSHARDDML
 {
-    // ê³µí†µ ì •ë³´
-    qmgGraph         graph;
+    // °øÅë Á¤º¸
+    qmgGraph           graph;
 
-    // ê³ ìœ  ì •ë³´
-    qcNamePosition   shardQuery;
-    sdiAnalyzeInfo * shardAnalysis;
-    UShort           shardParamOffset;
-    UShort           shardParamCount;
+    // °íÀ¯ Á¤º¸
+    qcNamePosition     shardQuery;
+    sdiAnalyzeInfo   * shardAnalysis;
+    qcShardParamInfo * shardParamInfo; /* TASK-7219 Non-shard DML */
+    UShort             shardParamCount;
 
-    UInt             flag;
+    UInt               flag;
 
 } qmgSHARDDML;
 
 //---------------------------------------------------
-// ShardDML graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+// ShardDML graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
 //---------------------------------------------------
 
 class qmgShardDML
 {
 public:
-    // Graph ì˜ ì´ˆê¸°í™”
-    static IDE_RC init( qcStatement     * aStatement,
-                        qcNamePosition  * aShardQuery,
-                        sdiAnalyzeInfo  * aShardAnalysis,
-                        UShort            aShardParamOffset,
-                        UShort            aShardParamCount,
-                        qmgGraph       ** aGraph );
+    // Graph ÀÇ ÃÊ±âÈ­
+    static IDE_RC init( qcStatement      * aStatement,
+                        qcNamePosition   * aShardQuery,
+                        sdiAnalyzeInfo   * aShardAnalysis,
+                        qcShardParamInfo * aShardParamInfo, /* TASK-7219 Non-shard DML */
+                        UShort             aShardParamCount,
+                        qmgGraph        ** aGraph );
 
-    // Graphì˜ ìµœì í™” ìˆ˜í–‰
+    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
     static IDE_RC optimize( qcStatement * aStatement,
                             qmgGraph    * aGraph );
 
-    // Graphì˜ Plan Tree ìƒì„±
+    // GraphÀÇ Plan Tree »ı¼º
     static IDE_RC makePlan( qcStatement    * aStatement,
                             const qmgGraph * aParent,
                             qmgGraph       * aGraph );
 
-    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
+    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
     static IDE_RC printGraph( qcStatement  * aStatement,
                               qmgGraph     * aGraph,
                               ULong          aDepth,
                               iduVarString * aString );
 
-    // shard ì •ë³´ë¥¼ ì¶œë ¥
+    // shard Á¤º¸¸¦ Ãâ·Â
     static IDE_RC printShardInfo( qcStatement    * aStatement,
                                   sdiAnalyzeInfo * aAnalyzeInfo,
                                   qcNamePosition * aQuery,

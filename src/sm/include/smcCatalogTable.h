@@ -16,13 +16,12 @@
  
 
 /***********************************************************************
- * $Id: smcCatalogTable.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smcCatalogTable.h 88191 2020-07-27 03:08:54Z mason.lee $
  **********************************************************************/
 
 #ifndef _O_SMC_CATALOG_TABLE_H_
 #define _O_SMC_CATALOG_TABLE_H_ 1
 
-#include <iduSync.h>
 
 #include <smDef.h>
 #include <smcDef.h>
@@ -31,25 +30,25 @@ class smcCatalogTable
 {
 public:
 
-    /* DB ìƒì„±ì‹œì— Catalog Tableê³¼ Temp Catalog Table ìƒì„± */
+    /* DB »ı¼º½Ã¿¡ Catalog Table°ú Temp Catalog Table »ı¼º */
     static IDE_RC createCatalogTable();
 
-    /* Server shutdownì‹œ Catalog Tableì— ëŒ€í•´ ë©”ëª¨ë¦¬ í•´ì œ ìˆ˜í–‰ */
+    /* Server shutdown½Ã Catalog Table¿¡ ´ëÇØ ¸Ş¸ğ¸® ÇØÁ¦ ¼öÇà */
     static IDE_RC finalizeCatalogTable();
 
-    /* Server startupì‹œ Catalog Tableì— ëŒ€í•´ ì´ˆê¸°í™” ìˆ˜í–‰ */
+    /* Server startup½Ã Catalog Table¿¡ ´ëÇØ ÃÊ±âÈ­ ¼öÇà */
     static IDE_RC initialize();
 
-    /* Server shutdownì‹œ Catalog Tableì— ëŒ€í•´ ë©”ëª¨ë¦¬ í•´ì œ ìˆ˜í–‰ */
+    /* Server shutdown½Ã Catalog Table¿¡ ´ëÇØ ¸Ş¸ğ¸® ÇØÁ¦ ¼öÇà */
     static IDE_RC destroy();
 
-    /* Temp Catalog Table Offsetë¥¼ return */
+    /* Temp Catalog Table Offset¸¦ return */
     static UInt getCatTempTableOffset();
 
-    /* restart recoveryì‹œì—
-       disk tableì˜ headerë¥¼ ì´ˆê¸°í™”í•˜ê³  í•´ë‹¹ tableì˜
-       ëª¨ë“  index runtime headerë¥¼
-       rebuild í•œë‹¤.*/
+    /* restart recovery½Ã¿¡
+       disk tableÀÇ header¸¦ ÃÊ±âÈ­ÇÏ°í ÇØ´ç tableÀÇ
+       ¸ğµç index runtime header¸¦
+       rebuild ÇÑ´Ù.*/
     static IDE_RC refineDRDBTables();
 
    static IDE_RC doAction4EachTBL(idvSQL            * aStatistics,
@@ -58,14 +57,14 @@ public:
 
 private:
 
-   // Create DBì‹œ Catalog Tableì„ ìƒì„±í•œë‹¤.
+   // Create DB½Ã Catalog TableÀ» »ı¼ºÇÑ´Ù.
     static IDE_RC createCatalog( void*   aCatTableHeader,
                                  UShort  aOffset );
 
-    // Shutdownì‹œ Catalog Tableì˜ í•´ì œì‘ì—…ì„ ìˆ˜í–‰
+    // Shutdown½Ã Catalog TableÀÇ ÇØÁ¦ÀÛ¾÷À» ¼öÇà
     static IDE_RC finCatalog( void* sCatTableHeader );
 
-    //  Catalog Tableì•ˆì˜ Used Slotì— ëŒ€í•´ Lock Itemê³¼ Runtime Itemí•´ì œ
+    //  Catalog Table¾ÈÀÇ Used Slot¿¡ ´ëÇØ Lock Item°ú Runtime ItemÇØÁ¦
     static IDE_RC finAllocedTableSlots( smcTableHeader * aCatTblHdr );
 };
 

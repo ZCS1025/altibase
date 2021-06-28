@@ -44,28 +44,28 @@ typedef IDE_RC  (* dkdRestartFunc)( void *aMgrHandle );
 class dkdDataMgr
 {
 private:
-    /* í˜„ì¬ iteration í•´ì•¼ í•  data ê°€ record buffer ì— ì¡´ì¬í•˜ëŠ”ì§€ disk temp
-       table ì— ì¡´ì¬í•˜ëŠ”ì§€ ì—¬ë¶€ */
+    /* ÇöÀç iteration ÇØ¾ß ÇÒ data °¡ record buffer ¿¡ Á¸ÀçÇÏ´ÂÁö disk temp
+       table ¿¡ Á¸ÀçÇÏ´ÂÁö ¿©ºÎ */
     idBool                mIsRecordBuffer;
-    /* ë§ˆì§€ë§‰ data block ì„ ë‹¤ ì½ì—ˆê³  readRecordDataFromProtocol ì˜ ê²°ê³¼
-       DK_RC_EOF ì¸ ê²½ìš° TRUE ë¡œ ì„¤ì • */
+    /* ¸¶Áö¸· data block À» ´Ù ÀĞ¾ú°í readRecordDataFromProtocol ÀÇ °á°ú
+       DK_RC_EOF ÀÎ °æ¿ì TRUE ·Î ¼³Á¤ */
     idBool                mIsEndOfFetch;
-    /* ì „ì²´ record ì˜ ê°¯ìˆ˜, insertRow ê°€ ì„±ê³µí•  ë•Œë§ˆë‹¤ 1ì”© ì¦ê°€ */
+    /* ÀüÃ¼ record ÀÇ °¹¼ö, insertRow °¡ ¼º°øÇÒ ¶§¸¶´Ù 1¾¿ Áõ°¡ */
     UInt                  mRecordCnt;
-    /* Converted record ì˜ ê¸¸ì´ */
+    /* Converted record ÀÇ ±æÀÌ */
     UInt                  mRecordLen;
     /* Converted Row's size */
     UInt                  mRowSize;
-    /* Disk temp table ì„ ìœ„í•´ ë™ì  í• ë‹¹ë°›ì€ record catridge */
+    /* Disk temp table À» À§ÇØ µ¿Àû ÇÒ´ç¹ŞÀº record catridge */
     dkdRecord           * mRecord;
-    /* Record buffer ë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš° ê°€ìš© record buffer ì˜ ìµœëŒ€í¬ê¸° */
+    /* Record buffer ¸¦ »ç¿ëÇÏ´Â °æ¿ì °¡¿ë record buffer ÀÇ ÃÖ´ëÅ©±â */
     UInt                  mRecordBufferSize;
-    /* AltiLinker í”„ë¡œì„¸ìŠ¤ë¡œë¶€í„° packet ì„ í•˜ë‚˜ ë°›ì„ ë•Œë§ˆë‹¤ ì¦ê°€í•˜ëŠ” 
-       data block ì˜ count. ì¶”í›„ í†µê³„ì¹˜ í™•ë³´ì—ë„ ì‚¬ìš©ë  ìˆ˜ ìˆë‹¤. */
+    /* AltiLinker ÇÁ·Î¼¼½º·ÎºÎÅÍ packet À» ÇÏ³ª ¹ŞÀ» ¶§¸¶´Ù Áõ°¡ÇÏ´Â 
+       data block ÀÇ count. ÃßÈÄ Åë°èÄ¡ È®º¸¿¡µµ »ç¿ëµÉ ¼ö ÀÖ´Ù. */
     UInt                  mDataBlockRecvCount;
-    /* Data manager ê°€ ì½ì€ data block ì˜ count. */
+    /* Data manager °¡ ÀĞÀº data block ÀÇ count. */
     UInt                  mDataBlockReadCount;
-    /* í˜„ì¬ data block ì—ì„œ ê°€ë¦¬í‚¤ê³  ìˆëŠ” ì§€ì  */
+    /* ÇöÀç data block ¿¡¼­ °¡¸®Å°°í ÀÖ´Â ÁöÁ¡ */
     SChar               * mDataBlockPos;
 
     struct dkdTypeConverter    * mTypeConverter;
@@ -76,7 +76,7 @@ private:
 
     void                * mMgrHandle;
 
-    void                * mCurRow; /* fetch í•œ row ë¥¼ ì¼ì‹œì ìœ¼ë¡œ ë³´ê´€ */
+    void                * mCurRow; /* fetch ÇÑ row ¸¦ ÀÏ½ÃÀûÀ¸·Î º¸°ü */
 
     dkdFetchRowFunc       mFetchRowFunc;
     dkdInsertRowFunc      mInsertRowFunc;

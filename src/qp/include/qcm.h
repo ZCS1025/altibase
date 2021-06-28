@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcm.h 84317 2018-11-12 00:39:24Z minku.kang $
+ * $Id: qcm.h 90861 2021-05-18 07:41:58Z jake.jang $
  **********************************************************************/
 
 #ifndef _O_QCM_H_
@@ -39,12 +39,12 @@ extern smiCursorProperties gMetaDefaultCursorProperty;
  **************************************************************/
 
 // check SYS_DATABASE_ record
-#define QCM_META_MAJOR_VER              (8)
-#define QCM_META_MINOR_VER              (7)
+#define QCM_META_MAJOR_VER              (9)
+#define QCM_META_MINOR_VER              (3)
 #define QCM_META_PATCH_VER              (1)
 
-#define QCM_META_MAJOR_STR_VER          "8"
-#define QCM_META_MINOR_STR_VER          "7"
+#define QCM_META_MAJOR_STR_VER          "9"
+#define QCM_META_MINOR_STR_VER          "3"
 #define QCM_META_PATCH_STR_VER          "1"
 
 #define QCM_TABLES_SEQ_STARTVALUE       ((SLong)4)
@@ -54,14 +54,14 @@ extern smiCursorProperties gMetaDefaultCursorProperty;
 
 /* 
  * PROJ-2206
- * tableID (QCM_TABLES_SEQ_MAXVALUE 2097151 ) ì¤‘ë³µ ë˜ì§€ ì•Šê²Œ ë” í° ê°’ìœ¼ë¡œ ì„¤ì • í•œë‹¤.
- * with ì ˆì— ì˜í•´ ìƒì„±ëœ view í…Œì´ë¸”ì— í• ë‹¹ëœë‹¤. ì´í›„ withì ˆì— ì˜í•œ stmtê°€ ì¸ë¼ì¸ë·°ë¡œ
- * ë˜ë©´ì„œ í• ë‹¹ëœ IDê°’ì´ ë™ì¼í•œ ë·°ë¥¼ sameviewë¡œ ê°„ì£¼í•˜ì—¬ materialize í•˜ë„ë¡ í•œë‹¤.
- * dbì—ì„œ ìœ ì¼í•œ ê°’ì´ ì•„ë‹ˆë¼ statementì—ì„œë§Œ ìœ ì¼í•œ ê°’ì´ë‹¤.
- * 0                         : inline view ì˜ ID
- * 4           ~ 2097151     : table ID, created view ì˜ ID
- * 2097151 + 1 ~ 3000000 - 1 : Fixed table, Performance View ì˜ ID
- * 3000000     ~ UINT MAX    : with ì ˆì— ì˜í•´ ìƒì„±ëœ inline viewì˜ ID
+ * tableID (QCM_TABLES_SEQ_MAXVALUE 2097151 ) Áßº¹ µÇÁö ¾Ê°Ô ´õ Å« °ªÀ¸·Î ¼³Á¤ ÇÑ´Ù.
+ * with Àı¿¡ ÀÇÇØ »ı¼ºµÈ view Å×ÀÌºí¿¡ ÇÒ´çµÈ´Ù. ÀÌÈÄ withÀı¿¡ ÀÇÇÑ stmt°¡ ÀÎ¶óÀÎºä·Î
+ * µÇ¸é¼­ ÇÒ´çµÈ ID°ªÀÌ µ¿ÀÏÇÑ ºä¸¦ sameview·Î °£ÁÖÇÏ¿© materialize ÇÏµµ·Ï ÇÑ´Ù.
+ * db¿¡¼­ À¯ÀÏÇÑ °ªÀÌ ¾Æ´Ï¶ó statement¿¡¼­¸¸ À¯ÀÏÇÑ °ªÀÌ´Ù.
+ * 0                         : inline view ÀÇ ID
+ * 4           ~ 2097151     : table ID, created view ÀÇ ID
+ * 2097151 + 1 ~ 3000000 - 1 : Fixed table, Performance View ÀÇ ID
+ * 3000000     ~ UINT MAX    : with Àı¿¡ ÀÇÇØ »ı¼ºµÈ inline viewÀÇ ID
  */
 #define QCM_WITH_TABLES_SEQ_MINVALUE    ((SLong)3000000)
 
@@ -75,7 +75,7 @@ extern smiCursorProperties gMetaDefaultCursorProperty;
 #define QCM_MAX_MINMAX_VALUE_LEN        "48"
 
 /* PROJ-1812 ROLE
- * PUBLIC ROLE ì¶”ê°€
+ * PUBLIC ROLE Ãß°¡
  * PUBLIC  =  0  <--- ROLE
  * SYSTEM_ =  1  <--- USER
  * SYS     =  2  <--- USER */
@@ -93,7 +93,7 @@ extern smiCursorProperties gMetaDefaultCursorProperty;
 #define QCM_TABLES_TBL_ID                   (1)
 #define QCM_COLUMNS_TBL_ID                  (2)
 
-#define QCM_TABLES_COL_CNT                  (26)
+#define QCM_TABLES_COL_CNT                  (28)
 
 #define QCM_COLUMNS_COL_CNT                 (18)
 
@@ -123,6 +123,11 @@ extern SChar      * gDBSequenceName[];
 #define QCM_SQL_BYTE_FMT        "BYTE'%s'"
 #define QCM_OID_TO_BIGINT       ULong
 #define QCM_VULONG_TO_BIGINT    ULong
+#define QCM_VULONG_TO_BIGINT    ULong
+// for sharding ³»ºÎÀûÀ¸·Î ¹ŞÀº stringÀ» ´ë¼Ò¹®ÀÚ ±¸ºĞÇÏÁö ¾Ê°í Ã³¸®ÇÏ±â À§ÇØ
+// ex> 'a' -> A, '"a"' -> a
+//     'A' -> A, '"A"' -> A
+#define QCM_SQL_STRING_SKIP_FMT "\"%s\""
 
 // BUG-20908
 #define QCM_MAX_RESOLVE_SYNONYM         (64)
@@ -144,31 +149,34 @@ extern SChar      * gDBSequenceName[];
 #define QCM_INDEX_COLUMNS             "SYS_INDEX_COLUMNS_"
 
 #define QCM_REPLICATIONS              "SYS_REPLICATIONS_"
+#define QCM_REPL_RECEIVER             "SYS_REPL_RECEIVER_"
 #define QCM_REPL_HOSTS                "SYS_REPL_HOSTS_"
 #define QCM_REPL_ITEMS                "SYS_REPL_ITEMS_"
+#define QCM_REPL_ITEMS_HISTORY        "SYS_REPL_ITEMS_HISTORY_"
 #define QCM_REPL_RECOVERY_INFOS       "SYS_REPL_RECOVERY_INFOS_"
 #define QCM_REPL_OFFLINE_DIR          "SYS_REPL_OFFLINE_DIR_" //PROJ-1915
+#define QCM_REPL_ITEM_REPLACE_HISTORY         "SYS_REPL_ITEM_REPLACE_HISTORY_" 
 #define QCM_PROCEDURES                "SYS_PROCEDURES_"
 #define QCM_PROC_PARAS                "SYS_PROC_PARAS_"
 #define QCM_PROC_PARSE                "SYS_PROC_PARSE_"
 #define QCM_PROC_RELATED              "SYS_PROC_RELATED_"
 
-// PROJ-1073 Packageë¥¼ ìœ„í•œ Meta Table
+// PROJ-1073 Package¸¦ À§ÇÑ Meta Table
 #define QCM_PKGS                      "SYS_PACKAGES_"
 #define QCM_PKG_PARAS                 "SYS_PACKAGE_PARAS_"
 #define QCM_PKG_PARSE                 "SYS_PACKAGE_PARSE_"
 #define QCM_PKG_RELATED               "SYS_PACKAGE_RELATED_"
 
-// PROJ-1359 Triggerë¥¼ ìœ„í•œ Meta Table
+// PROJ-1359 Trigger¸¦ À§ÇÑ Meta Table
 #define QCM_TRIGGERS                  "SYS_TRIGGERS_"
 #define QCM_TRIGGER_STRINGS           "SYS_TRIGGER_STRINGS_"
 #define QCM_TRIGGER_UPDATE_COLUMNS    "SYS_TRIGGER_UPDATE_COLUMNS_"
 #define QCM_TRIGGER_DML_TABLES        "SYS_TRIGGER_DML_TABLES_"
 
-// PROJ-1362 LOBì„ ìœ„í•œ ë©”íƒ€í…Œì´ë¸”
+// PROJ-1362 LOBÀ» À§ÇÑ ¸ŞÅ¸Å×ÀÌºí
 #define QCM_LOBS                      "SYS_LOBS_"
 
-// PROJ-2002 Column Securityë¥¼ ìœ„í•œ ë©”íƒ€í…Œì´ë¸”
+// PROJ-2002 Column Security¸¦ À§ÇÑ ¸ŞÅ¸Å×ÀÌºí
 #define QCM_SECURITY                  "SYS_SECURITY_"
 #define QCM_ENCRYPTED_COLUMNS         "SYS_ENCRYPTED_COLUMNS_"
 
@@ -190,7 +198,7 @@ extern SChar      * gDBSequenceName[];
 #define QCM_PART_KEY_COLUMNS          "SYS_PART_KEY_COLUMNS_"
 #define QCM_PART_LOBS                 "SYS_PART_LOBS_"
 
-// PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+// PROJ-1442 Replication Online Áß DDL Çã¿ë
 #define QCM_REPL_OLD_ITEMS            "SYS_REPL_OLD_ITEMS_"
 #define QCM_REPL_OLD_COLUMNS          "SYS_REPL_OLD_COLUMNS_"
 #define QCM_REPL_OLD_INDICES          "SYS_REPL_OLD_INDICES_"
@@ -200,7 +208,7 @@ extern SChar      * gDBSequenceName[];
 #define QCM_REPL_OLD_CHECKS           "SYS_REPL_OLD_CHECKS_"
 #define QCM_REPL_OLD_CHECK_COLUMNS    "SYS_REPL_OLD_CHECK_COLUMNS_"
 
-// PROJ-1371 DIRECTORYë¥¼ ìœ„í•œ Meta Table
+// PROJ-1371 DIRECTORY¸¦ À§ÇÑ Meta Table
 #define QCM_DIRECTORIES               "SYS_DIRECTORIES_"
 
 /* BUG-21387 COMMENT */
@@ -222,7 +230,7 @@ extern SChar      * gDBSequenceName[];
 // PROJ-2264 Dictionary table
 #define QCM_COMPRESSION_TABLES        "SYS_COMPRESSION_TABLES_"
 
-/* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
+/* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
 #define QCM_CONSTRAINT_RELATED        "SYS_CONSTRAINT_RELATED_"
 #define QCM_INDEX_RELATED             "SYS_INDEX_RELATED_"
 
@@ -233,6 +241,9 @@ extern SChar      * gDBSequenceName[];
 
 /* PROJ-1812 ROLE */
 #define QCM_USER_ROLES                "SYS_USER_ROLES_"
+
+/* PROJ-2422 srid */
+#define QCM_GEOMETRIES                "SYS_GEOMETRIES_"
 
 /**************************************************************
                          INDEX ORDER
@@ -284,6 +295,9 @@ extern SChar      * gDBSequenceName[];
 // Index Order for SYS_REPLICATIONS_
 #define QCM_REPL_INDEX_REPL_NAME                         (0)
 
+// Index Order for SYS_REPL_RECEIVER_
+#define QCM_REPL_RECEIVER_INDEX_REPL_NAME                 (0)
+
 // Index Order for SYS_REPL_HOSTS_
 #define QCM_REPLHOST_INDEX_HOSTNO                        (0)
 #define QCM_REPLHOST_INDEX_NAME_N_IP_N_PORT              (1)
@@ -294,6 +308,10 @@ extern SChar      * gDBSequenceName[];
 
 // Index Order for SYS_REPL_ITEMS_
 #define QCM_REPLITEM_INDEX_NAME_N_OID                    (0)
+#define QCM_REPLITEM_INDEX_OID                    (1)
+
+// Index Order for SYS_REPL_ITEM_REPLACE_HISTORY_
+#define QCM_REPL_ITEM_REPLACE_HISTORY_INDEX_NAME_N_OID   (0)
 
 // Index Order for SYS_REPL_OLD_ITEMS_
 #define QCM_REPLOLDITEM_INDEX_NAME_OID                   (0)
@@ -493,6 +511,10 @@ extern SChar      * gDBSequenceName[];
  **************************************************************/
 #define QCM_SEQUENCE_COL_COUNT                   (0)
 
+/* PROJ-2422 srid */
+#define QCM_GEOMETRIES_COLUMN_ID_IDX_ORDER            (0)
+#define QCM_GEOMETRIES_TABLE_ID_COLUMN_ID_IDX_ORDER   (1)
+
 /**************************************************************
                          COLUMN ORDERS
  **************************************************************/
@@ -554,8 +576,10 @@ extern SChar      * gDBSequenceName[];
 #define QCM_TABLES_HIDDEN_COL_ORDER             (21) // PROJ-1624 Global Non-partitioned Index
 #define QCM_TABLES_ACCESS_COL_ORDER             (22) /* PROJ-2359 Table/Partition Access Option */
 #define QCM_TABLES_PARALLEL_DEGREE_COL_ORDER    (23) /* PROJ-1071 Parallel Query */
-#define QCM_TABLES_CREATED_COL_ORDER            (24) // fix BUG-14394
-#define QCM_TABLES_LAST_DDL_TIME_COL_ORDER      (25) // fix BUG-14394
+#define QCM_TABLES_USABLE_COL_ORDER             (24) /* TASK-7307 DML Data Consistency in Shard */
+#define QCM_TABLES_SHARD_FLAG_COL_ORDER         (25) /* TASK-7307 */
+#define QCM_TABLES_CREATED_COL_ORDER            (26) // fix BUG-14394
+#define QCM_TABLES_LAST_DDL_TIME_COL_ORDER      (27) // fix BUG-14394
 
 // SYS_COLUMNS_
 #define QCM_COLUMNS_TABLE_ID_COL_ORDER          (6)
@@ -596,7 +620,7 @@ extern SChar      * gDBSequenceName[];
 #define QCM_CONSTRAINTS_REFERENCED_TABLE_ID_COL_ORDER       (7)
 #define QCM_CONSTRAINTS_REFERENCED_CONSTRAINT_ID_COL_ORDER  (8)
 #define QCM_CONSTRAINTS_DELETE_RULE_COL_ORDER               (9)
-#define QCM_CONSTRAINTS_CHECK_CONDITION_COL_ORDER           (10) /* PROJ-1107 Check Constraint ì§€ì› */
+#define QCM_CONSTRAINTS_CHECK_CONDITION_COL_ORDER           (10) /* PROJ-1107 Check Constraint Áö¿ø */
 #define QCM_CONSTRAINTS_VALIDATED_ORDER                     (11) // PROJ-1874 FK Novalidate
 
 /* SYS_CONSTRAINT_COLUMNS_ */
@@ -718,22 +742,22 @@ extern SChar      * gDBSequenceName[];
 #define QCM_PKG_RELATED_RELATEDOBJECTTYPE_COL_ORDER (4)
 
 //=========================================================
-// [PROJ-1359] Triggerë¥¼ ìœ„í•œ Meta Table êµ¬ì¡°
-// SYS_TRIGGERS_ : Triggerì˜ ì „ì²´ì ì¸ ë©”íƒ€ ì •ë³´ë¥¼ ê´€ë¦¬í•œë‹¤.
+// [PROJ-1359] Trigger¸¦ À§ÇÑ Meta Table ±¸Á¶
+// SYS_TRIGGERS_ : TriggerÀÇ ÀüÃ¼ÀûÀÎ ¸ŞÅ¸ Á¤º¸¸¦ °ü¸®ÇÑ´Ù.
 //
 // USER_ID          : User ID
 // USER_NAME        : User Name
 // TRIGGER_OID      : Trigger Object ID
 // TRIGGER_NAME     : Trigger Name
-// TABLE_ID         : Triggerê°€ ì°¸ì¡°í•˜ëŠ” Tableì˜ ID
-// IS_ENABLE        : ìˆ˜í–‰ ì—¬ë¶€ì˜ ì§€ì •
+// TABLE_ID         : Trigger°¡ ÂüÁ¶ÇÏ´Â TableÀÇ ID
+// IS_ENABLE        : ¼öÇà ¿©ºÎÀÇ ÁöÁ¤
 // EVENT_TIME       : BEFORE or AFTER Event
-// EVENT_TYPE       : Trigger Eventì˜ ì¢…ë¥˜(INSERT, DELETE, UPDATE)
-// UPDATE_COLUMN_CNT: Update Eventì— í¬í•¨ëœ Columnì˜ ê°œìˆ˜
+// EVENT_TYPE       : Trigger EventÀÇ Á¾·ù(INSERT, DELETE, UPDATE)
+// UPDATE_COLUMN_CNT: Update Event¿¡ Æ÷ÇÔµÈ ColumnÀÇ °³¼ö
 // GRANULARITY      : Action Granularity
-// REF_ROW_CNT      : Referencing Row ì˜ ê°œìˆ˜
-// SUBSTING_CNT     : Trigger ìƒì„±ë¬¸ì´ ë¶„í• ëœ ê°œìˆ˜
-// STRING_LENGTH    : Trigger ìƒì„±ë¬¸ì˜ ì´ ê¸¸ì´
+// REF_ROW_CNT      : Referencing Row ÀÇ °³¼ö
+// SUBSTING_CNT     : Trigger »ı¼º¹®ÀÌ ºĞÇÒµÈ °³¼ö
+// STRING_LENGTH    : Trigger »ı¼º¹®ÀÇ ÃÑ ±æÀÌ
 //=========================================================
 
 // PROJ-1359 SYS_TRIGGERS_
@@ -754,12 +778,12 @@ extern SChar      * gDBSequenceName[];
 #define QCM_TRIGGERS_LAST_DDL_TIME              (14) // fix BUG-14394
 
 //=========================================================
-// [PROJ-1359] Trigger ìƒì„± êµ¬ë¬¸ì„ í¬í•¨í•˜ê³  ìˆëŠ” Meta Table
-// SYS_TRIGGER_STRINGS_ : Triggerì˜ ì¬ì»´íŒŒì¼ì‹œì— ì‚¬ìš©ëœë‹¤.
+// [PROJ-1359] Trigger »ı¼º ±¸¹®À» Æ÷ÇÔÇÏ°í ÀÖ´Â Meta Table
+// SYS_TRIGGER_STRINGS_ : TriggerÀÇ ÀçÄÄÆÄÀÏ½Ã¿¡ »ç¿ëµÈ´Ù.
 // TABLE_ID      : Table ID
-// TRIGGER_OID   : Triggerì˜ OID
-// SEQNO         : Trigger ìƒì„± êµ¬ë¬¸ì˜ Substring ìˆœì„œ
-// SUBSTRING     : Trigger ìƒì„± êµ¬ë¬¸ì˜ ì‹¤ì œ Sub-String
+// TRIGGER_OID   : TriggerÀÇ OID
+// SEQNO         : Trigger »ı¼º ±¸¹®ÀÇ Substring ¼ø¼­
+// SUBSTRING     : Trigger »ı¼º ±¸¹®ÀÇ ½ÇÁ¦ Sub-String
 //=========================================================
 
 // PROJ-1359 SYS_TRIGGER_STRINGS_
@@ -769,11 +793,11 @@ extern SChar      * gDBSequenceName[];
 #define QCM_TRIGGER_STRINGS_SUBSTRING           (3)
 
 //=========================================================
-// [PROJ-1359] UPDATE Eventì˜ OF êµ¬ë¬¸ì— ì¡´ì¬í•˜ëŠ” Columnì„ ê´€ë¦¬
+// [PROJ-1359] UPDATE EventÀÇ OF ±¸¹®¿¡ Á¸ÀçÇÏ´Â ColumnÀ» °ü¸®
 // SYS_TRIGGER_UPDATE_COLUMNS_
 // TABLE_ID      : Table ID
-// TRIGGER_OID   : Triggerì˜ OID
-// COLUMN_ID     : OF êµ¬ë¬¸ì˜ Column ID
+// TRIGGER_OID   : TriggerÀÇ OID
+// COLUMN_ID     : OF ±¸¹®ÀÇ Column ID
 //=========================================================
 
 // PROJ-1359 SYS_TRIGGER_UPDATE_COLUMNS_
@@ -782,12 +806,12 @@ extern SChar      * gDBSequenceName[];
 #define QCM_TRIGGER_UPDATE_COLUMNS_COLUMN_ID    (2)
 
 //=========================================================
-// [PROJ-1359] Action Bodyê°€ DMLë¡œ ì ‘ê·¼í•˜ëŠ” í…Œì´ë¸”ì„ ê´€ë¦¬
+// [PROJ-1359] Action Body°¡ DML·Î Á¢±ÙÇÏ´Â Å×ÀÌºíÀ» °ü¸®
 // SYS_TRIGGER_DML_TABLES_
 // TABLE_ID          : Table ID
-// TRIGGER_OID       : Triggerì˜ OID
-// DML_TABLE_ID      : DMLë¡œ ì ‘ê·¼í•˜ëŠ” Tableì˜ ID
-// STMT_TYPE         : í•´ë‹¹ Tableì— ì ‘ê·¼í•˜ëŠ” STMTì˜ ì¢…ë¥˜
+// TRIGGER_OID       : TriggerÀÇ OID
+// DML_TABLE_ID      : DML·Î Á¢±ÙÇÏ´Â TableÀÇ ID
+// STMT_TYPE         : ÇØ´ç Table¿¡ Á¢±ÙÇÏ´Â STMTÀÇ Á¾·ù
 //=========================================================
 
 // PROJ-1359 SYS_TRIGGER_DML_TABLES_
@@ -797,14 +821,14 @@ extern SChar      * gDBSequenceName[];
 #define QCM_TRIGGER_DML_TABLES_DML_TYPE         (3)
 
 //=========================================================
-// [PROJ-1362] LOBì»¬ëŸ¼ì˜ ì†ì„±ì„ ì €ì¥í•˜ëŠ” í…Œì´ë¸”
+// [PROJ-1362] LOBÄÃ·³ÀÇ ¼Ó¼ºÀ» ÀúÀåÇÏ´Â Å×ÀÌºí
 // SYS_LOBS_
-// USER_ID           : LOBì»¬ëŸ¼ì„ ì €ì¥í•œ í…Œì´ë¸”ì„ ì†Œìœ í•œ ì‚¬ìš©ìì˜ ID
-// TABLE_ID          : LOBì»¬ëŸ¼ì„ ì €ì¥í•œ í…Œì´ë¸”ì˜ ID
-// TBS_ID            : LOBì»¬ëŸ¼ì´ ì €ì¥ëœ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ID
-// LOGGING           : LOBì»¬ëŸ¼ì˜ logging ì†ì„±
-// BUFFER            : LOBì»¬ëŸ¼ì˜ buffer ì†ì„±
-// IS_DEFAULT_TBS    : LOBì»¬ëŸ¼ì˜ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì§€ì • ì—¬ë¶€
+// USER_ID           : LOBÄÃ·³À» ÀúÀåÇÑ Å×ÀÌºíÀ» ¼ÒÀ¯ÇÑ »ç¿ëÀÚÀÇ ID
+// TABLE_ID          : LOBÄÃ·³À» ÀúÀåÇÑ Å×ÀÌºíÀÇ ID
+// TBS_ID            : LOBÄÃ·³ÀÌ ÀúÀåµÈ Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ID
+// LOGGING           : LOBÄÃ·³ÀÇ logging ¼Ó¼º
+// BUFFER            : LOBÄÃ·³ÀÇ buffer ¼Ó¼º
+// IS_DEFAULT_TBS    : LOBÄÃ·³ÀÇ Å×ÀÌºí½ºÆäÀÌ½º ÁöÁ¤ ¿©ºÎ
 //=========================================================
 #define QCM_LOBS_USER_ID_COL_ORDER              (0)
 #define QCM_LOBS_TABLE_ID_COL_ORDER             (1)
@@ -815,11 +839,11 @@ extern SChar      * gDBSequenceName[];
 #define QCM_LOBS_IS_DEFAULT_TBS_COL_ORDER       (6)
 
 //=========================================================
-// [PROJ-2002] Column Security ì»¬ëŸ¼ì˜ ì†ì„±ì„ ì €ì¥í•˜ëŠ” í…Œì´ë¸”
+// [PROJ-2002] Column Security ÄÃ·³ÀÇ ¼Ó¼ºÀ» ÀúÀåÇÏ´Â Å×ÀÌºí
 // SYS_SECURITY_
-// MODULE_NAME       : ë³´ì•ˆëª¨ë“ˆì˜ ì´ë¦„
-// ECC_POLICY_NAME   : ECC Policyì˜ ì´ë¦„
-// ECC_POLICY_CODE   : ECC Policyì˜ ê²€ì¦ ì½”ë“œ
+// MODULE_NAME       : º¸¾È¸ğµâÀÇ ÀÌ¸§
+// ECC_POLICY_NAME   : ECC PolicyÀÇ ÀÌ¸§
+// ECC_POLICY_CODE   : ECC PolicyÀÇ °ËÁõ ÄÚµå
 //=========================================================
 #define QCM_SECURITY_MODULE_NAME_COL_ORDER             (0)
 #define QCM_SECURITY_MODULE_VERSION_COL_ORDER          (1)
@@ -827,14 +851,14 @@ extern SChar      * gDBSequenceName[];
 #define QCM_SECURITY_MODULE_ECC_POLICY_CODE_COL_ORDER  (3)
 
 //=========================================================
-// [PROJ-2002] Column Security ì»¬ëŸ¼ì˜ ì†ì„±ì„ ì €ì¥í•˜ëŠ” í…Œì´ë¸”
+// [PROJ-2002] Column Security ÄÃ·³ÀÇ ¼Ó¼ºÀ» ÀúÀåÇÏ´Â Å×ÀÌºí
 // SYS_ENCRYPTED_COLUMNS_
-// USER_ID           : ë³´ì•ˆì»¬ëŸ¼ì„ ì €ì¥í•œ í…Œì´ë¸”ì„ ì†Œìœ í•œ ì‚¬ìš©ìì˜ ID
-// TABLE_ID          : ë³´ì•ˆì»¬ëŸ¼ì„ ì €ì¥í•œ í…Œì´ë¸”ì˜ ID
-// COLUMN_ID         : ë³´ì•ˆì»¬ëŸ¼ì˜ ID
-// ENCRYPT_PRECISION : ë³´ì•ˆì»¬ëŸ¼ì˜ precision
-// POLICY_NAME       : ë³´ì•ˆì»¬ëŸ¼ ì•”í˜¸í™”ì— ì‚¬ìš©í•œ policy ì´ë¦„
-// POLICY_CODE       : ë³´ì•ˆì»¬ëŸ¼ ì•”í˜¸í™”ì— ì‚¬ìš©í•œ policyì˜ ê²€ì¦ ì½”ë“œ
+// USER_ID           : º¸¾ÈÄÃ·³À» ÀúÀåÇÑ Å×ÀÌºíÀ» ¼ÒÀ¯ÇÑ »ç¿ëÀÚÀÇ ID
+// TABLE_ID          : º¸¾ÈÄÃ·³À» ÀúÀåÇÑ Å×ÀÌºíÀÇ ID
+// COLUMN_ID         : º¸¾ÈÄÃ·³ÀÇ ID
+// ENCRYPT_PRECISION : º¸¾ÈÄÃ·³ÀÇ precision
+// POLICY_NAME       : º¸¾ÈÄÃ·³ ¾ÏÈ£È­¿¡ »ç¿ëÇÑ policy ÀÌ¸§
+// POLICY_CODE       : º¸¾ÈÄÃ·³ ¾ÏÈ£È­¿¡ »ç¿ëÇÑ policyÀÇ °ËÁõ ÄÚµå
 //=========================================================
 #define QCM_ENCRYPTED_COLUMNS_USER_ID_COL_ORDER            (0)
 #define QCM_ENCRYPTED_COLUMNS_TABLE_ID_COL_ORDER           (1)
@@ -863,6 +887,14 @@ extern SChar      * gDBSequenceName[];
 #define QCM_REPLICATION_REMOTE_XSN                  (16)
 #define QCM_REPLICATION_PEER_REPL_NAME              (17)
 #define QCM_REPLICATION_REMOTE_LAST_DDL_XSN         (18)
+#define QCM_REPLICATION_XLOGFILE_CURRENT_LSN_FILENO (19)
+#define QCM_REPLICATION_XLOGFILE_CURRENT_LSN_OFFSET (20)
+
+// SYS_REPL_RECEIVER
+#define QCM_REPL_RECEIVER_REPL_NAME                   (0)
+#define QCM_REPL_RECEIVER_REMOTE_XSN                  (1)
+#define QCM_REPL_RECEIVER_XLOGFILE_CURRENT_LSN_FILENO (2)
+#define QCM_REPL_RECEIVER_XLOGFILE_CURRENT_LSN_OFFSET (3)
 
 // SYS_REPL_HOSTS_
 #define QCM_REPLHOST_HOST_NO                    (0)
@@ -893,6 +925,15 @@ extern SChar      * gDBSequenceName[];
 #define QCM_REPLITEM_INVALID_MAX_SN             (9)
 #define QCM_REPLITEM_CONDITION                  (10)  // not used anymore
 #define QCM_REPLITEM_REPLICATION_UNIT           (11)
+#define QCM_REPLITEM_IS_CONDITION_SYNCED        (12)
+
+// SYS_REPL_ITEMS_HISTORY_
+#define QCM_REPLITEM_REPL_NAME                  (0)
+#define QCM_REPLITEM_USER_NAME                  (1)
+#define QCM_REPLITEM_TABLE_NAME                 (2)
+#define QCM_REPLITEM_PARTITION_NAME             (3)
+#define QCM_REPLITEM_OLD_OID                    (4)
+#define QCM_REPLITEM_NEW_OID                    (5)
 
 // SYS_REPL_OLD_ITEMS_
 #define QCM_REPLOLDITEMS_REPLICATION_NAME       (0)
@@ -908,6 +949,13 @@ extern SChar      * gDBSequenceName[];
 #define QCM_REPLOLDITEMS_PARTITION_MIN_VALUE    (10)
 #define QCM_REPLOLDITEMS_PARTITION_MAX_VALUE    (11)
 #define QCM_REPLOLDITEMS_INVALID_MAX_SN         (12)
+#define QCM_REPLOLDITEMS_TABLE_ID               (13)
+#define QCM_REPLOLDITEMS_TABLE_PARTITION_TYPE   (14)
+#define QCM_REPLOLDITEMS_IS_PARTITION           (15)
+#define QCM_REPLOLDITEMS_REPLICATION_UNIT       (16)
+#define QCM_REPLOLDITEMS_TBS_TYPE               (17)
+#define QCM_REPLOLDITEMS_PARTITION_METHOD       (18)
+#define QCM_REPLOLDITEMS_PARTITION_COUNT        (19)
 
 // SYS_REPL_OLD_COLUMNS_
 #define QCM_REPLOLDCOLS_REPLICATION_NAME        (0)
@@ -920,15 +968,16 @@ extern SChar      * gDBSequenceName[];
 #define QCM_REPLOLDCOLS_MT_SCALE                (7)
 #define QCM_REPLOLDCOLS_MT_ECRYPT_PRECISION     (8)
 #define QCM_REPLODLCOLS_MT_POLICY_NAME          (9)
-#define QCM_REPLOLDCOLS_SM_ID                   (10)
-#define QCM_REPLOLDCOLS_SM_FLAG                 (11)
-#define QCM_REPLOLDCOLS_SM_OFFSET               (12)
-#define QCM_REPLOLDCOLS_SM_VARORDER             (13)
-#define QCM_REPLOLDCOLS_SM_SIZE                 (14)
-#define QCM_REPLOLDCOLS_SM_DIC_TABLE_OID        (15)
-#define QCM_REPLOLDCOLS_SM_COL_SPACE            (16)
-#define QCM_REPLOLDCOLS_QP_FLAG                 (17)
-#define QCM_REPLOLDCOLS_DEFAULT_VAL_STR         (18)
+#define QCM_REPLOLDCOLS_MT_SRID                 (10)
+#define QCM_REPLOLDCOLS_SM_ID                   (11)
+#define QCM_REPLOLDCOLS_SM_FLAG                 (12)
+#define QCM_REPLOLDCOLS_SM_OFFSET               (13)
+#define QCM_REPLOLDCOLS_SM_VARORDER             (14)
+#define QCM_REPLOLDCOLS_SM_SIZE                 (15)
+#define QCM_REPLOLDCOLS_SM_DIC_TABLE_OID        (16)
+#define QCM_REPLOLDCOLS_SM_COL_SPACE            (17)
+#define QCM_REPLOLDCOLS_QP_FLAG                 (18)
+#define QCM_REPLOLDCOLS_DEFAULT_VAL_STR         (19)
 
 // SYS_REPL_OLD_INDICES_
 #define QCM_REPLOLDIDXS_REPLICATION_NAME        (0)
@@ -970,6 +1019,14 @@ extern SChar      * gDBSequenceName[];
 
 /* PROJ-2240 */
 #define RP_COND_STATEMENT_MAX_LEN (16 + (QC_MAX_OBJECT_NAME_LEN * 2) + QC_CONDITION_LEN)
+
+// SYS_REPL_ITEM_REPLACE_HISTORY_
+#define QCM_REPL_ITEM_REPLACE_HISTORY_REPL_NAME                 (0)
+#define QCM_REPL_ITEM_REPLACE_HISTORY_USER_NAME                 (1)
+#define QCM_REPL_ITEM_REPLACE_HISTORY_TABLE_NAME                (2)
+#define QCM_REPL_ITEM_REPLACE_HISTORY_PARTITION_NAME            (3)
+#define QCM_REPL_ITEM_REPLACE_HISTORY_OLD_OID                   (4)
+#define QCM_REPL_ITEM_REPLACE_HISTORY_NEW_OID                   (5)
 
 // SYS_PRIVILEGES_
 #define QCM_PRIVILEGES_PRIV_ID                (0)
@@ -1064,8 +1121,9 @@ extern SChar      * gDBSequenceName[];
 #define QCM_TABLE_PARTITIONS_PARTITION_ORDER_COL_ORDER      (7)
 #define QCM_TABLE_PARTITIONS_TBS_ID_COL_ORDER               (8)
 #define QCM_TABLE_PARTITIONS_PARTITION_ACCESS_COL_ORDER     (9) /* PROJ-2359 Table/Partition Access Option */
-#define QCM_TABLE_PARTITIONS_REPLICATION_COUNT_COL_ORDER    (10)
-#define QCM_TABLE_PARTITIONS_REPL_RECOVERY_COUNT_COL_ORDER  (11)
+#define QCM_TABLE_PARTITIONS_PARTITION_USABLE_COL_ORDER     (10) /* TASK-7307 DML Data Consistency in Shard */
+#define QCM_TABLE_PARTITIONS_REPLICATION_COUNT_COL_ORDER    (11)
+#define QCM_TABLE_PARTITIONS_REPL_RECOVERY_COUNT_COL_ORDER  (12)
 
 // SYS_INDEX_PARTITIONS_
 #define QCM_INDEX_PARTITIONS_USER_ID_COL_ORDER              (0)
@@ -1222,10 +1280,20 @@ extern SChar      * gDBSequenceName[];
 #define QCM_USER_ROLES_GRANTEE_ID_COL_ORDER            (1)
 #define QCM_USER_ROLES_ROLE_ID_COL_ORDER               (2)
 
+/* PROJ-2422 srid */
+#define QCM_GEOMETRIES_USER_ID_COL_ORDER             (0)
+#define QCM_GEOMETRIES_TABLE_ID_COL_ORDER            (1)
+#define QCM_GEOMETRIES_COLUMN_ID_COL_ORDER           (2)
+#define QCM_GEOMETRIES_COORD_DIMEMSION_COL_ORDER     (3) 
+#define QCM_GEOMETRIES_SRID_COL_ORDER                (4)
+
 #define QCM_TABLE_TYPE_IS_MEMORY( flag ) (( flag & SMI_TABLE_TYPE_MASK ) \
                                           == SMI_TABLE_MEMORY ? ID_TRUE : ID_FALSE )
 #define QCM_TABLE_TYPE_IS_DISK( flag ) (( flag & SMI_TABLE_TYPE_MASK ) \
                                         == SMI_TABLE_DISK ? ID_TRUE : ID_FALSE )
+
+/* TASK-7217 Sharded sequence */
+#define QCM_MAX_SHARDED_SEQUENCE_SCALE (16)
 
 /**************************************************************
                         Extern Module CallBack
@@ -1291,10 +1359,11 @@ extern const void * gQcmEncryptedColumns;
 
 #if !defined(SMALL_FOOTPRINT)
 extern const void * gQcmReplications;
+extern const void * gQcmReplReceiver;
 extern const void * gQcmReplHosts;
 extern const void * gQcmReplItems;
 
-// PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+// PROJ-1442 Replication Online Áß DDL Çã¿ë
 extern const void * gQcmReplOldItems;
 extern const void * gQcmReplOldCols;
 extern const void * gQcmReplOldIdxs;
@@ -1309,6 +1378,7 @@ extern const void * gQcmReplRecoveryInfos;
 /* PROJ-1915 */
 extern const void * gQcmReplOfflineDirs;
 
+extern const void * gQcmReplItemReplaceHistory;
 #endif
 
 extern const void * gQcmPrivileges;
@@ -1357,12 +1427,15 @@ extern const void * gQcmAuditAllOpts;
 // PROJ-2264 Dictionary table
 extern const void * gQcmCompressionTables;
 
-/* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
+/* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
 extern const void * gQcmConstraintRelated;
 extern const void * gQcmIndexRelated;
 
 /* BUG-1438 Job Scheduler */
 extern const void * gQcmJobs;
+
+/* PROJ-2422 srid */
+extern const void * gQcmGeometries;
 
 /* PROJ-1812 ROLE */
 extern const void * gQcmUserRoles;
@@ -1385,7 +1458,7 @@ extern const void * gQcmReplicationsIndex          [QCM_MAX_META_INDICES];
 extern const void * gQcmReplHostsIndex             [QCM_MAX_META_INDICES];
 extern const void * gQcmReplItemsIndex             [QCM_MAX_META_INDICES];
 
-// PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+// PROJ-1442 Replication Online Áß DDL Çã¿ë
 extern const void * gQcmReplOldItemsIndex          [QCM_MAX_META_INDICES];
 extern const void * gQcmReplOldColsIndex           [QCM_MAX_META_INDICES];
 extern const void * gQcmReplOldIdxsIndex           [QCM_MAX_META_INDICES];
@@ -1397,6 +1470,8 @@ extern const void * gQcmReplOldCheckColumnsIndex   [QCM_MAX_META_INDICES];
 
 /* PROJ-1915 */
 extern const void * gQcmReplOfflineDirsIndex       [QCM_MAX_META_INDICES];
+
+extern const void * gQcmReplItemReplaceHistoryIndex       [QCM_MAX_META_INDICES];
 #endif
 
 extern const void * gQcmProceduresIndex            [QCM_MAX_META_INDICES];
@@ -1464,17 +1539,23 @@ extern const void * gQcmAuditAllOptsIndex          [QCM_MAX_META_INDICES];
 // PROJ-2264 Dictionary table
 extern const void * gQcmCompressionTablesIndex     [QCM_MAX_META_INDICES];
 
-/* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
+/* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
 extern const void * gQcmConstraintRelatedIndex     [QCM_MAX_META_INDICES];
 extern const void * gQcmIndexRelatedIndex          [QCM_MAX_META_INDICES];
 
 /* PROJ-1438 */
 extern const void * gQcmJobsIndex                  [QCM_MAX_META_INDICES];
 
+/* PROJ-2422 srid */
+extern const void * gQcmGeometriesIndex            [QCM_MAX_META_INDICES];
+
 /* PROJ-1812 ROLE */
 extern const void * gQcmUserRolesIndex             [QCM_MAX_META_INDICES];
 
 extern const SChar * gMetaTableNames[];
+
+/* TASK-7217 Sharded sequence */
+extern       SLong gShardNodeID[QCM_MAX_SHARDED_SEQUENCE_SCALE];
 
 /**************************************************************
                   CLASS & STRUCTURE DEFINITION
@@ -1555,7 +1636,7 @@ private:
                                qcmTableInfo  * aTableInfo);
 
     // BUG-42877
-    // lob columnì´ ìˆìœ¼ë©´ lob ì •ë³´ë¥¼ sTableInfo->columnsì˜ flagì— ì¶”ê°€í•œë‹¤.
+    // lob columnÀÌ ÀÖÀ¸¸é lob Á¤º¸¸¦ sTableInfo->columnsÀÇ flag¿¡ Ãß°¡ÇÑ´Ù.
     static IDE_RC getQcmLobColumn(smiStatement * aSmiStmt,
                                   qcmTableInfo * aTableInfo);
 
@@ -1620,7 +1701,7 @@ public:
     static void setOperatableFlag( qcmTableType   aTableType,
                                    UInt         * aOperatableFlag );
     
-    // Meta Tableì˜ Tablespace IDí•„ë“œë¡œë¶€í„° ë°ì´í„°ë¥¼ ì½ì–´ì˜¨ë‹¤
+    // Meta TableÀÇ Tablespace IDÇÊµå·ÎºÎÅÍ µ¥ÀÌÅÍ¸¦ ÀĞ¾î¿Â´Ù
     static scSpaceID getSpaceID(const void * aTableRow,
                                 UInt         aFieldOffset );
 
@@ -1651,6 +1732,21 @@ public:
         qcmTableInfo   **aTableInfo,
         smSCN           *aSCN,
         void           **aTableHandle);
+
+    static IDE_RC getTableInfo(qcStatement     *aStatement,
+                               SChar           *aUserName,
+                               SChar           *aTableName,
+                               qcmTableInfo   **aOutTableInfo,
+                               smSCN           *aOutSCN,
+                               void           **aOutTableHandle);
+
+    static IDE_RC getTableInfoAndLock(qcStatement     *aStatement,
+                                      SChar           *aUserName,
+                                      SChar           *aTableName,
+                                      smiTableLockMode aLockMode,
+                                      ULong            aTimeout,
+                                      qcmTableInfo   **aOutTableInfo,
+                                      void           **aOutTableHandle);
 
     static IDE_RC getTableInfoByID(
         qcStatement    *aStatement,
@@ -1967,6 +2063,15 @@ public:
 
     // PROJ-2689 downgrade meta
     static IDE_RC checkMetaVersionAndDowngrade(smiStatement * aSmiStmt);
+
+    static idBool existGlobalNonPartitionedIndex( qcmTableInfo * aTableInfo, qcmIndex ** aIndex );
+
+    /* TASK-7217 Sharded sequence */
+    static void setShardNodeID( UInt aNodeID );
+
+    static void unsetShardNodeID( void );
+
+    static SLong getShardNodeID( UInt aScale );
 };
 
 #endif /* _O_QCM_H_ */

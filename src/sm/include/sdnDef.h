@@ -28,7 +28,7 @@
 # include <smDef.h>
 # include <smnDef.h>
 
-#define SDN_CTS_MAX_KEY_CACHE  (4)
+#define SDN_CTS_MAX_KEY_CACHE  (3) /* BUG-48064 : CTSÀÇ KEY CACHE ¼ö¸¦ 4 -> 3 ·Î º¯°æ */
 #define SDN_CTS_KEY_CACHE_NULL (0)
 
 
@@ -44,44 +44,43 @@
     UInt           mIndexID;                                             \
                                                                          \
     /*  PROJ-1671 Bitmap-based Tablespace And Segment Space Management*/ \
-    /* Segment Handle : Segment RID ë° Semgnet Cache */                  \
+    /* Segment Handle : Segment RID ¹× Semgnet Cache */                  \
     sdpSegmentDesc mSegmentDesc;                                         \
                                                                          \
-    ULong          mSmoNo; /* ì‹œìŠ¤í…œ startupì‹œì— 1ë¡œ ì„¸íŒ…(0 ì•„ë‹˜)  */    \
-                           /* 0ê°’ì€ ì´ì „ startupì‹œì— nodeì— ê¸°ë¡ëœ */    \
-                           /* SmoNoë¥¼ resetí•˜ëŠ”ë° ì‚¬ìš©ë¨           */    \
+    ULong          mSmoNo; /* ½Ã½ºÅÛ startup½Ã¿¡ 1·Î ¼¼ÆÃ(0 ¾Æ´Ô)  */    \
+                           /* 0°ªÀº ÀÌÀü startup½Ã¿¡ node¿¡ ±â·ÏµÈ */    \
+                           /* SmoNo¸¦ resetÇÏ´Âµ¥ »ç¿ëµÊ           */    \
                                                                          \
     idBool         mIsUnique;                                            \
-    idBool         mIsNotNull; /*PKëŠ” NULLì„ ê°€ì§ˆìˆ˜ ì—†ë‹¤(BUG-17762).*/   \
+    idBool         mIsNotNull; /*PK´Â NULLÀ» °¡Áú¼ö ¾ø´Ù(BUG-17762).*/   \
     idBool         mLogging;                                             \
     /* BUG-17957 */                                                      \
-    /* index run-time headerì— creation option(logging, force) ì¶”ê°€*/    \
+    /* index run-time header¿¡ creation option(logging, force) Ãß°¡*/    \
     idBool              mIsCreatedWithLogging;                           \
     idBool              mIsCreatedWithForce;                             \
                                                                          \
     smLSN               mCompletionLSN;
 
- /* BUG-25279     Btree for spatialê³¼ Disk Btreeì˜ ìë£Œêµ¬ì¡° ë° ë¡œê¹… ë¶„ë¦¬ 
-  * Btree For Spatialê³¼ ì¼ë°˜ Disk Btreeì˜ ì €ì¥êµ¬ì¡°ê°€ ë¶„ë¦¬ëœë‹¤. í•˜ì§€ë§Œ Disk Indexë¡œì¨
-  * ê³µí†µì ìœ¼ë¡œ ê°€ì ¸ì•¼ í•˜ëŠ” ëŸ°íƒ€ì„ í—¤ë” í•­ëª©ì´ ì¡´ì¬í•œë‹¤. ì´ë¥¼ ë‹¤ìŒê³¼ ê°™ì´ ì •ì˜í•œë‹¤. */
+ /* BUG-25279     Btree for spatial°ú Disk BtreeÀÇ ÀÚ·á±¸Á¶ ¹× ·Î±ë ºĞ¸® 
+  * Btree For Spatial°ú ÀÏ¹İ Disk BtreeÀÇ ÀúÀå±¸Á¶°¡ ºĞ¸®µÈ´Ù. ÇÏÁö¸¸ Disk Index·Î½á
+  * °øÅëÀûÀ¸·Î °¡Á®¾ß ÇÏ´Â ·±Å¸ÀÓ Çì´õ Ç×¸ñÀÌ Á¸ÀçÇÑ´Ù. ÀÌ¸¦ ´ÙÀ½°ú °°ÀÌ Á¤ÀÇÇÑ´Ù. */
 typedef struct sdnRuntimeHeader
 {
     SDN_RUNTIME_PARAMETERS
 } sdnRuntimeHeader;
 
+/* BUG-48064
+   CTS CHANING ±â´ÉÁ¦°Å·Î °ü·Ãº¯¼ö »èÁ¦ÇÏ°í CTS KEY CACHE¸¦ 4->3°³·Î ÁÙ¿©¼­,
+   CTS ±¸Á¶Ã¼ Å©±â ÀÛ¾ÆÁü. (40->24bytes) */
 typedef struct sdnCTS
 {
     smSCN       mCommitSCN;     // Commit SCN or Begin SCN
-    smSCN       mNxtCommitSCN;  // Commit SCN of the chained CTS
     scPageID    mTSSlotPID;     // TSS page id
     scSlotNum   mTSSlotNum;     // TSS slotnum 
     UChar       mState;         // CTS State
-    UChar       mDummy;         // BUG-44757 mChainingì„ ë” ì´ìƒ ì‚¬ìš©í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ ì œê±°í•´ì•¼ í•˜ì§€ë§Œ
-                                //           ê¸°ì¡´ DBì™€ í˜¸í™˜ì„±ì„ ìœ„í•˜ì—¬ dummyë¡œ ê³µê°„ì„ ë¹„ì›Œë‘¡ë‹ˆë‹¤.
-    scPageID    mUndoPID;       /* undo page id of the chained CTS (ì´ê°’ì„ í™•ì¸í•˜ì—¬ chaining ì—¬ë¶€ë¥¼ í™•ì¸í•¨) */
-    scSlotNum   mUndoSlotNum;   /* undo slotnum of the chained CTS (ì´ê°’ì„ í™•ì¸í•˜ì—¬ chaining ì—¬ë¶€ë¥¼ í™•ì¸í•¨) */
-    UShort      mRefCnt;        /* ì´ CTSë¥¼ ì°¸ì¡°í•˜ëŠ” keyì˜ ê°¯ìˆ˜ */
+    UChar       mDummy;
     UShort      mRefKey[ SDN_CTS_MAX_KEY_CACHE ];
+    UShort      mRefCnt;        /* ÀÌ CTS¸¦ ÂüÁ¶ÇÏ´Â keyÀÇ °¹¼ö */
 } sdnCTS;
 
 typedef struct sdnCTLayerHdr
@@ -99,21 +98,18 @@ typedef struct sdnCTL
     sdnCTS      mArrCTS[1];
 } sdnCTL;
 
-#define SDN_CTS_NONE          (0)  // 'N': ì´ˆê¸° ìƒíƒœ
-#define SDN_CTS_UNCOMMITTED   (1)  // 'U': ìŠ¤íƒ¬í•‘ì„ í•˜ì§€ ì•Šì€ ìƒíƒœ(ì»¤ë°‹ ë¶ˆí™•ì‹¤)
-#define SDN_CTS_STAMPED       (2)  // 'S': ìŠ¤íƒ¬í•‘ì„í•œ ìƒíƒœ(ì»¤ë°‹ ë³´ì¥)
-#define SDN_CTS_DEAD          (3)  // 'D': ë”ì´ìƒ ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” ìƒíƒœ
+#define SDN_CTS_NONE          (0)  // 'N': ÃÊ±â »óÅÂ
+#define SDN_CTS_UNCOMMITTED   (1)  // 'U': ½ºÅÆÇÎÀ» ÇÏÁö ¾ÊÀº »óÅÂ(Ä¿¹Ô ºÒÈ®½Ç)
+#define SDN_CTS_STAMPED       (2)  // 'S': ½ºÅÆÇÎÀ»ÇÑ »óÅÂ(Ä¿¹Ô º¸Àå)
+#define SDN_CTS_DEAD          (3)  // 'D': ´õÀÌ»ó »ç¿ëµÇÁö ¾Ê´Â »óÅÂ
 
-#define SDN_CTS_INFINITE     ((UChar)0x1F)
-#define SDN_CTS_IN_KEY       ((UChar)0x1E)
-
-#define SDN_CHAINED_NO       (0)
-#define SDN_CHAINED_YES      (1)
+#define SDN_CTS_INFINITE     ((UChar)0x3F) /* 63 */
+#define SDN_CTS_IN_KEY       ((UChar)0x3E) /* 62 */
 
 #define SDN_IS_VALID_CTS( aCTS ) ( (aCTS != SDN_CTS_INFINITE) && (aCTS != SDN_CTS_IN_KEY) )
 
 /* BUG-24091
- * [SD-ê¸°ëŠ¥ì¶”ê°€] vrow column ë§Œë“¤ë•Œ ì›í•˜ëŠ” í¬ê¸°ë§Œí¼ë§Œ ë³µì‚¬í•˜ëŠ” ê¸°ëŠ¥ ì¶”ê°€ */
+ * [SD-±â´ÉÃß°¡] vrow column ¸¸µé¶§ ¿øÇÏ´Â Å©±â¸¸Å­¸¸ º¹»çÇÏ´Â ±â´É Ãß°¡ */
 #define SDN_FETCH_SIZE_UNLIMITED    ID_UINT_MAX
 
 typedef IDE_RC (*sdnSoftKeyStamping)( sdrMtx        * aMtx,
@@ -128,80 +124,10 @@ typedef IDE_RC (*sdnHardKeyStamping)( idvSQL        * aStatistics,
                                       UChar         * aContxt,
                                       idBool        * aSuccess );
 
-typedef IDE_RC (*sdnLogAndMakeChainedKeys)( sdrMtx        * aMtx,
-                                          sdpPhyPageHdr * aPage,
-                                          UChar           aCTSlotNum,
-                                          UChar         * aContext,
-                                          UChar         * aKeyList,
-                                          UShort        * aKeyListSize,
-                                          UShort        * aChainedKeyCount );
-
-typedef IDE_RC (*sdnWriteChainedKeysLog)( sdrMtx        * aMtx,
-                                          sdpPhyPageHdr * aPage,
-                                          UChar           aCTSlotNum );
-
-typedef IDE_RC (*sdnMakeChainedKeys)( sdpPhyPageHdr * aPage,
-                                      UChar           aCTSlotNum,
-                                      UChar         * aContext,
-                                      UChar         * aKeyList,
-                                      UShort        * aKeyListSize,
-                                      UShort        * aChainedKeyCount );
-
-typedef idBool (*sdnFindChainedKey)( idvSQL* aStatistis,
-                                     sdnCTS* sCTS,
-                                     UChar * aChainedKeyList,
-                                     UShort  aKeyCount,
-                                     UChar * aChainedCCTS,
-                                     UChar * aChainedLCTS,
-                                     UChar * aFindContext );
-
-typedef IDE_RC (*sdnLogAndMakeUnchainedKeys)( idvSQL        * aStatistics,
-                                              sdrMtx        * aMtx,
-                                              sdpPhyPageHdr * aPage,
-                                              sdnCTS        * aCTS,
-                                              UChar           aCTSlotNum,
-                                              UChar         * aChainedKeyList,
-                                              UShort          aChainedKeySize,
-                                              UShort        * aUnchainedKeyCount,  
-                                              UChar         * aFindContext );
-
-typedef IDE_RC (*sdnWriteUnchainedKeysLog)( sdrMtx        * aMtx,
-                                            sdpPhyPageHdr * aPage,
-                                            UShort          aUnchainedKeyCount,
-                                            UChar         * aUnchainedKey,
-                                            UInt            aUnchainedKeySize );
-
-typedef IDE_RC (*sdnMakeUnchainedKeys)( idvSQL        * aStatistics,
-                                        sdpPhyPageHdr * aPage,
-                                        sdnCTS        * aCTS,
-                                        UChar           aCTSlotNum,
-                                        UChar         * aChainedKeyList,
-                                        UShort          aChainedKeySize,
-                                        UChar         * aFindContext,
-                                        UChar         * aUnchainedKey,
-                                        UInt          * aUnchainedKeySize,
-                                        UShort        * aUnchainedKeyCount );
-
-/* BUG-32976 [SM] In situation where there is insufficient on undo tablespace
- *           when making a chained CTS in disk index, mini-transaction rollback
- *           makes the server shutdown abnormally.
- *
- * mMakeChainedKeys, mMakeUnchainedKeys ì¸í„°í˜ì´ìŠ¤ë¥¼ ë¶„ë¦¬í•œë‹¤.
- *
- * mLogAndMakeXXX  : ë¡œê·¸ë¥¼ ë‚¨ê¸°ê³  chained/unchained keysë¥¼ ë§Œë“œëŠ” ì¸í„°í˜ì´ìŠ¤.
- * mWriteXXX       : chained/unchained keysì— ëŒ€í•œ ë¡œê·¸ë§Œ ë‚¨ê¸°ëŠ” ì¸í„°í˜ì´ìŠ¤.
- * mMakeXXX        : chained/unchained keysë¥¼ ë§Œë“œëŠ” ì¸í„°í˜ì´ìŠ¤. */
 typedef struct sdnCallbackFuncs
 {
     sdnSoftKeyStamping          mSoftKeyStamping;
     sdnHardKeyStamping          mHardKeyStamping;
-//    sdnLogAndMakeChainedKeys    mLogAndMakeChainedKeys;
-    sdnWriteChainedKeysLog      mWriteChainedKeysLog;
-    sdnMakeChainedKeys          mMakeChainedKeys;
-    sdnFindChainedKey           mFindChainedKey;
-    sdnLogAndMakeUnchainedKeys  mLogAndMakeUnchainedKeys;
-//    sdnWriteUnchainedKeysLog    mWriteUnchainedKeysLog;
-    sdnMakeUnchainedKeys        mMakeUnchainedKeys;
 } sdnCallbackFuncs;
 
 #endif /* _O_SDN_DEF_H_ */

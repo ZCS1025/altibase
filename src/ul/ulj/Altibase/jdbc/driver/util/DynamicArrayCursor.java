@@ -21,8 +21,8 @@ import Altibase.jdbc.driver.ex.ErrorDef;
 
 public class DynamicArrayCursor
 {
-    private int mChunkIndex; // í˜„ì¬ chunkì˜ index: 0~9
-    private int mDataIndex; // í˜„ì¬ chunkì—ì„œ dataì˜ index:
+    private int mChunkIndex; // ÇöÀç chunkÀÇ index: 0~9
+    private int mDataIndex; // ÇöÀç chunk¿¡¼­ dataÀÇ index:
 
     public DynamicArrayCursor()
     {

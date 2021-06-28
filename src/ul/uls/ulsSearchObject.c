@@ -16,7 +16,7 @@
 
 /***********************************************************************
  *
- * Spatio-Temporal Date Í≤ÄÏÉâ Ìï®Ïàò
+ * Spatio-Temporal Date ∞Àªˆ «‘ºˆ
  *
  ***********************************************************************/
 
@@ -34,7 +34,7 @@
  *
  * Description:
  *
- *   Geometry Í∞ùÏ≤¥ ÌÉÄÏûÖÏùÑ ÏñªÏñ¥Ïò®Îã§.
+ *   Geometry ∞¥√º ≈∏¿‘¿ª æÚæÓø¬¥Ÿ.
  *
  * Implementation:
  *
@@ -58,7 +58,7 @@ ulsGetGeometryType( ulsHandle               * aHandle,
     ACI_TEST_RAISE( aGeometry  == NULL, ERR_NULL_PARAMETER );
     ACI_TEST_RAISE( aGeoType   == NULL, ERR_NULL_PARAMETER );
 
-    /* Type ÏñªÏñ¥Ïò§Í∏∞*/
+    /* Type æÚæÓø¿±‚*/
     ACI_TEST_RAISE( ulsGetGeoType( aHandle,
                                    (stdGeometryHeader*)aGeometry,
                                    &sGeoType )
@@ -66,7 +66,7 @@ ulsGetGeometryType( ulsHandle               * aHandle,
                     ERR_INVALID_GEOMETRY );
 
 
-    /* Í≤∞Í≥ºÍ∞í ÏÑ§Ï†ï*/
+    /* ∞·∞˙∞™ º≥¡§*/
     *aGeoType = sGeoType;
     
     return ACS_SUCCESS;
@@ -96,7 +96,7 @@ ulsGetGeometryType( ulsHandle               * aHandle,
  *
  * Description:
  *
- *   Geometry Í∞ùÏ≤¥Ïùò ÌÅ¨Í∏∞Î•º Íµ¨ÌïúÎã§.
+ *   Geometry ∞¥√º¿« ≈©±‚∏¶ ±∏«—¥Ÿ.
  *
  * Implementation:
  *
@@ -127,11 +127,17 @@ ulsGetGeometrySize(  ulsHandle              * aHandle,
 
     switch( aGeometry->u.header.mType )
     {
+        case STD_POINT_2D_EXT_TYPE :
+            ulsGetPoint2DExtSize( aHandle, & sObjSize );
+            *aSize = sObjSize;
+            
+            break;
         case STD_POINT_2D_TYPE :
             ulsGetPoint2DSize( aHandle, & sObjSize );
             *aSize = sObjSize;
             
             break;
+        case STD_LINESTRING_2D_EXT_TYPE :
         case STD_LINESTRING_2D_TYPE :
             ulsGetLineString2DSize( aHandle,
                                     aGeometry->u.linestring2D.mNumPoints,
@@ -139,6 +145,7 @@ ulsGetGeometrySize(  ulsHandle              * aHandle,
             *aSize = sObjSize;
             
             break;
+        case STD_POLYGON_2D_EXT_TYPE :
         case STD_POLYGON_2D_TYPE :
             sTotalSize = ACI_SIZEOF( stdPolygon2DType);
             
@@ -159,10 +166,14 @@ ulsGetGeometrySize(  ulsHandle              * aHandle,
             *aSize = sTotalSize;
             break;
             
+        case STD_MULTIPOINT_2D_EXT_TYPE :
         case STD_MULTIPOINT_2D_TYPE :
+        case STD_MULTILINESTRING_2D_EXT_TYPE :
         case STD_MULTILINESTRING_2D_TYPE :
-        case STD_MULTIPOLYGON_2D_TYPE        :
-        case STD_GEOCOLLECTION_2D_TYPE       :
+        case STD_MULTIPOLYGON_2D_EXT_TYPE :
+        case STD_MULTIPOLYGON_2D_TYPE :
+        case STD_GEOCOLLECTION_2D_EXT_TYPE :
+        case STD_GEOCOLLECTION_2D_TYPE :
             sTotalSize = ACI_SIZEOF( stdMultiPoint2DType );
             sNum = aGeometry->u.mpoint2D.mNumObjects;
             ACI_TEST( ulsSeekFirstGeometry( aHandle,
@@ -228,7 +239,7 @@ ulsGetGeometrySize(  ulsHandle              * aHandle,
  *
  * Description:
  *
- *   Geometry Í∞ùÏ≤¥ÎÇ¥Ïùò Í∞ØÏàòÎ•º ÏùÑ ÏñªÏñ¥Ïò®Îã§.
+ *   Geometry ∞¥√º≥ª¿« ∞πºˆ∏¶ ¿ª æÚæÓø¬¥Ÿ.
  *
  * Implementation:
  *   NULL or EMPTY Geometry       : [out] 0
@@ -262,7 +273,7 @@ ulsGetNumGeometries( ulsHandle               * aHandle,
 
     ACI_TEST( ulsCheckGeometry( aHandle, aGeometry ) != ACI_SUCCESS );
     
-    /* Type ÏñªÏñ¥Ïò§Í∏∞*/
+    /* Type æÚæÓø¿±‚*/
     ACI_TEST_RAISE( ulsGetGeoType( aHandle,
                                    (stdGeometryHeader*)aGeometry,
                                    &sGeoType )
@@ -271,25 +282,32 @@ ulsGetNumGeometries( ulsHandle               * aHandle,
 
     switch( sGeoType )
     {
-        case STD_NULL_TYPE    :
-        case STD_EMPTY_TYPE   :
+        case STD_NULL_TYPE :
+        case STD_EMPTY_TYPE :
             *aNumGeometries = 0;
             break;
-        case STD_POINT_2D_TYPE      :
+        case STD_POINT_2D_EXT_TYPE :
+        case STD_POINT_2D_TYPE :
+        case STD_LINESTRING_2D_EXT_TYPE :
         case STD_LINESTRING_2D_TYPE :
-        case STD_POLYGON_2D_TYPE    :
+        case STD_POLYGON_2D_EXT_TYPE :
+        case STD_POLYGON_2D_TYPE :
             *aNumGeometries = 1;
             break;
-        case STD_MULTIPOINT_2D_TYPE      :
+        case STD_MULTIPOINT_2D_EXT_TYPE :
+        case STD_MULTIPOINT_2D_TYPE :
             *aNumGeometries = ((stdMultiPoint2DType*)aGeometry)->mNumObjects;
             break;
-        case STD_MULTILINESTRING_2D_TYPE      :
+        case STD_MULTILINESTRING_2D_EXT_TYPE :
+        case STD_MULTILINESTRING_2D_TYPE :
             *aNumGeometries = ((stdMultiLineString2DType*)aGeometry)->mNumObjects;
             break;
-        case STD_MULTIPOLYGON_2D_TYPE      :
+        case STD_MULTIPOLYGON_2D_EXT_TYPE :
+        case STD_MULTIPOLYGON_2D_TYPE :
             *aNumGeometries = ((stdMultiPolygon2DType*)aGeometry)->mNumObjects;
             break;
-        case STD_GEOCOLLECTION_2D_TYPE      :
+        case STD_GEOCOLLECTION_2D_EXT_TYPE :
+        case STD_GEOCOLLECTION_2D_TYPE :
             *aNumGeometries = ((stdGeoCollection2DType*)aGeometry)->mNumGeometries;
             break;
         default :
@@ -326,7 +344,7 @@ ulsGetNumGeometries( ulsHandle               * aHandle,
  *
  * Description:
  *
- *   NÎ≤àÏß∏ Geometry Í∞ùÏ≤¥ÎÇ¥Ïùò ÌïòÏúÑ GeomtryÎ•º ÏñªÏñ¥Ïò®Îã§.
+ *   Nπ¯¬∞ Geometry ∞¥√º≥ª¿« «œ¿ß Geomtry∏¶ æÚæÓø¬¥Ÿ.
  *
  * Implementation:
  *   NULL or EMPTY Geometry       : Error: NOT_APPLCABLE_GEOMETRY_TYPE
@@ -367,7 +385,7 @@ ulsGetGeometryN( ulsHandle               * aHandle,
     ACI_TEST_RAISE( aNth<1 , ERR_INVALID_RANGE_PARAMETER );
 
     
-    /* Type ÏñªÏñ¥Ïò§Í∏∞*/
+    /* Type æÚæÓø¿±‚*/
     ACI_TEST_RAISE( ulsGetGeoType( aHandle,
                                    (stdGeometryHeader*)aGeometry,
                                    &sGeoType )
@@ -376,20 +394,27 @@ ulsGetGeometryN( ulsHandle               * aHandle,
 
     switch( sGeoType )
     {
-        case STD_NULL_TYPE    :
-        case STD_EMPTY_TYPE   :
+        case STD_NULL_TYPE :
+        case STD_EMPTY_TYPE :
             ACI_RAISE( ERR_NOT_APPLICABLE_GEOMETRY_TYPE );
             break;
-        case STD_POINT_2D_TYPE      :
+        case STD_POINT_2D_EXT_TYPE :
+        case STD_POINT_2D_TYPE :
+        case STD_LINESTRING_2D_EXT_TYPE :
         case STD_LINESTRING_2D_TYPE :
-        case STD_POLYGON_2D_TYPE    :
+        case STD_POLYGON_2D_EXT_TYPE :
+        case STD_POLYGON_2D_TYPE :
             ACI_TEST_RAISE( aNth!=1 , ERR_INVALID_RANGE_PARAMETER );
             *aSubGeometry = (stdGeometryType*) aGeometry;
             break;
-        case STD_MULTIPOINT_2D_TYPE        :
-        case STD_MULTILINESTRING_2D_TYPE   :
-        case STD_MULTIPOLYGON_2D_TYPE      :
-        case STD_GEOCOLLECTION_2D_TYPE     :
+        case STD_MULTIPOINT_2D_EXT_TYPE :
+        case STD_MULTIPOINT_2D_TYPE :
+        case STD_MULTILINESTRING_2D_EXT_TYPE :
+        case STD_MULTILINESTRING_2D_TYPE :
+        case STD_MULTIPOLYGON_2D_EXT_TYPE :
+        case STD_MULTIPOLYGON_2D_TYPE :
+        case STD_GEOCOLLECTION_2D_EXT_TYPE :
+        case STD_GEOCOLLECTION_2D_TYPE :
             ACI_TEST_RAISE( ((stdGeoCollection2DType*)aGeometry)->mNumGeometries < aNth,
                             ERR_INVALID_RANGE_PARAMETER );
                             
@@ -448,7 +473,7 @@ ulsGetGeometryN( ulsHandle               * aHandle,
  *
  * Description:
  *
- *   Polygon Geometry Í∞ùÏ≤¥ÎÇ¥Ïùò ExteriorRingÏùÑ ÏñªÏñ¥Ïò®Îã§.
+ *   Polygon Geometry ∞¥√º≥ª¿« ExteriorRing¿ª æÚæÓø¬¥Ÿ.
  *
  * Implementation:
  * Return :
@@ -478,15 +503,16 @@ ulsGetExteriorRing2D( ulsHandle                * aHandle,
     
     ACI_TEST_RAISE( aLinearRing == NULL, ERR_NULL_PARAMETER );
                     
-    /* Type ÏñªÏñ¥Ïò§Í∏∞*/
+    /* Type æÚæÓø¿±‚*/
     ACI_TEST_RAISE( ulsGetGeoType( aHandle,
                                    (stdGeometryHeader*) aPolygon,
                                    &sGeoType )
                     != ACI_SUCCESS,
                     ERR_INVALID_GEOMETRY );
 
-    /* TypeÍ≤ÄÏÇ¨ÌïòÍ∏∞*/
-    ACI_TEST_RAISE( sGeoType != STD_POLYGON_2D_TYPE,
+    /* Type∞ÀªÁ«œ±‚*/
+    ACI_TEST_RAISE( ( sGeoType != STD_POLYGON_2D_TYPE ) &&
+                    ( sGeoType != STD_POLYGON_2D_EXT_TYPE ),
                     ERR_NOT_APPLICABLE_GEOMETRY_TYPE );
 
     /* To Do*/
@@ -524,7 +550,7 @@ ulsGetExteriorRing2D( ulsHandle                * aHandle,
  *
  * Description:
  *
- *   Polygon Geometry Í∞ùÏ≤¥ÎÇ¥Ïùò ExteriorRing Í∞ØÏàòÎ•º ÏñªÏñ¥Ïò®Îã§.
+ *   Polygon Geometry ∞¥√º≥ª¿« ExteriorRing ∞πºˆ∏¶ æÚæÓø¬¥Ÿ.
  *
  * Implementation:
  * Return :
@@ -554,15 +580,16 @@ ulsGetNumInteriorRing2D( ulsHandle               * aHandle,
     
     ACI_TEST_RAISE( aNumInterinor == NULL, ERR_NULL_PARAMETER );
                     
-    /* Type ÏñªÏñ¥Ïò§Í∏∞*/
+    /* Type æÚæÓø¿±‚*/
     ACI_TEST_RAISE( ulsGetGeoType( aHandle,
                                    (stdGeometryHeader*)aPolygon,
                                    &sGeoType )
                     != ACI_SUCCESS,
                     ERR_INVALID_GEOMETRY );
 
-    /* TypeÍ≤ÄÏÇ¨ÌïòÍ∏∞*/
-    ACI_TEST_RAISE( sGeoType != STD_POLYGON_2D_TYPE,
+    /* Type∞ÀªÁ«œ±‚*/
+    ACI_TEST_RAISE( ( sGeoType != STD_POLYGON_2D_TYPE ) &&
+                    ( sGeoType != STD_POLYGON_2D_EXT_TYPE ),
                     ERR_NOT_APPLICABLE_GEOMETRY_TYPE );
     
     *aNumInterinor = aPolygon->mNumRings - 1;
@@ -598,7 +625,7 @@ ulsGetNumInteriorRing2D( ulsHandle               * aHandle,
  *
  * Description:
  *
- *   Polygon Geometry Í∞ùÏ≤¥ÎÇ¥Ïùò Nth InteriorRingÏùÑ ÏñªÏñ¥Ïò®Îã§.
+ *   Polygon Geometry ∞¥√º≥ª¿« Nth InteriorRing¿ª æÚæÓø¬¥Ÿ.
  *
  * Implementation:
  * Return :
@@ -633,15 +660,16 @@ ulsGetInteriorRingNPolygon2D( ulsHandle                * aHandle,
     
     ACI_TEST_RAISE( aLinearRing == NULL, ERR_NULL_PARAMETER );
                     
-    /* Type ÏñªÏñ¥Ïò§Í∏∞*/
+    /* Type æÚæÓø¿±‚*/
     ACI_TEST_RAISE( ulsGetGeoType( aHandle,
                                    (stdGeometryHeader*)aPolygon,
                                    &sGeoType )
                     != ACI_SUCCESS,
                     ERR_INVALID_GEOMETRY );
 
-    /* TypeÍ≤ÄÏÇ¨ÌïòÍ∏∞*/
-    ACI_TEST_RAISE( sGeoType != STD_POLYGON_2D_TYPE,
+    /* Type∞ÀªÁ«œ±‚*/
+    ACI_TEST_RAISE( ( sGeoType != STD_POLYGON_2D_TYPE ) &&
+                    ( sGeoType != STD_POLYGON_2D_EXT_TYPE ),
                     ERR_NOT_APPLICABLE_GEOMETRY_TYPE );
     
     ACI_TEST_RAISE( aNth >= aPolygon->mNumRings,
@@ -693,7 +721,7 @@ ulsGetInteriorRingNPolygon2D( ulsHandle                * aHandle,
  *
  * Description:
  *
- *   LineString GeometryÏùò Point Í∞ØÏàòÎ•º ÏñªÏñ¥Ïò®Îã§.
+ *   LineString Geometry¿« Point ∞πºˆ∏¶ æÚæÓø¬¥Ÿ.
  *
  * Implementation:
  * Return :
@@ -723,15 +751,16 @@ ulsGetNumPointsLineString2D( ulsHandle                   * aHandle,
     
     ACI_TEST_RAISE( aNumPoints == NULL, ERR_NULL_PARAMETER );
                     
-    /* Type ÏñªÏñ¥Ïò§Í∏∞*/
+    /* Type æÚæÓø¿±‚*/
     ACI_TEST_RAISE( ulsGetGeoType( aHandle,
                                    (stdGeometryHeader*)aLineString,
                                    &sGeoType )
                     != ACI_SUCCESS,
                     ERR_INVALID_GEOMETRY );
 
-    /* TypeÍ≤ÄÏÇ¨ÌïòÍ∏∞*/
-    ACI_TEST_RAISE( sGeoType != STD_LINESTRING_2D_TYPE,
+    /* Type∞ÀªÁ«œ±‚*/
+    ACI_TEST_RAISE( ( sGeoType != STD_LINESTRING_2D_TYPE ) &&
+                    ( sGeoType != STD_LINESTRING_2D_EXT_TYPE ),
                     ERR_NOT_APPLICABLE_GEOMETRY_TYPE );
     
     *aNumPoints = aLineString->mNumPoints;
@@ -769,7 +798,7 @@ ulsGetNumPointsLineString2D( ulsHandle                   * aHandle,
  *
  * Description:
  *
- *   LineString NÎ≤àÏß∏ PointÎ•º ÏñªÏñ¥Ïò®Îã§.
+ *   LineString Nπ¯¬∞ Point∏¶ æÚæÓø¬¥Ÿ.
  *
  * Implementation:
  * Return :
@@ -801,15 +830,16 @@ ulsGetPointNLineString2D( ulsHandle                   * aHandle,
     
     ACI_TEST_RAISE( aPoint == NULL, ERR_NULL_PARAMETER );
                     
-    /* Type ÏñªÏñ¥Ïò§Í∏∞*/
+    /* Type æÚæÓø¿±‚*/
     ACI_TEST_RAISE( ulsGetGeoType( aHandle,
                                    (stdGeometryHeader*)aLineString,
                                    &sGeoType )
                     != ACI_SUCCESS,
                     ERR_INVALID_GEOMETRY );
 
-    /* TypeÍ≤ÄÏÇ¨ÌïòÍ∏∞*/
-    ACI_TEST_RAISE( sGeoType != STD_LINESTRING_2D_TYPE,
+    /* Type∞ÀªÁ«œ±‚*/
+    ACI_TEST_RAISE( ( sGeoType != STD_LINESTRING_2D_TYPE ) &&
+                    ( sGeoType != STD_LINESTRING_2D_EXT_TYPE ),
                     ERR_NOT_APPLICABLE_GEOMETRY_TYPE );
 
     /* To Do*/
@@ -854,7 +884,7 @@ ulsGetPointNLineString2D( ulsHandle                   * aHandle,
  *
  * Description:
  *
- *   LineString Points pointerÎ•º ÏñªÏñ¥Ïò®Îã§.
+ *   LineString Points pointer∏¶ æÚæÓø¬¥Ÿ.
  *
  * Implementation:
  * Return :
@@ -884,15 +914,16 @@ ulsGetPointsLineString2D( ulsHandle                   * aHandle,
     
     ACI_TEST_RAISE( aPoints == NULL, ERR_NULL_PARAMETER );
                     
-    /* Type ÏñªÏñ¥Ïò§Í∏∞*/
+    /* Type æÚæÓø¿±‚*/
     ACI_TEST_RAISE( ulsGetGeoType( aHandle,
                                    (stdGeometryHeader*)aLineString,
                                    &sGeoType )
                     != ACI_SUCCESS,
                     ERR_INVALID_GEOMETRY );
 
-    /* TypeÍ≤ÄÏÇ¨ÌïòÍ∏∞*/
-    ACI_TEST_RAISE( sGeoType != STD_LINESTRING_2D_TYPE,
+    /* Type∞ÀªÁ«œ±‚*/
+    ACI_TEST_RAISE( ( sGeoType != STD_LINESTRING_2D_TYPE ) &&
+                    ( sGeoType != STD_LINESTRING_2D_EXT_TYPE ),
                     ERR_NOT_APPLICABLE_GEOMETRY_TYPE );
 
     /* To Do*/
@@ -929,7 +960,7 @@ ulsGetPointsLineString2D( ulsHandle                   * aHandle,
  *
  * Description:
  *
- *   LinearRingÏùò Point Í∞ØÏàòÎ•º ÏñªÏñ¥Ïò®Îã§.
+ *   LinearRing¿« Point ∞πºˆ∏¶ æÚæÓø¬¥Ÿ.
  *
  * Implementation:
  * Return :
@@ -977,7 +1008,7 @@ ulsGetNumPointsLinearRing2D( ulsHandle                   * aHandle,
  *
  * Description:
  *
- *   LinearRingÏùò NÎ≤àÏß∏ PointÎ•º ÏñªÏñ¥Ïò®Îã§.
+ *   LinearRing¿« Nπ¯¬∞ Point∏¶ æÚæÓø¬¥Ÿ.
  *
  * Implementation:
  * Return :
@@ -1037,7 +1068,7 @@ ulsGetPointNLinearRing2D( ulsHandle                   * aHandle,
  *
  * Description:
  *
- *   LinearRingÏùò Points pointerÎ•º ÏñªÏñ¥Ïò®Îã§.
+ *   LinearRing¿« Points pointer∏¶ æÚæÓø¬¥Ÿ.
  *
  * Implementation:
  * Return :
@@ -1083,10 +1114,10 @@ ulsGetPointsLinearRing2D( ulsHandle                   * aHandle,
  *
  * Description: BUG-28091
  *
- *   WKBÎ°úÎ∂ÄÌÑ∞ GeometryÏùò ÌÅ¨Í∏∞Î•º ÏñªÏñ¥ Ïò®Îã§.
- *   Ïó¨Í∏∞ÏÑú ÏÇ¨Ïö© ÎêòÎäî SizeÎäî Precision + Geometry HeaderÏùò ÌÅ¨Í∏∞Ïù¥Îã§.
- *   Îî∞ÎùºÏÑú Ïù¥ Ìï®ÏàòÎ•º ÌÜµÌï¥ ÏòàÎ°ú MultiPolygonÏù¥ 256Ïùò ÌÅ¨Í∏∞Í∞Ä ÎÇòÏôîÎã§Î©¥ Ïã§Ï†úÏùò PRECISIONÏùÄ
- *   Geometry Header Size(56)ÏùÑ Î∫Ä 200Ïù¥ ÎêúÎã§.
+ *   WKB∑Œ∫Œ≈Õ Geometry¿« ≈©±‚∏¶ æÚæÓ ø¬¥Ÿ.
+ *   ø©±‚º≠ ªÁøÎ µ«¥¬ Size¥¬ Precision + Geometry Header¿« ≈©±‚¿Ã¥Ÿ.
+ *   µ˚∂Ûº≠ ¿Ã «‘ºˆ∏¶ ≈Î«ÿ øπ∑Œ MultiPolygon¿Ã 256¿« ≈©±‚∞° ≥™ø‘¥Ÿ∏È Ω«¡¶¿« PRECISION¿∫
+ *   Geometry Header Size(56)¿ª ª´ 200¿Ã µ»¥Ÿ.
  *
  * Implementation:
  * Return :
@@ -1122,46 +1153,102 @@ ulsGetGeometrySizeFromWKB( ulsHandle   * aHandle,
         switch(sWkbType)
         {
             case WKB_POINT_TYPE :
-                ACI_TEST_RAISE( ulsGetPointSizeFromWKB(aHandle,
-                                                       &aWKB,
-                                                       sWKBFence,
-                                                       &sObjSize) != ACS_SUCCESS, ERR_PARSING );
+                ACI_TEST_RAISE( ulsGetPointSizeFromWKB( aHandle,
+                                                        &aWKB,
+                                                        sWKBFence,
+                                                        &sObjSize )
+                                != ACS_SUCCESS, ERR_PARSING );
                 break;
             case WKB_LINESTRING_TYPE :
-                ACI_TEST_RAISE( ulsGetLineStringSizeFromWKB(aHandle,
-                                                            &aWKB,
-                                                            sWKBFence,
-                                                            &sObjSize) != ACS_SUCCESS, ERR_PARSING );
+                ACI_TEST_RAISE( ulsGetLineStringSizeFromWKB( aHandle,
+                                                             &aWKB,
+                                                             sWKBFence,
+                                                             &sObjSize )
+                                != ACS_SUCCESS, ERR_PARSING );
                 break;
             case WKB_POLYGON_TYPE :
-                ACI_TEST_RAISE( ulsGetPolygonSizeFromWKB(aHandle,
-                                                         &aWKB,
-                                                         sWKBFence,
-                                                         &sObjSize) != ACS_SUCCESS, ERR_PARSING );
+                ACI_TEST_RAISE( ulsGetPolygonSizeFromWKB( aHandle,
+                                                          &aWKB,
+                                                          sWKBFence,
+                                                          &sObjSize )
+                                != ACS_SUCCESS, ERR_PARSING );
                 break;
             case WKB_MULTIPOINT_TYPE :
-                ACI_TEST_RAISE( ulsGetMultiPointSizeFromWKB(aHandle,
-                                                            &aWKB,
-                                                            sWKBFence,
-                                                            &sObjSize) != ACS_SUCCESS, ERR_PARSING );
+                ACI_TEST_RAISE( ulsGetMultiPointSizeFromWKB( aHandle,
+                                                             &aWKB,
+                                                             sWKBFence,
+                                                             &sObjSize )
+                                != ACS_SUCCESS, ERR_PARSING );
                 break;
             case WKB_MULTILINESTRING_TYPE :
-                ACI_TEST_RAISE( ulsGetMultiLineStringSizeFromWKB(aHandle,
-                                                                 &aWKB,
-                                                                 sWKBFence,
-                                                                 &sObjSize) != ACS_SUCCESS, ERR_PARSING );
+                ACI_TEST_RAISE( ulsGetMultiLineStringSizeFromWKB( aHandle,
+                                                                  &aWKB,
+                                                                  sWKBFence,
+                                                                  &sObjSize )
+                                != ACS_SUCCESS, ERR_PARSING );
                 break;
             case WKB_MULTIPOLYGON_TYPE :
-                ACI_TEST_RAISE( ulsGetMultiPolygonSizeFromWKB(aHandle,
-                                                              &aWKB,
-                                                              sWKBFence,
-                                                              &sObjSize) != ACS_SUCCESS, ERR_PARSING );
-                break;
-            case WKB_COLLECTION_TYPE :
-                ACI_TEST_RAISE( ulsGetGeoCollectionSizeFromWKB(aHandle,
+                ACI_TEST_RAISE( ulsGetMultiPolygonSizeFromWKB( aHandle,
                                                                &aWKB,
                                                                sWKBFence,
-                                                               &sObjSize) != ACS_SUCCESS, ERR_PARSING );
+                                                               &sObjSize )
+                                != ACS_SUCCESS, ERR_PARSING );
+                break;
+            case WKB_COLLECTION_TYPE :
+                ACI_TEST_RAISE( ulsGetGeoCollectionSizeFromWKB( aHandle,
+                                                                &aWKB,
+                                                                sWKBFence,
+                                                                &sObjSize )
+                                != ACS_SUCCESS, ERR_PARSING );
+                break;
+            case EWKB_POINT_TYPE :
+                ACI_TEST_RAISE( ulsGetPointSizeFromEWKB( aHandle,
+                                                         &aWKB,
+                                                         sWKBFence,
+                                                         &sObjSize )
+                                != ACS_SUCCESS, ERR_PARSING );
+                break;
+            case EWKB_LINESTRING_TYPE :
+                ACI_TEST_RAISE( ulsGetLineStringSizeFromEWKB( aHandle,
+                                                              &aWKB,
+                                                              sWKBFence,
+                                                              &sObjSize )
+                                != ACS_SUCCESS, ERR_PARSING );
+                break;
+            case EWKB_POLYGON_TYPE :
+                ACI_TEST_RAISE( ulsGetPolygonSizeFromEWKB( aHandle,
+                                                           &aWKB,
+                                                           sWKBFence,
+                                                           &sObjSize )
+                                != ACS_SUCCESS, ERR_PARSING );
+                break;
+            case EWKB_MULTIPOINT_TYPE :
+                ACI_TEST_RAISE( ulsGetMultiPointSizeFromEWKB( aHandle,
+                                                              &aWKB,
+                                                              sWKBFence,
+                                                              &sObjSize )
+                                != ACS_SUCCESS, ERR_PARSING );
+                break;
+            case EWKB_MULTILINESTRING_TYPE :
+                ACI_TEST_RAISE( ulsGetMultiLineStringSizeFromEWKB( aHandle,
+                                                                   &aWKB,
+                                                                   sWKBFence,
+                                                                   &sObjSize )
+                                != ACS_SUCCESS, ERR_PARSING );
+                break;
+            case EWKB_MULTIPOLYGON_TYPE :
+                ACI_TEST_RAISE( ulsGetMultiPolygonSizeFromEWKB( aHandle,
+                                                                &aWKB,
+                                                                sWKBFence,
+                                                                &sObjSize )
+                                != ACS_SUCCESS, ERR_PARSING );
+                break;
+            case EWKB_COLLECTION_TYPE :
+                ACI_TEST_RAISE( ulsGetGeoCollectionSizeFromEWKB( aHandle,
+                                                                 &aWKB,
+                                                                 sWKBFence,
+                                                                 &sObjSize )
+                                != ACS_SUCCESS, ERR_PARSING );
                 break;
             default :
                 ACI_RAISE( ERR_INVALID_OBJECT_MTYPE);

@@ -29,7 +29,9 @@ SInt mmuOS::heapmin()
     IDE_TEST_RAISE( iduMemMgr::shrinkAllAllocators() != IDE_SUCCESS,
                     shrink_allocator_error );
 
-#if defined(IBM_AIX) && (OS_MAJORVER >= 5)
+/* BUG-48047 ALTIBASE_HEAPMIN */
+/* it must match IDU_ALTIBASE_VERSION_STRING */
+#if defined(IBM_AIX) && (OS_MAJORVER >= 5) && defined(ALTIBASE_HEAPMIN)
     /* BUG-32748 compile error of MM module at AIX platfom */
     #ifdef _heapmin
     #undef _heapmin

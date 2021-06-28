@@ -27,9 +27,6 @@
 
 #include <qcmDatabaseLinks.h>
 
-#define CIPHER_KEY "7dcb6f959b9d37bd"
-#define CIPHER_KEYLEN (16)  // 16 byte(128 bit)
-
 static const void * gQcmDatabaseLinksTable;
 static const void * gQcmDatabaseLinksIndex;
 static void       * gQcmDatabaseLinksSequence;
@@ -242,61 +239,36 @@ IDE_RC qcmGetNewDatabaseLinkId( qcStatement * aStatement,
 /*
  *
  */
-static void makePasswordCipher( UChar * aPassword,
-                                SChar * aCipherPasswordHex,
-                                SInt    aCipherPasswordHexLength )
+static void makePasswordHex( UChar * aPassword,
+                             SChar * aPasswordHex,
+                             SInt    aPasswordHexLength )
 {
-    UChar       sCipherPassword[ QC_MAX_NAME_LEN + 1 ] = { 0, };
-    SInt        sCipherPasswordLength = 0;
-    idsRC4      sRC4;
-    RC4Context  sCtx;
+    SInt        sPasswordLength = 0;
     SInt        i = 0;
     SChar       sTargetChar;
 
-    IDE_DASSERT( aCipherPasswordHexLength == (QC_MAX_NAME_LEN * 2) + 1 );
+    IDE_DASSERT( aPasswordHexLength == (QC_MAX_NAME_LEN * 2) + 1 );
 
-    sRC4.setKey( &sCtx, (UChar *)CIPHER_KEY, CIPHER_KEYLEN );
-    sRC4.convert( &sCtx, (const UChar *)aPassword,
-                  idlOS::strlen( (SChar *)aPassword ), sCipherPassword );
-    sCipherPasswordLength = idlOS::strlen( (SChar *)sCipherPassword );
+    sPasswordLength = idlOS::strlen( (SChar *)aPassword );
 
-    idlOS::memset( aCipherPasswordHex, 0x00, aCipherPasswordHexLength );
+    idlOS::memset( aPasswordHex, 0x00, aPasswordHexLength );
 
-    for ( i = 0; i < sCipherPasswordLength; i++ )
+    for ( i = 0; i < sPasswordLength; i++ )
     {
-        sTargetChar = (SChar)( ( sCipherPassword[i] & 0xF0 ) >> 4 );
-        aCipherPasswordHex[i * 2] = (sTargetChar < 10)
+        sTargetChar = (SChar)( ( aPassword[i] & 0xF0 ) >> 4 );
+        aPasswordHex[i * 2] = (sTargetChar < 10)
             ? (sTargetChar + '0')
             : (sTargetChar + 'A' - 10);
 
-        sTargetChar = (SChar)( sCipherPassword[i] & 0x0F );
-        aCipherPasswordHex[i * 2 + 1] = (sTargetChar < 10)
+        sTargetChar = (SChar)( aPassword[i] & 0x0F );
+        aPasswordHex[i * 2 + 1] = (sTargetChar < 10)
             ? (sTargetChar + '0')
             : (sTargetChar + 'A' - 10);
     }
-
 }
 
 /*
- *
- */
-static void decodePasswordCipher( UChar * aCipherPassword,
-                                  SInt    aCipherPasswordLength,
-                                  UChar * aPassword )
-{
-    idsRC4      sRC4;
-    RC4Context  sCtx;
-
-    sRC4.setKey( &sCtx, (UChar *)CIPHER_KEY, CIPHER_KEYLEN );
-    sRC4.convert( &sCtx,
-                  aCipherPassword,
-                  idlOS::strlen( (SChar *)aCipherPassword ),
-                  aPassword );
-    aPassword[ aCipherPasswordLength ] = '\0';
-}
-
-/*
- * public database linkÏùò Í≤ΩÏö∞ user_idÎäî NULLÏù¥Îã§.
+ * public database link¿« ∞ÊøÏ user_id¥¬ NULL¿Ã¥Ÿ.
  */
 IDE_RC qcmDatabaseLinksInsertItem( qcStatement          * aStatement,
                                    qcmDatabaseLinksItem * aItem,
@@ -304,13 +276,13 @@ IDE_RC qcmDatabaseLinksInsertItem( qcStatement          * aStatement,
 {
     SChar       * sSqlString = NULL;
     vSLong        sRowCount = 0;
-    SChar         sCipherPasswordHex[(QC_MAX_NAME_LEN * 2) + 1];
+    SChar         sPasswordHex[(QC_MAX_NAME_LEN * 2) + 1];
     smiStatement  sDummyStatement;
     SInt          sStage = 0;
 
-    makePasswordCipher( aItem->remoteUserPassword,
-                        sCipherPasswordHex,
-                        ID_SIZEOF( sCipherPasswordHex ) );
+    makePasswordHex( aItem->remoteUserPassword,
+                     sPasswordHex,
+                     ID_SIZEOF( sPasswordHex ) );
 
     IDE_TEST( STRUCT_ALLOC_WITH_SIZE( aStatement->qmxMem,
                                       SChar,
@@ -338,7 +310,7 @@ IDE_RC qcmDatabaseLinksInsertItem( qcStatement          * aStatement,
                          aItem->linkName,
                          aItem->userMode,
                          aItem->remoteUserID,
-                         sCipherPasswordHex,
+                         sPasswordHex,
                          aItem->linkType,
                          aItem->targetName );
     }
@@ -363,7 +335,7 @@ IDE_RC qcmDatabaseLinksInsertItem( qcStatement          * aStatement,
                          aItem->linkName,
                          aItem->userMode,
                          aItem->remoteUserID,
-                         sCipherPasswordHex,
+                         sPasswordHex,
                          aItem->linkType,
                          aItem->targetName );
     }
@@ -614,9 +586,8 @@ static IDE_RC setDatabaseLinkItem( const void            * aRow,
                                   (const smiColumn**)&sColumn )
               != IDE_SUCCESS );
     sByteData = (mtdByteType *)((UChar *)aRow + sColumn->column.offset);
-    decodePasswordCipher( sByteData->value,
-                          sByteData->length,
-                          sItem->remoteUserPassword );
+    idlOS::memcpy( sItem->remoteUserPassword, sByteData->value, sByteData->length );
+    sItem->remoteUserPassword[ sByteData->length ] = '\0';
 
     IDE_TEST( smiGetTableColumns( gQcmDatabaseLinksTable,
                                   QCM_DATABASE_LINKS_LINK_TYPE_COL_ORDER,
@@ -663,7 +634,6 @@ IDE_RC qcmDatabaseLinksGetFirstItem( idvSQL * aStatistics, qcmDatabaseLinksItem 
     smiTableCursor         sCursor;
     const void           * sRow;
     smiTrans               sDummyTransaction;
-    smSCN                  sDummySCN;
     smiStatement         * sRootStatement = NULL;
     smiStatement           sDummyStatement;
     scGRID                 sDummyRid;
@@ -741,7 +711,7 @@ IDE_RC qcmDatabaseLinksGetFirstItem( idvSQL * aStatistics, qcmDatabaseLinksItem 
               != IDE_SUCCESS );
 
     sStage = 1;
-    IDE_TEST( sDummyTransaction.commit( &sDummySCN ) != IDE_SUCCESS );
+    IDE_TEST( sDummyTransaction.commit() != IDE_SUCCESS );
 
     sStage = 0;
     IDE_TEST( sDummyTransaction.destroy( aStatistics ) != IDE_SUCCESS );
@@ -818,7 +788,7 @@ IDE_RC qcmDatabaseLinksIsUserExisted( qcStatement * aStatement,
     smiRange               sRange;
     smiCursorProperties    sCursorProperty;
     const void           * sRow = NULL;
-    scGRID                 sRid; // Disk TableÏùÑ ÏúÑÌïú Record IDentifier
+    scGRID                 sRid; // Disk Table¿ª ¿ß«— Record IDentifier
     SInt                   sStage = 0;
     smiTableCursor         sCursor;
 

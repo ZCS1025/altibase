@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qcmSynonym.cpp 83512 2018-07-18 00:47:26Z hykim $
+ * $Id: qcmSynonym.cpp 91010 2021-06-17 01:33:11Z hykim $
  **********************************************************************/
 
 #include <idl.h>
@@ -90,8 +90,8 @@ IDE_RC qcmSynonym::getSynonym( qcStatement    *aStatement,
 
         if(QC_PUBLIC_USER_ID == aUserID)
         {
-            // public synonymì˜ ê²½ìš°
-            // user_idëŠ” NULLì´ë‹¤.
+            // public synonymÀÇ °æ¿ì
+            // user_id´Â NULLÀÌ´Ù.
             qtc::setMetaRangeIsNullColumn(
                 &sFirstMetaRange,
                 sFirstMtcColumn,
@@ -252,8 +252,8 @@ IDE_RC qcmSynonym::getSynonymOwnerID( qcStatement * aStatement,
                   != IDE_SUCCESS );
         if(QC_PUBLIC_USER_ID == aUserID)
         {
-            // public synonymì˜ ê²½ìš°
-            // user_idëŠ” NULLì´ë‹¤.
+            // public synonymÀÇ °æ¿ì
+            // user_id´Â NULLÀÌ´Ù.
             qtc::setMetaRangeIsNullColumn(
                 &sFirstMetaRange,
                 sFirstMtcColumn,
@@ -388,8 +388,8 @@ IDE_RC qcmSynonym::resolveTableViewQueue(
     aSynonymInfo->isPublicSynonym = ID_FALSE;
 
     // BUG-20908
-    // Synonymì •ë³´ë¥¼ ì €ìž¥í•  List ì´ˆê¸°í™”
-    // ì˜¤ë¥˜ ë°œìƒì‹œ ì—ëŸ¬ ë©”ì„¸ì§€ì— ì“°ë„ë¡ Synonymì˜ ì´ë¦„ì„ ë„£ì–´ì¤€ë‹¤.
+    // SynonymÁ¤º¸¸¦ ÀúÀåÇÒ List ÃÊ±âÈ­
+    // ¿À·ù ¹ß»ý½Ã ¿¡·¯ ¸Þ¼¼Áö¿¡ ¾²µµ·Ï SynonymÀÇ ÀÌ¸§À» ³Ö¾îÁØ´Ù.
     IDU_LIST_INIT_OBJ( &sSynonymInfoList, &aObjectName );
 
     if (QC_IS_NULL_NAME(aUserName) == ID_TRUE)
@@ -449,7 +449,7 @@ IDE_RC qcmSynonym::resolveTableViewQueue(
 
             if ( sCheckPublic == ID_TRUE )
             {
-                // SESSION_USER_IDë¥¼ ì´ìš©í–ˆë‹¤ë©´ environmentë¥¼ ê¸°ë¡í•œë‹¤.
+                // SESSION_USER_ID¸¦ ÀÌ¿ëÇß´Ù¸é environment¸¦ ±â·ÏÇÑ´Ù.
                 qcgPlan::registerPlanProperty( aStatement,
                                                PLAN_PROPERTY_USER_ID );
             }
@@ -500,7 +500,7 @@ IDE_RC qcmSynonym::resolveTableViewQueue(
                       != IDE_SUCCESS );
 
             // BUG-20908
-            // Synonymì˜ Circularity Checkë¥¼ ìœ„í•´ Listì— ì¶”ê°€í•œë‹¤.
+            // SynonymÀÇ Circularity Check¸¦ À§ÇØ List¿¡ Ãß°¡ÇÑ´Ù.
             IDE_TEST( addToSynonymInfoList( aStatement,
                                             &sSynonymInfoList,
                                             aSynonymInfo )
@@ -521,7 +521,7 @@ IDE_RC qcmSynonym::resolveTableViewQueue(
             
             if ( sCheckPublic == ID_TRUE )
             {
-                // SESSION_USER_IDë¥¼ ì´ìš©í–ˆë‹¤ë©´ environmentë¥¼ ê¸°ë¡í•œë‹¤.
+                // SESSION_USER_ID¸¦ ÀÌ¿ëÇß´Ù¸é environment¸¦ ±â·ÏÇÑ´Ù.
                 qcgPlan::registerPlanProperty( aStatement,
                                                PLAN_PROPERTY_USER_ID );
             }
@@ -539,7 +539,7 @@ IDE_RC qcmSynonym::resolveTableViewQueue(
             else
             {
                 /* BUG- 39066
-                   ë™ì¼í•œ ì´ë¦„ì„ ê°€ì§„ ê°ì²´ê°€ ì¡´ìž¬í•˜ëŠ”ì§€ public synonym ì°¾ê¸° ì „ì— ì²´í¬ */
+                   µ¿ÀÏÇÑ ÀÌ¸§À» °¡Áø °´Ã¼°¡ Á¸ÀçÇÏ´ÂÁö public synonym Ã£±â Àü¿¡ Ã¼Å© */
                 IDE_TEST( qcm::existObject( aStatement,
                                             ID_FALSE,
                                             aUserName,
@@ -574,7 +574,7 @@ IDE_RC qcmSynonym::resolveTableViewQueue(
                         aSynonymInfo->isPublicSynonym = ID_TRUE;
 
                         // BUG-20908
-                        // Synonymì˜ Circularity Checkë¥¼ ìœ„í•´ Listì— ì¶”ê°€í•œë‹¤.
+                        // SynonymÀÇ Circularity Check¸¦ À§ÇØ List¿¡ Ãß°¡ÇÑ´Ù.
                         IDE_TEST( addToSynonymInfoList( aStatement,
                                                         &sSynonymInfoList,
                                                         aSynonymInfo )
@@ -653,8 +653,8 @@ IDE_RC qcmSynonym::resolveSequence(
     aSynonymInfo->isPublicSynonym = ID_FALSE;
 
     // BUG-20908
-    // Synonymì •ë³´ë¥¼ ì €ìž¥í•  List ì´ˆê¸°í™”
-    // ì˜¤ë¥˜ ë°œìƒì‹œ ì—ëŸ¬ ë©”ì„¸ì§€ì— ì“°ë„ë¡ Synonymì˜ ì´ë¦„ì„ ë„£ì–´ì¤€ë‹¤.
+    // SynonymÁ¤º¸¸¦ ÀúÀåÇÒ List ÃÊ±âÈ­
+    // ¿À·ù ¹ß»ý½Ã ¿¡·¯ ¸Þ¼¼Áö¿¡ ¾²µµ·Ï SynonymÀÇ ÀÌ¸§À» ³Ö¾îÁØ´Ù.
     IDU_LIST_INIT_OBJ( &sSynonymInfoList, &aObjectName );
 
     if (QC_IS_NULL_NAME(aUserName) == ID_TRUE)
@@ -683,7 +683,7 @@ IDE_RC qcmSynonym::resolveSequence(
         
         if ( sCheckPublic == ID_TRUE )
         {
-            // SESSION_USER_IDë¥¼ ì´ìš©í–ˆë‹¤ë©´ environmentë¥¼ ê¸°ë¡í•œë‹¤.
+            // SESSION_USER_ID¸¦ ÀÌ¿ëÇß´Ù¸é environment¸¦ ±â·ÏÇÑ´Ù.
             qcgPlan::registerPlanProperty( aStatement,
                                            PLAN_PROPERTY_USER_ID );
         }
@@ -705,7 +705,7 @@ IDE_RC qcmSynonym::resolveSequence(
         if( ID_TRUE == *aExist)
         {
             // BUG-20908
-            // Synonymì˜ Circularity Checkë¥¼ ìœ„í•´ Listì— ì¶”ê°€í•œë‹¤.
+            // SynonymÀÇ Circularity Check¸¦ À§ÇØ List¿¡ Ãß°¡ÇÑ´Ù.
             addToSynonymInfoList( aStatement,
                                   &sSynonymInfoList,
                                   aSynonymInfo );
@@ -724,7 +724,7 @@ IDE_RC qcmSynonym::resolveSequence(
             
             if ( sCheckPublic == ID_TRUE )
             {
-                // SESSION_USER_IDë¥¼ ì´ìš©í–ˆë‹¤ë©´ environmentë¥¼ ê¸°ë¡í•œë‹¤.
+                // SESSION_USER_ID¸¦ ÀÌ¿ëÇß´Ù¸é environment¸¦ ±â·ÏÇÑ´Ù.
                 qcgPlan::registerPlanProperty( aStatement,
                                                PLAN_PROPERTY_USER_ID );
             }
@@ -742,7 +742,7 @@ IDE_RC qcmSynonym::resolveSequence(
             else
             {
                 /* BUG- 39066
-                   ë™ì¼í•œ ì´ë¦„ì„ ê°€ì§„ ê°ì²´ê°€ ì¡´ìž¬í•˜ëŠ”ì§€ public synonym ì°¾ê¸° ì „ì— ì²´í¬ */
+                   µ¿ÀÏÇÑ ÀÌ¸§À» °¡Áø °´Ã¼°¡ Á¸ÀçÇÏ´ÂÁö public synonym Ã£±â Àü¿¡ Ã¼Å© */
                 IDE_TEST( qcm::existObject( aStatement,
                                             ID_FALSE,
                                             aUserName,
@@ -770,10 +770,11 @@ IDE_RC qcmSynonym::resolveSequence(
                         aSynonymInfo->isPublicSynonym = ID_TRUE;
 
                         // BUG-20908
-                        // Synonymì˜ Circularity Checkë¥¼ ìœ„í•´ Listì— ì¶”ê°€í•œë‹¤.
-                        addToSynonymInfoList( aStatement,
-                                              &sSynonymInfoList,
-                                              aSynonymInfo );
+                        // SynonymÀÇ Circularity Check¸¦ À§ÇØ List¿¡ Ãß°¡ÇÑ´Ù.
+                        IDE_TEST( addToSynonymInfoList( aStatement,
+                                                        &sSynonymInfoList,
+                                                        aSynonymInfo )
+                                 != IDE_SUCCESS );
 
                         // resolve public synonym
                         IDE_TEST(
@@ -822,8 +823,8 @@ IDE_RC qcmSynonym::resolvePSM(
     idBool         sCheckPublic =  ID_FALSE;
     iduList        sSynonymInfoList;
     /* BUG-39048
-       check pubilc synonymì „ì— ë™ì¼í•œ ì´ë¦„ì„
-       ê°€ì§„ ê°ì²´ê°€ ìžˆëŠ”ì§€ í™•ì¸ í•„ìš”. */
+       check pubilc synonymÀü¿¡ µ¿ÀÏÇÑ ÀÌ¸§À»
+       °¡Áø °´Ã¼°¡ ÀÖ´ÂÁö È®ÀÎ ÇÊ¿ä. */
     UInt           sTmpUserID;
     qsOID          sTmpObjectID = QS_EMPTY_OID;
     idBool         sExistObject = ID_FALSE;
@@ -832,8 +833,8 @@ IDE_RC qcmSynonym::resolvePSM(
     aSynonymInfo->isPublicSynonym = ID_FALSE;
 
     // BUG-20908
-    // Synonymì •ë³´ë¥¼ ì €ìž¥í•  List ì´ˆê¸°í™”
-    // ì˜¤ë¥˜ ë°œìƒì‹œ ì—ëŸ¬ ë©”ì„¸ì§€ì— ì“°ë„ë¡ Synonymì˜ ì´ë¦„ì„ ë„£ì–´ì¤€ë‹¤.
+    // SynonymÁ¤º¸¸¦ ÀúÀåÇÒ List ÃÊ±âÈ­
+    // ¿À·ù ¹ß»ý½Ã ¿¡·¯ ¸Þ¼¼Áö¿¡ ¾²µµ·Ï SynonymÀÇ ÀÌ¸§À» ³Ö¾îÁØ´Ù.
     IDU_LIST_INIT_OBJ( &sSynonymInfoList, &aObjectName );
 
     if (QC_IS_NULL_NAME(aUserName) == ID_TRUE)
@@ -868,7 +869,7 @@ IDE_RC qcmSynonym::resolvePSM(
         
         if ( sCheckPublic == ID_TRUE )
         {
-            // SESSION_USER_IDë¥¼ ì´ìš©í–ˆë‹¤ë©´ environmentë¥¼ ê¸°ë¡í•œë‹¤.
+            // SESSION_USER_ID¸¦ ÀÌ¿ëÇß´Ù¸é environment¸¦ ±â·ÏÇÑ´Ù.
             qcgPlan::registerPlanProperty( aStatement,
                                            PLAN_PROPERTY_USER_ID );
         }
@@ -889,7 +890,7 @@ IDE_RC qcmSynonym::resolvePSM(
         if( ID_TRUE == *aExist )
         {
             // BUG-20908
-            // Synonymì˜ Circularity Checkë¥¼ ìœ„í•´ Listì— ì¶”ê°€í•œë‹¤.
+            // SynonymÀÇ Circularity Check¸¦ À§ÇØ List¿¡ Ãß°¡ÇÑ´Ù.
             IDE_TEST( addToSynonymInfoList( aStatement,
                                             &sSynonymInfoList,
                                             aSynonymInfo )
@@ -906,7 +907,7 @@ IDE_RC qcmSynonym::resolvePSM(
             
             if ( sCheckPublic == ID_TRUE )
             {
-                // SESSION_USER_IDë¥¼ ì´ìš©í–ˆë‹¤ë©´ environmentë¥¼ ê¸°ë¡í•œë‹¤.
+                // SESSION_USER_ID¸¦ ÀÌ¿ëÇß´Ù¸é environment¸¦ ±â·ÏÇÑ´Ù.
                 qcgPlan::registerPlanProperty( aStatement,
                                                PLAN_PROPERTY_USER_ID );
             }
@@ -925,7 +926,7 @@ IDE_RC qcmSynonym::resolvePSM(
             else
             {
                 /* BUG-39048
-                   ë™ì¼í•œ ì´ë¦„ì„ ê°€ì§„ ê°ì²´ê°€ ìžˆëŠ” í™•ì¸í•„ìš” */
+                   µ¿ÀÏÇÑ ÀÌ¸§À» °¡Áø °´Ã¼°¡ ÀÖ´Â È®ÀÎÇÊ¿ä */
                 IDE_TEST( qcm::existObject( aStatement,
                                             ID_FALSE,
                                             aUserName,
@@ -953,7 +954,7 @@ IDE_RC qcmSynonym::resolvePSM(
                         aSynonymInfo->isPublicSynonym = ID_TRUE;
 
                         // BUG-20908
-                        // Synonymì˜ Circularity Checkë¥¼ ìœ„í•´ Listì— ì¶”ê°€í•œë‹¤.
+                        // SynonymÀÇ Circularity Check¸¦ À§ÇØ List¿¡ Ãß°¡ÇÑ´Ù.
                         IDE_TEST( addToSynonymInfoList( aStatement,
                                                         &sSynonymInfoList,
                                                         aSynonymInfo )
@@ -1005,8 +1006,8 @@ IDE_RC qcmSynonym::resolveObject(
 /***********************************************************************
  *
  * Description :
- *     typeì„ ì•Œ ìˆ˜ ì—†ëŠ” ê°ì²´ë¥¼ ì´ë¦„ë§Œìœ¼ë¡œ ì°¾ì„ ìˆ˜ ìžˆë‹¤.
- *     BUGBUG - sequenceì— ëŒ€í•´ì„œë§Œ íŠ¹ë³„ížˆ meta idë¥¼ ë°˜í™˜í•œë‹¤.
+ *     typeÀ» ¾Ë ¼ö ¾ø´Â °´Ã¼¸¦ ÀÌ¸§¸¸À¸·Î Ã£À» ¼ö ÀÖ´Ù.
+ *     BUGBUG - sequence¿¡ ´ëÇØ¼­¸¸ Æ¯º°È÷ meta id¸¦ ¹ÝÈ¯ÇÑ´Ù.
  *
  * Implementation :
  *     1. search objects
@@ -1036,8 +1037,8 @@ IDE_RC qcmSynonym::resolveObject(
     aSynonymInfo->isPublicSynonym = ID_FALSE;
 
     // BUG-20908
-    // Synonymì •ë³´ë¥¼ ì €ìž¥í•  List ì´ˆê¸°í™”
-    // ì˜¤ë¥˜ ë°œìƒì‹œ ì—ëŸ¬ ë©”ì„¸ì§€ì— ì“°ë„ë¡ Synonymì˜ ì´ë¦„ì„ ë„£ì–´ì¤€ë‹¤.
+    // SynonymÁ¤º¸¸¦ ÀúÀåÇÒ List ÃÊ±âÈ­
+    // ¿À·ù ¹ß»ý½Ã ¿¡·¯ ¸Þ¼¼Áö¿¡ ¾²µµ·Ï SynonymÀÇ ÀÌ¸§À» ³Ö¾îÁØ´Ù.
     IDU_LIST_INIT_OBJ( &sSynonymInfoList, &aObjectName );
 
     if (QC_IS_NULL_NAME(aUserName) == ID_TRUE)
@@ -1101,7 +1102,7 @@ IDE_RC qcmSynonym::resolveObject(
 
             if ( sCheckPublic == ID_TRUE )
             {
-                // SESSION_USER_IDë¥¼ ì´ìš©í–ˆë‹¤ë©´ environmentë¥¼ ê¸°ë¡í•œë‹¤.
+                // SESSION_USER_ID¸¦ ÀÌ¿ëÇß´Ù¸é environment¸¦ ±â·ÏÇÑ´Ù.
                 qcgPlan::registerPlanProperty( aStatement,
                                                PLAN_PROPERTY_USER_ID );
             }
@@ -1132,7 +1133,7 @@ IDE_RC qcmSynonym::resolveObject(
 
         if ( sCheckPublic == ID_TRUE )
         {
-            // SESSION_USER_IDë¥¼ ì´ìš©í–ˆë‹¤ë©´ environmentë¥¼ ê¸°ë¡í•œë‹¤.
+            // SESSION_USER_ID¸¦ ÀÌ¿ëÇß´Ù¸é environment¸¦ ±â·ÏÇÑ´Ù.
             qcgPlan::registerPlanProperty( aStatement,
                                            PLAN_PROPERTY_USER_ID );
         }
@@ -1165,7 +1166,7 @@ IDE_RC qcmSynonym::resolveObject(
 
         if ( sCheckPublic == ID_TRUE )
         {
-            // SESSION_USER_IDë¥¼ ì´ìš©í–ˆë‹¤ë©´ environmentë¥¼ ê¸°ë¡í•œë‹¤.
+            // SESSION_USER_ID¸¦ ÀÌ¿ëÇß´Ù¸é environment¸¦ ±â·ÏÇÑ´Ù.
             qcgPlan::registerPlanProperty( aStatement,
                                            PLAN_PROPERTY_USER_ID );
         }
@@ -1201,7 +1202,7 @@ IDE_RC qcmSynonym::resolveObject(
 
         if ( sCheckPublic == ID_TRUE )
         {
-            // SESSION_USER_IDë¥¼ ì´ìš©í–ˆë‹¤ë©´ environmentë¥¼ ê¸°ë¡í•œë‹¤.
+            // SESSION_USER_ID¸¦ ÀÌ¿ëÇß´Ù¸é environment¸¦ ±â·ÏÇÑ´Ù.
             qcgPlan::registerPlanProperty( aStatement,
                                            PLAN_PROPERTY_USER_ID );
         }
@@ -1235,7 +1236,7 @@ IDE_RC qcmSynonym::resolveObject(
 
         if ( sCheckPublic == ID_TRUE )
         {
-            // SESSION_USER_IDë¥¼ ì´ìš©í–ˆë‹¤ë©´ environmentë¥¼ ê¸°ë¡í•œë‹¤.
+            // SESSION_USER_ID¸¦ ÀÌ¿ëÇß´Ù¸é environment¸¦ ±â·ÏÇÑ´Ù.
             qcgPlan::registerPlanProperty( aStatement,
                                            PLAN_PROPERTY_USER_ID );
         }
@@ -1284,7 +1285,7 @@ IDE_RC qcmSynonym::resolveObject(
                   != IDE_SUCCESS );
 
         // BUG-20908
-        // Synonymì˜ Circularity Checkë¥¼ ìœ„í•´ Listì— ì¶”ê°€í•œë‹¤.
+        // SynonymÀÇ Circularity Check¸¦ À§ÇØ List¿¡ Ãß°¡ÇÑ´Ù.
         IDE_TEST( addToSynonymInfoList( aStatement,
                                         &sSynonymInfoList,
                                         aSynonymInfo )
@@ -1305,7 +1306,7 @@ IDE_RC qcmSynonym::resolveObject(
         
         if ( sCheckPublic == ID_TRUE )
         {
-            // SESSION_USER_IDë¥¼ ì´ìš©í–ˆë‹¤ë©´ environmentë¥¼ ê¸°ë¡í•œë‹¤.
+            // SESSION_USER_ID¸¦ ÀÌ¿ëÇß´Ù¸é environment¸¦ ±â·ÏÇÑ´Ù.
             qcgPlan::registerPlanProperty( aStatement,
                                            PLAN_PROPERTY_USER_ID );
         }
@@ -1338,7 +1339,7 @@ IDE_RC qcmSynonym::resolveObject(
                 aSynonymInfo->isPublicSynonym = ID_TRUE;
                 
                 // BUG-20908
-                // Synonymì˜ Circularity Checkë¥¼ ìœ„í•´ Listì— ì¶”ê°€í•œë‹¤.
+                // SynonymÀÇ Circularity Check¸¦ À§ÇØ List¿¡ Ãß°¡ÇÑ´Ù.
                 IDE_TEST( addToSynonymInfoList( aStatement,
                                                 &sSynonymInfoList,
                                                 aSynonymInfo )
@@ -1387,8 +1388,8 @@ IDE_RC qcmSynonym::resolvePkg( qcStatement    * aStatement,
     qcNamePosition   sUserName;
     qcNamePosition   sObjectName;
     /* BUG-39048
-       check pubilc synonymì „ì— ë™ì¼í•œ ì´ë¦„ì„
-       ê°€ì§„ ê°ì²´ê°€ ìžˆëŠ”ì§€ í™•ì¸ í•„ìš”. */
+       check pubilc synonymÀü¿¡ µ¿ÀÏÇÑ ÀÌ¸§À»
+       °¡Áø °´Ã¼°¡ ÀÖ´ÂÁö È®ÀÎ ÇÊ¿ä. */
     UInt             sTmpUserID;
     qsOID            sTmpObjectID  = QS_EMPTY_OID;
     idBool           sExistObject  = ID_FALSE;
@@ -1435,7 +1436,7 @@ IDE_RC qcmSynonym::resolvePkg( qcStatement    * aStatement,
         {
             IDE_CLEAR();
 
-            /* aUserNameì€ user nameì´ ì•„ë‹ˆë‹¤. */
+            /* aUserNameÀº user nameÀÌ ¾Æ´Ï´Ù. */
             sObjectName = aUserName;
 
             // have to check private & public synonym.
@@ -1469,7 +1470,7 @@ IDE_RC qcmSynonym::resolvePkg( qcStatement    * aStatement,
 
         if( sCheckPublic == ID_TRUE )
         {
-            // SESSION_USER_IDë¥¼ ì´ìš©í–ˆë‹¤ë©´ environmentë¥¼ ê¸°ë¡í•œë‹¤.
+            // SESSION_USER_ID¸¦ ÀÌ¿ëÇß´Ù¸é environment¸¦ ±â·ÏÇÑ´Ù.
             qcgPlan::registerPlanProperty( aStatement,
                                            PLAN_PROPERTY_USER_ID );
         }
@@ -1492,7 +1493,7 @@ IDE_RC qcmSynonym::resolvePkg( qcStatement    * aStatement,
         if( ID_TRUE == *aExist )
         {
             // BUG-20908
-            // Synonymì˜ Circularity Checkë¥¼ ìœ„í•´ Listì— ì¶”ê°€í•œë‹¤.
+            // SynonymÀÇ Circularity Check¸¦ À§ÇØ List¿¡ Ãß°¡ÇÑ´Ù.
             IDE_TEST( addToSynonymInfoList( aStatement,
                                             &sSynonymInfoList,
                                             aSynonymInfo )
@@ -1509,7 +1510,7 @@ IDE_RC qcmSynonym::resolvePkg( qcStatement    * aStatement,
 
             if ( sCheckPublic == ID_TRUE )
             {
-                // SESSION_USER_IDë¥¼ ì´ìš©í–ˆë‹¤ë©´ environmentë¥¼ ê¸°ë¡í•œë‹¤.
+                // SESSION_USER_ID¸¦ ÀÌ¿ëÇß´Ù¸é environment¸¦ ±â·ÏÇÑ´Ù.
                 qcgPlan::registerPlanProperty( aStatement,
                                                PLAN_PROPERTY_USER_ID );
             }
@@ -1520,7 +1521,7 @@ IDE_RC qcmSynonym::resolvePkg( qcStatement    * aStatement,
         }
         else
         {
-            /* private synonymì´ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+            /* private synonymÀÌ Á¸ÀçÇÏÁö ¾Ê´Â´Ù. */
             if( sCheckPublic == ID_FALSE )
             {
                 *aExist = ID_FALSE;
@@ -1528,7 +1529,7 @@ IDE_RC qcmSynonym::resolvePkg( qcStatement    * aStatement,
             else
             {
                 /* BUG-39048
-                   ë™ì¼í•œ ì´ë¦„ì„ ê°€ì§„ ê°ì²´ê°€ ìžˆëŠ” í™•ì¸í•„ìš”. */
+                   µ¿ÀÏÇÑ ÀÌ¸§À» °¡Áø °´Ã¼°¡ ÀÖ´Â È®ÀÎÇÊ¿ä. */
                 IDE_TEST( qcm::existObject( aStatement,
                                             ID_FALSE,
                                             sUserName,
@@ -1555,7 +1556,7 @@ IDE_RC qcmSynonym::resolvePkg( qcStatement    * aStatement,
                         aSynonymInfo->isPublicSynonym = ID_TRUE;
 
                         // BUG-20908
-                        // Synonymì˜ Circularity Checkë¥¼ ìœ„í•´ Listì— ì¶”ê°€í•œë‹¤.
+                        // SynonymÀÇ Circularity Check¸¦ À§ÇØ List¿¡ Ãß°¡ÇÑ´Ù.
                         IDE_TEST( addToSynonymInfoList( aStatement,
                                                         &sSynonymInfoList,
                                                         aSynonymInfo )
@@ -1584,20 +1585,20 @@ IDE_RC qcmSynonym::resolvePkg( qcStatement    * aStatement,
         }
     }
 
-    /* BUG-41847 package subprogramì„ parameterì˜ defaultë¡œ ì‚¬ìš© ì‹œ resource busy ë°œìƒ
-       ì´ëŠ” metaë¥¼ ì¡°íšŒí•˜ì—¬ ê°ì²´ë¥¼ ì°¾ëŠ”ë°,
-       replaceì¼ ë•ŒëŠ” ë©”íƒ€ì— ê°ì²´ ì •ë³´ê°€ ì¡´ìž¬í•˜ê³ ,
-       ì´ë¡œ ì¸í•´ ìžê¸° ìžì‹  ë˜ëŠ” ë™ì¼í•œ packageë¥¼ ì™¸ë¶€ ê°ì²´ë¡œ íŒë‹¨í•˜ì—¬
-       latchë¥¼ ìž¡ê¸° ë•Œë¬¸ì— ë°œìƒí•˜ëŠ” ë¬¸ì œ
+    /* BUG-41847 package subprogramÀ» parameterÀÇ default·Î »ç¿ë ½Ã resource busy ¹ß»ý
+       ÀÌ´Â meta¸¦ Á¶È¸ÇÏ¿© °´Ã¼¸¦ Ã£´Âµ¥,
+       replaceÀÏ ¶§´Â ¸ÞÅ¸¿¡ °´Ã¼ Á¤º¸°¡ Á¸ÀçÇÏ°í,
+       ÀÌ·Î ÀÎÇØ ÀÚ±â ÀÚ½Å ¶Ç´Â µ¿ÀÏÇÑ package¸¦ ¿ÜºÎ °´Ã¼·Î ÆÇ´ÜÇÏ¿©
+       latch¸¦ Àâ±â ¶§¹®¿¡ ¹ß»ýÇÏ´Â ¹®Á¦
 
-       1. ìƒì„± ì¤‘ì¸ ê°ì²´ê°€ package specì¼ ë•Œ
-           a. ìƒì„± ì¤‘ì¸ ê°ì²´ì˜ user idì™€ object idê°€ ë™ì¼í•˜ë©´
-              ìƒì„± ì¤‘ì¸ ê°ì²´ì™€ ë™ì¼í•œ ê°ì²´ë¥¼ ë©”íƒ€ì—ì„œ ì°¾ì€ ê²ƒì´ë‹¤.
-       2. ìƒì„± ì¤‘ì¸ ê°ì²´ê°€ package bodyì¼ ê²½ìš°
-           a. ìƒì„± ì¤‘ì¸ ê°ì²´ì˜ specê³¼ user id ë° object idê°€ ë™ì¼í•˜ë©´
-              ë‹¤ë¥¸ packageê°€ ì•„ë‹Œ í•´ë‹¹ ê°ì²´ì˜ specì„ ì°¾ì€ ê²ƒì´ë‹¤.
-           b. ìƒì„± ì¤‘ì¸ ê°ì²´ì˜ user idì™€ object idê°€ ë™ì¼í•˜ë©´
-              ìƒì„± ì¤‘ì¸ ê°ì²´ì™€ ë™ì¼í•œ ê°ì²´ë¥¼ ë©”íƒ€ì—ì„œ ì°¾ì€ ê²ƒì´ë‹¤. */
+       1. »ý¼º ÁßÀÎ °´Ã¼°¡ package specÀÏ ¶§
+           a. »ý¼º ÁßÀÎ °´Ã¼ÀÇ user id¿Í object id°¡ µ¿ÀÏÇÏ¸é
+              »ý¼º ÁßÀÎ °´Ã¼¿Í µ¿ÀÏÇÑ °´Ã¼¸¦ ¸ÞÅ¸¿¡¼­ Ã£Àº °ÍÀÌ´Ù.
+       2. »ý¼º ÁßÀÎ °´Ã¼°¡ package bodyÀÏ °æ¿ì
+           a. »ý¼º ÁßÀÎ °´Ã¼ÀÇ spec°ú user id ¹× object id°¡ µ¿ÀÏÇÏ¸é
+              ´Ù¸¥ package°¡ ¾Æ´Ñ ÇØ´ç °´Ã¼ÀÇ specÀ» Ã£Àº °ÍÀÌ´Ù.
+           b. »ý¼º ÁßÀÎ °´Ã¼ÀÇ user id¿Í object id°¡ µ¿ÀÏÇÏ¸é
+              »ý¼º ÁßÀÎ °´Ã¼¿Í µ¿ÀÏÇÑ °´Ã¼¸¦ ¸ÞÅ¸¿¡¼­ Ã£Àº °ÍÀÌ´Ù. */
     if ( sPkgParseTree != NULL )
     {
         if ( (sPkgParseTree->userID == *aUserID) &&
@@ -1638,8 +1639,8 @@ IDE_RC qcmSynonym::resolveTableViewQueueInternal(
     iduList        * aSynonymInfoList)
 {
     //BUG-20855
-    //PUBLIC SYNONYMì„ ì°¾ê¸° ìœ„í•œ ë¬´í•œ Recusive Callì„ ë°©ì§€í•˜ê¸° ìœ„í•´ ì›ë³¸ Synonym ì •ë³´ë¥¼ ìž„ì‹œ ì €ìž¥í•œë‹¤.
-    //ìž„ì‹œ ì €ìž¥ëœ ê°ì²´ëŠ” ìƒˆë¡œìš´ Public Synonymì„ ì–»ì–´ì™”ì„ ë•Œ ë¹„êµë¥¼ ìœ„í•´ ì“°ì—¬ì§„ë‹¤.
+    //PUBLIC SYNONYMÀ» Ã£±â À§ÇÑ ¹«ÇÑ Recusive CallÀ» ¹æÁöÇÏ±â À§ÇØ ¿øº» Synonym Á¤º¸¸¦ ÀÓ½Ã ÀúÀåÇÑ´Ù.
+    //ÀÓ½Ã ÀúÀåµÈ °´Ã¼´Â »õ·Î¿î Public SynonymÀ» ¾ò¾î¿ÔÀ» ¶§ ºñ±³¸¦ À§ÇØ ¾²¿©Áø´Ù.
     qcmSynonymInfo   sSynonymInfo;
     SChar          * sObjectName;
     qcNamePosition   sUserNamePos;
@@ -1758,7 +1759,7 @@ IDE_RC qcmSynonym::resolveTableViewQueueInternal(
         else
         {
             /* BUG- 39066
-               ë™ì¼í•œ ì´ë¦„ì„ ê°€ì§„ ê°ì²´ê°€ ì¡´ìž¬í•˜ëŠ”ì§€ public synonym ì°¾ê¸° ì „ì— ì²´í¬ */
+               µ¿ÀÏÇÑ ÀÌ¸§À» °¡Áø °´Ã¼°¡ Á¸ÀçÇÏ´ÂÁö public synonym Ã£±â Àü¿¡ Ã¼Å© */
             IDE_TEST( qcm::existObject( aStatement,
                                         ID_FALSE,
                                         sUserNamePos,
@@ -1863,8 +1864,8 @@ IDE_RC qcmSynonym::resolveSequenceInternal(
     iduList         * aSynonymInfoList)
 {
     //BUG-20855
-    //PUBLIC SYNONYMì„ ì°¾ê¸° ìœ„í•œ ë¬´í•œ Recusive Callì„ ë°©ì§€í•˜ê¸° ìœ„í•´ ì›ë³¸ Synonym ì •ë³´ë¥¼ ìž„ì‹œ ì €ìž¥í•œë‹¤.
-    //ìž„ì‹œ ì €ìž¥ëœ ê°ì²´ëŠ” ìƒˆë¡œìš´ Public Synonymì„ ì–»ì–´ì™”ì„ ë•Œ ë¹„êµë¥¼ ìœ„í•´ ì“°ì—¬ì§„ë‹¤.
+    //PUBLIC SYNONYMÀ» Ã£±â À§ÇÑ ¹«ÇÑ Recusive CallÀ» ¹æÁöÇÏ±â À§ÇØ ¿øº» Synonym Á¤º¸¸¦ ÀÓ½Ã ÀúÀåÇÑ´Ù.
+    //ÀÓ½Ã ÀúÀåµÈ °´Ã¼´Â »õ·Î¿î Public SynonymÀ» ¾ò¾î¿ÔÀ» ¶§ ºñ±³¸¦ À§ÇØ ¾²¿©Áø´Ù.
     qcmSynonymInfo sSynonymInfo;
     qcNamePosition sUserName;
     qcNamePosition sObjectName;
@@ -1937,7 +1938,7 @@ IDE_RC qcmSynonym::resolveSequenceInternal(
         else
         {
             /* BUG- 39066
-               ë™ì¼í•œ ì´ë¦„ì„ ê°€ì§„ ê°ì²´ê°€ ì¡´ìž¬í•˜ëŠ”ì§€ public synonym ì°¾ê¸° ì „ì— ì²´í¬ */
+               µ¿ÀÏÇÑ ÀÌ¸§À» °¡Áø °´Ã¼°¡ Á¸ÀçÇÏ´ÂÁö public synonym Ã£±â Àü¿¡ Ã¼Å© */
             IDE_TEST( qcm::existObject( aStatement,
                                         ID_FALSE,
                                         sUserName,
@@ -2032,8 +2033,8 @@ IDE_RC qcmSynonym::resolvePSMInternal(
 {
 
     //BUG-20855
-    //PUBLIC SYNONYMì„ ì°¾ê¸° ìœ„í•œ ë¬´í•œ Recusive Callì„ ë°©ì§€í•˜ê¸° ìœ„í•´ ì›ë³¸ Synonym ì •ë³´ë¥¼ ìž„ì‹œ ì €ìž¥í•œë‹¤.
-    //ìž„ì‹œ ì €ìž¥ëœ ê°ì²´ëŠ” ìƒˆë¡œìš´ Public Synonymì„ ì–»ì–´ì™”ì„ ë•Œ ë¹„êµë¥¼ ìœ„í•´ ì“°ì—¬ì§„ë‹¤.
+    //PUBLIC SYNONYMÀ» Ã£±â À§ÇÑ ¹«ÇÑ Recusive CallÀ» ¹æÁöÇÏ±â À§ÇØ ¿øº» Synonym Á¤º¸¸¦ ÀÓ½Ã ÀúÀåÇÑ´Ù.
+    //ÀÓ½Ã ÀúÀåµÈ °´Ã¼´Â »õ·Î¿î Public SynonymÀ» ¾ò¾î¿ÔÀ» ¶§ ºñ±³¸¦ À§ÇØ ¾²¿©Áø´Ù.
     qcmSynonymInfo sSynonymInfo;
     qcNamePosition sUserName;
     qcNamePosition sObjectName;
@@ -2109,7 +2110,7 @@ IDE_RC qcmSynonym::resolvePSMInternal(
         else
         {
             /* BUG- 39066
-               ë™ì¼í•œ ì´ë¦„ì„ ê°€ì§„ ê°ì²´ê°€ ì¡´ìž¬í•˜ëŠ”ì§€ public synonym ì°¾ê¸° ì „ì— ì²´í¬ */
+               µ¿ÀÏÇÑ ÀÌ¸§À» °¡Áø °´Ã¼°¡ Á¸ÀçÇÏ´ÂÁö public synonym Ã£±â Àü¿¡ Ã¼Å© */
             IDE_TEST( qcm::existObject( aStatement,
                                         ID_FALSE,
                                         sUserName,
@@ -2202,8 +2203,8 @@ IDE_RC qcmSynonym::resolvePkgInternal(
     iduList        * aSynonymInfoList)
 {
     //BUG-20855
-    //PUBLIC SYNONYMì„ ì°¾ê¸° ìœ„í•œ ë¬´í•œ Recusive Callì„ ë°©ì§€í•˜ê¸° ìœ„í•´ ì›ë³¸ Synonym ì •ë³´ë¥¼ ìž„ì‹œ ì €ìž¥í•œë‹¤.
-    //ìž„ì‹œ ì €ìž¥ëœ ê°ì²´ëŠ” ìƒˆë¡œìš´ Public Synonymì„ ì–»ì–´ì™”ì„ ë•Œ ë¹„êµë¥¼ ìœ„í•´ ì“°ì—¬ì§„ë‹¤.
+    //PUBLIC SYNONYMÀ» Ã£±â À§ÇÑ ¹«ÇÑ Recusive CallÀ» ¹æÁöÇÏ±â À§ÇØ ¿øº» Synonym Á¤º¸¸¦ ÀÓ½Ã ÀúÀåÇÑ´Ù.
+    //ÀÓ½Ã ÀúÀåµÈ °´Ã¼´Â »õ·Î¿î Public SynonymÀ» ¾ò¾î¿ÔÀ» ¶§ ºñ±³¸¦ À§ÇØ ¾²¿©Áø´Ù.
     qcmSynonymInfo sSynonymInfo;
     qcNamePosition sUserName;
     qcNamePosition sObjectName;
@@ -2277,7 +2278,7 @@ IDE_RC qcmSynonym::resolvePkgInternal(
         else
         {
             /* BUG- 39066
-               ë™ì¼í•œ ì´ë¦„ì„ ê°€ì§„ ê°ì²´ê°€ ì¡´ìž¬í•˜ëŠ”ì§€ public synonym ì°¾ê¸° ì „ì— ì²´í¬ */
+               µ¿ÀÏÇÑ ÀÌ¸§À» °¡Áø °´Ã¼°¡ Á¸ÀçÇÏ´ÂÁö public synonym Ã£±â Àü¿¡ Ã¼Å© */
             IDE_TEST( qcm::existObject( aStatement,
                                         ID_FALSE,
                                         sUserName,
@@ -2632,7 +2633,7 @@ IDE_RC qcmSynonym::resolveObjectInternal(
                       != IDE_SUCCESS );
 
             // BUG-20908
-            // Synonymì˜ Circularity Checkë¥¼ ìœ„í•´ Listì— ì¶”ê°€í•œë‹¤.
+            // SynonymÀÇ Circularity Check¸¦ À§ÇØ List¿¡ Ãß°¡ÇÑ´Ù.
             IDE_TEST( addToSynonymInfoList( aStatement,
                                             aSynonymInfoList,
                                             aSynonymInfo )
@@ -2696,18 +2697,18 @@ IDE_RC qcmSynonym::addSynonymToRelatedObject(
     }
     else
     {
-        // 2. í”„ë¡œì‹œì € ìƒì„±ì‹œì— ìµœì´ˆ PVO í•˜ëŠ” ê²½ìš°
+        // 2. ÇÁ·Î½ÃÀú »ý¼º½Ã¿¡ ÃÖÃÊ PVO ÇÏ´Â °æ¿ì
         if( aStatement->spvEnv->createProc->procInfo == NULL )
         {
             sMemory = aStatement->myPlan->qmpMem;
         }
         else
         {
-            // 3. í”„ë¡œì‹œì € ìƒì„±ì‹œì— ë‘ë²ˆì§¸ë¡œ PVO í•˜ëŠ” ê²½ìš°
-            // qsxProcInfoì˜ relatedObjectsì— í• ë‹¹ë˜ëŠ” ë©”ëª¨ë¦¬ëŠ” qmsMem ì´ ì‚¬ìš©
-            // ë˜ì–´ì•¼ í•œë‹¤.
-            // ê° statementì˜ qmpMemì´ ì‚¬ìš©ë˜ëŠ” ê²½ìš° í•´ë‹¹ statementê°€ ìž¬ë¹Œë“œ
-            // ë˜ë©´ ì´ì „ì— í• ë‹¹í•œ ë©”ëª¨ë¦¬ ê³µê°„ì„ ëª¨ë‘ í•´ì œí•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+            // 3. ÇÁ·Î½ÃÀú »ý¼º½Ã¿¡ µÎ¹øÂ°·Î PVO ÇÏ´Â °æ¿ì
+            // qsxProcInfoÀÇ relatedObjects¿¡ ÇÒ´çµÇ´Â ¸Þ¸ð¸®´Â qmsMem ÀÌ »ç¿ë
+            // µÇ¾î¾ß ÇÑ´Ù.
+            // °¢ statementÀÇ qmpMemÀÌ »ç¿ëµÇ´Â °æ¿ì ÇØ´ç statement°¡ Àçºôµå
+            // µÇ¸é ÀÌÀü¿¡ ÇÒ´çÇÑ ¸Þ¸ð¸® °ø°£À» ¸ðµÎ ÇØÁ¦ÇÏ±â ¶§¹®ÀÌ´Ù.
             sMemory = aStatement->spvEnv->createProc->procInfo->qmsMem;
         }
     }
@@ -2845,8 +2846,8 @@ IDE_RC qcmSynonym::checkSynonymCircularity(
  * Description : check synonym has circualr reference (BUG-20908)
  *
  * Implementation :
- *     1. íŒŒë¼ë©”í„°ë¡œ ë°›ì€ Synonymì´ Listì— ìžˆëŠ”ì§€ í™•ì¸í•œë‹¤.
- *     2. Synonymì˜ ì—°ì† Resolveê°€ 64ë²ˆ ì´ìƒ ë°˜ë³µë˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+ *     1. ÆÄ¶ó¸ÞÅÍ·Î ¹ÞÀº SynonymÀÌ List¿¡ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+ *     2. SynonymÀÇ ¿¬¼Ó Resolve°¡ 64¹ø ÀÌ»ó ¹Ýº¹µÇ´ÂÁö °Ë»çÇÑ´Ù.
  *
  ***********************************************************************/
     iduList              * sIterator;
@@ -2856,13 +2857,13 @@ IDE_RC qcmSynonym::checkSynonymCircularity(
     IDE_DASSERT( aList != NULL );
     IDE_DASSERT( aSynonymInfo != NULL );
 
-    // Synonym Info List ì•ˆì— ë™ì¼í•œ ê°ì²´ë¥¼ ì°¸ì¡°í•˜ëŠ” Synonymì´ ìžˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+    // Synonym Info List ¾È¿¡ µ¿ÀÏÇÑ °´Ã¼¸¦ ÂüÁ¶ÇÏ´Â SynonymÀÌ ÀÖ´ÂÁö °Ë»çÇÑ´Ù.
     IDU_LIST_ITERATE( aList, sIterator )
     {
-        // Synonym resolve ë‹¨ê³„ê°€ 64ë¥¼ ë„˜ì–´ì„¤ ê²½ìš° ì—ëŸ¬ ì²˜ë¦¬í•œë‹¤.
+        // Synonym resolve ´Ü°è°¡ 64¸¦ ³Ñ¾î¼³ °æ¿ì ¿¡·¯ Ã³¸®ÇÑ´Ù.
         if ( ++sCnt > QCM_MAX_RESOLVE_SYNONYM )
         {
-            // List Headerì— ë“¤ì–´ìžˆëŠ” Synonymì´ë¦„ì„ ì¶œë ¥í•œë‹¤.
+            // List Header¿¡ µé¾îÀÖ´Â SynonymÀÌ¸§À» Ãâ·ÂÇÑ´Ù.
             sqlInfo.setSourceInfo( aStatement, (qcNamePosition*)(aList->mObj) );
             IDE_RAISE( ERR_SYNONYM_RESOLVE_OVERFLOW );
         }
@@ -2871,7 +2872,7 @@ IDE_RC qcmSynonym::checkSynonymCircularity(
             // Nothing to do.
         }
 
-        // ë™ì¼í•œ ê°ì²´ë¥¼ ê°€ë¦¬í‚¤ëŠ” ë§í¬ê°€ ìžˆëŠ”ì§€ ê²€ì‚¬
+        // µ¿ÀÏÇÑ °´Ã¼¸¦ °¡¸®Å°´Â ¸µÅ©°¡ ÀÖ´ÂÁö °Ë»ç
         if ( ( idlOS::strMatch( aSynonymInfo->objectOwnerName,
                                 idlOS::strlen( aSynonymInfo->objectOwnerName ),
                                 ((qcmSynonymInfo*)sIterator->mObj)->objectOwnerName,
@@ -2881,7 +2882,7 @@ IDE_RC qcmSynonym::checkSynonymCircularity(
                                 ((qcmSynonymInfo*)sIterator->mObj)->objectName,
                                 idlOS::strlen( ((qcmSynonymInfo*)sIterator->mObj)->objectName ) ) == 0 ) )
         {
-            // List Headerì— ë“¤ì–´ìžˆëŠ” Synonymì´ë¦„ì„ ì¶œë ¥í•œë‹¤.
+            // List Header¿¡ µé¾îÀÖ´Â SynonymÀÌ¸§À» Ãâ·ÂÇÑ´Ù.
             sqlInfo.setSourceInfo( aStatement, (qcNamePosition*)(aList->mObj) );
             IDE_RAISE( ERR_CIRCULAR_SYNONYM );
         }
@@ -2925,13 +2926,13 @@ IDE_RC qcmSynonym::addToSynonymInfoList(
  * Description : add synonym to list for circular check (BUG-20908)
  *
  * Implementation :
- *     1. List Nodeì™€ ë“¤ì–´ê°ˆ Objectì¸ Synonym Infoì— ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•œë‹¤.
- *     2. Listì— ì¶”ê°€í•œë‹¤.
+ *     1. List Node¿Í µé¾î°¥ ObjectÀÎ Synonym Info¿¡ ¸Þ¸ð¸®¸¦ ÇÒ´çÇÑ´Ù.
+ *     2. List¿¡ Ãß°¡ÇÑ´Ù.
  *
  ***********************************************************************/
     iduListNode *sNode = NULL;
 
-    // Node ê³µê°„ í• ë‹¹
+    // Node °ø°£ ÇÒ´ç
     IDU_FIT_POINT( "qcmSynonym::addToSynonymInfoList::alloc::sNode",
                     idERR_ABORT_InsufficientMemory );
 
@@ -2939,7 +2940,7 @@ IDE_RC qcmSynonym::addToSynonymInfoList(
                                             (void**)&(sNode))
               != IDE_SUCCESS);
 
-    // Synonym ê³µê°„ í• ë‹¹
+    // Synonym °ø°£ ÇÒ´ç
     IDU_FIT_POINT( "qcmSynonym::addToSynonymInfoList::alloc::mObj",
                     idERR_ABORT_InsufficientMemory );
 
@@ -2947,10 +2948,10 @@ IDE_RC qcmSynonym::addToSynonymInfoList(
                                             (void**)&(sNode->mObj))
               != IDE_SUCCESS);
 
-    // Synonym ì •ë³´ ë³µì‚¬
+    // Synonym Á¤º¸ º¹»ç
     *((qcmSynonymInfo*)sNode->mObj) = *aSynonymInfo;
 
-    // Listì˜ ë§ˆì§€ë§‰ì— Nodeë¥¼ ì¶”ê°€í•œë‹¤.
+    // ListÀÇ ¸¶Áö¸·¿¡ Node¸¦ Ãß°¡ÇÑ´Ù.
     IDU_LIST_ADD_FIRST( aList, sNode );
 
     return IDE_SUCCESS;
@@ -2981,8 +2982,8 @@ IDE_RC qcmSynonym::resolveLibrary(
     aSynonymInfo->isPublicSynonym = ID_FALSE;
 
     // BUG-20908
-    // Synonymì •ë³´ë¥¼ ì €ìž¥í•  List ì´ˆê¸°í™”
-    // ì˜¤ë¥˜ ë°œìƒì‹œ ì—ëŸ¬ ë©”ì„¸ì§€ì— ì“°ë„ë¡ Synonymì˜ ì´ë¦„ì„ ë„£ì–´ì¤€ë‹¤.
+    // SynonymÁ¤º¸¸¦ ÀúÀåÇÒ List ÃÊ±âÈ­
+    // ¿À·ù ¹ß»ý½Ã ¿¡·¯ ¸Þ¼¼Áö¿¡ ¾²µµ·Ï SynonymÀÇ ÀÌ¸§À» ³Ö¾îÁØ´Ù.
     IDU_LIST_INIT_OBJ( &sSynonymInfoList, &aObjectName );
 
     if (QC_IS_NULL_NAME(aUserName) == ID_TRUE)
@@ -3018,7 +3019,7 @@ IDE_RC qcmSynonym::resolveLibrary(
 
         if ( sCheckPublic == ID_TRUE )
         {
-            // SESSION_USER_IDë¥¼ ì´ìš©í–ˆë‹¤ë©´ environmentë¥¼ ê¸°ë¡í•œë‹¤.
+            // SESSION_USER_ID¸¦ ÀÌ¿ëÇß´Ù¸é environment¸¦ ±â·ÏÇÑ´Ù.
             qcgPlan::registerPlanProperty( aStatement,
                                            PLAN_PROPERTY_USER_ID );
         }
@@ -3039,7 +3040,7 @@ IDE_RC qcmSynonym::resolveLibrary(
         if( ID_TRUE == *aExist )
         {
             // BUG-20908
-            // Synonymì˜ Circularity Checkë¥¼ ìœ„í•´ Listì— ì¶”ê°€í•œë‹¤.
+            // SynonymÀÇ Circularity Check¸¦ À§ÇØ List¿¡ Ãß°¡ÇÑ´Ù.
             IDE_TEST( addToSynonymInfoList( aStatement,
                                             &sSynonymInfoList,
                                             aSynonymInfo )
@@ -3056,7 +3057,7 @@ IDE_RC qcmSynonym::resolveLibrary(
 
             if ( sCheckPublic == ID_TRUE )
             {
-                // SESSION_USER_IDë¥¼ ì´ìš©í–ˆë‹¤ë©´ environmentë¥¼ ê¸°ë¡í•œë‹¤.
+                // SESSION_USER_ID¸¦ ÀÌ¿ëÇß´Ù¸é environment¸¦ ±â·ÏÇÑ´Ù.
                 qcgPlan::registerPlanProperty( aStatement,
                                                PLAN_PROPERTY_USER_ID );
             }
@@ -3075,7 +3076,7 @@ IDE_RC qcmSynonym::resolveLibrary(
             else
             {
                 /* BUG- 39066
-                   ë™ì¼í•œ ì´ë¦„ì„ ê°€ì§„ ê°ì²´ê°€ ì¡´ìž¬í•˜ëŠ”ì§€ public synonym ì°¾ê¸° ì „ì— ì²´í¬ */
+                   µ¿ÀÏÇÑ ÀÌ¸§À» °¡Áø °´Ã¼°¡ Á¸ÀçÇÏ´ÂÁö public synonym Ã£±â Àü¿¡ Ã¼Å© */
                 IDE_TEST( qcm::existObject( aStatement,
                                             ID_FALSE,
                                             aUserName,
@@ -3102,7 +3103,7 @@ IDE_RC qcmSynonym::resolveLibrary(
                         aSynonymInfo->isPublicSynonym = ID_TRUE;
 
                         // BUG-20908
-                        // Synonymì˜ Circularity Checkë¥¼ ìœ„í•´ Listì— ì¶”ê°€í•œë‹¤.
+                        // SynonymÀÇ Circularity Check¸¦ À§ÇØ List¿¡ Ãß°¡ÇÑ´Ù.
                         IDE_TEST( addToSynonymInfoList( aStatement,
                                                         &sSynonymInfoList,
                                                         aSynonymInfo )
@@ -3151,8 +3152,8 @@ IDE_RC qcmSynonym::resolveLibraryInternal(
     idBool sExist = ID_FALSE;
 
     //BUG-20855
-    //PUBLIC SYNONYMì„ ì°¾ê¸° ìœ„í•œ ë¬´í•œ Recusive Callì„ ë°©ì§€í•˜ê¸° ìœ„í•´ ì›ë³¸ Synonym ì •ë³´ë¥¼ ìž„ì‹œ ì €ìž¥í•œë‹¤.
-    //ìž„ì‹œ ì €ìž¥ëœ ê°ì²´ëŠ” ìƒˆë¡œìš´ Public Synonymì„ ì–»ì–´ì™”ì„ ë•Œ ë¹„êµë¥¼ ìœ„í•´ ì“°ì—¬ì§„ë‹¤.
+    //PUBLIC SYNONYMÀ» Ã£±â À§ÇÑ ¹«ÇÑ Recusive CallÀ» ¹æÁöÇÏ±â À§ÇØ ¿øº» Synonym Á¤º¸¸¦ ÀÓ½Ã ÀúÀåÇÑ´Ù.
+    //ÀÓ½Ã ÀúÀåµÈ °´Ã¼´Â »õ·Î¿î Public SynonymÀ» ¾ò¾î¿ÔÀ» ¶§ ºñ±³¸¦ À§ÇØ ¾²¿©Áø´Ù.
     qcmSynonymInfo sSynonymInfo;
     qcNamePosition sUserName;
     qcNamePosition sObjectName;
@@ -3229,7 +3230,7 @@ IDE_RC qcmSynonym::resolveLibraryInternal(
         else
         {
             /* BUG- 39066
-               ë™ì¼í•œ ì´ë¦„ì„ ê°€ì§„ ê°ì²´ê°€ ì¡´ìž¬í•˜ëŠ”ì§€ public synonym ì°¾ê¸° ì „ì— ì²´í¬ */
+               µ¿ÀÏÇÑ ÀÌ¸§À» °¡Áø °´Ã¼°¡ Á¸ÀçÇÏ´ÂÁö public synonym Ã£±â Àü¿¡ Ã¼Å© */
             IDE_TEST( qcm::existObject( aStatement,
                                         ID_FALSE,
                                         sUserName,
@@ -3311,3 +3312,1150 @@ IDE_RC qcmSynonym::resolveLibraryInternal(
 
     return IDE_FAILURE;
 }
+
+/* BUG-48594 */
+IDE_RC qcmSynonym::resolveTableViewQueue4PlanCache( qcStatement     * aStatement,
+                                                    qcNamePosition    aUserName,
+                                                    qcNamePosition    aObjectName,
+                                                    idBool          * aExist,
+                                                    qcmSynonymInfo  * aSynonymInfo,
+                                                    void           ** aTableHandle )
+{
+/***********************************************************************
+ *
+ * Description : get table info with name
+ *
+ * Implementation :
+ *     1. search qcmTableInfo
+ *     2. search private synonym
+ *     3. search public synonym
+ *
+ ***********************************************************************/
+    idBool             sCheckPublic =  ID_FALSE;
+    SChar              sSynonymOwnerName[QC_MAX_OBJECT_NAME_LEN + 1];
+    UInt               sSynonymOwnerID;
+    SChar              sObjectName[QC_MAX_OBJECT_NAME_LEN + 1];
+    UInt               sTmpUserID;
+    qsOID              sTmpObjectID = QS_EMPTY_OID;
+    idBool             sExistObject = ID_FALSE;
+    UInt               sUserID = 0;
+    qcmTableInfo     * sTableInfo = NULL;
+    smSCN              sSCN;
+    qcmSynonymArr      sSynonymArr;
+
+    *aExist = ID_FALSE;
+
+    aSynonymInfo->isSynonymName = ID_FALSE;
+    aSynonymInfo->isPublicSynonym = ID_FALSE;
+    sSynonymArr.mCount = 0;
+
+    if (QC_IS_NULL_NAME(aUserName) == ID_TRUE)
+    {
+        // have to check private & public synonym.
+        sUserID = QCG_GET_SESSION_USER_ID(aStatement);
+        sCheckPublic = ID_TRUE;
+    }
+    else
+    {
+        // only check private synonym.
+        IDE_TEST(qcmUser::getUserID( aStatement, aUserName, &sUserID)
+                 != IDE_SUCCESS);
+    }
+
+    IDE_TEST_CONT( QC_IS_NULL_NAME( aObjectName ) == ID_TRUE,
+                   NORMAL_EXIT );
+
+    idlOS::memcpy( &sObjectName,
+                   aObjectName.stmtText + aObjectName.offset,
+                   aObjectName.size );
+    sObjectName[aObjectName.size] = '\0';
+
+    // PROJ-2083 DUAL Table
+    if ( ( idlOS::strlen( sObjectName ) >= 2 ) &&
+         ( ( idlOS::strMatch( sObjectName, 2, "X$", 2 ) == 0 ) ||
+           ( idlOS::strMatch( sObjectName, 2, "D$", 2 ) == 0 ) ||
+           ( idlOS::strMatch( sObjectName, 2, "S$", 2 ) == 0 ) ||
+           ( idlOS::strMatch( sObjectName, 2, "V$", 2 ) == 0 ) ) )
+    {
+        if ( qcmFixedTable::getTableInfo( aStatement,
+                                          aObjectName,
+                                          &sTableInfo,
+                                          &sSCN,
+                                          aTableHandle )
+            == IDE_SUCCESS )
+        {
+            *aExist = ID_TRUE;
+        }
+    }
+    else
+    {
+        if ( qcm::getTableInfo( aStatement,
+                                sUserID,
+                                aObjectName,
+                                &sTableInfo,
+                                &sSCN,
+                                aTableHandle ) == IDE_SUCCESS )
+        {
+            //gettableinfo success.
+            *aExist     = ID_TRUE;
+        }
+    }
+
+    if ( *aExist == ID_FALSE )
+    {
+        IDE_CLEAR();
+
+        // check private synonym
+        IDE_TEST(getSynonym(aStatement,
+                            sUserID,
+                            aObjectName.stmtText + aObjectName.offset,
+                            aObjectName.size,
+                            aSynonymInfo,
+                            aExist) != IDE_SUCCESS);
+
+        if ( ID_TRUE == *aExist )
+        {
+            IDE_TEST(getSynonymOwnerID(aStatement,
+                                       sUserID,
+                                       aObjectName.stmtText + aObjectName.offset,
+                                       aObjectName.size,
+                                       &sSynonymOwnerID,
+                                       aExist) != IDE_SUCCESS);
+
+            IDE_TEST( qcmUser::getUserName(aStatement,
+                                           sSynonymOwnerID,
+                                           sSynonymOwnerName)
+                      != IDE_SUCCESS );
+
+            if ( addToSynonymArr( &sSynonymArr, aSynonymInfo ) == IDE_SUCCESS )
+            {
+                // BUG-25587
+                // resolve private synonym
+                IDE_TEST( resolveTableViewQueueInternal4PlanCache( aStatement,
+                                                                   aSynonymInfo,
+                                                                   &sTableInfo,
+                                                                   &sUserID,
+                                                                   &sSCN,
+                                                                   aExist,
+                                                                   aTableHandle,
+                                                                   &sSynonymArr )
+                          != IDE_SUCCESS);
+            }
+            else
+            {
+                *aExist = ID_FALSE;
+            }
+        }
+        else
+        {
+            if ( sCheckPublic == ID_FALSE)
+            {
+                *aExist = ID_FALSE;
+            }
+            else
+            {
+                /* BUG- 39066
+                   µ¿ÀÏÇÑ ÀÌ¸§À» °¡Áø °´Ã¼°¡ Á¸ÀçÇÏ´ÂÁö public synonym Ã£±â Àü¿¡ Ã¼Å© */
+                IDE_TEST( qcm::existObject( aStatement,
+                                            ID_FALSE,
+                                            aUserName,
+                                            aObjectName,
+                                            QS_OBJECT_MAX,
+                                            &sTmpUserID,
+                                            &sTmpObjectID,
+                                            &sExistObject )
+                          != IDE_SUCCESS );
+
+                if ( sExistObject == ID_FALSE )
+                {
+                    // check public synonym
+                    IDE_TEST( getSynonym( aStatement,
+                                          QC_PUBLIC_USER_ID,
+                                          aObjectName.stmtText + aObjectName.offset,
+                                          aObjectName.size,
+                                          aSynonymInfo,
+                                          aExist )
+                              != IDE_SUCCESS);
+
+                    if ( ID_TRUE == *aExist )
+                    {
+                        aSynonymInfo->isPublicSynonym = ID_TRUE;
+
+                        if ( addToSynonymArr( &sSynonymArr, aSynonymInfo ) == IDE_SUCCESS )
+                        {
+                            // resolve public synonym
+                            IDE_TEST( resolveTableViewQueueInternal4PlanCache( aStatement,
+                                                                               aSynonymInfo,
+                                                                               &sTableInfo,
+                                                                               &sUserID,
+                                                                               &sSCN,
+                                                                               aExist,
+                                                                               aTableHandle,
+                                                                               &sSynonymArr )
+                                      != IDE_SUCCESS );
+                        }
+                        else
+                        {
+                            *aExist = ID_FALSE;
+                        }
+                    }
+                }
+                else
+                {
+                    *aExist = ID_FALSE;
+                }
+            }
+        }
+    }
+
+    IDE_EXCEPTION_CONT( NORMAL_EXIT );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    *aExist = ID_FALSE;
+
+    return IDE_FAILURE;
+}
+
+/* BUG-48594 */
+IDE_RC qcmSynonym::resolveTableViewQueueInternal4PlanCache( qcStatement      * aStatement,
+                                                            qcmSynonymInfo   * aSynonymInfo,
+                                                            qcmTableInfo    ** aTableInfo,
+                                                            UInt             * aUserID,
+                                                            smSCN            * aSCN,
+                                                            idBool           * aExist,
+                                                            void            ** aTableHandle,
+                                                            qcmSynonymArr    * aSynonymArr )
+{
+    qcmSynonymInfo   sSynonymInfo;
+    SChar          * sObjectName;
+    qcNamePosition   sUserNamePos;
+    qcNamePosition   sObjectNamePos;
+    UInt             sTmpUserID;
+    qsOID            sTmpObjectID = QS_EMPTY_OID;
+    idBool           sExistObject = ID_FALSE;
+
+    sUserNamePos.stmtText = aSynonymInfo->objectOwnerName;
+    sUserNamePos.offset   = 0;
+    sUserNamePos.size     = idlOS::strlen( aSynonymInfo->objectOwnerName );
+
+    sObjectNamePos.stmtText = aSynonymInfo->objectName;
+    sObjectNamePos.offset   = 0;
+    sObjectNamePos.size     = idlOS::strlen(aSynonymInfo->objectName);
+
+    *aExist = ID_FALSE;
+
+    idlOS::memcpy( &sSynonymInfo, aSynonymInfo, ID_SIZEOF(qcmSynonymInfo) );
+
+    IDE_TEST(qcmUser::getUserID( aStatement,
+                                 aSynonymInfo->objectOwnerName,
+                                 idlOS::strlen( aSynonymInfo->objectOwnerName ),
+                                 aUserID )
+             != IDE_SUCCESS);
+
+    sObjectName = aSynonymInfo->objectName;
+
+    // PROJ-2083 DUAL Table
+    if ( ( idlOS::strlen( sObjectName ) >= 2 ) &&
+         ( ( idlOS::strMatch( sObjectName, 2, "X$", 2 ) == 0 ) ||
+           ( idlOS::strMatch( sObjectName, 2, "D$", 2 ) == 0 ) ||
+           ( idlOS::strMatch( sObjectName, 2, "S$", 2 ) == 0 ) ||
+           ( idlOS::strMatch( sObjectName, 2, "V$", 2 ) == 0 ) ) )
+    {
+        if ( qcmFixedTable::getTableInfo( aStatement,
+                                          (UChar*)aSynonymInfo->objectName,
+                                          idlOS::strlen(aSynonymInfo->objectName),
+                                          aTableInfo,
+                                          aSCN,
+                                          aTableHandle )
+             == IDE_SUCCESS )
+        {
+            *aExist     = ID_TRUE;
+        }
+    }
+    else
+    {
+        if ( qcm::getTableInfo(aStatement,
+                               *aUserID,
+                               (UChar*)aSynonymInfo->objectName,
+                               idlOS::strlen(aSynonymInfo->objectName),
+                               aTableInfo,
+                               aSCN,
+                               aTableHandle) == IDE_SUCCESS )
+        {
+            //gettableinfo success.
+            *aExist = ID_TRUE;
+        }
+    }
+
+    if ( *aExist == ID_FALSE )
+    {
+        IDE_CLEAR();
+
+        // check private synonym
+        IDE_TEST(getSynonym(aStatement,
+                            *aUserID,
+                            aSynonymInfo->objectName,
+                            idlOS::strlen(aSynonymInfo->objectName),
+                            aSynonymInfo,
+                            aExist) != IDE_SUCCESS);
+
+        if ( ID_TRUE == *aExist )
+        {
+            if ( checkSynonymCircularityArr( aSynonymArr,
+                                             aSynonymInfo )
+                 == ID_TRUE )
+            {
+                *aExist = ID_FALSE;
+            }
+        }
+
+        if ( ID_TRUE == *aExist )
+        {
+            if ( addToSynonymArr( aSynonymArr, aSynonymInfo ) == IDE_SUCCESS )
+            {
+                // resolve private synonym
+                IDE_TEST( resolveTableViewQueueInternal4PlanCache( aStatement,
+                                                                   aSynonymInfo,
+                                                                   aTableInfo,
+                                                                   aUserID,
+                                                                   aSCN,
+                                                                   aExist,
+                                                                   aTableHandle,
+                                                                   aSynonymArr )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                *aExist = ID_FALSE;
+            }
+        }
+        else
+        {
+            /* BUG- 39066
+               µ¿ÀÏÇÑ ÀÌ¸§À» °¡Áø °´Ã¼°¡ Á¸ÀçÇÏ´ÂÁö public synonym Ã£±â Àü¿¡ Ã¼Å© */
+            IDE_TEST( qcm::existObject( aStatement,
+                                        ID_FALSE,
+                                        sUserNamePos,
+                                        sObjectNamePos,
+                                        QS_OBJECT_MAX,
+                                        &sTmpUserID,
+                                        &sTmpObjectID,
+                                        &sExistObject )
+                      != IDE_SUCCESS );
+
+            if ( sExistObject == ID_FALSE )
+            {
+                // check public synonym
+                IDE_TEST(getSynonym(aStatement,
+                                    QC_PUBLIC_USER_ID,
+                                    aSynonymInfo->objectName,
+                                    idlOS::strlen(aSynonymInfo->objectName),
+                                    aSynonymInfo,
+                                    aExist) != IDE_SUCCESS);
+
+                if ( *aExist == ID_TRUE )
+                {
+                    if ( checkSynonymCircularityArr( aSynonymArr,
+                                                     aSynonymInfo )
+                         == ID_TRUE )
+                    {
+                        *aExist = ID_FALSE;
+                    }
+                }
+
+                if ( ID_TRUE == *aExist )
+                {
+                    if ( addToSynonymArr( aSynonymArr, aSynonymInfo ) == IDE_SUCCESS )
+                    {
+                        //BUG-20855
+                        if ( ( idlOS::strMatch( aSynonymInfo->objectOwnerName,
+                                                idlOS::strlen( aSynonymInfo->objectOwnerName ),
+                                                sSynonymInfo.objectOwnerName,
+                                                idlOS::strlen( sSynonymInfo.objectOwnerName ) ) == 0 ) &&
+                             ( idlOS::strMatch( aSynonymInfo->objectName,
+                                                idlOS::strlen(aSynonymInfo->objectName),
+                                                sSynonymInfo.objectName,
+                                                idlOS::strlen( sSynonymInfo.objectName ) ) == 0 ) )
+                        {
+                            // no public synonym matched
+                            *aExist = ID_FALSE;
+                        }
+                        else
+                        {
+                            IDE_TEST( resolveTableViewQueueInternal4PlanCache( aStatement,
+                                                                               aSynonymInfo,
+                                                                               aTableInfo,
+                                                                               aUserID,
+                                                                               aSCN,
+                                                                               aExist,
+                                                                               aTableHandle,
+                                                                               aSynonymArr )
+                                      != IDE_SUCCESS );
+                        }
+                    }
+                    else
+                    {
+                        *aExist = ID_FALSE;
+                    }
+                }
+                else
+                {
+                    // no public synonym
+                    // do nothing
+                }
+            }
+            else
+            {
+                *aExist = ID_FALSE;
+            }
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    *aExist = ID_FALSE;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qcmSynonym::resolveSequence4PlanCache( qcStatement     * aStatement,
+                                              qcNamePosition    aUserName,
+                                              qcNamePosition    aObjectName,
+                                              qcmSequenceInfo * aSequenceInfo,
+                                              idBool          * aExist,
+                                              qcmSynonymInfo  * aSynonymInfo,
+                                              void           ** aSequenceHandle )
+{
+/***********************************************************************
+ *
+ * Description :
+ *     BUG-16980
+ *     get sequence info with name
+ *
+ * Implementation :
+ *     1. search sys_tables_
+ *     2. search private synonym
+ *     3. search public synonym
+ *
+ ***********************************************************************/
+    idBool           sCheckPublic =  ID_FALSE;
+    UInt             sTmpUserID;
+    qsOID            sTmpObjectID = QS_EMPTY_OID;
+    idBool           sExistObject = ID_FALSE;
+    UInt             sUserID = 0;
+    qcmSynonymArr    sSynonymArr;
+
+    aSynonymInfo->isSynonymName = ID_FALSE;
+    aSynonymInfo->isPublicSynonym = ID_FALSE;
+    sSynonymArr.mCount = 0;
+
+    if ( QC_IS_NULL_NAME(aUserName) == ID_TRUE )
+    {
+        // have to check private & public synonym.
+        sUserID = QCG_GET_SESSION_USER_ID(aStatement);
+        sCheckPublic = ID_TRUE;
+    }
+    else
+    {
+        // only check private synonym.
+        IDE_TEST(qcmUser::getUserID( aStatement, aUserName, &sUserID )
+                 != IDE_SUCCESS);
+    }
+
+    if ( qcm::getSequenceInfo(aStatement,
+                              sUserID,
+                              (UChar*) aObjectName.stmtText + aObjectName.offset,
+                              aObjectName.size,
+                              aSequenceInfo,
+                              aSequenceHandle) == IDE_SUCCESS )
+    {
+        *aExist = ID_TRUE;
+    }
+    else
+    {
+        IDE_CLEAR();
+        // check private synonym
+        IDE_TEST(getSynonym(aStatement,
+                            sUserID,
+                            aObjectName.stmtText + aObjectName.offset,
+                            aObjectName.size,
+                            aSynonymInfo,
+                            aExist) != IDE_SUCCESS);
+
+        if ( ID_TRUE == *aExist)
+        {
+            if ( addToSynonymArr( &sSynonymArr, aSynonymInfo ) == IDE_SUCCESS )
+            {
+                IDE_TEST( resolveSequenceInternal4PlanCache( aStatement,
+                                                             aSynonymInfo,
+                                                             aSequenceInfo,
+                                                             &sUserID,
+                                                             aExist,
+                                                             aSequenceHandle,
+                                                             &sSynonymArr )
+                          != IDE_SUCCESS);
+            }
+            else
+            {
+                *aExist = ID_FALSE;
+            }
+        }
+        else
+        {
+            if ( sCheckPublic == ID_FALSE )
+            {
+                *aExist = ID_FALSE;
+            }
+            else
+            {
+                /* BUG- 39066
+                   µ¿ÀÏÇÑ ÀÌ¸§À» °¡Áø °´Ã¼°¡ Á¸ÀçÇÏ´ÂÁö public synonym Ã£±â Àü¿¡ Ã¼Å© */
+                IDE_TEST( qcm::existObject( aStatement,
+                                            ID_FALSE,
+                                            aUserName,
+                                            aObjectName,
+                                            QS_OBJECT_MAX,
+                                            &sTmpUserID,
+                                            &sTmpObjectID,
+                                            &sExistObject )
+                          != IDE_SUCCESS );
+
+                if ( sExistObject == ID_FALSE )
+                {
+                    // check public synonym
+                    IDE_TEST( getSynonym( aStatement,
+                                          QC_PUBLIC_USER_ID,
+                                          aObjectName.stmtText + aObjectName.offset,
+                                          aObjectName.size,
+                                          aSynonymInfo,
+                                          aExist)
+                               != IDE_SUCCESS);
+
+                    if ( ID_TRUE == *aExist )
+                    {
+                        aSynonymInfo->isPublicSynonym = ID_TRUE;
+
+                        if ( addToSynonymArr( &sSynonymArr, aSynonymInfo ) == IDE_SUCCESS )
+                        {
+                            // resolve public synonym
+                            IDE_TEST( resolveSequenceInternal4PlanCache( aStatement,
+                                                                         aSynonymInfo,
+                                                                         aSequenceInfo,
+                                                                         &sUserID,
+                                                                         aExist,
+                                                                         aSequenceHandle,
+                                                                         &sSynonymArr )
+                                      != IDE_SUCCESS);
+                        }
+                        else
+                        {
+                            *aExist = ID_FALSE;
+                        }
+                    }
+                    else
+                    {
+                        // no public synonym
+                        // do nothing
+                    }
+                }
+                else
+                {
+                    *aExist = ID_FALSE;
+                }
+            }
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    *aExist = ID_FALSE;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qcmSynonym::resolveSequenceInternal4PlanCache( qcStatement      * aStatement,
+                                                      qcmSynonymInfo   * aSynonymInfo,
+                                                      qcmSequenceInfo  * aSequenceInfo,
+                                                      UInt             * aUserID,
+                                                      idBool           * aExist,
+                                                      void            ** aSequenceHandle,
+                                                      qcmSynonymArr    * aSynonymArr )
+{
+    qcmSynonymInfo   sSynonymInfo;
+    qcNamePosition   sUserName;
+    qcNamePosition   sObjectName;
+    UInt             sTmpUserID;
+    qsOID            sTmpObjectID = QS_EMPTY_OID;
+    idBool           sExistObject = ID_FALSE;
+
+    sUserName.stmtText = aSynonymInfo->objectOwnerName;
+    sUserName.offset   = 0;
+    sUserName.size     = idlOS::strlen( aSynonymInfo->objectOwnerName );
+
+    sObjectName.stmtText = aSynonymInfo->objectName;
+    sObjectName.offset   = 0;
+    sObjectName.size     = idlOS::strlen(aSynonymInfo->objectName);
+
+    idlOS::memcpy( &sSynonymInfo, aSynonymInfo, ID_SIZEOF(qcmSynonymInfo) );
+
+    IDE_TEST(qcmUser::getUserID( aStatement,
+                                 aSynonymInfo->objectOwnerName,
+                                 idlOS::strlen( aSynonymInfo->objectOwnerName ),
+                                 aUserID )
+             != IDE_SUCCESS);
+
+    if ( qcm::getSequenceInfo(aStatement,
+                              *aUserID,
+                              (UChar*)aSynonymInfo->objectName,
+                              idlOS::strlen(aSynonymInfo->objectName),
+                              aSequenceInfo,
+                              aSequenceHandle) == IDE_SUCCESS )
+    {
+        *aExist = ID_TRUE;
+    }
+    else
+    {
+        IDE_CLEAR();
+        // check private synonym
+        IDE_TEST(getSynonym(aStatement,
+                            *aUserID,
+                            aSynonymInfo->objectName,
+                            idlOS::strlen(aSynonymInfo->objectName),
+                            aSynonymInfo,
+                            aExist) != IDE_SUCCESS);
+
+        if ( ID_TRUE == *aExist )
+        {
+            if ( checkSynonymCircularityArr( aSynonymArr,
+                                             aSynonymInfo )
+                 == ID_TRUE )
+            {
+                *aExist = ID_FALSE;
+            }
+        }
+
+        if ( ID_TRUE == *aExist )
+        {
+            if ( addToSynonymArr( aSynonymArr, aSynonymInfo ) == IDE_SUCCESS )
+            {
+                // resolve private synonym
+                IDE_TEST( resolveSequenceInternal4PlanCache( aStatement,
+                                                             aSynonymInfo,
+                                                             aSequenceInfo,
+                                                             aUserID,
+                                                             aExist,
+                                                             aSequenceHandle,
+                                                             aSynonymArr )
+                           != IDE_SUCCESS);
+            }
+            else
+            {
+                *aExist = ID_FALSE;
+            }
+        }
+        else
+        {
+            /* BUG- 39066
+               µ¿ÀÏÇÑ ÀÌ¸§À» °¡Áø °´Ã¼°¡ Á¸ÀçÇÏ´ÂÁö public synonym Ã£±â Àü¿¡ Ã¼Å© */
+            IDE_TEST( qcm::existObject( aStatement,
+                                        ID_FALSE,
+                                        sUserName,
+                                        sObjectName,
+                                        QS_OBJECT_MAX,
+                                        &sTmpUserID,
+                                        &sTmpObjectID,
+                                        &sExistObject )
+                      != IDE_SUCCESS );
+
+            if ( sExistObject == ID_FALSE  )
+            {
+                // check public synonym
+                IDE_TEST(getSynonym(aStatement,
+                                    QC_PUBLIC_USER_ID,
+                                    aSynonymInfo->objectName,
+                                    idlOS::strlen(aSynonymInfo->objectName),
+                                    aSynonymInfo,
+                                    aExist) != IDE_SUCCESS);
+
+                if ( ID_TRUE == *aExist )
+                {
+                    if ( checkSynonymCircularityArr( aSynonymArr,
+                                                     aSynonymInfo )
+                         == ID_TRUE )
+                    {
+                        *aExist = ID_FALSE;
+                    }
+                }
+
+                if ( ID_TRUE == *aExist )
+                {
+                    if ( addToSynonymArr( aSynonymArr, aSynonymInfo ) == IDE_SUCCESS )
+                    {
+                        //BUG-20855
+                        if ( ( idlOS::strMatch( aSynonymInfo->objectOwnerName,
+                                                idlOS::strlen( aSynonymInfo->objectOwnerName ),
+                                                sSynonymInfo.objectOwnerName,
+                                                idlOS::strlen( sSynonymInfo.objectOwnerName ) ) == 0 ) &&
+                             ( idlOS::strMatch( aSynonymInfo->objectName,
+                                                idlOS::strlen(aSynonymInfo->objectName),
+                                                sSynonymInfo.objectName,
+                                                idlOS::strlen( sSynonymInfo.objectName ) ) == 0 ) )
+                        {
+                            // no public synonym matched
+                            *aExist = ID_FALSE;
+                        }
+                        else
+                        {
+
+                            IDE_TEST( resolveSequenceInternal4PlanCache( aStatement,
+                                                                         aSynonymInfo,
+                                                                         aSequenceInfo,
+                                                                         aUserID,
+                                                                         aExist,
+                                                                         aSequenceHandle,
+                                                                         aSynonymArr )
+                                      != IDE_SUCCESS );
+                        }
+                    }
+                    else
+                    {
+                        *aExist = ID_FALSE;
+                    }
+                }
+                else
+                {
+                    // no public synonym
+                    // do nothing
+                }
+            }
+            else
+            {
+                *aExist = ID_FALSE;
+            }
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    *aExist = ID_FALSE;
+
+    return IDE_FAILURE;
+}
+
+/* BUG-48594 */
+IDE_RC qcmSynonym::resolvePSM4PlanCache( qcStatement    * aStatement,
+                                         qcNamePosition   aUserName,
+                                         qcNamePosition   aObjectName,
+                                         qsOID          * aProcID,
+                                         idBool         * aExist,
+                                         qcmSynonymInfo * aSynonymInfo )
+{
+    idBool           sCheckPublic =  ID_FALSE;
+    UInt             sTmpUserID;
+    UInt             sUserID;
+    qsOID            sTmpObjectID = QS_EMPTY_OID;
+    idBool           sExistObject = ID_FALSE;
+    qcmSynonymArr    sSynonymArr;
+
+    aSynonymInfo->isSynonymName = ID_FALSE;
+    aSynonymInfo->isPublicSynonym = ID_FALSE;
+    sSynonymArr.mCount = 0;
+
+    if (QC_IS_NULL_NAME(aUserName) == ID_TRUE)
+    {
+        // have to check private & public synonym.
+        sUserID = QCG_GET_SESSION_USER_ID(aStatement);
+        sCheckPublic = ID_TRUE;
+    }
+    else
+    {
+        // only check private synonym.
+        IDE_TEST(qcmUser::getUserID( aStatement, aUserName, &sUserID )
+                 != IDE_SUCCESS);
+        sCheckPublic = ID_FALSE;
+    }
+
+    IDE_TEST( qcmProc::getProcExistWithEmptyByNamePtr( aStatement,
+                                                       sUserID,
+                                                       (SChar*) (aObjectName.stmtText +
+                                                                 aObjectName.offset),
+                                                       aObjectName.size,
+                                                       aProcID )
+              != IDE_SUCCESS);
+
+    if ( QS_EMPTY_OID != *aProcID )
+    {
+        *aExist = ID_TRUE;
+    }
+    else
+    {
+        // check private synonym
+        IDE_TEST(getSynonym(aStatement,
+                            sUserID,
+                            aObjectName.stmtText + aObjectName.offset,
+                            aObjectName.size,
+                            aSynonymInfo,
+                            aExist) != IDE_SUCCESS);
+
+        if ( ID_TRUE == *aExist )
+        {
+            if ( addToSynonymArr( &sSynonymArr, aSynonymInfo ) == IDE_SUCCESS )
+            {
+                // resolve private synonym
+                IDE_TEST(resolvePSMInternal4PlanCache( aStatement,
+                                                       aSynonymInfo,
+                                                       aProcID,
+                                                       &sUserID,
+                                                       aExist,
+                                                       &sSynonymArr )
+                         != IDE_SUCCESS);
+            }
+            else
+            {
+                *aExist = ID_FALSE;
+            }
+        }
+        else
+        {
+            if ( sCheckPublic == ID_FALSE )
+            {
+                *aExist = ID_FALSE;
+                // PSM not found
+            }
+            else
+            {
+                /* BUG-39048
+                   µ¿ÀÏÇÑ ÀÌ¸§À» °¡Áø °´Ã¼°¡ ÀÖ´Â È®ÀÎÇÊ¿ä */
+                IDE_TEST( qcm::existObject( aStatement,
+                                            ID_FALSE,
+                                            aUserName,
+                                            aObjectName,
+                                            QS_OBJECT_MAX,
+                                            &sTmpUserID,
+                                            &sTmpObjectID,
+                                            &sExistObject )
+                          != IDE_SUCCESS );
+
+                if ( sExistObject == ID_FALSE )
+                {
+                    // check public synonym
+                    IDE_TEST(getSynonym( aStatement,
+                                         QC_PUBLIC_USER_ID,
+                                         aObjectName.stmtText + aObjectName.offset,
+                                         aObjectName.size,
+                                         aSynonymInfo,
+                                         aExist)
+                             != IDE_SUCCESS);
+
+                    if ( ID_TRUE == *aExist )
+                    {
+                        aSynonymInfo->isPublicSynonym = ID_TRUE;
+
+                        if ( addToSynonymArr( &sSynonymArr, aSynonymInfo ) == IDE_SUCCESS )
+                        {
+                            // resolve public synonym
+                            IDE_TEST(resolvePSMInternal4PlanCache( aStatement,
+                                                                   aSynonymInfo,
+                                                                   aProcID,
+                                                                   &sUserID,
+                                                                   aExist,
+                                                                   &sSynonymArr )
+                                     != IDE_SUCCESS);
+                        }
+                        else
+                        {
+                            *aExist = ID_FALSE;
+                        }
+                    }
+                    else
+                    {
+                        // no public synonym
+                        // do nothing
+                    }
+                }
+                else
+                {
+                    *aExist = ID_FALSE;
+                }
+            }
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    *aExist = ID_FALSE;
+
+    return IDE_FAILURE;
+}
+
+/* BUG-48594 */
+IDE_RC qcmSynonym::resolvePSMInternal4PlanCache( qcStatement      * aStatement,
+                                                 qcmSynonymInfo   * aSynonymInfo,
+                                                 qsOID            * aProcID,
+                                                 UInt             * aUserID,
+                                                 idBool           * aExist,
+                                                 qcmSynonymArr    * aSynonymArr )
+{
+    qcmSynonymInfo   sSynonymInfo;
+    qcNamePosition   sUserName;
+    qcNamePosition   sObjectName;
+    UInt             sTmpUserID;
+    qsOID            sTmpObjectID = QS_EMPTY_OID;
+    idBool           sExistObject = ID_FALSE;
+
+    sUserName.stmtText = aSynonymInfo->objectOwnerName;
+    sUserName.offset   = 0;
+    sUserName.size     = idlOS::strlen( aSynonymInfo->objectOwnerName );
+
+    sObjectName.stmtText = aSynonymInfo->objectName;
+    sObjectName.offset   = 0;
+    sObjectName.size     = idlOS::strlen(aSynonymInfo->objectName);
+
+    idlOS::memcpy( &sSynonymInfo, aSynonymInfo, ID_SIZEOF(qcmSynonymInfo) );
+
+    IDE_TEST(qcmUser::getUserID( aStatement,
+                                 aSynonymInfo->objectOwnerName,
+                                 idlOS::strlen( aSynonymInfo->objectOwnerName ),
+                                 aUserID )
+             != IDE_SUCCESS);
+
+    IDE_TEST( qcmProc::getProcExistWithEmptyByNamePtr( aStatement,
+                                                       *aUserID,
+                                                       aSynonymInfo->objectName,
+                                                       idlOS::strlen(aSynonymInfo->objectName),
+                                                       aProcID )
+              != IDE_SUCCESS);
+
+    if ( QS_EMPTY_OID != *aProcID )
+    {
+        *aExist = ID_TRUE;
+    }
+    else
+    {
+        IDE_CLEAR();
+        // check private synonym
+        IDE_TEST(getSynonym(aStatement,
+                            *aUserID,
+                            aSynonymInfo->objectName,
+                            idlOS::strlen(aSynonymInfo->objectName),
+                            aSynonymInfo,
+                            aExist) != IDE_SUCCESS);
+
+        if ( ID_TRUE == *aExist )
+        {
+            if ( checkSynonymCircularityArr( aSynonymArr,
+                                             aSynonymInfo )
+                 == ID_TRUE )
+            {
+                *aExist = ID_FALSE;
+            }
+        }
+
+        if ( ID_TRUE == *aExist )
+        {
+            if ( addToSynonymArr( aSynonymArr, aSynonymInfo ) == IDE_SUCCESS )
+            {
+                // resolve private synonym
+                IDE_TEST( resolvePSMInternal4PlanCache( aStatement,
+                                                        aSynonymInfo,
+                                                        aProcID,
+                                                        aUserID,
+                                                        aExist,
+                                                        aSynonymArr )
+                          != IDE_SUCCESS);
+            }
+            else
+            {
+                *aExist = ID_FALSE;
+            }
+        }
+        else
+        {
+            /* BUG- 39066
+               µ¿ÀÏÇÑ ÀÌ¸§À» °¡Áø °´Ã¼°¡ Á¸ÀçÇÏ´ÂÁö public synonym Ã£±â Àü¿¡ Ã¼Å© */
+            IDE_TEST( qcm::existObject( aStatement,
+                                        ID_FALSE,
+                                        sUserName,
+                                        sObjectName,
+                                        QS_OBJECT_MAX,
+                                        &sTmpUserID,
+                                        &sTmpObjectID,
+                                        &sExistObject )
+                      != IDE_SUCCESS );
+
+            if ( sExistObject == ID_FALSE )
+            {
+                // check public synonym
+                IDE_TEST(getSynonym(aStatement,
+                                    QC_PUBLIC_USER_ID,
+                                    aSynonymInfo->objectName,
+                                    idlOS::strlen(aSynonymInfo->objectName),
+                                    aSynonymInfo,
+                                    aExist) != IDE_SUCCESS);
+
+                if ( ID_TRUE == *aExist )
+                {
+                    if ( checkSynonymCircularityArr( aSynonymArr,
+                                                     aSynonymInfo )
+                         == ID_TRUE )
+                    {
+                         *aExist = ID_FALSE;
+                    }
+                }
+                if ( ID_TRUE == *aExist )
+                {
+                    if ( addToSynonymArr( aSynonymArr, aSynonymInfo ) == IDE_SUCCESS )
+                    {
+                        //BUG-20855
+                        if ( ( idlOS::strMatch( aSynonymInfo->objectOwnerName,
+                                                idlOS::strlen( aSynonymInfo->objectOwnerName ),
+                                                sSynonymInfo.objectOwnerName,
+                                                idlOS::strlen( sSynonymInfo.objectOwnerName ) ) == 0 ) &&
+                             ( idlOS::strMatch( aSynonymInfo->objectName,
+                                                idlOS::strlen(aSynonymInfo->objectName),
+                                                sSynonymInfo.objectName,
+                                                idlOS::strlen( sSynonymInfo.objectName ) ) == 0 ) )
+                        {
+                            // no public synonym matched
+                            *aExist = ID_FALSE;
+                        }
+                        else
+                        {
+                            IDE_TEST( resolvePSMInternal4PlanCache( aStatement,
+                                                                    aSynonymInfo,
+                                                                    aProcID,
+                                                                    aUserID,
+                                                                    aExist,
+                                                                    aSynonymArr )
+                                      != IDE_SUCCESS );
+                        }
+                    }
+                    else
+                    {
+                        *aExist = ID_FALSE;
+                    }
+                }
+                else
+                {
+                    // no public synonym
+                    // do nothing
+                }
+            }
+            else
+            {
+                *aExist = ID_FALSE;
+            }
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    *aExist = ID_FALSE;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qcmSynonym::addToSynonymArr( qcmSynonymArr  * aSynonymArr,
+                                    qcmSynonymInfo * aSynonymInfo )
+{
+    UInt sSize = 0;
+
+    IDE_TEST_RAISE( aSynonymArr->mCount >= QCM_MAX_RESOLVE_SYNONYM, ERR_UNEXPECTED_MAX_RESOLVE );
+
+    sSize = idlOS::strlen(aSynonymInfo->objectOwnerName);
+
+    IDE_TEST_RAISE( sSize > QCM_MAX_SYNOM_NAME_LEN, ERR_UNEXPECT_INVALID_SIZE );
+
+    if ( sSize > 0 )
+    {
+        idlOS::memcpy( aSynonymArr->mInfo[aSynonymArr->mCount].mObjectOwnerName,
+                       aSynonymInfo->objectOwnerName,
+                       sSize );
+        aSynonymArr->mInfo[aSynonymArr->mCount].mObjectOwnerName[sSize] = '\0';
+    }
+    else
+    {
+        aSynonymArr->mInfo[aSynonymArr->mCount].mObjectOwnerName[0] = '\0';
+    }
+
+    sSize = idlOS::strlen(aSynonymInfo->objectName);
+
+    IDE_TEST_RAISE( sSize > QCM_MAX_SYNOM_NAME_LEN, ERR_UNEXPECT_INVALID_SIZE );
+
+    if ( sSize > 0 )
+    {
+        idlOS::memcpy( aSynonymArr->mInfo[aSynonymArr->mCount].mObjectName,
+                       aSynonymInfo->objectName,
+                       sSize );
+        aSynonymArr->mInfo[aSynonymArr->mCount].mObjectName[sSize] = '\0';
+    }
+    else
+    {
+        aSynonymArr->mInfo[aSynonymArr->mCount].mObjectName[0] = '\0';
+    }
+    aSynonymArr->mCount++;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_UNEXPECTED_MAX_RESOLVE )
+    {
+        ideLog::log( IDE_QP_32, "qcmSynonym::addToSynonymArr over resolve synonym" );
+    }
+    IDE_EXCEPTION( ERR_UNEXPECT_INVALID_SIZE )
+    {
+        ideLog::log( IDE_QP_32, "qcmSynonym::addToSynonymArr over max synonym name len" );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+idBool qcmSynonym::checkSynonymCircularityArr( qcmSynonymArr  * aSynonymArr,
+                                               qcmSynonymInfo * aSynonymInfo )
+{
+    UInt              i;
+    idBool            sCheck = ID_FALSE;
+
+    for ( i = 0 ; i < aSynonymArr->mCount; i++ )
+    {
+        if ( ( i + 1 ) > QCM_MAX_RESOLVE_SYNONYM )
+        {
+            sCheck = ID_TRUE;
+            break;
+        }
+
+        // µ¿ÀÏÇÑ °´Ã¼¸¦ °¡¸®Å°´Â ¸µÅ©°¡ ÀÖ´ÂÁö °Ë»ç
+        if ( ( idlOS::strMatch( aSynonymInfo->objectOwnerName,
+                                idlOS::strlen( aSynonymInfo->objectOwnerName ),
+                                aSynonymArr->mInfo[i].mObjectOwnerName,
+                                idlOS::strlen( aSynonymArr->mInfo[i].mObjectOwnerName ) ) == 0 ) &&
+             ( idlOS::strMatch( aSynonymInfo->objectName,
+                                idlOS::strlen( aSynonymInfo->objectName ),
+                                aSynonymArr->mInfo[i].mObjectName,
+                                idlOS::strlen( aSynonymArr->mInfo[i].mObjectName ) ) == 0 ) )
+        {
+            sCheck = ID_TRUE;
+            break;
+        }
+        else
+        {
+            // Nothing to do.
+        }
+    }
+
+    return sCheck;
+}
+

@@ -201,7 +201,7 @@ public class RequestResultSetMetaTask extends Task
                         sColumnMeta[i].mColumnType = JdbcDataManager.toSQLType(sResultSetMetaData.getColumnType(i + 1));
                                      
                         /* >> BUG-37394 */
-                        if( ( sColumnMeta[i].mColumnType != SQLType.SQL_CLOB )  &&  ( sColumnMeta[i].mColumnType != SQLType.SQL_BLOB ) )
+                        if( ( sColumnMeta[i].mColumnType != AltibaseSQLType.SQL_CLOB )  &&  ( sColumnMeta[i].mColumnType != AltibaseSQLType.SQL_BLOB ) )
                         {
                             sColumnMeta[i].mPrecision  = JdbcDataManager.convertColumnPrecision( sResultSetMetaData.getPrecision(i + 1) );
                             sColumnMeta[i].mScale      = sResultSetMetaData.getScale(i + 1);

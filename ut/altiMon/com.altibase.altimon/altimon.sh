@@ -4,14 +4,16 @@ cd $ALTIBASE_HOME/altiMon
 
 #JAVA_HOME=/usr/java/jdk1.5.0_22
 
-JAVA_OPTIONS="-Xss200k -Xms25m -Xmx25m -XX:NewSize=20m"
-#PICL_LIB=-Dpicl="picl-lib.so"
+JAVA_OPTIONS="-Xms25m -Xmx25m -XX:NewSize=20m"
+#PICL_LIB=-Dpicl="aix-ppc64-5.so"
 
 PID_FILE=altimon.pid
+ERR_LOG_FILE=altimon_stderr.log
 
 case "$1" in
   start)
     echo "Starting up...";
+
     if [ -f logs/altimon.log ]; then
         before_line=`wc -l logs/altimon.log | awk {'print $1'}`
     else
@@ -21,10 +23,17 @@ case "$1" in
     GET_PID=`ps -ef|grep altimon.jar|grep -v grep | grep $USER | awk '{print $2}'`
 
     if [ "$GET_PID" = "" ]; then
-      nohup $JAVA_HOME/bin/java $JAVA_OPTIONS $PICL_LIB -jar altimon.jar 1> /dev/null 2>> altimon_stderr.log &    
+      rm -f $ERR_LOG_FILE
+
+      nohup $JAVA_HOME/bin/java $JAVA_OPTIONS $PICL_LIB -jar altimon.jar > $ERR_LOG_FILE 2>&1 &
+
       ALTIMON_PID=$!
       echo "$ALTIMON_PID" > "$PID_FILE"
       sleep 3
+
+      if [ -f $ERR_LOG_FILE ]; then
+          cat $ERR_LOG_FILE
+      fi
 
       if [ -f logs/altimon.log ]; then
         after_line=`wc -l logs/altimon.log | awk {'print $1'}`

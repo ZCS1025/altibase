@@ -18,10 +18,10 @@
 #include <iloApi.h>
 
 /**
- * í•¸ë“¤ì´ ìœ íš¨í•œì§€ í™•ì¸í•œë‹¤.
+ * ÇÚµéÀÌ À¯È¿ÇÑÁö È®ÀÎÇÑ´Ù.
  *
- * @param[IN] aHandle í•¸ë“¤
- * @return í•¸ë“¤ì´ ìœ íš¨í•˜ë©´ ILO_TRUE, ì•„ë‹ˆë©´ ILO_FALSE
+ * @param[IN] aHandle ÇÚµé
+ * @return ÇÚµéÀÌ À¯È¿ÇÏ¸é ILO_TRUE, ¾Æ´Ï¸é ILO_FALSE
  */
 iloBool isValidIloaderHandle (ALTIBASE_ILOADER_HANDLE *aHandle)
 {
@@ -45,7 +45,7 @@ SInt altibase_iloader_init( ALTIBASE_ILOADER_HANDLE *aHandle )
 
     IDE_TEST_RAISE(aHandle == NULL, InvalidHandle);
 
-    /* handle í• ë‹¹ */
+    /* handle ÇÒ´ç */
     sHandle = (iloaderHandle *)idlOS::calloc(1, ID_SIZEOF(iloaderHandle));
     IDE_TEST_RAISE( sHandle == NULL, mallocError );
     sState = 1;
@@ -99,7 +99,7 @@ SInt altibase_iloader_init( ALTIBASE_ILOADER_HANDLE *aHandle )
     sHandle->mParser.mCharType = IDN_CF_UNKNOWN;
 
     /* get NLS, PORT number */
-    sHandle->mProgOption->ReadEnvironment();
+    sHandle->mProgOption->ReadEnvironment( sHandle );
 
     *aHandle = sHandle;
 
@@ -229,8 +229,8 @@ SInt altibase_iloader_connect( ALTIBASE_ILOADER_HANDLE aHandle )
     IDE_TEST_RAISE( sHandle->mSQLApi->setQueryTimeOut( 0 ) != SQL_TRUE,
                                                          setTimeOutError );
 
-    /* BUG-30693 : table ì´ë¦„ë“¤ê³¼ owner ì´ë¦„ì„ mtlMakeNameInFunc í•¨ìˆ˜ë¥¼ ì´ìš©í•˜ì—¬
-    ëŒ€ë¬¸ìžë¡œ ë³€ê²½í•´ì•¼ í•  ê²½ìš° ë³€ê²½í•¨.
+    /* BUG-30693 : table ÀÌ¸§µé°ú owner ÀÌ¸§À» mtlMakeNameInFunc ÇÔ¼ö¸¦ ÀÌ¿ëÇÏ¿©
+    ´ë¹®ÀÚ·Î º¯°æÇØ¾ß ÇÒ °æ¿ì º¯°æÇÔ.
     */
     sHandle->mProgOption->makeTableNameInCLI();
 
@@ -260,8 +260,8 @@ SInt altibase_iloader_options_init( SInt aVersion, void *aOptions )
             iloInitOpt_v1( aVersion, aOptions );
             break;
         default:
-            /* sOptons version ì •ë³´ë¥¼ ì…‹íŒ… í•´ ì£¼ì–´ì•¼ version ì •ë³´ë¥¼ ì²´í¬
-             * í•  ìˆ˜ ìžˆê¸° ë•Œë¬¸ì— default ë¡œ version 1 ì„ í˜¸ì¶œ í•˜ê²Œ í•œë‹¤.
+            /* sOptons version Á¤º¸¸¦ ¼ÂÆÃ ÇØ ÁÖ¾î¾ß version Á¤º¸¸¦ Ã¼Å©
+             * ÇÒ ¼ö ÀÖ±â ¶§¹®¿¡ default ·Î version 1 À» È£Ãâ ÇÏ°Ô ÇÑ´Ù.
              */
             iloInitOpt_v1( aVersion, aOptions );
             break;
@@ -344,7 +344,7 @@ SInt altibase_iloader_formout( ALTIBASE_ILOADER_HANDLE *aHandle,
 
     /* handle option, environment init */
     sHandle->mProgOption->InitOption();
-    sHandle->mProgOption->ReadEnvironment();
+    sHandle->mProgOption->ReadEnvironment( sHandle );
 
     /* Options Setting */
     sHandle->mProgOption->m_CommandType = FORM_OUT;
@@ -377,6 +377,7 @@ SInt altibase_iloader_formout( ALTIBASE_ILOADER_HANDLE *aHandle,
 
     IDE_EXCEPTION(InvalidHandle);
     {
+        return ALTIBASE_ILO_ERROR;
     }
     IDE_EXCEPTION(NullOptPtr);
     {
@@ -411,7 +412,7 @@ SInt altibase_iloader_dataout( ALTIBASE_ILOADER_HANDLE   *aHandle,
 
     /* handle option, environment init */
     sHandle->mProgOption->InitOption();
-    sHandle->mProgOption->ReadEnvironment();
+    sHandle->mProgOption->ReadEnvironment( sHandle );
 
     /* Options Setting */
     sHandle->mProgOption->m_CommandType = DATA_OUT;
@@ -446,6 +447,7 @@ SInt altibase_iloader_dataout( ALTIBASE_ILOADER_HANDLE   *aHandle,
 
     IDE_EXCEPTION(InvalidHandle);
     {
+        return ALTIBASE_ILO_ERROR;
     }
     IDE_EXCEPTION(NullOptPtr);
     {
@@ -476,7 +478,7 @@ SInt altibase_iloader_datain( ALTIBASE_ILOADER_HANDLE   *aHandle,
     IDE_TEST_RAISE(aOptions == NULL, NullOptPtr);
 
     /* BUG-30413 
-     * ALTIBASE_ILOADER_STATISTIC_LOGì— startTime setting
+     * ALTIBASE_ILOADER_STATISTIC_LOG¿¡ startTime setting
      */
     idlOS::time(&sStartTime);
     sHandle->mStatisticLog.startTime = sStartTime;
@@ -488,7 +490,7 @@ SInt altibase_iloader_datain( ALTIBASE_ILOADER_HANDLE   *aHandle,
 
     /* handle option, environment init */
     sHandle->mProgOption->InitOption();
-    sHandle->mProgOption->ReadEnvironment();
+    sHandle->mProgOption->ReadEnvironment( sHandle );
 
     /* Options Setting */
     sHandle->mProgOption->m_CommandType = DATA_IN;
@@ -530,6 +532,7 @@ SInt altibase_iloader_datain( ALTIBASE_ILOADER_HANDLE   *aHandle,
 
     IDE_EXCEPTION(InvalidHandle);
     {
+        return ALTIBASE_ILO_ERROR;
     }
     IDE_EXCEPTION(NullOptPtr);
     {
@@ -551,11 +554,11 @@ SInt altibase_iloader_datain( ALTIBASE_ILOADER_HANDLE   *aHandle,
 }
 
 /*
- * iLoader ì—ì„œ LOB FILE SIZE ë¥¼ 1G, 0.1G, .1 ì™€ ê°™ì´
- * ëª…ì‹œ í•˜ë©´  PARSEì—ì„œ ëª…ì‹œí•œ í˜•ì‹ì„ êµ¬ë³„í•˜ì—¬ ê°’ì„ êµ¬í•´
- * ì‚¬ìš©í•œë‹¤.
- * API ì—ì„œë„ ì •í™•í•œ ê°’ì„ êµ¬í•˜ê¸° ìœ„í•´ G,T,number ë¥¼ êµ¬ë³„
- * í•˜ì—¬ ê°’ì„ êµ¬í•˜ë„ë¡ í•œë‹¤.
+ * iLoader ¿¡¼­ LOB FILE SIZE ¸¦ 1G, 0.1G, .1 ¿Í °°ÀÌ
+ * ¸í½Ã ÇÏ¸é  PARSE¿¡¼­ ¸í½ÃÇÑ Çü½ÄÀ» ±¸º°ÇÏ¿© °ªÀ» ±¸ÇØ
+ * »ç¿ëÇÑ´Ù.
+ * API ¿¡¼­µµ Á¤È®ÇÑ °ªÀ» ±¸ÇÏ±â À§ÇØ G,T,number ¸¦ ±¸º°
+ * ÇÏ¿© °ªÀ» ±¸ÇÏµµ·Ï ÇÑ´Ù.
  */
 SInt getLobFileSize( ALTIBASE_ILOADER_HANDLE aHandle,
                      SChar *aLobFileSize )
@@ -644,7 +647,7 @@ SInt altibase_iloader_get_total_row( ALTIBASE_ILOADER_HANDLE  aHandle,
  
     /* handle option, environment init */
     sHandle->mProgOption->InitOption();
-    sHandle->mProgOption->ReadEnvironment();
+    sHandle->mProgOption->ReadEnvironment( sHandle );
 
     /* Options Setting */
     sHandle->mProgOption->m_CommandType = DATA_IN;
@@ -668,14 +671,14 @@ SInt altibase_iloader_get_total_row( ALTIBASE_ILOADER_HANDLE  aHandle,
             IDE_TEST( sRet == ALTIBASE_ILO_ERROR );
         }
 
-        /* row total count êµ¬í•˜ê¸° ìœ„í•´ data in ë£¨í‹´ì„ ë™ì¼ í•˜ê²Œ ì‚¬ìš© í•œë‹¤.*/
+        /* row total count ±¸ÇÏ±â À§ÇØ data in ·çÆ¾À» µ¿ÀÏ ÇÏ°Ô »ç¿ë ÇÑ´Ù.*/
         sHandle->mTableInfomation.mSeqIndex = 0;
         sHandle->mLoad->SetProgOption(sHandle->mProgOption);
         sHandle->mLoad->SetSQLApi(sHandle->mSQLApi);
         sHandle->mSQLApi->alterReplication( sHandle->mProgOption->mReplication );
 
-        /* data in ìˆ˜í–‰ ì‹œ data file ì´ ì—¬ëŸ¬ê°œ ì˜¬ ìˆ˜ê°€ ìžˆë‹¤. í•˜ì§€ë§Œ data file
-         * ê°œìˆ˜ëŠ” í•˜ë‚˜ì˜ data fileì— ëŒ€í•´ì„œë§Œ ëŒ€ìƒìœ¼ë¡œ í•œë‹¤.
+        /* data in ¼öÇà ½Ã data file ÀÌ ¿©·¯°³ ¿Ã ¼ö°¡ ÀÖ´Ù. ÇÏÁö¸¸ data file
+         * °³¼ö´Â ÇÏ³ªÀÇ data file¿¡ ´ëÇØ¼­¸¸ ´ë»óÀ¸·Î ÇÑ´Ù.
          */
         IDE_TEST( sHandle->mLoad->LoadwithPrepare(sHandle) != SQL_TRUE );
     }

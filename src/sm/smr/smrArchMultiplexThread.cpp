@@ -19,8 +19,6 @@
  * $Id: smrArchMultiplexThread.cpp $
  **********************************************************************/
 
-#include <ide.h>
-#include <idu.h>
 #include <smErrorCode.h>
 #include <smrRecoveryMgr.h>
 #include <smrArchMultiplexThread.h>
@@ -39,11 +37,11 @@ smrArchMultiplexThread::~smrArchMultiplexThread()
 }
 
 /***********************************************************************
- * Description : archMultiplex Threadë¥¼ ë‹¤ì¤‘í™” ëœ ìˆ˜ë§í¼ ì´ˆê¸°í™”í•œë‹¤.
+ * Description : archMultiplex Thread¸¦ ´ÙÁßÈ­ µÈ ¼ö¸¹Å­ ÃÊ±âÈ­ÇÑ´Ù.
  * 
- * aArchMultiplexThread - [IN] ì´ˆê¸°í™”í•  archMultiplexThreadê°ì²´ pointer
- * aArchPath            - [IN] archiveë  ë””ë ‰í† ë¦¬ pathë“¤
- * aMultiplexCnt        - [IN] ì´ˆê¸°í™”í•  thread ìˆ˜
+ * aArchMultiplexThread - [IN] ÃÊ±âÈ­ÇÒ archMultiplexThread°´Ã¼ pointer
+ * aArchPath            - [IN] archiveµÉ µğ·ºÅä¸® pathµé
+ * aMultiplexCnt        - [IN] ÃÊ±âÈ­ÇÒ thread ¼ö
  **********************************************************************/
 IDE_RC smrArchMultiplexThread::initialize( 
                             smrArchMultiplexThread ** aArchMultiplexThread,
@@ -70,7 +68,7 @@ IDE_RC smrArchMultiplexThread::initialize(
               != IDE_SUCCESS );
     sAllocState = 1;
 
-    /* ê° threadì— í•„ìš”í•œ ì •ë³´ ì…ë ¥ */
+    /* °¢ thread¿¡ ÇÊ¿äÇÑ Á¤º¸ ÀÔ·Â */
     for( sMultiplexIdx = 0; sMultiplexIdx < mMultiplexCnt; sMultiplexIdx++ )
     {
         new(&((*aArchMultiplexThread)[sMultiplexIdx])) smrArchMultiplexThread();
@@ -103,10 +101,10 @@ IDE_RC smrArchMultiplexThread::initialize(
 }
 
 /***********************************************************************
- * Description : archMultiplex Threadë¥¼ ì´ˆê¸°í™”í•˜ê³  ì‹œì‘í•œë‹¤.
+ * Description : archMultiplex Thread¸¦ ÃÊ±âÈ­ÇÏ°í ½ÃÀÛÇÑ´Ù.
  * 
- * aArchPath            - [IN] archiveë  ë””ë ‰í† ë¦¬ path
- * aMultiplexIdx        - [IN] ì´ˆê¸°í™”í•  threadì˜ idx ë²ˆí˜¸
+ * aArchPath            - [IN] archiveµÉ µğ·ºÅä¸® path
+ * aMultiplexIdx        - [IN] ÃÊ±âÈ­ÇÒ threadÀÇ idx ¹øÈ£
  **********************************************************************/
 IDE_RC smrArchMultiplexThread::initializeThread( const SChar * aArchPath,
                                                  UInt          aMultiplexIdx )
@@ -168,7 +166,7 @@ IDE_RC smrArchMultiplexThread::initializeThread( const SChar * aArchPath,
 }
 
 /***********************************************************************
- * Description : ëª¨ë“  archMultiplex Thread íŒŒê´´
+ * Description : ¸ğµç archMultiplex Thread ÆÄ±«
  **********************************************************************/
 IDE_RC smrArchMultiplexThread::destroy( smrArchMultiplexThread * aArchMultiplexThread )
 {
@@ -203,7 +201,7 @@ IDE_RC smrArchMultiplexThread::destroy( smrArchMultiplexThread * aArchMultiplexT
 }
 
 /***********************************************************************
- * Description : threadë¥¼ ì¢…ë£Œí•˜ê³  condition variableê³¼ mutextë¥¼ íŒŒê´´í•œë‹¤.
+ * Description : thread¸¦ Á¾·áÇÏ°í condition variable°ú mutext¸¦ ÆÄ±«ÇÑ´Ù.
  **********************************************************************/
 IDE_RC smrArchMultiplexThread::destroyThread()
 {
@@ -234,11 +232,11 @@ IDE_RC smrArchMultiplexThread::destroyThread()
 }
 
 /***********************************************************************
- * Description : ëª¨ë“  threadë“¤ì„ ê¹¨ìš°ê³  logíŒŒì¼ archive(backup)ì´ 
- *               ì™„ë£Œë ë•Œê¹Œì§€ ëŒ€ê¸°í•œë‹¤.
+ * Description : ¸ğµç threadµéÀ» ±ú¿ì°í logÆÄÀÏ archive(backup)ÀÌ 
+ *               ¿Ï·áµÉ¶§±îÁö ´ë±âÇÑ´Ù.
  * 
  * aArchMultiplexThread - [IN] 
- * aSrcLogFile          - [IN] archiveëŒ€ìƒ logíŒŒì¼
+ * aSrcLogFile          - [IN] archive´ë»ó logÆÄÀÏ
  **********************************************************************/
 IDE_RC smrArchMultiplexThread::performArchving( 
                         smrArchMultiplexThread * aArchMultiplexThread,
@@ -330,7 +328,7 @@ void smrArchMultiplexThread::run()
 }
 
 /***********************************************************************
- * Description : condwaití•˜ê³ ìˆëŠ” threadë“¤ì„ ê¹¨ìš´ë‹¤.
+ * Description : condwaitÇÏ°íÀÖ´Â threadµéÀ» ±ú¿î´Ù.
  **********************************************************************/
 IDE_RC smrArchMultiplexThread::wakeUp()
 {
@@ -367,9 +365,9 @@ IDE_RC smrArchMultiplexThread::wakeUp()
 }
 
 /***********************************************************************
- * Description : threadë“¤ì´ log archiveë¥¼ ì™„ë£Œí• ë•Œ ê¹Œì§€ ëŒ€ê¸°í•œë‹¤.
+ * Description : threadµéÀÌ log archive¸¦ ¿Ï·áÇÒ¶§ ±îÁö ´ë±âÇÑ´Ù.
  *
- * aArchMultiplexThread - [IN] waití•  archMultiplexThread
+ * aArchMultiplexThread - [IN] waitÇÒ archMultiplexThread
  **********************************************************************/
 IDE_RC smrArchMultiplexThread::wait( 
                         smrArchMultiplexThread * aArchMultiplexThread )
@@ -425,11 +423,11 @@ IDE_RC smrArchMultiplexThread::wait(
 }
 
 /***********************************************************************
- * Description : log archiveë¥¼ ìœ„í•´ logíŒŒì¼ì„ ë°±ì—…í•œë‹¤.
- *               smrArchThread::archLogFile()ì— ìˆë˜ ì½”ë“œë“¤ì¤‘ logíŒŒì¼ì„ 
- *               backupí•˜ê¸°ìœ„í•œ ì½”ë“œë¥¼ ì˜´ê²¨ì™”ë‹¤.
+ * Description : log archive¸¦ À§ÇØ logÆÄÀÏÀ» ¹é¾÷ÇÑ´Ù.
+ *               smrArchThread::archLogFile()¿¡ ÀÖ´ø ÄÚµåµéÁß logÆÄÀÏÀ» 
+ *               backupÇÏ±âÀ§ÇÑ ÄÚµå¸¦ ¿È°Ü¿Ô´Ù.
  *
- * aArchMultiplexThread - [IN] waití•  archMultiplexThread
+ * aArchMultiplexThread - [IN] waitÇÒ archMultiplexThread
  **********************************************************************/
 IDE_RC smrArchMultiplexThread::backupLogFile()
 {
@@ -549,7 +547,7 @@ IDE_RC smrArchMultiplexThread::backupLogFile()
         else // ERROR
         {
             /* BUG-42087 ARCHIVE_FULL_ACTION property does not operate as intended in manual
-             * sSystemErrno ì´ 0 ì´ê±°ë‚˜ ENOSPC ì¼ ê²½ìš°ì—ë§Œ í•´ë‹¹ëœë‹¤. */
+             * sSystemErrno ÀÌ 0 ÀÌ°Å³ª ENOSPC ÀÏ °æ¿ì¿¡¸¸ ÇØ´çµÈ´Ù. */
 
             ideLog::log(SM_TRC_LOG_LEVEL_ABORT,
                         SM_TRC_MRECOVERY_ARCH_ABORT1,

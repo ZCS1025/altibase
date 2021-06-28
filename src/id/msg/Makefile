@@ -1,4 +1,4 @@
-# $Id: Makefile 75676 2016-06-03 03:41:17Z jake.jang $
+# $Id: Makefile 90822 2021-05-13 04:45:36Z kclee $
 
 include ../idEnv.mk
 
@@ -19,10 +19,10 @@ OBJS = $(foreach src, $(SRCS),$(notdir $(src:.cpp=.$(OBJEXT))))
 
 BINS	= $(GENERRMSG)
 
-# 소스코드에 include 될 에러코드 화일
+# �ҽ��ڵ忡 include �� �����ڵ� ȭ��
 E_HEADER = idErrorCode.ih
 
-# 에러코드 메시지 화일
+# �����ڵ� �޽��� ȭ��
 
 all: ErrorFiles
 shobjs: 
@@ -84,6 +84,7 @@ ErrorFiles : $(ALLMSB)
 E_ID_US7ASCII.msb : $(BINS) E_ID_US7ASCII.msg
 	$(GENERRMSG) -i E_ID_US7ASCII.msg -o $(E_HEADER)
 	cp -f $(E_HEADER) ID_TRC_CODE.ih ID_TRC_CODE.ic ../include	
+	sync
 
 $(ALLMSB): E_ID_US7ASCII.msb
 	$(COPY) $^ $@

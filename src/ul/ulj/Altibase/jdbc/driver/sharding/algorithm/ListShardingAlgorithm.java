@@ -25,8 +25,8 @@ import Altibase.jdbc.driver.sharding.core.ShardRangeList;
 import Altibase.jdbc.driver.sharding.util.Range;
 
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import static Altibase.jdbc.driver.sharding.util.ShardingTraceLogger.shard_log;
 
@@ -40,18 +40,19 @@ public class ListShardingAlgorithm <T extends Comparable<?>> implements RangeSha
     }
 
     @SuppressWarnings("unchecked")
-    public Set<DataNode> doSharding(PreciseShardingValue<T> aShardingValue, DataNode aDefaultNode)
-            throws SQLException
+    public List<DataNode> doSharding(Comparable<?> aShardingValue, DataNode aDefaultNode) throws SQLException
     {
-        if (mShardRangeList.getRangeList().isEmpty())
+        // BUG-46790 range정보가 없더라도 default node가 있는 경우 정상으로 처리해야 한다.
+        if (mShardRangeList.getRangeList().isEmpty() && aDefaultNode == null)
         {
             Error.throwSQLException(ErrorDef.SHARD_RANGE_NOT_FOUNDED);
         }
-        Set<DataNode> sResult = new HashSet<DataNode>();
+        // BUG-47460 성능향상을 위해 HashSet을 ArrayList로 교체
+        List<DataNode> sResult = new ArrayList<DataNode>();
         for (ShardRange sShardRange : mShardRangeList.getRangeList())
         {
             Range sRange = sShardRange.getRange();
-            if (sRange.isEndedBy(aShardingValue.getValue()))
+            if (sRange.isEndedBy(aShardingValue))
             {
                 sResult.add(sShardRange.getNode());
             }

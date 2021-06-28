@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smi.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smi.h 85333 2019-04-26 02:34:41Z et16 $
  **********************************************************************/
 
 #ifndef _O_SMI_H_
@@ -37,6 +37,8 @@
 #include <smiDataPort.h>
 #include <smiStatistics.h>
 #include <smiTempTable.h>
+#include <smiSortTempTable.h>
+#include <smiHashTempTable.h>
 #include <smiTableSpace.h>
 #include <smiReadLogByOrder.h>
 

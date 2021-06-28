@@ -16,15 +16,15 @@
  
 
 /***********************************************************************
- * $Id: qmc.h 85317 2019-04-25 00:20:11Z donovan.seo $
+ * $Id: qmc.h 90785 2021-05-06 07:26:22Z hykim $
  *
  * Description :
- *     Executionì—ì„œ ì‚¬ìš©í•˜ëŠ” ê³µí†µ ëª¨ë“ˆë¡œ
- *     Materialized Columnì— ëŒ€í•œ ì²˜ë¦¬ë¥¼ í•˜ëŠ” ì‘ì—…ì´ ì£¼ë¥¼ ì´ë£¬ë‹¤.
+ *     Execution¿¡¼­ »ç¿ëÇÏ´Â °øÅë ¸ğµâ·Î
+ *     Materialized Column¿¡ ´ëÇÑ Ã³¸®¸¦ ÇÏ´Â ÀÛ¾÷ÀÌ ÁÖ¸¦ ÀÌ·é´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -79,6 +79,11 @@ typedef SInt qmcRowFlag;
 #define QMC_ROW_QUEUE_EMPTY_FALSE (0x00000000)
 #define QMC_ROW_QUEUE_EMPTY_TRUE  (0x00000040)
 
+// PROJ-2750
+#define QMC_ROW_NULL_PADDING_MASK     (0x00000080)
+#define QMC_ROW_NULL_PADDING_FALSE    (0x00000000)
+#define QMC_ROW_NULL_PADDING_TRUE     (0x00000080)
+
 // information about materialization row
 
 // qmcMtrNode.flag
@@ -87,33 +92,33 @@ typedef SInt qmcRowFlag;
 //----------------------------------------------------------------------
 // PROJ-2179
 // 
-// Materialized Nodeë¥¼ êµ¬ì„±í•˜ëŠ” Columnì˜ ì¢…ë¥˜
+// Materialized Node¸¦ ±¸¼ºÇÏ´Â ColumnÀÇ Á¾·ù
 //
-// 1. Base tableì„ ì €ì¥í•  ë•Œ surrogate keyë¥¼ ì €ì¥í•˜ëŠ” ìš©ë„ë¡œ ì‚¬ìš©í•œë‹¤.
-// QMC_MTR_TYPE_MEMORY_TABLE             : Memory tableì˜ base table(pointer)
-// QMC_MTR_TYPE_MEMORY_PARTITIONED_TABLE : Partitioned memory tableì˜
+// 1. Base tableÀ» ÀúÀåÇÒ ¶§ surrogate key¸¦ ÀúÀåÇÏ´Â ¿ëµµ·Î »ç¿ëÇÑ´Ù.
+// QMC_MTR_TYPE_MEMORY_TABLE             : Memory tableÀÇ base table(pointer)
+// QMC_MTR_TYPE_MEMORY_PARTITIONED_TABLE : Partitioned memory tableÀÇ
 //                                         base table(pointer & tuple ID)
-// QMC_MTR_TYPE_DISK_TABLE               : Disk tableì˜ base table(RID)
-// QMC_MTR_TYPE_DISK_PARTITIONED_TABLE   : Partitioned disk tableì˜
+// QMC_MTR_TYPE_DISK_TABLE               : Disk tableÀÇ base table(RID)
+// QMC_MTR_TYPE_DISK_PARTITIONED_TABLE   : Partitioned disk tableÀÇ
 //                                         base table(RID & tuple ID)
-// QMC_MTR_TYPE_HYBRID_PARTITIONED_TABLE : Hybrid Partitioned Tableì˜ Base Table(Pointer, RID and Tuple ID)
+// QMC_MTR_TYPE_HYBRID_PARTITIONED_TABLE : Hybrid Partitioned TableÀÇ Base Table(Pointer, RID and Tuple ID)
 //
-// 2. Memory columnì„ keyë¡œ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
-// QMC_MTR_TYPE_MEMORY_KEY_COLUMN        : Memory tableì˜ column (sorting/hashing key)
-//                                         Memory tableì˜ base table(pointer)
-// QMC_MTR_TYPE_MEMORY_PARTITION_KEY_COLUMN : Memory Partitioned tableì˜ column (sorting/hashing key)
+// 2. Memory columnÀ» key·Î »ç¿ëÇÏ´Â °æ¿ì
+// QMC_MTR_TYPE_MEMORY_KEY_COLUMN        : Memory tableÀÇ column (sorting/hashing key)
+//                                         Memory tableÀÇ base table(pointer)
+// QMC_MTR_TYPE_MEMORY_PARTITION_KEY_COLUMN : Memory Partitioned tableÀÇ column (sorting/hashing key)
 //                                            base table(pointer & tuple ID)
 //
-// 3. ê°’ì„ ë³µì‚¬í•´ì•¼ í•˜ëŠ” ê²½ìš°
-// QMC_MTR_TYPE_COPY_VALUE               : Disk tableì˜ column, pseudo column
-// QMC_MTR_TYPE_HYBRID_PARTITION_KEY_COLUMN : Hybrid Partitioned Tableì˜ Column
+// 3. °ªÀ» º¹»çÇØ¾ß ÇÏ´Â °æ¿ì
+// QMC_MTR_TYPE_COPY_VALUE               : Disk tableÀÇ column, pseudo column
+// QMC_MTR_TYPE_HYBRID_PARTITION_KEY_COLUMN : Hybrid Partitioned TableÀÇ Column
 //
-// 4. Expressionì˜ ê²½ìš° calculateë¥¼ í˜¸ì¶œí•˜ëŠ” ìš©ë„ë¡œ ì‚¬ìš©í•œë‹¤.
-// QMC_MTR_TYPE_CALCULATE                : ë‹¨ìˆœ columnì´ ì•„ë‹Œ expression
-// QMC_MTR_TYPE_CALCULATE_AND_COPY_VALUE : Subquery ë“±
+// 4. ExpressionÀÇ °æ¿ì calculate¸¦ È£ÃâÇÏ´Â ¿ëµµ·Î »ç¿ëÇÑ´Ù.
+// QMC_MTR_TYPE_CALCULATE                : ´Ü¼ø columnÀÌ ¾Æ´Ñ expression
+// QMC_MTR_TYPE_CALCULATE_AND_COPY_VALUE : Subquery µî
 //
-// 5. MTRNodeë¥¼ ìƒìœ„ Planì—ì„œ ì°¸ì¡°(ì‚¬ìš©)í•˜ì§€ ì•ŠëŠ” ê²½ìš°
-//    ë¶ˆí•„ìš”í•œ MTRNodeì˜ Sizeë¥¼ ìµœì†Œí™” í•˜ê¸° ìœ„í•œ ìš©ë„ë¡œ ì‚¬ìš©ëœë‹¤.
+// 5. MTRNode¸¦ »óÀ§ Plan¿¡¼­ ÂüÁ¶(»ç¿ë)ÇÏÁö ¾Ê´Â °æ¿ì
+//    ºÒÇÊ¿äÇÑ MTRNodeÀÇ Size¸¦ ÃÖ¼ÒÈ­ ÇÏ±â À§ÇÑ ¿ëµµ·Î »ç¿ëµÈ´Ù.
 // QMC_MTR_TYPE_USELESS_COLUMN           : Dummy MTRNode
 //----------------------------------------------------------------------
 #define QMC_MTR_TYPE_MASK                           (0x000000FF)
@@ -129,87 +134,87 @@ typedef SInt qmcRowFlag;
 #define QMC_MTR_TYPE_CALCULATE_AND_COPY_VALUE       (0x00000009)
 // PROJ-2469 Optimize View Materialization
 #define QMC_MTR_TYPE_USELESS_COLUMN                 (0x0000000A)
-/* PROJ-2464 hybrid partitioned table ì§€ì› */
+/* PROJ-2464 hybrid partitioned table Áö¿ø */
 #define QMC_MTR_TYPE_HYBRID_PARTITIONED_TABLE       (0x0000000B)
 #define QMC_MTR_TYPE_HYBRID_PARTITION_KEY_COLUMN    (0x0000000C)
 
 // qmcMtrNode.flag
-// ëŒ€ìƒ Materialized Columnì´ Sortingì´ í•„ìš”í•œ ì§€ì˜ ì—¬ë¶€
+// ´ë»ó Materialized ColumnÀÌ SortingÀÌ ÇÊ¿äÇÑ ÁöÀÇ ¿©ºÎ
 #define QMC_MTR_SORT_NEED_MASK                      (0x00000100)
 #define QMC_MTR_SORT_NEED_FALSE                     (0x00000000)
 #define QMC_MTR_SORT_NEED_TRUE                      (0x00000100)
 
 // qmcMtrNode.flag
-// ëŒ€ìƒ Materialized Columnì´ Sortingì´ í•„ìš”í•œ ê²½ìš°, ê·¸ Order
+// ´ë»ó Materialized ColumnÀÌ SortingÀÌ ÇÊ¿äÇÑ °æ¿ì, ±× Order
 #define QMC_MTR_SORT_ORDER_MASK                     (0x00000200)
 #define QMC_MTR_SORT_ASCENDING                      (0x00000000)
 #define QMC_MTR_SORT_DESCENDING                     (0x00000200)
 
 // qmcMtrNode.flag
-// ëŒ€ìƒ Materialized Columnì´ Hashingì´ í•„ìš”í•œ ì§€ì˜ ì—¬ë¶€
+// ´ë»ó Materialized ColumnÀÌ HashingÀÌ ÇÊ¿äÇÑ ÁöÀÇ ¿©ºÎ
 #define QMC_MTR_HASH_NEED_MASK                      (0x00000400)
 #define QMC_MTR_HASH_NEED_FALSE                     (0x00000000)
 #define QMC_MTR_HASH_NEED_TRUE                      (0x00000400)
 
 // qmcMtrNode.flag
-// ëŒ€ìƒ Materialized Columnì´ GROUP BY ì— ì˜í•œ ê²ƒì¸ì§€ì˜ ì—¬ë¶€
+// ´ë»ó Materialized ColumnÀÌ GROUP BY ¿¡ ÀÇÇÑ °ÍÀÎÁöÀÇ ¿©ºÎ
 #define QMC_MTR_GROUPING_MASK          ( QMC_MTR_HASH_NEED_MASK)
 #define QMC_MTR_GROUPING_FALSE         (QMC_MTR_HASH_NEED_FALSE)
 #define QMC_MTR_GROUPING_TRUE          ( QMC_MTR_HASH_NEED_TRUE)
 
 // qmcMtrNode.flag
-// í•´ë‹¹ Aggregationì´ Distinct Columnì„ í¬í•¨í•œì§€ì˜ ì—¬ë¶€
+// ÇØ´ç AggregationÀÌ Distinct ColumnÀ» Æ÷ÇÔÇÑÁöÀÇ ¿©ºÎ
 #define QMC_MTR_DIST_AGGR_MASK                      (0x00000800)
 #define QMC_MTR_DIST_AGGR_FALSE                     (0x00000000)
 #define QMC_MTR_DIST_AGGR_TRUE                      (0x00000800)
 
 // PROJ-1473
-// í•´ë‹¹ ë…¸ë“œì˜ column Locateê°€ ë³€ê²½ë˜ì–´ì•¼ í•œë‹¤.
+// ÇØ´ç ³ëµåÀÇ column Locate°¡ º¯°æµÇ¾î¾ß ÇÑ´Ù.
 #define QMC_MTR_CHANGE_COLUMN_LOCATE_MASK           (0x00001000)
 #define QMC_MTR_CHANGE_COLUMN_LOCATE_FALSE          (0x00000000)
 #define QMC_MTR_CHANGE_COLUMN_LOCATE_TRUE           (0x00001000)
 
 // PROJ-1705
-// mtrNode êµ¬ì„±ì‹œ, 
+// mtrNode ±¸¼º½Ã, 
 #define QMC_MTR_BASETABLE_TYPE_MASK                 (0x00004000)
 #define QMC_MTR_BASETABLE_TYPE_DISKTABLE            (0x00000000)
 #define QMC_MTR_BASETABLE_TYPE_DISKTEMPTABLE        (0x00004000)
 
 // BUG-31210
-// wndNodeì˜ analytic function result
+// wndNodeÀÇ analytic function result
 #define QMC_MTR_ANAL_FUNC_RESULT_OF_WND_NODE_MASK   (0x00008000)
 #define QMC_MTR_ANAL_FUNC_RESULT_OF_WND_NODE_FALSE  (0x00000000)
 #define QMC_MTR_ANAL_FUNC_RESULT_OF_WND_NODE_TRUE   (0x00008000)
 
 // BUG-31210
-// materialization planì—ì„œ mtrNodeë¥¼ ìƒì„±í•˜ëŠ” ê²½ìš° 
+// materialization plan¿¡¼­ mtrNode¸¦ »ı¼ºÇÏ´Â °æ¿ì 
 #define QMC_MTR_MTR_PLAN_MASK                       (0x00010000)
 #define QMC_MTR_MTR_PLAN_FALSE                      (0x00000000)
 #define QMC_MTR_MTR_PLAN_TRUE                       (0x00010000)
 
 // BUG-33663 Ranking Function
-// mtrNodeê°€ order by exprì— ì‚¬ìš©ë˜ì–´ orderê°€ ê³ ì •ë˜ì—ˆëŠ”ì§€ì˜ ì—¬ë¶€
+// mtrNode°¡ order by expr¿¡ »ç¿ëµÇ¾î order°¡ °íÁ¤µÇ¾ú´ÂÁöÀÇ ¿©ºÎ
 #define QMC_MTR_SORT_ORDER_FIXED_MASK               (0x00020000)
 #define QMC_MTR_SORT_ORDER_FIXED_FALSE              (0x00000000)
 #define QMC_MTR_SORT_ORDER_FIXED_TRUE               (0x00020000)
 
 // PROJ-1890 PROWID
-// select target ì— prowid ê°€ ìˆëŠ”ê²½ìš° rid ë³µì›ì´ í•„ìš”í•¨
+// select target ¿¡ prowid °¡ ÀÖ´Â°æ¿ì rid º¹¿øÀÌ ÇÊ¿äÇÔ
 #define QMC_MTR_RECOVER_RID_MASK                    (0x00040000)
 #define QMC_MTR_RECOVER_RID_FALSE                   (0x00000000)
 #define QMC_MTR_RECOVER_RID_TRUE                    (0x00040000)
 
-// PROJ-1353 Dist Mtr Nodeë¥¼ ì¤‘ë³µí•´ì„œ ì¶”ê°€í•˜ê¸° ìœ„í•œ ì˜µì…˜
+// PROJ-1353 Dist Mtr Node¸¦ Áßº¹ÇØ¼­ Ãß°¡ÇÏ±â À§ÇÑ ¿É¼Ç
 #define QMC_MTR_DIST_DUP_MASK                       (0x00080000)
 #define QMC_MTR_DIST_DUP_FALSE                      (0x00000000)
 #define QMC_MTR_DIST_DUP_TRUE                       (0x00080000)
 
-// PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+// PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
 #define QMC_MTR_TEMP_VAR_TYPE_ENABLE_MASK           (0x00100000)
 #define QMC_MTR_TEMP_VAR_TYPE_ENABLE_FALSE          (0x00000000)
 #define QMC_MTR_TEMP_VAR_TYPE_ENABLE_TRUE           (0x00100000)
 
-// PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+// PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
 #define QMC_MTR_BASETABLE_MASK                      (0x00200000)
 #define QMC_MTR_BASETABLE_FALSE                     (0x00000000)
 #define QMC_MTR_BASETABLE_TRUE                      (0x00200000)
@@ -235,12 +240,12 @@ typedef SInt qmcRowFlag;
 #define QMC_MTR_PRIOR_EXIST_TRUE                    (0x04000000)
 #define QMC_MTR_PRIOR_EXIST_FALSE                   (0x00000000)
 
-// PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
-// 1. ê°€ë³€ê¸¸ì´ ì»¬ëŸ¼
-// 2. non-padding typeì¸ ê²½ìš°
-// 3. 10 byteì´ìƒì¸ ê²½ìš°
-// (10 byte charì¸ ê²½ìš° precision 8ì—ì„œ í‰ê·  4ê¸€ìë¥¼ ì €ì¥í•œë‹¤ê³  í•˜ë©´
-// 6 byteì´ê³  2 byte headerë¥¼ ì¶”ê°€í•˜ë©´ 8 byteê°€ ë˜ì–´ 2 byteì˜ ì´ë“ì´ ë°œìƒí•œë‹¤.)
+// PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
+// 1. °¡º¯±æÀÌ ÄÃ·³
+// 2. non-padding typeÀÎ °æ¿ì
+// 3. 10 byteÀÌ»óÀÎ °æ¿ì
+// (10 byte charÀÎ °æ¿ì precision 8¿¡¼­ Æò±Õ 4±ÛÀÚ¸¦ ÀúÀåÇÑ´Ù°í ÇÏ¸é
+// 6 byteÀÌ°í 2 byte header¸¦ Ãß°¡ÇÏ¸é 8 byte°¡ µÇ¾î 2 byteÀÇ ÀÌµæÀÌ ¹ß»ıÇÑ´Ù.)
 #if defined(DEBUG)
 #define QMC_IS_MTR_TEMP_VAR_COLUMN( aMtcColumn )                        \
     ( ( ( ( (aMtcColumn).module->flag & MTD_VARIABLE_LENGTH_TYPE_MASK ) \
@@ -277,7 +282,7 @@ typedef struct qmcMemHashElement
 } qmcMemHashElement;
 
 //-------------------------------------------------
-// ê° Temp Tableì˜ Record Header Size
+// °¢ Temp TableÀÇ Record Header Size
 //-------------------------------------------------
 
 #define QMC_MEMSORT_TEMPHEADER_SIZE                                     \
@@ -286,7 +291,7 @@ typedef struct qmcMemHashElement
     ( idlOS::align(ID_SIZEOF(qmcMemHashElement), ID_SIZEOF(SDouble)) )
 
 /* PROJ-2201 Innovation in sorting and hashing(temp)
- * DiskTempëŠ” RowHeaderê°€ ì—†ìŒ */
+ * DiskTemp´Â RowHeader°¡ ¾øÀ½ */
 #define QMC_DISKSORT_TEMPHEADER_SIZE (0)
 #define QMC_DISKHASH_TEMPHEADER_SIZE ( QMC_DISKSORT_TEMPHEADER_SIZE )
 
@@ -305,7 +310,7 @@ typedef struct qmdNode
 
 typedef struct qmcMemPartRowInfo
 {
-    scGRID         grid;            // BUG-38309 ë©”ëª¨ë¦¬ íŒŒí‹°ì…˜ì¼ë•Œë„ rid ë¥¼ ì €ì¥í•´ì•¼ í•œë‹¤.
+    scGRID         grid;            // BUG-38309 ¸Ş¸ğ¸® ÆÄÆ¼¼ÇÀÏ¶§µµ rid ¸¦ ÀúÀåÇØ¾ß ÇÑ´Ù.
     UShort         partitionTupleID;
 
     SChar        * position;
@@ -316,11 +321,11 @@ typedef struct qmcDiskPartRowInfo
     scGRID         grid;
     UShort         partitionTupleID;
 
-    // index table scanì¸ ê²½ìš° index table ridë„ ì›ë³µí•  í•„ìš”ê°€ ìˆë‹¤.
+    // index table scanÀÎ °æ¿ì index table ridµµ ¿øº¹ÇÒ ÇÊ¿ä°¡ ÀÖ´Ù.
     scGRID         indexGrid;
 } qmcDiskPartRowInfo;
 
-/* PROJ-2464 hybrid partitioned table ì§€ì› */
+/* PROJ-2464 hybrid partitioned table Áö¿ø */
 typedef struct qmcPartRowInfo
 {
     union
@@ -359,18 +364,18 @@ typedef void * (* qmcGetRowFunc) ( qmdMtrNode * aNode, const void * aRow );
 
 typedef struct qmdMtrFunction
 {
-    qmcSetMtrFunc     setMtr;        // Materialized Column êµ¬ì„± ë°©ë²•
-    qmcGetHashFunc    getHash;       // Columnì˜ Hashê°’ íšë“ ë°©ë²•
-    qmcIsNullFunc     isNull;        // Columnì˜ NULL ì—¬ë¶€ íŒë‹¨ ë°©ë²•
-    qmcMakeNullFunc   makeNull;      // Columnì˜ NULL Value ìƒì„± ë°©ë²•
-    qmcGetRowFunc     getRow;        // Columnì„ ê¸°ì¤€ìœ¼ë¡œ í•´ë‹¹ Row íšë“ ë°©ë²•
-    qmcSetTupleFunc   setTuple;      // Columnì„ ì›ë³µì‹œí‚¤ëŠ” ë°©ë²•
-    mtdCompareFunc    compare;       // Columnì˜ ëŒ€ì†Œ ë¹„êµ ë°©ë²•
-    mtcColumn       * compareColumn; // Compareì˜ ê¸°ì¤€ì´ ë˜ëŠ” Column ì •ë³´
+    qmcSetMtrFunc     setMtr;        // Materialized Column ±¸¼º ¹æ¹ı
+    qmcGetHashFunc    getHash;       // ColumnÀÇ Hash°ª È¹µæ ¹æ¹ı
+    qmcIsNullFunc     isNull;        // ColumnÀÇ NULL ¿©ºÎ ÆÇ´Ü ¹æ¹ı
+    qmcMakeNullFunc   makeNull;      // ColumnÀÇ NULL Value »ı¼º ¹æ¹ı
+    qmcGetRowFunc     getRow;        // ColumnÀ» ±âÁØÀ¸·Î ÇØ´ç Row È¹µæ ¹æ¹ı
+    qmcSetTupleFunc   setTuple;      // ColumnÀ» ¿øº¹½ÃÅ°´Â ¹æ¹ı
+    mtdCompareFunc    compare;       // ColumnÀÇ ´ë¼Ò ºñ±³ ¹æ¹ı
+    mtcColumn       * compareColumn; // CompareÀÇ ±âÁØÀÌ µÇ´Â Column Á¤º¸
 } qmdMtrFunction;
 
 //---------------------------------------------
-// Code ì˜ì—­ì˜ ì €ì¥ Columnì˜ ì •ë³´
+// Code ¿µ¿ªÀÇ ÀúÀå ColumnÀÇ Á¤º¸
 //---------------------------------------------
 
 typedef struct qmcMtrNode
@@ -393,7 +398,7 @@ typedef struct qmcMtrNode
 } qmcMtrNode;
 
 //---------------------------------------------
-// Data ì˜ì—­ì˜ ì €ì¥ Columnì˜ ì •ë³´
+// Data ¿µ¿ªÀÇ ÀúÀå ColumnÀÇ Á¤º¸
 //---------------------------------------------
 
 typedef struct qmdMtrNode
@@ -415,54 +420,54 @@ typedef struct qmdMtrNode
     
 } qmdMtrNode;
 
-// attributeë“¤ì˜ flag
+// attributeµéÀÇ flag
 
-// Expressionì˜ ê²°ê³¼ë¥¼ í•˜ìœ„ì—ì„œ ê·¸ëŒ€ë¡œ ì „ë‹¬ë°›ì„ì§€ ì—¬ë¶€
+// ExpressionÀÇ °á°ú¸¦ ÇÏÀ§¿¡¼­ ±×´ë·Î Àü´Ş¹ŞÀ»Áö ¿©ºÎ
 #define QMC_ATTR_SEALED_MASK            (0x00000001)
 #define QMC_ATTR_SEALED_FALSE           (0x00000000)
 #define QMC_ATTR_SEALED_TRUE            (0x00000001)
 
-// Hashing/sortingì´ í•„ìš”í•œì§€ ì—¬ë¶€
+// Hashing/sortingÀÌ ÇÊ¿äÇÑÁö ¿©ºÎ
 #define QMC_ATTR_KEY_MASK               (0x00000002)
 #define QMC_ATTR_KEY_FALSE              (0x00000000)
 #define QMC_ATTR_KEY_TRUE               (0x00000002)
 
-// Sortingì´ í•„ìš”í•œ ê²½ìš° ìˆœì„œ
+// SortingÀÌ ÇÊ¿äÇÑ °æ¿ì ¼ø¼­
 #define QMC_ATTR_SORT_ORDER_MASK        (0x00000004)
 #define QMC_ATTR_SORT_ORDER_ASC         (0x00000000)
 #define QMC_ATTR_SORT_ORDER_DESC        (0x00000004)
 
-// Conversionì„ ìœ ì§€í•œ ì±„ ì¶”ê°€í• ì§€ ì—¬ë¶€
+// ConversionÀ» À¯ÁöÇÑ Ã¤ Ãß°¡ÇÒÁö ¿©ºÎ
 #define QMC_ATTR_CONVERSION_MASK        (0x00000008)
 #define QMC_ATTR_CONVERSION_FALSE       (0x00000000)
 #define QMC_ATTR_CONVERSION_TRUE        (0x00000008)
 
-// Distinct ì ˆì´ ì‚¬ìš©ëœ expressionì¸ì§€ ì—¬ë¶€
+// Distinct ÀıÀÌ »ç¿ëµÈ expressionÀÎÁö ¿©ºÎ
 #define QMC_ATTR_DISTINCT_MASK          (0x00000010)
 #define QMC_ATTR_DISTINCT_FALSE         (0x00000000)
 #define QMC_ATTR_DISTINCT_TRUE          (0x00000010)
 
-// Terminalì¸ì§€ ì—¬ë¶€(push downí•˜ì§€ ì•ŠëŠ”ë‹¤)
+// TerminalÀÎÁö ¿©ºÎ(push downÇÏÁö ¾Ê´Â´Ù)
 #define QMC_ATTR_TERMINAL_MASK          (0x00000020)
 #define QMC_ATTR_TERMINAL_FALSE         (0x00000000)
 #define QMC_ATTR_TERMINAL_TRUE          (0x00000020)
 
-// Analytic functionì¸ì§€ ì—¬ë¶€
+// Analytic functionÀÎÁö ¿©ºÎ
 #define QMC_ATTR_ANALYTIC_FUNC_MASK     (0x00000040)
 #define QMC_ATTR_ANALYTIC_FUNC_FALSE    (0x00000000)
 #define QMC_ATTR_ANALYTIC_FUNC_TRUE     (0x00000040)
 
-// Analytic functionì˜ order byì¸ì§€ ì—¬ë¶€
+// Analytic functionÀÇ order byÀÎÁö ¿©ºÎ
 #define QMC_ATTR_ANALYTIC_SORT_MASK     (0x00000080)
 #define QMC_ATTR_ANALYTIC_SORT_FALSE    (0x00000000)
 #define QMC_ATTR_ANALYTIC_SORT_TRUE     (0x00000080)
 
-// ORDER BYì ˆì—ì„œ ì°¸ì¡°ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€
+// ORDER BYÀı¿¡¼­ ÂüÁ¶µÇ¾ú´ÂÁö ¿©ºÎ
 #define QMC_ATTR_ORDER_BY_MASK          (0x00000100)
 #define QMC_ATTR_ORDER_BY_FALSE         (0x00000000)
 #define QMC_ATTR_ORDER_BY_TRUE          (0x00000100)
 
-// PROJ-1353 ROLLUP, CUBEì˜ ì¸ìë¡œ ì‚¬ìš©ëœ ì»¬ëŸ¼ê³¼ Group byì— ì‚¬ìš©ëœ ì»¬ëŸ¼ì˜ êµ¬ë¶„ìš©ë„
+// PROJ-1353 ROLLUP, CUBEÀÇ ÀÎÀÚ·Î »ç¿ëµÈ ÄÃ·³°ú Group by¿¡ »ç¿ëµÈ ÄÃ·³ÀÇ ±¸ºĞ¿ëµµ
 #define QMC_ATTR_GROUP_BY_EXT_MASK      (0x00000200)
 #define QMC_ATTR_GROUP_BY_EXT_FALSE     (0x00000000)
 #define QMC_ATTR_GROUP_BY_EXT_TRUE      (0x00000200)
@@ -478,24 +483,24 @@ typedef struct qmdMtrNode
 #define QMC_ATTR_USELESS_RESULT_FALSE   (0x00000000)
 #define QMC_ATTR_USELESS_RESULT_TRUE    (0x00001000)
 
-// qmc::appendAttributeì˜ ì˜µì…˜
+// qmc::appendAttributeÀÇ ¿É¼Ç
 
-// ì¤‘ë³µì„ í—ˆìš©í•  ê²ƒì¸ì§€ ì—¬ë¶€
+// Áßº¹À» Çã¿ëÇÒ °ÍÀÎÁö ¿©ºÎ
 #define QMC_APPEND_ALLOW_DUP_MASK       (0x00000001)
 #define QMC_APPEND_ALLOW_DUP_FALSE      (0x00000000)
 #define QMC_APPEND_ALLOW_DUP_TRUE       (0x00000001)
 
-// ìƒìˆ˜ ë˜ëŠ” bind ë³€ìˆ˜ë¥¼ í—ˆìš©í•  ê²ƒì¸ì§€ ì—¬ë¶€
+// »ó¼ö ¶Ç´Â bind º¯¼ö¸¦ Çã¿ëÇÒ °ÍÀÎÁö ¿©ºÎ
 #define QMC_APPEND_ALLOW_CONST_MASK     (0x00000002)
 #define QMC_APPEND_ALLOW_CONST_FALSE    (0x00000000)
 #define QMC_APPEND_ALLOW_CONST_TRUE     (0x00000002)
 
-// Expressionì˜ ê²½ìš° ê·¸ëŒ€ë¡œ ì¶”ê°€í•  ê²ƒì¸ì§€ ê°œë³„ êµ¬ì„±ìš”ì†Œë“¤ì„ ì¶”ê°€í• ê²ƒì¸ì§€ ì—¬ë¶€
+// ExpressionÀÇ °æ¿ì ±×´ë·Î Ãß°¡ÇÒ °ÍÀÎÁö °³º° ±¸¼º¿ä¼ÒµéÀ» Ãß°¡ÇÒ°ÍÀÎÁö ¿©ºÎ
 #define QMC_APPEND_EXPRESSION_MASK      (0x00000004)
 #define QMC_APPEND_EXPRESSION_FALSE     (0x00000000)
 #define QMC_APPEND_EXPRESSION_TRUE      (0x00000004)
 
-// Analytic functionì˜ analyticì ˆ(OVERì ˆ ì´í›„) ê²€ì‚¬ ì—¬ë¶€
+// Analytic functionÀÇ analyticÀı(OVERÀı ÀÌÈÄ) °Ë»ç ¿©ºÎ
 #define QMC_APPEND_CHECK_ANALYTIC_MASK  (0x00000008)
 #define QMC_APPEND_CHECK_ANALYTIC_FALSE (0x00000000)
 #define QMC_APPEND_CHECK_ANALYTIC_TRUE  (0x00000008)
@@ -519,7 +524,7 @@ class qmc
 public:
 
     //-----------------------------------------------------
-    // Default Execute í•¨ìˆ˜ Pointer
+    // Default Execute ÇÔ¼ö Pointer
     //-----------------------------------------------------
 
     static mtcExecute      valueExecute;
@@ -531,41 +536,41 @@ public:
                                            mtcTemplate* aTemplate );
 
     //-----------------------------------------------------
-    // [setMtr ê³„ì—´ í•¨ìˆ˜]
-    // Columnì„ Materialized Rowì— ì €ì¥í•˜ëŠ” ë°©ë²•
+    // [setMtr °è¿­ ÇÔ¼ö]
+    // ColumnÀ» Materialized Row¿¡ ÀúÀåÇÏ´Â ¹æ¹ı
     //-----------------------------------------------------
 
-    // ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” í•¨ìˆ˜
+    // »ç¿ëµÇÁö ¾Ê´Â ÇÔ¼ö
     static IDE_RC setMtrNA( qcTemplate  * aTemplate,
                             qmdMtrNode  * aNode,
                             void        * aRow );
 
-    // Pointerë¥¼ Materialized Rowì— êµ¬ì„±.
+    // Pointer¸¦ Materialized Row¿¡ ±¸¼º.
     static IDE_RC setMtrByPointer( qcTemplate  * aTemplate,
                                    qmdMtrNode  * aNode,
                                    void        * aRow );
 
-    // RIDë¥¼ Materialized Rowì— êµ¬ì„±
+    // RID¸¦ Materialized Row¿¡ ±¸¼º
     static IDE_RC setMtrByRID( qcTemplate  * aTemplate,
                                qmdMtrNode  * aNode,
                                void        * aRow );
 
-    // ì—°ì‚° ìˆ˜í–‰ì˜ Value ìì²´ë¥¼ Materialized Rowì— êµ¬ì„±
+    // ¿¬»ê ¼öÇàÀÇ Value ÀÚÃ¼¸¦ Materialized Row¿¡ ±¸¼º
     static IDE_RC setMtrByValue( qcTemplate  * aTemplate,
                                  qmdMtrNode  * aNode,
                                  void        * aRow);
 
-    // Columnì„ ë³µì‚¬í•˜ì—¬ Materialized Rowì— êµ¬ì„±
+    // ColumnÀ» º¹»çÇÏ¿© Materialized Row¿¡ ±¸¼º
     static IDE_RC setMtrByCopy( qcTemplate  * aTemplate,
                                 qmdMtrNode  * aNode,
                                 void        * aRow);
 
-    // Source Columnì˜ ì—°ì‚° ê²°ê³¼ë¥¼ Materialized Rowì— êµ¬ì„±
+    // Source ColumnÀÇ ¿¬»ê °á°ú¸¦ Materialized Row¿¡ ±¸¼º
     static IDE_RC setMtrByConvert( qcTemplate  * aTemplate,
                                    qmdMtrNode  * aNode,
                                    void        * aRow);
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     static IDE_RC setMtrByCopyOrConvert( qcTemplate  * aTemplate,
                                          qmdMtrNode  * aNode,
                                          void        * aRow );
@@ -576,7 +581,7 @@ public:
                                 void       * aRow );
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // Partitioned tableì˜ ê²½ìš° tuple idë¥¼ ì €ì¥í•´ì•¼ í•¨.
+    // Partitioned tableÀÇ °æ¿ì tuple id¸¦ ÀúÀåÇØ¾ß ÇÔ.
     static IDE_RC setMtrByPointerAndTupleID( qcTemplate  * aTemplate,
                                              qmdMtrNode  * aNode,
                                              void        * aRow);
@@ -585,45 +590,45 @@ public:
                                          qmdMtrNode  * aNode,
                                          void        * aRow);
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     static IDE_RC setMtrByPointerOrRIDAndTupleID( qcTemplate  * aTemplate,
                                                   qmdMtrNode  * aNode,
                                                   void        * aRow );
 
-    // Pointerê°€ ì €ì¥ëœ Columnìœ¼ë¡œë¶€í„° row pointeríšë“
+    // Pointer°¡ ÀúÀåµÈ ColumnÀ¸·ÎºÎÅÍ row pointerÈ¹µæ
     static void * getRowByPointerAndTupleID( qmdMtrNode * aNode,
                                              const void * aRow );
 
-    // Pointerê°€ ì €ì¥ëœ Columnìœ¼ë¡œë¶€í„° NULL ì—¬ë¶€ íŒë‹¨
+    // Pointer°¡ ÀúÀåµÈ ColumnÀ¸·ÎºÎÅÍ NULL ¿©ºÎ ÆÇ´Ü
     static idBool   isNullByPointerAndTupleID( qmdMtrNode * aNode,
                                                void       * aRow );
     
-    // Pointerê°€ ì €ì¥ëœ Columnìœ¼ë¡œë¶€í„° Hash ê°’ íšë“
+    // Pointer°¡ ÀúÀåµÈ ColumnÀ¸·ÎºÎÅÍ Hash °ª È¹µæ
     static UInt   getHashByPointerAndTupleID( UInt         aValue,
                                               qmdMtrNode * aNode,
                                               void       * aRow );
     
     //-----------------------------------------------------
-    // [setTuple ê³„ì—´ í•¨ìˆ˜]
-    // Materialized Rowì— ì €ì¥ëœ Columnì„ ì›ë³µí•˜ëŠ” ë°©ë²•
+    // [setTuple °è¿­ ÇÔ¼ö]
+    // Materialized Row¿¡ ÀúÀåµÈ ColumnÀ» ¿øº¹ÇÏ´Â ¹æ¹ı
     //-----------------------------------------------------
 
-    // ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” í•¨ìˆ˜
+    // »ç¿ëµÇÁö ¾Ê´Â ÇÔ¼ö
     static IDE_RC   setTupleNA( qcTemplate * aTemplate,
                                 qmdMtrNode * aNode,
                                 void       * aRow );
 
-    // Materialized Rowì— Pointerë¡œ ì €ì¥ëœ Columnì„ ë³µì›
+    // Materialized Row¿¡ Pointer·Î ÀúÀåµÈ ColumnÀ» º¹¿ø
     static IDE_RC   setTupleByPointer( qcTemplate * aTemplate,
                                        qmdMtrNode * aNode,
                                        void       * aRow );
 
-    // Materialized Rowì— Disk Tableì„ ìœ„í•œ RIDë¡œ ì €ì¥ëœ Columnì„ ë³µì›
+    // Materialized Row¿¡ Disk TableÀ» À§ÇÑ RID·Î ÀúÀåµÈ ColumnÀ» º¹¿ø
     static IDE_RC   setTupleByRID( qcTemplate * aTemplate,
                                    qmdMtrNode * aNode,
                                    void       * aRow );
 
-    // Materialized Rowì— Valueìì²´ê°€ ì €ì¥ëœ Columnì„ ë³µì›
+    // Materialized Row¿¡ ValueÀÚÃ¼°¡ ÀúÀåµÈ ColumnÀ» º¹¿ø
     static IDE_RC   setTupleByValue( qcTemplate * aTemplate,
                                      qmdMtrNode *  aNode,
                                      void       * aRow );
@@ -634,7 +639,7 @@ public:
                                     void       * aRow );    
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // Partitioned tableì˜ ê²½ìš° tuple idë„ ì›ë³µí•´ì•¼ í•¨.
+    // Partitioned tableÀÇ °æ¿ì tuple idµµ ¿øº¹ÇØ¾ß ÇÔ.
     static IDE_RC   setTupleByRIDAndTupleID( qcTemplate * aTemplate,
                                              qmdMtrNode * aNode,
                                              void       * aRow );
@@ -643,89 +648,89 @@ public:
                                                  qmdMtrNode * aNode,
                                                  void       * aRow );
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     static IDE_RC   setTupleByPointerOrRIDAndTupleID( qcTemplate * aTemplate,
                                                       qmdMtrNode * aNode,
                                                       void       * aRow );
 
     //-----------------------------------------------------
-    // [getHash ê³„ì—´ í•¨ìˆ˜]
-    // Materialized Rowì— ì €ì¥ëœ Columnì˜ Hashê°’ì„ ì–»ëŠ” ë°©ë²•
+    // [getHash °è¿­ ÇÔ¼ö]
+    // Materialized Row¿¡ ÀúÀåµÈ ColumnÀÇ Hash°ªÀ» ¾ò´Â ¹æ¹ı
     //-----------------------------------------------------
 
-    // ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” í•¨ìˆ˜
+    // »ç¿ëµÇÁö ¾Ê´Â ÇÔ¼ö
     static UInt   getHashNA( UInt         aValue,
                              qmdMtrNode * aNode,
                              void       * aRow );
 
-    // Pointerê°€ ì €ì¥ëœ Columnìœ¼ë¡œë¶€í„° Hash ê°’ íšë“
+    // Pointer°¡ ÀúÀåµÈ ColumnÀ¸·ÎºÎÅÍ Hash °ª È¹µæ
     static UInt   getHashByPointer( UInt         aValue,
                                     qmdMtrNode * aNode,
                                     void       * aRow );
 
-    // Valueê°€ ì €ì¥ëœ Columnìœ¼ë¡œë¶€í„° Hash ê°’ íšë“
+    // Value°¡ ÀúÀåµÈ ColumnÀ¸·ÎºÎÅÍ Hash °ª È¹µæ
     static UInt   getHashByValue( UInt         aValue,
                                   qmdMtrNode * aNode,
                                   void       * aRow );
 
     //-----------------------------------------------------
-    // [isNull ê³„ì—´ í•¨ìˆ˜]
-    // Materialized Rowì— ì €ì¥ëœ Columnì˜ NULLì—¬ë¶€ íŒë‹¨ ë°©ë²•
+    // [isNull °è¿­ ÇÔ¼ö]
+    // Materialized Row¿¡ ÀúÀåµÈ ColumnÀÇ NULL¿©ºÎ ÆÇ´Ü ¹æ¹ı
     //-----------------------------------------------------
 
-    // ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” í•¨ìˆ˜
+    // »ç¿ëµÇÁö ¾Ê´Â ÇÔ¼ö
     static idBool   isNullNA( qmdMtrNode * aNode,
                               void       * aRow );
 
-    // Pointerê°€ ì €ì¥ëœ Columnìœ¼ë¡œë¶€í„° NULL ì—¬ë¶€ íŒë‹¨
+    // Pointer°¡ ÀúÀåµÈ ColumnÀ¸·ÎºÎÅÍ NULL ¿©ºÎ ÆÇ´Ü
     static idBool   isNullByPointer( qmdMtrNode * aNode,
                                      void       * aRow );
 
-    // Valueê°€ ì €ì¥ëœ Columnìœ¼ë¡œë¶€í„° NULL ì—¬ë¶€ íŒë‹¨
+    // Value°¡ ÀúÀåµÈ ColumnÀ¸·ÎºÎÅÍ NULL ¿©ºÎ ÆÇ´Ü
     static idBool   isNullByValue( qmdMtrNode * aNode,
                                    void       * aRow );
 
     //-----------------------------------------------------
-    // [makeNull ê³„ì—´ í•¨ìˆ˜]
-    // Materialized Rowì— ì €ì¥ëœ Columnì˜ NULLì—¬ë¶€ íŒë‹¨ ë°©ë²•
+    // [makeNull °è¿­ ÇÔ¼ö]
+    // Materialized Row¿¡ ÀúÀåµÈ ColumnÀÇ NULL¿©ºÎ ÆÇ´Ü ¹æ¹ı
     //-----------------------------------------------------
 
-    // ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” í•¨ìˆ˜
+    // »ç¿ëµÇÁö ¾Ê´Â ÇÔ¼ö
     static void   makeNullNA( qmdMtrNode * aNode,
                               void       * aRow );
 
-    // Null Valueë¥¼ ìƒì„±í•˜ì§€ ì•ŠìŒ
+    // Null Value¸¦ »ı¼ºÇÏÁö ¾ÊÀ½
     static void   makeNullNothing( qmdMtrNode * aNode,
                                    void       * aRow );
 
-    // Null Valueë¥¼ ìƒì„±
+    // Null Value¸¦ »ı¼º
     static void   makeNullValue( qmdMtrNode * aNode,
                                  void       * aRow );
 
     //-----------------------------------------------------
-    // [getRow ê³„ì—´ í•¨ìˆ˜]
-    // Materialized Rowì˜ ì €ì¥ëœ Columnì˜ ì‹¤ì œ row pointeríšë“ í•¨ìˆ˜
+    // [getRow °è¿­ ÇÔ¼ö]
+    // Materialized RowÀÇ ÀúÀåµÈ ColumnÀÇ ½ÇÁ¦ row pointerÈ¹µæ ÇÔ¼ö
     //-----------------------------------------------------
 
-    // ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” í•¨ìˆ˜
+    // »ç¿ëµÇÁö ¾Ê´Â ÇÔ¼ö
     static void * getRowNA( qmdMtrNode * aNode,
                             const void * aRow );
 
-    // Pointerê°€ ì €ì¥ëœ Columnìœ¼ë¡œë¶€í„° row pointeríšë“
+    // Pointer°¡ ÀúÀåµÈ ColumnÀ¸·ÎºÎÅÍ row pointerÈ¹µæ
     static void * getRowByPointer ( qmdMtrNode * aNode,
                                     const void * aRow );
 
-    // Valueê°€ ì €ì¥ëœ Columnìœ¼ë¡œë¶€í„° row pointeríšë“
+    // Value°¡ ÀúÀåµÈ ColumnÀ¸·ÎºÎÅÍ row pointerÈ¹µæ
     static void * getRowByValue ( qmdMtrNode * aNode,
                                   const void * aRow );
 
     //-----------------------------------------------------
-    // [ê¸°íƒ€ ì§€ì› í•¨ìˆ˜]
+    // [±âÅ¸ Áö¿ø ÇÔ¼ö]
     //-----------------------------------------------------
 
     //---------------------------------------------
-    // ì €ì¥ Nodeë“¤ì˜ ì˜¬ë°”ë¥¸ ì‚¬ìš©ì„ ìœ„í•´ì„œëŠ” ë‹¤ìŒê³¼ ê°™ì€
-    // ìˆœì„œë¥¼ ìœ ì§€í•˜ë©° ì²˜ë¦¬í•˜ì—¬ì•¼ í•œë‹¤.
+    // ÀúÀå NodeµéÀÇ ¿Ã¹Ù¸¥ »ç¿ëÀ» À§ÇØ¼­´Â ´ÙÀ½°ú °°Àº
+    // ¼ø¼­¸¦ À¯ÁöÇÏ¸ç Ã³¸®ÇÏ¿©¾ß ÇÑ´Ù.
     //     ::linkMtrNode()
     //     ::initMtrNode()
     //     ::refineOffsets()
@@ -733,38 +738,38 @@ public:
     //     ::getRowSize()
     //---------------------------------------------
 
-    // 1. Data ì˜ì—­ì˜ ì €ì¥ Nodeë¥¼ ì—°ê²°
+    // 1. Data ¿µ¿ªÀÇ ÀúÀå Node¸¦ ¿¬°á
     static IDE_RC linkMtrNode( const qmcMtrNode * aCodeNode,
                                qmdMtrNode       * aDataNode );
 
-    // 2. Data ì˜ì—­ì˜ ì €ì¥ Nodeë¥¼ ì´ˆê¸°í™”
+    // 2. Data ¿µ¿ªÀÇ ÀúÀå Node¸¦ ÃÊ±âÈ­
     static IDE_RC initMtrNode( qcTemplate * aTemplate,
                                qmdMtrNode * aDataNode,
                                UShort       aBaseTableCount );
 
-    // 3. ì €ì¥ë˜ëŠ” Columnë“¤ì˜ offsetì„ ì¬ì¡°ì •í•¨.
+    // 3. ÀúÀåµÇ´Â ColumnµéÀÇ offsetÀ» ÀçÁ¶Á¤ÇÔ.
     static IDE_RC refineOffsets( qmdMtrNode * aNode, UInt aStartOffset );
 
-    // 4. Tuple ê³µê°„ì˜ Sizeë¥¼ ê³„ì‚°í•˜ê³ , Memoryë¥¼ í• ë‹¹í•¨.
+    // 4. Tuple °ø°£ÀÇ Size¸¦ °è»êÇÏ°í, Memory¸¦ ÇÒ´çÇÔ.
     static IDE_RC setRowSize( iduMemory  * aMemory,
                               mtcTemplate* aTemplate,
                               UShort       aTupleID );
 
-    // 5. ì €ì¥ Rowì˜ Sizeë¥¼ êµ¬í•¨
+    // 5. ÀúÀå RowÀÇ Size¸¦ ±¸ÇÔ
     static UInt   getMtrRowSize( qmdMtrNode * aNode );
 
-    // Materialized Columnì„ ì²˜ë¦¬í•  í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ê²°ì •
+    // Materialized ColumnÀ» Ã³¸®ÇÒ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ °áÁ¤
     static IDE_RC setFunctionPointer( qmdMtrNode * aDataNode );
 
-    // Materialized Columnì˜ ë¹„êµ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ê²°ì •
+    // Materialized ColumnÀÇ ºñ±³ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ °áÁ¤
     static IDE_RC setCompareFunction( qmdMtrNode * aDataNode );
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     static UInt getRowOffsetForTuple( mtcTemplate * aTemplate,
                                       UShort        aTupleID );
 
     // PROJ-2179
-    // Result descriptorë¥¼ ë‹¤ë£¨ê¸° ìœ„í•œ í•¨ìˆ˜ë“¤
+    // Result descriptor¸¦ ´Ù·ç±â À§ÇÑ ÇÔ¼öµé
     static IDE_RC findAttribute( qcStatement  * aStatement,
                                  qmcAttrDesc  * aResult,
                                  qtcNode      * aExpr,
@@ -832,50 +837,50 @@ public:
 private :
 
     //-----------------------------------------------------
-    // ì €ì¥ Node ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
+    // ÀúÀå Node ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
     //-----------------------------------------------------
 
-    // ì €ì¥ Columnë“¤ì˜ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
+    // ÀúÀå ColumnµéÀÇ Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
     static IDE_RC setMtrNode( qcTemplate * aTemplate,
                               qmdMtrNode * aDataNode,
                               qmcMtrNode * aCodeNode,
                               idBool       aBaseTable );
 
     //---------------------------
-    // í•¨ìˆ˜ í¬ì¸í„° ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
+    // ÇÔ¼ö Æ÷ÀÎÅÍ ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
     //---------------------------
 
-    // Memory Columnì— ëŒ€í•œ í•¨ìˆ˜ í¬ì¸í„° ê²°ì •
+    // Memory Column¿¡ ´ëÇÑ ÇÔ¼ö Æ÷ÀÎÅÍ °áÁ¤
     static IDE_RC setFunction4MemoryColumn( qmdMtrNode * aDataNode );
 
-    // Memory Partition Columnì— ëŒ€í•œ í•¨ìˆ˜ í¬ì¸í„° ê²°ì •
+    // Memory Partition Column¿¡ ´ëÇÑ ÇÔ¼ö Æ÷ÀÎÅÍ °áÁ¤
     static IDE_RC setFunction4MemoryPartitionColumn( qmdMtrNode * aDataNode );
 
-    // Disk Columnì— ëŒ€í•œ í•¨ìˆ˜ í¬ì¸í„° ê²°ì •
+    // Disk Column¿¡ ´ëÇÑ ÇÔ¼ö Æ÷ÀÎÅÍ °áÁ¤
     static IDE_RC setFunction4DiskColumn( qmdMtrNode * aDataNode );
 
-    // Constantì— ëŒ€í•œ í•¨ìˆ˜ í¬ì¸í„° ê²°ì •
+    // Constant¿¡ ´ëÇÑ ÇÔ¼ö Æ÷ÀÎÅÍ °áÁ¤
     static IDE_RC setFunction4Constant( qmdMtrNode * aDataNode );
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // Disk Tableì˜ Key Columnì— ëŒ€í•œ í•¨ìˆ˜ í¬ì¸í„° ê²°ì •
+    // Disk TableÀÇ Key Column¿¡ ´ëÇÑ ÇÔ¼ö Æ÷ÀÎÅÍ °áÁ¤
     static IDE_RC setFunction4DiskKeyColumn( qmdMtrNode * aDataNode );
 
     //-----------------------------------------------------
-    // Offset ì¡°ì • ê´€ë ¨ í•¨ìˆ˜
+    // Offset Á¶Á¤ °ü·Ã ÇÔ¼ö
     //-----------------------------------------------------
 
-    // Memory Columnì´ ì €ì¥ë  ë•Œì˜ offset ì¡°ì •
+    // Memory ColumnÀÌ ÀúÀåµÉ ¶§ÀÇ offset Á¶Á¤
     static IDE_RC refineOffset4MemoryColumn( qmdMtrNode * aListNode,
                                              qmdMtrNode * aColumnNode,
                                              UInt       * aOffset );
 
-    // Memory Partition Columnì´ ì €ì¥ë  ë•Œì˜ offset ì¡°ì •
+    // Memory Partition ColumnÀÌ ÀúÀåµÉ ¶§ÀÇ offset Á¶Á¤
     static IDE_RC refineOffset4MemoryPartitionColumn( qmdMtrNode * aListNode,
                                                       qmdMtrNode * aColumnNode,
                                                       UInt       * aOffset );
 
-    // Disk Columnì´ ì €ì¥ë  ë•Œì˜ offset ì¡°ì •
+    // Disk ColumnÀÌ ÀúÀåµÉ ¶§ÀÇ offset Á¶Á¤
     static IDE_RC refineOffset4DiskColumn( qmdMtrNode * aListNode,
                                            qmdMtrNode * aColumnNode,
                                            UInt       * aOffset );

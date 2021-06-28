@@ -29,57 +29,57 @@
 #include <smmShmKeyList.h>
 
 /*
-    smmShmKeyMgr - DBì˜ ê³µìœ ë©”ëª¨ë¦¬ Key í›„ë³´ë¥¼ ê´€ë¦¬í•œë‹¤.
+    smmShmKeyMgr - DBÀÇ °øÀ¯¸Þ¸ð¸® Key ÈÄº¸¸¦ °ü¸®ÇÑ´Ù.
 
     [PROJ-1548] User Memory Tablespace
     
-    - ê³µìœ  ë©”ëª¨ë¦¬ í‚¤ í›„ë³´ëž€?
-      - ê³µìœ ë©”ëª¨ë¦¬ Keyê°€ ì‚¬ìš© ê°€ëŠ¥í•œì§€ ì—¬ë¶€ë¥¼
-        ì§ì ‘ ê³µìœ ë©”ëª¨ë¦¬ ì˜ì—­ì„  ìƒì„±í•´ë´ì•¼ ì•Œ ìˆ˜ ìžˆë‹¤.
-      - í•´ë‹¹ Keyë¥¼ ì´ìš©í•˜ì—¬ ìƒˆ ê³µìœ ë©”ëª¨ë¦¬ ì˜ì—­ì„ ìƒì„±í•  ìˆ˜ ìžˆì„ ìˆ˜ë„
-        ìžˆê³  ì´ë¯¸ í•´ë‹¹ Keyë¡œ ê³µìœ ë©”ëª¨ë¦¬ ì˜ì—­ì´ ìƒì„±ë˜ì–´ ìžˆì–´ì„œ
-        ì‚¬ìš©ì´ ë¶ˆê°€ëŠ¥í•œ Keyì¼ ìˆ˜ë„ ìžˆë‹¤.
+    - °øÀ¯ ¸Þ¸ð¸® Å° ÈÄº¸¶õ?
+      - °øÀ¯¸Þ¸ð¸® Key°¡ »ç¿ë °¡´ÉÇÑÁö ¿©ºÎ¸¦
+        Á÷Á¢ °øÀ¯¸Þ¸ð¸® ¿µ¿ªÀ»  »ý¼ºÇØºÁ¾ß ¾Ë ¼ö ÀÖ´Ù.
+      - ÇØ´ç Key¸¦ ÀÌ¿ëÇÏ¿© »õ °øÀ¯¸Þ¸ð¸® ¿µ¿ªÀ» »ý¼ºÇÒ ¼ö ÀÖÀ» ¼öµµ
+        ÀÖ°í ÀÌ¹Ì ÇØ´ç Key·Î °øÀ¯¸Þ¸ð¸® ¿µ¿ªÀÌ »ý¼ºµÇ¾î ÀÖ¾î¼­
+        »ç¿ëÀÌ ºÒ°¡´ÉÇÑ KeyÀÏ ¼öµµ ÀÖ´Ù.
 
-    - ì‚¬ìš©ê°€ëŠ¥í•œ ê³µìœ ë©”ëª¨ë¦¬í‚¤ë¥¼ ì°¾ëŠ” ì•Œê³ ë¦¬ì¦˜ 
-      - SHM_DB_KEY í”„ë¡œí¼í‹°ë¥¼ ì‹œìž‘ìœ¼ë¡œ 1ì”© ê°ì†Œí•´ê°€ë©°
-        ì‚¬ìš©ê°€ëŠ¥í•œ Keyë¥¼ ì°¾ëŠ” ë°©ì‹ìœ¼ë¡œ
+    - »ç¿ë°¡´ÉÇÑ °øÀ¯¸Þ¸ð¸®Å°¸¦ Ã£´Â ¾Ë°í¸®Áò 
+      - SHM_DB_KEY ÇÁ·ÎÆÛÆ¼¸¦ ½ÃÀÛÀ¸·Î 1¾¿ °¨¼ÒÇØ°¡¸ç
+        »ç¿ë°¡´ÉÇÑ Key¸¦ Ã£´Â ¹æ½ÄÀ¸·Î
         
-    - Tablespaceë³„ ê³µìœ ë©”ëª¨ë¦¬ í‚¤ ê´€ë¦¬
-      - Tablespaceë³„ë¡œ ê³µìœ ë©”ëª¨ë¦¬ Keyë²”ìœ„ê°€ ë”°ë¡œ ë¶„ë¦¬ë˜ì–´ ìžˆì§€ ì•Šë‹¤.
-      - ì¦‰, SHM_DB_KEYë¡œë¶€í„° ì‹œìž‘í•˜ì—¬ í•˜ë‚˜ì”© ê°ì†Œí•´ê°€ë©° ì—¬ëŸ¬
-        í…Œì´ë¸” ìŠ¤íŽ˜ì´ìŠ¤ê°€ ê³µìœ ë©”ëª¨ë¦¬ í‚¤ë¥¼ ë‚˜ëˆ„ì–´ ê°€ì ¸ê°„ë‹¤.
+    - Tablespaceº° °øÀ¯¸Þ¸ð¸® Å° °ü¸®
+      - Tablespaceº°·Î °øÀ¯¸Þ¸ð¸® Key¹üÀ§°¡ µû·Î ºÐ¸®µÇ¾î ÀÖÁö ¾Ê´Ù.
+      - Áï, SHM_DB_KEY·ÎºÎÅÍ ½ÃÀÛÇÏ¿© ÇÏ³ª¾¿ °¨¼ÒÇØ°¡¸ç ¿©·¯
+        Å×ÀÌºí ½ºÆäÀÌ½º°¡ °øÀ¯¸Þ¸ð¸® Å°¸¦ ³ª´©¾î °¡Á®°£´Ù.
 
-    - ë™ì‹œì„± ì œì–´
-      - ì—¬ëŸ¬ Tablespaceì— ì ‘ê·¼í•˜ëŠ” ì—¬ëŸ¬ Threadê°€ ë™ì‹œì—
-        ê³µìœ ë©”ëª¨ë¦¬ Keyí›„ë³´ë¥¼ ê°€ì ¸ì˜¤ë ¤ í•  ìˆ˜ ìžˆë‹¤.
-      - Mutexë¥¼ ë‘ì–´ í•œë²ˆì— í•˜ë‚˜ì˜ Threadë§Œì´ ê³µìœ  ë©”ëª¨ë¦¬ Key í›„ë³´ë¥¼
-        ê°€ì ¸ê°ˆ ìˆ˜ ìžˆë„ë¡ êµ¬í˜„í•œë‹¤.
+    - µ¿½Ã¼º Á¦¾î
+      - ¿©·¯ Tablespace¿¡ Á¢±ÙÇÏ´Â ¿©·¯ Thread°¡ µ¿½Ã¿¡
+        °øÀ¯¸Þ¸ð¸® KeyÈÄº¸¸¦ °¡Á®¿À·Á ÇÒ ¼ö ÀÖ´Ù.
+      - Mutex¸¦ µÎ¾î ÇÑ¹ø¿¡ ÇÏ³ªÀÇ Thread¸¸ÀÌ °øÀ¯ ¸Þ¸ð¸® Key ÈÄº¸¸¦
+        °¡Á®°¥ ¼ö ÀÖµµ·Ï ±¸ÇöÇÑ´Ù.
 
-    - ê³µìœ ë©”ëª¨ë¦¬ Keyì˜ ìž¬í™œìš©
-      - ê°€ëŠ¥í•˜ë©´ ì´ì „ì— ë‹¤ë¥¸ Tablespaceì—ì„œ ì‚¬ìš©ë˜ì—ˆë˜ Keyë¥¼
-        ìž¬í™œìš©í•˜ì—¬ ì‚¬ìš©í•œë‹¤.
+    - °øÀ¯¸Þ¸ð¸® KeyÀÇ ÀçÈ°¿ë
+      - °¡´ÉÇÏ¸é ÀÌÀü¿¡ ´Ù¸¥ Tablespace¿¡¼­ »ç¿ëµÇ¾ú´ø Key¸¦
+        ÀçÈ°¿ëÇÏ¿© »ç¿ëÇÑ´Ù.
         
-      -  Tablespace dropì‹œì— Tablespaceì—ì„œ ì‚¬ìš©ì¤‘ì´ë˜ ê³µìœ ë©”ëª¨ë¦¬ Keyë¥¼
-         ë‹¤ë¥¸ Tablespaceì—ì„œ ìž¬í™œìš©í•  ìˆ˜ ìžˆì–´ì•¼ í•œë‹¤.
+      -  Tablespace drop½Ã¿¡ Tablespace¿¡¼­ »ç¿ëÁßÀÌ´ø °øÀ¯¸Þ¸ð¸® Key¸¦
+         ´Ù¸¥ Tablespace¿¡¼­ ÀçÈ°¿ëÇÒ ¼ö ÀÖ¾î¾ß ÇÑ´Ù.
 
-         - ë¬¸ì œ
-           Tablespace ê°€ dropë ë•Œ í•´ë‹¹ Tablespaceì—ì„œ ì‚¬ìš©ì¤‘ì´ë˜
-           ê³µìœ ë©”ëª¨ë¦¬ Keyë¥¼ ìž¬í™œìš©í•˜ì§€ ì•Šì„ ê²½ìš°
-           Tablespace create/dropì„ ë°˜ë³µí•˜ë©´ ê³µìœ ë©”ëª¨ë¦¬ Keyê°€
-           ê³ ê°ˆë˜ëŠ” ë¬¸ì œê°€ ìƒê¹€
+         - ¹®Á¦
+           Tablespace °¡ dropµÉ¶§ ÇØ´ç Tablespace¿¡¼­ »ç¿ëÁßÀÌ´ø
+           °øÀ¯¸Þ¸ð¸® Key¸¦ ÀçÈ°¿ëÇÏÁö ¾ÊÀ» °æ¿ì
+           Tablespace create/dropÀ» ¹Ýº¹ÇÏ¸é °øÀ¯¸Þ¸ð¸® Key°¡
+           °í°¥µÇ´Â ¹®Á¦°¡ »ý±è
 
-         - í•´ê²°ì±…
-           Tablespaceê°€ dropë ë•Œ í•´ë‹¹ Tablespaceì—ì„œ ì‚¬ìš©ì¤‘ì´ë˜
-           ê³µìœ ë©”ëª¨ë¦¬ Keyë¥¼ ìž¬í™œìš©í•œë‹¤.
+         - ÇØ°áÃ¥
+           Tablespace°¡ dropµÉ¶§ ÇØ´ç Tablespace¿¡¼­ »ç¿ëÁßÀÌ´ø
+           °øÀ¯¸Þ¸ð¸® Key¸¦ ÀçÈ°¿ëÇÑ´Ù.
        
  */
 
 class smmShmKeyMgr
 {
 private :
-    static iduMutex      mMutex;       // mSeekKeyë¥¼ ë³´í˜¸í•˜ëŠ” Mutex
-    static smmShmKeyList mFreeKeyList; // ìž¬í™œìš© ê³µìœ ë©”ëª¨ë¦¬ Key List
-    // ìž¬í™œìš© Keyê°€ ì—†ì„ë•Œ 1ì”© ê°ì†Œí•´ê°€ë©° ê³µìœ ë©”ëª¨ë¦¬ í›„ë³´í‚¤ ì°¾ì„ ê¸°ì¤€ í‚¤
+    static iduMutex      mMutex;       // mSeekKey¸¦ º¸È£ÇÏ´Â Mutex
+    static smmShmKeyList mFreeKeyList; // ÀçÈ°¿ë °øÀ¯¸Þ¸ð¸® Key List
+    // ÀçÈ°¿ë Key°¡ ¾øÀ»¶§ 1¾¿ °¨¼ÒÇØ°¡¸ç °øÀ¯¸Þ¸ð¸® ÈÄº¸Å° Ã£À» ±âÁØ Å°
     static key_t         mSeekKey;     
     
     
@@ -88,21 +88,21 @@ private :
 
 public :
 
-    // ë‹¤ìŒ ì‚¬ìš©í•  ê³µìœ ë©”ëª¨ë¦¬ Key í›„ë³´ë¥¼ ì°¾ì•„ ë¦¬í„´í•œë‹¤.
+    // ´ÙÀ½ »ç¿ëÇÒ °øÀ¯¸Þ¸ð¸® Key ÈÄº¸¸¦ Ã£¾Æ ¸®ÅÏÇÑ´Ù.
     static IDE_RC getShmKeyCandidate(key_t * aShmKeyCandidate) ;
 
 
-    // í˜„ìž¬ ì‚¬ìš©ì¤‘ì¸ Keyë¥¼ ì•Œë ¤ì¤€ë‹¤.
+    // ÇöÀç »ç¿ëÁßÀÎ Key¸¦ ¾Ë·ÁÁØ´Ù.
     static IDE_RC notifyUsedKey(key_t aUsedKey);
 
-    // ë”ì´ìƒ ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” Keyë¥¼ ì•Œë ¤ì¤€ë‹¤.
+    // ´õÀÌ»ó »ç¿ëµÇÁö ¾Ê´Â Key¸¦ ¾Ë·ÁÁØ´Ù.
     static IDE_RC notifyUnusedKey(key_t aUnusedKey);
     
-    // shmShmKeyMgrì˜ static ì´ˆê¸°í™” ìˆ˜í–‰ 
+    // shmShmKeyMgrÀÇ static ÃÊ±âÈ­ ¼öÇà 
     static IDE_RC initializeStatic();
     
 
-    // shmShmKeyMgrì˜ static íŒŒê´´ ìˆ˜í–‰ 
+    // shmShmKeyMgrÀÇ static ÆÄ±« ¼öÇà 
     static IDE_RC destroyStatic();
 
     static IDE_RC lock() { return mMutex.lock( NULL ); }

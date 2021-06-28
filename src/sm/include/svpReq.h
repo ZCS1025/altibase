@@ -102,13 +102,15 @@ class svpReqFunc
                               smOID       aTblOID,
                               smOID       aRecOID,
                               scSpaceID   aSpaceID,
-                              UInt        aFlag )
+                              UInt        aFlag,
+                              smSCN       aSCN )
         {
             return smxTrans::addOID2Trans( aTrans,
                                            aTblOID,
                                            aRecOID,
                                            aSpaceID,
-                                           aFlag );
+                                           aFlag,
+                                           aSCN );
         };
         static IDE_RC lockItem( void        * aTrans,
                                 void        * aLockItem,

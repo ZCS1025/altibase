@@ -100,6 +100,11 @@ public class BooleanColumn extends AbstractColumn
         ((ByteDynamicArray) aArray).put(mBooleanValue);
     }
 
+    public void storeTo()
+    {
+        mValues.add(mBooleanValue);
+    }
+
     protected void readFromSub(CmChannel aChannel) throws SQLException
     {
         mBooleanValue = aChannel.readByte();
@@ -110,9 +115,19 @@ public class BooleanColumn extends AbstractColumn
         ((ByteDynamicArray)aArray).put(aChannel.readByte());
     }
 
+    protected void readAndStoreValue(CmChannel aChannel) throws SQLException
+    {
+        mValues.add(aChannel.readByte());
+    }
+
     protected void loadFromSub(DynamicArray aArray)
     {
         mBooleanValue = ((ByteDynamicArray) aArray).get();
+    }
+
+    protected void loadFromSub(int aLoadIndex)
+    {
+        mBooleanValue = (Byte)mValues.get(aLoadIndex);
     }
 
     protected void setNullValue()

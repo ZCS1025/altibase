@@ -16,14 +16,14 @@
  
 
 /***********************************************************************
- * $Id: qmnScan.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qmnScan.cpp 90270 2021-03-21 23:20:18Z bethy $
  *
  * Description :
  *     SCAN Plan Node
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -54,12 +54,12 @@ qmnSCAN::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SCAN ë…¸ë“œì˜ ì´ˆê¸°í™”
+ *    SCAN ³ëµåÀÇ ÃÊ±âÈ­
  *
  * Implementation :
- *    - ìµœì´ˆ ì´ˆê¸°í™”ê°€ ë˜ì§€ ì•Šì€ ê²½ìš° ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰
- *    - Constant Filterì˜ ìˆ˜í–‰ ê²°ê³¼ ê²€ì‚¬
- *    - Constant Filterì˜ ê²°ê³¼ì— ë”°ë¥¸ ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
+ *    - ÃÖÃÊ ÃÊ±âÈ­°¡ µÇÁö ¾ÊÀº °æ¿ì ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà
+ *    - Constant FilterÀÇ ¼öÇà °á°ú °Ë»ç
+ *    - Constant FilterÀÇ °á°ú¿¡ µû¸¥ ¼öÇà ÇÔ¼ö °áÁ¤
  *
  ***********************************************************************/
 
@@ -77,13 +77,13 @@ qmnSCAN::init( qcTemplate * aTemplate,
     sDataPlan->plan.mTID = QMN_PLAN_INIT_THREAD_ID;
 
     //------------------------------------------------
-    // ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰ ì—¬ë¶€ íŒë‹¨
+    // ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà ¿©ºÎ ÆÇ´Ü
     //------------------------------------------------
 
     if ( (*sDataPlan->flag & QMND_SCAN_INIT_DONE_MASK)
          == QMND_SCAN_INIT_DONE_FALSE )
     {
-        // ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰
+        // ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà
         IDE_TEST( firstInit(aTemplate, sCodePlan, sDataPlan) != IDE_SUCCESS );
     }
     else
@@ -92,10 +92,16 @@ qmnSCAN::init( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // Constant Filterë¥¼ ìˆ˜í–‰
+    // Constant Filter¸¦ ¼öÇà
     //------------------------------------------------
 
-    if ( sCodePlan->method.constantFilter != NULL )
+    /* TASK-7307 DML Data Consistency in Shard */
+    if ( ( QCG_CHECK_SHARD_DML_CONSISTENCY( aTemplate->stmt ) == ID_TRUE ) &&
+         ( sCodePlan->tableRef->tableInfo->mIsUsable == ID_FALSE ) )
+    {
+        sJudge = ID_FALSE;
+    }
+    else if ( sCodePlan->method.constantFilter != NULL )
     {
         IDE_TEST( qtc::judge( & sJudge,
                               sCodePlan->method.constantFilter,
@@ -108,19 +114,19 @@ qmnSCAN::init( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // Constant Filterì— ë”°ë¥¸ ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
+    // Constant Filter¿¡ µû¸¥ ¼öÇà ÇÔ¼ö °áÁ¤
     //------------------------------------------------
 
     if ( sJudge == ID_TRUE )
     {
         //---------------------------------
-        // Constant Filterë¥¼ ë§Œì¡±í•˜ëŠ” ê²½ìš°
+        // Constant Filter¸¦ ¸¸Á·ÇÏ´Â °æ¿ì
         //---------------------------------
 
         if ( ( sCodePlan->flag & QMNC_SCAN_FAST_SELECT_FIXED_TABLE_MASK )
              == QMNC_SCAN_FAST_SELECT_FIXED_TABLE_FALSE )
         {
-            // ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
+            // ¼öÇà ÇÔ¼ö °áÁ¤
             sDataPlan->doIt = qmnSCAN::doItFirst;
         }
         else
@@ -128,36 +134,36 @@ qmnSCAN::init( qcTemplate * aTemplate,
             sDataPlan->doIt = qmnSCAN::doItFirstFixedTable;
         }
 
-        // Update, Deleteë¥¼ ìœ„í•œ Flag ì„¤ì •
+        // Update, Delete¸¦ À§ÇÑ Flag ¼³Á¤
         *sDataPlan->flag &= ~QMND_SCAN_ALL_FALSE_MASK;
         *sDataPlan->flag |= QMND_SCAN_ALL_FALSE_FALSE;
     }
     else
     {
         //-------------------------------------------
-        // Constant Filterë¥¼ ë§Œì¡±í•˜ì§€ ì•ŠëŠ” ê²½ìš°
-        // - í•­ìƒ ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ
-        //   ì–´ë– í•œ ê²°ê³¼ë„ ë¦¬í„´í•˜ì§€ ì•ŠëŠ” í•¨ìˆ˜ë¥¼ ê²°ì •í•œë‹¤.
+        // Constant Filter¸¦ ¸¸Á·ÇÏÁö ¾Ê´Â °æ¿ì
+        // - Ç×»ó Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾ÊÀ¸¹Ç·Î
+        //   ¾î¶°ÇÑ °á°úµµ ¸®ÅÏÇÏÁö ¾Ê´Â ÇÔ¼ö¸¦ °áÁ¤ÇÑ´Ù.
         //-------------------------------------------
 
-        // ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
+        // ¼öÇà ÇÔ¼ö °áÁ¤
         sDataPlan->doIt = qmnSCAN::doItAllFalse;
 
-        // Update, Deleteë¥¼ ìœ„í•œ Flag ì„¤ì •
+        // Update, Delete¸¦ À§ÇÑ Flag ¼³Á¤
         *sDataPlan->flag &= ~QMND_SCAN_ALL_FALSE_MASK;
         *sDataPlan->flag |= QMND_SCAN_ALL_FALSE_TRUE;
     }
 
     //------------------------------------------------
-    // ê°€ë³€ Data Flag ì˜ ì´ˆê¸°í™”
+    // °¡º¯ Data Flag ÀÇ ÃÊ±âÈ­
     //------------------------------------------------
 
-    // Subqueryë‚´ë¶€ì— í¬í•¨ë˜ì–´ ìˆì„ ê²½ìš° ì´ˆê¸°í™”í•˜ì—¬
-    // In Subquery Key Rangeë¥¼ ë‹¤ì‹œ ìƒì„±í•  ìˆ˜ ìˆë„ë¡ í•œë‹¤.
+    // Subquery³»ºÎ¿¡ Æ÷ÇÔµÇ¾î ÀÖÀ» °æ¿ì ÃÊ±âÈ­ÇÏ¿©
+    // In Subquery Key Range¸¦ ´Ù½Ã »ı¼ºÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
     *sDataPlan->flag &= ~QMND_SCAN_INSUBQ_RANGE_BUILD_MASK;
     *sDataPlan->flag |= QMND_SCAN_INSUBQ_RANGE_BUILD_SUCCESS;
 
-    // BUG-43721 IN-SUBQUERY KEY RANGEë¥¼ ì´ˆê¸°í™”ê°€ ì•ˆë˜ì–´ì„œ ê²°ê³¼ê°€ í‹€ë¦½ë‹ˆë‹¤.
+    // BUG-43721 IN-SUBQUERY KEY RANGE¸¦ ÃÊ±âÈ­°¡ ¾ÈµÇ¾î¼­ °á°ú°¡ Æ²¸³´Ï´Ù.
     if ( ( sCodePlan->flag & QMNC_SCAN_INSUBQ_KEYRANGE_MASK )
          == QMNC_SCAN_INSUBQ_KEYRANGE_TRUE )
     {
@@ -173,8 +179,8 @@ qmnSCAN::init( qcTemplate * aTemplate,
     {
         //------------------------------------------------
         // PR-24281
-        // select for updateì˜ ê²½ìš° initì‹œì— cursorë¥¼ ë¯¸ë¦¬
-        // ì—´ì–´ record lockì„ íšë“
+        // select for updateÀÇ °æ¿ì init½Ã¿¡ cursor¸¦ ¹Ì¸®
+        // ¿­¾î record lockÀ» È¹µæ
         //------------------------------------------------
 
         if ( ( sDataPlan->lockMode == SMI_LOCK_REPEATABLE ) &&
@@ -184,28 +190,28 @@ qmnSCAN::init( qcTemplate * aTemplate,
             IDE_TEST(makeRidRange(aTemplate, sCodePlan, sDataPlan)
                      != IDE_SUCCESS);
 
-            // KeyRange, KeyFilter, Filter êµ¬ì„±
+            // KeyRange, KeyFilter, Filter ±¸¼º
             IDE_TEST( makeKeyRangeAndFilter( aTemplate,
                                              sCodePlan,
                                              sDataPlan ) != IDE_SUCCESS );
 
-            // Cursorë¥¼ ì—°ë‹¤
+            // Cursor¸¦ ¿¬´Ù
             if ( ( *sDataPlan->flag & QMND_SCAN_CURSOR_MASK )
                  == QMND_SCAN_CURSOR_OPEN )
             {
-                // ì´ë¯¸ ì—´ë ¤ ìˆëŠ” ê²½ìš°
+                // ÀÌ¹Ì ¿­·Á ÀÖ´Â °æ¿ì
                 IDE_TEST( restartCursor( sCodePlan, sDataPlan )
                           != IDE_SUCCESS );
             }
             else
             {
-                // ì²˜ìŒ ì—¬ëŠ” ê²½ìš°
+                // Ã³À½ ¿©´Â °æ¿ì
                 IDE_TEST( openCursor( aTemplate, sCodePlan, sDataPlan )
                           != IDE_SUCCESS );
             }
 
-            // BUG-28533 SELECT FOR UPDATEì˜ ê²½ìš° cursorë¥¼ ë¯¸ë¦¬ ì—´ì–´ë‘ì—ˆìœ¼ë¯€ë¡œ
-            // doItFirstë¥¼ ì²˜ìŒ ìˆ˜í–‰ ì‹œ cursorë¥¼ restart í•  í•„ìš” ì—†ìŒ
+            // BUG-28533 SELECT FOR UPDATEÀÇ °æ¿ì cursor¸¦ ¹Ì¸® ¿­¾îµÎ¾úÀ¸¹Ç·Î
+            // doItFirst¸¦ Ã³À½ ¼öÇà ½Ã cursor¸¦ restart ÇÒ ÇÊ¿ä ¾øÀ½
             *sDataPlan->flag &= ~QMND_SCAN_RESTART_CURSOR_MASK;
             *sDataPlan->flag |= QMND_SCAN_RESTART_CURSOR_FALSE;
         }
@@ -221,7 +227,7 @@ qmnSCAN::init( qcTemplate * aTemplate,
     }
 
     // PROJ-1071
-    // addAccessCount ë³‘ëª©ì œê±°
+    // addAccessCount º´¸ñÁ¦°Å
     sDataPlan->mOrgModifyCnt      = sDataPlan->plan.myTuple->modify;
     sDataPlan->mOrgSubQFilterDepCnt = sDataPlan->subQFilterDepCnt;
 
@@ -242,10 +248,10 @@ qmnSCAN::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SCANì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
+ *    SCANÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *    ì§€ì •ëœ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *    ÁöÁ¤µÈ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼öÇàÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -289,16 +295,16 @@ qmnSCAN::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SCAN ì— í•´ë‹¹í•˜ëŠ” Null Rowë¥¼ íšë“í•œë‹¤.
+ *    SCAN ¿¡ ÇØ´çÇÏ´Â Null Row¸¦ È¹µæÇÑ´Ù.
  *
  * Implementation :
- *    Disk Tableì¸ ê²½ìš°
- *        - Null Rowê°€ ì—†ë‹¤ë©´, Null Rowê³µê°„ í• ë‹¹ ë° íšë“
- *        - Null Rowê°€ ìˆë‹¤ë©´, ë³µì‚¬
- *    Memory Temp Tableì¸ ê²½ìš°
- *        - Null Rowíšë“
+ *    Disk TableÀÎ °æ¿ì
+ *        - Null Row°¡ ¾ø´Ù¸é, Null Row°ø°£ ÇÒ´ç ¹× È¹µæ
+ *        - Null Row°¡ ÀÖ´Ù¸é, º¹»ç
+ *    Memory Temp TableÀÎ °æ¿ì
+ *        - Null RowÈ¹µæ
  *
- *    Modify ì¦ê°€
+ *    Modify Áõ°¡
  *
  ***********************************************************************/
 
@@ -306,7 +312,7 @@ qmnSCAN::padNull( qcTemplate * aTemplate,
     qmndSCAN * sDataPlan =
         (qmndSCAN*) (aTemplate->tmplate.data + aPlan->offset);
 
-    // ì´ˆê¸°í™”ê°€ ìˆ˜í–‰ë˜ì§€ ì•Šì€ ê²½ìš° ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
+    // ÃÊ±âÈ­°¡ ¼öÇàµÇÁö ¾ÊÀº °æ¿ì ÃÊ±âÈ­¸¦ ¼öÇà
     if ( (aTemplate->planFlag[sCodePlan->planID] & QMND_SCAN_INIT_DONE_MASK)
          == QMND_SCAN_INIT_DONE_FALSE )
     {
@@ -321,31 +327,31 @@ qmnSCAN::padNull( qcTemplate * aTemplate,
          == QMN_PLAN_STORAGE_DISK )
     {
         //-----------------------------------
-        // Disk Tableì¸ ê²½ìš°
+        // Disk TableÀÎ °æ¿ì
         //-----------------------------------
 
-        // Record ì €ì¥ì„ ìœ„í•œ ê³µê°„ì€ í•˜ë‚˜ë§Œ ì¡´ì¬í•˜ë©°,
-        // ì´ì— ëŒ€í•œ pointerëŠ” í•­ìƒ ìœ ì§€ë˜ì–´ì•¼ í•œë‹¤.
+        // Record ÀúÀåÀ» À§ÇÑ °ø°£Àº ÇÏ³ª¸¸ Á¸ÀçÇÏ¸ç,
+        // ÀÌ¿¡ ´ëÇÑ pointer´Â Ç×»ó À¯ÁöµÇ¾î¾ß ÇÑ´Ù.
 
         if ( sDataPlan->nullRow == NULL )
         {
             //-----------------------------------
-            // Null Rowë¥¼ ê°€ì ¸ì˜¨ ì ì´ ì—†ëŠ” ê²½ìš°
+            // Null Row¸¦ °¡Á®¿Â ÀûÀÌ ¾ø´Â °æ¿ì
             //-----------------------------------
 
-            // ì í•©ì„± ê²€ì‚¬
+            // ÀûÇÕ¼º °Ë»ç
             IDE_DASSERT( sDataPlan->plan.myTuple->rowOffset > 0 );
 
             IDU_FIT_POINT( "qmnSCAN::padNull::cralloc::nullRow",
                             idERR_ABORT_InsufficientMemory );
 
-            // Null Rowë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
+            // Null Row¸¦ À§ÇÑ °ø°£ ÇÒ´ç
             IDE_TEST( aTemplate->stmt->qmxMem->cralloc(
                     sDataPlan->plan.myTuple->rowOffset,
                     (void**) & sDataPlan->nullRow ) != IDE_SUCCESS);
 
             // PROJ-1705
-            // ë””ìŠ¤í¬í…Œì´ë¸”ì˜ null rowëŠ” qpì—ì„œ ìƒì„±/ì €ì¥í•´ë‘ê³  ì‚¬ìš©í•œë‹¤.
+            // µğ½ºÅ©Å×ÀÌºíÀÇ null row´Â qp¿¡¼­ »ı¼º/ÀúÀåÇØµÎ°í »ç¿ëÇÑ´Ù.
             IDE_TEST( qmn::makeNullRow( sDataPlan->plan.myTuple,
                                         sDataPlan->nullRow )
                       != IDE_SUCCESS );
@@ -354,16 +360,16 @@ qmnSCAN::padNull( qcTemplate * aTemplate,
         }
         else
         {
-            // ì´ë¯¸ Null Rowë¥¼ ê°€ì ¸ì™”ìŒ.
+            // ÀÌ¹Ì Null Row¸¦ °¡Á®¿ÔÀ½.
             // Nothing To Do
         }
 
-        // Null Row ë³µì‚¬
+        // Null Row º¹»ç
         idlOS::memcpy( sDataPlan->plan.myTuple->row,
                        sDataPlan->nullRow,
                        sDataPlan->plan.myTuple->rowOffset );
 
-        // Null RIDì˜ ë³µì‚¬
+        // Null RIDÀÇ º¹»ç
         idlOS::memcpy( & sDataPlan->plan.myTuple->rid,
                        & sDataPlan->nullRID,
                        ID_SIZEOF(scGRID) );
@@ -382,10 +388,10 @@ qmnSCAN::padNull( qcTemplate * aTemplate,
         else
         {
             //-----------------------------------
-            // Memory Tableì¸ ê²½ìš°
+            // Memory TableÀÎ °æ¿ì
             //-----------------------------------
             
-            // NULL ROWë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+            // NULL ROW¸¦ °¡Á®¿Â´Ù.
             IDE_TEST( smiGetTableNullRow( sCodePlan->table,
                                           (void **) & sDataPlan->plan.myTuple->row,
                                           & sDataPlan->plan.myTuple->rid )
@@ -393,7 +399,7 @@ qmnSCAN::padNull( qcTemplate * aTemplate,
         }
     }
 
-    // Null Paddingë„ recordê°€ ë³€í•œ ê²ƒì„
+    // Null Paddingµµ record°¡ º¯ÇÑ °ÍÀÓ
     sDataPlan->plan.myTuple->modify++;
 
     return IDE_SUCCESS;
@@ -407,9 +413,9 @@ qmnSCAN::padNull( qcTemplate * aTemplate,
  * -----------------------------------------------------------------------------
  * PROJ-2402 Parallel Table Scan
  *
- * doItFirst ì—ì„œ í•˜ëŠ” ë™ì‘ì¤‘ ì „ë°˜ë¶€ (cursor open) ë¥¼ ìˆ˜í–‰í•œë‹¤.
- * ì´ ë¶€ë¶„ê¹Œì§€ëŠ” serial ë¡œ ìˆ˜í–‰ë˜ì–´ì•¼ í•˜ê³ ,
- * ì´í›„ read row ë¶€ë¶„ì€ parallel í•˜ê²Œ ìˆ˜í–‰í•œë‹¤.
+ * doItFirst ¿¡¼­ ÇÏ´Â µ¿ÀÛÁß Àü¹İºÎ (cursor open) ¸¦ ¼öÇàÇÑ´Ù.
+ * ÀÌ ºÎºĞ±îÁö´Â serial ·Î ¼öÇàµÇ¾î¾ß ÇÏ°í,
+ * ÀÌÈÄ read row ºÎºĞÀº parallel ÇÏ°Ô ¼öÇàÇÑ´Ù.
  * -----------------------------------------------------------------------------
  */
 IDE_RC qmnSCAN::readyIt( qcTemplate * aTemplate,
@@ -422,25 +428,25 @@ IDE_RC qmnSCAN::readyIt( qcTemplate * aTemplate,
     UInt       sModifyCnt;
 
     // ----------------
-    // TID ì„¤ì •
+    // TID ¼³Á¤
     // ----------------
     sDataPlan->plan.mTID = aTID;
 
-    // ê¸°ì¡´ ACCESS count
+    // ±âÁ¸ ACCESS count
     sModifyCnt = sDataPlan->plan.myTuple->modify;
 
     // ----------------
-    // Tuple ìœ„ì¹˜ì˜ ê²°ì •
+    // Tuple À§Ä¡ÀÇ °áÁ¤
     // ----------------
     sDataPlan->plan.myTuple = &aTemplate->tmplate.rows[sCodePlan->tupleRowID];
 
-    // ACCESS count ì›ë³µ
+    // ACCESS count ¿øº¹
     sDataPlan->plan.myTuple->modify = sModifyCnt;
 
     // --------------------------------
     // PROJ-2444
-    // parallel aggr ì¼ë•ŒëŠ” SCAN ì˜ row ë¥¼ PRLQ ì—ì„œ ë³€ê²½í•´ ì£¼ì§€ ì•ŠëŠ”ë‹¤.
-    // ë”°ë¼ì„œ ìƒˆë¡œìš´ row ë²„í¼ë¥¼ í• ë‹¹ ë°›ì•„ì•¼ í•œë‹¤.
+    // parallel aggr ÀÏ¶§´Â SCAN ÀÇ row ¸¦ PRLQ ¿¡¼­ º¯°æÇØ ÁÖÁö ¾Ê´Â´Ù.
+    // µû¶ó¼­ »õ·Î¿î row ¹öÆÛ¸¦ ÇÒ´ç ¹Ş¾Æ¾ß ÇÑ´Ù.
     // --------------------------------
     if ( sDataPlan->plan.mTID != QMN_PLAN_INIT_THREAD_ID )
     {
@@ -457,11 +463,11 @@ IDE_RC qmnSCAN::readyIt( qcTemplate * aTemplate,
     if ((*sDataPlan->flag & QMND_SCAN_ALL_FALSE_MASK) ==
         QMND_SCAN_ALL_FALSE_FALSE)
     {
-        // ë¹„ì •ìƒ ì¢…ë£Œ ê²€ì‚¬
+        // ºñÁ¤»ó Á¾·á °Ë»ç
         IDE_TEST(iduCheckSessionEvent(aTemplate->stmt->mStatistics)
                  != IDE_SUCCESS);
 
-        // cursorê°€ ì´ë¯¸ openë˜ì–´ ìˆê³  doItFirstê°€ ì²˜ìŒ í˜¸ì¶œë˜ë¯€ë¡œ restart í•„ìš” ì—†ìŒ
+        // cursor°¡ ÀÌ¹Ì openµÇ¾î ÀÖ°í doItFirst°¡ Ã³À½ È£ÃâµÇ¹Ç·Î restart ÇÊ¿ä ¾øÀ½
         if ((*sDataPlan->flag & QMND_SCAN_RESTART_CURSOR_MASK) ==
             QMND_SCAN_RESTART_CURSOR_FALSE)
         {
@@ -472,27 +478,27 @@ IDE_RC qmnSCAN::readyIt( qcTemplate * aTemplate,
             IDE_TEST(makeRidRange(aTemplate, sCodePlan, sDataPlan)
                      != IDE_SUCCESS);
 
-            // KeyRange, KeyFilter, Filter êµ¬ì„±
+            // KeyRange, KeyFilter, Filter ±¸¼º
             IDE_TEST(makeKeyRangeAndFilter(aTemplate, sCodePlan, sDataPlan)
                      != IDE_SUCCESS);
 
-            // Cursorë¥¼ ì—°ë‹¤
+            // Cursor¸¦ ¿¬´Ù
             if ((*sDataPlan->flag & QMND_SCAN_CURSOR_MASK) ==
                 QMND_SCAN_CURSOR_OPEN)
             {
-                // ì´ë¯¸ ì—´ë ¤ ìˆëŠ” ê²½ìš°
+                // ÀÌ¹Ì ¿­·Á ÀÖ´Â °æ¿ì
                 IDE_TEST(restartCursor(sCodePlan, sDataPlan)
                          != IDE_SUCCESS);
             }
             else
             {
-                // ì²˜ìŒ ì—¬ëŠ” ê²½ìš°
+                // Ã³À½ ¿©´Â °æ¿ì
                 IDE_TEST(openCursor(aTemplate, sCodePlan, sDataPlan)
                          != IDE_SUCCESS);
             }
         }
 
-        // ë‹¤ìŒ ë²ˆ doItFirst ìˆ˜í–‰ ì‹œì—ëŠ” cursorë¥¼ restart
+        // ´ÙÀ½ ¹ø doItFirst ¼öÇà ½Ã¿¡´Â cursor¸¦ restart
         *sDataPlan->flag &= ~QMND_SCAN_RESTART_CURSOR_MASK;
         *sDataPlan->flag |= QMND_SCAN_RESTART_CURSOR_TRUE;
 
@@ -537,7 +543,7 @@ IDE_RC qmnSCAN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Predicate ì •ë³´ì˜ ìƒì„¸ ì¶œë ¥
+    // Predicate Á¤º¸ÀÇ »ó¼¼ Ãâ·Â
     //----------------------------
 
     if (QCG_GET_SESSION_TRCLOG_DETAIL_PREDICATE(aTemplate->stmt) == 1)
@@ -545,7 +551,9 @@ IDE_RC qmnSCAN::printPlan( qcTemplate   * aTemplate,
         IDE_TEST( printPredicateInfo( aTemplate,
                                       sCodePlan,
                                       aDepth,
-                                      aString ) != IDE_SUCCESS );
+                                      aString,
+                                      aMode )
+                  != IDE_SUCCESS );
     }
     else
     {
@@ -553,15 +561,15 @@ IDE_RC qmnSCAN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Subquery ì •ë³´ì˜ ì¶œë ¥
-    // SubqueryëŠ” ë‹¤ìŒê³¼ ê°™ì€ predicateì—ë§Œ ì¡´ì¬í•  ìˆ˜ ìˆë‹¤.
+    // Subquery Á¤º¸ÀÇ Ãâ·Â
+    // Subquery´Â ´ÙÀ½°ú °°Àº predicate¿¡¸¸ Á¸ÀçÇÒ ¼ö ÀÖ´Ù.
     //     1. Variable Key Range
     //     2. Variable Key Filter
     //     3. Constant Filter
     //     4. Subquery Filter
     //----------------------------
 
-    // Variable Key Rangeì˜ Subquery ì •ë³´ ì¶œë ¥
+    // Variable Key RangeÀÇ Subquery Á¤º¸ Ãâ·Â
     if ( sMethod->varKeyRange != NULL )
     {
         IDE_TEST( qmn::printSubqueryPlan( aTemplate,
@@ -571,7 +579,7 @@ IDE_RC qmnSCAN::printPlan( qcTemplate   * aTemplate,
                                           aMode ) != IDE_SUCCESS );
     }
 
-    // Variable Key Filterì˜ Subquery ì •ë³´ ì¶œë ¥
+    // Variable Key FilterÀÇ Subquery Á¤º¸ Ãâ·Â
     if ( sMethod->varKeyFilter != NULL )
     {
         IDE_TEST( qmn::printSubqueryPlan( aTemplate,
@@ -581,7 +589,7 @@ IDE_RC qmnSCAN::printPlan( qcTemplate   * aTemplate,
                                           aMode ) != IDE_SUCCESS );
     }
 
-    // Constant Filterì˜ Subquery ì •ë³´ ì¶œë ¥
+    // Constant FilterÀÇ Subquery Á¤º¸ Ãâ·Â
     if ( sMethod->constantFilter != NULL )
     {
         IDE_TEST( qmn::printSubqueryPlan( aTemplate,
@@ -591,7 +599,7 @@ IDE_RC qmnSCAN::printPlan( qcTemplate   * aTemplate,
                                           aMode ) != IDE_SUCCESS );
     }
 
-    // Subquery Filterì˜ Subquery ì •ë³´ ì¶œë ¥
+    // Subquery FilterÀÇ Subquery Á¤º¸ Ãâ·Â
     if ( sMethod->subqueryFilter != NULL )
     {
         IDE_TEST( qmn::printSubqueryPlan( aTemplate,
@@ -601,7 +609,7 @@ IDE_RC qmnSCAN::printPlan( qcTemplate   * aTemplate,
                                           aMode ) != IDE_SUCCESS );
     }
 
-    // NNF Filterì˜ Subquery ì •ë³´ ì¶œë ¥
+    // NNF FilterÀÇ Subquery Á¤º¸ Ãâ·Â
     if ( sCodePlan->nnfFilter != NULL )
     {
         IDE_TEST( qmn::printSubqueryPlan( aTemplate,
@@ -616,7 +624,7 @@ IDE_RC qmnSCAN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
+    // Operatorº° °á°ú Á¤º¸ Ãâ·Â
     //----------------------------
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
     {
@@ -683,7 +691,7 @@ qmnSCAN::printLocalPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SCAN ë…¸ë“œì˜ ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *    SCAN ³ëµåÀÇ ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  * Implementation :
  *
@@ -700,7 +708,7 @@ qmnSCAN::printLocalPlan( qcTemplate   * aTemplate,
     qcmIndex * sOrgIndex;
 
     //----------------------------
-    // Display ìœ„ì¹˜ ê²°ì •
+    // Display À§Ä¡ °áÁ¤
     //----------------------------
 
     qmn::printSpaceDepth(aString, aDepth);
@@ -709,16 +717,16 @@ qmnSCAN::printLocalPlan( qcTemplate   * aTemplate,
         == QMNC_SCAN_FOR_PARTITION_TRUE )
     {
         //----------------------------
-        // Table Partition Name ì¶œë ¥
+        // Table Partition Name Ãâ·Â
         //----------------------------
 
         iduVarStringAppend( aString,
                             "SCAN ( PARTITION: " );
 
-        /* BUG-44520 ë¯¸ì‚¬ìš© Disk Partitionì˜ SCAN Nodeë¥¼ ì¶œë ¥í•˜ë‹¤ê°€,
-         *           Partition Name ë¶€ë¶„ì—ì„œ ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
-         *  Lockì„ ì¡ì§€ ì•Šê³  Meta Cacheë¥¼ ì‚¬ìš©í•˜ë©´, ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
-         *  SCAN Nodeì—ì„œ Partition Nameì„ ë³´ê´€í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤.
+        /* BUG-44520 ¹Ì»ç¿ë Disk PartitionÀÇ SCAN Node¸¦ Ãâ·ÂÇÏ´Ù°¡,
+         *           Partition Name ºÎºĞ¿¡¼­ ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ½À´Ï´Ù.
+         *  LockÀ» ÀâÁö ¾Ê°í Meta Cache¸¦ »ç¿ëÇÏ¸é, ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ½À´Ï´Ù.
+         *  SCAN Node¿¡¼­ Partition NameÀ» º¸°üÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù.
          */
         iduVarStringAppend( aString,
                             sCodePlan->partitionName );
@@ -726,7 +734,7 @@ qmnSCAN::printLocalPlan( qcTemplate   * aTemplate,
     else
     {
         //----------------------------
-        // Table Owner Name ì¶œë ¥
+        // Table Owner Name Ãâ·Â
         //----------------------------
 
         iduVarStringAppend( aString,
@@ -746,7 +754,7 @@ qmnSCAN::printLocalPlan( qcTemplate   * aTemplate,
         }
 
         //----------------------------
-        // Table Name ì¶œë ¥
+        // Table Name Ãâ·Â
         //----------------------------
 
         if ( ( sCodePlan->tableName.size <= QC_MAX_OBJECT_NAME_LEN ) &&
@@ -763,14 +771,14 @@ qmnSCAN::printLocalPlan( qcTemplate   * aTemplate,
         }
 
         //----------------------------
-        // Alias Name ì¶œë ¥
+        // Alias Name Ãâ·Â
         //----------------------------
 
         if ( sCodePlan->aliasName.name != NULL &&
              sCodePlan->aliasName.size > 0  &&
              sCodePlan->aliasName.name != sCodePlan->tableName.name )
         {
-            // Table ì´ë¦„ ì •ë³´ì™€ Alias ì´ë¦„ ì •ë³´ê°€ ë‹¤ë¥¼ ê²½ìš°
+            // Table ÀÌ¸§ Á¤º¸¿Í Alias ÀÌ¸§ Á¤º¸°¡ ´Ù¸¦ °æ¿ì
             // (alias name)
             iduVarStringAppend( aString,
                                 " " );
@@ -788,32 +796,32 @@ qmnSCAN::printLocalPlan( qcTemplate   * aTemplate,
         }
         else
         {
-            // Alias ì´ë¦„ ì •ë³´ê°€ ì—†ê±°ë‚˜ Table ì´ë¦„ ì •ë³´ê°€ ë™ì¼í•œ ê²½ìš°
+            // Alias ÀÌ¸§ Á¤º¸°¡ ¾ø°Å³ª Table ÀÌ¸§ Á¤º¸°¡ µ¿ÀÏÇÑ °æ¿ì
             // Nothing To Do
         }
     }
 
     //----------------------------
-    // Access Method ì¶œë ¥
+    // Access Method Ãâ·Â
     //----------------------------
     sIndex = sMethod->index;
 
     if ( sIndex != NULL )
     {
-        // Indexê°€ ì‚¬ìš©ëœ ê²½ìš°
+        // Index°¡ »ç¿ëµÈ °æ¿ì
         iduVarStringAppend( aString,
                             ", INDEX: " );
 
         // PROJ-1502 PARTITIONED DISK TABLE
-        // local index partitionì˜ ì´ë¦„ì„
-        // partitioned indexì˜ ì´ë¦„ìœ¼ë¡œ ì¶œë ¥í•˜ê¸° ìœ„í•¨.
+        // local index partitionÀÇ ÀÌ¸§À»
+        // partitioned indexÀÇ ÀÌ¸§À¸·Î Ãâ·ÂÇÏ±â À§ÇÔ.
         if ( ( sCodePlan->flag & QMNC_SCAN_FOR_PARTITION_MASK )
              == QMNC_SCAN_FOR_PARTITION_TRUE )
         {
-            /* BUG-44633 ë¯¸ì‚¬ìš© Disk Partitionì˜ SCAN Nodeë¥¼ ì¶œë ¥í•˜ë‹¤ê°€,
-             *           Index Name ë¶€ë¶„ì—ì„œ ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
-             *  Lockì„ ì¡ì§€ ì•Šê³  Meta Cacheë¥¼ ì‚¬ìš©í•˜ë©´, ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
-             *  SCAN Nodeì—ì„œ Index IDë¥¼ ë³´ê´€í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤.
+            /* BUG-44633 ¹Ì»ç¿ë Disk PartitionÀÇ SCAN Node¸¦ Ãâ·ÂÇÏ´Ù°¡,
+             *           Index Name ºÎºĞ¿¡¼­ ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ½À´Ï´Ù.
+             *  LockÀ» ÀâÁö ¾Ê°í Meta Cache¸¦ »ç¿ëÇÏ¸é, ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ½À´Ï´Ù.
+             *  SCAN Node¿¡¼­ Index ID¸¦ º¸°üÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù.
              */
             IDE_TEST( qcmPartition::getPartIdxFromIdxId(
                           sCodePlan->partitionIndexId,
@@ -842,9 +850,9 @@ qmnSCAN::printLocalPlan( qcTemplate   * aTemplate,
         if ( (*sDataPlan->flag & QMND_SCAN_INIT_DONE_MASK)
              == QMND_SCAN_INIT_DONE_TRUE )
         {
-            // IN SUBQUERY KEYRANGEê°€ ìˆëŠ” ê²½ìš°:
-            // keyrangeë§Œë“¤ë‹¤ ì‹¤íŒ¨í•˜ë©´ fetchì¢…ë£Œ
-            // ì–¸ì œë‚˜ range scan ì„ í•œë‹¤.
+            // IN SUBQUERY KEYRANGE°¡ ÀÖ´Â °æ¿ì:
+            // keyrange¸¸µé´Ù ½ÇÆĞÇÏ¸é fetchÁ¾·á
+            // ¾ğÁ¦³ª range scan À» ÇÑ´Ù.
             if ( ( sCodePlan->flag & QMNC_SCAN_INSUBQ_KEYRANGE_MASK )
                  == QMNC_SCAN_INSUBQ_KEYRANGE_TRUE )
             {
@@ -880,7 +888,7 @@ qmnSCAN::printLocalPlan( qcTemplate   * aTemplate,
              == QMNC_SCAN_TRAVERSE_FORWARD )
         {
             // nothing todo
-            // asc ì˜ ê²½ìš°ì—ëŠ” ì¶œë ¥í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // asc ÀÇ °æ¿ì¿¡´Â Ãâ·ÂÇÏÁö ¾Ê´Â´Ù.
         }
         else
         {
@@ -898,13 +906,13 @@ qmnSCAN::printLocalPlan( qcTemplate   * aTemplate,
         }
         else
         {
-            // Full Scanì¸ ê²½ìš°
+            // Full ScanÀÎ °æ¿ì
             iduVarStringAppend(aString, ", FULL SCAN");
         }
     }
 
     //----------------------------
-    // ìˆ˜í–‰ íšŸìˆ˜ ì¶œë ¥
+    // ¼öÇà È½¼ö Ãâ·Â
     //----------------------------
 
     IDE_TEST( printAccessInfo( sCodePlan,
@@ -935,28 +943,28 @@ qmnSCAN::printLocalPlan( qcTemplate   * aTemplate,
         }
         else
         {
-            // Parallel execution ì´ ì•„ë‹Œ ê²½ìš° ì¶œë ¥ì„ ìƒëµí•œë‹¤.
+            // Parallel execution ÀÌ ¾Æ´Ñ °æ¿ì Ãâ·ÂÀ» »ı·«ÇÑ´Ù.
         }
     }
     else
     {
-        // Planonly ì¸ ê²½ìš° ì¶œë ¥ì„ ìƒëµí•œë‹¤.
+        // Planonly ÀÎ °æ¿ì Ãâ·ÂÀ» »ı·«ÇÑ´Ù.
     }
 
     //----------------------------
-    // Cost ì¶œë ¥
+    // Cost Ãâ·Â
     //----------------------------
     qmn::printCost( aString,
                     sCodePlan->plan.qmgAllCost );
 
     //----------------------------
-    // Plan ID ì¶œë ¥
+    // Plan ID Ãâ·Â
     //----------------------------
     if ( QCU_TRCLOG_DETAIL_MTRNODE == 1 )
     {
         qmn::printSpaceDepth(aString, aDepth);
 
-        // sCodePlan ì˜ ê°’ì„ ì¶œë ¥í•˜ê¸°ë•Œë¬¸ì— qmn::printMTRinfoì„ ì‚¬ìš©í•˜ì§€ ëª»í•œë‹¤.
+        // sCodePlan ÀÇ °ªÀ» Ãâ·ÂÇÏ±â¶§¹®¿¡ qmn::printMTRinfoÀ» »ç¿ëÇÏÁö ¸øÇÑ´Ù.
         iduVarStringAppendFormat( aString,
                                   "[ SELF NODE INFO, "
                                   "SELF: %"ID_INT32_FMT" ]\n",
@@ -979,7 +987,7 @@ qmnSCAN::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨.
+ *    ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ¸é ¾ÈµÊ.
  *
  * Implementation :
  *
@@ -998,13 +1006,13 @@ qmnSCAN::doItAllFalse( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Filter ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” Recordê°€ í•˜ë‚˜ë„ ì—†ëŠ” ê²½ìš° ì‚¬ìš©
+ *    Filter Á¶°ÇÀ» ¸¸Á·ÇÏ´Â Record°¡ ÇÏ³ªµµ ¾ø´Â °æ¿ì »ç¿ë
  *
- *    Constant Filter ê²€ì‚¬í›„ì— ê²°ì •ë˜ëŠ” í•¨ìˆ˜ë¡œ ì ˆëŒ€ ë§Œì¡±í•˜ëŠ”
- *    Recordê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *    Constant Filter °Ë»çÈÄ¿¡ °áÁ¤µÇ´Â ÇÔ¼ö·Î Àı´ë ¸¸Á·ÇÏ´Â
+ *    Record°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
  *
  * Implementation :
- *    í•­ìƒ record ì—†ìŒì„ ë¦¬í„´í•œë‹¤.
+ *    Ç×»ó record ¾øÀ½À» ¸®ÅÏÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1012,12 +1020,15 @@ qmnSCAN::doItAllFalse( qcTemplate * aTemplate,
     qmndSCAN * sDataPlan =
         (qmndSCAN*) (aTemplate->tmplate.data + aPlan->offset);
 
-    // ì í•©ì„± ê²€ì‚¬
-    IDE_DASSERT( sCodePlan->method.constantFilter != NULL );
+    /* TASK-7307 DML Data Consistency in Shard */
+    // ÀûÇÕ¼º °Ë»ç
+    IDE_DASSERT( (sCodePlan->method.constantFilter != NULL) ||
+                 ((QCG_CHECK_SHARD_DML_CONSISTENCY( aTemplate->stmt ) == ID_TRUE ) &&
+                  (sCodePlan->tableRef->tableInfo->mIsUsable == ID_FALSE)) )
     IDE_DASSERT( ( *sDataPlan->flag & QMND_SCAN_ALL_FALSE_MASK )
                  == QMND_SCAN_ALL_FALSE_TRUE );
 
-    // ë°ì´í„° ì—†ìŒì„ Setting
+    // µ¥ÀÌÅÍ ¾øÀ½À» Setting
     *aFlag &= ~QMC_ROW_DATA_MASK;
     *aFlag |= QMC_ROW_DATA_NONE;
 
@@ -1032,15 +1043,15 @@ IDE_RC qmnSCAN::doItFirst( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SCANì˜ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
- *    Cursorë¥¼ ì—´ê³  ìµœì´ˆ Recordë¥¼ ì½ëŠ”ë‹¤.
+ *    SCANÀÇ ÃÖÃÊ ¼öÇà ÇÔ¼ö
+ *    Cursor¸¦ ¿­°í ÃÖÃÊ Record¸¦ ÀĞ´Â´Ù.
  *
  * Implementation :
- *    - Table ì— IS Lockì„ ê±´ë‹¤.
- *    - Session Event Check (ë¹„ì •ìƒ ì¢…ë£Œ Detect)
- *    - Key Range, Key Filter, Filter êµ¬ì„±
+ *    - Table ¿¡ IS LockÀ» °Ç´Ù.
+ *    - Session Event Check (ºñÁ¤»ó Á¾·á Detect)
+ *    - Key Range, Key Filter, Filter ±¸¼º
  *    - Cursor Open
- *    - Record ì½ê¸°
+ *    - Record ÀĞ±â
  *
  ***********************************************************************/
 
@@ -1050,17 +1061,17 @@ IDE_RC qmnSCAN::doItFirst( qcTemplate * aTemplate,
 
     IDE_TEST(readyIt(aTemplate, aPlan, QMN_PLAN_INIT_THREAD_ID) != IDE_SUCCESS);
 
-    // tableì´ê±°ë‚˜ temporary tableì¸ ê²½ìš°
+    // tableÀÌ°Å³ª temporary tableÀÎ °æ¿ì
     if ( ( *sDataPlan->flag & QMND_SCAN_CURSOR_MASK )
          == QMND_SCAN_CURSOR_OPEN )
     {
-        // Recordë¥¼ íšë“í•œë‹¤.
+        // Record¸¦ È¹µæÇÑ´Ù.
         IDE_TEST( readRow( aTemplate, sCodePlan, sDataPlan, aFlag )
                   != IDE_SUCCESS );
     }
     else
     {
-        // ë§Œì¡±í•˜ëŠ” Record ì—†ìŒ
+        // ¸¸Á·ÇÏ´Â Record ¾øÀ½
         *aFlag = QMC_ROW_DATA_NONE;
     }
 
@@ -1089,8 +1100,8 @@ qmnSCAN::doItNext( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SCANì˜ ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
- *    ë‹¤ìŒ Recordë¥¼ ì½ëŠ”ë‹¤.
+ *    SCANÀÇ ´ÙÀ½ ¼öÇà ÇÔ¼ö
+ *    ´ÙÀ½ Record¸¦ ÀĞ´Â´Ù.
  *
  * Implementation :
  *
@@ -1103,20 +1114,20 @@ qmnSCAN::doItNext( qcTemplate * aTemplate,
     if ( ( *sDataPlan->flag & QMND_SCAN_CURSOR_MASK )
          == QMND_SCAN_CURSOR_OPEN )
     {
-        // ë‹¤ìŒ Recordë¥¼ ì½ëŠ”ë‹¤.
+        // ´ÙÀ½ Record¸¦ ÀĞ´Â´Ù.
         IDE_TEST( readRow( aTemplate, sCodePlan, sDataPlan, aFlag )
                   != IDE_SUCCESS );
     }
     else
     {
-        // ë§Œì¡±í•˜ëŠ” Record ì—†ìŒ
+        // ¸¸Á·ÇÏ´Â Record ¾øÀ½
         *aFlag = QMC_ROW_DATA_NONE;
     }
     
     if ( ( *aFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_NONE )
     {
-        // recordê°€ ì—†ëŠ” ê²½ìš°
-        // ë‹¤ìŒ ìˆ˜í–‰ì„ ìœ„í•´ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜ë¡œ ì„¤ì •í•¨.
+        // record°¡ ¾ø´Â °æ¿ì
+        // ´ÙÀ½ ¼öÇàÀ» À§ÇØ ÃÖÃÊ ¼öÇà ÇÔ¼ö·Î ¼³Á¤ÇÔ.
         sDataPlan->doIt = qmnSCAN::doItFirst;
     }
     else
@@ -1139,8 +1150,8 @@ qmnSCAN::storeCursor( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    í˜„ì¬ Cursorì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤.
- *    Merge Joinì„ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
+ *    ÇöÀç CursorÀÇ À§Ä¡¸¦ ÀúÀåÇÑ´Ù.
+ *    Merge JoinÀ» À§ÇØ »ç¿ëµÈ´Ù.
  *
  * Implementation :
  *
@@ -1149,14 +1160,14 @@ qmnSCAN::storeCursor( qcTemplate * aTemplate,
     qmndSCAN * sDataPlan =
         (qmndSCAN*) (aTemplate->tmplate.data + aPlan->offset);
 
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     IDE_DASSERT( (*sDataPlan->flag & QMND_SCAN_CURSOR_MASK)
                  == QMND_SCAN_CURSOR_OPEN );
 
     IDE_TEST_RAISE( ( sCodePlan->flag & QMNC_SCAN_FAST_SELECT_FIXED_TABLE_MASK )
                     == QMNC_SCAN_FAST_SELECT_FIXED_TABLE_TRUE, ERR_FIXED_TABLE );
 
-    // Cursor ì •ë³´ë¥¼ ì €ì¥í•¨.
+    // Cursor Á¤º¸¸¦ ÀúÀåÇÔ.
     IDE_TEST( sDataPlan->cursor->getCurPos( & sDataPlan->cursorInfo )
               != IDE_SUCCESS );
 
@@ -1180,10 +1191,10 @@ qmnSCAN::restoreCursor( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ì´ë¯¸ ì €ì¥ëœ Cursorë¥¼ ì´ìš©í•˜ì—¬ Cursor ìœ„ì¹˜ë¥¼ ë³µì›ì‹œí‚´
+ *    ÀÌ¹Ì ÀúÀåµÈ Cursor¸¦ ÀÌ¿ëÇÏ¿© Cursor À§Ä¡¸¦ º¹¿ø½ÃÅ´
  *
  * Implementation :
- *    Cursorì˜ ë³µì› ë¿ ì•„ë‹ˆë¼ record ë‚´ìš©ë„ ë³µì›í•œë‹¤.
+ *    CursorÀÇ º¹¿ø »Ó ¾Æ´Ï¶ó record ³»¿ëµµ º¹¿øÇÑ´Ù.
  *
  ***********************************************************************/
     qmncSCAN * sCodePlan = (qmncSCAN*) aPlan;
@@ -1193,7 +1204,7 @@ qmnSCAN::restoreCursor( qcTemplate * aTemplate,
     void  * sOrgRow;
     void  * sSearchRow;
 
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     IDE_DASSERT( (*sDataPlan->flag & QMND_SCAN_CURSOR_MASK)
                  == QMND_SCAN_CURSOR_OPEN );
 
@@ -1201,19 +1212,19 @@ qmnSCAN::restoreCursor( qcTemplate * aTemplate,
                     == QMNC_SCAN_FAST_SELECT_FIXED_TABLE_TRUE, ERR_FIXED_TABLE );
 
     //-----------------------------
-    // Cursorì˜ ë³µì›
+    // CursorÀÇ º¹¿ø
     //-----------------------------
     
     IDE_TEST( sDataPlan->cursor->setCurPos( & sDataPlan->cursorInfo )
               != IDE_SUCCESS );
 
     //-----------------------------
-    // Recordì˜ ë³µì›
+    // RecordÀÇ º¹¿ø
     //-----------------------------
 
     // To Fix PR-8110
-    // ì €ì¥ëœ Cursorë¥¼ ë³µì›í•˜ë©´, ì €ì¥ ìœ„ì¹˜ì˜ ì´ì „ìœ¼ë¡œ ì´ë™í•œë‹¤.
-    // ë”°ë¼ì„œ, ë‹¨ìˆœíˆ Cursorë¥¼ Readí•˜ë©´ ëœë‹¤.
+    // ÀúÀåµÈ Cursor¸¦ º¹¿øÇÏ¸é, ÀúÀå À§Ä¡ÀÇ ÀÌÀüÀ¸·Î ÀÌµ¿ÇÑ´Ù.
+    // µû¶ó¼­, ´Ü¼øÈ÷ Cursor¸¦ ReadÇÏ¸é µÈ´Ù.
     sOrgRow = sSearchRow = sDataPlan->plan.myTuple->row;
 
     IDE_TEST(
@@ -1225,13 +1236,13 @@ qmnSCAN::restoreCursor( qcTemplate * aTemplate,
     sDataPlan->plan.myTuple->row =
         (sSearchRow == NULL) ? sOrgRow : sSearchRow;
 
-    // ë°˜ë“œì‹œ ì €ì¥ëœ Cursorì—ëŠ” Rowê°€ ì¡´ì¬í•˜ì—¬ì•¼ í•œë‹¤.
+    // ¹İµå½Ã ÀúÀåµÈ Cursor¿¡´Â Row°¡ Á¸ÀçÇÏ¿©¾ß ÇÑ´Ù.
     IDE_ASSERT( sSearchRow != NULL );
 
-    // ì»¤ì„œì˜ ë³µì› í›„ì˜ ìˆ˜í–‰ í•¨ìˆ˜
+    // Ä¿¼­ÀÇ º¹¿ø ÈÄÀÇ ¼öÇà ÇÔ¼ö
     sDataPlan->doIt = qmnSCAN::doItNext;
 
-    // Modifyê°’ ì¦ê°€, recordê°€ ë³€ê²½ëœ ê²½ìš°ì„
+    // Modify°ª Áõ°¡, record°¡ º¯°æµÈ °æ¿ìÀÓ
     sDataPlan->plan.myTuple->modify++;
 
     return IDE_SUCCESS;
@@ -1255,7 +1266,7 @@ qmnSCAN::makeKeyRangeAndFilter( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Cursorë¥¼ ì—´ê¸° ìœ„í•œ Key Range, Key Filter, Filterë¥¼ êµ¬ì„±í•œë‹¤.
+ *    Cursor¸¦ ¿­±â À§ÇÑ Key Range, Key Filter, Filter¸¦ ±¸¼ºÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1265,13 +1276,13 @@ qmnSCAN::makeKeyRangeAndFilter( qcTemplate * aTemplate,
     qmncScanMethod    * sMethod = getScanMethod( aTemplate, aCodePlan );
 
     //-------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //-------------------------------------
 
     if ( ( aCodePlan->flag & QMNC_SCAN_INSUBQ_KEYRANGE_MASK )
          == QMNC_SCAN_INSUBQ_KEYRANGE_TRUE )
     {
-        // IN Subquery Key Rangeê°€ ìˆì„ ê²½ìš° ë‹¤ìŒ ì¡°ê±´ì„ ë§Œì¡±í•´ì•¼ í•¨
+        // IN Subquery Key Range°¡ ÀÖÀ» °æ¿ì ´ÙÀ½ Á¶°ÇÀ» ¸¸Á·ÇØ¾ß ÇÔ
         IDE_DASSERT( sMethod->fixKeyRange == NULL );
         IDE_DASSERT( sMethod->varKeyRange != NULL );
         IDE_DASSERT( sMethod->fixKeyFilter == NULL );
@@ -1279,38 +1290,42 @@ qmnSCAN::makeKeyRangeAndFilter( qcTemplate * aTemplate,
     }
 
     //-------------------------------------
-    // Predicate ì •ë³´ì˜ êµ¬ì„±
+    // Predicate Á¤º¸ÀÇ ±¸¼º
     //-------------------------------------
 
     sPredicateInfo.index = sMethod->index;
     sPredicateInfo.tupleRowID = aCodePlan->tupleRowID;
 
-    // Fixed Key Range ì •ë³´ì˜ êµ¬ì„±
+    // Fixed Key Range Á¤º¸ÀÇ ±¸¼º
     sPredicateInfo.fixKeyRangeArea = aDataPlan->fixKeyRangeArea;
     sPredicateInfo.fixKeyRange = aDataPlan->fixKeyRange;
     sPredicateInfo.fixKeyRangeOrg = sMethod->fixKeyRange;
+    sPredicateInfo.fixKeyRangeSize = aDataPlan->fixKeyRangeSize;
 
-    // Variable Key Range ì •ë³´ì˜ êµ¬ì„±
+    // Variable Key Range Á¤º¸ÀÇ ±¸¼º
     sPredicateInfo.varKeyRangeArea = aDataPlan->varKeyRangeArea;
     sPredicateInfo.varKeyRange = aDataPlan->varKeyRange;
     sPredicateInfo.varKeyRangeOrg = sMethod->varKeyRange;
     sPredicateInfo.varKeyRange4FilterOrg = sMethod->varKeyRange4Filter;
+    sPredicateInfo.varKeyRangeSize = aDataPlan->varKeyRangeSize;
 
-    // Fixed Key Filter ì •ë³´ì˜ êµ¬ì„±
+    // Fixed Key Filter Á¤º¸ÀÇ ±¸¼º
     sPredicateInfo.fixKeyFilterArea = aDataPlan->fixKeyFilterArea;
     sPredicateInfo.fixKeyFilter = aDataPlan->fixKeyFilter;
     sPredicateInfo.fixKeyFilterOrg = sMethod->fixKeyFilter;
+    sPredicateInfo.fixKeyFilterSize = aDataPlan->fixKeyFilterSize;
 
-    // Variable Key Filter ì •ë³´ì˜ êµ¬ì„±
+    // Variable Key Filter Á¤º¸ÀÇ ±¸¼º
     sPredicateInfo.varKeyFilterArea = aDataPlan->varKeyFilterArea;
     sPredicateInfo.varKeyFilter = aDataPlan->varKeyFilter;
     sPredicateInfo.varKeyFilterOrg = sMethod->varKeyFilter;
     sPredicateInfo.varKeyFilter4FilterOrg = sMethod->varKeyFilter4Filter;
+    sPredicateInfo.varKeyFilterSize = aDataPlan->varKeyFilterSize;
 
-    // Not Null Key Range ì •ë³´ì˜ êµ¬ì„±
+    // Not Null Key Range Á¤º¸ÀÇ ±¸¼º
     sPredicateInfo.notNullKeyRange = aDataPlan->notNullKeyRange;
 
-    // Filter ì •ë³´ì˜ êµ¬ì„±
+    // Filter Á¤º¸ÀÇ ±¸¼º
     sPredicateInfo.filter = sMethod->filter;
 
     sPredicateInfo.filterCallBack = & aDataPlan->callBack;
@@ -1322,7 +1337,7 @@ qmnSCAN::makeKeyRangeAndFilter( qcTemplate * aTemplate,
     sPredicateInfo.mSerialExecuteData = aDataPlan->mSerialExecuteData;
 
     //-------------------------------------
-    // Key Range, Key Filter, Filterì˜ ìƒì„±
+    // Key Range, Key Filter, FilterÀÇ »ı¼º
     //-------------------------------------
 
     IDE_TEST( qmn::makeKeyRangeAndFilter( aTemplate,
@@ -1345,18 +1360,18 @@ qmnSCAN::makeKeyRangeAndFilter( qcTemplate * aTemplate,
     aDataPlan->keyFilter = sPredicateInfo.keyFilter;
 
     //-------------------------------------
-    // IN SUBQUERY KEY RANGE ê²€ì‚¬
+    // IN SUBQUERY KEY RANGE °Ë»ç
     //-------------------------------------
 
     if ( ( (aCodePlan->flag & QMNC_SCAN_INSUBQ_KEYRANGE_MASK)
            == QMNC_SCAN_INSUBQ_KEYRANGE_TRUE ) &&
          ( aDataPlan->keyRange == smiGetDefaultKeyRange() ) )
     {
-        // IN SUBQUERY Key Rangeê°€ ìˆëŠ” ê²½ìš°ë¼ë©´
-        // ë” ì´ìƒ Recordê°€ ì¡´ì¬í•˜ì§€ ì•Šì•„ Key Rangeë¥¼ ìƒì„±í•˜ì§€
-        // ëª»í•˜ëŠ” ê²½ìš°ì´ë‹¤.  ì ˆëŒ€ Type Conversionë“±ìœ¼ë¡œ ì¸í•˜ì—¬
-        // Key Rangeë¥¼ ìƒì„±í•˜ì§€ ëª»í•˜ëŠ” ê²½ìš°ëŠ” ì—†ë‹¤.
-        // ë”°ë¼ì„œ, ë” ì´ìƒ recordë¥¼ ê²€ìƒ‰í•´ì„œëŠ” ì•ˆëœë‹¤.
+        // IN SUBQUERY Key Range°¡ ÀÖ´Â °æ¿ì¶ó¸é
+        // ´õ ÀÌ»ó Record°¡ Á¸ÀçÇÏÁö ¾Ê¾Æ Key Range¸¦ »ı¼ºÇÏÁö
+        // ¸øÇÏ´Â °æ¿ìÀÌ´Ù.  Àı´ë Type ConversionµîÀ¸·Î ÀÎÇÏ¿©
+        // Key Range¸¦ »ı¼ºÇÏÁö ¸øÇÏ´Â °æ¿ì´Â ¾ø´Ù.
+        // µû¶ó¼­, ´õ ÀÌ»ó record¸¦ °Ë»öÇØ¼­´Â ¾ÈµÈ´Ù.
         *aDataPlan->flag &= ~QMND_SCAN_INSUBQ_RANGE_BUILD_MASK;
         *aDataPlan->flag |= QMND_SCAN_INSUBQ_RANGE_BUILD_FAILURE;
     }
@@ -1381,10 +1396,10 @@ qmnSCAN::firstInit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SCAN nodeì˜ Data ì˜ì—­ì˜ ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
+ *    SCAN nodeÀÇ Data ¿µ¿ªÀÇ ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
  *
  * Implementation :
- *    - Data ì˜ì—­ì˜ ì£¼ìš” ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
+ *    - Data ¿µ¿ªÀÇ ÁÖ¿ä ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
  *
  ***********************************************************************/
 
@@ -1392,22 +1407,22 @@ qmnSCAN::firstInit( qcTemplate * aTemplate,
     qmncScanMethod * sMethod = getScanMethod( aTemplate, aCodePlan );
 
     //--------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------
 
-    // Key RangeëŠ” Fixed KeyRangeì™€ Variable KeyRangeê°€ í˜¼ìš©ë  ìˆ˜ ì—†ë‹¤.
+    // Key Range´Â Fixed KeyRange¿Í Variable KeyRange°¡ È¥¿ëµÉ ¼ö ¾ø´Ù.
     IDE_DASSERT( (sMethod->fixKeyRange == NULL) ||
                  (sMethod->varKeyRange == NULL) );
 
-    // Key FilterëŠ” Fixed KeyFilterì™€ Variable KeyFilterê°€ í˜¼ìš©ë  ìˆ˜ ì—†ë‹¤.
+    // Key Filter´Â Fixed KeyFilter¿Í Variable KeyFilter°¡ È¥¿ëµÉ ¼ö ¾ø´Ù.
     IDE_DASSERT( (sMethod->fixKeyFilter == NULL) ||
                  (sMethod->varKeyFilter == NULL) );
 
     //---------------------------------
-    // SCAN ê³ ìœ  ì •ë³´ì˜ ì´ˆê¸°í™”
+    // SCAN °íÀ¯ Á¤º¸ÀÇ ÃÊ±âÈ­
     //---------------------------------
 
-    // Tuple ìœ„ì¹˜ì˜ ê²°ì •
+    // Tuple À§Ä¡ÀÇ °áÁ¤
     aDataPlan->plan.myTuple =
         & aTemplate->tmplate.rows[aCodePlan->tupleRowID];
 
@@ -1418,26 +1433,26 @@ qmnSCAN::firstInit( qcTemplate * aTemplate,
     {
         if ( aDataPlan->plan.myTuple->cursorInfo == NULL )
         {
-            // Tableì— IS Lockì„ ê±´ë‹¤.
+            // Table¿¡ IS LockÀ» °Ç´Ù.
             IDE_TEST(smiValidateAndLockObjects( (QC_SMI_STMT( aTemplate->stmt))->getTrans(),
                                                 aCodePlan->table,
                                                 aCodePlan->tableSCN,
-                                                SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                 SMI_TABLE_LOCK_IS,
                                                 ID_ULONG_MAX,
-                                                ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
+                                                ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
                      != IDE_SUCCESS);
         }
         else
         {
-            // BUG-42952 DMLì¸ ê²½ìš° IX Lockì„ ê±´ë‹¤.
+            // BUG-42952 DMLÀÎ °æ¿ì IX LockÀ» °Ç´Ù.
             IDE_TEST(smiValidateAndLockObjects( (QC_SMI_STMT( aTemplate->stmt))->getTrans(),
                                                 aCodePlan->table,
                                                 aCodePlan->tableSCN,
-                                                SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                 SMI_TABLE_LOCK_IX,
                                                 ID_ULONG_MAX,
-                                                ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
+                                                ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
                      != IDE_SUCCESS);
         }
     }
@@ -1446,9 +1461,9 @@ qmnSCAN::firstInit( qcTemplate * aTemplate,
         // do nothing
     }
 
-    // ì í•©ì„± ê²€ì‚¬
-    // ì €ì¥ ë§¤ì²´ì— ëŒ€í•œ ì •ë³´ê°€ Tuple ì •ë³´ì™€ Planì˜ ì •ë³´ê°€ ë™ì¼í•˜ê²Œ
-    // ì„¤ì •ë˜ì–´ ìˆëŠ” ì§€ ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
+    // ÀúÀå ¸ÅÃ¼¿¡ ´ëÇÑ Á¤º¸°¡ Tuple Á¤º¸¿Í PlanÀÇ Á¤º¸°¡ µ¿ÀÏÇÏ°Ô
+    // ¼³Á¤µÇ¾î ÀÖ´Â Áö °Ë»ç
     if ( (aCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK)
          == QMN_PLAN_STORAGE_DISK )
     {
@@ -1461,8 +1476,8 @@ qmnSCAN::firstInit( qcTemplate * aTemplate,
                      == MTC_TUPLE_STORAGE_MEMORY );
     }
 
-    // Cursor Propertyì˜ ì„¤ì •
-    // Session Event ì •ë³´ë¥¼ ì„¤ì •í•˜ê¸° ìœ„í•˜ì—¬ ë³µì‚¬í•´ì•¼ í•œë‹¤.
+    // Cursor PropertyÀÇ ¼³Á¤
+    // Session Event Á¤º¸¸¦ ¼³Á¤ÇÏ±â À§ÇÏ¿© º¹»çÇØ¾ß ÇÑ´Ù.
 
     idlOS::memcpy( & aDataPlan->cursorProperty,
                    & aCodePlan->cursorProperty,
@@ -1470,8 +1485,8 @@ qmnSCAN::firstInit( qcTemplate * aTemplate,
     aDataPlan->cursorProperty.mStatistics =
         aTemplate->stmt->mStatistics;
 
-    // BUG-10146 limit ì ˆì— host variable í—ˆìš©
-    // aCodePlanì˜ limit ì •ë³´ë¥¼ ê°€ì§€ê³  cursorPropertiesë¥¼ ì„¸íŒ…í•œë‹¤.
+    // BUG-10146 limit Àı¿¡ host variable Çã¿ë
+    // aCodePlanÀÇ limit Á¤º¸¸¦ °¡Áö°í cursorProperties¸¦ ¼¼ÆÃÇÑ´Ù.
     if( aCodePlan->limit != NULL )
     {
         IDE_TEST( qmsLimitI::getStartValue(
@@ -1480,8 +1495,8 @@ qmnSCAN::firstInit( qcTemplate * aTemplate,
                       &aDataPlan->cursorProperty.mFirstReadRecordPos )
                   != IDE_SUCCESS );
 
-        // limitì˜ startëŠ” 1ë¶€í„° ì‹œì‘í•˜ì§€ë§Œ,
-        // recordPositionì€ 0ë¶€í„° ì‹œì‘í•œë‹¤.
+        // limitÀÇ start´Â 1ºÎÅÍ ½ÃÀÛÇÏÁö¸¸,
+        // recordPositionÀº 0ºÎÅÍ ½ÃÀÛÇÑ´Ù.
         aDataPlan->cursorProperty.mFirstReadRecordPos--;
 
         IDE_TEST( qmsLimitI::getCountValue(
@@ -1501,26 +1516,26 @@ qmnSCAN::firstInit( qcTemplate * aTemplate,
     aDataPlan->subQFilterDepCnt = 0;
 
     //---------------------------------
-    // Predicate ì¢…ë¥˜ì˜ ì´ˆê¸°í™”
+    // Predicate Á¾·ùÀÇ ÃÊ±âÈ­
     //---------------------------------
 
-    // Fixed Key Range ì˜ì—­ì˜ í• ë‹¹
+    // Fixed Key Range ¿µ¿ªÀÇ ÇÒ´ç
     IDE_TEST( allocFixKeyRange( aTemplate, aCodePlan, aDataPlan )
               != IDE_SUCCESS );
 
-    // Fixed Key Filter ì˜ì—­ì˜ í• ë‹¹
+    // Fixed Key Filter ¿µ¿ªÀÇ ÇÒ´ç
     IDE_TEST( allocFixKeyFilter( aTemplate, aCodePlan, aDataPlan )
               != IDE_SUCCESS );
 
-    // Variable Key Range ì˜ì—­ì˜ í• ë‹¹
+    // Variable Key Range ¿µ¿ªÀÇ ÇÒ´ç
     IDE_TEST( allocVarKeyRange( aTemplate, aCodePlan, aDataPlan )
               != IDE_SUCCESS );
 
-    // Variable Key Filter ì˜ì—­ì˜ í• ë‹¹
+    // Variable Key Filter ¿µ¿ªÀÇ ÇÒ´ç
     IDE_TEST( allocVarKeyFilter( aTemplate, aCodePlan, aDataPlan )
               != IDE_SUCCESS );
 
-    // Not Null Key Range ì˜ì—­ì˜ í• ë‹¹
+    // Not Null Key Range ¿µ¿ªÀÇ ÇÒ´ç
     IDE_TEST( allocNotNullKeyRange( aTemplate, aCodePlan, aDataPlan )
               != IDE_SUCCESS );
 
@@ -1531,33 +1546,33 @@ qmnSCAN::firstInit( qcTemplate * aTemplate,
     aDataPlan->keyFilter = NULL;
 
     //---------------------------------
-    // Disk Table ê´€ë ¨ ì •ë³´ì˜ ì´ˆê¸°í™”
+    // Disk Table °ü·Ã Á¤º¸ÀÇ ÃÊ±âÈ­
     //---------------------------------
 
-    // [Disk Tableì¸ ê²½ìš°]
-    //   Recordë¥¼ ì½ê¸° ìœ„í•œ ê³µê°„ ë§ˆë ¨,
-    //   Variable Columnì˜ value pointerì§€ì •
-    //   ë“±ì˜ ì‘ì—…ì„ ë‹¤ìŒ í•¨ìˆ˜ë¥¼ í†µí•˜ì—¬ ì²˜ë¦¬í•œë‹¤.
-    // [Memory Tableì˜ ê²½ìš°]
-    //   Variable Columnì˜ value pointerì§€ì •
+    // [Disk TableÀÎ °æ¿ì]
+    //   Record¸¦ ÀĞ±â À§ÇÑ °ø°£ ¸¶·Ã,
+    //   Variable ColumnÀÇ value pointerÁöÁ¤
+    //   µîÀÇ ÀÛ¾÷À» ´ÙÀ½ ÇÔ¼ö¸¦ ÅëÇÏ¿© Ã³¸®ÇÑ´Ù.
+    // [Memory TableÀÇ °æ¿ì]
+    //   Variable ColumnÀÇ value pointerÁöÁ¤
     IDE_TEST( qmc::setRowSize( aTemplate->stmt->qmxMem,
                                & aTemplate->tmplate,
                                aCodePlan->tupleRowID ) != IDE_SUCCESS );
 
-    // Disk Tableì¸ ê²½ìš°
-    //   Null Rowë¥¼ ìœ„í•œ ê³µê°„ìœ¼ë¡œ ë¹ˆë²ˆí•œ disk I/Oë¥¼ ë°©ì§€í•˜ê¸°
-    //   ìœ„í•˜ì—¬ í•´ë‹¹ ì˜ì—­ì— ë³µì‚¬í•˜ì—¬ ì²˜ë¦¬í•œë‹¤.
-    //   ìµœì´ˆ í˜¸ì¶œ ì‹œ memoryë¥¼ í• ë‹¹ë°›ì•„ SMë¡œë¶€í„° null rowë¥¼ ì–»ì–´ ì˜¨ë‹¤.
+    // Disk TableÀÎ °æ¿ì
+    //   Null Row¸¦ À§ÇÑ °ø°£À¸·Î ºó¹øÇÑ disk I/O¸¦ ¹æÁöÇÏ±â
+    //   À§ÇÏ¿© ÇØ´ç ¿µ¿ª¿¡ º¹»çÇÏ¿© Ã³¸®ÇÑ´Ù.
+    //   ÃÖÃÊ È£Ãâ ½Ã memory¸¦ ÇÒ´ç¹Ş¾Æ SM·ÎºÎÅÍ null row¸¦ ¾ò¾î ¿Â´Ù.
     aDataPlan->nullRow = NULL;
 
     //---------------------------------
-    // Triggerë¥¼ ìœ„í•œ ê³µê°„ì„ ë§ˆë ¨
+    // Trigger¸¦ À§ÇÑ °ø°£À» ¸¶·Ã
     //---------------------------------
 
     aDataPlan->isNeedAllFetchColumn = ID_FALSE;
 
     //---------------------------------
-    // cursor ì •ë³´ ì„¤ì •
+    // cursor Á¤º¸ ¼³Á¤
     //---------------------------------
 
     if ( aDataPlan->plan.myTuple->cursorInfo != NULL )
@@ -1590,12 +1605,12 @@ qmnSCAN::firstInit( qcTemplate * aTemplate,
     }
     else
     {
-        // DMLì´ ì•„ë‹Œ ê²½ìš° (select, select for update, dequeue)
+        // DMLÀÌ ¾Æ´Ñ °æ¿ì (select, select for update, dequeue)
 
         aDataPlan->updateColumnList = NULL;
         aDataPlan->cursorType       = SMI_SELECT_CURSOR;
         aDataPlan->inplaceUpdate    = ID_FALSE;
-        aDataPlan->lockMode         = aCodePlan->lockMode;  // í•­ìƒ SMI_LOCK_READëŠ” ì•„ë‹ˆë‹¤.
+        aDataPlan->lockMode         = aCodePlan->lockMode;  // Ç×»ó SMI_LOCK_READ´Â ¾Æ´Ï´Ù.
     }
 
     /* PROJ-2402 */
@@ -1633,7 +1648,7 @@ qmnSCAN::firstInit( qcTemplate * aTemplate,
     }
 
     //---------------------------------
-    // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
+    // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
     //---------------------------------
 
     *aDataPlan->flag &= ~QMND_SCAN_INIT_DONE_MASK;
@@ -1660,10 +1675,10 @@ qmnSCAN::allocFixKeyRange( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description : PROJ-1413
- *    Fixed Key Rangeë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
- *    Fixed Key Rangeë¼ í•˜ë”ë¼ë„ plan ê³µìœ ì— ì˜í•´ fixed key rangeê°€
- *    ê³µìœ ë˜ë¯€ë¡œ variable key rangeì™€ ë§ˆì°¬ê°€ì§€ë¡œ ìì‹ ë§Œì˜ ê³µê°„ì—
- *    ê³µìœ ë˜ì§€ ì•Šì€ key rangeë¥¼ ê°€ì ¸ì•¼ í•œë‹¤.
+ *    Fixed Key Range¸¦ À§ÇÑ °ø°£À» ÇÒ´ç¹Ş´Â´Ù.
+ *    Fixed Key Range¶ó ÇÏ´õ¶óµµ plan °øÀ¯¿¡ ÀÇÇØ fixed key range°¡
+ *    °øÀ¯µÇ¹Ç·Î variable key range¿Í ¸¶Âù°¡Áö·Î ÀÚ½Å¸¸ÀÇ °ø°£¿¡
+ *    °øÀ¯µÇÁö ¾ÊÀº key range¸¦ °¡Á®¾ß ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1676,15 +1691,14 @@ qmnSCAN::allocFixKeyRange( qcTemplate * aTemplate,
     {
         IDE_DASSERT( sMethod->index != NULL );
 
-        // Fixed Key Rangeì˜ í¬ê¸° ê³„ì‚°
+        // Fixed Key RangeÀÇ Å©±â °è»ê
         IDE_TEST( qmoKeyRange::estimateKeyRange( aTemplate,
                                                  sMethod->fixKeyRange,
                                                  & aDataPlan->fixKeyRangeSize )
                   != IDE_SUCCESS );
 
         IDE_DASSERT( aDataPlan->fixKeyRangeSize > 0 );
-
-        // Fixed Key Rangeë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
+        // Fixed Key Range¸¦ À§ÇÑ °ø°£ ÇÒ´ç
         sMemory = aTemplate->stmt->qmxMem;
 
         IDU_FIT_POINT( "qmnSCAN::allocFixKeyRange::cralloc::fixKeyRangeArea",
@@ -1716,10 +1730,10 @@ qmnSCAN::allocFixKeyFilter( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description : PROJ-1436
- *    Fixed Key Filterë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
- *    Fixed Key Filterë¼ í•˜ë”ë¼ë„ plan ê³µìœ ì— ì˜í•´ fixed key filterê°€
- *    ê³µìœ ë˜ë¯€ë¡œ variable key filterì™€ ë§ˆì°¬ê°€ì§€ë¡œ ìì‹ ë§Œì˜ ê³µê°„ì—
- *    ê³µìœ ë˜ì§€ ì•Šì€ key filterë¥¼ ê°€ì ¸ì•¼ í•œë‹¤.
+ *    Fixed Key Filter¸¦ À§ÇÑ °ø°£À» ÇÒ´ç¹Ş´Â´Ù.
+ *    Fixed Key Filter¶ó ÇÏ´õ¶óµµ plan °øÀ¯¿¡ ÀÇÇØ fixed key filter°¡
+ *    °øÀ¯µÇ¹Ç·Î variable key filter¿Í ¸¶Âù°¡Áö·Î ÀÚ½Å¸¸ÀÇ °ø°£¿¡
+ *    °øÀ¯µÇÁö ¾ÊÀº key filter¸¦ °¡Á®¾ß ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1733,7 +1747,7 @@ qmnSCAN::allocFixKeyFilter( qcTemplate * aTemplate,
     {
         IDE_DASSERT( sMethod->index != NULL );
 
-        // Fixed Key Filterì˜ í¬ê¸° ê³„ì‚°
+        // Fixed Key FilterÀÇ Å©±â °è»ê
         IDE_TEST(
             qmoKeyRange::estimateKeyRange( aTemplate,
                                            sMethod->fixKeyFilter,
@@ -1742,7 +1756,7 @@ qmnSCAN::allocFixKeyFilter( qcTemplate * aTemplate,
 
         IDE_DASSERT( aDataPlan->fixKeyFilterSize > 0 );
 
-        // Fixed Key Filterë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
+        // Fixed Key Filter¸¦ À§ÇÑ °ø°£ ÇÒ´ç
         sMemory = aTemplate->stmt->qmxMem;
 
         IDU_FIT_POINT( "qmnSCAN::allocFixKeyFilter::cralloc::fixKeyFilterArea",
@@ -1774,7 +1788,7 @@ qmnSCAN::allocVarKeyRange( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Variable Key Rangeë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
+ *    Variable Key Range¸¦ À§ÇÑ °ø°£À» ÇÒ´ç¹Ş´Â´Ù.
  *
  * Implementation :
  *
@@ -1787,7 +1801,7 @@ qmnSCAN::allocVarKeyRange( qcTemplate * aTemplate,
     {
         IDE_DASSERT( sMethod->index != NULL );
 
-        // Variable Key Rangeì˜ í¬ê¸° ê³„ì‚°
+        // Variable Key RangeÀÇ Å©±â °è»ê
         IDE_TEST( qmoKeyRange::estimateKeyRange( aTemplate,
                                                  sMethod->varKeyRange,
                                                  & aDataPlan->varKeyRangeSize )
@@ -1795,7 +1809,7 @@ qmnSCAN::allocVarKeyRange( qcTemplate * aTemplate,
 
         IDE_DASSERT( aDataPlan->varKeyRangeSize > 0 );
 
-        // Variable Key Rangeë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
+        // Variable Key Range¸¦ À§ÇÑ °ø°£ ÇÒ´ç
         sMemory = aTemplate->stmt->qmxMem;
 
         IDU_FIT_POINT( "qmnSCAN::allocVarKeyRange::cralloc::varKeyRangeArea",
@@ -1828,7 +1842,7 @@ qmnSCAN::allocVarKeyFilter( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Variable Key Filterë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
+ *    Variable Key Filter¸¦ À§ÇÑ °ø°£À» ÇÒ´ç¹Ş´Â´Ù.
  *
  * Implementation :
  *
@@ -1843,7 +1857,7 @@ qmnSCAN::allocVarKeyFilter( qcTemplate * aTemplate,
     {
         IDE_DASSERT( sMethod->index != NULL );
 
-        // Variable Key Filterì˜ í¬ê¸° ê³„ì‚°
+        // Variable Key FilterÀÇ Å©±â °è»ê
         IDE_TEST(
             qmoKeyRange::estimateKeyRange( aTemplate,
                                            sMethod->varKeyFilter,
@@ -1852,7 +1866,7 @@ qmnSCAN::allocVarKeyFilter( qcTemplate * aTemplate,
 
         IDE_DASSERT( aDataPlan->varKeyFilterSize > 0 );
 
-        // Variable Key Filterë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
+        // Variable Key Filter¸¦ À§ÇÑ °ø°£ ÇÒ´ç
         sMemory = aTemplate->stmt->qmxMem;
         IDU_LIMITPOINT("qmnSCAN::allocVarKeyFilter::malloc");
         IDE_TEST( sMemory->cralloc( aDataPlan->varKeyFilterSize,
@@ -1881,7 +1895,7 @@ qmnSCAN::allocNotNullKeyRange( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    NotNull Key Rangeë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
+ *    NotNull Key Range¸¦ À§ÇÑ °ø°£À» ÇÒ´ç¹Ş´Â´Ù.
  *
  * Implementation :
  *
@@ -1896,7 +1910,7 @@ qmnSCAN::allocNotNullKeyRange( qcTemplate * aTemplate,
          ( sMethod->fixKeyRange == NULL ) &&
          ( sMethod->varKeyRange == NULL ) )
     {
-        // keyRange ì ìš©ì„ ìœ„í•œ size êµ¬í•˜ê¸°
+        // keyRange Àû¿ëÀ» À§ÇÑ size ±¸ÇÏ±â
         IDE_TEST( mtk::estimateRangeDefault( NULL,
                                              NULL,
                                              0,
@@ -1905,7 +1919,7 @@ qmnSCAN::allocNotNullKeyRange( qcTemplate * aTemplate,
 
         IDE_DASSERT( sSize > 0 );
 
-        // Fixed Key Rangeë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
+        // Fixed Key Range¸¦ À§ÇÑ °ø°£ ÇÒ´ç
         sMemory = aTemplate->stmt->qmxMem;
 
         IDU_FIT_POINT( "qmnSCAN::allocNotNullKeyRange::cralloc::notNullKeyRange",
@@ -1935,12 +1949,12 @@ qmnSCAN::openCursor( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Cursorë¥¼ ì—°ë‹¤.
+ *    Cursor¸¦ ¿¬´Ù.
  *
  * Implementation :
- *    Cursorë¥¼ ì—´ê¸° ìœ„í•œ ì •ë³´ë¥¼ êµ¬ì„±í•œë‹¤.
- *    Cursorë¥¼ ì—´ê³  Cursor Managerì— ë“±ë¡í•œë‹¤.
- *    Cursorë¥¼ ìµœì´ˆ ìœ„ì¹˜ë¡œ ì´ë™ì‹œí‚¨ë‹¤.
+ *    Cursor¸¦ ¿­±â À§ÇÑ Á¤º¸¸¦ ±¸¼ºÇÑ´Ù.
+ *    Cursor¸¦ ¿­°í Cursor Manager¿¡ µî·ÏÇÑ´Ù.
+ *    Cursor¸¦ ÃÖÃÊ À§Ä¡·Î ÀÌµ¿½ÃÅ²´Ù.
  *
  ***********************************************************************/
 
@@ -1953,7 +1967,7 @@ qmnSCAN::openCursor( qcTemplate * aTemplate,
     UInt                    sInplaceUpdate;
     void                  * sOrgRow;
     qmncScanMethod        * sMethod = getScanMethod( aTemplate, aCodePlan );
-    smiRecordLockWaitFlag   sRecordLockWaitFlag; //PROJ-1677 DEQUEUE
+    idBool                  sIsDequeue = ID_FALSE;
     smiFetchColumnList    * sFetchColumnList = NULL;
     smiRange              * sRange; // KeyRange or RIDRange
     qmnCursorInfo         * sCursorInfo;
@@ -1966,22 +1980,22 @@ qmnSCAN::openCursor( qcTemplate * aTemplate,
          ((*aDataPlan->flag & QMND_SCAN_INSUBQ_RANGE_BUILD_MASK)
           == QMND_SCAN_INSUBQ_RANGE_BUILD_FAILURE ) )
     {
-        // Cursorë¥¼ ì—´ì§€ ì•ŠëŠ”ë‹¤.
-        // ë” ì´ìƒ IN SUBQUERY Key Rangeë¥¼ ìƒì„±í•  ìˆ˜ ì—†ëŠ” ê²½ìš°ë¡œ
-        // recordë¥¼ fetchí•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
+        // Cursor¸¦ ¿­Áö ¾Ê´Â´Ù.
+        // ´õ ÀÌ»ó IN SUBQUERY Key Range¸¦ »ı¼ºÇÒ ¼ö ¾ø´Â °æ¿ì·Î
+        // record¸¦ fetchÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
         // Nothing To Do
     }
     else
     {
         //-------------------------------------------------------
-        //  Cursorë¥¼ ìœ„í•œ ì •ë³´ êµ¬ì„±
+        //  Cursor¸¦ À§ÇÑ Á¤º¸ ±¸¼º
         //-------------------------------------------------------
 
         //---------------------------
-        // Flag ì •ë³´ì˜ êµ¬ì„±
+        // Flag Á¤º¸ÀÇ ±¸¼º
         //---------------------------
 
-        // Traverse ë°©í–¥ì˜ ê²°ì •
+        // Traverse ¹æÇâÀÇ °áÁ¤
         if ( ( aCodePlan->flag & QMNC_SCAN_TRAVERSE_MASK )
              == QMNC_SCAN_TRAVERSE_FORWARD )
         {
@@ -1992,7 +2006,7 @@ qmnSCAN::openCursor( qcTemplate * aTemplate,
             sTraverse = SMI_TRAVERSE_BACKWARD;
         }
 
-        // Previous ì‚¬ìš© ì—¬ë¶€ ê²°ì •
+        // Previous »ç¿ë ¿©ºÎ °áÁ¤
         if ( ( aCodePlan->flag & QMNC_SCAN_PREVIOUS_ENABLE_MASK )
              == QMNC_SCAN_PREVIOUS_ENABLE_TRUE )
         {
@@ -2004,17 +2018,17 @@ qmnSCAN::openCursor( qcTemplate * aTemplate,
         }
 
         // PROJ-1509
-        // inplace update ì—¬ë¶€ ê²°ì •
-        // MEMORY tableì—ì„œëŠ”,
-        // trigger or foreign keyê°€ ìˆëŠ” ê²½ìš°,
-        // ê°±ì‹  ì´ì „/ì´í›„ ê°’ì„ ì½ê¸° ìœ„í•´ì„œëŠ”
-        // inplace updateê°€ ë˜ì§€ ì•Šë„ë¡ í•´ì•¼ í•œë‹¤.
-        // ì´ ì •ë³´ëŠ” update cursorì—ì„œë§Œ í•„ìš”í•œ ê²ƒì´ì§€ë§Œ,
-        // qpì—ì„œ ì´ë¥¼ cursorë³„ë¡œ ì„¤ì •í•˜ë©´ ì½”ë“œê°€ ë³µì¡í•´ì ¸,
-        // insert, update, delete cursorì— ê´€ê³„ì—†ì´ ì •ë³´ë¥¼ smìœ¼ë¡œ ë„˜ê¸´ë‹¤.
-        // < ì°¸ê³  > smíŒ€ê³¼ì˜ í˜‘ì˜ì‚¬í•­ì´ë©°,
-        //          smì—ì„œ ì´ ì •ë³´ëŠ” update cursorì—ì„œë§Œ
-        //          ì‚¬ìš©ë˜ê¸° ë•Œë¬¸ì— ë¬¸ì œ ì—†ë‹¤ê³  í•¨.
+        // inplace update ¿©ºÎ °áÁ¤
+        // MEMORY table¿¡¼­´Â,
+        // trigger or foreign key°¡ ÀÖ´Â °æ¿ì,
+        // °»½Å ÀÌÀü/ÀÌÈÄ °ªÀ» ÀĞ±â À§ÇØ¼­´Â
+        // inplace update°¡ µÇÁö ¾Êµµ·Ï ÇØ¾ß ÇÑ´Ù.
+        // ÀÌ Á¤º¸´Â update cursor¿¡¼­¸¸ ÇÊ¿äÇÑ °ÍÀÌÁö¸¸,
+        // qp¿¡¼­ ÀÌ¸¦ cursorº°·Î ¼³Á¤ÇÏ¸é ÄÚµå°¡ º¹ÀâÇØÁ®,
+        // insert, update, delete cursor¿¡ °ü°è¾øÀÌ Á¤º¸¸¦ smÀ¸·Î ³Ñ±ä´Ù.
+        // < Âü°í > smÆÀ°úÀÇ ÇùÀÇ»çÇ×ÀÌ¸ç,
+        //          sm¿¡¼­ ÀÌ Á¤º¸´Â update cursor¿¡¼­¸¸
+        //          »ç¿ëµÇ±â ¶§¹®¿¡ ¹®Á¦ ¾ø´Ù°í ÇÔ.
         if( aDataPlan->inplaceUpdate == ID_TRUE )
         {
             sInplaceUpdate = SMI_INPLACE_UPDATE_ENABLE;
@@ -2028,7 +2042,7 @@ qmnSCAN::openCursor( qcTemplate * aTemplate,
             aDataPlan->lockMode | sTraverse | sPrevious | sInplaceUpdate;
 
         //---------------------------
-        // Index Handleì˜ íšë“
+        // Index HandleÀÇ È¹µæ
         //---------------------------
 
         if (sMethod->index != NULL)
@@ -2054,7 +2068,7 @@ qmnSCAN::openCursor( qcTemplate * aTemplate,
             IDE_TEST_RAISE( !SM_SCN_IS_EQ( &(aCodePlan->tableRef->tableSCN), &sBaseTableSCN ),
                             ERR_TEMPORARY_TABLE_EXIST );
 
-            // Session Temp Tableì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+            // Session Temp TableÀÌ Á¸ÀçÇÏ´Â °æ¿ì
             sTableSCN = smiGetRowSCN( sTableHandle );
 
             if( sIndexHandle != NULL )
@@ -2063,7 +2077,7 @@ qmnSCAN::openCursor( qcTemplate * aTemplate,
                     sStmt,
                     aCodePlan->tableRef->tableInfo,
                     sMethod->index->indexId );
-                // ë°˜ë“œì‹œ ì¡´ì¬í•˜ì—¬ì•¼ í•œë‹¤.
+                // ¹İµå½Ã Á¸ÀçÇÏ¿©¾ß ÇÑ´Ù.
                 IDE_ASSERT( sIndexHandle != NULL );
             }
         }
@@ -2074,28 +2088,28 @@ qmnSCAN::openCursor( qcTemplate * aTemplate,
         }
 
         //-------------------------------------------------------
-        //  Cursorë¥¼ ì—°ë‹¤.
+        //  Cursor¸¦ ¿¬´Ù.
         //-------------------------------------------------------
         
-        // Cursorì˜ ì´ˆê¸°í™”
+        // CursorÀÇ ÃÊ±âÈ­
         aDataPlan->cursor->initialize();
         
         // PROJ-1618
         aDataPlan->cursor->setDumpObject( aCodePlan->dumpObject );
         
-        //PROJ-1677 DEQUEUE
+        //BUG-48230: DEQUEUE ¼º´É °³¼±
         if ( (aCodePlan->flag & QMNC_SCAN_TABLE_QUEUE_MASK)
              == QMNC_SCAN_TABLE_QUEUE_TRUE )
         {
-            sRecordLockWaitFlag = SMI_RECORD_NO_LOCKWAIT;
+            sIsDequeue = ID_TRUE;
         }
         else
         {
-            sRecordLockWaitFlag = SMI_RECORD_LOCKWAIT;
+            sIsDequeue = ID_FALSE;
         }
 
         // PROJ-1705
-        // ë ˆì½”ë“œíŒ¨ì¹˜ì‹œ ë³µì‚¬ë˜ì–´ì•¼ í•  ì»¬ëŸ¼ì •ë³´ìƒì„±
+        // ·¹ÄÚµåÆĞÄ¡½Ã º¹»çµÇ¾î¾ß ÇÒ ÄÃ·³Á¤º¸»ı¼º
         if ( (aCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK)
              == QMN_PLAN_STORAGE_DISK )
         {
@@ -2109,9 +2123,9 @@ qmnSCAN::openCursor( qcTemplate * aTemplate,
 
             aDataPlan->cursorProperty.mFetchColumnList = sFetchColumnList;
 
-            // select for updateì™€ repeatable read ì²˜ë¦¬ë¥¼ ìœ„í•´
-            // smì— qpì—ì„œ í• ë‹¹í•œ ë©”ëª¨ë¦¬ì˜ì—­ì„ ë‚´ë ¤ì¤€ë‹¤.
-            // smì—ì„œ select for updateì™€ repeatable readì²˜ë¦¬ì‹œ ë©”ëª¨ë¦¬ ì ì‹œ ì‚¬ìš©.
+            // select for update¿Í repeatable read Ã³¸®¸¦ À§ÇØ
+            // sm¿¡ qp¿¡¼­ ÇÒ´çÇÑ ¸Ş¸ğ¸®¿µ¿ªÀ» ³»·ÁÁØ´Ù.
+            // sm¿¡¼­ select for update¿Í repeatable readÃ³¸®½Ã ¸Ş¸ğ¸® Àá½Ã »ç¿ë.
             aDataPlan->cursorProperty.mLockRowBuffer = (UChar*)aDataPlan->plan.myTuple->row;
             aDataPlan->cursorProperty.mLockRowBufferSize =
                         aTemplate->tmplate.rows[aCodePlan->tupleRowID].rowOffset;
@@ -2122,10 +2136,10 @@ qmnSCAN::openCursor( qcTemplate * aTemplate,
         }
 
         /*
-         * SMI_CURSOR_PROP_INIT ì„ ì‚¬ìš©í•˜ì§€ ì•Šê³ 
-         * mIndexTypeID ë§Œ ë”°ë¡œ setting í•˜ëŠ” ì´ìœ ëŠ”
-         * ìœ„ì—ëŠ” mFetchColumnList, mLockRowBuffer ë¥¼ ë³€ê²½í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
-         * SMI_CURSOR_PROP_INIT ì„ ì‚¬ìš©í•˜ë©´ ë‹¤ì‹œ ë‹¤ ì´ˆê¸°í™” ë˜ë¯€ë¡œ
+         * SMI_CURSOR_PROP_INIT À» »ç¿ëÇÏÁö ¾Ê°í
+         * mIndexTypeID ¸¸ µû·Î setting ÇÏ´Â ÀÌÀ¯´Â
+         * À§¿¡´Â mFetchColumnList, mLockRowBuffer ¸¦ º¯°æÇÏ±â ¶§¹®ÀÌ´Ù.
+         * SMI_CURSOR_PROP_INIT À» »ç¿ëÇÏ¸é ´Ù½Ã ´Ù ÃÊ±âÈ­ µÇ¹Ç·Î
          */
         if (sMethod->ridRange != NULL)
         {
@@ -2165,19 +2179,19 @@ qmnSCAN::openCursor( qcTemplate * aTemplate,
         }
 
         /* BUG-38290
-         * Cursor open ì€ ë™ì‹œì„± ì œì–´ê°€ í•„ìš”í•˜ë‹¤.
-         * Cursor ëŠ” SM ì—ì„œ open ì‹œ transaction ì„ ì‚¬ìš©í•˜ëŠ”ë°,
-         * transaction ì€ ë™ì‹œì„± ì œì–´ê°€ ê³ ë ¤ë˜ì–´ ìˆì§€ ì•Šìœ¼ë¯€ë¡œ
-         * QP ì—ì„œ ë™ì‹œì„± ì œì–´ë¥¼ í•´ì•¼ í•œë‹¤.
-         * ë˜, ì´ë¯¸ open ëœ cursor ë¥¼ cursro manager ì— ì¶”ê°€í•˜ëŠ”
-         * addOpendCursor í•¨ìˆ˜ë„ ë™ì‹œì„± ì œì–´ë¥¼ í•´ì•¼ í•œë‹¤.
+         * Cursor open Àº µ¿½Ã¼º Á¦¾î°¡ ÇÊ¿äÇÏ´Ù.
+         * Cursor ´Â SM ¿¡¼­ open ½Ã transaction À» »ç¿ëÇÏ´Âµ¥,
+         * transaction Àº µ¿½Ã¼º Á¦¾î°¡ °í·ÁµÇ¾î ÀÖÁö ¾ÊÀ¸¹Ç·Î
+         * QP ¿¡¼­ µ¿½Ã¼º Á¦¾î¸¦ ÇØ¾ß ÇÑ´Ù.
+         * ¶Ç, ÀÌ¹Ì open µÈ cursor ¸¦ cursro manager ¿¡ Ãß°¡ÇÏ´Â
+         * addOpendCursor ÇÔ¼öµµ µ¿½Ã¼º Á¦¾î¸¦ ÇØ¾ß ÇÑ´Ù.
          *
-         * ì´ëŠ” cursor open ì´ SCAN ê³¼ PCRD, CUNT ë“±ì—ì„œ ì‚¬ìš©ë˜ëŠ”ë°,
-         * íŠ¹íˆ SCAN ë…¸ë“œê°€ parallel query ë¡œ ì‹¤í–‰ ì‹œì— worker thread ì—
-         * ì˜í•´ ë™ì‹œì— ì‹¤í–‰ë  ê°€ëŠ¥ì„±ì´ ë†’ê¸° ë•Œë¬¸ì´ë‹¤.
+         * ÀÌ´Â cursor open ÀÌ SCAN °ú PCRD, CUNT µî¿¡¼­ »ç¿ëµÇ´Âµ¥,
+         * Æ¯È÷ SCAN ³ëµå°¡ parallel query ·Î ½ÇÇà ½Ã¿¡ worker thread ¿¡
+         * ÀÇÇØ µ¿½Ã¿¡ ½ÇÇàµÉ °¡´É¼ºÀÌ ³ô±â ¶§¹®ÀÌ´Ù.
          *
-         * ë”°ë¼ì„œ ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•´ cursor manager ì˜ mutex ë¡œ ë™ì‹œì„±ì„
-         * ì œì–´ í•œë‹¤.
+         * µû¶ó¼­ µ¿½Ã¼º Á¦¾î¸¦ À§ÇØ cursor manager ÀÇ mutex ·Î µ¿½Ã¼ºÀ»
+         * Á¦¾î ÇÑ´Ù.
          */
         IDE_TEST( sStmt->mCursorMutex.lock(NULL) != IDE_SUCCESS );
         sIsMutexLock = ID_TRUE;
@@ -2193,11 +2207,10 @@ qmnSCAN::openCursor( qcTemplate * aTemplate,
                                            sCursorFlag,
                                            aDataPlan->cursorType,
                                            &aDataPlan->cursorProperty,
-                                           //PROJ-1677 DEQUEUE
-                                           sRecordLockWaitFlag)
+                                           sIsDequeue ) 
                   != IDE_SUCCESS );
         
-        // Cursorë¥¼ ë“±ë¡
+        // Cursor¸¦ µî·Ï
         IDE_TEST( aTemplate->cursorMgr->addOpenedCursor(
                       sStmt->qmxMem,
                       aCodePlan->tupleRowID,
@@ -2207,17 +2220,17 @@ qmnSCAN::openCursor( qcTemplate * aTemplate,
         sIsMutexLock = ID_FALSE;
         IDE_TEST( sStmt->mCursorMutex.unlock() != IDE_SUCCESS );
 
-        // Cursorê°€ ì—´ë ¸ìŒì„ í‘œê¸°
+        // Cursor°¡ ¿­·ÈÀ½À» Ç¥±â
         *aDataPlan->flag &= ~QMND_SCAN_CURSOR_MASK;
         *aDataPlan->flag |= QMND_SCAN_CURSOR_OPEN;
 
         //-------------------------------------------------------
-        //  Cursorë¥¼ ìµœì´ˆ ìœ„ì¹˜ë¡œ ì´ë™
+        //  Cursor¸¦ ÃÖÃÊ À§Ä¡·Î ÀÌµ¿
         //-------------------------------------------------------
 
-        // Disk Tableì˜ ê²½ìš°
-        // Key Range ê²€ìƒ‰ìœ¼ë¡œ ì¸í•´ í•´ë‹¹ rowì˜ ê³µê°„ì„ ìƒì‹¤í•  ìˆ˜ ìˆë‹¤.
-        // ì´ë¥¼ ìœ„í•´ ì €ì¥ ê³µê°„ì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•˜ê³  ì´ë¥¼ ë³µì›í•œë‹¤.
+        // Disk TableÀÇ °æ¿ì
+        // Key Range °Ë»öÀ¸·Î ÀÎÇØ ÇØ´ç rowÀÇ °ø°£À» »ó½ÇÇÒ ¼ö ÀÖ´Ù.
+        // ÀÌ¸¦ À§ÇØ ÀúÀå °ø°£ÀÇ À§Ä¡¸¦ ÀúÀåÇÏ°í ÀÌ¸¦ º¹¿øÇÑ´Ù.
         sOrgRow = aDataPlan->plan.myTuple->row;
         
         IDE_TEST( aDataPlan->cursor->beforeFirst() != IDE_SUCCESS );
@@ -2228,13 +2241,13 @@ qmnSCAN::openCursor( qcTemplate * aTemplate,
         IDE_EXCEPTION_CONT( NORMAL_EXIT_EMPTY );
 
         //---------------------------------
-        // cursor ì •ë³´ ì„¤ì •
+        // cursor Á¤º¸ ¼³Á¤
         //---------------------------------
 
         if ( aDataPlan->plan.myTuple->cursorInfo != NULL )
         {
-            // DMLì—ì„œë„ ì‚¬ìš©í•˜ëŠ” scanì¸ ê²½ìš°
-            // cursor ì„¤ì •ì„ ë³€ê²½í•˜ê³  cursorë¥¼ ì „ë‹¬í•œë‹¤.
+            // DML¿¡¼­µµ »ç¿ëÇÏ´Â scanÀÎ °æ¿ì
+            // cursor ¼³Á¤À» º¯°æÇÏ°í cursor¸¦ Àü´ŞÇÑ´Ù.
 
             sCursorInfo = (qmnCursorInfo*) aDataPlan->plan.myTuple->cursorInfo;
 
@@ -2275,7 +2288,7 @@ IDE_RC qmnSCAN::restartCursor( qmncSCAN   * aCodePlan,
 /***********************************************************************
  *
  * Description :
- *    Cursorë¥¼ Restartí•œë‹¤.
+ *    Cursor¸¦ RestartÇÑ´Ù.
  *
  * Implementation :
  *
@@ -2289,9 +2302,9 @@ IDE_RC qmnSCAN::restartCursor( qmncSCAN   * aCodePlan,
          ((*aDataPlan->flag & QMND_SCAN_INSUBQ_RANGE_BUILD_MASK)
           == QMND_SCAN_INSUBQ_RANGE_BUILD_FAILURE ) )
     {
-        // Cursorë¥¼ ì—´ì§€ ì•ŠëŠ”ë‹¤.
-        // ë” ì´ìƒ IN SUBQUERY Key Rangeë¥¼ ìƒì„±í•  ìˆ˜ ì—†ëŠ” ê²½ìš°ë¡œ
-        // recordë¥¼ fetchí•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
+        // Cursor¸¦ ¿­Áö ¾Ê´Â´Ù.
+        // ´õ ÀÌ»ó IN SUBQUERY Key Range¸¦ »ı¼ºÇÒ ¼ö ¾ø´Â °æ¿ì·Î
+        // record¸¦ fetchÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
         // Nothing To Do
     }
     else
@@ -2307,9 +2320,9 @@ IDE_RC qmnSCAN::restartCursor( qmncSCAN   * aCodePlan,
             sRange = aDataPlan->keyRange;
         }
 
-        // Disk Tableì˜ ê²½ìš°
-        // Key Range ê²€ìƒ‰ìœ¼ë¡œ ì¸í•´ í•´ë‹¹ rowì˜ ê³µê°„ì„ ìƒì‹¤í•  ìˆ˜ ìˆë‹¤.
-        // ì´ë¥¼ ìœ„í•´ ì €ì¥ ê³µê°„ì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•˜ê³  ì´ë¥¼ ë³µì›í•œë‹¤.
+        // Disk TableÀÇ °æ¿ì
+        // Key Range °Ë»öÀ¸·Î ÀÎÇØ ÇØ´ç rowÀÇ °ø°£À» »ó½ÇÇÒ ¼ö ÀÖ´Ù.
+        // ÀÌ¸¦ À§ÇØ ÀúÀå °ø°£ÀÇ À§Ä¡¸¦ ÀúÀåÇÏ°í ÀÌ¸¦ º¹¿øÇÑ´Ù.
         sOrgRow = aDataPlan->plan.myTuple->row;
 
         IDE_TEST( aDataPlan->cursor->restart( sRange,
@@ -2337,21 +2350,21 @@ IDE_RC qmnSCAN::readRow(qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Cursorë¡œë¶€í„° ì¡°ê±´ì— ë§ëŠ” Recordë¥¼ ì½ëŠ”ë‹¤.
+ *    Cursor·ÎºÎÅÍ Á¶°Ç¿¡ ¸Â´Â Record¸¦ ÀĞ´Â´Ù.
  *
  * Implementation :
- *    Cursorë¥¼ ì´ìš©í•˜ì—¬ KeyRange, KeyFilter, Filterë¥¼ ë§Œì¡±í•˜ëŠ”
- *    Recordë¥¼ ì½ëŠ”ë‹¤.
- *    ì´í›„, subquery filterë¥¼ ì ìš©í•˜ì—¬ ì´ë¥¼ ë§Œì¡±í•˜ë©´ recordë¥¼ ë¦¬í„´í•œë‹¤.
+ *    Cursor¸¦ ÀÌ¿ëÇÏ¿© KeyRange, KeyFilter, Filter¸¦ ¸¸Á·ÇÏ´Â
+ *    Record¸¦ ÀĞ´Â´Ù.
+ *    ÀÌÈÄ, subquery filter¸¦ Àû¿ëÇÏ¿© ÀÌ¸¦ ¸¸Á·ÇÏ¸é record¸¦ ¸®ÅÏÇÑ´Ù.
  *
- *    [ Record ìœ„ì¹˜ì˜ ë³µì› ë¬¸ì œ ]
- *        - Disk Tableì˜ ê²½ìš°
- *             SMì˜ Filter ê²€ì‚¬, Data ì—†ìŒ ë“±ìœ¼ë¡œ ì¸í•´
- *             ì €ì¥ ê³µê°„ì„ ìƒì–´ ë²„ë¦´ ìˆ˜ ìˆë‹¤.
- *             - SMì˜ Filter ê²€ì‚¬ : plan.myTuple->row ì‚¬ë¼ì§
- *             - Data ì—†ìŒ        : sSearchRow ì‚¬ë¼ì§
- *        -  Memory Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°ì—ë„
- *           ë™ì¼í•œ logic ì ìš©ì— ì˜í•œ ë¬¸ì œê°€ ì—†ë„ë¡ í•œë‹¤.
+ *    [ Record À§Ä¡ÀÇ º¹¿ø ¹®Á¦ ]
+ *        - Disk TableÀÇ °æ¿ì
+ *             SMÀÇ Filter °Ë»ç, Data ¾øÀ½ µîÀ¸·Î ÀÎÇØ
+ *             ÀúÀå °ø°£À» ÀÒ¾î ¹ö¸± ¼ö ÀÖ´Ù.
+ *             - SMÀÇ Filter °Ë»ç : plan.myTuple->row »ç¶óÁü
+ *             - Data ¾øÀ½        : sSearchRow »ç¶óÁü
+ *        -  Memory TableÀ» »ç¿ëÇÏ´Â °æ¿ì¿¡µµ
+ *           µ¿ÀÏÇÑ logic Àû¿ë¿¡ ÀÇÇÑ ¹®Á¦°¡ ¾øµµ·Ï ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -2361,9 +2374,9 @@ IDE_RC qmnSCAN::readRow(qcTemplate * aTemplate,
     qmncScanMethod * sMethod = getScanMethod( aTemplate, aCodePlan );
 
     //----------------------------------------------
-    // 1. Cursorë¥¼ ì´ìš©í•˜ì—¬ Recordë¥¼ ì½ìŒ
-    // 2. Subquery Filter ì ìš©
-    // 3. Subquery Filter ë¥¼ ë§Œì¡±í•˜ë©´ ê²°ê³¼ ë¦¬í„´
+    // 1. Cursor¸¦ ÀÌ¿ëÇÏ¿© Record¸¦ ÀĞÀ½
+    // 2. Subquery Filter Àû¿ë
+    // 3. Subquery Filter ¸¦ ¸¸Á·ÇÏ¸é °á°ú ¸®ÅÏ
     //----------------------------------------------
 
     sJudge = ID_FALSE;
@@ -2371,7 +2384,7 @@ IDE_RC qmnSCAN::readRow(qcTemplate * aTemplate,
     while ( sJudge == ID_FALSE )
     {
         //----------------------------------------
-        // Cursorë¥¼ ì´ìš©í•˜ì—¬ Recordë¥¼ ì–»ìŒ
+        // Cursor¸¦ ÀÌ¿ëÇÏ¿© Record¸¦ ¾òÀ½
         //----------------------------------------
 
         if ( ((aCodePlan->flag & QMNC_SCAN_INSUBQ_KEYRANGE_MASK)
@@ -2379,13 +2392,12 @@ IDE_RC qmnSCAN::readRow(qcTemplate * aTemplate,
              ((*aDataPlan->flag & QMND_SCAN_INSUBQ_RANGE_BUILD_MASK)
               == QMND_SCAN_INSUBQ_RANGE_BUILD_FAILURE ) )
         {
-            // Subquery ê²°ê³¼ì˜ ë¶€ì¬ë¡œ
-            // IN SUBQUERY KEYRANGEë¥¼ ìœ„í•œ RANGE ìƒì„±ì„ ì‹¤íŒ¨í•œ ê²½ìš°
+            // Subquery °á°úÀÇ ºÎÀç·Î
+            // IN SUBQUERY KEYRANGE¸¦ À§ÇÑ RANGE »ı¼ºÀ» ½ÇÆĞÇÑ °æ¿ì
             sSearchRow = NULL;
         }
         else
         {
-RETRY_DEQUEUE:
             sOrgRow = sSearchRow = aDataPlan->plan.myTuple->row;
             IDE_TEST(
                 aDataPlan->cursor->readRow( (const void**) & sSearchRow,
@@ -2396,34 +2408,24 @@ RETRY_DEQUEUE:
                 (sSearchRow == NULL) ? sOrgRow : sSearchRow;
 
             // Proj 1360 Queue
-            // dequeueë¬¸ì—ì„œëŠ” í•´ë‹¹ rowë¥¼ ì‚­ì œí•´ì•¼ í•œë‹¤.
+            // dequeue¹®¿¡¼­´Â ÇØ´ç row¸¦ »èÁ¦ÇØ¾ß ÇÑ´Ù.
             if ( (sSearchRow != NULL) &&
                  ((aCodePlan->flag &  QMNC_SCAN_TABLE_QUEUE_MASK)
                   == QMNC_SCAN_TABLE_QUEUE_TRUE ))
             {
                 IDE_TEST(aDataPlan->cursor->deleteRow() != IDE_SUCCESS);
-                //PROJ-1677 DEQUEUE
-                if (aDataPlan->cursor->getRecordLockWaitStatus() ==
-                    SMI_ESCAPE_RECORD_LOCKWAIT)
-                {
-                    IDE_RAISE(RETRY_DEQUEUE);
-                }
-                else
-                {
-                    /* nothing to do */
-                }
             }
         }
 
         //----------------------------------------
-        // IN SUBQUERY KEY RANGEì‹œ ì¬ì‹œë„
+        // IN SUBQUERY KEY RANGE½Ã Àç½Ãµµ
         //----------------------------------------
 
         if ( ((aCodePlan->flag & QMNC_SCAN_INSUBQ_KEYRANGE_MASK)
               == QMNC_SCAN_INSUBQ_KEYRANGE_TRUE ) &&
              (sSearchRow == NULL) )
         {
-            // IN SUBQUERY KEYRANGEì¸ ê²½ìš° ë‹¤ì‹œ ì‹œë„í•œë‹¤.
+            // IN SUBQUERY KEYRANGEÀÎ °æ¿ì ´Ù½Ã ½ÃµµÇÑ´Ù.
             IDE_TEST( reRead4InSubRange( aTemplate,
                                          aCodePlan,
                                          aDataPlan,
@@ -2435,7 +2437,7 @@ RETRY_DEQUEUE:
         }
 
         //----------------------------------------
-        // SUBQUERY FILTER ì²˜ë¦¬
+        // SUBQUERY FILTER Ã³¸®
         //----------------------------------------
 
         if ( sSearchRow == NULL )
@@ -2445,15 +2447,15 @@ RETRY_DEQUEUE:
         }
         else
         {
-            // modifyê°’ ë³´ì •
+            // modify°ª º¸Á¤
             if ( sMethod->filter == NULL )
             {
-                // modifyê°’ ì¦ê°€.
+                // modify°ª Áõ°¡.
                 aDataPlan->plan.myTuple->modify++;
             }
             else
             {
-                // SMì— ì˜í•˜ì—¬ filterì ìš© ì‹œ modify ê°’ì´ ì¦ê°€í•¨.
+                // SM¿¡ ÀÇÇÏ¿© filterÀû¿ë ½Ã modify °ªÀÌ Áõ°¡ÇÔ.
 
                 // fix BUG-9052 BUG-9248
 
@@ -2463,24 +2465,24 @@ RETRY_DEQUEUE:
                 //                       WHERE T2.I1 = T3.I1
                 //                       AND T3.I1 = T1.I1
                 //                       GROUP BY T2.I2 ) AND T1.I1 > 0;
-                // subquery filterê°€ outer column ì°¸ì¡°ì‹œ
-                // outer columnì„ ì°¸ì¡°í•œ store and searchë¥¼
-                // ì¬ìˆ˜í–‰í•˜ë„ë¡ í•˜ê¸° ìœ„í•´
-                // aDataPlan->plan.myTuple->modifyì™€
-                // aDataPlan->subQFilterDepCntì˜ ê°’ì„ ì¦ê°€ì‹œí‚¨ë‹¤.
-                // printPlan()ë‚´ì—ì„œ ACCESS count displayì‹œ
-                // DataPlan->plan.myTuple->modifyì—ì„œ
-                // DataPlan->subQFilterDepCnt ê°’ì„ ë¹¼ì£¼ë„ë¡ í•œë‹¤.
+                // subquery filter°¡ outer column ÂüÁ¶½Ã
+                // outer columnÀ» ÂüÁ¶ÇÑ store and search¸¦
+                // Àç¼öÇàÇÏµµ·Ï ÇÏ±â À§ÇØ
+                // aDataPlan->plan.myTuple->modify¿Í
+                // aDataPlan->subQFilterDepCntÀÇ °ªÀ» Áõ°¡½ÃÅ²´Ù.
+                // printPlan()³»¿¡¼­ ACCESS count display½Ã
+                // DataPlan->plan.myTuple->modify¿¡¼­
+                // DataPlan->subQFilterDepCnt °ªÀ» »©ÁÖµµ·Ï ÇÑ´Ù.
 
                 // BUG-9248
-                // subquery filterì´ì™¸ì—ë„ modify countê°’ì„ ì°¸ì¡°í•´ì„œ
-                // ì¤‘ê°„ê²°ê³¼ë¥¼ ì¬ì €ì¥í•´ì•¼í•˜ëŠ” ê²½ìš°ê°€ ì¡´ì¬
+                // subquery filterÀÌ¿Ü¿¡µµ modify count°ªÀ» ÂüÁ¶ÇØ¼­
+                // Áß°£°á°ú¸¦ ÀçÀúÀåÇØ¾ßÇÏ´Â °æ¿ì°¡ Á¸Àç
 
                 aDataPlan->plan.myTuple->modify++;
                 aDataPlan->subQFilterDepCnt++;
             }
 
-            // Subquery Filterë¥¼ ì ìš©
+            // Subquery Filter¸¦ Àû¿ë
             if ( sMethod->subqueryFilter != NULL )
             {
                 IDE_TEST( qtc::judge( & sJudge,
@@ -2493,7 +2495,7 @@ RETRY_DEQUEUE:
                 sJudge = ID_TRUE;
             }
 
-            // NNF Filterë¥¼ ì ìš©
+            // NNF Filter¸¦ Àû¿ë
             if ( aCodePlan->nnfFilter != NULL )
             {
                 IDE_TEST( qtc::judge( & sJudge,
@@ -2510,12 +2512,12 @@ RETRY_DEQUEUE:
 
     if ( sJudge == ID_TRUE )
     {
-        // ë§Œì¡±í•˜ëŠ” Record ìˆìŒ
+        // ¸¸Á·ÇÏ´Â Record ÀÖÀ½
         *aFlag = QMC_ROW_DATA_EXIST;
     }
     else
     {
-        // ë§Œì¡±í•˜ëŠ” Record ì—†ìŒ
+        // ¸¸Á·ÇÏ´Â Record ¾øÀ½
         *aFlag = QMC_ROW_DATA_NONE;
     }
 
@@ -2534,7 +2536,7 @@ IDE_RC qmnSCAN::readRowFromGRID( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Cursorë¡œë¶€í„° ridì— í•´ë‹¹í•˜ëŠ” Recordë¥¼ ì½ëŠ”ë‹¤.
+ *    Cursor·ÎºÎÅÍ rid¿¡ ÇØ´çÇÏ´Â Record¸¦ ÀĞ´Â´Ù.
  *
  * Implementation :
  *
@@ -2548,7 +2550,7 @@ IDE_RC qmnSCAN::readRowFromGRID( qcTemplate * aTemplate,
     void * sSearchRow;
 
     //----------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //----------------------------------------------
 
     IDE_DASSERT( ( sCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK )
@@ -2561,7 +2563,7 @@ IDE_RC qmnSCAN::readRowFromGRID( qcTemplate * aTemplate,
                  == QMND_SCAN_CURSOR_OPEN );
 
     //----------------------------------------------
-    // Cursorë¥¼ ì´ìš©í•˜ì—¬ Recordë¥¼ ì½ìŒ
+    // Cursor¸¦ ÀÌ¿ëÇÏ¿© Record¸¦ ÀĞÀ½
     //----------------------------------------------
 
     sOrgRow = sSearchRow = sDataPlan->plan.myTuple->row;
@@ -2575,15 +2577,15 @@ IDE_RC qmnSCAN::readRowFromGRID( qcTemplate * aTemplate,
 
     if ( sSearchRow != NULL )
     {
-        // modifyê°’ ì¦ê°€.
+        // modify°ª Áõ°¡.
         sDataPlan->plan.myTuple->modify++;
 
-        // ë§Œì¡±í•˜ëŠ” Record ìˆìŒ
+        // ¸¸Á·ÇÏ´Â Record ÀÖÀ½
         *aFlag = QMC_ROW_DATA_EXIST;
     }
     else
     {
-        // ë§Œì¡±í•˜ëŠ” Record ì—†ìŒ
+        // ¸¸Á·ÇÏ´Â Record ¾øÀ½
         *aFlag = QMC_ROW_DATA_NONE;
     }
 
@@ -2603,7 +2605,7 @@ qmnSCAN::reRead4InSubRange( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     IN SUBQUERY KEYRANGEê°€ ìˆì„ ê²½ìš° Record Readë¥¼ ë‹¤ì‹œ ì‹œë„í•œë‹¤.
+ *     IN SUBQUERY KEYRANGE°¡ ÀÖÀ» °æ¿ì Record Read¸¦ ´Ù½Ã ½ÃµµÇÑ´Ù.
  *
  * Implementation :
  *
@@ -2617,11 +2619,11 @@ qmnSCAN::reRead4InSubRange( qcTemplate * aTemplate,
     {
         //---------------------------------------------------------
         // [IN SUBQUERY KEY RANGE]
-        // ê²€ìƒ‰ëœ RecordëŠ” ì—†ìœ¼ë‚˜, Subqueryì˜ ê²°ê³¼ê°€ ì•„ì§ ì¡´ì¬í•˜ëŠ” ê²½ìš°
-        //     - Key Rangeë¥¼ ë‹¤ì‹œ ìƒì„±í•œë‹¤.
-        //     - Recordë¥¼ Fetchí•œë‹¤.
-        //     - ìœ„ì˜ ê³¼ì •ì„ Fetchí•œ Recordê°€ ìˆê±°ë‚˜,
-        //       Key Range ìƒì„±ì„ ì‹¤íŒ¨í•  ë•Œê¹Œì§€ ë°˜ë³µí•œë‹¤.
+        // °Ë»öµÈ Record´Â ¾øÀ¸³ª, SubqueryÀÇ °á°ú°¡ ¾ÆÁ÷ Á¸ÀçÇÏ´Â °æ¿ì
+        //     - Key Range¸¦ ´Ù½Ã »ı¼ºÇÑ´Ù.
+        //     - Record¸¦ FetchÇÑ´Ù.
+        //     - À§ÀÇ °úÁ¤À» FetchÇÑ Record°¡ ÀÖ°Å³ª,
+        //       Key Range »ı¼ºÀ» ½ÇÆĞÇÒ ¶§±îÁö ¹İº¹ÇÑ´Ù.
         //---------------------------------------------------------
 
         while ( (sSearchRow == NULL) &&
@@ -2632,13 +2634,13 @@ qmnSCAN::reRead4InSubRange( qcTemplate * aTemplate,
             IDE_TEST(makeRidRange(aTemplate, aCodePlan, aDataPlan)
                      != IDE_SUCCESS);
 
-            // Key Rangeë¥¼ ì¬ìƒì„±í•œë‹¤.
+            // Key Range¸¦ Àç»ı¼ºÇÑ´Ù.
             IDE_TEST( makeKeyRangeAndFilter( aTemplate,
                                              aCodePlan,
                                              aDataPlan ) != IDE_SUCCESS );
 
-            // Cursorë¥¼ ì—°ë‹¤.
-            // ì´ë¯¸ Openë˜ì–´ ìˆìœ¼ë¯€ë¡œ, Restartí•œë‹¤.
+            // Cursor¸¦ ¿¬´Ù.
+            // ÀÌ¹Ì OpenµÇ¾î ÀÖÀ¸¹Ç·Î, RestartÇÑ´Ù.
             IDE_TEST( restartCursor( aCodePlan,
                                      aDataPlan ) != IDE_SUCCESS );
 
@@ -2646,7 +2648,7 @@ qmnSCAN::reRead4InSubRange( qcTemplate * aTemplate,
             if ( (*aDataPlan->flag & QMND_SCAN_INSUBQ_RANGE_BUILD_MASK)
                  == QMND_SCAN_INSUBQ_RANGE_BUILD_SUCCESS )
             {
-                // Key Range ìƒì„±ì„ ì„±ê³µí•œ ê²½ìš° Recordë¥¼ ì½ëŠ”ë‹¤.
+                // Key Range »ı¼ºÀ» ¼º°øÇÑ °æ¿ì Record¸¦ ÀĞ´Â´Ù.
                 sOrgRow = sSearchRow = aDataPlan->plan.myTuple->row;
 
                 IDE_TEST(
@@ -2687,7 +2689,7 @@ qmnSCAN::printAccessInfo( qmncSCAN     * aCodePlan,
 /***********************************************************************
  *
  * Description :
- *     Access ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *     Access Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  * Implementation :
  *
@@ -2702,10 +2704,10 @@ qmnSCAN::printAccessInfo( qmncSCAN     * aCodePlan,
     if ( aMode == QMN_DISPLAY_ALL )
     {
         //----------------------------
-        // explain plan = on; ì¸ ê²½ìš°
+        // explain plan = on; ÀÎ °æ¿ì
         //----------------------------
 
-        // ìˆ˜í–‰ íšŸìˆ˜ ì¶œë ¥
+        // ¼öÇà È½¼ö Ãâ·Â
         if ( (*aDataPlan->flag & QMND_SCAN_INIT_DONE_MASK)
              == QMND_SCAN_INIT_DONE_TRUE )
         {
@@ -2743,7 +2745,7 @@ qmnSCAN::printAccessInfo( qmncSCAN     * aCodePlan,
                                 ", ACCESS: 0" );
         }
 
-        // Disk Page ê°œìˆ˜ ì¶œë ¥
+        // Disk Page °³¼ö Ãâ·Â
         if ( ( aCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK )
              == QMN_PLAN_STORAGE_DISK )
         {
@@ -2754,8 +2756,8 @@ qmnSCAN::printAccessInfo( qmncSCAN     * aCodePlan,
                      ( ( aCodePlan->flag & QMNC_SCAN_FOR_PARTITION_MASK )
                                         == QMNC_SCAN_FOR_PARTITION_FALSE ) )
                 {
-                    // Disk Tableì— ëŒ€í•œ ì ‘ê·¼ì¸ ê²½ìš° ì¶œë ¥
-                    // SMìœ¼ë¡œë¶€í„° Disk Page Countë¥¼ íšë“
+                    // Disk Table¿¡ ´ëÇÑ Á¢±ÙÀÎ °æ¿ì Ãâ·Â
+                    // SMÀ¸·ÎºÎÅÍ Disk Page Count¸¦ È¹µæ
                     IDE_TEST( smiGetTableBlockCount( aCodePlan->table,
                                                      & sPageCount )
                               != IDE_SUCCESS );
@@ -2766,10 +2768,10 @@ qmnSCAN::printAccessInfo( qmncSCAN     * aCodePlan,
                 }
                 else
                 {
-                    /* BUG-44510 ë¯¸ì‚¬ìš© Disk Partitionì˜ SCAN Nodeë¥¼ ì¶œë ¥í•˜ë‹¤ê°€,
-                     *           Page Count ë¶€ë¶„ì—ì„œ ë¹„ì •ìƒ ì¢…ë£Œí•©ë‹ˆë‹¤.
-                     *  Lockì„ ì¡ì§€ ì•Šê³  smiGetTableBlockCount()ë¥¼ í˜¸ì¶œí•˜ë©´, ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
-                     *  ë¯¸ì‚¬ìš© Disk Partitionì˜ SCAN Nodeì—ì„œ Page Countë¥¼ ì¶œë ¥í•˜ì§€ ì•Šë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤.
+                    /* BUG-44510 ¹Ì»ç¿ë Disk PartitionÀÇ SCAN Node¸¦ Ãâ·ÂÇÏ´Ù°¡,
+                     *           Page Count ºÎºĞ¿¡¼­ ºñÁ¤»ó Á¾·áÇÕ´Ï´Ù.
+                     *  LockÀ» ÀâÁö ¾Ê°í smiGetTableBlockCount()¸¦ È£ÃâÇÏ¸é, ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ½À´Ï´Ù.
+                     *  ¹Ì»ç¿ë Disk PartitionÀÇ SCAN Node¿¡¼­ Page Count¸¦ Ãâ·ÂÇÏÁö ¾Êµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù.
                      */
                     iduVarStringAppendFormat( aString,
                                               ", DISK_PAGE_COUNT: ??" );
@@ -2778,20 +2780,20 @@ qmnSCAN::printAccessInfo( qmncSCAN     * aCodePlan,
             else
             {
                 // BUG-29209
-                // DISK_PAGE_COUNT ì •ë³´ ë³´ì—¬ì£¼ì§€ ì•ŠìŒ
+                // DISK_PAGE_COUNT Á¤º¸ º¸¿©ÁÖÁö ¾ÊÀ½
                 iduVarStringAppendFormat( aString,
                                           ", DISK_PAGE_COUNT: BLOCKED" );
             }
         }
         else
         {
-            // Memory Tableì— ëŒ€í•œ ì ‘ê·¼ì¸ ê²½ìš° ì¶œë ¥í•˜ì§€ ì•ŠìŒ
+            // Memory Table¿¡ ´ëÇÑ Á¢±ÙÀÎ °æ¿ì Ãâ·ÂÇÏÁö ¾ÊÀ½
         }
     }
     else
     {
         //----------------------------
-        // explain plan = only; ì¸ ê²½ìš°
+        // explain plan = only; ÀÎ °æ¿ì
         //----------------------------
 
         iduVarStringAppend( aString,
@@ -2810,34 +2812,37 @@ IDE_RC
 qmnSCAN::printPredicateInfo( qcTemplate   * aTemplate,
                              qmncSCAN     * aCodePlan,
                              ULong          aDepth,
-                             iduVarString * aString )
+                             iduVarString * aString,
+                             qmnDisplay     aMode )
 {
 /***********************************************************************
  *
  * Description :
- *     Predicateì˜ ìƒì„¸ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *     PredicateÀÇ »ó¼¼ Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  * Implementation :
  *
  ***********************************************************************/
 
-    // Key Range ì •ë³´ì˜ ì¶œë ¥
+    // Key Range Á¤º¸ÀÇ Ãâ·Â
     IDE_TEST( printKeyRangeInfo( aTemplate,
                                  aCodePlan,
                                  aDepth,
                                  aString ) != IDE_SUCCESS );
 
-    // Key Filter ì •ë³´ì˜ ì¶œë ¥
+    // Key Filter Á¤º¸ÀÇ Ãâ·Â
     IDE_TEST( printKeyFilterInfo( aTemplate,
                                   aCodePlan,
                                   aDepth,
                                   aString ) != IDE_SUCCESS );
 
-    // Filter ì •ë³´ì˜ ì¶œë ¥
+    // Filter Á¤º¸ÀÇ Ãâ·Â
     IDE_TEST( printFilterInfo( aTemplate,
                                aCodePlan,
                                aDepth,
-                               aString ) != IDE_SUCCESS );
+                               aString,
+                               aMode )
+              != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -2855,7 +2860,7 @@ qmnSCAN::printKeyRangeInfo( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Key Rangeì˜ ìƒì„¸ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *     Key RangeÀÇ »ó¼¼ Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  * Implementation :
  *
@@ -2864,7 +2869,7 @@ qmnSCAN::printKeyRangeInfo( qcTemplate   * aTemplate,
     UInt i;
     qmncScanMethod * sMethod = getScanMethod( aTemplate, aCodePlan );
 
-    // Fixed Key Range ì¶œë ¥
+    // Fixed Key Range Ãâ·Â
     if (sMethod->fixKeyRange4Print != NULL)
     {
         for ( i = 0; i < aDepth; i++ )
@@ -2885,7 +2890,7 @@ qmnSCAN::printKeyRangeInfo( qcTemplate   * aTemplate,
         // Nothing To Do
     }
 
-    // Variable Key Range ì¶œë ¥
+    // Variable Key Range Ãâ·Â
     if (sMethod->varKeyRange != NULL)
     {
         for ( i = 0; i < aDepth; i++ )
@@ -2960,7 +2965,7 @@ qmnSCAN::printKeyFilterInfo( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Key Filterì˜ ìƒì„¸ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *     Key FilterÀÇ »ó¼¼ Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  * Implementation :
  *
@@ -2969,7 +2974,7 @@ qmnSCAN::printKeyFilterInfo( qcTemplate   * aTemplate,
     UInt i;
     qmncScanMethod * sMethod = getScanMethod( aTemplate, aCodePlan );
 
-    // Fixed Key Filter ì¶œë ¥
+    // Fixed Key Filter Ãâ·Â
     if (sMethod->fixKeyFilter4Print != NULL)
     {
         for ( i = 0; i < aDepth; i++ )
@@ -2990,7 +2995,7 @@ qmnSCAN::printKeyFilterInfo( qcTemplate   * aTemplate,
         // Nothing To Do
     }
 
-    // Variable Key Filter ì¶œë ¥
+    // Variable Key Filter Ãâ·Â
     if (sMethod->varKeyFilter != NULL)
     {
         for ( i = 0; i < aDepth; i++ )
@@ -3023,12 +3028,13 @@ IDE_RC
 qmnSCAN::printFilterInfo( qcTemplate   * aTemplate,
                           qmncSCAN     * aCodePlan,
                           ULong          aDepth,
-                          iduVarString * aString )
+                          iduVarString * aString,
+                          qmnDisplay     aMode )
 {
 /***********************************************************************
  *
  * Description :
- *     Filterì˜ ìƒì„¸ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *     FilterÀÇ »ó¼¼ Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  * Implementation :
  *
@@ -3036,9 +3042,9 @@ qmnSCAN::printFilterInfo( qcTemplate   * aTemplate,
 
     UInt i;
     qmncScanMethod * sMethod   = getScanMethod( aTemplate, aCodePlan );
-    qmndSCAN       * sDataPlan = (qmndSCAN*)(aTemplate->tmplate.data + aCodePlan->plan.offset); /* PROJ-2632 */
+    qmndSCAN       * sDataPlan;
 
-    // Constant Filter ì¶œë ¥
+    // Constant Filter Ãâ·Â
     if (sMethod->constantFilter != NULL)
     {
         for ( i = 0; i < aDepth; i++ )
@@ -3059,7 +3065,7 @@ qmnSCAN::printFilterInfo( qcTemplate   * aTemplate,
         // Nothing To Do
     }
 
-    // Normal Filter ì¶œë ¥
+    // Normal Filter Ãâ·Â
     if (sMethod->filter != NULL)
     {
         for ( i = 0; i < aDepth; i++ )
@@ -3067,28 +3073,43 @@ qmnSCAN::printFilterInfo( qcTemplate   * aTemplate,
             iduVarStringAppend( aString,
                                 " " );
         }
-        /* PROJ-2632 */
-        if ( ( ( *sDataPlan->flag & QMND_SCAN_INIT_DONE_MASK ) == QMND_SCAN_INIT_DONE_TRUE ) &&
-             ( ( *sDataPlan->flag & QMND_SCAN_SERIAL_EXECUTE_MASK ) == QMND_SCAN_SERIAL_EXECUTE_TRUE ) )
+
+        /* BUG-48370 remote table fatal */
+        if ( ( ( aCodePlan->flag & QMNC_SCAN_REMOTE_TABLE_MASK ) ==
+               QMNC_SCAN_REMOTE_TABLE_FALSE ) &&
+             ( ( aCodePlan->flag & QMNC_SCAN_REMOTE_TABLE_STORE_MASK ) ==
+               QMNC_SCAN_REMOTE_TABLE_STORE_FALSE ) &&
+             ( aMode == QMN_DISPLAY_ALL ) )
         {
-            if ( QCG_GET_SESSION_TRCLOG_DETAIL_INFORMATION( aTemplate->stmt ) == 0 )
+            sDataPlan = (qmndSCAN*)(aTemplate->tmplate.data + aCodePlan->plan.offset); /* PROJ-2632 */
+            /* PROJ-2632 */
+            if ( ( ( *sDataPlan->flag & QMND_SCAN_INIT_DONE_MASK ) == QMND_SCAN_INIT_DONE_TRUE ) &&
+                 ( ( *sDataPlan->flag & QMND_SCAN_SERIAL_EXECUTE_MASK ) == QMND_SCAN_SERIAL_EXECUTE_TRUE ) )
             {
-                iduVarStringAppend( aString,
-                                    " [ FILTER SERIAL EXECUTE ]\n" );
+                if ( QCG_GET_SESSION_TRCLOG_DETAIL_INFORMATION( aTemplate->stmt ) == 0 )
+                {
+                    iduVarStringAppend( aString,
+                                        " [ FILTER SERIAL EXECUTE ]\n" );
+                }
+                else
+                {
+                    iduVarStringAppendFormat( aString,
+                                              " [ FILTER SERIAL EXECUTE, SIZE: %"ID_UINT32_FMT" ]\n",
+                                              QTC_GET_SERIAL_EXECUTE_DATA_SIZE( aCodePlan->mSerialFilterSize ) );
+                }
             }
             else
             {
-                iduVarStringAppendFormat( aString,
-                                          " [ FILTER SERIAL EXECUTE, SIZE: %"ID_UINT32_FMT" ]\n",
-                                          QTC_GET_SERIAL_EXECUTE_DATA_SIZE( aCodePlan->mSerialFilterSize ) );
+                iduVarStringAppend( aString,
+                                    " [ FILTER ]\n" );
             }
         }
         else
         {
-            iduVarStringAppend( aString,
-                                " [ FILTER ]\n" );
+                iduVarStringAppend( aString,
+                                    " [ FILTER ]\n" );
         }
-        
+
         IDE_TEST(qmoUtil::printPredInPlan(aTemplate,
                                           aString,
                                           aDepth + 1,
@@ -3100,7 +3121,7 @@ qmnSCAN::printFilterInfo( qcTemplate   * aTemplate,
         // Nothing To Do
     }
 
-    // Subquery Filter ì¶œë ¥
+    // Subquery Filter Ãâ·Â
     if (sMethod->subqueryFilter != NULL)
     {
         for ( i = 0; i < aDepth; i++ )
@@ -3121,7 +3142,7 @@ qmnSCAN::printFilterInfo( qcTemplate   * aTemplate,
         // Nothing To Do
     }
 
-    // NNF Filter ì¶œë ¥
+    // NNF Filter Ãâ·Â
     if (aCodePlan->nnfFilter != NULL)
     {
         for ( i = 0; i < aDepth; i++ )
@@ -3155,8 +3176,8 @@ qmnSCAN::getScanMethod( qcTemplate * aTemplate,
 {
     qmncScanMethod * sDefaultMethod = &aCodePlan->method;
 
-    // sdfê°€ ë‹¬ë ¤ ìˆê³ , data ì˜ì—­ì´ ì´ˆê¸°í™”ë˜ì–´ ìˆìœ¼ë©´
-    // data ì˜ì—­ì˜ selected methodë¥¼ ì–»ì–´ì˜¨ë‹¤.
+    // sdf°¡ ´Ş·Á ÀÖ°í, data ¿µ¿ªÀÌ ÃÊ±âÈ­µÇ¾î ÀÖÀ¸¸é
+    // data ¿µ¿ªÀÇ selected method¸¦ ¾ò¾î¿Â´Ù.
     if( ( aTemplate->planFlag[aCodePlan->planID] &
           QMND_SCAN_SELECTED_METHOD_SET_MASK )
         == QMND_SCAN_SELECTED_METHOD_SET_TRUE )
@@ -3194,13 +3215,13 @@ qmnSCAN::openCursorForPartition( qcTemplate * aTemplate,
  * Description : PROJ-1502 PARTITIONED DISK TABLE
  *
  * Implementation :
- *    - Session Event Check (ë¹„ì •ìƒ ì¢…ë£Œ Detect)
- *    - Key Range, Key Filter, Filter êµ¬ì„±
+ *    - Session Event Check (ºñÁ¤»ó Á¾·á Detect)
+ *    - Key Range, Key Filter, Filter ±¸¼º
  *    - Cursor Open
  *
  ***********************************************************************/
 
-    // ë¹„ì •ìƒ ì¢…ë£Œ ê²€ì‚¬
+    // ºñÁ¤»ó Á¾·á °Ë»ç
     IDE_TEST( iduCheckSessionEvent( aTemplate->stmt->mStatistics )
               != IDE_SUCCESS );
 
@@ -3208,30 +3229,30 @@ qmnSCAN::openCursorForPartition( qcTemplate * aTemplate,
     IDE_TEST(makeRidRange(aTemplate, aCodePlan, aDataPlan)
              != IDE_SUCCESS);
 
-    // KeyRange, KeyFilter, Filter êµ¬ì„±
+    // KeyRange, KeyFilter, Filter ±¸¼º
     IDE_TEST( makeKeyRangeAndFilter( aTemplate,
                                      aCodePlan,
                                      aDataPlan ) != IDE_SUCCESS );
 
-    // Cursorë¥¼ ì—°ë‹¤
+    // Cursor¸¦ ¿¬´Ù
     if ( ( *aDataPlan->flag & QMND_SCAN_CURSOR_MASK )
          != QMND_SCAN_CURSOR_OPEN )
     {
-        // ì²˜ìŒ ì—¬ëŠ” ê²½ìš°
+        // Ã³À½ ¿©´Â °æ¿ì
         IDE_TEST( openCursor( aTemplate, aCodePlan, aDataPlan )
                   != IDE_SUCCESS );
 
-        // doItFirstì‹œ cursorë¥¼ restartí•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // doItFirst½Ã cursor¸¦ restartÇÏÁö ¾Ê´Â´Ù.
         *aDataPlan->flag &= ~QMND_SCAN_RESTART_CURSOR_MASK;
         *aDataPlan->flag |= QMND_SCAN_RESTART_CURSOR_FALSE;
     }
     else
     {
         /* BUG-39399 remove search key preserved table
-         * ì´ë¯¸ ì—´ë ¤ ìˆëŠ” ê²½ìš°
-         * join update row movement ìˆ˜í–‰ì‹œ ì¤‘ë³µìœ¼ë¡œ ì—´ë ¤ê³  í•˜ëŠ” ê²½ìš°ê°€
-         * ìˆë‹¤. update ìˆ˜í–‰ ì‹œ ì¤‘ë³µ update ì²´í¬ í•˜ì—¬ ì—ëŸ¬ ì²˜ë¦¬í•˜ê¸° ë•Œë¬¸ì—
-         * ide_dassertëŠ” ì œê±° í•œë‹¤.*/
+         * ÀÌ¹Ì ¿­·Á ÀÖ´Â °æ¿ì
+         * join update row movement ¼öÇà½Ã Áßº¹À¸·Î ¿­·Á°í ÇÏ´Â °æ¿ì°¡
+         * ÀÖ´Ù. update ¼öÇà ½Ã Áßº¹ update Ã¼Å© ÇÏ¿© ¿¡·¯ Ã³¸®ÇÏ±â ¶§¹®¿¡
+         * ide_dassert´Â Á¦°Å ÇÑ´Ù.*/
     }
 
     return IDE_SUCCESS;
@@ -3258,7 +3279,7 @@ qmnSCAN::addAccessCount( qmncSCAN   * aPlan,
         if( (aPlan->plan.flag & QMN_PLAN_STORAGE_MASK)
                                    == QMN_PLAN_STORAGE_MEMORY )
         {
-            // startup ì‹œì— aTemplate->stmt->mStatisticsì€ NULLì´ë‹¤.
+            // startup ½Ã¿¡ aTemplate->stmt->mStatisticsÀº NULLÀÌ´Ù.
             if( aTemplate->stmt->mStatistics != NULL )
             {
                 IDV_SQL_ADD( aTemplate->stmt->mStatistics,
@@ -3359,9 +3380,9 @@ IDE_RC qmnSCAN::makeRidRange(qcTemplate* aTemplate,
     if (sMethod->ridRange != NULL)
     {
         /*
-         * ridRangeëŠ” ë‹¤ìŒê³¼ ê°™ì€ í˜•ì‹ìœ¼ë¡œ ë“¤ì–´ì˜´
+         * ridRange´Â ´ÙÀ½°ú °°Àº Çü½ÄÀ¸·Î µé¾î¿È
          *
-         * ì˜ˆ1) SELECT .. FROM .. WHERE _PROWID = 1 OR _PROWID = 2
+         * ¿¹1) SELECT .. FROM .. WHERE _PROWID = 1 OR _PROWID = 2
          *
          *   [OR]
          *    |
@@ -3369,7 +3390,7 @@ IDE_RC qmnSCAN::makeRidRange(qcTemplate* aTemplate,
          *    |            |
          *   [RID]--[1]   [RID]--[2]
          *
-         * ì˜ˆ2) SELECT .. FROM .. WHERE _PROWID IN (1, 2)
+         * ¿¹2) SELECT .. FROM .. WHERE _PROWID IN (1, 2)
          *
          *    [OR]
          *     |
@@ -3391,16 +3412,16 @@ IDE_RC qmnSCAN::makeRidRange(qcTemplate* aTemplate,
         while (sNode != NULL)
         {
             /*
-             * smiRange data ë§Œë“œëŠ” ë°©ë²•
+             * smiRange data ¸¸µå´Â ¹æ¹ı
              *
-             * 1) calculate í•˜ê³ 
-             * 2) converted node ë¡œ ë³€ê²½
-             * 3) mtc::value ë¡œ ê°’ ê°€ì ¸ì˜¤ê¸°
+             * 1) calculate ÇÏ°í
+             * 2) converted node ·Î º¯°æ
+             * 3) mtc::value ·Î °ª °¡Á®¿À±â
              *
-             * converted ëœ node ê°€ ë°˜ë“œì‹œ bigint ì´ì–´ì•¼ í•œë‹¤.
-             * SM ì´ ì¸ì‹í•˜ëŠ” format ì´ scGRID(=mtdBigint) ì´ê¸° ë•Œë¬¸ì´ë‹¤.
-             * conversion ì´ ê°€ëŠ¥í•˜ì§€ë§Œ ê²°ê³¼ê°€ bigint ê°€ ì•„ë‹Œê²½ìš°ëŠ”
-             * rid scan ì´ ë¶ˆê°€ëŠ¥í•˜ê³  ì´ë¯¸ filter ë¡œ ë¶„ë¥˜ë˜ì—ˆë‹¤.
+             * converted µÈ node °¡ ¹İµå½Ã bigint ÀÌ¾î¾ß ÇÑ´Ù.
+             * SM ÀÌ ÀÎ½ÄÇÏ´Â format ÀÌ scGRID(=mtdBigint) ÀÌ±â ¶§¹®ÀÌ´Ù.
+             * conversion ÀÌ °¡´ÉÇÏÁö¸¸ °á°ú°¡ bigint °¡ ¾Æ´Ñ°æ¿ì´Â
+             * rid scan ÀÌ ºÒ°¡´ÉÇÏ°í ÀÌ¹Ì filter ·Î ºĞ·ùµÇ¾ú´Ù.
              */
 
             if (sNode->module == &mtfEqual)
@@ -3482,7 +3503,7 @@ IDE_RC qmnSCAN::makeRidRange(qcTemplate* aTemplate,
         for (i = 1; i < sRangeCnt; i++)
         {
             /*
-             * BUG-41211 ì¤‘ë³µëœ range ì œê±°
+             * BUG-41211 Áßº¹µÈ range Á¦°Å
              */
             for (j = 0; j <= sPrevIdx; j++)
             {
@@ -3527,8 +3548,8 @@ void qmnSCAN::resetExecInfo4Subquery(qcTemplate *aTemplate, qmnPlan *aPlan)
  * Description :
  *
  *    BUG-31378
- *    template ì— ìˆëŠ” execInfo[] ë°°ì—´ ì¤‘
- *    subquery node ì— í•´ë‹¹í•˜ëŠ” ì›ì†Œë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ *    template ¿¡ ÀÖ´Â execInfo[] ¹è¿­ Áß
+ *    subquery node ¿¡ ÇØ´çÇÏ´Â ¿ø¼Ò¸¦ ÃÊ±âÈ­ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -3537,8 +3558,8 @@ void qmnSCAN::resetExecInfo4Subquery(qcTemplate *aTemplate, qmnPlan *aPlan)
     SInt             i;
 
     /*   
-     * qmncSCAN ì—ì„œ method ë¥¼ ì–»ê¸° ìœ„í•´ì„œ ê³§ì¥ qmncSCAN::method ì— ì ‘ê·¼í•´ì„œëŠ” ì•ˆëœë‹¤.
-     * qmnSCAN::getScanMethod() ë¥¼ ì´ìš©í•´ì•¼ í•œë‹¤.
+     * qmncSCAN ¿¡¼­ method ¸¦ ¾ò±â À§ÇØ¼­ °ğÀå qmncSCAN::method ¿¡ Á¢±ÙÇØ¼­´Â ¾ÈµÈ´Ù.
+     * qmnSCAN::getScanMethod() ¸¦ ÀÌ¿ëÇØ¾ß ÇÑ´Ù.
      */
     qmncSCAN        *sCodePlan = (qmncSCAN *)aPlan;
     qmncScanMethod  *sMethod = qmnSCAN::getScanMethod(aTemplate, sCodePlan);
@@ -3548,8 +3569,8 @@ void qmnSCAN::resetExecInfo4Subquery(qcTemplate *aTemplate, qmnPlan *aPlan)
     qtcNode  *sSubqueryWrapperNode;
 
     /*   
-     * qmnSCAN::printLocalPlan() ë‚´ì˜ ì£¼ì„ì— ì˜í•˜ë©´
-     * SubqueryëŠ” ë‹¤ìŒê³¼ ê°™ì€ predicateì—ë§Œ ì¡´ì¬í•  ìˆ˜ ìˆë‹¤ :
+     * qmnSCAN::printLocalPlan() ³»ÀÇ ÁÖ¼®¿¡ ÀÇÇÏ¸é
+     * Subquery´Â ´ÙÀ½°ú °°Àº predicate¿¡¸¸ Á¸ÀçÇÒ ¼ö ÀÖ´Ù :
      *     1. Variable Key Range
      *     2. Variable Key Filter
      *     3. Constant Filter
@@ -3562,8 +3583,8 @@ void qmnSCAN::resetExecInfo4Subquery(qcTemplate *aTemplate, qmnPlan *aPlan)
     sNode[2] = sMethod->constantFilter;
     sNode[3] = sMethod->subqueryFilter;
     /*
-     * method ì•„ë˜ì— ë‹¬ë¦¬ëŠ” qtcNode ë“¤ì˜ êµ¬ì¡°ëŠ” ì•„ë˜ì™€ ê°™ë‹¤.
-     * () ì•ˆì€ qtcNode ì˜ module name
+     * method ¾Æ·¡¿¡ ´Ş¸®´Â qtcNode µéÀÇ ±¸Á¶´Â ¾Æ·¡¿Í °°´Ù.
+     * () ¾ÈÀº qtcNode ÀÇ module name
      *
      * varKeyRange --- qtcNode                      : sNode[i]
      *                  (OR)
@@ -3583,7 +3604,7 @@ void qmnSCAN::resetExecInfo4Subquery(qcTemplate *aTemplate, qmnPlan *aPlan)
      *                                       qtcNode
      *                                       (COLUMN)
      *
-     * ì´ í•¨ìˆ˜ì—ì„œ ì°¾ê³ ì í•˜ëŠ” ë…¸ë“œëŠ” SUBQUERY_WRAPPER ë…¸ë“œ(1ë²ˆ)ì´ë‹¤.
+     * ÀÌ ÇÔ¼ö¿¡¼­ Ã£°íÀÚ ÇÏ´Â ³ëµå´Â SUBQUERY_WRAPPER ³ëµå(1¹ø)ÀÌ´Ù.
      */
     for (i = 0; i < QMN_SCAN_SUBQUERY_PREDICATE_MAX; i++)
     {
@@ -3596,8 +3617,8 @@ void qmnSCAN::resetExecInfo4Subquery(qcTemplate *aTemplate, qmnPlan *aPlan)
             // nothing to do
         }
         /*
-         * ì•„ë˜ì˜ ì¤‘ì²© for loop ëŠ” qmoKeyRange::calculateSubqueryInRangeNode() í•¨ìˆ˜ì—ì„œ
-         * ê·¸ëŒ€ë¡œ ê°€ì ¸ì˜¨ ê²ƒì„.
+         * ¾Æ·¡ÀÇ ÁßÃ¸ for loop ´Â qmoKeyRange::calculateSubqueryInRangeNode() ÇÔ¼ö¿¡¼­
+         * ±×´ë·Î °¡Á®¿Â °ÍÀÓ.
          */
         for (sOutterNode = (qtcNode *)sNode[i]->node.arguments;
              sOutterNode != NULL;
@@ -3653,25 +3674,25 @@ IDE_RC qmnSCAN::doItFirstFixedTable( qcTemplate * aTemplate,
 
     sDataPlan->plan.mTID = QMN_PLAN_INIT_THREAD_ID;
 
-    // ê¸°ì¡´ ACCESS count
+    // ±âÁ¸ ACCESS count
     sModifyCnt = sDataPlan->plan.myTuple->modify;
 
     // ----------------
-    // Tuple ìœ„ì¹˜ì˜ ê²°ì •
+    // Tuple À§Ä¡ÀÇ °áÁ¤
     // ----------------
     sDataPlan->plan.myTuple = &aTemplate->tmplate.rows[sCodePlan->tupleRowID];
 
-    // ACCESS count ì›ë³µ
+    // ACCESS count ¿øº¹
     sDataPlan->plan.myTuple->modify = sModifyCnt;
 
-    // ë¹„ì •ìƒ ì¢…ë£Œ ê²€ì‚¬
+    // ºñÁ¤»ó Á¾·á °Ë»ç
     IDE_TEST(iduCheckSessionEvent(aTemplate->stmt->mStatistics)
              != IDE_SUCCESS);
 
     IDE_TEST(makeRidRange(aTemplate, sCodePlan, sDataPlan)
              != IDE_SUCCESS);
 
-    // KeyRange, KeyFilter, Filter êµ¬ì„±
+    // KeyRange, KeyFilter, Filter ±¸¼º
     IDE_TEST(makeKeyRangeAndFilter(aTemplate, sCodePlan, sDataPlan)
              != IDE_SUCCESS);
 
@@ -3785,7 +3806,7 @@ IDE_RC qmnSCAN::doItFirstFixedTable( qcTemplate * aTemplate,
                   != IDE_SUCCESS );
     }
 
-    // Recordë¥¼ íšë“í•œë‹¤.
+    // Record¸¦ È¹µæÇÑ´Ù.
     IDE_TEST( readRowFixedTable( aTemplate, sCodePlan, sDataPlan, aFlag )
               != IDE_SUCCESS );
 
@@ -3813,7 +3834,7 @@ IDE_RC qmnSCAN::doItNextFixedTable( qcTemplate * aTemplate,
     qmndSCAN * sDataPlan =
         (qmndSCAN*) (aTemplate->tmplate.data + aPlan->offset);
 
-    // Recordë¥¼ íšë“í•œë‹¤.
+    // Record¸¦ È¹µæÇÑ´Ù.
     IDE_TEST( readRowFixedTable( aTemplate, sCodePlan, sDataPlan, aFlag )
               != IDE_SUCCESS );
 
@@ -3888,15 +3909,15 @@ IDE_RC qmnSCAN::readRowFixedTable( qcTemplate * aTemplate,
         }
         else
         {
-            // modifyê°’ ë³´ì •
+            // modify°ª º¸Á¤
             if ( sMethod->filter == NULL )
             {
-                // modifyê°’ ì¦ê°€.
+                // modify°ª Áõ°¡.
                 aDataPlan->plan.myTuple->modify++;
             }
             else
             {
-                // SMì— ì˜í•˜ì—¬ filterì ìš© ì‹œ modify ê°’ì´ ì¦ê°€í•¨.
+                // SM¿¡ ÀÇÇÏ¿© filterÀû¿ë ½Ã modify °ªÀÌ Áõ°¡ÇÔ.
 
                 // fix BUG-9052 BUG-9248
 
@@ -3906,25 +3927,25 @@ IDE_RC qmnSCAN::readRowFixedTable( qcTemplate * aTemplate,
                 //                       WHERE T2.I1 = T3.I1
                 //                       AND T3.I1 = T1.I1
                 //                       GROUP BY T2.I2 ) AND T1.I1 > 0;
-                // subquery filterê°€ outer column ì°¸ì¡°ì‹œ
-                // outer columnì„ ì°¸ì¡°í•œ store and searchë¥¼
-                // ì¬ìˆ˜í–‰í•˜ë„ë¡ í•˜ê¸° ìœ„í•´
-                // aDataPlan->plan.myTuple->modifyì™€
-                // aDataPlan->subQFilterDepCntì˜ ê°’ì„ ì¦ê°€ì‹œí‚¨ë‹¤.
-                // printPlan()ë‚´ì—ì„œ ACCESS count displayì‹œ
-                // DataPlan->plan.myTuple->modifyì—ì„œ
-                // DataPlan->subQFilterDepCnt ê°’ì„ ë¹¼ì£¼ë„ë¡ í•œë‹¤.
+                // subquery filter°¡ outer column ÂüÁ¶½Ã
+                // outer columnÀ» ÂüÁ¶ÇÑ store and search¸¦
+                // Àç¼öÇàÇÏµµ·Ï ÇÏ±â À§ÇØ
+                // aDataPlan->plan.myTuple->modify¿Í
+                // aDataPlan->subQFilterDepCntÀÇ °ªÀ» Áõ°¡½ÃÅ²´Ù.
+                // printPlan()³»¿¡¼­ ACCESS count display½Ã
+                // DataPlan->plan.myTuple->modify¿¡¼­
+                // DataPlan->subQFilterDepCnt °ªÀ» »©ÁÖµµ·Ï ÇÑ´Ù.
 
                 // BUG-9248
-                // subquery filterì´ì™¸ì—ë„ modify countê°’ì„ ì°¸ì¡°í•´ì„œ
-                // ì¤‘ê°„ê²°ê³¼ë¥¼ ì¬ì €ì¥í•´ì•¼í•˜ëŠ” ê²½ìš°ê°€ ì¡´ì¬
+                // subquery filterÀÌ¿Ü¿¡µµ modify count°ªÀ» ÂüÁ¶ÇØ¼­
+                // Áß°£°á°ú¸¦ ÀçÀúÀåÇØ¾ßÇÏ´Â °æ¿ì°¡ Á¸Àç
 
                 aDataPlan->plan.myTuple->modify++;
                 aDataPlan->subQFilterDepCnt++;
             }
 
 
-            // Subquery Filterë¥¼ ì ìš©
+            // Subquery Filter¸¦ Àû¿ë
             if ( sMethod->subqueryFilter != NULL )
             {
                 IDE_TEST( qtc::judge( & sJudge,
@@ -3937,7 +3958,7 @@ IDE_RC qmnSCAN::readRowFixedTable( qcTemplate * aTemplate,
                 sJudge = ID_TRUE;
             }
 
-            // NNF Filterë¥¼ ì ìš©
+            // NNF Filter¸¦ Àû¿ë
             if ( aCodePlan->nnfFilter != NULL )
             {
                 IDE_TEST( qtc::judge( & sJudge,
@@ -3954,12 +3975,12 @@ IDE_RC qmnSCAN::readRowFixedTable( qcTemplate * aTemplate,
 
     if ( sJudge == ID_TRUE )
     {
-        // ë§Œì¡±í•˜ëŠ” Record ìˆìŒ
+        // ¸¸Á·ÇÏ´Â Record ÀÖÀ½
         *aFlag = QMC_ROW_DATA_EXIST;
     }
     else
     {
-        // ë§Œì¡±í•˜ëŠ” Record ì—†ìŒ
+        // ¸¸Á·ÇÏ´Â Record ¾øÀ½
         *aFlag = QMC_ROW_DATA_NONE;
     }
 

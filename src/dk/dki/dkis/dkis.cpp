@@ -25,6 +25,7 @@
 extern IDE_RC dkisRegisterRemoteQueryCallback( void );
 extern IDE_RC dkisRegisterIndexModule( void );
 extern IDE_RC dkis2PCCallback( void );
+extern IDE_RC dkis2PCNullCallback( void );
 
 /*
  *
@@ -52,3 +53,15 @@ IDE_RC dkisRegister2PCCallback( void )
 
     return IDE_FAILURE;
 }
+
+IDE_RC dkisUnregister2PCCallback( void )
+{
+    IDE_TEST( dkis2PCNullCallback() != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+

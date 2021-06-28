@@ -1,6 +1,6 @@
 include ../ulEnv.mk
 
-# ì†ŒìŠ¤ì½”ë“œì— include ë  ì—ëŸ¬ì½”ë“œ í™”ì¼
+# ¼Ò½ºÄÚµå¿¡ include µÉ ¿¡·¯ÄÚµå È­ÀÏ
 
 UL_E_HEADER = ulErrorCode.ih
 UT_E_HEADER = utErrorCode.ih
@@ -8,7 +8,7 @@ LA_E_HEADER = ulaErrorCode.ih LA_TRC_CODE.ih
 LA_E_CODE = LA_TRC_CODE.ic
 LP_E_HEADER = ulpErrorCode.ih
 
-# ì—ëŸ¬ì½”ë“œ ë©”ì‹œì§€ í™”ì¼
+# ¿¡·¯ÄÚµå ¸Þ½ÃÁö È­ÀÏ
 
 all:ofiles
 
@@ -26,18 +26,21 @@ E_UL_US7ASCII.c : E_UL_US7ASCII.msg
 	$(GENERRMSG) -c -i E_UL_US7ASCII.msg -o $(UL_E_HEADER)
 	$(COPY) -f $(UL_E_HEADER) ../include
 	$(COPY) -f $@ $(UL_DIR)/uln
+	sync
 
 E_LA_US7ASCII.c : E_LA_US7ASCII.msg
 	$(GENERRMSG) -c -i E_LA_US7ASCII.msg -o $(LA_E_HEADER)
 	$(COPY) -f $(LA_E_HEADER) ../include
 	$(COPY) -f $(LA_E_CODE) ../ula
 	$(COPY) -f $@ $(UL_DIR)/ula
+	sync
 
 E_LP_US7ASCII.c : E_LP_US7ASCII.msg
 	$(GENERRMSG) -c -i E_LP_US7ASCII.msg -o $(LP_E_HEADER)
 	$(COPY) -f $(LP_E_HEADER) $(UL_DIR)/ulp/include	
 	$(COPY) -f $@ $(UL_DIR)/ulp
 	$(COPY) -f $@ $(UL_DIR)/ulp/lib
+	sync
 
 manual:
 	$(GENERRMSGMANUAL) -c -i E_UL_US7ASCII.msg  > $(ALTI_HOME)/msg/E_UL_US7ASCII.txt

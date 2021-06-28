@@ -28,7 +28,7 @@ typedef struct cmnLinkListenSSL
     SSL_CTX      *mSslCtx;
 } cmnLinkListenSSL;
 
-#if (DEBUG && (OPENSSL_VERSION_NUMBER >= 0x00909000L))
+#if (DEBUG)  /* BUG-47037 */
 /* This callback function shows state strings, and information
  * about alerts being handled and error messages */
 static void cmnSslHandshakeInfoCallback( const SSL *aSSL, SInt aWhere, SInt aRet )
@@ -106,7 +106,7 @@ IDE_RC cmnLinkListenInitializeSSL(cmnLink *aLink)
     STACK_OF(X509_NAME) *sCAList = NULL;
 
     /*
-     * Handle ì´ˆê¸°í™”
+     * Handle ÃÊ±âÈ­
      */
     sLink->mHandle = PDL_INVALID_SOCKET;
 
@@ -149,7 +149,7 @@ IDE_RC cmnLinkListenInitializeSSL(cmnLink *aLink)
     sSslCtx = cmnOpenssl::mFuncs.SSL_CTX_new(sMethod); /* create new context from method */
     IDE_TEST_RAISE(sSslCtx == NULL, FailedToCreateSslCtx);
 
-#if (DEBUG && (OPENSSL_VERSION_NUMBER >= 0x00909000L))
+#if (DEBUG)  /* BUG-47037 */
     /* set the callback function, that can be used to obtain state infomation for SSL objects */
     if ( cmnOpenssl::mFuncs.SSL_CTX_set_info_callback != NULL )
     {
@@ -280,7 +280,7 @@ IDE_RC cmnLinkListenInitializeSSL(cmnLink *aLink)
 IDE_RC cmnLinkListenFinalizeSSL(cmnLink *aLink)
 {
     /*
-     * socketì´ ì—´ë ¤ìžˆìœ¼ë©´ ë‹«ìŒ
+     * socketÀÌ ¿­·ÁÀÖÀ¸¸é ´ÝÀ½
      */
     IDE_TEST(aLink->mOp->mClose(aLink) != IDE_SUCCESS);
 
@@ -296,7 +296,7 @@ IDE_RC cmnLinkListenCloseSSL(cmnLink *aLink)
     cmnLinkListenSSL *sLink = (cmnLinkListenSSL *)aLink;
 
     /*
-     * socketì´ ì—´ë ¤ìžˆìœ¼ë©´ ë‹«ìŒ
+     * socketÀÌ ¿­·ÁÀÖÀ¸¸é ´ÝÀ½
      */
     if (sLink->mHandle != PDL_INVALID_SOCKET)
     {
@@ -319,7 +319,7 @@ IDE_RC cmnLinkListenGetHandleSSL(cmnLink *aLink, void *aHandle)
     cmnLinkListenSSL *sLink = (cmnLinkListenSSL *)aLink;
 
     /*
-     * socket ì„ ëŒë ¤ì¤Œ
+     * socket À» µ¹·ÁÁÜ
      */
     *(PDL_SOCKET *)aHandle = sLink->mHandle;
 
@@ -331,7 +331,7 @@ IDE_RC cmnLinkListenGetDispatchInfoSSL(cmnLink *aLink, void *aDispatchInfo)
     cmnLinkListenSSL *sLink = (cmnLinkListenSSL *)aLink;
 
     /*
-     * DispatcherInfoë¥¼ ëŒë ¤ì¤Œ
+     * DispatcherInfo¸¦ µ¹·ÁÁÜ
      */
     *(UInt *)aDispatchInfo = sLink->mDispatchInfo;
 
@@ -343,7 +343,7 @@ IDE_RC cmnLinkListenSetDispatchInfoSSL(cmnLink *aLink, void *aDispatchInfo)
     cmnLinkListenSSL *sLink = (cmnLinkListenSSL *)aLink;
 
     /*
-     * DispatcherInfoë¥¼ ì„¸íŒ…
+     * DispatcherInfo¸¦ ¼¼ÆÃ
      */
     sLink->mDispatchInfo = *(UInt *)aDispatchInfo;
 
@@ -363,7 +363,7 @@ IDE_RC cmnLinkListenListenSSL(cmnLinkListen *aLink, cmnLinkListenArg *aListenArg
     SChar                sErrMsg[256];
 
     /*
-     * socketì´ ì´ë¯¸ ì—´ë ¤ìžˆëŠ”ì§€ ê²€ì‚¬
+     * socketÀÌ ÀÌ¹Ì ¿­·ÁÀÖ´ÂÁö °Ë»ç
      */
     IDE_TEST_RAISE(sLink->mHandle != PDL_INVALID_SOCKET, SocketAlreadyOpened);
 
@@ -529,22 +529,22 @@ IDE_RC cmnLinkListenAcceptSSL(cmnLinkListen *aLink, cmnLinkPeer **aLinkPeer)
 #endif
 
     /*
-     * ìƒˆë¡œìš´ Linkë¥¼ í• ë‹¹
+     * »õ·Î¿î Link¸¦ ÇÒ´ç
      */
     /* BUG-29957
-     * cmnLinkAlloc ì‹¤íŒ¨ì‹œ Connectë¥¼ ìš”ì²­í•œ Socketì„ ìž„ì‹œë¡œ accept í•´ì¤˜ì•¼ í•œë‹¤.
+     * cmnLinkAlloc ½ÇÆÐ½Ã Connect¸¦ ¿äÃ»ÇÑ SocketÀ» ÀÓ½Ã·Î accept ÇØÁà¾ß ÇÑ´Ù.
      */
     IDE_TEST_RAISE(cmnLinkAlloc((cmnLink **)&sLinkPeer, CMN_LINK_TYPE_PEER_SERVER, CMN_LINK_IMPL_SSL) 
                    != IDE_SUCCESS, LinkError);
 
     /*
-     * Desc íšë“
+     * Desc È¹µæ
      */
     IDE_TEST_RAISE(sLinkPeer->mPeerOp->mGetDesc(sLinkPeer, &sDesc) != IDE_SUCCESS, LinkError);
 
     /* TASK-3873 5.3.3 Release Static Analysis Code-sonar */
-    /* Code-Sonarê°€ Function  Pointerë¥¼ followí•˜ì§€ ëª»í•´ì„œ..
-       assertë¥¼ ë„£ì—ˆìŠµë‹ˆë‹¤ */
+    /* Code-Sonar°¡ Function  Pointer¸¦ followÇÏÁö ¸øÇØ¼­..
+       assert¸¦ ³Ö¾ú½À´Ï´Ù */
     IDE_ASSERT( sDesc != NULL);
     
     /*
@@ -559,12 +559,12 @@ IDE_RC cmnLinkListenAcceptSSL(cmnLinkListen *aLink, cmnLinkPeer **aLinkPeer)
     IDE_TEST_RAISE(sDesc->mHandle == PDL_INVALID_SOCKET, AcceptError);
 
     /*
-     * Linkë¥¼ ëŒë ¤ì¤Œ
+     * Link¸¦ µ¹·ÁÁÜ
      */
     *aLinkPeer = sLinkPeer;
 
     /*
-     * socket ì´ˆê¸°í™”
+     * socket ÃÊ±âÈ­
      */
     IDE_TEST((*aLinkPeer)->mPeerOp->mSetOptions(*aLinkPeer, SO_NONE) != IDE_SUCCESS);
 
@@ -612,7 +612,7 @@ IDE_RC cmnLinkListenAcceptSSL(cmnLinkListen *aLink, cmnLinkPeer **aLinkPeer)
     IDE_EXCEPTION(LinkError)
     {
         /* BUG-29957 */
-        // bug-33934: codesonar: 3ë²ˆì§¸ì¸ìž NULL ëŒ€ì‹  ê¸¸ì´ ë„˜ê¸°ë„ë¡ ìˆ˜ì •
+        // bug-33934: codesonar: 3¹øÂ°ÀÎÀÚ NULL ´ë½Å ±æÀÌ ³Ñ±âµµ·Ï ¼öÁ¤
         sTmpDesc.mAddrLen = ID_SIZEOF(sTmpDesc.mAddr);
         sTmpDesc.mHandle = idlOS::accept(sLink->mHandle,
                                          (struct sockaddr *)&(sTmpDesc.mAddr),
@@ -684,13 +684,13 @@ IDE_RC cmnLinkListenMapSSL(cmnLink *aLink)
     cmnLinkListen *sLink = (cmnLinkListen *)aLink;
 
     /*
-     * Link ê²€ì‚¬
+     * Link °Ë»ç
      */
     IDE_ASSERT(aLink->mType == CMN_LINK_TYPE_LISTEN);
     IDE_ASSERT(aLink->mImpl == CMN_LINK_IMPL_SSL);
 
     /*
-     * í•¨ìˆ˜ í¬ì¸í„° ì„¸íŒ…
+     * ÇÔ¼ö Æ÷ÀÎÅÍ ¼¼ÆÃ
      */
     aLink->mOp       = &gCmnLinkListenOpSSL;
     sLink->mListenOp = &gCmnLinkListenListenOpSSL;

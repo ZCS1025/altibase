@@ -16,7 +16,7 @@
 # 브랜치에서 에러코드를 할당받으시면 안됩니다.
 # 반드시 main trunk에서 번호를 할당받은 후 브랜치에서 사용하셔야 합니다.
 # 의문 사항이 있으시면 AK팀 혹은 QP(품질본부)팀에 문의 부탁드립니다.
-# Last Number = 437
+# Last Number = 442
 
 SECTION = 1
 
@@ -1539,7 +1539,7 @@ SECTION = 1
 # *Cause: The number of directories specified using the ARCH_MULTIPLEX_DIR property is different from the value of ARCH_MULTIPLEX_COUNT.
 # *Action: Set the value of ARCH_MULTIPLEX_COUNT to the number of directories specified using ARCH_MULTIPLEX_DIR.
 
-387, smERR_ABORT_NOT_ENOUGH_NEXTENTSIZE = Insufficient page descriptor area in the temp table.
+#387, smERR_ABORT_NOT_ENOUGH_NEXTENTSIZE = Insufficient page descriptor area in the temp table.
 # *Cause: There is not enough room in the temporary table for the page descriptor information.
 # *Action: Increase the value of the TEMP_MAX_PAGE_COUNT property.
 
@@ -1730,7 +1730,6 @@ SECTION = 1
 434,smERR_ABORT_InvalidBCB = The BCB does not exist or is not valid. ( SpaceID:<0%u>, PageID:<1%u> )
 # *Cause: The BCB does not exist or is not valid.
 # *Action: Please shut down and restart to rebuild BCB List.
-#
 
 435,smERR_ABORT_smnUniqueViolationInReplTrans = Unique violation caused conflict resolution in replication.
 # *Cause: Unique violation caused conflict resolution on replication.
@@ -1744,7 +1743,27 @@ SECTION = 1
 # *Cause: A log file has been lost. If Incomplete media recovery continues, data may be lost.
 # *Action: Copy a valid log file to [LOG_DIR] or move log files that are not needed for recovery to another directory.
 
+438, smERR_ABORT_Distributed_Aborted = A distributed deadlock situation has been detected. ( <0%s> )
+# *Cause: A deadlock victim transaction has been stopped and terminated due to the deadlock resolution scheme.
+# *Action: Re-execute the transaction.
 
+439,smERR_ABORT_StatementTooOld = The records required for consistent reading are out of date. ( <0%s> )
+# *Cause: The records required for consistent reading are out of date.
+# *Action: Re-execute the transaction.
+
+440,smERR_ABORT_INVALID_SCN = Invalid SCN(System Commit Number) : <0%lu>.
+# *Cause: Internal error.
+# *Action: Contact Altibase's Support Center (http://support.altibase.com).
+
+#441,smERR_ABORT_NOT_SUPPORT_DISK = Altibase sharding does not support statements on disk table spaces for global consistent transactions.
+# *Cause: Altibase sharding does not support statements on disk table spaces for global consistent transactions.
+# *Action: Use memory tablespace.
+
+442,smERR_ABORT_INDOUBT_FETCH_TIMEOUT = The transaction has exceeded the in-doubt fetch timeout specified by the user due to a prepared transaction. (XID:<0%s>).
+# *Cause: The statement attempts to access a resource locked by a global consistent transaction in a prepare state.
+# *Action: Execute commit or abort command to finalize the global consistent transaction.
+
+#
 #  Server Internal Message
 #
 
@@ -2167,15 +2186,15 @@ SM_TRC_MRECOVERY_LOGFILE_INVALID_LOG6 = "Retrying...success!\n";
 
 SM_TRC_MRECOVERY_LOGFILE_INVALID_MAGIC = "A invalid magic number is found [FILE_NO=<%u>, OFFSET=<%u>]: log head magic=<%u>, calculated magic=<%u>\n";
 
-SM_TRC_MRECOVERY_LOGFILE_APPEND_ERROR = "Invalid log size and offset.\n"
-"Log size to be written          = <%u>\n"
-"Log buffer offset to be written = <%u>\n"
-"Current log buffer offset       = <%u>\n";
+#SM_TRC_MRECOVERY_LOGFILE_APPEND_ERROR = "Invalid log size and offset.\n"
+#"Log size to be written          = <%u>\n"
+#"Log buffer offset to be written = <%u>\n"
+#"Current log buffer offset       = <%u>\n";
  
-SM_TRC_MRECOVERY_LOGFILE_INVALID_LOG_SIZE = "Invalid log size and offset.\n"
-"Log size to be written    = <%u>\n"
-"Log buffer free size      = <%u>\n"
-"Current log buffer offset = <%u>\n";
+#SM_TRC_MRECOVERY_LOGFILE_INVALID_LOG_SIZE = "Invalid log size and offset.\n"
+#"Log size to be written    = <%u>\n"
+#"Log buffer free size      = <%u>\n"
+#"Current log buffer offset = <%u>\n";
 
 SM_TRC_MRECOVERY_LOGFILEGROUP_INVALID_LOGTYPE = "Log Type:[H:<%u>,T:<%u>], LSN:[<%u>,<%u>]\n";
 

@@ -32,7 +32,7 @@
 
 #define RP_DDL_SYNC_SAVEPOINT_NAME "$$DDL_SYNC_SAVE_POINT"
 #define RP_DDL_SQL_BUFFER_MAX      ( 24 * 1024 )
-#define RP_DDL_SYNC_PART_OID_COUNT QC_DDL_REPL_PART_OID_COUNT
+#define RP_DDL_INFO_PART_OID_COUNT QC_DDL_INFO_PART_OID_COUNT
 
 typedef enum
 {
@@ -71,7 +71,6 @@ typedef struct rpcDDLTableInfo
     qciAccessOption        mAccessOption;
     UInt                   mPartInfoCount;
     iduList                mPartInfoList;
-    qciTableInfo         * mOldTableInfo;
     idBool                 mIsDDLSyncTable;
     iduListNode            mNode;
 } rpcDDLTableInfo;
@@ -90,7 +89,7 @@ typedef struct rpcDDLReplInfo
 {
     SChar                mRepName[QC_MAX_NAME_LEN + 1];
     SChar                mHostIp [QC_MAX_IP_LEN + 1];
-    SInt                 mPortNo;
+    UInt                 mPortNo;
     RP_SOCKET_TYPE       mConnType;
     rpIBLatency          mIBLatency;
     cmiProtocolContext * mProtocolContext;
@@ -157,7 +156,6 @@ public:
     IDE_RC recvAndSetDDLSyncCancel( cmiProtocolContext * aProtocolContext, idBool * aExitFlag );
 
     static IDE_RC runDDL( idvSQL   * aStatistics,
-                          smiTrans * aTrans, 
                           SChar    * aSql,
                           SChar    * aUserName,
                           smiStatement * aSmiStmt );
@@ -258,7 +256,7 @@ private:
 
     IDE_RC getPartitionNamesByOID( smiTrans * aTrans,
                                    smOID    * aPartTableOIDs,
-                                   UInt     * aDDLSyncPartInfoCount,
+                                   UInt       aDDLSyncPartInfoCount,
                                    SChar      aDDLSyncPartInfoNames[][QC_MAX_OBJECT_NAME_LEN + 1] );
 
     idBool isDDLSyncPartition( qciTableInfo * aTableInfo, 
@@ -367,17 +365,6 @@ private:
 
     rpcDDLReplInfo * findDDLReplInfoByNameWithoutLock( SChar * aRepName );
 
-
-    IDE_RC storeTableInfo( smiTrans * aTrans, rpcDDLTableInfo * aDDLTableInfo );
-    IDE_RC storePartitionTableInfo( smiStatement * aStatement,
-                                    qciTableInfo * aNewTableInfo,
-                                    iduList      * aPartInfoList );
-    void   restorePartitionTableInfo( iduList * aPartInfoList );
-    void   destroyNewTableInfo( smiTrans * aTrans, rpcDDLTableInfo * aDDLTableInfo );
-    void   destroyNewPartTableInfo( smiTrans * aTrans, 
-                                    UInt aTableID, 
-                                    iduList * aDDLSyncPartInfoList );
-
     IDE_RC getTableInfo( idvSQL        * aStatistics,
                          smiTrans      * aTrans,
                          SChar         * aTableName,
@@ -385,16 +372,14 @@ private:
                          ULong           aTimeout,
                          qciTableInfo ** aTableInfo );
 
-    IDE_RC touchTableInfo( smiTrans * aDDLTrans, rpcDDLSyncInfo * aDDLSyncInfo );
-    IDE_RC touchPartitionInfo( smiStatement * aSmiStatement, UInt aTableID );
-
-
-
     void   addErrorList( SChar * aDest,
                          SChar * aRepName,
                          SChar * aErrMsg );
 
     void   addErrorRepList( SChar * aDest, SChar * aSrc );
     void   destroyProtocolContext( cmiProtocolContext * aProtocolContext );
+    
+    idBool duplicateDDLReplInfo( rpcDDLSyncInfo     * aDDLSyncInfo, 
+                                 rpdReplHosts       * aReplHosts );
 };
 #endif

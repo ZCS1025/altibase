@@ -17,12 +17,12 @@
 
 package Altibase.jdbc.driver.sharding.executor;
 
-import Altibase.jdbc.driver.sharding.routing.SQLExecutionUnit;
+import Altibase.jdbc.driver.sharding.core.DataNode;
 
 import java.sql.Statement;
 
 public interface BaseStatementUnit
 {
-    SQLExecutionUnit getSqlExecutionUnit();
+    DataNode getNode();
     Statement getStatement();
 }

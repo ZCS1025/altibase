@@ -34,11 +34,19 @@ void rpxDDLExecutor::finalizeThread()
 }
 
 IDE_RC rpxDDLExecutor::initialize( cmiProtocolContext * aProtocolContext, rpdVersion * aVersion )
-{
+{ 
+    mEventFlag = ID_ULONG(0);
+
     IDE_DASSERT( aProtocolContext != NULL );
 
-    mEventFlag = ID_ULONG(0);
-   
+    mIsThreadDead = ID_FALSE;
+
+    idlOS::memset( mRepName, 0, ID_SIZEOF( mRepName ) );
+
+    mExitFlag        = ID_FALSE;
+    mProtocolContext = aProtocolContext;
+    IDU_LIST_INIT_OBJ( &( mNode ), (void*)this );
+ 
     idvManager::initSession( &( mSession ), 
                              0 /* unuse */, 
                              NULL /* unuse */ );
@@ -49,15 +57,7 @@ IDE_RC rpxDDLExecutor::initialize( cmiProtocolContext * aProtocolContext, rpdVer
                          NULL, 
                          NULL, 
                          IDV_OWNER_UNKNOWN );
-
-    mIsThreadDead = ID_FALSE;
-
-    idlOS::memset( mRepName, 0, ID_SIZEOF( mRepName ) );
-
-    mExitFlag        = ID_FALSE;
-    mProtocolContext = aProtocolContext;
-    IDU_LIST_INIT_OBJ( &( mNode ), (void*)this );
-   
+  
     idlOS::memcpy( &mVersion, aVersion, ID_SIZEOF( rpdVersion ) );
 
     IDE_TEST_RAISE( mThreadJoinCV.initialize() != IDE_SUCCESS, ERR_COND_INIT );
@@ -159,7 +159,6 @@ void rpxDDLExecutor::run()
     sIsStatementBegin = ID_TRUE;
 
     IDE_TEST( rpcDDLSyncManager::runDDL( &mStatistics,
-                                         &sDDLTrans, 
                                          sSql,
                                          sUserName,
                                          &sStatement ) 
@@ -250,7 +249,7 @@ IDE_RC rpxDDLExecutor::waitThreadJoin( idvSQL *aStatistics )
 
         if ( aStatistics != NULL )
         {
-            // BUG-22637 MMÏóêÏÑú QUERY_TIMEOUT, Session ClosedÎ•º ÏÑ§Ï†ïÌñàÎäîÏßÄ ÌôïÏù∏
+            // BUG-22637 MMø°º≠ QUERY_TIMEOUT, Session Closed∏¶ º≥¡§«ﬂ¥¬¡ˆ »Æ¿Œ
             IDE_TEST( iduCheckSessionEvent( aStatistics ) != IDE_SUCCESS );
         }
         else

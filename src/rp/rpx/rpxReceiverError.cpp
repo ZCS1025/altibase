@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxReceiverError.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpxReceiverError.cpp 85848 2019-07-15 07:36:08Z yoonhee.kim $
  **********************************************************************/
 
 #include <idl.h>
@@ -171,10 +171,11 @@ void rpxReceiverApply::printPK( ideLogEntry   & aLog,
 }
                                   
 
-IDE_RC rpxReceiverApply::insertErrLog(ideLogEntry &aLog,
-                                      rpdMetaItem *aMetaItem,
-                                      rpdXLog     *aXLog,
-                                      const SChar *aPrefix )
+IDE_RC rpxReceiverApply::insertErrLog( ideLogEntry    &aLog,
+                                       rpdMetaItem    *aMetaItem,
+                                       rpdXLog        *aXLog,
+                                       rpApplyFailType aFailType,
+                                       const SChar    *aPrefix )
 {
     idBool       sIsValid = ID_FALSE;
 
@@ -200,7 +201,17 @@ IDE_RC rpxReceiverApply::insertErrLog(ideLogEntry &aLog,
                                         mSQLBufferLength,
                                         &sIsValid );
 
-    (void)aLog.appendFormat("%s ); (TID : %u)\n", mSQLBuffer, aXLog->mTID);
+    (void)aLog.appendFormat("%s ); (TID : %u)", mSQLBuffer, aXLog->mTID);
+
+
+    if ( aFailType == RP_APPLY_FAIL_BY_CORRUPTED_PAGE )
+    {
+        aLog.append(" (CORRUPTED)\n");
+    }
+    else
+    {
+        aLog.append("\n");
+    }
 
     return IDE_SUCCESS;
 
@@ -224,6 +235,7 @@ IDE_RC rpxReceiverApply::updateErrLog(ideLogEntry   & aLog,
                                       rpdMetaItem   * aMetaItemForPK,
                                       rpdXLog       * aXLog,
                                       idBool          aIsCmpBeforeImg,
+                                      rpApplyFailType aFailType,
                                       const SChar   * aPrefix)
 {
     UInt          i = 0;
@@ -313,7 +325,16 @@ IDE_RC rpxReceiverApply::updateErrLog(ideLogEntry   & aLog,
         aLog.append(";");
     }
 
-    aLog.appendFormat(" (TID : %u)\n", aXLog->mTID);
+    aLog.appendFormat(" (TID : %u)", aXLog->mTID);
+
+    if ( aFailType == RP_APPLY_FAIL_BY_CORRUPTED_PAGE )
+    {
+        aLog.append(" (CORRUPTED)\n");
+    }
+    else
+    {
+        aLog.append("\n");
+    }
 
     return IDE_SUCCESS;
 
@@ -332,10 +353,11 @@ IDE_RC rpxReceiverApply::updateErrLog(ideLogEntry   & aLog,
     return IDE_FAILURE;
 }
 
-IDE_RC rpxReceiverApply::deleteErrLog( ideLogEntry &aLog,
-                                       rpdMetaItem *aMetaItem,
-                                       rpdXLog     *aXLog,
-                                       const SChar *aPrefix )
+IDE_RC rpxReceiverApply::deleteErrLog( ideLogEntry    &aLog,
+                                       rpdMetaItem    *aMetaItem,
+                                       rpdXLog        *aXLog,
+                                       rpApplyFailType aFailType,
+                                       const SChar    *aPrefix )
 {
     UInt       i = 0;
     UInt       sPKCIDArray[QCI_MAX_COLUMN_COUNT] = { 0, };
@@ -367,7 +389,16 @@ IDE_RC rpxReceiverApply::deleteErrLog( ideLogEntry &aLog,
                                         mSQLBufferLength,
                                         &sIsValid );
 
-    (void)aLog.appendFormat( "%s; (TID : %u)\n", mSQLBuffer, aXLog->mTID );
+    (void)aLog.appendFormat( "%s; (TID : %u)", mSQLBuffer, aXLog->mTID );
+
+    if ( aFailType == RP_APPLY_FAIL_BY_CORRUPTED_PAGE )
+    {
+        aLog.append(" (CORRUPTED)\n");
+    }
+    else
+    {
+        aLog.append("\n");
+    }
 
     return IDE_SUCCESS;
 
@@ -385,6 +416,29 @@ IDE_RC rpxReceiverApply::deleteErrLog( ideLogEntry &aLog,
 
     return IDE_FAILURE;
 }
+
+void rpxReceiverApply::lobErrLog( ideLogEntry    &aLog,
+                                  rpdMetaItem    *aMetaItem,
+                                  rpdXLog        *aXLog,
+                                  rpApplyFailType aFailType,
+                                  const SChar    *aPrefix )
+{
+    aLog.appendFormat("%sA failure occurred while opening LOB Cursor (Table : %s.%s) (TID : %u) ",
+                      aPrefix,
+                      aMetaItem->mItem.mLocalUsername,
+                      aMetaItem->mItem.mLocalTablename,
+                      aXLog->mTID );
+
+    if ( aFailType == RP_APPLY_FAIL_BY_CORRUPTED_PAGE )
+    {
+        aLog.append(" (CORRUPTED)\n");
+    }
+    else
+    {
+        aLog.append("\n");
+    }
+}
+
 
 void rpxReceiverApply::abortConflictLog( ideLogEntry &aLog,
                                          rpdXLog * aXLog )

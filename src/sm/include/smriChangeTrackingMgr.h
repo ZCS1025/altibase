@@ -36,18 +36,18 @@
 class smriChangeTrackingMgr
 {
 private:
-    /*change trackingíŒŒì¼ í—¤ë”*/
+    /*change trackingÆÄÀÏ Çì´õ*/
     static smriCTFileHdrBlock   mCTFileHdr;
 
     static smriCTHdrState       mCTHdrState;
 
-    /*CTíŒŒì¼ */
+    /*CTÆÄÀÏ */
     static iduFile              mFile;
 
-    /*CT bodyì— ëŒ€í•œ pointer*/
+    /*CT body¿¡ ´ëÇÑ pointer*/
     static smriCTBody         * mCTBodyPtr[SMRI_CT_MAX_CT_BODY_CNT];       
 
-    /*CT bodyë¥¼ flushí•˜ê¸° ìœ„í•œ buffer */
+    /*CT body¸¦ flushÇÏ±â À§ÇÑ buffer */
     static smriCTBody         * mCTBodyFlushBuffer;
 
     static iduMutex             mMutex;
@@ -71,47 +71,49 @@ private:
 
     static UInt                 mFileNo;
     static scPageID             mSplitFilePageCount;
+    
+    static UInt                 mCurrChangeTrackingThreadCnt;
 
 private:
 
-    /*CTBody ì´ˆê¸°í™”*/
+    /*CTBody ÃÊ±âÈ­*/
     static IDE_RC createCTBody( smriCTBody * aCTBody );
 
-    /*íŒŒì¼ í—¤ë” ë¸”ëŸ­ ì´ˆê¸°í™”*/
+    /*ÆÄÀÏ Çì´õ ºí·° ÃÊ±âÈ­*/
     static IDE_RC createFileHdrBlock( smriCTFileHdrBlock * aCTFileHdrBlock );
 
-    /*extent map ë¸”ëŸ­ ì´ˆê¸°í™”*/
+    /*extent map ºí·° ÃÊ±âÈ­*/
     static IDE_RC createExtMapBlock( smriCTExtMapBlock * aExtMapBlock, 
                                      UInt                aBlockID );
 
-    /*DataFile Desc ë¸”ëŸ­ ì´ˆê¸°í™”*/
+    /*DataFile Desc ºí·° ÃÊ±âÈ­*/
     static IDE_RC createDataFileDescBlock( 
                         smriCTDataFileDescBlock * aDataFileDescBlock,
                         UInt                      aBlockID );
 
-    /*DataFile Desc slot ì´ˆê¸°í™”*/
+    /*DataFile Desc slot ÃÊ±âÈ­*/
     static IDE_RC createDataFileDescSlot( 
                         smriCTDataFileDescSlot * aDataFileDescSlot,
                         UInt                     aBlockID,
                         UInt                     aSlotIdx );
 
-    /*BmpExtHdrë¸”ëŸ­ ì´ˆê¸°í™”*/
+    /*BmpExtHdrºí·° ÃÊ±âÈ­*/
     static IDE_RC createBmpExtHdrBlock( smriCTBmpExtHdrBlock * aBmpExtHdrBlock,
                                         UInt                   aBlockID );
 
-    /*Bmp ë¸”ëŸ­ ì´ˆê¸°í™”*/
+    /*Bmp ºí·° ÃÊ±âÈ­*/
     static IDE_RC createBmpBlock( smriCTBmpBlock * aBmpBlock,
                                   UInt             aBlockID );
 
-    /*ë¸”ëŸ­ í—¤ë” ì´ˆê¸°í™”*/
+    /*ºí·° Çì´õ ÃÊ±âÈ­*/
     static IDE_RC createBlockHdr( smriCTBlockHdr    * aBlockHdr, 
                                   smriCTBlockType     aBlockType, 
                                   UInt                aBlockID );
 
-    /*ì´ë¯¸ ì¡´ì¬ í•˜ëŠ” ëª¨ë“  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ë°ì´í„°íŒŒì¼ë“¤ì„ CTíŒŒì¼ì— ë“±ë¡*/
+    /*ÀÌ¹Ì Á¸Àç ÇÏ´Â ¸ğµç Å×ÀÌºí½ºÆäÀÌ½ºÀÇ µ¥ÀÌÅÍÆÄÀÏµéÀ» CTÆÄÀÏ¿¡ µî·Ï*/
     static IDE_RC addAllExistingDataFile2CTFile( idvSQL * aStatistic );
 
-    /*ì´ë¯¸ ì¡´ì¬í•˜ëŠ” í•œ í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ì˜ ë°ì´í„°íŒŒì¼ì„ CTíŒŒì¼ì— ë“±ë¡*/
+    /*ÀÌ¹Ì Á¸ÀçÇÏ´Â ÇÑ Å×ÀÌºí ½ºÆäÀÌ½ºÀÇ µ¥ÀÌÅÍÆÄÀÏÀ» CTÆÄÀÏ¿¡ µî·Ï*/
     static IDE_RC addExistingDataFile2CTFile( 
                         idvSQL                      * aStatistic,
                         sctTableSpaceNode           * aSpaceNode,
@@ -120,7 +122,7 @@ private:
     static IDE_RC loadCTBody( ULong aCTBodyOffset, UInt aCTBodyIdx );
     static IDE_RC unloadCTBody( smriCTBody * aCTBody );
 
-    /*CTíŒŒì¼ê²€ì¦ í•¨ìˆ˜*/
+    /*CTÆÄÀÏ°ËÁõ ÇÔ¼ö*/
     static IDE_RC validateCTFile();
     static IDE_RC validateBmpExtList( smriCTBmpExtList * aBmpExtList, 
                                       UInt               aBmpExtListLen );
@@ -131,47 +133,47 @@ private:
     static IDE_RC initBmpExtLatch( smriCTBody * aCTBody );
     static IDE_RC destroyBmpExtLatch( smriCTBody * aCTBody );
 
-    /*flushí•˜ê¸°ìœ„í•œ ì¤€ë¹„*/
+    /*flushÇÏ±âÀ§ÇÑ ÁØºñ*/
     static IDE_RC startFlush();
 
-    /*flush ì™„ë£Œ*/
+    /*flush ¿Ï·á*/
     static IDE_RC completeFlush();
 
-    /*CTíŒŒì¼ í—¤ë” flush*/
+    /*CTÆÄÀÏ Çì´õ flush*/
     static IDE_RC flushCTFileHdr(); 
 
     /*CTBody flush*/
     static IDE_RC flushCTBody( smLSN aFlushLSN );
 
-    /*extend í•˜ê¸°ìœ„í•œ ì¤€ë¹„*/
+    /*extend ÇÏ±âÀ§ÇÑ ÁØºñ*/
     static IDE_RC startExtend( idBool * aIsNeedExtend );
 
-    /*extend ì™„ë£Œ*/
+    /*extend ¿Ï·á*/
     static IDE_RC completeExtend();
 
-    /*CTíŒŒì¼ì˜ flush,extendìˆ˜í–‰ì´ ì™„ë£Œë˜ëŠ”ê²ƒì„ ëŒ€ê¸°*/
+    /*CTÆÄÀÏÀÇ flush,extend¼öÇàÀÌ ¿Ï·áµÇ´Â°ÍÀ» ´ë±â*/
     static IDE_RC wait4FlushAndExtend();
 
-    /*DataFile Desc slotì„ í• ë‹¹ë‹¤ê³  ê°€ì ¸ì˜¨ë‹¤.*/
+    /*DataFile Desc slotÀ» ÇÒ´ç´Ù°í °¡Á®¿Â´Ù.*/
     static IDE_RC allocDataFileDescSlot( smriCTDataFileDescSlot ** aSlot );
     
-    /*ì‚¬ìš©ì¤‘ì´ì§€ ì•Šì€ DataFile Desc slotì˜ Idxë¥¼ ê°€ì ¸ì˜¨ë‹¤.*/
+    /*»ç¿ëÁßÀÌÁö ¾ÊÀº DataFile Desc slotÀÇ Idx¸¦ °¡Á®¿Â´Ù.*/
     static void getFreeSlotIdx( UInt aAllocSlotFlag, UInt * aSlotIdx );
 
-    /*DataFile Desc slotì— BmpExtë¥¼ ì¶”ê°€*/
+    /*DataFile Desc slot¿¡ BmpExt¸¦ Ãß°¡*/
     static IDE_RC addBmpExt2DataFileDescSlot( 
                                     smriCTDataFileDescSlot * aSlot,
                                     smriCTBmpExt          ** sAllocCurBmpExt );
 
-    /*ì‚¬ìš©í•  BmpExtë¥¼ í• ë‹¹*/
+    /*»ç¿ëÇÒ BmpExt¸¦ ÇÒ´ç*/
     static IDE_RC allocBmpExt( smriCTBmpExt ** aAllocBmpExt );
 
-    /*í• ë‹¹ ë°›ì€ BmpExtë¥¼ dataFile Desc slotì˜ BmpExtListì— ì¶”ê°€*/
+    /*ÇÒ´ç ¹ŞÀº BmpExt¸¦ dataFile Desc slotÀÇ BmpExtList¿¡ Ãß°¡*/
     static void addBmpExt2List( smriCTBmpExtList       * aBmpExtList,
                                 smriCTBmpExt           * aNewBmpExt );
 
-    /* DataFile Desc slotì— ìˆëŠ” BmpExtListì— í• ë‹¹ëœ BmpExtë¥¼ í• ë‹¹í•´ì œí•˜ê³  ì´ˆê¸°í™”
-     * í•œë‹¤.*/
+    /* DataFile Desc slot¿¡ ÀÖ´Â BmpExtList¿¡ ÇÒ´çµÈ BmpExt¸¦ ÇÒ´çÇØÁ¦ÇÏ°í ÃÊ±âÈ­
+     * ÇÑ´Ù.*/
     static IDE_RC deleteBmpExtFromDataFileDescSlot( smriCTDataFileDescSlot * aSlot );
 
     static IDE_RC deallocDataFileDescSlot( smriCTDataFileDescSlot  * aSlot );
@@ -179,26 +181,26 @@ private:
     static IDE_RC deleteBmpExtFromList( smriCTBmpExtList      * aBmpExtList,
                                       smriCTBmpExtHdrBlock ** aBmpExtHdrBlock );
 
-    /*í• ë‹¹ë˜ì–´ ì‚¬ìš©ì¤‘ì´ë˜ BmpExtì˜ í• ë‹¹ì„ í•´ì œí•œë‹¤.*/
+    /*ÇÒ´çµÇ¾î »ç¿ëÁßÀÌ´ø BmpExtÀÇ ÇÒ´çÀ» ÇØÁ¦ÇÑ´Ù.*/
     static IDE_RC deallocBmpExt( smriCTBmpExtHdrBlock  * sBmpExtHdrBlock );
 
-    /*ë³€ê²½ëœ IBChunkë¥¼ ì¶”ì ì¤‘ì¸ current BmpExtë¥¼ ê°€ì ¸ì˜¨ë‹¤.*/
+    /*º¯°æµÈ IBChunk¸¦ ÃßÀûÁßÀÎ current BmpExt¸¦ °¡Á®¿Â´Ù.*/
     static IDE_RC getCurBmpExt( 
                         smriCTDataFileDescSlot   * aSlot,
                         UInt                       aIBChunkID,
                         smriCTBmpExt            ** aCurBmpExt );
     
-    /*BmpExtListì—ì„œ aBmpExtSequenceë²ˆì§¸ì˜ BmpExtë¥¼ ê°€ì ¸ì˜¨ë‹¤.*/
+    /*BmpExtList¿¡¼­ aBmpExtSequence¹øÂ°ÀÇ BmpExt¸¦ °¡Á®¿Â´Ù.*/
     static IDE_RC getCurBmpExtInternal( smriCTDataFileDescSlot   * aSlot,
                                       UInt                       aBmpExtSeq,
                                       smriCTBmpExt            ** aCurBmpExt );
 
-    /*IBChunkIDì™€ ë§µí•‘ë˜ëŠ” bitì˜ ìœ„ì¹˜ë¥¼ êµ¬í•˜ê³  bitë¥¼ setí•œë‹¤.*/
+    /*IBChunkID¿Í ¸ÊÇÎµÇ´Â bitÀÇ À§Ä¡¸¦ ±¸ÇÏ°í bit¸¦ setÇÑ´Ù.*/
     static IDE_RC calcBitPositionAndSet( smriCTBmpExt             * aCurBmpExt,
                                          UInt                       aIBChunkID,
                                          smriCTDataFileDescSlot   * sSlot );
 
-    /*bitë¥¼ setí•˜ê¸°ìœ„í•œ í•¨ìˆ˜*/
+    /*bit¸¦ setÇÏ±âÀ§ÇÑ ÇÔ¼ö*/
     static IDE_RC setBit( smriCTBmpExt     * aBmpExt, 
                           UInt               aBmpBlockIdx, 
                           UInt               aByteIdx, 
@@ -221,15 +223,15 @@ private:
 
     static IDE_RC copyIBChunk( UInt aIBChunkID );
 
-    /*DifBmpExtListì˜ ì²«ë²ˆì§¸ BmpExtë¥¼ ê°€ì ¸ì˜¨ë‹¤.*/
+    /*DifBmpExtListÀÇ Ã¹¹øÂ° BmpExt¸¦ °¡Á®¿Â´Ù.*/
     static void getFirstDifBmpExt( smriCTDataFileDescSlot   * aSlot,
                                    UInt                     * aBmpExtBlockID);
 
-    /*CurBmpExtListì˜ ì²«ë²ˆì§¸ BmpExtë¥¼ ê°€ì ¸ì˜¨ë‹¤.*/
+    /*CurBmpExtListÀÇ Ã¹¹øÂ° BmpExt¸¦ °¡Á®¿Â´Ù.*/
     static void getFirstCumBmpExt( smriCTDataFileDescSlot   * aSlot,
                                    UInt                     * aBmpExtBlockID);
 
-    /*BlockIDë¥¼ ì´ìš©í•´ í•´ë‹¹ë¸”ë¡ì„ ê°€ì ¸ì˜¨ë‹¤.*/
+    /*BlockID¸¦ ÀÌ¿ëÇØ ÇØ´çºí·ÏÀ» °¡Á®¿Â´Ù.*/
     static void getBlock( UInt aBlockID, void ** aBlock );
 
     static void setBlockCheckSum( smriCTBlockHdr * aBlockHdr );
@@ -251,6 +253,9 @@ private:
         return mMutex.unlock ();
     }
 
+    static inline UInt getCurrChangeTrackingThreadCnt()
+    { return idCore::acpAtomicGet32( &mCurrChangeTrackingThreadCnt ); };
+
 public:
 
     static IDE_RC initializeStatic();
@@ -259,40 +264,40 @@ public:
     static IDE_RC begin();
     static IDE_RC end();
  
-    /*CTíŒŒì¼ ìƒì„±*/
+    /*CTÆÄÀÏ »ı¼º*/
     static IDE_RC createCTFile();
     static IDE_RC removeCTFile();
 
-    /*flush ìˆ˜í–‰í•¨ìˆ˜*/
+    /*flush ¼öÇàÇÔ¼ö*/
     static IDE_RC flush();
 
-    /*extend ìˆ˜í–‰ í•¨ìˆ˜*/
+    /*extend ¼öÇà ÇÔ¼ö*/
     static IDE_RC extend( idBool aFlushBody, smriCTBody ** aCTBody );
 
-    /*ë°ì´í„°íŒŒì¼ì„ CTíŒŒì¼ì— ë“±ë¡*/
+    /*µ¥ÀÌÅÍÆÄÀÏÀ» CTÆÄÀÏ¿¡ µî·Ï*/
     static IDE_RC addDataFile2CTFile( scSpaceID                     aSpaceID, 
                                       UInt                          aDataFileID, 
                                       smriCTTBSType                 aTBSType,
                                       smiDataFileDescSlotID      ** aSlotID );
 
-    /*CTíŒŒì¼ì— ë“±ë¡ë˜ì–´ìˆëŠ” ë°ì´í„°íŒŒì¼ì„ ë“±ë¡í•´ì œí•œë‹¤.*/
+    /*CTÆÄÀÏ¿¡ µî·ÏµÇ¾îÀÖ´Â µ¥ÀÌÅÍÆÄÀÏÀ» µî·ÏÇØÁ¦ÇÑ´Ù.*/
     //static IDE_RC deallocDataFileDescSlot( smiDataFileDescSlotID * aSlotID );
     static IDE_RC deleteDataFileFromCTFile( smiDataFileDescSlotID * aSlotID );
 
 
-    /*differential bakcupë³€ê²½ ì •ë³´ë¥¼ ì¶”ì ì¤‘ì¸ BmpExtListë¥¼ switchí•œë‹¤.*/
+    /*differential bakcupº¯°æ Á¤º¸¸¦ ÃßÀûÁßÀÎ BmpExtList¸¦ switchÇÑ´Ù.*/
     static IDE_RC switchBmpExtListID( smriCTDataFileDescSlot * aSlot );
 
     static IDE_RC changeTracking( sddDataFileNode * sDataFileNode,
                                   smmDatabaseFile * aDatabaseFile,
                                   UInt              aIBChunkID );
 
-    /*BmpExtListì— ì†í•œ ëª¨ë“  Bmp blockë“¤ì„ ì´ˆê¸°í™” í•œë‹¤.*/
+    /*BmpExtList¿¡ ¼ÓÇÑ ¸ğµç Bmp blockµéÀ» ÃÊ±âÈ­ ÇÑ´Ù.*/
     static IDE_RC initBmpExtListBlocks( 
                             smriCTDataFileDescSlot * aDataFileDescSlot,
                             UInt                     sBmpExtListID );
 
-    /* incrementalBackupì„ ìˆ˜í–‰í•œë‹¤. */
+    /* incrementalBackupÀ» ¼öÇàÇÑ´Ù. */
     static IDE_RC performIncrementalBackup(                        
                                 smriCTDataFileDescSlot * aDataFileDescSlot,           
                                 iduFile                * aSrcFile,
@@ -302,14 +307,14 @@ public:
                                 UInt                     aFileNo,
                                 smriBISlot             * aBackupInfo );
     
-    /* restart recoveryì¤‘ DataFileDescSlotì„ í• ë‹¹í•  í•„ìš”ê°€ìˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.*/
+    /* restart recoveryÁß DataFileDescSlotÀ» ÇÒ´çÇÒ ÇÊ¿ä°¡ÀÖ´ÂÁö °Ë»çÇÑ´Ù.*/
     static IDE_RC isNeedAllocDataFileDescSlot( 
                                     smiDataFileDescSlotID * aDataFileDescSlotID,
                                     scSpaceID               aSpaceID,
                                     UInt                    aFileNum,
                                     idBool                * aResult );
 
-    /* DataFileSlotIDì— í•´ë‹¹í•˜ëŠ” Slotì„ ê°€ì ¸ì˜¨ë‹¤. */
+    /* DataFileSlotID¿¡ ÇØ´çÇÏ´Â SlotÀ» °¡Á®¿Â´Ù. */
     static void getDataFileDescSlot( smiDataFileDescSlotID    * aSlotID, 
                                      smriCTDataFileDescSlot  ** aSlot );
 
@@ -321,11 +326,11 @@ public:
                                         scSpaceID                aSpaceID,
                                         UInt                     aFileNo );
 
-    /*DataFile Desc slotì— í• ë‹¹ëœ ëª¨ë“  BmpExtHdrì˜ latchë¥¼ íšë“í•œë‹¤.*/
+    /*DataFile Desc slot¿¡ ÇÒ´çµÈ ¸ğµç BmpExtHdrÀÇ latch¸¦ È¹µæÇÑ´Ù.*/
     static IDE_RC lockBmpExtHdrLatchX( smriCTDataFileDescSlot * aSlot,
                                        UShort                   alockListID );
 
-    /*DataFile Desc slotì— í• ë‹¹ëœ ëª¨ë“  BmpExtHdrì˜ latchë¥¼ í•´ì œí•œë‹¤.*/
+    /*DataFile Desc slot¿¡ ÇÒ´çµÈ ¸ğµç BmpExtHdrÀÇ latch¸¦ ÇØÁ¦ÇÑ´Ù.*/
     static IDE_RC unlockBmpExtHdrLatchX( smriCTDataFileDescSlot * aSlot,
                                          UShort                   alockListID );
 
@@ -412,5 +417,8 @@ public:
         
         return sResult;
     }
+
+    static IDE_RC changeTracking4WriteDiskPage( sddDataFileNode * aDataFileNode,
+                                                scPageID          aPageID );
 };
 #endif //_O_SMRI_CT_MANAGER_H

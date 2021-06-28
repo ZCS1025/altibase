@@ -191,7 +191,7 @@ IDE_RC cmbShmIPCDACreate(SInt aMaxChannelCount)
     UInt   sMaxCount              = 0;
     union  semun sArg;
 
-    /* IPCDA ì´ˆê¸°í™” */
+    /* IPCDA ÃÊ±âÈ­ */
     gIPCDAShmInfo.mShmKey          = CMB_INVALID_IPCDA_SHM_KEY;
     gIPCDAShmInfo.mShmID           = PDL_INVALID_HANDLE;
     gIPCDAShmInfo.mSemChannelKey   = NULL;
@@ -207,12 +207,12 @@ IDE_RC cmbShmIPCDACreate(SInt aMaxChannelCount)
 
     // fix BUG-18830
     // bug-27250 free Buf list can be crushed when client killed
-    // mMaxBufferCountëŠ”  ì›ëž˜ semaphoreê°’ì„ ì´ˆê¸°í™”í•˜ëŠ”ë° ì‚¬ìš©ëœë‹¤.
-    // ë³€ê²½ì „: channelìˆ˜ * extra_buffer ìˆ˜(8)
-    // ë³€ê²½í›„: ê³ ì •ê°’ 10
+    // mMaxBufferCount´Â  ¿ø·¡ semaphore°ªÀ» ÃÊ±âÈ­ÇÏ´Âµ¥ »ç¿ëµÈ´Ù.
+    // º¯°æÀü: channel¼ö * extra_buffer ¼ö(8)
+    // º¯°æÈÄ: °íÁ¤°ª 10
     gIPCDAShmInfo.mMaxBufferCount  = CMB_SHM_SEMA_UNDO_VALUE;
 
-    /* ë¹„ì •ìƒ ì¢…ë£Œì‹œ ìƒì„±í•œ ìžì› í•´ì œ */
+    /* ºñÁ¤»ó Á¾·á½Ã »ý¼ºÇÑ ÀÚ¿ø ÇØÁ¦ */
     idlOS::snprintf(gIPCDALogFile,
                     ID_SIZEOF(gIPCDALogFile),
                     PDL_TEXT("%s%s%s"),
@@ -279,9 +279,9 @@ IDE_RC cmbShmIPCDACreate(SInt aMaxChannelCount)
         gIPCDAShmInfo.mSemChannelKey[0] = gIPCDAShmInfo.mShmKey + 20000;
 
         /* ------------------------------------------------
-         *  HP 64bitì˜ ê²½ìš° 32ë¹„íŠ¸ Clinetì—ì„œ
-         *  Shared Memoryë¥¼ Attch í•  ìˆ˜ ìžˆë„ë¡,
-         *  compatible option : IPC_SHARE32ë¥¼ ì£¼ì–´ì•¼ í•œë‹¤.
+         *  HP 64bitÀÇ °æ¿ì 32ºñÆ® Clinet¿¡¼­
+         *  Shared Memory¸¦ Attch ÇÒ ¼ö ÀÖµµ·Ï,
+         *  compatible option : IPC_SHARE32¸¦ ÁÖ¾î¾ß ÇÑ´Ù.
          *  by gamestar
          * ----------------------------------------------*/
 #if (defined(HP_HPUX) || defined(IA64_HP_HPUX)) && defined(COMPILE_64BIT)
@@ -353,7 +353,7 @@ IDE_RC cmbShmIPCDACreate(SInt aMaxChannelCount)
         gIPCDAShmInfo.mShmBufferForSimpleQuery = (UChar*) idlOS::shmat( gIPCDAShmInfo.mShmIDForSimpleQuery, NULL, 0 );
         IDE_TEST_RAISE( gIPCDAShmInfo.mShmBufferForSimpleQuery == (void*) -1, err_attach_shm );
 
-        // Shared Memory Buffer ì´ˆê¸°í™”
+        // Shared Memory Buffer ÃÊ±âÈ­
         sMaxCount = gIPCDAShmInfo.mMaxChannelCount;
         
         // create channel semaphores
@@ -402,14 +402,14 @@ IDE_RC cmbShmIPCDACreate(SInt aMaxChannelCount)
             } // while
 
             /* ------------------------------------------------
-             *  IPC2 ì§€ì›í•  ê²½ìš°
+             *  IPC2 Áö¿øÇÒ °æ¿ì
              * ----------------------------------------------*/
             {
                 cmbShmIPCDAChannelInfo *sShmHeader = NULL;
                 sShmHeader = cmbShmIPCDAGetChannelInfo(gIPCDAShmInfo.mShmBuffer, i);
 
                 sShmHeader->mPID               = 0;
-                sShmHeader->mTicketNum         = 0;  // BUG-32398 íƒ€ìž„ìŠ¤íƒ¬í”„ì—ì„œ í‹°ì¼“ë²ˆí˜¸ë¡œ ë³€ê²½
+                sShmHeader->mTicketNum         = 0;  // BUG-32398 Å¸ÀÓ½ºÅÆÇÁ¿¡¼­ Æ¼ÄÏ¹øÈ£·Î º¯°æ
             }
             IDE_TEST(cmbShmIPCDAWriteLog(sLogFile, (void*)&gIPCDAShmInfo.mSemChannelKey[i], ID_SIZEOF(key_t)) != IDE_SUCCESS);
             IDE_TEST(cmbShmIPCDAWriteLog(sLogFile, (void*)&sSemCount, ID_SIZEOF(SInt)) != IDE_SUCCESS);
@@ -534,7 +534,7 @@ IDE_RC cmbShmIPCDADestroy()
     {
         idlOS::memset(&sSemCtlArg, 0, ID_SIZEOF(union semun));
 
-        // Channel Semaphore ì œê±°
+        // Channel Semaphore Á¦°Å
         if (gIPCDAShmInfo.mSemChannelID != NULL)
         {
             for (i = 0; i < gIPCDAShmInfo.mMaxChannelCount; i++)
@@ -550,7 +550,7 @@ IDE_RC cmbShmIPCDADestroy()
 
         gIPCDAShmInfo.mMaxChannelCount = 0;
 
-        // Channel ë©”ëª¨ë¦¬ ì œê±°
+        // Channel ¸Þ¸ð¸® Á¦°Å
         if (gIPCDAShmInfo.mSemChannelID != NULL)
         {
             IDE_TEST(iduMemMgr::free(gIPCDAShmInfo.mSemChannelID) != IDE_SUCCESS);
@@ -576,9 +576,9 @@ IDE_RC cmbShmIPCDADestroy()
             /*
              * BUG-32403 (for Windriver)
              *
-             * Windriver OSëŠ” shmdt() ê³¼ì •ì—ì„œ ê³µìœ ë©”ëª¨ë¦¬ê°€
-             * ì‚­ì œë˜ì–´ shmctl()ì—ì„œ í•­ìƒ ì„œë²„ê°€ ë¹„ì •ìƒ ì¢…ë£Œëœë‹¤.
-             * ê³µìœ ë©”ëª¨ë¦¬ ìƒíƒœë¥¼ ì²´í¬í•˜ê³  ì‚­ì œí•˜ìž.
+             * Windriver OS´Â shmdt() °úÁ¤¿¡¼­ °øÀ¯¸Þ¸ð¸®°¡
+             * »èÁ¦µÇ¾î shmctl()¿¡¼­ Ç×»ó ¼­¹ö°¡ ºñÁ¤»ó Á¾·áµÈ´Ù.
+             * °øÀ¯¸Þ¸ð¸® »óÅÂ¸¦ Ã¼Å©ÇÏ°í »èÁ¦ÇÏÀÚ.
              */
             if (idlOS::shmget(gIPCDAShmInfo.mShmKey, 0, 0) != -1)
             {
@@ -595,9 +595,9 @@ IDE_RC cmbShmIPCDADestroy()
             /*
              * BUG-32403 (for Windriver)
              *
-             * Windriver OSëŠ” shmdt() ê³¼ì •ì—ì„œ ê³µìœ ë©”ëª¨ë¦¬ê°€
-             * ì‚­ì œë˜ì–´ shmctl()ì—ì„œ í•­ìƒ ì„œë²„ê°€ ë¹„ì •ìƒ ì¢…ë£Œëœë‹¤.
-             * ê³µìœ ë©”ëª¨ë¦¬ ìƒíƒœë¥¼ ì²´í¬í•˜ê³  ì‚­ì œí•˜ìž.
+             * Windriver OS´Â shmdt() °úÁ¤¿¡¼­ °øÀ¯¸Þ¸ð¸®°¡
+             * »èÁ¦µÇ¾î shmctl()¿¡¼­ Ç×»ó ¼­¹ö°¡ ºñÁ¤»ó Á¾·áµÈ´Ù.
+             * °øÀ¯¸Þ¸ð¸® »óÅÂ¸¦ Ã¼Å©ÇÏ°í »èÁ¦ÇÏÀÚ.
              */
             if (idlOS::shmget(gIPCDAShmInfo.mShmKeyForSimpleQuery, 0, 0) != -1)
             {

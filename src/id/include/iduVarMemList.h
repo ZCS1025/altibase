@@ -38,7 +38,7 @@ typedef struct iduVarMemListStatus
 
 
 /// @class iduVarMemList
-/// ë©”ëª¨ë¦¬ë¥¼ í•œë²ˆ í• ë‹¹í• ë•Œë§ˆë‹¤ í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¥¼ ë‚´ë¶€ ê´€ë¦¬ ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€í•œë‹¤.
+/// ¸Þ¸ð¸®¸¦ ÇÑ¹ø ÇÒ´çÇÒ¶§¸¶´Ù ÇÒ´çµÈ ¸Þ¸ð¸®¸¦ ³»ºÎ °ü¸® ¸®½ºÆ®¿¡ Ãß°¡ÇÑ´Ù.
 class iduVarMemList {
     
 public:
@@ -48,63 +48,63 @@ public:
     static IDE_RC initializeStatic( void );
     static IDE_RC destroyStatic( void );
     
-    /// ë©”ëª¨ë¦¬ ë©”ë‹ˆì €ì˜ ì´ˆê¸°í™” ìž‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
-    /// ST í•¨ìˆ˜ ë‚´ì—ì„œëŠ” ì´ë¯¸ ì´ˆê¸°í™”ëœ ë©”ëª¨ë¦¬ ë§¤ë‹ˆì €ì— ëŒ€í•œ í¬ì¸í„°ë¥¼ ì–»ì–´ì„œ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì— ì‹ ê²½ì“¸ í•„ìš”ê°€ ì—†ë‹¤. QPì—ì„œëŠ” í˜„ìž¬ aIndexì˜ ê°’ìœ¼ë¡œ IDU_MEM_QMTë¥¼ ì‚¬ìš©í•˜ê³  ìžˆë‹¤.
-    /// @param aIndex ê°ì²´ë¥¼ ì‚¬ìš©í•  ëª¨ë“ˆ ë²ˆí˜¸
-    /// @param aMaxSize ë©”ëª¨ë¦¬ ìµœëŒ€ í¬ê¸°, ìƒëžµ ê°€ëŠ¥
+    /// ¸Þ¸ð¸® ¸Þ´ÏÀúÀÇ ÃÊ±âÈ­ ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+    /// ST ÇÔ¼ö ³»¿¡¼­´Â ÀÌ¹Ì ÃÊ±âÈ­µÈ ¸Þ¸ð¸® ¸Å´ÏÀú¿¡ ´ëÇÑ Æ÷ÀÎÅÍ¸¦ ¾ò¾î¼­ »ç¿ëÇÏ±â ¶§¹®¿¡ ½Å°æ¾µ ÇÊ¿ä°¡ ¾ø´Ù. QP¿¡¼­´Â ÇöÀç aIndexÀÇ °ªÀ¸·Î IDU_MEM_QMT¸¦ »ç¿ëÇÏ°í ÀÖ´Ù.
+    /// @param aIndex °´Ã¼¸¦ »ç¿ëÇÒ ¸ðµâ ¹øÈ£
+    /// @param aMaxSize ¸Þ¸ð¸® ÃÖ´ë Å©±â, »ý·« °¡´É
     IDE_RC               init( iduMemoryClientIndex aIndex, 
                                ULong                aMaxSize = ID_ULONG_MAX );
-    /// ë©”ëª¨ë¦¬ ë§¤ë‹ˆì €ì˜ ì‚­ì œ ìž‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
-    /// allocì´ë‚˜ realloc í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•´ì„œ ì´ë¯¸ í• ë‹¹ ë˜ì—ˆì§€ë§Œ ì•„ì§ í•´ì œë˜ì§€ ì•Šì€
-    /// ë©”ëª¨ë¦¬ì— ëŒ€í•œ í•´ì œ ìž‘ì—… ë° ë‚´ë¶€ì ìœ¼ë¡œ ì‚¬ìš©ë˜ëŠ” ë©”ëª¨ë¦¬ í’€ì— ëŒ€í•œ ì‚­ì œ ìž‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
-    /// ê°œì¸ ë©”ëª¨ë¦¬ í• ë‹¹ìžë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš° ë©”ëª¨ë¦¬ í• ë‹¹ìžë¥¼ í•´ì§€í•œë‹¤.
-    /// ST í•¨ìˆ˜ ë‚´ì—ì„œëŠ” destroy í•¨ìˆ˜ë¥¼ ì ˆëŒ€ë¡œ í˜¸ì¶œí•´ì„œëŠ” ì•ˆëœë‹¤.
+    /// ¸Þ¸ð¸® ¸Å´ÏÀúÀÇ »èÁ¦ ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+    /// allocÀÌ³ª realloc ÇÔ¼ö¸¦ »ç¿ëÇØ¼­ ÀÌ¹Ì ÇÒ´ç µÇ¾úÁö¸¸ ¾ÆÁ÷ ÇØÁ¦µÇÁö ¾ÊÀº
+    /// ¸Þ¸ð¸®¿¡ ´ëÇÑ ÇØÁ¦ ÀÛ¾÷ ¹× ³»ºÎÀûÀ¸·Î »ç¿ëµÇ´Â ¸Þ¸ð¸® Ç®¿¡ ´ëÇÑ »èÁ¦ ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+    /// °³ÀÎ ¸Þ¸ð¸® ÇÒ´çÀÚ¸¦ »ç¿ëÇÏ´Â °æ¿ì ¸Þ¸ð¸® ÇÒ´çÀÚ¸¦ ÇØÁöÇÑ´Ù.
+    /// ST ÇÔ¼ö ³»¿¡¼­´Â destroy ÇÔ¼ö¸¦ Àý´ë·Î È£ÃâÇØ¼­´Â ¾ÈµÈ´Ù.
     IDE_RC               destroy(); 
 
-    /// @a aSize ì— ì§€ì •ëœ í¬ê¸° ë§Œí¼ì˜ ë©”ëª¨ë¦¬ ê³µê°„ì„ í• ë‹¹í•œë‹¤.
-    /// @param aSize í• ë‹¹í•  ë©”ëª¨ë¦¬ í¬ê¸°
-    /// @param aBuffer ë©”ëª¨ë¦¬ í¬ì¸í„°
+    /// @a aSize ¿¡ ÁöÁ¤µÈ Å©±â ¸¸Å­ÀÇ ¸Þ¸ð¸® °ø°£À» ÇÒ´çÇÑ´Ù.
+    /// @param aSize ÇÒ´çÇÒ ¸Þ¸ð¸® Å©±â
+    /// @param aBuffer ¸Þ¸ð¸® Æ÷ÀÎÅÍ
     IDE_RC               alloc( ULong aSize, void **aBuffer );
 
-    /// 0ìœ¼ë¡œ ì´ˆê¸°í™”ëœ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•œë‹¤.
+    /// 0À¸·Î ÃÊ±âÈ­µÈ ¸Þ¸ð¸®¸¦ ÇÒ´çÇÑ´Ù.
     IDE_RC               cralloc( ULong aSize, void **aBuffer );
 
-    /// í• ë‹¹ëœ ë©”ëª¨ë¦¬ ê³µê°„ì„ í•´ì œí•œë‹¤.
-    /// alloc ì´ë‚˜ realloc í•¨ìˆ˜ë¥¼ í†µí•´ì„œ í• ë‹¹ë˜ì§€ ì•Šì€ í¬ì¸í„°ë¥¼ ë„˜ê¸°ëŠ” ê²½ìš° ASSERT ì²˜ë¦¬ í•œë‹¤.
+    /// ÇÒ´çµÈ ¸Þ¸ð¸® °ø°£À» ÇØÁ¦ÇÑ´Ù.
+    /// alloc ÀÌ³ª realloc ÇÔ¼ö¸¦ ÅëÇØ¼­ ÇÒ´çµÇÁö ¾ÊÀº Æ÷ÀÎÅÍ¸¦ ³Ñ±â´Â °æ¿ì ASSERT Ã³¸® ÇÑ´Ù.
     IDE_RC               free( void *aBuffer );
-    /// í• ë‹¹ëœ ëª¨ë“  ë©”ëª¨ë¦¬ì— ëŒ€í•œ í•´ì œ ìž‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
-    /// í•˜ì§€ë§Œ ë‚´ë¶€ì ìœ¼ë¡œ ì‚¬ìš©ë˜ëŠ” ë©”ëª¨ë¦¬ í’€ì— ëŒ€í•œ í•´ì œ ìž‘ì—…ì€ ìˆ˜í–‰ë˜ì§€ ì•ŠëŠ”ë‹¤.
+    /// ÇÒ´çµÈ ¸ðµç ¸Þ¸ð¸®¿¡ ´ëÇÑ ÇØÁ¦ ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+    /// ÇÏÁö¸¸ ³»ºÎÀûÀ¸·Î »ç¿ëµÇ´Â ¸Þ¸ð¸® Ç®¿¡ ´ëÇÑ ÇØÁ¦ ÀÛ¾÷Àº ¼öÇàµÇÁö ¾Ê´Â´Ù.
     IDE_RC               freeAll();
-    /// ì§€ì •ëœ ë²”ìœ„ì˜ ë¸”ëŸ­ë“¤ì„ í•´ì§€í•œë‹¤.
+    /// ÁöÁ¤µÈ ¹üÀ§ÀÇ ºí·°µéÀ» ÇØÁöÇÑ´Ù.
     IDE_RC               freeRange( iduVarMemListStatus *aBegin,
                                     iduVarMemListStatus *aEnd );
 
     //fix PROJ-1596
-    /// í˜„ìž¬ ê°ì²´ì˜ ìƒíƒœë¥¼ ì–»ì–´ì˜¨ë‹¤.
-    /// ë‚´ë¶€ì ìœ¼ë¡œëŠ” ìƒíƒœ ì •ë³´ë¥¼ ì–»ëŠ” ì‹œì ì„ í‘œì‹œí•˜ê¸°ìœ„í•œ
-    /// ë¹ˆ ë¸”ëŸ­ì„ ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€í•˜ê³ , ì´ ë¸”ëŸ­ì˜ í¬ì¸í„°ë¥¼ ë„˜ê²¨ì¤€ë‹¤.
-    /// ë”°ë¼ì„œ getStatusë¡œ ì–»ì€ ë¸”ëŸ­ì— ë°ì´í„°ë¥¼ ê¸°ë¡í•˜ë©´ ì•ˆëœë‹¤.
+    /// ÇöÀç °´Ã¼ÀÇ »óÅÂ¸¦ ¾ò¾î¿Â´Ù.
+    /// ³»ºÎÀûÀ¸·Î´Â »óÅÂ Á¤º¸¸¦ ¾ò´Â ½ÃÁ¡À» Ç¥½ÃÇÏ±âÀ§ÇÑ
+    /// ºó ºí·°À» ¸®½ºÆ®¿¡ Ãß°¡ÇÏ°í, ÀÌ ºí·°ÀÇ Æ÷ÀÎÅÍ¸¦ ³Ñ°ÜÁØ´Ù.
+    /// µû¶ó¼­ getStatus·Î ¾òÀº ºí·°¿¡ µ¥ÀÌÅÍ¸¦ ±â·ÏÇÏ¸é ¾ÈµÈ´Ù.
     IDE_RC               getStatus( iduVarMemListStatus *aStatus );
-    /// ê°ì²´ë¥¼ íŠ¹ì • ì‹œì ì˜ ìƒíƒœë¡œ ë˜ëŒë¦°ë‹¤.
+    /// °´Ã¼¸¦ Æ¯Á¤ ½ÃÁ¡ÀÇ »óÅÂ·Î µÇµ¹¸°´Ù.
     IDE_RC               setStatus( iduVarMemListStatus *aStatus );
-    /// ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” ë¸”ëŸ­ë“¤ë§Œ í•´ì§€í•œë‹¤.
+    /// »ç¿ëÇÏÁö ¾Ê´Â ºí·°µé¸¸ ÇØÁöÇÑ´Ù.
     void                 freeUnused( void ) {};
-    /// ëª¨ë“  ë¸”ëŸ­ì„ í•´ì§€í•œë‹¤.
+    /// ¸ðµç ºí·°À» ÇØÁöÇÑ´Ù.
     void                 clear() { (void)freeAll(); };
 
     // PROJ-1436
-    /// ê°ì²´ê°€ í• ë‹¹í•œ ë©”ëª¨ë¦¬ì˜ ì´ í•©
+    /// °´Ã¼°¡ ÇÒ´çÇÑ ¸Þ¸ð¸®ÀÇ ÃÑ ÇÕ
     ULong                getAllocSize();
-    /// ë©”ëª¨ë¦¬ í• ë‹¹ íšŸìˆ˜
+    /// ¸Þ¸ð¸® ÇÒ´ç È½¼ö
     UInt                 getAllocCount();
     iduList *            getNodeList();
-    /// í˜„ìž¬ ê°ì²´ê°€ ê°€ì§„ ë©”ëª¨ë¦¬ ë¸”ëŸ­ë“¤ì„ ë³µì‚¬í•œë‹¤.
-    /// @param aMem ë¸”ëŸ­ë“¤ì˜ ë¦¬ìŠ¤íŠ¸
+    /// ÇöÀç °´Ã¼°¡ °¡Áø ¸Þ¸ð¸® ºí·°µéÀ» º¹»çÇÑ´Ù.
+    /// @param aMem ºí·°µéÀÇ ¸®½ºÆ®
     IDE_RC               clone( iduVarMemList *aMem );
-    /// ë©”ëª¨ë¦¬ ë¸”ëŸ­ë“¤ì˜ ë‚´ìš©ì„ ë¹„êµí•œë‹¤.
+    /// ¸Þ¸ð¸® ºí·°µéÀÇ ³»¿ëÀ» ºñ±³ÇÑ´Ù.
     SInt                 compare( iduVarMemList *aMem );
 
-    /// ê° ë©”ëª¨ë¦¬ ë¸”ëŸ­ë“¤ì˜ í¬ê¸°ì™€ ë¸”ëŸ­ì— ì €ìž¥ëœ ë¬¸ìžì—´ì„ í„°ë¯¸ë„ì— ì¶œë ¥í•œë‹¤.
+    /// °¢ ¸Þ¸ð¸® ºí·°µéÀÇ Å©±â¿Í ºí·°¿¡ ÀúÀåµÈ ¹®ÀÚ¿­À» ÅÍ¹Ì³Î¿¡ Ãâ·ÂÇÑ´Ù.
     void                 dump();
 
 private:
@@ -117,8 +117,8 @@ private:
     ULong                mMaxSize;
     UInt                 mCount;
 
-    iduMemAllocator      mPrivateAlloc; // Thread-local ë©”ëª¨ë¦¬ í• ë‹¹ìž
-    static idBool        mUsePrivate;   // Thread-local ë©”ëª¨ë¦¬ í• ë‹¹ìž ì‚¬ìš© ì—¬ë¶€
+    iduMemAllocator      mPrivateAlloc; // Thread-local ¸Þ¸ð¸® ÇÒ´çÀÚ
+    static idBool        mUsePrivate;   // Thread-local ¸Þ¸ð¸® ÇÒ´çÀÚ »ç¿ë ¿©ºÎ
 };
 
 #endif /* _O_IDUVARMEMLIST_H_ */

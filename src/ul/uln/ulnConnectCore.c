@@ -39,14 +39,14 @@ ACI_RC ulnDrvConnStrToInt(acp_char_t *aString, acp_uint32_t aLength, acp_sint32_
             if (sRetValue == 0)
             {
                 /*
-                 * ì•žì— ì˜¤ëŠ” í™”ì´íŠ¸ ìŠ¤íŽ˜ì´ìŠ¤ëŠ” ë¬´ì‹œ
+                 * ¾Õ¿¡ ¿À´Â È­ÀÌÆ® ½ºÆäÀÌ½º´Â ¹«½Ã
                  */
                 continue;
             }
             else
             {
                 /*
-                 * ì¼ë‹¨ ìˆ«ìžê°€ ë‚˜ì˜¨ ë’¤ì˜ í™”ì´íŠ¸ ìŠ¤íŽ˜ì´ìŠ¤ëŠ” ìˆ«ìžì˜ ë
+                 * ÀÏ´Ü ¼ýÀÚ°¡ ³ª¿Â µÚÀÇ È­ÀÌÆ® ½ºÆäÀÌ½º´Â ¼ýÀÚÀÇ ³¡
                  */
                 break;
             }
@@ -61,7 +61,7 @@ ACI_RC ulnDrvConnStrToInt(acp_char_t *aString, acp_uint32_t aLength, acp_sint32_
             else
             {
                 /*
-                 * ìˆ«ìžë§Œ ë°›ëŠ”ë‹¤.
+                 * ¼ýÀÚ¸¸ ¹Þ´Â´Ù.
                  */
                 ACI_RAISE(LABEL_INVALID_LETTER);
                 break;
@@ -86,15 +86,15 @@ static ACI_RC ulnDrvConnReceivePropertySetRes(ulnFnContext *aFnContext, ulnPtCon
     acp_time_t  sTimeout;
 
     //PROJ-1645 UL-FailOver
-    //STFê³¼ì •ì—ì„œ Function Contextì˜ Object typeì´
-    //statement ì¼ìˆ˜ ìžˆë‹¤.
+    //STF°úÁ¤¿¡¼­ Function ContextÀÇ Object typeÀÌ
+    //statement ÀÏ¼ö ÀÖ´Ù.
     ULN_FNCONTEXT_GET_DBC(aFnContext,sDbc);
 
     /* BUG-46052 codesonar Null Pointer Dereference */
     ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     /*
-     * íƒ€ìž„ì•„ì›ƒ ì„¸íŒ…
+     * Å¸ÀÓ¾Æ¿ô ¼¼ÆÃ
      */
     sTimeout = acpTimeFrom(ulnDbcGetLoginTimeout(sDbc), 0);
 
@@ -125,10 +125,12 @@ static ACI_RC ulnDrvConnInitialPropertySet(ulnFnContext *aFnContext, ulnPtContex
     acp_char_t        sClientType[20];
     acp_uint64_t      sPid;
     const acp_char_t *sVersion = IDU_ALTIBASE_VERSION_STRING;
+    acp_slong_t       sValue = 0;
+    acp_uint64_t      sSMN = 0;
 
     //PROJ-1645 UL-FailOver
-    //STFê³¼ì •ì—ì„œ Function Contextì˜ Object typeì´
-    //statement ì¼ìˆ˜ ìžˆë‹¤.
+    //STF°úÁ¤¿¡¼­ Function ContextÀÇ Object typeÀÌ
+    //statement ÀÏ¼ö ÀÖ´Ù.
     ULN_FNCONTEXT_GET_DBC(aFnContext,sDbc);
 
     /* BUG-46052 codesonar Null Pointer Dereference */
@@ -151,122 +153,151 @@ static ACI_RC ulnDrvConnInitialPropertySet(ulnFnContext *aFnContext, ulnPtContex
 #endif
                     ulcGetClientType());
 
+    /*
+     * PropertySet Request ¾²±â
+     */
+    ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                    aPtContext,
+                                    ULN_PROPERTY_CLIENT_PACKAGE_VERSION,
+                                    (void *)sVersion)
+             != ACI_SUCCESS);
+
+    ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                    aPtContext,
+                                    ULN_PROPERTY_CLIENT_PROTOCOL_VERSION,
+                                    (void *)(&cmProtocolVersion))
+             != ACI_SUCCESS);
+
+    sPid = acpProcGetSelfID();
+
+    ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                    aPtContext,
+                                    ULN_PROPERTY_CLIENT_PID,
+                                    (void *)(&sPid))
+             != ACI_SUCCESS);
+
+    /* APP_INFO set before
+     * BUG-28866 : LoggingÀ» À§ÇØ APP_INFO¸¦
+     * ÀÎÁõ Àü¿¡ ¸ÕÀú Ã³¸®
+     */
+    
+    if (sDbc->mAppInfo != NULL)
+    {
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_APP_INFO,
+                                        (void *)sDbc->mAppInfo) != ACI_SUCCESS);
+    }
+
+    ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                    aPtContext,
+                                    ULN_PROPERTY_CLIENT_TYPE,
+                                    (void *)sClientType)
+             != ACI_SUCCESS);
+
+    /* Shard session ±¸ºÐÀ» À§ÇÑ Áß¿äÇÑ Property ´Â ¸ÕÀú Àü¼ÛÇÏÀÚ.
+     * ( ULN_PROPERTY_SHARD_NODE_NAME,
+     *   ULN_PROPERTY_SHARD_SESSION_TYPE,
+     *   ULN_PROPERTY_SHARD_CLIENT,
+     *   ULN_PROPERTY_SHARD_PIN,
+     *   ULN_PROPERTY_SHARD_META_NUMBER )
+     * À§ ¼ø¼­´Â º¯°æ¿¡ ÁÖÀÇ ÇØ¾ßÇÑ´Ù.
+     * ex) ULN_PROPERTY_SHARD_META_NUMBER ¸¦ ¼ö½ÅÇÏ¸é
+     *     ULN_PROPERTY_SHARD_SESSION_TYPE °ªÀ» ÀÌ¿ëÇØ ºÐ±âÇÑ´Ù.
+     */
+
     /* PROJ-2683 */
     /* ULN_PROPERTY_SHARD_NODE_NAME */
     if ( sDbc->mShardDbcCxt.mShardTargetDataNodeName[0] != '\0' )
     {
-        ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                          aPtContext,
-                                          ULN_PROPERTY_SHARD_NODE_NAME,
-                                          (void*)sDbc->mShardDbcCxt.mShardTargetDataNodeName) != ACI_SUCCESS);
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_SHARD_NODE_NAME,
+                                        (void*)sDbc->mShardDbcCxt.mShardTargetDataNodeName) != ACI_SUCCESS);
+    }
+
+    if ( sDbc->mShardDbcCxt.mShardSessionType > 0 )
+    {
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_SHARD_SESSION_TYPE,
+                                        (void*)(acp_slong_t)sDbc->mShardDbcCxt.mShardSessionType) != ACI_SUCCESS);
+    }
+
+    /* BUG-45707 */
+    if ( sDbc->mShardDbcCxt.mShardClient > 0 )
+    {
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_SHARD_CLIENT,
+                                        (void*)(acp_slong_t)sDbc->mShardDbcCxt.mShardClient) != ACI_SUCCESS);
     }
 
     /* PROJ-2660 */
     /* ULN_PROPERTY_SHARD_PIN */
     if ( sDbc->mShardDbcCxt.mShardPin != ULSD_SHARD_PIN_INVALID )
     {
-        ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                          aPtContext,
-                                          ULN_PROPERTY_SHARD_PIN,
-                                          (void*)sDbc->mShardDbcCxt.mShardPin) != ACI_SUCCESS);
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_SHARD_PIN,
+                                        (void*)sDbc->mShardDbcCxt.mShardPin) != ACI_SUCCESS);
 
         ULN_TRACE_LOG( NULL, ULN_TRACELOG_LOW, NULL, 0,
                        "%-18s| ShardPin send to node: ["ULSD_SHARD_PIN_FORMAT_STR"]",
                        "ulnDrvConnInitialPropertySet", ULSD_SHARD_PIN_FORMAT_ARG( sDbc->mShardDbcCxt.mShardPin ) );
     }
 
-    /* BUG-46090 Meta Node SMN ì „íŒŒ */
+    /* BUG-46090 Meta Node SMN ÀüÆÄ */
     /* ULN_PROPERTY_SHARD_META_NUMBER */
-    if ( sDbc->mShardDbcCxt.mShardMetaNumber != 0 )
+    if ( sDbc->mShardDbcCxt.mParentDbc != NULL )
     {
-        ACI_TEST( ulnWritePropertySetV2REQ( aFnContext,
-                                            aPtContext,
-                                            ULN_PROPERTY_SHARD_META_NUMBER,
-                                            (void *)sDbc->mShardDbcCxt.mShardMetaNumber )
+        sSMN = ACP_MAX( sDbc->mShardDbcCxt.mShardMetaNumber,
+                        sDbc->mShardDbcCxt.mParentDbc->mShardDbcCxt.mTargetShardMetaNumber );
+    }
+    else
+    {
+        sSMN = ACP_MAX( sDbc->mShardDbcCxt.mShardMetaNumber,
+                        sDbc->mShardDbcCxt.mTargetShardMetaNumber );
+    }
+
+    if ( sSMN != 0 )
+    {
+        ACI_TEST( ulnWritePropertySetREQ( aFnContext,
+                                          aPtContext,
+                                          ULN_PROPERTY_SHARD_META_NUMBER,
+                                          (void *)sSMN )
                   != ACI_SUCCESS );
+
+        ulnDbcSetSentShardMetaNumber( sDbc, sSMN );
 
         ULN_TRACE_LOG( NULL, ULN_TRACELOG_LOW, NULL, 0,
                        "%-18s| ShardMetaNumber send to node: [%"ACI_UINT64_FMT"]",
                        "ulnDrvConnInitialPropertySet", sDbc->mShardDbcCxt.mShardMetaNumber );
     }
 
-    /* BUG-46092 bug fix for Transaction Level */
-    /* ULN_PROPERTY_DBLINK_GLOBAL_TRANSACTION_LEVEL */
-    if ( sDbc->mShardDbcCxt.mShardTransactionLevel != ULN_SHARD_TX_MULTI_NODE )
+    /* BUG-47257 */
+    if ( sDbc->mAttrGlobalTransactionLevel == ULN_GLOBAL_TX_NONE )
     {
-        ACI_TEST( ulnWritePropertySetV2REQ( aFnContext,
-                                            aPtContext,
-                                            ULN_PROPERTY_DBLINK_GLOBAL_TRANSACTION_LEVEL,
-                                            (void *)((acp_ulong_t)sDbc->mShardDbcCxt.mShardTransactionLevel) )
+        /* ÃÖÃÊ ±âµ¿½Ã¿¡´Â ¼­¹ö·Î ºÎÅÍ °ªÀ» ÀÐ¾î¿È */
+        ACI_TEST( ulnWritePropertyGetREQ( aFnContext,
+                                          aPtContext,
+                                          ULN_PROPERTY_GLOBAL_TRANSACTION_LEVEL ) 
                   != ACI_SUCCESS );
-
-        ULN_TRACE_LOG( NULL, ULN_TRACELOG_LOW, NULL, 0,
-                       "%-18s| ShardTransactionLevel send to node: [%"ACI_UINT64_FMT"]",
-                       "ulnDrvConnInitialPropertySet", sDbc->mShardDbcCxt.mShardTransactionLevel );
     }
-
-    /* BUG-45707 */
-    if ( sDbc->mShardDbcCxt.mShardClient > 0 )
+    else
     {
-        ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
+        /* failover µÈ ÀÌÈÄ¿¡´Â library ¿¡ ¼³Á¤µÈ °ªÀ» ¼­¹ö¿¡ ¼³Á¤ */
+        ACI_TEST( ulnWritePropertySetREQ( aFnContext,
                                           aPtContext,
-                                          ULN_PROPERTY_SHARD_CLIENT,
-                                          (void*)(acp_slong_t)sDbc->mShardDbcCxt.mShardClient) != ACI_SUCCESS);
+                                          ULN_PROPERTY_GLOBAL_TRANSACTION_LEVEL,
+                                          (void *)((acp_ulong_t)sDbc->mAttrGlobalTransactionLevel) )
+                  != ACI_SUCCESS );
     }
 
-    if ( sDbc->mShardDbcCxt.mShardSessionType > 0 )
-    {
-        ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                          aPtContext,
-                                          ULN_PROPERTY_SHARD_SESSION_TYPE,
-                                          (void*)(acp_slong_t)sDbc->mShardDbcCxt.mShardSessionType) != ACI_SUCCESS);
-    }
-
-    /*
-     * PropertySet Request ì“°ê¸°
-     */
-    ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                      aPtContext,
-                                      ULN_PROPERTY_CLIENT_PACKAGE_VERSION,
-                                      (void *)sVersion)
-             != ACI_SUCCESS);
-
-    ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                      aPtContext,
-                                      ULN_PROPERTY_CLIENT_PROTOCOL_VERSION,
-                                      (void *)(&cmProtocolVersion))
-             != ACI_SUCCESS);
-
-    sPid = acpProcGetSelfID();
-
-    ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                      aPtContext,
-                                      ULN_PROPERTY_CLIENT_PID,
-                                      (void *)(&sPid))
-             != ACI_SUCCESS);
-
-    /* APP_INFO set before
-     * BUG-28866 : Loggingì„ ìœ„í•´ APP_INFOë¥¼
-     * ì¸ì¦ ì „ì— ë¨¼ì € ì²˜ë¦¬
-     */
-    
-    if (sDbc->mAppInfo != NULL)
-    {
-        ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                          aPtContext,
-                                          ULN_PROPERTY_APP_INFO,
-                                          (void *)sDbc->mAppInfo) != ACI_SUCCESS);
-    }
-    ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                      aPtContext,
-                                      ULN_PROPERTY_CLIENT_TYPE,
-                                      (void *)sClientType)
-             != ACI_SUCCESS);
-
-    ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                      aPtContext,
-                                      ULN_PROPERTY_NLS,
-                                      (void *)ulnDbcGetNlsLangString(sDbc))
+    ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                    aPtContext,
+                                    ULN_PROPERTY_NLS,
+                                    (void *)ulnDbcGetNlsLangString(sDbc))
              != ACI_SUCCESS);
 
     ACI_TEST(ulnWritePropertyGetREQ(aFnContext,
@@ -275,19 +306,19 @@ static ACI_RC ulnDrvConnInitialPropertySet(ulnFnContext *aFnContext, ulnPtContex
 
     /*  PROJ-1579 NCHAR */
     /* ULN_PROPERTY_NLS_NCHAR_LITERAL_REPLACE */
-    ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                      aPtContext,
-                                      ULN_PROPERTY_NLS_NCHAR_LITERAL_REPLACE,
-                                      (void*)(acp_slong_t)sDbc->mNlsNcharLiteralReplace) != ACI_SUCCESS);
+    ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                    aPtContext,
+                                    ULN_PROPERTY_NLS_NCHAR_LITERAL_REPLACE,
+                                    (void*)(acp_slong_t)sDbc->mNlsNcharLiteralReplace) != ACI_SUCCESS);
 
     /* PROJ-2683 */
     /* ULN_PROPERTY_SHARD_LINKER_TYPE */
     if ( sDbc->mShardDbcCxt.mShardLinkerType > 0 )
     {
-        ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                          aPtContext,
-                                          ULN_PROPERTY_SHARD_LINKER_TYPE,
-                                          (void*)(acp_slong_t)sDbc->mShardDbcCxt.mShardLinkerType) != ACI_SUCCESS);
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_SHARD_LINKER_TYPE,
+                                        (void*)(acp_slong_t)sDbc->mShardDbcCxt.mShardLinkerType) != ACI_SUCCESS);
     }
 
     /*  PROJ-1579 NCHAR */
@@ -321,10 +352,10 @@ static ACI_RC ulnDrvConnInitialPropertySet(ulnFnContext *aFnContext, ulnPtContex
     /* DateFormat does Set if it prepered otherwise get */
     if (sDbc->mDateFormat != NULL)
     {
-        ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                          aPtContext,
-                                          ULN_PROPERTY_DATE_FORMAT,
-                                          (void *)sDbc->mDateFormat)
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_DATE_FORMAT,
+                                        (void *)sDbc->mDateFormat)
                  != ACI_SUCCESS);
     }
     else
@@ -336,10 +367,10 @@ static ACI_RC ulnDrvConnInitialPropertySet(ulnFnContext *aFnContext, ulnPtContex
 
     if ( sDbc->mTimezoneString != NULL )
     {
-        ACI_TEST( ulnWritePropertySetV2REQ( aFnContext,
-                                            aPtContext,
-                                            ULN_PROPERTY_TIME_ZONE,
-                                            (void *)sDbc->mTimezoneString )
+        ACI_TEST( ulnWritePropertySetREQ( aFnContext,
+                                          aPtContext,
+                                          ULN_PROPERTY_TIME_ZONE,
+                                          (void *)sDbc->mTimezoneString )
                   != ACI_SUCCESS);
     }
     else
@@ -350,10 +381,10 @@ static ACI_RC ulnDrvConnInitialPropertySet(ulnFnContext *aFnContext, ulnPtContex
     /*  ULN_PROPERTY_AUTOCOMMIT             */
     if (sDbc->mAttrAutoCommit != SQL_UNDEF)
     {
-        ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                          aPtContext,
-                                          ULN_PROPERTY_AUTOCOMMIT,
-                                          (void*)(acp_slong_t)sDbc->mAttrAutoCommit) != ACI_SUCCESS);
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_AUTOCOMMIT,
+                                        (void*)(acp_slong_t)sDbc->mAttrAutoCommit) != ACI_SUCCESS);
     }
     else
     {
@@ -365,10 +396,10 @@ static ACI_RC ulnDrvConnInitialPropertySet(ulnFnContext *aFnContext, ulnPtContex
     /*  ULN_PROPERTY_EXPLAIN_PLAN           */
     if (sDbc->mAttrExplainPlan != SQL_UNDEF)
     {
-        ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                          aPtContext,
-                                          ULN_PROPERTY_EXPLAIN_PLAN,
-                                          (void*)(acp_slong_t)sDbc->mAttrExplainPlan) != ACI_SUCCESS);
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_EXPLAIN_PLAN,
+                                        (void*)(acp_slong_t)sDbc->mAttrExplainPlan) != ACI_SUCCESS);
     }
     else
     {
@@ -381,10 +412,10 @@ static ACI_RC ulnDrvConnInitialPropertySet(ulnFnContext *aFnContext, ulnPtContex
     /*  ULN_PROPERTY_OPTIMIZER_MODE         */
     if (sDbc->mAttrOptimizerMode != ACP_UINT32_MAX)
     {
-        ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                          aPtContext,
-                                          ULN_PROPERTY_OPTIMIZER_MODE,
-                                          (void*)(acp_slong_t)sDbc->mAttrOptimizerMode) != ACI_SUCCESS);
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_OPTIMIZER_MODE,
+                                        (void*)(acp_slong_t)sDbc->mAttrOptimizerMode) != ACI_SUCCESS);
     }
     else
     {
@@ -397,10 +428,10 @@ static ACI_RC ulnDrvConnInitialPropertySet(ulnFnContext *aFnContext, ulnPtContex
     /*  ULN_PROPERTY_STACK_SIZE             */
     if (sDbc->mAttrStackSize != ACP_UINT32_MAX)
     {
-        ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                          aPtContext,
-                                          ULN_PROPERTY_STACK_SIZE,
-                                          (void*)(acp_slong_t)sDbc->mAttrStackSize) != ACI_SUCCESS);
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_STACK_SIZE,
+                                        (void*)(acp_slong_t)sDbc->mAttrStackSize) != ACI_SUCCESS);
     }
     else
     {
@@ -413,10 +444,10 @@ static ACI_RC ulnDrvConnInitialPropertySet(ulnFnContext *aFnContext, ulnPtContex
     /*  ULN_PROPERTY_QUERY_TIMEOUT          */
     if (sDbc->mAttrQueryTimeout != ULN_QUERY_TMOUT_DEFAULT)
     {
-        ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                          aPtContext,
-                                          ULN_PROPERTY_QUERY_TIMEOUT,
-                                          (void*)(acp_slong_t)sDbc->mAttrQueryTimeout) != ACI_SUCCESS);
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_QUERY_TIMEOUT,
+                                        (void*)(acp_slong_t)sDbc->mAttrQueryTimeout) != ACI_SUCCESS);
     }
     else
     {
@@ -429,10 +460,10 @@ static ACI_RC ulnDrvConnInitialPropertySet(ulnFnContext *aFnContext, ulnPtContex
     /*  ULN_PROPERTY_DDL_TIMEOUT          */
     if (sDbc->mAttrDdlTimeout != ULN_DDL_TMOUT_DEFAULT)
     {
-        ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                          aPtContext,
-                                          ULN_PROPERTY_DDL_TIMEOUT,
-                                          (void*)(acp_slong_t)sDbc->mAttrDdlTimeout) != ACI_SUCCESS);
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_DDL_TIMEOUT,
+                                        (void*)(acp_slong_t)sDbc->mAttrDdlTimeout) != ACI_SUCCESS);
     }
     else
     {
@@ -444,10 +475,10 @@ static ACI_RC ulnDrvConnInitialPropertySet(ulnFnContext *aFnContext, ulnPtContex
     /*  ULN_PROPERTY_UTRANS_TIMEOUT         */
     if (sDbc->mAttrUtransTimeout != ACP_UINT32_MAX)
     {
-        ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                          aPtContext,
-                                          ULN_PROPERTY_UTRANS_TIMEOUT,
-                                          (void*)(acp_slong_t)sDbc->mAttrUtransTimeout) != ACI_SUCCESS);
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_UTRANS_TIMEOUT,
+                                        (void*)(acp_slong_t)sDbc->mAttrUtransTimeout) != ACI_SUCCESS);
     }
     else
     {
@@ -460,10 +491,10 @@ static ACI_RC ulnDrvConnInitialPropertySet(ulnFnContext *aFnContext, ulnPtContex
     /*  ULN_PROPERTY_FETCH_TIMEOUT          */
     if (sDbc->mAttrFetchTimeout != ACP_UINT32_MAX)
     {
-        ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                          aPtContext,
-                                          ULN_PROPERTY_FETCH_TIMEOUT,
-                                          (void*)(acp_slong_t)sDbc->mAttrFetchTimeout) != ACI_SUCCESS);
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_FETCH_TIMEOUT,
+                                        (void*)(acp_slong_t)sDbc->mAttrFetchTimeout) != ACI_SUCCESS);
     }
     else
     {
@@ -475,10 +506,10 @@ static ACI_RC ulnDrvConnInitialPropertySet(ulnFnContext *aFnContext, ulnPtContex
     /*  ULN_PROPERTY_IDLE_TIMEOUT           */
     if (sDbc->mAttrIdleTimeout != ACP_UINT32_MAX)
     {
-        ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                          aPtContext,
-                                          ULN_PROPERTY_IDLE_TIMEOUT,
-                                          (void*)(acp_slong_t)sDbc->mAttrIdleTimeout)  != ACI_SUCCESS);
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_IDLE_TIMEOUT,
+                                        (void*)(acp_slong_t)sDbc->mAttrIdleTimeout)  != ACI_SUCCESS);
     }
     else
     {
@@ -490,10 +521,10 @@ static ACI_RC ulnDrvConnInitialPropertySet(ulnFnContext *aFnContext, ulnPtContex
     /*  ULN_PROPERTY_HEADER_DISPLAY_MODE    */
     if (sDbc->mAttrHeaderDisplayMode != ACP_UINT32_MAX)
     {
-        ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                          aPtContext,
-                                          ULN_PROPERTY_HEADER_DISPLAY_MODE,
-                                          (void*)(acp_slong_t)sDbc->mAttrHeaderDisplayMode)!= ACI_SUCCESS);
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_HEADER_DISPLAY_MODE,
+                                        (void*)(acp_slong_t)sDbc->mAttrHeaderDisplayMode)!= ACI_SUCCESS);
     }
     else
     {
@@ -505,19 +536,19 @@ static ACI_RC ulnDrvConnInitialPropertySet(ulnFnContext *aFnContext, ulnPtContex
     /*  BUG-31144 MAX_STATEMENTS_PER_SESSION */
     if (sDbc->mAttrMaxStatementsPerSession != ACP_UINT32_MAX)
     {
-        ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                          aPtContext,
-                                          ULN_PROPERTY_MAX_STATEMENTS_PER_SESSION,
-                                          (void*)(acp_slong_t)sDbc->mAttrMaxStatementsPerSession) != ACI_SUCCESS);
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_MAX_STATEMENTS_PER_SESSION,
+                                        (void*)(acp_slong_t)sDbc->mAttrMaxStatementsPerSession) != ACI_SUCCESS);
     }
 
     /*  BUG-31390 Failover info for v$session */
     if (sDbc->mFailoverSource != NULL)
     {
-        ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                          aPtContext,
-                                          ULN_PROPERTY_FAILOVER_SOURCE,
-                                          (void *)sDbc->mFailoverSource) != ACI_SUCCESS);
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_FAILOVER_SOURCE,
+                                        (void *)sDbc->mFailoverSource) != ACI_SUCCESS);
     }
 
     // fix BUG-18971
@@ -528,11 +559,11 @@ static ACI_RC ulnDrvConnInitialPropertySet(ulnFnContext *aFnContext, ulnPtContex
     /* PROJ-2047 Strengthening LOB - LOBCACHE */
     if (sDbc->mAttrLobCacheThreshold != ACP_UINT32_MAX)
     {
-        ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                          aPtContext,
-                                          ULN_PROPERTY_LOB_CACHE_THRESHOLD,
-                                          (void *)(acp_slong_t)
-                                          sDbc->mAttrLobCacheThreshold)
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_LOB_CACHE_THRESHOLD,
+                                        (void *)(acp_slong_t)
+                                        sDbc->mAttrLobCacheThreshold)
                  != ACI_SUCCESS);
     }
     else
@@ -551,10 +582,10 @@ static ACI_RC ulnDrvConnInitialPropertySet(ulnFnContext *aFnContext, ulnPtContex
     /* BUG-39817 */
     if (sDbc->mAttrTxnIsolation != ULN_ISOLATION_LEVEL_DEFAULT)
     {
-        ACI_TEST(ulnWritePropertySetV2REQ(aFnContext,
-                                          aPtContext,
-                                          ULN_PROPERTY_ISOLATION_LEVEL,
-                                          (void*)(acp_slong_t)sDbc->mAttrTxnIsolation) != ACI_SUCCESS);
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_ISOLATION_LEVEL,
+                                        (void*)(acp_slong_t)sDbc->mAttrTxnIsolation) != ACI_SUCCESS);
     }
     else
     {
@@ -586,13 +617,124 @@ static ACI_RC ulnDrvConnInitialPropertySet(ulnFnContext *aFnContext, ulnPtContex
          * it doesn't need to be sent to the server to set its value. */
     }
 
+    /* BUG-46019 */
+    sValue = (sDbc->mMessageCallback != NULL) ? (acp_slong_t)ACP_TRUE : (acp_slong_t)ACP_FALSE;
+
+    ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                    aPtContext,
+                                    ULN_PROPERTY_MESSAGE_CALLBACK,
+                                    (void *)sValue)
+             != ACI_SUCCESS);
+
+    /*  ULN_PROPERTY_TRANSACTIONAL_DDL */
+    if (sDbc->mTransactionalDDL != SQL_UNDEF)
+    {
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_TRANSACTIONAL_DDL,
+                                        (void*)(acp_slong_t)sDbc->mTransactionalDDL) != ACI_SUCCESS);
+    }
+    else
+    {
+        ACI_TEST(ulnWritePropertyGetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_TRANSACTIONAL_DDL) != ACI_SUCCESS);
+    }
+
+    /*  ULN_PROPERTY_GLOBAL_DDL */
+    if (sDbc->mGlobalDDL != SQL_UNDEF)
+    {
+
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_GLOBAL_DDL,
+                                        (void*)(acp_slong_t)sDbc->mGlobalDDL) != ACI_SUCCESS);
+    }
+    else
+    {
+        ACI_TEST(ulnWritePropertyGetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_GLOBAL_DDL) != ACI_SUCCESS);
+    }
+
+    if (ulnDbcGetShardStatementRetry(sDbc) == SQL_UNDEF)
+    {
+        /* ¼­¹ö·Î ºÎÅÍ °ªÀ» ÀÐ¾î¿È */
+        ACI_TEST(ulnWritePropertyGetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_SHARD_STATEMENT_RETRY) 
+                 != ACI_SUCCESS);
+    }
+    else
+    {
+        /* ¼³Á¤µÈ °ªÀ» ¼­¹ö¿¡ Àü¼Û */
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_SHARD_STATEMENT_RETRY,
+                                        (void *)(acp_ulong_t)sDbc->mShardStatementRetry)
+                 != ACI_SUCCESS);
+    }
+
+    if (ulnDbcGetIndoubtFetchTimeout(sDbc) == ULN_TMOUT_MAX)
+    {
+        /* ¼­¹ö·Î ºÎÅÍ °ªÀ» ÀÐ¾î¿È */
+        ACI_TEST(ulnWritePropertyGetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_INDOUBT_FETCH_TIMEOUT)
+                 != ACI_SUCCESS);
+    }
+    else
+    {
+        /* ¼³Á¤µÈ °ªÀ» ¼­¹ö¿¡ Àü¼Û */
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_INDOUBT_FETCH_TIMEOUT,
+                                        (void *)(acp_ulong_t)sDbc->mIndoubtFetchTimeout)
+                 != ACI_SUCCESS);
+    }
+
+    if (ulnDbcGetIndoubtFetchMethod(sDbc) == SQL_UNDEF)
+    {
+        /* ¼­¹ö·Î ºÎÅÍ °ªÀ» ÀÐ¾î¿È */
+        ACI_TEST(ulnWritePropertyGetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_INDOUBT_FETCH_METHOD) 
+                 != ACI_SUCCESS);
+    }
+    else
+    {
+        /* ¼³Á¤µÈ °ªÀ» ¼­¹ö¿¡ Àü¼Û */
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_INDOUBT_FETCH_METHOD,
+                                        (void *)(acp_ulong_t)sDbc->mIndoubtFetchMethod)
+                 != ACI_SUCCESS);
+    }
+
+    if (ulnDbcGetDDLLockTimeout(sDbc) == ULN_DDL_LOCK_TMOUT_UNDEF)
+    {
+        /* ¼­¹ö·Î ºÎÅÍ °ªÀ» ÀÐ¾î¿È */
+        ACI_TEST(ulnWritePropertyGetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_DDL_LOCK_TIMEOUT)
+                 != ACI_SUCCESS);
+    }
+    else
+    {
+        /* ¼³Á¤µÈ °ªÀ» ¼­¹ö¿¡ Àü¼Û */
+        ACI_TEST(ulnWritePropertySetREQ(aFnContext,
+                                        aPtContext,
+                                        ULN_PROPERTY_DDL_LOCK_TIMEOUT,
+                                        (void *)(acp_ulong_t)sDbc->mDDLLockTimeout)
+                 != ACI_SUCCESS);
+    }
     /*
-     * íŒ¨í‚· ì „ì†¡
+     * ÆÐÅ¶ Àü¼Û
      */
     ACI_TEST(ulnFlushProtocol(aFnContext, aPtContext) != ACI_SUCCESS);
 
     /*
-     * ì„œë²„ ì‘ë‹µ ëŒ€ê¸°
+     * ¼­¹ö ÀÀ´ä ´ë±â
      */
     ACI_TEST(ulnDrvConnReceivePropertySetRes(aFnContext, aPtContext) != ACI_SUCCESS);
 
@@ -635,8 +777,8 @@ static ACI_RC ulnDrvConnSendConnectReq(ulnFnContext *aFnContext, ulnPtContext *a
     acp_uint8_t         sState          = 0;
 
     //PROJ-1645 UL-FailOver
-    //STFê³¼ì •ì—ì„œ Function Contextì˜ Object typeì´
-    //statement ì¼ìˆ˜ ìžˆë‹¤.
+    //STF°úÁ¤¿¡¼­ Function ContextÀÇ Object typeÀÌ
+    //statement ÀÏ¼ö ÀÖ´Ù.
     ULN_FNCONTEXT_GET_DBC(aFnContext,sDbc);
 
     /* BUG-46052 codesonar Null Pointer Dereference */
@@ -661,13 +803,13 @@ static ACI_RC ulnDrvConnSendConnectReq(ulnFnContext *aFnContext, ulnPtContext *a
         sMode = CMP_DB_CONNECT_MODE_NORMAL;
     }
 
-    sPacket.mOpID = CMP_OP_DB_ConnectEx;
+    sPacket.mOpID = CMP_OP_DB_ConnectV3;  /* PROJ-2733-Protocol */
     
     CMI_WRITE_CHECK(sCtx, 9 + sDbmsNameLen + sUserNameLen + sPasswordLen);
     sState = 1;
 
-    /* PROJ-2177: CliendID ìƒì„±ì— í•„ìš”í•œ SessionIDë¥¼ ë°›ì•„ì˜¤ê¸° ìœ„í•´ Connectë¡œ ì—°ê²° */
-    CMI_WOP(sCtx, CMP_OP_DB_ConnectEx);
+    /* PROJ-2177: CliendID »ý¼º¿¡ ÇÊ¿äÇÑ SessionID¸¦ ¹Þ¾Æ¿À±â À§ÇØ Connect·Î ¿¬°á */
+    CMI_WOP(sCtx, CMP_OP_DB_ConnectV3);
     CMI_WR2(sCtx, &sDbmsNameLen);
     CMI_WCP(sCtx, sDbmsName, sDbmsNameLen);
     CMI_WR2(sCtx, &sUserNameLen);
@@ -700,7 +842,7 @@ static ACI_RC ulnDrvConnSendConnectReq(ulnFnContext *aFnContext, ulnPtContext *a
 static ACI_RC ulnDrvConnLogin(ulnFnContext *aFnContext, ulnPtContext *aPtContext)
 {
     /*
-     * Connect Request ì „ì†¡
+     * Connect Request Àü¼Û
      */
     ACI_TEST(ulnDrvConnSendConnectReq(aFnContext, aPtContext) != ACI_SUCCESS);
 
@@ -723,17 +865,17 @@ static ACI_RC ulnDrvConnOrganizeConnectArgTcp(ulnFnContext *aFnContext)
     acp_char_t            *sPortNoEnvValue = NULL;
 
     /*
-     * Hostname ì„¸íŒ…
+     * Hostname ¼¼ÆÃ
      */
     if(sDbc->mAlternateServers == NULL)
     {
         if (ulnDbcGetDsnString(sDbc) == NULL)
         {
             /*
-             * Note : ì–´ì°¨í”¼ idlOS::malloc ì•ˆí•˜ê³ , uluMemory ì˜ alloc ì´ë¯€ë¡œ ë‚˜ì¤‘ì—
-             *        DBC ê°€ destroy ë  ë•Œ ë©”ëª¨ë¦¬ë„ í•¨ê»˜ í•´ì œ ëœë‹¤.
-             *        ë”°ë¼ì„œ, DBC ë¥¼ destroy í•  ë•Œ mDSNString ì„ ë”°ë¡œ free í•´ ì¤„ í•„ìš” ì—†ë‹¤.
-             *        ì¦‰, Constant string ì„ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°ê°€ ë“¤ì–´ê°€ë„ ì•ˆì „í•˜ë‹¤.
+             * Note : ¾îÂ÷ÇÇ idlOS::malloc ¾ÈÇÏ°í, uluMemory ÀÇ alloc ÀÌ¹Ç·Î ³ªÁß¿¡
+             *        DBC °¡ destroy µÉ ¶§ ¸Þ¸ð¸®µµ ÇÔ²² ÇØÁ¦ µÈ´Ù.
+             *        µû¶ó¼­, DBC ¸¦ destroy ÇÒ ¶§ mDSNString À» µû·Î free ÇØ ÁÙ ÇÊ¿ä ¾ø´Ù.
+             *        Áï, Constant string À» °¡¸®Å°´Â Æ÷ÀÎÅÍ°¡ µé¾î°¡µµ ¾ÈÀüÇÏ´Ù.
              */
             ulnSetConnAttrById(aFnContext,
                                ULN_CONN_ATTR_DSN,
@@ -743,10 +885,10 @@ static ACI_RC ulnDrvConnOrganizeConnectArgTcp(ulnFnContext *aFnContext)
             /*
              * 01S02
              *
-             * Note : DSN ì´ connection string ì— ì—†ì„ ë•Œ SQL_SUCCESS_WITH_INFO ê°€ ì•„ë‹ˆë¼
-             *        SQL_SUCCESS ë¥¼ ë¦¬í„´í•´ì•¼ í•œë‹¤ê³  í•¨.
-             *        ì™œ ê·¸ëŸ°ì§€ëŠ” ìž˜ ëª¨ë¥´ê² ìœ¼ë‚˜ ì•„ë¬´íŠ¼, ê·¸ë ‡ê²Œ í•´ì•¼ í•œë‹¤ê³  í•¨.
-             *        ê·¸ëž˜ì„œ ì•„ëž˜ì˜ ë¬¸ìž¥ ì£¼ì„ì²˜ë¦¬í•¨.
+             * Note : DSN ÀÌ connection string ¿¡ ¾øÀ» ¶§ SQL_SUCCESS_WITH_INFO °¡ ¾Æ´Ï¶ó
+             *        SQL_SUCCESS ¸¦ ¸®ÅÏÇØ¾ß ÇÑ´Ù°í ÇÔ.
+             *        ¿Ö ±×·±Áö´Â Àß ¸ð¸£°ÚÀ¸³ª ¾Æ¹«Æ°, ±×·¸°Ô ÇØ¾ß ÇÑ´Ù°í ÇÔ.
+             *        ±×·¡¼­ ¾Æ·¡ÀÇ ¹®Àå ÁÖ¼®Ã³¸®ÇÔ.
              */
             // ulnError(aFnContext, ulERR_IGNORE_TCP_HOSTNAME_NOT_SET);
         }
@@ -756,19 +898,19 @@ static ACI_RC ulnDrvConnOrganizeConnectArgTcp(ulnFnContext *aFnContext)
             sPortNoEnvValue = NULL;
 
             /*
-             * port number ê°€ ì•„ì§ 0 ì´ë¼ëŠ” ë§ì€ connection string ì— port no ê°€
-             * ì„¸íŒ…ë˜ì§€ ì•Šì•˜ë‹¤ëŠ” ì´ì•¼ê¸°ì´ë‹¤.
+             * port number °¡ ¾ÆÁ÷ 0 ÀÌ¶ó´Â ¸»Àº connection string ¿¡ port no °¡
+             * ¼¼ÆÃµÇÁö ¾Ê¾Ò´Ù´Â ÀÌ¾ß±âÀÌ´Ù.
              *
-             * connection string ì— port no ê°€ ì—†ì„ ë•Œ,
+             * connection string ¿¡ port no °¡ ¾øÀ» ¶§,
              *
-             * í™˜ê²½ë³€ìˆ˜ ALTIBASE_PORT_NO ê°€ ì„¸íŒ…ë˜ì§€ ì•Šì•˜ì„ ë•Œ ì—ëŸ¬ë¥¼ ë‚´ê³ ,
-             *                              ì„¸íŒ…ë˜ì–´ ìžˆìœ¼ë©´ ê·¸ ê°’ìœ¼ë¡œ í•œë‹¤.
+             * È¯°æº¯¼ö ALTIBASE_PORT_NO °¡ ¼¼ÆÃµÇÁö ¾Ê¾ÒÀ» ¶§ ¿¡·¯¸¦ ³»°í,
+             *                              ¼¼ÆÃµÇ¾î ÀÖÀ¸¸é ±× °ªÀ¸·Î ÇÑ´Ù.
              */
             ACI_TEST_RAISE(acpEnvGet("ALTIBASE_PORT_NO", &sPortNoEnvValue) != ACP_RC_SUCCESS,
                            LABEL_PORT_NO_NOT_SET);
 
             /*
-             * 32 ë¹„íŠ¸ int ì˜ ìµœëŒ€ê°’ : 4294967295 : 10ìžë¦¬
+             * 32 ºñÆ® int ÀÇ ÃÖ´ë°ª : 4294967295 : 10ÀÚ¸®
              */
             ACI_TEST_RAISE(ulnDrvConnStrToInt(sPortNoEnvValue,
                                               acpCStrLen(sPortNoEnvValue, 10),
@@ -778,30 +920,30 @@ static ACI_RC ulnDrvConnOrganizeConnectArgTcp(ulnFnContext *aFnContext)
             ulnDbcSetPortNumber(sDbc, sPortNumber);
 
             /*
-             * PORT_NO ê°€ ì—°ê²° ìŠ¤íŠ¸ë§ì— ì—†ì„ ë•Œ ALTIBASE_PORT_NO í™˜ê²½ë³€ìˆ˜ë¥¼ í™•ì¸í•˜ì—¬ì„œ
-             * ìžˆì„ ê²½ìš° SQL_SUCCESS_WITH_INFO ê°€ ì•„ë‹Œ SQL_SUCCESS ë¥¼ ë¦¬í„´í•˜ê³  ì •ìƒë™ìž‘í•´ì•¼ í•œë‹¤ê³ 
-             * í•œë‹¤.
+             * PORT_NO °¡ ¿¬°á ½ºÆ®¸µ¿¡ ¾øÀ» ¶§ ALTIBASE_PORT_NO È¯°æº¯¼ö¸¦ È®ÀÎÇÏ¿©¼­
+             * ÀÖÀ» °æ¿ì SQL_SUCCESS_WITH_INFO °¡ ¾Æ´Ñ SQL_SUCCESS ¸¦ ¸®ÅÏÇÏ°í Á¤»óµ¿ÀÛÇØ¾ß ÇÑ´Ù°í
+             * ÇÑ´Ù.
              */
             // ulnError(aFnContext, ulERR_IGNORE_PORT_NO_NOT_SET, sPortNumber);
         }
 
         /* ------------------------------------------------
-         * SQLCLIì—ì„œëŠ” DSNì„ Hostì˜ ì£¼ì†Œ ì¦‰, IP Addressë¡œ ì‚¬ìš©í•˜ê³ ,
+         * SQLCLI¿¡¼­´Â DSNÀ» HostÀÇ ÁÖ¼Ò Áï, IP Address·Î »ç¿ëÇÏ°í,
          *
-         * ODBCì—ì„œëŠ” "Server"ë¥¼ Ip Addressë¡œ ì‚¬ìš©í•œë‹¤.
-         * ì´ëŸ¬í•œ í˜¼ëž€ì„ ê²€ì¦í•˜ê³ , ì œëŒ€ë¡œ ë™ìž‘í•˜ëŠ” ê²ƒì„
-         * ë³´ìž¥í•˜ê¸° ìœ„í•´,
-         *  1. HostNameì„ ìš°ì„  ê²€ì‚¬í•œë‹¤.
-         *  2. ë§Œì¼ ì´ ê°’ì´ NULLì´ë¼ë©´, SQLCLIë¼ëŠ” ì˜ë¯¸ì´ë¯€ë¡œ,
-         *     Dsnì˜ Stringì„ ì‚¬ìš©í•œë‹¤. ì´ Stringì—ëŠ” ë°˜ë“œì‹œ Ip Addressê°€
-         *     ë“¤ì–´ ìžˆì„ ê²ƒì´ë‹¤.
-         *  3. ë§Œì¼ ì´ ê°’ì´ NULLì´ ì•„ë‹ˆë¼ë©´,
-         *     ì´ í”„ë¡œê·¸ëž¨ì€ ODBCì¼ ê²½ìš°ì´ë¯€ë¡œ (ProfileStringì— ì˜í•´ ì„¤ì •)
-         *     ì´ ê°’ì„ ì ‘ì†ì‹œ ì‚¬ìš©í•œë‹¤.
+         * ODBC¿¡¼­´Â "Server"¸¦ Ip Address·Î »ç¿ëÇÑ´Ù.
+         * ÀÌ·¯ÇÑ È¥¶õÀ» °ËÁõÇÏ°í, Á¦´ë·Î µ¿ÀÛÇÏ´Â °ÍÀ»
+         * º¸ÀåÇÏ±â À§ÇØ,
+         *  1. HostNameÀ» ¿ì¼± °Ë»çÇÑ´Ù.
+         *  2. ¸¸ÀÏ ÀÌ °ªÀÌ NULLÀÌ¶ó¸é, SQLCLI¶ó´Â ÀÇ¹ÌÀÌ¹Ç·Î,
+         *     DsnÀÇ StringÀ» »ç¿ëÇÑ´Ù. ÀÌ String¿¡´Â ¹Ýµå½Ã Ip Address°¡
+         *     µé¾î ÀÖÀ» °ÍÀÌ´Ù.
+         *  3. ¸¸ÀÏ ÀÌ °ªÀÌ NULLÀÌ ¾Æ´Ï¶ó¸é,
+         *     ÀÌ ÇÁ·Î±×·¥Àº ODBCÀÏ °æ¿ìÀÌ¹Ç·Î (ProfileString¿¡ ÀÇÇØ ¼³Á¤)
+         *     ÀÌ °ªÀ» Á¢¼Ó½Ã »ç¿ëÇÑ´Ù.
          *
-         *  sqlcliì—ì„œ ì‚¬ìš©ìžê°€ DSN=abcd;ServerName=192.168.3.1 ì´ë ‡ê²Œ ì¤¬ì„ ê²½ìš°ì—ë„
-         *  ìœ„ì˜ ë¡œì§ì„ í†µí•´ ì ‘ì†ì´ ì„±ê³µí•  ìˆ˜ ìžˆë‹¤.
-         *  odbc ì—ì„œëŠ” ì–¸ì œë‚˜ ProfileStringì—ì„œ ì„¤ì •ë˜ë¯€ë¡œ ë¬¸ì œê°€ ì—†ë‹¤.
+         *  sqlcli¿¡¼­ »ç¿ëÀÚ°¡ DSN=abcd;ServerName=192.168.3.1 ÀÌ·¸°Ô ÁáÀ» °æ¿ì¿¡µµ
+         *  À§ÀÇ ·ÎÁ÷À» ÅëÇØ Á¢¼ÓÀÌ ¼º°øÇÒ ¼ö ÀÖ´Ù.
+         *  odbc ¿¡¼­´Â ¾ðÁ¦³ª ProfileString¿¡¼­ ¼³Á¤µÇ¹Ç·Î ¹®Á¦°¡ ¾ø´Ù.
          * ----------------------------------------------*/
 
         if (ulnDbcGetHostNameString(sDbc) == NULL)
@@ -826,8 +968,8 @@ static ACI_RC ulnDrvConnOrganizeConnectArgTcp(ulnFnContext *aFnContext)
     ulnDbcGetConnectArg(sDbc)->mTCP.mPreferIPv6 =
         (sDbc->mAttrPreferIPv6 == ACP_TRUE)? 1: 0;
 
-    //fix BUG-26048 Embededì—ì„œ ConnType=5ë§Œ ì£¼ì—ˆì„ë•Œ
-    //  SYSDBAì ‘ì†ì´ ì•ˆë¨.
+    //fix BUG-26048 Embeded¿¡¼­ ConnType=5¸¸ ÁÖ¾úÀ»¶§
+    //  SYSDBAÁ¢¼ÓÀÌ ¾ÈµÊ.
     if(ulnDbcGetConnType(sDbc) == ULN_CONNTYPE_INVALID)
     {
         ulnDbcSetConnType(sDbc, ULN_CONNTYPE_TCP);
@@ -841,7 +983,7 @@ static ACI_RC ulnDrvConnOrganizeConnectArgTcp(ulnFnContext *aFnContext)
     ACI_EXCEPTION(LABEL_INVALID_PORT_NO)
     {
         /*
-         * SQLSTATE ëŠ” ë­˜ë¡œ í• ê¹Œ _--
+         * SQLSTATE ´Â ¹»·Î ÇÒ±î _--
          */
         ulnError(aFnContext, ulERR_ABORT_INVALID_ALTIBASE_PORT_NO, sPortNoEnvValue);
     }
@@ -849,7 +991,7 @@ static ACI_RC ulnDrvConnOrganizeConnectArgTcp(ulnFnContext *aFnContext)
     ACI_EXCEPTION(LABEL_PORT_NO_NOT_SET)
     {
         /*
-         * BUGBUG : ì—ëŸ¬ì½”ë“œ
+         * BUGBUG : ¿¡·¯ÄÚµå
          */
         ulnError(aFnContext, ulERR_ABORT_PORT_NO_ALTIBASE_PORT_NO_NOT_SET);
     }
@@ -869,17 +1011,17 @@ static ACI_RC ulnDrvConnOrganizeConnectArgSsl(ulnFnContext *aFnContext)
     acp_char_t            *sPortNoEnvValue = NULL;
 
     /*
-     * Hostname ì„¸íŒ…
+     * Hostname ¼¼ÆÃ
      */
     if (sDbc->mAlternateServers == NULL)
     {
         if (ulnDbcGetDsnString(sDbc) == NULL)
         {
             /*
-             * Note : ì–´ì°¨í”¼ idlOS::malloc ì•ˆí•˜ê³ , uluMemory ì˜ alloc ì´ë¯€ë¡œ ë‚˜ì¤‘ì—
-             *        DBC ê°€ destroy ë  ë•Œ ë©”ëª¨ë¦¬ë„ í•¨ê»˜ í•´ì œ ëœë‹¤.
-             *        ë”°ë¼ì„œ, DBC ë¥¼ destroy í•  ë•Œ mDSNString ì„ ë”°ë¡œ free í•´ ì¤„ í•„ìš” ì—†ë‹¤.
-             *        ì¦‰, Constant string ì„ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°ê°€ ë“¤ì–´ê°€ë„ ì•ˆì „í•˜ë‹¤.
+             * Note : ¾îÂ÷ÇÇ idlOS::malloc ¾ÈÇÏ°í, uluMemory ÀÇ alloc ÀÌ¹Ç·Î ³ªÁß¿¡
+             *        DBC °¡ destroy µÉ ¶§ ¸Þ¸ð¸®µµ ÇÔ²² ÇØÁ¦ µÈ´Ù.
+             *        µû¶ó¼­, DBC ¸¦ destroy ÇÒ ¶§ mDSNString À» µû·Î free ÇØ ÁÙ ÇÊ¿ä ¾ø´Ù.
+             *        Áï, Constant string À» °¡¸®Å°´Â Æ÷ÀÎÅÍ°¡ µé¾î°¡µµ ¾ÈÀüÇÏ´Ù.
              */
             ulnSetConnAttrById(aFnContext,
                                ULN_CONN_ATTR_DSN,
@@ -889,10 +1031,10 @@ static ACI_RC ulnDrvConnOrganizeConnectArgSsl(ulnFnContext *aFnContext)
             /*
              * 01S02
              *
-             * Note : DSN ì´ connection string ì— ì—†ì„ ë•Œ SQL_SUCCESS_WITH_INFO ê°€ ì•„ë‹ˆë¼
-             *        SQL_SUCCESS ë¥¼ ë¦¬í„´í•´ì•¼ í•œë‹¤ê³  í•¨.
-             *        ì™œ ê·¸ëŸ°ì§€ëŠ” ìž˜ ëª¨ë¥´ê² ìœ¼ë‚˜ ì•„ë¬´íŠ¼, ê·¸ë ‡ê²Œ í•´ì•¼ í•œë‹¤ê³  í•¨.
-             *        ê·¸ëž˜ì„œ ì•„ëž˜ì˜ ë¬¸ìž¥ ì£¼ì„ì²˜ë¦¬í•¨.
+             * Note : DSN ÀÌ connection string ¿¡ ¾øÀ» ¶§ SQL_SUCCESS_WITH_INFO °¡ ¾Æ´Ï¶ó
+             *        SQL_SUCCESS ¸¦ ¸®ÅÏÇØ¾ß ÇÑ´Ù°í ÇÔ.
+             *        ¿Ö ±×·±Áö´Â Àß ¸ð¸£°ÚÀ¸³ª ¾Æ¹«Æ°, ±×·¸°Ô ÇØ¾ß ÇÑ´Ù°í ÇÔ.
+             *        ±×·¡¼­ ¾Æ·¡ÀÇ ¹®Àå ÁÖ¼®Ã³¸®ÇÔ.
              */
         }
         else
@@ -905,19 +1047,19 @@ static ACI_RC ulnDrvConnOrganizeConnectArgSsl(ulnFnContext *aFnContext)
             sPortNoEnvValue = NULL;
 
             /*
-             * port number ê°€ ì•„ì§ 0 ì´ë¼ëŠ” ë§ì€ connection string ì— port no ê°€
-             * ì„¸íŒ…ë˜ì§€ ì•Šì•˜ë‹¤ëŠ” ì´ì•¼ê¸°ì´ë‹¤.
+             * port number °¡ ¾ÆÁ÷ 0 ÀÌ¶ó´Â ¸»Àº connection string ¿¡ port no °¡
+             * ¼¼ÆÃµÇÁö ¾Ê¾Ò´Ù´Â ÀÌ¾ß±âÀÌ´Ù.
              *
-             * connection string ì— port no ê°€ ì—†ì„ ë•Œ,
+             * connection string ¿¡ port no °¡ ¾øÀ» ¶§,
              *
-             * í™˜ê²½ë³€ìˆ˜ ALTIBASE_SSL_PORT_NO ê°€ ì„¸íŒ…ë˜ì§€ ì•Šì•˜ì„ ë•Œ ì—ëŸ¬ë¥¼ ë‚´ê³ ,
-             *                                  ì„¸íŒ…ë˜ì–´ ìžˆìœ¼ë©´ ê·¸ ê°’ìœ¼ë¡œ í•œë‹¤.
+             * È¯°æº¯¼ö ALTIBASE_SSL_PORT_NO °¡ ¼¼ÆÃµÇÁö ¾Ê¾ÒÀ» ¶§ ¿¡·¯¸¦ ³»°í,
+             *                                  ¼¼ÆÃµÇ¾î ÀÖÀ¸¸é ±× °ªÀ¸·Î ÇÑ´Ù.
              */
             ACI_TEST_RAISE(acpEnvGet("ALTIBASE_SSL_PORT_NO", &sPortNoEnvValue) != ACP_RC_SUCCESS,
                            LABEL_SSL_PORT_NO_NOT_SET);
 
             /*
-             * 32 ë¹„íŠ¸ int ì˜ ìµœëŒ€ê°’ : 4294967295 : 10ìžë¦¬
+             * 32 ºñÆ® int ÀÇ ÃÖ´ë°ª : 4294967295 : 10ÀÚ¸®
              */
             ACI_TEST_RAISE(ulnDrvConnStrToInt(sPortNoEnvValue,
                                               acpCStrLen(sPortNoEnvValue, 10),
@@ -927,9 +1069,9 @@ static ACI_RC ulnDrvConnOrganizeConnectArgSsl(ulnFnContext *aFnContext)
             ulnDbcSetPortNumber(sDbc, sPortNumber);
 
             /*
-             * PORT_NO ê°€ ì—°ê²° ìŠ¤íŠ¸ë§ì— ì—†ì„ ë•Œ ALTIBASE_SSL_PORT_NO í™˜ê²½ë³€ìˆ˜ë¥¼ í™•ì¸í•˜ì—¬ì„œ
-             * ìžˆì„ ê²½ìš° SQL_SUCCESS_WITH_INFO ê°€ ì•„ë‹Œ SQL_SUCCESS ë¥¼ ë¦¬í„´í•˜ê³  ì •ìƒë™ìž‘í•´ì•¼ í•œë‹¤ê³ 
-             * í•œë‹¤.
+             * PORT_NO °¡ ¿¬°á ½ºÆ®¸µ¿¡ ¾øÀ» ¶§ ALTIBASE_SSL_PORT_NO È¯°æº¯¼ö¸¦ È®ÀÎÇÏ¿©¼­
+             * ÀÖÀ» °æ¿ì SQL_SUCCESS_WITH_INFO °¡ ¾Æ´Ñ SQL_SUCCESS ¸¦ ¸®ÅÏÇÏ°í Á¤»óµ¿ÀÛÇØ¾ß ÇÑ´Ù°í
+             * ÇÑ´Ù.
              */
         }
         else
@@ -938,22 +1080,22 @@ static ACI_RC ulnDrvConnOrganizeConnectArgSsl(ulnFnContext *aFnContext)
         }
 
         /* ------------------------------------------------
-         * SQLCLIì—ì„œëŠ” DSNì„ Hostì˜ ì£¼ì†Œ ì¦‰, IP Addressë¡œ ì‚¬ìš©í•˜ê³ ,
+         * SQLCLI¿¡¼­´Â DSNÀ» HostÀÇ ÁÖ¼Ò Áï, IP Address·Î »ç¿ëÇÏ°í,
          *
-         * ODBCì—ì„œëŠ” "Server"ë¥¼ Ip Addressë¡œ ì‚¬ìš©í•œë‹¤.
-         * ì´ëŸ¬í•œ í˜¼ëž€ì„ ê²€ì¦í•˜ê³ , ì œëŒ€ë¡œ ë™ìž‘í•˜ëŠ” ê²ƒì„
-         * ë³´ìž¥í•˜ê¸° ìœ„í•´,
-         *  1. HostNameì„ ìš°ì„  ê²€ì‚¬í•œë‹¤.
-         *  2. ë§Œì¼ ì´ ê°’ì´ NULLì´ë¼ë©´, SQLCLIë¼ëŠ” ì˜ë¯¸ì´ë¯€ë¡œ,
-         *     Dsnì˜ Stringì„ ì‚¬ìš©í•œë‹¤. ì´ Stringì—ëŠ” ë°˜ë“œì‹œ Ip Addressê°€
-         *     ë“¤ì–´ ìžˆì„ ê²ƒì´ë‹¤.
-         *  3. ë§Œì¼ ì´ ê°’ì´ NULLì´ ì•„ë‹ˆë¼ë©´,
-         *     ì´ í”„ë¡œê·¸ëž¨ì€ ODBCì¼ ê²½ìš°ì´ë¯€ë¡œ (ProfileStringì— ì˜í•´ ì„¤ì •)
-         *     ì´ ê°’ì„ ì ‘ì†ì‹œ ì‚¬ìš©í•œë‹¤.
+         * ODBC¿¡¼­´Â "Server"¸¦ Ip Address·Î »ç¿ëÇÑ´Ù.
+         * ÀÌ·¯ÇÑ È¥¶õÀ» °ËÁõÇÏ°í, Á¦´ë·Î µ¿ÀÛÇÏ´Â °ÍÀ»
+         * º¸ÀåÇÏ±â À§ÇØ,
+         *  1. HostNameÀ» ¿ì¼± °Ë»çÇÑ´Ù.
+         *  2. ¸¸ÀÏ ÀÌ °ªÀÌ NULLÀÌ¶ó¸é, SQLCLI¶ó´Â ÀÇ¹ÌÀÌ¹Ç·Î,
+         *     DsnÀÇ StringÀ» »ç¿ëÇÑ´Ù. ÀÌ String¿¡´Â ¹Ýµå½Ã Ip Address°¡
+         *     µé¾î ÀÖÀ» °ÍÀÌ´Ù.
+         *  3. ¸¸ÀÏ ÀÌ °ªÀÌ NULLÀÌ ¾Æ´Ï¶ó¸é,
+         *     ÀÌ ÇÁ·Î±×·¥Àº ODBCÀÏ °æ¿ìÀÌ¹Ç·Î (ProfileString¿¡ ÀÇÇØ ¼³Á¤)
+         *     ÀÌ °ªÀ» Á¢¼Ó½Ã »ç¿ëÇÑ´Ù.
          *
-         *  sqlcliì—ì„œ ì‚¬ìš©ìžê°€ DSN=abcd;ServerName=192.168.3.1 ì´ë ‡ê²Œ ì¤¬ì„ ê²½ìš°ì—ë„
-         *  ìœ„ì˜ ë¡œì§ì„ í†µí•´ ì ‘ì†ì´ ì„±ê³µí•  ìˆ˜ ìžˆë‹¤.
-         *  odbc ì—ì„œëŠ” ì–¸ì œë‚˜ ProfileStringì—ì„œ ì„¤ì •ë˜ë¯€ë¡œ ë¬¸ì œê°€ ì—†ë‹¤.
+         *  sqlcli¿¡¼­ »ç¿ëÀÚ°¡ DSN=abcd;ServerName=192.168.3.1 ÀÌ·¸°Ô ÁáÀ» °æ¿ì¿¡µµ
+         *  À§ÀÇ ·ÎÁ÷À» ÅëÇØ Á¢¼ÓÀÌ ¼º°øÇÒ ¼ö ÀÖ´Ù.
+         *  odbc ¿¡¼­´Â ¾ðÁ¦³ª ProfileString¿¡¼­ ¼³Á¤µÇ¹Ç·Î ¹®Á¦°¡ ¾ø´Ù.
          * ----------------------------------------------*/
 
         if (ulnDbcGetHostNameString(sDbc) == NULL)
@@ -979,8 +1121,8 @@ static ACI_RC ulnDrvConnOrganizeConnectArgSsl(ulnFnContext *aFnContext)
     ulnDbcGetConnectArg(sDbc)->mSSL.mPreferIPv6 =
         (sDbc->mAttrPreferIPv6 == ACP_TRUE)? 1: 0;
 
-    //fix BUG-26048 Embededì—ì„œ ConnType=6ë§Œ ì£¼ì—ˆì„ë•Œ
-    //  SYSDBAì ‘ì†ì´ ì•ˆë¨.
+    //fix BUG-26048 Embeded¿¡¼­ ConnType=6¸¸ ÁÖ¾úÀ»¶§
+    //  SYSDBAÁ¢¼ÓÀÌ ¾ÈµÊ.
     if (ulnDbcGetConnType(sDbc) == ULN_CONNTYPE_INVALID)
     {
         ulnDbcSetConnType(sDbc, ULN_CONNTYPE_SSL);
@@ -998,7 +1140,7 @@ static ACI_RC ulnDrvConnOrganizeConnectArgSsl(ulnFnContext *aFnContext)
     ulnDbcGetConnectArg(sDbc)->mSSL.mKey    = ulnDbcGetSslKey(sDbc);
     ulnDbcGetConnectArg(sDbc)->mSSL.mVerify = ulnDbcGetSslVerify(sDbc);
 
-    /* BUG-44530 SSLì—ì„œ ALTIBASE_SOCK_BIND_ADDR ì§€ì› */
+    /* BUG-44530 SSL¿¡¼­ ALTIBASE_SOCK_BIND_ADDR Áö¿ø */
     ulnDbcGetConnectArg(sDbc)->mSSL.mBindAddr = ulnDbcGetSockBindAddr(sDbc);
 
     return ACI_SUCCESS;
@@ -1006,7 +1148,7 @@ static ACI_RC ulnDrvConnOrganizeConnectArgSsl(ulnFnContext *aFnContext)
     ACI_EXCEPTION(LABEL_INVALID_SSL_PORT_NO)
     {
         /*
-         * SQLSTATE ëŠ” ë­˜ë¡œ í• ê¹Œ _--
+         * SQLSTATE ´Â ¹»·Î ÇÒ±î _--
          */
         ulnError(aFnContext, ulERR_ABORT_INVALID_ALTIBASE_SSL_PORT_NO, sPortNoEnvValue);
     }
@@ -1014,7 +1156,7 @@ static ACI_RC ulnDrvConnOrganizeConnectArgSsl(ulnFnContext *aFnContext)
     ACI_EXCEPTION(LABEL_SSL_PORT_NO_NOT_SET)
     {
         /*
-         * BUGBUG : ì—ëŸ¬ì½”ë“œ
+         * BUGBUG : ¿¡·¯ÄÚµå
          */
         ulnError(aFnContext, ulERR_ABORT_PORT_NO_ALTIBASE_SSL_PORT_NO_NOT_SET);
     }
@@ -1030,11 +1172,11 @@ static ACI_RC ulnDrvConnOrganizeConnectArgUnix(ulnFnContext *aFnContext)
     ulnDbc     *sDbc = aFnContext->mHandle.mDbc;
 
     /*
-     * BUGBUG : í™˜ê²½ë³€ìˆ˜ ì´ë¦„ì„ ì—¬ê¸°ë‹¤ ë‘˜ ê²ƒì´ ì•„ë‹ˆë¼ #define ìœ¼ë¡œ ë¹¼ì•¼ í•œë‹¤.
+     * BUGBUG : È¯°æº¯¼ö ÀÌ¸§À» ¿©±â´Ù µÑ °ÍÀÌ ¾Æ´Ï¶ó #define À¸·Î »©¾ß ÇÑ´Ù.
      */
 
     /*
-     * BUGBUG : ì´ê²ƒì„ sDbc->mDsnString ì—ì„œ ê°€ì ¸ ì™€ì•¼ í•˜ì§€ ì•Šë‚˜?...
+     * BUGBUG : ÀÌ°ÍÀ» sDbc->mDsnString ¿¡¼­ °¡Á® ¿Í¾ß ÇÏÁö ¾Ê³ª?...
      */
     if (acpEnvGet("ALTIBASE_HOME", &sHome) != ACP_RC_SUCCESS)
     {
@@ -1052,16 +1194,16 @@ static ACI_RC ulnDrvConnOrganizeConnectArgUnix(ulnFnContext *aFnContext)
         /*
          * 01S00
          *
-         * Note : UNIX domain ì—°ê²°ì¼ ë•Œ PORT_NO ê°€ ì§€ì •ë˜ì–´ ìžˆì–´ë„ SQL_SUCCESS ë¥¼ ë¦¬í„´í•´ì•¼ í•œ
-         *        ë‹¤ê³  í•¨.
-         *        ì™œ ê·¸ëŸ°ì§€ëŠ” ìž˜ ëª¨ë¥´ê² ìœ¼ë‚˜ ì•„ë¬´íŠ¼, ê·¸ë ‡ê²Œ í•´ì•¼ í•œë‹¤ê³  í•¨.
-         *        ê·¸ëž˜ì„œ ì•„ëž˜ì˜ ë¬¸ìž¥ ì£¼ì„ì²˜ë¦¬í•¨.
+         * Note : UNIX domain ¿¬°áÀÏ ¶§ PORT_NO °¡ ÁöÁ¤µÇ¾î ÀÖ¾îµµ SQL_SUCCESS ¸¦ ¸®ÅÏÇØ¾ß ÇÑ
+         *        ´Ù°í ÇÔ.
+         *        ¿Ö ±×·±Áö´Â Àß ¸ð¸£°ÚÀ¸³ª ¾Æ¹«Æ°, ±×·¸°Ô ÇØ¾ß ÇÑ´Ù°í ÇÔ.
+         *        ±×·¡¼­ ¾Æ·¡ÀÇ ¹®Àå ÁÖ¼®Ã³¸®ÇÔ.
          */
         // ACI_TEST(ulnError(aFnContext, ulERR_IGNORE_PORT_NO_IGNORED) != ACI_SUCCESS);
     }
 
-    //fix BUG-26048 Embededì—ì„œ ConnType=5ë§Œ ì£¼ì—ˆì„ë•Œ
-    //  SYSDBAì ‘ì†ì´ ì•ˆë¨.
+    //fix BUG-26048 Embeded¿¡¼­ ConnType=5¸¸ ÁÖ¾úÀ»¶§
+    //  SYSDBAÁ¢¼ÓÀÌ ¾ÈµÊ.
     if(ulnDbcGetConnType(sDbc) == ULN_CONNTYPE_INVALID)
     {
         ulnDbcSetConnType(sDbc, ULN_CONNTYPE_UNIX);
@@ -1094,11 +1236,11 @@ static ACI_RC ulnDrvConnOrganizeConnectArgIpc(ulnFnContext *aFnContext)
                    LABEL_NOT_SUPPORTED_LINK);
 
     /*
-     * BUGBUG : í™˜ê²½ë³€ìˆ˜ ì´ë¦„ì„ ì—¬ê¸°ë‹¤ ë‘˜ ê²ƒì´ ì•„ë‹ˆë¼ #define ìœ¼ë¡œ ë¹¼ì•¼ í•œë‹¤.
+     * BUGBUG : È¯°æº¯¼ö ÀÌ¸§À» ¿©±â´Ù µÑ °ÍÀÌ ¾Æ´Ï¶ó #define À¸·Î »©¾ß ÇÑ´Ù.
      */
 
     /*
-     * BUGBUG : ì´ê²ƒì„ sDbc->mDsnString ì—ì„œ ê°€ì ¸ ì™€ì•¼ í•˜ì§€ ì•Šë‚˜?...
+     * BUGBUG : ÀÌ°ÍÀ» sDbc->mDsnString ¿¡¼­ °¡Á® ¿Í¾ß ÇÏÁö ¾Ê³ª?...
      */
     if (acpEnvGet("ALTIBASE_HOME", &sHome) != ACP_RC_SUCCESS)
     {
@@ -1115,10 +1257,10 @@ static ACI_RC ulnDrvConnOrganizeConnectArgIpc(ulnFnContext *aFnContext)
         /*
          * 01S00
          *
-         * Note : UNIX domain ì—°ê²°ì¼ ë•Œ PORT_NO ê°€ ì§€ì •ë˜ì–´ ìžˆì–´ë„ SQL_SUCCESS ë¥¼ ë¦¬í„´í•´ì•¼ í•œ
-         *        ë‹¤ê³  í•¨.
-         *        ì™œ ê·¸ëŸ°ì§€ëŠ” ìž˜ ëª¨ë¥´ê² ìœ¼ë‚˜ ì•„ë¬´íŠ¼, ê·¸ë ‡ê²Œ í•´ì•¼ í•œë‹¤ê³  í•¨.
-         *        ê·¸ëž˜ì„œ ì•„ëž˜ì˜ ë¬¸ìž¥ ì£¼ì„ì²˜ë¦¬í•¨.
+         * Note : UNIX domain ¿¬°áÀÏ ¶§ PORT_NO °¡ ÁöÁ¤µÇ¾î ÀÖ¾îµµ SQL_SUCCESS ¸¦ ¸®ÅÏÇØ¾ß ÇÑ
+         *        ´Ù°í ÇÔ.
+         *        ¿Ö ±×·±Áö´Â Àß ¸ð¸£°ÚÀ¸³ª ¾Æ¹«Æ°, ±×·¸°Ô ÇØ¾ß ÇÑ´Ù°í ÇÔ.
+         *        ±×·¡¼­ ¾Æ·¡ÀÇ ¹®Àå ÁÖ¼®Ã³¸®ÇÔ.
          */
         // ACI_TEST(ulnError(aFnContext, ulERR_IGNORE_PORT_NO_IGNORED) != ACI_SUCCESS);
     }
@@ -1153,11 +1295,11 @@ static ACI_RC ulnDrvConnOrganizeConnectArgIPCDA(ulnFnContext *aFnContext)
     ACI_TEST_RAISE(ulnDbcSetCmiLinkImpl(sDbc, CMI_LINK_IMPL_IPCDA) != ACI_SUCCESS,
                    LABEL_NOT_SUPPORTED_LINK);
     /*
-     * BUGBUG : í™˜ê²½ë³€ìˆ˜ ì´ë¦„ì„ ì—¬ê¸°ë‹¤ ë‘˜ ê²ƒì´ ì•„ë‹ˆë¼ #define ìœ¼ë¡œ ë¹¼ì•¼ í•œë‹¤.
+     * BUGBUG : È¯°æº¯¼ö ÀÌ¸§À» ¿©±â´Ù µÑ °ÍÀÌ ¾Æ´Ï¶ó #define À¸·Î »©¾ß ÇÑ´Ù.
      */
 
     /*
-     * BUGBUG : ì´ê²ƒì„ sDbc->mDsnString ì—ì„œ ê°€ì ¸ ì™€ì•¼ í•˜ì§€ ì•Šë‚˜?...
+     * BUGBUG : ÀÌ°ÍÀ» sDbc->mDsnString ¿¡¼­ °¡Á® ¿Í¾ß ÇÏÁö ¾Ê³ª?...
      */
     if (acpEnvGet("ALTIBASE_HOME", &sHome) != ACP_RC_SUCCESS)
     {
@@ -1202,17 +1344,17 @@ static ACI_RC ulnDrvConnOrganizeConnectArgIB(ulnFnContext *aFnContext)
     acp_char_t            *sPortNoEnvValue = NULL;
 
     /*
-     * Hostname ì„¸íŒ…
+     * Hostname ¼¼ÆÃ
      */
     if (sDbc->mAlternateServers == NULL)
     {
         if (ulnDbcGetDsnString(sDbc) == NULL)
         {
             /*
-             * Note : ì–´ì°¨í”¼ idlOS::malloc ì•ˆí•˜ê³ , uluMemory ì˜ alloc ì´ë¯€ë¡œ ë‚˜ì¤‘ì—
-             *        DBC ê°€ destroy ë  ë•Œ ë©”ëª¨ë¦¬ë„ í•¨ê»˜ í•´ì œ ëœë‹¤.
-             *        ë”°ë¼ì„œ, DBC ë¥¼ destroy í•  ë•Œ mDSNString ì„ ë”°ë¡œ free í•´ ì¤„ í•„ìš” ì—†ë‹¤.
-             *        ì¦‰, Constant string ì„ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°ê°€ ë“¤ì–´ê°€ë„ ì•ˆì „í•˜ë‹¤.
+             * Note : ¾îÂ÷ÇÇ idlOS::malloc ¾ÈÇÏ°í, uluMemory ÀÇ alloc ÀÌ¹Ç·Î ³ªÁß¿¡
+             *        DBC °¡ destroy µÉ ¶§ ¸Þ¸ð¸®µµ ÇÔ²² ÇØÁ¦ µÈ´Ù.
+             *        µû¶ó¼­, DBC ¸¦ destroy ÇÒ ¶§ mDSNString À» µû·Î free ÇØ ÁÙ ÇÊ¿ä ¾ø´Ù.
+             *        Áï, Constant string À» °¡¸®Å°´Â Æ÷ÀÎÅÍ°¡ µé¾î°¡µµ ¾ÈÀüÇÏ´Ù.
              */
             (void)ulnSetConnAttrById(aFnContext,
                                      ULN_CONN_ATTR_DSN,
@@ -1222,10 +1364,10 @@ static ACI_RC ulnDrvConnOrganizeConnectArgIB(ulnFnContext *aFnContext)
             /*
              * 01S02
              *
-             * Note : DSN ì´ connection string ì— ì—†ì„ ë•Œ SQL_SUCCESS_WITH_INFO ê°€ ì•„ë‹ˆë¼
-             *        SQL_SUCCESS ë¥¼ ë¦¬í„´í•´ì•¼ í•œë‹¤ê³  í•¨.
-             *        ì™œ ê·¸ëŸ°ì§€ëŠ” ìž˜ ëª¨ë¥´ê² ìœ¼ë‚˜ ì•„ë¬´íŠ¼, ê·¸ë ‡ê²Œ í•´ì•¼ í•œë‹¤ê³  í•¨.
-             *        ê·¸ëž˜ì„œ ì•„ëž˜ì˜ ë¬¸ìž¥ ì£¼ì„ì²˜ë¦¬í•¨.
+             * Note : DSN ÀÌ connection string ¿¡ ¾øÀ» ¶§ SQL_SUCCESS_WITH_INFO °¡ ¾Æ´Ï¶ó
+             *        SQL_SUCCESS ¸¦ ¸®ÅÏÇØ¾ß ÇÑ´Ù°í ÇÔ.
+             *        ¿Ö ±×·±Áö´Â Àß ¸ð¸£°ÚÀ¸³ª ¾Æ¹«Æ°, ±×·¸°Ô ÇØ¾ß ÇÑ´Ù°í ÇÔ.
+             *        ±×·¡¼­ ¾Æ·¡ÀÇ ¹®Àå ÁÖ¼®Ã³¸®ÇÔ.
              */
             // ulnError(aFnContext, ulERR_IGNORE_TCP_HOSTNAME_NOT_SET);
         }
@@ -1235,19 +1377,19 @@ static ACI_RC ulnDrvConnOrganizeConnectArgIB(ulnFnContext *aFnContext)
             sPortNoEnvValue = NULL;
 
             /*
-             * port number ê°€ ì•„ì§ 0 ì´ë¼ëŠ” ë§ì€ connection string ì— port no ê°€
-             * ì„¸íŒ…ë˜ì§€ ì•Šì•˜ë‹¤ëŠ” ì´ì•¼ê¸°ì´ë‹¤.
+             * port number °¡ ¾ÆÁ÷ 0 ÀÌ¶ó´Â ¸»Àº connection string ¿¡ port no °¡
+             * ¼¼ÆÃµÇÁö ¾Ê¾Ò´Ù´Â ÀÌ¾ß±âÀÌ´Ù.
              *
-             * connection string ì— port no ê°€ ì—†ì„ ë•Œ,
+             * connection string ¿¡ port no °¡ ¾øÀ» ¶§,
              *
-             * í™˜ê²½ë³€ìˆ˜ ALTIBASE_PORT_NO ê°€ ì„¸íŒ…ë˜ì§€ ì•Šì•˜ì„ ë•Œ ì—ëŸ¬ë¥¼ ë‚´ê³ ,
-             *                              ì„¸íŒ…ë˜ì–´ ìžˆìœ¼ë©´ ê·¸ ê°’ìœ¼ë¡œ í•œë‹¤.
+             * È¯°æº¯¼ö ALTIBASE_PORT_NO °¡ ¼¼ÆÃµÇÁö ¾Ê¾ÒÀ» ¶§ ¿¡·¯¸¦ ³»°í,
+             *                              ¼¼ÆÃµÇ¾î ÀÖÀ¸¸é ±× °ªÀ¸·Î ÇÑ´Ù.
              */
             ACI_TEST_RAISE(acpEnvGet("ALTIBASE_IB_PORT_NO", &sPortNoEnvValue) != ACP_RC_SUCCESS,
                            LABEL_PORT_NO_NOT_SET);
 
             /*
-             * 32 ë¹„íŠ¸ int ì˜ ìµœëŒ€ê°’ : 4294967295 : 10ìžë¦¬
+             * 32 ºñÆ® int ÀÇ ÃÖ´ë°ª : 4294967295 : 10ÀÚ¸®
              */
             ACI_TEST_RAISE(ulnDrvConnStrToInt(sPortNoEnvValue,
                                               acpCStrLen(sPortNoEnvValue, 10),
@@ -1257,30 +1399,30 @@ static ACI_RC ulnDrvConnOrganizeConnectArgIB(ulnFnContext *aFnContext)
             (void)ulnDbcSetPortNumber(sDbc, sPortNumber);
 
             /*
-             * PORT_NO ê°€ ì—°ê²° ìŠ¤íŠ¸ë§ì— ì—†ì„ ë•Œ ALTIBASE_PORT_NO í™˜ê²½ë³€ìˆ˜ë¥¼ í™•ì¸í•˜ì—¬ì„œ
-             * ìžˆì„ ê²½ìš° SQL_SUCCESS_WITH_INFO ê°€ ì•„ë‹Œ SQL_SUCCESS ë¥¼ ë¦¬í„´í•˜ê³  ì •ìƒë™ìž‘í•´ì•¼ í•œë‹¤ê³ 
-             * í•œë‹¤.
+             * PORT_NO °¡ ¿¬°á ½ºÆ®¸µ¿¡ ¾øÀ» ¶§ ALTIBASE_PORT_NO È¯°æº¯¼ö¸¦ È®ÀÎÇÏ¿©¼­
+             * ÀÖÀ» °æ¿ì SQL_SUCCESS_WITH_INFO °¡ ¾Æ´Ñ SQL_SUCCESS ¸¦ ¸®ÅÏÇÏ°í Á¤»óµ¿ÀÛÇØ¾ß ÇÑ´Ù°í
+             * ÇÑ´Ù.
              */
             // ulnError(aFnContext, ulERR_IGNORE_PORT_NO_NOT_SET, sPortNumber);
         }
 
         /* ------------------------------------------------
-         * SQLCLIì—ì„œëŠ” DSNì„ Hostì˜ ì£¼ì†Œ ì¦‰, IP Addressë¡œ ì‚¬ìš©í•˜ê³ ,
+         * SQLCLI¿¡¼­´Â DSNÀ» HostÀÇ ÁÖ¼Ò Áï, IP Address·Î »ç¿ëÇÏ°í,
          *
-         * ODBCì—ì„œëŠ” "Server"ë¥¼ Ip Addressë¡œ ì‚¬ìš©í•œë‹¤.
-         * ì´ëŸ¬í•œ í˜¼ëž€ì„ ê²€ì¦í•˜ê³ , ì œëŒ€ë¡œ ë™ìž‘í•˜ëŠ” ê²ƒì„
-         * ë³´ìž¥í•˜ê¸° ìœ„í•´,
-         *  1. HostNameì„ ìš°ì„  ê²€ì‚¬í•œë‹¤.
-         *  2. ë§Œì¼ ì´ ê°’ì´ NULLì´ë¼ë©´, SQLCLIë¼ëŠ” ì˜ë¯¸ì´ë¯€ë¡œ,
-         *     Dsnì˜ Stringì„ ì‚¬ìš©í•œë‹¤. ì´ Stringì—ëŠ” ë°˜ë“œì‹œ Ip Addressê°€
-         *     ë“¤ì–´ ìžˆì„ ê²ƒì´ë‹¤.
-         *  3. ë§Œì¼ ì´ ê°’ì´ NULLì´ ì•„ë‹ˆë¼ë©´,
-         *     ì´ í”„ë¡œê·¸ëž¨ì€ ODBCì¼ ê²½ìš°ì´ë¯€ë¡œ (ProfileStringì— ì˜í•´ ì„¤ì •)
-         *     ì´ ê°’ì„ ì ‘ì†ì‹œ ì‚¬ìš©í•œë‹¤.
+         * ODBC¿¡¼­´Â "Server"¸¦ Ip Address·Î »ç¿ëÇÑ´Ù.
+         * ÀÌ·¯ÇÑ È¥¶õÀ» °ËÁõÇÏ°í, Á¦´ë·Î µ¿ÀÛÇÏ´Â °ÍÀ»
+         * º¸ÀåÇÏ±â À§ÇØ,
+         *  1. HostNameÀ» ¿ì¼± °Ë»çÇÑ´Ù.
+         *  2. ¸¸ÀÏ ÀÌ °ªÀÌ NULLÀÌ¶ó¸é, SQLCLI¶ó´Â ÀÇ¹ÌÀÌ¹Ç·Î,
+         *     DsnÀÇ StringÀ» »ç¿ëÇÑ´Ù. ÀÌ String¿¡´Â ¹Ýµå½Ã Ip Address°¡
+         *     µé¾î ÀÖÀ» °ÍÀÌ´Ù.
+         *  3. ¸¸ÀÏ ÀÌ °ªÀÌ NULLÀÌ ¾Æ´Ï¶ó¸é,
+         *     ÀÌ ÇÁ·Î±×·¥Àº ODBCÀÏ °æ¿ìÀÌ¹Ç·Î (ProfileString¿¡ ÀÇÇØ ¼³Á¤)
+         *     ÀÌ °ªÀ» Á¢¼Ó½Ã »ç¿ëÇÑ´Ù.
          *
-         *  sqlcliì—ì„œ ì‚¬ìš©ìžê°€ DSN=abcd;ServerName=192.168.3.1 ì´ë ‡ê²Œ ì¤¬ì„ ê²½ìš°ì—ë„
-         *  ìœ„ì˜ ë¡œì§ì„ í†µí•´ ì ‘ì†ì´ ì„±ê³µí•  ìˆ˜ ìžˆë‹¤.
-         *  odbc ì—ì„œëŠ” ì–¸ì œë‚˜ ProfileStringì—ì„œ ì„¤ì •ë˜ë¯€ë¡œ ë¬¸ì œê°€ ì—†ë‹¤.
+         *  sqlcli¿¡¼­ »ç¿ëÀÚ°¡ DSN=abcd;ServerName=192.168.3.1 ÀÌ·¸°Ô ÁáÀ» °æ¿ì¿¡µµ
+         *  À§ÀÇ ·ÎÁ÷À» ÅëÇØ Á¢¼ÓÀÌ ¼º°øÇÒ ¼ö ÀÖ´Ù.
+         *  odbc ¿¡¼­´Â ¾ðÁ¦³ª ProfileString¿¡¼­ ¼³Á¤µÇ¹Ç·Î ¹®Á¦°¡ ¾ø´Ù.
          * ----------------------------------------------*/
 
         if (ulnDbcGetHostNameString(sDbc) == NULL)
@@ -1305,8 +1447,8 @@ static ACI_RC ulnDrvConnOrganizeConnectArgIB(ulnFnContext *aFnContext)
     /* proj-1538 ipv6 */
     ulnDbcGetConnectArg(sDbc)->mIB.mPreferIPv6 = (sDbc->mAttrPreferIPv6 == ACP_TRUE)? 1: 0;
 
-    //fix BUG-26048 Embededì—ì„œ ConnType=5ë§Œ ì£¼ì—ˆì„ë•Œ
-    //  SYSDBAì ‘ì†ì´ ì•ˆë¨.
+    //fix BUG-26048 Embeded¿¡¼­ ConnType=5¸¸ ÁÖ¾úÀ»¶§
+    //  SYSDBAÁ¢¼ÓÀÌ ¾ÈµÊ.
     if (ulnDbcGetConnType(sDbc) == ULN_CONNTYPE_INVALID)
     {
         (void)ulnDbcSetConnType(sDbc, ULN_CONNTYPE_IB);
@@ -1324,7 +1466,7 @@ static ACI_RC ulnDrvConnOrganizeConnectArgIB(ulnFnContext *aFnContext)
     ACI_EXCEPTION(LABEL_INVALID_PORT_NO)
     {
         /*
-         * SQLSTATE ëŠ” ë­˜ë¡œ í• ê¹Œ _--
+         * SQLSTATE ´Â ¹»·Î ÇÒ±î _--
          */
         (void)ulnError(aFnContext, ulERR_ABORT_INVALID_ALTIBASE_IB_PORT_NO, sPortNoEnvValue);
     }
@@ -1332,7 +1474,7 @@ static ACI_RC ulnDrvConnOrganizeConnectArgIB(ulnFnContext *aFnContext)
     ACI_EXCEPTION(LABEL_PORT_NO_NOT_SET)
     {
         /*
-         * BUGBUG : ì—ëŸ¬ì½”ë“œ
+         * BUGBUG : ¿¡·¯ÄÚµå
          */
         (void)ulnError(aFnContext, ulERR_ABORT_PORT_NO_ALTIBASE_IB_PORT_NO_NOT_SET);
     }
@@ -1343,7 +1485,7 @@ static ACI_RC ulnDrvConnOrganizeConnectArgIB(ulnFnContext *aFnContext)
 }
 
 /*
- * BUGBUG : ulnFnContext ë§Œ ë°›ìœ¼ë©´ í•¨ìˆ˜ì˜ ì˜ë¯¸ê°€ ì•½ê°„ ë¶ˆëª…í™•í•´ì§€ëŠ”ë°.. ì¼ë‹¨ ê·¸ëŒ€ë¡œ ë‘ìž.
+ * BUGBUG : ulnFnContext ¸¸ ¹ÞÀ¸¸é ÇÔ¼öÀÇ ÀÇ¹Ì°¡ ¾à°£ ºÒ¸íÈ®ÇØÁö´Âµ¥.. ÀÏ´Ü ±×´ë·Î µÎÀÚ.
  */
 static ACI_RC ulnDrvConnOrganizeConnectArg(ulnFnContext *aFnContext)
 {
@@ -1441,8 +1583,8 @@ static ACI_RC ulnDrvConnOrganizeConnectArg(ulnFnContext *aFnContext)
         /*
          * 01s02
          *
-         * BUGBUG : ì´ì²˜ëŸ¼ ë””í´íŠ¸ íƒ€ìž…ìœ¼ë¡œ ë°”ê¿”ë„ SUCCESS_WITH_INFO ê°€ ì•„ë‹ˆë¼ SQL_SUCCESS ë¥¼
-         *          ë‚´ì–´ ì¤˜ì•¼ ê¸°ì¡´ì˜ êµ¬í˜„ê³¼ ê°™ì•„ì§„ë‹¤... -_-;
+         * BUGBUG : ÀÌÃ³·³ µðÆúÆ® Å¸ÀÔÀ¸·Î ¹Ù²ãµµ SUCCESS_WITH_INFO °¡ ¾Æ´Ï¶ó SQL_SUCCESS ¸¦
+         *          ³»¾î Áà¾ß ±âÁ¸ÀÇ ±¸Çö°ú °°¾ÆÁø´Ù... -_-;
          */
         // ulnError(aFnContext, ulERR_IGNORE_CONNTYPE_NOT_SET);
     }
@@ -1476,7 +1618,7 @@ static ACI_RC ulnDrvConnOrganizeConnectArg(ulnFnContext *aFnContext)
 
         default:
             /*
-             * ì£½ìž. ë­”ê°€ í¬ê²Œ ìž˜ëª»ë˜ì—ˆë‹¤.
+             * Á×ÀÚ. ¹º°¡ Å©°Ô Àß¸øµÇ¾ú´Ù.
              */
             ACE_ASSERT(0);
             break;
@@ -1514,31 +1656,31 @@ static ACI_RC ulnConnectCorePhysicalConn(ulnFnContext *aFnContext)
     ACE_DASSERT(sDbc != NULL);
 
     /*
-     * SetConnectAttrì´ë‚˜ Connection string ìœ¼ë¡œë¶€í„° ë§Œë“¤ì–´ì§„
+     * SetConnectAttrÀÌ³ª Connection string À¸·ÎºÎÅÍ ¸¸µé¾îÁø
      *      mPortNumber
      *      mCmiLinkImpl
      *      mDsnString
-     * ë“±ì˜ ê°’ì„ ì´ìš©í•´ì„œ cmiConnectArg ë¥¼ ì¡°í•©í•œë‹¤.
+     * µîÀÇ °ªÀ» ÀÌ¿ëÇØ¼­ cmiConnectArg ¸¦ Á¶ÇÕÇÑ´Ù.
      */
 
     ACI_TEST(ulnDrvConnOrganizeConnectArg(aFnContext) != ACI_SUCCESS);
 
     /*
-     * cmiLink ë¥¼ ìƒì„±í•œë‹¤
+     * cmiLink ¸¦ »ý¼ºÇÑ´Ù
      *
-     * Note : ê¸°ì¡´ì— ìžˆë˜ mLink í¬ì¸í„°ê°€ ê°€ë¦¬í‚¤ëŠ” ë©”ëª¨ë¦¬ëŠ”
-     *        ì¡´ìž¬í•  ê²½ìš° ulnDbcAllocNewLink() í•¨ìˆ˜ê°€ í•´ì œí•œë‹¤)
+     * Note : ±âÁ¸¿¡ ÀÖ´ø mLink Æ÷ÀÎÅÍ°¡ °¡¸®Å°´Â ¸Þ¸ð¸®´Â
+     *        Á¸ÀçÇÒ °æ¿ì ulnDbcAllocNewLink() ÇÔ¼ö°¡ ÇØÁ¦ÇÑ´Ù)
      *
-     * Note : ì—¬ê¸°ì—ì„œ ìƒì„±í•œ cmiLink ëŠ” ulnDbcAllocNewLink(), ulnDbcFreeLink() í˜¹ì€
-     *        ulnDbcDestroy() ë¥¼ í•˜ë©´ ì•Œì•„ì„œ ì •ë¦¬ëœë‹¤.
+     * Note : ¿©±â¿¡¼­ »ý¼ºÇÑ cmiLink ´Â ulnDbcAllocNewLink(), ulnDbcFreeLink() È¤Àº
+     *        ulnDbcDestroy() ¸¦ ÇÏ¸é ¾Ë¾Æ¼­ Á¤¸®µÈ´Ù.
      */
 
     // fix BUG-28133
-    // ulnDbcAllocNewLink() ì‹¤íŒ¨ì‹œ ì—ëŸ¬ ë°˜í™˜
+    // ulnDbcAllocNewLink() ½ÇÆÐ½Ã ¿¡·¯ ¹ÝÈ¯
     ACI_TEST_RAISE(ulnDbcAllocNewLink(sDbc) != ACI_SUCCESS, LABEL_ALLOC_LINK_ERROR);
 
     /*
-     * ì—°ê²° ì‹œë„
+     * ¿¬°á ½Ãµµ
      */
     sTimeout = acpTimeFrom(ulnDbcGetLoginTimeout(sDbc), 0);
 
@@ -1556,7 +1698,7 @@ static ACI_RC ulnConnectCorePhysicalConn(ulnFnContext *aFnContext)
     return ACI_SUCCESS;
 
     // fix BUG-28133
-    // ulnDbcAllocNewLink() ì‹¤íŒ¨ì‹œ ì—ëŸ¬ ë°˜í™˜
+    // ulnDbcAllocNewLink() ½ÇÆÐ½Ã ¿¡·¯ ¹ÝÈ¯
     ACI_EXCEPTION(LABEL_ALLOC_LINK_ERROR)
     {
         ulnError(aFnContext,

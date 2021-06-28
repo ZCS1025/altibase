@@ -481,7 +481,7 @@ public class FetchResultSetTask extends RepeatableTask
         private static class ColumnType
         {
             private int mJdbcColumnType = java.sql.Types.NULL;
-            private int mSQLType        = SQLType.SQL_NONE;
+            private int mSQLType        = AltibaseSQLType.SQL_NONE;
         }
         
         public void setRemoteStatement(RemoteStatement aRemoteStatement)

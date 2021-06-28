@@ -37,7 +37,7 @@ class PoolUsingSample
         pool.printStates();
    
     
-        /* ì¿¼ë¦¬ìˆ˜í–‰ */
+        /* Äõ¸®¼öÇà */
         try {        
             stmt.execute("CREATE TABLE dual (i1 char(1))");
     
@@ -48,12 +48,12 @@ class PoolUsingSample
     
             res = stmt.executeQuery("SELECT sysdate FROM dual");
     
-            /* ê²°ê³¼ë¥¼ ë°›ì•„ í™”ë©´ì— ì¶œë ¥ */
+            /* °á°ú¸¦ ¹Ş¾Æ È­¸é¿¡ Ãâ·Â */
             while(res.next()) {
                 System.out.println("Current Time : " +res.getString(1));
             }
     
-            /* ì—°ê²° í•´ì œ */
+            /* ¿¬°á ÇØÁ¦ */
 			stmt.close();
 			pstmt.close();
             pool.freeConnection(con);

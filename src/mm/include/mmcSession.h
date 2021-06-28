@@ -48,23 +48,31 @@
 #define MMC_NLSUSE_MAX_LEN                  QC_MAX_NAME_LEN
 #define MMC_SSLINFO_MAX_LEN                 256 /* PROJ-2474 */
 #define MMC_DATEFORMAT_MAX_LEN              (MTC_TO_CHAR_MAX_PRECISION)
-/* ìµœì†Œí•œ ë‹¤ìŒë³´ë‹¤ëŠ” ì»¤ì•¼í•œë‹¤: prefix (4) + IDL_IP_ADDR_MAX_LEN (64) +  delim (1) + IDP_MAX_PROP_DBNAME_LEN (127)
- * ë°”ê¿€ë•ŒëŠ” ë‹¤ìŒë„ í•¨ê»˜ ë°”ê¿€ ê²ƒ: (cli) ULN_MAX_FAILOVER_SOURCE_LEN, (jdbc) MAX_FAILOVER_SOURCE_LENGTH */
+/* ÃÖ¼ÒÇÑ ´ÙÀ½º¸´Ù´Â Ä¿¾ßÇÑ´Ù: prefix (4) + IDL_IP_ADDR_MAX_LEN (64) +  delim (1) + IDP_MAX_PROP_DBNAME_LEN (127)
+ * ¹Ù²Ü¶§´Â ´ÙÀ½µµ ÇÔ²² ¹Ù²Ü °Í: (cli) ULN_MAX_FAILOVER_SOURCE_LEN, (jdbc) MAX_FAILOVER_SOURCE_LENGTH */
 #define MMC_FAILOVER_SOURCE_MAX_LEN         256
 //fix BUG-21311
 #define MMC_SESSION_LOB_HASH_BUCKET_CNT     (5)
 #define MMC_TIMEZONE_MAX_LEN                (MTC_TIMEZONE_NAME_LEN)
 #define MMC_SHARD_PIN_STR_LEN               (SDI_MAX_SHARD_PIN_STR_LEN)
 /*
- * ê°€ì¥ ì´ìƒì ì¸ collection bufferì˜ í¬ê¸°ëŠ” í†µì‹  ë²„í¼ ì‚¬ì´ì¦ˆ(32K)ì™€
- * ë™ì¼í•œ ê²½ìš°ì´ë‹¤. ê·¸ëŸ¬ë‚˜ í†µì‹  í—¤ë”ë¥¼ ê³ ë ¤í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì— 30Kë¥¼
- * ê¸°ë³¸ê°’ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+ * °¡Àå ÀÌ»óÀûÀÎ collection bufferÀÇ Å©±â´Â Åë½Å ¹öÆÛ »çÀÌÁî(32K)¿Í
+ * µ¿ÀÏÇÑ °æ¿ìÀÌ´Ù. ±×·¯³ª Åë½Å Çì´õ¸¦ °í·ÁÇØ¾ß ÇÏ±â ¶§¹®¿¡ 30K¸¦
+ * ±âº»°ªÀ¸·Î ¼³Á¤ÇÑ´Ù.
  */
 #define MMC_DEFAULT_COLLECTION_BUFFER_SIZE  (30*1024)
 
 // BUG-34725
 #define MMC_FETCH_PROTOCOL_TYPE_NORMAL  0
 #define MMC_FETCH_PROTOCOL_TYPE_LIST    1
+
+typedef struct mmcGCTxCommitInfo
+{
+    smSCN           mCoordSCN;
+    smSCN           mPrepareSCN;
+    smSCN           mGlobalCommitSCN;
+    smSCN           mLastSystemSCN;
+} mmcGCTxCommitInfo;
 
 typedef struct mmcSessionInfo
 {
@@ -93,6 +101,13 @@ typedef struct mmcSessionInfo
 
     qciUserInfo      mUserInfo;
 
+    // PROJ-2727
+    SChar            mSessionPropValueStr[IDP_MAX_VALUE_LEN + 1];
+    UInt             mSessionPropValueLen;
+    UShort           mSessionPropID;
+
+    UInt             mPropertyAttribute;
+    
     // PROJ-1579 NCHAR
     UInt             mNlsNcharLiteralReplace;
 
@@ -105,26 +120,26 @@ typedef struct mmcSessionInfo
     UChar            mExplainPlan;
 
     //------------------------------------
-    // Transaction Begin ì‹œì— í•„ìš”í•œ ì •ë³´
+    // Transaction Begin ½Ã¿¡ ÇÊ¿äÇÑ Á¤º¸
     // - mIsolationLevel     : isolation level
     // - mReplicationMode    : replication mode
-    // - mTransactionMode    : read only transactionì¸ì§€ ì•„ë‹Œì§€ì— ëŒ€í•œ mode
-    // - CommitWriteWaitMode : commit ì‹œì—, logê°€ diskì— ë‚´ë ¤ê°ˆë•Œê¹Œì§€
-    //                         ê¸°ë‹¤ë¦´ì§€ ë§ì§€ì— ëŒ€í•œ mode
+    // - mTransactionMode    : read only transactionÀÎÁö ¾Æ´ÑÁö¿¡ ´ëÇÑ mode
+    // - CommitWriteWaitMode : commit ½Ã¿¡, log°¡ disk¿¡ ³»·Á°¥¶§±îÁö
+    //                         ±â´Ù¸±Áö ¸»Áö¿¡ ´ëÇÑ mode
     // ps )
-    // mIsolationLevelì— Replication Mode, Transaction Mode ì •ë³´ê°€
-    // ëª¨ë‘ oringë˜ì–´ìˆëŠ” ê²ƒì„ BUG-15396 ìˆ˜ì •í•˜ë©´ì„œ ëª¨ë‘ í’€ì—ˆìŒ
+    // mIsolationLevel¿¡ Replication Mode, Transaction Mode Á¤º¸°¡
+    // ¸ğµÎ oringµÇ¾îÀÖ´Â °ÍÀ» BUG-15396 ¼öÁ¤ÇÏ¸é¼­ ¸ğµÎ Ç®¾úÀ½
     //------------------------------------
     UInt             mIsolationLevel;
     UInt             mReplicationMode;
     UInt             mTransactionMode;
-    idBool           mCommitWriteWaitMode; // BUG-17878 : type ë³€ê²½
+    idBool           mCommitWriteWaitMode; // BUG-17878 : type º¯°æ
 
     UInt             mOptimizerMode;
     UInt             mHeaderDisplayMode;
     UInt             mStackSize;
     UInt             mNormalFormMaximum;
-    // BUG-23780 TEMP_TBS_MEMORY íŒíŠ¸ ì ìš©ì—¬ë¶€ë¥¼ propertyë¡œ ì œê³µ
+    // BUG-23780 TEMP_TBS_MEMORY ÈùÆ® Àû¿ë¿©ºÎ¸¦ property·Î Á¦°ø
     UInt             mOptimizerDefaultTempTbsType;  
     UInt             mIdleTimeout;
     UInt             mQueryTimeout;
@@ -137,10 +152,10 @@ typedef struct mmcSessionInfo
     UInt             mNumberOfStatementsInSession;
     UInt             mMaxStatementsPerSession;
 
-    /* TRX_UPDATE_MAX_LOGSIZEì˜ ê°’ì„ Session Levelì—ì„œ ê°€ì§€ê³  ìˆë‹¤.
+    /* TRX_UPDATE_MAX_LOGSIZEÀÇ °ªÀ» Session Level¿¡¼­ °¡Áö°í ÀÖ´Ù.
      *
-     * BUG-19080: Update Versionì´ ì¼ì •ê°œìˆ˜ì´ìƒ ë°œìƒí•˜ë©´ í•´ë‹¹
-     *            Transactionì„ Abortí•˜ëŠ” ê¸°ëŠ¥ì´ í•„ìš”í•©ë‹ˆë‹¤. */
+     * BUG-19080: Update VersionÀÌ ÀÏÁ¤°³¼öÀÌ»ó ¹ß»ıÇÏ¸é ÇØ´ç
+     *            TransactionÀ» AbortÇÏ´Â ±â´ÉÀÌ ÇÊ¿äÇÕ´Ï´Ù. */
     ULong            mUpdateMaxLogSize;
 
     SChar            mDateFormat[MMC_DATEFORMAT_MAX_LEN + 1];
@@ -161,8 +176,8 @@ typedef struct mmcSessionInfo
     
     /*
      * PROJ-1752 LIST PROTOCOL
-     * BUGBUG: í–¥í›„ JDBCì— LIST í”„ë¡œí† ì½œì´ í™•ì¥ë˜ì—ˆì„ ì‹œì ì—ëŠ”
-     * ì•„ë˜ ë³€ìˆ˜ëŠ” ì‚­ì œë˜ì–´ì•¼ í•œë‹¤.
+     * BUGBUG: ÇâÈÄ JDBC¿¡ LIST ÇÁ·ÎÅäÄİÀÌ È®ÀåµÇ¾úÀ» ½ÃÁ¡¿¡´Â
+     * ¾Æ·¡ º¯¼ö´Â »èÁ¦µÇ¾î¾ß ÇÑ´Ù.
      */
     idBool           mHasClientListChannel;
 
@@ -182,26 +197,26 @@ typedef struct mmcSessionInfo
 
     UInt             mConnectTime;
     UInt             mIdleStartTime;
-    //fix BUG-24041 none-auto commit modeì—ì„œ select statement beginí• ë•Œ
-    // mActivatedë¥¼ onì‹œí‚¤ë©´ì•ˆë¨.
+    //fix BUG-24041 none-auto commit mode¿¡¼­ select statement beginÇÒ¶§
+    // mActivated¸¦ on½ÃÅ°¸é¾ÈµÊ.
     
-    // mActivated ì •ì˜ë¥¼ ë‹¤ìŒê³¼ ê°™ì´ ëª…í™•íˆ í•©ë‹ˆë‹¤(ì£¼ë¡œ none-auto commit modeì—ì„œ ì˜ë¯¸ê°€ ìˆìŒ).
-    //  sessionì—ì„œ ì‚¬ìš©í•˜ê³  ìˆëŠ” íŠ¸ëœì­ì…˜ì´ beginí›„
-    // selectê°€ ì•„ë‹Œ DMLì´ ë°œìƒí•˜ì—¬ table lock, record lockë¥¼ holdí•˜ì˜€ê³ ,
-    // SM logê°€ writeëœ ìƒíƒœë¥¼ Activated onìœ¼ë¡œ ì •ì˜í•œë‹¤.
+    // mActivated Á¤ÀÇ¸¦ ´ÙÀ½°ú °°ÀÌ ¸íÈ®È÷ ÇÕ´Ï´Ù(ÁÖ·Î none-auto commit mode¿¡¼­ ÀÇ¹Ì°¡ ÀÖÀ½).
+    //  session¿¡¼­ »ç¿ëÇÏ°í ÀÖ´Â Æ®·£Àè¼ÇÀÌ beginÈÄ
+    // select°¡ ¾Æ´Ñ DMLÀÌ ¹ß»ıÇÏ¿© table lock, record lock¸¦ holdÇÏ¿´°í,
+    // SM log°¡ writeµÈ »óÅÂ¸¦ Activated onÀ¸·Î Á¤ÀÇÇÑ´Ù.
     
-    // í•˜ì§€ë§Œ selectë§Œ ìˆ˜í–‰í•œ ê²½ìš°ì— root statementì¢…ë£Œì‹œ table IS-lockì´
-    // releaseë˜ê³  MVCCë•Œë¬¸ì— record-lockì„ ëŒ€ê¸°í•˜ì§€ ì•Šê³  SM log ë¡œwrite
-    //í•˜ì§€ ì•Šì•˜ê¸°ë•Œë¬¸ì—   Actived offìœ¼ë¡œ ì •ì˜í•œë‹¤.
+    // ÇÏÁö¸¸ select¸¸ ¼öÇàÇÑ °æ¿ì¿¡ root statementÁ¾·á½Ã table IS-lockÀÌ
+    // releaseµÇ°í MVCC¶§¹®¿¡ record-lockÀ» ´ë±âÇÏÁö ¾Ê°í SM log ·Îwrite
+    //ÇÏÁö ¾Ê¾Ò±â¶§¹®¿¡   Actived offÀ¸·Î Á¤ÀÇÇÑ´Ù.
 
-    //  sessionì—ì„œ ì‚¬ìš©í•˜ê³  ìˆëŠ” íŠ¸ëœì­ì…˜ì´ beginí›„ ì•„ë¬´ê²ƒë„
-    //  executeí•˜ì§€ ì•Šì€ê²½ìš° ì—­ì‹œ,Actived offìœ¼ë¡œ ì •ì˜í•œë‹¤.
+    //  session¿¡¼­ »ç¿ëÇÏ°í ÀÖ´Â Æ®·£Àè¼ÇÀÌ beginÈÄ ¾Æ¹«°Íµµ
+    //  executeÇÏÁö ¾ÊÀº°æ¿ì ¿ª½Ã,Actived offÀ¸·Î Á¤ÀÇÇÑ´Ù.
     idBool           mActivated;
     SInt             mOpenStmtCount;
     mmcStmtID        mCurrStmtID;
 
     /* PROJ-1381 Fetch Across Commits */
-    SInt             mOpenHoldFetchCount;   /**< Holdableë¡œ ì—´ë¦° Fetch ê°œìˆ˜ */
+    SInt             mOpenHoldFetchCount;   /**< Holdable·Î ¿­¸° Fetch °³¼ö */
 
     /*
      * XA
@@ -245,16 +260,16 @@ typedef struct mmcSessionInfo
     /*
      * Session properties for database link
      */
-    UInt             mDblinkGlobalTransactionLevel;
+    UInt             mGlobalTransactionLevel;
     UInt             mDblinkRemoteStatementAutoCommit;
 
     /*
-     * BUG-38430 í•´ë‹¹ sessionì—ì„œ ë§ˆì§€ë§‰ ì‹¤í–‰í•œ ì¿¼ë¦¬ë¡œ ì¸í•´ ë³€ê²½ëœ record ê°¯ìˆ˜
+     * BUG-38430 ÇØ´ç session¿¡¼­ ¸¶Áö¸· ½ÇÇàÇÑ Äõ¸®·Î ÀÎÇØ º¯°æµÈ record °¹¼ö
      */
     ULong            mLastProcessRow; 
 
-    /* PROJ-2473 SNMP ì§€ì› */
-    UInt             mSessionFailureCount; /* ì—°ì†ìœ¼ë¡œ ì‹¤í–‰ì´ ì‹¤íŒ¨í•œ ìˆ˜ */
+    /* PROJ-2473 SNMP Áö¿ø */
+    UInt             mSessionFailureCount; /* ¿¬¼ÓÀ¸·Î ½ÇÇàÀÌ ½ÇÆĞÇÑ ¼ö */
     
     /* PROJ-2441 flashback */
     UInt             mRecyclebinEnable;
@@ -277,7 +292,7 @@ typedef struct mmcSessionInfo
     // BUG-42464 dbms_alert package
     mmcEventManager  mEvent;
 
-    /* BUG-42853 LOCK TABLEì— UNTIL NEXT DDL ê¸°ëŠ¥ ì¶”ê°€ */
+    /* BUG-42853 LOCK TABLE¿¡ UNTIL NEXT DDL ±â´É Ãß°¡ */
     idBool           mLockTableUntilNextDDL;
     UInt             mTableIDOfLockTableUntilNextDDL;
 
@@ -290,24 +305,35 @@ typedef struct mmcSessionInfo
     /* PROJ-2638 shard native linker */
     SChar            mShardNodeName[SDI_NODE_NAME_MAX_SIZE + 1];
 
+    /* TASK-7219 Analyzer/Transformer/Executor ¼º´É°³¼± */
+    idBool           mCallByShardAnalyzeProtocol;
+
     /* BUG-44967 */
     mmcTransID       mTransID;
 
     /* PROJ-2660 */
     sdiShardPin      mShardPin;
 
+    /* BUG-46090 Meta Node SMN ÀüÆÄ */
+    ULong            mShardMetaNumber;
+    ULong            mToBeShardMetaNumber;
+    ULong            mLastShardMetaNumber;
+    ULong            mReceivedShardMetaNumber;
+
     /* PROJ-2677 */
     UInt             mReplicationDDLSync;
     UInt             mReplicationDDLSyncTimeout;
-
-    /* BUG-46090 Meta Node SMN ì „íŒŒ */
-    idBool           mIsMetaNodeShardCli;
-    ULong            mShardMetaNumber;
-
     UInt             mPrintOutEnable;
+
+    /* PROJ-2735 DDL Transaction */    
+    idBool           mTransactionalDDL;
+    
+    /* PROJ-2736 Global DDL */
+    idBool           mGlobalDDL;
+
     /* BUG-45707 */
     UInt             mShardClient;
-    UInt             mShardSessionType;
+    sdiSessionType   mShardSessionType;
     /* BUG-45899 */
     UInt             mTrclogDetailShard;
 
@@ -317,16 +343,55 @@ typedef struct mmcSessionInfo
     /* PROJ-2632 */
     UInt             mSerialExecuteMode;
     UInt             mTrcLogDetailInformation;
+
+    mmcMessageCallback mMessageCallback;  /* BUG-46019 MessageCallback µî·Ï ¿©ºÎ */
+
+    /* BUG-47648  disk partition¿¡¼­ »ç¿ëµÇ´Â prepared memory »ç¿ë·® °³¼± */
+    UInt             mReducePartPrepareMemory;
+
+    ULong            mAllocTransRetryCount; // BUG-47655
+
+    idBool           mShardInPSMEnable;
+    sdiInternalOperation mShardInternalLocalOperation;
+
+    /* PROJ-2733-DistTxInfo */
+    mmcGCTxCommitInfo mGCTxCommitInfo;
+
+    UInt             mShardStatementRetry;
+    UInt             mIndoubtFetchTimeout;
+    UInt             mIndoubtFetchMethod;
+
+    idBool           mGCTxPermit;  /* GCTx Çã¿ë ¿©ºÎ, GCTx ¹ÌÁö¿ø Å¬¶óÀÌ¾ğÆ®´Â Çã¿ë ¾ÈÇÔ. */
+
+    /* BUG-48132 */
+    UInt             mPlanHashOrSortMethod;
+
+    /* BUG-48161 */
+    UInt             mBucketCountMax;
+
+    UInt             mShardDDLLockTimeout;
+    UInt             mShardDDLLockTryCount;
+
+    UInt             mDDLLockTimeout;
+
+    /* BUG-48348 */
+    UInt             mEliminateCommonSubexpression;
+
+    UShort           mClientTouchNodeCount;  /* BUG-48384 */
+
+    /* TASK-7219 Non-shard DML */
+    UInt             mStmtExecSeqForShardTx;
+
 } mmcSessionInfo;
 
 //--------------------
-// X$SESSION ì˜ êµ¬ì¡°
+// X$SESSION ÀÇ ±¸Á¶
 //--------------------
 typedef struct mmcSessionInfo4PerfV
 {
     mmcSessID        mSessionID;      // ID
-    //fix BUG-23656 session,xid ,transactionì„ ì—°ê³„í•œ performance viewë¥¼ ì œê³µí•˜ê³ ,
-    //ê·¸ë“¤ê°„ì˜ ê´€ê³„ë¥¼ ì •í™•íˆ ìœ ì§€í•´ì•¼ í•¨.
+    //fix BUG-23656 session,xid ,transactionÀ» ¿¬°èÇÑ performance view¸¦ Á¦°øÇÏ°í,
+    //±×µé°£ÀÇ °ü°è¸¦ Á¤È®È÷ À¯ÁöÇØ¾ß ÇÔ.
     mmcTransID       mTransID;
     mmcTaskState    *mTaskState;      // TASK_STATE
     ULong            mEventFlag;      // EVENTFLAG
@@ -381,17 +446,21 @@ typedef struct mmcSessionInfo4PerfV
     SChar            mTimezoneString[MMC_TIMEZONE_MAX_LEN + 1];      /* PROJ-2209 DBTIMEZONE */
     UInt             mLobCacheThreshold;                             /* PROJ-2047 Strengthening LOB - LOBCACHE */
     UInt             mQueryRewriteEnable;                            /* PROJ-1090 Function-based Index */
-    UInt             mDblinkGlobalTransactionLevel; /* DBLINK_GLOBAL_TRANSACTION_LEVEL */
+    UInt             mDblinkGlobalTransactionLevel;     /* DBLINK_GLOBAL_TRANSACTION_LEVEL */
+    UInt             mGlobalTransactionLevel;           /* GLOBAL_TRANSACTION_LEVEL */
     UInt             mDblinkRemoteStatementAutoCommit;  /* DBLINK_REMOTE_STATEMENT_COMMIT */
 
     /*
      * BUG-40120  MAX_STATEMENTS_PER_SESSION value has to be seen in v$session when using alter session.
      */
     UInt             mMaxStatementsPerSession;
+
     SChar            mShardPinStr[MMC_SHARD_PIN_STR_LEN + 1];
 
-    /* BUG-46090 Meta Node SMN ì „íŒŒ */
+    /* BUG-46090 Meta Node SMN ÀüÆÄ */
     ULong            mShardMetaNumber;          // SHARD_META_NUMBER
+    ULong            mLastShardMetaNumber;
+    ULong            mReceivedShardMetaNumber;
 
     /* PROJ-2677 */
     UInt             mReplicationDDLSync;
@@ -400,17 +469,66 @@ typedef struct mmcSessionInfo4PerfV
     /* BUG-45707 */
     UInt             mShardClient;
     UInt             mShardSessionType;
+
+    mmcMessageCallback mMessageCallback;  /* BUG-46019 MessageCallback µî·Ï ¿©ºÎ */
+
+    ULong            mAllocTransRetryCount;   // BUG-47655
+
+    // PROJ-2727 add connect attr
+    UInt             mNormalFormMaximum;
+    UInt             mOptimizerDefaultTempTbsType;
+    UInt             mSTObjBufSize;
+    UInt             mTrclogDetailPredicate;
+    SInt             mOptimizerDiskIndexCostAdj;
+    SInt             mOptimizerMemoryIndexCostAdj;
+    UInt             mRecyclebinEnable;
+    UInt             mUseOldSort;
+    UInt             mArithmeticOpMode;
+    UInt             mResultCacheEnable;
+    UInt             mTopResultCacheMode;
+    UInt             mOptimizerAutoStats;
+    UInt             mOptimizerTransitivityOldRule;
+    UInt             mOptimizerPerformanceView;
+    UInt             mPrintOutEnable;
+    UInt             mTrclogDetailShard;
+    UInt             mSerialExecuteMode;
+    UInt             mTrcLogDetailInformation;
+    UInt             mReducePartPrepareMemory;   
+    idBool           mTransactionalDDL;     /* PROJ-2735 DDL Transaction */ 
+    sdiInternalOperation mShardInternalLocalOperation;
+    idBool           mGlobalDDL;            /* PROJ-2736 Global DDL */ 
+
+    mmcGCTxCommitInfo mGCTxCommitInfo;
+
+    UInt             mShardStatementRetry;
+    UInt             mIndoubtFetchTimeout;
+    UInt             mIndoubtFetchMethod;
+
+    UInt             mShardDDLLockTimeout;
+    UInt             mShardDDLLockTryCount;
+
+    UInt             mDDLLockTimeout;
+
+
+    UInt             mPlanHashOrSortMethod;            /* BUG-48132 */
+
+    UInt             mBucketCountMax;                  /* BUG-48161 */
+
+    UInt             mEliminateCommonSubexpression;    /* BUG-48348 */
+
+    /* TASK-7219 Non-shard DML */
+    UInt             mStmtExecSeqForShardTx;
 } mmcSessionInfo4PerfV;
 
 //--------------------
 // PROJ-2451 Concurrent Execute Package
-// X$INTERNAL_SESSION ì˜ êµ¬ì¡°
+// X$INTERNAL_SESSION ÀÇ ±¸Á¶
 //--------------------
 typedef struct mmcInternalSessionInfo4PerfV
 {
     mmcSessID        mSessionID;      // ID
-    //fix BUG-23656 session,xid ,transactionì„ ì—°ê³„í•œ performance viewë¥¼ ì œê³µí•˜ê³ ,
-    //ê·¸ë“¤ê°„ì˜ ê´€ê³„ë¥¼ ì •í™•íˆ ìœ ì§€í•´ì•¼ í•¨.
+    //fix BUG-23656 session,xid ,transactionÀ» ¿¬°èÇÑ performance view¸¦ Á¦°øÇÏ°í,
+    //±×µé°£ÀÇ °ü°è¸¦ Á¤È®È÷ À¯ÁöÇØ¾ß ÇÔ.
     mmcTransID       mTransID;
     UInt             mQueryTimeout;   // QUERY_TIME_LIMIT
     /* BUG-32885 Timeout for DDL must be distinct to query_timeout or utrans_timeout */
@@ -458,6 +576,7 @@ class mmcSession
 {
 public:
     static qciSessionCallback mCallback;
+    static smiSessionCallback mSessionInfoCallback;
 
 private:
     mmcSessionInfo  mInfo;
@@ -477,8 +596,8 @@ private:
     iduMutex        mStmtListMutex;
 
     /* PROJ-1381 Fetch Across Commits */
-    iduList         mCommitedFetchList; /**< Commitëœ Holdable Fetch List. */
-    iduMutex        mFetchListMutex;    /**< FetchList, CommitedFetchListë¥¼ ìœ„í•œ lock. */
+    iduList         mCommitedFetchList; /**< CommitµÈ Holdable Fetch List. */
+    iduMutex        mFetchListMutex;    /**< FetchList, CommitedFetchList¸¦ À§ÇÑ lock. */
 
     mmcStatement   *mExecutingStatement;
 
@@ -491,12 +610,14 @@ private:
     friend class    mmcTrans;         /* access mTrans of mmcSession private member
                                        * to control share tx in mmcTrans class
                                        */
-    idBool          mTransAllocFlag;
-    idBool          mTransBegin;      /* non-autocommitì˜ tx beginë˜ì—ˆëŠ”ì§€ ì—¬ë¶€ */
-    idBool          mTransLazyBegin;  /* Queryê°€ ë“¤ì–´ì˜¤ë©´ Transactionì„ ì‹œì‘ */
-    idBool          mTransPrepared;   /* transê°€ prepareë˜ì—ˆëŠ”ì§€ ì—¬ë¶€ */
-    ID_XID          mTransXID;        /* transê°€ prepareí•œ XID */
+    mmcTxConcurrencyDump mTransDump;
 
+    idBool          mTransAllocFlag;
+    idBool          mSessionBegin;    /* non-autocommitÀÇ session beginµÇ¾ú´ÂÁö ¿©ºÎ */
+    idBool          mTransLazyBegin;  /* Query°¡ µé¾î¿À¸é TransactionÀ» ½ÃÀÛ */
+    idBool          mTransPrepared;   /* trans°¡ prepareµÇ¾ú´ÂÁö ¿©ºÎ */
+    ID_XID          mTransXID;        /* trans°¡ prepareÇÑ XID */
+    sdiZKPendingJobFunc mZKPendingFunc;
 private:
     /*
      * LOB
@@ -506,14 +627,14 @@ private:
 
 private:
     /*
-     * PROJ-1629 2ê°€ì§€ í†µì‹  í”„ë¡œí† ì½œ ê°œì„ 
+     * PROJ-1629 2°¡Áö Åë½Å ÇÁ·ÎÅäÄİ °³¼±
      */
 
     UChar          *mChunk;
     UInt            mChunkSize;
-    /* PROJ-2160 CM íƒ€ì…ì œê±°
-       ìœ„ì˜ mChunk ëŠ” Insert ì‹œì— ì‚¬ìš©ë˜ë©°
-       mOutChunk ëŠ” outParam ì‹œì— ì‚¬ìš©ëœë‹¤. */
+    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
+       À§ÀÇ mChunk ´Â Insert ½Ã¿¡ »ç¿ëµÇ¸ç
+       mOutChunk ´Â outParam ½Ã¿¡ »ç¿ëµÈ´Ù. */
     UChar          *mOutChunk;
     UInt            mOutChunkSize;
 
@@ -579,17 +700,24 @@ private:
      */
     mmcMutexPool    mMutexPool;
 
+private:
+    idBool          mIsNeedBlockCommit;
+
+    idBool          mIsGTx;
+    idBool          mIsGCTx;
+
 public:
     IDE_RC initialize(mmcTask *aTask, mmcSessID aSessionID);
     IDE_RC finalize();
+    void preFinalizeShardSession();
 
     IDE_RC findLanguage();
 
-    /* TASK-6201 IDE_ASSERT remove */
+    /* BUG-47650 BUG-38585 IDE_ASSERT remove */
     IDE_RC disconnect(idBool aClearClientInfoFlag);
     void   changeSessionStateService();
 
-    /* BUG-28866 : Loggingì„ ìœ„í•œ í•¨ìˆ˜ ì¶”ê°€ */
+    /* BUG-28866 : LoggingÀ» À§ÇÑ ÇÔ¼ö Ãß°¡ */
     void   loggingSession(SChar *aLogInOut, mmcSessionInfo *aInfo);
     IDE_RC beginSession();
     IDE_RC endSession();
@@ -599,13 +727,37 @@ public:
     IDE_RC closeAllCursorByFetchList(iduList *aFetchList, idBool aSuccess);
 
     inline void   getDeqViewSCN(smSCN * aDeqViewSCN);
-    IDE_RC endPendingTrans( ID_XID *aXID, idBool aIsCommit );
-    IDE_RC prepareForShard( ID_XID *aXID, idBool *aReadOnly );
+    IDE_RC endPendingTrans( ID_XID *aXID,
+                            idBool aIsCommit,
+                            smSCN *aGlobalCommitSCN );
+    IDE_RC endPendingSharedTxDelegateSession( mmcTransObj * aTransObj,
+                                              ID_XID      * aXID,
+                                              idBool        aIsCommit,
+                                              smSCN       * aGlobalCommitSCN );
+    IDE_RC prepareForShard( ID_XID * aXID,
+                            idBool * aReadOnly,
+                            smSCN  * aPrepareSCN );
+    IDE_RC prepareForShardDelegateSession( mmcTransObj * aTransObj,
+                                           ID_XID      * aXID,
+                                           idBool      * aIsReadOnly,
+                                           smSCN       * aPrepareSCN );
+
+    IDE_RC blockDelegateSession( mmcTransObj * aTransObj, mmcSession ** aDelegatedSession );
+    void   unblockDelegateSession( mmcTransObj * aTransObj );
+
+    IDE_RC endPendingBySyntax( SChar * aXIDStr, 
+                               UInt    aXIDStrSize,
+                               idBool  aIsCommit );
+
     IDE_RC commit(idBool bInStoredProc = ID_FALSE);
     IDE_RC commitForceDatabaseLink(idBool bInStoredProc = ID_FALSE);
     IDE_RC rollback(const SChar* aSavePoint = NULL, idBool bInStoredProc = ID_FALSE);
     IDE_RC rollbackForceDatabaseLink( idBool bInStoredProc = ID_FALSE );
     IDE_RC savepoint(const SChar* aSavePoint, idBool bInStoredProc = ID_FALSE);
+
+    IDE_RC commitInternal( void * aUserContext );
+    
+    void executeZookeeperPendingJob();
 
     /* BUG-46785 Shard statement partial rollback */
     IDE_RC shardStmtPartialRollback( void );
@@ -683,13 +835,13 @@ public:
     UInt             getIsolationLevel();
     void             setIsolationLevel(UInt aIsolationLevel);
 
-    // BUG-15396 ìˆ˜ì • ì‹œ, ì¶”ê°€ë˜ì—ˆìŒ
+    // BUG-15396 ¼öÁ¤ ½Ã, Ãß°¡µÇ¾úÀ½
     UInt             getReplicationMode();
 
-    // BUG-15396 ìˆ˜ì • ì‹œ, ì¶”ê°€ë˜ì—ˆìŒ
+    // BUG-15396 ¼öÁ¤ ½Ã, Ãß°¡µÇ¾úÀ½
     UInt             getTransactionMode();
 
-    // To Fix BUG-15396 : alter session set commit write ì†ì„± ë³€ê²½ ì‹œ í˜¸ì¶œë¨
+    // To Fix BUG-15396 : alter session set commit write ¼Ó¼º º¯°æ ½Ã È£ÃâµÊ
     idBool           getCommitWriteWaitMode();
     void             setCommitWriteWaitMode(idBool aCommitWriteType);
 
@@ -722,7 +874,7 @@ public:
     UInt             getNormalFormMaximum();
     void             setNormalFormMaximum(UInt aNormalFormMaximum);
 
-    // BUG-23780  TEMP_TBS_MEMORY íŒíŠ¸ ì ìš©ì—¬ë¶€ë¥¼ propertyë¡œ ì œê³µ
+    // BUG-23780  TEMP_TBS_MEMORY ÈùÆ® Àû¿ë¿©ºÎ¸¦ property·Î Á¦°ø
     UInt             getOptimizerDefaultTempTbsType();
     void             setOptimizerDefaultTempTbsType(UInt aValue);
 
@@ -763,7 +915,7 @@ public:
     idBool           isAllStmtEnd();
     void             changeOpenStmt(SInt aCount);
 
-    /* PROJ-1381 FAC : Holdable Fetchë¥¼ ì œì™¸í•œ Stmtê°€ ëª¨ë‘ ë‹«í˜”ëŠ”ì§€ í™•ì¸í•  ìˆ˜ ìˆì–´ì•¼ í•œë‹¤. */
+    /* PROJ-1381 FAC : Holdable Fetch¸¦ Á¦¿ÜÇÑ Stmt°¡ ¸ğµÎ ´İÇû´ÂÁö È®ÀÎÇÒ ¼ö ÀÖ¾î¾ß ÇÑ´Ù. */
     idBool           isAllStmtEndExceptHold(void);
     void             changeHoldFetch(SInt aCount);
 
@@ -773,24 +925,24 @@ public:
     mmdXaAssocState  getXaAssocState();
     void             setXaAssocState(mmdXaAssocState aState);
 
-    // BUG-15396 : transactionì„ ìœ„í•œ session ì •ë³´ ë°˜í™˜
-    //             transaction begin ì‹œì— í•„ìš”í•¨
+    // BUG-15396 : transactionÀ» À§ÇÑ session Á¤º¸ ¹İÈ¯
+    //             transaction begin ½Ã¿¡ ÇÊ¿äÇÔ
     UInt             getSessionInfoFlagForTx();
     void             setSessionInfoFlagForTx(UInt   aIsolationLevel,
                                              UInt   aReplicationMode,
                                              UInt   aTransactionMode,
                                              idBool aCommitWriteWaitMode);
-    // transactionì˜ isolation levelì„ ë°˜í™˜
+    // transactionÀÇ isolation levelÀ» ¹İÈ¯
     UInt             getTxIsolationLevel(mmcTransObj * aTrans);
 
-    // transactionì˜ transaction modeë¥¼ ë°˜í™˜
+    // transactionÀÇ transaction mode¸¦ ¹İÈ¯
     UInt             getTxTransactionMode(mmcTransObj * aTrans);
 
     // PROJ-1583 large geometry
     void             setSTObjBufSize(UInt aObjBufSize );
     UInt             getSTObjBufSize();
 
-    // PROJ-1665 : alter session set parallel_dml_mode = 0/1 í˜¸ì¶œì‹œ ì‚¬ìš©ë¨
+    // PROJ-1665 : alter session set parallel_dml_mode = 0/1 È£Ãâ½Ã »ç¿ëµÊ
     IDE_RC           setParallelDmlMode(idBool aParallelDmlMode);
     idBool           getParallelDmlMode();
 
@@ -855,15 +1007,16 @@ public:
     /*
      * Database link session property
      */
-    UInt   getDblinkGlobalTransactionLevel();
-    IDE_RC setDblinkGlobalTransactionLevel( UInt aValue );
+    UInt   getGlobalTransactionLevel();
+    IDE_RC setGlobalTransactionLevel( UInt aValue );
+    IDE_RC checkGCTxPermit( UInt aValue );
     void   setDblinkRemoteStatementAutoCommit( UInt aValue );
 
     /* PROJ-2441 flashback */
     UInt getRecyclebinEnable();
     void setRecyclebinEnable(UInt aValue);
 
-    /* BUG-42853 LOCK TABLEì— UNTIL NEXT DDL ê¸°ëŠ¥ ì¶”ê°€ */
+    /* BUG-42853 LOCK TABLE¿¡ UNTIL NEXT DDL ±â´É Ãß°¡ */
     idBool getLockTableUntilNextDDL();
     void   setLockTableUntilNextDDL( idBool aValue );
     UInt   getTableIDOfLockTableUntilNextDDL();
@@ -908,32 +1061,43 @@ public:
     sdiShardPin getShardPIN();
     void        setShardPIN( sdiShardPin aShardPin );
     SChar      *getShardNodeName();
-    idBool      isShardData();
+    idBool      isShardUserSession();
+    idBool      isShardCoordinatorSession();
+    /* TASK-7219 Analyzer/Transformer/Executor ¼º´É°³¼± */
+    idBool      getCallByShardAnalyzeProtocol();
+    void        setCallByShardAnalyzeProtocol( idBool aCallByShardAnalyzeProtocol );
+
     idBool      isShardTrans();
     idBool      isShareableTrans();
     void        setNewSessionShardPin();
 
-    /* BUG-46090 Meta Node SMN ì „íŒŒ */
+    /* BUG-46090 Meta Node SMN ÀüÆÄ */
     idBool      isMetaNodeShardCli();
-    void        setMetaNodeShardCli( idBool aIsMetaNodeShardCli );
     ULong       getShardMetaNumber();
     void        setShardMetaNumber( ULong aSMN );
+
+    IDE_RC setCallbackForReloadNewIncreasedDataSMN(smiTrans * aTrans);
+    static void reloadDataShardMetaNumber( void * aSession );
+
+    ULong       getLastShardMetaNumber();
+    void        setLastShardMetaNumber(ULong aSMN);
+    void        clearLastShardMetaNumber();
+    idBool      isReshardOccurred();
+    ULong       getReceivedShardMetaNumber();
+    void        setReceivedShardMetaNumber(ULong aSMN);
+    idBool      isNeedRebuildNoti();
     IDE_RC      applyShardMetaChange( smiTrans * aTrans,
                                       ULong    * aNewSMN );
     void        clearShardDataInfo();
+    void        clearShardDataInfoForRebuild();
 
     /* BUG-46092 */
     void        freeRemoteStatement( UInt aNodeId, UChar aMode );
     UInt        getShardFailoverType( UInt aNodeId );
 
-    /* BUG-45967 Data Nodeì˜ Shard Session ì •ë¦¬ */
-    IDE_RC      checkSMNForDataNode( const SChar * aProtocolErrorMsg );
-
     /* BUG-46100 Session SMN Update */
     IDE_RC      checkSMNForDataNodeAndSetSMN( ULong         aSMNForSession,
                                               const SChar * aProtocolErrorMsg );
-    void        checkAndFinalizeShardCoordinator();
-    void        checkAndFinalizeRebuildCoordinator();
 
     /* BUG-45707 */
     void setShardClient( sdiShardClient aShardClient );
@@ -941,15 +1105,17 @@ public:
     UInt isShardClient();
 
     void setShardSessionType( sdiSessionType aSessionType );
-    UInt getShardSessionType();
+    sdiSessionType getShardSessionType();
     inline idBool isShardLibrarySession();
 
     /* BUG-45899 */
     void setTrclogDetailShard( UInt aTrclogDetailShard );
     UInt getTrclogDetailShard();
 
+    idBool getSessionBegin();
+    idBool isTransAlloc( void );
+    void   setSessionBegin(idBool aBegin);
     idBool getTransBegin();
-    void setTransBegin(idBool aBegin);
 
     idBool getTransLazyBegin();
     void setTransLazyBegin( idBool aLazyBegin );
@@ -966,6 +1132,18 @@ public:
     UInt   getReplicationDDLSyncTimeout();
     void   setReplicationDDLSyncTimeout( UInt aValue );
 
+    /* PROJ-2735 DDL Transaction */
+    idBool getTransactionalDDL();
+    IDE_RC setTransactionalDDL( idBool aDDLTrans );
+
+    /* PROJ-2736 Global DDL */
+    idBool getGlobalDDL();
+    IDE_RC setGlobalDDL( idBool aGlobalDDL );
+
+    idBool isDDLAutoCommit();
+
+    idBool globalDDLUserSession();
+
     void    setPrintOutEnable(UInt aValue);
     UInt    getPrintOutEnable();    
 
@@ -976,6 +1154,96 @@ public:
     UInt getTrcLogDetailInformation();
     void setTrcLogDetailInformation( UInt aValue );
 
+    void setShardDDLLockTimeout( UInt aShardDDLLockTimeout );
+    void setShardDDLLockTryCount( UInt aShardDDLLockTryCount );
+    void setDDLLockTimeout( SInt aDDLLockTimeout );
+
+    /* BUG-46019 */
+    mmcMessageCallback getMessageCallback();
+    void               setMessageCallback(mmcMessageCallback aValue);
+
+    /* BUG-47648  disk partition¿¡¼­ »ç¿ëµÇ´Â prepared memory »ç¿ë·® °³¼± */
+    UInt getReducePartPrepareMemory();
+    void setReducePartPrepareMemory( UInt aValue );
+
+    // PROJ-2727
+    IDE_RC setSessionPropertyInfo( UShort   aSessionPropertyID,
+                                   SChar  * aSessionPropValue,
+                                   UInt     aSessionPropValueLen );
+    
+    IDE_RC setSessionPropertyInfo( UShort aSessionPropID,
+                                   UInt   aSessionPropValue );
+    
+    void getSessionPropertyInfo( UShort *aSessionPropertyID,
+                                 SChar  **aSessionPropValue,
+                                 UInt   *aSessionPropValueLen );
+
+    UInt getDblinkRemoteStatementAutoCommit();
+
+    void setPropertyAttrbute( UInt aValue );
+    UInt getPropertyAttrbute();
+
+    // BUG-47773
+    IDE_RC setShardSessionProperty();
+    
+    idBool getShardInPSMEnable();
+    void setShardInPSMEnable( idBool aValue );
+
+    /* for sharding HA management */
+    static sdiInternalOperation getShardInternalLocalOperation(void * aSession);
+    static IDE_RC setShardInternalLocalOperationCallback( void * aSession, sdiInternalOperation aValue );
+    IDE_RC setShardInternalLocalOperation( sdiInternalOperation aValue );
+
+    idBool getIsNeedBlockCommit();
+    void   setIsNeedBlockCommit();
+
+    IDE_RC blockForLibrarySession( mmcTransObj * aTrans,
+                                   idBool      * aIsBlocked );
+    void   unblockForLibrarySession( mmcTransObj * aTrans );
+
+    /* PROJ-2733-DistTxInfo */
+    UChar *getSessionTypeString();
+    idBool isGTx();
+    idBool isGCTx();
+    sdiClientInfo * getShardClientInfo();
+    void getCoordSCN( sdiClientInfo * aClientInfo,
+                      smSCN         * aCoordSCN );
+    void getCoordPrepareSCN( sdiClientInfo * aClientInfo,
+                             smSCN         * aPrepareSCN );
+    void setCoordGlobalCommitSCN( sdiClientInfo * aClientInfo,
+                                  smSCN         * aGlobalCommitSCN );
+    void setShardStatementRetry( UInt aValue );
+    UInt getShardStatementRetry();
+    void setIndoubtFetchTimeout( UInt aValue );
+    void setIndoubtFetchMethod( UInt aValue );
+    idBool getGCTxPermit();
+    void   setGCTxPermit(idBool aValue);
+    void clearToBeShardMetaNumber();
+
+    /* BUG-48132 */
+    UInt getPlanHashOrSortMethod();
+    void setPlanHashOrSortMethod( UInt aValue );
+
+    /* BUG-48161 */
+    UInt getBucketCountMax();
+    void setBucketCountMax( UInt aValue );
+
+    /* BUG-48348 */
+    UInt getEliminateCommonSubexpression();
+    void setEliminateCommonSubexpression( UInt aValue );
+
+    /* BUG-48384 */
+    UShort getClientTouchNodeCount();
+    void   setClientTouchNodeCount(UShort aValue);
+
+    void setInternalTableSwap( smiTrans * aTrans );
+
+    /* TASK-7219 Non-shard DML */
+    void initStmtExecSeqForShardTx();
+    void increaseStmtExecSeqForShardTx();
+    void decreaseStmtExecSeqForShardTx();
+    UInt getStmtExecSeqForShardTx();
+    void setStmtExecSeqForShardTx( UInt aValue );
 public:
     /*
      * Set
@@ -1002,7 +1270,7 @@ public:
 
 public:
     /*
-     * PROJ-1629 2ê°€ì§€ í†µì‹  í”„ë¡œí† ì½œ ê°œì„ 
+     * PROJ-1629 2°¡Áö Åë½Å ÇÁ·ÎÅäÄİ °³¼±
      */
 
     UInt   getChunkSize();
@@ -1013,7 +1281,7 @@ public:
     idBool getHasClientListChannel();
     UInt   getFetchProtocolType();  // BUG-34725
 
-    /* PROJ-2160 CM íƒ€ì…ì œê±° */
+    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å */
     UInt   getOutChunkSize();
     UChar *getOutChunk();
     IDE_RC allocOutChunk(UInt aAllocSize);
@@ -1124,7 +1392,7 @@ public:
     static SLong            getTimezoneSecondCallback( void *aSession );
     static SChar           *getTimezoneStringCallback( void *aSession );
     static UInt             getNormalFormMaximumCallback(void *aSession);
-    // BUG-23780 TEMP_TBS_MEMORY íŒíŠ¸ ì ìš©ì—¬ë¶€ë¥¼ propertyë¡œ ì œê³µ
+    // BUG-23780 TEMP_TBS_MEMORY ÈùÆ® Àû¿ë¿©ºÎ¸¦ property·Î Á¦°ø
     static UInt             getOptimizerDefaultTempTbsTypeCallback(void *aSession);   
     static UInt             getOptimizerModeCallback(void *aSession);
     static UInt             getSelectHeaderDisplayCallback(void *aSession);
@@ -1204,7 +1472,7 @@ public:
     /* PROJ-2441 flashback */
     static UInt getRecyclebinEnableCallback( void *aSession );
     
-    /* BUG-42853 LOCK TABLEì— UNTIL NEXT DDL ê¸°ëŠ¥ ì¶”ê°€ */
+    /* BUG-42853 LOCK TABLE¿¡ UNTIL NEXT DDL ±â´É Ãß°¡ */
     static idBool getLockTableUntilNextDDLCallback( void * aSession );
     static void   setLockTableUntilNextDDLCallback( void * aSession, idBool aValue );
     static UInt   getTableIDOfLockTableUntilNextDDLCallback( void * aSession );
@@ -1217,13 +1485,15 @@ public:
 
     /* PROJ-2451 Concurrent Execute Package */
     static IDE_RC          allocInternalSession( void ** aMmSession, void * aOrgMmSession );
+    static IDE_RC allocInternalSessionWithUserInfo( void ** aMmSession, void * aUserInfo );
+
     static IDE_RC          freeInternalSession( void * aMmSession, idBool aIsSuccess );
     static smiTrans      * getSessionSmiTrans( void * aMmSession );
-
+    static smiTrans      * getSessionSmiTransWithBegin( void * aMmSession );
     // PROJ-1904 Extend UDT
     static qciSession    * getQciSessionCallback( void * aMmSession );
 
-    /* PROJ-2473 SNMP ì§€ì› */
+    /* PROJ-2473 SNMP Áö¿ø */
     inline UInt  getSessionFailureCount();
     inline UInt  addSessionFailureCount();
     inline void  resetSessionFailureCount();
@@ -1257,24 +1527,34 @@ public:
     static UInt getOptimizerPerformanceViewCallback( void * aSession );
 
     /* PROJ-2701 Sharding online data rebuild */
-    static idBool isShardDataCallback( void *aSession );
+    static idBool isShardUserSessionCallback( void *aSession );
+    /* TASK-7219 Analyzer/Transformer/Executor ¼º´É°³¼± */
+    static idBool getCallByShardAnalyzeProtocolCallback( void *aSession );
+
     /* PROJ-2638 shard native linker */
     static ULong getShardPINCallback( void *aSession );
+    static void setShardPINCallback( void *aSession );
+
     static ULong getShardMetaNumberCallback( void *aSession );
     static SChar * getShardNodeNameCallback( void *aSession );
     static IDE_RC reloadShardMetaNumberCallback( void   *aSession,
                                                  idBool  aIsLocalOnly );
+
+    static sdiSessionType getShardSessionTypeCallback( void *aSession );
 
     /* BUG-45899 */
     static UInt getTrclogDetailShardCallback( void *aSession );
 
     static UChar getExplainPlanCallback( void *aSession );
 
-    /* BUG-45844 (Server-Side) (Autocommit Mode) Multi-Transactionì„ ì§€ì›í•´ì•¼ í•©ë‹ˆë‹¤. */
-    static UInt getDBLinkGTXLevelCallback( void * aSession );
+    /* BUG-45844 (Server-Side) (Autocommit Mode) Multi-TransactionÀ» Áö¿øÇØ¾ß ÇÕ´Ï´Ù. */
+    static UInt getGTXLevelCallback( void * aSession );
 
     /* PROJ-2677 DDL synchronization */
     static UInt  getReplicationDDLSyncCallback( void *aSession );
+
+    static idBool getTransactionalDDLCallback( void *aSession );
+    static idBool getGlobalDDLCallback( void *aSession );
 
     static UInt  getPrintOutEnableCallback( void *aSession );
 
@@ -1289,6 +1569,39 @@ public:
     /* PROJ-2632 */
     static UInt getSerialExecuteModeCallback( void * aSession );
     static UInt getTrcLogDetailInformationCallback( void *aSession );
+
+    /* BUG-47648  disk partition¿¡¼­ »ç¿ëµÇ´Â prepared memory »ç¿ë·® °³¼± */
+    static UInt getReducePartPrepareMemoryCallback( void * aSession );
+    
+    // PROJ-2727
+    static void getSessionPropertyInfoCallback( void   * aSession,
+                                                UShort * aSessionPropID,
+                                                SChar  **aSessionPropValue,
+                                                UInt   * aSessionPropValueLen );
+
+    static UInt    getCommitWriteWaitModeCallback( void *aSession );
+    static UInt    getDblinkRemoteStatementAutoCommitCallback( void *aSession );
+    static UInt    getDdlTimeoutCallback( void *aSession );
+    static UInt    getFetchTimeoutCallback( void *aSession );
+    static UInt    getIdleTimeoutCallback( void *aSession );        
+    static UInt    getMaxStatementsPerSessionCallback( void *aSession );
+    static UInt    getNlsNcharConvExcpCallback( void *aSession );                
+    static void    getNlsTerritoryCallback( void *aSession, SChar * aBuffer );
+    static UInt    getQueryTimeoutCallback( void *aSession );                
+    static UInt    getReplicationDDLSyncTimeoutCallback( void *aSession );                
+    static ULong   getUpdateMaxLogSizeCallback( void *aSession );
+    static UInt    getUTransTimeoutCallback( void *aSession );
+    static UInt    getPropertyAttributeCallback( void *aSession );
+    static void    setPropertyAttributeCallback( void *aSession, UInt aValue );    
+
+    /* BUG-48132 */
+    static UInt getPlanHashOrSortMethodCallback( void * aSession );
+
+    /* BUG-48161 */
+    static UInt getBucketCountMaxCallback( void * aSession );
+
+    /* BUG-48348 */
+    static UInt getEliminateCommonSubexpressionCallback( void * aSession );
 
     // BUG-42464 dbms_alert package
     static IDE_RC           registerCallback( void  * aSession,
@@ -1328,8 +1641,103 @@ public:
                                              SInt   * aStatus,
                                              SInt     aTimeout );
 
-    /* PROJ-2624 [ê¸°ëŠ¥ì„±] MM - ìœ ì—°í•œ access_list ê´€ë¦¬ë°©ë²• ì œê³µ */
+    /* PROJ-2624 [±â´É¼º] MM - À¯¿¬ÇÑ access_list °ü¸®¹æ¹ı Á¦°ø */
     static IDE_RC           loadAccessListCallback();
+
+    /* BUG-47655 TRANSACTION_TABLE_SIZE ºÎÁ· ¿À·ù ¸Ş½ÃÁö ¼öÁ¤ */
+    static void setAllocTransRetryCountCallback( void  * aSession,
+                                                 ULong   aRetryCount );
+    static void   setShardInPSMEnableCallback( void * aSession, idBool aValue );
+    static idBool getShardInPSMEnableCallback( void * aSession );
+
+    /* PROJ-2728 Sharding LOB */
+    static UInt   getStmtIdCallback( void * aUserContext );
+
+    static void * findShardStmtCallback( void * aSession,
+                                         UInt   aStmtId );
+
+    // BUG-47861 INVOKE_USER_ID, INVOKE_USER_NAME function
+    static SChar *getInvokeUserNameCallback(void *aSession);
+    static void   setInvokeUserNameCallback(void *aSession, SChar * aInvokeUserName);
+
+    static IDE_RC setInvokeUserPropertyInternalCallback( void  * aSession,
+                                                         SChar * aPropName,
+                                                         UInt    aPropNameLen,
+                                                         SChar * aPropValue,
+                                                         UInt    aPropValueLen );
+    /* TASK-7219 */
+    static void * getPlanStringCallback( void * aUserContext );
+
+    /* PROJ-2733-DistTxInfo */
+    static void  getStatementRequestSCNCallback(void *aMmStatement, smSCN *aSCN);
+    static void  setStatementRequestSCNCallback(void *aMmStatement, smSCN *aSCN);
+    static void  getStatementTxFirstStmtSCNCallback(void *aMmStatement, smSCN *aTxFirstStmtSCN);
+    static ULong getStatementTxFirstStmtTimeCallback(void *aMmStatement);
+    static sdiDistLevel getStatementDistLevelCallback(void *aMmStatement);
+    static idBool isGTxCallback(void *aSession);
+    static idBool isGCTxCallback(void *aSession);
+    static UChar *getSessionTypeStringCallback(void *aSession);
+    static UInt   getShardStatementRetryCallback(void *aSession);
+    static UInt   getIndoubtFetchTimeoutCallback(void *aSession);
+    static UInt   getIndoubtFetchMethodCallback(void *aSession);
+
+    void getLastSystemSCN( UChar aOpID, smSCN * aLastSystemSCN );
+
+    void setGlobalTransactionLevelFlag();
+
+    static IDE_RC commitInternalCallback( void  * aSession,
+                                          void  * aUserContext );
+
+    static void setShardMetaNumberCallback( void  * aSession,
+                                            ULong   aSMN );
+
+    static void pauseShareTransFixCallback( void * aMmSession );
+    static void resumShareTransFixCallback( void * aMmSession );
+    static UInt getShardDDLLockTimeout(void *aSession);
+    static UInt getShardDDLLockTryCount(void *aSession);
+    static SInt getDDLLockTimeout(void *aSession);
+
+    static void getUserInfoCallback( void * aSession, void * aUserInfo );
+
+    static ULong getLastShardMetaNumberCallback( void * aMmSession );
+
+    static idBool detectShardMetaChangeCallback( void * aMmSession );
+
+    idBool detectShardMetaChange();
+    IDE_RC rebuildShardSession( ULong         aTargetSMN,
+                                mmcTransObj * aTrans );
+    void   cleanupShardRebuildSession();
+    IDE_RC propagateRebuildShardMetaNumber();
+    IDE_RC propagateShardMetaNumber();
+    IDE_RC processShardRetryError( mmcStatement * aStatement,
+                                   UInt         * aStmtRetryMax,
+                                   UInt         * aRebuildRetryMax );
+    void transBeginForGTxEndTran();
+
+    inline IDE_RC rebuildShardSessionBeforeEndTran( mmcTransObj * aTrans );
+    inline void   rebuildShardSessionAfterEndTran();
+
+    static UShort getClientTouchNodeCountCallback(void *aSession);  /* BUG-48384 */
+
+    /* TASK-7219 Non-shard DML */
+    static void increaseStmtExecSeqForShardTxCallback( void *aSession );
+    static void decreaseStmtExecSeqForShardTxCallback( void *aSession );
+    static UInt getStmtExecSeqForShardTxCallback( void *aSession );
+    static sdiShardPartialExecType getStatementShardPartialExecTypeCallback( void *aMmStatement );
+
+    /* BUG-48770 */
+    static UInt checkSessionCountCallback();
+private:
+    IDE_RC makeShardSession( ULong                   aTargetSMN,
+                             ULong                   aLastSessionSMN,
+                             smiTrans              * aSmiTrans,
+                             idBool                  aIsShardMetaChanged,
+                             sdiRebuildPropaOption   aRebuildPropaOpt );
+
+    IDE_RC makeShardSessionWithoutSession( ULong      aTargetSMN,
+                                           ULong      aLastSessionSMN,
+                                           smiTrans * aSmiTrans,
+                                           idBool     aIsShardMetaChanged );
 };
 
 
@@ -1423,7 +1831,15 @@ inline mmcTransObj *mmcSession::getTransPtr(mmcStatement *aStmt)
     }
     else
     {
-        sTrans = aStmt->getTransPtr();
+        /* BUG-46713 codesonar */
+        if ( aStmt != NULL )
+        {
+            sTrans = aStmt->getTransPtr();
+        }
+        else
+        {
+            sTrans = NULL;
+        }
     }
 
     return sTrans;
@@ -1439,15 +1855,17 @@ inline void mmcSession::setTrans(mmcTransObj *aTrans)
     }
 
     mTrans = aTrans;
+
+    mTransAllocFlag = ID_TRUE;
 }
 
 /*
- * commit ëª¨ë“œ ë³€ê²½ì‹œ 
- * ê¸°ì¡´ì— ì‚¬ìš©í•˜ë˜ ê³µìœ  ê°€ëŠ¥ íŠ¸ëœì­ì…˜ í˜¹ì€ ê³µìœ  ë¶ˆê°€ íŠ¸ëœì­ì…˜ì„ freeí•˜ê³ , 
- * í˜„ì¬ ëª¨ë“œì— ë§ëŠ” ì‹ ê·œ íŠ¸ëœì­ì…˜ì„ í• ë‹¹ ë°›ëŠ”ë‹¤.
+ * commit ¸ğµå º¯°æ½Ã 
+ * ±âÁ¸¿¡ »ç¿ëÇÏ´ø °øÀ¯ °¡´É Æ®·£Àè¼Ç È¤Àº °øÀ¯ ºÒ°¡ Æ®·£Àè¼ÇÀ» freeÇÏ°í, 
+ * ÇöÀç ¸ğµå¿¡ ¸Â´Â ½Å±Ô Æ®·£Àè¼ÇÀ» ÇÒ´ç ¹Ş´Â´Ù.
  *
- * ì‹ ê·œ íŠ¸ëœì­ì…˜ì€ ê¸°ì¡´ì— ì‚¬ìš©í•˜ë˜ íŠ¸ëœì­ì…˜ê³¼ ë‹¤ë¥¸ mempoolì—ì„œ 
- * í• ë‹¹ ë°›ê³  ë‹¤ë¥¸ í˜•íƒœë¡œ ì´ˆê¸°í™” ë˜ì–´ì•¼ í•œë‹¤.
+ * ½Å±Ô Æ®·£Àè¼ÇÀº ±âÁ¸¿¡ »ç¿ëÇÏ´ø Æ®·£Àè¼Ç°ú ´Ù¸¥ mempool¿¡¼­ 
+ * ÇÒ´ç ¹Ş°í ´Ù¸¥ ÇüÅÂ·Î ÃÊ±âÈ­ µÇ¾î¾ß ÇÑ´Ù.
  */
 inline void mmcSession::reallocTrans()
 {
@@ -1486,7 +1904,8 @@ inline qciUserInfo *mmcSession::getUserInfo()
 inline void mmcSession::setUserInfo(qciUserInfo *aUserInfo)
 {
     mInfo.mUserInfo = *aUserInfo;
-    
+    mInfo.mUserInfo.invokeUserNamePtr = (SChar*)(&mInfo.mUserInfo.loginID);
+
     (void)dkiSessionSetUserId( &mDatabaseLinkSession, aUserInfo->userID );
 }
 
@@ -1513,13 +1932,13 @@ inline void mmcSession::setExplainPlan(UChar aExplainPlan)
     sdi::setExplainPlanAttr( &mQciSession, aExplainPlan );
 }
 
-// BUG-15396 ìˆ˜ì • ì‹œ, ì¶”ê°€ë˜ì—ˆìŒ
+// BUG-15396 ¼öÁ¤ ½Ã, Ãß°¡µÇ¾úÀ½
 inline UInt mmcSession::getReplicationMode()
 {
     return mInfo.mReplicationMode;
 }
 
-// BUG-15396 ìˆ˜ì • ì‹œ, ì¶”ê°€ë˜ì—ˆìŒ
+// BUG-15396 ¼öÁ¤ ½Ã, Ãß°¡µÇ¾úÀ½
 inline UInt mmcSession::getTransactionMode()
 {
     return mInfo.mTransactionMode;
@@ -1538,8 +1957,8 @@ inline SChar * mmcSession::getNlsNumChar()
 /**********************************************************************
     BUG-15396
     alter session commit write wait/nowait;
-    commit ì‹œì— logê°€ diskì— ê¸°ë¡ë ë•Œê¹Œì§€ ê¸°ë‹¤ë¦´ì§€, ë°”ë¡œ ë°˜í™˜í• ì§€ì—
-    ëŒ€í•œ ì •ë³´
+    commit ½Ã¿¡ log°¡ disk¿¡ ±â·ÏµÉ¶§±îÁö ±â´Ù¸±Áö, ¹Ù·Î ¹İÈ¯ÇÒÁö¿¡
+    ´ëÇÑ Á¤º¸
 **********************************************************************/
 
 inline idBool mmcSession::getCommitWriteWaitMode()
@@ -1577,7 +1996,7 @@ inline ULong mmcSession::getUpdateMaxLogSize()
     return mInfo.mUpdateMaxLogSize;
 }
 
-// non auto commit ì¼ ê²½ìš°ì—ë§Œ í˜¸ì¶œë¨
+// non auto commit ÀÏ °æ¿ì¿¡¸¸ È£ÃâµÊ
 inline idBool mmcSession::isReadOnlyTransaction()
 {
     return (getTxTransactionMode(mTrans) & SMI_TRANSACTION_UNTOUCHABLE) != 0 ? ID_TRUE : ID_FALSE;
@@ -1629,7 +2048,7 @@ inline void mmcSession::setNormalFormMaximum(UInt aMaximum)
     mInfo.mNormalFormMaximum = aMaximum;
 }
 
-// BUG-23780 TEMP_TBS_MEMORY íŒíŠ¸ ì ìš©ì—¬ë¶€ë¥¼ propertyë¡œ ì œê³µ
+// BUG-23780 TEMP_TBS_MEMORY ÈùÆ® Àû¿ë¿©ºÎ¸¦ property·Î Á¦°ø
 inline UInt mmcSession::getOptimizerDefaultTempTbsType()
 {
     return mInfo.mOptimizerDefaultTempTbsType;    
@@ -1872,7 +2291,7 @@ inline idBool mmcSession::isQueueTimedOut()
         {
             sCurTime = idlOS::gettimeofday();
 
-            /* BUG-46183 u ë‹¨ìœ„ì˜ ì§§ì€ ì‹œê°„ì€ Queue êµ¬ì¡°ìƒ ëŒ€ê¸°í•˜ì§€ ì•Šì•„ mNeedQueueWait flagë¥¼ ë‘”ë‹¤. */
+            /* BUG-46183 u ´ÜÀ§ÀÇ ÂªÀº ½Ã°£Àº Queue ±¸Á¶»ó ´ë±âÇÏÁö ¾Ê¾Æ mNeedQueueWait flag¸¦ µĞ´Ù. */
             if (mQueueEndTime <= sCurTime.microsec())
             {
                 if (mNeedQueueWait == ID_TRUE)
@@ -1915,9 +2334,9 @@ inline void mmcSession::setGlobalCommitMode(mmcCommitMode aCommitMode)
 inline void mmcSession::saveLocalTrans()
 {
     mLocalTrans = getTransPtr();
-    mLocalTransBegin = getTransBegin();
+    mLocalTransBegin = getSessionBegin();
     mTransAllocFlag = ID_FALSE;
-    mTransBegin = ID_FALSE;
+    setSessionBegin( ID_FALSE );
     mTrans = NULL;
 }
 
@@ -1938,7 +2357,7 @@ inline void mmcSession::restoreLocalTrans()
 {
     
     mTrans = mLocalTrans;
-    mTransBegin = mLocalTransBegin;
+    setSessionBegin( mLocalTransBegin );
     /* fix BUG-31002, Remove unnecessary code dependency from the inline function of mm module. */
     if(mLocalTrans != NULL)
     {
@@ -1967,22 +2386,22 @@ inline void mmcSession::applyStatisticsToSystem()
 /*******************************************************************
  BUG-15396
 
- Description : transactionì‹œì— í•„ìš”í•œ session ì •ë³´ë¥¼
-               smiTrans.flag ê°’ìœ¼ë¡œ ì„¤ì •í•˜ì—¬ ë°˜í™˜
+ Description : transaction½Ã¿¡ ÇÊ¿äÇÑ session Á¤º¸¸¦
+               smiTrans.flag °ªÀ¸·Î ¼³Á¤ÇÏ¿© ¹İÈ¯
 
- Implementaion : Transaction ì‹œì‘ ì‹œì— ë„˜ê²¨ì¤˜ì•¼ í•  flag ì •ë³´ë¥¼
-                 Oring í•˜ì—¬ ë°˜í™˜
+ Implementaion : Transaction ½ÃÀÛ ½Ã¿¡ ³Ñ°ÜÁà¾ß ÇÒ flag Á¤º¸¸¦
+                 Oring ÇÏ¿© ¹İÈ¯
 ********************************************************************/
 inline UInt mmcSession::getSessionInfoFlagForTx()
 {
     UInt sFlag = 0;
 
-    // isolation level, replication mode, transaction mode ëª¨ë‘
-    // smiTrans.flag ê°’ê³¼ sessionì˜ ê°’ê³¼ ë™ì¼
+    // isolation level, replication mode, transaction mode ¸ğµÎ
+    // smiTrans.flag °ª°ú sessionÀÇ °ª°ú µ¿ÀÏ
     sFlag = getIsolationLevel() | getReplicationMode() | getTransactionMode();
 
-    // BUG-17878 : commit write wait modeë¥¼ bool typeìœ¼ë¡œ ë³€ê²½
-    // smiTrans.flagê°’ê³¼ sessionì˜ commit write wait mode ê°’ì´ ë‹¤ë¦„
+    // BUG-17878 : commit write wait mode¸¦ bool typeÀ¸·Î º¯°æ
+    // smiTrans.flag°ª°ú sessionÀÇ commit write wait mode °ªÀÌ ´Ù¸§
     if ( getCommitWriteWaitMode() == ID_TRUE )
     {
         sFlag &= ~SMI_COMMIT_WRITE_MASK;
@@ -1994,14 +2413,26 @@ inline UInt mmcSession::getSessionInfoFlagForTx()
         sFlag |= SMI_COMMIT_WRITE_NOWAIT;
     }
 
+    /* PROJ-2733-DistTxInfo Set GLOBAL_TRANSACTION_LEVEL */
+    if ( isGCTx() == ID_TRUE )
+    {
+        sFlag &= ~SMI_TRANS_GCTX_MASK;
+        sFlag |= SMI_TRANS_GCTX_ON;
+    }
+    else
+    {
+        sFlag &= ~SMI_TRANS_GCTX_MASK;
+        sFlag |= SMI_TRANS_GCTX_OFF;
+    }
+
     return sFlag;
 }
 
 /*******************************************************************
  BUG-15396
- Description : transactionì˜ Isolation Levelì„ ë°˜í™˜
- Implementaion : Transaction ìœ¼ë¡œë¶€í„° isolation levelì„ ë°›ì•„
-                 ì´ë¥¼ ë°˜í™˜
+ Description : transactionÀÇ Isolation LevelÀ» ¹İÈ¯
+ Implementaion : Transaction À¸·ÎºÎÅÍ isolation levelÀ» ¹Ş¾Æ
+                 ÀÌ¸¦ ¹İÈ¯
 ********************************************************************/
 inline UInt mmcSession::getTxIsolationLevel(mmcTransObj * aTrans)
 {
@@ -2011,9 +2442,9 @@ inline UInt mmcSession::getTxIsolationLevel(mmcTransObj * aTrans)
 
 /*******************************************************************
  BUG-15396
- Description : transactionì˜ transaction modeë¥¼ ë°˜í™˜
- Implementaion : Transaction ìœ¼ë¡œë¶€í„° transaction modeë¥¼ ë°›ì•„
-                 ì´ë¥¼ ë°˜í™˜
+ Description : transactionÀÇ transaction mode¸¦ ¹İÈ¯
+ Implementaion : Transaction À¸·ÎºÎÅÍ transaction mode¸¦ ¹Ş¾Æ
+                 ÀÌ¸¦ ¹İÈ¯
 ********************************************************************/
 inline UInt mmcSession::getTxTransactionMode(mmcTransObj * aTrans)
 {
@@ -2044,7 +2475,7 @@ inline void   mmcSession::getDeqViewSCN(smSCN * aDeqViewSCN)
 
 /*******************************************************************
  PROJ-1665
- Description : Parallel DML Mode ë°˜í™˜
+ Description : Parallel DML Mode ¹İÈ¯
 ********************************************************************/
 inline idBool mmcSession::getParallelDmlMode()
 {
@@ -2053,7 +2484,7 @@ inline idBool mmcSession::getParallelDmlMode()
 
 /*******************************************************************
  PROJ-1579 NCHAR
- Description : NLS_NCHAR_CONV_EXCP í”„ë¡œí¼í‹°
+ Description : NLS_NCHAR_CONV_EXCP ÇÁ·ÎÆÛÆ¼
 ********************************************************************/
 inline UInt   mmcSession::getNlsNcharConvExcp()
 {
@@ -2066,7 +2497,7 @@ inline void mmcSession::setNlsNcharConvExcp(UInt aConvExcp)
 
 /*******************************************************************
  PROJ-1579 NCHAR
- Description : NLS_NCHAR_LITERAL_REPLACE í”„ë¡œí¼í‹°
+ Description : NLS_NCHAR_LITERAL_REPLACE ÇÁ·ÎÆÛÆ¼
 ********************************************************************/
 inline UInt   mmcSession::getNlsNcharLiteralReplace()
 {
@@ -2146,8 +2577,8 @@ inline UInt mmcSession::getFetchChunkLimit()
 }
 
 /*******************************************************************
- PROJ-2160 CM íƒ€ì…ì œê±°
- Description : outParam ì‹œì— ì‚¬ìš©ëœë‹¤.
+ PROJ-2160 CM Å¸ÀÔÁ¦°Å
+ Description : outParam ½Ã¿¡ »ç¿ëµÈ´Ù.
 ********************************************************************/
 inline UChar *mmcSession::getOutChunk()
 {
@@ -2328,7 +2759,7 @@ inline void mmcSession::setRecyclebinEnable(UInt aValue)
     mInfo.mRecyclebinEnable = aValue;
 }
 
-/* BUG-42853 LOCK TABLEì— UNTIL NEXT DDL ê¸°ëŠ¥ ì¶”ê°€ */
+/* BUG-42853 LOCK TABLE¿¡ UNTIL NEXT DDL ±â´É Ãß°¡ */
 inline idBool mmcSession::getLockTableUntilNextDDL()
 {
     return mInfo.mLockTableUntilNextDDL;
@@ -2470,9 +2901,9 @@ inline void mmcSession::dumpSessionProperty( ideLogEntry &aLog, mmcSession *aSes
 /* PROJ-1381 Fetch Across Commits */
 
 /**
- * Commitëœ FetchListë¥¼ ì–»ëŠ”ë‹¤.
+ * CommitµÈ FetchList¸¦ ¾ò´Â´Ù.
  *
- * @return Commitëœ FetchList
+ * @return CommitµÈ FetchList
  */
 inline iduList* mmcSession::getCommitedFetchList(void)
 {
@@ -2480,7 +2911,7 @@ inline iduList* mmcSession::getCommitedFetchList(void)
 }
 
 /**
- * FetchList, CommitedFetchList ë³€ê²½ì„ ìœ„í•´ lockì„ ì¡ëŠ”ë‹¤.
+ * FetchList, CommitedFetchList º¯°æÀ» À§ÇØ lockÀ» Àâ´Â´Ù.
  */
 inline void mmcSession::lockForFetchList(void)
 {
@@ -2488,7 +2919,7 @@ inline void mmcSession::lockForFetchList(void)
 }
 
 /**
- * FetchList, CommitedFetchList ë³€ê²½ì„ ìœ„í•´ ì¡ì€ lock í‘¼ë‹¤.
+ * FetchList, CommitedFetchList º¯°æÀ» À§ÇØ ÀâÀº lock Ç¬´Ù.
  */
 inline void mmcSession::unlockForFetchList(void)
 {
@@ -2496,9 +2927,9 @@ inline void mmcSession::unlockForFetchList(void)
 }
 
 /**
- * Holdable Fetchë¡œ startëœ Stmt ìˆ˜ë¥¼ ì¡°ì •í•œë‹¤.
+ * Holdable Fetch·Î startµÈ Stmt ¼ö¸¦ Á¶Á¤ÇÑ´Ù.
  *
- * @param aCount[IN] ì¡°ì •í•  ê°’. ìˆ˜ë¥¼ ëŠ˜ë¦¬ë ¤ë©´ ì–‘ìˆ˜, ì¤„ì´ë ¤ë©´ ìŒìˆ˜ ì‚¬ìš©.
+ * @param aCount[IN] Á¶Á¤ÇÒ °ª. ¼ö¸¦ ´Ã¸®·Á¸é ¾ç¼ö, ÁÙÀÌ·Á¸é À½¼ö »ç¿ë.
  */
 inline void mmcSession::changeHoldFetch(SInt aCount)
 {
@@ -2506,16 +2937,16 @@ inline void mmcSession::changeHoldFetch(SInt aCount)
 }
 
 /**
- * Holdable Fetchë¥¼ ì œì™¸í•œ Stmtê°€ ëª¨ë‘ end ëëŠ”ì§€ í™•ì¸í•œë‹¤.
+ * Holdable Fetch¸¦ Á¦¿ÜÇÑ Stmt°¡ ¸ğµÎ end µÆ´ÂÁö È®ÀÎÇÑ´Ù.
  *
- * @return Holdable Fetchë¥¼ ì œì™¸í•œ Stmtê°€ ëª¨ë‘ end ëìœ¼ë©´ ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE
+ * @return Holdable Fetch¸¦ Á¦¿ÜÇÑ Stmt°¡ ¸ğµÎ end µÆÀ¸¸é ID_TRUE, ¾Æ´Ï¸é ID_FALSE
  */
 inline idBool mmcSession::isAllStmtEndExceptHold(void)
 {
     return ((mInfo.mOpenStmtCount - mInfo.mOpenHoldFetchCount) == 0 ? ID_TRUE : ID_FALSE);
 }
 
-/* PROJ-2473 SNMP ì§€ì› */
+/* PROJ-2473 SNMP Áö¿ø */
 inline UInt mmcSession::getSessionFailureCount()
 {
     return mInfo.mSessionFailureCount;
@@ -2554,10 +2985,50 @@ inline void mmcSession::setReplicationDDLSyncTimeout( UInt aValue )
     mInfo.mReplicationDDLSyncTimeout = aValue;
 }
 
+inline idBool mmcSession::getTransactionalDDL()
+{
+    return mInfo.mTransactionalDDL;
+}
+
+inline idBool mmcSession::getGlobalDDL()
+{
+    return mInfo.mGlobalDDL;
+}
+
+inline idBool mmcSession::isDDLAutoCommit()
+{
+    idBool sDDLAutoCommit = ID_TRUE;
+
+    if ( getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT )
+    {    
+        if (( getTransactionalDDL() == ID_TRUE ) &&
+            (( mQciSession.mQPSpecific.mFlag & QC_SESSION_SHARD_DDL_MASK ) !=
+             QC_SESSION_SHARD_DDL_TRUE ))
+        {
+            sDDLAutoCommit = ID_FALSE;
+        }
+    }
+
+    return sDDLAutoCommit;
+}
+
+inline idBool mmcSession::globalDDLUserSession()
+{
+    idBool sDDLUserSession = ID_FALSE;
+
+    if ( ( SDU_SHARD_ENABLE == 1 ) &&
+         ( getGlobalDDL() == ID_TRUE ) &&
+         ( isShardUserSession() == ID_TRUE ) )
+    {
+        sDDLUserSession = ID_TRUE;
+    }
+
+    return sDDLUserSession;
+}
 
 /**
  * PROJ-2626 Snapshot Export
- * í˜„ì¬ ì„¸ì…˜ì˜ ClientAppInfoTypeì„ ë°˜í™˜í•œë‹¤.
+ * ÇöÀç ¼¼¼ÇÀÇ ClientAppInfoTypeÀ» ¹İÈ¯ÇÑ´Ù.
  */
 inline mmcClientAppInfoType mmcSession::getClientAppInfoType( void )
 {
@@ -2576,12 +3047,9 @@ inline void mmcSession::setShardPIN( sdiShardPin aShardPin )
 
 inline idBool mmcSession::isMetaNodeShardCli()
 {
-    return mInfo.mIsMetaNodeShardCli;
-}
-
-inline void mmcSession::setMetaNodeShardCli( idBool aIsMetaNodeShardCli )
-{
-    mInfo.mIsMetaNodeShardCli = aIsMetaNodeShardCli;
+    return ( ( isShardUserSession() == ID_TRUE )
+             && ( isShardClient() == ID_TRUE ) )
+           ? ID_TRUE : ID_FALSE;
 }
 
 inline ULong mmcSession::getShardMetaNumber()
@@ -2592,12 +3060,19 @@ inline ULong mmcSession::getShardMetaNumber()
 inline void mmcSession::setShardMetaNumber( ULong aSMN )
 {
     mInfo.mShardMetaNumber = aSMN;
+}
 
-    if ( ( isShardData() == ID_TRUE ) &&
-         ( aSMN != ID_ULONG(0) ) &&
-         ( aSMN > sdi::getSMNForDataNode() ) )
+inline ULong mmcSession::getLastShardMetaNumber()
+{
+    return mInfo.mLastShardMetaNumber;
+}
+
+inline void mmcSession::setLastShardMetaNumber(ULong aSMN)
+{
+    if ( ( mInfo.mLastShardMetaNumber == SDI_NULL_SMN ) ||
+         ( mInfo.mLastShardMetaNumber == mInfo.mShardMetaNumber ) )
     {
-        sdi::setSMNForDataNode( aSMN );
+        mInfo.mLastShardMetaNumber = aSMN;
     }
     else
     {
@@ -2605,164 +3080,47 @@ inline void mmcSession::setShardMetaNumber( ULong aSMN )
     }
 }
 
-/* BUG-45967 Data Nodeì˜ Shard Session ì •ë¦¬ */
-inline IDE_RC mmcSession::checkSMNForDataNode( const SChar * aProtocolErrorMsg )
+inline void mmcSession::clearLastShardMetaNumber()
 {
-    ULong         sSMNForSession    = getShardMetaNumber();
-    ULong         sSMNForDataNode   = ID_ULONG(0);
-    const SChar * sDisconnectStr[2] = { "Y", "N" };
-    UInt          sNeedToDisconnect = 0;
+    mInfo.mLastShardMetaNumber = mInfo.mShardMetaNumber;
+}
 
-    if ( sSMNForSession != ID_ULONG(0) )
+inline idBool mmcSession::isReshardOccurred()
+{
+    idBool sRet = ID_FALSE;
+
+    sRet = sdi::isReshardOccurred( mInfo.mShardMetaNumber, mInfo.mLastShardMetaNumber );
+
+    return sRet;
+}
+
+inline ULong mmcSession::getReceivedShardMetaNumber()
+{
+    return mInfo.mReceivedShardMetaNumber;
+}
+
+inline void mmcSession::setReceivedShardMetaNumber( ULong aSMN )
+{
+    mInfo.mReceivedShardMetaNumber = aSMN;
+}
+
+inline idBool mmcSession::isNeedRebuildNoti()
+{
+    idBool sRet = ID_FALSE;
+
+    if ( isShardClient() == SDI_SHARD_CLIENT_TRUE )
     {
-        if ( isShardData() == ID_FALSE )
+        if ( mInfo.mShardMetaNumber > mInfo.mReceivedShardMetaNumber )
         {
-            if ( sdi::isShardEnable() == ID_TRUE )
-            {
-                sSMNForDataNode = sdi::getSMNForDataNode();
-                if ( sSMNForSession < sSMNForDataNode )
-                {
-                    sNeedToDisconnect = ( sdi::getNeedToDisconnect( &mQciSession ) == ID_TRUE ) ? 0 : 1;
-                    IDE_RAISE( ERR_INVALID_SMN );
-                }
-                else
-                {
-                    /* Nothing to do */
-                }
-            }
-            else
-            {
-                /* Nothing to do */
-            }
+            sRet = ID_TRUE;
         }
         else
         {
-            sSMNForDataNode = sdi::getSMNForDataNode();
-            if ( sSMNForSession < sSMNForDataNode )
-            {
-                sNeedToDisconnect = SDU_SHARD_ALLOW_OLD_SMN;
-                IDE_RAISE( ERR_INVALID_SMN );
-            }
-            else
-            {
-                /* Nothing to do */
-            }
+            IDE_DASSERT( mInfo.mShardMetaNumber == mInfo.mReceivedShardMetaNumber );
         }
     }
-    else
-    {
-        /* Nothing to do */
-    }
 
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION( ERR_INVALID_SMN )
-    {
-        IDE_SET( ideSetErrorCode( mmERR_ABORT_SESSION_WITH_INVALID_SMN,
-                                  sSMNForSession,
-                                  sSMNForDataNode,
-                                  sDisconnectStr[sNeedToDisconnect], /* BUG-46100 Session SMN Update */
-                                  aProtocolErrorMsg ) );
-    }
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-/* BUG-46100 Session SMN Update */
-inline IDE_RC mmcSession::checkSMNForDataNodeAndSetSMN( ULong         aSMNForSession,
-                                                        const SChar * aProtocolErrorMsg )
-{
-    ULong         sSMNForDataNode   = ID_ULONG(0);
-    UInt          sShardAllowOldSmn = SDU_SHARD_ALLOW_OLD_SMN;
-    const SChar * sDisconnectStr[2] = { "Y", "N" };
-
-    if ( ( aSMNForSession != ID_ULONG(0) ) &&
-         ( isShardData() == ID_TRUE ) )
-    {
-        sSMNForDataNode = sdi::getSMNForDataNode();
-        IDE_TEST_RAISE( aSMNForSession < sSMNForDataNode, ERR_INVALID_SMN );
-    }
-    else
-    {
-        /* Nothing to do */
-    }
-
-    setShardMetaNumber( aSMNForSession );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION( ERR_INVALID_SMN )
-    {
-        IDE_SET( ideSetErrorCode( mmERR_ABORT_SESSION_WITH_INVALID_SMN,
-                                  aSMNForSession,
-                                  sSMNForDataNode,
-                                  sDisconnectStr[sShardAllowOldSmn], /* BUG-46100 Session SMN Update */
-                                  aProtocolErrorMsg ) );
-    }
-    IDE_EXCEPTION_END;
-
-    if ( sShardAllowOldSmn != 0 )
-    {
-        setShardMetaNumber( aSMNForSession );
-    }
-    else
-    {
-        /* Nothing to do */
-    }
-
-    return IDE_FAILURE;
-}
-
-/* BUG-46100 Session SMN Update */
-inline void mmcSession::checkAndFinalizeShardCoordinator()
-{
-    ULong   sSMNForSession  = getShardMetaNumber();
-    ULong   sSMNForDataNode = ID_ULONG(0);
-
-    if ( ( sSMNForSession != ID_ULONG(0) ) &&
-         ( sdi::isShardEnable() == ID_TRUE ) &&
-         ( isShardData() == ID_FALSE ) )
-    {
-        sSMNForDataNode = sdi::getSMNForDataNode();
-
-        if ( ( sSMNForSession < sSMNForDataNode ) &&
-             ( sdi::getNeedToDisconnect( &mQciSession ) == ID_FALSE ) &&
-             ( isMetaNodeShardCli() == ID_FALSE ) &&
-             ( isAllStmtEnd() == ID_TRUE ) )
-        {
-            clearShardDataInfo();
-            sdi::finalizeSession( &mQciSession );
-            setShardMetaNumber( sSMNForDataNode );
-        }
-        else
-        {
-            /* Nothing to do */
-        }
-    }
-    else
-    {
-        /* Nothing to do */
-    }
-
-    return;
-}
-
-/* PROJ-2701 Sharding online data rebuild */
-inline void mmcSession::checkAndFinalizeRebuildCoordinator()
-{
-    if ( ( sdi::isShardEnable() == ID_TRUE ) &&
-         ( isShardData() == ID_TRUE ) )
-    {
-        clearShardDataInfo();
-        sdi::finalizeSession( &mQciSession );
-    }
-    else
-    {
-        /* Nothing to do */
-    }
-
-    return;
+    return sRet;
 }
 
 inline SChar *mmcSession::getShardNodeName()
@@ -2770,17 +3128,45 @@ inline SChar *mmcSession::getShardNodeName()
     return mInfo.mShardNodeName;
 }
 
-inline idBool mmcSession::isShardData()
+inline idBool mmcSession::isShardUserSession()
 {
-    return ((mInfo.mShardNodeName[0] != '\0') ? ID_TRUE : ID_FALSE);
+    idBool sResult = ID_FALSE;
+
+    if ( mInfo.mShardSessionType == SDI_SESSION_TYPE_USER )
+    {
+        sResult = ID_TRUE;
+    }
+    return sResult;
+}
+
+inline idBool mmcSession::isShardCoordinatorSession()
+{
+    idBool sResult = ID_FALSE;
+
+    if ( mInfo.mShardSessionType == SDI_SESSION_TYPE_COORD )
+    {
+        sResult = ID_TRUE;
+    }
+    return sResult;
+}
+
+/* TASK-7219 Analyzer/Transformer/Executor ¼º´É°³¼± */
+inline idBool mmcSession::getCallByShardAnalyzeProtocol()
+{
+    return mInfo.mCallByShardAnalyzeProtocol;
+}
+
+inline void mmcSession::setCallByShardAnalyzeProtocol( idBool aCallByShardAnalyzeProtocol )
+{
+    mInfo.mCallByShardAnalyzeProtocol = aCallByShardAnalyzeProtocol;
 }
 
 /*
  * PROJ-2660 hybrid sharding
- * (ë³€ê²½ì „)data nodeì—ì„œ shard pinì´ ê°™ì€ ì„¸ì…˜ì€ txë¥¼ ê³µìœ í•  ìˆ˜ ìˆë‹¤.
+ * (º¯°æÀü)data node¿¡¼­ shard pinÀÌ °°Àº ¼¼¼ÇÀº tx¸¦ °øÀ¯ÇÒ ¼ö ÀÖ´Ù.
  *
  * PROJ-2701 Sharding online data rebuild
- * (ë³€ê²½í›„)ëª¨ë“  nodeì˜ meta,data connectionë“¤ì€ shard pinì´ ê°™ì€ ì„¸ì…˜ë¼ë¦¬ txë¥¼ ê³µìœ í•  ìˆ˜ ìˆë‹¤.
+ * (º¯°æÈÄ)¸ğµç nodeÀÇ meta,data connectionµéÀº shard pinÀÌ °°Àº ¼¼¼Ç³¢¸® tx¸¦ °øÀ¯ÇÒ ¼ö ÀÖ´Ù.
  */
 inline idBool mmcSession::isShardTrans()
 {
@@ -2801,9 +3187,36 @@ inline void mmcSession::setNewSessionShardPin()
     setShardPIN( sdi::makeShardPin() );
 }
 
+inline idBool mmcSession::getSessionBegin()
+{
+    return mSessionBegin;
+}
+
+inline idBool mmcSession::isTransAlloc( void )
+{
+    return mTransAllocFlag;
+}
+
 inline idBool mmcSession::getTransBegin()
 {
-    return mTransBegin;
+    idBool sIsBegin = ID_FALSE;
+
+    if ( mmcTrans::isShareableTrans( mTrans ) == ID_TRUE )
+    {
+        if ( mSessionBegin == ID_TRUE )
+        {
+            sIsBegin = mmcTrans::isSharableTransBegin( mTrans );
+        }
+        else
+        {
+            sIsBegin = ID_FALSE;
+        }
+    }
+    else
+    {
+        sIsBegin = mSessionBegin;
+    }
+    return sIsBegin;
 }
 
 inline idBool mmcSession::getTransLazyBegin()
@@ -2849,10 +3262,10 @@ inline UInt mmcSession::isShardClient()
 
 inline void mmcSession::setShardSessionType( sdiSessionType aSessionType )
 {
-    mInfo.mShardSessionType = (UInt)aSessionType;
+    mInfo.mShardSessionType = aSessionType;
 }
 
-inline UInt mmcSession::getShardSessionType()
+inline sdiSessionType mmcSession::getShardSessionType()
 {
     return mInfo.mShardSessionType;
 }
@@ -2860,7 +3273,14 @@ inline UInt mmcSession::getShardSessionType()
 /* PROJ-2701 online data rebuild */
 inline idBool mmcSession::isShardLibrarySession()
 {
-    return ( ( mInfo.mShardSessionType == 0 ) && ( isShardData() == ID_TRUE ) ) ? ID_TRUE : ID_FALSE;
+    idBool sResult = ID_FALSE;
+
+    // BUG-47324
+    if ( mInfo.mShardSessionType == SDI_SESSION_TYPE_LIB )
+    {
+        sResult = ID_TRUE;
+    }
+    return sResult;
 }
 
 /* BUG-45899 */
@@ -2895,4 +3315,358 @@ inline void mmcSession::setTrcLogDetailInformation( UInt aValue )
     mInfo.mTrcLogDetailInformation = aValue;
 }
 
+inline void mmcSession::setShardDDLLockTimeout( UInt aShardDDLLockTimeout )
+{
+    mInfo.mShardDDLLockTimeout = aShardDDLLockTimeout;
+}
+
+inline void mmcSession::setShardDDLLockTryCount( UInt aShardDDLLockTryCount )
+{
+    mInfo.mShardDDLLockTryCount = aShardDDLLockTryCount;
+}
+
+inline void mmcSession::setDDLLockTimeout( SInt aDDLLockTimeout )
+{
+    mInfo.mDDLLockTimeout = aDDLLockTimeout;
+}
+
+/* BUG-46019 */
+inline mmcMessageCallback mmcSession::getMessageCallback()
+{
+    return mInfo.mMessageCallback;
+}
+
+inline void mmcSession::setMessageCallback(mmcMessageCallback aValue)
+{
+    mInfo.mMessageCallback = aValue;
+}
+
+/* BUG-47648  disk partition¿¡¼­ »ç¿ëµÇ´Â prepared memory »ç¿ë·® °³¼± */
+inline UInt mmcSession::getReducePartPrepareMemory()
+{
+    return mInfo.mReducePartPrepareMemory;
+}
+
+inline void mmcSession::setReducePartPrepareMemory( UInt aValue )
+{
+    mInfo.mReducePartPrepareMemory = aValue;
+}
+
+inline void mmcSession::getSessionPropertyInfo( UShort *aSessionPropID,
+                                                SChar  **aSessionPropValue,
+                                                UInt   *aSessionPropValueLen )
+{
+    *aSessionPropValue    = mInfo.mSessionPropValueStr;
+    *aSessionPropValueLen = mInfo.mSessionPropValueLen;
+    *aSessionPropID       = mInfo.mSessionPropID;
+}
+
+inline UInt mmcSession::getDblinkRemoteStatementAutoCommit()
+{
+    return mInfo.mDblinkRemoteStatementAutoCommit;
+}
+
+inline UInt mmcSession::getPropertyAttrbute()
+{
+    return mInfo.mPropertyAttribute;
+}
+
+inline void mmcSession::setPropertyAttrbute( UInt aValue )
+{
+    mInfo.mPropertyAttribute = aValue;
+}
+
+inline idBool mmcSession::getShardInPSMEnable()
+{
+    return mInfo.mShardInPSMEnable;
+}
+
+inline void mmcSession::setShardInPSMEnable( idBool aValue )
+{
+    mInfo.mShardInPSMEnable = aValue;
+}
+
+inline void mmcSession::initStmtExecSeqForShardTx()
+{
+    mInfo.mStmtExecSeqForShardTx = SDI_STMT_EXEC_SEQ_INIT;
+}
+
+inline void mmcSession::increaseStmtExecSeqForShardTx()
+{
+    mInfo.mStmtExecSeqForShardTx++;
+}
+
+inline void mmcSession::decreaseStmtExecSeqForShardTx()
+{
+    mInfo.mStmtExecSeqForShardTx--;
+}
+
+inline UInt mmcSession::getStmtExecSeqForShardTx()
+{
+    return mInfo.mStmtExecSeqForShardTx;
+}
+
+inline void mmcSession::setStmtExecSeqForShardTx( UInt aValue )
+{
+    mInfo.mStmtExecSeqForShardTx = aValue;
+}
+
+inline idBool mmcSession::getIsNeedBlockCommit()
+{
+    return mIsNeedBlockCommit;
+}
+
+inline void mmcSession::setIsNeedBlockCommit()
+{
+    if ( ( isGTx() == ID_TRUE ) &&
+         ( isShareableTrans() == ID_TRUE ) &&
+         ( isShardLibrarySession() ) )
+    {
+        mIsNeedBlockCommit = ID_TRUE;
+    }
+    else
+    {
+        mIsNeedBlockCommit = ID_FALSE;
+    }
+}
+
+inline IDE_RC mmcSession::blockForLibrarySession( mmcTransObj * aTrans,
+                                                  idBool      * aIsBlocked )
+{
+    mmcSession * sDelegatedSession = NULL;
+
+    *aIsBlocked = ID_FALSE;
+
+    if ( ( mIsNeedBlockCommit == ID_TRUE ) &&
+         ( getQciSession()->mQPSpecific.mClientInfo != NULL ) )
+    {
+        mmcTrans::fixSharedTrans( aTrans, getSessionID() );
+        IDE_TEST( blockDelegateSession( aTrans, &sDelegatedSession ) != IDE_SUCCESS );
+        mmcTrans::unfixSharedTrans( aTrans, getSessionID() );
+
+        if ( sDelegatedSession != NULL )
+        {
+            IDE_DASSERT( isShardLibrarySession() == ID_TRUE );
+
+            *aIsBlocked = ID_TRUE;
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+inline void mmcSession::unblockForLibrarySession( mmcTransObj * aTrans )
+{
+    mmcTrans::fixSharedTrans( aTrans, getSessionID() );
+    unblockDelegateSession( aTrans );
+    mmcTrans::unfixSharedTrans( aTrans, getSessionID() );
+}
+
+/* PROJ-2733-DistTxInfo */
+inline UChar *mmcSession::getSessionTypeString()
+{
+    switch (getShardSessionType())
+    {
+        case SDI_SESSION_TYPE_COORD:
+            return (UChar *)"COORD";
+
+        case SDI_SESSION_TYPE_LIB:
+            return (UChar *)"LIB";
+
+        case SDI_SESSION_TYPE_USER:
+            if (this->isShardClient() == SDI_SHARD_CLIENT_TRUE)
+            {
+                return (UChar *)"USER-SHARDCLI";
+            }
+            else
+            {
+                return (UChar *)"USER-CLI";
+            }
+
+        default:  /* Non-reachable */
+            return (UChar *)"UNKNOWN";
+    }
+}
+
+inline UInt mmcSession::getGlobalTransactionLevel()
+{
+    return mInfo.mGlobalTransactionLevel;
+}
+
+inline idBool mmcSession::isGTx()
+{
+    return mIsGTx;
+}
+
+inline idBool mmcSession::isGCTx()
+{
+    return mIsGCTx;
+}
+
+inline sdiClientInfo * mmcSession::getShardClientInfo()
+{
+    return getQciSession()->mQPSpecific.mClientInfo;
+}
+
+inline void mmcSession::getCoordSCN( sdiClientInfo * aClientInfo,
+                                     smSCN         * aCoordSCN )
+{
+    if ( aClientInfo != NULL )
+    {
+        SM_GET_SCN( aCoordSCN,
+                    &aClientInfo->mGCTxInfo.mCoordSCN );
+    }
+    else
+    {
+        SMI_INIT_SCN( aCoordSCN );
+    }
+}
+
+inline void mmcSession::getCoordPrepareSCN( sdiClientInfo * aClientInfo,
+                                            smSCN         * aPrepareSCN )
+{
+    if ( aClientInfo != NULL )
+    {
+        SM_GET_SCN( aPrepareSCN,
+                    &aClientInfo->mGCTxInfo.mPrepareSCN );
+    }
+    else
+    {
+        SMI_INIT_SCN( aPrepareSCN );
+    }
+}
+
+inline void mmcSession::setCoordGlobalCommitSCN( sdiClientInfo * aClientInfo,
+                                                 smSCN         * aGlobalCommitSCN )
+{
+    if ( aClientInfo != NULL )
+    {
+        SM_SET_SCN( &aClientInfo->mGCTxInfo.mGlobalCommitSCN,
+                    aGlobalCommitSCN );
+    }
+}
+
+inline void mmcSession::setShardStatementRetry( UInt aValue )
+{
+    mInfo.mShardStatementRetry = aValue;
+}
+
+inline UInt mmcSession::getShardStatementRetry()
+{
+    return mInfo.mShardStatementRetry;
+}
+
+inline void mmcSession::setIndoubtFetchTimeout( UInt aValue )
+{
+    mInfo.mIndoubtFetchTimeout = aValue;
+}
+
+inline void mmcSession::setIndoubtFetchMethod( UInt aValue )
+{
+    mInfo.mIndoubtFetchMethod = aValue;
+}
+
+inline idBool mmcSession::getGCTxPermit()
+{
+    return mInfo.mGCTxPermit;
+}
+
+inline void mmcSession::setGCTxPermit(idBool aValue)
+{
+    mInfo.mGCTxPermit = aValue;
+}
+
+/* BUG-48132 */
+inline UInt mmcSession::getPlanHashOrSortMethod()
+{
+    return mInfo.mPlanHashOrSortMethod;
+}
+
+inline void mmcSession::setPlanHashOrSortMethod( UInt aValue )
+{
+    mInfo.mPlanHashOrSortMethod = aValue;
+}
+
+/* BUG-48161 */
+inline UInt mmcSession::getBucketCountMax()
+{
+    return mInfo.mBucketCountMax;
+}
+
+inline void mmcSession::setBucketCountMax( UInt aValue)
+{
+    mInfo.mBucketCountMax = aValue;
+}
+
+/* BUG-48348 */
+inline UInt mmcSession::getEliminateCommonSubexpression()
+{
+    return mInfo.mEliminateCommonSubexpression;
+}
+
+inline void mmcSession::setEliminateCommonSubexpression( UInt aValue )
+{
+    mInfo.mEliminateCommonSubexpression = aValue;
+}
+
+inline void mmcSession::clearToBeShardMetaNumber()
+{
+    mInfo.mToBeShardMetaNumber = SDI_NULL_SMN;
+}
+
+inline IDE_RC mmcSession::rebuildShardSessionBeforeEndTran( mmcTransObj * aTrans )
+{
+    ULong sSMNForDataNode = SDI_NULL_SMN;
+
+    if ( ( isShardUserSession() == ID_TRUE ) ||
+         ( isShardLibrarySession() == ID_TRUE ) )
+    {
+        if ( ( mQciSession.mQPSpecific.mFlag & QC_SESSION_SHARD_META_TOUCH_MASK ) ==
+             QC_SESSION_SHARD_META_TOUCH_FALSE )
+        {
+            sSMNForDataNode = sdi::getSMNForDataNode();
+
+            if ( getShardMetaNumber() < sSMNForDataNode )
+            {
+                IDE_TEST( rebuildShardSession( sSMNForDataNode,
+                                               aTrans )
+                          != IDE_SUCCESS );
+            }
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+inline void mmcSession::rebuildShardSessionAfterEndTran()
+{
+    if ( ( isShardUserSession() == ID_TRUE ) ||
+         ( isShardLibrarySession() == ID_TRUE ) )
+    {
+        if ( isReshardOccurred() == ID_TRUE )
+        {
+            cleanupShardRebuildSession();
+        }
+    }
+}
+
+/* BUG-48384 */
+inline UShort mmcSession::getClientTouchNodeCount()
+{
+    return mInfo.mClientTouchNodeCount;
+}
+
+inline void mmcSession::setClientTouchNodeCount(UShort aValue)
+{
+    mInfo.mClientTouchNodeCount = aValue;
+}
 #endif
+

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qtcDef.h 85186 2019-04-09 07:37:00Z jayce.park $
+ * $Id: qtcDef.h 90192 2021-03-12 02:01:03Z jayce.park $
  **********************************************************************/
 
 #include <qc.h>
@@ -28,22 +28,22 @@
 /* qtcNode.node.flag                                */
 /**********************************************************************
  [QTC_NODE_MASK]
- Nodeë¥¼ êµ¬ì„±í•˜ëŠ” í•˜ìœ„ Nodeì˜ ì •ë³´ë“¤ ì¤‘
- ë‹¤ìŒê³¼ ê°™ì€ ì •ë³´ê°€ ì¡´ì¬í•˜ëŠ” ì§€ë¥¼ íŒë³„í•  ìˆ˜ ìˆëŠ” Maskì´ë‹¤.
- ì¦‰, ë‹¤ìŒê³¼ ê°™ì€ ì •ë³´ë¥¼ ì¶”ì¶œí•  ìˆ˜ ìˆë‹¤.
-     - MTC_NODE_MASK : ì¸ë±ìŠ¤, Binding, DML ì •ë³´
-        - MTC_NODE_INDEX_MASK : ì¸ë±ìŠ¤ë¥¼ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” Nodeê°€ ì¡´ì¬í•¨.
-        - MTC_NODE_BIND_MASK : Bindingì´ í•„ìš”í•œ Nodeê°€ ì¡´ì¬í•¨.
-        - MTC_NODE_DML_MASK : DMLì„ ìˆ˜í–‰í•  ìˆ˜ ì—†ëŠ” Nodeê°€ ì¡´ì¬í•¨.
-     - QTC_NODE_AGGREGATE_MASK : Aggregation Nodeê°€ ì¡´ì¬í•¨.
-     - QTC_NODE_AGGREGATE2_MASK : Nested Aggregation Nodeê°€ ì¡´ì¬í•¨.
-     - QTC_NODE_SUBQUERY_MASK : Subquery Nodeê°€ ì¡´ì¬í•¨
-     - QTC_NODE_SEQUNECE_MASK : Sequence Nodeê°€ ì¡´ì¬í•¨
-     - QTC_NODE_PRIOR_MASK : PRIOR Columnì´ ì¡´ì¬í•¨
-     - QTC_NODE_PROC_VAR_MASK : Procedure Variableì´ ì¡´ì¬í•¨.
-     - QTC_NODE_JOIN_OPERATOR_MASK : (+) Outer Join Operator ê°€ ì¡´ì¬í•¨. PROJ-1653
-     - QTC_NODE_COLUMN_RID_MASK : RID Nodeê°€ ì¡´ì¬í•¨ (PROJ-1789)
-     - QTC_NODE_SP_SYNONYM_FUNC_MASK : Synonymì„ í†µí•´ Functionì— ì ‘ê·¼
+ Node¸¦ ±¸¼ºÇÏ´Â ÇÏÀ§ NodeÀÇ Á¤º¸µé Áß
+ ´ÙÀ½°ú °°Àº Á¤º¸°¡ Á¸ÀçÇÏ´Â Áö¸¦ ÆÇº°ÇÒ ¼ö ÀÖ´Â MaskÀÌ´Ù.
+ Áï, ´ÙÀ½°ú °°Àº Á¤º¸¸¦ ÃßÃâÇÒ ¼ö ÀÖ´Ù.
+     - MTC_NODE_MASK : ÀÎµ¦½º, Binding, DML Á¤º¸
+        - MTC_NODE_INDEX_MASK : ÀÎµ¦½º¸¦ »ç¿ëÇÒ ¼ö ÀÖ´Â Node°¡ Á¸ÀçÇÔ.
+        - MTC_NODE_BIND_MASK : BindingÀÌ ÇÊ¿äÇÑ Node°¡ Á¸ÀçÇÔ.
+        - MTC_NODE_DML_MASK : DMLÀ» ¼öÇàÇÒ ¼ö ¾ø´Â Node°¡ Á¸ÀçÇÔ.
+     - QTC_NODE_AGGREGATE_MASK : Aggregation Node°¡ Á¸ÀçÇÔ.
+     - QTC_NODE_AGGREGATE2_MASK : Nested Aggregation Node°¡ Á¸ÀçÇÔ.
+     - QTC_NODE_SUBQUERY_MASK : Subquery Node°¡ Á¸ÀçÇÔ
+     - QTC_NODE_SEQUNECE_MASK : Sequence Node°¡ Á¸ÀçÇÔ
+     - QTC_NODE_PRIOR_MASK : PRIOR ColumnÀÌ Á¸ÀçÇÔ
+     - QTC_NODE_PROC_VAR_MASK : Procedure VariableÀÌ Á¸ÀçÇÔ.
+     - QTC_NODE_JOIN_OPERATOR_MASK : (+) Outer Join Operator °¡ Á¸ÀçÇÔ. PROJ-1653
+     - QTC_NODE_COLUMN_RID_MASK : RID Node°¡ Á¸ÀçÇÔ (PROJ-1789)
+     - QTC_NODE_SP_SYNONYM_FUNC_MASK : SynonymÀ» ÅëÇØ Function¿¡ Á¢±Ù
 ************************************************************************/
 
 # define QTC_NODE_MASK  ( QTC_NODE_AGGREGATE_MASK     | \
@@ -71,205 +71,205 @@
                           QTC_NODE_SP_SYNONYM_FUNC_MASK )
 
 /* qtcNode.flag                                */
-// Aggregationì˜ ì¡´ì¬ ì—¬ë¶€
+// AggregationÀÇ Á¸Àç ¿©ºÎ
 # define QTC_NODE_AGGREGATE_MASK          ID_ULONG(0x0000000000000001)
 # define QTC_NODE_AGGREGATE_EXIST         ID_ULONG(0x0000000000000001)
 # define QTC_NODE_AGGREGATE_ABSENT        ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
-// Nested Aggregationì˜ ì¡´ì¬ ì—¬ë¶€
+// Nested AggregationÀÇ Á¸Àç ¿©ºÎ
 # define QTC_NODE_AGGREGATE2_MASK         ID_ULONG(0x0000000000000002)
 # define QTC_NODE_AGGREGATE2_EXIST        ID_ULONG(0x0000000000000002)
 # define QTC_NODE_AGGREGATE2_ABSENT       ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
-// Subqueryì˜ ì¡´ì¬ ì—¬ë¶€
+// SubqueryÀÇ Á¸Àç ¿©ºÎ
 # define QTC_NODE_SUBQUERY_MASK           ID_ULONG(0x0000000000000004)
 # define QTC_NODE_SUBQUERY_EXIST          ID_ULONG(0x0000000000000004)
 # define QTC_NODE_SUBQUERY_ABSENT         ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
-// Sequenceì˜ ì¡´ì¬ ì—¬ë¶€
+// SequenceÀÇ Á¸Àç ¿©ºÎ
 # define QTC_NODE_SEQUENCE_MASK           ID_ULONG(0x0000000000000008)
 # define QTC_NODE_SEQUENCE_EXIST          ID_ULONG(0x0000000000000008)
 # define QTC_NODE_SEQUENCE_ABSENT         ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
-// PRIOR Pseudo Columnì˜ ì¡´ì¬ ì—¬ë¶€
+// PRIOR Pseudo ColumnÀÇ Á¸Àç ¿©ºÎ
 # define QTC_NODE_PRIOR_MASK              ID_ULONG(0x0000000000000010)
 # define QTC_NODE_PRIOR_EXIST             ID_ULONG(0x0000000000000010)
 # define QTC_NODE_PRIOR_ABSENT            ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
-// LEVEL Pseudo Columnì˜ ì¡´ì¬ ì—¬ë¶€
+// LEVEL Pseudo ColumnÀÇ Á¸Àç ¿©ºÎ
 # define QTC_NODE_LEVEL_MASK              ID_ULONG(0x0000000000000020)
 # define QTC_NODE_LEVEL_EXIST             ID_ULONG(0x0000000000000020)
 # define QTC_NODE_LEVEL_ABSENT            ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
 // fix BUG-10524
-// SYSDATE pseudo Columnì˜ ì¡´ì¬ ì—¬ë¶€
+// SYSDATE pseudo ColumnÀÇ Á¸Àç ¿©ºÎ
 # define QTC_NODE_SYSDATE_MASK            ID_ULONG(0x0000000000000040)
 # define QTC_NODE_SYSDATE_EXIST           ID_ULONG(0x0000000000000040)
 # define QTC_NODE_SYSDATE_ABSENT          ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
-// Procedure Variable ì˜ ì¡´ì¬ ì—¬ë¶€
+// Procedure Variable ÀÇ Á¸Àç ¿©ºÎ
 # define QTC_NODE_PROC_VAR_MASK           ID_ULONG(0x0000000000000080)
 # define QTC_NODE_PROC_VAR_EXIST          ID_ULONG(0x0000000000000080)
 # define QTC_NODE_PROC_VAR_ABSENT         ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
 // PROJ-1364
-// indexable predicate íŒë‹¨ì‹œ,
-// qmoPred::checkSameGroupType() í•¨ìˆ˜ë‚´ì—ì„œ
-// ë™ì¼ê³„ì—´ì˜ ì„œë¡œ ë‹¤ë¥¸ data typeì— ëŒ€í•´ index ì‚¬ìš©ê°€ëŠ¥í•œì§€ë¥¼ íŒë‹¨í•˜ë©°,
-// ì´ë•Œ, column nodeì— ì´ flagë¥¼ ì„¤ì •í•˜ê²Œ ëœë‹¤.
-// ì´ìœ ëŠ”,
-// qmoKeyRange::isIndexable() í•¨ìˆ˜ë‚´ì—ì„œ
-//  (1) host ë³€ìˆ˜ê°€ binding ëœ í›„,
-//  (2) sort temp tableì— ëŒ€í•œ keyRange ìƒì„±ì‹œ,
-// ë™ì¼ê³„ì—´ì˜ index ì‚¬ìš©ê°€ëŠ¥í•œì§€ë¥¼ íŒë‹¨í•˜ê²Œ ë˜ë©°,
-// ì´ë•Œ, prepare ë‹¨ê³„ì—ì„œ ì´ë¯¸ íŒë‹¨ëœ predicateì— ëŒ€í•´, ì¤‘ë³µ ê²€ì‚¬í•˜ì§€ ì•Šê¸° ìœ„í•´
+// indexable predicate ÆÇ´Ü½Ã,
+// qmoPred::checkSameGroupType() ÇÔ¼ö³»¿¡¼­
+// µ¿ÀÏ°è¿­ÀÇ ¼­·Î ´Ù¸¥ data type¿¡ ´ëÇØ index »ç¿ë°¡´ÉÇÑÁö¸¦ ÆÇ´ÜÇÏ¸ç,
+// ÀÌ¶§, column node¿¡ ÀÌ flag¸¦ ¼³Á¤ÇÏ°Ô µÈ´Ù.
+// ÀÌÀ¯´Â,
+// qmoKeyRange::isIndexable() ÇÔ¼ö³»¿¡¼­
+//  (1) host º¯¼ö°¡ binding µÈ ÈÄ,
+//  (2) sort temp table¿¡ ´ëÇÑ keyRange »ı¼º½Ã,
+// µ¿ÀÏ°è¿­ÀÇ index »ç¿ë°¡´ÉÇÑÁö¸¦ ÆÇ´ÜÇÏ°Ô µÇ¸ç,
+// ÀÌ¶§, prepare ´Ü°è¿¡¼­ ÀÌ¹Ì ÆÇ´ÜµÈ predicate¿¡ ´ëÇØ, Áßº¹ °Ë»çÇÏÁö ¾Ê±â À§ÇØ
 # define QTC_NODE_CHECK_SAMEGROUP_MASK   ID_ULONG(0x0000000000000100)
 # define QTC_NODE_CHECK_SAMEGROUP_TRUE   ID_ULONG(0x0000000000000100)
 # define QTC_NODE_CHECK_SAMEGROUP_FALSE  ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
 // To Fix PR-11391
-// Internal Procedure Variableì€ tableì˜ columnì¸ì§€
-// procedureì˜ variableì¸ì§€ ì²´í¬í•  í•„ìš”ê°€ ì—†ìŒ
+// Internal Procedure VariableÀº tableÀÇ columnÀÎÁö
+// procedureÀÇ variableÀÎÁö Ã¼Å©ÇÒ ÇÊ¿ä°¡ ¾øÀ½
 #define QTC_NODE_INTERNAL_PROC_VAR_MASK   ID_ULONG(0x0000000000000200)
 #define QTC_NODE_INTERNAL_PROC_VAR_EXIST  ID_ULONG(0x0000000000000200)
 #define QTC_NODE_INTERNAL_PROC_VAR_ABSENT ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
 // to Fix BUG-12934
-// constant filterì— ëŒ€í•´ì„œëŠ”
-// subqueryì˜ store and search ìµœì í™”íŒì„ ì ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
-// ì˜ˆ) ? in subquery, 1 in subquery
+// constant filter¿¡ ´ëÇØ¼­´Â
+// subqueryÀÇ store and search ÃÖÀûÈ­ÆÁÀ» Àû¿ëÇÏÁö ¾Ê´Â´Ù.
+// ¿¹) ? in subquery, 1 in subquery
 #define QTC_NODE_CONSTANT_FILTER_MASK     ID_ULONG(0x0000000000000400)
 #define QTC_NODE_CONSTANT_FILTER_TRUE     ID_ULONG(0x0000000000000400)
 #define QTC_NODE_CONSTANT_FILTER_FALSE    ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
 // To Fix PR-12743
-// NNF Filter ì—¬ë¶€ë¥¼ ì„¤ì •
+// NNF Filter ¿©ºÎ¸¦ ¼³Á¤
 #define QTC_NODE_NNF_FILTER_MASK          ID_ULONG(0x0000000000000800)
 #define QTC_NODE_NNF_FILTER_TRUE          ID_ULONG(0x0000000000000800)
 #define QTC_NODE_NNF_FILTER_FALSE         ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
 // To Fix BUG-13939
-// keyRange ìƒì„±ì‹œ, In subquery or subquery keyRangeì¼ ê²½ìš°,
-// subqueryë¥¼ ìˆ˜í–‰í•  ìˆ˜ ìˆë„ë¡ í•˜ê¸° ìœ„í•´
-// ë…¸ë“œë³€í™˜í›„, subquery nodeê°€ ì—°ê²°ëœ ë¹„êµì—°ì‚°ìë…¸ë“œì— ê·¸ ì •ë³´ë¥¼ ì €ì¥
+// keyRange »ı¼º½Ã, In subquery or subquery keyRangeÀÏ °æ¿ì,
+// subquery¸¦ ¼öÇàÇÒ ¼ö ÀÖµµ·Ï ÇÏ±â À§ÇØ
+// ³ëµåº¯È¯ÈÄ, subquery node°¡ ¿¬°áµÈ ºñ±³¿¬»êÀÚ³ëµå¿¡ ±× Á¤º¸¸¦ ÀúÀå
 #define QTC_NODE_SUBQUERY_RANGE_MASK      ID_ULONG(0x0000000000001000)
 #define QTC_NODE_SUBQUERY_RANGE_TRUE      ID_ULONG(0x0000000000001000)
 #define QTC_NODE_SUBQUERY_RANGE_FALSE     ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
-// PROJ-1075 PSMë³€ìˆ˜ì˜ OUTBINDING ì—¬ë¶€
+// PROJ-1075 PSMº¯¼öÀÇ OUTBINDING ¿©ºÎ
 #define QTC_NODE_OUTBINDING_MASK          ID_ULONG(0x0000000000002000)
 #define QTC_NODE_OUTBINDING_ENABLE        ID_ULONG(0x0000000000002000)
 #define QTC_NODE_OUTBINDING_DISABLE       ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
-// PROJ-1075 PSMë³€ìˆ˜ì˜ LVALUE ì—¬ë¶€
+// PROJ-1075 PSMº¯¼öÀÇ LVALUE ¿©ºÎ
 #define QTC_NODE_LVALUE_MASK              ID_ULONG(0x0000000000004000)
 #define QTC_NODE_LVALUE_ENABLE            ID_ULONG(0x0000000000004000)
 #define QTC_NODE_LVALUE_DISABLE           ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
 // fix BUG-14257
-// nodeê°€ functionì¸ì§€ì˜ ì •ë³´
+// node°¡ functionÀÎÁöÀÇ Á¤º¸
 #define QTC_NODE_PROC_FUNCTION_MASK       ID_ULONG(0x0000000000008000)
 #define QTC_NODE_PROC_FUNCTION_TRUE       ID_ULONG(0x0000000000008000)
 #define QTC_NODE_PROC_FUNCTION_FALSE      ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
 // BUG-16000
-// Equalì—°ì‚°ì´ ë¶ˆê°€ëŠ¥í•œ TYPEì¸ì§€ì˜ ì—¬ë¶€
-// (Lob or Binary Typeì¸ ê²½ìš°)
+// Equal¿¬»êÀÌ ºÒ°¡´ÉÇÑ TYPEÀÎÁöÀÇ ¿©ºÎ
+// (Lob or Binary TypeÀÎ °æ¿ì)
 #define QTC_NODE_BINARY_MASK              ID_ULONG(0x0000000000010000)
 #define QTC_NODE_BINARY_EXIST             ID_ULONG(0x0000000000010000)
 #define QTC_NODE_BINARY_ABSENT            ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
-// qtcColumnì˜ estimate ì—¬ë¶€ ì„¸íŒ….
+// qtcColumnÀÇ estimate ¿©ºÎ ¼¼ÆÃ.
 #define QTC_NODE_COLUMN_ESTIMATE_MASK     ID_ULONG(0x0000000000020000)
 #define QTC_NODE_COLUMN_ESTIMATE_TRUE     ID_ULONG(0x0000000000020000)
 #define QTC_NODE_COLUMN_ESTIMATE_FALSE    ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
-// procedure variableì´ estimateë˜ì—ˆëŠ”ì§€ ì—¬ë¶€
+// procedure variableÀÌ estimateµÇ¾ú´ÂÁö ¿©ºÎ
 #define QTC_NODE_PROC_VAR_ESTIMATE_MASK   ID_ULONG(0x0000000000040000)
 #define QTC_NODE_PROC_VAR_ESTIMATE_TRUE   ID_ULONG(0x0000000000040000)
 #define QTC_NODE_PROC_VAR_ESTIMATE_FALSE  ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
-// ROWNUM Pseudo Columnì˜ ì¡´ì¬ ì—¬ë¶€
+// ROWNUM Pseudo ColumnÀÇ Á¸Àç ¿©ºÎ
 # define QTC_NODE_ROWNUM_MASK             ID_ULONG(0x0000000000080000)
 # define QTC_NODE_ROWNUM_EXIST            ID_ULONG(0x0000000000080000)
 # define QTC_NODE_ROWNUM_ABSENT           ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
-// ë…¸ë“œ ë³€í™˜ì´ ë°œìƒí–ˆëŠ”ì§€ ì—¬ë¶€
+// ³ëµå º¯È¯ÀÌ ¹ß»ıÇß´ÂÁö ¿©ºÎ
 #define QTC_NODE_CONVERSION_MASK          ID_ULONG(0x0000000000100000)
 #define QTC_NODE_CONVERSION_TRUE          ID_ULONG(0x0000000000100000)
 #define QTC_NODE_CONVERSION_FALSE         ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
 // PROJ-1404
-// transformationìœ¼ë¡œ ìƒì„±ëœ transitive predicateì¸ì§€ ì—¬ë¶€
+// transformationÀ¸·Î »ı¼ºµÈ transitive predicateÀÎÁö ¿©ºÎ
 # define QTC_NODE_TRANS_PRED_MASK         ID_ULONG(0x0000000000200000)
 # define QTC_NODE_TRANS_PRED_EXIST        ID_ULONG(0x0000000000200000)
 # define QTC_NODE_TRANS_PRED_ABSENT       ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
 // PROJ-1404
-// random, sendmsg ê°™ì€ variable build-in í•¨ìˆ˜ê°€ ì‚¬ìš©ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€
+// random, sendmsg °°Àº variable build-in ÇÔ¼ö°¡ »ç¿ëµÇ¾ú´ÂÁö ¿©ºÎ
 # define QTC_NODE_VAR_FUNCTION_MASK       ID_ULONG(0x0000000000400000)
 # define QTC_NODE_VAR_FUNCTION_EXIST      ID_ULONG(0x0000000000400000)
 # define QTC_NODE_VAR_FUNCTION_ABSENT     ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
 // PROJ-1413
-// view mergingì— ì˜í•´ ë³€í™˜ëœ ë…¸ë“œì¸ì§€ ì—¬ë¶€
+// view merging¿¡ ÀÇÇØ º¯È¯µÈ ³ëµåÀÎÁö ¿©ºÎ
 # define QTC_NODE_MERGED_COLUMN_MASK      ID_ULONG(0x0000000000800000)
 # define QTC_NODE_MERGED_COLUMN_TRUE      ID_ULONG(0x0000000000800000)
 # define QTC_NODE_MERGED_COLUMN_FALSE     ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
 // PROJ-1762
-// analytic functionì— ì†í•˜ëŠ” nodeì¸ì§€ ì—¬ë¶€ 
+// analytic function¿¡ ¼ÓÇÏ´Â nodeÀÎÁö ¿©ºÎ 
 # define QTC_NODE_ANAL_FUNC_COLUMN_MASK   ID_ULONG(0x0000000001000000)
 # define QTC_NODE_ANAL_FUNC_COLUMN_FALSE  ID_ULONG(0x0000000000000000)
 # define QTC_NODE_ANAL_FUNC_COLUMN_TRUE   ID_ULONG(0x0000000001000000)
 
 /* qtcNode.flag                                */
 // BUG-25916
-// LOB Columnì˜ ì¡´ì¬ ì—¬ë¶€
+// LOB ColumnÀÇ Á¸Àç ¿©ºÎ
 # define QTC_NODE_LOB_COLUMN_MASK         ID_ULONG(0x0000000002000000)
 # define QTC_NODE_LOB_COLUMN_EXIST        ID_ULONG(0x0000000002000000)
 # define QTC_NODE_LOB_COLUMN_ABSENT       ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
 // BUG-27457
-// Analytic functionì˜ ì¡´ì¬ ì—¬ë¶€
+// Analytic functionÀÇ Á¸Àç ¿©ºÎ
 # define QTC_NODE_ANAL_FUNC_MASK          ID_ULONG(0x0000000004000000)
 # define QTC_NODE_ANAL_FUNC_EXIST         ID_ULONG(0x0000000004000000)
 # define QTC_NODE_ANAL_FUNC_ABSENT        ID_ULONG(0x0000000000000000)
 
 /* qtcNode.flag                                */
-// SP_arrayIndex_variableì˜ ì¡´ì¬ ì—¬ë¶€
+// SP_arrayIndex_variableÀÇ Á¸Àç ¿©ºÎ
 # define QTC_NODE_SP_ARRAY_INDEX_VAR_MASK    ID_ULONG(0x0000000008000000)
 # define QTC_NODE_SP_ARRAY_INDEX_VAR_EXIST   ID_ULONG(0x0000000008000000)
 # define QTC_NODE_SP_ARRAY_INDEX_VAR_ABSENT  ID_ULONG(0x0000000000000000)
 
 /* qtcNode.lflag
  * PROJ-2586 PSM Parameters and return without precision
- * PSM ê°ì²´ì˜ parameter node ë˜ëŠ” return nodeë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
+ * PSM °´Ã¼ÀÇ parameter node ¶Ç´Â return node¸¦ ³ªÅ¸³½´Ù.
  */
 #define QTC_NODE_SP_PARAM_OR_RETURN_MASK                  ID_ULONG(0x0000000010000000)
 #define QTC_NODE_SP_PARAM_OR_RETURN_TRUE                  ID_ULONG(0x0000000010000000)
@@ -277,7 +277,7 @@
 
 /* qtcNode.lflag
  * PROJ-2586 PSM Parameters and return without precision
- * PSM ê°ì²´ì˜ parameterì˜ precisionì˜ í‘œê¸°ì—¬ë¶€ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
+ * PSM °´Ã¼ÀÇ parameterÀÇ precisionÀÇ Ç¥±â¿©ºÎ¸¦ ³ªÅ¸³½´Ù.
  *     ex) char    => QTC_NODE_SP_PARAM_OR_RETURN_PRECISION_ABSENT
  *         char(3) => QTC_NODE_SP_PARAM_OR_RETURN_PRECISION_EXIST
  */
@@ -291,7 +291,7 @@
 # define QTC_NODE_JOIN_OPERATOR_EXIST     ID_ULONG(0x0000000040000000)
 # define QTC_NODE_JOIN_OPERATOR_ABSENT    ID_ULONG(0x0000000000000000)
 
-/* PROJ-1715 CONNECT_BY_ISLEAF Pseudo Columnì˜ ì¡´ì¬ ì—¬ë¶€ */
+/* PROJ-1715 CONNECT_BY_ISLEAF Pseudo ColumnÀÇ Á¸Àç ¿©ºÎ */
 # define QTC_NODE_ISLEAF_MASK             ID_ULONG(0x0000000080000000)
 # define QTC_NODE_ISLEAF_EXIST            ID_ULONG(0x0000000080000000)
 # define QTC_NODE_ISLEAF_ABSENT           ID_ULONG(0x0000000000000000)
@@ -304,10 +304,15 @@
 
 // qtcNode.flag
 // PROJ-1090 Function-based Index
-// deterministic user defined functionì¸ì§€ ì—¬ë¶€
+// deterministic user defined functionÀÎÁö ¿©ºÎ
 #define QTC_NODE_PROC_FUNC_DETERMINISTIC_MASK  ID_ULONG(0x0000000200000000)
 #define QTC_NODE_PROC_FUNC_DETERMINISTIC_FALSE ID_ULONG(0x0000000200000000)
 #define QTC_NODE_PROC_FUNC_DETERMINISTIC_TRUE  ID_ULONG(0x0000000000000000)
+
+/* BUG-48336 */
+#define QTC_NODE_TRANS_IN_TO_EXISTS_MASK       ID_ULONG(0x0000000400000000)
+#define QTC_NODE_TRANS_IN_TO_EXISTS_TRUE       ID_ULONG(0x0000000400000000)
+#define QTC_NODE_TRANS_IN_TO_EXISTS_FALSE      ID_ULONG(0x0000000000000000)
 
 /* qtcNode.lflag
  * BUG-35674
@@ -355,7 +360,7 @@
 
 /* qtcNode.lflag
  * PROJ-2415 Grouping Sets Clause
- * Grouping Sets Transformìœ¼ë¡œ Targetì— ì¶”ê°€ëœ OrderByì˜ Nodeë¥¼ ë‚˜íƒ€ë‚¸ë‹¤. 
+ * Grouping Sets TransformÀ¸·Î Target¿¡ Ãß°¡µÈ OrderByÀÇ Node¸¦ ³ªÅ¸³½´Ù. 
  */
 #define QTC_NODE_GBGS_ORDER_BY_NODE_MASK        ID_ULONG(0x0000080000000000)
 #define QTC_NODE_GBGS_ORDER_BY_NODE_TRUE        ID_ULONG(0x0000080000000000)
@@ -370,7 +375,7 @@
 
 /* qtcNode.lflag
  * BUG-39770
- * packageì— í¬í•¨ëœ ë³€ìˆ˜, subprogramì´ ì‚¬ìš©ëœ Nodeë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
+ * package¿¡ Æ÷ÇÔµÈ º¯¼ö, subprogramÀÌ »ç¿ëµÈ Node¸¦ ³ªÅ¸³½´Ù.
  */
 #define QTC_NODE_PKG_MEMBER_MASK                ID_ULONG(0x0000200000000000)
 #define QTC_NODE_PKG_MEMBER_EXIST               ID_ULONG(0x0000200000000000)
@@ -389,7 +394,7 @@
 
 /* qtcNode.lflag
  * BUG-41243
- * PSM Named-based Argument Passingì—ì„œ, Parameter ì´ë¦„ì„ ì €ì¥í•œ Nodeë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
+ * PSM Named-based Argument Passing¿¡¼­, Parameter ÀÌ¸§À» ÀúÀåÇÑ Node¸¦ ³ªÅ¸³½´Ù.
  */
 #define QTC_NODE_SP_PARAM_NAME_MASK             ID_ULONG(0x0001000000000000)
 #define QTC_NODE_SP_PARAM_NAME_TRUE             ID_ULONG(0x0001000000000000)
@@ -397,26 +402,26 @@
 
 /* qtcNode.lflag
  * BUG-41228
- * PSM parameterì˜ defaultì— ëŒ€í•œ validation ìˆ˜í–‰ ì¤‘ì„ì„ ë‚˜íƒ€ë‚¸ë‹¤..
+ * PSM parameterÀÇ default¿¡ ´ëÇÑ validation ¼öÇà ÁßÀÓÀ» ³ªÅ¸³½´Ù..
  */
 #define QTC_NODE_SP_PARAM_DEFAULT_VALUE_MASK    ID_ULONG(0x0002000000000000)
 #define QTC_NODE_SP_PARAM_DEFAULT_VALUE_TRUE    ID_ULONG(0x0002000000000000)
 #define QTC_NODE_SP_PARAM_DEFAULT_VALUE_FALSE   ID_ULONG(0x0000000000000000)
 
 /* qtcNode.lflag
- * BUG-36728 Check Constraint, Function-Based Indexì—ì„œ Synonymì„ ì‚¬ìš©í•  ìˆ˜ ì—†ì–´ì•¼ í•©ë‹ˆë‹¤.
+ * BUG-36728 Check Constraint, Function-Based Index¿¡¼­ SynonymÀ» »ç¿ëÇÒ ¼ö ¾ø¾î¾ß ÇÕ´Ï´Ù.
  */
 #define QTC_NODE_SP_SYNONYM_FUNC_MASK           ID_ULONG(0x0004000000000000)
 #define QTC_NODE_SP_SYNONYM_FUNC_TRUE           ID_ULONG(0x0004000000000000)
 #define QTC_NODE_SP_SYNONYM_FUNC_FALSE          ID_ULONG(0x0000000000000000)
 
-// BUG-44518 order by êµ¬ë¬¸ì˜ ESTIMATE ì¤‘ë³µ ìˆ˜í–‰í•˜ë©´ ì•ˆë©ë‹ˆë‹¤.
+// BUG-44518 order by ±¸¹®ÀÇ ESTIMATE Áßº¹ ¼öÇàÇÏ¸é ¾ÈµË´Ï´Ù.
 #define QTC_NODE_ORDER_BY_ESTIMATE_MASK         ID_ULONG(0x0008000000000000)
 #define QTC_NODE_ORDER_BY_ESTIMATE_TRUE         ID_ULONG(0x0008000000000000)
 #define QTC_NODE_ORDER_BY_ESTIMATE_FALSE        ID_ULONG(0x0000000000000000)
 
-// BUG-45172 semi ì¡°ì¸ì„ ì œê±°í•  ì¡°ê±´ì„ ê²€ì‚¬í•˜ì—¬ flagë¥¼ ì„¤ì •í•´ ë‘”ë‹¤.
-// ìƒìœ„ì— ì„œë¸Œì¿¼ë¦¬ê°€ semi ì¡°ì¸ì¼ ê²½ìš° flag ë¥¼ ë³´ê³  í•˜ìœ„ semi ì¡°ì¸ì„ ì œê±°í•¨
+// BUG-45172 semi Á¶ÀÎÀ» Á¦°ÅÇÒ Á¶°ÇÀ» °Ë»çÇÏ¿© flag¸¦ ¼³Á¤ÇØ µĞ´Ù.
+// »óÀ§¿¡ ¼­ºêÄõ¸®°¡ semi Á¶ÀÎÀÏ °æ¿ì flag ¸¦ º¸°í ÇÏÀ§ semi Á¶ÀÎÀ» Á¦°ÅÇÔ
 #define QTC_NODE_REMOVABLE_SEMI_JOIN_MASK       ID_ULONG(0x0010000000000000)
 #define QTC_NODE_REMOVABLE_SEMI_JOIN_TRUE       ID_ULONG(0x0010000000000000)
 #define QTC_NODE_REMOVABLE_SEMI_JOIN_FALSE      ID_ULONG(0x0000000000000000)
@@ -435,6 +440,11 @@
 #define QTC_NODE_SP_INS_UPT_VALUE_REC_MASK     ID_ULONG(0x0080000000000000)
 #define QTC_NODE_SP_INS_UPT_VALUE_REC_TRUE     ID_ULONG(0x0080000000000000)
 #define QTC_NODE_SP_INS_UPT_VALUE_REC_FALSE    ID_ULONG(0x0000000000000000)
+
+// /* TASK-7219 Non-shard DML */
+#define QTC_NODE_OUT_REF_COLUMN_MASK           ID_ULONG(0x0100000000000000)
+#define QTC_NODE_OUT_REF_COLUMN_TRUE           ID_ULONG(0x0100000000000000)
+#define QTC_NODE_OUT_REF_COLUMN_FALSE          ID_ULONG(0x0000000000000000)
 
 # define QTC_HAVE_AGGREGATE( aNode ) \
     ( ( (aNode)->lflag & QTC_NODE_AGGREGATE_MASK )           \
@@ -461,7 +471,7 @@
       ? ID_TRUE : ID_FALSE )
 
 // BUG-16730
-// Subqueryë„ target countê°€ 2ì´ìƒì´ë©´ Listì„
+// Subqueryµµ target count°¡ 2ÀÌ»óÀÌ¸é ListÀÓ
 # define QTC_IS_LIST( aNode ) \
     ( ( ( (aNode)->node.module == &mtfList ) || \
         ( ( (aNode)->node.module == &qtc::subqueryModule ) && \
@@ -558,17 +568,17 @@
 
 
 /******************************************************************
- [Column ì—¬ë¶€ì˜ íŒë‹¨]
- ê¸°ì¡´ A3ì—ì„œëŠ” ì•„ë˜ì™€ ê°™ì´ íŒë‹¨í•˜ì˜€ìœ¼ë‚˜,
- ì´ëŠ” ì‹¤ì œ Tableë‚´ì˜ Columnì¸ì§€ë¥¼ íŒë‹¨í•˜ëŠ” ëª…í™•í•œ
- ê¸°ì¤€ì´ ë˜ì§€ ì•ŠëŠ”ë‹¤.
- ì´ëŸ¬í•œ ì²˜ë¦¬ëŠ” Predicateì˜ Indexì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€ë¥¼
- ë³´ë‹¤ ì‰½ê²Œ íŒë‹¨í•  ìˆ˜ ìˆëŠ” ì¥ì ì€ ìˆìœ¼ë‚˜, Conversionì´
- ë°œìƒí•˜ëŠ” Columnë“¤ì— ëŒ€í•˜ì—¬ Columnì¸ì§€ë¥¼ íŒë‹¨í•˜ì§€ ëª»í•˜ê³ 
- ìˆì–´ ë‹¤ì–‘í•œ ìµœì í™” Tip ì ìš©ì— ë¬¸ì œê°€ ë˜ê³  ìˆë‹¤.(Ex, PR-7960)
- ë”°ë¼ì„œ, ì‹¤ì œ Columnì¸ì§€ ì•„ë‹Œì§€ë§Œì„ íŒë‹¨í•  ìˆ˜ ìˆë„ë¡
- í•´ë‹¹ Macroë¥¼ ìˆ˜ì •í•œë‹¤.  ì¦‰, FROMì ˆì— ì¡´ì¬í•˜ëŠ” Tableì˜
- Columnì¸ì§€ë¥¼ ë³´ê³  íŒë‹¨í•œë‹¤.
+ [Column ¿©ºÎÀÇ ÆÇ´Ü]
+ ±âÁ¸ A3¿¡¼­´Â ¾Æ·¡¿Í °°ÀÌ ÆÇ´ÜÇÏ¿´À¸³ª,
+ ÀÌ´Â ½ÇÁ¦ Table³»ÀÇ ColumnÀÎÁö¸¦ ÆÇ´ÜÇÏ´Â ¸íÈ®ÇÑ
+ ±âÁØÀÌ µÇÁö ¾Ê´Â´Ù.
+ ÀÌ·¯ÇÑ Ã³¸®´Â PredicateÀÇ Index»ç¿ë °¡´É ¿©ºÎ¸¦
+ º¸´Ù ½±°Ô ÆÇ´ÜÇÒ ¼ö ÀÖ´Â ÀåÁ¡Àº ÀÖÀ¸³ª, ConversionÀÌ
+ ¹ß»ıÇÏ´Â Columnµé¿¡ ´ëÇÏ¿© ColumnÀÎÁö¸¦ ÆÇ´ÜÇÏÁö ¸øÇÏ°í
+ ÀÖ¾î ´Ù¾çÇÑ ÃÖÀûÈ­ Tip Àû¿ë¿¡ ¹®Á¦°¡ µÇ°í ÀÖ´Ù.(Ex, PR-7960)
+ µû¶ó¼­, ½ÇÁ¦ ColumnÀÎÁö ¾Æ´ÑÁö¸¸À» ÆÇ´ÜÇÒ ¼ö ÀÖµµ·Ï
+ ÇØ´ç Macro¸¦ ¼öÁ¤ÇÑ´Ù.  Áï, FROMÀı¿¡ Á¸ÀçÇÏ´Â TableÀÇ
+ ColumnÀÎÁö¸¦ º¸°í ÆÇ´ÜÇÑ´Ù.
 ******************************************************************/
 
 /******************************************************************
@@ -719,9 +729,9 @@
 #define QTC_PROC_VAR_OP_SKIP_MODULE    (0x00000002)
 
 /******************************************************************
- Subquery Wrapper Node, Constant Wrapper Nodeë“±ì˜
- ìµœì´ˆ ìˆ˜í–‰ ì—¬ë¶€ë¥¼ íŒë‹¨í•˜ê¸° ìœ„í•œ maskì´ë‹¤.
- mtcTemplate.execInfo ì˜ ì˜ì—­ì— ì´ ê°’ì„ Settingí•œë‹¤.
+ Subquery Wrapper Node, Constant Wrapper NodeµîÀÇ
+ ÃÖÃÊ ¼öÇà ¿©ºÎ¸¦ ÆÇ´ÜÇÏ±â À§ÇÑ maskÀÌ´Ù.
+ mtcTemplate.execInfo ÀÇ ¿µ¿ª¿¡ ÀÌ °ªÀ» SettingÇÑ´Ù.
 ******************************************************************/
 
 #define QTC_WRAPPER_NODE_EXECUTE_MASK          (0x11)
@@ -776,7 +786,7 @@ typedef struct qtcNode {
     SET_EMPTY_POSITION((_node_)->columnName);  \
     SET_EMPTY_POSITION((_node_)->pkgName);     \
     (_node_)->overClause    = NULL;            \
-    (_node_)->shardViewTargetPos = 0;          \
+    (_node_)->shardViewTargetPos = ID_USHORT_MAX; \
 }
 
 //---------------------------------
@@ -861,16 +871,16 @@ typedef struct qtcWindow
 
 //---------------------------------
 // BUG-33663 Ranking Function
-// rank() over (partition by i1, i2 order by i3)ì˜ ê²½ìš°
-// qtcOverì˜ ê° memberëŠ” ë‹¤ìŒê³¼ ê°™ì´ êµ¬ì„±í•œë‹¤.
+// rank() over (partition by i1, i2 order by i3)ÀÇ °æ¿ì
+// qtcOverÀÇ °¢ member´Â ´ÙÀ½°ú °°ÀÌ ±¸¼ºÇÑ´Ù.
 //
 // overColumn ---------->i1->i2->i3->null
 //                       /       /
 // partitionByColumn ----       /
 // orderByColumn ---------------
 //
-// ì‚¬ì‹¤ partitionByColumnì´ë‚˜ oderByColumnì€ ë‹¨ìˆœíˆ ê° ì ˆì´
-// ì¡´ì¬í•˜ëŠ”ì§€ë¥¼ í‘œí˜„í•  ë¿ì´ë‹¤. validationì´ì™¸ì—ëŠ” ì‚¬ìš©ë˜ì§€ ì•ŠëŠ”ë‹¤.
+// »ç½Ç partitionByColumnÀÌ³ª oderByColumnÀº ´Ü¼øÈ÷ °¢ ÀıÀÌ
+// Á¸ÀçÇÏ´ÂÁö¸¦ Ç¥ÇöÇÒ »ÓÀÌ´Ù. validationÀÌ¿Ü¿¡´Â »ç¿ëµÇÁö ¾Ê´Â´Ù.
 //---------------------------------
 typedef struct qtcOver
 {
@@ -901,17 +911,17 @@ typedef struct qtcKeepAggr
 } qtcKeepAggr;
 
 //---------------------------------
-// Filterì˜ CallBack í˜¸ì¶œì„ ìœ„í•œ Data
+// FilterÀÇ CallBack È£ÃâÀ» À§ÇÑ Data
 //---------------------------------
 typedef struct qtcSmiCallBackData {
     mtcNode*         node;           // Node
     mtcTemplate*     tmplate;        // Template
-    mtcTuple*        table;          // ì ‘ê·¼í•  ë°ì´í„°ì˜ Tuple
-    mtcTuple*        tuple;          // Nodeì˜ Tuple
-    mtfCalculateFunc calculate;      // Filter ìˆ˜í–‰ í•¨ìˆ˜
-    void*            calculateInfo;  // Filter ìˆ˜í–‰ í•¨ìˆ˜ë¥¼ ìœ„í•œ ì •ë³´
-    mtcColumn*       column;         // Nodeì˜ Column ì •ë³´
-    mtdIsTrueFunc    isTrue;         // TRUE íŒë‹¨ í•¨ìˆ˜
+    mtcTuple*        table;          // Á¢±ÙÇÒ µ¥ÀÌÅÍÀÇ Tuple
+    mtcTuple*        tuple;          // NodeÀÇ Tuple
+    mtfCalculateFunc calculate;      // Filter ¼öÇà ÇÔ¼ö
+    void*            calculateInfo;  // Filter ¼öÇà ÇÔ¼ö¸¦ À§ÇÑ Á¤º¸
+    mtcColumn*       column;         // NodeÀÇ Column Á¤º¸
+    mtdIsTrueFunc    isTrue;         // TRUE ÆÇ´Ü ÇÔ¼ö
 } qtcSmiCallBackData;
 
 typedef struct qtcSmiCallBackDataAnd {
@@ -923,15 +933,15 @@ typedef struct qtcSmiCallBackDataAnd {
 /******************************************************************
  [qtcCallBackInfo]
 
- estimate ì˜ ì²˜ë¦¬ ì‹œ
- mtcCallBackì˜ ì²˜ë¦¬ë¥¼ ìœ„í•´ ì‚¬ìš©ë˜ëŠ” ë¶€ê°€ ì •ë³´ë¡œ
- mtcCallBack.info ì— ì„¤ì •ëœë‹¤.
+ estimate ÀÇ Ã³¸® ½Ã
+ mtcCallBackÀÇ Ã³¸®¸¦ À§ÇØ »ç¿ëµÇ´Â ºÎ°¡ Á¤º¸·Î
+ mtcCallBack.info ¿¡ ¼³Á¤µÈ´Ù.
 ******************************************************************/
 
 
 typedef struct qtcCallBackInfo {
     qcTemplate*         tmplate;
-    iduVarMemList*      memory;         // allocì‹œ ì‚¬ìš©í•  Memory Mgr
+    iduVarMemList*      memory;         // alloc½Ã »ç¿ëÇÒ Memory Mgr
                                         //fix PROJ-1596
     qcStatement*        statement;
     struct qmsQuerySet* querySet;       // for search column in order by
@@ -944,26 +954,26 @@ typedef struct qtcMetaRangeColumn {
     mtdCompareFunc      compare;
     
     // PROJ-1436
-    // columnDesc, valueDescëŠ” shared templateì˜ columnì„
-    // ì‚¬ìš©í•´ì„œëŠ” ì•ˆëœë‹¤. variable type columnì¸ ê²½ìš°
-    // ë°ì´í„° ì˜¤ì—¼ì´ ë°œìƒí•  ìˆ˜ ìˆë‹¤. ë”°ë¼ì„œ column ì •ë³´ë¥¼
-    // ë³µì‚¬í•´ì„œ ì‚¬ìš©í•œë‹¤.
-    // ì¶”í›„ private templateì˜ column ì •ë³´ë¥¼ ì‚¬ìš©í•  ìˆ˜
-    // ìˆë„ë¡ ìˆ˜ì •í•´ì•¼ í•œë‹¤.
+    // columnDesc, valueDesc´Â shared templateÀÇ columnÀ»
+    // »ç¿ëÇØ¼­´Â ¾ÈµÈ´Ù. variable type columnÀÎ °æ¿ì
+    // µ¥ÀÌÅÍ ¿À¿°ÀÌ ¹ß»ıÇÒ ¼ö ÀÖ´Ù. µû¶ó¼­ column Á¤º¸¸¦
+    // º¹»çÇØ¼­ »ç¿ëÇÑ´Ù.
+    // ÃßÈÄ private templateÀÇ column Á¤º¸¸¦ »ç¿ëÇÒ ¼ö
+    // ÀÖµµ·Ï ¼öÁ¤ÇØ¾ß ÇÑ´Ù.
     mtcColumn           columnDesc;
     mtcColumn           valueDesc;
     const void*         value;
-    // Proj-1872 DiskIndex ì €ì¥êµ¬ì¡° ìµœì í™”
-    // Storedíƒ€ì…ì˜ Columnì„ ë¹„êµí•˜ê¸° ìœ„í•´ Column ì¸ë±ìŠ¤ë¥¼ ì €ì¥í•´ì•¼ í•œë‹¤.
+    // Proj-1872 DiskIndex ÀúÀå±¸Á¶ ÃÖÀûÈ­
+    // StoredÅ¸ÀÔÀÇ ColumnÀ» ºñ±³ÇÏ±â À§ÇØ Column ÀÎµ¦½º¸¦ ÀúÀåÇØ¾ß ÇÑ´Ù.
     UInt                columnIdx;
 } qtcMetaRangeColumn;
 
 /******************************************************************
- [qtcModule] PROJ-1075 PSM structured type ì§€ì›
+ [qtcModule] PROJ-1075 PSM structured type Áö¿ø
 
- row type, record type, collection typeì˜ ì²˜ë¦¬ ì‹œ
- mtdModuleì´ì™¸ì˜ qpì—ì„œ ì‚¬ìš©í•˜ëŠ” ë¶€ê°€ì •ë³´ë¥¼ ì´ìš©í•˜ê¸° ìœ„í•´
- ì‚¬ìš©í•œë‹¤.
+ row type, record type, collection typeÀÇ Ã³¸® ½Ã
+ mtdModuleÀÌ¿ÜÀÇ qp¿¡¼­ »ç¿ëÇÏ´Â ºÎ°¡Á¤º¸¸¦ ÀÌ¿ëÇÏ±â À§ÇØ
+ »ç¿ëÇÑ´Ù.
 ******************************************************************/
 
 // PROJ-1904 Extend UDT

@@ -17,7 +17,7 @@
 
 
 /***********************************************************************
- * $Id: rpdQueue.cpp 82898 2018-04-25 01:14:15Z returns $
+ * $Id: rpdQueue.cpp 90491 2021-04-07 07:02:29Z lswhh $
  **********************************************************************/
 
 #include <rpdQueue.h>
@@ -172,7 +172,7 @@ IDE_RC rpdQueue::read(rpdXLog **aXLogPtr, UInt  aTimeoutSec )
     IDE_ASSERT(lock() == IDE_SUCCESS);
     sIsLock = ID_TRUE;
 
-    //Queueê°€ ë¹ˆ ê²½ìš° ëŒ€ê¸°
+    //Queue°¡ ºó °æ¿ì ´ë±â
     while( mXLogCnt == 0 )
     {
         sCheckTime.initialize();
@@ -278,10 +278,10 @@ void rpdQueue::freeXLog(rpdXLog *aXLogPtr, iduMemAllocator * aAllocator )
 }
 
 /**
-* @breif XLogë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+* @breif XLog¸¦ ÃÊ±âÈ­ÇÑ´Ù.
 *
-* @param aXLogPtr ì´ˆê¸°í™”í•  XLog
-* @param aBufferSize smiValue->valueì— í• ë‹¹í•  ë©”ëª¨ë¦¬ë¥¼ ê´€ë¦¬í•˜ëŠ” ë²„í¼ì˜ ê¸°ë³¸ í¬ê¸°
+* @param aXLogPtr ÃÊ±âÈ­ÇÒ XLog
+* @param aBufferSize smiValue->value¿¡ ÇÒ´çÇÒ ¸Þ¸ð¸®¸¦ °ü¸®ÇÏ´Â ¹öÆÛÀÇ ±âº» Å©±â
 */
 IDE_RC rpdQueue::initializeXLog( rpdXLog         * aXLogPtr,
                                  ULong             aBufferSize,
@@ -293,7 +293,7 @@ IDE_RC rpdQueue::initializeXLog( rpdXLog         * aXLogPtr,
 
     idlOS::memset( aXLogPtr, 0x00, ID_SIZEOF( rpdXLog ) );
 
-    /* rpsSmExecutorì—ì„œ ì‚¬ìš©í•˜ëŠ” í•„ìˆ˜ì ì¸ ë¶€ë¶„ */
+    /* rpsSmExecutor¿¡¼­ »ç¿ëÇÏ´Â ÇÊ¼öÀûÀÎ ºÎºÐ */
     aXLogPtr->mLobPtr = NULL;
 
     IDE_TEST( aXLogPtr->mMemory.init( IDU_MEM_RP_RPD, aBufferSize )
@@ -356,9 +356,9 @@ IDE_RC rpdQueue::initializeXLog( rpdXLog         * aXLogPtr,
 }
 
 /**
- * @breif XLogì— í• ë‹¹ëœ ìžì›ì„ ë°˜ë‚©í•œë‹¤.
+ * @breif XLog¿¡ ÇÒ´çµÈ ÀÚ¿øÀ» ¹Ý³³ÇÑ´Ù.
  *
- * @param aXLogPtr ìžì›ì„ ë°˜ë‚©í•  XLog
+ * @param aXLogPtr ÀÚ¿øÀ» ¹Ý³³ÇÒ XLog
  */
 void rpdQueue::destroyXLog( rpdXLog * aXLogPtr, iduMemAllocator * aAllocator )
 {
@@ -385,9 +385,9 @@ void rpdQueue::destroyXLog( rpdXLog * aXLogPtr, iduMemAllocator * aAllocator )
 }
 
 /**
- * @breif XLogì— í• ë‹¹ëœ ìžì›ì„ ìž¬ì‚¬ìš©í•  ìˆ˜ ìžˆê²Œ í•œë‹¤.
+ * @breif XLog¿¡ ÇÒ´çµÈ ÀÚ¿øÀ» Àç»ç¿ëÇÒ ¼ö ÀÖ°Ô ÇÑ´Ù.
  *
- * @param aXLogPtr ìžì›ì„ ìž¬ì‚¬ìš©í•  XLog
+ * @param aXLogPtr ÀÚ¿øÀ» Àç»ç¿ëÇÒ XLog
  */
 void rpdQueue::recycleXLog( rpdXLog * aXLogPtr, iduMemAllocator * aAllocator )
 {
@@ -395,7 +395,7 @@ void rpdQueue::recycleXLog( rpdXLog * aXLogPtr, iduMemAllocator * aAllocator )
 
     if(aXLogPtr->mLobPtr != NULL)
     {
-        /* mLobPtr ì€ ìž¬í™œìš© í•œë‹¤. */
+        /* mLobPtr Àº ÀçÈ°¿ë ÇÑ´Ù. */
         if ( aXLogPtr->mLobPtr->mLobPiece != NULL )
         {
             (void)iduMemMgr::free((void *)aXLogPtr->mLobPtr->mLobPiece, aAllocator);
@@ -417,11 +417,21 @@ void rpdQueue::recycleXLog( rpdXLog * aXLogPtr, iduMemAllocator * aAllocator )
     aXLogPtr->mColCnt = 0;
     aXLogPtr->mSPNameLen = 0;
     
-    /*SNì´ ì „ì†¡ë˜ì§€ ì•ŠëŠ” ê²½ìš°ê°€ ìžˆì–´ ì´ˆê¸°í™” í•´ì•¼í•¨.*/
+    /*SNÀÌ Àü¼ÛµÇÁö ¾Ê´Â °æ¿ì°¡ ÀÖ¾î ÃÊ±âÈ­ ÇØ¾ßÇÔ.*/
     aXLogPtr->mSN = SM_SN_NULL;
     aXLogPtr->mRestartSN = SM_SN_NULL;
+    SM_INIT_SCN( &(aXLogPtr->mGlobalCommitSCN) );
 
     return;
+}
+
+IDE_RC rpdQueue::printXLog(FILE * aFP, rpdXLog *aXLogPtr)
+{
+    if ( aFP != NULL )
+    {
+        idlOS::fprintf(aFP, "XLog Type: %"ID_UINT32_FMT", TID: %"ID_UINT32_FMT, aXLogPtr->mType, aXLogPtr->mTID);
+    }
+    return IDE_SUCCESS;
 }
 
 UInt rpdQueue::getSize()

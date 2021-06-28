@@ -105,13 +105,13 @@ IDE_RC sdptbUpdate::redo_SDPTB_FREE_IN_LG( SChar       * aData,
 
 /***********************************************************************
  *
- * Description : í• ë‹¹í–ˆë˜ ExtDir íŽ˜ì´ì§€ë¥¼ ë‹¤ì‹œ Free Listì— ì¶”ê°€í•œë‹¤.
+ * Description : ÇÒ´çÇß´ø ExtDir ÆäÀÌÁö¸¦ ´Ù½Ã Free List¿¡ Ãß°¡ÇÑ´Ù.
  *
- * aStatistics  - [IN] í†µê³„ì •ë³´
+ * aStatistics  - [IN] Åë°èÁ¤º¸
  * aMtx         - [IN] Mini Transaction Pointer
  * aSpaceID     - [IN] SpaceID
- * aFreeListIdx - [IN] Segì˜ PID
- * aExtDirPID   - [IN] í• ë‹¹í–ˆë˜ PageID
+ * aFreeListIdx - [IN] SegÀÇ PID
+ * aExtDirPID   - [IN] ÇÒ´çÇß´ø PageID
  *
  ***********************************************************************/
 IDE_RC sdptbUpdate::undo_SDPTB_ALLOCATE_AN_EXTDIR_FROM_LIST(
@@ -162,11 +162,11 @@ IDE_RC sdptbUpdate::undo_SDPTB_ALLOCATE_AN_EXTDIR_FROM_LIST(
               != IDE_SUCCESS );
 
     /*
-     * ì¼ë°˜ì ìœ¼ë¡œëŠ” Restart Recoveryì´í›„ì— Undo Tablespaceê°€ Resetë˜ì§€ë§Œ,
-     * Prepare Txê°€ ì¡´ìž¬í•  ê²½ìš°ì—ëŠ” Resetí•˜ì§€ ì•Šìœ¼ë¯€ë¡œ Recoveryì—ì„œëŠ” SpaceCacheê¹Œì§€
-     * ë³µì›í•´ë†“ì•„ì•¼ í•œë‹¤
+     * ÀÏ¹ÝÀûÀ¸·Î´Â Restart RecoveryÀÌÈÄ¿¡ Undo Tablespace°¡ ResetµÇÁö¸¸,
+     * Prepare Tx°¡ Á¸ÀçÇÒ °æ¿ì¿¡´Â ResetÇÏÁö ¾ÊÀ¸¹Ç·Î Recovery¿¡¼­´Â SpaceCache±îÁö
+     * º¹¿øÇØ³õ¾Æ¾ß ÇÑ´Ù
      */
-    sSpaceCache = (sdptbSpaceCache*)sddDiskMgr::getSpaceCache( aSpaceID );
+    sSpaceCache = sddDiskMgr::getSpaceCache( aSpaceID );
     IDE_ASSERT( sSpaceCache != NULL );
     sSpaceCache->mArrIsFreeExtDir[ aFreeListIdx ] = ID_TRUE;
 

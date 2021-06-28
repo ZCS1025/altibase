@@ -31,17 +31,17 @@
 // parameter may vary during implementation.
 typedef struct qdsCallBackInfo
 {
-    // ì™¸ë¶€ì—ì„œ ì´ˆê¸°í™”í•´ì•¼í•¨
+    // ¿ÜºÎ¿¡¼­ ÃÊ±âÈ­ÇØ¾ßÇÔ
     idvSQL              * mStatistics;
     void                * mTableHandle;
     smSCN                 mTableSCN;
 
-    // callback ë‚´ë¶€ì—ì„œ ì‚¬ìš©í•¨
+    // callback ³»ºÎ¿¡¼­ »ç¿ëÇÔ
     smiTrans              mSmiTrans;
     smiStatement          mSmiStmt;
     smiStatement        * mSmiStmtOrg;
 
-    // callback ë‚´ë¶€ì—ì„œ ì‚¬ìš©í•¨
+    // callback ³»ºÎ¿¡¼­ »ç¿ëÇÔ
     smiTableCursor        mCursor;
     smiCursorProperties   mProperty;
     mtcColumn           * mLastSyncSeqColumn;

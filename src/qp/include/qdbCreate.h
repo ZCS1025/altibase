@@ -62,12 +62,12 @@ public:
         qcmColumn           * columns,
         qdConstraintSpec    * constraints);
 
-    //  Tableì˜ Attribute Flag Listë¡œë¶€í„° 32bit Flagê°’ì„ ê³„ì‚°
+    //  TableÀÇ Attribute Flag List·ÎºÎÅÍ 32bit Flag°ªÀ» °è»ê
     static IDE_RC calculateTableAttrFlag( qcStatement      * aStatement,
                                           qdTableParseTree * aCreateTable );
 
 private:
-    // Volatile Tablespaceì— Tableìƒì„±ì¤‘ ìˆ˜í–‰í•˜ëŠ” ì—ëŸ¬ì²˜ë¦¬
+    // Volatile Tablespace¿¡ Table»ı¼ºÁß ¼öÇàÇÏ´Â ¿¡·¯Ã³¸®
     static IDE_RC checkError4CreateVolatileTable(
                       qdTableParseTree * aCreateTable );
 

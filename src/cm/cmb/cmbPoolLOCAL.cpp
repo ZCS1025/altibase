@@ -30,7 +30,7 @@ IDE_RC cmbPoolInitializeLOCAL(cmbPool *aPool)
     cmbPoolLOCAL *sPool      = (cmbPoolLOCAL *)aPool;
 
     /*
-     * Block Pool ì´ˆê¸°í™”
+     * Block Pool ÃÊ±âÈ­
      */
     IDE_TEST(sPool->mBlockPool.initialize(IDU_MEM_CMB,
                                           (SChar *)"CMB_LOCAL_POOL",
@@ -56,7 +56,7 @@ IDE_RC cmbPoolFinalizeLOCAL(cmbPool *aPool)
     cmbPoolLOCAL *sPool = (cmbPoolLOCAL *)aPool;
 
     /*
-     * Block Pool ì‚­ì œ
+     * Block Pool »èÁ¦
      */
     IDE_TEST(sPool->mBlockPool.destroy() != IDE_SUCCESS);
 
@@ -72,12 +72,12 @@ IDE_RC cmbPoolAllocBlockLOCAL(cmbPool *aPool, cmbBlock **aBlock)
     IDU_FIT_POINT( "cmbPoolLOCAL::cmbPoolAllocBlockLOCAL::alloc::Block" );
 
     /*
-     * Block í• ë‹¹
+     * Block ÇÒ´ç
      */
     IDE_TEST(sPool->mBlockPool.alloc((void **)aBlock) != IDE_SUCCESS);
 
     /*
-     * Block ì´ˆê¸°í™”
+     * Block ÃÊ±âÈ­
      */
     (*aBlock)->mBlockSize   = aPool->mBlockSize;
     (*aBlock)->mDataSize    = 0;
@@ -97,12 +97,12 @@ IDE_RC cmbPoolFreeBlockLOCAL(cmbPool *aPool, cmbBlock *aBlock)
     cmbPoolLOCAL *sPool  = (cmbPoolLOCAL *)aPool;
 
     /*
-     * Listì—ì„œ Block ì‚­ì œ
+     * List¿¡¼­ Block »èÁ¦
      */
     IDU_LIST_REMOVE(&aBlock->mListNode);
 
     /*
-     * Block í•´ì œ
+     * Block ÇØÁ¦
      */
     IDE_TEST(sPool->mBlockPool.memfree(aBlock) != IDE_SUCCESS);
 
@@ -127,7 +127,7 @@ struct cmbPoolOP gCmbPoolOpLOCAL =
 IDE_RC cmbPoolMapLOCAL(cmbPool *aPool)
 {
     /*
-     * í•¨ìˆ˜ í¬ì¸í„° ì„¸íŒ…
+     * ÇÔ¼ö Æ÷ÀÎÅÍ ¼¼ÆÃ
      */
     aPool->mOp = &gCmbPoolOpLOCAL;
 

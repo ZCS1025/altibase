@@ -16,18 +16,14 @@
  
 
 /***********************************************************************
- * $Id: smxTransMgr.cpp 84865 2019-02-07 05:10:33Z et16 $
+ * $Id: smxTransMgr.cpp 90521 2021-04-09 01:28:03Z emlee $
  **********************************************************************/
 
-#include <idl.h>
-#include <ida.h>
-#include <ideErrorMgr.h>
 #include <smErrorCode.h>
 #include <smDef.h>
-#include <smm.h>
 #include <smr.h>
-#include <smx.h>
 #include <sdc.h>
+#include <smx.h>
 #include <smxReq.h>
 
 #define SMX_MIN_TRANS_PER_FREE_TRANS_LIST (2)
@@ -47,31 +43,34 @@ smxTrans                 smxTransMgr::mPreparedTrans;
 smxMinSCNBuild           smxTransMgr::mMinSCNBuilder;
 smxGetSmmViewSCNFunc     smxTransMgr::mGetSmmViewSCN;
 smxGetSmmCommitSCNFunc   smxTransMgr::mGetSmmCommitSCN;
-UInt                     smxTransMgr::mTransTableFullCount;
+ULong                    smxTransMgr::mTransTableFullCount;  // BUG-47655 X$TRANSACTION_MANAGER
+ULong                    smxTransMgr::mAllocRetryTransCount; // BUG-47655 X$TRANSACTION_MANAGER
+smiSessionCallback       smxTransMgr::mSessionCallback;      
+UChar                 ** smxTransMgr::mPendingWait;
 
 IDE_RC  smxTransMgr::calibrateTransCount(UInt *aTransCount)
 {
     mTransFreeListCnt = smuUtility::getPowerofTwo(ID_SCALABILITY_CPU);
 
     /* BUG-31862 resize transaction table without db migration
-     * í”„ë¡œí¼í‹°ì˜ TRANSACTION_TABLE_SIZE ëŠ” 16 ~ 16384 ê¹Œì§€ì˜ 2^n ê°’ë§Œ ê°€ëŠ¥
+     * ÇÁ·ÎÆÛÆ¼ÀÇ TRANSACTION_TABLE_SIZE ´Â 16 ~ 16384 ±îÁöÀÇ 2^n °ª¸¸ °¡´É
      */
     mTransCnt = smuProperty::getTransTblSize();
 
     IDE_ASSERT( (mTransCnt & (mTransCnt -1) ) == 0 );
 
-    // BUG-28565 Prepared Txì˜ Undo ì´í›„ free trans list rebuild ì¤‘ ë¹„ì •ìƒ ì¢…ë£Œ
-    // 1. free trans list í•œ ê°œë‹¹ ìµœì†Œ 2ê°œ ì´ìƒì˜ free transë¥¼ ê°€ì§ˆ ìˆ˜ ìˆë„ë¡
-    //    free trans listì˜ ê°œìˆ˜ë¥¼ ì¡°ì •í•¨
-    // 2. ìµœì†Œ transaction table sizeë¥¼ 16ìœ¼ë¡œ ì •í•¨(ê¸°ì¡´ 0)
+    // BUG-28565 Prepared TxÀÇ Undo ÀÌÈÄ free trans list rebuild Áß ºñÁ¤»ó Á¾·á
+    // 1. free trans list ÇÑ °³´ç ÃÖ¼Ò 2°³ ÀÌ»óÀÇ free trans¸¦ °¡Áú ¼ö ÀÖµµ·Ï
+    //    free trans listÀÇ °³¼ö¸¦ Á¶Á¤ÇÔ
+    // 2. ÃÖ¼Ò transaction table size¸¦ 16À¸·Î Á¤ÇÔ(±âÁ¸ 0)
     if ( mTransCnt < ( mTransFreeListCnt * SMX_MIN_TRANS_PER_FREE_TRANS_LIST ) )
     {
         mTransFreeListCnt = mTransCnt / SMX_MIN_TRANS_PER_FREE_TRANS_LIST;
     }
 
     /* BUG-31862 resize transaction table without db migration
-     * TRANSACTION_TABLE_SIZE ëŠ” 16 ~ 16384 ê¹Œì§€ì˜ 2^n ê°’ë§Œ ê°€ëŠ¥í•˜ë¯€ë¡œ
-     * ì¬ì„¤ì • ë¶ˆí•„ìš”, ê¸°ì¡´ ì½”ë“œ ì‚­ì œ
+     * TRANSACTION_TABLE_SIZE ´Â 16 ~ 16384 ±îÁöÀÇ 2^n °ª¸¸ °¡´ÉÇÏ¹Ç·Î
+     * Àç¼³Á¤ ºÒÇÊ¿ä, ±âÁ¸ ÄÚµå »èÁ¦
      */
 
     if ( aTransCount != NULL )
@@ -86,6 +85,7 @@ IDE_RC smxTransMgr::initialize()
 {
 
     UInt i;
+    UInt j;
     UInt sFreeTransCnt;
     UInt sFstFreeTrans;
     UInt sLstFreeTrans;
@@ -95,7 +95,6 @@ IDE_RC smxTransMgr::initialize()
     IDE_TEST( smxOIDList::initializeStatic() != IDE_SUCCESS );
 
     IDE_TEST( smxTouchPageList::initializeStatic() != IDE_SUCCESS );
-
     IDE_TEST( mMutex.initialize( (SChar*)"TRANS_MGR_MUTEX",
                                  IDU_MUTEX_KIND_NATIVE,
                                  IDV_WAIT_INDEX_NULL ) != IDE_SUCCESS );
@@ -110,7 +109,8 @@ IDE_RC smxTransMgr::initialize()
     mPreparedTransCnt  = 0;
 
     mArrTrans = NULL;
-    mTransTableFullCount = 0;
+    mTransTableFullCount  = 0;
+    mAllocRetryTransCount = 0;
 
     IDE_TEST( smxTrans::initializeStatic() != IDE_SUCCESS );
 
@@ -124,7 +124,6 @@ IDE_RC smxTransMgr::initialize()
                     insufficient_memory );
 
     mArrTransFreeList = NULL;
-
     /* TC/FIT/Limit/sm/smx/smxTransMgr_initialize_malloc2.sql */
     IDU_FIT_POINT_RAISE( "smxTransMgr::initialize::malloc2",
                           insufficient_memory );
@@ -135,14 +134,12 @@ IDE_RC smxTransMgr::initialize()
                     insufficient_memory );
 
     i = 0;
-
     new ( mArrTrans + i ) smxTrans;
 
     IDE_TEST( mArrTrans[i].initialize( mTransCnt, mSlotMask )
               != IDE_SUCCESS );
 
     i++;
-
     for( ; i < mTransCnt; i++ )
     {
         new ( mArrTrans + i ) smxTrans;
@@ -173,6 +170,30 @@ IDE_RC smxTransMgr::initialize()
 
     smxFT::initializeFixedTableArea();
 
+    // X$PendingWait 
+    IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_SM_SMX,
+                                       mTransCnt,
+                                       ID_SIZEOF(UChar*),
+                                       (void**)&mPendingWait ) != IDE_SUCCESS,
+                    insufficient_memory );
+
+    for ( i = 0 ; i < mTransCnt ; i++ )
+    {
+        IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_SM_SMX,
+                                           mTransCnt,
+                                           ID_SIZEOF(UChar),
+                                           (void**)&(mPendingWait[i] ) ) != IDE_SUCCESS,
+                        insufficient_memory );
+    }
+
+    for ( i = 0 ; i < mTransCnt ; i++ )
+    {
+        for ( j = 0 ; j < mTransCnt ; j++ )
+        {
+            mPendingWait[i][j] = 0;
+        }
+    }
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( insufficient_memory );
@@ -187,7 +208,7 @@ IDE_RC smxTransMgr::initialize()
 
 /*************************************************************************
  * BUG-38962
- * Description : MinViewSCN Builderë¥¼ ìƒì„±í•œë‹¤.
+ * Description : MinViewSCN Builder¸¦ »ı¼ºÇÑ´Ù.
  *************************************************************************/
 IDE_RC smxTransMgr::initializeMinSCNBuilder()
 {
@@ -204,11 +225,11 @@ IDE_RC smxTransMgr::initializeMinSCNBuilder()
 
 /*************************************************************************
  * BUG-38962
- *      MinViewSCN ì“°ë ˆë“œì˜ ìƒì„±ê³¼ êµ¬ë™ì„ ë¶„ë¦¬í•œë‹¤.
- *      ìƒì„± : smxTransMgr::initializeMinSCNBuilder
- *      êµ¬ë™ : smxTransMgr::startupMinSCNBuilder
+ *      MinViewSCN ¾²·¹µåÀÇ »ı¼º°ú ±¸µ¿À» ºĞ¸®ÇÑ´Ù.
+ *      »ı¼º : smxTransMgr::initializeMinSCNBuilder
+ *      ±¸µ¿ : smxTransMgr::startupMinSCNBuilder
  *
- * Description : MinViewSCN Builderë¥¼ êµ¬ë™ì‹œí‚¨ë‹¤.
+ * Description : MinViewSCN Builder¸¦ ±¸µ¿½ÃÅ²´Ù.
  *************************************************************************/
 IDE_RC smxTransMgr::startupMinSCNBuilder()
 {
@@ -221,9 +242,22 @@ IDE_RC smxTransMgr::startupMinSCNBuilder()
     return IDE_FAILURE;
 }
 
+/* CREATE DB ½Ã¿¡ »ç¿ëÇÑ´Ù. 
+   MinSCNBuilder ¸¦ initialize¸¸ ÇÏ°í runÇÏÁö ¾Ê±â¶§¹®¿¡ destroy¸¸ È£ÃâÇÑ´Ù. */
+IDE_RC smxTransMgr::destroyMinSCNBuilder()
+{
+    IDE_TEST( mMinSCNBuilder.destroy() != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 /*************************************************************************
  *
- * Description : MinViewSCN Builderë¥¼ ì¢…ë£Œì‹œí‚¤ê³  í•´ì œí•œë‹¤.
+ * Description : MinViewSCN Builder¸¦ Á¾·á½ÃÅ°°í ÇØÁ¦ÇÑ´Ù.
  *
  *************************************************************************/
 IDE_RC smxTransMgr::shutdownMinSCNBuilder()
@@ -243,6 +277,13 @@ IDE_RC smxTransMgr::destroy()
 
     UInt      i;
 
+    for ( i = 0 ; i < mTransCnt ; i++ )
+    {
+        IDE_TEST( iduMemMgr::free(mPendingWait[i]) != IDE_SUCCESS );
+    }
+
+    IDE_TEST( iduMemMgr::free(mPendingWait) != IDE_SUCCESS );
+    
     for(i = 0; i < mTransCnt; i++)
     {
         IDE_TEST( mArrTrans[i].destroy() != IDE_SUCCESS );
@@ -279,11 +320,15 @@ IDE_RC smxTransMgr::alloc(smxTrans **aTrans,
                           idBool     aIgnoreRetry)
 {
 
-    UInt i;
-    UInt sTransAllocWait;
-    SInt sStartIdx;
+    UInt  i;
+    UInt  sTransAllocWait;
+    SInt  sStartIdx;
+    ULong sSleepCount = 0;
+    SLong sSessionID  = -1;
     PDL_Time_Value sWaitTime;
 
+    setAllocTransRetryCount( aStatistics,
+                             0 );
     *aTrans = NULL;
     sTransAllocWait = smuProperty::getTransAllocWait();
     sStartIdx  = (idlOS::getParallelIndex() % mTransFreeListCnt);
@@ -307,27 +352,40 @@ IDE_RC smxTransMgr::alloc(smxTrans **aTrans,
                 i = 0;
             }
 
-            // transaction free listë“¤ì„ í•œë²ˆëŒê³ ë„
-            // transactionì„ allocëª»ë°›ëŠ” ê²½ìš°, property microì´ˆë§Œí¼ sleepí•œë‹¤.
+            // transaction free listµéÀ» ÇÑ¹øµ¹°íµµ
+            // transactionÀ» alloc¸ø¹Ş´Â °æ¿ì, property microÃÊ¸¸Å­ sleepÇÑ´Ù.
             if ( i == (UInt)sStartIdx )
             {
-                /* BUG-33873 TRANSACTION_TABLE_SIZE ì— ë„ë‹¬í–ˆì—ˆëŠ”ì§€ trc ë¡œê·¸ì— ë‚¨ê¸´ë‹¤ */
-                if ( (mTransTableFullCount % smuProperty::getCheckOverflowTransTblSize()) == 0 )
+                /* BUG-47655 Transaction ÇÒ´ç Àç½Ãµµ ÀüÃ¼ È½¼ö
+                 * X$TRANSACTION_MANAGER.ALLOC_TRANSACTION_RETRY_COUNT */
+                idCore::acpAtomicInc64( &mTransTableFullCount );
+
+                /* BUG-33873 TRANSACTION_TABLE_SIZE ¿¡ µµ´ŞÇß¾ú´ÂÁö trc ·Î±×¿¡ ³²±ä´Ù */
+                if ( ((++sSleepCount) % ((ULong)smuProperty::getCheckOverflowTransTblSize())) == 0 )
                 {
+                    if ( aStatistics != NULL )
+                    {
+                        if( aStatistics->mSess != NULL)
+                        {
+                            sSessionID = aStatistics->mSess->mSID;
+                        }
+                    }
+
+                    /* BUG-47655 ÇÒ´ç Àç½Ãµµ°¡ property¸¦ ÃÊ°úÇÑ SessionÀÇ ID¸¦ Ãâ·Â */
                     ideLog::log( IDE_SERVER_0,
                                  " TRANSACTION_TABLE_SIZE is full !!\n"
                                  " Current TRANSACTION_TABLE_SIZE is %"ID_UINT32_FMT"\n"
-                                 " Please check TRANSACTION_TABLE_SIZE\n",
-                                 smuProperty::getTransTblSize() );
-                    mTransTableFullCount++;
-                }
-                else
-                {
-                    /* ê³„ì† ì¦ê°€í•´ë„ ê°’ì´ ìˆœí™˜í•˜ë¯€ë¡œ ìƒê´€ì—†ë‹¤ */
-                    mTransTableFullCount++;
+                                 " Please check TRANSACTION_TABLE_SIZE\n"
+                                 " (Session ID : %"ID_INT64_FMT")\n",
+                                 smuProperty::getTransTblSize(),
+                                 sSessionID );
                 }
 
-                /* BUG-27709 receiverì— ì˜í•œ ë°˜ì˜ ì¤‘, íŠ¸ëœì­ì…˜ allocì‹¤íŒ¨ ì‹œ í•´ë‹¹ receiverì¢…ë£Œ. */
+                /* BUG-47655 Transaction ÇÒ´ç Àç½Ãµµ È½¼ö µî·Ï X$SESSION */
+                setAllocTransRetryCount( aStatistics,
+                                         sSleepCount );
+
+                /* BUG-27709 receiver¿¡ ÀÇÇÑ ¹İ¿µ Áß, Æ®·£Àè¼Ç alloc½ÇÆĞ ½Ã ÇØ´ç receiverÁ¾·á. */
                 IDE_TEST_RAISE( aIgnoreRetry == ID_TRUE, ERR_ALLOC_TIMEOUT );
 
                 IDE_TEST( iduCheckSessionEvent( aStatistics )
@@ -343,6 +401,13 @@ IDE_RC smxTransMgr::alloc(smxTrans **aTrans,
         }
     }
 
+    if( sSleepCount > 0 )
+    {
+        /* BUG-47655 Transaction Àç½ÃµµÇØ¼­ ÇÒ´ç¹ŞÀº TransactionÀÇ ¼ö
+         * X$TRANSACTION_MANAGER.ALLOC_RETRY_TRANSACTION_COUNT */
+        idCore::acpAtomicInc64( &mAllocRetryTransCount );
+    }
+
     IDE_ASSERT( ((*aTrans)->mTransID != SM_NULL_TID) &&
                 ((*aTrans)->mTransID != 0));
 
@@ -356,13 +421,18 @@ IDE_RC smxTransMgr::alloc(smxTrans **aTrans,
     }
     IDE_EXCEPTION_END;
 
+    if( sSleepCount > 0 )
+    {
+        idCore::acpAtomicInc64( &mAllocRetryTransCount );
+    }
+
     return IDE_FAILURE;
 
 }
 
 //fix BUG-13175
-// nested transactionìœ¼ë¡œ ë¬´ë‹¨ëŒ€ê¸° í•˜ê¸° ì•Šê³ ,
-// transaction free listì—ì„œ í• ë‹¹ ë°›ì§€ ëª»í•˜ë©´ returnì„ í•œë‹¤.
+// nested transactionÀ¸·Î ¹«´Ü´ë±â ÇÏ±â ¾Ê°í,
+// transaction free list¿¡¼­ ÇÒ´ç ¹ŞÁö ¸øÇÏ¸é returnÀ» ÇÑ´Ù.
 IDE_RC smxTransMgr::allocNestedTrans(smxTrans **aTrans)
 {
 
@@ -391,9 +461,9 @@ IDE_RC smxTransMgr::allocNestedTrans(smxTrans **aTrans)
             {
                 i = 0;
             }
-            // transaction free listë¥¼ í•œ ë°”í€´ ëˆ ìƒíƒœ,
-            // transactionì„ í• ë‹¹ ë°›ì§€ ëª»í•˜ì˜€ê¸° ë•Œë¬¸ì—,
-            // ê¸°ë‹¤ë¦¬ì§€ ì•Šê³  ë¹ ì ¸ ë‚˜ê°„ë‹¤.
+            // transaction free list¸¦ ÇÑ ¹ÙÄû µ· »óÅÂ,
+            // transactionÀ» ÇÒ´ç ¹ŞÁö ¸øÇÏ¿´±â ¶§¹®¿¡,
+            // ±â´Ù¸®Áö ¾Ê°í ºüÁ® ³ª°£´Ù.
             IDE_TEST_RAISE(i == sStartIdx , error_no_free_trans);
 
 
@@ -421,50 +491,51 @@ IDE_RC smxTransMgr::allocNestedTrans(smxTrans **aTrans)
 
 }
 
-void smxTransMgr::dump()
-{
-
-    UInt i;
-
-    for(i = 0; i < mTransFreeListCnt; i++)
-    {
-        mArrTransFreeList[i].dump();
-    }
-}
-
 /*************************************************************************
  *
- * Description : SysMemViewSCN ì„ ë°˜í™˜í•œë‹¤.
+ * Description : SysMemViewSCN À» ¹İÈ¯ÇÑ´Ù.
  *
- * memory GCì¸ LogicalAgerì—ì„œ GC ì¡°ê±´ì¸  minumSCNì„ êµ¬í•œë‹¤. minumSCNì´ë¼ í•¨ì€
- * active transactionë“¤ì˜ minum ViewSCN(mMinMemViewScn)ì¤‘ ì œì¼ ì‘ì€ ê°’ì´ë‹¤.
- * unpinì´ë‚˜ alter table add columní•˜ê³  ìˆëŠ” txëŠ” ì œì™¸í•œë‹¤.
+ * memory GCÀÎ LogicalAger¿¡¼­ GC Á¶°ÇÀÎ  minumSCNÀ» ±¸ÇÑ´Ù. minumSCNÀÌ¶ó ÇÔÀº
+ * active transactionµéÀÇ minum ViewSCN(mMinMemViewSCN)Áß Á¦ÀÏ ÀÛÀº °ªÀÌ´Ù.
+ * unpinÀÌ³ª alter table add columnÇÏ°í ÀÖ´Â tx´Â Á¦¿ÜÇÑ´Ù.
  *
- * aMinSCN      - [OUT] Min( Transaction View SCNë“¤, System SCN )
- * aTID         - [OUT] Minimum View SCNì„ ê°€ì§€ê³  ìˆëŠ” TID.
- *
+ * aMinSCN      - [OUT] Min( Transaction View SCNµé, System SCN )
+ * aTID         - [OUT] Minimum View SCNÀ» °¡Áö°í ÀÖ´Â TID.
+ * aUseTimeSCN  - [IN] ID_FALSEÀÎ °æ¿ì, MemViewSCNÀÇ ÃÊ±â°ªÀ» system view scn·Î ¼³Á¤ÇÑ´Ù.
+                       ID_TRUE ÀÎ °æ¿ì, MemViewSCNÀÇ ÃÊ±â°ªÀ» Time SCN(+view bit)·Î ¼³Á¤ÇÑ´Ù.
  *************************************************************************/
-void smxTransMgr::getMinMemViewSCNofAll( smSCN *aMinSCN,
-                                         smTID *aTID )
+void smxTransMgr::getMinMemViewSCNofAll( smSCN   * aMinSCN,
+                                         smTID   * aTID,
+                                         idBool    aUseTimeSCN )
 {
-    UInt       i;
-    smSCN      sCurSCN;
-    smxTrans   *sTrans;
+    UInt         i;
+    smSCN        sCurSCN;
+    smxTrans   * sTrans;
+    smSCN        sMinSCN;
+    smTID        sTID;
 
-    *aTID = SM_NULL_TID;
+    sTID = SM_NULL_TID;
 
-    /* BUG-17600: [HP MCM] Agerê°€ Transacationì´ ë³´ê³  ìˆëŠ” Viewë¥¼ ì„ì˜ë¡œ
-     * ì‚­ì œí•©ë‹ˆë‹¤. */
+    if ( aUseTimeSCN == ID_FALSE )
+    {
+        /* BUG-17600: [HP MCM] Ager°¡ TransacationÀÌ º¸°í ÀÖ´Â View¸¦ ÀÓÀÇ·Î
+         * »èÁ¦ÇÕ´Ï´Ù. */
 
-    /* BUG-22232: [SM] Indexíƒìƒ‰ì‹œ ì°¸ì¡°í•˜ëŠ” Rowê°€ ì‚­ì œë˜ëŠ” ê²½ìš° ê°€ ë°œìƒí•¨
-     *
-     * ì—¬ê¸°ì„œ Active Transactionì´ ì—†ë”ë¼ë„ Min SCNìœ¼ë¡œ System View SCNì„
-     * ë„˜ê²¨ì¤€ë‹¤. ì´ì „ì—ëŠ” ë¬´í•œëŒ€ê°’ì„ ë„˜ê²¨ì„œ Agerê°€ KeyFreeSCNì„ ë¬´ì‹œí•˜ê³ 
-     * Agingí•˜ëŠ” ë¬¸ì œê°€ ìˆì—ˆë‹¤.
-     * */
-    smxTransMgr::mGetSmmViewSCN( aMinSCN );
+        /* BUG-22232: [SM] IndexÅ½»ö½Ã ÂüÁ¶ÇÏ´Â Row°¡ »èÁ¦µÇ´Â °æ¿ì °¡ ¹ß»ıÇÔ
+         *
+         * ¿©±â¼­ Active TransactionÀÌ ¾ø´õ¶óµµ Min SCNÀ¸·Î System View SCNÀ»
+         * ³Ñ°ÜÁØ´Ù. ÀÌÀü¿¡´Â ¹«ÇÑ´ë°ªÀ» ³Ñ°Ü¼­ Ager°¡ KeyFreeSCNÀ» ¹«½ÃÇÏ°í
+         * AgingÇÏ´Â ¹®Á¦°¡ ÀÖ¾ú´Ù.
+         * */
+        mGetSmmViewSCN( &sMinSCN );
+    }
+    else
+    {
+        getTimeSCN( &sMinSCN );
+        SM_SET_SCN_VIEW_BIT( &sMinSCN );
+    }
 
-    for(i = 0; i < mTransCnt; i++)
+    for( i = 0 ; i < mTransCnt ; i++ )
     {
         sTrans  = mArrTrans + i;
 
@@ -473,10 +544,11 @@ void smxTransMgr::getMinMemViewSCNofAll( smSCN *aMinSCN,
             idlOS::thr_yield();
         }
 
-        sTrans->getMinMemViewSCN4LOB(&sCurSCN);
+        /* Lob°ú GCTX¸¦ °í·ÁÇÑ mMinMemViewSCN */
+        sTrans->getMinMemViewSCNwithLOB( &sCurSCN );
 
-        // unpinì´ë‚˜ alter table add columnì„ í•˜ê³  ìˆëŠ” TxëŠ” ì œì™¸.
-        // Memory Resident Tableì— ëŒ€í•˜ì„œë§Œ ì˜ë¯¸ë¥¼ ê°€ì§.
+        // unpinÀÌ³ª alter table add columnÀ» ÇÏ°í ÀÖ´Â Tx´Â Á¦¿Ü.
+        // Memory Resident Table¿¡ ´ëÇÏ¼­¸¸ ÀÇ¹Ì¸¦ °¡Áü.
         if ( sTrans->mDoSkipCheckSCN == ID_TRUE )
         {
             continue;
@@ -484,43 +556,46 @@ void smxTransMgr::getMinMemViewSCNofAll( smSCN *aMinSCN,
 
         if ( sTrans->mStatus != SMX_TX_END )
         {
-            if ( SM_SCN_IS_LE( &sCurSCN, aMinSCN ) )
+            if ( SM_SCN_IS_LE( &sCurSCN, &sMinSCN ) )
             {
-                *aTID = sTrans->mTransID;
-                SM_SET_SCN( aMinSCN, &sCurSCN );
+                sTID = sTrans->mTransID;
+                SM_SET_SCN( &sMinSCN, &sCurSCN );
             }//if SM_SCN_IS_LT
         }
-    }
+    } // for
+
+    *aMinSCN = sMinSCN;
+    *aTID    = sTID;
 }
 
 /*************************************************************************
  *
- * Description: SysDskViewSCN, SysFstDskViewSCN,
- *              SysOldestFstViewSCN ì„ ë°˜í™˜í•œë‹¤.
- *     BUG-24885ë¥¼ ìœ„í•´ SysFstDskViewSCNì´ ì¶”ê°€ë¨.
- *     BUG-26881ì„ ìœ„í•´ SysOldestFstViewSCNì´ ì¶”ê°€ë¨.
+ * Description: SysDskViewSCN, SysFstDskViewSCN À» ¹İÈ¯ÇÑ´Ù.
+ *              BUG-24885¸¦ À§ÇØ SysFstDskViewSCNÀÌ Ãß°¡µÊ.
+ *              BUG-26881À» À§ÇØ SysOldestFstViewSCNÀÌ Ãß°¡µÊ.
  *
- * SysDskViewSCN ì´ë¼ í•¨ì€ Active íŠ¸ëœì­ì…˜ë“¤ì˜ DskStmt ì¤‘ì—ì„œ ê°€ì¥ ì‘ì€ ViewSCN
- * ì„ ì˜ë¯¸í•œë‹¤. LobCursorì˜ ViewSCNë„ í•¨ê»˜ ê³ ë ¤ë˜ë©°,
- * Create Disk Index íŠ¸ëœì­ì…˜ì„ ì œì™¸í•œë‹¤.
+ * SysDskViewSCN ÀÌ¶ó ÇÔÀº Active Æ®·£Àè¼ÇµéÀÇ DskStmt Áß¿¡¼­ °¡Àå ÀÛÀº ViewSCN
+ * À» ÀÇ¹ÌÇÑ´Ù. LobCursorÀÇ ViewSCNµµ ÇÔ²² °í·ÁµÇ¸ç,
+ * Create Disk Index Æ®·£Àè¼ÇÀ» Á¦¿ÜÇÑ´Ù.
  *
- * SysFstDskViewSCNì€ í˜„ì¬ Active íŠ¸ëœì­ì…˜ ë“¤ ì¤‘ ê°€ì¥ ì‘ì€
- * FstDskViewSCNì„ ì˜ë¯¸í•œë‹¤.
+ * SysFstDskViewSCNÀº ÇöÀç Active Æ®·£Àè¼Ç µé Áß °¡Àå ÀÛÀº
+ * FstDskViewSCNÀ» ÀÇ¹ÌÇÑ´Ù.
+
+ * SysOldestFstViewSCNÀº ÇöÀç Active Æ®·£Àè¼Ç µé¿¡ ¼³Á¤µÈ °¡Àå ¿À·¡µÈ
+ * OldestFstViewSCNÀ» ÀÇ¹ÌÇÑ´Ù
  *
- * SysOldestFstViewSCNì€ í˜„ì¬ Active íŠ¸ëœì­ì…˜ ë“¤ì— ì„¤ì •ëœ ê°€ì¥ ì˜¤ë˜ëœ
- * OldestFstViewSCNì„ ì˜ë¯¸í•œë‹¤
  *
  * BUG-24885 : wrong delayed stamping
- *             active CTSì— ëŒ€í•œ delayed stamping ê°€/ë¶€ë¥¼ íŒë‹¨í•˜ê¸° ìœ„í•´
- *             ëª¨ë“  Active íŠ¸ëœì­ì…˜ë“¤ì˜ fstDskViewSCN ì¤‘ì—ì„œ ìµœì†Œê°’ì„ ë°˜í™˜í•œë‹¤.
+ *             active CTS¿¡ ´ëÇÑ delayed stamping °¡/ºÎ¸¦ ÆÇ´ÜÇÏ±â À§ÇØ
+ *             ¸ğµç Active Æ®·£Àè¼ÇµéÀÇ fstDskViewSCN Áß¿¡¼­ ÃÖ¼Ò°ªÀ» ¹İÈ¯ÇÑ´Ù.
  *
  * BUG-26881 :
- *             active CTSì— ëŒ€í•œ delayed stamping ê°€/ë¶€ë¥¼ íŒë‹¨í•˜ê¸° ìœ„í•´
- *             ëª¨ë“  Active íŠ¸ëœì­ì…˜ë“¤ì˜ fstDskViewSCN ì¤‘ì—ì„œ ìµœì†Œê°’ì„ ë°˜í™˜í•œë‹¤.
+ *             active CTS¿¡ ´ëÇÑ delayed stamping °¡/ºÎ¸¦ ÆÇ´ÜÇÏ±â À§ÇØ
+ *             ¸ğµç Active Æ®·£Àè¼ÇµéÀÇ fstDskViewSCN Áß¿¡¼­ ÃÖ¼Ò°ªÀ» ¹İÈ¯ÇÑ´Ù.
  *
- * aMinSCN       - [OUT] Min( Transaction View SCNë“¤, System SCN )
- * aMinDskFstSCN - [OUT] Min( Transaction Fst Dsk SCNë“¤, System SCN )
- *
+ * aMinSCN       - [OUT] Min( Transaction View SCNµé, System SCN )
+ * aMinDskFstSCN - [OUT] Min( Transaction Fst Dsk SCNµé, System SCN )
+ * aMinOldestFstViewSCN - [OUT] Min( Transaction Fst Dsk SCNµé, System SCN )
  *************************************************************************/
 void smxTransMgr::getDskSCNsofAll( smSCN   * aMinViewSCN,
                                    smSCN   * aMinDskFstViewSCN,
@@ -530,22 +605,37 @@ void smxTransMgr::getDskSCNsofAll( smSCN   * aMinViewSCN,
     smSCN        sCurViewSCN;
     smSCN        sCurDskFstViewSCN;
     smSCN        sCurOldestFstViewSCN;
+    smSCN        sAccessSCN;
     smxTrans   * sTrans;
 
-    /* BUG-17600: [HP MCM] Agerê°€ Transacationì´ ë³´ê³  ìˆëŠ” Viewë¥¼ ì„ì˜ë¡œ
-     * ì‚­ì œí•©ë‹ˆë‹¤. */
+    /* BUG-17600: [HP MCM] Ager°¡ TransacationÀÌ º¸°í ÀÖ´Â View¸¦ ÀÓÀÇ·Î
+     * »èÁ¦ÇÕ´Ï´Ù. */
 
-    /* BUG-22232: [SM] Indexíƒìƒ‰ì‹œ ì°¸ì¡°í•˜ëŠ” Rowê°€ ì‚­ì œë˜ëŠ” ê²½ìš° ê°€ ë°œìƒí•¨
+    /* BUG-22232: [SM] IndexÅ½»ö½Ã ÂüÁ¶ÇÏ´Â Row°¡ »èÁ¦µÇ´Â °æ¿ì °¡ ¹ß»ıÇÔ
      *
-     * ì—¬ê¸°ì„œ Active Transactionì´ ì—†ë”ë¼ë„ Min SCNìœ¼ë¡œ System View SCNì„
-     * ë„˜ê²¨ì¤€ë‹¤. ì´ì „ì—ëŠ” ë¬´í•œëŒ€ê°’ì„ ë„˜ê²¨ì„œ Agerê°€ KeyFreeSCNì„ ë¬´ì‹œí•˜ê³ 
-     * Agingí•˜ëŠ” ë¬¸ì œê°€ ìˆì—ˆë‹¤.
+     * ¿©±â¼­ Active TransactionÀÌ ¾ø´õ¶óµµ Min SCNÀ¸·Î System View SCNÀ»
+     * ³Ñ°ÜÁØ´Ù. ÀÌÀü¿¡´Â ¹«ÇÑ´ë°ªÀ» ³Ñ°Ü¼­ Ager°¡ KeyFreeSCNÀ» ¹«½ÃÇÏ°í
+     * AgingÇÏ´Â ¹®Á¦°¡ ÀÖ¾ú´Ù.
      * */
     smxTransMgr::mGetSmmViewSCN( aMinViewSCN );
+    IDE_DASSERT( SM_SCN_IS_VIEWSCN(*aMinViewSCN) );
+
     SM_GET_SCN( aMinDskFstViewSCN, aMinViewSCN );
+
     SM_GET_SCN( aMinOldestFstViewSCN, aMinViewSCN );
 
-    for(i = 0; i < mTransCnt; i++)
+    if ( isActiveVersioningMinTime() == ID_TRUE )
+    {
+        smxTransMgr::getAccessSCN( &sAccessSCN );
+        SM_SET_SCN_VIEW_BIT( &sAccessSCN );
+
+        if ( SM_SCN_IS_LT( &sAccessSCN, aMinOldestFstViewSCN ) )
+        {
+            SM_SET_SCN( aMinOldestFstViewSCN, &sAccessSCN );
+        }
+    }
+
+    for( i = 0 ; i < mTransCnt ; i++ )
     {
         sTrans  = mArrTrans + i;
 
@@ -554,7 +644,7 @@ void smxTransMgr::getDskSCNsofAll( smSCN   * aMinViewSCN,
             idlOS::thr_yield();
         }
 
-        sTrans->getMinDskViewSCN4LOB(&sCurViewSCN);
+        sTrans->getMinDskViewSCNwithLOB(&sCurViewSCN);
         sCurDskFstViewSCN    = smxTrans::getFstDskViewSCN( sTrans );
         sCurOldestFstViewSCN = smxTrans::getOldestFstViewSCN( sTrans );
 
@@ -577,7 +667,7 @@ void smxTransMgr::getDskSCNsofAll( smSCN   * aMinViewSCN,
                 SM_SET_SCN( aMinDskFstViewSCN, &sCurDskFstViewSCN );
             }
 
-            // BUG-26881 ì˜ëª»ëœ CTS stampingìœ¼ë¡œ accesí•  ìˆ˜ ì—†ëŠ” rowë¥¼ ì ‘ê·¼í•¨
+            // BUG-26881 Àß¸øµÈ CTS stampingÀ¸·Î accesÇÒ ¼ö ¾ø´Â row¸¦ Á¢±ÙÇÔ
             // set the oldestViewSCN
             if ( SM_SCN_IS_LT( &sCurOldestFstViewSCN, aMinOldestFstViewSCN ) )
             {
@@ -587,6 +677,7 @@ void smxTransMgr::getDskSCNsofAll( smSCN   * aMinViewSCN,
     }
 }
 
+#if 0
 void smxTransMgr::dumpActiveTrans()
 {
     UInt       i;
@@ -631,40 +722,40 @@ void smxTransMgr::dumpActiveTrans()
         }
     }
 }
+#endif
 
 /*************************************************************************
- Description: Active Transactionì—ì„œ ê°€ì¥ ì‘ì€ Begin LSNì„ êµ¬í•œë‹¤.
+ Description: Active Transaction¿¡¼­ °¡Àå ÀÛÀº Begin LSNÀ» ±¸ÇÑ´Ù.
  Argument:
-              aLSN: Min LSNì„ ê°€ì§„ LSN
+              aLSN: Min LSNÀ» °¡Áø LSN
 ************************************************************************/
-IDE_RC smxTransMgr::getMinLSNOfAllActiveTrans( smLSN *aLSN )
+void smxTransMgr::getMinLSNOfAllActiveTrans( smLSN *aLSN )
 {
     UInt         sTransCnt;
     smxTrans    *sCurTrans;
     UInt         i;
     smTID        sTransID;
-    SInt         sState = 0;
 
     sTransCnt = smxTransMgr::mTransCnt;
     sCurTrans = smxTransMgr::mArrTrans;
 
     SM_LSN_MAX( *aLSN );
 
-    /* ì‹œì‘í•œ Transactionì˜ Begin LSNì¤‘ì—ì„œ
-       ê°€ì¥ì‘ì€ Begin LSNì„ êµ¬í•œë‹¤.*/
+    /* ½ÃÀÛÇÑ TransactionÀÇ Begin LSNÁß¿¡¼­
+       °¡ÀåÀÛÀº Begin LSNÀ» ±¸ÇÑ´Ù.*/
     for ( i = 0 ; i < sTransCnt ; i++ )
     {
-        /* mFstUndoNxtLSNê°€ ID_UINT_MAXê°€ ì•„ë‹ˆë©´
-           í˜„ì¬ íŠ¸ëœì­ì…˜ì€ ì ì–´ë„ í•œë²ˆ Updateí–ˆë‹¤.*/
+        /* mFstUndoNxtLSN°¡ ID_UINT_MAX°¡ ¾Æ´Ï¸é
+           ÇöÀç Æ®·£Àè¼ÇÀº Àû¾îµµ ÇÑ¹ø UpdateÇß´Ù.*/
         if ( ( !SM_IS_LSN_MAX( sCurTrans->mFstUndoNxtLSN ) ) )
         {
             sTransID = sCurTrans->mTransID;
 
-            IDE_TEST( sCurTrans->lock() != IDE_SUCCESS );
-            sState = 1;
+            sCurTrans->lock();
 
             if ( ( !SM_IS_LSN_MAX( sCurTrans->mFstUndoNxtLSN ) )  && 
-                 ( sCurTrans->mTransID == sTransID ) )
+                 ( sCurTrans->mTransID == sTransID )              &&
+                 ( sCurTrans->mStatus != SMX_TX_END ) )
             {
                 if ( smrCompareLSN::isLT( &(sCurTrans->mFstUndoNxtLSN ),
                                           aLSN ) == ID_TRUE )
@@ -673,23 +764,11 @@ IDE_RC smxTransMgr::getMinLSNOfAllActiveTrans( smLSN *aLSN )
                 }
             }
 
-            sState = 0;
-            IDE_TEST( sCurTrans->unlock() != IDE_SUCCESS );
+            sCurTrans->unlock();
         }
 
-        sCurTrans  += 1;
+        sCurTrans += 1;
     }
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    if ( sState != 0 )
-    {
-        (void)sCurTrans->unlock();
-    }
-
-    return IDE_FAILURE;
 }
 
 IDE_RC smxTransMgr::existPreparedTrans( idBool *aExistFlag )
@@ -750,6 +829,7 @@ IDE_RC smxTransMgr::recover(SInt           *aSlotID,
 
 }
 
+#if 0
 /* BUG-18981 */
 IDE_RC smxTransMgr::getXID(smTID  aTID, ID_XID *aXID)
 {
@@ -766,11 +846,12 @@ IDE_RC smxTransMgr::getXID(smTID  aTID, ID_XID *aXID)
     return IDE_FAILURE;
 
 }
+#endif
 
 /* ----------------------------------------------
-   recovery ì´í›„ì—ë§Œ í˜¸ì¶œë ìˆ˜ ìˆìŒ
-   recovery ì´í›„ prepare íŠ¸ëœì­ì…˜ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
-   ì´ë“¤ì„ free listì—ì„œ ì œê±°í•˜ê¸° ìœ„í•¨ì„
+   recovery ÀÌÈÄ¿¡¸¸ È£ÃâµÉ¼ö ÀÖÀ½
+   recovery ÀÌÈÄ prepare Æ®·£Àè¼ÇÀÌ Á¸ÀçÇÏ´Â °æ¿ì
+   ÀÌµéÀ» free list¿¡¼­ Á¦°ÅÇÏ±â À§ÇÔÀÓ
    ---------------------------------------------- */
 IDE_RC smxTransMgr::rebuildTransFreeList()
 {
@@ -802,18 +883,18 @@ IDE_RC smxTransMgr::rebuildTransFreeList()
 
 /*****************************************************************
  * Description:
- *  [BUG-20861] ë²„í¼ hash resizeë¥¼ í•˜ê¸°ìœ„í•´ì„œ ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ë“¤ì„ ëª¨ë‘ ì ‘ê·¼í•˜ì§€
- *  ëª»í•˜ê²Œ í•´ì•¼ í•©ë‹ˆë‹¤.
- *  [BUG-42927] TABLE_LOCK_ENABLE ê°’ì´ ë³€ê²½ë˜ëŠ” ë™ì•ˆ
- *  ìƒˆë¡œìš´ active transactionì„ BLOCK í•˜ê³  active transactionì´ ëª¨ë‘ ì¢…ë£Œë˜ì—ˆëŠ”ì§€ë¥¼ í™•ì¸í•©ë‹ˆë‹¤.
+ *  [BUG-20861] ¹öÆÛ hash resize¸¦ ÇÏ±âÀ§ÇØ¼­ ´Ù¸¥ Æ®·£Àè¼ÇµéÀ» ¸ğµÎ Á¢±ÙÇÏÁö
+ *  ¸øÇÏ°Ô ÇØ¾ß ÇÕ´Ï´Ù.
+ *  [BUG-42927] TABLE_LOCK_ENABLE °ªÀÌ º¯°æµÇ´Â µ¿¾È
+ *  »õ·Î¿î active transactionÀ» BLOCK ÇÏ°í active transactionÀÌ ¸ğµÎ Á¾·áµÇ¾ú´ÂÁö¸¦ È®ÀÎÇÕ´Ï´Ù.
  *
- *  ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰í•œ ì´í›„ì—ëŠ” ì¸ìë¡œ ë„˜ê²¨ì¤€ aTransì™¸ì— ì–´ë–¤ íŠ¸ëœì­ì…˜ë„
- *  ìˆ˜í–‰ì¤‘ì´ ì•„ë‹ˆë‹¤. ì¦‰, ìì‹ ì™¸ì— ëª¨ë“  íŠ¸ëœì­ì…˜ì´ ì¢…ë£Œë˜ì–´ìˆìŒì„ ë³´ì¥.
+ *  ÀÌ ÇÔ¼ö°¡ ¼öÇàÇÑ ÀÌÈÄ¿¡´Â ÀÎÀÚ·Î ³Ñ°ÜÁØ aTrans¿Ü¿¡ ¾î¶² Æ®·£Àè¼Çµµ
+ *  ¼öÇàÁßÀÌ ¾Æ´Ï´Ù. Áï, ÀÚ½Å¿Ü¿¡ ¸ğµç Æ®·£Àè¼ÇÀÌ Á¾·áµÇ¾îÀÖÀ½À» º¸Àå.
  *
- *  aTrans      - [IN]  smxTransMgr::blockì„ ìˆ˜í–‰í•˜ëŠ” íŠ¸ëœì­ì…˜ ìì‹ 
- *  aTryMicroSec- [IN]  ì´ ì‹œê°„ë™ì•ˆ íŠ¸ëœì­ì…˜ì´ ëª¨ë‘ ì¢…ë£Œë˜ê¸°ë¥¼ ê¸°ë‹¤ë¦°ë‹¤.
- *  aSuccess    - [OUT] aTryMicroSecë™ì•ˆ íŠ¸ëœì­ì…˜ì´ ëª¨ë‘ ì¢…ë£Œë˜ì§€ ì•Šìœ¼ë©´
- *                      ID_FALSEë¥¼ ë¦¬í„´í•œë‹¤.
+ *  aTrans      - [IN]  smxTransMgr::blockÀ» ¼öÇàÇÏ´Â Æ®·£Àè¼Ç ÀÚ½Å
+ *  aTryMicroSec- [IN]  ÀÌ ½Ã°£µ¿¾È Æ®·£Àè¼ÇÀÌ ¸ğµÎ Á¾·áµÇ±â¸¦ ±â´Ù¸°´Ù.
+ *  aSuccess    - [OUT] aTryMicroSecµ¿¾È Æ®·£Àè¼ÇÀÌ ¸ğµÎ Á¾·áµÇÁö ¾ÊÀ¸¸é
+ *                      ID_FALSE¸¦ ¸®ÅÏÇÑ´Ù.
  ****************************************************************/
 void smxTransMgr::block( void    *aTrans,
                          UInt     aTryMicroSec,
@@ -827,10 +908,10 @@ void smxTransMgr::block( void    *aTrans,
 
     disableTransBegin();
 
-    /* sWaitMaxëŠ” ë£¨í”„íšŸìˆ˜ë¥¼ ê°€ë¦¬í‚¤ê³ , sSleepTimeì€ ë§¤ ë£¨í”„ë‹¹ sleepí•˜ëŠ”
-     * ì‹œê°„ì´ë‹¤. sSleepTimeì€ ì„ì˜ë¡œ 50000ìœ¼ë¡œ ì •í–ˆë‹¤.
-     * ì´ ê°’ì´ ì»¤ì§€ë©´ blockí•¨ìˆ˜ì˜ ë°˜ì‘ ì†ë„ê°€ ëŠë ¤ì§€ê³ ,
-     * ì´ ê°’ì´ ì‘ì•„ì§€ë©´, blockí•¨ìˆ˜ê°€ cpuë¥¼ ë§ì´ ì‚¬ìš©í•œë‹¤.*/
+    /* sWaitMax´Â ·çÇÁÈ½¼ö¸¦ °¡¸®Å°°í, sSleepTimeÀº ¸Å ·çÇÁ´ç sleepÇÏ´Â
+     * ½Ã°£ÀÌ´Ù. sSleepTimeÀº ÀÓÀÇ·Î 50000À¸·Î Á¤Çß´Ù.
+     * ÀÌ °ªÀÌ Ä¿Áö¸é blockÇÔ¼öÀÇ ¹İÀÀ ¼Óµµ°¡ ´À·ÁÁö°í,
+     * ÀÌ °ªÀÌ ÀÛ¾ÆÁö¸é, blockÇÔ¼ö°¡ cpu¸¦ ¸¹ÀÌ »ç¿ëÇÑ´Ù.*/
     sWaitMax = aTryMicroSec / 50000;
     sSleepTime.set(0, 50000);
 
@@ -861,10 +942,10 @@ void smxTransMgr::block( void    *aTrans,
 
 /*****************************************************************
  * Description:
- *  [BUG-20861] ë²„í¼ hash resizeë¥¼ í•˜ê¸°ìœ„í•´ì„œ ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ë“¤ì„ ëª¨ë‘ ì ‘ê·¼í•˜ì§€
- *  ëª»í•˜ê²Œ í•´ì•¼ í•©ë‹ˆë‹¤.
+ *  [BUG-20861] ¹öÆÛ hash resize¸¦ ÇÏ±âÀ§ÇØ¼­ ´Ù¸¥ Æ®·£Àè¼ÇµéÀ» ¸ğµÎ Á¢±ÙÇÏÁö
+ *  ¸øÇÏ°Ô ÇØ¾ß ÇÕ´Ï´Ù.
  *
- *  íŠ¸ëœì­ì…˜ blockì„ í•´ì œ, ì´ í•¨ìˆ˜ ìˆ˜í–‰í›„, íŠ¸ëœì­ì…˜ì€ ë‹¤ì‹œ ìˆ˜í–‰ë  ìˆ˜ ìˆë‹¤.
+ *  Æ®·£Àè¼Ç blockÀ» ÇØÁ¦, ÀÌ ÇÔ¼ö ¼öÇàÈÄ, Æ®·£Àè¼ÇÀº ´Ù½Ã ¼öÇàµÉ ¼ö ÀÖ´Ù.
  ****************************************************************/
 void smxTransMgr::unblock(void)
 {
@@ -889,7 +970,7 @@ idBool  smxTransMgr::existActiveTrans( smxTrans  * aTrans )
     for(i = 0; i < mTransCnt; i++)
     {
         sTrans  = mArrTrans + i;
-        //ê²€ì‚¬í•˜ëŠ” ì£¼ì²´ì˜ íŠ¸ëœì­ì…˜ì€ ì œì™¸í•œë‹¤.
+        //°Ë»çÇÏ´Â ÁÖÃ¼ÀÇ Æ®·£Àè¼ÇÀº Á¦¿ÜÇÑ´Ù.
         if ( aTrans == sTrans )
         {
             continue;
@@ -938,25 +1019,25 @@ void smxTransMgr::addActiveTrans( void  * aTrans,
         }
         else
         {
-            /* RecoverLSN ì´ì „ì— ì‹œì‘í•œ íŠ¸ëœì­ì…˜ë“¤ì˜ ë¡œê·¸
-             * ë¬´ì¡°ê±´ commit ëœë‹¤ëŠ” ê°€ì •.
+            /* RecoverLSN ÀÌÀü¿¡ ½ÃÀÛÇÑ Æ®·£Àè¼ÇµéÀÇ ·Î±×
+             * ¹«Á¶°Ç commit µÈ´Ù´Â °¡Á¤.
              * do nothing */
         }
     }
     else
     {
         /* BUG-31862 resize transaction table without db migration
-         * TRANSACTION TABLE SIZEë¥¼ í™•ì¥í•œ í›„,
-         * í™•ì¥ ì „ ë°±ì—… íŒŒì¼ê³¼ í”„ë¡œí¼í‹°ë¡œ Recovery í•˜ëŠ” ê²½ìš°
-         * slot number ê°€ ì¤‘ë³µë  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
-         * TIDë¡œ ê²€ì¦ */
+         * TRANSACTION TABLE SIZE¸¦ È®ÀåÇÑ ÈÄ,
+         * È®Àå Àü ¹é¾÷ ÆÄÀÏ°ú ÇÁ·ÎÆÛÆ¼·Î Recovery ÇÏ´Â °æ¿ì
+         * slot number °¡ Áßº¹µÉ ¼ö ÀÖ½À´Ï´Ù.
+         * TID·Î °ËÁõ */
         if ( sCurTrans->mTransID == aTID )
         {
             sCurTrans->setLstUndoNxtLSN( *aCurLSN );
         }
         else
         {
-            /* slotì´ ê²¹ì¹˜ëŠ” ì˜¤ë¥˜ ìƒí™© */
+            /* slotÀÌ °ãÄ¡´Â ¿À·ù »óÈ² */
             idlOS::snprintf( sOutputMsg, ID_SIZEOF(sOutputMsg), "ERROR: \n"
                              "Transaction Slot is conflict beetween %"ID_UINT32_FMT""
                              " and %"ID_UINT32_FMT" \n"
@@ -976,57 +1057,62 @@ void smxTransMgr::addActiveTrans( void  * aTrans,
 
 // set XA information add Active Transaction
 IDE_RC smxTransMgr::setXAInfoAnAddPrepareLst( void     * aTrans,
+                                              idBool     aIsGCTx,
                                               timeval    aTimeVal,
                                               ID_XID     aXID, /* BUG-18981 */
                                               smSCN    * aFstDskViewSCN )
 {
     smxTrans        * sCurTrans;
 
+    IDE_DASSERT( smiGetStartupPhase() < SMI_STARTUP_SERVICE );
+
     sCurTrans  = (smxTrans*) aTrans;
 
+    sCurTrans->mIsGCTx = aIsGCTx;
+    if ( aIsGCTx )
+    {
+        SM_INIT_SCN( &sCurTrans->mPrepareSCN );
+    }
     sCurTrans->mCommitState  = SMX_XA_PREPARED;
     sCurTrans->mPreparedTime = aTimeVal;
     sCurTrans->mXaTransID    = aXID;
 
-    // BUG-27024 XAì—ì„œ Prepare í›„ Commitë˜ì§€ ì•Šì€ Disk Rowë¥¼
-    //           Server Restart ì‹œ ê³ ë ¤í–ì—¬ì•¼ í•©ë‹ˆë‹¤.
-    // Restart ì´ì „ì˜ XA Transì˜ FstDskViewSCNì„
-    // Restart ì´í›„ ì¬êµ¬ì¶•í•œ XA Prepare Transì— ë°˜ì˜í•¨
+    // BUG-27024 XA¿¡¼­ Prepare ÈÄ CommitµÇÁö ¾ÊÀº Disk Row¸¦
+    //           Server Restart ½Ã °í·ÁÇá¿©¾ß ÇÕ´Ï´Ù.
+    // Restart ÀÌÀüÀÇ XA TransÀÇ FstDskViewSCNÀ»
+    // Restart ÀÌÈÄ Àç±¸ÃàÇÑ XA Prepare Trans¿¡ ¹İ¿µÇÔ
     SM_SET_SCN( &sCurTrans->mFstDskViewSCN, aFstDskViewSCN );
 
     if ( smuProperty::getLogBufferType() == SMU_LOG_BUFFER_TYPE_MEMORY )
     {
-        // Log Buffer Typeì´ memoryì¸ ê²½ìš°, update transaction ìˆ˜ ì¦ê°€
-        // XA Transactionì€ Restart Redoê°€ ëë‚œ í›„ì—ë„
-        // ê·¸ëŒ€ë¡œ ì‚´ì•„ì„œ ì¡´ì¬í•˜ë‹¤ê°€ ì •ìƒ ìƒí™©ì—ì„œ Commit/Rollbackì„ í•œë‹¤.
-        // ê·¸ëŸ¬ë¯€ë¡œ, Restart Redoì¤‘ì— ë°œìƒí•œ XA Transactionì— ëŒ€í•´ì„œ
-        // Update Tx Countë¥¼ í•˜ë‚˜ ì¦ê°€ì‹œì¼œ ì£¼ì–´ì•¼ í•œë‹¤.
+        // Log Buffer TypeÀÌ memoryÀÎ °æ¿ì, update transaction ¼ö Áõ°¡
+        // XA TransactionÀº Restart Redo°¡ ³¡³­ ÈÄ¿¡µµ
+        // ±×´ë·Î »ì¾Æ¼­ Á¸ÀçÇÏ´Ù°¡ Á¤»ó »óÈ²¿¡¼­ Commit/RollbackÀ» ÇÑ´Ù.
+        // ±×·¯¹Ç·Î, Restart RedoÁß¿¡ ¹ß»ıÇÑ XA Transaction¿¡ ´ëÇØ¼­
+        // Update Tx Count¸¦ ÇÏ³ª Áõ°¡½ÃÄÑ ÁÖ¾î¾ß ÇÑ´Ù.
         smxTrans::setRSGroupID( sCurTrans, 0 );
 
-        IDE_TEST( smrLogMgr::incUpdateTxCount() != IDE_SUCCESS );
+        smrLogMgr::incUpdateTxCount();
     }
 
     /* Add trans to Prepared List */
+
     removeAT(sCurTrans);
     addPreparedList(sCurTrans);
 
     return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
 }
 
 /*****************************************************************
- * Description: BUG-27024 [SD] XAì—ì„œ Prepare í›„ Commitë˜ì§€ ì•Šì€ Disk
- *              Rowë¥¼ Server Restart ì‹œ ê³ ë ¤í–ì—¬ì•¼ í•©ë‹ˆë‹¤.
+ * Description: BUG-27024 [SD] XA¿¡¼­ Prepare ÈÄ CommitµÇÁö ¾ÊÀº Disk
+ *              Row¸¦ Server Restart ½Ã °í·ÁÇá¿©¾ß ÇÕ´Ï´Ù.
  *
- * Restart Recovery ì§í›„, Prepare Transë“¤ì˜ mFstDskViewSCN ì¤‘
- * ê°€ì¥ ì‘ì€ ê°’ìœ¼ë¡œ Prepare Transë“¤ì˜ OldestFstViewSCNì„ ê¸°ë¡í•©ë‹ˆë‹¤.
+ * Restart Recovery Á÷ÈÄ, Prepare TransµéÀÇ mFstDskViewSCN Áß
+ * °¡Àå ÀÛÀº °ªÀ¸·Î Prepare TransµéÀÇ OldestFstViewSCNÀ» ±â·ÏÇÕ´Ï´Ù.
  *
- * ì´ëŠ” XA Transê°€ Restart ì´ì „ì— Prepare í•˜ê³  Commití•˜ì§€ ì•Šì€ Rowì˜
- * DskFstViewSCNì´ System Agable SCNë³´ë‹¤ ì‘ì•„ì„œ Commitë˜ì—ˆë‹¤ê³  ì˜¤íŒí•˜ëŠ”
- * ë¬¸ì œë¥¼ ë§‰ê¸° ìœ„í•¨
+ * ÀÌ´Â XA Trans°¡ Restart ÀÌÀü¿¡ Prepare ÇÏ°í CommitÇÏÁö ¾ÊÀº RowÀÇ
+ * DskFstViewSCNÀÌ System Agable SCNº¸´Ù ÀÛ¾Æ¼­ CommitµÇ¾ú´Ù°í ¿ÀÆÇÇÏ´Â
+ * ¹®Á¦¸¦ ¸·±â À§ÇÔ
  *****************************************************************/
 void smxTransMgr::rebuildPrepareTransOldestSCN()
 {
@@ -1064,8 +1150,8 @@ void smxTransMgr::rebuildPrepareTransOldestSCN()
  *
  * Description :
  *
- * BUG-27122 Restart Recovery ì‹œ Undo Transê°€ ì ‘ê·¼í•˜ëŠ” ì¸ë±ìŠ¤ì— ëŒ€í•œ
- * Integrity ì²´í¬ê¸°ëŠ¥ ì¶”ê°€ (__SM_CHECK_DISK_INDEX_INTEGRITY=2)
+ * BUG-27122 Restart Recovery ½Ã Undo Trans°¡ Á¢±ÙÇÏ´Â ÀÎµ¦½º¿¡ ´ëÇÑ
+ * Integrity Ã¼Å©±â´É Ãß°¡ (__SM_CHECK_DISK_INDEX_INTEGRITY=2)
  *
  **********************************************************************/
 IDE_RC smxTransMgr::verifyIndex4ActiveTrans(idvSQL * aStatistics)
@@ -1089,7 +1175,7 @@ IDE_RC smxTransMgr::verifyIndex4ActiveTrans(idvSQL * aStatistics)
     while ( sCurTrans != &mActiveTrans )
     {
         IDE_ASSERT( sCurTrans               != NULL );
-        // XA íŠ¸ëœì­ì…˜ì˜ ìƒíƒœë„ SMX_TX_BEGINë¥¼ ê°€ì§
+        // XA Æ®·£Àè¼ÇÀÇ »óÅÂµµ SMX_TX_BEGIN¸¦ °¡Áü
         IDE_ASSERT( sCurTrans->mStatus == SMX_TX_BEGIN );
         IDE_ASSERT( sCurTrans->mOIDToVerify != NULL );
 
@@ -1116,16 +1202,16 @@ IDE_RC smxTransMgr::verifyIndex4ActiveTrans(idvSQL * aStatistics)
 
 
 /*
-   ê¸°ëŠ¥ :
-   redoAll ê³¼ì •ì—ì„œ SMR_LT_COMMIT, SMR_LT_ABORT ë¡œê·¸ë¥¼
-   ì¬ìˆ˜í–‰í•˜ì—¬ íŠ¸ëœì­ì…˜ì„ ì™„ë£Œì²˜ë¦¬í•œë‹¤.
+   ±â´É :
+   redoAll °úÁ¤¿¡¼­ SMR_LT_COMMIT, SMR_LT_ABORT ·Î±×¸¦
+   Àç¼öÇàÇÏ¿© Æ®·£Àè¼ÇÀ» ¿Ï·áÃ³¸®ÇÑ´Ù.
 
    PRJ-1548, BUG-14978
-   RESTART RECOVERY ê³¼ì •ì—ì„œ Commit Pending ì—°ì‚°ì„ ì§€ì›í•˜ë„ë¡
-   ìˆ˜ì •í•¨.
+   RESTART RECOVERY °úÁ¤¿¡¼­ Commit Pending ¿¬»êÀ» Áö¿øÇÏµµ·Ï
+   ¼öÁ¤ÇÔ.
 
-   [IN] aTrans    : íŠ¸ëœì­ì…˜ ê°ì²´
-   [IN] aIsCommit : íŠ¸ëœì­ì…˜ ì»¤ë°‹ ì—¬ë¶€
+   [IN] aTrans    : Æ®·£Àè¼Ç °´Ã¼
+   [IN] aIsCommit : Æ®·£Àè¼Ç Ä¿¹Ô ¿©ºÎ
 */
 IDE_RC smxTransMgr::makeTransEnd( void * aTrans,
                                   idBool aIsCommit )
@@ -1149,8 +1235,8 @@ IDE_RC smxTransMgr::makeTransEnd( void * aTrans,
         IDE_TEST( sCurTrans->freeOIDList() != IDE_SUCCESS );
 
         // PRJ-1548 User Memory Tablespace
-        // íŠ¸ëœì­ì…˜ì— ë“±ë¡ëœ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì— ëŒ€í•œ
-        // Commit Pending ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
+        // Æ®·£Àè¼Ç¿¡ µî·ÏµÈ Å×ÀÌºí½ºÆäÀÌ½º¿¡ ´ëÇÑ
+        // Commit Pending ¿¬»êÀ» ¼öÇàÇÑ´Ù.
         IDE_TEST( sCurTrans->executePendingList( aIsCommit ) != IDE_SUCCESS );
 
         if ( sCurTrans->isPrepared() == ID_TRUE )
@@ -1183,8 +1269,8 @@ IDE_RC smxTransMgr::insertUndoLSNs( smrUTransQueue*  aTransQueue )
     SM_LSN_MAX( sStopLSN );
 
     /* -----------------------------------------------
-        [1] ê° active transactionì´
-        ë§ˆì§€ë§‰ìœ¼ë¡œ ìƒì„±í•œ ë¡œê·¸ì˜ LSNìœ¼ë¡œ queue êµ¬ì„±
+        [1] °¢ active transactionÀÌ
+        ¸¶Áö¸·À¸·Î »ı¼ºÇÑ ·Î±×ÀÇ LSNÀ¸·Î queue ±¸¼º
       ----------------------------------------------- */
     while ( sTrans != &mActiveTrans )
     {
@@ -1221,8 +1307,8 @@ IDE_RC smxTransMgr::abortAllActiveTrans()
 
 }
 
-/* BUG-42724 : XA íŠ¸ëœì­ì…˜ì— ì˜í•´ insert/updateëœ ë ˆì½”ë“œì˜ OID ë¦¬ìŠ¤íŠ¸ë¥¼
- * ìˆœíšŒí•˜ì—¬ í”Œë˜ê·¸ë¥¼ ìˆ˜ì •í•œë‹¤.
+/* BUG-42724 : XA Æ®·£Àè¼Ç¿¡ ÀÇÇØ insert/updateµÈ ·¹ÄÚµåÀÇ OID ¸®½ºÆ®¸¦
+ * ¼øÈ¸ÇÏ¿© ÇÃ·¡±×¸¦ ¼öÁ¤ÇÑ´Ù.
  */
 IDE_RC smxTransMgr::setOIDFlagForInDoubtTrans()
 {
@@ -1233,7 +1319,7 @@ IDE_RC smxTransMgr::setOIDFlagForInDoubtTrans()
         sTrans = mPreparedTrans.mNxtPT;
         while ( sTrans != &mPreparedTrans )
         {
-            IDE_ASSERT( sTrans->mCommitState == SMX_XA_PREPARED );
+            IDE_ASSERT( sTrans->isPrepared() == ID_TRUE );
 
             IDE_TEST( sTrans->mOIDList->setOIDFlagForInDoubt() != IDE_SUCCESS );
 
@@ -1258,17 +1344,16 @@ IDE_RC smxTransMgr::setRowSCNForInDoubtTrans()
         sTrans = mPreparedTrans.mNxtPT;
         while ( sTrans != &mPreparedTrans )
         {
-            IDE_ASSERT( sTrans->mCommitState == SMX_XA_PREPARED );
-
+            IDE_ASSERT( sTrans->isPrepared() == ID_TRUE );
             IDE_TEST( sTrans->mOIDList->setSCNForInDoubt(sTrans->mTransID) != IDE_SUCCESS );
 
             sTrans = sTrans->mNxtPT;
         }
 
         /* ---------------------------------------------
-           recovery ì´í›„ íŠ¸ëœì­ì…˜ í…Œì´ë¸”ì˜ ëª¨ë“  ì—”íŠ¸ë¦¬ê°€
-           transaction free listì— ì—°ê²°ë˜ì–´ ìˆìœ¼ë¯€ë¡œ
-           prepare transactionì„ ìœ„í•´ ì´ë¥¼ ì¬êµ¬ì„±í•œë‹¤.
+           recovery ÀÌÈÄ Æ®·£Àè¼Ç Å×ÀÌºíÀÇ ¸ğµç ¿£Æ®¸®°¡
+           transaction free list¿¡ ¿¬°áµÇ¾î ÀÖÀ¸¹Ç·Î
+           prepare transactionÀ» À§ÇØ ÀÌ¸¦ Àç±¸¼ºÇÑ´Ù.
            --------------------------------------------- */
         IDE_TEST( smxTransMgr::rebuildTransFreeList() != IDE_SUCCESS );
     }
@@ -1281,11 +1366,11 @@ IDE_RC smxTransMgr::setRowSCNForInDoubtTrans()
 
 }
 
-/* ê¸°ëŠ¥ : XA Prepare Transactionì´ ìˆ˜ì •í•œ Tableì— ëŒ€í•˜ì—¬
- *       Transactionì˜ Table Infoì—ì„œ Record Countë¥¼ 1 ì¦ê°€ ì‹œí‚¨ë‹¤.
+/* ±â´É : XA Prepare TransactionÀÌ ¼öÁ¤ÇÑ Table¿¡ ´ëÇÏ¿©
+ *       TransactionÀÇ Table Info¿¡¼­ Record Count¸¦ 1 Áõ°¡ ½ÃÅ²´Ù.
  *
- *       [BUG-26415] XA íŠ¸ëœì­ì…˜ì¤‘ Partial Rollback(Unique Volation)ëœ
- *       Prepare íŠ¸ëœì­ì…˜ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš° ì„œë²„ ì¬êµ¬ë™ì´ ì‹¤íŒ¨í•©ë‹ˆë‹¤.
+ *       [BUG-26415] XA Æ®·£Àè¼ÇÁß Partial Rollback(Unique Volation)µÈ
+ *       Prepare Æ®·£Àè¼ÇÀÌ Á¸ÀçÇÏ´Â °æ¿ì ¼­¹ö Àç±¸µ¿ÀÌ ½ÇÆĞÇÕ´Ï´Ù.
  */
 IDE_RC smxTransMgr::incRecCnt4InDoubtTrans( smTID aTransID,
                                             smOID aTableOID )
@@ -1293,18 +1378,18 @@ IDE_RC smxTransMgr::incRecCnt4InDoubtTrans( smTID aTransID,
     smxTrans     * sTrans;
     smxTableInfo * sTableInfo = NULL;
 
-    // BUG-31521 ë³¸ í•¨ìˆ˜ëŠ” Prepare Transactionì´ ì¡´ì¬í•˜ëŠ” ìƒí™©ì—ì„œë§Œ
-    //           í˜¸ì¶œ ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
+    // BUG-31521 º» ÇÔ¼ö´Â Prepare TransactionÀÌ Á¸ÀçÇÏ´Â »óÈ²¿¡¼­¸¸
+    //           È£Ãâ µÇ¾î¾ß ÇÕ´Ï´Ù.
 
-    /* BUG-38151 Prepare Txê°€ ì•„ë‹Œ ìƒíƒœì—ì„œ SCNì´ ê¹¨ì§„ ê²½ìš°ì—ë„
-     * __SM_SKIP_CHECKSCN_IN_STARTUP í”„ë¡œí¼í‹°ê°€ ì¼œì ¸ ìˆë‹¤ë©´
-     * ì„œë²„ë¥¼ ë©ˆì¶”ì§€ ì•Šê³  ê´€ë ¨ ì •ë³´ë¥¼ ì¶œë ¥í•˜ê³  ê·¸ëŒ€ë¡œ ì§„í–‰í•œë‹¤. */
+    /* BUG-38151 Prepare Tx°¡ ¾Æ´Ñ »óÅÂ¿¡¼­ SCNÀÌ ±úÁø °æ¿ì¿¡µµ
+     * __SM_SKIP_CHECKSCN_IN_STARTUP ÇÁ·ÎÆÛÆ¼°¡ ÄÑÁ® ÀÖ´Ù¸é
+     * ¼­¹ö¸¦ ¸ØÃßÁö ¾Ê°í °ü·Ã Á¤º¸¸¦ Ãâ·ÂÇÏ°í ±×´ë·Î ÁøÇàÇÑ´Ù. */
     IDE_TEST( mPreparedTransCnt <= 0 );
 
     sTrans = mPreparedTrans.mNxtPT;
     while ( sTrans != &mPreparedTrans )
     {
-        IDE_ASSERT( sTrans->mCommitState == SMX_XA_PREPARED );
+        IDE_ASSERT( sTrans->isPrepared() == ID_TRUE );
 
         if ( sTrans->mTransID == aTransID )
         {
@@ -1329,11 +1414,11 @@ IDE_RC smxTransMgr::incRecCnt4InDoubtTrans( smTID aTransID,
 
 }
 
-/* ê¸°ëŠ¥ : XA Prepare Transactionì´ ìˆ˜ì •í•œ Tableì— ëŒ€í•˜ì—¬
- *       Transactionì˜ Table Infoì—ì„œ Record Countë¥¼ 1 ê°ì†Œì‹œí‚¨ë‹¤.
+/* ±â´É : XA Prepare TransactionÀÌ ¼öÁ¤ÇÑ Table¿¡ ´ëÇÏ¿©
+ *       TransactionÀÇ Table Info¿¡¼­ Record Count¸¦ 1 °¨¼Ò½ÃÅ²´Ù.
  *
- *       [BUG-26415] XA íŠ¸ëœì­ì…˜ì¤‘ Partial Rollback(Unique Volation)ëœ
- *       Prepare íŠ¸ëœì­ì…˜ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš° ì„œë²„ ì¬êµ¬ë™ì´ ì‹¤íŒ¨í•©ë‹ˆë‹¤.
+ *       [BUG-26415] XA Æ®·£Àè¼ÇÁß Partial Rollback(Unique Volation)µÈ
+ *       Prepare Æ®·£Àè¼ÇÀÌ Á¸ÀçÇÏ´Â °æ¿ì ¼­¹ö Àç±¸µ¿ÀÌ ½ÇÆĞÇÕ´Ï´Ù.
  */
 IDE_RC smxTransMgr::decRecCnt4InDoubtTrans( smTID aTransID,
                                             smOID aTableOID )
@@ -1341,18 +1426,18 @@ IDE_RC smxTransMgr::decRecCnt4InDoubtTrans( smTID aTransID,
     smxTrans     * sTrans;
     smxTableInfo * sTableInfo = NULL;
 
-    // BUG-31521 ë³¸ í•¨ìˆ˜ëŠ” Prepare Transactionì´ ì¡´ì¬í•˜ëŠ” ìƒí™©ì—ì„œë§Œ
-    //           í˜¸ì¶œ ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
+    // BUG-31521 º» ÇÔ¼ö´Â Prepare TransactionÀÌ Á¸ÀçÇÏ´Â »óÈ²¿¡¼­¸¸
+    //           È£Ãâ µÇ¾î¾ß ÇÕ´Ï´Ù.
 
-    /* BUG-38151 Prepare Txê°€ ì•„ë‹Œ ìƒíƒœì—ì„œ SCNì´ ê¹¨ì§„ ê²½ìš°ì—ë„
-     * __SM_SKIP_CHECKSCN_IN_STARTUP í”„ë¡œí¼í‹°ê°€ ì¼œì ¸ ìˆë‹¤ë©´
-     * ì„œë²„ë¥¼ ë©ˆì¶”ì§€ ì•Šê³  ê´€ë ¨ ì •ë³´ë¥¼ ì¶œë ¥í•˜ê³  ê·¸ëŒ€ë¡œ ì§„í–‰í•œë‹¤. */
+    /* BUG-38151 Prepare Tx°¡ ¾Æ´Ñ »óÅÂ¿¡¼­ SCNÀÌ ±úÁø °æ¿ì¿¡µµ
+     * __SM_SKIP_CHECKSCN_IN_STARTUP ÇÁ·ÎÆÛÆ¼°¡ ÄÑÁ® ÀÖ´Ù¸é
+     * ¼­¹ö¸¦ ¸ØÃßÁö ¾Ê°í °ü·Ã Á¤º¸¸¦ Ãâ·ÂÇÏ°í ±×´ë·Î ÁøÇàÇÑ´Ù. */
     IDE_TEST( mPreparedTransCnt <= 0 );
 
     sTrans = mPreparedTrans.mNxtPT;
     while ( sTrans != &mPreparedTrans )
     {
-        IDE_ASSERT( sTrans->mCommitState == SMX_XA_PREPARED );
+        IDE_ASSERT( sTrans->isPrepared() == ID_TRUE );
         
         if ( sTrans->mTransID == aTransID )
         {
@@ -1405,52 +1490,218 @@ void * smxTransMgr::getNxtPreparedTrx( void  * aTrans )
 }
 
 /*********************************************************
-  function description: waitForLock, table lock  wait functionì´ë©°,
-                        smlLockMgr::lockTableì— ì˜í•˜ì—¬ ë¶ˆë¦°ë‹¤.
+  function description: waitForLock, table lock  wait functionÀÌ¸ç,
+                        smlLockMgr::lockTable¿¡ ÀÇÇÏ¿© ºÒ¸°´Ù.
 ***********************************************************/
 IDE_RC smxTransMgr::waitForLock( void     *aTrans,
                                  iduMutex *aMutex,
                                  ULong     aLockWaitMicroSec )
 {
-    SLong      sLockTimeOut = smuProperty::getLockTimeOut();
-    smxTrans * sTrans       = (smxTrans*) aTrans;
+    ULong      sLockTimeOut            = smuProperty::getLockTimeOut();
+    smxTrans * sTrans                  = (smxTrans*) aTrans;
+    ULong      sLockWaitTime           = 0;
+    ULong      sDieWaitTime            = 0;
+    ULong      sTotalWaitTime          = 0;
+    ULong      sElapsedTime            = 0;
+    idBool     sCheckDistDeadlock      = ID_FALSE;
+    idBool     sIsReleasedDistDeadlock = ID_FALSE;
+    SChar      sBuf[128]               = {0, };
+    SInt       sLen                    = 0;
+
+    smxDistDeadlockDetection sDistDetected    = SMX_DIST_DEADLOCK_DETECTION_NONE;
+    smxDistDeadlockDetection sNewDistDetected = SMX_DIST_DEADLOCK_DETECTION_NONE;
 
     sTrans->mStatus    = SMX_TX_BLOCKED;
     sTrans->mStatus4FT = SMX_TX_BLOCKED;
 
-    while(1)
+    /*
+     * Àá±ñ ±â´Ù·Á º»´Ù. ±ú¾î³µÀ» ¶§ ¾ÆÁ÷ ¿äÃ»ÇÑ Resource°¡
+     * ÇØÁ¦°¡ µÇÁö ¾Ê¾Ò´Ù¸é DeadlockÀ» Ã¼Å©ÇÏ°í °è¼Ó´ë±â ÇÑ´Ù.
+     * PROJ-2620 
+     * spin ¸ğµå¿¡¼­´Â waitForLock ÇÔ¼ö°¡ È£ÃâµÇÁö ¾Ê´Â´Ù.
+     */
+    IDE_TEST( sTrans->suspend( NULL, aMutex, sLockTimeOut )
+              != IDE_SUCCESS );
+
+    if ( sTrans->mStatus == SMX_TX_BEGIN )
     {
-        /*
-         * ì ê¹ ê¸°ë‹¤ë ¤ ë³¸ë‹¤. ê¹¨ì–´ë‚¬ì„ ë•Œ ì•„ì§ ìš”ì²­í•œ Resourceê°€
-         * í•´ì œê°€ ë˜ì§€ ì•Šì•˜ë‹¤ë©´ Deadlockì„ ì²´í¬í•˜ê³  ê³„ì†ëŒ€ê¸° í•œë‹¤.
-         * PROJ-2620 
-         * spin ëª¨ë“œì—ì„œëŠ” waitForLock í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ì§€ ì•ŠëŠ”ë‹¤.
-         */
-        IDE_TEST( sTrans->suspendMutex( NULL, aMutex, sLockTimeOut )
-                  != IDE_SUCCESS );
-
-        if ( sTrans->mStatus == SMX_TX_BEGIN )
-        {
-            break;
-        }
-
-        /* Deadlockì´ ë°œìƒí•˜ì§€ ì•Šì€ ê²½ìš°ì— ëŒ€í•´ì„œë§Œ ë¬´í•œëŒ€ê¸° í•œë‹¤. ì´ë¥¼
-         * ìœ„í•´ Deadlockì´ ë°œìƒí•˜ì§€ ì•ŠëŠ”ì§€ Checkí•œë‹¤. */
-        IDE_TEST_RAISE( smLayerCallback::isCycle( sTrans->mSlotN ) == ID_TRUE,
-                        err_deadlock );
-
-        aLockWaitMicroSec = sTrans->getLockTimeoutByUSec( aLockWaitMicroSec );
-
-        IDE_TEST( sTrans->suspendMutex( NULL /* Target Transaction */,
-                                        aMutex,
-                                        aLockWaitMicroSec )
-                  != IDE_SUCCESS );
-
-        IDE_TEST_RAISE( sTrans->mStatus != SMX_TX_BEGIN,
-                        err_exceed_wait_time );
-
-        break;
+        /* TX°¡ ±ú¾î³µ´Ù. */
+        IDE_CONT( WAKED_UP );
     }
+
+    sLockWaitTime = sTrans->getLockTimeoutByUSec( aLockWaitMicroSec );
+
+    if ( ( smuProperty::getDistributionDeadlockEnable() == ID_TRUE ) &&
+         SMI_DIST_LEVEL_IS_VALID( sTrans->mDistTxInfo.mDistLevel ) )
+    {
+        sCheckDistDeadlock = ID_TRUE;
+    }
+
+    /* DeadlockÀÌ ¹ß»ıÇÏÁö ¾ÊÀº °æ¿ì¿¡ ´ëÇØ¼­¸¸ ¹«ÇÑ´ë±â ÇÑ´Ù. ÀÌ¸¦
+     * À§ÇØ DeadlockÀÌ ¹ß»ıÇÏÁö ¾Ê´ÂÁö CheckÇÑ´Ù. */
+    IDE_TEST_RAISE( smLayerCallback::isCycle( sTrans->mSlotN, sCheckDistDeadlock ) == ID_TRUE,
+                    err_deadlock );
+
+    /* PROJ-2734 
+       Global Consistency TXÀÇ Distributed Deadlock Ã¼Å© */
+    if ( sCheckDistDeadlock == ID_TRUE ) 
+    {
+#if DEBUG
+        smlLockMgr::dumpTxList4DistDeadlock( sTrans->mSlotN );
+#endif
+
+        sDistDetected = smlLockMgr::detectDistDeadlock( sTrans->mSlotN, &sDieWaitTime );
+    }
+
+    if ( SMX_DIST_DEADLOCK_IS_DETECTED( sDistDetected ) )
+    {
+        /* ºĞ»ê µ¥µå¶ôÀÌ Å½ÁöµÇ¾ú´Ù. */
+        /* sDieWaitTime ¸¸Å­ ±â´Ù¸°ÈÄ¿¡ ½ÇÆĞÃ³¸®ÇÑ´Ù. */
+        sTrans->mDistDeadlock4FT.mDetection   = sDistDetected;
+        sTrans->mDistDeadlock4FT.mDieWaitTime = sDieWaitTime;
+        sTrans->mDistDeadlock4FT.mElapsedTime = 0;
+
+        sTotalWaitTime = sDieWaitTime;
+        sElapsedTime   = 0;
+
+#ifdef DEBUG
+        ideLog::log( IDE_SD_19,
+                     "\n<Detected Distribution Deadlock - TABLE LOCK>\n"
+                     "WaiterTx(%"ID_UINT32_FMT") WaitTime : %"ID_UINT64_FMT"us\n",
+                     sTrans->mTransID,
+                     sDieWaitTime );
+#endif
+    }
+    else
+    {
+        /* ºĞ»ê µ¥µå¶ôÀÌ Å½ÁöµÇÁö ¾Ê¾Ò°Å³ª,
+           ºĞ»êµ¥µå¶ô ÆÇ´Ü ´ë»óÀÌ ¾Æ´Ï´Ù. */
+        sTotalWaitTime = sLockWaitTime;
+        sElapsedTime   = 0;
+    }
+
+    IDE_EXCEPTION_CONT( WAITING );
+
+    sIsReleasedDistDeadlock = ID_FALSE;
+    sNewDistDetected        = SMX_DIST_DEADLOCK_DETECTION_NONE;
+
+    /* PROJ-2734
+       sDistDetected °ª(ºĞ»êµ¥µå¶ô Å½Áö¿©ºÎ)¿¡ µû¸¥ suspend() ÇÔ¼öÀÇ WAIT Â÷ÀÌ.
+       1) ºĞ»êµ¥µå¶ô Å½ÁöµÊ   : ºĞ»êµ¥µå¶ô Å½ÁöÈÄ DIE WAIT
+       2) ºĞ»êµ¥µå¶ô Å½Áö¾ÈµÊ : LOCK WAIT  */
+    IDE_TEST( sTrans->suspend( NULL /* Target Transaction */,
+                               aMutex,
+                               &sTotalWaitTime,
+                               &sElapsedTime,
+                               sCheckDistDeadlock,
+                               sDistDetected,
+                               &sIsReleasedDistDeadlock,
+                               &sNewDistDetected )
+              != IDE_SUCCESS );
+
+    if ( sTrans->mStatus == SMX_TX_BEGIN )
+    {
+        /* TX°¡ ±ú¾î³µ´Ù. */
+        IDE_CONT( WAKED_UP );
+    }
+
+    /* suspend() ÀÌÈÄ Ã³¸® 
+
+       CASE 1 : WAITERÀÇ ºĞ»êÁ¤º¸°¡ ¼³Á¤µÇ¾îÀÖ°í, ºĞ»êµ¥µå¶ôÀÌ Å½ÁöµÈ ÀÌÈÄ Die Wait Áß ºĞ»êµ¥µå¶ôÀÌ ÇØÁ¦µÇ¾ú´Ù.
+                -> ºĞ»êµ¥µå¶ô »óÈ²Á¤¸®ÇÏ°í, LOCK WAIT ÇÑ´Ù. 
+
+       CASE 2 : WAITERÀÇ ºĞ»êÁ¤º¸°¡ ¼³Á¤µÇ¾îÀÖ°í, LOCK WAITÁß¿¡ ºĞ»êµ¥µå¶ôÀ» Å½ÁöÇÏ¿´´Ù.
+                -> ºĞ»êµ¥µå¶ô Die wait¸¦ ÇÏµµ·Ï ÇÑ´Ù.
+
+       CASE 3 : WAITERÀÇ ºĞ»êÁ¤º¸°¡ ¼³Á¤µÇ¾îÀÖ°í, ºĞ»êµ¥µå¶ôÀÌ Å½ÁöµÈ ÀÌÈÄ Die wait ½Ã°£À» ³Ñ°å´Ù.
+                -> Die Wait TIMEOUT Ã³¸®ÇÑ´Ù. (FAIL RETURN)
+
+       CASE 4 : WAITERÀÇ ºĞ»êÁ¤º¸°¡ ¼³Á¤µÇ¾îÀÖ°í, LOCK WAITÁß¿¡ WAIT TIMEÀ» ³Ñ°å´Ù.
+                -> LOCK WAIT TIMEOUT Ã³¸®ÇÑ´Ù. (FAIL RETURN)      
+
+       CASE 5 : WAITERÀÇ ºĞ»êÁ¤º¸°¡ ¼³Á¤µÇ¾îÀÖÁö ¾Ê°í, LOCK WAITÁß¿¡ WAIT TIMEÀ» ³Ñ°å´Ù.
+                -> LOCK WAIT TIMEOUT Ã³¸®ÇÑ´Ù. (FAIL RETURN)
+    */
+
+    if ( sIsReleasedDistDeadlock == ID_TRUE )
+    {
+        /* CASE 1 : Die wait Áß¿¡ ºĞ»êµ¥µå¶ô »óÈ²ÀÌ ÇØÁ¦µÇ¾ú´Ù.
+                    LOCK WAIT ÇÏ·¯ °£´Ù. */
+
+        IDE_DASSERT( sCheckDistDeadlock == ID_TRUE );
+        IDE_DASSERT( SMX_DIST_DEADLOCK_IS_DETECTED( sDistDetected ) );
+
+        sTotalWaitTime = sLockWaitTime;
+        sDistDetected  = SMX_DIST_DEADLOCK_DETECTION_NONE;
+
+        sTrans->mDistDeadlock4FT.mDetection = SMX_DIST_DEADLOCK_DETECTION_NONE;
+
+        #ifdef DEBUG
+        ideLog::log( IDE_SD_19,
+                "\n<Released Distribution Deadlock - TABLE LOCK>\n"
+                "WaiterTx(%"ID_UINT32_FMT") \n",
+                sTrans->mTransID );
+        #endif
+
+        IDE_CONT( WAITING );
+    }
+
+    if ( SMX_DIST_DEADLOCK_IS_DETECTED( sNewDistDetected ) )
+    {
+        /* CASE 2 : LOCK WAIT Áß ºĞ»êµ¥µå¶ôÀÌ »õ·Î Å½ÁöµÇ¾ú´Ù.
+                    Die Wait ÇÏ·¯ °£´Ù.*/
+
+        IDE_DASSERT( sCheckDistDeadlock == ID_TRUE );
+        IDE_DASSERT( SMX_DIST_DEADLOCK_IS_NOT_DETECTED( sDistDetected ) );
+
+        sDistDetected = sNewDistDetected;
+
+        sTrans->mDistDeadlock4FT.mDetection   = sNewDistDetected;
+        sTrans->mDistDeadlock4FT.mDieWaitTime = sTotalWaitTime;
+        sTrans->mDistDeadlock4FT.mElapsedTime = sElapsedTime;
+
+        IDE_CONT( WAITING );
+    }
+
+    if ( sCheckDistDeadlock == ID_TRUE)
+    {
+        if ( SMX_DIST_DEADLOCK_IS_DETECTED( sDistDetected ) )
+        {
+            if ( sIsReleasedDistDeadlock == ID_FALSE )
+            {
+                /* CASE 3 :  ºĞ»êµ¥µå¶ô Å½ÁöµÈ ÀÌÈÄ DIE WAIT TIME µµ ³Ñ°å´Ù.
+                             FAIL RETURN ÇÑ´Ù. */
+
+                /* ´õÀÌ»ó Performance view¿¡¼­ Ãâ·ÂµÇÁö ¾Ê°Ô ÇÑ´Ù. */
+                sTrans->mDistDeadlock4FT.mDetection = SMX_DIST_DEADLOCK_DETECTION_NONE;
+
+                IDE_RAISE( err_distributed_deadlock );
+            }
+            else
+            {
+                /* CASE 1 : ¾Õ¿¡¼­ Ã³¸®ÇÔ. */
+            }
+        }
+        else
+        {
+            if ( SMX_DIST_DEADLOCK_IS_NOT_DETECTED( sNewDistDetected ) )
+            {
+                /* CASE 4 : ºĞ»êÁ¤º¸°¡ ¼³Á¤µÇ¾îÀÖ°í, LOCK WAIT ¿´´Ù°¡ WAIT TIMEÀ» ³Ñ±ä °æ¿ìÀÌ´Ù. */
+                IDE_RAISE( err_exceed_wait_time );
+            }
+            else
+            {
+                /* CASE 2 : ¾Õ¿¡¼­ Ã³¸®ÇÔ. */
+            }
+        }
+    }
+    else
+    {
+        /* CASE 5 : ºĞ»êÁ¤º¸°¡ ¼³Á¤µÇ¾î ÀÖÁö¾Ê°í(¶Ç´Â ºĞ»êµ¥µå¶ô disable), LOCK WAIT¿´´Ù°¡ WAIT TIMEÀ» ³Ñ±ä °æ¿ìÀÌ´Ù.*/
+        IDE_RAISE( err_exceed_wait_time );
+    }
+
+    IDE_EXCEPTION_CONT( WAKED_UP );
 
     smLayerCallback::clearWaitItemColsOfTrans( ID_TRUE, sTrans->mSlotN );
     sTrans->mStatus    = SMX_TX_BEGIN;
@@ -1461,6 +1712,47 @@ IDE_RC smxTransMgr::waitForLock( void     *aTrans,
     IDE_EXCEPTION(err_deadlock);
     {
         IDE_SET(ideSetErrorCode(smERR_ABORT_Aborted));
+    }
+    IDE_EXCEPTION(err_distributed_deadlock);
+    {
+        sLen = idlOS::snprintf( sBuf,
+                                ID_SIZEOF(sBuf),    
+                                "[TABLE DEADLOCK] DieWaitTime[%"ID_UINT64_FMT"us], ", sTotalWaitTime );
+        switch( sDistDetected )
+        {
+            case SMX_DIST_DEADLOCK_DETECTION_VIEWSCN:
+                sLen += idlOS::snprintf( sBuf + sLen, ID_SIZEOF(sBuf) - sLen,
+                                         "Cause : reversed FIRST STATEMENT VIEW SCN" );
+                break;
+            case SMX_DIST_DEADLOCK_DETECTION_TIME:
+                sLen += idlOS::snprintf( sBuf + sLen, ID_SIZEOF(sBuf) - sLen,
+                                         "Cause : reversed FIRST STATEMENT TIME" );
+                break;
+            case SMX_DIST_DEADLOCK_DETECTION_SHARD_PIN_SEQ:
+                sLen += idlOS::snprintf( sBuf + sLen, ID_SIZEOF(sBuf) - sLen,
+                                         "Cause : reversed SHARD-PIN SEQUENCE" );
+                break;
+            case SMX_DIST_DEADLOCK_DETECTION_SHARD_PIN_NODE_ID:
+                sLen += idlOS::snprintf( sBuf + sLen, ID_SIZEOF(sBuf) - sLen,
+                                         "Cause : reversed SHARD-PIN NODE ID" );
+                break;
+            case SMX_DIST_DEADLOCK_DETECTION_ALL_EQUAL:
+                sLen += idlOS::snprintf( sBuf + sLen, ID_SIZEOF(sBuf) - sLen,
+                                         "Cause : All Same Items" );
+                break;
+            default:
+                break;
+        }
+
+        #ifdef DEBUG
+        ideLog::log( IDE_SD_19,
+                     "\n<Cancel Statement to recovery Distribution Deadlock : %s >\n"
+                     "WaiterTx(%"ID_UINT32_FMT") \n",
+                     sBuf,
+                     sTrans->mTransID );
+        #endif
+
+        IDE_SET(ideSetErrorCode(smERR_ABORT_Distributed_Aborted, sBuf));
     }
     IDE_EXCEPTION(err_exceed_wait_time);
     {
@@ -1486,6 +1778,7 @@ idBool smxTransMgr::isWaitForTransCase( void   * aTrans,
     /* replication self deadlock avoidance:
      * transactions that were begun by a receiver does not wait each other*/
     if ( ( sTrans->mReplID == sWaitTrans->mReplID ) &&
+         ( sTrans->mReplID != SMX_LOCK_WAIT_REPL_TX_ID ) &&
          ( sTrans->isReplTrans() == ID_TRUE ) &&
          ( sWaitTrans->isReplTrans() == ID_TRUE ) )
     {
@@ -1499,24 +1792,36 @@ idBool smxTransMgr::isWaitForTransCase( void   * aTrans,
 
 /*********************************************************
   function description: waitForTrans
-   record  lock  wait functionì´ë©°,
-  smcRecord, sdcRecordì˜ update ,delete ì— ì˜í•˜ì—¬ ë¶ˆë¦°ë‹¤.
-  ë˜í•œ index moduleì˜ lockAllRowì— ì˜í•´ì„œë„ ë¶ˆë¦°ë‹¤.
+   record  lock  wait functionÀÌ¸ç,
+  smcRecord, sdcRecordÀÇ update ,delete ¿¡ ÀÇÇÏ¿© ºÒ¸°´Ù.
+  ¶ÇÇÑ index moduleÀÇ lockAllRow¿¡ ÀÇÇØ¼­µµ ºÒ¸°´Ù.
 ***********************************************************/
-IDE_RC smxTransMgr::waitForTrans( void     *aTrans,
-                                  smTID     aWaitTransID,
-                                  ULong     aLockWaitTime )
+IDE_RC smxTransMgr::waitForTrans( void     * aTrans,
+                                  smTID      aWaitTransID,
+                                  scSpaceID  aSpaceID,
+                                  ULong      aLockWaitTime )
 {
-    smxTrans          *sTrans       = NULL;
-    smxTrans          *sWaitTrans   = NULL;
-    UInt               sState       = 0;
-    SLong              sLockTimeOut = 0;
+    smxTrans * sTrans                  = NULL;
+    smxTrans * sWaitTrans              = NULL;
+    UInt       sState                  = 0;
+    ULong      sLockTimeOut            = 0;
+    ULong      sLockWaitTime           = 0;
+    ULong      sDieWaitTime            = 0;
+    ULong      sTotalWaitTime          = 0;
+    ULong      sElapsedTime            = 0;
+    idBool     sCheckDistDeadlock      = ID_FALSE;
+    idBool     sIsReleasedDistDeadlock = ID_FALSE;
+    SChar      sBuf[128]               = {0, };
+    SInt       sLen                    = 0;
 
-    sTrans       = (smxTrans *)aTrans;
-    sWaitTrans   = smxTransMgr::getTransByTID( aWaitTransID );
-    sLockTimeOut = smuProperty::getLockTimeOut();
+    smxDistDeadlockDetection sDistDetected    = SMX_DIST_DEADLOCK_DETECTION_NONE;
+    smxDistDeadlockDetection sNewDistDetected = SMX_DIST_DEADLOCK_DETECTION_NONE;
 
-    IDE_TEST( sWaitTrans->lock() != IDE_SUCCESS );
+    sTrans        = (smxTrans *)aTrans;
+    sWaitTrans    = smxTransMgr::getTransByTID( aWaitTransID );
+    sLockTimeOut  = smuProperty::getLockTimeOut();
+
+    sWaitTrans->lock();
     sState = 1;
 
     sTrans->mStatus    = SMX_TX_BLOCKED;
@@ -1525,48 +1830,217 @@ IDE_RC smxTransMgr::waitForTrans( void     *aTrans,
     if ( ( sWaitTrans->mTransID != aWaitTransID ) ||
          ( sWaitTrans->mStatus == SMX_TX_END ) )
     {
-        IDE_TEST( sWaitTrans->unlock() != IDE_SUCCESS );
+        sWaitTrans->unlock();
         sState = 0;
+
+        IDE_CONT( WAKED_UP );
+    }
+
+    smLayerCallback::registRecordLockWait( sTrans->mSlotN,
+                                           sWaitTrans->mSlotN );
+
+    sWaitTrans->unlock();
+    sState = 0;
+
+    IDU_FIT_POINT( "1.BUG-42154@smxTransMgr::waitForTrans::afterRegistLockWait" );
+
+    IDE_TEST( sTrans->suspend( sWaitTrans,
+                               NULL,
+                               sLockTimeOut )
+              != IDE_SUCCESS );
+
+    if ( sTrans->mStatus == SMX_TX_BEGIN )
+    {
+        /* TX°¡ ±ú¾î³µ´Ù. */
+        IDE_CONT( WAKED_UP );
+    }
+
+    /* BUG-47223
+       TRANS_WAIT_TIME ÇÁ·ÎÆÛÆ¼°¡ ¼³Á¤µÇ¾îÀÖ´Â °æ¿ì
+       ÀÌ °ªÀ¸·Î wait timeÀ» Àç¼³Á¤ÇÑ´Ù.
+       service txÀÌ°í, meta tableÀÌ ¾Æ´Ñ°æ¿ì¸¸ Àû¿ëÇÑ´Ù. */
+    if ( ( smuProperty::getTransWaitTime() != ID_ULONG_MAX ) &&
+            ( sTrans->mIsServiceTX == ID_TRUE ) &&
+            ( aSpaceID != SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC ) )
+    {
+        sLockWaitTime = smuProperty::getTransWaitTime();
     }
     else
     {
-        smLayerCallback::registRecordLockWait( sTrans->mSlotN,
-                                               sWaitTrans->mSlotN );
-
-        IDE_TEST( sWaitTrans->unlock() != IDE_SUCCESS );
-        sState = 0;
-
-        IDU_FIT_POINT( "1.BUG-42154@smxTransMgr::waitForTrans::afterRegistLockWait" );
-
-        IDE_TEST( sTrans->suspend( sWaitTrans,
-                                   aWaitTransID,
-                                   NULL,
-                                   sLockTimeOut )
-                  != IDE_SUCCESS );
-
-        if ( sTrans->mStatus == SMX_TX_BEGIN )
-        {
-            //waiting tableì—ì„œ aSlotNì˜ í–‰ì— ëŒ€ê¸°ì—´ì„ clearí•œë‹¤.
-            smLayerCallback::clearWaitItemColsOfTrans( ID_TRUE,
-                                                       sTrans->mSlotN );
-
-            return IDE_SUCCESS;
-        }
-
-        //dead lock test
-        IDE_TEST_RAISE( smLayerCallback::isCycle( sTrans->mSlotN )
-                        == ID_TRUE, err_deadlock );
-
-        aLockWaitTime = sTrans->getLockTimeoutByUSec( aLockWaitTime );
-        IDE_TEST( sTrans->suspend( sWaitTrans,
-                                   aWaitTransID,
-                                   NULL /* Mutex */,
-                                   aLockWaitTime )
-                  != IDE_SUCCESS );
-
-        IDE_TEST_RAISE( sTrans->mStatus != SMX_TX_BEGIN,
-                        err_exceed_wait_time );
+        sLockWaitTime = sTrans->getLockTimeoutByUSec( aLockWaitTime );
     }
+
+    if ( ( smuProperty::getDistributionDeadlockEnable() == ID_TRUE ) &&
+         SMI_DIST_LEVEL_IS_VALID( sTrans->mDistTxInfo.mDistLevel ) )
+    {
+        sCheckDistDeadlock = ID_TRUE;
+    }
+
+    /* dead lock test */
+    IDE_TEST_RAISE( smLayerCallback::isCycle( sTrans->mSlotN, sCheckDistDeadlock ) == ID_TRUE,
+                    err_deadlock );
+
+    /* PROJ-2734 
+       Global Consistency TXÀÇ Distributed Deadlock Ã¼Å© */
+    if ( sCheckDistDeadlock == ID_TRUE )
+    {
+#if DEBUG
+        smlLockMgr::dumpTxList4DistDeadlock( sTrans->mSlotN );
+#endif
+
+        sDistDetected = smlLockMgr::detectDistDeadlock( sTrans->mSlotN, &sDieWaitTime );
+    }
+
+    if ( SMX_DIST_DEADLOCK_IS_DETECTED( sDistDetected ) )
+    {
+        /* ºĞ»êµ¥µå¶ôÀÌ Å½ÁöµÇ¾ú´Ù. */
+        /* sDieWaitTime ¸¸Å­ ±â´Ù¸°ÈÄ¿¡ ½ÇÆĞÃ³¸®ÇÑ´Ù. */
+        sTrans->mDistDeadlock4FT.mDetection   = sDistDetected;
+        sTrans->mDistDeadlock4FT.mDieWaitTime = sDieWaitTime;
+        sTrans->mDistDeadlock4FT.mElapsedTime = 0;
+
+        sTotalWaitTime = sDieWaitTime;
+        sElapsedTime   = 0;
+
+#ifdef DEBUG
+        ideLog::log( IDE_SD_19,
+                     "\n<Detected Distribution Deadlock - RECORD LOCK>\n"
+                     "WaiterTx(%"ID_UINT32_FMT") WaitTime : %"ID_UINT64_FMT"us\n",
+                     sTrans->mTransID,
+                     sDieWaitTime );
+#endif
+    }
+    else
+    {
+        /* ºĞ»ê µ¥µå¶ôÀÌ Å½ÁöµÇÁö ¾Ê¾Ò°Å³ª,
+           ºĞ»êµ¥µå¶ô ÆÇ´Ü ´ë»óÀÌ ¾Æ´Ï´Ù. */
+
+        sTotalWaitTime = sLockWaitTime;
+        sElapsedTime   = 0;
+    }
+
+    IDE_EXCEPTION_CONT( WAITING );
+
+    sIsReleasedDistDeadlock = ID_FALSE;
+    sNewDistDetected        = SMX_DIST_DEADLOCK_DETECTION_NONE;
+
+    /* PROJ-2734
+       sDistDetected °ª(ºĞ»êµ¥µå¶ô Å½Áö¿©ºÎ)¿¡ µû¸¥ suspend() ÇÔ¼öÀÇ WAIT Â÷ÀÌ.
+       1) ºĞ»êµ¥µå¶ô Å½ÁöµÊ   : ºĞ»êµ¥µå¶ô Å½ÁöÈÄ DIE WAIT
+       2) ºĞ»êµ¥µå¶ô Å½Áö¾ÈµÊ : LOCK WAIT  */
+    IDE_TEST( sTrans->suspend( sWaitTrans,
+                               NULL /* Mutex */,
+                               &sTotalWaitTime,
+                               &sElapsedTime,
+                               sCheckDistDeadlock,
+                               sDistDetected,
+                               &sIsReleasedDistDeadlock,
+                               &sNewDistDetected )
+              != IDE_SUCCESS );
+
+    if ( sTrans->mStatus == SMX_TX_BEGIN )
+    {
+        /* TX°¡ ±ú¾î³µ´Ù. */
+        IDE_CONT( WAKED_UP );
+    }
+
+    /* suspend() ÀÌÈÄ Ã³¸® 
+
+       CASE 1 : WAITERÀÇ ºĞ»êÁ¤º¸°¡ ¼³Á¤µÇ¾îÀÖ°í, ºĞ»êµ¥µå¶ôÀÌ Å½ÁöµÈ ÀÌÈÄ Die Wait Áß ºĞ»êµ¥µå¶ôÀÌ ÇØÁ¦µÇ¾ú´Ù.
+                -> ºĞ»êµ¥µå¶ô »óÈ²Á¤¸®ÇÏ°í, LOCK WAIT ÇÑ´Ù. 
+
+       CASE 2 : WAITERÀÇ ºĞ»êÁ¤º¸°¡ ¼³Á¤µÇ¾îÀÖ°í, LOCK WAITÁß¿¡ ºĞ»êµ¥µå¶ôÀ» Å½ÁöÇÏ¿´´Ù.
+                -> ºĞ»êµ¥µå¶ô Die wait¸¦ ÇÏµµ·Ï ÇÑ´Ù.
+
+       CASE 3 : WAITERÀÇ ºĞ»êÁ¤º¸°¡ ¼³Á¤µÇ¾îÀÖ°í, ºĞ»êµ¥µå¶ôÀÌ Å½ÁöµÈ ÀÌÈÄ Die wait ½Ã°£À» ³Ñ°å´Ù.
+                -> Die Wait TIMEOUT Ã³¸®ÇÑ´Ù. (FAIL RETURN)
+
+       CASE 4 : WAITERÀÇ ºĞ»êÁ¤º¸°¡ ¼³Á¤µÇ¾îÀÖ°í, LOCK WAITÁß¿¡ WAIT TIMEÀ» ³Ñ°å´Ù.
+                -> LOCK WAIT TIMEOUT Ã³¸®ÇÑ´Ù. (FAIL RETURN)      
+
+       CASE 5 : WAITERÀÇ ºĞ»êÁ¤º¸°¡ ¼³Á¤µÇ¾îÀÖÁö ¾Ê°í, LOCK WAITÁß¿¡ WAIT TIMEÀ» ³Ñ°å´Ù.
+                -> LOCK WAIT TIMEOUT Ã³¸®ÇÑ´Ù. (FAIL RETURN)
+    */
+
+    if ( sIsReleasedDistDeadlock == ID_TRUE )
+    {
+        /* CASE 1 : Die wait Áß¿¡ ºĞ»êµ¥µå¶ô »óÈ²ÀÌ ÇØÁ¦µÇ¾ú´Ù.
+                    LOCK WAIT ÇÏ·¯ °£´Ù. */
+
+        IDE_DASSERT( sCheckDistDeadlock == ID_TRUE );
+        IDE_DASSERT( SMX_DIST_DEADLOCK_IS_DETECTED( sDistDetected ) );
+
+        sTotalWaitTime = sLockWaitTime;
+        sDistDetected  = SMX_DIST_DEADLOCK_DETECTION_NONE;
+
+        sTrans->mDistDeadlock4FT.mDetection = SMX_DIST_DEADLOCK_DETECTION_NONE;
+
+        #ifdef DEBUG
+        ideLog::log( IDE_SD_19,
+                "\n<Released Distribution Deadlock - RECORD LOCK>\n"
+                "WaiterTx(%"ID_UINT32_FMT") \n",
+                sTrans->mTransID );
+        #endif
+
+        IDE_CONT( WAITING );
+    }
+
+    if ( SMX_DIST_DEADLOCK_IS_DETECTED( sNewDistDetected ) )
+    {
+        /* CASE 2 : LOCK WAIT Áß ºĞ»êµ¥µå¶ôÀÌ »õ·Î Å½ÁöµÇ¾ú´Ù.
+                    Die Wait ÇÏ·¯ °£´Ù.*/
+
+        IDE_DASSERT( sCheckDistDeadlock == ID_TRUE );
+        IDE_DASSERT( SMX_DIST_DEADLOCK_IS_NOT_DETECTED( sDistDetected ) );
+
+        sDistDetected = sNewDistDetected;
+
+        sTrans->mDistDeadlock4FT.mDetection   = sNewDistDetected;
+        sTrans->mDistDeadlock4FT.mDieWaitTime = sTotalWaitTime;
+        sTrans->mDistDeadlock4FT.mElapsedTime = sElapsedTime;
+
+        IDE_CONT( WAITING );
+    }
+
+    if ( sCheckDistDeadlock == ID_TRUE)
+    {
+        if ( SMX_DIST_DEADLOCK_IS_DETECTED( sDistDetected ) )
+        {
+            if ( sIsReleasedDistDeadlock == ID_FALSE )
+            {
+                /* CASE 3 :  ºĞ»êµ¥µå¶ô Å½ÁöµÈ ÀÌÈÄ DIE WAIT TIME µµ ³Ñ°å´Ù.
+                             FAIL RETURN ÇÑ´Ù. */
+
+                /* ´õÀÌ»ó Performance view¿¡¼­ Ãâ·ÂµÇÁö ¾Ê°Ô ÇÑ´Ù. */
+                sTrans->mDistDeadlock4FT.mDetection = SMX_DIST_DEADLOCK_DETECTION_NONE;
+
+                IDE_RAISE( err_distributed_deadlock );
+            }
+            else
+            {
+                /* CASE 1 : ¾Õ¿¡¼­ Ã³¸®ÇÔ. */
+            }
+        }
+        else
+        {
+            if ( SMX_DIST_DEADLOCK_IS_NOT_DETECTED( sNewDistDetected ) )
+            {
+                /* CASE 4 : ºĞ»êÁ¤º¸°¡ ¼³Á¤µÇ¾îÀÖ°í, LOCK WAIT ¿´´Ù°¡ WAIT TIMEÀ» ³Ñ±ä °æ¿ìÀÌ´Ù. */
+                IDE_RAISE( err_exceed_wait_time );
+            }
+            else
+            {
+                /* CASE 2 : ¾Õ¿¡¼­ Ã³¸®ÇÔ. */
+            }
+        }
+    }
+    else
+    {
+        /* CASE 5 : ºĞ»êÁ¤º¸°¡ ¼³Á¤µÇ¾î ÀÖÁö¾Ê°í(¶Ç´Â ºĞ»êµ¥µå¶ô disable), LOCK WAIT¿´´Ù°¡ WAIT TIMEÀ» ³Ñ±ä °æ¿ìÀÌ´Ù.*/
+        IDE_RAISE( err_exceed_wait_time );
+    }
+
+    IDE_EXCEPTION_CONT( WAKED_UP );
 
     //clear waiting tbl...
     smLayerCallback::clearWaitItemColsOfTrans( ID_TRUE,
@@ -1581,18 +2055,59 @@ IDE_RC smxTransMgr::waitForTrans( void     *aTrans,
     {
         IDE_SET( ideSetErrorCode( smERR_ABORT_Aborted ) );
     }
+    IDE_EXCEPTION(err_distributed_deadlock);
+    {
+        sLen = idlOS::snprintf( sBuf,
+                                ID_SIZEOF(sBuf),    
+                                "[RECORD DEADLOCK] DieWaitTime[%lluus], ", sTotalWaitTime );
+        switch( sDistDetected )
+        {
+            case SMX_DIST_DEADLOCK_DETECTION_VIEWSCN:
+                sLen += idlOS::snprintf( sBuf + sLen, ID_SIZEOF(sBuf) - sLen,
+                                         "Cause : reversed FIRST STATEMENT VIEW SCN" );
+                break;
+            case SMX_DIST_DEADLOCK_DETECTION_TIME:
+                sLen += idlOS::snprintf( sBuf + sLen, ID_SIZEOF(sBuf) - sLen,
+                                         "Cause : reversed FIRST STATEMENT TIME" );
+                break;
+            case SMX_DIST_DEADLOCK_DETECTION_SHARD_PIN_SEQ:
+                sLen += idlOS::snprintf( sBuf + sLen, ID_SIZEOF(sBuf) - sLen,
+                                         "Cause : reversed SHARD-PIN SEQUENCE" );
+                break;
+            case SMX_DIST_DEADLOCK_DETECTION_SHARD_PIN_NODE_ID:
+                sLen += idlOS::snprintf( sBuf + sLen, ID_SIZEOF(sBuf) - sLen,
+                                         "Cause : reversed SHARD-PIN NODE ID" );
+                break;
+            case SMX_DIST_DEADLOCK_DETECTION_ALL_EQUAL:
+                sLen += idlOS::snprintf( sBuf + sLen, ID_SIZEOF(sBuf) - sLen,
+                                         "Cause : All Same Items" );
+                break;
+            default:
+                break;
+        }
+
+        #ifdef DEBUG
+        ideLog::log( IDE_SD_19,
+                     "\n<Cancel Statement to recovery Distribution Deadlock : %s >\n"
+                     "WaiterTx(%"ID_UINT32_FMT") \n",
+                     sBuf,
+                     sTrans->mTransID );
+        #endif
+
+        IDE_SET(ideSetErrorCode(smERR_ABORT_Distributed_Aborted, sBuf));
+    }
     IDE_EXCEPTION(err_exceed_wait_time);
     {
         IDE_SET(ideSetErrorCode(smERR_ABORT_smcExceedLockTimeWait));
     }
     IDE_EXCEPTION_END;
 
-    // fix BUG-21402 Commit í•˜ëŠ” Transactionì´ freeAllRecordLockê³¼ì • ì¤‘ì—
-    // ì´ë¯¸ rollbackí•´ì„œ freeëœ Transactionì„ resumeì‹œë„í•˜ëŠ” ê²ƒì„ ë°©ì§€í•œë‹¤.
+    // fix BUG-21402 Commit ÇÏ´Â TransactionÀÌ freeAllRecordLock°úÁ¤ Áß¿¡
+    // ÀÌ¹Ì rollbackÇØ¼­ freeµÈ TransactionÀ» resume½ÃµµÇÏ´Â °ÍÀ» ¹æÁöÇÑ´Ù.
     if ( sState == 0 )
     {
         IDE_PUSH();
-        IDE_ASSERT( sWaitTrans->lock() == IDE_SUCCESS );
+        sWaitTrans->lock();
         IDE_POP();
     }
 
@@ -1600,7 +2115,7 @@ IDE_RC smxTransMgr::waitForTrans( void     *aTrans,
                                                sTrans->mSlotN );
 
     IDE_PUSH();
-    IDE_ASSERT( sWaitTrans->unlock() == IDE_SUCCESS );
+    sWaitTrans->unlock();
     IDE_POP();
 
     sTrans->mStatus    = SMX_TX_BEGIN;
@@ -1631,7 +2146,7 @@ IDE_RC smxTransMgr::addTouchedPage( void      * aTrans,
 }
 
 /***********************************************************************
- * Description : Free Listì— ì¡´ì¬í•˜ëŠ” Transactinoì´ Freeì¸ì§€ë¥¼ ê²€ì¦í•œë‹¤.
+ * Description : Free List¿¡ Á¸ÀçÇÏ´Â TransactinoÀÌ FreeÀÎÁö¸¦ °ËÁõÇÑ´Ù.
  ***********************************************************************/
 void smxTransMgr::checkFreeTransList()
 {
@@ -1653,53 +2168,47 @@ IDE_RC smxTransMgr::alloc4LayerCall(void** aTrans)
 //for fix bug 8084
 IDE_RC smxTransMgr::freeTrans4LayerCall(void* aTrans)
 {
-
     return freeTrans((smxTrans*)aTrans);
 }
 
 
 void smxTransMgr::getDummySmmViewSCN(smSCN * aSCN)
 {
-
     SM_INIT_SCN(aSCN);
-
 }
 
 
 IDE_RC smxTransMgr::getDummySmmCommitSCN( void    * aTrans,
-                                          idBool    /* aIsLegacyTrans */,
+                                          idBool    aIsLegacyTrans,
                                           void    * aStatus )
 {
-
     smSCN sDummySCN;
 
-    SM_INIT_SCN(&sDummySCN);
-    smxTrans::setTransCommitSCN(aTrans,sDummySCN,aStatus);
-
+    if( aTrans != NULL )
+    {
+        SM_INIT_SCN(&sDummySCN);
+        smxTrans::setTransSCNnStatus( aTrans, aIsLegacyTrans, &sDummySCN, aStatus );
+    }
     return IDE_SUCCESS;
 
 }
 
 void smxTransMgr::setSmmCallbacks( )
 {
-
     mGetSmmViewSCN = smmDatabase::getViewSCN;
     mGetSmmCommitSCN = smmDatabase::getCommitSCN;
-
 }
 
 void smxTransMgr::unsetSmmCallbacks( )
 {
-
     mGetSmmViewSCN = smxTransMgr::getDummySmmViewSCN;
     mGetSmmCommitSCN = smxTransMgr::getDummySmmCommitSCN;
-
 }
 
 /*************************************************************************
- * Description : í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ Transactionì´ ìˆëŠ”ì§€ í™•ì¸í•©ë‹ˆë‹¤.
- *               BUG-29633 Recoveryì „ ëª¨ë“  Transactionì´ Endìƒíƒœì¸ì§€ ì ê²€í•„ìš”.
- *               Recoveryë“¤ì–´ê°€ëŠ” ì‹œì ì— ì‚¬ìš©ì¤‘ì¸ Transactionì´ ìˆì–´ì„œëŠ” ì•ˆëœë‹¤.
+ * Description : ÇöÀç »ç¿ëÁßÀÎ TransactionÀÌ ÀÖ´ÂÁö È®ÀÎÇÕ´Ï´Ù.
+ *               BUG-29633 RecoveryÀü ¸ğµç TransactionÀÌ End»óÅÂÀÎÁö Á¡°ËÇÊ¿ä.
+ *               Recoveryµé¾î°¡´Â ½ÃÁ¡¿¡ »ç¿ëÁßÀÎ TransactionÀÌ ÀÖ¾î¼­´Â ¾ÈµÈ´Ù.
  *
  *************************************************************************/
 idBool smxTransMgr::existActiveTrans()
@@ -1723,4 +2232,33 @@ idBool smxTransMgr::existActiveTrans()
         }
     }
     return sExistUsingTrans;
+}
+
+/* BUG-47655 Transaction ÇÒ´ç Àç½Ãµµ È½¼ö µî·Ï X$SESSION */
+void smxTransMgr::setAllocTransRetryCount( idvSQL * aStatistics,
+                                           ULong    aRetryCount )
+{
+    if ( aStatistics != NULL )
+    {
+        if( aStatistics->mSess != NULL)
+        {
+            mSessionCallback.mSetAllocTransRetryCount( aStatistics->mSess->mSession,
+                                                       aRetryCount );
+        }
+    }
+}
+
+/*************************************************************************
+ * Description :
+ * PARALLEL ·Î µ¿ÀÛÇÏ¸é ºÎÁ¤È®ÇÒ¼öµµÀÖÁö¸¸
+ * thr_yield() Á¤µµÀÇ ¿ÀÂ÷ÀÓ.. atomic ÀÌ ºÎ´ã½º·¯¿ö¼­ ±×³É ÇÒ²¨ÀÓ.
+ *************************************************************************/
+void smxTransMgr::registPendingTable( UShort aCurSlotN, UShort aRowTransSlotN )
+{
+    mPendingWait[aCurSlotN][aRowTransSlotN] = 1;
+}
+
+void smxTransMgr::clearPendingTable( UShort aCurSlotN, UShort aRowTransSlotN )
+{
+    mPendingWait[aCurSlotN][aRowTransSlotN] = 0;
 }

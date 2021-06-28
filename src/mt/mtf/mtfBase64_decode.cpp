@@ -16,13 +16,13 @@
  
 
 /***********************************************************************
- * $Id: mtfBase64_decode.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfBase64_decode.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 /***********************************************************************
  * BASE64_DECODE() : 
- * ì…ë ¥ë°›ì€ VARBYTEì„ BASE64 ë””ì½”ë”©í•˜ì—¬
- * VARBYTEíƒ€ì…ìœ¼ë¡œ ë°˜í™˜í•œë‹¤.
+ * ÀÔ·Â¹ŞÀº VARBYTEÀ» BASE64 µğÄÚµùÇÏ¿©
+ * VARBYTEÅ¸ÀÔÀ¸·Î ¹İÈ¯ÇÑ´Ù.
  *
  * ex) SELECT BASE64_DECODE('71673D3D') FROM DUAL;
  * BASE64_DECODE('71673D3D') 
@@ -73,7 +73,7 @@ static IDE_RC mtfBase64DecodeEstimate( mtcNode     * aNode,
 mtfModule mtfBase64_decode = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfBase64DecodeFunctionName,
     NULL,
     mtf::initializeDefault,

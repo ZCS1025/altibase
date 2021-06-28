@@ -340,30 +340,54 @@ public abstract class Metric {
         return oType;
     }
 
-    public void performActionScript(OutputType oType) {
+    /*
+     * BUG-47437
+     *   Need to pass metric name, level, threshold, value to action script as arguments
+     */
+    private String getActionScriptArgv(OutputType oType, String aValue)
+    {
+        StringBuilder sArgs = new StringBuilder();
+
+        sArgs.append(" ").append(metricName)
+             .append(" ").append(oType);
+
         if (oType == OutputType.WARNING) {
-            performWarningActionScript();
+            sArgs.append(" ").append(warningThreshold);
         }
         else if (oType == OutputType.CRITICAL) {
-            performCriticalActionScript();
+            sArgs.append(" ").append(criticalThreshold);
+        }
+        sArgs.append(" ").append(aValue);
+
+        return sArgs.toString();
+    }
+
+    public void performActionScript(OutputType oType, String aValue) {
+        String sArgs = getActionScriptArgv(oType, aValue);
+
+        if (oType == OutputType.WARNING) {
+            performWarningActionScript(sArgs);
+        }
+        else if (oType == OutputType.CRITICAL) {
+            performCriticalActionScript(sArgs);
         }
         else {
             //do nothing...
         }
     }
 
-    private void performWarningActionScript() {
+    private void performWarningActionScript(String aArgs) {
         if (warningAlert && actionScript4Warn != null) {
-            ProcessExecutor.execute(actionScript4Warn);
+            ProcessExecutor.execute(actionScript4Warn + aArgs);
         }
         else {
             //do nothing...
         }
     }
 
-    private void performCriticalActionScript() {		
+    private void performCriticalActionScript(String aArgs) {		
         if (criticalAlert && actionScript4Critical != null) {
-            ProcessExecutor.execute(actionScript4Critical);
+            ProcessExecutor.execute(actionScript4Critical + aArgs);
         }
         else {
             //do nothing...

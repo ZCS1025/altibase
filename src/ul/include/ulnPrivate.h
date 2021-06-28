@@ -18,12 +18,12 @@
 #define _O_ULN_PRIVATE_H_ 1
 
 /*
- * ì´ íŒŒì¼ì€ ì™¸ë¶€ë¡œ Export ë˜ì§€ ì•Šê³ 
- * uln ë‚´ë¶€ì—ì„œë§Œ ì‚¬ìš©ë˜ëŠ” íƒ€ì…ê³¼ ìƒìˆ˜ì— ëŒ€í•œ ì •ì˜ë¥¼ í•œë‹¤.
+ * ÀÌ ÆÄÀÏÀº ¿ÜºÎ·Î Export µÇÁö ¾Ê°í
+ * uln ³»ºÎ¿¡¼­¸¸ »ç¿ëµÇ´Â Å¸ÀÔ°ú »ó¼ö¿¡ ´ëÇÑ Á¤ÀÇ¸¦ ÇÑ´Ù.
  *
- * uln ë‚´ë¶€ì˜ ì†ŒìŠ¤ì½”ë“œë“¤ì€ ëª¨ë‘ ì´ íŒŒì¼ì„ includeí•´ ì£¼ì–´ì•¼ í•œë‹¤.
+ * uln ³»ºÎÀÇ ¼Ò½ºÄÚµåµéÀº ¸ğµÎ ÀÌ ÆÄÀÏÀ» includeÇØ ÁÖ¾î¾ß ÇÑ´Ù.
  *
- * ë‹¨ìˆœíˆ í¸ì˜ ë° ì»´íŒŒì¼ì„ ìœ„í•œ íŒŒì¼ì´ë‹¤.
+ * ´Ü¼øÈ÷ ÆíÀÇ ¹× ÄÄÆÄÀÏÀ» À§ÇÑ ÆÄÀÏÀÌ´Ù.
  */
 
 
@@ -79,7 +79,7 @@ typedef struct ulsdModule   ulsdModule;
 #include <ulnDebug.h>
 
 /*
- * Note: ì•„ë˜ ë‘ fileì˜ ìˆœì„œê°€ ë°”ë€Œë©´ ì»´íŒŒì¼ ì•ˆëœë‹¤.
+ * Note: ¾Æ·¡ µÎ fileÀÇ ¼ø¼­°¡ ¹Ù²î¸é ÄÄÆÄÀÏ ¾ÈµÈ´Ù.
  */
 
 #include <ulnDiagnostic.h>
@@ -120,7 +120,7 @@ typedef struct ulsdModule   ulsdModule;
 #include <ulnLobCache.h>
 
 /*
- * í•¨ìˆ˜ë“¤
+ * ÇÔ¼öµé
  */
 #include <ulnAllocHandle.h>
 #include <ulnFreeHandle.h>
@@ -167,6 +167,8 @@ typedef struct ulsdModule   ulsdModule;
 #include <ulsdModule.h>
 #include <ulsdStmtInline.h>
 #include <ulsdVersionClient.h>
+/* PROJ-2739 Client-side Sharding LOB */
+#include <ulsdLob.h>
 #endif /* COMPILE_SHARDCLI */
 #include <ulsdnBindData.h>
 #include <ulnShard.h>
@@ -176,13 +178,13 @@ typedef struct ulsdModule   ulsdModule;
 #include <ulsdnStmt.h>
 
 /*
- * SQLBindFileToParam() ê³¼ SQLBindFileToCol() í•¨ìˆ˜ì—ì„œ ì“°ì´ëŠ” SQL_C_ íƒ€ì…
- * BUGBUG : 15 ì˜ ê°’ì´ ì ì ˆí•œ ê°’ì¸ì§€ ì²´í¬í•  í•„ìš”ê°€ ìˆë‹¤.
+ * SQLBindFileToParam() °ú SQLBindFileToCol() ÇÔ¼ö¿¡¼­ ¾²ÀÌ´Â SQL_C_ Å¸ÀÔ
+ * BUGBUG : 15 ÀÇ °ªÀÌ ÀûÀıÇÑ °ªÀÎÁö Ã¼Å©ÇÒ ÇÊ¿ä°¡ ÀÖ´Ù.
  */
 #define SQL_C_FILE 15
 
 /*
- * BUGBUG : í•„ìš”ì—†ì„ ê±° ê°™ë‹¤. í˜¼ë€ìŠ¤ëŸ¬ìš°ë¯€ë¡œ ë‚˜ì¤‘ì— ìƒê°ì¢€ í•´ ë³´ê³  ì—†ì• ì.
+ * BUGBUG : ÇÊ¿ä¾øÀ» °Å °°´Ù. È¥¶õ½º·¯¿ì¹Ç·Î ³ªÁß¿¡ »ı°¢Á» ÇØ º¸°í ¾ø¾ÖÀÚ.
  * Specified this Attributes
  * such as Autocommit etc are not
  * set one of SQL_TRUE or SQL_FALSE
@@ -195,7 +197,7 @@ typedef struct ulsdModule   ulsdModule;
 #define ULN_IS_FLAG_UP(x)   if((x) == ACP_TRUE)
 
 /*
- * ulnDesc ì— ìƒì„±ë˜ëŠ” DescRecArray ì˜ ë‹¨ìœ„ ì‚¬ì´ì¦ˆ
+ * ulnDesc ¿¡ »ı¼ºµÇ´Â DescRecArray ÀÇ ´ÜÀ§ »çÀÌÁî
  */
 #define ULN_DESC_REC_ARRAY_UNIT_SIZE       1024
 

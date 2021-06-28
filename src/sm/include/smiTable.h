@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smiTable.h 84317 2018-11-12 00:39:24Z minku.kang $
+ * $Id: smiTable.h 89014 2020-10-22 04:24:43Z returns $
  **********************************************************************/
 
 #ifndef _O_SMI_TABLE_H_
@@ -27,21 +27,53 @@
 # include <smlDef.h>
 # include <smrDef.h>
 
-/* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
- * Table Meta Log Recordì˜ Bodyì— í•´ë‹¹í•˜ëŠ” ë¶€ë¶„
+/* PROJ-1442 Replication Online Áß DDL Çã¿ë
+ * Table Meta Log RecordÀÇ Body¿¡ ÇØ´çÇÏ´Â ºÎºĞ
  */
 typedef smrTableMeta smiTableMeta;
 typedef smrDDLStmtMeta smiDDLStmtMeta;
 
-//mtcDef.h ì— MTC_POLICY_NAME_SIZEì™€ ë™ì¼ í•´ì•¼ í•©ë‹ˆë‹¤.
+//mtcDef.h ¿¡ MTC_POLICY_NAME_SIZE¿Í µ¿ÀÏ ÇØ¾ß ÇÕ´Ï´Ù.
 #define SM_POLICY_NAME_SIZE (16 - 1)
+
+typedef struct smiHashPartitionCondition
+{
+    UInt          mPartitionOrder;
+} smiHashPartitionCondition;
+
+typedef struct smiNonHashPartitionCondition
+{
+    SChar         mPartCondMinValues[SM_MAX_PARTKEY_COND_VALUE_LEN + 1 + 7]; // 7 Byte ´Â Dummy
+    SChar         mPartCondMaxValues[SM_MAX_PARTKEY_COND_VALUE_LEN + 1 + 7]; // 7 Byte ´Â Dummy
+} smiNonHashPartitionCondition;
 
 typedef struct smiPartTableMeta
 {
-    UInt          mPartitionOrder;
-    SChar         mPartCondMinValues[SM_MAX_PARTKEY_COND_VALUE_LEN + 1 + 7]; // 7 Byte ëŠ” Dummy
-    SChar         mPartCondMaxValues[SM_MAX_PARTKEY_COND_VALUE_LEN + 1 + 7]; // 7 Byte ëŠ” Dummy
+    UInt          mPartitionMethod;
+
+    UInt          mPartitionCount;
+
+    union {
+        smiHashPartitionCondition       mHashCondition;
+        smiNonHashPartitionCondition    mNonHashCondition;
+    };
 } smiPartTableMeta;
+
+//* BUG-26891 : º¸¾È ÄÃ·³ Á¤º¸  */
+struct smiColumnEncryptAttr {
+    SInt        mEncPrecision;                      // ¾ÏÈ£ µ¥ÀÌÅ¸ Å¸ÀÔÀÇ precision
+    SChar       mPolicy[SM_POLICY_NAME_SIZE + 1];    // º¸¾È Á¤Ã¥ÀÇ ÀÌ¸§ (Null Terminated String)
+};
+
+struct smiColumnSRIDAttr {
+    SInt        mSrid;
+};
+
+// columnÀÇ ºÎ°¡Á¤º¸
+union smiColumnAttr {
+    struct smiColumnEncryptAttr  mEncAttr;
+    struct smiColumnSRIDAttr     mSridAttr;
+};
 
 typedef struct smiColumnMeta
 {
@@ -55,9 +87,8 @@ typedef struct smiColumnMeta
     SInt        mMTPrecision;
     SInt        mMTScale;
 
-    /* BUG-26891 : ë³´ì•ˆ ì»¬ëŸ¼ ì •ë³´  */
-    SInt        mMTEncPrecision;                      // ì•”í˜¸ ë°ì´íƒ€ íƒ€ì…ì˜ precision
-    SChar       mMTPolicy[SM_POLICY_NAME_SIZE + 1];    // ë³´ì•ˆ ì •ì±…ì˜ ì´ë¦„ (Null Terminated String)
+    // columnÀÇ ºÎ°¡Á¤º¸
+    union smiColumnAttr  mMTColumnAttr;
 
     /* SM Column */
     UInt        mSMID;
@@ -129,7 +160,7 @@ public:
                                UInt                  aParallelDegree,
                                const void**          aTable );
 
-    /* MEMORY/DISK Tableì„ Drop í•œë‹¤ */
+    /* MEMORY/DISK TableÀ» Drop ÇÑ´Ù */
     static IDE_RC dropTable( smiStatement      * aStatement,
                              const void        * aTable,
                              smiTBSLockValidType aTBSLvType );
@@ -191,17 +222,17 @@ public:
                               const void          * aTable,
                               smiTBSLockValidType   aTBSLvType );
 
-    // MEMORY TABLEì— FREE PAGEë“¤ì„ DBì— ë°˜ë‚©í•œë‹¤.
+    // MEMORY TABLE¿¡ FREE PAGEµéÀ» DB¿¡ ¹İ³³ÇÑ´Ù.
     static IDE_RC compactTable( smiStatement * aStatement,
                                 const void   * aTable,
                                 ULong          aPages );
 
-    // DISK TABLEì˜ Garbage Versionì„ ì œê±°í•œë‹¤.
+    // DISK TABLEÀÇ Garbage VersionÀ» Á¦°ÅÇÑ´Ù.
     static IDE_RC agingTable( smiStatement * aStatement,
                               const void   * aTable );
 
     // PROJ-1704 MVCC Renewal
-    // DISK INDEXì˜ Garbage Versionì„ ì œê±°í•œë‹¤.
+    // DISK INDEXÀÇ Garbage VersionÀ» Á¦°ÅÇÑ´Ù.
     static IDE_RC agingIndex( smiStatement * aStatement,
                               const void   * aIndex );
 
@@ -217,7 +248,7 @@ public:
     static IDE_RC lockTable( smiTrans*   aTrans,
                              const void* aTable );
 
-    // BUG-17477 : rpì—ì„œ í•„ìš”í•œ í•¨ìˆ˜
+    // BUG-17477 : rp¿¡¼­ ÇÊ¿äÇÑ ÇÔ¼ö
     static IDE_RC lockTable( SInt          aSlot,
                              smlLockItem  *aLockItem,
                              smlLockMode   aLockMode,
@@ -280,7 +311,7 @@ public:
                                  idvSQL       * aStatistics = NULL);
     
     /* PROJ-1594 Volatile TBS */
-    /* Volatile Tableì„ backupí•œë‹¤. */
+    /* Volatile TableÀ» backupÇÑ´Ù. */
     static IDE_RC backupVolatileTable(smiStatement * aStatement,
                                       const void   * aTable,
                                       SChar        * aBackupFileName,
@@ -293,7 +324,7 @@ public:
                                            const void   * aDstTable,
                                            idvSQL       * aStatistics );
 
-    /* Memory tableì— ëŒ€í•´ restore ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤. */
+    /* Memory table¿¡ ´ëÇØ restore ÀÛ¾÷À» ¼öÇàÇÑ´Ù. */
     static IDE_RC restoreMemTable(void                  * aTrans,
                                   const void            * aSrcTable,
                                   const void            * aDstTable,
@@ -304,7 +335,7 @@ public:
                                   idBool                  aUndo,
                                   smiAlterTableCallBack * aCallBack );
 
-    /* Volatile tableì— ëŒ€í•´ restore ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤. */
+    /* Volatile table¿¡ ´ëÇØ restore ÀÛ¾÷À» ¼öÇàÇÑ´Ù. */
     static IDE_RC restoreVolTable(void                  * aTrans,
                                   const void            * aSrcTable,
                                   const void            * aDstTable,
@@ -349,12 +380,14 @@ public:
                                 SLong             aMaxSequence,
                                 SLong             aMinSequence,
                                 UInt              aFlag,
+                                idBool            aIsRestart,
+                                SLong             aStartSequence,
                                 SLong           * aLastSyncSeq);
 
     /* BUG-45929 */
     static IDE_RC resetSequence( smiStatement    * aStatement,
                                  const void      * aTable );
-
+    
     static IDE_RC readSequence(smiStatement        * aStatement,
                                const void          * aTable,
                                SInt                  aFlag,
@@ -444,19 +477,17 @@ public:
                                    ULong                /* aDirectKeyMaxSize */,
                                    const void**         aIndex);
     
-    // Tableì˜ Flagë¥¼ ë³€ê²½í•œë‹¤.
+    // TableÀÇ Flag¸¦ º¯°æÇÑ´Ù.
     static IDE_RC alterTableFlag( smiStatement *aStatement,
                                   const void   *aTable,
                                   UInt          aFlagMask,
                                   UInt          aFlagValue );
 
-    // Table Meta Log Recordë¥¼ ê¸°ë¡í•œë‹¤.
+    // Table Meta Log Record¸¦ ±â·ÏÇÑ´Ù.
     static IDE_RC writeTableMetaLog(smiTrans     * aTrans,
                                     smiTableMeta * aTableMeta,
                                     const void   * aLogBody,
                                     UInt           aLogBodyLen);
-
-    static IDE_RC initTableSCN4TempTable( const void * aSlotHeader );
 
     static IDE_RC modifyRowTemplate( smiStatement * aStatement,
                                      const void   * aTable );

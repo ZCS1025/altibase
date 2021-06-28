@@ -45,7 +45,7 @@ static IDE_RC stfNotRelateEstimate(
 
 mtfModule stfNotRelate = {
     1|MTC_NODE_OPERATOR_EQUAL|MTC_NODE_COMPARISON_TRUE,
-    ~(MTC_NODE_INDEX_MASK), // NotRelateëŠ” ì¸ë±ìŠ¤ë¥¼ íƒ€ë©´ ì•ˆë¨.
+    ~(MTC_NODE_INDEX_MASK), // NotRelate´Â ÀÎµ¦½º¸¦ Å¸¸é ¾ÈµÊ.
     1.0/2.0,                // TODO : default selectivity
     stfNotRelateFunctionName,
     &stfRelate,

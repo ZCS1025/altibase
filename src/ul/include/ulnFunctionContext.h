@@ -42,20 +42,20 @@ struct ulnFnContext
     ulnStateFunc       *mStateFunc;
 
     /*
-     * ì•„ëž˜ì˜ mErrIndex ëŠ” state machine ì—ì„œë§Œ í•„ìš”í•˜ë©° ë‹¤ë¥¸ ê³³ì—ì„œëŠ” 
-     * ì ˆëŒ€ë¡œ í•„ìš”í•˜ì§€ ì•Šë‹¤.
-     * ì‹ ê²½ì“°ì§€ ì•Šë„ë¡ í•œë‹¤.
+     * ¾Æ·¡ÀÇ mErrIndex ´Â state machine ¿¡¼­¸¸ ÇÊ¿äÇÏ¸ç ´Ù¸¥ °÷¿¡¼­´Â 
+     * Àý´ë·Î ÇÊ¿äÇÏÁö ¾Ê´Ù.
+     * ½Å°æ¾²Áö ¾Êµµ·Ï ÇÑ´Ù.
      */
     acp_uint32_t        mUlErrorCode;
 
     /*
-     * Array Execution ì‹œ SQL_SUCCESS_WITH_INFO ë¥¼ ë¦¬í„´í•´ ì£¼ê¸° ìœ„í•´ì„œ í•„ìš”í•˜ë‹¤.
-     * EXEC RES ë¥¼ ë°›ìœ¼ë©´ SUCCESS í”Œëž˜ê·¸ë¥¼ on,
-     * ERROR RES ë¥¼ ë°›ìœ¼ë©´ ERROR í”Œëž˜ê·¸ë¥¼ on.
-     * SQLRETURN ì„ ê²°ì •í•  ë•Œì—ëŠ”
-     *      ERROR í”Œëž˜ê·¸ë§Œ on ì´ë©´ SQL_ERROR,
-     *      SUCCESS í”Œëž˜ê·¸ë§Œ on ì´ë©´ SQL_SUCCESS
-     *      ë‘˜ ë‹¤ on ì´ë©´ SQL_SUCCESS_WITH_INFO
+     * Array Execution ½Ã SQL_SUCCESS_WITH_INFO ¸¦ ¸®ÅÏÇØ ÁÖ±â À§ÇØ¼­ ÇÊ¿äÇÏ´Ù.
+     * EXEC RES ¸¦ ¹ÞÀ¸¸é SUCCESS ÇÃ·¡±×¸¦ on,
+     * ERROR RES ¸¦ ¹ÞÀ¸¸é ERROR ÇÃ·¡±×¸¦ on.
+     * SQLRETURN À» °áÁ¤ÇÒ ¶§¿¡´Â
+     *      ERROR ÇÃ·¡±×¸¸ on ÀÌ¸é SQL_ERROR,
+     *      SUCCESS ÇÃ·¡±×¸¸ on ÀÌ¸é SQL_SUCCESS
+     *      µÑ ´Ù on ÀÌ¸é SQL_SUCCESS_WITH_INFO
      */
     acp_uint32_t        mArrayExecutionResult;
 
@@ -72,6 +72,8 @@ struct ulnFnContext
 
     /* BUG-46092 */
     acp_bool_t          mIsFailoverSuccess;
+
+    ulnShardCoordFixCtrlContext * mShardCoordFixCtrlCtx;
 };
 
 #define ULN_FNCONTEXT_SET_RC(aFnContext, aRC)                                                 \
@@ -79,7 +81,7 @@ struct ulnFnContext
         if((aFnContext)->mHandle.mObj != NULL)                                                \
         {                                                                                     \
             ulnDiagSetReturnCode(&((aFnContext)->mHandle.mObj->mDiagHeader), (aRC));          \
-            /* PROJ-2177: NEED DATAê°€ ë°œìƒí•œ í•¨ìˆ˜ ê¸°ì–µ */                                     \
+            /* PROJ-2177: NEED DATA°¡ ¹ß»ýÇÑ ÇÔ¼ö ±â¾ï */                                     \
             if (((aRC) == SQL_NEED_DATA)                                                      \
              && ((aFnContext)->mFuncID != ULN_FID_PARAMDATA))                                 \
             {                                                                                 \
@@ -109,6 +111,7 @@ struct ulnFnContext
         /* PROJ-2177: User Interface - Cancel */                     \
         aContext.mNeedUnlock  = ACP_FALSE;                           \
         aContext.mIsFailoverSuccess = ACP_FALSE;                     \
+        aContext.mShardCoordFixCtrlCtx = NULL;                       \
     } while(0)
 
 #define ULN_FNCONTEXT_GET_DBC(aFnContext, aDbc)                                \

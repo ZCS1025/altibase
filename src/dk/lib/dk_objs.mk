@@ -13,6 +13,7 @@ DKIV_SRCS = $(DK_DIR)/dki/dkiv/dkiv.cpp		\
             $(DK_DIR)/dki/dkiv/dkivDblinkGlobalTransactionInfo.cpp \
             $(DK_DIR)/dki/dkiv/dkivDblinkRemoteTransactionInfo.cpp \
             $(DK_DIR)/dki/dkiv/dkivDblinkNotifierTransactionInfo.cpp \
+            $(DK_DIR)/dki/dkiv/dkivDblinkShardNotifierTransactionInfo.cpp \
             $(DK_DIR)/dki/dkiv/dkivDblinkRemoteStatementInfo.cpp
 
 DKIF_SRCS = $(DK_DIR)/dki/dkif/dkif.cpp \
@@ -51,8 +52,7 @@ DKIS_SRCS = $(DK_DIR)/dki/dkis/dkis.cpp \
             $(DK_DIR)/dki/dkis/dkisRemoteQuery.cpp
 
 DKU_SRCS = $(DK_DIR)/dku/dkuTraceCode.cpp	\
-           $(DK_DIR)/dku/dkuProperty.cpp	\
-           $(DK_DIR)/dku/dkuSharedProperty.cpp
+           $(DK_DIR)/dku/dkuProperty.cpp	
 
 DKM_SRCS = $(DK_DIR)/dkm/dkm.cpp
 

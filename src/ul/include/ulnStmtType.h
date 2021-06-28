@@ -17,7 +17,20 @@
 #ifndef _O_ULN_STMT_TYPE_H_
 #define _O_ULN_STMT_TYPE_H_ 1
 
-// qci.h에 있는 qciStmtType을 그대로 복사해서 사용함.
+/* qciStmtType.h */
+
+/*
+ *  Statement Bit Mask
+ *   ID => 0000 0000
+ *         ^^^^ ^^^^
+ *         Type Index
+ *
+ *   Type : DDL, DML, DCL, SP, DB
+ */
+#define ULN_STMT_TYPE_MAX   16
+#define ULN_STMT_MASK_MASK  (0x000F0000)
+#define ULN_STMT_MASK_INDEX (0x0000FFFF)
+
 enum ulnStmtKind
 {
     ULN_STMT_MASK_DDL     = 0x00000000,
@@ -34,6 +47,7 @@ enum ulnStmtKind
     ULN_STMT_NON_SCHEMA_DDL,
     ULN_STMT_CRT_SP,
     ULN_STMT_COMMENT,
+    ULN_STMT_SHARD_DDL,
 
     //----------------------------------------------------
     //  DML
@@ -121,7 +135,7 @@ enum ulnStmtKind
     /* BUG-39074 */
     ULN_STMT_DELAUDIT_OPTION, 
 
-    /* BUG-42852 STOP과 FLUSH를 DCL로 변환합니다. */
+    /* BUG-42852 STOP�� FLUSH�� DCL�� ��ȯ�մϴ�. */
     ULN_STMT_ALT_REPLICATION_STOP,
     ULN_STMT_ALT_REPLICATION_FLUSH,
 
@@ -137,6 +151,21 @@ enum ulnStmtKind
     /* PROJ-2701 Sharding online data rebuild */
     ULN_STMT_RELOAD_SHARD_META_NUMBER,
     ULN_STMT_RELOAD_SHARD_META_NUMBER_LOCAL,
+
+    /* A sql for replication thread is DCL using one other internal transaction */
+    ULN_STMT_ALT_REPLICATION_START,
+    ULN_STMT_ALT_REPLICATION_QUICKSTART,
+    ULN_STMT_ALT_REPLICATION_SYNC,
+    ULN_STMT_ALT_REPLICATION_SYNC_CONDITION,
+    ULN_STMT_ALT_REPLICATION_TEMP_SYNC,
+
+    /* BUG-48216 */
+    ULN_STMT_ROLLBACK_TO_SAVEPOINT,
+
+    ULN_STMT_ALT_REPLICATION_FAILBACK,
+    ULN_STMT_ALT_REPLICATION_DELETE_ITEM_REPLACE_HISTORY,
+    
+    ULN_STMT_ALT_REPLICATION_FAILOVER,
 
     //----------------------------------------------------
     //  SP
@@ -162,5 +191,10 @@ enum ulnStmtKind
     ULN_STMT_MASK_MAX = ACP_SINT32_MAX
 };
 
+#define ulnStmtTypeIsSP(aStmtType) \
+    ( (((aStmtType) & ULN_STMT_MASK_MASK) == ULN_STMT_MASK_SP) ? ACP_TRUE : ACP_FALSE )
 
+#define ulnStmtTypeIsDDL(aStmtType) \
+    ( (((aStmtType) & ULN_STMT_MASK_MASK) == ULN_STMT_MASK_DDL) ? ACP_TRUE : ACP_FALSE )
+ 
 #endif /* _O_ULN_STMT_TYPE_H_ */

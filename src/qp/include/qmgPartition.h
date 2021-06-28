@@ -19,11 +19,11 @@
  * $Id: qmgPartition.h 20233 2007-02-01 01:58:21Z shsuh $
  *
  * Description :
- *     Partition Graphë¥¼ ìœ„í•œ ì •ì˜
+ *     Partition Graph¸¦ À§ÇÑ Á¤ÀÇ
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -34,104 +34,105 @@
 #include <qmgDef.h>
 
 //---------------------------------------------------
-// Partition Graphì˜ Define ìƒìˆ˜
+// Partition GraphÀÇ Define »ó¼ö
 //---------------------------------------------------
 
-// qmgSELT.graph.flagë¥¼ ê³µìœ í•˜ì—¬ ì“´ë‹¤.
+// qmgSELT.graph.flag¸¦ °øÀ¯ÇÏ¿© ¾´´Ù.
 // QMG_SELT_FULL_SCAN_HINT_MASK
 // QMG_SELT_NOTNULL_KEYRANGE_MASK
 
 //---------------------------------------------------
-// Partition Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+// Partition Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
 //---------------------------------------------------
 
 typedef struct qmgPARTITION
 {
-    qmgGraph          graph;    // ê³µí†µ Graph ì •ë³´
+    qmgGraph          graph;    // °øÅë Graph Á¤º¸
 
-    qmsLimit        * limit;    // SCAN Limit ìµœì í™” ì ìš©ì‹œ, limit ì •ë³´ ì„¤ì •
+    qmsLimit        * limit;    // SCAN Limit ÃÖÀûÈ­ Àû¿ë½Ã, limit Á¤º¸ ¼³Á¤
 
     //----------------------------------------------
-    // Partition Filter Predicate ì •ë³´:
-    //     - partKeyRange        : partition key range ì¶œë ¥ìš©
-    //     - partFilterPredicate : partition filter ì¶”ì¶œìš©
+    // Partition Filter Predicate Á¤º¸:
+    //     - partKeyRange        : partition key range Ãâ·Â¿ë
+    //     - partFilterPredicate : partition filter ÃßÃâ¿ë
     //----------------------------------------------
 
     qtcNode         * partKeyRange;
     qmoPredicate    * partFilterPredicate;
-    
+
     //------------------------------------------------
-    // Access Methodë¥¼ ìœ„í•œ ì •ë³´
-    //     - selectedIndex : ì„ íƒëœ AccessMethodê°€ FULL SCANì´ ì•„ë‹Œ ê²½ìš°,
-    //                       ì„ íƒëœ AccessMethod Index
-    //     - accessMethodCnt : í•´ë‹¹ Tableì˜ index ê°œìˆ˜ + 1
-    //     - accessMethod : ê° accessMethod ì •ë³´ì™€ Cost ì •ë³´
+    // Access Method¸¦ À§ÇÑ Á¤º¸
+    //     - selectedIndex : ¼±ÅÃµÈ AccessMethod°¡ FULL SCANÀÌ ¾Æ´Ñ °æ¿ì,
+    //                       ¼±ÅÃµÈ AccessMethod Index
+    //     - accessMethodCnt : ÇØ´ç TableÀÇ index °³¼ö + 1
+    //     - accessMethod : °¢ accessMethod Á¤º¸¿Í Cost Á¤º¸
     //------------------------------------------------
     qcmIndex        * selectedIndex;
-    qmoAccessMethod * selectedMethod;  // ì„ íƒëœ Access Method
-    UInt              accessMethodCnt; // joinì„ ìœ„í•œ accessMethodCnt
-    qmoAccessMethod * accessMethod;    // joinì„ ìœ„í•œ accessMethod
+    qmoAccessMethod * selectedMethod;  // ¼±ÅÃµÈ Access Method
+    UInt              accessMethodCnt; // joinÀ» À§ÇÑ accessMethodCnt
+    qmoAccessMethod * accessMethod;    // joinÀ» À§ÇÑ accessMethod
 
     idBool            forceIndexScan;
 
+    qmsPartitionRef * mPrePruningPartRef; // BUG-48800 prepruning tableRef
 } qmgPARTITION;
 
 //---------------------------------------------------
-// Partition Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+// Partition Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
 //---------------------------------------------------
 
 class qmgPartition
 {
 public:
-    // Graph ì˜ ì´ˆê¸°í™”
+    // Graph ÀÇ ÃÊ±âÈ­
     static IDE_RC  init( qcStatement * aStatement,
                          qmsQuerySet * aQuerySet,
                          qmsFrom     * aFrom,
                          qmgGraph   ** aGraph);
 
-    // Graphì˜ ìµœì í™” ìˆ˜í–‰
+    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
     static IDE_RC  optimize( qcStatement * aStatement, qmgGraph * aGraph );
 
-    // Graphì˜ Plan Tree ìƒì„±
+    // GraphÀÇ Plan Tree »ı¼º
     static IDE_RC  makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph * aGraph );
 
-    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
+    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
     static IDE_RC  printGraph( qcStatement  * aStatement,
                                qmgGraph     * aGraph,
                                ULong          aDepth,
                                iduVarString * aString );
 
-    // ìƒìœ„ graphì— ì˜í•´ access methodê°€ ë°”ë€ ê²½ìš°
+    // »óÀ§ graph¿¡ ÀÇÇØ access method°¡ ¹Ù²ï °æ¿ì
     static IDE_RC alterSelectedIndex( qcStatement  * aStatement,
                                       qmgPARTITION * aGraph,
                                       qcmIndex     * aNewIndex );
 
-    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
-    // ìƒìœ„ JOIN graphì—ì„œ ANTIë¡œ ì²˜ë¦¬í•  ë•Œ
-    // í•˜ìœ„ SELT graphë¥¼ ë³µì‚¬í•˜ëŠ”ë° ì´ë•Œ ì´ í•¨ìˆ˜ë¥¼
-    // í†µí•´ì„œ ë³µì‚¬í•˜ë„ë¡ í•´ì•¼ ì•ˆì „í•˜ë‹¤.
+    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+    // »óÀ§ JOIN graph¿¡¼­ ANTI·Î Ã³¸®ÇÒ ¶§
+    // ÇÏÀ§ SELT graph¸¦ º¹»çÇÏ´Âµ¥ ÀÌ¶§ ÀÌ ÇÔ¼ö¸¦
+    // ÅëÇØ¼­ º¹»çÇÏµµ·Ï ÇØ¾ß ¾ÈÀüÇÏ´Ù.
     static IDE_RC copyPARTITIONAndAlterSelectedIndex( qcStatement   * aStatement,
                                                       qmgPARTITION  * aSource,
                                                       qmgPARTITION ** aTarget,
                                                       qcmIndex      * aNewSelectedIndex,
                                                       UInt            aWhichOne );
 
-    // push-down join predicateë¥¼ ë°›ì•„ì„œ ìì‹ ì˜ ê·¸ë˜í”„ì— ì—°ê²°.
+    // push-down join predicate¸¦ ¹Ş¾Æ¼­ ÀÚ½ÅÀÇ ±×·¡ÇÁ¿¡ ¿¬°á.
     static IDE_RC setJoinPushDownPredicate( qcStatement   * aStatement,
                                             qmgPARTITION  * aGraph,
                                             qmoPredicate ** aPredicate );
 
-    // push-down non-join predicateë¥¼ ë°›ì•„ì„œ ìì‹ ì˜ ê·¸ë˜í”„ì— ì—°ê²°.
+    // push-down non-join predicate¸¦ ¹Ş¾Æ¼­ ÀÚ½ÅÀÇ ±×·¡ÇÁ¿¡ ¿¬°á.
     static IDE_RC setNonJoinPushDownPredicate( qcStatement   * aStatement,
                                                qmgPARTITION  * aGraph,
                                                qmoPredicate ** aPredicate );
 
-    // Preserved Orderì˜ directionì„ ê²°ì •í•œë‹¤.
+    // Preserved OrderÀÇ directionÀ» °áÁ¤ÇÑ´Ù.
     static IDE_RC finalizePreservedOrder( qmgGraph * aGraph );
     
 private:
 
-    // partition keyrangeë¥¼ ì¶”ì¶œ
+    // partition keyrange¸¦ ÃßÃâ
     static IDE_RC extractPartKeyRange(
         qcStatement          * aStatement,
         qmsQuerySet          * aQuerySet,
@@ -142,11 +143,11 @@ private:
         qtcNode             ** aPartKeyRangeOrg,
         smiRange            ** aPartKeyRange );
 
-    // PROJ-2242 ìì‹ íŒŒí‹°ì…˜ì˜ AccessMethodsCost ë¥¼ ì´ìš©í•˜ì—¬ cost ë¥¼ ìˆ˜ì •í•¨
+    // PROJ-2242 ÀÚ½Ä ÆÄÆ¼¼ÇÀÇ AccessMethodsCost ¸¦ ÀÌ¿ëÇÏ¿© cost ¸¦ ¼öÁ¤ÇÔ
     static IDE_RC reviseAccessMethodsCost( qmgPARTITION   * aPartitionGraph,
                                            UInt             aPartitionCount );
 
-    // childrenì„ ê°•ì œë¡œ rid scanìœ¼ë¡œ ë³€ê²½
+    // childrenÀ» °­Á¦·Î rid scanÀ¸·Î º¯°æ
     static IDE_RC alterForceRidScan( qcStatement  * aStatement,
                                      qmgPARTITION * aGraph );
 };

@@ -96,7 +96,7 @@ public class ResultSetTest extends AltibaseTestCase
         Statement sStmt = connection().createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
         ResultSet sRS = sStmt.executeQuery("SELECT * FROM t2");
         assertEquals(AltibaseEmptyResultSet.class, sRS.getClass());
-        // empty result setì€ í•­ìƒ after lastì— ìˆëŠ”ê²ƒìœ¼ë¡œ ê°„ì£¼
+        // empty result setÀº Ç×»ó after last¿¡ ÀÖ´Â°ÍÀ¸·Î °£ÁÖ
         assertEquals(0, sRS.getRow());
         assertEquals(false, sRS.isLast());
         assertEquals(false, sRS.isFirst());
@@ -139,13 +139,13 @@ public class ResultSetTest extends AltibaseTestCase
     public void testFetchSize() throws Exception
     {
         Statement sStmt = connection().createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
-        // fetch sizeê°€ ì œëŒ€ë¡œ ì ìš©ë¨ì„ ë³´ê¸° ìœ„í•œ external update
+        // fetch size°¡ Á¦´ë·Î Àû¿ëµÊÀ» º¸±â À§ÇÑ external update
         PreparedStatement sUpdStmt = connection().prepareStatement("UPDATE t1 SET c1 = 100 + c1");
         sStmt.setFetchSize(1);
         ResultSet sRS = sStmt.executeQuery("SELECT t1.* FROM t1");
         sUpdStmt.executeUpdate();
         assertEquals(true, sRS.next());
-        assertEquals(1, sRS.getInt(1)); // cache ë•Œë¬¸ì— ì˜ˆì „ê°’
+        assertEquals(1, sRS.getInt(1)); // cache ¶§¹®¿¡ ¿¹Àü°ª
         assertEquals(true, sRS.next());
         assertEquals(102, sRS.getInt(1));
         sRS.setFetchSize(2);
@@ -159,7 +159,7 @@ public class ResultSetTest extends AltibaseTestCase
         sRS.setFetchSize(1);
         sUpdStmt.executeUpdate();
         assertEquals(true, sRS.next());
-        assertEquals(206, sRS.getInt(1)); // cache ë•Œë¬¸ì— ì˜ˆì „ê°’
+        assertEquals(206, sRS.getInt(1)); // cache ¶§¹®¿¡ ¿¹Àü°ª
         assertEquals(true, sRS.next());
         assertEquals(307, sRS.getInt(1));
         assertEquals(true, sRS.next());
@@ -208,7 +208,7 @@ public class ResultSetTest extends AltibaseTestCase
         assertEquals(true, sRS.next());
         sRS.relative(-100);
         assertEquals(true, sRS.isBeforeFirst());
-        // beforeFirstì—ì„œ ëª‡ë²ˆì„ previousí•´ë„ ê³„ì† beforeFirstì— ìˆì–´ì•¼ í•˜ë©°, ê·¸ í›„ nextí•˜ë©´ ì²«ë²ˆì§¸ rowë¥¼ ì–»ì–´ì•¼ í•œë‹¤.
+        // beforeFirst¿¡¼­ ¸î¹øÀ» previousÇØµµ °è¼Ó beforeFirst¿¡ ÀÖ¾î¾ß ÇÏ¸ç, ±× ÈÄ nextÇÏ¸é Ã¹¹øÂ° row¸¦ ¾ò¾î¾ß ÇÑ´Ù.
         assertEquals(false, sRS.previous());
         assertEquals(false, sRS.previous());
         assertEquals(false, sRS.previous());
@@ -232,7 +232,7 @@ public class ResultSetTest extends AltibaseTestCase
         assertEquals(1, sRS.getInt(1));
         sRS.relative(100);
         assertEquals(true, sRS.isAfterLast());
-        // afterLastì—ì„œ ëª‡ë²ˆì„ nextí•´ë„ ê³„ì† afterLastì— ìˆì–´ì•¼ í•˜ë©°, ê·¸ í›„ previousí•˜ë©´ ë§ˆì§€ë§‰ rowë¥¼ ì–»ì–´ì•¼ í•œë‹¤.
+        // afterLast¿¡¼­ ¸î¹øÀ» nextÇØµµ °è¼Ó afterLast¿¡ ÀÖ¾î¾ß ÇÏ¸ç, ±× ÈÄ previousÇÏ¸é ¸¶Áö¸· row¸¦ ¾ò¾î¾ß ÇÑ´Ù.
         assertEquals(false, sRS.next());
         assertEquals(false, sRS.next());
         assertEquals(false, sRS.next());
@@ -242,7 +242,7 @@ public class ResultSetTest extends AltibaseTestCase
         assertEquals(false, sRS.next());
         assertEquals(true, sRS.previous());
         assertEquals(9, sRS.getInt(1));
-        // refreshê°€ ì ìš©ë¨ì„ ë³´ê¸° ìœ„í•´ external update
+        // refresh°¡ Àû¿ëµÊÀ» º¸±â À§ÇØ external update
         {
             Statement sUpdStmt = connection().createStatement();
             assertEquals(9, sUpdStmt.executeUpdate("UPDATE t1 SET c1 = 100 + c1"));
@@ -271,11 +271,11 @@ public class ResultSetTest extends AltibaseTestCase
         assertEquals(true, sRS.next());
         assertEquals(3, sRS.getInt(1));
 
-        // insert ì¤€ë¹„
+        // insert ÁØºñ
         sRS.moveToInsertRow();
         sRS.updateInt(1, 10);
 
-        // insert ìƒíƒœì´ë¯€ë¡œ update, sensitive ê´€ë ¨ ì—°ì‚°ì€ ì‹¤íŒ¨í•´ì•¼ í•œë‹¤.
+        // insert »óÅÂÀÌ¹Ç·Î update, sensitive °ü·Ã ¿¬»êÀº ½ÇÆĞÇØ¾ß ÇÑ´Ù.
         try
         {
             sRS.updateRow();
@@ -294,7 +294,7 @@ public class ResultSetTest extends AltibaseTestCase
         {
             assertEquals(ErrorDef.CURSOR_AT_INSERTING_ROW, sEx.getErrorCode());
         }
-        // BUGBUG (2013-03-07) oracleì€ specê³¼ ë‹¬ë¦¬ insert rowì—ì„œ cancelRowUpdates()ë¥¼ í˜¸ì¶œí•´ë„ ì˜ˆì™¸ë¥¼ ë˜ì§€ì§€ ì•ŠëŠ”ë‹¤.
+        // BUGBUG (2013-03-07) oracleÀº spec°ú ´Ş¸® insert row¿¡¼­ cancelRowUpdates()¸¦ È£ÃâÇØµµ ¿¹¿Ü¸¦ ´øÁöÁö ¾Ê´Â´Ù.
         try
         {
             sRS.cancelRowUpdates();
@@ -305,13 +305,13 @@ public class ResultSetTest extends AltibaseTestCase
             assertEquals(ErrorDef.CURSOR_AT_INSERTING_ROW, sEx.getErrorCode());
         }
 
-        // insert ìˆ˜í–‰
+        // insert ¼öÇà
         sRS.insertRow();
 
         sRS.close();
         sStmt.close();
 
-        // insert 10ì´ ì˜ ëë‚˜ í™•ì¸. dynamicì´ ì•„ë‹ˆë¯€ë¡œ cursorë¥¼ ë‹¤ì‹œ ì—´ì–´ì•¼ í•œë‹¤.
+        // insert 10ÀÌ Àß µÆ³ª È®ÀÎ. dynamicÀÌ ¾Æ´Ï¹Ç·Î cursor¸¦ ´Ù½Ã ¿­¾î¾ß ÇÑ´Ù.
         sStmt = connection().createStatement();
         sRS = sStmt.executeQuery("SELECT * FROM t1");
         for (int i = 1; i <= 10; i++)
@@ -328,7 +328,7 @@ public class ResultSetTest extends AltibaseTestCase
     {
         PreparedStatement sStmt = connection().prepareStatement("SELECT t3.* FROM t3 ORDER BY c1", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
 
-        // internal updateê°€ refresh ì•ˆí•´ë„ ResultSetì— ë°”ë¡œ ì ìš©ë˜ëŠ”ì§€ í™•ì¸
+        // internal update°¡ refresh ¾ÈÇØµµ ResultSet¿¡ ¹Ù·Î Àû¿ëµÇ´ÂÁö È®ÀÎ
         sStmt.setFetchSize(9);
         ResultSet sRS = sStmt.executeQuery();
         assertEquals(true, sRS.next());
@@ -347,7 +347,7 @@ public class ResultSetTest extends AltibaseTestCase
         assertEquals(VALUES_T3_C2[4], sRS.getString(2));
         sRS.close();
 
-        // ì¬í™•ì¸
+        // ÀçÈ®ÀÎ
         sRS = sStmt.executeQuery();
         for (int i = 1; i <= 11; i++)
         {
@@ -415,7 +415,7 @@ public class ResultSetTest extends AltibaseTestCase
         sSelStmt.close();
     }
 
-    // BUGBUG (2013-03-08) oracleì€ holeì„ ê°ì§€í•  ìˆ˜ ì—†ë‹¤.
+    // BUGBUG (2013-03-08) oracleÀº holeÀ» °¨ÁöÇÒ ¼ö ¾ø´Ù.
     // #region Hole test
     public void testSensitiveForInternalDelete() throws SQLException
     {
@@ -432,13 +432,13 @@ public class ResultSetTest extends AltibaseTestCase
         sRS.absolute(3);
         assertEquals(3, sRS.getRow());
         sRS.deleteRow();
-        assertEquals(2, sRS.getRow()); // deleteRow() í›„ì—ëŠ” í•œì¹¸ ì•ìœ¼ë¡œ ì´ë™
+        assertEquals(2, sRS.getRow()); // deleteRow() ÈÄ¿¡´Â ÇÑÄ­ ¾ÕÀ¸·Î ÀÌµ¿
         assertEquals(2, sRS.getInt(1));
 
         sRS.absolute(1);
         assertEquals(1, sRS.getRow());
         sRS.deleteRow();
-        assertEquals(0, sRS.getRow()); // deleteRow() í›„ì—ëŠ” í•œì¹¸ ì•ìœ¼ë¡œ ì´ë™
+        assertEquals(0, sRS.getRow()); // deleteRow() ÈÄ¿¡´Â ÇÑÄ­ ¾ÕÀ¸·Î ÀÌµ¿
         assertEquals(true, sRS.isBeforeFirst());
         try
         {
@@ -450,9 +450,9 @@ public class ResultSetTest extends AltibaseTestCase
             assertEquals(ErrorDef.CURSOR_AT_BEFORE_FIRST, sEx.getErrorCode());
         }
 
-        // internal deleteë¡œ ì¸í•œ hole ì²˜ë¦¬ê°€ ì œëŒ€ë¡œ ëë‚˜ í™•ì¸
+        // internal delete·Î ÀÎÇÑ hole Ã³¸®°¡ Á¦´ë·Î µÆ³ª È®ÀÎ
         {
-            // refreshê°€ ì ìš©ë¨ì„ ë³´ê¸° ìœ„í•´ external update
+            // refresh°¡ Àû¿ëµÊÀ» º¸±â À§ÇØ external update
             Statement sUpdStmt = connection().createStatement();
             assertEquals(7, sUpdStmt.executeUpdate("UPDATE t1 SET c1 = 100 + c1")); // 2 rows deleted
             sUpdStmt.close();
@@ -472,7 +472,7 @@ public class ResultSetTest extends AltibaseTestCase
         assertEquals(false, sRS.next());
         sRS.close();
 
-        // internal deleteê°€ dbì— ì˜ ë°˜ì˜ëë‚˜ í™•ì¸
+        // internal delete°¡ db¿¡ Àß ¹İ¿µµÆ³ª È®ÀÎ
         sRS = sSelStmt.executeQuery("SELECT t1.* FROM t1 ORDER BY c1");
         for (int i = 1; i <= 9; i++)
         {
@@ -507,7 +507,7 @@ public class ResultSetTest extends AltibaseTestCase
         sDelStmt.close();
 
         sRS.absolute(0);
-        // refreshê°€ ì ìš©ë¨ì„ ë³´ê¸° ìœ„í•´ external update
+        // refresh°¡ Àû¿ëµÊÀ» º¸±â À§ÇØ external update
         {
             Statement sUpdStmt = connection().createStatement();
             assertEquals(5, sUpdStmt.executeUpdate("UPDATE t1 SET c1 = 100 + c1"));
@@ -520,7 +520,7 @@ public class ResultSetTest extends AltibaseTestCase
             assertEquals(i < 5, sRS.rowDeleted());
             if (i < 5)
             {
-                // Holeì€ SQL NULLì— í•´ë‹¹í•˜ëŠ” ë°˜í™˜
+                // HoleÀº SQL NULL¿¡ ÇØ´çÇÏ´Â ¹İÈ¯
                 assertEquals(0, sRS.getInt(1));
                 assertEquals(null, sRS.getObject(1));
             }
@@ -551,7 +551,7 @@ public class ResultSetTest extends AltibaseTestCase
         sDelStmt.executeUpdate("DELETE t1 WHERE c1 < 5");
         sDelStmt.close();
 
-        // refreshê°€ ì ìš©ë¨ì„ ë³´ê¸° ìœ„í•´ external update
+        // refresh°¡ Àû¿ëµÊÀ» º¸±â À§ÇØ external update
         {
             Statement sUpdStmt = connection().createStatement();
             assertEquals(5, sUpdStmt.executeUpdate("UPDATE t1 SET c1 = 100 + c1"));
@@ -564,7 +564,7 @@ public class ResultSetTest extends AltibaseTestCase
             assertEquals(i < 5, sRS.rowDeleted());
             if (i < 5)
             {
-                // Holeì€ SQL NULLì— í•´ë‹¹í•˜ëŠ” ë°˜í™˜
+                // HoleÀº SQL NULL¿¡ ÇØ´çÇÏ´Â ¹İÈ¯
                 assertEquals(0, sRS.getInt(1));
                 assertEquals(null, sRS.getObject(1));
             }
@@ -599,7 +599,7 @@ public class ResultSetTest extends AltibaseTestCase
         assertEquals(2, sRS.getInt(1));
 
         assertEquals(true, sRS.next());
-        // Holeì€ 0 ë˜ëŠ” null
+        // HoleÀº 0 ¶Ç´Â null
         assertEquals(true, sRS.rowDeleted());
         assertEquals(0, sRS.getInt(1));
         assertEquals(null, sRS.getObject(1));
@@ -620,7 +620,7 @@ public class ResultSetTest extends AltibaseTestCase
 
     // #endregion Hole test
 
-    // BUGBUG (2013-03-08) oracleì€ CLOSE_CURSORS_AT_COMMITì„ ì§€ì›í•˜ì§€ ì•ŠëŠ” ë“¯.
+    // BUGBUG (2013-03-08) oracleÀº CLOSE_CURSORS_AT_COMMITÀ» Áö¿øÇÏÁö ¾Ê´Â µí.
     // #region CLOSE_CURSORS_AT_COMMIT test
 
     public void testNonHold() throws SQLException
@@ -686,7 +686,7 @@ public class ResultSetTest extends AltibaseTestCase
         assertEquals(true, sRSC.next());
         assertEquals(3, sRSC.getInt(1));
 
-        /* BUG-45841 Fetch Across Rollbackì— ì˜í•´ ì»¤ì„œê°€ ìœ ì§€ëœë‹¤. */
+        /* BUG-45841 Fetch Across Rollback¿¡ ÀÇÇØ Ä¿¼­°¡ À¯ÁöµÈ´Ù. */
         assertEquals(true, sRSR.next());
         assertEquals(2, sRSR.getInt(1));
 
@@ -697,7 +697,7 @@ public class ResultSetTest extends AltibaseTestCase
         assertEquals(true, sRSRR.next());
         assertEquals(1, sRSRR.getInt(1));
 
-        connection().rollback();  /* Updateì— ì˜í•´ sRSRR ì»¤ì„œëŠ” ë‹«íŒë‹¤. */
+        connection().rollback();  /* Update¿¡ ÀÇÇØ sRSRR Ä¿¼­´Â ´İÈù´Ù. */
         assertEquals(true, sRSC.next());
         assertEquals(4, sRSC.getInt(1));
         assertEquals(true, sRSR.next());
@@ -732,7 +732,7 @@ public class ResultSetTest extends AltibaseTestCase
         testNotDowngrade("SELECT t1.* FROM t1", true);
         testNotDowngrade("SELECT t3.* FROM t3", true);
         testNotDowngrade("SELECT a.* FROM t1 a", true);
-        // BUGBUG (2013-03-08) oracleì€ ë‹¤ìŒê³¼ê°™ì€ ì—ëŸ¬ë¥¼ ë±‰ëŠ”ë‹¤(wtf): ORA-00933 SQL command not properly ended
+        // BUGBUG (2013-03-08) oracleÀº ´ÙÀ½°ú°°Àº ¿¡·¯¸¦ ¹ñ´Â´Ù(wtf): ORA-00933 SQL command not properly ended
         testNotDowngrade("SELECT a.* FROM t1 AS a", true);
         testNotDowngrade("SELECT c1 FROM t1", true);
         testNotDowngrade("SELECT c1, c2 FROM t3", true);
@@ -763,7 +763,7 @@ public class ResultSetTest extends AltibaseTestCase
     {
         testDowngrade("SELECT a.* FROM t1 a, t1 b");
         testDowngrade("SELECT * FROM t1, t2");
-        // BUGBUG (2013-03-08) oracleì€ updatable ì•ˆí•œ ì»¬ëŸ¼ì´ ìˆì–´ë„ ê·¸ëƒ¥ updatableë¡œ ì—´ì–´ì¤€ë‹¤.
+        // BUGBUG (2013-03-08) oracleÀº updatable ¾ÈÇÑ ÄÃ·³ÀÌ ÀÖ¾îµµ ±×³É updatable·Î ¿­¾îÁØ´Ù.
         testDowngrade("SELECT c1, 1 FROM t3");
     }
 
@@ -908,7 +908,7 @@ public class ResultSetTest extends AltibaseTestCase
         sStmt.close();
     }
 
-    // Altibase ì „ìš©
+    // Altibase Àü¿ë
     public void testStatementAutoClose() throws SQLException
     {
         Statement sStmt = connection().createStatement();
@@ -981,8 +981,8 @@ public class ResultSetTest extends AltibaseTestCase
         {
             assertEquals(ErrorDef.WAS_NULL_CALLED_BEFORE_CALLING_GETXXX, sEx.getErrorCode());
         }
-        // BUGBUG (2013-03-08) oracleì€ í•œë²ˆ getXXX()ë¥¼ í•˜ë©´, ê·¸ ì»¬ëŸ¼ ì¸ë±ìŠ¤ë¥¼ ê³„ì† ì¨ì„œ wasNullì„ ê²€ì‚¬í•œë‹¤.
-        // specì—ëŠ” ë”±íˆ ê·¸ëŸ° ì–˜ê¸°ê°€ ì—†ë‹¤. ë‹¨ì§€, ë‹¤ë¥¸ getXXXë¥¼ í•˜ê¸° ì „ì— wasNullë¡œ í™•ì¸í•˜ë¼ê³  í•  ë¿.
+        // BUGBUG (2013-03-08) oracleÀº ÇÑ¹ø getXXX()¸¦ ÇÏ¸é, ±× ÄÃ·³ ÀÎµ¦½º¸¦ °è¼Ó ½á¼­ wasNullÀ» °Ë»çÇÑ´Ù.
+        // spec¿¡´Â µüÈ÷ ±×·± ¾ê±â°¡ ¾ø´Ù. ´ÜÁö, ´Ù¸¥ getXXX¸¦ ÇÏ±â Àü¿¡ wasNull·Î È®ÀÎÇÏ¶ó°í ÇÒ »Ó.
         assertEquals(2, sRS.getInt(1));
         assertEquals(false, sRS.wasNull());
         assertEquals(true, sRS.next()); // 3
@@ -1189,7 +1189,7 @@ public class ResultSetTest extends AltibaseTestCase
                 sRS.updateRow();
             }
 
-            // ë‚´ë¶€ ë°ì´íƒ€ ì •ë¦¬ë¥¼ ìœ„í•´ ì»¤ì„œë¥¼ í•œë²ˆ ì´ë™
+            // ³»ºÎ µ¥ÀÌÅ¸ Á¤¸®¸¦ À§ÇØ Ä¿¼­¸¦ ÇÑ¹ø ÀÌµ¿
             if (aType != ResultSet.TYPE_FORWARD_ONLY)
             {
                 sRS.previous();
@@ -1197,17 +1197,17 @@ public class ResultSetTest extends AltibaseTestCase
             }
             sRS.refreshRow();
 
-            // updatableì´ë©´ internal update ê°’ì´ ë³´ì—¬ì•¼ í•œë‹¤.
+            // updatableÀÌ¸é internal update °ªÀÌ º¸¿©¾ß ÇÑ´Ù.
             if (aConcurrency == ResultSet.CONCUR_UPDATABLE)
             {
                 assertEquals(201, sRS.getInt(1));
             }
-            // read-onlyë”ë¼ë„ sensitiveì´ë©´ external update ê°’ì´ ë³´ì—¬ì•¼ í•œë‹¤.
+            // read-only´õ¶óµµ sensitiveÀÌ¸é external update °ªÀÌ º¸¿©¾ß ÇÑ´Ù.
             else if (aType == ResultSet.TYPE_SCROLL_SENSITIVE)
             {
                 assertEquals(101, sRS.getInt(1));
             }
-            // read-only, insensitiveì´ë©´ ê¸°ì¡´ ê°’ì´ ë³´ì—¬ì•¼ í•œë‹¤.
+            // read-only, insensitiveÀÌ¸é ±âÁ¸ °ªÀÌ º¸¿©¾ß ÇÑ´Ù.
             else
             {
                 assertEquals(1, sRS.getInt(1));

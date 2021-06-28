@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmmParseTree.h 84499 2018-12-04 01:47:06Z ahra.cho $
+ * $Id: qmmParseTree.h 89835 2021-01-22 10:10:02Z andrew.shin $
  **********************************************************************/
 
 #ifndef _O_QMM_PARSE_TREE_H_
@@ -121,10 +121,10 @@ typedef struct qmmInsParseTree
     void               * queueMsgIDSeq;
 
     // PROJ-1566
-    // Insert ë°©ì‹ì„ APPENDë¡œ í• ê²ƒì¸ì§€ ë§ê²ƒì¸ì§€ì— ëŒ€í•œ Hint
-    // APPEND ë°©ì‹ ì¼ ê²½ìš°, Pageì— insertë ë•Œ ë§ˆì§€ë§‰ì— insertëœ
-    // record ë‹¤ìŒì— appendë˜ëŠ” ë°©ì‹
-    // ( ì´ë•Œ ë‚´ë¶€ì ìœ¼ë¡œ direct-path INSERT ë°©ì‹ìœ¼ë¡œ ì²˜ë¦¬ë¨ )
+    // Insert ¹æ½ÄÀ» APPEND·Î ÇÒ°ÍÀÎÁö ¸»°ÍÀÎÁö¿¡ ´ëÇÑ Hint
+    // APPEND ¹æ½Ä ÀÏ °æ¿ì, Page¿¡ insertµÉ¶§ ¸¶Áö¸·¿¡ insertµÈ
+    // record ´ÙÀ½¿¡ appendµÇ´Â ¹æ½Ä
+    // ( ÀÌ¶§ ³»ºÎÀûÀ¸·Î direct-path INSERT ¹æ½ÄÀ¸·Î Ã³¸®µÊ )
     qmsHints           * hints;
 
     // instead of trigger
@@ -136,7 +136,7 @@ typedef struct qmmInsParseTree
     /* PROJ-1988 MERGE statement */
     qmsQuerySet        * outerQuerySet;
 
-    /* PROJ-1107 Check Constraint ì§€ì› */
+    /* PROJ-1107 Check Constraint Áö¿ø */
     qdConstraintSpec   * checkConstrList;
     
     /* PROJ-1090 Function-based Index */
@@ -146,20 +146,31 @@ typedef struct qmmInsParseTree
     // BUG-43063 insert nowait
     ULong                lockWaitMicroSec;
 
-    /* PROJ-2598 Shard pilot(shard Analyze) */
-    qtcNode            * mShardPredicate;
-
     // BUG-36596 multi-table insert
     struct qmmInsParseTree * next;
-    
+
+    /* TASK-7219 Shard Transformer Refactoring */
+    struct sdiShardAnalysis * mShardAnalysis;
 } qmmInsParseTree;
+
+typedef struct qmmDelMultiTables
+{
+    qmsTableRef       * mTableRef;
+    qtcNode           * mColumnList;
+    qcmRefChildInfo   * mChildConstraints;
+    idBool              mInsteadOfTrigger;
+    SInt                mViewID;
+    smiColumnList     * mWhereColumnList;
+    smiColumnList    ** mWherePartColumnList;
+    qmmDelMultiTables * mNext;
+} qmmDelMultiTables;
 
 typedef struct qmmDelParseTree
 {
     qcParseTree          common;
 
     qmsQuerySet        * querySet;   // table information and where clause
-    
+
     /* PROJ-2204 Join Update, Delete */
     struct qmsTableRef * deleteTableRef;     // delete target tableRef
 
@@ -173,10 +184,12 @@ typedef struct qmmDelParseTree
 
     // PROJ-1888 INSTEAD OF TRIGGER 
     idBool               insteadOfTrigger;
-    
-    /* PROJ-2598 Shard pilot(shard Analyze) */
-    qtcNode            * mShardPredicate;
 
+    qcNamePosList      * mDelList;      // lists in multi delete clause
+    qmmDelMultiTables  * mTableList;
+
+    /* TASK-7219 Shard Transformer Refactoring */
+    struct sdiShardAnalysis * mShardAnalysis;
 } qmmDelParseTree;
 
 typedef struct qmmSetClause // temporary struct for parser
@@ -187,6 +200,38 @@ typedef struct qmmSetClause // temporary struct for parser
     qmmValueNode       * lists;      // lists in set clause
     qtcNode            * spVariable; // BUG-46174 sp variable in set clause
 } qmmSetClause;
+
+typedef struct qmmMultiTables
+{
+    qmsTableRef      * mTableRef;
+    qmsTableRef      * mInsertTableRef;
+    qcmColumn        * mColumns;
+    qtcNode          * mColumnList;
+    UInt               mColumnCount;
+    UInt             * mColumnIDs;
+    qcmColumn        * mDefaultColumns;
+    qcmColumn        * mDefaultBaseColumns;
+    qmsTableRef      * mDefaultTableRef;
+    qmmValueNode     * mValues;     // update values
+    qmmValueNode    ** mValuesPos;
+    smiColumnList    * mUptColumnList;
+    idBool             mInsteadOfTrigger;
+    qdConstraintSpec * mCheckConstrList;
+    UInt               mCanonizedTuple;
+    mtdIsNullFunc    * mIsNull;
+    qcmParentInfo    * mParentConst;
+    qcmRefChildInfo  * mChildConst;  // BUG-28049
+    idBool             mInplaceUpdate;
+    SInt               mViewID;
+    qmoUpdateType      mUpdateType;
+    smiCursorType      mCursorType;
+    smiColumnList   ** mPartColumnList;
+    smiColumnList    * mWhereColumnList;
+    smiColumnList   ** mWherePartColumnList;
+    smiColumnList    * mSetColumnList;
+    smiColumnList   ** mSetPartColumnList;
+    qmmMultiTables   * mNext;
+} qmmMultiTables;
 
 typedef struct qmmUptParseTree
 {
@@ -211,7 +256,7 @@ typedef struct qmmUptParseTree
     /* PROJ-2204 join update, delete */
     struct qmsTableRef * updateTableRef;
     qcmColumn          * updateColumns;
-    
+
     /* PROJ-1584 DML Return Clause */
     qmmReturnInto      * returnInto; 
 
@@ -224,16 +269,18 @@ typedef struct qmmUptParseTree
     // PROJ-1888 INSTEAD OF TRIGGER
     idBool               insteadOfTrigger;
 
-    /* PROJ-1107 Check Constraint ì§€ì› */
+    /* PROJ-1107 Check Constraint Áö¿ø */
     qdConstraintSpec   * checkConstrList;
-    
+
     /* PROJ-1090 Function-based Index */
     struct qmsTableRef * defaultTableRef;
     qcmColumn          * defaultExprColumns;
-    
-    /* PROJ-2598 Shard pilot(shard Analyze) */
-    qtcNode            * mShardPredicate;
 
+    /* PROJ-2714 Multiple update, delete support */
+    struct qmmMultiTables * mTableList;
+
+    /* TASK-7219 Shard Transformer Refactoring */
+    struct sdiShardAnalysis * mShardAnalysis;
 } qmmUptParseTree;
 
 typedef struct qmmMoveParseTree
@@ -253,7 +300,7 @@ typedef struct qmmMoveParseTree
    
     struct qmsLimit    * limit;
 
-    /* PROJ-1107 Check Constraint ì§€ì› */
+    /* PROJ-1107 Check Constraint Áö¿ø */
     qdConstraintSpec   * checkConstrList;
     
     /* PROJ-1090 Function-based Index */
@@ -273,7 +320,7 @@ typedef struct qmmLockParseTree
     smiTableLockMode     tableLockMode;
     ULong                lockWaitMicroSec;
 
-    /* BUG-42853 LOCK TABLEì— UNTIL NEXT DDL ê¸°ëŠ¥ ì¶”ê°€ */
+    /* BUG-42853 LOCK TABLE¿¡ UNTIL NEXT DDL ±â´É Ãß°¡ */
     idBool               untilNextDDL;
 
     // validation information
@@ -349,4 +396,49 @@ typedef struct qmmJobOrRoleParseTree
     (_dst_)->insertNoRowsParseTree = NULL;    \
 }
 
+#define QMM_INIT_MULTI_TABLES( _dst_ )         \
+{                                              \
+    (_dst_)->mTableRef            = NULL;      \
+    (_dst_)->mInsertTableRef      = NULL;      \
+    (_dst_)->mColumns             = NULL;      \
+    (_dst_)->mColumnList          = NULL;      \
+    (_dst_)->mColumnCount         = 0;         \
+    (_dst_)->mColumnIDs           = NULL;      \
+    (_dst_)->mDefaultColumns      = NULL;      \
+    (_dst_)->mDefaultBaseColumns  = NULL;      \
+    (_dst_)->mDefaultTableRef     = NULL;      \
+    (_dst_)->mValues              = NULL;      \
+    (_dst_)->mValuesPos           = NULL;      \
+    (_dst_)->mUptColumnList       = NULL;      \
+    (_dst_)->mInsteadOfTrigger    = ID_FALSE;  \
+    (_dst_)->mCheckConstrList     = NULL;      \
+    (_dst_)->mCanonizedTuple      = 0;         \
+    (_dst_)->mIsNull              = NULL;      \
+    (_dst_)->mParentConst         = NULL;      \
+    (_dst_)->mChildConst          = NULL;      \
+    (_dst_)->mInplaceUpdate       = ID_FALSE;  \
+    (_dst_)->mViewID              = -1;        \
+    (_dst_)->mUpdateType          = QMO_UPDATE_NORMAL;\
+    (_dst_)->mCursorType          = SMI_SELECT_CURSOR;\
+    (_dst_)->mPartColumnList      = NULL;      \
+    (_dst_)->mWhereColumnList     = NULL;      \
+    (_dst_)->mWherePartColumnList = NULL;      \
+    (_dst_)->mSetColumnList       = NULL;      \
+    (_dst_)->mSetPartColumnList   = NULL;      \
+    (_dst_)->mNext                = NULL;      \
+}
+
+#define QMM_INIT_DEL_MULTI_TABLES( _dst_ )     \
+{                                              \
+    (_dst_)->mTableRef            = NULL;      \
+    (_dst_)->mColumnList          = NULL;      \
+    (_dst_)->mChildConstraints    = NULL;      \
+    (_dst_)->mInsteadOfTrigger    = ID_FALSE;  \
+    (_dst_)->mViewID              = -1;        \
+    (_dst_)->mWhereColumnList     = NULL;      \
+    (_dst_)->mWherePartColumnList = NULL;      \
+    (_dst_)->mNext                = NULL;      \
+}
+
 #endif /* _O_QMM_PARSE_TREE_H_ */
+

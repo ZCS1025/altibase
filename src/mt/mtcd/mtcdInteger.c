@@ -161,19 +161,19 @@ mtdModule mtcdInteger = {
     {
         // Key Comparison
         {
-            // mt valueë“¤ ê°„ì˜ compare 
+            // mt valueµé °£ÀÇ compare 
             mtdIntegerMtdMtdKeyAscComp, // Ascending Key Comparison
             mtdIntegerMtdMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt valueì™€ stored valueê°„ì˜ compare 
+            // mt value¿Í stored value°£ÀÇ compare 
             mtdIntegerStoredMtdKeyAscComp, // Ascending Key Comparison
             mtdIntegerStoredMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // stored valueë“¤ ê°„ì˜ compare 
+            // stored valueµé °£ÀÇ compare 
             mtdIntegerStoredStoredKeyAscComp, // Ascending Key Comparison
             mtdIntegerStoredStoredKeyDescComp // Descending Key Comparison
         }
@@ -198,7 +198,7 @@ ACI_RC mtdInitializeInteger( acp_uint32_t aNo )
 {
     ACI_TEST( mtdInitializeModule( &mtcdInteger, aNo ) != ACI_SUCCESS );
 
-    // mtdColumnì˜ ì´ˆê¸°í™”
+    // mtdColumnÀÇ ÃÊ±âÈ­
     ACI_TEST( mtcInitializeColumn( & mtdColumn,
                                    & mtcdInteger,
                                    0,   // arguments
@@ -402,7 +402,7 @@ mtdIntegerMtdMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -462,7 +462,7 @@ mtdIntegerMtdMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
     /***********************************************************************
      *
-     * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
+     * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
      *
      * Implementation :
      *
@@ -522,7 +522,7 @@ mtdIntegerStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -578,7 +578,7 @@ mtdIntegerStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
     /***********************************************************************
      *
-     * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ descending compare
+     * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ descending compare
      *
      * Implementation :
      *
@@ -637,7 +637,7 @@ mtdIntegerStoredStoredKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyë“¤ ê°„ì˜ ascending compare
+ * Description : Stored Keyµé °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -690,7 +690,7 @@ mtdIntegerStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
 {
     /***********************************************************************
      *
-     * Description : Stored Keyë“¤ ê°„ì˜ descending compare
+     * Description : Stored Keyµé °£ÀÇ descending compare
      *
      * Implementation :
      *
@@ -759,7 +759,7 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
 {
 /***********************************************************************
  *
- * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColum ì´ˆê¸°í™”
+ * Description : valueÀÇ semantic °Ë»ç ¹× mtcColum ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -771,9 +771,9 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
                     ERR_INVALID_LENGTH );
 
     // ACI_TEST( mtdEstimate( aColumn, 0, 0, 0 ) != ACI_SUCCESS);
-    // ì´ˆê¸°í™”ëœ aColumnì€ cannonize() ì‹œì— ì‚¬ìš©
-    // ì´ë•Œ, data type moduleì˜ precision ì •ë³´ë§Œì„ ì‚¬ìš©í•˜ë¯€ë¡œ,
-    // language ì •ë³´ ì„¤ì •í•  í•„ìš”ì—†ìŒ 
+    // ÃÊ±âÈ­µÈ aColumnÀº cannonize() ½Ã¿¡ »ç¿ë
+    // ÀÌ¶§, data type moduleÀÇ precision Á¤º¸¸¸À» »ç¿ëÇÏ¹Ç·Î,
+    // language Á¤º¸ ¼³Á¤ÇÒ ÇÊ¿ä¾øÀ½ 
     ACI_TEST( mtcInitializeColumn( aColumn,
                                    & mtcdInteger,
                                    0,   // arguments
@@ -804,7 +804,7 @@ acp_double_t mtdSelectivityInteger( void * aColumnMax,
 /***********************************************************************
  *
  * Description :
- *    INTEGER ì˜ Selectivity ì¶”ì¶œ í•¨ìˆ˜
+ *    INTEGER ÀÇ Selectivity ÃßÃâ ÇÔ¼ö
  *
  * Implementation :
  *
@@ -817,8 +817,8 @@ acp_double_t mtdSelectivityInteger( void * aColumnMax,
     mtdIntegerType* sValueMax;
     mtdIntegerType* sValueMin;
     acp_double_t    sSelectivity;
-    acp_double_t    sDenominator;  // ë¶„ëª¨ê°’
-    acp_double_t    sNumerator;    // ë¶„ìê°’
+    acp_double_t    sDenominator;  // ºĞ¸ğ°ª
+    acp_double_t    sNumerator;    // ºĞÀÚ°ª
     mtdValueInfo    sValueInfo1;
     mtdValueInfo    sValueInfo2;
     mtdValueInfo    sValueInfo3;
@@ -830,8 +830,8 @@ acp_double_t mtdSelectivityInteger( void * aColumnMax,
     sValueMin  = (mtdIntegerType*) aValueMin;
 
     //------------------------------------------------------
-    // Dataì˜ ìœ íš¨ì„± ê²€ì‚¬
-    //     NULL ê²€ì‚¬ : ê³„ì‚°í•  ìˆ˜ ì—†ìŒ
+    // DataÀÇ À¯È¿¼º °Ë»ç
+    //     NULL °Ë»ç : °è»êÇÒ ¼ö ¾øÀ½
     //------------------------------------------------------
 
     if ( ( mtdIsNull( NULL, aColumnMax, MTD_OFFSET_USELESS ) == ACP_TRUE ) ||
@@ -839,17 +839,17 @@ acp_double_t mtdSelectivityInteger( void * aColumnMax,
          ( mtdIsNull( NULL, aValueMax, MTD_OFFSET_USELESS ) == ACP_TRUE )  ||
          ( mtdIsNull( NULL, aValueMin, MTD_OFFSET_USELESS ) == ACP_TRUE ) )
     {
-        // Dataì¤‘ NULL ì´ ìˆì„ ê²½ìš°
-        // ë¶€ë“±í˜¸ì˜ Default Selectivityì¸ 1/3ì„ Settingí•¨
+        // DataÁß NULL ÀÌ ÀÖÀ» °æ¿ì
+        // ºÎµîÈ£ÀÇ Default SelectivityÀÎ 1/3À» SettingÇÔ
         sSelectivity = MTD_DEFAULT_SELECTIVITY;
     }
     else
     {
         //------------------------------------------------------
-        // ìœ íš¨ì„± ê²€ì‚¬
-        // ë‹¤ìŒì˜ ê²½ìš°ëŠ” ì¡°ê±´ì„ ì˜ëª»ëœ í†µê³„ ì •ë³´ì´ê±°ë‚˜ ì…ë ¥ ì •ë³´ì„.
-        // Columnì˜ Minê°’ë³´ë‹¤ Valueì˜ Maxê°’ì´ ì‘ì€ ê²½ìš°
-        // Columnì˜ Maxê°’ë³´ë‹¤ Valueì˜ Minê°’ì´ í° ê²½ìš°
+        // À¯È¿¼º °Ë»ç
+        // ´ÙÀ½ÀÇ °æ¿ì´Â Á¶°ÇÀ» Àß¸øµÈ Åë°è Á¤º¸ÀÌ°Å³ª ÀÔ·Â Á¤º¸ÀÓ.
+        // ColumnÀÇ Min°ªº¸´Ù ValueÀÇ Max°ªÀÌ ÀÛÀº °æ¿ì
+        // ColumnÀÇ Max°ªº¸´Ù ValueÀÇ Min°ªÀÌ Å« °æ¿ì
         //------------------------------------------------------
 
         sValueInfo1.column = NULL;
@@ -880,9 +880,9 @@ acp_double_t mtdSelectivityInteger( void * aColumnMax,
         else
         {
             //------------------------------------------------------
-            // Valueê°’ ë³´ì •
-            // Valueì˜ Minê°’ì´ Columnì˜ Minê°’ë³´ë‹¤ ì‘ë‹¤ë©´ ë³´ì •
-            // Valueì˜ Maxê°’ì´ Columnì˜ Maxê°’ë³´ë‹¤ í¬ë‹¤ë©´ ë³´ì •
+            // Value°ª º¸Á¤
+            // ValueÀÇ Min°ªÀÌ ColumnÀÇ Min°ªº¸´Ù ÀÛ´Ù¸é º¸Á¤
+            // ValueÀÇ Max°ªÀÌ ColumnÀÇ Max°ªº¸´Ù Å©´Ù¸é º¸Á¤
             //------------------------------------------------------
 
             sValueInfo1.column = NULL;
@@ -922,34 +922,34 @@ acp_double_t mtdSelectivityInteger( void * aColumnMax,
             }
             
             //------------------------------------------------------
-            // ë¶„ëª¨ê°’ (aColumnMax - aColumnMin) ê°’ íšë“
+            // ºĞ¸ğ°ª (aColumnMax - aColumnMin) °ª È¹µæ
             //------------------------------------------------------
         
             sDenominator = (acp_double_t)(*sColumnMax - *sColumnMin);
     
             if ( sDenominator <= 0.0 )
             {
-                // ì˜ëª»ëœ í†µê³„ ì •ë³´ì˜ ì‚¬ìš©í•œ ê²½ìš°
+                // Àß¸øµÈ Åë°è Á¤º¸ÀÇ »ç¿ëÇÑ °æ¿ì
                 sSelectivity = MTD_DEFAULT_SELECTIVITY;
             }
             else
             {
                 //------------------------------------------------------
-                // ë¶„ìê°’ (aValueMax - aValueMin) ê°’ íšë“
+                // ºĞÀÚ°ª (aValueMax - aValueMin) °ª È¹µæ
                 //------------------------------------------------------
             
                 sNumerator = (acp_double_t) (*sValueMax - *sValueMin);
             
                 if ( sNumerator <= 0.0 )
                 {
-                    // ì˜ëª»ëœ ì…ë ¥ ì •ë³´ì¸ ê²½ìš°
+                    // Àß¸øµÈ ÀÔ·Â Á¤º¸ÀÎ °æ¿ì
                     // To Fix PR-11858
                     sSelectivity = 0;
                 }
                 else
                 {
                     //------------------------------------------------------
-                    // Selectivity ê³„ì‚°
+                    // Selectivity °è»ê
                     //------------------------------------------------------
                 
                     sSelectivity = sNumerator / sDenominator;
@@ -1039,14 +1039,14 @@ static ACI_RC mtdStoredValue2MtdValue( acp_uint32_t aColumnSize,
 {
 /*******************************************************************
  * PROJ-1705
- * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
- * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
+ * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
+ * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
  *******************************************************************/
 
     mtdIntegerType* sIntegerValue;
 
-    // ê³ ì •ê¸¸ì´ ë°ì´íƒ€ íƒ€ì…ì˜ ê²½ìš°
-    // í•˜ë‚˜ì˜ ì»¬ëŸ¼ ë°ì´íƒ€ê°€ ì—¬ëŸ¬í˜ì´ì§€ì— ë‚˜ëˆ„ì–´ ì €ì¥ë˜ëŠ” ê²½ìš°ëŠ” ì—†ë‹¤.
+    // °íÁ¤±æÀÌ µ¥ÀÌÅ¸ Å¸ÀÔÀÇ °æ¿ì
+    // ÇÏ³ªÀÇ ÄÃ·³ µ¥ÀÌÅ¸°¡ ¿©·¯ÆäÀÌÁö¿¡ ³ª´©¾î ÀúÀåµÇ´Â °æ¿ì´Â ¾ø´Ù.
 
     ACP_UNUSED(aDestValueOffset);
     
@@ -1054,7 +1054,7 @@ static ACI_RC mtdStoredValue2MtdValue( acp_uint32_t aColumnSize,
         
     if( aLength == 0 )
     {
-        // NULL ë°ì´íƒ€
+        // NULL µ¥ÀÌÅ¸
         *sIntegerValue = mtdIntegerNull;        
     }
     else
@@ -1081,7 +1081,7 @@ acp_uint32_t mtdNullValueSize()
 {
 /*******************************************************************
  * PROJ-1705
- * ê° ë°ì´íƒ€íƒ€ì…ì˜ null Valueì˜ í¬ê¸° ë°˜í™˜    
+ * °¢ µ¥ÀÌÅ¸Å¸ÀÔÀÇ null ValueÀÇ Å©±â ¹İÈ¯    
  *******************************************************************/
 
     return mtdActualSize( NULL,

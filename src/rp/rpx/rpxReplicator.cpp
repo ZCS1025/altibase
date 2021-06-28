@@ -20,7 +20,7 @@
 #include <smiLogRec.h>
 
 #include <rpcManager.h>
-
+#include <rpdCatalog.h>
 #include <rpdMeta.h>
 #include <rpxSender.h>
 
@@ -72,7 +72,7 @@ IDE_RC rpxReplicator::initialize( iduMemAllocator   * aAllocator,
 
     mTransTbl = NULL;
 
-    mUsleepCnt = 0;
+    mSleepForKeepAliveCount = 0;
 
     mCurrFileNo = 0;
 
@@ -291,23 +291,22 @@ idBool rpxReplicator::isLobControlLog( smiChangeLogType aTypeId )
     return sResult;
 }
 
-IDE_RC rpxReplicator::checkAndSendImplSVP( smiLogRec * aLog )     
+IDE_RC rpxReplicator::checkAndSendImplSVP( smiLogRec * aLog, smTID aTID )
 {
-    smTID sTID = aLog->getTransID();
     smSN  sSN  = SM_SN_NULL;
 
     if ( ( aLog->checkSavePointFlag() == ID_TRUE ) &&
-         ( mTransTbl->isATrans( sTID ) == ID_TRUE ) )
+         ( mTransTbl->isATrans( aTID ) == ID_TRUE ) )
     {
-        if ( mTransTbl->getBeginFlag( sTID ) == ID_FALSE )
+        if ( mTransTbl->getBeginFlag( aTID ) == ID_FALSE )
         {
-            mTransTbl->setBeginFlag(sTID, ID_TRUE);
+            mTransTbl->setBeginFlag(aTID, ID_TRUE);
 
-            /* senderê°€ mBeginSNì„ setí•˜ê³  senderê°€ ì½ìœ¼ë¯€ë¡œ
-             * mBeginSNì„ ì½ì„ ë•Œ lockì„ ì•ˆ ì¡ì•„ë„ ë¨
+            /* sender°¡ mBeginSNÀ» setÇÏ°í sender°¡ ÀĞÀ¸¹Ç·Î
+             * mBeginSNÀ» ÀĞÀ» ¶§ lockÀ» ¾È Àâ¾Æµµ µÊ
              */
             // BUG-17725
-            sSN = mTransTbl->getTrNode( sTID )->mBeginSN;
+            sSN = mTransTbl->getTrNode( aTID )->mBeginSN;
             IDE_DASSERT( sSN != SM_SN_NULL );
         }
         else
@@ -315,7 +314,7 @@ IDE_RC rpxReplicator::checkAndSendImplSVP( smiLogRec * aLog )
             sSN = aLog->getRecordSN();
         }
 
-        IDE_TEST( addXLogImplSVP( sTID,
+        IDE_TEST( addXLogImplSVP( aTID,
                                   sSN,
                                   aLog->getReplStmtDepth() )
                   != IDE_SUCCESS );
@@ -332,64 +331,6 @@ IDE_RC rpxReplicator::checkAndSendImplSVP( smiLogRec * aLog )
     return IDE_FAILURE;
 }
 
-/*
- *
- */
-IDE_RC rpxReplicator::addLastSNEntry( iduMemPool * aSNPool,
-                                      smSN         aSN,
-                                      iduList    * aSNList )
-{
-    rpxSNEntry * sSNEntry = NULL;
-
-    IDU_FIT_POINT( "rpxReplicator::addLastSNEntry::alloc::SNEntry" );
-    IDE_TEST( aSNPool->alloc( (void **)&sSNEntry ) != IDE_SUCCESS );
-
-    sSNEntry->mSN = aSN;
-
-    IDU_LIST_INIT_OBJ( &(sSNEntry->mNode), sSNEntry );
-    IDU_LIST_ADD_LAST( aSNList, &(sSNEntry->mNode) );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-/*
- *
- */
-rpxSNEntry * rpxReplicator::searchSNEntry( iduList * aSNList, smSN aSN )
-{
-    iduListNode * sNode    = NULL;
-    rpxSNEntry  * sSNEntry = NULL;
-    rpxSNEntry  * sReturn  = NULL;
-
-    IDU_LIST_ITERATE( aSNList, sNode )
-    {
-        sSNEntry = (rpxSNEntry *)sNode->mObj;
-
-        if ( sSNEntry->mSN == aSN )
-        {
-            sReturn = sSNEntry;
-            break;
-        }
-    }
-
-    return sReturn;
-}
-
-/*
- *
- */
-void rpxReplicator::removeSNEntry( iduMemPool * aSNPool,
-                                   rpxSNEntry * aSNEntry )
-{
-    IDU_LIST_REMOVE( &aSNEntry->mNode );
-    (void)aSNPool->memfree( aSNEntry );
-
-    return;
-}
 
 idBool rpxReplicator::needMakeMtdValue( rpdColumn * aRpdColumn )
 {
@@ -429,21 +370,21 @@ IDE_RC rpxReplicator::makeMtdValue( rpdLogAnalyzer * aLogAnlz,
     UInt        sCID;
     UShort      sColumnCount = 0;
     /*
-     * ì‹¤ì œë¡œ mtdValueë¥¼ ë§Œë“¤ì§€ëŠ” ì•ŠëŠ”ë‹¤. ì´ í•¨ìˆ˜ì—ì„œëŠ” ë°ì´í„°íƒ€ì…ë³„ë¡œ
-     * mtdValueLenì„ ì–»ì–´ ì €ì¥í•´ë‘”ë‹¤. ì°¨í›„ sendValue ì‹œì— mtdValueLenê³¼
-     * smiValue->valueë¥¼ ì´ì–´ì„œ ë³´ë‚´ë©´, receiverëŠ” mtdValueí˜•íƒœì˜ ì»¬ëŸ¼ê°’ì„
-     * ë°›ê²Œ ë˜ê¸° ë•Œë¬¸ì´ë‹¤.
+     * ½ÇÁ¦·Î mtdValue¸¦ ¸¸µéÁö´Â ¾Ê´Â´Ù. ÀÌ ÇÔ¼ö¿¡¼­´Â µ¥ÀÌÅÍÅ¸ÀÔº°·Î
+     * mtdValueLenÀ» ¾ò¾î ÀúÀåÇØµĞ´Ù. Â÷ÈÄ sendValue ½Ã¿¡ mtdValueLen°ú
+     * smiValue->value¸¦ ÀÌ¾î¼­ º¸³»¸é, receiver´Â mtdValueÇüÅÂÀÇ ÄÃ·³°ªÀ»
+     * ¹Ş°Ô µÇ±â ¶§¹®ÀÌ´Ù.
      */
 
-    //BUG-23967 : NULL POINTER DEFENSE ì¶”ê°€
+    //BUG-23967 : NULL POINTER DEFENSE Ãß°¡
     IDE_ASSERT( aMetaItem != NULL );
 
     /* PK value
-     * 1. PK COLUMNì—ëŠ” null valueì™€ lobì´ í•´ë‹¹ì‚¬í•­ì´ ì—†ìœ¼ë¯€ë¡œ ì´ë“¤ì— ëŒ€í•œ ê³ ë ¤ê°€ í•„ìš”ì—†ë‹¤.
-     * 2. ì¸ë±ìŠ¤ì—ì„œ divisible ë°ì´í„°ëŠ” ì—¬ì „íˆ mtdValueë¡œ ì €ì¥ë˜ê³  ìˆìœ¼ë¯€ë¡œ,
-     *    receiverì—ì„œ conflictì²´í¬ë¥¼ ìœ„í•´ ë¶ˆëŸ¬ì˜¤ëŠ” PK valueëŠ” mtdValueí˜•íƒœì´ë‹¤.
-     *    senderë¡œ ë¶€í„° ë°›ì€ PK valueì™€ì˜ ì›í™œí•œ ë¹„êµì‘ì—…ì„ ìœ„í•´, senderì—ì„œ PK valueë¥¼
-     *    mtdValueí˜•íƒœë¡œ ë§Œë“¤ì–´ ë³´ë‚´ë„ë¡í•œë‹¤.
+     * 1. PK COLUMN¿¡´Â null value¿Í lobÀÌ ÇØ´ç»çÇ×ÀÌ ¾øÀ¸¹Ç·Î ÀÌµé¿¡ ´ëÇÑ °í·Á°¡ ÇÊ¿ä¾ø´Ù.
+     * 2. ÀÎµ¦½º¿¡¼­ divisible µ¥ÀÌÅÍ´Â ¿©ÀüÈ÷ mtdValue·Î ÀúÀåµÇ°í ÀÖÀ¸¹Ç·Î,
+     *    receiver¿¡¼­ conflictÃ¼Å©¸¦ À§ÇØ ºÒ·¯¿À´Â PK value´Â mtdValueÇüÅÂÀÌ´Ù.
+     *    sender·Î ºÎÅÍ ¹ŞÀº PK value¿ÍÀÇ ¿øÈ°ÇÑ ºñ±³ÀÛ¾÷À» À§ÇØ, sender¿¡¼­ PK value¸¦
+     *    mtdValueÇüÅÂ·Î ¸¸µé¾î º¸³»µµ·ÏÇÑ´Ù.
      */
     for ( i = 0; i < aLogAnlz->mPKColCnt; i++ )
     {
@@ -453,7 +394,7 @@ IDE_RC rpxReplicator::makeMtdValue( rpdLogAnalyzer * aLogAnlz,
         /*BUG-26718 CodeSonar Null Pointer Dereference*/
         IDE_TEST_RAISE( sRpdColumn == NULL, COLUMN_NOT_FOUND );
 
-        /* PKëŠ” mtdValueë¡œ ì €ì¥ë˜ì§€ ì•ŠëŠ” ê°€ë³€ê¸¸ì´ ë°ì´í„° íƒ€ì…ì— ëŒ€í•´ì„œë§Œ ì²˜ë¦¬í•œë‹¤.
+        /* PK´Â mtdValue·Î ÀúÀåµÇÁö ¾Ê´Â °¡º¯±æÀÌ µ¥ÀÌÅÍ Å¸ÀÔ¿¡ ´ëÇØ¼­¸¸ Ã³¸®ÇÑ´Ù.
          */
         if ( needMakeMtdValue( sRpdColumn ) == ID_TRUE )
         {
@@ -558,7 +499,7 @@ void rpxReplicator::setMtdValueLen( rpdColumn  * aRpdColumn,
     }
     else
     {
-        // ë°ì´í„° íƒ€ì…ë³„ mtdValueLenSizeë¥¼ ì–»ëŠ”ë‹¤.
+        // µ¥ÀÌÅÍ Å¸ÀÔº° mtdValueLenSize¸¦ ¾ò´Â´Ù.
         sMtdLenSize = aRpdColumn->mColumn.module->nullValueSize();
         aLenArray->lengthSize  = sMtdLenSize;
 
@@ -596,13 +537,13 @@ IDE_RC rpxReplicator::checkEndOfLogFile( smiLogRec  * aLogRec,
     if ( aLogRec->getType() == SMI_LT_FILE_END )
     {
         // BUG-29837
-        // ë¶ˆí•„ìš”í•œ ë¡œê·¸ íŒŒì¼ì„ ì§€ìš¸ ìˆ˜ ìˆë„ë¡ mCommitXSNì„ ê°±ì‹ í•œë‹¤.
-        if ( mTransTbl->isThereATrans() != ID_TRUE )    // Transaction tableì—ì„œ Active transactionì´ ì—†ì„ ë•Œ
+        // ºÒÇÊ¿äÇÑ ·Î±× ÆÄÀÏÀ» Áö¿ï ¼ö ÀÖµµ·Ï mCommitXSNÀ» °»½ÅÇÑ´Ù.
+        if ( mTransTbl->isThereATrans() != ID_TRUE )    // Transaction table¿¡¼­ Active transactionÀÌ ¾øÀ» ¶§
         {
             mSender->mCommitXSN = mSender->mXSN;
         }
 
-        // Senderê°€ ë°”ìœ ìƒí™©ì—ì„œë„ Restart SNì€ ì£¼ê¸°ì ìœ¼ë¡œ ê°±ì‹ 
+        // Sender°¡ ¹Ù»Û »óÈ²¿¡¼­µµ Restart SNÀº ÁÖ±âÀûÀ¸·Î °»½Å
         IDE_TEST( mSender->addXLogKeepAlive() != IDE_SUCCESS );
 
         *aEndOfLog = ID_TRUE;
@@ -618,45 +559,46 @@ IDE_RC rpxReplicator::checkEndOfLogFile( smiLogRec  * aLogRec,
 /*
  *
  */
-IDE_RC rpxReplicator::waitForLogSync( smiLogRec * aLog )
+IDE_RC rpxReplicator::checkAndWaitForLogSync( smiLogRec * aLog )
 {
-    smTID  sTID;
-    idBool sIsSynced;
+    UInt   i = 0;
+    UInt   sGCCnt = 0;
+    smTID  sTID = SM_NULL_TID;
 
     IDU_FIT_POINT_RAISE( "rpxReplicator::waitForLogSync::Erratic::rpERR_ABORT_INVALID_PARAM",
                          ERR_BAD_PARAM );
     IDE_TEST_RAISE( aLog == NULL, ERR_BAD_PARAM );
 
     /* BUG-15753
-     * í”„ë¼í¼í‹°ê°€ ì„¤ì •ë˜ê³  Active Transactionì˜ COMMIT ë¡œê·¸ì¸ ê²½ìš°ì—ë§Œ,
-     * ë¡œê·¸ê°€ ë””ìŠ¤í¬ì— ë‚´ë ¤ê°ˆ ë•Œê¹Œì§€ ê¸°ë‹¤ë¦°ë‹¤.
+     * ÇÁ¶óÆÛÆ¼°¡ ¼³Á¤µÇ°í Active TransactionÀÇ COMMIT ·Î±×ÀÎ °æ¿ì¿¡¸¸,
+     * ·Î±×°¡ µğ½ºÅ©¿¡ ³»·Á°¥ ¶§±îÁö ±â´Ù¸°´Ù.
      */
-    if ( RPU_REPLICATION_SYNC_LOG != 0 )
+    if ( ( RPU_REPLICATION_SYNC_LOG != 0 ) && 
+         ( mSender->mCurrentType != RP_OFFLINE ) )
     {
         // fix BUG-15753
-        if ( ( aLog->needNormalReplicate() == ID_TRUE ) &&
-             ( aLog->getType() == SMI_LT_TRANS_COMMIT ) )
+        if ( aLog->needNormalReplicate() == ID_TRUE )
         {
-            sTID = aLog->getTransID();
-
-            if ( ( mTransTbl->isATrans( sTID ) == ID_TRUE ) &&
-                 ( mTransTbl->getBeginFlag( sTID ) == ID_TRUE ) )
+            if ( aLog->getType() == SMI_LT_TRANS_COMMIT )
             {
-                //To Fix PR-4559
-                while ( mSender->checkInterrupt() == RP_INTR_NONE )
-                {
-                    IDE_TEST( mLogMgr.isAllReadLogSynced( &sIsSynced )
-                              != IDE_SUCCESS );
+                sTID = aLog->getTransID();
 
-                    if ( sIsSynced == ID_FALSE )
-                    {
-                        IDE_TEST( sleepForKeepAlive() != IDE_SUCCESS );
-                    }
-                    else
-                    {
-                        break;
-                    }
+                IDE_TEST( waitForLogSync( sTID ) != IDE_SUCCESS );
+            }
+            else if ( aLog->getType() == SMI_LT_TRANS_GROUPCOMMIT )
+            {
+                sGCCnt = aLog->getGroupCommitCnt( aLog->getLogPtr() );
+
+                for ( i = 0; i < sGCCnt; i++ )
+                {
+                    sTID = aLog->getNthTIDFromGroupCommit( aLog->getLogPtr(), i );
+
+                    IDE_TEST( waitForLogSync( sTID ) != IDE_SUCCESS );
                 }
+            }
+            else
+            {
+                /* Nothing to do */
             }
         }
     }
@@ -671,6 +613,35 @@ IDE_RC rpxReplicator::waitForLogSync( smiLogRec * aLog )
     return IDE_FAILURE;
 }
 
+IDE_RC rpxReplicator::waitForLogSync( smTID  aTID )
+{
+    idBool sIsSynced = ID_FALSE;
+
+    if ( ( mTransTbl->isATrans( aTID ) == ID_TRUE ) &&
+         ( mTransTbl->getBeginFlag( aTID ) == ID_TRUE ) )
+    {
+        //To Fix PR-4559
+        while ( mSender->checkInterrupt() == RP_INTR_NONE )
+        {
+            IDE_TEST( mLogMgr.isAllReadLogSynced( &sIsSynced )
+                      != IDE_SUCCESS );
+
+            if ( sIsSynced == ID_FALSE )
+            {
+                IDE_TEST( sleepForKeepAlive() != IDE_SUCCESS );
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
 /*
  *
  */
@@ -691,7 +662,7 @@ IDE_RC rpxReplicator::sleepForKeepAlive( void )
     //----------------------------------------------------------------//
     // reach to check keep alive
     //----------------------------------------------------------------//
-    if ( mUsleepCnt == 0 )
+    if ( mSleepForKeepAliveCount == 0 )
     {
         IDE_TEST( mSender->addXLogKeepAlive() != IDE_SUCCESS );
     }
@@ -699,17 +670,18 @@ IDE_RC rpxReplicator::sleepForKeepAlive( void )
     {
         /*do nothing*/
     }
-    mUsleepCnt++;
+    mSleepForKeepAliveCount++;
 
     sSleepTv.initialize( 0, RPU_SENDER_SLEEP_TIME );
 
-    if ( mMeta->mReplication.mReplMode == RP_LAZY_MODE )
+    if ( ( mMeta->getReplMode() == RP_LAZY_MODE ) ||
+         ( mMeta->getReplMode() == RP_CONSISTENT_MODE ) )
     {
         idlOS::sleep( sSleepTv );
     }
     else
     {
-        if ( mUsleepCnt == RPU_KEEP_ALIVE_CNT )
+        if ( mSleepForKeepAliveCount == RPU_KEEP_ALIVE_CNT )
         {
             sTvCpu  = idlOS::gettimeofday();
             sTvCpu += sSleepTv;
@@ -726,9 +698,9 @@ IDE_RC rpxReplicator::sleepForKeepAlive( void )
     //----------------------------------------------------------------//
     // reach to check keep alive
     //----------------------------------------------------------------//
-    if ( mUsleepCnt >= RPU_KEEP_ALIVE_CNT ) 
+    if ( mSleepForKeepAliveCount >= RPU_KEEP_ALIVE_CNT ) 
     {
-        mUsleepCnt = 0;
+        mSleepForKeepAliveCount = 0;
     }
     else
     {
@@ -784,14 +756,15 @@ IDE_RC rpxReplicator::switchToArchiveLogMgr( smSN * aSN )
 
     ideLog::log( IDE_RP_0, RP_TRC_S_INIT_ARCHIVE_LOG_MGR );
 
-    // archive logë¡œ ì „í™˜í•œë‹¤.
+    // archive log·Î ÀüÈ¯ÇÑ´Ù.
     mLogMgrStatus = RP_LOG_MGR_ARCHIVE;
 
     IDE_TEST( mLogMgr.initialize( mSender->mXSN,
                                   0,
-                                  ID_TRUE, //ë¦¬ëª¨íŠ¸ ë¡œê·¸
+                                  ID_TRUE, //¸®¸ğÆ® ·Î±×
                                   smiGetLogFileSize(),
-                                  mFirstArchiveLogDirPath )
+                                  mFirstArchiveLogDirPath,
+                                  ID_TRUE ) // ¾ĞÃàµÈ ·Î±×ÆÄÀÏÀÇ °æ¿ì ¾ĞÃàÀ» Ç®Áö¾Ê°í ¹İÈ¯ÇÒÁö ¿©ºÎ
               != IDE_SUCCESS );
 
     IDE_ASSERT( getRemoteLastUsedGSN( aSN ) == IDE_SUCCESS );
@@ -820,10 +793,10 @@ IDE_RC rpxReplicator::waitForNewLogRecord( smSN              * aCurrentSN,
     while ( mSender->checkInterrupt() == RP_INTR_NONE )
     {
         /* BUG-31545
-         * í†µê³„ì •ë³´ë¥¼ ì„¸ì…˜ì— ë°˜ì˜í•˜ê³  ì´ˆê¸°í™”í•œë‹¤.
-         * IDV_OPTM_INDEX_RP_S_WAIT_NEW_LOGê°€ ì œëŒ€ë¡œ ì¸¡ì •ë˜ê¸° ìœ„í•´ì„œ
-         * ì„¸ì…˜ í†µê³„ì •ë³´ë¥¼ ì—…ë°ì´íŠ¸í•  ê°€ì¥ ì ì ˆí•œ ìœ„ì¹˜ë¡œ ë³´ì„. ì°¨í›„ ìœ„ì¹˜ ë³€ê²½ ê°€ëŠ¥.
-         * ì‹œìŠ¤í…œ í†µê³„ì •ë³´ ì—…ë°ì´íŠ¸ëŠ” ì£¼ê¸°ì ìœ¼ë¡œ MMì“°ë ˆë“œë¥¼ í†µí•´ ì´ë£¨ì–´ì§„ë‹¤.
+         * Åë°èÁ¤º¸¸¦ ¼¼¼Ç¿¡ ¹İ¿µÇÏ°í ÃÊ±âÈ­ÇÑ´Ù.
+         * IDV_OPTM_INDEX_RP_S_WAIT_NEW_LOG°¡ Á¦´ë·Î ÃøÁ¤µÇ±â À§ÇØ¼­
+         * ¼¼¼Ç Åë°èÁ¤º¸¸¦ ¾÷µ¥ÀÌÆ®ÇÒ °¡Àå ÀûÀıÇÑ À§Ä¡·Î º¸ÀÓ. Â÷ÈÄ À§Ä¡ º¯°æ °¡´É.
+         * ½Ã½ºÅÛ Åë°èÁ¤º¸ ¾÷µ¥ÀÌÆ®´Â ÁÖ±âÀûÀ¸·Î MM¾²·¹µå¸¦ ÅëÇØ ÀÌ·ç¾îÁø´Ù.
          */
         idvManager::applyOpTimeToSession( mStatSession, mOpStatistics );
         idvManager::initRPSenderAccumTime( mOpStatistics );
@@ -865,7 +838,6 @@ IDE_RC rpxReplicator::waitForNewLogRecord( smSN              * aCurrentSN,
         }
         else // Ok. New Log Record Arrived..
         {
-            mUsleepCnt = 0;
             break;
         }
     }
@@ -908,7 +880,8 @@ IDE_RC rpxReplicator::sendXLog( rpdLogAnalyzer * aLogAnlz )
             sNeedLock  = ID_FALSE;
         }
 
-        if ( mMeta->mReplication.mReplMode == RP_EAGER_MODE )
+        if ( ( mMeta->getReplMode() == RP_EAGER_MODE ) ||
+             ( mMeta->getReplMode() == RP_CONSISTENT_MODE ) )
         {
             sNeedFlush = ID_TRUE;
         }
@@ -942,6 +915,13 @@ IDE_RC rpxReplicator::sendXLog( rpdLogAnalyzer * aLogAnlz )
         IDE_RAISE( ERR_ETC );
     }
 
+    if ( ( mTransTbl->getSendBeginFlag( aLogAnlz->getSendTransID() ) == ID_FALSE ) &&
+         ( mTransTbl->getRemoteTID( aLogAnlz->getSendTransID() ) == aLogAnlz->getSendTransID() ) )
+    {
+
+        mTransTbl->setSendBeginFlag( aLogAnlz->getSendTransID(), ID_TRUE );
+    }
+
     IDE_TEST_CONT( mSender->checkHBTFault() != IDE_SUCCESS,
                    NORMAL_EXIT );
 
@@ -961,7 +941,7 @@ IDE_RC rpxReplicator::sendXLog( rpdLogAnalyzer * aLogAnlz )
     }
     IDE_EXCEPTION( ERR_ETC );
     {
-        // Recovery Senderê°€ Commitì—ì„œ rpnComm::recvAck()ë¥¼ ì‹¤íŒ¨í•œ ê²½ìš°ì—ë„ ì—¬ê¸°ë¡œ ì˜¨ë‹¤.
+        // Recovery Sender°¡ Commit¿¡¼­ rpnComm::recvAck()¸¦ ½ÇÆĞÇÑ °æ¿ì¿¡µµ ¿©±â·Î ¿Â´Ù.
     }
     IDE_EXCEPTION_END;
 
@@ -985,17 +965,18 @@ IDE_RC rpxReplicator::addXLogSyncPK( rpdMetaItem    * aMetaItem,
     UInt        sColID;
     IDE_RC      sRC      = IDE_SUCCESS;
 
-    IDE_DASSERT( mSender->mStatus == RP_SENDER_FAILBACK_SLAVE );
+    IDE_DASSERT( ( mSender->mStatus == RP_SENDER_FAILBACK_SLAVE ) ||
+                 ( mSender->mCurrentType == RP_XLOGFILE_FAILBACK_SLAVE ) );
 
     switch ( aLogAnlz->mType )
     {
-        case RP_X_INSERT :  // Priamry Keyê°€ ì—†ìœ¼ë¯€ë¡œ, After Imageì—ì„œ ì–»ëŠ”ë‹¤.
+        case RP_X_INSERT :  // Priamry Key°¡ ¾øÀ¸¹Ç·Î, After Image¿¡¼­ ¾ò´Â´Ù.
             IDE_DASSERT( aMetaItem != NULL );
 
-            // PK Column Countë¥¼ ì–»ëŠ”ë‹¤.
+            // PK Column Count¸¦ ¾ò´Â´Ù.
             sPKColCnt = aMetaItem->mPKColCount;
 
-            // PK Indexë¥¼ ê²€ìƒ‰í•œë‹¤.
+            // PK Index¸¦ °Ë»öÇÑ´Ù.
             for ( sIndex = 0; sIndex < aMetaItem->mIndexCount; sIndex++ )
             {
                 if ( aMetaItem->mPKIndex.indexId
@@ -1007,7 +988,7 @@ IDE_RC rpxReplicator::addXLogSyncPK( rpdMetaItem    * aMetaItem,
             }
             IDE_ASSERT( sPKIndex != NULL );
 
-            // PK Column Valueì™€ MT Lengthë¥¼ ì–»ëŠ”ë‹¤.
+            // PK Column Value¿Í MT Length¸¦ ¾ò´Â´Ù.
             idlOS::memset( sPKCols,
                            0x00,
                            ID_SIZEOF( smiValue ) * QCI_MAX_KEY_COLUMN_COUNT );
@@ -1031,7 +1012,7 @@ IDE_RC rpxReplicator::addXLogSyncPK( rpdMetaItem    * aMetaItem,
             }
             break;
 
-        case RP_X_UPDATE :  // ì´ë¯¸ Primary Keyê°€ ìˆìœ¼ë¯€ë¡œ, ë³µì‚¬í•œë‹¤.
+        case RP_X_UPDATE :  // ÀÌ¹Ì Primary Key°¡ ÀÖÀ¸¹Ç·Î, º¹»çÇÑ´Ù.
         case RP_X_DELETE :
         case RP_X_LOB_CURSOR_OPEN :
             sPKColCnt = aLogAnlz->mPKColCnt;
@@ -1102,23 +1083,23 @@ IDE_RC rpxReplicator::addXLogImplSVP( smTID aTID,
     IDE_TEST_CONT( mSender->checkHBTFault() != IDE_SUCCESS,
                    NORMAL_EXIT );
     
-    /* ìƒìœ„ statementê°€ rootê°€ ì•„ë‹Œ statementì— ëŒ€í•´ì„œ
-     * rollback(partial-rollback)ì„ ì§€ì›í•´ì•¼ í•˜ëŠ”
-     * ë²„ê·¸ë¥¼ ìˆ˜ì •í•˜ê¸° ìœ„í•´ì„œ smì—ì„œ implicit svp Logì— statement depthë¥¼
-     * ì¶”ê°€í•˜ê¸°ë¡œ í•˜ì˜€ë‹¤.
-     * replicationì—ì„œëŠ” ë¡œê·¸ì˜ headerì— statement depthë¥¼ ë³´ê³  í˜„ì¬
-     * implicit svpì— ëŒ€í•´ì„œ ì–´ë–¤ ì´ë¦„ìœ¼ë¡œ savepointë¥¼ ì§€ì •í•´ì•¼ í•˜ëŠ” ì§€ ì•Œìˆ˜
-     * ìˆìœ¼ë©° ë”°ë¼ì„œ ê¸°ì¡´ì— implicit svpì— ëŒ€í•´ì„œ XLog headerë§Œ ë³´ë‚´ëŠ” ê²ƒì„
-     * ì œê±°í•˜ê³  implicit svpë¡œê·¸ê°€ ë“¤ì–´ì˜¨ ê²½ìš°ì— explicit svp(RP_X_SP_SET)ë¡œ
-     * ë³´ë‚´ë„ë¡ í•˜ë©°, ì´ë¦„ì€ $$IMPLICIT + depthë¡œ ì§€ì •í•˜ê¸°ë¡œ í•˜ì˜€ë‹¤.
-     * ì¢€ ë” ìƒì„¸í•œ ë‚´ìš©ì€ smxDef.hì˜ ì£¼ì„ì„ ì°¸ì¡°
+    /* »óÀ§ statement°¡ root°¡ ¾Æ´Ñ statement¿¡ ´ëÇØ¼­
+     * rollback(partial-rollback)À» Áö¿øÇØ¾ß ÇÏ´Â
+     * ¹ö±×¸¦ ¼öÁ¤ÇÏ±â À§ÇØ¼­ sm¿¡¼­ implicit svp Log¿¡ statement depth¸¦
+     * Ãß°¡ÇÏ±â·Î ÇÏ¿´´Ù.
+     * replication¿¡¼­´Â ·Î±×ÀÇ header¿¡ statement depth¸¦ º¸°í ÇöÀç
+     * implicit svp¿¡ ´ëÇØ¼­ ¾î¶² ÀÌ¸§À¸·Î savepoint¸¦ ÁöÁ¤ÇØ¾ß ÇÏ´Â Áö ¾Ë¼ö
+     * ÀÖÀ¸¸ç µû¶ó¼­ ±âÁ¸¿¡ implicit svp¿¡ ´ëÇØ¼­ XLog header¸¸ º¸³»´Â °ÍÀ»
+     * Á¦°ÅÇÏ°í implicit svp·Î±×°¡ µé¾î¿Â °æ¿ì¿¡ explicit svp(RP_X_SP_SET)·Î
+     * º¸³»µµ·Ï ÇÏ¸ç, ÀÌ¸§Àº $$IMPLICIT + depth·Î ÁöÁ¤ÇÏ±â·Î ÇÏ¿´´Ù.
+     * Á» ´õ »ó¼¼ÇÑ ³»¿ëÀº smxDef.hÀÇ ÁÖ¼®À» ÂüÁ¶
      */
     //append sp $$IMPLICIT(SMR_IMPLICIT_SVP_NAME) + Replication Impl Svp Stmt Depth
     sSpName = rpcManager::getImplSPName( aReplStmtDepth );
 
     if ( mTransTbl->isSvpListSent( aTID ) != ID_TRUE )
     {
-        // BUG-28206 ë¶ˆí•„ìš”í•œ Transaction Beginì„ ë°©ì§€
+        // BUG-28206 ºÒÇÊ¿äÇÑ Transaction BeginÀ» ¹æÁö
         sRC = mTransTbl->addLastSvpEntry( aTID,
                                           aSN,
                                           RP_SAVEPOINT_IMPLICIT,
@@ -1471,11 +1452,11 @@ IDE_RC rpxReplicator::addXLog( smiLogRec             * aLog,
                                RP_ACTION_ON_ADD_XLOG   aAction,
                                iduMemPool            * aSNPool,
                                iduList               * aSNList,
-                               RP_REPLICATIED_TRNAS_GROUP_OP    aOperation )
+                               RP_REPLICATIED_TRNAS_GROUP_OP    aOperation,
+                               smTID                    aTID )
 {
     idBool             sIsDML;
-    rpdLogAnalyzer   * sLogAnlz;
-    smTID              sTID = aLog->getTransID();
+    rpdLogAnalyzer   * sLogAnlz = NULL;
     smiTableMeta     * sItemMeta = NULL;
     smiDDLStmtMeta   * sDDLStmtMeta = NULL;
     smiLogType         sLogType;
@@ -1484,7 +1465,7 @@ IDE_RC rpxReplicator::addXLog( smiLogRec             * aLog,
     UInt               sTableColCount = 0;
     UShort             sColumnCount = 0;
     idBool             sIsExist = ID_FALSE;
-
+    idBool             sNeedHandshake = ID_FALSE;
     RP_CREATE_FLAG_VARIABLE( IDV_OPTM_INDEX_RP_S_LOG_ANALYZE );
 
     if ( ( aAction == RP_COLLECT_BEGIN_SN_ON_ADD_XLOG ) ||
@@ -1493,9 +1474,9 @@ IDE_RC rpxReplicator::addXLog( smiLogRec             * aLog,
         IDE_ASSERT( aSNPool != NULL );
     }
 
-    IDE_DASSERT( mTransTbl->isATrans( sTID ) == ID_TRUE );
+    IDE_DASSERT( mTransTbl->isATrans( aTID ) == ID_TRUE );
 
-    sLogAnlz = mTransTbl->getLogAnalyzer( sTID );
+    sLogAnlz = mTransTbl->getLogAnalyzer( aTID );
     sLogType = aLog->getType();
     sChangeLogType = aLog->getChangeType();
 
@@ -1504,7 +1485,10 @@ IDE_RC rpxReplicator::addXLog( smiLogRec             * aLog,
 
     RP_OPTIMIZE_TIME_BEGIN( mOpStatistics, IDV_OPTM_INDEX_RP_S_LOG_ANALYZE );
 
-    IDE_TEST( sLogAnlz->analyze( aLog, &sIsDML ) != IDE_SUCCESS );
+    IDE_TEST( sLogAnlz->analyze( aLog,
+                                 &sIsDML,
+                                 aTID )
+              != IDE_SUCCESS );
     RP_OPTIMIZE_TIME_END( mOpStatistics, IDV_OPTM_INDEX_RP_S_LOG_ANALYZE );
 
     if ( ( sChangeLogType != SMI_CHANGE_MRDB_LOB_PARTIAL_WRITE ) &&
@@ -1517,7 +1501,7 @@ IDE_RC rpxReplicator::addXLog( smiLogRec             * aLog,
     {
         if ( sIsDML == ID_TRUE )
         {
-            // PROJ-1705 - UNDO LOG ë˜ëŠ” ë¶„ì„í•  ì»¬ëŸ¼ì´ ì—†ê±°ë‚˜ ë¶„ì„í•˜ì§€ ì•ŠëŠ” ë¡œê·¸ íƒ€ì…
+            // PROJ-1705 - UNDO LOG ¶Ç´Â ºĞ¼®ÇÒ ÄÃ·³ÀÌ ¾ø°Å³ª ºĞ¼®ÇÏÁö ¾Ê´Â ·Î±× Å¸ÀÔ
             if ( sLogAnlz->skipXLog() == ID_TRUE )
             {
                 IDE_RAISE( SKIP_XLOG );
@@ -1525,7 +1509,7 @@ IDE_RC rpxReplicator::addXLog( smiLogRec             * aLog,
         }
     }
 
-    /* LOB Cursor Openì€ ë¡œê·¸ ë¶„ì„ í›„ì— Table OIDë¥¼ ì–»ì„ ìˆ˜ ìˆë‹¤. */
+    /* LOB Cursor OpenÀº ·Î±× ºĞ¼® ÈÄ¿¡ Table OID¸¦ ¾òÀ» ¼ö ÀÖ´Ù. */
     if ( ( sLogType == SMI_LT_LOB_FOR_REPL ) &&
          ( sLogAnlz->mType == RP_X_LOB_CURSOR_OPEN ) )
     {
@@ -1535,43 +1519,43 @@ IDE_RC rpxReplicator::addXLog( smiLogRec             * aLog,
                   != IDE_SUCCESS );
     }
 
-    /* ë¹ ë¥¸ ë³€ìˆ˜ ì´ˆê¸°í™”ë¥¼ ìœ„í•´, Table Column Countë¥¼ ì–»ì–´ë†“ëŠ”ë‹¤. */
+    /* ºü¸¥ º¯¼ö ÃÊ±âÈ­¸¦ À§ÇØ, Table Column Count¸¦ ¾ò¾î³õ´Â´Ù. */
     if ( aMetaItem != NULL )
     {
         sTableColCount = (UInt)aMetaItem->mColCount;
     }
 
-    /* BUG-24398 ë¡œê·¸ íƒ€ì…ì´ LOB Cursor Openì´ë©´ Replication ëŒ€ìƒì¸ì§€ í™•ì¸í•œë‹¤
-     * í•œ í…Œì´ë¸”ì— Lob columnì´ ì—¬ëŸ¬ ê°œì¼ ë•Œ Lob Cursor Openê³¼ Close ì‚¬ì´ì— ë˜ ë‹¤ë¥¸ Cursor Openì´ ë˜ëŠ” ê²½ìš°ì— ëŒ€í•´ì„œ
-     * Receiverìª½ì—ì„œëŠ”  Lob column ë°˜ì˜ì‹œ ê°ê° ë”°ë¡œ ë°˜ì˜í•´ì•¼í•˜ê¸° ë•Œë¬¸ì— ë¦¬ìŠ¤íŠ¸ë¡œ ê´€ë¦¬í•˜ë‚˜
-     * Senderìª½ì—ì„œëŠ” ì „ë¶€ ë³´ë‚¼ì§€ ë§ì§€ë§Œì„ íŒë‹¨í•˜ë©´ ë˜ë¯€ë¡œ flag í•˜ë‚˜ë¡œ í•´ê²°ì´ ë©ë‹ˆë‹¤.
+    /* BUG-24398 ·Î±× Å¸ÀÔÀÌ LOB Cursor OpenÀÌ¸é Replication ´ë»óÀÎÁö È®ÀÎÇÑ´Ù
+     * ÇÑ Å×ÀÌºí¿¡ Lob columnÀÌ ¿©·¯ °³ÀÏ ¶§ Lob Cursor Open°ú Close »çÀÌ¿¡ ¶Ç ´Ù¸¥ Cursor OpenÀÌ µÇ´Â °æ¿ì¿¡ ´ëÇØ¼­
+     * ReceiverÂÊ¿¡¼­´Â  Lob column ¹İ¿µ½Ã °¢°¢ µû·Î ¹İ¿µÇØ¾ßÇÏ±â ¶§¹®¿¡ ¸®½ºÆ®·Î °ü¸®ÇÏ³ª
+     * SenderÂÊ¿¡¼­´Â ÀüºÎ º¸³¾Áö ¸»Áö¸¸À» ÆÇ´ÜÇÏ¸é µÇ¹Ç·Î flag ÇÏ³ª·Î ÇØ°áÀÌ µË´Ï´Ù.
      */
     if ( sLogType == SMI_LT_LOB_FOR_REPL )
     {
         if ( sLogAnlz->mType == RP_X_LOB_CURSOR_OPEN )
         {
             /*BUG-24417
-             *Lob ê´€ë ¨ XLogì—ë„ Invalid Max SNì„ ê²€ì‚¬í•©ë‹ˆë‹¤.
+             *Lob °ü·Ã XLog¿¡µµ Invalid Max SNÀ» °Ë»çÇÕ´Ï´Ù.
              */
             if ( ( aMetaItem == NULL ) ||
                  ( aLog->getRecordSN() <= aMetaItem->mItem.mInvalidMaxSN ) )
             {
-                mTransTbl->setSendLobLogFlag( sTID, ID_FALSE );
-                /* Lob operationì˜ ê²½ìš°ì—”, addXLogê¹Œì§€ ì§„í–‰ë˜ì—ˆë”ë¼ë„, ì´ì¤‘í™” ëŒ€ìƒ í…Œì´ë¸”ì´ ì•„ë‹ˆê±°ë‚˜
-                 * invalid Max SNë³´ë‹¤ ì‘ì€ ê²½ìš°ì—” sendXLogë¥¼ í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ, addXLog() ì „ì— ì¦ê°€ì‹œí‚¨
-                 * mSendLogCountë¥¼ ë‹¤ì‹œ ê°ì†Œ ì‹œì¼œì£¼ì–´ì•¼í•œë‹¤.
+                mTransTbl->setSendLobLogFlag( aTID, ID_FALSE );
+                /* Lob operationÀÇ °æ¿ì¿£, addXLog±îÁö ÁøÇàµÇ¾ú´õ¶óµµ, ÀÌÁßÈ­ ´ë»ó Å×ÀÌºíÀÌ ¾Æ´Ï°Å³ª
+                 * invalid Max SNº¸´Ù ÀÛÀº °æ¿ì¿£ sendXLog¸¦ ÇÏÁö ¾ÊÀ¸¹Ç·Î, addXLog() Àü¿¡ Áõ°¡½ÃÅ²
+                 * mSendLogCount¸¦ ´Ù½Ã °¨¼Ò ½ÃÄÑÁÖ¾î¾ßÇÑ´Ù.
                  */
                 idCore::acpAtomicDec64( &mSendLogCount );
                 IDE_RAISE( RESET_XLOG );
             }
             else
             {
-                mTransTbl->setSendLobLogFlag( sTID, ID_TRUE );
+                mTransTbl->setSendLobLogFlag( aTID, ID_TRUE );
             }
         }
         else
         {
-            if ( mTransTbl->getSendLobLogFlag( sTID ) == ID_FALSE )
+            if ( mTransTbl->getSendLobLogFlag( aTID ) == ID_FALSE )
             {
                 idCore::acpAtomicDec64( &mSendLogCount );
                 IDE_RAISE( RESET_XLOG );
@@ -1581,8 +1565,8 @@ IDE_RC rpxReplicator::addXLog( smiLogRec             * aLog,
 
     /*
      * PROJ-1705
-     * column CID ì •ë ¬
-     * column ë¶„ì„ ìˆœì„œê°€ ì™”ë‹¤ê°”ë‹¤ í•˜ë‹ˆ, row ë¶„ì„ì´ ëë‚œ í›„ ì •ë ¬í•´ì¤€ë‹¤.
+     * column CID Á¤·Ä
+     * column ºĞ¼® ¼ø¼­°¡ ¿Ô´Ù°¬´Ù ÇÏ´Ï, row ºĞ¼®ÀÌ ³¡³­ ÈÄ Á¤·ÄÇØÁØ´Ù.
      */
     if ( sLogAnlz->mRedoAnalyzedColCnt > sLogAnlz->mUndoAnalyzedColCnt )
     {
@@ -1610,9 +1594,9 @@ IDE_RC rpxReplicator::addXLog( smiLogRec             * aLog,
 
     if ( ( sLogType != SMI_LT_NULL ) || ( sChangeLogType != SMI_CHANGE_NULL ) )
     {
-        /* Typeê³¼ Change Typeì´ ìœ„ì™€ ê°™ì´ ë˜ëŠ” ê²½ìš°ëŠ” LOCK TABLE ë“±ì—ì„œ
-         * update beforeì™€ ê°™ì€ í˜•íƒœì˜ ë¡œê·¸ì´ì§€ë§Œ, update column countê°€ 0ì¸ ê²½ìš°ì´ë‹¤.
-         * ì´ë•ŒëŠ” ì‹¤ì œì ìœ¼ë¡œ í• ì¼ì´ ì•„ë¬´ê²ƒë„ ì—†ìœ¼ë¯€ë¡œ, ë„˜ì–´ê°ˆìˆ˜ ìˆê²Œ í•œë‹¤.
+        /* Type°ú Change TypeÀÌ À§¿Í °°ÀÌ µÇ´Â °æ¿ì´Â LOCK TABLE µî¿¡¼­
+         * update before¿Í °°Àº ÇüÅÂÀÇ ·Î±×ÀÌÁö¸¸, update column count°¡ 0ÀÎ °æ¿ìÀÌ´Ù.
+         * ÀÌ¶§´Â ½ÇÁ¦ÀûÀ¸·Î ÇÒÀÏÀÌ ¾Æ¹«°Íµµ ¾øÀ¸¹Ç·Î, ³Ñ¾î°¥¼ö ÀÖ°Ô ÇÑ´Ù.
          */
 
         if ( sLogType == SMI_LT_TABLE_META )
@@ -1625,18 +1609,19 @@ IDE_RC rpxReplicator::addXLog( smiLogRec             * aLog,
                          sItemMeta->mTableName,
                          sItemMeta->mPartName );
 
-            // Table Meta Log Recordë¥¼ Transaction Tableì— ë³´ê´€í•œë‹¤.
-            IDE_TEST( mTransTbl->addItemMetaEntry( sTID,
+            // Table Meta Log Record¸¦ Transaction Table¿¡ º¸°üÇÑ´Ù.
+            IDE_TEST( mTransTbl->addItemMetaEntry( aTID,
                                                    sItemMeta,
                                                    (const void *)aLog->getTblMetaLogBodyPtr(),
-                                                   aLog->getTblMetaLogBodySize())
+                                                   aLog->getTblMetaLogBodySize(),
+                                                   aLog->getRecordSN())
                       != IDE_SUCCESS );
         }
         else if ( sLogType == SMI_LT_DDL_QUERY_STRING )
         {
             sDDLStmtMeta = aLog->getDDLStmtMeta();
 
-            IDE_TEST( mTransTbl->setDDLStmtMetaLog( sTID, 
+            IDE_TEST( mTransTbl->setDDLStmtMetaLog( aTID,
                                                     sDDLStmtMeta,
                                                     (const void *)aLog->getDDLStmtMetaLogBodyPtr(),
                                                     aLog->getDDLStmtMetaLogBodySize() )
@@ -1646,23 +1631,23 @@ IDE_RC rpxReplicator::addXLog( smiLogRec             * aLog,
         {
             /*
              * PROJ-1705 RP
-             * mtdValueë¡œ ì „ì†¡í•  ìˆ˜ ìˆë„ë¡ mtdValueLenì •ë³´ë¥¼ ì–»ëŠ”ë‹¤.
+             * mtdValue·Î Àü¼ÛÇÒ ¼ö ÀÖµµ·Ï mtdValueLenÁ¤º¸¸¦ ¾ò´Â´Ù.
              */
             if ( ( sLogType == SMI_LT_DISK_CHANGE ) ||
-                 ( sChangeLogType == SMI_CHANGE_DRDB_LOB_CURSOR_OPEN ) ) // Disk Lobì˜ ê²½ìš° PK valueë¥¼ mtdValueë¡œ ë³€í™˜í•œë‹¤.
+                 ( sChangeLogType == SMI_CHANGE_DRDB_LOB_CURSOR_OPEN ) ) // Disk LobÀÇ °æ¿ì PK value¸¦ mtdValue·Î º¯È¯ÇÑ´Ù.
             {
                 IDE_TEST( makeMtdValue( sLogAnlz, aMetaItem ) != IDE_SUCCESS );
                 sNeedInitMtdValueLen = ID_TRUE;
             }
 
-            if ( mTransTbl->getBeginFlag( sTID ) == ID_FALSE )
+            if ( mTransTbl->getBeginFlag( aTID ) == ID_FALSE )
             {
-                mTransTbl->setBeginFlag( sTID, ID_TRUE );
-                /* senderê°€ mBeginSNì„ setí•˜ê³  senderê°€ ì½ìœ¼ë¯€ë¡œ
-                 * mBeginSNì„ ì½ì„ ë•Œ lockì„ ì•ˆ ì¡ì•„ë„ ë¨
+                mTransTbl->setBeginFlag( aTID, ID_TRUE );
+                /* sender°¡ mBeginSNÀ» setÇÏ°í sender°¡ ÀĞÀ¸¹Ç·Î
+                 * mBeginSNÀ» ÀĞÀ» ¶§ lockÀ» ¾È Àâ¾Æµµ µÊ
                  */
                 // BUG-17725
-                sLogAnlz->mSN = mTransTbl->getTrNode( sTID )->mBeginSN;
+                sLogAnlz->mSN = mTransTbl->getTrNode( aTID )->mBeginSN;
                 IDE_DASSERT( sLogAnlz->mSN != SM_SN_NULL );
             }
 
@@ -1679,7 +1664,7 @@ IDE_RC rpxReplicator::addXLog( smiLogRec             * aLog,
 
                         case RP_REPLICATIED_TRNAS_GROUP_SEND:
 
-                            sLogAnlz->setSendTransID( mAheadAnalyzer->getReplicatedTransactionGroupTID( sTID ) );
+                            sLogAnlz->setSendTransID( mAheadAnalyzer->getReplicatedTransactionGroupTID( aTID ) );
                             IDE_TEST( sendXLog( sLogAnlz ) != IDE_SUCCESS );
                             break;
 
@@ -1708,18 +1693,18 @@ IDE_RC rpxReplicator::addXLog( smiLogRec             * aLog,
                     break;
 
                 case RP_COLLECT_BEGIN_SN_ON_ADD_XLOG :
-                    // Failback Slaveê°€ Committed Transactionì˜ Begin SNì„ ìˆ˜ì§‘í•œë‹¤.
+                    // Failback Slave°¡ Committed TransactionÀÇ Begin SNÀ» ¼öÁıÇÑ´Ù.
                     if ( sLogAnlz->mType == RP_X_COMMIT )
                     {
-                        IDE_TEST( addLastSNEntry( aSNPool,
-                                                  mTransTbl->getTrNode( sTID )->mBeginSN,
-                                                  aSNList )
+                        IDE_TEST( rpcManager::addLastSNEntry( aSNPool,
+                                                              mTransTbl->getTrNode( aTID )->mBeginSN,
+                                                              aSNList )
                                   != IDE_SUCCESS );
                     }
                     break;
 
                 case RP_SEND_SYNC_PK_ON_ADD_XLOG :
-                    // Failback Slaveê°€ Incremental Syncì— í•„ìš”í•œ Primary Keyë¥¼ ì „ì†¡í•œë‹¤.
+                    // Failback Slave°¡ Incremental Sync¿¡ ÇÊ¿äÇÑ Primary Key¸¦ Àü¼ÛÇÑ´Ù.
                     IDE_TEST( addXLogSyncPK( aMetaItem, sLogAnlz )
                               != IDE_SUCCESS );
                     break;
@@ -1732,27 +1717,27 @@ IDE_RC rpxReplicator::addXLog( smiLogRec             * aLog,
     else
     {
         /* BUG-23195
-         * SMI_LT_NULL && SMI_CHANGE_NULL ì¸ ê²½ìš°ì—ë„
-         * Implicit Savepointê°€ ì„¤ì •ë˜ì–´ ìˆìœ¼ë©´
-         * (1) Begin Flagê°€ ë¯¸ì„¤ì •ë˜ì–´ ìˆìœ¼ë©´ Begin Flagë¥¼ ì„¤ì •í•˜ê³ ,
-         * (2) Implicit Savepoint XLog ì „ì†¡í•©ë‹ˆë‹¤.
+         * SMI_LT_NULL && SMI_CHANGE_NULL ÀÎ °æ¿ì¿¡µµ
+         * Implicit Savepoint°¡ ¼³Á¤µÇ¾î ÀÖÀ¸¸é
+         * (1) Begin Flag°¡ ¹Ì¼³Á¤µÇ¾î ÀÖÀ¸¸é Begin Flag¸¦ ¼³Á¤ÇÏ°í,
+         * (2) Implicit Savepoint XLog Àü¼ÛÇÕ´Ï´Ù.
          */
         if ( sLogAnlz->mImplSPDepth != SMI_STATEMENT_DEPTH_NULL )
         {
-            if ( mTransTbl->getBeginFlag( sTID ) == ID_FALSE )
+            if ( mTransTbl->getBeginFlag( aTID ) == ID_FALSE )
             {
-                mTransTbl->setBeginFlag( sTID, ID_TRUE );
-                /* senderê°€ mBeginSNì„ setí•˜ê³  senderê°€ ì½ìœ¼ë¯€ë¡œ
-                 * mBeginSNì„ ì½ì„ ë•Œ lockì„ ì•ˆ ì¡ì•„ë„ ë¨
+                mTransTbl->setBeginFlag( aTID, ID_TRUE );
+                /* sender°¡ mBeginSNÀ» setÇÏ°í sender°¡ ÀĞÀ¸¹Ç·Î
+                 * mBeginSNÀ» ÀĞÀ» ¶§ lockÀ» ¾È Àâ¾Æµµ µÊ
                  */
                 // BUG-17725
-                sLogAnlz->mSN = mTransTbl->getTrNode(sTID)->mBeginSN;
+                sLogAnlz->mSN = mTransTbl->getTrNode(aTID)->mBeginSN;
                 IDE_DASSERT( sLogAnlz->mSN != SM_SN_NULL );
             }
 
             if ( aAction == RP_SEND_XLOG_ON_ADD_XLOG )
             {
-                IDE_TEST( addXLogImplSVP( sTID,
+                IDE_TEST( addXLogImplSVP( aTID,
                                           sLogAnlz->mSN,
                                           sLogAnlz->mImplSPDepth )
                           != IDE_SUCCESS );
@@ -1760,38 +1745,39 @@ IDE_RC rpxReplicator::addXLog( smiLogRec             * aLog,
         }
     }
 
-    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
-     * DDL Transactionì´ Commitë˜ë©´,
-     * Table Meta Log Recordë¥¼ ë°˜ì˜í•˜ê³  Handshakeë¥¼ ìˆ˜í–‰í•œë‹¤.
+    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
+     * DDL TransactionÀÌ CommitµÇ¸é,
+     * Table Meta Log Record¸¦ ¹İ¿µÇÏ°í Handshake¸¦ ¼öÇàÇÑ´Ù.
      */
     if ( ( sLogAnlz->mType == RP_X_COMMIT ) &&
-         ( mTransTbl->isDDLTrans( sTID ) == ID_TRUE ) &&
-         ( mTransTbl->existItemMeta( sTID ) == ID_TRUE ) )
+         ( mTransTbl->isDDLTrans( aTID ) == ID_TRUE ) &&
+         ( mTransTbl->existItemMeta( aTID ) == ID_TRUE ) )
     {
-        // Failback Slaveì—ì„œ Failback ì „ì— DDLì„ ìˆ˜í–‰í•˜ë©´ ì•ˆ ëœë‹¤.
+        // Failback Slave¿¡¼­ Failback Àü¿¡ DDLÀ» ¼öÇàÇÏ¸é ¾È µÈ´Ù.
         IDE_ASSERT( aAction == RP_SEND_XLOG_ON_ADD_XLOG );
 
-        if ( mTransTbl->existDDLStmtMetaLog( sTID ) == ID_TRUE )
+        if ( mTransTbl->existDDLStmtMetaLog( aTID ) == ID_TRUE )
         {
             IDE_TEST( rpcDDLASyncManager::ddlASynchronization( mSender,
-                                                               sTID,
+                                                               aTID,
                                                                aLog->getRecordSN() ) 
                       != IDE_SUCCESS );
 
-            mTransTbl->removeDDLStmtMetaLog( sTID );
+            mTransTbl->removeDDLStmtMetaLog( aTID );
         }
 
         if ( mSender->checkInterrupt() == RP_INTR_NONE )
         {
-            IDE_TEST( applyTableMetaLog( sTID,
-                                         mTransTbl->getTrNode( sTID )->mBeginSN,
-                                         aLog->getRecordSN() )
+            IDE_TEST( applyTableMetaLog( aTID,
+                                         mTransTbl->getTrNode( aTID )->mBeginSN,
+                                         aLog->getRecordSN(),
+                                         &sNeedHandshake )
                       != IDE_SUCCESS );
         }
 
         /* PROJ-2563
-         * ë§Œì¼ V6í”„ë¡œí† ì½œì„ ì‚¬ìš©í•  ë•Œ,
-         * DDL ìˆ˜í–‰ í›„ LOB column ì´ í¬í•¨ë˜ì–´ ìˆë‹¤ë©´ ì‹œì‘ì„ ì‹¤íŒ¨í•´ì•¼í•œë‹¤.
+         * ¸¸ÀÏ V6ÇÁ·ÎÅäÄİÀ» »ç¿ëÇÒ ¶§,
+         * DDL ¼öÇà ÈÄ LOB column ÀÌ Æ÷ÇÔµÇ¾î ÀÖ´Ù¸é ½ÃÀÛÀ» ½ÇÆĞÇØ¾ßÇÑ´Ù.
          */
         if ( rpdMeta::isUseV6Protocol( &( mMeta->mReplication ) ) == ID_TRUE )
         {
@@ -1803,9 +1789,10 @@ IDE_RC rpxReplicator::addXLog( smiLogRec             * aLog,
             /* do nothing */
         }
 
-        if ( mSender->checkInterrupt() == RP_INTR_NONE )
+        if ( (mSender->checkInterrupt() == RP_INTR_NONE) &&
+             (sNeedHandshake == ID_TRUE) )
         {
-            IDE_TEST( mSender->handshakeWithoutReconnect() != IDE_SUCCESS );
+            IDE_TEST( mSender->handshakeWithoutReconnect( aTID ) != IDE_SUCCESS );
         }
     }
 
@@ -1823,10 +1810,10 @@ IDE_RC rpxReplicator::addXLog( smiLogRec             * aLog,
         //------------------------------------------------------//
         // remove in transaction table
         //------------------------------------------------------//
-        mTransTbl->removeTrans(sTID);
+        mTransTbl->removeTrans(aTID);
     }
 
-    /* BUG-28564 pk column countë³€ìˆ˜ ì´ˆê¸°í™” */
+    /* BUG-28564 pk column countº¯¼ö ÃÊ±âÈ­ */
     sLogAnlz->resetVariables( sNeedInitMtdValueLen, sTableColCount );
     sNeedInitMtdValueLen = ID_FALSE;
 
@@ -1847,13 +1834,13 @@ IDE_RC rpxReplicator::addXLog( smiLogRec             * aLog,
 
     IDE_ERRLOG( IDE_RP_0 );
     IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_SENDER_ADD_XLOG,
-                              sTID,
+                              aTID,
                               aLog->getRecordSN(),
                               sLogAnlz->mType,
                               sLogType,
                               sChangeLogType ) );
 
-    // BUGBUG : sLogAnlz->analyzeì—ì„œ í• ë‹¹í•œ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•´ì•¼ í•©ë‹ˆë‹¤.
+    // BUGBUG : sLogAnlz->analyze¿¡¼­ ÇÒ´çÇÑ ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇØ¾ß ÇÕ´Ï´Ù.
 
     return IDE_FAILURE;
 }
@@ -1863,15 +1850,15 @@ IDE_RC rpxReplicator::addXLog( smiLogRec             * aLog,
  */
 IDE_RC rpxReplicator::applyTableMetaLog( smTID aTID,
                                          smSN  aDDLBeginSN,
-                                         smSN  aDDLCommitSN )
+                                         smSN  aDDLCommitSN,
+                                         idBool * aOutNeedHandshake )
 {
     smiTrans           sTrans;
     SInt               sStage = 0;
     idBool             sIsTxBegin = ID_FALSE;
     smiStatement     * spRootStmt;    
     smiStatement       sSmiStmt;
-    smSCN              sDummySCN;
-    UInt               sFlag = RPU_ISOLATION_LEVEL |
+    UInt               sFlag = SMI_ISOLATION_NO_PHANTOM |
                                SMI_TRANSACTION_NORMAL |
                                SMI_TRANSACTION_REPL_NONE |
                                SMI_COMMIT_WRITE_NOWAIT;
@@ -1880,11 +1867,22 @@ IDE_RC rpxReplicator::applyTableMetaLog( smTID aTID,
     PDL_Time_Value     sTimeValue;
     smOID              sOldTableOID = SM_OID_NULL;
     smOID              sNewTableOID = SM_OID_NULL;
+    rpdMeta            sTempMeta;
+    rpdMeta            sPreviousMeta;
+    rpdMeta            sPostMeta;
+    UInt               sLockWaitSec = 10;
+    idBool             sIsUpdated = ID_FALSE;
+    idBool             sIsMetaUpdated = ID_FALSE;
+    idBool             sNeedRehandshake = ID_FALSE;
 
     sTimeValue.initialize( 1, 0 );
+    sTempMeta.initialize();
+    sPreviousMeta.initialize();
+    sPostMeta.initialize();
+    IDE_TEST_RAISE(mSender->mCurrentType == RP_OFFLINE, ERR_OFFLINE_SENDER );
 
-    // BUG-24427 [RP] Network ì‘ì—… í›„, Meta Cacheë¥¼ ê°±ì‹ í•´ì•¼ í•©ë‹ˆë‹¤
-    // DDL ì „ì— ë°œìƒí•œ DMLì´ Standby Serverì— ë°˜ì˜ë˜ê¸°ë¥¼ ê¸°ë‹¤ë¦°ë‹¤.
+    // BUG-24427 [RP] Network ÀÛ¾÷ ÈÄ, Meta Cache¸¦ °»½ÅÇØ¾ß ÇÕ´Ï´Ù
+    // DDL Àü¿¡ ¹ß»ıÇÑ DMLÀÌ Standby Server¿¡ ¹İ¿µµÇ±â¸¦ ±â´Ù¸°´Ù.
     while ( aDDLBeginSN > mSender->getLastProcessedSN() )
     {
         IDE_TEST( mSender->addXLogKeepAlive() != IDE_SUCCESS );
@@ -1897,10 +1895,48 @@ IDE_RC rpxReplicator::applyTableMetaLog( smTID aTID,
     IDE_TEST( sTrans.initialize() != IDE_SUCCESS );
     sStage = 1;
 
-    IDE_TEST( sTrans.begin( &spRootStmt, NULL, sFlag, SMX_NOT_REPL_TX_ID )
+    IDE_TEST( sTrans.begin( &spRootStmt, NULL, sFlag, RP_UNUSED_RECEIVER_INDEX )
               != IDE_SUCCESS );
     sIsTxBegin = ID_TRUE;
     sStage = 2;
+    IDE_TEST( sTrans.setReplTransLockTimeout( sLockWaitSec ) != IDE_SUCCESS );
+
+    for(;;)
+    {
+        // Table Meta¿Í Table Meta Cache¸¦ °»½ÅÇÑ´Ù.
+        IDE_TEST( sSmiStmt.begin( NULL,
+                                  spRootStmt,
+                                  SMI_STATEMENT_NORMAL |
+                                  SMI_STATEMENT_MEMORY_CURSOR)
+                  != IDE_SUCCESS );
+        sStage = 3;
+
+        if( sTempMeta.build(&sSmiStmt,
+                             mSender->getRepName(),
+                             ID_TRUE,
+                             RP_META_BUILD_OLD,
+                             SMI_TBSLV_DDL_DML )
+                  != IDE_SUCCESS )
+        {
+            IDE_TEST(ideIsRetry() != IDE_SUCCESS);
+
+            IDE_CLEAR();
+
+            IDE_TEST( sSmiStmt.end(SMI_STATEMENT_RESULT_FAILURE)
+                      != IDE_SUCCESS );
+            sStage = 2;
+
+            // retry.
+            RP_DBG_PRINTLINE();
+            continue;
+        }
+        break;
+    }
+
+    /* DDL ·Î±×¸¦ Àû¿ëÇÏ±â ÀüÀÇ ¸ŞÅ¸¸¦ sPreviousMeta·Î º¹»çÇØ ³õ´Â´Ù. */
+    mMeta->copyMeta(&sPreviousMeta); 
+    /* ½Å±Ô·Î buildÇÑ old meat¸¦ SenderÀÇ ¸ŞÅ¸¿¡ Àû¿ëÇÑ´Ù. */ 
+    IDE_TEST(sTempMeta.copyMeta(mMeta) != IDE_SUCCESS);
 
     while ( mTransTbl->existItemMeta( aTID ) == ID_TRUE )
     {
@@ -1909,41 +1945,87 @@ IDE_RC rpxReplicator::applyTableMetaLog( smTID aTID,
         sOldTableOID = sItemMetaEntry->mItemMeta.mOldTableOID;
         sNewTableOID = sItemMetaEntry->mItemMeta.mTableOID;
 
-       // Table Metaì™€ Table Meta Cacheë¥¼ ê°±ì‹ í•œë‹¤.
-        IDE_TEST( sSmiStmt.begin( NULL,
-                                  spRootStmt,
-                                  SMI_STATEMENT_NORMAL |
-                                  SMI_STATEMENT_MEMORY_CURSOR)
-                  != IDE_SUCCESS );
-        sStage = 3;
-
         IDE_TEST( updateMeta( &sSmiStmt,
+                              &sTempMeta,
                               sItemMetaEntry,
                               sOldTableOID,
                               sNewTableOID,
-                              aDDLCommitSN )
+                              aDDLCommitSN,
+                              &sIsUpdated )
                   != IDE_SUCCESS );
-
+        if ( sIsUpdated == ID_TRUE )
+        {
+            sIsMetaUpdated = ID_TRUE;
+        }
         mTransTbl->removeFirstItemMetaEntry( aTID );
-
-        IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
-        sStage = 2;
     }
 
+    IDE_TEST( mSender->allocAndRebuildNewSentLogCount() != IDE_SUCCESS );
+
+    if( sIsMetaUpdated == ID_TRUE )
+    {
+        /* DDL ·Î±×·Î ÀÎÇÏ¿© mMeta°¡ º¯°æµÇ¾ú´Ù¸é ÇÚµå½¦ÀÌÅ©¸¦ ´Ù½Ã ÇØ¾ßÇÑ´Ù. */
+        sNeedRehandshake = ID_TRUE;
+    }
+    else
+    {
+        /* mMeta°¡ DDL·Î±×·Î º¯°æµÇÁö ¾Ê¾Ò´õ¶óµµ ½Ç½Ã°£À¸·Î old¿¡ ³»¿ëÀ» ¹Ù²Ù´Â DDLÀ» Á¡°ËÇÏ±â À§ÇØ¼­ 
+         * receiver¿Í ÇÚµå½¦ÀÌÅ©¸¦ ½Ã¹Ä·¹ÀÌ¼Ç ÇØ¼­ Ã¼Å©ÇÕ´Ï´Ù. 
+         * ÀÌÀü¿¡ sender°¡ receiver¿Í ÇÚµå½¦ÀÌÅ© ¼º°øÇÑ senderÀÇ meta(sPreviousMeta)¸¦ receiver meta·Î »ç¿ëÇÑ´Ù.
+         * SenderÀÇ »õ·Î ºôµåµÈ meta¸¦ sPostMeta·Î º¹»çÇÏ¿© »ç¿ëÇÑ´Ù. 
+         * °¢°¢ÀÇ meta¸¦ ³Ö°í ÇÚµå½¦ÀÌÅ©¿¡¼­ »ç¿ëÇÏ´Â equals ÇÔ¼ö¸¦ »ç¿ëÇÏ¿© º¸¼öÀûÀ¸·Î Ã¼Å©ÇÑ´Ù.  
+         * sqlapply¿Í itemcountdiff´Â ala,jdbcadapter¸¦ °í·ÁÇÏ°í º¸¼öÀûÀ¸·Î 0À¸·Î ¼³Á¤ÇÏ¿© Ã¼Å©ÇÑ´Ù. 
+         * ÇÚµå ½¦ÀÌÅ©°¡ ÇÊ¿äÇÑÁö °¡»ó ÇÚµå½¦ÀÌÅ©¸¦ ÅëÇØ ºñ±³ÇÏ°í equals°¡ ½ÇÆĞÇÑ´Ù¸é ÇÚµå ½¦ÀÌÅ©¸¦ ´Ù½Ã ÇØ¾ßÇÑ´Ù.
+         */
+        IDE_TEST(mMeta->copyMeta(&sPostMeta) != IDE_SUCCESS);
+        sPreviousMeta.changeToRemoteMetaForSimulateHandshake();
+        if( rpdMeta::equals( &sSmiStmt,
+                             ID_FALSE,          /* aIsLocalReplication */
+                             0,                 /* aSqlApplyEnable(UInt) */
+                             0,                 /* aItemCountDiffEnable(UInt) */
+                             &sPostMeta,        /* aRemoteMeta, sender */
+                             &sPreviousMeta )   /* aLocalMeta, receiver */
+            == IDE_SUCCESS )
+        {
+            sNeedRehandshake = ID_FALSE;
+        }
+        else
+        {
+            sNeedRehandshake = ID_TRUE;
+        }
+    }
+
+    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    sStage = 2;
+
     sStage = 1;
-    IDE_TEST( sTrans.commit( &sDummySCN ) != IDE_SUCCESS );
+    IDE_TEST( sTrans.commit() != IDE_SUCCESS );
+
     sIsTxBegin = ID_FALSE;
 
     sStage = 0;
     IDE_TEST( sTrans.destroy( NULL ) != IDE_SUCCESS );
-    
+
     RP_LABEL( NORMAL_EXIT );
+
+    sTempMeta.finalize();
+    sPreviousMeta.finalize();
+    sPostMeta.finalize();
+
+    *aOutNeedHandshake = sNeedRehandshake;
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION_END;
+    IDE_EXCEPTION( ERR_OFFLINE_SENDER );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG,
+        		"A DDL Log cannot process in offline sender" ) );
+    }
 
-    // ì´í›„ Senderê°€ ì¢…ë£Œë˜ë¯€ë¡œ, Table Meta Cacheë¥¼ ë³µì›í•˜ì§€ ì•ŠëŠ”ë‹¤
+    IDE_EXCEPTION_END;
+    ideLog::log(IDE_RP_0,"[Sender] Failed to apply table meta log ");
+    IDE_ERRLOG(IDE_RP_0);
+    // ÀÌÈÄ Sender°¡ Á¾·áµÇ¹Ç·Î, Table Meta Cache¸¦ º¹¿øÇÏÁö ¾Ê´Â´Ù
     IDE_PUSH();
 
     switch ( sStage )
@@ -1963,7 +2045,9 @@ IDE_RC rpxReplicator::applyTableMetaLog( smTID aTID,
         default:
             break;
     }
-
+    sTempMeta.finalize();
+    sPreviousMeta.finalize();
+    sPostMeta.finalize();
     IDE_POP();
 
     return IDE_FAILURE;
@@ -1990,9 +2074,26 @@ IDE_RC rpxReplicator::insertNewTableInfo( smiStatement     * aSmiStmt,
     return IDE_FAILURE;
 }
 
-IDE_RC rpxReplicator::deleteOldTableInfo( smiStatement * aSmiStmt, smOID aOldTableOID )
+IDE_RC rpxReplicator::deleteOldTableInfo( smiStatement     * aSmiStmt, 
+                                          rpdItemMetaEntry * aItemMetaEntry,
+                                          smOID              aOldTableOID )
 {
-    IDE_TEST( mMeta->deleteOldTableInfo( aSmiStmt, aOldTableOID ) != IDE_SUCCESS );
+    idBool         sIsUpdateOldItem = ID_FALSE;
+
+    if ( mSender->mCurrentType != RP_OFFLINE )
+    {
+        sIsUpdateOldItem = ID_TRUE;
+    }
+    else
+    {
+        sIsUpdateOldItem = ID_FALSE;
+    }
+ 
+   IDE_TEST( mMeta->deleteOldTableInfo( aSmiStmt,
+                                         (const void *)aItemMetaEntry->mLogBody,
+                                         aOldTableOID,
+                                         sIsUpdateOldItem )
+              != IDE_SUCCESS );
 
     IDE_TEST( mSender->allocAndRebuildNewSentLogCount() != IDE_SUCCESS );
 
@@ -2014,6 +2115,7 @@ IDE_RC rpxReplicator::updateOldTableInfo( smiStatement     * aSmiStmt,
     idBool         sIsUpdateOldItem = ID_FALSE;
 
     IDE_TEST( mMeta->searchTable( &sMetaItem, aOldTableOID ) != IDE_SUCCESS );
+    
     IDU_FIT_POINT_RAISE( "rpxReplicator::updateOldTableInfo::Erratic::rpERR_ABORT_RP_META_NO_SUCH_DATA",
                          ERR_NOT_FOUND_TABLE );
     IDE_TEST_RAISE( sMetaItem == NULL,  ERR_NOT_FOUND_TABLE );
@@ -2027,7 +2129,7 @@ IDE_RC rpxReplicator::updateOldTableInfo( smiStatement     * aSmiStmt,
         sIsUpdateOldItem = ID_FALSE;
     }
 
-    /* PROJ-1915 off-line senderì˜ ê²½ìš° Metaë¥¼ ê°±ì‹ í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+    /* PROJ-1915 off-line senderÀÇ °æ¿ì Meta¸¦ °»½ÅÇÏÁö ¾Ê´Â´Ù. */
     IDE_TEST( mMeta->updateOldTableInfo( aSmiStmt,
                                          sMetaItem,
                                          &( aItemMetaEntry->mItemMeta ),
@@ -2050,60 +2152,158 @@ IDE_RC rpxReplicator::updateOldTableInfo( smiStatement     * aSmiStmt,
 
     return IDE_FAILURE;
 }
-
-rpdTableMetaType rpxReplicator::getTableMetaType( smOID aOldTableOID, smOID aNewTableOID )
+static IDE_RC isAlreadyDroppedItemFromReplicationMeta( smiStatement * aSmiStmt,
+                                                       SChar        * aRepName,
+                                                       smOID          aTableOID,
+                                                       idBool       * aOutIsDropped )
 {
-    rpdTableMetaType sType = RP_META_NONE_ITEM;
+    idBool             sIsExist = ID_FALSE;
 
-    if ( ( aOldTableOID == SM_OID_NULL ) && ( aNewTableOID != SM_OID_NULL ) )
+    IDE_TEST(rpdMeta::isExistItemInLastMeta(aSmiStmt,
+                                            aRepName,
+                                            aTableOID,
+                                            &sIsExist) != IDE_SUCCESS);
+
+    if ( sIsExist == ID_TRUE )
     {
-        sType = RP_META_INSERT_ITEM;    
-    }
-    else if ( ( aOldTableOID != SM_OID_NULL ) && ( aNewTableOID == SM_OID_NULL ) )
-    {
-        sType = RP_META_DELETE_ITEM;
-    }
-    else if ( ( aOldTableOID != SM_OID_NULL ) && ( aNewTableOID != SM_OID_NULL ) )
-    {
-        sType = RP_META_UPDATE_ITEM;
+        *aOutIsDropped = ID_FALSE;
     }
     else
     {
-        sType = RP_META_NONE_ITEM;
+        IDE_TEST(rpdCatalog::isExistInReplItemsHistory( aSmiStmt,
+                                                      aRepName,
+                                                      aTableOID,
+                                                      &sIsExist ) != IDE_SUCCESS);
+        if ( sIsExist != ID_TRUE )
+        {
+            *aOutIsDropped = ID_TRUE;
+        }
+        else
+        {
+            *aOutIsDropped = ID_FALSE;
+        }
     }
+    return IDE_SUCCESS;
 
-    return sType;
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+static idBool isAlreadyInsertedToReplicationMeta( rpdMeta *aMeta, smOID  aTableOID )
+{
+    rpdMetaItem  *     sMetaItem = NULL;
+    idBool             sResult = ID_FALSE;
+
+    IDE_ASSERT( aMeta->searchTable( &sMetaItem, aTableOID ) == IDE_SUCCESS );
+    if ( sMetaItem == NULL )
+    {
+        sResult = ID_FALSE;
+    }
+    else
+    {
+        sResult = ID_TRUE;
+    }
+    return sResult;
+}
+
+static idBool isAlreadyAppliedToReplicationMeta( rpdMeta *aMeta, smOID  aTableOID, smSN aLogSN )
+{
+    rpdMetaItem  *     sMetaItem = NULL;
+    idBool             sResult = ID_FALSE;
+
+    IDE_ASSERT( aMeta->searchTable( &sMetaItem, aTableOID ) == IDE_SUCCESS );
+    if ( sMetaItem != NULL )
+    {
+        if ( sMetaItem->mItem.mInvalidMaxSN < aLogSN )
+        {
+            sResult = ID_FALSE;
+        }
+        else
+        {
+            sResult = ID_TRUE;
+        }
+    }
+    else
+    {
+        sResult = ID_TRUE; /* already deleted */
+    }
+    return sResult;
 }
 
 IDE_RC rpxReplicator::updateMeta( smiStatement     * aSmiStmt,
+                                  rpdMeta          * aOldMeta,
                                   rpdItemMetaEntry * aItemMetaEntry,
                                   smOID              aOldTableOID,
                                   smOID              aNewTableOID,
-                                  smSN               aDDLCommitSN )
+                                  smSN               aDDLCommitSN,
+                                  idBool           * aOutIsUpdated )
 {
-    switch( getTableMetaType( aOldTableOID, aNewTableOID ) )
+    idBool sIsAlreadyDropped = ID_FALSE;
+    idBool sIsUpdated = ID_FALSE;
+    switch( rpdMeta::getTableMetaType( aOldTableOID, aNewTableOID ) )
     {
         case RP_META_INSERT_ITEM:
-            IDE_TEST( insertNewTableInfo( aSmiStmt, 
-                                          aItemMetaEntry,
-                                          aDDLCommitSN ) 
-                      != IDE_SUCCESS );
+            if ( isAlreadyInsertedToReplicationMeta(aOldMeta, aNewTableOID) != ID_TRUE )
+            {
+                IDE_TEST(isAlreadyDroppedItemFromReplicationMeta(aSmiStmt,
+                                                                 mSender->getRepName(),
+                                                                 aNewTableOID,
+                                                                 &sIsAlreadyDropped) != IDE_SUCCESS);
+                if ( sIsAlreadyDropped != ID_TRUE )
+                {
+                    IDE_TEST( insertNewTableInfo( aSmiStmt,
+                                                  aItemMetaEntry,
+                                                  aDDLCommitSN )
+                              != IDE_SUCCESS );
+                    sIsUpdated = ID_TRUE;
+                }
+                else
+                {
+                    /* already altered(truncate, alter repl drop, alter column..., oid change)
+                     * replication item ddl log, skip : do nothing */
+                }
+            }
+            else
+            {
+                /* already applied this ddl log, skip : do nothing */
+            }
             break;
         case RP_META_DELETE_ITEM:
-            IDE_TEST( deleteOldTableInfo( aSmiStmt, aOldTableOID ) != IDE_SUCCESS );
+            if ( isAlreadyAppliedToReplicationMeta(aOldMeta, aOldTableOID, aItemMetaEntry->mLogSN) != ID_TRUE )
+            {
+                IDE_TEST( deleteOldTableInfo( aSmiStmt,
+                                              aItemMetaEntry,
+                                              aOldTableOID )
+                          != IDE_SUCCESS );
+                sIsUpdated = ID_TRUE;
+            }
+            else
+            {
+                /* already applied this ddl log, skip : do nothing */
+            }
             break;
         case RP_META_UPDATE_ITEM:
-            IDE_TEST( updateOldTableInfo( aSmiStmt,
-                                          aItemMetaEntry,
-                                          aOldTableOID,
-                                          aNewTableOID,
-                                          aDDLCommitSN ) 
-                         != IDE_SUCCESS );
+            if ( isAlreadyAppliedToReplicationMeta(aOldMeta, aOldTableOID, aItemMetaEntry->mLogSN) != ID_TRUE )
+            {
+                IDE_TEST( updateOldTableInfo( aSmiStmt,
+                                              aItemMetaEntry,
+                                              aOldTableOID,
+                                              aNewTableOID,
+                                              aDDLCommitSN )
+                             != IDE_SUCCESS );
+                sIsUpdated = ID_TRUE;
+            }
+            else
+            {
+                /* already applied this ddl log, skip : do nothing */
+            }
             break;
         default:
             IDE_DASSERT( 0 );
+            break;
     }
-
+    *aOutIsUpdated = sIsUpdated;
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -2118,9 +2318,9 @@ IDE_RC rpxReplicator::checkUsefulBySenderTypeNStatus(
     idBool                * aIsOk,
     RP_ACTION_ON_ADD_XLOG   aAction,
     iduMemPool            * aSNPool,
-    iduList               * aSNList )
+    iduList               * aSNList,
+    smTID                   aTID)
 {
-    smTID        sTID;
     smiLogType   sLogType;
     rpxSNEntry * sSNEntry = NULL;
 
@@ -2130,17 +2330,18 @@ IDE_RC rpxReplicator::checkUsefulBySenderTypeNStatus(
         IDE_ASSERT( aSNPool != NULL );
     }
 
-    sTID     = aLog->getTransID();
     sLogType = aLog->getType();
     *aIsOk   = ID_TRUE;
      
-    // Logì— ëŒ€í•œ ìœ íš¨ì„±ì„ ê²€ì‚¬í•œë‹¤.
+    // Log¿¡ ´ëÇÑ À¯È¿¼ºÀ» °Ë»çÇÑ´Ù.
     switch ( mSender->mCurrentType )
     {
         case RP_RECOVERY:
-            if ( aLog->needReplRecovery() == ID_FALSE )
+            if ( ( aLog->needReplRecovery() == ID_FALSE ) &&
+                 ( ( aLog->needNormalReplicate() != ID_TRUE ) ||
+                   ( aLog->getType() != SMI_LT_TRANS_GROUPCOMMIT ) ) )
             {
-                //recovery flagê°€ ì„¤ì •ë˜ì–´ìˆëŠ”ì§€ í™•ì¸
+                //recovery flag°¡ ¼³Á¤µÇ¾îÀÖ´ÂÁö È®ÀÎ
                 *aIsOk = ID_FALSE;
                 break;
             }
@@ -2150,11 +2351,11 @@ IDE_RC rpxReplicator::checkUsefulBySenderTypeNStatus(
                 if ( mSender->mSNMapMgr->needRecoveryTx( aLog->getRecordSN() )
                      == ID_TRUE )
                 {
-                    // begin logëŠ” sn mapì—ì„œ recoveryí•´ì•¼ í•˜ëŠ” íŠ¸ëœì­ì…˜ì¸ì§€ í™•ì¸ í›„
-                    // ì²˜ë¦¬í•  ê²ƒì¸ì§€ ê²°ì •í•œë‹¤.
-                    // SN Mapì— ìˆëŠ” íŠ¸ëœì­ì…˜ë§Œ recoveryí•œë‹¤.
+                    // begin log´Â sn map¿¡¼­ recoveryÇØ¾ß ÇÏ´Â Æ®·£Àè¼ÇÀÎÁö È®ÀÎ ÈÄ
+                    // Ã³¸®ÇÒ °ÍÀÎÁö °áÁ¤ÇÑ´Ù.
+                    // SN Map¿¡ ÀÖ´Â Æ®·£Àè¼Ç¸¸ recoveryÇÑ´Ù.
                     IDE_TEST_RAISE( mTransTbl->insertTrans( mAllocator,
-                                                            sTID,
+                                                            aTID,
                                                             aLog->getRecordSN(),
                                                             &mChainedValuePool )
                                     != IDE_SUCCESS, ERR_TRANSTABLE_INSERT );
@@ -2186,7 +2387,7 @@ IDE_RC rpxReplicator::checkUsefulBySenderTypeNStatus(
             if ( aLog->isBeginLog() == ID_TRUE )
             {
                 IDE_TEST_RAISE( mTransTbl->insertTrans( mAllocator,
-                                                        sTID,
+                                                        aTID,
                                                         aLog->getRecordSN(),
                                                         &mChainedValuePool )
                                 != IDE_SUCCESS, ERR_TRANSTABLE_INSERT );
@@ -2194,13 +2395,16 @@ IDE_RC rpxReplicator::checkUsefulBySenderTypeNStatus(
             break;
 
         case RP_PARALLEL:
+        case RP_XLOGFILE_FAILBACK_SLAVE:
             if ( aLog->needNormalReplicate() == ID_FALSE )
             {
                 if ( ( ( mSender->getRole() == RP_ROLE_PROPAGATION ) ||
                        ( mSender->getRole() == RP_ROLE_ANALYSIS_PROPAGATION ) ) && 
                      ( isReplPropagableLog( aLog ) == ID_TRUE ) )
                 {
-                        /*do nothing : to do analysis for propagation*/
+                    /*do nothing : to do analysis for propagation*/
+                    /* consistent mode¿¡¼­´Â Áö¿øÇÏÁö ¾Ê´Â´Ù. */
+                    IDE_DASSERT( mSender->mCurrentType != RP_XLOGFILE_FAILBACK_SLAVE ); 
                 }
                 else
                 {
@@ -2209,25 +2413,25 @@ IDE_RC rpxReplicator::checkUsefulBySenderTypeNStatus(
                 }
             }
 
-            // ìì‹ ì´ ì²˜ë¦¬í•˜ëŠ” Transactionì˜ Beginì´ë©´, Transaction Tableì— ë“±ë¡í•œë‹¤.
+            // ÀÚ½ÅÀÌ Ã³¸®ÇÏ´Â TransactionÀÇ BeginÀÌ¸é, Transaction Table¿¡ µî·ÏÇÑ´Ù.
             if ( aLog->isBeginLog() == ID_TRUE )
             {
                 /* PROJ-2543 Eager Replication Performance Enhancement 
-                   DDLì˜ ê²½ìš° Eager Modeì—ì„œ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë° insert Transë¥¼ í•˜ê³ 
-                   ì¶”í›„ì— ì§€ìš´ë‹¤. ì´ëŸ° ê²½ìš°, Senderê°€ ì•„ì§ DDL logë¥¼ ì²˜ë¦¬í•˜ëŠ” ë„ì¤‘,
-                   service threadê°€ ë‹¤ë¥¸ logë¥¼ ì²˜ë¦¬í•˜ì—¬ duplicateë˜ëŠ” ê²½ìš°ê°€ ìƒê¸°ë©° ì´ë¥¼
-                   ë°©ì§€í•˜ê¸° ìœ„í•´ DDLì˜ ê²½ìš° ì•„ì˜ˆ insertTransë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.*/
+                   DDLÀÇ °æ¿ì Eager Mode¿¡¼­ Áö¿øÇÏÁö ¾Ê´Âµ¥ insert Trans¸¦ ÇÏ°í
+                   ÃßÈÄ¿¡ Áö¿î´Ù. ÀÌ·± °æ¿ì, Sender°¡ ¾ÆÁ÷ DDL log¸¦ Ã³¸®ÇÏ´Â µµÁß,
+                   service thread°¡ ´Ù¸¥ log¸¦ Ã³¸®ÇÏ¿© duplicateµÇ´Â °æ¿ì°¡ »ı±â¸ç ÀÌ¸¦
+                   ¹æÁöÇÏ±â À§ÇØ DDLÀÇ °æ¿ì ¾Æ¿¹ insertTrans¸¦ ÇÏÁö ¾Ê´Â´Ù.*/
                 if ( ( sLogType != SMI_LT_DDL ) ||
                      ( ( sLogType == SMI_LT_DDL ) &&
                        ( mSender->getStatus() < RP_SENDER_FAILBACK_EAGER ) ) )
                 {
                     if ( aAction == RP_SEND_SYNC_PK_ON_ADD_XLOG )
                     {
-                        sSNEntry = searchSNEntry( aSNList, aLog->getRecordSN() );
+                        sSNEntry = rpcManager::searchSNEntry( aSNList, aLog->getRecordSN() );
 
                         if ( sSNEntry != NULL )
                         {
-                            removeSNEntry( aSNPool, sSNEntry );
+                            rpcManager::removeSNEntry( aSNPool, sSNEntry );
                         }
                         else
                         {
@@ -2241,7 +2445,7 @@ IDE_RC rpxReplicator::checkUsefulBySenderTypeNStatus(
                     }
 
                     IDE_TEST_RAISE( mTransTbl->insertTrans( mAllocator,
-                                                            sTID,
+                                                            aTID,
                                                             aLog->getRecordSN(),
                                                             &mChainedValuePool )
                                     != IDE_SUCCESS, ERR_TRANSTABLE_INSERT );
@@ -2258,14 +2462,14 @@ IDE_RC rpxReplicator::checkUsefulBySenderTypeNStatus(
             break;
 
         default:
-            // Sync, Quick, Sync_onlyëŠ” ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì§€ ì•Šì•„ì•¼í•¨
+            // Sync, Quick, Sync_only´Â ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏÁö ¾Ê¾Æ¾ßÇÔ
             *aIsOk = ID_FALSE;
             IDE_RAISE( ERR_ABNORMAL_TYPE );
             break;
     }
 
-    // Active Transactionì¸ì§€ ê²€ì‚¬í•œë‹¤.
-    if ( mTransTbl->isATrans( sTID ) != ID_TRUE )
+    // Active TransactionÀÎÁö °Ë»çÇÑ´Ù.
+    if ( mTransTbl->isATrans( aTID ) != ID_TRUE )
     {
         *aIsOk = ID_FALSE;
     }
@@ -2296,10 +2500,10 @@ IDE_RC rpxReplicator::checkUsefulLog( smiLogRec             * aLog,
                                       rpdMetaItem          ** aMetaItem,
                                       RP_ACTION_ON_ADD_XLOG   aAction,
                                       iduMemPool            * aSNPool,
-                                      iduList               * aSNList )
+                                      iduList               * aSNList,
+                                      smTID                   aTID )
 {
     smiLogType          sLogType;
-    smTID               sTID;
     smOID               sTableOID;
 
     RP_CREATE_FLAG_VARIABLE( IDV_OPTM_INDEX_RP_S_CHECK_USEFUL_LOG );
@@ -2324,34 +2528,39 @@ IDE_RC rpxReplicator::checkUsefulLog( smiLogRec             * aLog,
                                               aIsOk,
                                               aAction,
                                               aSNPool,
-                                              aSNList )
+                                              aSNList,
+                                              aTID )
               != IDE_SUCCESS );
 
-    //ì•ˆë³´ëŠ” ë¡œê·¸ì„
+    //¾Èº¸´Â ·Î±×ÀÓ
     IDE_TEST_CONT( *aIsOk == ID_FALSE, NORMAL_EXIT );
 
     sLogType  = aLog->getType();
-    sTID      = aLog->getTransID();
     sTableOID = aLog->getTableOID();
 
     IDE_TEST( getMetaItemByLogTypeAndTableOID( sLogType,
                                                sTableOID,
                                                aMetaItem )
               != IDE_SUCCESS );
-    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
-     * DDL Transactionì—ì„œ DML Log Recordë¥¼ ë¬´ì‹œí•œë‹¤.
+    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
+     * DDL Transaction¿¡¼­ DML Log Record¸¦ ¹«½ÃÇÑ´Ù.
      */
     switch ( sLogType )
     {
         case SMI_LT_TABLE_META :
         case SMI_LT_DDL_QUERY_STRING :
         case SMI_LT_TRANS_COMMIT :
+        case SMI_LT_TRANS_GROUPCOMMIT :
         case SMI_LT_TRANS_ABORT :
         case SMI_LT_TRANS_PREABORT :
+        case SMI_LT_XA_START_REQ :
+        case SMI_LT_XA_PREPARE_REQ :
+        case SMI_LT_XA_PREPARE :
+        case SMI_LT_XA_END :
             break;
 
         default :
-            if ( mTransTbl->isDDLTrans( sTID ) == ID_TRUE )
+            if ( mTransTbl->isDDLTrans( aTID ) == ID_TRUE )
             {
                 *aIsOk = ID_FALSE;
                 IDE_CONT( NORMAL_EXIT );
@@ -2366,19 +2575,15 @@ IDE_RC rpxReplicator::checkUsefulLog( smiLogRec             * aLog,
             if ( isDMLLog( aLog->getChangeType() ) != ID_TRUE )
             {
                 *aIsOk = ID_FALSE;
-                IDE_TEST( checkAndSendImplSVP( aLog ) != IDE_SUCCESS );
+                IDE_TEST( checkAndSendImplSVP( aLog, aTID ) != IDE_SUCCESS );
                 IDE_CONT( NORMAL_EXIT );
             }
 
-        case SMI_LT_TABLE_META :    // Table Meta Log Record
-            //-------------------------------------------------------------//
-            // check replicative Table
-            //-------------------------------------------------------------//
             if ( *aMetaItem != NULL )
             {
                 // PROJ-1602
-                // í˜„ì¬ ì½ê³  ìˆëŠ” ë¡œê·¸ëŠ” Restart SN ì´í›„ì˜ ë¡œê·¸ì´ë¯€ë¡œ,
-                // INVALID_MAX_SNì´ Restart SN ë³´ë‹¤ ì‘ìœ¼ë©´ ê³„ì† ì§„í–‰í•˜ê²Œ ë©ë‹ˆë‹¤.
+                // ÇöÀç ÀĞ°í ÀÖ´Â ·Î±×´Â Restart SN ÀÌÈÄÀÇ ·Î±×ÀÌ¹Ç·Î,
+                // INVALID_MAX_SNÀÌ Restart SN º¸´Ù ÀÛÀ¸¸é °è¼Ó ÁøÇàÇÏ°Ô µË´Ï´Ù.
                 if ( (*aMetaItem)->mItem.mInvalidMaxSN < aLog->getRecordSN() )
                 {
                     *aIsOk = ID_TRUE;
@@ -2391,12 +2596,12 @@ IDE_RC rpxReplicator::checkUsefulLog( smiLogRec             * aLog,
             else // not found
             {
                 /* PROJ-2397 Compressed Table Replication */
-                /* ì„±ëŠ¥ë•Œë¬¸ì— aMetaItemì´ nullì¸ ê²½ìš° ë¹„êµ */
+                /* ¼º´É¶§¹®¿¡ aMetaItemÀÌ nullÀÎ °æ¿ì ºñ±³ */
                 if ( ( aLog->getChangeType() == SMI_CHANGE_MRDB_INSERT ) )
                 {
                     if ( mMeta->isMyDictTable( sTableOID ) == ID_TRUE )
                     {
-                        IDE_TEST( insertDictionaryValue( aLog )
+                        IDE_TEST( insertDictionaryValue( aLog, aTID )
                                   != IDE_SUCCESS );
                     }
                     else
@@ -2409,25 +2614,63 @@ IDE_RC rpxReplicator::checkUsefulLog( smiLogRec             * aLog,
                     /* Nothing to do */
                 }
 
-                if ( isSkipLog( aLog ) != ID_TRUE )
+                *aIsOk = ID_FALSE;
+            }
+
+            /* BUG-20919
+            * ºĞ¼® ´ë»óÀÌ ¾Æ´Ñ ·Î±× ·¹ÄÚµå¿¡
+            * Implicit Savepoint°¡ ¼³Á¤µÇ¾î ÀÖ°í Active TransactionÀÏ ¶§
+            * (1) Begin Flag°¡ ¹Ì¼³Á¤µÇ¾î ÀÖÀ¸¸é Begin Flag¸¦ ¼³Á¤ÇÏ°í,
+            * (2) Implicit Savepoint XLog Àü¼ÛÇÕ´Ï´Ù.
+            */
+            if ( *aIsOk == ID_FALSE )
+            {
+                IDE_TEST( checkAndSendImplSVP( aLog, aTID ) != IDE_SUCCESS );
+            }
+            else
+            {
+                /* do nothing */
+            }
+
+            break;
+
+        case SMI_LT_TABLE_META :    // Table Meta Log Record
+            //-------------------------------------------------------------//
+            // check replicative Table
+            //-------------------------------------------------------------//
+            *aIsOk = checkUsefulLogByTableMetaType( aLog );
+
+            if ( *aMetaItem == NULL )
+            { 
+                /* PROJ-2397 Compressed Table Replication */
+                /* ¼º´É¶§¹®¿¡ aMetaItemÀÌ nullÀÎ °æ¿ì ºñ±³ */
+                if ( ( aLog->getChangeType() == SMI_CHANGE_MRDB_INSERT ) )
                 {
-                    *aIsOk = ID_TRUE;
+                    if ( mMeta->isMyDictTable( sTableOID ) == ID_TRUE )
+                    {
+                        IDE_TEST( insertDictionaryValue( aLog, aTID )
+                                  != IDE_SUCCESS );
+                    }
+                    else
+                    {
+                        /* Nothing to do */
+                    }
                 }
                 else
                 {
-                    *aIsOk = ID_FALSE;
+                    /* Nothing to do */
                 }
             }
 
             /* BUG-20919
-            * ë¶„ì„ ëŒ€ìƒì´ ì•„ë‹Œ ë¡œê·¸ ë ˆì½”ë“œì—
-            * Implicit Savepointê°€ ì„¤ì •ë˜ì–´ ìˆê³  Active Transactionì¼ ë•Œ
-            * (1) Begin Flagê°€ ë¯¸ì„¤ì •ë˜ì–´ ìˆìœ¼ë©´ Begin Flagë¥¼ ì„¤ì •í•˜ê³ ,
-            * (2) Implicit Savepoint XLog ì „ì†¡í•©ë‹ˆë‹¤.
-            */
+             * ºĞ¼® ´ë»óÀÌ ¾Æ´Ñ ·Î±× ·¹ÄÚµå¿¡
+             * Implicit Savepoint°¡ ¼³Á¤µÇ¾î ÀÖ°í Active TransactionÀÏ ¶§
+             * (1) Begin Flag°¡ ¹Ì¼³Á¤µÇ¾î ÀÖÀ¸¸é Begin Flag¸¦ ¼³Á¤ÇÏ°í,
+             * (2) Implicit Savepoint XLog Àü¼ÛÇÕ´Ï´Ù.
+             */
             if ( *aIsOk == ID_FALSE )
             {
-                IDE_TEST( checkAndSendImplSVP( aLog ) != IDE_SUCCESS );
+                IDE_TEST( checkAndSendImplSVP( aLog, aTID ) != IDE_SUCCESS );
             }
             else
             {
@@ -2449,24 +2692,25 @@ IDE_RC rpxReplicator::checkUsefulLog( smiLogRec             * aLog,
             break;
 
         case SMI_LT_DDL :   // DDL Transaction Log Record
-            mTransTbl->setDDLTrans( sTID );
+            mSenderInfo->setDDLTransaction(aTID);
 
-            // BUG-23195 DDL Transactionì„ BEGIN ì—†ì´ COMMIT/ABORT í•˜ëŠ” ê²ƒì„ ë°©ì§€í•œë‹¤.
-            // BUG-28206 DMLì´ ì—†ëŠ” Transactionì€ ì „ì†¡í•˜ì§€ ì•ŠëŠ”ë‹¤.
-            // BUG-28206 ë°˜ì˜ í›„ì— BUG-23195ì´ ë°©ì§€ëœë‹¤.
-            // DDL Transactionì€ DMLì´ ì—†ìœ¼ë¯€ë¡œ, ê·¸ëƒ¥ Begin ìƒíƒœë¡œ ë§Œë“ ë‹¤.
-            mTransTbl->setBeginFlag( sTID, ID_TRUE );
+            // BUG-23195 DDL TransactionÀ» BEGIN ¾øÀÌ COMMIT/ABORT ÇÏ´Â °ÍÀ» ¹æÁöÇÑ´Ù.
+            // BUG-28206 DMLÀÌ ¾ø´Â TransactionÀº Àü¼ÛÇÏÁö ¾Ê´Â´Ù.
+            // BUG-28206 ¹İ¿µ ÈÄ¿¡ BUG-23195ÀÌ ¹æÁöµÈ´Ù.
+            // DDL TransactionÀº DMLÀÌ ¾øÀ¸¹Ç·Î, ±×³É Begin »óÅÂ·Î ¸¸µç´Ù.
+            mTransTbl->setBeginFlag( aTID, ID_TRUE );
 
             *aIsOk = ID_FALSE;
             break;
 
         case SMI_LT_TRANS_COMMIT :
+        case SMI_LT_TRANS_GROUPCOMMIT :
         case SMI_LT_TRANS_ABORT :
         case SMI_LT_TRANS_PREABORT :
             //------------------------------------------------------//
             // check replicative log
             //------------------------------------------------------//
-            if ( mTransTbl->getBeginFlag( sTID ) == ID_TRUE )
+            if ( mTransTbl->getBeginFlag( aTID ) == ID_TRUE )
             {
                 *aIsOk = ID_TRUE;
             }
@@ -2475,16 +2719,15 @@ IDE_RC rpxReplicator::checkUsefulLog( smiLogRec             * aLog,
                 //------------------------------------------------------//
                 // remove in transaction table
                 //------------------------------------------------------//
-                mTransTbl->removeTrans( sTID );
+                mTransTbl->removeTrans( aTID );
 
                 *aIsOk = ID_FALSE;
             }
-
             mSender->mCommitXSN = aLog->getRecordSN();
             break;
 
         case SMI_LT_DDL_QUERY_STRING :
-            if ( ( mTransTbl->existItemMeta( sTID ) == ID_TRUE ) && 
+            if ( ( mTransTbl->existItemMeta( aTID ) == ID_TRUE ) &&
                  ( ( mMeta->mReplication.mOptions & RP_OPTION_DDL_REPLICATE_MASK ) 
                    == RP_OPTION_DDL_REPLICATE_SET ) )
             {
@@ -2495,6 +2738,37 @@ IDE_RC rpxReplicator::checkUsefulLog( smiLogRec             * aLog,
                 *aIsOk = ID_FALSE;
             }
             break;
+        
+        case SMI_LT_XA_START_REQ :
+        case SMI_LT_XA_PREPARE :
+            if ( isReplUsingGlobalTx() == ID_TRUE )
+            {
+                if ( mTransTbl->getBeginFlag( aTID ) != ID_TRUE )
+                {
+                    mTransTbl->setBeginFlag( aTID, ID_TRUE );
+                }
+                mTransTbl->setGTrans( aTID );
+                *aIsOk = ID_TRUE;
+            }
+            else
+            {
+                *aIsOk = ID_FALSE;
+            }
+
+            break;
+
+        case SMI_LT_XA_PREPARE_REQ :
+        case SMI_LT_XA_END :
+            if ( isReplUsingGlobalTx() == ID_TRUE )
+            {
+                *aIsOk = ID_TRUE;
+            }
+            else
+            {
+                *aIsOk = ID_FALSE;
+            }
+            break;
+
         default:
             *aIsOk = ID_FALSE;
             break;
@@ -2525,25 +2799,33 @@ IDE_RC rpxReplicator::checkUsefulLog( smiLogRec             * aLog,
     return IDE_FAILURE;
 }
 
+idBool rpxReplicator::isReplUsingGlobalTx()
+{
+    idBool sIsUsing = ID_FALSE;
 
+    if ( mMeta->getReplMode() == RP_CONSISTENT_MODE )
+    {
+        sIsUsing = ID_TRUE;
+    }
+
+    return sIsUsing;
+}
 /*
  *
  */
-IDE_RC rpxReplicator::insertDictionaryValue( smiLogRec  * aLog )
+IDE_RC rpxReplicator::insertDictionaryValue( smiLogRec  * aLog, smTID aTID )
 {
     rpdLogAnalyzer     * sLogAnlz   = NULL;
     rpdDictionaryValue * sDictValue = NULL;
     UInt                 sState     = 0;
-    smTID                sTID       = SM_NULL_TID;
     smOID                sRecordOID = SM_NULL_OID;
     scGRID               sGRID;
 
-    sTID     = aLog->getTransID();
-    sLogAnlz = mTransTbl->getLogAnalyzer( sTID );
+    sLogAnlz = mTransTbl->getLogAnalyzer( aTID );
 
     IDE_TEST( rpdLogAnalyzer::anlzInsDictionary( sLogAnlz,
                                                  aLog,
-                                                 sTID,
+                                                 aTID,
                                                  aLog->getRecordSN() )
               != IDE_SUCCESS );
     sState = 1; 
@@ -2596,8 +2878,8 @@ IDE_RC rpxReplicator::insertDictionaryValue( smiLogRec  * aLog )
         sLogAnlz->insertDictValue( sDictValue );
     }
 
-    /* BUGBUG ë”•ì…”ë„ˆë¦¬ í…Œì´ë¸” ìŠ¤í‚¤ë§ˆê°€ ë³€ê²½ë˜ë©´
-     * ì•„ë˜ aTableColCountì˜ ê°’ì„ ë³€ê²½í•´ì•¼í•¨
+    /* BUGBUG µñ¼Å³Ê¸® Å×ÀÌºí ½ºÅ°¸¶°¡ º¯°æµÇ¸é
+     * ¾Æ·¡ aTableColCountÀÇ °ªÀ» º¯°æÇØ¾ßÇÔ
      */
     sState = 0;
     sLogAnlz->resetVariables( ID_FALSE,
@@ -2647,6 +2929,10 @@ IDE_RC rpxReplicator::replicateLogWithLogPtr( const SChar * aLogPtr )
     smiLogHdr     sLogHead;
     smLSN         sDummyLSN;
 
+    UInt          i         = 0;
+    UInt          sGCCnt    = 0;
+    smTID         sTID      = SM_NULL_TID;
+
     SM_LSN_INIT( sDummyLSN );
     
     smiLogRec::getLogHdr( (void *)aLogPtr, &sLogHead);
@@ -2662,7 +2948,7 @@ IDE_RC rpxReplicator::replicateLogWithLogPtr( const SChar * aLogPtr )
               != IDE_SUCCESS );
  
     /*
-     * íŒŒì¼ì˜ ë logì¼ ê²½ìš°, Sender threadë“¤ì„ wakeupì‹œì¼œ KeepAliveë¥¼ ë³´ë‚¸ë‹¤.
+     * ÆÄÀÏÀÇ ³¡ logÀÏ °æ¿ì, Sender threadµéÀ» wakeup½ÃÄÑ KeepAlive¸¦ º¸³½´Ù.
      */
     if ( sLog.getType() == SMI_LT_FILE_END )
     {
@@ -2673,17 +2959,41 @@ IDE_RC rpxReplicator::replicateLogWithLogPtr( const SChar * aLogPtr )
         /* Nothing to do */
     }
  
-    IDE_TEST( waitForLogSync( &sLog ) != IDE_SUCCESS );
+    IDE_TEST( checkAndWaitForLogSync( &sLog ) != IDE_SUCCESS );
 
     idCore::acpAtomicInc64( &mReadLogCount );
 
-    IDE_TEST( checkAndAddXLog( RP_SEND_XLOG_ON_ADD_XLOG,
-                               NULL, /* aSNPool */
-                               NULL, /* aSNList */
-                               &sLog,
-                               sDummyLSN,
-                               ID_FALSE ) /* aIsStartedAheadAnalyzer */
-              != IDE_SUCCESS );
+    if ( sLog.getType() == SMI_LT_TRANS_GROUPCOMMIT )
+    {
+        sGCCnt = sLog.getGroupCommitCnt( sLog.getLogPtr() );
+
+        for ( i = 0; i < sGCCnt; i++ )
+        {
+            sTID = sLog.getNthTIDFromGroupCommit( sLog.getLogPtr(), i );
+            IDE_TEST( checkAndAddXLog( RP_SEND_XLOG_ON_ADD_XLOG,
+                                       NULL, /* aSNPool */
+                                       NULL, /* aSNList */
+                                       NULL, /* RawLogPtr */
+                                       &sLog,
+                                       sDummyLSN,
+                                       ID_FALSE, /* aIsStartedAheadAnalyzer */
+                                       sTID )
+                      != IDE_SUCCESS );
+        }
+    }
+    else
+    {
+        sTID = sLog.getTransID();
+        IDE_TEST( checkAndAddXLog( RP_SEND_XLOG_ON_ADD_XLOG,
+                                   NULL, /* aSNPool */
+                                   NULL, /* aSNList */
+                                   NULL, /* RawLogPtr */
+                                   &sLog,
+                                   sDummyLSN,
+                                   ID_FALSE, /* aIsStartedAheadAnalyzer */
+                                   sTID )
+                  != IDE_SUCCESS );
+    }
 
     return IDE_SUCCESS;
 
@@ -2697,9 +3007,11 @@ IDE_RC rpxReplicator::replicateLogWithLogPtr( const SChar * aLogPtr )
 IDE_RC rpxReplicator::checkAndAddXLog( RP_ACTION_ON_ADD_XLOG   aActionAddXLog,
                                        iduMemPool            * aSNPool,
                                        iduList               * aSNList,
+                                       SChar                 * aRawLogPtr,
                                        smiLogRec             * aLog,
                                        smLSN                   aReadLSN,
-                                       idBool                  aIsStartedAheadAnalyzer )
+                                       idBool                  aIsStartedAheadAnalyzer,
+                                       smTID                   aTID )
 {
     idBool          sIsOK        = ID_FALSE;
     rpdMetaItem *   sMetaItem    = NULL;
@@ -2713,7 +3025,8 @@ IDE_RC rpxReplicator::checkAndAddXLog( RP_ACTION_ON_ADD_XLOG   aActionAddXLog,
                                     &sMetaItem,
                                     aActionAddXLog,
                                     aSNPool,
-                                    aSNList )
+                                    aSNList,
+                                    aTID )
                     != IDE_SUCCESS, ERR_CHECK_LOG_RECORD );
 
     if ( sIsOK != ID_TRUE )
@@ -2722,6 +3035,10 @@ IDE_RC rpxReplicator::checkAndAddXLog( RP_ACTION_ON_ADD_XLOG   aActionAddXLog,
     }
     else
     {
+        // ³Ê¹« ¸¹Àº KeepAlive ¹ß»ı½ÃÅ°Áö ¾Êµµ·Ï 
+        // À¯ÀÇ¹ÌÇÑ ·Î±× ¹ß»ı½Ã ÃÊ±âÈ­ ÇÑ´Ù.
+        mSleepForKeepAliveCount = 0;
+
         // Increase SEND_LOG_COUNT in V$REPSENDER
         idCore::acpAtomicInc64( &mSendLogCount );
 
@@ -2736,17 +3053,20 @@ IDE_RC rpxReplicator::checkAndAddXLog( RP_ACTION_ON_ADD_XLOG   aActionAddXLog,
                                      aActionAddXLog,
                                      aSNPool,
                                      aSNList,
-                                     RP_REPLICATIED_TRNAS_GROUP_NORMAL )
+                                     RP_REPLICATIED_TRNAS_GROUP_NORMAL,
+                                     aTID )
                             != IDE_SUCCESS, ERR_MAKE_XLOG );
         }
         else
         {
             IDE_TEST( addXLogInGroupingMode( aLog,
+                                             aRawLogPtr,
                                              aReadLSN,
                                              sMetaItem,
                                              aActionAddXLog,
                                              aSNPool,
-                                             aSNList )
+                                             aSNList,
+                                             aTID )
                      != IDE_SUCCESS );
 
         }
@@ -2776,11 +3096,12 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
                                          iduMemPool            * aSNPool,
                                          iduList               * aSNList )
 {
-    idBool        sIsOK            = ID_FALSE;
+    idBool        sIsValid         = ID_FALSE;
     smiLogRec     sLog;
     smSN          sLstSN;
     smSN          sCurrentSN       = SM_SN_NULL;
     SChar       * sLogPtr;
+    SChar       * sRawLogPtr;
     SChar       * sLogHeadPtr;
     smLSN         sReadLSN;
     smiLogHdr     sLogHead;
@@ -2790,21 +3111,24 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
     smSN          sFlushSN         = SM_SN_NULL;
     idBool        sLogSwitchLocked = ID_FALSE;
     idBool        sIsFirst         = ID_TRUE;
-    idBool        sIsOfflineStatusFound = ID_FALSE;
     idBool        sIsStartedAheadAnalyzer = ID_FALSE;
     smLSN         sThroughputStartLSN;
     ULong         sProcessedXLogSize = 0;
     /*
-     * PROJ-1969ì˜ ì˜í–¥ìœ¼ë¡œ Log Fileì´ Switch ë ë•Œë§Œ Log Buffer Modeë¡œ ë‹¤ì‹œ ë“¤ì–´ê°ˆ ìˆ˜ ìˆìŒ.
-     * sEndOfLogë¥¼ ì°¸ì¡°í•˜ì—¬ Log Fileì´ Switch ë˜ì—ˆëŠ”ì§€ í™•ì¸ í•¨.
-     * í•˜ì§€ë§Œ ìµœì†Œì˜ Log Buffer Modeë¡œ ë™ì‘í•˜ê¸° ìœ„í•´ì„œ ì´ˆê¸°ê°’ì„ ID_TRUEë¡œ ì„¤ì •. */
+     * PROJ-1969ÀÇ ¿µÇâÀ¸·Î Log FileÀÌ Switch µÉ¶§¸¸ Log Buffer Mode·Î ´Ù½Ã µé¾î°¥ ¼ö ÀÖÀ½.
+     * sEndOfLog¸¦ ÂüÁ¶ÇÏ¿© Log FileÀÌ Switch µÇ¾ú´ÂÁö È®ÀÎ ÇÔ.
+     * ÇÏÁö¸¸ ÃÖ¼ÒÀÇ Log Buffer Mode·Î µ¿ÀÛÇÏ±â À§ÇØ¼­ ÃÊ±â°ªÀ» ID_TRUE·Î ¼³Á¤. */
     idBool        sEndOfLog = ID_TRUE;
+    UInt          i         = 0;
+    UInt          sGCCnt    = 0;
+    smTID         sTID      = SM_NULL_TID;
+
+    /* BUG-46944 CompLogHeader¿¡ TableOID Ãß°¡ */
 
     SM_MAKE_LSN( sThroughputStartLSN, mSender->mXSN );
     mThroughputStartTime = idlOS::gettimeofday();
 
     RP_CREATE_FLAG_VARIABLE( IDV_OPTM_INDEX_RP_S_READ_LOG_FROM_REPLBUFFER );
-    RP_CREATE_FLAG_VARIABLE( IDV_OPTM_INDEX_RP_S_READ_LOG_FROM_FILE );
 
     if ( ( aActionAddXLog == RP_COLLECT_BEGIN_SN_ON_ADD_XLOG ) ||
          ( aActionAddXLog == RP_SEND_SYNC_PK_ON_ADD_XLOG ) )
@@ -2814,7 +3138,7 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
 
     SM_LSN_INIT( sBufLSN );
 
-    // PROJ-1705 íŒŒë¼ë©”í„° ì¶”ê°€
+    // PROJ-1705 ÆÄ¶ó¸ŞÅÍ Ãß°¡
     sLog.initialize( (const void *)mMeta,
                      &mChainedValuePool,
                      RPU_REPLICATION_POOL_ELEMENT_SIZE );
@@ -2830,7 +3154,7 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
     }
     else
     {
-        /* ì•„ì¹´ì´ë¸Œ ë¡œê·¸ìƒíƒœì´ë©´ remote lastSNì„ ì–»ëŠ”ë‹¤. */
+        /* ¾ÆÄ«ÀÌºê ·Î±×»óÅÂÀÌ¸é remote lastSNÀ» ¾ò´Â´Ù. */
         if ( mLogMgrStatus == RP_LOG_MGR_ARCHIVE )
         {
             IDE_ASSERT( getRemoteLastUsedGSN( &sLstSN )
@@ -2850,6 +3174,7 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
         IDE_CLEAR();
 
         sLogPtr     = NULL;
+        sRawLogPtr  = NULL;
         sLogHeadPtr = NULL;
 
         // BUG-29115
@@ -2857,7 +3182,7 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
 
         if ( mSender->mCurrentType == RP_RECOVERY )
         {
-            //recoveryê°€ ì™„ë£Œ ë˜ì—ˆìœ¼ë¯€ë¡œ, ì¢…ë£Œí•œë‹¤.
+            //recovery°¡ ¿Ï·á µÇ¾úÀ¸¹Ç·Î, Á¾·áÇÑ´Ù.
             if ( mSender->mSNMapMgr->isEmpty() == ID_TRUE )
             {
                 mSender->setExitFlag();
@@ -2865,24 +3190,24 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
             }
         }
 
-        /* PROJ-1915 : off-line replicatior ë¥¼ ì¢…ë£Œ í•©ë‹ˆë‹¤. */
+        /* PROJ-1915 : off-line replicator ¸¦ Á¾·á ÇÕ´Ï´Ù. */
         if ( mSender->mCurrentType != RP_OFFLINE )
         {
             if( mSender->isArchiveALA() == ID_TRUE &&
                 mLogMgrStatus == RP_LOG_MGR_ARCHIVE )
             {
-                /* archive logì˜ ëì— ë„ë‹¬í•˜ë©´ redo logë¡œ ì „í™˜í•œë‹¤. */
+                /* archive logÀÇ ³¡¿¡ µµ´ŞÇÏ¸é redo log·Î ÀüÈ¯ÇÑ´Ù. */
                 if( mSender->mXSN >= sLstSN )
                 {
                     ideLog::log( IDE_RP_0, RP_TRC_SX_REACH_END_ARCHIVE_LOG,
                                  mSender->mXSN, mCurrFileNo );
                     
-                    /* FILE_END logë¥¼ ê³ ë ¤í•˜ì—¬ 2ë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤. */
+                    /* FILE_END log¸¦ °í·ÁÇÏ¿© 2¸¦ Áõ°¡½ÃÅ²´Ù. */
                     mSender->mXSN += 2;
                     
                     lockLogSwitch( &sLogSwitchLocked );
                     
-                    /* redo logì™€ archive logê°„ì˜ switch */
+                    /* redo log¿Í archive log°£ÀÇ switch */
                     IDE_TEST( switchToRedoLogMgr( &sLstSN ) != IDE_SUCCESS);
                     sIsFirst = ID_TRUE;
                 }
@@ -2898,8 +3223,8 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
             
             /*
              * Waiting For New Log Record
-             * ë§Œì•½ return on no gapìœ¼ë¡œ ë“¤ì–´ì˜¤ë©´ gapì´ ì—†ì„ ë•Œ ê¸°ë‹¤ë¦¬ì§€ ì•Šê³ 
-             * ë¦¬í„´ë˜ì–´ sLstSNì™€ mXSNê°€ ê°™ì€ ê°’ì„ ê°–ê²Œëœë‹¤.
+             * ¸¸¾à return on no gapÀ¸·Î µé¾î¿À¸é gapÀÌ ¾øÀ» ¶§ ±â´Ù¸®Áö ¾Ê°í
+             * ¸®ÅÏµÇ¾î sLstSN¿Í mXSN°¡ °°Àº °ªÀ» °®°ÔµÈ´Ù.
              */
             IDE_TEST( waitForNewLogRecord( &sLstSN, aActionNoGap )
                       != IDE_SUCCESS );
@@ -2911,11 +3236,24 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
             break;
         }
 
-        //proj-1608 recovery from replication, recovery support sender
         if ( sFlushSN == SM_SN_NULL )
         {
-            IDE_TEST( smiGetSyncedMinFirstLogSN( &sFlushSN )
-                      != IDE_SUCCESS );
+            if ( mMeta->getReplMode() == RP_CONSISTENT_MODE )
+            {
+            /* R2HA PROJ-2742 Support data integrity after fail-back on 1:1 consistent replication 
+             * ÀÌÁßÈ­ ¸ğµå¸¦ È®ÀÎÇÏ¿©,
+             * consistent mode ÀÎ °æ¿ì checkpoint ½Ã Á¦°ÅÇØµµ µÇ´Â ·Î±× Áß °¡Àå Å« LSN À¸·Î ¼ÂÆÃ,
+             *                 ¾Æ´Ñ °æ¿ì, ±âÁ¸ ·ÎÁ÷ smiGetSyncedMinFirstLogSN()  */
+            
+                smiGetRemoveMaxLastLogSN( &sFlushSN );
+            }
+            else
+            {
+                //proj-1608 recovery from replication, recovery support sender
+                IDE_TEST( smiGetSyncedMinFirstLogSN( &sFlushSN )
+                          != IDE_SUCCESS );
+            }
+            
             if ( sFlushSN != SM_SN_NULL )
             {
                 mFlushSN = sFlushSN;
@@ -2929,10 +3267,10 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
             {
                 lockLogSwitch( &sLogSwitchLocked );
 
-                // redo logì™€ archive logê°„ì˜ switch
+                // redo log¿Í archive log°£ÀÇ switch
                 if ( mNeedSwitchLogMgr == ID_TRUE )
                 {
-                    mSender->mXSN++;
+                    mSender->mXSN += 1;
 
                     IDE_TEST( switchToArchiveLogMgr( &sLstSN ) != IDE_SUCCESS );
                     mNeedSwitchLogMgr = ID_FALSE;
@@ -2958,6 +3296,7 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
                 if ( mIsGroupingMode == ID_TRUE )
                 {
                     mAheadAnalyzer->stopToAnalyze();
+                    mDelayedLogQueue.dequeueALL();
                     sIsStartedAheadAnalyzer = ID_FALSE;
                 }
                 else
@@ -2968,9 +3307,9 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
         }
         if ( mIsRPLogBufMode == ID_TRUE )
         {
-            /* buf ëª¨ë“œì¸ ê²½ìš°, í•„ìš”í•œ ë¡œê·¸ë¥¼ ì°¾ì•„ì•¼ í•¨
-             * í•„ìš”í•œ ë¡œê·¸ëŠ” mXSN + 1 ë³´ë‹¤ í° ë¡œê·¸ ì¤‘ ê°€ì¥ ì‘ì€ SNì—
-             * í•´ë‹¹í•˜ëŠ” ë¡œê·¸ì„*/
+            /* buf ¸ğµåÀÎ °æ¿ì, ÇÊ¿äÇÑ ·Î±×¸¦ Ã£¾Æ¾ß ÇÔ
+             * ÇÊ¿äÇÑ ·Î±×´Â mXSN + 1 º¸´Ù Å« ·Î±× Áß °¡Àå ÀÛÀº SN¿¡
+             * ÇØ´çÇÏ´Â ·Î±×ÀÓ*/
             do
             {
                 RP_OPTIMIZE_TIME_BEGIN( mOpStatistics,
@@ -2994,13 +3333,13 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
             while ( mSender->checkInterrupt() == RP_INTR_NONE );
 
             // BUG-23967
-            // Sender Stop ì— ì˜ í•´ mExitFilagê°€ ì„¸íŒ… ë˜ì–´ do {} ë£¨í”„ë¥¼ ì´íƒˆ í• ë•Œ
-            // ë³´í†µ mExitFlgëŠ” ë³¸ í•¨ìˆ˜ì— ë§¨ ìµœìƒìœ„ì—ì„œ ì´íƒˆ í•˜ê²Œ ë˜ëŠ”ë° ëŠë¦¬ê²Œ ë™ì‘ í•  ê²½ìš° ìœ„ do { } ì§„í–‰ ì¤‘ì—
-            // ì„¸íŒ… ë˜ì–´ ì´íƒˆ í•˜ëŠ” ê²½ìš° ê°€ ìˆë‹¤. ì´ëŸ´ ê²½ìš° RPLogBuf ì•ˆì—ì„œ sCurrentSNì´ í˜„ì¬ í•„ìš” í•œ mNeedSNë³´ë‹¤
-            // ì‘ì€ ìƒíƒœ ì—ì„œ ì•„ë˜ë¡œ ì§„í–‰ í•˜ê²Œ ë ê²½ìš° stop ë©”ì„¸ì§€ì— ì´ì „ SNì„ ì‹«ì–´ RECEIVERì— ì „ì†¡ í•˜ì—¬ ë‹¤ìŒ ì‹œì‘ì— ë¬¸ì œê°€ ëœë‹¤.
-            // mNeedSNì€ rpxSender::runì—ì„œ mXSNìœ¼ë¡œ ì„¸íŒ… ë˜ì—ˆìœ¼ë¯€ë¡œ ì•„ë˜ ì¢…ë£Œ ìƒí™©ì—ì„œ sCurrentSNìœ¼ë¡œ ì„¸íŒ… ë˜ì–´
-            // mXSNì´ ë˜ì–´ì•¼ í•œë‹¤.
-            // í•˜ì—¬ mXSN = mNeedSNì´ ë˜ì–´ì•¼ í•œë‹¤. ì•„ë˜ì— skip ìƒí™©ë§Œ ì œì™¸ í•˜ê³  ëª¨ë‘ mXSN = mNeedSNìœ¼ë¡œ ìˆ˜ì •
+            // Sender Stop ¿¡ ÀÇ ÇØ mExitFilag°¡ ¼¼ÆÃ µÇ¾î do {} ·çÇÁ¸¦ ÀÌÅ» ÇÒ¶§
+            // º¸Åë mExitFlg´Â º» ÇÔ¼ö¿¡ ¸Ç ÃÖ»óÀ§¿¡¼­ ÀÌÅ» ÇÏ°Ô µÇ´Âµ¥ ´À¸®°Ô µ¿ÀÛ ÇÒ °æ¿ì À§ do { } ÁøÇà Áß¿¡
+            // ¼¼ÆÃ µÇ¾î ÀÌÅ» ÇÏ´Â °æ¿ì °¡ ÀÖ´Ù. ÀÌ·² °æ¿ì RPLogBuf ¾È¿¡¼­ sCurrentSNÀÌ ÇöÀç ÇÊ¿ä ÇÑ mNeedSNº¸´Ù
+            // ÀÛÀº »óÅÂ ¿¡¼­ ¾Æ·¡·Î ÁøÇà ÇÏ°Ô µÉ°æ¿ì stop ¸Ş¼¼Áö¿¡ ÀÌÀü SNÀ» ½È¾î RECEIVER¿¡ Àü¼Û ÇÏ¿© ´ÙÀ½ ½ÃÀÛ¿¡ ¹®Á¦°¡ µÈ´Ù.
+            // mNeedSNÀº rpxSender::run¿¡¼­ mXSNÀ¸·Î ¼¼ÆÃ µÇ¾úÀ¸¹Ç·Î ¾Æ·¡ Á¾·á »óÈ²¿¡¼­ sCurrentSNÀ¸·Î ¼¼ÆÃ µÇ¾î
+            // mXSNÀÌ µÇ¾î¾ß ÇÑ´Ù.
+            // ÇÏ¿© mXSN = mNeedSNÀÌ µÇ¾î¾ß ÇÑ´Ù. ¾Æ·¡¿¡ skip »óÈ²¸¸ Á¦¿Ü ÇÏ°í ¸ğµÎ mXSN = mNeedSNÀ¸·Î ¼öÁ¤
             if ( ( mSender->isExit() == ID_TRUE ) &&
                  ( sCurrentSN < mNeedSN ) )
             {
@@ -3011,7 +3350,7 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
             {
                 if ( sLogPtr == NULL ) // wait for rp log write, skip
                 {
-                    /*sCurrentSNì´ SM_SN_NULLì¸ ê²½ìš° ë‹¤ì‹œ ì‹œë„í•´ì•¼í•¨*/
+                    /*sCurrentSNÀÌ SM_SN_NULLÀÎ °æ¿ì ´Ù½Ã ½ÃµµÇØ¾ßÇÔ*/
                     if ( sCurrentSN != SM_SN_NULL )
                     {
                         mSender->mXSN = sCurrentSN;
@@ -3022,9 +3361,9 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
                 }
                 else
                 {
-                    /*BUG-27629 rp log bufferë¥¼ í†µí•´ì„œ ì½ì€ ë¡œê·¸ì˜ LSNì€ ì•Œìˆ˜ ì—†ìœ¼ë¯€ë¡œ,
-                     *rp log bufferë¥¼ í†µí•´ì„œ ì½ìœ¼ë©´, sReadLSNì´ ì´ˆê¸°í™” ë˜ì§€ ì•Šì€ ìƒíƒœë¡œ ì‚¬ìš©ë  ìˆ˜ ìˆë‹¤.
-                     *ê·¸ëŸ¬ë¯€ë¡œ, 0ìœ¼ë¡œ ì´ˆê¸°í™” í•¨*/
+                    /*BUG-27629 rp log buffer¸¦ ÅëÇØ¼­ ÀĞÀº ·Î±×ÀÇ LSNÀº ¾Ë¼ö ¾øÀ¸¹Ç·Î,
+                     *rp log buffer¸¦ ÅëÇØ¼­ ÀĞÀ¸¸é, sReadLSNÀÌ ÃÊ±âÈ­ µÇÁö ¾ÊÀº »óÅÂ·Î »ç¿ëµÉ ¼ö ÀÖ´Ù.
+                     *±×·¯¹Ç·Î, 0À¸·Î ÃÊ±âÈ­ ÇÔ*/
                     SM_LSN_INIT( sReadLSN );
                     sLogHeadPtr = (SChar*)&sLogHead;
                 }
@@ -3039,7 +3378,7 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
             {
                 leaveLogBuffer();
 
-                /*mLogMgrì´ˆê¸°í™” í•˜ê¸° */
+                /*mLogMgrÃÊ±âÈ­ ÇÏ±â */
                 IDE_TEST( mLogMgr.startByLSN( sBufLSN ) != IDE_SUCCESS );
 
                 /* PROJ-1969 Replicated Transaction Group */
@@ -3055,7 +3394,7 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
                 }
 
                 // BUG-29115
-                // í˜„ì¬ ì½ê³  ìˆëŠ” file no
+                // ÇöÀç ÀĞ°í ÀÖ´Â file no
                 mCurrFileNo = sBufLSN.mFileNo;
 
                 continue;
@@ -3063,56 +3402,32 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
         }
         else
         {
-            /* BUGBUG: For Parallel Logging */
-            RP_OPTIMIZE_TIME_BEGIN( mOpStatistics,
-                                    IDV_OPTM_INDEX_RP_S_READ_LOG_FROM_FILE );
-            IDE_TEST_RAISE( mLogMgr.readLog( &sCurrentSN,
-                                             &sReadLSN,
-                                             (void**)&sLogHeadPtr,
-                                             (void**)&sLogPtr,
-                                             &sIsOK )
-                            != IDE_SUCCESS, ERR_READ_LOG_RECORD );
-            RP_OPTIMIZE_TIME_END( mOpStatistics,
-                                  IDV_OPTM_INDEX_RP_S_READ_LOG_FROM_FILE );
-
-            if ( sIsOK == ID_FALSE )
+            IDE_TEST( readMyLog( &sCurrentSN,
+                                 &sReadLSN,
+                                 (SChar*)&sLogHead,
+                                 &sLogPtr,
+                                 &sRawLogPtr,
+                                 &sIsValid )
+                      != IDE_SUCCESS );
+            if ( sLogPtr != NULL )
             {
-                /* GSNê°’ì„ ì¦ê°€ì‹œí‚¤ê³  ë¡œê·¸ë¥¼ ê¸°ë¡í•˜ê¸° ë•Œë¬¸ì— ë¡œê·¸ê°€ ê¸°ë¡ë˜ê¸°ì „ì—
-                   Senderê°€ ì½ì„ ê²½ìš° ì´ëŸ° ê²½ìš°ê°€ ë°œìƒí•¨ ì •ìƒìƒí™©ì„.*/
-
-                if ( mSender->mCurrentType == RP_OFFLINE )
+                sLogHeadPtr = (SChar*)&sLogHead;
+            }
+            else
+            {
+                if ( sIsValid == ID_FALSE )
                 {
-                    mSender->setExitFlag();
-                    rpcManager::setOfflineCompleteFlag( mSender->mRepName,
-                                                         ID_TRUE,
-                                                         &sIsOfflineStatusFound );
-                    IDE_ASSERT( sIsOfflineStatusFound == ID_TRUE );
-                    continue;                    
+                    continue;
                 }
                 else
                 {
-                    // BUG-29115
-                    // archive logë¥¼ ì½ê³  ìˆëŠ” ìƒíƒœì—ì„œëŠ” ì´ëŸ° logê°€ ë°œìƒí•  ìˆ˜ ì—†ë‹¤.
-                    if ( mLogMgrStatus == RP_LOG_MGR_ARCHIVE )
-                    {
-                        // archive logë¥¼ ì½ëŠ” ê²½ìš°ëŠ” alaì¼ë•Œ ë¿ì´ë‹¤.
-                        IDE_DASSERT( mSender->getRole() == RP_ROLE_ANALYSIS );
-
-                        // ì˜ˆì™¸ì²˜ë¦¬ì—ì„œ ì—ëŸ¬ë¥¼ ì…‹íŒ…í•œë‹¤.
-                        IDE_RAISE( ERR_LOG_READ );
-                    }
+                    IDE_RAISE( NEXT_LOG );
                 }
-
-                continue;
             }
-
-            // BUG-29115
-            // í˜„ì¬ ì½ê³  ìˆëŠ” file no
-            mCurrFileNo = sReadLSN.mFileNo;
         }
 
         // BUG-29115
-        // debugìš©ìœ¼ë¡œ í˜„ì¬ ì½ê³ ìˆëŠ” file noë¥¼ ê¸°ë¡í•œë‹¤.
+        // debug¿ëÀ¸·Î ÇöÀç ÀĞ°íÀÖ´Â file no¸¦ ±â·ÏÇÑ´Ù.
         if ( ( sIsFirst == ID_TRUE ) && ( mSender->isArchiveALA() == ID_TRUE ) )
         {
             if ( mLogMgrStatus == RP_LOG_MGR_REDO )
@@ -3129,12 +3444,12 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
             sIsFirst = ID_FALSE;
         }
 
-        // sLogë¥¼ ë‹¤ì‹œ ì“°ê¸° ë•Œë¬¸ì— ìƒˆë¡œìš´ ë¡œê·¸ë¥¼ ì½ì–´ë“¤ì¼ë•Œë§ˆë‹¤ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•´ì•¼í•œë‹¤.
+        // sLog¸¦ ´Ù½Ã ¾²±â ¶§¹®¿¡ »õ·Î¿î ·Î±×¸¦ ÀĞ¾îµéÀÏ¶§¸¶´Ù ÃÊ±âÈ­¸¦ ¼öÇàÇØ¾ßÇÑ´Ù.
         sLog.reset();
         //----------------------------------------------------------------//
-        //  í˜„ì¬ XLSNê°€ ìœ„ì¹˜í•œ ë¡œê·¸ê°€ ì •í™•í•œ ê²ƒì¸ì§€ ê²€ì‚¬.
-        //  Headì™€ Tailì´ ë™ì¼í•œ Typeì„ ê°€ì ¸ì•¼ í•¨.
-        //  ë¡œê·¸ í™”ì¼ì˜ ë§ˆì§€ë§‰ì¸ì§€ë„ ê²€ì‚¬.
+        //  ÇöÀç XLSN°¡ À§Ä¡ÇÑ ·Î±×°¡ Á¤È®ÇÑ °ÍÀÎÁö °Ë»ç.
+        //  Head¿Í TailÀÌ µ¿ÀÏÇÑ TypeÀ» °¡Á®¾ß ÇÔ.
+        //  ·Î±× È­ÀÏÀÇ ¸¶Áö¸·ÀÎÁöµµ °Ë»ç.
         //  Check End Of Log : If so, Loop-Out.
         //----------------------------------------------------------------//
         IDE_TEST( sLog.readFrom( sLogHeadPtr, sLogPtr, &sReadLSN )
@@ -3170,46 +3485,83 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
         }
 
         //----------------------------------------------------------------//
-        // Gurarantee Synced mXLSN
+        // Guarantee Synced mXLSN
         //----------------------------------------------------------------//
         // BUG-15753
-        IDE_TEST( waitForLogSync( &sLog ) != IDE_SUCCESS );
+        IDE_TEST( checkAndWaitForLogSync( &sLog ) != IDE_SUCCESS );
 
         // Increase READ_LOG_COUNT in V$REPSENDER
         idCore::acpAtomicInc64( &mReadLogCount );
 
-
-        if ( isMyLog( sLog.getTransID(), sCurrentSN ) == ID_TRUE )
+        if ( sLog.getType() == SMI_LT_TRANS_GROUPCOMMIT )
         {
-            IDE_TEST_RAISE ( checkAndAddXLog( aActionAddXLog,
-                                              aSNPool,
-                                              aSNList,
-                                              &sLog,
-                                              sReadLSN,
-                                              sIsStartedAheadAnalyzer ) 
-                             != IDE_SUCCESS, ERR_CHECK_AND_MAKE_XLOG );    
+            sGCCnt = sLog.getGroupCommitCnt( sLog.getLogPtr() );
+
+            for ( i = 0; i < sGCCnt; i++ )
+            {
+                sTID = sLog.getNthTIDFromGroupCommit( sLog.getLogPtr(), i );
+
+                if ( isMyLog( sTID, sCurrentSN ) == ID_TRUE )
+                {
+                    IDE_TEST_RAISE ( checkAndAddXLog( aActionAddXLog,
+                                                      aSNPool,
+                                                      aSNList,
+                                                      sRawLogPtr,
+                                                      &sLog,
+                                                      sReadLSN,
+                                                      sIsStartedAheadAnalyzer,
+                                                      sTID )
+                                     != IDE_SUCCESS, ERR_CHECK_AND_MAKE_XLOG );
+                }
+                else
+                {
+                    /* do nothing */
+                }
+            }
         }
         else
         {
-            /* do nothing */
+            sTID = sLog.getTransID();
+
+            if ( isMyLog( sTID, sCurrentSN ) == ID_TRUE )
+            {
+                IDE_TEST_RAISE ( checkAndAddXLog( aActionAddXLog,
+                                                  aSNPool,
+                                                  aSNList,
+                                                  sRawLogPtr,
+                                                  &sLog,
+                                                  sReadLSN,
+                                                  sIsStartedAheadAnalyzer,
+                                                  sTID )
+                                 != IDE_SUCCESS, ERR_CHECK_AND_MAKE_XLOG );
+            }
+            else
+            {
+                /* do nothing */
+            }
         }
+        RP_LABEL( NEXT_LOG );
 
         mSender->mXSN = sCurrentSN;
         mNeedSN = sCurrentSN + 1;
 
         /*
          * PROJ-2453 Eager Replication Performance Enhancement
-         * Sender ì˜ Active Transaction ì´ ì¡´ì¬ í•˜ì§€ ì•Šìœ¼ë©´
-         * ë”ì´ìƒ Sender Thread ì—ì„œ ì§ì ‘ ë³´ë‚¼ ë¡œê·¸ë“¤ì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
-         * ê·¸ëŸ¬ë¯€ë¡œ replicateLogFiles ëŠ” ì¢…ë£Œ í•˜ê³  IDLE ìƒíƒœë¡œ ë³€ê²½í•œë‹¤.
+         * Sender ÀÇ Active Transaction ÀÌ Á¸Àç ÇÏÁö ¾ÊÀ¸¸é
+         * ´õÀÌ»ó Sender Thread ¿¡¼­ Á÷Á¢ º¸³¾ ·Î±×µéÀÌ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+         * ±×·¯¹Ç·Î replicateLogFiles ´Â Á¾·á ÇÏ°í IDLE »óÅÂ·Î º¯°æÇÑ´Ù.
          */
         if ( ( mTransTbl->getATransCnt() == 0 ) &&
-             ( mSender->mStatus == RP_SENDER_FLUSH_FAILBACK ) &&
+             ( ( mSender->mStatus == RP_SENDER_FLUSH_FAILBACK ) ||
+               ( mSender->mStatus == RP_SENDER_CONSISTENT_FAILBACK ) ) &&
              ( mSender->getFailbackEndSN() < sCurrentSN ) )
         {
             IDE_TEST( mSender->addXLogKeepAlive() != IDE_SUCCESS );
 
-            mSender->setStatus( RP_SENDER_IDLE );
+            if ( mMeta->getReplMode() == RP_EAGER_MODE )
+            {
+                mSender->setStatus( RP_SENDER_IDLE );
+            }
             break;
         }
         else
@@ -3224,6 +3576,7 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
     if ( mIsGroupingMode == ID_TRUE )
     {
         mAheadAnalyzer->stopToAnalyze();
+        mDelayedLogQueue.dequeueALL();
     }
     else
     {
@@ -3232,21 +3585,12 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION( ERR_READ_LOG_RECORD );
-    {
-        IDE_ERRLOG( IDE_RP_0 );
-    }
-    IDE_EXCEPTION( ERR_LOG_READ );
-    {
-        IDE_ERRLOG( IDE_RP_0 );
-    }
     IDE_EXCEPTION( ERR_CHECK_AND_MAKE_XLOG );
     {
         IDE_ERRLOG( IDE_RP_0 );
     }
     IDE_EXCEPTION_END;
 
-    RP_OPTIMIZE_TIME_END( mOpStatistics, IDV_OPTM_INDEX_RP_S_READ_LOG_FROM_FILE );
     RP_OPTIMIZE_TIME_END( mOpStatistics, IDV_OPTM_INDEX_RP_S_READ_LOG_FROM_REPLBUFFER );
 
     unlockLogSwitch( &sLogSwitchLocked );
@@ -3256,7 +3600,7 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
     IDE_ERRLOG( IDE_RP_0 );
 
     /*
-     *  sLogHeadPtr í• ë‹¹ ì „ì—  IDE_TEST ì¡´ì¬
+     *  sLogHeadPtr ÇÒ´ç Àü¿¡  IDE_TEST Á¸Àç
      */
     if ( sLogHeadPtr != NULL )
     {
@@ -3290,6 +3634,7 @@ IDE_RC rpxReplicator::replicateLogFiles( RP_ACTION_ON_NOGAP      aActionNoGap,
     if ( mIsGroupingMode == ID_TRUE )
     {
         mAheadAnalyzer->stopToAnalyze();
+        mDelayedLogQueue.dequeueALL();
     }
     else
     {
@@ -3352,7 +3697,7 @@ IDE_RC rpxReplicator::initTransTable( void )
                         != IDE_SUCCESS, ERR_MEMORY_ALLOC_TRANS_TABLE );
         new (sTransTbl) rpdTransTbl;
     
-        IDE_TEST_RAISE( sTransTbl->initialize( RPD_TRANSTBL_USE_SENDER,
+        IDE_TEST_RAISE( sTransTbl->initialize( RPD_TRANSTBL_USING_LOG_ANALYZER,
                                                0 /*sender does not use transaction pool*/ )
                         != IDE_SUCCESS, err_hash_init );
         sIsInit = ID_TRUE;
@@ -3474,13 +3819,14 @@ IDE_RC rpxReplicator::switchToRedoLogMgr( smSN * aSN )
 
     ideLog::log( IDE_RP_0, RP_TRC_S_INIT_REDO_LOG_MGR );
 
-    // redo logë¡œ ì „í™˜í•œë‹¤.
+    // redo log·Î ÀüÈ¯ÇÑ´Ù.
     mLogMgrStatus = RP_LOG_MGR_REDO;
     if ( mLogMgr.initialize( mSender->mXSN,
-                             0,    // BUG-29926 Archive ALAëŠ” PreRead Thread ë¯¸ì‚¬ìš©
-                             ID_FALSE,
-                             0,
-                             NULL )
+                             0,         // BUG-29926 Archive ALA´Â PreRead Thread ¹Ì»ç¿ë
+                             ID_FALSE,  // aIsRemoteLog 
+                             0,         // aLogFileSize
+                             NULL,      // aLogDirPath
+                             ID_TRUE ) // ¾ĞÃàµÈ ·Î±×ÆÄÀÏÀÇ °æ¿ì ¾ĞÃàÀ» Ç®Áö¾Ê°í ¹İÈ¯ÇÒÁö ¿©ºÎ
          != IDE_SUCCESS )
     {
         IDE_ERRLOG( IDE_RP_0 );
@@ -3488,13 +3834,14 @@ IDE_RC rpxReplicator::switchToRedoLogMgr( smSN * aSN )
         ideLog::log( IDE_RP_0, RP_TRC_S_ERR_INIT_REDO_LOG_MGR );
         ideLog::log( IDE_RP_0, RP_TRC_S_INIT_ARCHIVE_LOG_MGR );
 
-        // redo logì— ì—†ëŠ” ê²½ìš° ë‹¤ì‹œ archive logë¡œ ì „í™˜í•œë‹¤.
+        // redo log¿¡ ¾ø´Â °æ¿ì ´Ù½Ã archive log·Î ÀüÈ¯ÇÑ´Ù.
         mLogMgrStatus = RP_LOG_MGR_ARCHIVE;
         IDE_TEST( mLogMgr.initialize( mSender->mXSN,
                                       0,
-                                      ID_TRUE, //ë¦¬ëª¨íŠ¸ ë¡œê·¸
+                                      ID_TRUE, //¸®¸ğÆ® ·Î±×
                                       smiGetLogFileSize(),
-                                      mFirstArchiveLogDirPath )
+                                      mFirstArchiveLogDirPath,
+                                      ID_TRUE ) // ¾ĞÃàµÈ ·Î±×ÆÄÀÏÀÇ °æ¿ì ¾ĞÃàÀ» Ç®Áö¾Ê°í ¹İÈ¯ÇÒÁö ¿©ºÎ
                   != IDE_SUCCESS );
 
         IDE_ASSERT( getRemoteLastUsedGSN( aSN ) == IDE_SUCCESS );
@@ -3522,7 +3869,7 @@ IDE_RC rpxReplicator::initializeLogMgr( smSN     aInitSN,
                                         UInt     aPreOpenFileCnt,
                                         idBool   aIsRemoteLog,
                                         ULong    aLogFileSize,
-                                        UInt     /*aLFGCount*/, //[TASK-6757]LFG,SN ì œê±°
+                                        UInt     /*aLFGCount*/, //[TASK-6757]LFG,SN Á¦°Å
                                         SChar ** aLogDirPath )
 {
     if ( mLogMgrInit == ID_FALSE )
@@ -3535,7 +3882,8 @@ IDE_RC rpxReplicator::initializeLogMgr( smSN     aInitSN,
                                       aPreOpenFileCnt,
                                       aIsRemoteLog,
                                       aLogFileSize,
-                                      aLogDirPath )
+                                      aLogDirPath,
+                                      ID_TRUE ) /* ¾ĞÃàµÈ ·Î±×ÆÄÀÏÀÇ °æ¿ì ¾ĞÃàÀ» Ç®Áö¾Ê°í ¹İÈ¯ÇÒÁö ¿©ºÎ (¾ĞÃàµÈ ÇüÅÂ·Î ¹İÈ¯) */
                   != IDE_SUCCESS );
         
         mLogMgrInit = ID_TRUE;
@@ -3622,8 +3970,8 @@ void rpxReplicator::checkAndSetSwitchToArchiveLogMgr(
     if ( ( mLogMgrStatus == RP_LOG_MGR_REDO ) &&
          ( mNeedSwitchLogMgr == ID_FALSE ) )
     {
-        // í˜„ì¬ ì½ê³  ìˆëŠ” fileNoê°€ archiveë˜ì§€ ì•Šì•˜ë‹¤ë©´ logë¥¼ switchí•˜ì§€ ì•Šê³ 
-        // í˜„ì¬ ì½ê³  ìˆëŠ” redo logë¥¼ ì‚­ì œí•˜ì§€ ëª»í•˜ë„ë¡ í•œë‹¤.
+        // ÇöÀç ÀĞ°í ÀÖ´Â fileNo°¡ archiveµÇÁö ¾Ê¾Ò´Ù¸é log¸¦ switchÇÏÁö ¾Ê°í
+        // ÇöÀç ÀĞ°í ÀÖ´Â redo log¸¦ »èÁ¦ÇÏÁö ¸øÇÏµµ·Ï ÇÑ´Ù.
         if ( ( mCurrFileNo > aLastArchiveFileNo[0] ) &&
              ( mCurrFileNo != ID_UINT_MAX ) )
         {
@@ -3877,9 +4225,9 @@ SInt rpxReplicator::getCurrentFileNo( void )
     return mCurrFileNo;
 }
 
-RP_REPLICATIED_TRNAS_GROUP_OP rpxReplicator::getReplicatedTransGroupOperation( smiLogRec    * aLog )
+RP_REPLICATIED_TRNAS_GROUP_OP rpxReplicator::getReplicatedTransGroupOperation( smiLogRec    * aLog,
+                                                                               smTID          aTID )
 {
-    smTID           sTransID = SM_NULL_TID;
     smiLogType      sLogType;
     smSN            sSN = SM_SN_NULL;
     RP_REPLICATIED_TRNAS_GROUP_OP sOperation = RP_REPLICATIED_TRNAS_GROUP_NONE;
@@ -3888,11 +4236,10 @@ RP_REPLICATIED_TRNAS_GROUP_OP rpxReplicator::getReplicatedTransGroupOperation( s
     idBool          sIsLastLog = ID_FALSE;
     rpdReplicatedTransGroupOperation sGroupOperation = RPD_REPLICATED_TRANS_GROUP_NONE;
 
-    sTransID = aLog->getTransID();
     sLogType = aLog->getType();
     sSN = aLog->getRecordSN();
 
-    mAheadAnalyzer->getReplicatedTransGroupInfo( sTransID,
+    mAheadAnalyzer->getReplicatedTransGroupInfo( aTID,
                                                  sSN,
                                                  &sIsFirstGroup,
                                                  &sIsLastLog,
@@ -3923,6 +4270,7 @@ RP_REPLICATIED_TRNAS_GROUP_OP rpxReplicator::getReplicatedTransGroupOperation( s
                         break;
 
                     case SMI_LT_TRANS_COMMIT:
+                    case SMI_LT_TRANS_GROUPCOMMIT:
 
                         if ( sIsLastLog == ID_TRUE )
                         {
@@ -3932,7 +4280,6 @@ RP_REPLICATIED_TRNAS_GROUP_OP rpxReplicator::getReplicatedTransGroupOperation( s
                         {
                             sOperation = RP_REPLICATIED_TRNAS_GROUP_DONT_SEND;
                         }
-
                         break;
 
                     default:
@@ -3952,9 +4299,18 @@ RP_REPLICATIED_TRNAS_GROUP_OP rpxReplicator::getReplicatedTransGroupOperation( s
         switch ( sLogType )
         {
             case SMI_LT_TRANS_COMMIT:
+            case SMI_LT_TRANS_GROUPCOMMIT:
             case SMI_LT_TRANS_PREABORT:
-                IDE_DASSERT( mTransTbl->isATrans( sTransID ) == ID_TRUE ); 
-                sOperation = RP_REPLICATIED_TRNAS_GROUP_NORMAL;
+                IDE_DASSERT( mTransTbl->isATrans( aTID ) == ID_TRUE );
+
+                if ( mTransTbl->getSendBeginFlag( aTID ) == ID_FALSE )
+                {
+                    sOperation = RP_REPLICATIED_TRNAS_GROUP_DONT_SEND;
+                }
+                else
+                {
+                    sOperation = RP_REPLICATIED_TRNAS_GROUP_NORMAL;
+                }
                 break;
 
             default:
@@ -3968,12 +4324,15 @@ RP_REPLICATIED_TRNAS_GROUP_OP rpxReplicator::getReplicatedTransGroupOperation( s
 }
 
 IDE_RC rpxReplicator::addXLogInGroupingMode( smiLogRec             * aLog,
+                                             SChar                 * aRawLogPtr,
                                              smLSN                   aCurrentLSN,
                                              rpdMetaItem           * aMetaItem,
                                              RP_ACTION_ON_ADD_XLOG   aAction,
                                              iduMemPool            * aSNPool,
-                                             iduList               * aSNList )
+                                             iduList               * aSNList,
+                                             smTID                   aTID )
 {
+    smLSN sReadLSN;
     RP_REPLICATIED_TRNAS_GROUP_OP   sOperation;
 
     if ( ( aCurrentLSN.mFileNo < mAheadAnalyzer->getStartFileNo() ) ||
@@ -3983,14 +4342,16 @@ IDE_RC rpxReplicator::addXLogInGroupingMode( smiLogRec             * aLog,
     }
     else
     {
-        sOperation = getReplicatedTransGroupOperation( aLog );
+        sOperation = getReplicatedTransGroupOperation( aLog, aTID );
     }
 
     switch ( sOperation )
     {
         case RP_REPLICATIED_TRNAS_GROUP_KEEP:
-            IDE_DASSERT( mTransTbl->isATrans( aLog->getTransID() ) == ID_TRUE );
-            IDE_TEST ( mDelayedLogQueue.enqueue( aLog->getLogPtr() ) != IDE_SUCCESS );
+            IDE_DASSERT( mTransTbl->isATrans( aTID ) == ID_TRUE );
+
+            mLogMgr.getReadLSN( &sReadLSN );
+            IDE_TEST ( mDelayedLogQueue.enqueue( aRawLogPtr, &sReadLSN ) != IDE_SUCCESS );
             break;
 
         case RP_REPLICATIED_TRNAS_GROUP_NORMAL:
@@ -3999,7 +4360,8 @@ IDE_RC rpxReplicator::addXLogInGroupingMode( smiLogRec             * aLog,
                                      aAction,
                                      aSNPool,
                                      aSNList,
-                                     sOperation )
+                                     sOperation,
+                                     aTID )
                             != IDE_SUCCESS, ERR_MAKE_XLOG );
             break;
 
@@ -4010,10 +4372,11 @@ IDE_RC rpxReplicator::addXLogInGroupingMode( smiLogRec             * aLog,
                                      aAction,
                                      aSNPool,
                                      aSNList,
-                                     sOperation )
+                                     sOperation,
+                                     aTID )
                             != IDE_SUCCESS, ERR_MAKE_XLOG );
 
-            if ( mAheadAnalyzer->isLastTransactionInFirstGroup( aLog->getTransID(),
+            if ( mAheadAnalyzer->isLastTransactionInFirstGroup( aTID,
                                                                 aLog->getRecordSN() )
                  == ID_TRUE )
             {
@@ -4051,15 +4414,18 @@ IDE_RC rpxReplicator::dequeueAndSend( RP_ACTION_ON_ADD_XLOG   aAction,
                                       iduList               * aSNList )
 {
     smiLogHdr     sLogHead;
-    SChar       * sLogPtr = NULL;
+    SChar       * sLogPtr     = NULL;
+    SChar       * sLogTempPtr = NULL;
     smLSN         sDummyLSN;
     idBool        sIsEmpty = ID_TRUE;
 
     smiLogRec     sLog;
     smiLogType    sLogType = SMI_LT_NULL;
     ULong         sLogTableOID = 0;
+    smTID         sLogTransID = SM_NULL_TID;
 
     rpdMetaItem * sMetaItem = NULL;
+    smLSN         sReadLSN;
     
     RP_REPLICATIED_TRNAS_GROUP_OP   sOperation = RP_REPLICATIED_TRNAS_GROUP_NONE;
 
@@ -4075,8 +4441,9 @@ IDE_RC rpxReplicator::dequeueAndSend( RP_ACTION_ON_ADD_XLOG   aAction,
 
     while ( 1 )
     {
-        sLogPtr = NULL;
-        IDE_TEST( mDelayedLogQueue.dequeue( (void**)&sLogPtr,
+        sLogTempPtr = NULL;
+        IDE_TEST( mDelayedLogQueue.dequeue( (void**)&sLogTempPtr,
+                                            &sReadLSN,
                                             &sIsEmpty )
                   != IDE_SUCCESS );
 
@@ -4084,7 +4451,21 @@ IDE_RC rpxReplicator::dequeueAndSend( RP_ACTION_ON_ADD_XLOG   aAction,
         {
             sLog.reset();
 
-            smiLogRec::getLogHdr( sLogPtr, &sLogHead );
+            if ( mLogMgr.isCompressedLog( sLogTempPtr ) == ID_TRUE )
+            {
+                sLogPtr = NULL;
+
+                IDE_TEST( mLogMgr.decompressLog( sLogTempPtr,
+                                                 &sReadLSN,
+                                                 (smiLogHdr*)&sLogHead,
+                                                 &sLogPtr )
+                          != IDE_SUCCESS );
+            }
+            else
+            {                
+                sLogPtr = sLogTempPtr;
+                smiLogRec::getLogHdr( sLogPtr, &sLogHead );
+            }
 
             IDE_TEST( sLog.readFrom( &sLogHead,
                                      sLogPtr,
@@ -4093,8 +4474,9 @@ IDE_RC rpxReplicator::dequeueAndSend( RP_ACTION_ON_ADD_XLOG   aAction,
 
             sLogType = sLog.getType();
             sLogTableOID = sLog.getTableOID();
+            sLogTransID = sLog.getTransID();
 
-            sOperation = getReplicatedTransGroupOperation( &sLog );
+            sOperation = getReplicatedTransGroupOperation( &sLog, sLogTransID );
 
             /* TODO comment */
             if ( sOperation == RP_REPLICATIED_TRNAS_GROUP_KEEP )
@@ -4107,20 +4489,22 @@ IDE_RC rpxReplicator::dequeueAndSend( RP_ACTION_ON_ADD_XLOG   aAction,
             }
 
             IDE_DASSERT( sLogType != SMI_LT_TRANS_COMMIT );
+            IDE_DASSERT( sLogType != SMI_LT_TRANS_GROUPCOMMIT );
             IDE_DASSERT( sLogType != SMI_LT_TRANS_PREABORT );
-            
-            IDE_TEST( getMetaItemByLogTypeAndTableOID( sLogType,
-                                                       sLogTableOID,
-                                                       &sMetaItem )
-                      != IDE_SUCCESS );
 
-            IDE_TEST_RAISE( addXLog( &sLog,
-                                     sMetaItem,
-                                     aAction,
-                                     aSNPool,
-                                     aSNList,
-                                     sOperation )
-                            != IDE_SUCCESS, ERR_MAKE_XLOG );
+             IDE_TEST( getMetaItemByLogTypeAndTableOID( sLogType,
+                                                        sLogTableOID,
+                                                        &sMetaItem )
+                       != IDE_SUCCESS );
+
+             IDE_TEST_RAISE( addXLog( &sLog,
+                                      sMetaItem,
+                                      aAction,
+                                      aSNPool,
+                                      aSNList,
+                                      sOperation,
+                                      sLogTransID )
+                             != IDE_SUCCESS, ERR_MAKE_XLOG );
         }
         else
         {
@@ -4329,48 +4713,50 @@ idBool rpxReplicator::isReplPropagableLog( smiLogRec * aLog )
     return aLog->needReplRecovery();
 }
 
-idBool rpxReplicator::isSkipLog( smiLogRec * aLog )
+idBool rpxReplicator::checkUsefulLogByTableMetaType( smiLogRec * aLog )
 {
-    idBool         sIsSkipLog = ID_FALSE;
-    smiTableMeta * sItemMeta  = aLog->getTblMeta();
-    rpdMetaItem  * sMetaItem  = NULL;
-    smOID          sOldTableOID = aLog->getTableOID();
-    smOID          sNewTableOID = sItemMeta->mTableOID;
+    idBool         sIsOk     = ID_FALSE;
+    smiTableMeta * sItemMeta = aLog->getTblMeta();
 
-    if ( ( mMeta->findTableMetaItem( sItemMeta->mUserName, sItemMeta->mTableName ) != NULL ) && 
-         ( isNewPartition( sOldTableOID ) == ID_TRUE ) )
+    switch( rpdMeta::getTableMetaType( aLog->getTableOID(), sItemMeta->mTableOID ) )
     {
-        (void)mMeta->searchTable( &sMetaItem, sNewTableOID );
-        if ( sMetaItem != NULL )
-        {
-            if ( sMetaItem->mItem.mInvalidMaxSN >= aLog->getRecordSN() )
-            {
-                sIsSkipLog = ID_TRUE;
-            }
-        }
-    }
-    else
-    {
-        sIsSkipLog = ID_TRUE;
+        case RP_META_INSERT_ITEM:
+        case RP_META_UPDATE_ITEM:
+                if ( idlOS::strncmp( mMeta->mReplication.mRepName,
+                                     sItemMeta->mRepName,
+                                     QCI_MAX_NAME_LEN + 1 )
+                     == 0 )
+                {
+                    sIsOk = ID_TRUE;
+                }
+
+            break;
+        
+        case RP_META_DELETE_ITEM:
+                if ( sItemMeta->mRepName[0] == 0 )
+                {
+                    /* ALTER TABLE ... */
+                    sIsOk = ID_TRUE;
+                }
+                else
+                {
+                    /* ALTER REPLICATION ... */
+                    if ( idlOS::strncmp( mMeta->mReplication.mRepName,
+                                         sItemMeta->mRepName,
+                                         QCI_MAX_NAME_LEN + 1 ) 
+                         == 0 )
+                    {
+                        sIsOk = ID_TRUE;
+                    }
+                }
+            break;
+
+        default:
+            IDE_DASSERT( 0 );
+            break;
     }
 
-    return sIsSkipLog;
-}
-
-idBool rpxReplicator::isNewPartition( smOID aOldTableOID )
-{
-    idBool sIsNew = ID_FALSE;
-
-    if ( aOldTableOID == SM_OID_NULL )
-    {
-        sIsNew = ID_TRUE;
-    }
-    else
-    {
-        sIsNew = ID_FALSE;
-    }
-
-    return sIsNew;
+    return sIsOk;
 }
 
 IDE_RC rpxReplicator::getDDLInfoFromDDLStmtLog( smTID   aTID, 
@@ -4497,6 +4883,156 @@ IDE_RC rpxReplicator::getTargetNamesFromItemMetaEntry( smTID    aTID,
         (void)iduMemMgr::free( sTargetPartNames );
         sTargetPartNames = NULL;
     }
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpxReplicator::readMyLog( smSN    * aCurrentSN, 
+                                 smLSN   * aReadLSN, 
+                                 SChar   * aLogHead,
+                                 SChar  ** aLogPtr,
+                                 SChar  ** aRawLogPtr,
+                                 idBool  * aIsValid )
+{
+    SChar       * sLogPtr         = NULL;
+    SChar		* sLogPtrTemp	  = NULL;
+    SChar       * sLogHeadPtrTemp = NULL;
+    idBool        sIsOfflineStatusFound = ID_FALSE;
+    idBool        sIsNeedDecompress     = ID_FALSE;
+
+    RP_CREATE_FLAG_VARIABLE( IDV_OPTM_INDEX_RP_S_READ_LOG_FROM_FILE );
+
+    /* BUGBUG: For Parallel Logging */
+    RP_OPTIMIZE_TIME_BEGIN( mOpStatistics,
+                            IDV_OPTM_INDEX_RP_S_READ_LOG_FROM_FILE );
+
+    IDE_TEST_RAISE( mLogMgr.readLog( aCurrentSN,
+                                     aReadLSN,
+                                     (void**)&sLogHeadPtrTemp,
+                                     (void**)&sLogPtrTemp,
+                                     aIsValid )
+                    != IDE_SUCCESS, ERR_READ_LOG_RECORD );
+    *aRawLogPtr = sLogPtrTemp;
+
+    RP_OPTIMIZE_TIME_END( mOpStatistics,
+                          IDV_OPTM_INDEX_RP_S_READ_LOG_FROM_FILE );
+
+    if ( *aIsValid == ID_TRUE ) 
+    {
+        // BUG-29115
+        // ÇöÀç ÀĞ°í ÀÖ´Â file no
+        mCurrFileNo = aReadLSN->mFileNo;
+
+        if ( mLogMgr.isCompressedLog( sLogPtrTemp ) != ID_TRUE )
+        {   
+            *aLogPtr = sLogPtrTemp;
+            idlOS::memcpy( aLogHead, sLogHeadPtrTemp, ID_SIZEOF(smiLogHdr) );
+        }
+        else
+        {
+            IDE_TEST( isNeedDecompress( sLogPtrTemp, 
+                                        sLogHeadPtrTemp,
+                                        &sIsNeedDecompress )
+                      != IDE_SUCCESS );
+
+            if ( sIsNeedDecompress == ID_TRUE )
+            {
+                IDE_TEST( mLogMgr.decompressLog( sLogPtrTemp,
+                                                 aReadLSN,
+                                                 (smiLogHdr*)aLogHead,
+                                                 &sLogPtr )
+                          != IDE_SUCCESS );
+
+                *aLogPtr = sLogPtr;
+            }
+            else
+            {
+                *aLogPtr = NULL;
+            }
+        }
+    }
+    else
+    {
+        /* GSN°ªÀ» Áõ°¡½ÃÅ°°í ·Î±×¸¦ ±â·ÏÇÏ±â ¶§¹®¿¡ ·Î±×°¡ ±â·ÏµÇ±âÀü¿¡
+           Sender°¡ ÀĞÀ» °æ¿ì ÀÌ·± °æ¿ì°¡ ¹ß»ıÇÔ Á¤»ó»óÈ²ÀÓ.*/
+        if ( mSender->mCurrentType == RP_OFFLINE )
+        {
+            mSender->setExitFlag();
+            rpcManager::setOfflineCompleteFlag( mSender->mRepName,
+                                                ID_TRUE,
+                                                &sIsOfflineStatusFound );
+            IDE_ASSERT( sIsOfflineStatusFound == ID_TRUE );
+        }
+        else
+        {
+            // BUG-29115
+            // archive log¸¦ ÀĞ°í ÀÖ´Â »óÅÂ¿¡¼­´Â ÀÌ·± log°¡ ¹ß»ıÇÒ ¼ö ¾ø´Ù.
+            if ( mLogMgrStatus == RP_LOG_MGR_ARCHIVE )
+            {
+                // archive log¸¦ ÀĞ´Â °æ¿ì´Â alaÀÏ¶§ »ÓÀÌ´Ù.
+                IDE_DASSERT( mSender->getRole() == RP_ROLE_ANALYSIS );
+
+                // ¿¹¿ÜÃ³¸®¿¡¼­ ¿¡·¯¸¦ ¼ÂÆÃÇÑ´Ù.
+                IDE_RAISE( ERR_LOG_READ );
+            }
+        }
+
+        *aLogPtr = NULL;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_READ_LOG_RECORD );
+    {
+        IDE_ERRLOG( IDE_RP_0 );
+    }
+    IDE_EXCEPTION( ERR_LOG_READ );
+    {
+        IDE_ERRLOG( IDE_RP_0 );
+    }
+    IDE_EXCEPTION_END;
+
+    RP_OPTIMIZE_TIME_END( mOpStatistics, IDV_OPTM_INDEX_RP_S_READ_LOG_FROM_FILE );
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpxReplicator::isNeedDecompress( SChar  * aRawLogPtr,
+                                        SChar  * aRawHeadLogPtr,
+                                        idBool * aIsNeedDecompress )
+{
+    smOID         sTableOID = SM_OID_NULL;
+    rpdMetaItem * sMetaItem = NULL;
+
+    if ( smiLogRec::isNeedDecompressFromHdr( (smiLogHdr*)aRawHeadLogPtr ) == ID_TRUE )
+    {
+        *aIsNeedDecompress = ID_TRUE;
+    }
+    else
+    {
+        sTableOID = mLogMgr.getTableOID( aRawLogPtr );
+        if ( sTableOID == SM_OID_NULL )
+        {
+            *aIsNeedDecompress = ID_TRUE;
+        }
+        else
+        {
+            IDE_TEST( mMeta->searchTable( &sMetaItem, sTableOID )
+                      != IDE_SUCCESS );
+            if ( sMetaItem != NULL )
+            {
+                *aIsNeedDecompress = ID_TRUE;
+            }
+            else
+            {
+                *aIsNeedDecompress = ID_FALSE;
+            }
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 }

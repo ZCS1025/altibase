@@ -19,11 +19,11 @@
  *
  * Description : PROJ-2242 Common Subexpression Elimination Transformation
  *
- *       - QTC_NODE_JOIN_OPERATOR_EXIST ì¼ ê²½ìš° ìˆ˜í–‰ ì•ˆí•¨
- *       - subquery, host variable, GEOMETRY type arguments ì œì™¸
- *       - __OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION property ë¡œ ë™ì‘
+ *       - QTC_NODE_JOIN_OPERATOR_EXIST ÀÏ °æ¿ì ¼öÇà ¾ÈÇÔ
+ *       - subquery, host variable, GEOMETRY type arguments Á¦¿Ü
+ *       - __OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION property ·Î µ¿ÀÛ
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
  *            1. Idempotent law
  *             - A and A = A
@@ -33,7 +33,7 @@
  *             - A or (A and B) = A
  *
  *
- * ì•½ì–´ : CSE (Common Subexpression Elimination)
+ * ¾à¾î : CSE (Common Subexpression Elimination)
  *        NNF (Not Normal Form)
  *
  *****************************************************************************/
@@ -43,8 +43,8 @@
 #include <qtc.h>
 #include <qmvQTC.h>
 #include <qcgPlan.h>
-#include <qcuProperty.h>
 #include <qmoCSETransform.h>
+#include <qcg.h>
 
 IDE_RC
 qmoCSETransform::doTransform4NNF( qcStatement  * aStatement,
@@ -53,8 +53,8 @@ qmoCSETransform::doTransform4NNF( qcStatement  * aStatement,
 {
 /******************************************************************************
  *
- * PROJ-2242 : Normalize ì´ì „ ìµœì´ˆ NNF í˜•íƒœì˜ ëª¨ë“  ì¡°ê±´ì ˆì— ëŒ€í•´
- *             CSE (common subexpression elimination) ìˆ˜í–‰
+ * PROJ-2242 : Normalize ÀÌÀü ÃÖÃÊ NNF ÇüÅÂÀÇ ¸ğµç Á¶°ÇÀı¿¡ ´ëÇØ
+ *             CSE (common subexpression elimination) ¼öÇà
  *
  * Implementation : 1. CSE for where clause predicate
  *                  2. CSE for from tree
@@ -65,27 +65,27 @@ qmoCSETransform::doTransform4NNF( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCSETransform::doTransform4NNF::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aQuerySet  != NULL );
 
     //--------------------------------------
-    // ê° ì¡°ê±´ì ˆì— ëŒ€í•œ CSE í•¨ìˆ˜ í˜¸ì¶œ
+    // °¢ Á¶°ÇÀı¿¡ ´ëÇÑ CSE ÇÔ¼ö È£Ãâ
     //--------------------------------------
 
     if ( aQuerySet->setOp == QMS_NONE )
     {
-        // From on clause predicate ì²˜ë¦¬
+        // From on clause predicate Ã³¸®
         IDE_TEST( doTransform4From( aStatement, aQuerySet->SFWGH->from, aIsNNF )
                   != IDE_SUCCESS );
 
-        // Where clause predicate ì²˜ë¦¬
+        // Where clause predicate Ã³¸®
         IDE_TEST( doTransform( aStatement, &aQuerySet->SFWGH->where, aIsNNF )
                   != IDE_SUCCESS );
 
-        // Having clause predicate ì²˜ë¦¬
+        // Having clause predicate Ã³¸®
         IDE_TEST( doTransform( aStatement, &aQuerySet->SFWGH->having, aIsNNF )
                   != IDE_SUCCESS );
     }
@@ -112,7 +112,7 @@ qmoCSETransform::doTransform4From( qcStatement  * aStatement,
 {
 /******************************************************************************
  *
- * PROJ-2242 : From ì ˆì— ëŒ€í•œ CSE (common subexpression elimination) ìˆ˜í–‰
+ * PROJ-2242 : From Àı¿¡ ´ëÇÑ CSE (common subexpression elimination) ¼öÇà
  *
  * Implementation :
  *
@@ -121,14 +121,14 @@ qmoCSETransform::doTransform4From( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCSETransform::doTransform4From::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aFrom      != NULL );
 
     //--------------------------------------
-    // CSE í•¨ìˆ˜ í˜¸ì¶œ
+    // CSE ÇÔ¼ö È£Ãâ
     //--------------------------------------
 
     IDE_TEST( doTransform( aStatement, &aFrom->onCondition, aIsNNF )
@@ -157,41 +157,85 @@ qmoCSETransform::doTransform4From( qcStatement  * aStatement,
 IDE_RC
 qmoCSETransform::doTransform( qcStatement  * aStatement,
                               qtcNode     ** aNode,
-                              idBool         aIsNNF )
+                              idBool         aIsNNF,
+                              idBool         aIsWhere,
+                              qmsHints     * aHints )
 {
 /******************************************************************************
  *
- * PROJ-2242 : CSE (common subexpression elimination) ìˆ˜í–‰
- *             ë‹¨, ì¡°ê±´ì ˆì— oracle style outer mask '(+)' ê°€ ì¡´ì¬í•  ê²½ìš° ì œì™¸
+ * PROJ-2242 : CSE (common subexpression elimination) ¼öÇà
+ *             ´Ü, Á¶°ÇÀı¿¡ oracle style outer mask '(+)' °¡ Á¸ÀçÇÒ °æ¿ì Á¦¿Ü
  *
  * Implementation :
  *
- *          1. ORACLE style outer mask ì¡´ì¬ ê²€ì‚¬
+ *          1. ORACLE style outer mask Á¸Àç °Ë»ç
  *          2. NNF
- *          2.1. Depth ì¤„ì´ê¸°
- *          2.2. Idempotent law or absorption law ì ìš©
- *          2.3. í•˜ë‚˜ì˜ ì¸ìë¥¼ ê°–ëŠ” logical operator node ì œê±°
+ *          2.1. Depth ÁÙÀÌ±â
+ *          2.2. Idempotent law or absorption law Àû¿ë
+ *          2.3. ÇÏ³ªÀÇ ÀÎÀÚ¸¦ °®´Â logical operator node Á¦°Å
  *          3. Normal form
- *          3.1. Idempotent law or absorption law ì ìš©
+ *          3.1. Idempotent law or absorption law Àû¿ë
  *
  ******************************************************************************/
 
     idBool sExistOuter;
 
+    idBool              sIsTransform    = ID_TRUE;
+    qmsHints          * sHints;
+
     IDU_FIT_POINT_FATAL( "qmoCSETransform::doTransform::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aNode      != NULL );
 
-    //--------------------------------------
-    // CSE ìˆ˜í–‰
-    //--------------------------------------
+    sHints = aHints;
 
-    if( *aNode != NULL && QCU_OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION == 1 )
+    //--------------------------------------
+    // CSE ¼öÇà
+    //--------------------------------------
+    if ( *aNode == NULL )
+    {
+        sIsTransform = ID_FALSE;
+    }
+    else
+    {
+        // hint ¿ì¼±
+        if ( sHints != NULL )
+        {
+            if ( ( sHints->partialCSE == ID_TRUE ) &&
+                 ( aIsWhere == ID_TRUE ) )
+            {
+                sIsTransform = ID_FALSE;
+            }
+        }
+
+        if( sIsTransform == ID_TRUE )
+        {
+            switch ( QCG_GET_SESSION_ELIMINATE_COMMON_SUBEXPRESSION( aStatement ) )
+            {
+                case 0:
+                    sIsTransform = ID_FALSE;
+                    break;
+                case 1:
+                    break;
+                case 2:
+                    if ( aIsWhere == ID_TRUE )
+                    {
+                        sIsTransform = ID_FALSE;
+                    }
+                    break;
+                default:
+                    IDE_DASSERT(0);
+                    break;
+            }
+        }
+    }
+
+    if ( sIsTransform == ID_TRUE )
     {
         IDE_TEST( doCheckOuter( *aNode, &sExistOuter ) != IDE_SUCCESS );
 
@@ -214,7 +258,7 @@ qmoCSETransform::doTransform( qcStatement  * aStatement,
         }
         else
         {
-            // ì¡°ê±´ì ˆì— oracle style outer mask '(+)' ê°€ ì¡´ì¬í•  ê²½ìš°
+            // Á¶°ÇÀı¿¡ oracle style outer mask '(+)' °¡ Á¸ÀçÇÒ °æ¿ì
             // Nothing to do.
         }
     }
@@ -223,7 +267,7 @@ qmoCSETransform::doTransform( qcStatement  * aStatement,
         // Nothing to do.
     }
 
-    // environmentì˜ ê¸°ë¡
+    // environmentÀÇ ±â·Ï
     qcgPlan::registerPlanProperty(
             aStatement,
             PLAN_PROPERTY_OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION );
@@ -242,10 +286,10 @@ qmoCSETransform::doCheckOuter( qtcNode  * aNode,
 {
 /******************************************************************************
  *
- * PROJ-2242 : ORACLE style outer mask ê²€ì‚¬
+ * PROJ-2242 : ORACLE style outer mask °Ë»ç
  *
- * Implementation : ë…¸ë“œë¥¼ ìˆœíšŒí•˜ë©° QTC_NODE_JOIN_OPERATOR_MASK ê²€ì‚¬
- *                  ( parsing ê³¼ì •ì—ì„œ setting )
+ * Implementation : ³ëµå¸¦ ¼øÈ¸ÇÏ¸ç QTC_NODE_JOIN_OPERATOR_MASK °Ë»ç
+ *                  ( parsing °úÁ¤¿¡¼­ setting )
  *
  ******************************************************************************/
 
@@ -256,14 +300,14 @@ qmoCSETransform::doCheckOuter( qtcNode  * aNode,
     IDU_FIT_POINT_FATAL( "qmoCSETransform::doCheckOuter::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aNode       != NULL );
     IDE_DASSERT( aExistOuter != NULL );
 
     //--------------------------------------
-    // Outer mask ê²€ì‚¬
+    // Outer mask °Ë»ç
     //--------------------------------------
 
     sNode = aNode;
@@ -322,15 +366,15 @@ qmoCSETransform::unnestingAndOr4NNF( qcStatement * aStatement,
 {
 /******************************************************************************
  *
- * PROJ-2242 : NNF ì— ëŒ€í•´ ì¤‘ì²©ëœ AND,OR ë…¸ë“œ ì œê±°
+ * PROJ-2242 : NNF ¿¡ ´ëÇØ ÁßÃ¸µÈ AND,OR ³ëµå Á¦°Å
  *
- * Implementation : Parent level, child level ë…¸ë“œê°€
- *                  AND ë˜ëŠ” OR ë…¸ë“œë¡œ ë™ì¼í•  ê²½ìš°
- *                  child level ì˜ logical ë…¸ë“œë¥¼ ì œê±°
+ * Implementation : Parent level, child level ³ëµå°¡
+ *                  AND ¶Ç´Â OR ³ëµå·Î µ¿ÀÏÇÒ °æ¿ì
+ *                  child level ÀÇ logical ³ëµå¸¦ Á¦°Å
  *
  * Parent level :   OR (<- aNode)
  *                   |
- *  Child level :    P --- OR (<- sNode : ì œê±°) --- P (<-sNext) --- ...
+ *  Child level :    P --- OR (<- sNode : Á¦°Å) --- P (<-sNext) --- ...
  *                          |
  *                          P1 (<- sArg) --- ... --- Pn (<-sArgTail)
  *
@@ -342,7 +386,7 @@ qmoCSETransform::unnestingAndOr4NNF( qcStatement * aStatement,
     qtcNode * sArgTail = NULL;
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDU_FIT_POINT_FATAL( "qmoCSETransform::unnestingAndOr4NNF::__FT__" );
@@ -351,7 +395,7 @@ qmoCSETransform::unnestingAndOr4NNF( qcStatement * aStatement,
     IDE_DASSERT( aNode      != NULL );
 
     //--------------------------------------
-    // AND, OR ë…¸ë“œ unnesting ìˆ˜í–‰
+    // AND, OR ³ëµå unnesting ¼öÇà
     //--------------------------------------
 
     if( ( aNode->node.lflag & MTC_NODE_OPERATOR_MASK )
@@ -370,7 +414,7 @@ qmoCSETransform::unnestingAndOr4NNF( qcStatement * aStatement,
             if( ( aNode->node.lflag & MTC_NODE_OPERATOR_MASK ) ==
                 ( sNode->node.lflag & MTC_NODE_OPERATOR_MASK ) )
             {
-                // Tail ì—°ê²°
+                // Tail ¿¬°á
                 sArg = (qtcNode *)(sNode->node.arguments);
                 while( sArg != NULL )
                 {
@@ -387,7 +431,7 @@ qmoCSETransform::unnestingAndOr4NNF( qcStatement * aStatement,
                     // Nothing to do.
                 }
 
-                // Head ì—°ê²°
+                // Head ¿¬°á
                 if( sPrev == NULL )
                 {
                     aNode->node.arguments = sNode->node.arguments;
@@ -428,18 +472,18 @@ qmoCSETransform::idempotentAndAbsorption( qcStatement * aStatement,
 {
 /******************************************************************************
  *
- * PROJ-2242 : ë‘ ë…¸ë“œë¥¼ ë¹„êµí•˜ì—¬ ì•„ë˜ ë‘ ë²•ì¹™ì„ ì ìš©í•œë‹¤.
- *             NNF ì˜ ê²½ìš° ìˆ˜í–‰ê²°ê³¼ AND, OR ë…¸ë“œê°€ í•˜ë‚˜ì˜ ì¸ìë¥¼ ê°€ì§ˆìˆ˜ ìˆë‹¤.
- *             (ë”°ë¼ì„œ ë³¸ í•¨ìˆ˜ ìˆ˜í–‰ì´í›„ ë°˜ë“œì‹œ removeLogicalNode4NNF ë¥¼ ì ìš©í•´ì•¼ í•¨)
+ * PROJ-2242 : µÎ ³ëµå¸¦ ºñ±³ÇÏ¿© ¾Æ·¡ µÎ ¹ıÄ¢À» Àû¿ëÇÑ´Ù.
+ *             NNF ÀÇ °æ¿ì ¼öÇà°á°ú AND, OR ³ëµå°¡ ÇÏ³ªÀÇ ÀÎÀÚ¸¦ °¡Áú¼ö ÀÖ´Ù.
+ *             (µû¶ó¼­ º» ÇÔ¼ö ¼öÇàÀÌÈÄ ¹İµå½Ã removeLogicalNode4NNF ¸¦ Àû¿ëÇØ¾ß ÇÔ)
  *
  *          1. Idempotent law : A and A = A, A or A = A
  *          2. Absorption law : A and (A or B) = A, A or (A and B) = A
  *
  * ex) NNF : OR (<-aNode)
  *           |
- *           P1 (<-sTarget) -- AND (<-sCompare:ì¬ê·€) -- P2 -- AND --...
+ *           P1 (<-sTarget) -- AND (<-sCompare:Àç±Í) -- P2 -- AND --...
  *                             |                              |
- *                             Pn ( ê²°ê³¼ : í•œ ê°œ ì¡´ì¬ ê°€ëŠ¥)   ...
+ *                             Pn ( °á°ú : ÇÑ °³ Á¸Àç °¡´É)   ...
  *
  * ex) CNF : AND (<-aNode)
  *           |
@@ -447,10 +491,10 @@ qmoCSETransform::idempotentAndAbsorption( qcStatement * aStatement,
  *           |                      |             |
  *           Pn                     Pm            ...
  *
- *      cf) ë¹„êµ ê²°ê³¼(sResult)ë¥¼ ë‹¤ìŒê³¼ ê°™ì´ êµ¬ë³„í•œë‹¤.
- *        - QMO_CFS_COMPARE_RESULT_BOTH : sTarget, sCompare ìœ ì§€
- *        - QMO_CFS_COMPARE_RESULT_WIN  : sTarget ìœ ì§€, sCompare ì œê±°
- *        - QMO_CFS_COMPARE_RESULT_LOSE : sTarget ì œê±°, sCompare ìœ ì§€
+ *      cf) ºñ±³ °á°ú(sResult)¸¦ ´ÙÀ½°ú °°ÀÌ ±¸º°ÇÑ´Ù.
+ *        - QMO_CFS_COMPARE_RESULT_BOTH : sTarget, sCompare À¯Áö
+ *        - QMO_CFS_COMPARE_RESULT_WIN  : sTarget À¯Áö, sCompare Á¦°Å
+ *        - QMO_CFS_COMPARE_RESULT_LOSE : sTarget Á¦°Å, sCompare À¯Áö
  *
  *****************************************************************************/
 
@@ -464,14 +508,14 @@ qmoCSETransform::idempotentAndAbsorption( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCSETransform::idempotentAndAbsorption::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aNode      != NULL );
 
     //--------------------------------------
-    // Idempotent, absorption law ìˆ˜í–‰
+    // Idempotent, absorption law ¼öÇà
     //--------------------------------------
 
     if( ( aNode->node.lflag & MTC_NODE_OPERATOR_MASK )
@@ -482,7 +526,7 @@ qmoCSETransform::idempotentAndAbsorption( qcStatement * aStatement,
         sTargetPrev = NULL;
         sTarget = (qtcNode *)(aNode->node.arguments);
 
-        // sTargetì— ëŒ€í•´ ìš°ì„  ìˆ˜í–‰, ì´í›„ next ìˆœíšŒí•˜ë©° sCompare ì—ì„œ ìˆ˜í–‰
+        // sTarget¿¡ ´ëÇØ ¿ì¼± ¼öÇà, ÀÌÈÄ next ¼øÈ¸ÇÏ¸ç sCompare ¿¡¼­ ¼öÇà
         if( sTarget != NULL )
         {
             IDE_TEST( idempotentAndAbsorption( aStatement, sTarget )
@@ -500,7 +544,7 @@ qmoCSETransform::idempotentAndAbsorption( qcStatement * aStatement,
                 IDE_TEST( idempotentAndAbsorption( aStatement, sCompare )
                           != IDE_SUCCESS );
 
-                // ë‘ ë…¸ë“œì˜ ë¹„êµ
+                // µÎ ³ëµåÀÇ ºñ±³
                 IDE_TEST( compareNode( aStatement,
                                        sTarget,
                                        sCompare,
@@ -578,20 +622,20 @@ qmoCSETransform::compareNode( qcStatement         * aStatement,
 {
 /******************************************************************************
  *
- * PROJ-2242 : ë‘ ë…¸ë“œë¥¼ ë¹„êµí•˜ì—¬ ì œê±° ê°€ëŠ¥í•œ ë…¸ë“œë¥¼ ê²°ê³¼ë¡œ ë°˜í™˜í•œë‹¤.
+ * PROJ-2242 : µÎ ³ëµå¸¦ ºñ±³ÇÏ¿© Á¦°Å °¡´ÉÇÑ ³ëµå¸¦ °á°ú·Î ¹İÈ¯ÇÑ´Ù.
  *
- * Implementation : ë…¸ë“œì˜ ì¢…ë¥˜ì™€ ë¹„êµí˜•íƒœì— ë”°ë¼ ë‹¤ìŒê³¼ ê°™ì´ ì ìš©ëœë‹¤.
- *                  ( LO : AND, OR ë…¸ë“œ, OP: ì´ ì™¸ ë…¸ë“œ )
+ * Implementation : ³ëµåÀÇ Á¾·ù¿Í ºñ±³ÇüÅÂ¿¡ µû¶ó ´ÙÀ½°ú °°ÀÌ Àû¿ëµÈ´Ù.
+ *                  ( LO : AND, OR ³ëµå, OP: ÀÌ ¿Ü ³ëµå )
  *
- *               1. OP vs OP -> Idempotent law ì ìš©
- *               2. LO vs OP -> Absorption law ì ìš©
- *               3. OP vs LO -> Absorption law ì ìš©
- *               4. LO vs LO -> Absorption law ì ìš©
+ *               1. OP vs OP -> Idempotent law Àû¿ë
+ *               2. LO vs OP -> Absorption law Àû¿ë
+ *               3. OP vs LO -> Absorption law Àû¿ë
+ *               4. LO vs LO -> Absorption law Àû¿ë
  *
- *      cf) ë¹„êµ ê²°ê³¼(sResult)ë¥¼ ë‹¤ìŒê³¼ ê°™ì´ êµ¬ë³„í•œë‹¤.
- *        - QMO_CFS_COMPARE_RESULT_BOTH : sTarget, sCompare ìœ ì§€
- *        - QMO_CFS_COMPARE_RESULT_WIN  : sTarget ìœ ì§€, sCompare ì œê±°
- *        - QMO_CFS_COMPARE_RESULT_LOSE : sTarget ì œê±°, sCompare ìœ ì§€
+ *      cf) ºñ±³ °á°ú(sResult)¸¦ ´ÙÀ½°ú °°ÀÌ ±¸º°ÇÑ´Ù.
+ *        - QMO_CFS_COMPARE_RESULT_BOTH : sTarget, sCompare À¯Áö
+ *        - QMO_CFS_COMPARE_RESULT_WIN  : sTarget À¯Áö, sCompare Á¦°Å
+ *        - QMO_CFS_COMPARE_RESULT_LOSE : sTarget Á¦°Å, sCompare À¯Áö
  *
  *****************************************************************************/
 
@@ -609,14 +653,14 @@ qmoCSETransform::compareNode( qcStatement         * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCSETransform::compareNode::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aTarget    != NULL );
     IDE_DASSERT( aCompare   != NULL );
 
     //--------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //--------------------------------------
 
     sTargetArgCnt = 0;
@@ -628,16 +672,16 @@ qmoCSETransform::compareNode( qcStatement         * aStatement,
     sCompare = aCompare;
 
     //--------------------------------------
-    // target node ì™€ compare node ì˜ ë¹„êµ 
+    // target node ¿Í compare node ÀÇ ºñ±³ 
     //--------------------------------------
 
-    // BUG-35040 : fix í›„ if ì¡°ê±´ ì œê±°
+    // BUG-35040 : fix ÈÄ if Á¶°Ç Á¦°Å
     if( ( sTarget->lflag  & QTC_NODE_SUBQUERY_MASK )
         == QTC_NODE_SUBQUERY_EXIST ||
         ( sCompare->lflag & QTC_NODE_SUBQUERY_MASK )
         == QTC_NODE_SUBQUERY_EXIST )
     {
-        // ë‘ ë…¸ë“œ ì¤‘ í•˜ë‚˜ë¼ë„ subquery ë…¸ë“œë¥¼ ì¸ìë¡œ ê°–ëŠ” ê²½ìš°
+        // µÎ ³ëµå Áß ÇÏ³ª¶óµµ subquery ³ëµå¸¦ ÀÎÀÚ·Î °®´Â °æ¿ì
         sResult = QMO_CSE_COMPARE_RESULT_BOTH;
     }
     else
@@ -651,8 +695,8 @@ qmoCSETransform::compareNode( qcStatement         * aStatement,
             ( sCompare->node.lflag & MTC_NODE_OPERATOR_MASK )
             != MTC_NODE_OPERATOR_AND )
         {
-            // sTarget, sCompare ëª¨ë‘ ë…¼ë¦¬ ì—°ì‚°ì(OR, AND)ê°€ ì•„ë‹˜
-            // target ê³¼ compare ë¹„êµ
+            // sTarget, sCompare ¸ğµÎ ³í¸® ¿¬»êÀÚ(OR, AND)°¡ ¾Æ´Ô
+            // target °ú compare ºñ±³
             sIsEqual = ID_FALSE;
 
             IDE_TEST( qtc::isEquivalentExpression( aStatement,
@@ -674,12 +718,12 @@ qmoCSETransform::compareNode( qcStatement         * aStatement,
                    ( sCompare->node.lflag & MTC_NODE_OPERATOR_MASK )
                    != MTC_NODE_OPERATOR_AND ) )
         {
-            // sTarget ë§Œ ë…¼ë¦¬ ì—°ì‚°ì(OR, AND)
+            // sTarget ¸¸ ³í¸® ¿¬»êÀÚ(OR, AND)
             sTargetArg = (qtcNode *)(sTarget->node.arguments);
 
             while( sTargetArg != NULL )
             {
-                // target arguments ì™€ compare ë¹„êµ
+                // target arguments ¿Í compare ºñ±³
                 sIsEqual = ID_FALSE;
                 IDE_TEST( qtc::isEquivalentExpression( aStatement,
                                                        sTargetArg,
@@ -704,12 +748,12 @@ qmoCSETransform::compareNode( qcStatement         * aStatement,
                    ( sCompare->node.lflag & MTC_NODE_OPERATOR_MASK )
                    == MTC_NODE_OPERATOR_AND ) )
         {
-            // sCompare ë§Œ ë…¼ë¦¬ ì—°ì‚°ì(OR, AND)
+            // sCompare ¸¸ ³í¸® ¿¬»êÀÚ(OR, AND)
             sCompareArg = (qtcNode *)(sCompare->node.arguments);
 
             while( sCompareArg != NULL )
             {
-                // target ì™€ compare arguments ë¹„êµ
+                // target ¿Í compare arguments ºñ±³
                 sIsEqual = ID_FALSE;
                 IDE_TEST( qtc::isEquivalentExpression( aStatement,
                                                        sTarget,
@@ -725,9 +769,9 @@ qmoCSETransform::compareNode( qcStatement         * aStatement,
             }
         }
         else
-        {   // sTarget, sCompare ëª¨ë‘ ë…¼ë¦¬ ì—°ì‚°ì(OR, AND)
+        {   // sTarget, sCompare ¸ğµÎ ³í¸® ¿¬»êÀÚ(OR, AND)
 
-            // sTarget, sCompare arguments ê°¯ìˆ˜ íšë“
+            // sTarget, sCompare arguments °¹¼ö È¹µæ
             sTargetArg = (qtcNode *)(sTarget->node.arguments);
             sCompareArg = (qtcNode *)(sCompare->node.arguments);
 
@@ -743,7 +787,7 @@ qmoCSETransform::compareNode( qcStatement         * aStatement,
                 sCompareArg = (qtcNode *)(sCompareArg->node.next);
             }
 
-            // sTargetArg, sCompareArg ë¹„êµ
+            // sTargetArg, sCompareArg ºñ±³
             sTargetArg = (qtcNode *)(sTarget->node.arguments);
 
             while( sTargetArg != NULL )
@@ -791,17 +835,17 @@ qmoCSETransform::removeLogicalNode4NNF( qcStatement * aStatement,
 {
 /******************************************************************************
  *
- * PROJ-2242 : NNF ì— ëŒ€í•´ í•˜ë‚˜ì˜ argument ë¥¼ ê°–ëŠ” logical operator ì œê±°
+ * PROJ-2242 : NNF ¿¡ ´ëÇØ ÇÏ³ªÀÇ argument ¸¦ °®´Â logical operator Á¦°Å
  *
- * Implementation : í•˜ë‚˜ì˜ argument ë¥¼ ê°–ëŠ” logical ë…¸ë“œì˜ ì¸ìë¥¼ level up
+ * Implementation : ÇÏ³ªÀÇ argument ¸¦ °®´Â logical ³ëµåÀÇ ÀÎÀÚ¸¦ level up
  *
  * Predicate list : where (<- aNode)
  *                    |
  *                   OR (<- sNode)
  *                    |
- *                   P1 --- AND (<- sArg : ì œê±°) --- P2 (<- sNext)-- ...
+ *                   P1 --- AND (<- sArg : Á¦°Å) --- P2 (<- sNext)-- ...
  *                           |
- *                           P (ìƒìœ„ level ë¡œ ëŒì–´ì˜¬ë¦¼)
+ *                           P (»óÀ§ level ·Î ²ø¾î¿Ã¸²)
  *
  ******************************************************************************/
 
@@ -812,7 +856,7 @@ qmoCSETransform::removeLogicalNode4NNF( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCSETransform::removeLogicalNode4NNF::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -821,7 +865,7 @@ qmoCSETransform::removeLogicalNode4NNF( qcStatement * aStatement,
     sNode = *aNode;
 
     //--------------------------------------
-    // ì¤‘ì²©ëœ logical node ì˜ ì œê±°
+    // ÁßÃ¸µÈ logical node ÀÇ Á¦°Å
     //--------------------------------------
 
     if( ( sNode->node.lflag & MTC_NODE_OPERATOR_MASK )

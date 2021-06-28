@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxReceiverApply.h 85244 2019-04-16 05:09:21Z donghyun1 $
+ * $Id: rpxReceiverApply.h 89548 2020-12-16 08:33:05Z yoonhee.kim $
  **********************************************************************/
 
 #ifndef _O_RPX_RECEIVER_APPLY_H_
@@ -35,6 +35,8 @@
 #include <rpdQueue.h>
 #include <rpdSenderInfo.h>
 #include <rpsSmExecutor.h>
+
+#define RP_LOB_MTD_HEADER_SIZE    (8)
 
 #define RP_CONFLICT_ERRLOG2() { IDE_ERRLOG(IDE_RP_2); IDE_ERRLOG(IDE_RP_CONFLICT_2); }
 
@@ -83,8 +85,6 @@ public:
     void setFlagToSendAckForEachTransactionCommit( void );
     void setFlagNotToSendAckForEachTransactionCommit( void );
 
-    cmiProtocolContext * mProtocolContext;
-
     void setApplyPolicyCheck( void );
     void setApplyPolicyForce( void );
     void setApplyPolicyByProperty( void );
@@ -106,7 +106,7 @@ public:
                                                UInt                      aParallelID,
                                                SInt                      aApplierIndex );
 
-    /* PROJ-1915 : Î¶¨ÏãúÎ≤ÑÍ∞Ä AckÎ•º Î≥¥ÎÇ¥Í∏∞ Ï†ÑÏóê Restart SNÏùÑ Î≥¥Í¥Ä */
+    /* PROJ-1915 : ∏ÆΩ√πˆ∞° Ack∏¶ ∫∏≥ª±‚ ¿¸ø° Restart SN¿ª ∫∏∞¸ */
     smSN           mRestartSN;
     smiStatement   mSmiStmt;
     smiTableCursor mCursor;
@@ -183,20 +183,33 @@ private:
                     const SChar   * aPrefix,
                     rpdMetaItem   * aMetaItem,
                     smiValue      * aSmiValueArray );
+    
     IDE_RC insertErrLog( ideLogEntry     &aLog,
                          rpdMetaItem     *aMetaItem,
                          rpdXLog         *aXLog,
+                         rpApplyFailType aFailType,
                          const SChar     * = "" );
+
     IDE_RC updateErrLog( ideLogEntry     &aLog,
                          rpdMetaItem     *aMetaItem,
                          rpdMetaItem     *aMetaItemForPK,
                          rpdXLog         *aXLog,
                          idBool           aIsCmpBeforeImg /* BUG-36555 */, 
+                         rpApplyFailType  aFailType,
                          const SChar     * = "" );
+    
     IDE_RC deleteErrLog( ideLogEntry     &aLog,
                          rpdMetaItem     *aMetaItem,
                          rpdXLog         *aXLog,
+                         rpApplyFailType  aFailType,
                          const SChar     * = "" );
+ 
+    void lobErrLog( ideLogEntry     &aLog,
+                    rpdMetaItem     *aMetaItem,
+                    rpdXLog         *aXLog,
+                    rpApplyFailType  aFailType,
+                    const SChar     * = "" );
+   
     void   commitConflictLog( ideLogEntry &aLog,
                               rpdXLog     *aXLog );
     void   abortConflictLog( ideLogEntry &aLog,
@@ -242,7 +255,8 @@ private:
                                                   smiRange        * aKeyRange,
                                                   rpdXLog         * aXLog,
                                                   idBool          * aCheckRowExistence,
-                                                  idBool          * aIsResolutionNeed );
+                                                  idBool          * aIsResolutionNeed,
+                                                  rpApplyFailType * aFailType );
 
     IDE_RC insertReplaceSQL( rpdMetaItem        * aLocalMetaItem,
                              rpdMetaItem        * aRemoteMetaItem,
@@ -253,17 +267,25 @@ private:
                              SChar              * aQueryString,
                              rpApplyFailType    * aFailType );
 
-    void printInsertErrLog( rpdMetaItem   * aMetaItem,
-                            rpdMetaItem   * aMetaItemForPK,
-                            rpdXLog       * aXLog );
+    void printInsertErrLog( rpdMetaItem    * aMetaItem,
+                            rpdMetaItem    * aMetaItemForPK,
+                            rpdXLog        * aXLog,
+                            rpApplyFailType  aFailType );
+                            
     void printUpdateErrLog( rpdMetaItem   * aMetaItem,
                             rpdMetaItem   * aMetaItemForPK,
                             rpdXLog       * aXLog,
-                            idBool          aCompareBeforeImage );
+                            idBool          aCompareBeforeImage,
+                            rpApplyFailType aFailType );
 
     void printDeleteErrLog( rpdMetaItem    * aMetaItem,
-                            rpdXLog        * aXLog );
+                            rpdXLog        * aXLog,
+                            rpApplyFailType  aFailType );
 
+    void printLobErrLog( rpdMetaItem    * aMetaItem,
+                         rpdXLog        * aXLog,
+                         rpApplyFailType  aFailType );
+                            
     IDE_RC executeSQL( smiStatement   * aSmiStatement,
                        rpdMetaItem    * aRemoteMeta,
                        rpdMetaItem    * aLocalMeta,
@@ -295,6 +317,22 @@ private:
     IDE_RC getConfictResolutionTransaction( smTID        aTID,
                                             smiTrans  ** aTrans );
 
+    IDE_RC executeInsert( smiTrans         * aSmiTrans,
+                          rpdXLog          * aXLog,
+                          SChar            * aSpName );
+    
+    IDE_RC executeSyncInsert( smiTrans    * aSmiTrans,
+                              rpdXLog     * aXLog );
+    
+    IDE_RC executeUpdate( smiTrans         * aSmiTrans,
+                          rpdXLog          * aXLog );
+    
+    void insertSkip( rpdMetaItem    * aMetaItem,
+                     rpdXLog        * aXLog );
+    
+    void updateSkip( rpdMetaItem    * aMetaItem,
+                     rpdXLog        * aXLog );
+    
     // private member data
     SChar           * mRepName;
 
@@ -315,7 +353,7 @@ private:
     //proj-1608 recovery from replication
     rprSNMapMgr*          mSNMapMgr;
 
-    /* BUG-31545 ÏàòÌñâÏãúÍ∞Ñ ÌÜµÍ≥ÑÏ†ïÎ≥¥ */
+    /* BUG-31545 ºˆ«‡Ω√∞£ ≈Î∞Ë¡§∫∏ */
     idvSQL              * mStatistics;
 
     UInt                  mTransactionFlag;
@@ -326,7 +364,7 @@ private:
 
     RP_ROLE               mRole;
 
-    // Performace View Ï†ÑÏö©
+    // Performace View ¿¸øÎ
     smSN        mApplyXSN;
     ULong       mInsertSuccessCount;
     ULong       mInsertFailureCount;
@@ -342,9 +380,9 @@ private:
     /* BUG-38533 numa aware thread initialize */
     rpReceiverStartMode   mStartMode;
 
-    /* Key range Íµ¨ÏÑ±ÏùÑ Ìï†Îïå ÏÇ¨Ïö©ÌïòÎäî Î©îÎ™®Î¶¨ ÏòÅÏó≠,
-     * PerformanceÎ•º ÏúÑÌï¥ rpxReceiverApply ÎÇ¥Ïóê ÎØ∏Î¶¨ Î©îÎ™®Î¶¨Î•º Ìï†ÎãπÌï¥ ÎÜìÍ≥†,
-     * Î∞òÎ≥µÌïòÏó¨ Í∑∏ Î©îÎ™®Î¶¨Î•º Ïû¨ÏÇ¨Ïö©ÌïòÎèÑÎ°ù ÌïúÎã§.
+    /* Key range ±∏º∫¿ª «“∂ß ªÁøÎ«œ¥¬ ∏ﬁ∏∏Æ øµø™,
+     * Performance∏¶ ¿ß«ÿ rpxReceiverApply ≥ªø° πÃ∏Æ ∏ﬁ∏∏Æ∏¶ «“¥Á«ÿ ≥ı∞Ì,
+     * π›∫π«œø© ±◊ ∏ﬁ∏∏Æ∏¶ ¿ÁªÁøÎ«œµµ∑œ «—¥Ÿ.
      * Used Only - rpxReceiverApply::getKeyRange()
      */
     qriMetaRangeColumn  * mRangeColumn;
@@ -376,6 +414,12 @@ public:
     smSN getRestartSN( void );
     smSN getLastCommitSN( void );
 
+    static IDE_RC applyRebuildIndices( rpxReceiverApply * );
+    static IDE_RC applyUpdateConditionAct( rpxReceiverApply *, idBool );
+    static IDE_RC executeTruncate( rpxReceiver      * aReceiver,
+                                   rpdMetaItem      * aMetaItem,
+                                   idBool             aIsConditionSynced );
+
     // Apply function list
     static rpxApplyFunc mApplyFunc[RP_X_MAX];
 
@@ -401,8 +445,9 @@ public:
     static IDE_RC applyIgnore(rpxReceiverApply *, rpdXLog *);
     static IDE_RC applyNA(rpxReceiverApply *, rpdXLog *);
     static IDE_RC applySyncStart( rpxReceiverApply *, rpdXLog * );
-    static IDE_RC applyRebuildIndices( rpxReceiverApply *, rpdXLog * );
+    static IDE_RC applySyncEnd( rpxReceiverApply *, rpdXLog * );
     static IDE_RC applyAckOnDML( rpxReceiverApply *, rpdXLog * ); /* PROJ-2453 */
+    static IDE_RC applyTruncate( rpxReceiverApply * aApply, rpdXLog * aXLog );
     SChar* getSvpNameAndEtc( SChar           *  aXLogSPName,
                              rpSavepointType *  aType,
                              UInt            *  aImplicitSvpDepth,

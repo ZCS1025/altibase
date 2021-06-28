@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpcManager.h 85321 2019-04-25 04:58:40Z donghyun1 $
+ * $Id: rpcManager.h 90444 2021-04-02 10:15:58Z minku.kang $
  **********************************************************************/
 
 #ifndef _O_RPC_MANAGER_H_
@@ -32,6 +32,7 @@
 #include <qci.h>
 
 #include <rp.h>
+#include <rpcReceiverList.h>
 #include <rpxSender.h>
 #include <rpxReceiverApply.h>
 #include <rpxReceiver.h>
@@ -40,10 +41,14 @@
 #include <rpuProperty.h>
 #include <rpdSenderInfo.h>
 #include <rpdLogBufferMgr.h>
+#include <rpdStatistics.h>
 #include <rprSNMapMgr.h>
 #include <rpcDDLSyncManager.h>
+#include <rpxTempSender.h>
+
 
 class smiStatement;
+class rpdLockTableManager;
 
 typedef enum
 {
@@ -52,7 +57,7 @@ typedef enum
     RP_RECV_THR
 } RP_REPL_THR_MODE;
 
-// ** For the X$REPGAP Fix Table ** //
+// ** For the X$REPGAP Fixed Table ** //
 typedef struct rpxSenderGapInfo
 {
     SChar *        mRepName;     // REP_NAME
@@ -68,7 +73,7 @@ typedef struct rpxSenderGapInfo
     SInt           mParallelID;
 } rpxSenderGapInfo;
 
-// ** For the X$REPSYNC Fix Table ** //
+// ** For the X$REPSYNC Fixed Table ** //
 typedef struct rpxSenderSyncInfo
 {
     SChar *     mRepName;       // REP_NAME
@@ -220,7 +225,7 @@ typedef struct rpxReceiverStatistics
     ULong   mStatSendAck;
 } rpxReceiverStatistics;
 
-/* PROJ-1442 Replication Online Ï§ë DDL ÌóàÏö©
+/* PROJ-1442 Replication Online ¡ﬂ DDL «„øÎ
  * For the X$REPRECEIVER_COLUMN Fix Table
  */
 typedef struct rpxReceiverColumnInfo
@@ -232,6 +237,16 @@ typedef struct rpxReceiverColumnInfo
     SChar   *mColumnName;       // COLUMN_NAME
     UInt     mApplyMode;        // APPLY_MODE
 } rpxReceiverColumnInfo;
+
+/* For the X$REPSENDER_COLUMN Fix Table */
+typedef struct rpxSenderColumnInfo
+{
+    SChar   *mRepName;          // REP_NAME
+    SChar   *mUserName;         // USER_NAME
+    SChar   *mTableName;        // TABLE_NAME
+    SChar   *mPartitionName;    // PARTITION_NAME
+    SChar   *mColumnName;       // COLUMN_NAME
+} rpxSenderColumnInfo;
 
 // ** For the X$REPRECOVERY Fix Table ** //
 typedef struct rprRecoveryInfo
@@ -327,6 +342,32 @@ typedef struct rpdAheadAnalyzerInfo
     smSN          mReadSN;
 } rpdAheadAnalyzerInfo;
 
+/* For the X$XLOG_TRANSFER fix Table */
+typedef struct rpdXLogTransfer
+{
+    SChar       * mRepName;
+    UInt          mStatus;
+    smTID         mLastCommitTransactionID;
+    smSN          mLastCommitSN;
+    smSN          mLastWrittenSN;
+    smSN          mRestartSN;
+    UInt          mLastWrittenFileNumber;
+    UInt          mLastWrittenFileOffset;
+    UInt          mNetworkResourceStatus;
+} rpdXLogTransfer;
+
+/* For the X$XLOGFILE_MANAGER fix Table */
+typedef struct rpdXLogfileManagerInfo
+{
+    SChar * mRepName;
+    UInt    mReadFileNo;
+    UInt    mReadOffset;
+    UInt    mWriteFileNo;
+    UInt    mWriteOffset;
+    UInt    mPrepareXLogfileCnt;
+    UInt    mLastCreatedFileNo;
+} rpdXLogfileManagerInfo;
+
 class rpcManager : public idtBaseThread
 {
 public:
@@ -359,14 +400,16 @@ public:
 
     void   run();
 
-    //BUG-22703 : Begin StatementÎ•º ÏàòÌñâÌïú ÌõÑÏóê HangÏù¥ Í±∏Î¶¨ÏßÄ ÏïäÏïÑÏïº Ìï©ÎãàÎã§.
-    // aStatistics  ÌÜµÍ≥Ñ Ï†ïÎ≥¥ ÌååÎùºÎ©îÌÑ∞Î•º Ï∂îÍ∞Ä Ìï©ÎãàÎã§.
+    //BUG-22703 : Begin Statement∏¶ ºˆ«‡«— »ƒø° Hang¿Ã ∞…∏Æ¡ˆ æ æ∆æﬂ «’¥œ¥Ÿ.
+    // aStatistics  ≈Î∞Ë ¡§∫∏ ∆ƒ∂Û∏ﬁ≈Õ∏¶ √ﬂ∞° «’¥œ¥Ÿ.
     IDE_RC realize(RP_REPL_THR_MODE   thr_mode,
                    idvSQL           * aStatistics);
     IDE_RC realizeRecoveryItem( idvSQL * aStatistics );
 
     void   getReceiverErrorInfo( SChar  * aRepName,
                                  rpxReceiverErrorInfo   * aOutErrorInfo );
+
+    rpdMeta * findRemoteMeta( SChar * aRepName );
 
     static IDE_RC createReplication( void        * aQcStatement );
     static IDE_RC updatePartitionedTblRplRecoveryCnt( void          * aQcStatement,
@@ -384,12 +427,13 @@ public:
                                        SChar         * aReplName,
                                        UInt          * aReplItemCount );
 
-    static IDE_RC insertOneReplOldObject(void         * aQcStatement,
-                                         qriReplItem   * aReplItem,
-                                         qcmTableInfo * aTableInfo);
-    static IDE_RC deleteOneReplOldObject(void        * aQcStatement,
-                                         SChar       * aRepName,
-                                         qriReplItem  * aReplItem);
+    static IDE_RC insertOneReplOldObject( void         * aQcStatement,
+                                          qriReplItem  * aReplItem,
+                                          qcmTableInfo * aTableInfo,
+                                          idBool         aMetaUpdate );
+    static IDE_RC deleteOneReplOldObject( void         * aQcStatement,
+                                          qriReplItem  * aReplItem,
+                                          idBool         aMetaUpdate );
 
     static IDE_RC insertOneReplHost(void           * aQcStatement,
                                     qriReplHost     * aReplHost,
@@ -397,6 +441,11 @@ public:
                                     SInt             aRole);
     static IDE_RC deleteOneReplHost( void           * aQcStatement,
                                      qriReplHost     * aReplHost );
+   
+    static IDE_RC buildTempMetaItems( SChar           * aRepName,
+                                      rpdReplSyncItem * aSyncItemList,
+                                      rpdMeta         * aMeta );
+
     static IDE_RC setOneReplHost( void           * aQcStatement,
                                   qriReplHost     * aReplHost );
     static IDE_RC updateLastUsedHostNo( smiStatement  * aSmiStmt,
@@ -404,15 +453,22 @@ public:
                                         SChar         * aHostIP,
                                         UInt            aPortNo );
 
-    static IDE_RC alterReplicationFlush( smiStatement  * aSmiStmt,
-                                         SChar         * aReplName,
-                                         rpFlushOption * aFlushOption,
-                                         idvSQL        * aStatistics );
+    static IDE_RC alterReplicationFlushWithXLogs( smiStatement  * aSmiStmt,
+                                                  SChar         * aReplName,
+                                                  rpFlushOption * aFlushOption,
+                                                  idvSQL        * aStatistics );
     static IDE_RC waitUntilSenderFlush(SChar       *aRepName,
                                        rpFlushType  aFlushType,
                                        UInt         aTimeout,
                                        idBool       aAlreadyLocked,
                                        idvSQL      *aStatistics);
+
+    static IDE_RC alterReplicationFlushWithXLogfiles( smiStatement  * aSmiStmt,
+                                                      SChar         * aReplName,
+                                                      idvSQL        * aStatistics );
+
+    static IDE_RC waitUntilReceiverFlushXLogfiles( rpxReceiver   * aReceiver,
+                                                   idvSQL        * aStatistics );
 
     static IDE_RC alterReplicationAddTable( void        * aQcStatement );
     static IDE_RC alterReplicationDropTable( void        * aQcStatement );
@@ -434,22 +490,44 @@ public:
 
     static IDE_RC dropReplication( void        * aQcStatement );
 
-    //BUG-22703 : Begin StatementÎ•º ÏàòÌñâÌïú ÌõÑÏóê HangÏù¥ Í±∏Î¶¨ÏßÄ ÏïäÏïÑÏïº Ìï©ÎãàÎã§.
-    // aStatistics  ÌÜµÍ≥Ñ Ï†ïÎ≥¥ ÌååÎùºÎ©îÌÑ∞Î•º Ï∂îÍ∞Ä Ìï©ÎãàÎã§.
-    static IDE_RC startSenderThread(smiStatement  * aSmiStmt,
-                                    SChar         * aReplName,
-                                    RP_SENDER_TYPE  astartType,
-                                    idBool          aTryHandshakeOnce,
-                                    smSN            aStartSN,
-                                    qciSyncItems  * aSyncItemList,
-                                    SInt            aParallelFactor,
-                                    idBool          aAlreadyLocked, // BUG-14898
-                                    idvSQL        * aStatistics); 
+    static IDE_RC startSenderThread( idvSQL        * aStatistics,
+                                     iduVarMemList * aMemory,
+                                     SChar         * aReplName,
+                                     RP_SENDER_TYPE  aStartType,
+                                     idBool          aTryHandshakeOnce,
+                                     smSN            aStartSN,
+                                     qciSyncItems  * aSyncItemList,
+                                     SInt            aParallelFactor,
+                                     void          * aLockTable );
+
+    //BUG-22703 : Begin Statement∏¶ ºˆ«‡«— »ƒø° Hang¿Ã ∞…∏Æ¡ˆ æ æ∆æﬂ «’¥œ¥Ÿ.
+    // aStatistics  ≈Î∞Ë ¡§∫∏ ∆ƒ∂Û∏ﬁ≈Õ∏¶ √ﬂ∞° «’¥œ¥Ÿ.
+    static IDE_RC startSenderThread( idvSQL                 * aStatistics,
+                                     iduVarMemList          * aMemory, 
+                                     smiStatement           * aSmiStmt,
+                                     SChar                  * aReplName,
+                                     RP_SENDER_TYPE           astartType,
+                                     idBool                   aTryHandshakeOnce,
+                                     smSN                     aStartSN,
+                                     qciSyncItems           * aSyncItemList,
+                                     SInt                     aParallelFactor,
+                                     void                   * aLockTable );
     static IDE_RC stopSenderThread( smiStatement * aSmiStmt,
                                     SChar        * aReplName,
-                                    idBool         aAlreadyLocked,   // BUG-14898
                                     idvSQL       * aStatistics,
                                     idBool         aIsImmediate );
+     
+    static IDE_RC startTempSync( void * aQcStatement );
+
+
+    static IDE_RC makeTempSyncItemList( void             * aQcStatement,
+                                        rpdReplSyncItem ** aItemList );
+
+    static IDE_RC allocAndFillSyncItem( const qriReplItem        * const aReplItem,
+                                        const qcmTableInfo       * const aTableInfo,
+                                        const qcmTableInfo       * const aPartInfo,
+                                        rpdReplSyncItem         ** aSyncItem );
+
     static IDE_RC resetReplication(smiStatement * aSmiStmt,
                                    SChar        * aReplName,
                                    idvSQL       * aStatistics);
@@ -464,6 +542,9 @@ public:
     static IDE_RC updateRemoteFaultDetectTime(smiStatement * aSmiStmt,
                                               SChar        * aRepName,
                                               SChar        * aTime);
+
+    static IDE_RC removeOldMetaRepl( smiStatement  * aParentStatement,
+                                     SChar         * aReplName );
 
     static IDE_RC resetRemoteFaultDetectTime(smiStatement * aSmiStmt,
                                              SChar        * aRepName);
@@ -487,7 +568,7 @@ public:
                                    SChar        * aRepName,
                                    smSN           aSN );
 
-    // Replication Minimum XSNÏùÑ Î≥ÄÍ≤ΩÌïúÎã§.
+    // Replication Minimum XSN¿ª ∫Ø∞Ê«—¥Ÿ.
     static IDE_RC updateXSN( smiStatement * aSmiStmt,
                              SChar        * aRepName,
                              smSN           aSN );
@@ -506,15 +587,26 @@ public:
                                       rpdReplications * aReplications,
                                       UInt              aMaxReplications );
 
+    static IDE_RC updateXLogfileCurrentLSN( smiStatement * aSmiStmt,
+                                            SChar        * aRepName,
+                                            smLSN          aLSN );
+
+    static IDE_RC selectXLogfileCurrentLSNByName( smiStatement * aSmiStmt,
+                                                  SChar        * aRepName,
+                                                  smLSN        * aLSN );
+
     //proj-1608 recovery from replications
     IDE_RC processRPRequest( cmiLink        * aLink,
                              idBool           aIsRecoveryPhase);
 
-    // aRepNameÏùÑ Í∞ñÎäî SenderÎ•º Íπ®Ïö¥Îã§.
+    IDE_RC executeStartReceiverThread( cmiProtocolContext   * aProtocolContext,
+                                       rpdMeta              * aRemoteMeta );
+
+    // aRepName¿ª ∞Æ¥¬ Sender∏¶ ±˙øÓ¥Ÿ.
     void   wakeupSender(const SChar* aRepName);
 
-    //BUG-22703 : Begin StatementÎ•º ÏàòÌñâÌïú ÌõÑÏóê HangÏù¥ Í±∏Î¶¨ÏßÄ ÏïäÏïÑÏïº Ìï©ÎãàÎã§.
-    // aStatistics  ÌÜµÍ≥Ñ Ï†ïÎ≥¥ ÌååÎùºÎ©îÌÑ∞Î•º Ï∂îÍ∞Ä Ìï©ÎãàÎã§.
+    //BUG-22703 : Begin Statement∏¶ ºˆ«‡«— »ƒø° Hang¿Ã ∞…∏Æ¡ˆ æ æ∆æﬂ «’¥œ¥Ÿ.
+    // aStatistics  ≈Î∞Ë ¡§∫∏ ∆ƒ∂Û∏ﬁ≈Õ∏¶ √ﬂ∞° «’¥œ¥Ÿ.
     IDE_RC stopReceiverThread(SChar  * aRepName,
                               idBool   aAlreadyLocked,
                               idvSQL * aStatistics);
@@ -528,13 +620,23 @@ public:
                                        smOID        * aTableOIDArray,
                                        UInt           aTableOIDCount );
 
-    static idBool isEnableRP();           // BUG-45984 replication portÎ•º ÌôïÏù∏ÌïòÏó¨ Ïù¥Ï§ëÌôî ÏÇ¨Ïö©Ïó¨Î∂ÄÎ•º ÌôïÏù∏
+    static IDE_RC findNStopReceiverThreadsByTableOIDWithNewStmt( idvSQL       * aStatistics,
+                                                                 smiStatement * aRootStmt,
+                                                                 UInt           aStmtFlag,
+                                                                 smOID        * aTableOIDArray,
+                                                                 UInt           aTableOIDCount );
 
+    static IDE_RC findNStopReceiverThreadsByTableInfo( void * aQcStatement, qciTableInfo * aTableInfo );
+
+    static IDE_RC findNStopReceiverThreadsByTableOIDArray( idvSQL          * aStatistics,
+                                                           smiStatement    * aSmiStmt,
+                                                           smOID           * aTableOIDArray,
+                                                           UInt              aTableOIDCount );
+
+    static idBool isEnableRP();           // BUG-45984 replication port∏¶ »Æ¿Œ«œø© ¿Ã¡ﬂ»≠ ªÁøÎø©∫Œ∏¶ »Æ¿Œ
 
     IDE_RC addReplListener( rpLinkImpl aImpl );
     cmiLinkImpl getCMLinkImplByRPLinkImpl( rpLinkImpl aLinkImpl );
-
-
 
     static IDE_RC isEnabled();
 
@@ -546,21 +648,39 @@ public:
                                                 qcmTableInfo    * aTableInfo );
 
     /*************************************************************
-     * alter table t1 add column(...) ÏùÑ ÌñàÏùÑ Îïå,
-     * eager replicationÏóêÏÑúÎäî t1 ÌÖåÏù¥Î∏îÏùÑ replicationÌïòÍ≥† ÏûàÏùÑ Îïå,
-     * DDLÏùÑ ÌóàÏö©ÌïòÏßÄ ÏïäÎäîÎã§. Í∑∏Îü¨ÎØÄÎ°ú, tableOIDÎ•º Ïù¥Ïö©ÌïòÏó¨
-     * Ìï¥Îãπ ÌÖåÏù¥Î∏îÏùÑ replication Ï§ëÏù∏ SenderÍ∞Ä ÏûàÎäîÏßÄ Ï∞æÏïÑÎ¥êÏïºÌïúÎã§.
+     * alter table t1 add column(...) ¿ª «ﬂ¿ª ∂ß,
+     * eager replicationø°º≠¥¬ t1 ≈◊¿Ã∫Ì¿ª replication«œ∞Ì ¿÷¿ª ∂ß,
+     * DDL¿ª «„øÎ«œ¡ˆ æ ¥¬¥Ÿ. ±◊∑Øπ«∑Œ, tableOID∏¶ ¿ÃøÎ«œø©
+     * «ÿ¥Á ≈◊¿Ã∫Ì¿ª replication ¡ﬂ¿Œ Sender∞° ¿÷¥¬¡ˆ √£æ∆∫¡æﬂ«—¥Ÿ.
      ************************************************************/
+
     static IDE_RC isRunningEagerSenderByTableOID( smiStatement  * aSmiStmt,
                                                   idvSQL        * aStatistics,
                                                   smOID         * aTableOIDArray,
                                                   UInt            aTableOIDCount,
                                                   idBool        * aIsExist );
+
     static IDE_RC isRunningEagerReceiverByTableOID( smiStatement  * aSmiStmt,
                                                     idvSQL        * aStatistics,
                                                     smOID         * aTableOIDArray,
                                                     UInt            aTableOIDCount,
                                                     idBool        * aIsExist );
+
+    static IDE_RC isRunningEagerByTableInfoInternal( void          * aQcStatement,
+                                                     qciTableInfo  * aTableInfo,
+                                                     idBool        * aIsExist );
+
+    static IDE_RC isRunningEagerSenderByTableOIDArrayInternal( smiStatement  * aSmiStmt,
+                                                               idvSQL        * aStatistics,
+                                                               smOID         * aTableOIDArray,
+                                                               UInt            aTableOIDCount,
+                                                               idBool        * aIsExist );
+
+    static IDE_RC isRunningEagerReceiverByTableOIDArrayInternal( smiStatement  * aSmiStmt,
+                                                                 idvSQL        * aStatistics,
+                                                                 smOID         * aTableOIDArray,
+                                                                 UInt            aTableOIDCount,
+                                                                 idBool        * aIsExist );
 
     /*************************** Performance Views ***************************/
     static IDE_RC buildRecordForReplManager( idvSQL              * /*aStatistics*/,
@@ -623,6 +743,10 @@ public:
                                                     void                * aHeader,
                                                     void                * aDumpObj,
                                                     iduFixedTableMemory * aMemory );
+    static IDE_RC buildRecordForReplSenderColumn( idvSQL              * /*aStatistics*/,
+                                                  void                * aHeader,
+                                                  void                * aDumpObj,
+                                                  iduFixedTableMemory * aMemory );
     static IDE_RC buildRecordForReplOfflineSenderInfo( idvSQL              * /*aStatistics*/,
                                                        void                * aHeader,
                                                        void                * aDumpObj,
@@ -647,6 +771,16 @@ public:
                                                    void                * aDumpObj,
                                                    iduFixedTableMemory * aMemory );
 
+    static IDE_RC buildRecordForXLogTransfer( idvSQL              * /*aStatistics*/,
+                                              void                * aHeader,
+                                              void                * aDumpObj,
+                                              iduFixedTableMemory * aMemory );
+
+    static IDE_RC buildRecordForXLogfileManagerInfo( idvSQL              * /*aStatistics*/,
+                                                     void                * aHeader,
+                                                     void                * aDumpObj,
+                                                     iduFixedTableMemory * aMemory );
+
     static iduFixedTableColDesc gReplManagerColDesc[];
     static iduFixedTableColDesc gReplGapColDesc[];
     static iduFixedTableColDesc gReplSyncColDesc[];
@@ -654,6 +788,7 @@ public:
     static iduFixedTableColDesc gReplReceiverParallelApplyColumnColDesc[];
     static iduFixedTableColDesc gReplReceiverTransTblColDesc[];
     static iduFixedTableColDesc gReplReceiverColumnColDesc[];
+    static iduFixedTableColDesc gReplSenderColumnColDesc[];
     static iduFixedTableColDesc gReplSenderColDesc[];
     static iduFixedTableColDesc gReplSenderStatisticsColDesc[];
     static iduFixedTableColDesc gReplReceiverStatisticsColDesc[];
@@ -665,8 +800,9 @@ public:
     static iduFixedTableColDesc gReplicatedTransGroupInfoCol[];
     static iduFixedTableColDesc gReplicatedTransSlotInfoCol[];
     static iduFixedTableColDesc gAheadAnalyzerInfoCol[];
+    static iduFixedTableColDesc gXLogTransferColDesc[];
+    static iduFixedTableColDesc gXLogfileManagerInfoColDesc[];
 
-    rpxReceiverApply * getApply(const SChar* aRepName );
     rpxReceiver      * getReceiver(const SChar* aRepName );
     rpxSender        * getSender  (const SChar* aRepName );
     static idBool          isAliveSender( const SChar * aRepName );
@@ -674,7 +810,7 @@ public:
 
     //----------------------------------------------
     //PROJ-1541
-    /* BUG-26482 ÎåÄÍ∏∞ Ìï®ÏàòÎ•º CommitLog Í∏∞Î°ù Ï†ÑÌõÑÎ°ú Î∂ÑÎ¶¨ÌïòÏó¨ Ìò∏Ï∂úÌï©ÎãàÎã§. */
+    /* BUG-26482 ¥Î±‚ «‘ºˆ∏¶ CommitLog ±‚∑œ ¿¸»ƒ∑Œ ∫–∏Æ«œø© »£√‚«’¥œ¥Ÿ. */
     static IDE_RC waitForReplicationBeforeCommit( idvSQL          * aStatistics,
                                                   const smTID       aTID,
                                                   const smSN        aLastSN,
@@ -689,6 +825,7 @@ public:
 
     static void  waitForReplicationAfterCommit( idvSQL        * aStatistics,
                                                 const smTID     aTID,
+                                                const smSN      aBeginSN,
                                                 const smSN      aLastSN,
                                                 const UInt      aReplModeFlag,
                                                 const smiCallOrderInCommitFunc aCallOrder);
@@ -699,6 +836,30 @@ public:
                                         const UInt      aReplModeFlag,
                                         const smiCallOrderInCommitFunc aCallOrder );
 
+    static void waitAfterCommitInConsistent( const smTID     aTID,
+                                             const smSN      aBeginSN,
+                                             const smSN      aLastSN,
+                                             const UInt      aReplModeFlag );
+
+    static void servicesWaitAfterCommit( const smTID     aTID,
+                                         const smSN      aBeginSN,
+                                         const smSN      aLastSN,
+                                         const UInt      aReplModeFlag,
+                                         const UInt      aRequestWaitMode );
+
+    static IDE_RC serviceWaitAfterCommitAtLeastOneSender( const smTID     aTID,
+                                                          const smSN      aLastSN,
+                                                          const UInt      aReplModeFlag );
+
+    static IDE_RC waitForReplicationGlobalTxAfterPrepare(  idvSQL       * aStatistics,
+                                                           idBool         aIsRequestNode,
+                                                           const smTID    aTID,
+                                                           const smSN     aSN );
+ 
+    static void   servicesWaitAfterPrepare( idBool      aIsRequestNode,
+                                            const smTID aTID, 
+                                            const smSN  aLastSN );
+
     inline idBool isExit() { return mExitFlag; }
     //----------------------------------------------
 
@@ -707,13 +868,36 @@ public:
                                const UInt * aLastArchiveFileNo,
                                smSN       * aSN);
 
-    static IDE_RC checkAndGiveupReplication(rpdReplications * aReplication,
-                                            smSN              aCurrentSN,
-                                            const UInt      * aRestartRedoFileNo,
-                                            const UInt      * aLastArchiveFileNo,
-                                            idBool            aDontNeedCheckSenderGiveup,
-                                            smSN            * aMinNeedSN, //proj-1608
-                                            idBool          * aIsGiveUp); 
+    static IDE_RC getDistanceFromCheckPoint( const smSN        aRestartSN,
+                                             const UInt      * aRestartRedoFileNo,
+                                             SLong           * aDistanceFromChkpt );
+
+    static IDE_RC giveupReplication( iduVarMemList         * aMemory,
+                                     smiStatement          * aParentStatement,
+                                     rpdReplications       * aReplication,
+                                     rpxSender             * aSender,
+                                     smSN                    aCurrentSN,
+                                     const UInt            * aLastArchiveFileNo,
+                                     SLong                   aDistanceFromChkpt,
+                                     const idBool            aIsSenderStartAfterGiveup,
+                                     rpdLockTableManager   * aLockTable,
+                                     smSN                  * aMinNeedSN );
+
+    static IDE_RC checkAndGiveupReplication( iduVarMemList  * aMemory,
+                                             rpdReplications * aReplication,
+                                             smSN              aCurrentSN,
+                                             const UInt      * aRestartRedoFileNo,
+                                             const UInt      * aLastArchiveFileNo,
+                                             const UInt        aReplicationMaxLogFile,
+                                             const idBool      sIsSenderStartAfterGiveup,
+                                             smSN            * aMinNeedSN, //proj-1608
+                                             idBool          * aIsGiveUp ); 
+
+    static IDE_RC checkAndGiveupRecovery( SChar           * aReplName,
+                                          smSN              aCurrentSN,
+                                          const UInt      * aRestartRedoFileNo,
+                                          const UInt        aReplicationRecoveryMaxLogFile,
+                                          smSN            * aMinNeedSN );
 
     /*PROJ-1670 Log Buffer for Replication*/
     static void copyToRPLogBuf(idvSQL * aStatistics,
@@ -738,8 +922,8 @@ public:
     IDE_RC stopRecoverySenderThread(rprRecoveryItem * aRecoveryItem,
                                     idvSQL          * aStatistics);
 
-    //BUG-22703 : Begin StatementÎ•º ÏàòÌñâÌïú ÌõÑÏóê HangÏù¥ Í±∏Î¶¨ÏßÄ ÏïäÏïÑÏïº Ìï©ÎãàÎã§.
-    // aStatistics  ÌÜµÍ≥Ñ Ï†ïÎ≥¥ ÌååÎùºÎ©îÌÑ∞Î•º Ï∂îÍ∞Ä Ìï©ÎãàÎã§.
+    //BUG-22703 : Begin Statement∏¶ ºˆ«‡«— »ƒø° Hang¿Ã ∞…∏Æ¡ˆ æ æ∆æﬂ «’¥œ¥Ÿ.
+    // aStatistics  ≈Î∞Ë ¡§∫∏ ∆ƒ∂Û∏ﬁ≈Õ∏¶ √ﬂ∞° «’¥œ¥Ÿ.
     static IDE_RC removeRecoveryItem(rprRecoveryItem * aRecoveryItem, 
                                      idvSQL          * aStatistics);
     static IDE_RC removeRecoveryItemsWithName(SChar  * aRepName,
@@ -788,7 +972,7 @@ public:
             return (mMyself != NULL) ? mMyself->mServerID : (SChar *)"";
         }
 
-    /* archive logÎ•º ÏùΩÏùÑ Ïàò ÏûàÎäî ALAÏù∏Í∞Ä? */
+    /* archive log∏¶ ¿–¿ª ºˆ ¿÷¥¬ ALA¿Œ∞°? */
     inline static idBool isArchiveALA(SInt aRole)
         {
             if ( ( ( aRole == RP_ROLE_ANALYSIS ) || 
@@ -823,10 +1007,15 @@ public:
 
     inline static idBool isInitRepl() { return mIsInitRepl; }
 
+    static IDE_RC addLastSNEntry( iduMemPool * aSNPool,
+                                  smSN         aSN,
+                                  iduList    * aSNList );
+    static rpxSNEntry * searchSNEntry( iduList * aSNList, smSN aSN );
+    static void removeSNEntry( iduMemPool * aSNPool, rpxSNEntry * aSNEntry );
+
 private:
     rpcDDLSyncManager   mDDLSyncManager;
 
-    iduMutex            mReceiverMutex;
     iduMutex            mRecoveryMutex;
     iduMutex            mOfflineStatusMutex;
     UShort              mTCPPort;
@@ -834,14 +1023,18 @@ private:
     SInt                mMaxReplSenderCount;
     SInt                mMaxReplReceiverCount;
     rpxSender         **mSenderList;
-    rpxReceiver       **mReceiverList;
     idBool              mExitFlag;
+
+    rpcReceiverList     mReceiverList;
+
+    iduMutex            mTempSenderListMutex;
+    iduList             mTempSenderList;
 
     // BUG-15362 & PROJ-1541
     rpdSenderInfo     **mSenderInfoArrList;
     //PROJ-1608 recovery from replication
     SInt                mMaxRecoveryItemCount;
-    //mRecoveryList(Ïö¥ÏòÅÏ§ë)ÏôÄ mToDoRecoveryCount(ÏãúÏûëÌï†Îïå)Îäî recovery mutexÎ•º Ïù¥Ïö©ÌïòÏó¨ ÎèôÍ∏∞Ìôî Ìï®
+    //mRecoveryList(øÓøµ¡ﬂ)øÕ mToDoRecoveryCount(Ω√¿€«“∂ß)¥¬ recovery mutex∏¶ ¿ÃøÎ«œø© µø±‚»≠ «‘
     rprRecoveryItem    *mRecoveryItemList;
     UInt                mToDoRecoveryCount;
     smSN                mRPRecoverySN;
@@ -852,18 +1045,14 @@ private:
     // Failback for Eager Replication
     UInt                mToDoFailbackCount;
 
-    // for stop and drop replication even if port is 0
-    static iduMutex     mPort0Mutex;
-    static idBool       mPort0Flag;
-
-    /* PROJ-1915 Meta Î≥¥Í¥Ä : ActiveServerÏùò SenderÏóêÏÑú Î∞õÏùÄ MetaÎ•º Î≥¥Í¥ÄÌïúÎã§. */
-    rpdMeta            *mRemoteMetaArray; /* Î¶¨ÏãúÎ≤Ñ Í∞úÏàò ÎßåÌÅº ÏÉùÏÑ±ÌïúÎã§. */
+    /* PROJ-1915 Meta ∫∏∞¸ : ActiveServer¿« Senderø°º≠ πﬁ¿∫ Meta∏¶ ∫∏∞¸«—¥Ÿ. */
+    rpdMeta            *mRemoteMetaArray; /* ∏ÆΩ√πˆ ∞≥ºˆ ∏∏≈≠ ª˝º∫«—¥Ÿ. */
 
     /* BUG-25960 : V$REPOFFLINE_STATUS
-     * CREATE REPLICATION options OFFILE / ALTER replication OFFLINE ENABLE ÏàòÌñâÏãú addOfflineStatus()
-     * ALTRE replication OFFLINE DISABLE / DROP replication ÏàòÌñâÏãú removeOfflineStatus()
-     * ALTER replication START with OFFLINE ÏàòÌñâÏãú setOfflineStatus() (STARTED, ÏòàÏô∏Ïãú FAILED)
-     * ALTER replicaiton START with OFFLINE Ï¢ÖÎ£åÏãú setOfflineStatus() (END , SUCCESS_COUNT Ï¶ùÍ∞Ä)
+     * CREATE REPLICATION options OFFILE / ALTER replication OFFLINE ENABLE ºˆ«‡Ω√ addOfflineStatus()
+     * ALTRE replication OFFLINE DISABLE / DROP replication ºˆ«‡Ω√ removeOfflineStatus()
+     * ALTER replication START with OFFLINE ºˆ«‡Ω√ setOfflineStatus() (STARTED, øπø‹Ω√ FAILED)
+     * ALTER replication START with OFFLINE ¡æ∑·Ω√ setOfflineStatus() (END , SUCCESS_COUNT ¡ı∞°)
      */
     rpxOfflineInfo     *mOfflineStatusList;
 
@@ -875,14 +1064,14 @@ private:
 
     iduLatch            mSenderLatch;
 
-    /* BUG-31374 Implicit Savepoint Ïù¥Î¶ÑÏùò Î∞∞Ïó¥ */
-    static SChar        mImplSPNameArr[SMI_STATEMENT_DEPTH_MAX][RP_SAVEPOINT_NAME_LEN + 1];
+    rpdStatistics       mRpStatistics;
 
-private:
+    /* BUG-31374 Implicit Savepoint ¿Ã∏ß¿« πËø≠ */
+    static SChar        mImplSPNameArr[SMI_STATEMENT_DEPTH_MAX][RP_SAVEPOINT_NAME_LEN + 1];
 
     IDE_RC getUnusedReceiverIndexFromReceiverList( SInt * aReceiverListIndex );
 
-    rpdMeta * findRemoteMeta( SChar * aRepName );
+private:
 
     IDE_RC    setRemoteMeta( SChar         * aRepName,
                              rpdMeta      ** aRemoteMeta );
@@ -898,39 +1087,44 @@ private:
                                 SInt        * aRecoveryItemIndex );
 
     IDE_RC createAndInitializeReceiver( cmiProtocolContext   * aProtocolContext,
+                                        smiStatement         * aParentStatement,
                                         SChar                * aReceiverRepName,
                                         rpdMeta              * aMeta,
                                         rpReceiverStartMode    aReceiverMode,
                                         rpxReceiver         ** aReceiver );
 
-    void sendHandshakeAckAboutOutOfReplicationThreads( cmiProtocolContext * aProtocolContext,
-                                                       idBool             * aExitFlag );
+    void sendHandshakeAckWithErrMsg( cmiProtocolContext * aProtocolContext,
+                                     idBool             * aExitFlag,
+                                     const SChar        * aErrMsg );
+
+    idBool checkExistConsistentReceiver( SChar * aRepName );
+    idBool checkNoHandshakeReceiver( SChar * aRepName );
         
     /* PROJ-2677 DDL synchronization */
     IDE_RC recvOperationInfo( cmiProtocolContext * aProtocolContext,
                               idBool             * aExitFlag,
                               UChar              * aOpCode );
 
-    IDE_RC startRecoveryReceiverThread( cmiProtocolContext * aProtocolContext,
-                                        rpdMeta      * aMeta );
+    IDE_RC getReplSeq( SChar                  * aReplName,
+                       rpReceiverStartMode      aReceiverMode,
+                       UInt                     aParallelID,
+                       UInt                   * aReplSeq );
 
-    IDE_RC startSyncReceiverThread( cmiProtocolContext * aProtocolContext,
-                                    rpdMeta      * aMeta );
+    IDE_RC startNoHandshakeReceiverThread( void  * aQcStatement, 
+                                           SChar * aRepName );
 
-    IDE_RC startOfflineReceiverThread( cmiProtocolContext * aProtocolContext,
-                                       rpdMeta      * aMeta );
-
-    IDE_RC startParallelReceiverThread( cmiProtocolContext * aProtocolContext,
-                                        rpdMeta      * aMeta );
-
-    IDE_RC startNormalReceiverThread( cmiProtocolContext * aProtocolContext,
-                                      rpdMeta            * aMeta );
+    IDE_RC startReceiverThread( cmiProtocolContext      * aProtocolContext,
+                                iduVarMemList           * aMemory,
+                                SChar                   * aReplName,
+                                rpdMeta                 * aRemoteMeta,
+                                rpdLockTableManager     * aLockTable );
 
     static IDE_RC rebuildTableInfo( void            * aQcStatement,
                                     qcmTableInfo    * aOldTableInfo );
     static IDE_RC rebuildTableInfoArray( void                   * aQcStatement,
-                                         qcmTableInfo          ** aOldTableInfoArray,
-                                         UInt                     aCount );
+                                         qciTableInfo          ** aOldTableInfoArray,
+                                         UInt                     aCount,
+                                         qciTableInfo         *** aOutNewTableInfoArray);
 
     static IDE_RC recreateTableAndPartitionInfo( void                  * aQcStatement,
                                                  qcmTableInfo          * aOldTableInfo,
@@ -954,10 +1148,6 @@ private:
                                                    qcmPartitionInfoList ** aPartInfoListArray,
                                                    UInt                    aCount );
 
-    static IDE_RC lockTables( void                * aQcStatement,
-                              rpdMeta             * aMeta,
-                              smiTBSLockValidType   aTBSLvType );
-
     /* BUG-42851 */
     static IDE_RC updateReplTransWaitFlag( void                * aQcStatement,
                                            SChar               * aRepName,
@@ -977,8 +1167,11 @@ private:
                                   const qcmTableInfo       * const aPartInfo,
                                         rpdReplItems       *       aQcmReplItems );
 
+    static void fillRpdReplItemsByOldItem( rpdOldItem * aOldItem, rpdReplItems * aReplItem );
+
     static IDE_RC validateAndLockAllPartition( void                 * aQcStatement,
-                                               qcmPartitionInfoList * aPartInfoList );
+                                               qcmPartitionInfoList * aPartInfoList,
+                                               smiTableLockMode       aTableLockMode );
     static IDE_RC insertOneReplItem( void              * aQcStatement,
                                      UInt                aReplMode,
                                      UInt                aReplOptions,
@@ -1030,6 +1223,11 @@ private:
 
     static IDE_RC checkSenderAndRecieverExist( SChar    * aRepName );
 
+public:
+    static IDE_RC lockTables( void                * aQcStatement,
+                              rpdMeta             * aMeta,
+                              smiTBSLockValidType   aTBSLvType );
+
     static IDE_RC getTableInfoArrAndRefCount( smiStatement  *aSmiStmt,
                                               rpdMeta       *aMeta,
                                               qcmTableInfo **aTableInfoArr,
@@ -1040,7 +1238,7 @@ private:
                                       SInt      aReplItemCnt,
                                       SInt     *aTableInfoIdx,
                                       UInt     *aReplObjectCount );
-public:
+
     static IDE_RC splitPartitionForAllRepl( void         * aQcStatement,
                                             qcmTableInfo * aTableInfo,
                                             qcmTableInfo * aSrcPartInfo,
@@ -1060,6 +1258,9 @@ public:
     static rpdReplItems * searchReplItem( rpdMetaItem  * aReplMetaItems,
                                           UInt           aItemCount,
                                           smOID          aTableOID );
+
+    static IDE_RC validateFailover( void * aQcStatement );
+    static IDE_RC executeFailover( void * aQcStatement );
 
     /* PTOJ-2677 */
     static IDE_RC ddlSyncBegin( qciStatement * aQciStatement );
@@ -1082,7 +1283,8 @@ public:
                                                 idBool             * aExitFlag,
                                                 rpdReplications    * aReplication,
                                                 rpMsgReturn        * aResult,
-                                                SChar              * aErrMsg );
+                                                SChar              * aErrMsg,
+                                                UInt               * aMsgLen );
 
     static IDE_RC getReplHosts( smiStatement     * aSmiStmt,
                                 rpdReplications  * aReplications,
@@ -1103,12 +1305,67 @@ public:
 
     static rpcDDLReplInfo * findDDLReplInfoByName( SChar * aRepName );
 
+    static IDE_RC buildTempSyncMeta( smiStatement * aRootStmt,
+                                     SChar        * aRepName,
+                                     rpdReplHosts * aRemoteHost,
+                                     rpdReplSyncItem * aSyncItemList,
+                                     rpdMeta         * aMeta );
+
+    static IDE_RC attemptHandshakeForTempSync( void              ** aHBT,
+                                               cmiProtocolContext * aProtocolContext,
+                                               rpdReplications    * aReplication, 
+                                               rpdReplSyncItem    * aItemList,
+                                               rpdVersion         * aVersion );
+ 
+    static void releaseHandshakeForTempSync( void              ** aHBT,
+                                             cmiProtocolContext * aProtocolContext );
+
+
+    static IDE_RC sendTempSyncInfo( void                  * aHBTResource,
+                                    cmiProtocolContext    * aProtocolContext,
+                                    idBool                * aExitflag,
+                                    rpdReplications       * aReplication,
+                                    rpdReplSyncItem       * aItemList,
+                                    UInt                    aTimeoutSec );
+
+    static IDE_RC recvTempSyncInfo( cmiProtocolContext * aProtocolContext,
+                                    idBool             * aExitflag,
+                                    rpdReplications    * aReplication,
+                                    rpdReplSyncItem   ** aItemList,
+                                    UInt                 aTimeoutSec );
+
+    static IDE_RC recvTempSync( cmiProtocolContext * aProtocolContext, 
+                                smiTrans           * aTrans,
+                                rpdMeta            * aMeta,
+                                idBool               aEndianDiff );
+
+    IDE_RC startTempSyncThread( cmiProtocolContext * aProtocolContext, 
+                                rpdReplications    * aReplication,
+                                rpdVersion         * aVersion,
+                                rpdReplSyncItem    * aTempSyncItemList );
+
+    void   addToTempSyncSenderList( rpxTempSender * aTempSyncSender );
+    IDE_RC realizeTempSyncSender( idvSQL * aStatistics );
+
+    static IDE_RC recoveryConditionSync( rpdReplications * aReplications,
+                                         UInt              aReplCnt );
+
+    static IDE_RC isDDLAsycReplOption( void         * aQcStatement,
+                                       qcmTableInfo * aSrcPartInfo,
+                                       idBool       * aIsDDLReplOption );
+
 private:
     static void     sendXLog( const SChar * aLogPtr ); 
     static idBool   needReplicationByType( const SChar * aLogPtr );
     static ULong    convertBufferSizeToByte( UChar aType, ULong aBufSize );
 
     static IDE_RC   initRemoteData( SChar * aRepName );
+
+    IDE_RC startXLogfileFailbackMasterSenderThread( SChar         * aReplName );
+
+    IDE_RC   getUnCompleteGlobalTxList( SChar * aRepName, iduList * aGlobalTxList );
+
+    IDE_RC   waitReceiverThread( idvSQL * aStatistics, SChar * aRepName );
 };
 
 #endif  /* _O_RPC_MANAGER_H_ */

@@ -46,9 +46,9 @@
 ACI_RC ulnSFID_46(ulnFnContext *aFnContext)
 {
     /*
-     * BUGBUG : [3] [4] [5] ëŠ” ì•„ì§ êµ¬í˜„í•˜ì§€ ì•Šì•˜ìœ¼ë¯€ë¡œ ì¼ë‹¨ ë¬´ì‹œí•˜ë„ë¡ í•œë‹¤.
-     *          [1] [2] ë¥¼ êµ¬í˜„í•´ì•¼ í•œë‹¤.
-     *          ì¼ë‹¨ì€ SQLExecute() ë¥¼ í–ˆë‹¤ê³  ê°€ì •í•œë‹¤. ì¦‰, ë¬´ì¡°ê±´ [2]
+     * BUGBUG : [3] [4] [5] ´Â ¾ÆÁ÷ ±¸ÇöÇÏÁö ¾Ê¾ÒÀ¸¹Ç·Î ÀÏ´Ü ¹«½ÃÇÏµµ·Ï ÇÑ´Ù.
+     *          [1] [2] ¸¦ ±¸ÇöÇØ¾ß ÇÑ´Ù.
+     *          ÀÏ´ÜÀº SQLExecute() ¸¦ Çß´Ù°í °¡Á¤ÇÑ´Ù. Áï, ¹«Á¶°Ç [2]
      */
 
     if (aFnContext->mWhere == ULN_STATE_EXIT_POINT)
@@ -121,24 +121,24 @@ ACI_RC ulnSFID_47(ulnFnContext *aFnContext)
     if (aFnContext->mWhere == ULN_STATE_ENTRY_POINT)
     {
         /*
-         * S10 ìƒíƒœë¡œ ì˜¬ ìˆ˜ ìˆëŠ” ê²½ìš°ëŠ”
-         *      1. S9 ìƒíƒœì—ì„œ SQLPutData() í•¨ìˆ˜ê°€ SQL_SUCCESS ë¥¼ ë¦¬í„´í•œ ê²½ìš°,
-         *      2. S10 ìƒíƒœì—ì„œ SQLPutData() í•¨ìˆ˜ê°€ SQL_SUCCESS ë¥¼ ë¦¬í„´í•œ ê²½ìš°
-         * ë°–ì—ëŠ” ì—†ë‹¤.
-         * ì¦‰, [6] ë²ˆ ì¡°ê±´ì˜
+         * S10 »óÅÂ·Î ¿Ã ¼ö ÀÖ´Â °æ¿ì´Â
+         *      1. S9 »óÅÂ¿¡¼­ SQLPutData() ÇÔ¼ö°¡ SQL_SUCCESS ¸¦ ¸®ÅÏÇÑ °æ¿ì,
+         *      2. S10 »óÅÂ¿¡¼­ SQLPutData() ÇÔ¼ö°¡ SQL_SUCCESS ¸¦ ¸®ÅÏÇÑ °æ¿ì
+         * ¹Û¿¡´Â ¾ø´Ù.
+         * Áï, [6] ¹ø Á¶°ÇÀÇ
          *      " One or more calls to SQLPutData for a single parameter returned SQL_SUCCESS,
          *        and then a call to SQLPutData was made for the same parameter"
-         * ë¼ëŠ” ë¬¸ì¥ì´ ì´ ë¶€ë¶„ì´ ì‹¤í–‰ëœë‹¤ëŠ” ì‚¬ì‹¤ ë§Œìœ¼ë¡œë„ ì¶©ì¡±ì´ ëœë‹¤.
-         * ì²´í¬í•  ê²ƒì€ ë‹¨ì§€, StrLenOrInd set to SQL_NULL_DATA ë°–ì— ì—†ë‹¤.
+         * ¶ó´Â ¹®ÀåÀÌ ÀÌ ºÎºĞÀÌ ½ÇÇàµÈ´Ù´Â »ç½Ç ¸¸À¸·Îµµ ÃæÁ·ÀÌ µÈ´Ù.
+         * Ã¼Å©ÇÒ °ÍÀº ´ÜÁö, StrLenOrInd set to SQL_NULL_DATA ¹Û¿¡ ¾ø´Ù.
          */
         ACI_TEST_RAISE( *(ulvSLen *)(aFnContext->mArgs) == SQL_NULL_DATA, LABEL_ABORT_SET);
     }
     else
     {
         /*
-         * BUGBUG : [3] [4] [5] ëŠ” ì•„ì§ êµ¬í˜„í•˜ì§€ ì•Šì•˜ìœ¼ë¯€ë¡œ ì¼ë‹¨ ë¬´ì‹œí•˜ë„ë¡ í•œë‹¤.
-         *          [1] [2] ë¥¼ êµ¬í˜„í•´ì•¼ í•œë‹¤.
-         *          ì¼ë‹¨ì€ SQLExecute() ë¥¼ í–ˆë‹¤ê³  ê°€ì •í•œë‹¤. ì¦‰, ë¬´ì¡°ê±´ [2]
+         * BUGBUG : [3] [4] [5] ´Â ¾ÆÁ÷ ±¸ÇöÇÏÁö ¾Ê¾ÒÀ¸¹Ç·Î ÀÏ´Ü ¹«½ÃÇÏµµ·Ï ÇÑ´Ù.
+         *          [1] [2] ¸¦ ±¸ÇöÇØ¾ß ÇÑ´Ù.
+         *          ÀÏ´ÜÀº SQLExecute() ¸¦ Çß´Ù°í °¡Á¤ÇÑ´Ù. Áï, ¹«Á¶°Ç [2]
          */
         if (ULN_FNCONTEXT_GET_RC(aFnContext) == SQL_SUCCESS ||
            ULN_FNCONTEXT_GET_RC(aFnContext) == SQL_SUCCESS_WITH_INFO)
@@ -209,14 +209,14 @@ static ACI_RC ulnPutDataLob(ulnFnContext *aFnContext,
     ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
     /*
-     * ulnLob êµ¬ì¡°ì²´ ì–»ê¸°
+     * ulnLob ±¸Á¶Ã¼ ¾ò±â
      */
 
     sLob = ulnDescRecGetLobElement(aDescRecIpd, aStmt->mProcessingLobRowNumber);
     ACI_TEST_RAISE(sLob == NULL, LABEL_MEM_MAN_ERR);
 
     /*
-     * lob open ì€ SQLExecute() í•¨ìˆ˜ì—ì„œ ìˆ˜í–‰í•œë‹¤.
+     * lob open Àº SQLExecute() ÇÔ¼ö¿¡¼­ ¼öÇàÇÑ´Ù.
      */
 
     ACI_TEST_RAISE(sLob->mOp->mGetState(sLob) != ULN_LOB_ST_OPENED, LABEL_MEM_MAN_ERR);
@@ -233,20 +233,20 @@ static ACI_RC ulnPutDataLob(ulnFnContext *aFnContext,
 
         case SQL_DEFAULT_PARAM:
             /*
-             * BUGBUG : êµ¬í˜„ ì•„ì§ ëª»í•¨. ìŠ¤í™ ì½ì–´ ë´ì•¼ í•¨.
+             * BUGBUG : ±¸Çö ¾ÆÁ÷ ¸øÇÔ. ½ºÆå ÀĞ¾î ºÁ¾ß ÇÔ.
              */
             ACE_ASSERT(0);
             break;
 
         default:
             /*
-             * BUGBUG : ì—ëŸ¬ ì½”ë“œ
+             * BUGBUG : ¿¡·¯ ÄÚµå
              */
             ACI_TEST(aStrLenOrInd < ULN_vLEN(0));
 
             /*
-             * BUGBUG : 4ê¸°ê°€ ì´ìƒ ë˜ëŠ” ì‚¬ì´ì¦ˆì¼ ë•Œì—ëŠ” ëŒ€ëµ ë‚œê° -_-;
-             *          ì—ëŸ¬ ë°œìƒì‹œì¼œ ì¤˜ì•¼ í•œë‹¤.
+             * BUGBUG : 4±â°¡ ÀÌ»ó µÇ´Â »çÀÌÁîÀÏ ¶§¿¡´Â ´ë·« ³­°¨ -_-;
+             *          ¿¡·¯ ¹ß»ı½ÃÄÑ Áà¾ß ÇÑ´Ù.
              */
             sDataLength = (acp_uint32_t)aStrLenOrInd;
             break;
@@ -256,7 +256,7 @@ static ACI_RC ulnPutDataLob(ulnFnContext *aFnContext,
     {
         /*
          * BUG-28980 [CodeSonar]Ignored Return Value
-         * false alarm ì²˜ë¦¬
+         * false alarm Ã³¸®
          */
         case ULN_PD_ST_CREATED:
         case ULN_PD_ST_INITIAL:
@@ -265,7 +265,7 @@ static ACI_RC ulnPutDataLob(ulnFnContext *aFnContext,
 
         case ULN_PD_ST_NEED_DATA:
             /*
-             * ìµœì´ˆì˜ LOB SQLPutData() : Descriptor state shift
+             * ÃÖÃÊÀÇ LOB SQLPutData() : Descriptor state shift
              */
             // idlOS::printf("#### >>>>>> initialize pd context LOB\n");
             ulnPDContextInitialize(sPDContext, ULN_PD_BUFFER_TYPE_USER);
@@ -276,9 +276,9 @@ static ACI_RC ulnPutDataLob(ulnFnContext *aFnContext,
 
         case ULN_PD_ST_ACCUMULATING_DATA:
             /*
-             * ì—°ì†ë˜ëŠ” LOB SQLPutData()
+             * ¿¬¼ÓµÇ´Â LOB SQLPutData()
              *
-             * BUFFER ì¤€ë¹„
+             * BUFFER ÁØºñ
              */
             sCTYPE = ulnMetaGetCTYPE(&aDescRecApd->mMeta);
 
@@ -293,7 +293,7 @@ static ACI_RC ulnPutDataLob(ulnFnContext *aFnContext,
             ACI_TEST(sLobBuffer.mOp->mPrepare(aFnContext, &sLobBuffer) != ACI_SUCCESS);
 
             /*
-             * ì„œë²„ë¡œ ì „ì†¡ (lob open ì€ Execute ì‹œì— ì´ë£¨ì–´ì§„ë‹¤)
+             * ¼­¹ö·Î Àü¼Û (lob open Àº Execute ½Ã¿¡ ÀÌ·ç¾îÁø´Ù)
              */
             //fix BUG-17722
             ACI_TEST(ulnInitializeProtocolContext(aFnContext,
@@ -312,7 +312,7 @@ static ACI_RC ulnPutDataLob(ulnFnContext *aFnContext,
                                &(aStmt->mParentDbc->mPtContext)) != ACI_SUCCESS);
 
             /*
-             * BUFFER ì •ë¦¬
+             * BUFFER Á¤¸®
              */
 
             ACI_TEST(sLobBuffer.mOp->mFinalize(aFnContext, &sLobBuffer) != ACI_SUCCESS);
@@ -376,7 +376,7 @@ static ACI_RC ulnPutDataVariable(ulnFnContext *aFnContext,
     acp_uint32_t  sDataLength = 0;
 
     /*
-     * CHAR ë‚˜ BINARY ë°ì´í„°ë¥¼ ì—¬ëŸ¬ë²ˆì— ê±¸ì³ì„œ SQLPutData() í•˜ëŠ” ê²½ìš°ì„.
+     * CHAR ³ª BINARY µ¥ÀÌÅÍ¸¦ ¿©·¯¹ø¿¡ °ÉÃÄ¼­ SQLPutData() ÇÏ´Â °æ¿ìÀÓ.
      */
     switch (ulnPDContextGetState(sPDContext))
     {
@@ -387,11 +387,11 @@ static ACI_RC ulnPutDataVariable(ulnFnContext *aFnContext,
 
         case ULN_PD_ST_NEED_DATA:
             /*
-             * ìµœì´ˆì˜ SQLPutData() í˜¸ì¶œ
+             * ÃÖÃÊÀÇ SQLPutData() È£Ãâ
              *
-             * ulnParamProcess_DATA_AT_EXEC() ì—ì„œ í• ë‹¹í•œ ë©”ëª¨ë¦¬ free,
-             * ë§Œì•½ ì—ëŸ¬ ë“±ìœ¼ë¡œ free ì•ˆë˜ì—ˆì„ ë•Œì—ëŠ” ulnDescDestroy() ì—ì„œ Descriptor ì˜
-             * PDContextList ë¥¼ ë”°ë¼ê°€ë©´ì„œ free.
+             * ulnParamProcess_DATA_AT_EXEC() ¿¡¼­ ÇÒ´çÇÑ ¸Ş¸ğ¸® free,
+             * ¸¸¾à ¿¡·¯ µîÀ¸·Î free ¾ÈµÇ¾úÀ» ¶§¿¡´Â ulnDescDestroy() ¿¡¼­ Descriptor ÀÇ
+             * PDContextList ¸¦ µû¶ó°¡¸é¼­ free.
              */
             // idlOS::printf("#### >>>>>> initialize pd context variable\n");
             ulnPDContextInitialize(sPDContext, ULN_PD_BUFFER_TYPE_ALLOC);
@@ -405,7 +405,7 @@ static ACI_RC ulnPutDataVariable(ulnFnContext *aFnContext,
 
         case ULN_PD_ST_ACCUMULATING_DATA:
             /*
-             * ì—°ì†ë˜ëŠ” SQLPutData() í˜¸ì¶œ
+             * ¿¬¼ÓµÇ´Â SQLPutData() È£Ãâ
              */
             if (aStrLenOrInd == SQL_NTS)
             {
@@ -418,7 +418,7 @@ static ACI_RC ulnPutDataVariable(ulnFnContext *aFnContext,
             else if (aStrLenOrInd == SQL_DEFAULT_PARAM)
             {
                 /*
-                 * BUGBUG : êµ¬í˜„ ì•„ì§ ëª»í•¨. ìŠ¤í™ ì½ì–´ ë´ì•¼ í•¨.
+                 * BUGBUG : ±¸Çö ¾ÆÁ÷ ¸øÇÔ. ½ºÆå ÀĞ¾î ºÁ¾ß ÇÔ.
                  */
                 ACE_ASSERT(0);
             }
@@ -459,8 +459,8 @@ static ACI_RC ulnPutDataVariable(ulnFnContext *aFnContext,
         ulnDescRemovePDContext(aDescRecApd->mParentDesc, sPDContext);
 
         /*
-         * HY000 : SQLSTATE ì •ì˜ í•„ìš”
-         * BUGBUG : ë©”ëª¨ë¦¬ realloc í•˜ëŠ” ê³¼ì •ì´ í•„ìš”í•˜ë‹¤. ì—ëŸ¬ë¥¼ ë‚´ë©´ ì•ˆëœë‹¤.
+         * HY000 : SQLSTATE Á¤ÀÇ ÇÊ¿ä
+         * BUGBUG : ¸Ş¸ğ¸® realloc ÇÏ´Â °úÁ¤ÀÌ ÇÊ¿äÇÏ´Ù. ¿¡·¯¸¦ ³»¸é ¾ÈµÈ´Ù.
          */
         ulnError(aFnContext, ulERR_ABORT_PD_DATA_TOO_BIG);
     }
@@ -491,8 +491,8 @@ static ACI_RC ulnPutDataFixed(ulnFnContext *aFnContext,
             ulnPDContextInitialize(sPDContext, ULN_PD_BUFFER_TYPE_USER);
 
             sPDContext->mOp->mPrepare(sPDContext, aDataPtr);
-            /* BUG-41741 Fixed ë°ì´íƒ€ì— ëŒ€í•œ PutDataëŠ” í•œë²ˆë§Œ í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
-               Prepareì™€ Accumulateë¥¼ ë™ì‹œì— ìˆ˜í–‰í•´ì•¼í•œë‹¤. */
+            /* BUG-41741 Fixed µ¥ÀÌÅ¸¿¡ ´ëÇÑ PutData´Â ÇÑ¹ø¸¸ ÇÒ ¼ö ÀÖÀ¸¹Ç·Î
+               Prepare¿Í Accumulate¸¦ µ¿½Ã¿¡ ¼öÇàÇØ¾ßÇÑ´Ù. */
             sPDContext->mOp->mAccumulate(sPDContext, aDataPtr, ulnMetaGetOctetLength(&aDescRecApd->mMeta));
             ulnPDContextSetState(sPDContext, ULN_PD_ST_ACCUMULATING_DATA);
 
@@ -500,7 +500,7 @@ static ACI_RC ulnPutDataFixed(ulnFnContext *aFnContext,
 
         case ULN_PD_ST_ACCUMULATING_DATA:
             /*
-             * CHAR ë‚˜ BINARY ë°ì´í„°ê°€ ì•„ë‹Œ ê²½ìš° ì—¬ëŸ¬ë²ˆì— ê±¸ì³ì„œ SQLPutData() í•˜ë©´ ì•ˆë¨.
+             * CHAR ³ª BINARY µ¥ÀÌÅÍ°¡ ¾Æ´Ñ °æ¿ì ¿©·¯¹ø¿¡ °ÉÃÄ¼­ SQLPutData() ÇÏ¸é ¾ÈµÊ.
              */
             ACI_RAISE(LABEL_NOT_ALLOWED_IN_PIECES);
             break;
@@ -613,15 +613,15 @@ SQLRETURN ulnPutData(ulnStmt *aStmt, void *aDataPtr, ulvSLen aStrLenOrInd)
     sNeedExit = ACP_TRUE;
 
     /*
-     * BUGBUG : ì¸ìì˜ ìœ íš¨ì„± ì²´í¬
+     * BUGBUG : ÀÎÀÚÀÇ À¯È¿¼º Ã¼Å©
      */
 
     /*
-     * PutData ë©”ì¸
+     * PutData ¸ŞÀÎ
      */
 
     /* PROJ-1789 Updatable Scrollable Cursor
-     * SetPos, BulkOperationsì—ì„œ NEED_DATAê°€ ë‚¬ìœ¼ë©´ RowsetStmtë¡œ ì‘ì—…. */
+     * SetPos, BulkOperations¿¡¼­ NEED_DATA°¡ ³µÀ¸¸é RowsetStmt·Î ÀÛ¾÷. */
     if ((ulnStmtGetNeedDataFuncID(aStmt) == ULN_FID_SETPOS)
      || (ulnStmtGetNeedDataFuncID(aStmt) == ULN_FID_BULKOPERATIONS))
     {

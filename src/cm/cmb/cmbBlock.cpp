@@ -23,22 +23,22 @@
 IDE_RC cmbBlockMove(cmbBlock *aTargetBlock, cmbBlock *aSourceBlock, UInt aOffset)
 {
     /*
-     * offset ë²”ìœ„ ê²€ì‚¬
+     * offset ¹üÀ§ °Ë»ç
      */
     IDE_ASSERT(aOffset < aSourceBlock->mDataSize);
 
     /*
-     * Target Block Size ì„¸íŒ…
+     * Target Block Size ¼¼ÆÃ
      */
     aTargetBlock->mDataSize = aSourceBlock->mDataSize - aOffset;
 
     /*
-     * Source Block Size ì„¸íŒ…
+     * Source Block Size ¼¼ÆÃ
      */
     aSourceBlock->mDataSize = aOffset;
 
     /*
-     * Source Blockì—ì„œ Target Blockìœ¼ë¡œ ë³µì‚¬
+     * Source Block¿¡¼­ Target BlockÀ¸·Î º¹»ç
      */
     idlOS::memcpy(aTargetBlock->mData, aSourceBlock->mData + aOffset, aTargetBlock->mDataSize);
 
@@ -303,7 +303,7 @@ IDE_RC cmbBlockReadDateTime(cmbBlock *aBlock, cmtDateTime *aDateTime, idBool *aS
     CMB_BLOCK_CHECK_READ_CURSOR(aBlock, 13);
 
     /*
-     * DateTime ì½ìŒ
+     * DateTime ÀĞÀ½
      */
     CMB_BLOCK_READ_BYTE2(aBlock, &aDateTime->mYear);
     CMB_BLOCK_READ_BYTE1(aBlock, &aDateTime->mMonth);
@@ -337,7 +337,7 @@ IDE_RC cmbBlockReadInterval(cmbBlock *aBlock, cmtInterval *aInterval, idBool *aS
     CMB_BLOCK_CHECK_READ_CURSOR(aBlock, 16);
 
     /*
-     * Interval ì½ìŒ
+     * Interval ÀĞÀ½
      */
     CMB_BLOCK_READ_BYTE8(aBlock, &aInterval->mSecond);
     CMB_BLOCK_READ_BYTE8(aBlock, &aInterval->mMicroSecond);
@@ -365,12 +365,12 @@ IDE_RC cmbBlockReadNumeric(cmbBlock *aBlock, cmtNumeric *aNumeric, idBool *aSucc
     UShort sCursor;
 
     /*
-     * Cursor ìœ„ì¹˜ ë³µì‚¬
+     * Cursor À§Ä¡ º¹»ç
      */
     sCursor = aBlock->mCursor;
 
     /*
-     * Numeric Array Size ì½ìŒ
+     * Numeric Array Size ÀĞÀ½
      */
     IDE_TEST(cmbBlockReadUChar(aBlock, &aNumeric->mSize, aSuccess) != IDE_SUCCESS);
 
@@ -381,14 +381,14 @@ IDE_RC cmbBlockReadNumeric(cmbBlock *aBlock, cmtNumeric *aNumeric, idBool *aSucc
     CMB_BLOCK_CHECK_READ_CURSOR(aBlock, aNumeric->mSize + NUMERIC_HEADER_SIZE - 1);
 
     /*
-     * Numeric ì†ì„± ì½ìŒ
+     * Numeric ¼Ó¼º ÀĞÀ½
      */
     CMB_BLOCK_READ_BYTE1(aBlock, &aNumeric->mPrecision);
     CMB_BLOCK_READ_BYTE2(aBlock, &aNumeric->mScale);
     CMB_BLOCK_READ_BYTE1(aBlock, &aNumeric->mSign);
 
     /*
-     * Numeric Array ë³µì‚¬
+     * Numeric Array º¹»ç
      */
     idlOS::memcpy(aNumeric->mData, aBlock->mData + aBlock->mCursor, aNumeric->mSize);
 
@@ -414,7 +414,7 @@ IDE_RC cmbBlockReadNumeric(cmbBlock *aBlock, cmtNumeric *aNumeric, idBool *aSucc
     IDE_EXCEPTION_END;
     {
         /*
-         * Cursor ìœ„ì¹˜ ë³µêµ¬
+         * Cursor À§Ä¡ º¹±¸
          */
         aBlock->mCursor = sCursor;
     }
@@ -431,12 +431,12 @@ IDE_RC cmbBlockReadVariable(cmbBlock *aBlock, cmtVariable *aVariable, idBool *aS
     idBool sHeaderReadFlag = ID_FALSE;
 
     /*
-     * Cursor ìœ„ì¹˜ ë³µì‚¬
+     * Cursor À§Ä¡ º¹»ç
      */
     sCursor = aBlock->mCursor;
 
     /*
-     * Variable Header ì½ìŒ
+     * Variable Header ÀĞÀ½
      */
     CMB_BLOCK_CHECK_READ_CURSOR(aBlock, VARIABLE_HEADER_SIZE);
 
@@ -447,7 +447,7 @@ IDE_RC cmbBlockReadVariable(cmbBlock *aBlock, cmtVariable *aVariable, idBool *aS
     sHeaderReadFlag = ID_TRUE;
 
     /*
-     * Variableì— Piece ì¶”ê°€
+     * Variable¿¡ Piece Ãß°¡
      */
     CMB_BLOCK_CHECK_READ_CURSOR(aBlock, sPieceSize);
 
@@ -485,7 +485,7 @@ IDE_RC cmbBlockReadVariable(cmbBlock *aBlock, cmtVariable *aVariable, idBool *aS
     IDE_EXCEPTION_END;
     {
         /*
-         * Cursor ìœ„ì¹˜ ë³µêµ¬
+         * Cursor À§Ä¡ º¹±¸
          */
         aBlock->mCursor = sCursor;
     }
@@ -502,19 +502,19 @@ IDE_RC cmbBlockReadPtr(cmbBlock *aBlock, cmtInVariable*aInVariable, idBool *aSuc
     sPtrSize = ID_SIZEOF(vULong);
 
     /*   
-     * Cursor ìœ„ì¹˜ ë³µì‚¬
+     * Cursor À§Ä¡ º¹»ç
      */
     sCursor = aBlock->mCursor;
     
     CMB_BLOCK_CHECK_READ_CURSOR(aBlock, sPtrSize + 4);
 
     /*   
-     * IN BLOCK Ptr Header ì½ìŒ
+     * IN BLOCK Ptr Header ÀĞÀ½
      */
     CMB_BLOCK_READ_BYTE4(aBlock, &aInVariable->mSize);
 
     /*   
-     * IN BLOCK Ptr ì½ìŒ
+     * IN BLOCK Ptr ÀĞÀ½
      */
     CMB_BLOCK_READ_PTR(aBlock, aInVariable->mData, sPtrSize);
 
@@ -535,7 +535,7 @@ IDE_RC cmbBlockReadPtr(cmbBlock *aBlock, cmtInVariable*aInVariable, idBool *aSuc
     IDE_EXCEPTION_END;
     {
         /*
-         * Cursor ìœ„ì¹˜ ë³µêµ¬
+         * Cursor À§Ä¡ º¹±¸
          */
         aBlock->mCursor = sCursor;
     }
@@ -549,19 +549,19 @@ IDE_RC cmbBlockReadInVariable(cmbBlock *aBlock, cmtInVariable *aInVariable, idBo
     UChar  sInVariableDelimeter;
 
     /*
-     * Cursor ìœ„ì¹˜ ë³µì‚¬
+     * Cursor À§Ä¡ º¹»ç
      */
     sCursor = aBlock->mCursor;
     
     /*
-     * IN BLOCK Variable Header ì½ìŒ
+     * IN BLOCK Variable Header ÀĞÀ½
      */
     CMB_BLOCK_CHECK_READ_CURSOR(aBlock, 4);
 
     CMB_BLOCK_READ_BYTE4(aBlock, &aInVariable->mSize);
 
     /*
-     * IN BLOCK Variable data ì½ìŒ
+     * IN BLOCK Variable data ÀĞÀ½
      */
     CMB_BLOCK_CHECK_READ_CURSOR(aBlock, aInVariable->mSize);
 
@@ -591,7 +591,7 @@ IDE_RC cmbBlockReadInVariable(cmbBlock *aBlock, cmtInVariable *aInVariable, idBo
     IDE_EXCEPTION_END;
     {
         /*
-         * Cursor ìœ„ì¹˜ ë³µêµ¬
+         * Cursor À§Ä¡ º¹±¸
          */
         aBlock->mCursor = sCursor;
     }
@@ -689,19 +689,19 @@ IDE_RC cmbBlockReadAny(cmbBlock *aBlock, cmtAny *aAny, idBool *aSuccess)
     UChar  sType;
 
     /*
-     * Cursor ìœ„ì¹˜ ë³µì‚¬
+     * Cursor À§Ä¡ º¹»ç
      */
     sCursor = aBlock->mCursor;
 
     /*
-     * Type ID ì½ìŒ
+     * Type ID ÀĞÀ½
      */
     IDE_TEST(cmbBlockReadUChar(aBlock, &sType, aSuccess) != IDE_SUCCESS);
 
     if (*aSuccess == ID_TRUE)
     {
         /*
-         * ì´ˆê¸°í™”
+         * ÃÊ±âÈ­
          */
         if (aAny->mType == CMT_ID_NONE)
         {
@@ -713,7 +713,7 @@ IDE_RC cmbBlockReadAny(cmbBlock *aBlock, cmtAny *aAny, idBool *aSuccess)
         }
 
         /*
-         * Type ë³„ë¡œ Data ì½ìŒ
+         * Type º°·Î Data ÀĞÀ½
          */
         switch (aAny->mType)
         {
@@ -829,7 +829,7 @@ IDE_RC cmbBlockReadAny(cmbBlock *aBlock, cmtAny *aAny, idBool *aSuccess)
     IDE_EXCEPTION_END;
     {
         /*
-         * Cursor ìœ„ì¹˜ ë³µêµ¬
+         * Cursor À§Ä¡ º¹±¸
          */
         aBlock->mCursor = sCursor;
     }
@@ -843,19 +843,19 @@ IDE_RC cmbBlockReadCollection(cmbBlock *aBlock, cmtCollection *aCollection, idBo
     UChar  sType;
 
     /*
-     * Cursor ìœ„ì¹˜ ë³µì‚¬
+     * Cursor À§Ä¡ º¹»ç
      */
     sCursor = aBlock->mCursor;
 
     /*
-     * Type ID ì½ìŒ
+     * Type ID ÀĞÀ½
      */
     IDE_TEST(cmbBlockReadUChar(aBlock, &sType, aSuccess) != IDE_SUCCESS);
 
     if (*aSuccess == ID_TRUE)
     {
         /*
-         * ì´ˆê¸°í™”
+         * ÃÊ±âÈ­
          */
         if (aCollection->mType == CMT_ID_NONE)
         {
@@ -867,7 +867,7 @@ IDE_RC cmbBlockReadCollection(cmbBlock *aBlock, cmtCollection *aCollection, idBo
         }
         
         /*
-         * Type ë³„ë¡œ Data ì½ìŒ
+         * Type º°·Î Data ÀĞÀ½
          */
         switch (aCollection->mType)
         {
@@ -894,7 +894,7 @@ IDE_RC cmbBlockReadCollection(cmbBlock *aBlock, cmtCollection *aCollection, idBo
     IDE_EXCEPTION_END;
     {
         /*
-         * Cursor ìœ„ì¹˜ ë³µêµ¬
+         * Cursor À§Ä¡ º¹±¸
          */
         aBlock->mCursor = sCursor;
     }
@@ -1075,7 +1075,7 @@ IDE_RC cmbBlockWriteDateTime(cmbBlock *aBlock, cmtDateTime *aDateTime, idBool *a
     CMB_BLOCK_CHECK_WRITE_CURSOR(aBlock, 13);
 
     /*
-     * DataTime ì”€
+     * DataTime ¾¸
      */
     CMB_BLOCK_WRITE_BYTE2(aBlock, aDateTime->mYear);
     CMB_BLOCK_WRITE_BYTE1(aBlock, aDateTime->mMonth);
@@ -1100,7 +1100,7 @@ IDE_RC cmbBlockWriteInterval(cmbBlock *aBlock, cmtInterval *aInterval, idBool *a
     CMB_BLOCK_CHECK_WRITE_CURSOR(aBlock, 16);
 
     /*
-     * Interval ì”€
+     * Interval ¾¸
      */
     CMB_BLOCK_WRITE_BYTE8(aBlock, aInterval->mSecond);
     CMB_BLOCK_WRITE_BYTE8(aBlock, aInterval->mMicroSecond);
@@ -1121,7 +1121,7 @@ IDE_RC cmbBlockWriteNumeric(cmbBlock *aBlock, cmtNumeric *aNumeric, idBool *aSuc
     CMB_BLOCK_CHECK_WRITE_CURSOR(aBlock, aNumeric->mSize + NUMERIC_HEADER_SIZE);
 
     /*
-     * Numeric ì†ì„± ì”€
+     * Numeric ¼Ó¼º ¾¸
      */
     CMB_BLOCK_WRITE_BYTE1(aBlock, aNumeric->mSize);
     CMB_BLOCK_WRITE_BYTE1(aBlock, aNumeric->mPrecision);
@@ -1129,7 +1129,7 @@ IDE_RC cmbBlockWriteNumeric(cmbBlock *aBlock, cmtNumeric *aNumeric, idBool *aSuc
     CMB_BLOCK_WRITE_BYTE1(aBlock, aNumeric->mSign);
 
     /*
-     * Numeric Array ì”€
+     * Numeric Array ¾¸
      */
     idlOS::memcpy(aBlock->mData + aBlock->mCursor, aNumeric->mData, aNumeric->mSize);
 
@@ -1157,14 +1157,14 @@ IDE_RC cmbBlockWriteVariable(cmbBlock *aBlock, cmtVariable *aVariable, UInt *aSi
     UShort sPieceSize;
 
     /*
-     * Variable Size íšë“ ë° ê²€ì‚¬
+     * Variable Size È¹µæ ¹× °Ë»ç
      */
     sSize = cmtVariableGetSize(aVariable);
 
     IDE_TEST_RAISE((sSize > 0) && (aVariable->mPieceCount == 0), InvalidVariableType);
 
     /*
-     * SizeLeft = 0 ì¸ ê²½ìš° SizeLeft <- Variable Sizeë¡œ ì„¸íŒ…
+     * SizeLeft = 0 ÀÎ °æ¿ì SizeLeft <- Variable Size·Î ¼¼ÆÃ
      */
     if (*aSizeLeft == 0)
     {
@@ -1172,19 +1172,19 @@ IDE_RC cmbBlockWriteVariable(cmbBlock *aBlock, cmtVariable *aVariable, UInt *aSi
     }
 
     /*
-     * Variable ìµœì†Œ ì‚¬ì´ì¦ˆ í™•ë³´ì—¬ë¶€ ê²€ì‚¬
+     * Variable ÃÖ¼Ò »çÀÌÁî È®º¸¿©ºÎ °Ë»ç
      */
     CMB_BLOCK_CHECK_WRITE_CURSOR(aBlock, VARIABLE_HEADER_SIZE + (*aSizeLeft ? 1 : 0));
 
     /*
-     * Variable Write Offset ì”€
+     * Variable Write Offset ¾¸
      */
     sOffset = sSize - *aSizeLeft;
 
     CMB_BLOCK_WRITE_BYTE4(aBlock, sOffset);
 
     /*
-     * Variable Write Size ê³„ì‚°
+     * Variable Write Size °è»ê
      */
     sPieceSize = IDL_MIN(*aSizeLeft,
                          (UShort)(aBlock->mBlockSize -
@@ -1192,19 +1192,19 @@ IDE_RC cmbBlockWriteVariable(cmbBlock *aBlock, cmtVariable *aVariable, UInt *aSi
                                   (VARIABLE_HEADER_SIZE - 4)));
 
     /*
-     * Variable Write Size ì”€
+     * Variable Write Size ¾¸
      */
     CMB_BLOCK_WRITE_BYTE2(aBlock, sPieceSize);
 
     /*
-     * ë§ˆì§€ë§‰ Pieceì¸ì§€ ê²€ì‚¬ í›„ Flag ì”€
+     * ¸¶Áö¸· PieceÀÎÁö °Ë»ç ÈÄ Flag ¾¸
      */
     *aSizeLeft -= sPieceSize;
 
     CMB_BLOCK_WRITE_BYTE1(aBlock, (*aSizeLeft ? 0 : 1));
 
     /*
-     * Variable Data ì”€
+     * Variable Data ¾¸
      */
     IDE_TEST(cmtVariableCopy(aVariable,
                              aBlock->mData + aBlock->mCursor,
@@ -1214,7 +1214,7 @@ IDE_RC cmbBlockWriteVariable(cmbBlock *aBlock, cmtVariable *aVariable, UInt *aSi
     CMB_BLOCK_MOVE_WRITE_CURSOR(aBlock, sPieceSize);
 
     /*
-     * ë§ˆì§€ë§‰ Pieceì´ë©´ ë
+     * ¸¶Áö¸· PieceÀÌ¸é ³¡
      */
     *aSuccess = *aSizeLeft ? ID_FALSE : ID_TRUE;
 
@@ -1243,12 +1243,12 @@ IDE_RC cmbBlockWritePtr(cmbBlock *aBlock, cmtInVariable *aInVariable, idBool *aS
     CMB_BLOCK_CHECK_WRITE_CURSOR(aBlock, sPtrSize + 4);
 
     /*
-     * IN BLOCK Ptrì´ ê°€ë¦¬í‚¤ëŠ” ë°ì´í„°ì˜ Size ì”€
+     * IN BLOCK PtrÀÌ °¡¸®Å°´Â µ¥ÀÌÅÍÀÇ Size ¾¸
      */
     CMB_BLOCK_WRITE_BYTE4(aBlock, aInVariable->mSize);
 
     /*
-     * IN BLOCK Ptr ì”€
+     * IN BLOCK Ptr ¾¸
      */
     CMB_BLOCK_WRITE_PTR(aBlock, aInVariable->mData, sPtrSize);
 
@@ -1271,19 +1271,19 @@ IDE_RC cmbBlockWriteInVariable(cmbBlock *aBlock, cmtInVariable *aInVariable, idB
     CMB_BLOCK_CHECK_WRITE_CURSOR(aBlock, aInVariable->mSize + 5);
 
     /*
-     * IN BLOCK Variable Write Size ì”€
+     * IN BLOCK Variable Write Size ¾¸
      */
     CMB_BLOCK_WRITE_BYTE4(aBlock, aInVariable->mSize);
 
     /*
-     * IN BLOCK Variable Data ì”€
+     * IN BLOCK Variable Data ¾¸
      */
     idlOS::memcpy(aBlock->mData + aBlock->mCursor, aInVariable->mData, aInVariable->mSize);
 
     CMB_BLOCK_MOVE_WRITE_CURSOR(aBlock, aInVariable->mSize);
 
     /*
-     * IN BLOCK Variable Delimeter ì”€
+     * IN BLOCK Variable Delimeter ¾¸
      * Make in-variable data null terminated string
      */
     CMB_BLOCK_WRITE_BYTE1(aBlock, sInVariableDelimeter);
@@ -1305,9 +1305,9 @@ IDE_RC cmbBlockWriteBit(cmbBlock *aBlock, cmtBit *aBit, UInt *aSizeLeft, idBool 
     if (*aSizeLeft == 0)
     {
         /*
-         * Data Sizeê°€ 0ì¸ê±´ì§€ ì²˜ìŒë³´ë‚´ëŠ” ê±´ì§€ íŒë‹¨í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ
-         * ì²˜ìŒ ë³´ë‚¼ ë•Œ Data Sizeê°€ 0ì¸ ê²½ìš° ìª¼ê°œì§€ì§€ ì•Šê³ 
-         * í•œë²ˆì— ë³´ë‚´ì§€ë„ë¡ ë²„í¼ í¬ì¸í„°ë¥¼ ê²€ì‚¬í•œë‹¤.
+         * Data Size°¡ 0ÀÎ°ÇÁö Ã³À½º¸³»´Â °ÇÁö ÆÇ´ÜÇÒ ¼ö ¾øÀ¸¹Ç·Î
+         * Ã³À½ º¸³¾ ¶§ Data Size°¡ 0ÀÎ °æ¿ì ÂÉ°³ÁöÁö ¾Ê°í
+         * ÇÑ¹ø¿¡ º¸³»Áöµµ·Ï ¹öÆÛ Æ÷ÀÎÅÍ¸¦ °Ë»çÇÑ´Ù.
          */
         CMB_BLOCK_CHECK_WRITE_CURSOR(aBlock, VARIABLE_HEADER_SIZE + 4);
 
@@ -1355,9 +1355,9 @@ IDE_RC cmbBlockWriteNibble(cmbBlock *aBlock, cmtNibble *aNibble, UInt *aSizeLeft
     if (*aSizeLeft == 0)
     {
         /*
-         * Data Sizeê°€ 0ì¸ê±´ì§€ ì²˜ìŒë³´ë‚´ëŠ” ê±´ì§€ íŒë‹¨í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ
-         * ì²˜ìŒ ë³´ë‚¼ ë•Œ Data Sizeê°€ 0ì¸ ê²½ìš° ìª¼ê°œì§€ì§€ ì•Šê³ 
-         * í•œë²ˆì— ë³´ë‚´ì§€ë„ë¡ ë²„í¼ í¬ì¸í„°ë¥¼ ê²€ì‚¬í•œë‹¤.
+         * Data Size°¡ 0ÀÎ°ÇÁö Ã³À½º¸³»´Â °ÇÁö ÆÇ´ÜÇÒ ¼ö ¾øÀ¸¹Ç·Î
+         * Ã³À½ º¸³¾ ¶§ Data Size°¡ 0ÀÎ °æ¿ì ÂÉ°³ÁöÁö ¾Ê°í
+         * ÇÑ¹ø¿¡ º¸³»Áöµµ·Ï ¹öÆÛ Æ÷ÀÎÅÍ¸¦ °Ë»çÇÑ´Ù.
          */
         CMB_BLOCK_CHECK_WRITE_CURSOR(aBlock, VARIABLE_HEADER_SIZE + 4);
 
@@ -1405,24 +1405,24 @@ IDE_RC cmbBlockWriteAny(cmbBlock *aBlock, cmtAny *aAny, UInt *aSizeLeft, idBool 
     UShort sCursor;
 
     /*
-     * Cursor ìœ„ì¹˜ ë³µì‚¬
+     * Cursor À§Ä¡ º¹»ç
      */
     sCursor = aBlock->mCursor;
 
     /*
-     * Type ID ë²”ìœ„ ê²€ì‚¬
+     * Type ID ¹üÀ§ °Ë»ç
      */
     IDE_ASSERT((aAny->mType > CMT_ID_NONE) && (aAny->mType < CMT_ID_MAX));
 
     /*
-     * Type ID ì”€
+     * Type ID ¾¸
      */
     IDE_TEST(cmbBlockWriteUChar(aBlock, aAny->mType, aSuccess) != IDE_SUCCESS);
 
     if (*aSuccess == ID_TRUE)
     {
         /*
-         * Type ë³„ë¡œ Data ì”€
+         * Type º°·Î Data ¾¸
          */
         switch (aAny->mType)
         {
@@ -1532,7 +1532,7 @@ IDE_RC cmbBlockWriteAny(cmbBlock *aBlock, cmtAny *aAny, UInt *aSizeLeft, idBool 
     IDE_EXCEPTION_END;
     {
         /*
-         * Cursor ìœ„ì¹˜ ë³µêµ¬
+         * Cursor À§Ä¡ º¹±¸
          */
         aBlock->mCursor   = sCursor;
         aBlock->mDataSize = sCursor;
@@ -1546,25 +1546,25 @@ IDE_RC cmbBlockWriteCollection(cmbBlock *aBlock, cmtCollection *aCollection, UIn
     UShort sCursor;
 
     /*
-     * Cursor ìœ„ì¹˜ ë³µì‚¬
+     * Cursor À§Ä¡ º¹»ç
      */
     sCursor = aBlock->mCursor;
 
     /*
-     * Type ID ë²”ìœ„ ê²€ì‚¬
+     * Type ID ¹üÀ§ °Ë»ç
      */
     IDE_ASSERT((aCollection->mType == CMT_ID_VARIABLE) || 
                (aCollection->mType == CMT_ID_IN_VARIABLE));
 
     /*
-     * Type ID ì”€
+     * Type ID ¾¸
      */
     IDE_TEST(cmbBlockWriteUChar(aBlock, aCollection->mType, aSuccess) != IDE_SUCCESS);
 
     if (*aSuccess == ID_TRUE)
     {
         /*
-         * Type ë³„ë¡œ Data ì”€
+         * Type º°·Î Data ¾¸
          */
         switch (aCollection->mType)
         {
@@ -1586,7 +1586,7 @@ IDE_RC cmbBlockWriteCollection(cmbBlock *aBlock, cmtCollection *aCollection, UIn
     IDE_EXCEPTION_END;
     {
         /*
-         * Cursor ìœ„ì¹˜ ë³µêµ¬
+         * Cursor À§Ä¡ º¹±¸
          */
         aBlock->mCursor   = sCursor;
         aBlock->mDataSize = sCursor;

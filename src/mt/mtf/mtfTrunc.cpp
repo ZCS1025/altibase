@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfTrunc.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfTrunc.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -48,7 +48,7 @@ static IDE_RC mtfTruncEstimate( mtcNode*     aNode,
 mtfModule mtfTrunc = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfTruncFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -137,7 +137,7 @@ IDE_RC mtfTruncEstimate( mtcNode*     aNode,
     const mtdModule* sFloatModules[2];
     const mtdModule* sDateModules[2];
 
-    /* BUG-44091 where ì ˆì— round(), trunc() ì˜¤ëŠ” ê²½ìš° ë¹„ì •ìƒ ì¢…ë£Œí•©ë‹ˆë‹¤.  */
+    /* BUG-44091 where Àı¿¡ round(), trunc() ¿À´Â °æ¿ì ºñÁ¤»ó Á¾·áÇÕ´Ï´Ù.  */
     IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) < 1 ||
                     ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) > 2,
                     ERR_INVALID_FUNCTION_ARGUMENT );
@@ -252,8 +252,8 @@ IDE_RC mtfTruncCalculateFloatFor1Arg( mtcNode*     aNode,
  * Description : Trunc Calculate
  *
  * Implementation :
- *    aStack[0] : ì†Œìˆ˜ì  ì•„ë˜ë¥¼ ë²„ë¦° ìˆ«ì 
- *    aStack[1] : ì…ë ¥ ìˆ«ì
+ *    aStack[0] : ¼Ò¼öÁ¡ ¾Æ·¡¸¦ ¹ö¸° ¼ıÀÚ 
+ *    aStack[1] : ÀÔ·Â ¼ıÀÚ
  *
  *    ex) TRUNC( 15.79 ) ==> 15
  *
@@ -304,9 +304,9 @@ IDE_RC mtfTruncCalculateFloatFor2Args( mtcNode*     aNode,
  * Implementation :
  *    TRUNC( number_a, number_b )
  *
- *    aStack[0] : number_aë¥¼ ì†Œìˆ˜ì  ì•„ë˜ number_bë²ˆì§¸ ìë¦¬ì—ì„œ ë²„ë¦¼í•œ ê²°ê³¼
- *    aStack[1] : number_a ( ì…ë ¥ ìˆ«ì )
- *    aStack[2] : number_b ( ë²„ë¦´ ì†Œìˆ˜ì  ì•„ë˜ ìœ„ì¹˜ )
+ *    aStack[0] : number_a¸¦ ¼Ò¼öÁ¡ ¾Æ·¡ number_b¹øÂ° ÀÚ¸®¿¡¼­ ¹ö¸²ÇÑ °á°ú
+ *    aStack[1] : number_a ( ÀÔ·Â ¼ıÀÚ )
+ *    aStack[2] : number_b ( ¹ö¸± ¼Ò¼öÁ¡ ¾Æ·¡ À§Ä¡ )
  *
  *    ex) TRUNC(15.79 ,1 ) ==> 15.7
  *
@@ -354,7 +354,7 @@ IDE_RC mtfTruncCalculateFor1Arg(  mtcNode*     aNode,
  *
  * Implementation :
  *    aStack[0] : 
- *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
  *
  ***********************************************************************/
     
@@ -406,7 +406,7 @@ IDE_RC mtfTruncCalculateFor2Args(  mtcNode*     aNode,
  *
  * Implementation :
  *    aStack[0] : 
- *    aStack[1] : ì½ì–´ì˜¨ ìŠ¤íŠ¸ë§
+ *    aStack[1] : ÀĞ¾î¿Â ½ºÆ®¸µ
  *
  ***********************************************************************/
     
@@ -447,7 +447,7 @@ IDE_RC mtfTruncCalculateFor2Args(  mtcNode*     aNode,
         UChar sLastDays[13] = { 0, 31, 28, 31, 30, 31, 30,
                                    31, 31, 30, 31, 30, 31 };
 
-        // dateê°€ ìœ¤ë…„ì¼ ê²½ìš°
+        // date°¡ À±³âÀÏ °æ¿ì
         if ( mtdDateInterface::isLeapYear( sYear ) == ID_TRUE )
         {
              sLastDays[2] = 29;
@@ -504,7 +504,7 @@ IDE_RC mtfTruncCalculateFor2Args(  mtcNode*     aNode,
         else if( sLanguage->extractSet->matchWeek( sVarchar->value,
                                                    sVarchar->length ) == 0 )
         {
-            /* BUG-36296 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
+            /* BUG-36296 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±İ)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
             if ( ( sYear == 1582 ) &&
                  ( sMonth == 10 ) &&
                  ( ( sDay == 15 ) || ( sDay == 16 ) ) )
@@ -594,11 +594,11 @@ IDE_RC mtfTruncCalculateFor2Args(  mtcNode*     aNode,
                                                  mtdDateInterface::microSecond(sDate))
                       != IDE_SUCCESS );
         }
-        /* BUG-45730 ROUND, TRUNC í•¨ìˆ˜ì—ì„œ DATE í¬ë§· IW ì¶”ê°€ ì§€ì› */
+        /* BUG-45730 ROUND, TRUNC ÇÔ¼ö¿¡¼­ DATE Æ÷¸Ë IW Ãß°¡ Áö¿ø */
         else if( sLanguage->extractSet->matchISOWeek( sVarchar->value,
                                                       sVarchar->length ) == 0 )
         {
-            /* BUG-36296 1582ë…„ 10ì›” 4ì¼(ëª©)ì—ì„œ 10ì›” 15ì¼(ê¸ˆ)ìœ¼ë¡œ ë°”ë¡œ ê±´ë„ˆë›´ë‹¤. */
+            /* BUG-36296 1582³â 10¿ù 4ÀÏ(¸ñ)¿¡¼­ 10¿ù 15ÀÏ(±İ)À¸·Î ¹Ù·Î °Ç³Ê¶Ú´Ù. */
             if ( ( sYear == 1582 ) &&
                  ( sMonth == 10 ) &&
                  ( ( sDay == 15 ) || ( sDay == 16 ) ) )
@@ -610,7 +610,7 @@ IDE_RC mtfTruncCalculateFor2Args(  mtcNode*     aNode,
                 /* Nothing to do */
             }
 
-            /* ì¼ìš”ì¼ë¶€í„° 0, 1, 2, 3, 4, 5, 6 ìˆœì„œë¥¼ 6, 0, 1, 2, 3, 4, 5 ìœ¼ë¡œ ë³€ê²½ */
+            /* ÀÏ¿äÀÏºÎÅÍ 0, 1, 2, 3, 4, 5, 6 ¼ø¼­¸¦ 6, 0, 1, 2, 3, 4, 5 À¸·Î º¯°æ */
             sDay -= ( ( mtc::dayOfWeek( sYear, sMonth, sDay ) + 6 ) % 7 );
 
             if ( sDay < 1 )

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdn.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qdn.h 86367 2019-11-18 07:32:25Z donghyun1 $
  **********************************************************************/
 #ifndef _O_QDN_H_
 #define  _O_QDN_H_  1
@@ -102,7 +102,7 @@ public:
         UInt         aReferencedTblID,
         UInt         aReferencedIndexID,
         UInt         aReferencedRule, // PROJ-1509
-        SChar       *aCheckCondition, /* PROJ-1107 Check Constraint ÏßÄÏõê */
+        SChar       *aCheckCondition, /* PROJ-1107 Check Constraint ¡ˆø¯ */
         idBool       aValidated ); // PROJ-1874
     
     static IDE_RC insertConstraintColumnIntoMeta(

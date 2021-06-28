@@ -20,7 +20,7 @@
  *
  * Description :
  *     TASK-4990 changing the method of collecting index statistics
- *     í•œ Columnì˜ í†µê³„ì •ë³´ë¥¼ ìˆ˜ì§‘í•œë‹¤. 
+ *     ÇÑ ColumnÀÇ Åë°èÁ¤º¸¸¦ ¼öÁıÇÑ´Ù. 
  *
  * Syntax :
  *    SET_COLUMN_STATS (
@@ -46,8 +46,10 @@
 #include <qsxEnv.h>
 #include <smiDef.h>
 #include <smiStatistics.h>
+#include <qdbCommon.h>
 
 extern mtdModule mtdVarchar;
+extern mtdModule mtdChar;
 extern mtdModule mtdBigint;
 extern mtdModule mtdInteger;
 extern mtdModule mtdBoolean;
@@ -65,7 +67,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfSetColumnStatsModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -194,7 +196,6 @@ IDE_RC qsfCalculate_SetColumnStats( mtcNode*     aNode,
     smiStatement         * sDummyParentStmt;
     smiStatement           sDummyStmt;
     smiTrans               sSmiTrans;
-    smSCN                  sDummySCN;
     void                 * sMmSession;
     UInt                   sSmiStmtFlag;
     UInt                   sState = 0;
@@ -205,6 +206,8 @@ IDE_RC qsfCalculate_SetColumnStats( mtcNode*     aNode,
     UChar                * sSetMaxValue;
     ULong                  sMinValue[SMI_MAX_MINMAX_VALUE_SIZE/ID_SIZEOF(ULong)];
     ULong                  sMaxValue[SMI_MAX_MINMAX_VALUE_SIZE/ID_SIZEOF(ULong)];
+    SChar                  sTemp[SMI_MAX_MINMAX_VALUE_SIZE*3];
+    SChar                * sTempPtr;
     mtcColumn              sDecodeColumn;
 
     sStatement = ((qcTemplate*)aTemplate)->stmt;
@@ -250,7 +253,7 @@ IDE_RC qsfCalculate_SetColumnStats( mtcNode*     aNode,
     }
     else
     {
-        // ì´ì „ Planë“¤ì„ invalidate ì‹œí‚¬ í•„ìš”ê°€ ì—†ë‹¤.
+        // ÀÌÀü PlanµéÀ» invalidate ½ÃÅ³ ÇÊ¿ä°¡ ¾ø´Ù.
         // Nothing to do.
     }
 
@@ -273,7 +276,7 @@ IDE_RC qsfCalculate_SetColumnStats( mtcNode*     aNode,
     IDE_TEST( sDummyStmt.begin( sStatement->mStatistics, sDummyParentStmt, sSmiStmtFlag ) != IDE_SUCCESS);
     sState = 4;
 
-    /* Tableì •ë³´ íšë“ */
+    /* TableÁ¤º¸ È¹µæ */
     IDE_TEST( qcmUser::getUserID( sStatement,
                                   (SChar*)sOwnerNameValue->value,
                                   sOwnerNameValue->length,
@@ -292,7 +295,7 @@ IDE_RC qsfCalculate_SetColumnStats( mtcNode*     aNode,
     IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT(sStatement))->getTrans(),
                                          sTableHandle,
                                          sTableSCN,
-                                         SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                         SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                          SMI_TABLE_LOCK_IX,
                                          ID_ULONG_MAX,
                                          ID_FALSE )         // BUG-28752 isExplicitLock
@@ -309,7 +312,7 @@ IDE_RC qsfCalculate_SetColumnStats( mtcNode*     aNode,
                 NULL )
             != IDE_SUCCESS );
 
-    /* Partition í•˜ë‚˜ì— ëŒ€í•´ì„œë§Œ í†µê³„ì •ë³´ íšë“ */
+    /* Partition ÇÏ³ª¿¡ ´ëÇØ¼­¸¸ Åë°èÁ¤º¸ È¹µæ */
     if( sPartitionNameValue != NULL )
     {
         IDE_TEST( qcmPartition::getPartitionInfo( 
@@ -325,7 +328,7 @@ IDE_RC qsfCalculate_SetColumnStats( mtcNode*     aNode,
         IDE_TEST( qcmPartition::validateAndLockOnePartition( sStatement,
                                                              sTableHandle,
                                                              sTableSCN,
-                                                             SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                             SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                              SMI_TABLE_LOCK_IX,
                                                              ID_ULONG_MAX )
                   != IDE_SUCCESS );
@@ -344,28 +347,50 @@ IDE_RC qsfCalculate_SetColumnStats( mtcNode*     aNode,
                    sColumnInfo->basicInfo,
                    ID_SIZEOF(mtcColumn) );
 
-    // BUG-40290 SET_COLUMN_STATS min, max ì§€ì›
+    // BUG-40290 SET_COLUMN_STATS min, max Áö¿ø
     if ( ((sDecodeColumn.module->flag & MTD_SELECTIVITY_MASK) == MTD_SELECTIVITY_ENABLE) &&
          (sMinValuePtr != NULL) )
     {
         sValueLen = SMI_MAX_MINMAX_VALUE_SIZE;
 
         //---------------------------------------------------
-        // Min ê°’ ì»¬ëŸ¼ì˜ ë°ì´íƒ€ íƒ€ì…ìœ¼ë¡œ ì»¨ë²„ì ¼
+        // Min °ª ÄÃ·³ÀÇ µ¥ÀÌÅ¸ Å¸ÀÔÀ¸·Î ÄÁ¹öÁ¯
         //---------------------------------------------------
 
-        // sRet ëŠ” ë²„í¼ì˜ ê¸¸ì´ê°€ ëª¨ì˜ë„ ë•Œ IDE_FAILURE ê°€ ì„¸íŒ…ëœë‹¤.
-        // ëª¨ìë„ ë•ŒëŠ” ì˜ë¼ì„œ ì €ì¥í•œë‹¤.
-
-        IDE_TEST( sDecodeFunc( aTemplate,
-                               &sDecodeColumn,
-                               sMinValue,
-                               &sValueLen,
-                               (UChar*)"YYYY-MM-DD HH:MI:SS",
-                               idlOS::strlen("YYYY-MM-DD HH:MI:SS"),
-                               sMinValuePtr->value,
-                               sMinValuePtr->length,
-                               &sRet ) != IDE_SUCCESS );
+        if ( ( sDecodeColumn.module == &mtdVarchar ) ||
+             ( sDecodeColumn.module == &mtdChar ) )
+        {
+            /* BUG-47659 SET_COLUMN_STATS »ç¿ë½Ã ÀÛÀº µû¿ÈÇ¥( ' ) Æ÷ÇÔµÈ °æ¿ì * error ¹ß»ı */
+            sTempPtr = sTemp;
+            IDE_TEST( qdbCommon::addSingleQuote4PartValue( (SChar *)sMinValuePtr->value,
+                                                           (SInt)sMinValuePtr->length,
+                                                           &sTempPtr )
+                      != IDE_SUCCESS );
+            
+            IDE_TEST( sDecodeFunc( aTemplate,
+                                   &sDecodeColumn,
+                                   sMinValue,
+                                   &sValueLen,
+                                   (UChar*)"YYYY-MM-DD HH:MI:SS",
+                                   idlOS::strlen("YYYY-MM-DD HH:MI:SS"),
+                                   (UChar *)sTempPtr,
+                                   idlOS::strlen( sTempPtr ),
+                                   &sRet ) != IDE_SUCCESS );
+        }
+        else
+        {
+            // sRet ´Â ¹öÆÛÀÇ ±æÀÌ°¡ ¸ğÀß¶ö ¶§ IDE_FAILURE °¡ ¼¼ÆÃµÈ´Ù.
+            // ¸ğÀÚ¶ö ¶§´Â Àß¶ó¼­ ÀúÀåÇÑ´Ù.
+            IDE_TEST( sDecodeFunc( aTemplate,
+                                   &sDecodeColumn,
+                                   sMinValue,
+                                   &sValueLen,
+                                   (UChar*)"YYYY-MM-DD HH:MI:SS",
+                                   idlOS::strlen("YYYY-MM-DD HH:MI:SS"),
+                                   sMinValuePtr->value,
+                                   sMinValuePtr->length,
+                                   &sRet ) != IDE_SUCCESS );
+        }
 
         sSetMinValue = (UChar*)sMinValue;
     }
@@ -374,28 +399,50 @@ IDE_RC qsfCalculate_SetColumnStats( mtcNode*     aNode,
         sSetMinValue = NULL;
     }
 
-    // BUG-40290 SET_COLUMN_STATS min, max ì§€ì›
+    // BUG-40290 SET_COLUMN_STATS min, max Áö¿ø
     if ( ((sDecodeColumn.module->flag & MTD_SELECTIVITY_MASK) == MTD_SELECTIVITY_ENABLE) &&
          (sMaxValuePtr != NULL) )
     {
         sValueLen = SMI_MAX_MINMAX_VALUE_SIZE;
 
         //---------------------------------------------------
-        // Max ê°’ ì»¬ëŸ¼ì˜ ë°ì´íƒ€ íƒ€ì…ìœ¼ë¡œ ì»¨ë²„ì ¼
+        // Max °ª ÄÃ·³ÀÇ µ¥ÀÌÅ¸ Å¸ÀÔÀ¸·Î ÄÁ¹öÁ¯
         //---------------------------------------------------
 
-        // sRet ëŠ” ë²„í¼ì˜ ê¸¸ì´ê°€ ëª¨ì˜ë„ ë•Œ IDE_FAILURE ê°€ ì„¸íŒ…ëœë‹¤.
-        // ëª¨ìë„ ë•ŒëŠ” ì˜ë¼ì„œ ì €ì¥í•œë‹¤.
-
-        IDE_TEST( sDecodeFunc( aTemplate,
-                               &sDecodeColumn,
-                               sMaxValue,
-                               &sValueLen,
-                               (UChar*)"YYYY-MM-DD HH:MI:SS",
-                               idlOS::strlen("YYYY-MM-DD HH:MI:SS"),
-                               sMaxValuePtr->value,
-                               sMaxValuePtr->length,
-                               &sRet ) != IDE_SUCCESS );
+        if ( ( sDecodeColumn.module == &mtdVarchar ) ||
+             ( sDecodeColumn.module == &mtdChar ) )
+        {
+            /* BUG-47659 SET_COLUMN_STATS »ç¿ë½Ã ÀÛÀº µû¿ÈÇ¥( ' ) Æ÷ÇÔµÈ °æ¿ì * error ¹ß»ı */
+            sTempPtr = sTemp;
+            IDE_TEST( qdbCommon::addSingleQuote4PartValue( (SChar *)sMaxValuePtr->value,
+                                                           (SInt)sMaxValuePtr->length,
+                                                           &sTempPtr )
+                      != IDE_SUCCESS );
+            
+            IDE_TEST( sDecodeFunc( aTemplate,
+                                   &sDecodeColumn,
+                                   sMaxValue,
+                                   &sValueLen,
+                                   (UChar*)"YYYY-MM-DD HH:MI:SS",
+                                   idlOS::strlen("YYYY-MM-DD HH:MI:SS"),
+                                   (UChar *)sTempPtr,
+                                   idlOS::strlen( sTempPtr ),
+                                   &sRet ) != IDE_SUCCESS );
+        }
+        else
+        {
+            // sRet ´Â ¹öÆÛÀÇ ±æÀÌ°¡ ¸ğÀß¶ö ¶§ IDE_FAILURE °¡ ¼¼ÆÃµÈ´Ù.
+            // ¸ğÀÚ¶ö ¶§´Â Àß¶ó¼­ ÀúÀåÇÑ´Ù.
+            IDE_TEST( sDecodeFunc( aTemplate,
+                                   &sDecodeColumn,
+                                   sMaxValue,
+                                   &sValueLen,
+                                   (UChar*)"YYYY-MM-DD HH:MI:SS",
+                                   idlOS::strlen("YYYY-MM-DD HH:MI:SS"),
+                                   sMaxValuePtr->value,
+                                   sMaxValuePtr->length,
+                                   &sRet ) != IDE_SUCCESS );
+        }
 
         sSetMaxValue = (UChar*)sMaxValue;
     }
@@ -405,12 +452,12 @@ IDE_RC qsfCalculate_SetColumnStats( mtcNode*     aNode,
     }
 
    /* PROJ-2339
-    * T1ì€ 10ê°œì˜ Partitionì„ ê°€ì§€ê³  ìˆëŠ” Partitioned Tableì´ë¼ê³  í•˜ì.
-    * ë‹¤ìŒì„ ìˆ˜í–‰í•  ë•Œ, i1ì˜ Column NDVëŠ”?
+    * T1Àº 10°³ÀÇ PartitionÀ» °¡Áö°í ÀÖ´Â Partitioned TableÀÌ¶ó°í ÇÏÀÚ.
+    * ´ÙÀ½À» ¼öÇàÇÒ ¶§, i1ÀÇ Column NDV´Â?
     * iSQL> exec set_column_stats( 'sys' ,'t1' ,'i1' ,NULL ,10 );
     *
-    * PROJ-2339 ì „ì—ëŠ”, i1ì˜ Column NDVê°€ 10ì´ ì•„ë‹Œ 101ë¡œ ì„¤ì •ëœë‹¤. 
-    * PROJ-2339ë¥¼ í†µí•´ ì´ë¥¼ ìˆ˜ì •í–ˆë‹¤. 
+    * PROJ-2339 Àü¿¡´Â, i1ÀÇ Column NDV°¡ 10ÀÌ ¾Æ´Ñ 101·Î ¼³Á¤µÈ´Ù. 
+    * PROJ-2339¸¦ ÅëÇØ ÀÌ¸¦ ¼öÁ¤Çß´Ù. 
     */
    IDE_TEST( smiStatistics::setColumnStatsByUser( 
            (QC_SMI_STMT(sStatement))->getTrans(),
@@ -441,7 +488,7 @@ IDE_RC qsfCalculate_SetColumnStats( mtcNode*     aNode,
     }
     else
     {
-        // ì´ì „ Planë“¤ì„ invalidate ì‹œí‚¬ í•„ìš”ê°€ ì—†ë‹¤.
+        // ÀÌÀü PlanµéÀ» invalidate ½ÃÅ³ ÇÊ¿ä°¡ ¾ø´Ù.
         // Nothing to do.
     }
 
@@ -455,7 +502,7 @@ IDE_RC qsfCalculate_SetColumnStats( mtcNode*     aNode,
 
     // transaction commit
     sState = 1;
-    IDE_TEST( sSmiTrans.commit(&sDummySCN) != IDE_SUCCESS );
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
 
     // transaction destroy
     sState = 0;

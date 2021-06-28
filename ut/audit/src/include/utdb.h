@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: utdb.h 82790 2018-04-15 23:41:55Z bethy $
+ * $Id: utdb.h 86150 2019-09-10 06:40:44Z bethy $
  ******************************************************************************/
 
 #ifndef _UT_DB_H_
@@ -31,18 +31,18 @@
 
 /*
 BUG-24688
-insertì¼ë•Œ ìµœëŒ€ê¸¸ì´ì™€ updateì¼ë•Œ ìµœëŒ€ê¸¸ì´ë¥¼ ëŒ€ëµ ê³„ì‚°í•´ ë³´ë©´
-INSERT INTO ìœ ì €.í…Œì´ë¸”ëª… (ì»¬ëŸ¼,ì»¬ëŸ¼,......) VALUES (? , ? , ? ..... )
-ì»¬ëŸ¼ê¸¸ì´ "40", * 1024ê°œ = 44032byte  ?, * 1024ê°œ = 3072
-ì¦‰ 46 * 1024 + ì•ŒíŒŒ(ê·¸ì™¸ ë¬¸ì¥ 1kë¯¸ë§Œ)
-updateì¼ë•Œ ìµœëŒ€ê¸¸ì´
-UPDATE ìœ ì €.í…Œì´ë¸”ëª… SET ì»¬ëŸ¼ì´ë¦„ = ?,ì»¬ëŸ¼ì´ë¦„ = ?,..... WHERE PKì»¬ëŸ¼ì´ë¦„ = ? AND PKì»¬ëŸ¼ì´ë¦„ = ? AND ......
-"40" = ?, ëŠ” 47 x 1024 = 48128
-PKì»¬ëŸ¼ ìµœëŒ€ê°œìˆ˜ëŠ” 32 ì´ë¯€ë¡œ WHEREì ˆ ë’¤ì— ëŠ” "40" = ? AND  51 x 32 = 1632
-48128 + 1632 + ì•ŒíŒŒ(ê·¸ì™¸ ë¬¸ì¥ 1kë¯¸ë§Œ)
-delete ëŠ” ë” ì‘ë‹¤.
-ê·¸ëŸ¬ë¯€ë¡œ QUERY_BUFSIZEì˜ ìµœëŒ€ì¹˜ë¥¼ ëŒ€ëµ êµ¬í•  ìˆ˜ ìˆë‹¤.
-64 * 1024ë©´ ì¶©ë¶„í•¨ 
+insertÀÏ¶§ ÃÖ´ë±æÀÌ¿Í updateÀÏ¶§ ÃÖ´ë±æÀÌ¸¦ ´ë·« °è»êÇØ º¸¸é
+INSERT INTO À¯Àú.Å×ÀÌºí¸í (ÄÃ·³,ÄÃ·³,......) VALUES (? , ? , ? ..... )
+ÄÃ·³±æÀÌ "40", * 1024°³ = 44032byte  ?, * 1024°³ = 3072
+Áï 46 * 1024 + ¾ËÆÄ(±×¿Ü ¹®Àå 1k¹Ì¸¸)
+updateÀÏ¶§ ÃÖ´ë±æÀÌ
+UPDATE À¯Àú.Å×ÀÌºí¸í SET ÄÃ·³ÀÌ¸§ = ?,ÄÃ·³ÀÌ¸§ = ?,..... WHERE PKÄÃ·³ÀÌ¸§ = ? AND PKÄÃ·³ÀÌ¸§ = ? AND ......
+"40" = ?, ´Â 47 x 1024 = 48128
+PKÄÃ·³ ÃÖ´ë°³¼ö´Â 32 ÀÌ¹Ç·Î WHEREÀı µÚ¿¡ ´Â "40" = ? AND  51 x 32 = 1632
+48128 + 1632 + ¾ËÆÄ(±×¿Ü ¹®Àå 1k¹Ì¸¸)
+delete ´Â ´õ ÀÛ´Ù.
+±×·¯¹Ç·Î QUERY_BUFSIZEÀÇ ÃÖ´ëÄ¡¸¦ ´ë·« ±¸ÇÒ ¼ö ÀÖ´Ù.
+64 * 1024¸é ÃæºĞÇÔ 
 */
 #define QUERY_BUFSIZE   1024*64
 #define ERROR_BUFSIZE   1024*8
@@ -75,6 +75,13 @@ typedef enum
     DBA_TXT    ,   // Simple text files
     DBA_MAX = DBA_TXT
 }dba_t;
+
+/* BUG-47434 ¿¡·¯¸¦ Ãâ·ÂÇÒ ¶§ ¿¡·¯ ÄÚµåµµ Æ÷ÇÔÇØ¾ß ÇÕ´Ï´Ù */
+typedef enum
+{
+    MASTER = 0,
+    SLAVE
+} SERVER_TYPE;
 
 /* Dynamic load & link and create conection */
 //extern "C" static Connection *create_connection(dba_t type,const SChar * aHome);
@@ -243,6 +250,10 @@ public:
     inline metaColumns * getTCM() { return mTCM; }
     inline void setErrNo(SInt aErrNo) { mErrNo = aErrNo; }
 
+    /* BUG-47434 */
+    void   setServerType(SERVER_TYPE aType);
+    SChar *getServerType() { return mServerType; }
+
 protected: friend class Query;
 
     dbDriver *         dbd;  // Database Connection
@@ -261,6 +272,8 @@ protected: friend class Query;
     bool  mIsConnected;
 
     metaColumns * mTCM;
+
+    SChar         mServerType[10]; /* BUG-47434 */
 };
 
 
@@ -271,8 +284,8 @@ public:
     virtual ~Query();
     virtual IDE_RC clear   (void) =0;
     virtual IDE_RC close   (void) =0;
-    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
-    // ë‹¨ìˆœíˆ ì»¤ì„œë¥¼ ë‹«ëŠ”ë‹¤.
+    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+    // ´Ü¼øÈ÷ Ä¿¼­¸¦ ´İ´Â´Ù.
     virtual IDE_RC utaCloseCur(void) =0;
     virtual IDE_RC reset   (void) =0;
     virtual IDE_RC prepare (void) =0;
@@ -284,7 +297,7 @@ public:
 
     virtual IDE_RC assign  (const SChar*, ...)  ;// Format assign SQL
 
-    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
+    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
     virtual Row   *fetch   ( dba_t = DBA_ATB, bool = false ) =0;
 
     virtual IDE_RC bindColumn(UShort,SInt );
@@ -309,8 +322,8 @@ public:
 
     inline UInt   rows     (void) { return _rows; }
     inline UInt   rrows    (void) { UInt r=_rows;_rows=0;return r; }
-    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
-    // csv fileë¡œë¶€í„° í•œrowë¥¼ ì½ì–´ì˜¨í›„ _rowsë¥¼ ì¦ê°€ì‹œí‚´.
+    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+    // csv file·ÎºÎÅÍ ÇÑrow¸¦ ÀĞ¾î¿ÂÈÄ _rows¸¦ Áõ°¡½ÃÅ´.
     inline void   utaIncRows(void) { _rows++; }
 
     inline UInt   columns  (void) { return _cols; }
@@ -327,7 +340,7 @@ public:
     inline void    setLobDiffCol(SChar * colName) { lobDiffCol = colName; }
     bool     lobCompareMode;
 
-    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
+    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
     void   setArrayCount( SInt aArrayCount );
     IDE_RC setStmtAttr4Array( void );
 
@@ -363,7 +376,7 @@ public:
     virtual  Field * getField(UInt = 1);
 
     SInt    getSQLType(UInt  );
-    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
+    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
     SInt    getRealSqlType(UInt  );
     bool mIsLobCol;
 
@@ -378,17 +391,17 @@ public:
     inline virtual UShort size() { return        mCount; }
     inline bool    isException() { return (mErrNo != 0); }
 
-    //TASK-4212     auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„ 
+    //TASK-4212     auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼±
     virtual IDE_RC setStmtAttr4Array() = 0;
     inline void    setArrayCount( SInt aArrayCount ) { mArrayCount = aArrayCount; }
-    // ê° í•„ë“œë“¤ì˜ filemode flagë¥¼ ì„¤ì •í•´ì¤€ë‹¤.
+    // °¢ ÇÊµåµéÀÇ filemode flag¸¦ ¼³Á¤ÇØÁØ´Ù.
     void setFileMode4Fields( bool aVal );
 
-    //TASK-4212     auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„ 
+    //TASK-4212     auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼±
     //Array Fetch
     SInt                  mArrayCount;
-    SQLUINTEGER           mRowsFetched;        //Fetchëœ Row Count
-    SQLUSMALLINT         *mRowStatusArray;     //Fetchëœ Rowì˜ Status
+    SQLUINTEGER           mRowsFetched;        //FetchµÈ Row Count
+    SQLUSMALLINT         *mRowStatusArray;     //FetchµÈ RowÀÇ Status
 
 protected: friend class Query;
     SInt  &mErrNo;
@@ -407,7 +420,7 @@ public:
 
     virtual IDE_RC bindColumn(SInt,void* = NULL); // mType SQL type of field
     virtual bool   isNull() = 0;
-    //TASK-4212     auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„ 
+    //TASK-4212     auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼±
     virtual void   setIsNull(bool) = 0;
     virtual SInt   compareLogical(Field *f, idBool aUseFraction);
     virtual bool   comparePhysical(Field *f, idBool aUseFraction);  // BUG-17167
@@ -424,7 +437,7 @@ public:
 
     /* BUG-32569 The string with null character should be processed in Audit */
     inline  void setValueLength(UInt aValue) { mValueLength = aValue; }
-    //TASK-4212     auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„ 
+    //TASK-4212     auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼±
     inline  void setFileMode( bool aVal)  { mIsFileMode = aVal; }
 
     IDE_RC initialize(UShort , Row* ); // Column number 1..N order
@@ -459,7 +472,7 @@ protected: friend class Row;
 
     Row       *      mRow;
 
-    //TASK-4212     auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„ 
+    //TASK-4212     auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼±
     bool      mIsFileMode;
     virtual IDE_RC finalize  (void);
 };

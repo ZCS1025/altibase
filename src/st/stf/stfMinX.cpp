@@ -45,7 +45,7 @@ static IDE_RC stfMinXEstimate(
 mtfModule stfMinX = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     stfMinXFunctionName,
     NULL,
     mtf::initializeDefault,

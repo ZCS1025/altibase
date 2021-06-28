@@ -22,39 +22,39 @@ import java.util.List;
   // PROJ-2368
   /**
    * @author pss4you
-   * ListBufferHandle ê³¼ RowHandle ì˜ ìƒìœ„ Interface
-   * ë‘ ê°ì²´ ì‚¬ì´ì— ê³µí†µ ë˜ëŠ” ë¶€ë¶„ì„ ì—¬ê¸°ì„œ Define í•˜ì—¬ Code ë¥¼ ê°„ê²°í•˜ê²Œ ë§Œë“¤ê¸° ìœ„í•¨
+   * ListBufferHandle °ú RowHandle ÀÇ »óÀ§ Interface
+   * µÎ °´Ã¼ »çÀÌ¿¡ °øÅë µÇ´Â ºÎºĞÀ» ¿©±â¼­ Define ÇÏ¿© Code ¸¦ °£°áÇÏ°Ô ¸¸µé±â À§ÇÔ
    */
 public interface BatchDataHandle
 {
     /**
-     * DataHandle ì— ì €ì¥ëœ ì‘ì—… ìˆ«ìë¥¼ ë°˜í™˜ í•œë‹¤.
+     * DataHandle ¿¡ ÀúÀåµÈ ÀÛ¾÷ ¼ıÀÚ¸¦ ¹İÈ¯ ÇÑ´Ù.
      * 
-     * @return í˜„ì¬ ê¹Œì§€ ì €ì¥ëœ ì‘ì—… ìˆ«ì
+     * @return ÇöÀç ±îÁö ÀúÀåµÈ ÀÛ¾÷ ¼ıÀÚ
      */
     int size();
 
     /**
-     * DataHandle ì— Binding ëœ ì‘ì—…ì„ ì €ì¥í•œë‹¤.
+     * DataHandle ¿¡ Binding µÈ ÀÛ¾÷À» ÀúÀåÇÑ´Ù.
      */
     void store() throws SQLException;
 
     /**
-     * DataHandle ì„ ì´ˆê¸°í™” í•œë‹¤.
+     * DataHandle À» ÃÊ±âÈ­ ÇÑ´Ù.
      */
     void initToStore();
 
     /**
-     * DataHandle ì— Binding í•  Column ë“¤ì„ setting í•œë‹¤.
+     * DataHandle ¿¡ Binding ÇÒ Column µéÀ» setting ÇÑ´Ù.
      */
     void setColumns(List<Column> aColumns);
 
     /**
-     * ê¸°ì¡´ Bind Columnì— ìƒˆë¡œìš´ Typeìœ¼ë¡œ ë°”ì¸ë”©ì´ ëœ ê²½ìš° í•´ë‹¹í•˜ëŠ” ê°’ì˜ typeìœ¼ë¡œ bind column typeì„ ë³€ê²½í•œë‹¤.
-     * @param aIndex ì»¬ëŸ¼ì¸ë±ìŠ¤ (base 0)
-     * @param aColumn Column ì •ë³´
-     * @param aColumnInfo Column ë©”íƒ€ì •ë³´
-     * @param aInOutType InOutType ì •ë³´
+     * ±âÁ¸ Bind Column¿¡ »õ·Î¿î TypeÀ¸·Î ¹ÙÀÎµùÀÌ µÈ °æ¿ì ÇØ´çÇÏ´Â °ªÀÇ typeÀ¸·Î bind column typeÀ» º¯°æÇÑ´Ù.
+     * @param aIndex ÄÃ·³ÀÎµ¦½º (base 0)
+     * @param aColumn Column Á¤º¸
+     * @param aColumnInfo Column ¸ŞÅ¸Á¤º¸
+     * @param aInOutType InOutType Á¤º¸
      */
     void changeBindColumnType(int aIndex, Column aColumn, ColumnInfo aColumnInfo, byte aInOutType);
 }

@@ -136,6 +136,31 @@ cmpOpMap gCmpOpDBMapClient[] =
     {"CMP_OP_DB_ShardStmtPartialRollbackResult"},
     {"CMP_OP_DB_ShardNodeReport"            },
     {"CMP_OP_DB_ShardNodeReportResult"      },
+    /* PROJ-2733-Protocol 프로토콜 이름 V3로 통일 */
+    {"CMP_OP_DB_ErrorV3Result"              },
+    {"CMP_OP_DB_ConnectV3"                  },
+    {"CMP_OP_DB_ConnectV3Result"            },
+    {"CMP_OP_DB_PropertySetV3"              },
+    {"CMP_OP_DB_PropertySetV3Result"        },
+    {"CMP_OP_DB_ParamDataInListV3"          },
+    {"CMP_OP_DB_ParamDataInListV3Result"    },
+    {"CMP_OP_DB_ExecuteV3"                  },
+    {"CMP_OP_DB_ExecuteV3Result"            },
+    {"CMP_OP_DB_ShardTransactionV3"         },
+    {"CMP_OP_DB_ShardTransactionV3Result"   },
+    {"CMP_OP_DB_ShardPrepareV3"             },
+    {"CMP_OP_DB_ShardPrepareV3Result"       },
+    {"CMP_OP_DB_ShardEndPendingTxV3"        },
+    {"CMP_OP_DB_ShardEndPendingTxV3Result"  },
+    /* PROJ-2728 Sharding LOB */
+    {"CMP_OP_DB_LobGetSizeV3"               },
+    {"CMP_OP_DB_LobGetSizeV3Result"         },
+    {"CMP_OP_DB_FetchV3"                    },
+    {"CMP_OP_DB_ShardRebuildNotiV3"         },
+    /* BUG-48775 */
+    {"CMP_OP_DB_PrepareV3"                  },
+    {"CMP_OP_DB_PrepareByCIDV3"             },
+    {"CMP_OP_DB_PrepareV3Result"            },
     {"CMP_OP_DB_MAX"                        }
 };
 

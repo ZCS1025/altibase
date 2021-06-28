@@ -28,19 +28,19 @@
 #include <ulpLibMacro.h>
 #include <ulpTypes.h>
 
-/* ulpBindHostVarCore(...) í•¨ìˆ˜ ë‚´ì—ì„œ ulpBindInfo í•„ë“œê°’ë“¤ì„ settingí•œë‹¤.             *
- * row/column-wise bindingì‹œ ulpSetStmtAttrCore(...) í•¨ìˆ˜ì—ì„œ í•´ë‹¹ í•„ë“œê°’ë“¤ì„ ì°¸ì¡°í•œë‹¤. */
+/* ulpBindHostVarCore(...) ÇÔ¼ö ³»¿¡¼­ ulpBindInfo ÇÊµå°ªµéÀ» settingÇÑ´Ù.             *
+ * row/column-wise binding½Ã ulpSetStmtAttrCore(...) ÇÔ¼ö¿¡¼­ ÇØ´ç ÇÊµå°ªµéÀ» ÂüÁ¶ÇÑ´Ù. */
 typedef struct ulpStmtBindInfo
 {
-    acp_uint16_t mNumofInHostvar;          /* í•´ë‹¹ êµ¬ë¬¸ì˜ host ë³€ìˆ˜ ê°œìˆ˜ë¥¼ ê°–ëŠ”ë‹¤. */
+    acp_uint16_t mNumofInHostvar;          /* ÇØ´ç ±¸¹®ÀÇ host º¯¼ö °³¼ö¸¦ °®´Â´Ù. */
     acp_uint16_t mNumofOutHostvar;
     acp_uint16_t mNumofExtraHostvar;
-    acp_bool_t   mIsScrollCursor;    /* Scrollable Cusorë¥¼ ì„ ì–¸í•˜ë©´ trueê°’ì„ ê°–ëŠ”ë‹¤.   *
-                                      * ì´ê°’ì„ ë³´ê³  ì¶”ê°€ì ì¸ statement ì†ì„±ì„ ì„¸íŒ…í•´ì¤€ë‹¤. */
-    acp_bool_t   mIsArray;           /* column-wise bindingì´ í•„ìš”í•œì§€ ì—¬ë¶€,         *
-                                      * ëª¨ë“  host ë³€ìˆ˜ì˜ íƒ€ì…ì´ arrayì¼ ê²½ìš° ì°¸ì´ ëœë‹¤. */
-    acp_uint32_t mArraySize;         /* array sizeê°’.  */
-    acp_bool_t   mIsStruct;          /* row-wise bindingì´ í•„ìš”í•œì§€ ì—¬ë¶€. */
+    acp_bool_t   mIsScrollCursor;    /* Scrollable Cusor¸¦ ¼±¾ğÇÏ¸é true°ªÀ» °®´Â´Ù.   *
+                                      * ÀÌ°ªÀ» º¸°í Ãß°¡ÀûÀÎ statement ¼Ó¼ºÀ» ¼¼ÆÃÇØÁØ´Ù. */
+    acp_bool_t   mIsArray;           /* column-wise bindingÀÌ ÇÊ¿äÇÑÁö ¿©ºÎ,         *
+                                      * ¸ğµç host º¯¼öÀÇ Å¸ÀÔÀÌ arrayÀÏ °æ¿ì ÂüÀÌ µÈ´Ù. */
+    acp_uint32_t mArraySize;         /* array size°ª.  */
+    acp_bool_t   mIsStruct;          /* row-wise bindingÀÌ ÇÊ¿äÇÑÁö ¿©ºÎ. */
     acp_uint32_t mStructSize;        /* size of struct*/
     acp_bool_t   mIsAtomic;
 
@@ -51,21 +51,21 @@ typedef struct ulpStmtBindInfo
 } ulpStmtBindInfo;
 
 
-/* bindingëœ host variable/indicator pointerë¥¼ ì €ì¥í•˜ëŠ” ìë£Œêµ¬ì¡°. */
+/* bindingµÈ host variable/indicator pointer¸¦ ÀúÀåÇÏ´Â ÀÚ·á±¸Á¶. */
 typedef struct  ulpHostVarPtr
 {
-    void*        mHostVar;           /* hostë³€ìˆ˜ ê°’*/
+    void*        mHostVar;           /* hostº¯¼ö °ª*/
     /* BUG-27833 :
-        ë³€ìˆ˜ê°€ ë‹¤ë¥´ë”ë¼ë„ í¬ì¸í„°ê°€ ê°™ì„ìˆ˜ ìˆê¸° ë•Œë¬¸ì— typeê¹Œì§€ ë¹„êµí•´ì•¼í•¨. */
-    acp_sint16_t mHostVarType;       /* hostë³€ìˆ˜ type*/
-    void*        mHostInd;           /* hostë³€ìˆ˜ì˜ indicator ê°’*/
+        º¯¼ö°¡ ´Ù¸£´õ¶óµµ Æ÷ÀÎÅÍ°¡ °°À»¼ö ÀÖ±â ¶§¹®¿¡ type±îÁö ºñ±³ÇØ¾ßÇÔ. */
+    acp_sint16_t mHostVarType;       /* hostº¯¼ö type*/
+    void*        mHostInd;           /* hostº¯¼öÀÇ indicator °ª*/
 
 } ulpHostVarPtr;
 
-/* BUG-45779 APREì—ì„œ PSM ì¸ìë¡œ Array typeì„ ì§€ì›í•´ì•¼ í•©ë‹ˆë‹¤. */
+/* BUG-45779 APRE¿¡¼­ PSM ÀÎÀÚ·Î Array typeÀ» Áö¿øÇØ¾ß ÇÕ´Ï´Ù. */
 #define APRE_PSM_ARRAY_META_VERSION 808377001
 
-/* BUG-45779 serverì™€ì˜ í†µì‹ ì„ ìœ„í•œ metaì •ì˜ì´ë©°, ì „ì²´ sizeê°€  8ì˜ ë°°ìˆ˜ì—¬ì•¼ í•œë‹¤. */
+/* BUG-45779 server¿ÍÀÇ Åë½ÅÀ» À§ÇÑ metaÁ¤ÀÇÀÌ¸ç, ÀüÃ¼ size°¡  8ÀÇ ¹è¼ö¿©¾ß ÇÑ´Ù. */
 typedef struct psmArrayMetaInfo
 {
     acp_uint32_t    mUlpVersion;            /* VERSION                       */
@@ -84,11 +84,11 @@ typedef struct ulpPSMArrDataInfo
 
 typedef struct ulpPSMArrInfo
 {
-    acp_bool_t         mIsPSMArray;             /* PSMì´ array type ì¸ìë¥¼ ê°€ì§€ê³  ìˆëŠ”ì§€? */
+    acp_bool_t         mIsPSMArray;             /* PSMÀÌ array type ÀÎÀÚ¸¦ °¡Áö°í ÀÖ´ÂÁö? */
     acp_list_t         mPSMArrDataInfoList;     /* ulpPSMArrDataInfo List */
 } ulpPSMArrInfo;
 
-/* statementì— ëŒ€í•œ ìƒíƒœ ì •ë³´ type */
+/* statement¿¡ ´ëÇÑ »óÅÂ Á¤º¸ type */
 typedef enum ulpStmtState
 {
     S_INITIAL = 0,
@@ -100,7 +100,7 @@ typedef enum ulpStmtState
 } ulpStmtState;
 
 
-/* cursorì— ëŒ€í•œ ìƒíƒœ ì •ë³´ type */
+/* cursor¿¡ ´ëÇÑ »óÅÂ Á¤º¸ type */
 typedef enum ulpCurState
 {
     C_INITIAL = 0,
@@ -112,41 +112,41 @@ typedef enum ulpCurState
 
 
 /*
- * statement/cursor hash tableì—ì„œ ê´€ë¦¬ë˜ê³  ìˆëŠ” node.
+ * statement/cursor hash table¿¡¼­ °ü¸®µÇ°í ÀÖ´Â node.
  */
 typedef struct ulpLibStmtNode ulpLibStmtNode;
 struct ulpLibStmtNode
 {
     SQLHSTMT      mHstmt;             /* statement handle */
-    /* statement name ( PREPARE, DECLARE STATEMENTêµ¬ë¬¸ ìˆ˜í–‰ì‹œ ì´ë¦„) */
+    /* statement name ( PREPARE, DECLARE STATEMENT±¸¹® ¼öÇà½Ã ÀÌ¸§) */
     acp_char_t    mStmtName[MAX_STMT_NAME_LEN];
-    acp_char_t    mCursorName[MAX_CUR_NAME_LEN];  /* cursorì— ëŒ€í•œ ì´ë¦„ê°’ì„ ê°–ëŠ”ë‹¤. */
+    acp_char_t    mCursorName[MAX_CUR_NAME_LEN];  /* cursor¿¡ ´ëÇÑ ÀÌ¸§°ªÀ» °®´Â´Ù. */
     /* BUG-30789: Memory usage per prepared statement is too BIG. (>300k) */
-    acp_char_t   *mQueryStr;                      /* queryêµ¬ë¬¸ ì €ì¥ */
+    acp_char_t   *mQueryStr;                      /* query±¸¹® ÀúÀå */
     acp_sint32_t  mQueryStrLen;
 
-    ulpStmtState       mStmtState;    /* statementì— ëŒ€í•œ ìƒíƒœì •ë³´ë¥¼ ê°–ëŠ”ë‹¤.*/
-    ulpCurState        mCurState;     /* cursorì— ëŒ€í•œ ìƒíƒœì •ë³´ë¥¼ ê°–ëŠ”ë‹¤.   */
-    ulpStmtBindInfo    mBindInfo;     /* row/column-wise bindì—ëŒ€í•œ ì •ë³´ê°€ ì €ì¥ëœë‹¤. */
+    ulpStmtState       mStmtState;    /* statement¿¡ ´ëÇÑ »óÅÂÁ¤º¸¸¦ °®´Â´Ù.*/
+    ulpCurState        mCurState;     /* cursor¿¡ ´ëÇÑ »óÅÂÁ¤º¸¸¦ °®´Â´Ù.   */
+    ulpStmtBindInfo    mBindInfo;     /* row/column-wise bind¿¡´ëÇÑ Á¤º¸°¡ ÀúÀåµÈ´Ù. */
 
-    /* host ë³€ìˆ˜ ì •ë³´ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°   */
+    /* host º¯¼ö Á¤º¸¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ   */
     ulpHostVarPtr     *mInHostVarPtr;
     ulpHostVarPtr     *mOutHostVarPtr;
-    ulpHostVarPtr     *mExtraHostVarPtr; /* INOUT, PSM OUT typeì¼ê²½ìš° ì €ì¥ë¨. */
+    ulpHostVarPtr     *mExtraHostVarPtr; /* INOUT, PSM OUT typeÀÏ°æ¿ì ÀúÀåµÊ. */
 
     SQLUINTEGER  mRowsFetched;
-     /* BUG-31405 : Failoverì„±ê³µí›„ Failure of finding statement ì—ëŸ¬ ë°œìƒ. */
-    acp_bool_t   mNeedReprepare; /* failoverì„±ê³µí›„ reprepareë˜ê²Œ í•˜ê¸°ìœ„í•œ flag */
+     /* BUG-31405 : Failover¼º°øÈÄ Failure of finding statement ¿¡·¯ ¹ß»ı. */
+    acp_bool_t   mNeedReprepare; /* failover¼º°øÈÄ reprepareµÇ°Ô ÇÏ±âÀ§ÇÑ flag */
 
     ulpSqlca    *mSqlca;
     ulpSqlcode  *mSqlcode;
     ulpSqlstate *mSqlstate;
 
-    ulpLibStmtNode *mNextStmt;           /* stmt hash tableì˜ ë²„ì¼“ list link   */
-    ulpLibStmtNode *mNextCur;            /* cursor hash tableì˜ ë²„ì¼“ listì— link */
+    ulpLibStmtNode *mNextStmt;           /* stmt hash tableÀÇ ¹öÄÏ list link   */
+    ulpLibStmtNode *mNextCur;            /* cursor hash tableÀÇ ¹öÄÏ list¿¡ link */
 
     /* BUG-31467 : APRE should consider the thread safety of statement */
-    /* unnamed statementì— ëŒ€í•œ thread-safty ê³ ë ¤ */
+    /* unnamed statement¿¡ ´ëÇÑ thread-safty °í·Á */
     acp_thr_rwlock_t mLatch;
 
     /* BUG-45779 */
@@ -190,44 +190,44 @@ typedef struct  ulpLibStmtList
  * statement/cursor hash table managing functions.
  */
 
-/* ìƒˆë¡œìš´ statement nodeë¥¼ ë§Œë“ ë‹¤. */
+/* »õ·Î¿î statement node¸¦ ¸¸µç´Ù. */
 ulpLibStmtNode* ulpLibStNewNode(ulpSqlstmt* aSqlstmt, acp_char_t *aStmtName );
 
-/* stmt hash tableì—ì„œ í•´ë‹¹ stmtì´ë¦„ìœ¼ë¡œ stmt nodeë¥¼ ì°¾ëŠ”ë‹¤. */
+/* stmt hash table¿¡¼­ ÇØ´ç stmtÀÌ¸§À¸·Î stmt node¸¦ Ã£´Â´Ù. */
 ulpLibStmtNode* ulpLibStLookupStmt( ulpLibStmtHASHTAB *aStmtHashT,
                                     acp_char_t *aStmtName );
 
-/* stmt hash tableì— í•´ë‹¹ stmtì´ë¦„ìœ¼ë¡œ stmt nodeë¥¼ ì¶”ê°€í•œë‹¤. Listì˜ ì œì¼ ë’¤ì— ë§¤ë‹¨ë‹¤. */
+/* stmt hash table¿¡ ÇØ´ç stmtÀÌ¸§À¸·Î stmt node¸¦ Ãß°¡ÇÑ´Ù. ListÀÇ Á¦ÀÏ µÚ¿¡ ¸Å´Ü´Ù. */
 ulpLibStmtNode* ulpLibStAddStmt( ulpLibStmtHASHTAB *aStmtHashT,
                                  ulpLibStmtNode *aStmtNode );
 
-/* stmt hash tableì˜ ëª¨ë“  statementë¥¼ ì œê±°í•œë‹¤.                                   *
- * Prepareë‚˜ declare statementì— ì˜í•´ ìƒì„±ëœ stmt nodeë“¤ì€ disconnectë ë•Œ í•´ì œëœë‹¤. */
-/* BUG-26370 [valgrind error] :  cursor hash tableì„ í•´ì œí•´ì•¼í•œë‹¤. */
+/* stmt hash tableÀÇ ¸ğµç statement¸¦ Á¦°ÅÇÑ´Ù.                                   *
+ * Prepare³ª declare statement¿¡ ÀÇÇØ »ı¼ºµÈ stmt nodeµéÀº disconnectµÉ¶§ ÇØÁ¦µÈ´Ù. */
+/* BUG-26370 [valgrind error] :  cursor hash tableÀ» ÇØÁ¦ÇØ¾ßÇÑ´Ù. */
 void ulpLibStDelAllStmtCur( ulpLibStmtHASHTAB *aStmtTab,
                             ulpLibStmtHASHTAB *aCurTab );
 
-/* cursor hash tableì—ì„œ í•´ë‹¹ cursorì´ë¦„ìœ¼ë¡œ cursor nodeë¥¼ ì°¾ëŠ”ë‹¤. */
+/* cursor hash table¿¡¼­ ÇØ´ç cursorÀÌ¸§À¸·Î cursor node¸¦ Ã£´Â´Ù. */
 ulpLibStmtNode* ulpLibStLookupCur( ulpLibStmtHASHTAB *aCurHashT, acp_char_t *aCurName );
 
-/* cursor hash tableì— í•´ë‹¹ cursorì´ë¦„ì„ ê°–ëŠ” cursor nodeë¥¼ ì œê±°í•œë‹¤.                *
- * Statement ì´ë¦„ì´ ìˆì€ê²½ìš° linkë§Œ ì œê±°í•˜ë©°, ì—†ëŠ” ê²½ìš°ì—ëŠ” utpStmtNode ê°ì²´ë¥¼ ì œê±°í•œë‹¤. */
+/* cursor hash table¿¡ ÇØ´ç cursorÀÌ¸§À» °®´Â cursor node¸¦ Á¦°ÅÇÑ´Ù.                *
+ * Statement ÀÌ¸§ÀÌ ÀÖÀº°æ¿ì link¸¸ Á¦°ÅÇÏ¸ç, ¾ø´Â °æ¿ì¿¡´Â utpStmtNode °´Ã¼¸¦ Á¦°ÅÇÑ´Ù. */
 ACI_RC ulpLibStDeleteCur( ulpLibStmtHASHTAB *aCurHashT, acp_char_t *aCurName );
 
-/* cursor hash tableì˜ bucket list ë§ˆì§€ë§‰ì— í•´ë‹¹ stmt nodeì— ëŒ€í•œ ìƒˆlinkë¥¼ ì—°ê²°í•œë‹¤. */
+/* cursor hash tableÀÇ bucket list ¸¶Áö¸·¿¡ ÇØ´ç stmt node¿¡ ´ëÇÑ »õlink¸¦ ¿¬°áÇÑ´Ù. */
 ACI_RC ulpLibStAddCurLink( ulpLibStmtHASHTAB *aCurHashT,
                            ulpLibStmtNode *aStmtNode,
                            acp_char_t *aCurName );
 
-/* unnamed stmt listì—ì„œ í•´ë‹¹ queryë¡œ stmt nodeë¥¼ ì°¾ëŠ”ë‹¤. */
+/* unnamed stmt list¿¡¼­ ÇØ´ç query·Î stmt node¸¦ Ã£´Â´Ù. */
 ulpLibStmtNode *ulpLibStLookupUnnamedStmt( ulpLibStmtLIST *aStmtList,
                                            acp_char_t *aQuery );
 
-/* unnamed stmt listì— ìƒˆ stmt nodeë¥¼ ì¶”ê°€í•œë‹¤. */
+/* unnamed stmt list¿¡ »õ stmt node¸¦ Ãß°¡ÇÑ´Ù. */
 ACI_RC ulpLibStAddUnnamedStmt( ulpLibStmtLIST *aStmtList,
                                ulpLibStmtNode *aStmtNode );
 
-/* unnamed stmt listì— ë§¤ë‹¬ë¦° ëª¨ë“  stmt nodeë“¤ì„ ì œê±°í•œë‹¤. */
+/* unnamed stmt list¿¡ ¸Å´Ş¸° ¸ğµç stmt nodeµéÀ» Á¦°ÅÇÑ´Ù. */
 void ulpLibStDelAllUnnamedStmt( ulpLibStmtLIST *aStmtList );
 
 

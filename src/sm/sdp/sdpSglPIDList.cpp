@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * File-Based PID Single Linked-List êµ¬í˜„
+ * File-Based PID Single Linked-List ±¸Çö
  *
  **********************************************************************/
 
@@ -29,13 +29,13 @@
 #include <sdpPhyPage.h>
 
 /***********************************************************************
- * Description : page listì˜ base ë…¸ë“œë¥¼ ì´ˆê¸°í™”
+ * Description : page listÀÇ base ³ëµå¸¦ ÃÊ±âÈ­
  *
  * + 2nd.code desgin
- *   - base ë…¸ë“œì˜ page IDë¥¼ ì–»ëŠ”ë‹¤.
- *   - base ë…¸ë“œì˜ mNodeCntë¥¼ 0ìœ¼ë¡œ ë¡œê¹…í•œë‹¤. (SDR_4BYTE)
- *   - base ë…¸ë“œì˜ mHeadë¥¼ Page IDë¥¼ self Page IDë¡œ ë¡œê¹…í•œë‹¤.(SDR_4BYTE)
- *   - base ë…¸ë“œì˜ mTailë¥¼ Page IDë¥¼ self Page IDë¡œ ë¡œê¹…í•œë‹¤.(SDR_4BYTE)
+ *   - base ³ëµåÀÇ page ID¸¦ ¾ò´Â´Ù.
+ *   - base ³ëµåÀÇ mNodeCnt¸¦ 0À¸·Î ·Î±ëÇÑ´Ù. (SDR_4BYTE)
+ *   - base ³ëµåÀÇ mHead¸¦ Page ID¸¦ self Page ID·Î ·Î±ëÇÑ´Ù.(SDR_4BYTE)
+ *   - base ³ëµåÀÇ mTail¸¦ Page ID¸¦ self Page ID·Î ·Î±ëÇÑ´Ù.(SDR_4BYTE)
  ***********************************************************************/
 IDE_RC sdpSglPIDList::initList( sdpSglPIDListBase*  aBase,
                                 sdrMtx*             aMtx )
@@ -46,7 +46,7 @@ IDE_RC sdpSglPIDList::initList( sdpSglPIDListBase*  aBase,
     /* set item count */
     IDE_TEST( setNodeCnt( aBase, 0, aMtx ) != IDE_SUCCESS );
 
-    /* ì´ˆê¸°ì— PID Listì˜ Head,Tailì€ SD_NULL_PID ë¡œ ì„¤ì •ëœë‹¤. */
+    /* ÃÊ±â¿¡ PID ListÀÇ Head,TailÀº SD_NULL_PID ·Î ¼³Á¤µÈ´Ù. */
     IDE_TEST( setHeadOfList( aBase, SD_NULL_PID,
                              aMtx) != IDE_SUCCESS );
 
@@ -61,7 +61,7 @@ IDE_RC sdpSglPIDList::initList( sdpSglPIDListBase*  aBase,
 }
 
 /***********************************************************************
- * Description : Page Listì˜ headì— ë…¸ë“œë¥¼ ì¶”ê°€
+ * Description : Page ListÀÇ head¿¡ ³ëµå¸¦ Ãß°¡
  ***********************************************************************/
 IDE_RC sdpSglPIDList::addNode2Head( sdpSglPIDListBase   * aBase,
                                     sdpSglPIDListNode   * aNewNode,
@@ -111,7 +111,7 @@ IDE_RC sdpSglPIDList::addNode2Head( sdpSglPIDListBase   * aBase,
 }
 
 /***********************************************************************
- * Description :  Page Listì˜ tailì— ë…¸ë“œë¥¼ ì¶”ê°€
+ * Description :  Page ListÀÇ tail¿¡ ³ëµå¸¦ Ãß°¡
  ***********************************************************************/
 IDE_RC sdpSglPIDList::addNode2Tail( idvSQL             * aStatistics,
                                     sdpSglPIDListBase  * aBase,
@@ -149,7 +149,7 @@ IDE_RC sdpSglPIDList::addNode2Tail( idvSQL             * aStatistics,
     }
     else
     {
-        /* Tailì˜ Next PIDë¥¼ aBase->mTailë¡œ ì„¤ì •í•œë‹¤. */
+        /* TailÀÇ Next PID¸¦ aBase->mTail·Î ¼³Á¤ÇÑ´Ù. */
         IDE_TEST( sdbBufferMgr::getPageByPID( aStatistics,
                                               sSpaceID,
                                               aBase->mTail,
@@ -182,7 +182,7 @@ IDE_RC sdpSglPIDList::addNode2Tail( idvSQL             * aStatistics,
 }
 
 /***********************************************************************
- * Description :  Page Listì˜ Headì— ë…¸ë“œë¥¼ ì¶”ê°€
+ * Description :  Page ListÀÇ Head¿¡ ³ëµå¸¦ Ãß°¡
  ***********************************************************************/
 IDE_RC sdpSglPIDList::addList2Head( sdpSglPIDListBase  * aBase,
                                     sdpSglPIDListNode  * aFstNode,
@@ -229,7 +229,7 @@ IDE_RC sdpSglPIDList::addList2Head( sdpSglPIDListBase  * aBase,
 }
 
 /***********************************************************************
- * Description :  page listì˜ tailì— Node Listë¥¼ ì¶”ê°€
+ * Description :  page listÀÇ tail¿¡ Node List¸¦ Ãß°¡
  ***********************************************************************/
 IDE_RC sdpSglPIDList::addList2Tail( idvSQL             * aStatistics,
                                     sdpSglPIDListBase  * aBase,
@@ -268,7 +268,7 @@ IDE_RC sdpSglPIDList::addList2Tail( idvSQL             * aStatistics,
     }
     else
     {
-        /* Tailì˜ Next PIDë¥¼ aBase->mTailë¡œ ì„¤ì •í•œë‹¤. */
+        /* TailÀÇ Next PID¸¦ aBase->mTail·Î ¼³Á¤ÇÑ´Ù. */
         IDE_TEST( sdbBufferMgr::getPageByPID( aStatistics,
                                               sSpaceID,
                                               aBase->mTail,
@@ -332,15 +332,15 @@ IDE_RC sdpSglPIDList::removeNodeAtHead( sdpSglPIDListBase  * aBase,
                                  aMtx ) != IDE_SUCCESS );
     }
 
-    /* Headì˜ Nextë¥¼ ë„ë¡œ í•˜ê¸°ì „ì— Baseì˜ Headë¥¼ ì„¤ì •í•œë‹¤. */
+    /* HeadÀÇ Next¸¦ ³Î·Î ÇÏ±âÀü¿¡ BaseÀÇ Head¸¦ ¼³Á¤ÇÑ´Ù. */
     IDE_TEST( setHeadOfList( aBase, sHeadNode->mNext, aMtx )
               != IDE_SUCCESS );
 
-    /* ì œê±°ë  Nodeì˜ Nextë¥¼ NULLë¡œ ì„¤ì •í•œë‹¤. */
+    /* Á¦°ÅµÉ NodeÀÇ Next¸¦ NULL·Î ¼³Á¤ÇÑ´Ù. */
     IDE_TEST( setNxtOfNode( sHeadNode, SD_NULL_PID, aMtx )
               != IDE_SUCCESS );
 
-    /* Nodeê°¯ìˆ˜ë¥¼ 1ê°ì†Œ ì‹œí‚¨ë‹¤. */
+    /* Node°¹¼ö¸¦ 1°¨¼Ò ½ÃÅ²´Ù. */
     IDE_TEST( setNodeCnt( aBase, getNodeCnt( aBase ) - 1, aMtx )
               != IDE_SUCCESS );
 
@@ -441,7 +441,7 @@ IDE_RC sdpSglPIDList::removeNode( sdpSglPIDListBase  * aBase,
     {
         IDE_ASSERT( sHeadPID == sRmvPID );
 
-        /* HeadëŠ” ì œê±°ë  Nodeì˜ ë‹¤ìŒ ë…¸ë“œ. */
+        /* Head´Â Á¦°ÅµÉ NodeÀÇ ´ÙÀ½ ³ëµå. */
         IDE_TEST( setHeadOfList( aBase, sRmvNode->mNext, aMtx )
                   != IDE_SUCCESS );
 
@@ -450,14 +450,14 @@ IDE_RC sdpSglPIDList::removeNode( sdpSglPIDListBase  * aBase,
     else
     {
         sPrvNode = sdpPhyPage::getSglPIDListNode( (sdpPhyPageHdr*) aPrvPagePtr );
-        /* ì œê±°ë  Nodeì˜ Prev Nodeì˜ Nextë¥¼ ì œê±°ë  Nodeì˜ Nextë¡œ */
+        /* Á¦°ÅµÉ NodeÀÇ Prev NodeÀÇ Next¸¦ Á¦°ÅµÉ NodeÀÇ Next·Î */
         IDE_TEST( setNxtOfNode( sPrvNode, sRmvNode->mNext, aMtx )
                   != IDE_SUCCESS );
 
         sPrvPID  = sdpPhyPage::getPageID( aPrvPagePtr );
     }
 
-    /* ì œê±°ë  Nodeì˜ Nextë¥¼ NULL */
+    /* Á¦°ÅµÉ NodeÀÇ Next¸¦ NULL */
     IDE_TEST( setNxtOfNode( sRmvNode, SD_NULL_PID, aMtx )
               != IDE_SUCCESS );
 
@@ -486,8 +486,8 @@ IDE_RC sdpSglPIDList::removeNode( sdpSglPIDListBase  * aBase,
 }
 
 /***********************************************************************
- * Description : base ë…¸ë“œì˜ length ì„¤ì • ë° logging
- * base ë…¸ë“œì˜ list lengthì„ ì„¤ì •í•œë‹¤.
+ * Description : base ³ëµåÀÇ length ¼³Á¤ ¹× logging
+ * base ³ëµåÀÇ list lengthÀ» ¼³Á¤ÇÑ´Ù.
  ***********************************************************************/
 IDE_RC sdpSglPIDList::setNodeCnt( sdpSglPIDListBase  * aBase,
                                   ULong                aNodeCnt,
@@ -509,9 +509,9 @@ IDE_RC sdpSglPIDList::setNodeCnt( sdpSglPIDListBase  * aBase,
 }
 
 /***********************************************************************
- * Description : ë…¸ë“œì˜ prev page ID ì„¤ì • ë° logging 
- * aNodeê°€ base ë…¸ë“œì´ë©´ tail ë…¸ë“œë¥¼ ì„¤ì •í•˜ê³ , ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ next ë…¸ë“œë¥¼
- * ì„¤ì •í•œë‹¤.
+ * Description : ³ëµåÀÇ prev page ID ¼³Á¤ ¹× logging 
+ * aNode°¡ base ³ëµåÀÌ¸é tail ³ëµå¸¦ ¼³Á¤ÇÏ°í, ±×·¸Áö ¾ÊÀ¸¸é next ³ëµå¸¦
+ * ¼³Á¤ÇÑ´Ù.
  ***********************************************************************/
 IDE_RC sdpSglPIDList::setHeadOfList( sdpSglPIDListBase*  aBase,
                                      scPageID            aPageID,
@@ -531,7 +531,7 @@ IDE_RC sdpSglPIDList::setHeadOfList( sdpSglPIDListBase*  aBase,
 }
 
 /***********************************************************************
- * Description : ë…¸ë“œì˜ prev page ID ì„¤ì • ë° logging
+ * Description : ³ëµåÀÇ prev page ID ¼³Á¤ ¹× logging
  ***********************************************************************/
 IDE_RC sdpSglPIDList::setTailOfList( sdpSglPIDListBase*    aBase,
                                      scPageID              aPageID,
@@ -551,7 +551,7 @@ IDE_RC sdpSglPIDList::setTailOfList( sdpSglPIDListBase*    aBase,
 }
 
 /***********************************************************************
- * Description : ë…¸ë“œì˜ prev page ID ì„¤ì • ë° logging
+ * Description : ³ëµåÀÇ prev page ID ¼³Á¤ ¹× logging
  ***********************************************************************/
 IDE_RC sdpSglPIDList::setNxtOfNode(sdpSglPIDListNode*   aNode,
                                    scPageID          aPageID,
@@ -572,7 +572,7 @@ IDE_RC sdpSglPIDList::setNxtOfNode(sdpSglPIDListNode*   aNode,
 }
 
 /***********************************************************************
- * Description : ë¦¬ìŠ¤íŠ¸ì˜ ëª¨ë“  node ì¶œë ¥
+ * Description : ¸®½ºÆ®ÀÇ ¸ğµç node Ãâ·Â
  ***********************************************************************/
 IDE_RC sdpSglPIDList::dumpList( scSpaceID  aSpaceID,
                                 sdRID      aBaseRID )
@@ -661,7 +661,7 @@ IDE_RC sdpSglPIDList::dumpList( scSpaceID  aSpaceID,
 }
 
 /***********************************************************************
- * Description : ë¦¬ìŠ¤íŠ¸ì˜ dump check.
+ * Description : ¸®½ºÆ®ÀÇ dump check.
  ***********************************************************************/
 IDE_RC sdpSglPIDList::dumpCheck( sdpSglPIDListBase* aBase,
                                  scSpaceID          aSpaceID,

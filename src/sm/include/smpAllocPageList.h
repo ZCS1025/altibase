@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smpAllocPageList.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smpAllocPageList.h 85392 2019-05-07 06:40:22Z seulki $
  **********************************************************************/
 
 #ifndef _O_SMP_ALLOC_PAGELIST_H_
@@ -28,85 +28,86 @@ class smpAllocPageList
 {
 public:
 
-    // AllocPageListë¥¼ ì´ˆê¸°í™”í•œë‹¤
+    // AllocPageList¸¦ ÃÊ±âÈ­ÇÑ´Ù
     static void     initializePageListEntry(
                                       smpAllocPageListEntry* aAllocPageList );
 
-    // Runtime Itemì„ NULLë¡œ ì„¤ì •í•œë‹¤.
+    // Runtime ItemÀ» NULL·Î ¼³Á¤ÇÑ´Ù.
     static IDE_RC setRuntimeNull( UInt                   aAllocPageListCount,
                                   smpAllocPageListEntry* aAllocPageListArray );
     
     
-    // AllocPageListì˜ Runtime ì •ë³´(Mutex) ì´ˆê¸°í™”
+    // AllocPageListÀÇ Runtime Á¤º¸(Mutex) ÃÊ±âÈ­
     static IDE_RC   initEntryAtRuntime( smpAllocPageListEntry* aAllocPageList,
                                         smOID                  aTableOID,
                                         smpPageType            aPageType );
 
-    // AllocPageListì˜ Runtime ì •ë³´ í•´ì œ
+    // AllocPageListÀÇ Runtime Á¤º¸ ÇØÁ¦
     static IDE_RC   finEntryAtRuntime( smpAllocPageListEntry* aAllocPageList );
 
-    // aAllocPageHead~aAllocPageTail ë¥¼ AllocPageListì— ì¶”ê°€
+    // aAllocPageHead~aAllocPageTail ¸¦ AllocPageList¿¡ Ãß°¡
     static IDE_RC   addPageList( void*                  aTrans,
                                  scSpaceID              aSpaceID,
                                  smpAllocPageListEntry* aAllocPageList,
                                  smOID                  aTableOID,
                                  smpPersPage*           aAllocPageHead,
-                                 smpPersPage*           aAllocPageTail );
+                                 smpPersPage*           aAllocPageTail,
+                                 UInt                   aAllocPageCnt );
 
-    // AllocPageList ì œê±°í•´ì„œ DBë¡œ ë°˜ë‚©
+    // AllocPageList Á¦°ÅÇØ¼­ DB·Î ¹İ³³
     static IDE_RC   freePageListToDB( void*                  aTrans,
                                       scSpaceID              aSpaceID,
                                       smpAllocPageListEntry* aAllocPageList,
                                       smOID                  aTableOID );
 
-    // AllocPageListì—ì„œ aPageIDë¥¼ ì œê±°í•´ì„œ DBë¡œ ë°˜ë‚©
+    // AllocPageList¿¡¼­ aPageID¸¦ Á¦°ÅÇØ¼­ DB·Î ¹İ³³
     static IDE_RC   removePage( void*                  aTrans,
                                 scSpaceID              aSpaceID,
                                 smpAllocPageListEntry* aAllocPageList,
                                 scPageID               aPageID,
                                 smOID                  aTableOID );
     
-    // aHeadPage~aTailPageê¹Œì§€ì˜ PageListì˜ ì—°ê²°ì´ ì˜¬ë°”ë¥¸ì§€ ê²€ì‚¬í•œë‹¤.
+    // aHeadPage~aTailPage±îÁöÀÇ PageListÀÇ ¿¬°áÀÌ ¿Ã¹Ù¸¥Áö °Ë»çÇÑ´Ù.
     static idBool   isValidPageList( scSpaceID aSpaceID,
                                      scPageID  aHeadPage,
                                      scPageID  aTailPage,
                                      vULong    aPageCount );
 
-    // aCurRowë‹¤ìŒ ìœ íš¨í•œ aNxtRowë¥¼ ë¦¬í„´í•œë‹¤.
+    // aCurRow´ÙÀ½ À¯È¿ÇÑ aNxtRow¸¦ ¸®ÅÏÇÑ´Ù.
     static IDE_RC   nextOIDall( scSpaceID              aSpaceID,
                                 smpAllocPageListEntry* aAllocPageList,
                                 SChar*                 aCurRow,
                                 vULong                 aSlotSize,
                                 SChar**                aNxtRow );
 
-    // ë‹¤ì¤‘í™”ëœ aAllocPageListì—ì„œ aPageIDì˜ ë‹¤ìŒ PageID ë°˜í™˜
+    // ´ÙÁßÈ­µÈ aAllocPageList¿¡¼­ aPageIDÀÇ ´ÙÀ½ PageID ¹İÈ¯
     static scPageID getNextAllocPageID( scSpaceID              aSpaceID,
                                         smpAllocPageListEntry* aAllocPageList,
                                         scPageID               aPageID );
-    // ë‹¤ì¤‘í™”ëœ aAllocPageListì—ì„œ aPagePtrì˜ ë‹¤ìŒ PageID ë°˜í™˜
+    // ´ÙÁßÈ­µÈ aAllocPageList¿¡¼­ aPagePtrÀÇ ´ÙÀ½ PageID ¹İÈ¯
     // added for dumpci
     static scPageID getNextAllocPageID( smpAllocPageListEntry * aAllocPageList,
                                         smpPersPageHeader     * aPagePtr );
 
-    // ë‹¤ì¤‘í™”ëœ aAllocPageListì—ì„œ aPageIDì˜ ì´ì „ PageID ë°˜í™˜
+    // ´ÙÁßÈ­µÈ aAllocPageList¿¡¼­ aPageIDÀÇ ÀÌÀü PageID ¹İÈ¯
     static scPageID getPrevAllocPageID( scSpaceID              aSpaceID,
                                         smpAllocPageListEntry* aAllocPageList,
                                         scPageID               aPageID);
 
-    // aAllocPageListì˜ ì²« PageID ë°˜í™˜
+    // aAllocPageListÀÇ Ã¹ PageID ¹İÈ¯
     static scPageID getFirstAllocPageID( smpAllocPageListEntry* aAllocPageList );
 
-    // aAllocPageListì˜ ë§ˆì§€ë§‰ PageID ë°˜í™˜
+    // aAllocPageListÀÇ ¸¶Áö¸· PageID ¹İÈ¯
     static scPageID getLastAllocPageID( smpAllocPageListEntry* aAllocPageList );
 
 private:
 
-    // TableHeaderì—ì„œ aAllocPageListì˜ Offset ê³„ì‚°
+    // TableHeader¿¡¼­ aAllocPageListÀÇ Offset °è»ê
     static inline scOffset makeOffsetAllocPageList(
         smOID                  aTableOID,
         smpAllocPageListEntry* aAllocPageList);
 
-    // nextOIDallì„ ìœ„í•´ aRowì—ì„œ í•´ë‹¹ Pageë¥¼ ì°¾ì•„ì¤€ë‹¤.
+    // nextOIDallÀ» À§ÇØ aRow¿¡¼­ ÇØ´ç Page¸¦ Ã£¾ÆÁØ´Ù.
     static inline void     initForScan(
         scSpaceID              aSpaceID,
         smpAllocPageListEntry* aAllocPageList,
@@ -118,10 +119,10 @@ private:
 };
 
 /**********************************************************************
- * TableHeaderì—ì„œ AllocPageListì˜ Offset ê³„ì‚°
+ * TableHeader¿¡¼­ AllocPageListÀÇ Offset °è»ê
  *
- * aTableOID      : ê³„ì‚°í•˜ë ¤ëŠ” í…Œì´ë¸” OID
- * aAllocPageList : ê³„ì‚°í•˜ë ¤ëŠ” AllocPageList
+ * aTableOID      : °è»êÇÏ·Á´Â Å×ÀÌºí OID
+ * aAllocPageList : °è»êÇÏ·Á´Â AllocPageList
  **********************************************************************/
 
 inline scOffset smpAllocPageList::makeOffsetAllocPageList(
@@ -131,9 +132,9 @@ inline scOffset smpAllocPageList::makeOffsetAllocPageList(
     UInt    sOffset;
     void  * sPagePtr;
 
-    // ã…ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡sOffsetã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…“
+    // ¤¿¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤ÑsOffset¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ã
     // [...TableHeader...mFixed.mMMDB.mAllocPageList[0][1]...[n]...]
-    // ^ í…Œì´ë¸”í—¤ë”í˜ì´ì§€                                       ^ aAllocPageList
+    // ^ Å×ÀÌºíÇì´õÆäÀÌÁö                                       ^ aAllocPageList
     
     IDE_ASSERT( smmManager::getPersPagePtr( SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
                                             SM_MAKE_PID(aTableOID),

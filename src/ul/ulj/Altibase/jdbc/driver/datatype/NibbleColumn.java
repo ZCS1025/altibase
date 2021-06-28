@@ -82,8 +82,8 @@ public class NibbleColumn extends AbstractBinaryColumn
     }
 
     /**
-     * @return byte ê°’
-     * @exception nibble streamì˜ ê¸¸ì´ê°€ 2ê°€ ì•„ë‹Œ ê²½ìš°
+     * @return byte °ª
+     * @exception nibble streamÀÇ ±æÀÌ°¡ 2°¡ ¾Æ´Ñ °æ¿ì
      */
     protected byte getByteSub() throws SQLException
     {
@@ -96,8 +96,8 @@ public class NibbleColumn extends AbstractBinaryColumn
     }
 
     /**
-     * nibbleì„ byte[]ë¡œ ë³€í™˜í•´ ë°˜í™˜í•œë‹¤.
-     * ì´ ë•Œ í•œ byteëŠ” 2ê°œì˜ nibble ê°’ì„ í¬í•¨í•œë‹¤.
+     * nibbleÀ» byte[]·Î º¯È¯ÇØ ¹İÈ¯ÇÑ´Ù.
+     * ÀÌ ¶§ ÇÑ byte´Â 2°³ÀÇ nibble °ªÀ» Æ÷ÇÔÇÑ´Ù.
      */
     protected byte[] getBytesSub() throws SQLException
     {

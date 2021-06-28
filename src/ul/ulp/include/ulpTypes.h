@@ -48,7 +48,10 @@ typedef enum
     S_FailOver      = 24,
     S_BindVariables = 25, /* BUG-41010 */
     S_SetArraySize  = 26, /* BUG-41010 */
-    S_SelectList    = 27  /* BUG-41010 */
+    S_SelectList    = 27, /* BUG-41010 */
+    S_DirectANONPSM = 28, /* BUG-46824 anonymous block*/
+    S_GetStmtDiag   = 29, /* TASK-7218 */
+    S_GetConditionDiag = 30  /* TASK-7218 */
 } ulpStmtType;
 
 typedef enum
@@ -83,7 +86,8 @@ typedef enum
     H_NCHAR,
     H_NVARCHAR,
     H_SQLDA,
-    H_BINARY2
+    H_BINARY2,
+    H_NUMERIC_STRUCT /* BUG-45933 */
 } ulpHostType;
 
 typedef enum
@@ -93,5 +97,18 @@ typedef enum
     H_INOUT,
     H_OUT_4PSM
 } ulpHostIOType;
+
+/* TASK-7218 Handling Multiple Errors */
+typedef enum
+{
+    H_DIAG_UNKNOWN = -1,
+    H_STMT_DIAG_NUMBER = 0,
+    H_STMT_DIAG_ROW_COUNT,
+    H_COND_DIAG_RETURNED_SQLCODE,
+    H_COND_DIAG_RETURNED_SQLSTATE,
+    H_COND_DIAG_MESSAGE_TEXT,
+    H_COND_DIAG_ROW_NUMBER,
+    H_COND_DIAG_COLUMN_NUMBER
+} ulpHostDiagType;
 
 #endif

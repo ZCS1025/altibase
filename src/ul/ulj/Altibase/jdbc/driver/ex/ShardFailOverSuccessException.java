@@ -18,12 +18,18 @@
 package Altibase.jdbc.driver.ex;
 
 /**
- * Shard ìƒí™©í•˜ì—ì„œ STFê°€ ì„±ê³µí–ˆì„ ë•Œ ë°œìƒí•¨
+ * Shard »óÈ²ÇÏ¿¡¼­ STF°¡ ¼º°øÇßÀ» ¶§ ¹ß»ıÇÔ
  */
 public class ShardFailOverSuccessException extends ShardJdbcException
 {
-    public ShardFailOverSuccessException(String aErrorMsg, int aErrorCode, String aNodeName)
+    public ShardFailOverSuccessException(String aErrorMsg, int aErrorCode, String aNodeName,
+                                         String aIpAddress, int aPort)
     {
-        super(aErrorMsg, aErrorCode, aNodeName);
+        super("Failover success. " + aErrorMsg, aErrorCode, aNodeName, aIpAddress, aPort);
+    }
+
+    public ShardFailOverSuccessException(String aErrorMsg, int aErrorCode)
+    {
+        super("Failover success. " + aErrorMsg, aErrorCode, null, null, 0);
     }
 }

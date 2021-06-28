@@ -25,10 +25,12 @@ import Altibase.jdbc.driver.sharding.core.ShardRangeList;
 import Altibase.jdbc.driver.cm.CmProtocolContextShardStmt;
 import Altibase.jdbc.driver.cm.CmShardAnalyzeResult;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
- * ìƒ¤ë“œ í‚¤ê°’ì´ ì—†ê¸°ë•Œë¬¸ì— shard rangeì˜ ëª¨ë“  ë…¸ë“œê°€ ìˆ˜í–‰ëŒ€ìƒì´ ëœë‹¤.
+ * »şµå Å°°ªÀÌ ¾ø±â¶§¹®¿¡ shard rangeÀÇ ¸ğµç ³ëµå°¡ ¼öÇà´ë»óÀÌ µÈ´Ù.
  */
 public class AllNodesRoutingEngine implements RoutingEngine
 {
@@ -39,20 +41,17 @@ public class AllNodesRoutingEngine implements RoutingEngine
         mShardStmtCtx = aShardStmtCtx;
     }
 
-    public SQLRouteResult route(String aSql, List<Column> aParameters)
+    public List<DataNode> route(String aSql, List<Column> aParameters)
     {
         CmShardAnalyzeResult sShardAnalyzeResult = mShardStmtCtx.getShardAnalyzeResult();
         ShardRangeList sShardRangeList = sShardAnalyzeResult.getShardRangeList();
-        SQLRouteResult sResult = new SQLRouteResult();
+        List<DataNode> sResult = new ArrayList<DataNode>();
         ShardNodeConfig sShardNodeConfig = mShardStmtCtx.getShardContextConnect().getShardNodeConfig();
 
         if (sShardRangeList == null)
         {
-            // PROJ-2690 range ì •ë³´ê°€ ì—†ëŠ” ê²½ìš°ì—” ì „ì²´ ë°ì´í„°ë…¸ë“œê°€ ì‹¤í–‰ëŒ€ìƒì´ ëœë‹¤.
-            for (DataNode sEach : sShardNodeConfig.getDataNodes())
-            {
-                sResult.getExecutionUnits().add(new SQLExecutionUnit(sEach, aSql));
-            }
+            // PROJ-2690 range Á¤º¸°¡ ¾ø´Â °æ¿ì¿£ ÀüÃ¼ µ¥ÀÌÅÍ³ëµå°¡ ½ÇÇà´ë»óÀÌ µÈ´Ù.
+            sResult.addAll(sShardNodeConfig.getDataNodes());
         }
         else
         {
@@ -64,7 +63,11 @@ public class AllNodesRoutingEngine implements RoutingEngine
                 {
                     sDefaultNodeIncluded = true;
                 }
-                sResult.getExecutionUnits().add(new SQLExecutionUnit(sEach.getNode(), aSql));
+                DataNode sNode = sEach.getNode();
+                if (!sResult.contains(sNode))
+                {
+                    sResult.add(sEach.getNode());
+                }
             }
             if (sDefaultNodeId >= 0 && !sDefaultNodeIncluded)
             {
@@ -77,19 +80,16 @@ public class AllNodesRoutingEngine implements RoutingEngine
                         break;
                     }
                 }
-                sResult.getExecutionUnits().add(new SQLExecutionUnit(sNode, aSql));
+                sResult.add(sNode);
             }
         }
-
+        Collections.sort(sResult);
         return sResult;
     }
 
     @Override
     public String toString()
     {
-        final StringBuilder sSb = new StringBuilder("AllNodesRoutingEngine{");
-        sSb.append("mShardStmtCtx=").append(mShardStmtCtx);
-        sSb.append('}');
-        return sSb.toString();
+        return "AllNodesRoutingEngine{" + "mShardStmtCtx=" + mShardStmtCtx + '}';
     }
 }

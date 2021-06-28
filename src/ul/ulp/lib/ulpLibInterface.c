@@ -24,10 +24,10 @@
 #include <ulpLibMacro.h>
 #include <mtcdTypes.h>
 
-/* ì´ˆê¸°í™” ì½”ë“œê°€ ì²˜ë¦¬ë¼ì•¼í•˜ëŠ”ì§€ì— ëŒ€í•œ flag */
+/* ÃÊ±âÈ­ ÄÚµå°¡ Ã³¸®µÅ¾ßÇÏ´ÂÁö¿¡ ´ëÇÑ flag */
 acp_bool_t gUlpLibDoInitProc = ACP_TRUE;
 
-/* ì´ˆê¸°í™” ì½”ë“œ í•œë²ˆí˜¸ì¸¨ìš¸ ë³´ìž¥í•˜ê¸° ìœ„í•œ latch */
+/* ÃÊ±âÈ­ ÄÚµå ÇÑ¹øÈ£Ãú¿ï º¸ÀåÇÏ±â À§ÇÑ latch */
 acp_thr_rwlock_t  gUlpLibLatch4Init;
 
 typedef ACI_RC ulpLibInterFunc ( acp_char_t *aConnName,
@@ -63,14 +63,17 @@ static ulpLibInterFunc * const gUlpLibInterFuncArray[ULP_LIB_INTER_FUNC_MAX] =
     ulpFailOver,           /* S_FailOver      = 24 */
     ulpBindVariable,       /* S_BindVariables = 25 */
     ulpSetArraySize,       /* S_SetArraySize  = 26 */
-    ulpSelectList          /* S_SelectList    = 27 */
+    ulpSelectList,         /* S_SelectList    = 27 */
+    ulpRunDirectQuery,     /* S_DirectANONPSM = 28, anonymous block */
+    ulpGetStmtDiag,        /* S_GetStmtDiag   = 29 */
+    ulpGetConditionDiag    /* S_GetCondDiag   = 30 */
 };
 
 static
 void ulpLibInit( void )
 {
     /* Initialize for latch */
-    /* Fix BUG-27644 Apre ì˜ ulpConnMgr::ulpInitialzie, finalizeê°€ ìž˜ëª»ë¨. */
+    /* Fix BUG-27644 Apre ÀÇ ulpConnMgr::ulpInitialzie, finalize°¡ Àß¸øµÊ. */
     ACE_ASSERT( ulnInitialize() == ACI_SUCCESS );
 
     /* init grobal latch for the first call of ulpDoEmsql function */
@@ -114,16 +117,16 @@ ulpSqlstate *ulpGetSqlstate( void )
 EXTERN_C
 void ulpDoEmsql( acp_char_t * aConnName, ulpSqlstmt *aSqlstmt, void *aReserved )
 {
-    /* ì´ˆê¸°í™” í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê¸°ìœ„í•¨.*/
+    /* ÃÊ±âÈ­ ÇÔ¼ö¸¦ È£ÃâÇÏ±âÀ§ÇÔ.*/
     static acp_thr_once_t sOnceControl = ACP_THR_ONCE_INITIALIZER;
-    /* library ì´ˆê¸°í™” í•¨ìˆ˜ ulpLibInit í˜¸ì¶œí•¨.*/
+    /* library ÃÊ±âÈ­ ÇÔ¼ö ulpLibInit È£ÃâÇÔ.*/
     acpThrOnce( &sOnceControl, ulpLibInit );
 
     /*
      *    Initilaize
      */
 
-    /* ulpDoEmsqlì´ ì²˜ìŒ í˜¸ì¶œë  ê²½ìš°ì—ë§Œ ì²˜ë¦¬ë˜ê²Œí•¨. */
+    /* ulpDoEmsqlÀÌ Ã³À½ È£ÃâµÉ °æ¿ì¿¡¸¸ Ã³¸®µÇ°ÔÇÔ. */
     if ( gUlpLibDoInitProc == ACP_TRUE )
     {
         /* get write lock */
@@ -133,7 +136,7 @@ void ulpDoEmsql( acp_char_t * aConnName, ulpSqlstmt *aSqlstmt, void *aReserved )
         /* do some initial job */
         if ( gUlpLibDoInitProc == ACP_TRUE )
         {
-            /* BUG-28209 : AIX ì—ì„œ c compilerë¡œ ì»´íŒŒì¼í•˜ë©´ ìƒì„±ìž í˜¸ì¶œì•ˆë¨. */
+            /* BUG-28209 : AIX ¿¡¼­ c compiler·Î ÄÄÆÄÀÏÇÏ¸é »ý¼ºÀÚ È£Ãâ¾ÈµÊ. */
             /* initialize ConnMgr class*/
             ACE_ASSERT( ulpInitializeConnMgr() == ACI_SUCCESS );
         }
@@ -147,7 +150,7 @@ void ulpDoEmsql( acp_char_t * aConnName, ulpSqlstmt *aSqlstmt, void *aReserved )
      */
     if ( (acp_bool_t) aSqlstmt->ismt == ACP_TRUE )
     {
-        /* BUG-43429 í•œë²ˆì¼œì§€ë©´ êº¼ì§€ì§€ ì•ŠëŠ”ë‹¤. */
+        /* BUG-43429 ÇÑ¹øÄÑÁö¸é ²¨ÁöÁö ¾Ê´Â´Ù. */
         gUlpLibOption.mIsMultiThread = ACP_TRUE;
     }
     else
@@ -283,3 +286,52 @@ bool ulpDoubleIsNull( const void* aValue )
     return ((*(acp_uint64_t*)aValue & MTD_DOUBLE_EXPONENT_MASK) == MTD_DOUBLE_EXPONENT_MASK) ? true : false ;
 }
 
+/* BUG-45933 */
+EXTERN_C 
+long ulpNumericToLong(SQL_NUMERIC_STRUCT *aNumeric)
+{
+    acp_slong_t sValue = 0;
+    acp_slong_t sLast  = 1;
+    int  i;
+    
+    for (i = 0; i < SQL_MAX_NUMERIC_LEN; i++)
+    {   
+        sValue += sLast * aNumeric->val[i];
+        sLast  *= 256;
+    }
+    
+    return (long)sValue;
+}
+
+EXTERN_C 
+double ulpNumericToDouble(SQL_NUMERIC_STRUCT *aNumeric)
+{
+    acp_double_t sDouble    = ulpNumericToLong(aNumeric);
+    acp_double_t sTempValue = 1.0;
+
+    int    i;
+
+    if (aNumeric->scale > 0)
+    {   
+        for (i = 0; i < aNumeric->scale; i++)
+        {   
+            sTempValue *= 10.0;
+        }
+        sDouble /= sTempValue;
+    }
+    else if (aNumeric->scale < 0)
+    {   
+        for (i = 0; i > aNumeric->scale; i--)
+        {
+            sTempValue *= 10.0;
+        }
+        sDouble *= sTempValue;
+    }
+
+    if (aNumeric->sign == 0)
+    {   
+        sDouble *= -1;
+    }
+
+    return (double)sDouble;
+}

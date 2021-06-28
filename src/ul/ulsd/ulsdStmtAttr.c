@@ -13,6 +13,24 @@
 
 #include <ulsd.h>
 
+static acp_bool_t ulsdIsSupportedStmtAttr( acp_sint32_t  aAttribute,
+                                           void         *aValuePtr )
+{
+    acp_bool_t sIsSupported = ACP_TRUE;
+    acp_uint32_t  sValue;
+
+    if ( aAttribute == SQL_ATTR_PARAMSET_SIZE )
+    {
+        sValue = (acp_uint32_t)(((acp_ulong_t)aValuePtr) & ACP_UINT32_MAX);
+        if ( sValue > 1 )
+        {
+            sIsSupported = ACP_FALSE;
+        }
+    }
+
+    return sIsSupported;
+}
+
 SQLRETURN ulsdSetStmtAttr(ulnStmt      *aMetaStmt,
                           acp_sint32_t  aAttribute,
                           void         *aValuePtr,
@@ -28,7 +46,14 @@ SQLRETURN ulsdSetStmtAttr(ulnStmt      *aMetaStmt,
     ulnFnContext        sFnContext;
     acp_uint16_t        i;
 
-    /* BUG-46257 shardcliì—ì„œ Node ì¶”ê°€/ì œê±° ì§€ì› */
+    ULN_INIT_FUNCTION_CONTEXT( sFnContext, ULN_FID_SETSTMTATTR, aMetaStmt, ULN_OBJ_TYPE_STMT );
+
+    /* BUG-47553 */
+    ACI_TEST_RAISE( ulsdEnter( &sFnContext ) != ACI_SUCCESS, LABEL_ENTER_ERROR );
+
+    ACI_TEST_RAISE( ulsdIsSupportedStmtAttr( aAttribute, aValuePtr ) != ACP_TRUE, LABEL_NOT_SUPPORTED );
+
+    /* BUG-46257 shardcli¿¡¼­ Node Ãß°¡/Á¦°Å Áö¿ø */
     ACI_TEST_RAISE( acpMemAlloc( (void **) & sNewObj,
                                  ACI_SIZEOF( ulsdStmtAttrInfo ) )
                     != ACP_RC_SUCCESS, LABEL_NOT_ENOUGH_MEMORY );
@@ -41,7 +66,7 @@ SQLRETURN ulsdSetStmtAttr(ulnStmt      *aMetaStmt,
 
     ulsdGetShardFromDbc(aMetaStmt->mParentDbc, &sShard);
 
-    /* BUG-45411 dataë…¸ë“œì—ì„œ ë¨¼ì € ìˆ˜í–‰í•˜ê³ , ëª¨ë‘ ì„±ê³µí•˜ë©´ metaë…¸ë“œì—ì„œ ìˆ˜í–‰í•œë‹¤. */
+    /* BUG-45411 data³ëµå¿¡¼­ ¸ÕÀú ¼öÇàÇÏ°í, ¸ðµÎ ¼º°øÇÏ¸é meta³ëµå¿¡¼­ ¼öÇàÇÑ´Ù. */
     for ( i = 0; i < sShard->mNodeCount; i++ )
     {
         sRet = ulnSetStmtAttr(aMetaStmt->mShardStmtCxt.mShardNodeStmt[i],
@@ -63,7 +88,7 @@ SQLRETURN ulsdSetStmtAttr(ulnStmt      *aMetaStmt,
                           aStringLength);
     ACI_TEST(sRet != SQL_SUCCESS);
 
-    /* BUG-46257 shardcliì—ì„œ Node ì¶”ê°€/ì œê±° ì§€ì› */
+    /* BUG-46257 shardcli¿¡¼­ Node Ãß°¡/Á¦°Å Áö¿ø */
     ACP_LIST_ITERATE_SAFE( & aMetaStmt->mShardStmtCxt.mStmtAttrList, sNode, sNext )
     {
         sObj = (ulsdStmtAttrInfo *)sNode->mObj;
@@ -84,6 +109,14 @@ SQLRETURN ulsdSetStmtAttr(ulnStmt      *aMetaStmt,
 
     return SQL_SUCCESS;
 
+    ACI_EXCEPTION( LABEL_ENTER_ERROR )
+    {
+        sRet = ULN_FNCONTEXT_GET_RC( &sFnContext );
+    }
+    ACI_EXCEPTION( LABEL_NOT_SUPPORTED )
+    {
+        ulnError( &sFnContext, ulERR_ABORT_FEATURE_NOT_IMPLEMENTED_IN_SHARD );
+    }
     ACI_EXCEPTION(LABEL_NODE_SETSTMTATTR_FAIL)
     {
         ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_SETSTMTATTR, aMetaStmt, ULN_OBJ_TYPE_STMT);

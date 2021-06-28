@@ -34,7 +34,7 @@ public class AddBatchOp extends RequestOperation
     public static class BindVariable 
     {
     	public int    mBindVariableIndex  = 0;
-        public int    mBindVariableType   = SQLType.SQL_VARCHAR;
+        public int    mBindVariableType   = AltibaseSQLType.SQL_VARCHAR;
         public String mBindVariableString = null;
         
         public BindVariable()
@@ -82,7 +82,7 @@ public class AddBatchOp extends RequestOperation
                     mBindVariables[i].mBindVariableIndex = readInt (aOpPayload);
                     mBindVariables[i].mBindVariableType  = readInt (aOpPayload);
         
-                    if (mBindVariables[i].mBindVariableType == SQLType.SQL_VARCHAR)
+                    if (mBindVariables[i].mBindVariableType == AltibaseSQLType.SQL_VARCHAR)
                     {
                         mBindVariables[i].mBindVariableString = readVariableString(aOpPayload, true);
                     }
@@ -116,7 +116,7 @@ public class AddBatchOp extends RequestOperation
         		return false;
         	}
         	
-        	if (mBindVariables[i].mBindVariableType != SQLType.SQL_VARCHAR)
+        	if (mBindVariables[i].mBindVariableType != AltibaseSQLType.SQL_VARCHAR)
         	{
         		return false;
         	}

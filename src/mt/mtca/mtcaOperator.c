@@ -105,10 +105,10 @@
  * change naming to id
  *
  * Revision 1.1  2000/05/31 07:33:57  
- * id ë¼ì´ë¸ŒëŸ¬ë¦¬ ìƒì„±
+ * id ¶óÀÌºê·¯¸® »ı¼º
  *
  * Revision 1.9  2000/05/22 10:12:26  sjkim
- * ì—ëŸ¬ ì²˜ë¦¬ ë£¨í‹´ ìˆ˜ì • : ACTION ì¶”ê°€
+ * ¿¡·¯ Ã³¸® ·çÆ¾ ¼öÁ¤ : ACTION Ãß°¡
  *
  * Revision 1.8  2000/04/20 07:25:43  assam
  * idaDate added.

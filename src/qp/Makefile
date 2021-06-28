@@ -1,10 +1,10 @@
 #
-# $Id: Makefile 70397 2015-04-20 01:43:07Z heesuk.shin $
+# $Id: Makefile 87559 2020-05-21 05:17:13Z jake.jang $
 #
 
 include qpEnv.mk
 
-DIRS=msg qtc qcc qcd qcm qcu qcp qcg qdb qdc qdd qdm qdn qdr qds qdx qdv qdp qdt qmc qmv qmn qmo qmg qms qmx qmr qci qrc qsf qsv qso qsx qss qsc qdq qcs lib
+DIRS=msg qtc qcc qcd qcm qcu qcp qcg qdb qdc qdd qdm qdn qdr qds qdx qdv qdp qdt qmc qmv qmn qmo qmg qms qmx qmr qci qrc qsf qsv qso qsx qss qsc qdq qcs qdsd lib
 
 include $(ALTIDEV_HOME)/makefiles/moddep-common.mk
 

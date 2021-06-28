@@ -22,7 +22,7 @@ import com.altibase.altilinker.util.AltilinkerXid;
 
 public class AldpXid extends Object
 {
-    public static final int   MAXGTRIDSIZE = 14;
+    public static final int   MAXGTRIDSIZE = 18;
     public static final int   MAXBQUALSIZE = 4;
     public static final int   DATASIZE  = MAXGTRIDSIZE + MAXBQUALSIZE;
     public static final int   SIZEOF_XID   = DATASIZE; // ID_SIZEOF( XID )
@@ -109,7 +109,7 @@ public class AldpXid extends Object
         mBranchQualifier     = new byte[MAXBQUALSIZE];
 
         /* XID format
-         *   0    7 8      11
+         *  0    17 18     21 
          * | GTxID | BQual   |
          */
         System.arraycopy( aData, 0, 

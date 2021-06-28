@@ -16,13 +16,12 @@
  
 
 /***********************************************************************
- * $Id: smcSequence.h 82844 2018-04-19 00:41:18Z andrew.shin $
+ * $Id: smcSequence.h 88753 2020-10-05 00:19:19Z khkwak $
  **********************************************************************/
 
 #ifndef _O_SMC_SEQUENCE_H_
 #define _O_SMC_SEQUENCE_H_ 1
 
-#include <iduSync.h>
 
 #include <smDef.h>
 #include <smcDef.h>
@@ -47,6 +46,8 @@ public:
                                  SLong             aMaxSequence,
                                  SLong             aMinSequence,
                                  UInt              aFlag,
+                                 idBool            aIsRestart,
+                                 SLong             aStartSequence,
                                  SLong*            aLastSyncSeq );
 
     /* BUG-45929 */

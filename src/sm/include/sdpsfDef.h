@@ -25,35 +25,35 @@
 #define SDPSF_SEGHDR_OFFSET (idlOS::align8((UInt)ID_SIZEOF(sdpPhyPageHdr)))
 
 /* --------------------------------------------------------------------
- * í˜ì´ì§€ì˜ physical headerì— ì €ì¥ëœë‹¤.
- * í˜ì´ì§€ì˜ ìƒíƒœë¥¼ í‘œì‹œí•œë‹¤.
- * extent descì˜ í‘œì‹œë˜ëŠ” í˜ì´ì§€ì˜ ìƒíƒœì™€ physical headerì—
- * í‘œì‹œë˜ëŠ” í˜ì´ì§€ì˜ ìƒíƒœê°€ ê°™ì€ ìƒíƒœë¡œ ìœ ì§€ë  ê²ƒì´ë‹¤.
- * ì´ê²ƒì´ ë‹¤ë¥´ë‹¤ë©´ ì¤‘ê°„ì— ì„œë²„ê°€ ì£½ì—ˆë˜ ìƒíƒœì¼ ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
- * ì ì ˆíˆ ì²˜ë¦¬í•´ì•¼ í•œë‹¤.
+ * ÆäÀÌÁöÀÇ physical header¿¡ ÀúÀåµÈ´Ù.
+ * ÆäÀÌÁöÀÇ »óÅÂ¸¦ Ç¥½ÃÇÑ´Ù.
+ * extent descÀÇ Ç¥½ÃµÇ´Â ÆäÀÌÁöÀÇ »óÅÂ¿Í physical header¿¡
+ * Ç¥½ÃµÇ´Â ÆäÀÌÁöÀÇ »óÅÂ°¡ °°Àº »óÅÂ·Î À¯ÁöµÉ °ÍÀÌ´Ù.
+ * ÀÌ°ÍÀÌ ´Ù¸£´Ù¸é Áß°£¿¡ ¼­¹ö°¡ Á×¾ú´ø »óÅÂÀÏ ¼ö ÀÖÀ¸¹Ç·Î,
+ * ÀûÀıÈ÷ Ã³¸®ÇØ¾ß ÇÑ´Ù.
  * ----------------------------------------------------------------- */
 typedef enum
 {
-    // pageê°€ usedì´ê³  insert ê°€ëŠ¥í•œ ìƒíƒœ
-    // insertable ì—¬ë¶€ë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” í˜ì´ì§€ë¼ë©´ usedë¥¼ ì˜ë¯¸
+    // page°¡ usedÀÌ°í insert °¡´ÉÇÑ »óÅÂ
+    // insertable ¿©ºÎ¸¦ »ç¿ëÇÏÁö ¾Ê´Â ÆäÀÌÁö¶ó¸é used¸¦ ÀÇ¹Ì
     SDPSF_PAGE_USED_INSERTABLE = 0,
 
-    // pageê°€ usedì´ê³  insert ë¶ˆê°€ëŠ¥í•œ ìƒíƒœ
-    // ì˜¤ì§ updateë§Œ ê°€ëŠ¥í•˜ë‹¤.
+    // page°¡ usedÀÌ°í insert ºÒ°¡´ÉÇÑ »óÅÂ
+    // ¿ÀÁ÷ update¸¸ °¡´ÉÇÏ´Ù.
     SDPSF_PAGE_USED_UPDATE_ONLY,
 
-    // pageê°€ freeì¸ ìƒíƒœ
+    // page°¡ freeÀÎ »óÅÂ
     SDPSF_PAGE_FREE
 
 } sdpsfPageState;
 
-/* Segment Cache ìë£Œêµ¬ì¡° (Runtime ì •ë³´) */
+/* Segment Cache ÀÚ·á±¸Á¶ (Runtime Á¤º¸) */
 typedef struct sdpsfSegCache
 {
     sdpSegCCache  mCommon;
 } sdpsfSegCache;
 
-//XXX Nameì„ ìˆ˜ì •í•´ì•¼ ë¨.
+//XXX NameÀ» ¼öÁ¤ÇØ¾ß µÊ.
 #define SDP_SF_EXTDESC_FST_IS_EXTDIRPAGE_MASK  (0x00000001)
 #define SDP_SF_EXTDESC_FST_IS_EXTDIRPAGE_TRUE  (0x00000001)
 #define SDP_SF_EXTDESC_FST_IS_EXTDIRPAGE_FALSE (0x00000000)
@@ -62,35 +62,36 @@ typedef struct sdpsfSegCache
     ( ( aFlag & SDP_SF_EXTDESC_FST_IS_EXTDIRPAGE_MASK ) == SDP_SF_EXTDESC_FST_IS_EXTDIRPAGE_TRUE )
 
 /* --------------------------------------------------------------------
- * Extent Descriptorì˜ ì •ë³´
+ * Extent DescriptorÀÇ Á¤º¸
  * ----------------------------------------------------------------- */
 typedef struct sdpsfExtDesc
 {
-    // ì´ extentì— ì†í•œ ì²«ë²ˆì§¸ í˜ì´ì§€ì˜ ID
+    // ÀÌ extent¿¡ ¼ÓÇÑ Ã¹¹øÂ° ÆäÀÌÁöÀÇ ID
     scPageID           mFstPID;
-    // Extentì˜ ìƒíƒœì •ë³´: ex) ì²«ë²ˆì§¸ í˜ì´ì§€ê°€ ExtDirPageì¸ê°€?
+    // ExtentÀÇ »óÅÂÁ¤º¸: ex) Ã¹¹øÂ° ÆäÀÌÁö°¡ ExtDirPageÀÎ°¡?
     UInt               mFlag;
 } sdpsfExtDesc;
 
-// Extent Direct Control Header ì •ì˜
+// Extent Direct Control Header Á¤ÀÇ
 typedef struct sdpsfExtDirCntlHdr
 {
-    UShort       mExtDescCnt;         // í˜ì´ì§€ë‚´ì˜ ExtentDesc ê°œìˆ˜
-    UShort       mMaxExtDescCnt;      // í˜ì´ì§€ë‚´ì˜ ìµœëŒ€ ExtentDesc ê°œìˆ˜
-    scOffset     mFstExtDescOffset;   // í˜ì´ì§€ ë‚´ì˜ ExtentDescì˜ ì²«ë²ˆì§¸ Offset
+    UShort       mExtDescCnt;         // ÆäÀÌÁö³»ÀÇ ExtentDesc °³¼ö
+    UShort       mMaxExtDescCnt;      // ÆäÀÌÁö³»ÀÇ ÃÖ´ë ExtentDesc °³¼ö
+    scOffset     mFstExtDescOffset;   // ÆäÀÌÁö ³»ÀÇ ExtentDescÀÇ Ã¹¹øÂ° Offset
 
+    /* PROJ-1497 DB MigrationÀ» ¹æÁöÇÏ±â À§ÇØ Reserved ¿µ¿ªÀ» Ãß°¡ */
     ULong        mReserveArea[SDP_EXTDIR_PAGEHDR_RESERV_SIZE];
 } sdpsfExtDirCntlHdr;
 
 /* --------------------------------------------------------------------
- * Segement Descriptorì˜ ì •ë³´
+ * Segement DescriptorÀÇ Á¤º¸
  *
- * extentì˜ ë¦¬ìŠ¤íŠ¸ëŠ” í•­ìƒ seg descì— ì¡´ì¬ í•´ì•¼ í•œë‹¤.
- * table seg hdrì— ì¡´ì¬ í•  ìˆ˜ ì—†ë‹¤.
- * ì™œëƒí•˜ë©´ table seg hdrë¥¼ ìµœì´ˆì— í• ë‹¹ë°›ê¸° ìœ„í•´ì„œëŠ”
- * ë¨¼ì € extentë¥¼ í• ë‹¹ë°›ì„ ìˆ˜ ìˆì–´ì•¼ í•˜ëŠ”ë° table seg hdrì—
- * extent listë¥¼ ë‘ì—ˆì„ ê²½ìš° ì• ì´ˆì— extentë¥¼ í• ë‹¹ë°›ì„ ìˆ˜
- * ìˆëŠ” ë°©ë²•ì´ ì—†ë‹¤.
+ * extentÀÇ ¸®½ºÆ®´Â Ç×»ó seg desc¿¡ Á¸Àç ÇØ¾ß ÇÑ´Ù.
+ * table seg hdr¿¡ Á¸Àç ÇÒ ¼ö ¾ø´Ù.
+ * ¿Ö³ÄÇÏ¸é table seg hdr¸¦ ÃÖÃÊ¿¡ ÇÒ´ç¹Ş±â À§ÇØ¼­´Â
+ * ¸ÕÀú extent¸¦ ÇÒ´ç¹ŞÀ» ¼ö ÀÖ¾î¾ß ÇÏ´Âµ¥ table seg hdr¿¡
+ * extent list¸¦ µÎ¾úÀ» °æ¿ì ¾ÖÃÊ¿¡ extent¸¦ ÇÒ´ç¹ŞÀ» ¼ö
+ * ÀÖ´Â ¹æ¹ıÀÌ ¾ø´Ù.
  * ----------------------------------------------------------------- */
 typedef struct sdpsfSegHdr
 {
@@ -100,7 +101,7 @@ typedef struct sdpsfSegHdr
     /* table or index or undo or tss or temp */
     UShort             mType;
 
-    /* í• ë‹¹ ìƒíƒœ */
+    /* ÇÒ´ç »óÅÂ */
     UShort             mState;
 
     /* PageCnt In Ext */
@@ -111,49 +112,49 @@ typedef struct sdpsfSegHdr
     /* Max Extent Cnt In Extent Directory Page */
     UShort             mMaxExtCntInExtDirPage;
 
-    /* Direct Path Insertë‚˜ Segment Mergeì‹œ HWMì´ ë’¤ë¡œ ì´ë™í•˜ëŠ”ë°
-     * ì´ë•Œ ì¤‘ê°„ì— ìˆëŠ” Extentì— ìˆëŠ” UFmt Pageë¥¼ ì´ ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€í•œë‹¤.
-     * ì™œëƒí•˜ë©´ DPath Insertë‚˜ Mergeê°€ Rollbackì‹œ Addëœ Free Pageë¥¼
-     * Freeí•´ì•¼ í•˜ëŠ”ë° Agerê°€ ë™ì‹œì— ëŒ ê²½ìš° UFmtPageListì— ëŒ€í•œ ë³€ê²½ì´
-     * ë°œìƒí•˜ì—¬ Addëœ í˜ì´ì§€ë¥¼ rollbackì‹œ ì œê±°í•  ìˆ˜ ì—†ë‹¤. Commitì „ê¹Œì§€
-     * ë‹¤ë¥¸ Trasnsactionì´ ì ‘ê·¼í•˜ì§€ ì•ŠëŠ” Private FreePage Listë¥¼ ë‘”ë‹¤.*/
+    /* Direct Path Insert³ª Segment Merge½Ã HWMÀÌ µÚ·Î ÀÌµ¿ÇÏ´Âµ¥
+     * ÀÌ¶§ Áß°£¿¡ ÀÖ´Â Extent¿¡ ÀÖ´Â UFmt Page¸¦ ÀÌ ¸®½ºÆ®¿¡ Ãß°¡ÇÑ´Ù.
+     * ¿Ö³ÄÇÏ¸é DPath Insert³ª Merge°¡ Rollback½Ã AddµÈ Free Page¸¦
+     * FreeÇØ¾ß ÇÏ´Âµ¥ Ager°¡ µ¿½Ã¿¡ µ¹ °æ¿ì UFmtPageList¿¡ ´ëÇÑ º¯°æÀÌ
+     * ¹ß»ıÇÏ¿© AddµÈ ÆäÀÌÁö¸¦ rollback½Ã Á¦°ÅÇÒ ¼ö ¾ø´Ù. CommitÀü±îÁö
+     * ´Ù¸¥ TrasnsactionÀÌ Á¢±ÙÇÏÁö ¾Ê´Â Private FreePage List¸¦ µĞ´Ù.*/
     sdpSglPIDListBase  mPvtFreePIDList;
 
-    /* ì™„ì „íˆ ë¹ˆ Page List( External, LOB, Multiple Columnì˜ Pageê°€
-     * í•œë²ˆí• ë‹¹ ë˜ê³  Rowê°€ Freeë˜ì–´ ì™„ì „íˆ ë¹„ë©´ FreePage Listê°€ ì•„ë‹Œ
-     * Unformated Page Listì— ë°˜í™˜ëœë‹¤. */
+    /* ¿ÏÀüÈ÷ ºó Page List( External, LOB, Multiple ColumnÀÇ Page°¡
+     * ÇÑ¹øÇÒ´ç µÇ°í Row°¡ FreeµÇ¾î ¿ÏÀüÈ÷ ºñ¸é FreePage List°¡ ¾Æ´Ñ
+     * Unformated Page List¿¡ ¹İÈ¯µÈ´Ù. */
     sdpSglPIDListBase  mUFmtPIDList;
 
-    /* Insertí•  ê³µê°„ì´ ìˆëŠ” PageList */
+    /* InsertÇÒ °ø°£ÀÌ ÀÖ´Â PageList */
     sdpSglPIDListBase  mFreePIDList;
 
-    /* Segmentì—ì„œ í•œë²ˆì´ë¼ë„ í• ë‹¹ëœ Pageì˜ ê°¯ìˆ˜ */
+    /* Segment¿¡¼­ ÇÑ¹øÀÌ¶óµµ ÇÒ´çµÈ PageÀÇ °¹¼ö */
     ULong              mFmtPageCnt;
 
-    /* Segmentì—ì„œ Formatëœ ë§ˆì§€ë§‰ í˜ì´ì§€ë¥¼ ê°€ë¦¬í‚¨ë‹¤. */
+    /* Segment¿¡¼­ FormatµÈ ¸¶Áö¸· ÆäÀÌÁö¸¦ °¡¸®Å²´Ù. */
     scPageID           mHWMPID;
 
-    /* Meta Page ID Array: Index SegëŠ” ì´ PageID Array ì— Root
-     * Node PIDë¥¼ ê¸°ë¡í•œë‹¤. */
+    /* Meta Page ID Array: Index Seg´Â ÀÌ PageID Array ¿¡ Root
+     * Node PID¸¦ ±â·ÏÇÑ´Ù. */
     scPageID           mArrMetaPID[ SDP_MAX_SEG_PID_CNT ];
 
-    /* Segmentì—ì„œ í˜„ì¬ Page Allocì„ ìœ„í•´ ì‚¬ìš©ì¤‘ì¸ Ext RID */
+    /* Segment¿¡¼­ ÇöÀç Page AllocÀ» À§ÇØ »ç¿ëÁßÀÎ Ext RID */
     sdRID              mAllocExtRID;
 
-    /* Segmentì—ì„œ í˜„ì¬ Page Allocì„ ìœ„í•´ ì‚¬ìš©ì¤‘ì¸ Extentì˜
-     * ì²«ë²ˆì§¸ PID */
+    /* Segment¿¡¼­ ÇöÀç Page AllocÀ» À§ÇØ »ç¿ëÁßÀÎ ExtentÀÇ
+     * Ã¹¹øÂ° PID */
     scPageID           mFstPIDOfAllocExt;
 
 
-    /** Extent Managementì— ê´€ë ¨ëœ ì •ë³´ë¥¼ ê¸°ë¡í•œë‹¤. **/
-    /* Ext Descì˜ Free ë¦¬ìŠ¤íŠ¸ */
+    /** Extent Management¿¡ °ü·ÃµÈ Á¤º¸¸¦ ±â·ÏÇÑ´Ù. **/
+    /* Ext DescÀÇ Free ¸®½ºÆ® */
     sdpDblPIDListBase  mExtDirPIDList;
 
-    /* Segmentê°€ ê°€ì§€ê³  ìˆëŠ” Extentì˜ Total Count */
+    /* Segment°¡ °¡Áö°í ÀÖ´Â ExtentÀÇ Total Count */
     ULong              mTotExtCnt;
 
-    /* Segment Headerì˜ ë‚¨ëŠ” ê³µê°„ì„ ExtDescë¥¼ ê¸°ë¡í•˜ê¸°
-     * ìœ„í•´ ì‚¬ìš©í•œë‹¤. */
+    /* Segment HeaderÀÇ ³²´Â °ø°£À» ExtDesc¸¦ ±â·ÏÇÏ±â
+     * À§ÇØ »ç¿ëÇÑ´Ù. */
     sdpsfExtDirCntlHdr mExtDirCntlHdr;
 } sdpsfSegHdr;
 

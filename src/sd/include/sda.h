@@ -27,20 +27,22 @@
 
 typedef enum sdaQtcNodeType
 {
-    SDA_NONE = 0,
-    SDA_KEY_COLUMN,
-    SDA_SUB_KEY_COLUMN,
-    SDA_HOST_VAR,
-    SDA_CONSTANT_VALUE,
-    SDA_OR,
-    SDA_EQUAL,
-    SDA_SHARD_KEY_FUNC
+    SDA_NONE           = 0,
+    SDA_KEY_COLUMN     = 1,
+    SDA_SUB_KEY_COLUMN = 2,
+    SDA_HOST_VAR       = 3,
+    SDA_CONSTANT_VALUE = 4,
+    SDA_OR             = 5,
+    SDA_EQUAL          = 6,
+    SDA_EQUALANY       = 7,
+    SDA_SHARD_KEY_FUNC = 8,
+
 } sdaQtcNodeType;
 
 typedef struct sdaSubqueryAnalysis
 {
-    struct sdiParseTree   * mShardAnalysis;
-    sdaSubqueryAnalysis   * mNext;
+    struct sdiShardAnalysis * mShardAnalysis;
+    sdaSubqueryAnalysis     * mNext;
 
 } sdaSubqueryAnalysis;
 
@@ -68,14 +70,14 @@ typedef struct sdaFrom
     UInt                  mKeyCount;
     UShort              * mKey;
 
-    UShort                mValueCount;
-    sdiValueInfo        * mValue;
+    UShort                mValuePtrCount;
+    sdiValueInfo       ** mValuePtrArray;
 
     sdiTableInfo        * mTableInfo;
     sdiShardInfo          mShardInfo;
 
-    idBool                mIsCanMerge;
-    idBool                mCantMergeReason[SDI_CAN_NOT_MERGE_REASON_MAX];
+    idBool                mIsShardQuery;
+    sdiAnalysisFlag       mAnalysisFlag;
 
     idBool                mIsJoined;
     idBool                mIsNullPadding;
@@ -85,37 +87,36 @@ typedef struct sdaFrom
 
 } sdaFrom;
 
-#define SDA_INIT_SHARD_FROM( info )                          \
-{                                                            \
-    (info)->mTupleId                      = 0;               \
-    (info)->mKeyCount                     = 0;               \
-    (info)->mKey                          = NULL;            \
-    (info)->mValueCount                   = 0;               \
-    (info)->mValue                        = NULL;            \
-    (info)->mShardInfo.mKeyDataType       = ID_UINT_MAX;     \
-    (info)->mShardInfo.mDefaultNodeId     = ID_UINT_MAX;     \
-    (info)->mShardInfo.mSplitMethod       = SDI_SPLIT_NONE;  \
-    (info)->mShardInfo.mRangeInfo.mCount  = 0;               \
-    (info)->mShardInfo.mRangeInfo.mRanges = NULL;            \
-    (info)->mIsCanMerge                   = ID_FALSE;        \
-    (info)->mIsJoined                     = ID_FALSE;        \
-    (info)->mIsNullPadding                = ID_FALSE;        \
-    (info)->mIsAntiJoinInner              = ID_FALSE;        \
-    (info)->mNext                         = NULL;            \
-    (info)->mTableInfo                    = NULL;            \
-    SDI_INIT_CAN_NOT_MERGE_REASON((info)->mCantMergeReason); \
+#define SDA_INIT_SHARD_FROM( info )                           \
+{                                                             \
+    (info)->mTupleId                      = 0;                \
+    (info)->mKeyCount                     = 0;                \
+    (info)->mKey                          = NULL;             \
+    (info)->mValuePtrCount                = 0;                \
+    (info)->mValuePtrArray                = NULL;             \
+    (info)->mShardInfo.mKeyDataType       = ID_UINT_MAX;      \
+    (info)->mShardInfo.mDefaultNodeId     = SDI_NODE_NULL_ID; \
+    (info)->mShardInfo.mSplitMethod       = SDI_SPLIT_NONE;   \
+    (info)->mShardInfo.mRangeInfo         = NULL;             \
+    (info)->mIsShardQuery                 = ID_FALSE;         \
+    (info)->mIsJoined                     = ID_FALSE;         \
+    (info)->mIsNullPadding                = ID_FALSE;         \
+    (info)->mIsAntiJoinInner              = ID_FALSE;         \
+    (info)->mNext                         = NULL;             \
+    (info)->mTableInfo                    = NULL;             \
+    SDI_INIT_ANALYSIS_FLAG( ( info )->mAnalysisFlag );        \
 }
 
 class sda
 {
 public:
 
-    static IDE_RC checkStmt( qcStatement * aStatement );
-
+    static IDE_RC checkStmtTypeBeforeAnalysis( qcStatement * aStatement );
+    // PROJ-2727
+    static IDE_RC checkDCLStmt( qcStatement * aStatement );
+    
     static IDE_RC analyze( qcStatement * aStatement,
                            ULong         aSMN );
-
-    static IDE_RC setAnalysisResult( qcStatement * aStatement );
 
     static idBool findRangeInfo( sdiRangeInfo * aRangeInfo,
                                  UInt           aNodeId );
@@ -168,16 +169,6 @@ public:
                                    sdiValueInfo * aValue2,
                                    idBool       * aIsSame );
 
-    static IDE_RC allocAndCopyRanges( qcStatement  * aStatement,
-                                      sdiRangeInfo * aTo,
-                                      sdiRangeInfo * aFrom );
-
-    static IDE_RC allocAndCopyValues( qcStatement   * aStatement,
-                                      sdiValueInfo ** aTo,
-                                      UShort        * aToCount,
-                                      sdiValueInfo  * aFrom,
-                                      UShort          aFromCount );
-
     /* BUG-45899 */
     static void setNonShardQueryReason( sdiPrintInfo * aPrintInfo,
                                         UShort         aReason );
@@ -188,15 +179,68 @@ public:
     static void setPrintInfoFromPrintInfo( sdiPrintInfo * aDst,
                                            sdiPrintInfo * aSrc );
 
+    static IDE_RC allocAndSetShardHostValueInfo( qcStatement      * aStatement,
+                                                 UInt               aBindParamId,
+                                                 sdiValueInfo    ** aValueInfo );
+
+    static IDE_RC allocAndSetShardConstValueInfo( qcStatement      * aStatement,
+                                                  UInt               aKeyDataType,
+                                                  const void       * aKeyValue,
+                                                  sdiValueInfo    ** aValueInfo );
+
+    static UInt calculateValueInfoSize( UInt         aKeyDataType,
+                                        const void * aConstValue );
+
+    static IDE_RC allocAndCopyValue( qcStatement      * aStatement,
+                                     sdiValueInfo     * aFromValueInfo,
+                                     sdiValueInfo    ** aToValueInfo );
+
+    /* TASK-7219 Shard Transformer Refactoring */
+    /* BUG-47903 이후, 전 노드 수행 Non-Shard Query 를 고려해서 수정함 */
+    static IDE_RC isShardQuery( sdiAnalysisFlag * aAnalysisFlag,
+                                idBool          * aIsShardQuery );
+
+    static void setNonShardQueryReasonErr( sdiAnalysisFlag * aAnalysisFlag,
+                                           UShort          * aErrIdx );
+
+    static IDE_RC mergeAnalysisFlag( sdiAnalysisFlag * aFlag1,
+                                     sdiAnalysisFlag * aFlag2,
+                                     UShort            aType );
+
+    static IDE_RC mergeFlag( idBool * aFlag1,
+                             idBool * aFlag2,
+                             UInt     aIdx );
+
+    static IDE_RC allocAnalysis( qcStatement       * aStatement,
+                                 sdiShardAnalysis ** aAnalysis );
+
+    static IDE_RC getParseTreeAnalysis( qcParseTree       * aParseTree,
+                                        sdiShardAnalysis ** aAnalysis );
+
+    static IDE_RC setParseTreeAnalysis( qcParseTree      * aParseTree,
+                                        sdiShardAnalysis * aAnalysis );
+
+    static IDE_RC makeAndSetAnalyzeInfo( qcStatement      * aStatement,
+                                         sdiShardAnalysis * aAnalysis,
+                                         sdiAnalyzeInfo  ** aAnalyzeInfo );
+
+    static IDE_RC preAnalyzeQuerySet( qcStatement * aStatement,
+                                      qmsQuerySet * aQuerySet,
+                                      ULong         aSMN );
+
 private:
 
-    static IDE_RC analyzeSelect( qcStatement * aStatement,
-                                 ULong         aSMN,
-                                 idBool        aIsSubKey );
+    static IDE_RC analyzeSelect( qcStatement             * aStatement,
+                                 ULong                     aSMN );
+    
+    static IDE_RC analyzeSelectCore( qcStatement * aStatement,
+                                     ULong         aSMN,
+                                     sdiKeyInfo  * aOutRefInfo,
+                                     idBool        aIsSubKey );
 
-    static IDE_RC normalizePredicate( qcStatement  * aStatement,
-                                      qmsQuerySet  * aQuerySet,
-                                      qtcNode     ** aPredicate );
+    static IDE_RC normalizePredicate( qcStatement * aStatement,
+                                      qmsQuerySet * aQuerySet,
+                                      qtcNode    ** aPredicate );
 
     static IDE_RC getQtcNodeTypeWithShardFrom( qcStatement         * aStatement,
                                                sdaFrom             * aShardFrom,
@@ -206,104 +250,168 @@ private:
     static IDE_RC getQtcNodeTypeWithKeyInfo( qcStatement         * aStatement,
                                              sdiKeyInfo          * aKeyInfo,
                                              qtcNode             * aNode,
-                                             sdaQtcNodeType      * aQtcNodeType );
+                                             sdaQtcNodeType      * aQtcNodeType,
+                                             sdiKeyInfo         ** aKeyInfoRef );
 
-    static IDE_RC getKeyValueID4InsertValue( qcStatement   * aStatement,
-                                             qmsTableRef   * aInsertTableRef,
-                                             qcmColumn     * aInsertColumns,
-                                             qmmMultiRows  * aInsertRows,
-                                             sdiKeyInfo    * aKeyInfo,
-                                             idBool          aIsSubKey );
+    static IDE_RC getKeyValueID4InsertValue( qcStatement     * aStatement,
+                                             ULong             aSMN,
+                                             qmsTableRef     * aInsertTableRef,
+                                             qcmColumn       * aInsertColumns,
+                                             qmmMultiRows    * aInsertRows,
+                                             sdiKeyInfo      * aKeyInfo,
+                                             idBool          * aIsShardQuery,
+                                             sdiAnalysisFlag * aAnalysisFlag,
+                                             idBool            aIsSubKey );
 
     static IDE_RC getKeyValueID4ProcArguments( qcStatement     * aStatement,
+                                               ULong             aSMN,
                                                qsProcParseTree * aPlanTree,
                                                qsExecParseTree * aParseTree,
                                                sdiKeyInfo      * aKeyInfo,
+                                               sdiAnalysisFlag * aAnalysisFlag,
                                                idBool            aIsSubKey );
 
-    static IDE_RC setAnalysis( qcStatement  * aStatement,
-                               sdiQuerySet  * aAnalysis,
-                               idBool       * aCantMergeReason,
-                               idBool       * aCantMergeReasonSub );
+    static IDE_RC setAnalysisCommonInfo( qcStatement      * aStatement,
+                                         sdiShardAnalysis * aAnalysis,
+                                         sdiAnalyzeInfo   * aAnalysisResult );
+
+    static IDE_RC setAnalysisCombinedInfo( sdiShardAnalysis * aAnalysis,
+                                           sdiAnalyzeInfo   * aAnalysisResult,
+                                           sdiAnalysisFlag  * aAnalysisFlag );
+
+    static IDE_RC setAnalysisIndividualInfo( qcStatement      * aStatement,
+                                             sdiShardAnalysis * aAnalysis,
+                                             UShort           * aValuePtrCount,
+                                             sdiValueInfo*   ** aValuePtrArray,
+                                             sdiSplitMethod   * aSplitMethod,
+                                             UInt             * aKeyDataType );
 
     static IDE_RC subqueryAnalysis4NodeTree( qcStatement          * aStatement,
                                              ULong                  aSMN,
                                              qtcNode              * aNode,
+                                             sdiKeyInfo           * aOutRefInfo,
+                                             idBool                 aIsSubKey,
                                              sdaSubqueryAnalysis ** aSubqueryAnalysis );
 
+    static IDE_RC traverseOverColumn4SubqueryAnalysis( qcStatement          * aStatement,
+                                                       ULong                  aSMN,
+                                                       qtcOverColumn        * aOverColumn,
+                                                       sdiKeyInfo           * aOutRefInfo,
+                                                       idBool                 aIsSubKey,
+                                                       sdaSubqueryAnalysis ** aSubqueryAnalysis );
+
+    static IDE_RC traversePredForCheckingShardKeyJoin( qcStatement * aStatement,
+                                                       qtcNode     * aCompareNode,
+                                                       qtcNode     * aLeftNode,
+                                                       qtcNode     * aRightNode,
+                                                       sdiKeyInfo  * aOutRefInfo,
+                                                       idBool        aIsSubKey );
+
+    static IDE_RC checkSubqueryAndTheOtherSideNode( qcStatement * aStatement,
+                                                    qtcNode     * aSubquery,
+                                                    qtcNode     * aOuterColumn,
+                                                    sdiKeyInfo  * aOutRefInfo,
+                                                    idBool        aIsSubKey );
+
+    static IDE_RC resetSubqueryAnalysisReasonForTargetLink( sdiShardAnalysis  * aSubQAnalysis,
+                                                            sdiShardInfo      * aShardInfo,
+                                                            UShort              aShardKeyColumnIdx,
+                                                            idBool              aIsSubKey,
+                                                            sdiKeyInfo       ** aKeyInfoRet );
+
     static IDE_RC setShardInfo4Subquery( qcStatement         * aStatement,
-                                         sdiQuerySet         * aQuerySetAnalysis,
+                                         sdiShardAnalysis    * aQuerySetAnalysis,
                                          sdaSubqueryAnalysis * aSubqueryAnalysis,
-                                         idBool              * aCantMergeReason );
+                                         idBool                aIsSelect,
+                                         idBool                aIsSubKey,
+                                         sdiAnalysisFlag     * aAnalysisFlag );
 
-    static IDE_RC subqueryAnalysis4ParseTree( qcStatement          * aStatement,
-                                              ULong                  aSMN,
-                                              qmsParseTree         * aParseTree,
-                                              sdaSubqueryAnalysis ** aSubqueryAnalysis );
+    static idBool isSameRangesForCloneAndSolo( sdiRangeInfo * aRangeInfo1,
+                                               sdiRangeInfo * aRangeInfo2 );
 
-    static IDE_RC subqueryAnalysis4SFWGH( qcStatement          * aStatement,
-                                          ULong                  aSMN,
-                                          qmsSFWGH             * aSFWGH,
-                                          sdaSubqueryAnalysis ** aSubqueryAnalysis );
+    static IDE_RC subqueryAnalysis4ParseTree( qcStatement      * aStatement,
+                                              ULong              aSMN,
+                                              qmsParseTree     * aParseTree,
+                                              idBool             aIsSubKey );
+
+    static IDE_RC subqueryAnalysis4SFWGH( qcStatement      * aStatement,
+                                          ULong              aSMN,
+                                          qmsSFWGH         * aSFWGH,
+                                          sdiShardAnalysis * aQuerySetAnalysis,
+                                          idBool             aIsSubKey );
 
     static IDE_RC subqueryAnalysis4FromTree( qcStatement          * aStatement,
                                              ULong                  aSMN,
                                              qmsFrom              * aFrom,
+                                             sdiKeyInfo           * aOutRefInfo,
+                                             idBool                 aIsSubKey,
                                              sdaSubqueryAnalysis ** aSubqueryAnalysis );
 
     /* PROJ-2646 shard analyzer enhancement */
 
     static IDE_RC analyzeParseTree( qcStatement * aStatement,
                                     ULong         aSMN,
-                                    idBool        aIsSubKey );
+                                    sdiKeyInfo  * aOutRefInfo,
+                                    idBool       aIsSubKey );
 
-    static IDE_RC analyzeQuerySet( qcStatement * aStatement,
-                                   ULong         aSMN,
-                                   qmsQuerySet * aQuerySet,
-                                   idBool        aIsSubKey );
+    static IDE_RC analyzeQuerySet( qcStatement  * aStatement,
+                                   ULong          aSMN,
+                                   qmsQuerySet  * aQuerySet,
+                                   sdiKeyInfo   * aOutRefInfo,
+                                   idBool         aIsSubKey );
 
     static IDE_RC analyzeSFWGH( qcStatement * aStatement,
                                 ULong         aSMN,
                                 qmsQuerySet * aQuerySet,
+                                sdiKeyInfo  * aOutRefInfo,
                                 idBool        aIsSubKey );
 
-    static IDE_RC analyzeFrom( qcStatement  * aStatement,
-                               ULong          aSMN,
-                               qmsFrom      * aFrom,
-                               sdiQuerySet  * aQuerySetAnalysis,
-                               sdaFrom     ** aShardFromInfo,
-                               idBool       * aCantMergeReason,
-                               idBool         aIsSubKey );
+    static IDE_RC analyzeSFWGHCore( qcStatement      * aStatement,
+                                    ULong              aSMN,
+                                    qmsQuerySet      * aQuerySet,
+                                    sdiShardAnalysis * aQuerySetAnalysis,
+                                    qtcNode          * aShardPredicate,
+                                    sdiKeyInfo       * aOutRefInfo,
+                                    idBool             aIsSubKey );
 
-    static IDE_RC checkTableRef( qcStatement * aStatement,
-                                 qmsTableRef * aTableRef );
+    static IDE_RC analyzeFrom( qcStatement       * aStatement,
+                               ULong               aSMN,
+                               qmsFrom           * aFrom,
+                               sdiShardAnalysis  * aQuerySetAnalysis,
+                               sdaFrom          ** aShardFromInfo,
+                               idBool              aIsSubKey );
 
-    static IDE_RC makeShardFromInfo4Table( qcStatement  * aStatement,
-                                           ULong          aSMN,
-                                           qmsFrom      * aFrom,
-                                           sdiQuerySet  * aQuerySetAnalysis,
-                                           sdaFrom     ** aShardFromInfo,
-                                           idBool         aIsSubKey );
+    static IDE_RC checkTableRef( qcStatement      * aStatement,
+                                 qmsTableRef      * aTableRef,
+                                 sdiShardAnalysis * aQuerySetAnalysis );
 
-    static IDE_RC makeShardFromInfo4View( qcStatement  * aStatement,
-                                          qmsFrom      * aFrom,
-                                          sdiQuerySet  * aQuerySetAnalysis,
-                                          sdiParseTree * aViewAnalysis,
-                                          sdaFrom     ** aShardFromInfo,
-                                          idBool         aIsSubKey );
+    static IDE_RC makeShardFromInfo4Table( qcStatement       * aStatement,
+                                           ULong               aSMN,
+                                           qmsFrom           * aFrom,
+                                           sdiShardAnalysis  * aQuerySetAnalysis,
+                                           sdaFrom          ** aShardFromInfo,
+                                           idBool              aIsSubKey );
 
-    static IDE_RC analyzePredicate( qcStatement  * aStatement,
-                                    qtcNode      * aCNF,
-                                    sdaCNFList   * aCNFOnCondition,
-                                    sdaFrom      * aShardFromInfo,
-                                    idBool         aIsOneNodeSQL,
-                                    sdiKeyInfo  ** aKeyInfo,
-                                    idBool       * aCantMergeReason,
-                                    idBool         aIsSubKey );
+    static IDE_RC makeShardFromInfo4View( qcStatement       * aStatement,
+                                          qmsFrom           * aFrom,
+                                          sdiShardAnalysis  * aQuerySetAnalysis,
+                                          sdiShardAnalysis  * aViewAnalysis,
+                                          sdaFrom          ** aShardFromInfo,
+                                          idBool              aIsSubKey );
+
+    static IDE_RC analyzePredicate( qcStatement     * aStatement,
+                                    qtcNode         * aCNF,
+                                    sdaCNFList      * aCNFOnCondition,
+                                    sdaFrom         * aShardFromInfo,
+                                    idBool            aIsOneNodeSQL,
+                                    sdiKeyInfo      * aOutRefInfo,
+                                    sdiKeyInfo     ** aKeyInfo,
+                                    sdiAnalysisFlag * aAnalysisFlag,
+                                    idBool            aIsSubKey );
 
     static IDE_RC makeKeyInfoFromJoin( qcStatement  * aStatement,
                                        qtcNode      * aCNF,
-                                       sdaFrom      * aShardFromInfo,
+                                       sdaFrom      * aShardFroInfo,
                                        sdiKeyInfo  ** aKeyInfo,
                                        idBool         aIsSubKey );
 
@@ -337,13 +445,15 @@ private:
                                               idBool        aIsSubKey,
                                               sdiKeyInfo ** aRetKeyInfo );
 
-    static idBool isSameShardHashInfo( sdiShardInfo * aShardInfo1,
+    static IDE_RC isSameShardHashInfo( sdiShardInfo * aShardInfo1,
                                        sdiShardInfo * aShardInfo2,
-                                       idBool         aIsSubKey );
+                                       idBool         aIsSubKey,
+                                       idBool       * aOutResult );
 
-    static idBool isSameShardRangeInfo( sdiShardInfo * aShardInfo1,
+    static IDE_RC isSameShardRangeInfo( sdiShardInfo * aShardInfo1,
                                         sdiShardInfo * aShardInfo2,
-                                        idBool         aIsSubKey );
+                                        idBool         aIsSubKey,
+                                        idBool       * aOutResult );
 
     static IDE_RC isSameShardInfo( sdiShardInfo * aShardInfo1,
                                    sdiShardInfo * aShardInfo2,
@@ -359,6 +469,22 @@ private:
                                          sdaFrom     * aShardFromInfo,
                                          idBool        aIsSubKey,
                                          sdiKeyInfo ** aKeyInfo );
+
+    static IDE_RC checkOutRefShardJoin( qcStatement     * aStatement,
+                                        qtcNode         * aCNF,
+                                        sdaCNFList      * sCNFOnCondition,
+                                        sdiKeyInfo      * aKeyInfo,
+                                        sdiKeyInfo      * aOutRefInfo,
+                                        sdiAnalysisFlag * aAnalysisFlag,
+                                        idBool            aIsSubKey );
+
+    static IDE_RC findShardJoinWithOutRefKey( qcStatement     * aStatement,
+                                              sdiKeyInfo      * aKeyInfo,
+                                              qtcNode         * aCNFOr,
+                                              sdiKeyInfo      * aOutRefInfo,
+                                              sdiAnalysisFlag * aAnalysisFlag,
+                                              idBool            aIsSubKey,
+                                              idBool          * aIsOutRefJoinFound );
 
     static IDE_RC makeValueInfo( qcStatement * aStatement,
                                  qtcNode     * aCNF,
@@ -395,45 +521,53 @@ private:
                                            sdiShardInfo * aShardInfo,
                                            idBool         aIsSubKey );
 
-    static IDE_RC copyShardInfoFromShardInfo( qcStatement  * aStatement,
-                                              sdiShardInfo * aTo,
-                                              sdiShardInfo * aFrom );
+    static IDE_RC getRangeIntersection( qcStatement   * aStatement,
+                                        sdiRangeInfo  * aRangeInfo1,
+                                        sdiRangeInfo  * aRangeInfo2,
+                                        sdiRangeInfo ** aOutRangeInfo ); /* TASK-7219 Shard Transformer Refactoring */
 
-    static IDE_RC copyShardInfoFromObjectInfo( qcStatement   * aStatement,
-                                               sdiShardInfo  * aTo,
-                                               sdiObjectInfo * aFrom,
-                                               idBool          aIsSubKey );
+    static void copyShardInfoFromShardInfo( sdiShardInfo * aTo,
+                                            sdiShardInfo * aFrom );
 
-    static void   andRangeInfo( sdiRangeInfo * aRangeInfo1,
-                                sdiRangeInfo * aRangeInfo2,
-                                sdiRangeInfo * aResult );
+    static void copyShardInfoFromObjectInfo( sdiShardInfo  * aTo,
+                                             sdiObjectInfo * aFrom,
+                                             idBool          aIsSubKey );
+
+    static IDE_RC allocAndMergeValues( qcStatement         * aStatement,
+                                       sdiValueInfo       ** aSrcValueInfoPtrArray1,
+                                       UShort                aSrcValueInfoPtrCount1,
+                                       sdiValueInfo       ** aSrcValueInfoPtrArray2,
+                                       UShort                aSrcValueInfoPtrCount2,
+                                       sdiValueInfo *     ** aNewValueInfoPtrArray,
+                                       UShort              * aNewValueInfoPtrCount );
+
+    static IDE_RC andRangeInfo( qcStatement   * aStatement,
+                                sdiRangeInfo  * aRangeInfo1,
+                                sdiRangeInfo  * aRangeInfo2,
+                                sdiRangeInfo ** aAndRangeInfo );
 
     static idBool isSubRangeInfo( sdiRangeInfo * aRangeInfo,
-                                  sdiRangeInfo * aSubRangeInfo );
+                                  sdiRangeInfo * aSubRangeInfo,
+                                  UInt           aSubRangeDefaultNode );
 
-    static IDE_RC isCanMerge( idBool * aCantMergeReason,
-                              idBool * aIsCanMerge );
+    static IDE_RC setAnalysisFlag4SFWGH( qcStatement     * aStatement,
+                                         qmsSFWGH        * aSFWGH,
+                                         sdiKeyInfo      * aKeyInfo,
+                                         sdiAnalysisFlag * aAnalysisFlag );
 
-    static IDE_RC isCanMergeAble( idBool * aCantMergeReason,
-                                  idBool * aIsCanMergeAble );
+    static IDE_RC setAnalysisFlag4Distinct( qcStatement     * aStatement,
+                                            qmsSFWGH        * aSFWGH,
+                                            sdiKeyInfo      * aKeyInfo,
+                                            sdiAnalysisFlag * aAnalysisFlag );
 
-    static IDE_RC canMergeOr( idBool  * aCantMergeReason1,
-                              idBool  * aCantMergeReason2 );
+    static IDE_RC setAnalysisFlag4GroupBy( qcStatement     * aStatement,
+                                           qmsSFWGH        * aSFWGH,
+                                           sdiKeyInfo      * aKeyInfo,
+                                           sdiAnalysisFlag * aAnalysisFlag );
 
-    static IDE_RC setCantMergeReasonSFWGH( qcStatement * aStatement,
-                                           qmsSFWGH    * aSFWGH,
-                                           sdiKeyInfo  * aKeyInfo,
-                                           idBool      * aCantMergeReason );
-
-    static IDE_RC setCantMergeReasonDistinct( qcStatement * aStatement,
-                                              qmsSFWGH   * aSFWGH,
-                                              sdiKeyInfo * aKeyInfo,
-                                              idBool     * aCantMergeReason );
-
-    static IDE_RC setCantMergeReasonGroupBy( qcStatement * aStatement,
-                                             qmsSFWGH   * aSFWGH,
-                                             sdiKeyInfo * aKeyInfo,
-                                             idBool     * aCantMergeReason );
+    static IDE_RC setAnalysisFlag4WindowFunc( qmsAnalyticFunc * aAnalyticFuncList,
+                                              sdiKeyInfo      * aKeyInfo,
+                                              sdiAnalysisFlag * aAnalysisFlag );
 
     static IDE_RC analyzeQuerySetAnalysis( qcStatement * aStatement,
                                            qmsQuerySet * aMyQuerySet,
@@ -441,11 +575,16 @@ private:
                                            qmsQuerySet * aRightQuerySet,
                                            idBool        aIsSubKey );
 
-    static IDE_RC analyzeSetLeftRight( qcStatement  * aStatement,
-                                       sdiQuerySet  * aLeftQuerySetAnalysis,
-                                       sdiQuerySet  * aRightQuerySetAnalysis,
-                                       sdiKeyInfo  ** aKeyInfo,
-                                       idBool         aIsSubKey );
+    static IDE_RC setQuerySetAnalysis( qmsQuerySet      * aQuerySet,
+                                       sdiSplitMethod     aLeftQuerySetSplit,
+                                       sdiSplitMethod     aRightQuerySetSplit,
+                                       sdiShardAnalysis * aSetAnalysis );
+
+    static IDE_RC analyzeSetLeftRight( qcStatement       * aStatement,
+                                       sdiShardAnalysis  * aLeftQuerySetAnalysis,
+                                       sdiShardAnalysis  * aRightQuerySetAnalysis,
+                                       sdiKeyInfo       ** aKeyInfo,
+                                       idBool              aIsSubKey );
 
     static IDE_RC makeKeyInfo4SET( qcStatement * aStatement,
                                    sdiKeyInfo  * aSourceKeyInfo,
@@ -480,17 +619,8 @@ private:
                                   sdiKeyInfo  * aCurrKeyInfo,
                                   sdiKeyInfo ** aRetKeyInfo );
 
-    static IDE_RC setCantMergeReasonParseTree( qmsParseTree * aParseTree,
-                                               sdiKeyInfo   * aKeyInfo,
-                                               idBool       * aCantMergeReason );
-
-    static IDE_RC makeShardValueList( qcStatement   * aStatement,
-                                      sdiKeyInfo    * aKeyInfo,
-                                      sdaValueList ** aValueList,
-                                      UShort        * aValueListCount );
-
-    static void setCanNotMergeReasonErr( idBool * aCanNotMergeReason,
-                                         UShort * aErrIdx );
+    static IDE_RC setAnalysisFlag4ParseTree( qmsParseTree * aParseTree,
+                                             idBool         aIsSubKey );
 
     static IDE_RC appendKeyInfo( qcStatement * aStatement,
                                  sdiKeyInfo  * aKeyInfo,
@@ -510,7 +640,8 @@ private:
                                    ULong         aSMN );
 
     static IDE_RC checkUpdate( qcStatement     * aStatement,
-                               qmmUptParseTree * aUptParseTree );
+                               qmmUptParseTree * aUptParseTree,
+                               ULong             aSMN );
     static IDE_RC checkDelete( qcStatement     * aStatement,
                                qmmDelParseTree * aDelParseTree );
     static IDE_RC checkInsert( qcStatement     * aStatement,
@@ -518,19 +649,49 @@ private:
     static IDE_RC checkExecProc( qcStatement     * aStatement,
                                  qsExecParseTree * aExecParseTree );
 
-    static IDE_RC setUpdateAnalysis( qcStatement * aStatement,
-                                     ULong         aSMN );
-    static IDE_RC setDeleteAnalysis( qcStatement * aStatement,
-                                     ULong         aSMN );
-    static IDE_RC setInsertAnalysis( qcStatement * aStatement,
-                                     ULong         aSMN );
-    static IDE_RC setExecProcAnalysis( qcStatement * aStatement,
-                                       ULong         aSMN );
+    static IDE_RC analyzeUpdateCore( qcStatement       * aStatement,
+                                     ULong               aSMN,
+                                     sdiObjectInfo     * aShardObjInfo,
+                                     idBool              aIsSubKey );
 
-    static IDE_RC setDMLCommonAnalysis( qcStatement    * aStatement,
-                                        sdiObjectInfo  * aShardObjInfo,
-                                        qmsTableRef    * aTableRef,
-                                        sdiQuerySet   ** aAnalysis );
+    static IDE_RC analyzeDeleteCore( qcStatement       * aStatement,
+                                     ULong               aSMN,
+                                     sdiObjectInfo     * aShardObjInfo,
+                                     idBool              aIsSubKey );
+
+    static IDE_RC analyzeInsertCore( qcStatement       * aStatement,
+                                     ULong               aSMN,
+                                     sdiObjectInfo     * aShardObjInfo,
+                                     idBool              aIsSubKey );
+
+    static IDE_RC setInsertValueAnalysis( qcStatement      * aStatement,
+                                          UShort             aSMN,
+                                          qmmInsParseTree  * aParseTree,
+                                          sdiShardAnalysis * aAnalysis,
+                                          idBool             aIsSubKey );
+
+    static IDE_RC setInsertSelectAnalysis( qcStatement      * aStatement,
+                                           UShort             aSMN,
+                                           qmmInsParseTree  * aParseTree,
+                                           sdiShardAnalysis * aAnalysis,
+                                           idBool             aIsSubKey );
+
+    static IDE_RC analyzeExecProcCore( qcStatement       * aStatement,
+                                       ULong               aSMN, /* TASK-7219 Shard Transformer Refactoring */
+                                       sdiObjectInfo     * aShardObjInfo,
+                                       idBool              aIsSubKey );
+
+    static IDE_RC setDMLCommonAnalysis( qcStatement      * aStatement,
+                                        ULong              aSMN, /* TASK-7219 Shard Transformer Refactoring */
+                                        sdiObjectInfo    * aShardObjInfo,
+                                        qmsTableRef      * aTableRef,
+                                        sdiShardAnalysis * aAnalysis,
+                                        idBool             aIsSubKey );
+
+    static IDE_RC subqueryAnalysis4DML( qcStatement      * aStatement,
+                                        UShort             aSMN,
+                                        sdiShardAnalysis * aAnalysis,
+                                        idBool             aIsSubKey );
 
     static IDE_RC getKeyConstValue( qcStatement      * aStatement,
                                     qtcNode          * aNode,
@@ -541,12 +702,12 @@ private:
                                 sdiKeyInfo    * aKeyInfo,
                                 sdiShardInfo ** aShardInfo );
 
-    static IDE_RC analyzeAnsiJoin( qcStatement * aStatement,
-                                   qmsQuerySet * aQuerySet,
-                                   qmsFrom     * aFrom,
-                                   sdaFrom     * aShardFrom,
-                                   sdaCNFList ** aCNFList,
-                                   idBool      * aCantMergeReason );
+    static IDE_RC analyzeAnsiJoin( qcStatement     * aStatement,
+                                   qmsQuerySet     * aQuerySet,
+                                   qmsFrom         * aFrom,
+                                   sdaFrom         * aShardFrom,
+                                   sdaCNFList     ** aCNFList,
+                                   sdiAnalysisFlag * aAnalysisFlag );
 
     static IDE_RC setNullPaddedShardFrom( qmsFrom * aFrom,
                                           sdaFrom * aShardFrom,
@@ -556,11 +717,11 @@ private:
                                          idBool  * aIsCloneExists,
                                          idBool  * aIsShardExists );
 
-    static IDE_RC analyzePredJoin( qcStatement * aStatement,
-                                   qtcNode     * aNode,
-                                   sdaFrom     * aShardFromInfo,
-                                   idBool      * aCantMergeReason,
-                                   idBool        aIsSubKey );
+    static IDE_RC analyzePredJoin( qcStatement     * aStatement,
+                                   qtcNode         * aNode,
+                                   sdaFrom         * aShardFromInfo,
+                                   sdiAnalysisFlag * aAnalysisFlag,
+                                   idBool            aIsSubKey );
 
     /* PROJ-2655 Composite shard key */
     static IDE_RC setKeyValue( UInt             aKeyDataType,
@@ -574,41 +735,78 @@ private:
     
     static IDE_RC isOneNodeSQL( sdaFrom      * aShardFrom,
                                 sdiKeyInfo   * aKeyInfo,
-                                idBool       * aIsOneNodeSQL );
+                                idBool       * aIsOneNodeSQL,
+                                UInt         * aDistKeyCount );
 
-    static IDE_RC checkInnerOuterTable( qcStatement * aStatement,
-                                        qtcNode     * aNode,
-                                        sdaFrom     * aShardFrom,
-                                        idBool      * aCantMergeReason );
+    static IDE_RC checkInnerOuterTable( qcStatement     * aStatement,
+                                        qtcNode         * aNode,
+                                        sdaFrom         * aShardFrom,
+                                        sdiAnalysisFlag * aAnalysisFlag );
 
     static IDE_RC checkAntiJoinInner( sdiKeyInfo * aKeyInfo,
                                       UShort       aTable,
                                       UShort       aColumn,
                                       idBool     * aIsAntiJoinInner );
 
-    static IDE_RC addTableInfo( qcStatement  * aStatement,
-                                sdiQuerySet  * aQuerySetAnalysis,
-                                sdiTableInfo * aTableInfo );
+    static IDE_RC addTableInfo( qcStatement      * aStatement,
+                                sdiShardAnalysis * aQuerySetAnalysis,
+                                sdiTableInfo     * aTableInfo );
 
     static IDE_RC addTableInfoList( qcStatement      * aStatement,
-                                    sdiQuerySet      * aQuerySetAnalysis,
+                                    sdiShardAnalysis * aQuerySetAnalysis,
                                     sdiTableInfoList * aTableInfoList );
 
-    static IDE_RC mergeTableInfoList( qcStatement * aStatement,
-                                      sdiQuerySet * aQuerySetAnalysis,
-                                      sdiQuerySet * aLeftQuerySetAnalysis,
-                                      sdiQuerySet * aRightQuerySetAnalysis );
-
-    /* PROJ-2687 Shard aggregation transform */
-    static IDE_RC isTransformAble( idBool * aCantMergeReason,
-                                   idBool * aIsTransformAble );
+    static IDE_RC mergeTableInfoList( qcStatement      * aStatement,
+                                      sdiShardAnalysis * aQuerySetAnalysis,
+                                      sdiShardAnalysis * aLeftQuerySetAnalysis,
+                                      sdiShardAnalysis * aRightQuerySetAnalysis );
 
     /* BUG-45823 */
     static void increaseAnalyzeCount( qcStatement * aStatement );
 
-    /* BUG-45899 */
-    static void setNonShardQueryReasonOfQuerySet( sdiPrintInfo * aPrintInfo,
-                                                  sdiQuerySet  * aQuerySet );
+    /* TASK-7219 Shard Transformer Refactoring */
+    static IDE_RC allocAndSetAnalysis( qcStatement       * aStatement,
+                                       qcParseTree       * aParseTree,
+                                       qmsQuerySet       * aQuerySet,
+                                       idBool              aIsSubKey,
+                                       sdiShardAnalysis ** aAnalysis );
 
+    static IDE_RC getShardPredicate( qcStatement * aStatement,
+                                     qmsQuerySet * aQuerySet,
+                                     idBool        aIsSelect,
+                                     idBool        aIsSubKey,
+                                     qtcNode    ** aPredicate );
+
+    static IDE_RC checkAndGetShardObjInfo( ULong            aSMN,
+                                           sdiAnalysisFlag * aAnalysisFlag,
+                                           sdiObjectInfo   * aShardObjList,
+                                           idBool            aIsSelect,
+                                           idBool            aIsSubKey,
+                                           sdiObjectInfo  ** aShardObjInfo );
+
+    static IDE_RC setAnalysisFlag( qmsQuerySet * aQuerySet,
+                                   idBool        aIsSubKey );
+
+    static IDE_RC setAnalysisFlag4From( qmsFrom         * aFrom,
+                                        sdiAnalysisFlag * aAnalysisFlag );
+
+    static IDE_RC setAnalysisFlag4TransformAble( sdiAnalysisFlag * aAnalysisFlag );
+
+    static IDE_RC setAnalysisFlag4Target( qcStatement     * aStatement,
+                                          qmsTarget       * aTarget,
+                                          sdiAnalysisFlag * aAnalysisFlag );
+
+    static IDE_RC setAnalysisFlag4OrderBy( qmsSortColumns  * aOrderBy,
+                                           sdiAnalysisFlag * aAnalysisFlag );
+
+    static IDE_RC setAnalysisFlag4GroupPsmBind( qmsConcatElement * aGroupBy,
+                                                sdiAnalysisFlag  * aAnalysisFlag );
+
+    static IDE_RC setAnalysisFlag4PsmBind( qtcNode         * aNode,
+                                           sdiAnalysisFlag * aAnalysisFlag );
+
+    static IDE_RC setAnalysisFlag4PsmLob( qcStatement     * aStatement,
+                                          qtcNode         * aNode,
+                                          sdiAnalysisFlag * aAnalysisFlag );
 };
 #endif /* _O_SDA_H_ */

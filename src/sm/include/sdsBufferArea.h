@@ -32,7 +32,7 @@
 
 #include <sdsBCB.h>
 
-/* applyFuncToEachBCBs í•¨ìˆ˜ ë‚´ì—ì„œ ê° BCBì— ì ìš©í•˜ëŠ” í•¨ìˆ˜ì˜ í˜•ì‹ */
+/* applyFuncToEachBCBs ÇÔ¼ö ³»¿¡¼­ °¢ BCB¿¡ Àû¿ëÇÏ´Â ÇÔ¼öÀÇ Çü½Ä */
 typedef IDE_RC (*sdsBufferAreaActFunc)( sdsBCB *aSBCB, void *aFiltAgr );
 
 typedef enum
@@ -75,7 +75,7 @@ public:
 
     inline UInt getLastFlushExtent();
 
-    /* í†µê³„ ì •ë³´ ê´€ë ¨ í•¨ìˆ˜ */
+    /* Åë°è Á¤º¸ °ü·Ã ÇÔ¼ö */
     IDE_RC applyFuncToEachBCBs( sdsBufferAreaActFunc    aFunc,
                                 void                  * aObj);
 private:
@@ -83,27 +83,27 @@ private:
 public :
 
 private:
-    /* BCBë¥¼ ì ‘ê·¼í• ë•Œ í•„ìš”í•œ ì •ë³´*/
+    /* BCB¸¦ Á¢±ÙÇÒ¶§ ÇÊ¿äÇÑ Á¤º¸*/
     sdsBCB             ** mBCBArray;
-    /* BCB ê°œìˆ˜ */
+    /* BCB °³¼ö */
     UInt                  mBCBCount;
-    /*  BCB Extent ìƒíƒœ */
+    /*  BCB Extent »óÅÂ */
     sdsExtentStateType  * mBCBExtState;
-    /* BCB Extent ê°œìˆ˜ */
+    /* BCB Extent °³¼ö */
     UInt                  mBCBExtentCount;
-    /* BCB í• ë‹¹ì„ ìœ„í•œ ë©”ëª¨ë¦¬ í’€ */
+    /* BCB ÇÒ´çÀ» À§ÇÑ ¸Ş¸ğ¸® Ç® */
     iduMemPool            mBCBMemPool;
-    /* Extentë¥¼ ê²€ìƒ‰ ìœ„í•œ mutex */
+    /* Extent¸¦ °Ë»ö À§ÇÑ mutex */
     iduMutex              mExtentMutex;     
-    /* Secondaty Bufferì— ì—¬ìœ ê³µê°„ì´ ì—†ì„ë•Œ ëŒ€ê¸°í•˜ê¸° ìœ„í•œ mutex */
+    /* Secondaty Buffer¿¡ ¿©À¯°ø°£ÀÌ ¾øÀ»¶§ ´ë±âÇÏ±â À§ÇÑ mutex */
     iduMutex              mMutexForWait;
-    /* Secondary Bufferì— mmovedown í• ë•Œ ì‚¬ìš© */
+    /* Secondary Buffer¿¡ mmovedown ÇÒ¶§ »ç¿ë */
     UInt                  mMovedownPos;
-    /* Secondary Bufferë¥¼ flush í• ë•Œ ì‚¬ìš© */
+    /* Secondary Buffer¸¦ flush ÇÒ¶§ »ç¿ë */
     UInt                  mFlushPos;
-    /* Secondaty Byfferì— ì—¬ìœ ê³µê°„ì´ ì—†ì„ë•Œ  ëŒ€ê¸°í•˜ê¸° ìœ„í•œ cond variable */
+    /* Secondaty Byffer¿¡ ¿©À¯°ø°£ÀÌ ¾øÀ»¶§  ´ë±âÇÏ±â À§ÇÑ cond variable */
     iduCond               mCondVar;
-    /* ëŒ€ê¸°ì¤‘ì¸ ì“°ë ˆë“œì˜ ê°¯ìˆ˜ */
+    /* ´ë±âÁßÀÎ ¾²·¹µåÀÇ °¹¼ö */
     UInt                  mWaitingClientCount;
 };
 
@@ -124,11 +124,11 @@ sdsBCB* sdsBufferArea::getBCB( UInt aIndex )
 
 /******************************************************************************
  * Description :
- * 1.aMovedoweIngPages [OUT] - movedown ì¤‘ì¸ Ext 
- * 2.aMovedownDonePages[OUT] - movedown ì™„ë£Œëœ Ext
- * 3.aFlushIngPages    [OUT] - flush ì¤‘ì¸ Ext
- * 4.aFlushDonePages   [OUT] - flush ì™„ë£Œëœ Ext + free Ext
-   1+2 ê°€ Flush ëŒ€ìƒì˜ Ext
+ * 1.aMovedoweIngPages [OUT] - movedown ÁßÀÎ Ext 
+ * 2.aMovedownDonePages[OUT] - movedown ¿Ï·áµÈ Ext
+ * 3.aFlushIngPages    [OUT] - flush ÁßÀÎ Ext
+ * 4.aFlushDonePages   [OUT] - flush ¿Ï·áµÈ Ext + free Ext
+   1+2 °¡ Flush ´ë»óÀÇ Ext
  ******************************************************************************/
 void sdsBufferArea::getExtentCnt( UInt * aMovedoweIngPages,
                                   UInt * aMovedownDonePages,

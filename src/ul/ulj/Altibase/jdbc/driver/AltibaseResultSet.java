@@ -31,10 +31,12 @@ import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
 import java.sql.Date;
+import java.time.*;
 import java.util.*;
 
-public abstract class AltibaseResultSet implements ResultSet
+public abstract class AltibaseResultSet extends AbstractResultSet
 {
+    private static boolean             mAllowLobNullSelect;      // BUG-47639 lob columnÀÌ nullÀÏ¶§ Lob°´Ã¼°¡ ¸®ÅÏµÉ ¼ö ÀÖ´ÂÁö ¿©ºÎ
     protected AltibaseStatement        mStatement;
     protected SQLWarning               mWarning;
     protected int                      mFetchSize;
@@ -42,15 +44,15 @@ public abstract class AltibaseResultSet implements ResultSet
 
     private ResultSetMetaData          mMetaData;
     private boolean                    mClosed;
-    private ArrayList                  mListeners;
+    private ArrayList<Object>          mListeners;
     private int                        mLastReadColumnIndex = 0;
-    // getXXX() í˜¸ì¶œë•Œë§ˆë‹¤ ë§¤ë²ˆ row ìœ„ì¹˜ í…ŒìŠ¤íŠ¸ë¥¼ í•˜ëŠ” ë¹„ìš©ì„ ì¤„ì´ê¸° ìœ„í•œ í•„ë“œ
+    // getXXX() È£Ãâ¶§¸¶´Ù ¸Å¹ø row À§Ä¡ Å×½ºÆ®¸¦ ÇÏ´Â ºñ¿ëÀ» ÁÙÀÌ±â À§ÇÑ ÇÊµå
     private boolean                    mCursorTested        = false;
 
-    static ResultSet createResultSet(AltibaseStatement aStatement, int aResultSetType, int aResultSetConcurrency) throws SQLException
+    static AltibaseResultSet createResultSet(AltibaseStatement aStatement, int aResultSetType, int aResultSetConcurrency) throws SQLException
     {
         AltibaseResultSet sResult = null;
-        if ((aStatement.mFetchResult.fetchRemains() == false) &&
+        if ((!aStatement.mFetchResult.fetchRemains()) &&
             (aStatement.mFetchResult.rowHandle().size() == 0))
         {
             if(aStatement.getProtocolContext().getPrepareResult().getResultSetCount() > 1)
@@ -64,9 +66,9 @@ public abstract class AltibaseResultSet implements ResultSet
         }
         else
         {
-            // BUGBUG ë¶ˆí•„ìš”í•œ ê°ì²´ ìƒì„± íšŒí”¼
-            // ResultSetì„ ë§Œë“¤ê¸° ì „ì— ì²´í¬ë¥¼ ë¨¼ì € í•  ìˆ˜ ìˆê²Œ í•˜ëŠ” ê²ƒì´ ì¢‹ê² ìŒ
-            // ë¶ˆí•„ìš”í•œ ê°ì²´ ìƒì„±ì„ ë§‰ì„ í•„ìš”ê°€ ìˆìŒ
+            // BUGBUG ºÒÇÊ¿äÇÑ °´Ã¼ »ı¼º È¸ÇÇ
+            // ResultSetÀ» ¸¸µé±â Àü¿¡ Ã¼Å©¸¦ ¸ÕÀú ÇÒ ¼ö ÀÖ°Ô ÇÏ´Â °ÍÀÌ ÁÁ°ÚÀ½
+            // ºÒÇÊ¿äÇÑ °´Ã¼ »ı¼ºÀ» ¸·À» ÇÊ¿ä°¡ ÀÖÀ½
             switch (aResultSetType)
             {
                 case ResultSet.TYPE_FORWARD_ONLY:
@@ -87,6 +89,8 @@ public abstract class AltibaseResultSet implements ResultSet
                 sResult = new AltibaseUpdatableResultSet((AltibaseReadableResultSet)sResult);
             }
         }
+        // BUG-47639 lob_null_select jdbc ¼Ó¼º°ªÀ» AltibaseConnection °´Ã¼·ÎºÎÅÍ ¹Ş¾Æ¿Â´Ù.
+        mAllowLobNullSelect = aStatement.mConnection.getAllowLobNullSelect();
         return sResult;
     }
 
@@ -141,7 +145,7 @@ public abstract class AltibaseResultSet implements ResultSet
             case ResultSet.CONCUR_UPDATABLE:
                 return true;
             default:
-            	return false;
+                return false;
         }
     }
 
@@ -153,7 +157,7 @@ public abstract class AltibaseResultSet implements ResultSet
             case ResultSet.CLOSE_CURSORS_AT_COMMIT:
                 return true;
             default:
-            	return false;
+                return false;
         }
     }
 
@@ -177,9 +181,9 @@ public abstract class AltibaseResultSet implements ResultSet
     }
 
     /**
-     * ResultSetì˜ í¬ê¸°(ì „ì²´ row ìˆ˜)ë¥¼ ì–»ëŠ”ë‹¤.
+     * ResultSetÀÇ Å©±â(ÀüÃ¼ row ¼ö)¸¦ ¾ò´Â´Ù.
      * 
-     * @return í¬ê¸°ë¥¼ ì •í™•íˆ ì•Œ ìˆ˜ ìˆìœ¼ë©´ ê·¸ ê°’, ì•„ë‹ˆë©´ í° ê°’(Integer.MAX_VALUE)
+     * @return Å©±â¸¦ Á¤È®È÷ ¾Ë ¼ö ÀÖÀ¸¸é ±× °ª, ¾Æ´Ï¸é Å« °ª(Integer.MAX_VALUE)
      */
     abstract int size();
 
@@ -217,11 +221,11 @@ public abstract class AltibaseResultSet implements ResultSet
     }
 
     /**
-     * ResultSetì´ ë‹«í˜”ëŠ”ì§€ í™•ì¸í•œë‹¤.
+     * ResultSetÀÌ ´İÇû´ÂÁö È®ÀÎÇÑ´Ù.
      * 
-     * @return Resultsetì´ closeë˜ì—ˆìœ¼ë©´ true, ì•„ë‹ˆë©´ false
+     * @return ResultsetÀÌ closeµÇ¾úÀ¸¸é true, ¾Æ´Ï¸é false
      */
-    public final boolean isClosed() throws SQLException
+    public final boolean isClosed()
     {
         return mClosed;
     }
@@ -236,14 +240,14 @@ public abstract class AltibaseResultSet implements ResultSet
     {
         CmProtocol.closeCursor(mStatement.getProtocolContext(),
                 mStatement.getID(),
-                mContext.getFetchResult().getResultSetId(), 
+                mContext.getFetchResult().getResultSetId(),
                 mStatement.mConnection.isClientSideAutoCommit());
         mWarning = Error.processServerError(mWarning, mStatement.getProtocolContext().getError());
     }
     
     public void close() throws SQLException
     {
-        if (isClosed() == true)
+        if (isClosed())
         {
             return;
         }
@@ -252,49 +256,47 @@ public abstract class AltibaseResultSet implements ResultSet
         mClosed = true;
 
         // auto close
-        if (mListeners != null)
+        try
         {
-            Iterator iter = mListeners.iterator();
-            Object obj = null;
-
-            while (iter.hasNext())
+            if (mListeners != null)
             {
-                obj = iter.next();
-                if (obj instanceof Statement)
+                for (Object sObj : mListeners)
                 {
-                    ((Statement)obj).close();
+                    if (sObj instanceof Statement)
+                    {
+                        ((Statement)sObj).close();
+                    }
+                    else
+                    {
+                        Error.throwInternalError(ErrorDef.INVALID_TYPE, "Statement",
+                                                 sObj.getClass().getName());
+                    }
                 }
-                else
-                {
-                    Error.throwInternalError(ErrorDef.INVALID_TYPE, "Statement", obj.getClass().getName());
-                }
+                mListeners.clear();
+                mListeners = null;
             }
-
-            mListeners.clear();
-            mListeners = null;
+        }
+        finally
+        {
+            mStatement.checkCloseOnCompletion();
         }
 
-//        if(mStatement instanceof AltibasePreparedStatement)
-//        {
-//            ((AltibasePreparedStatement)mStatement).closeAllPrevResultSet();
-//        }
-        
         mClosed = true;
     }
 
     /**
-     * ResultSetì„ {@link #close()} í•  ë•Œ ë‹«ì•„ì¤„ ê°ì²´ë¥¼ ë“±ë¡í•œë‹¤.
+     * ResultSetÀ» {@link #close()} ÇÒ ¶§ ´İ¾ÆÁÙ °´Ã¼¸¦ µî·ÏÇÑ´Ù.
      * <p>
-     * ë“±ë¡í•  ìˆ˜ ìˆëŠ” ê°ì²´ëŠ” ë‹¤ìŒ ì¤‘ í•˜ë‚˜ì—¬ì•¼ í•œë‹¤:
+     * µî·ÏÇÒ ¼ö ÀÖ´Â °´Ã¼´Â ´ÙÀ½ Áß ÇÏ³ª¿©¾ß ÇÑ´Ù:
      * Statement
      *
-     * @param aClosableObject ResultSetì„ ë‹«ì„ ë•Œ ë‹«ì„ ê°ì²´
+     * @param aClosableObject ResultSetÀ» ´İÀ» ¶§ ´İÀ» °´Ã¼
      */
     protected final void registerTarget(Object aClosableObject)
     {
         if (mListeners == null)
         {
-            mListeners = new ArrayList();
+            mListeners = new ArrayList<>();
         }
 
         mListeners.add(aClosableObject);
@@ -339,17 +341,17 @@ public abstract class AltibaseResultSet implements ResultSet
 
 
 
-    // #region getter interfaceë¥¼ ìœ„í•œ ê³µí†µ êµ¬í˜„
-    // BUGBUG (2012-10-18) : getXXX() ë©”ì†Œë“œëŠ” rowDeleted() ì¼ ë•Œ SQL NULLì— í•´ë‹¹í•˜ëŠ” ê°’ì„ ì¤˜ì•¼í•œë‹¤.
-    // SQL NULLì¼ ë•Œ ë°˜í™˜í•˜ëŠ” ê°’ì€ ë³´í†µ ê°ì²´ë¥¼ ë°˜í™˜í•˜ëŠ” ë©”ì†Œë“œë©´ null ê°’ì„ ë°˜í™˜í•˜ëŠ” ë©”ì†Œë“œë©´ 0ì´ë‹¤.
+    // #region getter interface¸¦ À§ÇÑ °øÅë ±¸Çö
+    // BUGBUG (2012-10-18) : getXXX() ¸Ş¼Òµå´Â rowDeleted() ÀÏ ¶§ SQL NULL¿¡ ÇØ´çÇÏ´Â °ªÀ» Áà¾ßÇÑ´Ù.
+    // SQL NULLÀÏ ¶§ ¹İÈ¯ÇÏ´Â °ªÀº º¸Åë °´Ã¼¸¦ ¹İÈ¯ÇÏ´Â ¸Ş¼Òµå¸é null °ªÀ» ¹İÈ¯ÇÏ´Â ¸Ş¼Òµå¸é 0ÀÌ´Ù.
 
     /**
-     * @return íƒ€ê²Ÿ ì»¬ëŸ¼ë§µ
+     * @return Å¸°Ù ÄÃ·³¸Ê
      */
-    protected abstract List getTargetColumns();
+    protected abstract List<Column> getTargetColumns();
 
     /**
-     * @return íƒ€ê²Ÿ ì»¬ëŸ¼ ê°¯ìˆ˜
+     * @return Å¸°Ù ÄÃ·³ °¹¼ö
      */
     protected final int getTargetColumnCount()
     {
@@ -357,21 +359,21 @@ public abstract class AltibaseResultSet implements ResultSet
     }
 
     /**
-     * column indexì— í•´ë‹¹í•˜ëŠ” Column ê°ì²´ë¥¼ ì–»ëŠ”ë‹¤.
+     * column index¿¡ ÇØ´çÇÏ´Â Column °´Ã¼¸¦ ¾ò´Â´Ù.
      * 
      * @param aColumnIndex column index (1 base)
-     * @return Column ê°ì²´
+     * @return Column °´Ã¼
      */
     protected final Column getTargetColumn(int aColumnIndex)
     {
-        return (Column)getTargetColumns().get(aColumnIndex - 1);
+        return getTargetColumns().get(aColumnIndex - 1);
     }
 
     /**
-     * column indexì— í•´ë‹¹í•˜ëŠ” column ì •ë³´ë¥¼ ì–»ëŠ”ë‹¤.
+     * column index¿¡ ÇØ´çÇÏ´Â column Á¤º¸¸¦ ¾ò´Â´Ù.
      * 
      * @param aColumnIndex column index (1 base)
-     * @return ì»¬ëŸ¼ ì •ë³´
+     * @return ÄÃ·³ Á¤º¸
      */
     protected ColumnInfo getTargetColumnInfo(int aColumnIndex)
     {
@@ -381,7 +383,7 @@ public abstract class AltibaseResultSet implements ResultSet
     public final int findColumn(String aColName) throws SQLException
     {
         throwErrorForClosed();
-        // (spec) column nameì€ case insensitive. ê°™ì€ ì´ë¦„ì´ ìˆìœ¼ë©´ ì•ì˜ ê±° ë°˜í™˜.
+        // (spec) column nameÀº case insensitive. °°Àº ÀÌ¸§ÀÌ ÀÖÀ¸¸é ¾ÕÀÇ °Å ¹İÈ¯.
         for (int i = 1; i <= getTargetColumnCount(); i++)
         {
             if (getTargetColumnInfo(i).getDisplayColumnName().equalsIgnoreCase(aColName))
@@ -405,7 +407,7 @@ public abstract class AltibaseResultSet implements ResultSet
         
         if (mMetaData == null)
         {
-            // _prowidë¥¼ ì“°ëŠ” íƒ€ì…ì´ë©´, _prowidëŠ” ë–¼ê³  ë„˜ê²¨ì¤€ë‹¤.
+            // _prowid¸¦ ¾²´Â Å¸ÀÔÀÌ¸é, _prowid´Â ¶¼°í ³Ñ°ÜÁØ´Ù.
             if (getType() == TYPE_SCROLL_SENSITIVE || getConcurrency() == CONCUR_UPDATABLE)
             {
                 mMetaData = new AltibaseResultSetMetaData(getTargetColumns(), getTargetColumnCount() - 1);
@@ -420,12 +422,12 @@ public abstract class AltibaseResultSet implements ResultSet
     }
 
     /**
-     * ResultSet ìƒíƒœì™€ column indexê°€ ìœ íš¨í•œì§€ í™•ì¸í•œë‹¤.
+     * ResultSet »óÅÂ¿Í column index°¡ À¯È¿ÇÑÁö È®ÀÎÇÑ´Ù.
      * 
      * @param aColumnIndex column index (1 base)
-     * @throws SQLException ResultSetì´ ì´ë¯¸ ë‹«íŒ ê²½ìš°
-     * @throws SQLException column indexê°€ ìœ íš¨í•˜ì§€ ì•Šì„ ê²½ìš°
-     * @throws SQLException ì»¤ì„œ ìœ„ì¹˜ê°€ before first ë˜ëŠ” after lastì¸ ê²½ìš°
+     * @throws SQLException ResultSetÀÌ ÀÌ¹Ì ´İÈù °æ¿ì
+     * @throws SQLException column index°¡ À¯È¿ÇÏÁö ¾ÊÀ» °æ¿ì
+     * @throws SQLException Ä¿¼­ À§Ä¡°¡ before first ¶Ç´Â after lastÀÎ °æ¿ì
      */
     private void checkStateAndColumnIndexForGetXXX(int aColumnIndex) throws SQLException
     {
@@ -453,9 +455,9 @@ public abstract class AltibaseResultSet implements ResultSet
     }
 
     /**
-     * ì»¤ì„œ ìœ„ì¹˜ê°€ ë°”ê¼ˆìŒì„ ì•Œë¦°ë‹¤.
+     * Ä¿¼­ À§Ä¡°¡ ¹Ù²¼À½À» ¾Ë¸°´Ù.
      * <p>
-     * ì»¤ì„œ ìœ„ì¹˜ê°€ ë°”ë€Œë©´ ë‹¤ìŒì— ë°ì´íƒ€ë¥¼ ì–»ì„ ë•Œ ìœ íš¨í•œ ìœ„ì¹˜ì¸ì§€ ë‹¤ì‹œ í™•ì¸í•œë‹¤.
+     * Ä¿¼­ À§Ä¡°¡ ¹Ù²î¸é ´ÙÀ½¿¡ µ¥ÀÌÅ¸¸¦ ¾òÀ» ¶§ À¯È¿ÇÑ À§Ä¡ÀÎÁö ´Ù½Ã È®ÀÎÇÑ´Ù.
      */
     protected final void cursorMoved()
     {
@@ -465,8 +467,7 @@ public abstract class AltibaseResultSet implements ResultSet
 
     public final Array getArray(int aColumnIndex) throws SQLException
     {
-        Error.throwSQLException(ErrorDef.UNSUPPORTED_FEATURE, "Array type");
-        return null;
+        throw Error.createSQLException(ErrorDef.UNSUPPORTED_FEATURE, "Array type");
     }
 
     public final Array getArray(String aColumnName) throws SQLException
@@ -488,7 +489,7 @@ public abstract class AltibaseResultSet implements ResultSet
             BlobInputStream blobStream = (BlobInputStream)sStream;
             if (blobStream.isClosed())
             {
-                blobStream.open(mStatement.mConnection.channel()); // BUG-38008 blobStreamì´ ë‹«í˜€ìˆì„ë•ŒëŠ” ì±„ë„ì„ ì—´ë„ë¡ ì²˜ë¦¬
+                blobStream.open(mStatement.mConnection.channel()); // BUG-38008 blobStreamÀÌ ´İÇôÀÖÀ»¶§´Â Ã¤³ÎÀ» ¿­µµ·Ï Ã³¸®
             }
         }
         return sStream;
@@ -499,14 +500,13 @@ public abstract class AltibaseResultSet implements ResultSet
         return getAsciiStream(findColumn(aColumnName));
     }
 
-    @SuppressWarnings("deprecation")
     public final BigDecimal getBigDecimal(int aColumnIndex, int aScale) throws SQLException
     {
         BigDecimal sResult = getBigDecimal(aColumnIndex);
         
         if (sResult != null)
         {
-            // BUG-43937 BigDecimalì´ immutableì´ê¸° ë•Œë¬¸ì— setScaleê²°ê³¼ë¥¼ ë‹¤ì‹œ sResultë¡œ í• ë‹¹í•œë‹¤.
+            // BUG-43937 BigDecimalÀÌ immutableÀÌ±â ¶§¹®¿¡ setScale°á°ú¸¦ ´Ù½Ã sResult·Î ÇÒ´çÇÑ´Ù.
             sResult = sResult.setScale(aScale, BigDecimal.ROUND_HALF_EVEN);
         }
         
@@ -524,7 +524,6 @@ public abstract class AltibaseResultSet implements ResultSet
         return getTargetColumn(aColumnIndex).getBigDecimal();
     }
 
-    @SuppressWarnings("deprecation")
     public final BigDecimal getBigDecimal(String aColumnName, int aScale) throws SQLException
     {
         return getBigDecimal(findColumn(aColumnName), aScale);
@@ -551,7 +550,10 @@ public abstract class AltibaseResultSet implements ResultSet
         }
 
         BlobInputStream sStream = (BlobInputStream)getTargetColumn(aColumnIndex).getBinaryStream();
-        sStream.open(mStatement.mConnection.channel());
+        if (sStream.isClosed()) // BUG-48892 sStream ´İÇôÀÖÀ»¶§´Â Ã¤³ÎÀ» ¿­µµ·Ï Ã³¸®
+        {
+            sStream.open(mStatement.mConnection.channel());
+        }
 
         return sStream;
     }
@@ -569,8 +571,14 @@ public abstract class AltibaseResultSet implements ResultSet
             return null;
         }
         mLastReadColumnIndex = aColumnIndex;
-        // IMPROVEMENT beforeFirst í›„ì— ë‹¤ì‹œ ê°€ì ¸ì˜¤ë©´ ìƒˆë¡œ ë§Œë“ ë‹¤. ë©”ëª¨ë¦¬ ìµœì í™”ê°€ í•„ìš”í•¨.
-        AltibaseBlob sBlob = (AltibaseBlob)getTargetColumn(aColumnIndex).getBlob();
+        // IMPROVEMENT beforeFirst ÈÄ¿¡ ´Ù½Ã °¡Á®¿À¸é »õ·Î ¸¸µç´Ù. ¸Ş¸ğ¸® ÃÖÀûÈ­°¡ ÇÊ¿äÇÔ.
+        Column sColumn = getTargetColumn(aColumnIndex);
+        if (sColumn.isNull() && !mAllowLobNullSelect)
+        {
+            // BUG-47639 lob ÄÃ·³°ªÀÌ nullÀÌ°í lob_null_select jdbc¼Ó¼ºÀÌ false ¶ó¸é Blob°´Ã¼¸¦ ¸®ÅÏÇÏÁö ¾Ê°í nullÀ» ¸®ÅÏÇÑ´Ù.
+            return null;
+        }
+        AltibaseBlob sBlob = (AltibaseBlob)sColumn.getBlob();
         if (sBlob != null)
         {
             sBlob.open(mStatement.mConnection.channel());
@@ -664,7 +672,14 @@ public abstract class AltibaseResultSet implements ResultSet
             return null;
         }
         mLastReadColumnIndex = aColumnIndex;
-        AltibaseClob sClob = (AltibaseClob)getTargetColumn(aColumnIndex).getClob();
+
+        Column sColumn = getTargetColumn(aColumnIndex);
+        if (sColumn.isNull() && !mAllowLobNullSelect)
+        {
+            // BUG-47639 lob ÄÃ·³°ªÀÌ nullÀÌ°í lob_null_select jdbc¼Ó¼ºÀÌ false ¶ó¸é Clob°´Ã¼¸¦ ¸®ÅÏÇÏÁö ¾Ê°í nullÀ» ¸®ÅÏÇÑ´Ù.
+            return null;
+        }
+        AltibaseClob sClob = (AltibaseClob)sColumn.getClob();
         if (sClob != null)
         {
             sClob.open(mStatement.mConnection.channel());
@@ -901,14 +916,12 @@ public abstract class AltibaseResultSet implements ResultSet
         return getURL(findColumn(aColumnName));
     }
 
-    @SuppressWarnings("deprecation")
     public final InputStream getUnicodeStream(int aColumnIndex) throws SQLException
     {
         Error.throwSQLException(ErrorDef.UNSUPPORTED_FEATURE, "Deprecated: getUnicodeStream");
         return null;
     }
 
-    @SuppressWarnings("deprecation")
     public final InputStream getUnicodeStream(String aColumnName) throws SQLException
     {
         return getUnicodeStream(findColumn(aColumnName));
@@ -928,16 +941,37 @@ public abstract class AltibaseResultSet implements ResultSet
 
 
 
-    // #region updatable interface ê³µí†µ êµ¬í˜„
+    // #region updatable interface °øÅë ±¸Çö
 
     public void updateArray(String aColumnName, Array aValue) throws SQLException
     {
         updateArray(findColumn(aColumnName), aValue);
     }
 
+    // BUG-47465 long ±æÀÌ ÀÎÀÚ¸¦ °¡Áö´Â updateAsciiStream, updateBinaryStream, updateCharacterStream Ãß°¡
+    public void updateAsciiStream(String aColumnName, InputStream aValue) throws SQLException
+    {
+        updateAsciiStream(findColumn(aColumnName), aValue, Long.MAX_VALUE);
+    }
+
     public void updateAsciiStream(String aColumnName, InputStream aValue, int aLength) throws SQLException
     {
+        updateAsciiStream(findColumn(aColumnName), aValue, (long)aLength);
+    }
+
+    public void updateAsciiStream(String aColumnName, InputStream aValue, long aLength) throws SQLException
+    {
         updateAsciiStream(findColumn(aColumnName), aValue, aLength);
+    }
+
+    public void updateAsciiStream(int aColumnIndex, InputStream aValue) throws SQLException
+    {
+        updateAsciiStream(aColumnIndex, aValue, Long.MAX_VALUE);
+    }
+
+    public void updateAsciiStream(int aColumnIndex, InputStream aValue, int aLength) throws SQLException
+    {
+        updateAsciiStream(aColumnIndex, aValue, (long)aLength);
     }
 
     public void updateBigDecimal(String aColumnName, BigDecimal aValue) throws SQLException
@@ -945,9 +979,29 @@ public abstract class AltibaseResultSet implements ResultSet
         updateBigDecimal(findColumn(aColumnName), aValue);
     }
 
+    public void updateBinaryStream(String aColumnName, InputStream aValue) throws SQLException
+    {
+        updateBinaryStream(findColumn(aColumnName), aValue, Long.MAX_VALUE);
+    }
+
     public void updateBinaryStream(String aColumnName, InputStream aValue, int aLength) throws SQLException
     {
+        updateBinaryStream(findColumn(aColumnName), aValue, (long)aLength);
+    }
+
+    public void updateBinaryStream(String aColumnName, InputStream aValue, long aLength) throws SQLException
+    {
         updateBinaryStream(findColumn(aColumnName), aValue, aLength);
+    }
+
+    public void updateBinaryStream(int aColumnIndex, InputStream aValue) throws SQLException
+    {
+        updateBinaryStream(aColumnIndex, aValue, Long.MAX_VALUE);
+    }
+
+    public void updateBinaryStream(int aColumnIndex, InputStream aValue, int aLength) throws SQLException
+    {
+        updateBinaryStream(aColumnIndex, aValue, (long)aLength);
     }
 
     public void updateBlob(String aColumnName, Blob aValue) throws SQLException
@@ -970,9 +1024,29 @@ public abstract class AltibaseResultSet implements ResultSet
         updateBytes(findColumn(aColumnName), aValue);
     }
 
+    public void updateCharacterStream(String aColumnName, Reader aReader) throws SQLException
+    {
+        updateCharacterStream(findColumn(aColumnName), aReader, Long.MAX_VALUE);
+    }
+
     public void updateCharacterStream(String aColumnName, Reader aReader, int aLength) throws SQLException
     {
+        updateCharacterStream(findColumn(aColumnName), aReader, (long)aLength);
+    }
+
+    public void updateCharacterStream(String aColumnName, Reader aReader, long aLength) throws SQLException
+    {
         updateCharacterStream(findColumn(aColumnName), aReader, aLength);
+    }
+
+    public void updateCharacterStream(int aColumnIndex, Reader aValue) throws SQLException
+    {
+        updateCharacterStream(aColumnIndex, aValue, Long.MAX_VALUE);
+    }
+
+    public void updateCharacterStream(int aColumnIndex, Reader aValue, int aLength) throws SQLException
+    {
+        updateCharacterStream(aColumnIndex, aValue, (long)aLength);
     }
 
     public void updateClob(String aColumnName, Clob aValue) throws SQLException
@@ -1049,19 +1123,19 @@ public abstract class AltibaseResultSet implements ResultSet
 
 
 
-    // #region Altibase íŠ¹ìˆ˜ ê¸°ëŠ¥
+    // #region Altibase Æ¯¼ö ±â´É
 
     /**
-     * Plan textë¥¼ ì–»ëŠ”ë‹¤.
+     * Plan text¸¦ ¾ò´Â´Ù.
      * <p>
-     * ê´€ë ¨ Statementì— ëŒ€í•œ Plan textë¥¼ ì–»ëŠ” ê²ƒì´ë¯€ë¡œ, ë§Œì•½ ResultSetì„ ì–»ì€ í›„ ë‹¤ë¥¸ êµ¬ë¬¸ì„ ìˆ˜í–‰í–ˆë‹¤ë©´ ë‹¤ë¥¸
-     * ì¿¼ë¦¬ì— ëŒ€í•œ Plan textë¥¼ ì–»ì„ ìˆ˜ ìˆë‹¤.
+     * °ü·Ã Statement¿¡ ´ëÇÑ Plan text¸¦ ¾ò´Â °ÍÀÌ¹Ç·Î, ¸¸¾à ResultSetÀ» ¾òÀº ÈÄ ´Ù¸¥ ±¸¹®À» ¼öÇàÇß´Ù¸é ´Ù¸¥
+     * Äõ¸®¿¡ ´ëÇÑ Plan text¸¦ ¾òÀ» ¼ö ÀÖ´Ù.
      * <p>
-     * ë‹¨ìˆœ Plan text ì¡°íšŒë¥¼ ì›í•œë‹¤ë©´ Prepare ë˜ëŠ” Execute í›„ì—, ë³´ë‹¤ ì •í™•í•œ Plan text ì¡°íšŒë¥¼ ì›í•œë‹¤ë©´
-     * Fetch ì™„ë£Œ í›„ì— ìˆ˜í–‰í• ê²ƒì„ ê¶Œì¥í•œë‹¤.
+     * ´Ü¼ø Plan text Á¶È¸¸¦ ¿øÇÑ´Ù¸é Prepare ¶Ç´Â Execute ÈÄ¿¡, º¸´Ù Á¤È®ÇÑ Plan text Á¶È¸¸¦ ¿øÇÑ´Ù¸é
+     * Fetch ¿Ï·á ÈÄ¿¡ ¼öÇàÇÒ°ÍÀ» ±ÇÀåÇÑ´Ù.
      * 
      * @return Plan text
-     * @throws SQLException Plan text ìš”ì²­ì´ë‚˜ ê²°ê³¼ë¥¼ ì–»ëŠ”ë° ì‹¤íŒ¨í–ˆì„ ë•Œ
+     * @throws SQLException Plan text ¿äÃ»ÀÌ³ª °á°ú¸¦ ¾ò´Âµ¥ ½ÇÆĞÇßÀ» ¶§
      */
     public final String getExplainPlan() throws SQLException
     {
@@ -1109,9 +1183,176 @@ public abstract class AltibaseResultSet implements ResultSet
         mStatement.throwErrorForClosed();
     }
 
-    // BUG-46513 cursorê°€ ì—´ë ¤ìˆëŠ” statementê°€ ìˆëŠ”ì§€ í™•ì¸í•˜ê¸° ìœ„í•´ ì¶”ê°€
+    // BUG-46513 cursor°¡ ¿­·ÁÀÖ´Â statement°¡ ÀÖ´ÂÁö È®ÀÎÇÏ±â À§ÇØ Ãß°¡
     public boolean fetchRemains()
     {
         return mContext.getFetchResult().fetchRemains();
+    }
+
+    public void setClosed(boolean aClosed)
+    {
+        this.mClosed = aClosed;
+    }
+
+    public void setAllowLobNullSelect(boolean aAllowLobNullSelect)
+    {
+        mAllowLobNullSelect = aAllowLobNullSelect;
+    }
+
+    @Override
+    public void updateNString(String aColumnName, String aValue) throws SQLException
+    {
+        updateNString(findColumn(aColumnName), aValue);
+    }
+
+    @Override
+    public String getNString(int aColumnIndex) throws SQLException
+    {
+        return getString(aColumnIndex);
+    }
+
+    @Override
+    public String getNString(String aColumnName) throws SQLException
+    {
+        return getNString(findColumn(aColumnName));
+    }
+
+    @Override
+    public void updateBlob(int aColumnIndex, InputStream aValue) throws SQLException
+    {
+        updateBlob(aColumnIndex, aValue, Long.MAX_VALUE);
+    }
+
+    @Override
+    public void updateBlob(String aColumnName, InputStream aValue, long aLength) throws SQLException
+    {
+        updateBlob(findColumn(aColumnName), aValue, aLength);
+    }
+
+    @Override
+    public void updateClob(String aColumnName, Reader aValue, long aLength) throws SQLException
+    {
+        updateClob(findColumn(aColumnName), aValue, aLength);
+    }
+
+    @Override
+    public void updateClob(int aColumnIndex, Reader aValue) throws SQLException
+    {
+        updateClob(aColumnIndex, aValue, Long.MAX_VALUE);
+    }
+
+    @Override
+    public void updateClob(String aColumnName, Reader aValue) throws SQLException
+    {
+        updateClob(findColumn(aColumnName), aValue);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T getObject(int aColumnIndex, Class<T> aType) throws SQLException
+    {
+        if (aType == null)
+        {
+            throw Error.createSQLException(ErrorDef.TYPE_PARAMETER_CANNOT_BE_NULL);
+        }
+
+        if (aType.equals(Struct.class) || aType.equals(RowId.class) || aType.equals(NClob.class) ||
+            aType.equals(SQLXML.class) || aType.equals(Array.class) || aType.equals(Ref.class) ||
+            aType.equals(URL.class))
+        {
+            throw Error.createSQLFeatureNotSupportedException();
+        }
+
+        if (aType.equals(LocalDate.class))
+        {
+            Date sDate = getDate(aColumnIndex);
+            return sDate == null ? null : aType.cast(sDate.toLocalDate());
+        }
+        else if (aType.equals(LocalDateTime.class))
+        {
+            Timestamp sTimestamp = getTimestamp(aColumnIndex);
+            return sTimestamp == null ? null : aType.cast(sTimestamp.toLocalDateTime());
+        }
+        else if (aType.equals(LocalTime.class))
+        {
+            Time sTime = getTime(aColumnIndex);
+            return sTime == null ? null : aType.cast(sTime.toLocalTime());
+        }
+        else if (aType.equals(String.class))
+        {
+            return (T) getString(aColumnIndex);
+        }
+        else if (aType.equals(BigDecimal.class))
+        {
+            return (T) getBigDecimal(aColumnIndex);
+        }
+        else if (aType.equals(Boolean.class) || aType.equals(Boolean.TYPE))
+        {
+            return (T) Boolean.valueOf(getBoolean(aColumnIndex));
+        }
+        else if (aType.equals(Integer.class) || aType.equals(Integer.TYPE))
+        {
+            return (T) Integer.valueOf(getInt(aColumnIndex));
+        }
+        else if (aType.equals(Long.class) || aType.equals(Long.TYPE))
+        {
+            return (T) Long.valueOf(getLong(aColumnIndex));
+        }
+        else if (aType.equals(Float.class) || aType.equals(Float.TYPE))
+        {
+            return (T) Float.valueOf(getFloat(aColumnIndex));
+        }
+        else if (aType.equals(Double.class) || aType.equals(Double.TYPE))
+        {
+            return (T) Double.valueOf(getDouble(aColumnIndex));
+        }
+        else if (aType.equals(byte[].class))
+        {
+            return (T) getBytes(aColumnIndex);
+        }
+        else if (aType.equals(Date.class))
+        {
+            return (T) getDate(aColumnIndex);
+        }
+        else if (aType.equals(Time.class))
+        {
+            return (T) getTime(aColumnIndex);
+        }
+        else if (aType.equals(Timestamp.class))
+        {
+            return (T) getTimestamp(aColumnIndex);
+        }
+        else if (aType.equals(Clob.class))
+        {
+            return (T) getClob(aColumnIndex);
+        }
+        else if (aType.equals(Blob.class))
+        {
+            return (T) getBlob(aColumnIndex);
+        }
+        else
+        {
+            try
+            {
+                return aType.cast(getObject(aColumnIndex));
+            }
+            catch (ClassCastException aClassCastEx)
+            {
+                throw Error.createSQLException(ErrorDef.TYPE_CONVERSION_NOT_SUPPORTED, aType.getName(),
+                                               aClassCastEx);
+            }
+        }
+    }
+
+    @Override
+    public <T> T getObject(String aColumnName, Class<T> aType) throws SQLException
+    {
+        return getObject(findColumn(aColumnName), aType);
+    }
+
+    @Override
+    public void updateBlob(String aColumnName, InputStream aValue) throws SQLException
+    {
+        updateBlob(findColumn(aColumnName), aValue);
     }
 }

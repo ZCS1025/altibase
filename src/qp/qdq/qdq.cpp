@@ -16,7 +16,7 @@
  
 
 /***********************************************************************/
-/* $Id: qdq.cpp 82844 2018-04-19 00:41:18Z andrew.shin $ */
+/* $Id: qdq.cpp 90270 2021-03-21 23:20:18Z bethy $ */
 /**********************************************************************/
 
 #include <idl.h>
@@ -58,9 +58,14 @@ IDE_RC qdq::executeCreateQueue(qcStatement *aStatement)
     /* ======================== *
      * [1] Create Queue Table   *
      * ======================== */
-    IDE_TEST( qdbCreate::executeCreateTable(aStatement) != IDE_SUCCESS );
 
+    //BUG-48230: Queue Table¿∫ MEMORY ±‚π› ≈◊¿Ã∫Ì ¿ÃæÓæﬂ∏∏ «‘
     sParseTree = (qdTableParseTree *) aStatement->myPlan->parseTree;
+
+    IDE_TEST_RAISE( smiTableSpace::isDiskTableSpace(sParseTree->TBSAttr.mID),
+                    ERR_NO_MEMORY_OR_VOLATILE_TABLE );
+
+    IDE_TEST( qdbCreate::executeCreateTable(aStatement) != IDE_SUCCESS );
 
     QC_STR_COPY( sQueueName, sParseTree->tableName );
 
@@ -81,9 +86,9 @@ IDE_RC qdq::executeCreateQueue(qcStatement *aStatement)
     sSequenceOID = smiGetTableId(sSequenceHandle);
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // queueÎäî partitionÎê† Ïàò ÏóÜÏùå.
+    // queue¥¬ partitionµ… ºˆ æ¯¿Ω.
     // PROJ-1407 Temporary Table
-    // queueÎäî temporaryÎ°ú ÏÉùÏÑ±Ìï† Ïàò ÏóÜÏùå
+    // queue¥¬ temporary∑Œ ª˝º∫«“ ºˆ æ¯¿Ω
     IDE_TEST( qcmTablespace::getTBSAttrByID( SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
                                              & sTBSAttr )
               != IDE_SUCCESS );
@@ -116,6 +121,8 @@ IDE_RC qdq::executeCreateQueue(qcStatement *aStatement)
                     "CHAR'N',"
                     "CHAR'W',"
                     "INTEGER'1'," // Parallel degree
+                    "CHAR'Y',"    // USABLE
+                    "INTEGER'0'," // SHARD_FLAG
                     "SYSDATE, SYSDATE )",
                     sParseTree->userID,
                     sSeqTblID,
@@ -138,6 +145,10 @@ IDE_RC qdq::executeCreateQueue(qcStatement *aStatement)
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION(ERR_NO_MEMORY_OR_VOLATILE_TABLE)
+    {
+        IDE_SET(ideSetErrorCode(qpERR_ABORT_QDB_NO_MEMORY_OR_VOLATILE_TABLE));
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -162,7 +173,7 @@ IDE_RC qdq::executeDropQueue(qcStatement *aStatement)
     sParseTree = (qdDropParseTree *)aStatement->myPlan->parseTree;
 
     //---------------------------------------
-    // TASK-2176 TableÏóê ÎåÄÌïú LockÏùÑ ÌöçÎìùÌïúÎã§.
+    // TASK-2176 Tableø° ¥Î«— Lock¿ª »πµÊ«—¥Ÿ.
     //---------------------------------------
 
     IDE_TEST( qcm::validateAndLockTable(aStatement,
@@ -239,7 +250,7 @@ IDE_RC qdq::executeDropQueue(qcStatement *aStatement)
     sArgDropQueue.mTableID   = sTableID;
     sArgDropQueue.mMmSession = aStatement->session->mMmSession;
     
-    // MMÏùò QUEUEÍ¥ÄÎ†® Îç∞Ïù¥ÌÑ∞ ÏÇ≠Ï†úÏöîÏ≤≠ (commitÏãú ÏÇ≠Ï†úÎê®)
+    // MM¿« QUEUE∞¸∑√ µ•¿Ã≈Õ ªË¡¶ø‰√ª (commitΩ√ ªË¡¶µ )
     IDE_TEST( qcg::mDropQueueFuncPtr( (void *)&sArgDropQueue )
               != IDE_SUCCESS );
 
@@ -306,18 +317,18 @@ IDE_RC qdq::validateAlterCompactQueue(qcStatement * aStatement)
 {
 /***********************************************************************
  *
- * Description : ALTER QUEUE queue_name COMPACT Íµ¨Î¨∏Ïùò validation
+ * Description : ALTER QUEUE queue_name COMPACT ±∏πÆ¿« validation
  *
  * Implementation :
- *    (1) QueueÍ∞Ä Ï°¥Ïû¨ÌïòÎäîÏßÄ Í≤ÄÏÇ¨
- *    (2) Í∂åÌïú Í≤ÄÏÇ¨
+ *    (1) Queue∞° ¡∏¿Á«œ¥¬¡ˆ ∞ÀªÁ
+ *    (2) ±««— ∞ÀªÁ
  *
- *    replication ÏïàÎê®
+ *    replication æ»µ 
  * 
- *    ALTER TABLEÍ∂åÌïúÏùÄ ÎßâÌòÄÏûàÏùå! Ïò§ÏßÅ COMPACTÎßå Îê®
- *    Îî∞ÎùºÏÑú 'qdbAlter::checkOperatable()' Ìï®Ïàò Ìò∏Ï∂úÌï† ÌïÑÏöîÏóÜÏùå
- *    ÎßåÏïΩ ALTER TABLE Íµ¨Î¨∏ÏúºÎ°ú Queue TableÏùÑ Î≥ÄÍ≤ΩÌïòÍ≥†Ïûê ÌïúÎã§Î©¥
- *    Ïù¥ Î∂ÄÎ∂ÑÏùÑ Ïó¥ÎèÑÎ°ù Ìï¥ÏïºÌï®
+ *    ALTER TABLE±««—¿∫ ∏∑«Ù¿÷¿Ω! ø¿¡˜ COMPACT∏∏ µ 
+ *    µ˚∂Ûº≠ 'qdbAlter::checkOperatable()' «‘ºˆ »£√‚«“ « ø‰æ¯¿Ω
+ *    ∏∏æ‡ ALTER TABLE ±∏πÆ¿∏∑Œ Queue Table¿ª ∫Ø∞Ê«œ∞Ì¿⁄ «—¥Ÿ∏È
+ *    ¿Ã ∫Œ∫–¿ª ø≠µµ∑œ «ÿæﬂ«‘
  * 
  ***********************************************************************/    
 #define IDE_FN "qdq::validateAlterQueueCompact"
@@ -339,7 +350,7 @@ IDE_RC qdq::validateAlterCompactQueue(qcStatement * aStatement)
     }
 
     //----------------------------
-    // Queue Í∞Ä Ï°¥Ïû¨ÌïòÎäîÏßÄ Í≤ÄÏÇ¨
+    // Queue ∞° ¡∏¿Á«œ¥¬¡ˆ ∞ÀªÁ
     //----------------------------
     if ( qdbCommon::checkTableInfo( aStatement,
                                     sParseTree->userName,
@@ -350,10 +361,10 @@ IDE_RC qdq::validateAlterCompactQueue(qcStatement * aStatement)
                                     &(sParseTree->tableSCN))
          == IDE_SUCCESS )
     {
-        // tableInfoÍ∞Ä ÏûàÎäî Í≤ΩÏö∞
+        // tableInfo∞° ¿÷¥¬ ∞ÊøÏ
         if( sParseTree->tableInfo->tableType == QCM_QUEUE_TABLE )
         {
-            // Queue TableÏù∏ÏßÄ Í≤ÄÏÇ¨
+            // Queue Table¿Œ¡ˆ ∞ÀªÁ
         }
         else
         {
@@ -366,14 +377,14 @@ IDE_RC qdq::validateAlterCompactQueue(qcStatement * aStatement)
     }
 
     /* BUG-
-       ALTER TABLE Í∂åÌïúÏùÄ ÎßâÌòÄÏûàÏùå
+       ALTER TABLE ±««—¿∫ ∏∑«Ù¿÷¿Ω
     IDE_TEST( qdbAlter::checkOperatable( aStatement,
                                          sParseTree->tableInfo )
               != IDE_SUCCESS );
     */
     
     //----------------------------
-    // ÌÖåÏù¥Î∏îÏóê LOCK(IS)
+    // ≈◊¿Ã∫Ìø° LOCK(IS)
     //----------------------------
     IDE_TEST( qcm::lockTableForDDLValidation(aStatement,
                                              sParseTree->tableHandle,
@@ -397,7 +408,7 @@ IDE_RC qdq::validateAlterCompactQueue(qcStatement * aStatement)
     }
 
     //----------------------------
-    // Í∂åÌïú Í≤ÄÏÇ¨
+    // ±««— ∞ÀªÁ
     //----------------------------
 
     IDE_TEST( qdpRole::checkDDLAlterTablePriv( aStatement,
@@ -405,8 +416,8 @@ IDE_RC qdq::validateAlterCompactQueue(qcStatement * aStatement)
               != IDE_SUCCESS );
 
     //----------------------------
-    // PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin Í∞úÎ∞ú
-    //   DDL Statement TextÏùò Î°úÍπÖ
+    // PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ∞≥πﬂ
+    //   DDL Statement Text¿« ∑Œ±Î
     //----------------------------
     
     if (QCU_DDL_SUPPLEMENTAL_LOG == 1)
@@ -418,7 +429,7 @@ IDE_RC qdq::validateAlterCompactQueue(qcStatement * aStatement)
     }
 
     //----------------------------
-    // Queue TableÏùÄ MEMORY Í∏∞Î∞ò ÌÖåÏù¥Î∏î Ïù¥Ïñ¥ÏïºÎßå Ìï®
+    // Queue Table¿∫ MEMORY ±‚π› ≈◊¿Ã∫Ì ¿ÃæÓæﬂ∏∏ «‘
     //----------------------------
     sTableType = sParseTree->tableInfo->tableFlag & SMI_TABLE_TYPE_MASK;
     IDE_TEST_RAISE( (sTableType != SMI_TABLE_MEMORY), 
@@ -457,7 +468,7 @@ IDE_RC qdq::executeCompactQueue(qcStatement * aStatement)
 {
 /***********************************************************************
  *
- * Description : ALTER QUEUE queue_name COMPACT Íµ¨Î¨∏Ïùò execution
+ * Description : ALTER QUEUE queue_name COMPACT ±∏πÆ¿« execution
  *
  * Implementation :
  *
@@ -513,7 +524,7 @@ IDE_RC qdq::validateAlterQueueSequence( qcStatement * aStatement )
         IDE_RAISE( CANT_USE_RESERVED_WORD );
     }
 
-    /* QUEUE ÌôïÏù∏ */
+    /* QUEUE »Æ¿Œ */
     IDE_TEST_RAISE( qdbCommon::checkTableInfo( aStatement,
                                                sParseTree->mUserName,
                                                sParseTree->mQueueName,
@@ -533,7 +544,7 @@ IDE_RC qdq::validateAlterQueueSequence( qcStatement * aStatement )
     IDE_TEST_RAISE( sParseTree->mTableInfo->tableType != QCM_QUEUE_TABLE,
                     ERR_NOT_FOUND_QUEUE );
 
-    /* Îç∞Ïù¥ÌÑ∞ ÌôïÏù∏ */
+    /* µ•¿Ã≈Õ »Æ¿Œ */
     IDE_TEST( smiStatistics::getTableStatNumRow( (void*) sParseTree->mTableInfo->tableHandle,
                                                  ID_TRUE, /* CurrentValue */
                                                  QC_SMI_STMT( aStatement )->getTrans(),
@@ -542,7 +553,7 @@ IDE_RC qdq::validateAlterQueueSequence( qcStatement * aStatement )
 
     IDE_TEST_RAISE( sRowCount != 0, ERR_NOT_EMPTY_QUEUE );
 
-    /* SEQUENCE ÌôïÏù∏ */
+    /* SEQUENCE »Æ¿Œ */
     IDE_TEST_RAISE( checkQueueSequenceInfo( aStatement,
                                             sParseTree->mUserID,
                                             sParseTree->mQueueName,
@@ -554,7 +565,7 @@ IDE_RC qdq::validateAlterQueueSequence( qcStatement * aStatement )
     IDE_TEST_RAISE( sParseTree->mQueueSequenceInfo.sequenceType != QCM_QUEUE_SEQUENCE,
                     ERR_META_CRASH );
 
-    /* Í∂åÌïú Í≤ÄÏÇ¨ 1 */
+    /* ±««— ∞ÀªÁ 1 */
     if ( QCG_GET_SESSION_USER_ID( aStatement ) != QC_SYSTEM_USER_ID )
     {
         /* META */
@@ -574,7 +585,7 @@ IDE_RC qdq::validateAlterQueueSequence( qcStatement * aStatement )
         }
     }
 
-    /* Í∂åÌïú Í≤ÄÏÇ¨ 2 */
+    /* ±««— ∞ÀªÁ 2 */
     IDE_TEST( qdpRole::checkDDLAlterTablePriv( aStatement,
                                                sParseTree->mTableInfo )
               != IDE_SUCCESS );
@@ -583,10 +594,10 @@ IDE_RC qdq::validateAlterQueueSequence( qcStatement * aStatement )
                                                   &( sParseTree->mQueueSequenceInfo ) )
               != IDE_SUCCESS );
 
-    /* Replication Í≤ÄÏÇ¨ */
+    /* Replication ∞ÀªÁ */
     IDE_TEST_RAISE( sParseTree->mTableInfo->replicationCount > 0,
                     ERR_UNSUPPORTED );
-
+    
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_NOT_FOUND_QUEUE )
@@ -662,7 +673,7 @@ IDE_RC qdq::checkQueueSequenceInfo( qcStatement      * aStatement,
     SChar sQueueName[QC_MAX_OBJECT_NAME_LEN + 1];
     SChar sQueueSequenceName[QC_MAX_SEQ_NAME_LEN + 1];
 
-    /* Queue Sequence Ïù¥Î¶Ñ ÏÉùÏÑ± */
+    /* Queue Sequence ¿Ã∏ß ª˝º∫ */
     QC_STR_COPY( sQueueName, aQueueName );
 
     idlOS::snprintf( sQueueSequenceName,
@@ -670,7 +681,7 @@ IDE_RC qdq::checkQueueSequenceInfo( qcStatement      * aStatement,
                     "%s_NEXT_MSG_ID",
                     sQueueName );
 
-    /* Queue Sequence Ï∞æÍ∏∞ */
+    /* Queue Sequence √£±‚ */
     IDE_TEST( qcm::getSequenceInfoByName( QC_SMI_STMT( aStatement ),
                                           aUserID,
                                           (UChar*) sQueueSequenceName,
@@ -699,7 +710,7 @@ IDE_RC qdq::updateQueueSequenceFromMeta( qcStatement    * aStatement,
     SChar    sQueueName[QC_MAX_OBJECT_NAME_LEN + 1];
     SChar    sQueueSequenceName[QC_MAX_SEQ_NAME_LEN + 1];
 
-    /* Queue Sequence Ïù¥Î¶Ñ ÏÉùÏÑ± */
+    /* Queue Sequence ¿Ã∏ß ª˝º∫ */
     QC_STR_COPY( sQueueName, aQueueNamePos );
 
     idlOS::snprintf( sQueueSequenceName,
@@ -750,4 +761,3 @@ IDE_RC qdq::updateQueueSequenceFromMeta( qcStatement    * aStatement,
 
     return IDE_FAILURE;
 }
-

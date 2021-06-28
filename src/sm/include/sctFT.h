@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ê´€ë¦¬ì
+ * Å×ÀÌºí½ºÆäÀÌ½º °ü¸®ÀÚ
  *
  *
  **********************************************************************/
@@ -46,27 +46,27 @@ public:
                                             iduFixedTableMemory *aMemory);
 
 private:
-    // TBS State Bitsetì„ ë°›ì•„ State Nameì„ ë°˜í™˜
+    // TBS State BitsetÀ» ¹Ş¾Æ State NameÀ» ¹İÈ¯
     static void getTBSStateName( UInt aTBSStateBitset, UChar*  aTBSStateName );
 
-    // Tablespace Header Performance Viewêµ¬ì¡°ì²´ì˜
-    // Attribute Flag í•„ë“œë“¤ì„ ì„¤ì •í•œë‹¤.
+    // Tablespace Header Performance View±¸Á¶Ã¼ÀÇ
+    // Attribute Flag ÇÊµåµéÀ» ¼³Á¤ÇÑ´Ù.
     static IDE_RC getSpaceHeaderAttrFlags(
                       sctTableSpaceNode * aSpaceNode,
                       sctTbsHeaderInfo  * aSpaceHeader);
 
 
-    // Disk Tablespaceì˜ ì •ë³´ë¥¼ Fix Table êµ¬ì¡°ì²´ì— ì €ì¥í•œë‹¤.
+    // Disk TablespaceÀÇ Á¤º¸¸¦ Fix Table ±¸Á¶Ã¼¿¡ ÀúÀåÇÑ´Ù.
     static IDE_RC getDiskTBSInfo( sddTableSpaceNode * aDiskSpaceNode,
                                   sctTbsInfo        * aSpaceInfo );
 
-    // Memory Tablespaceì˜ ì •ë³´ë¥¼ Fix Table êµ¬ì¡°ì²´ì— ì €ì¥í•œë‹¤.
-    static IDE_RC getMemTBSInfo( smmTBSNode   * aMemSpaceNode,
-                                 sctTbsInfo   * aSpaceInfo );
+    // Memory TablespaceÀÇ Á¤º¸¸¦ Fix Table ±¸Á¶Ã¼¿¡ ÀúÀåÇÑ´Ù.
+    static void getMemTBSInfo( smmTBSNode   * aMemSpaceNode,
+                               sctTbsInfo   * aSpaceInfo );
 
-    // Volatile Tablespaceì˜ ì •ë³´ë¥¼ Fixed Table êµ¬ì¡°ì²´ì— ì €ì¥í•œë‹¤.
-    static IDE_RC getVolTBSInfo( svmTBSNode   * aVolSpaceNode,
-                                 sctTbsInfo   * aSpaceInfo );
+    // Volatile TablespaceÀÇ Á¤º¸¸¦ Fixed Table ±¸Á¶Ã¼¿¡ ÀúÀåÇÑ´Ù.
+    static void getVolTBSInfo( svmTBSNode   * aVolSpaceNode,
+                               sctTbsInfo   * aSpaceInfo );
 };
 
 #endif // _O_SCT_FT_H_

@@ -20,37 +20,37 @@
  *
  * Description :
  *
- * ë³¸ íŒŒì¼ì€ transaction status slotì— ëŒ€í•œ í—¤ë”íŒŒì¼ì…ë‹ˆë‹¤.
+ * º» ÆÄÀÏÀº transaction status slot¿¡ ´ëÇÑ Çì´õÆÄÀÏÀÔ´Ï´Ù.
  *
- * # ê°œë…
+ * # °³³ä
  *
- *   DRDBì˜ MVCC, garbage collecting, transaction rollbackê³¼
- *   transaction ìƒíƒœë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ transaction status slot
+ *   DRDBÀÇ MVCC, garbage collecting, transaction rollback°ú
+ *   transaction »óÅÂ¸¦ °ü¸®ÇÏ±â À§ÇÑ transaction status slot
  *
  *
- * # êµ¬ì¡°
+ * # ±¸Á¶
  *
- *   - tss (transaction status slot)ì˜ êµ¬ì¡°
+ *   - tss (transaction status slot)ÀÇ ±¸Á¶
  *
- *   tssëŠ” ê³ ì •ê¸¸ì´ë¥¼ ê°€ì§€ë©°, ë‹¤ìŒê³¼ ê°™ì€ ì •ë³´ë¡œ êµ¬ì„±ëœë‹¤.
+ *   tss´Â °íÁ¤±æÀÌ¸¦ °¡Áö¸ç, ´ÙÀ½°ú °°Àº Á¤º¸·Î ±¸¼ºµÈ´Ù.
  *    ___________________________
  *   |TID |        | Commite SCN |
  *   |____|_status_|_____________|
  *
  *    - TID
- *      : íŠ¸ëœì­ì…˜ ID
+ *      : Æ®·£Àè¼Ç ID
  *
  *    - Status
- *      : TSSì˜ ìƒíƒœ
+ *      : TSSÀÇ »óÅÂ
  *
  *    - Commit SCN
- *      : transaction commitê³¼ì •ì—ì„œ í• ë‹¹í•˜ëŠ” SCN ê°’ì„ ì„¤ì •í•˜ë©´,
- *        commitë˜ê¸°ì „ê¹Œì§€ ë¬´í•œëŒ€ ê°’ì„ í‘œì‹œ
+ *      : transaction commit°úÁ¤¿¡¼­ ÇÒ´çÇÏ´Â SCN °ªÀ» ¼³Á¤ÇÏ¸é,
+ *        commitµÇ±âÀü±îÁö ¹«ÇÑ´ë °ªÀ» Ç¥½Ã
  *
  *
- * # ê´€ë ¨ìë£Œêµ¬ì¡°
+ * # °ü·ÃÀÚ·á±¸Á¶
  *
- *  - sdcTSS      êµ¬ì¡°ì²´
+ *  - sdcTSS      ±¸Á¶Ã¼
  *
  **********************************************************************/
 
@@ -119,7 +119,7 @@ inline void sdcTSSlot::init( sdcTSS   * aSlotPtr,
 
 
 /***********************************************************************
- * Description : TSSì˜ CommitSCN ë°˜í™˜
+ * Description : TSSÀÇ CommitSCN ¹İÈ¯
  **********************************************************************/
 inline void sdcTSSlot::getCommitSCN( sdcTSS  * aSlotPtr,
                                      smSCN   * aCommitSCN )
@@ -130,7 +130,7 @@ inline void sdcTSSlot::getCommitSCN( sdcTSS  * aSlotPtr,
 }
 
 /***********************************************************************
- * Description : TSS ìƒíƒœ ë°˜í™˜
+ * Description : TSS »óÅÂ ¹İÈ¯
  **********************************************************************/
 inline sdcTSState sdcTSSlot::getState( sdcTSS*  aSlotPtr )
 {
@@ -140,7 +140,7 @@ inline sdcTSState sdcTSSlot::getState( sdcTSS*  aSlotPtr )
 
 
 /***********************************************************************
- * Description : íŠ¸ëœì­ì…˜ì˜ TIDì™€ CommitSCN ë°˜í™˜
+ * Description : Æ®·£Àè¼ÇÀÇ TID¿Í CommitSCN ¹İÈ¯
  **********************************************************************/
 inline void sdcTSSlot::getTransInfo( sdcTSS   * aSlotPtr,
                                      smTID    * aTransID,

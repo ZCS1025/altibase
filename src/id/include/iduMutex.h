@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduMutex.h 85186 2019-04-09 07:37:00Z jayce.park $
+ * $Id: iduMutex.h 86279 2019-10-15 01:10:42Z hykim $
  **********************************************************************/
 #ifndef _O_IDU_MUTEX_H_
 #define _O_IDU_MUTEX_H_ 1
@@ -17,8 +17,8 @@ class iduMutex
 public:
 
     /*
-     * mutexì˜ ì¢…ë¥˜ì™€ ì¸¡ì •í•  wait eventë¥¼ ëª…ì‹œí•œë‹¤.
-     * wait eventëŠ” idv.hì— ì§ì ‘ ì •ì˜í•˜ê±°ë‚˜ ì°¸ì¡°í•œë‹¤
+     * mutexÀÇ Á¾·ù¿Í ÃøÁ¤ÇÒ wait event¸¦ ¸í½ÃÇÑ´Ù.
+     * wait event´Â idv.h¿¡ Á÷Á¢ Á¤ÀÇÇÏ°Å³ª ÂüÁ¶ÇÑ´Ù
      */
     IDE_RC initialize(const SChar *aName,
                       iduMutexKind aKind,
@@ -29,16 +29,13 @@ public:
     inline IDE_RC trylock(idBool        & bLock );
 
     /*
-     * ì´ˆê¸°í™”ì‹œ ëª…ì‹œëœ wait eventì˜ wait timeì„ ì¸¡ì •í•˜ë ¤ë©´
-     * Session í†µê³„ìë£Œêµ¬ì¡°ì¸ idvSQLë¥¼ ì¸ìë¡œ ì „ë‹¬í•´ì•¼í•œë‹¤.
-     * TIMED_STATISTICS í”„ë¡œí¼í‹°ê°€ 1 ì´ì–´ì•¼ ì¸¡ì •ëœë‹¤. 
+     * ÃÊ±âÈ­½Ã ¸í½ÃµÈ wait eventÀÇ wait timeÀ» ÃøÁ¤ÇÏ·Á¸é
+     * Session Åë°èÀÚ·á±¸Á¶ÀÎ idvSQL¸¦ ÀÎÀÚ·Î Àü´ŞÇØ¾ßÇÑ´Ù.
+     * TIMED_STATISTICS ÇÁ·ÎÆÛÆ¼°¡ 1 ÀÌ¾î¾ß ÃøÁ¤µÈ´Ù. 
      */
     inline IDE_RC lock( idvSQL        * aStatSQL );
 
     inline IDE_RC unlock();
-
-    inline IDE_RC lockRecursive( idvSQL * aStatSQL );
-    inline IDE_RC unlockRecursive();
 
     void  status() {}
     
@@ -104,23 +101,10 @@ inline IDE_RC iduMutex::unlock()
     return IDE_SUCCESS;
 }
 
-inline IDE_RC iduMutex::lockRecursive( idvSQL * aStatSQL )
-{
-    mEntry->lockRecursive( aStatSQL );
-
-    return IDE_SUCCESS;
-}
-
-inline IDE_RC iduMutex::unlockRecursive()
-{
-    mEntry->unlockRecursive();
-
-    return IDE_SUCCESS;
-}
 /* --------------------------------------------------------------------
- * mtx commit ì‹œì— latchë¥¼ í’€ì–´ì£¼ê¸° ìœ„í•œ í•¨ìˆ˜
- * sdbBufferMgrê³¼ i/fë¥¼ ë§ì¶”ê¸° ìœ„í•´ 2ê°œì˜ ì¸ìê°€ ì¶”ê°€ë˜ì—ˆìœ¼ë‚˜
- * ì‚¬ìš©ë˜ì§€ ì•ŠëŠ”ë‹¤.
+ * mtx commit ½Ã¿¡ latch¸¦ Ç®¾îÁÖ±â À§ÇÑ ÇÔ¼ö
+ * sdbBufferMgr°ú i/f¸¦ ¸ÂÃß±â À§ÇØ 2°³ÀÇ ÀÎÀÚ°¡ Ãß°¡µÇ¾úÀ¸³ª
+ * »ç¿ëµÇÁö ¾Ê´Â´Ù.
  * ----------------------------------------------------------------- */
 inline IDE_RC iduMutex::unlock( void *aMutex, UInt, void * )
 {
@@ -130,9 +114,9 @@ inline IDE_RC iduMutex::unlock( void *aMutex, UInt, void * )
 }
 
 /* --------------------------------------------------------------------
- * 2ê°œì˜ latchê°€ ê°™ì€ ì§€ ë¹„êµí•œë‹¤.
- * sdrMiniTransì—ì„œ ìŠ¤íƒì— ìˆëŠ” íŠ¹ì • ì•„ì´í…œì„ ì°¾ì„ ë•Œ ì‚¬ìš©ëœë‹¤.
- * ë‹¨ìˆœíˆ í¬ì¸í„°ê°€ ê°™ì€ì§€ ë¹„êµí•œë‹¤. -> ë¹„êµí•  ì•„ì´í…œì„ ì°¾ì§€ ëª»í–ˆìŒ.
+ * 2°³ÀÇ latch°¡ °°Àº Áö ºñ±³ÇÑ´Ù.
+ * sdrMiniTrans¿¡¼­ ½ºÅÃ¿¡ ÀÖ´Â Æ¯Á¤ ¾ÆÀÌÅÛÀ» Ã£À» ¶§ »ç¿ëµÈ´Ù.
+ * ´Ü¼øÈ÷ Æ÷ÀÎÅÍ°¡ °°ÀºÁö ºñ±³ÇÑ´Ù. -> ºñ±³ÇÒ ¾ÆÀÌÅÛÀ» Ã£Áö ¸øÇßÀ½.
  * ----------------------------------------------------------------- */
 inline idBool iduMutex::isMutexSame( void *aLhs, void *aRhs )
 {

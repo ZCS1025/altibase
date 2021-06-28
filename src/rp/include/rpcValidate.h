@@ -49,6 +49,7 @@ public:
     static IDE_RC validateQuickStart(void * aQcStatement);
     static IDE_RC validateSync(void * aQcStatement);
     static IDE_RC validateSyncTbl(void * aQcStatement);
+    static IDE_RC validateTempSync(void * aQcStatement);
     static IDE_RC validateReset(void * aQcStatement);
     static IDE_RC validateAlterSetRecovery(void * aQcStatement);
     static IDE_RC validateAlterSetOffline(void * aQcStatement);
@@ -66,11 +67,30 @@ public:
     static IDE_RC validateAlterPartition( void * aQcStatement,
                                           qcmTableInfo * aPartInfo );
 
+
+    static IDE_RC validateDeleteItemReplaceHistory(void * aQcStatement);
+    static IDE_RC validateFailback(void * aQcStatement);
+
+    static IDE_RC validateFailover( void * aQcStatement );
+
 private:
     static IDE_RC lockAllPartitionForDDLValidation( void                 * aQcStatement,
                                                     qcmPartitionInfoList * aPartInfoList );
 
     static IDE_RC applierBufferSizeCheck( UChar aType, ULong aSize );
+
+    static IDE_RC makeTableOIDArray( void         * aQcStatement,
+                                     UInt           aReplItemCount,
+                                     qriReplItem  * aReplItems,
+                                     UInt         * aTableOIDCount,
+                                     smOID       ** aTableOIDArray );
+
+    static IDE_RC allocAndBuildLockTable( idvSQL               * aStatistics,
+                                          iduVarMemList        * aMemory,
+                                          smiStatement         * aSmiStatement,
+                                          SChar                * aRepName,
+                                          RP_META_BUILD_TYPE     aMetaBuildType,
+                                          void                ** aLockTable );
 };
 
 #endif  // _O_RPC_VALIDATE_H_

@@ -183,9 +183,9 @@
 #define OA_CONFIG_OTHER_DATABASE_GROUP_COMMIT_MIN (0)
 #define OA_CONFIG_OTHER_DATABASE_GROUP_COMMIT_MAX (1)
 
-#define OA_CONFIG_OTHER_DATABASE_JDBC_JVM_MAX_HEAP_SIZE_DEFAULT (2 * 1024)
-#define OA_CONFIG_OTHER_DATABASE_JDBC_JVM_MAX_HEAP_SIZE_MIN (0)
-#define OA_CONFIG_OTHER_DATABASE_JDBC_JVM_MAX_HEAP_SIZE_MAX (10 * 1024)
+#define OA_CONFIG_OTHER_DATABASE_JDBC_MAX_HEAP_SIZE_DEFAULT (2 * 1024)
+#define OA_CONFIG_OTHER_DATABASE_JDBC_MAX_HEAP_SIZE_MIN (0)
+#define OA_CONFIG_OTHER_DATABASE_JDBC_MAX_HEAP_SIZE_MAX (10 * 1024)
 
 #define OA_CONFIG_OTHER_DATABASE_JDBC_DRIVER_PATH_DEFAULT ("")
 
@@ -785,7 +785,7 @@ static acp_sint32_t oaConfigCallbackOtherDatabaseGroupCommit( acp_sint32_t aDept
     return 0;
 }
 
-static acp_sint32_t oaConfigCallbackOtherDatabaseJDBCJVMMaxHeapSize( acp_sint32_t     aDepth,
+static acp_sint32_t oaConfigCallbackOtherDatabaseJDBCMaxHeapSize( acp_sint32_t     aDepth,
                                                                      acl_conf_key_t * aKey,
                                                                      acp_sint32_t     aLineNumber,
                                                                      void           * aValue,
@@ -1684,12 +1684,12 @@ static acl_conf_def_t gConfigDefinition[] =
                          OA_CONFIG_OTHER_DATABASE_GROUP_COMMIT_MAX,
                          1, oaConfigCallbackOtherDatabaseGroupCommit ),
     
-    ACL_CONF_DEF_SINT32( "OTHER_DATABASE_JDBC_JVM_MAX_HEAP_SIZE",
-                         OA_CONFIG_OTHER_DATABASE_JDBC_JVM_MAX_HEAP_SIZE,
-                         OA_CONFIG_OTHER_DATABASE_JDBC_JVM_MAX_HEAP_SIZE_DEFAULT,
-                         OA_CONFIG_OTHER_DATABASE_JDBC_JVM_MAX_HEAP_SIZE_MIN,
-                         OA_CONFIG_OTHER_DATABASE_JDBC_JVM_MAX_HEAP_SIZE_MAX,
-                         1, oaConfigCallbackOtherDatabaseJDBCJVMMaxHeapSize ),
+    ACL_CONF_DEF_SINT32( "OTHER_DATABASE_JDBC_MAX_HEAP_SIZE",
+                         OA_CONFIG_OTHER_DATABASE_JDBC_MAX_HEAP_SIZE,
+                         OA_CONFIG_OTHER_DATABASE_JDBC_MAX_HEAP_SIZE_DEFAULT,
+                         OA_CONFIG_OTHER_DATABASE_JDBC_MAX_HEAP_SIZE_MIN,
+                         OA_CONFIG_OTHER_DATABASE_JDBC_MAX_HEAP_SIZE_MAX,
+                         1, oaConfigCallbackOtherDatabaseJDBCMaxHeapSize ),
                          
     ACL_CONF_DEF_STRING( "OTHER_DATABASE_JDBC_DRIVER_PATH",
                          OA_CONFIG_OTHER_DATABASE_JDBC_DRIVER_PATH,
@@ -2081,7 +2081,7 @@ static void oaConfigInitializeHandle(oaConfigHandle *aHandle)
 
     aHandle->mJDBCConflictLoggingLevel = OA_CONFIG_OTHER_DATABASE_CONFLICT_LOGGING_LEVEL_DEFAULT;
     aHandle->mJDBCGroupCommit = OA_CONFIG_OTHER_DATABASE_GROUP_COMMIT_DEFAULT;
-    aHandle->mJDBCXmxOpt = OA_CONFIG_OTHER_DATABASE_JDBC_JVM_MAX_HEAP_SIZE_DEFAULT;
+    aHandle->mJDBCXmxOpt = OA_CONFIG_OTHER_DATABASE_JDBC_MAX_HEAP_SIZE_DEFAULT;
 
     aHandle->mSetUserToTable = OA_CONFIG_OTHER_DATABASE_SET_USER_TO_TABLE_DEFAULT;
     
@@ -2365,7 +2365,7 @@ void oaConfigGetBasicConfiguration(oaConfigHandle *aHandle,
 }
 
 /**
- * @breif  Constraint í”„ë¼í¼í‹°ë¥¼ ì–»ëŠ”ë‹¤.
+ * @breif  Constraint ÇÁ¶óÆÛÆ¼¸¦ ¾ò´Â´Ù.
  *
  * @param  aHandle All Properties
  * @param  aConfig Constraint Properties

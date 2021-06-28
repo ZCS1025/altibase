@@ -37,138 +37,8 @@
 
 //======================================================================
 //  X$INDEX
-//  indexì˜ general informationì„ ë³´ì—¬ì£¼ëŠ” peformance view
+//  indexÀÇ general informationÀ» º¸¿©ÁÖ´Â peformance view
 //======================================================================
-
-IDE_RC smnFT::buildRecordForIndexInfo(idvSQL              * /*aStatistics*/,
-                                      void        *aHeader,
-                                      void        * /* aDumpObj */,
-                                      iduFixedTableMemory *aMemory)
-{
-    smcTableHeader     *sCatTblHdr;
-    smcTableHeader     *sTableHeader;
-    smpSlotHeader      *sPtr;
-    SChar              *sCurPtr;
-    SChar              *sNxtPtr;
-    smnIndexHeader     *sIndexCursor;
-    smnIndexInfo4PerfV  sIndexInfo;
-    void               *sTrans;
-    UInt                sIndexCnt;
-    UInt                i;
-    void              * sISavepoint = NULL;
-    UInt                sDummy = 0;
-
-    IDE_ERROR( aHeader != NULL );
-    IDE_ERROR( aMemory != NULL );
-
-    sCatTblHdr = (smcTableHeader*)SMC_CAT_TABLE;
-    sCurPtr = NULL;
-
-    if ( aMemory->useExternalMemory() == ID_TRUE )
-    {
-        /* BUG-43006 FixedTable Indexing Filter */
-        sTrans = ((smiFixedTableProperties *)aMemory->getContext())->mTrans;
-    }
-    else
-    {
-        /* BUG-32292 [sm-util] Self deadlock occur since fixed-table building
-         * operation uses another transaction. 
-         * NestedTransactionì„ ì‚¬ìš©í•˜ë©´ Self-deadlock ìš°ë ¤ê°€ ìˆë‹¤.
-         * ë”°ë¼ì„œ id Memory ì˜ì—­ìœ¼ë¡œë¶€í„° Iteratorë¥¼ ì–»ì–´ Transactionì„ ì–»ì–´ë‚¸ë‹¤. */
-        sTrans = ((smiIterator*)aMemory->getContext())->trans;
-    }
-
-    while(1)
-    {
-        IDE_TEST(smcRecord::nextOIDall(sCatTblHdr,sCurPtr,&sNxtPtr)
-                  != IDE_SUCCESS);
-        if( sNxtPtr == NULL )
-        {
-            break;
-        }//if sNxtPtr
-        sPtr = (smpSlotHeader *)sNxtPtr;
-        // To fix BUG-14681
-        if( SM_SCN_IS_INFINITE(sPtr->mCreateSCN) == ID_TRUE )
-        {
-            /* BUG-14974: ë¬´í•œ Loopë°œìƒ.*/
-            sCurPtr = sNxtPtr;
-            continue;
-        }
-        sTableHeader = (smcTableHeader *)( sPtr + 1 );
-
-        if( smcTable::isDropedTable(sTableHeader) == ID_TRUE )
-        {
-            sCurPtr = sNxtPtr;
-            continue;
-        }//if
-
-        sIndexCnt =  smcTable::getIndexCount(sTableHeader);
-
-        if( sIndexCnt != 0  )
-        {
-            //DDL ì„ ë°©ì§€.
-            IDE_TEST( smLayerCallback::setImpSavepoint( sTrans, 
-                                                        &sISavepoint,
-                                                        sDummy )
-                      != IDE_SUCCESS );
-            IDE_TEST( smLayerCallback::lockTableModeIS( sTrans,
-                                                        SMC_TABLE_LOCK( sTableHeader ) )
-                      != IDE_SUCCESS );
-
-            //lockì„ ì¡ì•˜ì§€ë§Œ tableì´ dropëœ ê²½ìš°ì—ëŠ” skip;
-            if(smcTable::isDropedTable(sTableHeader) == ID_TRUE)
-            {
-                IDE_TEST( smLayerCallback::abortToImpSavepoint( sTrans, 
-                                                                sISavepoint )
-                          != IDE_SUCCESS );
-                IDE_TEST( smLayerCallback::unsetImpSavepoint( sTrans, 
-                                                              sISavepoint )
-                          != IDE_SUCCESS );
-                sCurPtr = sNxtPtr;
-                continue;
-            }//if
-
-            // lockì„ ëŒ€ê¸°í•˜ëŠ” ë™ì•ˆ indexê°€ dropë˜ì—ˆê±°ë‚˜, ìƒˆë¡œìš´ indexê°€
-            // ìƒì„±ë˜ì—ˆì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì •í™•í•œ index ìˆ˜ë¥¼ ë‹¤ì‹œ êµ¬í•œë‹¤.
-            // ë¿ë§Œ ì•„ë‹ˆë¼, index cntë¥¼ ì¦ê°€ì‹œí‚¨ í›„ indexë¥¼ ìƒì„±í•˜ë¯€ë¡œ
-            // indexê°€ ì™„ë£Œë˜ì§€ ëª»í•˜ë©´ index cntê°€ ê°ì†Œí•˜ë¯€ë¡œ ë‹¤ì‹œ êµ¬í•´ì•¼ í•¨.
-            sIndexCnt = smcTable::getIndexCount(sTableHeader);
-
-            for(i=0;i < sIndexCnt; i++ )
-            {
-                sIndexCursor=(smnIndexHeader*)smcTable::getTableIndex(sTableHeader,i);
-
-                idlOS::memset(&sIndexInfo,0x00,ID_SIZEOF(smnIndexInfo4PerfV));
-                sIndexInfo.mTableOID     = sIndexCursor->mTableOID;
-                sIndexInfo.mIndexSegPID  = SC_MAKE_PID(sIndexCursor->mIndexSegDesc);
-                sIndexInfo.mIndexID      = sIndexCursor->mId;
-                // primary keyë‚˜ ì¼ë°˜ ì¸ë±ìŠ¤ ëƒ?
-                sIndexInfo.mIndexType  =   sIndexCursor->mFlag &  SMI_INDEX_TYPE_MASK;
-
-                IDE_TEST(iduFixedTable::buildRecord(aHeader,
-                                                    aMemory,
-                                                    (void *)&sIndexInfo)
-                     != IDE_SUCCESS);
-
-
-            }//for
-            IDE_TEST( smLayerCallback::abortToImpSavepoint( sTrans, 
-                                                            sISavepoint )
-                      != IDE_SUCCESS );
-            IDE_TEST( smLayerCallback::unsetImpSavepoint( sTrans, 
-                                                          sISavepoint )
-                      != IDE_SUCCESS );
-        }// if ì¸ë±ìŠ¤ê°€ ìˆìœ¼ë©´
-        sCurPtr = sNxtPtr;
-    }// while
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
 static iduFixedTableColDesc  gIndexInfoColDesc[]=
 {
 
@@ -176,7 +46,7 @@ static iduFixedTableColDesc  gIndexInfoColDesc[]=
         (SChar*)"TABLE_OID",
         offsetof(smnIndexInfo4PerfV,mTableOID),
         IDU_FT_SIZEOF(smnIndexInfo4PerfV,mTableOID),
-        IDU_FT_TYPE_UBIGINT,
+        IDU_FT_TYPE_UBIGINT | IDU_FT_COLUMN_INDEX,
         NULL,
         0, 0,NULL // for internal use
     },
@@ -230,3 +100,177 @@ iduFixedTableDesc  gIndexDesc=
     IDU_FT_DESC_TRANS_USE,
     NULL
 };
+
+IDE_RC smnFT::buildRecordForIndexInfo(idvSQL              * /*aStatistics*/,
+                                      void        *aHeader,
+                                      void        * /* aDumpObj */,
+                                      iduFixedTableMemory *aMemory)
+{
+    smcTableHeader     *sCatTblHdr;
+    smcTableHeader     *sTableHeader;
+    smpSlotHeader      *sPtr;
+    SChar              *sCurPtr;
+    SChar              *sNxtPtr;
+    smnIndexHeader     *sIndexCursor;
+    smnIndexInfo4PerfV  sIndexInfo;
+    void               *sTrans;
+    UInt                sIndexCnt;
+    UInt                i;
+    void              * sISavepoint = NULL;
+    UInt                sDummy = 0;
+    void              * sIndexValues[1];
+    UInt                sState = 0;
+
+    IDE_ERROR( aHeader != NULL );
+    IDE_ERROR( aMemory != NULL );
+
+    sCatTblHdr = (smcTableHeader*)SMC_CAT_TABLE;
+    sCurPtr = NULL;
+
+    if ( aMemory->useExternalMemory() == ID_TRUE )
+    {
+        /* BUG-43006 FixedTable Indexing Filter */
+        sTrans = ((smiFixedTableProperties *)aMemory->getContext())->mTrans;
+    }
+    else
+    {
+        /* BUG-32292 [sm-util] Self deadlock occur since fixed-table building
+         * operation uses another transaction. 
+         * NestedTransactionÀ» »ç¿ëÇÏ¸é Self-deadlock ¿ì·Á°¡ ÀÖ´Ù.
+         * µû¶ó¼­ id Memory ¿µ¿ªÀ¸·ÎºÎÅÍ Iterator¸¦ ¾ò¾î TransactionÀ» ¾ò¾î³½´Ù. */
+        sTrans = ((smiIterator*)aMemory->getContext())->trans;
+    }
+
+    while(1)
+    {
+        IDE_TEST(smcRecord::nextOIDall(sCatTblHdr,sCurPtr,&sNxtPtr)
+                  != IDE_SUCCESS);
+        if( sNxtPtr == NULL )
+        {
+            break;
+        }//if sNxtPtr
+        sPtr = (smpSlotHeader *)sNxtPtr;
+        // To fix BUG-14681
+        if( SM_SCN_IS_INFINITE(sPtr->mCreateSCN) == ID_TRUE )
+        {
+            /* BUG-14974: ¹«ÇÑ Loop¹ß»ı.*/
+            sCurPtr = sNxtPtr;
+            continue;
+        }
+        sTableHeader = (smcTableHeader *)( sPtr + 1 );
+
+        if( smcTable::isDropedTable(sTableHeader) == ID_TRUE )
+        {
+            sCurPtr = sNxtPtr;
+            continue;
+        }//if
+
+        sIndexCnt =  smcTable::getIndexCount(sTableHeader);
+
+        if( sIndexCnt != 0  )
+        {
+            /* BUG-43006 FixedTable Indexing Filter
+             * Column Index ¸¦ »ç¿ëÇØ¼­ ÀüÃ¼ Record¸¦ »ı¼ºÇÏÁö¾Ê°í
+             * ºÎºĞ¸¸ »ı¼ºÇØ Filtering ÇÑ´Ù.
+             * 1. void * ¹è¿­¿¡ IDU_FT_COLUMN_INDEX ·Î ÁöÁ¤µÈ ÄÃ·³¿¡
+             * ÇØ´çÇÏ´Â °ªÀ» ¼ø¼­´ë·Î ³Ö¾îÁÖ¾î¾ß ÇÑ´Ù.
+             * 2. IDU_FT_COLUMN_INDEXÀÇ ÄÃ·³¿¡ ÇØ´çÇÏ´Â °ªÀ» ¸ğµÎ ³Ö
+             * ¾î ÁÖ¾î¾ßÇÑ´Ù.
+             */
+            sIndexValues[0] = &sTableHeader->mSelfOID;
+            if ( iduFixedTable::checkKeyRange( aMemory,
+                                               gIndexInfoColDesc,
+                                               sIndexValues )
+                 == ID_FALSE )
+            {
+                sCurPtr = sNxtPtr;
+                continue;
+            }
+
+            sState = 1;
+            //DDL À» ¹æÁö.
+            IDE_TEST( smLayerCallback::setImpSavepoint( sTrans, 
+                                                        &sISavepoint,
+                                                        sDummy )
+                      != IDE_SUCCESS );
+
+            /* BUG-48160 lock ÀâÈù table Àº Á¦¿ÜÇÏ°í Ãâ·ÂÇÏ´Â ±â´É Ãß°¡.
+             * Property : __SKIP_LOCKED_TABLE_AT_FIXED_TABLE */
+            if ( smLayerCallback::lockTableModeIS4FixedTable( sTrans,
+                                                              SMC_TABLE_LOCK( sTableHeader ) )
+                      == IDE_SUCCESS )
+            {
+                sState = 2;
+                //lockÀ» Àâ¾ÒÁö¸¸ tableÀÌ dropµÈ °æ¿ì¿¡´Â skip;
+                if(smcTable::isDropedTable(sTableHeader) == ID_TRUE)
+                {
+                    sState = 1;
+                    IDE_TEST( smLayerCallback::abortToImpSavepoint( sTrans, 
+                                                                    sISavepoint )
+                              != IDE_SUCCESS );
+
+                    sState = 0;
+                    IDE_TEST( smLayerCallback::unsetImpSavepoint( sTrans, 
+                                                                  sISavepoint )
+                              != IDE_SUCCESS );
+                    sCurPtr = sNxtPtr;
+                    continue;
+                }//if
+
+                // lockÀ» ´ë±âÇÏ´Â µ¿¾È index°¡ dropµÇ¾ú°Å³ª, »õ·Î¿î index°¡
+                // »ı¼ºµÇ¾úÀ» ¼ö ÀÖÀ¸¹Ç·Î Á¤È®ÇÑ index ¼ö¸¦ ´Ù½Ã ±¸ÇÑ´Ù.
+                // »Ó¸¸ ¾Æ´Ï¶ó, index cnt¸¦ Áõ°¡½ÃÅ² ÈÄ index¸¦ »ı¼ºÇÏ¹Ç·Î
+                // index°¡ ¿Ï·áµÇÁö ¸øÇÏ¸é index cnt°¡ °¨¼ÒÇÏ¹Ç·Î ´Ù½Ã ±¸ÇØ¾ß ÇÔ.
+                sIndexCnt = smcTable::getIndexCount(sTableHeader);
+
+                for(i=0;i < sIndexCnt; i++ )
+                {
+                    sIndexCursor=(smnIndexHeader*)smcTable::getTableIndex(sTableHeader,i);
+
+                    idlOS::memset(&sIndexInfo,0x00,ID_SIZEOF(smnIndexInfo4PerfV));
+                    sIndexInfo.mTableOID     = sIndexCursor->mTableOID;
+                    sIndexInfo.mIndexSegPID  = SC_MAKE_PID(sIndexCursor->mIndexSegDesc);
+                    sIndexInfo.mIndexID      = sIndexCursor->mId;
+                    // primary key³ª ÀÏ¹İ ÀÎµ¦½º ³Ä?
+                    sIndexInfo.mIndexType  =   sIndexCursor->mFlag &  SMI_INDEX_TYPE_MASK;
+
+                    IDE_TEST(iduFixedTable::buildRecord(aHeader,
+                                                        aMemory,
+                                                        (void *)&sIndexInfo)
+                             != IDE_SUCCESS);
+
+
+                }//for
+
+                sState = 1;
+                IDE_TEST( smLayerCallback::abortToImpSavepoint( sTrans, 
+                                                                sISavepoint )
+                          != IDE_SUCCESS );
+            }
+
+            sState = 0;
+            IDE_TEST( smLayerCallback::unsetImpSavepoint( sTrans, 
+                                                          sISavepoint )
+                      != IDE_SUCCESS );
+        }// if ÀÎµ¦½º°¡ ÀÖÀ¸¸é
+        sCurPtr = sNxtPtr;
+    }// while
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    switch ( sState )
+    {
+        case 2:
+            IDE_ASSERT( smLayerCallback::abortToImpSavepoint( sTrans, sISavepoint )
+                        == IDE_SUCCESS );
+        case 1:
+            IDE_ASSERT( smLayerCallback::unsetImpSavepoint( sTrans, sISavepoint )
+                        == IDE_SUCCESS );
+        default:
+            break;
+    }
+
+    return IDE_FAILURE;
+}

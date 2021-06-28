@@ -16,7 +16,7 @@
  
 
 /*******************************************************************************
-* $Id: mtfSOWAnova.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+* $Id: mtfSOWAnova.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
 *******************************************************************************/
 
 #include <mte.h>
@@ -944,7 +944,7 @@ IDE_RC mtfSOWAnovaEstimate( mtcNode     * aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // funcData ì‚¬ìš©
+    // funcData »ç¿ë
     aNode->info = aTemplate->funcDataCnt;
     aTemplate->funcDataCnt++;
 
@@ -977,7 +977,7 @@ IDE_RC mtfSOWAnovaInitialize( mtcNode*     aNode,
     sColumn = aTemplate->rows[aNode->table].columns + aNode->column;
     sRow    = (UChar *)aTemplate->rows[aNode->table].row;
 
-    // ìµœì´ˆ ë“±ë¡
+    // ÃÖÃÊ µî·Ï
     if ( aTemplate->funcData[aNode->info] == NULL )
     {
         IDE_TEST( mtf::allocFuncDataMemory( &sMemoryMgr )
@@ -996,7 +996,7 @@ IDE_RC mtfSOWAnovaInitialize( mtcNode*     aNode,
                                                     sMemoryMgr )
                   != IDE_SUCCESS );
 
-        // ë“±ë¡
+        // µî·Ï
         aTemplate->funcData[aNode->info] = sFDBI;
     }
     else

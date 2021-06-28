@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLSpool.cpp 82438 2018-03-11 23:49:11Z bethy $
+ * $Id: iSQLSpool.cpp 88494 2020-09-04 04:29:31Z chkim $
  **********************************************************************/
 
 #include <ida.h>
@@ -78,10 +78,12 @@ iSQLSpool::SetSpoolFile( SChar * a_FileName )
 {
     IDE_TEST_RAISE(m_bSpoolOn == ID_TRUE, already_spool_on);
 
-    m_fpSpool = isql_fopen(a_FileName, "r");
+    /* BUG-47652 Set file permission */
+    m_fpSpool = isql_fopen( a_FileName, "r", gProgOption.isExistFilePerm() );
     IDE_TEST_RAISE(m_fpSpool != NULL, already_exist_file);
 
-    m_fpSpool = isql_fopen(a_FileName, "wt");
+    /* BUG-47652 Set file permission */
+    m_fpSpool = isql_fopen( a_FileName, "wt", gProgOption.isExistFilePerm() );
     IDE_TEST_RAISE(m_fpSpool == NULL, fail_open_file);
 
     m_bSpoolOn = ID_TRUE;
@@ -186,9 +188,9 @@ iSQLSpool::PrintPrompt()
 void
 iSQLSpool::Print()
 {
-    /* set term offëŠ” script íŒŒì¼ì„ ì‹¤í–‰í•  ë•Œë§Œ ì ìš©ëœë‹¤.
-     * interactiveí•˜ê²Œ ì‹¤í–‰í•  ë•ŒëŠ” term off ì˜í–¥ì„ ë°›ì§€ ì•ŠëŠ”ë‹¤.
-     * ì¦‰,
+    /* set term off´Â script ÆÄÀÏÀ» ½ÇÇàÇÒ ¶§¸¸ Àû¿ëµÈ´Ù.
+     * interactiveÇÏ°Ô ½ÇÇàÇÒ ¶§´Â term off ¿µÇâÀ» ¹ŞÁö ¾Ê´Â´Ù.
+     * Áï,
      * if ( gProperty.GetTerm() == ID_FALSE &&
      *      gSQLCompiler->IsFileRead() == ID_TRUE )
      * {
@@ -202,7 +204,7 @@ iSQLSpool::Print()
         idlOS::fflush(gProgOption.m_OutFile);
     }
 
-    /* Spool íŒŒì¼ì´ ì„¤ì •ë˜ì–´ ìˆìœ¼ë©´ í•´ë‹¹ íŒŒì¼ë¡œ ê²°ê³¼ë¥¼ ë¬´ì¡°ê±´ ì¶œë ¥ */
+    /* Spool ÆÄÀÏÀÌ ¼³Á¤µÇ¾î ÀÖÀ¸¸é ÇØ´ç ÆÄÀÏ·Î °á°ú¸¦ ¹«Á¶°Ç Ãâ·Â */
     if ( m_bSpoolOn == ID_TRUE && m_fpSpool != NULL )
     {
         idlOS::fprintf(m_fpSpool, "%s", m_Buf);
@@ -217,34 +219,9 @@ iSQLSpool::PrintOutFile()
     idlOS::fflush(gProgOption.m_OutFile);
 }
 
-/*
- * BUG-45722 Renewal of Echo On|Off
- *   This function was replaced with PrintCommand2()
- *   and it should be removed later.
- */
-void iSQLSpool::PrintCommand()
-{
-    /* BUG-37772 */
-    /* BUG-45722
-    if( ( gProperty.GetEcho()        == ID_TRUE  ) &&
-        ( gProperty.GetTerm()        == ID_FALSE ) &&
-        ( gSQLCompiler->IsFileRead() == ID_TRUE  ) )
-    {
-        idlOS::fprintf(gProgOption.m_OutFile, "%s", m_Buf);
-        idlOS::fflush(gProgOption.m_OutFile);
-    }
-
-    if ( m_bSpoolOn == ID_TRUE && m_fpSpool != NULL )
-    {
-        idlOS::fprintf(m_fpSpool, "%s%s",
-                       gProperty.GetSqlPrompt(), m_Buf);
-        idlOS::fflush(m_fpSpool);
-    }
-    */
-}
-
+/* BUG-46217 Remove unused code */
 /* BUG-45722 Renewal of Echo On|OFF */
-void iSQLSpool::PrintCommand2(idBool aDisplayOut, idBool aSpoolOut)
+void iSQLSpool::PrintCommand(idBool aDisplayOut, idBool aSpoolOut)
 {
     if ( aDisplayOut == ID_TRUE )
     {
@@ -277,7 +254,7 @@ iSQLSpool::PrintWithDouble(SInt *aPos)
 /***********************************************************************
  *
  * Description :
- *    DOUBLE ê°’ì„ ì ì ˆí•œ í¬ë§·ìœ¼ë¡œ ì¶œë ¥
+ *    DOUBLE °ªÀ» ÀûÀıÇÑ Æ÷¸ËÀ¸·Î Ãâ·Â
  *
  * Implementation :
  *
@@ -291,7 +268,7 @@ iSQLSpool::PrintWithDouble(SInt *aPos)
 #endif
 
     // fix PR-12295
-    // 0ì— ê°€ê¹Œìš´ ì‘ì€ ê°’ì€ 0ìœ¼ë¡œ ì¶œë ¥í•¨.
+    // 0¿¡ °¡±î¿î ÀÛÀº °ªÀº 0À¸·Î Ãâ·ÂÇÔ.
     if( ( m_DoubleBuf < 1E-7 ) &&
         ( m_DoubleBuf > -1E-7 ) )
     {
@@ -332,7 +309,7 @@ iSQLSpool::PrintWithFloat(SInt *aPos)
 /***********************************************************************
  *
  * Description :
- *    REAL ê°’ì„ ì ì ˆí•œ í¬ë§·ìœ¼ë¡œ ì¶œë ¥
+ *    REAL °ªÀ» ÀûÀıÇÑ Æ÷¸ËÀ¸·Î Ãâ·Â
  *
  * Implementation :
  *
@@ -346,7 +323,7 @@ iSQLSpool::PrintWithFloat(SInt *aPos)
 #endif
 
     // fix PR-12295
-    // 0ì— ê°€ê¹Œìš´ ì‘ì€ ê°’ì€ 0ìœ¼ë¡œ ì¶œë ¥í•¨.
+    // 0¿¡ °¡±î¿î ÀÛÀº °ªÀº 0À¸·Î Ãâ·ÂÇÔ.
     if( ( m_FloatBuf < 1E-7 ) &&
         ( m_FloatBuf > -1E-7 ) )
     {

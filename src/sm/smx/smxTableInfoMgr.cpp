@@ -16,11 +16,9 @@
  
 
 /***********************************************************************
- * $Id: smxTableInfoMgr.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smxTableInfoMgr.cpp 90158 2021-03-10 00:30:31Z emlee $
  **********************************************************************/
 
-# include <idl.h>
-# include <idu.h>
 # include <smErrorCode.h>
 # include <smp.h>
 # include <smx.h>
@@ -28,17 +26,17 @@
 # include <sdp.h>
 
 /***********************************************************************
- * Description : Table Info Manager ì „ì—­ ì´ˆê¸°í™”
+ * Description : Table Info Manager Àü¿ª ÃÊ±âÈ­
  *
- * íŠ¸ëžœìž­ì…˜ë§ˆë‹¤ í…Œì´ë¸”ì •ë³´ê´€ë¦¬ìžë¥¼ ê°€ì§€ê³  ìžˆìœ¼ë©°, ì„œë²„êµ¬ë™ê³¼ì •ì˜ íŠ¸ëžœìž­ì…˜
- * ì „ì—­ì´ˆê¸°í™”ì‹œì— í…Œì´ë¸”ì •ë³´ê´€ë¦¬ìžë„ í•¨ê»˜ ì´ˆê¸°í™”ëœë‹¤.
+ * Æ®·£Àè¼Ç¸¶´Ù Å×ÀÌºíÁ¤º¸°ü¸®ÀÚ¸¦ °¡Áö°í ÀÖÀ¸¸ç, ¼­¹ö±¸µ¿°úÁ¤ÀÇ Æ®·£Àè¼Ç
+ * Àü¿ªÃÊ±âÈ­½Ã¿¡ Å×ÀÌºíÁ¤º¸°ü¸®ÀÚµµ ÇÔ²² ÃÊ±âÈ­µÈ´Ù.
  *
- * - ìš´ì˜ì‹œ ë©”ëª¨ë¦¬í• ë‹¹ì„ ì ê²Œí•˜ê¸° ìœ„í•´ SMX_TABLEINFO_CACHE_COUNTë§Œí¼
- *   ë¯¸ë¦¬ smxTableInfo ê°ì²´ë¥¼ í• ë‹¹í•˜ë©°, smxTableInfoì˜ freelistë¥¼ ê´€ë¦¬í•œë‹¤.
- * - Hashë¥¼ ì‚¬ìš©í•˜ì—¬ table OIDë¥¼ ìž…ë ¥í•˜ì—¬ smxTableInfo ê°ì²´ë¥¼ ê²€ìƒ‰ê°€ëŠ¥í•˜ê²Œ í•œë‹¤.
- * - Hashì— ì‚½ìž…ëœ smxTableInfo ê°ì²´ë“¤ì— ëŒ€í•˜ì—¬ ì¶”ê°€ì ìœ¼ë¡œ smxTableInfo
- *   ê°ì²´ ì°¸ì¡° ë¦¬ìŠ¤íŠ¸ë¥¼ êµ¬ì„±í•œë‹¤. ê°ì²´ ì°¸ì¡° ë¦¬ìŠ¤íŠ¸ëŠ” table OID ìˆœìœ¼ë¡œ ì •ë ¬ì´
- *   ë˜ì–´ ìžˆë‹¤.
+ * - ¿î¿µ½Ã ¸Þ¸ð¸®ÇÒ´çÀ» Àû°ÔÇÏ±â À§ÇØ SMX_TABLEINFO_CACHE_COUNT¸¸Å­
+ *   ¹Ì¸® smxTableInfo °´Ã¼¸¦ ÇÒ´çÇÏ¸ç, smxTableInfoÀÇ freelist¸¦ °ü¸®ÇÑ´Ù.
+ * - Hash¸¦ »ç¿ëÇÏ¿© table OID¸¦ ÀÔ·ÂÇÏ¿© smxTableInfo °´Ã¼¸¦ °Ë»ö°¡´ÉÇÏ°Ô ÇÑ´Ù.
+ * - Hash¿¡ »ðÀÔµÈ smxTableInfo °´Ã¼µé¿¡ ´ëÇÏ¿© Ãß°¡ÀûÀ¸·Î smxTableInfo
+ *   °´Ã¼ ÂüÁ¶ ¸®½ºÆ®¸¦ ±¸¼ºÇÑ´Ù. °´Ã¼ ÂüÁ¶ ¸®½ºÆ®´Â table OID ¼øÀ¸·Î Á¤·ÄÀÌ
+ *   µÇ¾î ÀÖ´Ù.
  ***********************************************************************/
 IDE_RC smxTableInfoMgr::initialize()
 {
@@ -57,7 +55,7 @@ IDE_RC smxTableInfoMgr::initialize()
     mTableInfoFreeList.mNextPtr = &mTableInfoFreeList;
     mTableInfoFreeList.mRecordCnt = ID_ULONG_MAX;
 
-    /* TMS ì„¸ê·¸ë¨¼íŠ¸ë¥¼ ìœ„í•œ ê°€ìš©ê³µê°„ íƒìƒ‰ ì‹œìž‘ Data íŽ˜ì´ì§€ì˜ PID */
+    /* TMS ¼¼±×¸ÕÆ®¸¦ À§ÇÑ °¡¿ë°ø°£ Å½»ö ½ÃÀÛ Data ÆäÀÌÁöÀÇ PID */
     mTableInfoFreeList.mHintDataPID = SD_NULL_PID;
 
     mTableInfoList.mPrevPtr = &mTableInfoList;
@@ -92,10 +90,10 @@ IDE_RC smxTableInfoMgr::initialize()
 }
 
 /***********************************************************************
- * Description : Table Info Manager ì „ì—­ í•´ì œ
+ * Description : Table Info Manager Àü¿ª ÇØÁ¦
  *
- * ì„œë²„ì¢…ë£Œê³¼ì •ì˜ íŠ¸ëžœìž­ì…˜ ì „ì—­í•´ì œì‹œì— í…Œì´ë¸”ì •ë³´ê´€ë¦¬ìžë„ í•¨ê»˜ í•´ì œëœë‹¤.
- * - Hash ë° ë¯¸ë¦¬ í• ë‹¹ë˜ì–´ ìžˆë˜ smxTableInfo ê°ì²´ë“¤ì„ ëª¨ë‘ ì •ë¦¬í•œë‹¤.
+ * ¼­¹öÁ¾·á°úÁ¤ÀÇ Æ®·£Àè¼Ç Àü¿ªÇØÁ¦½Ã¿¡ Å×ÀÌºíÁ¤º¸°ü¸®ÀÚµµ ÇÔ²² ÇØÁ¦µÈ´Ù.
+ * - Hash ¹× ¹Ì¸® ÇÒ´çµÇ¾î ÀÖ´ø smxTableInfo °´Ã¼µéÀ» ¸ðµÎ Á¤¸®ÇÑ´Ù.
  ***********************************************************************/
 IDE_RC smxTableInfoMgr::destroy()
 {
@@ -129,10 +127,10 @@ IDE_RC smxTableInfoMgr::destroy()
 }
 
 /***********************************************************************
- * Description : Table Info Manager ì „ì—­ í•´ì œ
+ * Description : Table Info Manager Àü¿ª ÇØÁ¦
  *
- * ì„œë²„ì¢…ë£Œê³¼ì •ì˜ íŠ¸ëžœìž­ì…˜ ì „ì—­í•´ì œì‹œì— í…Œì´ë¸”ì •ë³´ê´€ë¦¬ìžë„ í•¨ê»˜ í•´ì œëœë‹¤.
- * - Hash ë° ë¯¸ë¦¬ í• ë‹¹ë˜ì–´ ìžˆë˜ smxTableInfo ê°ì²´ë“¤ì„ ëª¨ë‘ ì •ë¦¬í•œë‹¤.
+ * ¼­¹öÁ¾·á°úÁ¤ÀÇ Æ®·£Àè¼Ç Àü¿ªÇØÁ¦½Ã¿¡ Å×ÀÌºíÁ¤º¸°ü¸®ÀÚµµ ÇÔ²² ÇØÁ¦µÈ´Ù.
+ * - Hash ¹× ¹Ì¸® ÇÒ´çµÇ¾î ÀÖ´ø smxTableInfo °´Ã¼µéÀ» ¸ðµÎ Á¤¸®ÇÑ´Ù.
  ***********************************************************************/
 IDE_RC smxTableInfoMgr::init()
 {
@@ -163,10 +161,10 @@ IDE_RC smxTableInfoMgr::init()
 }
 
 /***********************************************************************
- * Description : smxTableInfo ê°ì²´ë¥¼ ê²€ìƒ‰í•˜ì—¬ ë°˜í™˜í•œë‹¤.
+ * Description : smxTableInfo °´Ã¼¸¦ °Ë»öÇÏ¿© ¹ÝÈ¯ÇÑ´Ù.
  *
- * í…Œì´ë¸” Cursor open ë˜ëŠ” íŠ¸ëžœìž­ì…˜ ì² íšŒê³¼ì •ì—ì„œ í˜¸ì¶œë˜ë©´, ê²€ìƒ‰í•˜ê³ ìží•˜ëŠ” í…Œì´ë¸”ì˜
- * OIDë¥¼ ìž…ë ¥í•˜ì—¬ í•´ë‹¹ í…Œì´ë¸”ì˜ smxTableInfo ê°ì²´ë¥¼ ë°˜í™˜í•œë‹¤.
+ * Å×ÀÌºí Cursor open ¶Ç´Â Æ®·£Àè¼Ç Ã¶È¸°úÁ¤¿¡¼­ È£ÃâµÇ¸é, °Ë»öÇÏ°íÀÚÇÏ´Â Å×ÀÌºíÀÇ
+ * OID¸¦ ÀÔ·ÂÇÏ¿© ÇØ´ç Å×ÀÌºíÀÇ smxTableInfo °´Ã¼¸¦ ¹ÝÈ¯ÇÑ´Ù.
  ***********************************************************************/
 IDE_RC smxTableInfoMgr::getTableInfo( smOID          aTableOID,
                                       smxTableInfo **aTableInfoPtr,
@@ -203,8 +201,8 @@ IDE_RC smxTableInfoMgr::getTableInfo( smOID          aTableOID,
 }
 
 /***********************************************************************
- * Description : ëª¨ë“   smxTableInfo ê°ì²´ ì¤‘ TableHeader  ê°€ ì¡´ìž¬í•˜ë©´
- * ModifyCountë¥¼ ì¦ê°€ì‹œì¼œì¤€ë‹¤.
+ * Description : ¸ðµç  smxTableInfo °´Ã¼ Áß TableHeader  °¡ Á¸ÀçÇÏ¸é
+ * ModifyCount¸¦ Áõ°¡½ÃÄÑÁØ´Ù.
  ***********************************************************************/
 void smxTableInfoMgr::addTablesModifyCount( void )
 {
@@ -226,15 +224,15 @@ void smxTableInfoMgr::addTablesModifyCount( void )
 }
 
 /***********************************************************************
- * Description : íŠ¸ëžœìž­ì…˜ commitì‹œ íŠ¸ëžœìž­ì…˜ì´ ì°¸ì¡°í•œ í…Œì´ë¸”ë“¤ì— ëŒ€í•´ì„œ
- *               max rowsë¥¼ ê²€ì‚¬í•œë‹¤.
+ * Description : Æ®·£Àè¼Ç commit½Ã Æ®·£Àè¼ÇÀÌ ÂüÁ¶ÇÑ Å×ÀÌºíµé¿¡ ´ëÇØ¼­
+ *               max rows¸¦ °Ë»çÇÑ´Ù.
  *
- * í…Œì´ë¸”ì •ë³´ê´€ë¦¬ìžì˜ smxTableInfo ê°ì²´ ì°¸ì¡° ë¦¬ìŠ¤íŠ¸(order by table OID)ë¥¼ ìˆœíšŒí•˜ë©´ì„œ
- * ì°¸ì¡°ëœ í…Œì´ë¸”ë“¤ì˜ page list entryì˜ mutexë¥¼ ìž¡ëŠ”ë‹¤.
+ * Å×ÀÌºíÁ¤º¸°ü¸®ÀÚÀÇ smxTableInfo °´Ã¼ ÂüÁ¶ ¸®½ºÆ®(order by table OID)¸¦ ¼øÈ¸ÇÏ¸é¼­
+ * ÂüÁ¶µÈ Å×ÀÌºíµéÀÇ page list entryÀÇ mutex¸¦ Àâ´Â´Ù.
  *
- * - ë©”ëª¨ë¦¬í…Œì´ë¸”ì€ row countê°€ ì¦ê°€ëœ í…Œì´ë¸”ì— ëŒ€í•´ì„œë§Œ mutexë¥¼ ìž¡ëŠ”ë‹¤.
- * - disk í…Œì´ë¸”ì€ ëª¨ë‘ ìž¡ëŠ”ë‹¤.
- * - deadlockì„ ë°©ì§€í•˜ê¸° ìœ„í•´ í•œë°©í–¥ìœ¼ë¡œ mutexë¥¼ ìž¡ëŠ”ë‹¤.
+ * - ¸Þ¸ð¸®Å×ÀÌºíÀº row count°¡ Áõ°¡µÈ Å×ÀÌºí¿¡ ´ëÇØ¼­¸¸ mutex¸¦ Àâ´Â´Ù.
+ * - disk Å×ÀÌºíÀº ¸ðµÎ Àâ´Â´Ù.
+ * - deadlockÀ» ¹æÁöÇÏ±â À§ÇØ ÇÑ¹æÇâÀ¸·Î mutex¸¦ Àâ´Â´Ù.
  ***********************************************************************/
 
 IDE_RC smxTableInfoMgr::requestAllEntryForCheckMaxRow()
@@ -260,7 +258,20 @@ IDE_RC smxTableInfoMgr::requestAllEntryForCheckMaxRow()
         IDE_ASSERT( smcTable::getTableHeaderFromOID( sCurTableInfoPtr->mTableOID,
                                                      (void**)&sCurTableHeaderPtr )
                      == IDE_SUCCESS );
+       
         sTableType = SMI_GET_TABLE_TYPE( sCurTableHeaderPtr );
+
+        /* BUG-47368: ÀÌ¹Ì ID_ULONG_MAX °ªÀÌ¸é Ã¼Å© ÇÒ ÇÊ¿ä ¾ø´Ù. ÀÌ °æ¿ì¿¡´Â
+         * ¶ôÀ» ÀâÁö ¾Ê°í, ÀÌ ´ÙÀ½¿¡ È£ÃâµÇ´Â ´ÙÀ½ÀÇ ÇÔ¼öµé 
+         * releaseEntryAndUpdateMemTableInfoForIns(), 
+         * updateMemTableInfoForDe|()¿¡¼­ Atomic ¿¬»êÃ³¸® ÇÑ´Ù.  
+         */  
+        if ( ( sCurTableHeaderPtr->mMaxRow == ID_ULONG_MAX ) &&
+             ( sTableType != SMI_TABLE_DISK ) )    
+        {
+            sCurTableInfoPtr = sNxtTableInfoPtr;
+            continue;
+        }
 
         if ( ( sTableType == SMI_TABLE_META )   ||
              ( sTableType == SMI_TABLE_MEMORY ) ||
@@ -372,8 +383,8 @@ IDE_RC smxTableInfoMgr::requestAllEntryForCheckMaxRow()
 }
 
 /***********************************************************************
- * Description : ë©”ëª¨ë¦¬ í…Œì´ë¸”ì˜ ì¦ê°€ëœ row ê°œìˆ˜ë¥¼ ê°±ì‹ í•˜ê³ 
- * entry mutexë¥¼ releaseí•œë‹¤.
+ * Description : ¸Þ¸ð¸® Å×ÀÌºíÀÇ Áõ°¡µÈ row °³¼ö¸¦ °»½ÅÇÏ°í
+ * entry mutex¸¦ releaseÇÑ´Ù.
  ***********************************************************************/
 
 IDE_RC smxTableInfoMgr::releaseEntryAndUpdateMemTableInfoForIns()
@@ -399,31 +410,34 @@ IDE_RC smxTableInfoMgr::releaseEntryAndUpdateMemTableInfoForIns()
              ( sTableType == SMI_TABLE_FIXED ) )
         {
             /* TASK-4990 changing the method of collecting index statistics 
-             * ê°±ì‹ ëœ Row ê°œìˆ˜ë¥¼ ëˆ„ì ì‹œí‚´ */
+             * °»½ÅµÈ Row °³¼ö¸¦ ´©Àû½ÃÅ´ */
+            /* BUG-47368: ´ÙÀ½ÀÇ ¿¬»êÀ» atomicÀ¸·Î º¯°æ ÇÒ °æ¿ì SINT_MAX ¿¡
+             * ¸ÂÃß¾î ÃÊ±âÈ­ ÇÒ ÇÊ¿ä´Â ¾ø¾î º¸ÀÓ. X$DBMS_STATS Àü¿ë.
+             */
             if ( sCurTableInfoPtr->mRecordCnt < 0 )
             {
-                sCurTableHeaderPtr->mStat.mNumRowChange -= sCurTableInfoPtr->mRecordCnt;
+                (void)idCore::acpAtomicAdd64 ( &(sCurTableHeaderPtr->mStat.mNumRowChange), 
+                                               ( -1 * sCurTableInfoPtr->mRecordCnt ) );
             }
             else
             {
-                sCurTableHeaderPtr->mStat.mNumRowChange += sCurTableInfoPtr->mRecordCnt;
+                (void)idCore::acpAtomicAdd64 ( &(sCurTableHeaderPtr->mStat.mNumRowChange), 
+                                               sCurTableInfoPtr->mRecordCnt );
             }
-            /* ì´ˆê¸°í™” */
-            if ( sCurTableHeaderPtr->mStat.mNumRowChange > ID_SINT_MAX )
-            {
-                sCurTableHeaderPtr->mStat.mNumRowChange = 0;
-            }
-
+            
             if ( sCurTableInfoPtr->mRecordCnt > 0 )
             {
-                sCurTableHeaderPtr->mFixed.mMRDB.mRuntimeEntry->mInsRecCnt +=
-                    sCurTableInfoPtr->mRecordCnt;
+                // BUG-47368: ForInsert()
+                (void)idCore::acpAtomicAdd64( &(sCurTableHeaderPtr->mFixed.mMRDB.mRuntimeEntry->mInsRecCnt),
+                                              sCurTableInfoPtr->mRecordCnt );
 
-                IDE_TEST_RAISE(
-                    sCurTableHeaderPtr->mFixed.mMRDB.mRuntimeEntry->mMutex.unlock()
-                               != IDE_SUCCESS, err_mutex_unlock);
-
-
+                if ( sCurTableHeaderPtr->mMaxRow != ID_ULONG_MAX ) 
+                {
+                    IDE_TEST_RAISE(
+                        sCurTableHeaderPtr->mFixed.mMRDB.mRuntimeEntry->mMutex.unlock()
+                        != IDE_SUCCESS, err_mutex_unlock);
+                }
+                
                 sCurTableInfoPtr->mRecordCnt = 0;
             }
         }
@@ -431,12 +445,17 @@ IDE_RC smxTableInfoMgr::releaseEntryAndUpdateMemTableInfoForIns()
         {
             if ( sCurTableInfoPtr->mRecordCnt > 0 )
             {
-                sCurTableHeaderPtr->mFixed.mVRDB.mRuntimeEntry->mInsRecCnt +=
-                    sCurTableInfoPtr->mRecordCnt;
-                IDE_TEST_RAISE(
-                    sCurTableHeaderPtr->mFixed.mVRDB.mRuntimeEntry->mMutex.unlock()
-                               != IDE_SUCCESS, err_mutex_unlock);
+                // BUG-47368: ForInsert() 
+                (void)idCore::acpAtomicAdd64( &(sCurTableHeaderPtr->mFixed.mVRDB.mRuntimeEntry->mInsRecCnt),
+                                              sCurTableInfoPtr->mRecordCnt );
 
+                if ( sCurTableHeaderPtr->mMaxRow != ID_ULONG_MAX )
+                {
+                    IDE_TEST_RAISE(
+                        sCurTableHeaderPtr->mFixed.mVRDB.mRuntimeEntry->mMutex.unlock()
+                        != IDE_SUCCESS, err_mutex_unlock);
+                }
+                
                 sCurTableInfoPtr->mRecordCnt = 0;
             }
         }
@@ -458,13 +477,13 @@ IDE_RC smxTableInfoMgr::releaseEntryAndUpdateMemTableInfoForIns()
 
 
 /***********************************************************************
- * Description : ë””ìŠ¤í¬ í…Œì´ë¸”ì˜ ì¦ê°ëœ row ê°œìˆ˜ë¥¼ ê°±ì‹ ê³¼ í•¨ê»˜ commití•˜ê³ 
- * entry mutexë¥¼ releaseí•œë‹¤.
+ * Description : µð½ºÅ© Å×ÀÌºíÀÇ Áõ°¨µÈ row °³¼ö¸¦ °»½Å°ú ÇÔ²² commitÇÏ°í
+ * entry mutex¸¦ releaseÇÑ´Ù.
  ***********************************************************************/
 IDE_RC smxTableInfoMgr::releaseEntryAndUpdateDiskTableInfoWithCommit(
                                                    idvSQL    * aStatistics,
                                                    smxTrans  * aTransPtr,
-                                                   smLSN     * aBeginLSN,
+                                                   smSCN       aCommitSCN,
                                                    smLSN     * aEndLSN )
 {
     smxTableInfo      *sCurTableInfoPtr;
@@ -501,30 +520,18 @@ IDE_RC smxTableInfoMgr::releaseEntryAndUpdateDiskTableInfoWithCommit(
 
     if ( sTSSlotSID != SD_NULL_SID )
     {
-        aTransPtr->initCommitLog( &sCommitLog, SMR_LT_DSKTRANS_COMMIT );
+        aTransPtr->initCommitLog( &sCommitLog, SMR_LT_DSKTRANS_COMMIT, aCommitSCN  );
     }
     else
     {
-        aTransPtr->initCommitLog( &sCommitLog, SMR_LT_MEMTRANS_COMMIT );
+        /*BUGBUG : mTXSegEntry != NULL À» È®ÀÎÇÏ°í ¿Ô´Âµ¥ ÀÌÂÊÀ¸·Î ¿Ã¼ö ÀÖ³ª? */
+        IDE_DASSERT( 0 );
+
+        aTransPtr->initCommitLog( &sCommitLog, SMR_LT_MEMTRANS_COMMIT, aCommitSCN );
     }
 
-    smrLogHeadI::setSize( &sCommitLog.mHead,
-                          SMR_LOGREC_SIZE(smrTransCommitLog) + ID_SIZEOF(smrLogTail) );
-
-    smrLogHeadI::setTransID(&sCommitLog.mHead, aTransPtr->mTransID);
-
-    smrLogHeadI::setFlag(&sCommitLog.mHead, aTransPtr->mLogTypeFlag );
-
-    /* BUG-24866
-     * [valgrind] SMR_SMC_PERS_WRITE_LOB_PIECE ë¡œê·¸ì— ëŒ€í•´ì„œ
-     * Implicit Savepointë¥¼ ì„¤ì •í•˜ëŠ”ë°, mReplSvPNumberë„ ì„¤ì •í•´ì•¼ í•©ë‹ˆë‹¤. */
-    smrLogHeadI::setReplStmtDepth( &sCommitLog.mHead,
-                                   SMI_STATEMENT_DEPTH_NULL );
-
-    sCommitLog.mDskRedoSize = 0;
-
-    /* BUG-29262 TSS í• ë‹¹ì— ì‹¤íŒ¨í•œ íŠ¸ëžœìž­ì…˜ì˜ COMMIT ë¡œê·¸ë¥¼ ê¸°ë¡í•´ì•¼ í•©ë‹ˆë‹¤.
-     * Transaction CommitLogì˜ logHeadë¥¼ ê¸°ë¡í•œë‹¤. */
+    /* BUG-29262 TSS ÇÒ´ç¿¡ ½ÇÆÐÇÑ Æ®·£Àè¼ÇÀÇ COMMIT ·Î±×¸¦ ±â·ÏÇØ¾ß ÇÕ´Ï´Ù.
+     * Transaction CommitLogÀÇ logHead¸¦ ±â·ÏÇÑ´Ù. */
     IDE_TEST( aTransPtr->writeLogToBuffer( &sCommitLog,
                                            SMR_LOGREC_SIZE(smrTransCommitLog) ) 
               != IDE_SUCCESS );
@@ -543,7 +550,7 @@ IDE_RC smxTableInfoMgr::releaseEntryAndUpdateDiskTableInfoWithCommit(
              ( sCurTableInfoPtr->mRecordCnt != 0 ) )
         {
             /* TASK-4990 changing the method of collecting index statistics 
-             * ê°±ì‹ ëœ Row ê°œìˆ˜ë¥¼ ëˆ„ì ì‹œí‚´ */
+             * °»½ÅµÈ Row °³¼ö¸¦ ´©Àû½ÃÅ´ */
             if ( sCurTableInfoPtr->mRecordCnt < 0 )
             {
                 sCurTableHeaderPtr->mStat.mNumRowChange -=
@@ -554,15 +561,15 @@ IDE_RC smxTableInfoMgr::releaseEntryAndUpdateDiskTableInfoWithCommit(
                 sCurTableHeaderPtr->mStat.mNumRowChange +=
                                                 sCurTableInfoPtr->mRecordCnt;
             }
-            /* ì´ˆê¸°í™” */
+            /* ÃÊ±âÈ­ */
             if ( sCurTableHeaderPtr->mStat.mNumRowChange > ID_SINT_MAX )
             {
                 sCurTableHeaderPtr->mStat.mNumRowChange = 0;
             }
-
+            
             sRecordCount = sCurTableHeaderPtr->mFixed.mDRDB.mRecCnt +
-                                                sCurTableInfoPtr->mRecordCnt;
-
+                sCurTableInfoPtr->mRecordCnt;
+            
             sPageID = SM_MAKE_PID(sCurTableHeaderPtr->mSelfOID);
             sOffset = SM_MAKE_OFFSET(sCurTableHeaderPtr->mSelfOID)
                       + SMP_SLOT_HEADER_SIZE;
@@ -605,7 +612,7 @@ IDE_RC smxTableInfoMgr::releaseEntryAndUpdateDiskTableInfoWithCommit(
                                            ID_FALSE ) // aDoUpdate
                   != IDE_SUCCESS );
 
-        // ì§€ê¸ˆê¹Œì§€ ìž‘ì„±ëœ Mtxë‚´ì˜ Log Bufferë¥¼ íŠ¸ëžœìž­ì…˜ì— ë¡œë”©í•œë‹¤.
+        // Áö±Ý±îÁö ÀÛ¼ºµÈ Mtx³»ÀÇ Log Buffer¸¦ Æ®·£Àè¼Ç¿¡ ·ÎµùÇÑ´Ù.
         sDynArrayPtr = &(sMtx.mLogBuffer);
         sDskRedoSize = smuDynArray::getSize( sDynArrayPtr );
 
@@ -615,19 +622,19 @@ IDE_RC smxTableInfoMgr::releaseEntryAndUpdateDiskTableInfoWithCommit(
     }
     else
     {
-        // Memory íŠ¸ëžœìž­ì…˜ í˜¹ì€ Parallel DPath ì˜ ê²½ìš° Main ThreadëŠ” 
-        // TSSë¥¼ í• ë‹¹í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // Memory Æ®·£Àè¼Ç È¤Àº Parallel DPath ÀÇ °æ¿ì Main Thread´Â 
+        // TSS¸¦ ÇÒ´çÇÏÁö ¾Ê´Â´Ù.
         sDskRedoSize = 0;
     }
 
-    /* BUG-29262 TSS í• ë‹¹ì— ì‹¤íŒ¨í•œ íŠ¸ëžœìž­ì…˜ì˜ COMMIT ë¡œê·¸ë¥¼ ê¸°ë¡í•´ì•¼ í•©ë‹ˆë‹¤.
-     * Transaction CommitLogì˜ logTailì„ ê¸°ë¡í•œë‹¤. */
+    /* BUG-29262 TSS ÇÒ´ç¿¡ ½ÇÆÐÇÑ Æ®·£Àè¼ÇÀÇ COMMIT ·Î±×¸¦ ±â·ÏÇØ¾ß ÇÕ´Ï´Ù.
+     * Transaction CommitLogÀÇ logTailÀ» ±â·ÏÇÑ´Ù. */
     IDE_TEST( aTransPtr->writeLogToBuffer( &sCommitLog.mHead.mType,
                                            ID_SIZEOF( smrLogType ) ) 
               != IDE_SUCCESS );
 
-    /* BUG-29262 TSS í• ë‹¹ì— ì‹¤íŒ¨í•œ íŠ¸ëžœìž­ì…˜ì˜ COMMIT ë¡œê·¸ë¥¼ ê¸°ë¡í•´ì•¼ í•©ë‹ˆë‹¤.
-     * Transaction log bufferì—ì„œ CommitLogì˜ sizeì™€ diskRedoSizeë¥¼ ì„¤ì •í•œë‹¤. */
+    /* BUG-29262 TSS ÇÒ´ç¿¡ ½ÇÆÐÇÑ Æ®·£Àè¼ÇÀÇ COMMIT ·Î±×¸¦ ±â·ÏÇØ¾ß ÇÕ´Ï´Ù.
+     * Transaction log buffer¿¡¼­ CommitLogÀÇ size¿Í diskRedoSize¸¦ ¼³Á¤ÇÑ´Ù. */
     sCommitLogHead = (smrTransCommitLog*)( aTransPtr->getLogBuffer() );
     sLogSize       = aTransPtr->getLogSize();
 
@@ -640,8 +647,7 @@ IDE_RC smxTableInfoMgr::releaseEntryAndUpdateDiskTableInfoWithCommit(
     IDE_TEST( sdrMiniTrans::commit( &sMtx,
                                     SMR_CT_END,
                                     aEndLSN,
-                                    SMR_RT_DISKONLY,
-                                    aBeginLSN )
+                                    SMR_RT_DISKONLY )
               != IDE_SUCCESS );
 
     sCurTableInfoPtr = mTableInfoList.mNextPtr;
@@ -657,9 +663,9 @@ IDE_RC smxTableInfoMgr::releaseEntryAndUpdateDiskTableInfoWithCommit(
         if ( ( SMI_TABLE_TYPE_IS_DISK( sCurTableHeaderPtr ) == ID_TRUE ) &&
              ( sCurTableInfoPtr->mRecordCnt != 0 ) )
         {
-            /* BUG-15608 : Commitì‹œ TableHeaderì˜ Recordê°¯ìˆ˜ì— ëŒ€í•´
-             * Loggingì‹œ WALì„ ì§€í‚¤ì§€ ì•ŠìŠµë‹ˆë‹¤. Commit Logë¥¼ ê¸°ë¡í›„ì— Table
-             * Headerì˜ Record Countë¥¼ ê°±ì‹ í•œë‹¤. */
+            /* BUG-15608 : Commit½Ã TableHeaderÀÇ Record°¹¼ö¿¡ ´ëÇØ
+             * Logging½Ã WALÀ» ÁöÅ°Áö ¾Ê½À´Ï´Ù. Commit Log¸¦ ±â·ÏÈÄ¿¡ Table
+             * HeaderÀÇ Record Count¸¦ °»½ÅÇÑ´Ù. */
 
             sCurTableHeaderPtr->mFixed.mDRDB.mRecCnt += sCurTableInfoPtr->mRecordCnt;
 
@@ -672,7 +678,7 @@ IDE_RC smxTableInfoMgr::releaseEntryAndUpdateDiskTableInfoWithCommit(
             {
                 IDE_TEST( smmDirtyPageMgr::insDirtyPage(
                                               SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
-                                              sCurTableInfoPtr->mDirtyPageID)
+                                              sCurTableInfoPtr->mDirtyPageID )
                           != IDE_SUCCESS );
             }
         }
@@ -719,7 +725,7 @@ IDE_RC smxTableInfoMgr::releaseEntryAndUpdateDiskTableInfoWithCommit(
     return IDE_FAILURE;
 }
 
-IDE_RC smxTableInfoMgr::updateMemTableInfoForDel()
+void smxTableInfoMgr::updateMemTableInfoForDel()
 {
     smxTableInfo   *sCurTableInfoPtr;
     smxTableInfo   *sNxtTableInfoPtr;
@@ -744,60 +750,34 @@ IDE_RC smxTableInfoMgr::updateMemTableInfoForDel()
                  ( sTableType == SMI_TABLE_META )   ||
                  ( sTableType == SMI_TABLE_FIXED ) )
             {
-                IDE_TEST_RAISE(
-                    sCurTableHeaderPtr->mFixed.mMRDB.mRuntimeEntry->mMutex.lock(NULL /* idvSQL* */)
-                               != IDE_SUCCESS, err_mutex_lock);
+                // BUG-47368: ForDelete() 
+                (void)idCore::acpAtomicAdd64( &(sCurTableHeaderPtr->mFixed.mMRDB.mRuntimeEntry->mInsRecCnt),
+                                sCurTableInfoPtr->mRecordCnt );
 
-                sCurTableHeaderPtr->mFixed.mMRDB.mRuntimeEntry->mInsRecCnt +=
-                    sCurTableInfoPtr->mRecordCnt;
-
-                IDE_TEST_RAISE(
-                    sCurTableHeaderPtr->mFixed.mMRDB.mRuntimeEntry->mMutex.unlock()
-                               != IDE_SUCCESS, err_mutex_unlock);
                 sCurTableInfoPtr->mRecordCnt = 0;
             }
             else if (sTableType == SMI_TABLE_VOLATILE)
             {
-                IDE_TEST_RAISE(
-                    sCurTableHeaderPtr->mFixed.mVRDB.mRuntimeEntry->mMutex.lock(NULL /* idvSQL* */)
-                               != IDE_SUCCESS, err_mutex_lock);
+                // BUG-47368: ForDelete()
+                (void)idCore::acpAtomicAdd64( &(sCurTableHeaderPtr->mFixed.mVRDB.mRuntimeEntry->mInsRecCnt),
+                                sCurTableInfoPtr->mRecordCnt );
 
-                sCurTableHeaderPtr->mFixed.mVRDB.mRuntimeEntry->mInsRecCnt +=
-                    sCurTableInfoPtr->mRecordCnt;
-
-                IDE_TEST_RAISE(
-                    sCurTableHeaderPtr->mFixed.mVRDB.mRuntimeEntry->mMutex.unlock()
-                               != IDE_SUCCESS, err_mutex_unlock);
                 sCurTableInfoPtr->mRecordCnt = 0;
             }
         }
 
         sCurTableInfoPtr = sNxtTableInfoPtr;
     }
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION(err_mutex_lock);
-    {
-        IDE_SET(ideSetErrorCode(smERR_FATAL_ThrMutexLock));
-    }
-    IDE_EXCEPTION(err_mutex_unlock);
-    {
-        IDE_SET(ideSetErrorCode(smERR_FATAL_ThrMutexUnlock));
-    }
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
 }
 
 /*******************************************************************************
- * Description: DPath INSERTë¥¼ ìˆ˜í–‰í•œ TXê°€ commit í•  ë•Œ, ê° table infoì— ëŒ€í•´
- *      í•„ìš”í•œ ìž‘ì—…ë“¤ì„ ì²˜ë¦¬í•œë‹¤.
+ * Description: DPath INSERT¸¦ ¼öÇàÇÑ TX°¡ commit ÇÒ ¶§, °¢ table info¿¡ ´ëÇØ
+ *      ÇÊ¿äÇÑ ÀÛ¾÷µéÀ» Ã³¸®ÇÑ´Ù.
  *
- *      1. DPath INSERTë¥¼ ìˆ˜í–‰í•œ tableì´ indexë¥¼ ê°€ì§€ê³  ìžˆìœ¼ë©´ inconsistent
- *          í”Œëž˜ê·¸ë¥¼ ì„¤ì •í•œë‹¤.
- *      2. DPath INSERTë¥¼ ìˆ˜í–‰í•œ tableì— nologging ì˜µì…˜ì´ ì„¤ì •ë˜ì–´ ìžˆìœ¼ë©´
- *          table headerì— inconsistent í”Œëž˜ê·¸ë¥¼ ì„¤ì •í•˜ëŠ” redo ë¡œê·¸ë¥¼ ë‚¨ê¸´ë‹¤.
+ *      1. DPath INSERT¸¦ ¼öÇàÇÑ tableÀÌ index¸¦ °¡Áö°í ÀÖÀ¸¸é inconsistent
+ *          ÇÃ·¡±×¸¦ ¼³Á¤ÇÑ´Ù.
+ *      2. DPath INSERT¸¦ ¼öÇàÇÑ table¿¡ nologging ¿É¼ÇÀÌ ¼³Á¤µÇ¾î ÀÖÀ¸¸é
+ *          table header¿¡ inconsistent ÇÃ·¡±×¸¦ ¼³Á¤ÇÏ´Â redo ·Î±×¸¦ ³²±ä´Ù.
  ******************************************************************************/
 IDE_RC smxTableInfoMgr::processAtDPathInsCommit()
 {
@@ -828,22 +808,22 @@ IDE_RC smxTableInfoMgr::processAtDPathInsCommit()
             if ( smcTable::isLoggingMode( sTableHeader ) == ID_FALSE )
             {
                 //------------------------------------------------------------
-                // NOLOGGINGìœ¼ë¡œ Direct-Path INSERTê°€ ìˆ˜í–‰ë˜ëŠ” ê²½ìš°,
-                // Redo Logê°€ ì—†ê¸° ë•Œë¬¸ì— Media Recovery ì‹œì—
-                // Direct-Path INSERTê°€ ìˆ˜í–‰ëœ pageì—ëŠ” ì•„ë¬´ê²ƒë„ ê¸°ë¡ë˜ì§€
-                // ì•ŠëŠ”ë‹¤. ì´ë•Œ, Tableì˜ ìƒíƒœëŠ” consistent í•˜ì§€ ì•Šë‹¤.
-                // ë”°ë¼ì„œ ì´ë¥¼ detect í•˜ê¸° ìœ„í•˜ì—¬
-                // Direct-Path INSERê°€ NOLOGGINGìœ¼ë¡œ ì²˜ìŒ ìˆ˜í–‰ëœ ê²½ìš°,
-                // table headerì— inconsistent flagë¥¼ ì„¤ì •í•˜ëŠ” ë¡œê·¸ë¥¼ ë¡œê¹…í•œë‹¤.
+                // NOLOGGINGÀ¸·Î Direct-Path INSERT°¡ ¼öÇàµÇ´Â °æ¿ì,
+                // Redo Log°¡ ¾ø±â ¶§¹®¿¡ Media Recovery ½Ã¿¡
+                // Direct-Path INSERT°¡ ¼öÇàµÈ page¿¡´Â ¾Æ¹«°Íµµ ±â·ÏµÇÁö
+                // ¾Ê´Â´Ù. ÀÌ¶§, TableÀÇ »óÅÂ´Â consistent ÇÏÁö ¾Ê´Ù.
+                // µû¶ó¼­ ÀÌ¸¦ detect ÇÏ±â À§ÇÏ¿©
+                // Direct-Path INSER°¡ NOLOGGINGÀ¸·Î Ã³À½ ¼öÇàµÈ °æ¿ì,
+                // table header¿¡ inconsistent flag¸¦ ¼³Á¤ÇÏ´Â ·Î±×¸¦ ·Î±ëÇÑ´Ù.
                 //------------------------------------------------------------
                 IDE_TEST( smrUpdate::setInconsistencyAtTableHead(
                                                     sTableHeader,
-                                                    ID_TRUE ) // media recovery ì‹œì—ë§Œ redo ìˆ˜í–‰í•¨
+                                                    ID_TRUE ) // media recovery ½Ã¿¡¸¸ redo ¼öÇàÇÔ
                           != IDE_SUCCESS );
             }
             else
             {
-                // LOGGING MODEë¡œ Direct-Path INSERTê°€ ìˆ˜í–‰ë˜ëŠ” ê²½ìš°
+                // LOGGING MODE·Î Direct-Path INSERT°¡ ¼öÇàµÇ´Â °æ¿ì
             }
         }
 
@@ -858,7 +838,7 @@ IDE_RC smxTableInfoMgr::processAtDPathInsCommit()
 }
 
 /***********************************************************************
- * Description : smxTableInfo ê°ì²´ë¥¼ ë©”ëª¨ë¦¬ í• ë‹¹í•œë‹¤.
+ * Description : smxTableInfo °´Ã¼¸¦ ¸Þ¸ð¸® ÇÒ´çÇÑ´Ù.
  ***********************************************************************/
 IDE_RC smxTableInfoMgr::allocTableInfo( smxTableInfo  ** aTableInfoPtr )
 {
@@ -911,7 +891,7 @@ IDE_RC smxTableInfoMgr::allocTableInfo( smxTableInfo  ** aTableInfoPtr )
 }
 
 /***********************************************************************
- * Description : smxTableInfo ê°ì²´ë¥¼ ë©”ëª¨ë¦¬ í•´ì œí•œë‹¤.
+ * Description : smxTableInfo °´Ã¼¸¦ ¸Þ¸ð¸® ÇØÁ¦ÇÑ´Ù.
  ***********************************************************************/
 IDE_RC smxTableInfoMgr::freeTableInfo( smxTableInfo  * aTableInfo )
 {
@@ -930,7 +910,7 @@ IDE_RC smxTableInfoMgr::freeTableInfo( smxTableInfo  * aTableInfo )
 }
 
 /***********************************************************************
- * Description : smxTableInfo ê°ì²´ì˜ row countë¥¼ 1ì¦ê°€ì‹œí‚¨ë‹¤.
+ * Description : smxTableInfo °´Ã¼ÀÇ row count¸¦ 1Áõ°¡½ÃÅ²´Ù.
  ***********************************************************************/
 void  smxTableInfoMgr::incRecCntOfTableInfo( void  * aTableInfoPtr )
 {
@@ -942,7 +922,7 @@ void  smxTableInfoMgr::incRecCntOfTableInfo( void  * aTableInfoPtr )
 }
 
 /***********************************************************************
- * Description : smxTableInfo ê°ì²´ì˜ row countë¥¼ 1ê°ì†Œì‹œí‚¨ë‹¤.
+ * Description : smxTableInfo °´Ã¼ÀÇ row count¸¦ 1°¨¼Ò½ÃÅ²´Ù.
  ***********************************************************************/
 void  smxTableInfoMgr::decRecCntOfTableInfo( void  * aTableInfoPtr )
 {
@@ -952,7 +932,7 @@ void  smxTableInfoMgr::decRecCntOfTableInfo( void  * aTableInfoPtr )
 }
 
 /***********************************************************************
- * Description : smxTableInfo ê°ì²´ì˜ row countë¥¼ ë°˜í™˜í•œë‹¤.
+ * Description : smxTableInfo °´Ã¼ÀÇ row count¸¦ ¹ÝÈ¯ÇÑ´Ù.
  ***********************************************************************/
 SLong smxTableInfoMgr::getRecCntOfTableInfo( void  * aTableInfoPtr )
 {
@@ -961,7 +941,7 @@ SLong smxTableInfoMgr::getRecCntOfTableInfo( void  * aTableInfoPtr )
 }
 
 /***********************************************************************
- * Description : smxTableInfo ê°ì²´ì˜ ExistDPathInsë¥¼ ì„¤ì •í•œë‹¤.
+ * Description : smxTableInfo °´Ã¼ÀÇ ExistDPathIns¸¦ ¼³Á¤ÇÑ´Ù.
  ***********************************************************************/
 void smxTableInfoMgr::setExistDPathIns( void  * aTableInfoPtr,
                                         idBool  aExistDPathIns )
@@ -969,4 +949,3 @@ void smxTableInfoMgr::setExistDPathIns( void  * aTableInfoPtr,
     IDE_DASSERT( aTableInfoPtr != NULL );
     ((smxTableInfo*)aTableInfoPtr)->mExistDPathIns = aExistDPathIns;
 }
-

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsxProc.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsxProc.h 90009 2021-02-17 06:54:43Z khkwak $
  **********************************************************************/
 
 #ifndef _Q_QSX_PROC_H_
@@ -39,7 +39,9 @@ typedef struct qsxProcInfo
     UInt               modifyCount;
 
     idBool             isValid;
-    UInt               sessionID; // BUG-36291 invalidë¡œ ë³€ê²½í•œ SessionID
+    UInt               sessionID; // BUG-36291 invalid·Î º¯°æÇÑ SessionID
+
+    sdiSplitMethod     shardSplitMethod; // TASK-7244 Set shard split method to PSM info 
 
     iduVarMemList    * qmsMem;
     qsProcParseTree  * planTree;
@@ -115,6 +117,11 @@ public :
     static IDE_RC makeStatusInvalid( qcStatement * aStatement,
                                      qsOID         aProcOID );
 
+    // TASK-7244 Set shard split method to PSM info
+    static IDE_RC makeStatusInvalidAndSetShardSplitMethod( qcStatement * aStatement,
+                                                           qsOID         aProcOID,
+                                                           SChar       * aShardSplitMethodStr );
+
     static IDE_RC makeStatusInvalidTx( qcStatement * aStatement,
                                        qsOID         aProcOID );
 
@@ -127,6 +134,11 @@ public :
 
     static IDE_RC createProcObjAndInfoCallback( smiStatement * aSmiStmt,
                                                 qsOID          aProcOID );
+
+private:
+    static IDE_RC makeStatusInvalidInternal( qcStatement * aStatement,
+                                             qsOID         aProcOID,
+                                             SChar       * aShardSplitMethodStr );
 };
 
 #endif /* _Q_QSX_PROC_H_ */

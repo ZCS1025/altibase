@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qmx.cpp 85343 2019-04-30 01:50:33Z returns $
+ * $Id: qmx.cpp 90311 2021-03-24 09:46:45Z ahra.cho $
  **********************************************************************/
 
 #include <cm.h>
@@ -54,12 +54,12 @@ IDE_RC qmx::atomicExecuteInsertBefore( qcStatement  * aStatement )
 /***********************************************************************
  *
  * Description :
- *    Atomic Insert ì˜ ìˆ˜í–‰ì„ ì¤€ë¹„í•¨
+ *    Atomic Insert ÀÇ ¼öÇàÀ» ÁØºñÇÔ
  *
  * Implementation :
- *    1. SMI_TABLE_LOCK_IX lock ì„ ì¡ëŠ”ë‹¤ => smiValidateAndLockObjects
- *    2. result row count ì´ˆê¸°í™”
- *    3. Before Each Statement Trigger ìˆ˜í–‰
+ *    1. SMI_TABLE_LOCK_IX lock À» Àâ´Â´Ù => smiValidateAndLockObjects
+ *    2. result row count ÃÊ±âÈ­
+ *    3. Before Each Statement Trigger ¼öÇà
  *    4. set SYSDATE
  *    5. Cursor Open
  *
@@ -67,6 +67,8 @@ IDE_RC qmx::atomicExecuteInsertBefore( qcStatement  * aStatement )
 
     qmmInsParseTree    * sParseTree;
     qcmTableInfo       * sTableForInsert;
+    UInt               * sINSTflag;
+    UInt                 sPlanID;
 
     // PROJ-1566
     smiTableLockMode     sLockMode;
@@ -76,7 +78,7 @@ IDE_RC qmx::atomicExecuteInsertBefore( qcStatement  * aStatement )
     IDE_ASSERT( sParseTree != NULL );
 
     //------------------------------------------
-    // í•´ë‹¹ Tableì— lockì„ íšë“í•¨.
+    // ÇØ´ç Table¿¡ lockÀ» È¹µæÇÔ.
     //------------------------------------------
 
     if ( ((qmncINST*)aStatement->myPlan->plan)->isAppend == ID_TRUE )
@@ -96,7 +98,7 @@ IDE_RC qmx::atomicExecuteInsertBefore( qcStatement  * aStatement )
     sTableForInsert = sParseTree->insertTableRef->tableInfo;
 
     //------------------------------------------
-    // STATEMENT GRANULARITY TRIGGERì˜ ìˆ˜í–‰
+    // STATEMENT GRANULARITY TRIGGERÀÇ ¼öÇà
     //------------------------------------------
     // before trigger
     IDE_TEST( qdnTrigger::fireTrigger( aStatement,
@@ -115,7 +117,7 @@ IDE_RC qmx::atomicExecuteInsertBefore( qcStatement  * aStatement )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // INSERTë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ ê¸°ë³¸ ê°’ íšë“
+    // INSERT¸¦ Ã³¸®ÇÏ±â À§ÇÑ ±âº» °ª È¹µæ
     //------------------------------------------
 
     // set SYSDATE
@@ -125,14 +127,20 @@ IDE_RC qmx::atomicExecuteInsertBefore( qcStatement  * aStatement )
     QC_PRIVATE_TMPLATE(aStatement)->numRows = 0;
 
     //------------------------------------------
-    // INSERT Plan ì´ˆê¸°í™”
+    // INSERT Plan ÃÊ±âÈ­
     //------------------------------------------
 
-    // BUG-45288 atomic insert ëŠ” direct path ê°€ëŠ¥. normal insert ë¶ˆê°€ëŠ¥.
+    // BUG-45288 atomic insert ´Â direct path °¡´É. normal insert ºÒ°¡´É.
     ((qmndINST*) (QC_PRIVATE_TMPLATE(aStatement)->tmplate.data +
                   aStatement->myPlan->plan->offset))->isAppend =
         ((qmncINST*)aStatement->myPlan->plan)->isAppend;
-    
+  
+    sPlanID = ((qmncINST*)(aStatement->myPlan->plan))->planID;
+    sINSTflag = &(QC_PRIVATE_TMPLATE(aStatement)->planFlag[sPlanID]);
+
+    *sINSTflag &= ~QMND_INST_ATOMIC_MASK;
+    *sINSTflag |= QMND_INST_ATOMIC_TRUE;
+
     IDE_TEST( qmnINST::init( QC_PRIVATE_TMPLATE(aStatement),
                              aStatement->myPlan->plan)
              != IDE_SUCCESS);
@@ -149,14 +157,14 @@ IDE_RC qmx::atomicExecuteInsert( qcStatement  * aStatement )
 /***********************************************************************
  *
  * Description :
- *    Atomic Insert ë¥¼ ìˆ˜í–‰í•¨
+ *    Atomic Insert ¸¦ ¼öÇàÇÔ
  *
  * Implementation :
- *    1. ì‹œí€€ìŠ¤ë¥¼ ì‚¬ìš©í•˜ë©´ ê·¸ ì •ë³´ë¥¼ ì°¾ì•„ë†“ëŠ”ë‹¤
+ *    1. ½ÃÄö½º¸¦ »ç¿ëÇÏ¸é ±× Á¤º¸¸¦ Ã£¾Æ³õ´Â´Ù
  *    2. Before Trigger
- *    3. ì…ë ¥í•  ê°’ìœ¼ë¡œ smiValue ë¥¼ ë§Œë“ ë‹¤ => makeSmiValueWithValue
- *    4. smiCursorTable::insertRow ë¥¼ ìˆ˜í–‰í•´ì„œ ì…ë ¥í•œë‹¤.
- *    5. result row count ì¦ê°€
+ *    3. ÀÔ·ÂÇÒ °ªÀ¸·Î smiValue ¸¦ ¸¸µç´Ù => makeSmiValueWithValue
+ *    4. smiCursorTable::insertRow ¸¦ ¼öÇàÇØ¼­ ÀÔ·ÂÇÑ´Ù.
+ *    5. result row count Áõ°¡
  *    6. After Trigger
  *
  ***********************************************************************/
@@ -164,7 +172,7 @@ IDE_RC qmx::atomicExecuteInsert( qcStatement  * aStatement )
     qmcRowFlag           sFlag = QMC_ROW_INITIALIZE;
 
     //------------------------------------------
-    // INSERTë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ ê¸°ë³¸ ê°’ íšë“
+    // INSERT¸¦ Ã³¸®ÇÏ±â À§ÇÑ ±âº» °ª È¹µæ
     //------------------------------------------
 
     // check session cache SEQUENCE.CURRVAL
@@ -190,13 +198,13 @@ IDE_RC qmx::atomicExecuteInsert( qcStatement  * aStatement )
     }
 
     //------------------------------------------
-    // INSERTë¥¼ ìˆ˜í–‰
+    // INSERT¸¦ ¼öÇà
     //------------------------------------------
 
-    // ë¯¸ë¦¬ ì¦ê°€ì‹œí‚¨ë‹¤. doItì¤‘ ì°¸ì¡°ë  ìˆ˜ ìˆë‹¤.
+    // ¹Ì¸® Áõ°¡½ÃÅ²´Ù. doItÁß ÂüÁ¶µÉ ¼ö ÀÖ´Ù.
     QC_PRIVATE_TMPLATE(aStatement)->numRows++;
     
-    // insertì˜ planì„ ìˆ˜í–‰í•œë‹¤.
+    // insertÀÇ planÀ» ¼öÇàÇÑ´Ù.
     IDE_TEST( qmnINST::doIt( QC_PRIVATE_TMPLATE(aStatement),
                              aStatement->myPlan->plan,
                              &sFlag )
@@ -214,12 +222,12 @@ IDE_RC qmx::atomicExecuteInsertAfter( qcStatement   * aStatement )
 /***********************************************************************
  *
  * Description :
- *    Atomic Insert ì˜ ìˆ˜í–‰ì„ ëë‚œí›„ í›„ì²˜ë¦¬
+ *    Atomic Insert ÀÇ ¼öÇàÀ» ³¡³­ÈÄ ÈÄÃ³¸®
  *
  * Implementation :
  *    1. Cursor Close
- *    2. ì°¸ì¡°í•˜ëŠ” í‚¤ê°€ ìˆìœ¼ë©´, parent í…Œì´ë¸”ì˜ ì»¬ëŸ¼ì— ê°’ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
- *    3. Before Each Statement Trigger ìˆ˜í–‰
+ *    2. ÂüÁ¶ÇÏ´Â Å°°¡ ÀÖÀ¸¸é, parent Å×ÀÌºíÀÇ ÄÃ·³¿¡ °ªÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+ *    3. Before Each Statement Trigger ¼öÇà
  *
  ***********************************************************************/
     
@@ -240,13 +248,13 @@ IDE_RC qmx::atomicExecuteInsertAfter( qcStatement   * aStatement )
     /* PROJ-1071 */
     IDE_TEST(qcg::joinThread(aStatement) != IDE_SUCCESS);
     
-    IDE_TEST( QC_PRIVATE_TMPLATE(aStatement)->cursorMgr->closeAllCursor()
+    IDE_TEST( QC_PRIVATE_TMPLATE(aStatement)->cursorMgr->closeAllCursor(aStatement->mStatistics)
               != IDE_SUCCESS );
 
     IDE_TEST(qcg::finishAndReleaseThread(aStatement) != IDE_SUCCESS);
 
     //------------------------------------------
-    // Foreign Key Reference ê²€ì‚¬
+    // Foreign Key Reference °Ë»ç
     //------------------------------------------
     
     if ( QC_PRIVATE_TMPLATE(aStatement)->numRows == 0 )
@@ -270,7 +278,7 @@ IDE_RC qmx::atomicExecuteInsertAfter( qcStatement   * aStatement )
 
     //------------------------------------------
     // PROJ-1359 Trigger
-    // STATEMENT GRANULARITY TRIGGERì˜ ìˆ˜í–‰
+    // STATEMENT GRANULARITY TRIGGERÀÇ ¼öÇà
     //------------------------------------------
     IDE_TEST( qdnTrigger::fireTrigger( aStatement,
                                        aStatement->qmxMem,
@@ -299,7 +307,7 @@ IDE_RC qmx::atomicExecuteFinalize( qcStatement  * aStatement )
 /***********************************************************************
  *
  * Description :
- *    Atomic Insertê°€ ì¤‘ê°„ì— ë©ˆì¶”ëŠ” ê²½ìš°
+ *    Atomic Insert°¡ Áß°£¿¡ ¸ØÃß´Â °æ¿ì
  *
  * Implementation :
  *    1. Cursor Close
@@ -326,17 +334,17 @@ IDE_RC qmx::executeInsertValues(qcStatement *aStatement)
 /***********************************************************************
  *
  * Description :
- *    INSERT INTO ... ì˜ execution ìˆ˜í–‰
+ *    INSERT INTO ... ÀÇ execution ¼öÇà
  *
  * Implementation :
- *    1. SMI_TABLE_LOCK_IX lock ì„ ì¡ëŠ”ë‹¤ => smiValidateAndLockObjects
- *    2. result row count ì´ˆê¸°í™”
+ *    1. SMI_TABLE_LOCK_IX lock À» Àâ´Â´Ù => smiValidateAndLockObjects
+ *    2. result row count ÃÊ±âÈ­
  *    3. set SYSDATE
- *    4. ì‹œí€€ìŠ¤ë¥¼ ì‚¬ìš©í•˜ë©´ ê·¸ ì •ë³´ë¥¼ ì°¾ì•„ë†“ëŠ”ë‹¤
- *    6. ì…ë ¥í•  ê°’ìœ¼ë¡œ smiValue ë¥¼ ë§Œë“ ë‹¤ => makeSmiValueWithValue
- *    7. smiCursorTable::insertRow ë¥¼ ìˆ˜í–‰í•´ì„œ ì…ë ¥í•œë‹¤.
- *    8. ì°¸ì¡°í•˜ëŠ” í‚¤ê°€ ìˆìœ¼ë©´, parent í…Œì´ë¸”ì˜ ì»¬ëŸ¼ì— ê°’ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
- *    9. result row count ì¦ê°€
+ *    4. ½ÃÄö½º¸¦ »ç¿ëÇÏ¸é ±× Á¤º¸¸¦ Ã£¾Æ³õ´Â´Ù
+ *    6. ÀÔ·ÂÇÒ °ªÀ¸·Î smiValue ¸¦ ¸¸µç´Ù => makeSmiValueWithValue
+ *    7. smiCursorTable::insertRow ¸¦ ¼öÇàÇØ¼­ ÀÔ·ÂÇÑ´Ù.
+ *    8. ÂüÁ¶ÇÏ´Â Å°°¡ ÀÖÀ¸¸é, parent Å×ÀÌºíÀÇ ÄÃ·³¿¡ °ªÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+ *    9. result row count Áõ°¡
  *
  ***********************************************************************/
 
@@ -354,7 +362,7 @@ IDE_RC qmx::executeInsertValues(qcStatement *aStatement)
     sTableRef  = sParseTree->insertTableRef;
 
     //------------------------------------------
-    // í•´ë‹¹ Tableì— IX lockì„ íšë“í•¨.
+    // ÇØ´ç Table¿¡ IX lockÀ» È¹µæÇÔ.
     //------------------------------------------
 
     // PROJ-1502 PARTITIONED DISK TABLE
@@ -366,7 +374,7 @@ IDE_RC qmx::executeInsertValues(qcStatement *aStatement)
     sTableForInsert = sTableRef->tableInfo;
 
     //------------------------------------------
-    // STATEMENT GRANULARITY TRIGGERì˜ ìˆ˜í–‰
+    // STATEMENT GRANULARITY TRIGGERÀÇ ¼öÇà
     //------------------------------------------
     // To fix BUG-12622
     // before trigger
@@ -386,7 +394,7 @@ IDE_RC qmx::executeInsertValues(qcStatement *aStatement)
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // INSERTë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ ê¸°ë³¸ ê°’ íšë“
+    // INSERT¸¦ Ã³¸®ÇÏ±â À§ÇÑ ±âº» °ª È¹µæ
     //------------------------------------------
 
     // initialize result row count
@@ -418,9 +426,9 @@ IDE_RC qmx::executeInsertValues(qcStatement *aStatement)
     }
 
     //------------------------------------------
-    // INSERTë¥¼ ìœ„í•œ plan tree ì´ˆê¸°í™”
+    // INSERT¸¦ À§ÇÑ plan tree ÃÊ±âÈ­
     //------------------------------------------
-    // BUG-45288 atomic insert ëŠ” direct path ê°€ëŠ¥. normal insert ë¶ˆê°€ëŠ¥.
+    // BUG-45288 atomic insert ´Â direct path °¡´É. normal insert ºÒ°¡´É.
     ((qmndINST*) (QC_PRIVATE_TMPLATE(aStatement)->tmplate.data +
                   aStatement->myPlan->plan->offset))->isAppend = ID_FALSE;
 
@@ -430,7 +438,7 @@ IDE_RC qmx::executeInsertValues(qcStatement *aStatement)
     sInitialized = ID_TRUE;
 
     //------------------------------------------
-    // INSERTë¥¼ ìˆ˜í–‰
+    // INSERT¸¦ ¼öÇà
     //------------------------------------------
 
     do
@@ -438,10 +446,10 @@ IDE_RC qmx::executeInsertValues(qcStatement *aStatement)
         IDE_TEST( iduCheckSessionEvent( aStatement->mStatistics )
                   != IDE_SUCCESS );
 
-        // ë¯¸ë¦¬ ì¦ê°€ì‹œí‚¨ë‹¤. doItì¤‘ ì°¸ì¡°ë  ìˆ˜ ìˆë‹¤.
+        // ¹Ì¸® Áõ°¡½ÃÅ²´Ù. doItÁß ÂüÁ¶µÉ ¼ö ÀÖ´Ù.
         QC_PRIVATE_TMPLATE(aStatement)->numRows++;
 
-        // insertì˜ planì„ ìˆ˜í–‰í•œë‹¤.
+        // insertÀÇ planÀ» ¼öÇàÇÑ´Ù.
         IDE_TEST( qmnINST::doIt( QC_PRIVATE_TMPLATE(aStatement),
                                  aStatement->myPlan->plan,
                                  &sFlag )
@@ -465,13 +473,13 @@ IDE_RC qmx::executeInsertValues(qcStatement *aStatement)
     /* PROJ-1071 */
     IDE_TEST(qcg::joinThread(aStatement) != IDE_SUCCESS);
 
-    IDE_TEST( QC_PRIVATE_TMPLATE(aStatement)->cursorMgr->closeAllCursor()
+    IDE_TEST( QC_PRIVATE_TMPLATE(aStatement)->cursorMgr->closeAllCursor(aStatement->mStatistics)
               != IDE_SUCCESS );
 
     IDE_TEST(qcg::finishAndReleaseThread(aStatement) != IDE_SUCCESS);
 
     //------------------------------------------
-    // Foreign Key Reference ê²€ì‚¬
+    // Foreign Key Reference °Ë»ç
     //------------------------------------------
 
     if ( QC_PRIVATE_TMPLATE(aStatement)->numRows == 0 )
@@ -495,7 +503,7 @@ IDE_RC qmx::executeInsertValues(qcStatement *aStatement)
 
     //------------------------------------------
     // PROJ-1359 Trigger
-    // STATEMENT GRANULARITY TRIGGERì˜ ìˆ˜í–‰
+    // STATEMENT GRANULARITY TRIGGERÀÇ ¼öÇà
     //------------------------------------------
     IDE_TEST( qdnTrigger::fireTrigger( aStatement,
                                        aStatement->qmxMem,
@@ -537,21 +545,21 @@ IDE_RC qmx::executeInsertSelect(qcStatement *aStatement)
 /***********************************************************************
  *
  * Description :
- *    INSERT INTO ... SELECT ... ì˜ execution ìˆ˜í–‰
+ *    INSERT INTO ... SELECT ... ÀÇ execution ¼öÇà
  *
  * Implementation :
- *    1. SMI_TABLE_LOCK_IX lock ì„ ì¡ëŠ”ë‹¤ => smiValidateAndLockObjects
- *    2. result row count ì´ˆê¸°í™”
+ *    1. SMI_TABLE_LOCK_IX lock À» Àâ´Â´Ù => smiValidateAndLockObjects
+ *    2. result row count ÃÊ±âÈ­
  *    3. set SYSDATE
- *    4. ì‹œí€€ìŠ¤ë¥¼ ì‚¬ìš©í•˜ë©´ ê·¸ ì •ë³´ë¥¼ ì°¾ì•„ë†“ëŠ”ë‹¤
+ *    4. ½ÃÄö½º¸¦ »ç¿ëÇÏ¸é ±× Á¤º¸¸¦ Ã£¾Æ³õ´Â´Ù
  *    6. set DEFAULT value ???
- *    7. select plan ì„ ì–»ëŠ”ë‹¤
- *    8. insert ë¥¼ ìœ„í•œ ì»¤ì„œë¥¼ ì˜¤í”ˆí•œë‹¤
+ *    7. select plan À» ¾ò´Â´Ù
+ *    8. insert ¸¦ À§ÇÑ Ä¿¼­¸¦ ¿ÀÇÂÇÑ´Ù
  *    9. qmnPROJ::doIt
- *    10. select í•œ ê°’ìœ¼ë¡œ smiValue ë¥¼ ë§Œë“ ë‹¤
- *    11. smiCursorTable::insertRow ë¥¼ ìˆ˜í–‰í•´ì„œ í…Œì´ë¸”ì— ì…ë ¥í•œë‹¤
- *    12. ì°¸ì¡°í•˜ëŠ” í‚¤ê°€ ìˆìœ¼ë©´, parent í…Œì´ë¸”ì˜ ì»¬ëŸ¼ì— ê°’ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
- *    13. select í•œ ê°’ì´ ì—†ì„ ë•Œê¹Œì§€ 9,10,11,12 ì„ ë°˜ë³µí•œë‹¤
+ *    10. select ÇÑ °ªÀ¸·Î smiValue ¸¦ ¸¸µç´Ù
+ *    11. smiCursorTable::insertRow ¸¦ ¼öÇàÇØ¼­ Å×ÀÌºí¿¡ ÀÔ·ÂÇÑ´Ù
+ *    12. ÂüÁ¶ÇÏ´Â Å°°¡ ÀÖÀ¸¸é, parent Å×ÀÌºíÀÇ ÄÃ·³¿¡ °ªÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+ *    13. select ÇÑ °ªÀÌ ¾øÀ» ¶§±îÁö 9,10,11,12 À» ¹İº¹ÇÑ´Ù
  *
  ***********************************************************************/
 
@@ -570,14 +578,14 @@ IDE_RC qmx::executeInsertSelect(qcStatement *aStatement)
     idBool              sIsOld;
 
     //------------------------------------------
-    // ê¸°ë³¸ ì •ë³´ ì„¤ì •
+    // ±âº» Á¤º¸ ¼³Á¤
     //------------------------------------------
 
     sParseTree = (qmmInsParseTree *) aStatement->myPlan->parseTree;
     sTableRef  = sParseTree->insertTableRef;
     
     //------------------------------------------
-    // í•´ë‹¹ Tableì— IX lockì„ íšë“í•¨.
+    // ÇØ´ç Table¿¡ IX lockÀ» È¹µæÇÔ.
     //------------------------------------------
     
     if ( ((qmncINST*)aStatement->myPlan->plan)->isAppend == ID_TRUE )
@@ -606,7 +614,7 @@ IDE_RC qmx::executeInsertSelect(qcStatement *aStatement)
     sTableForInsert = sTableRef->tableInfo;
 
     //------------------------------------------
-    // STATEMENT GRANULARITY TRIGGERì˜ ìˆ˜í–‰
+    // STATEMENT GRANULARITY TRIGGERÀÇ ¼öÇà
     //------------------------------------------
     // To fix BUG-12622
     // before trigger
@@ -626,7 +634,7 @@ IDE_RC qmx::executeInsertSelect(qcStatement *aStatement)
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // INSERTë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ ê¸°ë³¸ ê°’ íšë“
+    // INSERT¸¦ Ã³¸®ÇÏ±â À§ÇÑ ±âº» °ª È¹µæ
     //------------------------------------------
 
     // initialize result row count
@@ -684,13 +692,13 @@ IDE_RC qmx::executeInsertSelect(qcStatement *aStatement)
     }
     
     //------------------------------------------
-    // INSERT Plan ì´ˆê¸°í™”
+    // INSERT Plan ÃÊ±âÈ­
     //------------------------------------------
 
-    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
     IDE_TEST( qmo::optimizeForHost( aStatement ) != IDE_SUCCESS );
 
-    // BUG-45288 atomic insert ëŠ” direct path ê°€ëŠ¥. normal insert ë¶ˆê°€ëŠ¥.
+    // BUG-45288 atomic insert ´Â direct path °¡´É. normal insert ºÒ°¡´É.
     ((qmndINST*) (QC_PRIVATE_TMPLATE(aStatement)->tmplate.data +
                   aStatement->myPlan->plan->offset))->isAppend =
         ((qmncINST*)aStatement->myPlan->plan)->isAppend;
@@ -701,21 +709,21 @@ IDE_RC qmx::executeInsertSelect(qcStatement *aStatement)
     sInitialized = ID_TRUE;
 
     //------------------------------------------
-    // INSERTë¥¼ ìˆ˜í–‰
+    // INSERT¸¦ ¼öÇà
     //------------------------------------------
 
     do
     {
-        // BUG-22287 insert ì‹œê°„ì´ ë§ì´ ê±¸ë¦¬ëŠ” ê²½ìš°ì— session
-        // outë˜ì–´ë„ insertê°€ ëë‚  ë•Œ ê¹Œì§€ ê¸°ë‹¤ë¦¬ëŠ” ë¬¸ì œê°€ ìˆë‹¤.
-        // session outì„ í™•ì¸í•œë‹¤.
+        // BUG-22287 insert ½Ã°£ÀÌ ¸¹ÀÌ °É¸®´Â °æ¿ì¿¡ session
+        // outµÇ¾îµµ insert°¡ ³¡³¯ ¶§ ±îÁö ±â´Ù¸®´Â ¹®Á¦°¡ ÀÖ´Ù.
+        // session outÀ» È®ÀÎÇÑ´Ù.
         IDE_TEST( iduCheckSessionEvent( aStatement->mStatistics )
                   != IDE_SUCCESS );
         
-        // ë¯¸ë¦¬ ì¦ê°€ì‹œí‚¨ë‹¤. doItì¤‘ ì°¸ì¡°ë  ìˆ˜ ìˆë‹¤.
+        // ¹Ì¸® Áõ°¡½ÃÅ²´Ù. doItÁß ÂüÁ¶µÉ ¼ö ÀÖ´Ù.
         QC_PRIVATE_TMPLATE(aStatement)->numRows++;
         
-        // updateì˜ planì„ ìˆ˜í–‰í•œë‹¤.
+        // updateÀÇ planÀ» ¼öÇàÇÑ´Ù.
         IDE_TEST( qmnINST::doIt( QC_PRIVATE_TMPLATE(aStatement),
                                  aStatement->myPlan->plan,
                                  &sRowFlag )
@@ -728,7 +736,7 @@ IDE_RC qmx::executeInsertSelect(qcStatement *aStatement)
                                                &sRowGRID )
               != IDE_SUCCESS );
     
-    // DATA_NONEì¸ ê²½ìš°ëŠ” ë¹¼ì¤€ë‹¤.
+    // DATA_NONEÀÎ °æ¿ì´Â »©ÁØ´Ù.
     QC_PRIVATE_TMPLATE(aStatement)->numRows--;
     
     //------------------------------------------
@@ -743,20 +751,20 @@ IDE_RC qmx::executeInsertSelect(qcStatement *aStatement)
     /* PROJ-1071 */
     IDE_TEST(qcg::joinThread(aStatement) != IDE_SUCCESS);
     
-    IDE_TEST( QC_PRIVATE_TMPLATE(aStatement)->cursorMgr->closeAllCursor()
+    IDE_TEST( QC_PRIVATE_TMPLATE(aStatement)->cursorMgr->closeAllCursor(aStatement->mStatistics)
               != IDE_SUCCESS );
 
     IDE_TEST(qcg::finishAndReleaseThread(aStatement) != IDE_SUCCESS);
     
     //------------------------------------------
-    // Foreign Key Reference ê²€ì‚¬
+    // Foreign Key Reference °Ë»ç
     //------------------------------------------
 
     //------------------------------------------
-    // self referenceì— ëŒ€í•œ ì˜¬ë°”ë¥¸ ê²°ê³¼ë¥¼ ë§Œë“¤ê¸° ìœ„í•´ì„œëŠ”,
-    // insertê°€ ëª¨ë‘ ìˆ˜í–‰ë˜ê³  ë‚œí›„ì—,
-    // parent tableì— ëŒ€í•œ ê²€ì‚¬ë¥¼ ìˆ˜í–‰í•´ì•¼ í•¨.
-    // ì˜ˆ) CREATE TABLE T1 ( I1 INTEGER, I2 INTEGER );
+    // self reference¿¡ ´ëÇÑ ¿Ã¹Ù¸¥ °á°ú¸¦ ¸¸µé±â À§ÇØ¼­´Â,
+    // insert°¡ ¸ğµÎ ¼öÇàµÇ°í ³­ÈÄ¿¡,
+    // parent table¿¡ ´ëÇÑ °Ë»ç¸¦ ¼öÇàÇØ¾ß ÇÔ.
+    // ¿¹) CREATE TABLE T1 ( I1 INTEGER, I2 INTEGER );
     //     CREATE TABLE T2 ( I1 INTEGER, I2 INTEGER );
     //     CREATE INDEX T2_I1 ON T2( I1 );
     //     ALTER TABLE T1 ADD CONSTRAINT T1_PK PRIMARY KEY (I1);
@@ -775,13 +783,13 @@ IDE_RC qmx::executeInsertSelect(qcStatement *aStatement)
     //     select * from t2 order by i1;
     //
     //     insert into t1 select * from t2;
-    //     : insert successí•´ì•¼ í•¨.
-    //      ( ìœ„ ì¿¼ë¦¬ë¥¼ í•˜ë‚˜ì˜ ë ˆì½”ë“œê°€ ì¸ì„œíŠ¸ ë ë•Œë§ˆë‹¤
-    //        parentí…Œì´ë¸”ì„ ì°¸ì¡°í•˜ëŠ” ë¡œì§ìœ¼ë¡œ ì½”ë”©í•˜ë©´,
-    //        parent record is not foundë¼ëŠ” ì—ëŸ¬ê°€ ë°œìƒí•˜ëŠ” ì˜¤ë¥˜ê°€ ìƒê¹€. )
+    //     : insert successÇØ¾ß ÇÔ.
+    //      ( À§ Äõ¸®¸¦ ÇÏ³ªÀÇ ·¹ÄÚµå°¡ ÀÎ¼­Æ® µÉ¶§¸¶´Ù
+    //        parentÅ×ÀÌºíÀ» ÂüÁ¶ÇÏ´Â ·ÎÁ÷À¸·Î ÄÚµùÇÏ¸é,
+    //        parent record is not found¶ó´Â ¿¡·¯°¡ ¹ß»ıÇÏ´Â ¿À·ù°¡ »ı±è. )
     //------------------------------------------
 
-    // BUG-25180 insertëœ rowê°€ ì¡´ì¬í•  ë•Œì—ë§Œ ê²€ì‚¬í•´ì•¼ í•¨
+    // BUG-25180 insertµÈ row°¡ Á¸ÀçÇÒ ¶§¿¡¸¸ °Ë»çÇØ¾ß ÇÔ
     if( QC_PRIVATE_TMPLATE(aStatement)->numRows == 0 )
     {
         // Nothing to do.
@@ -802,7 +810,7 @@ IDE_RC qmx::executeInsertSelect(qcStatement *aStatement)
     }
 
     //------------------------------------------
-    // STATEMENT GRANULARITY TRIGGERì˜ ìˆ˜í–‰
+    // STATEMENT GRANULARITY TRIGGERÀÇ ¼öÇà
     //------------------------------------------
     IDE_TEST( qdnTrigger::fireTrigger( aStatement,
                                        aStatement->qmxMem,
@@ -849,21 +857,21 @@ IDE_RC qmx::executeMultiInsertSelect(qcStatement *aStatement)
 /***********************************************************************
  *
  * Description :
- *    INSERT INTO ... SELECT ... ì˜ execution ìˆ˜í–‰
+ *    INSERT INTO ... SELECT ... ÀÇ execution ¼öÇà
  *
  * Implementation :
- *    1. SMI_TABLE_LOCK_IX lock ì„ ì¡ëŠ”ë‹¤ => smiValidateAndLockObjects
- *    2. result row count ì´ˆê¸°í™”
+ *    1. SMI_TABLE_LOCK_IX lock À» Àâ´Â´Ù => smiValidateAndLockObjects
+ *    2. result row count ÃÊ±âÈ­
  *    3. set SYSDATE
- *    4. ì‹œí€€ìŠ¤ë¥¼ ì‚¬ìš©í•˜ë©´ ê·¸ ì •ë³´ë¥¼ ì°¾ì•„ë†“ëŠ”ë‹¤
+ *    4. ½ÃÄö½º¸¦ »ç¿ëÇÏ¸é ±× Á¤º¸¸¦ Ã£¾Æ³õ´Â´Ù
  *    6. set DEFAULT value ???
- *    7. select plan ì„ ì–»ëŠ”ë‹¤
- *    8. insert ë¥¼ ìœ„í•œ ì»¤ì„œë¥¼ ì˜¤í”ˆí•œë‹¤
+ *    7. select plan À» ¾ò´Â´Ù
+ *    8. insert ¸¦ À§ÇÑ Ä¿¼­¸¦ ¿ÀÇÂÇÑ´Ù
  *    9. qmnPROJ::doIt
- *    10. select í•œ ê°’ìœ¼ë¡œ smiValue ë¥¼ ë§Œë“ ë‹¤
- *    11. smiCursorTable::insertRow ë¥¼ ìˆ˜í–‰í•´ì„œ í…Œì´ë¸”ì— ì…ë ¥í•œë‹¤
- *    12. ì°¸ì¡°í•˜ëŠ” í‚¤ê°€ ìˆìœ¼ë©´, parent í…Œì´ë¸”ì˜ ì»¬ëŸ¼ì— ê°’ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
- *    13. select í•œ ê°’ì´ ì—†ì„ ë•Œê¹Œì§€ 9,10,11,12 ì„ ë°˜ë³µí•œë‹¤
+ *    10. select ÇÑ °ªÀ¸·Î smiValue ¸¦ ¸¸µç´Ù
+ *    11. smiCursorTable::insertRow ¸¦ ¼öÇàÇØ¼­ Å×ÀÌºí¿¡ ÀÔ·ÂÇÑ´Ù
+ *    12. ÂüÁ¶ÇÏ´Â Å°°¡ ÀÖÀ¸¸é, parent Å×ÀÌºíÀÇ ÄÃ·³¿¡ °ªÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+ *    13. select ÇÑ °ªÀÌ ¾øÀ» ¶§±îÁö 9,10,11,12 À» ¹İº¹ÇÑ´Ù
  *
  ***********************************************************************/
 
@@ -886,7 +894,7 @@ IDE_RC qmx::executeMultiInsertSelect(qcStatement *aStatement)
     UInt                sInsertCount = 0;
 
     //------------------------------------------
-    // ê¸°ë³¸ ì •ë³´ ì„¤ì •
+    // ±âº» Á¤º¸ ¼³Á¤
     //------------------------------------------
 
     sParseTree = (qmmInsParseTree *) aStatement->myPlan->parseTree;
@@ -905,7 +913,7 @@ IDE_RC qmx::executeMultiInsertSelect(qcStatement *aStatement)
         sINST = (qmncINST*)sChildren->childPlan;
         
         //------------------------------------------
-        // í•´ë‹¹ Tableì— IX lockì„ íšë“í•¨.
+        // ÇØ´ç Table¿¡ IX lockÀ» È¹µæÇÔ.
         //------------------------------------------
         
         if ( sINST->isAppend == ID_TRUE )
@@ -942,7 +950,7 @@ IDE_RC qmx::executeMultiInsertSelect(qcStatement *aStatement)
         sTableForInsert = sINST->tableRef->tableInfo;
 
         //------------------------------------------
-        // STATEMENT GRANULARITY TRIGGERì˜ ìˆ˜í–‰
+        // STATEMENT GRANULARITY TRIGGERÀÇ ¼öÇà
         //------------------------------------------
         // To fix BUG-12622
         // before trigger
@@ -963,7 +971,7 @@ IDE_RC qmx::executeMultiInsertSelect(qcStatement *aStatement)
     }
 
     //------------------------------------------
-    // INSERTë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ ê¸°ë³¸ ê°’ íšë“
+    // INSERT¸¦ Ã³¸®ÇÏ±â À§ÇÑ ±âº» °ª È¹µæ
     //------------------------------------------
 
     // initialize result row count
@@ -1021,10 +1029,10 @@ IDE_RC qmx::executeMultiInsertSelect(qcStatement *aStatement)
     }
 
     //------------------------------------------
-    // INSERT Plan ì´ˆê¸°í™”
+    // INSERT Plan ÃÊ±âÈ­
     //------------------------------------------
 
-    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
     IDE_TEST( qmo::optimizeForHost( aStatement ) != IDE_SUCCESS );
 
     IDE_TEST( qmnMTIT::init( QC_PRIVATE_TMPLATE(aStatement),
@@ -1033,21 +1041,21 @@ IDE_RC qmx::executeMultiInsertSelect(qcStatement *aStatement)
     sInitialized = ID_TRUE;
 
     //------------------------------------------
-    // INSERTë¥¼ ìˆ˜í–‰
+    // INSERT¸¦ ¼öÇà
     //------------------------------------------
 
     do
     {
-        // BUG-22287 insert ì‹œê°„ì´ ë§ì´ ê±¸ë¦¬ëŠ” ê²½ìš°ì— session
-        // outë˜ì–´ë„ insertê°€ ëë‚  ë•Œ ê¹Œì§€ ê¸°ë‹¤ë¦¬ëŠ” ë¬¸ì œê°€ ìˆë‹¤.
-        // session outì„ í™•ì¸í•œë‹¤.
+        // BUG-22287 insert ½Ã°£ÀÌ ¸¹ÀÌ °É¸®´Â °æ¿ì¿¡ session
+        // outµÇ¾îµµ insert°¡ ³¡³¯ ¶§ ±îÁö ±â´Ù¸®´Â ¹®Á¦°¡ ÀÖ´Ù.
+        // session outÀ» È®ÀÎÇÑ´Ù.
         IDE_TEST( iduCheckSessionEvent( aStatement->mStatistics )
                   != IDE_SUCCESS );
         
-        // ë¯¸ë¦¬ ì¦ê°€ì‹œí‚¨ë‹¤. doItì¤‘ ì°¸ì¡°ë  ìˆ˜ ìˆë‹¤.
+        // ¹Ì¸® Áõ°¡½ÃÅ²´Ù. doItÁß ÂüÁ¶µÉ ¼ö ÀÖ´Ù.
         QC_PRIVATE_TMPLATE(aStatement)->numRows += sInsertCount;
         
-        // updateì˜ planì„ ìˆ˜í–‰í•œë‹¤.
+        // updateÀÇ planÀ» ¼öÇàÇÑ´Ù.
         IDE_TEST( qmnMTIT::doIt( QC_PRIVATE_TMPLATE(aStatement),
                                  aStatement->myPlan->plan,
                                  &sRowFlag )
@@ -1055,7 +1063,7 @@ IDE_RC qmx::executeMultiInsertSelect(qcStatement *aStatement)
         
     } while ( ( sRowFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST );
 
-    // DATA_NONEì¸ ê²½ìš°ëŠ” ë¹¼ì¤€ë‹¤.
+    // DATA_NONEÀÎ °æ¿ì´Â »©ÁØ´Ù.
     QC_PRIVATE_TMPLATE(aStatement)->numRows -= sInsertCount;
     
     //------------------------------------------
@@ -1075,20 +1083,20 @@ IDE_RC qmx::executeMultiInsertSelect(qcStatement *aStatement)
     /* PROJ-1071 */
     IDE_TEST(qcg::joinThread(aStatement) != IDE_SUCCESS);
 
-    IDE_TEST( QC_PRIVATE_TMPLATE(aStatement)->cursorMgr->closeAllCursor()
+    IDE_TEST( QC_PRIVATE_TMPLATE(aStatement)->cursorMgr->closeAllCursor(aStatement->mStatistics)
               != IDE_SUCCESS );
 
     IDE_TEST(qcg::finishAndReleaseThread(aStatement) != IDE_SUCCESS);
 
     //------------------------------------------
-    // Foreign Key Reference ê²€ì‚¬
+    // Foreign Key Reference °Ë»ç
     //------------------------------------------
 
     //------------------------------------------
-    // self referenceì— ëŒ€í•œ ì˜¬ë°”ë¥¸ ê²°ê³¼ë¥¼ ë§Œë“¤ê¸° ìœ„í•´ì„œëŠ”,
-    // insertê°€ ëª¨ë‘ ìˆ˜í–‰ë˜ê³  ë‚œí›„ì—,
-    // parent tableì— ëŒ€í•œ ê²€ì‚¬ë¥¼ ìˆ˜í–‰í•´ì•¼ í•¨.
-    // ì˜ˆ) CREATE TABLE T1 ( I1 INTEGER, I2 INTEGER );
+    // self reference¿¡ ´ëÇÑ ¿Ã¹Ù¸¥ °á°ú¸¦ ¸¸µé±â À§ÇØ¼­´Â,
+    // insert°¡ ¸ğµÎ ¼öÇàµÇ°í ³­ÈÄ¿¡,
+    // parent table¿¡ ´ëÇÑ °Ë»ç¸¦ ¼öÇàÇØ¾ß ÇÔ.
+    // ¿¹) CREATE TABLE T1 ( I1 INTEGER, I2 INTEGER );
     //     CREATE TABLE T2 ( I1 INTEGER, I2 INTEGER );
     //     CREATE INDEX T2_I1 ON T2( I1 );
     //     ALTER TABLE T1 ADD CONSTRAINT T1_PK PRIMARY KEY (I1);
@@ -1107,13 +1115,13 @@ IDE_RC qmx::executeMultiInsertSelect(qcStatement *aStatement)
     //     select * from t2 order by i1;
     //
     //     insert into t1 select * from t2;
-    //     : insert successí•´ì•¼ í•¨.
-    //      ( ìœ„ ì¿¼ë¦¬ë¥¼ í•˜ë‚˜ì˜ ë ˆì½”ë“œê°€ ì¸ì„œíŠ¸ ë ë•Œë§ˆë‹¤
-    //        parentí…Œì´ë¸”ì„ ì°¸ì¡°í•˜ëŠ” ë¡œì§ìœ¼ë¡œ ì½”ë”©í•˜ë©´,
-    //        parent record is not foundë¼ëŠ” ì—ëŸ¬ê°€ ë°œìƒí•˜ëŠ” ì˜¤ë¥˜ê°€ ìƒê¹€. )
+    //     : insert successÇØ¾ß ÇÔ.
+    //      ( À§ Äõ¸®¸¦ ÇÏ³ªÀÇ ·¹ÄÚµå°¡ ÀÎ¼­Æ® µÉ¶§¸¶´Ù
+    //        parentÅ×ÀÌºíÀ» ÂüÁ¶ÇÏ´Â ·ÎÁ÷À¸·Î ÄÚµùÇÏ¸é,
+    //        parent record is not found¶ó´Â ¿¡·¯°¡ ¹ß»ıÇÏ´Â ¿À·ù°¡ »ı±è. )
     //------------------------------------------
 
-    // BUG-25180 insertëœ rowê°€ ì¡´ì¬í•  ë•Œì—ë§Œ ê²€ì‚¬í•´ì•¼ í•¨
+    // BUG-25180 insertµÈ row°¡ Á¸ÀçÇÒ ¶§¿¡¸¸ °Ë»çÇØ¾ß ÇÔ
     if( QC_PRIVATE_TMPLATE(aStatement)->numRows == 0 )
     {
         // Nothing to do.
@@ -1139,7 +1147,7 @@ IDE_RC qmx::executeMultiInsertSelect(qcStatement *aStatement)
     }
 
     //------------------------------------------
-    // STATEMENT GRANULARITY TRIGGERì˜ ìˆ˜í–‰
+    // STATEMENT GRANULARITY TRIGGERÀÇ ¼öÇà
     //------------------------------------------
     for ( sChildren = sMTIT->plan.children;
           sChildren != NULL;
@@ -1196,17 +1204,17 @@ IDE_RC qmx::executeDelete(qcStatement *aStatement)
 /***********************************************************************
  *
  * Description :
- *    DELETE FROM ... ì˜ execution ìˆ˜í–‰
+ *    DELETE FROM ... ÀÇ execution ¼öÇà
  *
  * Implementation :
- *    1. SMI_TABLE_LOCK_IX lock ì„ ì¡ëŠ”ë‹¤ => smiValidateAndLockObjects
+ *    1. SMI_TABLE_LOCK_IX lock À» Àâ´Â´Ù => smiValidateAndLockObjects
  *    2. set SYSDATE
  *    3. qmnSCAN::init
- *    4. childConstraints ê°€ ìˆìœ¼ë©´,
- *       ì‚­ì œëœ ë ˆì½”ë“œë¥¼ ì°¾ì•„ì„œ
- *       ê·¸ ê°’ì„ ì°¸ì¡°í•˜ëŠ” child í…Œì´ë¸”ì´ ìˆëŠ”ì§€ í™•ì¸í•˜ê³ ,
- *       ìˆìœ¼ë©´ ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤.
- *    5. childConstraints ê°€ ì—†ìœ¼ë©´, í•´ë‹¹í•˜ëŠ” ë ˆì½”ë“œë¥¼ ì‚­ì œí•œë‹¤.
+ *    4. childConstraints °¡ ÀÖÀ¸¸é,
+ *       »èÁ¦µÈ ·¹ÄÚµå¸¦ Ã£¾Æ¼­
+ *       ±× °ªÀ» ÂüÁ¶ÇÏ´Â child Å×ÀÌºíÀÌ ÀÖ´ÂÁö È®ÀÎÇÏ°í,
+ *       ÀÖÀ¸¸é ¿¡·¯¸¦ ¹İÈ¯ÇÑ´Ù.
+ *    5. childConstraints °¡ ¾øÀ¸¸é, ÇØ´çÇÏ´Â ·¹ÄÚµå¸¦ »èÁ¦ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1220,7 +1228,7 @@ IDE_RC qmx::executeDelete(qcStatement *aStatement)
     idBool              sInitialized = ID_FALSE;
 
     //------------------------------------------
-    // ê¸°ë³¸ ì •ë³´ íšë“
+    // ±âº» Á¤º¸ È¹µæ
     //------------------------------------------
 
     sParseTree = (qmmDelParseTree *) aStatement->myPlan->parseTree;
@@ -1228,7 +1236,7 @@ IDE_RC qmx::executeDelete(qcStatement *aStatement)
     sTableRef = sParseTree->deleteTableRef;
 
     //------------------------------------------
-    // í•´ë‹¹ Tableì— IX lockì„ íšë“í•¨.
+    // ÇØ´ç Table¿¡ IX lockÀ» È¹µæÇÔ.
     //------------------------------------------
 
     IDE_TEST( lockTableForDML( aStatement,
@@ -1242,7 +1250,7 @@ IDE_RC qmx::executeDelete(qcStatement *aStatement)
     IDE_TEST_RAISE( sIsOld == ID_TRUE, err_plan_too_old );
 
     //-------------------------------------------------------
-    // STATEMENT GRANULARITY TRIGGERì˜ ìˆ˜í–‰
+    // STATEMENT GRANULARITY TRIGGERÀÇ ¼öÇà
     //-------------------------------------------------------
     // To fix BUG-12622
     // before trigger
@@ -1254,7 +1262,7 @@ IDE_RC qmx::executeDelete(qcStatement *aStatement)
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // DELETE ë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ ê¸°ë³¸ ê°’ íšë“
+    // DELETE ¸¦ Ã³¸®ÇÏ±â À§ÇÑ ±âº» °ª È¹µæ
     //------------------------------------------
 
     QC_PRIVATE_TMPLATE(aStatement)->numRows = 0;
@@ -1263,7 +1271,7 @@ IDE_RC qmx::executeDelete(qcStatement *aStatement)
     IDE_TEST( qtc::setDatePseudoColumn( QC_PRIVATE_TMPLATE( aStatement ) )
               != IDE_SUCCESS );
 
-    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
     IDE_TEST( qmo::optimizeForHost( aStatement ) != IDE_SUCCESS );
     
     // PROJ-1502 PARTITIONED DISK TABLE
@@ -1273,21 +1281,21 @@ IDE_RC qmx::executeDelete(qcStatement *aStatement)
     sInitialized = ID_TRUE;
 
     //------------------------------------------
-    // DELETEì˜ ìˆ˜í–‰
+    // DELETEÀÇ ¼öÇà
     //------------------------------------------
 
     do
     {
-        // BUG-22287 insert ì‹œê°„ì´ ë§ì´ ê±¸ë¦¬ëŠ” ê²½ìš°ì— session
-        // outë˜ì–´ë„ insertê°€ ëë‚  ë•Œ ê¹Œì§€ ê¸°ë‹¤ë¦¬ëŠ” ë¬¸ì œê°€ ìˆë‹¤.
-        // session outì„ í™•ì¸í•œë‹¤.
+        // BUG-22287 insert ½Ã°£ÀÌ ¸¹ÀÌ °É¸®´Â °æ¿ì¿¡ session
+        // outµÇ¾îµµ insert°¡ ³¡³¯ ¶§ ±îÁö ±â´Ù¸®´Â ¹®Á¦°¡ ÀÖ´Ù.
+        // session outÀ» È®ÀÎÇÑ´Ù.
         IDE_TEST( iduCheckSessionEvent( aStatement->mStatistics )
                   != IDE_SUCCESS );
         
-        // ë¯¸ë¦¬ ì¦ê°€ì‹œí‚¨ë‹¤. doItì¤‘ ì°¸ì¡°ë  ìˆ˜ ìˆë‹¤.
+        // ¹Ì¸® Áõ°¡½ÃÅ²´Ù. doItÁß ÂüÁ¶µÉ ¼ö ÀÖ´Ù.
         QC_PRIVATE_TMPLATE(aStatement)->numRows++;
         
-        // deleteì˜ planì„ ìˆ˜í–‰í•œë‹¤.
+        // deleteÀÇ planÀ» ¼öÇàÇÑ´Ù.
         IDE_TEST( qmnDETE::doIt( QC_PRIVATE_TMPLATE(aStatement),
                                  aStatement->myPlan->plan,
                                  &sFlag )
@@ -1295,11 +1303,11 @@ IDE_RC qmx::executeDelete(qcStatement *aStatement)
 
     } while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST );
     
-    // DATA_NONEì¸ ê²½ìš°ëŠ” ë¹¼ì¤€ë‹¤.
+    // DATA_NONEÀÎ °æ¿ì´Â »©ÁØ´Ù.
     QC_PRIVATE_TMPLATE(aStatement)->numRows--;
     
     //------------------------------------------
-    // DELETEë¥¼ ìœ„í•´ ì—´ì–´ë‘ì—ˆë˜ Cursorë¥¼ Close
+    // DELETE¸¦ À§ÇØ ¿­¾îµÎ¾ú´ø Cursor¸¦ Close
     //------------------------------------------
 
     sInitialized = ID_FALSE;
@@ -1310,13 +1318,13 @@ IDE_RC qmx::executeDelete(qcStatement *aStatement)
     /* PROJ-1071 */
     IDE_TEST(qcg::joinThread(aStatement) != IDE_SUCCESS);
     
-    IDE_TEST( QC_PRIVATE_TMPLATE(aStatement)->cursorMgr->closeAllCursor()
+    IDE_TEST( QC_PRIVATE_TMPLATE(aStatement)->cursorMgr->closeAllCursor(aStatement->mStatistics)
               != IDE_SUCCESS );
 
     IDE_TEST(qcg::finishAndReleaseThread(aStatement) != IDE_SUCCESS);
     
     //------------------------------------------
-    // Foreign Key Reference ê²€ì‚¬
+    // Foreign Key Reference °Ë»ç
     //------------------------------------------
     
     // BUG-28049
@@ -1324,7 +1332,7 @@ IDE_RC qmx::executeDelete(qcStatement *aStatement)
         &&
         ( sParseTree->childConstraints != NULL ) )
     {
-        // Child Tableì´ ì°¸ì¡°í•˜ê³  ìˆëŠ” ì§€ë¥¼ ê²€ì‚¬
+        // Child TableÀÌ ÂüÁ¶ÇÏ°í ÀÖ´Â Áö¸¦ °Ë»ç
         IDE_TEST( qmnDETE::checkDeleteRef(
                       QC_PRIVATE_TMPLATE(aStatement),
                       aStatement->myPlan->plan )
@@ -1332,27 +1340,27 @@ IDE_RC qmx::executeDelete(qcStatement *aStatement)
     }
     else
     {
-        // (ì˜ˆ1)
+        // (¿¹1)
         // DELETE FROM PARENT
-        // WHERE I1 IN ( SELECT I1 FROM CHILD WHERE I1 = 100 ) ê³¼ ê°™ì´
-        // whereì ˆì˜ ì¡°ê±´ì´ in subquery keyRangeë¡œ ìˆ˜í–‰ë˜ëŠ” ì§ˆì˜ë¬¸ì˜ ê²½ìš°,
-        // child tableì— ë ˆì½”ë“œê°€ í•˜ë‚˜ë„ ì—†ëŠ” ê²½ìš°,
-        // ì¡°ê±´ì— ë§ëŠ” ë ˆì½”ë“œê°€ ì—†ìœ¼ë¯€ë¡œ
-        // i1 in ì— ëŒ€í•œ keyRangeì„ ë§Œë“¤ìˆ˜ ì—†ê³ ,
-        // in subquery keyRangeëŠ” filterë¡œë„ ì²˜ë¦¬í•  ìˆ˜ ì—†ëŠ” êµ¬ì¡°ì„.
-        // SCANë…¸ë“œì—ì„œëŠ” ìµœì´ˆ cursor openì‹œ ìœ„ì™€ ê°™ì€ ê²½ìš°ì´ë©´
-        // cursorë¥¼ opení•˜ì§€ ì•ŠëŠ”ë‹¤.
-        // ë”°ë¼ì„œ, ìœ„ì™€ ê°™ì€ ê²½ìš°ëŠ” updateëœ ë¡œìš°ê°€ ì—†ìœ¼ë¯€ë¡œ,
-        // close closeì™€ child tableì°¸ì¡°ê²€ì‚¬ì™€ ê°™ì€ ì²˜ë¦¬ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
-        // (ì˜ˆ2)
+        // WHERE I1 IN ( SELECT I1 FROM CHILD WHERE I1 = 100 ) °ú °°ÀÌ
+        // whereÀıÀÇ Á¶°ÇÀÌ in subquery keyRange·Î ¼öÇàµÇ´Â ÁúÀÇ¹®ÀÇ °æ¿ì,
+        // child table¿¡ ·¹ÄÚµå°¡ ÇÏ³ªµµ ¾ø´Â °æ¿ì,
+        // Á¶°Ç¿¡ ¸Â´Â ·¹ÄÚµå°¡ ¾øÀ¸¹Ç·Î
+        // i1 in ¿¡ ´ëÇÑ keyRangeÀ» ¸¸µé¼ö ¾ø°í,
+        // in subquery keyRange´Â filter·Îµµ Ã³¸®ÇÒ ¼ö ¾ø´Â ±¸Á¶ÀÓ.
+        // SCAN³ëµå¿¡¼­´Â ÃÖÃÊ cursor open½Ã À§¿Í °°Àº °æ¿ìÀÌ¸é
+        // cursor¸¦ openÇÏÁö ¾Ê´Â´Ù.
+        // µû¶ó¼­, À§¿Í °°Àº °æ¿ì´Â updateµÈ ·Î¿ì°¡ ¾øÀ¸¹Ç·Î,
+        // close close¿Í child tableÂüÁ¶°Ë»ç¿Í °°Àº Ã³¸®¸¦ ÇÏÁö ¾Ê´Â´Ù.
+        // (¿¹2)
         // delete from t1 where 1 != 1;
-        // ê³¼ ê°™ì€ ê²½ìš°ì—ë„ cursorë¥¼ opení•˜ì§€ ì•ŠìŒ.
+        // °ú °°Àº °æ¿ì¿¡µµ cursor¸¦ openÇÏÁö ¾ÊÀ½.
 
         // Nothing to do.
     }
 
     //-------------------------------------------------------
-    // STATEMENT GRANULARITY TRIGGERì˜ ìˆ˜í–‰
+    // STATEMENT GRANULARITY TRIGGERÀÇ ¼öÇà
     //-------------------------------------------------------
     
     IDE_TEST( fireStatementTriggerOnDeleteCascade(
@@ -1389,21 +1397,21 @@ IDE_RC qmx::executeUpdate(qcStatement *aStatement)
 /***********************************************************************
  *
  * Description :
- *    UPDATE ... SET ... ì˜ execution ìˆ˜í–‰
+ *    UPDATE ... SET ... ÀÇ execution ¼öÇà
  *
  * Implementation :
- *    1. SMI_TABLE_LOCK_IX lock ì„ ì¡ëŠ”ë‹¤ => smiValidateAndLockObjects
+ *    1. SMI_TABLE_LOCK_IX lock À» Àâ´Â´Ù => smiValidateAndLockObjects
  *    2. set SYSDATE
- *    3. ì‹œí€€ìŠ¤ë¥¼ ì‚¬ìš©í•˜ë©´ ê·¸ ì •ë³´ë¥¼ ì°¾ì•„ë†“ëŠ”ë‹¤
+ *    3. ½ÃÄö½º¸¦ »ç¿ëÇÏ¸é ±× Á¤º¸¸¦ Ã£¾Æ³õ´Â´Ù
  *    4. qmnSCAN::init
- *    5. update ë˜ëŠ” ì»¬ëŸ¼ì˜ ID ë¥¼ ì°¾ì•„ì„œ sUpdateColumnIDs ë°°ì—´ì„ ë§Œë“ ë‹¤
- *    6. childConstraints ê°€ ìˆìœ¼ë©´,
- *       1. update ë˜ëŠ” ë ˆì½”ë“œë¥¼ ì°¾ì•„ì„œ ë³€ê²½ì „ì˜ ê°’ì„ ì°¸ì¡°í•˜ëŠ” child í…Œì´ë¸”ì´
- *          ìˆëŠ”ì§€ ë³€ê²½í›„ì— ê·¸ ê°’ì´ ì—†ì–´ì§€ëŠ”ì§€ í™•ì¸í•˜ê³ ,
- *          ìˆìœ¼ë©´ ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤.
- *    7. childConstraints ê°€ ì—†ìœ¼ë©´, í•´ë‹¹í•˜ëŠ” ë ˆì½”ë“œë¥¼ ë³€ê²½í•œë‹¤.
- *    8. ë³€ê²½ë˜ëŠ” ì»¬ëŸ¼ì´ ì°¸ì¡°í•˜ëŠ” parenet ê°€ ìˆìœ¼ë©´, ë³€ê²½í›„ì˜ ê°’ì´ parent ì—
- *       ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•˜ê³ , ê°’ì´ ì—†ìœ¼ë©´ ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤.
+ *    5. update µÇ´Â ÄÃ·³ÀÇ ID ¸¦ Ã£¾Æ¼­ sUpdateColumnIDs ¹è¿­À» ¸¸µç´Ù
+ *    6. childConstraints °¡ ÀÖÀ¸¸é,
+ *       1. update µÇ´Â ·¹ÄÚµå¸¦ Ã£¾Æ¼­ º¯°æÀüÀÇ °ªÀ» ÂüÁ¶ÇÏ´Â child Å×ÀÌºíÀÌ
+ *          ÀÖ´ÂÁö º¯°æÈÄ¿¡ ±× °ªÀÌ ¾ø¾îÁö´ÂÁö È®ÀÎÇÏ°í,
+ *          ÀÖÀ¸¸é ¿¡·¯¸¦ ¹İÈ¯ÇÑ´Ù.
+ *    7. childConstraints °¡ ¾øÀ¸¸é, ÇØ´çÇÏ´Â ·¹ÄÚµå¸¦ º¯°æÇÑ´Ù.
+ *    8. º¯°æµÇ´Â ÄÃ·³ÀÌ ÂüÁ¶ÇÏ´Â parenet °¡ ÀÖÀ¸¸é, º¯°æÈÄÀÇ °ªÀÌ parent ¿¡
+ *       Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÏ°í, °ªÀÌ ¾øÀ¸¸é ¿¡·¯¸¦ ¹İÈ¯ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1418,7 +1426,7 @@ IDE_RC qmx::executeUpdate(qcStatement *aStatement)
     scGRID              sRowGRID;
     
     //------------------------------------------
-    // ê¸°ë³¸ ì •ë³´ ì„¤ì •
+    // ±âº» Á¤º¸ ¼³Á¤
     //------------------------------------------
 
     sUptParseTree = (qmmUptParseTree *) aStatement->myPlan->parseTree;
@@ -1426,15 +1434,15 @@ IDE_RC qmx::executeUpdate(qcStatement *aStatement)
     sTableRef = sUptParseTree->updateTableRef;
 
     //------------------------------------------
-    // í•´ë‹¹ Tableì— ìœ í˜•ì— ë§ëŠ” IX lockì„ íšë“í•¨.
+    // ÇØ´ç Table¿¡ À¯Çü¿¡ ¸Â´Â IX lockÀ» È¹µæÇÔ.
     //------------------------------------------
 
     // PROJ-1509
-    // MEMORY tableì—ì„œëŠ”
-    // tableì— trigger or foreign keyê°€ ì¡´ì¬í•˜ë©´,
-    // ë³€ê²½ ì´ì „/ì´í›„ê°’ì„ ì°¸ì¡°í•˜ê¸° ìœ„í•´,
-    // inplace updateê°€ ë˜ì§€ ì•Šë„ë¡ í•´ì•¼ í•œë‹¤.
-    // table lockë„ IX lockìœ¼ë¡œ ì¡ë„ë¡ í•œë‹¤.
+    // MEMORY table¿¡¼­´Â
+    // table¿¡ trigger or foreign key°¡ Á¸ÀçÇÏ¸é,
+    // º¯°æ ÀÌÀü/ÀÌÈÄ°ªÀ» ÂüÁ¶ÇÏ±â À§ÇØ,
+    // inplace update°¡ µÇÁö ¾Êµµ·Ï ÇØ¾ß ÇÑ´Ù.
+    // table lockµµ IX lockÀ¸·Î Àâµµ·Ï ÇÑ´Ù.
 
     IDE_TEST( lockTableForUpdate(
                   aStatement,
@@ -1448,7 +1456,7 @@ IDE_RC qmx::executeUpdate(qcStatement *aStatement)
     IDE_TEST_RAISE( sIsOld == ID_TRUE, err_plan_too_old );
 
     //------------------------------------------
-    // STATEMENT GRANULARITY TRIGGERì˜ ìˆ˜í–‰
+    // STATEMENT GRANULARITY TRIGGERÀÇ ¼öÇà
     //------------------------------------------
     // To fix BUG-12622
     // before trigger
@@ -1468,7 +1476,7 @@ IDE_RC qmx::executeUpdate(qcStatement *aStatement)
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // UPDATEë¥¼ ìœ„í•œ ê¸°ë³¸ ì •ë³´ ì„¤ì •
+    // UPDATE¸¦ À§ÇÑ ±âº» Á¤º¸ ¼³Á¤
     //------------------------------------------
 
     QC_PRIVATE_TMPLATE(aStatement)->numRows = 0;
@@ -1501,10 +1509,10 @@ IDE_RC qmx::executeUpdate(qcStatement *aStatement)
     }
 
     //------------------------------------------
-    // UPDATEë¥¼ ìœ„í•œ plan tree ì´ˆê¸°í™”
+    // UPDATE¸¦ À§ÇÑ plan tree ÃÊ±âÈ­
     //------------------------------------------
     
-    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
     IDE_TEST( qmo::optimizeForHost( aStatement ) != IDE_SUCCESS );
 
     IDE_TEST( qmnUPTE::init( QC_PRIVATE_TMPLATE(aStatement),
@@ -1513,21 +1521,21 @@ IDE_RC qmx::executeUpdate(qcStatement *aStatement)
     sInitialized = ID_TRUE;
 
     //------------------------------------------
-    // UPDATEë¥¼ ìˆ˜í–‰
+    // UPDATE¸¦ ¼öÇà
     //------------------------------------------
 
     do
     {
-        // BUG-22287 insert ì‹œê°„ì´ ë§ì´ ê±¸ë¦¬ëŠ” ê²½ìš°ì— session
-        // outë˜ì–´ë„ insertê°€ ëë‚  ë•Œ ê¹Œì§€ ê¸°ë‹¤ë¦¬ëŠ” ë¬¸ì œê°€ ìˆë‹¤.
-        // session outì„ í™•ì¸í•œë‹¤.
+        // BUG-22287 insert ½Ã°£ÀÌ ¸¹ÀÌ °É¸®´Â °æ¿ì¿¡ session
+        // outµÇ¾îµµ insert°¡ ³¡³¯ ¶§ ±îÁö ±â´Ù¸®´Â ¹®Á¦°¡ ÀÖ´Ù.
+        // session outÀ» È®ÀÎÇÑ´Ù.
         IDE_TEST( iduCheckSessionEvent( aStatement->mStatistics )
                   != IDE_SUCCESS );
         
-        // ë¯¸ë¦¬ ì¦ê°€ì‹œí‚¨ë‹¤. doItì¤‘ ì°¸ì¡°ë  ìˆ˜ ìˆë‹¤.
+        // ¹Ì¸® Áõ°¡½ÃÅ²´Ù. doItÁß ÂüÁ¶µÉ ¼ö ÀÖ´Ù.
         QC_PRIVATE_TMPLATE(aStatement)->numRows++;
         
-        // updateì˜ planì„ ìˆ˜í–‰í•œë‹¤.
+        // updateÀÇ planÀ» ¼öÇàÇÑ´Ù.
         IDE_TEST( qmnUPTE::doIt( QC_PRIVATE_TMPLATE(aStatement),
                                  aStatement->myPlan->plan,
                                  &sFlag )
@@ -1535,7 +1543,7 @@ IDE_RC qmx::executeUpdate(qcStatement *aStatement)
 
     } while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST );
 
-    // DATA_NONEì¸ ê²½ìš°ëŠ” ë¹¼ì¤€ë‹¤.
+    // DATA_NONEÀÎ °æ¿ì´Â »©ÁØ´Ù.
     QC_PRIVATE_TMPLATE(aStatement)->numRows--;
     
     IDE_TEST( qmnUPTE::getLastUpdatedRowGRID( QC_PRIVATE_TMPLATE(aStatement),
@@ -1555,40 +1563,40 @@ IDE_RC qmx::executeUpdate(qcStatement *aStatement)
     /* PROJ-1071 */
     IDE_TEST(qcg::joinThread(aStatement) != IDE_SUCCESS);
     
-    IDE_TEST( QC_PRIVATE_TMPLATE(aStatement)->cursorMgr->closeAllCursor()
+    IDE_TEST( QC_PRIVATE_TMPLATE(aStatement)->cursorMgr->closeAllCursor(aStatement->mStatistics)
               != IDE_SUCCESS );
 
     IDE_TEST(qcg::finishAndReleaseThread(aStatement) != IDE_SUCCESS);
     
     //------------------------------------------
-    // Foreign Key Reference ê²€ì‚¬
+    // Foreign Key Reference °Ë»ç
     //------------------------------------------
     
     if( QC_PRIVATE_TMPLATE(aStatement)->numRows == 0 )
     {
-        // (ì˜ˆ1)
+        // (¿¹1)
         // UPDATE PARENT SET I1 = 6
         // WHERE I1 IN ( SELECT I1 FROM CHILD WHERE I1 = 100 )
-        // ê³¼ whereì ˆì˜ ì¡°ê±´ì´ in subquery keyRangeë¡œ ìˆ˜í–‰ë˜ëŠ” ì§ˆì˜ë¬¸ì˜ ê²½ìš°,
-        // child tableì— ë ˆì½”ë“œê°€ í•˜ë‚˜ë„ ì—†ëŠ” ê²½ìš°,
-        // ì¡°ê±´ì— ë§ëŠ” ë ˆì½”ë“œê°€ ì—†ìœ¼ë¯€ë¡œ  i1 in ì— ëŒ€í•œ keyRangeì„ ë§Œë“¤ìˆ˜ ì—†ê³ ,
-        // in subquery keyRangeëŠ” filterë¡œë„ ì²˜ë¦¬í•  ìˆ˜ ì—†ëŠ” êµ¬ì¡°ì„.
-        // SCANë…¸ë“œì—ì„œëŠ” ìµœì´ˆ cursor openì‹œ ìœ„ì™€ ê°™ì€ ê²½ìš°ì´ë©´
-        // cursorë¥¼ opení•˜ì§€ ì•ŠëŠ”ë‹¤.
-        // ë”°ë¼ì„œ, ìœ„ì™€ ê°™ì€ ê²½ìš°ëŠ” updateëœ ë¡œìš°ê°€ ì—†ìœ¼ë¯€ë¡œ,
-        // close closeì™€ child tableì°¸ì¡°ê²€ì‚¬ì™€ ê°™ì€ ì²˜ë¦¬ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
-        // (ì˜ˆ2)
+        // °ú whereÀıÀÇ Á¶°ÇÀÌ in subquery keyRange·Î ¼öÇàµÇ´Â ÁúÀÇ¹®ÀÇ °æ¿ì,
+        // child table¿¡ ·¹ÄÚµå°¡ ÇÏ³ªµµ ¾ø´Â °æ¿ì,
+        // Á¶°Ç¿¡ ¸Â´Â ·¹ÄÚµå°¡ ¾øÀ¸¹Ç·Î  i1 in ¿¡ ´ëÇÑ keyRangeÀ» ¸¸µé¼ö ¾ø°í,
+        // in subquery keyRange´Â filter·Îµµ Ã³¸®ÇÒ ¼ö ¾ø´Â ±¸Á¶ÀÓ.
+        // SCAN³ëµå¿¡¼­´Â ÃÖÃÊ cursor open½Ã À§¿Í °°Àº °æ¿ìÀÌ¸é
+        // cursor¸¦ openÇÏÁö ¾Ê´Â´Ù.
+        // µû¶ó¼­, À§¿Í °°Àº °æ¿ì´Â updateµÈ ·Î¿ì°¡ ¾øÀ¸¹Ç·Î,
+        // close close¿Í child tableÂüÁ¶°Ë»ç¿Í °°Àº Ã³¸®¸¦ ÇÏÁö ¾Ê´Â´Ù.
+        // (¿¹2)
         // update t1 set i1=1 where 1 != 1;
-        // ì¸ ê²½ìš°ë„ cursorë¥¼ opení•˜ì§€ ì•ŠìŒ.
+        // ÀÎ °æ¿ìµµ cursor¸¦ openÇÏÁö ¾ÊÀ½.
     }
     else
     {
         //------------------------------------------
-        // Foreign Key Referencingì„ ìœ„í•œ
-        // Master Tableì´ ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬
+        // Foreign Key ReferencingÀ» À§ÇÑ
+        // Master TableÀÌ Á¸ÀçÇÏ´Â Áö °Ë»ç
         // To Fix PR-10592
-        // Cursorì˜ ì˜¬ë°”ë¥¸ ì‚¬ìš©ì„ ìœ„í•´ì„œëŠ” Masterì— ëŒ€í•œ ê²€ì‚¬ë¥¼ ìˆ˜í–‰í•œ í›„ì—
-        // Child Tableì— ëŒ€í•œ ê²€ì‚¬ë¥¼ ìˆ˜í–‰í•˜ì—¬ì•¼ í•œë‹¤.
+        // CursorÀÇ ¿Ã¹Ù¸¥ »ç¿ëÀ» À§ÇØ¼­´Â Master¿¡ ´ëÇÑ °Ë»ç¸¦ ¼öÇàÇÑ ÈÄ¿¡
+        // Child Table¿¡ ´ëÇÑ °Ë»ç¸¦ ¼öÇàÇÏ¿©¾ß ÇÑ´Ù.
         //------------------------------------------
 
         if ( sUptParseTree->parentConstraints != NULL )
@@ -1604,7 +1612,7 @@ IDE_RC qmx::executeUpdate(qcStatement *aStatement)
         }
 
         //------------------------------------------
-        // Child Tableì— ëŒ€í•œ Referencing ê²€ì‚¬
+        // Child Table¿¡ ´ëÇÑ Referencing °Ë»ç
         //------------------------------------------
 
         if ( sUptParseTree->childConstraints != NULL )
@@ -1616,14 +1624,14 @@ IDE_RC qmx::executeUpdate(qcStatement *aStatement)
         }
         else
         {
-            // Child Tableì˜ Referencing ì¡°ê±´ì„ ê²€ì‚¬í•  í•„ìš”ê°€ ì—†ëŠ” ê²½ìš°
+            // Child TableÀÇ Referencing Á¶°ÇÀ» °Ë»çÇÒ ÇÊ¿ä°¡ ¾ø´Â °æ¿ì
             // Nothing To Do
         }
     }
 
     //------------------------------------------
     // PROJ-1359 Trigger
-    // STATEMENT GRANULARITY TRIGGERì˜ ìˆ˜í–‰
+    // STATEMENT GRANULARITY TRIGGERÀÇ ¼öÇà
     //------------------------------------------
     IDE_TEST( qdnTrigger::fireTrigger( aStatement,
                                        aStatement->qmxMem,
@@ -1674,17 +1682,17 @@ IDE_RC qmx::executeLockTable(qcStatement *aStatement)
 
     sParseTree = (qmmLockParseTree*) aStatement->myPlan->parseTree;
 
-    /* BUG-42853 LOCK TABLEì— UNTIL NEXT DDL ê¸°ëŠ¥ ì¶”ê°€ */
+    /* BUG-42853 LOCK TABLE¿¡ UNTIL NEXT DDL ±â´É Ãß°¡ */
     if ( sParseTree->untilNextDDL == ID_TRUE )
     {
         IDE_TEST( ( QC_SMI_STMT(aStatement) )->getTrans()->isReadOnly( &sIsReadOnly )
                   != IDE_SUCCESS );
 
-        /* ë°ì´í„°ë¥¼ ë³€ê²½í•˜ëŠ” DMLê³¼ í•¨ê»˜ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤. */
+        /* µ¥ÀÌÅÍ¸¦ º¯°æÇÏ´Â DML°ú ÇÔ²² »ç¿ëÇÒ ¼ö ¾ø´Ù. */
         IDE_TEST_RAISE( sIsReadOnly != ID_TRUE,
                         ERR_CANNOT_LOCK_TABLE_UNTIL_NEXT_DDL_WITH_DML );
 
-        /* í•œ Transactionì— í•œ ë²ˆë§Œ ìˆ˜í–‰í•  ìˆ˜ ìˆë‹¤. */
+        /* ÇÑ Transaction¿¡ ÇÑ ¹ø¸¸ ¼öÇàÇÒ ¼ö ÀÖ´Ù. */
         IDE_TEST_RAISE( QCG_GET_SESSION_LOCK_TABLE_UNTIL_NEXT_DDL( aStatement ) == ID_TRUE,
                         ERR_CANNOT_LOCK_TABLE_UNTIL_NEXT_DDL_MORE_THAN_ONCE );
     }
@@ -1719,19 +1727,19 @@ IDE_RC qmx::executeLockTable(qcStatement *aStatement)
         IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT(aStatement))->getTrans(),
                                              sParseTree->tableHandle,
                                              sParseTree->tableSCN,
-                                             SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                             SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                              sTableLockMode,
                                              sParseTree->lockWaitMicroSec,
-                                             ID_TRUE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
+                                             ID_TRUE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
                   != IDE_SUCCESS );
 
         IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT(aStatement))->getTrans(),
                                              sParseTree->partitionHandle,
                                              sParseTree->partitionSCN,
-                                             SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                             SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                              sParseTree->tableLockMode,
                                              sParseTree->lockWaitMicroSec,
-                                             ID_TRUE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
+                                             ID_TRUE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
                   != IDE_SUCCESS );
     }
     else
@@ -1740,10 +1748,10 @@ IDE_RC qmx::executeLockTable(qcStatement *aStatement)
         IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT(aStatement))->getTrans(),
                                              sParseTree->tableHandle,
                                              sParseTree->tableSCN,
-                                             SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                             SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                              sParseTree->tableLockMode,
                                              sParseTree->lockWaitMicroSec,
-                                             ID_TRUE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
+                                             ID_TRUE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
                   != IDE_SUCCESS );
 
         // PROJ-1502 PARTITIONED DISK TABLE
@@ -1757,7 +1765,7 @@ IDE_RC qmx::executeLockTable(qcStatement *aStatement)
                           & sPartInfoList )
                       != IDE_SUCCESS );
 
-            // íŒŒí‹°ì…˜ë“œ í…Œì´ë¸”ê³¼ ê°™ì€ ì¢…ë¥˜ì˜ LOCKì„ ì¡ëŠ”ë‹¤.
+            // ÆÄÆ¼¼Çµå Å×ÀÌºí°ú °°Àº Á¾·ùÀÇ LOCKÀ» Àâ´Â´Ù.
             for ( ;
                   sPartInfoList != NULL;
                   sPartInfoList = sPartInfoList->next )
@@ -1765,10 +1773,10 @@ IDE_RC qmx::executeLockTable(qcStatement *aStatement)
                 IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT(aStatement))->getTrans(),
                                                      sPartInfoList->partHandle,
                                                      sPartInfoList->partSCN,
-                                                     SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                     SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                      sParseTree->tableLockMode,
                                                      sParseTree->lockWaitMicroSec,
-                                                     ID_TRUE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
+                                                     ID_TRUE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
                           != IDE_SUCCESS );
             }
         }
@@ -1778,10 +1786,10 @@ IDE_RC qmx::executeLockTable(qcStatement *aStatement)
         }
     }
 
-    /* BUG-42853 LOCK TABLEì— UNTIL NEXT DDL ê¸°ëŠ¥ ì¶”ê°€ */
+    /* BUG-42853 LOCK TABLE¿¡ UNTIL NEXT DDL ±â´É Ãß°¡ */
     if ( sParseTree->untilNextDDL == ID_TRUE )
     {
-        /* Sessionì— ì„¤ì • ê°’ì„ ì €ì¥í•œë‹¤. */
+        /* Session¿¡ ¼³Á¤ °ªÀ» ÀúÀåÇÑ´Ù. */
         QCG_SET_SESSION_LOCK_TABLE_UNTIL_NEXT_DDL( aStatement,
                                                    ID_TRUE );
         QCG_SET_SESSION_TABLE_ID_OF_LOCK_TABLE_UNTIL_NEXT_DDL( aStatement,
@@ -1812,16 +1820,16 @@ IDE_RC qmx::executeSelect( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *    SELECT êµ¬ë¬¸ì„ ìˆ˜í–‰í•¨.
+ *    SELECT ±¸¹®À» ¼öÇàÇÔ.
  *
  * Implementation :
  *    PROJ-1350
- *    í•´ë‹¹ Plan Treeê°€ ìœ íš¨í•œì§€ë¥¼ ê²€ì‚¬
+ *    ÇØ´ç Plan Tree°¡ À¯È¿ÇÑÁö¸¦ °Ë»ç
  *
  ***********************************************************************/
     idBool   sIsOld;
 
-    // PROJ-1350 Plan Tree ê°€ êµ¬ì„±ë  ë‹¹ì‹œì˜ í†µê³„ ì •ë³´ì™€ ìœ ì‚¬í•œì§€ë¥¼ ê²€ì‚¬
+    // PROJ-1350 Plan Tree °¡ ±¸¼ºµÉ ´ç½ÃÀÇ Åë°è Á¤º¸¿Í À¯»çÇÑÁö¸¦ °Ë»ç
     IDE_TEST( checkPlanTreeOld( aStatement, & sIsOld ) != IDE_SUCCESS );
 
     IDE_TEST_RAISE( sIsOld == ID_TRUE, err_plan_too_old );
@@ -1837,7 +1845,7 @@ IDE_RC qmx::executeSelect( qcStatement * aStatement )
                  != IDE_SUCCESS);
     }
 
-    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
     IDE_TEST( qmo::optimizeForHost( aStatement ) != IDE_SUCCESS );
 
     IDE_TEST(aStatement->myPlan->plan->init( QC_PRIVATE_TMPLATE(aStatement),
@@ -1847,7 +1855,7 @@ IDE_RC qmx::executeSelect( qcStatement * aStatement )
     return IDE_SUCCESS;
 
     // PROJ-1350
-    // REBUILD errorë¥¼ ì „ë‹¬í•˜ì—¬ ìƒìœ„ì—ì„œ Plan Treeë¥¼ recompileí•˜ë„ë¡ í•œë‹¤.
+    // REBUILD error¸¦ Àü´ŞÇÏ¿© »óÀ§¿¡¼­ Plan Tree¸¦ recompileÇÏµµ·Ï ÇÑ´Ù.
     IDE_EXCEPTION(err_plan_too_old);
     {
         IDE_SET(ideSetErrorCode(qpERR_REBUILD_QMX_TOO_OLD_PLANTREE));
@@ -1868,17 +1876,17 @@ IDE_RC qmx::makeSmiValueWithValue(qcmColumn     * aColumn,
 /***********************************************************************
  *
  * Description :
- *    smiValueë¥¼ êµ¬ì„±í•œë‹¤.
+ *    smiValue¸¦ ±¸¼ºÇÑ´Ù.
  *
  * Implementation :
  *    PROJ-1362
- *    lobì»¬ëŸ¼ì„ êµ¬ì„±í• ë•Œ ìœ ì˜í•  ì 
- *    1. Xlobì€ lob-valueì™€ lob-locator ë‘ ê°€ì§€ íƒ€ì…ì´ ìˆë‹¤.
- *    2. calculateë¥¼ ê±°ì¹˜ë©´ lob-locatorê°€ openëœë‹¤.
- *       ì´ í•¨ìˆ˜ì—ì„œëŠ” locatorë¥¼ lobInfoì— ë°˜ë“œì‹œ ì €ì¥í•´ì•¼ í•˜ê³ 
- *       closeëŠ” í˜¸ì¶œí•œ í•¨ìˆ˜ê°€ ì±…ì„ì§„ë‹¤.
- *    3. Xlobì´ nullì¼ë•Œ smiValueëŠ” {0,NULL}ì´ì–´ì•¼ í•œë‹¤.
- *       mtdXlobNullì€ {0,""}ì´ê¸° ë•Œë¬¸ì— NULLì„ ì§€ì •í•´ì•¼ í•œë‹¤.
+ *    lobÄÃ·³À» ±¸¼ºÇÒ¶§ À¯ÀÇÇÒ Á¡
+ *    1. XlobÀº lob-value¿Í lob-locator µÎ °¡Áö Å¸ÀÔÀÌ ÀÖ´Ù.
+ *    2. calculate¸¦ °ÅÄ¡¸é lob-locator°¡ openµÈ´Ù.
+ *       ÀÌ ÇÔ¼ö¿¡¼­´Â locator¸¦ lobInfo¿¡ ¹İµå½Ã ÀúÀåÇØ¾ß ÇÏ°í
+ *       close´Â È£ÃâÇÑ ÇÔ¼ö°¡ Ã¥ÀÓÁø´Ù.
+ *    3. XlobÀÌ nullÀÏ¶§ smiValue´Â {0,NULL}ÀÌ¾î¾ß ÇÑ´Ù.
+ *       mtdXlobNullÀº {0,""}ÀÌ±â ¶§¹®¿¡ NULLÀ» ÁöÁ¤ÇØ¾ß ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1975,7 +1983,7 @@ IDE_RC qmx::makeSmiValueWithValue(qcmColumn     * aColumn,
 
                     if ( sIsOutBind == ID_TRUE )
                     {
-                        // bindë³€ìˆ˜ì´ë‹¤.
+                        // bindº¯¼öÀÌ´Ù.
                         IDE_TEST( addLobInfoForOutBind(
                                       aLobInfo,
                                       & aTableInfo->columns[sColumnOrder].basicInfo->column,
@@ -1983,7 +1991,7 @@ IDE_RC qmx::makeSmiValueWithValue(qcmColumn     * aColumn,
                                   != IDE_SUCCESS );
 
                         // NOT NULL Constraint
-                        // Not Null constraintê°€ ìˆì„ ê²½ìš° locatorë¥¼ outbindë¡œ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+                        // Not Null constraint°¡ ÀÖÀ» °æ¿ì locator¸¦ outbind·Î »ç¿ëÇÒ ¼ö ¾ø´Ù.
                         IDE_TEST_RAISE(
                             ( aTableInfo->columns[sColumnOrder].basicInfo->flag &
                               MTC_COLUMN_NOTNULL_MASK )
@@ -1995,7 +2003,8 @@ IDE_RC qmx::makeSmiValueWithValue(qcmColumn     * aColumn,
                         IDE_TEST( addLobInfoForCopy(
                                       aLobInfo,
                                       & aTableInfo->columns[sColumnOrder].basicInfo->column,
-                                      *(smLobLocator*)sValue)
+                                      *(smLobLocator*)sValue,
+                                      sColumnOrder)
                                   != IDE_SUCCESS );
 
                         // NOT NULL Constraint
@@ -2005,7 +2014,8 @@ IDE_RC qmx::makeSmiValueWithValue(qcmColumn     * aColumn,
                         {
                             if ( *(smLobLocator*)sValue != MTD_LOCATOR_NULL )
                             {
-                                IDE_TEST( smiLob::getLength( *(smLobLocator*)sValue,
+                                IDE_TEST( smiLob::getLength( QC_STATISTICS(aTmplate->stmt),
+                                                             *(smLobLocator*)sValue,
                                                              & sLobLen,
                                                              & sIsNullLob )
                                           != IDE_SUCCESS );
@@ -2023,14 +2033,14 @@ IDE_RC qmx::makeSmiValueWithValue(qcmColumn     * aColumn,
                         }
                     }
 
-                    // NULLì„ í• ë‹¹í•œë‹¤.
+                    // NULLÀ» ÇÒ´çÇÑ´Ù.
                     aInsertedRow[sColumnOrder].value  = NULL;
                     aInsertedRow[sColumnOrder].length = 0;
                 }
                 else
                 {
                     // check conversion
-                    /* PROJ-1361 : data module ê³¼ language module ë¶„ë¦¬í–ˆìŒ */
+                    /* PROJ-1361 : data module °ú language module ºĞ¸®ÇßÀ½ */
                     if (sColumn->basicInfo->type.dataTypeId ==
                         sValueColumn->type.dataTypeId )
                     {
@@ -2065,9 +2075,9 @@ IDE_RC qmx::makeSmiValueWithValue(qcmColumn     * aColumn,
                     }
 
                     // PROJ-2002 Column Security
-                    // insert select, move ì ˆì—ì„œ subqueryë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš° ì•”í˜¸ íƒ€ì…ì´
-                    // ì˜¬ ìˆ˜ ì—†ë‹¤. ë‹¨ typed literalì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°ëŠ” default policyì˜
-                    // ì•”í˜¸ íƒ€ì…ì€ ì˜¬ ìˆ˜ ìˆë‹¤.
+                    // insert select, move Àı¿¡¼­ subquery¸¦ »ç¿ëÇÏ´Â °æ¿ì ¾ÏÈ£ Å¸ÀÔÀÌ
+                    // ¿Ã ¼ö ¾ø´Ù. ´Ü typed literalÀ» »ç¿ëÇÏ´Â °æ¿ì´Â default policyÀÇ
+                    // ¾ÏÈ£ Å¸ÀÔÀº ¿Ã ¼ö ÀÖ´Ù.
                     //
                     // insert into t1 select i1 from t2;
                     // insert into t1 select echar'a' from t2;
@@ -2184,7 +2194,7 @@ IDE_RC qmx::makeSmiValueWithValue(qcmColumn     * aColumn,
 
     IDE_EXCEPTION( ERR_NOT_ALLOW_NULL )
     {
-        /* BUG-45680 insert ìˆ˜í–‰ì‹œ not null columnì— ëŒ€í•œ ì—ëŸ¬ë©”ì‹œì§€ ì •ë³´ì— column ì •ë³´ ì¶œë ¥. */
+        /* BUG-45680 insert ¼öÇà½Ã not null column¿¡ ´ëÇÑ ¿¡·¯¸Ş½ÃÁö Á¤º¸¿¡ column Á¤º¸ Ãâ·Â. */
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QMX_NOT_NULL_CONSTRAINT,
                                   "",
                                   "" ) );
@@ -2284,8 +2294,8 @@ IDE_RC qmx::makeSmiValueWithValue( qcTemplate    * aTemplate,
         // Proj-1360 Queue
         else if (sValueNode->msgID == ID_TRUE)
         {
-            // queueì˜ messageIDì¹¼ëŸ¼ì€ bigint typeì´ë©°,
-            // í•´ë‹¹ ì¹¼ëŸ¼ì— ëŒ€í•œ ê°’ì€ sequenceë¥¼ ì½ì–´ì„œ ì„¤ì •í•œë‹¤.
+            // queueÀÇ messageIDÄ®·³Àº bigint typeÀÌ¸ç,
+            // ÇØ´ç Ä®·³¿¡ ´ëÇÑ °ªÀº sequence¸¦ ÀĞ¾î¼­ ¼³Á¤ÇÑ´Ù.
             IDU_FIT_POINT("qmx::makeSmiValueWithValue::malloc3");
             IDE_TEST(aTemplate->stmt->qmxMem->alloc(
                          ID_SIZEOF(mtdBigintType),
@@ -2352,7 +2362,7 @@ IDE_RC qmx::makeSmiValueWithValue( qcTemplate    * aTemplate,
 
                     if ( sIsOutBind == ID_TRUE )
                     {
-                        // bindë³€ìˆ˜ì´ë‹¤.
+                        // bindº¯¼öÀÌ´Ù.
                         IDE_TEST( addLobInfoForOutBind(
                                       aLobInfo,
                                       & aTableInfo->
@@ -2361,7 +2371,7 @@ IDE_RC qmx::makeSmiValueWithValue( qcTemplate    * aTemplate,
                                   != IDE_SUCCESS );
 
                         // NOT NULL Constraint
-                        // Not Null constraintê°€ ìˆì„ ê²½ìš° locatorë¥¼ outbindë¡œ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+                        // Not Null constraint°¡ ÀÖÀ» °æ¿ì locator¸¦ outbind·Î »ç¿ëÇÒ ¼ö ¾ø´Ù.
                         IDE_TEST_RAISE(
                             ( aTableInfo->columns[sColumnOrder].basicInfo->flag &
                               MTC_COLUMN_NOTNULL_MASK )
@@ -2374,7 +2384,8 @@ IDE_RC qmx::makeSmiValueWithValue( qcTemplate    * aTemplate,
                                       aLobInfo,
                                       & aTableInfo->
                                       columns[sColumnOrder].basicInfo->column,
-                                      *(smLobLocator*)sStack->value)
+                                      *(smLobLocator*)sStack->value,
+                                      sColumnOrder)
                                   != IDE_SUCCESS );
 
                         // NOT NULL Constraint
@@ -2384,7 +2395,8 @@ IDE_RC qmx::makeSmiValueWithValue( qcTemplate    * aTemplate,
                         {
                             if ( *(smLobLocator*)sStack->value != MTD_LOCATOR_NULL )
                             {
-                                IDE_TEST( smiLob::getLength( *(smLobLocator*)sStack->value,
+                                IDE_TEST( smiLob::getLength( QC_STATISTICS(aTemplate->stmt),
+                                                             *(smLobLocator*)sStack->value,
                                                              & sLobLen,
                                                              & sIsNullLob )
                                           != IDE_SUCCESS );
@@ -2403,7 +2415,7 @@ IDE_RC qmx::makeSmiValueWithValue( qcTemplate    * aTemplate,
                         }
                     }
 
-                    // NULLì„ í• ë‹¹í•œë‹¤.
+                    // NULLÀ» ÇÒ´çÇÑ´Ù.
                     aInsertedRow[sIterator].value  = NULL;
                     aInsertedRow[sIterator].length = 0;
                 }
@@ -2417,9 +2429,9 @@ IDE_RC qmx::makeSmiValueWithValue( qcTemplate    * aTemplate,
                     sColumnOrder = sColumns->column.id & SMI_COLUMN_ID_MASK;
 
                     // PROJ-2002 Column Security
-                    // insert value ì ˆì—ì„œ subqueryë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš°ëŠ” ì•”í˜¸ íƒ€ì…ì´
-                    // ì˜¬ ìˆ˜ ì—†ë‹¤. ë‹¨ typed literalì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš° default policyì˜
-                    // ì•”í˜¸ íƒ€ì…ì´ ì˜¬ ìˆ˜ëŠ” ìˆë‹¤.
+                    // insert value Àı¿¡¼­ subquery¸¦ »ç¿ëÇÏ´Â °æ¿ì´Â ¾ÏÈ£ Å¸ÀÔÀÌ
+                    // ¿Ã ¼ö ¾ø´Ù. ´Ü typed literalÀ» »ç¿ëÇÏ´Â °æ¿ì default policyÀÇ
+                    // ¾ÏÈ£ Å¸ÀÔÀÌ ¿Ã ¼ö´Â ÀÖ´Ù.
                     sMtcColumn = QTC_TMPL_COLUMN( aTemplate, sValueNode->value );
 
                     IDE_TEST_RAISE( ( (sMtcColumn->module->flag & MTD_ENCRYPT_TYPE_MASK)
@@ -2475,7 +2487,7 @@ IDE_RC qmx::makeSmiValueWithValue( qcTemplate    * aTemplate,
 
     IDE_EXCEPTION( ERR_NOT_ALLOW_NULL );
     {
-        /* BUG-45680 insert ìˆ˜í–‰ì‹œ not null columnì— ëŒ€í•œ ì—ëŸ¬ë©”ì‹œì§€ ì •ë³´ì— column ì •ë³´ ì¶œë ¥. */
+        /* BUG-45680 insert ¼öÇà½Ã not null column¿¡ ´ëÇÑ ¿¡·¯¸Ş½ÃÁö Á¤º¸¿¡ column Á¤º¸ Ãâ·Â. */
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QMX_NOT_NULL_CONSTRAINT,
                                   "",
                                   "" ) );
@@ -2562,7 +2574,7 @@ IDE_RC qmx::makeSmiValueWithStack( qcmColumn     * aColumn,
 
         sColumnOrder = (sColumn->basicInfo->column.id & SMI_COLUMN_ID_MASK);
 
-        /* PROJ-2464 hybrid partitioned table ì§€ì› */
+        /* PROJ-2464 hybrid partitioned table Áö¿ø */
         sStoringColumn = aTableInfo->columns[sColumnOrder].basicInfo;
 
         if ( ( (sValueColumn->module->id == MTD_BLOB_LOCATOR_ID) &&
@@ -2574,11 +2586,12 @@ IDE_RC qmx::makeSmiValueWithStack( qcmColumn     * aColumn,
                  (sColumn->basicInfo->module->id == MTD_CLOB_ID) ) ) )
         {
             // PROJ-1362
-            // selectì˜ ê²°ê³¼ë¡œ ìœ íš¨í•˜ì§€ ì•Šì€ Lob Locatorê°€ ë‚˜ì˜¬ ìˆ˜ ì—†ë‹¤.
+            // selectÀÇ °á°ú·Î À¯È¿ÇÏÁö ¾ÊÀº Lob Locator°¡ ³ª¿Ã ¼ö ¾ø´Ù.
             IDE_TEST( addLobInfoForCopy(
                           aLobInfo,
                           & sStoringColumn->column,
-                          *(smLobLocator*)sValue)
+                          *(smLobLocator*)sValue,
+                          sColumnOrder)
                       != IDE_SUCCESS );
 
             // NOT NULL Constraint
@@ -2587,7 +2600,8 @@ IDE_RC qmx::makeSmiValueWithStack( qcmColumn     * aColumn,
             {
                 if ( *(smLobLocator*)sValue != MTD_LOCATOR_NULL )
                 {
-                    IDE_TEST( smiLob::getLength( *(smLobLocator*)sValue,
+                    IDE_TEST( smiLob::getLength( QC_STATISTICS(aTemplate->stmt),
+                                                 *(smLobLocator*)sValue,
                                                  & sLobLen,
                                                  & sIsNullLob )
                               != IDE_SUCCESS );
@@ -2605,14 +2619,14 @@ IDE_RC qmx::makeSmiValueWithStack( qcmColumn     * aColumn,
                 // Nothing to do.
             }
 
-            // NULLì„ í• ë‹¹í•œë‹¤.
+            // NULLÀ» ÇÒ´çÇÑ´Ù.
             aInsertedRow[sColumnOrder].value  = NULL;
             aInsertedRow[sColumnOrder].length = 0;
         }
         else
         {
             // check conversion
-            /* PROJ-1361 : data moduleê³¼ language module ë¶„ë¦¬í–ˆìŒ */
+            /* PROJ-1361 : data module°ú language module ºĞ¸®ÇßÀ½ */
             if (sColumn->basicInfo->type.dataTypeId ==
                 sValueColumn->type.dataTypeId )
             {
@@ -2746,7 +2760,7 @@ IDE_RC qmx::makeSmiValueWithStack( qcmColumn     * aColumn,
 
     IDE_EXCEPTION(ERR_NOT_ALLOW_NULL)
     {
-        /* BUG-45680 insert ìˆ˜í–‰ì‹œ not null columnì— ëŒ€í•œ ì—ëŸ¬ë©”ì‹œì§€ ì •ë³´ì— column ì •ë³´ ì¶œë ¥. */
+        /* BUG-45680 insert ¼öÇà½Ã not null column¿¡ ´ëÇÑ ¿¡·¯¸Ş½ÃÁö Á¤º¸¿¡ column Á¤º¸ Ãâ·Â. */
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QMX_NOT_NULL_CONSTRAINT,
                                   "",
                                   "" ) );
@@ -2815,7 +2829,7 @@ IDE_RC qmx::makeSmiValueForUpdate( qcTemplate    * aTmplate,
     {
         sColumnOrder = (sQcmColumn->basicInfo->column.id & SMI_COLUMN_ID_MASK);
 
-        /* PROJ-2464 hybrid partitioned table ì§€ì› */
+        /* PROJ-2464 hybrid partitioned table Áö¿ø */
         sMetaColumn = &(aTableInfo->columns[sColumnOrder]);
 
         if ( sValueNode->timestamp == ID_FALSE )
@@ -2856,7 +2870,7 @@ IDE_RC qmx::makeSmiValueForUpdate( qcTemplate    * aTmplate,
 
                     if ( sIsOutBind == ID_TRUE )
                     {
-                        // bindë³€ìˆ˜ì´ë‹¤.
+                        // bindº¯¼öÀÌ´Ù.
                         IDE_TEST( addLobInfoForOutBind(
                                       aLobInfo,
                                       & sMetaColumn->basicInfo->column,
@@ -2864,7 +2878,7 @@ IDE_RC qmx::makeSmiValueForUpdate( qcTemplate    * aTmplate,
                                   != IDE_SUCCESS );
 
                         // NOT NULL Constraint
-                        // Not Null constraintê°€ ìˆì„ ê²½ìš° locatorë¥¼ outbindë¡œ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+                        // Not Null constraint°¡ ÀÖÀ» °æ¿ì locator¸¦ outbind·Î »ç¿ëÇÒ ¼ö ¾ø´Ù.
                         IDE_TEST_RAISE(
                             ( sMetaColumn->basicInfo->flag & MTC_COLUMN_NOTNULL_MASK )
                             == MTC_COLUMN_NOTNULL_TRUE,
@@ -2884,7 +2898,8 @@ IDE_RC qmx::makeSmiValueForUpdate( qcTemplate    * aTmplate,
                         {
                             if ( *(smLobLocator*)sStack->value != MTD_LOCATOR_NULL )
                             {
-                                IDE_TEST( smiLob::getLength( *(smLobLocator*)sStack->value,
+                                IDE_TEST( smiLob::getLength( QC_STATISTICS(aTmplate->stmt),
+                                                             *(smLobLocator*)sStack->value,
                                                              & sLobLen,
                                                              & sIsNullLob )
                                           != IDE_SUCCESS );
@@ -2903,7 +2918,7 @@ IDE_RC qmx::makeSmiValueForUpdate( qcTemplate    * aTmplate,
                         }
                     }
 
-                    // NULLì„ í• ë‹¹í•œë‹¤.
+                    // NULLÀ» ÇÒ´çÇÑ´Ù.
                     aUpdatedRow[sIterator].value = NULL;
                     aUpdatedRow[sIterator].length = 0;
                 }
@@ -2914,9 +2929,9 @@ IDE_RC qmx::makeSmiValueForUpdate( qcTemplate    * aTmplate,
                          + sColumns->column.offset);
 
                     // PROJ-2002 Column Security
-                    // update t1 set i1=i2 ê°™ì€ ê²½ìš° i2ëŠ” ë³µí˜¸í™”í•¨ìˆ˜ê°€ ìƒì„±ë˜ì—ˆìœ¼ë¯€ë¡œ
-                    // ì•”í˜¸ íƒ€ì…ì´ ì˜¬ ìˆ˜ ì—†ë‹¤. ë‹¨ typed literalì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
-                    // default policyì˜ ì•”í˜¸ íƒ€ì…ì´ ì˜¬ ìˆ˜ëŠ” ìˆë‹¤.
+                    // update t1 set i1=i2 °°Àº °æ¿ì i2´Â º¹È£È­ÇÔ¼ö°¡ »ı¼ºµÇ¾úÀ¸¹Ç·Î
+                    // ¾ÏÈ£ Å¸ÀÔÀÌ ¿Ã ¼ö ¾ø´Ù. ´Ü typed literalÀ» »ç¿ëÇÏ´Â °æ¿ì
+                    // default policyÀÇ ¾ÏÈ£ Å¸ÀÔÀÌ ¿Ã ¼ö´Â ÀÖ´Ù.
                     sMtcColumn = QTC_TMPL_COLUMN( aTmplate, sValueNode->value );
 
                     IDE_TEST_RAISE( ( (sMtcColumn->module->flag & MTD_ENCRYPT_TYPE_MASK)
@@ -2964,8 +2979,8 @@ IDE_RC qmx::makeSmiValueForUpdate( qcTemplate    * aTmplate,
                     aUpdatedRow[sIterator].length = sStoringSize;
 
                     // BUG-16523
-                    // locatorì˜ ê²½ìš° lengthë¡œ ê²€ì‚¬í–ˆìœ¼ë¯€ë¡œ
-                    // locatorê°€ ì•„ë‹Œ ê²½ìš°ë§Œ ê²€ì‚¬í•œë‹¤.
+                    // locatorÀÇ °æ¿ì length·Î °Ë»çÇßÀ¸¹Ç·Î
+                    // locator°¡ ¾Æ´Ñ °æ¿ì¸¸ °Ë»çÇÑ´Ù.
                     IDE_TEST_RAISE( aIsNull[sIterator](
                                         sColumns,
                                         sCanonizedValue ) == ID_TRUE,
@@ -2975,17 +2990,17 @@ IDE_RC qmx::makeSmiValueForUpdate( qcTemplate    * aTmplate,
             else
             {
                 // Nothing to do
-                // ì•„ë‹Œ ê²½ìš°ì—ë„ aUpdatedRowëŠ” ì„¸íŒ…ë˜ì–´ ìˆìŒ
-                // makeSmiValueForUpdate()ë¥¼ í˜¸ì¶œí•˜ëŠ” ê³³: qmnScan.cppì˜ updateOneRow()
+                // ¾Æ´Ñ °æ¿ì¿¡µµ aUpdatedRow´Â ¼¼ÆÃµÇ¾î ÀÖÀ½
+                // makeSmiValueForUpdate()¸¦ È£ÃâÇÏ´Â °÷: qmnScan.cppÀÇ updateOneRow()
 
 
                 // PROJ-1362
-                // calculate í•˜ì§€ì•ŠëŠ” ê²½ìš° isNullê³„ì‚°
+                // calculate ÇÏÁö¾Ê´Â °æ¿ì isNull°è»ê
                 if ( ( sMetaColumn->basicInfo->flag & MTC_COLUMN_NOTNULL_MASK )
                      == MTC_COLUMN_NOTNULL_TRUE )
                 {
-                    // sMetaColumnì€ lob_locator_typeì¼ ìˆ˜ ì—†ë‹¤.
-                    // ê·¸ëŸ¬ë¯€ë¡œ lob_typeë§Œ ê³ ë ¤í•˜ë©´ ëœë‹¤.
+                    // sMetaColumnÀº lob_locator_typeÀÏ ¼ö ¾ø´Ù.
+                    // ±×·¯¹Ç·Î lob_type¸¸ °í·ÁÇÏ¸é µÈ´Ù.
                     IDE_DASSERT( sMetaColumn->basicInfo->module->id
                                  != MTD_BLOB_LOCATOR_ID );
                     IDE_DASSERT( sMetaColumn->basicInfo->module->id
@@ -3039,7 +3054,7 @@ IDE_RC qmx::makeSmiValueForUpdate( qcTemplate    * aTmplate,
 
     IDE_EXCEPTION( ERR_NOT_ALLOW_NULL );
     {
-        /* BUG-45680 insert ìˆ˜í–‰ì‹œ not null columnì— ëŒ€í•œ ì—ëŸ¬ë©”ì‹œì§€ ì •ë³´ì— column ì •ë³´ ì¶œë ¥. */
+        /* BUG-45680 insert ¼öÇà½Ã not null column¿¡ ´ëÇÑ ¿¡·¯¸Ş½ÃÁö Á¤º¸¿¡ column Á¤º¸ Ãâ·Â. */
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QMX_NOT_NULL_CONSTRAINT,
                                   " : ",
                                   sMetaColumn->name ) );
@@ -3095,7 +3110,7 @@ IDE_RC qmx::makeSmiValueForSubquery( qcTemplate    * aTemplate,
     SLong               sLobLen;
     idBool              sIsNullLob;
 
-    // Value ì •ë³´ êµ¬ì„±
+    // Value Á¤º¸ ±¸¼º
     for( sSubquery = aSubquery;
          sSubquery != NULL;
          sSubquery = sSubquery->next )
@@ -3109,7 +3124,7 @@ IDE_RC qmx::makeSmiValueForSubquery( qcTemplate    * aTemplate,
              sValue = sValue->next,
                  sStack++ )
         {
-            // Metaì»¬ëŸ¼ì„ ì°¾ëŠ”ë‹¤.
+            // MetaÄÃ·³À» Ã£´Â´Ù.
             for( sIterator = 0,
                      sQcmColumn = aColumn;
                  sIterator != sValue->valueNode->order;
@@ -3121,14 +3136,14 @@ IDE_RC qmx::makeSmiValueForSubquery( qcTemplate    * aTemplate,
 
             sColumnOrder = (sQcmColumn->basicInfo->column.id & SMI_COLUMN_ID_MASK);
 
-            /* PROJ-2464 hybrid partitioned table ì§€ì› */
+            /* PROJ-2464 hybrid partitioned table Áö¿ø */
             sMetaColumn = &(aTableInfo->columns[sColumnOrder]);
 
             if( (sStack->column->module->id == MTD_BLOB_LOCATOR_ID) ||
                 (sStack->column->module->id == MTD_CLOB_LOCATOR_ID) )
             {
                 // PROJ-1362
-                // subqueryì˜ ê²°ê³¼ë¡œ ìœ íš¨í•˜ì§€ ì•Šì€ Lob Locatorê°€ ë‚˜ì˜¬ ìˆ˜ ì—†ë‹¤.
+                // subqueryÀÇ °á°ú·Î À¯È¿ÇÏÁö ¾ÊÀº Lob Locator°¡ ³ª¿Ã ¼ö ¾ø´Ù.
                 IDE_TEST( addLobInfoForCopy(
                               aLobInfo,
                               & sMetaColumn->basicInfo->column,
@@ -3141,7 +3156,8 @@ IDE_RC qmx::makeSmiValueForSubquery( qcTemplate    * aTemplate,
                 {
                     if ( *(smLobLocator*)sStack->value != MTD_LOCATOR_NULL )
                     {
-                        IDE_TEST( smiLob::getLength( *(smLobLocator*)sStack->value,
+                        IDE_TEST( smiLob::getLength( QC_STATISTICS(aTemplate->stmt),
+                                                     *(smLobLocator*)sStack->value,
                                                      & sLobLen,
                                                      & sIsNullLob )
                                   != IDE_SUCCESS );
@@ -3159,7 +3175,7 @@ IDE_RC qmx::makeSmiValueForSubquery( qcTemplate    * aTemplate,
                     // Nothing to do.
                 }
 
-                // NULLì„ í• ë‹¹í•œë‹¤.
+                // NULLÀ» ÇÒ´çÇÑ´Ù.
                 aUpdatedRow[sValue->valueNode->order].value  = NULL;
                 aUpdatedRow[sValue->valueNode->order].length = 0;
             }
@@ -3175,9 +3191,9 @@ IDE_RC qmx::makeSmiValueForSubquery( qcTemplate    * aTemplate,
                       + sColumn->column.offset);
 
                 // PROJ-2002 Column Security
-                // updateì‹œ subqueryë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš° ì•”í˜¸ íƒ€ì…ì´ ì˜¬ ìˆ˜ ì—†ë‹¤.
-                // ë‹¨ typed literalì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš° default policyì˜
-                // ì•”í˜¸ íƒ€ì…ì´ ì˜¬ ìˆ˜ëŠ” ìˆë‹¤.
+                // update½Ã subquery¸¦ »ç¿ëÇÏ´Â °æ¿ì ¾ÏÈ£ Å¸ÀÔÀÌ ¿Ã ¼ö ¾ø´Ù.
+                // ´Ü typed literalÀ» »ç¿ëÇÏ´Â °æ¿ì default policyÀÇ
+                // ¾ÏÈ£ Å¸ÀÔÀÌ ¿Ã ¼ö´Â ÀÖ´Ù.
                 //
                 // update t1 set i1=(select echar'a' from dual);
                 //
@@ -3239,7 +3255,7 @@ IDE_RC qmx::makeSmiValueForSubquery( qcTemplate    * aTemplate,
 
     IDE_EXCEPTION( ERR_NOT_ALLOW_NULL );
     {
-        /* BUG-45680 insert ìˆ˜í–‰ì‹œ not null columnì— ëŒ€í•œ ì—ëŸ¬ë©”ì‹œì§€ ì •ë³´ì— column ì •ë³´ ì¶œë ¥. */
+        /* BUG-45680 insert ¼öÇà½Ã not null column¿¡ ´ëÇÑ ¿¡·¯¸Ş½ÃÁö Á¤º¸¿¡ column Á¤º¸ Ãâ·Â. */
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QMX_NOT_NULL_CONSTRAINT,
                                   "",
                                   "" ) );
@@ -3299,7 +3315,7 @@ IDE_RC qmx::findSessionSeqCaches(qcStatement * aStatement,
                 if ( sParseSeqCache->sequenceOID == sSessionSeqCache->sequenceOID )
                 {
                     /* BUG-45315
-                     * PROJ-2268ë¡œ ì¸í•´ OIDê°€ ê°™ë”ë¼ë„ Sequenceê°€ ë³€ê²½ë˜ì—ˆì„ ìˆ˜ ìˆë‹¤. */
+                     * PROJ-2268·Î ÀÎÇØ OID°¡ °°´õ¶óµµ Sequence°¡ º¯°æµÇ¾úÀ» ¼ö ÀÖ´Ù. */
                     if ( smiValidatePlanHandle( smiGetTable( sSessionSeqCache->sequenceOID ),
                                                 sSessionSeqCache->sequenceSCN )
                          == IDE_SUCCESS )
@@ -3372,7 +3388,7 @@ IDE_RC qmx::addSessionSeqCaches(qcStatement * aStatement,
             if ( sParseSeqCache->sequenceOID == sSessionSeqCache->sequenceOID )
             {
                 /* BUG-43515
-                 * PROJ-2268ë¡œ ì¸í•´ OIDê°€ ê°™ë”ë¼ë„ SEQUENCEê°€ ë³€ê²½ë˜ì—ˆì„ ìˆ˜ ìˆë‹¤. */
+                 * PROJ-2268·Î ÀÎÇØ OID°¡ °°´õ¶óµµ SEQUENCE°¡ º¯°æµÇ¾úÀ» ¼ö ÀÖ´Ù. */
                 if ( smiValidatePlanHandle( smiGetTable( sSessionSeqCache->sequenceOID ),
                                             sSessionSeqCache->sequenceSCN )
                      == IDE_SUCCESS )
@@ -3493,12 +3509,14 @@ IDE_RC qmx::readSequenceNextVals(
 
     qcParseSeqCaches    * sParseSeqCache;
     SLong                 sCurrVal;
+    SLong                 sNodeID;
     
     qdsCallBackInfo       sCallBackInfo;
     smiSeqTableCallBack   sSeqTableCallBack = {
         (void*) & sCallBackInfo,
         qds::selectCurrValTx,
-        qds::updateLastValTx
+        qds::updateLastValTx,
+        0 // max scale of sequence, for sharded sequence
     };
     
     for (sParseSeqCache = aNextValSeqs;
@@ -3524,6 +3542,23 @@ IDE_RC qmx::readSequenceNextVals(
                                          &sSeqTableCallBack)
                  != IDE_SUCCESS);
 
+        /* TASK-7217 Sharded sequence */
+        if ( sSeqTableCallBack.scale > 0 )
+        {
+            sNodeID = qcm::getShardNodeID( sSeqTableCallBack.scale );
+
+            IDE_TEST_RAISE(sNodeID == 0, ERR_NOT_EXIST_META);
+
+            if ( sCurrVal >= 0 )
+            {
+                sCurrVal = sCurrVal + sNodeID;
+            }
+            else
+            {
+                sCurrVal = sCurrVal - sNodeID;
+            }
+        }
+
         // set NEXTVAL in session sequence cache
         IDE_TEST(setValSessionSeqCaches(aStatement, sParseSeqCache, sCurrVal)
                  != IDE_SUCCESS);
@@ -3537,6 +3572,10 @@ IDE_RC qmx::readSequenceNextVals(
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION(ERR_NOT_EXIST_META)
+    {
+        ideSetErrorCode(qpERR_ABORT_QDSD_SHARD_META_NOT_CREATED);
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -3637,6 +3676,12 @@ IDE_RC qmx::initializeLobInfo( qcStatement  * aStatement,
                       (void**) & sLobInfo->locator )
                   != IDE_SUCCESS );
 
+        // dstBindId
+        IDE_TEST( aStatement->qmxMem->alloc(
+                      ID_SIZEOF(UShort) * aSize,
+                      (void**) & sLobInfo->dstBindId )
+                  != IDE_SUCCESS );
+
         // for outbind
         // outBindId
         IDU_FIT_POINT("qmx::initializeLobInfo::malloc4");
@@ -3672,12 +3717,17 @@ IDE_RC qmx::initializeLobInfo( qcStatement  * aStatement,
         sLobInfo->outCount    = 0;
         sLobInfo->outFirst    = ID_TRUE;
         sLobInfo->outCallback = ID_FALSE;
+        sLobInfo->mCount4PutLob = 0;
+        sLobInfo->mBindId4PutLob = NULL;
+        sLobInfo->mCount4OutBindNonLob = 0;
+        sLobInfo->mBindId4OutBindNonLob = NULL;
         sLobInfo->mImmediateClose = ID_FALSE;
 
         for ( i = 0; i < aSize; i++ )
         {
             sLobInfo->column[i] = NULL;
             sLobInfo->locator[i] = MTD_LOCATOR_NULL;
+            sLobInfo->dstBindId[i] = 0;
 
             sLobInfo->outBindId[i] = 0;
             sLobInfo->outColumn[i] = NULL;
@@ -3706,10 +3756,10 @@ void qmx::initLobInfo( qmxLobInfo  * aLobInfo )
 /***********************************************************************
  *
  * Description :
- *     insert, insert select, atomic insert ê°™ì€ single row insertëŠ”
- *     lob infoë¥¼ ì¬ì‚¬ìš©í• ë•Œë§ˆë‹¤ outFirstë¥¼ ì´ˆê¸°í™”í•´ì•¼í•œë‹¤.
+ *     insert, insert select, atomic insert °°Àº single row insert´Â
+ *     lob info¸¦ Àç»ç¿ëÇÒ¶§¸¶´Ù outFirst¸¦ ÃÊ±âÈ­ÇØ¾ßÇÑ´Ù.
  *
- * Implementation : lob infoë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ * Implementation : lob info¸¦ ÃÊ±âÈ­ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -3729,6 +3779,7 @@ void qmx::initLobInfo( qmxLobInfo  * aLobInfo )
         {
             aLobInfo->column[i] = NULL;
             aLobInfo->locator[i] = MTD_LOCATOR_NULL;
+            aLobInfo->dstBindId[i] = 0;
 
             aLobInfo->outBindId[i] = 0;
             aLobInfo->outColumn[i] = NULL;
@@ -3749,8 +3800,8 @@ void qmx::clearLobInfo( qmxLobInfo  * aLobInfo )
 /***********************************************************************
  *
  * Description :
- *     update ê°™ì€ multi row updateëŠ” lob infoë¥¼ ì¬ì‚¬ìš©í•˜ì§€ë§Œ
- *     outFirstë¥¼ ì´ˆê¸°í™”í•˜ë©´ ì•ˆëœë‹¤.
+ *     update °°Àº multi row update´Â lob info¸¦ Àç»ç¿ëÇÏÁö¸¸
+ *     outFirst¸¦ ÃÊ±âÈ­ÇÏ¸é ¾ÈµÈ´Ù.
  *
  * Implementation :
  *
@@ -3769,6 +3820,7 @@ void qmx::clearLobInfo( qmxLobInfo  * aLobInfo )
         {
             aLobInfo->column[i] = NULL;
             aLobInfo->locator[i] = MTD_LOCATOR_NULL;
+            aLobInfo->dstBindId[i] = 0;
 
             aLobInfo->outBindId[i] = 0;
             aLobInfo->outColumn[i] = NULL;
@@ -3785,18 +3837,19 @@ void qmx::clearLobInfo( qmxLobInfo  * aLobInfo )
 
 IDE_RC qmx::addLobInfoForCopy( qmxLobInfo   * aLobInfo,
                                smiColumn    * aColumn,
-                               smLobLocator   aLocator )
+                               smLobLocator   aLocator,
+                               UShort         aBindId )
 {
 #define IDE_FN "qmx::addLobInfoForCopy"
 
-    // BUG-38188 instead of triggerì—ì„œ aLobInfoê°€ NULLì¼ ìˆ˜ ìˆë‹¤.
+    // BUG-38188 instead of trigger¿¡¼­ aLobInfo°¡ NULLÀÏ ¼ö ÀÖ´Ù.
     if ( aLobInfo != NULL )
     {
         IDE_ASSERT( aLobInfo->count < aLobInfo->size );
         IDE_ASSERT( (aColumn->flag & SMI_COLUMN_TYPE_MASK) ==
                     SMI_COLUMN_TYPE_LOB );
 
-        /* BUG-44022 CREATE AS SELECTë¡œ TABLE ìƒì„±í•  ë•Œì— OUTER JOINê³¼ LOBë¥¼ ê°™ì´ ì‚¬ìš©í•˜ë©´ ì—ëŸ¬ê°€ ë°œìƒ */
+        /* BUG-44022 CREATE AS SELECT·Î TABLE »ı¼ºÇÒ ¶§¿¡ OUTER JOIN°ú LOB¸¦ °°ÀÌ »ç¿ëÇÏ¸é ¿¡·¯°¡ ¹ß»ı */
         if ( ( aLocator == MTD_LOCATOR_NULL )
              ||
              ( SMI_IS_NULL_LOCATOR( aLocator ) ) )
@@ -3807,6 +3860,7 @@ IDE_RC qmx::addLobInfoForCopy( qmxLobInfo   * aLobInfo,
         {
             aLobInfo->column[aLobInfo->count] = aColumn;
             aLobInfo->locator[aLobInfo->count] = aLocator;
+            aLobInfo->dstBindId[aLobInfo->count] = aBindId;
             aLobInfo->count++;
         }
     }
@@ -3841,7 +3895,7 @@ IDE_RC qmx::addLobInfoForOutBind( qmxLobInfo   * aLobInfo,
 }
 
 /* BUG-30351
- * insert into selectì—ì„œ ê° Row Insert í›„ í•´ë‹¹ Lob Cursorë¥¼ ë°”ë¡œ í•´ì œí–ˆìœ¼ë©´ í•©ë‹ˆë‹¤.
+ * insert into select¿¡¼­ °¢ Row Insert ÈÄ ÇØ´ç Lob Cursor¸¦ ¹Ù·Î ÇØÁ¦ÇßÀ¸¸é ÇÕ´Ï´Ù.
  */
 void qmx::setImmediateCloseLobInfo( qmxLobInfo  * aLobInfo,
                                     idBool        aImmediateClose )
@@ -3914,11 +3968,12 @@ IDE_RC qmx::copyAndOutBindLobInfo( qcStatement    * aStatement,
 
             sTempLocator = sLocator;
             sLocator = MTD_LOCATOR_NULL;
-            IDE_TEST( closeLobLocator( sTempLocator )
+            IDE_TEST( closeLobLocator( aStatement->mStatistics,
+                                       sTempLocator )
                       != IDE_SUCCESS );
 
             /* BUG-30351
-             * insert into selectì—ì„œ ê° Row Insert í›„ í•´ë‹¹ Lob Cursorë¥¼ ë°”ë¡œ í•´ì œí–ˆìœ¼ë©´ í•©ë‹ˆë‹¤.
+             * insert into select¿¡¼­ °¢ Row Insert ÈÄ ÇØ´ç Lob Cursor¸¦ ¹Ù·Î ÇØÁ¦ÇßÀ¸¸é ÇÕ´Ï´Ù.
              */
             sTempLocator = aLobInfo->locator[i];
             aLobInfo->locator[i] = MTD_LOCATOR_NULL;
@@ -3933,13 +3988,15 @@ IDE_RC qmx::copyAndOutBindLobInfo( qcStatement    * aStatement,
                 }
                 else
                 {
-                    IDE_TEST( smiLob::closeLobCursor( sTempLocator )
+                    IDE_TEST( smiLob::closeLobCursor( aStatement->mStatistics,
+                                                      sTempLocator )
                               != IDE_SUCCESS );
                 }
             }
             else
             {
-                IDE_TEST( closeLobLocator( sTempLocator )
+                IDE_TEST( closeLobLocator( aStatement->mStatistics,
+                                           sTempLocator )
                         != IDE_SUCCESS );
             }
         }
@@ -3976,9 +4033,9 @@ IDE_RC qmx::copyAndOutBindLobInfo( qcStatement    * aStatement,
                           != IDE_SUCCESS );
             }
 
-            // locatorê°€ out-bound ë˜ì—ˆì„ ë•Œ
-            // getParamDataì‹œ ì²«ë²ˆì§¸ locatorë¥¼ ë„˜ê²¨ì£¼ê¸° ìœ„í•´
-            // ì²«ë²ˆì§¸ locatorë“¤ì„ bind-tupleì— ì €ì¥í•œë‹¤.
+            // locator°¡ out-bound µÇ¾úÀ» ¶§
+            // getParamData½Ã Ã¹¹øÂ° locator¸¦ ³Ñ°ÜÁÖ±â À§ÇØ
+            // Ã¹¹øÂ° locatorµéÀ» bind-tuple¿¡ ÀúÀåÇÑ´Ù.
             if ( aLobInfo->outFirst == ID_TRUE )
             {
                 sTemplate = QC_PRIVATE_TMPLATE(aStatement);
@@ -3995,8 +4052,8 @@ IDE_RC qmx::copyAndOutBindLobInfo( qcStatement    * aStatement,
                                & sLocator,
                                ID_SIZEOF(sLocator) );
 
-                // ì²«ë²ˆì§¸ locatorë“¤ì„ ë”°ë¡œ ì €ì¥í•œë‹¤.
-                // mmì—ì„œ locator-listì˜ hash functionì— ì‚¬ìš©í•œë‹¤.
+                // Ã¹¹øÂ° locatorµéÀ» µû·Î ÀúÀåÇÑ´Ù.
+                // mm¿¡¼­ locator-listÀÇ hash function¿¡ »ç¿ëÇÑ´Ù.
                 aLobInfo->outFirstLocator[i] = sLocator;
             }
             else
@@ -4019,7 +4076,7 @@ IDE_RC qmx::copyAndOutBindLobInfo( qcStatement    * aStatement,
                           aLobInfo->outCount )
                       != IDE_SUCCESS );
 
-            // callbackì„ í˜¸ì¶œí–ˆìŒì„ í‘œì‹œ
+            // callbackÀ» È£ÃâÇßÀ½À» Ç¥½Ã
             aLobInfo->outCallback = ID_TRUE;
         }
         else
@@ -4036,13 +4093,13 @@ IDE_RC qmx::copyAndOutBindLobInfo( qcStatement    * aStatement,
 
     IDE_EXCEPTION_END;
 
-    (void) closeLobLocator( sLocator );
+    (void) closeLobLocator( aStatement->mStatistics, sLocator );
 
     for ( i = 0;
           i < aLobInfo->outCount;
           i++ )
     {
-        (void) closeLobLocator( aLobInfo->outLocator[i] );
+        (void) closeLobLocator( aStatement->mStatistics, aLobInfo->outLocator[i] );
         aLobInfo->outLocator[i] = MTD_LOCATOR_NULL;
     }
 
@@ -4065,7 +4122,8 @@ void qmx::finalizeLobInfo( qcStatement * aStatement,
               i < aLobInfo->count;
               i++ )
         {
-            (void) closeLobLocator( aLobInfo->locator[i] );
+            (void) closeLobLocator( aStatement->mStatistics,
+                                    aLobInfo->locator[i] );
             aLobInfo->locator[i] = MTD_LOCATOR_NULL;
         }
 
@@ -4091,7 +4149,8 @@ void qmx::finalizeLobInfo( qcStatement * aStatement,
 #undef IDE_FN
 }
 
-IDE_RC qmx::closeLobLocator( smLobLocator   aLocator )
+IDE_RC qmx::closeLobLocator( idvSQL       * aStatistics,
+                             smLobLocator   aLocator )
 {
 #define IDE_FN "qmx::closeLobLocator"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(IDE_FN));
@@ -4113,7 +4172,8 @@ IDE_RC qmx::closeLobLocator( smLobLocator   aLocator )
         if ( (sInfo & MTC_LOB_LOCATOR_CLOSE_MASK)
              == MTC_LOB_LOCATOR_CLOSE_TRUE )
         {
-            IDE_TEST( smiLob::closeLobCursor( aLocator )
+            IDE_TEST( smiLob::closeLobCursor( aStatistics,
+                                              aLocator )
                       != IDE_SUCCESS );
         }
         else
@@ -4141,18 +4201,18 @@ qmx::fireStatementTriggerOnDeleteCascade(
 /***********************************************************************
  * BUG-28049, BUG-28094
  *
- * Description : delete cascadeì— ëŒ€í•œ Statement triggerë¥¼ ìˆ˜í–‰í•œë‹¤.
- *               planì— êµ¬ì„±ëœ child constraint listì— í¬í•¨ëœ
- *               ëª¨ë“  í…Œì´ë¸”ì— IS lockì„ ë¶€ì—¬í•˜ê³ ,
- *               ê° í…Œì´ë¸”ë§ˆë‹¤ í•˜ë‚˜ì”©ì˜ delete íŠ¸ë¦¬ê±°ë¥¼ ìƒì„±í•œë‹¤.
+ * Description : delete cascade¿¡ ´ëÇÑ Statement trigger¸¦ ¼öÇàÇÑ´Ù.
+ *               plan¿¡ ±¸¼ºµÈ child constraint list¿¡ Æ÷ÇÔµÈ
+ *               ¸ğµç Å×ÀÌºí¿¡ IS lockÀ» ºÎ¿©ÇÏ°í,
+ *               °¢ Å×ÀÌºí¸¶´Ù ÇÏ³ª¾¿ÀÇ delete Æ®¸®°Å¸¦ »ı¼ºÇÑ´Ù.
  *
- *               íŠ¸ë¦¬ê±° í˜¸ì¶œ ìˆœì„œëŠ” íŠ¸ë¦¬ê±° ìˆ˜í–‰ ì‹œì ì— ë”°ë¼ êµ¬ë¶„í•˜ë©°,
- *               QCM_TRIGGER_BEFORE & QCM_TRIGGER_AFTER ë¡œ ë‚˜ëˆ„ì–´ ì§„ë‹¤.
- *               ì´ ë‘˜ì€ ë°˜ëŒ€ì˜ ìˆœì„œë¡œ statement íŠ¸ë¦¬ê±°ë¥¼ í˜¸ì¶œí•œë‹¤.
+ *               Æ®¸®°Å È£Ãâ ¼ø¼­´Â Æ®¸®°Å ¼öÇà ½ÃÁ¡¿¡ µû¶ó ±¸ºĞÇÏ¸ç,
+ *               QCM_TRIGGER_BEFORE & QCM_TRIGGER_AFTER ·Î ³ª´©¾î Áø´Ù.
+ *               ÀÌ µÑÀº ¹İ´ëÀÇ ¼ø¼­·Î statement Æ®¸®°Å¸¦ È£ÃâÇÑ´Ù.
  *
- *               validation ê³¼ì •ì—ì„œ ìƒì„±ëœ child constraint listëŠ”
- *               deleteì™€ delete cascadeë¥¼ ê³ ë ¤í•˜ì—¬ êµ¬ì„±ë˜ì—ˆê¸° ë•Œë¬¸ì—
- *               í•´ë‹¹ í•¨ìˆ˜ì—ì„œëŠ” ì´ë¥¼ êµ¬ë¶„í•´ì„œ êµ¬í˜„í•  í•„ìš”ê°€ ì—†ë‹¤.
+ *               validation °úÁ¤¿¡¼­ »ı¼ºµÈ child constraint list´Â
+ *               delete¿Í delete cascade¸¦ °í·ÁÇÏ¿© ±¸¼ºµÇ¾ú±â ¶§¹®¿¡
+ *               ÇØ´ç ÇÔ¼ö¿¡¼­´Â ÀÌ¸¦ ±¸ºĞÇØ¼­ ±¸ÇöÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
  *
  * Implementation :
  *
@@ -4166,8 +4226,8 @@ qmx::fireStatementTriggerOnDeleteCascade(
 
     IDE_DASSERT( aParentTableRef != NULL );
 
-    // 1. child constraint listë¥¼ ì´ìš©í•˜ì—¬
-    // child Tableì— ëŒ€í•œ ì°¸ì¡° ë¦¬ìŠ¤íŠ¸ êµ¬ì„± & ì¤‘ë³µì œê±°
+    // 1. child constraint list¸¦ ÀÌ¿ëÇÏ¿©
+    // child Table¿¡ ´ëÇÑ ÂüÁ¶ ¸®½ºÆ® ±¸¼º & Áßº¹Á¦°Å
     sChildTableRefCount = 1;
 
     for ( sRefChildInfo = aChildInfo;
@@ -4221,7 +4281,7 @@ qmx::fireStatementTriggerOnDeleteCascade(
         if ( aParentTableRef->tableHandle != sChildTableRefList[i]->tableHandle )
         {
             // BUG-21816
-            // childì˜ tableInfoë¥¼ ì°¸ì¡°í•˜ê¸° ìœ„í•´ IS LOCKì„ ì¡ëŠ”ë‹¤.
+            // childÀÇ tableInfo¸¦ ÂüÁ¶ÇÏ±â À§ÇØ IS LOCKÀ» Àâ´Â´Ù.
             IDE_TEST( qmx::lockTableForDML( aStatement,
                                             sChildTableRefList[i],
                                             SMI_TABLE_LOCK_IS )
@@ -4233,7 +4293,7 @@ qmx::fireStatementTriggerOnDeleteCascade(
         }
     }
     
-    // 2. íŠ¸ë¦¬ê±° ìˆ˜í–‰ ì‹œì ì— ë”°ë¼ êµ¬ë¶„í•˜ë©° statement íŠ¸ë¦¬ê±° í˜¸ì¶œ
+    // 2. Æ®¸®°Å ¼öÇà ½ÃÁ¡¿¡ µû¶ó ±¸ºĞÇÏ¸ç statement Æ®¸®°Å È£Ãâ
     switch ( aTriggerEventTime )
     {
         case QCM_TRIGGER_BEFORE:
@@ -4305,8 +4365,8 @@ qmx::fireTriggerInsertRowGranularity( qcStatement      * aStatement,
 /***********************************************************************
  *
  * Description :
- *     INSERT êµ¬ë¬¸ ìˆ˜í–‰ ì‹œ Row Granularity Triggerì— ëŒ€í•˜ì—¬
- *     Triggerë¥¼ fireí•œë‹¤.
+ *     INSERT ±¸¹® ¼öÇà ½Ã Row Granularity Trigger¿¡ ´ëÇÏ¿©
+ *     Trigger¸¦ fireÇÑ´Ù.
  *
  * Implementation :
  *
@@ -4326,14 +4386,14 @@ qmx::fireTriggerInsertRowGranularity( qcStatement      * aStatement,
     mtcTuple          sCopyTuple;
 
     //---------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aInsertCursorMgr != NULL );
 
     //---------------------------------------
-    // Trigger Objectì˜ ì‚­ì œ
+    // Trigger ObjectÀÇ »èÁ¦
     //---------------------------------------
 
     sHasCheckConstraint = (aCheckConstrList != NULL) ? ID_TRUE : ID_FALSE;
@@ -4342,21 +4402,21 @@ qmx::fireTriggerInsertRowGranularity( qcStatement      * aStatement,
               != IDE_SUCCESS );
 
     //--------------------------------------
-    // Return Clause ì—­ì‹œ After Triggerì²˜ëŸ¼
-    // Insert ëœ NEW ROWê°€ í•„ìš”.
+    // Return Clause ¿ª½Ã After TriggerÃ³·³
+    // Insert µÈ NEW ROW°¡ ÇÊ¿ä.
     //--------------------------------------
     if ( ( aNeedNewRow == ID_TRUE ) ||
          ( aReturnInto != NULL ) ||
          ( sHasCheckConstraint == ID_TRUE ) )
     {
         //---------------------------------
-        // NEW ROW ê°€ í•„ìš”í•œ ê²½ìš°
+        // NEW ROW °¡ ÇÊ¿äÇÑ °æ¿ì
         //---------------------------------
 
         sTableID = aTableRef->table;
         sInsertTuple = &(QC_PRIVATE_TMPLATE(aStatement)->tmplate.rows[sTableID]);
 
-        /* PROJ-2464 hybrid partitioned table ì§€ì› */
+        /* PROJ-2464 hybrid partitioned table Áö¿ø */
         if ( aTableRef->tableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
         {
             if ( aTableRef->partitionSummary->isHybridPartitionedTable == ID_TRUE )
@@ -4386,7 +4446,7 @@ qmx::fireTriggerInsertRowGranularity( qcStatement      * aStatement,
                                    sTableID )
                   != IDE_SUCCESS );
 
-        // NEW ROWì˜ íšë“
+        // NEW ROWÀÇ È¹µæ
         IDE_TEST( sCursor->getLastModifiedRow( & sInsertTuple->row,
                                                sInsertTuple->rowOffset )
                   != IDE_SUCCESS );
@@ -4398,7 +4458,7 @@ qmx::fireTriggerInsertRowGranularity( qcStatement      * aStatement,
                       &sColumnsForNewRow )
                   != IDE_SUCCESS );
 
-        /* PROJ-1107 Check Constraint ì§€ì› */
+        /* PROJ-1107 Check Constraint Áö¿ø */
         if ( sHasCheckConstraint == ID_TRUE )
         {
             IDE_TEST( qdnCheck::verifyCheckConstraintList(
@@ -4415,7 +4475,7 @@ qmx::fireTriggerInsertRowGranularity( qcStatement      * aStatement,
         {
 
             // PROJ-1359 Trigger
-            // ROW GRANULARITY TRIGGERì˜ ìˆ˜í–‰
+            // ROW GRANULARITY TRIGGERÀÇ ¼öÇà
             IDE_TEST( qdnTrigger::fireTrigger(
                         aStatement,
                         aStatement->qmxMem,
@@ -4450,7 +4510,7 @@ qmx::fireTriggerInsertRowGranularity( qcStatement      * aStatement,
             // nothing do do
         }
 
-        /* PROJ-2464 hybrid partitioned table ì§€ì› */
+        /* PROJ-2464 hybrid partitioned table Áö¿ø */
         if ( sNeedToRecoverTuple == ID_TRUE )
         {
             sNeedToRecoverTuple = ID_FALSE;
@@ -4461,15 +4521,15 @@ qmx::fireTriggerInsertRowGranularity( qcStatement      * aStatement,
             /* Nothing to do */
         }
 
-        // insert-selectì˜ ê²½ìš° qmx memoryê°€ ì´ˆê¸°í™” ë˜ë¯€ë¡œ
-        // columnì„ ìƒˆë¡œ êµ¬í•´ì•¼ í•œë‹¤.
+        // insert-selectÀÇ °æ¿ì qmx memory°¡ ÃÊ±âÈ­ µÇ¹Ç·Î
+        // columnÀ» »õ·Î ±¸ÇØ¾ß ÇÑ´Ù.
         IDE_TEST( aInsertCursorMgr->clearColumnsForNewRow()
                   != IDE_SUCCESS );
     }
     else
     {
         // PROJ-1359 Trigger
-        // ROW GRANULARITY TRIGGERì˜ ìˆ˜í–‰
+        // ROW GRANULARITY TRIGGERÀÇ ¼öÇà
         IDE_TEST( qdnTrigger::fireTrigger( aStatement,
                                            aStatement->qmxMem,
                                            aTableRef->tableInfo,
@@ -4490,7 +4550,7 @@ qmx::fireTriggerInsertRowGranularity( qcStatement      * aStatement,
 
     IDE_EXCEPTION_END;
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     if ( sNeedToRecoverTuple == ID_TRUE )
     {
         copyMtcTupleForPartitionDML( sInsertTuple, &sCopyTuple );
@@ -4513,14 +4573,14 @@ qmx::checkPlanTreeOld( qcStatement * aStatement,
  *
  * Description :
  *    PROJ-1350
- *    í•´ë‹¹ Plan Treeê°€ ë„ˆë¬´ ì˜¤ë˜ë˜ì—ˆëŠ”ì§€ë¥¼ ê²€ì‚¬
+ *    ÇØ´ç Plan Tree°¡ ³Ê¹« ¿À·¡µÇ¾ú´ÂÁö¸¦ °Ë»ç
  *
  * Implementation :
- *    Plan Treeê°€ ê°€ì§„ Tableë“¤ì˜ Record ê°œìˆ˜ì™€
- *    ì‹¤ì œ Tableì´ ê°€ì§„ Record ê°œìˆ˜ë¥¼ ë¹„êµí•˜ì—¬
- *    ì¼ì • ê°œìˆ˜ ì´ìƒì´ë©´ Plan Treeê°€ ë§¤ìš° ì˜¤ë ¤ë˜ì—ˆìŒì„ ë¦¬í„´í•¨.
- *    ë‹¨, RULE based Hintë¡œ ì¸í•´ ìƒì„±ëœ í†µê³„ ì •ë³´ë¼ë©´
- *    ì´ëŸ¬í•œ ì¡°ê±´ì„ ë”°ë¥´ì§€ ì•ŠëŠ”ë‹¤.
+ *    Plan Tree°¡ °¡Áø TableµéÀÇ Record °³¼ö¿Í
+ *    ½ÇÁ¦ TableÀÌ °¡Áø Record °³¼ö¸¦ ºñ±³ÇÏ¿©
+ *    ÀÏÁ¤ °³¼ö ÀÌ»óÀÌ¸é Plan Tree°¡ ¸Å¿ì ¿À·ÁµÇ¾úÀ½À» ¸®ÅÏÇÔ.
+ *    ´Ü, RULE based Hint·Î ÀÎÇØ »ı¼ºµÈ Åë°è Á¤º¸¶ó¸é
+ *    ÀÌ·¯ÇÑ Á¶°ÇÀ» µû¸£Áö ¾Ê´Â´Ù.
  *
  ***********************************************************************/
 
@@ -4540,14 +4600,14 @@ qmx::checkPlanTreeOld( qcStatement * aStatement,
     qmsPartitionRef * sPartitionRef;
 
     //----------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //----------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aIsOld     != NULL );
 
     //----------------------------------------
-    // ê¸°ë³¸ ì •ë³´ ì¶”ì¶œ
+    // ±âº» Á¤º¸ ÃßÃâ
     //----------------------------------------
 
     sIsOld = ID_FALSE;
@@ -4555,8 +4615,8 @@ qmx::checkPlanTreeOld( qcStatement * aStatement,
 
     if ( QCU_FAKE_TPCH_SCALE_FACTOR > 0 )
     {
-        // TPC-Hë¥¼ ìœ„í•œ ê°€ìƒì˜ í†µê³„ ì •ë³´ë¥¼ êµ¬ì¶•í•œ ê²½ìš°ë¼ë©´
-        // ê²€ì‚¬ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // TPC-H¸¦ À§ÇÑ °¡»óÀÇ Åë°è Á¤º¸¸¦ ±¸ÃàÇÑ °æ¿ì¶ó¸é
+        // °Ë»ç¸¦ ÇÏÁö ¾Ê´Â´Ù.
         IDE_CONT( NORMAL_EXIT );
     }
     else
@@ -4567,8 +4627,8 @@ qmx::checkPlanTreeOld( qcStatement * aStatement,
     if ( ( QC_PRIVATE_TMPLATE(aStatement)->flag & QC_TMP_PLAN_KEEP_MASK )
          == QC_TMP_PLAN_KEEP_TRUE )
     {
-        // í†µê³„ì •ë³´ ë³€ê²½ì— ì˜í•œ rebuildë¥¼ ì›í•˜ì§€ ì•ŠëŠ” ê²½ìš°
-        // ê²€ì‚¬ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // Åë°èÁ¤º¸ º¯°æ¿¡ ÀÇÇÑ rebuild¸¦ ¿øÇÏÁö ¾Ê´Â °æ¿ì
+        // °Ë»ç¸¦ ÇÏÁö ¾Ê´Â´Ù.
         IDE_CONT( NORMAL_EXIT );
     }
     else
@@ -4587,15 +4647,15 @@ qmx::checkPlanTreeOld( qcStatement * aStatement,
         /* Nothing to do. */
     }
 
-    // DNFë¡œ ì²˜ë¦¬ë  ê²½ìš° plan ê°œìˆ˜ëŠ” ì—„ì²­ë‚˜ê²Œ ëŠ˜ì–´ë‚  ìˆ˜ ìˆìŒ
-    // ì´ë•Œ PLANì´ ëŠ˜ì–´ë‚˜ë”ë¼ë„ Table Mapì€ ì¦ê°€í•˜ì§€ ì•ŠìŒ.
+    // DNF·Î Ã³¸®µÉ °æ¿ì plan °³¼ö´Â ¾öÃ»³ª°Ô ´Ã¾î³¯ ¼ö ÀÖÀ½
+    // ÀÌ¶§ PLANÀÌ ´Ã¾î³ª´õ¶óµµ Table MapÀº Áõ°¡ÇÏÁö ¾ÊÀ½.
 
     // BUG-17409
     for ( i = 0; i < QC_PRIVATE_TMPLATE(aStatement)->tmplate.rowCount; i++ )
     {
         if ( sTableMap[i].from != NULL )
         {
-            // FROMì— í•´ë‹¹í•˜ëŠ” ê°ì²´ì¸ ê²½ìš°
+            // FROM¿¡ ÇØ´çÇÏ´Â °´Ã¼ÀÎ °æ¿ì
 
             if ( sTableMap[i].from->tableRef->view == NULL )
             {
@@ -4608,8 +4668,15 @@ qmx::checkPlanTreeOld( qcStatement * aStatement,
                 {
                     /* nothing to do */
                 }
-                
-                // Table ì¸ ê²½ìš°
+
+                // BUG-47700 recursive viewÀÎ °æ¿ì rebuild È®ÀÎÀÌ ÇÊ¿ä ¾ø½À´Ï´Ù.
+                if ( ( sTableMap[i].from->tableRef->flag & QMS_TABLE_REF_RECURSIVE_VIEW_MASK) ==
+                     QMS_TABLE_REF_RECURSIVE_VIEW_TRUE )
+                {
+                    continue;
+                }         
+
+                // Table ÀÎ °æ¿ì
                 if ( sTableMap[i].from->tableRef->statInfo->optGoleType
                      != QMO_OPT_GOAL_TYPE_RULE )
                 {
@@ -4620,18 +4687,18 @@ qmx::checkPlanTreeOld( qcStatement * aStatement,
                         sTableRef = sTableMap[i].from->tableRef;
 
                         //-----------------------------------------
-                        // Record ê°œìˆ˜ ì •ë³´ ì¶”ì¶œ
+                        // Record °³¼ö Á¤º¸ ÃßÃâ
                         //-----------------------------------------
 
-                        // Plan Treeê°€ ê°€ì§„ Record ê°œìˆ˜ ì •ë³´ íšë“
+                        // Plan Tree°¡ °¡Áø Record °³¼ö Á¤º¸ È¹µæ
 
                         if( ( QC_PRIVATE_TMPLATE(aStatement)->tmplate.rows[i].lflag &
                               MTC_TUPLE_PARTITIONED_TABLE_MASK ) ==
                             MTC_TUPLE_PARTITIONED_TABLE_TRUE )
                         {
                             // PROJ-1502 PARTITIONED DISK TABLE
-                            // ê°ê°ì˜ partitionì— ëŒ€í•œ record countê°€ ë³€ê²½ì´
-                            // ë˜ì—ˆëŠ”ì§€ë¥¼ ê²€ì‚¬í•´ì•¼ í•œë‹¤.
+                            // °¢°¢ÀÇ partition¿¡ ´ëÇÑ record count°¡ º¯°æÀÌ
+                            // µÇ¾ú´ÂÁö¸¦ °Ë»çÇØ¾ß ÇÑ´Ù.
                             IDE_DASSERT( sTableRef->tableInfo->tablePartitionType ==
                                          QCM_PARTITIONED_TABLE );
 
@@ -4641,7 +4708,7 @@ qmx::checkPlanTreeOld( qcStatement * aStatement,
                             {
                                 sStatRecordCnt = sPartitionRef->statInfo->totalRecordCnt;
 
-                                // PROJ-2248 í˜„ì¬ì‹œì ì˜ í†µê³„ë§Œ ê³ ë ¤í•œë‹¤.
+                                // PROJ-2248 ÇöÀç½ÃÁ¡ÀÇ Åë°è¸¸ °í·ÁÇÑ´Ù.
                                 IDE_TEST( smiStatistics::getTableStatNumRow(
                                               sPartitionRef->partitionHandle,
                                               ID_TRUE,
@@ -4653,7 +4720,7 @@ qmx::checkPlanTreeOld( qcStatement * aStatement,
                                     ( sRecordCnt == 0 ) ? 1 : ID_ULTODB( sRecordCnt );
 
                                 //-----------------------------------------
-                                // Record ë³€ê²½ëŸ‰ì˜ ë¹„êµ
+                                // Record º¯°æ·®ÀÇ ºñ±³
                                 //-----------------------------------------
                                 sChangeRatio = (sRealRecordCnt - sStatRecordCnt)
                                     / sStatRecordCnt;
@@ -4661,8 +4728,8 @@ qmx::checkPlanTreeOld( qcStatement * aStatement,
                                 if ( (sChangeRatio > QMC_AUTO_REBUILD_PLAN_PLUS_RATIO) ||
                                      (sChangeRatio < QMC_AUTO_REBUILD_PLAN_MINUS_RATIO) )
                                 {
-                                    // Record ë³€ê²½ëŸ‰ì´ ë§ì€ ê²½ìš°ë¡œ í•´ë‹¹ Plan Treeê°€
-                                    // ë” ì´ìƒ ìœ íš¨í•˜ì§€ ì•Šë‹¤.
+                                    // Record º¯°æ·®ÀÌ ¸¹Àº °æ¿ì·Î ÇØ´ç Plan Tree°¡
+                                    // ´õ ÀÌ»ó À¯È¿ÇÏÁö ¾Ê´Ù.
                                     sIsOld = ID_TRUE;
                                     break;
                                 }
@@ -4688,7 +4755,7 @@ qmx::checkPlanTreeOld( qcStatement * aStatement,
                             {
                                 sStatRecordCnt = sTableRef->statInfo->totalRecordCnt;
 
-                                // PROJ-2248 í˜„ì¬ì‹œì ì˜ í†µê³„ë§Œ ê³ ë ¤í•œë‹¤.
+                                // PROJ-2248 ÇöÀç½ÃÁ¡ÀÇ Åë°è¸¸ °í·ÁÇÑ´Ù.
                                 IDE_TEST( smiStatistics::getTableStatNumRow(
                                               sTableRef->tableHandle,
                                               ID_TRUE,
@@ -4700,7 +4767,7 @@ qmx::checkPlanTreeOld( qcStatement * aStatement,
                                     ( sRecordCnt == 0 ) ? 1 : ID_ULTODB( sRecordCnt );
 
                                 //-----------------------------------------
-                                // Record ë³€ê²½ëŸ‰ì˜ ë¹„êµ
+                                // Record º¯°æ·®ÀÇ ºñ±³
                                 //-----------------------------------------
                                 sChangeRatio = (sRealRecordCnt - sStatRecordCnt)
                                     / sStatRecordCnt;
@@ -4708,8 +4775,8 @@ qmx::checkPlanTreeOld( qcStatement * aStatement,
                                 if ( (sChangeRatio > QMC_AUTO_REBUILD_PLAN_PLUS_RATIO) ||
                                      (sChangeRatio < QMC_AUTO_REBUILD_PLAN_MINUS_RATIO) )
                                 {
-                                    // Record ë³€ê²½ëŸ‰ì´ ë§ì€ ê²½ìš°ë¡œ í•´ë‹¹ Plan Treeê°€
-                                    // ë” ì´ìƒ ìœ íš¨í•˜ì§€ ì•Šë‹¤.
+                                    // Record º¯°æ·®ÀÌ ¸¹Àº °æ¿ì·Î ÇØ´ç Plan Tree°¡
+                                    // ´õ ÀÌ»ó À¯È¿ÇÏÁö ¾Ê´Ù.
                                     sIsOld = ID_TRUE;
                                     break;
                                 }
@@ -4727,19 +4794,19 @@ qmx::checkPlanTreeOld( qcStatement * aStatement,
                     else
                     {
                         // Nothing to do.
-                        // partitionì— ëŒ€í•œ tupleì€ ê³„ì‚°ì„ ìƒëµí•œë‹¤.
+                        // partition¿¡ ´ëÇÑ tupleÀº °è»êÀ» »ı·«ÇÑ´Ù.
                     }
                 }
                 else
                 {
-                    // RULE Based Hintë¡œë¶€í„° êµ¬ì„±ëœ í†µê³„ ì •ë³´ì¸ ê²½ìš°
-                    // í•´ë‹¹ Record ê°œìˆ˜ë¥¼ ë¹„êµí•˜ë©´ ì•ˆëœë‹¤.
+                    // RULE Based Hint·ÎºÎÅÍ ±¸¼ºµÈ Åë°è Á¤º¸ÀÎ °æ¿ì
+                    // ÇØ´ç Record °³¼ö¸¦ ºñ±³ÇÏ¸é ¾ÈµÈ´Ù.
                     // Nothing To Do
                 }
             }
             else
             {
-                // Viewì¸ ê²½ìš°
+                // ViewÀÎ °æ¿ì
                 // Nothing To Do
             }
         }
@@ -4767,31 +4834,31 @@ IDE_RC qmx::executeMove( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *    MOVE ... FROM ... ì˜ execution ìˆ˜í–‰
+ *    MOVE ... FROM ... ÀÇ execution ¼öÇà
  *
  * Implementation :
- *    1. insertí•  í…Œì´ë¸”ì˜ SMI_TABLE_LOCK_IX lock ì„ ì¡ëŠ”ë‹¤
- *    2. deleteí•  í…Œì´ë¸”ì˜ SMI_TABLE_LOCK_IX lock ì„ ì¡ëŠ”ë‹¤
- *    3. insert row triggerí•„ìš”í•œì§€ ê²€ì‚¬
- *    4. delete row triggerí•„ìš”í•œì§€ ê²€ì‚¬
+ *    1. insertÇÒ Å×ÀÌºíÀÇ SMI_TABLE_LOCK_IX lock À» Àâ´Â´Ù
+ *    2. deleteÇÒ Å×ÀÌºíÀÇ SMI_TABLE_LOCK_IX lock À» Àâ´Â´Ù
+ *    3. insert row triggerÇÊ¿äÇÑÁö °Ë»ç
+ *    4. delete row triggerÇÊ¿äÇÑÁö °Ë»ç
  *    5. set SYSDATE
- *    6. ì‹œí€€ìŠ¤ë¥¼ ì‚¬ìš©í•˜ë©´ ê·¸ ì •ë³´ë¥¼ ì°¾ì•„ë†“ëŠ”ë‹¤
+ *    6. ½ÃÄö½º¸¦ »ç¿ëÇÏ¸é ±× Á¤º¸¸¦ Ã£¾Æ³õ´Â´Ù
  *    7. qmnSCAN::init
- *    8. insertë° delete ë¥¼ ìœ„í•œ ì»¤ì„œë¥¼ ì˜¤í”ˆí•œë‹¤
- *    9.limit ê´€ë ¨ ì •ë³´ ì´ˆê¸°í™”
- *    10. Childì— ëŒ€í•œ Foreign Key Referenceì˜ í•„ìš”ì„± ê²€ì‚¬
- *    11. insert ë° deleteë¥¼ ìœ„í•œ cursor open
- *    12. loopë¥¼ ëŒë©´ì„œ ë‹¤ìŒ ê³¼ì • ìˆ˜í–‰
- *    12.1. deleteí•  í…Œì´ë¸”ì—ì„œ rowí•˜ë‚˜ ì½ì–´ì˜´
- *    12.2. insert rowë¥¼ êµ¬ì„±í•˜ì—¬ insertí•  í…Œì´ë¸”ì— ì‚½ì…
- *    12.3. ì°¸ì¡°í•˜ëŠ” í‚¤ê°€ ìˆìœ¼ë©´,
- *          parent í…Œì´ë¸”ì˜ ì»¬ëŸ¼ì— ê°’ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
- *    12.4. insert row trigger ìˆ˜í–‰
- *    12.5. deleteí•  í…Œì´ë¸”ì˜ ë ˆì½”ë“œ ì‚­ì œ
- *    12.6. delete row trigger ìˆ˜í–‰
- *    13. childConstraintsê²€ì‚¬
- *    14. insert statement trigger ìˆ˜í–‰
- *    15. delete statement trigger ìˆ˜í–‰
+ *    8. insert¹× delete ¸¦ À§ÇÑ Ä¿¼­¸¦ ¿ÀÇÂÇÑ´Ù
+ *    9.limit °ü·Ã Á¤º¸ ÃÊ±âÈ­
+ *    10. Child¿¡ ´ëÇÑ Foreign Key ReferenceÀÇ ÇÊ¿ä¼º °Ë»ç
+ *    11. insert ¹× delete¸¦ À§ÇÑ cursor open
+ *    12. loop¸¦ µ¹¸é¼­ ´ÙÀ½ °úÁ¤ ¼öÇà
+ *    12.1. deleteÇÒ Å×ÀÌºí¿¡¼­ rowÇÏ³ª ÀĞ¾î¿È
+ *    12.2. insert row¸¦ ±¸¼ºÇÏ¿© insertÇÒ Å×ÀÌºí¿¡ »ğÀÔ
+ *    12.3. ÂüÁ¶ÇÏ´Â Å°°¡ ÀÖÀ¸¸é,
+ *          parent Å×ÀÌºíÀÇ ÄÃ·³¿¡ °ªÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+ *    12.4. insert row trigger ¼öÇà
+ *    12.5. deleteÇÒ Å×ÀÌºíÀÇ ·¹ÄÚµå »èÁ¦
+ *    12.6. delete row trigger ¼öÇà
+ *    13. childConstraints°Ë»ç
+ *    14. insert statement trigger ¼öÇà
+ *    15. delete statement trigger ¼öÇà
  ***********************************************************************/
 #define IDE_FN "qmx::executeMove"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(IDE_FN));
@@ -4806,7 +4873,7 @@ IDE_RC qmx::executeMove( qcStatement * aStatement )
     idBool              sInitialized = ID_FALSE;
 
     //------------------------------------------
-    // ê¸°ë³¸ ì •ë³´ íšë“ ë° ì´ˆê¸°í™”
+    // ±âº» Á¤º¸ È¹µæ ¹× ÃÊ±âÈ­
     //------------------------------------------
     
     sParseTree = (qmmMoveParseTree *) aStatement->myPlan->parseTree;
@@ -4816,7 +4883,7 @@ IDE_RC qmx::executeMove( qcStatement * aStatement )
 
     //------------------------------------------
     // PROJ-1502 PARTITIONED DISK TABLE
-    // insert, deleteí•  í…Œì´ë¸”ì˜ lock ì„ ì¡ëŠ”ë‹¤
+    // insert, deleteÇÒ Å×ÀÌºíÀÇ lock À» Àâ´Â´Ù
     //------------------------------------------
     
     IDE_TEST( lockTableForDML( aStatement,
@@ -4837,7 +4904,7 @@ IDE_RC qmx::executeMove( qcStatement * aStatement )
     sTableForInsert = sTargetTableRef->tableInfo;
 
     //------------------------------------------
-    // insert statement trigger ìˆ˜í–‰
+    // insert statement trigger ¼öÇà
     //------------------------------------------
     // To fix BUG-12622
     // before trigger
@@ -4869,7 +4936,7 @@ IDE_RC qmx::executeMove( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // MOVEë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ ê¸°ë³¸ ê°’ íšë“
+    // MOVE¸¦ Ã³¸®ÇÏ±â À§ÇÑ ±âº» °ª È¹µæ
     //------------------------------------------
     
     // To fix BUG-12327 initialize numRows to 0.
@@ -4883,7 +4950,7 @@ IDE_RC qmx::executeMove( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // ì‹œí€€ìŠ¤ë¥¼ ì‚¬ìš©í•˜ë©´ ê·¸ ì •ë³´ë¥¼ ì°¾ì•„ë†“ëŠ”ë‹¤
+    // ½ÃÄö½º¸¦ »ç¿ëÇÏ¸é ±× Á¤º¸¸¦ Ã£¾Æ³õ´Â´Ù
     //------------------------------------------
     
     // check session cache SEQUENCE.CURRVAL
@@ -4911,10 +4978,10 @@ IDE_RC qmx::executeMove( qcStatement * aStatement )
     }
     
     //------------------------------------------
-    // MOVEë¥¼ ìœ„í•œ plan tree ì´ˆê¸°í™”
+    // MOVE¸¦ À§ÇÑ plan tree ÃÊ±âÈ­
     //------------------------------------------
     
-    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
     IDE_TEST( qmo::optimizeForHost( aStatement ) != IDE_SUCCESS );
 
     IDE_TEST( qmnMOVE::init( QC_PRIVATE_TMPLATE(aStatement),
@@ -4923,21 +4990,21 @@ IDE_RC qmx::executeMove( qcStatement * aStatement )
     sInitialized = ID_TRUE;
 
     //------------------------------------------
-    // MOVEë¥¼ ìˆ˜í–‰
+    // MOVE¸¦ ¼öÇà
     //------------------------------------------
 
     do
     {
-        // BUG-22287 insert ì‹œê°„ì´ ë§ì´ ê±¸ë¦¬ëŠ” ê²½ìš°ì— session
-        // outë˜ì–´ë„ insertê°€ ëë‚  ë•Œ ê¹Œì§€ ê¸°ë‹¤ë¦¬ëŠ” ë¬¸ì œê°€ ìˆë‹¤.
-        // session outì„ í™•ì¸í•œë‹¤.
+        // BUG-22287 insert ½Ã°£ÀÌ ¸¹ÀÌ °É¸®´Â °æ¿ì¿¡ session
+        // outµÇ¾îµµ insert°¡ ³¡³¯ ¶§ ±îÁö ±â´Ù¸®´Â ¹®Á¦°¡ ÀÖ´Ù.
+        // session outÀ» È®ÀÎÇÑ´Ù.
         IDE_TEST( iduCheckSessionEvent( aStatement->mStatistics )
                   != IDE_SUCCESS );
         
-        // ë¯¸ë¦¬ ì¦ê°€ì‹œí‚¨ë‹¤. doItì¤‘ ì°¸ì¡°ë  ìˆ˜ ìˆë‹¤.
+        // ¹Ì¸® Áõ°¡½ÃÅ²´Ù. doItÁß ÂüÁ¶µÉ ¼ö ÀÖ´Ù.
         QC_PRIVATE_TMPLATE(aStatement)->numRows++;
         
-        // moveì˜ planì„ ìˆ˜í–‰í•œë‹¤.
+        // moveÀÇ planÀ» ¼öÇàÇÑ´Ù.
         IDE_TEST( qmnMOVE::doIt( QC_PRIVATE_TMPLATE(aStatement),
                                  aStatement->myPlan->plan,
                                  &sFlag )
@@ -4945,7 +5012,7 @@ IDE_RC qmx::executeMove( qcStatement * aStatement )
 
     } while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST );
 
-    // DATA_NONEì¸ ê²½ìš°ëŠ” ë¹¼ì¤€ë‹¤.
+    // DATA_NONEÀÎ °æ¿ì´Â »©ÁØ´Ù.
     QC_PRIVATE_TMPLATE(aStatement)->numRows--;
     
     //------------------------------------------
@@ -4960,39 +5027,39 @@ IDE_RC qmx::executeMove( qcStatement * aStatement )
     /* PROJ-1071 */
     IDE_TEST(qcg::joinThread(aStatement) != IDE_SUCCESS);
     
-    IDE_TEST( QC_PRIVATE_TMPLATE(aStatement)->cursorMgr->closeAllCursor()
+    IDE_TEST( QC_PRIVATE_TMPLATE(aStatement)->cursorMgr->closeAllCursor(aStatement->mStatistics)
               != IDE_SUCCESS );
     
     IDE_TEST(qcg::finishAndReleaseThread(aStatement) != IDE_SUCCESS);
     
     //------------------------------------------
-    // Foreign Key Referenceë¥¼ ê²€ì‚¬
+    // Foreign Key Reference¸¦ °Ë»ç
     //------------------------------------------
     
     if ( QC_PRIVATE_TMPLATE(aStatement)->numRows == 0 )
     {
-        // (ì˜ˆ1)
+        // (¿¹1)
         // MOVE INTO PARENT FROM CHILD
         // WHERE I1 IN ( SELECT I1 FROM CHILD WHERE I1 = 100 )
-        // ê³¼ whereì ˆì˜ ì¡°ê±´ì´ in subquery keyRangeë¡œ ìˆ˜í–‰ë˜ëŠ” ì§ˆì˜ë¬¸ì˜ ê²½ìš°,
-        // child tableì— ë ˆì½”ë“œê°€ í•˜ë‚˜ë„ ì—†ëŠ” ê²½ìš°,
-        // ì¡°ê±´ì— ë§ëŠ” ë ˆì½”ë“œê°€ ì—†ìœ¼ë¯€ë¡œ  i1 in ì— ëŒ€í•œ keyRangeì„ ë§Œë“¤ìˆ˜ ì—†ê³ ,
-        // in subquery keyRangeëŠ” filterë¡œë„ ì²˜ë¦¬í•  ìˆ˜ ì—†ëŠ” êµ¬ì¡°ì„.
-        // SCANë…¸ë“œì—ì„œëŠ” ìµœì´ˆ cursor openì‹œ ìœ„ì™€ ê°™ì€ ê²½ìš°ì´ë©´
-        // cursorë¥¼ opení•˜ì§€ ì•ŠëŠ”ë‹¤.
-        // ë”°ë¼ì„œ, ìœ„ì™€ ê°™ì€ ê²½ìš°ëŠ” updateëœ ë¡œìš°ê°€ ì—†ìœ¼ë¯€ë¡œ,
-        // close closeì™€ child tableì°¸ì¡°ê²€ì‚¬ì™€ ê°™ì€ ì²˜ë¦¬ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
-        // (ì˜ˆ2)
+        // °ú whereÀıÀÇ Á¶°ÇÀÌ in subquery keyRange·Î ¼öÇàµÇ´Â ÁúÀÇ¹®ÀÇ °æ¿ì,
+        // child table¿¡ ·¹ÄÚµå°¡ ÇÏ³ªµµ ¾ø´Â °æ¿ì,
+        // Á¶°Ç¿¡ ¸Â´Â ·¹ÄÚµå°¡ ¾øÀ¸¹Ç·Î  i1 in ¿¡ ´ëÇÑ keyRangeÀ» ¸¸µé¼ö ¾ø°í,
+        // in subquery keyRange´Â filter·Îµµ Ã³¸®ÇÒ ¼ö ¾ø´Â ±¸Á¶ÀÓ.
+        // SCAN³ëµå¿¡¼­´Â ÃÖÃÊ cursor open½Ã À§¿Í °°Àº °æ¿ìÀÌ¸é
+        // cursor¸¦ openÇÏÁö ¾Ê´Â´Ù.
+        // µû¶ó¼­, À§¿Í °°Àº °æ¿ì´Â updateµÈ ·Î¿ì°¡ ¾øÀ¸¹Ç·Î,
+        // close close¿Í child tableÂüÁ¶°Ë»ç¿Í °°Àº Ã³¸®¸¦ ÇÏÁö ¾Ê´Â´Ù.
+        // (¿¹2)
         // MOVE INTO PARENT FROM CHILD WHERE 1 != 1;
-        // ì´ì™€ ê°™ì€ ê²½ìš°ë„ cursorë¥¼ opení•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // ÀÌ¿Í °°Àº °æ¿ìµµ cursor¸¦ openÇÏÁö ¾Ê´Â´Ù.
     }
     else
     {
         //------------------------------------------
-        // self referenceì— ëŒ€í•œ ì˜¬ë°”ë¥¸ ê²°ê³¼ë¥¼ ë§Œë“¤ê¸° ìœ„í•´ì„œëŠ”,
-        // insertê°€ ëª¨ë‘ ìˆ˜í–‰ë˜ê³  ë‚œí›„ì—,
-        // parent tableì— ëŒ€í•œ ê²€ì‚¬ë¥¼ ìˆ˜í–‰í•´ì•¼ í•¨.
-        // ì˜ˆ) CREATE TABLE T1 ( I1 INTEGER, I2 INTEGER );
+        // self reference¿¡ ´ëÇÑ ¿Ã¹Ù¸¥ °á°ú¸¦ ¸¸µé±â À§ÇØ¼­´Â,
+        // insert°¡ ¸ğµÎ ¼öÇàµÇ°í ³­ÈÄ¿¡,
+        // parent table¿¡ ´ëÇÑ °Ë»ç¸¦ ¼öÇàÇØ¾ß ÇÔ.
+        // ¿¹) CREATE TABLE T1 ( I1 INTEGER, I2 INTEGER );
         //     CREATE TABLE T2 ( I1 INTEGER, I2 INTEGER );
         //     CREATE INDEX T2_I1 ON T2( I1 );
         //     ALTER TABLE T1 ADD CONSTRAINT T1_PK PRIMARY KEY (I1);
@@ -5011,13 +5078,13 @@ IDE_RC qmx::executeMove( qcStatement * aStatement )
         //     select * from t2 order by i1;
         //
         //     insert into t1 select * from t2;
-        //     : insert successí•´ì•¼ í•¨.
-        //      ( ìœ„ ì¿¼ë¦¬ë¥¼ í•˜ë‚˜ì˜ ë ˆì½”ë“œê°€ ì¸ì„œíŠ¸ ë ë•Œë§ˆë‹¤
-        //        parentí…Œì´ë¸”ì„ ì°¸ì¡°í•˜ëŠ” ë¡œì§ìœ¼ë¡œ ì½”ë”©í•˜ë©´,
-        //        parent record is not foundë¼ëŠ” ì—ëŸ¬ê°€ ë°œìƒí•˜ëŠ” ì˜¤ë¥˜ê°€ ìƒê¹€. )
+        //     : insert successÇØ¾ß ÇÔ.
+        //      ( À§ Äõ¸®¸¦ ÇÏ³ªÀÇ ·¹ÄÚµå°¡ ÀÎ¼­Æ® µÉ¶§¸¶´Ù
+        //        parentÅ×ÀÌºíÀ» ÂüÁ¶ÇÏ´Â ·ÎÁ÷À¸·Î ÄÚµùÇÏ¸é,
+        //        parent record is not found¶ó´Â ¿¡·¯°¡ ¹ß»ıÇÏ´Â ¿À·ù°¡ »ı±è. )
         //------------------------------------------
 
-        // parent reference ì²´í¬
+        // parent reference Ã¼Å©
         if ( sParseTree->parentConstraints != NULL )
         {
             IDE_TEST( qmnMOVE::checkInsertRef(
@@ -5030,7 +5097,7 @@ IDE_RC qmx::executeMove( qcStatement * aStatement )
             // Nothing To Do
         }
 
-        // Child Tableì´ ì°¸ì¡°í•˜ê³  ìˆëŠ” ì§€ë¥¼ ê²€ì‚¬
+        // Child TableÀÌ ÂüÁ¶ÇÏ°í ÀÖ´Â Áö¸¦ °Ë»ç
         if ( sParseTree->childConstraints != NULL )
         {
             IDE_TEST( qmnMOVE::checkDeleteRef(
@@ -5045,7 +5112,7 @@ IDE_RC qmx::executeMove( qcStatement * aStatement )
     }
 
     //------------------------------------------
-    // insert statement trigger ìˆ˜í–‰
+    // insert statement trigger ¼öÇà
     //------------------------------------------
     
     IDE_TEST( qdnTrigger::fireTrigger( aStatement,
@@ -5064,7 +5131,7 @@ IDE_RC qmx::executeMove( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // delete statement trigger ìˆ˜í–‰
+    // delete statement trigger ¼öÇà
     //------------------------------------------
     
     IDE_TEST( fireStatementTriggerOnDeleteCascade(
@@ -5104,22 +5171,33 @@ IDE_RC qmx::lockTableForDML( qcStatement      * aStatement,
 /***********************************************************************
  *
  *  Description : PROJ-1502 Partitioned Disk Table
- *                íŒŒí‹°ì…˜ì„ ê³ ë ¤í•œ DML ì—ì„œì˜ table lock
- *  TODO1502: qcmìª½ìœ¼ë¡œ ì˜®ê¸¸ê¹Œ?
+ *                ÆÄÆ¼¼ÇÀ» °í·ÁÇÑ DML ¿¡¼­ÀÇ table lock
+ *  TODO1502: qcmÂÊÀ¸·Î ¿Å±æ±î?
  *  Implementation :
- *                non-partitioned table : tableì— IX
- *                partitioned table : tableì— IX, partitionì— IX
+ *      non-partitioned table : table¿¡ IX
+ *      partitioned table : table¿¡ IX, partition¿¡ IX
+ *                  default partitionÀÌ ¾ø´Â °æ¿ì(range partitioned table)
+ *                      empty partition¿¡ ¶ôÀâÁö ¾Ê°í validate Object È®ÀÎ¸¸ 
  *
  ***********************************************************************/
 
     IDE_TEST(smiValidateAndLockObjects( (QC_SMI_STMT(aStatement))->getTrans(),
                                         aTableRef->tableHandle,
                                         aTableRef->tableSCN,
-                                        SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                        SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                         aLockMode,
                                         ID_ULONG_MAX,
-                                        ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
+                                        ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
              != IDE_SUCCESS);
+
+    // BUG-47599
+    // emptyPartiton¿¡ lockÀ» °É¸é add partition op¿Í lock Ãæµ¹ÀÌ ¹ß»ıÇÕ´Ï´Ù.
+    if ( aTableRef->mEmptyPartRef != NULL )
+    {
+        IDE_TEST( smiValidateObjects( aTableRef->mEmptyPartRef->partitionHandle,
+                                      aTableRef->mEmptyPartRef->partitionSCN )
+                  != IDE_SUCCESS);
+    }
 
     return IDE_SUCCESS;
 
@@ -5135,10 +5213,10 @@ IDE_RC qmx::lockPartitionForDML( smiStatement     * aSmiStmt,
     IDE_TEST( smiValidateAndLockObjects( aSmiStmt->getTrans(),
                                          aPartitionRef->partitionHandle,
                                          aPartitionRef->partitionSCN,
-                                         SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                         SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                          aLockMode,
                                          ID_ULONG_MAX,
-                                         ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
+                                         ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -5163,7 +5241,7 @@ qmx::lockTableForUpdate( qcStatement * aStatement,
 
     sTableType = aTableRef->tableFlag & SMI_TABLE_TYPE_MASK;
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     if ( aTableRef->partitionSummary != NULL )
     {
         if ( ( aTableRef->partitionSummary->memoryPartitionCount +
@@ -5188,7 +5266,7 @@ qmx::lockTableForUpdate( qcStatement * aStatement,
         }
     }
 
-    // BUG-28757 UPDATE_IN_PLACEì— ëŒ€í•œ VOLATILE TABLESPACEì— ëŒ€í•œ ê³ ë ¤ê°€ ì—†ìŒ.
+    // BUG-28757 UPDATE_IN_PLACE¿¡ ´ëÇÑ VOLATILE TABLESPACE¿¡ ´ëÇÑ °í·Á°¡ ¾øÀ½.
     if( ( QCU_UPDATE_IN_PLACE == 1 ) && ( sHasMemory == ID_TRUE ) )
     {
         if ( ( sCodePlan->inplaceUpdate == ID_TRUE ) &&
@@ -5216,8 +5294,8 @@ qmx::lockTableForUpdate( qcStatement * aStatement,
     }
     
     // PROJ-1502 PARTITIONED DISK TABLE
-    // row movementê°€ ìˆëŠ” ê²½ìš° inserTableRefê°€ ìƒì„±ë˜ë©°,
-    // ì´ì— ëŒ€í•œ lockì„ íšë“í•˜ì—¬ì•¼ í•œë‹¤.
+    // row movement°¡ ÀÖ´Â °æ¿ì inserTableRef°¡ »ı¼ºµÇ¸ç,
+    // ÀÌ¿¡ ´ëÇÑ lockÀ» È¹µæÇÏ¿©¾ß ÇÑ´Ù.
     if( sCodePlan->insertTableRef != NULL )
     {
         IDE_TEST( lockTableForDML(
@@ -5245,11 +5323,11 @@ qmx::changeLobColumnInfo( qmxLobInfo * aLobInfo,
 /***********************************************************************
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
- *                ê°ê°ì˜ partitionì— ë§ê²Œ lob columnì„ ë°”ê¾¼ë‹¤.
- *                insert, updateì—ì„œ ì‚¬ìš©í•œë‹¤.
+ *                °¢°¢ÀÇ partition¿¡ ¸Â°Ô lob columnÀ» ¹Ù²Û´Ù.
+ *                insert, update¿¡¼­ »ç¿ëÇÑ´Ù.
  *
- *  Implementation : parameterë¡œ ë°›ì€ column(partitionì˜ column)ì„
- *                   ê²€ìƒ‰í•´ì„œ ë™ì¼ ì»¬ëŸ¼ì´ ìˆìœ¼ë©´ ê·¸ê²ƒìœ¼ë¡œ êµì²´.
+ *  Implementation : parameter·Î ¹ŞÀº column(partitionÀÇ column)À»
+ *                   °Ë»öÇØ¼­ µ¿ÀÏ ÄÃ·³ÀÌ ÀÖÀ¸¸é ±×°ÍÀ¸·Î ±³Ã¼.
  *
  ***********************************************************************/
 
@@ -5358,7 +5436,7 @@ qmx::makeSmiValueForChkRowMovement( smiColumnList * aUpdateColumns,
 
         if( sFound == ID_TRUE )
         {
-            // update columnì¸ ê²½ìš°ì„.
+            // update columnÀÎ °æ¿ìÀÓ.
             aChkValues[sColumnOrder].value = aUpdateValues[i].value;
             aChkValues[sColumnOrder].length = aUpdateValues[i].length;
         }
@@ -5368,7 +5446,7 @@ qmx::makeSmiValueForChkRowMovement( smiColumnList * aUpdateColumns,
                                         aTuple->row,
                                         MTD_OFFSET_USE );
 
-            // update columnì´ ì•„ë‹ˆê³  rowì—ì„œ êµ¬í•´ì•¼ í•˜ëŠ” ê²½ìš°ì„.
+            // update columnÀÌ ¾Æ´Ï°í row¿¡¼­ ±¸ÇØ¾ß ÇÏ´Â °æ¿ìÀÓ.
             IDE_TEST( qdbCommon::mtdValue2StoringValue(
                           sPartKeyColumn->basicInfo,
                           &aTuple->columns[sColumnOrder],
@@ -5446,7 +5524,7 @@ qmx::makeSmiValueForRowMovement( qcmTableInfo   * aTableInfo, /* Criterion for s
 
         if( sFound == ID_TRUE )
         {
-            // update columnì¸ ê²½ìš°ì„.
+            // update columnÀÎ °æ¿ìÀÓ.
             aInsValues[sIterator].value = aUpdateValues[i].value;
             aInsValues[sIterator].length = aUpdateValues[i].length;
 
@@ -5465,10 +5543,10 @@ qmx::makeSmiValueForRowMovement( qcmTableInfo   * aTableInfo, /* Criterion for s
         }
         else
         {
-            // update columnì´ ì•„ë‹ˆê³  rowì—ì„œ êµ¬í•´ì•¼ í•˜ëŠ” ê²½ìš°ì„.
+            // update columnÀÌ ¾Æ´Ï°í row¿¡¼­ ±¸ÇØ¾ß ÇÏ´Â °æ¿ìÀÓ.
             sColumnOrder = (sInsColumns[sIterator].column.id & SMI_COLUMN_ID_MASK);
 
-            /* PROJ-2464 hybrid partitioned table ì§€ì› */
+            /* PROJ-2464 hybrid partitioned table Áö¿ø */
             sStoringColumn = aTableInfo->columns[sColumnOrder].basicInfo;
 
             if( ( sInsColumns[sIterator].column.flag &
@@ -5488,7 +5566,7 @@ qmx::makeSmiValueForRowMovement( qcmTableInfo   * aTableInfo, /* Criterion for s
                     }
                     else
                     {
-                        // emptyë„ lob cursorê°€ ì—´ë¦°ë‹¤.
+                        // emptyµµ lob cursor°¡ ¿­¸°´Ù.
                         IDE_TEST( smiLob::openLobCursorWithRow(
                                       aCursor,
                                       aTuple->row,
@@ -5518,7 +5596,7 @@ qmx::makeSmiValueForRowMovement( qcmTableInfo   * aTableInfo, /* Criterion for s
                         }
                         else
                         {
-                            // emptyë„ lob cursorê°€ ì—´ë¦°ë‹¤.
+                            // emptyµµ lob cursor°¡ ¿­¸°´Ù.
                             IDE_TEST( smiLob::openLobCursorWithGRID(
                                           aCursor,
                                           sGRID,
@@ -5533,7 +5611,7 @@ qmx::makeSmiValueForRowMovement( qcmTableInfo   * aTableInfo, /* Criterion for s
 
                 if ( sLocator != MTD_LOCATOR_NULL )
                 {
-                    // emptyë„ copy ëŒ€ìƒì´ë‹¤.
+                    // emptyµµ copy ´ë»óÀÌ´Ù.
                     IDE_TEST( qmx::addLobInfoForCopy(
                                   aInsLobInfo,
                                   & (sStoringColumn->column),
@@ -5576,7 +5654,8 @@ qmx::makeSmiValueForRowMovement( qcmTableInfo   * aTableInfo, /* Criterion for s
 
     IDE_EXCEPTION_END;
 
-    (void) qmx::closeLobLocator( sLocator );
+    (void) qmx::closeLobLocator( NULL, /* idvSQL* */
+                                 sLocator );
 
     return IDE_FAILURE;
 }
@@ -5592,7 +5671,7 @@ qmx::makeRowWithSmiValue( mtcColumn   * aColumn,
  *  Description :
  *
  *  Implementation :
- *      smiValue listë¥¼ table row í˜•íƒœë¡œ ë³µì‚¬
+ *      smiValue list¸¦ table row ÇüÅÂ·Î º¹»ç
  *
  ***********************************************************************/
 
@@ -5604,7 +5683,7 @@ qmx::makeRowWithSmiValue( mtcColumn   * aColumn,
     UInt        i;
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
     
     IDE_DASSERT( aColumn != NULL );
@@ -5612,7 +5691,7 @@ qmx::makeRowWithSmiValue( mtcColumn   * aColumn,
     IDE_DASSERT( aRow != NULL );
 
     //------------------------------------------
-    // ë³µì‚¬
+    // º¹»ç
     //------------------------------------------
     
     for ( i = 0, sSrcColumn = aColumn, sCurrValue = aValues;
@@ -5626,7 +5705,7 @@ qmx::makeRowWithSmiValue( mtcColumn   * aColumn,
             // MEMORY COLUMN 
             //---------------------------
                 
-            // variable nullì˜ í˜•ì‹ì„ ë§ì¶˜ë‹¤.
+            // variable nullÀÇ Çü½ÄÀ» ¸ÂÃá´Ù.
             if( sCurrValue->length == 0 )
             {
                 sSrcValue = sSrcColumn->module->staticNull;
@@ -5675,9 +5754,9 @@ qmx::addLobInfoFromLobInfo( UInt         aColumnID,
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
  *
- *  Implementation : row movementê°€ ì¼ì–´ë‚˜ëŠ” ê²½ìš°ì— ì‚¬ìš©.
- *                   update í•˜ëŠ” lobInfoì—ì„œ insertí•˜ëŠ” lobInfoë¡œ
- *                   lob columnì˜ ì •ë³´ë¥¼ ì‚½ì…í•œë‹¤.
+ *  Implementation : row movement°¡ ÀÏ¾î³ª´Â °æ¿ì¿¡ »ç¿ë.
+ *                   update ÇÏ´Â lobInfo¿¡¼­ insertÇÏ´Â lobInfo·Î
+ *                   lob columnÀÇ Á¤º¸¸¦ »ğÀÔÇÑ´Ù.
  *
  ***********************************************************************/
     UInt i;
@@ -5737,7 +5816,7 @@ qmx::checkNotNullColumnForInsert( qcmColumn  * aColumn,
 /***********************************************************************
  *
  * Description : To fix BUG-12622
- *               before triggerí˜¸ì¶œ í›„ not null ì²´í¬ë¥¼ í•˜ë„ë¡ í•¨ìˆ˜ë¡œ ë¹¼ëƒ„.
+ *               before triggerÈ£Ãâ ÈÄ not null Ã¼Å©¸¦ ÇÏµµ·Ï ÇÔ¼ö·Î »©³¿.
  * Implementation :
  *
  ***********************************************************************/
@@ -5748,7 +5827,7 @@ qmx::checkNotNullColumnForInsert( qcmColumn  * aColumn,
           sColumn != NULL;
           sColumn = sColumn->next )
     {
-        // not null constraintê°€ ìˆëŠ” ê²½ìš°
+        // not null constraint°¡ ÀÖ´Â °æ¿ì
         if( ( sColumn->basicInfo->flag &
               MTC_COLUMN_NOTNULL_MASK )
             == MTC_COLUMN_NOTNULL_TRUE )
@@ -5765,9 +5844,9 @@ qmx::checkNotNullColumnForInsert( qcmColumn  * aColumn,
                       == SMI_COLUMN_TYPE_FIXED ) )
                 {
                     //---------------------------------------------------
-                    // memory fixed columnì€ isNullí•¨ìˆ˜ë¡œ null ê²€ì‚¬
-                    // memory fixed columnì€
-                    // mtdValueì™€ storingValueê°€ ë™ì¼í•˜ë‹¤.
+                    // memory fixed columnÀº isNullÇÔ¼ö·Î null °Ë»ç
+                    // memory fixed columnÀº
+                    // mtdValue¿Í storingValue°¡ µ¿ÀÏÇÏ´Ù.
                     //---------------------------------------------------
 
                     IDE_TEST_RAISE(
@@ -5779,7 +5858,7 @@ qmx::checkNotNullColumnForInsert( qcmColumn  * aColumn,
                 else
                 {
                     //---------------------------------------------------
-                    // variable, lob, disk columnì€ lengthê°€ 0ì¸ê²ƒìœ¼ë¡œ ê²€ì‚¬
+                    // variable, lob, disk columnÀº length°¡ 0ÀÎ°ÍÀ¸·Î °Ë»ç
                     //---------------------------------------------------
 
                     IDE_TEST_RAISE(
@@ -5789,7 +5868,7 @@ qmx::checkNotNullColumnForInsert( qcmColumn  * aColumn,
             }
             else
             {
-                // lobinfoì— í¬í•¨ëœ ê²ƒì€ ê²€ì‚¬í•˜ì§€ ì•ŠìŒ.
+                // lobinfo¿¡ Æ÷ÇÔµÈ °ÍÀº °Ë»çÇÏÁö ¾ÊÀ½.
                 // Nothing to do.
             }
         }
@@ -5805,14 +5884,14 @@ qmx::checkNotNullColumnForInsert( qcmColumn  * aColumn,
     {
         if ( aPrintColumnName == ID_TRUE )
         {
-            /* BUG-45680 insert ìˆ˜í–‰ì‹œ not null columnì— ëŒ€í•œ ì—ëŸ¬ë©”ì‹œì§€ ì •ë³´ì— column ì •ë³´ ì¶œë ¥. */
+            /* BUG-45680 insert ¼öÇà½Ã not null column¿¡ ´ëÇÑ ¿¡·¯¸Ş½ÃÁö Á¤º¸¿¡ column Á¤º¸ Ãâ·Â. */
                 IDE_SET( ideSetErrorCode( qpERR_ABORT_QMX_NOT_NULL_CONSTRAINT,
                                           " : ",
                                           sColumn->name ) );
         }
         else
         {
-            /* BUG-45680 insert ìˆ˜í–‰ì‹œ not null columnì— ëŒ€í•œ ì—ëŸ¬ë©”ì‹œì§€ ì •ë³´ì— column ì •ë³´ ì¶œë ¥. */
+            /* BUG-45680 insert ¼öÇà½Ã not null column¿¡ ´ëÇÑ ¿¡·¯¸Ş½ÃÁö Á¤º¸¿¡ column Á¤º¸ Ãâ·Â. */
                 IDE_SET( ideSetErrorCode( qpERR_ABORT_QMX_NOT_NULL_CONSTRAINT,
                                           "",
                                           "" ) );
@@ -5830,7 +5909,7 @@ qmx::existLobInfo( qmxLobInfo * aLobInfo,
 /***********************************************************************
  *
  * Description : To fix BUG-12622
- *               lobinfoì— í•´ë‹¹ ì»¬ëŸ¼id ê°€ ì†í•´ ìˆëŠ”ì§€ ê²€ì‚¬.
+ *               lobinfo¿¡ ÇØ´ç ÄÃ·³id °¡ ¼ÓÇØ ÀÖ´ÂÁö °Ë»ç.
  * Implementation :
  *
  ***********************************************************************/
@@ -5899,18 +5978,18 @@ IDE_RC qmx::executeMerge( qcStatement * aStatement )
     qmcRowFlag            sFlag = QMC_ROW_INITIALIZE;
 
     //------------------------------------------
-    // ê¸°ë³¸ ì •ë³´ ì„¤ì •
+    // ±âº» Á¤º¸ ¼³Á¤
     //------------------------------------------
     
     sParseTree = (qmmMergeParseTree *) aStatement->myPlan->parseTree;
 
     //------------------------------------------
-    // í•´ë‹¹ Tableì— ìœ í˜•ì— ë§ëŠ” IX lockì„ íšë“í•¨.
+    // ÇØ´ç Table¿¡ À¯Çü¿¡ ¸Â´Â IX lockÀ» È¹µæÇÔ.
     //------------------------------------------
 
-    // BUG-44807 on clauseì— subqeryê°€ unnestingë˜ëŠ” ê²½ìš° selectTargetParseTreeì˜
-    // tableRefì˜ tableHandleì •ë³´ê°€ NULLì´ ë˜ëŠ” ê²½ìš°ê°€ ìˆì–´ ê°ê° êµ¬ë¬¸ì˜ parseTree 
-    // ì‚¬ìš©í•˜ë„ë¡ í•¨.
+    // BUG-44807 on clause¿¡ subqery°¡ unnestingµÇ´Â °æ¿ì selectTargetParseTreeÀÇ
+    // tableRefÀÇ tableHandleÁ¤º¸°¡ NULLÀÌ µÇ´Â °æ¿ì°¡ ÀÖ¾î °¢°¢ ±¸¹®ÀÇ parseTree 
+    // »ç¿ëÇÏµµ·Ï ÇÔ.
     if ( sParseTree->updateParseTree != NULL )
     {
         sTableRef = sParseTree->updateParseTree->querySet->SFWGH->from->tableRef;        
@@ -5929,7 +6008,7 @@ IDE_RC qmx::executeMerge( qcStatement * aStatement )
     
     if ( sParseTree->updateStatement != NULL )
     {
-        // update planì€ childrenì˜ QMO_MERGE_UPDATE_IDXë²ˆì§¸ì— ìˆë‹¤.
+        // update planÀº childrenÀÇ QMO_MERGE_UPDATE_IDX¹øÂ°¿¡ ÀÖ´Ù.
         IDE_TEST( lockTableForUpdate(
                       aStatement,
                       sTableRef,
@@ -5950,7 +6029,7 @@ IDE_RC qmx::executeMerge( qcStatement * aStatement )
     IDE_TEST_RAISE( sIsPlanOld == ID_TRUE, err_plan_too_old );
 
     //------------------------------------------
-    // SELCT SOURCEë¥¼ ìœ„í•œ ê¸°ë³¸ ì •ë³´ ì„¤ì •
+    // SELCT SOURCE¸¦ À§ÇÑ ±âº» Á¤º¸ ¼³Á¤
     //------------------------------------------
 
     idlOS::memcpy( & sTempStatement,
@@ -5958,11 +6037,11 @@ IDE_RC qmx::executeMerge( qcStatement * aStatement )
                    ID_SIZEOF( qcStatement ) );
     setSubStatement( aStatement, & sTempStatement );
     
-    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
     IDE_TEST( qmo::optimizeForHost( & sTempStatement ) != IDE_SUCCESS );
     
     //------------------------------------------
-    // SELCT TARGETë¥¼ ìœ„í•œ ê¸°ë³¸ ì •ë³´ ì„¤ì •
+    // SELCT TARGET¸¦ À§ÇÑ ±âº» Á¤º¸ ¼³Á¤
     //------------------------------------------
     
     idlOS::memcpy( & sTempStatement,
@@ -5970,17 +6049,17 @@ IDE_RC qmx::executeMerge( qcStatement * aStatement )
                    ID_SIZEOF( qcStatement ) );
     setSubStatement( aStatement, & sTempStatement );
     
-    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
     IDE_TEST( qmo::optimizeForHost( & sTempStatement ) != IDE_SUCCESS );
     
     //------------------------------------------
-    // UPDATEë¥¼ ìœ„í•œ ê¸°ë³¸ ì •ë³´ ì„¤ì •
+    // UPDATE¸¦ À§ÇÑ ±âº» Á¤º¸ ¼³Á¤
     //------------------------------------------
     
     if ( sParseTree->updateStatement != NULL )
     {
         //------------------------------------------
-        // STATEMENT GRANULARITY TRIGGERì˜ ìˆ˜í–‰
+        // STATEMENT GRANULARITY TRIGGERÀÇ ¼öÇà
         //------------------------------------------
         
         IDE_TEST( qdnTrigger::fireTrigger( aStatement,
@@ -5999,7 +6078,7 @@ IDE_RC qmx::executeMerge( qcStatement * aStatement )
                   != IDE_SUCCESS );
 
         //------------------------------------------
-        // sequence ì •ë³´ ì„¤ì •
+        // sequence Á¤º¸ ¼³Á¤
         //------------------------------------------
         
         if ( sParseTree->updateParseTree->common.currValSeqs != NULL )
@@ -6029,7 +6108,7 @@ IDE_RC qmx::executeMerge( qcStatement * aStatement )
                        ID_SIZEOF( qcStatement ) );
         setSubStatement( aStatement, & sTempStatement );
         
-        // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+        // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
         IDE_TEST( qmo::optimizeForHost( & sTempStatement ) != IDE_SUCCESS );
     }
     else
@@ -6038,13 +6117,13 @@ IDE_RC qmx::executeMerge( qcStatement * aStatement )
     }
 
     //------------------------------------------
-    // DELTEë¥¼ ìœ„í•œ ê¸°ë³¸ ì •ë³´ ì„¤ì •
+    // DELTE¸¦ À§ÇÑ ±âº» Á¤º¸ ¼³Á¤
     //------------------------------------------
     
     if ( sParseTree->deleteStatement != NULL )
     {
         //------------------------------------------
-        // STATEMENT GRANULARITY TRIGGERì˜ ìˆ˜í–‰
+        // STATEMENT GRANULARITY TRIGGERÀÇ ¼öÇà
         //------------------------------------------
         
         IDE_TEST( fireStatementTriggerOnDeleteCascade(
@@ -6059,7 +6138,7 @@ IDE_RC qmx::executeMerge( qcStatement * aStatement )
                        ID_SIZEOF( qcStatement ) );
         setSubStatement( aStatement, & sTempStatement );
         
-        // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+        // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
         IDE_TEST( qmo::optimizeForHost( & sTempStatement ) != IDE_SUCCESS );
     }
     else
@@ -6068,13 +6147,13 @@ IDE_RC qmx::executeMerge( qcStatement * aStatement )
     }
 
     //------------------------------------------
-    // INSERTë¥¼ ìœ„í•œ ê¸°ë³¸ ì •ë³´ ì„¤ì •
+    // INSERT¸¦ À§ÇÑ ±âº» Á¤º¸ ¼³Á¤
     //------------------------------------------
     
     if ( sParseTree->insertParseTree != NULL )
     {
         //------------------------------------------
-        // STATEMENT GRANULARITY TRIGGERì˜ ìˆ˜í–‰
+        // STATEMENT GRANULARITY TRIGGERÀÇ ¼öÇà
         //------------------------------------------
         
         IDE_TEST( qdnTrigger::fireTrigger( aStatement,
@@ -6093,7 +6172,7 @@ IDE_RC qmx::executeMerge( qcStatement * aStatement )
                   != IDE_SUCCESS );
 
         //------------------------------------------
-        // sequence ì •ë³´ ì„¤ì •
+        // sequence Á¤º¸ ¼³Á¤
         //------------------------------------------
         
         if ( sParseTree->insertParseTree->common.currValSeqs != NULL )
@@ -6124,7 +6203,7 @@ IDE_RC qmx::executeMerge( qcStatement * aStatement )
     }
 
     //------------------------------------------
-    // MERGEë¥¼ ìœ„í•œ ê¸°ë³¸ ì •ë³´ ì„¤ì •
+    // MERGE¸¦ À§ÇÑ ±âº» Á¤º¸ ¼³Á¤
     //------------------------------------------
 
     QC_PRIVATE_TMPLATE(aStatement)->numRows = 0;
@@ -6132,7 +6211,7 @@ IDE_RC qmx::executeMerge( qcStatement * aStatement )
     IDE_TEST( qtc::setDatePseudoColumn( QC_PRIVATE_TMPLATE( aStatement ) ) != IDE_SUCCESS );
 
     //------------------------------------------
-    // MERGEë¥¼ ìœ„í•œ plan tree ì´ˆê¸°í™”
+    // MERGE¸¦ À§ÇÑ plan tree ÃÊ±âÈ­
     //------------------------------------------
     
     IDE_TEST( qmnMRGE::init( QC_PRIVATE_TMPLATE(aStatement),
@@ -6141,25 +6220,25 @@ IDE_RC qmx::executeMerge( qcStatement * aStatement )
     sInitialized = ID_TRUE;
 
     //------------------------------------------
-    // MERGEë¥¼ ìˆ˜í–‰
+    // MERGE¸¦ ¼öÇà
     //------------------------------------------
 
     do
     {
-        // BUG-22287 insert ì‹œê°„ì´ ë§ì´ ê±¸ë¦¬ëŠ” ê²½ìš°ì— session
-        // outë˜ì–´ë„ insertê°€ ëë‚  ë•Œ ê¹Œì§€ ê¸°ë‹¤ë¦¬ëŠ” ë¬¸ì œê°€ ìˆë‹¤.
-        // session outì„ í™•ì¸í•œë‹¤.
+        // BUG-22287 insert ½Ã°£ÀÌ ¸¹ÀÌ °É¸®´Â °æ¿ì¿¡ session
+        // outµÇ¾îµµ insert°¡ ³¡³¯ ¶§ ±îÁö ±â´Ù¸®´Â ¹®Á¦°¡ ÀÖ´Ù.
+        // session outÀ» È®ÀÎÇÑ´Ù.
         IDE_TEST( iduCheckSessionEvent( aStatement->mStatistics )
                   != IDE_SUCCESS );
         
-        // mergeì˜ planì„ ìˆ˜í–‰í•œë‹¤.
+        // mergeÀÇ planÀ» ¼öÇàÇÑ´Ù.
         IDE_TEST( qmnMRGE::doIt( QC_PRIVATE_TMPLATE(aStatement),
                                  aStatement->myPlan->plan,
                                  & sFlag )
                   != IDE_SUCCESS );
 
-        // merge countëŠ” update row countì™€ insert row countì˜ í•©ë‹ˆë‹¤.
-        // 1íšŒ doItì‹œ ì—¬ëŸ¬ rowê°€ mergeë  ìˆ˜ ìˆë‹¤.
+        // merge count´Â update row count¿Í insert row countÀÇ ÇÕ´Ï´Ù.
+        // 1È¸ doIt½Ã ¿©·¯ row°¡ mergeµÉ ¼ö ÀÖ´Ù.
         IDE_TEST( qmnMRGE::getMergedRowCount( QC_PRIVATE_TMPLATE(aStatement),
                                               aStatement->myPlan->plan,
                                               & sMergedCount )
@@ -6181,13 +6260,13 @@ IDE_RC qmx::executeMerge( qcStatement * aStatement )
     /* PROJ-1071 */
     IDE_TEST(qcg::joinThread(aStatement) != IDE_SUCCESS);
     
-    IDE_TEST( QC_PRIVATE_TMPLATE(aStatement)->cursorMgr->closeAllCursor()
+    IDE_TEST( QC_PRIVATE_TMPLATE(aStatement)->cursorMgr->closeAllCursor(aStatement->mStatistics)
               != IDE_SUCCESS );
 
     IDE_TEST(qcg::finishAndReleaseThread(aStatement) != IDE_SUCCESS);
     
     //------------------------------------------
-    // UPDATE STATEMENT GRANULARITY TRIGGERì˜ ìˆ˜í–‰
+    // UPDATE STATEMENT GRANULARITY TRIGGERÀÇ ¼öÇà
     //------------------------------------------
         
     if ( sParseTree->updateStatement != NULL )
@@ -6213,7 +6292,7 @@ IDE_RC qmx::executeMerge( qcStatement * aStatement )
     }
 
     //------------------------------------------
-    // DELETE STATEMENT GRANULARITY TRIGGERì˜ ìˆ˜í–‰
+    // DELETE STATEMENT GRANULARITY TRIGGERÀÇ ¼öÇà
     //------------------------------------------
     
     if ( sParseTree->deleteStatement != NULL )
@@ -6231,7 +6310,7 @@ IDE_RC qmx::executeMerge( qcStatement * aStatement )
     }
 
     //------------------------------------------
-    // INSERT STATEMENT GRANULARITY TRIGGERì˜ ìˆ˜í–‰
+    // INSERT STATEMENT GRANULARITY TRIGGERÀÇ ¼öÇà
     //------------------------------------------
         
     if ( sParseTree->insertParseTree != NULL )
@@ -6308,23 +6387,27 @@ IDE_RC qmx::executeShardDML( qcStatement * aStatement )
         // Nothing to do
     }
 
-    // initì„ ìˆ˜í–‰í•œë‹¤.
+    // initÀ» ¼öÇàÇÑ´Ù.
     IDE_TEST( qmnSDEX::init( QC_PRIVATE_TMPLATE(aStatement),
                              aStatement->myPlan->plan)
              != IDE_SUCCESS);
 
-    // planì„ ìˆ˜í–‰í•œë‹¤.
+    // planÀ» ¼öÇàÇÑ´Ù.
     IDE_TEST( qmnSDEX::doIt( QC_PRIVATE_TMPLATE(aStatement),
                              aStatement->myPlan->plan,
                              &sFlag )
               != IDE_SUCCESS );
 
-    IDE_TEST( QC_PRIVATE_TMPLATE(aStatement)->cursorMgr->closeAllCursor()
+    IDE_TEST( QC_PRIVATE_TMPLATE(aStatement)->cursorMgr->closeAllCursor(aStatement->mStatistics)
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    /* BUG-47459 */
+    qmnSDEX::shardStmtPartialRollbackUsingSavepoint( QC_PRIVATE_TMPLATE(aStatement),
+                                                     aStatement->myPlan->plan );
 
     return IDE_FAILURE;
 }
@@ -6338,14 +6421,14 @@ IDE_RC qmx::executeShardInsert( qcStatement * aStatement )
     IDE_DASSERT( aStatement != NULL );
 
     //------------------------------------------
-    // ê¸°ë³¸ ì •ë³´ ì„¤ì •
+    // ±âº» Á¤º¸ ¼³Á¤
     //------------------------------------------
 
     sParseTree = (qmmInsParseTree *) aStatement->myPlan->parseTree;
     sTableRef  = sParseTree->insertTableRef;
 
     //------------------------------------------
-    // í•´ë‹¹ Tableì— IS lockì„ íšë“í•¨.
+    // ÇØ´ç Table¿¡ IS lockÀ» È¹µæÇÔ.
     //------------------------------------------
 
     IDE_TEST( lockTableForDML( aStatement,
@@ -6354,7 +6437,7 @@ IDE_RC qmx::executeShardInsert( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // INSERTë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ ê¸°ë³¸ ê°’ íšë“
+    // INSERT¸¦ Ã³¸®ÇÏ±â À§ÇÑ ±âº» °ª È¹µæ
     //------------------------------------------
 
     // initialize result row count
@@ -6420,7 +6503,7 @@ IDE_RC qmx::executeShardInsert( qcStatement * aStatement )
     }
 
     //------------------------------------------
-    // INSERT Plan ì´ˆê¸°í™”
+    // INSERT Plan ÃÊ±âÈ­
     //------------------------------------------
 
     IDE_TEST( qmnSDIN::init( QC_PRIVATE_TMPLATE(aStatement),
@@ -6428,18 +6511,18 @@ IDE_RC qmx::executeShardInsert( qcStatement * aStatement )
              != IDE_SUCCESS);
 
     //------------------------------------------
-    // INSERTë¥¼ ìˆ˜í–‰
+    // INSERT¸¦ ¼öÇà
     //------------------------------------------
 
     do
     {
-        // BUG-22287 insert ì‹œê°„ì´ ë§ì´ ê±¸ë¦¬ëŠ” ê²½ìš°ì— session
-        // outë˜ì–´ë„ insertê°€ ëë‚  ë•Œ ê¹Œì§€ ê¸°ë‹¤ë¦¬ëŠ” ë¬¸ì œê°€ ìˆë‹¤.
-        // session outì„ í™•ì¸í•œë‹¤.
+        // BUG-22287 insert ½Ã°£ÀÌ ¸¹ÀÌ °É¸®´Â °æ¿ì¿¡ session
+        // outµÇ¾îµµ insert°¡ ³¡³¯ ¶§ ±îÁö ±â´Ù¸®´Â ¹®Á¦°¡ ÀÖ´Ù.
+        // session outÀ» È®ÀÎÇÑ´Ù.
         IDE_TEST( iduCheckSessionEvent( aStatement->mStatistics )
                   != IDE_SUCCESS );
 
-        // updateì˜ planì„ ìˆ˜í–‰í•œë‹¤.
+        // updateÀÇ planÀ» ¼öÇàÇÑ´Ù.
         IDE_TEST( qmnSDIN::doIt( QC_PRIVATE_TMPLATE(aStatement),
                                  aStatement->myPlan->plan,
                                  &sRowFlag )
@@ -6473,6 +6556,8 @@ void qmx::setSubStatement( qcStatement * aStatement,
     QC_PRIVATE_TMPLATE(aSubStatement)       = QC_PRIVATE_TMPLATE(aStatement);
     QC_PRIVATE_TMPLATE(aSubStatement)->stmt = aStatement;
     QC_QMX_MEM(aSubStatement)               = QC_QMX_MEM(aStatement);
+    /* BUG-48125 Merge Trigger Fatal */
+    QC_QMT_MEM(aSubStatement)               = QC_QMT_MEM(aStatement);
     // BUG-36766
     aSubStatement->stmtInfo                 = aStatement->stmtInfo;
     QC_PRIVATE_TMPLATE(aSubStatement)->cursorMgr
@@ -6489,7 +6574,7 @@ void qmx::setSubStatement( qcStatement * aStatement,
     aSubStatement->disableLeftStore = aStatement->disableLeftStore;
 
     // BUG-38932 alloc, free cost of cursor mutex is too expensive.
-    // merge êµ¬ë¬¸ì—ì„œ ë³„ë„ì˜ Statement ë¥¼ ì‚¬ìš©í•œë‹¤. mutex ë¥¼ ì˜®ê²¨ì£¼ì–´ì•¼ í•œë‹¤.
+    // merge ±¸¹®¿¡¼­ º°µµÀÇ Statement ¸¦ »ç¿ëÇÑ´Ù. mutex ¸¦ ¿Å°ÜÁÖ¾î¾ß ÇÑ´Ù.
     aSubStatement->mCursorMutex.mEntry = aStatement->mCursorMutex.mEntry;
 
     // BUG-41227 source select statement of merge query containing function
@@ -6500,6 +6585,7 @@ void qmx::setSubStatement( qcStatement * aStatement,
 
     // BUG-43158 Enhance statement list caching in PSM
     aSubStatement->mStmtList    = aStatement->mStmtList;
+    aSubStatement->mStmtList2   = aStatement->mStmtList2;
 }
 
 IDE_RC
@@ -6510,8 +6596,8 @@ qmx::copyReturnToInto( qcTemplate      * aTemplate,
 /***********************************************************************
  *
  * Description : PROJ-1584 DML Return Clause
- *         RETURN Clause (Column Value) -> INTO Clause (Column Value)ì„
- *         ë³µì‚¬ í•˜ì—¬ ì¤€ë‹¤.
+ *         RETURN Clause (Column Value) -> INTO Clause (Column Value)À»
+ *         º¹»ç ÇÏ¿© ÁØ´Ù.
  *
  *         PREPARE iSQL             => normalReturnToInto
  *         PSM Primitive Type       => normalReturnToInto
@@ -6531,7 +6617,7 @@ qmx::copyReturnToInto( qcTemplate      * aTemplate,
     IDE_DASSERT( aReturnInto->returnValue != NULL );
 
     // BUG-42715
-    // package ë³€ìˆ˜ë¥¼ ì§ì ‘ ì‚¬ìš©í•œ ê²½ìš°
+    // package º¯¼ö¸¦ Á÷Á¢ »ç¿ëÇÑ °æ¿ì
     if ( aReturnInto->returnIntoValue->returningInto->node.objectID != QS_EMPTY_OID )
     {
         sDestTemplate   = aTemplate;
@@ -6543,7 +6629,7 @@ qmx::copyReturnToInto( qcTemplate      * aTemplate,
         sDestReturnInto = aTemplate->stmt->parentInfo->parentReturnInto;
     }
 
-    // PSMë‚´ì˜ DMLì—ì„œ return into ì ˆì„ ì²˜ë¦¬í•˜ëŠ” ê²½ìš°
+    // PSM³»ÀÇ DML¿¡¼­ return into ÀıÀ» Ã³¸®ÇÏ´Â °æ¿ì
     if( ( sDestTemplate   != NULL ) &&
         ( sDestReturnInto != NULL ) )
     {
@@ -6551,8 +6637,8 @@ qmx::copyReturnToInto( qcTemplate      * aTemplate,
                                  sDestTemplate,
                                  sDestReturnInto->returnIntoValue->returningInto );
 
-        // Row Type, Record Type, Associative Array í˜•íƒœì˜ Record Typeì€
-        // qsxUtil::recordReturnToInto í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
+        // Row Type, Record Type, Associative Array ÇüÅÂÀÇ Record TypeÀº
+        // qsxUtil::recordReturnToInto ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
         if( ( sMtcColumn->type.dataTypeId == MTD_ROWTYPE_ID ) ||
             ( sMtcColumn->type.dataTypeId == MTD_RECORDTYPE_ID ) )
         {
@@ -6566,8 +6652,8 @@ qmx::copyReturnToInto( qcTemplate      * aTemplate,
         }
         else
         {
-            // Primitive Typeì˜ Associative Arrayì´ë©´
-            // qsxUtil::arrayReturnToInto í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
+            // Primitive TypeÀÇ Associative ArrayÀÌ¸é
+            // qsxUtil::arrayReturnToInto ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
             if( aReturnInto->bulkCollect == ID_TRUE )
             {
                 IDE_TEST( qsxUtil::arrayReturnToInto( aTemplate,
@@ -6589,7 +6675,7 @@ qmx::copyReturnToInto( qcTemplate      * aTemplate,
     }
     else
     {
-        // ì¼ë°˜ DMLì—ì„œ return into ì ˆì„ ì²˜ë¦¬í•˜ëŠ” ê²½ìš°
+        // ÀÏ¹İ DML¿¡¼­ return into ÀıÀ» Ã³¸®ÇÏ´Â °æ¿ì
         IDE_TEST( normalReturnToInto( aTemplate,
                                       aReturnInto )
                   != IDE_SUCCESS );
@@ -6609,12 +6695,12 @@ qmx::normalReturnToInto( qcTemplate    * aTemplate,
 /***********************************************************************
  *
  * Description : PROJ-1584 DML Return Clause
- *     iSQL RETURN Clause (Column Value) -> INTO Clause (Column Value)ì„
- *     ë³µì‚¬ í•˜ì—¬ ì¤€ë‹¤.
+ *     iSQL RETURN Clause (Column Value) -> INTO Clause (Column Value)À»
+ *     º¹»ç ÇÏ¿© ÁØ´Ù.
  *
  * Implementation :
  *      (1) Return Clause -> INTO Clause value copy.
- *      (2) ì•”í˜¸í™” ì»¬ëŸ¼ì€ decrypt í›„ copy.
+ *      (2) ¾ÏÈ£È­ ÄÃ·³Àº decrypt ÈÄ copy.
  *
  ***********************************************************************/
 
@@ -6640,7 +6726,7 @@ qmx::normalReturnToInto( qcTemplate    * aTemplate,
         sSrcColumn = aTemplate->tmplate.stack->column;
         sSrcValue  = aTemplate->tmplate.stack->value;
 
-        // decryptí•¨ìˆ˜ë¥¼ ë¶™ì˜€ìœ¼ë¯€ë¡œ ì•”í˜¸ì»¬ëŸ¼ì´ ë‚˜ì˜¬ ìˆ˜ ì—†ë‹¤.
+        // decryptÇÔ¼ö¸¦ ºÙ¿´À¸¹Ç·Î ¾ÏÈ£ÄÃ·³ÀÌ ³ª¿Ã ¼ö ¾ø´Ù.
         IDE_DASSERT( (sSrcColumn->module->flag & MTD_ENCRYPT_TYPE_MASK)
                      == MTD_ENCRYPT_TYPE_FALSE );
             
@@ -6652,9 +6738,9 @@ qmx::normalReturnToInto( qcTemplate    * aTemplate,
         sDestValue  = aTemplate->tmplate.stack->value;
 
         // BUG-35195
-        // intoì ˆì˜ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ íƒ€ì…ì€ returnì ˆì—ì„œ ì˜¬ë¼ì˜¤ëŠ” íƒ€ì…ì´ ì•„ë‹ˆë¼
-        // ì‚¬ìš©ìê°€ bindí•œ íƒ€ì…ìœ¼ë¡œ ì´ˆê¸°í™”ë˜ì–´ ìˆìœ¼ë¯€ë¡œ
-        // ë³µì‚¬ì‹œ í•­ìƒ ì‹¤ì‹œê°„ ì»¨ë²„ì ¼í•œë‹¤.
+        // intoÀıÀÇ È£½ºÆ® º¯¼ö Å¸ÀÔÀº returnÀı¿¡¼­ ¿Ã¶ó¿À´Â Å¸ÀÔÀÌ ¾Æ´Ï¶ó
+        // »ç¿ëÀÚ°¡ bindÇÑ Å¸ÀÔÀ¸·Î ÃÊ±âÈ­µÇ¾î ÀÖÀ¸¹Ç·Î
+        // º¹»ç½Ã Ç×»ó ½Ç½Ã°£ ÄÁ¹öÁ¯ÇÑ´Ù.
         IDE_TEST( qsxUtil::assignPrimitiveValue( aTemplate->stmt->qmxMem,
                                                  sSrcColumn,
                                                  sSrcValue,
@@ -6673,9 +6759,9 @@ qmx::normalReturnToInto( qcTemplate    * aTemplate,
 
 /***********************************************************************
  *
- * Description : PROJ-2464 hybrid partitioned table ì§€ì›
- *               Partitioned Tableì˜ Tupleì„ Table Partitionìœ¼ë¡œ êµì²´í•˜ê¸° ìœ„í•´ í•„ìš”í•œ ì •ë³´ë¥¼ ë³µì‚¬í•œë‹¤.
- *               Partitioned Tableì˜ Tupleì„ ë³µì›í•˜ê¸° ìœ„í•´ í•„ìš”í•œ ì •ë³´ë¥¼ ë³µì‚¬í•œë‹¤.
+ * Description : PROJ-2464 hybrid partitioned table Áö¿ø
+ *               Partitioned TableÀÇ TupleÀ» Table PartitionÀ¸·Î ±³Ã¼ÇÏ±â À§ÇØ ÇÊ¿äÇÑ Á¤º¸¸¦ º¹»çÇÑ´Ù.
+ *               Partitioned TableÀÇ TupleÀ» º¹¿øÇÏ±â À§ÇØ ÇÊ¿äÇÑ Á¤º¸¸¦ º¹»çÇÑ´Ù.
  *
  * Implementation :
  *
@@ -6717,8 +6803,8 @@ void qmx::adjustMtcTupleForPartitionDML( mtcTuple * aDstTuple,
 
 /***********************************************************************
  *
- * Description : PROJ-2464 hybrid partitioned table ì§€ì›
- *               Max Row Offsetì„ êµ¬í•œë‹¤.
+ * Description : PROJ-2464 hybrid partitioned table Áö¿ø
+ *               Max Row OffsetÀ» ±¸ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -6772,7 +6858,7 @@ IDE_RC qmx::setChkSmiValueList( void                 * aRow,
 /***********************************************************************
  *
  * Description : PROJ-1784 DML Without Retry
- *               ë‚´ë ¤ ì¤€ column listì— ë§ì¶”ì–´ value listë¥¼ êµ¬ì„±í•œë‹¤.
+ *               ³»·Á ÁØ column list¿¡ ¸ÂÃß¾î value list¸¦ ±¸¼ºÇÑ´Ù.
  *
  * Implementation :
  *
@@ -6860,8 +6946,8 @@ IDE_RC qmx::makeSmiValueForCompress( qcTemplate   * aTemplate,
                                       + sColumns->column.offset );
 
             // PROJ-2397 Dictionary Table Handle Interface Re-factoring
-            // 1. Dictionary table ì— ê°’ì´ ì¡´ì¬í•˜ëŠ”ì§€ ë³´ê³ , ê·¸ row ì˜ OID ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
-            // 2. Null OID ê°€ ë°˜í™˜ë˜ì—ˆìœ¼ë©´ dictionary table ì— ê°’ì´ ì—†ëŠ” ê²ƒì´ë‹¤.
+            // 1. Dictionary table ¿¡ °ªÀÌ Á¸ÀçÇÏ´ÂÁö º¸°í, ±× row ÀÇ OID ¸¦ °¡Á®¿Â´Ù.
+            // 2. Null OID °¡ ¹İÈ¯µÇ¾úÀ¸¸é dictionary table ¿¡ °ªÀÌ ¾ø´Â °ÍÀÌ´Ù.
             IDE_TEST( qcmDictionary::makeDictValueForCompress( 
 						QC_SMI_STMT( aTemplate->stmt ),
 						sTableHandle,
@@ -6870,10 +6956,10 @@ IDE_RC qmx::makeSmiValueForCompress( qcTemplate   * aTemplate,
 						sValue )
                       != IDE_SUCCESS );
 
-            // 3. smiValue ê°€ dictionary table ì˜ OID ë¥¼ ê°€ë¦¬í‚¤ë„ë¡ í•œë‹¤.
+            // 3. smiValue °¡ dictionary table ÀÇ OID ¸¦ °¡¸®Å°µµ·Ï ÇÑ´Ù.
 
-            // OID ëŠ” canonizeê°€ í•„ìš”ì—†ë‹¤.
-            // OID ëŠ” memory table ì´ë¯€ë¡œ mtd value ì™€ storing value ê°€ ë™ì¼í•˜ë‹¤.
+            // OID ´Â canonize°¡ ÇÊ¿ä¾ø´Ù.
+            // OID ´Â memory table ÀÌ¹Ç·Î mtd value ¿Í storing value °¡ µ¿ÀÏÇÏ´Ù.
             aInsertedRow[sIterator].value  = sValue;
             aInsertedRow[sIterator].length = ID_SIZEOF(smOID);
         }
@@ -6896,16 +6982,25 @@ IDE_RC qmx::makeSmiValueForCompress( qcTemplate   * aTemplate,
 }
 
 IDE_RC qmx::checkAccessOption( qcmTableInfo * aTableInfo,
-                               idBool         aIsInsertion )
+                               idBool         aIsInsertion,
+                               idBool         aCheckDmlConsistency )
 {
 /***********************************************************************
  *
  *  Description : PROJ-2359 Table/Partition Access Option
- *      Access Optionì„ ê¸°ì¤€ìœ¼ë¡œ, í…Œì´ë¸”/íŒŒí‹°ì…˜ ì ‘ê·¼ì´ ê°€ëŠ¥í•œ ì§€ í™•ì¸í•œë‹¤.
+ *      Access OptionÀ» ±âÁØÀ¸·Î, Å×ÀÌºí/ÆÄÆ¼¼Ç Á¢±ÙÀÌ °¡´ÉÇÑ Áö È®ÀÎÇÑ´Ù.
  *
  *  Implementation :
  *
  ***********************************************************************/
+
+    /* TASK-7307 DML Data Consistency in Shard */
+    if ( aIsInsertion == ID_TRUE )
+    {
+        IDE_TEST_RAISE( ( aCheckDmlConsistency == ID_TRUE ) &&
+                        ( aTableInfo->mIsUsable == ID_FALSE ),
+                        ERR_TABLE_PARTITION_UNUSABLE );
+    }
 
     switch ( aTableInfo->accessOption )
     {
@@ -6933,6 +7028,11 @@ IDE_RC qmx::checkAccessOption( qcmTableInfo * aTableInfo,
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QMX_TABLE_PARTITION_ACCESS_DENIED,
                                   aTableInfo->name ) );
     }
+    IDE_EXCEPTION( ERR_TABLE_PARTITION_UNUSABLE );
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMX_TABLE_PARTITION_UNUSABLE,
+                                  aTableInfo->name ) );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -6944,7 +7044,7 @@ IDE_RC qmx::checkAccessOptionForExistentRecord( qcmAccessOption   aAccessOption,
 /***********************************************************************
  *
  *  Description : PROJ-2359 Table/Partition Access Option
- *      Access Optionì„ ê¸°ì¤€ìœ¼ë¡œ, í…Œì´ë¸”/íŒŒí‹°ì…˜ ì ‘ê·¼ì´ ê°€ëŠ¥í•œ ì§€ í™•ì¸í•œë‹¤.
+ *      Access OptionÀ» ±âÁØÀ¸·Î, Å×ÀÌºí/ÆÄÆ¼¼Ç Á¢±ÙÀÌ °¡´ÉÇÑ Áö È®ÀÎÇÑ´Ù.
  *
  *  Implementation :
  *
@@ -6989,8 +7089,8 @@ IDE_RC qmx::checkAccessOptionForExistentRecord( qcmAccessOption   aAccessOption,
 /***********************************************************************
  *
  * Description :
- *    ì €ì¥ë§¤ì²´(Memory/Disk)ë¥¼ ê³ ë ¤í•˜ì—¬ smiValueë¥¼ ë³€í™˜í•œë‹¤.
- *    Partitioned Tableì˜ smiValueë¡œ Table Partitionì˜ smiValueë¥¼ ì–»ëŠ” ìš©ë„ë¡œ ì‚¬ìš©í•œë‹¤.
+ *    ÀúÀå¸ÅÃ¼(Memory/Disk)¸¦ °í·ÁÇÏ¿© smiValue¸¦ º¯È¯ÇÑ´Ù.
+ *    Partitioned TableÀÇ smiValue·Î Table PartitionÀÇ smiValue¸¦ ¾ò´Â ¿ëµµ·Î »ç¿ëÇÑ´Ù.
  *
  * Implementation :
  *
@@ -7046,3 +7146,700 @@ IDE_RC qmx::makeSmiValueWithSmiValue( qcmTableInfo * aSrcTableInfo,
 
     return IDE_FAILURE;
 }
+
+/**
+ * PROJ-2714 Multiple Update Delete support
+ *
+ * Description :
+ *    UPDATE ... SET ... ÀÇ execution ¼öÇà
+ *
+ * Implementation :
+ *    1. SMI_TABLE_LOCK_IX lock À» Àâ´Â´Ù => smiValidateAndLockObjects
+ *    2. set SYSDATE
+ *    3. ½ÃÄö½º¸¦ »ç¿ëÇÏ¸é ±× Á¤º¸¸¦ Ã£¾Æ³õ´Â´Ù
+ *    4. qmnSCAN::init
+ *    5. update µÇ´Â ÄÃ·³ÀÇ ID ¸¦ Ã£¾Æ¼­ sUpdateColumnIDs ¹è¿­À» ¸¸µç´Ù
+ *    6. childConstraints °¡ ÀÖÀ¸¸é,
+ *       1. update µÇ´Â ·¹ÄÚµå¸¦ Ã£¾Æ¼­ º¯°æÀüÀÇ °ªÀ» ÂüÁ¶ÇÏ´Â child Å×ÀÌºíÀÌ
+ *          ÀÖ´ÂÁö º¯°æÈÄ¿¡ ±× °ªÀÌ ¾ø¾îÁö´ÂÁö È®ÀÎÇÏ°í,
+ *          ÀÖÀ¸¸é ¿¡·¯¸¦ ¹İÈ¯ÇÑ´Ù.
+ *    7. childConstraints °¡ ¾øÀ¸¸é, ÇØ´çÇÏ´Â ·¹ÄÚµå¸¦ º¯°æÇÑ´Ù.
+ *    8. º¯°æµÇ´Â ÄÃ·³ÀÌ ÂüÁ¶ÇÏ´Â parenet °¡ ÀÖÀ¸¸é, º¯°æÈÄÀÇ °ªÀÌ parent ¿¡
+ *       Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÏ°í, °ªÀÌ ¾øÀ¸¸é ¿¡·¯¸¦ ¹İÈ¯ÇÑ´Ù.
+ */
+IDE_RC qmx::executeMultiUpdate( qcStatement * aStatement )
+{
+    qmmUptParseTree   * sUptParseTree;
+    qmmMultiTables    * sTmp;
+
+    idBool              sIsOld;
+    qmcRowFlag          sFlag = QMC_ROW_INITIALIZE;
+    idBool              sInitialized = ID_FALSE;
+    scGRID              sRowGRID;
+    UInt                i;
+
+    //------------------------------------------
+    // ±âº» Á¤º¸ ¼³Á¤
+    //------------------------------------------
+
+    sUptParseTree = (qmmUptParseTree *) aStatement->myPlan->parseTree;
+
+    //------------------------------------------
+    // ÇØ´ç Table¿¡ À¯Çü¿¡ ¸Â´Â IX lockÀ» È¹µæÇÔ.
+    //------------------------------------------
+
+    // PROJ-1509
+    // MEMORY table¿¡¼­´Â
+    // table¿¡ trigger or foreign key°¡ Á¸ÀçÇÏ¸é,
+    // º¯°æ ÀÌÀü/ÀÌÈÄ°ªÀ» ÂüÁ¶ÇÏ±â À§ÇØ,
+    // inplace update°¡ µÇÁö ¾Êµµ·Ï ÇØ¾ß ÇÑ´Ù.
+    // table lockµµ IX lockÀ¸·Î Àâµµ·Ï ÇÑ´Ù.
+
+    for ( sTmp = sUptParseTree->mTableList;
+          sTmp != NULL;
+          sTmp = sTmp->mNext )
+    {
+        IDE_TEST( lockTableForUpdate( aStatement,
+                                      sTmp->mTableRef,
+                                      aStatement->myPlan->plan )
+                  != IDE_SUCCESS );
+    }
+
+    //fix BUG-14080
+    IDE_TEST( checkPlanTreeOld( aStatement, & sIsOld ) != IDE_SUCCESS );
+
+    IDE_TEST_RAISE( sIsOld == ID_TRUE, err_plan_too_old );
+
+    //------------------------------------------
+    // STATEMENT GRANULARITY TRIGGERÀÇ ¼öÇà
+    //------------------------------------------
+    // To fix BUG-12622
+    // before trigger
+    for ( sTmp = sUptParseTree->mTableList;
+          sTmp != NULL;
+          sTmp = sTmp->mNext )
+    {
+        IDE_TEST( qdnTrigger::fireTrigger( aStatement,
+                                           aStatement->qmxMem,
+                                           sTmp->mTableRef->tableInfo,
+                                           QCM_TRIGGER_ACTION_EACH_STMT,
+                                           QCM_TRIGGER_BEFORE,
+                                           QCM_TRIGGER_EVENT_UPDATE,
+                                           sTmp->mUptColumnList, // UPDATE Column
+                                           NULL,            /* Table Cursor */
+                                           SC_NULL_GRID,    /* Row GRID */
+                                           NULL,  // OLD ROW
+                                           NULL,  // OLD ROW Column
+                                           NULL,  // NEW ROW
+                                           NULL ) // NEW ROW Column
+                  != IDE_SUCCESS );
+    }
+
+    //------------------------------------------
+    // UPDATE¸¦ À§ÇÑ ±âº» Á¤º¸ ¼³Á¤
+    //------------------------------------------
+
+    QC_PRIVATE_TMPLATE(aStatement)->numRows = 0;
+
+    // set SYSDATE
+    IDE_TEST( qtc::setDatePseudoColumn( QC_PRIVATE_TMPLATE( aStatement ) ) != IDE_SUCCESS );
+
+    // check session cache SEQUENCE.CURRVAL
+    if ( aStatement->myPlan->parseTree->currValSeqs != NULL )
+    {
+        IDE_TEST(findSessionSeqCaches(aStatement, aStatement->myPlan->parseTree)
+                 != IDE_SUCCESS);
+    }
+    else
+    {
+        // Nothing To Do
+    }
+
+    // get SEQUENCE.NEXTVAL
+    if ( aStatement->myPlan->parseTree->nextValSeqs != NULL )
+    {
+        IDE_TEST(addSessionSeqCaches(aStatement, aStatement->myPlan->parseTree)
+                 != IDE_SUCCESS);
+    }
+    else
+    {
+        // Nothing To Do
+    }
+
+    //------------------------------------------
+    // UPDATE¸¦ À§ÇÑ plan tree ÃÊ±âÈ­
+    //------------------------------------------
+
+    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+    IDE_TEST( qmo::optimizeForHost( aStatement ) != IDE_SUCCESS );
+
+    IDE_TEST( qmnUPTE::init( QC_PRIVATE_TMPLATE(aStatement),
+                             aStatement->myPlan->plan)
+             != IDE_SUCCESS);
+
+    sInitialized = ID_TRUE;
+
+    //------------------------------------------
+    // UPDATE¸¦ ¼öÇà
+    //------------------------------------------
+
+    do
+    {
+        // BUG-22287 insert ½Ã°£ÀÌ ¸¹ÀÌ °É¸®´Â °æ¿ì¿¡ session
+        // outµÇ¾îµµ insert°¡ ³¡³¯ ¶§ ±îÁö ±â´Ù¸®´Â ¹®Á¦°¡ ÀÖ´Ù.
+        // session outÀ» È®ÀÎÇÑ´Ù.
+        IDE_TEST( iduCheckSessionEvent( aStatement->mStatistics )
+                  != IDE_SUCCESS );
+
+        // ¹Ì¸® Áõ°¡½ÃÅ²´Ù. doItÁß ÂüÁ¶µÉ ¼ö ÀÖ´Ù.
+        QC_PRIVATE_TMPLATE(aStatement)->numRows++;
+
+        // updateÀÇ planÀ» ¼öÇàÇÑ´Ù.
+        IDE_TEST( qmnUPTE::doIt( QC_PRIVATE_TMPLATE(aStatement),
+                                 aStatement->myPlan->plan,
+                                 &sFlag )
+                  != IDE_SUCCESS );
+
+    } while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST );
+
+    // DATA_NONEÀÎ °æ¿ì´Â »©ÁØ´Ù.
+    QC_PRIVATE_TMPLATE(aStatement)->numRows--;
+
+    IDE_TEST( qmnUPTE::getLastUpdatedRowGRID( QC_PRIVATE_TMPLATE(aStatement),
+                                              aStatement->myPlan->plan,
+                                              & sRowGRID )
+              != IDE_SUCCESS );
+
+    //------------------------------------------
+    // UPDATE cursor close
+    //------------------------------------------
+
+    sInitialized = ID_FALSE;
+    IDE_TEST( qmnUPTE::closeCursorMultiTable( QC_PRIVATE_TMPLATE(aStatement),
+                                              aStatement->myPlan->plan )
+              != IDE_SUCCESS );
+
+    /* PROJ-1071 */
+    IDE_TEST(qcg::joinThread(aStatement) != IDE_SUCCESS);
+
+    IDE_TEST( QC_PRIVATE_TMPLATE(aStatement)->cursorMgr->closeAllCursor(aStatement->mStatistics)
+              != IDE_SUCCESS );
+
+    IDE_TEST(qcg::finishAndReleaseThread(aStatement) != IDE_SUCCESS);
+
+    //------------------------------------------
+    // Foreign Key Reference °Ë»ç
+    //------------------------------------------
+
+    for ( sTmp = sUptParseTree->mTableList, i = 0;
+          sTmp != NULL;
+          sTmp = sTmp->mNext, i++ )
+    {
+        if ( QC_PRIVATE_TMPLATE(aStatement)->numRows == 0 )
+        {
+            // (¿¹1)
+            // UPDATE PARENT SET I1 = 6
+            // WHERE I1 IN ( SELECT I1 FROM CHILD WHERE I1 = 100 )
+            // °ú whereÀıÀÇ Á¶°ÇÀÌ in subquery keyRange·Î ¼öÇàµÇ´Â ÁúÀÇ¹®ÀÇ °æ¿ì,
+            // child table¿¡ ·¹ÄÚµå°¡ ÇÏ³ªµµ ¾ø´Â °æ¿ì,
+            // Á¶°Ç¿¡ ¸Â´Â ·¹ÄÚµå°¡ ¾øÀ¸¹Ç·Î  i1 in ¿¡ ´ëÇÑ keyRangeÀ» ¸¸µé¼ö ¾ø°í,
+            // in subquery keyRange´Â filter·Îµµ Ã³¸®ÇÒ ¼ö ¾ø´Â ±¸Á¶ÀÓ.
+            // SCAN³ëµå¿¡¼­´Â ÃÖÃÊ cursor open½Ã À§¿Í °°Àº °æ¿ìÀÌ¸é
+            // cursor¸¦ openÇÏÁö ¾Ê´Â´Ù.
+            // µû¶ó¼­, À§¿Í °°Àº °æ¿ì´Â updateµÈ ·Î¿ì°¡ ¾øÀ¸¹Ç·Î,
+            // close close¿Í child tableÂüÁ¶°Ë»ç¿Í °°Àº Ã³¸®¸¦ ÇÏÁö ¾Ê´Â´Ù.
+            // (¿¹2)
+            // update t1 set i1=1 where 1 != 1;
+            // ÀÎ °æ¿ìµµ cursor¸¦ openÇÏÁö ¾ÊÀ½.
+        }
+        else
+        {
+            //------------------------------------------
+            // Foreign Key ReferencingÀ» À§ÇÑ
+            // Master TableÀÌ Á¸ÀçÇÏ´Â Áö °Ë»ç
+            // To Fix PR-10592
+            // CursorÀÇ ¿Ã¹Ù¸¥ »ç¿ëÀ» À§ÇØ¼­´Â Master¿¡ ´ëÇÑ °Ë»ç¸¦ ¼öÇàÇÑ ÈÄ¿¡
+            // Child Table¿¡ ´ëÇÑ °Ë»ç¸¦ ¼öÇàÇÏ¿©¾ß ÇÑ´Ù.
+            //------------------------------------------
+            if ( sTmp->mParentConst != NULL )
+            {
+                IDE_TEST( qmnUPTE::checkUpdateParentRefMultiTable( QC_PRIVATE_TMPLATE( aStatement ),
+                                                                   aStatement->myPlan->plan,
+                                                                   sTmp,
+                                                                   i )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+
+            //------------------------------------------
+            // Child Table¿¡ ´ëÇÑ Referencing °Ë»ç
+            //------------------------------------------
+            if ( sTmp->mChildConst != NULL )
+            {
+                IDE_TEST( qmnUPTE::checkUpdateChildRefMultiTable( QC_PRIVATE_TMPLATE( aStatement ),
+                                                                  aStatement->myPlan->plan,
+                                                                  sTmp )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        //------------------------------------------
+        // PROJ-1359 Trigger
+        // STATEMENT GRANULARITY TRIGGERÀÇ ¼öÇà
+        //------------------------------------------
+        IDE_TEST( qdnTrigger::fireTrigger( aStatement,
+                                           aStatement->qmxMem,
+                                           sTmp->mTableRef->tableInfo,
+                                           QCM_TRIGGER_ACTION_EACH_STMT,
+                                           QCM_TRIGGER_AFTER,
+                                           QCM_TRIGGER_EVENT_UPDATE,
+                                           sTmp->mUptColumnList, // UPDATE Column
+                                           NULL,            /* Table Cursor */
+                                           SC_NULL_GRID,    /* Row GRID */
+                                           NULL,  // OLD ROW
+                                           NULL,  // OLD ROW Column
+                                           NULL,  // NEW ROW
+                                           NULL ) // NEW ROW Column
+                  != IDE_SUCCESS );
+    }
+
+    // BUG-38129
+    qcg::setLastModifiedRowGRID( aStatement, sRowGRID );
+
+    return IDE_SUCCESS;
+
+    //fix BUG-14080
+    IDE_EXCEPTION(err_plan_too_old);
+    {
+        IDE_SET(ideSetErrorCode(qpERR_REBUILD_QMX_TOO_OLD_PLANTREE));
+    }
+    IDE_EXCEPTION_END;
+
+    QC_PRIVATE_TMPLATE(aStatement)->numRows = 0;
+
+    if ( sInitialized == ID_TRUE )
+    {
+        (void) qmnUPTE::closeCursorMultiTable( QC_PRIVATE_TMPLATE(aStatement),
+                                               aStatement->myPlan->plan );
+    }
+    return IDE_FAILURE;
+}
+
+IDE_RC qmx::executeMultiDelete( qcStatement * aStatement )
+{
+    qmmDelParseTree   * sParseTree;
+    qmmDelMultiTables * sTmp;
+    UInt                i;
+    idBool              sIsOld;
+    qmcRowFlag          sFlag = QMC_ROW_INITIALIZE;
+    idBool              sInitialized = ID_FALSE;
+
+    //------------------------------------------
+    // ±âº» Á¤º¸ È¹µæ
+    //------------------------------------------
+    sParseTree = (qmmDelParseTree *) aStatement->myPlan->parseTree;
+
+    for ( sTmp = sParseTree->mTableList;
+          sTmp != NULL;
+          sTmp = sTmp->mNext )
+    {
+        IDE_TEST( lockTableForDML( aStatement,
+                                   sTmp->mTableRef,
+                                   SMI_TABLE_LOCK_IX )
+                  != IDE_SUCCESS );
+    }
+
+    //fix BUG-14080
+    IDE_TEST( checkPlanTreeOld( aStatement, & sIsOld ) != IDE_SUCCESS );
+
+    IDE_TEST_RAISE( sIsOld == ID_TRUE, err_plan_too_old );
+
+    for ( sTmp = sParseTree->mTableList;
+          sTmp != NULL;
+          sTmp = sTmp->mNext )
+    {
+        //-------------------------------------------------------
+        // STATEMENT GRANULARITY TRIGGERÀÇ ¼öÇà
+        //-------------------------------------------------------
+        // To fix BUG-12622
+        // before trigger
+        IDE_TEST( fireStatementTriggerOnDeleteCascade(
+                      aStatement,
+                      sTmp->mTableRef,
+                      sTmp->mChildConstraints,
+                      QCM_TRIGGER_BEFORE )
+                  != IDE_SUCCESS );
+    }
+
+    //------------------------------------------
+    // DELETE ¸¦ Ã³¸®ÇÏ±â À§ÇÑ ±âº» °ª È¹µæ
+    //------------------------------------------
+
+    QC_PRIVATE_TMPLATE(aStatement)->numRows = 0;
+
+    // set SYSDATE
+    IDE_TEST( qtc::setDatePseudoColumn( QC_PRIVATE_TMPLATE( aStatement ) )
+              != IDE_SUCCESS );
+
+    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+    IDE_TEST( qmo::optimizeForHost( aStatement ) != IDE_SUCCESS );
+
+    // PROJ-1502 PARTITIONED DISK TABLE
+    IDE_TEST( qmnDETE::init( QC_PRIVATE_TMPLATE(aStatement),
+                             aStatement->myPlan->plan )
+              != IDE_SUCCESS);
+    sInitialized = ID_TRUE;
+
+    //------------------------------------------
+    // DELETEÀÇ ¼öÇà
+    //------------------------------------------
+
+    do
+    {
+        // BUG-22287 insert ½Ã°£ÀÌ ¸¹ÀÌ °É¸®´Â °æ¿ì¿¡ session
+        // outµÇ¾îµµ insert°¡ ³¡³¯ ¶§ ±îÁö ±â´Ù¸®´Â ¹®Á¦°¡ ÀÖ´Ù.
+        // session outÀ» È®ÀÎÇÑ´Ù.
+        IDE_TEST( iduCheckSessionEvent( aStatement->mStatistics )
+                  != IDE_SUCCESS );
+
+        // ¹Ì¸® Áõ°¡½ÃÅ²´Ù. doItÁß ÂüÁ¶µÉ ¼ö ÀÖ´Ù.
+        QC_PRIVATE_TMPLATE(aStatement)->numRows++;
+
+        // deleteÀÇ planÀ» ¼öÇàÇÑ´Ù.
+        IDE_TEST( qmnDETE::doIt( QC_PRIVATE_TMPLATE(aStatement),
+                                 aStatement->myPlan->plan,
+                                 &sFlag )
+                  != IDE_SUCCESS );
+
+    } while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST );
+
+    // DATA_NONEÀÎ °æ¿ì´Â »©ÁØ´Ù.
+    QC_PRIVATE_TMPLATE(aStatement)->numRows--;
+
+    //------------------------------------------
+    // DELETE¸¦ À§ÇØ ¿­¾îµÎ¾ú´ø Cursor¸¦ Close
+    //------------------------------------------
+
+    sInitialized = ID_FALSE;
+    IDE_TEST( qmnDETE::closeCursorMultiTable( QC_PRIVATE_TMPLATE(aStatement),
+                                              aStatement->myPlan->plan )
+              != IDE_SUCCESS );
+
+    /* PROJ-1071 */
+    IDE_TEST(qcg::joinThread(aStatement) != IDE_SUCCESS);
+
+    IDE_TEST( QC_PRIVATE_TMPLATE(aStatement)->cursorMgr->closeAllCursor(aStatement->mStatistics)
+              != IDE_SUCCESS );
+
+    IDE_TEST(qcg::finishAndReleaseThread(aStatement) != IDE_SUCCESS);
+
+    //------------------------------------------
+    // Foreign Key Reference °Ë»ç
+    //------------------------------------------
+
+    // BUG-28049
+    if ( QC_PRIVATE_TMPLATE(aStatement)->numRows > 0 )
+    {
+        for ( sTmp = sParseTree->mTableList, i = 0;
+              sTmp != NULL;
+              sTmp = sTmp->mNext, i++ )
+        {
+            if ( sTmp->mChildConstraints != NULL )
+            {
+                // Child TableÀÌ ÂüÁ¶ÇÏ°í ÀÖ´Â Áö¸¦ °Ë»ç
+                IDE_TEST( qmnDETE::checkDeleteRefMultiTable(
+                              QC_PRIVATE_TMPLATE(aStatement),
+                              aStatement->myPlan->plan,
+                              sTmp,
+                              i )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+    }
+    else
+    {
+        // (¿¹1)
+        // DELETE FROM PARENT
+        // WHERE I1 IN ( SELECT I1 FROM CHILD WHERE I1 = 100 ) °ú °°ÀÌ
+        // whereÀıÀÇ Á¶°ÇÀÌ in subquery keyRange·Î ¼öÇàµÇ´Â ÁúÀÇ¹®ÀÇ °æ¿ì,
+        // child table¿¡ ·¹ÄÚµå°¡ ÇÏ³ªµµ ¾ø´Â °æ¿ì,
+        // Á¶°Ç¿¡ ¸Â´Â ·¹ÄÚµå°¡ ¾øÀ¸¹Ç·Î
+        // i1 in ¿¡ ´ëÇÑ keyRangeÀ» ¸¸µé¼ö ¾ø°í,
+        // in subquery keyRange´Â filter·Îµµ Ã³¸®ÇÒ ¼ö ¾ø´Â ±¸Á¶ÀÓ.
+        // SCAN³ëµå¿¡¼­´Â ÃÖÃÊ cursor open½Ã À§¿Í °°Àº °æ¿ìÀÌ¸é
+        // cursor¸¦ openÇÏÁö ¾Ê´Â´Ù.
+        // µû¶ó¼­, À§¿Í °°Àº °æ¿ì´Â updateµÈ ·Î¿ì°¡ ¾øÀ¸¹Ç·Î,
+        // close close¿Í child tableÂüÁ¶°Ë»ç¿Í °°Àº Ã³¸®¸¦ ÇÏÁö ¾Ê´Â´Ù.
+        // (¿¹2)
+        // delete from t1 where 1 != 1;
+        // °ú °°Àº °æ¿ì¿¡µµ cursor¸¦ openÇÏÁö ¾ÊÀ½.
+
+        // Nothing to do.
+    }
+
+    for ( sTmp = sParseTree->mTableList;
+          sTmp != NULL;
+          sTmp = sTmp->mNext )
+    {
+        //-------------------------------------------------------
+        // STATEMENT GRANULARITY TRIGGERÀÇ ¼öÇà
+        //-------------------------------------------------------
+        IDE_TEST( fireStatementTriggerOnDeleteCascade(
+                      aStatement,
+                      sTmp->mTableRef,
+                      sTmp->mChildConstraints,
+                      QCM_TRIGGER_AFTER )
+                  != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(err_plan_too_old);
+    {
+        IDE_SET(ideSetErrorCode(qpERR_REBUILD_QMX_TOO_OLD_PLANTREE));
+    }
+    IDE_EXCEPTION_END;
+
+    QC_PRIVATE_TMPLATE(aStatement)->numRows = 0;
+
+    if ( sInitialized == ID_TRUE )
+    {
+        (void) qmnDETE::closeCursorMultiTable( QC_PRIVATE_TMPLATE(aStatement),
+                                               aStatement->myPlan->plan );
+    }
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmx::makeSmiValueForSubqueryMultiTable( qcTemplate    * aTemplate,
+                                               qcmTableInfo  * aTableInfo,
+                                               qcmColumn     * aColumn,
+                                               qmmValueNode  * aValues,
+                                               qmmValueNode ** aValuesPos,
+                                               qmmSubqueries * aSubquery,
+                                               UInt            aCanonizedTuple,
+                                               smiValue      * aUpdatedRow,
+                                               mtdIsNullFunc * aIsNull,
+                                               qmxLobInfo    * aLobInfo )
+{
+    qmmSubqueries     * sSubquery;
+    qmmValueNode      * sValue;
+    qmmValuePointer   * sValuePointer;
+    mtcStack          * sStack;
+    mtcColumn         * sColumn;
+    void              * sCanonizedValue;
+    SInt                sColumnOrder;
+    qcmColumn         * sQcmColumn = NULL;
+    qcmColumn         * sMetaColumn;
+    UInt                sIterator;
+    mtcColumn         * sMtcColumn;
+    mtcEncryptInfo      sEncryptInfo;
+    UInt                sStoringSize = 0;
+    void              * sStoringValue;
+    SLong               sLobLen;
+    idBool              sIsNullLob;
+    qtcNode           * sNode;
+    UInt                i;
+
+    // Value Á¤º¸ ±¸¼º
+    for ( sSubquery = aSubquery;
+          sSubquery != NULL;
+          sSubquery = sSubquery->next )
+    {
+        IDE_TEST( qtc::calculate( sSubquery->subquery, aTemplate )
+                  != IDE_SUCCESS );
+
+        for ( sValuePointer = sSubquery->valuePointer,
+                sStack = (mtcStack*)aTemplate->tmplate.stack->value;
+              sValuePointer != NULL;
+              sValuePointer = sValuePointer->next, sStack++ )
+        {
+            sNode = NULL;
+            for ( sValue = aValues, i = 0; sValue != NULL; sValue = sValue->next, i++ )
+            {
+                if ( ( aValuesPos[i] == sValuePointer->valueNode ) )
+                {
+                    sNode = sValuePointer->valueNode->value;
+                    break;
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+            }
+
+            if ( ( sNode == NULL ) || ( sValue == NULL ) )
+            {
+                continue;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+
+            // MetaÄÃ·³À» Ã£´Â´Ù.
+            for ( sIterator = 0, sQcmColumn = aColumn;
+                  sIterator != sValue->order;
+                  sIterator++, sQcmColumn = sQcmColumn->next )
+            {
+                // Nothing to do.
+            }
+
+            sColumnOrder = (sQcmColumn->basicInfo->column.id & SMI_COLUMN_ID_MASK);
+
+            /* PROJ-2464 hybrid partitioned table Áö¿ø */
+            sMetaColumn = &(aTableInfo->columns[sColumnOrder]);
+
+            if ( (sStack->column->module->id == MTD_BLOB_LOCATOR_ID) ||
+                 (sStack->column->module->id == MTD_CLOB_LOCATOR_ID) )
+            {
+                // PROJ-1362
+                // subqueryÀÇ °á°ú·Î À¯È¿ÇÏÁö ¾ÊÀº Lob Locator°¡ ³ª¿Ã ¼ö ¾ø´Ù.
+                IDE_TEST( addLobInfoForCopy(
+                              aLobInfo,
+                              & sMetaColumn->basicInfo->column,
+                              *(smLobLocator*)sStack->value)
+                          != IDE_SUCCESS );
+
+                // NOT NULL Constraint
+                if ( ( sMetaColumn->basicInfo->flag & MTC_COLUMN_NOTNULL_MASK )
+                     == MTC_COLUMN_NOTNULL_TRUE )
+                {
+                    if ( *(smLobLocator*)sStack->value != MTD_LOCATOR_NULL )
+                    {
+                        IDE_TEST( smiLob::getLength( QC_STATISTICS(aTemplate->stmt),
+                                                     *(smLobLocator*)sStack->value,
+                                                     & sLobLen,
+                                                     & sIsNullLob )
+                                  != IDE_SUCCESS );
+                    }
+                    else
+                    {
+                        sIsNullLob = ID_TRUE;
+                    }
+
+                    IDE_TEST_RAISE( sIsNullLob == ID_TRUE,
+                                    ERR_NOT_ALLOW_NULL );
+                }
+                else
+                {
+                    // Nothing to do.
+                }
+
+                // NULLÀ» ÇÒ´çÇÑ´Ù.
+                aUpdatedRow[sValue->order].value  = NULL;
+                aUpdatedRow[sValue->order].length = 0;
+            }
+            else
+            {
+                sColumn =
+                    &( aTemplate->tmplate.rows[aCanonizedTuple]
+                       .columns[sValue->order]);
+
+                sCanonizedValue = (void*)
+                    ( (UChar*)
+                      aTemplate->tmplate.rows[aCanonizedTuple].row
+                      + sColumn->column.offset);
+
+                // PROJ-2002 Column Security
+                // update½Ã subquery¸¦ »ç¿ëÇÏ´Â °æ¿ì ¾ÏÈ£ Å¸ÀÔÀÌ ¿Ã ¼ö ¾ø´Ù.
+                // ´Ü typed literalÀ» »ç¿ëÇÏ´Â °æ¿ì default policyÀÇ
+                // ¾ÏÈ£ Å¸ÀÔÀÌ ¿Ã ¼ö´Â ÀÖ´Ù.
+                //
+                // update t1 set i1=(select echar'a' from dual);
+                //
+                sMtcColumn = QTC_TMPL_COLUMN( aTemplate, sNode );
+
+                IDE_TEST_RAISE( ( (sMtcColumn->module->flag & MTD_ENCRYPT_TYPE_MASK)
+                                  == MTD_ENCRYPT_TYPE_TRUE ) &&
+                                ( QCS_IS_DEFAULT_POLICY( sMtcColumn ) != ID_TRUE ),
+                                ERR_INVALID_ENCRYPTED_COLUMN );
+
+                // PROJ-2002 Column Security
+                if ( ( sColumn->module->flag & MTD_ENCRYPT_TYPE_MASK )
+                     == MTD_ENCRYPT_TYPE_TRUE )
+                {
+                    IDE_TEST( qcsModule::getEncryptInfo( aTemplate->stmt,
+                                                         aTableInfo,
+                                                         sColumnOrder,
+                                                         & sEncryptInfo )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    // Nothing to do.
+                }
+
+                IDE_TEST_RAISE( sColumn->module->canonize( sColumn,
+                                                           & sCanonizedValue,
+                                                           & sEncryptInfo,
+                                                           sStack->column,
+                                                           sStack->value,
+                                                           NULL,
+                                                           & aTemplate->tmplate )
+                                != IDE_SUCCESS, ERR_INVALID_CANONIZE );
+
+                IDE_TEST( qdbCommon::mtdValue2StoringValue(
+                              sMetaColumn->basicInfo,
+                              sStack->column,
+                              sCanonizedValue,
+                              &sStoringValue )
+                          != IDE_SUCCESS );
+                aUpdatedRow[sValue->order].value  = sStoringValue;
+
+                IDE_TEST( qdbCommon::storingSize( sMetaColumn->basicInfo,
+                                                  sStack->column,
+                                                  sCanonizedValue,
+                                                  &sStoringSize )
+                          != IDE_SUCCESS );
+                aUpdatedRow[sValue->order].length = sStoringSize;
+
+                IDE_TEST_RAISE( aIsNull[sIterator](
+                                    sColumn,
+                                    sCanonizedValue ) == ID_TRUE,
+                                ERR_NOT_ALLOW_NULL );
+            }
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NOT_ALLOW_NULL );
+    {
+        /* BUG-45680 insert ¼öÇà½Ã not null column¿¡ ´ëÇÑ ¿¡·¯¸Ş½ÃÁö Á¤º¸¿¡ column Á¤º¸ Ãâ·Â. */
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMX_NOT_NULL_CONSTRAINT,
+                                  "",
+                                  "" ) );
+    }
+    IDE_EXCEPTION( ERR_INVALID_ENCRYPTED_COLUMN );
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QTC_INVALID_ENCRYPTED_COLUMN ) );
+    }
+    IDE_EXCEPTION( ERR_INVALID_CANONIZE );
+    {
+        if ( ideGetErrorCode() == mtERR_ABORT_INVALID_LENGTH )
+        {
+            IDE_CLEAR();
+            IDE_SET( ideSetErrorCode( mtERR_ABORT_INVALID_LENGTH_COLUMN,
+                                      aTableInfo->columns[sColumnOrder].name ) );
+        }
+        else
+        {
+            // nothing to do
+        }
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+

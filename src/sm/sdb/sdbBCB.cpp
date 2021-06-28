@@ -23,11 +23,6 @@
  **********************************************************************/
 #include <smDef.h>
 #include <sdbDef.h>
-
-#include <idu.h>
-#include <ide.h>
-#include <iduMutex.h>
-
 #include <sdbBCB.h>
 #include <smErrorCode.h>
 
@@ -35,10 +30,10 @@ ULong sdbBCB::mTouchUSecInterval;
 
 /***********************************************************************
  * Description :
- *  aFrameMemHandle - [IN] mFrameÏóê ÎåÄÌïú MemoryHandleÎ°úÏÑú FreeÏãúÏóê ÏÇ¨Ïö©ÌïúÎã§. 
- *                         (Ï∞∏Ï°∞:iduMemPool2)
+ *  aFrameMemHandle - [IN] mFrameø° ¥Î«— MemoryHandle∑Œº≠ FreeΩ√ø° ªÁøÎ«—¥Ÿ. 
+ *                         (¬¸¡∂:iduMemPool2)
  *  aFrame          - [IN] frame pointer
- *  aBCBID          - [IN] BCB ÏãùÎ≥ÑÏûê
+ *  aBCBID          - [IN] BCB Ωƒ∫∞¿⁄
  ***********************************************************************/
 IDE_RC sdbBCB::initialize( void   *aFrameMemHandle,
                            UChar  *aFrame,
@@ -48,9 +43,9 @@ IDE_RC sdbBCB::initialize( void   *aFrameMemHandle,
 
     IDE_ASSERT( aFrame != NULL );
 
-    /*[BUG-22041] mSpaceIDÏôÄ mPageIDÎäî BCBÏùò ÏÉÅÌÉúÍ∞Ä freeÏù∏ Ïù¥ÏÉÅ
-     * Ïù¥ ÎëêÍ∞íÏùÄ ÏùòÎØ∏Í∞Ä ÏóÜÏñ¥ Ï¥àÍ∏∞ÌôîÎ•º ÌïòÏßÄ ÏïäÏïòÏßÄÎßå umrÏù¥ Î∞úÏÉùÌïòÎäî Í≤ΩÏö∞Í∞Ä
-     * ÏûàÏñ¥ 0ÏúºÎ°ú Ï¥àÍ∏∞ÌôîÎ•º ÌïúÎã§.*/
+    /*[BUG-22041] mSpaceIDøÕ mPageID¥¬ BCB¿« ªÛ≈¬∞° free¿Œ ¿ÃªÛ
+     * ¿Ã µŒ∞™¿∫ ¿«πÃ∞° æ¯æÓ √ ±‚»≠∏¶ «œ¡ˆ æ æ“¡ˆ∏∏ umr¿Ã πﬂª˝«œ¥¬ ∞ÊøÏ∞°
+     * ¿÷æÓ 0¿∏∑Œ √ ±‚»≠∏¶ «—¥Ÿ.*/
     mSpaceID        = 0;
     mPageID         = 0;
     mID             = aBCBID;
@@ -71,8 +66,8 @@ IDE_RC sdbBCB::initialize( void   *aFrameMemHandle,
 
 
     /*
-     * BUG-28331   [SM] AT-P03 Scalaility-*-Disk-* ÏóêÏÑúÏùò ÏÑ±Îä• Ï†ÄÌïò Î∂ÑÏÑù 
-     *             (2009ÎÖÑ 11Ïõî 21Ïùº Ïù¥ÌõÑ)
+     * BUG-28331   [SM] AT-P03 Scalaility-*-Disk-* ø°º≠¿« º∫¥… ¿˙«œ ∫–ºÆ 
+     *             (2009≥‚ 11ø˘ 21¿œ ¿Ã»ƒ)
      */
     IDE_TEST( mMutex.initialize( sMutexName,
                                  IDU_MUTEX_KIND_NATIVE,
@@ -87,15 +82,15 @@ IDE_RC sdbBCB::initialize( void   *aFrameMemHandle,
                   IDV_WAIT_INDEX_LATCH_FREE_DRDB_BCB_READ_IO_MUTEX )
               != IDE_SUCCESS );
 
-    /* BUG-24092: [SD] BufferMgrÏóêÏÑú BCBÏùò Latch StatÏùÑ Í∞±Ïã†Ïãú Page TypeÏù¥
-     * InvalidÌïòÏó¨ ÏÑúÎ≤ÑÍ∞Ä Ï£ΩÏäµÎãàÎã§.
+    /* BUG-24092: [SD] BufferMgrø°º≠ BCB¿« Latch Stat¿ª ∞ªΩ≈Ω√ Page Type¿Ã
+     * Invalid«œø© º≠πˆ∞° ¡◊Ω¿¥œ¥Ÿ.
      *
-     * mPageTypeÏùÄ ÏõêÌïòÎäî PageÍ∞Ä BufferÏóê Ï°¥Ïû¨ÌïòÏßÄ ÏïäÏùÑ Í≤ΩÏö∞ ReadPageÍ∞Ä
-     * ÏôÑÎ£åÌõÑ SetÌïúÎã§. ÎïåÎ¨∏Ïóê ReadPageÏãú Í∞ôÏùÄ BCBÎ•º ÏöîÏ≤≠ÌïòÎäî ÌÉÄ ThreadÎäî
-     * ÎåÄÍ∏∞ÌïòÎäîÎç∞ Ïù¥Îïå mPageTypeÏóê ÎåÄÌïú ÌÜµÍ≥ÑÏ†ïÎ≥¥Î•º Í∞±Ïã†ÌïúÎã§. ÌïòÏßÄÎßå mPageType
-     * Ïóê ÎåÄÌïú Ï†ïÎ≥¥Í∞Ä ÏïÑÏßÅ ÏÑ§Ï†ïÎêòÏßÄ ÏïäÏùÑ Ïàò ÏûàÎã§. Ïù¥ Í≤ΩÏö∞ mPageTypeÏùÑ 0ÏúºÎ°ú
-     * ÏùΩÍ≤åÌïúÎã§. ÎïåÎ¨∏Ïóê ÌÜµÍ≥ÑÏ†ïÎ≥¥Í∞Ä Ï†ïÌôïÌïòÏßÄ ÏïäÏùÑ Ïàò ÏûàÎã§. ÎÇòÎ®∏ÏßÄ MemberÎì§ÎèÑ
-     * Î∞©Ïñ¥Ï†ÅÏù∏ Ï∞®ÏõêÏóêÏÑú Ï¥àÍ∏∞Ìôî Ìï©ÎãàÎã§. */
+     * mPageType¿∫ ø¯«œ¥¬ Page∞° Bufferø° ¡∏¿Á«œ¡ˆ æ ¿ª ∞ÊøÏ ReadPage∞°
+     * øœ∑·»ƒ Set«—¥Ÿ. ∂ßπÆø° ReadPageΩ√ ∞∞¿∫ BCB∏¶ ø‰√ª«œ¥¬ ≈∏ Thread¥¬
+     * ¥Î±‚«œ¥¬µ• ¿Ã∂ß mPageTypeø° ¥Î«— ≈Î∞Ë¡§∫∏∏¶ ∞ªΩ≈«—¥Ÿ. «œ¡ˆ∏∏ mPageType
+     * ø° ¥Î«— ¡§∫∏∞° æ∆¡˜ º≥¡§µ«¡ˆ æ ¿ª ºˆ ¿÷¥Ÿ. ¿Ã ∞ÊøÏ mPageType¿ª 0¿∏∑Œ
+     * ¿–∞‘«—¥Ÿ. ∂ßπÆø° ≈Î∞Ë¡§∫∏∞° ¡§»Æ«œ¡ˆ æ ¿ª ºˆ ¿÷¥Ÿ. ≥™∏”¡ˆ MemberµÈµµ
+     * πÊæÓ¿˚¿Œ ¬˜ø¯ø°º≠ √ ±‚»≠ «’¥œ¥Ÿ. */
     mPageType = SDB_NULL_PAGE_TYPE;
 
     mState    = SDB_BCB_FREE;
@@ -116,7 +111,13 @@ IDE_RC sdbBCB::initialize( void   *aFrameMemHandle,
     /* PROJ-2102 Secondary Buffer */
     mSBCB          = NULL;
 
-    setToFree();
+    /* BUG-47945 cp list µπˆ±Î ¡§∫∏ ∫∏∞≠
+     * setToFree() «‘ºˆø°º≠ ¿Ã¿¸ ∞™ »Æ¿Œ«œµµ∑œ ∫Ø∞Êµ«æÓº≠,
+     * √≥¿Ω √ ±‚»≠¥¬ ¡˜¡¢ «’¥œ¥Ÿ. */
+    makeFreeExceptListItem();
+
+    SDB_INIT_BCB_LIST( this );
+    SDB_INIT_CP_LIST( this );
 
     SMU_LIST_INIT_NODE( &mBCBListItem );
     mBCBListItem.mData = this;
@@ -137,7 +138,7 @@ IDE_RC sdbBCB::initialize( void   *aFrameMemHandle,
 
 /***********************************************************************
  * Description :
- *  sdbBCB ÏÜåÎ©∏Ïûê.
+ *  sdbBCB º“∏Í¿⁄.
  ***********************************************************************/
 IDE_RC sdbBCB::destroy()
 {
@@ -152,43 +153,35 @@ IDE_RC sdbBCB::destroy()
 
 /***********************************************************************
  * Description :
- *  sm Î°úÍ∑∏Ïóê dump
- *
+ *  sm ∑Œ±◊ø° dump (BUG-47945 cp list µπˆ±Î ¡§∫∏ ∫∏∞≠)
+ * 
  *  aBCB    - [IN]  BCB
  ***********************************************************************/
-IDE_RC sdbBCB::dump( sdbBCB * aBCB )
+void sdbBCB::dump()
 {
-    IDE_ERROR( aBCB != NULL );
-
     ideLog::log( IDE_ERR_0,
                  SM_TRC_BUFFER_POOL_BCB_INFO,
-                 aBCB->mID,
-                 aBCB->mState,
-                 aBCB->mFrame,
-                 aBCB->mSpaceID,
-                 aBCB->mPageID,
-                 aBCB->mPageType,
-                 aBCB->mRecoveryLSN.mFileNo,
-                 aBCB->mRecoveryLSN.mOffset,
-                 aBCB->mBCBListType,
-                 aBCB->mBCBListNo,
-                 aBCB->mCPListNo,
-                 aBCB->mTouchCnt,
-                 aBCB->mFixCnt,
-                 aBCB->mReadyToRead,
-                 aBCB->mPageReadError,
-                 aBCB->mWriteCount );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
+                 mID,
+                 mState,
+                 mFrame,
+                 mSpaceID,
+                 mPageID,
+                 mPageType,
+                 mRecoveryLSN.mFileNo,
+                 mRecoveryLSN.mOffset,
+                 mBCBListType,
+                 mBCBListNo,
+                 mCPListNo,
+                 mTouchCnt,
+                 mFixCnt,
+                 mReadyToRead,
+                 mPageReadError,
+                 mWriteCount );
 }
 
 /***********************************************************************
  * Description :
- *  SDB_BCB_CLEAN ÏÉÅÌÉúÎ°ú Î¨¥Ï°∞Í±¥ Î≥ÄÍ≤ΩÌïúÎã§.
+ *  SDB_BCB_CLEAN ªÛ≈¬∑Œ π´¡∂∞« ∫Ø∞Ê«—¥Ÿ.
  ***********************************************************************/
 void sdbBCB::clearDirty()
 {
@@ -199,7 +192,7 @@ void sdbBCB::clearDirty()
 
 /***********************************************************************
  * Description :
- *  Îëê BCBÍ∞Ä mPageIDÏôÄ mSpaceIDÍ∞Ä Í∞ôÏùÄÏßÄ ÎπÑÍµêÌïúÎã§.
+ *  µŒ BCB∞° mPageIDøÕ mSpaceID∞° ∞∞¿∫¡ˆ ∫Ò±≥«—¥Ÿ.
  *
  *  aLhs    - [IN]  BCB
  *  aRhs    - [IN]  BCB

@@ -42,14 +42,6 @@ typedef enum RP_REPLICATIED_TRNAS_GROUP_OP
     RP_REPLICATIED_TRNAS_GROUP_KEEP
 } RP_REPLICATIED_TRNAS_GROUP_OP;
 
-typedef enum rpdTableMetaType
-{
-    RP_META_NONE_ITEM = 0,
-    RP_META_INSERT_ITEM,
-    RP_META_DELETE_ITEM,
-    RP_META_UPDATE_ITEM
-} rpdTableMetaType; 
-
 class rpxReplicator
 {
 
@@ -70,7 +62,7 @@ private:
     ULong          mReadLogCount;
     ULong          mSendLogCount;
 
-    UInt           mUsleepCnt;
+    UInt           mSleepForKeepAliveCount;
 
     smiReadLogByOrder mLogMgr;
     RP_LOG_MGR_INIT_STATUS mLogMgrInitStatus;
@@ -102,12 +94,6 @@ private:
     idBool isDMLLog( smiChangeLogType aTypeId );
     idBool isLobControlLog( smiChangeLogType aTypeId );
 
-    IDE_RC addLastSNEntry( iduMemPool * aSNPool,
-                           smSN         aSN,
-                           iduList    * aSNList );
-    rpxSNEntry * searchSNEntry( iduList * aSNList, smSN aSN );
-    void removeSNEntry( iduMemPool * aSNPool, rpxSNEntry * aSNEntry );
-    
     idBool needMakeMtdValue( rpdColumn * aRpdColumn );
 
     IDE_RC makeMtdValue( rpdLogAnalyzer * aLogAnlz,
@@ -120,7 +106,9 @@ private:
     IDE_RC checkEndOfLogFile( smiLogRec * aLogRec,
                               idBool    * aEndOfLog );
 
-    IDE_RC waitForLogSync( smiLogRec * aLog );
+    IDE_RC checkAndWaitForLogSync( smiLogRec * aLog );
+
+    IDE_RC waitForLogSync( smTID  aTID );
 
     void lockLogSwitch( idBool * aLocked );
     void unlockLogSwitch( idBool * aLocked );
@@ -136,7 +124,7 @@ private:
 
     IDE_RC addXLogImplSVP( smTID  aTID, smSN aSN, UInt aReplStmpDepth );
 
-    IDE_RC checkAndSendImplSVP( smiLogRec * aLog );
+    IDE_RC checkAndSendImplSVP( smiLogRec * aLog, smTID aTID );
 
     IDE_RC addXLog( smiLogRec             * aLogRec,
                     rpdMetaItem           * aMetaItem,
@@ -144,11 +132,13 @@ private:
                     iduMemPool            * aSNPool,
                     iduList               * aSNList,
                     RP_REPLICATIED_TRNAS_GROUP_OP
-                                            aOperation );
+                                            aOperation,
+                    smTID                   aTID );
 
     IDE_RC applyTableMetaLog( smTID aTID,
                               smSN  aDDLBeginSN,
-                              smSN  aDDLCommitSN );
+                              smSN  aDDLCommitSN,
+                              idBool * aOutNeedHandshake );
 
     IDE_RC buildNewMeta( smiStatement     * aRootStmt );
 
@@ -162,38 +152,44 @@ private:
                                            idBool                * aIsOk,
                                            RP_ACTION_ON_ADD_XLOG   aAction,
                                            iduMemPool            * aSNPool,
-                                           iduList               * aSNList );
+                                           iduList               * aSNList,
+                                           smTID                   aTID );
     IDE_RC checkUsefulLog( smiLogRec             * aLogRec,
                            idBool                * aIsOk,
                            rpdMetaItem          ** aMetaItem,
                            RP_ACTION_ON_ADD_XLOG   aAction,
                            iduMemPool            * aSNPool,
-                           iduList               * aSNList );
+                           iduList               * aSNList,
+                           UInt                    aTID );
 
-    IDE_RC insertDictionaryValue( smiLogRec  * aLog );
+    IDE_RC insertDictionaryValue( smiLogRec  * aLog,  smTID aTID );
     idBool isReplPropagableLog( smiLogRec * aLog );
 
     IDE_RC updateMeta( smiStatement     * aSmiStmt,
+                       rpdMeta          * aOldMeta,
                        rpdItemMetaEntry * aItemMetaEntry,
                        smOID              aOldTableOID,
                        smOID              aNewTableOID,
-                       smSN               aDDLCommitSN );
+                       smSN               aDDLCommitSN,
+                       idBool           * aOutIsUpdated );
     
     IDE_RC insertNewTableInfo( smiStatement     * aSmiStmt,
                                rpdItemMetaEntry * aItemMetaEntry, 
                                smSN               aDDLCommitSN );
-    IDE_RC deleteOldTableInfo( smiStatement * aSmiStmt, smOID aOldTableOID );
+    IDE_RC deleteOldTableInfo( smiStatement     * aSmiStmt, 
+                               rpdItemMetaEntry * aItemMetaEntry,
+                               smOID              aOldTableOID );
     IDE_RC updateOldTableInfo( smiStatement     * aSmiStmt,
                                rpdItemMetaEntry * aItemMetaEntry,
                                smOID              aOldTableOID,
                                smOID              aNewTableOID,
                                smSN               aDDLCommitSN );
 
-    rpdTableMetaType getTableMetaType( smOID aOldTableOID, smOID aNewTableOID );
+    idBool checkUsefulLogByTableMetaType( smiLogRec * aLog );
 
-    idBool isSkipLog( smiLogRec * aLog );
+    idBool isAlreadyInsertNewItem( smiLogRec * aLog );
 
-    idBool isNewPartition( smOID aOldTableOID );
+    idBool isReplUsingGlobalTx();
 
 public:
     rpxReplicator( void );
@@ -298,14 +294,17 @@ private:
     rpdDelayedLogQueue  mDelayedLogQueue;
 
 
-    RP_REPLICATIED_TRNAS_GROUP_OP getReplicatedTransGroupOperation( smiLogRec    * aLog );
+    RP_REPLICATIED_TRNAS_GROUP_OP getReplicatedTransGroupOperation( smiLogRec    * aLog, 
+                                                                    smTID          aTID );
 
     IDE_RC              addXLogInGroupingMode( smiLogRec             * aLog,
+                                               SChar                 * aRawLogPtr,
                                                smLSN                   aCurrentLSN,
                                                rpdMetaItem           * aMetaItem,
                                                RP_ACTION_ON_ADD_XLOG   aAction,
                                                iduMemPool            * aSNPool,
-                                               iduList               * aSNList );
+                                               iduList               * aSNList,
+                                               smTID                   aTID );
 
     IDE_RC              dequeueAndSend( RP_ACTION_ON_ADD_XLOG   aAction,
                                         iduMemPool            * aSNPool,
@@ -350,15 +349,27 @@ private:
     idBool              isMyLog( smTID  aTransID,
                                  smSN   aCurrentSN );
 
+    IDE_RC              readMyLog( smSN    * aCurrentSN,
+                                   smLSN   * aReadLSN,
+                                   SChar   * aLogHead,
+                                   SChar  ** aLogPtr,
+                                   SChar  ** aRawLogPtr,
+                                   idBool  * aIsValid );
+
+    IDE_RC              isNeedDecompress( SChar  * aRawLogPtr,
+                                          SChar  * aRawHeadLogPtr,
+                                          idBool * aIsNeedDecompress );
 public:
     IDE_RC              replicateLogWithLogPtr( const SChar * aLogPtr );
 
     IDE_RC              checkAndAddXLog( RP_ACTION_ON_ADD_XLOG   aActionAddXLog,
                                          iduMemPool            * aSNPool,
                                          iduList               * aSNList,
+                                         SChar                 * aRawLogPtr,
                                          smiLogRec             * aLog,
                                          smLSN                   aReadLSN,
-                                         idBool                  aIsStartedAheadAnalyzer );
+                                         idBool                  aIsStartedAheadAnalyzer,
+                                         smTID                   aTID );
 
     UInt                getActiveTransCount( void );
     IDE_RC              sleepForKeepAlive();

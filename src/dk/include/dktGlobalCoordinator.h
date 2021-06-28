@@ -39,7 +39,7 @@
 class dktGlobalCoordinator
 {
 private:
-
+    ID_XID           mGlobalXID;  
     UInt             mSessionId;                   /* PV info */
     UInt             mGlobalTxId;                  /* PV info */
     UInt             mLocalTxId;                   /* PV info */
@@ -52,6 +52,9 @@ private:
     iduList          mSavepointList;               /* savepoint list */
     iduMutex         mDktRTxMutex;
     UInt             mFlag;                        /* Flags */
+    sdiClientInfo  * mShardClientInfo;
+    idBool           mIsGTx;
+    idBool           mIsGCTx;
 
     void setAllRemoteTxStatus( dktRTxStatus aRemoteTxStatus );
     IDE_RC freeAndDestroyAllRemoteStmt( dksSession *aSession, UInt  aSessionId );
@@ -60,7 +63,7 @@ public:
 
     iduListNode     mNode;
     dktDtxInfo    * mDtxInfo;
-    /* mDtxInfoì— ëŒ€í•œ ë™ì‹œì ‘ê·¼ì„ ë§‰ê¸° ìœ„í•œ mutex */
+    /* mDtxInfo¿¡ ´ëÇÑ µ¿½ÃÁ¢±ÙÀ» ¸·±â À§ÇÑ mutex */
     iduMutex        mCoordinatorDtxInfoMutex;
 
     /* Initialize / Finalize */
@@ -104,7 +107,8 @@ public:
 
     IDE_RC          executeSimpleTransactionCommitPrepareForShard();
 
-    IDE_RC          writeXaPrepareLog();
+    IDE_RC          writeXaStartReqLog();
+    IDE_RC          writeXaPrepareReqLog();
 
     IDE_RC          executeTwoPhaseCommitPrepare();
 
@@ -140,12 +144,19 @@ public:
 
     IDE_RC          executeSimpleTransactionCommitRollbackForceForShard();
 
+    IDE_RC          executeSavepointRollbackForShard( SChar *aSavepointName );
+
     IDE_RC          executeTwoPhaseCommitRollback();
 
-    IDE_RC          executeTwoPhaseCommitRollbackForShard();
+    IDE_RC          executeTwoPhaseCommitRollbackForShard(SChar * aSavepointName);
+
+    /* Commit & Rollback */
+    IDE_RC          writeXaEndLog();
 
     /* Savepoint */
     IDE_RC          executeSavepointForShard( const SChar *aSavepointName );
+
+    IDE_RC          closeAllShardTransasction();
 
     IDE_RC          setSavepoint( const SChar   *aSavepointName );
 
@@ -175,11 +186,11 @@ public:
     
     UInt            getAllRemoteStmtCount();
     
-    /* PV: í˜„ìž¬ ìˆ˜í–‰ì¤‘ì¸ íŠ¸ëžœìž­ì…˜ì˜ ì •ë³´ë¥¼ ì–»ì–´ì˜¨ë‹¤. */
+    /* PV: ÇöÀç ¼öÇàÁßÀÎ Æ®·£Àè¼ÇÀÇ Á¤º¸¸¦ ¾ò¾î¿Â´Ù. */
     IDE_RC          getGlobalTransactionInfo( dktGlobalTxInfo   *aInfo );
 
     IDE_RC          getRemoteTransactionInfo( dktRemoteTxInfo   *aInfo,
-                                              UInt               aRTxCnt,
+                                              UInt               aRemainedCnt,
                                               UInt              *aInfoCnt );
 
     IDE_RC          getRemoteStmtInfo( dktRemoteStmtInfo    *aInfo, 
@@ -227,6 +238,11 @@ public:
 
     inline void setFlag( UInt aMask, UInt aValue );
     inline UInt getFlag( UInt aMask );
+    inline void setXID( ID_XID * aXID );
+    inline void setShardClientInfo( sdiClientInfo * aClientInfo );
+    inline sdiClientInfo * getShardClientInfo();
+    inline idBool isGTx();
+    inline idBool isGCTx();
 };
 
 inline dktGTxStatus dktGlobalCoordinator::getGTxStatus()
@@ -296,6 +312,34 @@ inline void dktGlobalCoordinator::setFlag( UInt aMask, UInt aValue )
 inline UInt dktGlobalCoordinator::getFlag( UInt aMask )
 {
     return ( mFlag & aMask );
+}
+
+inline void dktGlobalCoordinator::setXID( ID_XID * aXID )
+{
+    if ( ( mDtxInfo != NULL ) && ( aXID != NULL ) )
+    {
+        dktXid::copyXID( &mDtxInfo->mXID, aXID );
+    }
+}
+
+inline void dktGlobalCoordinator::setShardClientInfo( sdiClientInfo * aClientInfo )
+{
+    mShardClientInfo = aClientInfo;
+}
+
+inline sdiClientInfo * dktGlobalCoordinator::getShardClientInfo()
+{
+    return mShardClientInfo;
+}
+
+inline idBool dktGlobalCoordinator::isGTx()
+{
+    return mIsGTx;
+}
+
+inline idBool dktGlobalCoordinator::isGCTx()
+{
+    return mIsGCTx;
 }
 #endif /* _O_DKT_GLOBAL_COORDINATOR_H_ */
 

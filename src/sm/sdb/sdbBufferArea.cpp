@@ -21,29 +21,31 @@
 
 /******************************************************************************
  * Description :
- *    sdbBufferArea ê°ì²´ëŠ” sdbBufferPoolì—ê²Œ BCBë¥¼ ê³µê¸‰í•˜ëŠ” ì—­í• ì„ í•œë‹¤.
- *    ëª¨ë“  frame, BCBë“¤ì€ sdbBufferAreaì—ì„œ ìƒì„±ë˜ë©° ê´€ë¦¬ëœë‹¤.
- *    frameê³¼ BCBëŠ” ê·¸ ì–‘ì„ ì‹œìŠ¤í…œ êµ¬ë™ì¤‘ì— ëŠ˜ë¦¬ê±°ë‚˜ ì¤„ì¼ ìˆ˜ ìˆë„ë¡
- *    chunkë‹¨ìœ„ë¡œ í• ë‹¹í•œë‹¤. 
+ *    sdbBufferArea °´Ã¼´Â sdbBufferPool¿¡°Ô BCB¸¦ °ø±ŞÇÏ´Â ¿ªÇÒÀ» ÇÑ´Ù.
+ *    ¸ğµç frame, BCBµéÀº sdbBufferArea¿¡¼­ »ı¼ºµÇ¸ç °ü¸®µÈ´Ù.
+ *    frame°ú BCB´Â ±× ¾çÀ» ½Ã½ºÅÛ ±¸µ¿Áß¿¡ ´Ã¸®°Å³ª ÁÙÀÏ ¼ö ÀÖµµ·Ï
+ *    chunk´ÜÀ§·Î ÇÒ´çÇÑ´Ù. 
  *
  ******************************************************************************/
 #include <sdbBufferArea.h>
 #include <sdbReq.h>
+#include <sdbBufferMgr.h>
+#include <smu.h>
 
 /******************************************************************************
  * Description :
- *    BufferAreaë¥¼ ì´ˆê¸°í™”í•œë‹¤. ì´ Areaê°€ ê°€ì§€ëŠ” chunkë‹¹ pageì˜ ê°œìˆ˜ì™€
- *    ì´ˆê¸° chunkì˜ ê°œìˆ˜, ê·¸ë¦¬ê³  pageì˜ sizeë¥¼ ì¸ìë¡œ ë„˜ê²¨ì•¼ í•œë‹¤.
+ *    BufferArea¸¦ ÃÊ±âÈ­ÇÑ´Ù. ÀÌ Area°¡ °¡Áö´Â chunk´ç pageÀÇ °³¼ö¿Í
+ *    ÃÊ±â chunkÀÇ °³¼ö, ±×¸®°í pageÀÇ size¸¦ ÀÎÀÚ·Î ³Ñ°Ü¾ß ÇÑ´Ù.
  *
  * Implementation :
- *    ë‘ê°œì˜ mutexë¥¼ ì´ˆê¸°í™”í•œë‹¤. IDE_FAILUREê°€ ë°œìƒí•  ìˆ˜ ìˆëŠ” ê²½ìš°ëŠ”
- *    mutexì˜ ì´ˆê¸°í™” ì‹¤íŒ¨ë¿ì´ë‹¤.
+ *    µÎ°³ÀÇ mutex¸¦ ÃÊ±âÈ­ÇÑ´Ù. IDE_FAILURE°¡ ¹ß»ıÇÒ ¼ö ÀÖ´Â °æ¿ì´Â
+ *    mutexÀÇ ÃÊ±âÈ­ ½ÇÆĞ»ÓÀÌ´Ù.
  *    
- * ì´ ë²„í¼ í¬ê¸°êµ¬í•˜ëŠ” ì‹ = aChunkPageCount * aChunkCount * aPageSize
+ * ÃÑ ¹öÆÛ Å©±â±¸ÇÏ´Â ½Ä = aChunkPageCount * aChunkCount * aPageSize
  * 
- * aChunkPageCount  - [IN] chunkë‹¹ pageì˜ ê°œìˆ˜
- * aChunkCount      - [IN] ì´ BufferAreaê°€ ì´ˆê¸°ì— ê°€ì§€ëŠ” chunkì˜ ê°œìˆ˜
- * aPageSize        - [IN] í˜ì´ì§€ í•˜ë‚˜ì˜ í¬ê¸°(ë°”ì´íŠ¸ë‹¨ìœ„)
+ * aChunkPageCount  - [IN] chunk´ç pageÀÇ °³¼ö
+ * aChunkCount      - [IN] ÀÌ BufferArea°¡ ÃÊ±â¿¡ °¡Áö´Â chunkÀÇ °³¼ö
+ * aPageSize        - [IN] ÆäÀÌÁö ÇÏ³ªÀÇ Å©±â(¹ÙÀÌÆ®´ÜÀ§)
  ******************************************************************************/
 IDE_RC sdbBufferArea::initialize(UInt aChunkPageCount,
                                  UInt aChunkCount,
@@ -54,9 +56,13 @@ IDE_RC sdbBufferArea::initialize(UInt aChunkPageCount,
     SMU_LIST_INIT_BASE(&mUnUsedBCBListBase);
     SMU_LIST_INIT_BASE(&mAllBCBList);
 
+    //BUG-48042: BUFFER AREA Parallel »ı¼º  
+    UInt    sParDegree  = smuProperty::getBuffAreaCreatePDegree();
+    idBool  sMemPoolMtx = ID_FALSE;    
+     
     mChunkPageCount = aChunkPageCount;
     mPageSize       = aPageSize;
-    mChunkCount     = 0; // expandAreaì—ì„œ ì¦ê°€ëœë‹¤.
+    mChunkCount     = 0; // expandArea¿¡¼­ Áõ°¡µÈ´Ù.
     mBCBCount       = 0;
     initBCBPtrRange();
 
@@ -64,13 +70,18 @@ IDE_RC sdbBufferArea::initialize(UInt aChunkPageCount,
               != IDE_SUCCESS );
     sState = 1;
 
+    if ( sParDegree > 1 ) 
+    {
+        sMemPoolMtx = ID_TRUE;
+    }
+
     IDE_TEST(mBCBMemPool.initialize(IDU_MEM_SM_SDB,
                                     (SChar*)"SDB_BCB_MEMORY_POOL",
-                                    1,                  // Multi Pool Cnt
+                                    sParDegree,         // Multi Pool Cnt 
                                     ID_SIZEOF(sdbBCB),  // Block Size 
                                     mChunkPageCount,    // Block Cnt In Chunk 
                                     ID_UINT_MAX,        // chunk limit 
-                                    ID_FALSE,           // use mutex
+                                    sMemPoolMtx,        // use mutex
                                     8,                  // align byte
                                     ID_FALSE,			// ForcePooling
                                     ID_TRUE,			// GarbageCollection
@@ -81,7 +92,7 @@ IDE_RC sdbBufferArea::initialize(UInt aChunkPageCount,
 
     IDE_TEST(mFrameMemPool.initialize(IDU_MEM_SM_SDB,
                                       (SChar*)"SDB_FRAME_MEMORY_POOL",
-                                      1,               /* Multi Pool Cnt */
+                                      sParDegree,      /* Multi Pool Cnt */
                                       mPageSize,       /* Block Size */
                                       mChunkPageCount, /* Block Cnt In Chunk */
                                       0,               /* Cache Size */
@@ -91,11 +102,11 @@ IDE_RC sdbBufferArea::initialize(UInt aChunkPageCount,
 
     IDE_TEST(mListMemPool.initialize(IDU_MEM_SM_SDB,
                                      (SChar*)"SDB_BCB_LIST_MEMORY_POOL",
-                                     1,                 // Multi Pool Cnt
+                                     sParDegree,        // Multi Pool Cnt
                                      ID_SIZEOF(smuList),// Block Size 
                                      mChunkPageCount,   // Block Cnt In Chunk 
                                      ID_UINT_MAX,       // chunk limit 
-                                     ID_FALSE,          // use mutex
+                                     sMemPoolMtx,       // use mutex
                                      8,                 // align byte
                                      ID_FALSE,			// ForcePooling 
                                      ID_TRUE,			// GarbageCollection
@@ -104,7 +115,7 @@ IDE_RC sdbBufferArea::initialize(UInt aChunkPageCount,
              != IDE_SUCCESS);			
     sState = 4;
 
-    // ì‹¤ì œë¡œ BCB arrayì™€ frame chunkë¥¼ í• ë‹¹í•œë‹¤.
+    // ½ÇÁ¦·Î BCB array¿Í frame chunk¸¦ ÇÒ´çÇÑ´Ù.
     IDE_TEST(expandArea(NULL, aChunkCount) != IDE_SUCCESS);
 
     return IDE_SUCCESS;
@@ -130,9 +141,9 @@ IDE_RC sdbBufferArea::initialize(UInt aChunkPageCount,
 
 /******************************************************************************
  * Description :
- *    sdbBufferAreaë¥¼ í•´ì œí•œë‹¤. ë‚´ë¶€ì ìœ¼ë¡œ í• ë‹¹í–ˆë˜ ëª¨ë“  frame chunkì™€
- *    BCB arrayì™€ nodeë“¤ì„ ëª¨ë‘ í•´ì œí•˜ê³  mutexë„ í•´ì œí•œë‹¤.
- *    destroy í˜¸ì¶œ í›„ ë‹¤ì‹œ initialize()ë¥¼ í˜¸ì¶œí•˜ì—¬ ì¬ì‚¬ìš©í•  ìˆ˜ ìˆë‹¤.
+ *    sdbBufferArea¸¦ ÇØÁ¦ÇÑ´Ù. ³»ºÎÀûÀ¸·Î ÇÒ´çÇß´ø ¸ğµç frame chunk¿Í
+ *    BCB array¿Í nodeµéÀ» ¸ğµÎ ÇØÁ¦ÇÏ°í mutexµµ ÇØÁ¦ÇÑ´Ù.
+ *    destroy È£Ãâ ÈÄ ´Ù½Ã initialize()¸¦ È£ÃâÇÏ¿© Àç»ç¿ëÇÒ ¼ö ÀÖ´Ù.
  ******************************************************************************/
 IDE_RC sdbBufferArea::destroy()
 {
@@ -149,8 +160,8 @@ IDE_RC sdbBufferArea::destroy()
 
 /******************************************************************************
  * Description :
- *  buffer areaìì‹ ì´ ìƒì„±í•œ ëª¨ë“  BCB, list, Frameê´€ë ¨ ì •ë³´ ë° ë©”ëª¨ë¦¬ë¥¼
- *  í•´ì œí•©ë‹ˆë‹¤.
+ *  buffer areaÀÚ½ÅÀÌ »ı¼ºÇÑ ¸ğµç BCB, list, Frame°ü·Ã Á¤º¸ ¹× ¸Ş¸ğ¸®¸¦
+ *  ÇØÁ¦ÇÕ´Ï´Ù.
  ******************************************************************************/
 void sdbBufferArea::freeAllAllocatedMem()
 {
@@ -166,7 +177,7 @@ void sdbBufferArea::freeAllAllocatedMem()
         SMU_LIST_DELETE(sNode);
         sBCB = (sdbBCB*)sNode->mData;
 
-        //BUG-21053 ì„œë²„ ì¢…ë£Œì‹œ ë²„í¼ë§¤ë‹ˆì €ì˜ ë®¤í…ìŠ¤ë¥¼ ì „í˜€ í•´ì œí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+        //BUG-21053 ¼­¹ö Á¾·á½Ã ¹öÆÛ¸Å´ÏÀúÀÇ ¹ÂÅØ½º¸¦ ÀüÇô ÇØÁ¦ÇÏÁö ¾Ê½À´Ï´Ù.
         IDE_ASSERT( sBCB->destroy() == IDE_SUCCESS );
 
         mFrameMemPool.memFree(sBCB->mFrameMemHandle);
@@ -179,58 +190,133 @@ void sdbBufferArea::freeAllAllocatedMem()
 
 /******************************************************************************
  * Description :
- *    aChunkCount ê°œìˆ˜ë§Œí¼ì˜ ìƒˆë¡œìš´ BCBë¥¼ buffer Areaë‚´ì˜ 
- *    ì´ì™€ í•¨ê»˜ BCB arrayë„ í• ë‹¹í•˜ê³  free BCB ë¦¬ìŠ¤íŠ¸ë¥¼ êµ¬ì„±í•œë‹¤.
- *    ë™ì‹œì„± ì œì–´ê°€ ê³ ë ¤ë˜ì–´ ìˆë‹¤.
- *    chunkë‹¹ pageì˜ ê°œìˆ˜ì™€ page sizeëŠ” initializeí•  ë•Œ ì •í•´ì§„ ê°’ì„ ë”°ë¥¸ë‹¤.
+ *    aChunkCount °³¼ö¸¸Å­ÀÇ »õ·Î¿î BCB¸¦ buffer Area³»ÀÇ 
+ *    ÀÌ¿Í ÇÔ²² BCB arrayµµ ÇÒ´çÇÏ°í free BCB ¸®½ºÆ®¸¦ ±¸¼ºÇÑ´Ù.
+ *    µ¿½Ã¼º Á¦¾î°¡ °í·ÁµÇ¾î ÀÖ´Ù.
+ *    chunk´ç pageÀÇ °³¼ö¿Í page size´Â initializeÇÒ ¶§ Á¤ÇØÁø °ªÀ» µû¸¥´Ù.
  *
  *    + exception:
- *        - mallocì—ì„œ ë©”ëª¨ë¦¬ í• ë‹¹ì— ì‹¤íŒ¨í•˜ë©´ exceptionì´ ë°œìƒí•  ìˆ˜ ìˆìŒ
+ *        - malloc¿¡¼­ ¸Ş¸ğ¸® ÇÒ´ç¿¡ ½ÇÆĞÇÏ¸é exceptionÀÌ ¹ß»ıÇÒ ¼ö ÀÖÀ½
  *     
- *  aStatistics - [IN]  í†µê³„ì •ë³´
- *  aChunkCount - [IN]  í™•ì¥í•˜ë ¤ëŠ” chunkì˜ ê°œìˆ˜
+ *  aStatistics - [IN]  Åë°èÁ¤º¸
+ *  aChunkCount - [IN]  È®ÀåÇÏ·Á´Â chunkÀÇ °³¼ö
  ******************************************************************************/
 IDE_RC sdbBufferArea::expandArea(idvSQL *aStatistics, UInt aChunkCount)
 {
-    UInt     i;
+    UInt     i, j;
     UChar   *sFrame;
     sdbBCB  *sBCB;
     UInt     sBCBID;
     smuList *sNode;
     void    *sFrameMemHandle;
     UInt     sBCBCnt;
-
+    
+    //BUG-48042: BUFFER AREA Parallel »ı¼º 
+    smuWorkerThreadMgr   sThreadMgr;
+    sdbBuffAreaJobInfo * sJob;   
+    UInt                 sParDegree  = smuProperty::getBuffAreaCreatePDegree();  //Thread Cnt. 
+    UInt                 sJobCnt     = 0;
+    UInt                 sJobCntLast = 0;
+    
     IDE_ASSERT(aChunkCount > 0);
 
     lockBufferAreaX(aStatistics);
 
     sBCBID  = mChunkPageCount * mChunkCount;
     sBCBCnt = mChunkPageCount * aChunkCount;
-    for (i = 0; i < sBCBCnt; i++)
+
+    //BUG-48042: Parallel degree 1ÀÎ °æ¿ì
+    if ( sParDegree == 1 )
     {
-        /* sdbBufferArea_expandArea_alloc_Frame.tc */
-        IDU_FIT_POINT("sdbBufferArea::expandArea::alloc::Frame");
-        IDE_TEST(mFrameMemPool.alloc(&sFrameMemHandle, (void**)&sFrame) != IDE_SUCCESS);
+        for (i = 0; i < sBCBCnt; i++)
+        {
+            /* sdbBufferArea_expandArea_alloc_Frame.tc */
+            IDU_FIT_POINT("sdbBufferArea::expandArea::alloc::Frame");
+            IDE_TEST(mFrameMemPool.alloc(&sFrameMemHandle, (void**)&sFrame) != IDE_SUCCESS);
 
-        /* sdbBufferArea_expandArea_alloc_BCB.tc */
-        IDU_FIT_POINT("sdbBufferArea::expandArea::alloc::BCB");
-        IDE_TEST(mBCBMemPool.alloc((void**)&sBCB) != IDE_SUCCESS);
+            /* sdbBufferArea_expandArea_alloc_BCB.tc */
+            IDU_FIT_POINT("sdbBufferArea::expandArea::alloc::BCB");
+            IDE_TEST(mBCBMemPool.alloc((void**)&sBCB) != IDE_SUCCESS);
 
-        /* sdbBufferArea_expandArea_alloc_Node.tc */
-        IDU_FIT_POINT("sdbBufferArea::expandArea::alloc::Node");
-        IDE_TEST(mListMemPool.alloc((void**)&sNode) != IDE_SUCCESS);
+            /* sdbBufferArea_expandArea_alloc_Node.tc */
+            IDU_FIT_POINT("sdbBufferArea::expandArea::alloc::Node");
+            IDE_TEST(mListMemPool.alloc((void**)&sNode) != IDE_SUCCESS);
 
-        IDE_TEST(sBCB->initialize(sFrameMemHandle, sFrame, sBCBID) != IDE_SUCCESS);
+            IDE_TEST(sBCB->initialize(sFrameMemHandle, sFrame, sBCBID) != IDE_SUCCESS);
 
-        sNode->mData = sBCB;
+            sNode->mData = sBCB;
 
-        SMU_LIST_ADD_LAST(&mUnUsedBCBListBase, &sBCB->mBCBListItem);
-        SMU_LIST_ADD_LAST(&mAllBCBList, sNode);
+            SMU_LIST_ADD_LAST(&mUnUsedBCBListBase, &sBCB->mBCBListItem);
+            SMU_LIST_ADD_LAST(&mAllBCBList, sNode);
 
-        mBCBCount++;
-        sBCBID++;
+            mBCBCount++;
+            sBCBID++;
 
-        setBCBPtrRange( sBCB );
+            setBCBPtrRange( sBCB );
+        }
+    }
+    else
+    {
+        //BUG-48042: parallel degree > 1 ÀÎ °æ¿ì ( º´·Ä »ı¼º ) 
+        IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SDB,
+                                     sParDegree, 
+                                     (ULong)ID_SIZEOF( sdbBuffAreaJobInfo ), 
+                                     (void **)&sJob )
+                  != IDE_SUCCESS );
+        
+        sJobCnt     = sBCBCnt / sParDegree;
+        sJobCntLast = sBCBCnt % sParDegree;
+
+        //º´·Ä »ı¼º ÃÊ±âÈ­ 
+        IDE_TEST( smuWorkerThread::initialize( sdbBufferArea::expandAreaParallel,
+                                               sParDegree,   /* Thread Count */
+                                               sParDegree,   /* Queue Size */
+                                               &sThreadMgr )
+                  != IDE_SUCCESS ); 
+        
+        for ( i = 0 ; i < sParDegree ; i++ )
+        {
+            sJob[i].mStartBCBID = sBCBID + ( i * sJobCnt ); 
+
+            if ( (i+1) != sParDegree )
+            {
+                sJob[i].mJobCnt = sJobCnt;
+            } 
+            else
+            {
+                //¸¶Áö¸· thread´Â jobÀ» ´õ °¡Á®°¨  
+                sJob[i].mJobCnt = ( sJobCnt + sJobCntLast );
+            }
+            
+            IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SDB,
+                                         sJob[i].mJobCnt, 
+                                         (ULong)ID_SIZEOF( sdbBuffAreaPtrSet ), 
+                                         (void **)&(sJob[i].mPtrSet) )
+                      != IDE_SUCCESS );
+           
+            IDE_TEST( smuWorkerThread::addJob( &sThreadMgr,
+                                               (void *)&sJob[i] )
+                      != IDE_SUCCESS );
+        }
+
+        IDE_TEST( smuWorkerThread::finalize( &sThreadMgr ) != IDE_SUCCESS );
+
+        //ÇÒ´çÇÑ BCB¸¦ ¸®½ºÆ®¿¡ ´Ş¾Æ ³õ±â 
+        for ( i = 0 ; i < sParDegree ; i++ )
+        {
+            for ( j = 0 ; j < sJob[i].mJobCnt ; j++ )
+            { 
+                SMU_LIST_ADD_LAST(&mUnUsedBCBListBase, &(sJob[i].mPtrSet[j].mTmpBCB->mBCBListItem));
+                SMU_LIST_ADD_LAST(&mAllBCBList, sJob[i].mPtrSet[j].mTmpNode);
+
+                setBCBPtrRange( sJob[i].mPtrSet[j].mTmpBCB );
+            }
+            mBCBCount += sJob[i].mJobCnt ;
+
+            IDE_TEST( iduMemMgr::free( sJob[i].mPtrSet ) != IDE_SUCCESS );
+        }
+
+        IDE_TEST( iduMemMgr::free( sJob ) != IDE_SUCCESS );
     }
 
     mChunkCount += aChunkCount;
@@ -244,28 +330,66 @@ IDE_RC sdbBufferArea::expandArea(idvSQL *aStatistics, UInt aChunkCount)
     return IDE_FAILURE;
 }
 
+void sdbBufferArea::expandAreaParallel( void   * aJob )
+{
+    UInt i;
+    sdbBuffAreaJobInfo* sBuffJob;
+    
+    sBuffJob = (sdbBuffAreaJobInfo *)aJob; 
+
+    for ( i = 0 ; i < sBuffJob->mJobCnt ; i++ )
+    {
+        IDE_TEST( sdbBufferMgr::getArea()->mFrameMemPool.alloc( 
+                                                    &(sBuffJob->mPtrSet[i].mTmpFrameMemHandle), 
+                                                    (void**)&(sBuffJob->mPtrSet[i].mTmpFrame) ) 
+                != IDE_SUCCESS );
+        
+        IDE_TEST( sdbBufferMgr::getArea()->mBCBMemPool.alloc(
+                                                (void**)&(sBuffJob->mPtrSet[i].mTmpBCB)) 
+                != IDE_SUCCESS );
+        
+        IDE_TEST( sdbBufferMgr::getArea()->mListMemPool.alloc(
+                                                (void**)&(sBuffJob->mPtrSet[i].mTmpNode)) 
+                != IDE_SUCCESS );
+
+        IDE_TEST( sBuffJob->mPtrSet[i].mTmpBCB->initialize( 
+                                                    sBuffJob->mPtrSet[i].mTmpFrameMemHandle, 
+                                                    sBuffJob->mPtrSet[i].mTmpFrame, 
+                                                    (sBuffJob->mStartBCBID + i) ) 
+                != IDE_SUCCESS );
+
+        sBuffJob->mPtrSet[i].mTmpNode->mData = sBuffJob->mPtrSet[i].mTmpBCB;
+    }
+
+    return;
+
+    IDE_EXCEPTION_END;
+
+    return;
+}
+
 /******************************************************************************
  * Description :
- *    ì£¼ì–´ì§„ aChunkCount ê°œìˆ˜ë§Œí¼ chunkë¥¼ í•´ì œí•œë‹¤.
- *    ê·¸ chunkì— ì†í•œ ëª¨ë“  BCBë“¤ì€ ë²„í¼ì—ì„œ ì œê±°ëœë‹¤.
+ *    ÁÖ¾îÁø aChunkCount °³¼ö¸¸Å­ chunk¸¦ ÇØÁ¦ÇÑ´Ù.
+ *    ±× chunk¿¡ ¼ÓÇÑ ¸ğµç BCBµéÀº ¹öÆÛ¿¡¼­ Á¦°ÅµÈ´Ù.
  ******************************************************************************/
 IDE_RC sdbBufferArea::shrinkArea(idvSQL */*aStatistics*/, UInt /*aChunkCount*/)
 {
-    // ì•„ì§ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // ¾ÆÁ÷ Áö¿øÇÏÁö ¾Ê´Â´Ù.
     return IDE_FAILURE;
 }
 
 /******************************************************************************
  * Description :
- *    aFirstë¶€í„° aLastê¹Œì§€ êµ¬ì„±ëœ BCB listë¥¼ BufferAreaì— ì¶”ê°€í•œë‹¤.
- *    aFirstë¶€í„° aLastê¹Œì§€ aCountê°œìˆ˜ê°€ ë§ëŠ”ì§€ëŠ” ë‚´ë¶€ì ìœ¼ë¡œ ê²€ì‚¬í•˜ì§€ ì•Šê¸°
- *    ë•Œë¬¸ì— ì´ í•¨ìˆ˜ì˜ í˜¸ì¶œí•˜ëŠ” ê³³ì—ì„œ ì˜¬ë°”ë¥¸ count ì •ë³´ë¥¼ ì±…ì„ì ¸ì•¼ í•œë‹¤.
+ *    aFirstºÎÅÍ aLast±îÁö ±¸¼ºµÈ BCB list¸¦ BufferArea¿¡ Ãß°¡ÇÑ´Ù.
+ *    aFirstºÎÅÍ aLast±îÁö aCount°³¼ö°¡ ¸Â´ÂÁö´Â ³»ºÎÀûÀ¸·Î °Ë»çÇÏÁö ¾Ê±â
+ *    ¶§¹®¿¡ ÀÌ ÇÔ¼öÀÇ È£ÃâÇÏ´Â °÷¿¡¼­ ¿Ã¹Ù¸¥ count Á¤º¸¸¦ Ã¥ÀÓÁ®¾ß ÇÑ´Ù.
  *
- *  aStatistics - [IN]  ë‚´ë¶€ì ìœ¼ë¡œ mutexë¥¼ íšë“í•˜ê¸° ë•Œë¬¸ì—
- *                      í†µê³„ ì •ë³´ë¥¼ ë„˜ê²¨ì•¼ í•œë‹¤.
- *  aCount      - [IN]  ì¶”ê°€í•  BCB listì˜ ê°œìˆ˜
- *  aFirst      - [IN]  ì¶”ê°€í•  BCB listì˜ ì²˜ìŒ. ì´ê²ƒì˜ mPrevëŠ” NULLì´ì–´ì•¼ í•œë‹¤.
- *  aLast       - [IN]  ì¶”ê°€í•  BCB listì˜ ë§ˆì§€ë§‰. ì´ê²ƒì˜ mNextëŠ” NULLì´ì–´ì•¼ í•œë‹¤.
+ *  aStatistics - [IN]  ³»ºÎÀûÀ¸·Î mutex¸¦ È¹µæÇÏ±â ¶§¹®¿¡
+ *                      Åë°è Á¤º¸¸¦ ³Ñ°Ü¾ß ÇÑ´Ù.
+ *  aCount      - [IN]  Ãß°¡ÇÒ BCB listÀÇ °³¼ö
+ *  aFirst      - [IN]  Ãß°¡ÇÒ BCB listÀÇ Ã³À½. ÀÌ°ÍÀÇ mPrev´Â NULLÀÌ¾î¾ß ÇÑ´Ù.
+ *  aLast       - [IN]  Ãß°¡ÇÒ BCB listÀÇ ¸¶Áö¸·. ÀÌ°ÍÀÇ mNext´Â NULLÀÌ¾î¾ß ÇÑ´Ù.
  ******************************************************************************/
 void sdbBufferArea::addBCBs(idvSQL *aStatistics,
                             UInt    aCount,
@@ -286,11 +410,11 @@ void sdbBufferArea::addBCBs(idvSQL *aStatistics,
 
 /******************************************************************************
  * Description :
- *    BufferAreaê°€ ê°€ì§€ê³  ìˆëŠ” BCBë¥¼ í•˜ë‚˜ ê°€ì ¸ì˜¨ë‹¤.
- *    ë°˜í™˜ë˜ëŠ” BCBëŠ” ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°ë˜ë©° freeìƒíƒœì´ë‹¤.
- *    BufferAreaì— BCBê°€ í•˜ë‚˜ë„ ì—†ìœ¼ë©´ NULLì´ ë°˜í™˜ëœë‹¤.
+ *    BufferArea°¡ °¡Áö°í ÀÖ´Â BCB¸¦ ÇÏ³ª °¡Á®¿Â´Ù.
+ *    ¹İÈ¯µÇ´Â BCB´Â ¸®½ºÆ®¿¡¼­ Á¦°ÅµÇ¸ç free»óÅÂÀÌ´Ù.
+ *    BufferArea¿¡ BCB°¡ ÇÏ³ªµµ ¾øÀ¸¸é NULLÀÌ ¹İÈ¯µÈ´Ù.
  *
- *  aStatistics - [IN]  mutex íšë“ì„ ìœ„í•œ í†µê³„ì •ë³´
+ *  aStatistics - [IN]  mutex È¹µæÀ» À§ÇÑ Åë°èÁ¤º¸
  ******************************************************************************/
 sdbBCB* sdbBufferArea::removeLast(idvSQL *aStatistics)
 {
@@ -320,13 +444,13 @@ sdbBCB* sdbBufferArea::removeLast(idvSQL *aStatistics)
 
 /******************************************************************************
  * Description :
- *    ì´ BufferAreaê°€ ê°€ì§€ê³  ìˆëŠ” ëª¨ë“  BCB listë¥¼ ë°˜í™˜í•˜ê³ 
- *    BufferAreaëŠ” 0ê°œì˜ BCBë¥¼ ê°€ì§„ ìƒíƒœê°€ëœë‹¤.
+ *    ÀÌ BufferArea°¡ °¡Áö°í ÀÖ´Â ¸ğµç BCB list¸¦ ¹İÈ¯ÇÏ°í
+ *    BufferArea´Â 0°³ÀÇ BCB¸¦ °¡Áø »óÅÂ°¡µÈ´Ù.
  *
- *  aStatistics - [IN]  mutex íšë“ì„ ìœ„í•œ í†µê³„ì •ë³´
- *  aFirst      - [OUT] ë°˜í™˜ë  BCB listì˜ ì²«ë²ˆì§¸ BCB pointer
- *  aLast       - [OUT] ë°˜í™˜ë  BCB listì˜ ë§ˆì§€ë§‰ BCB pointer
- *  aCount      - [OUT] ë°˜í™˜ë  BCB listì˜ BCB ê°œìˆ˜
+ *  aStatistics - [IN]  mutex È¹µæÀ» À§ÇÑ Åë°èÁ¤º¸
+ *  aFirst      - [OUT] ¹İÈ¯µÉ BCB listÀÇ Ã¹¹øÂ° BCB pointer
+ *  aLast       - [OUT] ¹İÈ¯µÉ BCB listÀÇ ¸¶Áö¸· BCB pointer
+ *  aCount      - [OUT] ¹İÈ¯µÉ BCB listÀÇ BCB °³¼ö
  ******************************************************************************/
 void sdbBufferArea::getAllBCBs(idvSQL  *aStatistics,
                                sdbBCB **aFirst,
@@ -359,29 +483,29 @@ void sdbBufferArea::getAllBCBs(idvSQL  *aStatistics,
 /******************************************************************************
  * Description :
  * 
- * ë³¸ í•¨ìˆ˜ë¥¼ í†µí•´ BCBë¥¼ ì ‘ê·¼í•˜ëŠ” ë°©ì‹ì€ ë¬¸ì œê°€ ìˆë‹¤.
- * ê°€ì¥ í° ë¬¸ì œëŠ” BCBê°€ Buffer Poolì˜ ì–´ëŠê³³ì—ë“  ìœ„ì¹˜í•  ìˆ˜ ìˆë‹¤ëŠ” ê²ƒì´ë‹¤.
- * ì´ëŸ¬í•œ ì ‘ê·¼ ë°©ë²•ì„ ì œì™¸í–ˆì„ë•Œ, BCBë¥¼ ì ‘ê·¼í•  ìˆ˜ ìˆëŠ” ë°©ë²•ì€ ì˜¤ì§ 2ê°€ì§€
- * ë¿ì´ì—ˆë‹¤. hash ë˜ëŠ” listì˜ endë¥¼ í†µí•´ì„œ...  ê·¸ë¦¬ê³  ì´ 2ë°©ì‹ì€ ì„œë¡œ
- * ì˜í–¥ì„ ë¯¸ì¹˜ì§€ ì•Šê¸° ë•Œë¬¸ì— ë™ì‹œì„±ì„ ì œì–´í•˜ëŠ”ê²ƒì´ ìƒëŒ€ì ìœ¼ë¡œ ìˆ˜ì›”í•˜ì˜€ë‹¤.
+ * º» ÇÔ¼ö¸¦ ÅëÇØ BCB¸¦ Á¢±ÙÇÏ´Â ¹æ½ÄÀº ¹®Á¦°¡ ÀÖ´Ù.
+ * °¡Àå Å« ¹®Á¦´Â BCB°¡ Buffer PoolÀÇ ¾î´À°÷¿¡µç À§Ä¡ÇÒ ¼ö ÀÖ´Ù´Â °ÍÀÌ´Ù.
+ * ÀÌ·¯ÇÑ Á¢±Ù ¹æ¹ıÀ» Á¦¿ÜÇßÀ»¶§, BCB¸¦ Á¢±ÙÇÒ ¼ö ÀÖ´Â ¹æ¹ıÀº ¿ÀÁ÷ 2°¡Áö
+ * »ÓÀÌ¾ú´Ù. hash ¶Ç´Â listÀÇ end¸¦ ÅëÇØ¼­...  ±×¸®°í ÀÌ 2¹æ½ÄÀº ¼­·Î
+ * ¿µÇâÀ» ¹ÌÄ¡Áö ¾Ê±â ¶§¹®¿¡ µ¿½Ã¼ºÀ» Á¦¾îÇÏ´Â°ÍÀÌ »ó´ëÀûÀ¸·Î ¼ö¿ùÇÏ¿´´Ù.
  *
- * ê·¸ëŸ°ë°, ëª¨ë“  BCBë¥¼ ì ‘ê·¼í•˜ê¸° ìœ„í•´ì„œ ì´ í•¨ìˆ˜ë¥¼ ë§Œë“¤ì—ˆë‹¤.
- * ê·¸ë ‡ê¸° ë•Œë¬¸ì— ë™ì‹œì„±ì„ ì˜ ë”°ì ¸ë´ì„œ ë³¸ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤. 
+ * ±×·±µ¥, ¸ğµç BCB¸¦ Á¢±ÙÇÏ±â À§ÇØ¼­ ÀÌ ÇÔ¼ö¸¦ ¸¸µé¾ú´Ù.
+ * ±×·¸±â ¶§¹®¿¡ µ¿½Ã¼ºÀ» Àß µûÁ®ºÁ¼­ º» ÇÔ¼ö¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù. 
  *
- * ì£¼ì˜ì‚¬í•­!
- *     list(LRU, Prepare, flush, flusher ê°œì¸ list)ë¥¼ ì ‘ê·¼í•˜ëŠ” íŠ¸ëœì­ì…˜ì€
- *    ìì‹ ì´ BCBë¥¼ listì—ì„œ ì œê±°í•˜ê¸°ë§Œ í•˜ë©´ ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ ê·¸ BCBì˜ ë‚´ìš©ì„
- *    ë³€ê²½í•˜ì§€ ì•ŠëŠ”ë‹¤ê³  ìƒê°í•œë‹¤.(fixì™€ touchCntëŠ” ì œì™¸.. ) ê·¸ë ‡ê¸° ë•Œë¬¸ì—
- *    ì´ íŠ¸ëœì­ì…˜ë“¤ì€ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°ëœ BCBì— ëŒ€í•´ì„œ dirty readë¥¼ ë§ˆìŒëŒ€ë¡œ 
- *    í•´ë²„ë¦°ë‹¤.  ê·¸ë ‡ê¸° ë•Œë¬¸ì— ì´ë“¤ì—ê²Œ ì˜í–¥ì„ ë¯¸ì¹˜ëŠ” í–‰ìœ„ë¥¼ ë³¸ í•¨ìˆ˜ ìˆ˜í–‰ ì¤‘
- *    í•´ì„œëŠ” ì•ˆëœë‹¤. ë‹¨ì§€ ì½ê¸°ë§Œ í•˜ëŠ”ê²ƒì€ ë¬¸ì œê°€ ë˜ì§€ ì•Šìœ¼ë‚˜, ì“°ëŠ” í–‰ë™ì„
- *    í•  ê²½ìš°ì—ëŠ” ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ê³¼ì˜ mutexë¥¼ ì˜ ë”°ì ¸ ê°€ë©´ì„œ ì„¬ì„¸í•˜ê²Œ í•´ì•¼í•œë‹¤.
+ * ÁÖÀÇ»çÇ×!
+ *     list(LRU, Prepare, flush, flusher °³ÀÎ list)¸¦ Á¢±ÙÇÏ´Â Æ®·£Àè¼ÇÀº
+ *    ÀÚ½ÅÀÌ BCB¸¦ list¿¡¼­ Á¦°ÅÇÏ±â¸¸ ÇÏ¸é ´Ù¸¥ Æ®·£Àè¼ÇÀÌ ±× BCBÀÇ ³»¿ëÀ»
+ *    º¯°æÇÏÁö ¾Ê´Â´Ù°í »ı°¢ÇÑ´Ù.(fix¿Í touchCnt´Â Á¦¿Ü.. ) ±×·¸±â ¶§¹®¿¡
+ *    ÀÌ Æ®·£Àè¼ÇµéÀº ¸®½ºÆ®¿¡¼­ Á¦°ÅµÈ BCB¿¡ ´ëÇØ¼­ dirty read¸¦ ¸¶À½´ë·Î 
+ *    ÇØ¹ö¸°´Ù.  ±×·¸±â ¶§¹®¿¡ ÀÌµé¿¡°Ô ¿µÇâÀ» ¹ÌÄ¡´Â ÇàÀ§¸¦ º» ÇÔ¼ö ¼öÇà Áß
+ *    ÇØ¼­´Â ¾ÈµÈ´Ù. ´ÜÁö ÀĞ±â¸¸ ÇÏ´Â°ÍÀº ¹®Á¦°¡ µÇÁö ¾ÊÀ¸³ª, ¾²´Â Çàµ¿À»
+ *    ÇÒ °æ¿ì¿¡´Â ´Ù¸¥ Æ®·£Àè¼Ç°úÀÇ mutex¸¦ Àß µûÁ® °¡¸é¼­ ¼¶¼¼ÇÏ°Ô ÇØ¾ßÇÑ´Ù.
  *
- *    ë™ì‹œì„± ê´€ë ¨ëœ ìì„¸í•œ ì‚¬í•­ì€ sdbBufferPool.cppì˜ 
- *    ** BufferPoolì˜ ë™ì‹œì„± ì œì–´ ** ë¶€ë¶„ì„ ì°¸ê³ 
+ *    µ¿½Ã¼º °ü·ÃµÈ ÀÚ¼¼ÇÑ »çÇ×Àº sdbBufferPool.cppÀÇ 
+ *    ** BufferPoolÀÇ µ¿½Ã¼º Á¦¾î ** ºÎºĞÀ» Âü°í
  *    
- * aFunc    - [IN]  ë²„í¼ areaì˜ ê° BCBì— ì ìš©í•  í•¨ìˆ˜
- * aObj     - [IN]  aFuncìˆ˜í–‰í• ë•Œ í•„ìš”í•œ ë³€ìˆ˜
+ * aFunc    - [IN]  ¹öÆÛ areaÀÇ °¢ BCB¿¡ Àû¿ëÇÒ ÇÔ¼ö
+ * aObj     - [IN]  aFunc¼öÇàÇÒ¶§ ÇÊ¿äÇÑ º¯¼ö
  ******************************************************************************/
 IDE_RC sdbBufferArea::applyFuncToEachBCBs(
     idvSQL                *aStatistics,

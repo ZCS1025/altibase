@@ -21,6 +21,8 @@
 
 #include <dumpcommon.h>
 
+#include "alticrc.txt"
+
 #define MAXFILES (IDE_LOG_MAX_MODULE * 2)
 
 #define MAXLINES        (128)
@@ -29,6 +31,12 @@
 
 #define   MAXHOURDIFF (+24)
 #define   MINHOURDIFF (-24)
+
+/* BUG-47888 */
+#define DUMPTRC_INVALID_MESSAGE "\nWarning!!  --------------------------------------------\n"\
+                                "Altibase version doesn't match this dumptrc.\n"        \
+                                "Output of dumptrc might be wrong!!\n"                       \
+                                "--------------------------------------------------------\n" 
 
 typedef struct 
 {
@@ -110,6 +118,7 @@ void printusage(void)
     idlOS::printf(" -h : prints this help screen.\n");
     idlOS::printf("\t Without any option, dumptrc will"
                   " print this help screen and exit.\n");
+    idlOS::printf(" -x : show callstacks even if altibase doesn't match dumptrc\n");
     idlOS::printf(" -v : prints version info.\n");
     idlOS::printf(" Filenames are as follows, not case-sensitive;\n");
     idlOS::printf("\t ERROR       : altibase_error.log\n");
@@ -398,6 +407,19 @@ void printLines(void)
                 {
                     gRet[idlOS::strlen(gRet) - 1] = '\0';
                     sTemp = idlOS::strstr(gRet, " ") + 1;
+                
+                    /*
+                     * BUG-48433 
+                     * when not found, strstr is supposed to return NULL.
+                     * but,it returns 1 in 1.98 platform
+                     * I don't think it's worth digging into this problem :(
+                     * anyway, it works.
+                     */
+                    if( sTemp < (SChar*)0xff ) //error
+                    {
+                        idlOS::printf("[dumptrc:wrong format.omit this line.]\n");
+                        continue;
+                    }
 #if defined(ALTI_CFG_OS_WINDOWS)
                     sscanf(sTemp, "%llX", &sAddress);
 #else
@@ -617,6 +639,24 @@ SInt getNameIndex(SChar* aName)
     return -1;
 }
 
+/* BUG-47888 */
+idBool validDump()
+{
+    UInt    sTotal = 0;
+    UChar   sRet = ID_FALSE;
+
+    sRet = getSimpleCRC(&sTotal);
+    
+    if( (sRet == ID_TRUE) && (sTotal == VALID_CRC) )
+    {
+        return ID_TRUE;
+    }
+    else
+    {
+        return ID_FALSE;
+    }
+}
+
 SInt main(SInt aArgc, SChar** aArgv)
 {
     SInt    i;
@@ -635,6 +675,7 @@ SInt main(SInt aArgc, SChar** aArgv)
     idBool  sLineSet        = ID_FALSE;
     idBool  sVersion        = ID_FALSE;
     idBool  sIsPrintMap     = ID_FALSE;
+    idBool  sCallstackForce = ID_FALSE;
 
     struct tm   sTime;
 
@@ -645,6 +686,8 @@ SInt main(SInt aArgc, SChar** aArgv)
 
     idBool  sInclude[IDE_LOG_MAX_MODULE];
     idBool  sExclude[IDE_LOG_MAX_MODULE];
+    
+    idBool  sCorrectCRC = validDump();
 
     for( i = 0; i < IDE_LOG_MAX_MODULE; i++ )
     {
@@ -652,7 +695,7 @@ SInt main(SInt aArgc, SChar** aArgv)
         sExclude[i] = ID_FALSE;
     }
 
-    while((sOptVal = idlOS::getopt(aArgc, aArgv, "hai:e:csft:p:n:vH:m")) != -1)
+    while((sOptVal = idlOS::getopt(aArgc, aArgv, "hai:e:csft:p:n:vH:mx")) != -1)
     {
         sOptCount++;
 
@@ -765,9 +808,19 @@ SInt main(SInt aArgc, SChar** aArgv)
         case 'm':
             sIsPrintMap = ID_TRUE;
             break;
+        case 'x':
+            sCallstackForce = ID_TRUE;
+            break;
         default:
             break;
         }
+    }
+
+    /* BUG-47888 */
+    if( (sCorrectCRC == ID_FALSE) && (sCallstackForce == ID_FALSE) )
+    {
+        idlOS::printf( DUMPTRC_INVALID_MESSAGE );
+        idlOS::exit(0);
     }
 
     if( (sOptCount == 0) || (sPrintUsage == ID_TRUE) )

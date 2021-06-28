@@ -29,7 +29,7 @@ public class ColumnInfo implements Cloneable
     public static final byte IN_OUT_TARGET_TYPE_IN = 1;
     public static final byte IN_OUT_TARGET_TYPE_INOUT = 2;
     public static final byte IN_OUT_TARGET_TYPE_OUT = 4;
-    public static final byte IN_OUT_TARGET_TYPE_TARGET = 5; // select target ì ˆì— ì‚¬ìš©ë˜ëŠ” ì»¬ëŸ¼
+    public static final byte IN_OUT_TARGET_TYPE_TARGET = 5; // select target Àı¿¡ »ç¿ëµÇ´Â ÄÃ·³
 
     public static final boolean NON_NULLABLE = false;
     public static final boolean NULLABLE = true;
@@ -50,9 +50,9 @@ public class ColumnInfo implements Cloneable
     private String mBaseColumnName = null;
     private String mSchemaName = null;
     private int mCharPrecisionRate = 0;
-    /* BUG-45572 columnInfoê°€ ìƒˆë¡œ ìƒì„±ë˜ì—ˆìœ¼ë¯€ë¡œ setParamInfoë¥¼ ì „ì†¡í•´ì•¼ í•˜ë¯€ë¡œ mChangedë¥¼ trueë¡œ ì„¤ì •í•œë‹¤. */
+    /* BUG-45572 columnInfo°¡ »õ·Î »ı¼ºµÇ¾úÀ¸¹Ç·Î setParamInfo¸¦ Àü¼ÛÇØ¾ß ÇÏ¹Ç·Î mChanged¸¦ true·Î ¼³Á¤ÇÑ´Ù. */
     private boolean mChanged = true;
-    // BUG-40081 typeì„ ë°”ê¿”ì•¼ í•˜ëŠ”ì§€ë¥¼ ë‚˜íƒ€ë‚´ëŠ” flag 
+    // BUG-40081 typeÀ» ¹Ù²ã¾ß ÇÏ´ÂÁö¸¦ ³ªÅ¸³»´Â flag 
     private boolean mShouldChangeType = false;
 
     public ColumnInfo()
@@ -284,7 +284,7 @@ public class ColumnInfo implements Cloneable
         }
     }
 
-    // BUG-42424 deferredìƒíƒœì¼ë•Œ ColumnInfoì˜ ê¸°ë³¸ê°’ì„ ìƒì„±í•œë‹¤.
+    // BUG-42424 deferred»óÅÂÀÏ¶§ ColumnInfoÀÇ ±âº»°ªÀ» »ı¼ºÇÑ´Ù.
     public void makeDefaultValues()
     {
         this.setColumnInfo(AltibaseTypes.NULL,
@@ -305,7 +305,7 @@ public class ColumnInfo implements Cloneable
                            AltibaseStatement.BYTES_PER_CHAR);      // bytes per char
     }
 
-    // BUG-42424 dataTypeì— ë§ê²Œ argument, scale ë“±ì˜ ê°’ì„ ë³´ì •í•œë‹¤.
+    // BUG-42424 dataType¿¡ ¸Â°Ô argument, scale µîÀÇ °ªÀ» º¸Á¤ÇÑ´Ù.
     public void setColumnMetaInfos(int aDataType, int aPrecision)
     {
         if (mDataType != aDataType || mPrecision != aPrecision)
@@ -328,7 +328,7 @@ public class ColumnInfo implements Cloneable
                     mArguments = 1;
                     break;
                 case Types.FLOAT:
-                    // Precisionë§Œì„ ê°–ëŠ” ë¶€ë™ì†Œìˆ˜ì  Data Type
+                    // Precision¸¸À» °®´Â ºÎµ¿¼Ò¼öÁ¡ Data Type
                     mArguments = 1;
                     break;
                 case AltibaseTypes.NUMBER:

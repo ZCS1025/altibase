@@ -22,9 +22,10 @@
 #ifndef _O_ULSD_VERSION_CLIENT_H_
 #define _O_ULSD_VERSION_CLIENT_H_ 1
 
-/* shard version ë˜ëŠ” cm protocol(shard ê´€ë ¨)ì´ ë³€ê²½ê´¼ ê²½ìš° ì•„ëž˜ ë²„ì „ ë³€ê²½í•´ì•¼ í•¨ */
-#define SHARD_MAJOR_VERSION 2
-#define SHARD_MINOR_VERSION 2 
+/* shard version ¶Ç´Â cm protocol(shard °ü·Ã)ÀÌ º¯°æµÉ °æ¿ì ¾Æ·¡ ¹öÀü º¯°æÇØ¾ß ÇÔ */
+/* BUG-48254 2.2.1 -> 3.1.1·Î º¯°æ */
+#define SHARD_MAJOR_VERSION 3
+#define SHARD_MINOR_VERSION 1
 #define SHARD_PATCH_VERSION 1
 
 #endif /* _O_ULSD_VERSION_CLIENT_H_ */

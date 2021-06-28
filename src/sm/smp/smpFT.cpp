@@ -20,8 +20,8 @@
  *
  * Description
  *
- * MEM DBì—ì„œ íŽ˜ì´ì§€ ê´€ë ¨ ì •ë³´ë¥¼ Dumpí•˜ê¸° ìœ„í•œ FixedTableì„ ìƒì„±í•¨.
- * D$MEM_DB_PAGE : Mem Pageë¥¼ Hexaí˜•ì‹ì˜ Binaryê°’ìœ¼ë¡œ ì¶œë ¥í•´ì¤Œ.
+ * MEM DB¿¡¼­ ÆäÀÌÁö °ü·Ã Á¤º¸¸¦ DumpÇÏ±â À§ÇÑ FixedTableÀ» »ý¼ºÇÔ.
+ * D$MEM_DB_PAGE : Mem Page¸¦ HexaÇü½ÄÀÇ Binary°ªÀ¸·Î Ãâ·ÂÇØÁÜ.
  *
  **********************************************************************/
 
@@ -95,7 +95,7 @@ static iduFixedTableColDesc gDumpMemDBPageColDesc[] =
 };
 
 // D$MEM_DB_PAGE
-// MEM PCHë¡œë¶€í„° íŽ˜ì´ì§€ë¥¼ Dumpí•œë‹¤.
+// MEM PCH·ÎºÎÅÍ ÆäÀÌÁö¸¦ DumpÇÑ´Ù.
 IDE_RC smpFT::buildRecordMemDBPageDump( idvSQL              * /*aStatistics*/,
                                         void                *aHeader,
                                         void                *aDumpObj,
@@ -107,7 +107,6 @@ IDE_RC smpFT::buildRecordMemDBPageDump( idvSQL              * /*aStatistics*/,
     UChar                 * sPagePtr;
     UInt                    sLocked = ID_FALSE;
     smpMemDBPageDump        sMemDBPageDump;
-    smmPCH                * sPCH;
 
     IDE_ERROR( aHeader != NULL );
     IDE_ERROR( aMemory != NULL );
@@ -118,15 +117,10 @@ IDE_RC smpFT::buildRecordMemDBPageDump( idvSQL              * /*aStatistics*/,
     sSpaceID  = SC_MAKE_SPACE(*sGRID);
     sPageID   = SC_MAKE_PID(*sGRID);
 
-    // MEM_TABLESPACEê°€ ë§žëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+    // MEM_TABLESPACE°¡ ¸Â´ÂÁö °Ë»çÇÑ´Ù.
     IDE_ASSERT( sctTableSpaceMgr::isMemTableSpace( sSpaceID ) == ID_TRUE );
 
-    IDE_TEST_RAISE( ( smmManager::isValidSpaceID( sSpaceID ) != ID_TRUE ) ||
-                    ( smmManager::isValidPageID( sSpaceID, sPageID ) != ID_TRUE ),
-                    ERR_EMPTY_OBJECT );
-
-    sPCH = smmManager::getPCH( sSpaceID, sPageID );
-    IDE_TEST_RAISE( ( sPCH == NULL ) || ( sPCH->m_page == NULL ),
+    IDE_TEST_RAISE( smmManager::isPageExist( sSpaceID, sPageID ) == ID_TRUE,
                     ERR_EMPTY_OBJECT );
 
     IDE_TEST( smmManager::holdPageSLatch( sSpaceID, sPageID )

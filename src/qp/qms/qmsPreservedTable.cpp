@@ -108,7 +108,7 @@ IDE_RC qmsPreservedTable::addTable( qcStatement  * aStatement,
                                                          (void**) & sNewRow )
                           != IDE_SUCCESS );
 
-                // ushort_maxë¡œ ì´ˆê¸°í™”
+                // ushort_max·Î ÃÊ±âÈ­
                 for ( i = 0; i < QC_MAX_REF_TABLE_CNT; i++ )
                 {
                     sNewRow[i] = ID_USHORT_MAX;
@@ -165,7 +165,7 @@ qmsPreservedTable::isUnique( qcStatement       * aStatement,
  * Description : PROJ-2204 Join Update, Delete
  *
  * Implementation :
- *     composite unique columnì— ì˜í•œ partial uniqueë¥¼ ê¸°ë¡í•˜ê³  í™•ì¸í•œë‹¤.
+ *     composite unique column¿¡ ÀÇÇÑ partial unique¸¦ ±â·ÏÇÏ°í È®ÀÎÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -201,7 +201,7 @@ qmsPreservedTable::isUnique( qcStatement       * aStatement,
         sTableInfo = sTableRef->tableInfo;
         sColumn = QTC_STMT_COLUMN( aStatement, aFromNode );
 
-        // 1. single unique columnì¸ ê²½ìš° ë°”ë¡œ ì°¾ëŠ”ë‹¤.
+        // 1. single unique columnÀÎ °æ¿ì ¹Ù·Î Ã£´Â´Ù.
         for ( i = 0; i < sTableInfo->indexCount; i++ )
         {
             sIndex = & (sTableInfo->indices[i]);
@@ -233,10 +233,10 @@ qmsPreservedTable::isUnique( qcStatement       * aStatement,
 
         if ( *aIsUnique == ID_FALSE )
         {
-            // 2. composite unique columnì¸ ê²½ìš°
+            // 2. composite unique columnÀÎ °æ¿ì
             sFoundInfo = ID_FALSE;
 
-            // 2.1. uniqueInfoì—ì„œ ì°¾ì•„ë³¸ë‹¤.
+            // 2.1. uniqueInfo¿¡¼­ Ã£¾Æº»´Ù.
             for ( sUniqueInfo = aPreservedTable->uniqueInfo[sTableIndex];
                   sUniqueInfo != NULL;
                   sUniqueInfo = sUniqueInfo->next )
@@ -250,7 +250,7 @@ qmsPreservedTable::isUnique( qcStatement       * aStatement,
                     {
                         if ( sUniqueInfo->fromColumn[i] == sColumn->column.id )
                         {
-                            // ì°¾ì•˜ë‹¤ë©´ uint_maxë¡œ ë³€ê²½í•œë‹¤.
+                            // Ã£¾Ò´Ù¸é uint_max·Î º¯°æÇÑ´Ù.
                             sUniqueInfo->fromColumn[i] = ID_UINT_MAX;
                         }
                         else
@@ -286,7 +286,7 @@ qmsPreservedTable::isUnique( qcStatement       * aStatement,
             
             if ( sFoundInfo == ID_FALSE )
             {
-                // 2.2 uniqueInfoë¥¼ ì¶”ê°€í•˜ê³  ê¸°ë¡í•œë‹¤.
+                // 2.2 uniqueInfo¸¦ Ãß°¡ÇÏ°í ±â·ÏÇÑ´Ù.
                 for ( i = 0; i < sTableInfo->indexCount; i++ )
                 {
                     sIndex = & (sTableInfo->indices[i]);
@@ -416,7 +416,7 @@ qmsPreservedTable::unmarkAll( qmsPreservedInfo  * aPreservedTable )
  * Description : PROJ-2204 Join Update, Delete
  *
  * Implementation :
- *     addTable ìƒíƒœë¡œ ì´ˆê¸°í™”
+ *     addTable »óÅÂ·Î ÃÊ±âÈ­
  *
  ***********************************************************************/
 
@@ -438,7 +438,7 @@ qmsPreservedTable::unmarkAll( qmsPreservedInfo  * aPreservedTable )
         }
     }
 
-    // ì´í›„ë¡œëŠ” ì¶”ê°€í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // ÀÌÈÄ·Î´Â Ãß°¡ÇÏÁö ¾Ê´Â´Ù.
     aPreservedTable->stopFlag = ID_TRUE;
     
     return IDE_SUCCESS;
@@ -479,7 +479,7 @@ qmsPreservedTable::addPredicate( qcStatement  * aStatement,
                  ( ( aNode->lflag & QTC_NODE_JOIN_OPERATOR_MASK )
                    == QTC_NODE_JOIN_OPERATOR_ABSENT ) )
             {
-                /* outer joinìœ¼ë¡œ ì´ë¯¸ ì—°ê²°ê´€ê³„ê°€ ëë‚œ predicateì€ ì œì™¸í•œë‹¤.
+                /* outer joinÀ¸·Î ÀÌ¹Ì ¿¬°á°ü°è°¡ ³¡³­ predicateÀº Á¦¿ÜÇÑ´Ù.
                  * unique key: t1.i1, t2.i1, t3.i1
                  * CASE 1. select t1.i1 t1i1, t1.i2 t1i2, t2.i1 t2i1, t2.i2 t2i2 
                  *         from t1 left outer join t2 on t1.i1=t2.i1 where t1.i1=t2.i2;
@@ -512,7 +512,7 @@ qmsPreservedTable::addPredicate( qcStatement  * aStatement,
                 }
 
                 // BUGBUG
-                // inner joinìœ¼ë¡œ ì—°ê²°ëœ predicateë„ ì œì™¸ëœë‹¤.
+                // inner joinÀ¸·Î ¿¬°áµÈ predicateµµ Á¦¿ÜµÈ´Ù.
                 if ( sIsContain == ID_FALSE )
                 {
                     sLeftNode  = (qtcNode*) aNode->node.arguments;
@@ -581,8 +581,8 @@ qmsPreservedTable::addPredicate( qcStatement  * aStatement,
                  ( ( aNode->lflag & QTC_NODE_JOIN_OPERATOR_MASK )
                    == QTC_NODE_JOIN_OPERATOR_EXIST ) )
             {
-                // or ë…¸ë“œê°€ ìˆëŠ” ê²½ìš° ëª¨ë‘ key preserved tableì´ ì•„ë‹˜
-                // join operator ë…¸ë“œê°€ ìˆëŠ” ê²½ìš° ëª¨ë‘ key preserved tableì´ ì•„ë‹˜
+                // or ³ëµå°¡ ÀÖ´Â °æ¿ì ¸ğµÎ key preserved tableÀÌ ¾Æ´Ô
+                // join operator ³ëµå°¡ ÀÖ´Â °æ¿ì ¸ğµÎ key preserved tableÀÌ ¾Æ´Ô
                 IDE_TEST( unmarkAll( sPreservedTable )
                           != IDE_SUCCESS );
             }
@@ -620,7 +620,7 @@ qmsPreservedTable::fromTreeDepInfo( qcStatement  * aStatement,
  * Description : PROJ-2204 Join Update, Delete
  *
  * Implementation :
- *     from í•˜ìœ„ treeì˜ depInfoë¥¼ ëª¨ë‘ orí•œë‹¤.
+ *     from ÇÏÀ§ treeÀÇ depInfo¸¦ ¸ğµÎ orÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -918,7 +918,7 @@ qmsPreservedTable::addOnCondPredicate( qcStatement  * aStatement,
             else if ( (aNode->node.module->lflag & MTC_NODE_OPERATOR_MASK)
                       == MTC_NODE_OPERATOR_OR )
             {
-                // or ë…¸ë“œê°€ ìˆëŠ” ê²½ìš° ëª¨ë‘ key preserved tableì´ ì•„ë‹˜
+                // or ³ëµå°¡ ÀÖ´Â °æ¿ì ¸ğµÎ key preserved tableÀÌ ¾Æ´Ô
                 IDE_TEST( unmarkAll( sPreservedTable )
                           != IDE_SUCCESS );
             }
@@ -989,9 +989,9 @@ IDE_RC qmsPreservedTable::checkPreservation( qmsPreservedInfo  * aPreservedTable
  *
  * Description : PROJ-2204 Join Update, Delete
  *
- * Implementation : preservation ê²€ì‚¬
+ * Implementation : preservation °Ë»ç
  *
- *   ëª¨ë“  rowì— markê°€ í‘œì‹œë˜ì–´ ìˆë‹¤ë©´ key preserved tableì´ë‹¤.
+ *   ¸ğµç row¿¡ mark°¡ Ç¥½ÃµÇ¾î ÀÖ´Ù¸é key preserved tableÀÌ´Ù.
  *
  *    +---+---+---+---+
  *    | \ | m |   |   |  x
@@ -1069,7 +1069,7 @@ IDE_RC qmsPreservedTable::find( qcStatement  * aStatement,
     {
         sMtcTemplate = & QC_SHARED_TMPLATE(aStatement)->tmplate; /* BUG-46124 */
 
-         // simple viewì— order byë§Œ í—ˆìš©í•œë‹¤.
+         // simple view¿¡ order by¸¸ Çã¿ëÇÑ´Ù.
          if( ( aSFWGH->hierarchy == NULL ) &&
              ( aSFWGH->group == NULL ) &&
              ( aSFWGH->having == NULL ) &&
@@ -1092,7 +1092,7 @@ IDE_RC qmsPreservedTable::find( qcStatement  * aStatement,
                             != IDE_SUCCESS );
              }
         
-             // tupleì— ë°˜ì˜í•œë‹¤.
+             // tuple¿¡ ¹İ¿µÇÑ´Ù.
              for ( i = 0; i < sPreservedTable->tableCount; i++ )
              {
                  if ( sPreservedTable->useKeyPreservedTable == ID_TRUE )
@@ -1175,8 +1175,8 @@ IDE_RC qmsPreservedTable::getFirstKeyPrevTable( qmsSFWGH      * aSFWGH,
  *   ex>
  * CASE 1. delete from (select t1.i1 a, t2.i1 b from t1, t2 where t1.i1 = t2.i1 ) ....  
  * CASE 2. delete from (select t1.i1 a, t2.i1 b from t2, t1 where t1.i1 = t2.i1 ) ....
- * t1,t2 key preserved tableì´ë‹¤. delete ì‹œ ì²«ë²ˆì§¸ key preserved tableë§Œ deleteëœë‹¤.
- * CASE 1ëŠ” T1, CASE 2ëŠ” T2.
+ * t1,t2 key preserved tableÀÌ´Ù. delete ½Ã Ã¹¹øÂ° key preserved table¸¸ deleteµÈ´Ù.
+ * CASE 1´Â T1, CASE 2´Â T2.
  *
  ***********************************************************************/
 
@@ -1271,7 +1271,7 @@ IDE_RC qmsPreservedTable::checkKeyPreservedTableHints( qmsSFWGH * aSFWGH )
                                           sTableRef->aliasName.offset,
                                           sTableRef->aliasName.size ) == 0 )
                     {
-                        // HINTì˜ˆ ëª…ì‹œí•œ í…Œì´ë¸”ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+                        // HINT¿¹ ¸í½ÃÇÑ Å×ÀÌºíÀÌ Á¸ÀçÇÏ´Â °æ¿ì
                         sPreservedTable->isKeyPreserved[i] = ID_TRUE;
                         break;
                     }
@@ -1330,10 +1330,10 @@ IDE_RC qmsPreservedTable::checkAndSetPreservedInfo( qmsSFWGH    * aSFWGH,
  * Description : BUG-46124
  *
  * Implementation :
- *  ì¤‘ì²© êµ¬ì¡°ì¸ Viewì˜ í•˜ìœ„ View ê¹Œì§€ Key Preserved ì•Œê³ ë¦¬ì¦˜ì„ ìˆ˜í–‰í•  ìˆ˜ ìˆë„ë¡,
- *  ìƒìœ„ Viewì˜ PreservedInfoë¥¼ í•˜ìœ„ Viewì— ì—°ê²°ì‹œí‚µë‹ˆë‹¤.
+ *  ÁßÃ¸ ±¸Á¶ÀÎ ViewÀÇ ÇÏÀ§ View ±îÁö Key Preserved ¾Ë°í¸®ÁòÀ» ¼öÇàÇÒ ¼ö ÀÖµµ·Ï,
+ *  »óÀ§ ViewÀÇ PreservedInfo¸¦ ÇÏÀ§ View¿¡ ¿¬°á½ÃÅµ´Ï´Ù.
  *
- *  ì´ë•Œì— í”„ë¡œí¼í‹° __KEY_PRESERVED_TABLE = 0 ì¸ ê²½ìš°ë§Œ ì—°ê²°í•©ë‹ˆë‹¤.
+ *  ÀÌ¶§¿¡ ÇÁ·ÎÆÛÆ¼ __KEY_PRESERVED_TABLE = 0 ÀÎ °æ¿ì¸¸ ¿¬°áÇÕ´Ï´Ù.
  *
  ***********************************************************************/
 
@@ -1397,19 +1397,19 @@ IDE_RC qmsPreservedTable::searchQmsTargetForPreservedTable( qmsParseTree * aPars
  * Description : BUG-46124
  *
  * Implementation :
- *   ì´ í•¨ìˆ˜ëŠ” DML ì‘ì—… ì‹œì— Fromì˜ Viewê°€ ì¡´ì¬í•˜ë©´, ì‹¤ì œ DMLì„ ì‘ì—…í•´ì•¼í• 
- *   Columnê³¼ Tuple ì •ë³´ë¥¼ ì°¾ì„ ìˆ˜ ìˆëŠ” Taget ì •ë³´ë¥¼ ê²€ìƒ‰í•©ë‹ˆë‹¤.
+ *   ÀÌ ÇÔ¼ö´Â DML ÀÛ¾÷ ½Ã¿¡ FromÀÇ View°¡ Á¸ÀçÇÏ¸é, ½ÇÁ¦ DMLÀ» ÀÛ¾÷ÇØ¾ßÇÒ
+ *   Column°ú Tuple Á¤º¸¸¦ Ã£À» ¼ö ÀÖ´Â Taget Á¤º¸¸¦ °Ë»öÇÕ´Ï´Ù.
  *
- *   ë˜í•œ, Viewì¸ ê²½ìš°, DMLì„ í•  ìˆ˜ ìˆëŠ” MTRë¥¼ ì‚¬ìš©í•˜ë„ë¡ íŒíŠ¸ë¥¼ ë‚´ë ¤ì¤ë‹ˆë‹¤.
+ *   ¶ÇÇÑ, ViewÀÎ °æ¿ì, DMLÀ» ÇÒ ¼ö ÀÖ´Â MTR¸¦ »ç¿ëÇÏµµ·Ï ÈùÆ®¸¦ ³»·ÁÁİ´Ï´Ù.
  *
- *   ì´ë•Œ, ìµœìƒìœ„ Viewì˜ Fromì— Viewë¥¼ í¬í•¨í•œ Joinì´ ìˆë‹¤ë©´, DMLë¥¼ í—ˆìš©í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+ *   ÀÌ¶§, ÃÖ»óÀ§ ViewÀÇ From¿¡ View¸¦ Æ÷ÇÔÇÑ JoinÀÌ ÀÖ´Ù¸é, DML¸¦ Çã¿ëÇÏÁö ¾Ê½À´Ï´Ù.
  *
- *   DML ê°€ëŠ¥ View
+ *   DML °¡´É View
  *    - CREATE VIEW V1 AS SELECT I1, I2 FROM T1;
  *    - CREATE VIEW V2 AS SELECT I1, I2 FROM V1;
  *    - CREATE VIEW V3 AS SELECT I1, I2 FROM V2;
  *
- *   DML ë¶ˆê°€ëŠ¥ View
+ *   DML ºÒ°¡´É View
  *    - CREATE VIEW V4 AS SELECT V1.I1, T1.I2 FROM V1, T1 ...;
  *    - CREATE VIEW V5 AS SELECT T1.I1, V2.I2 FROM T1, V2 ...;
  *    - CREATE VIEW V6 AS SELECT V3.I1, V4.I2 FROM V3, V4 ...;
@@ -1439,11 +1439,23 @@ IDE_RC qmsPreservedTable::searchQmsTargetForPreservedTable( qmsParseTree * aPars
     {
         if ( sFrom->joinType != QMS_NO_JOIN )
         {
-            IDE_TEST_RAISE( ( ( aSFWGH->flag & QMV_SFWGH_UPDATABLE_VIEW_MASK )
-                              == QMV_SFWGH_UPDATABLE_VIEW_TRUE ) &&
-                            ( ( sFrom->left->tableRef->view != NULL ) ||
-                              ( sFrom->right->tableRef->view != NULL ) ),
-                            ERR_NOT_KEY_PRESERVED_TABLE );
+            if ( ( aSFWGH->lflag & QMV_SFWGH_UPDATABLE_VIEW_MASK )
+                 == QMV_SFWGH_UPDATABLE_VIEW_TRUE )
+            {
+                if ( sFrom->left->tableRef != NULL )
+                {
+                    IDE_TEST_RAISE( sFrom->left->tableRef->view != NULL, ERR_NOT_KEY_PRESERVED_TABLE );
+                }
+
+                if ( sFrom->right->tableRef != NULL )
+                {
+                    IDE_TEST_RAISE( sFrom->right->tableRef->view != NULL, ERR_NOT_KEY_PRESERVED_TABLE );
+                }
+            }
+            else
+            {
+                /* Nothing to do */
+            }
         }
         else
         {
@@ -1451,11 +1463,23 @@ IDE_RC qmsPreservedTable::searchQmsTargetForPreservedTable( qmsParseTree * aPars
 
             if ( sNextFrom != NULL )
             {
-                IDE_TEST_RAISE( ( ( aSFWGH->flag & QMV_SFWGH_UPDATABLE_VIEW_MASK )
-                                    == QMV_SFWGH_UPDATABLE_VIEW_TRUE ) &&
-                                ( ( sNextFrom->tableRef->view != NULL ) ||
-                                  ( sFrom->tableRef->view != NULL ) ),
-                                ERR_NOT_KEY_PRESERVED_TABLE );
+                if ( ( aSFWGH->lflag & QMV_SFWGH_UPDATABLE_VIEW_MASK )
+                       == QMV_SFWGH_UPDATABLE_VIEW_TRUE )
+                {
+                    if ( sNextFrom->tableRef != NULL )
+                    {
+                        IDE_TEST_RAISE( sNextFrom->tableRef->view != NULL, ERR_NOT_KEY_PRESERVED_TABLE );
+                    }
+
+                    if ( sFrom->tableRef != NULL )
+                    {
+                        IDE_TEST_RAISE( sFrom->tableRef->view != NULL, ERR_NOT_KEY_PRESERVED_TABLE );
+                    }
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
             }
             else
             {

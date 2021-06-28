@@ -59,7 +59,7 @@ void ulpSymTable::ulpFinalize()
     }
 }
 
-// host variableë¥¼ m_SymbolTableì— ì €ì¥í•œë‹¤.
+// host variable¸¦ m_SymbolTable¿¡ ÀúÀåÇÑ´Ù.
 ulpSymTNode *ulpSymTable::ulpSymAdd ( ulpSymTElement *aSym )
 {
     SInt            sIndex;
@@ -76,14 +76,14 @@ ulpSymTNode *ulpSymTable::ulpSymAdd ( ulpSymTElement *aSym )
 
     sIndex = (*mHash)( (UChar *)sSymNode->mElement.mName ) % ( mSize );
 
-    // bucket listì˜ ì œì¼ ì•ì—ë‹¤ ì¶”ê°€í•¨.
+    // bucket listÀÇ Á¦ÀÏ ¾Õ¿¡´Ù Ãß°¡ÇÔ.
     sSymNode2 = mSymbolTable[sIndex];
 
     mSymbolTable[sIndex] = sSymNode;
 
     sSymNode->mNext = sSymNode2;
 
-    // mInOrderList ì— ì¶”ê°€í•¨.
+    // mInOrderList ¿¡ Ãß°¡ÇÔ.
     for ( sSymNode2 = mInOrderList, sSymNode3 = NULL
           ; sSymNode2 != NULL
           ; sSymNode2 = sSymNode2->mInOrderNext  )
@@ -119,7 +119,7 @@ ulpSymTNode *ulpSymTable::ulpSymAdd ( ulpSymTElement *aSym )
     return NULL;
 }
 
-// íŠ¹ì • ì´ë¦„ì„ ê°–ëŠ” ë³€ìˆ˜ë¥¼ symbol tableì—ì„œ ê²€ìƒ‰í•œë‹¤.
+// Æ¯Á¤ ÀÌ¸§À» °®´Â º¯¼ö¸¦ symbol table¿¡¼­ °Ë»öÇÑ´Ù.
 ulpSymTElement *ulpSymTable::ulpSymLookup( SChar *aName )
 {
     SInt sIndex;
@@ -144,7 +144,7 @@ ulpSymTElement *ulpSymTable::ulpSymLookup( SChar *aName )
     }
 }
 
-// íŠ¹ì • ì´ë¦„ì„ ê°–ëŠ” ë³€ìˆ˜ë¥¼ symbol tableì—ì„œ ì œê±°í•œë‹¤.
+// Æ¯Á¤ ÀÌ¸§À» °®´Â º¯¼ö¸¦ symbol table¿¡¼­ Á¦°ÅÇÑ´Ù.
 void ulpSymTable::ulpSymDelete( SChar *aName )
 {
     SInt sIndex;
@@ -186,12 +186,12 @@ void ulpSymTable::ulpPrintSymT( SInt aScopeD )
     SInt   sIDcnt;
     SInt   sSIDcnt;
     SInt   sArrSizecnt;
-    idBool sIsIDEnd;      // id ê¸¸ì´ê°€ 15ìë¥¼ ë„˜ì„ ê²½ìš° ë‹¤ìŒ ë¼ì¸ì— ì¶œë ¥í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨.
-    idBool sIsSIDEnd;     // struct id ê¸¸ì´ê°€ 10ìë¥¼ ë„˜ì„ ê²½ìš° ì‚¬ìš©ë¨.
-    idBool sIsArrSizeEnd; // array size ê¸¸ì´ê°€ 10ìë¥¼ ë„˜ì„ ê²½ìš° ì‚¬ìš©ë¨.
+    idBool sIsIDEnd;      // id ±æÀÌ°¡ 15ÀÚ¸¦ ³ÑÀ» °æ¿ì ´ÙÀ½ ¶óÀÎ¿¡ Ãâ·ÂÇÏ±â À§ÇØ »ç¿ëµÊ.
+    idBool sIsSIDEnd;     // struct id ±æÀÌ°¡ 10ÀÚ¸¦ ³ÑÀ» °æ¿ì »ç¿ëµÊ.
+    idBool sIsArrSizeEnd; // array size ±æÀÌ°¡ 10ÀÚ¸¦ ³ÑÀ» °æ¿ì »ç¿ëµÊ.
     idBool sIsFirst;
     SChar  sTmpStr[11];
-    SChar  sArrSize[100]; // array size stingì„ ì €ì¥í•˜ê¸° ìœ„í•œ ì„ì‹œë²„í¼.
+    SChar  sArrSize[100]; // array size stingÀ» ÀúÀåÇÏ±â À§ÇÑ ÀÓ½Ã¹öÆÛ.
     ulpSymTNode *sNode;
 
     sCnt = 1;
@@ -234,7 +234,7 @@ void ulpSymTable::ulpPrintSymT( SInt aScopeD )
             {
                 sMLineCnt  = 1;
                 if (aScopeD == -1)
-                {   // structure ì¼ê²½ìš°
+                {   // structure ÀÏ°æ¿ì
                     idlOS::printf( "    " );  //4 spaces
                 }
                 idlOS::printf( "%s", sLineB1 );
@@ -268,7 +268,7 @@ void ulpSymTable::ulpPrintSymT( SInt aScopeD )
             else
             {
                 if (aScopeD == -1)
-                {   // structure ì¼ê²½ìš°
+                {   // structure ÀÏ°æ¿ì
                     idlOS::printf( "    " );  //4 spaces
                 }
                 idlOS::printf( "|   |" ); // 3 spaces
@@ -331,6 +331,10 @@ void ulpSymTable::ulpPrintSymT( SInt aScopeD )
                             break;
                         case H_NUMERIC :
                             idlOS::strcpy(sTmpStr, "numeric");
+                            break;
+                        /* BUG-45933 */
+                        case H_NUMERIC_STRUCT :
+                            idlOS::strcpy(sTmpStr, "numeric_struct");
                             break;
                         case H_INTEGER :
                             idlOS::strcpy(sTmpStr, "integer");

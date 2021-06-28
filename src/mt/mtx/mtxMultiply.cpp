@@ -15,7 +15,7 @@
  */
 
 /***********************************************************************
- * $Id: mtxMultiply.cpp 85045 2019-03-20 01:40:10Z andrew.shin $
+ * $Id: mtxMultiply.cpp 84859 2019-02-01 06:07:08Z andrew.shin $
  **********************************************************************/
 #include <mtx.h>
 
@@ -119,8 +119,8 @@ static IDE_RC mtxMultiplyDouble( mtxEntry ** aEntry )
         *sReturn = ( *sArg1Val ) * ( *sArg2Val );
 
         /* fix BUG-13757
-         *  double'0' * double'-1' = double'-0' ì´ ë‚˜ì˜¤ë¯€ë¡œ
-         *  -0 ê°’ì„ 0 ê°’ìœ¼ë¡œ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ ì½”ë“œì„.
+         *  double'0' * double'-1' = double'-0' ÀÌ ³ª¿À¹Ç·Î
+         *  -0 °ªÀ» 0 °ªÀ¸·Î Ã³¸®ÇÏ±â À§ÇÑ ÄÚµåÀÓ.
          */
         /* PATCH(BEGIN): GNU MATH LIBRARY - REMOVE MINUS ZERO */
         if ( *sReturn < 0.0 )

@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: Connection.cpp 80540 2017-07-19 08:00:50Z daramix $
+ * $Id: Connection.cpp 86150 2019-09-10 06:40:44Z bethy $
  ******************************************************************************/
 
 #include <utdb.h>
@@ -214,6 +214,22 @@ IDE_RC Connection::delMetaColumns( metaColumns * aMeta )
     return IDE_FAILURE;
 }
 
+/* BUG-47434 ¿¡·¯¸¦ Ãâ·ÂÇÒ ¶§ ¿¡·¯ ÄÚµåµµ Æ÷ÇÔÇØ¾ß ÇÕ´Ï´Ù */
+void Connection::setServerType(SERVER_TYPE aType)
+{
+    if (aType == MASTER)
+    {
+        idlOS::strcpy(mServerType, "Master");
+    }
+    else if (aType == SLAVE)
+    {
+        idlOS::strcpy(mServerType, "Slave");
+    }
+    else
+    {
+        idlOS::strcpy(mServerType, "Unknown");
+    }
+}
 
 IDE_RC Connection::execute(const SChar * aSQL, ... )
 {
@@ -345,8 +361,8 @@ dbDriver::finalize()
         idlOS::free(mURL);
 
         /* BUG-40205 insure++ warning 
-         * dbDriver::finalizeê°€ í˜¸ì¶œë˜ë„ë¡ ìˆ˜ì •í–ˆìœ¼ë‚˜,
-         * dlclose í˜¸ì¶œ ì‹œ ì˜¤ë¥˜ê°€ ìˆì–´ì„œ ì½”ë©˜íŠ¸ ì²˜ë¦¬í•¨
+         * dbDriver::finalize°¡ È£ÃâµÇµµ·Ï ¼öÁ¤ÇßÀ¸³ª,
+         * dlclose È£Ãâ ½Ã ¿À·ù°¡ ÀÖ¾î¼­ ÄÚ¸àÆ® Ã³¸®ÇÔ
         if(handle != NULL)
         {
             idlOS::dlclose(handle);

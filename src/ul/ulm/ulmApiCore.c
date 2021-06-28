@@ -93,8 +93,8 @@ ulmResourceManager  gResourceManager[ULM_MAX_QUERY_COUNT] =
     },
 
     // BUG-34728: cpu is too high
-    // cpuë¥¼ ë‚®ì¶”ê¸° ìœ„í•´ join query ìƒˆë¡œ ì¶”ê°€.
-    // v$view ë³´ë‹¤ x$tableì„ ì§ì ‘ ì¡°íšŒí•˜ëŠ” ê²ƒì´ cpu ì ê²Œ ì‚¬ìš©
+    // cpu¸¦ ³·Ãß±â À§ÇØ join query »õ·Î Ãß°¡.
+    // v$view º¸´Ù x$tableÀ» Á÷Á¢ Á¶È¸ÇÏ´Â °ÍÀÌ cpu Àû°Ô »ç¿ë
     // ULM_V_SESSTAT_EXECUTING_ONLY
     { SQL_NULL_HSTMT, NULL, NULL, 0,
       "SELECT B.SID, B.VALUE "
@@ -150,7 +150,7 @@ ulmResourceManager  gResourceManager[ULM_MAX_QUERY_COUNT] =
     { SQL_NULL_HSTMT, NULL, NULL, 0,
       "SELECT EVENT_ID, NAME, WAIT_CLASS_ID, WAIT_CLASS "
       "FROM V$EVENT_NAME "
-      /* BUG-39222 ì´ í•¨ìˆ˜  ê²°ê³¼ ì¤‘ no wait event ì œì™¸ëŠ” ì´ˆê¸° ê°œë°œë‹¹ì‹œ í˜‘ì˜ì‚¬í•­ */
+      /* BUG-39222 ÀÌ ÇÔ¼ö  °á°ú Áß no wait event Á¦¿Ü´Â ÃÊ±â °³¹ß´ç½Ã ÇùÀÇ»çÇ× */
       "WHERE NAME!='no wait event' "
       "ORDER BY EVENT_ID",
       ulmBindColOfEventName, ulmCopyOfEventName
@@ -174,8 +174,8 @@ ulmResourceManager  gResourceManager[ULM_MAX_QUERY_COUNT] =
     },
 
     // BUG-34728: cpu is too high
-    // v$sqltext ì¡°íšŒë¥¼ x$statement join queryë¡œ ë³€ê²½
-    // active ì„¸ì…˜ë“¤ì˜ current sql text ë“¤ì„ ì¡°íšŒ
+    // v$sqltext Á¶È¸¸¦ x$statement join query·Î º¯°æ
+    // active ¼¼¼ÇµéÀÇ current sql text µéÀ» Á¶È¸
     // ULM_SQL_TEXT
     { SQL_NULL_HSTMT, NULL, NULL, 0,
       "SELECT A.ID, B.ID, B.QUERY, B.QUERY_START_TIME, B.EXECUTE_FLAG, B.SQL_CACHE_TEXT_ID, "
@@ -188,7 +188,7 @@ ulmResourceManager  gResourceManager[ULM_MAX_QUERY_COUNT] =
     },
 
     // BUG-34728: cpu is too high
-    // ê¸°ì¡´ì˜ ë‹¨ì¼ sql text ì¡°íšŒ ê¸°ëŠ¥ì„ ìœ ì§€í•˜ê¸° ìœ„í•´ ìƒˆë¡œ ì¶”ê°€
+    // ±âÁ¸ÀÇ ´ÜÀÏ sql text Á¶È¸ ±â´ÉÀ» À¯ÁöÇÏ±â À§ÇØ »õ·Î Ãß°¡
     // ULM_SQL_TEXT_BY_STMT_ID
     { SQL_NULL_HSTMT, NULL, NULL, 0,
       "SELECT SESSION_ID, ID, QUERY, QUERY_START_TIME, EXECUTE_FLAG, SQL_CACHE_TEXT_ID, "
@@ -680,10 +680,10 @@ acp_rc_t ulmBindColOfSqlText( void )
 
     sPtr = (ulmSqlText *)gResourceManagerPtr->mBindArray;
 
-    /* BUG-41825: í•„ë“œ ì¶”ê°€, Length ë°›ëŠ” í•„ë“œ ì¡°ì ˆ */
+    /* BUG-41825: ÇÊµå Ãß°¡, Length ¹Þ´Â ÇÊµå Á¶Àý */
 
     // BUG-34728: cpu is too high
-    // ê¸°ì¡´ì—ëŠ” sqltextë§Œ ì¡°íšŒí–ˆëŠ”ë°, ìˆ˜ì •í›„ sessionID, stmtID, sqltextë¥¼ ì¡°íšŒí•œë‹¤
+    // ±âÁ¸¿¡´Â sqltext¸¸ Á¶È¸Çß´Âµ¥, ¼öÁ¤ÈÄ sessionID, stmtID, sqltext¸¦ Á¶È¸ÇÑ´Ù
     ACI_TEST( SQLBindCol( gResourceManagerPtr->mHStmt, 1, SQL_C_SLONG, &sPtr->mSessID, 0, NULL )
               != SQL_SUCCESS );
 
@@ -993,7 +993,7 @@ void ulmCopyOfSqlText( acp_uint32_t aPos )
     for( sI = 0; sI < gFetchedRowCount; sI++ )
     {
         // BUG-34728: cpu is too high
-        // indicator[2] ëŠ” 3ë²ˆì§¸ ì¡°íšŒì»¬ëŸ¼, ì¦‰ queryì˜ null ì—¬ë¶€í™•ì¸
+        // indicator[2] ´Â 3¹øÂ° Á¶È¸ÄÃ·³, Áï queryÀÇ null ¿©ºÎÈ®ÀÎ
         if( sSrc->mSqlTextLength != SQL_NULL_DATA ) /* BUG-41825 */
         {
             acpMemCpy( sDest, sSrc, sSize );
@@ -1004,7 +1004,7 @@ void ulmCopyOfSqlText( acp_uint32_t aPos )
                 sDest->mSqlCacheTextID[0] = '\0';
             }
         }
-        // if query is null. nullì¸ ê²½ìš°ê°€ ìžˆëŠ”ì§€ëŠ” ëª¨ë¥´ê² ìŒ
+        // if query is null. nullÀÎ °æ¿ì°¡ ÀÖ´ÂÁö´Â ¸ð¸£°ÚÀ½
         else
         {
             sDest->mSessID = sSrc->mSessID;

@@ -599,56 +599,56 @@ class ColumnDataFactory
         
         switch (aSQLType)
         {
-        case SQLType.SQL_CHAR:
-        case SQLType.SQL_VARCHAR:
-        case SQLType.SQL_DECIMAL:
-        case SQLType.SQL_NUMERIC:
-        case SQLType.SQL_FLOAT:
+        case AltibaseSQLType.SQL_CHAR:
+        case AltibaseSQLType.SQL_VARCHAR:
+        case AltibaseSQLType.SQL_DECIMAL:
+        case AltibaseSQLType.SQL_NUMERIC:
+        case AltibaseSQLType.SQL_FLOAT:
             sNewColumnData = new StringColumnData();
             break;
             
-        case SQLType.SQL_SMALLINT:
-        case SQLType.SQL_TINYINT:
+        case AltibaseSQLType.SQL_SMALLINT:
+        case AltibaseSQLType.SQL_TINYINT:
             sNewColumnData = new SmallIntColumnData();
             break;
             
-        case SQLType.SQL_INTEGER:
+        case AltibaseSQLType.SQL_INTEGER:
             sNewColumnData = new IntegerColumnData();
             break;
             
-        case SQLType.SQL_REAL:
+        case AltibaseSQLType.SQL_REAL:
             sNewColumnData = new RealColumnData();
             break;
             
-        case SQLType.SQL_DOUBLE:
+        case AltibaseSQLType.SQL_DOUBLE:
             sNewColumnData = new DoubleColumnData();
             break;
             
-        case SQLType.SQL_BIGINT:
+        case AltibaseSQLType.SQL_BIGINT:
             sNewColumnData = new BigIntColumnData();
             break;
             
-        case SQLType.SQL_DATE:
+        case AltibaseSQLType.SQL_DATE:
             sNewColumnData = new DateColumnData();
             break;
             
-        case SQLType.SQL_TIME:
+        case AltibaseSQLType.SQL_TIME:
             sNewColumnData = new TimeColumnData();
             break;
             
-        case SQLType.SQL_TIMESTAMP:
+        case AltibaseSQLType.SQL_TIMESTAMP:
             sNewColumnData = new TimestampColumnData();
             break;
             
-        case SQLType.SQL_BINARY:
+        case AltibaseSQLType.SQL_BINARY:
             sNewColumnData = new BinaryColumnData();
             break;
             
-        case SQLType.SQL_BLOB:
+        case AltibaseSQLType.SQL_BLOB:
             sNewColumnData = new BlobColumnData();
             break;
             
-        case SQLType.SQL_CLOB:
+        case AltibaseSQLType.SQL_CLOB:
             sNewColumnData = new ClobColumnData();
             break;
             

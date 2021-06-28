@@ -25,7 +25,7 @@ abstract public class CmOperationDef
     static final byte             DB_OP_GET_PROPERTY                     = 8;
     static final byte             DB_OP_GET_PROPERTY_RESULT              = 9;
     static final byte             DB_OP_SET_PROPERTY_RESULT              = 11;
-    static final byte             DB_OP_PREPARE                          = 12;  // ÏÇ¨Ïö©ÌïòÏßÄ ÏïäÏùå. ÎåÄÏã† OPERATION_PREPARE_BY_CID ÏÇ¨Ïö©.
+    static final byte             DB_OP_PREPARE                          = 12;  // ªÁøÎ«œ¡ˆ æ ¿Ω. ¥ÎΩ≈ OPERATION_PREPARE_BY_CID ªÁøÎ.
     static final byte             DB_OP_PREPARE_RESULT                   = 13;
     static final byte             DB_OP_GET_PLAN                         = 14;
     static final byte             DB_OP_GET_PLAN_RESULT                  = 15;
@@ -45,7 +45,7 @@ abstract public class CmOperationDef
     static final byte             DB_OP_FETCH_END_RESULT                 = 40;
     static final byte             DB_OP_FREE                             = 41;
     static final byte             DB_OP_FREE_RESULT                      = 42;
-    static final byte             DB_OP_CANCEL                           = 43;  // ÏÇ¨Ïö©ÌïòÏßÄ ÏïäÏùå. ÎåÄÏã† OPERATION_CANCEL_BY_CID ÏÇ¨Ïö©.
+    static final byte             DB_OP_CANCEL                           = 43;  // ªÁøÎ«œ¡ˆ æ ¿Ω. ¥ÎΩ≈ OPERATION_CANCEL_BY_CID ªÁøÎ.
     static final byte             DB_OP_CANCEL_RESULT                    = 44;
     static final byte             DB_OP_TRANSACTION_RESULT               = 46;
     static final byte             DB_OP_LOB_GET_SIZE                     = 47;
@@ -93,15 +93,44 @@ abstract public class CmOperationDef
     static final byte             DB_OP_SHARD_HANDSHAKE                  = 93;
     static final byte             DB_OP_SHARD_HANDSHAKE_RESULT           = 94;
     static final byte             DB_OP_SHARD_TRANSACTION_RESULT         = 96;
-    static final        byte      DB_OP_COUNT                            = 97;  // the number of the operations
 
-    // BUG-46513 shardjdbc Í¥ÄÎ†®ÌÅ¥ÎûòÏä§ÏóêÏÑú Ï∞∏Ï°∞ÌïòÍ∏∞ ÏúÑÌï¥ ÏïÑÎûò ÏÜçÏÑ±Îì§ÏùÑ publicÏúºÎ°ú Î≥ÄÍ≤Ω
+    static final byte             DB_OP_SHARD_STMT_PARTIAL_ROLLBACK      = 105;
+    static final byte             DB_OP_SHARD_STMT_PARTIAL_ROLLBACK_RESULT = 106;
+    static final byte             DB_OP_SHARD_NODE_REPORT                = 107;
+    static final byte             DB_OP_SHARD_NODE_REPORT_RESULT         = 108;
+    static final byte             DB_OP_ERROR_V3_RESULT                  = 109;  
+    static final byte             DB_OP_CONNECT_V3                       = 110;  
+    static final byte             DB_OP_CONNECT_V3_RESULT                = 111;  
+    static final byte             DB_OP_SET_PROPERTY_V3_RESULT           = 113;  
+    static final byte             DB_OP_PARAM_DATA_IN_LIST_V3_RESULT     = 115;  
+    static final byte             DB_OP_SHARD_TRANSACTION_V3_RESULT      = 119;  
+    static final byte             DB_OP_SHARD_PREPARE_V3                 = 120;  
+    static final byte             DB_OP_SHARD_PREPARE_V3_RESULT          = 121;  
+    static final byte             DB_OP_SHARD_END_PENDING_TX_V3          = 122;  
+    static final byte             DB_OP_SHARD_END_PENDING_TX_V3_RESULT   = 123;  
+    static final byte             DB_OP_LOB_GET_SIZE_V3                  = 124;
+    static final byte             DB_OP_LOB_GET_SIZE_V3_RESULT           = 125;
+    static final byte             DB_OP_FETCH_V3                         = 126;  
+    static final byte             DB_OP_SHARD_REBUILD_NOTI_V3            = 127;  
+    static final byte             DB_OP_PREPARE_V3                       = (byte)128;  // ªÁøÎ«œ¡ˆ æ ¿Ω. ¥ÎΩ≈ OPERATION_PREPARE_BY_CID_V3 ªÁøÎ.
+    static final byte             DB_OP_PREPARE_BY_CID_V3                = (byte)129;
+    static final byte             DB_OP_PREPARE_V3_RESULT                = (byte)130;
+
+    static final byte             DB_OP_COUNT                            = (byte)131;  // the number of the operations
+
+    // BUG-46513 shardjdbc ∞¸∑√≈¨∑°Ω∫ø°º≠ ¬¸¡∂«œ±‚ ¿ß«ÿ æ∆∑° º”º∫µÈ¿ª public¿∏∑Œ ∫Ø∞Ê
     public static final byte      DB_OP_SET_PROPERTY                     = 10;
     public static final byte      DB_OP_TRANSACTION                      = 45;
     public static final byte      DB_OP_PARAM_DATA_IN_LIST_V2            = 83;  // BUG-44572
     public static final byte      DB_OP_EXECUTE_V2                       = 85;  // BUG-44572
     public static final byte      DB_OP_EXECUTE_V2_RESULT                = 86;  // BUG-44572
     public static final byte      DB_OP_SHARD_TRANSACTION                = 95;
+
+    public static final byte      DB_OP_SET_PROPERTY_V3                  = 112;
+    public static final byte      DB_OP_PARAM_DATA_IN_LIST_V3            = 114;  
+    public static final byte      DB_OP_EXECUTE_V3                       = 116;  
+    public static final byte      DB_OP_EXECUTE_V3_RESULT                = 117;  
+    public static final byte      DB_OP_SHARD_TRANSACTION_V3             = 118;
 
     private static final String[] DB_OP_NAMES = {
         "DB_OP_MESSAGE",
@@ -182,15 +211,15 @@ abstract public class CmOperationDef
         "DB_OP_CANCEL_BY_CID",
         "DB_OP_LOB_TRIM",
         "DB_OP_LOB_TRIM_RESULT", 
-        "DB_OP_CONNECT_EX",        // BUG-38496
-        "DB_OP_CONNECT_EX_RESULT", // BUG-38496
-        "DB_OP_FETCH_V2",          // BUG-39463
-        "DB_OP_SET_PROPERTY_V2",   // BUG-41793
-        "DB_OP_IPCDA_LAST_OP_ENDED", // PROJ-2616
-        "DB_OP_PARAM_DATA_IN_LIST_V2",        // BUG-44572
-        "DB_OP_PARAM_DATA_IN_LIST_V2_RESULT", // BUG-44572
-        "DB_OP_EXECUTE_V2",                   // BUG-44572
-        "DB_OP_EXECUTE_V2_RESULT",            // BUG-44572,
+        "DB_OP_CONNECT_EX",                              // BUG-38496
+        "DB_OP_CONNECT_EX_RESULT",                       // BUG-38496
+        "DB_OP_FETCH_V2",                                // BUG-39463
+        "DB_OP_SET_PROPERTY_V2",                         // BUG-41793
+        "DB_OP_IPCDA_LAST_OP_ENDED",                     // PROJ-2616
+        "DB_OP_PARAM_DATA_IN_LIST_V2",                   // BUG-44572
+        "DB_OP_PARAM_DATA_IN_LIST_V2_RESULT",            // BUG-44572
+        "DB_OP_EXECUTE_V2",                              // BUG-44572
+        "DB_OP_EXECUTE_V2_RESULT",                       // BUG-44572
         "DB_OP_SHARD_ANALYZE",
         "DB_OP_SHARD_ANALYZE_RESULT",
         "DB_OP_SHARD_NODE_UPDATE_LIST",
@@ -200,7 +229,41 @@ abstract public class CmOperationDef
         "DB_OP_SHARD_HANDSHAKE",
         "DB_OP_SHARD_HANDSHAKE_RESULT",
         "DB_OP_SHARD_TRANSACTION",
-        "DB_OP_SHARD_TRANSACTION_RESULT"
+        "DB_OP_SHARD_TRANSACTION_RESULT",
+        "DB_OP_SHARD_PREPARE",
+        "DB_OP_SHARD_PREPARE_RESULT",
+        "DB_OP_SHARD_ENDPENDING_TX",
+        "DB_OP_SHARD_ENDPENDING_TX_RESULT",
+        "DB_OP_SET_SAVEPOINT",
+        "DB_OP_SET_SAVEPOINT_RESULT",
+        "DB_OP_ROLLBACK_TO_SAVEPOINT",
+        "DB_OP_ROLLBACK_TO_SAVEPOINT_RESULT",
+        "DB_OP_SHARD_STMT_PARTIAL_ROLLBACK",
+        "DB_OP_SHARD_STMT_PARTIAL_ROLLBACK_RESULT",
+        "DB_OP_SHARD_NODE_REPORT",
+        "DB_OP_SHARD_NODE_REPORT_RESULT",
+        "DB_OP_ERROR_V3_RESULT",
+        "DB_OP_CONNECT_V3",
+        "DB_OP_CONNECT_V3_RESULT",
+        "DB_OP_SET_PROPERTY_V3",
+        "DB_OP_SET_PROPERTY_V3_RESULT",
+        "DB_OP_PARAM_DATA_IN_LIST_V3",
+        "DB_OP_PARAM_DATA_IN_LIST_V3_RESULT",
+        "DB_OP_EXECUTE_V3",
+        "DB_OP_EXECUTE_V3_RESULT",
+        "DB_OP_SHARD_TRANSACTION_V3",
+        "DB_OP_SHARD_TRANSACTION_V3_RESULT",
+        "DB_OP_SHARD_PREPARE_V3",
+        "DB_OP_SHARD_PREPARE_V3_RESULT",
+        "DB_OP_SHARD_END_PENDING_TX_V3",
+        "DB_OP_SHARD_END_PENDING_TX_V3_RESULT",
+        "DB_OP_LOB_GET_SIZE_V3",
+        "DB_OP_LOB_GET_SIZE_V3_RESULT",
+        "DB_OP_FETCH_V3",
+        "DB_OP_SHARD_REBUILD_NOTI_V3",
+        "DB_OP_PREPARE_V3",
+        "DB_OP_PREPARE_BY_CID_V3",
+        "DB_OP_PREPARE_V3_RESULT"
     };
 
     public static final short     CONNECT_MODE_NORMAL                    = 0;
@@ -250,15 +313,18 @@ abstract public class CmOperationDef
     public static final int       WRITE_STRING_MODE_NCHAR                = 2;
     public static final int       WRITE_STRING_MODE_NLITERAL             = 3;
     
+    public static final int       SHARD_NODE_REPORT_TYPE_CONNECTION         = 1;
+    public static final int       SHARD_NODE_REPORT_TYPE_TRANSACTION_BROKEN = 2;
+
     protected CmOperationDef()
     {
     }
 
     /**
-     * aOpÏóê Ìï¥ÎãπÌïòÎäî Operation Ïù¥Î¶ÑÏùÑ ÏñªÎäîÎã§.
+     * aOpø° «ÿ¥Á«œ¥¬ Operation ¿Ã∏ß¿ª æÚ¥¬¥Ÿ.
      * 
      * @param aOp Operation Code
-     * @return Operation Ïù¥Î¶Ñ
+     * @return Operation ¿Ã∏ß
      */
     public static String getOperationName(int aOp)
     {
@@ -266,13 +332,13 @@ abstract public class CmOperationDef
     }
 
     /**
-     * aOpÏóê Ìï¥ÎãπÌïòÎäî Operation Ïù¥Î¶ÑÏùÑ ÏñªÎäîÎã§.
+     * aOpø° «ÿ¥Á«œ¥¬ Operation ¿Ã∏ß¿ª æÚ¥¬¥Ÿ.
      * <p>
-     * aWithIDÎ•º trueÎ°ú Ï£ºÎ©¥ 'OPERATION_NAME(99)'ÏôÄ Í∞ôÏù¥ IDÍ∞íÏù¥ Ìè¨Ìï®Îêú ÌòïÌÉúÎ°ú Ï§ÄÎã§.
+     * aWithID∏¶ true∑Œ ¡÷∏È 'OPERATION_NAME(99)'øÕ ∞∞¿Ã ID∞™¿Ã ∆˜«‘µ» «¸≈¬∑Œ ¡ÿ¥Ÿ.
      * 
      * @param aOp Operation Code
-     * @param aWithID IDÍ∞íÏù¥ Ìè¨Ìï®Îêú ÌòïÌÉúÎ°ú ÏñªÏùÑÍ≤ÉÏù∏ÏßÄ Ïó¨Î∂Ä
-     * @return Operation Ïù¥Î¶Ñ
+     * @param aWithID ID∞™¿Ã ∆˜«‘µ» «¸≈¬∑Œ æÚ¿ª∞Õ¿Œ¡ˆ ø©∫Œ
+     * @return Operation ¿Ã∏ß
      */
     public static String getOperationName(int aOp, boolean aWithID)
     {

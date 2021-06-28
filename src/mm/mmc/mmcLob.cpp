@@ -68,7 +68,8 @@ IDE_RC mmcLob::alloc(mmcLobLocator **aLobLocator, UInt aStatementID, ULong aLoca
     return IDE_FAILURE;
 }
 
-IDE_RC mmcLob::free(mmcLobLocator *aLobLocator)
+IDE_RC mmcLob::free(idvSQL        *aStatistics,
+                    mmcLobLocator *aLobLocator)
 {
     mmcLobLocator *sLobLocator;
     iduListNode   *sIterator;
@@ -79,7 +80,7 @@ IDE_RC mmcLob::free(mmcLobLocator *aLobLocator)
     {
         sLobLocator = (mmcLobLocator *)sIterator->mObj;
 
-        if (qciMisc::lobFinalize(sLobLocator->mLocatorID) != IDE_SUCCESS)
+        if (qciMisc::lobFinalize(aStatistics, sLobLocator->mLocatorID) != IDE_SUCCESS)
         {
             sRet = IDE_FAILURE;
         }
@@ -91,7 +92,7 @@ IDE_RC mmcLob::free(mmcLobLocator *aLobLocator)
         IDE_TEST(mPool.memfree(sLobLocator) != IDE_SUCCESS);
     }
 
-    if (qciMisc::lobFinalize(aLobLocator->mLocatorID) != IDE_SUCCESS)
+    if (qciMisc::lobFinalize(aStatistics, aLobLocator->mLocatorID) != IDE_SUCCESS)
     {
         sRet = IDE_FAILURE;
     }

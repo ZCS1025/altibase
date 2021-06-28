@@ -21,10 +21,11 @@
 /* 
  * PROJ-2047 Strengthening LOB - Added Interfaces
  */
-SQLRETURN ulnTrimLob(ulnStmt     *aStmt,
-                     acp_sint16_t aLocatorCType,
-                     acp_uint64_t aLocator,
-                     acp_uint32_t aStartOffset)
+SQLRETURN ulnTrimLob(acp_sint16_t   aHandleType,
+                     ulnObject     *aObject,
+                     acp_sint16_t   aLocatorCType,
+                     acp_uint64_t   aLocator,
+                     acp_uint32_t   aStartOffset)
 {
     ULN_FLAG(sNeedExit);
     ULN_FLAG(sNeedFinPtContext);
@@ -35,7 +36,7 @@ SQLRETURN ulnTrimLob(ulnStmt     *aStmt,
     ulnLob        sLob;
     ulnMTypeID    sMTYPE;
 
-    ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_TRIMLOB, aStmt, ULN_OBJ_TYPE_STMT);
+    ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_TRIMLOB, aObject, aHandleType);
 
     /*
      * Enter
@@ -49,8 +50,8 @@ SQLRETURN ulnTrimLob(ulnStmt     *aStmt,
 
     ULN_FLAG_UP(sNeedExit);
 
-    sPtContext = &(aStmt->mParentDbc->mPtContext);
-    /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
+    sPtContext = &(sDbc->mPtContext);
+    /* BUG-44125 [mm-cli] IPCDA ¸ðµå Å×½ºÆ® Áß hang - iloader CLOB */
     ACI_TEST_RAISE(cmiGetLinkImpl(&sPtContext->mCmiPtContext) == CMI_LINK_IMPL_IPCDA,
                    IPCDANotSupport);
     /*
@@ -72,7 +73,7 @@ SQLRETURN ulnTrimLob(ulnStmt     *aStmt,
 
 
     /*
-     * ulnLob êµ¬ì¡°ì²´ ì´ˆê¸°í™”
+     * ulnLob ±¸Á¶Ã¼ ÃÊ±âÈ­
      */
 
     ulnLobInitialize(&sLob, sMTYPE);                        /* ULN_LOB_ST_INITIALIZED */
@@ -80,20 +81,20 @@ SQLRETURN ulnTrimLob(ulnStmt     *aStmt,
     sLob.mState = ULN_LOB_ST_OPENED;                        /* ULN_LOB_ST_OPENED */
 
     ACI_TEST(ulnInitializeProtocolContext(&sFnContext,
-                                          &(aStmt->mParentDbc->mPtContext),
-                                          &(aStmt->mParentDbc->mSession)) != ACI_SUCCESS);
+                                          &(sDbc->mPtContext),
+                                          &(sDbc->mSession)) != ACI_SUCCESS);
 
     ULN_FLAG_UP(sNeedFinPtContext);
 
     ACI_TEST(sLob.mOp->mTrim(&sFnContext,
-                             &(aStmt->mParentDbc->mPtContext),
+                             &(sDbc->mPtContext),
                              &sLob,
                              aStartOffset) != ACI_SUCCESS);
 
     ULN_FLAG_DOWN(sNeedFinPtContext);
 
     ACI_TEST(ulnFinalizeProtocolContext(&sFnContext,
-                                        &(aStmt->mParentDbc->mPtContext))
+                                        &(sDbc->mPtContext))
                 != ACI_SUCCESS);
 
     ULN_FLAG_DOWN(sNeedExit);
@@ -120,7 +121,7 @@ SQLRETURN ulnTrimLob(ulnStmt     *aStmt,
 
     ULN_IS_FLAG_UP(sNeedFinPtContext)
     {
-        ulnFinalizeProtocolContext(&sFnContext,&(aStmt->mParentDbc->mPtContext) );
+        ulnFinalizeProtocolContext(&sFnContext,&(sDbc->mPtContext) );
     }
 
     ULN_IS_FLAG_UP(sNeedExit)

@@ -13,7 +13,7 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 /*
  * Picl_aix.c
  *
@@ -61,79 +61,79 @@
  * Method:    update
  * Signature: (Lcom/altibase/picl/Picl;)V
  */
-JNIEXPORT void JNICALL Java_com_altibase_picl_Cpu_update
+    JNIEXPORT void JNICALL Java_com_altibase_picl_Cpu_update
 (JNIEnv *env, jobject cpu_obj, jobject picl_obj)
 {
-  jfieldID prev_fid, sys_fid, user_fid;
-  jlongArray mPrevTime;
-  float mUserPerc;
-  float mSysPerc;
+    jfieldID prev_fid, sys_fid, user_fid;
+    jlongArray mPrevTime;
+    float mUserPerc;
+    float mSysPerc;
 
-  jboolean isCopy = JNI_TRUE;
+    jboolean isCopy = JNI_TRUE;
 
-  /* Variable for calculate CPU Percentage */
-  float delta; 
+    /* Variable for calculate CPU Percentage */
+    float delta; 
 
-  /* Get a reference to obj's class */
-  jclass cls = (*env)->GetObjectClass(env, cpu_obj);
-  jclass picl_cls = (*env)->GetObjectClass(env, picl_obj);
+    /* Get a reference to obj's class */
+    jclass cls = (*env)->GetObjectClass(env, cpu_obj);
+    jclass picl_cls = (*env)->GetObjectClass(env, picl_obj);
 
-  /* Look for the instance field mPrevTime in cls */
-  prev_fid = (*env)->GetFieldID(env, picl_cls, "mPrevTime", "[J");
-  sys_fid = (*env)->GetFieldID(env, cls, "mSysPerc", "D");
-  user_fid = (*env)->GetFieldID(env, cls, "mUserPerc", "D");
+    /* Look for the instance field mPrevTime in cls */
+    prev_fid = (*env)->GetFieldID(env, picl_cls, "mPrevTime", "[J");
+    sys_fid = (*env)->GetFieldID(env, cls, "mSysPerc", "D");
+    user_fid = (*env)->GetFieldID(env, cls, "mUserPerc", "D");
 
-  if(prev_fid == NULL || sys_fid == NULL || user_fid == NULL)
-  {
-    return;// failed to find the field
-  }
+    if(prev_fid == NULL || sys_fid == NULL || user_fid == NULL)
+    {
+        return;// failed to find the field
+    }
 
-  // JNI Object Type
-  mPrevTime = (jlongArray)(*env)->GetObjectField(env, picl_obj, prev_fid);
-  mSysPerc = (*env)->GetDoubleField(env, cpu_obj, sys_fid);
-  mUserPerc = (*env)->GetDoubleField(env, cpu_obj, user_fid);
+    // JNI Object Type
+    mPrevTime = (jlongArray)(*env)->GetObjectField(env, picl_obj, prev_fid);
+    mSysPerc = (*env)->GetDoubleField(env, cpu_obj, sys_fid);
+    mUserPerc = (*env)->GetDoubleField(env, cpu_obj, user_fid);
 
-  // Native Type
-  jlong* mPrevTimeArr = (*env)->GetLongArrayElements(env, mPrevTime, &isCopy);
-  
-  perfstat_cpu_total_t cpu_total_buffer;
+    // Native Type
+    jlong* mPrevTimeArr = (*env)->GetLongArrayElements(env, mPrevTime, &isCopy);
 
-  /* get initial set of data */
-  perfstat_cpu_total(NULL, &cpu_total_buffer, sizeof(perfstat_cpu_total_t), 1);
+    perfstat_cpu_total_t cpu_total_buffer;
 
-  /* save values for delta calculations */
-  delta = cpu_total_buffer.user - mPrevTimeArr[CP_USER] +
-      cpu_total_buffer.sys - mPrevTimeArr[CP_SYS] +
-      cpu_total_buffer.idle - mPrevTimeArr[CP_IDLE] +
-      cpu_total_buffer.wait - mPrevTimeArr[CP_WAIT];
+    /* get initial set of data */
+    perfstat_cpu_total(NULL, &cpu_total_buffer, sizeof(perfstat_cpu_total_t), 1);
 
-  if(delta==0)
-  {
-      mSysPerc = 0.0;
-      mUserPerc = 0.0;
+    /* save values for delta calculations */
+    delta = cpu_total_buffer.user - mPrevTimeArr[CP_USER] +
+        cpu_total_buffer.sys - mPrevTimeArr[CP_SYS] +
+        cpu_total_buffer.idle - mPrevTimeArr[CP_IDLE] +
+        cpu_total_buffer.wait - mPrevTimeArr[CP_WAIT];
 
-      mPrevTimeArr[CP_USER] = cpu_total_buffer.user;
-      mPrevTimeArr[CP_SYS] = cpu_total_buffer.sys;
-      mPrevTimeArr[CP_WAIT] = cpu_total_buffer.wait;
-      mPrevTimeArr[CP_IDLE] = cpu_total_buffer.idle;
-  }
-  else
-  {
-      mSysPerc = (double)(cpu_total_buffer.sys - mPrevTimeArr[CP_SYS]) / delta * 100.00;
-      mUserPerc = (double)(cpu_total_buffer.user - mPrevTimeArr[CP_USER]) / delta * 100.00;
-      
-      mPrevTimeArr[CP_USER] = cpu_total_buffer.user;
-      mPrevTimeArr[CP_SYS] = cpu_total_buffer.sys;
-      mPrevTimeArr[CP_WAIT] = cpu_total_buffer.wait;
-      mPrevTimeArr[CP_IDLE] = cpu_total_buffer.idle;
-  }
-  
-  (*env)->ReleaseLongArrayElements(env, mPrevTime, mPrevTimeArr, 0);
+    if(delta==0)
+    {
+        mSysPerc = 0.0;
+        mUserPerc = 0.0;
 
-  /* Read the instance field mSysPerc */
-  (*env)->SetObjectField(env, picl_obj, prev_fid, mPrevTime);
-  (*env)->SetDoubleField(env, cpu_obj, sys_fid, mSysPerc);
-  (*env)->SetDoubleField(env, cpu_obj, user_fid, mUserPerc);  
+        mPrevTimeArr[CP_USER] = cpu_total_buffer.user;
+        mPrevTimeArr[CP_SYS] = cpu_total_buffer.sys;
+        mPrevTimeArr[CP_WAIT] = cpu_total_buffer.wait;
+        mPrevTimeArr[CP_IDLE] = cpu_total_buffer.idle;
+    }
+    else
+    {
+        mSysPerc = (double)(cpu_total_buffer.sys - mPrevTimeArr[CP_SYS]) / delta * 100.00;
+        mUserPerc = (double)(cpu_total_buffer.user - mPrevTimeArr[CP_USER]) / delta * 100.00;
+
+        mPrevTimeArr[CP_USER] = cpu_total_buffer.user;
+        mPrevTimeArr[CP_SYS] = cpu_total_buffer.sys;
+        mPrevTimeArr[CP_WAIT] = cpu_total_buffer.wait;
+        mPrevTimeArr[CP_IDLE] = cpu_total_buffer.idle;
+    }
+
+    (*env)->ReleaseLongArrayElements(env, mPrevTime, mPrevTimeArr, 0);
+
+    /* Read the instance field mSysPerc */
+    (*env)->SetObjectField(env, picl_obj, prev_fid, mPrevTime);
+    (*env)->SetDoubleField(env, cpu_obj, sys_fid, mSysPerc);
+    (*env)->SetDoubleField(env, cpu_obj, user_fid, mUserPerc);  
 }
 
 #include <procinfo.h>
@@ -145,7 +145,7 @@ JNIEXPORT void JNICALL Java_com_altibase_picl_Cpu_update
  * Method:    update
  * Signature: (Lcom/altibase/picl/Picl;J)V
  */
-JNIEXPORT void JNICALL Java_com_altibase_picl_ProcCpu_update
+    JNIEXPORT void JNICALL Java_com_altibase_picl_ProcCpu_update
 (JNIEnv * env, jobject proccpu_obj, jobject picl_obj, jlong pid)
 {
     jfieldID sys_fid, user_fid, prev_ctime_fid, prev_utime_fid, prev_stime_fid, prev_cutime_fid, prev_cstime_fid;
@@ -172,7 +172,7 @@ JNIEXPORT void JNICALL Java_com_altibase_picl_ProcCpu_update
 
     unsigned long long current_utime;
     unsigned long long current_stime;
-    
+
     unsigned long long CURRENT_CP_USER = 0;
     unsigned long long CURRENT_CP_SYS = 0;
     unsigned long long CURRENT_CP_WAIT = 0;
@@ -208,7 +208,7 @@ JNIEXPORT void JNICALL Java_com_altibase_picl_ProcCpu_update
             prev_utime_fid == NULL ||
             prev_stime_fid == NULL ||
             prev_cstime_fid == NULL ||
-       prev_cutime_fid == NULL)
+            prev_cutime_fid == NULL)
     {
 
         return;
@@ -242,17 +242,17 @@ JNIEXPORT void JNICALL Java_com_altibase_picl_ProcCpu_update
 
         //Calculate
         struct procsinfo64 pinfo;
-        
+
         //pinfo = malloc(sizeof(*pinfo));
         pid_t retval = (pid_t)pid;
-        
+
         getprocs(&pinfo, sizeof(struct procsinfo64), 0, 0, &retval, 1);
 
         // Actually, tv_usec include nano-second value
-        
+
         current_utime = (unsigned long long)(pinfo.pi_ru.ru_utime.tv_sec * 1000) + (unsigned long long)(pinfo.pi_ru.ru_utime.tv_usec / (1000 * 1000));
         current_stime = (unsigned long long)(pinfo.pi_ru.ru_stime.tv_sec * 1000) + (unsigned long long)(pinfo.pi_ru.ru_stime.tv_usec / (1000 * 1000));
-        
+
         /* save values for delta calculations */
         CURRENT_CP_USER = cpu_total_buffer.user * tick2msec;
         CURRENT_CP_SYS = cpu_total_buffer.sys * tick2msec;
@@ -263,7 +263,7 @@ JNIEXPORT void JNICALL Java_com_altibase_picl_ProcCpu_update
         sdelta = current_stime - prev_stime;
 
         cdelta = CURRENT_CP_USER + CURRENT_CP_SYS + CURRENT_CP_WAIT + CURRENT_CP_IDLE - prev_ctime;
-        
+
         cudelta = CURRENT_CP_USER - prev_cutime;
         csdelta = CURRENT_CP_SYS - prev_cstime;
 
@@ -286,7 +286,7 @@ JNIEXPORT void JNICALL Java_com_altibase_picl_ProcCpu_update
             mSysPerc = 0.0;
             mUserPerc = 0.0;
         }
-        
+
         prev_ctime = CURRENT_CP_USER + CURRENT_CP_SYS + CURRENT_CP_WAIT + CURRENT_CP_IDLE;
         prev_cutime = CURRENT_CP_USER;
         prev_cstime = CURRENT_CP_SYS;
@@ -308,46 +308,46 @@ JNIEXPORT void JNICALL Java_com_altibase_picl_ProcCpu_update
  * Method:    update
  * Signature: (Lcom/altibase/picl/Picl;)V
  */
-JNIEXPORT void JNICALL Java_com_altibase_picl_Memory_update
+    JNIEXPORT void JNICALL Java_com_altibase_picl_Memory_update
 (JNIEnv * env, jobject mem_obj, jobject picl_obj)
 {
-  jfieldID memUsage_fid;
-  jlongArray memUsage;
-  jlong* memUsageArr;
+    jfieldID memUsage_fid;
+    jlongArray memUsage;
+    jlong* memUsageArr;
 
-  jboolean isCopy = JNI_TRUE;
-  
-  /* Variable for calculate Memory Usage */
-  /* Get a reference to obj's class */
-  jclass mem_cls = (*env)->GetObjectClass(env, mem_obj);
-  jclass picl_cls = (*env)->GetObjectClass(env, picl_obj);
+    jboolean isCopy = JNI_TRUE;
 
-  /* Look for the instance field mMemoryUsage in cls */
-  memUsage_fid = (*env)->GetFieldID(env, mem_cls, "mMemoryUsage", "[J");
+    /* Variable for calculate Memory Usage */
+    /* Get a reference to obj's class */
+    jclass mem_cls = (*env)->GetObjectClass(env, mem_obj);
+    jclass picl_cls = (*env)->GetObjectClass(env, picl_obj);
 
-  if(memUsage_fid == NULL)
-  {
-    return;// failed to find the field
-  }
+    /* Look for the instance field mMemoryUsage in cls */
+    memUsage_fid = (*env)->GetFieldID(env, mem_cls, "mMemoryUsage", "[J");
 
-  memUsage = (jlongArray)(*env)->GetObjectField(env, mem_obj, memUsage_fid);
+    if(memUsage_fid == NULL)
+    {
+        return;// failed to find the field
+    }
 
-  memUsageArr = (*env)->GetLongArrayElements(env, memUsage, &isCopy);
-  
-  //Calculate
-  perfstat_memory_total_t minfo;
+    memUsage = (jlongArray)(*env)->GetObjectField(env, mem_obj, memUsage_fid);
 
-  perfstat_memory_total(NULL, &minfo, sizeof(perfstat_memory_total_t), 1);
+    memUsageArr = (*env)->GetLongArrayElements(env, memUsage, &isCopy);
 
-  int pagesize = getpagesize();
+    //Calculate
+    perfstat_memory_total_t minfo;
 
-  memUsageArr[MemTotal] = minfo.real_total * pagesize / 1024;
-  memUsageArr[MemFree] = minfo.real_free * pagesize / 1024;
-  memUsageArr[MemUsed] = memUsageArr[MemTotal] - memUsageArr[MemFree];
-    
-  // Save into Java Object
-  (*env)->ReleaseLongArrayElements(env, memUsage, memUsageArr, 0);
-  (*env)->SetObjectField(env, mem_obj, memUsage_fid, memUsage);  
+    perfstat_memory_total(NULL, &minfo, sizeof(perfstat_memory_total_t), 1);
+
+    int pagesize = getpagesize();
+
+    memUsageArr[MemTotal] = minfo.real_total * pagesize / 1024;
+    memUsageArr[MemFree] = minfo.real_free * pagesize / 1024;
+    memUsageArr[MemUsed] = memUsageArr[MemTotal] - memUsageArr[MemFree];
+
+    // Save into Java Object
+    (*env)->ReleaseLongArrayElements(env, memUsage, memUsageArr, 0);
+    (*env)->SetObjectField(env, mem_obj, memUsage_fid, memUsage);  
 }
 
 /*
@@ -355,44 +355,44 @@ JNIEXPORT void JNICALL Java_com_altibase_picl_Memory_update
  * Method:    update
  * Signature: (Lcom/altibase/picl/Picl;J)V
  */
-JNIEXPORT void JNICALL Java_com_altibase_picl_ProcMemory_update
+    JNIEXPORT void JNICALL Java_com_altibase_picl_ProcMemory_update
 (JNIEnv * env, jobject procmem_obj, jobject picl_obj, jlong pid)
 {
-  jfieldID memUsed_fid;
-  long memUsed;
+    jfieldID memUsed_fid;
+    long memUsed;
 
-  /* pstat information */
+    /* pstat information */
 
-  /* Get a reference to obj's class */
-  jclass procmem_cls = (*env)->GetObjectClass(env, procmem_obj);
-  jclass picl_cls = (*env)->GetObjectClass(env, picl_obj);
+    /* Get a reference to obj's class */
+    jclass procmem_cls = (*env)->GetObjectClass(env, procmem_obj);
+    jclass picl_cls = (*env)->GetObjectClass(env, picl_obj);
 
-  /* Look for the instance field mMemoryUsage in cls */
-  memUsed_fid = (*env)->GetFieldID(env, procmem_cls, "mMemUsed", "J");
+    /* Look for the instance field mMemoryUsage in cls */
+    memUsed_fid = (*env)->GetFieldID(env, procmem_cls, "mMemUsed", "J");
 
-  if(memUsed_fid == NULL)
-  {
-    return;// failed to find the field
-  }
+    if(memUsed_fid == NULL)
+    {
+        return;// failed to find the field
+    }
 
-  /* Get the ProcCpu object member variable */
-  memUsed = (*env)->GetLongField(env, procmem_obj, memUsed_fid);
+    /* Get the ProcCpu object member variable */
+    memUsed = (*env)->GetLongField(env, procmem_obj, memUsed_fid);
 
-  //Calculate
-  struct procsinfo64 pinfo;
-
-
-  //pinfo = malloc(sizeof(*pinfo));
-  pid_t retval = (pid_t)pid;
+    //Calculate
+    struct procsinfo64 pinfo;
 
 
-  getprocs(&pinfo, sizeof(struct procsinfo64), 0, 0, &retval, 1);
+    //pinfo = malloc(sizeof(*pinfo));
+    pid_t retval = (pid_t)pid;
 
-  memUsed = (pinfo.pi_drss + pinfo.pi_trss) * getpagesize() / 1024;
-  
-  
-  // Save into Java Object
-  (*env)->SetLongField(env, procmem_obj, memUsed_fid, memUsed);
+
+    getprocs(&pinfo, sizeof(struct procsinfo64), 0, 0, &retval, 1);
+
+    memUsed = (pinfo.pi_drss + pinfo.pi_trss) * getpagesize() / 1024;
+
+
+    // Save into Java Object
+    (*env)->SetLongField(env, procmem_obj, memUsed_fid, memUsed);
 }
 
 #include <sys/vminfo.h>
@@ -402,152 +402,152 @@ JNIEXPORT void JNICALL Java_com_altibase_picl_ProcMemory_update
  * Method:    update
  * Signature: (Lcom/altibase/picl/Picl;)V
  */
-JNIEXPORT void JNICALL Java_com_altibase_picl_Swap_update
+    JNIEXPORT void JNICALL Java_com_altibase_picl_Swap_update
 (JNIEnv * env, jobject swap_obj, jobject picl_obj)
 {
-  jfieldID swapTotal_fid, swapFree_fid;
-  long swapTotal, swapFree;
-  int status, i=0;
+    jfieldID swapTotal_fid, swapFree_fid;
+    long swapTotal, swapFree;
+    int status, i=0;
 
-  /* Get a reference to obj's class */
-  jclass swap_cls = (*env)->GetObjectClass(env, swap_obj);
-  jclass picl_cls = (*env)->GetObjectClass(env, picl_obj);
+    /* Get a reference to obj's class */
+    jclass swap_cls = (*env)->GetObjectClass(env, swap_obj);
+    jclass picl_cls = (*env)->GetObjectClass(env, picl_obj);
 
-  /* Look for the instance field in swap_cls */
-  swapTotal_fid = (*env)->GetFieldID(env, swap_cls, "mSwapTotal", "J");
-  swapFree_fid = (*env)->GetFieldID(env, swap_cls, "mSwapFree", "J");
+    /* Look for the instance field in swap_cls */
+    swapTotal_fid = (*env)->GetFieldID(env, swap_cls, "mSwapTotal", "J");
+    swapFree_fid = (*env)->GetFieldID(env, swap_cls, "mSwapFree", "J");
 
-  if(swapTotal_fid == NULL || swapFree_fid == NULL)
-  {
-    return;// failed to find the field
-  }
+    if(swapTotal_fid == NULL || swapFree_fid == NULL)
+    {
+        return;// failed to find the field
+    }
 
-  /* Get the ProcCpu object member variable */
-  swapTotal = (*env)->GetLongField(env, swap_obj, swapTotal_fid);
-  swapFree = (*env)->GetLongField(env, swap_obj, swapFree_fid);
+    /* Get the ProcCpu object member variable */
+    swapTotal = (*env)->GetLongField(env, swap_obj, swapTotal_fid);
+    swapFree = (*env)->GetLongField(env, swap_obj, swapFree_fid);
 
-  // Calculate
-  struct pginfo p;
-  int ret;
+    // Calculate
+    struct pginfo p;
+    int ret;
 
-  CLASS_SYMBOL cuat;
-  struct CuAt paging_ent;
-  struct CuAt *pret;
-  char buf[1024];
-    
-  if(odm_initialize() < 0)
-  {
-      return;
-  }
+    CLASS_SYMBOL cuat;
+    struct CuAt paging_ent;
+    struct CuAt *pret;
+    char buf[1024];
 
-  cuat = odm_open_class(CuAt_CLASS);
+    if(odm_initialize() < 0)
+    {
+        return;
+    }
 
-  if (cuat == NULL)
-  {
-      return;
-  }
+    cuat = odm_open_class(CuAt_CLASS);
 
-  pret = odm_get_obj(cuat, "value='paging'", &paging_ent, ODM_FIRST);
+    if (cuat == NULL)
+    {
+        return;
+    }
 
-  while(pret != NULL)
-  {
-      memset(buf, 0, 1024);
+    pret = odm_get_obj(cuat, "value='paging'", &paging_ent, ODM_FIRST);
 
-      snprintf(buf, 1024, "%s/%s", "/dev/", paging_ent.name);
+    while(pret != NULL)
+    {
+        memset(buf, 0, 1024);
 
-      ret = swapqry(buf, &p);
+        snprintf(buf, 1024, "%s/%s", "/dev/", paging_ent.name);
 
-      if (ret == -1)
-      {
-          return;
-      }
+        ret = swapqry(buf, &p);
 
-      swapTotal += p.size;
-      
-      swapFree += p.free;
+        if (ret == -1)
+        {
+            return;
+        }
 
+        swapTotal += p.size;
 
-      /* XXX make sure no memory leak occurs somehow when I call this */
-      pret = odm_get_obj(cuat, NULL, &paging_ent, ODM_NEXT);
-  }
-
-  odm_close_class(cuat);
+        swapFree += p.free;
 
 
-  if (odm_terminate() < 0)
-  {
-      return;
-  }
+        /* XXX make sure no memory leak occurs somehow when I call this */
+        pret = odm_get_obj(cuat, NULL, &paging_ent, ODM_NEXT);
+    }
 
-  swapTotal *= PAGESIZE / 1024;
-  swapFree *= PAGESIZE / 1024;
-      
-  // Save into Java Object
-  (*env)->SetLongField(env, swap_obj, swapTotal_fid, swapTotal);
-  (*env)->SetLongField(env, swap_obj, swapFree_fid, swapFree);
+    odm_close_class(cuat);
+
+
+    if (odm_terminate() < 0)
+    {
+        return;
+    }
+
+    swapTotal *= PAGESIZE / 1024;
+    swapFree *= PAGESIZE / 1024;
+
+    // Save into Java Object
+    (*env)->SetLongField(env, swap_obj, swapTotal_fid, swapTotal);
+    (*env)->SetLongField(env, swap_obj, swapFree_fid, swapFree);
 }
 
 #define DIR_NAME_MAX 4096
 
 typedef struct {
-  int disk_usage;
+    int disk_usage;
 } dir_usage_t;
 
 int getDirUsage(const char *dirname, dir_usage_t *dirusage)
 {
-  int status;
-  char name[DIR_NAME_MAX+1];
-  int len = strlen(dirname);
-  int max = sizeof(name)-len-1;
-  char *ptr = name;
+    int status;
+    char name[DIR_NAME_MAX+1];
+    int len = strlen(dirname);
+    int max = sizeof(name)-len-1;
+    char *ptr = name;
 
-  struct dirent *emnt;
-  struct stat info;
-  struct dirent dbuf;
+    struct dirent *emnt;
+    struct stat info;
+    struct dirent dbuf;
 
-  DIR *dirp = opendir(dirname);
+    DIR *dirp = opendir(dirname);
 
-  if(!dirp) {
-    return;
-  }
+    if(!dirp) {
+        return;
+    }
 
-  strncpy(name, dirname, sizeof(name));
-  ptr += len;
-  if (name[len] != '/') {
-    *ptr++ = '/';
-    len++;
-    max--;
-  }
+    strncpy(name, dirname, sizeof(name));
+    ptr += len;
+    if (name[len] != '/') {
+        *ptr++ = '/';
+        len++;
+        max--;
+    }
 
-  while (readdir_r(dirp, &dbuf, &emnt) == 0)
-  {
-    if (emnt == NULL)
+    while (readdir_r(dirp, &dbuf, &emnt) == 0)
     {
-      break;
+        if (emnt == NULL)
+        {
+            break;
+        }
+
+        if (((emnt->d_name[0] == '.') && (!emnt->d_name[1] || ((emnt->d_name[1] == '.') && !emnt->d_name[2])))) {
+            continue;
+        }
+
+        strncpy(ptr, emnt->d_name, max);
+        ptr[max] = '\0';
+
+        if (lstat(name, &info) != 0) {
+            continue;
+        }
+
+        dirusage->disk_usage += info.st_size;
+
+        if((info.st_mode & S_IFMT) == S_IFDIR)
+        {
+            getDirUsage(name, dirusage);
+        }
     }
 
-    if (((emnt->d_name[0] == '.') && (!emnt->d_name[1] || ((emnt->d_name[1] == '.') && !emnt->d_name[2])))) {
-      continue;
-    }
-    
-    strncpy(ptr, emnt->d_name, max);
-    ptr[max] = '\0';
-    
-    if (lstat(name, &info) != 0) {
-      continue;
-    }
-    
-    dirusage->disk_usage += info.st_size;
-    
-    if((info.st_mode & S_IFMT) == S_IFDIR)
-    {
-      getDirUsage(name, dirusage);
-    }
-  }
-  
-  closedir(dirp);
-  
-  return 1;
+    closedir(dirp);
+
+    return 1;
 }
 
 
@@ -556,30 +556,30 @@ int getDirUsage(const char *dirname, dir_usage_t *dirusage)
  * Method:    update
  * Signature: (Lcom/altibase/picl/Picl;Ljava/lang/String;)V
  */
-JNIEXPORT void JNICALL Java_com_altibase_picl_Disk_update
+    JNIEXPORT void JNICALL Java_com_altibase_picl_Disk_update
 (JNIEnv *env, jobject disk_obj, jobject picl_obj , jstring aPath)
 {
-  jfieldID dirusage_fid;
+    jfieldID dirusage_fid;
 
-  const char *dirname;
-  dir_usage_t dirusage;
+    const char *dirname;
+    dir_usage_t dirusage;
 
-  /* Get a reference to obj's class */
-  jclass disk_cls = (*env)->GetObjectClass(env, disk_obj);
+    /* Get a reference to obj's class */
+    jclass disk_cls = (*env)->GetObjectClass(env, disk_obj);
 
-  /* Look for the instance field mMemoryUsage in cls */
-  dirusage_fid = (*env)->GetFieldID(env, disk_cls, "mDirUsage", "J");
+    /* Look for the instance field mMemoryUsage in cls */
+    dirusage_fid = (*env)->GetFieldID(env, disk_cls, "mDirUsage", "J");
 
-  dirusage.disk_usage = 0;
+    dirusage.disk_usage = 0;
 
-  dirname = (*env)->GetStringUTFChars(env, aPath, NULL);
+    dirname = (*env)->GetStringUTFChars(env, aPath, NULL);
 
-  getDirUsage(dirname, &dirusage);
+    getDirUsage(dirname, &dirusage);
 
-  // Save into Java Object
-  (*env)->SetLongField(env, disk_obj, dirusage_fid, dirusage.disk_usage);
+    // Save into Java Object
+    (*env)->SetLongField(env, disk_obj, dirusage_fid, dirusage.disk_usage);
 
-  (*env)->ReleaseStringUTFChars(env, aPath, dirname);
+    (*env)->ReleaseStringUTFChars(env, aPath, dirname);
 }
 
 #include <mntent.h>
@@ -599,16 +599,16 @@ typedef enum {
 
 
 typedef struct {
-  char dir_name[DIR_NAME_MAX];
-  char dev_name[DIR_NAME_MAX];
-  char type_name[DEVICE_INFO_MAX];
-  type_e type;
+    char dir_name[DIR_NAME_MAX];
+    char dev_name[DIR_NAME_MAX];
+    char type_name[DEVICE_INFO_MAX];
+    type_e type;
 } device_t_;
 
 typedef struct {
-  unsigned long number;
-  unsigned long size;
-  device_t_ *data;
+    unsigned long number;
+    unsigned long size;
+    device_t_ *data;
 } device_list_t_;
 
 int getDeviceList(device_list_t_ *fslist)
@@ -636,7 +636,7 @@ int getDeviceList(device_list_t_ *fslist)
         return errno;
 
     }
-    
+
     fslist->number = 0;
 
     fslist->size = DEVICE_MAX;
@@ -657,10 +657,10 @@ int getDeviceList(device_list_t_ *fslist)
 
         mntlist += emnt->vmt_length;
 
-		int hnme_len;
-		int dnme_len;
-		int total_len;
-		
+        int hnme_len;
+        int dnme_len;
+        int total_len;
+
         if (fslist->number >= fslist->size) {
 
             fslist->data = realloc(fslist->data, sizeof(*(fslist->data))*(fslist->size + DEVICE_MAX));
@@ -726,8 +726,8 @@ int getDeviceList(device_list_t_ *fslist)
                 }
 
         }
-        
-        
+
+
         strncpy(device_fsp->dir_name, vmt2dataptr(emnt, VMT_STUB), sizeof(device_fsp->dir_name));
 
         device_fsp->dir_name[sizeof(device_fsp->dir_name)-1] = '\0';
@@ -735,18 +735,18 @@ int getDeviceList(device_list_t_ *fslist)
         dnme = vmt2dataptr(emnt, VMT_OBJECT);
 
         if (device_fsp->type == NETWORK) {
-			char *hnme   = vmt2dataptr(emnt, VMT_HOSTNAME);
-            #if 0            
+            char *hnme   = vmt2dataptr(emnt, VMT_HOSTNAME);
+#if 0            
             hnme_len = vmt2datasize(emnt, VMT_HOSTNAME)-1;            
             dnme_len  = vmt2datasize(emnt, VMT_OBJECT);            
-            #else
+#else
             hnme_len = strlen(hnme);
             dnme_len = strlen(dnme) + 1;
-            #endif
+#endif
             total_len = hnme_len + dnme_len + 1;
-            
+
             if (total_len > sizeof(device_fsp->dev_name)) {
-             	/* sprintf(device_fsp->dnme, "%s:%s", hnme, dnme) */
+                /* sprintf(device_fsp->dnme, "%s:%s", hnme, dnme) */
                 strncpy(device_fsp->dev_name, dnme, sizeof(device_fsp->dev_name));
                 device_fsp->dev_name[sizeof(device_fsp->dev_name)-1] = '\0';
             }
@@ -767,13 +767,13 @@ int getDeviceList(device_list_t_ *fslist)
     }
 
     free(buf);
-    
+
     return 1;
 }
 
 enum {
-  DEVICE_DIRNAME,
-  DEVICE_DEVNAME,
+    DEVICE_DIRNAME,
+    DEVICE_DEVNAME,
     DEVICE_FIELD_MAX
 };
 
@@ -783,80 +783,80 @@ enum {
  * Method:    getDeviceListNative
  * Signature: ()[Lcom/altibase/picl/Device;
  */
-JNIEXPORT jobjectArray JNICALL Java_com_altibase_picl_DiskLoad_getDeviceListNative
-  (JNIEnv *env, jobject device_obj)
+    JNIEXPORT jobjectArray JNICALL Java_com_altibase_picl_DiskLoad_getDeviceListNative
+(JNIEnv *env, jobject device_obj)
 {
-  int status;
-  int i;
-  device_list_t_ device_list;
-  jobjectArray device_arr;
-  jfieldID fids[DEVICE_FIELD_MAX];
-  jclass nfs_cls=NULL;
-  jclass device_cls = (*env)->FindClass(env, "com/altibase/picl/Device");
+    int status;
+    int i;
+    device_list_t_ device_list;
+    jobjectArray device_arr;
+    jfieldID fids[DEVICE_FIELD_MAX];
+    jclass nfs_cls=NULL;
+    jclass device_cls = (*env)->FindClass(env, "com/altibase/picl/Device");
 
-  if ((status = getDeviceList(&device_list)) != 1) {
-    return NULL;
-  }
+    if ((status = getDeviceList(&device_list)) != 1) {
+        return NULL;
+    }
 
-  fids[DEVICE_DIRNAME] = (*env)->GetFieldID(env, device_cls, "mDirName", "Ljava/lang/String;");
-  fids[DEVICE_DEVNAME] = (*env)->GetFieldID(env, device_cls, "mDevName", "Ljava/lang/String;");
+    fids[DEVICE_DIRNAME] = (*env)->GetFieldID(env, device_cls, "mDirName", "Ljava/lang/String;");
+    fids[DEVICE_DEVNAME] = (*env)->GetFieldID(env, device_cls, "mDevName", "Ljava/lang/String;");
 
-  device_arr = (*env)->NewObjectArray(env, device_list.number, device_cls, 0);
+    device_arr = (*env)->NewObjectArray(env, device_list.number, device_cls, 0);
 
-  for (i=0; i<device_list.number; i++) {
-    device_t_ *device =  &(device_list.data)[i];
-    jobject temp_obj;
+    for (i=0; i<device_list.number; i++) {
+        device_t_ *device =  &(device_list.data)[i];
+        jobject temp_obj;
 
-    temp_obj = (*env)->AllocObject(env, device_cls);
-    
-    (*env)->SetObjectField(env, temp_obj, fids[DEVICE_DIRNAME], (*env)->NewStringUTF(env, device->dir_name));
-    (*env)->SetObjectField(env, temp_obj, fids[DEVICE_DEVNAME], (*env)->NewStringUTF(env, device->dev_name));
+        temp_obj = (*env)->AllocObject(env, device_cls);
 
-    (*env)->SetObjectArrayElement(env, device_arr, i, temp_obj);
-  }
+        (*env)->SetObjectField(env, temp_obj, fids[DEVICE_DIRNAME], (*env)->NewStringUTF(env, device->dir_name));
+        (*env)->SetObjectField(env, temp_obj, fids[DEVICE_DEVNAME], (*env)->NewStringUTF(env, device->dev_name));
 
-  if (device_list.size > 0 ) {
-    free(device_list.data);
-    device_list.number = 0;
-    device_list.size = 0;
-  }
-  
-  return device_arr;
+        (*env)->SetObjectArrayElement(env, device_arr, i, temp_obj);
+    }
+
+    if (device_list.size > 0 ) {
+        free(device_list.data);
+        device_list.number = 0;
+        device_list.size = 0;
+    }
+
+    return device_arr;
 }
 
 void getDevName(const char *mountName, char **devName)
 {
-  device_list_t_ device_list;
-  int i;
+    device_list_t_ device_list;
+    int i;
 
-  if(getDeviceList(&device_list) == 1)
-  {
-    for (i=0; i<device_list.number; i++) {
-      device_t_ *device = &(device_list.data)[i];
-      if(strncmp(device->dir_name, mountName, strlen(mountName))==0)
-      {
-	*devName = device->dev_name;
-	break;
-      }
+    if(getDeviceList(&device_list) == 1)
+    {
+        for (i=0; i<device_list.number; i++) {
+            device_t_ *device = &(device_list.data)[i];
+            if(strncmp(device->dir_name, mountName, strlen(mountName))==0)
+            {
+                *devName = device->dev_name;
+                break;
+            }
+        }
     }
-  }
 
-  if (device_list.size > 0 ) {
-    free(device_list.data);
-    device_list.number = 0;
-    device_list.size = 0;
-  }
+    if (device_list.size > 0 ) {
+        free(device_list.data);
+        device_list.number = 0;
+        device_list.size = 0;
+    }
 }
 
 typedef struct {
-  unsigned long numOfReads;
-  unsigned long numOfWrites;
-  unsigned long write_bytes;
-  unsigned long read_bytes;
-  unsigned long total_bytes;
-  unsigned long avail_bytes;
-  unsigned long used_bytes;
-  unsigned long free_bytes;
+    unsigned long numOfReads;
+    unsigned long numOfWrites;
+    unsigned long write_bytes;
+    unsigned long read_bytes;
+    unsigned long total_bytes;
+    unsigned long avail_bytes;
+    unsigned long used_bytes;
+    unsigned long free_bytes;
 } disk_load_t;
 
 #define CONVERT_TO_BYTES(numOfBlocks, blockSize) ((numOfBlocks * blockSize) >> 1)
@@ -868,29 +868,29 @@ int getDiskIo(const char *mountName, disk_load_t *diskLoad)
     struct statvfs vbuf;
     char *devName;
     unsigned long numOfBlocks, blockSize;
-    
+
     getDevName(mountName, &devName);
 
     if(statvfs(mountName, &vbuf)==0)
     {
         blockSize = vbuf.f_frsize / 512;
-        
+
         numOfBlocks = vbuf.f_blocks;
         diskLoad->total_bytes = CONVERT_TO_BYTES(numOfBlocks, blockSize);
-        
+
         numOfBlocks = vbuf.f_bavail;
         diskLoad->avail_bytes = CONVERT_TO_BYTES(numOfBlocks, blockSize);
-        
+
         numOfBlocks = vbuf.f_bfree;
         diskLoad->free_bytes = CONVERT_TO_BYTES(numOfBlocks, blockSize);
-        
+
         diskLoad->used_bytes = diskLoad->total_bytes - diskLoad->free_bytes;
     }
     else
     {
         return 0;
     }
-    
+
     perfstat_disk_t *disk;
     perfstat_id_t id;
 
@@ -914,7 +914,7 @@ int getDiskIo(const char *mountName, disk_load_t *diskLoad)
     for (i=0; i<num; i++) {
 
         int check = 1;
-                
+
         char query[256];
 
         struct CuDv *dv, *ptr;
@@ -925,7 +925,7 @@ int getDiskIo(const char *mountName, disk_load_t *diskLoad)
 
 
         snprintf(query, sizeof(query),
-                 "parent = '%s'", disk[i].vgname);
+                "parent = '%s'", disk[i].vgname);
 
 
         ptr = dv = odm_get_list(CuDv_CLASS, query, &info, 256, 1);
@@ -942,7 +942,7 @@ int getDiskIo(const char *mountName, disk_load_t *diskLoad)
             struct CuAt *attr;
 
             int num, retval;
-            
+
             struct stat sb;
 
 
@@ -959,8 +959,8 @@ int getDiskIo(const char *mountName, disk_load_t *diskLoad)
                         diskLoad->numOfWrites = disk[i].wblks;
                         diskLoad->read_bytes  = disk[i].rblks * disk[i].bsize;
                         diskLoad->write_bytes = disk[i].wblks * disk[i].bsize;
-                        
-                        
+
+
                         check=0;                        
                     }
                 }
@@ -990,14 +990,14 @@ int getDiskIo(const char *mountName, disk_load_t *diskLoad)
 #include <unistd.h>
 
 enum {
-  IO_FIELD_DIRNAME,
-  IO_FIELD_READ,
-  IO_FIELD_WRITE,
-  IO_FIELD_TIME,
-  IO_FIELD_TOTAL,
-  IO_FIELD_AVAIL,
-  IO_FIELD_USED,
-  IO_FIELD_FREE,
+    IO_FIELD_DIRNAME,
+    IO_FIELD_READ,
+    IO_FIELD_WRITE,
+    IO_FIELD_TIME,
+    IO_FIELD_TOTAL,
+    IO_FIELD_AVAIL,
+    IO_FIELD_USED,
+    IO_FIELD_FREE,
     IO_FIELD_MAX
 };
 
@@ -1007,47 +1007,47 @@ enum {
  * Method:    update
  * Signature: (Lcom/altibase/picl/Picl;)V
  */
-JNIEXPORT jobject JNICALL Java_com_altibase_picl_DiskLoad_update
+    JNIEXPORT jobject JNICALL Java_com_altibase_picl_DiskLoad_update
 (JNIEnv *env, jobject diskload_obj, jobject picl_obj, jstring mountName)
 {
-  disk_load_t disk_io;
-  int status;
-  jclass cls = (*env)->GetObjectClass(env, diskload_obj);
-  jclass iops_cls = (*env)->FindClass(env, "com/altibase/picl/Iops");
-  jfieldID fids[IO_FIELD_MAX];
-  jobject iops_obj;
-  const char* name;
-  struct timeval currentTime;
+    disk_load_t disk_io;
+    int status;
+    jclass cls = (*env)->GetObjectClass(env, diskload_obj);
+    jclass iops_cls = (*env)->FindClass(env, "com/altibase/picl/Iops");
+    jfieldID fids[IO_FIELD_MAX];
+    jobject iops_obj;
+    const char* name;
+    struct timeval currentTime;
 
-  clock_t currentTick;
+    clock_t currentTick;
 
-  name = (*env)->GetStringUTFChars(env, mountName, 0);
+    name = (*env)->GetStringUTFChars(env, mountName, 0);
 
-  status = getDiskIo(name, &disk_io);//Get current disk io value
-  gettimeofday(&currentTime, NULL);
-  fids[IO_FIELD_DIRNAME] = (*env)->GetFieldID(env, iops_cls, "mDirName", "Ljava/lang/String;");
-  fids[IO_FIELD_READ] = (*env)->GetFieldID(env, iops_cls, "mRead", "J");
-  fids[IO_FIELD_WRITE] = (*env)->GetFieldID(env, iops_cls, "mWrite", "J");
-  fids[IO_FIELD_TIME] = (*env)->GetFieldID(env, iops_cls, "mTime4Sec", "J"); 
-  fids[IO_FIELD_TOTAL] = (*env)->GetFieldID(env, iops_cls, "mTotalSize", "J");
-  fids[IO_FIELD_AVAIL] = (*env)->GetFieldID(env, iops_cls, "mAvailSize", "J");
-  fids[IO_FIELD_USED] = (*env)->GetFieldID(env, iops_cls, "mUsedSize", "J");
-  fids[IO_FIELD_FREE] = (*env)->GetFieldID(env, iops_cls, "mFreeSize", "J");
+    status = getDiskIo(name, &disk_io);//Get current disk io value
+    gettimeofday(&currentTime, NULL);
+    fids[IO_FIELD_DIRNAME] = (*env)->GetFieldID(env, iops_cls, "mDirName", "Ljava/lang/String;");
+    fids[IO_FIELD_READ] = (*env)->GetFieldID(env, iops_cls, "mRead", "J");
+    fids[IO_FIELD_WRITE] = (*env)->GetFieldID(env, iops_cls, "mWrite", "J");
+    fids[IO_FIELD_TIME] = (*env)->GetFieldID(env, iops_cls, "mTime4Sec", "J"); 
+    fids[IO_FIELD_TOTAL] = (*env)->GetFieldID(env, iops_cls, "mTotalSize", "J");
+    fids[IO_FIELD_AVAIL] = (*env)->GetFieldID(env, iops_cls, "mAvailSize", "J");
+    fids[IO_FIELD_USED] = (*env)->GetFieldID(env, iops_cls, "mUsedSize", "J");
+    fids[IO_FIELD_FREE] = (*env)->GetFieldID(env, iops_cls, "mFreeSize", "J");
 
-  iops_obj = (*env)->AllocObject(env, iops_cls);
+    iops_obj = (*env)->AllocObject(env, iops_cls);
 
-  (*env)->SetObjectField(env, iops_obj, fids[IO_FIELD_DIRNAME], (*env)->NewStringUTF(env, name));
-  (*env)->SetLongField(env, iops_obj, fids[IO_FIELD_READ], disk_io.numOfReads);
-  (*env)->SetLongField(env, iops_obj, fids[IO_FIELD_WRITE], disk_io.numOfWrites);
-  (*env)->SetLongField(env, iops_obj, fids[IO_FIELD_TIME], currentTime.tv_sec);
-  (*env)->SetLongField(env, iops_obj, fids[IO_FIELD_TOTAL], disk_io.total_bytes);
-  (*env)->SetLongField(env, iops_obj, fids[IO_FIELD_AVAIL], disk_io.avail_bytes);
-  (*env)->SetLongField(env, iops_obj, fids[IO_FIELD_USED], disk_io.used_bytes);
-  (*env)->SetLongField(env, iops_obj, fids[IO_FIELD_FREE], disk_io.free_bytes);
+    (*env)->SetObjectField(env, iops_obj, fids[IO_FIELD_DIRNAME], (*env)->NewStringUTF(env, name));
+    (*env)->SetLongField(env, iops_obj, fids[IO_FIELD_READ], disk_io.numOfReads);
+    (*env)->SetLongField(env, iops_obj, fids[IO_FIELD_WRITE], disk_io.numOfWrites);
+    (*env)->SetLongField(env, iops_obj, fids[IO_FIELD_TIME], currentTime.tv_sec);
+    (*env)->SetLongField(env, iops_obj, fids[IO_FIELD_TOTAL], disk_io.total_bytes);
+    (*env)->SetLongField(env, iops_obj, fids[IO_FIELD_AVAIL], disk_io.avail_bytes);
+    (*env)->SetLongField(env, iops_obj, fids[IO_FIELD_USED], disk_io.used_bytes);
+    (*env)->SetLongField(env, iops_obj, fids[IO_FIELD_FREE], disk_io.free_bytes);
 
-  (*env)->ReleaseStringUTFChars(env, mountName, name);
+    (*env)->ReleaseStringUTFChars(env, mountName, name);
 
-  return iops_obj;
+    return iops_obj;
 }
 
 
@@ -1056,7 +1056,7 @@ JNIEXPORT jobject JNICALL Java_com_altibase_picl_DiskLoad_update
  * Method:    getPid
  * Signature: (Ljava/lang/String;)J
  */
-JNIEXPORT jlong JNICALL Java_com_altibase_picl_ProcessFinder_getPid
+    JNIEXPORT jlong JNICALL Java_com_altibase_picl_ProcessFinder_getPid
 (JNIEnv *env, jclass cls, jstring aProcPath)
 {
     DIR *procDir;
@@ -1179,5 +1179,3 @@ int getCmdLine(char *file, char *buf)
     return 0;
 
 }
-
-

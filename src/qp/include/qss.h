@@ -27,7 +27,7 @@
 #include <qc.h>
 #include <qcg.h>
 
-/* isqlì—ì„œ ë°›ì„ ìˆ˜ ìˆëŠ” text max length */
+/* isql¿¡¼­ ¹ŞÀ» ¼ö ÀÖ´Â text max length */
 #define QSS_STMT_MAX_LENGTH (65536)
 
 class qss

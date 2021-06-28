@@ -1,6 +1,6 @@
 # Generated automatically from Makefile.in by configure.
 
-# $Id: Makefile 79711 2017-04-13 06:43:08Z djin $
+# $Id: Makefile 87881 2020-06-29 08:04:01Z kclee $
 
 include idEnv.mk
 
@@ -13,10 +13,6 @@ endif # PC_CYGWIN
 ifeq "$(OS_LINUX_PACKAGE)" "ARM_WINCE"
 DIRS	= msg ida idc idd ide idl idm idn ids idt idu idp idf idx
 endif # ARM_WINCE
-
-ifeq "$(ALTIBASE_PRODUCT)" "xdb"
-DIRS   += idr
-endif
 
 GREPED_FILE = grep.txt
 RESULT_FILE = result.txt

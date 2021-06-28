@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmvHierTransform.cpp 82490 2018-03-16 00:17:55Z donovan.seo $
+ * $Id: qmvHierTransform.cpp 82330 2018-02-23 00:32:59Z donovan.seo $
  *
  ***********************************************************************/
 
@@ -35,8 +35,8 @@
 /**
  * doTransform
  *
- * Tableì´ í•œê°œì¸ ê²½ìš°ì— Hierarcy Queryë¥¼ ì‚¬ìš©ì‹œ ì´ë¥¼ inline viewí˜•íƒœë¡œ ë°”ê¾¸ì–´ì¤€ë‹¤.
- * ì´ë¥¼ í†µí•´ì„œ Hierarhcy Queraryì˜ PLANì„ inline viewì™€ ë™ì¼í•˜ê²Œ ì²˜ë¦¬í•œë‹¤.
+ * TableÀÌ ÇÑ°³ÀÎ °æ¿ì¿¡ Hierarcy Query¸¦ »ç¿ë½Ã ÀÌ¸¦ inline viewÇüÅÂ·Î ¹Ù²Ù¾îÁØ´Ù.
+ * ÀÌ¸¦ ÅëÇØ¼­ Hierarhcy QueraryÀÇ PLANÀ» inline view¿Í µ¿ÀÏÇÏ°Ô Ã³¸®ÇÑ´Ù.
  *
  * select * from t1 connect by prior id = pid ;
  * --> select * from (select * from t1 ) t1 connect by prior id = pid;

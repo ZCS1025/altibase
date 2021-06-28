@@ -1,7 +1,18 @@
-/***********************************************************************
- * Copyright 1999-2015, ALTIBASE Corporation or its subsidiaries.
- * All rights reserved.
- **********************************************************************/
+/**
+ *  Copyright (c) 1999~2017, Altibase Corp. and/or its affiliates. All rights reserved.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License, version 3,
+ *  as published by the Free Software Foundation.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 
 /***********************************************************************
  * $Id$
@@ -11,9 +22,9 @@
  *     ALTIBASE SHARD manage ment function
  *
  * Syntax :
- *    SHARD_SET_SHARD_SOLO( user_name VARCHAR,
- *                          table_name VARCHAR,
- *                          node_name VARCHAR )
+ *    SHARD_SET_SHARD_SOLO_LOCAL( user_name VARCHAR,
+ *                                table_name VARCHAR,
+ *                                node_name VARCHAR )
  *    RETURN 0
  *
  **********************************************************************/
@@ -22,6 +33,7 @@
 #include <sdm.h>
 #include <smi.h>
 #include <qcg.h>
+#include <sdiZookeeper.h>
 
 extern mtdModule mtdInteger;
 extern mtdModule mtdVarchar;
@@ -39,7 +51,7 @@ static IDE_RC sdfEstimate( mtcNode*        aNode,
 mtfModule sdfSetShardSoloModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     sdfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -149,8 +161,31 @@ IDE_RC sdfCalculate_SetShardSolo( mtcNode*     aNode,
     smiStatement              sSmiStmt;
     UInt                      sSmiStmtFlag;
     SInt                      sState = 0;
+    idBool                    sIsOldSessionShardMetaTouched = ID_FALSE;
+
+    ULong                     sSMN = ID_ULONG(0);
+    idBool                    sIsTableFound = ID_FALSE;
+    sdiTableInfo              sTableInfo;
+    sdiLocalMetaInfo          sLocalMetaInfo;
+    UInt                      i = 0;
+    SChar                     sPartitionName[ QC_MAX_OBJECT_NAME_LEN + 1 ];
+
+    sdiReplicaSetInfo         sReplicaSetInfo;
+    sdiReplicaSetInfo         sFoundReplicaSetInfo;
+
+    idlOS::strncpy( sPartitionName, SDM_NA_STR, QC_MAX_OBJECT_NAME_LEN + 1 );
 
     sStatement   = ((qcTemplate*)aTemplate)->stmt;
+
+    sStatement->mFlag &= ~QC_STMT_SHARD_META_CHANGE_MASK;
+    sStatement->mFlag |= QC_STMT_SHARD_META_CHANGE_TRUE;
+
+    /* BUG-47623 »þµå ¸ÞÅ¸ º¯°æ¿¡ ´ëÇÑ trc ·Î±×Áß commit ·Î±×¸¦ ÀÛ¼ºÇÏ±âÀü¿¡ DASSERT ·Î Á×´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù. */
+    if ( ( sStatement->session->mQPSpecific.mFlag & QC_SESSION_SHARD_META_TOUCH_MASK ) ==
+         QC_SESSION_SHARD_META_TOUCH_TRUE )
+    {
+        sIsOldSessionShardMetaTouched = ID_TRUE;
+    }
 
     // BUG-46366
     IDE_TEST_RAISE( ( QC_SMI_STMT(sStatement)->getTrans() == NULL ) ||
@@ -161,6 +196,15 @@ IDE_RC sdfCalculate_SetShardSolo( mtcNode*     aNode,
     // Check Privilege
     IDE_TEST_RAISE( QCG_GET_SESSION_USER_ID(sStatement) != QCI_SYS_USER_ID,
                     ERR_NO_GRANT );
+
+    if ( SDU_SHARD_LOCAL_FORCE != 1 )
+    {
+        /* Shard Local OperationÀº internal ¿¡¼­¸¸ ¼öÇàµÇ¾î¾ß ÇÑ´Ù.  */
+        IDE_TEST_RAISE( ( QCG_GET_SESSION_IS_SHARD_INTERNAL_LOCAL_OPERATION( sStatement ) != ID_TRUE ) &&
+                        ( ( sStatement->session->mQPSpecific.mFlag & QC_SESSION_ALTER_META_MASK )
+                             != QC_SESSION_ALTER_META_ENABLE),
+                        ERR_INTERNAL_OPERATION );
+    }
 
     IDE_TEST( mtf::postfixCalculate( aNode,
                                      aStack,
@@ -207,7 +251,7 @@ IDE_RC sdfCalculate_SetShardSolo( mtcNode*     aNode,
         // shard group name
         sNodeName = (mtdCharType*)aStack[3].value;
 
-        IDE_TEST_RAISE( sNodeName->length > SDI_NODE_NAME_MAX_SIZE,
+        IDE_TEST_RAISE( sNodeName->length > SDI_CHECK_NODE_NAME_MAX_SIZE,
                         ERR_SHARD_GROUP_NAME_TOO_LONG );
         idlOS::strncpy( sNodeNameStr,
                         (SChar*)sNodeName->value,
@@ -217,6 +261,9 @@ IDE_RC sdfCalculate_SetShardSolo( mtcNode*     aNode,
         //---------------------------------
         // Begin Statement for meta
         //---------------------------------
+        IDE_TEST( sdi::getIncreasedSMNForMetaNode( ( QC_SMI_STMT( sStatement ) )->getTrans() , 
+                                                   &sSMN ) 
+                  != IDE_SUCCESS );
 
         sSmiStmtFlag = SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR;
         sOldStmt                = QC_SMI_STMT(sStatement);
@@ -228,6 +275,23 @@ IDE_RC sdfCalculate_SetShardSolo( mtcNode*     aNode,
                                   sSmiStmtFlag )
                   != IDE_SUCCESS );
         sState = 2;
+
+        // µî·ÏµÈ Shard °´Ã¼¿©¾ß ÇÑ´Ù.
+        IDE_TEST( sdm::getTableInfo( QC_SMI_STMT( sStatement ),
+                                     sUserNameStr,
+                                     sTableNameStr,
+                                     sSMN, //sMetaNodeInfo.mShardMetaNumber,
+                                     &sTableInfo,
+                                     &sIsTableFound )
+                  != IDE_SUCCESS );
+
+        IDE_TEST_RAISE( sIsTableFound == ID_FALSE,
+                        ERR_NOT_EXIST_TABLE );
+
+        IDE_TEST( sdm::getAllReplicaSetInfoSortedByPName( QC_SMI_STMT( sStatement ),
+                                                          &sReplicaSetInfo,
+                                                          sSMN ) 
+                  != IDE_SUCCESS );
 
         //---------------------------------
         // Insert Meta
@@ -252,12 +316,171 @@ IDE_RC sdfCalculate_SetShardSolo( mtcNode*     aNode,
 
         IDE_TEST_RAISE( sRowCnt == 0,
                         ERR_INVALID_SHARD_TABLE );
+
+        //---------------------------------
+        // Replication Add
+        //---------------------------------
+        /* Table ´ë»óÀ¸·Î¸¸ ÀÌÁßÈ­¸¦ »ý¼ºÇÑ´Ù. */
+        if ( sTableInfo.mObjectType == 'T' )
+        {
+            IDE_TEST( sdm::getLocalMetaInfo( &sLocalMetaInfo ) != IDE_SUCCESS );
+
+            /* ÁöÁ¤µÈ Node¿Í ³» NodeNameÀÌ ÀÏÄ¡ÇÏ¸é ³»°¡ Sender ÀÌ´Ù. */
+            if ( idlOS::strncmp(sLocalMetaInfo.mNodeName, sNodeNameStr, SDI_NODE_NAME_MAX_SIZE + 1) == 0 )
+            {
+                /* ÀÌ¹Ì »ý¼ºµÇ¾î ÀÖ´Â Repl¿¡ TableÀ» Ãß°¡ÇØÁÖ¾î¾ß ÇÔ */
+                for ( i = 0; i < sLocalMetaInfo.mKSafety; i++ )
+                {
+                    sSmiStmtFlag = SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR;
+                    sOldStmt                = QC_SMI_STMT(sStatement);
+                    QC_SMI_STMT(sStatement) = &sSmiStmt;
+                    sState = 1;
+
+                    IDE_TEST( sSmiStmt.begin( sStatement->mStatistics,
+                                              sOldStmt,
+                                              sSmiStmtFlag )
+                              != IDE_SUCCESS );
+                    sState = 2;
+
+                    /* ³»°¡ º¸³»´Â ReplNameÀ» Ã£¾Æ¾ß ÇÑ´Ù. */
+                    IDE_TEST( sdm::findSendReplInfoFromReplicaSet( &sReplicaSetInfo,
+                                                                   sLocalMetaInfo.mNodeName,
+                                                                   &sFoundReplicaSetInfo )
+                              != IDE_SUCCESS );
+                    
+                    IDE_TEST( sdm::addReplicationItemUsingRPSets( sStatement,
+                                                                  &sFoundReplicaSetInfo,
+                                                                  SDM_NA_STR,
+                                                                  sUserNameStr,
+                                                                  sTableNameStr,
+                                                                  sPartitionName,
+                                                                  i,
+                                                                  SDM_REPL_SENDER )
+                              != IDE_SUCCESS );
+
+                    sState = 1;
+                    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+
+                    sState = 0;
+                    QC_SMI_STMT(sStatement) = sOldStmt;
+
+                }
+
+                if ( SDU_SHARD_LOCAL_FORCE != 1 )
+                {
+                    /* TASK-7307 DML Data Consistency in Shard
+                     *   ³» Node¿¡¼­ »ç¿ëÇÏ´Â Å×ÀÌºíÀÌ¸é USABLE·Î º¯°æÇÑ´Ù */
+                    IDE_TEST( sdm::alterUsable( sStatement,
+                                                sUserNameStr,
+                                                sTableNameStr,
+                                                NULL,    /* partition */
+                                                ID_TRUE, /* isUsable */
+                                                ID_TRUE  /* isNewTrans */ )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+            }
+            else
+            {
+                /* ³»°¡ Recv ³ëµåÀÎÁö È®ÀÎÇÏ¿©¾ß ÇÑ´Ù. */
+                for ( i = 0 ; i < sLocalMetaInfo.mKSafety; i++ )
+                {
+                    sSmiStmtFlag = SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR;
+                    sOldStmt                = QC_SMI_STMT(sStatement);
+                    QC_SMI_STMT(sStatement) = &sSmiStmt;
+                    sState = 1;
+
+                    IDE_TEST( sSmiStmt.begin( sStatement->mStatistics,
+                                              sOldStmt,
+                                              sSmiStmtFlag )
+                              != IDE_SUCCESS );
+                    sState = 2;
+
+                    /* ³»°¡ ¹Þ´Â ReplName¸¦ Ã£¾Æ¾ß ÇÑ´Ù. */
+                    IDE_TEST( sdm::findRecvReplInfoFromReplicaSet( &sReplicaSetInfo,
+                                                                   sLocalMetaInfo.mNodeName,
+                                                                   i,
+                                                                   &sFoundReplicaSetInfo )
+                              != IDE_SUCCESS );
+
+                    /* ³»°¡ Recv ÁßÀÎ RPSet Áß¿¡ ÁöÁ¤µÈ Node°¡ ¾øÀ»¼öµµ ÀÖ´Ù.
+                     * ÇÔ¼ö ³»ºÎ¿¡¼­ È®ÀÎ ÈÄ Ã³¸® */
+                    IDE_TEST( sdm::addReplicationItemUsingRPSets( sStatement,
+                                                                  &sFoundReplicaSetInfo,
+                                                                  sNodeNameStr,
+                                                                  sUserNameStr,
+                                                                  sTableNameStr,
+                                                                  sPartitionName,
+                                                                  i,
+                                                                  SDM_REPL_RECEIVER )
+                              != IDE_SUCCESS );
+
+                    sState = 1;
+                    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+
+                    sState = 0;
+                    QC_SMI_STMT(sStatement) = sOldStmt;
+                }
+            }
+
+            /* ÁöÁ¤µÈ Node¿Í ³» NodeNameÀÌ ÀÏÄ¡ÇÏ¸é ³»°¡ Sender ÀÌ´Ù. */
+            if ( idlOS::strncmp(sLocalMetaInfo.mNodeName, sNodeNameStr, SDI_NODE_NAME_MAX_SIZE + 1) == 0 )
+            {
+                for ( i = 0; i < sLocalMetaInfo.mKSafety; i++ )
+                {
+                    sSmiStmtFlag = SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR;
+                    sOldStmt                = QC_SMI_STMT(sStatement);
+                    QC_SMI_STMT(sStatement) = &sSmiStmt;
+                    sState = 1;
+
+                    IDE_TEST( sSmiStmt.begin( sStatement->mStatistics,
+                                              sOldStmt,
+                                              sSmiStmtFlag )
+                              != IDE_SUCCESS );
+                    sState = 2;
+
+                    /* ³»°¡ º¸³»´Â ReplNameÀ» Ã£¾Æ¾ß ÇÑ´Ù. */
+                    IDE_TEST( sdm::findSendReplInfoFromReplicaSet( &sReplicaSetInfo,
+                                                                   sLocalMetaInfo.mNodeName,
+                                                                   &sFoundReplicaSetInfo )
+                              != IDE_SUCCESS );
+                    
+                    IDE_TEST( sdm::flushReplicationItemUsingRPSets( sStatement,
+                                                                    &sFoundReplicaSetInfo,
+                                                                    sUserNameStr,
+                                                                    sLocalMetaInfo.mNodeName,
+                                                                    i,
+                                                                    SDM_REPL_SENDER )
+                              != IDE_SUCCESS );
+
+                    sState = 1;
+                    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+
+                    sState = 0;
+                    QC_SMI_STMT(sStatement) = sOldStmt;
+
+                }
+            }
+        }
     }
 
     *(mtdIntegerType*)aStack[0].value = 0;
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_INTERNAL_OPERATION )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdfCalculate_SetShardSolo",
+                                  "SHARD_INTERNAL_LOCAL_OPERATION is not 1" ) );
+    }
+    IDE_EXCEPTION( ERR_NOT_EXIST_TABLE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDM_SHARD_TABLE_NOT_EXIST ) );
+    }
     IDE_EXCEPTION( ERR_INSIDE_QUERY )
     {
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QSX_PSM_INSIDE_QUERY ) );
@@ -288,6 +511,8 @@ IDE_RC sdfCalculate_SetShardSolo( mtcNode*     aNode,
     }
     IDE_EXCEPTION_END;
 
+    IDE_PUSH();
+    
     switch ( sState )
     {
         case 2:
@@ -301,5 +526,17 @@ IDE_RC sdfCalculate_SetShardSolo( mtcNode*     aNode,
             break;
     }
 
+    /* BUG-47623 »þµå ¸ÞÅ¸ º¯°æ¿¡ ´ëÇÑ trc ·Î±×Áß commit ·Î±×¸¦ ÀÛ¼ºÇÏ±âÀü¿¡ DASSERT ·Î Á×´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù. */
+    if ( sIsOldSessionShardMetaTouched == ID_TRUE )
+    {
+        sdi::setShardMetaTouched( sStatement->session );
+    }
+    else
+    {
+        sdi::unsetShardMetaTouched( sStatement->session );
+    }
+
+    IDE_POP();
+    
     return IDE_FAILURE;
 }

@@ -23,7 +23,7 @@
 #include <iduReusedMemoryHandle.h>
 
 
-// ê°ì²´ ìƒì„±ìž,íŒŒê´´ìž => ì•„ë¬´ì¼ë„ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+// °´Ã¼ »ý¼ºÀÚ,ÆÄ±«ÀÚ => ¾Æ¹«ÀÏµµ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
 iduReusedMemoryHandle::iduReusedMemoryHandle()
 {
 }
@@ -33,20 +33,20 @@ iduReusedMemoryHandle::~iduReusedMemoryHandle()
 
 
 /*
-  Resizable Memory Handleì„ ì´ˆê¸°í™” í•œë‹¤.
+  Resizable Memory HandleÀ» ÃÊ±âÈ­ ÇÑ´Ù.
 
-  [IN] aMemoryClient - iduMemMgrì— ë„˜ê¸¸ ë©”ëª¨ë¦¬ í• ë‹¹ Client
+  [IN] aMemoryClient - iduMemMgr¿¡ ³Ñ±æ ¸Þ¸ð¸® ÇÒ´ç Client
 */
 IDE_RC iduReusedMemoryHandle::initialize( iduMemoryClientIndex   aMemoryClient )
 {
-    /* ê°ì²´ì˜ virtual function tableì´ˆê¸°í™” ìœ„í•´ì„œ newë¥¼ í˜¸ì¶œ */
+    /* °´Ã¼ÀÇ virtual function tableÃÊ±âÈ­ À§ÇØ¼­ new¸¦ È£Ãâ */
     new (this) iduReusedMemoryHandle();
    
 #ifdef __CSURF__
     IDE_ASSERT( this != NULL );
 #endif   
     
-    /* í¬ê¸° 0, ë©”ëª¨ë¦¬ NULLë¡œ ì´ˆê¸°í™” */
+    /* Å©±â 0, ¸Þ¸ð¸® NULL·Î ÃÊ±âÈ­ */
     mSize   = 0;
     mMemory = NULL;
     mMemoryClient = aMemoryClient;
@@ -57,9 +57,9 @@ IDE_RC iduReusedMemoryHandle::initialize( iduMemoryClientIndex   aMemoryClient )
 }
     
 /*
-  Resizable Memory Handleì„ íŒŒê´´ í•œë‹¤.
+  Resizable Memory HandleÀ» ÆÄ±« ÇÑ´Ù.
   
-  [IN] aHandle - íŒŒê´´í•  Memory Handle
+  [IN] aHandle - ÆÄ±«ÇÒ Memory Handle
 */
 IDE_RC iduReusedMemoryHandle::destroy()
 {
@@ -83,13 +83,13 @@ IDE_RC iduReusedMemoryHandle::destroy()
 
     
 /*
-  Resizable Memory Handleì— aSizeì´ìƒì˜ ë©”ëª¨ë¦¬ë¥¼ ì‚¬ìš©ê°€ëŠ¥í•˜ë„ë¡ ì¤€ë¹„í•œë‹¤.
-  ì´ë¯¸ aSizeì´ìƒ ë©”ëª¨ë¦¬ê°€ í• ë‹¹ë˜ì–´ ìžˆë‹¤ë©´ ì•„ë¬´ì¼ë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+  Resizable Memory Handle¿¡ aSizeÀÌ»óÀÇ ¸Þ¸ð¸®¸¦ »ç¿ë°¡´ÉÇÏµµ·Ï ÁØºñÇÑ´Ù.
+  ÀÌ¹Ì aSizeÀÌ»ó ¸Þ¸ð¸®°¡ ÇÒ´çµÇ¾î ÀÖ´Ù¸é ¾Æ¹«ÀÏµµ ÇÏÁö ¾Ê´Â´Ù.
 
-  [ì°¸ê³ ] ë©”ëª¨ë¦¬ë‹¨íŽ¸í™” í˜„ìƒì„ ë°©ì§€í•˜ê¸° ìœ„í•´ 2ì˜ NìŠ¹ì˜ í¬ê¸°ë¡œë§Œ í• ë‹¹í•œë‹¤.
+  [Âü°í] ¸Þ¸ð¸®´ÜÆíÈ­ Çö»óÀ» ¹æÁöÇÏ±â À§ÇØ 2ÀÇ N½ÂÀÇ Å©±â·Î¸¸ ÇÒ´çÇÑ´Ù.
 
-  [IN] aSize   - ì¤€ë¹„í•  ë©”ëª¨ë¦¬ ê³µê°„ì˜ í¬ê¸°
-  [OUT] aPreparedMemory - ì¤€ë¹„ëœ ë©”ëª¨ë¦¬ì˜ ì£¼ì†Œ
+  [IN] aSize   - ÁØºñÇÒ ¸Þ¸ð¸® °ø°£ÀÇ Å©±â
+  [OUT] aPreparedMemory - ÁØºñµÈ ¸Þ¸ð¸®ÀÇ ÁÖ¼Ò
 */
 
 IDE_RC iduReusedMemoryHandle::prepareMemory( UInt aSize,
@@ -137,7 +137,7 @@ IDE_RC iduReusedMemoryHandle::prepareMemory( UInt aSize,
 }
 
 /*
-    ì´ Memory Handleì„ í†µí•´ í• ë‹¹ë°›ì€ ë©”ëª¨ë¦¬ì˜ ì´ëŸ‰ì„ ë¦¬í„´
+    ÀÌ Memory HandleÀ» ÅëÇØ ÇÒ´ç¹ÞÀº ¸Þ¸ð¸®ÀÇ ÃÑ·®À» ¸®ÅÏ
  */
 ULong iduReusedMemoryHandle::getSize( void )
 {
@@ -148,7 +148,7 @@ ULong iduReusedMemoryHandle::getSize( void )
 
 
 /*
-  Resizable Memory Handleì˜ ì í•©ì„± ê²€í† (ASSERT)
+  Resizable Memory HandleÀÇ ÀûÇÕ¼º °ËÅä(ASSERT)
 */
 void iduReusedMemoryHandle::assertConsistency()
 {
@@ -173,12 +173,12 @@ void iduReusedMemoryHandle::assertConsistency()
 }
 
 /*
-  aSizeë¥¼ 2ì˜ NìŠ¹ì˜ í¬ê¸°ë¡œ Align upí•œë‹¤.
+  aSize¸¦ 2ÀÇ N½ÂÀÇ Å©±â·Î Align upÇÑ´Ù.
   
   ex> 1000 => 1024
       2017 => 2048
 
-  [IN] aSize - Align Upí•  í¬ê¸°
+  [IN] aSize - Align UpÇÒ Å©±â
 */
 UInt iduReusedMemoryHandle::alignUpPowerOfTwo( UInt aSize )
 {
@@ -195,5 +195,50 @@ UInt iduReusedMemoryHandle::alignUpPowerOfTwo( UInt aSize )
     return ++aSize ;
 }
 
+/*
+  Resizable Memory Handle ¿¡ ÀÏÁ¤ ÀÌ»óÀÇ SizeÀÇ Memory°¡ ÇÒ´ç µÇ¾î ÀÖÀ»°æ¿ì
+  »õ·Î¿î Size¸¦ °¡Áöµµ·Ï ÀçÁ¶Á¤ ÇØÁØ´Ù.
+
+  [Âü°í] ¸Þ¸ð¸®´ÜÆíÈ­ Çö»óÀ» ¹æÁöÇÏ±â À§ÇØ 2ÀÇ N½ÂÀÇ Å©±â·Î¸¸ ÇÒ´çÇÑ´Ù.
+
+  [IN] aSize   - ÁØºñÇÒ ¸Þ¸ð¸® °ø°£ÀÇ Å©±â ( 0º¸´Ù Ä¿¾ß¸¸ ÇÑ´Ù )
+*/
+
+IDE_RC iduReusedMemoryHandle::tuneSize( UInt aSize )
+{
+    IDE_ASSERT( aSize > 0 );
     
+    UInt sNewSize ;
+    
+    assertConsistency();
+
+    /* aSize·Î 2ÀÇ N½ÂÀÌ ¾Æ´Ñ °ªÀÌ ³Ñ¾î ¿Ã°æ¿ì aSize·Î mSize¸¦ ¸ÕÀú °è»êÇÏ¸é
+     * mSize = 1024, aSize = 1000 °°Àº °æ¿ì °°Àº Size¸¦ ÀçÇÒ´ç ÇÏ·Á ÇÒ¼ö ÀÖÀ¸¹Ç·Î
+     * alignUpÀ» ¸ÕÀú ¼öÇàÇØ ÁØ´Ù.
+     * ³»ºÎÀûÀ¸·Î aSize°¡ 0ÀÏ °æ¿ì ASSERT ÀÌ¹Ç·Î aSize´Â Ç×»ó 0º¸´Ù Ä¿¾ß ÇÑ´Ù. */
+    sNewSize = alignUpPowerOfTwo( aSize );
+
+    if ( mSize > sNewSize )
+    {
+        /* sNewSize´Â Ç×»ó 0º¸´Ù Ä¿¾ßµÇ¹Ç·Î mSize°¡ 0 Áï NULLÀÏ °æ¿ì´Â ¾ø´Ù.  */
+        IDE_TEST( iduMemMgr::free( mMemory ) != IDE_SUCCESS );
+        mMemory = NULL;
+        mSize = 0;
+
+        IDE_TEST( iduMemMgr::malloc( mMemoryClient,
+                                     sNewSize,
+                                     &mMemory )
+                  != IDE_SUCCESS );
+        
+        mSize = sNewSize;
+        
+        assertConsistency();
+    }
+   
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
 

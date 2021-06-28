@@ -67,10 +67,11 @@ public class CommandJob extends ProfileRunner {
                         alert.add(MetricManager.METRIC_NAME, mJobId);
                         alert.add(MetricManager.METRIC_TIME, time);
                         alert.add(MetricManager.METRIC_OUTTYPE, oType);
-                        alert.add(MetricManager.METRIC_VALUE, (String)result.get(MetricManager.METRIC_VALUE));
+                        alert.add(MetricManager.METRIC_VALUE, metricValue);
                         mQueue.enqueue(alert);
 
-                        metric.performActionScript(oType);
+                        /* BUG-47437 Need to pass metric name, level, threshold, value to action script as arguments */
+                        metric.performActionScript(oType, metricValue);
                     }
                 }
 

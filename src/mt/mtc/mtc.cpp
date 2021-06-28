@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtc.cpp 85313 2019-04-24 05:52:44Z andrew.shin $
+ * $Id: mtc.cpp 90192 2021-03-12 02:01:03Z jayce.park $
  **********************************************************************/
 
 #include <mte.h>
@@ -45,8 +45,8 @@ extern mtlModule mtlUTF16;
 SDouble gDoublePow[64];
 
 /********************************************************
- * BUG-41194 double to numeric ë³€í™˜ ì„±ëŠ¥ê°œì„ 
- * 2ì§„ìˆ˜ë¥¼ 10ì§„ìˆ˜ë¡œ ë³€ê²½ì‹œ ì‚¬ìš©í•  ë³€í™˜í…Œì´ë¸”ì„ ì •ì˜í•œë‹¤.
+ * BUG-41194 double to numeric º¯È¯ ¼º´É°³¼±
+ * 2Áø¼ö¸¦ 10Áø¼ö·Î º¯°æ½Ã »ç¿ëÇÒ º¯È¯Å×ÀÌºíÀ» Á¤ÀÇÇÑ´Ù.
  *
  * 2^-1075 = 0.247033 E-323
  * 2^-1074 = 0.494066 E-323
@@ -59,11 +59,11 @@ SDouble gDoublePow[64];
  * 2^1074  = 0.202402 E324
  * 2^1075  = 0.404805 E324
  *           ~~~~~~~~  ~~~
- *           ì‹¤ìˆ˜ë¶€   ì§€ìˆ˜ë¶€
+ *           ½Ç¼öºÎ   Áö¼öºÎ
  *
  ********************************************************/
-SDouble   gConvMantissaBuf[1075+1+1075];  // ì‹¤ìˆ˜ë¶€
-SInt      gConvExponentBuf[1075+1+1075];  // ì§€ìˆ˜ë¶€
+SDouble   gConvMantissaBuf[1075+1+1075];  // ½Ç¼öºÎ
+SInt      gConvExponentBuf[1075+1+1075];  // Áö¼öºÎ
 SDouble * gConvMantissa;
 SInt    * gConvExponent;
 idBool    gIEEE754Double;
@@ -208,8 +208,8 @@ IDE_RC mtc::initialize( mtcExtCallback  * aCallBacks )
     UInt      i;
     SInt      j;
 
-    /* BUG-40387 trace logì˜ ì–‘ì„ ì¤„ì´ê¸° ìœ„í•´
-     * mtì´ˆê¸°í™”ì‹œ ë°œìƒí•˜ëŠ” ì—ëŸ¬ëŠ” ì¶œë ¥í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+    /* BUG-40387 trace logÀÇ ¾çÀ» ÁÙÀÌ±â À§ÇØ
+     * mtÃÊ±âÈ­½Ã ¹ß»ıÇÏ´Â ¿¡·¯´Â Ãâ·ÂÇÏÁö ¾Ê´Â´Ù. */
     
     if( aCallBacks == NULL )
     {
@@ -254,7 +254,7 @@ IDE_RC mtc::initialize( mtcExtCallback  * aCallBacks )
     }
 
     // BUG-41194
-    // IEEE754ì—ì„œ 64bit doubleë¡œ -100ì€ ë‹¤ìŒê³¼ ê°™ì´ í‘œí˜„í•œë‹¤.
+    // IEEE754¿¡¼­ 64bit double·Î -100Àº ´ÙÀ½°ú °°ÀÌ Ç¥ÇöÇÑ´Ù.
     // 11000000 01011001 00000000 00000000 00000000 00000000 00000000 00000000
     // C0       59       00       00       00       00       00       00
 #if defined(ENDIAN_IS_BIG_ENDIAN)
@@ -269,10 +269,10 @@ IDE_RC mtc::initialize( mtcExtCallback  * aCallBacks )
          ( sDoubleProbes[1] == 0x00 ) && ( sDoubleProbes[0] == 0x00 ) )
 #endif
     {
-        // IEEE754í˜•ì‹ì˜ doubleì´ë‹¤.
+        // IEEE754Çü½ÄÀÇ doubleÀÌ´Ù.
         gIEEE754Double = ID_TRUE;
         
-        // 2ì§„ìˆ˜ 10ì§„ìˆ˜ ë³€í™˜í…Œì´ë¸”ì„ ìƒì„±í•œë‹¤.
+        // 2Áø¼ö 10Áø¼ö º¯È¯Å×ÀÌºíÀ» »ı¼ºÇÑ´Ù.
         gConvMantissa = gConvMantissaBuf + 1075;
         gConvExponent = gConvExponentBuf + 1075;
     
@@ -307,7 +307,7 @@ IDE_RC mtc::initialize( mtcExtCallback  * aCallBacks )
     }
     else
     {
-        // IEEE754í˜•ì‹ì˜ doubleì´ ì•„ë‹ˆë‹¤.
+        // IEEE754Çü½ÄÀÇ doubleÀÌ ¾Æ´Ï´Ù.
         gIEEE754Double = ID_FALSE;
     }
   
@@ -317,9 +317,9 @@ IDE_RC mtc::initialize( mtcExtCallback  * aCallBacks )
     gInitialValue = ( (ULong) idlOS::rand() << 32 ) + (ULong) idlOS::rand() ;
     gTimeSec      = (UInt) idlOS::gettimeofday().sec();
 
-    // MT ëª¨ë“ˆ ì´ˆê¸°í™” ì‹œì—ëŠ” í”„ë¡œí¼í‹°ë¡œ ì´ˆê¸°í™” í•˜ì§€ë§Œ
-    // ì¶”í›„ í´ë¼ì´ì–¸íŠ¸ ì—°ê²° ì‹œì—ëŠ” í•´ë‹¹ í´ë¼ì´ì–¸íŠ¸ì˜ ALTIBASE_NLS_USEë¡œ
-    // ë‹¤ì‹œ defModuleì„ êµ¬ì„±í•˜ê²Œ ëœë‹¤.
+    // MT ¸ğµâ ÃÊ±âÈ­ ½Ã¿¡´Â ÇÁ·ÎÆÛÆ¼·Î ÃÊ±âÈ­ ÇÏÁö¸¸
+    // ÃßÈÄ Å¬¶óÀÌ¾ğÆ® ¿¬°á ½Ã¿¡´Â ÇØ´ç Å¬¶óÀÌ¾ğÆ®ÀÇ ALTIBASE_NLS_USE·Î
+    // ´Ù½Ã defModuleÀ» ±¸¼ºÇÏ°Ô µÈ´Ù.
     IDE_TEST( mtl::initialize( (SChar*)"US7ASCII", ID_FALSE )
               != IDE_SUCCESS );
     IDE_TEST( mtd::initialize( mExtTypeModuleGroup, mExtTypeModuleGroupCnt )
@@ -410,12 +410,12 @@ void mtc::copyColumn( mtcColumn*       aDestination,
 
 /********************************************************************
  * Description
- *    ì´ í•¨ìˆ˜ëŠ” ìƒìœ„ ë ˆì´ì–´ë¥¼ ìœ„í•œ í•¨ìˆ˜ì´ë‹¤.
- *    Variable ì»¬ëŸ¼ì— ëŒ€í•´ NULLì´ ë°˜í™˜ë˜ë©´
- *    ì´ í•¨ìˆ˜ëŠ” mtdModuleì˜ NULL ê°’ìœ¼ë¡œ ë˜í•‘í•œ í›„ ë°˜í™˜í•œë‹¤.
- *    ê·¸ë¦¬ê³  SMì—ì„œ callbackìœ¼ë¡œ ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œë˜ì„œëŠ” ì•ˆëœë‹¤.
- *    ì™œëƒí•˜ë©´, aColumnì˜ moduleì„ ì°¸ì¡°í•˜ë¯€ë¡œ smiColumnì„
- *    ì¸ìë¡œ ë„˜ê¸°ë©´ ì•ˆëœë‹¤.
+ *    ÀÌ ÇÔ¼ö´Â »óÀ§ ·¹ÀÌ¾î¸¦ À§ÇÑ ÇÔ¼öÀÌ´Ù.
+ *    Variable ÄÃ·³¿¡ ´ëÇØ NULLÀÌ ¹İÈ¯µÇ¸é
+ *    ÀÌ ÇÔ¼ö´Â mtdModuleÀÇ NULL °ªÀ¸·Î ·¡ÇÎÇÑ ÈÄ ¹İÈ¯ÇÑ´Ù.
+ *    ±×¸®°í SM¿¡¼­ callbackÀ¸·Î ÀÌ ÇÔ¼ö¸¦ È£ÃâµÇ¼­´Â ¾ÈµÈ´Ù.
+ *    ¿Ö³ÄÇÏ¸é, aColumnÀÇ moduleÀ» ÂüÁ¶ÇÏ¹Ç·Î smiColumnÀ»
+ *    ÀÎÀÚ·Î ³Ñ±â¸é ¾ÈµÈ´Ù.
  *
  ********************************************************************/
 const void* mtc::value( const mtcColumn* aColumn,
@@ -476,7 +476,7 @@ UInt mtc::hash(UInt         aHash,
     aHash >>= 8;
     sHash[0] = aHash;
     sFence--;
-    // little endianì´ê¸° ë•Œë¬¸ì— valueë¥¼ ì—­ìˆœìœ¼ë¡œ í•œë‹¤.
+    // little endianÀÌ±â ¶§¹®¿¡ value¸¦ ¿ª¼øÀ¸·Î ÇÑ´Ù.
     for(; sFence >= aValue; sFence--)
     {
         sHash[0] = hashPermut[sHash[0]^*sFence];
@@ -489,11 +489,11 @@ UInt mtc::hash(UInt         aHash,
 #endif
 
 // fix BUG-9496
-// float, numeric data typeì— ëŒ€í•œ hash í•¨ìˆ˜
-// (mtc::hash í•¨ìˆ˜ëŠ” endianì— ë”°ë¥¸ êµ¬ë¶„ì²˜ë¦¬)
-// mtc::hashWithExponentëŠ” endianì— ë”°ë¥¸ êµ¬ë¶„ ì²˜ë¦¬ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
-// float, numeric data typeì€ mtdNumericType êµ¬ì¡°ì²´ë¥¼ ì‚¬ìš©í•˜ë¯€ë¡œ
-// endianì— ë”°ë¥¸ êµ¬ë¶„ ì²˜ë¦¬ë¥¼ í•˜ì§€ ì•Šì•„ë„ ë¨.
+// float, numeric data type¿¡ ´ëÇÑ hash ÇÔ¼ö
+// (mtc::hash ÇÔ¼ö´Â endian¿¡ µû¸¥ ±¸ºĞÃ³¸®)
+// mtc::hashWithExponent´Â endian¿¡ µû¸¥ ±¸ºĞ Ã³¸®¸¦ ÇÏÁö ¾Ê´Â´Ù.
+// float, numeric data typeÀº mtdNumericType ±¸Á¶Ã¼¸¦ »ç¿ëÇÏ¹Ç·Î
+// endian¿¡ µû¸¥ ±¸ºĞ Ã³¸®¸¦ ÇÏÁö ¾Ê¾Æµµ µÊ.
 UInt mtc::hashWithExponent( UInt         aHash,
                             const UChar* aValue,
                             UInt         aLength )
@@ -620,8 +620,8 @@ UInt mtc::hashWithoutSpace( UInt         aHash,
                             UInt         aLength )
 {
     // To Fix PR-11941
-    // ìˆ«ìí˜• Stringì¸ ê²½ìš° ì„±ëŠ¥ ì €í•˜ê°€ ë§¤ìš° ì‹¬ê°í•¨.
-    // ë”°ë¼ì„œ, Spaceë¥¼ ì œì™¸í•œ ëª¨ë“  Stringì„ ë¹„êµí•˜ë„ë¡ í•¨.
+    // ¼ıÀÚÇü StringÀÎ °æ¿ì ¼º´É ÀúÇÏ°¡ ¸Å¿ì ½É°¢ÇÔ.
+    // µû¶ó¼­, Space¸¦ Á¦¿ÜÇÑ ¸ğµç StringÀ» ºñ±³ÇÏµµ·Ï ÇÔ.
 
     UChar        sHash[4];
     const UChar* sFence;
@@ -1203,14 +1203,14 @@ IDE_RC mtc::numericCanonize( mtdNumericType *aValue,
                     //               1  byte( sign & exponent ) +
                     //               20 byte( mantissa )
                     //
-                    //     Numeric( 6 )ì¼ ë•Œ, 100000.01111ì€ ë‹¤ìŒê³¼ ê°™ì´
-                    //     ì„¤ì •ë˜ì–´ì•¼ í•¨
+                    //     Numeric( 6 )ÀÏ ¶§, 100000.01111Àº ´ÙÀ½°ú °°ÀÌ
+                    //     ¼³Á¤µÇ¾î¾ß ÇÔ
                     //     100000.0111 => length : 3
                     //                    sign & exponent : 197
                     //                    mantissa : 1
-                    //     ê·¸ëŸ¬ë‚˜ lengthê°€ 5ë¡œ ì„¤ì •ë˜ëŠ” ë¬¸ì œê°€ ìˆì—ˆìŒ
-                    //     ì›ì¸ : mantissaê°’ì´ 0ì¸ ê²½ìš°, lengthë¥¼
-                    //            ì¤„ì—¬ì•¼ í•¨
+                    //     ±×·¯³ª length°¡ 5·Î ¼³Á¤µÇ´Â ¹®Á¦°¡ ÀÖ¾úÀ½
+                    //     ¿øÀÎ : mantissa°ªÀÌ 0ÀÎ °æ¿ì, length¸¦
+                    //            ÁÙ¿©¾ß ÇÔ
                     //------------------------------------------------
 
                     for( sCount=aCanonizedValue->length-2; sCount>0; sCount-- )
@@ -1802,7 +1802,7 @@ IDE_RC mtc::floatCanonize( mtdNumericType *aValue,
                                         ERR_VALUE_OVERFLOW );
                         aCanonizedValue->signExponent--;
                         aCanonizedValue->length      = 2;
-                        // ìŒìˆ˜ì´ë¯€ë¡œ carryë°œìƒí›„ ê°’ì€ -1 ì¦‰, 98ì´ ë˜ì–´ì•¼ í•œë‹¤.
+                        // À½¼öÀÌ¹Ç·Î carry¹ß»ıÈÄ °ªÀº -1 Áï, 98ÀÌ µÇ¾î¾ß ÇÑ´Ù.
                         aCanonizedValue->mantissa[0] = 98;
                     }
                 }
@@ -1848,7 +1848,7 @@ void mtc::makeNumeric( mtdNumericType *aNumeric,
         aNumeric->length       = 1;
         aNumeric->signExponent = 0x80;
     }
-    /* ì–‘ìˆ˜ */
+    /* ¾ç¼ö */
     else if ( aNumber > 0 )
     {
         sULongValue = aNumber;
@@ -1883,7 +1883,7 @@ void mtc::makeNumeric( mtdNumericType *aNumeric,
 
         aNumeric->signExponent = sExponent + 192;
 
-        /* length ì„¤ì • */
+        /* length ¼³Á¤ */
         for ( sCount = 0, aNumeric->length = 1;
              sCount < ID_SIZEOF(sMantissa) - 1;
              sCount++ )
@@ -1906,7 +1906,7 @@ void mtc::makeNumeric( mtdNumericType *aNumeric,
         }
 
     }
-    /* ìŒìˆ˜ */
+    /* À½¼ö */
     else
     {
         if ( aNumber == -ID_LONG(9223372036854775807) - ID_LONG(1) )
@@ -1948,7 +1948,7 @@ void mtc::makeNumeric( mtdNumericType *aNumeric,
 
         aNumeric->signExponent = 64 - sExponent;
 
-        /* length ì„¤ì • */
+        /* length ¼³Á¤ */
         for ( sCount = 0, aNumeric->length = 1;
              sCount < ID_SIZEOF(sMantissa) - 1;
              sCount++ )
@@ -1963,7 +1963,7 @@ void mtc::makeNumeric( mtdNumericType *aNumeric,
             }
         }
 
-        /* ìŒìˆ˜ ë³´ìˆ˜ ë³€í™˜ */
+        /* À½¼ö º¸¼ö º¯È¯ */
         for( sCount = 0;
              sCount < (UInt)( aNumeric->length - 1 );
              sCount++ )
@@ -2043,7 +2043,7 @@ IDE_RC mtc::findCompare( const smiColumn* aColumn,
         else
         {
             /* PROJ-2433
-             * Direct Keyìš© compare í•¨ìˆ˜ ì‚¬ìš©ìœ„í•´ type ì„¸íŒ… */
+             * Direct Key¿ë compare ÇÔ¼ö »ç¿ëÀ§ÇØ type ¼¼ÆÃ */
             if ( ( aFlag & SMI_COLUMN_COMPARE_TYPE_MASK ) == SMI_COLUMN_COMPARE_DIRECT_KEY )
             {
                 if ( (aColumn->flag & SMI_COLUMN_TYPE_MASK ) == SMI_COLUMN_TYPE_FIXED )
@@ -2070,7 +2070,7 @@ IDE_RC mtc::findCompare( const smiColumn* aColumn,
     else
     {
         /* PROJ-2433
-         * Direct Key IndexëŠ” compressed columnì„ ì§€ì›í•˜ì§€ì•ŠëŠ”ë‹¤ */
+         * Direct Key Index´Â compressed columnÀ» Áö¿øÇÏÁö¾Ê´Â´Ù */
         IDE_DASSERT( ( aFlag & SMI_COLUMN_COMPARE_TYPE_MASK ) !=
                      SMI_COLUMN_COMPARE_DIRECT_KEY );
 
@@ -2204,14 +2204,14 @@ mtc::findHashKeyFunc( const smiColumn * aColumn,
 /***********************************************************************
  *
  * Description :
- *    Columnì˜ Data Typeì— ë¶€í•©í•˜ëŠ” Hash Key ì¶”ì¶œ í•¨ìˆ˜ë¥¼ ì–»ëŠ”ë‹¤.
- *    Data Typeì„ ì•Œ ìˆ˜ ì—†ëŠ” í•˜ìœ„ layer(SM)ì—ì„œ hash key ì¶”ì¶œ í•¨ìˆ˜ë¥¼
- *    ì–»ê¸° ìœ„í•´ ì‚¬ìš©í•œë‹¤.
+ *    ColumnÀÇ Data Type¿¡ ºÎÇÕÇÏ´Â Hash Key ÃßÃâ ÇÔ¼ö¸¦ ¾ò´Â´Ù.
+ *    Data TypeÀ» ¾Ë ¼ö ¾ø´Â ÇÏÀ§ layer(SM)¿¡¼­ hash key ÃßÃâ ÇÔ¼ö¸¦
+ *    ¾ò±â À§ÇØ »ç¿ëÇÑ´Ù.
  *
  * Implementation :
  *
- *    Columnì˜ ë°ì´í„° Typeì— í•´ë‹¹í•˜ëŠ” ëª¨ë“ˆì„ íšë“í•˜ê³ ,
- *    ì´ì— ëŒ€í•œ Hash Key ì¶”ì¶œ í•¨ìˆ˜ë¥¼ Returní•œë‹¤.
+ *    ColumnÀÇ µ¥ÀÌÅÍ Type¿¡ ÇØ´çÇÏ´Â ¸ğµâÀ» È¹µæÇÏ°í,
+ *    ÀÌ¿¡ ´ëÇÑ Hash Key ÃßÃâ ÇÔ¼ö¸¦ ReturnÇÑ´Ù.
  *
  ***********************************************************************/
     const mtcColumn* sColumn;
@@ -2238,20 +2238,20 @@ mtc::findStoredValue2MtdValue( const smiColumn             * aColumn,
 /***********************************************************************
  *
  * Description :
- *    Columnì˜ Data Typeì— ë¶€í•©í•˜ëŠ” column valueë¥¼ ë³µì‚¬í•˜ëŠ” í•¨ìˆ˜ë¥¼ ì–»ëŠ”ë‹¤.
- *    Data Typeì„ ì•Œ ìˆ˜ ì—†ëŠ” í•˜ìœ„ layer(SM)ì—ì„œ colum valueë¥¼ ë³µì‚¬í•˜ëŠ”
- *    í•¨ìˆ˜ë¥¼ ì–»ê¸° ìœ„í•´ ì‚¬ìš©í•œë‹¤.
+ *    ColumnÀÇ Data Type¿¡ ºÎÇÕÇÏ´Â column value¸¦ º¹»çÇÏ´Â ÇÔ¼ö¸¦ ¾ò´Â´Ù.
+ *    Data TypeÀ» ¾Ë ¼ö ¾ø´Â ÇÏÀ§ layer(SM)¿¡¼­ colum value¸¦ º¹»çÇÏ´Â
+ *    ÇÔ¼ö¸¦ ¾ò±â À§ÇØ »ç¿ëÇÑ´Ù.
  *
  *    PROJ-2429 Dictionary based data compress for on-disk DB
- *    dictionary compression colunmì¼ ê²½ìš°
- *    mtd::mtdStoredValue2MtdValue4CompressColumní•¨ìˆ˜ë¥¼ ë°˜í™˜í•˜ê³ 
- *    ê·¸ë ‡ì§€ ì•Šì„ê²½ìš° ë°ì´í„°íƒ€ì…ì— ë§ëŠ” ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜
- *    ë°ì´íƒ€ë¥¼ ë³µì‚¬í•˜ëŠ” í•¨ìˆ˜ë¥¼ ë°˜í™˜ í•œë‹¤.
+ *    dictionary compression colunmÀÏ °æ¿ì
+ *    mtd::mtdStoredValue2MtdValue4CompressColumnÇÔ¼ö¸¦ ¹İÈ¯ÇÏ°í
+ *    ±×·¸Áö ¾ÊÀ»°æ¿ì µ¥ÀÌÅÍÅ¸ÀÔ¿¡ ¸Â´Â µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ
+ *    µ¥ÀÌÅ¸¸¦ º¹»çÇÏ´Â ÇÔ¼ö¸¦ ¹İÈ¯ ÇÑ´Ù.
  *
  * Implementation :
  *
- *    Columnì˜ ë°ì´í„° Typeì— í•´ë‹¹í•˜ëŠ” ëª¨ë“ˆì„ íšë“í•˜ê³ ,
- *    ì´ì— ëŒ€í•œ column valueë¥¼ ë³µì‚¬í•˜ëŠ” í•¨ìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.
+ *    ColumnÀÇ µ¥ÀÌÅÍ Type¿¡ ÇØ´çÇÏ´Â ¸ğµâÀ» È¹µæÇÏ°í,
+ *    ÀÌ¿¡ ´ëÇÑ column value¸¦ º¹»çÇÏ´Â ÇÔ¼ö¸¦ ¸®ÅÏÇÑ´Ù.
  ***********************************************************************/
 
     const mtcColumn* sColumn;
@@ -2292,20 +2292,20 @@ mtc::findStoredValue2MtdValue4DataType( const smiColumn             * aColumn,
 /***********************************************************************
  *
  * Description :
- *    Columnì˜ Data Typeì— ë¶€í•©í•˜ëŠ” column valueë¥¼ ë³µì‚¬í•˜ëŠ” í•¨ìˆ˜ë¥¼ ì–»ëŠ”ë‹¤.
- *    Data Typeì„ ì•Œ ìˆ˜ ì—†ëŠ” í•˜ìœ„ layer(SM)ì—ì„œ colum valueë¥¼ ë³µì‚¬í•˜ëŠ”
- *    í•¨ìˆ˜ë¥¼ ì–»ê¸° ìœ„í•´ ì‚¬ìš©í•œë‹¤.
+ *    ColumnÀÇ Data Type¿¡ ºÎÇÕÇÏ´Â column value¸¦ º¹»çÇÏ´Â ÇÔ¼ö¸¦ ¾ò´Â´Ù.
+ *    Data TypeÀ» ¾Ë ¼ö ¾ø´Â ÇÏÀ§ layer(SM)¿¡¼­ colum value¸¦ º¹»çÇÏ´Â
+ *    ÇÔ¼ö¸¦ ¾ò±â À§ÇØ »ç¿ëÇÑ´Ù.
  *
  *    PROJ-2429 Dictionary based data compress for on-disk DB 
- *    dictionary compression colunmì— ìƒê´€ì—†ì´
- *    ë°ì´í„°íƒ€ì…ì— ë§ëŠ” ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜  ë°ì´íƒ€ë¥¼ ë³µì‚¬í•˜ëŠ”
- *    í•¨ìˆ˜ë¥¼ ë°˜í™˜ í•œë‹¤.
+ *    dictionary compression colunm¿¡ »ó°ü¾øÀÌ
+ *    µ¥ÀÌÅÍÅ¸ÀÔ¿¡ ¸Â´Â µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ  µ¥ÀÌÅ¸¸¦ º¹»çÇÏ´Â
+ *    ÇÔ¼ö¸¦ ¹İÈ¯ ÇÑ´Ù.
  *
  *
  * Implementation :
  *
- *    Columnì˜ ë°ì´í„° Typeì— í•´ë‹¹í•˜ëŠ” ëª¨ë“ˆì„ íšë“í•˜ê³ ,
- *    ì´ì— ëŒ€í•œ column valueë¥¼ ë³µì‚¬í•˜ëŠ” í•¨ìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.
+ *    ColumnÀÇ µ¥ÀÌÅÍ Type¿¡ ÇØ´çÇÏ´Â ¸ğµâÀ» È¹µæÇÏ°í,
+ *    ÀÌ¿¡ ´ëÇÑ column value¸¦ º¹»çÇÏ´Â ÇÔ¼ö¸¦ ¸®ÅÏÇÑ´Ù.
  ***********************************************************************/
 
     const mtcColumn* sColumn;
@@ -2373,17 +2373,17 @@ IDE_RC mtc::getAlignValue( const smiColumn * aColumn,
 
 //--------------------------------------------------
 // PROJ-1705
-// smì—ì„œ í…Œì´ë¸”ë ˆì½”ë“œë¡œë¶€í„° ì¸ë±ìŠ¤ë ˆì½”ë“œë¥¼ êµ¬ì„±í•˜ê¸° ìœ„í•´
-// í•´ë‹¹ ì»¬ëŸ¼ë°ì´íƒ€ì˜ sizeì™€ value ptrì„ êµ¬í•œë‹¤.
-// SMì—ì„œ ì¸ë±ìŠ¤ë ˆì½”ë“œë¥¼ êµ¬ì„±í•˜ê¸° ìœ„í•´ì„œ ì•„ë˜ì˜ ì ˆì°¨ë¡œ ìˆ˜í–‰ë˜ë©°,
-//  (1) SM ë””ìŠ¤í¬ë ˆì½”ë“œë¥¼ ì½ì–´ì„œ ->
-//  (2) QP ì˜ì—­ ì²˜ë¦¬ ê°€ëŠ¥í•œ ë ˆì½”ë“œ êµ¬ì„±  ->
-//  (3) SM ì¸ë±ìŠ¤ë ˆì½”ë“œ êµ¬ì„±
-// ì´ í•¨ìˆ˜ëŠ” (2)->(3)ì˜ ìˆ˜í–‰ì‹œ í˜¸ì¶œëœë‹¤.
+// sm¿¡¼­ Å×ÀÌºí·¹ÄÚµå·ÎºÎÅÍ ÀÎµ¦½º·¹ÄÚµå¸¦ ±¸¼ºÇÏ±â À§ÇØ
+// ÇØ´ç ÄÃ·³µ¥ÀÌÅ¸ÀÇ size¿Í value ptrÀ» ±¸ÇÑ´Ù.
+// SM¿¡¼­ ÀÎµ¦½º·¹ÄÚµå¸¦ ±¸¼ºÇÏ±â À§ÇØ¼­ ¾Æ·¡ÀÇ ÀıÂ÷·Î ¼öÇàµÇ¸ç,
+//  (1) SM µğ½ºÅ©·¹ÄÚµå¸¦ ÀĞ¾î¼­ ->
+//  (2) QP ¿µ¿ª Ã³¸® °¡´ÉÇÑ ·¹ÄÚµå ±¸¼º  ->
+//  (3) SM ÀÎµ¦½º·¹ÄÚµå ±¸¼º
+// ÀÌ ÇÔ¼ö´Â (2)->(3)ÀÇ ¼öÇà½Ã È£ÃâµÈ´Ù.
 //
-// RPì—ì„œë„ ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ëŠ”ë°,
-// logë¥¼ ì½ì–´ mtdTypeì˜ valueë¥¼ êµ¬ì„±í•˜ê³ ,
-// ê·¸ valueì˜ mtdTypeì˜ lengthë¥¼ êµ¬í• ë•Œ í˜¸ì¶œëœë‹¤.
+// RP¿¡¼­µµ ÀÌ ÇÔ¼ö°¡ È£ÃâµÇ´Âµ¥,
+// log¸¦ ÀĞ¾î mtdTypeÀÇ value¸¦ ±¸¼ºÇÏ°í,
+// ±× valueÀÇ mtdTypeÀÇ length¸¦ ±¸ÇÒ¶§ È£ÃâµÈ´Ù.
 //--------------------------------------------------
 IDE_RC mtc::getValueLengthFromFetchBuffer( idvSQL          * /*aStatistic*/,
                                            const smiColumn * aColumn,
@@ -2415,8 +2415,8 @@ IDE_RC mtc::getValueLengthFromFetchBuffer( idvSQL          * /*aStatistic*/,
 
 //--------------------------------------------------
 // PROJ-1705
-// ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
-// qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
+// µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
+// qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
 //--------------------------------------------------
 void mtc::storedValue2MtdValue( const smiColumn* aColumn,
                                 void           * aDestValue,
@@ -2430,9 +2430,9 @@ void mtc::storedValue2MtdValue( const smiColumn* aColumn,
     sColumn = (const mtcColumn*)aColumn;
 
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // Dictionary compression columnì¸ì§€ í™•ì¸í•˜ê³  dictionary column copyí•¨ìˆ˜ë¥¼
-    // ì „ë‹¬í•œë‹¤. Dictionary compression columnì´ ì•„ë‹Œê²½ìš° data typeì— ë§ëŠ” í•¨ìˆ˜ë¥¼
-    // ì „ë‹¬ í•œë‹¤.
+    // Dictionary compression columnÀÎÁö È®ÀÎÇÏ°í dictionary column copyÇÔ¼ö¸¦
+    // Àü´ŞÇÑ´Ù. Dictionary compression columnÀÌ ¾Æ´Ñ°æ¿ì data type¿¡ ¸Â´Â ÇÔ¼ö¸¦
+    // Àü´Ş ÇÑ´Ù.
     if ( (aColumn->flag & SMI_COLUMN_COMPRESSION_MASK) 
         != SMI_COLUMN_COMPRESSION_TRUE )
     {
@@ -2466,7 +2466,7 @@ IDE_RC mtc::cloneTuple( iduMemory   * aMemory,
         = aSrcTemplate->rows[aSrcTupleID].lflag ;
     aDstTemplate->rows[aDstTupleID].columnCount
         = aSrcTemplate->rows[aSrcTupleID].columnCount ;
-    // ì‹¤ì œ ì»¬ëŸ¼ ê°œìˆ˜ë§Œ ë³µì‚¬í•´ì•¼ í•œë‹¤.
+    // ½ÇÁ¦ ÄÃ·³ °³¼ö¸¸ º¹»çÇØ¾ß ÇÑ´Ù.
     aDstTemplate->rows[aDstTupleID].columnMaximum
         = aSrcTemplate->rows[aSrcTupleID].columnCount;
     aDstTemplate->rows[aDstTupleID].rowOffset
@@ -2509,7 +2509,7 @@ IDE_RC mtc::cloneTuple( iduMemory   * aMemory,
     {
         for( i = 0 ; i < aDstTemplate->rows[aDstTupleID].columnMaximum; i++ )
         {
-            /* BUG-44382 clone tuple ì„±ëŠ¥ê°œì„  */
+            /* BUG-44382 clone tuple ¼º´É°³¼± */
             if ( ( sFlag & MTC_TUPLE_TYPE_MASK ) == MTC_TUPLE_TYPE_TABLE )
             {
                 aDstTemplate->rows[aDstTupleID].columns[i] =
@@ -2579,7 +2579,7 @@ IDE_RC mtc::cloneTuple( iduMemory   * aMemory,
     {
         if ( aDstTemplate->rows[aDstTupleID].rowMaximum > 0 )
         {
-            /* BUG-44382 clone tuple ì„±ëŠ¥ê°œì„  */
+            /* BUG-44382 clone tuple ¼º´É°³¼± */
             if ( sFlag & MTC_TUPLE_ROW_MEMSET_TRUE )
             {
                 // BUG-15548
@@ -2632,7 +2632,7 @@ IDE_RC mtc::cloneTuple( iduVarMemList * aMemory,
         = aSrcTemplate->rows[aSrcTupleID].lflag ;
     aDstTemplate->rows[aDstTupleID].columnCount
         = aSrcTemplate->rows[aSrcTupleID].columnCount ;
-    // ì‹¤ì œ ì»¬ëŸ¼ ê°œìˆ˜ë§Œ ë³µì‚¬í•´ì•¼ í•œë‹¤.
+    // ½ÇÁ¦ ÄÃ·³ °³¼ö¸¸ º¹»çÇØ¾ß ÇÑ´Ù.
     aDstTemplate->rows[aDstTupleID].columnMaximum
         = aSrcTemplate->rows[aSrcTupleID].columnCount;
     aDstTemplate->rows[aDstTupleID].rowOffset
@@ -2675,7 +2675,7 @@ IDE_RC mtc::cloneTuple( iduVarMemList * aMemory,
     {
         for( i = 0 ; i < aDstTemplate->rows[aDstTupleID].columnMaximum; i++ )
         {
-            /* BUG-44382 clone tuple ì„±ëŠ¥ê°œì„  */
+            /* BUG-44382 clone tuple ¼º´É°³¼± */
             if ( ( sFlag & MTC_TUPLE_TYPE_MASK ) == MTC_TUPLE_TYPE_TABLE )
             {
                 aDstTemplate->rows[aDstTupleID].columns[i] =
@@ -2745,7 +2745,7 @@ IDE_RC mtc::cloneTuple( iduVarMemList * aMemory,
     {
         if ( aDstTemplate->rows[aDstTupleID].rowMaximum > 0 )
         {
-            /* BUG-44382 clone tuple ì„±ëŠ¥ê°œì„  */
+            /* BUG-44382 clone tuple ¼º´É°³¼± */
             if ( sFlag & MTC_TUPLE_ROW_MEMSET_TRUE )
             {
                 // BUG-15548
@@ -2785,11 +2785,11 @@ IDE_RC mtc::cloneTuple( iduVarMemList * aMemory,
 
 /******************************************************************
  *
- * ì„¸ì…˜ ì •ë³´ì¤‘ì— dateFormatì´ ì¶”ê°€ë˜ì—ˆëŠ”ë°
- * ì´ ì •ë³´ëŠ” cloneTemplateì˜ source, targetì´ ê³µìœ í•˜ê²Œ ë˜ì–´ ìˆë‹¤.
- * ë”°ë¼ì„œ ì´ í•¨ìˆ˜ëŠ” ê°™ì€ ì„¸ì…˜ ë‚´ì—ì„œë§Œ ì‚¬ìš©ë˜ì–´ì•¼ í•œë‹¤.
- * í˜¹ì€ ë‹¤ë¥¸ ì„¸ì…˜ì˜ templateì„ ë³µì‚¬í•˜ëŠ” ê²½ìš°ì—ëŠ”
- * ë°˜ë“œì‹œ dateFormatì„ ë”°ë¡œ assign í•´ ì£¼ì–´ì•¼ í•œë‹¤.
+ * ¼¼¼Ç Á¤º¸Áß¿¡ dateFormatÀÌ Ãß°¡µÇ¾ú´Âµ¥
+ * ÀÌ Á¤º¸´Â cloneTemplateÀÇ source, targetÀÌ °øÀ¯ÇÏ°Ô µÇ¾î ÀÖ´Ù.
+ * µû¶ó¼­ ÀÌ ÇÔ¼ö´Â °°Àº ¼¼¼Ç ³»¿¡¼­¸¸ »ç¿ëµÇ¾î¾ß ÇÑ´Ù.
+ * È¤Àº ´Ù¸¥ ¼¼¼ÇÀÇ templateÀ» º¹»çÇÏ´Â °æ¿ì¿¡´Â
+ * ¹İµå½Ã dateFormatÀ» µû·Î assign ÇØ ÁÖ¾î¾ß ÇÑ´Ù.
  * ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  * By kumdory, 2005-04-08
  *
@@ -2805,8 +2805,8 @@ IDE_RC mtc::cloneTemplate( iduMemory    * aMemory,
 
     // To Fix PR-9600
     // To Fix PR-9600
-    // mtcTemplate::execInfo, mtcTemplate::execInfoCnt ë©¤ë²„ì˜ ì¶”ê°€ë¡œ
-    // í•´ë‹¹ ì •ë³´ì— ëŒ€í•œ ë³µì‚¬ë¥¼ í•´ì£¼ì–´ì•¼ í•¨.
+    // mtcTemplate::execInfo, mtcTemplate::execInfoCnt ¸â¹öÀÇ Ãß°¡·Î
+    // ÇØ´ç Á¤º¸¿¡ ´ëÇÑ º¹»ç¸¦ ÇØÁÖ¾î¾ß ÇÔ.
     aDestination->execInfoCnt     = aSource->execInfoCnt;
 
     aDestination->initSubquery    = aSource->initSubquery;
@@ -2830,11 +2830,11 @@ IDE_RC mtc::cloneTemplate( iduMemory    * aMemory,
     aDestination->getECCInfo       = aSource->getECCInfo;
     aDestination->getECCSize       = aSource->getECCSize;
 
-    // BUG-11192ê´€ë ¨
-    // templateì— dateFormatì´ ì¶”ê°€ë˜ë©´ì„œ cloneTemplateì—ì„œ
-    // ë³µì‚¬ë¥¼ í•´ì£¼ì–´ì•¼ í•œë‹¤.
-    // cloneTemplateì€ ê°™ì€ ì„¸ì…˜ë‚´ì—ì„œë§Œ ì‚¬ìš©ë˜ë¯€ë¡œ
-    // í¬ì¸í„°ë§Œ assigní•˜ë©´ ëœë‹¤. (mallocí•´ì„œ ì¹´í”¼í•  í•„ìš”ëŠ” ì—†ë‹¤)
+    // BUG-11192°ü·Ã
+    // template¿¡ dateFormatÀÌ Ãß°¡µÇ¸é¼­ cloneTemplate¿¡¼­
+    // º¹»ç¸¦ ÇØÁÖ¾î¾ß ÇÑ´Ù.
+    // cloneTemplateÀº °°Àº ¼¼¼Ç³»¿¡¼­¸¸ »ç¿ëµÇ¹Ç·Î
+    // Æ÷ÀÎÅÍ¸¸ assignÇÏ¸é µÈ´Ù. (mallocÇØ¼­ Ä«ÇÇÇÒ ÇÊ¿ä´Â ¾ø´Ù)
     aDestination->dateFormat      = aSource->dateFormat;
     aDestination->dateFormatRef   = aSource->dateFormatRef;
 
@@ -2872,8 +2872,8 @@ IDE_RC mtc::cloneTemplate( iduMemory    * aMemory,
     }
 
     // To Fix PR-9600
-    // mtcTemplate::execInfo, mtcTemplate::execInfoCnt ë©¤ë²„ì˜ ì¶”ê°€ë¡œ
-    // í•´ë‹¹ ì •ë³´ì— ëŒ€í•œ ë³µì‚¬ë¥¼ í•´ì£¼ì–´ì•¼ í•¨.
+    // mtcTemplate::execInfo, mtcTemplate::execInfoCnt ¸â¹öÀÇ Ãß°¡·Î
+    // ÇØ´ç Á¤º¸¿¡ ´ëÇÑ º¹»ç¸¦ ÇØÁÖ¾î¾ß ÇÔ.
     if ( aDestination->execInfoCnt > 0 )
     {
         IDE_TEST(aMemory->alloc( aDestination->execInfoCnt *
@@ -2933,8 +2933,8 @@ IDE_RC mtc::cloneTemplate( iduVarMemList * aMemory,
 
     // To Fix PR-9600
     // To Fix PR-9600
-    // mtcTemplate::execInfo, mtcTemplate::execInfoCnt ë©¤ë²„ì˜ ì¶”ê°€ë¡œ
-    // í•´ë‹¹ ì •ë³´ì— ëŒ€í•œ ë³µì‚¬ë¥¼ í•´ì£¼ì–´ì•¼ í•¨.
+    // mtcTemplate::execInfo, mtcTemplate::execInfoCnt ¸â¹öÀÇ Ãß°¡·Î
+    // ÇØ´ç Á¤º¸¿¡ ´ëÇÑ º¹»ç¸¦ ÇØÁÖ¾î¾ß ÇÔ.
     aDestination->execInfoCnt     = aSource->execInfoCnt;
 
     aDestination->initSubquery    = aSource->initSubquery;
@@ -2958,11 +2958,11 @@ IDE_RC mtc::cloneTemplate( iduVarMemList * aMemory,
     aDestination->getECCInfo       = aSource->getECCInfo;
     aDestination->getECCSize       = aSource->getECCSize;
 
-    // BUG-11192ê´€ë ¨
-    // templateì— dateFormatì´ ì¶”ê°€ë˜ë©´ì„œ cloneTemplateì—ì„œ
-    // ë³µì‚¬ë¥¼ í•´ì£¼ì–´ì•¼ í•œë‹¤.
-    // cloneTemplateì€ ê°™ì€ ì„¸ì…˜ë‚´ì—ì„œë§Œ ì‚¬ìš©ë˜ë¯€ë¡œ
-    // í¬ì¸í„°ë§Œ assigní•˜ë©´ ëœë‹¤. (mallocí•´ì„œ ì¹´í”¼í•  í•„ìš”ëŠ” ì—†ë‹¤)
+    // BUG-11192°ü·Ã
+    // template¿¡ dateFormatÀÌ Ãß°¡µÇ¸é¼­ cloneTemplate¿¡¼­
+    // º¹»ç¸¦ ÇØÁÖ¾î¾ß ÇÑ´Ù.
+    // cloneTemplateÀº °°Àº ¼¼¼Ç³»¿¡¼­¸¸ »ç¿ëµÇ¹Ç·Î
+    // Æ÷ÀÎÅÍ¸¸ assignÇÏ¸é µÈ´Ù. (mallocÇØ¼­ Ä«ÇÇÇÒ ÇÊ¿ä´Â ¾ø´Ù)
     aDestination->dateFormat      = aSource->dateFormat;
     aDestination->dateFormatRef   = aSource->dateFormatRef;
 
@@ -3000,8 +3000,8 @@ IDE_RC mtc::cloneTemplate( iduVarMemList * aMemory,
     }
 
     // To Fix PR-9600
-    // mtcTemplate::execInfo, mtcTemplate::execInfoCnt ë©¤ë²„ì˜ ì¶”ê°€ë¡œ
-    // í•´ë‹¹ ì •ë³´ì— ëŒ€í•œ ë³µì‚¬ë¥¼ í•´ì£¼ì–´ì•¼ í•¨.
+    // mtcTemplate::execInfo, mtcTemplate::execInfoCnt ¸â¹öÀÇ Ãß°¡·Î
+    // ÇØ´ç Á¤º¸¿¡ ´ëÇÑ º¹»ç¸¦ ÇØÁÖ¾î¾ß ÇÔ.
     if ( aDestination->execInfoCnt > 0 )
     {
         IDE_TEST(aMemory->alloc( aDestination->execInfoCnt *
@@ -3054,7 +3054,7 @@ IDE_RC mtc::cloneTemplate( iduVarMemList * aMemory,
  *
  * PROJ-2527 WITHIN GROUP AGGR
  *
- * cloneTemplateì‹œì— ìƒì„±í•œ ê°ì²´ë“¤ì— ëŒ€í•´ finalizeí•œë‹¤.
+ * cloneTemplate½Ã¿¡ »ı¼ºÇÑ °´Ã¼µé¿¡ ´ëÇØ finalizeÇÑ´Ù.
  *
  ******************************************************************/
 void mtc::finiTemplate( mtcTemplate  * aTemplate )
@@ -3105,15 +3105,15 @@ void mtc::finiTemplate( mtcTemplate  * aTemplate )
  *    IDE_RC mtc::addFloat()
  *
  * Argument :
- *    aValue - point of value , ê³„ì‚° ë˜ì–´ì§€ëŠ” ê°’
+ *    aValue - point of value , °è»ê µÇ¾îÁö´Â °ª
  *    aArgument1
- *    aArgument2 - ì…ë ¥ê°’ aValue = aArgument1 + aArgument2
- *    aPrecisionMaximum - ìë¦¬ìˆ˜
+ *    aArgument2 - ÀÔ·Â°ª aValue = aArgument1 + aArgument2
+ *    aPrecisionMaximum - ÀÚ¸®¼ö
  *
  * Description :
- *    1. exponentê³„ì‚°
- *    2. ìë¦¬ìˆ˜ëŒ€ë¡œ ë§ì…ˆ ; carry ìƒê°
- *    3. ë§¨ì•ì˜ ìºë¦¬ëŠ” ìë¦¬ìˆ˜+1 í•´ì¤€ë‹¤
+ *    1. exponent°è»ê
+ *    2. ÀÚ¸®¼ö´ë·Î µ¡¼À ; carry »ı°¢
+ *    3. ¸Ç¾ÕÀÇ Ä³¸®´Â ÀÚ¸®¼ö+1 ÇØÁØ´Ù
  * ---------------------------------------------------------------------------*/
 
 
@@ -3220,7 +3220,7 @@ IDE_RC mtc::addFloat( mtdNumericType *aValue,
             }
         }
 
-        //ì˜®ê²¨ì ¸ì„œ 0ìœ¼ë¡œ ì±„ì›Œì§„ê³³ì´ 21ë²ˆë¥¼ ë„˜ìœ¼ë©´
+        //¿Å°ÜÁ®¼­ 0À¸·Î Ã¤¿öÁø°÷ÀÌ 21¹ø¸¦ ³ÑÀ¸¸é
         if( longLength - longArg->length > (SInt)(aPrecisionMaximum / 2 + 2) )
         {
             aValue->length = shortArg->length;
@@ -3234,15 +3234,15 @@ IDE_RC mtc::addFloat( mtdNumericType *aValue,
         if( longLength > (SInt) (aPrecisionMaximum / 2 + 2) )
         {
             // BUG-10557 fix
-            // maxLengthê°€ 21ì´ ë„˜ì„ ë•Œ, 21ë¡œ ì¤„ì´ëŠ”ë°
-            // ì´ë•Œ, argument1 ë˜ëŠ” argument2ì˜ ì—°ì‚°ì— í¬í•¨í•  ë²”ìœ„ë¥¼
-            // maxLengthê°€ ì¤„ì–´ë“  ë§Œí¼ ë¹¼ì¤˜ì•¼ í•œë‹¤.
+            // maxLength°¡ 21ÀÌ ³ÑÀ» ¶§, 21·Î ÁÙÀÌ´Âµ¥
+            // ÀÌ¶§, argument1 ¶Ç´Â argument2ÀÇ ¿¬»ê¿¡ Æ÷ÇÔÇÒ ¹üÀ§¸¦
+            // maxLength°¡ ÁÙ¾îµç ¸¸Å­ »©Áà¾ß ÇÑ´Ù.
             //
-            // ì˜ˆë¥¼ ë“¤ì–´ 158/10000*17/365 + 1ë¥¼ ê³„ì‚°í•  ë•Œ,
-            // 158/10000*17/365ëŠ” 0.00073589... (length=20) ì¸ë°,
-            // maxLengthëŠ” 22ì—ì„œ 21ë¡œ ì¤„ì¼ë•Œ,
-            // 0.00073589...ì˜ ê¸¸ì´ë¥¼ 19ë¡œ ì¤„ì—¬ ë§ˆì§€ë§‰ í•œìë¦¬ëŠ” í¬ê¸°í•´ì•¼ í•œë‹¤.
-            // subtractFloatì—ì„œë„ ë§ˆì°¬ê°€ì§€ë¡œ ì´ëŸ° ì²˜ë¦¬ë¥¼ í•´ì£¼ì–´ì•¼ í•œë‹¤.
+            // ¿¹¸¦ µé¾î 158/10000*17/365 + 1¸¦ °è»êÇÒ ¶§,
+            // 158/10000*17/365´Â 0.00073589... (length=20) ÀÎµ¥,
+            // maxLength´Â 22¿¡¼­ 21·Î ÁÙÀÏ¶§,
+            // 0.00073589...ÀÇ ±æÀÌ¸¦ 19·Î ÁÙ¿© ¸¶Áö¸· ÇÑÀÚ¸®´Â Æ÷±âÇØ¾ß ÇÑ´Ù.
+            // subtractFloat¿¡¼­µµ ¸¶Âù°¡Áö·Î ÀÌ·± Ã³¸®¸¦ ÇØÁÖ¾î¾ß ÇÑ´Ù.
             //
             lIndex = longArg->length - 2 - (longLength - 21);
             longLength = 21;
@@ -3262,12 +3262,12 @@ IDE_RC mtc::addFloat( mtdNumericType *aValue,
         //     1  : 2 :   3
         //   xxxxxxxxx________
         //+  ______xxxxxxxxxxx
-        //ê·¸ë¦¬ê³  ê²¹ì¹˜ì§€ ì•ŠëŠ” ê³µê°„
-        //ë¹ˆê³µê°„ì€ POSITIVE : 0
+        //±×¸®°í °ãÄ¡Áö ¾Ê´Â °ø°£
+        //ºó°ø°£Àº POSITIVE : 0
         //         NEGATIVE : 99
         for( mantissaIndex = longLength - 2 ; mantissaIndex >= 0 ; mantissaIndex-- )
         {
-            // 3êµ¬ì—­?
+            // 3±¸¿ª?
             if( mantissaIndex > (shortLength -2) && lIndex >= 0)
             {
                 if( sShortExponent == 0x80 )
@@ -3282,10 +3282,10 @@ IDE_RC mtc::addFloat( mtdNumericType *aValue,
                 }
                 lIndex--;
             }
-            //ë¹ˆê³µê°„
+            //ºó°ø°£
             else if( mantissaIndex > (shortLength -2) && lIndex < 0)
             {
-                //ìºë¦¬ ìƒê°
+                //Ä³¸® »ı°¢
                 aValue->mantissa[mantissaIndex] = 0;
                 if( sShortExponent == 0x00 )
                 {
@@ -3297,7 +3297,7 @@ IDE_RC mtc::addFloat( mtdNumericType *aValue,
                 }
                 aValue->mantissa[mantissaIndex] += sCarry;
             }
-            //2êµ¬ì—­
+            //2±¸¿ª
             else if( mantissaIndex <= (shortLength - 2) && lIndex >=0 && sIndex >=0)
             {
                 aValue->mantissa[mantissaIndex] =
@@ -3306,7 +3306,7 @@ IDE_RC mtc::addFloat( mtdNumericType *aValue,
                 lIndex--;
                 sIndex--;
             }
-            //1êµ¬ì—­
+            //1±¸¿ª
             else if( lIndex < 0 )
             {
                 if( sLongExponent == 0x80 )
@@ -3337,7 +3337,7 @@ IDE_RC mtc::addFloat( mtdNumericType *aValue,
                 lIndex--;
             }
 
-            //ìºë¦¬ ì„¤ì •
+            //Ä³¸® ¼³Á¤
             if( aValue->mantissa[mantissaIndex] >= 100 )
             {
                 aValue->mantissa[mantissaIndex] -= 100;
@@ -3349,8 +3349,8 @@ IDE_RC mtc::addFloat( mtdNumericType *aValue,
             }
         }
 
-        //ìŒìˆ˜ë¡œ ì¸í•œ ìºë¦¬ëŠ” ìë¦¬ìˆ˜ ì´ë™ì´ ì—†ë‹¤ ê·¸ë¦¬ê³  +1ì„ í•´ì¤€ë‹¤
-        //ì–‘ìˆ˜ëŠ” ìë¦¬ ì´ë™
+        //À½¼ö·Î ÀÎÇÑ Ä³¸®´Â ÀÚ¸®¼ö ÀÌµ¿ÀÌ ¾ø´Ù ±×¸®°í +1À» ÇØÁØ´Ù
+        //¾ç¼ö´Â ÀÚ¸® ÀÌµ¿
         if( sLongExponent != sShortExponent )
         {
             if( sCarry )
@@ -3371,8 +3371,8 @@ IDE_RC mtc::addFloat( mtdNumericType *aValue,
                 sCarry = 1;
             }
         }
-        //ë‘˜ë‹¤ ìŒìˆ˜
-        //ë¬´ì¡°ê±´1 ë”í•´ì¤€ë‹¤
+        //µÑ´Ù À½¼ö
+        //¹«Á¶°Ç1 ´õÇØÁØ´Ù
         else if( sLongExponent == 0x00 && sShortExponent == 0x00 )
         {
             if( sCarry == 0 )
@@ -3426,7 +3426,7 @@ IDE_RC mtc::addFloat( mtdNumericType *aValue,
              sCarry == 1 ) )
         {
 
-            //ì•ì˜ 0ì„ ì—…ì• ì¤€ë‹¤
+            //¾ÕÀÇ 0À» ¾÷¾ÖÁØ´Ù
             for( mantissaIndex = 0 ; mantissaIndex < longLength - 1 ; mantissaIndex++ )
             {
                 if( aValue->mantissa[mantissaIndex] == 0 )
@@ -3445,8 +3445,8 @@ IDE_RC mtc::addFloat( mtdNumericType *aValue,
             longLength -= checkIndex;
             sExponent1 -= checkIndex;
 
-            //ì–‘ìˆ˜
-            //ë’¤ì˜ 0
+            //¾ç¼ö
+            //µÚÀÇ 0
             mantissaIndex = longLength - 2;
 
             //BUG-fix 4733 - UMR remove
@@ -3467,7 +3467,7 @@ IDE_RC mtc::addFloat( mtdNumericType *aValue,
         }
         else
         {
-            //ì•ì˜ 99ë¥¼ ì—…ì• ì¤€ë‹¤
+            //¾ÕÀÇ 99¸¦ ¾÷¾ÖÁØ´Ù
             for( mantissaIndex = 0 ; mantissaIndex < longLength - 1 ; mantissaIndex++ )
             {
                 if( aValue->mantissa[mantissaIndex] == 99 )
@@ -3486,8 +3486,8 @@ IDE_RC mtc::addFloat( mtdNumericType *aValue,
             longLength -= checkIndex;
             sExponent1 -= checkIndex;
 
-            //ìŒìˆ˜
-            //ë’¤ì˜ 99
+            //À½¼ö
+            //µÚÀÇ 99
             mantissaIndex = longLength - 2;
 
             //BUG-fix 4733 UMR remove
@@ -3504,7 +3504,7 @@ IDE_RC mtc::addFloat( mtdNumericType *aValue,
                 }
             }
 
-            //-0ì´ ë˜ë©´
+            //-0ÀÌ µÇ¸é
             if( longLength == 1 )
             {
                 aValue->signExponent = 0x80;
@@ -3516,7 +3516,7 @@ IDE_RC mtc::addFloat( mtdNumericType *aValue,
         }
 
         // To fix BUG-12970
-        // ìµœëŒ€ ê¸¸ì´ê°€ ë„˜ëŠ” ê²½ìš° ë³´ì •í•´ ì¤˜ì•¼ í•¨.
+        // ÃÖ´ë ±æÀÌ°¡ ³Ñ´Â °æ¿ì º¸Á¤ÇØ Áà¾ß ÇÔ.
         if( longLength > 21 )
         {
             aValue->length = 21;
@@ -3527,8 +3527,8 @@ IDE_RC mtc::addFloat( mtdNumericType *aValue,
         }
 
         //BUGBUG
-        //precisionê³„ì‚°(ìœ íš¨ìˆ«ì , lengthì™€ ì—°ê´€í•´ì„œ)
-        //precisionìë¦¬ì—ì„œ ë°˜ì˜¬ë¦¼í•´ì¤€ë‹¤.
+        //precision°è»ê(À¯È¿¼ıÀÚ , length¿Í ¿¬°üÇØ¼­)
+        //precisionÀÚ¸®¿¡¼­ ¹İ¿Ã¸²ÇØÁØ´Ù.
         //aPrecisionMaximum
     }
 
@@ -3547,15 +3547,15 @@ IDE_RC mtc::addFloat( mtdNumericType *aValue,
  *    IDE_RC mtc::subtractFloat()
  *
  * Argument :
- *    aValue - point of value , ê³„ì‚° ë˜ì–´ì§€ëŠ” ê°’
+ *    aValue - point of value , °è»ê µÇ¾îÁö´Â °ª
  *    aArgument1
- *    aArgument2 - ì…ë ¥ê°’ aValue = aArgument1 - aArgument2
- *    aPrecisionMaximum - ìë¦¬ìˆ˜
+ *    aArgument2 - ÀÔ·Â°ª aValue = aArgument1 - aArgument2
+ *    aPrecisionMaximum - ÀÚ¸®¼ö
  *
  * Description :
- *    1. exponentê³„ì‚°
- *    2. ìë¦¬ìˆ˜ëŒ€ë¡œ ëº„ì…ˆ ; borrow ìƒê° ìŒìˆ˜ì¼ê²½ìš° 99ì˜ ë³´ìˆ˜ë¡œ ê³„ì‚°
- *    3. ë§¨ì•ì˜ ìºë¦¬ëŠ” ìë¦¬ìˆ˜+1 í•´ì¤€ë‹¤
+ *    1. exponent°è»ê
+ *    2. ÀÚ¸®¼ö´ë·Î »¬¼À ; borrow »ı°¢ À½¼öÀÏ°æ¿ì 99ÀÇ º¸¼ö·Î °è»ê
+ *    3. ¸Ç¾ÕÀÇ Ä³¸®´Â ÀÚ¸®¼ö+1 ÇØÁØ´Ù
  * ---------------------------------------------------------------------------*/
 
 IDE_RC mtc::subtractFloat( mtdNumericType *aValue,
@@ -3599,7 +3599,7 @@ IDE_RC mtc::subtractFloat( mtdNumericType *aValue,
     {
         aValue->length = aArgument2->length;
 
-        //ë¶€í˜¸ ë°”ê¾¸ê³  ë³´ìˆ˜( + -> - )
+        //ºÎÈ£ ¹Ù²Ù°í º¸¼ö( + -> - )
         aValue->signExponent = 256 - aArgument2->signExponent;
 
         for( mantissaIndex = 0 ;
@@ -3645,8 +3645,8 @@ IDE_RC mtc::subtractFloat( mtdNumericType *aValue,
         }
 
 
-        // To fix BUG-13569 addFloatê³¼ ê°™ì´
-        // long argumentì™€ short argumentë¡œ êµ¬ë¶„.
+        // To fix BUG-13569 addFloat°ú °°ÀÌ
+        // long argument¿Í short argument·Î ±¸ºĞ.
         //maxLength
         if( sExponent1 < sExponent2 )
         {
@@ -3690,7 +3690,7 @@ IDE_RC mtc::subtractFloat( mtdNumericType *aValue,
             }
         }
 
-        //ì˜®ê²¨ì ¸ì„œ 0ìœ¼ë¡œ ì±„ì›Œì§„ê³³ì´ 21ë²ˆë¥¼ ë„˜ìœ¼ë©´
+        //¿Å°ÜÁ®¼­ 0À¸·Î Ã¤¿öÁø°÷ÀÌ 21¹ø¸¦ ³ÑÀ¸¸é
         if( longLength - longArg->length > (SInt)(aPrecisionMaximum / 2 + 2) )
         {
             if( shortArg == aArgument1 )
@@ -3721,15 +3721,15 @@ IDE_RC mtc::subtractFloat( mtdNumericType *aValue,
         if( longLength > (SInt) (aPrecisionMaximum / 2 + 2) )
         {
             // BUG-10557 fix
-            // maxLengthê°€ 21ì´ ë„˜ì„ ë•Œ, 21ë¡œ ì¤„ì´ëŠ”ë°
-            // ì´ë•Œ, argument1 ë˜ëŠ” argument2ì˜ ì—°ì‚°ì— í¬í•¨í•  ë²”ìœ„ë¥¼
-            // maxLengthê°€ ì¤„ì–´ë“  ë§Œí¼ ë¹¼ì¤˜ì•¼ í•œë‹¤.
+            // maxLength°¡ 21ÀÌ ³ÑÀ» ¶§, 21·Î ÁÙÀÌ´Âµ¥
+            // ÀÌ¶§, argument1 ¶Ç´Â argument2ÀÇ ¿¬»ê¿¡ Æ÷ÇÔÇÒ ¹üÀ§¸¦
+            // maxLength°¡ ÁÙ¾îµç ¸¸Å­ »©Áà¾ß ÇÑ´Ù.
             //
-            // ì˜ˆë¥¼ ë“¤ì–´ 158/10000*17/365 + 1ë¥¼ ê³„ì‚°í•  ë•Œ,
-            // 158/10000*17/365ëŠ” 0.00073589... (length=20) ì¸ë°,
-            // maxLengthëŠ” 22ì—ì„œ 21ë¡œ ì¤„ì¼ë•Œ,
-            // 0.00073589...ì˜ ê¸¸ì´ë¥¼ 19ë¡œ ì¤„ì—¬ ë§ˆì§€ë§‰ í•œìë¦¬ëŠ” í¬ê¸°í•´ì•¼ í•œë‹¤.
-            // subtractFloatì—ì„œë„ ë§ˆì°¬ê°€ì§€ë¡œ ì´ëŸ° ì²˜ë¦¬ë¥¼ í•´ì£¼ì–´ì•¼ í•œë‹¤.
+            // ¿¹¸¦ µé¾î 158/10000*17/365 + 1¸¦ °è»êÇÒ ¶§,
+            // 158/10000*17/365´Â 0.00073589... (length=20) ÀÎµ¥,
+            // maxLength´Â 22¿¡¼­ 21·Î ÁÙÀÏ¶§,
+            // 0.00073589...ÀÇ ±æÀÌ¸¦ 19·Î ÁÙ¿© ¸¶Áö¸· ÇÑÀÚ¸®´Â Æ÷±âÇØ¾ß ÇÑ´Ù.
+            // subtractFloat¿¡¼­µµ ¸¶Âù°¡Áö·Î ÀÌ·± Ã³¸®¸¦ ÇØÁÖ¾î¾ß ÇÑ´Ù.
             //
             lIndex = longArg->length - 2 - (longLength - 21);
             longLength = 21;
@@ -3761,20 +3761,20 @@ IDE_RC mtc::subtractFloat( mtdNumericType *aValue,
         }
 
         sBorrow = 0;
-        //ë¹¼ê¸°
+        //»©±â
 
         //     1  : 2 :   3
         //   xxxxxxxxx________
         //-  ______xxxxxxxxxxx
-        //ê·¸ë¦¬ê³  ê²¹ì¹˜ì§€ ì•ŠëŠ” ê³µê°„
-        //ë¹ˆê³µê°„ì€ POSITIVE : 0
+        //±×¸®°í °ãÄ¡Áö ¾Ê´Â °ø°£
+        //ºó°ø°£Àº POSITIVE : 0
         //         NEGATIVE : 99
 
         for( mantissaIndex = maxLength - 2 ;
              mantissaIndex >= 0 ;
              mantissaIndex-- )
         {
-            //3êµ¬ì—­
+            //3±¸¿ª
             if( sArg1Length > sArg2Length && sArg1Index >= 0)
             {
                 if( sArgExponent2 == 0x00 )
@@ -3802,7 +3802,7 @@ IDE_RC mtc::subtractFloat( mtdNumericType *aValue,
             }
             else if( sArg1Length < sArg2Length && sArg2Index >= 0)
             {
-                //ì–‘ìˆ˜ë©´
+                //¾ç¼ö¸é
                 if( sArgExponent1 == 0x80 )
                 {
                     aValue->mantissa[mantissaIndex] =
@@ -3818,7 +3818,7 @@ IDE_RC mtc::subtractFloat( mtdNumericType *aValue,
                 sArg2Index--;
                 sArg2Length--;
             }
-            //ê²¹ì¹˜ëŠ” ê³µê°„(1ì´ ê¸¸ê±°ë‚˜ 2ê°€ ê¸¸ê±°ë‚˜)
+            //°ãÄ¡´Â °ø°£(1ÀÌ ±æ°Å³ª 2°¡ ±æ°Å³ª)
             else if( (sArg1Index == (sArg2Index + sDiffExp) ||
                       sArg2Index == (sArg1Index + sDiffExp)) &&
                      sArg1Index >= 0 && sArg2Index >= 0)
@@ -3841,13 +3841,13 @@ IDE_RC mtc::subtractFloat( mtdNumericType *aValue,
                 sArg1Index--;
                 sArg2Index--;
             }
-            //ê²¹ì¹˜ì§€ ì•ŠëŠ” ê³µê°„
+            //°ãÄ¡Áö ¾Ê´Â °ø°£
             else if( (sArg2Index < 0 && mantissaIndex > sArg1Index ) ||
                      (sArg1Index < 0 && mantissaIndex > sArg2Index ) )
             {
                 if(sBorrow)
                 {
-                    //ì–‘ìˆ˜
+                    //¾ç¼ö
                     if( sArgExponent1 == 0x80 )
                     {
                         if( sArgExponent2 == 0x80 )
@@ -3861,7 +3861,7 @@ IDE_RC mtc::subtractFloat( mtdNumericType *aValue,
                         sBorrow = 1;
 
                     }
-                    //ìŒìˆ˜
+                    //À½¼ö
                     else
                     {
                         if( sArgExponent2 == 0x80 )
@@ -3878,7 +3878,7 @@ IDE_RC mtc::subtractFloat( mtdNumericType *aValue,
                 }
                 else
                 {
-                    //ì–‘ìˆ˜
+                    //¾ç¼ö
                     if( sArgExponent1 == 0x80 )
                     {
                         if( sArgExponent2 == 0x80 )
@@ -3892,7 +3892,7 @@ IDE_RC mtc::subtractFloat( mtdNumericType *aValue,
                             sBorrow = 1;
                         }
                     }
-                    //ìŒìˆ˜
+                    //À½¼ö
                     else
                     {
                         if( sArgExponent2 == 0x80 )
@@ -3907,10 +3907,10 @@ IDE_RC mtc::subtractFloat( mtdNumericType *aValue,
                     }
                 }
             }
-            //1êµ¬ì—­
+            //1±¸¿ª
             else if( sArg2Index < 0 )
             {
-                //ìŒìˆ˜
+                //À½¼ö
                 if( sArgExponent2 == 0x00 )
                 {
                     if( aArgument1->mantissa[sArg1Index] - sBorrow < 99 )
@@ -3994,7 +3994,7 @@ IDE_RC mtc::subtractFloat( mtdNumericType *aValue,
         {
             if( sBorrow )
             {
-                //ì–‘ìˆ˜
+                //¾ç¼ö
                 for( mantissaIndex = maxLength - 2 ;
                      mantissaIndex >= 0 ;
                      mantissaIndex-- )
@@ -4011,11 +4011,11 @@ IDE_RC mtc::subtractFloat( mtdNumericType *aValue,
                 }
 
 
-                //ë§¨ì•ì˜ ë°”ë¡œìš° ë°œìƒí–‡ëŠ”ë° 99ì¼ê²½ìš°ë§Œ ì¦‰ ë¹¼ê¸°í•´ì„œ 0ì´ ë‚˜ì˜¬ë•Œ
+                //¸Ç¾ÕÀÇ ¹Ù·Î¿ì ¹ß»ıÇŞ´Âµ¥ 99ÀÏ°æ¿ì¸¸ Áï »©±âÇØ¼­ 0ÀÌ ³ª¿Ã¶§
                 if( aValue->mantissa[0] == 99 )
                 {
                     SShort checkIndex = 0;
-                    //ì•ì˜ 99ë¥¼ ì—…ì• ì¤€ë‹¤
+                    //¾ÕÀÇ 99¸¦ ¾÷¾ÖÁØ´Ù
                     for( mantissaIndex = 0 ;
                          mantissaIndex < maxLength - 1 ;
                          mantissaIndex++ )
@@ -4046,7 +4046,7 @@ IDE_RC mtc::subtractFloat( mtdNumericType *aValue,
             else
             {
 
-                //ìŒìˆ˜ê°€ ëœë‹¤.
+                //À½¼ö°¡ µÈ´Ù.
                 isZero = 0;
                 mantissaIndex = 0;
 
@@ -4065,7 +4065,7 @@ IDE_RC mtc::subtractFloat( mtdNumericType *aValue,
 
 
 
-                //0ì¼ë•Œ
+                //0ÀÏ¶§
                 if( isZero == maxLength - 1)
                 {
                     aValue->length = 1;
@@ -4095,7 +4095,7 @@ IDE_RC mtc::subtractFloat( mtdNumericType *aValue,
         }
         else
         {
-            //ì–‘ìˆ˜
+            //¾ç¼ö
 
             if( sArgExponent1 == 0x80 )
             {
@@ -4137,7 +4137,7 @@ IDE_RC mtc::subtractFloat( mtdNumericType *aValue,
             else
             {
                 if( sBorrow ){
-                    //98ë”í•´ì¤Œ
+                    //98´õÇØÁÜ
                     for( mantissaIndex = maxLength - 1 ;
                          mantissaIndex > 0 ;
                          mantissaIndex-- )
@@ -4155,15 +4155,15 @@ IDE_RC mtc::subtractFloat( mtdNumericType *aValue,
         }
 
         // BUG-12334 fix
-        // '-' ì—°ì‚° ê²°ê³¼ ëìë¦¬ê°€ 99ë¡œ ëë‚˜ëŠ” ê²½ìš° nomalizeê°€ í•„ìš”í•˜ë‹¤.
-        // ì˜ˆë¥¼ ë“¤ì–´,
-        // -220 - 80 í•˜ë©´
+        // '-' ¿¬»ê °á°ú ³¡ÀÚ¸®°¡ 99·Î ³¡³ª´Â °æ¿ì nomalize°¡ ÇÊ¿äÇÏ´Ù.
+        // ¿¹¸¦ µé¾î,
+        // -220 - 80 ÇÏ¸é
         // -220: length=3, exponent=62,  mantissa=97,79
         // 80  : length=2, exponent=193, mantissa=80
-        // ê²°ê³¼: length=3, exponent=62,  mantissa=96,99
-        // ì¸ë°, -330ì€ length=2, exponent=62, mantissa=96ì´ë‹¤.
-        // ê²°ë¡ ì ìœ¼ë¡œ ë§ˆì§€ë§‰ì˜ 99, 0ì€ ì—†ì• ê³  lengthë¥¼ 1 ì¤„ì—¬ì•¼ í•œë‹¤.
-        // ì–‘ìˆ˜ì¼ ê²½ìš°ì—” 0ì„ ìŒìˆ˜ì¼ ê²½ìš°ì—” 99ë¥¼ ì—†ì•¤ë‹¤.
+        // °á°ú: length=3, exponent=62,  mantissa=96,99
+        // ÀÎµ¥, -330Àº length=2, exponent=62, mantissa=96ÀÌ´Ù.
+        // °á·ĞÀûÀ¸·Î ¸¶Áö¸·ÀÇ 99, 0Àº ¾ø¾Ö°í length¸¦ 1 ÁÙ¿©¾ß ÇÑ´Ù.
+        // ¾ç¼öÀÏ °æ¿ì¿£ 0À» À½¼öÀÏ °æ¿ì¿£ 99¸¦ ¾ø¾Ø´Ù.
         // by kumdory, 2005-07-11
         if( ( aValue->signExponent & 0x80 ) > 0 )
         {
@@ -4199,33 +4199,33 @@ IDE_RC mtc::subtractFloat( mtdNumericType *aValue,
         }
 
 /*
-  ì–‘ ì–‘
-  ë°”ë¡œìš° ë°œìƒ -> -1
-  ë°”ë¡œìš° ì—†ìŒ -> 0
+  ¾ç ¾ç
+  ¹Ù·Î¿ì ¹ß»ı -> -1
+  ¹Ù·Î¿ì ¾øÀ½ -> 0
 
-  ìŒ ìŒ
-  ë°”ë¡œìš° -> -1
-  ë°”ë¡œìš° ì—†ìŒ -> 0
-
-
-  ì–‘ìŒ
-  ë°”ë¡œìš° -> -1
-  ë°”ë¡œìš° ì—†ìŒ -> -1
+  À½ À½
+  ¹Ù·Î¿ì -> -1
+  ¹Ù·Î¿ì ¾øÀ½ -> 0
 
 
-  ìŒì–‘
-  ë°”ë¡œìš° -> 0 ,98 ë”í•´ì¤Œ
-  ë°”ë¡œìš° ì—†ìŒ -> 0
+  ¾çÀ½
+  ¹Ù·Î¿ì -> -1
+  ¹Ù·Î¿ì ¾øÀ½ -> -1
 
-  //ë’¤ì— 0ì´ ì—°ì†í•´ì„œ ì˜¬ê²½ìš°
+
+  À½¾ç
+  ¹Ù·Î¿ì -> 0 ,98 ´õÇØÁÜ
+  ¹Ù·Î¿ì ¾øÀ½ -> 0
+
+  //µÚ¿¡ 0ÀÌ ¿¬¼ÓÇØ¼­ ¿Ã°æ¿ì
 
   */
         //BUGBUG
-        //precisionê³„ì‚°(ìœ íš¨ìˆ«ì , lengthì™€ ì—°ê´€í•´ì„œ)
-        //precisionìë¦¬ì—ì„œ ë°˜ì˜¬ë¦¼í•´ì¤€ë‹¤.
+        //precision°è»ê(À¯È¿¼ıÀÚ , length¿Í ¿¬°üÇØ¼­)
+        //precisionÀÚ¸®¿¡¼­ ¹İ¿Ã¸²ÇØÁØ´Ù.
 
         // To fix BUG-12970
-        // ìµœëŒ€ ê¸¸ì´ê°€ ë„˜ì–´ê°€ëŠ” ê²½ìš° ë³´ì •í•´ì¤˜ì•¼ í•¨.
+        // ÃÖ´ë ±æÀÌ°¡ ³Ñ¾î°¡´Â °æ¿ì º¸Á¤ÇØÁà¾ß ÇÔ.
         if( maxLength > 21 )
         {
             aValue->length = 21;
@@ -4252,29 +4252,29 @@ IDE_RC mtc::subtractFloat( mtdNumericType *aValue,
  *    IDE_RC mtc::multiplyFloat()
  *
  * Argument :
- *    aValue - point of value , ê³„ì‚° ë˜ì–´ì§€ëŠ” ê°’
+ *    aValue - point of value , °è»ê µÇ¾îÁö´Â °ª
  *    aArgument1
- *    aArgument2 - ì…ë ¥ê°’ aValue = aArgument1 * aArgument2
- *    aPrecisionMaximum - ìë¦¬ìˆ˜
+ *    aArgument2 - ÀÔ·Â°ª aValue = aArgument1 * aArgument2
+ *    aPrecisionMaximum - ÀÚ¸®¼ö
  *
  * Description :
- *    ì‚¬ìš© algorithm : grade school multiplication( ì¼ëª… í•„ì‚°ë²•)
+ *    »ç¿ë algorithm : grade school multiplication( ÀÏ¸í ÇÊ»ê¹ı)
  *
- *    1. exponentê³„ì‚°
- *    2. ìë¦¬ìˆ˜ëŒ€ë¡œ ê³±ì…ˆ ; ìŒìˆ˜ì¼ê²½ìš° 99ì˜ ë³´ìˆ˜ë¡œ ê³„ì‚°
- *    2.1 ì†ë„ë¥¼ ë¹ ë¥´ê²Œ í•˜ê¸° ìœ„í•´ ì–‘*ì–‘, ìŒ*ìŒ, ìŒ*ì–‘ ì¸ ê²½ìš°ë¥¼ ë”°ë¡œ ë§Œë“ ë‹¤
- *    3. í•œìë¦¬ì”© ê³±í•´ì„œ ë”í•´ì¤€ë‹¤.
- *    4. ìºë¦¬ ê³„ì‚°ì€ ë§¨ ë§ˆì§€ë§‰ì— í•œë‹¤.(ë”í• ë•Œë§ˆë‹¤ í•˜ê²Œë˜ë©´ carryê°€ cascadeë  ê²½ìš° ë¹„íš¨ìœ¨ì ì„)
- *    5. maximum mantissa(20)ë¥¼ ë„˜ì–´ê°€ë©´ ë²„ë¦¼
- *    6. exponentëŠ” -63ì´í•˜ë©´ 0, 63ì´ìƒì´ë©´ overflow
- *    7. ìŒìˆ˜ë©´ 99ë¥¼ ë¹¼ì„œ ì €ì¥
+ *    1. exponent°è»ê
+ *    2. ÀÚ¸®¼ö´ë·Î °ö¼À ; À½¼öÀÏ°æ¿ì 99ÀÇ º¸¼ö·Î °è»ê
+ *    2.1 ¼Óµµ¸¦ ºü¸£°Ô ÇÏ±â À§ÇØ ¾ç*¾ç, À½*À½, À½*¾ç ÀÎ °æ¿ì¸¦ µû·Î ¸¸µç´Ù
+ *    3. ÇÑÀÚ¸®¾¿ °öÇØ¼­ ´õÇØÁØ´Ù.
+ *    4. Ä³¸® °è»êÀº ¸Ç ¸¶Áö¸·¿¡ ÇÑ´Ù.(´õÇÒ¶§¸¶´Ù ÇÏ°ÔµÇ¸é carry°¡ cascadeµÉ °æ¿ì ºñÈ¿À²ÀûÀÓ)
+ *    5. maximum mantissa(20)¸¦ ³Ñ¾î°¡¸é ¹ö¸²
+ *    6. exponent´Â -63ÀÌÇÏ¸é 0, 63ÀÌ»óÀÌ¸é overflow
+ *    7. À½¼ö¸é 99¸¦ »©¼­ ÀúÀå
  * ---------------------------------------------------------------------------*/
 IDE_RC mtc::multiplyFloat( mtdNumericType *aValue,
                            UInt            /* aPrecisionMaximum */,
                            mtdNumericType *aArgument1,
                            mtdNumericType *aArgument2 )
 {
-    SInt sResultMantissa[40];   // ê²°ê³¼ëŠ” ìµœëŒ€ 80ìë¦¬ê¹Œì§€ ë‚˜ì˜¬ ìˆ˜ ìˆë‹¤.
+    SInt sResultMantissa[40];   // °á°ú´Â ÃÖ´ë 80ÀÚ¸®±îÁö ³ª¿Ã ¼ö ÀÖ´Ù.
     SInt i;                     // for multiplication
     SInt j;                     // for multiplication
     SInt sCarry;
@@ -4284,14 +4284,14 @@ IDE_RC mtc::multiplyFloat( mtdNumericType *aValue,
     SShort sResultExponent;
     SShort sMantissaStart;
 
-    // í•˜ë‚˜ë¼ë„ nullì¸ ê²½ìš° nullì²˜ë¦¬
+    // ÇÏ³ª¶óµµ nullÀÎ °æ¿ì nullÃ³¸®
     if( aArgument1->length == 0 || aArgument2->length == 0 )
     {
         aValue->length = 0;
         aValue->signExponent = 0;
         return IDE_SUCCESS;
     }
-    // í•˜ë‚˜ë¼ë„ 0ì¸ ê²½ìš° 0ìœ¼ë¡œ
+    // ÇÏ³ª¶óµµ 0ÀÎ °æ¿ì 0À¸·Î
     else if( aArgument1->length == 1 || aArgument2->length == 1 )
     {
         aValue->length       = 1;
@@ -4299,17 +4299,17 @@ IDE_RC mtc::multiplyFloat( mtdNumericType *aValue,
         return IDE_SUCCESS;
     }
 
-    // result mantissaìµœëŒ€ ê¸¸ì´ ì„¤ì •
+    // result mantissaÃÖ´ë ±æÀÌ ¼³Á¤
     sResultFence = aArgument1->length + aArgument2->length - 2;
-    // result mantissaë¥¼ 0ìœ¼ë¡œ ì´ˆê¸°í™”
+    // result mantissa¸¦ 0À¸·Î ÃÊ±âÈ­
     idlOS::memset( sResultMantissa, 0, ID_SIZEOF(UInt) * sResultFence );
 
 
-    // ì–‘ìˆ˜ì¸ì§€ ìŒìˆ˜ì¸ì§€ ë¶€ë¶„ë§Œ ì¶”ì¶œ
+    // ¾ç¼öÀÎÁö À½¼öÀÎÁö ºÎºĞ¸¸ ÃßÃâ
     sArgExponent1 = aArgument1->signExponent & 0x80;
     sArgExponent2 = aArgument2->signExponent & 0x80;
 
-    //exponent êµ¬í•˜ê¸°
+    //exponent ±¸ÇÏ±â
     if( sArgExponent1 == 0x80 )
     {
         sResultExponent = (aArgument1->signExponent & 0x7F) - 64;
@@ -4328,8 +4328,8 @@ IDE_RC mtc::multiplyFloat( mtdNumericType *aValue,
         sResultExponent += 64 - (aArgument2->signExponent & 0x7F);
     }
 
-    // ifë¬¸ ë¹„êµë¥¼ í•œë²ˆë§Œ í•˜ê¸° ìœ„í•´ ëª¨ë“  ê²½ìš°ì— ëŒ€í•´ ê³„ì‚°
-    // ì–‘ * ì–‘
+    // if¹® ºñ±³¸¦ ÇÑ¹ø¸¸ ÇÏ±â À§ÇØ ¸ğµç °æ¿ì¿¡ ´ëÇØ °è»ê
+    // ¾ç * ¾ç
     if( (sArgExponent1 != 0) && (sArgExponent2 != 0) )
     {
         for(i = aArgument1->length-2; i >= 0; i--)
@@ -4342,7 +4342,7 @@ IDE_RC mtc::multiplyFloat( mtdNumericType *aValue,
             }
         }
     }
-    // ì–‘ * ìŒ
+    // ¾ç * À½
     else if( (sArgExponent1 != 0) /*&& (sArgExponent2 == 0)*/ )
     {
         for(i = aArgument1->length-2; i >= 0; i--)
@@ -4355,7 +4355,7 @@ IDE_RC mtc::multiplyFloat( mtdNumericType *aValue,
             }
         }
     }
-    // ìŒ * ì–‘
+    // À½ * ¾ç
     else if( /*(sArgExponent1 == 0) &&*/ (sArgExponent2 != 0) )
     {
         for(i = aArgument1->length-2; i >= 0; i--)
@@ -4368,7 +4368,7 @@ IDE_RC mtc::multiplyFloat( mtdNumericType *aValue,
             }
         }
     }
-    // ìŒ * ìŒ
+    // À½ * À½
     else
     {
         for(i = aArgument1->length-2; i >= 0; i--)
@@ -4382,7 +4382,7 @@ IDE_RC mtc::multiplyFloat( mtdNumericType *aValue,
         }
     }
 
-    // carryê³„ì‚°
+    // carry°è»ê
     for( i = sResultFence - 1; i > 0; i-- )
     {
         sCarry = sResultMantissa[i] / 100;
@@ -4390,7 +4390,7 @@ IDE_RC mtc::multiplyFloat( mtdNumericType *aValue,
         sResultMantissa[i] -= sCarry * 100;
     }
 
-    // ì• Zero trim
+    // ¾Õ Zero trim
     if( sResultMantissa[0] == 0 )
     {
         sMantissaStart = 1;
@@ -4401,7 +4401,7 @@ IDE_RC mtc::multiplyFloat( mtdNumericType *aValue,
         sMantissaStart = 0;
     }
 
-    // ë’¤ Zero trim
+    // µÚ Zero trim
     for( i = sResultFence - 1; i >= 0; i-- )
     {
         if( sResultMantissa[i] == 0 )
@@ -4423,10 +4423,10 @@ IDE_RC mtc::multiplyFloat( mtdNumericType *aValue,
         // Nothing to do.
     }
 
-    // exponentê°€ 63ì„ ë„˜ìœ¼ë©´ ì—ëŸ¬(ìµœëŒ€ 126ì´ë¯€ë¡œ)
+    // exponent°¡ 63À» ³ÑÀ¸¸é ¿¡·¯(ÃÖ´ë 126ÀÌ¹Ç·Î)
     IDE_TEST_RAISE( sResultExponent > 63, ERR_VALUE_OVERFLOW );
 
-    // exponentê°€ -63(-126)ë³´ë‹¤ ì‘ìœ¼ë©´ 0ì´ ë¨
+    // exponent°¡ -63(-126)º¸´Ù ÀÛÀ¸¸é 0ÀÌ µÊ
     if( sResultExponent < -63 )
     {
         aValue->length       = 1;
@@ -4434,8 +4434,8 @@ IDE_RC mtc::multiplyFloat( mtdNumericType *aValue,
     }
     else
     {
-        // ì‹¤ì œ mantissaì— ê°’ ë³µì‚¬
-        // ë¶€í˜¸ê°€ ê°™ì€ ê²½ìš°
+        // ½ÇÁ¦ mantissa¿¡ °ª º¹»ç
+        // ºÎÈ£°¡ °°Àº °æ¿ì
         if( sArgExponent1 == sArgExponent2 )
         {
             aValue->signExponent = sResultExponent + 192;
@@ -4445,7 +4445,7 @@ IDE_RC mtc::multiplyFloat( mtdNumericType *aValue,
             }
             aValue->length = sResultFence - sMantissaStart + 1;
         }
-        // ë¶€í˜¸ê°€ ë‹¤ë¥¸ ê²½ìš°
+        // ºÎÈ£°¡ ´Ù¸¥ °æ¿ì
         else
         {
             aValue->signExponent = 64 - sResultExponent;
@@ -4474,24 +4474,24 @@ IDE_RC mtc::multiplyFloat( mtdNumericType *aValue,
  *    IDE_RC mtc::divideFloat()
  *
  * Argument :
- *    aValue - point of value , ê³„ì‚° ë˜ì–´ì§€ëŠ” ê°’
+ *    aValue - point of value , °è»ê µÇ¾îÁö´Â °ª
  *    aArgument1
- *    aArgument2 - ì…ë ¥ê°’ aValue = aArgument1 / aArgument2
- *    aPrecisionMaximum - ìë¦¬ìˆ˜
+ *    aArgument2 - ÀÔ·Â°ª aValue = aArgument1 / aArgument2
+ *    aPrecisionMaximum - ÀÚ¸®¼ö
  *
  * Description :
- *    ì‚¬ìš© algorithm : David M. Smithì˜ ë…¼ë¬¸
+ *    »ç¿ë algorithm : David M. SmithÀÇ ³í¹®
  *                    'A Multiple-Precision Division Algorithm'
  *
- *    1. exponentê³„ì‚°
- *    2. í”¼ì œìˆ˜, ì œìˆ˜ë¥¼ integer mantissa arrayì— ì €ì¥.(ëª¨ë‘ ì–‘ìˆ˜ë¡œ normalization)
- *    2.1 í”¼ì œìˆ˜ëŠ” í•œì¹¸ ì˜¤ë¥¸ìª½ ì‰¬í”„íŠ¸í•´ì„œ ì €ì¥.(ë‚¨ì€ ë¹ˆì¹¸ì—ëŠ” ëª«ì´ ì €ì¥ëœë‹¤)
- *    3. ë‚˜ëˆ—ì…ˆ ëª«ì„ ì¶”ì¸¡í•˜ê¸° ìœ„í•œ ê°’ ì €ì¥
- *    3.1 í”¼ì œìˆ˜, ì œìˆ˜ì—ì„œ ê°ê° 4ìë¦¬ì”© ë¹¼ì„œ integerê°’ì— ì €ì¥
- *    3.2 ì¶”ì¸¡ê°’ì„ êµ¬í•¨
- *    4. í”¼ì œìˆ˜ = í”¼ì œìˆ˜ - ì œìˆ˜ * ì¶”ì¸¡ê°’(ë³´ìˆ˜ì—°ì‚° ì—†ì´ ê·¸ëƒ¥ ëºŒ)
- *    5. ëª«ì´ maximum mantissa + 1ì´ ë ë•Œê¹Œì§€ 3~4 ë°˜ë³µ
- *    6. ëª«ì„ normalization
+ *    1. exponent°è»ê
+ *    2. ÇÇÁ¦¼ö, Á¦¼ö¸¦ integer mantissa array¿¡ ÀúÀå.(¸ğµÎ ¾ç¼ö·Î normalization)
+ *    2.1 ÇÇÁ¦¼ö´Â ÇÑÄ­ ¿À¸¥ÂÊ ½¬ÇÁÆ®ÇØ¼­ ÀúÀå.(³²Àº ºóÄ­¿¡´Â ¸òÀÌ ÀúÀåµÈ´Ù)
+ *    3. ³ª´°¼À ¸òÀ» ÃßÃøÇÏ±â À§ÇÑ °ª ÀúÀå
+ *    3.1 ÇÇÁ¦¼ö, Á¦¼ö¿¡¼­ °¢°¢ 4ÀÚ¸®¾¿ »©¼­ integer°ª¿¡ ÀúÀå
+ *    3.2 ÃßÃø°ªÀ» ±¸ÇÔ
+ *    4. ÇÇÁ¦¼ö = ÇÇÁ¦¼ö - Á¦¼ö * ÃßÃø°ª(º¸¼ö¿¬»ê ¾øÀÌ ±×³É »­)
+ *    5. ¸òÀÌ maximum mantissa + 1ÀÌ µÉ¶§±îÁö 3~4 ¹İº¹
+ *    6. ¸òÀ» normalization
  *
  * ---------------------------------------------------------------------------*/
 IDE_RC mtc::divideFloat( mtdNumericType *aValue,
@@ -4500,13 +4500,13 @@ IDE_RC mtc::divideFloat( mtdNumericType *aValue,
                          mtdNumericType *aArgument2 )
 
 {
-    SInt  sMantissa1[42];        // í”¼ì œìˆ˜ ë° ëª« ì €ì¥.
-    UChar sMantissa2[20] = {0,}; // ì œìˆ˜ ì €ì¥.(ìŒìˆ˜ë¼ë©´)
-    SInt  sMantissa3[21];        // ì œìˆ˜ * ë¶€ë¶„ëª«. ì¶”ì¸¡ê°’ì´ í° ê²½ìš° ëŒ€ë¹„.(ìµœëŒ€ 1byte)
+    SInt  sMantissa1[42];        // ÇÇÁ¦¼ö ¹× ¸ò ÀúÀå.
+    UChar sMantissa2[20] = {0,}; // Á¦¼ö ÀúÀå.(À½¼ö¶ó¸é)
+    SInt  sMantissa3[21];        // Á¦¼ö * ºÎºĞ¸ò. ÃßÃø°ªÀÌ Å« °æ¿ì ´ëºñ.(ÃÖ´ë 1byte)
 
-    SInt sNumerator;           // í”¼ì œìˆ˜ ìƒ˜í”Œê°’.
-    SInt sDenominator;         // ì œìˆ˜ ìƒ˜í”Œê°’.
-    SInt sPartialQ;            // ë¶€ë¶„ëª«.
+    SInt sNumerator;           // ÇÇÁ¦¼ö »ùÇÃ°ª.
+    SInt sDenominator;         // Á¦¼ö »ùÇÃ°ª.
+    SInt sPartialQ;            // ºÎºĞ¸ò.
 
     SInt i;                    // for Iterator
     SInt j;                    // for Iterator
@@ -4525,18 +4525,18 @@ IDE_RC mtc::divideFloat( mtdNumericType *aValue,
     SInt    sCarry;
     SInt    sMantissaStart;
 
-    // í•˜ë‚˜ë¼ë„ nullì´ë©´ null
+    // ÇÏ³ª¶óµµ nullÀÌ¸é null
     if( aArgument1->length == 0 || aArgument2->length == 0 )
     {
         aValue->length = 0;
         return IDE_SUCCESS;
     }
-    // 0ìœ¼ë¡œ ë‚˜ëˆˆ ê²½ìš°
+    // 0À¸·Î ³ª´« °æ¿ì
     else if ( aArgument2->length == 1 )
     {
         IDE_RAISE(ERR_DIVIDE_BY_ZERO);
     }
-    // 0ì„ ë‚˜ëˆˆ ê²½ìš°
+    // 0À» ³ª´« °æ¿ì
     else if ( aArgument1->length == 1 )
     {
         aValue->length = 1;
@@ -4544,18 +4544,18 @@ IDE_RC mtc::divideFloat( mtdNumericType *aValue,
         return IDE_SUCCESS;
     }
 
-    // ì–‘ìˆ˜ì¸ì§€ ìŒìˆ˜ì¸ì§€ ë¶€ë¶„ë§Œ ì¶”ì¶œ
+    // ¾ç¼öÀÎÁö À½¼öÀÎÁö ºÎºĞ¸¸ ÃßÃâ
     sArgExponent1 = aArgument1->signExponent & 0x80;
     sArgExponent2 = aArgument2->signExponent & 0x80;
 
 
-    // í”¼ì œìˆ˜ ë³µì‚¬.
-    // ë¬´ì¡°ê±´ ì–‘ìˆ˜ í˜•íƒœë¡œ ë°”ê¾¸ì–´ mantissaë³µì‚¬
+    // ÇÇÁ¦¼ö º¹»ç.
+    // ¹«Á¶°Ç ¾ç¼ö ÇüÅÂ·Î ¹Ù²Ù¾î mantissaº¹»ç
     sMantissa1[0] = 0;
 
     if( sArgExponent1 == 0x80 )
     {
-        // í”¼ì œìˆ˜ëŠ” í•œì¹¸ë¹„ìš°ê³  ë³µì‚¬(0ë²ˆì§¸ ì¹¸ë¶€í„° ëª«ì´ ì €ì¥ë ê²ƒì„)
+        // ÇÇÁ¦¼ö´Â ÇÑÄ­ºñ¿ì°í º¹»ç(0¹øÂ° Ä­ºÎÅÍ ¸òÀÌ ÀúÀåµÉ°ÍÀÓ)
         for( i = 0; i < aArgument1->length - 1; i++ )
         {
             sMantissa1[i+1] = (SInt)aArgument1->mantissa[i];
@@ -4564,7 +4564,7 @@ IDE_RC mtc::divideFloat( mtdNumericType *aValue,
     }
     else
     {
-        // í”¼ì œìˆ˜ëŠ” í•œì¹¸ë¹„ìš°ê³  ë³µì‚¬(0ë²ˆì§¸ ì¹¸ë¶€í„° ëª«ì´ ì €ì¥ë ê²ƒì„)
+        // ÇÇÁ¦¼ö´Â ÇÑÄ­ºñ¿ì°í º¹»ç(0¹øÂ° Ä­ºÎÅÍ ¸òÀÌ ÀúÀåµÉ°ÍÀÓ)
         for( i = 0; i < aArgument1->length - 1; i++ )
         {
             sMantissa1[i+1] = 99 - (SInt)aArgument1->mantissa[i];
@@ -4572,11 +4572,11 @@ IDE_RC mtc::divideFloat( mtdNumericType *aValue,
         idlOS::memset( &sMantissa1[i+1], 0, sizeof(SInt) * (42 - i - 1) );
     }
 
-    // ì œìˆ˜ ë³µì‚¬.
-    // ì œìˆ˜ëŠ” ì–‘ìˆ˜ì¼ë•ŒëŠ” ë³µì‚¬ì•ˆí•¨.
+    // Á¦¼ö º¹»ç.
+    // Á¦¼ö´Â ¾ç¼öÀÏ¶§´Â º¹»ç¾ÈÇÔ.
     if( sArgExponent2 == 0x80 )
     {
-        // mantissaptrì´ ì§ì ‘ aArgument2->mantissaë¥¼ ê°€ë¦¬í‚´.
+        // mantissaptrÀÌ Á÷Á¢ aArgument2->mantissa¸¦ °¡¸®Å´.
         sMantissa2Ptr = aArgument2->mantissa;
     }
     else
@@ -4588,7 +4588,7 @@ IDE_RC mtc::divideFloat( mtdNumericType *aValue,
         sMantissa2Ptr = sMantissa2;
     }
 
-    //exponent êµ¬í•˜ê¸°
+    //exponent ±¸ÇÏ±â
     if( sArgExponent1 == 0x80 )
     {
         sResultExponent = (aArgument1->signExponent & 0x7F) - 64;
@@ -4607,7 +4607,7 @@ IDE_RC mtc::divideFloat( mtdNumericType *aValue,
         sResultExponent -= 64 - (aArgument2->signExponent & 0x7F) - 1;
     }
 
-    // ì œìˆ˜ ìƒ˜í”Œê°’ êµ¬í•˜ê¸°(ìµœëŒ€ 3ìë¦¬ê¹Œì§€ ìƒ˜í”Œê°’ì„ êµ¬í•˜ì—¬ ì˜¤ì°¨ë¥¼ ìµœì†Œí™” í•œë‹¤.)
+    // Á¦¼ö »ùÇÃ°ª ±¸ÇÏ±â(ÃÖ´ë 3ÀÚ¸®±îÁö »ùÇÃ°ªÀ» ±¸ÇÏ¿© ¿ÀÂ÷¸¦ ÃÖ¼ÒÈ­ ÇÑ´Ù.)
     if( aArgument2->length > 3 )
     {
         sDenominator = (SInt)sMantissa2Ptr[0] * 10000 +
@@ -4625,28 +4625,28 @@ IDE_RC mtc::divideFloat( mtdNumericType *aValue,
     }
     IDE_TEST_RAISE(sDenominator == 0, ERR_DIVIDE_BY_ZERO);
 
-    sLastStep = 20 + 2; // ìµœëŒ€ 21ìë¦¬ê¹Œì§€ ë‚˜ì˜¬ ìˆ˜ ìˆë„ë¡
+    sLastStep = 20 + 2; // ÃÖ´ë 21ÀÚ¸®±îÁö ³ª¿Ã ¼ö ÀÖµµ·Ï
 
     for( sStep = 1; sStep < sLastStep; sStep++ )
     {
-        // í”¼ì œìˆ˜ ìƒ˜í”Œê°’ êµ¬í•˜ê¸°(í”¼ì œìˆ˜ì˜ ìë¦¬ìˆ˜ëŠ” ìµœëŒ€ 42ìë¦¬ì´ê¸° ë•Œë¬¸ì— abrì´ ë‚  ìˆ˜ ì—†ìŒ)
+        // ÇÇÁ¦¼ö »ùÇÃ°ª ±¸ÇÏ±â(ÇÇÁ¦¼öÀÇ ÀÚ¸®¼ö´Â ÃÖ´ë 42ÀÚ¸®ÀÌ±â ¶§¹®¿¡ abrÀÌ ³¯ ¼ö ¾øÀ½)
         sNumerator = sMantissa1[sStep] * 1000000 +
             sMantissa1[sStep+1] * 10000 +
             sMantissa1[sStep+2] * 100 +
             sMantissa1[sStep+3];
 
-        // ë¶€ë¶„ëª«ì„ êµ¬í•¨.
+        // ºÎºĞ¸òÀ» ±¸ÇÔ.
         sPartialQ = sNumerator / sDenominator;
 
-        // ë¶€ë¶„ëª«ì´ 0ì´ ì•„ë‹ˆë¼ë©´ í”¼ì œìˆ˜ - (ì œìˆ˜*ë¶€ë¶„ëª«)
+        // ºÎºĞ¸òÀÌ 0ÀÌ ¾Æ´Ï¶ó¸é ÇÇÁ¦¼ö - (Á¦¼ö*ºÎºĞ¸ò)
         if( sPartialQ != 0 )
         {
-            // sPartialQ * sMantissa2í•œ ê²ƒì„ sMantissa1ì—ì„œ ëº€ë‹¤.
-            // ìë¦¬ìˆ˜ë¥¼ ë§ì¶°ì„œ ë¹¼ì•¼ í•¨. ë³´ìˆ˜ì—°ì‚° ëº„ì…ˆ ì‚¬ìš©X
+            // sPartialQ * sMantissa2ÇÑ °ÍÀ» sMantissa1¿¡¼­ »«´Ù.
+            // ÀÚ¸®¼ö¸¦ ¸ÂÃç¼­ »©¾ß ÇÔ. º¸¼ö¿¬»ê »¬¼À »ç¿ëX
             // sPartialQ * sMantissa2
             sMantissa3[0] = 0;
 
-            // ì œìˆ˜*ë¶€ë¶„ëª«
+            // Á¦¼ö*ºÎºĞ¸ò
             for(k = aArgument2->length-2; k >= 0; k--)
             {
                 sMantissa3[k+1] = (SInt)sMantissa2Ptr[k] * sPartialQ;
@@ -4655,15 +4655,15 @@ IDE_RC mtc::divideFloat( mtdNumericType *aValue,
             sCarry = 0;
 
             /** BUG-42773
-             * 99.999 / 111.112 ë¥¼ ë‚˜ëˆ„ê²Œ ë˜ë©´ sPartialQ = 9000 ì¸ë°
-             * sMantissa3ì— sCaaryë¥¼ í•˜ë©´ 100ì§„ë²•ì„ ë„˜ê²Œë˜ëŠ”ë° ì´ì— ê´€ë ¨ëœ
-             * ì²˜ë¦¬ê°€ ì—†ì—ˆë‹¤.
-             * ì¦‰ 100 ì§„ë²•ìœ¼ë¡œ carryì€ ë°°ì—´ì˜ ëì—ì„œ ë¶€í„° 0 ë¡œ carryë¥¼ í•˜ëŠ”ë°
-             * ë§ˆì§€ë§‰ì— 100 ì§„ë²•ì´ ë„˜ì–´ì„œ carryê°’ì´  1 ì´ ë‚¨ì•˜ëŠ”ë°
-             * ì´ì™€ ê´€ë ¨ëœ ì²˜ë¦¬ê°€ ì—†ì–´ì„œ ë¬´ì‹œë˜ë©´ì„œ ê³„ì‚°ì´ ê¼¬ì´ê²Œ ëœë‹¤.
-             * ë”°ë¼ì„œ ë§ˆì§€ë§‰ 0ëŠ” carryí•˜ì§€ ì•Šê³  ê·¸ëŒ€ë¡œ ì²˜ë¦¬í•œë‹¤.
+             * 99.999 / 111.112 ¸¦ ³ª´©°Ô µÇ¸é sPartialQ = 9000 ÀÎµ¥
+             * sMantissa3¿¡ sCaary¸¦ ÇÏ¸é 100Áø¹ıÀ» ³Ñ°ÔµÇ´Âµ¥ ÀÌ¿¡ °ü·ÃµÈ
+             * Ã³¸®°¡ ¾ø¾ú´Ù.
+             * Áï 100 Áø¹ıÀ¸·Î carryÀº ¹è¿­ÀÇ ³¡¿¡¼­ ºÎÅÍ 0 ·Î carry¸¦ ÇÏ´Âµ¥
+             * ¸¶Áö¸·¿¡ 100 Áø¹ıÀÌ ³Ñ¾î¼­ carry°ªÀÌ  1 ÀÌ ³²¾Ò´Âµ¥
+             * ÀÌ¿Í °ü·ÃµÈ Ã³¸®°¡ ¾ø¾î¼­ ¹«½ÃµÇ¸é¼­ °è»êÀÌ ²¿ÀÌ°Ô µÈ´Ù.
+             * µû¶ó¼­ ¸¶Áö¸· 0´Â carryÇÏÁö ¾Ê°í ±×´ë·Î Ã³¸®ÇÑ´Ù.
              */
-            // ê³±ì…ˆì´í›„ì˜ carryê³„ì‚°
+            // °ö¼ÀÀÌÈÄÀÇ carry°è»ê
             for ( k = aArgument2->length - 1 ; k > 0; k-- )
             {
                 sMantissa3[k] += sCarry;
@@ -4672,7 +4672,7 @@ IDE_RC mtc::divideFloat( mtdNumericType *aValue,
             }
             sMantissa3[0] += sCarry;
 
-            // í”¼ì œìˆ˜ - (ì œìˆ˜*ë¶€ë¶„ëª«)
+            // ÇÇÁ¦¼ö - (Á¦¼ö*ºÎºĞ¸ò)
             for( k = 0; k < aArgument2->length; k++ )
             {
                 sMantissa1[sStep + k] -=  sMantissa3[k];
@@ -4681,7 +4681,7 @@ IDE_RC mtc::divideFloat( mtdNumericType *aValue,
             sMantissa1[sStep+1] +=sMantissa1[sStep]*100;
             sMantissa1[sStep] = sPartialQ;
         }
-        // ë¶€ë¶„ëª«ì´ 0ì´ë¼ë©´ ëª«ì€ ê·¸ëƒ¥ 0
+        // ºÎºĞ¸òÀÌ 0ÀÌ¶ó¸é ¸òÀº ±×³É 0
         else
         {
             sMantissa1[sStep+1] +=sMantissa1[sStep]*100;
@@ -4690,8 +4690,8 @@ IDE_RC mtc::divideFloat( mtdNumericType *aValue,
     }
 
     // Final Normalization
-    // carryë° ì˜ëª»ëœ ê°’ì„ normalizationí•œë‹¤.
-    // 22ìë¦¬ê¹Œì§€ ê³„ì‚°í•´ ë†“ì•˜ìœ¼ë¯€ë¡œ resultFenceëŠ” 21ì„.
+    // carry¹× Àß¸øµÈ °ªÀ» normalizationÇÑ´Ù.
+    // 22ÀÚ¸®±îÁö °è»êÇØ ³õ¾ÒÀ¸¹Ç·Î resultFence´Â 21ÀÓ.
     sResultFence = 21;
 
     for( i = sResultFence; i > 0; i-- )
@@ -4704,10 +4704,10 @@ IDE_RC mtc::divideFloat( mtdNumericType *aValue,
         }
         else if ( sMantissa1[i] < 0 )
         {
-            // carryê°€ 100ë‹¨ìœ„ë¡œ ë–¨ì–´ì§€ëŠ” ê²ƒ ì²˜ë¦¬ë¥¼ ìœ„í•´
-            // +1ì„ í•œ ê°’ì—ì„œ /100ì„ í•˜ê³  ì—¬ê¸°ì— -1ì„ í•¨
-            // ex) -100 => carryëŠ” -1, -101 => carryëŠ” -2
-            //     -99  => carryëŠ” -1
+            // carry°¡ 100´ÜÀ§·Î ¶³¾îÁö´Â °Í Ã³¸®¸¦ À§ÇØ
+            // +1À» ÇÑ °ª¿¡¼­ /100À» ÇÏ°í ¿©±â¿¡ -1À» ÇÔ
+            // ex) -100 => carry´Â -1, -101 => carry´Â -2
+            //     -99  => carry´Â -1
             sCarry = ((sMantissa1[i] + 1) / 100) - 1;
             sMantissa1[i-1] += sCarry;
             sMantissa1[i] -= sCarry * 100;
@@ -4718,22 +4718,22 @@ IDE_RC mtc::divideFloat( mtdNumericType *aValue,
         }
     }
 
-    // mantissa1[0]ì´ 0ì¸ ê²½ìš° resultExponentê°€ 1 ì¤„ì–´ë“¬.
-    // ex) ë‚˜ëˆ„ì–´ì§ˆ ì²«ë²ˆì§¸ ìë¦¬ë¶€í„° ì œìˆ˜ê°€ í”¼ì œìˆ˜ë³´ë‹¤ í° ê²½ìš°ì„.
-    //     1234 / 23 -> ì²«ì§¸ìë¦¬ ë‚˜ëˆŒìˆ˜ ì—†ì–´ 0ì„
+    // mantissa1[0]ÀÌ 0ÀÎ °æ¿ì resultExponent°¡ 1 ÁÙ¾îµë.
+    // ex) ³ª´©¾îÁú Ã¹¹øÂ° ÀÚ¸®ºÎÅÍ Á¦¼ö°¡ ÇÇÁ¦¼öº¸´Ù Å« °æ¿ìÀÓ.
+    //     1234 / 23 -> Ã¹Â°ÀÚ¸® ³ª´­¼ö ¾ø¾î 0ÀÓ
     if( sMantissa1[0] == 0 )
     {
         sMantissaStart = 1;
         sResultExponent--;
     }
-    // 0ì´ ì•„ë‹Œ ê²½ìš° ì• ì´ˆ ì˜ˆìƒí–ˆë˜ ìë¦¬ë³´ë‹¤ í•œìë¦¬ê°€ ë§ìœ¼ë¯€ë¡œ í•œìë¦¬ ê°ì†Œ
+    // 0ÀÌ ¾Æ´Ñ °æ¿ì ¾ÖÃÊ ¿¹»óÇß´ø ÀÚ¸®º¸´Ù ÇÑÀÚ¸®°¡ ¸¹À¸¹Ç·Î ÇÑÀÚ¸® °¨¼Ò
     else
     {
         sMantissaStart = 0;
         sResultFence--;
     }
 
-    // ë’¤ Zero Trim
+    // µÚ Zero Trim
     for( i = sResultFence - 1; i > 0; i-- )
     {
         if( sMantissa1[i] == 0 )
@@ -4755,10 +4755,10 @@ IDE_RC mtc::divideFloat( mtdNumericType *aValue,
         // Nothing to do.
     }
 
-    // exponentê°€ 63ì„ ë„˜ìœ¼ë©´ ì—ëŸ¬(ìµœëŒ€ 126ì´ë¯€ë¡œ)
+    // exponent°¡ 63À» ³ÑÀ¸¸é ¿¡·¯(ÃÖ´ë 126ÀÌ¹Ç·Î)
     IDE_TEST_RAISE( sResultExponent > 63, ERR_VALUE_OVERFLOW );
 
-    // exponentê°€ -63(-126)ë³´ë‹¤ ì‘ìœ¼ë©´ 0ì´ ë¨
+    // exponent°¡ -63(-126)º¸´Ù ÀÛÀ¸¸é 0ÀÌ µÊ
     if( sResultExponent < -63 )
     {
         aValue->length       = 1;
@@ -4766,7 +4766,7 @@ IDE_RC mtc::divideFloat( mtdNumericType *aValue,
     }
     else
     {
-        // ë¶€í˜¸ê°€ ê°™ì€ ê²½ìš°
+        // ºÎÈ£°¡ °°Àº °æ¿ì
         if( sArgExponent1 == sArgExponent2 )
         {
             aValue->signExponent = sResultExponent + 192;
@@ -4776,7 +4776,7 @@ IDE_RC mtc::divideFloat( mtdNumericType *aValue,
             }
             aValue->length = sResultFence - sMantissaStart + 1;
         }
-        // ë¶€í˜¸ê°€ ë‹¤ë¥¸ ê²½ìš°
+        // ºÎÈ£°¡ ´Ù¸¥ °æ¿ì
         else
         {
             aValue->signExponent = 64 - sResultExponent;
@@ -4826,18 +4826,18 @@ IDE_RC mtc::modFloat( mtdNumericType *aValue,
     SShort  sArgExponent2;
     SInt    sMantissaStart;
 
-    /* í•˜ë‚˜ë¼ë„ nullì´ë©´ null */
+    /* ÇÏ³ª¶óµµ nullÀÌ¸é null */
     if ( ( aArgument1->length == 0 ) || ( aArgument2->length == 0 ) )
     {
         aValue->length = 0;
         IDE_CONT( NORMAL_EXIT );
     }
-    /* 0ìœ¼ë¡œ ë‚˜ëˆˆ ê²½ìš° */
+    /* 0À¸·Î ³ª´« °æ¿ì */
     else if ( aArgument2->length == 1 )
     {
         IDE_RAISE(ERR_DIVIDE_BY_ZERO);
     }
-    /* 0ì„ ë‚˜ëˆˆ ê²½ìš° */
+    /* 0À» ³ª´« °æ¿ì */
     else if ( aArgument1->length == 1 )
     {
         aValue->length = 1;
@@ -4849,11 +4849,11 @@ IDE_RC mtc::modFloat( mtdNumericType *aValue,
         /* Nothing to do */
     }
 
-    /* ì–‘ìˆ˜ì¸ì§€ ìŒìˆ˜ì¸ì§€ ë¶€ë¶„ë§Œ ì¶”ì¶œ */
+    /* ¾ç¼öÀÎÁö À½¼öÀÎÁö ºÎºĞ¸¸ ÃßÃâ */
     sArgExponent1 = aArgument1->signExponent & 0x80;
     sArgExponent2 = aArgument2->signExponent & 0x80;
 
-    /* exponent êµ¬í•˜ê¸° */
+    /* exponent ±¸ÇÏ±â */
     if ( sArgExponent1 == 0x80 )
     {
         sExponent1 = (aArgument1->signExponent & 0x7F) - 64;
@@ -4872,7 +4872,7 @@ IDE_RC mtc::modFloat( mtdNumericType *aValue,
         sExponent2 = 64 - (aArgument2->signExponent & 0x7F);
     }
 
-    /* í”¼ì œìˆ˜ ë³µì‚¬. ë¬´ì¡°ê±´ ì–‘ìˆ˜ í˜•íƒœë¡œ ë°”ê¾¸ì–´ mantissaë³µì‚¬ */
+    /* ÇÇÁ¦¼ö º¹»ç. ¹«Á¶°Ç ¾ç¼ö ÇüÅÂ·Î ¹Ù²Ù¾î mantissaº¹»ç */
     sMantissa1[0] = sMantissa2[0] = 0;
 
     if ( sArgExponent1 == 0x80 )
@@ -4890,7 +4890,7 @@ IDE_RC mtc::modFloat( mtdNumericType *aValue,
         }
     }
 
-    /* ì œìˆ˜ ë³µì‚¬. */
+    /* Á¦¼ö º¹»ç. */
     if ( sArgExponent2 == 0x80 )
     {
         for ( i = 0; i < aArgument2->length - 1; i++ )
@@ -5013,10 +5013,10 @@ IDE_RC mtc::modFloat( mtdNumericType *aValue,
 
     sExponent1 -= sMantissaStart - 1;
 
-    /* exponentê°€ 63ì„ ë„˜ìœ¼ë©´ ì—ëŸ¬(ìµœëŒ€ 126ì´ë¯€ë¡œ) */
+    /* exponent°¡ 63À» ³ÑÀ¸¸é ¿¡·¯(ÃÖ´ë 126ÀÌ¹Ç·Î) */
     IDE_TEST_RAISE( sExponent1 > 63, ERR_VALUE_OVERFLOW );
 
-    /* exponentê°€ -63(-126)ë³´ë‹¤ ì‘ìœ¼ë©´ 0ì´ ë¨ */
+    /* exponent°¡ -63(-126)º¸´Ù ÀÛÀ¸¸é 0ÀÌ µÊ */
     if ( ( sExponent1 < -63 ) || ( sMantissaStart == ID_SIZEOF(sMantissa1) ) )
     {
         aValue->length       = 1;
@@ -5028,7 +5028,7 @@ IDE_RC mtc::modFloat( mtdNumericType *aValue,
         {
             sMantissa4[i] = sMantissa1[j];
         }
-        /* ê¸°ì¡´ makenumeric í˜¸í™˜ì„± */
+        /* ±âÁ¸ makenumeric È£È¯¼º */
         for ( i = 0, aValue->length = 1; i < (SInt)ID_SIZEOF(sMantissa4) - 1; i++ )
         {
             if ( sMantissa4[i] != 0 )
@@ -5041,7 +5041,7 @@ IDE_RC mtc::modFloat( mtdNumericType *aValue,
             }
         }
 
-        /* í”¼ì œìˆ˜ì˜ ë¶€í˜¸ë¥¼ ë”°ë¥¸ë‹¤. */
+        /* ÇÇÁ¦¼öÀÇ ºÎÈ£¸¦ µû¸¥´Ù. */
         if ( sArgExponent1 == 0x80 )
         {
             aValue->signExponent = sExponent1 + 192;
@@ -5086,12 +5086,12 @@ IDE_RC mtc::signFloat( mtdNumericType *aValue,
 {
     SShort sArgExponent1;
 
-    /* null ì´ë©´ null */
+    /* null ÀÌ¸é null */
     if ( aArgument1->length == 0)
     {
         aValue->length = 0;
     }
-    /* zero ì´ë©´ zero */
+    /* zero ÀÌ¸é zero */
     else if ( aArgument1->length == 1 )
     {
         aValue->length       = 1;
@@ -5101,14 +5101,14 @@ IDE_RC mtc::signFloat( mtdNumericType *aValue,
     {
         sArgExponent1 = aArgument1->signExponent & 0x80;
 
-        /* ì–‘ìˆ˜ */
+        /* ¾ç¼ö */
         if ( sArgExponent1 == 0x80 )
         {
             aValue->signExponent = 193;
             aValue->length = 2;
             aValue->mantissa[0] = 1;
         }
-        /* ìŒìˆ˜ */
+        /* À½¼ö */
         else
         {
             aValue->signExponent = 63;
@@ -5130,7 +5130,7 @@ IDE_RC mtc::absFloat( mtdNumericType *aValue,
     SShort sArgExponent1;
     SInt   i;
 
-    /* null ì´ë©´ null */
+    /* null ÀÌ¸é null */
     if ( aArgument1->length == 0)
     {
         aValue->length = 0;
@@ -5139,7 +5139,7 @@ IDE_RC mtc::absFloat( mtdNumericType *aValue,
     {
         sArgExponent1 = aArgument1->signExponent & 0x80;
 
-        /* ì–‘ìˆ˜ */
+        /* ¾ç¼ö */
         if ( sArgExponent1 == 0x80 )
         {
             aValue->length = aArgument1->length;
@@ -5149,7 +5149,7 @@ IDE_RC mtc::absFloat( mtdNumericType *aValue,
                 aValue->mantissa[i] = aArgument1->mantissa[i];
             }
         }
-        /* ìŒìˆ˜ */
+        /* À½¼ö */
         else
         {
             aValue->length = aArgument1->length;
@@ -5177,7 +5177,7 @@ IDE_RC mtc::ceilFloat( mtdNumericType *aValue,
     SShort sArgExponent1;
     UChar  sMantissa[MTD_FLOAT_MANTISSA_MAXIMUM] = { 0, };
 
-    /* null ì´ë©´ null */
+    /* null ÀÌ¸é null */
     if ( aArgument1->length == 0 )
     {
         aValue->length = 0;
@@ -5200,7 +5200,7 @@ IDE_RC mtc::ceilFloat( mtdNumericType *aValue,
 
         sArgExponent1 = aArgument1->signExponent & 0x80;
 
-        /* ì–‘ìˆ˜ */
+        /* ¾ç¼ö */
         if ( sArgExponent1 == 0x80 )
         {
             sExponent = (aArgument1->signExponent & 0x7F) - 64;
@@ -5292,7 +5292,7 @@ IDE_RC mtc::ceilFloat( mtdNumericType *aValue,
                 }
             }
         }
-        /* ìŒìˆ˜ */
+        /* À½¼ö */
         else
         {
             sExponent = 64 - (aArgument1->signExponent & 0x7F);
@@ -5342,7 +5342,7 @@ IDE_RC mtc::floorFloat( mtdNumericType *aValue,
     SShort sArgExponent1;
     UChar  sMantissa[MTD_FLOAT_MANTISSA_MAXIMUM] = { 0, };
 
-    /* null ì´ë©´ null */
+    /* null ÀÌ¸é null */
     if ( aArgument1->length == 0 )
     {
         aValue->length = 0;
@@ -5375,7 +5375,7 @@ IDE_RC mtc::floorFloat( mtdNumericType *aValue,
             }
         }
 
-        /* ì–‘ìˆ˜ */
+        /* ¾ç¼ö */
         if ( sArgExponent1 == 0x80 )
         {
             sExponent = (aArgument1->signExponent & 0x7F) - 64;
@@ -5407,7 +5407,7 @@ IDE_RC mtc::floorFloat( mtdNumericType *aValue,
                 }
             }
         }
-        /* ìŒìˆ˜ */
+        /* À½¼ö */
         else
         {
             sExponent = 64 - (aArgument1->signExponent & 0x7F);
@@ -5514,7 +5514,7 @@ IDE_RC mtc::numeric2Slong( SLong          *aValue,
                                     ID_ULONG(100000000000000),
                                     ID_ULONG(10000000000000000),
                                     ID_ULONG(1000000000000000000) };
-    /* null ì´ë©´ ì—ëŸ¬ */
+    /* null ÀÌ¸é ¿¡·¯ */
     IDE_TEST_RAISE( aArgument1->length == 0, ERR_NULL_VALUE );
 
     if ( aArgument1->length == 1 )
@@ -5529,7 +5529,7 @@ IDE_RC mtc::numeric2Slong( SLong          *aValue,
 
     sArgExponent1 = aArgument1->signExponent & 0x80;
 
-    /* ì–‘ìˆ˜ì´ë©´ ê·¸ëŒ€ë¡œ ìŒìˆ˜ì´ë©´ ì–‘ìˆ˜ë¡œ ë³€í™˜ */
+    /* ¾ç¼öÀÌ¸é ±×´ë·Î À½¼öÀÌ¸é ¾ç¼ö·Î º¯È¯ */
     if ( sArgExponent1 == 0x80 )
     {
         sExponent = (aArgument1->signExponent & 0x7F) - 64;
@@ -5564,14 +5564,14 @@ IDE_RC mtc::numeric2Slong( SLong          *aValue,
         /* nothing to do. */
     }
 
-    //ì–‘ìˆ˜
+    //¾ç¼ö
     if ( sArgExponent1 == 0x80 )
     {
         IDE_TEST_RAISE( sULongValue > ID_ULONG(9223372036854775807),
                         ERR_OVERFLOW );
         *aValue = sULongValue;
     }
-    //ìŒìˆ˜
+    //À½¼ö
     else
     {
         IDE_TEST_RAISE( sULongValue > ID_ULONG(9223372036854775808),
@@ -5680,7 +5680,7 @@ void mtc::numeric2Double( mtdDoubleType  * aValue,
     }
 }
 
-// BUG-41194 double to numeric ë³€í™˜ ì„±ëŠ¥ê°œì„ 
+// BUG-41194 double to numeric º¯È¯ ¼º´É°³¼±
 IDE_RC mtc::double2Numeric( mtdNumericType *aValue,
                             mtdDoubleType   aArgument1 )
 {
@@ -5704,14 +5704,14 @@ IDE_RC mtc::double2Numeric( mtdNumericType *aValue,
     // decompose double
     //------------------------------------------
     
-    // IEEE 754-1985 í‘œì¤€ì— ë§ì¶° double typeì„ ë¶„ë¦¬í•œë‹¤.
+    // IEEE 754-1985 Ç¥ÁØ¿¡ ¸ÂÃç double typeÀ» ºĞ¸®ÇÑ´Ù.
     // 64 bit = 1 bit sign + 11 bit exponent + 52 bit fraction
     
 #if defined(ENDIAN_IS_BIG_ENDIAN)
     
     // sign
     sSign = sDoubles[0] & 0x80;
-    sSign = (sSign >> 7) & 0x01;  // 0 í˜¹ì€ 1
+    sSign = (sSign >> 7) & 0x01;  // 0 È¤Àº 1
 
     // exponent
     sExponents[0] = sDoubles[0] & 0x7f;
@@ -5720,7 +5720,7 @@ IDE_RC mtc::double2Numeric( mtdNumericType *aValue,
 
     // fraction
     sFractions[0] = 0;
-    sFractions[1] = (sDoubles[1] & 0x0f) | 0x10;  // ì•ì— 1ì¶”ê°€
+    sFractions[1] = (sDoubles[1] & 0x0f) | 0x10;  // ¾Õ¿¡ 1Ãß°¡
     sFractions[2] = sDoubles[2];
     sFractions[3] = sDoubles[3];
     sFractions[4] = sDoubles[4];
@@ -5732,7 +5732,7 @@ IDE_RC mtc::double2Numeric( mtdNumericType *aValue,
 
     // sign
     sSign = sDoubles[7] & 0x80;
-    sSign = (sSign >> 7) & 0x01;  // 0 í˜¹ì€ 1
+    sSign = (sSign >> 7) & 0x01;  // 0 È¤Àº 1
     
     // exponent
     sExponents[0] = sDoubles[6] & 0xf0;
@@ -5746,7 +5746,7 @@ IDE_RC mtc::double2Numeric( mtdNumericType *aValue,
     sFractions[3] = sDoubles[3];
     sFractions[4] = sDoubles[4];
     sFractions[5] = sDoubles[5];
-    sFractions[6] = (sDoubles[6] & 0x0f) | 0x10;  // ì•ì— 1ì¶”ê°€
+    sFractions[6] = (sDoubles[6] & 0x0f) | 0x10;  // ¾Õ¿¡ 1Ãß°¡
     sFractions[7] = 0;
 
 #endif
@@ -5801,7 +5801,7 @@ IDE_RC mtc::double2Numeric( mtdNumericType *aValue,
     // make numeric
     //------------------------------------------
 
-    // í™€ìˆ˜ ì§€ìˆ˜ ë³´ì •
+    // È¦¼ö Áö¼ö º¸Á¤
     if ( sExponent10 % 2 != 0 )
     {
         sLongValue *= 10;
@@ -5879,7 +5879,7 @@ IDE_RC mtc::double2Numeric( mtdNumericType *aValue,
             aValue->length = sLength;
             aValue->signExponent = 64 - sExponent;
 
-            // ìŒìˆ˜ ë³´ìˆ˜ ë³€í™˜
+            // À½¼ö º¸¼ö º¯È¯
             for ( i = 0; i < sLength - 1; i++ )
             {
                 aValue->mantissa[i] = 99 - sMantissa[i];
@@ -5920,7 +5920,7 @@ IDE_RC mtc::roundFloat( mtdNumericType *aValue,
     UChar  sMantissa[MTD_FLOAT_MANTISSA_MAXIMUM] = { 0, };
     SInt   i;
 
-    /* null ì´ë©´ null */
+    /* null ÀÌ¸é null */
     if ( aArgument1->length == 0 )
     {
         aValue->length = 0;
@@ -5937,7 +5937,7 @@ IDE_RC mtc::roundFloat( mtdNumericType *aValue,
 
         sRound = -sRound;
 
-        /* exponent êµ¬í•˜ê¸° */
+        /* exponent ±¸ÇÏ±â */
         sArgExponent1 = aArgument1->signExponent & 0x80;
         if ( sArgExponent1 == 0x80 )
         {
@@ -5948,7 +5948,7 @@ IDE_RC mtc::roundFloat( mtdNumericType *aValue,
             sExponent = 64 - (aArgument1->signExponent & 0x7F);
         }
 
-        /* aArgument1 ë³µì‚¬ */
+        /* aArgument1 º¹»ç */
         aValue->signExponent = aArgument1->signExponent;
         aValue->length = aArgument1->length;
 
@@ -5976,7 +5976,7 @@ IDE_RC mtc::roundFloat( mtdNumericType *aValue,
                 sExponent++;
                 IDE_TEST_RAISE( sExponent > 63, ERR_OVERFLOW );
                 aValue->length = 2;
-                /* exponent ì„¤ì • */
+                /* exponent ¼³Á¤ */
                 if ( sArgExponent1 == 0x80 )
                 {
                     aValue->signExponent = sExponent + 192;
@@ -6108,7 +6108,7 @@ IDE_RC mtc::roundFloat( mtdNumericType *aValue,
                 sMantissa[0] = 1;
                 sExponent++;
                 IDE_TEST_RAISE( sExponent > 63, ERR_OVERFLOW );
-                /* exponent ì„¤ì • */
+                /* exponent ¼³Á¤ */
                 if ( sArgExponent1 == 0x80 )
                 {
                     aValue->signExponent = sExponent + 192;
@@ -6123,7 +6123,7 @@ IDE_RC mtc::roundFloat( mtdNumericType *aValue,
                 /* Nothing to do */
             }
 
-            /* length ì„¤ì • */
+            /* length ¼³Á¤ */
             for ( i = 0, aValue->length = 1; i < (SInt)ID_SIZEOF(sMantissa) - 1; i++ )
             {
                 if ( sMantissa[i] != 0 )
@@ -6190,7 +6190,7 @@ IDE_RC mtc::truncFloat( mtdNumericType *aValue,
     UChar  sMantissa[MTD_FLOAT_MANTISSA_MAXIMUM] = { 0, };
     SInt   i;
 
-    /* null ì´ë©´ null */
+    /* null ÀÌ¸é null */
     if ( aArgument1->length == 0 )
     {
         aValue->length = 0;
@@ -6207,7 +6207,7 @@ IDE_RC mtc::truncFloat( mtdNumericType *aValue,
 
         sTrunc = -sTrunc;
 
-        /* exponent êµ¬í•˜ê¸° */
+        /* exponent ±¸ÇÏ±â */
         sArgExponent1 = aArgument1->signExponent & 0x80;
         if ( sArgExponent1 == 0x80 )
         {
@@ -6218,7 +6218,7 @@ IDE_RC mtc::truncFloat( mtdNumericType *aValue,
             sExponent = 64 - (aArgument1->signExponent & 0x7F);
         }
 
-        /* aArgument1 ë³µì‚¬ */
+        /* aArgument1 º¹»ç */
         aValue->signExponent = aArgument1->signExponent;
         aValue->length = aArgument1->length;
 
@@ -6304,7 +6304,7 @@ IDE_RC mtc::truncFloat( mtdNumericType *aValue,
                     break;
             }/* switch */
 
-            //length ì„¤ì •
+            //length ¼³Á¤
             for ( i = 0, aValue->length = 1; i < (SInt)ID_SIZEOF(sMantissa) - 1; i++ )
             {
                 if ( sMantissa[i] != 0 )
@@ -6317,7 +6317,7 @@ IDE_RC mtc::truncFloat( mtdNumericType *aValue,
                 }
             }
 
-            //ë³µì‚¬
+            //º¹»ç
             if ( sArgExponent1 == 0x80 )
             {
                 for ( i = 0; i < aValue->length - 1; i++ )
@@ -6359,10 +6359,10 @@ IDE_RC mtc::getPrecisionScaleFloat( const mtdNumericType * aValue,
                                     SInt                 * aScale )
 {
 // To fix BUG-12944
-// precisionê³¼ scaleì„ ì •í™•íˆ êµ¬í•´ì£¼ëŠ” í•¨ìˆ˜.
-// ë§Œì•½ maximum precisionì„ ë„˜ëŠ” ê²½ìš°ëŠ” ìµœëŒ€ 39, 40ì´ë¯€ë¡œ,
-// precision, scaleì„ ê°•ì œë¡œ 38ë¡œ ë„˜ê²¨ì¤€ë‹¤.(ìµœëŒ€ mantissaë°°ì—´ í¬ê¸°ë¥¼ ë„˜ì§€ ì•Šìœ¼ë¯€ë¡œ ë¬´ê´€í•¨)
-// ë¬´ì¡°ê±´ ì„±ê³µí•¨. return IDE_SUCCESS;
+// precision°ú scaleÀ» Á¤È®È÷ ±¸ÇØÁÖ´Â ÇÔ¼ö.
+// ¸¸¾à maximum precisionÀ» ³Ñ´Â °æ¿ì´Â ÃÖ´ë 39, 40ÀÌ¹Ç·Î,
+// precision, scaleÀ» °­Á¦·Î 38·Î ³Ñ°ÜÁØ´Ù.(ÃÖ´ë mantissa¹è¿­ Å©±â¸¦ ³ÑÁö ¾ÊÀ¸¹Ç·Î ¹«°üÇÔ)
+// ¹«Á¶°Ç ¼º°øÇÔ. return IDE_SUCCESS;
     SInt sExponent;
 
     if ( aValue->length > 1 )
@@ -6426,7 +6426,7 @@ IDE_RC mtc::getPrecisionScaleFloat( const mtdNumericType * aValue,
 
         if ( (*aPrecision) > MTD_NUMERIC_PRECISION_MAXIMUM )
         {
-            // precisionì´ ê°ì†Œí•˜ë©´ì„œ scaleë„ ë§ˆì°¬ê°€ì§€ë¡œ ê°ì†Œí•´ì•¼ í•¨.
+            // precisionÀÌ °¨¼ÒÇÏ¸é¼­ scaleµµ ¸¶Âù°¡Áö·Î °¨¼ÒÇØ¾ß ÇÔ.
             (*aScale)  -= (*aPrecision) - MTD_NUMERIC_PRECISION_MAXIMUM;
             (*aPrecision) = MTD_NUMERIC_PRECISION_MAXIMUM;
         }
@@ -6456,13 +6456,13 @@ IDE_RC mtc::isSamePhysicalImage( const mtcColumn * aColumn,
  * Description :
  *
  *    BUG-16531
- *    Columnì´ í¬í•¨í•œ Dataê°€ ë™ì¼í•œ Imageì¸ì§€ ê²€ì‚¬
+ *    ColumnÀÌ Æ÷ÇÔÇÑ Data°¡ µ¿ÀÏÇÑ ImageÀÎÁö °Ë»ç
  *
  * Implementation :
  *
- *    NULLì¸ ê²½ìš° Garbage Dataê°€ ì¡´ì¬í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ ëª¨ë‘ NULLì¸ì§€ íŒë‹¨
- *    Dataì˜ ê¸¸ì´ê°€ ë™ì¼í•œì§€ ê²€ì‚¬
- *    Data ê¸¸ì´ê°€ ë™ì¼í•  ê²½ìš° memcmp ë¡œ ê²€ì‚¬
+ *    NULLÀÎ °æ¿ì Garbage Data°¡ Á¸ÀçÇÒ ¼ö ÀÖÀ¸¹Ç·Î ¸ğµÎ NULLÀÎÁö ÆÇ´Ü
+ *    DataÀÇ ±æÀÌ°¡ µ¿ÀÏÇÑÁö °Ë»ç
+ *    Data ±æÀÌ°¡ µ¿ÀÏÇÒ °æ¿ì memcmp ·Î °Ë»ç
  *
  ***********************************************************************/
 
@@ -6490,7 +6490,7 @@ IDE_RC mtc::isSamePhysicalImage( const mtcColumn * aColumn,
     *aOutIsSame = ID_FALSE;
 
     /* PROJ-2118 */
-    /* Data Type ëª¨ë“ˆ íšë“ */
+    /* Data Type ¸ğµâ È¹µæ */
     IDE_TEST( mtd::moduleById( &sTypeModule,
                                aColumn->type.dataTypeId )
               != IDE_SUCCESS );
@@ -6556,15 +6556,15 @@ IDE_RC mtc::initializeColumn( mtcColumn       * aColumn,
 {
 /***********************************************************************
  *
- * Description : mtcColumnì˜ ì´ˆê¸°í™”
- *              ( mtdModule ë° mtlModuleì„ ì§€ì •í•´ì¤€ ê²½ìš° )
+ * Description : mtcColumnÀÇ ÃÊ±âÈ­
+ *              ( mtdModule ¹× mtlModuleÀ» ÁöÁ¤ÇØÁØ °æ¿ì )
  *
  * Implementation :
  *
  ***********************************************************************/
     const mtdModule * sModule;
 
-    // smiColumn ì •ë³´ ì„¤ì •
+    // smiColumn Á¤º¸ ¼³Á¤
     aColumn->column.flag = SMI_COLUMN_TYPE_FIXED;
 
     if ( aModule->id == MTD_NUMBER_ID )
@@ -6585,7 +6585,7 @@ IDE_RC mtc::initializeColumn( mtcColumn       * aColumn,
         sModule = aModule;
     }
 
-    // data type module ì •ë³´ ì„¤ì •
+    // data type module Á¤º¸ ¼³Á¤
     aColumn->type.dataTypeId = sModule->id;
     aColumn->module = sModule;
 
@@ -6593,11 +6593,12 @@ IDE_RC mtc::initializeColumn( mtcColumn       * aColumn,
     aColumn->precision = aPrecision;
     aColumn->scale = aScale;
 
-    // ë³´ì•ˆ ì •ë³´ ì„¤ì •
-    aColumn->encPrecision = 0;
-    aColumn->policy[0] = '\0';
+    // Ãß°¡Á¤º¸ ÃÊ±âÈ­
+    idlOS::memset( &(aColumn->mColumnAttr),
+                   0x00,
+                   ID_SIZEOF( mtcColumnAttr ) );
 
-    // data type moduleì˜ semantic ê²€ì‚¬
+    // data type moduleÀÇ semantic °Ë»ç
     IDE_TEST( sModule->estimate( & aColumn->column.size,
                                  & aColumn->flag,
                                  & aColumn->precision,
@@ -6606,8 +6607,8 @@ IDE_RC mtc::initializeColumn( mtcColumn       * aColumn,
 
     if( (mtl::mDBCharSet != NULL) && (mtl::mNationalCharSet != NULL) )
     {
-        // create databaseì˜ ê²½ìš° validation ê³¼ì •ì—ì„œ
-        // mtl::mDBCharSet, mtl::mNationalCharSetì„ ì„¸íŒ…í•˜ê²Œ ëœë‹¤.
+        // create databaseÀÇ °æ¿ì validation °úÁ¤¿¡¼­
+        // mtl::mDBCharSet, mtl::mNationalCharSetÀ» ¼¼ÆÃÇÏ°Ô µÈ´Ù.
 
         // Nothing to do
         if( (sModule->id == MTD_NCHAR_ID) ||
@@ -6624,10 +6625,10 @@ IDE_RC mtc::initializeColumn( mtcColumn       * aColumn,
     }
     else
     {
-        // create databaseê°€ ì•„ë‹Œ ê²½ìš°
-        // ì„ì‹œë¡œ ì„¸íŒ… í›„, META ë‹¨ê³„ì—ì„œ ì¬ì„¤ì •í•œë‹¤.
-        // fixed table, PVëŠ” ASCIIë¡œ ì„¤ì •í•´ë„ ìƒê´€ì—†ë‹¤.
-        // (ASCIIì´ì™¸ì˜ ê°’ì´ ì—†ê¸° ë•Œë¬¸)
+        // create database°¡ ¾Æ´Ñ °æ¿ì
+        // ÀÓ½Ã·Î ¼¼ÆÃ ÈÄ, META ´Ü°è¿¡¼­ Àç¼³Á¤ÇÑ´Ù.
+        // fixed table, PV´Â ASCII·Î ¼³Á¤ÇØµµ »ó°ü¾ø´Ù.
+        // (ASCIIÀÌ¿ÜÀÇ °ªÀÌ ¾ø±â ¶§¹®)
         mtl::mDBCharSet = & mtlAscii;
         mtl::mNationalCharSet = & mtlUTF16;
 
@@ -6650,8 +6651,8 @@ IDE_RC mtc::initializeColumn( mtcColumn       * aColumn,
 {
 /***********************************************************************
  *
- * Description : mtcColumnì˜ ì´ˆê¸°í™”
- *               ( mtdModule ë° mtlModuleì„ ì°¾ì•„ì•¼ í•˜ëŠ” ê²½ìš° )
+ * Description : mtcColumnÀÇ ÃÊ±âÈ­
+ *               ( mtdModule ¹× mtlModuleÀ» Ã£¾Æ¾ß ÇÏ´Â °æ¿ì )
  *
  * Implementation :
  *
@@ -6659,10 +6660,10 @@ IDE_RC mtc::initializeColumn( mtcColumn       * aColumn,
     const mtdModule * sModule;
     const mtdModule * sRealModule;
 
-    // smiColumn ì •ë³´ ì„¤ì •
+    // smiColumn Á¤º¸ ¼³Á¤
     aColumn->column.flag = SMI_COLUMN_TYPE_FIXED;
 
-    // í•´ë‹¹ mtdModule ì°¾ì•„ì„œ mtcColumn::moduleì— ì„¤ì •
+    // ÇØ´ç mtdModule Ã£¾Æ¼­ mtcColumn::module¿¡ ¼³Á¤
     IDE_TEST( mtd::moduleById( & sModule, aDataTypeId ) != IDE_SUCCESS);
 
     if ( sModule->id == MTD_NUMBER_ID )
@@ -6686,16 +6687,17 @@ IDE_RC mtc::initializeColumn( mtcColumn       * aColumn,
     aColumn->type.dataTypeId = sRealModule->id;
     aColumn->module = sRealModule;
 
-    // flag, precision, scale ì •ë³´ ì„¤ì •
+    // flag, precision, scale Á¤º¸ ¼³Á¤
     aColumn->flag = aArguments;
     aColumn->precision = aPrecision;
     aColumn->scale = aScale;
 
-    // ë³´ì•ˆ ì •ë³´ ì„¤ì •
-    aColumn->encPrecision = 0;
-    aColumn->policy[0] = '\0';
+    // Ãß°¡Á¤º¸ ÃÊ±âÈ­
+    idlOS::memset( &(aColumn->mColumnAttr),
+                   0x00,
+                   ID_SIZEOF( mtcColumnAttr ) );
 
-    // data type moduleì˜ semantic ê²€ì‚¬
+    // data type moduleÀÇ semantic °Ë»ç
     IDE_TEST( sRealModule->estimate( & aColumn->column.size,
                                      & aColumn->flag,
                                      & aColumn->precision,
@@ -6704,8 +6706,8 @@ IDE_RC mtc::initializeColumn( mtcColumn       * aColumn,
 
     if( (mtl::mDBCharSet != NULL) && (mtl::mNationalCharSet != NULL) )
     {
-        // create databaseì˜ ê²½ìš° validation ê³¼ì •ì—ì„œ
-        // mtl::mDBCharSet, mtl::mNationalCharSetì„ ì„¸íŒ…í•˜ê²Œ ëœë‹¤.
+        // create databaseÀÇ °æ¿ì validation °úÁ¤¿¡¼­
+        // mtl::mDBCharSet, mtl::mNationalCharSetÀ» ¼¼ÆÃÇÏ°Ô µÈ´Ù.
 
         // Nothing to do
         if( (sModule->id == MTD_NCHAR_ID) ||
@@ -6722,10 +6724,10 @@ IDE_RC mtc::initializeColumn( mtcColumn       * aColumn,
     }
     else
     {
-        // create databaseê°€ ì•„ë‹Œ ê²½ìš°
-        // ì„ì‹œë¡œ ì„¸íŒ… í›„, META ë‹¨ê³„ì—ì„œ ì¬ì„¤ì •í•œë‹¤.
-        // fixed table, PVëŠ” ASCIIë¡œ ì„¤ì •í•´ë„ ìƒê´€ì—†ë‹¤.
-        // (ASCIIì´ì™¸ì˜ ê°’ì´ ì—†ê¸° ë•Œë¬¸)
+        // create database°¡ ¾Æ´Ñ °æ¿ì
+        // ÀÓ½Ã·Î ¼¼ÆÃ ÈÄ, META ´Ü°è¿¡¼­ Àç¼³Á¤ÇÑ´Ù.
+        // fixed table, PV´Â ASCII·Î ¼³Á¤ÇØµµ »ó°ü¾ø´Ù.
+        // (ASCIIÀÌ¿ÜÀÇ °ªÀÌ ¾ø±â ¶§¹®)
         mtl::mDBCharSet = & mtlAscii;
         mtl::mNationalCharSet = & mtlUTF16;
 
@@ -6745,21 +6747,21 @@ void mtc::initializeColumn( mtcColumn  * aDestColumn,
 {
 /***********************************************************************
  *
- * Description : mtcColumnì˜ ì´ˆê¸°í™”
- *               ( src columnìœ¼ë¡œ dest columnì„ ì´ˆê¸°í™”í•˜ëŠ” ê²½ìš°)
+ * Description : mtcColumnÀÇ ÃÊ±âÈ­
+ *               ( src columnÀ¸·Î dest columnÀ» ÃÊ±âÈ­ÇÏ´Â °æ¿ì)
  *
  * Implementation :
  *
  ***********************************************************************/
-    // type, module ì„¤ì •
+    // type, module ¼³Á¤
     aDestColumn->type.dataTypeId = aSrcColumn->type.dataTypeId;
     aDestColumn->module          = aSrcColumn->module;
 
-    // language, module ì„¤ì •
+    // language, module ¼³Á¤
     aDestColumn->type.languageId = aSrcColumn->type.languageId;
     aDestColumn->language        = aSrcColumn->language;
 
-    // smiColumn size, flag ì •ë³´ ì„¤ì •
+    // smiColumn size, flag Á¤º¸ ¼³Á¤
     aDestColumn->column.size = aSrcColumn->column.size;
     aDestColumn->column.flag = aSrcColumn->column.flag;
 
@@ -6770,18 +6772,29 @@ void mtc::initializeColumn( mtcColumn  * aDestColumn,
     aDestColumn->column.flag &= ~SMI_COLUMN_COMPRESSION_MASK;
     aDestColumn->column.flag |= SMI_COLUMN_COMPRESSION_FALSE;
 
-    // mtcColumn flag, precision, scale ì •ë³´ ì„¤ì •
+    // mtcColumn flag, precision, scale Á¤º¸ ¼³Á¤
     aDestColumn->flag      = aSrcColumn->flag;
     // BUG-36836
-    // not null ì†ì„±ì€ ë³µì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // not null ¼Ó¼ºÀº º¹»çÇÏÁö ¾Ê´Â´Ù.
     aDestColumn->flag      &= ~MTC_COLUMN_NOTNULL_MASK;
     aDestColumn->precision = aSrcColumn->precision;
     aDestColumn->scale     = aSrcColumn->scale;
 
-    // ë³´ì•ˆ ì •ë³´ ì„¤ì •
-    aDestColumn->encPrecision = aSrcColumn->encPrecision;
-    idlOS::memcpy( (void*) aDestColumn->policy,
-                   (void*) aSrcColumn->policy,
+    // echar, evarchar
+    if (( aDestColumn->module->flag & MTD_ENCRYPT_TYPE_MASK)
+                 == MTD_ENCRYPT_TYPE_TRUE )
+    {
+        // º¸¾È Á¤º¸ ¼³Á¤
+        aDestColumn->mColumnAttr.mEncAttr.mEncPrecision = aSrcColumn->mColumnAttr.mEncAttr.mEncPrecision;
+    }
+    else
+    {
+        // º¸¾È Á¤º¸ ¼³Á¤
+        aDestColumn->mColumnAttr.mEncAttr.mEncPrecision = 0;
+    }
+    
+    idlOS::memcpy( (void*) aDestColumn->mColumnAttr.mEncAttr.mPolicy,
+                   (void*) aSrcColumn->mColumnAttr.mEncAttr.mPolicy,
                    MTC_POLICY_NAME_SIZE + 1 );
 }
 
@@ -6793,29 +6806,29 @@ IDE_RC mtc::initializeEncryptColumn( mtcColumn    * aColumn,
 /***********************************************************************
  * PROJ-2002 Column Security
  *
- * Description : ì»¬ëŸ¼ì˜ ì•”í˜¸í™”ë¥¼ ìœ„í•œ mtcColumnì˜ ì´ˆê¸°í™”
- *              ( mtdModule ë° mtlModuleì„ ì§€ì •í•´ì¤€ ê²½ìš° )
+ * Description : ÄÃ·³ÀÇ ¾ÏÈ£È­¸¦ À§ÇÑ mtcColumnÀÇ ÃÊ±âÈ­
+ *              ( mtdModule ¹× mtlModuleÀ» ÁöÁ¤ÇØÁØ °æ¿ì )
  *
  * Implementation :
  *
  ***********************************************************************/
     IDE_ASSERT( aColumn->module != NULL );
 
-    // echar, evarcharë§Œ ê°€ëŠ¥í•¨
+    // echar, evarchar¸¸ °¡´ÉÇÔ
     IDE_ASSERT( (aColumn->module->flag & MTD_ENCRYPT_TYPE_MASK)
                  == MTD_ENCRYPT_TYPE_TRUE );
 
-    // ë³´ì•ˆ ì •ë³´ ì„¤ì •
-    aColumn->encPrecision = (SInt) (aEncryptedSize + aECCSize);
-    idlOS::snprintf( aColumn->policy,
+    // º¸¾È Á¤º¸ ¼³Á¤
+    aColumn->mColumnAttr.mEncAttr.mEncPrecision = (SInt) ( aEncryptedSize + aECCSize );
+    idlOS::snprintf( aColumn->mColumnAttr.mEncAttr.mPolicy,
                      MTC_POLICY_NAME_SIZE + 1,
                      "%s",
                      aPolicy );
 
-    // data type moduleì˜ semantic ê²€ì‚¬
+    // data type moduleÀÇ semantic °Ë»ç
     IDE_TEST( aColumn->module->estimate( & aColumn->column.size,
                                          & aColumn->flag,
-                                         & aColumn->encPrecision,
+                                         & aColumn->mColumnAttr.mEncAttr.mEncPrecision,
                                          & aColumn->scale )
               != IDE_SUCCESS );
 
@@ -7106,19 +7119,19 @@ IDE_RC mtc::makeInterval( mtdIntervalType* aInterval,
     return IDE_FAILURE;
 }
 
-// PROJ-1597 Temp record size ì œì•½ì œê±°
-// bit, varbit, nibble íƒ€ì…ë“¤ì€
-// varchar, char ë“±ì˜ íƒ€ì…ê³¼ëŠ” ë‹¤ë¥´ê²Œ DISK DBì—ì„œë„ headerë¥¼ ì €ì¥í•´ì•¼ í•œë‹¤.
-// í•˜ì§€ë§Œ getMtdHeaderSize()ëŠ” ì´ë“¤ íƒ€ì…ì„ ê³ ë ¤í•˜ì§€ ì•Šê³  header ê¸¸ì´ë¥¼
-// ë°˜í™˜í•˜ê¸° ë•Œë¬¸ì— column ê°’ì˜ actual size - header size ë§Œí¼ ê³µê°„ì„
-// í™•ë³´í•˜ë©´ ë¬¸ì œê°€ ëœë‹¤.
-// ì´ë¥¼ í•´ê²°í•˜ê¸° ìœ„í•´ bit, varbit, nibble ë“±ì˜ íƒ€ì…ì„ ê³ ë ¤í•œ
-// headerSizeë¥¼ ë°˜í™˜í•˜ëŠ” í•¨ìˆ˜ë¥¼ ë³„ë„ë¡œ ë§Œë“¤ì—ˆë‹¤.
-// ì´ í•¨ìˆ˜ëŠ” SMê³¼ qdbCommonì—ì„œ ì‚¬ìš©ëœë‹¤.
-// ì´ í•¨ìˆ˜ì˜ ì˜ë¯¸ëŠ” ì»¬ëŸ¼ì´ DISK DBì— ì €ì¥ë  ë•Œ,
-// ì €ì¥ë˜ì§€ ì•ŠëŠ” ì˜ì—­ì˜ ê¸¸ì´ë¥¼ ë§í•œë‹¤.
-// bit ë“±ì˜ íƒ€ì…ì€ ì»¬ëŸ¼ ì •ë³´ ëª¨ë‘ê°€ ì €ì¥ë˜ì–´ì•¼ í•˜ê¸° ë•Œë¬¸ì—
-// ì´ ê°’ì´ 0ì´ë‹¤.
+// PROJ-1597 Temp record size Á¦¾àÁ¦°Å
+// bit, varbit, nibble Å¸ÀÔµéÀº
+// varchar, char µîÀÇ Å¸ÀÔ°ú´Â ´Ù¸£°Ô DISK DB¿¡¼­µµ header¸¦ ÀúÀåÇØ¾ß ÇÑ´Ù.
+// ÇÏÁö¸¸ getMtdHeaderSize()´Â ÀÌµé Å¸ÀÔÀ» °í·ÁÇÏÁö ¾Ê°í header ±æÀÌ¸¦
+// ¹İÈ¯ÇÏ±â ¶§¹®¿¡ column °ªÀÇ actual size - header size ¸¸Å­ °ø°£À»
+// È®º¸ÇÏ¸é ¹®Á¦°¡ µÈ´Ù.
+// ÀÌ¸¦ ÇØ°áÇÏ±â À§ÇØ bit, varbit, nibble µîÀÇ Å¸ÀÔÀ» °í·ÁÇÑ
+// headerSize¸¦ ¹İÈ¯ÇÏ´Â ÇÔ¼ö¸¦ º°µµ·Î ¸¸µé¾ú´Ù.
+// ÀÌ ÇÔ¼ö´Â SM°ú qdbCommon¿¡¼­ »ç¿ëµÈ´Ù.
+// ÀÌ ÇÔ¼öÀÇ ÀÇ¹Ì´Â ÄÃ·³ÀÌ DISK DB¿¡ ÀúÀåµÉ ¶§,
+// ÀúÀåµÇÁö ¾Ê´Â ¿µ¿ªÀÇ ±æÀÌ¸¦ ¸»ÇÑ´Ù.
+// bit µîÀÇ Å¸ÀÔÀº ÄÃ·³ Á¤º¸ ¸ğµÎ°¡ ÀúÀåµÇ¾î¾ß ÇÏ±â ¶§¹®¿¡
+// ÀÌ °ªÀÌ 0ÀÌ´Ù.
 IDE_RC mtc::getNonStoringSize( const smiColumn *aColumn, UInt * aOutSize )
 {
     const mtcColumn* sColumn;
@@ -7565,7 +7578,7 @@ IDE_RC mtc::makeBit( UChar*       aBitValue,
     {
         IDE_TEST_RAISE( sHexBit[sToken[0]] > 1, ERR_INVALID_LITERAL );
 
-        // ê°’ ë„£ê¸° ì „ì— 0ìœ¼ë¡œ ì´ˆê¸°í™”
+        // °ª ³Ö±â Àü¿¡ 0À¸·Î ÃÊ±âÈ­
         idlOS::memset( sIterator,
                        0x00,
                        1 );
@@ -7655,7 +7668,8 @@ IDE_RC mtc::getLikeEcharKeySize( mtcTemplate * aTemplate,
 
 IDE_RC mtc::getLobLengthLocator( smLobLocator   aLobLocator,
                                  idBool       * aIsNull,
-                                 UInt         * aLobLength )
+                                 UInt         * aLobLength,
+                                 idvSQL       * aStatistics )
 {
     SLong  sLobLength;
     idBool sIsNulLob;
@@ -7668,7 +7682,8 @@ IDE_RC mtc::getLobLengthLocator( smLobLocator   aLobLocator,
     }
     else
     {
-        IDE_TEST( mtc::getLobLengthWithLocator( aLobLocator,
+        IDE_TEST( mtc::getLobLengthWithLocator( aStatistics,
+                                                aLobLocator,
                                                 & sLobLength,
                                                 & sIsNulLob )
                   != IDE_SUCCESS );
@@ -7867,9 +7882,9 @@ IDE_RC mtc::cloneTemplate4Parallel( iduMemory    * aMemory,
 
     // stack buffer is set on allocation
 
-    // data ëŠ” ë‚˜ì¤‘ì— ë³µì‚¬í•œë‹¤.
+    // data ´Â ³ªÁß¿¡ º¹»çÇÑ´Ù.
 
-    // execInfo ëŠ” ë‚˜ì¤‘ì— ë³µì‚¬í•œë‹¤.
+    // execInfo ´Â ³ªÁß¿¡ º¹»çÇÑ´Ù.
 
     for ( sTupleIndex = 0;
           sTupleIndex < aDestination->rowCount;
@@ -7914,23 +7929,23 @@ IDE_RC mtc::cloneTuple4Parallel( iduMemory   * /*aMemory*/,
     aDstTemplate->rows[aDstTupleID].rowMaximum
         = aSrcTemplate->rows[aSrcTupleID].rowMaximum;
 
-    // columns ì™€ execute ëŠ” ì›ë³¸ í…œí”Œë¦¿ì˜ ê²ƒì„ ê³µìœ í•´ì„œ ì‚¬ìš©í•œë‹¤.
+    // columns ¿Í execute ´Â ¿øº» ÅÛÇÃ¸´ÀÇ °ÍÀ» °øÀ¯ÇØ¼­ »ç¿ëÇÑ´Ù.
     aDstTemplate->rows[aDstTupleID].columns
         = aSrcTemplate->rows[aSrcTupleID].columns;
     aDstTemplate->rows[aDstTupleID].execute
         = aSrcTemplate->rows[aSrcTupleID].execute;
 
-    // constant, variable, table tuple ì€ row ë¥¼ ë³µì‚¬í•´ì•¼ í•œë‹¤.
-    // Intermediate tuple ì„ ì œì™¸í•œ ë‚˜ë¨¸ì§€ëŠ” ROW ALLOC ì´ FALSE ì´ë‹¤.
+    // constant, variable, table tuple Àº row ¸¦ º¹»çÇØ¾ß ÇÑ´Ù.
+    // Intermediate tuple À» Á¦¿ÜÇÑ ³ª¸ÓÁö´Â ROW ALLOC ÀÌ FALSE ÀÌ´Ù.
     if ( (sFlag & MTC_TUPLE_ROW_ALLOCATE_MASK)
          == MTC_TUPLE_ROW_ALLOCATE_FALSE )
     {
-        // ë³´í†µ row ì˜ ë³µì‚¬ëŠ” MTC_TUPLE_ROW_SET_MASK ì— ì˜í•´ ê²°ì •ëœë‹¤.
-        // ì´ mask ëŠ” prepare ì¢…ë£Œ ì‹œì ì„ ê¸°ì¤€ìœ¼ë¡œ ì„¤ì •ëœ mask ì´ë‹¤.
-        // í•˜ì§€ë§Œ parallel ì„ ìœ„í•œ template clone ì€
-        // execution ë„ì¤‘ì— ì¼ì–´ë‚˜ê¸° ë•Œë¬¸ì—
-        // í˜„ì¬ ì‹¤í–‰ ì¤‘ì¸ template ì„ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•˜ê¸° ìœ„í•´ row ë¥¼ ìƒˆë¡œ í• ë‹¹í•˜ëŠ”
-        // intermediate tuple ì„ ì œì™¸í•œ ë‚˜ë¨¸ì§€ tuple ë“¤ì€ row ë¥¼ ë³µì‚¬í•´ì•¼ í•œë‹¤.
+        // º¸Åë row ÀÇ º¹»ç´Â MTC_TUPLE_ROW_SET_MASK ¿¡ ÀÇÇØ °áÁ¤µÈ´Ù.
+        // ÀÌ mask ´Â prepare Á¾·á ½ÃÁ¡À» ±âÁØÀ¸·Î ¼³Á¤µÈ mask ÀÌ´Ù.
+        // ÇÏÁö¸¸ parallel À» À§ÇÑ template clone Àº
+        // execution µµÁß¿¡ ÀÏ¾î³ª±â ¶§¹®¿¡
+        // ÇöÀç ½ÇÇà ÁßÀÎ template À» ±×´ë·Î »ç¿ëÇÏ±â À§ÇØ row ¸¦ »õ·Î ÇÒ´çÇÏ´Â
+        // intermediate tuple À» Á¦¿ÜÇÑ ³ª¸ÓÁö tuple µéÀº row ¸¦ º¹»çÇØ¾ß ÇÑ´Ù.
         aDstTemplate->rows[aDstTupleID].row
             = aSrcTemplate->rows[aSrcTupleID].row;
     }
@@ -7960,7 +7975,7 @@ IDE_RC mtc::getColumnStoreLen( const smiColumn * aColumn,
 
     if ( (sColumn->flag & MTC_COLUMN_NOTNULL_MASK ) == MTC_COLUMN_NOTNULL_FALSE )
     {
-        /* not nullì´ ì•„ë‹Œ columnì€ variable columnìœ¼ë¡œ ê°„ì£¼ í•œë‹¤. */
+        /* not nullÀÌ ¾Æ´Ñ columnÀº variable columnÀ¸·Î °£ÁÖ ÇÑ´Ù. */
         *aActualColLen = ID_UINT_MAX;
     }
     else
@@ -7968,8 +7983,8 @@ IDE_RC mtc::getColumnStoreLen( const smiColumn * aColumn,
         if ( (sColumn->column.flag & SMI_COLUMN_COMPRESSION_MASK) 
              != SMI_COLUMN_COMPRESSION_TRUE )
         {
-            /* smì— ì‹¤ì œë¡œ ì €ì¥ëœ column lengthë¥¼ êµ¬í•œë‹¤.
-             * variable columnì¸ ê²½ìš° ID_UINT_MAXê°€ ë°˜í™˜ëœë‹¤. */
+            /* sm¿¡ ½ÇÁ¦·Î ÀúÀåµÈ column length¸¦ ±¸ÇÑ´Ù.
+             * variable columnÀÎ °æ¿ì ID_UINT_MAX°¡ ¹İÈ¯µÈ´Ù. */
             IDE_TEST( mtd::moduleById( &sModule, sColumn->type.dataTypeId )
                       != IDE_SUCCESS );
  
@@ -7978,7 +7993,7 @@ IDE_RC mtc::getColumnStoreLen( const smiColumn * aColumn,
         else
         {
             // PROJ-2429 Dictionary based data compress for on-disk DB
-            // Dictionary columnì˜ í¬ê¸°ëŠ” ID_SIZEOF(smOID)ì´ë‹¤.
+            // Dictionary columnÀÇ Å©±â´Â ID_SIZEOF(smOID)ÀÌ´Ù.
             *aActualColLen = ID_SIZEOF(smOID);
         }
     }
@@ -7993,30 +8008,30 @@ IDE_RC mtc::getColumnStoreLen( const smiColumn * aColumn,
 /***********************************************************************
  *
  * Description :
- *    ISO 8601 í‘œì¤€ ì£¼ì°¨ë¥¼ êµ¬í•©ë‹ˆë‹¤.
- *      ì£¼ì°¨ëŠ” ì›”ìš”ì¼ë¶€í„° ì‹œì‘í•©ë‹ˆë‹¤.
- *      1ì›” 1ì¼ì´ ëª©ìš”ì¼ ì´ì „ì´ë©´, ì²« ì£¼ì™€ ì „ë…„ë„ì˜ ë§ˆì§€ë§‰ ì£¼ëŠ” ë‹¹ë…„ë„ì˜ 1ì£¼ì°¨ì…ë‹ˆë‹¤.
- *      1ì›” 1ì¼ì´ ê¸ˆìš”ì¼ ì´í›„ì´ë©´, ì²« ì£¼ëŠ” ì „ë…„ë„ì˜ ë§ˆì§€ë§‰ ì£¼ì°¨ì…ë‹ˆë‹¤.
+ *    ISO 8601 Ç¥ÁØ ÁÖÂ÷¸¦ ±¸ÇÕ´Ï´Ù.
+ *      ÁÖÂ÷´Â ¿ù¿äÀÏºÎÅÍ ½ÃÀÛÇÕ´Ï´Ù.
+ *      1¿ù 1ÀÏÀÌ ¸ñ¿äÀÏ ÀÌÀüÀÌ¸é, Ã¹ ÁÖ¿Í Àü³âµµÀÇ ¸¶Áö¸· ÁÖ´Â ´ç³âµµÀÇ 1ÁÖÂ÷ÀÔ´Ï´Ù.
+ *      1¿ù 1ÀÏÀÌ ±İ¿äÀÏ ÀÌÈÄÀÌ¸é, Ã¹ ÁÖ´Â Àü³âµµÀÇ ¸¶Áö¸· ÁÖÂ÷ÀÔ´Ï´Ù.
  *
  * Implementation :
- *    1. ì—°ë„ë¥¼ êµ¬í•©ë‹ˆë‹¤.
- *      1ì›” 1ì¼ : 1ì›” 1ì¼ì´ ê¸ˆí† ì¼ì¸ ê²½ìš°, ì „ë…„ë„ 12ì›” 31ì¼ì˜ ì£¼ì°¨ë¥¼ êµ¬í•©ë‹ˆë‹¤. (Step 2)
- *      1ì›” 2ì¼ : 1ì›” 1ì¼ì´ ê¸ˆí† ì¸ ê²½ìš°, ì „ë…„ë„ 12ì›” 31ì¼ì˜ ì£¼ì°¨ë¥¼ êµ¬í•©ë‹ˆë‹¤. (Step 2)
- *      1ì›” 3ì¼ : 1ì›” 1ì¼ì´ ê¸ˆì¸ ê²½ìš°, ì „ë…„ë„ 12ì›” 31ì¼ì˜ ì£¼ì°¨ë¥¼ êµ¬í•©ë‹ˆë‹¤. (Step 2)
- *      12ì›” 29ì¼ : 12ì›” 31ì¼ì´ ìˆ˜ì¸ ê²½ìš°, ì°¨ë…„ë„ 1ì£¼ì°¨ì…ë‹ˆë‹¤.
- *      12ì›” 30ì¼ : 12ì›” 31ì¼ì´ í™”ìˆ˜ì¸ ê²½ìš°, ì°¨ë…„ë„ 1ì£¼ì°¨ì…ë‹ˆë‹¤.
- *      12ì›” 31ì¼ : 12ì›” 31ì¼ì´ ì›”í™”ìˆ˜ì¸ ê²½ìš°, ì°¨ë…„ë„ 1ì£¼ì°¨ì…ë‹ˆë‹¤.
- *      ë‚˜ë¨¸ì§€ : ë‹¹ë…„ë„ ì£¼ì°¨ë¥¼ êµ¬í•©ë‹ˆë‹¤. (Step 2)
+ *    1. ¿¬µµ¸¦ ±¸ÇÕ´Ï´Ù.
+ *      1¿ù 1ÀÏ : 1¿ù 1ÀÏÀÌ ±İÅäÀÏÀÎ °æ¿ì, Àü³âµµ 12¿ù 31ÀÏÀÇ ÁÖÂ÷¸¦ ±¸ÇÕ´Ï´Ù. (Step 2)
+ *      1¿ù 2ÀÏ : 1¿ù 1ÀÏÀÌ ±İÅäÀÎ °æ¿ì, Àü³âµµ 12¿ù 31ÀÏÀÇ ÁÖÂ÷¸¦ ±¸ÇÕ´Ï´Ù. (Step 2)
+ *      1¿ù 3ÀÏ : 1¿ù 1ÀÏÀÌ ±İÀÎ °æ¿ì, Àü³âµµ 12¿ù 31ÀÏÀÇ ÁÖÂ÷¸¦ ±¸ÇÕ´Ï´Ù. (Step 2)
+ *      12¿ù 29ÀÏ : 12¿ù 31ÀÏÀÌ ¼öÀÎ °æ¿ì, Â÷³âµµ 1ÁÖÂ÷ÀÔ´Ï´Ù.
+ *      12¿ù 30ÀÏ : 12¿ù 31ÀÏÀÌ È­¼öÀÎ °æ¿ì, Â÷³âµµ 1ÁÖÂ÷ÀÔ´Ï´Ù.
+ *      12¿ù 31ÀÏ : 12¿ù 31ÀÏÀÌ ¿ùÈ­¼öÀÎ °æ¿ì, Â÷³âµµ 1ÁÖÂ÷ÀÔ´Ï´Ù.
+ *      ³ª¸ÓÁö : ´ç³âµµ ÁÖÂ÷¸¦ ±¸ÇÕ´Ï´Ù. (Step 2)
  *
- *    2. ì£¼ì°¨ë¥¼ êµ¬í•©ë‹ˆë‹¤.
- *      (1) ì²« ì£¼ê°€ ì£¼ì°¨ì— í¬í•¨ë˜ëŠ”ì§€ í™•ì¸í•©ë‹ˆë‹¤.
- *          1ì›” 1ì¼ì´ ì›”í™”ìˆ˜ëª©ì¸ ê²½ìš°, ì²« ì£¼ê°€ ì£¼ì°¨ì— í¬í•¨ë©ë‹ˆë‹¤.
- *          ì²« ì£¼ì˜ ë§ˆì§€ë§‰ì¼ì(ì¼ìš”ì¼)ë¥¼ êµ¬í•©ë‹ˆë‹¤. (firstSunday)
+ *    2. ÁÖÂ÷¸¦ ±¸ÇÕ´Ï´Ù.
+ *      (1) Ã¹ ÁÖ°¡ ÁÖÂ÷¿¡ Æ÷ÇÔµÇ´ÂÁö È®ÀÎÇÕ´Ï´Ù.
+ *          1¿ù 1ÀÏÀÌ ¿ùÈ­¼ö¸ñÀÎ °æ¿ì, Ã¹ ÁÖ°¡ ÁÖÂ÷¿¡ Æ÷ÇÔµË´Ï´Ù.
+ *          Ã¹ ÁÖÀÇ ¸¶Áö¸·ÀÏÀÚ(ÀÏ¿äÀÏ)¸¦ ±¸ÇÕ´Ï´Ù. (firstSunday)
  *
- *      (2) ë‚˜ë¨¸ì§€ ì£¼ì˜ ì£¼ì°¨ë¥¼ êµ¬í•©ë‹ˆë‹¤.
+ *      (2) ³ª¸ÓÁö ÁÖÀÇ ÁÖÂ÷¸¦ ±¸ÇÕ´Ï´Ù.
  *          ( dayOfYear - firstSunday + 6 ) / 7
  *
- *      (3) 1ê³¼ 2ë¥¼ ë”í•´ì„œ ì£¼ì°¨ë¥¼ êµ¬í•©ë‹ˆë‹¤.
+ *      (3) 1°ú 2¸¦ ´õÇØ¼­ ÁÖÂ÷¸¦ ±¸ÇÕ´Ï´Ù.
  *
  ***********************************************************************/
 SInt mtc::weekOfYearForStandard( SInt aYear,
@@ -8029,14 +8044,14 @@ SInt mtc::weekOfYearForStandard( SInt aYear,
     SInt    sFirstSunday = 0;
     idBool  sIsPrevYear  = ID_FALSE;
 
-    /* Step 1. ì—°ë„ë¥¼ êµ¬í•©ë‹ˆë‹¤. */
+    /* Step 1. ¿¬µµ¸¦ ±¸ÇÕ´Ï´Ù. */
     if ( aMonth == 1 )
     {
         switch ( aDay )
         {
             case 1 :
                 sDayOfWeek = dayOfWeek( aYear, 1, 1 );
-                if ( ( sDayOfWeek >= 5 ) || ( sDayOfWeek == 0 ) )   // ê¸ˆí† ì¼
+                if ( ( sDayOfWeek >= 5 ) || ( sDayOfWeek == 0 ) )   // ±İÅäÀÏ
                 {
                     sIsPrevYear = ID_TRUE;
                 }
@@ -8048,7 +8063,7 @@ SInt mtc::weekOfYearForStandard( SInt aYear,
 
             case 2 :
                 sDayOfWeek = dayOfWeek( aYear, 1, 1 );
-                if ( sDayOfWeek >= 5 )                              // ê¸ˆí† 
+                if ( sDayOfWeek >= 5 )                              // ±İÅä
                 {
                     sIsPrevYear = ID_TRUE;
                 }
@@ -8060,7 +8075,7 @@ SInt mtc::weekOfYearForStandard( SInt aYear,
 
             case 3 :
                 sDayOfWeek = dayOfWeek( aYear, 1, 1 );
-                if ( sDayOfWeek == 5 )                              // ê¸ˆ
+                if ( sDayOfWeek == 5 )                              // ±İ
                 {
                     sIsPrevYear = ID_TRUE;
                 }
@@ -8080,7 +8095,7 @@ SInt mtc::weekOfYearForStandard( SInt aYear,
         {
             case 29 :
                 sDayOfWeek = dayOfWeek( aYear, 12, 31 );
-                if ( sDayOfWeek == 3 )                                                      // ìˆ˜
+                if ( sDayOfWeek == 3 )                                                      // ¼ö
                 {
                     sWeekOfYear = 1;
                 }
@@ -8092,7 +8107,7 @@ SInt mtc::weekOfYearForStandard( SInt aYear,
 
             case 30 :
                 sDayOfWeek = dayOfWeek( aYear, 12, 31 );
-                if ( ( sDayOfWeek == 2 ) || ( sDayOfWeek == 3 ) )                           // í™”ìˆ˜
+                if ( ( sDayOfWeek == 2 ) || ( sDayOfWeek == 3 ) )                           // È­¼ö
                 {
                     sWeekOfYear = 1;
                 }
@@ -8104,7 +8119,7 @@ SInt mtc::weekOfYearForStandard( SInt aYear,
 
             case 31 :
                 sDayOfWeek = dayOfWeek( aYear, 12, 31 );
-                if ( ( sDayOfWeek == 1 ) || ( sDayOfWeek == 2 ) || ( sDayOfWeek == 3 ) )    // ì›”í™”ìˆ˜
+                if ( ( sDayOfWeek == 1 ) || ( sDayOfWeek == 2 ) || ( sDayOfWeek == 3 ) )    // ¿ùÈ­¼ö
                 {
                     sWeekOfYear = 1;
                 }
@@ -8123,7 +8138,7 @@ SInt mtc::weekOfYearForStandard( SInt aYear,
         /* Nothing to do */
     }
 
-    /* Step 2. ì£¼ì°¨ë¥¼ êµ¬í•©ë‹ˆë‹¤. */
+    /* Step 2. ÁÖÂ÷¸¦ ±¸ÇÕ´Ï´Ù. */
     if ( sWeekOfYear == 0 )
     {
         if ( sIsPrevYear == ID_TRUE )
@@ -8138,7 +8153,7 @@ SInt mtc::weekOfYearForStandard( SInt aYear,
         }
 
         sFirstSunday = 8 - sDayOfWeek;
-        if ( sFirstSunday == 8 )    // 1ì›” 1ì¼ì´ ì¼ìš”ì¼
+        if ( sFirstSunday == 8 )    // 1¿ù 1ÀÏÀÌ ÀÏ¿äÀÏ
         {
             sFirstSunday = 1;
         }
@@ -8147,7 +8162,7 @@ SInt mtc::weekOfYearForStandard( SInt aYear,
             /* Nothing to do */
         }
 
-        if ( ( sDayOfWeek >= 1 ) && ( sDayOfWeek <= 4 ) )   // ì²« ì£¼ê°€ ì›”í™”ìˆ˜ëª©
+        if ( ( sDayOfWeek >= 1 ) && ( sDayOfWeek <= 4 ) )   // Ã¹ ÁÖ°¡ ¿ùÈ­¼ö¸ñ
         {
             sWeekOfYear = ( sDayOfYear - sFirstSunday + 6 ) / 7 + 1;
         }
@@ -8167,20 +8182,20 @@ SInt mtc::weekOfYearForStandard( SInt aYear,
 /***********************************************************************
  *
  * Description :
- *    ISO 8601 í‘œì¤€ ì—°ë„ë¥¼ êµ¬í•©ë‹ˆë‹¤.
- *      ì£¼ì°¨ëŠ” ì›”ìš”ì¼ë¶€í„° ì‹œì‘í•©ë‹ˆë‹¤.
- *      1ì›” 1ì¼ì´ ëª©ìš”ì¼ ì´ì „ì´ë©´, ì²« ì£¼ì™€ ì „ë…„ë„ì˜ ë§ˆì§€ë§‰ ì£¼ëŠ” ë‹¹ë…„ë„ì˜ 1ì£¼ì°¨ì…ë‹ˆë‹¤.
- *      1ì›” 1ì¼ì´ ê¸ˆìš”ì¼ ì´í›„ì´ë©´, ì²« ì£¼ëŠ” ì „ë…„ë„ì˜ ë§ˆì§€ë§‰ ì£¼ì°¨ì…ë‹ˆë‹¤.
+ *    ISO 8601 Ç¥ÁØ ¿¬µµ¸¦ ±¸ÇÕ´Ï´Ù.
+ *      ÁÖÂ÷´Â ¿ù¿äÀÏºÎÅÍ ½ÃÀÛÇÕ´Ï´Ù.
+ *      1¿ù 1ÀÏÀÌ ¸ñ¿äÀÏ ÀÌÀüÀÌ¸é, Ã¹ ÁÖ¿Í Àü³âµµÀÇ ¸¶Áö¸· ÁÖ´Â ´ç³âµµÀÇ 1ÁÖÂ÷ÀÔ´Ï´Ù.
+ *      1¿ù 1ÀÏÀÌ ±İ¿äÀÏ ÀÌÈÄÀÌ¸é, Ã¹ ÁÖ´Â Àü³âµµÀÇ ¸¶Áö¸· ÁÖÂ÷ÀÔ´Ï´Ù.
  *
  * Implementation :
- *    1. ì—°ë„ë¥¼ êµ¬í•©ë‹ˆë‹¤.
- *      1ì›” 1ì¼ : 1ì›” 1ì¼ì´ ê¸ˆí† ì¼ì¸ ê²½ìš°, ì „ë…„ë„ì…ë‹ˆë‹¤.
- *      1ì›” 2ì¼ : 1ì›” 1ì¼ì´ ê¸ˆí† ì¸ ê²½ìš°, ì „ë…„ë„ì…ë‹ˆë‹¤.
- *      1ì›” 3ì¼ : 1ì›” 1ì¼ì´ ê¸ˆì¸ ê²½ìš°, ì „ë…„ë„ì…ë‹ˆë‹¤.
- *      12ì›” 29ì¼ : 12ì›” 31ì¼ì´ ìˆ˜ì¸ ê²½ìš°, ì°¨ë…„ë„ì…ë‹ˆë‹¤.
- *      12ì›” 30ì¼ : 12ì›” 31ì¼ì´ í™”ìˆ˜ì¸ ê²½ìš°, ì°¨ë…„ë„ì…ë‹ˆë‹¤.
- *      12ì›” 31ì¼ : 12ì›” 31ì¼ì´ ì›”í™”ìˆ˜ì¸ ê²½ìš°, ì°¨ë…„ë„ì…ë‹ˆë‹¤.
- *      ë‚˜ë¨¸ì§€ : ë‹¹ë…„ë„ì…ë‹ˆë‹¤.
+ *    1. ¿¬µµ¸¦ ±¸ÇÕ´Ï´Ù.
+ *      1¿ù 1ÀÏ   : 1¿ù 1ÀÏÀÌ ±İÅäÀÏÀÎ °æ¿ì, Àü³âµµÀÔ´Ï´Ù.
+ *      1¿ù 2ÀÏ   : 1¿ù 1ÀÏÀÌ ±İÅäÀÎ °æ¿ì, Àü³âµµÀÔ´Ï´Ù.
+ *      1¿ù 3ÀÏ   : 1¿ù 1ÀÏÀÌ ±İÀÎ °æ¿ì, Àü³âµµÀÔ´Ï´Ù.
+ *      12¿ù 29ÀÏ : 12¿ù 31ÀÏÀÌ ¼öÀÎ °æ¿ì, Â÷³âµµÀÔ´Ï´Ù.
+ *      12¿ù 30ÀÏ : 12¿ù 31ÀÏÀÌ È­¼öÀÎ °æ¿ì, Â÷³âµµÀÔ´Ï´Ù.
+ *      12¿ù 31ÀÏ : 12¿ù 31ÀÏÀÌ ¿ùÈ­¼öÀÎ °æ¿ì, Â÷³âµµÀÔ´Ï´Ù.
+ *      ³ª¸ÓÁö    : ´ç³âµµÀÔ´Ï´Ù.
  *
  ***********************************************************************/
 SInt mtc::yearForStandard( SInt aYear,
@@ -8190,7 +8205,7 @@ SInt mtc::yearForStandard( SInt aYear,
     SInt    sYear  = 0;
     SInt    sDayOfWeek   = 0;
 
-    /* Step 1. ì—°ë„ë¥¼ êµ¬í•©ë‹ˆë‹¤. */
+    /* Step 1. ¿¬µµ¸¦ ±¸ÇÕ´Ï´Ù. */
     sYear = aYear;
 
     if ( aMonth == 1 )
@@ -8199,7 +8214,7 @@ SInt mtc::yearForStandard( SInt aYear,
         {
             case 1 :
                 sDayOfWeek = dayOfWeek( aYear, 1, 1 );
-                if ( ( sDayOfWeek >= 5 ) || ( sDayOfWeek == 0 ) )   // ê¸ˆí† ì¼
+                if ( ( sDayOfWeek >= 5 ) || ( sDayOfWeek == 0 ) )   // ±İÅäÀÏ
                 {
                     sYear = aYear - 1;
                 }
@@ -8211,7 +8226,7 @@ SInt mtc::yearForStandard( SInt aYear,
 
             case 2 :
                 sDayOfWeek = dayOfWeek( aYear, 1, 1 );
-                if ( sDayOfWeek >= 5 )                              // ê¸ˆí† 
+                if ( sDayOfWeek >= 5 )                              // ±İÅä
                 {
                     sYear = aYear - 1;
                 }
@@ -8223,7 +8238,7 @@ SInt mtc::yearForStandard( SInt aYear,
 
             case 3 :
                 sDayOfWeek = dayOfWeek( aYear, 1, 1 );
-                if ( sDayOfWeek == 5 )                              // ê¸ˆ
+                if ( sDayOfWeek == 5 )                              // ±İ
                 {
                     sYear = aYear - 1;
                 }
@@ -8243,7 +8258,7 @@ SInt mtc::yearForStandard( SInt aYear,
         {
             case 29 :
                 sDayOfWeek = dayOfWeek( aYear, 12, 31 );
-                if ( sDayOfWeek == 3 )                                                      // ìˆ˜
+                if ( sDayOfWeek == 3 )                                                      // ¼ö
                 {
                     sYear = aYear + 1;
                 }
@@ -8255,7 +8270,7 @@ SInt mtc::yearForStandard( SInt aYear,
 
             case 30 :
                 sDayOfWeek = dayOfWeek( aYear, 12, 31 );
-                if ( ( sDayOfWeek == 2 ) || ( sDayOfWeek == 3 ) )                           // í™”ìˆ˜
+                if ( ( sDayOfWeek == 2 ) || ( sDayOfWeek == 3 ) )                           // È­¼ö
                 {
                     sYear = aYear + 1;
                 }
@@ -8267,7 +8282,7 @@ SInt mtc::yearForStandard( SInt aYear,
 
             case 31 :
                 sDayOfWeek = dayOfWeek( aYear, 12, 31 );
-                if ( ( sDayOfWeek == 1 ) || ( sDayOfWeek == 2 ) || ( sDayOfWeek == 3 ) )    // ì›”í™”ìˆ˜
+                if ( ( sDayOfWeek == 1 ) || ( sDayOfWeek == 2 ) || ( sDayOfWeek == 3 ) )    // ¿ùÈ­¼ö
                 {
                     sYear = aYear + 1;
                 }

@@ -16,11 +16,18 @@
 
 package Altibase.jdbc.driver.cm;
 
+import Altibase.jdbc.driver.sharding.core.DistTxInfo;
+
 public class CmProtocolContext
 {
-    private CmChannel mChannel;
-    private CmErrorResult mError = null;
-    private CmResult[] mResults;
+    private CmChannel     mChannel;
+    private CmErrorResult mError      = null;
+    private CmResult[]    mResults;
+    
+    // PROJ-2733 DistTxInfo
+    private static Object mlock        = new Object();
+    private static long   mSCN         = 0;  // cliÀÇ Env->mSCN¿¡ ´ëÀÀ. ¿©·¯ ConnectionÀÌ °øÀ¯ÇÑ´Ù.
+    private DistTxInfo    mDistTxInfo; 
 
     public CmProtocolContext(CmChannel aChannel)
     {
@@ -30,14 +37,18 @@ public class CmProtocolContext
 
     public CmProtocolContext()
     {
-        /* BUG-46513 CmProtocolContextShardConnect, CmProtocolContextShasrdStmtì—ì„œ ì°¸ì¡°í•˜ê¸° ë•Œë¬¸ì— CmResult
-           ì´ˆê¸°í™” êµ¬ë¬¸ì„ ì¶”ê°€ */
-        mResults = new CmResult[CmOperation.DB_OP_COUNT];
+        int sOpCount = Byte.toUnsignedInt(CmOperation.DB_OP_COUNT);  // BUG-48775
+
+        // BUG-46513 CmProtocolContextShardConnect, CmProtocolContextShasrdStmt¿¡¼­
+        //           ÂüÁ¶ÇÏ±â ¶§¹®¿¡ CmResult ÃÊ±âÈ­ ±¸¹®À» Ãß°¡
+        mResults = new CmResult[sOpCount];
+        mDistTxInfo = new DistTxInfo();
     }
 
     public void addCmResult(CmResult aResult)
     {
-        mResults[aResult.getResultOp()] = aResult;
+        int sResultOp = Byte.toUnsignedInt(aResult.getResultOp());  // BUG-48775
+        mResults[sResultOp] = aResult;
     }
     
     public void clearError()
@@ -55,14 +66,15 @@ public class CmProtocolContext
         return mChannel;
     }
     
-    // BUG-42424 AltibasePreparedStatementì—ì„œ í•´ë‹¹ë©”ì†Œë“œë¥¼ ì´ìš©í•˜ê¸° ë•Œë¬¸ì— publicìœ¼ë¡œ ë³€ê²½
+    // BUG-42424 AltibasePreparedStatement¿¡¼­ ÇØ´ç¸Þ¼Òµå¸¦ ÀÌ¿ëÇÏ±â ¶§¹®¿¡ publicÀ¸·Î º¯°æ
     public CmResult getCmResult(byte aResultOp)
     {
-        CmResult sResult = mResults[aResultOp];
+        int      sResultOp = Byte.toUnsignedInt(aResultOp);  // BUG-48775
+        CmResult sResult   = mResults[sResultOp];
         if (sResult == null)
         {
-            sResult = CmResultFactory.getInstance(aResultOp);
-            mResults[aResultOp] = sResult;
+            sResult = CmResultFactory.getInstance(sResultOp);
+            mResults[sResultOp] = sResult;
         }
         return sResult;
     }
@@ -78,12 +90,46 @@ public class CmProtocolContext
             mError.addError(aError);
         }
 
-        // BUG-46513 smn ì—ëŸ¬ì¼ë•Œ executeê²°ê³¼ë¥¼ ì…‹íŒ…í•˜ê¸° ìœ„í•´ Contextê°ì²´ ì£¼ìž…
+        // BUG-46513 smn ¿¡·¯ÀÏ¶§ execute°á°ú¸¦ ¼ÂÆÃÇÏ±â À§ÇØ Context°´Ã¼ ÁÖÀÔ
         mError.setContext(this);
     }
 
     public void setChannel(CmChannel aChannel)
     {
         this.mChannel = aChannel;
+    }
+
+    public void initDistTxInfo()
+    {
+        mDistTxInfo.initDistTxInfo();
+    }
+
+    public DistTxInfo getDistTxInfo()
+    {
+        return mDistTxInfo;
+    }
+
+    public void setDistTxInfo(DistTxInfo aDistTxInfo)
+    {
+        mDistTxInfo = aDistTxInfo;
+    }
+
+    public void updateSCN(long aSCN)
+    {
+        synchronized(mlock) 
+        {
+            if (aSCN > mSCN) 
+            {
+                mSCN = aSCN;
+            }
+        }
+    }
+
+    public static long getSCN()
+    {
+        synchronized(mlock) 
+        {
+            return mSCN;
+        }
     }
 }

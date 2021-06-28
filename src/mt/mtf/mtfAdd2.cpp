@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfAdd2.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfAdd2.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -51,7 +51,7 @@ mtfModule mtfAdd2 = {
         MTC_NODE_PRINT_FMT_MISC|
         MTC_NODE_COMMUTATIVE_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞ÏûêÍ∞Ä ÏïÑÎãò)
+    1.0,  // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄∞° æ∆¥‘)
     mtfAdd2FunctionName,
     NULL,
     mtfAdd2Initialize,
@@ -130,7 +130,7 @@ static mtfSubModule mtfXX[1] = {
 //};
 
 // To Fix PR-8722
-// [Overflow(Underflow)-PRONE Ïó∞ÏÇ∞Ïùò Ï†úÍ±∞]
+// [Overflow(Underflow)-PRONE ø¨ªÍ¿« ¡¶∞≈]
 
 static mtfSubModule mtfNN[5] = {
     { mtfNN+1, mtfAdd2EstimateInteger  },
@@ -163,7 +163,7 @@ static mtfSubModule* mtfGroupTable[MTD_GROUP_MAXIMUM][MTD_GROUP_MAXIMUM] = {
 };
 
 // BUG-41994
-// high precisionÏö© group table
+// high precisionøÎ group table
 static mtfSubModule mtfNP[3] = {
     { mtfNP+1, mtfAdd2EstimateInteger  },
     { mtfNP+2, mtfAdd2EstimateBigint   },
@@ -289,7 +289,7 @@ IDE_RC mtfAdd2Estimate( mtcNode*     aNode,
                                     aRemain,
                                     aCallBack )
               != IDE_SUCCESS );
-    
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_NOT_AGGREGATION );
@@ -691,7 +691,7 @@ IDE_RC mtfAdd2EstimateFloat( mtcNode*     aNode,
  *
  * Description :
  *    Add Float : aStack[0] = aStack[1] + aStack[2] 
- *    Ïã§Ï†úÏ†ÅÏù∏ Í≥ÑÏÇ∞ÏùÄ idaAddÏóêÏÑú Ïù¥Î£®Ïñ¥ÏßÑÎã§.
+ *    Ω«¡¶¿˚¿Œ ∞ËªÍ¿∫ idaAddø°º≠ ¿Ã∑ÁæÓ¡¯¥Ÿ.
  * ---------------------------------------------------------------------------*/
  IDE_RC mtfAdd2CalculateFloat( 
                           mtcNode*     aNode,

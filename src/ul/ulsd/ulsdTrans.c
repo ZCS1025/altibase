@@ -26,18 +26,28 @@
 #include <ulsd.h>
 #include <ulsdnExecute.h>
 #include <ulsdnFailover.h>
+#include <ulsdDistTxInfo.h>
+#include <ulsdnTrans.h>
+#include <ulsdRebuild.h>
 
 void ulsdClearOnTransactionNode(ulnDbc *aMetaDbc)
 {
-    aMetaDbc->mShardDbcCxt.mShardOnTransactionNodeIndex = -1;
+    aMetaDbc->mShardDbcCxt.mShardOnTransactionNodeIndex = ACP_UINT16_MAX;
     aMetaDbc->mShardDbcCxt.mShardIsNodeTransactionBegin = ACP_FALSE;
 }
 
 void ulsdSetOnTransactionNodeIndex(ulnDbc       *aMetaDbc,
                                    acp_uint16_t  aNodeIndex)
 {
-    aMetaDbc->mShardDbcCxt.mShardOnTransactionNodeIndex = aNodeIndex;
-    aMetaDbc->mShardDbcCxt.mShardIsNodeTransactionBegin = ACP_TRUE;
+    if ( aMetaDbc->mAttrAutoCommit == SQL_AUTOCOMMIT_OFF )
+    {
+        aMetaDbc->mShardDbcCxt.mShardOnTransactionNodeIndex = aNodeIndex;
+        aMetaDbc->mShardDbcCxt.mShardIsNodeTransactionBegin = ACP_TRUE;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 }
 
 void ulsdGetOnTransactionNodeIndex(ulnDbc       *aMetaDbc,
@@ -50,7 +60,7 @@ void ulsdIsValidOnTransactionNodeIndex(ulnDbc       *aMetaDbc,
                                        acp_uint16_t  aDecidedNodeIndex,
                                        acp_bool_t   *aIsValid)
 {
-    /* Transaction Ïù¥ ÏãúÏûëÎêòÏßÄ ÏïäÏïòÍ≥† || ÌòÑÏû¨ ÏÇ¨Ïö©Ï§ëÏù∏ Node Î©¥ -> Valid Index */
+    /* Transaction ¿Ã Ω√¿€µ«¡ˆ æ æ“∞Ì || «ˆ¿Á ªÁøÎ¡ﬂ¿Œ Node ∏È -> Valid Index */
     (*aIsValid) = (( aMetaDbc->mShardDbcCxt.mShardIsNodeTransactionBegin == ACP_FALSE) ||
                   (aDecidedNodeIndex == aMetaDbc->mShardDbcCxt.mShardOnTransactionNodeIndex)) ?
                   ACP_TRUE : ACP_FALSE;
@@ -62,90 +72,92 @@ SQLRETURN ulsdEndTranDbc(acp_sint16_t  aHandleType,
 {
     SQLRETURN       sRet = SQL_ERROR;
     ulnFnContext    sFnContext;
-    ulnFnContext    sFnContextSMNUpdate;
     acp_sint16_t    sTouchNodeCount;
 
     ACP_UNUSED(aHandleType);
 
     ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_ENDTRAN, aMetaDbc, ULN_OBJ_TYPE_DBC);
 
-    ACI_TEST_RAISE( ulnClearDiagnosticInfoFromObject( sFnContext.mHandle.mObj )
-                    != ACI_SUCCESS,
-                    LABEL_MEM_MAN_ERR );
+    /* BUG-47553 */
+    ACI_TEST_RAISE( ulsdEnter( &sFnContext ) != ACI_SUCCESS, LABEL_ENTER_ERROR );
 
-    if (aMetaDbc->mShardDbcCxt.mShardTransactionLevel == ULN_SHARD_TX_ONE_NODE)
+    switch ( aMetaDbc->mAttrGlobalTransactionLevel )
     {
-        sRet = ulsdNodeEndTranDbc( & sFnContext,
-                                   aMetaDbc->mShardDbcCxt.mShardDbc,
-                                   aCompletionType );
+        case ULN_GLOBAL_TX_ONE_NODE:
+            sRet = ulsdNodeEndTranDbc( & sFnContext,
+                                       aMetaDbc->mShardDbcCxt.mShardDbc,
+                                       aCompletionType );
+            break;
 
-        if ( SQL_SUCCEEDED( sRet ) )
-        {
-            ulsdClearOnTransactionNode( aMetaDbc );
-        }
-        else
-        {
-            /* Nothing to do */
-        }
-    }
-    else if (aMetaDbc->mShardDbcCxt.mShardTransactionLevel == ULN_SHARD_TX_MULTI_NODE)
-    {
-        sRet = ulsdTouchNodeEndTranDbc( & sFnContext,
-                                        aMetaDbc->mShardDbcCxt.mShardDbc,
-                                        aCompletionType );
-    }
-    else if (aMetaDbc->mShardDbcCxt.mShardTransactionLevel == ULN_SHARD_TX_GLOBAL)
-    {
-        ulsdGetTouchNodeCount(aMetaDbc->mShardDbcCxt.mShardDbc,
-                              &sTouchNodeCount);
-
-        /* BUG-45801 Global Tx RollbackÏùÑ 2PCÎ°ú Ï≤òÎ¶¨ÌïòÍ≥† ÏûàÏäµÎãàÎã§. */
-        if ( ( sTouchNodeCount >= 2 ) && ( aCompletionType == ULN_TRANSACT_COMMIT ) )
-        {
-            /* 2ÎÖ∏Îìú Ïù¥ÏÉÅÏù¥Í≥† CommitÏù∏ Í≤ΩÏö∞Îßå global transactionÏùÑ ÏÇ¨Ïö©ÌïúÎã§. */
-            sRet = ulsdShardEndTranDbc( & sFnContext,
-                                        aMetaDbc->mShardDbcCxt.mShardDbc );
-        }
-        else
-        {
+        case ULN_GLOBAL_TX_MULTI_NODE:
             sRet = ulsdTouchNodeEndTranDbc( & sFnContext,
                                             aMetaDbc->mShardDbcCxt.mShardDbc,
                                             aCompletionType );
-        }
-    }
-    else
-    {
-        ACE_ASSERT(0);
+            break;
+
+        case ULN_GLOBAL_TX_GLOBAL:
+            /* fall through */
+        case ULN_GLOBAL_TX_GCTX:
+            ulsdGetTouchNodeCount(aMetaDbc->mShardDbcCxt.mShardDbc,
+                                  &sTouchNodeCount);
+
+            /* BUG-45801 Global Tx Rollback¿ª 2PC∑Œ √≥∏Æ«œ∞Ì ¿÷Ω¿¥œ¥Ÿ. */
+            if ( ( sTouchNodeCount >= 2 ) && ( aCompletionType == ULN_TRANSACT_COMMIT ) )
+            {
+                /* 2≥ÎµÂ ¿ÃªÛ¿Ã∞Ì Commit¿Œ ∞ÊøÏ∏∏ global transaction¿ª ªÁøÎ«—¥Ÿ. */
+                sRet = ulsdShardEndTranDbc( & sFnContext,
+                                            aMetaDbc->mShardDbcCxt.mShardDbc );
+            }
+            else
+            {
+                sRet = ulsdTouchNodeShardEndTranDbc( & sFnContext,
+                                                     aMetaDbc->mShardDbcCxt.mShardDbc,
+                                                     aCompletionType );
+            }
+
+            if ( sRet == SQL_SUCCESS )
+            {
+                ulnDbcSet2PcCommitState( aMetaDbc, ULSD_2PC_NORMAL );
+            }
+            else
+            {
+                ulnDbcSet2PcCommitState( aMetaDbc, ULSD_2PC_COMMIT_FAIL );
+            }
+            break;
+
+        default:
+            ACI_RAISE( LABEL_NO_SET_GLOBAL_TRANSACTION_LEVEL );
+            break;
     }
 
-    /* BUG-46100 Session SMN Update */
-    if ( ulsdIsTimeToUpdateShardMetaNumber( aMetaDbc ) == ACP_TRUE )
-    {
-        ULN_INIT_FUNCTION_CONTEXT( sFnContextSMNUpdate, ULN_FID_ENDTRAN, aMetaDbc, ULN_OBJ_TYPE_DBC );
+    /* BUGBUG retrun result not matched with FNCONTEXT result */
+    ULN_FNCONTEXT_SET_RC( &sFnContext, sRet );
 
-        ACI_TEST( ulsdUpdateShardMetaNumber( aMetaDbc, & sFnContextSMNUpdate ) != SQL_SUCCESS );
+    ulsdCleanupShardSession( aMetaDbc,
+                             &sFnContext );
 
-        if ( sRet != SQL_SUCCESS )
-        {
-            ulnError( & sFnContext, ulERR_ABORT_SHARD_META_CHANGED );
-        }
-    }
-    else
+    ACI_TEST( SQL_SUCCEEDED( ULN_FNCONTEXT_GET_RC( &sFnContext ) ) == 0 );
+
+    ulsdClearOnTransactionNode( aMetaDbc );
+
+    /* TASK-7219 Non-shard DML */
+    ulnDbcInitStmtExecSeqForShardTx(aMetaDbc);
+
+    return ULN_FNCONTEXT_GET_RC( &sFnContext );
+
+    ACI_EXCEPTION( LABEL_ENTER_ERROR )
     {
         /* Nothing to do */
     }
-
-    return sRet;
-
-    ACI_EXCEPTION( LABEL_MEM_MAN_ERR )
+    ACI_EXCEPTION( LABEL_NO_SET_GLOBAL_TRANSACTION_LEVEL )
     {
-        (void)ulnError( &sFnContext,
-                        ulERR_FATAL_MEMORY_MANAGEMENT_ERROR,
-                        "ulsdEndTranDbc" );
+        ulnError( &sFnContext,
+                  ulERR_ABORT_SHARD_INTERNAL_ERROR,
+                  "No set Global Transaction level" );
     }
     ACI_EXCEPTION_END;
 
-    return SQL_ERROR;
+    return ULN_FNCONTEXT_GET_RC( &sFnContext );
 }
 
 SQLRETURN ulsdNodeEndTranDbc(ulnFnContext      *aFnContext,
@@ -211,10 +223,31 @@ ACI_RC ulsdCallbackShardTransactionResult(cmiProtocolContext *aProtocolContext,
                                           void               *aServiceSession,
                                           void               *aUserContext)
 {
-    ACP_UNUSED(aProtocolContext);
+    ulnFnContext   *sFnContext = (ulnFnContext *)aUserContext;
+    ulnDbc         *sDbc       = sFnContext->mHandle.mDbc;
+
+    acp_uint64_t    sSCN = 0;
+
     ACP_UNUSED(aProtocol);
     ACP_UNUSED(aServiceSession);
-    ACP_UNUSED(aUserContext);
+
+    CMI_RD8(aProtocolContext, &sSCN);  /* PROJ-2733-Protocol */
+
+    /* PROJ-2733-DistTxInfo */
+    if (sSCN > 0)
+    {
+        ulsdUpdateSCNToEnv(sDbc->mParentEnv, &sSCN);
+    }
+
+    if ( sDbc->mShardDbcCxt.mParentDbc != NULL )
+    {
+        ulsdInitDistTxInfo( sDbc->mShardDbcCxt.mParentDbc );
+    }
+    else
+    {
+        ulsdInitDistTxInfo( sDbc );
+    }
+
     return ACI_SUCCESS;
 }
 
@@ -245,12 +278,15 @@ ACI_RC ulsdCallbackShardHandshakeResult( cmiProtocolContext *aProtocolContext,
     return ACI_SUCCESS;
 }
 
-ACI_RC ulsdShardTranDbcMain( ulnFnContext * aFnContext,
-                             ulnDbc       * aDbc,
-                             acp_uint32_t * aTouchNodeArr,
-                             acp_uint16_t   aTouchNodeCount )
+ACI_RC ulsdShardTranDbcMain( ulnFnContext     * aFnContext,
+                             ulnDbc           * aDbc,
+                             ulnTransactionOp   aCompletionType,
+                             acp_uint32_t     * aTouchNodeArr,
+                             acp_uint16_t       aTouchNodeCount )
 {
     ULN_FLAG(sNeedFinPtContext);
+
+    ulnErrorMgr sErrorMgr;
 
     /* PROJ-2047 Strengthening LOB - LOBCACHE */
     ulnStmt            *sStmt     = NULL;
@@ -270,7 +306,7 @@ ACI_RC ulsdShardTranDbcMain( ulnFnContext * aFnContext,
          ( aDbc->mIsConnected == ACP_TRUE ) )
     {
         /*
-         * protocol context Ï¥àÍ∏∞Ìôî
+         * protocol context √ ±‚»≠
          */
         // fix BUG-17722
         ACI_TEST(ulnInitializeProtocolContext(aFnContext,
@@ -280,18 +316,24 @@ ACI_RC ulsdShardTranDbcMain( ulnFnContext * aFnContext,
         ULN_FLAG_UP(sNeedFinPtContext);
 
         /*
-         * Ìå®ÌÇ∑ Ïì∞Í∏∞
+         * ∆–≈∂ æ≤±‚
          */
         ACI_TEST( ulsdShardTransactionCommitRequest( aFnContext,
                                                      &(aDbc->mPtContext),
+                                                     aCompletionType,
                                                      aTouchNodeArr,
                                                      aTouchNodeCount )
                   != ACI_SUCCESS );
 
         /*
-         * Ìå®ÌÇ∑ Ï†ÑÏÜ°
+         * ∆–≈∂ ¿¸º€
          */
         ACI_TEST( ulnFlushProtocol( aFnContext, &(aDbc->mPtContext ) ) != ACI_SUCCESS );
+
+        /*
+         * BUG-45509 shard nested commit
+         */
+        ulsdDbcCallback(aDbc);
 
         /*
          * Waiting for Transaction Result Packet
@@ -313,7 +355,7 @@ ACI_RC ulsdShardTranDbcMain( ulnFnContext * aFnContext,
         /* 
          * PROJ-2047 Strengthening LOB - LOBCACHE
          *
-         * Stmt ListÏùò LOB CacheÎ•º Ï†úÍ±∞ÌïòÏûê.
+         * Stmt List¿« LOB Cache∏¶ ¡¶∞≈«œ¿⁄.
          */
         ACP_LIST_ITERATE(&(aDbc->mStmtList), sIterator)
         {
@@ -322,7 +364,7 @@ ACI_RC ulsdShardTranDbcMain( ulnFnContext * aFnContext,
         }
 
         /*
-         * Protocol Context Ï†ïÎ¶¨
+         * Protocol Context ¡§∏Æ
          */
         ULN_FLAG_DOWN(sNeedFinPtContext);
         // fix BUG-17722
@@ -330,14 +372,16 @@ ACI_RC ulsdShardTranDbcMain( ulnFnContext * aFnContext,
     }
     else
     {
-        /* Nothing to do */
+        ulsdDbcCallback(aDbc);
     }
 
     return ACI_SUCCESS;
 
     ACI_EXCEPTION(LABEL_ABORT_NO_CONNECTION)
     {
-        (void)ulnError( aFnContext, ulERR_ABORT_NO_CONNECTION, "" );
+        /* BUG-47143 ª˛µÂ All meta »Ø∞Êø°º≠ Failover ∏¶ ∞À¡ı«’¥œ¥Ÿ. */
+        ulnErrorMgrSetCmError( aDbc, &sErrorMgr, aciGetErrorCode() );
+        ulsdModuleOnCmError(aFnContext, aDbc, &sErrorMgr);
     }
     ACI_EXCEPTION_END;
 
@@ -350,7 +394,7 @@ ACI_RC ulsdShardTranDbcMain( ulnFnContext * aFnContext,
     return ACI_FAILURE;
 }
 
-/* coordinatorÏóê touch node listÏôÄ commitÏùÑ Î≥¥ÎÇ∏Îã§. */
+/* coordinatorø° touch node listøÕ commit¿ª ∫∏≥Ω¥Ÿ. */
 SQLRETURN ulsdShardEndTranDbc( ulnFnContext * aFnContext,
                                ulsdDbc      * aShard )
 {
@@ -392,11 +436,14 @@ SQLRETURN ulsdShardEndTranDbc( ulnFnContext * aFnContext,
         }
     }
 
+    aShard->mTouched = ACP_TRUE;
+
     /*
-     * Shard Transaction Î©îÏù∏ Î£®Ìã¥
+     * Shard Transaction ∏ﬁ¿Œ ∑Á∆æ
      */
     ACI_TEST( ulsdShardTranDbcMain( aFnContext,
                                     aShard->mMetaDbc,
+                                    SQL_COMMIT,
                                     sTouchNodeArr,
                                     sTouchNodeCount )
               != ACI_SUCCESS );
@@ -432,6 +479,54 @@ SQLRETURN ulsdShardEndTranDbc( ulnFnContext * aFnContext,
     }
 
     return ULN_FNCONTEXT_GET_RC(aFnContext);
+}
+
+SQLRETURN ulsdnSimpleShardEndTranDbc( ulnDbc *aDbc, ulnTransactionOp aCompletionType )
+{
+    ULN_FLAG(sNeedExit);
+    ulnFnContext sFnContext;
+
+    ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_ENDTRAN, aDbc, ULN_OBJ_TYPE_DBC);
+    /*
+     * Enter
+     */
+    ACI_TEST(ulnEnter(&sFnContext, NULL) != ACI_SUCCESS);
+    ULN_FLAG_UP(sNeedExit);
+
+    /* PROJ-1573 XA */
+    ACI_TEST_RAISE(aDbc->mXaEnlist == ACP_TRUE, LABEL_XA_COMMIT_ERROR);
+
+    /*
+     * Shard Transaction ∏ﬁ¿Œ ∑Á∆æ
+     */
+    ACI_TEST( ulsdShardTranDbcMain( &sFnContext,
+                                    aDbc,
+                                    aCompletionType,
+                                    NULL,
+                                    0 )
+              != ACI_SUCCESS );
+
+    /*
+     * Exit
+     */
+    ULN_FLAG_DOWN(sNeedExit);
+    ACI_TEST(ulnExit(&sFnContext) != ACI_SUCCESS);
+
+    return ULN_FNCONTEXT_GET_RC(&sFnContext);
+
+    /* BUG-18796*/
+    ACI_EXCEPTION(LABEL_XA_COMMIT_ERROR);
+    {
+        ULN_FNCONTEXT_SET_RC(&sFnContext, SQL_ERROR);
+    }
+    ACI_EXCEPTION_END;
+
+    ULN_IS_FLAG_UP(sNeedExit)
+    {
+        (void)ulnExit( &sFnContext );
+    }
+
+    return ULN_FNCONTEXT_GET_RC(&sFnContext);
 }
 
 void ulsdGetTouchNodeCount(ulsdDbc       *aShard,
@@ -476,7 +571,7 @@ SQLRETURN ulsdTouchNodeEndTranDbc(ulnFnContext      *aFnContext,
     acp_bool_t         sSuccess = ACP_TRUE;
     acp_uint16_t       i = 0;
 
-    /* commitÌï† node Îì±Î°ù */
+    /* commit«“ node µÓ∑œ */
     for ( i = 0; i < aShard->mNodeCount; i++ )
     {
         if ( aShard->mNodeInfo[i]->mTouched == ACP_TRUE )
@@ -505,10 +600,7 @@ SQLRETURN ulsdTouchNodeEndTranDbc(ulnFnContext      *aFnContext,
         }
     }
 
-    /* commit Î≥ëÎ†¨ÏàòÌñâ */
-    ulsdDoCallback( sCallback );
-
-    /* meta nodeÎäî Î≥ëÎ†¨ÏàòÌñâÌïòÏßÄ ÏïäÍ≥† commit */
+    /* meta node¥¬ ∫¥∑ƒºˆ«‡«œ¡ˆ æ ∞Ì commit */
     if ( aShard->mTouched == ACP_TRUE )
     {
         sNodeResult = ulnEndTran( SQL_HANDLE_DBC,
@@ -538,6 +630,9 @@ SQLRETURN ulsdTouchNodeEndTranDbc(ulnFnContext      *aFnContext,
         /* Do Nothing */
     }
 
+    /* commit ∫¥∑ƒºˆ«‡ */
+    ulsdDoCallback( sCallback );
+
     for ( i = 0; i < aShard->mNodeCount; i++ )
     {
         /* Pass checking node that already closed on execute time */
@@ -558,11 +653,17 @@ SQLRETURN ulsdTouchNodeEndTranDbc(ulnFnContext      *aFnContext,
             {
                 aShard->mNodeInfo[i]->mTouched = ACP_FALSE;
             }
+            else if ( sNodeResult == SQL_NO_DATA )
+            {
+                /* BUG-47143 ª˛µÂ All meta »Ø∞Êø°º≠ Failover ∏¶ ∞À¡ı«’¥œ¥Ÿ.
+                 * Touch ∏¶ ACP_FALSE ∑Œ ∏∏µÈ∏È æ»µ»¥Ÿ.
+                 * ¥Ÿ¿Ω SQLEndTran ø°º≠ clinet-side ∑Œ end tran «ÿæﬂ«—¥Ÿ. */
+            }
             else if ( sNodeResult == SQL_SUCCESS_WITH_INFO )
             {
                 aShard->mNodeInfo[i]->mTouched = ACP_FALSE;
 
-                /* ÏóêÎü¨ Ï†ÑÎã¨ */
+                /* ø°∑Ø ¿¸¥ﬁ */
                 ulsdNativeErrorToUlnError( aFnContext,
                                            SQL_HANDLE_DBC,
                                            (ulnObject *)aShard->mNodeInfo[i]->mNodeDbc,
@@ -575,7 +676,7 @@ SQLRETURN ulsdTouchNodeEndTranDbc(ulnFnContext      *aFnContext,
             }
             else
             {
-                /* ÏóêÎü¨ Ï†ÑÎã¨ */
+                /* ø°∑Ø ¿¸¥ﬁ */
                 ulsdNativeErrorToUlnError(aFnContext,
                                           SQL_HANDLE_DBC,
                                           (ulnObject *)aShard->mNodeInfo[i]->mNodeDbc,
@@ -599,6 +700,159 @@ SQLRETURN ulsdTouchNodeEndTranDbc(ulnFnContext      *aFnContext,
     ulsdRemoveCallback( sCallback );
 
     return sSuccessResult;
+
+    ACI_EXCEPTION_END;
+
+    ulsdRemoveCallback( sCallback );
+
+    return sErrorResult;
+}
+
+SQLRETURN ulsdTouchNodeShardEndTranDbc(ulnFnContext      *aFnContext,
+                                       ulsdDbc           *aShard,
+                                       acp_sint16_t       aCompletionType)
+{
+    SQLRETURN          sNodeResult = SQL_ERROR;
+    SQLRETURN          sSuccessResult = SQL_SUCCESS;
+    SQLRETURN          sErrorResult = SQL_ERROR;
+    ulsdFuncCallback  *sCallback = NULL;
+    acp_bool_t         sSuccess = ACP_TRUE;
+    acp_uint16_t       i = 0;
+
+    /* commit«“ node µÓ∑œ */
+    for ( i = 0; i < aShard->mNodeCount; i++ )
+    {
+        if ( aShard->mNodeInfo[i]->mTouched == ACP_TRUE )
+        {
+            sNodeResult = ulsdShardEndTranAddCallback( i,
+                                                       aShard->mNodeInfo[i]->mNodeDbc,
+                                                       aCompletionType,
+                                                       &sCallback );
+            if ( sNodeResult == SQL_SUCCESS )
+            {
+                /* Nothing to do */
+            }
+            else if ( sNodeResult == SQL_SUCCESS_WITH_INFO )
+            {
+                sSuccessResult = sNodeResult;
+            }
+            else
+            {
+                sErrorResult = sNodeResult;
+                sSuccess = ACP_FALSE;
+            }
+        }
+        else
+        {
+            /* Do Nothing */
+        }
+    }
+
+    /* meta node¥¬ ∫¥∑ƒºˆ«‡«œ¡ˆ æ ∞Ì commit */
+    if ( aShard->mTouched == ACP_TRUE )
+    {
+        sNodeResult = ulsdnSimpleShardEndTranDbc( aShard->mMetaDbc,
+                                                  (acp_sint16_t)aCompletionType );
+
+        SHARD_LOG( "(TouchNodeShardEndTranDbc) MetaNode\n" );
+
+        if ( sNodeResult == SQL_SUCCESS )
+        {
+            aShard->mTouched = ACP_FALSE;
+        }
+        else if ( sNodeResult == SQL_SUCCESS_WITH_INFO )
+        {
+            aShard->mTouched = ACP_FALSE;
+
+            sSuccessResult = sNodeResult;
+        }
+        else
+        {
+            sErrorResult = sNodeResult;
+            sSuccess = ACP_FALSE;
+        }
+    }
+    else
+    {
+        /* Do Nothing */
+    }
+
+    /* commit ∫¥∑ƒºˆ«‡ */
+    ulsdDoCallback( sCallback );
+
+    for ( i = 0; i < aShard->mNodeCount; i++ )
+    {
+        /* Pass checking node that already closed on execute time */
+        if ( aShard->mNodeInfo[i]->mTouched == ACP_TRUE )
+        {
+            sNodeResult = ulsdGetResultCallback( i,
+                                                 sCallback,
+                                                 (aCompletionType == SQL_ROLLBACK) ?
+                                                 (acp_uint8_t)1: (acp_uint8_t)0 );
+
+            SHARD_LOG( "(TouchNodeShardEndTranDbc) NodeIndex[%d], NodeId=%d, Server=%s:%d\n",
+                       i,
+                       aShard->mNodeInfo[i]->mNodeId,
+                       aShard->mNodeInfo[i]->mServerIP,
+                       aShard->mNodeInfo[i]->mPortNo );
+
+            if ( sNodeResult == SQL_SUCCESS )
+            {
+                aShard->mNodeInfo[i]->mTouched = ACP_FALSE;
+            }
+            else if ( sNodeResult == SQL_NO_DATA )
+            {
+                /* BUG-47143 ª˛µÂ All meta »Ø∞Êø°º≠ Failover ∏¶ ∞À¡ı«’¥œ¥Ÿ.
+                 * Touch ∏¶ ACP_FALSE ∑Œ ∏∏µÈ∏È æ»µ»¥Ÿ.
+                 * ¥Ÿ¿Ω SQLEndTran ø°º≠ clinet-side ∑Œ end tran «ÿæﬂ«—¥Ÿ. */
+            }
+            else if ( sNodeResult == SQL_SUCCESS_WITH_INFO )
+            {
+                aShard->mNodeInfo[i]->mTouched = ACP_FALSE;
+
+                /* ø°∑Ø ¿¸¥ﬁ */
+                ulsdNativeErrorToUlnError( aFnContext,
+                                           SQL_HANDLE_DBC,
+                                           (ulnObject *)aShard->mNodeInfo[i]->mNodeDbc,
+                                           aShard->mNodeInfo[i],
+                                           ( aCompletionType == SQL_COMMIT ) ?
+                                               (acp_char_t *)"Commit" :
+                                               (acp_char_t *)"Rollback" );
+
+                sSuccessResult = sNodeResult;
+            }
+            else
+            {
+                /* ø°∑Ø ¿¸¥ﬁ */
+                ulsdNativeErrorToUlnError(aFnContext,
+                                          SQL_HANDLE_DBC,
+                                          (ulnObject *)aShard->mNodeInfo[i]->mNodeDbc,
+                                          aShard->mNodeInfo[i],
+                                          (aCompletionType == SQL_COMMIT) ?
+                                          (acp_char_t *)"Commit" :
+                                          (acp_char_t *)"Rollback");
+
+                sErrorResult = sNodeResult;
+                sSuccess = ACP_FALSE;
+            }
+        }
+        else
+        {
+            /* Do Nothing */
+        }
+    }
+
+    ACI_TEST_RAISE( sSuccess == ACP_FALSE,
+                    ERR_ENDTRAN_FAIL );
+
+    ulsdRemoveCallback( sCallback );
+
+    return sSuccessResult;
+
+    ACI_EXCEPTION( ERR_ENDTRAN_FAIL )
+    {
+        ULN_FNCONTEXT_SET_RC( aFnContext, sErrorResult );
+    }
 
     ACI_EXCEPTION_END;
 

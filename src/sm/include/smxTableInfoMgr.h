@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smxTableInfoMgr.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smxTableInfoMgr.h 89495 2020-12-14 05:19:22Z emlee $
  **********************************************************************/
 
 #ifndef _O_SMX_TABLEINFO_H_
@@ -45,31 +45,31 @@ public:
     void            addTablesModifyCount( void );
 
     /*
-     * + Page List EntryÏùò record cntÎ•º Í∞±Ïã†ÌïòÎäî Ï†àÏ∞® by PRJ-1496
+     * + Page List Entry¿« record cnt∏¶ ∞ªΩ≈«œ¥¬ ¿˝¬˜ by PRJ-1496
      *
-     * 1) Î™®Îì† tableÏóê entry mutexÎ•º Ïû°ÏúºÎ©¥ÏÑú max rowsÎ•º Í≤ÄÏÇ¨ÌïúÎã§.
+     * 1) ∏µÁ tableø° entry mutex∏¶ ¿‚¿∏∏Èº≠ max rows∏¶ ∞ÀªÁ«—¥Ÿ.
      *    -> requestAllEntryForCheckMaxRow
      *
-     * 2) Î©îÎ™®Î¶¨ ÌÖåÏù¥Î∏îÏùò Ï¶ùÍ∞ÄÎêú row Í∞úÏàòÎ•º Í∞±Ïã†ÌïòÍ≥† entry mutexÎ•º releaseÌïúÎã§.
+     * 2) ∏ﬁ∏∏Æ ≈◊¿Ã∫Ì¿« ¡ı∞°µ» row ∞≥ºˆ∏¶ ∞ªΩ≈«œ∞Ì entry mutex∏¶ release«—¥Ÿ.
      *    -> releaseEntryAndUpdateMemTableInfoForIns
      *
-     * 3) ÎîîÏä§ÌÅ¨ ÌÖåÏù¥Î∏îÏùò Ï¶ùÍ∞êÎêú row Í∞úÏàòÎ•º Í∞±Ïã†Í≥º Ìï®Íªò commitÌïòÍ≥†
-     *    entry mutexÎ•º releaseÌïúÎã§.
+     * 3) µΩ∫≈© ≈◊¿Ã∫Ì¿« ¡ı∞®µ» row ∞≥ºˆ∏¶ ∞ªΩ≈∞˙ «‘≤≤ commit«œ∞Ì
+     *    entry mutex∏¶ release«—¥Ÿ.
      *    -> releaseEntryAndUpdateDiskTableInfoWithCommit
      *
-     * 4) Î©îÎ™®Î¶¨ ÌÖåÏù¥Î∏îÏùò Í∞êÏÜåÎêú row Í∞úÏàòÎ•º Í∞±Ïã†ÌïúÎã§.
+     * 4) ∏ﬁ∏∏Æ ≈◊¿Ã∫Ì¿« ∞®º“µ» row ∞≥ºˆ∏¶ ∞ªΩ≈«—¥Ÿ.
      *    -> updateMemTableInfoForDel
      */
 
     IDE_RC        requestAllEntryForCheckMaxRow();
     IDE_RC        releaseEntryAndUpdateMemTableInfoForIns();
-    IDE_RC        updateMemTableInfoForDel();
+    void          updateMemTableInfoForDel();
 
     IDE_RC        releaseEntryAndUpdateDiskTableInfoWithCommit(
-                                         idvSQL   *aStatistics,
-                                         smxTrans *aTransPtr,
-                                         smLSN    *aBeginLSN,
-                                         smLSN    *aEndLSN );
+                                             idvSQL   * aStatistics,
+                                             smxTrans * aTransPtr,
+                                             smSCN      aCommitSCN,
+                                             smLSN    * aEndLSN );
 
     IDE_RC        processAtDPathInsCommit();
 
@@ -182,7 +182,7 @@ inline void smxTableInfoMgr::setHintDataPID( smxTableInfo * aTableInfoPtr,
 }
 
 /***********************************************************************
- * Description : smxTableInfo Í∞ùÏ≤¥Ïùò ExistDPathInsÎ•º Î∞òÌôòÌïúÎã§.
+ * Description : smxTableInfo ∞¥√º¿« ExistDPathIns∏¶ π›»Ø«—¥Ÿ.
  ***********************************************************************/
 inline idBool smxTableInfoMgr::isExistDPathIns( void * aTableInfoPtr )
 {

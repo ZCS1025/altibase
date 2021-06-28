@@ -44,8 +44,11 @@ public:
                         qciSQLPlanCacheContext *aPlanCacheContext,
                         idBool                 *aSuccess);
     
+    /* BUG-47813 */
     static void moveToColdRegionTail(idvSQL* aStatSQL,
-                                     mmcPCB* aPCB);
+                                     mmcPCB* aPCB,
+                                     mmcPCBLRURegion* aLRURegion);
+
     /*fix BUG-31245	The size of hot or cold LRU region can be incorrect
       when old PCO is freed directly while statement perform rebuilding a plan for old PCO.*/
     static void updateCacheSize(idvSQL                 *aStatSQL,

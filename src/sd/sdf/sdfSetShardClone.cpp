@@ -23,9 +23,10 @@
  *     ALTIBASE SHARD manage ment function
  *
  * Syntax :
- *    SHARD_SET_SHARD_CLONE( user_name VARCHAR,
- *                           table_name VARCHAR,
- *                           node_name VARCHAR )
+ *    SHARD_SET_SHARD_CLONE_LOCAL( user_name VARCHAR,
+ *                                 table_name VARCHAR,
+ *                                 node_name VARCHAR,
+ *                                 is_called_by_ddl INTEGER )
  *    RETURN 0
  *
  **********************************************************************/
@@ -51,7 +52,7 @@ static IDE_RC sdfEstimate( mtcNode*        aNode,
 mtfModule sdfSetShardCloneModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     sdfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -83,11 +84,13 @@ IDE_RC sdfEstimate( mtcNode*     aNode,
                     SInt      /* aRemain */,
                     mtcCallBack* aCallBack )
 {
-    const mtdModule* sModules[3] =
+    const mtdModule* sModules[5] =
     {
         &mtdVarchar, // user_name
         &mtdVarchar, // table_name
         &mtdVarchar, // ndoe_name
+        &mtdInteger, // replicaset_id
+        &mtdInteger  // called_by
     };
     const mtdModule* sModule = &mtdInteger;
 
@@ -95,7 +98,7 @@ IDE_RC sdfEstimate( mtcNode*     aNode,
                     MTC_NODE_QUANTIFIER_TRUE,
                     ERR_NOT_AGGREGATION );
 
-    IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) != 3,
+    IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) != 5,
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
     IDE_TEST( mtf::makeConversionNodes( aNode,
@@ -161,8 +164,30 @@ IDE_RC sdfCalculate_SetShardClone( mtcNode*     aNode,
     smiStatement              sSmiStmt;
     UInt                      sSmiStmtFlag;
     SInt                      sState = 0;
+    idBool                    sIsOldSessionShardMetaTouched = ID_FALSE;
+
+    UInt                      sReplicaSetId = SDI_REPLICASET_NULL_ID;
+    sdiInternalOperation      sInternalOP = SDI_INTERNAL_OP_NOT;
+
+    ULong                     sSMN = ID_ULONG(0);
+    idBool                    sIsTableFound = ID_FALSE;
+    sdiTableInfo              sTableInfo;
+    sdiLocalMetaInfo          sLocalMetaInfo;
+
+    mtdIntegerType            sCalledBy   = 0;
+    idBool                    sIsNewTrans = ID_FALSE;
 
     sStatement   = ((qcTemplate*)aTemplate)->stmt;
+
+    sStatement->mFlag &= ~QC_STMT_SHARD_META_CHANGE_MASK;
+    sStatement->mFlag |= QC_STMT_SHARD_META_CHANGE_TRUE;
+
+    /* BUG-47623 »þµå ¸ÞÅ¸ º¯°æ¿¡ ´ëÇÑ trc ·Î±×Áß commit ·Î±×¸¦ ÀÛ¼ºÇÏ±âÀü¿¡ DASSERT ·Î Á×´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù. */
+    if ( ( sStatement->session->mQPSpecific.mFlag & QC_SESSION_SHARD_META_TOUCH_MASK ) ==
+         QC_SESSION_SHARD_META_TOUCH_TRUE )
+    {
+        sIsOldSessionShardMetaTouched = ID_TRUE;
+    }
 
     // BUG-46366
     IDE_TEST_RAISE( ( QC_SMI_STMT(sStatement)->getTrans() == NULL ) ||
@@ -173,6 +198,15 @@ IDE_RC sdfCalculate_SetShardClone( mtcNode*     aNode,
     // Check Privilege
     IDE_TEST_RAISE( QCG_GET_SESSION_USER_ID(sStatement) != QCI_SYS_USER_ID,
                     ERR_NO_GRANT );
+
+    if ( SDU_SHARD_LOCAL_FORCE != 1 )
+    {
+        /* Shard Local OperationÀº internal ¿¡¼­¸¸ ¼öÇàµÇ¾î¾ß ÇÑ´Ù.  */
+        IDE_TEST_RAISE( ( QCG_GET_SESSION_IS_SHARD_INTERNAL_LOCAL_OPERATION( sStatement ) != ID_TRUE ) &&
+                        ( ( sStatement->session->mQPSpecific.mFlag & QC_SESSION_ALTER_META_MASK )
+                             != QC_SESSION_ALTER_META_ENABLE),
+                        ERR_INTERNAL_OPERATION );
+    }
 
     IDE_TEST( mtf::postfixCalculate( aNode,
                                      aStack,
@@ -219,16 +253,48 @@ IDE_RC sdfCalculate_SetShardClone( mtcNode*     aNode,
         // shard group name
         sNodeName = (mtdCharType*)aStack[3].value;
 
-        IDE_TEST_RAISE( sNodeName->length > SDI_NODE_NAME_MAX_SIZE,
+        IDE_TEST_RAISE( sNodeName->length > SDI_CHECK_NODE_NAME_MAX_SIZE,
                         ERR_SHARD_GROUP_NAME_TOO_LONG );
         idlOS::strncpy( sNodeNameStr,
                         (SChar*)sNodeName->value,
                         sNodeName->length );
         sNodeNameStr[sNodeName->length] = '\0';
 
+        // conn_type
+        if ( aStack[4].column->module->isNull( aStack[4].column,
+                                               aStack[4].value ) == ID_TRUE )
+        {
+            sReplicaSetId = SDI_REPLICASET_NULL_ID;
+        }
+        else
+        {
+            sReplicaSetId = *(mtdIntegerType*)aStack[4].value;
+        }
+
+        // Internal Option
+        sInternalOP = (sdiInternalOperation)QCG_GET_SESSION_SHARD_INTERNAL_LOCAL_OPERATION( sStatement );
+
+        // TASK-7307: is_called_by_ddl
+        if ( aStack[5].column->module->isNull( aStack[5].column,
+                                               aStack[5].value ) == ID_TRUE )
+        {
+            sCalledBy = SDM_CALLED_BY_SHARD_PKG;
+        }
+        else
+        {
+            sCalledBy = *(mtdIntegerType*)aStack[5].value;
+
+            IDE_TEST_RAISE( ( sCalledBy > 2 ) ||
+                            ( sCalledBy < 0 ),
+                            ERR_ARGUMENT_NOT_APPLICABLE );
+        }
+
         //---------------------------------
         // Begin Statement for meta
         //---------------------------------
+        IDE_TEST( sdi::getIncreasedSMNForMetaNode( ( QC_SMI_STMT( sStatement ) )->getTrans() , 
+                                                   &sSMN ) 
+                  != IDE_SUCCESS );
 
         sSmiStmtFlag = SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR;
         sOldStmt                = QC_SMI_STMT(sStatement);
@@ -241,6 +307,18 @@ IDE_RC sdfCalculate_SetShardClone( mtcNode*     aNode,
                   != IDE_SUCCESS );
         sState = 2;
 
+        // µî·ÏµÈ Shard °´Ã¼¿©¾ß ÇÑ´Ù.
+        IDE_TEST( sdm::getTableInfo( QC_SMI_STMT( sStatement ),
+                                     sUserNameStr,
+                                     sTableNameStr,
+                                     sSMN, //sMetaNodeInfo.mShardMetaNumber,
+                                     &sTableInfo,
+                                     &sIsTableFound )
+                  != IDE_SUCCESS );
+
+        IDE_TEST_RAISE( sIsTableFound == ID_FALSE,
+                        ERR_NOT_EXIST_TABLE );
+
         //---------------------------------
         // Insert Meta
         //---------------------------------
@@ -249,7 +327,9 @@ IDE_RC sdfCalculate_SetShardClone( mtcNode*     aNode,
                                     (SChar*)sUserNameStr,
                                     (SChar*)sTableNameStr,
                                     (SChar*)sNodeNameStr,
-                                    &sRowCnt )
+                                    sReplicaSetId,
+                                    &sRowCnt,
+                                    sInternalOP)
                   != IDE_SUCCESS );
 
         //---------------------------------
@@ -264,12 +344,61 @@ IDE_RC sdfCalculate_SetShardClone( mtcNode*     aNode,
 
         IDE_TEST_RAISE( sRowCnt == 0,
                         ERR_INVALID_SHARD_TABLE );
+
+        // CloneÀº ÀÌÁßÈ­¸¦ »ý¼ºÇÏÁö ¾Ê´Â´Ù.
+
+        /* TASK-7307 DML Data Consistency in Shard
+         *   ³» Node¿¡¼­ »ç¿ëÇÏ´Â Å×ÀÌºíÀÌ¸é USABLE·Î º¯°æÇÑ´Ù */
+        if ( ( SDU_SHARD_LOCAL_FORCE != 1 ) &&
+             ( sTableInfo.mObjectType == 'T' ) &&
+             ( sCalledBy != SDM_CALLED_BY_SHARD_FAILBACK ) )
+        {
+            IDE_TEST( sdm::getLocalMetaInfo( &sLocalMetaInfo ) != IDE_SUCCESS );
+
+            /* ÁöÁ¤µÈ Node¿Í ³» NodeNameÀÌ ÀÏÄ¡ÇÏ¸é usable·Î ¼³Á¤ */
+            if ( idlOS::strncmp(sLocalMetaInfo.mNodeName, sNodeNameStr, SDI_NODE_NAME_MAX_SIZE + 1) == 0 )
+            {
+                if ( sCalledBy == SDM_CALLED_BY_SHARD_MOVE )
+                {
+                    sIsNewTrans = ID_FALSE;
+                }
+                else // called by shard_dbms package
+                {
+                    sIsNewTrans = ID_TRUE;
+                }
+                IDE_TEST( sdm::alterUsable( sStatement,
+                                            sUserNameStr,
+                                            sTableNameStr,
+                                            NULL,   /* partition */
+                                            ID_TRUE /* isUsable */,
+                                            sIsNewTrans )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        else
+        {
+            /* Nothing to do */
+        }
     }
 
     *(mtdIntegerType*)aStack[0].value = 0;
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_INTERNAL_OPERATION )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdfCalculate_SetShardClone",
+                                  "SHARD_INTERNAL_LOCAL_OPERATION is not 1" ) );
+    }
+    IDE_EXCEPTION( ERR_NOT_EXIST_TABLE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDM_SHARD_TABLE_NOT_EXIST ) );
+    }
     IDE_EXCEPTION( ERR_INSIDE_QUERY )
     {
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QSX_PSM_INSIDE_QUERY ) );
@@ -300,6 +429,8 @@ IDE_RC sdfCalculate_SetShardClone( mtcNode*     aNode,
     }
     IDE_EXCEPTION_END;
 
+    IDE_PUSH();
+    
     switch ( sState )
     {
         case 2:
@@ -317,5 +448,17 @@ IDE_RC sdfCalculate_SetShardClone( mtcNode*     aNode,
             break;
     }
 
+    /* BUG-47623 »þµå ¸ÞÅ¸ º¯°æ¿¡ ´ëÇÑ trc ·Î±×Áß commit ·Î±×¸¦ ÀÛ¼ºÇÏ±âÀü¿¡ DASSERT ·Î Á×´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù. */
+    if ( sIsOldSessionShardMetaTouched == ID_TRUE )
+    {
+        sdi::setShardMetaTouched( sStatement->session );
+    }
+    else
+    {
+        sdi::unsetShardMetaTouched( sStatement->session );
+    }
+
+    IDE_POP();
+    
     return IDE_FAILURE;
 }

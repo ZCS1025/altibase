@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfPosition.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfPosition.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -65,7 +65,7 @@ IDE_RC mtfReverseFindPosition( const mtlModule* aLanguage,
 mtfModule mtfPosition = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfPositionFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -212,7 +212,7 @@ IDE_RC mtfReverseFindPosition( const mtlModule* aLanguage,
 {
 /***********************************************************************
  *
- * Description : sourceì— ì¡´ì¬í•˜ëŠ” target ìœ„ì¹˜ ê±°ê¾¸ë¡œ ì°¾ê¸°
+ * Description : source¿¡ Á¸ÀçÇÏ´Â target À§Ä¡ °Å²Ù·Î Ã£±â
  *
  * Implementation :
  *
@@ -231,12 +231,12 @@ IDE_RC mtfReverseFindPosition( const mtlModule* aLanguage,
     UChar    sSourceSize;
     UChar    sTargetSize;
     
-    // target ìœ„ì¹˜ ì´ˆê¸°í™”
+    // target À§Ä¡ ÃÊ±âÈ­
     *aPosition = 0;
 
     if ( aTargetLen == 0 )
     {
-        // target ë¬¸ìì—´ì´ 0 ì¸ ê²½ìš°
+        // target ¹®ÀÚ¿­ÀÌ 0 ÀÎ °æ¿ì
         return IDE_SUCCESS;
     }
     else
@@ -244,36 +244,36 @@ IDE_RC mtfReverseFindPosition( const mtlModule* aLanguage,
         // nothing to do
     }
 
-    // Sourceì˜ ë¬¸ì ê°œìˆ˜ë¥¼ êµ¬í•¨
+    // SourceÀÇ ¹®ÀÚ °³¼ö¸¦ ±¸ÇÔ
     sSourceIndex = (UChar*) aSource;
     sSourceFence = sSourceIndex + aSourceLen;
 
     while ( sSourceIndex < sSourceFence )
     {
-        // TASK-3420 ë¬¸ìì—´ ì²˜ë¦¬ ì •ì±… ê°œì„ 
+        // TASK-3420 ¹®ÀÚ¿­ Ã³¸® Á¤Ã¥ °³¼±
         (void)aLanguage->nextCharPtr( & sSourceIndex, sSourceFence );
 
         ++sSourceTotalCharCount;
     }
 
-    // Targetì˜ ë¬¸ì ê°œìˆ˜ë¥¼ êµ¬í•¨
+    // TargetÀÇ ¹®ÀÚ °³¼ö¸¦ ±¸ÇÔ
     sTargetIndex = (UChar*) aTarget;
     sTargetFence = sTargetIndex + aTargetLen;
 
     while ( sTargetIndex < sTargetFence )
     {
-        // TASK-3420 ë¬¸ìì—´ ì²˜ë¦¬ ì •ì±… ê°œì„ 
+        // TASK-3420 ¹®ÀÚ¿­ Ã³¸® Á¤Ã¥ °³¼±
         (void)aLanguage->nextCharPtr( & sTargetIndex, sTargetFence );
     }
 
-    // íƒìƒ‰ë˜ëŠ” substringì´ ëª‡ê°œì¸ì§€ ì°¾ìŒ. 
+    // Å½»öµÇ´Â substringÀÌ ¸î°³ÀÎÁö Ã£À½. 
     sSourceIndex = (UChar*) aSource;
     sSourceFence = sSourceIndex + aSourceLen;
 
     while ( sSourceIndex < sSourceFence )
     {
         //----------------------------------------
-        // Sourceì— target ë¬¸ìì—´ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
+        // Source¿¡ target ¹®ÀÚ¿­ÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
         //----------------------------------------
 
         sCurSourceIndex = sSourceIndex;
@@ -291,8 +291,8 @@ IDE_RC mtfReverseFindPosition( const mtlModule* aLanguage,
                                                 sTargetFence,
                                                 aLanguage );
             
-            // Source ë¬¸ìì™€ Target ë¬¸ìê°€ ë™ì¼í•œì§€ ë¹„êµ
-            // ì½ì€ í•œë¬¸ìë§Œí¼ ì¸ë±ìŠ¤ ì§„í–‰
+            // Source ¹®ÀÚ¿Í Target ¹®ÀÚ°¡ µ¿ÀÏÇÑÁö ºñ±³
+            // ÀĞÀº ÇÑ¹®ÀÚ¸¸Å­ ÀÎµ¦½º ÁøÇà
 
             sIsSame = mtc::compareOneChar( sCurSourceIndex,
                                            sSourceSize,
@@ -301,16 +301,16 @@ IDE_RC mtfReverseFindPosition( const mtlModule* aLanguage,
             
             if ( sIsSame == ID_TRUE )
             {
-                // ë™ì¼í•  ê²½ìš°, ë‹¤ìŒ targetìœ¼ë¡œ ì§„í–‰
-                // TASK-3420 ë¬¸ìì—´ ì²˜ë¦¬ ì •ì±… ê°œì„ 
+                // µ¿ÀÏÇÒ °æ¿ì, ´ÙÀ½ targetÀ¸·Î ÁøÇà
+                // TASK-3420 ¹®ÀÚ¿­ Ã³¸® Á¤Ã¥ °³¼±
                 (void)aLanguage->nextCharPtr( & sTargetIndex, sTargetFence );
 
                 (void)aLanguage->nextCharPtr( & sCurSourceIndex, sSourceFence );
 
                 if ( sCurSourceIndex == sSourceFence )
                 {
-                    // SourceëŠ” ë§ˆì§€ë§‰ ë¬¸ìì¸ë°,
-                    // Targetì€ ë§ˆì§€ë§‰ ë¬¸ìê°€ ì•„ë‹Œ ê²½ìš°
+                    // Source´Â ¸¶Áö¸· ¹®ÀÚÀÎµ¥,
+                    // TargetÀº ¸¶Áö¸· ¹®ÀÚ°¡ ¾Æ´Ñ °æ¿ì
                     if ( sTargetIndex < sTargetFence )
                     {
                         sIsSame = ID_FALSE;
@@ -335,9 +335,9 @@ IDE_RC mtfReverseFindPosition( const mtlModule* aLanguage,
         if ( sIsSame == ID_TRUE )
         {
             //----------------------------------------
-            // startê°€ ìŒìˆ˜ì´ë¯€ë¡œ sSourceTotalCharCount  - MTF_ABS(aStart)
-            // ë°”ë¡œ ì§ì „ì— ìˆëŠ” positionê¹Œì§€ êµ¬í•˜ê³  , sCnt ì¦ê°€
-            // sSourceCharCountëŠ” í˜„ì¬ ë¬¸ìì˜ ê°œìˆ˜, TempëŠ” ì „ì²´ ë¬¸ìì˜ ê°œìˆ˜
+            // start°¡ À½¼öÀÌ¹Ç·Î sSourceTotalCharCount  - MTF_ABS(aStart)
+            // ¹Ù·Î Á÷Àü¿¡ ÀÖ´Â position±îÁö ±¸ÇÏ°í , sCnt Áõ°¡
+            // sSourceCharCount´Â ÇöÀç ¹®ÀÚÀÇ °³¼ö, Temp´Â ÀüÃ¼ ¹®ÀÚÀÇ °³¼ö
             //----------------------------------------
 
             if ( ( sSourceTotalCharCount - MTF_ABS(aStart) ) >= sSourceCharCount )
@@ -346,26 +346,26 @@ IDE_RC mtfReverseFindPosition( const mtlModule* aLanguage,
                 sCnt++;
             }
 
-            // ë‹¤ìŒìœ¼ë¡œ ì§„í–‰
-            // TASK-3420 ë¬¸ìì—´ ì²˜ë¦¬ ì •ì±… ê°œì„ 
+            // ´ÙÀ½À¸·Î ÁøÇà
+            // TASK-3420 ¹®ÀÚ¿­ Ã³¸® Á¤Ã¥ °³¼±
             (void)aLanguage->nextCharPtr( & sSourceIndex, sSourceFence );
 
             ++sSourceCharCount;
         }
         else
         {
-            // ë‹¤ìŒìœ¼ë¡œ ì§„í–‰
-            // TASK-3420 ë¬¸ìì—´ ì²˜ë¦¬ ì •ì±… ê°œì„ 
+            // ´ÙÀ½À¸·Î ÁøÇà
+            // TASK-3420 ¹®ÀÚ¿­ Ã³¸® Á¤Ã¥ °³¼±
             (void)aLanguage->nextCharPtr( & sSourceIndex, sSourceFence );
 
             ++sSourceCharCount;
         }
     }
     
-    /* ì°¾ì€ Countê°€ ì—†ë‹¤ë©´ ê²°ê³¼ëŠ” 0ì„ */
+    /* Ã£Àº Count°¡ ¾ø´Ù¸é °á°ú´Â 0ÀÓ */
     if ( sCnt != 0 )
     {
-        // ì°¾ëŠ” substringì´ ì•ì—ì„œ ëª‡ ë²ˆì§¸ì¸ì§€ êµ¬í•¨.
+        // Ã£´Â substringÀÌ ¾Õ¿¡¼­ ¸î ¹øÂ°ÀÎÁö ±¸ÇÔ.
         if ( ( sSourceTotalCharCount - MTF_ABS(aStart)  + 1 ) >= *aPosition )
         {
             sFindCnt = sCnt - aOccurrence + 1;
@@ -408,7 +408,7 @@ IDE_RC mtfFindPosition( const mtlModule* aLanguage,
 {
 /***********************************************************************
  *
- * Description : sourceì— ì¡´ì¬í•˜ëŠ” target ìœ„ì¹˜ ì°¾ê¸°
+ * Description : source¿¡ Á¸ÀçÇÏ´Â target À§Ä¡ Ã£±â
  *
  * Implementation :
  *
@@ -426,12 +426,12 @@ IDE_RC mtfFindPosition( const mtlModule* aLanguage,
     UChar    sTargetSize;
     SShort   sStart;
 
-    // target ìœ„ì¹˜ ì´ˆê¸°í™”
+    // target À§Ä¡ ÃÊ±âÈ­
     *aPosition = 0;
     
     if ( aTargetLen == 0 )
     {
-        // target ë¬¸ìì—´ì´ 0 ì¸ ê²½ìš°
+        // target ¹®ÀÚ¿­ÀÌ 0 ÀÎ °æ¿ì
         return IDE_SUCCESS;
     }
     else
@@ -439,14 +439,14 @@ IDE_RC mtfFindPosition( const mtlModule* aLanguage,
         // nothing to do
     }
 
-    // íƒìƒ‰ì„ ì‹œì‘í•  ìœ„ì¹˜ ì¡°ì •
+    // Å½»öÀ» ½ÃÀÛÇÒ À§Ä¡ Á¶Á¤
     sSourceIndex = (UChar*) aSource;
     sSourceFence = sSourceIndex + aSourceLen;
     
     sStart = aStart;
     while ( sStart - 1 > 0 )
     {
-        // TASK-3420 ë¬¸ìì—´ ì²˜ë¦¬ ì •ì±… ê°œì„ 
+        // TASK-3420 ¹®ÀÚ¿­ Ã³¸® Á¤Ã¥ °³¼±
         (void)aLanguage->nextCharPtr( & sSourceIndex, sSourceFence );
 
         ++sSourceCharCount;
@@ -456,7 +456,7 @@ IDE_RC mtfFindPosition( const mtlModule* aLanguage,
     while ( sSourceIndex < sSourceFence )
     {
         //----------------------------------------
-        // Sourceì— target ë¬¸ìì—´ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
+        // Source¿¡ target ¹®ÀÚ¿­ÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
         //----------------------------------------
         
         sCurSourceIndex = sSourceIndex;
@@ -474,8 +474,8 @@ IDE_RC mtfFindPosition( const mtlModule* aLanguage,
                                                 sTargetFence,
                                                 aLanguage );
             
-            // Source ë¬¸ìì™€ Target ë¬¸ìê°€ ë™ì¼í•œì§€ ë¹„êµ 
-            // ì½ì€ í•œë¬¸ìë§Œí¼ ì¸ë±ìŠ¤ ì§„í–‰
+            // Source ¹®ÀÚ¿Í Target ¹®ÀÚ°¡ µ¿ÀÏÇÑÁö ºñ±³ 
+            // ÀĞÀº ÇÑ¹®ÀÚ¸¸Å­ ÀÎµ¦½º ÁøÇà
             sIsSame = mtc::compareOneChar( sCurSourceIndex,
                                            sSourceSize,
                                            sTargetIndex,
@@ -483,16 +483,16 @@ IDE_RC mtfFindPosition( const mtlModule* aLanguage,
 
             if ( sIsSame == ID_TRUE )
             {
-                // ë™ì¼í•  ê²½ìš°, ë‹¤ìŒ targetìœ¼ë¡œ ì§„í–‰
-                // TASK-3420 ë¬¸ìì—´ ì²˜ë¦¬ ì •ì±… ê°œì„ 
+                // µ¿ÀÏÇÒ °æ¿ì, ´ÙÀ½ targetÀ¸·Î ÁøÇà
+                // TASK-3420 ¹®ÀÚ¿­ Ã³¸® Á¤Ã¥ °³¼±
                 (void)aLanguage->nextCharPtr( & sTargetIndex, sTargetFence );
 
                 (void)aLanguage->nextCharPtr( & sCurSourceIndex, sSourceFence );
 
                 if ( sCurSourceIndex == sSourceFence )
                 {
-                    // SourceëŠ” ë§ˆì§€ë§‰ ë¬¸ìì¸ë°,
-                    // Targetì€ ë§ˆì§€ë§‰ ë¬¸ìê°€ ì•„ë‹Œ ê²½ìš°
+                    // Source´Â ¸¶Áö¸· ¹®ÀÚÀÎµ¥,
+                    // TargetÀº ¸¶Áö¸· ¹®ÀÚ°¡ ¾Æ´Ñ °æ¿ì
                     if ( sTargetIndex < sTargetFence )
                     {
                         sIsSame = ID_FALSE;
@@ -516,11 +516,11 @@ IDE_RC mtfFindPosition( const mtlModule* aLanguage,
 
         if ( sIsSame == ID_TRUE )
         {
-            // aOccurenceì™€ sCntê°€ ê°™ì•„ì•¼ íƒìƒ‰ ëëƒ„.
+            // aOccurence¿Í sCnt°¡ °°¾Æ¾ß Å½»ö ³¡³¿.
             if ( aOccurrence == sCnt )
             {
                 //----------------------------------------
-                // Sourceì— target ë¬¸ìì—´ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°, Position ì €ì¥
+                // Source¿¡ target ¹®ÀÚ¿­ÀÌ Á¸ÀçÇÏ´Â °æ¿ì, Position ÀúÀå
                 //----------------------------------------
 
                 // To Fix BUG-12741
@@ -529,10 +529,10 @@ IDE_RC mtfFindPosition( const mtlModule* aLanguage,
             }
             else
             {
-                // íƒìƒ‰í•œ substring ê°œìˆ˜ ì¦ê°€
+                // Å½»öÇÑ substring °³¼ö Áõ°¡
                 sCnt++;
 
-                // TASK-3420 ë¬¸ìì—´ ì²˜ë¦¬ ì •ì±… ê°œì„ 
+                // TASK-3420 ¹®ÀÚ¿­ Ã³¸® Á¤Ã¥ °³¼±
                 (void)aLanguage->nextCharPtr( & sSourceIndex, sSourceFence );
 
                 ++sSourceCharCount;
@@ -540,7 +540,7 @@ IDE_RC mtfFindPosition( const mtlModule* aLanguage,
         }
         else
         {
-            // TASK-3420 ë¬¸ìì—´ ì²˜ë¦¬ ì •ì±… ê°œì„ 
+            // TASK-3420 ¹®ÀÚ¿­ Ã³¸® Á¤Ã¥ °³¼±
             (void)aLanguage->nextCharPtr( & sSourceIndex, sSourceFence );
 
             ++sSourceCharCount;
@@ -564,9 +564,9 @@ IDE_RC mtfPositionCalculateFor2Args( mtcNode*     aNode,
  * Implementation :
  *    INSTR( char1, char2 )
  *
- *    aStack[0] : char1ì— ì…ë ¥ëœ ë¬¸ìì—´ì—ì„œ char2ê°€ ìˆëŠ” ìœ„ì¹˜ê°’
- *    aStack[1] : char1 ( ë¬¸ìì—´ )
- *    aStack[2] : char2 ( target ë¬¸ìì—´ )
+ *    aStack[0] : char1¿¡ ÀÔ·ÂµÈ ¹®ÀÚ¿­¿¡¼­ char2°¡ ÀÖ´Â À§Ä¡°ª
+ *    aStack[1] : char1 ( ¹®ÀÚ¿­ )
+ *    aStack[2] : char2 ( target ¹®ÀÚ¿­ )
  *
  *    ex) INSTR( 'JAKIM', 'KIM' ) ==> 3
  *
@@ -630,10 +630,10 @@ IDE_RC mtfPositionCalculateFor3Args( mtcNode*     aNode,
  * Implementation :
  *    INSTR( char1, char2, start )
  *
- *    aStack[0] : char1ì— ì…ë ¥ëœ ë¬¸ìì—´ì—ì„œ char2ê°€ ìˆëŠ” ìœ„ì¹˜ê°’
- *    aStack[1] : char1 ( ë¬¸ìì—´ )
- *    aStack[2] : char2 ( target ë¬¸ìì—´ )
- *    aStack[3] : start (íƒìƒ‰ì„ ì‹œì‘í•  ë¬¸ìì˜ ìœ„ì¹˜)
+ *    aStack[0] : char1¿¡ ÀÔ·ÂµÈ ¹®ÀÚ¿­¿¡¼­ char2°¡ ÀÖ´Â À§Ä¡°ª
+ *    aStack[1] : char1 ( ¹®ÀÚ¿­ )
+ *    aStack[2] : char2 ( target ¹®ÀÚ¿­ )
+ *    aStack[3] : start (Å½»öÀ» ½ÃÀÛÇÒ ¹®ÀÚÀÇ À§Ä¡)
  *
  *    ex) INSTR( 'JAKIM JAKIM', 'KIM', 4 ) ==> 9
  *
@@ -668,7 +668,7 @@ IDE_RC mtfPositionCalculateFor3Args( mtcNode*     aNode,
         sTarget = (mtdCharType*)aStack[2].value;
         sStart = *(mtdIntegerType*)aStack[3].value;
 
-        // Sourceì˜ ë¬¸ì ê°œìˆ˜ë¥¼ êµ¬í•¨
+        // SourceÀÇ ¹®ÀÚ °³¼ö¸¦ ±¸ÇÔ
         sSourceCharCount = 0;
 
         sIndex = sSource->value;
@@ -676,15 +676,15 @@ IDE_RC mtfPositionCalculateFor3Args( mtcNode*     aNode,
         
         while ( sIndex < sFence )
         {
-            // TASK-3420 ë¬¸ìì—´ ì²˜ë¦¬ ì •ì±… ê°œì„ 
+            // TASK-3420 ¹®ÀÚ¿­ Ã³¸® Á¤Ã¥ °³¼±
             (void)aStack[1].column->language->nextCharPtr( & sIndex, sFence );
 
             ++sSourceCharCount;
         }
 
         /* BUG-34232 
-         * sStart( íƒìƒ‰ì„ ì‹œì‘í•  ìœ„ì¹˜ )ê°€ ì…ë ¥ë°›ì€ ë¬¸ìì—´ ê¸¸ì´ë³´ë‹¤ í° ê²½ìš°, 
-         * ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¤ëŠ” ëŒ€ì‹  0ì„ ë¦¬í„´í•˜ë„ë¡ ìˆ˜ì • */
+         * sStart( Å½»öÀ» ½ÃÀÛÇÒ À§Ä¡ )°¡ ÀÔ·Â¹ŞÀº ¹®ÀÚ¿­ ±æÀÌº¸´Ù Å« °æ¿ì, 
+         * ¿¡·¯¸¦ ¹ß»ı½ÃÅ°´Â ´ë½Å 0À» ¸®ÅÏÇÏµµ·Ï ¼öÁ¤ */
         if ( MTF_ABS(sStart) > sSourceCharCount )
         {
             sPosition = 0;
@@ -745,11 +745,11 @@ IDE_RC mtfPositionCalculateFor4Args( mtcNode*     aNode,
  * Implementation :
  *    INSTR( char1, char2, start, occurence )
  *
- *    aStack[0] : char1ì— ì…ë ¥ëœ ë¬¸ìì—´ì—ì„œ char2ê°€ ìˆëŠ” ìœ„ì¹˜ê°’
- *    aStack[1] : char1 ( ë¬¸ìì—´ )
- *    aStack[2] : char2 ( target ë¬¸ìì—´ )
- *    aStack[3] : start (íƒìƒ‰ì„ ìœ„ì‘í•  ë¬¸ìì˜ ìœ„ì¹˜)
- *    aStack[4] : íƒìƒ‰í•œ substringì˜ ê°œìˆ˜
+ *    aStack[0] : char1¿¡ ÀÔ·ÂµÈ ¹®ÀÚ¿­¿¡¼­ char2°¡ ÀÖ´Â À§Ä¡°ª
+ *    aStack[1] : char1 ( ¹®ÀÚ¿­ )
+ *    aStack[2] : char2 ( target ¹®ÀÚ¿­ )
+ *    aStack[3] : start (Å½»öÀ» À§ÀÛÇÒ ¹®ÀÚÀÇ À§Ä¡)
+ *    aStack[4] : Å½»öÇÑ substringÀÇ °³¼ö
  *
  *    ex) INSTR( 'JAKIM JAKIM', 'KIM', 2, 2 ) ==> 9
  *
@@ -786,7 +786,7 @@ IDE_RC mtfPositionCalculateFor4Args( mtcNode*     aNode,
         sStart = *(mtdIntegerType*)aStack[3].value;
         sOccurrence = *(mtdIntegerType*)aStack[4].value;
 
-        // Sourceì˜ ë¬¸ì ê°œìˆ˜ë¥¼ êµ¬í•¨
+        // SourceÀÇ ¹®ÀÚ °³¼ö¸¦ ±¸ÇÔ
         sSourceCharCount = 0;
 
         sIndex = sSource->value;
@@ -794,7 +794,7 @@ IDE_RC mtfPositionCalculateFor4Args( mtcNode*     aNode,
         
         while ( sIndex < sFence )
         {
-            // TASK-3420 ë¬¸ìì—´ ì²˜ë¦¬ ì •ì±… ê°œì„ 
+            // TASK-3420 ¹®ÀÚ¿­ Ã³¸® Á¤Ã¥ °³¼±
             (void)aStack[1].column->language->nextCharPtr( & sIndex, sFence );
 
             ++sSourceCharCount;
@@ -804,8 +804,8 @@ IDE_RC mtfPositionCalculateFor4Args( mtcNode*     aNode,
                          ERR_ARGUMENT4_VALUE_OUT_OF_RANGE );
         
         /* BUG-34232 
-         * sStart( íƒìƒ‰ì„ ì‹œì‘í•  ìœ„ì¹˜ )ê°€ ì…ë ¥ë°›ì€ ë¬¸ìì—´ ê¸¸ì´ë³´ë‹¤ í° ê²½ìš°, 
-         * ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¤ëŠ” ëŒ€ì‹  0ì„ ë¦¬í„´í•˜ë„ë¡ ìˆ˜ì • */       
+         * sStart( Å½»öÀ» ½ÃÀÛÇÒ À§Ä¡ )°¡ ÀÔ·Â¹ŞÀº ¹®ÀÚ¿­ ±æÀÌº¸´Ù Å« °æ¿ì, 
+         * ¿¡·¯¸¦ ¹ß»ı½ÃÅ°´Â ´ë½Å 0À» ¸®ÅÏÇÏµµ·Ï ¼öÁ¤ */       
         if ( MTF_ABS(sStart) > sSourceCharCount )
         {
             sPosition = 0;

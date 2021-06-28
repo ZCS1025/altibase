@@ -19,7 +19,7 @@
  *
  * $Id:$
  *
- * ë³¸ íŒŒì¼ì€ extent directory pageì— ëŒ€í•œ í—¤ë”íŒŒì¼ì´ë‹¤.
+ * º» ÆÄÀÏÀº extent directory page¿¡ ´ëÇÑ Çì´õÆÄÀÏÀÌ´Ù.
  *
  **********************************************************************/
 
@@ -34,12 +34,12 @@
 class sdpsfExtDirPage
 {
 public:
-    /* ext. dir. ì´ˆê¸°í™” */
+    /* ext. dir. ÃÊ±âÈ­ */
     static IDE_RC initialize( sdrMtx*              aMtx,
                               sdpsfExtDirCntlHdr*  aExtDirPageHdr,
                               UShort               aMaxExtDescCnt );
 
-    /* dummy í•¨ìˆ˜ */
+    /* dummy ÇÔ¼ö */
     static IDE_RC destroy();
 
     static IDE_RC getPage4Update( idvSQL              * aStatistics,
@@ -111,10 +111,10 @@ public:
 
 /* inline function */
 public:
-    /* ext dir pageì— ì €ì¥í•  ìˆ˜ ìˆëŠ” ext desc ê°œìˆ˜ ë°˜í™˜ */
+    /* ext dir page¿¡ ÀúÀåÇÒ ¼ö ÀÖ´Â ext desc °³¼ö ¹İÈ¯ */
     static inline UInt calcExtDescCntPerExtDir( UInt aExtDescSize );
 
-    /* ext dir hdrì˜ ì‹œì‘ ptr (logical hdr) */
+    /* ext dir hdrÀÇ ½ÃÀÛ ptr (logical hdr) */
     static inline sdpsfExtDirCntlHdr* getExtDirCntlHdr( UChar* aPagePtr );
 
     static inline UInt  getFstExtOffset();
@@ -122,7 +122,7 @@ public:
     static inline sdRID getFstExtRID( scPageID aExtDirPID );
     static inline sdRID getLstExtRID( sdpsfExtDirCntlHdr* aExtDirPageHdr );
 
-    /* ì²«ë²ˆì§¸ ext descì˜ ptrì„ ë°˜í™˜ */
+    /* Ã¹¹øÂ° ext descÀÇ ptrÀ» ¹İÈ¯ */
     static inline sdpsfExtDesc* getFstExtDesc( sdpsfExtDirCntlHdr* aExtDirPageHdr );
     static inline sdpsfExtDesc* getLstExtDesc( sdpsfExtDirCntlHdr* aExtDirPageHdr );
     static inline sdpsfExtDesc* getNthExtDesc( sdpsfExtDirCntlHdr* aExtDirPageHdr,
@@ -153,7 +153,7 @@ private:
 };
 
 /***********************************************************************
- * Description: ì„ì˜ì˜ ptrì„ extent dir hdrë¡œ ë°˜í™˜
+ * Description: ÀÓÀÇÀÇ ptrÀ» extent dir hdr·Î ¹İÈ¯
  **********************************************************************/
 inline sdpsfExtDirCntlHdr* sdpsfExtDirPage::getExtDirCntlHdr( UChar*  aPagePtr )
 {
@@ -202,10 +202,10 @@ inline sdRID sdpsfExtDirPage::getFstExtRID( scPageID aExtDirPID )
 }
 
 /***********************************************************************
- * Description : dir pageì—ì„œ headerë¥¼ ì œì™¸í•œ ë°ì´íƒ€ê°€ ì €ì¥ë  ì²« ìœ„ì¹˜
- * ext dir í˜ì´ì§€ì˜ physical headerì™€ logical header í¬ê¸° ì´í›„ì˜ ptr
- * ë¥¼ êµ¬í•œë‹¤.
- * : page ptr + sdpPhyPageHdr í¬ê¸° + sdpsfExtDirCntlHdr í¬ê¸° +
+ * Description : dir page¿¡¼­ header¸¦ Á¦¿ÜÇÑ µ¥ÀÌÅ¸°¡ ÀúÀåµÉ Ã¹ À§Ä¡
+ * ext dir ÆäÀÌÁöÀÇ physical header¿Í logical header Å©±â ÀÌÈÄÀÇ ptr
+ * ¸¦ ±¸ÇÑ´Ù.
+ * : page ptr + sdpPhyPageHdr Å©±â + sdpsfExtDirCntlHdr Å©±â +
  **********************************************************************/
 inline sdpsfExtDesc* sdpsfExtDirPage::getFstExtDesc( sdpsfExtDirCntlHdr* aExtDirPageHdr )
 {
@@ -237,9 +237,9 @@ inline sdpsfExtDesc* sdpsfExtDirPage::getNthExtDesc( sdpsfExtDirCntlHdr* aExtDir
 }
 
 /***********************************************************************
- * Description : ext dir pageì— ì €ì¥ë˜ëŠ” ext desc ê°œìˆ˜ ë°˜í™˜
- * ( page í¬ê¸° - align(ID_SIZEOF(physical page hdr))
- *             - align(ID_SIZEOF(logical page hdr)) ) / ext desc size ë°˜í™˜
+ * Description : ext dir page¿¡ ÀúÀåµÇ´Â ext desc °³¼ö ¹İÈ¯
+ * ( page Å©±â - align(ID_SIZEOF(physical page hdr))
+ *             - align(ID_SIZEOF(logical page hdr)) ) / ext desc size ¹İÈ¯
  **********************************************************************/
 inline UInt sdpsfExtDirPage::calcExtDescCntPerExtDir( UInt aExtDescSize )
 {
@@ -248,7 +248,7 @@ inline UInt sdpsfExtDirPage::calcExtDescCntPerExtDir( UInt aExtDescSize )
 }
 
 /***********************************************************************
- * Description : ext dir hdrì— Max ExtDesc Countì„¤ì •
+ * Description : ext dir hdr¿¡ Max ExtDesc Count¼³Á¤
  **********************************************************************/
 inline IDE_RC sdpsfExtDirPage::setMaxExtDescCnt( sdrMtx*              aMtx,
                                                  sdpsfExtDirCntlHdr*  aExtDirPageHdr,
@@ -264,7 +264,7 @@ inline IDE_RC sdpsfExtDirPage::setMaxExtDescCnt( sdrMtx*              aMtx,
 }
 
 /***********************************************************************
- * Description : ext dir hdrì— ExtDesc Countì„¤ì •
+ * Description : ext dir hdr¿¡ ExtDesc Count¼³Á¤
  **********************************************************************/
 inline IDE_RC sdpsfExtDirPage::setExtDescCnt( sdrMtx*              aMtx,
                                               sdpsfExtDirCntlHdr*  aExtDirPageHdr,
@@ -293,7 +293,7 @@ inline IDE_RC sdpsfExtDirPage::setFstExtDescOffset( sdrMtx*              aMtx,
 }
 
 /***********************************************************************
- * Description : ext dirí˜ì´ì§€ê°€ Fullì´ë©´ ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE
+ * Description : ext dirÆäÀÌÁö°¡ FullÀÌ¸é ID_TRUE, ¾Æ´Ï¸é ID_FALSE
  **********************************************************************/
 inline idBool sdpsfExtDirPage::isFull( sdpsfExtDirCntlHdr * aExtDirHdr )
 {
@@ -310,7 +310,7 @@ inline idBool sdpsfExtDirPage::isFull( sdpsfExtDirCntlHdr * aExtDirHdr )
 }
 
 /*
- * Extent Desc í˜ì´ì§€ì— ê¸°ë¡í•  ìˆ˜ ìˆëŠ” ìµœëŒ€ Extent Slotì˜ ê°œìˆ˜ë°˜í™˜
+ * Extent Desc ÆäÀÌÁö¿¡ ±â·ÏÇÒ ¼ö ÀÖ´Â ÃÖ´ë Extent SlotÀÇ °³¼ö¹İÈ¯
  */
 inline UShort sdpsfExtDirPage::getMaxExtDescCntInExtDirPage()
 {

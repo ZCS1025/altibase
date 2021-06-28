@@ -15,11 +15,11 @@
  */
  
 /***********************************************************************
- * $Id: qcmPerformanceView.cpp 85231 2019-04-15 03:22:43Z andrew.shin $
+ * $Id: qcmPerformanceView.cpp 90425 2021-04-01 09:55:38Z justin.kwon $
  *
  * Description :
  *
- *     FT í…Œì´ë¸”ë“¤ì— ëŒ€í•˜ì—¬
+ *     FT Å×ÀÌºíµé¿¡ ´ëÇÏ¿©
  *
  *        [BUG-16437]
  *
@@ -29,12 +29,12 @@
  *           A1, A2, A3
  *        FROM X$TABLE;
  *
- *     ê³¼ ê°™ì´ viewë¥¼ ì •ì˜í•˜ì—¬ ì¼ë°˜ ì‚¬ìš©ìì—ê²ŒëŠ”  ì´ viewì— ëŒ€í•œ ì—°ì‚°ë§Œì„
- *     ê°œë°©í•˜ë„ë¡ í•œë‹¤.
+ *     °ú °°ÀÌ view¸¦ Á¤ÀÇÇÏ¿© ÀÏ¹İ »ç¿ëÀÚ¿¡°Ô´Â  ÀÌ view¿¡ ´ëÇÑ ¿¬»ê¸¸À»
+ *     °³¹æÇÏµµ·Ï ÇÑ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  **********************************************************************/
 
 #include <idl.h>
@@ -54,15 +54,14 @@
 
 
 // PROJ-1726
-// ë™ì  ëª¨ë“ˆí™”ê°€ ì§„í–‰ëœ ëª¨ë“ˆì˜ ê²½ìš° í¼í¬ë¨¼ìŠ¤ ë·°ì˜ ì •ì˜ê°€
-// <ëª¨ë“ˆ>i.h ì— define ìœ¼ë¡œ ì •ì˜ë˜ì–´ìˆë‹¤.
+// µ¿Àû ¸ğµâÈ­°¡ ÁøÇàµÈ ¸ğµâÀÇ °æ¿ì ÆÛÆ÷¸Õ½º ºäÀÇ Á¤ÀÇ°¡
+// <¸ğµâ>i.h ¿¡ define À¸·Î Á¤ÀÇµÇ¾îÀÖ´Ù.
 #include <rpi.h>
 #include <sti.h>
 #include <sdi.h>
-#include <sdiPerformanceView.h>
 
-// PROJ-1726 - qcmPerformanceViewManager ì—ì„œ ì‚¬ìš©í•˜ëŠ”
-// static ë³€ìˆ˜ ì„ ì–¸.
+// PROJ-1726 - qcmPerformanceViewManager ¿¡¼­ »ç¿ëÇÏ´Â
+// static º¯¼ö ¼±¾ğ.
 SChar ** qcmPerformanceViewManager::mPreViews;
 SInt     qcmPerformanceViewManager::mNumOfPreViews;
 SInt     qcmPerformanceViewManager::mNumOfAddedViews;
@@ -73,7 +72,7 @@ SInt     qcmPerformanceViewManager::mShardViewCount;
 // global performance view strings.
 SChar * gQcmPerformanceViews[] =
 {
-    /* BUG-46217 V$TABLEì€ performance viewë§Œ ë³´ì—¬ì£¼ë„ë¡ í•¨ */
+    /* BUG-46217 V$TABLEÀº performance view¸¸ º¸¿©ÁÖµµ·Ï ÇÔ */
     (SChar*)"CREATE VIEW V$TABLE "
                "(NAME, SLOTSIZE, COLUMNCOUNT) "
             "AS SELECT "
@@ -82,7 +81,7 @@ SChar * gQcmPerformanceViews[] =
             "WHERE SUBSTR(NAME, 1, 2) IN ('S$', 'V$') "
             "ORDER BY NAME",
 
-    //[TASK-6757]LFG,SN ì œê±° : LFG_ID ëŠ” 0 ìœ¼ë¡œ ì¶œë ¥í•¨
+    //[TASK-6757]LFG,SN Á¦°Å : LFG_ID ´Â 0 À¸·Î Ãâ·ÂÇÔ
     (SChar*)"CREATE VIEW V$DISK_RTREE_HEADER "
            "(INDEX_NAME, INDEX_ID, INDEX_TBS_ID, TABLE_TBS_ID,"
            "IS_CONSISTENT, "
@@ -99,7 +98,7 @@ SChar * gQcmPerformanceViews[] =
            "INITEXTENTS, NEXTEXTENTS, MINEXTENTS, MAXEXTENTS "
         "FROM X$DISK_RTREE_HEADER",
 
-    //[TASK-6757]LFG,SN ì œê±° : LFG_ID ëŠ” 0 ìœ¼ë¡œ ì¶œë ¥í•¨
+    //[TASK-6757]LFG,SN Á¦°Å : LFG_ID ´Â 0 À¸·Î Ãâ·ÂÇÔ
     (SChar*)"CREATE VIEW V$DISK_BTREE_HEADER "
                "(INDEX_NAME, INDEX_ID, INDEX_TBS_ID, TABLE_TBS_ID,"
                "IS_UNIQUE, COLLENINFO_LIST, IS_CONSISTENT, "
@@ -126,7 +125,7 @@ SChar * gQcmPerformanceViews[] =
                "BUILT_TYPE "
             "FROM X$MEM_BTREE_HEADER",
 
-    // BUG-18122 : MEM_BTREE_NODEPOOL performance view ì¶”ê°€
+    // BUG-18122 : MEM_BTREE_NODEPOOL performance view Ãß°¡
     (SChar*)"CREATE VIEW V$MEM_BTREE_NODEPOOL "
                "(TOTAL_PAGE_COUNT, TOTAL_NODE_COUNT, FREE_NODE_COUNT, USED_NODE_COUNT, "
                "NODE_SIZE, TOTAL_ALLOC_REQ, TOTAL_FREE_REQ, FREE_REQ_COUNT ) "
@@ -157,8 +156,8 @@ SChar * gQcmPerformanceViews[] =
             "FROM X$TABLESPACES A, X$TABLESPACES_HEADER B "
             "WHERE A.ID=B.ID",
 
-    // archive ì •ë³´ë“± ë°±ì—…ì—ì„œ ì‚¬ìš©ë˜ëŠ” performance view.
-    //[TASK-6757]LFG,SN ì œê±° : LFG_ID ëŠ” 0ìœ¼ë¡œ ì¶œë ¥í•¨  
+    // archive Á¤º¸µî ¹é¾÷¿¡¼­ »ç¿ëµÇ´Â performance view.
+    //[TASK-6757]LFG,SN Á¦°Å : LFG_ID ´Â 0À¸·Î Ãâ·ÂÇÔ  
     (SChar*)"CREATE VIEW V$ARCHIVE "
                 "(LFG_ID, ARCHIVE_MODE, ARCHIVE_THR_RUNNING, ARCHIVE_DEST, "
                 "NEXTLOGFILE_TO_ARCH, OLDEST_ACTIVE_LOGFILE,CURRENT_LOGFILE) "
@@ -167,7 +166,7 @@ SChar * gQcmPerformanceViews[] =
                 "NEXTLOGFILE_TO_ARCH, OLDEST_ACTIVE_LOGFILE,CURRENT_LOGFILE "
             "FROM X$ARCHIVE",
 
-    // buffer pool í†µê³„ë¥¼ ë³´ì—¬ì£¼ëŠ” performance view.
+    // buffer pool Åë°è¸¦ º¸¿©ÁÖ´Â performance view.
     (SChar*)"CREATE VIEW V$BUFFPOOL_STAT"
                 "(ID, POOL_SIZE, PAGE_SIZE, HASH_BUCKET_COUNT, HASH_CHAIN_LATCH_COUNT, "
                 "LRU_LIST_COUNT, PREPARE_LIST_COUNT, FLUSH_LIST_COUNT, CHECKPOINT_LIST_COUNT, "
@@ -205,7 +204,7 @@ SChar * gQcmPerformanceViews[] =
                 "FIX_PAGES,CREATE_PAGES,HIT_RATIO "
             "FROM X$BUFFER_PAGE_INFO WHERE PAGE_TYPE = 10",
 
-    // memory GCìƒíƒœë¥¼ ë³´ì—¬ì£¼ëŠ” fixed table.
+    // memory GC»óÅÂ¸¦ º¸¿©ÁÖ´Â fixed table.
     (SChar*)"CREATE VIEW V$MEMGC "
                 "(GC_NAME, CURRSYSTEMVIEWSCN, MINMEMSCNINTXS, OLDESTTX, SCNOFTAIL, "
                 "IS_EMPTY_OIDLIST, ADD_OID_CNT, GC_OID_CNT, "
@@ -222,7 +221,7 @@ SChar * gQcmPerformanceViews[] =
                 "AGING_REQUEST_OID_CNT, AGING_PROCESSED_OID_CNT, THREAD_COUNT "
             "FROM X$MEMGC_DELTHR",
 
-    // disk GCìƒíƒœë¥¼ ë³´ì—¬ì£¼ëŠ” fixed table.
+    // disk GC»óÅÂ¸¦ º¸¿©ÁÖ´Â fixed table.
     /* xxxxxxxxxxxxxxxxxxxxxxxxxx
     (SChar*)"CREATE VIEW V$DISKGC "
                 "(GC_NAME, THREAD_COUNT, CURR_SYSTEMVIEWSCN, MINDISKSCN_INTXS, SCNOFTAIL, "
@@ -241,8 +240,8 @@ SChar * gQcmPerformanceViews[] =
             "FROM  X$DISK_DEL_THR",
             */
 
-    // aliasë˜ì–´ performace viewë¡œ ë³´ì—¬ì§€ëŠ” fixed table.
-    //[TASK-6757]LFG,SN ì œê±° : LFG_ID ëŠ” 0ìœ¼ë¡œ ì¶œë ¥í•¨  
+    // aliasµÇ¾î performace view·Î º¸¿©Áö´Â fixed table.
+    //[TASK-6757]LFG,SN Á¦°Å : LFG_ID ´Â 0À¸·Î Ãâ·ÂÇÔ  
     (SChar*)"CREATE VIEW V$DATAFILES "
                 "( ID, NAME, SPACEID, "
                 "OLDEST_LSN_LFGID, OLDEST_LSN_FILENO, OLDEST_LSN_OFFSET, "
@@ -259,8 +258,8 @@ SChar * gQcmPerformanceViews[] =
                 "MAX_OPEN_FD_COUNT, CUR_OPEN_FD_COUNT "
             "FROM X$DATAFILES",
 
-    // PR-13911 [PROJ-1490] DB Free Page List Performance Viewêµ¬í˜„
-    // MEM_DBFILE_SIZEì™€ MEM_FREE_PAGE_COUNTì„ ê³„ì‚°í•˜ì—¬ selectí•˜ë„ë¡ ìˆ˜ì •
+    // PR-13911 [PROJ-1490] DB Free Page List Performance View±¸Çö
+    // MEM_DBFILE_SIZE¿Í MEM_FREE_PAGE_COUNTÀ» °è»êÇÏ¿© selectÇÏµµ·Ï ¼öÁ¤
     (SChar*)"CREATE VIEW V$DATABASE "
                 "(DB_NAME, PRODUCT_SIGNATURE, DB_SIGNATURE, VERSION_ID, "
                 "COMPILE_BIT, ENDIAN, LOGFILE_SIZE, TX_TBL_SIZE, "
@@ -270,7 +269,7 @@ SChar * gQcmPerformanceViews[] =
             "AS SELECT /*+ USE_HASH( A, B ) */ "
                 "A.DB_NAME,A.PRODUCT_SIGNATURE,A.DB_SIGNATURE, "
                 "A.VERSION_ID, A.COMPILE_BIT,A.ENDIAN,A.LOGFILE_SIZE, "
-                "A.TX_TBL_SIZE, B.LAST_SYSTEM_SCN, B.INIT_SYSTEM_SCN, "
+                "A.TX_TBL_SIZE, B.LAST_SYSTEM_SCN, CAST(0 AS VARCHAR(29)), "
                 "A.DURABLE_SYSTEM_SCN, "
                 "( SELECT memory_value1 from x$property "
                 "  WHERE name='MEM_MAX_DB_SIZE' LIMIT 1) MEM_MAX_DB_SIZE, "
@@ -325,7 +324,7 @@ SChar * gQcmPerformanceViews[] =
 
     /* BUG-31080 - [SM] need the checking method about the amount of
      *             volatile tablespace.
-     * V$VOL_TABLESPACESì— ALLOC_PAGE_COUNT, FREE_PAGE_COUNT ì¹¼ëŸ¼ì„ ì¶”ê°€í•¨. */
+     * V$VOL_TABLESPACES¿¡ ALLOC_PAGE_COUNT, FREE_PAGE_COUNT Ä®·³À» Ãß°¡ÇÔ. */
     (SChar*)"CREATE VIEW V$VOL_TABLESPACES "
                 "(SPACE_ID, "
                 "SPACE_NAME, "
@@ -373,8 +372,8 @@ SChar * gQcmPerformanceViews[] =
                 " CAST(POOL_SIZE-USED_SIZE AS BIGINT) AS FREE_SIZE "
             "FROM X$MEMALLOC",
 
-    /* Local SIDë¥¼ ì–»ì–´ì˜¤ëŠ” ì§ˆì˜, ë‹¤ë¥¸ ë…¸ë“œì˜ SIDëŠ” ì„¤ì •ë  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ,
-     * X$Propertyì—ëŠ” ìì‹ ì˜ SIDë§Œ ì¡´ì¬í•œë‹¤. */
+    /* Local SID¸¦ ¾ò¾î¿À´Â ÁúÀÇ, ´Ù¸¥ ³ëµåÀÇ SID´Â ¼³Á¤µÉ ¼ö ¾øÀ¸¹Ç·Î,
+     * X$Property¿¡´Â ÀÚ½ÅÀÇ SID¸¸ Á¸ÀçÇÑ´Ù. */
     (SChar*)"CREATE VIEW V$PROPERTY "
                 "( NAME, STOREDCOUNT, ATTR, MIN, MAX, "
                 "VALUE1, VALUE2, VALUE3, VALUE4, VALUE5, VALUE6, "
@@ -389,7 +388,7 @@ SChar * gQcmPerformanceViews[] =
     (SChar*)"CREATE VIEW V$SPROPERTY "
         "( SID, NAME, STOREDCOUNT, ATTR, MIN, MAX, ISSPECIFIED, "
         "VALUE1, VALUE2, VALUE3, VALUE4, VALUE5, VALUE6, VALUE7, VALUE8 ) "
-        /* asteriskë¡œ ì„¤ì •ëœ ê°’ì´ ìˆëŠ” ê²½ìš° í”„ë¡œí¼í‹° ë§ˆë‹¤ í•˜ë‚˜ì”©(LOCAL SIDë¥¼ ê°–ëŠ” í”„ë¡œí¼í‹°) ë³´ì—¬ì¤€ë‹¤. */
+        /* asterisk·Î ¼³Á¤µÈ °ªÀÌ ÀÖ´Â °æ¿ì ÇÁ·ÎÆÛÆ¼ ¸¶´Ù ÇÏ³ª¾¿(LOCAL SID¸¦ °®´Â ÇÁ·ÎÆÛÆ¼) º¸¿©ÁØ´Ù. */
         "AS SELECT '*', A.NAME, A.SPFILE_BY_ASTERISK_VALUE_COUNT, "
                 "A.ATTR, A.MIN, A.MAX, 'TRUE', "
                 "A.SPFILE_BY_ASTERISK_VALUE1, A.SPFILE_BY_ASTERISK_VALUE2, "
@@ -400,7 +399,7 @@ SChar * gQcmPerformanceViews[] =
             "WHERE A.SID = B.SID AND B.NAME = 'SID' "
                 "AND A.SPFILE_BY_ASTERISK_VALUE_COUNT > 0 AND MOD(A.ATTR,2)=0 "
         "UNION ALL "
-        /* "SID"ë¡œ ì„¤ì •ëœ ê°’ì€ ëª¨ë“  SID, NAMEì— ëŒ€í•´ ë³´ì—¬ì¤€ë‹¤. */
+        /* "SID"·Î ¼³Á¤µÈ °ªÀº ¸ğµç SID, NAME¿¡ ´ëÇØ º¸¿©ÁØ´Ù. */
             "SELECT SID, NAME, SPFILE_BY_SID_VALUE_COUNT, "
                 "ATTR, MIN, MAX, 'TRUE', "
                 "SPFILE_BY_SID_VALUE1, SPFILE_BY_SID_VALUE2, "
@@ -410,10 +409,10 @@ SChar * gQcmPerformanceViews[] =
             "FROM X$PROPERTY "
             "WHERE MOD(ATTR,2)=0 AND SPFILE_BY_SID_VALUE_COUNT > 0 "
         "UNION ALL "
-        /* í•˜ë‚˜ì˜ í”„ë¡œí¼í‹° ë¦¬ìŠ¤íŠ¸ì—ì„œ asteriskì™€ "SID" ë‘ ê°€ì§€ ì¤‘ í•˜ë‚˜ë„
-         * ì„¤ì •ëœ ê²ƒì´ ì—†ìœ¼ë©´ asteriskì™€ nullì„ ê°–ëŠ” ê°’ì„ ë°˜í™˜í•œë‹¤.
-         * v$propertyë¥¼ vë¡œ ì‚¬ìš©í•˜ì—¬ í”„ë¡œí¼í‹° ëª©ë¡ì—ì„œ
-         * '*'ë‚˜'sid'ë¡œ ì„¤ì •ë˜ì§€ ì•Šì€ í”„ë¡œí¼í‹°ë¥¼ ì°¾ìŒ. */
+        /* ÇÏ³ªÀÇ ÇÁ·ÎÆÛÆ¼ ¸®½ºÆ®¿¡¼­ asterisk¿Í "SID" µÎ °¡Áö Áß ÇÏ³ªµµ
+         * ¼³Á¤µÈ °ÍÀÌ ¾øÀ¸¸é asterisk¿Í nullÀ» °®´Â °ªÀ» ¹İÈ¯ÇÑ´Ù.
+         * v$property¸¦ v·Î »ç¿ëÇÏ¿© ÇÁ·ÎÆÛÆ¼ ¸ñ·Ï¿¡¼­
+         * '*'³ª'sid'·Î ¼³Á¤µÇÁö ¾ÊÀº ÇÁ·ÎÆÛÆ¼¸¦ Ã£À½. */
             "SELECT '*', V.NAME, 0, ATTR, MIN, MAX, 'FALSE', "
                 "VARCHAR'', VARCHAR'', VARCHAR'', VARCHAR'', VARCHAR'', VARCHAR'', VARCHAR'', VARCHAR'' "
             "FROM "
@@ -451,7 +450,11 @@ SChar * gQcmPerformanceViews[] =
                 "MODULE, "
                 "ACTION, "
                 "REPLICATION_DDL_SYNC, "
-                "REPLICATION_DDL_SYNC_TIMELIMIT ) "
+                "REPLICATION_DDL_SYNC_TIMELIMIT, "
+                "MESSAGE_CALLBACK, "
+                "SHARD_DDL_LOCK_TIMEOUT, "
+                "SHARD_DDL_LOCK_TRY_COUNT, "
+                "DDL_LOCK_TIMEOUT ) "
             "AS SELECT "
                 "A.ID, "
                 "A.TRANS_ID , "
@@ -497,7 +500,13 @@ SChar * gQcmPerformanceViews[] =
                 "A.MODULE, "
                 "A.ACTION, "
                 "A.REPLICATION_DDL_SYNC, "
-                "A.REPLICATION_DDL_SYNC_TIMELIMIT "
+                "A.REPLICATION_DDL_SYNC_TIMELIMIT, "
+                "DECODE(A.MESSAGE_CALLBACK, 0, 'UNREG', "
+                "                           1, 'REG', "
+                "                              'UNKNOWN') MESSAGE_CALLBACK, "
+                "A.SHARD_DDL_LOCK_TIMEOUT, "
+                "A.SHARD_DDL_LOCK_TRY_COUNT, "
+                "A.DDL_LOCK_TIMEOUT "
             "FROM X$SESSION A",
 
     (SChar*)"CREATE VIEW V$SESSIONMGR "
@@ -561,7 +570,8 @@ SChar * gQcmPerformanceViews[] =
             "FROM X$STATEMENT A, X$WAIT_EVENT_NAME B "
             "WHERE A.SEQNUM = B.EVENT_ID ",
 
-    //[TASK-6757]LFG,SN ì œê±° : LFG_ID ëŠ” 0ìœ¼ë¡œ ì¶œë ¥í•¨  
+    //[TASK-6757]LFG,SN Á¦°Å : LFG_ID ´Â 0À¸·Î Ãâ·ÂÇÔ 
+    //BUG-47727: undo ÁøÇà »óÅÂ °ü·Ã Á¤º¸ Ãß°¡ 
     (SChar*)"CREATE VIEW V$TRANSACTION "
                 "( ID, SESSION_ID, MEMORY_VIEW_SCN, MIN_MEMORY_LOB_VIEW_SCN, "
                 "DISK_VIEW_SCN, MIN_DISK_LOB_VIEW_SCN, COMMIT_SCN, "
@@ -576,7 +586,10 @@ SChar * gQcmPerformanceViews[] =
                 "UPDATE_SIZE, ENABLE_ROLLBACK, FIRST_UPDATE_TIME, "
                 "LOG_BUF_SIZE, LOG_OFFSET, SKIP_CHECK_FLAG, "
                 "SKIP_CHECK_SCN_FLAG, DDL_FLAG, TSS_RID, "
-                "RESOURCE_GROUP_ID, LEGACY_TRANS_COUNT, ISOLATION_LEVEL ) "
+                "RESOURCE_GROUP_ID, LEGACY_TRANS_COUNT, ISOLATION_LEVEL, "
+                "PROCESSED_UNDO_TIME, ESTIMATED_TOTAL_UNDO_TIME,"
+                "TOTAL_LOG_COUNT, "
+                "TOTAL_UNDO_LOG_COUNT, PROCESSED_UNDO_LOG_COUNT ) "
             "AS SELECT "
                 "ID, SESSION_ID, MIN_MEM_VIEW_SCN, MIN_MEM_VIEW_SCN_FOR_LOB, "
                 "MIN_DISK_VIEW_SCN, MIN_DISK_VIEW_SCN_FOR_LOB, COMMIT_SCN, "
@@ -591,7 +604,11 @@ SChar * gQcmPerformanceViews[] =
                 "UPDATE_SIZE, ENABLE_ROLLBACK, FIRST_UPDATE_TIME, "
                 "LOG_BUF_SIZE, LOG_OFFSET, SKIP_CHECK_FLAG, "
                 "SKIP_CHECK_SCN_FLAG, DDL_FLAG, TSS_RID, "
-                "RESOURCE_GROUP_ID, LEGACY_TRANS_COUNT, ISOLATION_LEVEL "
+                "RESOURCE_GROUP_ID, LEGACY_TRANS_COUNT, ISOLATION_LEVEL, "
+                "PROCESSED_UNDO_TIME, ESTIMATED_TOTAL_UNDO_TIME,"
+                "TOTAL_LOG_COUNT, " 
+                "CAST( TOTAL_LOG_COUNT - PROCESSED_UNDO_LOG_COUNT AS BIGINT ),"
+                "PROCESSED_UNDO_LOG_COUNT "
             "FROM X$TRANSACTIONS",
 
     /* PROJ-1704 Disk MVCC Renewal */
@@ -872,7 +889,7 @@ SChar * gQcmPerformanceViews[] =
             "AS SELECT "
                 "SEQ_OID, CURRENT_SEQ, START_SEQ, INCREMENT_SEQ, "
                 "SYNC_INTERVAL CACHE_SIZE, MAX_SEQ, MIN_SEQ, "
-                "DECODE(FLAG,0,'NO',16,'YES','UNKNOWN') IS_CYCLE "
+                "DECODE(NUMAND(FLAG,16),0,'NO',16,'YES','UNKNOWN') IS_CYCLE "
             "FROM X$SEQ",
 
     (SChar*)"CREATE VIEW V$INSTANCE "
@@ -916,7 +933,7 @@ SChar * gQcmPerformanceViews[] =
                 "A. REMOVE_THR_COUNT "
             "FROM  X$SERVICE_THREAD_MGR  A",
 
-    //[TASK-6757]LFG,SN ì œê±° : LFG_ID ëŠ” 0ìœ¼ë¡œ ì¶œë ¥í•¨  
+    //[TASK-6757]LFG,SN Á¦°Å : LFG_ID ´Â 0À¸·Î Ãâ·ÂÇÔ  
     (SChar*)"CREATE VIEW V$LOG"
                 "( BEGIN_CHKPT_LFGID, BEGIN_CHKPT_FILE_NO, "
                 "BEGIN_CHKPT_FILE_OFFSET, END_CHKPT_LFGID, END_CHKPT_FILE_NO, "
@@ -1093,9 +1110,9 @@ SChar * gQcmPerformanceViews[] =
             "FROM X$PKGTEXT",
 
     // BUG-17202
-    // ODBC SPECì— ë§ëŠ” ê²°ê³¼ë¥¼ ë³´ì—¬ì£¼ê¸° ìœ„í•´
-    // ODBC_DATA_TYPEê³¼ ODBC_SQL_DATA_TYPEë¥¼ DATA_TYPE, SQL_DATA_TYPEìœ¼ë¡œ ë³€í™˜
-    // BUG-17684 V$DATATYPE ì— DATA_TYPE(server type), ODBC_DATA_TYPE ë¶„ë¦¬
+    // ODBC SPEC¿¡ ¸Â´Â °á°ú¸¦ º¸¿©ÁÖ±â À§ÇØ
+    // ODBC_DATA_TYPE°ú ODBC_SQL_DATA_TYPE¸¦ DATA_TYPE, SQL_DATA_TYPEÀ¸·Î º¯È¯
+    // BUG-17684 V$DATATYPE ¿¡ DATA_TYPE(server type), ODBC_DATA_TYPE ºĞ¸®
 
     (SChar*)"CREATE VIEW V$DATATYPE "
                 "( TYPE_NAME, DATA_TYPE, ODBC_DATA_TYPE, COLUMN_SIZE, LITERAL_PREFIX, "
@@ -1121,8 +1138,8 @@ SChar * gQcmPerformanceViews[] =
                 "DECODE(INDEX_TYPE,2, 'PRIMARY','NORMAL') INDEXTYPE "
             "FROM X$INDEX",
 
-    /* BUG-24577 V$SEGMENTì— UDSEG ì™€ TSSEG ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤ */
-    /* BUG-44171 V$SEGMENT.SEGMENT_TYPE ì— LOBì„ ì¶”ê°€ */
+    /* BUG-24577 V$SEGMENT¿¡ UDSEG ¿Í TSSEG Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù */
+    /* BUG-44171 V$SEGMENT.SEGMENT_TYPE ¿¡ LOBÀ» Ãß°¡ */
     (SChar*)"CREATE VIEW V$SEGMENT "
                 "( SPACE_ID, TABLE_OID, SEGMENT_PID, SEGMENT_TYPE, "
                 "SEGMENT_STATE, EXTENT_TOTAL_COUNT ) "
@@ -1145,7 +1162,7 @@ SChar * gQcmPerformanceViews[] =
                 "TOTAL_EXTENT_COUNT "
                 "FROM X$TSSEGS ",
 
-    //[TASK-6757]LFG,SN ì œê±° : LFG_ID ëŠ” 0ìœ¼ë¡œ ì¶œë ¥í•¨  
+    //[TASK-6757]LFG,SN Á¦°Å : LFG_ID ´Â 0À¸·Î Ãâ·ÂÇÔ  
     (SChar*)"CREATE VIEW V$LFG "
                 "( LFG_ID, CUR_WRITE_LF_NO, CUR_WRITE_LF_OFFSET, "
                 "LF_OPEN_COUNT, LF_PREPARE_COUNT, LF_PREPARE_WAIT_COUNT, "
@@ -1184,10 +1201,10 @@ SChar * gQcmPerformanceViews[] =
                 "INDEX_CNT, INDEX_VAR_SLOT_CNT "
             "FROM X$CATALOG",
 
-    /* TASK-4007 [SM] PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
-     * V$BUFFPAGEINFOì˜ HITRATIOê³„ì‚°ì´ ì˜ëª»ë˜ëŠ” ë²„ê·¸ë¥¼ ìˆ˜ì •í•©ë‹ˆë‹¤.*/
-    /*BUG-30429     v$buffpageinfo ì˜ ë‚´ìš©ì˜ HIT-RATIO ê³„ì‚°ì‹œ
-                    FIX_PAGE_COUNTë¥¼ ëˆ„ë½í•˜ê³  ìˆìŠµë‹ˆë‹¤*/
+    /* TASK-4007 [SM] PBT¸¦ À§ÇÑ ±â´É Ãß°¡
+     * V$BUFFPAGEINFOÀÇ HITRATIO°è»êÀÌ Àß¸øµÇ´Â ¹ö±×¸¦ ¼öÁ¤ÇÕ´Ï´Ù.*/
+    /*BUG-30429     v$buffpageinfo ÀÇ ³»¿ëÀÇ HIT-RATIO °è»ê½Ã
+                    FIX_PAGE_COUNT¸¦ ´©¶ôÇÏ°í ÀÖ½À´Ï´Ù*/
     (SChar*)"CREATE VIEW V$BUFFPAGEINFO "
                 "( PAGE_TYPE, READ_PAGE_COUNT, "
                 "GET_PAGE_COUNT, FIX_PAGE_COUNT, CREATE_PAGE_COUNT, HIT_RATIO ) "
@@ -1328,13 +1345,13 @@ SChar * gQcmPerformanceViews[] =
     (SChar*)"CREATE VIEW V$DISK_TEMP_STAT "
                 "(TBS_ID, TRANSACTION_ID, CONSUME_TIME, "
                 "READ_COUNT, WRITE_COUNT, WRITE_PAGE_COUNT, "
-                "ALLOC_WAIT_COUNT,WRITE_WAIT_COUNT,QUEUE_WAIT_COUNT, "
-                "WORK_AREA_SIZE,  DISK_USAGE ) "
+                "OVER_ALLOC_COUNT,ALLOC_WAIT_COUNT,WRITE_WAIT_COUNT,QUEUE_WAIT_COUNT, "
+                "WORK_AREA_SIZE, MAX_WORK_AREA_SIZE, DISK_USAGE, RUNTIME_MAP_SIZE ) "
            "AS SELECT "
                "TBS_ID, TRANSACTION_ID, CONSUME_TIME, "
                "READ_COUNT, WRITE_COUNT, WRITE_PAGE_COUNT, "
-               "ALLOC_WAIT_COUNT,WRITE_WAIT_COUNT,QUEUE_WAIT_COUNT,"
-               "WORK_AREA_SIZE, NORMAL_AREA_SIZE "
+               "OVER_ALLOC_COUNT,ALLOC_WAIT_COUNT,0,0,"
+               "WORK_AREA_SIZE, MAX_WORK_AREA_SIZE, NORMAL_AREA_SIZE, RUNTIME_MAP_SIZE "
                "FROM X$TEMPTABLE_STATS "
                "WHERE CREATE_TIME > DROP_TIME; ",
     (SChar*)"CREATE VIEW v$DISK_TEMP_INFO  "
@@ -1380,7 +1397,7 @@ SChar * gQcmPerformanceViews[] =
 
     /* PROJ-2102 Secondary Buffer */
 
-    /* Secondary Buffer Pool  í†µê³„ë¥¼ ë³´ì—¬ì£¼ëŠ” performance view. */
+    /* Secondary Buffer Pool  Åë°è¸¦ º¸¿©ÁÖ´Â performance view. */
     (SChar*)"CREATE VIEW V$SBUFFER_STAT "
                 "(PAGE_COUNT, HASH_BUCKET_COUNT,HASH_CHAIN_LATCH_COUNT, "
                 "CHECKPOINT_LIST_COUNT, HASH_PAGES, FLUSH_PAGES, CHECKPOINT_LIST_PAGES,"
@@ -1402,7 +1419,7 @@ SChar * gQcmPerformanceViews[] =
                 "/ ( MPR_READ_USEC/1000/1000 ) END AS DOUBLE) "
             "FROM X$SBUFFER_STAT",
 
-    /* Secondary Buffer Flusher ê°ê°ì˜ í†µê³„ë¥¼ ë³´ì—¬ì£¼ëŠ” performance view. */
+    /* Secondary Buffer Flusher °¢°¢ÀÇ Åë°è¸¦ º¸¿©ÁÖ´Â performance view. */
     (SChar*)"CREATE VIEW V$SFLUSHER "
                 "( ID, ALIVE, CURRENT_JOB, DOING_IO, INIOB_COUNT,"
                 "REPLACE_FLUSH_JOBS, REPLACE_FLUSH_PAGES, REPLACE_SKIP_PAGES,"
@@ -1431,7 +1448,7 @@ SChar * gQcmPerformanceViews[] =
                 "/ ( (TOTAL_TEMP_WRITE_USec )/1000/1000 ) END AS DOUBLE) "
                 "FROM X$SBUFFER_FLUSHER",
  
-    /* Secondary Buffer FlushMgrì˜ í†µê³„ë¥¼ ë³´ì—¬ì£¼ëŠ” performance view. */
+    /* Secondary Buffer FlushMgrÀÇ Åë°è¸¦ º¸¿©ÁÖ´Â performance view. */
     (SChar*)"CREATE VIEW V$SFLUSHINFO "
                 "( FLUSHER_COUNT, CHECKPOINT_LIST_COUNT, REQ_JOB_COUNT, "
                 "REPLACE_PAGES,  CHECKPOINT_PAGES, "
@@ -1484,7 +1501,7 @@ SChar * gQcmPerformanceViews[] =
                 "                               1, 'TRUE', "
                 "                               'UNKNOWN') QUERY_REWRITE_ENABLE "
             "FROM X$INTERNAL_SESSION A",
-    /* PROJ-2624 [ê¸°ëŠ¥ì„±] MM - ìœ ì—°í•œ access_list ê´€ë¦¬ë°©ë²• ì œê³µ */
+    /* PROJ-2624 [±â´É¼º] MM - À¯¿¬ÇÑ access_list °ü¸®¹æ¹ı Á¦°ø */
     (SChar*)"CREATE VIEW V$ACCESS_LIST "
                 "( ID, OPERATION, ADDRESS, MASK )"
             "AS SELECT "
@@ -1507,11 +1524,338 @@ SChar * gQcmPerformanceViews[] =
              "AS SELECT "
                 "A.KEYWORD, A.LENGTH, A.RESERVED_TYPE "
                 "FROM X$RESERVED_WORDS A",    
+    /* PROJ-2717 Internal Procedures */
+    (SChar*)"CREATE VIEW V$LIBRARY "
+                "( FILE_SPEC, REFERENCE_COUNT, FILE_SIZE, CREATE_TIME, OPEN_TIME ) "
+            "AS SELECT "
+                "A.FILE_SPEC, A.REFERENCE_COUNT, A.FILE_SIZE, A.CREATE_TIME, A.OPEN_TIME "
+            "FROM X$LIBRARY A "
+            "WHERE A.REFERENCE_COUNT >= 0",
+    (SChar*)"CREATE VIEW V$PROCINFO"
+                "( PROC_OID, MODIFY_COUNT, STATUS, SESSION_ID, PROC_TYPE, SHARD_SPLIT_METHOD ) "
+            "AS SELECT "
+                "A.PROC_OID, A.MODIFY_COUNT, "
+                "DECODE(A.STATUS, 0, 'VALID', "
+                "                 1, 'INVALID' ) STATUS, "
+                "A.SESSION_ID, "
+                "DECODE(A.PROC_TYPE, 0, 'NORMAL', "
+                "                    1, 'EXTERNAL C', "
+                "                    2, 'INTERNAL C', "
+                "                    'UNKNOWN') PROC_TYPE, "
+                "DECODE(A.SHARD_SPLIT_METHOD, 0, 'NONE', "
+                "                             1, 'HASH', "
+                "                             2, 'RANGE', "
+                "                             3, 'LIST', "
+                "                             4, 'CLONE', "
+                "                             5, 'SOLO', "
+                "                             'UNKNOWN') SHARD_SPLIT_METHOD "
+            "FROM X$PROCINFO A",
     NULL
 };
 
+
+/************************************/
 /* BUG-45646 shard performance view */
-SChar * gQcmShardPerformanceViews[] = { SDI_PERFORMANCE_VIEWS, NULL };
+/************************************/
+
+SChar * gQcmShardPerformanceViews[] =
+{
+    (SChar*)"CREATE VIEW S$CONNECTION_INFO "
+            "AS ( "
+            "SELECT NODE_ID, NODE_NAME, COMM_NAME, TOUCH_COUNT, LINK_FAILURE "
+            "FROM X$SHARD_CONNECTION_INFO ) "
+            ,
+    (SChar*)"CREATE VIEW S$PROPERTY "
+            "AS ( "
+            "SELECT "
+               "NODE_NAME, NAME, STOREDCOUNT, ATTR, MIN, MAX, "
+               "VALUE1, VALUE2, VALUE3, VALUE4, VALUE5, VALUE6, VALUE7, VALUE8 "
+            "FROM NODE[DATA] ( SELECT SHARD_NODE_NAME() NODE_NAME, * FROM V$PROPERTY ) ) "
+            ,
+    (SChar*)"CREATE VIEW S$SESSION "
+            "AS ( "
+            "SELECT "
+               "ID, SHARD_META_NUMBER, NODE_NAME, "
+               "SHARD_CLIENT, "
+               "SHARD_SESSION_TYPE, "
+               "SESSION_ID, TRANS_ID, "
+               "TASK_STATE, "
+               "COMM_NAME, XA_SESSION_FLAG, XA_ASSOCIATE_FLAG, QUERY_TIME_LIMIT, "
+               "DDL_TIME_LIMIT, FETCH_TIME_LIMIT, UTRANS_TIME_LIMIT, IDLE_TIME_LIMIT, IDLE_START_TIME, "
+               "ACTIVE_FLAG, OPENED_STMT_COUNT, CLIENT_PACKAGE_VERSION, CLIENT_PROTOCOL_VERSION, "
+               "CLIENT_PID, CLIENT_TYPE, CLIENT_APP_INFO, CLIENT_NLS, DB_USERNAME, DB_USERID, "
+               "DEFAULT_TBSID, DEFAULT_TEMP_TBSID, SYSDBA_FLAG, AUTOCOMMIT_FLAG, "
+               "SESSION_STATE, "
+               "ISOLATION_LEVEL, REPLICATION_MODE, TRANSACTION_MODE, COMMIT_WRITE_WAIT_MODE, "
+               "OPTIMIZER_MODE, HEADER_DISPLAY_MODE, CURRENT_STMT_ID, STACK_SIZE, DEFAULT_DATE_FORMAT, "
+               "TRX_UPDATE_MAX_LOGSIZE, PARALLEL_DML_MODE, LOGIN_TIME, FAILOVER_SOURCE, NLS_TERRITORY, "
+               "NLS_ISO_CURRENCY, NLS_CURRENCY, NLS_NUMERIC_CHARACTERS, TIME_ZONE, LOB_CACHE_THRESHOLD, "
+               "QUERY_REWRITE_ENABLE, "
+               "DBLINK_GLOBAL_TRANSACTION_LEVEL, DBLINK_REMOTE_STATEMENT_AUTOCOMMIT, "
+               "MAX_STATEMENTS_PER_SESSION, SSL_CIPHER, SSL_CERTIFICATE_SUBJECT, SSL_CERTIFICATE_ISSUER, "
+               "MODULE, ACTION, REPLICATION_DDL_SYNC, REPLICATION_DDL_SYNC_TIMELIMIT, "
+               "MESSAGE_CALLBACK," 
+               "GLOBAL_TRANSACTION_LEVEL, ARITHMETIC_OPERATION_MODE, NORMALFORM_MAXIMUM, "
+               "ST_OBJECT_BUFFER_SIZE, NLS_NCHAR_CONV_EXCP, AUTO_REMOTE_EXEC, "
+               "TRCLOG_DETAIL_PREDICATE, OPTIMIZER_DISK_INDEX_COST_ADJ, OPTIMIZER_MEMORY_INDEX_COST_ADJ, "
+               "RECYCLEBIN_ENABLE, RESULT_CACHE_ENABLE, TOP_RESULT_CACHE_MODE, "
+               "OPTIMIZER_AUTO_STATS, OPTIMIZER_PERFORMANCE_VIEW, "
+               "TRCLOG_DETAIL_SHARD, SERIAL_EXECUTE_MODE, TRCLOG_DETAIL_INFORMATION, TRANSACTIONAL_DDL, "
+               "GCTX_COORD_SCN, GCTX_PREPARE_SCN, GCTX_GLOBAL_COMMIT_SCN, GCTX_LAST_SYSTEM_SCN, "
+               "SHARD_STATEMENT_RETRY, INDOUBT_FETCH_TIMEOUT, INDOUBT_FETCH_METHOD, "
+               "LAST_SHARD_META_NUMBER, RECEIVED_SHARD_META_NUMBER, "
+               "SHARD_STMT_EXEC_SEQ "
+            "FROM NODE[DATA] ( SELECT SHARD_NODE_NAME() NODE_NAME, "
+                                   "SHARD_PIN ID, SHARD_META_NUMBER, "
+                                   "DECODE(SHARD_CLIENT, 1, 'Y', 'N') SHARD_CLIENT, "
+                                   "DECODE(SHARD_SESSION_TYPE, 0, 'U', 1, 'C', 2, 'L','-') SHARD_SESSION_TYPE, "
+                                   "ID SESSION_ID, TRANS_ID, "
+                                   "DECODE(TASK_STATE, 0, 'WAITING', "
+                                                      "1, 'READY', "
+                                                      "2, 'EXECUTING', "
+                                                      "3, 'QUEUE WAIT', "
+                                                      "4, 'QUEUE READY', "
+                                                      "'UNKNOWN') TASK_STATE, "
+                                   "COMM_NAME, XA_SESSION_FLAG, XA_ASSOCIATE_FLAG, QUERY_TIME_LIMIT, "
+                                   "DDL_TIME_LIMIT, FETCH_TIME_LIMIT, UTRANS_TIME_LIMIT, IDLE_TIME_LIMIT, IDLE_START_TIME, "
+                                   "ACTIVE_FLAG, OPENED_STMT_COUNT, CLIENT_PACKAGE_VERSION, CLIENT_PROTOCOL_VERSION, "
+                                   "CLIENT_PID, CLIENT_TYPE, CLIENT_APP_INFO, CLIENT_NLS, DB_USERNAME, DB_USERID, "
+                                   "DEFAULT_TBSID, DEFAULT_TEMP_TBSID, SYSDBA_FLAG, AUTOCOMMIT_FLAG, "
+                                   "DECODE(SESSION_STATE, 0, 'INIT', "
+                                                         "1, 'AUTH', "
+                                                         "2, 'SERVICE READY', "
+                                                         "3, 'SERVICE', "
+                                                         "4, 'END', "
+                                                         "5, 'ROLLBACK', "
+                                                         "'UNKNOWN') SESSION_STATE, "
+                                   "ISOLATION_LEVEL, REPLICATION_MODE, TRANSACTION_MODE, COMMIT_WRITE_WAIT_MODE, "
+                                   "OPTIMIZER_MODE, HEADER_DISPLAY_MODE, CURRENT_STMT_ID, STACK_SIZE, DEFAULT_DATE_FORMAT, "
+                                   "TRX_UPDATE_MAX_LOGSIZE, PARALLEL_DML_MODE, LOGIN_TIME, FAILOVER_SOURCE, NLS_TERRITORY, "
+                                   "NLS_ISO_CURRENCY, NLS_CURRENCY, NLS_NUMERIC_CHARACTERS, TIME_ZONE, LOB_CACHE_THRESHOLD, "
+                                   "DECODE(QUERY_REWRITE_ENABLE, 0, 'FALSE', "
+                                                                "1, 'TRUE', "
+                                                                "'UNKNOWN') QUERY_REWRITE_ENABLE, "
+                                   "DBLINK_GLOBAL_TRANSACTION_LEVEL, DBLINK_REMOTE_STATEMENT_AUTOCOMMIT, "
+                                   "MAX_STATEMENTS_PER_SESSION, SSL_CIPHER, SSL_CERTIFICATE_SUBJECT, SSL_CERTIFICATE_ISSUER, "
+                                   "MODULE, ACTION, REPLICATION_DDL_SYNC, REPLICATION_DDL_SYNC_TIMELIMIT, "
+                                   "DECODE(MESSAGE_CALLBACK, 0, 'UNREG', "
+                                                            "1, 'REG', "
+                                                            "'UNKNOWN') MESSAGE_CALLBACK," 
+
+
+                                   "GLOBAL_TRANSACTION_LEVEL, ARITHMETIC_OPERATION_MODE, NORMALFORM_MAXIMUM, "
+                                   "ST_OBJECT_BUFFER_SIZE, NLS_NCHAR_CONV_EXCP, AUTO_REMOTE_EXEC, "
+                                   "TRCLOG_DETAIL_PREDICATE, OPTIMIZER_DISK_INDEX_COST_ADJ, OPTIMIZER_MEMORY_INDEX_COST_ADJ, "
+                                   "RECYCLEBIN_ENABLE, RESULT_CACHE_ENABLE, TOP_RESULT_CACHE_MODE, "
+                                   "OPTIMIZER_AUTO_STATS, OPTIMIZER_PERFORMANCE_VIEW, "
+                                   "TRCLOG_DETAIL_SHARD, SERIAL_EXECUTE_MODE, TRCLOG_DETAIL_INFORMATION, TRANSACTIONAL_DDL, "
+                                   "GCTX_COORD_SCN, GCTX_PREPARE_SCN, GCTX_GLOBAL_COMMIT_SCN, GCTX_LAST_SYSTEM_SCN, "
+                                   "SHARD_STATEMENT_RETRY, INDOUBT_FETCH_TIMEOUT, INDOUBT_FETCH_METHOD, "
+                                   "LAST_SHARD_META_NUMBER, RECEIVED_SHARD_META_NUMBER, "
+                                   "SHARD_STMT_EXEC_SEQ "
+                              "FROM X$SESSION WHERE SHARD_PIN != '0-0-0' ) ) "
+            ,
+    (SChar*)"CREATE VIEW S$STATEMENT "
+            "AS ( "
+            "SELECT "
+               "SHARD_SESSION_ID, NODE_NAME, SHARD_SESSION_TYPE, QUERY_TYPE, "
+               "ID, PARENT_ID, CURSOR_TYPE, "
+               "SESSION_ID, TX_ID, QUERY, LAST_QUERY_START_TIME, QUERY_START_TIME, "
+               "FETCH_START_TIME, EXECUTE_STATE, FETCH_STATE, ARRAY_FLAG, ROW_NUMBER, EXECUTE_FLAG, "
+               "BEGIN_FLAG, TOTAL_TIME, PARSE_TIME, VALIDATE_TIME, OPTIMIZE_TIME, EXECUTE_TIME, "
+               "FETCH_TIME, SOFT_PREPARE_TIME, SQL_CACHE_TEXT_ID, SQL_CACHE_PCO_ID, OPTIMIZER, COST, "
+               "USED_MEMORY, READ_PAGE, WRITE_PAGE, GET_PAGE, CREATE_PAGE, UNDO_READ_PAGE, "
+               "UNDO_WRITE_PAGE, UNDO_GET_PAGE, UNDO_CREATE_PAGE, MEM_CURSOR_FULL_SCAN, "
+               "MEM_CURSOR_INDEX_SCAN, DISK_CURSOR_FULL_SCAN, DISK_CURSOR_INDEX_SCAN, EXECUTE_SUCCESS, "
+               "EXECUTE_FAILURE, FETCH_SUCCESS, FETCH_FAILURE, PROCESS_ROW, MEMORY_TABLE_ACCESS_COUNT, "
+               "SEQNUM, EVENT, P1, P2, P3, WAIT_TIME, SECOND_IN_TIME, SIMPLE_QUERY, MATHEMATICS_TEMP_MEMORY, "
+               "GCTX_REQUEST_SCN, DISTRIBUTION_FIRST_STMT_SCN, DISTRIBUTION_FIRST_STMT_TIME, DISTRIBUTION_LEVEL, "
+               "SHARD_PARTIAL_EXEC_TYPE "
+            "FROM NODE[DATA]( "
+               "SELECT /*+ USE_HASH( A, B ) */ "
+                   "A.SHARD_PIN SHARD_SESSION_ID, SHARD_NODE_NAME() NODE_NAME, "
+                   "DECODE(A.SHARD_SESSION_TYPE, 0, 'U', 1, 'C', 2, 'L','-') SHARD_SESSION_TYPE, "
+                   "DECODE(A.SHARD_SESSION_TYPE, 0, DECODE(SHARD_QUERY_TYPE, 1, 'S', 2, 'N', '-'), 2, 'S', '-') QUERY_TYPE, "
+                   "A.ID ID, A.PARENT_ID PARENT_ID, A.CURSOR_TYPE CURSOR_TYPE, "
+                   "A.SESSION_ID SESSION_ID, A.TX_ID TX_ID, A.QUERY QUERY, "
+                   "A.LAST_QUERY_START_TIME LAST_QUERY_START_TIME, A.QUERY_START_TIME QUERY_START_TIME, "
+                   "A.FETCH_START_TIME FETCH_START_TIME, "
+                   "DECODE(A.STATE, 0, 'ALLOC', "
+                                   "1, 'PREPARED', "
+                                   "2, 'EXECUTED', "
+                                   "'UNKNOWN') EXECUTE_STATE, "
+                   "DECODE(A.FETCH_STATE, 0, 'PROCEED', "
+                                         "1, 'CLOSE', "
+                                         "2, 'NO RESULTSET', "
+                                         "3, 'INVALIDATED', "
+                                         "'UNKNOWN') FETCH_STATE, "
+                   "A.ARRAY_FLAG ARRAY_FLAG, A.ROW_NUMBER ROW_NUMBER, A.EXECUTE_FLAG EXECUTE_FLAG, "
+                   "A.BEGIN_FLAG BEGIN_FLAG, A.TOTAL_TIME TOTAL_TIME, A.PARSE_TIME PARSE_TIME, "
+                   "A.VALIDATE_TIME VALIDATE_TIME, A.OPTIMIZE_TIME OPTIMIZE_TIME, "
+                   "A.EXECUTE_TIME EXECUTE_TIME, A.FETCH_TIME FETCH_TIME, A.SOFT_PREPARE_TIME SOFT_PREPARE_TIME, "
+                   "A.SQL_CACHE_TEXT_ID SQL_CACHE_TEXT_ID, A.SQL_CACHE_PCO_ID SQL_CACHE_PCO_ID, "
+                   "A.OPTIMIZER OPTIMIZER, A.COST COST, A.USED_MEMORY USED_MEMORY, A.READ_PAGE READ_PAGE, "
+                   "A.WRITE_PAGE WRITE_PAGE, A.GET_PAGE GET_PAGE, A.CREATE_PAGE CREATE_PAGE, "
+                   "A.UNDO_READ_PAGE UNDO_READ_PAGE, A.UNDO_WRITE_PAGE UNDO_WRITE_PAGE, "
+                   "A.UNDO_GET_PAGE UNDO_GET_PAGE, A.UNDO_CREATE_PAGE UNDO_CREATE_PAGE, "
+                   "A.MEM_CURSOR_FULL_SCAN MEM_CURSOR_FULL_SCAN, A.MEM_CURSOR_INDEX_SCAN MEM_CURSOR_INDEX_SCAN, "
+                   "A.DISK_CURSOR_FULL_SCAN DISK_CURSOR_FULL_SCAN, A.DISK_CURSOR_INDEX_SCAN DISK_CURSOR_INDEX_SCAN, "
+                   "A.EXECUTE_SUCCESS EXECUTE_SUCCESS, A.EXECUTE_FAILURE EXECUTE_FAILURE, "
+                   "A.FETCH_SUCCESS FETCH_SUCCESS, A.FETCH_FAILURE FETCH_FAILURE, A.PROCESS_ROW PROCESS_ROW, "
+                   "A.MEMORY_TABLE_ACCESS_COUNT MEMORY_TABLE_ACCESS_COUNT, A.SEQNUM SEQNUM, B.EVENT EVENT, "
+                   "A.P1 P1, A.P2 P2, A.P3 P3, A.WAIT_TIME WAIT_TIME, A.SECOND_IN_TIME SECOND_IN_TIME, "
+                   "A.SIMPLE_QUERY SIMPLE_QUERY, A.MATHEMATICS_TEMP_MEMORY, "
+                   "A.GCTX_REQUEST_SCN, A.DISTRIBUTION_FIRST_STMT_SCN, A.DISTRIBUTION_FIRST_STMT_TIME, A.DISTRIBUTION_LEVEL, "
+                   "DECODE( A.SHARD_PARTIAL_EXEC_TYPE, 0, 'NORMAL', "
+                                                      "1, 'PARTIAL COORD', "
+                                                      "2, 'PARTIAL QUERY' ) SHARD_PARTIAL_EXEC_TYPE "
+               "FROM X$STATEMENT A, X$WAIT_EVENT_NAME B "
+               "WHERE A.SEQNUM = B.EVENT_ID AND A.SHARD_PIN != '0-0-0' ) D ) "
+            ,
+    (SChar*)"CREATE VIEW S$TIME_SCN "
+            "AS ( "
+            "SELECT "
+                "NODE_NAME, TIME, SYSTEM_SCN, BASE "
+            "FROM NODE[DATA] ( SELECT SHARD_NODE_NAME() NODE_NAME, TIME, SYSTEM_SCN, BASE FROM X$TIME_SCN ) ) "
+            ,
+    (SChar*)"CREATE VIEW S$PENDING_WAIT "
+            "AS (  "
+            "SELECT   "
+                "NODE_NAME, TRANS_ID, SHARD_PIN, WAIT_FOR_TRANS_ID, WAIT_FOR_XID, WAIT_FOR_SHARD_PIN  "
+            "FROM NODE[DATA] ( "
+                 "SELECT SHARD_NODE_NAME() NODE_NAME, "
+                    "TRANS_ID, SHARD_PIN, WAIT_FOR_TRANS_ID, WAIT_FOR_XID, WAIT_FOR_SHARD_PIN " 
+                 "FROM X$PENDING_WAIT ) );  "
+            , 
+    (SChar*)"CREATE VIEW S$LOCK_WAIT "
+            "AS ( "
+            "SELECT "
+                "NODE_NAME, "
+                "TRANS_ID, SHARD_PIN, "
+                "DISTRIBUTION_FIRST_STMT_SCN, DISTRIBUTION_FIRST_STMT_TIME, DISTRIBUTION_LEVEL, " 
+                "WAIT_FOR_TRANS_ID, WAIT_FOR_SHARD_PIN, "
+                "WAIT_FOR_DISTRIBUTION_FIRST_STMT_SCN, WAIT_FOR_DISTRIBUTION_FIRST_STMT_TIME, WAIT_FOR_DISTRIBUTION_LEVEL "
+            "FROM NODE[DATA] ( "
+                "SELECT SHARD_NODE_NAME() NODE_NAME, "
+                "L.TRANS_ID, T.SHARD_PIN, "
+                "CASE WHEN ( T.DISTRIBUTION_FIRST_STMT_VIEW_SCN LIKE 'INFINITE%' ) "
+                "    THEN T.DISTRIBUTION_FIRST_STMT_VIEW_SCN "
+                "    ELSE "
+                "    CASE WHEN TO_NUMBER(T.DISTRIBUTION_FIRST_STMT_VIEW_SCN) = 0 OR TO_NUMBER(T.DISTRIBUTION_FIRST_STMT_VIEW_SCN) = 1 "
+                "        THEN T.DISTRIBUTION_FIRST_STMT_VIEW_SCN "
+                "        ELSE LPAD(TO_CHAR( TO_NUMBER(T.DISTRIBUTION_FIRST_STMT_VIEW_SCN) - 7 ), 19, ' ') "
+                "    END " 
+                "END AS DISTRIBUTION_FIRST_STMT_SCN, "
+                "T.DISTRIBUTION_FIRST_STMT_TIME, T.DISTRIBUTION_LEVEL, "
+                "L.WAIT_FOR_TRANS_ID, "
+                "T2.SHARD_PIN AS WAIT_FOR_SHARD_PIN, "
+                "CASE WHEN ( T2.DISTRIBUTION_FIRST_STMT_VIEW_SCN LIKE 'INFINITE%' ) "
+                "    THEN T2.DISTRIBUTION_FIRST_STMT_VIEW_SCN "
+                "    ELSE "
+                "    CASE WHEN TO_NUMBER(T2.DISTRIBUTION_FIRST_STMT_VIEW_SCN) = 0 OR TO_NUMBER(T2.DISTRIBUTION_FIRST_STMT_VIEW_SCN) = 1 "
+                "        THEN T2.DISTRIBUTION_FIRST_STMT_VIEW_SCN "
+                "        ELSE LPAD(TO_CHAR( TO_NUMBER(T2.DISTRIBUTION_FIRST_STMT_VIEW_SCN) - 7 ), 19, ' ') "
+                "    END " 
+                "END AS WAIT_FOR_DISTRIBUTION_FIRST_STMT_SCN, "
+                "T2.DISTRIBUTION_FIRST_STMT_TIME AS WAIT_FOR_DISTRIBUTION_FIRST_STMT_TIME, T2.DISTRIBUTION_LEVEL AS WAIT_FOR_DISTRIBUTION_LEVEL "
+                    "FROM X$LOCK_WAIT L, X$TRANSACTIONS T, (SELECT * FROM X$TRANSACTIONS) T2 "
+                    "WHERE L.TRANS_ID = T.ID AND L.WAIT_FOR_TRANS_ID = T2.ID ) ) "
+            ,
+    (SChar*)"CREATE VIEW S$DIST_LOCK_WAIT "
+            "AS ( "
+            "SELECT "
+                "NODE_NAME, TRANS_ID, SHARD_PIN, "
+                "DISTRIBUTION_FIRST_STMT_SCN, DISTRIBUTION_FIRST_STMT_TIME, DISTRIBUTION_LEVEL, "
+                "WAIT_FOR_TRANS_ID, WAIT_FOR_SHARD_PIN, "
+                "WAIT_FOR_DISTRIBUTION_FIRST_STMT_SCN, WAIT_FOR_DISTRIBUTION_FIRST_STMT_TIME, WAIT_FOR_DISTRIBUTION_LEVEL, "
+                "DISTRIBUTION_DEADLOCK_DETECTION, DISTRIBUTION_DEADLOCK_WAIT_TIME, DISTRIBUTION_DEADLOCK_ELAPSED_TIME "
+            "FROM NODE[DATA] ( "
+                "SELECT SHARD_NODE_NAME() NODE_NAME, "
+                "D.TRANS_ID, T.SHARD_PIN, "
+                "CASE WHEN ( T.DISTRIBUTION_FIRST_STMT_VIEW_SCN LIKE 'INFINITE%' ) "
+                "    THEN T.DISTRIBUTION_FIRST_STMT_VIEW_SCN "
+                "    ELSE "
+                "    CASE WHEN TO_NUMBER(T.DISTRIBUTION_FIRST_STMT_VIEW_SCN) = 0 OR TO_NUMBER(T.DISTRIBUTION_FIRST_STMT_VIEW_SCN) = 1 "
+                "        THEN T.DISTRIBUTION_FIRST_STMT_VIEW_SCN "
+                "        ELSE LPAD(TO_CHAR( TO_NUMBER(T.DISTRIBUTION_FIRST_STMT_VIEW_SCN) - 7 ), 19, ' ') "
+                "    END " 
+                "END AS DISTRIBUTION_FIRST_STMT_SCN, "
+                "T.DISTRIBUTION_FIRST_STMT_TIME, T.DISTRIBUTION_LEVEL, "
+                "D.WAIT_FOR_TRANS_ID, "
+                "T2.SHARD_PIN AS WAIT_FOR_SHARD_PIN, "
+                "CASE WHEN ( T2.DISTRIBUTION_FIRST_STMT_VIEW_SCN LIKE 'INFINITE%' ) "
+                "    THEN T2.DISTRIBUTION_FIRST_STMT_VIEW_SCN "
+                "    ELSE "
+                "    CASE WHEN TO_NUMBER(T2.DISTRIBUTION_FIRST_STMT_VIEW_SCN) = 0 OR TO_NUMBER(T2.DISTRIBUTION_FIRST_STMT_VIEW_SCN) = 1 "
+                "        THEN T2.DISTRIBUTION_FIRST_STMT_VIEW_SCN "
+                "        ELSE LPAD(TO_CHAR( TO_NUMBER(T2.DISTRIBUTION_FIRST_STMT_VIEW_SCN) - 7 ), 19, ' ') "
+                "    END " 
+                "END AS WAIT_FOR_DISTRIBUTION_FIRST_STMT_SCN, "
+                "T2.DISTRIBUTION_FIRST_STMT_TIME AS WAIT_FOR_DISTRIBUTION_FIRST_STMT_TIME, T2.DISTRIBUTION_LEVEL AS WAIT_FOR_DISTRIBUTION_LEVEL, "
+                "T.DISTRIBUTION_DEADLOCK_DETECTION, T.DISTRIBUTION_DEADLOCK_WAIT_TIME, T.DISTRIBUTION_DEADLOCK_ELAPSED_TIME "
+                "FROM X$DIST_LOCK_WAIT D, X$TRANSACTIONS T, (SELECT * FROM X$TRANSACTIONS) T2 "
+                "WHERE D.TRANS_ID = T.ID AND D.WAIT_FOR_TRANS_ID = T2.ID ) )"
+            ,
+    (SChar*)"CREATE VIEW S$TRANSACTION ( "
+                "NODE_NAME, ID, SESSION_ID, MEMORY_VIEW_SCN, MIN_MEMORY_LOB_VIEW_SCN, "
+                "DISK_VIEW_SCN, MIN_DISK_LOB_VIEW_SCN, "
+                "LAST_REQUEST_VIEW_SCN, PREPARE_SCN, COMMIT_SCN, "
+                "STATUS, UPDATE_STATUS, LOG_TYPE, "
+                "XA_COMMIT_STATUS, XA_PREPARED_TIME, "
+                "FIRST_UNDO_NEXT_LSN_FILENO, "
+                "FIRST_UNDO_NEXT_LSN_OFFSET, CURRENT_UNDO_NEXT_SN, "
+                "CURRENT_UNDO_NEXT_LSN_FILENO, "
+                "CURRENT_UNDO_NEXT_LSN_OFFSET, "
+                "LAST_UNDO_NEXT_LSN_FILENO, LAST_UNDO_NEXT_LSN_OFFSET, "
+                "LAST_UNDO_NEXT_SN, SLOT_NO, "
+                "UPDATE_SIZE, ENABLE_ROLLBACK, FIRST_UPDATE_TIME, "
+                "LOG_BUF_SIZE, LOG_OFFSET, SKIP_CHECK_FLAG, "
+                "SKIP_CHECK_SCN_FLAG, DDL_FLAG, TSS_RID, "
+                "RESOURCE_GROUP_ID, LEGACY_TRANS_COUNT, ISOLATION_LEVEL, "
+                "PROCESSED_UNDO_TIME, ESTIMATED_TOTAL_UNDO_TIME, "
+                "TOTAL_LOG_COUNT, "
+                "TOTAL_UNDO_LOG_COUNT, "
+                "PROCESSED_UNDO_LOG_COUNT, GLOBAL_CONSISTENCY, "
+                "SHARD_PIN, DISTRIBUTION_FIRST_STMT_TIME, "
+                "DISTRIBUTION_FIRST_STMT_SCN, "
+                "DISTRIBUTION_LEVEL, "
+                "DISTRIBUTION_DEADLOCK_DETECTION, DISTRIBUTION_DEADLOCK_WAIT_TIME, DISTRIBUTION_DEADLOCK_ELAPSED_TIME ) "
+            "AS ( "
+            "SELECT "
+                "NODE_NAME, ID, SESSION_ID, MIN_MEM_VIEW_SCN, MIN_MEM_VIEW_SCN_FOR_LOB, "
+                "MIN_DISK_VIEW_SCN, MIN_DISK_VIEW_SCN_FOR_LOB, "
+                "LAST_REQUEST_VIEW_SCN, PREPARE_SCN, COMMIT_SCN, "
+                "STATUS, UPDATE_STATUS, LOG_TYPE, "
+                "XA_COMMIT_STATUS, XA_PREPARED_TIME, "
+                "FIRST_UNDO_NEXT_LSN_FILENO, "
+                "FIRST_UNDO_NEXT_LSN_OFFSET, CURRENT_UNDO_NEXT_SN, "
+                "CURRENT_UNDO_NEXT_LSN_FILENO, "
+                "CURRENT_UNDO_NEXT_LSN_OFFSET, "
+                "LAST_UNDO_NEXT_LSN_FILENO, LAST_UNDO_NEXT_LSN_OFFSET, "
+                "LAST_UNDO_NEXT_SN, SLOT_NO, "
+                "UPDATE_SIZE, ENABLE_ROLLBACK, FIRST_UPDATE_TIME, "
+                "LOG_BUF_SIZE, LOG_OFFSET, SKIP_CHECK_FLAG, "
+                "SKIP_CHECK_SCN_FLAG, DDL_FLAG, TSS_RID, "
+                "RESOURCE_GROUP_ID, LEGACY_TRANS_COUNT, ISOLATION_LEVEL, "
+                "PROCESSED_UNDO_TIME, ESTIMATED_TOTAL_UNDO_TIME, "
+                "TOTAL_LOG_COUNT, "
+                "CAST( TOTAL_LOG_COUNT - PROCESSED_UNDO_LOG_COUNT AS BIGINT ), "
+                "PROCESSED_UNDO_LOG_COUNT, GLOBAL_CONSISTENCY, "
+                "SHARD_PIN, DISTRIBUTION_FIRST_STMT_TIME, " 
+                "CASE WHEN ( DISTRIBUTION_FIRST_STMT_VIEW_SCN LIKE 'INFINITE%' ) "
+                "    THEN DISTRIBUTION_FIRST_STMT_VIEW_SCN "
+                "    ELSE "
+                "    CASE WHEN TO_NUMBER(DISTRIBUTION_FIRST_STMT_VIEW_SCN) = 0 OR TO_NUMBER(DISTRIBUTION_FIRST_STMT_VIEW_SCN) = 1 "
+                "        THEN DISTRIBUTION_FIRST_STMT_VIEW_SCN "
+                "        ELSE LPAD(TO_CHAR( TO_NUMBER(DISTRIBUTION_FIRST_STMT_VIEW_SCN) - 7 ), 19, ' ') "
+                "    END " 
+                "END, "
+                "DISTRIBUTION_LEVEL, "
+                "DISTRIBUTION_DEADLOCK_DETECTION, DISTRIBUTION_DEADLOCK_WAIT_TIME, DISTRIBUTION_DEADLOCK_ELAPSED_TIME "
+            "FROM NODE[DATA] ( SELECT SHARD_NODE_NAME() NODE_NAME, * FROM X$TRANSACTIONS WHERE SHARD_PIN != '0-0-0' ) )"
+            ,
+    NULL
+};
 
 extern mtdModule mtdChar;
 extern mtdModule mtdVarchar;
@@ -1527,8 +1871,8 @@ IDE_RC qcmPerformanceView::makeParseTreeForViewInSelect(
 /***********************************************************************
  *
  * Description :
- *  select * from v$table ê³¼ ê°™ì€ ì§ˆì˜ì— ëŒ€í•´ì„œ
- *  v$tableì˜ parseTreeë¥¼ ìƒì„±í•œë‹¤.
+ *  select * from v$table °ú °°Àº ÁúÀÇ¿¡ ´ëÇØ¼­
+ *  v$tableÀÇ parseTree¸¦ »ı¼ºÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1551,15 +1895,15 @@ IDE_RC qcmPerformanceView::makeParseTreeForViewInSelect(
     // set meber of qcStatement
     idlOS::memcpy( sStatement, aStatement, ID_SIZEOF(qcStatement) );
 
-    // myPlanì„ ì¬ì„¤ì •í•œë‹¤.
+    // myPlanÀ» Àç¼³Á¤ÇÑ´Ù.
     sStatement->myPlan = & sStatement->privatePlan;
     sStatement->myPlan->planEnv = NULL;
 
-    // PROJ-1726 - performance view ìŠ¤íŠ¸ë§ì„ ì–»ê¸° ìœ„í•´ì„œ
-    // gQcmPerformanceViews ë¥¼ ì§ì ‘ì ‘ê·¼í•˜ëŠ” ëŒ€ì‹ 
-    // qcmPerformanceViewManager::get ì„ ì´ìš©, ê°„ì ‘ì ‘ê·¼ì„ í•œë‹¤.
-    // ì´ëŠ” gQcmPerformanceViews ì™¸ì— ë™ì ëª¨ë“ˆì´ ë¡œë“œë  ë•Œ
-    // ì¶”ê°€ë¡œ ë“±ë¡ë˜ëŠ” performance view ë¥¼ ìœ„í•œ ê²ƒì´ë‹¤.
+    // PROJ-1726 - performance view ½ºÆ®¸µÀ» ¾ò±â À§ÇØ¼­
+    // gQcmPerformanceViews ¸¦ Á÷Á¢Á¢±ÙÇÏ´Â ´ë½Å
+    // qcmPerformanceViewManager::get À» ÀÌ¿ë, °£Á¢Á¢±ÙÀ» ÇÑ´Ù.
+    // ÀÌ´Â gQcmPerformanceViews ¿Ü¿¡ µ¿Àû¸ğµâÀÌ ·ÎµåµÉ ¶§
+    // Ãß°¡·Î µî·ÏµÇ´Â performance view ¸¦ À§ÇÑ °ÍÀÌ´Ù.
     sStmtText = qcmPerformanceViewManager::get( aTableRef->tableInfo->viewArrayNo,
                                                 aTableRef->tableInfo->mPVType );
 
@@ -1574,9 +1918,9 @@ IDE_RC qcmPerformanceView::makeParseTreeForViewInSelect(
             (void **)(&(sStatement->myPlan->stmtText)) )
         != IDE_SUCCESS);
 
-    // PROJ-1726 - performance view ìŠ¤íŠ¸ë§ì„ ì–»ê¸° ìœ„í•´ì„œ
-    // gQcmPerformanceViews ë¥¼ ì§ì ‘ì ‘ê·¼í•˜ëŠ” ëŒ€ì‹ 
-    // qcmPerformanceViewManager::get ì„ ì´ìš©, ê°„ì ‘ì ‘ê·¼ì„ í•œë‹¤.
+    // PROJ-1726 - performance view ½ºÆ®¸µÀ» ¾ò±â À§ÇØ¼­
+    // gQcmPerformanceViews ¸¦ Á÷Á¢Á¢±ÙÇÏ´Â ´ë½Å
+    // qcmPerformanceViewManager::get À» ÀÌ¿ë, °£Á¢Á¢±ÙÀ» ÇÑ´Ù.
     idlOS::memcpy(sStatement->myPlan->stmtText,
                   sStmtText,
                   sStmtTextLen);
@@ -1594,7 +1938,7 @@ IDE_RC qcmPerformanceView::makeParseTreeForViewInSelect(
     // set parse tree
     aTableRef->view = sCreateViewParseTree->select;
 
-    // planEnvë¥¼ ì¬ì„¤ì •í•œë‹¤.
+    // planEnv¸¦ Àç¼³Á¤ÇÑ´Ù.
     aTableRef->view->myPlan->planEnv = aStatement->myPlan->planEnv;
 
     return IDE_SUCCESS;
@@ -1616,8 +1960,8 @@ IDE_RC qcmPerformanceView::registerPerformanceView( idvSQL    * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  fixedTableì„ ê¸°ë°˜ìœ¼ë¡œ gQcmPerformanceViews[]ì— ì •ì˜ëœ
- *  performanceViewë¥¼ ì •ì˜í•œë‹¤.
+ *  fixedTableÀ» ±â¹İÀ¸·Î gQcmPerformanceViews[]¿¡ Á¤ÀÇµÈ
+ *  performanceView¸¦ Á¤ÀÇÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1640,7 +1984,7 @@ IDE_RC qcmPerformanceView::executeDDL(
 /***********************************************************************
  *
  * Description :
- *  create view V$...  statementì˜ P/V/O/E ìˆ˜í–‰
+ *  create view V$...  statementÀÇ P/V/O/E ¼öÇà
  *
  * Implementation :
  *
@@ -1720,8 +2064,8 @@ IDE_RC qcmPerformanceView::registerOnIduFixedTableDesc(
 /***********************************************************************
  *
  * Description :
- *  ìƒˆë¡œ ìƒì„±ëœ create view V$... ì˜ ë‚´ìš©ì„ fixedTableì— ë“±ë¡
- *  ì´ ì‘ì—…ì€ create view vXXX ë¥¼ SYS_TABLES_ ì— ë“±ë¡í•˜ëŠ” ê³¼ì •ê³¼ ìœ ì‚¬
+ *  »õ·Î »ı¼ºµÈ create view V$... ÀÇ ³»¿ëÀ» fixedTable¿¡ µî·Ï
+ *  ÀÌ ÀÛ¾÷Àº create view vXXX ¸¦ SYS_TABLES_ ¿¡ µî·ÏÇÏ´Â °úÁ¤°ú À¯»ç
  *
  * Implementation :
  *
@@ -2036,12 +2380,12 @@ SChar* qcmPerformanceViewManager::get( int aIdx, qcmPVType aType )
     switch( aType )
     {
         case QCM_PV_TYPE_NORMAL:
-            // ë§Œì¼ gQcmPerformanceViews ì— ë“±ë¡ëœ performance view ì¸ ê²½ìš°
+            // ¸¸ÀÏ gQcmPerformanceViews ¿¡ µî·ÏµÈ performance view ÀÎ °æ¿ì
             if(mNumOfPreViews > aIdx)
             {
                 sRetStr = mPreViews[aIdx];
             }
-            // ë™ì ëª¨ë“ˆì—ì„œ ë“±ë¡ëœ performance view ì¸ ê²½ìš°
+            // µ¿Àû¸ğµâ¿¡¼­ µî·ÏµÈ performance view ÀÎ °æ¿ì
             else
             {
                 if ( aIdx < getTotalViewCount( QCM_PV_TYPE_NORMAL ) )
@@ -2069,7 +2413,7 @@ IDE_RC qcmPerformanceView::runDDLforPV( idvSQL    * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  gQcmPerformanceViews[i] ì„ fixedTableì„ ê¸°ë°˜ìœ¼ë¡œ DDL ìˆ˜í–‰
+ *  gQcmPerformanceViews[i] À» fixedTableÀ» ±â¹İÀ¸·Î DDL ¼öÇà
  *
  * Implementation :
  *
@@ -2081,8 +2425,6 @@ IDE_RC qcmPerformanceView::runDDLforPV( idvSQL    * aStatistics,
     smiStatement  * sDummySmiStmt;
     qcStatement     sStatement;
     SChar         * sStmtText;
-    //PROJ-1677 DEQ
-    smSCN           sDummySCN;
     UInt            sStage = 0;
 
     iduMemory       sIduMem;
@@ -2126,14 +2468,14 @@ IDE_RC qcmPerformanceView::runDDLforPV( idvSQL    * aStatistics,
               != IDE_SUCCESS );
     sStage = 2;
 
-    // PROJ-1726 - performance view ìŠ¤íŠ¸ë§ì„ ì–»ê¸° ìœ„í•´ì„œ
-    // gQcmPerformanceViews ë¥¼ ì§ì ‘ì ‘ê·¼í•˜ëŠ” ëŒ€ì‹ 
-    // qcmPerformanceViewManager::get(idx) ì„ ì´ìš©, ê°„ì ‘ì ‘ê·¼ì„ í•œë‹¤.
+    // PROJ-1726 - performance view ½ºÆ®¸µÀ» ¾ò±â À§ÇØ¼­
+    // gQcmPerformanceViews ¸¦ Á÷Á¢Á¢±ÙÇÏ´Â ´ë½Å
+    // qcmPerformanceViewManager::get(idx) À» ÀÌ¿ë, °£Á¢Á¢±ÙÀ» ÇÑ´Ù.
     for ( i = 0; i < qcmPerformanceViewManager::getTotalViewCount( aType ); i++ )
     {
-        // PROJ-1726 - performance view ìŠ¤íŠ¸ë§ì„ ì–»ê¸° ìœ„í•´ì„œ
-        // gQcmPerformanceViews ë¥¼ ì§ì ‘ì ‘ê·¼í•˜ëŠ” ëŒ€ì‹ 
-        // qcmPerformanceViewManager::get ì„ ì´ìš©, ê°„ì ‘ì ‘ê·¼ì„ í•œë‹¤.
+        // PROJ-1726 - performance view ½ºÆ®¸µÀ» ¾ò±â À§ÇØ¼­
+        // gQcmPerformanceViews ¸¦ Á÷Á¢Á¢±ÙÇÏ´Â ´ë½Å
+        // qcmPerformanceViewManager::get À» ÀÌ¿ë, °£Á¢Á¢±ÙÀ» ÇÑ´Ù.
         sStmtText = qcmPerformanceViewManager::get( i, aType );
         IDE_TEST_RAISE( sStmtText == NULL, ERR_PERFORMANCE_VIEW );
 
@@ -2151,7 +2493,7 @@ IDE_RC qcmPerformanceView::runDDLforPV( idvSQL    * aStatistics,
     }
 
     // transaction commit
-    IDE_TEST( sTrans.commit(&sDummySCN) != IDE_SUCCESS );
+    IDE_TEST( sTrans.commit() != IDE_SUCCESS );
     sStage = 0;
 
     // free the members of qcStatement
@@ -2198,8 +2540,8 @@ IDE_RC qcmPerformanceView::parseCreate(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *  parseTreeë¥¼ ì „ì²´ë¥¼ íƒìƒ‰í•˜ë©´ì„œ V$ë¥¼ ì •ì˜í•  ë•Œ X$ê°€ ì•„ë‹Œ ì¼ë°˜ tableë¡œ
- *  ì •ì˜ë˜ì§€ ì•Šë„ë¡ validation ìˆ˜í–‰.
+ *  parseTree¸¦ ÀüÃ¼¸¦ Å½»öÇÏ¸é¼­ V$¸¦ Á¤ÀÇÇÒ ¶§ X$°¡ ¾Æ´Ñ ÀÏ¹İ table·Î
+ *  Á¤ÀÇµÇÁö ¾Êµµ·Ï validation ¼öÇà.
  *
  * Implementation :
  *
@@ -2218,7 +2560,7 @@ IDE_RC qcmPerformanceView::parseCreate(qcStatement * aStatement)
     *    --> in case of "X$" or "V$" : 3
     *    --> in case of normal table : 2
     *
-    *  BUGBUG      , jhseong, defineí•˜ì.
+    *  BUGBUG      , jhseong, defineÇÏÀÚ.
     *  if   1      : special tables for FixedTable, Performance View
     *  else 2      : normal tables
     *  else 0 or 3 : ERROR
@@ -2236,7 +2578,7 @@ IDE_RC qcmPerformanceView::parseCreate(qcStatement * aStatement)
 
     if( QC_SHARED_TMPLATE(aStatement)->fixedTableAutomataStatus == 1 )
     {
-        // PVì´ë©´ functionì„ overrideí•´ì„œ ì¼ë°˜ í…Œì´ë¸”ê³¼ êµ¬ë¶„ì§“ëŠ”ë‹¤.
+        // PVÀÌ¸é functionÀ» overrideÇØ¼­ ÀÏ¹İ Å×ÀÌºí°ú ±¸ºĞÁş´Â´Ù.
         aStatement->myPlan->parseTree->validate =
             qcmPerformanceView::validateCreate;
         aStatement->myPlan->parseTree->execute =
@@ -2260,7 +2602,7 @@ IDE_RC qcmPerformanceView::validateCreate(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *  create view v$XXX ... êµ¬ë¬¸ì„ validationí•¨.
+ *  create view v$XXX ... ±¸¹®À» validationÇÔ.
  *
  * Implementation :
  *
@@ -2283,13 +2625,13 @@ IDE_RC qcmPerformanceView::validateCreate(qcStatement * aStatement)
     //------------------------------------------------------------------
     // validation of SELECT statement
     //------------------------------------------------------------------
-    ((qmsParseTree*)(sParseTree->select->myPlan->parseTree))->querySet->flag
+    ((qmsParseTree*)(sParseTree->select->myPlan->parseTree))->querySet->lflag
         &= ~(QMV_PERFORMANCE_VIEW_CREATION_MASK);
-    ((qmsParseTree*)(sParseTree->select->myPlan->parseTree))->querySet->flag
+    ((qmsParseTree*)(sParseTree->select->myPlan->parseTree))->querySet->lflag
         |= (QMV_PERFORMANCE_VIEW_CREATION_TRUE);
-    ((qmsParseTree*)(sParseTree->select->myPlan->parseTree))->querySet->flag
+    ((qmsParseTree*)(sParseTree->select->myPlan->parseTree))->querySet->lflag
         &= ~(QMV_VIEW_CREATION_MASK);
-    ((qmsParseTree*)(sParseTree->select->myPlan->parseTree))->querySet->flag
+    ((qmsParseTree*)(sParseTree->select->myPlan->parseTree))->querySet->lflag
         |= (QMV_VIEW_CREATION_TRUE);
 
     sSelectValidation = qmv::validateSelect(sParseTree->select);
@@ -2351,8 +2693,8 @@ IDE_RC qcmPerformanceView::executeCreate(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *  create view v$XXX ... êµ¬ë¬¸ì„ ì‹¤í–‰í•¨.
- *  ì‹¤í–‰ ê²°ê³¼ëŠ” iduFixedTableDesc ìë£Œêµ¬ì¡°ë¡œ fixedTableì— viewê°€ ë“±ë¡ë¨.
+ *  create view v$XXX ... ±¸¹®À» ½ÇÇàÇÔ.
+ *  ½ÇÇà °á°ú´Â iduFixedTableDesc ÀÚ·á±¸Á¶·Î fixedTable¿¡ view°¡ µî·ÏµÊ.
  *
  * Implementation :
  *
@@ -2382,7 +2724,7 @@ qcmPerformanceView::nullBuildRecord( idvSQL              * /* aStatistics */,
 /***********************************************************************
  *
  * Description :
- *  iduFixedTableDesc ì—ì„œ ì‚¬ìš©ë˜ëŠ” null function pointer
+ *  iduFixedTableDesc ¿¡¼­ »ç¿ëµÇ´Â null function pointer
  *
  * Implementation :
  *

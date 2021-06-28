@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smnfDef.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smnfDef.h 88191 2020-07-27 03:08:54Z mason.lee $
  **********************************************************************/
 
 #ifndef _O_SMNF_DEF_H_
@@ -41,7 +41,8 @@ typedef struct smnfIterator
     UInt                flag;
 
     smiCursorProperties  * mProperties;
-    /* smiIterator ê³µí†µ ë³€ìˆ˜ ë */
+    smiStatement         * mStatement;
+    /* smiIterator °øÅë º¯¼ö ³¡ */
 
     UChar*             mRecBuffer;
     UChar*             mRecEndBuffer;

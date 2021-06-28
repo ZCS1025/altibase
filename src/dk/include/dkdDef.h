@@ -32,7 +32,7 @@
 /* Define record cartridge */
 typedef struct dkdRecord
 {
-    void          * mData;  /* Record Ïùò Ïã§Ï†ú Îç∞Ïù¥ÌÑ∞ */
+    void          * mData;  /* Record ¿« Ω«¡¶ µ•¿Ã≈Õ */
     iduListNode     mNode;
 } dkdRecord;
 

@@ -80,7 +80,7 @@ static SInt mtlAsciiExtract_MatchSecond( UChar* aSource,
 static SInt mtlAsciiExtract_MatchMicroSec( UChar* aSource,
                                            UInt   aSourceLen );
 
-/* BUG-45730 ROUND, TRUNC í•¨ìˆ˜ì—ì„œ DATE í¬ë§· IW ì¶”ê°€ ì§€ì› */
+/* BUG-45730 ROUND, TRUNC ÇÔ¼ö¿¡¼­ DATE Æ÷¸Ë IW Ãß°¡ Áö¿ø */
 static SInt mtlAsciiExtract_MatchISOWeek( UChar * aSource,
                                           UInt    aSourceLen );
 
@@ -98,7 +98,7 @@ mtlExtractFuncSet mtlAsciiExtractSet = {
     mtlAsciiExtract_MatchMinute,
     mtlAsciiExtract_MatchSecond,
     mtlAsciiExtract_MatchMicroSec,
-    /* BUG-45730 ROUND, TRUNC í•¨ìˆ˜ì—ì„œ DATE í¬ë§· IW ì¶”ê°€ ì§€ì› */
+    /* BUG-45730 ROUND, TRUNC ÇÔ¼ö¿¡¼­ DATE Æ÷¸Ë IW Ãß°¡ Áö¿ø */
     mtlAsciiExtract_MatchISOWeek
 };
 
@@ -149,10 +149,10 @@ mtlNCRet mtlAsciiNextChar( UChar ** aSource, UChar * /**/ )
 {
 /***********************************************************************
  *
- * Description : PROJ-1755 Next Char ìµœì í™”
+ * Description : PROJ-1755 Next Char ÃÖÀûÈ­
  *
  * Implementation :
- *    ë‹¤ìŒ ë¬¸ì ìœ„ì¹˜ë¡œ pointer ì´ë™
+ *    ´ÙÀ½ ¹®ÀÚ À§Ä¡·Î pointer ÀÌµ¿
  *
  ***********************************************************************/
 
@@ -176,14 +176,14 @@ static SInt mtlAsciiMaxPrecision( SInt aLength )
 {
 /***********************************************************************
  *
- * Description : ë¬¸ìê°¯ìˆ˜(aLength)ì˜ ASCIIì˜ ìµœëŒ€ precision ê³„ì‚°
+ * Description : ¹®ÀÚ°¹¼ö(aLength)ÀÇ ASCIIÀÇ ÃÖ´ë precision °è»ê
  *
  * Implementation :
  *
- *    ì¸ìë¡œ ë°›ì€ aLengthì—
- *    ascii í•œë¬¸ìì˜ ìµœëŒ€ í¬ê¸°ë¥¼ ê³±í•œ ê°’ì„ ë¦¬í„´í•¨.
+ *    ÀÎÀÚ·Î ¹ŞÀº aLength¿¡
+ *    ascii ÇÑ¹®ÀÚÀÇ ÃÖ´ë Å©±â¸¦ °öÇÑ °ªÀ» ¸®ÅÏÇÔ.
  *
- *    aLengthëŠ” ë¬¸ìê°¯ìˆ˜ì˜ ì˜ë¯¸ê°€ ìˆìŒ.
+ *    aLength´Â ¹®ÀÚ°¹¼öÀÇ ÀÇ¹Ì°¡ ÀÖÀ½.
  *
  ***********************************************************************/
     
@@ -407,7 +407,7 @@ static SInt mtlAsciiNextDay_MatchSatDay( UChar* aSource,
     return 1;
 }
 
-/* BUG-45730 ROUND, TRUNC í•¨ìˆ˜ì—ì„œ DATE í¬ë§· IW ì¶”ê°€ ì§€ì› */
+/* BUG-45730 ROUND, TRUNC ÇÔ¼ö¿¡¼­ DATE Æ÷¸Ë IW Ãß°¡ Áö¿ø */
 static SInt mtlAsciiExtract_MatchISOWeek( UChar * aSource,
                                           UInt    aSourceLen )
 {

@@ -47,7 +47,7 @@ public:
                               smnGetRowFunc     aGetRowFunc,
                               SChar           * aNullPtr );
 
-    /* ì“°ë ˆë“œ ì´ˆê¸°í™” */
+    /* ¾²·¹µå ÃÊ±âÈ­ */
     IDE_RC initialize( void        * aTrans,
                        idvSQL      * aStatistics,
                        smnpJobItem * aJobInfo,
@@ -116,7 +116,7 @@ public:
                             smnbLNode       * aRightNode,
                             UInt              aRightPos );
 
-    IDE_RC destroy();       /* ì“°ë ˆë“œ í•´ì œ */
+    IDE_RC destroy();       /* ¾²·¹µå ÇØÁ¦ */
 
     void run();
  

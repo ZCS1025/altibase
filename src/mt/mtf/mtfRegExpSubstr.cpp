@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfRegExpSubstr.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfRegExpSubstr.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -66,7 +66,7 @@ IDE_RC mtfRegExpSubstring( const mtlModule  * aLanguage,
 mtfModule mtfRegExpSubstr = {
     2|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfRegExpSubstrFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -181,7 +181,7 @@ IDE_RC mtfRegExpSubstrEstimate( mtcNode*     aNode,
                                         sModules )
               != IDE_SUCCESS );
 
-    /* ê²°ê³¼ë¥¼ ì €ìž¥í•¨ ìµœëŒ€ ê¸¸ì´ëŠ” ì›ë³¸ ìŠ¤íŠ¸ë§ì— precison */
+    /* °á°ú¸¦ ÀúÀåÇÔ ÃÖ´ë ±æÀÌ´Â ¿øº» ½ºÆ®¸µ¿¡ precison */
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      &mtdVarchar,
                                      1,
@@ -189,7 +189,7 @@ IDE_RC mtfRegExpSubstrEstimate( mtcNode*     aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    /* regexpì˜ compiled patternì„ ì €ìž¥í•¨ */
+    /* regexpÀÇ compiled patternÀ» ÀúÀåÇÔ */
     sPrecision = MTF_REG_EXPRESSION_SIZE( aStack[2].column->precision );
     
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
@@ -261,7 +261,7 @@ IDE_RC mtfRegExpSubstrEstimate( mtcNode*     aNode,
             aTemplate->rows[aNode->table].execute[aNode->column].calculateInfo =
                 sCompiledExpression;
 
-            // ë”ì´ìƒ ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
+            // ´õÀÌ»ó »ç¿ëÇÏÁö ¾ÊÀ½
             IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                              & mtdBinary,
                                              1,
@@ -287,7 +287,7 @@ IDE_RC mtfRegExpSubstrEstimate( mtcNode*     aNode,
         aNode->lflag &= ~MTC_NODE_REESTIMATE_MASK;
         aNode->lflag |= MTC_NODE_REESTIMATE_TRUE;
             
-        // BUG-38070 undef typeìœ¼ë¡œ re-estimateí•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // BUG-38070 undef typeÀ¸·Î re-estimateÇÏÁö ¾Ê´Â´Ù.
         if ( ( aTemplate->variableRow != ID_USHORT_MAX ) &&
              ( ( aNode->lflag & MTC_NODE_BIND_MASK ) == MTC_NODE_BIND_EXIST ) )
         {
@@ -313,7 +313,7 @@ IDE_RC mtfRegExpSubstrEstimate( mtcNode*     aNode,
         aNode->lflag |= MTC_NODE_REESTIMATE_FALSE;
     }
 
-    /* BUG-44740 mtfRegExpression ìž¬ì‚¬ìš©ì„ ìœ„í•´ Tuple Rowë¥¼ ì´ˆê¸°í™”í•œë‹¤. */
+    /* BUG-44740 mtfRegExpression Àç»ç¿ëÀ» À§ÇØ Tuple Row¸¦ ÃÊ±âÈ­ÇÑ´Ù. */
     aTemplate->rows[aNode->table].lflag &= ~MTC_TUPLE_ROW_MEMSET_MASK;
     aTemplate->rows[aNode->table].lflag |= MTC_TUPLE_ROW_MEMSET_TRUE;
 
@@ -348,7 +348,7 @@ IDE_RC mtfRegExpSubstring( const mtlModule  * aLanguage,
     UShort       sLen = 0;
     SShort       sStart;
     
-    // íƒìƒ‰ì„ ì‹œìž‘í•  ìœ„ì¹˜ ì¡°ì •
+    // Å½»öÀ» ½ÃÀÛÇÒ À§Ä¡ Á¶Á¤
     sSourceIndex = (UChar*) aSource;
     sSourceFence = sSourceIndex + aSourceLen;
     
@@ -357,7 +357,7 @@ IDE_RC mtfRegExpSubstring( const mtlModule  * aLanguage,
     sStart = aStart;
     while ( sStart - 1 > 0 )
     {
-        // TASK-3420 ë¬¸ìžì—´ ì²˜ë¦¬ ì •ì±… ê°œì„ 
+        // TASK-3420 ¹®ÀÚ¿­ Ã³¸® Á¤Ã¥ °³¼±
         (void)aLanguage->nextCharPtr( & sSourceIndex, sSourceFence );
         --sStart;
     }
@@ -371,7 +371,7 @@ IDE_RC mtfRegExpSubstring( const mtlModule  * aLanguage,
                                 &sBeginStr,
                                 &sEndStr ) == ID_TRUE )
         {
-            /* 'ABCDEF','B*' ì´ëŸ¬í•œ ê²½ìš° sEndStrì´ ì£¼ì–´ì§„ sSourceIndexì™€ ê°™ì„ìˆ˜ ìžˆë‹¤. */
+            /* 'ABCDEF','B*' ÀÌ·¯ÇÑ °æ¿ì sEndStrÀÌ ÁÖ¾îÁø sSourceIndex¿Í °°À»¼ö ÀÖ´Ù. */
             if ( sSourceIndex != (UChar*)sEndStr )
             {
                 sSourceIndex = (UChar*)sEndStr;
@@ -397,7 +397,7 @@ IDE_RC mtfRegExpSubstring( const mtlModule  * aLanguage,
         }
     }
     
-    /* ê¸€ìžìˆ˜ë¥¼ êµ¬í•œë‹¤. */
+    /* ±ÛÀÚ¼ö¸¦ ±¸ÇÑ´Ù. */
     if ( sLen != 0 )
     {
         idlOS::memcpy( aResult, sBeginStr, sLen );
@@ -411,7 +411,7 @@ IDE_RC mtfRegExpSubstring( const mtlModule  * aLanguage,
     return IDE_SUCCESS;
 }
 
-/* aLength ê¹Œì§€ì˜ ë¬¸ìž ìˆ˜ë¥¼ ë°˜í™˜ í•œë‹¤. */
+/* aLength ±îÁöÀÇ ¹®ÀÚ ¼ö¸¦ ¹ÝÈ¯ ÇÑ´Ù. */
 UShort mtfRegExpGetCharCount( const mtlModule*  aLanguage,
                               const UChar*      aSource,
                               UShort            aLength )
@@ -478,9 +478,9 @@ IDE_RC mtfRegExpSubstrCalculateFor2Args( mtcNode*     aNode,
         sPatternLength = sVarchar2->length;
 
         /* BUG-45213 valgrin warning
-         * SortTempì™€ ê°™ì´ mtrNodeë¡œ ìŒ“ì¼ ê²½ìš° í•­ìƒ ìƒˆë¡œìš´ Rowê°€
-         * í• ë‹¹ë˜ë¯€ë¡œ ì´ì „ sCompiledExpression->patternLen ë¹„êµí•´ë´ì•¼
-         * ì˜ë¯¸ê°€ ì—†ë‹¤ ë”°ë¼ì„œ ì´ëŸ´ê²½ìš° ê·¸ëƒ¥ Compileí•œë‹¤.
+         * SortTemp¿Í °°ÀÌ mtrNode·Î ½×ÀÏ °æ¿ì Ç×»ó »õ·Î¿î Row°¡
+         * ÇÒ´çµÇ¹Ç·Î ÀÌÀü sCompiledExpression->patternLen ºñ±³ÇØºÁ¾ß
+         * ÀÇ¹Ì°¡ ¾ø´Ù µû¶ó¼­ ÀÌ·²°æ¿ì ±×³É CompileÇÑ´Ù.
          */
         if ( ( aTemplate->rows[aNode->table].lflag & MTC_TUPLE_PLAN_MTR_MASK )
              == MTC_TUPLE_PLAN_MTR_TRUE )
@@ -588,15 +588,15 @@ IDE_RC mtfRegExpSubstrCalculateFor3Args( mtcNode*     aNode,
         sPattern = sVarchar2->value;
         sPatternLength = sVarchar2->length;
 
-        // Sourceì˜ ë¬¸ìž ê°œìˆ˜ë¥¼ êµ¬í•¨
+        // SourceÀÇ ¹®ÀÚ °³¼ö¸¦ ±¸ÇÔ
         sSourceCharCount = mtfRegExpGetCharCount( aStack[1].column->language,
                                                   sVarchar1->value,
                                                   sVarchar1->length );
 
         /* BUG-45213 valgrin warning
-         * SortTempì™€ ê°™ì´ mtrNodeë¡œ ìŒ“ì¼ ê²½ìš° í•­ìƒ ìƒˆë¡œìš´ Rowê°€
-         * í• ë‹¹ë˜ë¯€ë¡œ ì´ì „ sCompiledExpression->patternLen ë¹„êµí•´ë´ì•¼
-         * ì˜ë¯¸ê°€ ì—†ë‹¤ ë”°ë¼ì„œ ì´ëŸ´ê²½ìš° ê·¸ëƒ¥ Compileí•œë‹¤.
+         * SortTemp¿Í °°ÀÌ mtrNode·Î ½×ÀÏ °æ¿ì Ç×»ó »õ·Î¿î Row°¡
+         * ÇÒ´çµÇ¹Ç·Î ÀÌÀü sCompiledExpression->patternLen ºñ±³ÇØºÁ¾ß
+         * ÀÇ¹Ì°¡ ¾ø´Ù µû¶ó¼­ ÀÌ·²°æ¿ì ±×³É CompileÇÑ´Ù.
          */
         if ( ( aTemplate->rows[aNode->table].lflag & MTC_TUPLE_PLAN_MTR_MASK )
              == MTC_TUPLE_PLAN_MTR_TRUE )
@@ -635,8 +635,8 @@ IDE_RC mtfRegExpSubstrCalculateFor3Args( mtcNode*     aNode,
         }
 
         /* BUG-34232
-         * sStart( íƒìƒ‰ì„ ì‹œìž‘í•  ìœ„ì¹˜ )ê°€ ìž…ë ¥ë°›ì€ ë¬¸ìžì—´ ê¸¸ì´ë³´ë‹¤ í° ê²½ìš°,
-         * ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¤ëŠ” ëŒ€ì‹  0ì„ ë¦¬í„´í•˜ë„ë¡ ìˆ˜ì • */
+         * sStart( Å½»öÀ» ½ÃÀÛÇÒ À§Ä¡ )°¡ ÀÔ·Â¹ÞÀº ¹®ÀÚ¿­ ±æÀÌº¸´Ù Å« °æ¿ì,
+         * ¿¡·¯¸¦ ¹ß»ý½ÃÅ°´Â ´ë½Å 0À» ¸®ÅÏÇÏµµ·Ï ¼öÁ¤ */
         if ( sStart > sSourceCharCount )
         {
             aStack[0].column->module->null( aStack[0].column,
@@ -723,15 +723,15 @@ IDE_RC mtfRegExpSubstrCalculateFor4Args( mtcNode*     aNode,
         sPattern = sVarchar2->value;
         sPatternLength = sVarchar2->length;
         
-        // Sourceì˜ ë¬¸ìž ê°œìˆ˜ë¥¼ êµ¬í•¨
+        // SourceÀÇ ¹®ÀÚ °³¼ö¸¦ ±¸ÇÔ
         sSourceCharCount = mtfRegExpGetCharCount( aStack[1].column->language,
                                                   sVarchar1->value,
                                                   sVarchar1->length );
 
         /* BUG-45213 valgrin warning
-         * SortTempì™€ ê°™ì´ mtrNodeë¡œ ìŒ“ì¼ ê²½ìš° í•­ìƒ ìƒˆë¡œìš´ Rowê°€
-         * í• ë‹¹ë˜ë¯€ë¡œ ì´ì „ sCompiledExpression->patternLen ë¹„êµí•´ë´ì•¼
-         * ì˜ë¯¸ê°€ ì—†ë‹¤ ë”°ë¼ì„œ ì´ëŸ´ê²½ìš° ê·¸ëƒ¥ Compileí•œë‹¤.
+         * SortTemp¿Í °°ÀÌ mtrNode·Î ½×ÀÏ °æ¿ì Ç×»ó »õ·Î¿î Row°¡
+         * ÇÒ´çµÇ¹Ç·Î ÀÌÀü sCompiledExpression->patternLen ºñ±³ÇØºÁ¾ß
+         * ÀÇ¹Ì°¡ ¾ø´Ù µû¶ó¼­ ÀÌ·²°æ¿ì ±×³É CompileÇÑ´Ù.
          */
         if ( ( aTemplate->rows[aNode->table].lflag & MTC_TUPLE_PLAN_MTR_MASK )
              == MTC_TUPLE_PLAN_MTR_TRUE )
@@ -770,8 +770,8 @@ IDE_RC mtfRegExpSubstrCalculateFor4Args( mtcNode*     aNode,
         }
 
         /* BUG-34232 
-         * sStart( íƒìƒ‰ì„ ì‹œìž‘í•  ìœ„ì¹˜ )ê°€ ìž…ë ¥ë°›ì€ ë¬¸ìžì—´ ê¸¸ì´ë³´ë‹¤ í° ê²½ìš°, 
-         * ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¤ëŠ” ëŒ€ì‹  0ì„ ë¦¬í„´í•˜ë„ë¡ ìˆ˜ì • */
+         * sStart( Å½»öÀ» ½ÃÀÛÇÒ À§Ä¡ )°¡ ÀÔ·Â¹ÞÀº ¹®ÀÚ¿­ ±æÀÌº¸´Ù Å« °æ¿ì, 
+         * ¿¡·¯¸¦ ¹ß»ý½ÃÅ°´Â ´ë½Å 0À» ¸®ÅÏÇÏµµ·Ï ¼öÁ¤ */
         if ( sStart > sSourceCharCount )
         {
             aStack[0].column->module->null( aStack[0].column,
@@ -900,14 +900,14 @@ IDE_RC mtfRegExpSubstrCalculateFor3ArgsFast( mtcNode*     aNode,
         IDE_DASSERT( aInfo != NULL );
         sCompiledExpression = (mtfRegExpression*)aInfo;
         
-        // Sourceì˜ ë¬¸ìž ê°œìˆ˜ë¥¼ êµ¬í•¨
+        // SourceÀÇ ¹®ÀÚ °³¼ö¸¦ ±¸ÇÔ
         sSourceCharCount = mtfRegExpGetCharCount( aStack[1].column->language,
                                                   sVarchar1->value,
                                                   sVarchar1->length );
         
         /* BUG-34232
-         * sStart( íƒìƒ‰ì„ ì‹œìž‘í•  ìœ„ì¹˜ )ê°€ ìž…ë ¥ë°›ì€ ë¬¸ìžì—´ ê¸¸ì´ë³´ë‹¤ í° ê²½ìš°,
-         * ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¤ëŠ” ëŒ€ì‹  0ì„ ë¦¬í„´í•˜ë„ë¡ ìˆ˜ì • */
+         * sStart( Å½»öÀ» ½ÃÀÛÇÒ À§Ä¡ )°¡ ÀÔ·Â¹ÞÀº ¹®ÀÚ¿­ ±æÀÌº¸´Ù Å« °æ¿ì,
+         * ¿¡·¯¸¦ ¹ß»ý½ÃÅ°´Â ´ë½Å 0À» ¸®ÅÏÇÏµµ·Ï ¼öÁ¤ */
         if ( sStart > sSourceCharCount )
         {
             aStack[0].column->module->null( aStack[0].column,
@@ -984,14 +984,14 @@ IDE_RC mtfRegExpSubstrCalculateFor4ArgsFast( mtcNode*     aNode,
         IDE_DASSERT( aInfo != NULL );
         sCompiledExpression = (mtfRegExpression*)aInfo;
         
-        // Sourceì˜ ë¬¸ìž ê°œìˆ˜ë¥¼ êµ¬í•¨
+        // SourceÀÇ ¹®ÀÚ °³¼ö¸¦ ±¸ÇÔ
         sSourceCharCount = mtfRegExpGetCharCount( aStack[1].column->language,
                                                   sVarchar1->value,
                                                   sVarchar1->length );
         
         /* BUG-34232
-         * sStart( íƒìƒ‰ì„ ì‹œìž‘í•  ìœ„ì¹˜ )ê°€ ìž…ë ¥ë°›ì€ ë¬¸ìžì—´ ê¸¸ì´ë³´ë‹¤ í° ê²½ìš°,
-         * ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¤ëŠ” ëŒ€ì‹  0ì„ ë¦¬í„´í•˜ë„ë¡ ìˆ˜ì • */
+         * sStart( Å½»öÀ» ½ÃÀÛÇÒ À§Ä¡ )°¡ ÀÔ·Â¹ÞÀº ¹®ÀÚ¿­ ±æÀÌº¸´Ù Å« °æ¿ì,
+         * ¿¡·¯¸¦ ¹ß»ý½ÃÅ°´Â ´ë½Å 0À» ¸®ÅÏÇÏµµ·Ï ¼öÁ¤ */
         if ( sStart > sSourceCharCount )
         {
             aStack[0].column->module->null( aStack[0].column,

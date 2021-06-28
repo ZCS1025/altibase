@@ -16,40 +16,40 @@
  
 
 /***********************************************************************
- * $Id: qmoCostDef.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmoCostDef.h 85333 2019-04-26 02:34:41Z et16 $
  *
  * Description :
  *
- *    Cost Factor ìƒìˆ˜ì˜ ì •ì˜
+ *    Cost Factor »ó¼öÀÇ Á¤ÀÇ
  *
- *    ë¹„ìš© ê³„ì‚° ì‹œ ì ìš©ë˜ëŠ” ìƒìˆ˜ê°’ì„ ì—¬ê¸°ì— ì •ì˜í•¨.
+ *    ºñ¿ë °è»ê ½Ã Àû¿ëµÇ´Â »ó¼ö°ªÀ» ¿©±â¿¡ Á¤ÀÇÇÔ.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
 #ifndef _O_QMO_COST_DEF_H_
 #define _O_QMO_COST_DEF_H_ 1
 
-// Joinì„ DNF ë¡œ ì²˜ë¦¬í•˜ëŠ” ê²ƒì€ ë°”ëžŒì§í•˜ì§€ ì•Šë‹¤.
-// ì´ì— ëŒ€í•œ Penaltyë¥¼ ë¶€ì—¬í•œë‹¤.
+// JoinÀ» DNF ·Î Ã³¸®ÇÏ´Â °ÍÀº ¹Ù¶÷Á÷ÇÏÁö ¾Ê´Ù.
+// ÀÌ¿¡ ´ëÇÑ Penalty¸¦ ºÎ¿©ÇÑ´Ù.
 #define QMO_COST_DNF_JOIN_PENALTY                                  (10)
 
 //----------------------------------------------
-// ì ìš©í•  ìˆ˜ ì—†ëŠ” ê²½ìš°ì˜ ë¹„ìš©
+// Àû¿ëÇÒ ¼ö ¾ø´Â °æ¿ìÀÇ ºñ¿ë
 //----------------------------------------------
 #define QMO_COST_INVALID_COST                                      (-1)
 
-// ìµœì†Œ ë²„í¼ ê°œìˆ˜
+// ÃÖ¼Ò ¹öÆÛ °³¼ö
 #define QMO_COST_DISK_MINIMUM_BUFFER                               (10)
 
 //----------------------------------------------------------------------
-// ì¤‘ê°„ ê²°ê³¼ ì €ìž¥ ë°©ì‹
+// Áß°£ °á°ú ÀúÀå ¹æ½Ä
 //----------------------------------------------------------------------
 
-// RID ì €ìž¥ ë°©ì‹ê³¼ Push Projectionì— ì˜í•œ Value ì €ìž¥ ë°©ì‹ìœ¼ë¡œ ë‚˜ë‰œë‹¤.
+// RID ÀúÀå ¹æ½Ä°ú Push Projection¿¡ ÀÇÇÑ Value ÀúÀå ¹æ½ÄÀ¸·Î ³ª´¶´Ù.
 typedef enum
 {
     QMO_STORE_RID = 0,
@@ -62,8 +62,7 @@ typedef enum
 //----------------------------------------------
 
 #define QMO_COST_STORE_SORT_TEMP                                    (0)
-#define QMO_COST_STORE_UNIQUE_HASH_TEMP                             (1)
-#define QMO_COST_STORE_CLUSTER_HASH_TEMP                            (2)
+#define QMO_COST_STORE_HASH_TEMP                                    (1)
 
 #define QMO_COST_DEFAULT_NODE_CNT                                   (1)
 

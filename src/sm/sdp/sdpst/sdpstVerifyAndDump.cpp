@@ -19,16 +19,16 @@
  *
  * $Id: sdpstVerifyAndDump.cpp 27229 2008-07-23 17:37:19Z newdaily $
  *
- * ë³¸ íŒŒì¼ì€ Treelist Managed Segmentì˜ ìë£Œêµ¬ì¡° í™•ì¸ ë° ì¶œë ¥ê³¼ ê´€ë ¨ëœ
- * STATIC  ì¸í„°í˜ì´ìŠ¤ë¥¼ ê´€ë¦¬í•œë‹¤.
+ * º» ÆÄÀÏÀº Treelist Managed SegmentÀÇ ÀÚ·á±¸Á¶ È®ÀÎ ¹× Ãâ·Â°ú °ü·ÃµÈ
+ * STATIC  ÀÎÅÍÆäÀÌ½º¸¦ °ü¸®ÇÑ´Ù.
  *
  ***********************************************************************/
 
 # include <sdpstVerifyAndDump.h>
 
 /*
- * [ INTERFACE ] Treelist Managed Segmentì˜ ëª¨ë“  Bitmap í˜ì´ì§€ë¥¼
- * í‘œì¤€ì¶œë ¥ìœ¼ë¡œ ì¶œë ¥í•œë‹¤
+ * [ INTERFACE ] Treelist Managed SegmentÀÇ ¸ğµç Bitmap ÆäÀÌÁö¸¦
+ * Ç¥ÁØÃâ·ÂÀ¸·Î Ãâ·ÂÇÑ´Ù
  */
 void sdpstVerifyAndDump::dump( scSpaceID    /*aSpaceID*/,
                                void        */*aSegDesc*/,
@@ -38,7 +38,7 @@ void sdpstVerifyAndDump::dump( scSpaceID    /*aSpaceID*/,
 }
 
 /*
- * [ INTERFACE ] Segment ì˜ ëª¨ë“  ìë£Œêµ¬ì¡°ë¥¼ í™•ì¸í•œë‹¤.
+ * [ INTERFACE ] Segment ÀÇ ¸ğµç ÀÚ·á±¸Á¶¸¦ È®ÀÎÇÑ´Ù.
  */
 IDE_RC sdpstVerifyAndDump::verify( idvSQL     */*aStatistics*/,
                                    scSpaceID   /*aSpaceID*/,

@@ -21,15 +21,15 @@
  * Description :
  *     HSDS(HaSh DiStinct) Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ hash-based distinction ì—°ì‚°ì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     °ü°èÇü ¸ğµ¨¿¡¼­ hash-based distinction ¿¬»êÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
  *
- *     ë‹¤ìŒê³¼ ê°™ì€ ê¸°ëŠ¥ì„ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
+ *     ´ÙÀ½°ú °°Àº ±â´ÉÀ» À§ÇØ »ç¿ëµÈ´Ù.
  *         - Hash-based Distinction
  *         - Set Union
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -46,7 +46,7 @@ qmnHSDS::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    HSDS ë…¸ë“œì˜ ì´ˆê¸°í™”
+ *    HSDS ³ëµåÀÇ ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -66,7 +66,7 @@ qmnHSDS::init( qcTemplate * aTemplate,
     sDataPlan->doIt = qmnHSDS::doItDefault;
 
     //----------------------------------------
-    // ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰
+    // ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà
     //----------------------------------------
 
     if ( (*sDataPlan->flag & QMND_HSDS_INIT_DONE_MASK)
@@ -87,14 +87,14 @@ qmnHSDS::init( qcTemplate * aTemplate,
     if ( sDependency == ID_TRUE )
     {
         //----------------------------------------
-        // Temp Table êµ¬ì¶• ì „ ì´ˆê¸°í™”
+        // Temp Table ±¸Ãà Àü ÃÊ±âÈ­
         //----------------------------------------
 
         IDE_TEST( qmcHashTemp::clear( sDataPlan->hashMgr )
                   != IDE_SUCCESS );
 
         //----------------------------------------
-        // Childë¥¼ ë°˜ë³µ ìˆ˜í–‰í•˜ì—¬ Temp Tableì„ êµ¬ì¶•
+        // Child¸¦ ¹İº¹ ¼öÇàÇÏ¿© Temp TableÀ» ±¸Ãà
         //----------------------------------------
 
         IDE_TEST( aPlan->left->init( aTemplate,
@@ -126,13 +126,13 @@ qmnHSDS::init( qcTemplate * aTemplate,
         }
         else
         {
-            // Top Queryì—ì„œ ì‚¬ìš©ë˜ëŠ” ê²½ìš° ì´ˆê¸°í™” ê³¼ì •ì—ì„œ Dataë¥¼ êµ¬ì¶•í•˜ì§€
-            // ì•Šê³  ìˆ˜í–‰ ê³¼ì •ì—ì„œ Data êµ¬ì¶• ë° ê²°ê³¼ ë¦¬í„´ì„ ìˆ˜í–‰í•œë‹¤.
+            // Top Query¿¡¼­ »ç¿ëµÇ´Â °æ¿ì ÃÊ±âÈ­ °úÁ¤¿¡¼­ Data¸¦ ±¸ÃàÇÏÁö
+            // ¾Ê°í ¼öÇà °úÁ¤¿¡¼­ Data ±¸Ãà ¹× °á°ú ¸®ÅÏÀ» ¼öÇàÇÑ´Ù.
             // Nothing To Do
         }
 
         //----------------------------------------
-        // Temp Table êµ¬ì¶• í›„ ì´ˆê¸°í™”
+        // Temp Table ±¸Ãà ÈÄ ÃÊ±âÈ­
         //----------------------------------------
 
         sDataPlan->depValue = sDataPlan->depTuple->modify;
@@ -143,13 +143,13 @@ qmnHSDS::init( qcTemplate * aTemplate,
     }
 
     //----------------------------------------
-    // ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
+    // ¼öÇà ÇÔ¼ö °áÁ¤
     //----------------------------------------
 
     if ( ( sCodePlan->flag & QMNC_HSDS_IN_TOP_MASK )
          == QMNC_HSDS_IN_TOP_FALSE )
     {
-        // ì´ë¯¸ êµ¬ì„±ëœ ê²°ê³¼ë¥¼ ë¦¬í„´í•œë‹¤.
+        // ÀÌ¹Ì ±¸¼ºµÈ °á°ú¸¦ ¸®ÅÏÇÑ´Ù.
         sDataPlan->doIt = qmnHSDS::doItFirstIndependent;
     }
     else
@@ -160,20 +160,20 @@ qmnHSDS::init( qcTemplate * aTemplate,
             if ( ( *sDataPlan->resultData.flag & QMX_RESULT_CACHE_STORED_MASK )
                  == QMX_RESULT_CACHE_STORED_TRUE )
             {
-                // ì´ë¯¸ êµ¬ì„±ëœ ê²°ê³¼ë¥¼ ë¦¬í„´í•œë‹¤.
+                // ÀÌ¹Ì ±¸¼ºµÈ °á°ú¸¦ ¸®ÅÏÇÑ´Ù.
                 sDataPlan->doIt = qmnHSDS::doItFirstIndependent;
             }
             else
             {
-                // ìˆ˜í–‰ ê³¼ì • ì¤‘ì— Temp Tableì„ êµ¬ì„±í•˜ê³ ,
-                // ê²°ê³¼ ìƒì„±ì‹œë§ˆë‹¤ ë¦¬í„´í•œë‹¤.
+                // ¼öÇà °úÁ¤ Áß¿¡ Temp TableÀ» ±¸¼ºÇÏ°í,
+                // °á°ú »ı¼º½Ã¸¶´Ù ¸®ÅÏÇÑ´Ù.
                 sDataPlan->doIt = qmnHSDS::doItDependent;
             }
         }
         else
         {
-            // ìˆ˜í–‰ ê³¼ì • ì¤‘ì— Temp Tableì„ êµ¬ì„±í•˜ê³ ,
-            // ê²°ê³¼ ìƒì„±ì‹œë§ˆë‹¤ ë¦¬í„´í•œë‹¤.
+            // ¼öÇà °úÁ¤ Áß¿¡ Temp TableÀ» ±¸¼ºÇÏ°í,
+            // °á°ú »ı¼º½Ã¸¶´Ù ¸®ÅÏÇÑ´Ù.
             sDataPlan->doIt = qmnHSDS::doItDependent;
         }
     }
@@ -196,10 +196,10 @@ qmnHSDS::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    HSDS ì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
+ *    HSDS ÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *    ì§€ì •ëœ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *    ÁöÁ¤µÈ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼öÇàÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -228,11 +228,11 @@ qmnHSDS::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    HSDS ë…¸ë“œì˜ Tupleì— Null Rowë¥¼ ì„¤ì •í•œë‹¤.
+ *    HSDS ³ëµåÀÇ Tuple¿¡ Null Row¸¦ ¼³Á¤ÇÑ´Ù.
  *
  * Implementation :
- *    Child Planì˜ Null Paddingì„ ìˆ˜í–‰í•˜ê³ ,
- *    ìì‹ ì˜ Null Rowë¥¼ Temp Tableë¡œë¶€í„° íšë“í•œë‹¤.
+ *    Child PlanÀÇ Null PaddingÀ» ¼öÇàÇÏ°í,
+ *    ÀÚ½ÅÀÇ Null Row¸¦ Temp Table·ÎºÎÅÍ È¹µæÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -263,9 +263,9 @@ qmnHSDS::padNull( qcTemplate * aTemplate,
     sDataPlan->plan.myTuple->modify++;
 
     // To Fix PR-9822
-    // padNull() í•¨ìˆ˜ëŠ” Child ì˜ modify ê°’ì„ ë³€ê²½ì‹œí‚¤ê²Œ ëœë‹¤.
-    // ì´ëŠ” ì¬êµ¬ì¶• ì—¬ë¶€ì™€ ê´€ê³„ê°€ ì—†ìœ¼ë¯€ë¡œ ê·¸ ê°’ì„ ì €ì¥í•˜ì—¬
-    // ì¬êµ¬ì¶•ì´ ë˜ì§€ ì•Šë„ë¡ í•œë‹¤.
+    // padNull() ÇÔ¼ö´Â Child ÀÇ modify °ªÀ» º¯°æ½ÃÅ°°Ô µÈ´Ù.
+    // ÀÌ´Â Àç±¸Ãà ¿©ºÎ¿Í °ü°è°¡ ¾øÀ¸¹Ç·Î ±× °ªÀ» ÀúÀåÇÏ¿©
+    // Àç±¸ÃàÀÌ µÇÁö ¾Êµµ·Ï ÇÑ´Ù.
     sDataPlan->depValue = sDataPlan->depTuple->modify;
 
     return IDE_SUCCESS;
@@ -287,7 +287,7 @@ qmnHSDS::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    HSDS ë…¸ë“œì˜ ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *    HSDS ³ëµåÀÇ ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  * Implementation :
  *
@@ -309,7 +309,7 @@ qmnHSDS::printPlan( qcTemplate   * aTemplate,
     ULong  i;
 
     //----------------------------
-    // Display ìœ„ì¹˜ ê²°ì •
+    // Display À§Ä¡ °áÁ¤
     //----------------------------
 
     for ( i = 0; i < aDepth; i++ )
@@ -319,20 +319,20 @@ qmnHSDS::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // ìˆ˜í–‰ ì •ë³´ ì¶œë ¥
+    // ¼öÇà Á¤º¸ Ãâ·Â
     //----------------------------
 
     if ( aMode == QMN_DISPLAY_ALL )
     {
         //----------------------------
-        // explain plan = on; ì¸ ê²½ìš°
+        // explain plan = on; ÀÎ °æ¿ì
         //----------------------------
 
         if ( (*sDataPlan->flag & QMND_HSDS_INIT_DONE_MASK)
              == QMND_HSDS_INIT_DONE_TRUE )
         {
             sIsInit = ID_TRUE;
-            // ìˆ˜í–‰ ì •ë³´ íšë“
+            // ¼öÇà Á¤º¸ È¹µæ
             IDE_TEST( qmcHashTemp::getDisplayInfo( sDataPlan->hashMgr,
                                                    & sPageCnt,
                                                    & sRecordCnt,
@@ -358,7 +358,7 @@ qmnHSDS::printPlan( qcTemplate   * aTemplate,
                 else
                 {
                     // BUG-29209
-                    // ITEM_SIZE ì •ë³´ ë³´ì—¬ì£¼ì§€ ì•ŠìŒ
+                    // ITEM_SIZE Á¤º¸ º¸¿©ÁÖÁö ¾ÊÀ½
                     iduVarStringAppendFormat(
                         aString,
                         "DISTINCT ( ITEM_SIZE: BLOCKED, "
@@ -388,7 +388,7 @@ qmnHSDS::printPlan( qcTemplate   * aTemplate,
                 else
                 {
                     // BUG-29209
-                    // ITEM_SIZE, DISK_PAGE_COUNT ì •ë³´ ë³´ì—¬ì£¼ì§€ ì•ŠìŒ
+                    // ITEM_SIZE, DISK_PAGE_COUNT Á¤º¸ º¸¿©ÁÖÁö ¾ÊÀ½
                     iduVarStringAppendFormat(
                         aString,
                         "DISTINCT ( ITEM_SIZE: BLOCKED, "
@@ -412,7 +412,7 @@ qmnHSDS::printPlan( qcTemplate   * aTemplate,
     else
     {
         //----------------------------
-        // explain plan = only; ì¸ ê²½ìš°
+        // explain plan = only; ÀÎ °æ¿ì
         //----------------------------
 
         iduVarStringAppendFormat( aString,
@@ -423,7 +423,7 @@ qmnHSDS::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Cost ì¶œë ¥
+    // Cost Ãâ·Â
     //----------------------------
     qmn::printCost( aString,
                     sCodePlan->plan.qmgAllCost );
@@ -483,7 +483,7 @@ qmnHSDS::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
+    // Operatorº° °á°ú Á¤º¸ Ãâ·Â
     //----------------------------
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
     {
@@ -499,7 +499,7 @@ qmnHSDS::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Child Plan ì •ë³´ ì¶œë ¥
+    // Child Plan Á¤º¸ Ãâ·Â
     //----------------------------
 
     IDE_TEST( aPlan->left->printPlan( aTemplate,
@@ -525,7 +525,7 @@ qmnHSDS::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨.
+ *    ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ¸é ¾ÈµÊ.
  *
  * Implementation :
  *
@@ -549,8 +549,8 @@ qmnHSDS::doItDependent( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ìƒˆë¡œìš´ Row ì¶œí˜„ ì‹œ ë°”ë¡œ ê²°ê³¼ë¥¼ ë¦¬í„´
- *    Top Queryì—ì„œ ìˆ˜í–‰ë  ê²½ìš° í˜¸ì¶œëœë‹¤.
+ *    »õ·Î¿î Row ÃâÇö ½Ã ¹Ù·Î °á°ú¸¦ ¸®ÅÏ
+ *    Top Query¿¡¼­ ¼öÇàµÉ °æ¿ì È£ÃâµÈ´Ù.
  *
  * Implementation :
  *
@@ -569,7 +569,7 @@ qmnHSDS::doItDependent( qcTemplate * aTemplate,
     sInserted = ID_TRUE;
 
     //------------------------------
-    // Child Recordì˜ ì €ì¥
+    // Child RecordÀÇ ÀúÀå
     //------------------------------
 
     IDE_TEST( sCodePlan->plan.left->doIt( aTemplate,
@@ -579,13 +579,13 @@ qmnHSDS::doItDependent( qcTemplate * aTemplate,
     while ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
     {
         //---------------------------------------
-        // 1.  ì €ì¥ Rowë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
-        // 2.  ì €ì¥ Rowì˜ êµ¬ì„±
-        // 3.  ì €ì¥ Rowì˜ ì‚½ì…
-        // 4.  ì‚½ì… ì„±ê³µ ì—¬ë¶€ì— ë”°ë¥¸ ê²°ê³¼ ë¦¬í„´
+        // 1.  ÀúÀå Row¸¦ À§ÇÑ °ø°£ ÇÒ´ç
+        // 2.  ÀúÀå RowÀÇ ±¸¼º
+        // 3.  ÀúÀå RowÀÇ »ğÀÔ
+        // 4.  »ğÀÔ ¼º°ø ¿©ºÎ¿¡ µû¸¥ °á°ú ¸®ÅÏ
         //---------------------------------------
 
-        // 1.  ì €ì¥ Rowë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
+        // 1.  ÀúÀå Row¸¦ À§ÇÑ °ø°£ ÇÒ´ç
         if ( sInserted == ID_TRUE )
         {
             IDE_TEST( qmcHashTemp::alloc( sDataPlan->hashMgr,
@@ -594,31 +594,31 @@ qmnHSDS::doItDependent( qcTemplate * aTemplate,
         }
         else
         {
-            // ì‚½ì…ì´ ì‹¤íŒ¨í•œ ê²½ìš°ë¡œ ì´ë¯¸ í• ë‹¹ë°›ì€ ê³µê°„ì„ ì‚¬ìš©í•œë‹¤.
-            // ë”°ë¼ì„œ, ë³„ë„ë¡œ ê³µê°„ì„ í• ë‹¹ ë°›ì„ í•„ìš”ê°€ ì—†ë‹¤.
+            // »ğÀÔÀÌ ½ÇÆĞÇÑ °æ¿ì·Î ÀÌ¹Ì ÇÒ´ç¹ŞÀº °ø°£À» »ç¿ëÇÑ´Ù.
+            // µû¶ó¼­, º°µµ·Î °ø°£À» ÇÒ´ç ¹ŞÀ» ÇÊ¿ä°¡ ¾ø´Ù.
         }
 
-        // 2.  ì €ì¥ Rowì˜ êµ¬ì„±
+        // 2.  ÀúÀå RowÀÇ ±¸¼º
         IDE_TEST( setMtrRow( aTemplate,
                              sDataPlan ) != IDE_SUCCESS );
 
-        // 3.  ì €ì¥ Rowì˜ ì‚½ì…
+        // 3.  ÀúÀå RowÀÇ »ğÀÔ
         IDE_TEST( qmcHashTemp::addDistRow( sDataPlan->hashMgr,
                                            & sDataPlan->plan.myTuple->row,
                                            & sInserted )
                   != IDE_SUCCESS );
 
-        // 4.  ì‚½ì… ì„±ê³µ ì—¬ë¶€ì— ë”°ë¥¸ ê²°ê³¼ ë¦¬í„´
+        // 4.  »ğÀÔ ¼º°ø ¿©ºÎ¿¡ µû¸¥ °á°ú ¸®ÅÏ
         if ( sInserted == ID_TRUE )
         {
-            // ì‚½ì…ì´ ì„±ê³µí•œ ê²½ìš° Distinct Rowì´ë‹¤.
-            // ë”°ë¼ì„œ, í•´ë‹¹ ê²°ê³¼ë¥¼ ë¦¬í„´í•œë‹¤.
+            // »ğÀÔÀÌ ¼º°øÇÑ °æ¿ì Distinct RowÀÌ´Ù.
+            // µû¶ó¼­, ÇØ´ç °á°ú¸¦ ¸®ÅÏÇÑ´Ù.
             break;
         }
         else
         {
-            // ì‚½ì…ì´ ì‹¤íŒ¨í•œ ê²½ìš° ë™ì¼í•œ Rowê°€ ì¡´ì¬í•˜ê³  ìˆë‹¤.
-            // ë”°ë¼ì„œ, Childë¥¼ ë‹¤ì‹œ ìˆ˜í–‰í•œë‹¤.
+            // »ğÀÔÀÌ ½ÇÆĞÇÑ °æ¿ì µ¿ÀÏÇÑ Row°¡ Á¸ÀçÇÏ°í ÀÖ´Ù.
+            // µû¶ó¼­, Child¸¦ ´Ù½Ã ¼öÇàÇÑ´Ù.
             IDE_TEST( sCodePlan->plan.left->doIt( aTemplate,
                                                   sCodePlan->plan.left,
                                                   & sFlag ) != IDE_SUCCESS );
@@ -626,7 +626,7 @@ qmnHSDS::doItDependent( qcTemplate * aTemplate,
     }
 
     //------------------------------
-    // ê²°ê³¼ ë¦¬í„´
+    // °á°ú ¸®ÅÏ
     //------------------------------
 
     if ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
@@ -670,10 +670,10 @@ qmnHSDS::doItFirstIndependent( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Subquery ë‚´ì—ì„œ ì‚¬ìš©ë  ê²½ìš°ì˜ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
+ *    Subquery ³»¿¡¼­ »ç¿ëµÉ °æ¿ìÀÇ ÃÖÃÊ ¼öÇà ÇÔ¼ö
  *
  * Implementation :
- *    ì´ë¯¸ êµ¬ì„±ëœ Temp Tableë¡œë¶€í„° í•œ ê»€ì”© ì–»ì–´ì˜¨ë‹¤.
+ *    ÀÌ¹Ì ±¸¼ºµÈ Temp Table·ÎºÎÅÍ ÇÑ ²«¾¿ ¾ò¾î¿Â´Ù.
  *
  ***********************************************************************/
 
@@ -726,10 +726,10 @@ qmnHSDS::doItNextIndependent( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Subquery ë‚´ì—ì„œ ì‚¬ìš©ë  ê²½ìš°ì˜ ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
+ *    Subquery ³»¿¡¼­ »ç¿ëµÉ °æ¿ìÀÇ ´ÙÀ½ ¼öÇà ÇÔ¼ö
  *
  * Implementation :
- *    ì´ë¯¸ êµ¬ì„±ëœ Temp Tableë¡œë¶€í„° í•œ ê»€ì”© ì–»ì–´ì˜¨ë‹¤.
+ *    ÀÌ¹Ì ±¸¼ºµÈ Temp Table·ÎºÎÅÍ ÇÑ ²«¾¿ ¾ò¾î¿Â´Ù.
  *
  ***********************************************************************/
 
@@ -778,7 +778,7 @@ qmnHSDS::firstInit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    HSDS nodeì˜ Data ì˜ì—­ì˜ ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
+ *    HSDS nodeÀÇ Data ¿µ¿ªÀÇ ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
  *
  * Implementation :
  *
@@ -786,11 +786,11 @@ qmnHSDS::firstInit( qcTemplate * aTemplate,
     qmndHSDS * sCacheDataPlan = NULL;
 
     //---------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------
 
     //---------------------------------
-    // HSDS ê³ ìœ  ì •ë³´ì˜ ì´ˆê¸°í™”
+    // HSDS °íÀ¯ Á¤º¸ÀÇ ÃÊ±âÈ­
     //---------------------------------
     //
     /* PROJ-2462 Result Cache */
@@ -832,14 +832,14 @@ qmnHSDS::firstInit( qcTemplate * aTemplate,
     aDataPlan->depValue = QMN_PLAN_DEFAULT_DEPENDENCY_VALUE;
 
     //---------------------------------
-    // Temp Tableì˜ ì´ˆê¸°í™”
+    // Temp TableÀÇ ÃÊ±âÈ­
     //---------------------------------
 
     IDE_TEST( initTempTable( aTemplate, aCodePlan, aDataPlan )
               != IDE_SUCCESS );
 
     //---------------------------------
-    // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
+    // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
     //---------------------------------
 
     *aDataPlan->flag &= ~QMND_HSDS_INIT_DONE_MASK;
@@ -872,7 +872,7 @@ qmnHSDS::initMtrNode( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ì €ì¥ Columnì˜ ê´€ë¦¬ë¥¼ ìœ„í•œ ë…¸ë“œë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ *    ÀúÀå ColumnÀÇ °ü¸®¸¦ À§ÇÑ ³ëµå¸¦ ÃÊ±âÈ­ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -880,13 +880,13 @@ qmnHSDS::initMtrNode( qcTemplate * aTemplate,
     UInt        sHeaderSize = 0;
 
     //---------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------
 
     IDE_DASSERT( aCodePlan->mtrNodeOffset > 0 );
 
     //---------------------------------
-    // ì €ì¥ ê´€ë¦¬ë¥¼ ìœ„í•œ ì •ë³´ì˜ ì´ˆê¸°í™”
+    // ÀúÀå °ü¸®¸¦ À§ÇÑ Á¤º¸ÀÇ ÃÊ±âÈ­
     //---------------------------------
     aDataPlan->mtrNode =
         (qmdMtrNode*) (aTemplate->tmplate.data + aCodePlan->mtrNodeOffset);
@@ -914,14 +914,14 @@ qmnHSDS::initMtrNode( qcTemplate * aTemplate,
     }
 
     //---------------------------------
-    // ì €ì¥ Columnì˜ ì´ˆê¸°í™”
+    // ÀúÀå ColumnÀÇ ÃÊ±âÈ­
     //---------------------------------
 
-    // 1.  ì €ì¥ Columnì˜ ì—°ê²° ì •ë³´ ìƒì„±
-    // 2.  ì €ì¥ Columnì˜ ì´ˆê¸°í™”
-    // 3.  ì €ì¥ Columnì˜ offsetì„ ì¬ì¡°ì •
-    // 4.  Row Sizeì˜ ê³„ì‚°
-    //     - Disk Temp Tableì˜ ê²½ìš° Rowë¥¼ ìœ„í•œ Memoryë„ í• ë‹¹ë°›ìŒ.
+    // 1.  ÀúÀå ColumnÀÇ ¿¬°á Á¤º¸ »ı¼º
+    // 2.  ÀúÀå ColumnÀÇ ÃÊ±âÈ­
+    // 3.  ÀúÀå ColumnÀÇ offsetÀ» ÀçÁ¶Á¤
+    // 4.  Row SizeÀÇ °è»ê
+    //     - Disk Temp TableÀÇ °æ¿ì Row¸¦ À§ÇÑ Memoryµµ ÇÒ´ç¹ŞÀ½.
 
     IDE_TEST( qmc::linkMtrNode( aCodePlan->myNode,
                                 aDataPlan->mtrNode ) != IDE_SUCCESS );
@@ -951,7 +951,7 @@ qmnHSDS::initHashNode( qmndHSDS   * aDataPlan )
 /***********************************************************************
  *
  * Description :
- *    Hashing Columnì˜ ì‹œì‘ ìœ„ì¹˜
+ *    Hashing ColumnÀÇ ½ÃÀÛ À§Ä¡
  *
  * Implementation :
  *
@@ -985,7 +985,7 @@ qmnHSDS::initTempTable( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Hash Temp Tableì„ ì´ˆê¸°í™”í•œë‹¤.
+ *     Hash Temp TableÀ» ÃÊ±âÈ­ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -994,11 +994,11 @@ qmnHSDS::initTempTable( qcTemplate * aTemplate,
     qmndHSDS * sCacheDataPlan = NULL;
 
     //-----------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //-----------------------------
 
     //-----------------------------
-    // Flag ì •ë³´ ì´ˆê¸°í™”
+    // Flag Á¤º¸ ÃÊ±âÈ­
     //-----------------------------
 
     sFlag = QMCD_HASH_TMP_DISTINCT_TRUE | QMCD_HASH_TMP_PRIMARY_TRUE;
@@ -1022,16 +1022,16 @@ qmnHSDS::initTempTable( qcTemplate * aTemplate,
     }
     
     // PROJ-2553
-    // DISTINCT Hashingì€ Bucket List Hashing ë°©ë²•ì„ ì¨ì•¼ í•œë‹¤.
+    // DISTINCT HashingÀº Bucket List Hashing ¹æ¹ıÀ» ½á¾ß ÇÑ´Ù.
     sFlag &= ~QMCD_HASH_TMP_HASHING_TYPE;
     sFlag |= QMCD_HASH_TMP_HASHING_BUCKET;
 
     // BUG-31997: When using temporary tables by RID, RID refers to
     // the invalid row.
-    /* QMNC_HSDS_IN_TOP_TRUE ì¼ë•ŒëŠ” temp table ë¥¼ ì™„ì „ì´ êµ¬ì„±í•˜ì§€ ì•Šê³ 
-     * 1 row ë¥¼ insert í•˜ê³  ìƒìœ„ í”Œëœì—ì„œ insert í•œ rid ë¥¼ ê·¸ëŒ€ë¡œ ì €ì¥í•˜ê²Œ ëœë‹¤.
-     * í•˜ì§€ë§Œ hash temp table ì€ indexë¡œ ë§Œë“¤ì–´ì ¸ì„œ rid ê°€ ë³€ê²½ë ìˆ˜ ìˆë‹¤.
-     * ë”°ë¼ì„œ SM ì—ê²Œ rid ë¥¼ ë³€ê²½í•˜ì§€ ì•Šë„ë¡ ìš”ì²­ì„ í•´ì•¼ í•œë‹¤. */
+    /* QMNC_HSDS_IN_TOP_TRUE ÀÏ¶§´Â temp table ¸¦ ¿ÏÀüÀÌ ±¸¼ºÇÏÁö ¾Ê°í
+     * 1 row ¸¦ insert ÇÏ°í »óÀ§ ÇÃ·£¿¡¼­ insert ÇÑ rid ¸¦ ±×´ë·Î ÀúÀåÇÏ°Ô µÈ´Ù.
+     * ÇÏÁö¸¸ hash temp table Àº index·Î ¸¸µé¾îÁ®¼­ rid °¡ º¯°æµÉ¼ö ÀÖ´Ù.
+     * µû¶ó¼­ SM ¿¡°Ô rid ¸¦ º¯°æÇÏÁö ¾Êµµ·Ï ¿äÃ»À» ÇØ¾ß ÇÑ´Ù. */
     if ( (aCodePlan->flag & QMNC_HSDS_IN_TOP_MASK) == QMNC_HSDS_IN_TOP_TRUE )
     {
         if ( (aCodePlan->plan.flag & QMN_PLAN_TEMP_FIXED_RID_MASK)
@@ -1043,7 +1043,7 @@ qmnHSDS::initTempTable( qcTemplate * aTemplate,
     }
 
     //-----------------------------
-    // Temp Table ì´ˆê¸°í™”
+    // Temp Table ÃÊ±âÈ­
     //-----------------------------
     if ( ( *aDataPlan->flag & QMN_PLAN_RESULT_CACHE_EXIST_MASK )
          == QMN_PLAN_RESULT_CACHE_EXIST_FALSE )
@@ -1058,7 +1058,7 @@ qmnHSDS::initTempTable( qcTemplate * aTemplate,
                                      ID_UINT_MAX,
                                      aDataPlan->mtrNode,
                                      aDataPlan->hashNode,
-                                     NULL,  // Aggregation Columnì—†ìŒ
+                                     NULL,  // Aggregation Column¾øÀ½
                                      aCodePlan->bucketCnt,
                                      sFlag )
                   != IDE_SUCCESS );
@@ -1083,7 +1083,7 @@ qmnHSDS::initTempTable( qcTemplate * aTemplate,
                                          sCacheDataPlan->resultData.memoryIdx,
                                          aDataPlan->mtrNode,
                                          aDataPlan->hashNode,
-                                         NULL,  // Aggregation Columnì—†ìŒ
+                                         NULL,  // Aggregation Column¾øÀ½
                                          aCodePlan->bucketCnt,
                                          sFlag )
                       != IDE_SUCCESS );
@@ -1112,7 +1112,7 @@ IDE_RC qmnHSDS::checkDependency( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Dependent Tupleì— ë³€í™”ê°€ ìˆëŠ” ì§€ë¥¼ ê²€ì‚¬
+ *    Dependent Tuple¿¡ º¯È­°¡ ÀÖ´Â Áö¸¦ °Ë»ç
  *
  * Implementation :
  *
@@ -1158,7 +1158,7 @@ qmnHSDS::setMtrRow( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ì €ì¥ Rowì˜ êµ¬ì„±
+ *    ÀúÀå RowÀÇ ±¸¼º
  *
  * Implementation :
  *
@@ -1195,7 +1195,7 @@ qmnHSDS::setTupleSet( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     ê²€ìƒ‰ëœ ì €ì¥ Rowë¥¼ ì´ìš©í•˜ì—¬ Tuple Setì„ ë³µì›í•œë‹¤.
+ *     °Ë»öµÈ ÀúÀå Row¸¦ ÀÌ¿ëÇÏ¿© Tuple SetÀ» º¹¿øÇÑ´Ù.
  *
  * Implementation :
  *

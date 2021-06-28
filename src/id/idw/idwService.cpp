@@ -16,6 +16,7 @@
  
 #include <ide.h>
 #include <idwService.h>
+#include <idtContainer.h>
 
 
 //Static Variable Initialize
@@ -37,10 +38,10 @@
  * Name : serviceStart()
  *
  * Description :
- * 1. ì‚¬ìš©ì ë³€ìˆ˜ì—ì„œ ì„œë¹„ìŠ¤ ì´ë¦„ì„ ì½ì–´ì˜¨ë‹¤.
- * 2. SCMì— ë“±ë¡ëœ ì„œë¹„ìŠ¤ì—ì„œ Start/Stop ë“±ì˜ ëª…ë ¹ì„ ë°›ì„ ìˆ˜ ìˆë„ë¡
- *    Dispatcherë¥¼ ë“±ë¡í•˜ê³  ì‹¤ì œ Altibaseë¥¼ êµ¬ë™í•˜ê¸°ìœ„í•´ 
- *    serviceMain() ì„ í˜¸ì¶œí•œë‹¤.
+ * 1. »ç¿ëÀÚ º¯¼ö¿¡¼­ ¼­ºñ½º ÀÌ¸§À» ÀĞ¾î¿Â´Ù.
+ * 2. SCM¿¡ µî·ÏµÈ ¼­ºñ½º¿¡¼­ Start/Stop µîÀÇ ¸í·ÉÀ» ¹ŞÀ» ¼ö ÀÖµµ·Ï
+ *    Dispatcher¸¦ µî·ÏÇÏ°í ½ÇÁ¦ Altibase¸¦ ±¸µ¿ÇÏ±âÀ§ÇØ 
+ *    serviceMain() À» È£ÃâÇÑ´Ù.
 ---------------------------------------------------------------*/
 
 IDE_RC idwService::serviceStart()
@@ -49,8 +50,8 @@ IDE_RC idwService::serviceStart()
     
     if ( (serviceName = idlOS::getenv(ALTIBASE_ENV_PREFIX"SERVICE")) == NULL )
     {
-        //BUGBUG - ì´ë²¤íŠ¸ë¡œê·¸ ë‚¨ê²¨ì•¼ í•¨
-        //PS. í™˜ê²½ ë³€ìˆ˜ë¥¼ ì½ì–´ì˜¬ ìˆ˜ ì—†ìŒ.
+        //BUGBUG - ÀÌº¥Æ®·Î±× ³²°Ü¾ß ÇÔ
+        //PS. È¯°æ º¯¼ö¸¦ ÀĞ¾î¿Ã ¼ö ¾øÀ½.
         return IDE_FAILURE;   
     }
 
@@ -80,9 +81,9 @@ IDE_RC idwService::serviceStart()
  * Name : serviceMain()
  *
  * Description :
- * Dispatcherì—ì„œ ë³´ë‚´ëŠ” ëª…ë ¹(Start/Stop)ì„ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ Handlerë¥¼
- * ë“±ë¡í•˜ê³ , Altibase ë¥¼ êµ¬ë™í•œë‹¤ (iSQLê³¼ì˜ í†µì‹ ì€ ë³„ë„ë¡œ í•„ìš”í•˜ì§€
- * ì•Šë„ë¡ ì²˜ë¦¬ë˜ì—ˆë‹¤).
+ * Dispatcher¿¡¼­ º¸³»´Â ¸í·É(Start/Stop)À» Ã³¸®ÇÏ±â À§ÇÑ Handler¸¦
+ * µî·ÏÇÏ°í, Altibase ¸¦ ±¸µ¿ÇÑ´Ù (iSQL°úÀÇ Åë½ÅÀº º°µµ·Î ÇÊ¿äÇÏÁö
+ * ¾Êµµ·Ï Ã³¸®µÇ¾ú´Ù).
  *
 ---------------------------------------------------------------*/ 
 
@@ -93,28 +94,33 @@ IDE_RC idwService::serviceMain( SInt   /*argc*/,
 
     UInt     sOptionFlag      = 0;
 
-	//ServiceHandleì„ ë“±ë¡í•¨.
+	//ServiceHandleÀ» µî·ÏÇÔ.
 	mHService = RegisterServiceCtrlHandler( serviceName, 
 	                                        (LPHANDLER_FUNCTION)serviceHandler );
 	
     if (mHService == 0)
     {
-        //BUGBUG : ì—ëŸ¬ ë©”ì‹œì§€ëŠ” ì´ë²¤íŠ¸ ë¡œê·¸ë¡œ ë‚¨ê²¨ì•¼ í•¨		
-        //GetLastErrorë¥¼ ì‚¬ìš©í•˜ì—¬ ERROR_INVALID_NAME, 
-        //ERROR_SERVICE_DOES_NOT_EXISTë¥¼ íŒë³„í•œë’¤ ì´ë²¤íŠ¸ ë¡œê·¸ë¡œ ë‚¨ê¹€        
+        //BUGBUG : ¿¡·¯ ¸Ş½ÃÁö´Â ÀÌº¥Æ® ·Î±×·Î ³²°Ü¾ß ÇÔ		
+        //GetLastError¸¦ »ç¿ëÇÏ¿© ERROR_INVALID_NAME, 
+        //ERROR_SERVICE_DOES_NOT_EXIST¸¦ ÆÇº°ÇÑµÚ ÀÌº¥Æ® ·Î±×·Î ³²±è        
         return IDE_FAILURE;
     }
+
+    /* BUG-47527 */
+    IDE_TEST( idtContainer::initializeStatic(IDU_SERVER_TYPE) != IDE_SUCCESS );
 
     //Altibase Startup 
 	setStatus( SERVICE_START_PENDING );
     IDE_TEST( idwService::mWinStart() != IDE_SUCCESS );
     
-    //Listenerë¥¼ ìƒì„±
+    //Listener¸¦ »ı¼º
     setStatus( SERVICE_RUNNING );
     IDE_TEST( idwService::mWinRun() != IDE_SUCCESS );    
 
 	setStatus( SERVICE_STOPPED );	
 	
+    IDE_TEST( idtContainer::destroyStatic() != IDE_SUCCESS );
+
 	CloseHandle( mHService );  
 	
 	return IDE_SUCCESS;  
@@ -137,12 +143,12 @@ IDE_RC idwService::serviceMain( SInt   /*argc*/,
  * PROJ-1699
  *
  * Name : serviceHandler(..)
- * Argument : opCode = ì œì–´ ëª…ë ¹(START/STOP)
+ * Argument : opCode = Á¦¾î ¸í·É(START/STOP)
  * Description :
- * Dispatcherì—ì„œ ì „ë‹¬ëœ ëª…ë ¹ì„ ì‹¤ì œë¡œ ì²˜ë¦¬í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
- * SCMì—ì„œ STOP ëª…ë ¹ ë˜ëŠ” ì‹œìŠ¤í…œ ì¢…ë£Œì‹œ ì „ë‹¬ë˜ëŠ” SHUTDOWN ëª…ë ¹ì„
- * ë°›ì•„ì„œ, serviceStop í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
- * ê° ëª…ë ¹ì„ ì²˜ë¦¬í•œ í›„ì— SCMì— í˜„ì¬ ì„œë¹„ìŠ¤ ìƒíƒœë¥¼ ì„¸íŒ…í•œë‹¤.
+ * Dispatcher¿¡¼­ Àü´ŞµÈ ¸í·ÉÀ» ½ÇÁ¦·Î Ã³¸®ÇÏ´Â ÇÔ¼öÀÌ´Ù.
+ * SCM¿¡¼­ STOP ¸í·É ¶Ç´Â ½Ã½ºÅÛ Á¾·á½Ã Àü´ŞµÇ´Â SHUTDOWN ¸í·ÉÀ»
+ * ¹Ş¾Æ¼­, serviceStop ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+ * °¢ ¸í·ÉÀ» Ã³¸®ÇÑ ÈÄ¿¡ SCM¿¡ ÇöÀç ¼­ºñ½º »óÅÂ¸¦ ¼¼ÆÃÇÑ´Ù.
 ---------------------------------------------------------------*/
 
 #if defined(PDL_WIN32) && !defined(VC_WINCE)
@@ -173,7 +179,7 @@ void idwService::serviceHandler( SInt /*opCode*/ )
 	
     IDE_EXCEPTION_END;
     {
-        //BUGBUG - ì´ë²¤íŠ¸ë¡œê·¸ë¡œ ê´€ë ¨ ì—ëŸ¬ë¥¼ ë‚¨ê²¨ì•¼ í•¨
+        //BUGBUG - ÀÌº¥Æ®·Î±×·Î °ü·Ã ¿¡·¯¸¦ ³²°Ü¾ß ÇÔ
         ideLog::logErrorMsg(IDE_SERVER_0);
     }
 #else
@@ -186,9 +192,9 @@ void idwService::serviceHandler( SInt /*opCode*/ )
  * PROJ-1699
  *
  * Name : setStatus(..)
- * Argument : dwState = ì„œë¹„ìŠ¤ ìƒíƒœ
+ * Argument : dwState = ¼­ºñ½º »óÅÂ
  * Description :
- * SCMì— ìƒíƒœ ë³´ê³ ë¥¼ í•œë‹¤.
+ * SCM¿¡ »óÅÂ º¸°í¸¦ ÇÑ´Ù.
  * 
 ---------------------------------------------------------------*/
 

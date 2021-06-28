@@ -64,7 +64,7 @@ static void acpCStrShift( acp_char_t *aStr, acp_sint32_t aNum )
 }
 
 /*
- * ì†Œìˆ˜ì ì„ ì§€ìš°ê³  ë¬¸ìžì—´ ì‹œìž‘ì„ ê¸°ì¤€ìœ¼ë¡œ í–ˆì„ ë•Œ ìœ„ì¹˜ë¥¼ ë°˜í™˜
+ * ¼Ò¼öÁ¡À» Áö¿ì°í ¹®ÀÚ¿­ ½ÃÀÛÀ» ±âÁØÀ¸·Î ÇßÀ» ¶§ À§Ä¡¸¦ ¹ÝÈ¯
  */
 static acp_size_t acpCStrRemoveDecimalPoint( acp_char_t *aStr, const acp_size_t aMaxLen )
 {
@@ -81,8 +81,8 @@ static acp_size_t acpCStrRemoveDecimalPoint( acp_char_t *aStr, const acp_size_t 
     if ( ACP_RC_NOT_SUCCESS( sRC ) )
     {
         /*
-         * ì†Œìˆ˜ì  ì—†ê³  exponentë„ ì—†ìœ¼ë¯€ë¡œ ë§¨ ëì— ìžˆëŠ” ì†Œìˆ˜ì ì´
-         * ìƒëžµë˜ì–´ ìžˆë‹¤.
+         * ¼Ò¼öÁ¡ ¾ø°í exponentµµ ¾øÀ¸¹Ç·Î ¸Ç ³¡¿¡ ÀÖ´Â ¼Ò¼öÁ¡ÀÌ
+         * »ý·«µÇ¾î ÀÖ´Ù.
          */
         sDecPoint = acpCStrLen( aStr, aMaxLen );
     }
@@ -104,7 +104,7 @@ static acp_size_t acpCStrRemoveDecimalPoint( acp_char_t *aStr, const acp_size_t 
 }
 
 /*
- * ìˆ˜ì˜ exponentë¶€ë¶„ì„ ì§€ìš°ê³  exponentë¥¼ ë°˜í™˜
+ * ¼öÀÇ exponentºÎºÐÀ» Áö¿ì°í exponent¸¦ ¹ÝÈ¯
  */
 static acp_uint32_t acpCStrRemoveExp( acp_char_t *aStr, const acp_size_t aMaxLen )
 {
@@ -122,7 +122,7 @@ static acp_uint32_t acpCStrRemoveExp( acp_char_t *aStr, const acp_size_t aMaxLen
     if ( ACP_RC_IS_SUCCESS( sRC ) )
     {
         /*
-         * ì†Œìˆ˜ì  ì—†ìœ¼ë‚˜ exponentëŠ” ìžˆìŒ
+         * ¼Ò¼öÁ¡ ¾øÀ¸³ª exponent´Â ÀÖÀ½
          */
         sRC = acpCStrToInt32( &aStr[ 1 + sFoundIndex ],
                               acpCStrLen( &aStr[ 1 + sFoundIndex ], aMaxLen - sFoundIndex - 1 ),
@@ -135,7 +135,7 @@ static acp_uint32_t acpCStrRemoveExp( acp_char_t *aStr, const acp_size_t aMaxLen
         sExp = sResult * sSign;
 
         /*
-         * eë¶€í„° ì§€ì›€
+         * eºÎÅÍ Áö¿ò
          */
         aStr[ sFoundIndex ] = '\0';
     }
@@ -148,15 +148,15 @@ static acp_uint32_t acpCStrRemoveExp( acp_char_t *aStr, const acp_size_t aMaxLen
 }
 
 /*
- * aStrì— parseë˜ì–´ ìžˆëŠ” ìˆ«ìžë¥¼ significant figureë§Œ ë‚¨ê¸°ê³  ë‹¤ìŒ
- * ì •ë³´ë¥¼ ë°˜í™˜:
- * -  ì²˜ë¦¬ëœ ë¬¸ìžì—´ ì‹œìž‘ ìœ„ì¹˜ (ì´ì „ ë¬¸ìžì—´ì„ ë®ì–´ ì”€)
- * -  ë¬¸ìžì—´ ì‹œìž‘ì„ ê¸°ì¤€ìœ¼ë¡œ í–ˆì„ ë•Œ ì†Œìˆ˜ì  ìœ„ì¹˜
- * -  ì‹¸ì¸ ì •ë³´
+ * aStr¿¡ parseµÇ¾î ÀÖ´Â ¼ýÀÚ¸¦ significant figure¸¸ ³²±â°í ´ÙÀ½
+ * Á¤º¸¸¦ ¹ÝÈ¯:
+ * -  Ã³¸®µÈ ¹®ÀÚ¿­ ½ÃÀÛ À§Ä¡ (ÀÌÀü ¹®ÀÚ¿­À» µ¤¾î ¾¸)
+ * -  ¹®ÀÚ¿­ ½ÃÀÛÀ» ±âÁØÀ¸·Î ÇßÀ» ¶§ ¼Ò¼öÁ¡ À§Ä¡
+ * -  ½ÎÀÎ Á¤º¸
  *
- * ì´ í•¨ìˆ˜ì˜ ëª©í‘œëŠ” gcvtì˜ ê²°ê³¼ë¬¼ì„ acpPrintfRender ëª¨ë“ˆì´ ì‚¬ìš©í•  ìˆ˜
- * ìžˆìœ¼ë©° acpCStrDoubleToStringì˜ 2, 3ë²ˆ ëª¨ë“œë“¤ê³¼ ì¼ê´€ì„± ìžˆëŠ” ê°’ìœ¼ë¡œ
- * ë³€í™˜í•˜ëŠ” ê²ƒì´ë‹¤.
+ * ÀÌ ÇÔ¼öÀÇ ¸ñÇ¥´Â gcvtÀÇ °á°ú¹°À» acpPrintfRender ¸ðµâÀÌ »ç¿ëÇÒ ¼ö
+ * ÀÖÀ¸¸ç acpCStrDoubleToStringÀÇ 2, 3¹ø ¸ðµåµé°ú ÀÏ°ü¼º ÀÖ´Â °ªÀ¸·Î
+ * º¯È¯ÇÏ´Â °ÍÀÌ´Ù.
  */
 static void acpCStrGcvtPostProc( acp_char_t       *aStr,
                                  const acp_size_t  aMaxLen,
@@ -168,7 +168,7 @@ static void acpCStrGcvtPostProc( acp_char_t       *aStr,
     if ( *aSign > 0 )
     {
         /*
-         * ë¬¸ìžì—´ì—ì„œ ì‹¸ì¸ì„ ì‚­ì œ
+         * ¹®ÀÚ¿­¿¡¼­ ½ÎÀÎÀ» »èÁ¦
          */
         acpCStrShift( 1 + aStr, -1 );
     }
@@ -190,18 +190,18 @@ void acpCStrDoubleToStringFree( acp_char_t *aStr )
 }
 
 /*
- * ecvt(), fcvt()ë‚˜ gcvt()ë¥¼ ì‚¬ìš©í•´ doubleì„ ë¬¸ìžì—´ë¡œ ì „í™˜ í›„
- * acpPrintfRenderê°€ ë°›ì•„ ë“œë¦¬ëŠ” ì¼ê´€ì„± ìžˆëŠ” í˜•íƒœë¡œ ì²˜ë¦¬.
+ * ecvt(), fcvt()³ª gcvt()¸¦ »ç¿ëÇØ doubleÀ» ¹®ÀÚ¿­·Î ÀüÈ¯ ÈÄ
+ * acpPrintfRender°¡ ¹Þ¾Æ µå¸®´Â ÀÏ°ü¼º ÀÖ´Â ÇüÅÂ·Î Ã³¸®.
  *
- * ë‚´ë¶€ì ìœ¼ë¡œ ë²„í¼ë¥¼ í• ë‹¹í•˜ê¸° ë•Œë¬¸ì— ì‚¬ìš© í›„
- * acpCStrDoubleToStringFree()ë¥¼ í˜¸ì¶œí•´ì•¼ í•¨.
+ * ³»ºÎÀûÀ¸·Î ¹öÆÛ¸¦ ÇÒ´çÇÏ±â ¶§¹®¿¡ »ç¿ë ÈÄ
+ * acpCStrDoubleToStringFree()¸¦ È£ÃâÇØ¾ß ÇÔ.
  *
  * aMode:
- *   0 ==> ì“°ì´ì§€ ì•ŠìŒ
- *   1 ==> ì“°ì´ì§€ ì•ŠìŒ
+ *   0 ==> ¾²ÀÌÁö ¾ÊÀ½
+ *   1 ==> ¾²ÀÌÁö ¾ÊÀ½
  *   2 ==> ecvt(): max(1,ndigits) significant digits.
  *   3 ==> fcvt(): through ndigits past the decimal point.
- *   4 ==> gcvt(): fcvt()ì™€ ecvt() ì¤‘ ë¬¸ìžì—´ ê¸¸ì´ê°€ ì§§ì€ ìª½.
+ *   4 ==> gcvt(): fcvt()¿Í ecvt() Áß ¹®ÀÚ¿­ ±æÀÌ°¡ ÂªÀº ÂÊ.
  */
 acpCStrDoubleType acpCStrDoubleToString(acp_double_t   aValue,
                                         acp_sint32_t   aMode,
@@ -301,9 +301,9 @@ acpCStrDoubleType acpCStrDoubleToString(acp_double_t   aValue,
     }
 
     /*
-     * ë‹¤ìŒ ì„¹ì…˜ì€ ecvt, fcvt, gcvtì˜ ê²°ê³¼ë¥¼ acpPrintfRenderëª¨ë“ˆì´
-     * ì²˜ë¦¬í•  ìžë£Œ êµ¬ì¡°ë¡œ ë³€í™˜í•œë‹¤.  í”Œëž«í¼ë§ˆë‹¤ ì´ í•¨ìˆ˜ë“¤ì˜ ê²°ê³¼ê°€
-     * ì•½ê°„ì”© ë‹¤ë¥´ê¸° ë•Œë¬¸.
+     * ´ÙÀ½ ¼½¼ÇÀº ecvt, fcvt, gcvtÀÇ °á°ú¸¦ acpPrintfRender¸ðµâÀÌ
+     * Ã³¸®ÇÒ ÀÚ·á ±¸Á¶·Î º¯È¯ÇÑ´Ù.  ÇÃ·§Æû¸¶´Ù ÀÌ ÇÔ¼öµéÀÇ °á°ú°¡
+     * ¾à°£¾¿ ´Ù¸£±â ¶§¹®.
      */
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - -

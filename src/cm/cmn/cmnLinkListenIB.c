@@ -103,7 +103,7 @@ ACI_RC cmnLinkListenListenIB(cmnLinkListen *aLink, cmnLinkListenArg *aListenArg)
     acp_char_t            sErrMsg[256];
 
     sErrMsg[0] = '\0';
-    /* socketì´ ì´ë¯¸ ì—´ë ¤ìˆëŠ”ì§€ ê²€ì‚¬ */
+    /* socketÀÌ ÀÌ¹Ì ¿­·ÁÀÖ´ÂÁö °Ë»ç */
     ACI_TEST_RAISE(sLink->mSocket != CMN_INVALID_SOCKET_HANDLE, SocketAlreadyOpened);
 
     /* *********************************************************
@@ -248,20 +248,20 @@ ACI_RC cmnLinkListenAcceptIB(cmnLinkListen *aLink, cmnLinkPeer **aLinkPeer)
     cmnLinkDescIB     sTmpDesc;
 
     /*
-     * ìƒˆë¡œìš´ Linkë¥¼ í• ë‹¹
+     * »õ·Î¿î Link¸¦ ÇÒ´ç
      */
     /* BUG-29957
-     * cmnLinkAlloc ì‹¤íŒ¨ì‹œ Connectë¥¼ ìš”ì²­í•œ Socketì„ ì„ì‹œë¡œ accept í•´ì¤˜ì•¼ í•œë‹¤.
+     * cmnLinkAlloc ½ÇÆĞ½Ã Connect¸¦ ¿äÃ»ÇÑ SocketÀ» ÀÓ½Ã·Î accept ÇØÁà¾ß ÇÑ´Ù.
      */
     ACI_TEST_RAISE(cmnLinkAlloc((cmnLink **)&sLinkPeer, CMN_LINK_TYPE_PEER_SERVER, CMN_LINK_IMPL_IB)
                    != ACI_SUCCESS, LinkError);
 
-    /* Desc íšë“ */
+    /* Desc È¹µæ */
     ACI_TEST_RAISE(sLinkPeer->mPeerOp->mGetDesc(sLinkPeer, &sDesc) != ACI_SUCCESS, LinkError);
 
     /* TASK-3873 5.3.3 Release Static Analysis Code-sonar */
-    /* Code-Sonarê°€ Function  Pointerë¥¼ followí•˜ì§€ ëª»í•´ì„œ..
-       assertë¥¼ ë„£ì—ˆìŠµë‹ˆë‹¤ */
+    /* Code-Sonar°¡ Function  Pointer¸¦ followÇÏÁö ¸øÇØ¼­..
+       assert¸¦ ³Ö¾ú½À´Ï´Ù */
     ACE_ASSERT(sDesc != NULL);
 
     /* accept */
@@ -276,8 +276,8 @@ ACI_RC cmnLinkListenAcceptIB(cmnLinkListen *aLink, cmnLinkPeer **aLinkPeer)
     /**
      * [CAUTION]
      *
-     * Berkeley socket ê³¼ ë‹¤ë¥´ê²Œ blocking mode ì´ë”ë¼ë„
-     * raccept() í•¨ìˆ˜ëŠ” 'accpeting' ìƒíƒœë¡œ ë°˜í™˜ë  ìˆ˜ ìˆìŒ.
+     * Berkeley socket °ú ´Ù¸£°Ô blocking mode ÀÌ´õ¶óµµ
+     * raccept() ÇÔ¼ö´Â 'accpeting' »óÅÂ·Î ¹İÈ¯µÉ ¼ö ÀÖÀ½.
      */
 
     /* for rsocket option */

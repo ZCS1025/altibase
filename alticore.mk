@@ -41,7 +41,8 @@ endif
 endif
 
 ALTICORE_DEFINES  += -D_GNU_SOURCE
-ALTICORE_INCLUDES += -I$(CORE_DIR)/include
+ALTICORE_INCLUDES += -I$(CORE_DIR)/include \
+                     -I$(CORE_EXT_DIR)/include
 ALTICORE_LDFLAGS  += -L$(ALTICORE_HOME)/lib \
                      -lalticore -laltictest \
                      -lm -lpthread -ldl -lncurses \

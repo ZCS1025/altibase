@@ -29,7 +29,6 @@
 #include <smxTransMgr.h>
 #include <smxTrans.h>
 #include <smxTransFreeList.h>
-#include <smxSavepointMgr.h>
 #include <sdc.h>
 #include <smxReq.h>
 #include <smxFT.h>
@@ -38,9 +37,9 @@
  *
  * Description :
  *
- *  smxTransMgrÎäî Î™®Îëê static Î©§Î≤ÑÎ•º Í∞ÄÏßÄÍ∏∞ ÎïåÎ¨∏Ïóê FixedTableÎ°ú
- *  ÏßÅÏ†ë Î≥ÄÌôòÌï† Ïàò ÏóÜÎã§. Îî∞ÎùºÏÑú, Î≥ÄÌôòÏùÑ ÏúÑÌïú Íµ¨Ï°∞Ï≤¥Î•º ÎØ∏Î¶¨
- *  Ï¥àÍ∏∞Ìôî ÏãúÌÇ®Îã§.
+ *  smxTransMgr¥¬ ∏µŒ static ∏‚πˆ∏¶ ∞°¡ˆ±‚ ∂ßπÆø° FixedTable∑Œ
+ *  ¡˜¡¢ ∫Ø»Ø«“ ºˆ æ¯¥Ÿ. µ˚∂Ûº≠, ∫Ø»Ø¿ª ¿ß«— ±∏¡∂√º∏¶ πÃ∏Æ
+ *  √ ±‚»≠ Ω√≈≤¥Ÿ.
  *
  **********************************************************************/
 typedef struct smxTransMgrStatistics
@@ -52,6 +51,8 @@ typedef struct smxTransMgrStatistics
     idBool             *mEnabledTransBegin;
     UInt               *mActiveTransCnt;
     smSCN               mSysMinDskViewSCN;
+    ULong              *mTransTableFullCount;     // BUG-47655
+    ULong              *mAllocRetryTransCount;    // BUG-47655
 } smxTransMgrStatistics;
 
 static smxTransMgrStatistics gSmxTransMgrStatistics;
@@ -63,6 +64,8 @@ void smxFT::initializeFixedTableArea()
     gSmxTransMgrStatistics.mCurAllocTransFreeList = &smxTransMgr::mCurAllocTransFreeList;
     gSmxTransMgrStatistics.mEnabledTransBegin     = &smxTransMgr::mEnabledTransBegin;
     gSmxTransMgrStatistics.mActiveTransCnt        = &smxTransMgr::mActiveTransCnt;
+    gSmxTransMgrStatistics.mTransTableFullCount   = &smxTransMgr::mTransTableFullCount;  // BUG-47655
+    gSmxTransMgrStatistics.mAllocRetryTransCount  = &smxTransMgr::mAllocRetryTransCount; // BUG-47655
     SM_INIT_SCN( &gSmxTransMgrStatistics.mSysMinDskViewSCN );
 }
 
@@ -117,6 +120,24 @@ static iduFixedTableColDesc gTxMgrTableColDesc[] =
         0, 0,NULL // for internal use
     },
 
+    {   /* BUG-47655 Transaction «“¥Á ¿ÁΩ√µµ √— »Ωºˆ */
+        (SChar*)"ALLOC_TRANSACTION_RETRY_COUNT",
+        IDU_FT_OFFSETOF(smxTransMgrStatistics, mTransTableFullCount),
+        ID_SIZEOF(smxTransMgr::mTransTableFullCount),
+        IDU_FT_TYPE_UBIGINT | IDU_FT_TYPE_POINTER,
+        NULL,
+        0, 0,NULL // for internal use
+    },
+
+    {   /* BUG-47655 Transaction «“¥Á ¿ÁΩ√µµ«— Transaction ∞πºˆ */
+        (SChar*)"ALLOC_RETRY_TRANSACTION_COUNT",
+        IDU_FT_OFFSETOF(smxTransMgrStatistics, mAllocRetryTransCount),
+        ID_SIZEOF(smxTransMgr::mAllocRetryTransCount),
+        IDU_FT_TYPE_UBIGINT | IDU_FT_TYPE_POINTER,
+        NULL,
+        0, 0,NULL // for internal use
+    },
+
     {
         NULL,
         0,
@@ -146,7 +167,7 @@ IDE_RC smxFT::buildRecordForTxMgr( idvSQL              * /*aStatistics*/,
     }
 
     smxTransMgr::mActiveTransCnt = smxTransMgr::mTransCnt - sTotalFreeCount;
-    smxTransMgr::getSysMinDskViewSCN( &gSmxTransMgrStatistics.mSysMinDskViewSCN );
+    SMX_GET_MIN_DISK_VIEW( &gSmxTransMgrStatistics.mSysMinDskViewSCN );
 
     IDE_TEST(iduFixedTable::buildRecord( aHeader,
                                          aMemory,
@@ -187,8 +208,8 @@ static iduFixedTableColDesc gTxListTableColDesc[] =
         NULL,
         0, 0,NULL // for internal use
     },
-    //fix BUG-23656 session,xid ,transactionÏùÑ Ïó∞Í≥ÑÌïú performance viewÎ•º Ï†úÍ≥µÌïòÍ≥†,
-    //Í∑∏Îì§Í∞ÑÏùò Í¥ÄÍ≥ÑÎ•º Ï†ïÌôïÌûà Ïú†ÏßÄÌï¥Ïïº Ìï®.
+    //fix BUG-23656 session,xid ,transaction¿ª ø¨∞Ë«— performance view∏¶ ¡¶∞¯«œ∞Ì,
+    //±◊µÈ∞£¿« ∞¸∞Ë∏¶ ¡§»Æ»˜ ¿Ø¡ˆ«ÿæﬂ «‘.
     {
         (SChar*)"SESSION_ID",
         IDU_FT_OFFSETOF(smxTransInfo4Perf, mSessionID),
@@ -207,7 +228,7 @@ static iduFixedTableColDesc gTxListTableColDesc[] =
     },
     {
         (SChar*)"MIN_MEM_VIEW_SCN_FOR_LOB",
-        IDU_FT_OFFSETOF(smxTransInfo4Perf, mMinMemViewSCN4LOB),
+        IDU_FT_OFFSETOF(smxTransInfo4Perf, mMinMemViewSCNwithLOB),
         29,
         IDU_FT_TYPE_VARCHAR,
         smiFixedTable::convertSCN,
@@ -223,7 +244,31 @@ static iduFixedTableColDesc gTxListTableColDesc[] =
     },
     {
         (SChar*)"MIN_DISK_VIEW_SCN_FOR_LOB",
-        IDU_FT_OFFSETOF(smxTransInfo4Perf, mMinDskViewSCN4LOB),
+        IDU_FT_OFFSETOF(smxTransInfo4Perf, mMinDskViewSCNwithLOB),
+        29,
+        IDU_FT_TYPE_VARCHAR,
+        smiFixedTable::convertSCN,
+        0, 0,NULL // for internal use
+    },
+    {
+        (SChar*)"FIRST_MIN_DISK_VIEW_SCN",
+        IDU_FT_OFFSETOF(smxTransInfo4Perf, mFstDskViewSCN),
+        29,
+        IDU_FT_TYPE_VARCHAR,
+        smiFixedTable::convertSCN,
+        0, 0,NULL // for internal use
+    },
+    {
+        (SChar*)"LAST_REQUEST_VIEW_SCN",
+        IDU_FT_OFFSETOF(smxTransInfo4Perf, mLastRequestSCN),
+        29,
+        IDU_FT_TYPE_VARCHAR,
+        smiFixedTable::convertSCN,
+        0, 0,NULL // for internal use
+    },
+    {
+        (SChar*)"PREPARE_SCN",
+        IDU_FT_OFFSETOF(smxTransInfo4Perf, mPrepareSCN),
         29,
         IDU_FT_TYPE_VARCHAR,
         smiFixedTable::convertSCN,
@@ -403,7 +448,7 @@ static iduFixedTableColDesc gTxListTableColDesc[] =
         (SChar*)"TOTAL_LOG_COUNT",
         IDU_FT_OFFSETOF(smxTransInfo4Perf, mTotalLogCount),
         IDU_FT_SIZEOF(smxTransInfo4Perf, mTotalLogCount),
-        IDU_FT_TYPE_UINTEGER,
+        IDU_FT_TYPE_UBIGINT,
         NULL,
         0, 0,NULL // for internal use
     },
@@ -411,7 +456,7 @@ static iduFixedTableColDesc gTxListTableColDesc[] =
         (SChar*)"PROCESSED_UNDO_LOG_COUNT",
         IDU_FT_OFFSETOF(smxTransInfo4Perf, mProcessedUndoLogCount),
         IDU_FT_SIZEOF(smxTransInfo4Perf, mProcessedUndoLogCount),
-        IDU_FT_TYPE_UINTEGER,
+        IDU_FT_TYPE_UBIGINT,
         NULL,
         0, 0,NULL // for internal use
     },
@@ -504,6 +549,70 @@ static iduFixedTableColDesc gTxListTableColDesc[] =
         0, 0,NULL // for internal use
     },
     {
+        (SChar*)"GLOBAL_CONSISTENCY",
+        IDU_FT_OFFSETOF(smxTransInfo4Perf, mIsGCTx ),
+        IDU_FT_SIZEOF(smxTransInfo4Perf, mIsGCTx ),
+        IDU_FT_TYPE_UINTEGER,
+        NULL,
+        0, 0,NULL /* for internal use */
+    },
+    {
+        (SChar *)"SHARD_PIN",
+        IDU_FT_OFFSETOF(smxTransInfo4Perf, mShardPin ),
+        SMI_MAX_SHARD_PIN_STR_LEN,
+        IDU_FT_TYPE_VARCHAR,
+        smiFixedTable::convertShardPinToString,
+        0, 0, NULL
+    },
+    {
+        (SChar*)"DISTRIBUTION_FIRST_STMT_TIME",
+        IDU_FT_OFFSETOF(smxTransInfo4Perf, mGCTxFirstStmtTime.tv_ ),
+        64,
+        IDU_FT_TYPE_VARCHAR,
+        smiFixedTable::convertAlignedTIMESTAMP,
+        0, 0,NULL /* for internal use */
+    },
+    {
+        (SChar*)"DISTRIBUTION_FIRST_STMT_VIEW_SCN",
+        IDU_FT_OFFSETOF(smxTransInfo4Perf, mGCTxFirstStmtViewSCN ),
+        29,
+        IDU_FT_TYPE_VARCHAR,
+        smiFixedTable::convertSCN,
+        0, 0,NULL /* for internal use */
+    },
+    {
+        (SChar*)"DISTRIBUTION_LEVEL",
+        IDU_FT_OFFSETOF(smxTransInfo4Perf, mDistLevel ),
+        IDU_FT_SIZEOF(smxTransInfo4Perf, mDistLevel ),
+        IDU_FT_TYPE_UINTEGER,
+        NULL,
+        0, 0,NULL /* for internal use */
+    },
+    {
+        (SChar*)"DISTRIBUTION_DEADLOCK_DETECTION",
+        IDU_FT_OFFSETOF( smxTransInfo4Perf, mDetectionStr ),
+        IDU_FT_SIZEOF( smxTransInfo4Perf, mDetectionStr ),
+        IDU_FT_TYPE_VARCHAR,
+        NULL,
+        0, 0,NULL /* for internal use */
+    },
+    {
+        (SChar*)"DISTRIBUTION_DEADLOCK_WAIT_TIME",
+        IDU_FT_OFFSETOF( smxTransInfo4Perf, mDieWaitTime ),
+        IDU_FT_SIZEOF( smxTransInfo4Perf, mDieWaitTime ),
+        IDU_FT_TYPE_UBIGINT,
+        NULL,
+        0, 0,NULL /* for internal use */
+    },
+    {
+        (SChar*)"DISTRIBUTION_DEADLOCK_ELAPSED_TIME",
+        IDU_FT_OFFSETOF( smxTransInfo4Perf, mElapsedTime ),
+        IDU_FT_SIZEOF( smxTransInfo4Perf, mElapsedTime ),
+        IDU_FT_TYPE_UBIGINT,
+        NULL,
+        0, 0,NULL /* for internal use */
+    },
+    {
         NULL,
         0,
         0,
@@ -513,6 +622,8 @@ static iduFixedTableColDesc gTxListTableColDesc[] =
     }
 };
 
+/* smxDistDeadlockDetection to String */
+SChar sDetectionString[][64] = { "NONE", "VIEWSCN", "TIME", "SHARD_PIN_SEQ", "SHARD_PIN_NODE_ID", "ALL_EQUAL" };
 
 IDE_RC smxFT::buildRecordForTxList( idvSQL              * /*aStatistics*/,
                                     void                * aHeader,
@@ -520,8 +631,8 @@ IDE_RC smxFT::buildRecordForTxList( idvSQL              * /*aStatistics*/,
                                     iduFixedTableMemory * aMemory )
 {
     ULong              sNeedRecCount;
-    UInt               sRedoLogCnt;
-    UInt               sUndoLogCnt;
+    ULong              sRedoLogCnt;
+    ULong              sUndoLogCnt;
     UInt               i;
     smxTrans         * sTrans;
     smxTransInfo4Perf  sTransInfo;
@@ -536,18 +647,18 @@ IDE_RC smxFT::buildRecordForTxList( idvSQL              * /*aStatistics*/,
     {
         sTrans = &smxTransMgr::mArrTrans[i];
 
-        /* BUG-23314 V$TransactionÏóêÏÑú StatusÍ∞Ä EndÏù∏ TransactionÏù¥ ÎÇòÏò§Î©¥
-         * ÏïàÎê©ÎãàÎã§. StatusÍ∞Ä ENDÏù∏Í≤ÉÏùÄ Í±¥ÎÑàÎõ∞ÎèÑÎ°ù ÌïòÏòÄÏäµÎãàÎã§. */
-        /* BUG-43198 valgrind Í≤ΩÍ≥† ÏàòÏ†ï */
+        /* BUG-23314 V$Transactionø°º≠ Status∞° End¿Œ Transaction¿Ã ≥™ø¿∏È
+         * æ»µÀ¥œ¥Ÿ. Status∞° END¿Œ∞Õ¿∫ ∞«≥ ∂Ÿµµ∑œ «œø¥Ω¿¥œ¥Ÿ. */
+        /* BUG-43198 valgrind ∞Ê∞Ì ºˆ¡§ */
         if ( sTrans->mStatus4FT != SMX_TX_END )
         {
             /* BUG-43006 FixedTable Indexing Filter
-             * Column Index Î•º ÏÇ¨Ïö©Ìï¥ÏÑú Ï†ÑÏ≤¥ RecordÎ•º ÏÉùÏÑ±ÌïòÏßÄÏïäÍ≥†
-             * Î∂ÄÎ∂ÑÎßå ÏÉùÏÑ±Ìï¥ Filtering ÌïúÎã§.
-             * 1. void * Î∞∞Ïó¥Ïóê IDU_FT_COLUMN_INDEX Î°ú ÏßÄÏ†ïÎêú Ïª¨ÎüºÏóê
-             * Ìï¥ÎãπÌïòÎäî Í∞íÏùÑ ÏàúÏÑúÎåÄÎ°ú ÎÑ£Ïñ¥Ï£ºÏñ¥Ïïº ÌïúÎã§.
-             * 2. IDU_FT_COLUMN_INDEXÏùò Ïª¨ÎüºÏóê Ìï¥ÎãπÌïòÎäî Í∞íÏùÑ Î™®Îëê ÎÑ£
-             * Ïñ¥ Ï£ºÏñ¥ÏïºÌïúÎã§.
+             * Column Index ∏¶ ªÁøÎ«ÿº≠ ¿¸√º Record∏¶ ª˝º∫«œ¡ˆæ ∞Ì
+             * ∫Œ∫–∏∏ ª˝º∫«ÿ Filtering «—¥Ÿ.
+             * 1. void * πËø≠ø° IDU_FT_COLUMN_INDEX ∑Œ ¡ˆ¡§µ» ƒ√∑≥ø°
+             * «ÿ¥Á«œ¥¬ ∞™¿ª º¯º≠¥Î∑Œ ≥÷æÓ¡÷æÓæﬂ «—¥Ÿ.
+             * 2. IDU_FT_COLUMN_INDEX¿« ƒ√∑≥ø° «ÿ¥Á«œ¥¬ ∞™¿ª ∏µŒ ≥÷
+             * æÓ ¡÷æÓæﬂ«—¥Ÿ.
              */
             sIndexValues[0] = &sTrans->mSessionID;
             sIndexValues[1] = &sTrans->mStatus4FT;
@@ -565,11 +676,14 @@ IDE_RC smxFT::buildRecordForTxList( idvSQL              * /*aStatistics*/,
             }
 
             sTransInfo.mTransID        = sTrans->mTransID;
-            //fix BUG-23656 session,xid ,transactionÏùÑ Ïó∞Í≥ÑÌïú performance viewÎ•º Ï†úÍ≥µÌïòÍ≥†,
-            //Í∑∏Îì§Í∞ÑÏùò Í¥ÄÍ≥ÑÎ•º Ï†ïÌôïÌûà Ïú†ÏßÄÌï¥Ïïº Ìï®.
+            //fix BUG-23656 session,xid ,transaction¿ª ø¨∞Ë«— performance view∏¶ ¡¶∞¯«œ∞Ì,
+            //±◊µÈ∞£¿« ∞¸∞Ë∏¶ ¡§»Æ»˜ ¿Ø¡ˆ«ÿæﬂ «‘.
             sTransInfo.mSessionID             = sTrans->mSessionID;
             sTransInfo.mMscn                  = sTrans->mMinMemViewSCN;
             sTransInfo.mDscn                  = sTrans->mMinDskViewSCN;
+            sTransInfo.mFstDskViewSCN         = sTrans->mFstDskViewSCN;
+            sTransInfo.mLastRequestSCN        = sTrans->mLastRequestSCN;
+            sTransInfo.mPrepareSCN            = sTrans->mPrepareSCN;
             sTransInfo.mCommitSCN             = sTrans->mCommitSCN;
             sTransInfo.mStatus                = sTrans->mStatus4FT;
             sTransInfo.mIsUpdate              = sTrans->mIsUpdate;
@@ -583,7 +697,7 @@ IDE_RC smxFT::buildRecordForTxList( idvSQL              * /*aStatistics*/,
             sTransInfo.mCurUndoNxtSN          = SM_MAKE_SN( sTrans->mCurUndoNxtLSN );
             sTransInfo.mSlotN                 = sTrans->mSlotN;
             sTransInfo.mUpdateSize            = sTrans->mUpdateSize;
-            sTransInfo.mAbleToRollback        = sTrans->mAbleToRollback;
+            sTransInfo.mAbleToRollback        = ID_TRUE; // dummy
             sTransInfo.mFstUpdateTime         = sTrans->mFstUpdateTime;
             if ( sTrans->mUndoBeginTime == 0 )
             {
@@ -602,8 +716,8 @@ IDE_RC smxFT::buildRecordForTxList( idvSQL              * /*aStatistics*/,
             sUndoLogCnt = sTrans->mProcessedUndoLogCount;
             if ( sUndoLogCnt > 0 )
             {
-                sTransInfo.mEstimatedTotalUndoTime =
-                             sTransInfo.mProcessedUndoTime * sRedoLogCnt / sUndoLogCnt ;
+                sTransInfo.mEstimatedTotalUndoTime = 
+                             (UInt)( sTransInfo.mProcessedUndoTime * sRedoLogCnt / sUndoLogCnt );
             }
             else
             {
@@ -620,10 +734,34 @@ IDE_RC smxFT::buildRecordForTxList( idvSQL              * /*aStatistics*/,
             sTransInfo.mDiskLobCursorCount = sTrans->mDiskLCL.getLobCursorCnt( 0, NULL );
             sTransInfo.mLegacyTransCount   = sTrans->mLegacyTransCnt;
 
-            sTrans->getMinMemViewSCN4LOB( &sTransInfo.mMinMemViewSCN4LOB );
-            sTrans->getMinDskViewSCN4LOB( &sTransInfo.mMinDskViewSCN4LOB );
+            sTrans->getMinMemViewSCNwithLOB( &sTransInfo.mMinMemViewSCNwithLOB );
+            sTrans->getMinDskViewSCNwithLOB( &sTransInfo.mMinDskViewSCNwithLOB );
 
             sTransInfo.mIsolationLevel     = (sTrans->mFlag & SMI_ISOLATION_MASK);
+
+            /* PROJ-2734 */
+            sTransInfo.mGCTxFirstStmtTime    = sTrans->mDistTxInfo.mFirstStmtTime;
+            sTransInfo.mGCTxFirstStmtViewSCN = sTrans->mDistTxInfo.mFirstStmtViewSCN;
+            sTransInfo.mDistLevel            = sTrans->mDistTxInfo.mDistLevel;
+            sTransInfo.mShardPin             = sTrans->mDistTxInfo.mShardPin;
+            
+            sTransInfo.mIsGCTx = sTrans->mIsGCTx;
+
+            idlOS::snprintf( sTransInfo.mDetectionStr,
+                             ID_SIZEOF( sTransInfo.mDetectionStr ),
+                             "%s",
+                             sDetectionString[sTrans->mDistDeadlock4FT.mDetection] );
+
+            if ( sTrans->mDistDeadlock4FT.mDetection != SMX_DIST_DEADLOCK_DETECTION_NONE )
+            {
+                sTransInfo.mDieWaitTime = sTrans->mDistDeadlock4FT.mDieWaitTime;
+                sTransInfo.mElapsedTime = sTrans->mDistDeadlock4FT.mElapsedTime;
+            }
+            else
+            {
+                sTransInfo.mDieWaitTime = 0;
+                sTransInfo.mElapsedTime = 0;
+            }
 
             IDE_TEST(iduFixedTable::buildRecord( aHeader,
                                                  aMemory,
@@ -678,7 +816,7 @@ static iduFixedTableColDesc gTxPendingTableColDesc[] =
         idaXaConvertXIDToString,
         0, 0,NULL // for internal use
     },
-/* prepared ÏÉÅÌÉúÏùò transaction Îßå Î≥¥Ïó¨Ï§å
+/* prepared ªÛ≈¬¿« transaction ∏∏ ∫∏ø©¡‹
     {
         (SChar*)"STATUS",
         IDU_FT_OFFSETOF(smxTrans, mCommitState),
@@ -930,6 +1068,10 @@ IDE_RC smxFT::buildRecordForActiveTXSEGS( idvSQL              * /*aStatistics*/,
     return IDE_FAILURE;
 }
 
+/* ------------------------------------------------
+ *  Fixed Table Define for X$LEGACY_TRANSACTIONS
+ * ----------------------------------------------*/
+
 IDE_RC smxFT::buildRecordForLegacyTxList( idvSQL              * /*aStatistics*/,
                                           void                * aHeader,
                                           void                * /* aDumpObj */,
@@ -1048,4 +1190,268 @@ iduFixedTableDesc gLegacyTxListTableDesc =
     NULL
 };
 
+/* ------------------------------------------------
+ *  Fixed Table Define for X$TIME_SCN 
+ * ----------------------------------------------*/
 
+typedef struct smxTimeSCN4Perf
+{
+    timeval mTime;
+    smSCN   mSystemSCN;
+    SChar   mBase;
+} smxTimeSCN4Perf;
+
+static iduFixedTableColDesc gTimeSCNListTableColDesc[] =
+{
+    {
+        (SChar*)"TIME",
+        IDU_FT_OFFSETOF(smxTimeSCN4Perf, mTime ),
+        32,
+        IDU_FT_TYPE_VARCHAR,
+        smiFixedTable::convertAlignedTIMESTAMP,
+        0, 0,NULL /* for internal use */
+    },
+    {
+        (SChar*)"SYSTEM_SCN",
+        IDU_FT_OFFSETOF(smxTimeSCN4Perf, mSystemSCN),
+        29,
+        IDU_FT_TYPE_VARCHAR,
+        smiFixedTable::convertSCN,
+        0, 0,NULL /* for internal use */
+    },
+    {
+        (SChar*)"BASE",
+        IDU_FT_OFFSETOF(smxTimeSCN4Perf, mBase),
+        IDU_FT_SIZEOF(smxTimeSCN4Perf, mBase),
+        IDU_FT_TYPE_CHAR,
+        NULL,
+        0, 0,NULL /* for internal use */
+    },
+    {
+        NULL,
+        0,
+        0,
+        IDU_FT_TYPE_CHAR,
+        NULL,
+        0, 0,NULL /* for internal use */
+    }
+};
+
+iduFixedTableDesc gTimeSCNListTableDesc =
+{
+    (SChar *)"X$TIME_SCN",
+    smxFT::buildRecordForTimeSCNList,
+    gTimeSCNListTableColDesc,
+    IDU_STARTUP_SERVICE,
+    0,
+    0,
+    IDU_FT_DESC_TRANS_NOT_USE,
+    NULL
+};
+
+IDE_RC smxFT::buildRecordForTimeSCNList( idvSQL              * /*aStatistics*/,
+                                         void                * aHeader,
+                                         void                * /* aDumpObj */,
+                                         iduFixedTableMemory * aMemory )
+{
+    smxTimeSCN4Perf  sTimeSCNInfo;
+    SInt             i;
+    SInt             sBaseIdx;
+    SInt             sLastIdx;
+    smxTimeSCNNode * sTimeSCNList = NULL;
+ 
+    if ( smxTransMgr::isActiveVersioningMinTime() == ID_FALSE )
+    {
+        IDE_CONT( SKIP_TIME_SCN_LIST );
+    }
+
+    sBaseIdx = smxTransMgr::getTimeSCNBaseIdx();
+    sLastIdx = smxTransMgr::getTimeSCNLastIdx();
+    
+    if ( ( sBaseIdx < 0 ) ||
+         ( sLastIdx < 0 ) )
+    {
+        /* æ∆¡˜ TIME-LIST∞° ¡ÿ∫Òµ«¡ˆ æ æ“¥Ÿ. SKIP «—¥Ÿ. */
+        IDE_CONT( SKIP_TIME_SCN_LIST );
+    }
+
+    IDE_DASSERT( sBaseIdx < smxTransMgr::getTimeSCNMaxCnt() );
+    IDE_DASSERT( sLastIdx < smxTransMgr::getTimeSCNMaxCnt() );
+
+    smxTransMgr::getTimeSCNList( &sTimeSCNList );
+
+    i = sBaseIdx;
+
+    while ( 1 )
+    {
+        sTimeSCNInfo.mTime       = (timeval)(sTimeSCNList[i].mTime);
+        sTimeSCNInfo.mSystemSCN  = sTimeSCNList[i].mSCN;
+
+        if ( i == sBaseIdx )
+        {
+            sTimeSCNInfo.mBase = 'Y';
+        }
+        else
+        {
+            sTimeSCNInfo.mBase = 'N';
+        }
+
+        if ( SM_SCN_IS_INIT( sTimeSCNList[i].mSCN ) )
+        {
+            /* ¡∂»∏¡ﬂø° TIME-SCN LIST∞° ≈¨∏ÆæÓµ» ∞ÊøÏ¿Ã¥Ÿ.
+               ≈Ωªˆ ¡ﬂ¡ˆ«—¥Ÿ. */
+            break;
+        }
+
+        IDE_TEST( iduFixedTable::buildRecord( aHeader,
+                                              aMemory,
+                                              (void *)&sTimeSCNInfo )
+                  != IDE_SUCCESS );
+
+        if ( i == sLastIdx )
+        {
+            break;
+        }
+
+        i = ( (i + 1) %  smxTransMgr::getTimeSCNMaxCnt() );
+    }
+
+    IDE_EXCEPTION_CONT( SKIP_TIME_SCN_LIST );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/* ------------------------------------------------
+ *  Fixed Table Define for X$PENDING_WAIT
+ * ----------------------------------------------*/
+
+typedef struct smxPendingWait4Perf
+{
+    smTID       mWaitingTID;         
+    smiShardPin mWaitingTxShardPin;
+    smTID       mPendingTID;
+    ID_XID      mPendingXID;
+    smiShardPin mPendingTxShardPin;
+
+} smlLockWaitStat;
+
+
+static iduFixedTableColDesc   gPendingWaitColDesc[]=
+{
+
+    {
+        (SChar*)"TRANS_ID",
+        offsetof(smxPendingWait4Perf,mWaitingTID),
+        IDU_FT_SIZEOF(smxPendingWait4Perf,mWaitingTID),
+        IDU_FT_TYPE_UBIGINT,
+        NULL,
+        0, 0,NULL // for internal use
+    },
+    {
+        (SChar *)"SHARD_PIN",
+        IDU_FT_OFFSETOF(smxPendingWait4Perf, mWaitingTxShardPin),
+        SMI_MAX_SHARD_PIN_STR_LEN,
+        IDU_FT_TYPE_VARCHAR,
+        smiFixedTable::convertShardPinToString,
+        0, 0, NULL
+    },
+    {
+        (SChar*)"WAIT_FOR_TRANS_ID",
+        offsetof(smxPendingWait4Perf,mPendingTID),
+        IDU_FT_SIZEOF(smxPendingWait4Perf,mPendingTID),
+        IDU_FT_TYPE_UBIGINT,
+        NULL,
+        0, 0,NULL // for internal use
+    },
+    {
+        (SChar*)"WAIT_FOR_XID",
+        IDU_FT_OFFSETOF(smxPendingWait4Perf, mPendingXID),
+        SMI_XID_STRING_LEN,
+        IDU_FT_TYPE_VARCHAR,
+        idaXaConvertXIDToString,
+        0, 0,NULL // for internal use
+    },
+    {
+        (SChar *)"WAIT_FOR_SHARD_PIN",
+        IDU_FT_OFFSETOF(smxPendingWait4Perf, mPendingTxShardPin),
+        SMI_MAX_SHARD_PIN_STR_LEN,
+        IDU_FT_TYPE_VARCHAR,
+        smiFixedTable::convertShardPinToString,
+        0, 0, NULL
+    },
+    {
+        NULL,
+        0,
+        0,
+        IDU_FT_TYPE_CHAR,
+        NULL,
+        0, 0,NULL // for internal use
+    }
+};
+
+iduFixedTableDesc gPendingWaitTableDesc =
+{
+    (SChar *)"X$PENDING_WAIT",
+    smxFT::buildRecordForPendingWait,
+    gPendingWaitColDesc,
+    IDU_STARTUP_SERVICE,
+    0,
+    0,
+    IDU_FT_DESC_TRANS_NOT_USE,
+    NULL
+};
+
+IDE_RC smxFT::buildRecordForPendingWait( idvSQL              * /*aStatistics*/,
+                                         void                * aHeader,
+                                         void                * /* aDumpObj */,
+                                         iduFixedTableMemory * aMemory )
+{
+    SInt       i;
+    SInt       j;
+    smTID      sWaitingTID;         
+    smTID      sPendingTID;
+    smxTrans * sPendingTrans = NULL;
+    smxTrans * sWaitingTrans = NULL;
+
+    smxPendingWait4Perf sTxInfo;
+
+    SInt   sTransCnt = smxTransMgr::getCurTransCnt();
+
+    for ( j = 0; j < sTransCnt; j++ )
+    {
+        if ( smxTransMgr::isActiveBySID(j) == ID_TRUE )
+        {
+            for ( i = 0; i < sTransCnt; i++ )
+            {
+                if ( smxTransMgr::mPendingWait[j][i] == 1 )
+                {
+                    sPendingTID         = smxTransMgr::getTIDBySID(i);
+                    sTxInfo.mPendingTID = sPendingTID;
+                    sPendingTrans       = smxTransMgr::getTransByTID(sPendingTID);
+                    sTxInfo.mPendingXID = sPendingTrans->mXaTransID;
+                    sTxInfo.mPendingTxShardPin = sPendingTrans->mDistTxInfo.mShardPin;
+
+                    sWaitingTID         = smxTransMgr::getTIDBySID(j);
+                    sTxInfo.mWaitingTID = sWaitingTID;
+                    sWaitingTrans       = smxTransMgr::getTransByTID(sWaitingTID);
+                    sTxInfo.mWaitingTxShardPin = sWaitingTrans->mDistTxInfo.mShardPin;
+
+                    IDE_TEST( iduFixedTable::buildRecord( aHeader,
+                                                          aMemory,
+                                                          (void *)&sTxInfo )
+                              != IDE_SUCCESS );
+                }
+            }
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}

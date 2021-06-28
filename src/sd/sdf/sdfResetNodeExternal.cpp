@@ -53,7 +53,7 @@ static IDE_RC sdfEstimate( mtcNode*        aNode,
 mtfModule sdfResetNodeExternalModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     sdfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -167,9 +167,20 @@ IDE_RC sdfCalculate_ResetNodeExternal( mtcNode*     aNode,
     smiStatement              sSmiStmt;
     UInt                      sSmiStmtFlag;
     SInt                      sState = 0;
+    idBool                    sIsOldSessionShardMetaTouched = ID_FALSE;
 
     sStatement   = ((qcTemplate*)aTemplate)->stmt;
 
+    sStatement->mFlag &= ~QC_STMT_SHARD_META_CHANGE_MASK;
+    sStatement->mFlag |= QC_STMT_SHARD_META_CHANGE_TRUE;
+
+    /* BUG-47623 »þµå ¸ÞÅ¸ º¯°æ¿¡ ´ëÇÑ trc ·Î±×Áß commit ·Î±×¸¦ ÀÛ¼ºÇÏ±âÀü¿¡ DASSERT ·Î Á×´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù. */
+    if ( ( sStatement->session->mQPSpecific.mFlag & QC_SESSION_SHARD_META_TOUCH_MASK ) ==
+         QC_SESSION_SHARD_META_TOUCH_TRUE )
+    {
+        sIsOldSessionShardMetaTouched = ID_TRUE;
+    }
+    
     // BUG-46366
     IDE_TEST_RAISE( ( QC_SMI_STMT(sStatement)->getTrans() == NULL ) ||
                     ( ( sStatement->myPlan->parseTree->stmtKind & QCI_STMT_MASK_DML ) == QCI_STMT_MASK_DML ) ||
@@ -205,7 +216,7 @@ IDE_RC sdfCalculate_ResetNodeExternal( mtcNode*     aNode,
         // shard node name
         sNodeName = (mtdCharType*)aStack[1].value;
 
-        IDE_TEST_RAISE( sNodeName->length > SDI_NODE_NAME_MAX_SIZE,
+        IDE_TEST_RAISE( sNodeName->length > SDI_CHECK_NODE_NAME_MAX_SIZE,
                         ERR_SHARD_NODE_NAME_TOO_LONG );
         idlOS::strncpy( sNodeNameStr,
                         (SChar*)sNodeName->value,
@@ -350,6 +361,8 @@ IDE_RC sdfCalculate_ResetNodeExternal( mtcNode*     aNode,
     }
     IDE_EXCEPTION_END;
 
+    IDE_PUSH();
+    
     switch ( sState )
     {
         case 2:
@@ -369,5 +382,17 @@ IDE_RC sdfCalculate_ResetNodeExternal( mtcNode*     aNode,
             break;
     }
 
+    /* BUG-47623 »þµå ¸ÞÅ¸ º¯°æ¿¡ ´ëÇÑ trc ·Î±×Áß commit ·Î±×¸¦ ÀÛ¼ºÇÏ±âÀü¿¡ DASSERT ·Î Á×´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù. */
+    if ( sIsOldSessionShardMetaTouched == ID_TRUE )
+    {
+        sdi::setShardMetaTouched( sStatement->session );
+    }
+    else
+    {
+        sdi::unsetShardMetaTouched( sStatement->session );
+    }
+
+    IDE_POP();
+    
     return IDE_FAILURE;
 }

@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iloMain.cpp 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: iloMain.cpp 88494 2020-09-04 04:29:31Z chkim $
  **********************************************************************/
 
 #include <idp.h>
@@ -100,7 +100,7 @@ int main(int argc, char **argv)
     IDE_TEST( sHandle->m_memmgr == NULL );
     sState = 7;
 
-    //Threadìƒì„±ì‹œ ìƒì„±ë˜ì–´ì•¼í•¨ 
+    //Thread»ı¼º½Ã »ı¼ºµÇ¾î¾ßÇÔ 
     sHandle->mLoad = new iloLoad( sHandle );
     IDE_TEST( sHandle->mLoad == NULL );
     sState = 8;
@@ -128,7 +128,7 @@ int main(int argc, char **argv)
         ShowCopyRight();
     }
 
-    /* BUG-31387: ConnTypeì„ ì¡°ì •í•˜ê³  ê²½ìš°ì— ë”°ë¼ ê²½ê³  ì¶œë ¥ */
+    /* BUG-31387: ConnTypeÀ» Á¶Á¤ÇÏ°í °æ¿ì¿¡ µû¶ó °æ°í Ãâ·Â */
     sHandle->mProgOption->AdjustConnType(sHandle);
 
     if (gCommandCompiler->IsNullCommand(gszCommand) == SQL_FALSE)
@@ -143,10 +143,11 @@ int main(int argc, char **argv)
 
     nRet = sHandle->mProgOption->TestCommandLineOption(sHandle);
     IDE_TEST_RAISE( nRet == COMMAND_INVALID, err_command1 );
+ 
+    /* BUG-47652 Set file permission */
+    IDE_TEST_RAISE( sHandle->mProgOption->ReadEnvironment( sHandle ), env_var_error );
 
-    sHandle->mProgOption->ReadEnvironment();
-
-    // BUG-26287: ìˆìœ¼ë©´ altibase.propertiesë„ ì°¸ì¡° (for server)
+    // BUG-26287: ÀÖÀ¸¸é altibase.propertiesµµ ÂüÁ¶ (for server)
     sHandle->mProgOption->ReadServerProperties();
 
     IDE_TEST_RAISE( sHandle->mProgOption->ReadProgOptionInteractive()
@@ -173,7 +174,7 @@ int main(int argc, char **argv)
                 idlOS::printf(ENV_ISQL_CONNECTION" : IPCDA\n");
                 break;
             default:
-                /* ë­”ê°€ í¬ê²Œ ì˜ëª»ëë‹¤! */
+                /* ¹º°¡ Å©°Ô Àß¸øµÆ´Ù! */
                 IDE_ASSERT(0);
                 break;
         }
@@ -202,18 +203,18 @@ int main(int argc, char **argv)
     //PROJ-1714
     sHandle->mLoad->SetConnType(sConnType);
 
-    /* iLoaderì—ì„œ AUTOCOMMITì€ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
-     * LOB ì»¬ëŸ¼ì´ ìˆì„ ê²½ìš° AUTOCOMMITì€ ì‚¬ìš©í•´ì„œëŠ” ì•ˆë¨ì— ì£¼ì˜. */
+    /* iLoader¿¡¼­ AUTOCOMMITÀº »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+     * LOB ÄÃ·³ÀÌ ÀÖÀ» °æ¿ì AUTOCOMMITÀº »ç¿ëÇØ¼­´Â ¾ÈµÊ¿¡ ÁÖÀÇ. */
     IDE_TEST_RAISE( sHandle->mSQLApi->AutoCommit(ILO_FALSE) != IDE_SUCCESS,
                     SetAutoCommitError);
     IDE_TEST_RAISE( sHandle->mSQLApi->setQueryTimeOut( 0 ) != SQL_TRUE,
                     err_set_timeout );
 
-    /* BUG-30693 : table ì´ë¦„ë“¤ê³¼ owner ì´ë¦„ì„ mtlMakeNameInFunc í•¨ìˆ˜ë¥¼ ì´ìš©í•˜ì—¬
-    ëŒ€ë¬¸ìë¡œ ë³€ê²½í•´ì•¼ í•  ê²½ìš° ë³€ê²½í•¨.
-    CommandParserì—ì„œ ë³€í™˜í•˜ë©´ ì•ˆëœë‹¤. ê·¸ ì´ìœ ëŠ” ulnDbcInitialize í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ê¸° ì „ì´ë¼
-    ë¬´ì¡°ê±´ ASCII ë¼ê³  ê°„ì£¼ë˜ê¸° ë•Œë¬¸ì—, SHIFTJISì™€ ê°™ì€ ì¸ì½”ë”©ì˜ ë¬¸ìì—´ì´ ì™”ì„ê²½ìš° ëŒ€ë¬¸ì ë³€í™˜ì´
-    ì˜ëª»ë  ìˆ˜ ìˆë‹¤.
+    /* BUG-30693 : table ÀÌ¸§µé°ú owner ÀÌ¸§À» mtlMakeNameInFunc ÇÔ¼ö¸¦ ÀÌ¿ëÇÏ¿©
+    ´ë¹®ÀÚ·Î º¯°æÇØ¾ß ÇÒ °æ¿ì º¯°æÇÔ.
+    CommandParser¿¡¼­ º¯È¯ÇÏ¸é ¾ÈµÈ´Ù. ±× ÀÌÀ¯´Â ulnDbcInitialize ÇÔ¼ö°¡ È£ÃâµÇ±â ÀüÀÌ¶ó
+    ¹«Á¶°Ç ASCII ¶ó°í °£ÁÖµÇ±â ¶§¹®¿¡, SHIFTJIS¿Í °°Àº ÀÎÄÚµùÀÇ ¹®ÀÚ¿­ÀÌ ¿ÔÀ»°æ¿ì ´ë¹®ÀÚ º¯È¯ÀÌ
+    Àß¸øµÉ ¼ö ÀÖ´Ù.
     */
     sHandle->mProgOption->makeTableNameInCLI();
 
@@ -244,7 +245,7 @@ int main(int argc, char **argv)
             sHandle->mLoad->SetSQLApi(sHandle->mSQLApi);
 
             /* PROJ-1714 Parallel iLoader
-             * ì…ë ¥í•œ ë°ì´í„° íŒŒì¼ë§Œí¼ ë°˜ë³µí•´ì„œ uploadingí•œë‹¤.
+             * ÀÔ·ÂÇÑ µ¥ÀÌÅÍ ÆÄÀÏ¸¸Å­ ¹İº¹ÇØ¼­ uploadingÇÑ´Ù.
              */
             for ( i = 0 ; i < sHandle->mProgOption->m_DataFileNum ; i++ )
             {
@@ -269,7 +270,7 @@ int main(int argc, char **argv)
             
             if ( sHandle->mProgOption->m_bExist_NST != SQL_TRUE)
             {
-                // BUG-24096 : iloader ê²½ê³¼ ì‹œê°„ í‘œì‹œ
+                // BUG-24096 : iloader °æ°ú ½Ã°£ Ç¥½Ã
                 g_qcuTimeCheck.showAutoScale4Wall();
             }
             break;
@@ -290,7 +291,7 @@ int main(int argc, char **argv)
 
         gEdo = el_init(*argv, stdin, stdout, stderr);
 
-        /* BUG-29932 : [WIN] iloader ë„ noprompt ì˜µì…˜ì´ í•„ìš”í•©ë‹ˆë‹¤. */
+        /* BUG-29932 : [WIN] iloader µµ noprompt ¿É¼ÇÀÌ ÇÊ¿äÇÕ´Ï´Ù. */
         if( sHandle->mProgOption->mNoPrompt == ILO_TRUE )
         {
             el_set(gEdo, EL_PROMPT, ilonoprompt);
@@ -351,8 +352,8 @@ int main(int argc, char **argv)
             idlOS::printf("Input Option is Valid\n");
 #endif
 
-            /* BUG-30693 : table ì´ë¦„ë“¤ê³¼ owner ì´ë¦„ì„ mtlMakeNameInFunc í•¨ìˆ˜ë¥¼ ì´ìš©í•˜ì—¬
-            ëŒ€ë¬¸ìë¡œ ë³€ê²½í•´ì•¼ í•  ê²½ìš° ë³€ê²½í•¨.*/
+            /* BUG-30693 : table ÀÌ¸§µé°ú owner ÀÌ¸§À» mtlMakeNameInFunc ÇÔ¼ö¸¦ ÀÌ¿ëÇÏ¿©
+            ´ë¹®ÀÚ·Î º¯°æÇØ¾ß ÇÒ °æ¿ì º¯°æÇÔ.*/
             sHandle->mProgOption->makeTableNameInCLI();
 
             switch ( sHandle->mProgOption->m_CommandType)
@@ -376,7 +377,7 @@ int main(int argc, char **argv)
                 sHandle->mLoad->SetProgOption(sHandle->mProgOption);
                 sHandle->mLoad->SetSQLApi(sHandle->mSQLApi);
                 sHandle->mSQLApi->alterReplication( sHandle->mProgOption->mReplication );                       /* PROJ-1714
-                 * ì…ë ¥í•œ ë°ì´í„° íŒŒì¼ë§Œí¼ ë°˜ë³µí•´ì„œ uploadingí•œë‹¤.
+                 * ÀÔ·ÂÇÑ µ¥ÀÌÅÍ ÆÄÀÏ¸¸Å­ ¹İº¹ÇØ¼­ uploadingÇÑ´Ù.
                  */
                 for ( i = 0 ; i < sHandle->mProgOption->m_DataFileNum ; i++ )
                 {
@@ -393,7 +394,7 @@ int main(int argc, char **argv)
                
                 if ( sHandle->mProgOption->m_bExist_NST != SQL_TRUE)
                 {
-                    // BUG-24096 : iloader ê²½ê³¼ ì‹œê°„ í‘œì‹œ
+                    // BUG-24096 : iloader °æ°ú ½Ã°£ Ç¥½Ã
                     g_qcuTimeCheck.showAutoScale4Wall();
                 }
                 break;
@@ -442,7 +443,7 @@ exit_pos:
     {
         /* do nothing */
     }
-    // ì¼ë°˜ ìˆ˜í–‰ì¤‘ ë°œìƒí•œ ì—ëŸ¬ë©”ì‹œì§€ ì¶œë ¥
+    // ÀÏ¹İ ¼öÇàÁß ¹ß»ıÇÑ ¿¡·¯¸Ş½ÃÁö Ãâ·Â
     IDE_EXCEPTION( err_command1 );
     {
         if ( sHandle->mUseApi != SQL_TRUE )
@@ -450,7 +451,7 @@ exit_pos:
             utePrintfErrorCode(stdout, sHandle->mErrorMgr);
         }
     }
-    // íŒŒì‹±ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš°
+    // ÆÄ½Ì¿¡·¯°¡ ¹ß»ıÇÑ °æ¿ì
     IDE_EXCEPTION( err_command2 );
     {
         uteSetErrorCode(sHandle->mErrorMgr, utERR_ABORT_Parse_Command_Error);
@@ -464,7 +465,7 @@ exit_pos:
         idlOS::printf("Use help. iLoader> help \n");
 #endif /* COMPILE_SHARDCLI */
     }
-    // íŒŒì‹±ì¤‘ ì¤‘ë³µëœ ì˜µì…˜ ì‚¬ìš©ì´ë‚˜ ì˜ëª»ëœ ì˜µì…˜ê°’ì„ ì…ë ¥í–ˆì„ ê²½ìš°
+    // ÆÄ½ÌÁß Áßº¹µÈ ¿É¼Ç »ç¿ëÀÌ³ª Àß¸øµÈ ¿É¼Ç°ªÀ» ÀÔ·ÂÇßÀ» °æ¿ì
     IDE_EXCEPTION( err_command3 );
     {
         // bug-20637
@@ -492,6 +493,14 @@ exit_pos:
         if ( sHandle->mUseApi != SQL_TRUE )
         {
             utePrintfErrorCode(stdout, sHandle->mErrorMgr);
+        }
+    }
+    /* BUG-47652 Set file permission */
+    IDE_EXCEPTION( env_var_error );
+    {
+        if ( sHandle->mUseApi != SQL_TRUE )
+        {
+            utePrintfErrorCode( stdout, sHandle->mErrorMgr );
         }
     }
     IDE_EXCEPTION_END;

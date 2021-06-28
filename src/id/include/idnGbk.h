@@ -23,19 +23,19 @@
 
 #include <idnConv.h>
 
-/* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
+/* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
 SInt convertMbToWc4Gbk( void    * aSrc,
                         SInt      aSrcRemain,
                         void    * aDest,
                         SInt      aDestRemain );
 
-/* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
+/* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
 SInt convertWcToMb4Gbk( void    * aSrc,
                         SInt      aSrcRemain,
                         void    * aDest,
                         SInt      aDestRemain );
 
-/* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
+/* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
 SInt copyGbk( void    * aSrc,
               SInt      aSrcRemain,
               void    * aDest,

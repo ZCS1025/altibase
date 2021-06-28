@@ -146,9 +146,13 @@ SQLRETURN ulnSetSavepoint( ulnDbc               * aDbc,
                            const acp_char_t     * aSavepointName,
                            acp_uint32_t           aSavepointNameLength )
 {
+    ULN_FLAG(sNeedExit);
     ulnFnContext sFnContext;
 
-    ULN_INIT_FUNCTION_CONTEXT( sFnContext, ULN_FID_NONE, aDbc, ULN_OBJ_TYPE_DBC );
+    ULN_INIT_FUNCTION_CONTEXT( sFnContext, ULN_FID_FOR_SD, aDbc, ULN_OBJ_TYPE_DBC );
+
+    ACI_TEST(ulnEnter(&sFnContext, NULL) != ACI_SUCCESS);
+    ULN_FLAG_UP(sNeedExit);
 
     ACI_TEST( ulnSetSavepointMain( &sFnContext,
                                    aDbc, 
@@ -156,9 +160,17 @@ SQLRETURN ulnSetSavepoint( ulnDbc               * aDbc,
                                    aSavepointNameLength ) 
               != ACI_SUCCESS );
 
+    ULN_FLAG_DOWN(sNeedExit);
+    ACI_TEST(ulnExit(&sFnContext) != ACI_SUCCESS);
+
     return SQL_SUCCESS;
 
     ACI_EXCEPTION_END;
+
+    ULN_IS_FLAG_UP(sNeedExit)
+    {
+        ulnExit(&sFnContext);
+    }
 
     ULN_TRACE_LOG( NULL, ULN_TRACELOG_MID, NULL, 0,
                    "%-18s| ulnSetSavepoint" );
@@ -183,9 +195,13 @@ SQLRETURN ulnRollbackToSavepoint( ulnDbc             * aDbc,
                                   const acp_char_t   * aSavepointName,
                                   acp_uint32_t         aSavepointNameLength )
 {
+    ULN_FLAG(sNeedExit);
     ulnFnContext sFnContext;
 
-    ULN_INIT_FUNCTION_CONTEXT( sFnContext, ULN_FID_NONE, aDbc, ULN_OBJ_TYPE_DBC );
+    ULN_INIT_FUNCTION_CONTEXT( sFnContext, ULN_FID_FOR_SD, aDbc, ULN_OBJ_TYPE_DBC );
+
+    ACI_TEST(ulnEnter(&sFnContext, NULL) != ACI_SUCCESS);
+    ULN_FLAG_UP(sNeedExit);
 
     ACI_TEST( ulnRollbackToSavepointMain( &sFnContext,
                                           aDbc, 
@@ -193,9 +209,17 @@ SQLRETURN ulnRollbackToSavepoint( ulnDbc             * aDbc,
                                           aSavepointNameLength ) 
               != ACI_SUCCESS );
 
+    ULN_FLAG_DOWN(sNeedExit);
+    ACI_TEST(ulnExit(&sFnContext) != ACI_SUCCESS);
+
     return SQL_SUCCESS;
 
     ACI_EXCEPTION_END;
+
+    ULN_IS_FLAG_UP(sNeedExit)
+    {
+        ulnExit(&sFnContext);
+    }
 
     ULN_TRACE_LOG( NULL, ULN_TRACELOG_MID, NULL, 0,
                    "%-18s| ulnRollbackToSavepoint" );

@@ -2,7 +2,7 @@
 
 include ../stEnv.mk
 
-# NLS ì¤‘ ì˜ì–´ ì—ëŸ¬ ë©”ì‹œì§€ í™”ì¼ ì •ì˜
+# NLS Áß ¿µ¾î ¿¡·¯ ¸Þ½ÃÁö È­ÀÏ Á¤ÀÇ
 E_ST_US_MSG    = E_ST_US7ASCII.msg
 ALLMSG         = $(E_ST_US_MSG)
 
@@ -26,6 +26,7 @@ compile:  $(ALLMSB)
 $(E_ST_US_MSB) : $(E_ST_US_MSG) $(GENERRMSG)
 	$(GENERRMSG) -i $(E_ST_US_MSG) -o $(E_ST_HEADER)
 	cp -f ST_TRC_CODE.ih ST_TRC_CODE.ic $(E_ST_HEADER) ../include
+	sync
 
 $(ALLMSB): $(E_ST_US_MSB)
 	$(COPY) $^ $@

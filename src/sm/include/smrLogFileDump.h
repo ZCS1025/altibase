@@ -22,23 +22,26 @@
 #ifndef _O_SMR_LOG_FILE_DUMP_H_
 #define _O_SMR_LOG_FILE_DUMP_H_ 1
 
+#include <ida.h>
 #include <idu.h>
 #include <smDef.h>
 
+#define SMR_XID_DATA_MAX_LEN (256)
+
 /*
-    í•˜ë‚˜ì˜ ë¡œê·¸íŒŒì¼ì•ˆì˜ ë¡œê·¸ë ˆì½”ë“œë“¤ì„ ì¶œë ¥í•œë‹¤.
+    ÇÏ³ªÀÇ ·Î±×ÆÄÀÏ¾ÈÀÇ ·Î±×·¹ÄÚµåµéÀ» Ãâ·ÂÇÑ´Ù.
  */
 class smrLogFileDump
 {
 public :
-    /* Static ë³€ìˆ˜ ë° í•¨ìˆ˜ë“¤ 
+    /* Static º¯¼ö ¹× ÇÔ¼öµé 
      *********************************************************************/
     static IDE_RC initializeStatic();
     static IDE_RC destroyStatic();
     
-    /* TASK-4007 [SM] PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
-     * ì„œë²„ë‚´ ì €ì¥ë˜ì–´ ìˆëŠ” LogType, Operation Type ë“±
-     * ë¡œê·¸ì™€ ê´€ë ¨ëœ String ì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤. */
+    /* TASK-4007 [SM] PBT¸¦ À§ÇÑ ±â´É Ãß°¡
+     * ¼­¹ö³» ÀúÀåµÇ¾î ÀÖ´Â LogType, Operation Type µî
+     * ·Î±×¿Í °ü·ÃµÈ String Á¤º¸¸¦ °¡Á®¿Â´Ù. */
     static SChar *getLogType( smrLogType aIdx );
     static SChar *getOPType( UInt aIdx );
     static SChar *getLOBOPType( UInt aIdx );
@@ -47,7 +50,9 @@ public :
     static SChar *getUpdateType( smrUpdateType aIdx );
     static SChar *getTBSUptType( UInt aIdx );
 
-    /* Instance í•¨ìˆ˜ë“¤
+    static IDE_RC dumpPrepareReqBranchTx( SChar * aBranchTxStr, UInt aSize );
+
+    /* Instance ÇÔ¼öµé
      *********************************************************************/
     IDE_RC initFile();
     IDE_RC destroyFile();
@@ -67,7 +72,7 @@ public :
     idBool       getIsCompressed() { return mIsCompressed;}
     
 private:
-    /* Dumpí•˜ëŠ”ë° í•„ìš”í•œ member ë³€ìˆ˜ */
+    /* DumpÇÏ´Âµ¥ ÇÊ¿äÇÑ member º¯¼ö */
     iduFile                 mLogFile;
     SChar                 * mFileBuffer;
     ULong                   mFileSize;
@@ -80,8 +85,8 @@ private:
     UInt                    mNextOffset;
     idBool                  mIsCompressed;
 
-    /* ë¡œê·¸ë©”ëª¨ë¦¬ì˜ íŠ¹ì • Offsetì—ì„œ ë¡œê·¸ ë ˆì½”ë“œë¥¼ ì½ì–´ì˜¨ë‹¤.
-     * ì••ì¶•ëœ ë¡œê·¸ì˜ ê²½ìš°, ë¡œê·¸ ì••ì¶•í•´ì œë¥¼ ìˆ˜í–‰í•œë‹¤. */
+    /* ·Î±×¸Ş¸ğ¸®ÀÇ Æ¯Á¤ Offset¿¡¼­ ·Î±× ·¹ÄÚµå¸¦ ÀĞ¾î¿Â´Ù.
+     * ¾ĞÃàµÈ ·Î±×ÀÇ °æ¿ì, ·Î±× ¾ĞÃàÇØÁ¦¸¦ ¼öÇàÇÑ´Ù. */
     static IDE_RC readLog( iduMemoryHandle    * aDecompBufferHandle,
                            SChar              * aFileBuffer,
                            UInt                 aFileNo,
@@ -92,12 +97,12 @@ private:
                            idBool             * aIsCompressed);
 
 
-    // Log File Headerë¡œë¶€í„° File Beginë¡œê·¸ë¥¼ ì–»ì–´ë‚¸ë‹¤
+    // Log File Header·ÎºÎÅÍ File Begin·Î±×¸¦ ¾ò¾î³½´Ù
     static IDE_RC getFileNo( SChar * aFileBeginLog,
                              UInt  * aFileNo );
     
-    // BUG-28581 dumplfì—ì„œ Log ê°œìˆ˜ ê³„ì‚°ì„ ìœ„í•œ sizeof ë‹¨ìœ„ê°€ ì˜ëª»ë˜ì–´ ìˆìŠµë‹ˆë‹¤.
-    // smrLogTypeëŠ” UCharì´ê¸° ë•Œë¬¸ì— UChar MAXë§Œí¼ Arrayë¥¼ ìƒì„±í•´ì•¼ í•©ë‹ˆë‹¤.
+    // BUG-28581 dumplf¿¡¼­ Log °³¼ö °è»êÀ» À§ÇÑ sizeof ´ÜÀ§°¡ Àß¸øµÇ¾î ÀÖ½À´Ï´Ù.
+    // smrLogType´Â UCharÀÌ±â ¶§¹®¿¡ UChar MAX¸¸Å­ Array¸¦ »ı¼ºÇØ¾ß ÇÕ´Ï´Ù.
     static SChar mStrLogType[ ID_UCHAR_MAX ][100];
     static SChar mStrOPType[SMR_OP_MAX+1][100];
     static SChar mStrLOBOPType[SMR_LOB_OP_MAX+1][100];
@@ -109,8 +114,8 @@ private:
 
 inline SChar *smrLogFileDump::getLogType( smrLogType aIdx )
 {
-    //smrLogTypeì€ UCharí˜• ë³€ìˆ˜ë¡œ 256ê°œ ìˆìœ¼ë©°, mStrLogTypeì€ 1Byteë¡œ
-    //ì„ ì–¸ ë˜ì–´ ìˆê¸°ì—, Overflow ë¬¸ì œê°€ ì—†ë‹¤.
+    //smrLogTypeÀº UCharÇü º¯¼ö·Î 256°³ ÀÖÀ¸¸ç, mStrLogTypeÀº 1Byte·Î
+    //¼±¾ğ µÇ¾î ÀÖ±â¿¡, Overflow ¹®Á¦°¡ ¾ø´Ù.
 
     return mStrLogType[ aIdx ];
 }

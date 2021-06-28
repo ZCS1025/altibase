@@ -29,8 +29,8 @@ SChar utpCSVWriter::mEncloser   = '"';
 
 /* Description:
  *
- * CSV íŒŒì¼ì˜ êµ¬ë¶„ìë¥¼ ì„¤ì •í•œë‹¤.
- * ì„¤ì •í•˜ì§€ ì•Šìœ¼ë©´ ë””í´íŠ¸ ê°’ì´ ì‚¬ìš©ëœë‹¤.
+ * CSV ÆÄÀÏÀÇ ±¸ºĞÀÚ¸¦ ¼³Á¤ÇÑ´Ù.
+ * ¼³Á¤ÇÏÁö ¾ÊÀ¸¸é µğÆúÆ® °ªÀÌ »ç¿ëµÈ´Ù.
  */
 void utpCSVWriter::initialize(SChar aColSep,
                               SChar aLineSep,
@@ -44,8 +44,8 @@ void utpCSVWriter::initialize(SChar aColSep,
 
 /* Description:
  *
- * ì œëª© ë¼ì¸ì„ ì¶œë ¥í•œë‹¤.
- * ëª¨ë“  ì¹¼ëŸ¼ì„ ê°ê°ì˜ ì¸ìë¡œ ì…ë ¥í•´ì•¼ í•œë‹¤.
+ * Á¦¸ñ ¶óÀÎÀ» Ãâ·ÂÇÑ´Ù.
+ * ¸ğµç Ä®·³À» °¢°¢ÀÇ ÀÎÀÚ·Î ÀÔ·ÂÇØ¾ß ÇÑ´Ù.
  */
 void utpCSVWriter::writeTitle(FILE *aFp, SInt aCnt, ...)
 {
@@ -74,8 +74,8 @@ void utpCSVWriter::writeTitle(FILE *aFp, SInt aCnt, ...)
 
 /* Description:
  *
- * ì œëª© ë¼ì¸ì„ ì¶œë ¥í•œë‹¤.
- * ì½¤ë§ˆë¡œ êµ¬ë¶„ëœ ëª¨ë“  ì¹¼ëŸ¼ì„ í•˜ë‚˜ì˜ ë¬¸ìì—´ë¡œ ì…ë ¥í•´ì•¼ í•œë‹¤.
+ * Á¦¸ñ ¶óÀÎÀ» Ãâ·ÂÇÑ´Ù.
+ * ÄŞ¸¶·Î ±¸ºĞµÈ ¸ğµç Ä®·³À» ÇÏ³ªÀÇ ¹®ÀÚ¿­·Î ÀÔ·ÂÇØ¾ß ÇÑ´Ù.
  */
 void utpCSVWriter::writeTitle(FILE *aFp, const SChar *aValue)
 {
@@ -85,7 +85,7 @@ void utpCSVWriter::writeTitle(FILE *aFp, const SChar *aValue)
 
 /* Description:
  *
- * int ê°’ì„ ì¶œë ¥í•œë‹¤. ì¹¼ëŸ¼ êµ¬ë¶„ìë„ í•¨ê»˜ ì¶œë ¥í•œë‹¤.
+ * int °ªÀ» Ãâ·ÂÇÑ´Ù. Ä®·³ ±¸ºĞÀÚµµ ÇÔ²² Ãâ·ÂÇÑ´Ù.
  */
 void utpCSVWriter::writeInt(FILE *aFp, UInt aValue)
 {
@@ -94,7 +94,7 @@ void utpCSVWriter::writeInt(FILE *aFp, UInt aValue)
 
 /* Description:
  *
- * double ê°’ì„ ì¶œë ¥í•œë‹¤. ì¹¼ëŸ¼ êµ¬ë¶„ìë„ í•¨ê»˜ ì¶œë ¥í•œë‹¤.
+ * double °ªÀ» Ãâ·ÂÇÑ´Ù. Ä®·³ ±¸ºĞÀÚµµ ÇÔ²² Ãâ·ÂÇÑ´Ù.
  */
 void utpCSVWriter::writeDouble(FILE *aFp, double aValue)
 {
@@ -103,7 +103,7 @@ void utpCSVWriter::writeDouble(FILE *aFp, double aValue)
 
 /* Description:
  *
- * ë¬¸ìì—´ ê°’ì„ ì¶œë ¥í•œë‹¤. ë¼ì¸ êµ¬ë¶„ìë„ í•¨ê»˜ ì¶œë ¥í•œë‹¤.
+ * ¹®ÀÚ¿­ °ªÀ» Ãâ·ÂÇÑ´Ù. ¶óÀÎ ±¸ºĞÀÚµµ ÇÔ²² Ãâ·ÂÇÑ´Ù.
  */
 void utpCSVWriter::writeString(FILE *aFp, SChar *aValue)
 {

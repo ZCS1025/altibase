@@ -24,14 +24,15 @@
 
 #include <qci.h>
 #include <qmxSessionCache.h>
+#include <sdi.h>
 
 #define QCG_DEFAULT_BIND_MEM_SIZE          (1024)
 
-// ë‚´ë¶€ì ìœ¼ë¡œ qcStatementë¥¼ í• ë‹¹ë°›ì•„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°ì—,
-// qcStatement ì´ˆê¸°í™”ë¥¼ ìœ„í•´ ì‚¬ìš©í•˜ëŠ” ê°’ì„.
+// ³»ºÎÀûÀ¸·Î qcStatement¸¦ ÇÒ´ç¹Ş¾Æ »ç¿ëÇÏ´Â °æ¿ì¿¡,
+// qcStatement ÃÊ±âÈ­¸¦ À§ÇØ »ç¿ëÇÏ´Â °ªÀÓ.
 #define QCG_INTERNAL_OPTIMIZER_MODE        ( 0 ) // Cost
 #define QCG_INTERNAL_SELECT_HEADER_DISPLAY ( 0 ) // No Display
-#define QCG_INTERNAL_OPTIMIZER_DEFAULT_TEMP_TBS_TYPE ( 0 )  // optimizerê°€ íŒë‹¨
+#define QCG_INTERNAL_OPTIMIZER_DEFAULT_TEMP_TBS_TYPE ( 0 )  // optimizer°¡ ÆÇ´Ü
 
 #define QCG_GET_SESSION_LANGUAGE( _QcStmt_ )    \
     qcg::getSessionLanguage( _QcStmt_ )
@@ -98,12 +99,22 @@
 #define QCG_GET_SESSION_SHARD_META_NUMBER( _QcStmt_ ) \
     qcg::getSessionShardMetaNumber( _QcStmt_ )
 
+#define QCG_GET_LAST_SESSION_SHARD_META_NUMBER( _QcStmt_ ) \
+    qcg::getLastSessionShardMetaNumber( _QcStmt_ )
+
 // PROJ-2701 Sharding online data rebuild
-#define QCG_GET_SESSION_IS_SHARD_DATA_SESSION( _QcStmt_ ) \
-    qcg::getSessionIsShardDataSession( _QcStmt_ )
+#define QCG_GET_SESSION_IS_SHARD_USER_SESSION( _QcStmt_ ) \
+    qcg::getSessionIsShardUserSession( _QcStmt_ )
+
+/* TASK-7219 Analyzer/Transformer/Executor ¼º´É°³¼± */
+#define QCG_GET_CALL_BY_SHARD_ANALYZE_PROTOCOL( _QcStmt_ ) \
+    qcg::getCallByShardAnalyzeProtocol( _QcStmt_ )
 
 #define QCG_GET_SESSION_SHARD_NODE_NAME( _QcStmt_ ) \
     qcg::getSessionShardNodeName( _QcStmt_ )
+
+#define QCG_GET_SESSION_SHARD_SESSION_TYPE( _QcStmt_ ) \
+    qcg::getSessionShardSessionType( _QcStmt_ )
 
 /* BUG-45899 */
 #define QCG_GET_SESSION_TRCLOG_DETAIL_SHARD( _QcStmt_ ) \
@@ -112,12 +123,27 @@
 #define QCG_GET_SESSION_EXPLAIN_PLAN( _QcStmt_ ) \
     qcg::getSessionExplainPlan( _QcStmt_ )
 
-#define QCG_GET_SESSION_DBLINK_GTX_LEVEL( _QcStmt_ ) \
-    qcg::getSessionDBLinkGTXLevel( _QcStmt_ )
+#define QCG_GET_SESSION_GTX_LEVEL( _QcStmt_ ) \
+    qcg::getSessionGTXLevel( _QcStmt_ )
+
+#define QCG_GET_SESSION_IS_GTX( _QcStmt_ ) \
+    qcg::isGTxSession( _QcStmt_ )
+
+#define QCG_GET_SESSION_IS_GCTX( _QcStmt_ ) \
+    qcg::isGCTxSession( _QcStmt_ )
 
 /* PROJ-2677 DDL synchronization */
 #define QCG_GET_SESSION_REPLICATION_DDL_SYNC( _QcStmt_ ) \
     qcg::getReplicationDDLSync( _QcStmt_ )
+
+#define QCG_GET_SESSION_IS_NEED_DDL_INFO( _QcStmt_ ) \
+    qcg::getIsNeedDDLInfo( _QcStmt_ )
+
+#define QCG_GET_SESSION_TRANSACTIONAL_DDL( _QcStmt_ ) \
+    qcg::getTransactionalDDL( _QcStmt_ )
+
+#define QCG_GET_SESSION_GLOBAL_DDL( _QcStmt_ ) \
+    qcg::getGlobalDDL( _QcStmt_ )
 
 // PROJ-1579 NCHAR
 #define QCG_GET_SESSION_NCHAR_LITERAL_REPLACE( _QcStmt_ ) \
@@ -146,7 +172,7 @@
                                        _savePoint_,                             \
                                        _inStoredProc_ ) )
 
-// BUG-23780 TEMP_TBS_MEMORY íŒíŠ¸ ì ìš©ì—¬ë¶€ë¥¼ propertyë¡œ ì œê³µ
+// BUG-23780 TEMP_TBS_MEMORY ÈùÆ® Àû¿ë¿©ºÎ¸¦ property·Î Á¦°ø
 #define QCG_GET_SESSION_OPTIMIZER_DEFAULT_TEMP_TBS_TYPE( _QcStmt_ )      \
     qcg::getSessionOptimizerDefaultTempTbsType( _QcStmt_ )
 
@@ -196,7 +222,7 @@
 #define QCG_GET_SESSION_PRINT_OUT_ENABLE( _QcStmt_ ) \
     qcg::getSessionPrintOutEnable( _QcStmt_ )
 
-/* BUG-42853 LOCK TABLEì— UNTIL NEXT DDL ê¸°ëŠ¥ ì¶”ê°€ */
+/* BUG-42853 LOCK TABLE¿¡ UNTIL NEXT DDL ±â´É Ãß°¡ */
 #define QCG_GET_SESSION_LOCK_TABLE_UNTIL_NEXT_DDL( _QcStmt_ )                                   \
     ( ( (_QcStmt_)->session->mMmSession != NULL ) ?                                             \
         qci::mSessionCallback.mGetLockTableUntilNextDDL( (_QcStmt_)->session->mMmSession ) :    \
@@ -267,6 +293,12 @@
 #define QCG_GET_SESSION_IS_AUTOCOMMIT( _QcStmt_ ) \
     qcg::getSessionIsAutoCommit( _QcStmt_ )
 
+#define QCG_GET_SESSION_IS_SHARD_INTERNAL_LOCAL_OPERATION( _QcStmt_ ) \
+    qcg::getSessionIsInternalLocalOperation( _QcStmt_ )
+
+#define QCG_GET_SESSION_SHARD_INTERNAL_LOCAL_OPERATION( _QcStmt_ ) \
+    qcg::getSessionInternalLocalOperation( _QcStmt_ )
+
 /* BUG-42134 Created transitivity predicate of join predicate must be reinforced. */
 #define QCG_GET_SESSION_OPTIMIZER_TRANSITIVITY_OLD_RULE( _QcStmt_ ) \
     qcg::getSessionOptimizerTransitivityOldRule( _QcStmt_ )
@@ -282,9 +314,87 @@
 #define QCG_GET_SESSION_TRCLOG_DETAIL_INFORMATION( _QcStmt_ ) \
     qcg::getSessionTrclogDetailInformation( _QcStmt_ )
 
+/* BUG-47648  disk partition¿¡¼­ »ç¿ëµÇ´Â prepared memory »ç¿ë·® °³¼± */
+#define QCG_GET_REDUCE_PART_PREPARE_MEMORY( _QcStmt_ ) \
+    qcg::getReducePartPrepareMemory( _QcStmt_ )
+
+// PROJ-2727 
+#define QCG_GET_SESSION_PROPERTY_ATTRIBUTE( _QcStmt_ ) \
+    qcg::getSessionPropertyAttribute( _QcStmt_ )
+
+#define QCG_SET_SESSION_PROPERTY_ATTRIBUTE( _QcStmt_, _aValue_ )  \
+    {                                                                     \
+        if ( (_QcStmt_)->session->mMmSession != NULL )                    \
+        {                                                                 \
+            qci::mSessionCallback.mSetPropertyAttribute( (_QcStmt_)->session->mMmSession, \
+                                                          _aValue_ );     \
+        }                                                                 \
+    }
+
+#define QCG_SET_SESSION_SHARD_IN_PSM_ENABLE( _QcStmt_, _aValue_ ) \
+        qcg::setSessionShardInPSMEnable( _QcStmt_, _aValue_ )     \
+
+#define QCG_GET_SESSION_SHARD_IN_PSM_ENABLE( _QcStmt_ ) \
+    qcg::getSessionShardInPSMEnable( _QcStmt_ )
+
+/* TASK-7219 Non-shard DML */
+#define QCG_INCREASE_SESSION_STMT_EXEC_SEQ_FOR_SHARD_TX( _QcStmt_, _aIsIncreased_ )    \
+    qcg::increaseStmtExecSeqForShardTx( _QcStmt_, _aIsIncreased_ )
+
+#define QCG_DECREASE_SESSION_STMT_EXEC_SEQ_FOR_SHARD_TX( _QcStmt_ ) \
+    qcg::decreaseStmtExecSeqForShardTx( _QcStmt_ )
+
+#define QCG_GET_SESSION_STMT_EXEC_SEQ_FOR_SHARD_TX( _QcStmt_ ) \
+    qcg::getStmtExecSeqForShardTx( _QcStmt_ )
+
+#define QCG_GET_SHARD_PARTIAL_EXEC_TYPE( _QcStmt_ ) \
+    qcg::getShardPartialExecType( _QcStmt_ )
+
+// BUG-47861 INVOKE_USER_ID, INVOKE_USER_NAME function
+#define QCG_GET_SESSION_INVOKE_USER_NAME( _QcStmt_ )     \
+    qcg::getSessionInvokeUserName( _QcStmt_ )
+
+#define QCG_SET_SESSION_INVOKE_USER_NAME( _QcStmt_, _userId_ )   \
+    qcg::setSessionInvokeUserName( _QcStmt_, _userId_ )
+
+/* BUG-48132 */
+#define QCG_GET_PLAN_HASH_OR_SORT_METHOD( _QcStmt_ ) \
+    qcg::getPlanHashOrSortMethod( _QcStmt_ )
+
+/* BUG-48161 */
+#define QCG_GET_BUCKET_COUNT_MAX( _QcStmt_ ) \
+    qcg::getBucketCountMax( _QcStmt_ )
+
+
+#define QCG_GET_SESSION_SHARD_DDL_LOCK_TIMEOUT( _QcStmt_ )     \
+    qci::mSessionCallback.mGetShardDDLLockTimeout((_QcStmt_)->session->mMmSession)
+
+#define QCG_GET_SESSION_SHARD_DDL_LOCK_TRY_COUNT( _QcStmt_ )     \
+    qci::mSessionCallback.mGetShardDDLLockTryCount((_QcStmt_)->session->mMmSession)
+
+#define QCG_GET_SESSION_QUERY_TIMEOUT( _QcStmt_ )     \
+    qci::mSessionCallback.mGetQueryTimeout((_QcStmt_)->session->mMmSession)
+
+/* BUG-48348 */
+#define QCG_GET_SESSION_ELIMINATE_COMMON_SUBEXPRESSION( _QcStmt_ ) \
+    qcg::getEliminateCommonSubexpression( _QcStmt_ )
+
+// BUG-48384
+#define QCG_GET_SESSION_SHARD_CLIENT_TOUCH_NODE_COUNT( _QcStmt_ )    \
+    qci::mSessionCallback.mGetClientTouchNodeCount((_QcStmt_)->session->mMmSession)
 
 /* PROJ-2109 : Remove the bottleneck of alloc/free stmts. */
 #define QCG_MEMPOOL_ELEMENT_CNT 16
+
+/* TASK-7307 DML Data Consistency in Shard */
+#define QCG_CHECK_SHARD_DML_CONSISTENCY( _QcStmt_ )                       \
+    (                                                                     \
+        ( ( SDU_SHARD_ENABLE == 1 ) &&                                    \
+          ( QCG_GET_SESSION_IS_SHARD_INTERNAL_LOCAL_OPERATION( _QcStmt_ ) \
+            != ID_TRUE )                                                  \
+        )                                                                 \
+        ? ID_TRUE : ID_FALSE                                              \
+    )
 
 struct  qciStatement;
 
@@ -297,7 +407,7 @@ typedef IDE_RC (*qcgDeQueueCallback)( void * aArg,idBool aBookDeq);
 
 /*
  * PROJ-1071 Parallel Query
- * parallel worker thread ìµœëŒ€ ê°œìˆ˜ ì œí•œ
+ * parallel worker thread ÃÖ´ë °³¼ö Á¦ÇÑ
  */
 typedef struct qcgPrlThrUseCnt
 {
@@ -309,15 +419,15 @@ class qcg
 {
 private:
 
-    // qpë‚´ë¶€ì—ì„œ ì²˜ë¦¬ë˜ëŠ” ì§ˆì˜ë¬¸ì˜ ê²½ìš°,
-    // mmì˜ session ì •ë³´ ì—†ì´ ì²˜ë¦¬ë˜ì–´ì•¼ í•¨.
-    // ë”°ë¼ì„œ, callback í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ,
-    // ë‚´ë¶€ì ìœ¼ë¡œ sessionì˜ userIDë¥¼ ì„¸íŒ…í•˜ê³  ì–»ê¸° ìœ„í•´ì„œ.
+    // qp³»ºÎ¿¡¼­ Ã³¸®µÇ´Â ÁúÀÇ¹®ÀÇ °æ¿ì,
+    // mmÀÇ session Á¤º¸ ¾øÀÌ Ã³¸®µÇ¾î¾ß ÇÔ.
+    // µû¶ó¼­, callback ÇÔ¼ö¸¦ »ç¿ëÇÒ ¼ö ¾øÀ¸¹Ç·Î,
+    // ³»ºÎÀûÀ¸·Î sessionÀÇ userID¸¦ ¼¼ÆÃÇÏ°í ¾ò±â À§ÇØ¼­.
     static UInt    mInternalUserID;
     static SChar * mInternalUserName;
 
     // BUG-17224
-    // startup serviceë‹¨ê³„ ì¤‘ meta cacheê°€ ì´ˆê¸°í™”ë˜ì—ˆëŠ”ì§€ ë‚˜íƒ€ëƒ„.
+    // startup service´Ü°è Áß meta cache°¡ ÃÊ±âÈ­µÇ¾ú´ÂÁö ³ªÅ¸³¿.
     static idBool     mInitializedMetaCaches;
     /* PROJ-2109 : Remove the bottleneck of alloc/free stmts. */
     /* To reduce the number of system calls and eliminate the contention
@@ -337,32 +447,32 @@ private:
 public:
     //-----------------------------------------------------------------
     // allocStatement() :
-    //     qcStatementì— ëŒ€í•œ ìµœì´ˆ ì´ˆê¸°í™” ë° Memory í• ë‹¹
+    //     qcStatement¿¡ ´ëÇÑ ÃÖÃÊ ÃÊ±âÈ­ ¹× Memory ÇÒ´ç
     // freeStatement() :
-    //     qcStatementì˜ ì™„ì „í•œ ì œê±°
+    //     qcStatementÀÇ ¿ÏÀüÇÑ Á¦°Å
     // clearStatement() : : reset for a statement - for Direct Execution
-    //     qcStatementì˜ RESET : Parsing, Validationì •ë³´ì˜ ì œê±°
-    //        - SQLExecDirect() ì™„ë£Œ í›„
+    //     qcStatementÀÇ RESET : Parsing, ValidationÁ¤º¸ÀÇ Á¦°Å
+    //        - SQLExecDirect() ¿Ï·á ÈÄ
     //        - SQLFreeStmt(SQL_DROP) :
     // closeStatement() :
-    //     qcStatementì˜ Execution ì •ë³´ ì œê±°
-    //     (Parsing, Validation, Optimizationì˜ ì •ë³´ëŠ” ìœ íš¨í•¨)
+    //     qcStatementÀÇ Execution Á¤º¸ Á¦°Å
+    //     (Parsing, Validation, OptimizationÀÇ Á¤º¸´Â À¯È¿ÇÔ)
     //        - SQLFreeStmt(SQL_CLOSE)
     // stepAfterPVO() :
-    //     PVO(Parsing->Validation->Optimization)ì´í›„ì— ë°˜ë“œì‹œ í˜¸ì¶œ
-    //     ì§ˆì˜ ìˆ˜í–‰ì„ ìœ„í•œ Template ê°’ë“¤ì„ ì´ˆê¸°í™”í•¨.
+    //     PVO(Parsing->Validation->Optimization)ÀÌÈÄ¿¡ ¹İµå½Ã È£Ãâ
+    //     ÁúÀÇ ¼öÇàÀ» À§ÇÑ Template °ªµéÀ» ÃÊ±âÈ­ÇÔ.
     //
-    // stepAfterPXX() : Prepare Executionì—ì„œ SQLExecute()í›„ì— ë°˜ë“œì‹œ í˜¸ì¶œ
-    //     ì§ˆì˜ ìˆ˜í–‰ì„ ìœ„í•´ ìƒì„±í–ˆë˜ ìì›ì„ ì œê±°í•˜ê³ , Templateê°’ë“¤ì„ ì´ˆê¸°í™”í•¨.
+    // stepAfterPXX() : Prepare Execution¿¡¼­ SQLExecute()ÈÄ¿¡ ¹İµå½Ã È£Ãâ
+    //     ÁúÀÇ ¼öÇàÀ» À§ÇØ »ı¼ºÇß´ø ÀÚ¿øÀ» Á¦°ÅÇÏ°í, Template°ªµéÀ» ÃÊ±âÈ­ÇÔ.
     //-----------------------------------------------------------------
 
-    // qcStatementë¥¼ ìœ„í•œ ê°ì¢… ë³€ìˆ˜ ë° Memory Managerì˜ ìƒì„±
+    // qcStatement¸¦ À§ÇÑ °¢Á¾ º¯¼ö ¹× Memory ManagerÀÇ »ı¼º
     static IDE_RC allocStatement( qcStatement * aStatement,
                                   qcSession   * aSession,
                                   qcStmtInfo  * aStmtInfo,
                                   idvSQL      * aStatistics );
 
-    // qcTemplateì„ ìœ„í•œ ê°ì¢… ë³€ìˆ˜ ì´ˆê¸°í™” ë° Memory í• ë‹¹
+    // qcTemplateÀ» À§ÇÑ °¢Á¾ º¯¼ö ÃÊ±âÈ­ ¹× Memory ÇÒ´ç
     static IDE_RC allocSharedTemplate( qcStatement * aStatement,
                                        SInt          aStackSize );
 
@@ -372,68 +482,68 @@ public:
     static IDE_RC allocPrivateTemplate( qcStatement   * aStatement,
                                         iduVarMemList * aMemory );
 
-    // qcStatementì˜ ì œê±°
+    // qcStatementÀÇ Á¦°Å
     static IDE_RC freeStatement( qcStatement * aStatement );
 
-    // qcStatementì˜ Parsing, Validation ì •ë³´ì˜ ì œê±°
+    // qcStatementÀÇ Parsing, Validation Á¤º¸ÀÇ Á¦°Å
     static IDE_RC clearStatement( qcStatement * aStatement,
                                   idBool        aRebuild );
 
-    // qcStatementì˜ Execution ì •ë³´ë§Œ ì œê±°
+    // qcStatementÀÇ Execution Á¤º¸¸¸ Á¦°Å
     static IDE_RC closeStatement( qcStatement * aStatement );
 
-    // Parsing ì´í›„ì˜ ì‘ì—… ì²˜ë¦¬
+    // Parsing ÀÌÈÄÀÇ ÀÛ¾÷ Ã³¸®
     static IDE_RC fixAfterParsing( qcStatement * aStatement );
 
-    // Validation ì´í›„ì˜ ì‘ì—… ì²˜ë¦¬
+    // Validation ÀÌÈÄÀÇ ÀÛ¾÷ Ã³¸®
     static IDE_RC fixAfterValidation( qcStatement * aStatement );
 
     static IDE_RC fixAfterValidationAB( qcStatement * aQcStmt );
 
-    // Optimization ì´í›„ì˜ ì‘ì—… ì²˜ë¦¬
+    // Optimization ÀÌÈÄÀÇ ÀÛ¾÷ Ã³¸®
     static IDE_RC fixAfterOptimization( qcStatement * aStatement );
 
-    // Parsing, Validation, Optimizationì´í›„ì˜ ì²˜ë¦¬
-    // ì§ˆì˜ ìˆ˜í–‰ì„ ìœ„í•œ ì¤€ë¹„ ì‘ì—… ìˆ˜í–‰
+    // Parsing, Validation, OptimizationÀÌÈÄÀÇ Ã³¸®
+    // ÁúÀÇ ¼öÇàÀ» À§ÇÑ ÁØºñ ÀÛ¾÷ ¼öÇà
     static IDE_RC stepAfterPVO( qcStatement * aStatement );
 
-    // ì›ë³¸ ì˜ì—­ì„ private ì˜ì—­ìœ¼ë¡œ ì‚¬ìš©
+    // ¿øº» ¿µ¿ªÀ» private ¿µ¿ªÀ¸·Î »ç¿ë
     static IDE_RC setPrivateArea( qcStatement * aStatement );
 
     //-------------------------------------------------
-    // Query Processorì—ì„œ í•„ìš”í•œ Session ì •ë³´ë¥¼ ì–»ê¸°ìœ„í•œ í•¨ìˆ˜.
-    // MT ë° SMë¡œ ì •ë³´ë¥¼ ì „ë‹¬í•˜ê¸° ìœ„í•˜ì—¬ ê´€ë¦¬í•¨.
-    // Statement í• ë‹¹ ì´í›„ ë°˜ë“œì‹œ ì„¤ì •í•˜ì—¬ì•¼ í•¨.
+    // Query Processor¿¡¼­ ÇÊ¿äÇÑ Session Á¤º¸¸¦ ¾ò±âÀ§ÇÑ ÇÔ¼ö.
+    // MT ¹× SM·Î Á¤º¸¸¦ Àü´ŞÇÏ±â À§ÇÏ¿© °ü¸®ÇÔ.
+    // Statement ÇÒ´ç ÀÌÈÄ ¹İµå½Ã ¼³Á¤ÇÏ¿©¾ß ÇÔ.
     //-------------------------------------------------
 
-    // smiStatementì˜ ì„¤ì • (for SM)
+    // smiStatementÀÇ ¼³Á¤ (for SM)
     inline static void setSmiStmt( qcStatement * aStatement,
                                    smiStatement * aSmiStmt )
     {
         QC_SMI_STMT( aStatement ) = aSmiStmt;
     }
 
-    // smiStatementì˜ íšë“ (for SM)
+    // smiStatementÀÇ È¹µæ (for SM)
     inline static void getSmiStmt( qcStatement * aStatement,
                                    smiStatement ** aSmiStmt )
     {
         *aSmiStmt = QC_SMI_STMT( aStatement );
     }
 
-    // smiTransì˜ ì„¤ì • (for SM)
+    // smiTransÀÇ ¼³Á¤ (for SM)
     static void   setSmiTrans( qcStatement * aStatement,
                                smiTrans    * aSmiTrans );
 
-    // smiTransì˜ íšë“ (for SM)
+    // smiTransÀÇ È¹µæ (for SM)
     static void   getSmiTrans( qcStatement * aStatement,
                                smiTrans   ** aSmiTrans );
 
-    // SQL Statementì˜ ì„¤ì • (for QP)
+    // SQL StatementÀÇ ¼³Á¤ (for QP)
     static void   getStmtText( qcStatement  * aStatement,
                                SChar       ** aText,
                                SInt         * aTextLen );
 
-    // SQL Statementì˜ ì„¤ì • (for QP)
+    // SQL StatementÀÇ ¼³Á¤ (for QP)
     // PROJ-2163
     static IDE_RC   setStmtText( qcStatement * aStatement,
                                  SChar       * aText,
@@ -462,19 +572,32 @@ public:
     static SChar* getSessionLoginIP( qcStatement * aStatemet );
     static ULong getSessionShardPIN( qcStatement  * aStatement );
     static ULong getSessionShardMetaNumber( qcStatement * aStatement );
-    static idBool getSessionIsShardDataSession( qcStatement * aStatement );
+    static ULong getLastSessionShardMetaNumber( qcStatement * aStatement );
+    static idBool getSessionIsShardUserSession( qcStatement * aStatement );
+    /* TASK-7219 Analyzer/Transformer/Executor ¼º´É°³¼± */
+    static idBool getCallByShardAnalyzeProtocol( qcStatement * aStatement );
+
     static SChar* getSessionShardNodeName( qcStatement * aStatement );
+    static UInt getSessionShardSessionType( qcStatement * aStatement );
 
     /* BUG-45899 */
     static UInt getSessionTrclogDetailShard( qcStatement * aStatement );
 
     static UChar  getSessionExplainPlan( qcStatement * aStatement );
-    static UInt   getSessionDBLinkGTXLevel( qcStatement * aStatement );
+    static UInt   getSessionGTXLevel( qcStatement * aStatement );
+    static idBool isGTxSession( qcStatement * aStatement );
+    static idBool isGCTxSession( qcStatement * aStatement );
 
     /* PROJ-2677 DDL synchronization */
     static UInt   getReplicationDDLSync( qcStatement * aStatement);
 
-    // BUG-23780 TEMP_TBS_MEMORY íŒíŠ¸ ì ìš©ì—¬ë¶€ë¥¼ propertyë¡œ ì œê³µ
+    static idBool getIsNeedDDLInfo( qcStatement * aStatement);
+    static idBool getTransactionalDDL( qcStatement * aStatement);
+    static idBool getGlobalDDL( qcStatement * aStatement);
+
+    static idBool getIsRollbackableInternalDDL( qcStatement * aStatment );
+
+    // BUG-23780 TEMP_TBS_MEMORY ÈùÆ® Àû¿ë¿©ºÎ¸¦ property·Î Á¦°ø
     static UInt getSessionOptimizerDefaultTempTbsType( qcStatement * aStatement );
 
     // PROJ-1579 NCHAR
@@ -514,6 +637,10 @@ public:
     /* BUG-41561 */
     static UInt getSessionLoginUserID( qcStatement * aStatement );
 
+    static void setSessionInvokeUserName( qcStatement * aStatement,
+                                          SChar       * aInvokeUserName );
+    static SChar* getSessionInvokeUserName( qcStatement * aStatement );
+
     // BUG-41944
     static mtcArithmeticOpMode getArithmeticOpMode( qcStatement * aStatement );
     
@@ -529,6 +656,11 @@ public:
     /* PROJ-2462 Result Cache */
     static idBool getSessionIsAutoCommit(qcStatement * aStatement);
 
+    static idBool getSessionIsInternalLocalOperation(qcStatement * aStatement);
+    static IDE_RC setSessionIsInternalLocalOperation( qcStatement * aStatement, sdiInternalOperation aValue );
+
+    static sdiInternalOperation getSessionInternalLocalOperation(qcStatement * aStatement);
+
     // BUG-38129
     static void getLastModifiedRowGRID( qcStatement * aStatement,
                                         scGRID      * aRowGRID );
@@ -539,6 +671,9 @@ public:
     /* BUG-42134 Created transitivity predicate of join predicate must be reinforced. */
     static UInt getSessionOptimizerTransitivityOldRule(qcStatement * aStatement);
 
+    // PROJ-2727
+    static UInt getSessionPropertyAttribute( qcStatement * aStatement );
+    
     /* BUG-42639 Monitoring query */
     static UInt getSessionOptimizerPerformanceView(qcStatement * aStatement);
 
@@ -549,19 +684,42 @@ public:
     static UInt getSerialExecuteMode( qcStatement * aStatement );
     static UInt getSessionTrclogDetailInformation( qcStatement * aStatement );
    
+    /* BUG-47648  disk partition¿¡¼­ »ç¿ëµÇ´Â prepared memory »ç¿ë·® °³¼± */
+    static UInt getReducePartPrepareMemory( qcStatement * aStatement );
+
+    static idBool getSessionShardInPSMEnable( qcStatement * aStatement );
+    static void setSessionShardInPSMEnable( qcStatement * aStatement,
+                                            idBool        aVal );
+
+    /* BUG-48132 */
+    static UInt getPlanHashOrSortMethod( qcStatement * aStatement );
+
+    /* BUG-48161 */
+    static UInt getBucketCountMax( qcStatement * aStatement );
+
+    /* BUG-48348 */
+    static UInt getEliminateCommonSubexpression( qcStatement * aStatement );
+
+    /* TASK-7219 Non-shard DML */
+    static void increaseStmtExecSeqForShardTx( qcStatement * aStatement,
+                                               idBool      * aIsIncreased );
+    static void decreaseStmtExecSeqForShardTx( qcStatement * aStatement );
+    static UInt getStmtExecSeqForShardTx( qcStatement * aStatement );
+    static sdiShardPartialExecType getShardPartialExecType( qcStatement * aStatement );
+
     //-------------------------------------------------
-    // ì§ˆì˜ ìˆ˜í–‰ ì™„ë£Œ í›„ì˜ ì²˜ë¦¬
+    // ÁúÀÇ ¼öÇà ¿Ï·á ÈÄÀÇ Ã³¸®
     //-------------------------------------------------
 
-    // ëª¨ë“  Cursorì˜ Close
-    // ì§ˆì˜ ìˆ˜í–‰ ì™„ë£Œ í›„ Openëœ Cursorë¥¼ ëª¨ë‘ ë‹«ìŒ
+    // ¸ğµç CursorÀÇ Close
+    // ÁúÀÇ ¼öÇà ¿Ï·á ÈÄ OpenµÈ Cursor¸¦ ¸ğµÎ ´İÀ½
     static IDE_RC closeAllCursor( qcStatement * aStatement );
 
     //-------------------------------------------------
-    // Host ë³€ìˆ˜ì˜ Bindingì„ ìœ„í•œ ì²˜ë¦¬
+    // Host º¯¼öÀÇ BindingÀ» À§ÇÑ Ã³¸®
     //-------------------------------------------------
 
-    // Hostë³€ìˆ˜ì˜ Column ì •ë³´ë¥¼ ì„¤ì • (bindParamInfoì—ì„œ í˜¸ì¶œ)
+    // Hostº¯¼öÀÇ Column Á¤º¸¸¦ ¼³Á¤ (bindParamInfo¿¡¼­ È£Ãâ)
     static IDE_RC setBindColumn( qcStatement * aStatement,
                                  UShort        aId,
                                  UInt          aType,
@@ -569,12 +727,12 @@ public:
                                  SInt          aPrecision,
                                  SInt          aScale );
 
-    // Host ë³€ìˆ˜ì˜ ê°œìˆ˜ íšë“
+    // Host º¯¼öÀÇ °³¼ö È¹µæ
     static UShort   getBindCount( qcStatement * aStatement );
 
-    // Host ë³€ìˆ˜ì˜ ê°’ì„ ì„¤ì •
-    // Host ë³€ìˆ˜ì˜ Column ì •ë³´ ì„¤ì • ì´í›„ì— ì´ì— ëŒ€í•œ ì‹¤ì œ ê°’ì„
-    // ì„¤ì •í•  ë•Œ ì‚¬ìš©í•¨.
+    // Host º¯¼öÀÇ °ªÀ» ¼³Á¤
+    // Host º¯¼öÀÇ Column Á¤º¸ ¼³Á¤ ÀÌÈÄ¿¡ ÀÌ¿¡ ´ëÇÑ ½ÇÁ¦ °ªÀ»
+    // ¼³Á¤ÇÒ ¶§ »ç¿ëÇÔ.
     static IDE_RC setBindData( qcStatement * aStatement,
                                UShort        aId,
                                UInt          aInOutType,
@@ -594,16 +752,38 @@ public:
     static IDE_RC fixOutBindParam( qcStatement * aStatement );
 
     //-------------------------------------------------
-    // Query Processor ë‚´ë¶€ì ìœ¼ë¡œ ì‚¬ìš©í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+    // Query Processor ³»ºÎÀûÀ¸·Î »ç¿ëÇÏ±â À§ÇÑ ÇÔ¼ö
     //-------------------------------------------------
 
-    /* PROJ-2677 DDL syncrhonization */
-    static IDE_RC  runDDLforDDLSync( idvSQL       * aStatistics,
-                                     smiStatement * aSmiStmt,
-                                     UInt           aUserID,
-                                     SChar        * aSqlStr );
+    /* PROJ-2677 DDL syncrhonization & 
+     * PROJ-2737 Internal Replication (for internal ddl execution) */
+    static IDE_RC  runDDLforInternal( idvSQL       * aStatistics,
+                                      smiStatement * aSmiStmt,
+                                      UInt           aUserID,
+                                      UInt           aSessionFlag,
+                                      SChar        * aSqlStr );
 
-    // DDL ìˆ˜í–‰ ì‹œì— Metaì— ëŒ€í•´ ë°œìƒí•˜ëŠ” DMLì˜ ì²˜ë¦¬
+    static IDE_RC  runDDLforInternalWithMmSession( idvSQL       * aStatistics,
+                                                   void         * aMmSession,
+                                                   smiStatement * aSmiStmt,
+                                                   UInt           aUserID,
+                                                   UInt           aSessionFlag,
+                                                   SChar        * aSqlStr );
+
+    static IDE_RC rebuildInternalStatement( qcStatement * aStatement );
+    static IDE_RC ddlBeginSavepoint( qcStatement * aStatement );
+    static IDE_RC backupNewTableInfo( qcStatement * aStatement );
+    static IDE_RC backupOldTableInfo( qcStatement * aStatement );
+    static IDE_RC runRollbackableInternalDDL( qcStatement  * aStatement,
+                                              smiStatement * aSmiStmt,
+                                              UInt           aUserID,
+                                              SChar        * aSqlStr );
+
+    static IDE_RC runDCLforInternal( qcStatement  * aStatement,
+                                     SChar        * aSqlStr,
+                                     void         * aSession );
+
+    // DDL ¼öÇà ½Ã¿¡ Meta¿¡ ´ëÇØ ¹ß»ıÇÏ´Â DMLÀÇ Ã³¸®
     static IDE_RC runDMLforDDL(smiStatement * aSmiStmt,
                                SChar        * aSqlStr,
                                vSLong       * aRowCnt);
@@ -615,7 +795,8 @@ public:
     /* PROJ-2701 Sharding online data rebuild */
     static IDE_RC runSQLforShardMeta( smiStatement * aSmiStmt,
                                       SChar        * aSqlStr,
-                                      vSLong       * aRowCnt );
+                                      vSLong       * aRowCnt,
+                                      qcSession    * aSession = NULL );
 
     /* PROJ-2207 Password policy support */
     static IDE_RC runSelectOneRowforDDL(smiStatement * aSmiStmt,
@@ -632,52 +813,52 @@ public:
                                                     ... );
 
     // PROJ-1436
-    // shared templateì— ì €ì¥ëœ template ì •ë³´ë¥¼ ë³µì‚¬
+    // shared template¿¡ ÀúÀåµÈ template Á¤º¸¸¦ º¹»ç
     static IDE_RC cloneTemplate( iduVarMemList * aMemory,
                                  qcTemplate    * aSource,
                                  qcTemplate    * aDestination );
 
-    // Stored Procedure ìˆ˜í–‰ ì‹œ ì €ì¥ëœ Template ì •ë³´ë¥¼ ë³µì‚¬í•˜ê³  ì´ˆê¸°í™” í•¨
+    // Stored Procedure ¼öÇà ½Ã ÀúÀåµÈ Template Á¤º¸¸¦ º¹»çÇÏ°í ÃÊ±âÈ­ ÇÔ
     static IDE_RC cloneAndInitTemplate( iduMemory   * aMemory,
                                         qcTemplate  * aSource,
                                         qcTemplate  * aDestination );
 
-    // cloneTemlpate() , cloneAndInitTemplateì—ì„œ date pseudo column ì •ë³´ë¥¼ ë³µì‚¬í•¨
+    // cloneTemlpate() , cloneAndInitTemplate¿¡¼­ date pseudo column Á¤º¸¸¦ º¹»çÇÔ
     static IDE_RC cloneTemplateDatePseudoColumn( iduMemory   * aMemory,
                                                  qcTemplate  * aSource,
                                                  qcTemplate  * aDestination );
 
-    /* fix BUG-29965 SQL Plan Cacheì—ì„œ plan execution template ê´€ë¦¬ê°€
-     * Dynamic SQL í™˜ê²½ì—ì„œëŠ” ê°œì„ ì´ í•„ìš”í•˜ë‹¤.
-     * preparedëœ execution template í•´ì œ ë£¨í‹´ì´ ì¤‘ë³µë˜ì–´,
-     * ë‹¤ìŒê³¼ ê°™ì´ ê³µí†µí•¨ìˆ˜ë¥¼ ì¶”ê°€í•˜ì˜€ìŠµë‹ˆë‹¤.
+    /* fix BUG-29965 SQL Plan Cache¿¡¼­ plan execution template °ü¸®°¡
+     * Dynamic SQL È¯°æ¿¡¼­´Â °³¼±ÀÌ ÇÊ¿äÇÏ´Ù.
+     * preparedµÈ execution template ÇØÁ¦ ·çÆ¾ÀÌ Áßº¹µÇ¾î,
+     * ´ÙÀ½°ú °°ÀÌ °øÅëÇÔ¼ö¸¦ Ãß°¡ÇÏ¿´½À´Ï´Ù.
      */
     static void freePrepTemplate( qcStatement * aStatement,
                                   idBool        aRebuild );
 
     //-------------------------------------------------
-    // MM, UTê³¼ì˜ íŠ¹ìˆ˜ ì²˜ë¦¬ ê³µì¡°ë¥¼ ìœ„í•œ í•¨ìˆ˜
+    // MM, UT°úÀÇ Æ¯¼ö Ã³¸® °øÁ¶¸¦ À§ÇÑ ÇÔ¼ö
     //-------------------------------------------------
 
-    // Stack Sizeì˜ ì¬ì¡°ì • (for MM)
+    // Stack SizeÀÇ ÀçÁ¶Á¤ (for MM)
     static IDE_RC refineStackSize( qcStatement * aStatement, SInt aStackSize );
 
-    // MEMORY TABLE or DISK TABLE ì ‘ê·¼ ì—¬ë¶€
-    // validation ê³¼ì • ì´í›„ì— í˜¸ì¶œí•´ì•¼ í•¨
+    // MEMORY TABLE or DISK TABLE Á¢±Ù ¿©ºÎ
+    // validation °úÁ¤ ÀÌÈÄ¿¡ È£ÃâÇØ¾ß ÇÔ
     static IDE_RC getSmiStatementCursorFlag( qcTemplate * aTemplate,
                                              UInt       * aFlag );
 
     // PROJ-1358
-    // Systemì˜ Query Stack Sizeë¥¼ íšë“
+    // SystemÀÇ Query Stack Size¸¦ È¹µæ
     static UInt   getQueryStackSize();
 
-    // BUG-26017 [PSM] server restartì‹œ ìˆ˜í–‰ë˜ëŠ” psm loadê³¼ì •ì—ì„œ
-    // ê´€ë ¨í”„ë¡œí¼í‹°ë¥¼ ì°¸ì¡°í•˜ì§€ ëª»í•˜ëŠ” ê²½ìš° ìˆìŒ.
+    // BUG-26017 [PSM] server restart½Ã ¼öÇàµÇ´Â psm load°úÁ¤¿¡¼­
+    // °ü·ÃÇÁ·ÎÆÛÆ¼¸¦ ÂüÁ¶ÇÏÁö ¸øÇÏ´Â °æ¿ì ÀÖÀ½.
     static UInt   getOptimizerMode();
 
     static UInt   getAutoRemoteExec();
 
-    // BUG-23780 TEMP_TBS_MEMORY íŒíŠ¸ ì ìš©ì—¬ë¶€ë¥¼ propertyë¡œ ì œê³µ
+    // BUG-23780 TEMP_TBS_MEMORY ÈùÆ® Àû¿ë¿©ºÎ¸¦ property·Î Á¦°ø
     static UInt   getOptimizerDefaultTempTbsType();
 
     // set callback functions
@@ -715,7 +896,7 @@ public:
 
     static IDE_RC buildPerformanceView( idvSQL * aStatistics );
 
-    // í•´ë‹¹ ì¿¼ë¦¬ê°€ FT ë‚˜ PVë§Œì„ ì‚¬ìš©í•˜ëŠ”ê²ƒì¸ì§€ ê²€ì‚¬.
+    // ÇØ´ç Äõ¸®°¡ FT ³ª PV¸¸À» »ç¿ëÇÏ´Â°ÍÀÎÁö °Ë»ç.
     static idBool isFTnPV( qcStatement * aStatement );
     static IDE_RC detectFTnPV( qcStatement * aStatement );
 
@@ -745,7 +926,7 @@ public:
     static IDE_RC startupShutdown( idvSQL * aStatistics );
     static IDE_RC startupDowngrade( idvSQL * aStatistics ); /* PROJ-2689 */
 
-    // plan tree text ì •ë³´ íšë“.
+    // plan tree text Á¤º¸ È¹µæ.
     static IDE_RC printPlan( qcStatement  * aStatement,
                              qcTemplate   * aTemplate,
                              ULong          aDepth,
@@ -753,7 +934,7 @@ public:
                              qmnDisplay     aMode );
 
     // BUG-25109
-    // simple select queryì—ì„œ base table nameì„ ì„¤ì •
+    // simple select query¿¡¼­ base table nameÀ» ¼³Á¤
     static void setBaseTableInfo( qcStatement * aStatement );
     /* PROJ-2109 : Remove the bottleneck of alloc/free stmts. */
     static IDE_RC allocIduVarMemList(void         **aVarMemList);
@@ -775,6 +956,11 @@ public:
                                  SChar  * aSqlStr,
                                  UInt     aSqlStrLen,
                                  UInt   * aErrorCode );
+
+    static IDE_RC runTempSQL( void   * aMmSession,
+                              SChar  * aSqlStr,
+                              UInt     aSqlStrLen,
+                              UInt   * aErrorCode );
     /*
      * --------------------------------------------------------------
      * PROJ-1071 Parallel Query
@@ -853,7 +1039,7 @@ public:
                                      SInt        * aErrorPosition );
 
     /* BUG-44563
-       trigger ìƒì„± í›„ server stopí•˜ë©´ ë¹„ì •ìƒ ì¢…ë£Œí•˜ëŠ” ê²½ìš°ê°€ ë°œìƒí•©ë‹ˆë‹¤. */
+       trigger »ı¼º ÈÄ server stopÇÏ¸é ºñÁ¤»ó Á¾·áÇÏ´Â °æ¿ì°¡ ¹ß»ıÇÕ´Ï´Ù. */
     static IDE_RC freeSession( qcStatement * aStatement );
 
     static void prsCopyStrDupAppo( SChar * aDest,
@@ -863,28 +1049,28 @@ public:
 private:
 
     //-------------------------------------------------
-    // qcStatement ì •ë³´ ì´ˆê¸°í™” í•¨ìˆ˜
+    // qcStatement Á¤º¸ ÃÊ±âÈ­ ÇÔ¼ö
     //-------------------------------------------------
 
-    // qcTemplateì˜ ë©”ëª¨ë¦¬ í• ë‹¹ ë° ì´ˆê¸°í™”
+    // qcTemplateÀÇ ¸Ş¸ğ¸® ÇÒ´ç ¹× ÃÊ±âÈ­
     static IDE_RC allocAndInitTemplateMember( qcTemplate * aTemplate,
                                               iduMemory  * aMemory );
 
     // AfterPVO
-    // qcTemplate ì •ë³´ì˜ ì´ˆê¸°í™”
+    // qcTemplate Á¤º¸ÀÇ ÃÊ±âÈ­
     static IDE_RC initTemplateMember( qcTemplate * aTemplate,
                                       iduMemory  * aMemory);
 
     // at CLEAR, CLOSE, AfterPXX
-    // qcStatement ì •ë³´ì˜ ì´ˆê¸°í™”
+    // qcStatement Á¤º¸ÀÇ ÃÊ±âÈ­
     static void resetTemplateMember( qcStatement * aStatement );
 
     // at CLEAR, CLOSE, AfterPXX
-    // Tuple Setê´€ë ¨ ì •ë³´ì˜ ì´ˆê¸°í™”
+    // Tuple Set°ü·Ã Á¤º¸ÀÇ ÃÊ±âÈ­
     static void resetTupleSet( qcTemplate * aTemplate );
 
     // PROJ-1358
-    // ì¶”í›„ ìë™ í™•ì¥ë  ìˆ˜ë„ ìˆëŠ” Internal Tuple ê³µê°„ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
+    // ÃßÈÄ ÀÚµ¿ È®ÀåµÉ ¼öµµ ÀÖ´Â Internal Tuple °ø°£À» ÇÒ´ç¹Ş´Â´Ù.
     static IDE_RC allocInternalTuple( qcTemplate * aTemplate,
                                       iduMemory  * aMemory,
                                       UShort       aTupleCnt );

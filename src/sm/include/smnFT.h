@@ -26,7 +26,7 @@
 # include <smnDef.h>
 # include <smnbDef.h>
 
-/* X$INDEX ì¶œë ¥ìš© ìë£Œêµ¬ì¡° */
+/* X$INDEX Ãâ·Â¿ë ÀÚ·á±¸Á¶ */
 typedef struct  smnIndexInfo4PerfV
 {
     smOID        mTableOID;

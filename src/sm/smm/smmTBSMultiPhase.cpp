@@ -35,13 +35,13 @@ smmTBSMultiPhase::smmTBSMultiPhase()
 {
 }
 
-/* Server Shutdownì‹œì— Tablespaceì˜ ìƒíƒœì— ë”°ë¼
-   Tablespaceì˜ ì´ˆê¸°í™”ëœ ë‹¨ê³„ë“¤ì„ íŒŒê´´í•œë‹¤.
+/* Server Shutdown½Ã¿¡ TablespaceÀÇ »óÅÂ¿¡ µû¶ó
+   TablespaceÀÇ ÃÊ±âÈ­µÈ ´Ü°èµéÀ» ÆÄ±«ÇÑ´Ù.
 
-   [IN] aTBSNode - Tablespaceì˜  Node
+   [IN] aTBSNode - TablespaceÀÇ  Node
    
-   ex> DISCARDED, OFFLINEìƒíƒœì˜ TBSëŠ” MEDIA, STATEë‹¨ê³„ë¥¼ íŒŒê´´
-   ex> ONLINEìƒíƒœì˜ TBSëŠ” PAGE,MEDIA,STATEë‹¨ê³„ë¥¼ íŒŒê´´
+   ex> DISCARDED, OFFLINE»óÅÂÀÇ TBS´Â MEDIA, STATE´Ü°è¸¦ ÆÄ±«
+   ex> ONLINE»óÅÂÀÇ TBS´Â PAGE,MEDIA,STATE´Ü°è¸¦ ÆÄ±«
  */
 IDE_RC smmTBSMultiPhase::finiTBS( smmTBSNode * aTBSNode )
 {
@@ -67,21 +67,21 @@ IDE_RC smmTBSMultiPhase::finiTBS( smmTBSNode * aTBSNode )
 
 
 
-/* STATE Phase ë¡œë¶€í„° Tablespaceì˜ ìƒíƒœì— ë”°ë¼
-   í•„ìš”í•œ ë‹¨ê²Œê¹Œì§€ ë‹¤ë‹¨ê³„ ì´ˆê¸°í™”
+/* STATE Phase ·ÎºÎÅÍ TablespaceÀÇ »óÅÂ¿¡ µû¶ó
+   ÇÊ¿äÇÑ ´Ü°Ô±îÁö ´Ù´Ü°è ÃÊ±âÈ­
 
-   [IN] aTBSNode - Tablespaceì˜  Node
-   [IN] aTBSAttr - Tablespaceì˜  Attribute
+   [IN] aTBSNode - TablespaceÀÇ  Node
+   [IN] aTBSAttr - TablespaceÀÇ  Attribute
    
-   ex> DISCARDED, OFFLINEìƒíƒœì˜ TBSëŠ” MEDIA, STATEë‹¨ê³„ë¥¼ íŒŒê´´
-   ex> ONLINEìƒíƒœì˜ TBSëŠ”  STATE, MEDIA, PAGEë‹¨ê³„ë¥¼ í•˜ë‚˜ì”© ì´ˆê¸°í™”
+   ex> DISCARDED, OFFLINE»óÅÂÀÇ TBS´Â MEDIA, STATE´Ü°è¸¦ ÆÄ±«
+   ex> ONLINE»óÅÂÀÇ TBS´Â  STATE, MEDIA, PAGE´Ü°è¸¦ ÇÏ³ª¾¿ ÃÊ±âÈ­
  */
 IDE_RC smmTBSMultiPhase::initTBS( smmTBSNode        * aTBSNode,
                                   smiTableSpaceAttr * aTBSAttr )
 {
     IDE_DASSERT( aTBSNode != NULL );
 
-    // STATE Phase ì´ˆê¸°í™”
+    // STATE Phase ÃÊ±âÈ­
     if ( sctTableSpaceMgr::isStateInSet( aTBSAttr->mTBSStateOnLA,
                                          SCT_SS_NEED_STATE_PHASE )
          == ID_TRUE )
@@ -90,7 +90,7 @@ IDE_RC smmTBSMultiPhase::initTBS( smmTBSNode        * aTBSNode,
                                   aTBSAttr ) != IDE_SUCCESS );
     }
 
-    // MEDIA, PAGE Phase ì´ˆê¸°í™”
+    // MEDIA, PAGE Phase ÃÊ±âÈ­
     if ( sctTableSpaceMgr::isStateInSet( aTBSNode->mHeader.mState,
                                          SCT_SS_NEED_MEDIA_PHASE )
          == ID_TRUE )
@@ -105,12 +105,12 @@ IDE_RC smmTBSMultiPhase::initTBS( smmTBSNode        * aTBSNode,
     return IDE_FAILURE;
 }
 
-/* STATEë‹¨ê³„ê¹Œì§€ ì´ˆê¸°í™”ëœ Tablespaceì˜ ë‹¤ë‹¨ê³„ì´ˆê¸°í™”
+/* STATE´Ü°è±îÁö ÃÊ±âÈ­µÈ TablespaceÀÇ ´Ù´Ü°èÃÊ±âÈ­
 
-   [IN] aTBSNode - Tablespaceì˜  Node
+   [IN] aTBSNode - TablespaceÀÇ  Node
    
-   ex> OFFLINEìƒíƒœì˜ TBSëŠ” MEDIAë‹¨ê³„ê¹Œì§€ ì´ˆê¸°í™”
-   ex> ONLINEìƒíƒœì˜ TBSëŠ” PAGE,MEDIAë‹¨ê³„ê¹Œì§€ ì´ˆê¸°í™”
+   ex> OFFLINE»óÅÂÀÇ TBS´Â MEDIA´Ü°è±îÁö ÃÊ±âÈ­
+   ex> ONLINE»óÅÂÀÇ TBS´Â PAGE,MEDIA´Ü°è±îÁö ÃÊ±âÈ­
    
  */
   
@@ -120,13 +120,13 @@ IDE_RC smmTBSMultiPhase::initFromStatePhase( smmTBSNode * aTBSNode )
 
     UInt sTBSState = aTBSNode->mHeader.mState;
 
-    // í˜„ì¬ Tablespaceì˜ ìƒíƒœëŠ” STATEë‹¨ê³„ê¹Œì§€ì˜ ì´ˆê¸°í™”ë¥¼
-    // í•„ìš”ë¡œ í•˜ëŠ” ìƒíƒœì—¬ì•¼ í•œë‹¤.
+    // ÇöÀç TablespaceÀÇ »óÅÂ´Â STATE´Ü°è±îÁöÀÇ ÃÊ±âÈ­¸¦
+    // ÇÊ¿ä·Î ÇÏ´Â »óÅÂ¿©¾ß ÇÑ´Ù.
     IDE_ASSERT( sctTableSpaceMgr::isStateInSet( sTBSState,
                                                 SCT_SS_NEED_STATE_PHASE )
                 == ID_TRUE );
     
-    // MEDIA Phaseì´ˆê¸°í™”
+    // MEDIA PhaseÃÊ±âÈ­
     if ( sctTableSpaceMgr::isStateInSet( sTBSState,
                                          SCT_SS_NEED_MEDIA_PHASE )
          == ID_TRUE )
@@ -135,7 +135,7 @@ IDE_RC smmTBSMultiPhase::initFromStatePhase( smmTBSNode * aTBSNode )
     }
 
     
-    // PAGE Phase ì´ˆê¸°í™”
+    // PAGE Phase ÃÊ±âÈ­
     if ( sctTableSpaceMgr::isStateInSet( sTBSState,
                                          SCT_SS_NEED_PAGE_PHASE )
          == ID_TRUE )
@@ -152,14 +152,14 @@ IDE_RC smmTBSMultiPhase::initFromStatePhase( smmTBSNode * aTBSNode )
 
 
 
-/* ë‹¤ë‹¨ê³„ í•´ì œë¥¼ í†µí•´ STATEë‹¨ê³„ë¡œ ì „ì´
+/* ´Ù´Ü°è ÇØÁ¦¸¦ ÅëÇØ STATE´Ü°è·Î ÀüÀÌ
 
-   [IN] aTBSNode - Tablespaceì˜  Node
+   [IN] aTBSNode - TablespaceÀÇ  Node
    
-   ex> OFFLINEìƒíƒœì˜ TBSëŠ” MEDIAë‹¨ê³„ë¥¼ íŒŒê´´
-   ex> ONLINEìƒíƒœì˜ TBSëŠ” PAGE,MEDIAë‹¨ê³„ë¥¼ íŒŒê´´
+   ex> OFFLINE»óÅÂÀÇ TBS´Â MEDIA´Ü°è¸¦ ÆÄ±«
+   ex> ONLINE»óÅÂÀÇ TBS´Â PAGE,MEDIA´Ü°è¸¦ ÆÄ±«
 
-   => sTBSNodeì•ˆì˜ Stateë¥¼ ì´ìš©í•˜ì§€ ì•Šê³  ì¸ìë¡œ ë„˜ì–´ì˜¨ Stateë¥¼ ì´ìš©í•œë‹¤
+   => sTBSNode¾ÈÀÇ State¸¦ ÀÌ¿ëÇÏÁö ¾Ê°í ÀÎÀÚ·Î ³Ñ¾î¿Â State¸¦ ÀÌ¿ëÇÑ´Ù
  */
 IDE_RC smmTBSMultiPhase::finiToStatePhase( smmTBSNode * aTBSNode )
 {
@@ -168,7 +168,7 @@ IDE_RC smmTBSMultiPhase::finiToStatePhase( smmTBSNode * aTBSNode )
     UInt sTBSState = aTBSNode->mHeader.mState;
     
     
-    // PAGE Phase íŒŒê´´
+    // PAGE Phase ÆÄ±«
     if ( sctTableSpaceMgr::isStateInSet( sTBSState,
                                          SCT_SS_NEED_PAGE_PHASE )
          == ID_TRUE )
@@ -176,7 +176,7 @@ IDE_RC smmTBSMultiPhase::finiToStatePhase( smmTBSNode * aTBSNode )
         IDE_TEST( finiPagePhase( aTBSNode ) != IDE_SUCCESS );
     }
 
-    // MEDIA PhaseíŒŒê´´
+    // MEDIA PhaseÆÄ±«
     if ( sctTableSpaceMgr::isStateInSet( sTBSState,
                                          SCT_SS_NEED_MEDIA_PHASE )
          == ID_TRUE )
@@ -184,8 +184,8 @@ IDE_RC smmTBSMultiPhase::finiToStatePhase( smmTBSNode * aTBSNode )
         IDE_TEST( finiMediaPhase( aTBSNode ) != IDE_SUCCESS );
     }
 
-    // í˜„ì¬ Tablespaceì˜ ìƒíƒœëŠ” STATEë‹¨ê³„ê¹Œì§€ì˜ ì´ˆê¸°í™”ë¥¼
-    // í•„ìš”ë¡œ í•˜ëŠ” ìƒíƒœì—¬ì•¼ í•œë‹¤.
+    // ÇöÀç TablespaceÀÇ »óÅÂ´Â STATE´Ü°è±îÁöÀÇ ÃÊ±âÈ­¸¦
+    // ÇÊ¿ä·Î ÇÏ´Â »óÅÂ¿©¾ß ÇÑ´Ù.
     IDE_ASSERT( sctTableSpaceMgr::isStateInSet( sTBSState,
                                                 SCT_SS_NEED_STATE_PHASE )
                 == ID_TRUE );
@@ -198,29 +198,29 @@ IDE_RC smmTBSMultiPhase::finiToStatePhase( smmTBSNode * aTBSNode )
     return IDE_FAILURE;
 }
 
-/* ë‹¤ë‹¨ê³„ í•´ì œë¥¼ í†µí•´ MEDIAë‹¨ê³„ë¡œ ì „ì´
+/* ´Ù´Ü°è ÇØÁ¦¸¦ ÅëÇØ MEDIA´Ü°è·Î ÀüÀÌ
 
-   [IN] aTBSState - Tablespaceì˜ State
-   [IN] aTBSNode - Tablespaceì˜  Node
+   [IN] aTBSState - TablespaceÀÇ State
+   [IN] aTBSNode - TablespaceÀÇ  Node
    
-   ex> ONLINEìƒíƒœì˜ TBSì— ëŒ€í•´ PAGEë‹¨ê³„ë¥¼ íŒŒê´´
+   ex> ONLINE»óÅÂÀÇ TBS¿¡ ´ëÇØ PAGE´Ü°è¸¦ ÆÄ±«
 
-   => sTBSNodeì•ˆì˜ Stateë¥¼ ì´ìš©í•˜ì§€ ì•Šê³  ì¸ìë¡œ ë„˜ì–´ì˜¨ Stateë¥¼ ì´ìš©í•œë‹¤
+   => sTBSNode¾ÈÀÇ State¸¦ ÀÌ¿ëÇÏÁö ¾Ê°í ÀÎÀÚ·Î ³Ñ¾î¿Â State¸¦ ÀÌ¿ëÇÑ´Ù
  */
 IDE_RC smmTBSMultiPhase::finiToMediaPhase( UInt         aTBSState,
                                            smmTBSNode * aTBSNode )
 {
     IDE_DASSERT( aTBSNode != NULL );
 
-    // PAGE Phase íŒŒê´´
+    // PAGE Phase ÆÄ±«
     if ( sctTableSpaceMgr::isStateInSet( aTBSState, SCT_SS_NEED_PAGE_PHASE )
          == ID_TRUE )
     {
         IDE_TEST( finiPagePhase( aTBSNode ) != IDE_SUCCESS );
     }
 
-    // í˜„ì¬ Tablespaceì˜ ìƒíƒœëŠ” MEDIAë‹¨ê³„ê¹Œì§€ì˜ ì´ˆê¸°í™”ë¥¼
-    // í•„ìš”ë¡œ í•˜ëŠ” ìƒíƒœì—¬ì•¼ í•œë‹¤.
+    // ÇöÀç TablespaceÀÇ »óÅÂ´Â MEDIA´Ü°è±îÁöÀÇ ÃÊ±âÈ­¸¦
+    // ÇÊ¿ä·Î ÇÏ´Â »óÅÂ¿©¾ß ÇÑ´Ù.
     IDE_ASSERT( sctTableSpaceMgr::isStateInSet( aTBSState,
                                                 SCT_SS_NEED_MEDIA_PHASE )
                 == ID_TRUE );
@@ -233,10 +233,10 @@ IDE_RC smmTBSMultiPhase::finiToMediaPhase( UInt         aTBSState,
 }
 
 
-/* Tablespaceì˜ STATEë‹¨ê³„ë¥¼ ì´ˆê¸°í™”
+/* TablespaceÀÇ STATE´Ü°è¸¦ ÃÊ±âÈ­
 
-   [IN] aTBSNode - Tablespaceì˜  Node
-   [IN] aTBSAttr - Tablespaceì˜  Attribute
+   [IN] aTBSNode - TablespaceÀÇ  Node
+   [IN] aTBSAttr - TablespaceÀÇ  Attribute
  */
 IDE_RC smmTBSMultiPhase::initStatePhase( smmTBSNode * aTBSNode,
                                          smiTableSpaceAttr * aTBSAttr )
@@ -244,7 +244,7 @@ IDE_RC smmTBSMultiPhase::initStatePhase( smmTBSNode * aTBSNode,
     IDE_DASSERT( aTBSNode != NULL );
     IDE_DASSERT( aTBSAttr != NULL );
 
-    // Memory Tablespace Nodeì˜ ì´ˆê¸°í™” ì‹¤ì‹œ
+    // Memory Tablespace NodeÀÇ ÃÊ±âÈ­ ½Ç½Ã
     IDE_TEST( smmManager::initMemTBSNode( aTBSNode,
                                           aTBSAttr )
               != IDE_SUCCESS );
@@ -256,17 +256,17 @@ IDE_RC smmTBSMultiPhase::initStatePhase( smmTBSNode * aTBSNode,
     return IDE_FAILURE;
 }
 
-/* Tablespaceì˜ MEDIAë‹¨ê³„ë¥¼ ì´ˆê¸°í™”
+/* TablespaceÀÇ MEDIA´Ü°è¸¦ ÃÊ±âÈ­
 
-   [IN] aTBSNode - Tablespaceì˜  Node
+   [IN] aTBSNode - TablespaceÀÇ  Node
 
-   ì°¸ê³  : STATEë‹¨ê³„ê¹Œì§€ ì´ˆê¸°í™”ê°€ ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
+   Âü°í : STATE´Ü°è±îÁö ÃÊ±âÈ­°¡ µÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
  */
 IDE_RC smmTBSMultiPhase::initMediaPhase( smmTBSNode * aTBSNode )
 {
     IDE_DASSERT( aTBSNode != NULL );
 
-    // Memory Tablespace Nodeì˜ ì´ˆê¸°í™” ì‹¤ì‹œ
+    // Memory Tablespace NodeÀÇ ÃÊ±âÈ­ ½Ç½Ã
     IDE_TEST( smmManager::initMediaSystem( aTBSNode )
               != IDE_SUCCESS );
     
@@ -277,17 +277,17 @@ IDE_RC smmTBSMultiPhase::initMediaPhase( smmTBSNode * aTBSNode )
     return IDE_FAILURE;
 }
 
-/* Tablespaceì˜ PAGEë‹¨ê³„ë¥¼ ì´ˆê¸°í™”
+/* TablespaceÀÇ PAGE´Ü°è¸¦ ÃÊ±âÈ­
 
-   [IN] aTBSNode - Tablespaceì˜  Node
+   [IN] aTBSNode - TablespaceÀÇ  Node
 
-   ì°¸ê³  : MEDIAë‹¨ê³„ê¹Œì§€ì´ˆê¸°í™”ê°€ ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
+   Âü°í : MEDIA´Ü°è±îÁöÃÊ±âÈ­°¡ µÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
  */
 IDE_RC smmTBSMultiPhase::initPagePhase( smmTBSNode * aTBSNode )
 {
     IDE_DASSERT( aTBSNode != NULL );
 
-    // Memory Tablespace Nodeì˜ ì´ˆê¸°í™” ì‹¤ì‹œ
+    // Memory Tablespace NodeÀÇ ÃÊ±âÈ­ ½Ç½Ã
     IDE_TEST( smmManager::initPageSystem( aTBSNode )
               != IDE_SUCCESS );
     
@@ -298,12 +298,12 @@ IDE_RC smmTBSMultiPhase::initPagePhase( smmTBSNode * aTBSNode )
     return IDE_FAILURE;
 }
 
-/* Tablespaceì˜ STATEë‹¨ê³„ë¥¼ íŒŒê´´
+/* TablespaceÀÇ STATE´Ü°è¸¦ ÆÄ±«
 
-   [IN] aTBSNode - Tablespaceì˜  Node
+   [IN] aTBSNode - TablespaceÀÇ  Node
 
-   ì°¸ê³  : STATEë‹¨ê³„ê°€ ì´ˆê¸°í™”ëœ ìƒíƒœì—¬ì•¼ í•œë‹¤.
-   ì°¸ê³  : PAGE,MEDIAë‹¨ê³„ê°€ íŒŒê´´ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
+   Âü°í : STATE´Ü°è°¡ ÃÊ±âÈ­µÈ »óÅÂ¿©¾ß ÇÑ´Ù.
+   Âü°í : PAGE,MEDIA´Ü°è°¡ ÆÄ±«µÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
  */
 IDE_RC smmTBSMultiPhase::finiStatePhase( smmTBSNode * aTBSNode )
 {
@@ -319,12 +319,12 @@ IDE_RC smmTBSMultiPhase::finiStatePhase( smmTBSNode * aTBSNode )
     return IDE_FAILURE;
 }
 
-/* Tablespaceì˜ MEDIAë‹¨ê³„ë¥¼ íŒŒê´´
+/* TablespaceÀÇ MEDIA´Ü°è¸¦ ÆÄ±«
 
-   [IN] aTBSNode - Tablespaceì˜  Node
+   [IN] aTBSNode - TablespaceÀÇ  Node
 
-   ì°¸ê³  : STATE, MEDIAë‹¨ê³„ê°€ ëª¨ë‘ ì´ˆê¸°í™”ëœ ìƒíƒœì—¬ì•¼ í•œë‹¤.
-   ì°¸ê³  : PAGEë‹¨ê³„ê°€ íŒŒê´´ ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
+   Âü°í : STATE, MEDIA´Ü°è°¡ ¸ğµÎ ÃÊ±âÈ­µÈ »óÅÂ¿©¾ß ÇÑ´Ù.
+   Âü°í : PAGE´Ü°è°¡ ÆÄ±« µÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
  */
 IDE_RC smmTBSMultiPhase::finiMediaPhase( smmTBSNode * aTBSNode )
 {
@@ -335,7 +335,7 @@ IDE_RC smmTBSMultiPhase::finiMediaPhase( smmTBSNode * aTBSNode )
 
 
     // To Fix BUG-18100, 18099
-    //        Shutdownì‹œ Checkpoint Path Nodeê´€ë ¨ Memory Leakë°œìƒ ë¬¸ì œ í•´ê²°
+    //        Shutdown½Ã Checkpoint Path Node°ü·Ã Memory Leak¹ß»ı ¹®Á¦ ÇØ°á
     IDE_TEST( smmTBSChkptPath::freeAllChkptPathNode( aTBSNode )
               != IDE_SUCCESS );
     
@@ -346,11 +346,11 @@ IDE_RC smmTBSMultiPhase::finiMediaPhase( smmTBSNode * aTBSNode )
     return IDE_FAILURE;
 }
 
-/* Tablespaceì˜ PAGEë‹¨ê³„ë¥¼ íŒŒê´´
+/* TablespaceÀÇ PAGE´Ü°è¸¦ ÆÄ±«
 
-   [IN] aTBSNode - Tablespaceì˜  Node
+   [IN] aTBSNode - TablespaceÀÇ  Node
 
-   ì°¸ê³  : STATE, MEDIA, PAGEë‹¨ê³„ê°€ ëª¨ë‘ ì´ˆê¸°í™”ëœ ìƒíƒœì—¬ì•¼ í•œë‹¤.
+   Âü°í : STATE, MEDIA, PAGE´Ü°è°¡ ¸ğµÎ ÃÊ±âÈ­µÈ »óÅÂ¿©¾ß ÇÑ´Ù.
  */
 IDE_RC smmTBSMultiPhase::finiPagePhase( smmTBSNode * aTBSNode )
 {

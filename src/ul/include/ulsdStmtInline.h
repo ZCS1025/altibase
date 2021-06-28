@@ -46,9 +46,9 @@ ACP_INLINE void ulsdStmtSetShardRangeInfoCnt(ulnStmt *aStmt, acp_uint16_t aShard
 }
 
 /* PROJ-2646 New shard analyzer */
-ACP_INLINE void ulsdStmtSetShardIsCanMerge(ulnStmt *aStmt, acp_bool_t aIsCanMerge)
+ACP_INLINE void ulsdStmtSetShardIsShardQuery(ulnStmt *aStmt, acp_bool_t aIsNonShardQuery)
 {
-    aStmt->mShardStmtCxt.mShardIsCanMerge = aIsCanMerge;
+    aStmt->mShardStmtCxt.mShardIsShardQuery = aIsNonShardQuery;
 }
 
 ACP_INLINE void ulsdStmtSetShardValueCnt(ulnStmt *aStmt, acp_uint16_t aValueCnt)
@@ -82,6 +82,17 @@ ACP_INLINE void ulsdStmtSetShardSubKeyDataType(ulnStmt *aStmt, acp_uint32_t aSha
 ACP_INLINE void ulsdStmtSetShardSubValueCnt(ulnStmt *aStmt, acp_uint16_t aSubValueCnt)
 {
     aStmt->mShardStmtCxt.mShardSubValueCnt = aSubValueCnt;
+}
+
+/* TASK-7219 Non-shard DML */
+ACP_INLINE void ulsdStmtSetPartialExecType(ulnStmt *aStmt, ulsdShardPartialExecType aPartialExecType )
+{
+    aStmt->mShardStmtCxt.mPartialExecType = aPartialExecType;
+}
+
+ACP_INLINE ulsdShardPartialExecType ulsdStmtGetPartialExecType(ulnStmt *aStmt)
+{
+    return aStmt->mShardStmtCxt.mPartialExecType;
 }
 
 #endif /* _O_ULSD_STMT_INLINE_H_ */

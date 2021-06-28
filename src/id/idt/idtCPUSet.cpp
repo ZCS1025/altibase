@@ -20,10 +20,10 @@
 
 /*****************************************************************************
  *   NAME
- *     idtCPUSet.cpp - CPU Set í´ëž˜ìŠ¤ êµ¬í˜„
+ *     idtCPUSet.cpp - CPU Set Å¬·¡½º ±¸Çö
  *
  *   DESCRIPTION
- *     TASK-6764ë¡œ ìƒˆë¡œì´ ì¶”ê°€ëœ CPU Set ì •ë³´
+ *     TASK-6764·Î »õ·ÎÀÌ Ãß°¡µÈ CPU Set Á¤º¸
  *
  *   PUBLIC FUNCTION(S)
  *
@@ -189,36 +189,36 @@ IDE_RC idtCPUSet::initializeStatic(void)
                 if((idlOS::strncmp(sCPUEnt->d_name, "cpu", 3) == 0) &&
                         (isdigit((UChar)sCPUEnt->d_name[3]) != 0))
                 {
-#if defined(ALTI_CFG_CPU_POWERPC)
-                    idlOS::snprintf(sCPUInfoPath, ID_MAX_FILE_NAME, "%s/%s/online", sPath, sCPUEnt->d_name);
-                    sCPUInfo = idf::open(sCPUInfoPath, O_RDONLY);
-                    IDE_TEST_RAISE(sCPUInfo == PDL_INVALID_HANDLE, ENOSYSINFO);
+                     /* check online files(BUG-47105) */
+                     idlOS::snprintf(sCPUInfoPath ,PATH_MAX ,"%s/%s/online" ,sPath ,sCPUEnt->d_name );
+                     /* if there is no the file online,it means it's always available. */
+                     if(idlOS::access(sCPUInfoPath, F_OK) == 0) /* if it exists. */
+                     {
 
-                    idf::fdgets(sLine, sizeof(sLine), sCPUInfo); 
+                        sCPUInfo = idf::open(sCPUInfoPath, O_RDONLY);
+                        IDE_TEST_RAISE(sCPUInfo == PDL_INVALID_HANDLE, ENOSYSINFO);
 
-                    if(idlOS::strncmp(sLine, "1", 1) == 0 )
-                    {
-#endif
-                        sCoreID    = (UInt)idlOS::strtol(sCPUEnt->d_name + 3, NULL, 0);
-                        IDE_TEST_RAISE(sIndex >= IDT_MAX_CPU_CORES, ECPUEXCEED);
+                        if( (idf::fdgets(sLine, ID_SIZEOF(sLine), sCPUInfo) == NULL) || ( sLine[0] == '0' )  )
+                        {
+                            idf::close(sCPUInfo);
+                            continue;
+                        }
+                        idf::close(sCPUInfo);
 
-                        mCPUCores[sIndex].mCoreID       = sCoreID;
-                        mCPUCores[sIndex].mSocketID     = sSocketID;
-                        mCPUCores[sIndex].mLogicalID    = sIndex;
-                        mCPUCores[sIndex].mInUse        = ID_FALSE;
-
-                        mCorePsets[sIndex].addCPU(sIndex);
-                        mNUMAPsets[sSocketID].addCPU(sIndex);
-
-                        mNUMACount = IDL_MAX(mNUMACount, sSocketID);
-                        sIndex++;
-#if defined(ALTI_CFG_CPU_POWERPC)
                     }
-                    else
-                   {
-                       /* continue */
-                   }
-#endif
+                    sCoreID    = (UInt)idlOS::strtol(sCPUEnt->d_name + 3, NULL, 0);
+                    IDE_TEST_RAISE(sIndex >= IDT_MAX_CPU_CORES, ECPUEXCEED);
+
+                    mCPUCores[sIndex].mCoreID       = sCoreID;
+                    mCPUCores[sIndex].mSocketID     = sSocketID;
+                    mCPUCores[sIndex].mLogicalID    = sIndex;
+                    mCPUCores[sIndex].mInUse        = ID_FALSE;
+
+                    mCorePsets[sIndex].addCPU(sIndex);
+                    mNUMAPsets[sSocketID].addCPU(sIndex);
+
+                    mNUMACount = IDL_MAX(mNUMACount, sSocketID);
+                    sIndex++;
                 }
                 else
                 {
@@ -318,10 +318,10 @@ IDE_RC idtCPUSet::destroyStatic(void)
 }
 
 /* 
- * License CPU ê°œìˆ˜ ì œì•½ì„ ìœ„í•´ mProcessPsetì„ ìž¬ì„¤ì • í•œë‹¤.
- * í—ˆìš©ë˜ëŠ” CPU ê°œìˆ˜, NUMA Node ê°œìˆ˜ë¥¼ ì¸ìžë¡œ ë°›ê³ ,
- * Systemì—ì„œ ë’· Node, Nodeì—ì„œë„ í° CPUë²ˆí˜¸ ìˆœìœ¼ë¡œ í—ˆìš©í•œë‹¤.
- * ì˜ˆë¥¼ë“¤ë©´, (11,2) ì¸ ê²½ìš° ì‚¬ìš©ê°€ëŠ¥ cpu ë²ˆí˜¸ëŠ” 25-29, 34-39 ë²ˆ CPUì´ë‹¤.  
+ * License CPU °³¼ö Á¦¾àÀ» À§ÇØ mProcessPsetÀ» Àç¼³Á¤ ÇÑ´Ù.
+ * Çã¿ëµÇ´Â CPU °³¼ö, NUMA Node °³¼ö¸¦ ÀÎÀÚ·Î ¹Þ°í,
+ * System¿¡¼­ µÞ Node, Node¿¡¼­µµ Å« CPU¹øÈ£ ¼øÀ¸·Î Çã¿ëÇÑ´Ù.
+ * ¿¹¸¦µé¸é, (11,2) ÀÎ °æ¿ì »ç¿ë°¡´É cpu ¹øÈ£´Â 25-29, 34-39 ¹ø CPUÀÌ´Ù.  
  * Node[0] xxxxxxxxxx (0~9)
  * Node[1] xxxxxxxxxx (10~19)
  * Node[2] xxxxxooooo (20~29)
@@ -358,7 +358,7 @@ IDE_RC idtCPUSet::relocateCPUs(SInt aCPUCount, SInt aNUMACount)
 
     for(i = 0; i < sAllocNUMACount; i++)
     {
-        /* ë’· NUMA Nodeë¶€í„° íƒìƒ‰ */
+        /* µÞ NUMA NodeºÎÅÍ Å½»ö */
         sAllocCoreIndex = IDT_EMPTY;
         sAllocNUMAIndex = mNUMACount - (i % sAllocNUMACount) - 1;
 
@@ -366,7 +366,7 @@ IDE_RC idtCPUSet::relocateCPUs(SInt aCPUCount, SInt aNUMACount)
         {
             for(j=0; j< sAllocCoreCount; j++)
             {
-                /* Nodeì˜ ë’¤ìª½ CPUë¶€í„° íƒìƒ‰ */
+                /* NodeÀÇ µÚÂÊ CPUºÎÅÍ Å½»ö */
                 if( mProcessPset.getCPUCount() < mProcessPset.getAvailableCPUCount() )
                 {
                     if(sAllocCoreIndex == IDT_EMPTY )
@@ -423,7 +423,7 @@ IDE_RC idtCPUSet::relocateCPUs(SInt aCPUCount, SInt aNUMACount)
 }
 
 /*
- * initializeì™€ ê°™ì€ ìž‘ë™ì„ í•œë‹¤.
+ * initialize¿Í °°Àº ÀÛµ¿À» ÇÑ´Ù.
  */
 idtCPUSet::idtCPUSet(const SInt aFill)
 {
@@ -431,8 +431,8 @@ idtCPUSet::idtCPUSet(const SInt aFill)
 }
 
 /*
- * CPU Setì— í˜„ìž¬ ì‹œìŠ¤í…œì— ìž¥ì°©ëœ CPU ì¤‘
- * ë¼ì´ì„¼ìŠ¤ì—ì„œ í—ˆê°€ëœ CPUë“¤ì„ setí•œë‹¤
+ * CPU Set¿¡ ÇöÀç ½Ã½ºÅÛ¿¡ ÀåÂøµÈ CPU Áß
+ * ¶óÀÌ¼¾½º¿¡¼­ Çã°¡µÈ CPUµéÀ» setÇÑ´Ù
  */
 void idtCPUSet::fill(void)
 {
@@ -440,7 +440,7 @@ void idtCPUSet::fill(void)
 }
 
 /*
- * CPU Setì„ ëª¨ë‘ ë¹„ì›Œì„œ 0ìœ¼ë¡œ ë§Œë“ ë‹¤.
+ * CPU SetÀ» ¸ðµÎ ºñ¿ö¼­ 0À¸·Î ¸¸µç´Ù.
  */
 void idtCPUSet::clear(void)
 {
@@ -449,8 +449,8 @@ void idtCPUSet::clear(void)
 }
 
 /*
- * aFillì´ IDT_FILLì´ë©´ fillí•˜ê³  IDT_EMPTYì´ë©´ clearí•œë‹¤.
- * IDT_FILLì€ (SInt(0))ê³¼, IDT_EMPTYëŠ” ((SInt)(-1))ê³¼ ê°™ë‹¤.
+ * aFillÀÌ IDT_FILLÀÌ¸é fillÇÏ°í IDT_EMPTYÀÌ¸é clearÇÑ´Ù.
+ * IDT_FILLÀº (SInt(0))°ú, IDT_EMPTY´Â ((SInt)(-1))°ú °°´Ù.
  */
 void idtCPUSet::initialize(const SInt aFill)
 {
@@ -470,7 +470,7 @@ void idtCPUSet::initialize(const SInt aFill)
 }
 
 /*
- * aCPUNoì— í•´ë‹¹í•˜ëŠ” CPUë¥¼ setí•œë‹¤.
+ * aCPUNo¿¡ ÇØ´çÇÏ´Â CPU¸¦ setÇÑ´Ù.
  */
 void idtCPUSet::addCPU(const SInt aCPUNo)
 {
@@ -502,7 +502,7 @@ void idtCPUSet::addCPU(const SInt aCPUNo)
 }
 
 /*
- * aCPUNoì— í•´ë‹¹í•˜ëŠ” CPUë¥¼ clearí•œë‹¤.
+ * aCPUNo¿¡ ÇØ´çÇÏ´Â CPU¸¦ clearÇÑ´Ù.
  */
 void idtCPUSet::removeCPU(const SInt aCPUNo)
 {
@@ -534,7 +534,7 @@ void idtCPUSet::removeCPU(const SInt aCPUNo)
 }
 
 /*
- * aCPUNoê°€ setë˜ì–´ ìžˆìœ¼ë©´ clear, clearìƒíƒœì´ë©´ setí•œë‹¤.
+ * aCPUNo°¡ setµÇ¾î ÀÖÀ¸¸é clear, clear»óÅÂÀÌ¸é setÇÑ´Ù.
  */
 void idtCPUSet::toggleCPU(const SInt aCPUNo)
 {
@@ -568,7 +568,7 @@ void idtCPUSet::toggleCPU(const SInt aCPUNo)
 }
 
 /*
- * aNUMANo NUMA ë…¸ë“œì— í•´ë‹¹í•˜ëŠ” CPUë¥¼ ëª¨ë‘ setí•œë‹¤.
+ * aNUMANo NUMA ³ëµå¿¡ ÇØ´çÇÏ´Â CPU¸¦ ¸ðµÎ setÇÑ´Ù.
  */
 void idtCPUSet::addNUMA(const SInt aNUMANo)
 {
@@ -585,7 +585,7 @@ void idtCPUSet::addNUMA(const SInt aNUMANo)
 }
 
 /*
- * aNUMANo NUMA ë…¸ë“œì— í•´ë‹¹í•˜ëŠ” CPUë¥¼ ëª¨ë‘ clearí•œë‹¤.
+ * aNUMANo NUMA ³ëµå¿¡ ÇØ´çÇÏ´Â CPU¸¦ ¸ðµÎ clearÇÑ´Ù.
  */
 void idtCPUSet::removeNUMA(const SInt aNUMANo)
 {
@@ -608,8 +608,8 @@ void idtCPUSet::removeNUMA(const SInt aNUMANo)
 }
 
 /*
- * aCPUNoê°€ í˜„ìž¬ CPU Setì— í¬í•¨ë˜ì–´ ìžˆìœ¼ë©´ ID_TRUEë¥¼ ë¦¬í„´í•œë‹¤.
- * ì•„ë‹ˆë©´ ID_FALSEë¥¼ ë¦¬í„´í•œë‹¤.
+ * aCPUNo°¡ ÇöÀç CPU Set¿¡ Æ÷ÇÔµÇ¾î ÀÖÀ¸¸é ID_TRUE¸¦ ¸®ÅÏÇÑ´Ù.
+ * ¾Æ´Ï¸é ID_FALSE¸¦ ¸®ÅÏÇÑ´Ù.
  */
 idBool idtCPUSet::find(const SInt aCPUNo)
 {
@@ -634,7 +634,7 @@ idBool idtCPUSet::find(const SInt aCPUNo)
 }
 
 /*
- * CPU Setì— ì„¤ì •ë˜ì–´ìžˆëŠ” CPU ê°œìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.
+ * CPU Set¿¡ ¼³Á¤µÇ¾îÀÖ´Â CPU °³¼ö¸¦ ¸®ÅÏÇÑ´Ù.
  */
 SInt idtCPUSet::getCPUCount(void)
 {
@@ -642,8 +642,8 @@ SInt idtCPUSet::getCPUCount(void)
 }
 
 /*
- * CPU Setì— ì„¤ì •ëœ CPUë“¤ì´ NUMA ë…¸ë“œ ëª‡ ê°œë¥¼
- * ì‚¬ìš©í•˜ê³  ìžˆëŠ”ê°€ ë¦¬í„´í•œë‹¤.
+ * CPU Set¿¡ ¼³Á¤µÈ CPUµéÀÌ NUMA ³ëµå ¸î °³¸¦
+ * »ç¿ëÇÏ°í ÀÖ´Â°¡ ¸®ÅÏÇÑ´Ù.
  */
 SInt idtCPUSet::getNUMACount(void)
 {
@@ -661,8 +661,8 @@ SInt idtCPUSet::getNUMACount(void)
 }
 
 /*
- * CPU Setì— ì„¤ì •ëœ CPU ì¤‘ aNUMANoì— ì†í•˜ëŠ”
- * CPUì˜ ê°œìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.
+ * CPU Set¿¡ ¼³Á¤µÈ CPU Áß aNUMANo¿¡ ¼ÓÇÏ´Â
+ * CPUÀÇ °³¼ö¸¦ ¸®ÅÏÇÑ´Ù.
  */
 SInt idtCPUSet::getCPUCountInNUMA(const SInt aNUMANo)
 {
@@ -687,7 +687,7 @@ SInt idtCPUSet::getCPUCountInNUMA(const SInt aNUMANo)
 }
 
 /*
- * í˜„ìž¬ CPU Setì— aNUMANoì— í•´ë‹¹í•˜ëŠ” CPUê°€ ìžˆëŠ”ê°€ í™•ì¸í•œë‹¤.
+ * ÇöÀç CPU Set¿¡ aNUMANo¿¡ ÇØ´çÇÏ´Â CPU°¡ ÀÖ´Â°¡ È®ÀÎÇÑ´Ù.
  */
 idBool idtCPUSet::isInNUMA(const SInt aNUMANo)
 {
@@ -703,8 +703,8 @@ idBool idtCPUSet::isInNUMA(const SInt aNUMANo)
 }
 
 /*
- * aCPUSetì— ì„¤ì •ëœ CPU Setì„ í˜„ìž¬ ì¸ìŠ¤í„´ìŠ¤ë¡œ ë³µì‚¬í•´ì˜¨ë‹¤.
- * *thisë¥¼ ë¦¬í„´í•œë‹¤.
+ * aCPUSet¿¡ ¼³Á¤µÈ CPU SetÀ» ÇöÀç ÀÎ½ºÅÏ½º·Î º¹»çÇØ¿Â´Ù.
+ * *this¸¦ ¸®ÅÏÇÑ´Ù.
  */
 const idtCPUSet& idtCPUSet::copyFrom(const idtCPUSet& aCPUSet)
 {
@@ -715,9 +715,9 @@ const idtCPUSet& idtCPUSet::copyFrom(const idtCPUSet& aCPUSet)
 }
 
 /*
- * aCPUSetì— ì„¤ì •ëœ CPU Setê³¼ í˜„ìž¬ ì¸ìŠ¤í„´ìŠ¤ì— ì„¤ì •ëœ
- * CPU Setë¥¼ ORí•˜ì—¬ í•©ì¹œë‹¤.
- * *thisë¥¼ ë¦¬í„´í•œë‹¤.
+ * aCPUSet¿¡ ¼³Á¤µÈ CPU Set°ú ÇöÀç ÀÎ½ºÅÏ½º¿¡ ¼³Á¤µÈ
+ * CPU Set¸¦ ORÇÏ¿© ÇÕÄ£´Ù.
+ * *this¸¦ ¸®ÅÏÇÑ´Ù.
  */
 const idtCPUSet& idtCPUSet::mergeFrom(const idtCPUSet& aCPUSet)
 {
@@ -733,8 +733,8 @@ const idtCPUSet& idtCPUSet::mergeFrom(const idtCPUSet& aCPUSet)
 }
 
 /*
- * CPU Setì— ì„¤ì •ëœ CPU ì¤‘ logical IDê°€
- * ê°€ìž¥ ìž‘ì€ CPU ë²ˆí˜¸ë¥¼ ë¦¬í„´í•œë‹¤.
+ * CPU Set¿¡ ¼³Á¤µÈ CPU Áß logical ID°¡
+ * °¡Àå ÀÛÀº CPU ¹øÈ£¸¦ ¸®ÅÏÇÑ´Ù.
  */
 SInt idtCPUSet::findFirstCPU(void)
 {
@@ -760,9 +760,9 @@ SInt idtCPUSet::findFirstCPU(void)
 }
 
 /* 
- * CPU Setì— ì„¤ì •ë˜ì–´ìžˆê³  aCPUNoë³´ë‹¤ logical IDê°€ í° CPU ì¤‘
- * logical IDê°€ ê°€ìž¥ ìž‘ì€ CPU ë²ˆí˜¸ë¥¼ ë¦¬í„´í•œë‹¤.
- * í•´ë‹¹ CPUê°€ Set ë‚´ë¶€ì— ì—†ìœ¼ë©´ IDT_EMPTYë¥¼ ë¦¬í„´í•œë‹¤.
+ * CPU Set¿¡ ¼³Á¤µÇ¾îÀÖ°í aCPUNoº¸´Ù logical ID°¡ Å« CPU Áß
+ * logical ID°¡ °¡Àå ÀÛÀº CPU ¹øÈ£¸¦ ¸®ÅÏÇÑ´Ù.
+ * ÇØ´ç CPU°¡ Set ³»ºÎ¿¡ ¾øÀ¸¸é IDT_EMPTY¸¦ ¸®ÅÏÇÑ´Ù.
  */
 SInt idtCPUSet::findNextCPU(const SInt aCPUNo)
 {
@@ -820,8 +820,8 @@ SInt idtCPUSet::findNextCPU(const SInt aCPUNo)
     return sRet;
 }
 /*
- * CPU Setì— ì„¤ì •ëœ CPU ì¤‘ logical IDê°€
- * ê°€ìž¥ í° CPU ë²ˆí˜¸ë¥¼ ë¦¬í„´í•œë‹¤.
+ * CPU Set¿¡ ¼³Á¤µÈ CPU Áß logical ID°¡
+ * °¡Àå Å« CPU ¹øÈ£¸¦ ¸®ÅÏÇÑ´Ù.
  */
 SInt idtCPUSet::findLastCPU(void)
 {
@@ -846,9 +846,9 @@ SInt idtCPUSet::findLastCPU(void)
     return sRet;
 }
 /* 
- * CPU Setì— ì„¤ì •ë˜ì–´ìžˆê³  aCPUNoë³´ë‹¤ logical IDê°€ ìž‘ì€ CPU ì¤‘
- * logical IDê°€ ê°€ìž¥ í° CPU ë²ˆí˜¸ë¥¼ ë¦¬í„´í•œë‹¤.
- * í•´ë‹¹ CPUê°€ Set ë‚´ë¶€ì— ì—†ìœ¼ë©´ IDT_EMPTYë¥¼ ë¦¬í„´í•œë‹¤.
+ * CPU Set¿¡ ¼³Á¤µÇ¾îÀÖ°í aCPUNoº¸´Ù logical ID°¡ ÀÛÀº CPU Áß
+ * logical ID°¡ °¡Àå Å« CPU ¹øÈ£¸¦ ¸®ÅÏÇÑ´Ù.
+ * ÇØ´ç CPU°¡ Set ³»ºÎ¿¡ ¾øÀ¸¸é IDT_EMPTY¸¦ ¸®ÅÏÇÑ´Ù.
  */
 SInt idtCPUSet::findPrevCPU(const SInt aCPUNo)
 {
@@ -909,8 +909,8 @@ SInt idtCPUSet::findPrevCPU(const SInt aCPUNo)
 
 
 /*
- * CPU Setì— ì„¤ì •ë˜ì–´ ìžˆê³  aNUMANoì— ì†í•˜ëŠ” CPU ì¤‘
- * logical IDê°€ ê°€ìž¥ ìž‘ì€ CPU ë²ˆí˜¸ë¥¼ ë¦¬í„´í•œë‹¤.
+ * CPU Set¿¡ ¼³Á¤µÇ¾î ÀÖ°í aNUMANo¿¡ ¼ÓÇÏ´Â CPU Áß
+ * logical ID°¡ °¡Àå ÀÛÀº CPU ¹øÈ£¸¦ ¸®ÅÏÇÑ´Ù.
  */
 SInt idtCPUSet::findFirstNUMA(const SInt aNUMANo)
 {
@@ -936,10 +936,10 @@ SInt idtCPUSet::findFirstNUMA(const SInt aNUMANo)
 }
 
 /*
- * CPU Setì— ì„¤ì •ë˜ì–´ ìžˆê³  aNUMANoì— ì†í•´ ìžˆìœ¼ë©°,
- * aCPUNoë³´ë‹¤ logical IDê°€ í° CPU ì¤‘
- * logical IDê°€ ê°€ìž¥ ìž‘ì€ CPU ë²ˆí˜¸ë¥¼ ë¦¬í„´í•œë‹¤.
- * í•´ë‹¹ CPUê°€ Set ë‚´ë¶€ì— ì—†ìœ¼ë©´ IDT_EMPTYë¥¼ ë¦¬í„´í•œë‹¤.
+ * CPU Set¿¡ ¼³Á¤µÇ¾î ÀÖ°í aNUMANo¿¡ ¼ÓÇØ ÀÖÀ¸¸ç,
+ * aCPUNoº¸´Ù logical ID°¡ Å« CPU Áß
+ * logical ID°¡ °¡Àå ÀÛÀº CPU ¹øÈ£¸¦ ¸®ÅÏÇÑ´Ù.
+ * ÇØ´ç CPU°¡ Set ³»ºÎ¿¡ ¾øÀ¸¸é IDT_EMPTY¸¦ ¸®ÅÏÇÑ´Ù.
  */
 SInt idtCPUSet::findNextNUMA(const SInt aCPUNo, const SInt aNUMANo)
 {
@@ -978,8 +978,8 @@ SInt idtCPUSet::findNextNUMA(const SInt aCPUNo, const SInt aNUMANo)
 }
 
 /*
- * í˜„ìž¬ ì¸ìŠ¤í„´ìŠ¤ì™€ aCPUSetì´ ë™ì¼í•œê°€ ë¹„êµí•œë‹¤.
- * ë™ì¼í•˜ë©´ ID_TRUEë¥¼, ì•„ë‹ˆë©´ ID_FALSEë¥¼ ë¦¬í„´í•œë‹¤.
+ * ÇöÀç ÀÎ½ºÅÏ½º¿Í aCPUSetÀÌ µ¿ÀÏÇÑ°¡ ºñ±³ÇÑ´Ù.
+ * µ¿ÀÏÇÏ¸é ID_TRUE¸¦, ¾Æ´Ï¸é ID_FALSE¸¦ ¸®ÅÏÇÑ´Ù.
  */
 idBool idtCPUSet::compare(const idtCPUSet& aCPUSet)
 {
@@ -999,8 +999,8 @@ idBool idtCPUSet::compare(const idtCPUSet& aCPUSet)
 }
 
 /*
- * aCPUSetì´ í˜„ìž¬ ì¸ìŠ¤í„´ìŠ¤ì˜ ë¶€ë¶„ì§‘í•©ì¸ê°€ í™•ì¸í•œë‹¤.
- * ë¶€ë¶„ì§‘í•©ì´ë¼ë©´ ID_TRUEë¥¼, ì•„ë‹ˆë©´ ID_FALSEë¥¼ ë¦¬í„´í•œë‹¤.
+ * aCPUSetÀÌ ÇöÀç ÀÎ½ºÅÏ½ºÀÇ ºÎºÐÁýÇÕÀÎ°¡ È®ÀÎÇÑ´Ù.
+ * ºÎºÐÁýÇÕÀÌ¶ó¸é ID_TRUE¸¦, ¾Æ´Ï¸é ID_FALSE¸¦ ¸®ÅÏÇÑ´Ù.
  */
 idBool idtCPUSet::implies(const idtCPUSet& aCPUSet)
 {
@@ -1033,10 +1033,10 @@ idBool idtCPUSet::implies(const idtCPUSet& aCPUSet)
 }
  
 /*
- * í˜„ìž¬ ì¸ìŠ¤í„´ìŠ¤ë¥¼ ëª¨ë‘ ë¹„ìš´ í›„
- * CPU Set 1ê³¼ CPU Set 2ì— ê³µí†µì ìœ¼ë¡œ í¬í•¨ëœ CPU Setë“¤ë§Œì„
- * í˜„ìž¬ instanceì— setí•œë‹¤.
- * *thisë¥¼ ë¦¬í„´í•œë‹¤.
+ * ÇöÀç ÀÎ½ºÅÏ½º¸¦ ¸ðµÎ ºñ¿î ÈÄ
+ * CPU Set 1°ú CPU Set 2¿¡ °øÅëÀûÀ¸·Î Æ÷ÇÔµÈ CPU Setµé¸¸À»
+ * ÇöÀç instance¿¡ setÇÑ´Ù.
+ * *this¸¦ ¸®ÅÏÇÑ´Ù.
  */
 const idtCPUSet& idtCPUSet::makeIntersectionFrom(const idtCPUSet& aCPUSet1,
                                                  const idtCPUSet& aCPUSet2)
@@ -1053,10 +1053,10 @@ const idtCPUSet& idtCPUSet::makeIntersectionFrom(const idtCPUSet& aCPUSet1,
 }
 
 /*
- * í˜„ìž¬ ì¸ìŠ¤í„´ìŠ¤ë¥¼ ëª¨ë‘ ë¹„ìš´ í›„
- * CPU Set 1ê³¼ CPU Set 2ì— í¬í•¨ëœ CPU Setë“¤ì„ ëª¨ë‘
- * í˜„ìž¬ instanceì— setí•œë‹¤.
- * *thisë¥¼ ë¦¬í„´í•œë‹¤.
+ * ÇöÀç ÀÎ½ºÅÏ½º¸¦ ¸ðµÎ ºñ¿î ÈÄ
+ * CPU Set 1°ú CPU Set 2¿¡ Æ÷ÇÔµÈ CPU SetµéÀ» ¸ðµÎ
+ * ÇöÀç instance¿¡ setÇÑ´Ù.
+ * *this¸¦ ¸®ÅÏÇÑ´Ù.
  */
 const idtCPUSet& idtCPUSet::makeUnionFrom(const idtCPUSet& aCPUSet1,
                                           const idtCPUSet& aCPUSet2)
@@ -1073,17 +1073,17 @@ const idtCPUSet& idtCPUSet::makeUnionFrom(const idtCPUSet& aCPUSet1,
 }
 
 /*
- * í˜„ìž¬ CPU Setì„ ë¬¸ìžì—´ë¡œ ë³€í™˜í•˜ì—¬ aStringì— ì €ìž¥í•œë‹¤.
- * aStringì˜ ìµœëŒ€ ê¸¸ì´ëŠ” aLenì´ë©° í•­ìƒ NUL('\0')ë¡œ ëë‚œë‹¤.
+ * ÇöÀç CPU SetÀ» ¹®ÀÚ¿­·Î º¯È¯ÇÏ¿© aString¿¡ ÀúÀåÇÑ´Ù.
+ * aStringÀÇ ÃÖ´ë ±æÀÌ´Â aLenÀÌ¸ç Ç×»ó NUL('\0')·Î ³¡³­´Ù.
  */
 void idtCPUSet::dumpCPUsToString(SChar* aString, const size_t aLen)
 {
-    SInt    sPrevCoreID = IDT_EMPTY;       /* ë§ˆì§€ë§‰ core idë¥¼ ì €ìž¥ */
+    SInt    sPrevCoreID = IDT_EMPTY;       /* ¸¶Áö¸· core id¸¦ ÀúÀå */
     SInt    i;
     size_t  sTotalLen;
     size_t  sLen;
-    idBool  sIsCont = ID_FALSE;           /* ì´ì „ core idì™€ ì—°ì†ì¤‘ì¸ì§€ í™•ì¸í•˜ê¸°ìœ„í•´ */
-    idBool  sCoreIDs[IDT_MAX_CPU_CORES];  /* cpuidë¥¼ coreid ìˆœìœ¼ë¡œ ì •ë ¬ */
+    idBool  sIsCont = ID_FALSE;           /* ÀÌÀü core id¿Í ¿¬¼ÓÁßÀÎÁö È®ÀÎÇÏ±âÀ§ÇØ */
+    idBool  sCoreIDs[IDT_MAX_CPU_CORES];  /* cpuid¸¦ coreid ¼øÀ¸·Î Á¤·Ä */
    
     sTotalLen = aLen;
     idlOS::memset(sCoreIDs, 0, IDT_MAX_CPU_CORES*sizeof(idBool));
@@ -1096,8 +1096,8 @@ void idtCPUSet::dumpCPUsToString(SChar* aString, const size_t aLen)
          {
              if( sPrevCoreID == IDT_EMPTY )
              {
-                 /* ìµœì´ˆ ê¸°ë¡
-                  * aString ì— i ì¶”ê°€ */
+                 /* ÃÖÃÊ ±â·Ï
+                  * aString ¿¡ i Ãß°¡ */
                  sLen = idlOS::snprintf(aString, sTotalLen, "%d", i);
                  IDE_TEST( aLen <= sLen );
                  aString += sLen;
@@ -1105,12 +1105,12 @@ void idtCPUSet::dumpCPUsToString(SChar* aString, const size_t aLen)
              }
              else if( i - sPrevCoreID == 1 )
              {
-                 /* ì´ì „ core id ì™€ ì—°ì† */
+                 /* ÀÌÀü core id ¿Í ¿¬¼Ó */
 
                  if( sIsCont == ID_FALSE )
                  {
-                     /* ìµœì´ˆ ì—°ì†
-                      * aString ì— '-' ì¶”ê°€ */
+                     /* ÃÖÃÊ ¿¬¼Ó
+                      * aString ¿¡ '-' Ãß°¡ */
                      sLen = idlOS::snprintf(aString, sTotalLen, "-");
                      IDE_TEST( aLen <= sLen );
                      aString += sLen;
@@ -1119,24 +1119,24 @@ void idtCPUSet::dumpCPUsToString(SChar* aString, const size_t aLen)
                  }
                  else
                  {
-                     /* ì—°ì† ì¤‘ */
+                     /* ¿¬¼Ó Áß */
                  }
                  sIsCont = ID_TRUE;
              }
              else
              {
-                 /* ì´ì „ core idì™€ ì—°ì† ì•ˆí•¨ */
+                 /* ÀÌÀü core id¿Í ¿¬¼Ó ¾ÈÇÔ */
 
                  if( sIsCont == ID_TRUE )
                  {
-                     /* ì´ì „ core id ê¹Œì§€ ì—°ì†ì´ì˜€ê³ , ì§€ê¸ˆì€ ì—°ì†ì´ ì•„ë‹˜
-                      * astringì— 'sPrevCoreID, i' ì¶”ê°€ */
+                     /* ÀÌÀü core id ±îÁö ¿¬¼ÓÀÌ¿´°í, Áö±ÝÀº ¿¬¼ÓÀÌ ¾Æ´Ô
+                      * astring¿¡ 'sPrevCoreID, i' Ãß°¡ */
                      sLen = idlOS::snprintf(aString, sTotalLen, "%d, %d", sPrevCoreID, i);
                  }
                  else
                  {
-                     /* ì´ì „ë„ ì—°ì†ì´ ì•„ë‹ˆì˜€ê³ , ì§€ê¸ˆë„ ì—°ì†ì´ ì•„ë‹˜
-                      * astringì— ', i' ì¶”ê°€*/
+                     /* ÀÌÀüµµ ¿¬¼ÓÀÌ ¾Æ´Ï¿´°í, Áö±Ýµµ ¿¬¼ÓÀÌ ¾Æ´Ô
+                      * astring¿¡ ', i' Ãß°¡*/
                      sLen = idlOS::snprintf(aString, sTotalLen, ", %d", i);
                  }
                  IDE_TEST( aLen <= sLen );
@@ -1151,8 +1151,8 @@ void idtCPUSet::dumpCPUsToString(SChar* aString, const size_t aLen)
     }
     if( sIsCont == ID_TRUE )
     {
-        /* ì—°ì†ì¤‘ì´ë˜ ë§ˆì§€ë§‰ ê°’ ê¸°ë¡í•´ì•¼í•¨
-         * aString ì— 'sPrevCoreID' ê¸°ë¡*/
+        /* ¿¬¼ÓÁßÀÌ´ø ¸¶Áö¸· °ª ±â·ÏÇØ¾ßÇÔ
+         * aString ¿¡ 'sPrevCoreID' ±â·Ï*/
         sLen = idlOS::snprintf(aString, sTotalLen, "%d", sPrevCoreID);
         IDE_TEST( aLen <= sLen );
         aString += sLen;
@@ -1165,8 +1165,8 @@ void idtCPUSet::dumpCPUsToString(SChar* aString, const size_t aLen)
 }
 
 /*
- * í˜„ìž¬ CPU Setì„ ë¬¸ìžì—´ë¡œ ë³€í™˜í•˜ì—¬ aStringì— ì €ìž¥í•œë‹¤.
- * aStringì˜ ìµœëŒ€ ê¸¸ì´ëŠ” aLenì´ë©° í•­ìƒ NUL('\0')ë¡œ ëë‚œë‹¤.
+ * ÇöÀç CPU SetÀ» ¹®ÀÚ¿­·Î º¯È¯ÇÏ¿© aString¿¡ ÀúÀåÇÑ´Ù.
+ * aStringÀÇ ÃÖ´ë ±æÀÌ´Â aLenÀÌ¸ç Ç×»ó NUL('\0')·Î ³¡³­´Ù.
  */
 void idtCPUSet::dumpCPUsToHexString(SChar* aString, const size_t aLen)
 {
@@ -1177,7 +1177,7 @@ void idtCPUSet::dumpCPUsToHexString(SChar* aString, const size_t aLen)
     SInt    i;
     size_t  sLen;
     size_t  sTotalLen;
-    idBool  sCoreIDs[IDT_MAX_CPU_CORES];  /* cpuidë¥¼ coreid ìˆœìœ¼ë¡œ ì •ë ¬ */
+    idBool  sCoreIDs[IDT_MAX_CPU_CORES];  /* cpuid¸¦ coreid ¼øÀ¸·Î Á¤·Ä */
   
     sLen = 0;
     sTotalLen = aLen;
@@ -1244,8 +1244,8 @@ void idtCPUSet::convertToPhysicalPset(acp_pset_t* aPSet)
 }
 
 /*
- * CPU Setì— ì„¤ì •ëœ CPUë¥¼ core ID ìˆœìœ¼ë¡œ ì •ë ¬í•˜ì—¬
- * aCoreIDsì— ì €ìž¥í•œë‹¤.
+ * CPU Set¿¡ ¼³Á¤µÈ CPU¸¦ core ID ¼øÀ¸·Î Á¤·ÄÇÏ¿©
+ * aCoreIDs¿¡ ÀúÀåÇÑ´Ù.
  */
 void idtCPUSet::sortCoreID(idBool* aCoreIDs)
 {
@@ -1274,10 +1274,10 @@ void idtCPUSet::calcIndexAndDelta(const SInt    aCPUNo,
 }
 
 /*
- * ìŠ¤ë ˆë“œì— CPU ì—¬ëŸ¬ ê°œë¥¼ bindí•  ìˆ˜ ìžˆëŠ”ê°€ë¥¼ ë¦¬í„´í•œë‹¤.
- * Linuxì—ì„œëŠ” ID_TRUEë¥¼, ì—¬íƒ€ ìš´ì˜ì²´ì œì—ì„œëŠ” ID_FALSEë¥¼ ë¦¬í„´í•œë‹¤.
- * Linuxë¥¼ ì œì™¸í•œ ìš´ì˜ì²´ì œì—ì„œëŠ” í•œ ìŠ¤ë ˆë“œì— CPU ì—¬ëŸ¬ ê°œë¥¼ bindí•˜ë ¤ë©´
- * root ê¶Œí•œì´ í•„ìš”í•˜ë‹¤.
+ * ½º·¹µå¿¡ CPU ¿©·¯ °³¸¦ bindÇÒ ¼ö ÀÖ´Â°¡¸¦ ¸®ÅÏÇÑ´Ù.
+ * Linux¿¡¼­´Â ID_TRUE¸¦, ¿©Å¸ ¿î¿µÃ¼Á¦¿¡¼­´Â ID_FALSE¸¦ ¸®ÅÏÇÑ´Ù.
+ * Linux¸¦ Á¦¿ÜÇÑ ¿î¿µÃ¼Á¦¿¡¼­´Â ÇÑ ½º·¹µå¿¡ CPU ¿©·¯ °³¸¦ bindÇÏ·Á¸é
+ * root ±ÇÇÑÀÌ ÇÊ¿äÇÏ´Ù.
  */
 idBool idtCPUSet::canSetMultipleCPUs(void)
 {
@@ -1288,15 +1288,15 @@ idBool idtCPUSet::canSetMultipleCPUs(void)
 #endif
 }
 
-/* ì‹œìŠ¤í…œì— ì„¤ì¹˜ë˜ì–´ ìžˆëŠ” ì „ì²´ CPU ê°œìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤. */
+/* ½Ã½ºÅÛ¿¡ ¼³Ä¡µÇ¾î ÀÖ´Â ÀüÃ¼ CPU °³¼ö¸¦ ¸®ÅÏÇÑ´Ù. */
 SInt idtCPUSet::getSystemCPUCount(void)
 {
     return mSystemCPUCount;
 }
 
 /*
- * ì‹œìŠ¤í…œì— ì„¤ì¹˜ë˜ì–´ ìžˆëŠ” CPU ì¤‘ ë¼ì´ì„¼ìŠ¤ë¡œ í—ˆê°€ë˜ì–´
- * í˜„ìž¬ IN_USE=YESì¸ CPUì˜ ê°œìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.
+ * ½Ã½ºÅÛ¿¡ ¼³Ä¡µÇ¾î ÀÖ´Â CPU Áß ¶óÀÌ¼¾½º·Î Çã°¡µÇ¾î
+ * ÇöÀç IN_USE=YESÀÎ CPUÀÇ °³¼ö¸¦ ¸®ÅÏÇÑ´Ù.
  */
 SInt idtCPUSet::getAvailableCPUCount(void)
 {
@@ -1304,7 +1304,7 @@ SInt idtCPUSet::getAvailableCPUCount(void)
 }
 
 /*
- * ì‹œìŠ¤í…œì— ì„¤ì¹˜ë˜ì–´ ìžˆëŠ” NUMA ë…¸ë“œ ê°œìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.
+ * ½Ã½ºÅÛ¿¡ ¼³Ä¡µÇ¾î ÀÖ´Â NUMA ³ëµå °³¼ö¸¦ ¸®ÅÏÇÑ´Ù.
  */
 SInt idtCPUSet::getSystemNUMACount(void)
 {
@@ -1312,7 +1312,7 @@ SInt idtCPUSet::getSystemNUMACount(void)
 }
 
 /*
- * í˜„ìž¬ ìŠ¤ë ˆë“œì˜ affinityë¥¼ CPU Setìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+ * ÇöÀç ½º·¹µåÀÇ affinity¸¦ CPU SetÀ¸·Î ¼³Á¤ÇÑ´Ù.
  */
 IDE_RC idtCPUSet::bindThread(void)
 {
@@ -1328,9 +1328,9 @@ IDE_RC idtCPUSet::bindThread(void)
 }
 
 /*
- * í˜„ìž¬ ìŠ¤ë ˆë“œì˜ affinityë¥¼ í•´ì œí•œë‹¤.
- * Linuxì—ì„œëŠ” ë¼ì´ì„¼ìŠ¤ë¡œ ì¸í•˜ì—¬ ì‚¬ìš© ê°€ëŠ¥í•œ CPU Coreê°€ ì œí•œë˜ì–´ ìžˆìœ¼ë©´
- * ì œí•œëœ CPU Setì— í˜„ìž¬ ìŠ¤ë ˆë“œë¥¼ bindí•œë‹¤.
+ * ÇöÀç ½º·¹µåÀÇ affinity¸¦ ÇØÁ¦ÇÑ´Ù.
+ * Linux¿¡¼­´Â ¶óÀÌ¼¾½º·Î ÀÎÇÏ¿© »ç¿ë °¡´ÉÇÑ CPU Core°¡ Á¦ÇÑµÇ¾î ÀÖÀ¸¸é
+ * Á¦ÇÑµÈ CPU Set¿¡ ÇöÀç ½º·¹µå¸¦ bindÇÑ´Ù.
  */
 
 IDE_RC idtCPUSet::unbindThread(void)
@@ -1350,7 +1350,7 @@ IDE_RC idtCPUSet::unbindThread(void)
 }
      
 /*
- * í˜„ìž¬ í”„ë¡œì„¸ìŠ¤ì˜ affinityë¥¼ CPU Setìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+ * ÇöÀç ÇÁ·Î¼¼½ºÀÇ affinity¸¦ CPU SetÀ¸·Î ¼³Á¤ÇÑ´Ù.
  */
 IDE_RC idtCPUSet::bindProcess(void)
 {
@@ -1366,9 +1366,9 @@ IDE_RC idtCPUSet::bindProcess(void)
 }
 
 /*
- * í˜„ìž¬ í”„ë¡œì„¸ìŠ¤ì˜ affinityë¥¼ í•´ì œí•œë‹¤.
- * Linuxì—ì„œëŠ” ë¼ì´ì„¼ìŠ¤ë¡œ ì¸í•˜ì—¬ ì‚¬ìš© ê°€ëŠ¥í•œ CPU Coreê°€ ì œí•œë˜ì–´ ìžˆìœ¼ë©´
- * ì œí•œëœ CPU Setì— í˜„ìž¬ í”„ë¡œì„¸ìŠ¤ë¥¼ bindí•œë‹¤.
+ * ÇöÀç ÇÁ·Î¼¼½ºÀÇ affinity¸¦ ÇØÁ¦ÇÑ´Ù.
+ * Linux¿¡¼­´Â ¶óÀÌ¼¾½º·Î ÀÎÇÏ¿© »ç¿ë °¡´ÉÇÑ CPU Core°¡ Á¦ÇÑµÇ¾î ÀÖÀ¸¸é
+ * Á¦ÇÑµÈ CPU Set¿¡ ÇöÀç ÇÁ·Î¼¼½º¸¦ bindÇÑ´Ù.
  */
 IDE_RC idtCPUSet::unbindProcess(void)
 {

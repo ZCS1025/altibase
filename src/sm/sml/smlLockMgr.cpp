@@ -1,4 +1,4 @@
-/** 
+/**
  *  Copyright (c) 1999~2017, Altibase Corp. and/or its affiliates. All rights reserved.
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -13,79 +13,79 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 
 /***********************************************************************
- * $Id: smlLockMgr.cpp 84032 2018-09-19 05:32:05Z kclee $
+ * $Id: smlLockMgr.cpp 90597 2021-04-15 01:17:16Z emlee $
  **********************************************************************/
 /**************************************************************
  * FILE DESCRIPTION : smlLockMgr.cpp                          *
  * -----------------------------------------------------------*
- ì´ ëª¨ë“ˆì—ì„œ ì œê³µí•˜ëŠ” ê¸°ëŠ¥ì€ ë‹¤ìŒê³¼ í¬ê²Œ 4ê°€ì§€ì´ë‹¤.
+ ÀÌ ¸ğµâ¿¡¼­ Á¦°øÇÏ´Â ±â´ÉÀº ´ÙÀ½°ú Å©°Ô 4°¡ÁöÀÌ´Ù.
 
  1. lock table
  2. unlock table
- 3. record lockì²˜ë¦¬
+ 3. record lockÃ³¸®
  4. dead lock detection
 
 
  - lock table
-  ê¸°ë³¸ì ìœ¼ë¡œ tableì˜ ëŒ€í‘œë½ê³¼ ì§€ê¸ˆ ì¡ê³ ì í•˜ëŠ” ë½ê³¼ í˜¸í™˜ê°€ëŠ¥í•˜ë©´,
-  grant listì— ë‹¬ê³  table lockì„ ì¡ê²Œ ë˜ê³ ,
-  lock conflictì´ ë°œìƒí•˜ë©´ table lockëŒ€ê¸° ë¦¬ìŠ¤íŠ¸ì¸ request list
-  ì— ë‹¬ê²Œ ë˜ë©°, lock waiting tableì— ë“±ë¡í•˜ê³  dead lockê²€ì‚¬í›„ì—
-  waitingí•˜ê²Œ ëœë‹¤.
+  ±âº»ÀûÀ¸·Î tableÀÇ ´ëÇ¥¶ô°ú Áö±İ Àâ°íÀÚ ÇÏ´Â ¶ô°ú È£È¯°¡´ÉÇÏ¸é,
+  grant list¿¡ ´Ş°í table lockÀ» Àâ°Ô µÇ°í,
+  lock conflictÀÌ ¹ß»ıÇÏ¸é table lock´ë±â ¸®½ºÆ®ÀÎ request list
+  ¿¡ ´Ş°Ô µÇ¸ç, lock waiting table¿¡ µî·ÏÇÏ°í dead lock°Ë»çÈÄ¿¡
+  waitingÇÏ°Ô µÈ´Ù.
 
-  altibaseì—ì„œëŠ” lock  optimizationì„ ë‹¤ìŒê³¼ ê°™ì´ í•˜ì—¬,
-  ì½”ë“œê°€ ë³µì¡í•˜ê²Œ ë˜ì—ˆë‹¤.
+  altibase¿¡¼­´Â lock  optimizationÀ» ´ÙÀ½°ú °°ÀÌ ÇÏ¿©,
+  ÄÚµå°¡ º¹ÀâÇÏ°Ô µÇ¾ú´Ù.
 
-  : grant lock node ìƒì„±ì„ ì¤„ì´ê¸° ìœ„í•˜ì—¬  lock nodeì•ˆì˜
-    lock slotë„ì…ë° ì´ìš©.
-    -> ì´ì „ì— íŠ¸ëœì­ì…˜ì´  tableì— ëŒ€í•˜ì—¬ lockì„ ì¡ì•˜ê³ ,
-      ì§€ê¸ˆ ìš”êµ¬í•˜ëŠ” table lock modeê°€ í˜¸í™˜ê°€ëŠ¥í•˜ë©´, ìƒˆë¡œìš´
-      grant nodeë¥¼ ìƒì„±í•˜ê³  grant listì— ë‹¬ì§€ ì•Šê³ ,
-      ê¸°ì¡´ grant nodeì˜ lock modeë§Œ conversioní•˜ì—¬ ê°±ì‹ í•œë‹¤.
-    ->lock conflictì´ì§€ë§Œ,   grantëœ lock nodeê°€ 1ê°œì´ê³ ,
-      ê·¸ê²ƒì´ ë°”ë¡œ ê·¸  íŠ¸ë™ì­ì…˜ì¼ ê²½ìš°, ê¸°ì¡´ grant lock nodeì˜
-      lock modeë¥¼ conversioní•˜ì—¬ ê°±ì‹ í•œë‹¤.
+  : grant lock node »ı¼ºÀ» ÁÙÀÌ±â À§ÇÏ¿©  lock node¾ÈÀÇ
+    lock slotµµÀÔ¹× ÀÌ¿ë.
+    -> ÀÌÀü¿¡ Æ®·£Àè¼ÇÀÌ  table¿¡ ´ëÇÏ¿© lockÀ» Àâ¾Ò°í,
+      Áö±İ ¿ä±¸ÇÏ´Â table lock mode°¡ È£È¯°¡´ÉÇÏ¸é, »õ·Î¿î
+      grant node¸¦ »ı¼ºÇÏ°í grant list¿¡ ´ŞÁö ¾Ê°í,
+      ±âÁ¸ grant nodeÀÇ lock mode¸¸ conversionÇÏ¿© °»½ÅÇÑ´Ù.
+    ->lock conflictÀÌÁö¸¸,   grantµÈ lock node°¡ 1°³ÀÌ°í,
+      ±×°ÍÀÌ ¹Ù·Î ±×  Æ®·¢Àè¼ÇÀÏ °æ¿ì, ±âÁ¸ grant lock nodeÀÇ
+      lock mode¸¦ conversionÇÏ¿© °»½ÅÇÑ´Ù.
 
-  : unlock tableì‹œ request listì— ìˆëŠ” nodeë¥¼
-    grant listìœ¼ë¡œ moveë˜ëŠ” ë¹„ìš©ì„ ì¤„ì´ê¸° ìœ„í•˜ì—¬ lock nodeì•ˆì—
-    cvs lock node pointerë¥¼ ë„ì…í•˜ì˜€ë‹¤.
-    -> lock conflict ì´ê³  íŠ¸ëœì­ì…˜ì´ ì´ì „ì— tableì— ëŒ€í•˜ì—¬ grantëœ
-      lock nodeë¥¼ ê°€ì§€ê³  ìˆëŠ” ê²½ìš°, request listì— ë‹¬ ìƒˆë¡œìš´
-      lock nodeì˜ cvs lockë¥¼ ì´ì „ì— grant lock nodeë¥¼ pointing
-      í•˜ê²Œí•¨.
-   %ë‚˜ì¤‘ì— ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì˜ unlock tableì‹œ requestì— ìˆì—ˆë˜ lock
-   nodeê°€ ìƒˆë¡œ ê°±ì‹ ëœ grant modeì™€ í˜¸í™˜ê°€ëŠ¥í• ë•Œ , ì´ lock nodeë¥¼
-   grant listìœ¼ë¡œ moveí•˜ëŠ” ëŒ€ì‹ , ê¸°ì¡´ grant lock nodeì˜ lock mode
-   ë§Œ conversioní•œë‹¤.
+  : unlock table½Ã request list¿¡ ÀÖ´Â node¸¦
+    grant listÀ¸·Î moveµÇ´Â ºñ¿ëÀ» ÁÙÀÌ±â À§ÇÏ¿© lock node¾È¿¡
+    cvs lock node pointer¸¦ µµÀÔÇÏ¿´´Ù.
+    -> lock conflict ÀÌ°í Æ®·£Àè¼ÇÀÌ ÀÌÀü¿¡ table¿¡ ´ëÇÏ¿© grantµÈ
+      lock node¸¦ °¡Áö°í ÀÖ´Â °æ¿ì, request list¿¡ ´Ş »õ·Î¿î
+      lock nodeÀÇ cvs lock¸¦ ÀÌÀü¿¡ grant lock node¸¦ pointing
+      ÇÏ°ÔÇÔ.
+   %³ªÁß¿¡ ´Ù¸¥ Æ®·£Àè¼ÇÀÇ unlock table½Ã request¿¡ ÀÖ¾ú´ø lock
+   node°¡ »õ·Î °»½ÅµÈ grant mode¿Í È£È¯°¡´ÉÇÒ¶§ , ÀÌ lock node¸¦
+   grant listÀ¸·Î moveÇÏ´Â ´ë½Å, ±âÁ¸ grant lock nodeÀÇ lock mode
+   ¸¸ conversionÇÑ´Ù.
 
  - unlock table.
-   lock nodeê°€ grantë˜ì–´ ìˆëŠ” ê²½ìš°ì—ëŠ” ë‹¤ìŒê³¼ ê°™ì´ ë™ì‘í•œë‹¤.
-    1> ìƒˆë¡œìš´ tableì˜ ëŒ€í‘œë½ê³¼ grant lock modeë¥¼ ê°±ì‹ í•œë‹¤.
-    2>  grant listì—ì„œ lock nodeë¥¼ ì œê±°ì‹œí‚¨ë‹¤.
-      -> Lock nodeì•ˆì— lock slotì´ 2ê°œ ì´ìƒìˆëŠ” ê²½ìš°ì—ëŠ”
-       ì œê±°ì•ˆí•¨.
-   lock nodeê°€ requestë˜ì–´ ìˆì—ˆë˜ ê²½ìš°ì—ëŠ” request listì—ì„œ
-   ì œê±°í•œë‹¤.
+   lock node°¡ grantµÇ¾î ÀÖ´Â °æ¿ì¿¡´Â ´ÙÀ½°ú °°ÀÌ µ¿ÀÛÇÑ´Ù.
+    1> »õ·Î¿î tableÀÇ ´ëÇ¥¶ô°ú grant lock mode¸¦ °»½ÅÇÑ´Ù.
+    2>  grant list¿¡¼­ lock node¸¦ Á¦°Å½ÃÅ²´Ù.
+      -> Lock node¾È¿¡ lock slotÀÌ 2°³ ÀÌ»óÀÖ´Â °æ¿ì¿¡´Â
+       Á¦°Å¾ÈÇÔ.
+   lock node°¡ requestµÇ¾î ÀÖ¾ú´ø °æ¿ì¿¡´Â request list¿¡¼­
+   Á¦°ÅÇÑ´Ù.
 
-   request listì— ìˆëŠ” lock nodeì¤‘ì—
-   í˜„ì¬ ê°±ì‹ ëœ grant lock modeì™€ í˜¸í™˜ê°€ëŠ¥í•œ
-   Transactionë“¤ ì„ ë‹¤ìŒê³¼ ê°™ì´ ê¹¨ìš´ë‹¤.
-   1.  request listì—ì„œ lock nodeì œê±°.
-   2.  table lockì •ë³´ì—ì„œ grant lock modeë¥¼ ê°±ì‹ .
-   3.  cvs lock nodeê°€ ìˆìœ¼ë©´,ì´ lock nodeë¥¼
-      grant listìœ¼ë¡œ moveí•˜ëŠ” ëŒ€ì‹ , ê¸°ì¡´ grant lock nodeì˜
-      lock mode ë§Œ conversioní•œë‹¤.
-   4. cvs lock nodeê°€ ì—†ìœ¼ë©´ grant listì— lock node add.
-   5.  waiting tableì—ì„œ ìì‹ ì„ wainting í•˜ê³  ìˆëŠ” íŠ¸ëœì­ì…˜
-       ì˜ ëŒ€ê¸° ìƒíƒœ clear.
-   6.  waitingí•˜ê³  ìˆëŠ” íŠ¸ëœì­ì…˜ì„ resumeì‹œí‚¨ë‹¤.
-   7.  lock slot, lock node ì œê±° ì‹œë„.
+   request list¿¡ ÀÖ´Â lock nodeÁß¿¡
+   ÇöÀç °»½ÅµÈ grant lock mode¿Í È£È¯°¡´ÉÇÑ
+   Transactionµé À» ´ÙÀ½°ú °°ÀÌ ±ú¿î´Ù.
+   1.  request list¿¡¼­ lock nodeÁ¦°Å.
+   2.  table lockÁ¤º¸¿¡¼­ grant lock mode¸¦ °»½Å.
+   3.  cvs lock node°¡ ÀÖÀ¸¸é,ÀÌ lock node¸¦
+      grant listÀ¸·Î moveÇÏ´Â ´ë½Å, ±âÁ¸ grant lock nodeÀÇ
+      lock mode ¸¸ conversionÇÑ´Ù.
+   4. cvs lock node°¡ ¾øÀ¸¸é grant list¿¡ lock node add.
+   5.  waiting table¿¡¼­ ÀÚ½ÅÀ» wainting ÇÏ°í ÀÖ´Â Æ®·£Àè¼Ç
+       ÀÇ ´ë±â »óÅÂ clear.
+   6.  waitingÇÏ°í ÀÖ´Â Æ®·£Àè¼ÇÀ» resume½ÃÅ²´Ù.
+   7.  lock slot, lock node Á¦°Å ½Ãµµ.
 
- - waiting table í‘œí˜„.
-   waiting tableì€ chained matrixì´ê³ , ë‹¤ìŒê³¼ ê°™ì´ í‘œí˜„ëœë‹¤.
+ - waiting table Ç¥Çö.
+   waiting tableÀº chained matrixÀÌ°í, ´ÙÀ½°ú °°ÀÌ Ç¥ÇöµÈ´Ù.
 
      T1   T2   T3   T4   T5   T6
 
@@ -103,62 +103,52 @@
     --------------------------------->
     table lock waiting or transaction waiting list
 
-    T3ì€ T4, T6ì— ëŒ€í•˜ì—¬ table lock waitingë˜ëŠ”
-    transaction waiting(record lockì¼ ê²½ìš°)í•˜ê³  ìˆë‹¤.
+    T3Àº T4, T6¿¡ ´ëÇÏ¿© table lock waiting¶Ç´Â
+    transaction waiting(record lockÀÏ °æ¿ì)ÇÏ°í ÀÖ´Ù.
 
-    T2ì— ëŒ€í•˜ì—¬  T4,T6ê°€ record lock waitingí•˜ê³  ìˆìœ¼ë©°,
-    T2ê°€ commit or rollbackì‹œì— T4,T6 í–‰ì˜ T2ì—´ì˜ ëŒ€ê¸°
-    ìƒíƒœë¥¼ clearí•˜ê³  resumeì‹œí‚¨ë‹¤.
+    T2¿¡ ´ëÇÏ¿©  T4,T6°¡ record lock waitingÇÏ°í ÀÖÀ¸¸ç,
+    T2°¡ commit or rollback½Ã¿¡ T4,T6 ÇàÀÇ T2¿­ÀÇ ´ë±â
+    »óÅÂ¸¦ clearÇÏ°í resume½ÃÅ²´Ù.
 
- -  record lockì²˜ë¦¬
-   recod lock grant, request listì™€ nodeëŠ” ì—†ë‹¤.
-   ë‹¤ë§Œ waiting tableì—ì„œ  ëŒ€ê¸°í•˜ë ¤ëŠ” transaction Aì˜ columnì—
-   record lock ëŒ€ê¸°ë¥¼ ë“±ë¡ì‹œí‚¤ê³ , transaction A abort,commitì´
-   ë°œìƒí•˜ë©´ ìì‹ ì—ê²Œ ë“±ë¡ëœ record lock ëŒ€ê¸° listì„ ìˆœíšŒí•˜ë©°
-   record lockëŒ€ê¸°ìƒíƒœë¥¼ clearí•˜ê³ , íŠ¸ëœì­ì…˜ë“¤ì„ ê¹¨ìš´ë‹¤.
+ -  record lockÃ³¸®
+   recod lock grant, request list¿Í node´Â ¾ø´Ù.
+   ´Ù¸¸ waiting table¿¡¼­  ´ë±âÇÏ·Á´Â transaction AÀÇ column¿¡
+   record lock ´ë±â¸¦ µî·Ï½ÃÅ°°í, transaction A abort,commitÀÌ
+   ¹ß»ıÇÏ¸é ÀÚ½Å¿¡°Ô µî·ÏµÈ record lock ´ë±â listÀ» ¼øÈ¸ÇÏ¸ç
+   record lock´ë±â»óÅÂ¸¦ clearÇÏ°í, Æ®·£Àè¼ÇµéÀ» ±ú¿î´Ù.
 
 
  - dead lock detection.
-  dead lock dectioinì€ ë‹¤ìŒê³¼ ê°™ì€ ë‘ê°€ì§€ ê²½ìš°ì—
-  ëŒ€í•˜ì—¬ ìˆ˜í–‰í•œë‹¤.
+  dead lock dectioinÀº ´ÙÀ½°ú °°Àº µÎ°¡Áö °æ¿ì¿¡
+  ´ëÇÏ¿© ¼öÇàÇÑ´Ù.
 
-   1. Tx Aê°€ table lockì‹œ conflictì´ ë°œìƒí•˜ì—¬ request listì— ë‹¬ê³ ,
-     Tx Aì˜ í–‰ì˜ ì—´ì— waiting listë¥¼ ë“±ë¡í• ë•Œ,waiting tableì—ì„œ
-     Tx Aì— ëŒ€í•˜ì—¬ cycleì´ ë°œìƒí•˜ë©´ transactionì„ abortì‹œí‚¨ë‹¤.
+   1. Tx A°¡ table lock½Ã conflictÀÌ ¹ß»ıÇÏ¿© request list¿¡ ´Ş°í,
+     Tx AÀÇ ÇàÀÇ ¿­¿¡ waiting list¸¦ µî·ÏÇÒ¶§,waiting table¿¡¼­
+     Tx A¿¡ ´ëÇÏ¿© cycleÀÌ ¹ß»ıÇÏ¸é transactionÀ» abort½ÃÅ²´Ù.
 
 
-   2.Tx Aê°€  record R1ì„ updateì‹œë„í•˜ë‹¤ê°€,
-   ë‹¤ë¥¸ Tx Bì— ì˜í•˜ì—¬ ì´ë¯¸  activeì—¬ì„œ record lockì„ ëŒ€ê¸°í• ë•Œ.
-    -  Tx Bì˜ record lock ëŒ€ê¸°ì—´ì—ì„œ  Tx Aë¥¼ ë“±ë¡í•˜ê³ ,
-       Tx Aê°€ Tx Bì— ëŒ€ê¸°í•¨ì„ ê¸°ë¡í•˜ê³  ë‚˜ì„œ  waiting tableì—ì„œ
-       Tx Aì— ëŒ€í•˜ì—¬ cycleì´ ë°œìƒí•˜ë©´ transactionì„ abortì‹œí‚¨ë‹¤.
+   2.Tx A°¡  record R1À» update½ÃµµÇÏ´Ù°¡,
+   ´Ù¸¥ Tx B¿¡ ÀÇÇÏ¿© ÀÌ¹Ì  active¿©¼­ record lockÀ» ´ë±âÇÒ¶§.
+    -  Tx BÀÇ record lock ´ë±â¿­¿¡¼­  Tx A¸¦ µî·ÏÇÏ°í,
+       Tx A°¡ Tx B¿¡ ´ë±âÇÔÀ» ±â·ÏÇÏ°í ³ª¼­  waiting table¿¡¼­
+       Tx A¿¡ ´ëÇÏ¿© cycleÀÌ ¹ß»ıÇÏ¸é transactionÀ» abort½ÃÅ²´Ù.
 
 
 *************************************************************************/
-#include <idl.h>
-#include <idu.h>
-#include <iduList.h>
-#include <ideErrorMgr.h>
-
 #include <smErrorCode.h>
-//#include <smlDef.h>
 #include <smDef.h>
 #include <smr.h>
 #include <smc.h>
 #include <sml.h>
 #include <smlReq.h>
 #include <smu.h>
-//#include <smrLogHeadI.h>
 #include <sct.h>
-//#include <smxTrans.h>
-//#include <smxTransMgr.h>
-#include <smx.h>    
-
+#include <smx.h>
 
 /*
-   ë½ í˜¸í™˜ì„± í–‰ë ¬
-   ê°€ë¡œ - í˜„ì¬ ê±¸ë ¤ìˆëŠ” ë½íƒ€ì…
-   ì„¸ë¡œ - ìƒˆë¡œìš´ ë½íƒ€ì…
+   ¶ô È£È¯¼º Çà·Ä
+   °¡·Î - ÇöÀç °É·ÁÀÖ´Â ¶ôÅ¸ÀÔ
+   ¼¼·Î - »õ·Î¿î ¶ôÅ¸ÀÔ
 */
 idBool smlLockMgr::mCompatibleTBL[SML_NUMLOCKTYPES][SML_NUMLOCKTYPES] = {
 /*                   SML_NLOCK SML_SLOCK SML_XLOCK SML_ISLOCK SML_IXLOCK SML_SIXLOCK */
@@ -170,9 +160,9 @@ idBool smlLockMgr::mCompatibleTBL[SML_NUMLOCKTYPES][SML_NUMLOCKTYPES] = {
 /* for SML_SIXLOCK*/{ID_TRUE,  ID_FALSE, ID_FALSE, ID_TRUE,   ID_FALSE,  ID_FALSE}
 };
 /*
-   ë½ ë³€í™˜ í–‰ë ¬
-   ê°€ë¡œ - í˜„ì¬ ê±¸ë ¤ìˆëŠ” ë½íƒ€ì…
-   ì„¸ë¡œ - ìƒˆë¡œìš´ ë½íƒ€ì…
+   ¶ô º¯È¯ Çà·Ä
+   °¡·Î - ÇöÀç °É·ÁÀÖ´Â ¶ôÅ¸ÀÔ
+   ¼¼·Î - »õ·Î¿î ¶ôÅ¸ÀÔ
 */
 smlLockMode smlLockMgr::mConversionTBL[SML_NUMLOCKTYPES][SML_NUMLOCKTYPES] = {
 /*                   SML_NLOCK    SML_SLOCK    SML_XLOCK  SML_ISLOCK   SML_IXLOCK   SML_SIXLOCK */
@@ -185,17 +175,9 @@ smlLockMode smlLockMgr::mConversionTBL[SML_NUMLOCKTYPES][SML_NUMLOCKTYPES] = {
 };
 
 /*
-   ë½ Modeê²°ì • í…Œì´ë¸”
+   ¶ô Mode°áÁ¤ Å×ÀÌºí
 */
-smlLockMode smlLockMgr::mDecisionTBL[64] = {
-    SML_NLOCK,   SML_SLOCK,   SML_XLOCK, SML_XLOCK,
-    SML_ISLOCK,  SML_SLOCK,   SML_XLOCK, SML_XLOCK,
-    SML_IXLOCK,  SML_SIXLOCK, SML_XLOCK, SML_XLOCK,
-    SML_IXLOCK,  SML_SIXLOCK, SML_XLOCK, SML_XLOCK,
-    SML_SIXLOCK, SML_SIXLOCK, SML_XLOCK, SML_XLOCK,
-    SML_SIXLOCK, SML_SIXLOCK, SML_XLOCK, SML_XLOCK,
-    SML_SIXLOCK, SML_SIXLOCK, SML_XLOCK, SML_XLOCK,
-    SML_SIXLOCK, SML_SIXLOCK, SML_XLOCK, SML_XLOCK,
+smlLockMode smlLockMgr::mDecisionTBL[SML_DECISION_TBL_SIZE] = {
     SML_NLOCK,   SML_SLOCK,   SML_XLOCK, SML_XLOCK,
     SML_ISLOCK,  SML_SLOCK,   SML_XLOCK, SML_XLOCK,
     SML_IXLOCK,  SML_SIXLOCK, SML_XLOCK, SML_XLOCK,
@@ -207,7 +189,7 @@ smlLockMode smlLockMgr::mDecisionTBL[64] = {
 };
 
 /*
-   ë½ Modeì— ë”°ë¥¸ Lock Maskê²°ì • í…Œì´ë¸”
+   ¶ô Mode¿¡ µû¸¥ Lock Mask°áÁ¤ Å×ÀÌºí
 */
 SInt smlLockMgr::mLockModeToMask[SML_NUMLOCKTYPES] = {
     /* for SML_NLOCK  */ 0x00000000,
@@ -227,112 +209,55 @@ smlLockMode2StrTBL smlLockMgr::mLockMode2StrTBL[SML_NUMLOCKTYPES] ={
     {SML_SIXLOCK,"SIX_LOCK"}
 };
 
-const SInt
-smlLockMgr::mLockBit[SML_NUMLOCKTYPES] =
+/* PROJ-2734
+   mDistDeadlockRisk[WAITER TX][HOLDER TX]
+
+   ÀÚ¿ø´ë±âTX(waiter)¿Í ÀÚ¿øº¸À¯TX(holder)ÀÇ ºĞ»êLEVEL Á¶ÇÕº° ºĞ»êµ¥µå¶ô ½ÇÁ¦ ¹ß»ı À§Çè·ü.
+   ºĞ»êµ¥µå¶ôÀÌ Å½ÁöµÇ¾úÀ»¶§ ½ÇÁ¦ ºĞ»êµ¥µå¶ôÀÏ È®·üÀÌ ³ôÀ»¼ö·Ï HIGH·Î ¼³Á¤ÇÏ¿´´Ù.
+ */
+smlDistDeadlockRiskType smlLockMgr::mDistDeadlockRisk[SMI_DIST_LEVEL_MAX][SMI_DIST_LEVEL_MAX] =
 {
-    0,      /* NLOCK */
-    0,      /* SLOCK */
-    61,     /* XLOCK */
-    20,     /* ISLOCK */
-    40,     /* IXLOCK */
-    60      /* SIXLOCK */
+    /* WAITER TX : SMI_DIST_LEVEL_NONE     */
+    { SML_DIST_DEADLOCK_RISK_NONE, SML_DIST_DEADLOCK_RISK_NONE, SML_DIST_DEADLOCK_RISK_NONE, SML_DIST_DEADLOCK_RISK_NONE },
+
+    /* WAITER TX : SMI_DIST_LEVEL_SINGLE   */
+    { SML_DIST_DEADLOCK_RISK_NONE, SML_DIST_DEADLOCK_RISK_LOW, SML_DIST_DEADLOCK_RISK_LOW,  SML_DIST_DEADLOCK_RISK_LOW },
+
+    /* WAITER TX : SMI_DIST_LEVEL_MULTI    */
+    { SML_DIST_DEADLOCK_RISK_NONE, SML_DIST_DEADLOCK_RISK_LOW, SML_DIST_DEADLOCK_RISK_LOW,  SML_DIST_DEADLOCK_RISK_MID },
+
+    /* WAITER TX : SMI_DIST_LEVEL_PARALLEL */
+    { SML_DIST_DEADLOCK_RISK_NONE, SML_DIST_DEADLOCK_RISK_MID, SML_DIST_DEADLOCK_RISK_MID,  SML_DIST_DEADLOCK_RISK_HIGH }
 };
-
-const SLong
-smlLockMgr::mLockDelta[SML_NUMLOCKTYPES] =
-{
-    0,      /* NLOCK */
-    ID_LONG(1) << smlLockMgr::mLockBit[SML_SLOCK],   /* SLOCK */
-    ID_LONG(1) << smlLockMgr::mLockBit[SML_XLOCK],   /* XLOCK */
-    ID_LONG(1) << smlLockMgr::mLockBit[SML_ISLOCK],  /* ISLOCK */
-    ID_LONG(1) << smlLockMgr::mLockBit[SML_IXLOCK],  /* IXLOCK */
-    ID_LONG(1) << smlLockMgr::mLockBit[SML_SIXLOCK]  /* SIXLOCK */
-};
-
-const SLong
-smlLockMgr::mLockMax[SML_NUMLOCKTYPES] =
-{
-    0,          /* NLOCK */
-    ID_LONG(0xFFFFF),   /* SLOCK */
-    ID_LONG(1),         /* XLOCK */
-    ID_LONG(0xFFFFF),   /* ISLOCK */
-    ID_LONG(0xFFFFF),   /* IXLOCK */
-    ID_LONG(1)          /* SIXLOCK */
-};
-
-const SLong
-smlLockMgr::mLockMask[SML_NUMLOCKTYPES] =
-{
-    0,
-    smlLockMgr::mLockMax[SML_SLOCK]    << smlLockMgr::mLockBit[SML_SLOCK],
-    smlLockMgr::mLockMax[SML_XLOCK]    << smlLockMgr::mLockBit[SML_XLOCK],
-    smlLockMgr::mLockMax[SML_ISLOCK]   << smlLockMgr::mLockBit[SML_ISLOCK],
-    smlLockMgr::mLockMax[SML_IXLOCK]   << smlLockMgr::mLockBit[SML_IXLOCK],
-    smlLockMgr::mLockMax[SML_SIXLOCK]  << smlLockMgr::mLockBit[SML_SIXLOCK]
-};
-
-const smlLockMode
-smlLockMgr::mPriority[SML_NUMLOCKTYPES] = 
-{
-    SML_XLOCK,
-    SML_SLOCK,
-    SML_SIXLOCK,
-    SML_IXLOCK,
-    SML_ISLOCK,
-    SML_NLOCK
-};
-
-
 
 SInt                    smlLockMgr::mTransCnt;
-SInt                    smlLockMgr::mSpinSlotCnt;
 iduMemPool              smlLockMgr::mLockPool;
-smlLockMatrixItem**     smlLockMgr::mWaitForTable;
+smlLockMatrixItem   **  smlLockMgr::mWaitForTable;
+
+
 smiLockWaitFunc         smlLockMgr::mLockWaitFunc;
 smiLockWakeupFunc       smlLockMgr::mLockWakeupFunc;
-smlTransLockList*       smlLockMgr::mArrOfLockList;
+smlTransLockList     *  smlLockMgr::mArrOfLockList;
+iduMutex             *  smlLockMgr::mArrOfLockListMutex;
 
-smlLockTableFunc        smlLockMgr::mLockTableFunc;
-smlUnlockTableFunc      smlLockMgr::mUnlockTableFunc;
+smlAllocLockNodeFunc    smlLockMgr::mAllocLockNodeFunc;
+smlFreeLockNodeFunc     smlLockMgr::mFreeLockNodeFunc;
 
-smlAllocLockItemFunc            smlLockMgr::mAllocLockItemFunc;
-smlInitLockItemFunc             smlLockMgr::mInitLockItemFunc;
-smlRegistRecordLockWaitFunc     smlLockMgr::mRegistRecordLockWaitFunc;
-smlDidLockReleasedFunc          smlLockMgr::mDidLockReleasedFunc;
-smlFreeAllRecordLockFunc        smlLockMgr::mFreeAllRecordLockFunc;
-smlClearWaitItemColsOfTransFunc smlLockMgr::mClearWaitItemColsOfTransFunc;
-smlAllocLockNodeFunc            smlLockMgr::mAllocLockNodeFunc;
-smlFreeLockNodeFunc             smlLockMgr::mFreeLockNodeFunc;
+smlLockNode         **  smlLockMgr::mNodeCache;
+smlLockNode          *  smlLockMgr::mNodeCacheArray;
+ULong                *  smlLockMgr::mNodeAllocMap;
 
-SInt**                  smlLockMgr::mPendingMatrix;
-SInt*                   smlLockMgr::mPendingArray;
-idBool*                 smlLockMgr::mIsCycle;
-idBool*                 smlLockMgr::mIsChecked;
-idBool*                 smlLockMgr::mIsDetected;
-SInt*                   smlLockMgr::mDetectQueue;
-ULong*                  smlLockMgr::mSerialArray;
-ULong                   smlLockMgr::mPendSerial;
-ULong                   smlLockMgr::mTXPendCount;
-
-smlLockNode**           smlLockMgr::mNodeCache;
-smlLockNode*            smlLockMgr::mNodeCacheArray;
-ULong*                  smlLockMgr::mNodeAllocMap;
-
-SInt                    smlLockMgr::mStopDetect;
-idtThreadRunner         smlLockMgr::mDetectDeadlockThread;
+/* PROJ-2734 */
+smlDistDeadlockNode  ** smlLockMgr::mTxList4DistDeadlock; /* ºĞ»êµ¥µå¶ô Ã¼Å© ´ë»óÀÌ µÉ Tx */
 
 static IDE_RC smlLockWaitNAFunction( ULong, idBool * )
 {
-
     return IDE_SUCCESS;
-
 }
 
 static IDE_RC smlLockWakeupNAFunction()
 {
-
     return IDE_SUCCESS;
-
 }
 
 
@@ -340,15 +265,14 @@ IDE_RC smlLockMgr::initialize( UInt              aTransCnt,
                                smiLockWaitFunc   aLockWaitFunc,
                                smiLockWakeupFunc aLockWakeupFunc )
 {
-
-    SInt i;
+    SInt               i;
+    SInt               j;
     smlTransLockList * sTransLockList; /* BUG-43408 */
+    SChar sBuffer[128];
+
+    IDE_ASSERT( aTransCnt > 0 );
 
     mTransCnt = aTransCnt;
-    mSpinSlotCnt = (mTransCnt + 63) / 64;
-
-    IDE_ASSERT(mTransCnt > 0);
-    IDE_ASSERT(mSpinSlotCnt > 0);
 
     /* TC/FIT/Limit/sm/sml/smlLockMgr_initialize_calloc1.sql */
     IDU_FIT_POINT_RAISE( "smlLockMgr::initialize::calloc1",
@@ -359,14 +283,14 @@ IDE_RC smlLockMgr::initialize( UInt              aTransCnt,
                                     ID_SCALABILITY_SYS,
                                     sizeof(smlLockNode),
                                     SML_LOCK_POOL_SIZE,
-                                    IDU_AUTOFREE_CHUNK_LIMIT,			/* ChunkLimit */
-                                    ID_TRUE,							/* UseMutex */
+                                    IDU_AUTOFREE_CHUNK_LIMIT,           /* ChunkLimit */
+                                    ID_TRUE,                            /* UseMutex */
                                     IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
-                                    ID_FALSE,							/* ForcePooling */
-                                    ID_TRUE,							/* GarbageCollection */
+                                    ID_FALSE,                           /* ForcePooling */
+                                    ID_TRUE,                            /* GarbageCollection */
                                     ID_TRUE,                            /* HWCacheLine */
-                                    IDU_MEMPOOL_TYPE_LEGACY             /* mempool type */) 
-              != IDE_SUCCESS);			
+                                    IDU_MEMPOOL_TYPE_LEGACY             /* mempool type */)
+              != IDE_SUCCESS);
 
     // allocate transLock List array.
     mArrOfLockList = NULL;
@@ -379,6 +303,26 @@ IDE_RC smlLockMgr::initialize( UInt              aTransCnt,
                                        (ULong)sizeof(smlTransLockList) * mTransCnt,
                                        (void**)&mArrOfLockList ) != IDE_SUCCESS,
                     insufficient_memory );
+
+    /* PROJ-2734 */
+    mTxList4DistDeadlock = NULL;
+    IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SML,
+                                       ID_SIZEOF(smlDistDeadlockNode *) * mTransCnt,
+                                       (void**)&mTxList4DistDeadlock ) != IDE_SUCCESS,
+                    insufficient_memory );
+    for ( i = 0; i < mTransCnt; i++ )
+    {
+        IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SML,
+                                           ID_SIZEOF(smlDistDeadlockNode) * mTransCnt,
+                                           (void**)&(mTxList4DistDeadlock[i]) ) != IDE_SUCCESS,
+                        insufficient_memory );
+    }
+
+    IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SML,
+                                       (ULong)sizeof(iduMutex) * mTransCnt,
+                                       (void**)&mArrOfLockListMutex ) != IDE_SUCCESS,
+                    insufficient_memory );
+
     mLockWaitFunc = ( (aLockWaitFunc == NULL) ?
                       smlLockWaitNAFunction : aLockWaitFunc );
 
@@ -387,6 +331,10 @@ IDE_RC smlLockMgr::initialize( UInt              aTransCnt,
 
     for ( i = 0 ; i < mTransCnt ; i++ )
     {
+        idlOS::snprintf( sBuffer, 128, "TRANS_LOCK_NODE_LIST_MUTEX_%"ID_INT32_FMT"\0", i );
+        IDE_TEST( mArrOfLockListMutex[i].initialize( sBuffer,
+                                                     IDU_MUTEX_KIND_NATIVE,
+                                                     IDV_WAIT_INDEX_NULL ) != IDE_SUCCESS );
         initTransLockList(i);
     }
 
@@ -401,7 +349,7 @@ IDE_RC smlLockMgr::initialize( UInt              aTransCnt,
         for ( i = 0 ; i < mTransCnt ; i++ )
         {
             sTransLockList = (mArrOfLockList+i);
-            IDE_TEST_RAISE( initTransLockNodeCache( i, 
+            IDE_TEST_RAISE( initTransLockNodeCache( i,
                                                     &( sTransLockList->mLockNodeCache ) )
                             != IDE_SUCCESS,
                             insufficient_memory );
@@ -421,7 +369,7 @@ IDE_RC smlLockMgr::initialize( UInt              aTransCnt,
                                            (void**)&mNodeCache ) != IDE_SUCCESS,
                         insufficient_memory );
         IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_SM_SML,
-                                           mTransCnt, 
+                                           mTransCnt,
                                            sizeof(ULong),
                                            (void**)&mNodeAllocMap ) != IDE_SUCCESS,
                         insufficient_memory );
@@ -430,7 +378,7 @@ IDE_RC smlLockMgr::initialize( UInt              aTransCnt,
         {
             mNodeCache[i] = &(mNodeCacheArray[i * 64]);
         }
-        
+
         mAllocLockNodeFunc  = allocLockNodeBitmap;
         mFreeLockNodeFunc   = freeLockNodeBitmap;
 
@@ -438,20 +386,32 @@ IDE_RC smlLockMgr::initialize( UInt              aTransCnt,
 
     }
 
-    switch( smuProperty::getLockMgrType() )
+    //Alloc wait table
+    IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_SM_SML,
+                                       mTransCnt,
+                                       ID_SIZEOF(smlLockMatrixItem *),
+                                       (void**)&mWaitForTable ) != IDE_SUCCESS,
+                    insufficient_memory );
+
+    for ( i = 0 ; i < mTransCnt ; i++ )
     {
-    case 0:
-        //Alloc wait table
-        IDE_TEST( initializeMutex(aTransCnt) != IDE_SUCCESS );
-        break;
+        IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_SM_SML,
+                                           mTransCnt,
+                                           ID_SIZEOF(smlLockMatrixItem),
+                                           (void**)&(mWaitForTable[i] ) ) != IDE_SUCCESS,
+                        insufficient_memory );
 
-    case 1:
-        IDE_TEST( initializeSpin(aTransCnt) != IDE_SUCCESS );
-        break;
 
-    default:
-        IDE_ASSERT(0);
-        break;
+    }
+
+    for ( i = 0 ; i < mTransCnt ; i++ )
+    {
+        for ( j = 0 ; j < mTransCnt ; j++ )
+        {
+            mWaitForTable[i][j].mIndex = 0;
+            mWaitForTable[i][j].mNxtWaitTransItem = ID_USHORT_MAX;
+            mWaitForTable[i][j].mNxtWaitRecTransItem = ID_USHORT_MAX;
+        }
     }
 
     return IDE_SUCCESS;
@@ -466,16 +426,16 @@ IDE_RC smlLockMgr::initialize( UInt              aTransCnt,
 }
 
 /* BUG-43408 */
-IDE_RC smlLockMgr::initTransLockNodeCache( SInt      aSlotID, 
+IDE_RC smlLockMgr::initTransLockNodeCache( SInt      aSlotID,
                                            iduList * aTxSlotLockNodeBitmap )
 {
     smlLockNode * sLockNode;
     UInt          i;
     UInt          sLockNodeCacheCnt;
 
-    /* BUG-43408 Propertyë¡œ ì´ˆê¸° í• ë‹¹ ê°¯ìˆ˜ë¥¼ ê²°ì • */
+    /* BUG-43408 Property·Î ÃÊ±â ÇÒ´ç °¹¼ö¸¦ °áÁ¤ */
     sLockNodeCacheCnt = smuProperty::getLockNodeCacheCount();
-    
+
     IDU_LIST_INIT( aTxSlotLockNodeBitmap );
 
     for ( i = 0 ; i < sLockNodeCacheCnt ; i++ )
@@ -486,7 +446,7 @@ IDE_RC smlLockMgr::initTransLockNodeCache( SInt      aSlotID,
         IDU_LIST_INIT_OBJ( &(sLockNode->mNode4LockNodeCache), sLockNode );
         IDU_LIST_ADD_AFTER( aTxSlotLockNodeBitmap, &(sLockNode->mNode4LockNodeCache) );
     }
-    
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -503,20 +463,12 @@ IDE_RC smlLockMgr::destroy()
     smlTransLockList*   sTransLockList;
     SInt                i;
 
-    switch(smuProperty::getLockMgrType())
+    for ( i = 0 ; i < mTransCnt ; i++ )
     {
-    case 0:
-        IDE_TEST( destroyMutex() != IDE_SUCCESS );
-        break;
-
-    case 1:
-        IDE_TEST( destroySpin() != IDE_SUCCESS );
-        break;
-
-    default:
-        IDE_ASSERT(0);
-        break;
+        IDE_TEST( iduMemMgr::free(mWaitForTable[i]) != IDE_SUCCESS );
     }
+
+    IDE_TEST( iduMemMgr::free(mWaitForTable) != IDE_SUCCESS );
 
     switch(smuProperty::getLockMgrCacheNode())
     {
@@ -548,7 +500,20 @@ IDE_RC smlLockMgr::destroy()
 
     mLockWaitFunc = NULL;
 
-    IDE_TEST( iduMemMgr::free(mArrOfLockList) != IDE_SUCCESS );
+    for ( i = 0 ; i < mTransCnt ; i++ )
+    {
+        IDE_TEST( mArrOfLockListMutex[i].destroy() != IDE_SUCCESS );
+    }
+    IDE_TEST( iduMemMgr::free( mArrOfLockListMutex ) != IDE_SUCCESS );
+    IDE_TEST( iduMemMgr::free( mArrOfLockList ) != IDE_SUCCESS );
+
+    /* PROJ-2734 */
+    for ( i = 0 ; i < mTransCnt ; i++ )
+    {
+        IDE_TEST( iduMemMgr::free(mTxList4DistDeadlock[i]) != IDE_SUCCESS );
+    }
+
+    IDE_TEST( iduMemMgr::free( mTxList4DistDeadlock ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -559,12 +524,12 @@ IDE_RC smlLockMgr::destroy()
 
 /*********************************************************
   function description: initTransLockList
-  Transaction lock list arrayì—ì„œ aSlotì— í•´ë‹¹í•˜ëŠ”
-  smlTransLockListì˜ ì´ˆê¸°í™”ë¥¼ í•œë‹¤.
-  - Txì˜ ë§¨ì²˜ìŒ table lock ëŒ€ê¸° item
-  - Txì˜ ë§¨ì²˜ìŒ record lockëŒ€ê¸° item.
-  - Txì˜ lock nodeì˜ list ì´ˆê¸°í™”.
-  - Txì˜ lock slot listì´ˆê¸°í™”.
+  Transaction lock list array¿¡¼­ aSlot¿¡ ÇØ´çÇÏ´Â
+  smlTransLockListÀÇ ÃÊ±âÈ­¸¦ ÇÑ´Ù.
+  - TxÀÇ ¸ÇÃ³À½ table lock ´ë±â item
+  - TxÀÇ ¸ÇÃ³À½ record lock´ë±â item.
+  - TxÀÇ lock nodeÀÇ list ÃÊ±âÈ­.
+  - TxÀÇ lock slot listÃÊ±âÈ­.
 ***********************************************************/
 void  smlLockMgr::initTransLockList( SInt aSlot )
 {
@@ -584,70 +549,6 @@ void  smlLockMgr::initTransLockList( SInt aSlot )
     sTransLockList->mLockNodeHeader.mNxtTransLockNode = &(sTransLockList->mLockNodeHeader);
 }
 
-IDE_RC smlLockMgr::freeLockItem( void * aLockItem )
-{
-    IDE_TEST( iduMemMgr::free(aLockItem) != IDE_SUCCESS );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-IDE_RC smlLockMgr::initLockItemCore( scSpaceID          aSpaceID,
-                                     ULong              aItemID,
-                                     smiLockItemType    aLockItemType,
-                                     void*              aLockItem )
-{
-    smlLockItem * sLockItem;
-    SChar         sBuffer[128];
-
-    sLockItem = (smlLockItem*) aLockItem;
-
-    /* LockItem Typeì— ë”°ë¼ì„œ mSpaceIDì™€ mItemIDë¥¼ ì„¤ì •í•œë‹¤.
-     *                   mSpaceID    mItemID
-     * TableSpace Lock :  SpaceID     N/A
-     * Table Lock      :  SpaceID     TableOID
-     * DataFile Lock   :  SpaceID     FileID */
-    sLockItem->mLockItemType    = aLockItemType;
-    sLockItem->mSpaceID         = aSpaceID;
-    sLockItem->mItemID          = aItemID;
-
-    idlOS::sprintf( sBuffer,
-                    "LOCKITEM_MUTEX_%"ID_UINT32_FMT"_%"ID_UINT64_FMT,
-                    aSpaceID,
-                    (ULong)aItemID );
-
-    IDE_TEST_RAISE( sLockItem->mMutex.initialize( sBuffer,
-                                                  IDU_MUTEX_KIND_NATIVE,
-                                                  IDV_WAIT_INDEX_NULL ) 
-                    != IDE_SUCCESS,
-                    mutex_init_error );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION(mutex_init_error);
-    {
-        IDE_SET(ideSetErrorCode(smERR_FATAL_ThrMutexInit));
-    }
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-IDE_RC smlLockMgr::destroyLockItem( void *aLockItem )
-{
-    IDE_TEST( ((smlLockItem*)(aLockItem))->mMutex.destroy() != IDE_SUCCESS );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    IDE_SET(ideSetErrorCode(smERR_FATAL_ThrMutexDestroy));
-
-    return IDE_FAILURE;
-}
 
 void smlLockMgr::getTxLockInfo( SInt aSlot, smTID *aOwnerList, UInt *aOwnerCount )
 {
@@ -671,42 +572,70 @@ void smlLockMgr::getTxLockInfo( SInt aSlot, smTID *aOwnerList, UInt *aOwnerCount
             else
             {
                 /* nothing to do */
-            }            
+            }
         }
     }
 }
 
 /*********************************************************
   function description: addLockNode
-  íŠ¸ëœì­ì…˜ì´ tableì— ëŒ€í•˜ì—¬ lockì„ ì¥ê²Œ ë˜ëŠ” ê²½ìš°,
-  ê·¸ tableì˜ grant list  lock nodeë¥¼  ìì‹ ì˜ íŠ¸ëœì­ì…˜
-  lock listì— ì¶”ê°€í•œë‹¤.
+  Æ®·£Àè¼ÇÀÌ table¿¡ ´ëÇÏ¿© lockÀ» Áã°Ô µÇ´Â °æ¿ì,
+  ±× tableÀÇ grant list  lock node¸¦  ÀÚ½ÅÀÇ Æ®·£Àè¼Ç
+  lock list¿¡ Ãß°¡ÇÑ´Ù.
 
-  lockì„ ì¡ê²Œ ë˜ëŠ” ê²½ìš°ëŠ” ì•„ë˜ì˜ ë‘ê°€ì§€ ê²½ìš°ì´ë‹¤.
-  1. íŠ¸ëœì­ì…˜ì´ tableì— ëŒ€í•˜ì—¬ lockì´ grantë˜ì–´
-     lockì„ ì¡ê²Œ ë˜ëŠ” ê²½ìš°.
-  2. lock waitingí•˜ê³  ìˆë‹¤ê°€ lockì„ ì¡ê³  ìˆì—ˆë˜  ë‹¤ë¥¸ íŠ¸ëœì­ì…˜
-     ì´ commit or rollbackì„ ìˆ˜í–‰í•˜ì—¬,  wakeupë˜ëŠ” ê²½ìš°.
+  lockÀ» Àâ°Ô µÇ´Â °æ¿ì´Â ¾Æ·¡ÀÇ µÎ°¡Áö °æ¿ìÀÌ´Ù.
+  1. Æ®·£Àè¼ÇÀÌ table¿¡ ´ëÇÏ¿© lockÀÌ grantµÇ¾î
+     lockÀ» Àâ°Ô µÇ´Â °æ¿ì.
+  2. lock waitingÇÏ°í ÀÖ´Ù°¡ lockÀ» Àâ°í ÀÖ¾ú´ø  ´Ù¸¥ Æ®·£Àè¼Ç
+     ÀÌ commit or rollbackÀ» ¼öÇàÇÏ¿©,  wakeupµÇ´Â °æ¿ì.
 ***********************************************************/
 void smlLockMgr::addLockNode( smlLockNode *aLockNode, SInt aSlot )
 {
-
     smlLockNode*  sTransLockNodeHdr = &(mArrOfLockList[aSlot].mLockNodeHeader);
+
+    IDE_ASSERT( NULL == aLockNode->mPrvTransLockNode );
+    IDE_ASSERT( NULL == aLockNode->mNxtTransLockNode );
+    IDE_ASSERT( ID_FALSE == aLockNode->mDoRemove );
+    IDE_ASSERT( aLockNode->mBeGrant  == ID_TRUE );
+
+    IDE_DASSERT( isLockNodeExist( aLockNode ) == ID_FALSE );
 
     aLockNode->mNxtTransLockNode = sTransLockNodeHdr;
     aLockNode->mPrvTransLockNode = sTransLockNodeHdr->mPrvTransLockNode;
 
     sTransLockNodeHdr->mPrvTransLockNode->mNxtTransLockNode = aLockNode;
     sTransLockNodeHdr->mPrvTransLockNode  = aLockNode;
+
+    IDE_DASSERT( isLockNodeExist( aLockNode ) == ID_TRUE );
+    IDE_ASSERT( NULL != aLockNode->mPrvTransLockNode );
+    IDE_ASSERT( NULL != aLockNode->mNxtTransLockNode );
+    IDE_ASSERT( aLockNode != aLockNode->mPrvTransLockNode );
+    IDE_ASSERT( aLockNode != aLockNode->mNxtTransLockNode );
+    IDE_ASSERT( aLockNode->mNxtTransLockNode->mPrvTransLockNode == aLockNode );
+    IDE_ASSERT( aLockNode->mPrvTransLockNode->mNxtTransLockNode == aLockNode );
+    IDE_ASSERT( aLockNode->mNxtTransLockNode->mPrvTransLockNode != aLockNode->mPrvTransLockNode );
+    IDE_ASSERT( aLockNode->mPrvTransLockNode->mNxtTransLockNode != aLockNode->mNxtTransLockNode );
 }
 
 /*********************************************************
   function description: removeLockNode
-  íŠ¸ëœì­ì…˜ lock list arrayì—ì„œ  transactionì˜ slotidì—
-  í•´ë‹¹í•˜ëŠ” listì—ì„œ lock nodeë¥¼ ì œê±°í•œë‹¤.
+  Æ®·£Àè¼Ç lock list array¿¡¼­  transactionÀÇ slotid¿¡
+  ÇØ´çÇÏ´Â list¿¡¼­ lock node¸¦ Á¦°ÅÇÑ´Ù.
 ***********************************************************/
-void smlLockMgr::removeLockNode(smlLockNode *aLockNode)
+void smlLockMgr::removeLockNode( smlLockNode *aLockNode )
 {
+    IDE_DASSERT( isLockNodeExist( aLockNode ) == ID_TRUE );
+    IDE_ASSERT( aLockNode->mDoRemove == ID_FALSE );
+    IDE_ASSERT( aLockNode->mBeGrant  == ID_TRUE );
+    IDE_ASSERT( NULL != aLockNode->mPrvTransLockNode );
+    IDE_ASSERT( NULL != aLockNode->mNxtTransLockNode );
+    IDE_ASSERT( aLockNode != aLockNode->mPrvTransLockNode );
+    IDE_ASSERT( aLockNode != aLockNode->mNxtTransLockNode );
+    IDE_ASSERT( aLockNode->mNxtTransLockNode->mPrvTransLockNode == aLockNode );
+    IDE_ASSERT( aLockNode->mPrvTransLockNode->mNxtTransLockNode == aLockNode );
+
+    IDE_ASSERT( aLockNode->mNxtTransLockNode->mPrvTransLockNode != aLockNode->mPrvTransLockNode );
+    IDE_ASSERT( aLockNode->mPrvTransLockNode->mNxtTransLockNode != aLockNode->mNxtTransLockNode );
 
     aLockNode->mNxtTransLockNode->mPrvTransLockNode = aLockNode->mPrvTransLockNode;
     aLockNode->mPrvTransLockNode->mNxtTransLockNode = aLockNode->mNxtTransLockNode;
@@ -714,15 +643,16 @@ void smlLockMgr::removeLockNode(smlLockNode *aLockNode)
     aLockNode->mPrvTransLockNode = NULL;
     aLockNode->mNxtTransLockNode = NULL;
 
+    IDE_DASSERT( isLockNodeExist( aLockNode ) == ID_FALSE );
 }
 
 /*********************************************************
   PROJ-1381 Fetch Across Commits
   function description: freeAllItemLockExceptIS
-  aSlot idì— í•´ë‹¹í•˜ëŠ” íŠ¸ëœì­ì…˜ì´ grantë˜ì–´ lockì„ ì¡ê³ 
-  ìˆëŠ” lockì¤‘ IS lockì„ ì œì™¸í•˜ê³  í•´ì œí•œë‹¤.
+  aSlot id¿¡ ÇØ´çÇÏ´Â Æ®·£Àè¼ÇÀÌ grantµÇ¾î lockÀ» Àâ°í
+  ÀÖ´Â lockÁß IS lockÀ» Á¦¿ÜÇÏ°í ÇØÁ¦ÇÑ´Ù.
 
-  ê°€ì¥ ë§ˆì§€ë§‰ì— ì¡ì•˜ë˜ lockë¶€í„° lockì„ í•´ì œí•œë‹¤.
+  °¡Àå ¸¶Áö¸·¿¡ Àâ¾Ò´ø lockºÎÅÍ lockÀ» ÇØÁ¦ÇÑ´Ù.
 ***********************************************************/
 IDE_RC smlLockMgr::freeAllItemLockExceptIS( SInt aSlot )
 {
@@ -739,14 +669,14 @@ IDE_RC smlLockMgr::freeAllItemLockExceptIS( SInt aSlot )
     {
         sPrvLockSlot = sCurLockSlot->mPrvLockSlot;
 
-        if ( sISLockMask != sCurLockSlot->mMask ) /* IS Lockì´ ì•„ë‹ˆë©´ */
+        if ( sISLockMask != sCurLockSlot->mMask ) /* IS LockÀÌ ¾Æ´Ï¸é */
         {
             IDE_TEST( smlLockMgr::unlockTable(aSlot, NULL, sCurLockSlot)
                       != IDE_SUCCESS );
         }
         else
         {
-            /* IS Lockì¸ ê²½ìš° ê³„ì† fetchë¥¼ ìˆ˜í–‰í•˜ê¸° ìœ„í•´ì„œ ë‚¨ê²¨ë‘”ë‹¤. */
+            /* IS LockÀÎ °æ¿ì °è¼Ó fetch¸¦ ¼öÇàÇÏ±â À§ÇØ¼­ ³²°ÜµĞ´Ù. */
         }
 
         sCurLockSlot = sPrvLockSlot;
@@ -761,11 +691,11 @@ IDE_RC smlLockMgr::freeAllItemLockExceptIS( SInt aSlot )
 
 /*********************************************************
   function description: freeAllItemLock
-  aSlot idì— í•´ë‹¹í•˜ëŠ” íŠ¸ëœì­ì…˜ì´ grantë˜ì–´ lockì„ ì¡ê³ 
-  ìˆëŠ” lockë“¤ ì„ í•´ì œí•œë‹¤.
+  aSlot id¿¡ ÇØ´çÇÏ´Â Æ®·£Àè¼ÇÀÌ grantµÇ¾î lockÀ» Àâ°í
+  ÀÖ´Â lockµé À» ÇØÁ¦ÇÑ´Ù.
 
-  lock í•´ì œ ìˆœì„œëŠ” ê°€ì¥ ë§ˆì§€ë§‰ì— ì¡ì•˜ë˜ lockë¶€í„° í’€ê¸°
-  ì‹œì‘í•œë‹¤.
+  lock ÇØÁ¦ ¼ø¼­´Â °¡Àå ¸¶Áö¸·¿¡ Àâ¾Ò´ø lockºÎÅÍ Ç®±â
+  ½ÃÀÛÇÑ´Ù.
 *******************m***************************************/
 IDE_RC smlLockMgr::freeAllItemLock( SInt aSlot )
 {
@@ -796,18 +726,18 @@ IDE_RC smlLockMgr::freeAllItemLock( SInt aSlot )
 
 /*********************************************************
   function description: partialTableUnlock
-  íŠ¸ëœì­ì…˜ aSlotì— í•´ë‹¹í•˜ëŠ” lockSlot listì—ì„œ
-  ê°€ì¥ ë§ˆì§€ë§‰ lock slotë¶€í„°  aLockSlotê¹Œì§€ êº¼ê¾¸ë¡œ ì˜¬ë¼ê°€ë©´ì„œ
-  aLockSlotì´ ì†í•´ìˆëŠ” lock nodeë¥¼ ì´ìš©í•˜ì—¬ table unlockì„
-  ìˆ˜í–‰í•œë‹¤. ì´ë•Œ Lock Slotì˜ Sequence ê°€ aLockSequenceë³´ë‹¤
-  í´ë•Œê¹Œì§€ë§Œ Unlockì„ ìˆ˜í–‰í•œë‹¤.
+  Æ®·£Àè¼Ç aSlot¿¡ ÇØ´çÇÏ´Â lockSlot list¿¡¼­
+  °¡Àå ¸¶Áö¸· lock slotºÎÅÍ  aLockSlot±îÁö ²¨²Ù·Î ¿Ã¶ó°¡¸é¼­
+  aLockSlotÀÌ ¼ÓÇØÀÖ´Â lock node¸¦ ÀÌ¿ëÇÏ¿© table unlockÀ»
+  ¼öÇàÇÑ´Ù. ÀÌ¶§ Lock SlotÀÇ Sequence °¡ aLockSequenceº¸´Ù
+  Å¬¶§±îÁö¸¸ UnlockÀ» ¼öÇàÇÑ´Ù.
 
-  aSlot          - [IN] aSlotì— í•´ë‹¹í•˜ëŠ” Transactionì§€ì •
-  aLockSequence  - [IN] LockSlotì˜ mSequenceì˜ ê°’ì´ aLockSequence
-                        ë³´ë‹¤ ì‘ì„ë•Œê¹Œì§€  Unlockì„ ìˆ˜í–‰í•œë‹¤.
-  aIsSeveralLock  - [IN] ID_FALSE:ëª¨ë“  Lockì„ í•´ì œ.
-                         ID_TRUE :Implicit Savepointê¹Œì§€ ëª¨ë“  í…Œì´ë¸”ì— ëŒ€í•´
-                                  ISë½ì„ í•´ì œí•˜ê³ ,temp tbsì¼ê²½ìš°ëŠ” IXë½ë„í•´ì œ.
+  aSlot          - [IN] aSlot¿¡ ÇØ´çÇÏ´Â TransactionÁöÁ¤
+  aLockSequence  - [IN] LockSlotÀÇ mSequenceÀÇ °ªÀÌ aLockSequence
+                        º¸´Ù ÀÛÀ»¶§±îÁö  UnlockÀ» ¼öÇàÇÑ´Ù.
+  aIsSeveralLock  - [IN] ID_FALSE:¸ğµç LockÀ» ÇØÁ¦.
+                         ID_TRUE :Implicit Savepoint±îÁö ¸ğµç Å×ÀÌºí¿¡ ´ëÇØ
+                                  IS¶ôÀ» ÇØÁ¦ÇÏ°í,temp tbsÀÏ°æ¿ì´Â IX¶ôµµÇØÁ¦.
 
 ***********************************************************/
 IDE_RC smlLockMgr::partialItemUnlock( SInt   aSlot,
@@ -829,23 +759,23 @@ IDE_RC smlLockMgr::partialItemUnlock( SInt   aSlot,
 
         if ( aIsSeveralLock == ID_FALSE )
         {
-            // Abort Savepointë“±ì˜ ì¼ë°˜ì ì¸ ê²½ìš° Partial Unlock
-            // Lockì˜ ì¢…ë¥˜ì™€ ìƒê´€ì—†ì´ LockSequenceë¡œ ë²”ìœ„ë¥¼ ì¸¡ì •í•˜ì—¬ ëª¨ë‘ unlock
+            // Abort SavepointµîÀÇ ÀÏ¹İÀûÀÎ °æ¿ì Partial Unlock
+            // LockÀÇ Á¾·ù¿Í »ó°ü¾øÀÌ LockSequence·Î ¹üÀ§¸¦ ÃøÁ¤ÇÏ¿© ¸ğµÎ unlock
             IDE_TEST( smlLockMgr::unlockTable(aSlot, NULL, sCurLockSlot)
                       != IDE_SUCCESS );
         }
         else
         {
-            // Statement Endì‹œ í˜¸ì¶œë˜ëŠ” ê²½ìš°
-            // Implicit IS Lockì™€, TableTableì˜ IX Lockì„ Unlock
+            // Statement End½Ã È£ÃâµÇ´Â °æ¿ì
+            // Implicit IS Lock¿Í, TableTableÀÇ IX LockÀ» Unlock
 
-            if ( sISLockMask == sCurLockSlot->mMask ) // IS Lockì˜ ê²½ìš°
+            if ( sISLockMask == sCurLockSlot->mMask ) // IS LockÀÇ °æ¿ì
             {
-                /* BUG-15906: non-autocommitëª¨ë“œì—ì„œ selectì™„ë£Œí›„ IS_LOCKì´ í•´ì œë˜ë©´
-                   ì¢‹ê² ìŠµë‹ˆë‹¤.
-                   aPartialLockê°€ ID_TRUEì´ë©´ IS_LOCKë§Œì„ í•´ì œí•˜ë„ë¡ í•¨. */
-                // BUG-28752 lock table ... in row share mode êµ¬ë¬¸ì´ ë¨¹íˆì§€ ì•ŠìŠµë‹ˆë‹¤. 
-                // Implicit IS lockë§Œ í’€ì–´ì¤ë‹ˆë‹¤.
+                /* BUG-15906: non-autocommit¸ğµå¿¡¼­ select¿Ï·áÈÄ IS_LOCKÀÌ ÇØÁ¦µÇ¸é
+                   ÁÁ°Ú½À´Ï´Ù.
+                   aPartialLock°¡ ID_TRUEÀÌ¸é IS_LOCK¸¸À» ÇØÁ¦ÇÏµµ·Ï ÇÔ. */
+                // BUG-28752 lock table ... in row share mode ±¸¹®ÀÌ ¸ÔÈ÷Áö ¾Ê½À´Ï´Ù.
+                // Implicit IS lock¸¸ Ç®¾îÁİ´Ï´Ù.
 
                 if ( sCurLockSlot->mLockNode->mIsExplicitLock != ID_TRUE )
                 {
@@ -853,10 +783,10 @@ IDE_RC smlLockMgr::partialItemUnlock( SInt   aSlot,
                               != IDE_SUCCESS );
                 }
             }
-            else if ( sIXLockMask == sCurLockSlot->mMask ) //IX Lockì˜ ê²½ìš°
+            else if ( sIXLockMask == sCurLockSlot->mMask ) //IX LockÀÇ °æ¿ì
             {
-                /* BUG-21743    
-                 * Select ì—°ì‚°ì—ì„œ User Temp TBS ì‚¬ìš©ì‹œ TBSì— Lockì´ ì•ˆí’€ë¦¬ëŠ” í˜„ìƒ */
+                /* BUG-21743
+                 * Select ¿¬»ê¿¡¼­ User Temp TBS »ç¿ë½Ã TBS¿¡ LockÀÌ ¾ÈÇ®¸®´Â Çö»ó */
                 sSpaceID = sCurLockSlot->mLockNode->mSpaceID;
 
                 if ( sctTableSpaceMgr::isTempTableSpace( sSpaceID ) == ID_TRUE )
@@ -878,32 +808,8 @@ IDE_RC smlLockMgr::partialItemUnlock( SInt   aSlot,
 
 }
 
-IDE_RC smlLockMgr::unlockItem( void *aTrans,
-                               void *aLockSlot )
-{
-    IDE_DASSERT( aLockSlot != NULL );
-
-
-    IDE_TEST( unlockTable( smLayerCallback::getTransSlot( aTrans ),
-                           NULL,
-                           (smlLockSlot*)aLockSlot )
-              != IDE_SUCCESS );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
 /* BUG-18981 */
-IDE_RC  smlLockMgr::logLocks( void*   aTrans,
-                              smTID   aTID,
-                              UInt    aFlag,
-                              ID_XID* aXID,
-                              SChar*  aLogBuffer,
-                              SInt    aSlot,
-                              smSCN*  aFstDskViewSCN )
+IDE_RC  smlLockMgr::logLocks( smxTrans * aTrans, ID_XID * aXID )
 {
     smrXaPrepareLog  *sPrepareLog;
     smlTableLockInfo  sLockInfo;
@@ -915,21 +821,76 @@ IDE_RC  smlLockMgr::logLocks( void*   aTrans,
     smlLockNode      *sPrvLockNode;
     PDL_Time_Value    sTmv;
     smLSN             sEndLSN;
+    SInt              sNeedBufferSize;
+
+#ifdef DEBUG
+    UChar             sXidString[SMR_XID_DATA_MAX_LEN];
+
+    (void)idaXaConvertXIDToString(NULL, aXID, sXidString, SMR_XID_DATA_MAX_LEN);
+
+    ideLog::log( IDE_SD_19,
+                 "\n<SMR_LT_XA_PREPARE Logging> "
+                 "LocalID: %"ID_UINT32_FMT", "
+                 "XID: %s, "
+                 "GCTX: %"ID_INT32_FMT"\n",
+                 aTrans->mTransID,
+                 sXidString,
+                 aTrans->mIsGCTx );
+#endif
 
     /* -------------------------------------------------------------------
-       xidë¥¼ ë¡œê·¸ë°ì´íƒ€ë¡œ ê¸°ë¡
+       BUG-48307 : LOG BUFFER Å©±â°¡ ÃæºĞÇÑÁö È®ÀÎÇÏ°í, ºÎÁ·½Ã Áõ°¡½ÃÅ²´Ù.
        ------------------------------------------------------------------- */
-    sLogBuffer = aLogBuffer;
+    /* 1. LOCKÀÇ ÃÑ°¹¼ö¸¦ ¸ÕÀú ±¸ÇÑ´Ù. */
+    sCurLockNode = mArrOfLockList[aTrans->mSlotN].mLockNodeHeader.mPrvTransLockNode;
+    while ( sCurLockNode != &(mArrOfLockList[aTrans->mSlotN].mLockNodeHeader) )
+    {
+        sPrvLockNode = sCurLockNode->mPrvTransLockNode;
+
+        // Å×ÀÌºí ½ºÆäÀÌ½º °ü·Ã DDLÀº XA¸¦ Áö¿øÇÏÁö ¾Ê´Â´Ù.
+        if ( sCurLockNode->mLockItemType != SMI_LOCK_ITEM_TABLE )
+        {
+            sCurLockNode = sPrvLockNode;
+            continue;
+        }
+
+        sCurLockNode = sPrvLockNode;
+        sLockCount++;
+    }
+    /* 2. ÇÊ¿äÇÑ LOG BUFFER SIZE¸¦ °è»êÇÑ´Ù. */
+    if ( sLockCount >= SML_MAX_LOCK_INFO )
+    {
+        sNeedBufferSize = SMR_LOGREC_SIZE(smrXaPrepareLog)
+                          + (SML_MAX_LOCK_INFO * sizeof(smlTableLockInfo))
+                          + sizeof(smrLogTail);
+    }
+    else
+    {
+        sNeedBufferSize = SMR_LOGREC_SIZE(smrXaPrepareLog)
+                          + (sLockCount * sizeof(smlTableLockInfo))
+                          + sizeof(smrLogTail);
+    }
+    /* 3. ÇÊ¿äÇÑ LOG BUFER SIZE°¡ ´õ Å«°æ¿ì LOG BUFFER SIZE¸¦ ´Ã¸°´Ù. */
+    if ( smxTrans::getLogBufferSize( aTrans ) < sNeedBufferSize )
+    {
+        aTrans->setLogBufferSize( sNeedBufferSize );
+    }
+
+    /* -------------------------------------------------------------------
+       xid¸¦ ·Î±×µ¥ÀÌÅ¸·Î ±â·Ï
+       ------------------------------------------------------------------- */
+    sLockCount = 0;
+    sLogBuffer = aTrans->getLogBuffer();
     sPrepareLog = (smrXaPrepareLog*)sLogBuffer;
-    smrLogHeadI::setTransID(&sPrepareLog->mHead, aTID);
-    smrLogHeadI::setFlag(&sPrepareLog->mHead, aFlag);
+    smrLogHeadI::setTransID(&sPrepareLog->mHead, aTrans->mTransID);
+    smrLogHeadI::setFlag(&sPrepareLog->mHead, aTrans->mLogTypeFlag);
     smrLogHeadI::setType(&sPrepareLog->mHead, SMR_LT_XA_PREPARE);
 
-    // BUG-27024 XAì—ì„œ Prepare í›„ Commitë˜ì§€ ì•Šì€ Disk Rowë¥¼
-    //           Server Restart ì‹œ ê³ ë ¤í–ì—¬ì•¼ í•©ë‹ˆë‹¤.
-    // XA Transì˜ FstDskViewSCNì„ Logì— ê¸°ë¡í•˜ì—¬,
-    // Restartì‹œ XA Prepare Trans ì¬êµ¬ì¶•ì— ì‚¬ìš©
-    SM_SET_SCN( &sPrepareLog->mFstDskViewSCN, aFstDskViewSCN );
+    // BUG-27024 XA¿¡¼­ Prepare ÈÄ CommitµÇÁö ¾ÊÀº Disk Row¸¦
+    //           Server Restart ½Ã °í·ÁÇá¿©¾ß ÇÕ´Ï´Ù.
+    // XA TransÀÇ FstDskViewSCNÀ» Log¿¡ ±â·ÏÇÏ¿©,
+    // Restart½Ã XA Prepare Trans Àç±¸Ãà¿¡ »ç¿ë
+    SM_SET_SCN( &sPrepareLog->mFstDskViewSCN, &aTrans->mFstDskViewSCN );
 
     if ( (smrLogHeadI::getFlag(&sPrepareLog->mHead) & SMR_LOG_SAVEPOINT_MASK)
          == SMR_LOG_SAVEPOINT_OK)
@@ -943,26 +904,26 @@ IDE_RC  smlLockMgr::logLocks( void*   aTrans,
                                        SMI_STATEMENT_DEPTH_NULL );
     }
 
-    // preparedëœ ì‹œì ì„ ë¡œê¹…í•¨
-    // ì™œëƒí•˜ë©´ heuristic commit/rollback ì§€ì›ìœ„í•´ timeout ê¸°ë²•ì„ ì‚¬ìš©í•˜ëŠ”ë°
-    // system failure ì´í›„ì—ë„ preparedëœ ì •í™•í•œ ì‹œì ì„ ë³´ì¥í•˜ê¸° ìœ„í•¨ì„.
+    // preparedµÈ ½ÃÁ¡À» ·Î±ëÇÔ
+    // ¿Ö³ÄÇÏ¸é heuristic commit/rollback Áö¿øÀ§ÇØ timeout ±â¹ıÀ» »ç¿ëÇÏ´Âµ¥
+    // system failure ÀÌÈÄ¿¡µµ preparedµÈ Á¤È®ÇÑ ½ÃÁ¡À» º¸ÀåÇÏ±â À§ÇÔÀÓ.
     /* BUG-18981 */
     idlOS::memcpy(&(sPrepareLog->mXaTransID), aXID, sizeof(ID_XID));
     sTmv                       = idlOS::gettimeofday();
     sPrepareLog->mPreparedTime = (timeval)sTmv;
-
+    sPrepareLog->mIsGCTx       = aTrans->mIsGCTx;
     /* -------------------------------------------------------------------
-       table lockì„ prepare logì˜ ë°ì´íƒ€ë¡œ ë¡œê¹…
-       record lockê³¼ OID ì •ë³´ëŠ” ì¬ì‹œì‘ íšŒë³µì˜ ì¬ìˆ˜í–‰ ë‹¨ê³„ì—ì„œ ìˆ˜ì§‘í•´ì•¼ í•¨
+       table lockÀ» prepare logÀÇ µ¥ÀÌÅ¸·Î ·Î±ë
+       record lock°ú OID Á¤º¸´Â Àç½ÃÀÛ È¸º¹ÀÇ Àç¼öÇà ´Ü°è¿¡¼­ ¼öÁıÇØ¾ß ÇÔ
        ------------------------------------------------------------------- */
     sLog         = sLogBuffer + SMR_LOGREC_SIZE(smrXaPrepareLog);
-    sCurLockNode = mArrOfLockList[aSlot].mLockNodeHeader.mPrvTransLockNode;
+    sCurLockNode = mArrOfLockList[aTrans->mSlotN].mLockNodeHeader.mPrvTransLockNode;
 
-    while ( sCurLockNode != &(mArrOfLockList[aSlot].mLockNodeHeader) )
+    while ( sCurLockNode != &(mArrOfLockList[aTrans->mSlotN].mLockNodeHeader) )
     {
         sPrvLockNode = sCurLockNode->mPrvTransLockNode;
 
-        // í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ ê´€ë ¨ DDLì€ XAë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // Å×ÀÌºí ½ºÆäÀÌ½º °ü·Ã DDLÀº XA¸¦ Áö¿øÇÏÁö ¾Ê´Â´Ù.
         if ( sCurLockNode->mLockItemType != SMI_LOCK_ITEM_TABLE )
         {
             sCurLockNode = sPrvLockNode;
@@ -970,7 +931,7 @@ IDE_RC  smlLockMgr::logLocks( void*   aTrans,
         }
 
         sLockInfo.mOidTable = (smOID)sCurLockNode->mLockItem->mItemID;
-        sLockInfo.mLockMode = getLockMode(sCurLockNode);
+        sLockInfo.mLockMode = sCurLockNode->mLockMode;
 
         idlOS::memcpy(sLog, &sLockInfo, sizeof(smlTableLockInfo));
         sLog        += sizeof( smlTableLockInfo );
@@ -996,7 +957,8 @@ IDE_RC  smlLockMgr::logLocks( void*   aTrans,
                                            (SChar*)sLogBuffer,
                                            NULL,  // Previous LSN Ptr
                                            NULL,  // Log LSN Ptr
-                                           NULL ) // End LSN Ptr
+                                           NULL,  // End LSN Ptr
+                                           SM_NULL_OID )
                      != IDE_SUCCESS );
 
             sLockCount = 0;
@@ -1022,9 +984,10 @@ IDE_RC  smlLockMgr::logLocks( void*   aTrans,
         IDE_TEST( smrLogMgr::writeLog( NULL, /* idvSQL* */
                                        aTrans,
                                        (SChar*)sLogBuffer,
-                                       NULL,  // Previous LSN Ptr
-                                       NULL,  // Log LSN Ptr
-                                       &sEndLSN ) // End LSN Ptr
+                                       NULL,      // Previous LSN Ptr
+                                       NULL,      // Log LSN Ptr
+                                       &sEndLSN,  // End LSN Ptr
+                                       SM_NULL_OID )
                   != IDE_SUCCESS );
 
         if ( smLayerCallback::isNeedLogFlushAtCommitAPrepare( aTrans )
@@ -1036,54 +999,11 @@ IDE_RC  smlLockMgr::logLocks( void*   aTrans,
         }
     }
 
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-IDE_RC smlLockMgr::lockItem( void        *aTrans,
-                             void        *aLockItem,
-                             idBool       aIsIntent,
-                             idBool       aIsExclusive,
-                             ULong        aLockWaitMicroSec,
-                             idBool     * aLocked,
-                             void      ** aLockSlot )
-{
-    smlLockMode sLockMode;
-
-    if ( aIsIntent == ID_TRUE )
-    {
-        if ( aIsExclusive == ID_TRUE )
-        {
-            sLockMode = SML_IXLOCK;
-        }
-        else
-        {
-            sLockMode = SML_ISLOCK;
-        }
-    }
-    else
-    {
-        if ( aIsExclusive == ID_TRUE )
-        {
-            sLockMode = SML_XLOCK;
-        }
-        else
-        {
-            sLockMode = SML_SLOCK;
-        }
-    }
-
-    IDE_TEST( lockTable( smLayerCallback::getTransSlot( aTrans ),
-                         (smlLockItem *)aLockItem,
-                         sLockMode,
-                         aLockWaitMicroSec, /* wait micro second */
-                         NULL,      /* current lock mode */
-                         aLocked,   /* is locked */
-                         NULL,      /* get locked node */
-                         (smlLockSlot**)aLockSlot ) != IDE_SUCCESS );
+    IDE_TEST( smrRecoveryMgr::mIsReplWaitGlobalTxAfterPrepareFunc( NULL, /* idvSQL* */
+                                                                   ID_FALSE, /* isRequestNode */
+                                                                   aTrans->mTransID,
+                                                                   SM_MAKE_SN(sEndLSN) ) 
+              != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -1092,75 +1012,7 @@ IDE_RC smlLockMgr::lockItem( void        *aTrans,
     return IDE_FAILURE;
 }
 
-IDE_RC smlLockMgr::lockTableModeX( void     *aTrans,
-                                   void     *aLockItem )
-{
-
-    return lockTable( smLayerCallback::getTransSlot( aTrans ),
-                      (smlLockItem *)aLockItem,
-                      SML_XLOCK );
-}
-/*********************************************************
-  function description: lockTableModeIX
-  IX lock modeìœ¼ë¡œ table lockì„ ê±´ë‹¤.
- ***********************************************************/
-IDE_RC smlLockMgr::lockTableModeIX( void    *aTrans,
-                                    void    *aLockItem )
-{
-
-
-    return lockTable( smLayerCallback::getTransSlot( aTrans ),
-                      (smlLockItem *)aLockItem,
-                      SML_IXLOCK );
-}
-/*********************************************************
-  function description: lockTableModeIS
-  IS lock modeìœ¼ë¡œ table lockì„ ê±´ë‹¤.
- ***********************************************************/
-IDE_RC smlLockMgr::lockTableModeIS(void    *aTrans,
-                                   void    *aLockItem )
-{
-
-
-    return lockTable( smLayerCallback::getTransSlot( aTrans ),
-                      (smlLockItem *)aLockItem,
-                      SML_ISLOCK );
-}
-
-/*********************************************************
-  function description: lockTableModeXAndCheckLocked
-  X lock modeìœ¼ë¡œ table lockì„ ê±´ë‹¤.
- ***********************************************************/
-IDE_RC smlLockMgr::lockTableModeXAndCheckLocked( void   *aTrans,
-                                                 void   *aLockItem,
-                                                 idBool *aIsLock )
-{
-
-    smlLockMode      sLockMode;
-
-    return lockTable( smLayerCallback::getTransSlot( aTrans ),
-                      (smlLockItem *)aLockItem,
-                      SML_XLOCK,
-                      sctTableSpaceMgr::getDDLLockTimeOut(),
-                      &sLockMode,
-                      aIsLock );
-}
-/*********************************************************
-  function description: getMutexOfLockItem
-  table lockì •ë³´ì¸ aLockItemì˜ mutexì˜ pointerë¥¼
-  returní•œë‹¤.
-***********************************************************/
-/* BUG-33048 [sm_transaction] The Mutex of LockItem can not be the Native
- * mutex.
- * LockItemìœ¼ë¡œ NativeMutexì„ ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡ ìˆ˜ì •í•¨ */
-iduMutex * smlLockMgr::getMutexOfLockItem( void *aLockItem )
-{
-
-    return &( ((smlLockItem *)aLockItem)->mMutex );
-
-}
-
-void  smlLockMgr::lockTableByPreparedLog( void  * aTrans, 
+void  smlLockMgr::lockTableByPreparedLog( void  * aTrans,
                                           SChar * aLogPtr,
                                           UInt    aLockCnt,
                                           UInt  * aOffset )
@@ -1175,7 +1027,7 @@ void  smlLockMgr::lockTableByPreparedLog( void  * aTrans,
     for ( i = 0 ; i < aLockCnt ; i++ )
     {
 
-        idlOS::memcpy( &sLockInfo, 
+        idlOS::memcpy( &sLockInfo,
                        (SChar *)((aLogPtr) + *aOffset),
                        sizeof(smlTableLockInfo) );
         sTableOID = sLockInfo.mOidTable;
@@ -1203,14 +1055,14 @@ void smlLockMgr::initLockNode( smlLockNode *aLockNode )
     aLockNode->mPrvLockNode       = NULL;
     aLockNode->mNxtLockNode       = NULL;
     aLockNode->mCvsLockNode       = NULL;
-        
+
     aLockNode->mPrvTransLockNode  = NULL;
     aLockNode->mNxtTransLockNode  = NULL;
-    
-    aLockNode->mDoRemove          = ID_TRUE;
+
+    aLockNode->mDoRemove          = ID_FALSE;
 
     sLockSlotList = aLockNode->mArrLockSlotList;
-    
+
     for ( i = 0 ; i < SML_NUMLOCKTYPES ; i++ )
     {
         sLockSlotList[i].mLockNode      = aLockNode;
@@ -1241,7 +1093,7 @@ IDE_RC smlLockMgr::allocLockNodeList( SInt aSlot, smlLockNode** aNewNode )
     smlTransLockList*   sTransLockList;
     iduList*            sLockNodeCache;
     iduListNode*        sNode;
-    
+
     sTransLockList = (mArrOfLockList+aSlot);
     sLockNodeCache = &(sTransLockList->mLockNodeCache);
 
@@ -1296,13 +1148,13 @@ IDE_RC smlLockMgr::allocLockNodeBitmap( SInt aSlot, smlLockNode** aNewNode )
 
 /*********************************************************
   function description: allocLockNodeAndInit
-  lock nodeë¥¼ í• ë‹¹í•˜ê³ , ì´ˆê¸°í™”ë¥¼ í•œë‹¤.
+  lock node¸¦ ÇÒ´çÇÏ°í, ÃÊ±âÈ­¸¦ ÇÑ´Ù.
 ***********************************************************/
 IDE_RC  smlLockMgr::allocLockNodeAndInit( SInt           aSlot,
                                           smlLockMode    aLockMode,
                                           smlLockItem  * aLockItem,
                                           smlLockNode ** aNewLockNode,
-                                          idBool         aIsExplicitLock ) 
+                                          idBool         aIsExplicitLock )
 {
     smlLockNode*    sLockNode = NULL;
 
@@ -1319,12 +1171,14 @@ IDE_RC  smlLockMgr::allocLockNodeAndInit( SInt           aSlot,
     sLockNode->mLockItem        = aLockItem;
     sLockNode->mLockMode        = aLockMode;
     sLockNode->mFlag            = mLockModeToMask[aLockMode];
-    // BUG-28752 implicit/explicit êµ¬ë¶„í•©ë‹ˆë‹¤.
-    sLockNode->mIsExplicitLock  = aIsExplicitLock; 
+    // BUG-28752 implicit/explicit ±¸ºĞÇÕ´Ï´Ù.
+    sLockNode->mIsExplicitLock  = aIsExplicitLock;
 
     sLockNode->mTransID = smLayerCallback::getTransID( smLayerCallback::getTransBySID( aSlot ) );
 
     *aNewLockNode = sLockNode;
+
+    IDE_DASSERT( isLockNodeExist( sLockNode ) == ID_FALSE );
 
     return IDE_SUCCESS;
 
@@ -1380,3 +1234,2638 @@ IDE_RC smlLockMgr::freeLockNodeBitmap( smlLockNode* aLockNode )
     return IDE_FAILURE;
 }
 
+/*********************************************************
+  function description: findLockNode
+  Æ®·£Àè¼ÇÀÌ ÀÌÀü statement¿¡ ÀÇÇÏ¿©,
+  ÇöÀç  table A¿¡ ´ëÇÏ¿© lockÀ» Àâ°í ÀÖ´Â
+  lock node  ¸¦ Ã£´Â´Ù.
+***********************************************************/
+smlLockNode * smlLockMgr::findLockNode( smlLockItem * aLockItem, SInt aSlot )
+{
+    smlLockNode *sCurLockNode;
+    smlLockNode* sLockNodeHeader = &(mArrOfLockList[aSlot].mLockNodeHeader);
+    sCurLockNode = mArrOfLockList[aSlot].mLockNodeHeader.mPrvTransLockNode;
+
+    while ( sCurLockNode != sLockNodeHeader )
+    {
+        IDE_ASSERT( sCurLockNode->mDoRemove == ID_FALSE );
+        IDE_ASSERT( sCurLockNode->mBeGrant  == ID_TRUE );
+        if ( sCurLockNode->mLockItem == aLockItem )
+        {
+            return sCurLockNode;
+        }
+
+        sCurLockNode = sCurLockNode->mPrvTransLockNode;
+    }
+
+    return NULL;
+}
+
+/*********************************************************
+  function description: addLockSlot
+  transation lock slot list¿¡ insertÇÏ¸ç,
+  lock nodeÃß°¡ ´ë½Å, node¾È¿¡ lock slotÀ» ÀÌ¿ëÇÏ·ÁÇÒ¶§
+  ºÒ¸°´Ù.
+***********************************************************/
+void smlLockMgr::addLockSlot( smlLockSlot * aLockSlot, SInt aSlot )
+{
+    smlLockSlot * sTransLockSlotHdr = &(mArrOfLockList[aSlot].mLockSlotHeader);
+    //Add Lock Slot To Tail of Lock Slot List
+    IDE_DASSERT( aLockSlot->mNxtLockSlot == NULL );
+    IDE_DASSERT( aLockSlot->mPrvLockSlot == NULL );
+    IDE_DASSERT( aLockSlot->mLockSequence == 0 );
+
+    aLockSlot->mNxtLockSlot = sTransLockSlotHdr;
+    aLockSlot->mPrvLockSlot = sTransLockSlotHdr->mPrvLockSlot;
+
+    /* BUG-15906: non-autocommit¸ğµå¿¡¼­ Select¿Ï·áÈÄ IS_LOCKÀÌ ÇØÁ¦µÇ¸é
+     * ÁÁ°Ú½À´Ï´Ù. Statement½ÃÀÛ½Ã TransactionÀÇ ¸¶Áö¸· Lock SlotÀÇ
+     * Lock Sequence Number¸¦ ÀúÀåÇØ µÎ°í Statement End½Ã¿¡ TransactionÀÇ
+     * Lock Slot List¸¦ ¿ªÀ¸·Î °¡¸é¼­ ÀúÀåÇØµĞ Lock Sequence Numberº¸´Ù
+     * ÇØ´ç Lock SlotÀÇ Lock Sequence Number°¡ ÀÛ°Å³ª °°À»¶§±îÁö LockÀ» ÇØÁ¦ÇÑ´Ù.
+     */
+    IDE_ASSERT( sTransLockSlotHdr->mPrvLockSlot->mLockSequence !=
+                ID_ULONG_MAX );
+    IDE_ASSERT( aLockSlot->mLockSequence == 0 );
+
+    aLockSlot->mLockSequence =
+        sTransLockSlotHdr->mPrvLockSlot->mLockSequence + 1;
+
+    sTransLockSlotHdr->mPrvLockSlot->mNxtLockSlot = aLockSlot;
+    sTransLockSlotHdr->mPrvLockSlot = aLockSlot;
+}
+
+/*********************************************************
+  function description: removeLockSlot
+  transactionÀÇ slotid¿¡
+  ÇØ´çÇÏ´Â lock slot list¿¡¼­ lock slotÀ»  Á¦°ÅÇÑ´Ù.
+***********************************************************/
+void smlLockMgr::removeLockSlot( smlLockSlot * aLockSlot )
+{
+    aLockSlot->mNxtLockSlot->mPrvLockSlot = aLockSlot->mPrvLockSlot;
+    aLockSlot->mPrvLockSlot->mNxtLockSlot = aLockSlot->mNxtLockSlot;
+
+    aLockSlot->mPrvLockSlot  = NULL;
+    aLockSlot->mNxtLockSlot  = NULL;
+    aLockSlot->mLockSequence = 0;
+
+    aLockSlot->mOldMode      = SML_NLOCK;
+    aLockSlot->mNewMode      = SML_NLOCK;
+}
+
+/*********************************************************
+  function description: decTblLockModeAndTryUpdate
+  table lock Á¤º¸ÀÎ aLockItem¿¡¼­
+  Lock nodeÀÇ lock mode¿¡ ÇØ´çÇÏ´Â lock modeÀÇ °¹¼ö¸¦ ÁÙÀÌ°í,
+  ¸¸¾à 0ÀÌ µÈ´Ù¸é, tableÀÇ ´ëÇ¥¶ôÀ» º¯°æÇÑ´Ù.
+***********************************************************/
+void smlLockMgr::decTblLockModeAndTryUpdate( smlLockItem     * aLockItem,
+                                             smlLockMode       aLockMode )
+{
+    --(aLockItem->mArrLockCount[aLockMode]);
+    IDE_ASSERT(aLockItem->mArrLockCount[aLockMode] >= 0);
+    // tableÀÇ ´ëÇ¥ ¶ôÀ» º¯°æÇÑ´Ù.
+    if ( aLockItem->mArrLockCount[aLockMode] ==  0 )
+    {
+        aLockItem->mFlag &= ~(mLockModeToMask[aLockMode]);
+    }
+}
+
+/*********************************************************
+  function description: incTblLockModeUpdate
+  table lock Á¤º¸ÀÎ aLockItem¿¡¼­
+  Lock nodeÀÇ lock mode¿¡ ÇØ´çÇÏ´Â lock modeÀÇ °¹¼ö¸¦ ´ÃÀÌ°í,
+   tableÀÇ ´ëÇ¥¶ôÀ» º¯°æÇÑ´Ù.
+***********************************************************/
+void smlLockMgr::incTblLockModeAndUpdate( smlLockItem     *  aLockItem,
+                                          smlLockMode        aLockMode )
+{
+    ++(aLockItem->mArrLockCount[aLockMode]);
+    IDE_ASSERT(aLockItem->mArrLockCount[aLockMode] >= 0);
+    aLockItem->mFlag |= mLockModeToMask[aLockMode];
+}
+
+
+void smlLockMgr::addLockNodeToHead( smlLockNode *&aFstLockNode,
+                                    smlLockNode *&aLstLockNode,
+                                    smlLockNode *&aNewLockNode )
+{
+    if ( aFstLockNode != NULL )
+    {
+        aFstLockNode->mPrvLockNode = aNewLockNode;
+    }
+    else
+    {
+        aLstLockNode = aNewLockNode;
+    }
+    aNewLockNode->mPrvLockNode = NULL;
+    aNewLockNode->mNxtLockNode = aFstLockNode;
+    aFstLockNode = aNewLockNode;
+}
+
+void smlLockMgr::addLockNodeToTail( smlLockNode *&aFstLockNode,
+                                    smlLockNode *&aLstLockNode,
+                                    smlLockNode *&aNewLockNode )
+{
+    if ( aLstLockNode != NULL )
+    {
+        aLstLockNode->mNxtLockNode = aNewLockNode;
+    }
+    else
+    {
+        aFstLockNode = aNewLockNode;
+    }
+    aNewLockNode->mPrvLockNode = aLstLockNode;
+    aNewLockNode->mNxtLockNode = NULL;
+    aLstLockNode = aNewLockNode;
+}
+
+void smlLockMgr::removeLockNode( smlLockNode *&aFstLockNode,
+                                 smlLockNode *&aLstLockNode,
+                                 smlLockNode *&aLockNode )
+{
+    if ( aLockNode == aFstLockNode )
+    {
+        aFstLockNode = aLockNode->mNxtLockNode;
+    }
+    else
+    {
+        aLockNode->mPrvLockNode->mNxtLockNode = aLockNode->mNxtLockNode;
+    }
+    if ( aLockNode == aLstLockNode )
+    {
+        aLstLockNode = aLockNode->mPrvLockNode;
+    }
+    else
+    {
+        aLockNode->mNxtLockNode->mPrvLockNode = aLockNode->mPrvLockNode;
+    }
+    aLockNode->mNxtLockNode = NULL;
+    aLockNode->mPrvLockNode = NULL;
+}
+
+IDE_RC smlLockMgr::allocLockItem( void ** aLockItem )
+{
+    IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SML,
+                                       ID_SIZEOF(smlLockItem),
+                                       aLockItem ) != IDE_SUCCESS,
+                    insufficient_memory );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( insufficient_memory );
+    {
+        IDE_SET(ideSetErrorCode(idERR_ABORT_InsufficientMemory));
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC smlLockMgr::initLockItem( scSpaceID       aSpaceID,
+                                 ULong           aItemID,
+                                 smiLockItemType aLockItemType,
+                                 void          * aLockItem )
+{
+    smlLockItem       * sLockItem;
+    SChar               sBuffer[128];
+
+    sLockItem = (smlLockItem*) aLockItem;
+
+    /* LockItem Type¿¡ µû¶ó¼­ mSpaceID¿Í mItemID¸¦ ¼³Á¤ÇÑ´Ù.
+     *                   mSpaceID    mItemID
+     * TableSpace Lock :  SpaceID     N/A
+     * Table Lock      :  SpaceID     TableOID
+     * DataFile Lock   :  SpaceID     FileID */
+    sLockItem->mLockItemType    = aLockItemType;
+    sLockItem->mSpaceID         = aSpaceID;
+    sLockItem->mItemID          = aItemID;
+
+    idlOS::sprintf( sBuffer,
+                    "LOCKITEM_MUTEX_%"ID_UINT32_FMT"_%"ID_UINT64_FMT,
+                    aSpaceID,
+                    (ULong)aItemID );
+
+    IDE_TEST_RAISE( sLockItem->mMutex.initialize( sBuffer,
+                                                  IDU_MUTEX_KIND_NATIVE,
+                                                  IDV_WAIT_INDEX_NULL )
+                    != IDE_SUCCESS,
+                    mutex_init_error );
+
+    clearLockItem( sLockItem );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(mutex_init_error);
+    {
+        IDE_SET(ideSetErrorCode(smERR_FATAL_ThrMutexInit));
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+void smlLockMgr::clearLockItem( smlLockItem   * aLockItem )
+{
+    SInt   sLockType;
+
+    aLockItem->mGrantLockMode   = SML_NLOCK;
+    aLockItem->mFstLockGrant    = NULL;
+    aLockItem->mFstLockRequest  = NULL;
+    aLockItem->mLstLockGrant    = NULL;
+    aLockItem->mLstLockRequest  = NULL;
+    aLockItem->mGrantCnt        = 0;
+    aLockItem->mRequestCnt      = 0;
+    aLockItem->mFlag            = SML_FLAG_LIGHT_MODE;
+
+    for ( sLockType = 0 ; sLockType < SML_NUMLOCKTYPES ; sLockType++ )
+    {
+        aLockItem->mArrLockCount[sLockType] = 0;
+    }
+}
+
+
+
+/*********************************************************
+  function description: isCycle
+  SIGMOD RECORD, Vol.17, No,2 ,June,1988
+  Bin Jang,
+  Dead Lock Detection is Really Cheap paperÀÇ
+  7 page³»¿ë°ú µ¿ÀÏ.
+  ³í¹® ³»¿ë°ú ´Ù¸¥Á¡Àº,
+  waiting tableÀÌ chained matrixÀÌ¾î¼­ ¾Ë·Î¸®µëÀÇ
+  º¹Àâµµ¸¦ ³·Ãß¾ú°í,
+  ¸¶Áö¸· loop¿¡¼­ ¾Æ·¡¿Í °°Àº Á¶°ÇÀ» ÁÖ¾î
+  ÀÚ±âÀÚ½Å°ú°æ·Î°¡ ¹ß»ıÇÏÀÚ¸¶ÀÚ ÀüÃ¼ loop¸¦ ºüÁ®³ª°£´Ù´Â
+  Á¡ÀÌ´Ù.
+  if(aSlot == j)
+  {
+   return ID_TRUE;
+  }
+
+ *********************************************************
+
+  <PROJ-2734 : 'aIsReadyDistDeadlock = ID_TRUE' ÀÎ°æ¿ì >
+  ºĞ»ê Æ®·£Á§¼Ç µ¥µå¶ô Ã¼Å©ÇÒ Æ®·£Á§¼ÇÀ» ¿©±â¼­ ¼±Á¤ÇÑ´Ù.
+
+  WAITER TX¿Í ´ë±â°ü°è Áß Ã³À½ ³ª¿À´Â <ºĞ»êÁ¤º¸ÀÖ´ÂTX>°¡ ´ë»óÀÌ µÇ¸ç,
+  mTxList4DistDeadlock[WaitSlot][HoldLlot] ¿¡ ¼¼ÆÃµÈ´Ù.
+  ´ë»ó ¼±Á¤±âÁØÀº ¾Æ·¡¿Í °°´Ù.
+
+  1. WAITER TX¸¦ ±âÁØÀ¸·Î ÇÑ´Ù. (WAITER TXµµ <ºĞ»êÁ¤º¸ÀÖ´ÂTX>ÀÌ´Ù.)
+  2. WAITER TX°¡ ´ë±âÇÏ°í ÀÖ´Â <ºĞ»êÁ¤º¸ÀÖ´ÂTX>°¡ ´ë»óÀÌ µÈ´Ù.
+  3. WAITER TX°¡ ´ë±âÇÏ°í ÀÖ´Â °ÍÀÌ <ºĞ»êÁ¤º¸¾ø´ÂTX>¶ó¸é,
+     <ºĞ»êÁ¤º¸¾ø´ÂTX>°¡ ´ë±âÁßÀÎ ¶Ç ´Ù¸¥ TX(X)¸¦ È®ÀÎÇÑ´Ù.
+     3.1 TX(X)°¡ <ºĞ»êÁ¤º¸ÀÖ´ÂTX>¶ó¸é ´ë»óÀÌ µÈ´Ù.
+     3.2 TX(X)°¡ <ºĞ»êÁ¤º¸¾ø´ÂTX>¶ó¸é, <ºĞ»êÁ¤º¸ÀÖ´ÂTX>°¡ ³ª¿Ã¶§±îÁö °è¼Ó ´ë±â°ü°è¸¦ µû¶ó°£´Ù.
+
+  ¿¹Á¦) TX°¡ A, B, ~ H ±îÁö ÀÖ´Ù.
+        WAITER TX A°¡ ¾Æ·¡¿Í °°Àº ´ë±â°ü°è¸¦ °®´Â´Ù¸é.
+        °¢°¢ÀÇ TX B ~ H ±îÁöÀÇ °ªÀº ´ÙÀ½°ú °°ÀÌ Á¤ÇØÁø´Ù.
+    
+  No´Â <ºĞ»êÁ¤º¸¾ø´ÂTX>, Yes´Â <ºĞ»êÁ¤º¸ÀÖ´ÂTX>¸¦ ³ªÅ¸³½´Ù.
+
+  A(WAITER) -> B(No)  -> C(Yes) -> D(No)
+  A(WAITER) -> E(Yes) -> F(Yes)
+  A(WAITER) -> G(Yes) -> H(No)
+
+  À§¿Í °°À»°æ¿ì TX °¢°¢ÀÇ TYPEÀº ¾Æ·¡¿Í °°ÀÌ Á¤ÇØÁö°í,
+  SML_DIST_DEADLOCK_TX_FIRST_DIST_INFO Å¸ÀÔÀÇ TX°¡ ºĞ»ê Æ®·£Á§¼Ç µ¥µå¶ô Ã¼Å© ´ë»óÀ¸·Î ¼±Á¤µÈ´Ù.
+
+  SML_DIST_DEADLOCK_TX_NON_DIST_INFO   : B
+  SML_DIST_DEADLOCK_TX_FIRST_DIST_INFO : C, E, G
+  SML_DIST_DEADLOCK_TX_UNKNOWN         : D, F, H
+
+***********************************************************/
+idBool smlLockMgr::isCycle( SInt aSlot, idBool aIsReadyDistDeadlock )
+{
+    UShort     i, j;
+    // node¿Í node°£¿¡ ´ë±â°æ·Î ±æÀÌ.
+    UShort sPathLen;
+    // node°£¿¡ ´ë±â °æ·Î°¡ ÀÖ´Â°¡ ¿¡´ëÇÑ flag
+    idBool     sExitPathFlag;
+    smxTrans * sTrans = NULL;
+
+    sExitPathFlag = ID_TRUE;
+    sPathLen= 1;
+    IDL_MEM_BARRIER;
+
+    if ( aIsReadyDistDeadlock == ID_TRUE )
+    {
+        /* PROJ-2734 : ÀÚ½ÅÀÇ mTxList4DistDeadlockÀ» ÃÊ±âÈ­ */
+        smlLockMgr::clearTxList4DistDeadlock( aSlot );
+    }
+
+    while ( ( sExitPathFlag == ID_TRUE ) &&
+            ( mWaitForTable[aSlot][aSlot].mIndex == 0 ) &&
+            ( sPathLen < mTransCnt ) )
+    {
+        sExitPathFlag      = ID_FALSE;
+
+        for ( i  =  mArrOfLockList[aSlot].mFstWaitTblTransItem;
+              ( i != SML_END_ITEM ) &&
+              ( mWaitForTable[aSlot][aSlot].mNxtWaitTransItem == ID_USHORT_MAX );
+              i = mWaitForTable[aSlot][i].mNxtWaitTransItem )
+        {
+            IDE_ASSERT(i < mTransCnt);
+
+            if ( mWaitForTable[aSlot][i].mIndex == sPathLen )
+            {
+
+                /* PROJ-2734 */
+                /* path Len = 1ÀÎ TX¿¡ ´ëÇÑ mTxList4DistDeadlock ¼³Á¤Àº ¿©±â¼­ÇÑ´Ù. */
+                if ( ( sPathLen == 1 ) &&
+                     ( aIsReadyDistDeadlock == ID_TRUE ) )
+                {
+                    sTrans = (smxTrans *)(smLayerCallback::getTransBySID( i ));
+
+                    if ( SMI_DIST_LEVEL_IS_VALID( sTrans->mDistTxInfo.mDistLevel ) )
+                    {
+                        /*
+                           PROJ-2734
+                           Trans°¡ ÀçÈ°¿ëµÇ¾ú´ÂÁö È®ÀÎÇÏ±â À§ÇØ TransID¸¦ °°ÀÌ ÀúÀåÇÑ´Ù.
+
+                           ÀûÀº È®·üÀÌÁö¸¸, TransID¼³Á¤ Á÷Àü¿¡ TX°¡ ÀçÈ°¿ëµÉ¼öÀÖÀ¸¹Ç·Î,
+                           mWaitForTable[aSlot][i].mIndex == 1 ÀÌ ±×´ë·Î À¯ÁöµÇ´ÂÁö È®ÀÎÇØ¼­
+                           TX ÀçÈ°¿ë¿©ºÎ¸¦ ÀçÈ®ÀÎÇÑ´Ù.
+                         */
+
+                        ID_SERIAL_BEGIN( mTxList4DistDeadlock[aSlot][i].mDistTxType = SML_DIST_DEADLOCK_TX_FIRST_DIST_INFO;
+                                         mTxList4DistDeadlock[aSlot][i].mTransID    = sTrans->mTransID; );
+
+                        ID_SERIAL_END( if ( mWaitForTable[aSlot][i].mIndex != 1 )
+                                       {
+                                           /* ´ë±â°ü°è°¡ »ç¶óÁ³´Ù¸é, TX°¡ ÀçÈ°¿ëµÈ°ÍÀÌ´Ù. ÀúÀåÇÑ Á¤º¸¸¦ ¾ø¾Ø´Ù. */
+                                           mTxList4DistDeadlock[aSlot][i].mDistTxType = SML_DIST_DEADLOCK_TX_UNKNOWN;
+                                           mTxList4DistDeadlock[aSlot][i].mTransID    = SM_NULL_TID;
+                                       } );
+                    }
+                    else
+                    {
+                        mTxList4DistDeadlock[aSlot][i].mDistTxType = SML_DIST_DEADLOCK_TX_NON_DIST_INFO;
+                        mTxList4DistDeadlock[aSlot][i].mTransID    = SM_NULL_TID;
+                    }
+                }
+
+                for ( j  = mArrOfLockList[i].mFstWaitTblTransItem;
+                      j < SML_END_ITEM;
+                      j  = mWaitForTable[i][j].mNxtWaitTransItem )
+                {
+                    if ( (mWaitForTable[i][j].mIndex == 1)
+                         && (mWaitForTable[aSlot][j].mNxtWaitTransItem == ID_USHORT_MAX) )
+                    {
+                        IDE_ASSERT(j < mTransCnt);
+
+                        mWaitForTable[aSlot][j].mIndex = sPathLen + 1;
+
+                        mWaitForTable[aSlot][j].mNxtWaitTransItem
+                            = mArrOfLockList[aSlot].mFstWaitTblTransItem;
+
+                        mArrOfLockList[aSlot].mFstWaitTblTransItem = j;
+
+                        /* PROJ-2734 */
+                        if ( aIsReadyDistDeadlock == ID_TRUE )
+                        {
+                            switch( mTxList4DistDeadlock[aSlot][i].mDistTxType )
+                            {
+                                case SML_DIST_DEADLOCK_TX_FIRST_DIST_INFO :
+                                case SML_DIST_DEADLOCK_TX_UNKNOWN :
+
+                                    mTxList4DistDeadlock[aSlot][j].mDistTxType = SML_DIST_DEADLOCK_TX_UNKNOWN;
+                                    mTxList4DistDeadlock[aSlot][j].mTransID    = SM_NULL_TID;
+                                    break;
+
+                                case SML_DIST_DEADLOCK_TX_NON_DIST_INFO :
+
+                                    sTrans = (smxTrans *)(smLayerCallback::getTransBySID( j ));
+
+                                    if ( SMI_DIST_LEVEL_IS_VALID( sTrans->mDistTxInfo.mDistLevel ) )
+                                    {
+                                        /*
+                                           PROJ-2734
+                                           Trans°¡ ÀçÈ°¿ëµÇ¾ú´ÂÁö È®ÀÎÇÏ±â À§ÇØ TransID¸¦ °°ÀÌ ÀúÀåÇÑ´Ù.
+
+                                           ÀÛÀº È®·üÀÌÁö¸¸, TransID¼³Á¤ Á÷Àü¿¡ TX°¡ ÀçÈ°¿ëµÉ¼öÀÖÀ¸¹Ç·Î,
+                                           mWaitForTable[i][j].mIndex == 1 ÀÌ ±×´ë·Î À¯ÁöµÇ´ÂÁö È®ÀÎÇØ¼­
+                                           TX ÀçÈ°¿ë¿©ºÎ¸¦ ÀçÈ®ÀÎÇÑ´Ù.
+                                         */
+
+                                        ID_SERIAL_BEGIN( mTxList4DistDeadlock[aSlot][j].mDistTxType
+                                                             = SML_DIST_DEADLOCK_TX_FIRST_DIST_INFO;
+                                                         mTxList4DistDeadlock[aSlot][j].mTransID
+                                                             = sTrans->mTransID ; );
+
+                                        ID_SERIAL_END( if ( mWaitForTable[i][j].mIndex != 1 )
+                                                       {
+                                                           /* TX°¡ ÀçÈ°¿ëµÈ°ÍÀÌ´Ù. ÀúÀåÇÑ Á¤º¸¸¦ ¾ø¾Ø´Ù. */
+                                                           mTxList4DistDeadlock[aSlot][j].mDistTxType
+                                                               = SML_DIST_DEADLOCK_TX_UNKNOWN;
+                                                           mTxList4DistDeadlock[aSlot][j].mTransID
+                                                               = SM_NULL_TID;
+                                                       } );
+                                    }
+                                    break;
+
+                                default :
+                                    IDE_DASSERT(0);
+                            }
+                        }
+
+                        // aSlot == jÀÌ¸é,
+                        // dead lock ¹ß»ı ÀÌ´Ù..
+                        // ¿Ö³ÄÇÏ¸é
+                        // mWaitForTable[aSlot][aSlot].mIndex !=0
+                        // »óÅÂ°¡ µÇ¾ú±â ¶§¹®ÀÌ´Ù.
+                        // dead lock dectionÇÏÀÚ ¸¶ÀÚ,
+                        // ³ª¸ÓÁö loop »ı¶ô. ÀÌÁ¡ÀÌ ³í¹®°ú Æ²¸°Á¡.
+                        if ( aSlot == j )
+                        {
+                            return ID_TRUE;
+                        }
+
+                        sExitPathFlag = ID_TRUE;
+                    }
+                }//For
+            }//if
+        }//For
+        sPathLen++;
+    }//While
+
+    return (mWaitForTable[aSlot][aSlot].mIndex == 0) ? ID_FALSE: ID_TRUE;
+}
+
+ULong smlLockMgr::getDistDeadlockWaitTime( smlDistDeadlockRiskType aRisk )
+{
+    ULong sWaitTime;
+
+    switch ( aRisk )
+    {
+        case SML_DIST_DEADLOCK_RISK_LOW :
+            sWaitTime = smuProperty::getDistributionDeadlockRiskLowWaitTime();
+            break;
+
+        case SML_DIST_DEADLOCK_RISK_MID :
+            sWaitTime = smuProperty::getDistributionDeadlockRiskMidWaitTime();
+            break;
+
+        case SML_DIST_DEADLOCK_RISK_HIGH :
+            sWaitTime = smuProperty::getDistributionDeadlockRiskHighWaitTime();
+            break;
+
+        default :
+            sWaitTime = 0;
+            IDE_DASSERT(0);
+    }
+
+    return sWaitTime;
+}
+
+/* PROJ-2734
+   ºĞ»êµ¥µå¶ô Ã¼Å©´ë»ó : WAITER¿Í ´ë±â°ü°è Áß Ã³À½ ³ª¿À´Â ºĞ»êÁ¤º¸ÀÖ´ÂTX
+   ºĞ»ê·¹º§ È®ÀÎ ´ë»ó  : WAITER¿Í ´ë±â°ü°è¿¡ ÀÖ´Â ¸ğµç ºĞ»êÁ¤º¸ÀÖ´ÂTX */
+smxDistDeadlockDetection smlLockMgr::detectDistDeadlock( SInt    aWaitSlot,
+                                                         ULong * aWaitTime )
+{
+    smxTrans * sHoldTrans          = NULL;
+    smxTrans * sWaitTrans          = NULL;
+    SInt i                         = 0;
+    SInt sSlotCount                = 0;
+    smiDistLevel sMaxDistLevel     = SMI_DIST_LEVEL_INIT;
+    smiDistLevel sLastMaxDistLevel = SMI_DIST_LEVEL_INIT;
+    ULong sWaitTime                = 0;
+    smxDistDeadlockDetection sDetected       = SMX_DIST_DEADLOCK_DETECTION_NONE;
+    smxDistDeadlockDetection sFirstDetection = SMX_DIST_DEADLOCK_DETECTION_NONE;
+
+    sWaitTrans = (smxTrans *) smLayerCallback::getTransBySID( aWaitSlot );
+    sSlotCount = (SInt)smlLockMgr::getSlotCount();
+
+    /* isCycle() ÇÔ¼ö¿¡¼­
+       mTxList4DistDeadlock º¯¼ö¿¡ ºĞ»êµ¥µå¶ô Ã¼Å©ÇÒ TX¸¦ ¼³Á¤ÇØµÎ¾ú´Ù.
+       (mTxList4DistDeadlock[WaitSlot][HoldSlot].mDistTxType = SML_DIST_DEADLOCK_TX_FIRST_DIST_INFO ÀÎ TXÀÌ´Ù.) */
+
+    for ( i = 0;
+          i < sSlotCount;
+          i++ )
+    {
+        /* ´ë±âTX ÀÚ±âÀÚ½ÅÀÌ¸é ÆĞ½º */
+        if ( i == aWaitSlot )
+        {
+            continue;
+        }
+
+        /* ´ë±âTX¿Í ´ë±â°ü°è°¡ ¾ø´Ù¸é ÆĞ½º */
+        if ( mWaitForTable[aWaitSlot][i].mIndex == 0 )
+        {
+            continue;
+        }
+
+        sHoldTrans = (smxTrans *)smLayerCallback::getTransBySID( i );
+
+        /* º¸À¯TXÀÇ ºĞ»ê·¹º§ÀÌ VALID ÇÏÁö ¾ÊÀ¸¸é ÆĞ½º */
+        if ( SMI_DIST_LEVEL_IS_NOT_VALID( sHoldTrans->mDistTxInfo.mDistLevel ) )
+        {
+            continue;
+        }
+
+        /* ´ë±âTX¸¦ ½ÃÀÛÀ¸·Î ´ë±â°ü°è¸¦ ±×¸®´Â ¸ğµç ºĞ»êTX¿¡ ´ëÇØ¼­
+           ºĞ»ê·¹º§À» È®ÀÎÇÑ´Ù. */
+        sLastMaxDistLevel = sMaxDistLevel;
+        if ( sHoldTrans->mDistTxInfo.mDistLevel > sMaxDistLevel )
+        {
+            sMaxDistLevel = sHoldTrans->mDistTxInfo.mDistLevel;
+        }
+
+        /*
+           ºĞ»êµ¥µå¶ô Ã¼Å© ´ë»óÀÌ ¾Æ´Ï¸é ÆĞ½ºÇÑ´Ù.
+           => ¿©±â¼­ ÁÖÀÇÇÒ Á¡Àº,
+              ºĞ»ê·¹º§À» È®ÀÎÇÒ TX¿Í ºĞ»êµ¥µå¶ô Ã¼Å©ÇÒ TX´Â ´Ù¸¦¼öÀÖ´Ù´Â Á¡ÀÌ´Ù.
+
+           1) ºĞ»ê·¹º§ È®ÀÎÇÒ TX : ´ë±âTX¿Í ´ë±â°ü°è¿¡ ÀÖ´Â ¸ğµç º¸À¯TX
+           2) ºĞ»êµ¥µå¶ô Ã¼Å©ÇÒ TX : ´ë±âTX¿Í ´ë±â°ü°è Áß Ã³À½ ³ª¿À´Â º¸À¯TX
+         */
+        if ( mTxList4DistDeadlock[aWaitSlot][i].mDistTxType != SML_DIST_DEADLOCK_TX_FIRST_DIST_INFO )
+        {
+            continue;
+        }
+
+        sDetected = compareTx4DistDeadlock( sWaitTrans, sHoldTrans );
+
+        if ( ( sHoldTrans->mStatus == SMX_TX_END ) ||
+             ( mTxList4DistDeadlock[aWaitSlot][i].mTransID != sHoldTrans->mTransID ) )
+        {
+            /* ºñ±³Áß¿¡ HOLDER TX°¡ ÀçÈ°¿ë µÇ¾ú´Ù.
+               SKIP ÇÏÀÚ. */
+#ifdef DEBUG
+            ideLog::log( IDE_SD_19,
+                         "Distribution Deadlock - REUSE Trans ID : "
+                         "%"ID_UINT32_FMT" -> %"ID_UINT32_FMT", Status : %"ID_INT32_FMT,
+                         mTxList4DistDeadlock[aWaitSlot][i].mTransID,
+                         sHoldTrans->mTransID,
+                         sHoldTrans->mStatus );
+#endif
+
+            /* BUG-48445 : MAXºĞ»ê·¹º§ÀÌ º¯°æµÈ °æ¿ì¸¸ ¿øº¹ÇÕ´Ï´Ù. */
+            if ( sLastMaxDistLevel != sMaxDistLevel )
+            {
+                sMaxDistLevel = sLastMaxDistLevel;
+            }
+
+            continue;
+        }
+
+        /* ºĞ»êµ¥µå¶ôÀÌ Å½ÁöµÇ¾ú´Ù¸é, */
+        if ( sDetected != SMX_DIST_DEADLOCK_DETECTION_NONE )
+        {
+            if ( sFirstDetection == SMX_DIST_DEADLOCK_DETECTION_NONE )
+            {
+                sFirstDetection = sDetected;
+            }
+
+            /* ºĞ»êLEVEL PARALLEL ¶ó¸é, ´õÀÌ»ó TX¸¦ ºñ±³ÇÒ ÇÊ¿ä¾ø´Ù. ºñ±³¸¦ Á¾·áÇÑ´Ù. */
+            if ( sMaxDistLevel == SMI_DIST_LEVEL_PARALLEL )
+            {
+                break;
+            }
+        }
+    }
+
+    if ( sFirstDetection != SMX_DIST_DEADLOCK_DETECTION_NONE )
+    {
+        /* Á×ÀÌ±âÀü TIMEOUT ¼³Á¤ */
+        sWaitTime = getDistDeadlockWaitTime( 
+                    mDistDeadlockRisk[ sWaitTrans->mDistTxInfo.mDistLevel ][ sMaxDistLevel ] );
+
+    }
+
+#ifdef DEBUG
+    ideLog::log( IDE_SD_19,
+                 "WaiterTx(%"ID_UINT32_FMT") DistLevel : %"ID_INT32_FMT", HolderTx Max DistLevel : %"ID_INT32_FMT,
+                 sWaitTrans->mTransID,
+                 sWaitTrans->mDistTxInfo.mDistLevel,
+                 sMaxDistLevel );
+#endif
+
+    *aWaitTime = sWaitTime;
+
+    return sFirstDetection;
+}
+
+/* PROJ-2734 : Distributed TX¸¦ ºñ±³ÇÑ´Ù.
+   ºñ±³¼ø¼­´Â ¾Æ·¡¿Í °°´Ù.
+   1. Distribution TX First Stmt View SCN
+   2. Distribution TX First Stmt Time
+   3. Shard PIN sequence
+   4. Shard PIN Node ID */
+smxDistDeadlockDetection smlLockMgr::compareTx4DistDeadlock( smxTrans * aWaitTx, smxTrans * aHoldTx )
+{
+    smxDistDeadlockDetection sDetected = SMX_DIST_DEADLOCK_DETECTION_NONE;
+
+    UShort sWaitTxNodeID;
+    UShort sHoldTxNodeID;
+
+    UInt sWaitTxSequence;
+    UInt sHoldTxSequence;
+
+    while ( 1 ) /* no loop */
+    {
+        /* 1. Distribution TX First Stmt View SCN COMPARE */
+#ifdef DEBUG
+        ideLog::log( IDE_SD_19,
+                     "compare ViewSCN (Must be Wait(%"ID_INT32_FMT") > Hold(%"ID_INT32_FMT")) : "
+                     "%"ID_UINT64_FMT", %"ID_UINT64_FMT,
+                     aWaitTx->mTransID,
+                     aHoldTx->mTransID,
+                     aWaitTx->mDistTxInfo.mFirstStmtViewSCN,
+                     aHoldTx->mDistTxInfo.mFirstStmtViewSCN );
+#endif
+
+        if ( aWaitTx->mDistTxInfo.mFirstStmtViewSCN > aHoldTx->mDistTxInfo.mFirstStmtViewSCN )
+        {
+            break;
+        }
+        else if ( aWaitTx->mDistTxInfo.mFirstStmtViewSCN < aHoldTx->mDistTxInfo.mFirstStmtViewSCN )
+        {
+            sDetected = SMX_DIST_DEADLOCK_DETECTION_VIEWSCN;
+            break;
+        }
+
+        /* 2. Distribution TX First Stmt Time COMPARE */
+#ifdef DEBUG
+        ideLog::log( IDE_SD_19,
+                     "compare Time (Must be Wait(%"ID_INT32_FMT") > Hold(%"ID_INT32_FMT")) : "
+                     "[%"ID_INT64_FMT"][%"ID_INT64_FMT"], [%"ID_INT64_FMT"][%"ID_INT64_FMT"]",
+                     aWaitTx->mTransID,
+                     aHoldTx->mTransID,
+                     aWaitTx->mDistTxInfo.mFirstStmtTime.tv_.tv_sec,
+                     aWaitTx->mDistTxInfo.mFirstStmtTime.tv_.tv_usec,
+                     aHoldTx->mDistTxInfo.mFirstStmtTime.tv_.tv_sec,
+                     aHoldTx->mDistTxInfo.mFirstStmtTime.tv_.tv_usec );
+#endif
+
+        if ( aWaitTx->mDistTxInfo.mFirstStmtTime > aHoldTx->mDistTxInfo.mFirstStmtTime )
+        {
+            break;
+        }
+        else if ( aWaitTx->mDistTxInfo.mFirstStmtTime < aHoldTx->mDistTxInfo.mFirstStmtTime )
+        {
+            sDetected = SMX_DIST_DEADLOCK_DETECTION_TIME;
+            break;
+        }
+
+        SMI_DIVIDE_SHARD_PIN( aWaitTx->mDistTxInfo.mShardPin,
+                              NULL, /* version */
+                              &sWaitTxNodeID,
+                              &sWaitTxSequence );
+
+        SMI_DIVIDE_SHARD_PIN( aHoldTx->mDistTxInfo.mShardPin,
+                              NULL, /* version */
+                              &sHoldTxNodeID,
+                              &sHoldTxSequence );
+
+        /* 3. SHARD-PIN SEQUENCE COMPARE */
+#ifdef DEBUG
+        ideLog::log( IDE_SD_19,
+                     "compare Sequence (Must be Wait(%"ID_INT32_FMT") > Hold(%"ID_INT32_FMT")) : "
+                     "%"ID_UINT32_FMT", %"ID_UINT32_FMT,
+                     aWaitTx->mTransID,
+                     aHoldTx->mTransID,
+                     sWaitTxSequence,
+                     sHoldTxSequence );
+#endif
+
+        if ( sWaitTxSequence > sHoldTxSequence )
+        {
+            break;
+        }
+        else if ( sWaitTxSequence < sHoldTxSequence )
+        {
+            sDetected = SMX_DIST_DEADLOCK_DETECTION_SHARD_PIN_SEQ;
+            break;
+        }
+
+        /* 4. SHARD-PIN NODE-ID COMPARE */
+#ifdef DEBUG
+        ideLog::log( IDE_SD_19,
+                     "compare Node-ID (Must be Wait(%"ID_INT32_FMT") > Hold(%"ID_INT32_FMT")) : "
+                     "%"ID_UINT32_FMT", %"ID_UINT32_FMT,
+                     aWaitTx->mTransID,
+                     aHoldTx->mTransID,
+                     sWaitTxNodeID,
+                     sHoldTxNodeID );
+#endif
+
+        if ( sWaitTxNodeID > sHoldTxNodeID )
+        {
+            break;
+        }
+        else if ( sWaitTxNodeID < sHoldTxNodeID )
+        {
+            sDetected = SMX_DIST_DEADLOCK_DETECTION_SHARD_PIN_NODE_ID;
+            break;
+        }
+
+        sDetected = SMX_DIST_DEADLOCK_DETECTION_ALL_EQUAL;
+        break;
+    }
+
+#ifdef DEBUG
+    ideLog::log( IDE_SD_19,
+                 "compare end (Must be 0) : result (%"ID_INT32_FMT")", sDetected );
+#endif
+
+    return sDetected;
+}
+
+/*********************************************************
+  function description:
+
+  aSlot¿¡ ÇØ´çÇÏ´Â Æ®·£Àè¼ÇÀÌ ´ë±âÇÏ°í ÀÖ¾ú´ø
+  Æ®·£Àè¼ÇµéÀÇ ´ë±â°æ·Î Á¤º¸¸¦ 0À¸·Î clearÇÑ´Ù.
+  -> waitTable¿¡¼­ aSlotÇà¿¡ ´ë±âÇÏ°í ÀÖ´Â ÄÃ·³µé¿¡¼­
+    °æ·Î±æÀÌ¸¦ 0·Î ÇÑ´Ù.
+
+  aDoInit¿¡¼­ ID_TRUEÀÌ¸ç ´ë±â¿¬°á Á¤º¸µµ ²÷¾î¹ö¸°´Ù.
+***********************************************************/
+void smlLockMgr::clearWaitItemColsOfTrans( idBool aDoInit, SInt aSlot )
+{
+
+    UInt    sCurTargetSlot;
+    UInt    sNxtTargetSlot;
+
+    sCurTargetSlot = mArrOfLockList[aSlot].mFstWaitTblTransItem;
+
+    while ( sCurTargetSlot != SML_END_ITEM )
+    {
+        mWaitForTable[aSlot][sCurTargetSlot].mIndex = 0;
+        sNxtTargetSlot = mWaitForTable[aSlot][sCurTargetSlot].mNxtWaitTransItem;
+
+        if ( aDoInit == ID_TRUE )
+        {
+            mWaitForTable[aSlot][sCurTargetSlot].mNxtWaitTransItem = ID_USHORT_MAX;
+        }
+
+        sCurTargetSlot = sNxtTargetSlot;
+    }
+
+    if ( aDoInit == ID_TRUE )
+    {
+        mArrOfLockList[aSlot].mFstWaitTblTransItem = SML_END_ITEM;
+    }
+}
+
+/* PROJ-2734
+ * isCycle() ÇÔ¼ö°¡ ¼öÇàµÇ±â ÀüÀ¸·Î aSlot Æ®·£Á§¼ÇÀÇ ´ë±â»óÅÂ Á¤º¸¸¦ µÇµ¹¸°´Ù.
+ *
+ * => isCycle() ÇÔ¼ö ¼öÇàÀ¸·Î
+ *    0 -> 2 or 3 or 4 or ... ·Î Áõ°¡µÈ mIndex°ªÀ» 0À¸·Î µÇµ¹¸°´Ù. */
+void smlLockMgr::revertWaitItemColsOfTrans( SInt aSlot )
+{
+    UInt    sCurTargetSlot;
+    UInt    sNxtTargetSlot;
+
+    /* isCycleÀ» °ÅÄ£ ÈÄÀÇ ¸®½ºÆ®´Â
+       mIndex°ªÀÇ ³»¸²Â÷¼øÀ¸·Î ±¸¼ºµÇ¾îÀÖ´Ù. (Å«°ªÀÌ ¾Õ¿¡ ÀÖ´Ù.) */
+
+    for ( sCurTargetSlot = mArrOfLockList[aSlot].mFstWaitTblTransItem ;
+          ( ( sCurTargetSlot != SML_END_ITEM ) &&
+            ( mWaitForTable[aSlot][sCurTargetSlot].mIndex > 1 ) ) ;
+          sCurTargetSlot = sNxtTargetSlot )
+    {
+        mWaitForTable[aSlot][sCurTargetSlot].mIndex = 0;
+
+        sNxtTargetSlot = mWaitForTable[aSlot][sCurTargetSlot].mNxtWaitTransItem;
+
+        mWaitForTable[aSlot][sCurTargetSlot].mNxtWaitTransItem = ID_USHORT_MAX;
+    }
+
+    if ( sCurTargetSlot != SML_END_ITEM )
+    {
+        mArrOfLockList[aSlot].mFstWaitTblTransItem = sCurTargetSlot;
+    }
+}
+
+/*********************************************************
+  function description:
+  : Æ®·£Àè¼Ç a(aSlot)¿¡ ´ëÇÏ¿© waitingÇÏ°í ÀÖ¾ú´ø Æ®·£Àè¼ÇµéÀÇ
+    ´ë±â °æ·Î Á¤º¸¸¦ clearÇÑ´Ù.
+***********************************************************/
+void  smlLockMgr::clearWaitTableRows( smlLockNode * aLockNode,
+                                      SInt          aSlot )
+{
+
+    UShort sTransSlot;
+
+    while ( aLockNode != NULL )
+    {
+        sTransSlot = aLockNode->mSlotID;
+        mWaitForTable[sTransSlot][aSlot].mIndex = 0;
+        aLockNode = aLockNode->mNxtLockNode;
+    }
+}
+
+/*********************************************************
+  function description: registRecordLockWait
+  ´ÙÀ½°ú °°Àº ¼ø¼­·Î  record¶ô ´ë±â¿Í
+  Æ®·£Àè¼Ç°£¿¡ waiting °ü°è¸¦ ¿¬°áÇÑ´Ù.
+
+  1. waiting table¿¡¼­ aSlot ÀÌ aWaitSlot¿¡ waitingÇÏ°í
+     ÀÖ½¿À» Ç¥½ÃÇÑ´Ù.
+  2.  aWaitSlot column¿¡  aSlotÀ»
+     record lock list¿¡ ¿¬°á½ÃÅ²´Ù.
+  3.  aSlotÇà¿¡¼­ aWaitSlotÀ»  transaction waiting
+     list¿¡ ¿¬°á½ÃÅ²´Ù.
+***********************************************************/
+void   smlLockMgr::registRecordLockWait( SInt aSlot, SInt aWaitSlot )
+{
+    SInt sLstSlot;
+
+    IDE_ASSERT( mWaitForTable[aSlot][aWaitSlot].mIndex == 0 );
+    IDE_ASSERT( mArrOfLockList[aSlot].mFstWaitTblTransItem == SML_END_ITEM );
+
+    /* BUG-24416
+     * smlLockMgr::registRecordLockWait() ¿¡¼­ ¹İµå½Ã
+     * mWaitForTable[aSlot][aWaitSlot].mIndex ÀÌ 1·Î ¼³Á¤µÇ¾î¾ß ÇÕ´Ï´Ù. */
+    mWaitForTable[aSlot][aWaitSlot].mIndex = 1;
+
+    if ( mWaitForTable[aSlot][aWaitSlot].mNxtWaitRecTransItem
+         == ID_USHORT_MAX )
+    {
+        /* BUG-23823: Record Lock¿¡ ´ëÇÑ ´ë±â ¸®½ºÆ®¸¦ Waiting¼ø¼­´ë·Î ±ú¿ö
+         * ÁÖ¾î¾ß ÇÑ´Ù.
+         *
+         * WaitÇÒ TransactionÀ» Target Wait Transaction ListÀÇ ¸¶Áö¸·¿¡ ¿¬°á
+         * ÇÑ´Ù. */
+        mWaitForTable[aSlot][aWaitSlot].mNxtWaitRecTransItem = SML_END_ITEM;
+
+        if ( mArrOfLockList[aWaitSlot].mFstWaitRecTransItem == SML_END_ITEM )
+        {
+            IDE_ASSERT( mArrOfLockList[aWaitSlot].mLstWaitRecTransItem ==
+                        SML_END_ITEM );
+
+            mArrOfLockList[aWaitSlot].mFstWaitRecTransItem = aSlot;
+            mArrOfLockList[aWaitSlot].mLstWaitRecTransItem = aSlot;
+        }
+        else
+        {
+            IDE_ASSERT( mArrOfLockList[aWaitSlot].mLstWaitRecTransItem !=
+                        SML_END_ITEM );
+
+            sLstSlot = mArrOfLockList[aWaitSlot].mLstWaitRecTransItem;
+
+            mWaitForTable[sLstSlot][aWaitSlot].mNxtWaitRecTransItem = aSlot;
+            mArrOfLockList[aWaitSlot].mLstWaitRecTransItem          = aSlot;
+        }
+    }
+
+    IDE_ASSERT( mArrOfLockList[aSlot].mFstWaitTblTransItem == SML_END_ITEM );
+
+    mWaitForTable[aSlot][aWaitSlot].mNxtWaitTransItem = mArrOfLockList[aSlot].mFstWaitTblTransItem;
+    mArrOfLockList[aSlot].mFstWaitTblTransItem = aWaitSlot;
+}
+
+/*********************************************************
+  function description: freeAllRecordLock
+  aSlot¿¡ ÇØ´çÇÏ´Â Æ®·£Àè¼ÇÀ» record lockÀ¸·Î waitingÇÏ°í
+  ÀÖ´Â Æ®·£Àè¼Çµé°£ÀÇ ´ë±â °æ·Î¸¦ 0À¸·Î clearÇÑ´Ù.
+  record lockÀ» waitingÇÏ°í ÀÖ´Â Æ®·£Àè¼ÇÀ» resume½ÃÅ²´Ù.
+***********************************************************/
+IDE_RC  smlLockMgr::freeAllRecordLock( SInt aSlot )
+{
+
+    UShort i;
+    UShort  sNxtItem;
+    void * sTrans;
+
+
+    i = mArrOfLockList[aSlot].mFstWaitRecTransItem;
+
+    while ( i != SML_END_ITEM )
+    {
+        IDE_ASSERT( i != ID_USHORT_MAX );
+
+        sNxtItem = mWaitForTable[i][aSlot].mNxtWaitRecTransItem;
+
+        mWaitForTable[i][aSlot].mNxtWaitRecTransItem = ID_USHORT_MAX;
+
+        if ( mWaitForTable[i][aSlot].mIndex == 1 )
+        {
+            sTrans = smLayerCallback::getTransBySID( i );
+            IDE_TEST( smLayerCallback::resumeTrans( sTrans ) != IDE_SUCCESS );
+        }
+
+        mWaitForTable[i][aSlot].mIndex = 0;
+
+        i = sNxtItem;
+    }
+
+    /* PROJ-1381 FAC
+     * Record LockÀ» ÇØÁ¦ÇÑ ´ÙÀ½ ÃÊ±âÈ­¸¦ ÇÑ´Ù. */
+    mArrOfLockList[aSlot].mFstWaitRecTransItem = SML_END_ITEM;
+    mArrOfLockList[aSlot].mLstWaitRecTransItem = SML_END_ITEM;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/*********************************************************
+  function description: registTblLockWaitListByReq
+  waiting table¿¡¼­   Æ®·£Àè¼ÇÀÇ slot id ÇàÀÇ ¿­µé¿¡
+  request list¿¡¼­  ´ë±âÇÏ°í ÀÖ´ÂÆ®·¢Àè¼Çµé ÀÇ
+  slot id¸¦  table lock waiting ¸®½ºÆ®¿¡ µî·ÏÇÑ´Ù.
+***********************************************************/
+void smlLockMgr::registTblLockWaitListByReq( SInt          aSlot,
+                                             smlLockNode * aLockNode )
+{
+
+    UShort       sTransSlot;
+
+    while ( aLockNode != NULL )
+    {
+        sTransSlot = aLockNode->mSlotID;
+        if ( aSlot != sTransSlot )
+        {
+            IDE_ASSERT(mWaitForTable[aSlot][sTransSlot].mNxtWaitTransItem == ID_USHORT_MAX);
+
+            mWaitForTable[aSlot][sTransSlot].mIndex = 1;
+            mWaitForTable[aSlot][sTransSlot].mNxtWaitTransItem
+                = mArrOfLockList[aSlot].mFstWaitTblTransItem;
+            mArrOfLockList[aSlot].mFstWaitTblTransItem = sTransSlot;
+        }
+        aLockNode = aLockNode->mNxtLockNode;
+    }
+}
+
+/*********************************************************
+  function description: registTblLockWaitListByGrant
+  waiting table¿¡¼­   Æ®·£Àè¼ÇÀÇ slot id Çà¿¡
+  grant list¿¡¼­     ÀÖ´ÂÆ®·¢Àè¼Çµé ÀÇ
+  slot id¸¦  table lock waiting ¸®½ºÆ®¿¡ µî·ÏÇÑ´Ù.
+***********************************************************/
+void smlLockMgr::registTblLockWaitListByGrant( SInt          aSlot,
+                                               smlLockNode * aLockNode )
+{
+
+    UShort       sTransSlot;
+
+    while ( aLockNode != NULL )
+    {
+        sTransSlot = aLockNode->mSlotID;
+        if ( (aSlot != sTransSlot) &&
+             (mWaitForTable[aSlot][sTransSlot].mNxtWaitTransItem == ID_USHORT_MAX) )
+        {
+            mWaitForTable[aSlot][sTransSlot].mIndex = 1;
+            mWaitForTable[aSlot][sTransSlot].mNxtWaitTransItem
+                = mArrOfLockList[aSlot].mFstWaitTblTransItem;
+            mArrOfLockList[aSlot].mFstWaitTblTransItem = sTransSlot;
+        } //if
+        aLockNode = aLockNode->mNxtLockNode;
+    }//while
+}
+
+/*********************************************************
+  function description: setLockModeAndAddLockSlot
+  Æ®·£Àè¼ÇÀÌ ÀÌÀü¿¡ table¿¡ lockÀ» ÀâÀº °æ¿ì¿¡ ÇÑÇÏ¿©,
+  ÇöÀç Æ®·£Àè¼ÇÀÇ lock mode¸¦ settingÇÏ°í,
+  ÀÌ¹ø¿¡µµ lockÀ» Àâ¾Ò´Ù¸é lock slotÀ» Æ®·£Àè¼ÇÀÇ lock
+  node¿¡ Ãß°¡ÇÑ´Ù.
+***********************************************************/
+void smlLockMgr::setLockModeAndAddLockSlot( SInt           aSlot,
+                                            smlLockNode  * aTxLockNode,
+                                            smlLockMode  * aCurLockMode,
+                                            smlLockMode    aLockMode,
+                                            idBool         aIsLocked,
+                                            smlLockSlot ** aLockSlot )
+{
+    if ( aTxLockNode != NULL )
+    {
+        if ( aCurLockMode != NULL )
+        {
+            *aCurLockMode = aTxLockNode->mLockMode;
+        }
+        // Æ®·£Àè¼ÇÀÇ lock slot list¿¡  lock slot  Ãß°¡ .
+        if ( aIsLocked == ID_TRUE )
+        {
+            aTxLockNode->mFlag |= mLockModeToMask[aLockMode];
+            addLockSlot( &(aTxLockNode->mArrLockSlotList[aLockMode]),
+                         aSlot );
+
+            if ( aLockSlot != NULL )
+            {
+                *aLockSlot = &(aTxLockNode->mArrLockSlotList[aLockMode]);
+            }//if aLockSlot
+
+        }//if aIsLocked
+    }//aTxLockNode != NULL
+}
+
+/***********************************************************
+ * BUG-47388 Lock Table °³¼±
+ * Lock Node°¡ Transaction Lock Node List¿¡ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+ ***********************************************************/
+idBool smlLockMgr::isLockNodeExist( smlLockNode *aLockNode )
+{
+    UInt aSlot = aLockNode->mSlotID;
+    smlLockNode *sCurLockNode;
+    smlLockNode* sLockNodeHeader = &(mArrOfLockList[ aSlot ].mLockNodeHeader);
+
+    IDE_ASSERT( aLockNode->mSlotID < mTransCnt );
+
+    sCurLockNode = mArrOfLockList[aSlot].mLockNodeHeader.mPrvTransLockNode;
+
+    while ( sCurLockNode != sLockNodeHeader )
+    {
+        if ( sCurLockNode == aLockNode )
+        {
+            return ID_TRUE;
+        }
+
+        sCurLockNode = sCurLockNode->mPrvTransLockNode;
+    }
+
+    return ID_FALSE;
+}
+
+/***********************************************************
+ * BUG-47388 Lock Table °³¼±
+ * Lock Node°¡ Lock ItemÀÇ Grant List¿¡ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+ ***********************************************************/
+idBool smlLockMgr::isLockNodeExistInGrant( smlLockItem * aLockItem,
+                                           smlLockNode *aLockNode )
+{
+    smlLockNode   * sCurLockNode = aLockItem->mFstLockGrant;
+
+    while ( sCurLockNode != NULL )
+    {
+        IDE_ASSERT( sCurLockNode->mLockItem == aLockItem );
+        IDE_ASSERT( sCurLockNode->mItemID == aLockItem->mItemID );
+
+        if ( sCurLockNode == aLockNode )
+        {
+            return ID_TRUE;
+        }
+        if ( aLockItem->mLstLockGrant == sCurLockNode )
+        {
+            break;
+        }
+
+        sCurLockNode = sCurLockNode->mNxtLockNode;
+    }
+
+    return ID_FALSE;
+}
+
+/***********************************************************
+ * BUG-47388 Lock Table °³¼±
+ * Lock ItemÀÇ Grant List¿Í Request List¸¦ °ËÁõÇÑ´Ù.
+ ***********************************************************/
+void smlLockMgr::validateNodeListInLockItem( smlLockItem * aLockItem )
+{
+    smlLockNode * sCurLockNode = aLockItem->mFstLockGrant;
+
+    while ( sCurLockNode != NULL )
+    {
+        IDE_ASSERT( sCurLockNode->mLockItem == aLockItem );
+        IDE_ASSERT( sCurLockNode->mItemID == aLockItem->mItemID );
+
+        if ( aLockItem->mLstLockGrant == sCurLockNode )
+        {
+            break;
+        }
+
+        sCurLockNode = sCurLockNode->mNxtLockNode;
+    }
+
+    sCurLockNode = aLockItem->mFstLockRequest;
+    while ( sCurLockNode != NULL )
+    {
+        IDE_ASSERT( sCurLockNode->mLockItem == aLockItem );
+        IDE_ASSERT( sCurLockNode->mItemID == aLockItem->mItemID );
+
+        if ( aLockItem->mLstLockRequest == sCurLockNode )
+        {
+            break;
+        }
+
+        sCurLockNode = sCurLockNode->mNxtLockNode;
+    }
+
+    return ;
+}
+
+
+void smlLockMgr::updateStatistics( idvSQL*      sStat,
+                                   idvStatIndex aStatIdx )
+{
+    idvSession * sSession;
+
+    sSession = ( sStat == NULL ? NULL : sStat->mSess );
+
+    IDV_SESS_ADD( sSession, aStatIdx, 1 );
+}
+
+/***********************************************************
+ * BUG-47388 Lock Table °³¼±À¸·Î Light Mode Ãß°¡
+ *
+ * 0 Table, Tablespace Disable ÀÌ¸é Lock TableÀ» ÀâÁö ¾Ê´Â´Ù.
+ *   DDLÀº ¹ŞÀ» ¼ö ¾ø´Ù. S, X, SIX °¡ µé¾î¿À¸é ¿¹¿ÜÃ³¸®
+ *
+ * 1. ÀÌ¹Ì ÀâÀº Lock TableÀÇ ÇÏÀ§¸ğµÎ Lock ÀÌ ¿Ã °æ¿ì Åë°ú
+ *    ´Ü, IS Lock Àº FAC¸¦ ÀÌÀ¯·Î ¿äÃ»À» SkipÇÏÁö ¾Ê´Â´Ù.
+ *
+ * 2. BUG-47388¿¡¼­ Ãß°¡µÈ Light Mode·Î Lock Table À» Àâ´Â´Ù.
+ *    Lock Item¿¡ S,X,SIX°¡ ¾ø°í ³»°¡ IS or IX¸¦ Àâ´Â °æ¿ì
+ *
+ * 3. Lock Item¿¡ S,X,SIX °¡ ÀÖ°Å³ª ³»°¡ S,X,SIX ÀÎ °æ¿ì
+ *    Mutex Mode·Î Lock TableÀ» Àâ´Â´Ù.
+ ***********************************************************/
+IDE_RC smlLockMgr::lockTable( SInt          aSlot,
+                              smlLockItem  *aLockItem,
+                              smlLockMode   aLockMode,
+                              ULong         aLockWaitMicroSec,
+                              smlLockMode   *aCurLockMode,
+                              idBool       *aLocked,
+                              smlLockNode **aLockNode,
+                              smlLockSlot **aLockSlot,
+                              idBool        aIsExplicit )
+{
+    smlLockNode       * sCurTransLockNode = NULL;
+    UInt                sLockEnable = 1;
+    idvSQL            * sStatistics = smLayerCallback::getStatisticsBySID( aSlot );
+
+    /* BUG-32237 [sm_transaction] Free lock node when dropping table.
+     * DropTablePending ¿¡¼­ ¿¬±âÇØµĞ freeLockNode¸¦ ¼öÇàÇÕ´Ï´Ù. */
+    /* ÀÇµµÇÑ »óÈ²Àº ¾Æ´Ï±â¿¡ Debug¸ğµå¿¡¼­´Â DASSERT·Î Á¾·á½ÃÅ´.
+     * ÇÏÁö¸¸ release ¸ğµå¿¡¼­´Â ±×³É rebuild ÇÏ¸é ¹®Á¦ ¾øÀ½. */
+    IDE_ERROR_RAISE( aLockItem != NULL, error_table_modified );
+
+    if ( aLocked != NULL )
+    {
+        *aLocked = ID_TRUE;
+    }
+
+    if ( aLockSlot != NULL )
+    {
+        *aLockSlot = NULL;
+    }
+
+    // To fix BUG-14951
+    // smuProperty::getTableLockEnableÀº TABLE¿¡¸¸ Àû¿ëµÇ¾î¾ß ÇÑ´Ù.
+    // (TBSLIST, TBS ¹× DBF¿¡´Â ÇØ´ç ¾ÈµÊ)
+    /* BUG-35453 -  add TABLESPACE_LOCK_ENABLE property
+     * TABLESPACE_LOCK_ENABLE µµ TABLE_LOCK_ENABLE °ú µ¿ÀÏÇÏ°Ô
+     * tablespace lock¿¡ ´ëÇØ Ã³¸®ÇÑ´Ù. */
+    if ( aLockItem->mLockItemType == SMI_LOCK_ITEM_TABLE )
+    {
+        sLockEnable = smuProperty::getTableLockEnable();
+    }
+    else if ( aLockItem->mLockItemType == SMI_LOCK_ITEM_TABLESPACE )
+    {
+        sLockEnable = smuProperty::getTablespaceLockEnable();
+    }
+
+    if ( sLockEnable == 0 )
+    {
+        IDE_TEST_RAISE( (( aLockMode == SML_SLOCK ) ||
+                         ( aLockMode == SML_XLOCK ) ||
+                         ( aLockMode == SML_SIXLOCK )),  error_lock_table_use );
+
+        if ( aCurLockMode != NULL )
+        {
+            *aCurLockMode = aLockMode;
+        }
+
+        return IDE_SUCCESS;
+    }
+
+    // Æ®·£Àè¼ÇÀÌ ÀÌÀü statement¿¡ ÀÇÇÏ¿©,
+    // ÇöÀç table A¿¡ ´ëÇÏ¿© lockÀ» Àâ¾Ò´ø lock node¸¦ Ã£´Â´Ù.
+    // Trans Node List´Â ³ª¸¸ ¼öÁ¤ÇÑ´Ù. ±×·¯¹Ç·Î lockÀ» ÀâÀ» ÇÊ¿ä´Â ¾ø´Ù.
+    // ÀÌ ¶§ ´Ù¸¥ DDLÀÌ Á¢±Ù ÇÒ ¼öµµ ÀÖÀ¸³ª Trans Node List¸¦ ¼öÁ¤ÇÏÁö´Â ¾Ê´Â´Ù..
+    // Grant, Req List´Â DDLÀÌ ¼öÁ¤ ÇÒ ¼öµµ ÀÖ´Ù.
+    sCurTransLockNode = findLockNode( aLockItem, aSlot );
+    // case 1: ÀÌÀü¿¡ Æ®·£Àè¼ÇÀÌ  table A¿¡  lockÀ» Àâ¾Ò°í,
+    // ÀÌÀü¿¡ ÀâÀº lock mode¿Í Áö±İ Àâ°íÀÚ ÇÏ´Â ¶ô¸ğµå º¯È¯°á°ú°¡
+    // °°À¸¸é ¹Ù·Î return!
+    if ( sCurTransLockNode != NULL )
+    {
+        if ( mConversionTBL[sCurTransLockNode->mLockMode][aLockMode]
+             == sCurTransLockNode->mLockMode )
+        {
+            if (( aLockMode == SML_ISLOCK ) &&
+                ( sCurTransLockNode->mArrLockSlotList[aLockMode].mLockSequence == 0 ))
+            {
+                /* PROJ-1381 Fetch Across Commits
+                 * IS LockÀ» ÀâÁö ¾Ê¾Ò´ø °æ¿ì, Lock Mode°¡ È£È¯ÀÌ µÇ´õ¶óµµ
+                 * FAC Fetch Cursor¸¦ À§ÇØ IS LockÀ» Àâ¾Æ Áà¾ß ÇÑ´Ù. */       
+            }
+            else
+            {
+                /* ±×·¸Áö ¾ÊÀº °æ¿ì´Â(IS °¡ ¾Æ´Ñ °æ¿ìÀÌ°Å³ª ÀÌ¹Ì IS¸¦ ÀâÀº °æ¿ì)
+                 * ÀÌ¹Ì ÀâÀº Lock Mode°¡ »õ·Î ÀâÀ» LockÀÇ »óÀ§ LockÀÌ¸é ¹Ù·Î Return */
+                if ( aCurLockMode != NULL )
+                {
+                    *aCurLockMode = sCurTransLockNode->mLockMode;
+                }
+                IDE_CONT( lock_SUCCESS );
+            }
+        }
+    }
+
+    if (( aLockMode == SML_ISLOCK ) ||
+        ( aLockMode == SML_IXLOCK ))
+    {
+        // ´Ù¸¥ DDL°ú µ¿½Ã¼º Á¦¾î¸¦ À§ÇØ¼­ LockÀ» Àâ¾Æ¾ßÇÑ´Ù.
+        lockTransNodeList( sStatistics, aSlot );
+
+        if ( aLockItem->mFlag == SML_FLAG_LIGHT_MODE )
+        {
+            if ( sCurTransLockNode != NULL ) /* ÀÌÀü statement ¼öÇà½Ã lockÀ» ÀâÀ½ */
+            {
+                /* Lock¿¡ ´ëÇØ¼­ ConversionÀ» ¼öÇàÇÑ´Ù. */
+                sCurTransLockNode->mLockMode =
+                    mConversionTBL[sCurTransLockNode->mLockMode][aLockMode];
+            }
+            else                      /* ÀÌÀü statement ¼öÇà ½Ã lockÀ» ÀâÁö ¸øÇÔ */
+            {
+                /* allocate lock node and initialize */
+                IDE_TEST( allocLockNodeAndInit( aSlot,
+                                                aLockMode,
+                                                aLockItem,
+                                                &sCurTransLockNode,
+                                                aIsExplicit )
+                          != IDE_SUCCESS );
+                sCurTransLockNode->mBeGrant  = ID_TRUE;
+
+                /* Add Lock Node to a transaction */
+                addLockNode( sCurTransLockNode, aSlot );
+            }
+
+            sCurTransLockNode->mLockCnt++;
+
+            // Æ®·£Àè¼ÇÀÇ Lock node°¡ ÀÖ¾ú°í,LockÀ» Àâ¾Ò´Ù¸é
+            // lock slotÀ» Ãß°¡ÇÑ´Ù
+            // XXX ±âÁ¸ ÄÚµå¿¡¼­ ¹«Á¶°Ç È£ÃâµÈ´Ù. ¹«Á¶°Ç lockslotÀ» Ãß°¡ ÇØ¾ß ÇÏ´ÂÁö È®ÀÎ ÇØ¾ß ÇÑ´Ù.
+            setLockModeAndAddLockSlot( aSlot,
+                                       sCurTransLockNode,
+                                       aCurLockMode,
+                                       aLockMode,
+                                       ID_TRUE,
+                                       aLockSlot );
+
+            IDE_DASSERT( sCurTransLockNode->mArrLockSlotList[aLockMode].mLockSequence != 0 );
+            // ³»°Í¿¡¸¸ Ãß°¡ÇÏ°Å³ª °»½ÅÇÏ°í Á¾·á
+            unlockTransNodeList( aSlot );
+
+            IDE_ASSERT( sCurTransLockNode->mLockMode != SML_XLOCK );
+
+            IDE_CONT(lock_SUCCESS);
+        }
+        else
+        {
+            unlockTransNodeList( aSlot );
+        }
+    }
+
+    IDE_TEST( lockTableInternal( sStatistics,
+                                 aSlot,
+                                 aLockItem,
+                                 aLockMode,
+                                 aLockWaitMicroSec,
+                                 aCurLockMode,
+                                 aLocked ,
+                                 sCurTransLockNode,
+                                 aLockSlot,
+                                 aIsExplicit ) != IDE_SUCCESS );
+
+    IDE_EXCEPTION_CONT(lock_SUCCESS);
+
+    if ( aLockNode != NULL )
+    {
+        *aLockNode = sCurTransLockNode;
+    }
+    else
+    {
+        /* nothing to do */
+    }
+
+    updateStatistics( sStatistics,
+                      IDV_STAT_INDEX_LOCK_ACQUIRED );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( error_table_modified );
+    {
+        IDE_SET( ideSetErrorCode( smERR_REBUILD_smiTableModified ) );
+    }
+    IDE_EXCEPTION( error_lock_table_use );
+    {
+        if ( aLockItem->mLockItemType == SMI_LOCK_ITEM_TABLE )
+        {
+            IDE_SET( ideSetErrorCode( smERR_ABORT_TableLockUse ));
+        }
+        else
+        {
+            IDE_SET( ideSetErrorCode( smERR_ABORT_TablespaceLockUse ));
+        }
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+
+}
+
+/*********************************************************
+  function description: lockTable
+  table¿¡ lockÀ» °É¶§ ´ÙÀ½°ú °°Àº case¿¡ µû¶ó °¢°¢ Ã³¸®ÇÑ´Ù.
+
+  0. Lock Item Mutex¸¦ Àâ°í º¸´Ï Light Mode ÀÎ °æ¿ì
+     Light ModeÀÇ Lock tableÀ» Àâ°í ¹Ù·Î ºüÁ® ³ª°£´Ù.(BUG-47388)
+
+  1. ÀÌÀü¿¡ Æ®·£Àè¼ÇÀÌ  table A¿¡  lockÀ» Àâ¾Ò°í,
+    ÀÌÀü¿¡ ÀâÀº lock mode¿Í Áö±İ Àâ°íÀÚ ÇÏ´Â ¶ô¸ğµå º¯È¯°á°ú°¡
+    °°À¸¸é ¹Ù·Î return.
+
+  2. tableÀÇ grant lock mode°ú Áö±İ Àâ°íÀÚ ÇÏ´Â ¶ô°ú È£È¯°¡´ÉÇÑ°æ¿ì.
+
+     2.1  table ¿¡ lock waitingÇÏ´Â Æ®·£Àè¼ÇÀÌ ÇÏ³ªµµ ¾ø°í,
+          ÀÌÀü¿¡ Æ®·£Àè¼ÇÀÌ table¿¡ ´ëÇÏ¿© lockÀ» ÀâÁö ¾Ê´Â °æ¿ì.
+
+       -  lock node¸¦ ÇÒ´çÇÏ°í ÃÊ±âÈ­ÇÑ´Ù.
+       -  table lockÀÇ grant list tail¿¡ addÇÑ´Ù.
+       -  lock node°¡ grantµÇ¾úÀ½À» °»½ÅÇÏ°í,
+          table lockÀÇ grant count¸¦ 1Áõ°¡ ½ÃÅ²´Ù.
+       -  Æ®·¢Àè¼ÇÀÇ lock list¿¡  lock node¸¦  addÇÑ´Ù.
+
+     2.2  table ¿¡ lock waitingÇÏ´Â Æ®·£Àè¼ÇµéÀÌ ÀÖÁö¸¸,
+          ÀÌÀü¿¡ Æ®·£Àè¼ÇÀÌ  table¿¡ ´ëÇÏ¿© lockÀ» ÀâÀº °æ¿ì.
+         -  table¿¡¼­ grantµÈ lock mode array¿¡¼­
+            Æ®·£Àè¼ÇÀÇ lock nodeÀÇ   lock mode¸¦ 1°¨¼Ò.
+            table ÀÇ ´ëÇ¥¶ô °»½Å½Ãµµ.
+
+     2.1, 2.2ÀÇ °øÅëÀûÀ¸·Î  ´ÙÀ½À» ¼öÇàÇÏ°í 3¹øÂ° ´Ü°è·Î ³Ñ¾î°¨.
+     - ÇöÀç ¿äÃ»ÇÑ lock mode¿Í ÀÌÀü  lock mode¸¦
+      conversionÇÏ¿©, lock nodeÀÇ lock mode¸¦ °»½Å.
+     - lock nodeÀÇ °»½ÅµÈ  lock modeÀ» ÀÌ¿ëÇÏ¿©
+      table¿¡¼­ grantµÈ lock mode array¿¡¼­
+      »õ·Î¿î lockmode ¿¡ ÇØ´çÇÏ´Â lock mode¸¦ 1Áõ°¡ÇÏ°í
+      tableÀÇ ´ëÇ¥¶ôÀ» °»½Å.
+     - table lockÀÇ grant mode¸¦ °»½Å.
+     - grant lock nodeÀÇ lock°¹¼ö Áõ°¡.
+
+     2.3  ÀÌÀü¿¡ Æ®·£Àè¼ÇÀÌ table¿¡ ´ëÇÏ¿© lockÀ» ÀâÁö ¾Ê¾Ò°í,
+          tableÀÇ request list°¡ ºñ¾î ÀÖÁö ¾Ê´Â °æ¿ì.
+         - lockÀ» grantÇÏÁö ¾Ê°í 3.2Àı°ú °°ÀÌ lock´ë±âÃ³¸®¸¦
+           ÇÑ´Ù.
+           % ÇüÆò¼º ¹®Á¦ ¶§¹®¿¡ ÀÌ·¸°Ô Ã³¸®ÇÑ´Ù.
+
+  3. tableÀÇ grant lock mode°ú Áö±İ Àâ°íÀÚ ÇÏ´Â ¶ô°ú È£È¯ºÒ°¡´ÉÇÑ °æ¿ì.
+     3.1 lock conflictÀÌÁö¸¸,   grantµÈ lock node°¡ 1°³ÀÌ°í,
+         ±×°ÍÀÌ ¹Ù·Î ±×  Æ®·¢Àè¼ÇÀÏ °æ¿ì.
+      - request list¿¡ ´ŞÁö ¾Ê°í
+        ±âÁ¸ grantµÈ  lock nodeÀÇ lock mode¿Í tableÀÇ ´ëÇ¥¶ô,
+        grant lock mode¸¦   °»½ÅÇÑ´Ù.
+
+     3.2 lock conflict ÀÌ°í lock ´ë±â ½Ã°£ÀÌ 0ÀÌ ¾Æ´Ñ °æ¿ì.
+        -  request list¿¡ ´Ş lock node¸¦ »ı¼ºÇÏ°í
+         ¾Æ·¡ ¼¼ºÎ case¿¡ ´ëÇÏ¿©, ºĞ±â.
+        3.2.1 Æ®·£Àè¼ÇÀÌ ÀÌÀü¿¡ table¿¡ ´ëÇÏ¿© grantµÈ
+              lock node¸¦ °¡Áö°í ÀÖ´Â °æ¿ì.
+           -  request listÀÇ Çì´õ¿¡ »ı¼ºµÈ lock node¸¦ Ãß°¡.
+           -  request list¿¡ ¸Å´Ü lock nodeÀÇ cvs node¸¦
+               grantµÈ lock nodeÀÇ ÁÖ¼Ò·Î assgin.
+            -> ³ªÁß¿¡ ´Ù¸¥ Æ®·£Àè¼Ç¿¡¼­  unlock table½Ã¿¡
+                request list¿¡ ÀÖ´Â lock node¿Í
+               °»½ÅµÈ table grant mode¿Í È£È¯µÉ¶§,
+               grant list¿¡ º°µµ·Î insertÇÏÁö ¾Ê°í ,
+               ±âÁ¸ cvs lock nodeÀÇ lock mode¸¸ °»½Å½ÃÄÑ
+               grant list ¿¬»êÀ» ÁÙÀÌ·Á´Â ÀÇµµÀÓ.
+
+        3.2.2 ÀÌÀü¿¡ grantµÈ lock node°¡ ¾ø´Â °æ¿ì.
+            -  table lock request list¿¡¼­ ÀÖ´Â Æ®·£Àè¼ÇµéÀÇ
+               slot idµéÀ»  waitingTable¿¡¼­ lockÀ» ¿ä±¸ÇÑ
+               Æ®·¢Àè¼ÇÀÇ slot id Çà¿¡ list·Î ¿¬°áÇÑ´Ù
+               %°æ·Î±æÀÌ´Â 1·Î
+            - request listÀÇ tail¿¡ »ı¼ºµÈ lock node¸¦ Ãß°¡.
+
+        3.2.1, 3.2.2 °øÅëÀ¸·Î ¸¶¹«¸® ½ºÅÜÀ¸·Î ´ÙÀ½°ú °°ÀÌÇÑ´Ù.
+
+        - waiting table¿¡¼­   Æ®·£Àè¼ÇÀÇ slot id Çà¿¡
+        grant list¿¡¼­     ÀÖ´ÂÆ®·¢Àè¼Çµé ÀÇ
+        slot id¸¦  table lock waiting ¸®½ºÆ®¿¡ µî·ÏÇÑ´Ù.
+        - dead lock ¸¦ °Ë»çÇÑ´Ù(isCycle)
+         -> smxTransMgr::waitForLock¿¡¼­ °Ë»çÇÏ¸ç,
+          dead lockÀÌ ¹ß»ıÇÏ¸é Æ®·£Àè¼Ç abort.
+        - waitingÇÏ°Ô µÈ´Ù(suspend).
+         ->smxTransMgr::waitForLock¿¡¼­ ¼öÇàÇÑ´Ù.
+        -  ´Ù¸¥ Æ®·£Àè¼ÇÀÌ commit/abortµÇ¸é¼­ wakeupµÇ¸é,
+          waiting table¿¡¼­ ÀÚ½ÅÀÇ Æ®·£Àè¼Ç slot id¿¡
+          ´ëÀÀÇÏ´Â Çà¿¡¼­  ´ë±â ÄÃ·³µéÀ» clearÇÑ´Ù.
+        -  Æ®·£Àè¼ÇÀÇ lock list¿¡ lock node¸¦ Ãß°¡ÇÑ´Ù.
+          : lockÀ» Àâ°Ô µÇ¾ú±â¶§¹®¿¡.
+
+     3.3 lock conflict ÀÌ°í lock´ë±â ½Ã°£ÀÌ 0ÀÎ °æ¿ì.
+        : lock flag¸¦ ID_FALSE·Î °»½Å.
+
+  4. Æ®·£Àè¼ÇÀÇ lock slot list¿¡  lock slot  Ãß°¡ .
+     (BUG-47388 cvs node ¸¦ ´ë±âÇÏ´Â ÀÓ½Ã Lock Node ÀÌ¸é Free)
+
+ BUG-28752 lock table ... in row share mode ±¸¹®ÀÌ ¸ÔÈ÷Áö ¾Ê½À´Ï´Ù.
+
+ implicit/explicit lockÀ» ±¸ºĞÇÏ¿© °Ì´Ï´Ù.
+ implicit is lock¸¸ statement end½Ã Ç®¾îÁÖ±â À§ÇÔÀÔ´Ï´Ù. 
+
+ ÀÌ °æ¿ì Upgrding Lock¿¡ ´ëÇØ °í·ÁÇÏÁö ¾Ê¾Æµµ µË´Ï´Ù.
+  Áï, Implicit IS LockÀÌ °É¸° »óÅÂ¿¡¼­ Explicit IS LockÀ» °É·Á ÇÏ°Å³ª
+ Explicit IS LockÀÌ °É¸° »óÅÂ¿¡¼­ Implicit IS LockÀÌ °É¸° °æ¿ì¿¡ ´ëÇØ
+ °í·ÁÇÏÁö ¾Ê¾Æµµ µË´Ï´Ù.
+  ¿Ö³ÄÇÏ¸é Imp°¡ ¸ÕÀú °É·ÁÀÖÀ» °æ¿ì, ¾îÂ÷ÇÇ Statement EndµÇ´Â Áï½Ã Ç®
+ ¾îÁö±â ¶§¹®¿¡ ÀÌÈÄ Explicit LockÀ» °Å´Âµ¥ ¹®Á¦ ¾ø°í, Exp°¡ ¸ÕÀú °É·Á
+ ÀÖÀ» °æ¿ì, ¾îÂ÷ÇÇ IS LockÀÌ °É·Á ÀÖ´Â »óÅÂÀÌ±â ¶§¹®¿¡ Imp LockÀ» ¶Ç
+ °É ÇÊ¿ä´Â ¾ø±â ¶§¹®ÀÔ´Ï´Ù.
+***********************************************************/
+IDE_RC smlLockMgr::lockTableInternal( idvSQL           * aStatistics,
+                                      SInt               aSlot,
+                                      smlLockItem      * aLockItem,
+                                      smlLockMode        aLockMode,
+                                      ULong              aLockWaitMicroSec,
+                                      smlLockMode      * aCurLockMode,
+                                      idBool           * aLocked,
+                                      smlLockNode      * aCurTransLockNode,
+                                      smlLockSlot     ** aLockSlot,
+                                      idBool             aIsExplicit )
+{
+    smlLockNode*        sNewTransLockNode = NULL;
+    idBool              sLocked           = ID_TRUE;
+    UInt                sState            = 0;
+    SInt                i;
+    smlTransLockList  * sCurSlot;
+    smlLockNode       * sGrantLockNode;
+    idBool              sIsFirstDDL = ID_FALSE;
+
+    aLockItem->mMutex.lock( aStatistics );
+    sState = 1;
+
+    /***************************************************************************************/
+    /* BUG-47388¿¡¼­ Ãß°¡µÈ ¿µ¿ª Start
+     * 1. IS, IX lockItemÀ» Àâ¾Æ¾ß ÇØ¼­ Àâ¾Ò´Âµ¥ ±× »çÀÌ¿¡ ¸ğµÎ ºüÁ®³ª°¬´Ù, Light Mode·Î Ãß°¡
+     * 2. X, S, SIX : TransactionÀ» ¸ğµÎ ¼øÈ¸ÇÏ¸ç Grant List¸¦ ±¸Ãà */
+    if ( aLockItem->mFlag == SML_FLAG_LIGHT_MODE )
+    {
+        if (( aLockMode == SML_ISLOCK ) ||
+            ( aLockMode == SML_IXLOCK ))
+        {
+            // lockItemÀ» Àâ¾Æ¾ß ÇØ¼­ Àâ¾Ò´Âµ¥,±× »çÀÌ¿¡ ¸ğµÎ ºüÁ®³ª°¬´Ù,
+            // ³»°Í¿¡¸¸ Ãß°¡ÇÏ°Å³ª °»½ÅÇÏ°í ºüÁø´Ù.
+
+            if ( aCurTransLockNode != NULL ) /* ÀÌÀü statement ¼öÇà½Ã lockÀ» ÀâÀ½ */
+            {
+                /* Lock¿¡ ´ëÇØ¼­ ConversionÀ» ¼öÇàÇÑ´Ù. */
+                aCurTransLockNode->mLockMode =
+                    mConversionTBL[aCurTransLockNode->mLockMode][aLockMode];
+            }
+            else                      /* ÀÌÀü statement ¼öÇà ½Ã lockÀ» ÀâÁö ¸øÇÔ */
+            {
+                /* allocate lock node and initialize */
+                IDE_TEST( allocLockNodeAndInit( aSlot,
+                                                aLockMode,
+                                                aLockItem,
+                                                &aCurTransLockNode,
+                                                aIsExplicit )
+                          != IDE_SUCCESS );
+                aCurTransLockNode->mBeGrant  = ID_TRUE;
+
+                /* Add Lock Node to a transaction */
+                lockTransNodeList( aStatistics, aSlot );
+                addLockNode( aCurTransLockNode, aSlot );
+                unlockTransNodeList( aSlot );
+            }
+
+            aCurTransLockNode->mLockCnt++;
+
+            IDE_CONT(lock_SUCCESS);
+        }
+        else
+        {
+            // S,X,SIX ¸¦ Ã³À½ ÀâÀº °æ¿ì, ¸ğµÎ ¼øÈ¸ÇÏ¸ç ÀÌ¹Ì ÀâÀº I lockÀ» Ã£¾Æº»´Ù.
+            /* 1. Transaction Å½»ö ÇÏ¿© Grant List¸¦ ±¸ÃàÇÑ´Ù.
+             * 2. ±¸¹öÀü Lock Item°ú µ¿ÀÏÇÏ°Ô lockÀ» Àâ´Â´Ù.
+             * ¿©±â¿¡¼­´Â Grant List¸¸ ±¸Ãà µÇ¸é ³ª¸ÓÁö´Â ÀÌÈÄ¿¡¼­ ÇÑ´Ù.*/
+
+            // mFlag¸¦ »ç¿ëÇÏ±â À§ÇØ ÃÊ±âÈ­ ÇÑ´Ù.
+            // SML_FLAG_LIGHT_MODE ¿¡¼­ ´Ù¸¥°ªÀ¸·Î º¯°æÇÏ¸é
+            // ´Ù¸¥ Transaction µéÀÌ Light Mode¿¡¼­ ¹ş¾î³µ´Ù´Â °ÍÀ» ¾Ë°Ô µÈ´Ù.
+            aLockItem->mFlag = 0 ;
+            sIsFirstDDL = ID_TRUE;
+
+            // ³» mutexÀ» ÀâÀ¸¸é dead lock ¹ß»ı ÇÒ ¼ö ÀÖ´Ù.
+            // ³ªÀÇ mutexÀº ÀâÁö ¾Ê°í Å¸¸¥ trans ÀÇ mutex¸¸ Àâ´Â´Ù.
+            for( i = 0 ; i < mTransCnt ; i++ )
+            {
+                sCurSlot = mArrOfLockList + i;
+
+                // Node List¸¸ º¸È£ÇÏ¸é µÇÁö¸¸ ¿©±â¿¡¼­´Â DML°úÀÇ µ¿ÀÛÀ» ÅëÁ¦ÇÏ±â À§ÇÏ´Â ¿ªÇÒµµ ÇÑ´Ù.
+                // Pointer°¡ NullÀÎ°Í °°¾Æ º¸ÀÌ´õ¶óµµ, ÇØ´ç TransactionÀÌ LockÀ» Àâ°í ¾ÆÁ÷ ´ŞÁö ¾ÊÀº °ÍÀÏ¼öµµ ÀÖ´Ù.
+                // ±×·¯¹Ç·Î Mutex lockÀ» Àâ°í È®ÀÎ ÇØ ºÁ¾ß ÇÑ´Ù.
+                lockTransNodeList( aStatistics, i );
+
+                if ( (void*)sCurSlot->mLockNodeHeader.mPrvTransLockNode != (void*)sCurSlot )
+                {
+                    sGrantLockNode = findLockNode( aLockItem, i );
+                    if( sGrantLockNode != NULL )
+                    {
+                        IDE_ASSERT( mCompatibleTBL[aLockItem->mGrantLockMode][sGrantLockNode->mLockMode] == ID_TRUE );
+                        /* add node to grant list */
+                        addLockNodeToTail( aLockItem->mFstLockGrant,
+                                           aLockItem->mLstLockGrant,
+                                           sGrantLockNode );
+
+                        aLockItem->mGrantCnt++;
+
+                        incTblLockModeAndUpdate( aLockItem, sGrantLockNode->mLockMode );
+                        aLockItem->mGrantLockMode = mConversionTBL[aLockItem->mGrantLockMode][ sGrantLockNode->mLockMode ];
+                    }
+                }
+                unlockTransNodeList( i );
+            }
+        }
+    }
+    /* BUG-47388¿¡¼­ Ãß°¡µÈ ¿µ¿ª End */
+    /***************************************************************************************/
+
+    //---------------------------------------
+    // tableÀÇ ´ëÇ¥¶ô°ú Áö±İ Àâ°íÀÚ ÇÏ´Â ¶ôÀÌ È£È¯°¡´ÉÇÏ´ÂÁö È®ÀÎ.
+    //---------------------------------------
+    if ( mCompatibleTBL[aLockItem->mGrantLockMode][aLockMode] == ID_TRUE )
+    {
+        if ( aCurTransLockNode != NULL ) /* ÀÌÀü statement ¼öÇà½Ã lockÀ» ÀâÀ½ */
+        {
+            // ÀÌÀü¿¡ Àâ¾Ò´ø °ªÀ» »©°í Àá½Ã ÈÄ¿¡ »õ °ªÀ» ³Ö´Â´Ù.
+            decTblLockModeAndTryUpdate( aLockItem,
+                                        aCurTransLockNode->mLockMode );
+        }
+        else                      /* ÀÌÀü statement ¼öÇà ½Ã lockÀ» ÀâÁö ¸øÇÔ */
+        {
+            /* ±â´Ù¸®´Â lockÀÌ ÀÖ´Â °æ¿ì */
+            /* BUGBUG: BUG-16471, BUG-17522
+             * ±â´Ù¸®´Â lockÀÌ ÀÖ´Â °æ¿ì ¹«Á¶°Ç lock conflict Ã³¸®ÇÑ´Ù. */
+            IDE_TEST_CONT( aLockItem->mRequestCnt != 0, lock_conflict );
+
+            /* ±â´Ù¸®´Â lockÀÌ ¾ø´Â °æ¿ì LockÀ» grant ÇÔ */
+            /* BUG-47363 ¹Ì¸® alloc ÇØµĞ LockNode¸¦ »ç¿ë */
+            IDE_TEST( allocLockNodeAndInit( aSlot,
+                                            aLockMode,
+                                            aLockItem,
+                                            &aCurTransLockNode,
+                                            aIsExplicit )
+                      != IDE_SUCCESS );
+
+            /* add node to grant list */
+            addLockNodeToTail( aLockItem->mFstLockGrant,
+                               aLockItem->mLstLockGrant,
+                               aCurTransLockNode );
+
+            aCurTransLockNode->mBeGrant = ID_TRUE;
+            aLockItem->mGrantCnt++;
+
+            // ¼öÁ¤Àº ³ª È¥ÀÚ ÇÏÁö¸¸, ´Ù¸¥ TransactionÀÌ ´Ù¸¥ Table¿¡ DDLÀ» ÀâÀ¸¸é¼­ ³ª¸¦ ÂüÁ¶ ÇÒ ¼öµµ ÀÖ´Ù.
+            // Transaction Lock Node List º¯°æ ÇÒ ¶§ ¿¡´Â ¹İµå½Ã LockÀ» Àâ¾Æ¾ß ÇÑ´Ù.
+            lockTransNodeList( aStatistics, aSlot );
+            /* Add Lock Node to a transaction */
+            addLockNode( aCurTransLockNode, aSlot );
+            unlockTransNodeList( aSlot );
+        }
+
+        /* Lock¿¡ ´ëÇØ¼­ ConversionÀ» ¼öÇàÇÑ´Ù. */
+        aCurTransLockNode->mLockMode =
+            mConversionTBL[aCurTransLockNode->mLockMode][aLockMode];
+
+        incTblLockModeAndUpdate(aLockItem, aCurTransLockNode->mLockMode);
+        aLockItem->mGrantLockMode =
+            mConversionTBL[aLockItem->mGrantLockMode][aLockMode];
+
+        aCurTransLockNode->mLockCnt++;
+        IDE_CONT(lock_SUCCESS);
+    }
+
+    //---------------------------------------
+    // Lock Conflict Ã³¸®
+    //---------------------------------------
+
+    IDE_EXCEPTION_CONT(lock_conflict);
+
+    if ( ( aLockItem->mGrantCnt == 1 ) && ( aCurTransLockNode != NULL ) )
+    {
+        //---------------------------------------
+        // lock conflictÀÌÁö¸¸, grantµÈ lock node°¡ 1°³ÀÌ°í,
+        // ±×°ÍÀÌ ¹Ù·Î ±×  Æ®·¢Àè¼ÇÀÏ °æ¿ì¿¡´Â request list¿¡ ´ŞÁö ¾Ê°í
+        // ±âÁ¸ grantµÈ  lock nodeÀÇ lock mode¿Í tableÀÇ ´ëÇ¥¶ô,
+        // grant lock mode¸¦  °»½ÅÇÑ´Ù.
+        //---------------------------------------
+
+        decTblLockModeAndTryUpdate( aLockItem,
+                                    aCurTransLockNode->mLockMode );
+
+        aCurTransLockNode->mLockMode =
+            mConversionTBL[aCurTransLockNode->mLockMode][aLockMode];
+
+        aLockItem->mGrantLockMode =
+            mConversionTBL[aLockItem->mGrantLockMode][aLockMode];
+
+        incTblLockModeAndUpdate( aLockItem, aCurTransLockNode->mLockMode );
+    }
+    else if ( aLockWaitMicroSec != 0 )
+    {
+        IDE_TEST( allocLockNodeAndInit( aSlot,
+                                        aLockMode,
+                                        aLockItem,
+                                        &sNewTransLockNode,
+                                        aIsExplicit )
+                  != IDE_SUCCESS );
+
+        sNewTransLockNode->mBeGrant = ID_FALSE;
+
+        if ( aCurTransLockNode != NULL )
+        {
+            sNewTransLockNode->mCvsLockNode = aCurTransLockNode;
+
+            //Lock node¸¦ Lock request ¸®½ºÆ®ÀÇ Çì´õ¿¡ Ãß°¡ÇÑ´Ù.
+            // ¿Ö³ÄÇÏ¸é ConversionÀÌ±â ¶§¹®ÀÌ´Ù.
+            addLockNodeToHead( aLockItem->mFstLockRequest,
+                               aLockItem->mLstLockRequest,
+                               sNewTransLockNode );
+        }
+        else
+        {
+            aCurTransLockNode = sNewTransLockNode;
+
+            // waiting table¿¡¼­   Æ®·£Àè¼ÇÀÇ slot id Çà¿¡
+            // request list¿¡¼­  ´ë±âÇÏ°í ÀÖ´ÂÆ®·¢Àè¼Çµé ÀÇ
+            // slot id¸¦  table lock waiting ¸®½ºÆ®¿¡ µî·ÏÇÑ´Ù.
+            registTblLockWaitListByReq(aSlot,aLockItem->mFstLockRequest);
+            //Lock node¸¦ Lock request ¸®½ºÆ®ÀÇ Tail¿¡ Ãß°¡ÇÑ´Ù.
+            addLockNodeToTail( aLockItem->mFstLockRequest,
+                               aLockItem->mLstLockRequest,
+                               sNewTransLockNode );
+        }
+        // waiting table¿¡¼­   Æ®·£Àè¼ÇÀÇ slot id Çà¿¡
+        // grant list¿¡¼­     ÀÖ´ÂÆ®·¢Àè¼Çµé ÀÇ
+        // slot id¸¦  table lock waiting ¸®½ºÆ®¿¡ µî·ÏÇÑ´Ù.
+        registTblLockWaitListByGrant( aSlot,aLockItem->mFstLockGrant );
+        aLockItem->mRequestCnt++;
+
+        IDE_TEST_RAISE( smLayerCallback::waitForLock(
+                                        smLayerCallback::getTransBySID( aSlot ),
+                                        &(aLockItem->mMutex),
+                                        aLockWaitMicroSec )
+                        != IDE_SUCCESS, err_wait_lock );
+
+        if ( sNewTransLockNode->mCvsLockNode != NULL )
+        {
+            // ÀÌ¹Ì Àâ°í ÀÖ´Â lockÀ» °»½ÅÇÏ°í, ´ë±âÇÏ´ø ÀÓ½Ã lock node´Â Á¤¸®ÇÔ,
+            // Æ®·£Àè¼ÇÀÇ lock list¿¡´Â ¿¬°áÇÑ ÀûÀÌ ¾øÀ½ (BUG-47388)
+            IDE_ASSERT(( sNewTransLockNode->mPrvTransLockNode == NULL ) &&
+                       ( sNewTransLockNode->mNxtTransLockNode == NULL ));
+            IDE_ASSERT(( sNewTransLockNode->mPrvLockNode == NULL ) &&
+                       ( sNewTransLockNode->mNxtLockNode == NULL ) );
+            IDE_ASSERT(  sNewTransLockNode->mDoRemove == ID_TRUE );
+            IDE_ASSERT(  sNewTransLockNode->mBeGrant  == ID_FALSE );
+
+            IDE_TEST( freeLockNode( sNewTransLockNode ) != IDE_SUCCESS );
+            sNewTransLockNode = NULL;
+
+            updateStatistics( aStatistics,
+                              IDV_STAT_INDEX_LOCK_RELEASED );
+        }
+    }
+    else
+    {
+        // ÃÖÃÊ·Î Heavy Mode·Î º¯°æ ½ÃµµÇÑ DDLÀÌ LockÀ» Àâ´Âµ¥ ½ÇÆĞÇÑ °æ¿ì
+        // ¹Ù·Î Light ¸ğµå·Î ´Ù½Ã º¯°æÇÑ´Ù.
+        if ( sIsFirstDDL == ID_TRUE )
+        {
+            IDE_TEST( toLightMode( aStatistics,
+                                   aLockItem ) != IDE_SUCCESS );
+        }
+
+        sLocked = ID_FALSE;
+
+        if ( aLocked != NULL )
+        {
+            *aLocked = ID_FALSE;
+        }
+    }
+
+    IDE_EXCEPTION_CONT(lock_SUCCESS);
+
+    //Æ®·£Àè¼ÇÀÇ Lock node°¡ ÀÖ¾ú°í,LockÀ» Àâ¾Ò´Ù¸é
+    // lock slotÀ» Ãß°¡ÇÑ´Ù
+    setLockModeAndAddLockSlot( aSlot,
+                               aCurTransLockNode,
+                               aCurLockMode,
+                               aLockMode,
+                               sLocked,
+                               aLockSlot );
+
+    sState = 0;
+    (void)aLockItem->mMutex.unlock();
+
+    IDE_TEST_RAISE(sLocked == ID_FALSE, err_exceed_wait_time);
+    IDE_DASSERT( aCurTransLockNode->mArrLockSlotList[aLockMode].mLockSequence != 0 );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(err_wait_lock);
+    {
+        // fix BUG-10202ÇÏ¸é¼­,
+        // dead lock , time outÀ» Æ¨°Ü ³ª¿Â Æ®·£Àè¼ÇµéÀÇ
+        // waiting table rowÀÇ ¿­À» clearÇÏ°í,
+        // request listÀÇ transactionÀÌ±ú¾î³ªµµ µÇ´ÂÁö Ã¼Å©ÇÑ´Ù.
+
+        // TimeOut ÀÌÁö¸¸, Å¸ÀÌ¹Ö ÀûÀ¸·Î LockÀ» Grant ÇÑ »óÅÂ ÀÏ ¼öµµ ÀÖ°í,
+        // ¹Ù·Î Á¤¸® ÇÏ¸é µÇ´Â CVS Node ÀÏ ¼öµµ ÀÖ´Ù.
+        (void)smlLockMgr::unlockTable( aSlot,
+                                       sNewTransLockNode,
+                                       NULL,
+                                       ID_FALSE );
+    }
+    IDE_EXCEPTION(err_exceed_wait_time);
+    {
+        IDE_SET(ideSetErrorCode(smERR_ABORT_smcExceedLockTimeWait));
+    }
+    IDE_EXCEPTION_END;
+    //waiting table¿¡¼­ aSlotÀÇ Çà¿¡ ´ë±â¿­À» clearÇÑ´Ù.
+    clearWaitItemColsOfTrans( ID_TRUE, aSlot );
+
+    if ( sState != 0 )
+    {
+        (void)aLockItem->mMutex.unlock();
+    }
+
+    return IDE_FAILURE;
+}
+
+/*********************************************************
+ * BUG-47388 Lock Table °³¼±À¸·Î Light Mode Ãß°¡
+ *
+ * 1. light mode ÀÏ °æ¿ì trans lock node list¿¡¼­¸¸ Á¦°ÅÇÑ´Ù.
+ * 2. ¾Æ´Ò °æ¿ì unlockTableInternal() È£Ãâ
+ *    2-1 mutex mode unlock Table
+ *    2-2 Timeout ¿¹¿ÜÃ³¸® ( aDoMutexLock == False )
+ *       2-2-1 TimeoutÁ÷Àü¿¡ ÀÌ¹Ì Grant ÇØ¹ö¸° °æ¿ì
+ *       2-2-2 CVS NodeÀÎ °æ¿ì DoRemove == ID_TRUE
+ *       2-2-3 Request List¿¡ ¿¬°áµÇ¾î ÀÖ´Â °æ¿ì
+ *********************************************************/
+IDE_RC smlLockMgr::unlockTable( SInt           aSlot,
+                                smlLockNode  * aLockNode,
+                                smlLockSlot  * aLockSlot,
+                                idBool         aDoMutexLock )
+{
+    idvSQL       * sStatistics = smLayerCallback::getStatisticsBySID( aSlot );
+    smlLockItem  * sLockItem ;
+    UInt           sState = 0;
+
+    if ( aLockNode == NULL )
+    {
+        IDE_DASSERT( aLockSlot->mLockNode != NULL );
+
+        aLockNode = aLockSlot->mLockNode;
+    }
+
+    sLockItem = aLockNode->mLockItem;
+
+    /* DoRemoveµµ ³»°¡ º¯°æÇØ¼­ lockÀ» if ¾È¿¡ Àâ¾Æµµ µÇÁö¸¸,
+     * 1. Trans lockÀº º´¸ñÀÌ ¾ø´Ù.
+     * 2. ´ëºÎºĞÀÇ °æ¿ì Light Mode ÀÏ °ÍÀÌ°í ±×·¸´Ù¸é DoRemove´Â FalseÀÌ´Ù.
+     * ¹Û¿¡ Àâ´Â´Ù°í ÇØ¼­ ¹®Á¦°¡ ¾øÀ¸¹Ç·Î ¸¸ÀÏÀÇ »çÅÂ¸¦ ´ëºñÇØ¼­ ¹Û¿¡¼­ Àâ´Â´Ù.
+     * */
+    lockTransNodeList( sStatistics, aSlot );
+    sState = 1;
+
+    if ( aLockNode->mDoRemove == ID_FALSE )
+    {
+        // ¾Æ´Ï ÀÌ°Íº¸´Ù ³» lock item list prev, next¸¦ º¸ÀÚ
+        if ( sLockItem->mFlag == SML_FLAG_LIGHT_MODE )
+        {
+            IDE_ASSERT( aLockNode->mNxtLockNode == NULL );
+            IDE_ASSERT( aLockNode->mPrvLockNode == NULL );
+            IDE_ASSERT( aLockNode->mLockMode != SML_XLOCK );
+            IDE_ASSERT( aLockNode->mLockMode != SML_SLOCK );
+            IDE_ASSERT( aLockNode->mLockMode != SML_SIXLOCK );
+            IDE_ASSERT( aLockNode->mBeGrant == ID_TRUE );
+
+            if ( aLockSlot != NULL )
+            {
+                aLockNode->mFlag  &= ~(aLockSlot->mMask);
+                // lockTableÀÇ 2.2Àı¿¡¼­ ÀÌÀü¿¡ Æ®·£Àè¼ÇÀÌ grant µÈ
+                // lock node¿¡ ´ëÇÏ¿©, grant lock node¸¦ Ãß°¡ÇÏ´Â ´ë½Å¿¡
+                // lock mode¸¦ conversionÇÏ¿© lock slotÀ»
+                // addÇÑ °æ¿ìÀÌ´Ù. Áï node´Â ÇÏ³ªÀÌÁö¸¸, ±×¾È¿¡
+                // lock slotÀÌ µÎ°³ ÀÌ»óÀÌ ÀÖ´Â °æ¿ìÀÌ´Ù.
+                // -> µû¶ó¼­ lock node¸¦ »èÁ¦ÇÏ¸é ¾ÈµÈ´Ù.
+                //   sDoFreeLockNode = ID_FALSE;
+
+                removeLockSlot(aLockSlot);
+
+                if ( aLockNode->mFlag != 0 )
+                {
+                    aLockNode->mLockMode = getDecision( aLockNode->mFlag );
+
+                    sState = 0;
+                    unlockTransNodeList( aSlot );
+                
+                    updateStatistics( sStatistics,
+                                      IDV_STAT_INDEX_LOCK_RELEASED );
+                    return IDE_SUCCESS;
+                }//if aLockNode
+            } // if aLockSlot != NULL
+
+            if ( aLockNode->mPrvTransLockNode != NULL )
+            {
+                // Æ®·£Àè¼Ç lock list array¿¡¼­
+                // transactionÀÇ slot id¿¡ ÇØ´çÇÏ´Â
+                // list¿¡¼­ lock node¸¦ Á¦°ÅÇÑ´Ù.
+                removeLockNode(aLockNode);
+            }
+
+            sState = 0;
+            unlockTransNodeList( aSlot );
+
+            IDE_TEST( freeLockNode( aLockNode ) != IDE_SUCCESS );
+            aLockNode = NULL;
+
+            updateStatistics( sStatistics,
+                              IDV_STAT_INDEX_LOCK_RELEASED );
+
+            // ³»°Í¸¸ Á¦°ÅÇÏ°Å³ª °»½ÅÇÏ°í Á¾·á
+            return IDE_SUCCESS;
+        }
+    }
+    else // ( aLockNode->mDoRemove == ID_TRUE )
+    {
+        /* ÁÖ·Î lock escalation ¿ë ÀÓ½Ã nodeÀÌ´Ù
+         * È£Ãâ ºóµµ°¡ ³·´Ù. unlockTableInternal¿¡¼­ Ã³¸®ÇÑ´Ù.*/
+    }
+    sState = 0;        
+    unlockTransNodeList( aSlot );
+
+    IDE_TEST( unlockTableInternal( sStatistics,
+                                   aSlot,
+                                   sLockItem,
+                                   aLockNode,
+                                   aLockSlot,
+                                   aDoMutexLock ) != IDE_SUCCESS );
+
+    updateStatistics( sStatistics,
+                      IDV_STAT_INDEX_LOCK_RELEASED );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    if ( sState != 0 )
+    {
+        unlockTransNodeList( aSlot );
+    }
+
+    return IDE_FAILURE;
+
+}
+
+/*********************************************************
+  function description: unlockTable
+
+ unlockTableInternal ÀÌ È£ÃâµÇ´Â °æ¿ì
+
+  1 mutex mode unlock Table
+  2 Timeout ¿¹¿ÜÃ³¸®
+    2-1 TimeoutÁ÷Àü¿¡ ÀÌ¹Ì Grant ÇØ¹ö¸° °æ¿ì
+    2-2 CVS NodeÀÎ °æ¿ì DoRemove == ID_TRUE
+    2-3 Request List¿¡ ¿¬°áµÇ¾î ÀÖ´Â °æ¿ì
+
+ **************************************************    
+ 
+  ¾Æ·¡¿Í °°ÀÌ ´Ù¾çÇÑ case¿¡ µû¶ó °¢°¢ Ã³¸®ÇÑ´Ù.
+  0. lock node°¡ ÀÌ¹ÌtableÀÇ grant or wait list¿¡¼­
+     ÀÌ¹Ì Á¦°Å µÇ¾î ÀÖ´Â °æ¿ì.
+     - lock node°¡ Æ®·£Àè¼ÇÀÇ lock list¿¡¼­ ´Ş·ÁÀÖÀ¸¸é,
+       lock node¸¦ Æ®·£Àè¼ÇÀÇ lock list¿¡¼­ Á¦°ÅÇÑ´Ù.
+
+  1. Lock Item Mutex¸¦ Àâ°í º¸´Ï Light ¸ğµå ÀÎ °æ¿ì
+     Light Mode Lock TableÀ» ÇØÁ¦ÇÏ°í ¹Ù·Î ºüÁ®³ª°£´Ù.
+
+  2. if (lock node°¡ grantµÈ »óÅÂ ÀÏ°æ¿ì)
+     then
+      table lockÁ¤º¸¿¡¼­ lock nodeÀÇ lock mode¸¦  1°¨¼Ò
+      ½ÃÅ°°í table ´ëÇ¥¶ô °»½Å½Ãµµ.
+      aLockNodeÀÇ ´ëÇ¥¶ô  &= ~(aLockSlotÀÇ mMask).
+      if( aLock nodeÀÇ ´ëÇ¥¶ô  != 0)
+      then
+        aLockNodeÀÇ lockMode¸¦ °»½ÅÇÑ´Ù.
+        °»½ÅµÈ lock nodeÀÇ mLockMode¸¦ table lockÁ¤º¸¿¡¼­ 1Áõ°¡.
+        lock node»èÁ¦ ÇÏ¶ó´Â flag¸¦ off½ÃÅ²´Ù.
+        --> lockTableÀÇ 2.2Àı¿¡¼­ ÀÌÀü¿¡ Æ®·£Àè¼ÇÀÌ grant µÈ
+        lock node¿¡ ´ëÇÏ¿©, grant lock node¸¦ Ãß°¡ÇÏ´Â ´ë½Å¿¡
+        lock mode¸¦ conversionÇÏ¿© lock slotÀ»
+        addÇÑ °æ¿ìÀÌ´Ù. Áï node´Â ÇÏ³ªÀÌÁö¸¸, ±×¾È¿¡
+        lock slotÀÌ µÎ°³ ÀÌ»óÀÌ ÀÖ´Â °æ¿ìÀÌ´Ù.
+        4¹øÂ° ´Ü°è·Î ³Ñ¾î°£´Ù.
+      fi
+      grant list¿¡¼­ lock node¸¦ Á¦°Å½ÃÅ²´Ù.
+      table lockÁ¤º¸¿¡¼­ grant count 1 °¨¼Ò.
+      »õ·Î¿î Grant Lock Mode¸¦ °áÁ¤ÇÑ´Ù.
+    else
+      // lock node°¡ request list¿¡ ´Ş·Á ÀÖ´Â °æ¿ì.
+       request list¿¡¼­ lock node¸¦ Á¦°Å.
+       request count°¨¼Ò.
+       grant count°¡ 0ÀÌ¸é 5¹ø´Ü°è·Î ³Ñ¾î°¨.
+    fi
+  3. waiting tableÀ» clearÇÑ´Ù.
+     grant lock nodeÀÌ°Å³ª, request list¿¡ ÀÖ¾ú´ø lock node
+     °¡  ¿ÏÀüÈ÷ FreeµÉ °æ¿ì ÀÌ TransactionÀ» ±â´Ù¸®°í ÀÖ´Â
+     TransactionÀÇ  waiting table¿¡¼­ °»½ÅÇÏ¿© ÁØ´Ù.
+     ÇÏÁö¸¸ request¿¡ ÀÖ¾ú´ø lock nodeÀÇ °æ¿ì,
+     Grant List¿¡ Lock Node°¡
+     ³²¾Æ ÀÖ´Â°æ¿ì´Â ÇÏÁö ¾Ê´Â´Ù.
+
+  4-1. Lock Item¿¡ ´õÀÌ»ó S,X,SIX °¡ ¾ø´Â °æ¿ì
+     Lock Node¸¦ Á¤¸®ÇÏ°í Light Mode·Î º¯°æÇÑ´Ù. BUG-47388
+
+  4-2. lockÀ» waitÇÏ°í ÀÖ´Â TransactionÀ» ±ú¿î´Ù.
+     ÇöÀç lock node :=  table lockÁ¤º¸¿¡¼­ request list¿¡¼­
+                        ¸ÇÃ³À½ lock node.
+     while( ÇöÀç lock node != null)
+     begin loop.
+      if( ÇöÀç tableÀÇ grant mode¿Í ÇöÀç lock nodeÀÇ lock mode°¡ È£È¯?)
+      then
+         request ¸®½ºÆ®¿¡¼­ Lock Node¸¦ Á¦°ÅÇÑ´Ù.
+         table lockÁ¤º¸¿¡¼­ grant lock mode¸¦ °»½ÅÇÑ´Ù.
+         if(ÇöÀç lock nodeÀÇ cvs node°¡ nullÀÌ ¾Æ´Ï¸é)
+         then
+            table lock Á¤º¸¿¡¼­ ÇöÀç lock nodeÀÇ
+            cvs nodeÀÇ lock mode¸¦ 1°¨¼Ò½ÃÅ°°í,´ëÇ¥¶ô °»½Å½Ãµµ.
+            cvs nodeÀÇ lock mode¸¦ °»½ÅÇÑ´Ù.
+            table lock Á¤º¸¿¡¼­ cvs nodeÀÇ
+            lock mode¸¦ 1Áõ°¡ ½ÃÅ°°í ´ëÇ¥¶ôÀ» °»½Å.
+         else
+            table lock Á¤º¸¿¡¼­ ÇöÀç lock nodeÀÇ lock mode¸¦
+            1Áõ°¡ ½ÃÅ°°í ´ëÇ¥¶ôÀ» °»½Å.
+            Grant¸®½ºÆ®¿¡ »õ·Î¿î Lock Node¸¦ Ãß°¡ÇÑ´Ù.
+            ÇöÀç lock nodeÀÇ grant flag¸¦ on ½ÃÅ²´Ù.
+            grant count¸¦ 1Áõ°¡ ½ÃÅ²´Ù.
+         fi //ÇöÀç lock nodeÀÇ cvs node°¡ nullÀÌ ¾Æ´Ï¸é
+      else
+      //ÇöÀç tableÀÇ grant mode¿Í ÇöÀç lock nodeÀÇ lock mode°¡
+      // È£È¯µÇÁö ¾Ê´Â °æ¿ì.
+        if(tableÀÇ grant count == 1)
+        then
+           if(ÇöÀç lock nodeÀÇ cvs node°¡ ÀÖ´Â°¡?)
+           then
+             //cvs node°¡ ¹Ù·Î  grantµÈ 1°³ nodeÀÌ´Ù.
+              table lock Á¤º¸¿¡¼­ cvs lock nodeÀÇ lock mode¸¦
+              1°¨¼Ò ½ÃÅ°°í, table ´ëÇ¥¶ô °»½Å½Ãµµ.
+              table lock Á¤º¸¿¡¼­ grant mode°»½Å.
+              cvs lock nodeÀÇ lock mode¸¦ ÇöÀç tableÀÇ grant mode
+              À¸·Î °»½Å.
+              table lock Á¤º¸¿¡¼­ ÇöÀç grant mode¸¦ 1Áõ°¡ ½ÃÅ°°í,
+              ´ëÇ¥¶ô °»½Å.
+              Request ¸®½ºÆ®¿¡¼­ Lock Node¸¦ Á¦°ÅÇÑ´Ù.
+           else
+              break; // nothint to do
+           fi
+        else
+           break; // nothing to do.
+        fi
+      fi// lock nodeÀÇ lock mode°¡ È£È¯µÇÁö ¾Ê´Â °æ¿ì.
+
+      table lockÁ¤º¸¿¡¼­ request count 1°¨¼Ò.
+      ÇöÀç lock nodeÀÇ slot idÀ»  waitingÇÏ°í ÀÖ´Â rowµéÀ»
+      waiting table¿¡¼­ clearÇÑ´Ù.
+      waitingÇÏ°í ÀÖ´Â Æ®·£Àè¼ÇÀ» resume½ÃÅ²´Ù.
+     loop end.
+
+  5. lock slot, lock node Á¦°Å ½Ãµµ.
+     - lock slot ÀÌ nullÀÌ ¾Æ´Ï¸é,lock slotÀ» transaction
+        ÀÇ lock slot list¿¡¼­ Á¦°ÅÇÑ´Ù.
+     - 2¹ø ´Ü°è¿¡¼­ lock node¸¦ Á¦°ÅÇÏ¶ó´Â flag°¡ on
+     µÇ¾î ÀÖÀ¸¸é  lock node¸¦  Æ®·£Àè¼ÇÀÇ lock list¿¡¼­
+     Á¦°Å ÇÏ°í, lock node¸¦ freeÇÑ´Ù.
+***********************************************************/
+IDE_RC smlLockMgr::unlockTableInternal( idvSQL      * aStatistics,
+                                        SInt          aSlot,
+                                        smlLockItem * aLockItem,
+                                        smlLockNode * aLockNode,
+                                        smlLockSlot * aLockSlot,
+                                        idBool        aDoMutexLock )
+{
+    smlLockNode  * sCurLockNode;
+    idBool         sDoFreeLockNode = ID_TRUE;
+    idBool         sUnlinkAll;
+    UInt           sState = 0;
+
+    // lock node°¡ ÀÌ¹Ì request or grant list¿¡¼­ Á¦°ÅµÈ »óÅÂ.
+    if ( aLockNode->mDoRemove == ID_TRUE )
+    {
+        // ÁÖ·Î lock escalation ¿¡ »ç¿ëµÈ ÀÓ½Ã lock node
+        IDE_ASSERT( aDoMutexLock == ID_FALSE );
+        IDE_ASSERT( aLockNode->mCvsLockNode != NULL );
+        IDE_ASSERT( ( aLockNode->mPrvLockNode == NULL ) &&
+                    ( aLockNode->mNxtLockNode == NULL ) );
+
+        IDE_CONT( unlock_COMPLETE );
+    }
+
+    if ( aDoMutexLock == ID_TRUE )
+    {
+        // lockTable Áß¿¡ TimeOutÀ¸·Î unlockÇÏ´Â °æ¿ì
+        (void)aLockItem->mMutex.lock( aStatistics );
+        sState = 1;
+    }
+
+    // LockItemÀ» Àâ°í µé¾î¿Ô´Âµ¥ ¸¶Ä§ Ç®¾îÁø °æ¿ì
+    if ( aLockItem->mFlag == SML_FLAG_LIGHT_MODE )
+    {
+        IDE_ASSERT( aDoMutexLock == ID_TRUE );
+        IDE_ASSERT( aLockNode->mNxtLockNode == NULL );
+        IDE_ASSERT( aLockNode->mPrvLockNode == NULL );
+        IDE_ASSERT( aLockNode->mLockMode != SML_XLOCK );
+        IDE_ASSERT( aLockNode->mLockMode != SML_SLOCK );
+        IDE_ASSERT( aLockNode->mLockMode != SML_SIXLOCK );
+        IDE_ASSERT( aLockNode->mBeGrant == ID_TRUE );
+
+        if ( aLockSlot != NULL )
+        {
+            aLockNode->mFlag  &= ~(aLockSlot->mMask);
+            // lockTableÀÇ 2.2Àı¿¡¼­ ÀÌÀü¿¡ Æ®·£Àè¼ÇÀÌ grant µÈ
+            // lock node¿¡ ´ëÇÏ¿©, grant lock node¸¦ Ãß°¡ÇÏ´Â ´ë½Å¿¡
+            // lock mode¸¦ conversionÇÏ¿© lock slotÀ»
+            // addÇÑ °æ¿ìÀÌ´Ù. Áï node´Â ÇÏ³ªÀÌÁö¸¸, ±×¾È¿¡
+            // lock slotÀÌ µÎ°³ ÀÌ»óÀÌ ÀÖ´Â °æ¿ìÀÌ´Ù.
+            // -> µû¶ó¼­ lock node¸¦ »èÁ¦ÇÏ¸é ¾ÈµÈ´Ù.
+            //   sDoFreeLockNode = ID_FALSE;
+            removeLockSlot( aLockSlot );
+
+            if ( aLockNode->mFlag != 0 )
+            {
+                aLockNode->mLockMode = getDecision( aLockNode->mFlag );
+
+                sDoFreeLockNode = ID_FALSE;
+            }
+        }
+
+        IDE_CONT( unlock_COMPLETE );
+    }
+
+    // ³²Àº °æ¿ì
+    // Grant°¡ X, S, SIX ÀÎ °æ¿ì,
+    // È¤Àº X,S,SIX°¡ ´ë±âÁßÀÌ°í IS, IX ÀÎ °æ¿ì
+    if ( aLockNode->mBeGrant == ID_TRUE )
+    {
+        decTblLockModeAndTryUpdate( aLockItem, aLockNode->mLockMode );
+
+        while ( 1 )
+        {
+            if ( aLockSlot != NULL )
+            {
+                aLockNode->mFlag  &= ~(aLockSlot->mMask);
+                // lockTableÀÇ 2.2Àı¿¡¼­ ÀÌÀü¿¡ Æ®·£Àè¼ÇÀÌ grant µÈ
+                // lock node¿¡ ´ëÇÏ¿©, grant lock node¸¦ Ãß°¡ÇÏ´Â ´ë½Å¿¡
+                // lock mode¸¦ conversionÇÏ¿© lock slotÀ»
+                // addÇÑ °æ¿ìÀÌ´Ù. Áï node´Â ÇÏ³ªÀÌÁö¸¸, ±×¾È¿¡
+                // lock slotÀÌ µÎ°³ ÀÌ»óÀÌ ÀÖ´Â °æ¿ìÀÌ´Ù.
+                // -> µû¶ó¼­ lock node¸¦ »èÁ¦ÇÏ¸é ¾ÈµÈ´Ù.
+                //   sDoFreeLockNode = ID_FALSE;
+                if ( aLockNode->mFlag != 0 )
+                {
+                    aLockNode->mLockMode = getDecision( aLockNode->mFlag );
+                    incTblLockModeAndUpdate( aLockItem,
+                                             aLockNode->mLockMode );
+                    sDoFreeLockNode = ID_FALSE;
+                    break;
+                }//if aLockNode
+            } // if aLockSlot != NULL
+
+            //Remove lock node from lock Grant list
+            removeLockNode( aLockItem->mFstLockGrant,
+                            aLockItem->mLstLockGrant,
+                            aLockNode );
+            aLockItem->mGrantCnt--;
+            break;
+        }
+        //»õ·Î¿î Grant Lock Mode¸¦ °áÁ¤ÇÑ´Ù.
+        aLockItem->mGrantLockMode = getDecision( aLockItem->mFlag );
+    }//if aLockNode->mBeGrant == ID_TRUE
+    else
+    {
+        // Grant µÇ¾îÀÖÁö ¾Ê´Â »óÅÂ.
+        //remove lock node from lock request list
+        removeLockNode( aLockItem->mFstLockRequest,
+                        aLockItem->mLstLockRequest, 
+                        aLockNode );
+        aLockItem->mRequestCnt--;
+
+    }//else aLockNode->mBeGrant == ID_TRUE.
+
+    if ( ( sDoFreeLockNode == ID_TRUE ) && ( aLockNode->mCvsLockNode == NULL ) )
+    {
+        // grant lock nodeÀÌ°Å³ª, request list¿¡ ÀÖ¾ú´ø lock node
+        //°¡  ¿ÏÀüÈ÷ FreeµÉ °æ¿ì ÀÌ TransactionÀ» ±â´Ù¸®°í ÀÖ´Â
+        //TransactionÀÇ  waiting table¿¡¼­ °»½ÅÇÏ¿© ÁØ´Ù.
+        //ÇÏÁö¸¸ request¿¡ ÀÖ¾ú´ø lock nodeÀÇ °æ¿ì,
+        // Grant List¿¡ Lock Node°¡
+        //³²¾Æ ÀÖ´Â°æ¿ì´Â ÇÏÁö ¾Ê´Â´Ù.
+        clearWaitTableRows( aLockItem->mFstLockRequest,
+                            aSlot );
+    }
+
+    // ( ³»°¡ X, S SIX ÀÏ¶§ ) && ( Grant¿¡¼­ ºüÁ®³ª¿Â´Ù. )
+    if (( aLockItem->mGrantLockMode == SML_ISLOCK ) ||
+        ( aLockItem->mGrantLockMode == SML_IXLOCK ) ||
+        ( aLockItem->mGrantLockMode == SML_NLOCK ))
+    {
+        sUnlinkAll = ID_TRUE;
+        for ( sCurLockNode = aLockItem->mFstLockRequest ;
+              sCurLockNode != NULL ;
+              sCurLockNode = sCurLockNode->mNxtLockNode )
+        {
+            // ¸ğµÎ IS, IX ¸¸ ÀÖ´Ù¸é Lock ItemÀ» ¸ğµÎ ÇØÃ¼ÇÑ´Ù
+            if (( sCurLockNode->mLockMode == SML_XLOCK ) ||
+                ( sCurLockNode->mLockMode == SML_SLOCK ) ||
+                ( sCurLockNode->mLockMode == SML_SIXLOCK ))
+            {
+                sUnlinkAll = ID_FALSE;
+                break;
+            }
+        }
+    }
+    else
+    {
+        sUnlinkAll = ID_FALSE;
+    }
+
+    if ( sUnlinkAll == ID_TRUE )
+    {
+        /* ±â´Ù¸®´Â LockÀÌ ÀüºÎ DML ÀÎ °æ¿ì
+         * lock itemÀ» ¸ğµÎ unlinkÇÏ°í, i lock Ã¼Á¦·Î º¯°æÇÑ´Ù.
+         * ¸¸¾à ³»°¡ SIX¿´´Ù¸é Grant Listµµ unlink ÇØ¾ß ÇÑ´Ù.*/
+
+        IDE_TEST( toLightMode( aStatistics,
+                               aLockItem ) != IDE_SUCCESS );
+    }
+    else // ±â´Ù¸®´Â LockÁß¿¡ DDL ÀÌ ÀÖ´Â °æ¿ì
+         // or ¾ÆÁ÷ X, S,SIX °¡ ÇØÁ¦µÇÁö ¾ÊÀº °æ¿ì
+    {
+        //lockÀ» ±â´Ù¸®´Â TransactionÀ» ±ú¿î´Ù.
+        IDE_TEST( wakeupRequestLockNodeInLockItem( aStatistics,
+                                                   aLockItem ) != IDE_SUCCESS );
+    }
+
+    if ( aLockSlot != NULL )
+    {
+        removeLockSlot( aLockSlot );
+    }
+
+    IDE_EXCEPTION_CONT( unlock_COMPLETE );
+
+    if ( sDoFreeLockNode == ID_TRUE )
+    {
+        // Trans List´Â ³ª¸¸ °»½Å ÇÒ ¼ö ÀÖÀ¸¹Ç·Î
+        // lockÀ» ÀâÁö ¾Ê°í È®ÀÎÇØµµ µÈ´Ù.
+        if ( aLockNode->mPrvTransLockNode != NULL )
+        {
+            // Æ®·£Àè¼Ç lock list array¿¡¼­
+            // transactionÀÇ slot id¿¡ ÇØ´çÇÏ´Â
+            // list¿¡¼­ lock node¸¦ Á¦°ÅÇÑ´Ù.
+            lockTransNodeList( aStatistics, aSlot );
+            removeLockNode(aLockNode);
+            unlockTransNodeList( aSlot );
+        }
+    }
+
+    if ( sState == 1 )
+    {
+        sState = 0;
+        (void)aLockItem->mMutex.unlock();
+    }
+
+    if ( sDoFreeLockNode == ID_TRUE )
+    {
+        IDE_TEST( freeLockNode( aLockNode ) != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    if ( sState != 0 )
+    {
+        IDE_ASSERT( aLockItem->mMutex.unlock() == IDE_SUCCESS );
+    }
+
+    return IDE_FAILURE;
+
+}
+
+/*********************************************************
+ * BUG-47388 Lock Table °³¼±À¸·Î Light Mode Ãß°¡
+ *
+ * S, X, SIX --> IS, IX, N À¸·Î º¯°æµÇ´Â °æ¿ì
+ * Lock ItemÀÇ Grant, Request ListÀÇ ¸ğµç Lock Node¸¦
+ * Light Mode·Î º¯°æÇØÁÖ°í Lock ItemÀ» ÃÊ±âÈ­ ÇÑ´Ù.
+ *********************************************************/
+IDE_RC smlLockMgr::toLightMode( idvSQL      * aStatistics,
+                                smlLockItem * aLockItem )
+{
+    smlLockNode  * sCurLockNode;
+
+    if ( aLockItem->mGrantCnt > 0 )
+    {
+        sCurLockNode = aLockItem->mFstLockGrant;
+        while ( sCurLockNode != NULL )
+        {
+            IDE_ASSERT(( sCurLockNode->mLockMode != SML_XLOCK ) &&
+                       ( sCurLockNode->mLockMode != SML_SLOCK ) &&
+                       ( sCurLockNode->mLockMode != SML_SIXLOCK ));
+            removeLockNode( aLockItem->mFstLockGrant,
+                            aLockItem->mLstLockGrant,
+                            sCurLockNode );
+
+            aLockItem->mGrantCnt--;
+            clearWaitTableRows( aLockItem->mFstLockRequest,
+                                sCurLockNode->mSlotID );
+
+            sCurLockNode = aLockItem->mFstLockGrant;
+        }
+    }
+    IDE_ASSERT( aLockItem->mGrantCnt == 0 );
+
+    //lockÀ» ±â´Ù¸®´Â TransactionÀ» ±ú¿î´Ù.
+    sCurLockNode = aLockItem->mFstLockRequest;
+    while ( sCurLockNode != NULL )
+    {
+        IDE_ASSERT(( sCurLockNode->mLockMode != SML_XLOCK ) &&
+                   ( sCurLockNode->mLockMode != SML_SLOCK ) &&
+                   ( sCurLockNode->mLockMode != SML_SIXLOCK ));
+
+        //Request ¸®½ºÆ®¿¡¼­ Lock Node¸¦ Á¦°ÅÇÑ´Ù.
+        removeLockNode( aLockItem->mFstLockRequest,
+                        aLockItem->mLstLockRequest,
+                        sCurLockNode );
+
+        // Lock ItemÀ» Light Mode·Î º¯°æÇÏ±â Àü¿¡(mFlag¸¦ º¯°æÇÏ±â Àü¿¡)
+        // Transaction Lock Node List¿¡ ¿¬°áÇÏ°í Lock Mode¸¦ ¼³Á¤ ÇØ ÁÖ¾î¾ß ÇÑ´Ù.
+        // ´Ù½Ã to Heavy ·Î º¯°æ ÇÏ´Â TransactionÀÌ ¾ÆÁ÷ ¿¬°áµÇÁö ¸øÇÑ Node¸¦ Ã£Áö ¸øÇÒ ¼öµµ ÀÖ´Ù.
+        if ( sCurLockNode->mCvsLockNode != NULL )
+        {
+            //cvs nodeÀÇ lock mode¸¦ °»½ÅÇÑ´Ù.
+            sCurLockNode->mCvsLockNode->mLockMode = mConversionTBL[sCurLockNode->mCvsLockNode->mLockMode][sCurLockNode->mLockMode];
+            sCurLockNode->mDoRemove = ID_TRUE;
+        }// if sCurLockNode->mCvsLockNode != NULL
+        else
+        {
+            sCurLockNode->mBeGrant = ID_TRUE;
+            IDE_ASSERT( sCurLockNode->mPrvTransLockNode == NULL );
+
+            lockTransNodeList( aStatistics, sCurLockNode->mSlotID );
+            addLockNode( sCurLockNode, sCurLockNode->mSlotID );
+            unlockTransNodeList( sCurLockNode->mSlotID );
+        }
+        //waiting table¿¡¼­ aSlotÀÇ Çà¿¡¼­  ´ë±â¿­À» clearÇÑ´Ù.
+        clearWaitItemColsOfTrans( ID_FALSE, sCurLockNode->mSlotID );
+
+        // waitingÇÏ°í ÀÖ´Â Æ®·£Àè¼ÇÀ» resume½ÃÅ²´Ù.
+        IDE_TEST( smLayerCallback::resumeTrans( smLayerCallback::getTransBySID( sCurLockNode->mSlotID ) ) != IDE_SUCCESS );
+        sCurLockNode = aLockItem->mFstLockRequest;
+    }/* while */
+    // aLockItem Á¤¸®;
+
+    // flag´Â ÃÖ¼ÒÇÑ grant List´Â ÇØÁ¦ µÈ ´ÙÀ½¿¡ SML_FLAG_LIGHT_MODE¸¦ set ÇØ¾ß ÇÑ´Ù.
+    // unlockÇÏ·¯ µé¾î¿Ô´Âµ¥ flag´Â 0ÀÎµ¥ ¾ÆÁ÷ grant list¿¡ ¿¬°á µÇ¾î ÀÖ´Â »óÈ²ÀÌ ¹ß»ı ÇÒ ¼ö ÀÖ´Ù.
+    clearLockItem( aLockItem );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************
+ * Mutex Mode Lock Table¿¡¼­ Request List »óÀÇ Lock Node Áß
+ * Grant List·Î ¿Å±æ ¼ö ÀÖ´Â Lock Node´Â ¿Å±â°í wakeupÇÑ´Ù.
+ ***********************************************************/
+IDE_RC smlLockMgr::wakeupRequestLockNodeInLockItem( idvSQL      * aStatistics,
+                                                    smlLockItem * aLockItem )
+{
+    smlLockNode  * sCurLockNode;
+
+    //lockÀ» ±â´Ù¸®´Â TransactionÀ» ±ú¿î´Ù.
+    sCurLockNode = aLockItem->mFstLockRequest;
+
+    while ( sCurLockNode != NULL )
+    {
+        //Wake up requestors
+        //ÇöÀç tableÀÇ grant mode¿Í ÇöÀç lock nodeÀÇ lock mode°¡ È£È¯?
+        if ( mCompatibleTBL[sCurLockNode->mLockMode][aLockItem->mGrantLockMode] == ID_TRUE )
+        {
+            //Request ¸®½ºÆ®¿¡¼­ Lock Node¸¦ Á¦°ÅÇÑ´Ù.
+            removeLockNode( aLockItem->mFstLockRequest,
+                            aLockItem->mLstLockRequest,
+                            sCurLockNode );
+
+            aLockItem->mGrantLockMode =
+                mConversionTBL[aLockItem->mGrantLockMode][sCurLockNode->mLockMode];
+            if ( sCurLockNode->mCvsLockNode != NULL )
+            {
+                //table lock Á¤º¸¿¡¼­ ÇöÀç lock nodeÀÇ
+                //cvs nodeÀÇ  lock mode¸¦ 1°¨¼Ò½ÃÅ°°í,´ëÇ¥¶ô °»½Å½Ãµµ.
+                decTblLockModeAndTryUpdate( aLockItem,
+                                            sCurLockNode->mCvsLockNode->mLockMode );
+                //cvs nodeÀÇ lock mode¸¦ °»½ÅÇÑ´Ù.
+                sCurLockNode->mCvsLockNode->mLockMode =
+                    mConversionTBL[sCurLockNode->mCvsLockNode->mLockMode][sCurLockNode->mLockMode];
+                //table lock Á¤º¸¿¡¼­ cvs nodeÀÇ
+                //lock mode¸¦ 1Áõ°¡ ½ÃÅ°°í ´ëÇ¥¶ôÀ» °»½Å.
+                incTblLockModeAndUpdate( aLockItem,
+                                         sCurLockNode->mCvsLockNode->mLockMode );
+                sCurLockNode->mDoRemove = ID_TRUE;
+            }// if sCurLockNode->mCvsLockNode != NULL
+            else
+            {
+                incTblLockModeAndUpdate( aLockItem, sCurLockNode->mLockMode );
+                //Grant¸®½ºÆ®¿¡ »õ·Î¿î Lock Node¸¦ Ãß°¡ÇÑ´Ù.
+                addLockNodeToTail( aLockItem->mFstLockGrant,
+                                   aLockItem->mLstLockGrant,
+                                   sCurLockNode );
+                sCurLockNode->mBeGrant = ID_TRUE;
+                aLockItem->mGrantCnt++;
+
+                IDE_ASSERT( sCurLockNode->mPrvTransLockNode == NULL );
+
+                lockTransNodeList( aStatistics, sCurLockNode->mSlotID );
+                addLockNode( sCurLockNode, sCurLockNode->mSlotID );
+                unlockTransNodeList( sCurLockNode->mSlotID );
+            }//else sCurLockNode->mCvsLockNode°¡ NULL
+        }
+        // ÇöÀç tableÀÇ grant lock mode¿Í lock nodeÀÇ lockmode
+        // °¡ È£È¯ÇÏÁö ¾Ê´Â °æ¿ì.
+        else
+        {
+            if ( aLockItem->mGrantCnt == 1 )
+            {
+                if ( sCurLockNode->mCvsLockNode != NULL )
+                {
+                    // cvs node°¡ ¹Ù·Î grantµÈ 1°³ nodeÀÌ´Ù.
+                    //ÇöÀç lockÀº ÇöÀç table¿¡ ´ëÇÑ lockÀÇ Converion ÀÌ´Ù.
+                    decTblLockModeAndTryUpdate( aLockItem,
+                                                sCurLockNode->mCvsLockNode->mLockMode );
+
+                    aLockItem->mGrantLockMode =
+                        mConversionTBL[aLockItem->mGrantLockMode][sCurLockNode->mLockMode];
+                    sCurLockNode->mCvsLockNode->mLockMode = aLockItem->mGrantLockMode;
+                    incTblLockModeAndUpdate( aLockItem, aLockItem->mGrantLockMode );
+                    //Request ¸®½ºÆ®¿¡¼­ Lock Node¸¦ Á¦°ÅÇÑ´Ù.
+                    removeLockNode( aLockItem->mFstLockRequest,
+                                    aLockItem->mLstLockRequest, 
+                                    sCurLockNode );
+                    sCurLockNode->mDoRemove = ID_TRUE;
+                }
+                else
+                {
+                    break;
+                } // sCurLockNode->mCvsLockNode°¡ null
+            }//aLockItem->mGrantCnt == 1
+            else
+            {
+                break;
+            }//aLockItem->mGrantCnt != 1
+        }//mCompatibleTBL
+
+        aLockItem->mRequestCnt--;
+        //waiting table¿¡¼­ aSlotÀÇ Çà¿¡¼­  ´ë±â¿­À» clearÇÑ´Ù.
+        clearWaitItemColsOfTrans( ID_FALSE, sCurLockNode->mSlotID );
+        // waitingÇÏ°í ÀÖ´Â Æ®·£Àè¼ÇÀ» resume½ÃÅ²´Ù.
+        IDE_TEST( smLayerCallback::resumeTrans( smLayerCallback::getTransBySID( sCurLockNode->mSlotID ) )
+                  != IDE_SUCCESS );
+        sCurLockNode = aLockItem->mFstLockRequest;
+    }/* while */
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+
+void smlLockMgr::dumpLockWait()
+{
+    SInt    i;
+    SInt    j;
+    SInt    k; /* for preventing from infinite loop */
+    smTID   sTID;         // Current Waiting Tx
+    smTID   sWaitForTID;  // Wait For Target Tx
+    idBool  sWaited = ID_FALSE;
+
+    SInt   sTransCnt = smLayerCallback::getCurTransCnt();
+
+    ideLogEntry sLog( IDE_DUMP_0 );
+    sLog.appendFormat( "LOCK WAIT INFO:\n"
+                       "%8s,%16s \n",
+                       "TRANS_ID",
+                       "WAIT_FOR_TRANS_ID" );
+
+    for ( j = 0; j < sTransCnt; j++ )
+    {
+        if ( smLayerCallback::isActiveBySID(j) == ID_TRUE)
+        {
+            for ( k = 0, i = smlLockMgr::mArrOfLockList[j].mFstWaitTblTransItem;
+                  (i != SML_END_ITEM) && (i != ID_USHORT_MAX) && (k < sTransCnt);
+                  i = smlLockMgr::mWaitForTable[j][i].mNxtWaitTransItem, k++ )
+            {
+                if (smlLockMgr::mWaitForTable[j][i].mIndex == 1)
+                {
+                    sWaited = ID_TRUE;
+                    sTID        = smLayerCallback::getTIDBySID(j);
+                    sWaitForTID = smLayerCallback::getTIDBySID(i);
+
+                    sLog.appendFormat( "%8u,%16u \n",
+                                       sTID,
+                                       sWaitForTID );
+                }
+            }
+        }
+    }
+
+    if( sWaited == ID_TRUE )
+    {
+        sLog.write();
+    }
+}
+
+IDE_RC smlLockMgr::dumpLockTBL()
+{
+    smcTableHeader *sCatTblHdr;
+    smcTableHeader *sTableHeader;
+    smpSlotHeader  *sPtr;
+    SChar          *sCurPtr;
+    SChar          *sNxtPtr;
+
+    sCatTblHdr = (smcTableHeader*)SMC_CAT_TABLE;
+    sCurPtr    = NULL;
+
+    // [1] Å×ÀÌºí Çì´õ¸¦ ¼øÈ¸ÇÏ¸é¼­ ÇöÀç lock node list¸¦ ±¸ÇÑ´Ù.
+    while(1)
+    {
+        IDE_TEST( smcRecord::nextOIDall( sCatTblHdr,
+                                         sCurPtr,
+                                         &sNxtPtr )
+                  != IDE_SUCCESS );
+
+        if ( sNxtPtr == NULL )
+        {
+            break;
+        }
+
+        sPtr = (smpSlotHeader *)sNxtPtr;
+
+        // To fix BUG-14681
+        if ( SM_SCN_IS_INFINITE(sPtr->mCreateSCN) )
+        {
+            /* BUG-14974: ¹«ÇÑ Loop¹ß»ı.*/
+            sCurPtr = sNxtPtr;
+            continue;
+        }
+
+        sTableHeader = (smcTableHeader *)( sPtr + 1 );
+
+        // 1. temp tableÀº skip ( PROJ-2201 TempTableÀº ÀÌÁ¦ ¿©±â ¾øÀ½ */
+        // 2. dropµÈ tableÀº skip
+        // 3. meta  tableÀº skip
+
+        if( ( SMI_TABLE_TYPE_IS_META( sTableHeader ) == ID_TRUE ) ||
+            ( smcTable::isDropedTable(sTableHeader) == ID_TRUE ) )
+        {
+            sCurPtr = sNxtPtr;
+            continue;
+        }
+
+        getLockItemNodes( (smlLockItem*)sTableHeader->mLock );
+        sCurPtr = sNxtPtr;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+void smlLockMgr::getLockItemNodes( smlLockItem * aLockItem )
+{
+    smlLockNode * sCurLockNode;
+    idBool        sGranted   = ID_FALSE;
+    idBool        sRequested = ID_FALSE;
+    SChar         sLockModeStr[][100] = {"SML_NLOCK",
+                                         "SML_SLOCK",
+                                         "SML_XLOCK",
+                                         "SML_ISLOCK",
+                                         "SML_IXLOCK",
+                                         "SML_SIXLOCK"};
+
+    aLockItem->mMutex.lock(NULL /* idvSQL* */);
+
+    ideLogEntry sTitleLog( IDE_DUMP_0 );
+    sTitleLog.appendFormat( "LOCK INFO:\n"
+                            "SPACEID    : %"ID_UINT32_FMT"\n"
+                            "TABLEOID   : %"ID_UINT64_FMT"\n"
+                            "LOCK TYPE  : %"ID_UINT32_FMT"\n"
+                            "LOCK MODE  : %s (%"ID_INT32_FMT")\n"
+                            "GRANT CNT  : %"ID_INT32_FMT"\n"
+                            "REQUEST CNT: %"ID_INT32_FMT"\n",
+                            aLockItem->mSpaceID,
+                            aLockItem->mItemID,
+                            aLockItem->mLockItemType,
+                            sLockModeStr[aLockItem->mGrantLockMode],
+                            aLockItem->mGrantLockMode,
+                            aLockItem->mGrantCnt,
+                            aLockItem->mRequestCnt );
+
+
+    ideLogEntry sGrantLog( IDE_DUMP_0 );
+    sGrantLog.appendFormat( "LOCK GRANT INFO:\n"
+                            "%8s, %8s, %8s, %8s, %8s, %8s, %8s \n",
+                            "SLOTID",
+                            "TABLEOID",
+                            "TRANSID",
+                            "TRANSID",
+                            "LOCKMODE",
+                            "LOCKCNT",
+                            "IS_GRANT" );
+    // Grant Lock Node list
+    sCurLockNode = aLockItem->mFstLockGrant;
+
+    while ( sCurLockNode != NULL )
+    {
+        sGranted = ID_TRUE;
+        sGrantLog.appendFormat( "%8u, %8lu, %8u, %8u, %8s, %8u, %8u \n",
+                                sCurLockNode->mSlotID,
+                                sCurLockNode->mItemID,
+                                smLayerCallback::getTransID(smLayerCallback::getTransBySID(sCurLockNode->mSlotID)),
+                                sCurLockNode->mTransID,
+                                sLockModeStr[sCurLockNode->mLockMode],
+                                sCurLockNode->mLockCnt,
+                                sCurLockNode->mBeGrant );
+
+        sCurLockNode = sCurLockNode->mNxtLockNode;
+    }
+
+
+    ideLogEntry sRequestLog( IDE_DUMP_0 );
+    sRequestLog.appendFormat( "LOCK REQUEST INFO:\n"
+                              "%8s, %8s, %8s, %8s, %8s, %8s, %8s \n",
+                              "SLOTID",
+                              "TABLEOID",
+                              "TRANSID",
+                              "TRANSID",
+                              "LOCKMODE",
+                              "LOCKCNT",
+                              "IS_GRANT" );
+    // Request Lock Node list
+    sCurLockNode = aLockItem->mFstLockRequest;
+
+    while ( sCurLockNode != NULL )
+    {
+        sRequested = ID_TRUE;
+        sRequestLog.appendFormat( "%8u, %8lu, %8u, %8u, %8s, %8u, %8u \n",
+                                  sCurLockNode->mSlotID,
+                                  sCurLockNode->mItemID,
+                                  smLayerCallback::getTransID(smLayerCallback::getTransBySID(sCurLockNode->mSlotID)),
+                                  sCurLockNode->mTransID,
+                                  sLockModeStr[sCurLockNode->mLockMode],
+                                  sCurLockNode->mLockCnt,
+                                  sCurLockNode->mBeGrant );
+
+        sCurLockNode = sCurLockNode->mNxtLockNode;
+    }
+
+    aLockItem->mMutex.unlock();
+
+    if( ( sGranted == ID_TRUE ) || (sRequested == ID_TRUE ) )
+    {
+        sTitleLog.write();
+    }
+
+    if( sGranted == ID_TRUE )
+    {
+        sGrantLog.write();
+    }
+
+    if( sRequested == ID_TRUE )
+    {
+        sRequestLog.write();
+    }
+    return;
+}

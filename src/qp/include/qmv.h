@@ -13,10 +13,9 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
- 
 
 /***********************************************************************
- * $Id: qmv.h 85332 2019-04-26 01:19:42Z ahra.cho $
+ * $Id: qmv.h 90434 2021-04-02 06:56:50Z khkwak $
  **********************************************************************/
 
 #ifndef _Q_QMV_H_
@@ -25,114 +24,149 @@
 #include <qc.h>
 #include <qmsParseTree.h>
 #include <qmmParseTree.h>
+#include <qcg.h>
+#include <qsv.h>
 
-// qmv::validateSelectì— ì¸ìžë¡œ ë„˜ê¸°ëŠ” flag ê°’ì— ëŒ€í•œ ì •ì˜
-// í–¥í›„ì— íŠ¹ì • ë™ìž‘ì„ ìœ„í•˜ì—¬ flagë¥¼ ì„¤ì •í•˜ì—¬ì•¼ í•˜ëŠ” ê²½ìš°
-// ê¸°ëŠ¥ì— ë”°ë¼ì„œ í™•ìž¥í•˜ë©´ ë¨.
-#define QMV_PERFORMANCE_VIEW_CREATION_MASK           (0x00000001)
-#define QMV_PERFORMANCE_VIEW_CREATION_FALSE          (0x00000000)
-#define QMV_PERFORMANCE_VIEW_CREATION_TRUE           (0x00000001)
+// qmv::validateSelect¿¡ ÀÎÀÚ·Î ³Ñ±â´Â flag °ª¿¡ ´ëÇÑ Á¤ÀÇ
+// ÇâÈÄ¿¡ Æ¯Á¤ µ¿ÀÛÀ» À§ÇÏ¿© flag¸¦ ¼³Á¤ÇÏ¿©¾ß ÇÏ´Â °æ¿ì
+// ±â´É¿¡ µû¶ó¼­ È®ÀåÇÏ¸é µÊ.
+#define QMV_PERFORMANCE_VIEW_CREATION_MASK           ID_ULONG( 0x0000000000000001 )
+#define QMV_PERFORMANCE_VIEW_CREATION_FALSE          ID_ULONG( 0x0000000000000000 )
+#define QMV_PERFORMANCE_VIEW_CREATION_TRUE           ID_ULONG( 0x0000000000000001 )
 
-#define QMV_VIEW_CREATION_MASK                       (0x00000002)
-#define QMV_VIEW_CREATION_FALSE                      (0x00000000)
-#define QMV_VIEW_CREATION_TRUE                       (0x00000002)
+#define QMV_VIEW_CREATION_MASK                       ID_ULONG( 0x0000000000000002 )
+#define QMV_VIEW_CREATION_FALSE                      ID_ULONG( 0x0000000000000000 )
+#define QMV_VIEW_CREATION_TRUE                       ID_ULONG( 0x0000000000000002 )
 
 // BUG-20272
-// subqueryì˜ query setì¸ì§€ë¥¼ ê¸°ë¡í•œë‹¤.
-#define QMV_QUERYSET_SUBQUERY_MASK                   (0x00000004)
-#define QMV_QUERYSET_SUBQUERY_FALSE                  (0x00000000)
-#define QMV_QUERYSET_SUBQUERY_TRUE                   (0x00000004)
+// subqueryÀÇ query setÀÎÁö¸¦ ±â·ÏÇÑ´Ù.
+#define QMV_QUERYSET_SUBQUERY_MASK                   ID_ULONG( 0x0000000000000004 )
+#define QMV_QUERYSET_SUBQUERY_FALSE                  ID_ULONG( 0x0000000000000000 )
+#define QMV_QUERYSET_SUBQUERY_TRUE                   ID_ULONG( 0x0000000000000004 )
 
 // proj-2188
-#define QMV_SFWGH_PIVOT_MASK                         (0x00000008)
-#define QMV_SFWGH_PIVOT_FALSE                        (0x00000000)
-#define QMV_SFWGH_PIVOT_TRUE                         (0x00000008)
+#define QMV_SFWGH_PIVOT_MASK                         ID_ULONG( 0x0000000000000008 )
+#define QMV_SFWGH_PIVOT_FALSE                        ID_ULONG( 0x0000000000000000 )
+#define QMV_SFWGH_PIVOT_TRUE                         ID_ULONG( 0x0000000000000008 )
 
 // BUG-34295
-#define QMV_SFWGH_JOIN_MASK                          (0x000000F0)
-#define QMV_SFWGH_JOIN_INNER                         (0x00000010)
-#define QMV_SFWGH_JOIN_FULL_OUTER                    (0x00000020)
-#define QMV_SFWGH_JOIN_LEFT_OUTER                    (0x00000040)
-#define QMV_SFWGH_JOIN_RIGHT_OUTER                   (0x00000080)
+#define QMV_SFWGH_JOIN_MASK                          ID_ULONG( 0x00000000000000F0 )
+#define QMV_SFWGH_JOIN_INNER                         ID_ULONG( 0x0000000000000010 )
+#define QMV_SFWGH_JOIN_FULL_OUTER                    ID_ULONG( 0x0000000000000020 )
+#define QMV_SFWGH_JOIN_LEFT_OUTER                    ID_ULONG( 0x0000000000000040 )
+#define QMV_SFWGH_JOIN_RIGHT_OUTER                   ID_ULONG( 0x0000000000000080 )
 
 // PROJ-2204 join update, delete
-// key preserved tableì„ ê³„ì‚°í•´ì•¼í•˜ëŠ” SFWGHì¸ì§€ ì„¤ì •í•œë‹¤.
+// key preserved tableÀ» °è»êÇØ¾ßÇÏ´Â SFWGHÀÎÁö ¼³Á¤ÇÑ´Ù.
 // create view, update view, delete view, insert view
-#define QMV_SFWGH_UPDATABLE_VIEW_MASK                (0x00000100)
-#define QMV_SFWGH_UPDATABLE_VIEW_FALSE               (0x00000000)
-#define QMV_SFWGH_UPDATABLE_VIEW_TRUE                (0x00000100)
+#define QMV_SFWGH_UPDATABLE_VIEW_MASK                ID_ULONG( 0x0000000000000100 )
+#define QMV_SFWGH_UPDATABLE_VIEW_FALSE               ID_ULONG( 0x0000000000000000 )
+#define QMV_SFWGH_UPDATABLE_VIEW_TRUE                ID_ULONG( 0x0000000000000100 )
 
 // PROJ-2394 Bulk Pivot Aggregation
-// pivot transformationìœ¼ë¡œ ìƒì„±ë˜ëŠ” ì²«ë²ˆì§¸ viewìž„ì„ ì„¤ì •í•œë‹¤.
-#define QMV_SFWGH_PIVOT_FIRST_VIEW_MASK              (0x00000200)
-#define QMV_SFWGH_PIVOT_FIRST_VIEW_FALSE             (0x00000000)
-#define QMV_SFWGH_PIVOT_FIRST_VIEW_TRUE              (0x00000200)
+// pivot transformationÀ¸·Î »ý¼ºµÇ´Â Ã¹¹øÂ° viewÀÓÀ» ¼³Á¤ÇÑ´Ù.
+#define QMV_SFWGH_PIVOT_FIRST_VIEW_MASK              ID_ULONG( 0x0000000000000200 )
+#define QMV_SFWGH_PIVOT_FIRST_VIEW_FALSE             ID_ULONG( 0x0000000000000000 )
+#define QMV_SFWGH_PIVOT_FIRST_VIEW_TRUE              ID_ULONG( 0x0000000000000200 )
 
-#define QMV_SFWGH_CONNECT_BY_FUNC_MASK               (0x00000400)
-#define QMV_SFWGH_CONNECT_BY_FUNC_FALSE              (0x00000000)
-#define QMV_SFWGH_CONNECT_BY_FUNC_TRUE               (0x00000400)
+#define QMV_SFWGH_CONNECT_BY_FUNC_MASK               ID_ULONG( 0x0000000000000400 )
+#define QMV_SFWGH_CONNECT_BY_FUNC_FALSE              ID_ULONG( 0x0000000000000000 )
+#define QMV_SFWGH_CONNECT_BY_FUNC_TRUE               ID_ULONG( 0x0000000000000400 )
+
+// BUG-48128
+// having clause ¶Ç´Â target caluse¿¡ scalar subquery°¡ outer columnÀ» °®´Â°æ¿ì
+// outer QUERYSET¿¡ flag
+#define QMV_QUERYSET_SCALAR_SUBQ_OUTER_COL_MASK      ID_ULONG( 0x0000000000000800 )
+#define QMV_QUERYSET_SCALAR_SUBQ_OUTER_COL_FALSE     ID_ULONG( 0x0000000000000000 )
+#define QMV_QUERYSET_SCALAR_SUBQ_OUTER_COL_TRUE      ID_ULONG( 0x0000000000000800 )
 
 // PROJ-2415 Grouping Sets Transform
-#define QMV_SFWGH_GBGS_TRANSFORM_MASK                (0x00007000)
-#define QMV_SFWGH_GBGS_TRANSFORM_NONE                (0x00000000)
-#define QMV_SFWGH_GBGS_TRANSFORM_TOP                 (0x00001000)
-#define QMV_SFWGH_GBGS_TRANSFORM_MIDDLE              (0x00002000)
-#define QMV_SFWGH_GBGS_TRANSFORM_BOTTOM              (0x00003000)
-#define QMV_SFWGH_GBGS_TRANSFORM_BOTTOM_MTR          (0x00004000)
+#define QMV_SFWGH_GBGS_TRANSFORM_MASK                ID_ULONG( 0x0000000000007000 )
+#define QMV_SFWGH_GBGS_TRANSFORM_NONE                ID_ULONG( 0x0000000000000000 )
+#define QMV_SFWGH_GBGS_TRANSFORM_TOP                 ID_ULONG( 0x0000000000001000 )
+#define QMV_SFWGH_GBGS_TRANSFORM_MIDDLE              ID_ULONG( 0x0000000000002000 )
+#define QMV_SFWGH_GBGS_TRANSFORM_BOTTOM              ID_ULONG( 0x0000000000003000 )
+#define QMV_SFWGH_GBGS_TRANSFORM_BOTTOM_MTR          ID_ULONG( 0x0000000000004000 )
 
 // BUG-41311 table function
-// table function transformationìœ¼ë¡œ ìƒì„±ë˜ëŠ” viewìž„ì„ ì„¤ì •í•œë‹¤.
-#define QMV_SFWGH_TABLE_FUNCTION_VIEW_MASK           (0x00008000)
-#define QMV_SFWGH_TABLE_FUNCTION_VIEW_FALSE          (0x00000000)
-#define QMV_SFWGH_TABLE_FUNCTION_VIEW_TRUE           (0x00008000)
+// table function transformationÀ¸·Î »ý¼ºµÇ´Â viewÀÓÀ» ¼³Á¤ÇÑ´Ù.
+#define QMV_SFWGH_TABLE_FUNCTION_VIEW_MASK           ID_ULONG( 0x0000000000008000 )
+#define QMV_SFWGH_TABLE_FUNCTION_VIEW_FALSE          ID_ULONG( 0x0000000000000000 )
+#define QMV_SFWGH_TABLE_FUNCTION_VIEW_TRUE           ID_ULONG( 0x0000000000008000 )
 
 // BUG-41573 Lateral View with GROUPING SETS
-// QuerySetì´ Lateral Viewì¸ì§€ ì„¤ì •í•œë‹¤.
-#define QMV_QUERYSET_LATERAL_MASK                    (0x00010000)
-#define QMV_QUERYSET_LATERAL_FALSE                   (0x00000000)
-#define QMV_QUERYSET_LATERAL_TRUE                    (0x00010000)
+// QuerySetÀÌ Lateral ViewÀÎÁö ¼³Á¤ÇÑ´Ù.
+#define QMV_QUERYSET_LATERAL_MASK                    ID_ULONG( 0x0000000000010000 )
+#define QMV_QUERYSET_LATERAL_FALSE                   ID_ULONG( 0x0000000000000000 )
+#define QMV_QUERYSET_LATERAL_TRUE                    ID_ULONG( 0x0000000000010000 )
 
 // PROJ-2523 Unpivot clause
-#define QMV_SFWGH_UNPIVOT_MASK                       (0x00020000)
-#define QMV_SFWGH_UNPIVOT_FALSE                      (0x00000000)
-#define QMV_SFWGH_UNPIVOT_TRUE                       (0x00020000)
+#define QMV_SFWGH_UNPIVOT_MASK                       ID_ULONG( 0x0000000000020000 )
+#define QMV_SFWGH_UNPIVOT_FALSE                      ID_ULONG( 0x0000000000000000 )
+#define QMV_SFWGH_UNPIVOT_TRUE                       ID_ULONG( 0x0000000000020000 )
 
 // PROJ-2462 Result Cache
-#define QMV_QUERYSET_RESULT_CACHE_MASK               (0x000C0000)
-#define QMV_QUERYSET_RESULT_CACHE_NONE               (0x00000000)
-#define QMV_QUERYSET_RESULT_CACHE                    (0x00040000)
-#define QMV_QUERYSET_RESULT_CACHE_NO                 (0x00080000)
+#define QMV_QUERYSET_RESULT_CACHE_MASK               ID_ULONG( 0x00000000000C0000 )
+#define QMV_QUERYSET_RESULT_CACHE_NONE               ID_ULONG( 0x0000000000000000 )
+#define QMV_QUERYSET_RESULT_CACHE                    ID_ULONG( 0x0000000000040000 )
+#define QMV_QUERYSET_RESULT_CACHE_NO                 ID_ULONG( 0x0000000000080000 )
 
 // PROJ-2462 Result Cache
-#define QMV_QUERYSET_RESULT_CACHE_INVALID_MASK       (0x00100000)
-#define QMV_QUERYSET_RESULT_CACHE_INVALID_FALSE      (0x00000000)
-#define QMV_QUERYSET_RESULT_CACHE_INVALID_TRUE       (0x00100000)
+#define QMV_QUERYSET_RESULT_CACHE_INVALID_MASK       ID_ULONG( 0x0000000000100000 )
+#define QMV_QUERYSET_RESULT_CACHE_INVALID_FALSE      ID_ULONG( 0x0000000000000000 )
+#define QMV_QUERYSET_RESULT_CACHE_INVALID_TRUE       ID_ULONG( 0x0000000000100000 )
 
 // PROJ-2582 recursive with
-#define QMV_QUERYSET_RECURSIVE_VIEW_MASK             (0x00600000)
-#define QMV_QUERYSET_RECURSIVE_VIEW_NONE             (0x00000000)
-#define QMV_QUERYSET_RECURSIVE_VIEW_LEFT             (0x00200000)
-#define QMV_QUERYSET_RECURSIVE_VIEW_RIGHT            (0x00400000)
-#define QMV_QUERYSET_RECURSIVE_VIEW_TOP              (0x00600000)
+#define QMV_QUERYSET_RECURSIVE_VIEW_MASK             ID_ULONG( 0x0000000000600000 )
+#define QMV_QUERYSET_RECURSIVE_VIEW_NONE             ID_ULONG( 0x0000000000000000 )
+#define QMV_QUERYSET_RECURSIVE_VIEW_LEFT             ID_ULONG( 0x0000000000200000 )
+#define QMV_QUERYSET_RECURSIVE_VIEW_RIGHT            ID_ULONG( 0x0000000000400000 )
+#define QMV_QUERYSET_RECURSIVE_VIEW_TOP              ID_ULONG( 0x0000000000600000 )
+
+/* BUG-48405 */
+#define QMV_QUERYSET_ANSI_JOIN_ORDERING_MASK         ID_ULONG( 0x0000000000800000 )
+#define QMV_QUERYSET_ANSI_JOIN_ORDERING_TRUE         ID_ULONG( 0x0000000000800000 )
+#define QMV_QUERYSET_ANSI_JOIN_ORDERING_FALSE        ID_ULONG( 0x0000000000000000 )
 
 // BUG-43059 Target subquery unnest/removal disable
-#define QMV_QUERYSET_TARGET_SUBQUERY_UNNEST_MASK     (0x01000000)
-#define QMV_QUERYSET_TARGET_SUBQUERY_UNNEST_TRUE     (0x00000000)
-#define QMV_QUERYSET_TARGET_SUBQUERY_UNNEST_FALSE    (0x01000000)
+#define QMV_QUERYSET_TARGET_SUBQUERY_UNNEST_MASK     ID_ULONG( 0x0000000001000000 )
+#define QMV_QUERYSET_TARGET_SUBQUERY_UNNEST_TRUE     ID_ULONG( 0x0000000000000000 )
+#define QMV_QUERYSET_TARGET_SUBQUERY_UNNEST_FALSE    ID_ULONG( 0x0000000001000000 )
 
-#define QMV_QUERYSET_TARGET_SUBQUERY_REMOVAL_MASK    (0x02000000)
-#define QMV_QUERYSET_TARGET_SUBQUERY_REMOVAL_TRUE    (0x00000000)
-#define QMV_QUERYSET_TARGET_SUBQUERY_REMOVAL_FALSE   (0x02000000)
+#define QMV_QUERYSET_TARGET_SUBQUERY_REMOVAL_MASK    ID_ULONG( 0x0000000002000000 )
+#define QMV_QUERYSET_TARGET_SUBQUERY_REMOVAL_TRUE    ID_ULONG( 0x0000000000000000 )
+#define QMV_QUERYSET_TARGET_SUBQUERY_REMOVAL_FALSE   ID_ULONG( 0x0000000002000000 )
 
 // PROJ-2687 Shard aggregation transform
-#define QMV_SFWGH_SHARD_TRANS_VIEW_MASK              (0x04000000)
-#define QMV_SFWGH_SHARD_TRANS_VIEW_FALSE             (0x00000000)
-#define QMV_SFWGH_SHARD_TRANS_VIEW_TRUE              (0x04000000)
+#define QMV_SFWGH_SHARD_TRANS_VIEW_MASK              ID_ULONG( 0x0000000004000000 )
+#define QMV_SFWGH_SHARD_TRANS_VIEW_FALSE             ID_ULONG( 0x0000000000000000 )
+#define QMV_SFWGH_SHARD_TRANS_VIEW_TRUE              ID_ULONG( 0x0000000004000000 )
 
 // BUG-46932
-#define QMV_QUERYSET_FROM_RECURSIVE_WITH_MASK        (0x08000000)
-#define QMV_QUERYSET_FROM_RECURSIVE_WITH_TRUE        (0x08000000)
-#define QMV_QUERYSET_FROM_RECURSIVE_WITH_FALSE       (0x00000000)
+#define QMV_QUERYSET_FROM_RECURSIVE_WITH_MASK        ID_ULONG( 0x0000000008000000 )
+#define QMV_QUERYSET_FROM_RECURSIVE_WITH_TRUE        ID_ULONG( 0x0000000008000000 )
+#define QMV_QUERYSET_FROM_RECURSIVE_WITH_FALSE       ID_ULONG( 0x0000000000000000 )
+
+/* BUG-47786 Unnest °á°ú ¿À·ù */
+#define QMV_SFWGH_UNNEST_OR_STOP_MASK                ID_ULONG( 0x0000000010000000 )
+#define QMV_SFWGH_UNNEST_OR_STOP_FALSE               ID_ULONG( 0x0000000000000000 )
+#define QMV_SFWGH_UNNEST_OR_STOP_TRUE                ID_ULONG( 0x0000000010000000 )
+
+/* BUG-47786 Unnest °á°ú ¿À·ù */
+#define QMV_SFWGH_UNNEST_LEFT_DISK_MASK              ID_ULONG( 0x0000000020000000 )
+#define QMV_SFWGH_UNNEST_LEFT_DISK_FALSE             ID_ULONG( 0x0000000000000000 )
+#define QMV_SFWGH_UNNEST_LEFT_DISK_TRUE              ID_ULONG( 0x0000000020000000 )
+
+/* TASK-7219 */
+#define QMV_SFWGH_SHARD_ORDER_BY_TRANS_MASK          ID_ULONG( 0x00000000C0000000 )
+#define QMV_SFWGH_SHARD_ORDER_BY_TRANS_FALSE         ID_ULONG( 0x0000000000000000 )
+#define QMV_SFWGH_SHARD_ORDER_BY_TRANS_TRUE          ID_ULONG( 0x0000000040000000 )
+#define QMV_SFWGH_SHARD_ORDER_BY_TRANS_ERROR         ID_ULONG( 0x0000000080000000 )
+
+/* TASK-7219 Shard Transformer Refactoring */
+#define QMV_SFWGH_SHARD_ANSI_TRANSFORM_MASK          ID_ULONG( 0x0000000100000000 )
+#define QMV_SFWGH_SHARD_ANSI_TRANSFORM_FALSE         ID_ULONG( 0x0000000000000000 )
+#define QMV_SFWGH_SHARD_ANSI_TRANSFORM_TRUE          ID_ULONG( 0x0000000100000000 )
 
 #define QMV_SET_QCM_COLUMN(_dest_, _src_)                       \
     {                                                           \
@@ -150,7 +184,7 @@
 class qmv
 {
 
-    // BUGBUG: jhseong, FT,PV í˜¼ìš©ê°€ëŠ¥í•œ ì½”ë“œë¡œ ë³€ê²½.
+    // BUGBUG: jhseong, FT,PV È¥¿ë°¡´ÉÇÑ ÄÚµå·Î º¯°æ.
 public:
     // parse DEFAULT values of INSERT
     static IDE_RC parseInsertValues( qcStatement * aStatement );
@@ -175,6 +209,12 @@ public:
 
     // parse VIEW of SELECT
     static IDE_RC parseSelect( qcStatement * aStatement );
+
+    /* TASK-7219 Shard Transformer Refactoring */
+    static IDE_RC parseInsertValuesInternal( qcStatement * aStatement );
+    static IDE_RC parseSelectInternal( qcStatement * aStatement );
+    static IDE_RC parseUpdateInternal( qcStatement * aStatement );
+    static IDE_RC parseDeleteInternal( qcStatement * aStatement );
 
     // PROJ-1382, jhseong
     // parse function for detect & branch-fy of validation ptr.
@@ -272,24 +312,18 @@ public:
                                    qcmColumn         * aChangedColumn = NULL,
                                    SInt                aUptColCount   = 0);
 
-    // BUG-45443
-    static void   disableShardTransformOnTop( qcStatement * aStatement,
-                                              idBool      * aIsTop );
+    /* PROJ-2714 Multiple Update Delete support */
+    static IDE_RC parseMultiUpdate( qcStatement * aStatement );
+    static IDE_RC validateMultiUpdate( qcStatement * aStatement );
 
-    static void   enableShardTransformOnTop( qcStatement * aStatement,
-                                             idBool        aIsTop );
-
-    static void   disableShardTransformInShardView( qcStatement * aStatement,
-                                                    idBool      * aIsShardView );
-
-    static void   enableShardTransformInShardView( qcStatement * aStatement,
-                                                   idBool        aIsShardView );
+    static IDE_RC parseMultiDelete( qcStatement * aStatement );
+    static IDE_RC validateMultiDelete( qcStatement * aStatement );
 
 private:
     static IDE_RC insertCommon(
         qcStatement       * aStatement,
         qmsTableRef       * aTableRef,
-        qdConstraintSpec ** aCheckConstrSpec,      /* PROJ-1107 Check Constraint ì§€ì› */
+        qdConstraintSpec ** aCheckConstrSpec,      /* PROJ-1107 Check Constraint Áö¿ø */
         qcmColumn        ** aDefaultExprColumns,   /* PROJ-1090 Function-based Index */
         qmsTableRef      ** aDefaultTableRef );
 
@@ -322,9 +356,9 @@ private:
                                      qcmIndex         * aIndex );
 
     // parse VIEW of SELECT
-    static IDE_RC parseViewInQuerySet(
-        qcStatement * aStatement,
-        qmsQuerySet * aQuerySet );
+    static IDE_RC parseViewInQuerySet( qcStatement  * aStatement,
+                                       qmsParseTree * aParseTree, /* TASK-7219 Shard Transformer Refactoring */
+                                       qmsQuerySet  * aQuerySet );
 
     // parse VIEW of FROM clause
     static IDE_RC parseViewInFromClause(
@@ -338,13 +372,13 @@ private:
         qmmInsParseTree  * aParseTree,
         qcmTableInfo     * aTableInfo );
 
-    static IDE_RC checkUpdateOperatable(
-        qcStatement  * aStatement,
-        qcmTableInfo * aTableInfo );
+    static IDE_RC checkUpdateOperatable( qcStatement  * aStatement,
+                                         idBool         aIsInsteadOfTrigger,
+                                         qmsTableRef  * aTableRef );
 
-    static IDE_RC checkDeleteOperatable(
-        qcStatement  * aStatement,
-        qcmTableInfo * aTableInfo );
+    static IDE_RC checkDeleteOperatable( qcStatement  * aStatement,
+                                         idBool         aIsInsteadOfTrigger,
+                                         qmsTableRef  * aTableRef );
 
     static IDE_RC checkInsteadOfTrigger(
         qmsTableRef * aTableRef,
@@ -364,7 +398,11 @@ private:
                                               qmsTableRef * aTableRef );
     
     // PROJ-1705
-    static IDE_RC sortUpdateColumn( qcStatement * aStatement );
+    static IDE_RC sortUpdateColumn( qcStatement   * aStatement,
+                                    qcmColumn    ** aColumns,
+                                    UInt            aColumnCount,
+                                    qmmValueNode ** aValue,
+                                    qmmValueNode ** aValuesPos );
 
     // PROJ-2002 Column Security
     static IDE_RC addDecryptFunc4ValueNode( qcStatement  * aStatement,
@@ -391,6 +429,135 @@ private:
     /* BUG-46702 */
     static IDE_RC convertWithRoullupToRollup( qcStatement * aStatement,
                                               qmsSFWGH    * aSFWGH );
+
+    static IDE_RC checkUpdatableView( qcStatement * aStatement,
+                                      qmsFrom     * aFrom );
+
+    static IDE_RC searchColumnInFromTree( qcStatement *  aStatement,
+                                          qcmColumn   *  aColumn,
+                                          qmsFrom     *  aFrom,
+                                          qmsTableRef ** aTableRef );
+
+    static IDE_RC makeUpdateRowForMultiTable( qcStatement * aStatement );
+
+    static IDE_RC makeMultiTable( qcStatement        * aStatement,
+                                  qmsFrom            * aFrom,
+                                  qcNamePosList      * aDelList,
+                                  qmmDelMultiTables ** aTableList );
+
+    static IDE_RC makeNewUpdateColumnListMultiTable( qcStatement    * aQcStmt,
+                                                     qmmMultiTables * aTable );
+
+    static IDE_RC getRefColumnListMultiTable( qcStatement     * aQcStmt,
+                                              qmmMultiTables  * aTable,
+                                              UChar          ** aRefColumnList,
+                                              UInt            * aRefColumnCount );
+
+    static void setTableNameForMultiTable( qtcNode        * aNode,
+                                           qcNamePosition * aTableName );
+
+    static IDE_RC makeAndSetMultiTable( qcStatement     * aStatement,
+                                        qmmUptParseTree * aParseTree,
+                                        qmsTableRef     * aTableRef,
+                                        qcmColumn       * aColumn,
+                                        qmmValueNode    * aValue,
+                                        UInt              aValueCount,
+                                        qmmMultiTables ** aTableList );
+
+    inline static IDE_RC checkUsableTable( qcStatement     * aStatement,
+                                           qcmTableInfo    * aTableInfo );
 };
+
+IDE_RC qmv::checkUsableTable( qcStatement     * aStatement,
+                              qcmTableInfo    * aTableInfo )
+{
+/***********************************************************************
+ *
+ * TASK-7307 DML Data Consistency in Shard
+ *   Shard Meta, Backup, Clone Å×ÀÌºíÀº ¼¼¼Çº°·Î readonly°¡ ´Ù¸£°Ô Ã³¸®µÊ.
+ *
+ *   META, BACKUP Å×ÀÌºí
+ *     »ç¿ëÀÚ´Â write ºÒ°¡.
+ *     shard_internal_local_operation >= 1 ÀÌ¸é, À§ÀÇ Á¶°Çµé°ú °ü·Ã¾øÀÌ write Çã¿ë
+ *
+ *   CLONE Å×ÀÌºí
+ *     node added/joined ÀÌ ¾Æ´Ñ »óÅÂ¿¡¼­´Â write ºÒ°¡
+ *     global_transaction_level != 3 ¿¡¼­´Â write ºÒ°¡
+ *     shard_internal_local_operation >= 1 ÀÌ¸é, À§ÀÇ Á¶°Çµé°ú °ü·Ã¾øÀÌ write Çã¿ë
+ *
+ ***********************************************************************/
+    IDE_TEST_CONT( SDU_SHARD_ENABLE != 1, normal_exit );
+
+    IDE_TEST_CONT( QCG_GET_SESSION_IS_SHARD_INTERNAL_LOCAL_OPERATION( aStatement ) == ID_TRUE, normal_exit );
+
+    if ( QCM_TABLE_IS_SHARD_META(aTableInfo->mShardFlag) == ID_TRUE )
+    {
+        IDE_TEST_RAISE( ( ( aStatement->session->mQPSpecific.mFlag & QC_SESSION_ALTER_META_MASK )
+                           != QC_SESSION_ALTER_META_ENABLE ) &&
+                        //( aStatement->session->mMmSession != NULL ) &&
+                        ( ( aStatement->session->mQPSpecific.mFlag & QC_SESSION_INTERNAL_ALLOC_MASK )
+                           != QC_SESSION_INTERNAL_ALLOC_TRUE ) &&
+                        ( QCG_GET_SESSION_SHARD_SESSION_TYPE( aStatement )
+                          != SDI_SESSION_TYPE_COORD ), ERR_NO_GRANT_DML_META_TABLE );
+    }
+    else if ( QCM_TABLE_IS_SHARD_BACKUP(aTableInfo->mShardFlag) == ID_TRUE )
+    {
+        IDE_TEST_RAISE( QCG_GET_SESSION_SHARD_SESSION_TYPE( aStatement )
+                        != SDI_SESSION_TYPE_COORD, ERR_UNABLE_TO_ACCESS );
+    }
+    else if ( QCM_TABLE_IS_SHARD_CLONE(aTableInfo->mShardFlag) == ID_TRUE )
+    {
+        IDE_TEST_RAISE( QCG_GET_SESSION_IS_GCTX( aStatement ) != ID_TRUE,
+                        ERR_NOT_GLOBAL_CONSISTENT_TRANSACTION );
+
+        IDE_TEST_RAISE( sdi::getShardStatus() != 1,
+                        ERR_NOT_JOINED_SHARD );
+
+        // BUG-48700
+        // Local ½ÇÇàÁß¿¡´Â clone table¿¡ write¸¦ Çã¿ëÇÏÁö ¾Ê´Â´Ù.
+        // PSMÀ» compile Áß¿¡´Â checkÇÏÁö ¾Ê´Â´Ù.
+        IDE_TEST_RAISE( (QCG_GET_SESSION_SHARD_IN_PSM_ENABLE(aStatement) == ID_FALSE) &&
+                        ((aStatement->spvEnv->createProc == NULL) &&
+                         (aStatement->spvEnv->createPkg  == NULL)),
+                        ERR_DML_CLONE_TABLE_IN_LOCAL );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    IDE_EXCEPTION_CONT( normal_exit );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NO_GRANT_DML_META_TABLE );
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QDP_NO_GRANT_DML_PRIV_OF_META_TABLE ) );
+    }
+    IDE_EXCEPTION( ERR_UNABLE_TO_ACCESS );
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMV_BAK_TABLE_WRITE_DENIED ) );
+    }
+    IDE_EXCEPTION( ERR_NOT_GLOBAL_CONSISTENT_TRANSACTION );
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMV_TABLE_WRITE_DENIED,
+                                  aTableInfo->name,
+                                  "No GLOBAL_CONSISTENT_TRANSACTION" ) );
+    }
+    IDE_EXCEPTION( ERR_NOT_JOINED_SHARD );
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMV_TABLE_WRITE_DENIED,
+                                  aTableInfo->name,
+                                  "Disjoined Shard node" ) );
+    }
+    IDE_EXCEPTION( ERR_DML_CLONE_TABLE_IN_LOCAL );
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMV_CLONE_TABLE_WRITE_DENIED,
+                                  aTableInfo->name ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
 
 #endif  // _Q_QMV_H_

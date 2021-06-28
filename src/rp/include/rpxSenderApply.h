@@ -47,8 +47,8 @@ public:
 
     rpxSenderApply();
     virtual ~rpxSenderApply() {};
-    /* PROJ-1915 start flagë¥¼ ì „ë‹¬ í•˜ì—¬ off-line senderë¡œ ë™ì‘ í• ë•Œ
-     * updateXSNì„ metaì— ë°˜ì˜ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    /* PROJ-1915 start flag¸¦ Àü´Ş ÇÏ¿© off-line sender·Î µ¿ÀÛ ÇÒ¶§
+     * updateXSNÀ» meta¿¡ ¹İ¿µ ÇÏÁö ¾Ê´Â´Ù.
      */
     IDE_RC initialize(rpxSender        *aSender,
                       idvSQL           *aOpStatistics,
@@ -57,6 +57,7 @@ public:
                       rpnMessenger    * aMessenger,
                       rpdMeta          *aMeta,
                       void             *aRsc,   // BUG-29689 HBT Check
+                      UInt             *aRetryCount,
                       idBool           *aNetworkError,
                       idBool           *aApplyFaultFlag,
                       idBool           *aSenderStopFlag,
@@ -81,8 +82,8 @@ public:
 
     idBool isExit() { return mExitFlag; }
 
-    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
-     * Handshake ì¤‘ SenderApply ì¤‘ì§€
+    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
+     * Handshake Áß SenderApply ÁßÁö
      */
     inline idBool isSuspended() { return mIsSuspended; }
     inline void   resume()      { mIsSuspended = ID_FALSE; }
@@ -106,6 +107,7 @@ private:
     rpnMessenger    * mMessenger;
     rpdMeta          *mMeta;
     void             *mRsc;             // BUG-29689 HBT Check
+    UInt             *mRetryCount;
     idBool           *mRetryError;
     idBool           *mApplyFaultFlag;
     idBool           *mSenderStopFlag;
@@ -128,7 +130,7 @@ private:
 
     RP_SENDER_STATUS *mStatus;
 
-    /* BUG-31545 ìˆ˜í–‰ì‹œê°„ í†µê³„ì •ë³´ */
+    /* BUG-31545 ¼öÇà½Ã°£ Åë°èÁ¤º¸ */
     idvSQL          * mOpStatistics;
     idvSession      * mStatSession;
 

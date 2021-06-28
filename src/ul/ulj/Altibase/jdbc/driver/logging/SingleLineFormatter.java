@@ -22,7 +22,7 @@ import java.text.*;
 import java.util.Date;
 
 /**
- * ì½ê¸° ì‰½ë„ë¡ LogRecordë¥¼ 1~2ë¼ì¸ìœ¼ë¡œ ìƒìƒí•´ì£¼ëŠ” customized formatter
+ * ÀĞ±â ½±µµ·Ï LogRecord¸¦ 1~2¶óÀÎÀ¸·Î »ı»ıÇØÁÖ´Â customized formatter
  * 
  * @author yjpark
  *
@@ -35,10 +35,10 @@ public class SingleLineFormatter extends Formatter
     private String mLineSeparator = System.getProperty("line.separator");
 
     /**
-     * LogRecordì˜ formatì„ ì„¤ì •í•œë‹¤.
+     * LogRecordÀÇ formatÀ» ¼³Á¤ÇÑ´Ù.
      * 
-     * @param aRecord formatí•  log record
-     * @return formatëœ log record
+     * @param aRecord formatÇÒ log record
+     * @return formatµÈ log record
      */
     public String format(LogRecord aRecord)
     {
@@ -58,7 +58,7 @@ public class SingleLineFormatter extends Formatter
         mFormatter.format(sArgs, sText, null);
         sb.append(sText).append(' ');
 
-        // í´ë˜ìŠ¤ëª…
+        // Å¬·¡½º¸í
         if (aRecord.getSourceClassName() == null)
         {
             sb.append(aRecord.getLoggerName());
@@ -68,7 +68,7 @@ public class SingleLineFormatter extends Formatter
             sb.append(aRecord.getSourceClassName());
         }
 
-        // ë©”ì†Œë“œëª…
+        // ¸Ş¼Òµå¸í
         if (aRecord.getSourceMethodName() != null)
         {
             sb.append('.').append(aRecord.getSourceMethodName());
@@ -77,7 +77,7 @@ public class SingleLineFormatter extends Formatter
 
         String sMessage = formatMessage(aRecord);
 
-        // ë ˆë²¨
+        // ·¹º§
         sb.append(aRecord.getLevel().getLocalizedName()).append(": ");
 
         int sOffset = (1000 - aRecord.getLevel().intValue()) / 100;

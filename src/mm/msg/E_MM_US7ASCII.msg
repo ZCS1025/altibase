@@ -23,7 +23,7 @@
 # 반드시 main trunk에서 번호를 할당받은 후 브랜치에서 사용하셔야 합니다.
 # 의문 사항이 있으시면 AK팀 혹은 QP(품질본부)팀에 문의 부탁드립니다.
 
-# Last Number = 252
+# Last Number = 262
 
 SECTION = 4
 
@@ -740,7 +740,7 @@ SECTION = 4
 # *Cause: The stored procedure contains both the ARRAY INSERT statement and a SELECT statement that returns a ResultSet.
 # *Action: Verify that the stored procedure does not contain both the ARRAY INSERT statement and a SELECT statement that returns a ResultSet.
 
-233, mmERR_ABORT_IP_ACL_DENIED = Connection is not permitted by the ACCESS_LIST: <0%s>
+233, mmERR_ABORT_IP_ACL_DENIED = Connection is not permitted by the ACCESS_LIST: <0%s> ( IP : <1%s> )
 # *Cause: ACCESS_LIST is set DENY.
 # *Action: Check and modify to PERMIT on the ACCESS_LIST.
 
@@ -810,7 +810,7 @@ SECTION = 4
 # *Cause: The queue(enqueue/dequeue) is not supported in IPCDA.
 # *Action: Set another communication protocols. Altibase supports the following communication besides IPCDA ; TCP/IP, Unix Domain Socket, IPC using Shared Memory, SSL/TLS.
 
-250,mmERR_ABORT_SESSION_WITH_INVALID_SMN = The shard meta number(SMN) is invalid.: [ Session SMN=<0%lu>, Data Node SMN=<1%lu>, Disconnect=<2%s>, Protocol=<3%s> ]
+#250,mmERR_ABORT_SESSION_WITH_INVALID_SMN = The shard meta number(SMN) is invalid.: [ Session SMN=<0%lu>, Data Node SMN=<1%lu>, Disconnect=<2%s>, Protocol=<3%s> ]
 # *Cause: The shard meta number(SMN) of the data node is greater than the SMN of the session.
 # *Action: Reconnect to the meta node.
 
@@ -821,6 +821,55 @@ SECTION = 4
 252,mmERR_ABORT_PLAN_CACHE_NOT_FOUND_SQL_TEXT_ID = SQLTextID not found. (SQLTextID = <0%s>)
 # *Cause: The SQLTextID does not exist.
 # *Action: Check whether SQLTextID exists in V$SQL_PLAN_CACHE_SQLTEXT.
+
+253,mmERR_ABORT_SHARED_TRANSACTION_STATE_INVALID = The state of shared transaction is invalid. (State = <0%s>, Action = <1%s>)
+# *Cause: This is an internal error related to unexpected state of shared transaction.
+# *Action: Please contact Altibase's Support Center (http://support.altibase.com).
+
+254,mmERR_ABORT_SHARD_ADMIN_MODE_ERROR = If SHARD_ADMIN_MODE is activated, only the users SYS and SYSTEM_ can connect to the database.
+# *Cause: When SHARD_ADMIN_MODE is on, only the SYS and SYSTEM_ users can connect to DB.
+# *Action: Connect to the database as SYS or SYSTEM_.
+
+255, mmERR_ABORT_ALTER_SESSION_NOT_ALLOW = ALTER SESSION statement is not allowed to execute on a specific session.
+# *Cause:  ALTER SESSION statement is not allowed to execute on a specific session.
+# *Action: Check the statement.
+
+256, mmERR_ABORT_GCTX_NOT_PERMIT = The client library version does not support the Global Consistent Transaction level.
+# *Cause: The client library version does not support the Global Consistent Transaction level.
+# *Action: Upgrade the client library version which supports the Global Consistent Transaction level.
+
+257, mmERR_ABORT_GLOBAL_TRANSACTIONS_ARE_OPEN = Global transactions are not finished to run.
+# *Cause: Failed to shutdown Server, because there are running global transactions.
+# *Action: Terminate the running global transactions, or execute 'SHUTDOWN ABORT'. 
+
+258, mmERR_ABORT_CANNOT_CHANGE_AUTOCOMMIT_IN_SHARD_ENV = Unable to change to auto-commit mode in shard environment.
+# *Cause: Unable to change to auto-commit mode in shard environment.
+# *Action: Do not attempt to change to auto-commit mode in shard environment.
+
+259, mmERR_ABORT_CONNECT_ERROR_IN_SHARD_ENV= In shard environment, a client set to autocommit cannot connect to the database.
+# *Cause: In shard environment, a client set to autocommit cannot connect to the database.
+# *Action: Set to non-autocommit mode.  
+
+260, mmERR_RETRY_SHARD_INTERNAL_STATEMENT_IS_TOO_OLD = The records required for consistent reading are out of date.
+# *Cause: The records required for consistent reading are out of date.
+# *Action: Check the error number from the trace log and contact Altibase's Support Center (http://support.altibase.com).
+
+261, mmERR_REBUILD_SHARD_INTERNAL_SHARD_META_OUT_OF_DATE = Shard meta information of session is out of date.
+# *Cause: Shard meta information has been changed.
+# *Action: Check the error number from the trace log and contact Altibase's Support Center (http://support.altibase.com).
+
+262, mmERR_ABORT_NO_SHARD_META_CHANGE_TO_REBUILD = No shard meta information changes to perform shard rebuild. (<0%s>)
+# *Cause: There are no more shard meta information changes to perform shard rebuild.
+# *Action: Check the shard configuration information.
+
+263, mmERR_ABORT_COMMIT_ERROR = In shard environment, commit failed.
+# *Cause: This is an internal error.
+# *Action: Please contact Altibase's Support Center (http://support.altibase.com).
+
+264, mmERR_ABORT_ROLLBACK_ERROR = In shard environment, rollback failed.
+# *Cause: This is an internal error.
+# *Action: Please contact Altibase's Support Center (http://support.altibase.com).
+
 
 INTERNAL_TRACE_MESSAGE_BEGIN
 

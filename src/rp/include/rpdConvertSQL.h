@@ -129,6 +129,8 @@ private:
                                         UChar            * aResult,
                                         UInt             * aResultLen );
 
+    static idBool       isSupportDataType( UInt   aDataTypeId );
+
     static IDE_RC       convertValue( mtcColumn   * aColumn,
                                       smiValue    * aSmiValue,
                                       SChar       * aValue,

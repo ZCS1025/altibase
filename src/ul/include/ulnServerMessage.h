@@ -24,7 +24,7 @@ ACI_RC ulnCallbackMessage(cmiProtocolContext *aProtocolContext,
                           void               *aServiceSession,
                           void               *aUserContext);
 
-ACI_RC ulnRegisterServerMessageCallback(ulnDbc                         *aDbc,
-                                        ulnServerMessageCallbackStruct *aCallbackStruct);
+ACI_RC ulnRegisterMessageCallback(ulnDbc                   *aDbc,
+                                  ulnMessageCallbackStruct *aMessageCallback);
 
 #endif /* _O_ULN_SERVER_MESSAGE_H_ */

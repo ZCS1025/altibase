@@ -41,6 +41,17 @@
 #include <qmn.h>
 #include <smiTableSpace.h>
 #include <mtl.h>
+#include <qdn.h>
+#include <qcmProc.h>
+
+smiTransactionalDDLCallback qciMisc::mTransactionalDDLCallback =
+{
+    qciMisc::backupDDLTargetOldTableInfo,
+    qciMisc::backupDDLTargetNewTableInfo,
+    qciMisc::removeDDLTargetTableInfo,
+    qciMisc::restoreDDLTargetOldTableInfo,
+    qciMisc::destroyDDLTargetNewTableInfo
+};
 
 UInt qciMisc::getQueryStackSize()
 {
@@ -48,8 +59,8 @@ UInt qciMisc::getQueryStackSize()
 }
 
 // BUG-26017
-// [PSM] server restartÏãú ÏàòÌñâÎêòÎäî psm loadÍ≥ºÏ†ïÏóêÏÑú
-// Í¥ÄÎ†®ÌîÑÎ°úÌçºÌã∞Î•º Ï∞∏Ï°∞ÌïòÏßÄ Î™ªÌïòÎäî Í≤ΩÏö∞ ÏûàÏùå.
+// [PSM] server restartΩ√ ºˆ«‡µ«¥¬ psm load∞˙¡§ø°º≠
+// ∞¸∑√«¡∑Œ∆€∆º∏¶ ¬¸¡∂«œ¡ˆ ∏¯«œ¥¬ ∞ÊøÏ ¿÷¿Ω.
 UInt qciMisc::getOptimizerMode()
 {
     return qcg::getOptimizerMode();
@@ -60,7 +71,7 @@ UInt qciMisc::getAutoRemoteExec()
     return qcg::getAutoRemoteExec();
 }
 
-// BUG-23780 TEMP_TBS_MEMORY ÌûåÌä∏ Ï†ÅÏö©Ïó¨Î∂ÄÎ•º propertyÎ°ú Ï†úÍ≥µ
+// BUG-23780 TEMP_TBS_MEMORY »˘∆Æ ¿˚øÎø©∫Œ∏¶ property∑Œ ¡¶∞¯
 UInt qciMisc::getOptimizerDefaultTempTbsType()
 {
     return qcg::getOptimizerDefaultTempTbsType();
@@ -71,7 +82,6 @@ idBool qciMisc::isStmtDDL( qciStmtType aStmtType )
     return ((aStmtType & QCI_STMT_MASK_MASK) == QCI_STMT_MASK_DDL) ?
         ID_TRUE : ID_FALSE;
 }
-
 idBool qciMisc::isStmtDML( qciStmtType aStmtType )
 {
     return ((aStmtType & QCI_STMT_MASK_MASK) == QCI_STMT_MASK_DML ) ?
@@ -102,23 +112,23 @@ UInt qciMisc::getStmtType( qciStmtType aStmtType )
 }
 
 // PROJ-1726
-// qcmPerformanceViewManager Î•º ÏúÑÌïú qci interface
+// qcmPerformanceViewManager ∏¶ ¿ß«— qci interface
 IDE_RC qciMisc::initializePerformanceViewManager()
 {
     return qcmPerformanceViewManager::initialize();
 }
 
 // PROJ-1726
-// qcmPerformanceViewManager Î•º ÏúÑÌïú qci interface
+// qcmPerformanceViewManager ∏¶ ¿ß«— qci interface
 IDE_RC qciMisc::finalizePerformanceViewManager()
 {
     return qcmPerformanceViewManager::finalize();
 }
 
 // PROJ-1726
-// qcmPerformanceViewManager Î•º ÏúÑÌïú qci interface
-// ÎèôÏ†Å Î™®ÎìàÏóêÏÑú performance view Î•º Îü∞ÌÉÄÏûÑ Ï§ë Ï∂îÍ∞ÄÌï† Îïå
-// <Î™®Îìà>im.cpp ::initSystemTable() ÏóêÏÑú ÏÇ¨Ïö©ÌïúÎã§.
+// qcmPerformanceViewManager ∏¶ ¿ß«— qci interface
+// µø¿˚ ∏µ‚ø°º≠ performance view ∏¶ ∑±≈∏¿” ¡ﬂ √ﬂ∞°«“ ∂ß
+// <∏µ‚>im.cpp ::initSystemTable() ø°º≠ ªÁøÎ«—¥Ÿ.
 IDE_RC qciMisc::addPerformanceView( SChar* aPerfViewStr )
 {
     return qcmPerformanceViewManager::add( aPerfViewStr );
@@ -147,7 +157,8 @@ IDE_RC qciMisc::getPartitionInfoList( void                  * aQcStatement,
                                                aSmiStmt,
                                                aMem,
                                                aTableID,
-                                               aPartInfoList );
+                                               aPartInfoList,
+                                               ID_TRUE );
 }
 
 IDE_RC qciMisc::getPartMinMaxValue( smiStatement * aSmiStmt,
@@ -174,69 +185,25 @@ IDE_RC qciMisc::getPartitionOrder( smiStatement * aSmiStmt,
                                             aPartOrder );
 }
 
-IDE_RC qciMisc::comparePartCondValues( idvSQL                  * aStatistics,
-                                       qcmTableInfo            * aTableInfo,
-                                       SChar                   * aValue1,
-                                       SChar                   * aValue2,
-                                       SInt                    * aResult )
+IDE_RC qciMisc::comparePartCondValues( void             * aQcStatement,
+                                       qcmTableInfo     * aTableInfo,
+                                       SChar            * aValue1,
+                                       SChar            * aValue2,
+                                       SInt             * aResult )
 {
-
     qmsPartCondValList      sPartCondVal1;
     qmsPartCondValList      sPartCondVal2;
     qcCondValueCharBuffer   sBuffer;
     mtdCharType           * sPartKeyCondValueStr = (mtdCharType*) & sBuffer;
-    qcStatement             sStatement;
-    smiStatement          * sDummySmiStmt;
-    smiStatement            sSmiStmt;
-    UInt                    sStage = 0;
-    UInt                    sSmiStmtFlag  = 0;
-    smiTrans                sTrans;
-    //PROJ-1677 DEQ
-    smSCN                   sDummySCN;
-    UInt                    i;
-
-
-    IDE_DASSERT( aResult != NULL );
-
-    // initialize smiStatement flag
-    sSmiStmtFlag &= ~SMI_STATEMENT_MASK;
-    sSmiStmtFlag |= SMI_STATEMENT_NORMAL;
-
-    sSmiStmtFlag &= ~SMI_STATEMENT_CURSOR_MASK;
-    sSmiStmtFlag |= SMI_STATEMENT_MEMORY_CURSOR;
-
-    IDE_TEST( qcg::allocStatement( &sStatement,
-                                   NULL,
-                                   NULL,
-                                   NULL )
-              != IDE_SUCCESS );
-
-    sStage = 1;
-
-    qcg::setSmiStmt(&sStatement, &sSmiStmt);
-
-    IDE_TEST( sTrans.initialize() != IDE_SUCCESS );
-    sStage = 2;
-
-    IDE_TEST( sTrans.begin( &sDummySmiStmt,
-                            aStatistics,
-                            SMI_ISOLATION_CONSISTENT | 
-                            SMI_TRANSACTION_NORMAL |
-                            SMI_TRANSACTION_REPL_DEFAULT )
-              != IDE_SUCCESS );
-    sStage = 3;
-
-    IDE_TEST( sSmiStmt.begin( aStatistics,
-                              sDummySmiStmt,
-                              sSmiStmtFlag ) != IDE_SUCCESS);
-    sStage = 4;
+    qcStatement           * sStatement = (qcStatement*)aQcStatement;
+    UInt                    i = 0;
 
     qtc::setVarcharValue( sPartKeyCondValueStr,
                           NULL,
                           (SChar*)aValue1,
                           idlOS::strlen( aValue1) );
 
-    IDE_TEST( qcmPartition::getPartCondVal( &sStatement,
+    IDE_TEST( qcmPartition::getPartCondVal( sStatement,
                                             aTableInfo->partKeyColumns,
                                             aTableInfo->partitionMethod,
                                             &sPartCondVal1,
@@ -250,7 +217,7 @@ IDE_RC qciMisc::comparePartCondValues( idvSQL                  * aStatistics,
                           (SChar*)aValue2,
                           idlOS::strlen( aValue2) );
 
-    IDE_TEST( qcmPartition::getPartCondVal( &sStatement,
+    IDE_TEST( qcmPartition::getPartCondVal( sStatement,
                                             aTableInfo->partKeyColumns,
                                             aTableInfo->partitionMethod,
                                             &sPartCondVal2,
@@ -262,16 +229,16 @@ IDE_RC qciMisc::comparePartCondValues( idvSQL                  * aStatistics,
     if ( ( sPartCondVal1.partCondValCount == 0 ) ||
          ( sPartCondVal2.partCondValCount == 0 ) )
     {
-        /* BUGBUG : partCondValCountÎ°ú ÌåêÎã®ÌïòÎäî Î∞©Î≤ïÏùÄ
-         *  BUG-45653 Range/ListÏùò Default PartitionÏóê Îì§Ïñ¥Í∞ÄÎäî Í∞à Ïàò ÏûàÎäî Í∞íÏù¥ Îã¨ÎùºÎèÑ, HandshakeÍ∞Ä ÏÑ±Í≥µÌï©ÎãàÎã§.
-         * Î•º Ìï¥Í≤∞ÌïòÏßÄ Î™ªÌï©ÎãàÎã§. BUG-45653 Ï≤òÎ¶¨ Ïù¥ÌõÑÏóê ÏàòÏ†ïÌï¥Ïïº Ìï©ÎãàÎã§.
+        /* BUGBUG : partCondValCount∑Œ ∆«¥‹«œ¥¬ πÊπ˝¿∫
+         *  BUG-45653 Range/List¿« Default Partitionø° µÈæÓ∞°¥¬ ∞• ºˆ ¿÷¥¬ ∞™¿Ã ¥ﬁ∂Ûµµ, Handshake∞° º∫∞¯«’¥œ¥Ÿ.
+         * ∏¶ «ÿ∞·«œ¡ˆ ∏¯«’¥œ¥Ÿ. BUG-45653 √≥∏Æ ¿Ã»ƒø° ºˆ¡§«ÿæﬂ «’¥œ¥Ÿ.
          */
         if ( ( sPartCondVal1.partCondValCount == 0 ) &&
              ( sPartCondVal2.partCondValCount == 0 ) )
         {
-            // PartcondValCountÍ∞Ä 0Ïù∏ Í≤ΩÏö∞Îäî Í∞íÏù¥ NullÏù∏ Í≤ΩÏö∞, Ï¶â
-            // DefaultÏùº Í≤ΩÏö∞ÏûÖÎãàÎã§.
-            // Îî∞ÎùºÏÑú ÎèôÏùºÌï©ÎãàÎã§.
+            // PartcondValCount∞° 0¿Œ ∞ÊøÏ¥¬ ∞™¿Ã Null¿Œ ∞ÊøÏ, ¡Ô
+            // Default¿œ ∞ÊøÏ¿‘¥œ¥Ÿ.
+            // µ˚∂Ûº≠ µø¿œ«’¥œ¥Ÿ.
             *aResult = 0;
         }
         else if ( sPartCondVal1.partCondValCount == 0 )
@@ -345,11 +312,70 @@ IDE_RC qciMisc::comparePartCondValues( idvSQL                  * aStatistics,
         }
     }
 
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qciMisc::comparePartCondValues( idvSQL                  * aStatistics,
+                                       qcmTableInfo            * aTableInfo,
+                                       SChar                   * aValue1,
+                                       SChar                   * aValue2,
+                                       SInt                    * aResult )
+{
+    qcStatement             sStatement;
+    smiStatement          * sDummySmiStmt;
+    smiStatement            sSmiStmt;
+    UInt                    sStage = 0;
+    UInt                    sSmiStmtFlag  = 0;
+    smiTrans                sTrans;
+
+    IDE_DASSERT( aResult != NULL );
+
+    // initialize smiStatement flag
+    sSmiStmtFlag &= ~SMI_STATEMENT_MASK;
+    sSmiStmtFlag |= SMI_STATEMENT_NORMAL;
+
+    sSmiStmtFlag &= ~SMI_STATEMENT_CURSOR_MASK;
+    sSmiStmtFlag |= SMI_STATEMENT_MEMORY_CURSOR;
+
+    IDE_TEST( qcg::allocStatement( &sStatement,
+                                   NULL,
+                                   NULL,
+                                   NULL )
+              != IDE_SUCCESS );
+    sStage = 1;
+
+    IDE_TEST( sTrans.initialize() != IDE_SUCCESS );
+    sStage = 2;
+
+    IDE_TEST( sTrans.begin( &sDummySmiStmt,
+                            aStatistics,
+                            SMI_ISOLATION_CONSISTENT | 
+                            SMI_TRANSACTION_NORMAL |
+                            SMI_TRANSACTION_REPL_DEFAULT )
+              != IDE_SUCCESS );
+    sStage = 3;
+
+    IDE_TEST( sSmiStmt.begin( aStatistics,
+                              sDummySmiStmt,
+                              sSmiStmtFlag ) != IDE_SUCCESS);
+    sStage = 4;
+
+    IDE_TEST( comparePartCondValues( (void*)&sStatement,
+                                     aTableInfo,
+                                     aValue1,
+                                     aValue2,
+                                     aResult )
+              != IDE_SUCCESS );
+
     sStage = 3;
     IDE_TEST(sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
 
     sStage = 2;
-    IDE_TEST(sTrans.commit(&sDummySCN) != IDE_SUCCESS);
+    IDE_TEST(sTrans.commit() != IDE_SUCCESS);
 
     sStage = 1;
     IDE_TEST(sTrans.destroy( aStatistics ) != IDE_SUCCESS);
@@ -376,6 +402,85 @@ IDE_RC qciMisc::comparePartCondValues( idvSQL                  * aStatistics,
     return IDE_FAILURE;
 }
 
+IDE_RC qciMisc::comparePartCondValues( smiStatement      * aSmiStatement,
+                                       SChar             * aTableName,
+                                       SChar             * aUserName,
+                                       SChar             * aValue1,
+                                       SChar             * aValue2,
+                                       ULong               aTimeout,
+                                       SInt              * aResult )
+{
+    smSCN                   sTableSCN;
+    void                  * sTableHandle = NULL;
+    qcmTableInfo          * sTableInfo = NULL;
+    qcStatement             sStatement;
+    idBool                  sIsAllocStatement = ID_FALSE;
+    UInt                    sUserID = 0;
+
+    IDE_TEST( qcg::allocStatement( &sStatement,
+                                   NULL,
+                                   NULL,
+                                   NULL )
+              != IDE_SUCCESS );
+    sIsAllocStatement = ID_TRUE;
+
+    qcg::setSmiStmt( &sStatement, aSmiStatement );
+
+    IDE_TEST(qcmUser::getUserID( &sStatement,
+                                 aUserName,
+                                 idlOS::strlen( aUserName ),
+                                 &sUserID )
+             != IDE_SUCCESS);
+
+    IDE_TEST( qcm::getTableHandleByName( aSmiStatement,
+                                         sUserID,
+                                         (UChar *)aTableName,
+                                         idlOS::strlen( (SChar*)aTableName ),
+                                         &sTableHandle,
+                                         &sTableSCN )
+              != IDE_SUCCESS );
+
+    IDE_TEST( smiValidateAndLockObjects( aSmiStatement->getTrans(),
+                                         sTableHandle,
+                                         sTableSCN,
+                                         SMI_TBSLV_DDL_DML,
+                                         SMI_TABLE_LOCK_IS,
+                                         aTimeout,
+                                         ID_FALSE )
+              != IDE_SUCCESS );
+    
+    /* PROJ-2446 ONE SOURCE statistics∏¶ ¿Œ¿⁄∑Œ πﬁæ∆ ≥—±‚¡ˆ æ ∞Ì
+     * local¿« statement∏¶ ≥—±‰¥Ÿ.»Æ¿Œ */
+    IDE_TEST( smiGetTableTempInfo( sTableHandle,
+                                   (void**)&sTableInfo )
+              != IDE_SUCCESS );
+
+    IDE_TEST( comparePartCondValues( &sStatement,
+                                     sTableInfo,
+                                     aValue1,
+                                     aValue2,
+                                     aResult )
+              != IDE_SUCCESS );
+    
+    sIsAllocStatement = ID_FALSE;
+    IDE_TEST( qcg::freeStatement( &sStatement ) != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    IDE_PUSH();
+
+    if ( sIsAllocStatement == ID_TRUE )
+    {
+        sIsAllocStatement = ID_FALSE;
+        (void)qcg::freeStatement( &sStatement );
+    }
+
+    IDE_POP();
+
+    return IDE_FAILURE;
+}
 
 IDE_RC qciMisc::comparePartCondValues( idvSQL            * aStatistics,
                                        SChar             * aTableName,
@@ -394,8 +499,6 @@ IDE_RC qciMisc::comparePartCondValues( idvSQL            * aStatistics,
     UInt                    sStage = 0;
     UInt                    sSmiStmtFlag  = 0;
     smiTrans                sTrans;
-    //PROJ-1677 DEQ
-    smSCN                   sDummySCN;
     UInt                    sUserID;
 
 
@@ -453,14 +556,12 @@ IDE_RC qciMisc::comparePartCondValues( idvSQL            * aStatistics,
                                          sTableSCN,
                                          SMI_TBSLV_DDL_DML,
                                          SMI_TABLE_LOCK_IS,
-                                         ((smiGetDDLLockTimeOut() == -1) ?
-                                         ID_ULONG_MAX :
-                                         smiGetDDLLockTimeOut()*1000000),
+                                         smiGetDDLLockTimeOut(sSmiStmt.getTrans()),
                                          ID_FALSE )
               != IDE_SUCCESS );
     
-    /* PROJ-2446 ONE SOURCE statisticsÎ•º Ïù∏ÏûêÎ°ú Î∞õÏïÑ ÎÑòÍ∏∞ÏßÄ ÏïäÍ≥†
-     * localÏùò statementÎ•º ÎÑòÍ∏¥Îã§.ÌôïÏù∏ */
+    /* PROJ-2446 ONE SOURCE statistics∏¶ ¿Œ¿⁄∑Œ πﬁæ∆ ≥—±‚¡ˆ æ ∞Ì
+     * local¿« statement∏¶ ≥—±‰¥Ÿ.»Æ¿Œ */
     IDE_TEST( smiGetTableTempInfo( aTableHandle,
                                    (void**)&sTableInfo )
               != IDE_SUCCESS );
@@ -476,7 +577,7 @@ IDE_RC qciMisc::comparePartCondValues( idvSQL            * aStatistics,
     IDE_TEST(sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
 
     sStage = 2;
-    IDE_TEST(sTrans.commit(&sDummySCN) != IDE_SUCCESS);
+    IDE_TEST(sTrans.commit() != IDE_SUCCESS);
 
     sStage = 1;
     IDE_TEST(sTrans.destroy( aStatistics ) != IDE_SUCCESS);
@@ -513,7 +614,6 @@ IDE_RC qciMisc::getUserIdByName( SChar             * aUserName,
     UInt                    sStage = 0;
     UInt                    sSmiStmtFlag  = 0;
     smiTrans                sTrans;
-    smSCN                   sDummySCN;
 
 
     IDE_DASSERT( aUserID != NULL );
@@ -564,7 +664,7 @@ IDE_RC qciMisc::getUserIdByName( SChar             * aUserName,
     IDE_TEST(sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
 
     sStage = 2;
-    IDE_TEST(sTrans.commit(&sDummySCN) != IDE_SUCCESS);
+    IDE_TEST(sTrans.commit() != IDE_SUCCESS);
 
     sStage = 1;
     IDE_TEST(sTrans.destroy( &sStatistics ) != IDE_SUCCESS);
@@ -599,7 +699,6 @@ IDE_RC qciMisc::isEquivalentExpressionString( SChar  * aExprString1,
     smiTrans             sTrans;
     smiStatement         sSmiStmt;
     smiStatement       * sDummySmiStmt;
-    smSCN                sDummySCN;
     UInt                 sSmiStmtFlag  = 0;
     UInt                 sStage = 0;
 
@@ -668,7 +767,7 @@ IDE_RC qciMisc::isEquivalentExpressionString( SChar  * aExprString1,
     IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
 
     sStage = 2;
-    IDE_TEST( sTrans.commit( &sDummySCN ) != IDE_SUCCESS );
+    IDE_TEST( sTrans.commit() != IDE_SUCCESS );
 
     sStage = 1;
     IDE_TEST( sTrans.destroy( NULL ) != IDE_SUCCESS );
@@ -775,8 +874,8 @@ IDE_RC qciMisc::clobRead( idvSQL       * aStatistics,
             if ( (sNCRet == NC_MB_INCOMPLETED) ||
                  (UInt)(sBufPosition - aBuffer) > sReadLength )
             {
-                // ÏùΩÏùÑ ÏúÑÏπòÍ∞Ä Î≤ÑÌçºÎ•º Î≤óÏñ¥ÎÇ¨Îã§.
-                // ÎßàÏßÄÎßâÏóê ÏùΩÏùÄ Î¨∏ÏûêÎ•º Î≤ÑÎ¶∞Îã§.
+                // ¿–¿ª ¿ßƒ°∞° πˆ∆€∏¶ π˛æÓ≥µ¥Ÿ.
+                // ∏∂¡ˆ∏∑ø° ¿–¿∫ πÆ¿⁄∏¶ πˆ∏∞¥Ÿ.
                 sReadCharCount--;
                 sBufPosition = sPrevBufPosition;
             }
@@ -832,7 +931,7 @@ IDE_RC qciMisc::lobPrepare4Write( idvSQL     * aStatistics,
 
     IDE_EXCEPTION(ERR_NOT_ALLOW_NULL)
     {
-        /* BUG-45680 insert ÏàòÌñâÏãú not null columnÏóê ÎåÄÌïú ÏóêÎü¨Î©îÏãúÏßÄ Ï†ïÎ≥¥Ïóê column Ï†ïÎ≥¥ Ï∂úÎ†•. */
+        /* BUG-45680 insert ºˆ«‡Ω√ not null columnø° ¥Î«— ø°∑Ø∏ﬁΩ√¡ˆ ¡§∫∏ø° column ¡§∫∏ √‚∑¬. */
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QMX_NOT_NULL_CONSTRAINT,
                                   "",
                                   "" ) );
@@ -875,15 +974,18 @@ idBool qciMisc::lobIsOpen( smLobLocator aLocator )
     return smiLob::isOpen( aLocator );
 }
 
-IDE_RC qciMisc::lobGetLength( smLobLocator   aLocator,
-                              UInt         * aLength )
+IDE_RC qciMisc::lobGetLength( idvSQL       * aStatistics,
+                              smLobLocator   aLocator,
+                              UInt         * aLength,
+                              idBool       * aIsNullLob )
 {
     SLong   sLength;
-    idBool  sIsNullLob;
+    idBool  sIsNullLob = ID_FALSE;
 
     if ( aLocator != MTD_LOCATOR_NULL )
     {
-        IDE_TEST( smiLob::getLength( aLocator,
+        IDE_TEST( smiLob::getLength( aStatistics,
+                                     aLocator,
                                      &sLength,
                                      &sIsNullLob )
                   != IDE_SUCCESS );
@@ -903,6 +1005,12 @@ IDE_RC qciMisc::lobGetLength( smLobLocator   aLocator,
     else
     {
         *aLength = 0;
+    }
+
+    /* PROJ-2728 Sharding LOB */
+    if ( aIsNullLob != NULL )
+    {
+        *aIsNullLob = sIsNullLob;
     }
 
     return IDE_SUCCESS;
@@ -926,11 +1034,12 @@ IDE_RC qciMisc::lobTrim(idvSQL       *aStatistics,
                         aOffset);
 }
 
-IDE_RC qciMisc::lobFinalize( smLobLocator   aLocator )
+IDE_RC qciMisc::lobFinalize( idvSQL       * aStatistics,
+                             smLobLocator   aLocator )
 {
     if ( smiLob::isOpen( aLocator ) == ID_TRUE )
     {
-        (void) smiLob::closeLobCursor( aLocator );
+        (void) smiLob::closeLobCursor( aStatistics, aLocator );
     }
     else
     {
@@ -940,7 +1049,7 @@ IDE_RC qciMisc::lobFinalize( smLobLocator   aLocator )
     return IDE_SUCCESS;
 }
 
-// Stored Procedure FunctionÏùÑ MTÏóê Îì±Î°ù
+// Stored Procedure Function¿ª MTø° µÓ∑œ
 IDE_RC
 qciMisc::addExtFuncModule( void )
 {
@@ -1132,10 +1241,10 @@ qciMisc::copyMtcColumns( void         * aTableHandle,
 }
 
 /* PROJ-1594 Volatile TBS */
-/* volatile tableÏùÄ ÌúòÎ∞úÏÑ±Ïù¥ÎØÄÎ°ú ÏÑúÎ≤ÑÍ∞Ä Íµ¨ÎèôÎê† ÎïåÎßàÎã§
-   ÌÖåÏù¥Î∏îÏùÑ Ï¥àÍ∏∞ÌôîÌï¥Ïïº ÌïúÎã§. ÌÖåÏù¥Î∏îÏùÑ Ï¥àÍ∏∞ÌôîÌï† Îïå
-   null rowÎ•º Íµ¨ÏÑ±Ìï¥Ïïº ÌïòÎäîÎç∞, Ïù¥Îïå ÏÇ¨Ïö©ÎêòÎäî Ìï®ÏàòÏù¥Îã§.
-   Ïù¥ Ìï®ÏàòÎäî SMÏóêÏÑú callbackÏúºÎ°ú Ìò∏Ï∂úÎêúÎã§. */
+/* volatile table¿∫ »÷πﬂº∫¿Ãπ«∑Œ º≠πˆ∞° ±∏µøµ… ∂ß∏∂¥Ÿ
+   ≈◊¿Ã∫Ì¿ª √ ±‚»≠«ÿæﬂ «—¥Ÿ. ≈◊¿Ã∫Ì¿ª √ ±‚»≠«“ ∂ß
+   null row∏¶ ±∏º∫«ÿæﬂ «œ¥¬µ•, ¿Ã∂ß ªÁøÎµ«¥¬ «‘ºˆ¿Ã¥Ÿ.
+   ¿Ã «‘ºˆ¥¬ SMø°º≠ callback¿∏∑Œ »£√‚µ»¥Ÿ. */
 IDE_RC qciMisc::makeNullRow(idvSQL        * /* aStatistics */, /* PROJ-2446 */
                             smiColumnList *aColumnList,
                             smiValue      *aNullRow,
@@ -1150,18 +1259,18 @@ IDE_RC qciMisc::makeNullRow(idvSQL        * /* aStatistics */, /* PROJ-2446 */
 
     for (sCurList = aColumnList; sCurList != NULL; sCurList = sCurList->next)
     {
-        /* table headerÏùò column listÏóê ÏûàÎäî mtcColumnÏùÄ
-           module, languageÎäî ÏÇ¨Ïö©Ìï† Ïàò ÏóÜÎã§.
-           Ìï®Ïàò Ìè¨Ïù∏ÌÑ∞Îäî server startÏù¥ÌõÑ Ïò¨Î∞îÎ•∏ Ï†ïÎ≥¥Í∞Ä ÏïÑÎãàÍ∏∞ ÎïåÎ¨∏Ïù¥Îã§.
-           Îî∞ÎùºÏÑú sColumn->moduleÏùÄ ÏÇ¨Ïö©Ìï¥ÏÑúÎäî ÏïàÎêúÎã§. */
+        /* table header¿« column listø° ¿÷¥¬ mtcColumn¿∫
+           module, language¥¬ ªÁøÎ«“ ºˆ æ¯¥Ÿ.
+           «‘ºˆ ∆˜¿Œ≈Õ¥¬ server start¿Ã»ƒ ø√πŸ∏• ¡§∫∏∞° æ∆¥œ±‚ ∂ßπÆ¿Ã¥Ÿ.
+           µ˚∂Ûº≠ sColumn->module¿∫ ªÁøÎ«ÿº≠¥¬ æ»µ»¥Ÿ. */
         sColumn = (mtcColumn*)sCurList->column;
         IDE_TEST(mtd::moduleById(&sModule, sColumn->type.dataTypeId)
                  != IDE_SUCCESS);
 
-        /* volatile tableÏùÑ ÎßåÎì§ ÎãπÏãúÏùò Ïª¨Îüº Î™®ÎìàÏù¥ mtdÏóê ÏóÜÏúºÎ©¥
-           ÎçîÏù¥ÏÉÅ ÏÑúÎ≤Ñ Íµ¨ÎèôÏùÑ ÏßÑÌñâÏãúÌÇ¨ Ïàò ÏóÜÎã§.
-           Ïù¥ÎïåÎ¨∏Ïóê volatile tableÏóêÎäî external columnÏùÑ ÏÇ¨Ïö©Ìï† Ïàò ÏóÜÎäî
-           Ï†úÏïΩÏù¥ ÏÉùÍ∏¥Îã§. */
+        /* volatile table¿ª ∏∏µÈ ¥ÁΩ√¿« ƒ√∑≥ ∏µ‚¿Ã mtdø° æ¯¿∏∏È
+           ¥ı¿ÃªÛ º≠πˆ ±∏µø¿ª ¡¯«‡Ω√≈≥ ºˆ æ¯¥Ÿ.
+           ¿Ã∂ßπÆø° volatile tableø°¥¬ external column¿ª ªÁøÎ«“ ºˆ æ¯¥¬
+           ¡¶æ‡¿Ã ª˝±‰¥Ÿ. */
         IDE_ASSERT(sModule != NULL);
 
         if ((sColumn->column.flag & SMI_COLUMN_TYPE_MASK)
@@ -1180,7 +1289,7 @@ IDE_RC qciMisc::makeNullRow(idvSQL        * /* aStatistics */, /* PROJ-2446 */
                                                      sNullValue->value);
         }
 
-        /* Îã§Ïùå Ïª¨ÎüºÏùò valueÎ°ú Ïù¥ÎèôÌïúÎã§. */
+        /* ¥Ÿ¿Ω ƒ√∑≥¿« value∑Œ ¿Ãµø«—¥Ÿ. */
         sNullValue++;
     }
 
@@ -1227,15 +1336,15 @@ IDE_RC qciMisc::smiCallbackCheckNeedUndoRecord( smiStatement * /* aSmiStmt */,
                                                 idBool       * aIsNeed )
 {
 /*--------------------------------------------------------------------
- * SMÏóêÏÑú Ìò∏Ï∂úÎêòÎäî Ìï®ÏàòÏù¥Î©∞,
- * foreignKeyÏôÄ triggerÍ∞Ä Ï°¥Ïû¨ÌïòÏßÄ ÏïäÎäî Í≤ΩÏö∞
- * undo recordÎ•º Í∏∞Î°ùÌïòÏßÄ ÏïäÍ∏∞ ÏúÑÌï¥ÏÑú
- * Ìï¥Îãπ ÌÖåÏù¥Î∏îÏóê foreignKey / trigger Ï°¥Ïû¨Ïú†Î¨¥Ïùò Ï†ïÎ≥¥Î•º ÏñªÎäîÎã§.
- * Ìï¥Îãπ ÌÖåÏù¥Î∏îÏóê ÎåÄÌï¥ Ïù¥ÎØ∏ lockÏù¥ Ïû°ÌòÄÏûàÎäî ÏÉÅÌÉúÏù¥ÎØÄÎ°ú
- * Î≥ÑÎèÑÏùò lockÏùÑ Ïû°ÏßÄ ÏïäÏïÑÎèÑ ÎêúÎã§.
- * (Ï£ºÏùò)
- * lockÏù¥ Ïû°ÌûàÏßÄ ÏïäÏùÄ ÌÖåÏù¥Î∏îÏùºÍ≤ΩÏö∞ Ïù¥ Ìï®ÏàòÎ•º Ìò∏Ï∂úÌïòÍ∏∞Ï†ÑÏóê
- * Î∞òÎìúÏãú lockÏùÑ Ïû°ÏïÑÏïº ÌïúÎã§.
+ * SMø°º≠ »£√‚µ«¥¬ «‘ºˆ¿Ã∏Á,
+ * foreignKeyøÕ trigger∞° ¡∏¿Á«œ¡ˆ æ ¥¬ ∞ÊøÏ
+ * undo record∏¶ ±‚∑œ«œ¡ˆ æ ±‚ ¿ß«ÿº≠
+ * «ÿ¥Á ≈◊¿Ã∫Ìø° foreignKey / trigger ¡∏¿Á¿Øπ´¿« ¡§∫∏∏¶ æÚ¥¬¥Ÿ.
+ * «ÿ¥Á ≈◊¿Ã∫Ìø° ¥Î«ÿ ¿ÃπÃ lock¿Ã ¿‚«Ù¿÷¥¬ ªÛ≈¬¿Ãπ«∑Œ
+ * ∫∞µµ¿« lock¿ª ¿‚¡ˆ æ æ∆µµ µ»¥Ÿ.
+ * (¡÷¿«)
+ * lock¿Ã ¿‚»˜¡ˆ æ ¿∫ ≈◊¿Ã∫Ì¿œ∞ÊøÏ ¿Ã «‘ºˆ∏¶ »£√‚«œ±‚¿¸ø°
+ * π›µÂΩ√ lock¿ª ¿‚æ∆æﬂ «—¥Ÿ.
  ---------------------------------------------------------------------*/
     qcmTableInfo   * sTableInfo;
     idBool           sNeedUndoRecord = ID_TRUE;
@@ -1479,6 +1588,23 @@ IDE_RC qciMisc::getTableInfo( void            *aQcStatement,
                               aTableHandle );
 }
 
+IDE_RC qciMisc::getTableInfoAndLock(void            *aQcStatement,
+                                    SChar           *aUserName,
+                                    SChar           *aTableName,
+                                    smiTableLockMode aLockMode,
+                                    ULong            aTimeout,
+                                    qcmTableInfo   **aOutTableInfo,
+                                    void           **aOutTableHandle)
+{
+    return qcm::getTableInfoAndLock((qcStatement*)aQcStatement,
+                                    aUserName,
+                                    aTableName,
+                                    aLockMode,
+                                    aTimeout,
+                                    aOutTableInfo,
+                                    aOutTableHandle);
+}
+
 IDE_RC qciMisc::lockTableForDDLValidation(void      * aQcStatement,
                                           void      * aTableHandle,
                                           smSCN       aSCN)
@@ -1580,7 +1706,30 @@ IDE_RC qciMisc::runSQLforShardMeta( smiStatement * aSmiStmt,
 {
     return qcg::runSQLforShardMeta( aSmiStmt,
                                     aSqlStr,
-                                    aRowCnt );
+                                    aRowCnt,
+                                    NULL );
+}
+
+IDE_RC qciMisc::runDCLforInternal( qcStatement  * aStatement,
+                                   SChar        * aSqlStr,
+                                   void         * aSession )
+{
+    return qcg::runDCLforInternal( aStatement,
+                                   aSqlStr,
+                                   aSession );
+}
+
+IDE_RC qciMisc::runSelectOneRowforDDL( smiStatement * aSmiStmt,
+                                       SChar        * aSqlStr,
+                                       void         * aResult,
+                                       idBool       * aRecordExist,
+                                       idBool         aCalledPWVerifyFunc )
+{
+    return qcg::runSelectOneRowforDDL( aSmiStmt,
+                                       aSqlStr,
+                                       aResult,
+                                       aRecordExist,
+                                       aCalledPWVerifyFunc );   
 }
 
 IDE_RC qciMisc::selectCount( smiStatement        * aSmiStmt,
@@ -1887,14 +2036,13 @@ IDE_RC qciMisc::getAuditMetaInfo( idBool              * aIsStarted,
     smiTrans      sTrans;
     smiStatement  sSmiStmt;
     smiStatement *sDummySmiStmt;
-    smSCN         sDummySCN;
     UInt          sSmiStmtFlag;
     UInt          sStage = 0;
 
     sSmiStmtFlag = SMI_STATEMENT_UNTOUCHABLE | SMI_STATEMENT_MEMORY_CURSOR;
 
-    /* PROJ-2446 ONE SOURCE MM ÏóêÏÑú statisticsÏ†ïÎ≥¥Î•º ÎÑòÍ≤® Î∞õÏïÑÏïº ÌïúÎã§.
-     * Ï∂îÌõÑ ÏûëÏóÖ */
+    /* PROJ-2446 ONE SOURCE MM ø°º≠ statistics¡§∫∏∏¶ ≥—∞‹ πﬁæ∆æﬂ «—¥Ÿ.
+     * √ﬂ»ƒ ¿€æ˜ */
     IDE_TEST(sTrans.initialize() != IDE_SUCCESS);
     sStage++; //1
 
@@ -1923,7 +2071,7 @@ IDE_RC qciMisc::getAuditMetaInfo( idBool              * aIsStarted,
     IDE_TEST(sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
 
     sStage--; //1
-    IDE_TEST(sTrans.commit(&sDummySCN) != IDE_SUCCESS);
+    IDE_TEST(sTrans.commit() != IDE_SUCCESS);
 
     sStage--; //0
     IDE_TEST(sTrans.destroy( NULL ) != IDE_SUCCESS);
@@ -1937,7 +2085,7 @@ IDE_RC qciMisc::getAuditMetaInfo( idBool              * aIsStarted,
         case 3:
             IDE_ASSERT(sSmiStmt.end(SMI_STATEMENT_RESULT_FAILURE) == IDE_SUCCESS);
         case 2:
-            IDE_ASSERT(sTrans.commit(&sDummySCN) == IDE_SUCCESS);
+            IDE_ASSERT(sTrans.commit() == IDE_SUCCESS);
         case 1:
             IDE_ASSERT(sTrans.destroy( NULL ) == IDE_SUCCESS);
         default:
@@ -1949,10 +2097,10 @@ IDE_RC qciMisc::getAuditMetaInfo( idBool              * aIsStarted,
 
 // PROJ-2397 Compressed Column Table Replication
 IDE_RC qciMisc::makeDictValueForCompress( smiStatement   * aStatement,
-					  void           * aTableHandle,
-				          void           * aIndexHeader,
-					  smiValue       * aInsertedRow,
-					  void           * aOIDValue )
+                      void           * aTableHandle,
+                          void           * aIndexHeader,
+                      smiValue       * aInsertedRow,
+                      void           * aOIDValue )
 {
     return qcmDictionary::makeDictValueForCompress( aStatement,
                                                     aTableHandle,
@@ -1964,7 +2112,7 @@ IDE_RC qciMisc::makeDictValueForCompress( smiStatement   * aStatement,
 /**
  * PROJ-1438 Job Scheduler
  *
- * ÌòÑÏ†ú ÏãúÍ∞ÑÏóê Ïã§ÌñâÌï† JobÎì§ÏùÑ ÏñªÎäîÎã§.
+ * «ˆ¡¶ Ω√∞£ø° Ω««‡«“ JobµÈ¿ª æÚ¥¬¥Ÿ.
  */
 void qciMisc::getExecJobItems( SInt * aIems,
                                UInt * aCount,
@@ -1973,7 +2121,6 @@ void qciMisc::getExecJobItems( SInt * aIems,
     smiTrans       sTrans;
     smiStatement   sSmiStmt;
     smiStatement * sDummySmiStmt;
-    smSCN          sDummySCN;
     UInt           sSmiStmtFlag;
     UInt           sStage = 0;
 
@@ -1981,8 +2128,8 @@ void qciMisc::getExecJobItems( SInt * aIems,
 
     *aCount = 0;
 
-    /* PROJ-2446 ONE SOURCE MM ÏóêÏÑú statisticsÏ†ïÎ≥¥Î•º ÎÑòÍ≤® Î∞õÏïÑÏïº ÌïúÎã§.
-     * Ï∂îÌõÑ ÏûëÏóÖ */
+    /* PROJ-2446 ONE SOURCE MM ø°º≠ statistics¡§∫∏∏¶ ≥—∞‹ πﬁæ∆æﬂ «—¥Ÿ.
+     * √ﬂ»ƒ ¿€æ˜ */
     IDE_TEST( sTrans.initialize() != IDE_SUCCESS );
 
     sStage++; //1
@@ -2005,7 +2152,7 @@ void qciMisc::getExecJobItems( SInt * aIems,
     IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
 
     sStage--; //1
-    IDE_TEST( sTrans.commit( &sDummySCN ) != IDE_SUCCESS );
+    IDE_TEST( sTrans.commit() != IDE_SUCCESS );
 
     sStage--; //0
     IDE_TEST( sTrans.destroy( NULL ) != IDE_SUCCESS );
@@ -2019,7 +2166,7 @@ void qciMisc::getExecJobItems( SInt * aIems,
         case 3:
             ( void )sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
         case 2:
-            ( void )sTrans.commit( &sDummySCN );
+            ( void )sTrans.commit();
         case 1:
             ( void )sTrans.destroy( NULL );
         default:
@@ -2035,13 +2182,13 @@ void qciMisc::getExecJobItems( SInt * aIems,
 /**
  * PROJ-1438 Job Scheduler
  *
- *   Job IDÎ•º ÌÜµÌï¥ÏÑú JobÏùÑ Ïã§ÌñâÌïúÎã§.
+ *   Job ID∏¶ ≈Î«ÿº≠ Job¿ª Ω««‡«—¥Ÿ.
  *
- *   1. Job IDÎ•º ÌÜµÌï¥ÏÑú JobÏùò Ï†ïÎ≥¥Î•º ÌöçÎìùÌïúÎã§.
- *   2. Job StateÏôÄ Last Exec Time ÏùÑ Update ÌïúÎã§.
- *   3. Job Ï†ïÎ≥¥Î•º ÌÜµÌï¥ Procecure Î•º Ïã§ÌñâÏãúÌÇ®Îã§.
- *   4. Ïã§Ìñâ Í≤∞Í≥ºÏóê Îî∞Îùº Commit or Rallback Î™ÖÎ†πÏùÑ Ïã§ÌñâÌïúÎã§.
- *   5. Ïã§ÌñâÌõÑ Job StateÏôÄ, Execute Count, Error CodeÎ•º Update ÌïúÎã§.
+ *   1. Job ID∏¶ ≈Î«ÿº≠ Job¿« ¡§∫∏∏¶ »πµÊ«—¥Ÿ.
+ *   2. Job StateøÕ Last Exec Time ¿ª Update «—¥Ÿ.
+ *   3. Job ¡§∫∏∏¶ ≈Î«ÿ Procecure ∏¶ Ω««‡Ω√≈≤¥Ÿ.
+ *   4. Ω««‡ ∞·∞˙ø° µ˚∂Û Commit or Rallback ∏Ì∑…¿ª Ω««‡«—¥Ÿ.
+ *   5. Ω««‡»ƒ Job StateøÕ, Execute Count, Error Code∏¶ Update «—¥Ÿ.
  */
 void qciMisc::executeJobItem( UInt     aJobThreadIndex,
                               SInt     aJob,
@@ -2050,7 +2197,6 @@ void qciMisc::executeJobItem( UInt     aJobThreadIndex,
     smiTrans       sTrans;
     smiStatement   sSmiStmt;
     smiStatement * sDummySmiStmt;
-    smSCN          sDummySCN;
     UInt           sSmiStmtFlag;
     UInt           sStage       = 0;
     SInt           sExecCount   = -1;
@@ -2064,8 +2210,8 @@ void qciMisc::executeJobItem( UInt     aJobThreadIndex,
 
     sSmiStmtFlag = SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR;
 
-    /* PROJ-2446 ONE SOURCE MM ÏóêÏÑú statisticsÏ†ïÎ≥¥Î•º ÎÑòÍ≤® Î∞õÏïÑÏïº ÌïúÎã§.
-     * Ï∂îÌõÑ ÏûëÏóÖ */
+    /* PROJ-2446 ONE SOURCE MM ø°º≠ statistics¡§∫∏∏¶ ≥—∞‹ πﬁæ∆æﬂ «—¥Ÿ.
+     * √ﬂ»ƒ ¿€æ˜ */
     IDE_TEST( sTrans.initialize() != IDE_SUCCESS );
 
     sStage++; //1
@@ -2080,7 +2226,7 @@ void qciMisc::executeJobItem( UInt     aJobThreadIndex,
 
     sStage++; //3
 
-    /* 1. Job IDÎ•º ÌÜµÌï¥ÏÑú JobÏùò Ï†ïÎ≥¥Î•º ÌöçÎìùÌïúÎã§. */
+    /* 1. Job ID∏¶ ≈Î«ÿº≠ Job¿« ¡§∫∏∏¶ »πµÊ«—¥Ÿ. */
     IDE_TEST( qcmJob::getJobInfo( &sSmiStmt,
                                   aJob,
                                   sJobName,
@@ -2093,7 +2239,7 @@ void qciMisc::executeJobItem( UInt     aJobThreadIndex,
     if ( ( sJobState != QCM_JOB_STATE_EXEC ) &&
          ( sExecCount > -1 ) )
     {
-        /* 2. Job StateÏôÄ Last Exec Time ÏùÑ Update ÌïúÎã§.*/
+        /* 2. Job StateøÕ Last Exec Time ¿ª Update «—¥Ÿ.*/
         IDE_TEST( qcmJob::updateStateAndLastExecTime( &sSmiStmt,
                                                       aJob )
                   != IDE_SUCCESS );
@@ -2102,13 +2248,13 @@ void qciMisc::executeJobItem( UInt     aJobThreadIndex,
         IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
 
         sStage--; //1
-        IDE_TEST( sTrans.commit( &sDummySCN )
+        IDE_TEST( sTrans.commit()
                   != IDE_SUCCESS );
 
         sStage--; //0
         IDE_TEST( sTrans.destroy( NULL ) != IDE_SUCCESS );
 
-        /* 3. Job Ï†ïÎ≥¥Î•º ÌÜµÌï¥ Procecure Î•º Ïã§ÌñâÏãúÌÇ®Îã§. */
+        /* 3. Job ¡§∫∏∏¶ ≈Î«ÿ Procecure ∏¶ Ω««‡Ω√≈≤¥Ÿ. */
         if ( qcg::runProcforJob( aJobThreadIndex,
                                  aSession,
                                  aJob,
@@ -2117,7 +2263,7 @@ void qciMisc::executeJobItem( UInt     aJobThreadIndex,
                                  &sErrorCode )
               == IDE_SUCCESS )
         {
-            /* 4. ÏÑ±Í≥µÏãú  CommitÏùÑ ÌïúÎã§ */
+            /* 4. º∫∞¯Ω√  Commit¿ª «—¥Ÿ */
             if ( qci::mSessionCallback.mCommit( aSession, ID_FALSE )
                  != IDE_SUCCESS )
             {
@@ -2128,7 +2274,7 @@ void qciMisc::executeJobItem( UInt     aJobThreadIndex,
                              ideGetErrorMsg(ideGetErrorCode()));
                 sErrorCode = ideGetErrorCode();
                 
-                /* 4. Ïã§Ìå®Ïãú Rollback ÌïúÎã§ */
+                /* 4. Ω«∆–Ω√ Rollback «—¥Ÿ */
                 if ( qci::mSessionCallback.mRollback( aSession, NULL, ID_FALSE )
                      != IDE_SUCCESS )
                 {
@@ -2150,7 +2296,7 @@ void qciMisc::executeJobItem( UInt     aJobThreadIndex,
         }
         else
         {
-            /* 4. Ïã§Ìå®Ïãú Rollback ÌïúÎã§ */
+            /* 4. Ω«∆–Ω√ Rollback «—¥Ÿ */
             if ( qci::mSessionCallback.mRollback( aSession, NULL, ID_FALSE )
                  != IDE_SUCCESS )
             {
@@ -2177,7 +2323,7 @@ void qciMisc::executeJobItem( UInt     aJobThreadIndex,
                   != IDE_SUCCESS );
 
         sStage++; //3
-        /* 5. Ïã§ÌñâÌõÑ Job StateÏôÄ, Execute Count, Error CodeÎ•º Update ÌïúÎã§. */
+        /* 5. Ω««‡»ƒ Job StateøÕ, Execute Count, Error Code∏¶ Update «—¥Ÿ. */
         sExecCount++;
         IDE_TEST( qcmJob::updateExecuteResult( &sSmiStmt,
                                                aJob,
@@ -2194,7 +2340,7 @@ void qciMisc::executeJobItem( UInt     aJobThreadIndex,
     IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
 
     sStage--; //1
-    IDE_TEST( sTrans.commit( &sDummySCN )
+    IDE_TEST( sTrans.commit()
               != IDE_SUCCESS );
 
     sStage--; //0
@@ -2209,7 +2355,7 @@ void qciMisc::executeJobItem( UInt     aJobThreadIndex,
         case 3:
             ( void )sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
         case 2:
-            ( void )sTrans.commit( &sDummySCN );
+            ( void )sTrans.commit();
         case 1:
             ( void )sTrans.destroy( NULL );
         default:
@@ -2219,13 +2365,74 @@ void qciMisc::executeJobItem( UInt     aJobThreadIndex,
     return;
 }
 
+IDE_RC qciMisc::executeTempSQL( void  * aMmSession, 
+                                SChar * aSQL, 
+                                idBool  aIsCommit )
+{
+    smiTrans     * sTrans = NULL;
+    idBool         sIsTransBegin  = ID_FALSE;
+    UInt           sErrorCode   = 0;
+
+    sTrans     = qci::mSessionCallback.mGetTransWithBegin( aMmSession );
+    IDE_TEST_RAISE( sTrans == NULL, ERR_INVALID_CONDITION );
+    sIsTransBegin = ID_TRUE;
+
+    IDE_TEST( qcg::runTempSQL( aMmSession,
+                               aSQL,
+                               idlOS::strlen(aSQL),
+                               &sErrorCode )
+              != IDE_SUCCESS );
+
+    if ( aIsCommit == ID_TRUE )
+    {
+        IDE_TEST_RAISE( qci::mSessionCallback.mCommit( aMmSession, ID_FALSE )
+                        != IDE_SUCCESS, COMMIT_FAIL );
+    }
+    else
+    {
+        IDE_TEST_RAISE( qci::mSessionCallback.mRollback( aMmSession, NULL, ID_FALSE )
+                        != IDE_SUCCESS, ROLLBACK_FAIL );
+    }
+    sIsTransBegin = ID_FALSE;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(ERR_INVALID_CONDITION)
+    {
+        IDE_SET(ideSetErrorCode(qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                "qciMisc::executeTempSQL",
+                                "invliad condition"));
+    }
+    IDE_EXCEPTION(COMMIT_FAIL)
+    {
+        ideLog::log( IDE_QP_0, "[Temporary SQL: COMMIT FAILURE] ERR-%05X : %s",
+                     E_ERROR_CODE(ideGetErrorCode()),
+                     ideGetErrorMsg(ideGetErrorCode()));
+    }
+    IDE_EXCEPTION(ROLLBACK_FAIL)
+    {
+        ideLog::log( IDE_QP_0, "[Temporary SQL: ROLLBACK FAILURE] ERR-%05X : %s",
+                     E_ERROR_CODE(ideGetErrorCode()),
+                     ideGetErrorMsg(ideGetErrorCode()));
+    }
+    IDE_EXCEPTION_END;
+
+    IDE_PUSH();
+    if ( sIsTransBegin == ID_TRUE )
+    {
+        (void)qci::mSessionCallback.mRollback( aMmSession, NULL, ID_FALSE );
+    }
+    IDE_POP();
+
+    return IDE_FAILURE;
+}
+
 /* BUG-45783 */
 void qciMisc::resetInitialJobState( void )
 {
     smiTrans       sTrans;
     smiStatement   sSmiStmt;
     smiStatement * sDummySmiStmt;
-    smSCN          sDummySCN;
     UInt           sSmiStmtFlag;
     UInt           sStage = 0;
 
@@ -2251,7 +2458,7 @@ void qciMisc::resetInitialJobState( void )
     IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
 
     sStage--; //1
-    IDE_TEST( sTrans.commit( &sDummySCN ) != IDE_SUCCESS );
+    IDE_TEST( sTrans.commit() != IDE_SUCCESS );
 
     sStage--; //0
     IDE_TEST( sTrans.destroy( NULL ) != IDE_SUCCESS );
@@ -2265,7 +2472,7 @@ void qciMisc::resetInitialJobState( void )
         case 3:
             ( void )sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
         case 2:
-            ( void )sTrans.commit( &sDummySCN );
+            ( void )sTrans.commit();
         case 1:
             ( void )sTrans.destroy( NULL );
         default:
@@ -2316,7 +2523,7 @@ idvSQL* qciMisc::getStatistics( mtcTemplate * aTemplate )
     return sStatistics;
 }
 
-/* PROJ-2446 ONE SOURCE XDB smiGlobalCallBackListÏóêÏÑú ÏÇ¨Ïö© ÎêúÎã§.
+/* PROJ-2446 ONE SOURCE XDB smiGlobalCallBackListø°º≠ ªÁøÎ µ»¥Ÿ.
  * partition meta cache, procedure cache, trigger cache */
 IDE_RC qciMisc::makeAndSetQcmTblInfo( smiStatement * aSmiStmt,
                                       UInt           aTableID,
@@ -2550,7 +2757,7 @@ idBool qciMisc::isSimpleQuery( qcStatement * aStatement )
 
     IDE_TEST_CONT( sIsSimple == ID_FALSE, NORMAL_EXIT );
 
-    // bind param Í∞ØÏàòÍ∞Ä Í∞ôÍ≥† Î™®Îëê ÏÇ¨Ïö©Ìï¥Ïïº ÌïúÎã§.
+    // bind param ∞πºˆ∞° ∞∞∞Ì ∏µŒ ªÁøÎ«ÿæﬂ «—¥Ÿ.
     if ( sBindParamCount == sHostValueCount )
     {
         for ( i = 0; i < sBindParamCount; i++ )
@@ -2640,7 +2847,7 @@ idBool qciMisc::isSimpleSelectQuery( qmnPlan     * aPlan,
 
         while ( 1 )
         {
-            // Ïò§Î•∏Ï™ΩÏùÄ Ìï≠ÏÉÅ SCANÏù¥Ïñ¥Ïïº ÌïúÎã§.
+            // ø¿∏•¬ ¿∫ «◊ªÛ SCAN¿ÃæÓæﬂ «—¥Ÿ.
             if ( sPlan->right->type == QMN_SCAN )
             {
                 // Nothing to do.
@@ -2654,7 +2861,7 @@ idBool qciMisc::isSimpleSelectQuery( qmnPlan     * aPlan,
             sJOIN = (qmncJOIN*)sPlan;
             sSCAN = (qmncSCAN*)sPlan->right;
 
-            // simpleÏù¥Ïñ¥Ïïº ÌïúÎã§.
+            // simple¿ÃæÓæﬂ «—¥Ÿ.
             if ( ( sJOIN->isSimple == ID_FALSE ) ||
                  ( sSCAN->isSimple == ID_FALSE ) )
             {
@@ -2671,7 +2878,7 @@ idBool qciMisc::isSimpleSelectQuery( qmnPlan     * aPlan,
                                    sSCAN->simpleValues,
                                    sSCAN->simpleValueCount );
 
-            // ÏôºÏ™ΩÏùÄ JOINÏù¥Í±∞ÎÇò SCAN
+            // øﬁ¬ ¿∫ JOIN¿Ã∞≈≥™ SCAN
             if ( sPlan->left->type == QMN_JOIN )
             {
                 sPlan = sPlan->left;
@@ -2695,7 +2902,7 @@ idBool qciMisc::isSimpleSelectQuery( qmnPlan     * aPlan,
                                        sSCAN->simpleValues,
                                        sSCAN->simpleValueCount );
 
-                // ÎßàÏßÄÎßâ scan
+                // ∏∂¡ˆ∏∑ scan
                 break;
             }
             else
@@ -2926,7 +3133,7 @@ idBool qciMisc::isSimpleSelectBind( qcStatement * aStatement,
 
         while ( 1 )
         {
-            // Ïò§Î•∏Ï™ΩÏùÄ Ìï≠ÏÉÅ SCAN
+            // ø¿∏•¬ ¿∫ «◊ªÛ SCAN
             IDE_DASSERT( sPlan->right->type == QMN_SCAN );
 
             sSCAN = (qmncSCAN*)sPlan->right;
@@ -2943,7 +3150,7 @@ idBool qciMisc::isSimpleSelectBind( qcStatement * aStatement,
                 // Nothing to do.
             }
 
-            // ÏôºÏ™ΩÏùÄ JOINÏù¥Í±∞ÎÇò SCAN
+            // øﬁ¬ ¿∫ JOIN¿Ã∞≈≥™ SCAN
             if ( sPlan->left->type == QMN_JOIN )
             {
                 sPlan = sPlan->left;
@@ -3021,7 +3228,7 @@ void qciMisc::setSimpleBindFlag( qcStatement * aStatement )
 {
     if ( ( ( aStatement->mFlag & QC_STMT_FAST_EXEC_MASK )
            == QC_STMT_FAST_EXEC_TRUE ) &&
-         /* BUG-45307 Begin Snapshot Ïù¥ÌõÑÏóêÎäî FAST ExecuteÎ•º ÌïòÏßÄ ÏïäÎäîÎã§ */
+         /* BUG-45307 Begin Snapshot ¿Ã»ƒø°¥¬ FAST Execute∏¶ «œ¡ˆ æ ¥¬¥Ÿ */
          ( aStatement->mInplaceUpdateDisableFlag == ID_FALSE ) )
     {
         if ( qciMisc::isSimpleBind( aStatement ) == ID_TRUE )
@@ -3115,8 +3322,8 @@ idBool qciMisc::checkSimpleBind( qciBindParamInfo * aBindParam,
                 }
                 else if ( sValueInfo->column.module->id == MTD_CHAR_ID )
                 {
-                    // char compareÎ°úÎäî char typeÎßå Í∞ÄÎä•ÌïòÎã§.
-                    // (Î¨ºÎ°† compareÌï®ÏàòÎ•º varchar compareÎ°ú Î∞îÍæ∏Î©¥ ÎêòÍ∏¥ÌïúÎã§.)
+                    // char compare∑Œ¥¬ char type∏∏ ∞°¥…«œ¥Ÿ.
+                    // (π∞∑– compare«‘ºˆ∏¶ varchar compare∑Œ πŸ≤Ÿ∏È µ«±‰«—¥Ÿ.)
                     if ( sBindParam->param.type == MTD_CHAR_ID )
                     {
                         // Nothing to do.
@@ -3313,7 +3520,7 @@ IDE_RC qciMisc::writeTableMetaLogForReplication( qcStatement    * aStatement,
     return IDE_FAILURE;
 }
 
-/* BUG-43605 [mt] randomÌï®ÏàòÏùò seed ÏÑ§Ï†ïÏùÑ session Îã®ÏúÑÎ°ú Î≥ÄÍ≤ΩÌï¥Ïïº Ìï©ÎãàÎã§. */
+/* BUG-43605 [mt] random«‘ºˆ¿« seed º≥¡§¿ª session ¥‹¿ß∑Œ ∫Ø∞Ê«ÿæﬂ «’¥œ¥Ÿ. */
 void qciMisc::initRandomInfo( qcRandomInfo * aRandomInfo )
 {
     aRandomInfo->mExistSeed = ID_FALSE;
@@ -3340,34 +3547,139 @@ IDE_RC qciMisc::getDiskUndoMaxAndUsedSize( ULong * aMaxSize, ULong * aUsedSize )
     return IDE_FAILURE;
 }
 
-idBool qciMisc::existGlobalNonPartitionedIndice( qciTableInfo * aTableInfo )
+IDE_RC qciMisc::checkRollbackAbleDDLEnable( smiTrans * aTrans, 
+                                            smOID      aTableOID,
+                                            idBool     aCallByRepl )
 {
-    UInt       i       = 0;
-    qcmIndex * sIndex  = NULL;
-    idBool     sExist = ID_FALSE;
+    const void   * sTable        = NULL;
+    qciTableInfo * sTableInfo    = NULL;
+    qciTableInfo * sPartInfo     = NULL;
+    qcmIndex     * sIndex        = NULL;
+    smSCN          sDummySCN;
+    smiStatement   sSmiStatement;
+    qciStatement   sQciStatement;
+    qcStatement  * sQcStatement  = NULL;
+    idBool         sExist        = ID_FALSE;
+    idBool         sIsInit       = ID_FALSE;
+    idBool         sSmiStmtBegin = ID_FALSE;
+    qciPartitionInfoList * sPartInfoList     = NULL;
+    qciPartitionInfoList * sTempPartInfoList = NULL;
 
-    if ( aTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
+    IDE_TEST_CONT( aTableOID == SM_OID_NULL, NORMAL_EXIT );
+
+    idlOS::memset( &sQciStatement, 0x00, ID_SIZEOF( qciStatement ) );
+    IDE_TEST( qci::initializeStatement( &sQciStatement,
+                                        NULL,
+                                        NULL,
+                                        aTrans->getStatistics() )
+              != IDE_SUCCESS );
+    sIsInit = ID_TRUE;
+
+    IDE_TEST( sSmiStatement.begin( aTrans->getStatistics(),
+                                   aTrans->getStatement(),
+                                   SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR )
+              != IDE_SUCCESS );
+    sSmiStmtBegin = ID_TRUE;
+
+    qciMisc::setSmiStmt( &sQciStatement, &sSmiStatement );
+    sQcStatement = &(sQciStatement.statement);
+
+    sTable = smiGetTable( aTableOID );
+    sDummySCN = smiGetRowSCN( sTable );
+
+    IDE_TEST( smiValidateAndLockObjects( aTrans,
+                                         sTable,
+                                         sDummySCN,
+                                         SMI_TBSLV_DDL_DML,
+                                         SMI_TABLE_LOCK_IS,
+                                         ID_ULONG_MAX,
+                                         ID_FALSE )
+              != IDE_SUCCESS );
+
+    IDE_TEST( smiGetTableTempInfo( sTable, (void **)&sTableInfo ) != IDE_SUCCESS );
+
+    IDE_TEST_RAISE( qcm::existGlobalNonPartitionedIndex( sTableInfo, &sIndex ) == ID_TRUE,
+                    NOT_ALLOWED_GLOBAL_NON_PART_INDEX );
+
+    if ( aCallByRepl != ID_TRUE )
     {
-        for ( i = 0; i < aTableInfo->indexCount; i++ )
+        IDE_TEST( qci::mManageReplicationCallback.mIsDDLAsycReplOption( sQcStatement,
+                                                                        sTableInfo,
+                                                                        &sExist ) 
+                  != IDE_SUCCESS );
+        IDE_TEST_RAISE( sExist == ID_TRUE, NOT_ALLOWED_DDL_ASYNC );
+    }
+
+    if ( sTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
+    {
+        if ( qciMisc::getPartitionInfoList( sQcStatement,
+                                            QCI_SMI_STMT( sQcStatement ),
+                                            ( iduMemory * )QCI_QMX_MEM( sQcStatement ),
+                                            sTableInfo->tableID,
+                                            &sPartInfoList)
+             == IDE_SUCCESS )
         {
-            sIndex = &( aTableInfo->indices[i] );
-            if ( sIndex->indexPartitionType == QCM_NONE_PARTITIONED_INDEX )
+            for ( sTempPartInfoList = sPartInfoList;
+                  sTempPartInfoList != NULL;
+                  sTempPartInfoList = sTempPartInfoList->next )
             {
-                sExist = ID_TRUE;
-                break;
-            }
-            else
-            {
-                // Nothing to do
+                IDE_TEST( smiValidateAndLockObjects( aTrans,
+                                                     sTempPartInfoList->partHandle,
+                                                     sTempPartInfoList->partSCN,
+                                                     SMI_TBSLV_DDL_DML,
+                                                     SMI_TABLE_LOCK_IS,
+                                                     smiGetDDLLockTimeOut(aTrans),
+                                                     ID_FALSE )
+                          != IDE_SUCCESS);
+                sPartInfo = sTempPartInfoList->partitionInfo;
+                IDE_TEST_RAISE( qcm::existGlobalNonPartitionedIndex( sPartInfo, &sIndex ) == ID_TRUE,
+                                NOT_ALLOWED_GLOBAL_NON_PART_INDEX );
+
+                if ( aCallByRepl != ID_TRUE )
+                {
+                    IDE_TEST( qci::mManageReplicationCallback.mIsDDLAsycReplOption( sQcStatement,
+                                                                                    sPartInfo,
+                                                                                    &sExist ) 
+                              != IDE_SUCCESS );
+                    IDE_TEST_RAISE( sExist == ID_TRUE, NOT_ALLOWED_DDL_ASYNC );
+                }
             }
         }
-    }
-    else
-    {
-        sExist = ID_FALSE;
+
     }
 
-    return sExist;
+    IDE_TEST( sSmiStatement.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    sSmiStmtBegin = ID_FALSE;
+
+    sIsInit = ID_FALSE;
+    IDE_TEST( qci::finalizeStatement( &sQciStatement ) != IDE_SUCCESS );
+
+    IDE_EXCEPTION_CONT( NORMAL_EXIT );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( NOT_ALLOWED_GLOBAL_NON_PART_INDEX );
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_ROLLBACKABLE_DDL_GLOBAL_NOT_ALLOWED_NON_PART_INDEX,
+                                  sIndex->name ) );
+    }
+    IDE_EXCEPTION( NOT_ALLOWED_DDL_ASYNC );
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_ROLLBACKABLE_DDL_GLOBAL_NOT_ALLOWED_DDL_ASYNC ) );
+    }
+    IDE_EXCEPTION_END;
+
+    if ( sSmiStmtBegin == ID_TRUE )
+    {
+        (void)sSmiStatement.end( SMI_STATEMENT_RESULT_FAILURE );
+    }
+
+    if ( sIsInit == ID_TRUE )
+    {
+        (void)qci::finalizeStatement( &sQciStatement );
+    }
+
+    return IDE_FAILURE;
 }
 
 void qciMisc::restoreTempInfoForPartition( qciTableInfo * aTableInfo,
@@ -3399,33 +3711,165 @@ IDE_RC qciMisc::validateAndLockPartitionInfoList( qciStatement         * aQciSta
                                                            aLockWaitMicroSec );
 }
 
-IDE_RC qciMisc::runDDLforDDLSync( idvSQL       * aStatistics,
-                                  smiStatement * aSmiStmt,
-                                  UInt           aUserID,
-                                  SChar        * aSqlStr )
+IDE_RC qciMisc::runDDLforInternal( idvSQL       * aStatistics,
+                                   smiStatement * aSmiStmt,
+                                   UInt           aUserID,
+                                   UInt           aSessionFlag,
+                                   SChar        * aSqlStr )
 {
-    return qcg::runDDLforDDLSync( aStatistics,
-                                  aSmiStmt,
-                                  aUserID,
-                                  aSqlStr );
+    return qcg::runDDLforInternal( aStatistics,
+                                   aSmiStmt,
+                                   aUserID,
+                                   aSessionFlag,
+                                   aSqlStr );
 }
 
-smOID qciMisc::getDDLReplTableOID( qciStatement * aQciStatement )
+IDE_RC qciMisc::runDDLforInternalWithMmSession( idvSQL       * aStatistics,
+                                                void         * aMmSession,
+                                                smiStatement * aSmiStmt,
+                                                UInt           aUserID,
+                                                UInt           aSessionFlag,
+                                                SChar        * aSqlStr )
 {
-    return aQciStatement->statement.mDDLReplInfo.mTableOID;
+    return qcg::runDDLforInternalWithMmSession( aStatistics,
+                                                aMmSession,
+                                                aSmiStmt,
+                                                aUserID,
+                                                aSessionFlag,
+                                                aSqlStr );
 }
 
-smOID * qciMisc::getDDLReplPartTableOID( qciStatement * aQciStatement )
+IDE_RC qciMisc::runRollbackableInternalDDL( qcStatement  * aStatement,
+                                            smiStatement * aSmiStmt,
+                                            UInt           aUserID,
+                                            SChar        * aSqlStr )
 {
-    return aQciStatement->statement.mDDLReplInfo.mPartTableOID;
+    return qcg::runRollbackableInternalDDL( aStatement,
+                                            aSmiStmt,
+                                            aUserID,
+                                            aSqlStr );
+}
+
+void qciMisc::setTransactionalDDLAvailable( void * aQcStatement, idBool aAvailable )
+{
+    ((qcStatement*)aQcStatement)->mDDLInfo.mTransactionalDDLAvailable = aAvailable;
+}
+
+idBool qciMisc::getTransactionalDDLAvailable( qciStatement * aQciStatement )
+{
+    return aQciStatement->statement.mDDLInfo.mTransactionalDDLAvailable;
+}
+
+qciDDLTargetType qciMisc::getDDLTargetType( UInt aSrcPartOIDCount )
+{
+    qciDDLTargetType sType = QCI_DDL_TARGET_NONE;
+
+    if ( aSrcPartOIDCount == 0 )
+    {
+        sType = QCI_DDL_TARGET_TABLE;
+    }
+    else
+    {
+        sType = QCI_DDL_TARGET_PARTITION;
+    }
+
+    return sType;
+}
+
+void qciMisc::setDDLSrcInfo( void        * aQcStatement,
+                             idBool        aDDLTransAvailable,
+                             UInt          aSrcTableOIDCount,
+                             smOID       * aSrcTableOIDArray,
+                             UInt          aSrcPartOIDCountPerTable,
+                             smOID       * aSrcPartOIDArray )
+{
+    qrc::setDDLSrcInfo( (qcStatement*)aQcStatement,
+                        aDDLTransAvailable,
+                        aSrcTableOIDCount,
+                        aSrcTableOIDArray,
+                        aSrcPartOIDCountPerTable,
+                        aSrcPartOIDArray );
+}
+
+smOID * qciMisc::getDDLSrcTableOIDArray( qciStatement * aQciStatement, UInt * aSrcTableOIDCount )
+{
+    return getDDLSrcTableOIDArray( (void*)&(aQciStatement->statement), aSrcTableOIDCount );
+}
+
+smOID * qciMisc::getDDLSrcTableOIDArray( void * aQcStatement, UInt * aSrcTableOIDCount )
+{
+    UInt    sCount = ((qcStatement*)aQcStatement)->mDDLInfo.mSrcTableOIDCount;
+    smOID * sArray = ((qcStatement*)aQcStatement)->mDDLInfo.mSrcTableOIDArray;
+
+    *aSrcTableOIDCount = sCount;
+
+    return sArray;
+}
+
+smOID * qciMisc::getDDLSrcPartTableOIDArray( qciStatement * aQciStatement, UInt * aDestPartOIDCount )
+{
+    return getDDLSrcPartTableOIDArray( (void*)&(aQciStatement->statement), aDestPartOIDCount );
+}
+
+smOID * qciMisc::getDDLSrcPartTableOIDArray( void * aQcStatement, UInt * aSrcPartOIDCount )
+{
+    UInt    sCount = ((qcStatement*)aQcStatement)->mDDLInfo.mSrcPartOIDCountPerTable;
+    smOID * sArray = ((qcStatement*)aQcStatement)->mDDLInfo.mSrcPartOIDArray;
+
+    *aSrcPartOIDCount = sCount;
+
+    return sArray;
+}
+
+void qciMisc::setDDLDestInfo( void        * aQcStatement, 
+                              UInt          aDestTableOIDCount,
+                              smOID       * aDestTableOIDArray,
+                              UInt          aDestPartOIDCountPerTable,
+                              smOID       * aDestPartOIDArray )
+{
+    qrc::setDDLDestInfo( (qcStatement*)aQcStatement,
+                         aDestTableOIDCount,
+                         aDestTableOIDArray,
+                         aDestPartOIDCountPerTable,
+                         aDestPartOIDArray );
+}
+
+smOID * qciMisc::getDDLDestTableOIDArray( qciStatement * aQciStatement, UInt * aDestTableOIDCount )
+{
+    return getDDLDestTableOIDArray(&(aQciStatement->statement), aDestTableOIDCount);
+}
+
+smOID * qciMisc::getDDLDestTableOIDArray( qcStatement * aQcStatement, UInt * aDestTableOIDCount )
+{
+    UInt    sCount = aQcStatement->mDDLInfo.mDestTableOIDCount;
+    smOID * sArray = aQcStatement->mDDLInfo.mDestTableOIDArray;
+
+    *aDestTableOIDCount = sCount;
+
+    return sArray;
+}
+
+smOID * qciMisc::getDDLDestPartTableOIDArray( qciStatement * aQciStatement, UInt * aSrcPartOIDCount )
+{
+    return getDDLDestPartTableOIDArray( (void*)&(aQciStatement->statement), aSrcPartOIDCount );
+}
+
+smOID * qciMisc::getDDLDestPartTableOIDArray( void * aQcStatement, UInt * aDestPartOIDCount )
+{
+    UInt    sCount = ((qcStatement*)aQcStatement)->mDDLInfo.mDestPartOIDCountPerTable;
+    smOID * sArray = ((qcStatement*)aQcStatement)->mDDLInfo.mDestPartOIDArray;
+
+    *aDestPartOIDCount = sCount;
+
+    return sArray;
 }
 
 idBool qciMisc::isReplicableDDL( qciStatement * aQciStatement )
 {
     idBool sIsReplicableDDL = ID_FALSE;
-    qcStatement * sQcStatement = (qcStatement*)&( aQciStatement->statement );
+    UInt   sDummyCount      = 0;
 
-    if ( sQcStatement->mDDLReplInfo.mTableOID != SM_OID_NULL )
+    if ( getDDLSrcTableOIDArray( aQciStatement, &sDummyCount ) != NULL )
     {
         sIsReplicableDDL = ID_TRUE;
     }
@@ -3442,6 +3886,7 @@ void qciMisc::setSmiStmt( qciStatement *aQciStatement, smiStatement * aSmiStatem
     qcg::setSmiStmt( &( aQciStatement->statement ), aSmiStatement );
 }
 
+/* BUG-45948 */
 void qciMisc::getSmiStmt( qciStatement *aQciStatement, smiStatement ** aSmiStatement )
 {
     qcg::getSmiStmt( &( aQciStatement->statement ), aSmiStatement );
@@ -3455,4 +3900,720 @@ idBool qciMisc::isDDLSync( qciStatement * aQciStatement )
 idBool qciMisc::isDDLSync( void * aQcStatement )
 {
     return qrc::isDDLSync( (qcStatement*)aQcStatement );
+}
+
+idBool qciMisc::isInternalDDL( void * aQcStatement )
+{
+    return qrc::isInternalDDL( (qcStatement*)aQcStatement );
+}
+
+idBool qciMisc::getIsNeedDDLInfo( void * aQcStatement )
+{
+    return QCG_GET_SESSION_IS_NEED_DDL_INFO( (qcStatement*)aQcStatement );
+}
+
+idBool qciMisc::getTransactionalDDL( void * aQcStatement )
+{
+    return QCG_GET_SESSION_TRANSACTIONAL_DDL( (qcStatement*)aQcStatement );
+}
+
+idBool qciMisc::getIsRollbackableInternalDDL( void * aQcStatement )
+{
+    return qcg::getIsRollbackableInternalDDL( (qcStatement*)aQcStatement );
+}
+
+idBool qciMisc::getGlobalDDL( void * aQcStatement )
+{
+    return QCG_GET_SESSION_GLOBAL_DDL( (qcStatement*)aQcStatement );
+}
+
+IDE_RC qciMisc::backupDDLTargetOldTableInfo( smiTrans               * aTrans, 
+                                             smOID                    aTableOID,
+                                             UInt                     aPartOIDCount,
+                                             smOID                  * aPartOIDArray,
+                                             smiDDLTargetTableInfo ** aDDLTargetTableInfo )
+{
+    const void   * sTable        = NULL;
+    qciTableInfo * sTableInfo    = NULL;
+    qciTableInfo * sPartInfo     = NULL;
+    qciTableInfo * sNewTableInfo = NULL;
+    smSCN          sDummySCN;
+    qciStatement   sQciStatement;
+    smiStatement   sSmiStatement;
+    idBool         sIsInit       = ID_FALSE;
+    idBool         sSmiStmtBegin = ID_FALSE;
+    idBool         sIsTarget     = ID_FALSE;
+
+    UInt           i      = 0;
+    iduListNode  * sNode  = NULL;
+    iduListNode  * sDummy = NULL;
+    const void   * sTempTable = NULL;
+    
+    smiDDLTargetTableInfo * sTempInfo              = NULL;
+    smiDDLTargetTableInfo * sDDLTargetTableInfo    = NULL;
+    qciPartitionInfoList  * sTablePartInfoList     = NULL;
+    qciPartitionInfoList  * sTempTablePartInfoList = NULL;
+
+    IDE_TEST_CONT( aTableOID == SM_OID_NULL, PASS );
+
+    idlOS::memset( &sQciStatement, 0x00, ID_SIZEOF( qciStatement ) );
+    IDE_TEST( qci::initializeStatement( &sQciStatement,
+                                        NULL,
+                                        NULL,
+                                        aTrans->getStatistics() )
+              != IDE_SUCCESS );
+    sIsInit = ID_TRUE;
+
+    IDE_TEST( sSmiStatement.begin( aTrans->getStatistics(),
+                                   aTrans->getStatement(),
+                                   SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR )
+              != IDE_SUCCESS );
+    sSmiStmtBegin = ID_TRUE;
+
+    qciMisc::setSmiStmt( &sQciStatement, &sSmiStatement );
+
+    sTable = smiGetTable( aTableOID );
+    sDummySCN = smiGetRowSCN( sTable );
+
+    IDE_TEST( smiValidateAndLockObjects( aTrans,
+                                         sTable,
+                                         sDummySCN,
+                                         SMI_TBSLV_DDL_DML,
+                                         SMI_TABLE_LOCK_IX,
+                                         smiGetDDLLockTimeOut(aTrans),
+                                         ID_FALSE )
+              != IDE_SUCCESS );
+
+    IDE_TEST( smiGetTableTempInfo( sTable, (void **)&sTableInfo ) != IDE_SUCCESS );
+
+    if ( getDDLTargetType( aPartOIDCount ) == QCI_DDL_TARGET_TABLE )
+    {
+        IDE_TEST( smiValidateAndLockObjects( aTrans,
+                                         sTable,
+                                         sDummySCN,
+                                         SMI_TBSLV_DDL_DML,
+                                         SMI_TABLE_LOCK_X,
+                                         smiGetDDLLockTimeOut(aTrans),
+                                         ID_FALSE )
+              != IDE_SUCCESS );
+
+        IDE_TEST( makeAndSetQcmTableInfo( &sSmiStatement,
+                                          sTableInfo->tableID,
+                                          sTableInfo->tableOID )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( smiTable::touchTable( &sSmiStatement,
+                                        sTableInfo->tableHandle,
+                                        SMI_TBSLV_DDL_DML )
+                  != IDE_SUCCESS );
+        IDE_TEST( smiGetTableTempInfo( sTable, (void**)&sNewTableInfo ) != IDE_SUCCESS );
+ 
+        sIsTarget = ID_TRUE;
+    }
+    else /* QCI_DDL_TARGET_PARTITION */
+    {
+        sNewTableInfo = sTableInfo;
+        sIsTarget = ID_FALSE;
+    }
+
+    IDE_TEST( aTrans->allocNSetDDLTargetTableInfo( sTableInfo->tableID,
+                                                   (void*)sTableInfo,
+                                                   NULL,
+                                                   sIsTarget,
+                                                   &sDDLTargetTableInfo )
+              != IDE_SUCCESS );
+
+    if ( sTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
+    {
+        if ( getDDLTargetType( aPartOIDCount ) == QCI_DDL_TARGET_TABLE )
+        {
+            IDE_TEST( getPartitionInfoList( &( sQciStatement.statement ),
+                                            &sSmiStatement,
+                                            ( iduMemory * )QCI_QMX_MEM( &( sQciStatement.statement ) ),
+                                            sTableInfo->tableID,
+                                            &sTablePartInfoList )
+                      != IDE_SUCCESS );
+
+            IDE_TEST( validateAndLockPartitionInfoList( &sQciStatement,
+                                                        sTablePartInfoList,
+                                                        SMI_TBSLV_DDL_DML, // TBS Validation ø…º«
+                                                        SMI_TABLE_LOCK_X,
+                                                        smiGetDDLLockTimeOut(aTrans) )
+                      != IDE_SUCCESS );
+
+            for ( sTempTablePartInfoList = sTablePartInfoList;
+                  sTempTablePartInfoList != NULL;
+                  sTempTablePartInfoList = sTempTablePartInfoList->next )
+            {
+                sPartInfo = sTempTablePartInfoList->partitionInfo;
+
+                IDE_TEST( aTrans->allocNSetDDLTargetPartTableInfo( sDDLTargetTableInfo,
+                                                                   sPartInfo->partitionID,
+                                                                   ID_TRUE,
+                                                                   (void*)sPartInfo,
+                                                                   NULL )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( makeAndSetQcmPartitionInfo( &sSmiStatement,
+                                                      sPartInfo->partitionID,
+                                                      sPartInfo->tableOID,
+                                                      sNewTableInfo )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( smiTable::touchTable( &sSmiStatement,
+                                                sPartInfo->tableHandle,
+                                                SMI_TBSLV_DDL_DML )
+                          != IDE_SUCCESS );
+        
+                IDE_TEST( smiGetTableTempInfo( sTable, (void**)&sNewTableInfo ) != IDE_SUCCESS );
+            }
+        }
+        else
+        {
+            for ( i = 0; i < aPartOIDCount; i++ )
+            {
+                sTable = smiGetTable( aPartOIDArray[i] );
+                sDummySCN = smiGetRowSCN( sTable );
+
+                IDE_TEST( smiValidateAndLockObjects( aTrans,
+                                                     sTable,
+                                                     sDummySCN,
+                                                     SMI_TBSLV_DDL_DML,
+                                                     SMI_TABLE_LOCK_X,
+                                                     smiGetDDLLockTimeOut(aTrans),
+                                                     ID_FALSE )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( smiGetTableTempInfo( sTable, (void **)&sPartInfo ) != IDE_SUCCESS );
+
+                IDE_TEST( aTrans->allocNSetDDLTargetPartTableInfo( sDDLTargetTableInfo,
+                                                                   sPartInfo->partitionID,
+                                                                   ID_TRUE,
+                                                                   (void*)sPartInfo,
+                                                                   NULL )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( makeAndSetQcmPartitionInfo( &sSmiStatement,
+                                                      sPartInfo->partitionID,
+                                                      sPartInfo->tableOID,
+                                                      sNewTableInfo )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( smiTable::touchTable( &sSmiStatement,
+                                                sPartInfo->tableHandle,
+                                                SMI_TBSLV_DDL_DML )
+                          != IDE_SUCCESS );                        
+            }
+        }
+    }
+
+    IDE_TEST( sSmiStatement.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    sSmiStmtBegin = ID_FALSE;
+
+    sIsInit = ID_FALSE;
+    IDE_TEST( qci::finalizeStatement( &sQciStatement ) != IDE_SUCCESS );
+
+    *aDDLTargetTableInfo = sDDLTargetTableInfo;
+
+    IDE_EXCEPTION_CONT( PASS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    if ( sDDLTargetTableInfo != NULL )
+    {
+        IDU_LIST_ITERATE_SAFE( &(sDDLTargetTableInfo->mPartInfoList), sNode, sDummy )
+        {
+            sTempInfo = (smiDDLTargetTableInfo*)sNode->mObj;
+            if ( ( sTempInfo->mOldTableInfo != NULL ) &&
+                 ( sTempInfo->mIsReCreated == ID_TRUE ) )
+            {
+                sTempTable = smiGetTable( ((qciTableInfo*)sTempInfo->mOldTableInfo)->tableOID );
+                (void)smiGetTableTempInfo( sTempTable, (void **)&sTableInfo );
+                if ( sTempInfo->mOldTableInfo != sTableInfo )
+                {
+                    (void)destroyQcmPartitionInfo( sTableInfo );
+                }
+            }
+        }
+        restoreDDLTargetOldTableInfo( sDDLTargetTableInfo );
+
+        aTrans->freeDDLTargetTableInfo( sDDLTargetTableInfo );
+        sDDLTargetTableInfo = NULL;
+    }
+
+    if ( sDDLTargetTableInfo != NULL )
+    {
+        if ( ( sNewTableInfo != NULL ) &&
+             ( sDDLTargetTableInfo->mIsReCreated == ID_TRUE ) )
+        {
+            (void)destroyQcmTableInfo( (qcmTableInfo*)sNewTableInfo );
+            sNewTableInfo = NULL;
+        }
+    }
+    else
+    {
+        if ( ( sNewTableInfo != NULL ) && 
+             ( sIsTarget == ID_TRUE ) )
+        {
+            (void)destroyQcmTableInfo( (qcmTableInfo*)sNewTableInfo );
+            sNewTableInfo = NULL;
+        }
+    }
+
+    if ( sSmiStmtBegin == ID_TRUE )
+    {
+        (void)sSmiStatement.end( SMI_STATEMENT_RESULT_FAILURE );
+    }
+
+    if ( sIsInit == ID_TRUE )
+    {
+        (void)qci::finalizeStatement( &sQciStatement );
+    }
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qciMisc::backupDDLTargetNewTableInfo( smiTrans               * aTrans, 
+                                             smOID                    aTableOID,
+                                             UInt                     aPartOIDCount,
+                                             smOID                  * aPartOIDArray,
+                                             smiDDLTargetTableInfo ** aDDLTargetTableInfo )
+{
+    UInt           i             = 0;
+    const void   * sTable        = NULL;
+    qciTableInfo * sTableInfo    = NULL;
+    qciTableInfo * sPartInfo     = NULL;
+    smSCN          sDummySCN;
+    qciStatement   sQciStatement;
+    smiStatement   sSmiStatement;
+    idBool         sIsInit       = ID_FALSE;
+    idBool         sSmiStmtBegin = ID_FALSE;
+    idBool         sIsReCreated  = ID_FALSE;
+
+    smiDDLTargetTableInfo * sDDLTargetTableInfo    = NULL;
+    qciPartitionInfoList  * sTablePartInfoList     = NULL;
+    qciPartitionInfoList  * sTempTablePartInfoList = NULL;
+
+    IDE_TEST_CONT( aTableOID == SM_OID_NULL, PASS );
+
+    idlOS::memset( &sQciStatement, 0x00, ID_SIZEOF( qciStatement ) );
+    IDE_TEST( qci::initializeStatement( &sQciStatement,
+                                        NULL,
+                                        NULL,
+                                        aTrans->getStatistics() )
+              != IDE_SUCCESS );
+    sIsInit = ID_TRUE;
+
+    IDE_TEST( sSmiStatement.begin( aTrans->getStatistics(),
+                                   aTrans->getStatement(),
+                                   SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR )
+              != IDE_SUCCESS );
+    sSmiStmtBegin = ID_TRUE;
+
+    setSmiStmt( &sQciStatement, &sSmiStatement );
+
+    sTable = smiGetTable( aTableOID );
+    sDummySCN = smiGetRowSCN( sTable );
+
+    IDE_TEST( smiValidateAndLockObjects( aTrans,
+                                         sTable,
+                                         sDummySCN,
+                                         SMI_TBSLV_DDL_DML,
+                                         SMI_TABLE_LOCK_IX,
+                                         ID_ULONG_MAX,
+                                         ID_FALSE )
+              != IDE_SUCCESS );
+
+    IDE_TEST( smiGetTableTempInfo( sTable, (void **)&sTableInfo ) != IDE_SUCCESS );
+
+    if ( getDDLTargetType( aPartOIDCount ) == QCI_DDL_TARGET_TABLE )
+    {
+        sIsReCreated = ID_TRUE;
+    }
+    else
+    {
+        sIsReCreated = ID_FALSE;
+    }
+
+    IDE_TEST( aTrans->allocNSetDDLTargetTableInfo( sTableInfo->tableID,
+                                                   NULL,
+                                                   (void*)sTableInfo,
+                                                   sIsReCreated,
+                                                   &sDDLTargetTableInfo )
+              != IDE_SUCCESS );
+
+    if ( sTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
+    {
+        if ( getDDLTargetType( aPartOIDCount ) == QCI_DDL_TARGET_TABLE )
+        {
+            IDE_TEST( smiTable::touchTable( &sSmiStatement,
+                                            sTableInfo->tableHandle,
+                                            SMI_TBSLV_DDL_DML )
+                      != IDE_SUCCESS );
+
+            IDE_TEST( getPartitionInfoList( &( sQciStatement.statement ),
+                                            &sSmiStatement,
+                                            ( iduMemory * )QCI_QMX_MEM( &( sQciStatement.statement ) ),
+                                            sTableInfo->tableID,
+                                            &sTablePartInfoList )
+                      != IDE_SUCCESS );
+
+            IDE_TEST( validateAndLockPartitionInfoList( &sQciStatement,
+                                                        sTablePartInfoList,
+                                                        SMI_TBSLV_DDL_DML, // TBS Validation ø…º«
+                                                        SMI_TABLE_LOCK_X,
+                                                        smiGetDDLLockTimeOut(aTrans) )
+                      != IDE_SUCCESS );
+
+            for ( sTempTablePartInfoList = sTablePartInfoList;
+                  sTempTablePartInfoList != NULL;
+                  sTempTablePartInfoList = sTempTablePartInfoList->next )
+            {
+                sPartInfo = sTempTablePartInfoList->partitionInfo;
+
+                IDE_TEST( aTrans->allocNSetDDLTargetPartTableInfo( sDDLTargetTableInfo,
+                                                                   sPartInfo->tableID,
+                                                                   ID_TRUE,
+                                                                   NULL,
+                                                                   (void*)sPartInfo )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( smiTable::touchTable( &sSmiStatement,
+                                                sPartInfo->tableHandle,
+                                                SMI_TBSLV_DDL_DML )
+                          != IDE_SUCCESS );
+            }
+        }
+        else
+        {
+            for ( i = 0; i < aPartOIDCount; i++ )
+            {
+                sTable = smiGetTable( aPartOIDArray[i] );
+                sDummySCN = smiGetRowSCN( sTable );
+
+                IDE_TEST( smiValidateAndLockObjects( aTrans,
+                                                     sTable,
+                                                     sDummySCN,
+                                                     SMI_TBSLV_DDL_DML,
+                                                     SMI_TABLE_LOCK_X,
+                                                     smiGetDDLLockTimeOut(aTrans),
+                                                     ID_FALSE )
+                          != IDE_SUCCESS );
+                IDE_TEST( smiGetTableTempInfo( sTable, (void **)&sPartInfo ) != IDE_SUCCESS );
+
+                IDE_TEST( aTrans->allocNSetDDLTargetPartTableInfo( sDDLTargetTableInfo,
+                                                                   sPartInfo->tableID,
+                                                                   ID_TRUE,
+                                                                   NULL,
+                                                                   (void*)sPartInfo )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( smiTable::touchTable( &sSmiStatement,
+                                                sPartInfo->tableHandle,
+                                                SMI_TBSLV_DDL_DML )
+                          != IDE_SUCCESS );
+            }
+        }
+    }
+
+    IDE_TEST( sSmiStatement.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    sSmiStmtBegin = ID_FALSE;
+
+    sIsInit = ID_FALSE;
+    IDE_TEST( qci::finalizeStatement( &sQciStatement ) != IDE_SUCCESS );
+
+    *aDDLTargetTableInfo = sDDLTargetTableInfo;
+
+    IDE_EXCEPTION_CONT( PASS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    if ( sDDLTargetTableInfo != NULL )
+    {
+        (void)removeDDLTargetTableInfo( aTrans, sDDLTargetTableInfo );
+        sDDLTargetTableInfo = NULL;
+    }
+
+    if ( sSmiStmtBegin == ID_TRUE )
+    {
+        (void)sSmiStatement.end( SMI_STATEMENT_RESULT_FAILURE );
+    }
+
+    if ( sIsInit == ID_TRUE )
+    {
+        (void)qci::finalizeStatement( &sQciStatement );
+    }
+
+    return IDE_FAILURE;
+}
+
+void qciMisc::removeDDLTargetTableInfo( smiTrans * aTrans, smiDDLTargetTableInfo * aDDLTargetTableInfo )
+{
+    iduListNode      * sNode  = NULL;
+    iduListNode      * sDummy = NULL;
+    smiDDLTargetTableInfo * sPartInfo  = NULL;
+
+    if ( aDDLTargetTableInfo != NULL )
+    {
+        IDU_LIST_ITERATE_SAFE( &(aDDLTargetTableInfo->mPartInfoList), sNode, sDummy )
+        {
+            sPartInfo = (smiDDLTargetTableInfo*)sNode->mObj;
+
+            IDU_LIST_REMOVE( &( sPartInfo->mNode ) );
+
+            if ( ( sPartInfo->mOldTableInfo != NULL ) &&
+                 ( sPartInfo->mIsReCreated == ID_TRUE ) )
+            {
+                (void)destroyQcmPartitionInfo( (qcmTableInfo*)sPartInfo->mOldTableInfo );
+            }
+            sPartInfo->mOldTableInfo = NULL;
+
+            sPartInfo->mNewTableInfo = NULL;
+        }
+
+        if ( ( aDDLTargetTableInfo->mOldTableInfo != NULL ) &&
+             ( aDDLTargetTableInfo->mIsReCreated == ID_TRUE ) )
+        {
+            (void)destroyQcmTableInfo( (qcmTableInfo*)aDDLTargetTableInfo->mOldTableInfo );
+        }
+        aDDLTargetTableInfo->mOldTableInfo = NULL;
+        
+        aDDLTargetTableInfo->mNewTableInfo = NULL;
+
+        aTrans->freeDDLTargetTableInfo( aDDLTargetTableInfo );
+    }
+}
+
+void qciMisc::restoreDDLTargetOldTableInfo( smiDDLTargetTableInfo * aDDLTargetTableInfo )
+{
+    iduListNode      * sNode  = NULL;
+    iduListNode      * sDummy = NULL;
+    smiDDLTargetTableInfo * sPartInfo  = NULL;
+
+    if ( aDDLTargetTableInfo != NULL )
+    {
+        IDU_LIST_ITERATE_SAFE( &(aDDLTargetTableInfo->mPartInfoList), sNode, sDummy )
+        {
+            sPartInfo = (smiDDLTargetTableInfo*)sNode->mObj;
+
+            IDU_LIST_REMOVE( &( sPartInfo->mNode ) );
+
+            if ( sPartInfo->mOldTableInfo != NULL )
+            {
+                restoreTempInfoForPartition( (qciTableInfo*)aDDLTargetTableInfo->mOldTableInfo,
+                                             (qciTableInfo*)sPartInfo->mOldTableInfo );
+                sPartInfo->mOldTableInfo = NULL;
+            }
+        }
+        
+        restoreTempInfo( (qciTableInfo*)aDDLTargetTableInfo->mOldTableInfo,
+                         NULL,
+                         NULL );
+        aDDLTargetTableInfo->mOldTableInfo = NULL;
+    }
+}
+
+void qciMisc::destroyDDLTargetNewTableInfo( smiDDLTargetTableInfo * aDDLTargetTableInfo )
+{
+    iduListNode      * sNode  = NULL;
+    iduListNode      * sDummy = NULL;
+    smiDDLTargetTableInfo * sPartInfo  = NULL;
+
+    if ( aDDLTargetTableInfo != NULL )
+    {
+        if ( IDU_LIST_IS_EMPTY( &(aDDLTargetTableInfo->mPartInfoList) ) != ID_TRUE )
+        {
+            IDU_LIST_ITERATE_SAFE( &(aDDLTargetTableInfo->mPartInfoList), sNode, sDummy )
+            {
+                sPartInfo = (smiDDLTargetTableInfo*)sNode->mObj;
+
+                IDU_LIST_REMOVE( &( sPartInfo->mNode ) );
+
+                if ( ( sPartInfo->mNewTableInfo != NULL ) &&
+                     ( sPartInfo->mIsReCreated == ID_TRUE ) )
+                {
+                    (void)destroyQcmPartitionInfo( (qcmTableInfo*)sPartInfo->mNewTableInfo );
+                }
+                sPartInfo->mNewTableInfo = NULL;
+            }
+        }
+
+        if ( aDDLTargetTableInfo->mIsReCreated == ID_TRUE )
+        {
+            (void)destroyQcmTableInfo( (qcmTableInfo*)aDDLTargetTableInfo->mNewTableInfo );
+        }
+        aDDLTargetTableInfo->mNewTableInfo = NULL;
+    }
+}
+
+IDE_RC qciMisc::rebuildStatement( qciStatement * aQciStatement, 
+                                  smiTrans     * aTrans,
+                                  UInt           aFlag )
+{
+    idBool         sIsBegin       = ID_FALSE;
+    idBool         sIsSwap        = ID_FALSE;
+    smiStatement   sSmiStatement;
+    smiStatement * sSmiStatementOrig;
+    UInt           sSqlLen        = QCI_STMTTEXTLEN( aQciStatement );
+    SChar        * sSql           = NULL;
+    qciSQLPlanCacheContext  sPlanCacheContext;
+
+    idlOS::memset( &sPlanCacheContext, 0x00, ID_SIZEOF( qciSQLPlanCacheContext ) );
+    sPlanCacheContext.mPlanCacheInMode     = QCI_SQL_PLAN_CACHE_IN_OFF;
+    sPlanCacheContext.mSharedPlanMemory    = NULL;
+    sPlanCacheContext.mPrepPrivateTemplate = NULL;
+
+    IDE_TEST( iduMemMgr::malloc( IDU_MEM_QCI,
+                                 sSqlLen + 1,
+                                 (void**)&sSql,
+                                 IDU_MEM_IMMEDIATE )
+              != IDE_SUCCESS );
+
+    idlOS::strncpy( sSql,
+                    QCI_STMTTEXT( aQciStatement ),
+                    sSqlLen + 1);
+    sSql[sSqlLen] = '\0';
+
+    idlOS::memset( &sSmiStatement, 0x00, ID_SIZEOF( smiStatement ) );
+    IDE_TEST( sSmiStatement.begin( aTrans->getStatistics(),
+                                   aTrans->getStatement(),
+                                   aFlag )
+              != IDE_SUCCESS );
+    sIsBegin = ID_TRUE;
+
+    getSmiStmt( aQciStatement, &sSmiStatementOrig );
+    setSmiStmt( aQciStatement, &sSmiStatement );
+    sIsSwap = ID_TRUE;
+   
+    IDE_TEST( qci::clearStatement4Reprepare( aQciStatement,
+                                             &sSmiStatement )
+              != IDE_SUCCESS );
+
+    while ( qci::hardRebuild( aQciStatement,
+                              &sSmiStatement,
+                              aTrans->getStatement(),
+                              &sPlanCacheContext,
+                              sSql,
+                              sSqlLen )
+            != IDE_SUCCESS )
+    {
+    
+        IDE_TEST( ideIsRebuild() != IDE_SUCCESS );
+
+        IDE_TEST( sSmiStatement.end( SMI_STATEMENT_RESULT_FAILURE )
+                  != IDE_SUCCESS );
+        sIsBegin = ID_FALSE;
+
+        idlOS::memset( &sSmiStatement, 0x00, ID_SIZEOF( smiStatement ) );
+        IDE_TEST( sSmiStatement.begin( aTrans->getStatistics(),
+                                       aTrans->getStatement(),
+                                       aFlag )
+                  != IDE_SUCCESS );
+        sIsBegin = ID_TRUE;
+    }
+
+    IDE_TEST( qci::setBindTuple( aQciStatement ) != IDE_SUCCESS );
+
+    IDE_TEST( sSmiStatement.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    sIsBegin = ID_FALSE;
+
+    setSmiStmt( aQciStatement, sSmiStatementOrig );
+    sIsSwap = ID_FALSE;
+
+    (void)iduMemMgr::free( sSql );
+    sSql = NULL;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    IDE_PUSH();
+
+    if ( sIsBegin == ID_TRUE )
+    {
+        (void)sSmiStatement.end( SMI_STATEMENT_RESULT_FAILURE );
+        sIsBegin = ID_FALSE;
+    }
+
+    if ( sIsSwap == ID_TRUE )
+    {
+        setSmiStmt( aQciStatement, sSmiStatementOrig );
+    }
+
+    if ( sSql != NULL )
+    {
+        (void)iduMemMgr::free( sSql );
+        sSql = NULL;
+    }
+
+    IDE_POP();
+
+    return IDE_FAILURE;
+}
+
+idBool qciMisc::isLockTableUntillNextDDL( qciStatement * aQciStatement )
+{
+    return qrc::isLockTableUntillNextDDL( &( aQciStatement->statement ) );
+}
+
+idBool qciMisc::isLockTableUntillNextDDL( void * aQcStatement )
+{
+    return qrc::isLockTableUntillNextDDL( (qcStatement*)aQcStatement );
+}
+
+idBool qciMisc::intersectColumn( UInt *aColumnIDList1,
+                                 UInt aColumnIDCount1,
+                                 UInt *aColumnIDList2,
+                                 UInt aColumnIDCount2)    
+{
+    return qdn::intersectColumn( aColumnIDList1,
+                                 aColumnIDCount1,
+                                 aColumnIDList2,
+                                 aColumnIDCount2 );
+    
+}
+
+// TASK-7244 PSM partial rollback in Sharding
+void qciMisc::setBeginSP( qcStatement * aQcStatement )
+{
+    qsxEnv::setBeginSP( aQcStatement->spxEnv );
+}
+
+// TASK-7244 PSM partial rollback in Sharding
+void qciMisc::unsetBeginSP( qcStatement * aQcStatement )
+{
+    qsxEnv::unsetBeginSP( aQcStatement->spxEnv );
+}
+
+// TASK-7244 PSM partial rollback in Sharding
+idBool qciMisc::isBeginSP( qcStatement * aQcStatement )
+{
+    return qsxEnv::isBeginSP( aQcStatement->spxEnv );
+}
+
+// TASK-7244 Set shard split method to PSM info
+IDE_RC qciMisc::makeProcStatusInvalidAndSetShardSplitMethodByName( qcStatement * aQcStatement,
+                                                                   qsOID         aProcOID,
+                                                                   SChar       * aShardSplitMethodStr )
+{
+    // ¿ßø°º≠ √º≈©«œ∞Ì »£√‚«ÿæﬂ «—¥Ÿ.
+    IDE_DASSERT( aProcOID != SMI_NULL_OID );
+
+    if ( aProcOID != SMI_NULL_OID )
+    {
+        IDE_TEST( qsxProc::makeStatusInvalidAndSetShardSplitMethod ( aQcStatement,
+                                                                     aProcOID,
+                                                                     aShardSplitMethodStr )
+                  != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }

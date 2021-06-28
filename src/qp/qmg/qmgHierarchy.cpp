@@ -16,14 +16,14 @@
  
 
 /***********************************************************************
- * $Id: qmgHierarchy.cpp 82490 2018-03-16 00:17:55Z donovan.seo $
+ * $Id: qmgHierarchy.cpp 90192 2021-03-12 02:01:03Z jayce.park $
  *
  * Description :
- *     Hierarchy Graphë¥¼ ìœ„í•œ ìˆ˜í–‰ í•¨ìˆ˜
+ *     Hierarchy Graph¸¦ À§ÇÑ ¼öÇà ÇÔ¼ö
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -36,6 +36,8 @@
 #include <qmgHierarchy.h>
 #include <qmgSelection.h>
 #include <qmo.h>
+#include <qmv.h>
+#include <qmvQTC.h>
 
 IDE_RC
 qmgHierarchy::init( qcStatement  * aStatement,
@@ -47,18 +49,18 @@ qmgHierarchy::init( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgHierarchy Graphì˜ ìµœì í™”
+ * Description : qmgHierarchy GraphÀÇ ÃÖÀûÈ­
  *
  * Implementation :
- *    (1) qmgHierarchyë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
- *    (2) graph( ëª¨ë“  Graphë¥¼ ìœ„í•œ ê³µí†µ ìžë£Œ êµ¬ì¡° ) ì´ˆê¸°í™”
- *    (3) graph.type ì„¤ì •
- *    (4) graph.myQuerySetì„ aQuerySetìœ¼ë¡œ ì„¤ì •
- *    (5) graph.myFromì„ aFromìœ¼ë¡œ ì„¤ì •
- *    (6) graph.dependencies ì„¤ì •
- *    (7) qmgHierarchyì˜ startWithCNF êµ¬ì„±
- *    (8) qmgHierarchyì˜ connectByCNF êµ¬ì„±
- *    (9) DISK/MEMORY ì„¤ì •
+ *    (1) qmgHierarchy¸¦ À§ÇÑ °ø°£ ÇÒ´ç
+ *    (2) graph( ¸ðµç Graph¸¦ À§ÇÑ °øÅë ÀÚ·á ±¸Á¶ ) ÃÊ±âÈ­
+ *    (3) graph.type ¼³Á¤
+ *    (4) graph.myQuerySetÀ» aQuerySetÀ¸·Î ¼³Á¤
+ *    (5) graph.myFromÀ» aFromÀ¸·Î ¼³Á¤
+ *    (6) graph.dependencies ¼³Á¤
+ *    (7) qmgHierarchyÀÇ startWithCNF ±¸¼º
+ *    (8) qmgHierarchyÀÇ connectByCNF ±¸¼º
+ *    (9) DISK/MEMORY ¼³Á¤
  *
  ***********************************************************************/
 
@@ -66,13 +68,14 @@ qmgHierarchy::init( qcStatement  * aStatement,
     qmoCNF  * sStartWithCNF = NULL;
     qmoCNF  * sConnectByCNF = NULL;
     qtcNode * sNormalCNF;
-
-    qmoNormalType sNormalType;
+    qmoNormalType     sNormalType;
+    qtcNode         * sNode[2];
+    qcNamePosition    sPosition;
 
     IDU_FIT_POINT_FATAL( "qmgHierarchy::optimize::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -81,18 +84,18 @@ qmgHierarchy::init( qcStatement  * aStatement,
     IDE_DASSERT( aHierarchy != NULL );
 
     //---------------------------------------------------
-    // Hierarchy Graphë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
+    // Hierarchy Graph¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
     //---------------------------------------------------
 
     sStartWithCNF = NULL;
     sConnectByCNF = NULL;
 
-    // qmgHierarchyë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
+    // qmgHierarchy¸¦ À§ÇÑ °ø°£ ÇÒ´ç
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmgHIER ),
                                              (void**) &sMyGraph )
               != IDE_SUCCESS );
 
-    // Graph ê³µí†µ ì •ë³´ì˜ ì´ˆê¸°í™”
+    // Graph °øÅë Á¤º¸ÀÇ ÃÊ±âÈ­
     IDE_TEST( qmg::initGraph( &sMyGraph->graph ) != IDE_SUCCESS );
 
     sMyGraph->graph.type = QMG_HIERARCHY;
@@ -126,17 +129,45 @@ qmgHierarchy::init( qcStatement  * aStatement,
             sMyGraph->graph.flag |= QMG_GRAPH_TYPE_MEMORY;
         }
     }
+
+    /* BUG-48300 */
+    if ( ( aQuerySet->SFWGH->lflag & QMV_SFWGH_CONNECT_BY_FUNC_MASK )
+         == QMV_SFWGH_CONNECT_BY_FUNC_TRUE )
+    {
+        /* PROJ-1715 Connect By Stack Address Pseudo Column */
+        if ( aQuerySet->SFWGH->cnbyStackAddr == NULL )
+        {
+            SET_EMPTY_POSITION( sPosition );
+
+            IDE_TEST( qtc::makeColumn( aStatement,
+                                       sNode,
+                                       NULL,
+                                       NULL,
+                                       &sPosition,
+                                       NULL ) != IDE_SUCCESS );
+
+            aQuerySet->SFWGH->cnbyStackAddr = sNode[0];
+
+            /* make tuple for Connect By Stack Address */
+            IDE_TEST(qmvQTC::makeOneTupleForPseudoColumn( aStatement,
+                                                          aQuerySet->SFWGH->cnbyStackAddr,
+                                                          (SChar *)"BIGINT",
+                                                          6 )
+                     != IDE_SUCCESS);
+        }
+    }
+
     //---------------------------------------------------
-    // Hierarchy Graph ë§Œì„ ìœ„í•œ ìžë£Œ êµ¬ì¡° ì´ˆê¸°í™”
+    // Hierarchy Graph ¸¸À» À§ÇÑ ÀÚ·á ±¸Á¶ ÃÊ±âÈ­
     //---------------------------------------------------
 
     sMyGraph->myHierarchy = aHierarchy;
 
     //---------------------------------------------------
-    // startWithCNF êµ¬ì„±
+    // startWithCNF ±¸¼º
     //---------------------------------------------------
 
-    // start with CNF ì´ˆê¸°í™”
+    // start with CNF ÃÊ±âÈ­
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmoCNF ),
                                              (void**)& sStartWithCNF )
               != IDE_SUCCESS);
@@ -149,13 +180,13 @@ qmgHierarchy::init( qcStatement  * aStatement,
 
     if ( sMyGraph->myHierarchy->startWith != NULL )
     {
-        // To Fix PR-12743 NNF Filterì§€ì›
+        // To Fix PR-12743 NNF FilterÁö¿ø
         IDE_TEST( qmoCrtPathMgr
                   ::decideNormalType( aStatement,
                                       aFrom,
                                       sMyGraph->myHierarchy->startWith,
                                       aQuerySet->SFWGH->hints,
-                                      ID_TRUE, // CNF Onlyìž„
+                                      ID_TRUE, // CNF OnlyÀÓ
                                       & sNormalType )
                   != IDE_SUCCESS );
 
@@ -224,7 +255,7 @@ qmgHierarchy::init( qcStatement  * aStatement,
     }
 
     //---------------------------------------------------
-    // connectBy ì´ˆê¸°í™”
+    // connectBy ÃÊ±âÈ­
     //---------------------------------------------------
 
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmoCNF ),
@@ -239,13 +270,13 @@ qmgHierarchy::init( qcStatement  * aStatement,
 
     if ( sMyGraph->myHierarchy->connectBy != NULL )
     {
-        // To Fix PR-12743 NNF Filterì§€ì›
+        // To Fix PR-12743 NNF FilterÁö¿ø
         IDE_TEST( qmoCrtPathMgr
                   ::decideNormalType( aStatement,
                                       aFrom,
                                       sMyGraph->myHierarchy->connectBy,
                                       aQuerySet->SFWGH->hints,
-                                      ID_TRUE, // CNF Onlyìž„
+                                      ID_TRUE, // CNF OnlyÀÓ
                                       & sNormalType )
                   != IDE_SUCCESS );
 
@@ -268,11 +299,11 @@ qmgHierarchy::init( qcStatement  * aStatement,
     }
     else
     {
-        /* hierarchy queryì—ëŠ” connect byê°€ ë°˜ë“œì‹œ ì¡´ìž¬í•´ì•¼ í•¨ */
+        /* hierarchy query¿¡´Â connect by°¡ ¹Ýµå½Ã Á¸ÀçÇØ¾ß ÇÔ */
         IDE_RAISE( ERR_NO_CONNECT_BY );
     }
 
-    // out ì„¤ì •
+    // out ¼³Á¤
     *aGraph = (qmgGraph*)sMyGraph;
 
     return IDE_SUCCESS;
@@ -296,25 +327,25 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- * Description : qmgHierarchy Graphì˜ ìµœì í™”
+ * Description : qmgHierarchy GraphÀÇ ÃÖÀûÈ­
  *
  * Implementation :
- *    (1)  subquery graph ìƒì„±
- *         - Start Withì ˆì˜ Subquery ì²˜ë¦¬
- *         - Connect Byì ˆì˜ Subquery ì²˜ë¦¬
- *         : ë‹¨, Hierarchy QueryëŠ” Subqueryì™€ í•¨ê»˜ ì“°ì´ì§€ ëª»í•œë‹¤.
- *           ì¶”í›„ í™•ìž¥ì„ ìœ„í•´ ìœ„ì˜ ì²˜ë¦¬ë¥¼ ë‚¨ê²¨ë‘”ë‹¤.
- *    (2)  ê³µí†µ ë¹„ìš© ì •ë³´ì˜ ì„¤ì •( recordSize, inputRecordCnt, pageCnt )
- *    (3)  startWithCNFì˜ Predicate ë¶„ë¥˜
- *    (4)  startWithì˜ accessMethodì˜ ì„ íƒ
- *    (5)  connectByCNFì˜ Predicate ë¶„ë¥˜
- *    (6)  connectByì˜ accessMethodì˜ ì„ íƒ
- *    (7)  ì „ì²´ selectivity ê³„ì‚° ë° ê³µí†µ ë¹„ìš© ì •ë³´ì˜ selectivityì— ì €ìž¥
- *         selectivity = where selectivity *  (=> SCAN ìœ¼ë¡œ ë‚´ë¦¬ì§€ ì•ŠìŒ)
+ *    (1)  subquery graph »ý¼º
+ *         - Start WithÀýÀÇ Subquery Ã³¸®
+ *         - Connect ByÀýÀÇ Subquery Ã³¸®
+ *         : ´Ü, Hierarchy Query´Â Subquery¿Í ÇÔ²² ¾²ÀÌÁö ¸øÇÑ´Ù.
+ *           ÃßÈÄ È®ÀåÀ» À§ÇØ À§ÀÇ Ã³¸®¸¦ ³²°ÜµÐ´Ù.
+ *    (2)  °øÅë ºñ¿ë Á¤º¸ÀÇ ¼³Á¤( recordSize, inputRecordCnt, pageCnt )
+ *    (3)  startWithCNFÀÇ Predicate ºÐ·ù
+ *    (4)  startWithÀÇ accessMethodÀÇ ¼±ÅÃ
+ *    (5)  connectByCNFÀÇ Predicate ºÐ·ù
+ *    (6)  connectByÀÇ accessMethodÀÇ ¼±ÅÃ
+ *    (7)  ÀüÃ¼ selectivity °è»ê ¹× °øÅë ºñ¿ë Á¤º¸ÀÇ selectivity¿¡ ÀúÀå
+ *         selectivity = where selectivity *  (=> SCAN À¸·Î ³»¸®Áö ¾ÊÀ½)
  *                       start with selectivity *
  *                       connect by selectivity
  *         output record count = T(R) * T(R) * selectivity
- *    (8) Preserved Order ì„¤ì •
+ *    (8) Preserved Order ¼³Á¤
  *
  ***********************************************************************/
 
@@ -341,46 +372,57 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     IDU_FIT_POINT_FATAL( "qmgHierarchy::optimize::__FT__" );
 
     //---------------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //---------------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //---------------------------------------------------
 
     sMyGraph = (qmgHIER*) aGraph;
     sTableRef = sMyGraph->graph.myFrom->tableRef;
+
+    if ( sMyGraph->graph.myPredicate != NULL )
+    {
+        /* TASK-7219 Non-shard DML */
+        IDE_TEST( qmo::removeOutRefPredPushedForce( & sMyGraph->graph.myPredicate )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        // Nothing to do.
+    }
 
     if ( ( sMyGraph->graph.flag & QMG_HIERARCHY_JOIN_MASK )
          == QMG_HIERARCHY_JOIN_FALSE )
     {
         /*
          * PROJ-1715 Hierarchy
-         * View Graphì˜ ìƒì„± ë° í†µê³„ ì •ë³´ êµ¬ì¶•
-         *   ( ì¼ë°˜ Tableì˜ í†µê³„ ì •ë³´ëŠ” Validation ê³¼ì •ì—ì„œ ì„¤ì •ë¨ )
+         * View GraphÀÇ »ý¼º ¹× Åë°è Á¤º¸ ±¸Ãà
+         *   ( ÀÏ¹Ý TableÀÇ Åë°è Á¤º¸´Â Validation °úÁ¤¿¡¼­ ¼³Á¤µÊ )
          */
         if ( sTableRef->view != NULL )
         {
             sTableRef->viewOptType = QMO_VIEW_OPT_TYPE_CMTR;
-            // View Graphì˜ ìƒì„±
+            // View GraphÀÇ »ý¼º
             IDE_TEST( qmgSelection::makeViewGraph( aStatement, & sMyGraph->graph )
                       != IDE_SUCCESS );
 
             sMyGraph->graph.left->flag &= ~QMG_PROJ_VIEW_OPT_TIP_CMTR_MASK;
             sMyGraph->graph.left->flag |= QMG_PROJ_VIEW_OPT_TIP_CMTR_TRUE;
 
-            // í†µê³„ ì •ë³´ì˜ êµ¬ì¶•
+            // Åë°è Á¤º¸ÀÇ ±¸Ãà
             IDE_TEST( qmoStat::getStatInfo4View( aStatement,
                                                  & sMyGraph->graph,
                                                  & sTableRef->statInfo )
                       != IDE_SUCCESS );
 
             // fix BUG-11209
-            // selection graphëŠ” í•˜ìœ„ì— viewê°€ ì˜¬ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ
-            // viewê°€ ìžˆì„ ë•ŒëŠ” viewì˜ projection graphì˜ íƒ€ìž…ìœ¼ë¡œ flagë¥¼ ë³´ì •í•œë‹¤.
+            // selection graph´Â ÇÏÀ§¿¡ view°¡ ¿Ã ¼ö ÀÖÀ¸¹Ç·Î
+            // view°¡ ÀÖÀ» ¶§´Â viewÀÇ projection graphÀÇ Å¸ÀÔÀ¸·Î flag¸¦ º¸Á¤ÇÑ´Ù.
             sMyGraph->graph.flag &= ~QMG_GRAPH_TYPE_MASK;
             sMyGraph->graph.flag |= QMG_GRAPH_TYPE_MASK & sMyGraph->graph.left->flag;
         }
@@ -395,7 +437,7 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //---------------------------------------------------
-    // Subquery Graph ìƒì„±
+    // Subquery Graph »ý¼º
     //---------------------------------------------------
 
     if ( sMyGraph->graph.myPredicate != NULL )
@@ -411,7 +453,7 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //---------------------------------------------------
-    // startWithCNFì˜ Predicate ë¶„ë¥˜ ë° access methodì˜ ì„ íƒ
+    // startWithCNFÀÇ Predicate ºÐ·ù ¹× access methodÀÇ ¼±ÅÃ
     //---------------------------------------------------
 
     if ( sMyGraph->startWithCNF != NULL )
@@ -424,8 +466,8 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         /* Nothing to do */
     }
 
-    /* connectByCNFì˜ Predicate ë¶„ë¥˜ ë° access methodì˜ ì„ íƒ */
-    // Predicate ë¶„ë¥˜
+    /* connectByCNFÀÇ Predicate ºÐ·ù ¹× access methodÀÇ ¼±ÅÃ */
+    // Predicate ºÐ·ù
     if ( ( sMyGraph->graph.flag & QMG_HIERARCHY_JOIN_MASK )
          == QMG_HIERARCHY_JOIN_FALSE )
     {
@@ -451,7 +493,7 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         if ( ( sMyGraph->graph.flag & QMG_HIERARCHY_JOIN_MASK )
              == QMG_HIERARCHY_JOIN_FALSE )
         {
-            // Predicate ìž¬ë°°ì¹˜
+            // Predicate Àç¹èÄ¡
             IDE_TEST(
                 qmoPred::relocatePredicate(
                     aStatement,
@@ -482,6 +524,7 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                 }
             }
             sFind = ID_FALSE;
+            sFindFrom = NULL;
             for ( sFrom = sMyGraph->graph.myFrom; sFrom != NULL; sFrom = sFrom->next )
             {
                 IDE_TEST( searchFrom( sTableID, sFrom, &sFindFrom, &sFind )
@@ -496,7 +539,10 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                 }
             }
 
-            // Predicate ìž¬ë°°ì¹˜
+            /* BUG-47807 °èÃþÇü Äõ¸® ¼öÇà½Ã optmize¿¡¼­ FATAL */
+            IDE_TEST_RAISE( sFindFrom == NULL, ERR_NOT_FOUND_FROM );
+
+            // Predicate Àç¹èÄ¡
             IDE_TEST(
                 qmoPred::relocatePredicate(
                     aStatement,
@@ -512,8 +558,8 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     else
     {
         // To Fix PR-9050
-        // CONNECT BYì ˆì— ë°˜ë“œì‹œ One Table Predicateì´ ì¡´ìž¬í•¨ì„
-        // ë³´ìž¥í•  ìˆ˜ ì—†ë‹¤. ì¦‰, ë‹¤ìŒê³¼ ê°™ì€ Predicateì´ ì¡´ìž¬í•  ìˆ˜ ìžˆë‹¤.
+        // CONNECT BYÀý¿¡ ¹Ýµå½Ã One Table PredicateÀÌ Á¸ÀçÇÔÀ»
+        // º¸ÀåÇÒ ¼ö ¾ø´Ù. Áï, ´ÙÀ½°ú °°Àº PredicateÀÌ Á¸ÀçÇÒ ¼ö ÀÖ´Ù.
         // Ex) CONNECT BY PRIOR a1 = PRIOR a2
         // Ex) CONNECT BY 1 = 1
 
@@ -570,7 +616,7 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //---------------------------------------------------
-    // Predicateì˜ ìž¬ë°°ì¹˜ ë° ê°œë³„ Predicateì˜ Selectivity ê³„ì‚°
+    // PredicateÀÇ Àç¹èÄ¡ ¹× °³º° PredicateÀÇ Selectivity °è»ê
     //---------------------------------------------------
 
     if ( sMyGraph->graph.myPredicate != NULL )
@@ -590,7 +636,7 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
 
     //---------------------------------------------------
-    // ê³µí†µ ë¹„ìš© ì •ë³´ì˜ ì„¤ì •
+    // °øÅë ºñ¿ë Á¤º¸ÀÇ ¼³Á¤
     // output record count = ( input record count * input record count )
     //                       * selectivity
     // output page count = record size * output record count / page size
@@ -600,15 +646,15 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
          ( ( sMyGraph->graph.flag & QMG_HIERARCHY_JOIN_MASK )
             == QMG_HIERARCHY_JOIN_TRUE ) )
     {
-        // recordSize ì„¤ì •
+        // recordSize ¼³Á¤
         sMyGraph->graph.costInfo.recordSize =
             sMyGraph->graph.left->costInfo.recordSize;
 
-        // input Record Cnt ì„¤ì •
+        // input Record Cnt ¼³Á¤
         sMyGraph->graph.costInfo.inputRecordCnt = sInputRecordCnt =
             sMyGraph->graph.left->costInfo.outputRecordCnt;
 
-        // selectivity ì„¤ì •
+        // selectivity ¼³Á¤
         IDE_TEST( qmoSelectivity::setHierarchySelectivity(
                       aStatement,
                       sMyGraph->graph.myPredicate,
@@ -621,7 +667,7 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         if ( ( sMyGraph->graph.flag & QMG_HIERARCHY_JOIN_MASK )
              == QMG_HIERARCHY_JOIN_FALSE )
         {
-            // output Record Cnt ì„¤ì •
+            // output Record Cnt ¼³Á¤
             sOutputRecordCnt = sInputRecordCnt * sInputRecordCnt *
                 sMyGraph->graph.costInfo.selectivity;
         }
@@ -657,7 +703,7 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
             sMyGraph->graph.costInfo.myAccessCost +
             sMyGraph->graph.costInfo.myDiskCost;
 
-        // total cost ì„¤ì •
+        // total cost ¼³Á¤
         sMyGraph->graph.costInfo.totalAccessCost =
             sMyGraph->graph.left->costInfo.totalAccessCost +
             sMyGraph->graph.costInfo.myAccessCost;
@@ -681,11 +727,11 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         sRecordSize = IDL_MAX( sRecordSize, 1 );
         sMyGraph->graph.costInfo.recordSize = sRecordSize;
 
-        // input Record Cnt ì„¤ì •
+        // input Record Cnt ¼³Á¤
         sMyGraph->graph.costInfo.inputRecordCnt = sInputRecordCnt =
             sMyGraph->graph.myFrom->tableRef->statInfo->totalRecordCnt;
 
-        // selectivity ì„¤ì •
+        // selectivity ¼³Á¤
         IDE_TEST( qmoSelectivity::setHierarchySelectivity(
                       aStatement,
                       sMyGraph->graph.myPredicate,
@@ -695,7 +741,7 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                       & sMyGraph->graph.costInfo.selectivity )
                   != IDE_SUCCESS );
 
-        // output Record Cnt ì„¤ì •
+        // output Record Cnt ¼³Á¤
         sOutputRecordCnt = sInputRecordCnt * sInputRecordCnt *
             sMyGraph->graph.costInfo.selectivity;
         sOutputRecordCnt = ( sOutputRecordCnt < 1 ) ? 1 : sOutputRecordCnt;
@@ -710,14 +756,14 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         sMyGraph->graph.costInfo.myAllCost    = sMyGraph->graph.costInfo.myAccessCost +
             sMyGraph->graph.costInfo.myDiskCost;
 
-        // total cost ì„¤ì •
+        // total cost ¼³Á¤
         sMyGraph->graph.costInfo.totalAccessCost = sMyGraph->graph.costInfo.myAccessCost;
         sMyGraph->graph.costInfo.totalDiskCost   = sMyGraph->graph.costInfo.myDiskCost;
         sMyGraph->graph.costInfo.totalAllCost    = sMyGraph->graph.costInfo.myAllCost;
     }
 
     //---------------------------------------------------
-    // Preserved Order ì„¤ì •
+    // Preserved Order ¼³Á¤
     //---------------------------------------------------
 
     sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
@@ -725,6 +771,12 @@ qmgHierarchy::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_NOT_FOUND_FROM )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgHierarchy::optimize",
+                                  "Not found From" ));
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -746,14 +798,14 @@ IDE_RC qmgHierarchy::optimizeStartWith( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgHierarchy::optimizeStartWith::__FT__" );
 
     //---------------------------------------------------
-    // start withì ˆì´ ì¡´ìž¬í•˜ëŠ” ê²½ìš°,
-    // start withì˜ access method ì„ íƒ
+    // start withÀýÀÌ Á¸ÀçÇÏ´Â °æ¿ì,
+    // start withÀÇ access method ¼±ÅÃ
     //---------------------------------------------------
 
     if ( ( aMyGraph->graph.flag & QMG_HIERARCHY_JOIN_MASK )
          == QMG_HIERARCHY_JOIN_FALSE )
     {
-        // Predicate ë¶„ë¥˜
+        // Predicate ºÐ·ù
         IDE_TEST(
             qmoCnfMgr::classifyPred4StartWith( aStatement,
                                                aMyGraph->startWithCNF,
@@ -762,7 +814,7 @@ IDE_RC qmgHierarchy::optimizeStartWith( qcStatement * aStatement,
     }
     else
     {
-        // Predicate ë¶„ë¥˜
+        // Predicate ºÐ·ù
         IDE_TEST(
             qmoCnfMgr::classifyPred4StartWith( aStatement,
                                                aMyGraph->startWithCNF,
@@ -784,8 +836,8 @@ IDE_RC qmgHierarchy::optimizeStartWith( qcStatement * aStatement,
                                      &sTableID,
                                      &sFind )
                       != IDE_SUCCESS );
-            sFind = ID_FALSE;
 
+            sFind = ID_FALSE;
             for ( sFrom = aMyGraph->graph.myFrom; sFrom != NULL; sFrom = sFrom->next )
             {
                 IDE_TEST( searchFrom( sTableID, sFrom, &sFindFrom, &sFind )
@@ -807,9 +859,12 @@ IDE_RC qmgHierarchy::optimizeStartWith( qcStatement * aStatement,
             {
                 /* Nothing to do */
             }
+
+            /* BUG-47807 °èÃþÇü Äõ¸® ¼öÇà½Ã optmize¿¡¼­ FATAL */
+            IDE_TEST_RAISE( sTableRef == NULL, ERR_NOT_FOUND_TABLE_REF );
         }
 
-        // Predicate ìž¬ë°°ì¹˜
+        // Predicate Àç¹èÄ¡
         IDE_TEST(
             qmoPred::relocatePredicate(
                 aStatement,
@@ -825,9 +880,9 @@ IDE_RC qmgHierarchy::optimizeStartWith( qcStatement * aStatement,
              ( ( aMyGraph->graph.flag & QMG_HIERARCHY_JOIN_MASK )
              == QMG_HIERARCHY_JOIN_FALSE ) )
         {
-            // rid predicate ì´ ìžˆëŠ” ê²½ìš° ë¬´ì¡°ê±´ rid scan ì„ ì‹œë„í•œë‹¤.
-            // rid predicate ì´ ìžˆë”ë¼ë„  rid scan ì„ í• ìˆ˜ ì—†ëŠ” ê²½ìš°ë„ ìžˆë‹¤.
-            // ì´ ê²½ìš°ì—ë„ index scan ì´ ë˜ì§€ ì•Šê³  full scan ì„ í•˜ê²Œ ëœë‹¤.
+            // rid predicate ÀÌ ÀÖ´Â °æ¿ì ¹«Á¶°Ç rid scan À» ½ÃµµÇÑ´Ù.
+            // rid predicate ÀÌ ÀÖ´õ¶óµµ  rid scan À» ÇÒ¼ö ¾ø´Â °æ¿ìµµ ÀÖ´Ù.
+            // ÀÌ °æ¿ì¿¡µµ index scan ÀÌ µÇÁö ¾Ê°í full scan À» ÇÏ°Ô µÈ´Ù.
             //---------------------------------------------------------------
             if ( aMyGraph->graph.ridPredicate != NULL )
             {
@@ -880,8 +935,14 @@ IDE_RC qmgHierarchy::optimizeStartWith( qcStatement * aStatement,
 
     return IDE_SUCCESS;
     
+    IDE_EXCEPTION( ERR_NOT_FOUND_TABLE_REF )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgHierarchy::optimizeStartWith",
+                                  "Not found Table Ref" ));
+    }
     IDE_EXCEPTION_END;
-    
+
     return IDE_FAILURE;
 }
 
@@ -890,25 +951,25 @@ qmgHierarchy::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
 {
 /***********************************************************************
  *
- * Description : qmgHierachyë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
+ * Description : qmgHierachy·Î ºÎÅÍ PlanÀ» »ý¼ºÇÑ´Ù.
  *
  * Implementation :
  *
- *     - qmgHierachyë¡œ ë¶€í„° ìƒì„±ê°€ëŠ¥í•œ Plan
+ *     - qmgHierachy·Î ºÎÅÍ »ý¼º°¡´ÉÇÑ Plan
  *       1) One Table
- *       ( [FILT] ) : WHEREì ˆì˜ ì²˜ë¦¬ (qmgHIER.graph.myPredicate )a
+ *       ( [FILT] ) : WHEREÀýÀÇ Ã³¸® (qmgHIER.graph.myPredicate )a
  *           |
- *         [CNBY]   : Connect By ì ˆì˜ ì²˜ë¦¬
+ *         [CNBY]   : Connect By ÀýÀÇ Ã³¸®
  *           |
- *         [SCAN]   : Start Withì ˆì˜ ì²˜ë¦¬
- *                    Constant Predicateì˜ ì²˜ë¦¬
+ *         [SCAN]   : Start WithÀýÀÇ Ã³¸®
+ *                    Constant PredicateÀÇ Ã³¸®
  *
  *       2) View
- *       ( [FILT] ) : WHEREì ˆì˜ ì²˜ë¦¬ (qmgHIER.graph.myPredicate )
+ *       ( [FILT] ) : WHEREÀýÀÇ Ã³¸® (qmgHIER.graph.myPredicate )
  *           |
- *         [CNBY]   : Connect By ì ˆì˜ ì²˜ë¦¬
- *                    Start Withì ˆì˜ ì²˜
- *                    Constant Predicateì˜ ì²˜ë¦¬
+ *         [CNBY]   : Connect By ÀýÀÇ Ã³¸®
+ *                    Start WithÀýÀÇ Ã³
+ *                    Constant PredicateÀÇ Ã³¸®
  *
  *
  ***********************************************************************/
@@ -926,7 +987,7 @@ qmgHierarchy::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
     IDU_FIT_POINT_FATAL( "qmgHierarchy::makePlan::__FT__" );
 
     //---------------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -935,7 +996,7 @@ qmgHierarchy::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
     sMyGraph = (qmgHIER*) aGraph;
 
     //---------------------------------------------------
-    // Current CNFì˜ ë“±ë¡
+    // Current CNFÀÇ µî·Ï
     //---------------------------------------------------
 
     if ( sMyGraph->graph.myCNF != NULL )
@@ -955,7 +1016,7 @@ qmgHierarchy::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
     if ( aGraph->left != NULL )
     {
         // BUG-38410
-        // SCAN parallel flag ë¥¼ ìžì‹ ë…¸ë“œë¡œ ë¬¼ë ¤ì¤€ë‹¤.
+        // SCAN parallel flag ¸¦ ÀÚ½Ä ³ëµå·Î ¹°·ÁÁØ´Ù.
         aGraph->left->flag |= (aGraph->flag & QMG_PLAN_EXEC_REPEATED_MASK);
     }
     else
@@ -966,10 +1027,10 @@ qmgHierarchy::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
     sMyGraph->graph.myPlan = aParent->myPlan;
 
     //---------------------------------------------------
-    // FILT ë…¸ë“œì˜ ìƒì„±
+    // FILT ³ëµåÀÇ »ý¼º
     //---------------------------------------------------
 
-    //FILTë…¸ë“œì˜ ìƒì„±
+    //FILT³ëµåÀÇ »ý¼º
     if( sMyGraph->graph.myPredicate != NULL )
     {
         IDE_TEST( qmoPred::linkFilterPredicate( aStatement ,
@@ -1021,7 +1082,7 @@ qmgHierarchy::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
         // Nothing To Do
     }
 
-    //Predicateì˜ í†µí•©
+    //PredicateÀÇ ÅëÇÕ
     if( sMyGraph->graph.constantPredicate != NULL )
     {
         sConstantPredicate = sMyGraph->graph.constantPredicate;
@@ -1056,12 +1117,12 @@ qmgHierarchy::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
          ( ( sMyGraph->graph.flag & QMG_HIERARCHY_JOIN_MASK )
            == QMG_HIERARCHY_JOIN_FALSE ) )
     {
-        /* CNBY ë…¸ë“œì˜ ìƒì„± */
+        /* CNBY ³ëµåÀÇ »ý¼º */
         sLeafInfo[0].predicate         = NULL;
         sLeafInfo[0].levelPredicate    = NULL;
         sLeafInfo[0].constantPredicate = NULL;
         sLeafInfo[0].ridPredicate      = NULL;
-        sLeafInfo[0].connectByRownumPred = NULL; /* BUG-39434 Start withì˜ rownum ì€ constant ë¡œ ì²˜ë¦¬ëœë‹¤. */
+        sLeafInfo[0].connectByRownumPred = NULL; /* BUG-39434 Start withÀÇ rownum Àº constant ·Î Ã³¸®µÈ´Ù. */
         sLeafInfo[0].index             = NULL;
         sLeafInfo[0].preservedOrder    = NULL;
         sLeafInfo[0].sdf               = NULL;
@@ -1098,7 +1159,7 @@ qmgHierarchy::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
         else
         {
             // To Fix PR-10288
-            // NOTNULL KEY RANGEê°€ ì•„ë‹Œ ê²½ìš°ë¡œ ë°˜ë“œì‹œ ì„¤ì •í•´ ì£¼ì–´ì•¼ í•¨.
+            // NOTNULL KEY RANGE°¡ ¾Æ´Ñ °æ¿ì·Î ¹Ýµå½Ã ¼³Á¤ÇØ ÁÖ¾î¾ß ÇÔ.
             sSCANInfo.flag &= ~QMO_SCAN_INFO_NOTNULL_KEYRANGE_MASK;
             sSCANInfo.flag |= QMO_SCAN_INFO_NOTNULL_KEYRANGE_FALSE;
         }
@@ -1131,14 +1192,14 @@ qmgHierarchy::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
 
         IDE_TEST_RAISE( sLobFilter != NULL, ERR_NOT_SUPPORT_LOB_FILTER );
     }
-    else /* PROJ-1715 View ì¸ ê²½ìš° */
+    else /* PROJ-1715 View ÀÎ °æ¿ì */
     {
-        /* CNBY ë…¸ë“œì˜ ìƒì„± */
+        /* CNBY ³ëµåÀÇ »ý¼º */
         sLeafInfo[0].predicate         = sMyGraph->startWithCNF->oneTablePredicate;
         sLeafInfo[0].levelPredicate    = NULL;
         sLeafInfo[0].constantPredicate = sConstantPredicate;
         sLeafInfo[0].ridPredicate      = NULL;
-        sLeafInfo[0].connectByRownumPred = NULL; /* BUG-39434 Start withì˜ rownum ì€ constant ë¡œ ì²˜ë¦¬ëœë‹¤. */
+        sLeafInfo[0].connectByRownumPred = NULL; /* BUG-39434 Start withÀÇ rownum Àº constant ·Î Ã³¸®µÈ´Ù. */
         sLeafInfo[0].index             = NULL;
         sLeafInfo[0].preservedOrder    = NULL;
         sLeafInfo[0].sdf               = NULL;
@@ -1187,7 +1248,7 @@ qmgHierarchy::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
 
             if ( sMyGraph->graph.left->myPlan == NULL )
             {
-                /* í•­ìƒ Memeory Temp Table ì„ ì´ìš©í•œë‹¤. */
+                /* Ç×»ó Memeory Temp Table À» ÀÌ¿ëÇÑ´Ù. */
                 sMyGraph->graph.left->flag &= ~QMG_GRAPH_TYPE_MASK;
                 sMyGraph->graph.left->flag |= QMG_GRAPH_TYPE_MEMORY;
                 IDE_TEST( sMyGraph->graph.left->makePlan(
@@ -1287,7 +1348,7 @@ qmgHierarchy::printGraph( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Graphë¥¼ êµ¬ì„±í•˜ëŠ” ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *    Graph¸¦ ±¸¼ºÇÏ´Â °øÅë Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  *
  * Implementation :
@@ -1297,7 +1358,7 @@ qmgHierarchy::printGraph( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgHierarchy::printGraph::__FT__" );
 
     //-----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //-----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1305,7 +1366,7 @@ qmgHierarchy::printGraph( qcStatement  * aStatement,
     IDE_DASSERT( aString != NULL );
 
     //-----------------------------------
-    // Graph ê³µí†µ ì •ë³´ì˜ ì¶œë ¥
+    // Graph °øÅë Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
     IDE_TEST( qmg::printGraph( aStatement,
@@ -1317,7 +1378,7 @@ qmgHierarchy::printGraph( qcStatement  * aStatement,
     if ( aGraph->left != NULL )
     {
         //-----------------------------------
-        // Child Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
+        // Child Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
         //-----------------------------------
         IDE_TEST( aGraph->left->printGraph( aStatement,
                                             aGraph->left,
@@ -1343,7 +1404,9 @@ IDE_RC qmgHierarchy::searchTableID( qtcNode * aNode,
 {
     if ( *aFind == ID_FALSE )
     {
-        if ( aNode->node.module == &qtc::columnModule )
+        /* BUG-47807 °èÃþÇü Äõ¸® ¼öÇà½Ã optmize¿¡¼­ FATAL */
+        if ( ( aNode->node.module == &qtc::columnModule ) &&
+             ( QTC_IS_PSEUDO( aNode ) == ID_FALSE ) )
         {
             *aTableID = aNode->node.table;
             if ( ( aNode->lflag & QTC_NODE_PRIOR_MASK) ==

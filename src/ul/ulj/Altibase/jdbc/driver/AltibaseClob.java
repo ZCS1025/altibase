@@ -50,7 +50,7 @@ public class AltibaseClob extends AltibaseLob implements Clob
         if (mAsciiStream == null)
         {
             mAsciiStream = (BlobInputStream)LobObjectFactory.createAsciiStream(mLocatorId, mLobLength, mLobByteCache);
-            if (mChannel != null) // BUG-38008 ì±„ë„ì´ ì˜¤í”ˆë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
+            if (mChannel != null) // BUG-38008 Ã¤³ÎÀÌ ¿ÀÇÂµÇ¾î ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
             {
                 mAsciiStream.open(mChannel);
             }
@@ -166,5 +166,22 @@ public class AltibaseClob extends AltibaseLob implements Clob
                 return null;
             }
         }
+    }
+
+    @Override
+    public Reader getCharacterStream(long aPos, long aLength) throws SQLException
+    {
+        if (mReader == null)
+        {
+            mReader = (ClobReader)LobObjectFactory.createCharacterStream(mLocatorId, aLength, mLobByteCache, mLobCharCache);
+            if (mChannel != null)
+            {
+                mReader.open(mChannel);
+            }
+        }
+        // PROJ-2707 positionÀ¸·Î ¼­¹ö offsetÀ» ¸ÂÃá´Ù.
+        mReader.setOffset4Server(aPos);
+
+        return mReader;
     }
 }

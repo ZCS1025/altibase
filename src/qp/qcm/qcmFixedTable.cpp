@@ -15,17 +15,17 @@
  */
  
 /***********************************************************************
- * $Id: qcmFixedTable.cpp 83512 2018-07-18 00:47:26Z hykim $
+ * $Id: qcmFixedTable.cpp 90270 2021-03-21 23:20:18Z bethy $
  *
  * Description :
  *
- *     ID, SMì— ì˜í•´ ì •ì˜ëœ fixedTableì— ëŒ€í•´ì„œ
- *     QPë¥¼ ê¸°ë°˜ìœ¼ë¡œ selection ì„ í•˜ê¸° ìœ„í•´ì„œëŠ” meta cacheê°€ í•„ìš”í•˜ë©°,
- *     ì´ì— ëŒ€í•œ ì •ë³´ êµ¬ì¶•, ì •ë³´ íšë“ë“±ì„ ê´€ë¦¬í•œë‹¤.
+ *     ID, SM¿¡ ÀÇÇØ Á¤ÀÇµÈ fixedTable¿¡ ´ëÇØ¼­
+ *     QP¸¦ ±â¹İÀ¸·Î selection À» ÇÏ±â À§ÇØ¼­´Â meta cache°¡ ÇÊ¿äÇÏ¸ç,
+ *     ÀÌ¿¡ ´ëÇÑ Á¤º¸ ±¸Ãà, Á¤º¸ È¹µæµîÀ» °ü¸®ÇÑ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
 
  **********************************************************************/
 
@@ -46,8 +46,8 @@ IDE_RC qcmFixedTable::validateTableName( qcStatement    *aStatement,
 /***********************************************************************
  *
  * Description :
- *  X$ì™€ V$ í…Œì´ë¸” ì´ë¦„ì€ fixedTable, performanceViewì˜ ìš©ë„ë¡œë§Œ
- *  ì‚¬ìš©í•˜ë„ë¡ validationì„ ìˆ˜í–‰í•œë‹¤.
+ *  X$¿Í V$ Å×ÀÌºí ÀÌ¸§Àº fixedTable, performanceViewÀÇ ¿ëµµ·Î¸¸
+ *  »ç¿ëÇÏµµ·Ï validationÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
  *
@@ -114,8 +114,8 @@ IDE_RC qcmFixedTable::getTableInfo( qcStatement     *aStatement,
 /***********************************************************************
  *
  * Description :
- *  fixedTableì— ì €ì¥ëœ tableë¡œë¶€í„° tempInfoì— ì €ì¥ëœ
- *  tableInfoë¥¼ ì–»ëŠ”ë‹¤.
+ *  fixedTable¿¡ ÀúÀåµÈ table·ÎºÎÅÍ tempInfo¿¡ ÀúÀåµÈ
+ *  tableInfo¸¦ ¾ò´Â´Ù.
  *
  * Implementation :
  *
@@ -123,7 +123,7 @@ IDE_RC qcmFixedTable::getTableInfo( qcStatement     *aStatement,
 
     UChar sTableName[QC_MAX_NAME_LEN+1];
 
-    // tableHandleì„ ì´ë¦„ ê¸°ë°˜ìœ¼ë¡œ íšë“.
+    // tableHandleÀ» ÀÌ¸§ ±â¹İÀ¸·Î È¹µæ.
     if ( aTableNameSize > 0 )
     {
         IDE_TEST( getTableHandleByName( aTableName,
@@ -205,7 +205,7 @@ IDE_RC qcmFixedTable::getTableHandleByName( UChar            * aTableName,
 /***********************************************************************
  *
  * Description :
- *  qcmFixedTable::getTableInfoì— ì˜í•´ í˜¸ì¶œë¨.
+ *  qcmFixedTable::getTableInfo¿¡ ÀÇÇØ È£ÃâµÊ.
  *
  * Implementation :
  *
@@ -244,7 +244,7 @@ IDE_RC qcmFixedTable::makeAndSetQcmTableInfo( idvSQL * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  fixedTableì— ëŒ€í•´ì„œ tableInfoë¥¼ êµ¬ì¶•í•˜ê³ , tempInfoì— ì£¼ì†Œë¥¼ ì €ì¥.
+ *  fixedTable¿¡ ´ëÇØ¼­ tableInfo¸¦ ±¸ÃàÇÏ°í, tempInfo¿¡ ÁÖ¼Ò¸¦ ÀúÀå.
  *
  * Implementation :
  *
@@ -266,7 +266,6 @@ IDE_RC qcmFixedTable::makeAndSetQcmTableInfo( idvSQL * aStatistics,
     SChar                sTableName[QC_MAX_OBJECT_NAME_LEN + 1];
     UInt                 j;
     qcmTableInfo       * sTableInfo = NULL;
-    smSCN                sDummySCN;
     // fix BUG-31958
     static UInt          sStaticTableID = (UInt)(QCM_TABLES_SEQ_MAXVALUE + 1);
     UInt                 sState = 0;
@@ -288,7 +287,7 @@ IDE_RC qcmFixedTable::makeAndSetQcmTableInfo( idvSQL * aStatistics,
 
     sFlag = SMI_LOCK_READ|SMI_TRAVERSE_FORWARD|SMI_PREVIOUS_DISABLE;
 
-    // X$TABLEì„ íšë“.
+    // X$TABLEÀ» È¹µæ.
     idlOS::strcpy( sTableName, "X$TABLE" );
     IDE_TEST( smiFixedTable::findTable( sTableName, &sTable )
               != IDE_SUCCESS );
@@ -300,7 +299,7 @@ IDE_RC qcmFixedTable::makeAndSetQcmTableInfo( idvSQL * aStatistics,
     sRange    = smiGetDefaultKeyRange();
     sCallBack = smiGetDefaultFilter();
 
-    // X$TABLE ì»¤ì„œ open
+    // X$TABLE Ä¿¼­ open
     IDE_TEST( sCursor.open( &sStmt,
                             sTable,
                             NULL,
@@ -316,20 +315,20 @@ IDE_RC qcmFixedTable::makeAndSetQcmTableInfo( idvSQL * aStatistics,
 
     IDE_TEST( sCursor.beforeFirst( ) != IDE_SUCCESS );
 
-    // X$TABLE ì»¤ì„œ ì—ì„œ ì²«ë²ˆì§¸ rowë¥¼ readRow
+    // X$TABLE Ä¿¼­ ¿¡¼­ Ã¹¹øÂ° row¸¦ readRow
     IDE_TEST( sCursor.readRow( &sRow, &sRowRID, SMI_FIND_NEXT )
               != IDE_SUCCESS );
     j = 0;
     while( sRow != NULL )
     {
-        // X$TABLEì˜ ë‚´ìš©ì¤‘ì—ì„œ TABLE ì´ë¦„ íšë“.
+        // X$TABLEÀÇ ³»¿ëÁß¿¡¼­ TABLE ÀÌ¸§ È¹µæ.
 
         sTableNameColumnPtr = ((SChar*)sRow + sTableNameColumnOffset);
         IDE_TEST( makeTrimmedName( sTableName, &(sTableNameColumnPtr[2]) )
                   != IDE_SUCCESS );
 
-        // TABLEì˜ ì´ë¦„ì´ X$ ë‹¨ê³„
-        // , V$ ë‹¨ê³„ ì¼ë•Œ íŠ¹ì • ë‹¨ê³„ì—ì„œë§Œ í…Œì´ë¸” meta cache ìƒì„±.
+        // TABLEÀÇ ÀÌ¸§ÀÌ X$ ´Ü°è
+        // , V$ ´Ü°è ÀÏ¶§ Æ¯Á¤ ´Ü°è¿¡¼­¸¸ Å×ÀÌºí meta cache »ı¼º.
         if ( ( idlOS::strlen( aNameType ) >= 2 ) &&
              ( idlOS::strMatch( aNameType,
                                 2,
@@ -426,8 +425,8 @@ IDE_RC qcmFixedTable::makeAndSetQcmTableInfo( idvSQL * aStatistics,
             sTableInfo->foreignKeys     = NULL;
             sTableInfo->notNullCount = 0;
             sTableInfo->notNulls     = NULL;
-            sTableInfo->checkCount = 0;     /* PROJ-1107 Check Constraint ì§€ì› */
-            sTableInfo->checks     = NULL;  /* PROJ-1107 Check Constraint ì§€ì› */
+            sTableInfo->checkCount = 0;     /* PROJ-1107 Check Constraint Áö¿ø */
+            sTableInfo->checks     = NULL;  /* PROJ-1107 Check Constraint Áö¿ø */
             sTableInfo->timestamp = NULL;
             sTableInfo->privilegeCount = 0;
             sTableInfo->privilegeInfo  = NULL;
@@ -436,7 +435,11 @@ IDE_RC qcmFixedTable::makeAndSetQcmTableInfo( idvSQL * aStatistics,
             sTableInfo->lobColumnCount = 0;  // PROJ-1362
             sTableInfo->parallelDegree = 1;  // PROJ-1071 Parallel query
 
-            // ê¸°íƒ€ ìì£¼ ì‚¬ìš©í•˜ëŠ” ì •ë³´
+            // TASK-7307 DML Data Consistency in Shard
+            sTableInfo->mIsUsable = ID_TRUE;
+            sTableInfo->mShardFlag = QCM_SHARD_FLAG_TABLE_NONE;
+
+            // ±âÅ¸ ÀÚÁÖ »ç¿ëÇÏ´Â Á¤º¸
             sTableInfo->tableOID = smiGetTableId(sTableInfo->tableHandle);
             sTableInfo->tableFlag = smiGetTableFlag(sTableInfo->tableHandle);
             sTableInfo->isDictionary = ID_FALSE;
@@ -455,10 +458,10 @@ IDE_RC qcmFixedTable::makeAndSetQcmTableInfo( idvSQL * aStatistics,
             /* BUG-43006 Fixed Table Indexing Filter */
             IDE_TEST( getQcmIndices( sTableInfo ) != IDE_SUCCESS );
 
-            // smcTableHeaderì˜ tempInfoì— meta cacheê°’ì„ ì„¤ì •.
+            // smcTableHeaderÀÇ tempInfo¿¡ meta cache°ªÀ» ¼³Á¤.
             smiSetTableTempInfo( sTableInfo->tableHandle, (void*)sTableInfo );
 
-            // nullRow ìƒì„± ë° smiFixedTableHeader.mNullRowë¡œ í• ë‹¹.
+            // nullRow »ı¼º ¹× smiFixedTableHeader.mNullRow·Î ÇÒ´ç.
             IDE_TEST( makeNullRow4FT( sTableInfo->columns, &sNullRow )
                       != IDE_SUCCESS );
             smiFixedTable::setNullRow( sTableInfo->tableHandle, sNullRow );
@@ -474,7 +477,7 @@ IDE_RC qcmFixedTable::makeAndSetQcmTableInfo( idvSQL * aStatistics,
 
     IDE_TEST( sStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS );
     
-    IDE_TEST( sTrans.commit(&sDummySCN) != IDE_SUCCESS );
+    IDE_TEST( sTrans.commit() != IDE_SUCCESS );
 
     IDE_TEST( sTrans.destroy( aStatistics ) != IDE_SUCCESS );
 
@@ -547,8 +550,8 @@ IDE_RC qcmFixedTable::makeNullRow4FT( qcmColumn  * aColumns,
     UInt            sState = 0;
 
     // fix BUG-10785
-    // ë ˆì½”ë“œ ì‚¬ì´ì¦ˆë¥¼ êµ¬í•  ë•ŒëŠ” ë§¨ ë§ˆì§€ë§‰ columnì„ ê°€ì§€ê³ 
-    // êµ¬í•˜ëŠ” ê²ƒì´ ì•„ë‹ˆë¼ ê°€ì¥ í° offsetì„ ê°€ì§„ columnìœ¼ë¡œ êµ¬í•´ì•¼ í•¨
+    // ·¹ÄÚµå »çÀÌÁî¸¦ ±¸ÇÒ ¶§´Â ¸Ç ¸¶Áö¸· columnÀ» °¡Áö°í
+    // ±¸ÇÏ´Â °ÍÀÌ ¾Æ´Ï¶ó °¡Àå Å« offsetÀ» °¡Áø columnÀ¸·Î ±¸ÇØ¾ß ÇÔ
     sSelectedColumn = aColumns;
 
     for (sColumn = aColumns; sColumn != NULL; sColumn = sColumn->next)
@@ -604,7 +607,7 @@ IDE_RC qcmFixedTable::getQcmColumn( qcmTableInfo * aTableInfo )
 /***********************************************************************
  *
  * Description :
- *  ê¸°ì¡´ meta table ë¡œë¶€í„° êµ¬ì¶•í•˜ë˜ qcmColumnì„ fixedTableê¸°ë°˜ìœ¼ë¡œ êµ¬ì¶•.
+ *  ±âÁ¸ meta table ·ÎºÎÅÍ ±¸ÃàÇÏ´ø qcmColumnÀ» fixedTable±â¹İÀ¸·Î ±¸Ãà.
  *
  * Implementation :
  *
@@ -645,12 +648,12 @@ IDE_RC qcmFixedTable::getQcmColumn( qcmTableInfo * aTableInfo )
 
             // To Fix PR-11718, PR-11719, PR-11720
             //        PR-11721, PR-11722, PR-11723
-            // UMRì„ ë°©ì§€í•˜ê¸° ìœ„í•´ì„œëŠ”
-            // smiColumn.id ê°’ì„ ì„¤ì •í•´ ì£¼ì–´ì•¼ í•¨.
+            // UMRÀ» ¹æÁöÇÏ±â À§ÇØ¼­´Â
+            // smiColumn.id °ªÀ» ¼³Á¤ÇØ ÁÖ¾î¾ß ÇÔ.
             sMtcColumn->column.id = i;
             sMtcColumn->column.value = NULL;
 
-            // PR-13597ê³¼ ê´€ë ¨í•˜ì—¬ fixedTable, performanceViewëŠ” í•­ìƒ null ê°’ì´ ì˜¬ ìˆ˜ ìˆë„ë¡ ì„¤ì •.
+            // PR-13597°ú °ü·ÃÇÏ¿© fixedTable, performanceView´Â Ç×»ó null °ªÀÌ ¿Ã ¼ö ÀÖµµ·Ï ¼³Á¤.
             sMtcColumn->column.flag &= ~(MTC_COLUMN_NOTNULL_MASK);
             sMtcColumn->column.flag |= (MTC_COLUMN_NOTNULL_FALSE);
 
@@ -667,7 +670,7 @@ IDE_RC qcmFixedTable::getQcmColumn( qcmTableInfo * aTableInfo )
 
             for( j = 0; j < sColumnNameLen; j++ )
             {
-                // PRJ-1678 : multi-byteë¥¼ ì‚¬ìš©í•˜ëŠ” fixed table columnëª…ì€ ì—†ê² ì§€...
+                // PRJ-1678 : multi-byte¸¦ »ç¿ëÇÏ´Â fixed table column¸íÀº ¾ø°ÚÁö...
                 aTableInfo->columns[i].name[j] =
                     idlOS::idlOS_toupper( aTableInfo->columns[i].name[j] );
             }
@@ -705,12 +708,12 @@ IDE_RC qcmFixedTable::createColumn( qcmTableInfo  * aTableInfo,
 /***********************************************************************
  *
  * Description :
- *  qcmColumnì— ì˜í•´ ê°€ë¦¬ì¼œ ì§ˆ mtcColumnì„ fixedTableê¸°ë°˜ìœ¼ë¡œ êµ¬ì¶•í•¨.
+ *  qcmColumn¿¡ ÀÇÇØ °¡¸®ÄÑ Áú mtcColumnÀ» fixedTable±â¹İÀ¸·Î ±¸ÃàÇÔ.
  *
  * Implementation :
  *    ps )
- *    Fixed Table( Performace View )ì˜ mtcColumnì˜ languageëŠ”
- *    default language ( = ENGLISH )ë¡œ ì„¤ì •ë¨
+ *    Fixed Table( Performace View )ÀÇ mtcColumnÀÇ language´Â
+ *    default language ( = ENGLISH )·Î ¼³Á¤µÊ
  *
  ***********************************************************************/
 
@@ -738,8 +741,8 @@ IDE_RC qcmFixedTable::createColumn( qcmTableInfo  * aTableInfo,
                                                aIndex );
             sScale     = 0;
 
-            // sColumnì˜ ì´ˆê¸°í™”
-            // : dataTypeì€ char, languageëŠ” defaultë¡œ ì„¤ì •
+            // sColumnÀÇ ÃÊ±âÈ­
+            // : dataTypeÀº char, language´Â default·Î ¼³Á¤
             IDE_TEST( mtc::initializeColumn( sColumn,
                                              MTD_VARCHAR_ID,
                                              1,
@@ -755,8 +758,8 @@ IDE_RC qcmFixedTable::createColumn( qcmTableInfo  * aTableInfo,
                                                aIndex );
             sScale     = 0;
 
-            // sColumnì˜ ì´ˆê¸°í™”
-            // : dataTypeì€ char, languageëŠ” defaultë¡œ ì„¤ì •
+            // sColumnÀÇ ÃÊ±âÈ­
+            // : dataTypeÀº char, language´Â default·Î ¼³Á¤
             IDE_TEST( mtc::initializeColumn( sColumn,
                                              MTD_CHAR_ID,
                                              1,
@@ -771,8 +774,8 @@ IDE_RC qcmFixedTable::createColumn( qcmTableInfo  * aTableInfo,
             sPrecision = 0;
             sScale     = 0;
 
-            // sColumnì˜ ì´ˆê¸°í™”
-            // : dataTypeì€ bigint, languageëŠ” defaultë¡œ ì„¤ì •
+            // sColumnÀÇ ÃÊ±âÈ­
+            // : dataTypeÀº bigint, language´Â default·Î ¼³Á¤
             IDE_TEST( mtc::initializeColumn( sColumn,
                                              MTD_BIGINT_ID,
                                              0,
@@ -787,8 +790,8 @@ IDE_RC qcmFixedTable::createColumn( qcmTableInfo  * aTableInfo,
             sPrecision = 0;
             sScale     = 0;
 
-            // sColumnì˜ ì´ˆê¸°í™”
-            // : dataTypeì€ smallint, languageëŠ” defaultë¡œ ì„¤ì •
+            // sColumnÀÇ ÃÊ±âÈ­
+            // : dataTypeÀº smallint, language´Â default·Î ¼³Á¤
             IDE_TEST( mtc::initializeColumn( sColumn,
                                              MTD_SMALLINT_ID,
                                              0,
@@ -803,8 +806,8 @@ IDE_RC qcmFixedTable::createColumn( qcmTableInfo  * aTableInfo,
             sPrecision = 0;
             sScale     = 0;
 
-            // sColumnì˜ ì´ˆê¸°í™”
-            // : dataTypeì€ integer, languageëŠ” defaultë¡œ ì„¤ì •
+            // sColumnÀÇ ÃÊ±âÈ­
+            // : dataTypeÀº integer, language´Â default·Î ¼³Á¤
             IDE_TEST( mtc::initializeColumn( sColumn,
                                              MTD_INTEGER_ID,
                                              0,
@@ -819,8 +822,8 @@ IDE_RC qcmFixedTable::createColumn( qcmTableInfo  * aTableInfo,
             sPrecision = 0;
             sScale     = 0;
 
-            // sColumnì˜ ì´ˆê¸°í™”
-            // : dataTypeì€ double, languageëŠ” defaultë¡œ ì„¤ì •
+            // sColumnÀÇ ÃÊ±âÈ­
+            // : dataTypeÀº double, language´Â default·Î ¼³Á¤
             IDE_TEST( mtc::initializeColumn( sColumn,
                                              MTD_DOUBLE_ID,
                                              0,
@@ -847,7 +850,7 @@ IDE_RC qcmFixedTable::makeTrimmedName( SChar * aDst,
 /***********************************************************************
  *
  * Description :
- *  stringì˜ ' 'ê°’ ì´í›„ì˜ stringì„ trimì‹œí‚¨ stringì„ ë§Œë“¤ì–´ ë‚¸ë‹¤.
+ *  stringÀÇ ' '°ª ÀÌÈÄÀÇ stringÀ» trim½ÃÅ² stringÀ» ¸¸µé¾î ³½´Ù.
  *
  * Implementation :
  *
@@ -878,7 +881,7 @@ IDE_RC qcmFixedTable::checkDuplicatedTable(
 /***********************************************************************
  *
  * Description :
- *  ì´ë¯¸ ìƒì„±ëœ fixedTableì˜ ì´ë¦„ì´ ê²¹ì¹˜ëŠ”ì§€ë¥¼ validateí•œë‹¤.
+ *  ÀÌ¹Ì »ı¼ºµÈ fixedTableÀÇ ÀÌ¸§ÀÌ °ãÄ¡´ÂÁö¸¦ validateÇÑ´Ù.
  *
  * Implementation :
  *
@@ -915,8 +918,8 @@ IDE_RC qcmFixedTable::checkDuplicatedTable(
 /**
  * BUG-43006 FixedTable Indexing Filter
  *
- * Fixed Table ì¤‘ì— Indexing Filterë¡œ ì§€ì •ëœ ì»¬ëŸ¼ì„ ì°¾ì•„ì„œ
- * qcmIndex ìë£Œêµ¬ì¡°ë¥¼ ë§Œë“¤ì–´ ì¤€ë‹¤.
+ * Fixed Table Áß¿¡ Indexing Filter·Î ÁöÁ¤µÈ ÄÃ·³À» Ã£¾Æ¼­
+ * qcmIndex ÀÚ·á±¸Á¶¸¦ ¸¸µé¾î ÁØ´Ù.
  */
 IDE_RC qcmFixedTable::getQcmIndices( qcmTableInfo * aTableInfo )
 {

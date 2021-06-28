@@ -19,8 +19,6 @@
  * $id$
  **********************************************************************/
 
-#include <dkuSharedProperty.h>
-
 #include <dkdDataBufferMgr.h>
 
 UInt    dkdDataBufferMgr::mBufferBlockSize;
@@ -32,7 +30,7 @@ iduMemAllocator    *dkdDataBufferMgr::mAllocator = NULL; /* BUG-37215 */
 iduMutex            dkdDataBufferMgr::mDbmMutex;
 
 /***********************************************************************
- * Description: Data buffer manager ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ * Description: Data buffer manager ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
  *
  **********************************************************************/
 IDE_RC  dkdDataBufferMgr::initializeStatic()
@@ -90,7 +88,7 @@ IDE_RC  dkdDataBufferMgr::initializeStatic()
         /* do nothing */
     }
 
-    /* Data buffer manager ì— ëŒ€í•œ ë™ì‹œì ‘ê·¼ì„ ë§‰ê¸° ìœ„í•œ mutex ì´ˆê¸°í™” */
+    /* Data buffer manager ¿¡ ´ëÇÑ µ¿½ÃÁ¢±ÙÀ» ¸·±â À§ÇÑ mutex ÃÊ±âÈ­ */
     IDE_TEST_RAISE( mDbmMutex.initialize( (SChar *)"DKD_DATA_BUFFER_MGR_MUTEX",
                                           IDU_MUTEX_KIND_POSIX,
                                           IDV_WAIT_INDEX_NULL )
@@ -133,7 +131,7 @@ IDE_RC  dkdDataBufferMgr::initializeStatic()
 }
 
 /************************************************************************
- * Description : Data buffer manager ë¥¼ ì •ë¦¬í•œë‹¤.
+ * Description : Data buffer manager ¸¦ Á¤¸®ÇÑ´Ù.
  *
  ************************************************************************/
 IDE_RC  dkdDataBufferMgr::finalizeStatic()
@@ -158,15 +156,15 @@ IDE_RC  dkdDataBufferMgr::finalizeStatic()
 }
 
 /************************************************************************
- * Warning     : ì´ í•¨ìˆ˜ëŠ” í˜„ì¬ ì‚¬ìš©í•˜ì§€ ì•Šìœ¼ë‚˜ ì¶”í›„ ë²„í¼í• ë‹¹ ì•Œê³ ë¦¬ì¦˜ì˜ 
- *               ë³€ê²½ì„ í†µí•´ ì‚¬ìš©í•  ìˆ˜ë„ ìˆìŒ. ë¦¬ë·° í›„ ì‚­ì œ ì—¬ë¶€ ê²°ì •
+ * Warning     : ÀÌ ÇÔ¼ö´Â ÇöÀç »ç¿ëÇÏÁö ¾ÊÀ¸³ª ÃßÈÄ ¹öÆÛÇÒ´ç ¾Ë°í¸®ÁòÀÇ 
+ *               º¯°æÀ» ÅëÇØ »ç¿ëÇÒ ¼öµµ ÀÖÀ½. ¸®ºä ÈÄ »èÁ¦ ¿©ºÎ °áÁ¤
  *
- * Description : ì…ë ¥ë°›ì€ block ê°¯ìˆ˜ë§Œí¼ record buffer ë¥¼ í• ë‹¹í•œë‹¤.
- *               í• ë‹¹ ê°€ëŠ¥ì„± ì—¬ë¶€ëŠ” caller ì—ì„œ í•œë‹¤. ë”°ë¼ì„œ aBlockCnt
- *               ê°€ 0 ì¸ ê²½ìš°ëŠ” FAILURE ë¡œ ì²˜ë¦¬í•œë‹¤.
+ * Description : ÀÔ·Â¹ŞÀº block °¹¼ö¸¸Å­ record buffer ¸¦ ÇÒ´çÇÑ´Ù.
+ *               ÇÒ´ç °¡´É¼º ¿©ºÎ´Â caller ¿¡¼­ ÇÑ´Ù. µû¶ó¼­ aBlockCnt
+ *               °¡ 0 ÀÎ °æ¿ì´Â FAILURE ·Î Ã³¸®ÇÑ´Ù.
  *
- *  aSize       - [OUT] í• ë‹¹ë°›ì€ record buffer size
- *  aRecBuf     - [OUT] í• ë‹¹ë°›ì€ record buffer ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„° 
+ *  aSize       - [OUT] ÇÒ´ç¹ŞÀº record buffer size
+ *  aRecBuf     - [OUT] ÇÒ´ç¹ŞÀº record buffer ¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ 
  *
  ************************************************************************/
 IDE_RC  dkdDataBufferMgr::allocRecordBuffer( UInt  *aSize, void  **aRecBuf )
@@ -198,13 +196,13 @@ IDE_RC  dkdDataBufferMgr::allocRecordBuffer( UInt  *aSize, void  **aRecBuf )
 }
 
 /************************************************************************
- * Warning     : ì´ í•¨ìˆ˜ëŠ” í˜„ì¬ ì‚¬ìš©í•˜ì§€ ì•Šìœ¼ë‚˜ ì¶”í›„ ë²„í¼í• ë‹¹ ì•Œê³ ë¦¬ì¦˜ì˜ 
- *               ë³€ê²½ì„ í†µí•´ ì‚¬ìš©í•  ìˆ˜ë„ ìˆìŒ. ë¦¬ë·° í›„ ì‚­ì œ ì—¬ë¶€ ê²°ì •
+ * Warning     : ÀÌ ÇÔ¼ö´Â ÇöÀç »ç¿ëÇÏÁö ¾ÊÀ¸³ª ÃßÈÄ ¹öÆÛÇÒ´ç ¾Ë°í¸®ÁòÀÇ 
+ *               º¯°æÀ» ÅëÇØ »ç¿ëÇÒ ¼öµµ ÀÖÀ½. ¸®ºä ÈÄ »èÁ¦ ¿©ºÎ °áÁ¤
  *
- * Description : ì…ë ¥ë°›ì€ record buffer ë¥¼ ë°˜í™˜í•œë‹¤.
+ * Description : ÀÔ·Â¹ŞÀº record buffer ¸¦ ¹İÈ¯ÇÑ´Ù.
  *
- *  aRecBuf     - [IN] ë°˜í™˜í•  record buffer ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„° 
- *  aBlockCnt   - [IN] ë°˜í™˜í•  buffer block ì˜ ê°¯ìˆ˜
+ *  aRecBuf     - [IN] ¹İÈ¯ÇÒ record buffer ¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ 
+ *  aBlockCnt   - [IN] ¹İÈ¯ÇÒ buffer block ÀÇ °¹¼ö
  *
  ************************************************************************/
 IDE_RC  dkdDataBufferMgr::deallocRecordBuffer( void *aRecBuf, UInt aBlockCnt )

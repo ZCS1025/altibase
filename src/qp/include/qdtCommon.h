@@ -51,7 +51,7 @@ public:
                                      UInt              * aDataFileCount);
 
     // To Fix PR-10437
-    // INDEX TABLESPACE tbs_name ì— ëŒ€í•œ Validation
+    // INDEX TABLESPACE tbs_name ¿¡ ´ëÇÑ Validation
     static IDE_RC getAndValidateIndexTBS( qcStatement       * aStatement,
                                           scSpaceID           aTableTBSID,
                                           smiTableSpaceType   aTableTBSType,
@@ -69,22 +69,22 @@ public:
                                           scSpaceID         * aIndexTBSID,
                                           smiTableSpaceType * aIndexTBSType );
 
-    // ì—¬ëŸ¬ ê°œì˜ Attribute Flag Listì˜ Flagê°’ì„
-    // Bitwise Orì—°ì‚° í•˜ì—¬ í•˜ë‚˜ì˜ UInt í˜•ì˜ Flag ê°’ì„ ë§Œë“ ë‹¤
+    // ¿©·¯ °³ÀÇ Attribute Flag ListÀÇ Flag°ªÀ»
+    // Bitwise Or¿¬»ê ÇÏ¿© ÇÏ³ªÀÇ UInt ÇüÀÇ Flag °ªÀ» ¸¸µç´Ù
     static IDE_RC getTBSAttrFlagFromList(qdTBSAttrFlagList * aAttrFlagList,
                                          UInt              * aAttrFlag );
 
-    // Tablespaceì˜ Attribute Flag Listì— ëŒ€í•œ Validationìˆ˜í–‰
+    // TablespaceÀÇ Attribute Flag List¿¡ ´ëÇÑ Validation¼öÇà
     static IDE_RC validateTBSAttrFlagList(qcStatement       * aStatement,
                                           qdTBSAttrFlagList * aAttrFlagList);
 
-    // BUG-40728 ë™ì¼ tbs typeì¸ì§€ ê²€ì‚¬í•œë‹¤.
+    // BUG-40728 µ¿ÀÏ tbs typeÀÎÁö °Ë»çÇÑ´Ù.
     static idBool isSameTBSType( smiTableSpaceType  aTBSType1,
                                  smiTableSpaceType  aTBSType2 );
     
 private:
-    // Tablespaceì˜ Attribute Flag Listì—ì„œ ë™ì¼í•œ
-    // Attribute Listê°€ ì¡´ì¬í•  ê²½ìš° ì—ëŸ¬ì²˜ë¦¬
+    // TablespaceÀÇ Attribute Flag List¿¡¼­ µ¿ÀÏÇÑ
+    // Attribute List°¡ Á¸ÀçÇÒ °æ¿ì ¿¡·¯Ã³¸®
     static IDE_RC checkTBSAttrIsUnique(qcStatement       * aStatement,
                                        qdTBSAttrFlagList * aAttrFlagList);
     

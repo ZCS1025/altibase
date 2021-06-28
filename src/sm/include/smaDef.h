@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smaDef.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smaDef.h 88423 2020-08-26 04:06:55Z emlee $
  **********************************************************************/
 
 #ifndef _O_SMA_DEF_H_
@@ -41,19 +41,24 @@
 # define SMA_PARALLEL_LOGICAL_AGER_OFF (0)
 # define SMA_PARALLEL_LOGICAL_AGER_ON (1)
 
+/* BUG-47367 */
+# define SMA_PARALLEL_DELETE_THREAD_OFF (0)
+# define SMA_PARALLEL_DELETE_THREAD_ON  (1)
+
+
 typedef struct smaOidList
 {
     smSCN       mSCN;
-    smLSN       mLSN;
-    // rowì˜ freeì™€  index node freeê°„ì˜
-    // syncë¥¼ ë§ˆì¶”ê¸°ìœ„í•˜ì—¬ ì‚¬ìš©.
-    // oidì— ëŒ€ì‘í•˜ëŠ”  ì¸ë±ìŠ¤ key slotë“¤ì„
-    // free ì™„ë£Œí•œ ì‹œì ì˜ system view scn. 
+    // rowÀÇ free¿Í  index node free°£ÀÇ
+    // sync¸¦ ¸¶Ãß±âÀ§ÇÏ¿© »ç¿ë.
+    // oid¿¡ ´ëÀÀÇÏ´Â  ÀÎµ¦½º key slotµéÀ»
+    // free ¿Ï·áÇÑ ½ÃÁ¡ÀÇ system view scn. 
     smSCN       mKeyFreeSCN;  
     idBool      mErasable;
     idBool      mFinished;
     UInt        mCondition;
     smTID       mTransID;
+    SInt        mListN;
     smaOidList* mNext;
     smxOIDNode* mHead;
     smxOIDNode* mTail;
@@ -64,48 +69,48 @@ typedef struct smaGCStatus
 {
     //GC name :smaLogicalAger, smaDeleteThread.
     SChar  *mGCName;
-    // í˜„ìž¬ systemViewSCN.
+    // ÇöÀç systemViewSCN.
     smSCN  mSystemViewSCN;
-    // Active Transaction ì¤‘ ìµœì†Œ memory view SCN
+    // Active Transaction Áß ÃÖ¼Ò memory view SCN
     smSCN  mMiMemSCNInTxs;
-    // BUG-24821 V$TRANSACTIONì— LOBê´€ë ¨ MinSCNì´ ì¶œë ¥ë˜ì–´ì•¼ í•©ë‹ˆë‹¤. 
-    // mMiMemSCNInTxsì„ ì†Œìœ í•œ íŠ¸ëžœìž­ì…˜ ì•„ì´ë””(ê°€ìž¥ ì˜¤ëž˜ëœ íŠ¸ëžœìž­ì…˜)
+    // BUG-24821 V$TRANSACTION¿¡ LOB°ü·Ã MinSCNÀÌ Ãâ·ÂµÇ¾î¾ß ÇÕ´Ï´Ù. 
+    // mMiMemSCNInTxsÀ» ¼ÒÀ¯ÇÑ Æ®·£Àè¼Ç ¾ÆÀÌµð(°¡Àå ¿À·¡µÈ Æ®·£Àè¼Ç)
     smTID  mOldestTx;
-    // LogicalAger, DeleteThredì˜ Tailì˜ commitSCN
+    // LogicalAger, DeleteThredÀÇ TailÀÇ commitSCN
     smSCN  mSCNOfTail;
-    // OIDListê°€ ë¹„ì–´ ìžˆëŠ”ì§€ boolean
+    // OIDList°¡ ºñ¾î ÀÖ´ÂÁö boolean
     idBool mIsEmpty;
-    // addëœ OID ê°¯ìˆ˜.
+    // addµÈ OID °¹¼ö.
     ULong  mAddOIDCnt;
-    // GCì²˜ë¦¬ê°€ëœ OIDê°¯ìˆ˜.
+    // GCÃ³¸®°¡µÈ OID°¹¼ö.
     ULong  mGcOIDCnt;
 
-    /* Transactionì´ Commmit/Abortì‹œ OID Listì— Agingì„ ìˆ˜í–‰í•´ì•¼í• 
-     * OIDê°¯ìˆ˜ê°€ ë”í•´ì§„ë‹¤.*/
+    /* TransactionÀÌ Commmit/Abort½Ã OID List¿¡ AgingÀ» ¼öÇàÇØ¾ßÇÒ
+     * OID°¹¼ö°¡ ´õÇØÁø´Ù.*/
     ULong mAgingRequestOIDCnt;
 
-    /* Agerê°€ OID Listì˜ OIDë¥¼ í•˜ë‚˜ì”© ì²˜ë¦¬í•˜ëŠ”ë° ì´ë•Œ 1ì‹ì¦ê°€ */
+    /* Ager°¡ OID ListÀÇ OID¸¦ ÇÏ³ª¾¿ Ã³¸®ÇÏ´Âµ¥ ÀÌ¶§ 1½ÄÁõ°¡ */
     ULong mAgingProcessedOIDCnt;
 
-    //BUG-17371 [MMDB] Agingì´ ë°€ë¦´ê²½ìš° Systemì— ê³¼ë¶€í™” ë° Agingì´
-    //                 ë°€ë¦¬ëŠ” í˜„ìƒì´ ë” ì‹¬í™”ë¨.
-    // getMinSCNí–ˆì„ë•Œ, MinSCNë•Œë¬¸ì— ìž‘ì—…í•˜ì§€ ëª»í•œ íšŸìˆ˜
+    //BUG-17371 [MMDB] AgingÀÌ ¹Ð¸±°æ¿ì System¿¡ °úºÎÈ­ ¹× AgingÀÌ
+    //                 ¹Ð¸®´Â Çö»óÀÌ ´õ ½ÉÈ­µÊ.
+    // getMinSCNÇßÀ»¶§, MinSCN¶§¹®¿¡ ÀÛ¾÷ÇÏÁö ¸øÇÑ È½¼ö
     ULong mSleepCountOnAgingCondition;
 
-    /* í˜„ìž¬ ìˆ˜í–‰ì¤‘ì¸ Logical Ager Thread, í˜¹ì€ Delete Threadì˜ ê°¯ìˆ˜ */
+    /* ÇöÀç ¼öÇàÁßÀÎ Logical Ager Thread, È¤Àº Delete ThreadÀÇ °¹¼ö */
     UInt  mThreadCount;
 } smaGCStatus;
 
 /*
-    Instant Agingì˜ ì¡°ê±´ Filter
+    Instant AgingÀÇ Á¶°Ç Filter
 
-    Instant Agingì„ ìˆ˜í–‰í•  ì¡°ê±´ì„ ì €ìž¥í•œë‹¤.
+    Instant AgingÀ» ¼öÇàÇÒ Á¶°ÇÀ» ÀúÀåÇÑ´Ù.
     
-    [ ê°€ëŠ¥í•œ Filterë“¤ ]
-      1. mTBSIDê°€ SC_NULL_SPACEIDê°€ ì•„ë‹Œ ê²½ìš°
-         => íŠ¹ì • Tablespaceì— ì†í•œ OIDë“¤ë§Œ Instant Agingì‹¤ì‹œ
-      2. mTableOIDê°€ SM_NULL_OIDê°€ ì•„ë‹Œ ê²½ìš°
-         => íŠ¹ì • Tableì— ì†í•œ OIDë“¤ë§Œ Instant Aging ì‹¤ì‹œ
+    [ °¡´ÉÇÑ Filterµé ]
+      1. mTBSID°¡ SC_NULL_SPACEID°¡ ¾Æ´Ñ °æ¿ì
+         => Æ¯Á¤ Tablespace¿¡ ¼ÓÇÑ OIDµé¸¸ Instant Aging½Ç½Ã
+      2. mTableOID°¡ SM_NULL_OID°¡ ¾Æ´Ñ °æ¿ì
+         => Æ¯Á¤ Table¿¡ ¼ÓÇÑ OIDµé¸¸ Instant Aging ½Ç½Ã
  */
 typedef struct smaInstantAgingFilter
 {

@@ -31,6 +31,8 @@
 #include <qc.h>
 
 extern mtfModule stfIsValid;
+extern mtdModule stdGeometry;
+extern mtdModule mtdInteger;
 
 static mtcName stfIsValidFunctionName[2] = {
     { stfIsValidFunctionName+1, 10, (void*)"ST_ISVALID" }, 
@@ -80,15 +82,7 @@ IDE_RC stfIsValidEstimate( mtcNode*     aNode,
                            SInt      /* aRemain */,
                            mtcCallBack* aCallBack )
 {
-    mtcNode* sNode;
-    ULong    sLflag;
-
-    extern mtdModule stdGeometry;
-    extern mtdModule mtdInteger;
-
-    const mtdModule* sModules[1];
-
-    *sModules = &stdGeometry;
+    const mtdModule* sModules[2];
 
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
@@ -96,24 +90,22 @@ IDE_RC stfIsValidEstimate( mtcNode*     aNode,
                     MTC_NODE_QUANTIFIER_TRUE,
                     ERR_NOT_AGGREGATION );
 
-    IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) != 1,
-                    ERR_INVALID_FUNCTION_ARGUMENT );
+    IDE_TEST_RAISE( ( ( (aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK) < 1 ) ||
+                      ( (aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK) > 2 ) ),
+                     ERR_INVALID_FUNCTION_ARGUMENT );
 
-    for( sNode  = aNode->arguments, sLflag = MTC_NODE_INDEX_UNUSABLE;
-         sNode != NULL;
-         sNode  = sNode->next )
+    sModules[0] = &stdGeometry;
+
+    // BUG-48051
+    if ( (aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK) == 2 )
     {
-        if( ( sNode->lflag & MTC_NODE_COMPARISON_MASK ) ==
-            MTC_NODE_COMPARISON_TRUE )
-        {
-            sNode->lflag &= ~(MTC_NODE_INDEX_MASK);
-        }
-        sLflag |= sNode->lflag & MTC_NODE_INDEX_MASK;
+        sModules[1] = &mtdInteger;
     }
-
-    aNode->lflag &= ~(MTC_NODE_INDEX_MASK);
-    aNode->lflag |= sLflag;
-
+    else
+    {
+        // Nothing to do.
+    }
+ 
     IDE_TEST( mtf::makeConversionNodes( aNode,
                                         aNode->arguments,
                                         aTemplate,
@@ -151,19 +143,38 @@ IDE_RC stfIsValidCalculate(
                         void*        aInfo,
                         mtcTemplate* aTemplate )
 {
+    idBool   sCheck = ID_FALSE;
+
     IDE_TEST( mtf::postfixCalculate( aNode,
                                      aStack,
                                      aRemain,
                                      aInfo,
                                      aTemplate )
               != IDE_SUCCESS );
-    
+
+    // BUG-48051 geomFromWKB로 잘못 삽입된 데이터를 확인
+    if ( (aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK) == 2 )
+    {
+        if ( *(mtdIntegerType*)aStack[2].value == 1 )
+        {
+            sCheck = ID_TRUE;
+        }
+        else
+        {
+            // Nothing to do.
+        }
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
     IDE_TEST( stfBasic::isValid( aNode,
                                  aStack,
                                  aRemain,
-                                 aInfo,
+                                 sCheck,
                                  aTemplate ) != IDE_SUCCESS );
-    
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;

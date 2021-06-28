@@ -16,14 +16,14 @@
  
 
 /***********************************************************************
- * $Id: qmgLeftOuter.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmgLeftOuter.h 90785 2021-05-06 07:26:22Z hykim $
  *
  * Description :
- *     LeftOuter Graphë¥¼ ìœ„í•œ ì •ì˜
+ *     LeftOuter Graph¸¦ À§ÇÑ Á¤ÀÇ
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -36,30 +36,30 @@
 #include <qmoPredicate.h>
 
 //---------------------------------------------------
-// Left Outer Join Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+// Left Outer Join Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
 //---------------------------------------------------
 
 typedef struct qmgLOJN
 {
-    qmgGraph graph;  // ê³µí†µ Graph ì •ë³´
+    qmgGraph graph;  // °øÅë Graph Á¤º¸
 
-    // LeftOuter Join Graphë¥¼ ìœ„í•œ ì •ë³´
+    // LeftOuter Join Graph¸¦ À§ÇÑ Á¤º¸
 
     qmoCNF            * onConditionCNF;
 
     //-----------------------------------------------
-    // Join Method ì •ë³´
+    // Join Method Á¤º¸
     //-----------------------------------------------
 
     qmoJoinMethod     * nestedLoopJoinMethod;
     qmoJoinMethod     * sortBasedJoinMethod;
     qmoJoinMethod     * hashBasedJoinMethod;
 
-    qmoJoinMethodCost * selectedJoinMethod; // ê°€ì¥ costê°€ ë‚®ì€ Join Method
+    qmoJoinMethodCost * selectedJoinMethod; // °¡Àå cost°¡ ³·Àº Join Method
 
     //----------------------------------------------
-    // Join Predicate ì •ë³´:
-    //    ì„ íƒëœ Join Method Typeì— ë”°ë¼ ë‹¤ìŒê³¼ ê°™ì´ Join Predicateì´ ë¶„ë¥˜ëœë‹¤.
+    // Join Predicate Á¤º¸:
+    //    ¼±ÅÃµÈ Join Method Type¿¡ µû¶ó ´ÙÀ½°ú °°ÀÌ Join PredicateÀÌ ºĞ·ùµÈ´Ù.
     //
     //    - joinablePredicate
     //      Index Nested Loop or Anti Outer      : indexablePredicate
@@ -76,15 +76,15 @@ typedef struct qmgLOJN
     qmoPredicate      * nonJoinablePredicate;
 
     // PROJ-2179/BUG-35484
-    // Full/index nested loop joinì‹œ push downëœ predicateì„ ë‹´ì•„ë‘”ë‹¤.
+    // Full/index nested loop join½Ã push downµÈ predicateÀ» ´ã¾ÆµĞ´Ù.
     qmoPredicate      * pushedDownPredicate;
 
     //---------------------------------------------
-    // Join Method Typeì´ Hash Based Joinì¸ ê²½ìš°, ì‚¬ìš©
+    // Join Method TypeÀÌ Hash Based JoinÀÎ °æ¿ì, »ç¿ë
     //---------------------------------------------
 
     UInt            hashBucketCnt;        // hash bucket count
-    UInt            hashTmpTblCnt;        // hash temp table ê°œìˆ˜
+    UInt            hashTmpTblCnt;        // hash temp table °³¼ö
 
     // PROJ-2242
     SDouble         firstRowsFactor;      // FIRST_ROWS_N
@@ -93,25 +93,25 @@ typedef struct qmgLOJN
 } qmgLOJN;
 
 //---------------------------------------------------
-// Left Outer Join Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+// Left Outer Join Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
 //---------------------------------------------------
 
 class qmgLeftOuter
 {
 public:
-    // Graph ì˜ ì´ˆê¸°í™”
+    // Graph ÀÇ ÃÊ±âÈ­
     static IDE_RC  init( qcStatement * aStatement,
                          qmsQuerySet * aQuerySet,
                          qmsFrom     * aFrom,
                          qmgGraph   ** aGraph );
 
-    // Graphì˜ ìµœì í™” ìˆ˜í–‰
+    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
     static IDE_RC  optimize( qcStatement * aStatement, qmgGraph * aGraph );
 
-    // Graphì˜ Plan Tree ìƒì„±
+    // GraphÀÇ Plan Tree »ı¼º
     static IDE_RC  makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph * aGraph );
 
-    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
+    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
     static IDE_RC  printGraph( qcStatement  * aStatement,
                                qmgGraph     * aGraph,
                                ULong          aDepth,
@@ -153,6 +153,14 @@ private:
                              qmgLOJN     * aMyGraph,
                              qtcNode     * aFilter,
                              qmnPlan     * aFILT );
+
+    // PROJ-2750
+    static IDE_RC checkAndSetSkipRight( qmgGraph * aGraph );
+
+    static idBool isExistsSkipRightIgnoreOperation( mtcNode   * aNode,
+                                                    qcDepInfo * aTargetDepInfo );
+
+    static IDE_RC checkAndSetSkipRightFlag( qmnPlan * aPlan );
 };
 
 #endif /* _O_QMG_LEFT_OUTER_H_ */

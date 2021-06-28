@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtv.h 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtv.h 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #ifndef _O_MTV_H_
@@ -47,7 +47,7 @@ private:
                                            mtcTemplate*      aTemplate );
 
 public:
-    // BUG-21627 ìµœëŒ€ conversion path
+    // BUG-21627 ÃÖ´ë conversion path
     static UInt mMaxConvCount;
     
     static IDE_RC initialize( mtvModule *** aExtCvtModuleGroup,
@@ -97,19 +97,19 @@ public:
 
     /* PROJ-2183
      *
-     * + ê·¸ë£¹ êµ¬ë¶„
+     * + ±×·ì ±¸ºĞ
      *
      * 1. character         : char, varchar
-     * 2. nativeN (native ì •ìˆ˜)   : bigint, integer, smallint
-     * 3. nativeR (native ì‹¤ìˆ˜í˜•) : double, real
+     * 2. nativeN (native Á¤¼ö)   : bigint, integer, smallint
+     * 3. nativeR (native ½Ç¼öÇü) : double, real
      * 4. numeric (nonNative) : numeric,  float
      * 5. etc (misc, interval, date, encrypt, st, national character ..., )
      *
-     * + í˜•ë³€í™˜ì„ ê·¸ë£¹ê°„ì˜ ë³€í™˜ê³¼ ê·¸ë£¹ë‚´ì˜ ë³€í™˜ìœ¼ë¡œ êµ¬ë¶„í•¨
+     * + Çüº¯È¯À» ±×·ì°£ÀÇ º¯È¯°ú ±×·ì³»ÀÇ º¯È¯À¸·Î ±¸ºĞÇÔ
      *
-     * 1. ê·¸ë£¹ë³€ê²½
+     * 1. ±×·ìº¯°æ
      *
-     * - ìƒˆë¡œ ìƒì„±í•œ í•¨ìˆ˜
+     * - »õ·Î »ı¼ºÇÑ ÇÔ¼ö
      * character2NativeR;
      * character2NativeN;
      * nativeN2Character;
@@ -117,14 +117,14 @@ public:
      * numeric2NativeN;
      * nativeN2Numeric;
      *
-     * - ê¸°ì¡´ì— ìˆê±°ë‚˜ ì´ í”„ë¡œì íŠ¸ì—ì„œ ì‹œê°„ì´ ë¶€ì¡±í•´ ë§Œë“¤ì§€ ì•Šì€ í•¨ìˆ˜
+     * - ±âÁ¸¿¡ ÀÖ°Å³ª ÀÌ ÇÁ·ÎÁ§Æ®¿¡¼­ ½Ã°£ÀÌ ºÎÁ·ÇØ ¸¸µéÁö ¾ÊÀº ÇÔ¼ö
      * character2Numeric ;            // makeNumeric
      * nativeR2Numeric ;              // makeNumeric
      * numeric2Character ;            // float2String
      * numeric2NativeR( aOutBigint ); // don't care
      * character2Numeric ;            // makeNumeric
      *
-     * 2. ê·¸ë£¹ ë‚´ ë³€í™˜ : ì£¼ë¡œ memcpy ë˜ëŠ” ìºìŠ¤íŒ…ìœ¼ë¡œ ì²˜ë¦¬í•˜ë¯€ë¡œ í•¨ìˆ˜í™”í•˜ì§€ ì•ŠìŒ
+     * 2. ±×·ì ³» º¯È¯ : ÁÖ·Î memcpy ¶Ç´Â Ä³½ºÆÃÀ¸·Î Ã³¸®ÇÏ¹Ç·Î ÇÔ¼öÈ­ÇÏÁö ¾ÊÀ½
      *
      * nativeN2nativeR, nativeR2nativeN, nativeR2nativeR, nonnative2Nonnative, character2Character
      *
@@ -132,11 +132,11 @@ public:
 
     static IDE_RC character2NativeR( mtdCharType* aInChar, mtdDoubleType* aOutDouble );
     static IDE_RC character2NativeN( mtdCharType* aInChar, mtdBigintType* aOutBigint );
-    // static IDE_RC character2Numeric( mtcStack* aStack ); // makeNumericí•¨ìˆ˜ë¡œ ì²˜ë¦¬í•¨
+    // static IDE_RC character2Numeric( mtcStack* aStack ); // makeNumericÇÔ¼ö·Î Ã³¸®ÇÔ
     static IDE_RC nativeN2Character( mtdBigintType aInBigint, mtdCharType* aOutChar );
     static IDE_RC nativeR2Character( mtdDoubleType aInDouble, mtdCharType* aOutChar );
-    // static IDE_RC nativeR2Numeric( mtcStack* aStack, mtdDoubleType aInDouble ); // makeNumericí•¨ìˆ˜ë¡œ ì²˜ë¦¬í•¨
-    // static IDE_RC numeric2Character( mtcStack* aStack ); // float2Stringí•¨ìˆ˜ë¡œ ì²˜ë¦¬í•¨
+    // static IDE_RC nativeR2Numeric( mtcStack* aStack, mtdDoubleType aInDouble ); // makeNumericÇÔ¼ö·Î Ã³¸®ÇÔ
+    // static IDE_RC numeric2Character( mtcStack* aStack ); // float2StringÇÔ¼ö·Î Ã³¸®ÇÔ
     static IDE_RC numeric2NativeN( mtdNumericType* aInNumeric, mtdBigintType* aOutBigint );
     static IDE_RC nativeN2Numeric( mtdBigintType aInBigint, mtdNumericType* aOutNumeric );
 };

@@ -17,10 +17,6 @@
 
 package Altibase.jdbc.driver.sharding.core;
 
-import Altibase.jdbc.driver.AltibaseStatement;
-import Altibase.jdbc.driver.sharding.merger.IteratorStreamResultSetMerger;
-import Altibase.jdbc.driver.sharding.merger.ResultSetMerger;
-
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -29,7 +25,13 @@ import java.sql.*;
 import java.sql.Date;
 import java.util.*;
 
-public class AltibaseShardingResultSet implements ResultSet
+import Altibase.jdbc.driver.AbstractResultSet;
+import Altibase.jdbc.driver.AltibaseStatement;
+import Altibase.jdbc.driver.sharding.merger.IteratorStreamResultSetMerger;
+import Altibase.jdbc.driver.sharding.merger.ResultSetMerger;
+import Altibase.jdbc.driver.ex.Error;
+
+public class AltibaseShardingResultSet extends AbstractResultSet
 {
     private ResultSetMerger            mResultSetMerger;
     private List<ResultSet>            mResultSets;
@@ -42,15 +44,16 @@ public class AltibaseShardingResultSet implements ResultSet
         mResultSetMerger = aMerger;
         mResultSets = aResultSets;
         mStatement = aStatement;
-        // BUG-46513 smnÍ∞íÏùÑ ÎπÑÍµêÌïòÍ∏∞ ÏúÑÌï¥ meta connectionÏùÑ Ï£ºÏûÖÎ∞õÎäîÎã§.
+        // BUG-46513 smn∞™¿ª ∫Ò±≥«œ±‚ ¿ß«ÿ meta connection¿ª ¡÷¿‘πﬁ¥¬¥Ÿ.
         mMetaConn = ((AltibaseShardingStatement)aStatement).getMetaConn();
     }
 
     public boolean next() throws SQLException
     {
+        mMetaConn.checkCommitState();
         boolean sResult = mResultSetMerger.next();
 
-        // BUG-46513 autocommit on Ïù¥Í≥† smnÍ∞íÏù¥ ÏûëÎã§Î©¥ Í∞±Ïã†Ìï¥Ïïº ÌïúÎã§.
+        // BUG-46513 autocommit on ¿Ã∞Ì smn∞™¿Ã ¿€¥Ÿ∏È ∞ªΩ≈«ÿæﬂ «—¥Ÿ.
         if (mMetaConn.getAutoCommit() && mMetaConn.shouldUpdateShardMetaNumber())
         {
             mMetaConn.updateShardMetaNumber();
@@ -65,7 +68,7 @@ public class AltibaseShardingResultSet implements ResultSet
         {
             sEach.close();
         }
-        // BUG-46513 autocommit on Ïù¥Í≥† smnÍ∞íÏù¥ ÏûëÎã§Î©¥ Í∞±Ïã†Ìï¥Ïïº ÌïúÎã§.
+        // BUG-46513 autocommit on ¿Ã∞Ì smn∞™¿Ã ¿€¥Ÿ∏È ∞ªΩ≈«ÿæﬂ «—¥Ÿ.
         if (mMetaConn.getAutoCommit() && mMetaConn.shouldUpdateShardMetaNumber())
         {
             mMetaConn.updateShardMetaNumber();
@@ -771,11 +774,11 @@ public class AltibaseShardingResultSet implements ResultSet
         return mResultSetMerger.getCurrentResultSet();
     }
 
-    public void clearClosedResultSets()
+    void clearClosedResultSets()
     {
         List<ResultSet> sClosedResultSets = new ArrayList<ResultSet>();
 
-        // BUG-46513 ResultSetÏóê Ïó∞Í≤∞Îêú StatementÍ∞Ä Ïù¥ÎØ∏ closeÎêú Í≤ΩÏö∞ÏóêÎäî ResultSet ListÏóêÏÑú Ï†úÏô∏ÏãúÌÇ®Îã§.
+        // BUG-46513 ResultSetø° ø¨∞·µ» Statement∞° ¿ÃπÃ closeµ» ∞ÊøÏø°¥¬ ResultSet Listø°º≠ ¡¶ø‹Ω√≈≤¥Ÿ.
         for (ResultSet sEach : mResultSets)
         {
             try
@@ -801,5 +804,173 @@ public class AltibaseShardingResultSet implements ResultSet
         }
 
         mResultSetMerger = new IteratorStreamResultSetMerger(mResultSets);
+    }
+
+    @Override
+    public int getHoldability() throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public boolean isClosed() throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void updateNString(int aColumnIndex, String aValue) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void updateNString(String aColumnName, String aValue) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public String getNString(int aColumnIndex) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public String getNString(String aColumnName) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void updateAsciiStream(int aColumnIndex, InputStream aInputStream, long aLength) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void updateBinaryStream(int aColumnIndex, InputStream aInputStream, long aLength) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void updateCharacterStream(int aColumnIndex, Reader aReader, long aLength) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void updateAsciiStream(String aColumnName, InputStream aInputStream, long aLength) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void updateBinaryStream(String aColumnName, InputStream aInputStream, long aLength) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void updateCharacterStream(String aColumnName, Reader aReader, long aLength) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void updateBlob(int aColumnIndex, InputStream aInputStream, long aLength) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void updateBlob(String aColumnName, InputStream aInputStream, long aLength) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void updateClob(int aColumnIndex, Reader aReader, long aLength) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void updateClob(String aColumnName, Reader aReader, long aLength) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void updateAsciiStream(int aColumnIndex, InputStream aInputStream) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void updateBinaryStream(int aColumnIndex, InputStream aInputStream) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void updateCharacterStream(int aColumnIndex, Reader aReader) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void updateAsciiStream(String aColumnName, InputStream aInputStream) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void updateBinaryStream(String aColumnName, InputStream aInputStream) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void updateCharacterStream(String aColumnName, Reader aReader) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void updateBlob(int aColumnIndex, InputStream aInputStream) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void updateBlob(String aColumnName, InputStream aInputStream) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void updateClob(int aColumnIndex, Reader aReader) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void updateClob(String aColumnName, Reader aReader) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public <T> T getObject(int aColumnIndex, Class<T> aType) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public <T> T getObject(String aColumnName, Class<T> aType) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
     }
 }

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfRand.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfRand.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -35,8 +35,8 @@ static mtcName mtfRandFunctionName[1] = {
 };
 
 /** BUG-42750 rand function
- * Mersenne Twister ÏïåÍ≥†Î¶¨Ï¶ò
- * MT19937 Í∏∞Ï§Ä ÏÉÅÏàò
+ * Mersenne Twister æÀ∞Ì∏Æ¡Ú
+ * MT19937 ±‚¡ÿ ªÛºˆ
  * ( w, n, m, r ) = (32, 624, 397, 31 )
  * a = 0x9908B0DF
  * ( u, d ) = ( 11, 0xFFFFFFFF )
@@ -78,7 +78,7 @@ void mtfRandSetSeed( UInt aSeed );
 mtfModule mtfRand = {
     1|MTC_NODE_OPERATOR_FUNCTION|MTC_NODE_VARIABLE_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0, // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞ÏûêÍ∞Ä ÏïÑÎãò)
+    1.0, // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄∞° æ∆¥‘)
     mtfRandFunctionName,
     NULL,
     mtfRandInitialize,
@@ -257,10 +257,10 @@ IDE_RC mtfRandCalculate( mtcNode     * aNode,
     /**
      * BUG-42750
      *
-     * Í∞íÏùÄ 0<= x < 1 ÏùÄ Í∞íÏù¥ ÎÇòÏôÄÏïº ÌïòÎ©∞ ÎßåÏïΩ Ïù¥Îü∞ Í∞íÏù¥
-     * ÎÇòÏò¨ Í≤ΩÏö∞ Ïû¨ÏãúÎèÑÎ•º ÏàòÌñâÌïúÎã§. Ïû¨ÏãúÎèÑÎäî MTF_RAND_MT_N ( 624 )
-     * Ìöå ÎßåÌÅº ÏãúÎèÑÌï¥Î≥¥Í≥† Í∑∏ÎûòÎèÑ ÏïäÎêòÎ©¥ seed Í∞íÏùÑ Îã§Ïãú ÎÑ£Ïñ¥ÏÑú
-     * Í∞íÏùÑ ÏñªÎäîÎã§.
+     * ∞™¿∫ 0<= x < 1 ¿∫ ∞™¿Ã ≥™øÕæﬂ «œ∏Á ∏∏æ‡ ¿Ã∑± ∞™¿Ã
+     * ≥™ø√ ∞ÊøÏ ¿ÁΩ√µµ∏¶ ºˆ«‡«—¥Ÿ. ¿ÁΩ√µµ¥¬ MTF_RAND_MT_N ( 624 )
+     * »∏ ∏∏≈≠ Ω√µµ«ÿ∫∏∞Ì ±◊∑°µµ æ µ«∏È seed ∞™¿ª ¥ŸΩ√ ≥÷æÓº≠
+     * ∞™¿ª æÚ¥¬¥Ÿ.
      */
     do
     {

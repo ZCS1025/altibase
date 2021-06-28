@@ -38,7 +38,7 @@ typedef struct qsxPkgInfo
     UInt               modifyCount;
 
     idBool             isValid;
-    UInt               sessionID; // BUG-36291 invalidÎ°ú Î≥ÄÍ≤ΩÌïú SessionID
+    UInt               sessionID; // BUG-36291 invalid∑Œ ∫Ø∞Ê«— SessionID
 
     iduVarMemList    * qmsMem;
     qsPkgParseTree   * planTree;
@@ -124,7 +124,7 @@ public :
 
     static IDE_RC unlatchForStatus( qsOID          aPkgOID );
 
-    /* BUG-38844 package subproramÏùò parse tree Í≤ÄÏÉâ. */
+    /* BUG-38844 package subproram¿« parse tree ∞Àªˆ. */
     static IDE_RC findSubprogramPlanTree(
         qsxPkgInfo       * aPkgInfo,
         UInt               aSubprogramID,

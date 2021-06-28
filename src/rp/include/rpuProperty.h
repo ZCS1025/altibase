@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpuProperty.h 84487 2018-11-30 13:31:47Z yoonhee.kim $
+ * $Id: rpuProperty.h 90491 2021-04-07 07:02:29Z lswhh $
  **********************************************************************/
 
 #ifndef _O_RPU_PROPERTY_H_
@@ -79,6 +79,7 @@
 #define RPU_REPLICATION_EAGER_RECEIVER_MAX_ERROR_COUNT      (rpuProperty::mEagerReceiverMaxErrorCount)
 #define RPU_REPLICATION_BEFORE_IMAGE_LOG_ENABLE   (rpuProperty::mBeforeImageLogEnable)
 #define RPU_REPLICATION_SENDER_COMPRESS_XLOG      (rpuProperty::mSenderCompressXLog)
+#define RPU_REPLICATION_SENDER_COMPRESS_XLOG_LEVEL          (rpuProperty::mSenderCompressXLogLevel)
 #define RPU_REPLICATION_MAX_COUNT                 (rpuProperty::mMaxReplicationCount)
 #define RPU_REPLICATION_ALLOW_DUPLICATE_HOSTS     (rpuProperty::mAllowDuplicateHosts)
 #define RPU_REPLICATION_SENDER_ENCRYPT_XLOG       (rpuProperty::mSenderEncryptXLog)
@@ -110,11 +111,23 @@
 
 #define RPU_REPLICATION_GAP_UNIT                  (rpuProperty::mGapUnit)
 
+#define RPU_REPLICATION_CHECK_SRID_IN_GEOMETRY_ENABLE    (rpuProperty::mCheckSRIDInGeometryEnable)
+#define RPU_REPLICATION_XLOGFILE_PREPARE_COUNT           (rpuProperty::mXLogfilePrepareCount)
+#define RPU_REPLICATION_XLOGFILE_SIZE                    (rpuProperty::mXLogfileSize)
+#define RPU_REPLICATION_XLOGFILE_REMOVE_INTERVAL         (rpuProperty::mXLogfileRemoveInterval)
+#define RPU_REPLICATION_XLOGFILE_REMOVE_INTERVAL_BY_FILE_CREATE (rpuProperty::mXLogfileRemoveIntervalByFileCreate)
+#define RPU_REPLICATION_XLOGFILE_DIR_PATH                (rpuProperty::mXLogDirPath)
+
+#define RPU_REPLICATION_META_ITEM_COUNT_DIFF_ENABLE     (rpuProperty::mMetaItemCountDiffEnable)
+
 class rpuProperty
 {
 public:
+    static IDE_RC initProperty();
+    static IDE_RC finalProperty();
     static IDE_RC load();
     static IDE_RC checkConflict();
+    static void setLowerModuleStaticProperty();
 
     static SChar          *mSID;
     static SChar          *mDbName;
@@ -169,6 +182,7 @@ public:
     static UInt            mEagerReceiverMaxErrorCount;
     static UInt            mBeforeImageLogEnable;
     static SInt            mSenderCompressXLog;
+    static UInt            mSenderCompressXLogLevel;
     static UInt            mMaxReplicationCount;     /* BUG-37482 */
     static UInt            mAllowDuplicateHosts;
     static SInt            mSenderEncryptXLog;  /* BUG-38102 */
@@ -199,6 +213,15 @@ public:
     static UInt            mIBLatency;
     
     static ULong           mGapUnit;
+    
+    static UInt            mCheckSRIDInGeometryEnable;
+    static UInt            mXLogfilePrepareCount;
+    static ULong           mXLogfileSize;
+    static UInt            mXLogfileRemoveInterval;
+    static UInt            mXLogfileRemoveIntervalByFileCreate;
+
+    static UInt            mMetaItemCountDiffEnable;
+    static SChar          *mXLogDirPath;
 
     static IDE_RC notifyREPLICATION_SYNC_LOCK_TIMEOUT(idvSQL* /* aStatistics */,
                                                       SChar *aName,
@@ -350,6 +373,12 @@ public:
                                                           void  * aNewValue,
                                                           void  * aArg );
 
+    static IDE_RC notifyREPLICATION_SENDER_COMPRESS_XLOG_LEVEL( idvSQL* /* aStatistics */,
+                                                                SChar * Name,
+                                                                void  * aOldValue,
+                                                                void  * aNewValue,
+                                                                void  * aArg );
+
     static IDE_RC notifyREPLICATION_ALLOW_DUPLICATE_HOSTS( idvSQL* /* aStatistics */,
                                                            SChar * Name,
                                                            void  * aOldValue,
@@ -471,14 +500,14 @@ public:
                                                  void  * /* aOldValue */,
                                                  void  * aNewValue,
                                                  void  * /* aArg */ );
-    
+
     static inline void setReplicationDDLSync( UInt aValue )
     {
         mReplicationDDLSync = aValue;
     }
 
     static inline void setReplicationDDLSyncTimeout( UInt aValue )
-    {
+    {        
         mReplicationDDLSyncTimeout = aValue;
     }
 
@@ -493,6 +522,24 @@ public:
                                               void  * /* aOldValue */,
                                               void  * aNewValue,
                                               void  * /* aArg */ );
+    
+    static IDE_RC notifyREPLICATION_CHECK_SRID_IN_GEOMETRY_ENABLE( idvSQL* /* aStatistics */,
+                                                                   SChar * /* aName */,
+                                                                   void  * /* aOldValue */,
+                                                                   void  * aNewValue,
+                                                                   void  * /* aArg */ );
+
+    static IDE_RC notifyREPLICATION_META_ITEM_COUNT_DIFF_ENABLE( idvSQL* /* aStatistics */,
+                                                                 SChar * /* aName */,
+                                                                 void  * /* aOldValue */,
+                                                                 void  * aNewValue,
+                                                                 void  * /* aArg */ );
+                                                                   
+    static IDE_RC notifyXLOGFILE_REMOVE_INTERVAL_BY_FILE_CREATE( idvSQL* /* aStatistics */,
+                                                                 SChar * /* aName */,
+                                                                 void  * /* aOldValue */,
+                                                                 void  * aNewValue,
+                                                                 void  * /* aArg */ );
 };
 
 #endif

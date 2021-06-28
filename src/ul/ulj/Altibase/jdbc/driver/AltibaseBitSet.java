@@ -23,9 +23,9 @@ public class AltibaseBitSet extends BitSet
     private int mSize;
 
     /**
-     * ì§€ì •í•œ í¬ê¸°ë¥¼ ê°–ëŠ” BitSetì„ ë§Œë“ ë‹¤.
+     * ÁöÁ¤ÇÑ Å©±â¸¦ °®´Â BitSetÀ» ¸¸µç´Ù.
      *
-     * @param aBitSetSize BitSetì˜ í¬ê¸°
+     * @param aBitSetSize BitSetÀÇ Å©±â
      */
     public AltibaseBitSet( int aBitSetSize )
     {

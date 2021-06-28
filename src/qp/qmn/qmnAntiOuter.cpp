@@ -21,15 +21,15 @@
  * Description :
  *     AOJN(Anti Outer JoiN) Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ Full Outer Joinì˜ ì²˜ë¦¬ë¥¼ ìœ„í•´
- *     íŠ¹ìˆ˜í•œ ì—°ì‚°ì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     °ü°èÇü ¸ðµ¨¿¡¼­ Full Outer JoinÀÇ Ã³¸®¸¦ À§ÇØ
+ *     Æ¯¼öÇÑ ¿¬»êÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
  *
- *     Left Outer Joinê³¼ íë¦„ì€ ìœ ì‚¬í•˜ë‚˜ ë‹¤ìŒê³¼ ê°™ì€ í° ì°¨ì´ê°€ ìžˆë‹¤.
- *        - Left Rowì— ë§Œì¡±í•˜ëŠ” Right Rowê°€ ì—†ëŠ” ê²½ìš°ë¥¼ ê²€ìƒ‰í•œë‹¤.
+ *     Left Outer Join°ú Èå¸§Àº À¯»çÇÏ³ª ´ÙÀ½°ú °°Àº Å« Â÷ÀÌ°¡ ÀÖ´Ù.
+ *        - Left Row¿¡ ¸¸Á·ÇÏ´Â Right Row°¡ ¾ø´Â °æ¿ì¸¦ °Ë»öÇÑ´Ù.
  *        
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -48,7 +48,7 @@ qmnAOJN::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    AOJN ë…¸ë“œì˜ ì´ˆê¸°í™”
+ *    AOJN ³ëµåÀÇ ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -76,19 +76,19 @@ qmnAOJN::init( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // Child Planì˜ ì´ˆê¸°í™”
+    // Child PlanÀÇ ÃÊ±âÈ­
     //------------------------------------------------
 
     IDE_TEST( aPlan->left->init( aTemplate, 
                                  aPlan->left ) != IDE_SUCCESS);
 
     // To Fix PR-9822
-    // doIt() ê³¼ì •ì—ì„œ ì´ˆê¸°í™”ëœë‹¤.
+    // doIt() °úÁ¤¿¡¼­ ÃÊ±âÈ­µÈ´Ù.
     // IDE_TEST( aPlan->right->init( aTemplate, 
     //                               aPlan->right ) != IDE_SUCCESS);
 
     //------------------------------------------------
-    // ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
+    // ¼öÇà ÇÔ¼ö °áÁ¤
     //------------------------------------------------
 
     sDataPlan->doIt = qmnAOJN::doItLeft;
@@ -111,10 +111,10 @@ qmnAOJN::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    AOJNì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
+ *    AOJNÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *    ì§€ì •ëœ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *    ÁöÁ¤µÈ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼öÇàÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -142,11 +142,11 @@ qmnAOJN::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Null Paddingì„ ìˆ˜í–‰í•œë‹¤.
+ *    Null PaddingÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *    ë³„ë„ì˜ Null Rowë¥¼ ê°€ì§€ì§€ ì•Šìœ¼ë©°,
- *    Childì— ëŒ€í•œ Null Paddingì„ ìˆ˜í–‰í•œë‹¤.
+ *    º°µµÀÇ Null Row¸¦ °¡ÁöÁö ¾ÊÀ¸¸ç,
+ *    Child¿¡ ´ëÇÑ Null PaddingÀ» ¼öÇàÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -169,7 +169,7 @@ qmnAOJN::padNull( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // Child ì— ëŒ€í•œ Null Padding
+    // Child ¿¡ ´ëÇÑ Null Padding
     //------------------------------------------------
     
     IDE_TEST( aPlan->left->padNull( aTemplate, aPlan->left )
@@ -197,7 +197,7 @@ qmnAOJN::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *    ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  * Implementation :
  *
@@ -214,7 +214,7 @@ qmnAOJN::printPlan( qcTemplate   * aTemplate,
     ULong i;
 
     //----------------------------
-    // Display ìœ„ì¹˜ ê²°ì •
+    // Display À§Ä¡ °áÁ¤
     //----------------------------
 
     for ( i = 0; i < aDepth; i++ )
@@ -224,25 +224,25 @@ qmnAOJN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // AOJN ë…¸ë“œ í‘œì‹œ
+    // AOJN ³ëµå Ç¥½Ã
     //----------------------------
 
     iduVarStringAppend( aString,
                         "ANTI-OUTER-JOIN( " );
 
     //----------------------------
-    // Join Method ì¶œë ¥
+    // Join Method Ãâ·Â
     //----------------------------
     qmn::printJoinMethod( aString, sCodePlan->plan.flag );
 
     //----------------------------
-    // Cost ì¶œë ¥
+    // Cost Ãâ·Â
     //----------------------------
     qmn::printCost( aString,
                     sCodePlan->plan.qmgAllCost );
 
     //----------------------------
-    // Predicate ì •ë³´ í‘œì‹œ
+    // Predicate Á¤º¸ Ç¥½Ã
     //----------------------------
     
     if ( sCodePlan->filter != NULL )
@@ -275,7 +275,7 @@ qmnAOJN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Child Planì˜ ì •ë³´ ì¶œë ¥
+    // Child PlanÀÇ Á¤º¸ Ãâ·Â
     //----------------------------
     
     IDE_TEST( aPlan->left->printPlan( aTemplate,
@@ -307,7 +307,7 @@ qmnAOJN::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨.
+ *    ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ¸é ¾ÈµÊ.
  *
  * Implementation :
  *
@@ -331,11 +331,11 @@ qmnAOJN::doItLeft( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ìƒˆë¡œìš´ Left Rowì— ëŒ€í•œ ì²˜ë¦¬
+ *    »õ·Î¿î Left Row¿¡ ´ëÇÑ Ã³¸®
  *
  * Implementation :
- *    ë§Œì¡±í•˜ëŠ” Right Rowê°€ ì—†ëŠ” Left Rowë¥¼ ì°¾ì•„
- *    Right Rowë¥¼ Null Padding í•œë‹¤.
+ *    ¸¸Á·ÇÏ´Â Right Row°¡ ¾ø´Â Left Row¸¦ Ã£¾Æ
+ *    Right Row¸¦ Null Padding ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -350,8 +350,8 @@ qmnAOJN::doItLeft( qcTemplate * aTemplate,
     qmcRowFlag sFlag = QMC_ROW_DATA_EXIST;
 
     //----------------------------------
-    // ë§Œì¡±í•˜ëŠ” Right Rowê°€ ì—†ëŠ” Left Rowë¥¼
-    // ì°¾ì„ ë•Œê¹Œì§€ ë°˜ë³µ ìˆ˜í–‰
+    // ¸¸Á·ÇÏ´Â Right Row°¡ ¾ø´Â Left Row¸¦
+    // Ã£À» ¶§±îÁö ¹Ýº¹ ¼öÇà
     //----------------------------------
     
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
@@ -399,7 +399,7 @@ qmnAOJN::doItLeft( qcTemplate * aTemplate,
     }
 
     //----------------------------------
-    // Left Row ì°¾ì€ ê²½ìš° Rightì— ëŒ€í•œ Null Padding
+    // Left Row Ã£Àº °æ¿ì Right¿¡ ´ëÇÑ Null Padding
     //----------------------------------
     
     if ( (*aFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
@@ -427,7 +427,7 @@ qmnAOJN::firstInit( qmndAOJN   * aDataPlan )
 /***********************************************************************
  *
  * Description :
- *    Data ì˜ì—­ì— ëŒ€í•œ ì´ˆê¸°í™”
+ *    Data ¿µ¿ª¿¡ ´ëÇÑ ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -437,7 +437,7 @@ qmnAOJN::firstInit( qmndAOJN   * aDataPlan )
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
     //---------------------------------
-    // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
+    // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
     //---------------------------------
 
     *aDataPlan->flag &= ~QMND_AOJN_INIT_DONE_MASK;

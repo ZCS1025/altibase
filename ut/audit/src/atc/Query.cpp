@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: Query.cpp 82637 2018-03-27 04:37:41Z bethy $
+ * $Id: Query.cpp 82636 2018-03-27 04:22:20Z bethy $
  ******************************************************************************/
 #include <utdb.h>
 
@@ -118,7 +118,7 @@ SInt Query::getSQLType(UInt i)
  return (mRow)? mRow->getSQLType(i):0;
 }
 
-/* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
+/* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
 void Query::setArrayCount( SInt aArrayCount )
 {
     if(mRow)

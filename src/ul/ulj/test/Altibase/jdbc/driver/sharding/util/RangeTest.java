@@ -50,16 +50,16 @@ public class RangeTest extends TestCase
     @SuppressWarnings("unchecked")
     public void testStringRange()
     {
-        mRangeMap.put("node1", Range.between(Range.getNullRange(), "ê°€ë‚˜ë‹¤"));
-        mRangeMap.put("node2", Range.between("ê°€ë‚˜ë‹¤", "ê°€ë‚˜ì‚¬"));
-        mRangeMap.put("node3", Range.between("ê°€ë‚˜ì‚¬", "ê°€ë°”ë§ˆ"));
+        mRangeMap.put("node1", Range.between(Range.getNullRange(), "°¡³ª´Ù"));
+        mRangeMap.put("node2", Range.between("°¡³ª´Ù", "°¡³ª»ç"));
+        mRangeMap.put("node3", Range.between("°¡³ª»ç", "°¡¹Ù¸¶"));
 
-        assertThat(getNodeNameFromRange("ê°€ë‚˜ë‚˜"), is("node1"));
-        assertThat(getNodeNameFromRange("ê°€ë‚˜ë‹¤"), is("node2"));
-        assertThat(getNodeNameFromRange("ê°€ë‚˜ë°”"), is("node2"));
-        assertThat(getNodeNameFromRange("ê°€ë‚˜"),   is("node1"));
+        assertThat(getNodeNameFromRange("°¡³ª³ª"), is("node1"));
+        assertThat(getNodeNameFromRange("°¡³ª´Ù"), is("node2"));
+        assertThat(getNodeNameFromRange("°¡³ª¹Ù"), is("node2"));
+        assertThat(getNodeNameFromRange("°¡³ª"),   is("node1"));
         assertThat(getNodeNameFromRange(""),      is("node1"));
-        assertThat(getNodeNameFromRange("ë‚˜ë‚˜ë‹¤"), is("not founded"));
+        assertThat(getNodeNameFromRange("³ª³ª´Ù"), is("not founded"));
     }
 
     @SuppressWarnings("unchecked")

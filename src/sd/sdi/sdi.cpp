@@ -13,21 +13,23 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
- 
 
 /***********************************************************************
  * $Id$
  **********************************************************************/
-
+#include <cm.h>
 #include <sdDef.h>
 #include <sdi.h>
+#include <sdiLob.h>
 #include <sdm.h>
 #include <sdf.h>
 #include <sda.h>
 #include <qci.h>
 #include <qcm.h>
+#include <qcmProc.h>
 #include <qcg.h>
 #include <qmn.h>
+#include <qdsd.h>
 #include <sdl.h>
 #include <sdlStatement.h>
 #include <sdlStatementManager.h>
@@ -35,26 +37,62 @@
 #include <qdk.h>
 #include <sdmShardPin.h>
 #include <sduProperty.h>
+#include <sduVersion.h>
+#include <qmxShard.h>
+#include <sdiZookeeper.h>
+#include <sdo.h>    /* TASK-7219 Shard Transformer Refactoring */
 
-#define SAVEPOINT_FOR_SHARD_STMT_PARTIAL_ROLLBACK   ("$$SHARD_PARTIAL_ROLLBACK")
+#include <qcd.h>
 
 extern iduFixedTableDesc gShardConnectionInfoTableDesc;
 extern iduFixedTableDesc gShardMetaNodeInfoTableDesc;
 extern iduFixedTableDesc gShardDataNodeInfoTableDesc;
+extern iduFixedTableDesc gZookeeperInfoTableDesc;
 
 static sdiAnalyzeInfo    gAnalyzeInfoForAllNodes;
 
 /* BUG-45899 */
-static SChar * gCanNotMergeReasonArr[] = { SDI_CAN_NOT_MERGE_REASONS, NULL };
+static SChar * gNonShardQueryReason[] = { SDI_NON_SHARD_QUERY_REASONS, NULL };
 
 /* BUG-46039 SLCN(Shard Linker Change Number) -> SMN(Shard Meta Number) */
-static ULong             gSMNForMetaNode = ID_ULONG(0);
+static ULong             gSMNForMetaNode = SDI_NULL_SMN;
 
-/* BUG-46090 Meta Node SMN ì „íŒŒ */
-static ULong             gSMNForDataNode = ID_ULONG(0);
+/* BUG-46090 Meta Node SMN ÀüÆÄ */
+static ULong             gSMNForDataNode = SDI_NULL_SMN;
 
 /* PROJ-2701 Sharding online data rebuild */
 static UInt              gShardUserID = ID_UINT_MAX;
+
+// SHARD_STATUS 0,1 DEFAULT : 0
+static UInt              gShardStatus = 0; 
+
+static sdiDatabaseInfo   gShardDBInfo;
+
+static void shardCoordFixCtrlCallback( void * aSession, SInt * aCount, UInt aEnterOrExit )
+{
+    switch ( aEnterOrExit )
+    {
+        case SDI_SHARD_COORD_FIX_CTRL_EVENT_ENTER :
+            if ( *aCount == 0 )
+            {
+                qci::mSessionCallback.mPauseShareTransFix( aSession );
+            }
+            ++(*aCount);
+            break;
+
+        case SDI_SHARD_COORD_FIX_CTRL_EVENT_EXIT :
+            --(*aCount);
+            if ( *aCount == 0 )
+            {
+                qci::mSessionCallback.mResumeShareTransFix( aSession );
+            }
+            break;
+
+        default :
+            IDE_DASSERT( 0 );
+            break;
+    }
+}
 
 static inline idBool isNameInDoubleQuotation( qcNamePosition    * aNamePosition )
 {
@@ -126,13 +164,16 @@ static inline idBool isMatchedNodeName( qcShardNodes     * aNodeName1,
     
     return sIsSame;
 }
-static inline idBool needShardStmtPartialRollback( qciStmtType aStmtKind )
+static inline idBool needShardStmtPartialRollback( qciStmtType aStmtKind,
+                                                   idBool      aFromSDSE )
 {
     idBool      sNeedShardStmtPartialRollback = ID_FALSE;
 
-    if ( ( aStmtKind == QCI_STMT_INSERT ) ||
-         ( aStmtKind == QCI_STMT_UPDATE ) ||
-         ( aStmtKind == QCI_STMT_DELETE ) ||
+    if ( ( ( ( aStmtKind == QCI_STMT_INSERT ) ||
+             ( aStmtKind == QCI_STMT_UPDATE ) ||
+             ( aStmtKind == QCI_STMT_DELETE ) ) &&
+           ( aFromSDSE == ID_FALSE ) )
+         ||
          ( aStmtKind == QCI_STMT_SELECT_FOR_UPDATE ) )
     {
         sNeedShardStmtPartialRollback = ID_TRUE;
@@ -147,7 +188,8 @@ static inline idBool needShardStmtPartialRollback( qciStmtType aStmtKind )
 
 static void processExecuteError( qcStatement       * aStatement,
                                  sdiClientInfo     * aClientInfo,
-                                 sdiDataNode       * aDataNode )
+                                 sdiDataNode       * aDataNode,
+                                 idBool              aFromSDSE )
 {
     UInt                  i = 0;
     sdiConnectInfo      * sConnectInfo = aClientInfo->mConnectInfo;
@@ -155,7 +197,8 @@ static void processExecuteError( qcStatement       * aStatement,
     idBool                sNeedShardStmtPartialRollback;
    
     sIsAutoCommit = QCG_GET_SESSION_IS_AUTOCOMMIT( aStatement );
-    sNeedShardStmtPartialRollback = needShardStmtPartialRollback( aStatement->myPlan->parseTree->stmtKind ) ;
+    sNeedShardStmtPartialRollback = needShardStmtPartialRollback( aStatement->myPlan->parseTree->stmtKind,
+                                                                  aFromSDSE ) ;
 
     for ( i = 0; i < aClientInfo->mCount; i++, sConnectInfo++, aDataNode++ )
     {
@@ -195,39 +238,123 @@ static void processExecuteError( qcStatement       * aStatement,
     }
 }
 
-void sdi::initialize()
+IDE_RC sdi::initialize()
 {
     sdmShardPinMgr::initialize();
+    idlOS::memset(&gShardDBInfo, 0, ID_SIZEOF(sdiDatabaseInfo));
+    gShardDBInfo.mDBName = NULL;            /* smiGetDBName()  after smiStartupMeta phase */
+    gShardDBInfo.mTransTblSize = 0;         /* smiGetTransTblSize after smiStartupPreProcess phase */
+
+    gShardDBInfo.mDBCharSet = NULL;         /* mtc::getDBCharSet(); */
+    gShardDBInfo.mNationalCharSet = NULL;   /* mtc::getNationalCharSet(); */
+    gShardDBInfo.mDBVersion = NULL;         /* smVersionString */
+    gShardDBInfo.mMajorVersion = SHARD_MAJOR_VERSION;
+    gShardDBInfo.mMinorVersion = SHARD_MINOR_VERSION;
+    /* shard patch version should not be compare, for rolling patch */
+    gShardDBInfo.mPatchVersion = SHARD_PATCH_VERSION;
+
+    #ifdef ALTI_CFG_OS_LINUX
+    IDE_TEST(sdiZookeeper::initializeStatic() != IDE_SUCCESS);
+    #endif
+    
+    /* PROJ-2728 Sharding LOB */
+    smiLob::setShardLobModule(
+                        sdiLob::open,
+                        sdiLob::read,
+                        sdiLob::write,
+                        sdiLob::erase,
+                        sdiLob::trim,
+                        sdiLob::prepare4Write,
+                        sdiLob::finishWrite,
+                        sdiLob::getLobInfo,
+                        sdiLob::writeLog4CursorOpen,
+                        sdiLob::close );
+    return IDE_SUCCESS;
+    IDE_EXCEPTION_END;
+    return IDE_FAILURE;
+}
+
+void sdi::setShardDBInfo()
+{
+    gShardDBInfo.mDBName = smiGetDBName();
+    gShardDBInfo.mTransTblSize = smiGetTransTblSize();
+
+    gShardDBInfo.mDBCharSet = mtc::getDBCharSet();
+    gShardDBInfo.mNationalCharSet = mtc::getNationalCharSet();
+    gShardDBInfo.mDBVersion = (SChar*)smVersionString;
+}
+
+IDE_RC sdi::validateCreateDB(SChar         * aDBName,
+                             SChar         * aDBCharSet,
+                             SChar         * aNationalCharSet)
+{
+    PDL_UNUSED_ARG(aDBName);
+    PDL_UNUSED_ARG(aDBCharSet);
+    PDL_UNUSED_ARG(aNationalCharSet);
+
+    if ( SDU_SHARD_ENABLE == 1 )
+    {
+        /* R2HA
+         * first zookeeper connect.
+         * check sharded database arguments
+         * database_name, database charset, national charset compare
+         * if there are different, database creation fails
+         * if there is no sharded database, this work is first add sharded database
+         * */
+        ideLog::log(IDE_SD_31,"[DEBUG] validateCreateDB call");
+    }
+
+    return IDE_SUCCESS;
+}
+
+IDE_RC sdi::validateDropDB(SChar    * /*aDBName*/)
+{
+    if ( SDU_SHARD_ENABLE == 1 )
+    {
+        /* first zookeeper connect.
+         * check sharded database
+         * if there is the database in the sharded database, then the database drop fails.
+         * */
+        ideLog::log(IDE_SD_31,"[DEBUG] validateDropDB call");
+    }
+
+    return IDE_SUCCESS;
 }
 
 IDE_RC sdi::loadMetaNodeInfo()
 {
-    sdiGlobalMetaNodeInfo   sMetaNodeInfo = { ID_ULONG(0) };
-    UInt                    sShardUserID = ID_UINT_MAX;
+    sdiGlobalMetaInfo   sMetaNodeInfo = { SDI_NULL_SMN };
+    UInt                sShardUserID = ID_UINT_MAX;
+
+    if( gShardDBInfo.mDBName == NULL )
+    {    
+        setShardDBInfo();
+    }
 
     IDE_TEST_CONT( isShardEnable() != ID_TRUE, NO_SHARD_ENABLE );
     IDE_TEST_CONT( checkMetaCreated() != ID_TRUE, NO_SHARD_ENABLE );
 
-    /* ShardUserIDë¥¼ ì„¸íŒ…í•œë‹¤. */
+    /* ShardUserID¸¦ ¼¼ÆÃÇÑ´Ù. */
     IDE_TEST_CONT( sdm::getShardUserID( &sShardUserID ) != IDE_SUCCESS, NO_SHARD_ENABLE );
     setShardUserID( sShardUserID );
 
     /* Global Shard Meta Info */
-    IDE_TEST( sdm::getGlobalMetaNodeInfo( &sMetaNodeInfo ) != IDE_SUCCESS );
+    IDE_TEST( sdm::getGlobalMetaInfo( &sMetaNodeInfo ) != IDE_SUCCESS );
     setSMNCacheForMetaNode( sMetaNodeInfo.mShardMetaNumber );
 
     /* PROJ-2701 Sharding online data rebuild
-     * start-upì‹œì— dataSMNì€ ì´ˆê¸°í™” ë˜ì–´ìˆë‹¤.
-     * ì´ë¥¼ dataSMNì„ metaSMNê³¼ ë™ì¼í•˜ê²Œ ì„¤ì •í•œë‹¤.
+     * start-up½Ã¿¡ dataSMNÀº ÃÊ±âÈ­ µÇ¾îÀÖ´Ù.
+     * ÀÌ¸¦ dataSMNÀ» metaSMN°ú µ¿ÀÏÇÏ°Ô ¼³Á¤ÇÑ´Ù.
      *
-     * BUGBUG data rebuildìˆ˜í–‰ì¤‘ ì¥ì• ì‹œì—, í•´ë‹¹ nodeê°€ ë‚´ë ¤ê°”ë‹¤ ì˜¬ë¼ì˜¤ë©´(failback)
-     *        dataSMNì´ í•˜ë‚˜ ë‚®ì€ ìƒíƒœë¡œ ì„¤ì • ë  ê²ƒì´ë‹¤.
-     *        ë‹¤ë¥¸ ì‚´ì•„ìˆë˜ ë…¸ë“œë“¤ ì¤‘ ê°€ì¥ í° dataSMNìœ¼ë¡œ ì„¤ì •ë˜ë„ë¡ í•´ì•¼í•œë‹¤.
+     * BUGBUG data rebuild¼öÇàÁß Àå¾Ö½Ã¿¡, ÇØ´ç node°¡ ³»·Á°¬´Ù ¿Ã¶ó¿À¸é(failback)
+     *        dataSMNÀÌ ÇÏ³ª ³·Àº »óÅÂ·Î ¼³Á¤ µÉ °ÍÀÌ´Ù.
+     *        ´Ù¸¥ »ì¾ÆÀÖ´ø ³ëµåµé Áß °¡Àå Å« dataSMNÀ¸·Î ¼³Á¤µÇµµ·Ï ÇØ¾ßÇÑ´Ù.
      */
     setSMNForDataNode( sMetaNodeInfo.mShardMetaNumber );
 
     /* Local Shard Meta Info */
     sdmShardPinMgr::loadShardPinInfo();
+
 
     IDE_EXCEPTION_CONT( NO_SHARD_ENABLE );
 
@@ -240,6 +367,7 @@ IDE_RC sdi::loadMetaNodeInfo()
 
 void sdi::finalize()
 {
+    (void)sdiZookeeper::finalizeStatic();
     sdmShardPinMgr::finalize();
 }
 
@@ -263,28 +391,45 @@ void sdi::setSMNCacheForMetaNode( ULong aNewSMN )
     (void)idCore::acpAtomicSet64( &gSMNForMetaNode, aNewSMN );
 }
 
+UInt sdi::getShardStatus()
+{
+    return gShardStatus;
+}
+
+void sdi::setShardStatus( UInt aShardStatus )
+{
+    gShardStatus = aShardStatus;
+}
+
+
+void sdi::loadShardPinInfo()
+{
+    sdmShardPinMgr::loadShardPinInfo();
+}
+
 IDE_RC sdi::getIncreasedSMNForMetaNode( smiTrans * aTrans,
                                         ULong    * aNewSMN )
 {
-    sdiGlobalMetaNodeInfo   sMetaNodeInfo = { ID_ULONG(0) };
-    smiStatement            sSmiStmt;
-    idBool                  sIsStmtBegun  = ID_FALSE;
+    sdiGlobalMetaInfo   sMetaNodeInfo = { SDI_NULL_SMN };
+    smiStatement        sSmiStmt;
+    idBool              sIsStmtBegun  = ID_FALSE;
 
     IDE_TEST( sSmiStmt.begin( aTrans->getStatistics(),
                               aTrans->getStatement(),
-                              ( SMI_STATEMENT_NORMAL |
+                              ( SMI_STATEMENT_UNTOUCHABLE |
                                 SMI_STATEMENT_MEMORY_CURSOR ) )
               != IDE_SUCCESS );
     sIsStmtBegun = ID_TRUE;
 
-    /* PROJ-2701 Online data rebuild
+    /*
+     * PROJ-2701 Online data rebuild
      *
      * // IDE_TEST( sdm::increaseShardMetaNumberCore( &sSmiStmt ) != IDE_SUCCESS );
      *
-     * GLOBAL_META_INFO_ì˜ shard_meta_numberì— ëŒ€í•œ increaseì‹œì ì€
-     * Txì˜ ì²« shard meta ë³€ê²½ ì‹œë¡œ ì´ë™í•œë‹¤.
+     * GLOBAL_META_INFO_ÀÇ shard_meta_number¿¡ ´ëÇÑ increase½ÃÁ¡Àº
+     * TxÀÇ Ã¹ shard meta º¯°æ ½Ã·Î ÀÌµ¿ÇÑ´Ù.
      */
-    IDE_TEST( sdm::getGlobalMetaNodeInfoCore( &sSmiStmt, &sMetaNodeInfo ) != IDE_SUCCESS );
+    IDE_TEST( sdm::getGlobalMetaInfoCore( &sSmiStmt, &sMetaNodeInfo ) != IDE_SUCCESS );
 
     IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
     sIsStmtBegun = ID_FALSE;
@@ -313,29 +458,23 @@ IDE_RC sdi::getIncreasedSMNForMetaNode( smiTrans * aTrans,
 
 IDE_RC sdi::reloadSMNForDataNode( smiStatement * aSmiStmt )
 {
-    sdiGlobalMetaNodeInfo   sMetaNodeInfo = { ID_ULONG(0) };
+    sdiGlobalMetaInfo   sMetaNodeInfo = { SDI_NULL_SMN };
 
     IDE_TEST_CONT( isShardEnable() != ID_TRUE, NO_SHARD_ENABLE );
     IDE_TEST_CONT( checkMetaCreated() != ID_TRUE, NO_SHARD_ENABLE );
 
     if ( aSmiStmt != NULL )
     {
-        IDE_TEST( sdm::getGlobalMetaNodeInfoCore( aSmiStmt,
-                                                  &sMetaNodeInfo ) != IDE_SUCCESS );
+        IDE_TEST( sdm::getGlobalMetaInfoCore( aSmiStmt,
+                                              &sMetaNodeInfo ) != IDE_SUCCESS );
     }
     else
     {
-        IDE_TEST( sdm::getGlobalMetaNodeInfo( &sMetaNodeInfo ) != IDE_SUCCESS );
+        IDE_TEST( sdm::getGlobalMetaInfo( &sMetaNodeInfo ) != IDE_SUCCESS );
     }
 
-    if ( sMetaNodeInfo.mShardMetaNumber > getSMNForDataNode() )
-    {
-        setSMNForDataNode( sMetaNodeInfo.mShardMetaNumber );
-    }
-    else
-    {
-        // Nothing to do.
-    }
+    setSMNForDataNode( sMetaNodeInfo.mShardMetaNumber );
+
 
     IDE_EXCEPTION_CONT( NO_SHARD_ENABLE );
 
@@ -388,11 +527,14 @@ IDE_RC sdi::initSystemTables( void )
         IDU_FIXED_TABLE_DEFINE_RUNTIME( gShardMetaNodeInfoTableDesc );
         IDU_FIXED_TABLE_DEFINE_RUNTIME( gShardDataNodeInfoTableDesc );
         IDU_FIXED_TABLE_DEFINE_RUNTIME( gShardConnectionInfoTableDesc );
+        IDU_FIXED_TABLE_DEFINE_RUNTIME( gZookeeperInfoTableDesc );
 
         // initialize gAnalyzeInfoForAllNodes
         SDI_INIT_ANALYZE_INFO( &gAnalyzeInfoForAllNodes );
 
-        gAnalyzeInfoForAllNodes.mIsCanMerge = ID_TRUE;
+        /* TASK-7219 Shard Transformer Refactoring */
+        gAnalyzeInfoForAllNodes.mIsShardQuery        = ID_FALSE;
+        gAnalyzeInfoForAllNodes.mNonShardQueryReason = SDI_SHARD_KEYWORD_EXISTS;
     }
     else
     {
@@ -402,9 +544,15 @@ IDE_RC sdi::initSystemTables( void )
     return IDE_SUCCESS;
 }
 
-IDE_RC sdi::checkStmt( qcStatement * aStatement )
+IDE_RC sdi::checkStmtTypeBeforeAnalysis( qcStatement * aStatement )
 {
-    return sda::checkStmt( aStatement );
+    return sda::checkStmtTypeBeforeAnalysis( aStatement );
+}
+
+// PROJ-2727
+IDE_RC sdi::checkDCLStmt( qcStatement * aStatement )
+{
+    return sda::checkDCLStmt( aStatement );
 }
 
 IDE_RC sdi::analyze( qcStatement * aStatement,
@@ -423,43 +571,36 @@ IDE_RC sdi::analyze( qcStatement * aStatement,
     return IDE_FAILURE;
 }
 
-IDE_RC sdi::setAnalysisResult( qcStatement * aStatement )
-{
-    IDU_FIT_POINT_FATAL( "sdi::setAnalysisResult::__FT__" );
-
-    IDE_TEST( sda::setAnalysisResult( aStatement ) != IDE_SUCCESS );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
 IDE_RC sdi::setAnalysisResultForInsert( qcStatement    * aStatement,
                                         sdiAnalyzeInfo * aAnalyzeInfo,
                                         sdiObjectInfo  * aShardObjInfo )
 {
+    sdiValueInfo    * sValueInfo = NULL;
     SDI_INIT_ANALYZE_INFO(aAnalyzeInfo);
 
-    // analyzerë¥¼ í†µí•˜ì§€ ì•Šê³  ì§ì ‘ analyze ì •ë³´ë¥¼ ìƒì„±í•œë‹¤.
+    // analyzer¸¦ ÅëÇÏÁö ¾Ê°í Á÷Á¢ analyze Á¤º¸¸¦ »ı¼ºÇÑ´Ù.
     if ( aShardObjInfo->mTableInfo.mSplitMethod != SDI_SPLIT_SOLO )
     {
         IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiValueInfo),
-                                                 (void**)&aAnalyzeInfo->mValue )
+                                                 (void**)&aAnalyzeInfo->mValuePtrArray )
                   != IDE_SUCCESS );
 
-        aAnalyzeInfo->mValueCount = 1;
-        aAnalyzeInfo->mValue[0].mType = 0;  // host variable
-        aAnalyzeInfo->mValue[0].mValue.mBindParamId = aShardObjInfo->mTableInfo.mKeyColOrder;
-        aAnalyzeInfo->mIsCanMerge = ID_TRUE;
+        IDE_TEST( sda::allocAndSetShardHostValueInfo( aStatement,
+                                                      aShardObjInfo->mTableInfo.mKeyColOrder,
+                                                      &sValueInfo )
+                  != IDE_SUCCESS );
+
+        aAnalyzeInfo->mValuePtrCount = 1;
+        aAnalyzeInfo->mValuePtrArray[0] = sValueInfo;
+
+        aAnalyzeInfo->mIsShardQuery = ID_TRUE;
         aAnalyzeInfo->mSplitMethod = aShardObjInfo->mTableInfo.mSplitMethod;
         aAnalyzeInfo->mKeyDataType = aShardObjInfo->mTableInfo.mKeyDataType;
     }
     else
     {
-        aAnalyzeInfo->mValueCount = 0;
-        aAnalyzeInfo->mIsCanMerge = ID_TRUE;
+        aAnalyzeInfo->mValuePtrCount = 0;
+        aAnalyzeInfo->mIsShardQuery = ID_TRUE;
         aAnalyzeInfo->mSplitMethod = aShardObjInfo->mTableInfo.mSplitMethod;
         aAnalyzeInfo->mKeyDataType = aShardObjInfo->mTableInfo.mKeyDataType;
     }
@@ -469,13 +610,18 @@ IDE_RC sdi::setAnalysisResultForInsert( qcStatement    * aStatement,
 
     if ( aAnalyzeInfo->mSubKeyExists == ID_TRUE )
     {
-        IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiValueInfo),
-                                                 (void**)&aAnalyzeInfo->mSubValue )
+        IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiValueInfo*),
+                                                 (void**)&aAnalyzeInfo->mSubValuePtrArray )
                   != IDE_SUCCESS );
 
-        aAnalyzeInfo->mSubValueCount = 1;
-        aAnalyzeInfo->mSubValue[0].mType = 0;  // host variable
-        aAnalyzeInfo->mSubValue[0].mValue.mBindParamId = aShardObjInfo->mTableInfo.mSubKeyColOrder;
+        IDE_TEST( sda::allocAndSetShardHostValueInfo( aStatement,
+                                                      aShardObjInfo->mTableInfo.mSubKeyColOrder,
+                                                      &sValueInfo )
+                  != IDE_SUCCESS );
+
+        aAnalyzeInfo->mSubValuePtrCount = 1;
+        aAnalyzeInfo->mSubValuePtrArray[0] = sValueInfo;
+
         aAnalyzeInfo->mSubSplitMethod = aShardObjInfo->mTableInfo.mSubSplitMethod;
         aAnalyzeInfo->mSubKeyDataType = aShardObjInfo->mTableInfo.mSubKeyDataType;
     }
@@ -487,9 +633,62 @@ IDE_RC sdi::setAnalysisResultForInsert( qcStatement    * aStatement,
 
     aAnalyzeInfo->mDefaultNodeId = aShardObjInfo->mTableInfo.mDefaultNodeId;
 
-    IDE_TEST( sdi::allocAndCopyRanges( aStatement,
-                                       &aAnalyzeInfo->mRangeInfo,
-                                       &aShardObjInfo->mRangeInfo )
+    IDE_TEST( allocAndCopyRanges( aStatement,
+                                  &aAnalyzeInfo->mRangeInfo,
+                                  &aShardObjInfo->mRangeInfo )
+              != IDE_SUCCESS );
+
+    // PROJ-2685 online rebuild
+    IDE_TEST( QC_QMP_MEM(aStatement)->alloc(
+                  ID_SIZEOF(sdiTableInfoList),
+                  (void**) &(aAnalyzeInfo->mTableInfoList) )
+              != IDE_SUCCESS );
+
+    aAnalyzeInfo->mTableInfoList->mTableInfo = &(aShardObjInfo->mTableInfo);
+    aAnalyzeInfo->mTableInfoList->mNext = NULL;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::setAnalysisResultForDML( qcStatement    * aStatement,
+                                     sdiAnalyzeInfo * aAnalyzeInfo,
+                                     sdiObjectInfo  * aShardObjInfo )
+{
+    SDI_INIT_ANALYZE_INFO(aAnalyzeInfo);
+
+    // analyzer¸¦ ÅëÇÏÁö ¾Ê°í Á÷Á¢ analyze Á¤º¸¸¦ »ı¼ºÇÑ´Ù.
+    aAnalyzeInfo->mValuePtrCount = 0;
+
+    aAnalyzeInfo->mIsShardQuery = ID_TRUE;
+    aAnalyzeInfo->mValuePtrArray = NULL;
+    aAnalyzeInfo->mSplitMethod = aShardObjInfo->mTableInfo.mSplitMethod;
+    aAnalyzeInfo->mKeyDataType = aShardObjInfo->mTableInfo.mKeyDataType;
+
+    aAnalyzeInfo->mSubKeyExists = aShardObjInfo->mTableInfo.mSubKeyExists;
+
+    if ( aAnalyzeInfo->mSubKeyExists == ID_TRUE )
+    {
+        aAnalyzeInfo->mSubValuePtrCount = 0;
+        aAnalyzeInfo->mSubValuePtrArray = NULL;
+
+        aAnalyzeInfo->mSubSplitMethod = aShardObjInfo->mTableInfo.mSubSplitMethod;
+        aAnalyzeInfo->mSubKeyDataType = aShardObjInfo->mTableInfo.mSubKeyDataType;
+    }
+    else
+    {
+        // Already initialized
+        // Nothing to do.
+    }
+
+    aAnalyzeInfo->mDefaultNodeId = aShardObjInfo->mTableInfo.mDefaultNodeId;
+
+    IDE_TEST( allocAndCopyRanges( aStatement,
+                                  &aAnalyzeInfo->mRangeInfo,
+                                  &aShardObjInfo->mRangeInfo )
               != IDE_SUCCESS );
 
     // PROJ-2685 online rebuild
@@ -514,8 +713,8 @@ IDE_RC sdi::setAnalysisResultForTable( qcStatement    * aStatement,
 {
     SDI_INIT_ANALYZE_INFO(aAnalyzeInfo);
 
-    // analyzerë¥¼ í†µí•˜ì§€ ì•Šê³  ì§ì ‘ analyze ì •ë³´ë¥¼ ìƒì„±í•œë‹¤.
-    aAnalyzeInfo->mIsCanMerge = ID_TRUE;
+    // analyzer¸¦ ÅëÇÏÁö ¾Ê°í Á÷Á¢ analyze Á¤º¸¸¦ »ı¼ºÇÑ´Ù.
+    aAnalyzeInfo->mIsShardQuery = ID_TRUE;
     aAnalyzeInfo->mSplitMethod = aShardObjInfo->mTableInfo.mSplitMethod;
     aAnalyzeInfo->mKeyDataType = aShardObjInfo->mTableInfo.mKeyDataType;
 
@@ -525,9 +724,9 @@ IDE_RC sdi::setAnalysisResultForTable( qcStatement    * aStatement,
 
     aAnalyzeInfo->mDefaultNodeId = aShardObjInfo->mTableInfo.mDefaultNodeId;
 
-    IDE_TEST( sdi::allocAndCopyRanges( aStatement,
-                                       &aAnalyzeInfo->mRangeInfo,
-                                       &aShardObjInfo->mRangeInfo )
+    IDE_TEST( allocAndCopyRanges( aStatement,
+                                  &aAnalyzeInfo->mRangeInfo,
+                                  &aShardObjInfo->mRangeInfo )
               != IDE_SUCCESS );
 
     // PROJ-2685 online rebuild
@@ -550,13 +749,10 @@ IDE_RC sdi::copyAnalyzeInfo( qcStatement    * aStatement,
                              sdiAnalyzeInfo * aAnalyzeInfo,
                              sdiAnalyzeInfo * aSrcAnalyzeInfo )
 {
-    sdiTableInfoList * sTableInfoList;
-    sdiTableInfoList * sTableInfo;
-
     /*
-     * sdiAnalyzeInfo ì „ì²´ë¥¼ memcpyí•œ í›„,
-     * pointer variableì¸ mRangeInfo->mRanges, mValue, mSubValue ì— ëŒ€í•´ì„œëŠ”
-     * ë³„ë„ë¡œ memoryë¥¼ allocí•˜ê³  ë³µì‚¬í•œë‹¤.
+     * sdiAnalyzeInfo ÀüÃ¼¸¦ memcpyÇÑ ÈÄ,
+     * pointer variableÀÎ mRangeInfo->mRanges, mValue, mSubValue ¿¡ ´ëÇØ¼­´Â
+     * º°µµ·Î memory¸¦ allocÇÏ°í º¹»çÇÑ´Ù.
      */
     idlOS::memcpy( (void*)aAnalyzeInfo,
                    (void*)aSrcAnalyzeInfo,
@@ -564,10 +760,10 @@ IDE_RC sdi::copyAnalyzeInfo( qcStatement    * aStatement,
 
     aAnalyzeInfo->mRangeInfo.mCount = 0;
     aAnalyzeInfo->mRangeInfo.mRanges = NULL;
-    aAnalyzeInfo->mValueCount = 0;
-    aAnalyzeInfo->mValue = NULL;
-    aAnalyzeInfo->mSubValueCount = 0;
-    aAnalyzeInfo->mSubValue = NULL;
+    aAnalyzeInfo->mValuePtrCount = 0;
+    aAnalyzeInfo->mValuePtrArray = NULL;
+    aAnalyzeInfo->mSubValuePtrCount = 0;
+    aAnalyzeInfo->mSubValuePtrArray = NULL;
     aAnalyzeInfo->mTableInfoList = NULL;
 
     IDE_TEST( allocAndCopyRanges( aStatement,
@@ -576,39 +772,24 @@ IDE_RC sdi::copyAnalyzeInfo( qcStatement    * aStatement,
               != IDE_SUCCESS );
 
     IDE_TEST( allocAndCopyValues( aStatement,
-                                  &aAnalyzeInfo->mValue,
-                                  &aAnalyzeInfo->mValueCount,
-                                  aSrcAnalyzeInfo->mValue,
-                                  aSrcAnalyzeInfo->mValueCount )
+                                  &aAnalyzeInfo->mValuePtrArray,
+                                  &aAnalyzeInfo->mValuePtrCount,
+                                  aSrcAnalyzeInfo->mValuePtrArray,
+                                  aSrcAnalyzeInfo->mValuePtrCount )
               != IDE_SUCCESS );
 
     IDE_TEST( allocAndCopyValues( aStatement,
-                                  &aAnalyzeInfo->mSubValue,
-                                  &aAnalyzeInfo->mSubValueCount,
-                                  aSrcAnalyzeInfo->mSubValue,
-                                  aSrcAnalyzeInfo->mSubValueCount )
+                                  &aAnalyzeInfo->mSubValuePtrArray,
+                                  &aAnalyzeInfo->mSubValuePtrCount,
+                                  aSrcAnalyzeInfo->mSubValuePtrArray,
+                                  aSrcAnalyzeInfo->mSubValuePtrCount )
               != IDE_SUCCESS );
 
-    for ( sTableInfoList = aSrcAnalyzeInfo->mTableInfoList;
-          sTableInfoList != NULL;
-          sTableInfoList = sTableInfoList->mNext )
-    {
-        IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiTableInfoList) +
-                                                 ID_SIZEOF(sdiTableInfo),
-                                                 (void**) &sTableInfo )
-                  != IDE_SUCCESS );
-
-        sTableInfo->mTableInfo =
-            (sdiTableInfo*)((UChar*)sTableInfo + ID_SIZEOF(sdiTableInfoList));
-
-        idlOS::memcpy( sTableInfo->mTableInfo,
-                       sTableInfoList->mTableInfo,
-                       ID_SIZEOF(sdiTableInfo) );
-
-        // link
-        sTableInfo->mNext = aAnalyzeInfo->mTableInfoList;
-        aAnalyzeInfo->mTableInfoList = sTableInfo;
-    }
+    /* TASK-7219 Shard Transformer Refactoring */
+    IDE_TEST( allocAndCopyTableInfoList( aStatement,
+                                         aSrcAnalyzeInfo->mTableInfoList,
+                                         &( aAnalyzeInfo->mTableInfoList ) )
+              != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -627,7 +808,6 @@ idBool sdi::checkMetaCreated()
     smiTrans       sTrans;
     smiStatement   sSmiStmt;
     smiStatement * sDummySmiStmt = NULL;
-    smSCN          sDummySCN;
     UInt           sStage = 0;
 
     IDE_TEST( sTrans.initialize() != IDE_SUCCESS );
@@ -648,7 +828,7 @@ idBool sdi::checkMetaCreated()
     IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
     sStage = 2;
 
-    IDE_TEST( sTrans.commit( &sDummySCN ) != IDE_SUCCESS );
+    IDE_TEST( sTrans.commit() != IDE_SUCCESS );
     sStage = 1;
 
     sStage = 0;
@@ -684,18 +864,17 @@ IDE_RC sdi::getExternalNodeInfo( sdiNodeInfo * aNodeInfo,
     smiTrans       sTrans;
     smiStatement   sSmiStmt;
     smiStatement * sDummySmiStmt;
-    smSCN          sDummySCN;
     UInt           sStage = 0;
 
-    ULong          sDataSMNForMetaInfo = ID_ULONG(0);
+    ULong          sDataSMNForMetaInfo = SDI_NULL_SMN;
 
     IDE_DASSERT( aNodeInfo != NULL );
 
     /* init */
     aNodeInfo->mCount = 0;
 
-    /* PROJ-2446 ONE SOURCE MM ì—ì„œ statisticsì •ë³´ë¥¼ ë„˜ê²¨ ë°›ì•„ì•¼ í•œë‹¤.
-     * ì¶”í›„ ì‘ì—… */
+    /* PROJ-2446 ONE SOURCE MM ¿¡¼­ statisticsÁ¤º¸¸¦ ³Ñ°Ü ¹Ş¾Æ¾ß ÇÑ´Ù.
+     * ÃßÈÄ ÀÛ¾÷ */
     IDE_TEST( sTrans.initialize() != IDE_SUCCESS );
     sStage = 1;
 
@@ -734,7 +913,7 @@ IDE_RC sdi::getExternalNodeInfo( sdiNodeInfo * aNodeInfo,
     IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
     sStage = 2;
 
-    IDE_TEST( sTrans.commit( &sDummySCN ) != IDE_SUCCESS );
+    IDE_TEST( sTrans.commit() != IDE_SUCCESS );
     sStage = 1;
 
     sStage = 0;
@@ -759,7 +938,7 @@ IDE_RC sdi::getExternalNodeInfo( sdiNodeInfo * aNodeInfo,
             break;
     }
 
-    ideLog::log( IDE_SD_0, "[SHARD META : FAILURE] errorcode 0x%05"ID_XINT32_FMT" %s\n",
+    ideLog::log( IDE_SD_1, "[SHARD_META_ERROR] Failure. errorcode 0x%05"ID_XINT32_FMT" %s\n",
                            E_ERROR_CODE(ideGetErrorCode()),
                            ideGetErrorMsg(ideGetErrorCode()));
     return IDE_FAILURE;
@@ -773,11 +952,10 @@ IDE_RC sdi::getInternalNodeInfo( smiTrans    * aTrans,
     smiTrans       sTrans;
     smiStatement   sSmiStmt;
     smiStatement * sDummySmiStmt = NULL;
-    smSCN          sDummySCN;
     UShort         sTransStage = 0;
     idBool         sIsStmtBegun = ID_FALSE;
 
-    ULong          sDataSMNForMetaInfo = ID_ULONG(0);
+    ULong          sDataSMNForMetaInfo = SDI_NULL_SMN;
     idvSQL       * sStatistics = NULL;
     smiStatement * sSmiStmtForMetaInfo = NULL;
 
@@ -809,7 +987,7 @@ IDE_RC sdi::getInternalNodeInfo( smiTrans    * aTrans,
     // PROJ-2701 Online data rebuild
     if ( aIsShardMetaChanged == ID_TRUE )
     {
-        /* Shard Metaë¥¼ ë³€ê²½í•œ Transactionì´ë¯€ë¡œ aSMNì— í•´ë‹¹í•˜ëŠ” Internal Node Infoë¥¼ ì–»ì„ ìˆ˜ ìˆë‹¤. */
+        /* Shard Meta¸¦ º¯°æÇÑ TransactionÀÌ¹Ç·Î aSMN¿¡ ÇØ´çÇÏ´Â Internal Node Info¸¦ ¾òÀ» ¼ö ÀÖ´Ù. */
         sDataSMNForMetaInfo = aSMN;
     }
     else if ( getSMNForMetaNode() < aSMN )
@@ -845,7 +1023,7 @@ IDE_RC sdi::getInternalNodeInfo( smiTrans    * aTrans,
 
     if ( aTrans == NULL )
     {
-        IDE_TEST( sTrans.commit( &sDummySCN ) != IDE_SUCCESS );
+        IDE_TEST( sTrans.commit() != IDE_SUCCESS );
         sTransStage = 1;
 
         sTransStage = 0;
@@ -887,7 +1065,7 @@ IDE_RC sdi::getInternalNodeInfo( smiTrans    * aTrans,
             break;
     }
 
-    ideLog::log( IDE_SD_0, "[SHARD META : FAILURE] errorcode 0x%05"ID_XINT32_FMT" %s\n",
+    ideLog::log( IDE_SD_1, "[SHARD_META_ERROR] Failure. errorcode 0x%05"ID_XINT32_FMT" %s\n",
                            E_ERROR_CODE(ideGetErrorCode()),
                            ideGetErrorMsg(ideGetErrorCode()));
     return IDE_FAILURE;
@@ -959,7 +1137,7 @@ IDE_RC sdi::validateNodeNames( qcStatement  * aStatement,
           sNodeName != NULL;
           sNodeName = sNodeName->next )
     {
-        // length ê²€ì‚¬
+        // length °Ë»ç
         if ( ( sNodeName->namePos.size <= 0 ) ||
              ( sNodeName->namePos.size > SDI_NODE_NAME_MAX_SIZE ) )
         {
@@ -976,7 +1154,7 @@ IDE_RC sdi::validateNodeNames( qcStatement  * aStatement,
               sNodeName2 != NULL;
               sNodeName2 = sNodeName2->next )
         {
-            // duplicate ê²€ì‚¬
+            // duplicate °Ë»ç
             if ( QC_IS_NAME_CASELESS_MATCHED( sNodeName->namePos,
                                               sNodeName2->namePos ) == ID_TRUE )
             {
@@ -1015,34 +1193,141 @@ IDE_RC sdi::validateNodeNames( qcStatement  * aStatement,
 IDE_RC sdi::allocAndCopyRanges( qcStatement  * aStatement,
                                 sdiRangeInfo * aTo,
                                 sdiRangeInfo * aFrom )
-{
-    IDE_TEST( sda::allocAndCopyRanges( aStatement,
-                                       aTo,
-                                       aFrom )
-              != IDE_SUCCESS );
+{   
+    IDE_DASSERT( aTo   != NULL);
+
+    if ( aFrom != NULL )
+    {
+        if ( aFrom->mCount > 0 )
+        {
+            IDE_TEST_RAISE( aFrom->mRanges == NULL, ERR_NULL_SRC_RANGES );
+
+            if ( aFrom->mCount > aTo->mCount )
+            {
+                IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiRange) *
+                                                         aFrom->mCount,
+                                                         (void**) & aTo->mRanges )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                IDE_TEST_RAISE( aTo->mRanges == NULL, ERR_NULL_DEST_RANGES );
+            }
+
+            idlOS::memcpy( aTo->mRanges,
+                           aFrom->mRanges,
+                           ID_SIZEOF(sdiRange) * aFrom->mCount );
+        }
+        else
+        {
+            aTo->mRanges = NULL;
+        }
+
+        aTo->mCount = aFrom->mCount;
+    }
+    else
+    {
+        aTo->mCount = 0;
+        aTo->mRanges = NULL;
+    }
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_NULL_SRC_RANGES )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::allocAndCopyRanges",
+                                  "The range-of-source is null." ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_DEST_RANGES )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::allocAndCopyRanges",
+                                  "The range-of-destination is null." ) );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 }
 
-IDE_RC sdi::allocAndCopyValues( qcStatement   * aStatement,
-                                sdiValueInfo ** aTo,
-                                UShort        * aToCount,
-                                sdiValueInfo  * aFrom,
-                                UShort          aFromCount )
+IDE_RC sdi::allocAndCopyValues( qcStatement          * aStatement,
+                                sdiValueInfo *      ** aTo,
+                                UShort               * aToCount,
+                                sdiValueInfo        ** aFrom,
+                                UShort                 aFromCount )
 {
-    IDE_TEST( sda::allocAndCopyValues( aStatement,
-                                       aTo,
-                                       aToCount,
-                                       aFrom,
-                                       aFromCount )
-              != IDE_SUCCESS );
+    UInt                   i = 0;    
+    UInt                   sSize = 0;
+    idBool                 sNewArray = ID_FALSE;
+    sdiValueInfo        ** sValueInfoPtrArray = NULL;
+    sdiValueInfo         * sValueInfo = NULL;
+
+    IDE_DASSERT( aTo != NULL );
+
+    if ( aFromCount > 0 )
+    {
+        IDE_TEST_RAISE( aFrom == NULL, ERR_NULL_SRC_VALUE );
+
+        if ( aFromCount > *aToCount )
+        {
+            IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(sdiValueInfo*) *
+                                                     aFromCount,
+                                                     (void**)&sValueInfoPtrArray )
+                      != IDE_SUCCESS );
+            sNewArray = ID_TRUE;
+        }
+        else
+        {
+            IDE_TEST_RAISE( *aTo == NULL, ERR_NULL_DEST_VALUE );
+            sValueInfoPtrArray = *aTo;
+        }
+
+        for ( i = 0; i < aFromCount; i++ )
+        {
+            sSize = sda::calculateValueInfoSize( aFrom[i]->mDataValueType,
+                                                 &(aFrom[i]->mValue) );
+
+            if ( ( sSize <= ID_SIZEOF( sdiValueInfo ) ) &&
+                 ( sNewArray == ID_FALSE ) )
+            {
+                idlOS::memcpy( sValueInfoPtrArray[i],
+                               aFrom[i],
+                               ID_SIZEOF(sdiValueInfo) );
+            }
+            else
+            {
+                IDE_TEST( sda::allocAndCopyValue( aStatement,
+                                                  aFrom[i],
+                                                  &sValueInfo )
+                          != IDE_SUCCESS );
+
+                sValueInfoPtrArray[i] = sValueInfo;
+            }
+        }
+
+        *aTo = sValueInfoPtrArray;
+        *aToCount = aFromCount;
+    }
+    else
+    {
+        *aTo = NULL;
+        *aToCount = aFromCount;
+    }
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_NULL_SRC_VALUE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::allocAndCopyValues",
+                                  "The value-of-source is null." ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_DEST_VALUE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::allocAndCopyValues",
+                                  "The value-of-destination is null." ) );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -1050,32 +1335,64 @@ IDE_RC sdi::allocAndCopyValues( qcStatement   * aStatement,
 
 IDE_RC sdi::checkShardLinker( qcStatement * aStatement )
 {
-    ULong sSMN = ID_ULONG(0);
+    ULong       sSMN      = SDI_NULL_SMN;
+    ULong       sLastSMN  = SDI_NULL_SMN;
+    qciStmtType sStmtType = aStatement->myPlan->parseTree->stmtKind;
+
+    /* TASK-7219 Non-shard DML */
+    idBool      sIsPartialCoord = ID_FALSE;
 
     if ( ( qci::getStartupPhase() == QCI_STARTUP_SERVICE ) &&
          ( aStatement->session->mQPSpecific.mClientInfo == NULL ) )
     {
-        if ( sdi::isShardCoordinator( aStatement ) == ID_TRUE )
+        sIsPartialCoord = sdi::isPartialCoordinator( aStatement );
+        
+        if ( ( sdi::isShardCoordinator( aStatement ) == ID_TRUE ) ||
+             ( sIsPartialCoord == ID_TRUE ) )
         {
             // shardCoordinator using sessionSMN 
             sSMN = QCG_GET_SESSION_SHARD_META_NUMBER( aStatement );
         }
-        else // ( sdi::isRebuildCoordinator( aStatement ) == ID_TRUE )
+        else
         {
-            IDE_DASSERT( sdi::isRebuildCoordinator( aStatement ) == ID_TRUE );
+            /* PROJ-2745 rebuild coordinator ¾ø¾îÁ³´Ù. */
+            IDE_TEST_RAISE( sdi::getShardStatus() != 1, ERR_ABORT_SDI_SHARD_NOT_JOIN );
 
             // rebuildCoordinator using dataSMN
             sSMN = sdi::getSMNForDataNode();
         }
+        
+        sLastSMN = QCG_GET_LAST_SESSION_SHARD_META_NUMBER( aStatement );
 
-        if ( sSMN != ID_ULONG(0) )
+        if ( sSMN != SDI_NULL_SMN )
         {
-            IDE_TEST( initializeSession( aStatement->session,
-                                         QCG_GET_DATABASE_LINK_SESSION( aStatement ),
-                                         ( QC_SMI_STMT( aStatement ) )->getTrans(),
-                                         ID_FALSE,
-                                         sSMN )
-                      != IDE_SUCCESS );
+            // PROJ-2727
+            if (( sStmtType == QCI_STMT_SET_SESSION_PROPERTY ) ||
+                ( sStmtType == QCI_STMT_SET_SYSTEM_PROPERTY ))
+            {
+                IDE_TEST( makeShardSession( aStatement->session,
+                                            QCG_GET_DATABASE_LINK_SESSION( aStatement ),
+                                            NULL, // DCL not exist Trans
+                                            ID_FALSE,
+                                            sSMN,
+                                            sLastSMN,
+                                            SDI_REBUILD_SMN_PROPAGATE,
+                                            sIsPartialCoord )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                IDE_TEST( makeShardSession( aStatement->session,
+                                            QCG_GET_DATABASE_LINK_SESSION( aStatement ),
+                                            ( QC_SMI_STMT( aStatement ) )->getTrans(),
+                                            ID_FALSE,
+                                            sSMN,
+                                            sLastSMN,
+                                            SDI_REBUILD_SMN_PROPAGATE,
+                                            sIsPartialCoord )
+                          != IDE_SUCCESS );
+
+            }
         }
         else
         {
@@ -1086,6 +1403,11 @@ IDE_RC sdi::checkShardLinker( qcStatement * aStatement )
     {
         // Nothing to do.
     }
+    
+    // BUG-47765    
+    IDE_TEST( copyPropertyFlagToCoordPropertyFlag( aStatement->session,
+                                                   aStatement->session->mQPSpecific.mClientInfo )
+              != IDE_SUCCESS );
 
     IDE_TEST_RAISE( aStatement->session->mQPSpecific.mClientInfo == NULL,
                     ERR_SHARD_LINKER_NOT_INITIALIZED );
@@ -1095,6 +1417,142 @@ IDE_RC sdi::checkShardLinker( qcStatement * aStatement )
     IDE_EXCEPTION( ERR_SHARD_LINKER_NOT_INITIALIZED )
     {
         IDE_SET( ideSetErrorCode( sdERR_ABORT_SDI_SHARD_LINKER_NOT_INITIALIZED ) );
+    }
+    // R2HA BUG-48367
+    IDE_EXCEPTION( ERR_ABORT_SDI_SHARD_NOT_JOIN )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDI_SHARD_NOT_JOIN ) );
+    }
+    
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::checkShardLinkerWithoutSQL( qcStatement * aStatement, ULong aSMN, smiTrans * aTrans )
+{
+    ULong sLastSMN  = SDI_NULL_SMN;
+
+    if ( ( qci::getStartupPhase() == QCI_STARTUP_SERVICE ) &&
+         ( aStatement->session->mQPSpecific.mClientInfo == NULL ) )
+    {
+        IDE_TEST_RAISE( aSMN == SDI_NULL_SMN, ERR_SMN_ARG_ERR );
+
+        sLastSMN = QCG_GET_LAST_SESSION_SHARD_META_NUMBER( aStatement );
+
+        IDE_TEST( makeShardSession( aStatement->session,
+                                    QCG_GET_DATABASE_LINK_SESSION( aStatement ),
+                                    aTrans,
+                                    ID_FALSE,
+                                    aSMN,
+                                    sLastSMN,
+                                    SDI_REBUILD_SMN_PROPAGATE,
+                                    ID_FALSE /* aIsPartialCoord */ )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    IDE_TEST( copyPropertyFlagToCoordPropertyFlag( aStatement->session,
+                                                   aStatement->session->mQPSpecific.mClientInfo )
+              != IDE_SUCCESS );
+    IDE_TEST_RAISE( aStatement->session->mQPSpecific.mClientInfo == NULL,
+                    ERR_SHARD_LINKER_NOT_INITIALIZED );
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_SHARD_LINKER_NOT_INITIALIZED )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDI_SHARD_LINKER_NOT_INITIALIZED ) );
+    }
+    IDE_EXCEPTION( ERR_SMN_ARG_ERR )
+    {
+        IDE_SET(ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,"sdi::checkShardLinkerInternal", "aSMN == 0" ));
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::checkShardLinkerWithNodeList( qcStatement * aStatement, 
+                                          ULong         aSMN, 
+                                          smiTrans    * aTrans, 
+                                          iduList     * aNodeList )
+{
+    if ( qci::getStartupPhase() == QCI_STARTUP_SERVICE )
+    {
+        IDE_TEST_RAISE( aSMN == ID_ULONG(0), ERR_SMN_ARG_ERR );
+
+        if ( aStatement->session->mQPSpecific.mClientInfo == NULL )
+        {
+            if( SDU_SHARD_ZOOKEEPER_TEST == 1 )
+            {                    
+                IDE_TEST( initializeSessionWithNodeList( aStatement->session,
+                                                         QCG_GET_DATABASE_LINK_SESSION( aStatement ),
+                                                         aTrans,
+                                                         ID_FALSE,
+                                                         aSMN,
+                                                         aNodeList )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                IDE_TEST( initializeSession( aStatement->session,
+                                             QCG_GET_DATABASE_LINK_SESSION( aStatement ),
+                                             aTrans,
+                                             ID_FALSE,
+                                             aSMN )
+                          != IDE_SUCCESS );
+            }
+            
+        }
+        else
+        {
+            finalizeSession( aStatement->session );
+            
+            if( SDU_SHARD_ZOOKEEPER_TEST == 1 )
+            {
+                    
+                IDE_TEST( initializeSessionWithNodeList( aStatement->session,
+                                                         QCG_GET_DATABASE_LINK_SESSION( aStatement ),
+                                                         aTrans,
+                                                         ID_FALSE,
+                                                         aSMN,
+                                                         aNodeList )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                IDE_TEST( initializeSession( aStatement->session,
+                                             QCG_GET_DATABASE_LINK_SESSION( aStatement ),
+                                             aTrans,
+                                             ID_FALSE,
+                                             aSMN )
+                          != IDE_SUCCESS );
+            }                
+        }
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    IDE_TEST( copyPropertyFlagToCoordPropertyFlag( aStatement->session,
+                                                   aStatement->session->mQPSpecific.mClientInfo )
+              != IDE_SUCCESS );
+
+    IDE_TEST_RAISE( aStatement->session->mQPSpecific.mClientInfo == NULL,
+                    ERR_SHARD_LINKER_NOT_INITIALIZED );
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_SHARD_LINKER_NOT_INITIALIZED )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDI_SHARD_LINKER_NOT_INITIALIZED ) );
+    }
+    IDE_EXCEPTION( ERR_SMN_ARG_ERR )
+    {
+        IDE_SET(ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,"sdi::checkShardLinkerInternal", "aSMN == 0" ));
     }
     IDE_EXCEPTION_END;
 
@@ -1129,9 +1587,11 @@ idBool sdi::findBindParameter( sdiAnalyzeInfo * aAnalyzeInfo )
     idBool  sFound = ID_FALSE;
     UInt    i;
 
-    for ( i = 0; i < aAnalyzeInfo->mValueCount; i++ )
+    for ( i = 0; i < aAnalyzeInfo->mValuePtrCount; i++ )
     {
-        if ( aAnalyzeInfo->mValue[i].mType == 0 )
+        if ( ( aAnalyzeInfo->mValuePtrArray[i]->mType == 0 ) ||
+             ( aAnalyzeInfo->mValuePtrArray[i]->mType == 2 ) /* TASK-7219 Transformed out ref column bind */
+             )
         {
             // a bind parameter exists
             sFound = ID_TRUE;
@@ -1145,9 +1605,11 @@ idBool sdi::findBindParameter( sdiAnalyzeInfo * aAnalyzeInfo )
 
     if ( aAnalyzeInfo->mSubKeyExists == ID_TRUE )
     {
-        for ( i = 0; i < aAnalyzeInfo->mSubValueCount; i++ )
+        for ( i = 0; i < aAnalyzeInfo->mSubValuePtrCount; i++ )
         {
-            if ( aAnalyzeInfo->mSubValue[i].mType == 0 )
+            if ( ( aAnalyzeInfo->mSubValuePtrArray[i]->mType == 0 ) ||
+                 ( aAnalyzeInfo->mSubValuePtrArray[i]->mType == 2 ) /* TASK-7219 Transformed out ref column bind */
+                 )
             {
                 // a bind parameter exists
                 sFound = ID_TRUE;
@@ -1178,8 +1640,134 @@ IDE_RC sdi::getProcedureInfo( qcStatement      * aStatement,
                               UInt               aUserID,
                               qcNamePosition     aUserName,
                               qcNamePosition     aProcName,
-                              qsProcParseTree  * aProcPlanTree,
                               sdiObjectInfo   ** aShardObjInfo )
+{
+    qsOID   sProcOID;
+    SChar   sProcName[QCI_MAX_OBJECT_NAME_LEN +1] = {0,};
+    qsxProcInfo     * sProcInfo = NULL;
+
+    QC_STR_COPY( sProcName, aProcName );
+    IDE_TEST( qcmProc::getProcExistWithEmptyByNamePtr( aStatement,
+                                                       aUserID,
+                                                       sProcName,
+                                                       aProcName.size,
+                                                       &sProcOID )
+              != IDE_SUCCESS );
+    IDE_TEST_RAISE( sProcOID == QS_EMPTY_OID, ERR_NOT_EXIST_OBJECT );
+
+    IDE_TEST( qsxProc::getProcInfo( sProcOID, &sProcInfo ) != IDE_SUCCESS );
+    IDE_TEST( sdi::getProcedureInfoWithPlanTree( aStatement,
+                                                 aUserID,
+                                                 aUserName,
+                                                 aProcName,
+                                                 sProcInfo->planTree,
+                                                 aShardObjInfo ) != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+    IDE_EXCEPTION( ERR_NOT_EXIST_OBJECT )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDI_NOT_EXIST_PROC_SQLTEXT,
+                                  sProcName ) );
+    }
+    IDE_EXCEPTION_END;
+    return IDE_FAILURE;
+}
+
+// TASK-7244 Set shard split method to PSM info
+IDE_RC sdi::getProcedureShardSplitMethod( qcStatement    * aStatement,
+                                          UInt             aUserID,
+                                          qcNamePosition   aUserName,
+                                          qcNamePosition   aProcName,
+                                          sdiSplitMethod * aShardSplitMethod )
+{
+    smiStatement      sSmiStmt;
+    idBool            sIsBeginStmt = ID_FALSE;
+    SChar             sUserName[QC_MAX_OBJECT_NAME_LEN + 1];
+    SChar             sProcName[QC_MAX_OBJECT_NAME_LEN + 1];
+    sdiTableInfo      sShardTableInfo;
+    idBool            sIsTableFound = ID_FALSE;
+
+    sdiGlobalMetaInfo   sMetaNodeInfo = { ID_ULONG(0) };
+
+    if ( ( ( qciMisc::isStmtDML( aStatement->myPlan->parseTree->stmtKind ) == ID_TRUE ) ||
+           ( qciMisc::isStmtSP( aStatement->myPlan->parseTree->stmtKind ) == ID_TRUE )  ||
+           ( qciMisc::isStmtDDL( aStatement->myPlan->parseTree->stmtKind ) == ID_TRUE ) ) &&
+         ( aUserID != QC_SYSTEM_USER_ID ) &&
+         ( aUserID != getShardUserID() ) )
+    {
+        IDE_DASSERT( QC_IS_NULL_NAME( aProcName ) == ID_FALSE );
+
+        if ( QC_IS_NULL_NAME( aUserName ) == ID_TRUE )
+        {
+            IDE_TEST(qciMisc::getUserName(aStatement, aUserID, sUserName) != IDE_SUCCESS);
+            QC_STR_COPY( sProcName, aProcName );
+        }
+        else
+        {
+            QC_STR_COPY( sUserName, aUserName );
+            QC_STR_COPY( sProcName, aProcName );
+        }
+
+        IDE_TEST( sdm::getGlobalMetaInfo( &sMetaNodeInfo ) != IDE_SUCCESS );
+
+        // º°µµÀÇ stmt¸¦ ¿­¾î Ç×»ó ÃÖ½ÅÀÇ view¸¦ º»´Ù.
+        // (shard meta´Â ÀÏ¹İ memory tableÀÌ¹Ç·Î normal·Î ¿­µÇ,
+        // »óÀ§ stmt°¡ untouchableÀÏ ¼ö ÀÖÀ¸¹Ç·Î self¸¦ Ãß°¡ÇÑ´Ù.)
+        IDE_TEST( sSmiStmt.begin( aStatement->mStatistics,
+                                  QC_SMI_STMT( aStatement ),
+                                  SMI_STATEMENT_NORMAL |
+                                  SMI_STATEMENT_SELF_TRUE |
+                                  SMI_STATEMENT_ALL_CURSOR )
+                  != IDE_SUCCESS );
+        sIsBeginStmt = ID_TRUE;
+
+        if ( sdm::getTableInfo( &sSmiStmt,
+                                sUserName,
+                                sProcName,
+                                sMetaNodeInfo.mShardMetaNumber,
+                                &sShardTableInfo,
+                                &sIsTableFound ) == IDE_SUCCESS )
+        {
+            if ( sIsTableFound == ID_TRUE )
+            {
+                *aShardSplitMethod = sShardTableInfo.mSplitMethod;
+            }
+            else
+            {
+                *aShardSplitMethod = SDI_SPLIT_NONE;
+            }
+        }
+        else
+        {
+            *aShardSplitMethod = SDI_SPLIT_NONE;
+        }
+
+        sIsBeginStmt = ID_FALSE;
+        IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    }
+    else
+    {
+        *aShardSplitMethod = SDI_SPLIT_NONE;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    if ( sIsBeginStmt == ID_TRUE )
+    {
+        (void)sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+    }
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::getProcedureInfoWithPlanTree( qcStatement      * aStatement,
+                                          UInt               aUserID,
+                                          qcNamePosition     aUserName,
+                                          qcNamePosition     aProcName,
+                                          qsProcParseTree  * aProcPlanTree,
+                                          sdiObjectInfo   ** aShardObjInfo )
 {
 /***********************************************************************
  *
@@ -1209,11 +1797,12 @@ IDE_RC sdi::getProcedureInfo( qcStatement      * aStatement,
      * sSMN[0] : sessionSMN
      * sSMN[1] : dataSMN
      */
-    ULong  sSMN[2] = { ID_ULONG(0), ID_ULONG(0) };
-    ULong  sSMNForShardObj = ID_ULONG(0);
+    ULong  sSMN[2] = { SDI_NULL_SMN, SDI_NULL_SMN };
+    ULong  sSMNForShardObj = SDI_NULL_SMN;
 
     if ( ( ( qciMisc::isStmtDML( aStatement->myPlan->parseTree->stmtKind ) == ID_TRUE ) ||
-           ( qciMisc::isStmtSP( aStatement->myPlan->parseTree->stmtKind ) == ID_TRUE ) )  &&
+           ( qciMisc::isStmtSP( aStatement->myPlan->parseTree->stmtKind ) == ID_TRUE )  ||
+           ( qciMisc::isStmtDDL( aStatement->myPlan->parseTree->stmtKind ) == ID_TRUE ) ) &&
          ( aUserID != QC_SYSTEM_USER_ID ) &&
          ( aUserID != getShardUserID() ) &&
          ( *aShardObjInfo == NULL ) )
@@ -1239,21 +1828,21 @@ IDE_RC sdi::getProcedureInfo( qcStatement      * aStatement,
         {
             sSMN[0] = QCG_GET_SESSION_SHARD_META_NUMBER( aStatement );
 
-            if ( sSMN[0] != ID_ULONG(0) )
+            if ( sSMN[0] != SDI_NULL_SMN )
             {
                 IDE_TEST( waitAndSetSMNForMetaNode( aStatement->mStatistics,
                                                     QC_SMI_STMT( aStatement ),
                                                     ( SMI_STATEMENT_NORMAL |
                                                       SMI_STATEMENT_SELF_TRUE |
                                                       SMI_STATEMENT_ALL_CURSOR ),
-                                                    ID_ULONG(0),
+                                                    SDI_NULL_SMN,
                                                     &sSMN[1] )
                           != IDE_SUCCESS );
             }
             else
             {
                 // sSMNCount = 0;
-                // Shardingì„ ì“°ì§€ ì•ŠìŒ.
+                // ShardingÀ» ¾²Áö ¾ÊÀ½.
                 // Nothing to do.
             }
         }
@@ -1263,9 +1852,9 @@ IDE_RC sdi::getProcedureInfo( qcStatement      * aStatement,
             // Nothing to do.
         }
 
-        // ë³„ë„ì˜ stmtë¥¼ ì—´ì–´ í•­ìƒ ìµœì‹ ì˜ viewë¥¼ ë³¸ë‹¤.
-        // (shard metaëŠ” ì¼ë°˜ memory tableì´ë¯€ë¡œ normalë¡œ ì—´ë˜,
-        // ìƒìœ„ stmtê°€ untouchableì¼ ìˆ˜ ìˆìœ¼ë¯€ë¡œ selfë¥¼ ì¶”ê°€í•œë‹¤.)
+        // º°µµÀÇ stmt¸¦ ¿­¾î Ç×»ó ÃÖ½ÅÀÇ view¸¦ º»´Ù.
+        // (shard meta´Â ÀÏ¹İ memory tableÀÌ¹Ç·Î normal·Î ¿­µÇ,
+        // »óÀ§ stmt°¡ untouchableÀÏ ¼ö ÀÖÀ¸¹Ç·Î self¸¦ Ãß°¡ÇÑ´Ù.)
         IDE_TEST( sSmiStmt.begin( aStatement->mStatistics,
                                   QC_SMI_STMT( aStatement ),
                                   SMI_STATEMENT_NORMAL |
@@ -1274,7 +1863,7 @@ IDE_RC sdi::getProcedureInfo( qcStatement      * aStatement,
                   != IDE_SUCCESS );
         sIsBeginStmt = ID_TRUE;
 
-        // SessionSMN ~ dataSMN ì‚¬ì´ì˜ shardObjInfoë¥¼ ìƒì„±í•œë‹¤.
+        // SessionSMN ~ dataSMN »çÀÌÀÇ shardObjInfo¸¦ »ı¼ºÇÑ´Ù.
         for ( sSMNForShardObj = sSMN[0]; sSMNForShardObj <= sSMN[1]; sSMNForShardObj++ )
         {
             if ( sdm::getTableInfo( &sSmiStmt,
@@ -1289,12 +1878,12 @@ IDE_RC sdi::getProcedureInfo( qcStatement      * aStatement,
                     if ( ( sShardTableInfo.mObjectType == 'P' ) &&
                          ( sShardTableInfo.mSplitMethod != SDI_SPLIT_NONE ) )
                     {
-                        IDE_TEST_RAISE( ( sShardTableInfo.mSplitMethod != SDI_SPLIT_CLONE ) &&
-                                        ( sShardTableInfo.mSplitMethod != SDI_SPLIT_SOLO ) &&
+                        IDE_TEST_RAISE( ( sdi::getSplitType( sShardTableInfo.mSplitMethod )
+                                          == SDI_SPLIT_TYPE_DIST  ) &&
                                         ( sShardTableInfo.mKeyColumnName[0] == '\0' ),
                                         ERR_NO_SHARD_KEY_COLUMN );
 
-                        // keyFlagsë¥¼ ì¶”ê°€ìƒì„±í•œë‹¤.
+                        // keyFlags¸¦ Ãß°¡»ı¼ºÇÑ´Ù.
                         IDE_TEST( QC_QMP_MEM(aStatement)->alloc(
                                       ID_SIZEOF( sdiObjectInfo ) + aProcPlanTree->paraDeclCount,
                                       (void**) & sShardObjInfo )
@@ -1311,10 +1900,9 @@ IDE_RC sdi::getProcedureInfo( qcStatement      * aStatement,
                         // set SMN
                         sShardObjInfo->mSMN = sSMNForShardObj;
 
-                        if ( ( sShardTableInfo.mSplitMethod != SDI_SPLIT_CLONE ) &&
-                             ( sShardTableInfo.mSplitMethod != SDI_SPLIT_SOLO ) )
+                        if ( getSplitType( sShardTableInfo.mSplitMethod ) == SDI_SPLIT_TYPE_DIST )
                         {
-                            // Hash, Range or List-based sharding ì˜ shard key columnì„ ì°¾ëŠ”ë‹¤.
+                            // Hash, Range or List-based sharding ÀÇ shard key columnÀ» Ã£´Â´Ù.
                             for ( sParaDecls = aProcPlanTree->paraDecls, i = 0;
                                   sParaDecls != NULL;
                                   sParaDecls = sParaDecls->next, i++ )
@@ -1412,15 +2000,15 @@ IDE_RC sdi::getProcedureInfo( qcStatement      * aStatement,
                                                      &sSmiStmt,
                                                      sShardObjInfo->mSMN,
                                                      &(sShardObjInfo->mTableInfo),
-                                                     &(sShardObjInfo->mRangeInfo) )
+                                                     &(sShardObjInfo->mRangeInfo),
+                                                     ID_TRUE )
                                   != IDE_SUCCESS );
 
-                        if ( ( sShardObjInfo->mSMN == sSMN[0] ) ||
-                             ( sShardObjInfo->mSMN == sSMN[1] ) )
+                        if ( sShardObjInfo->mSMN == sSMN[1] )
                         {
-                            // default nodeë„ ì—†ê³  range ì •ë³´ë„ ì—†ë‹¤ë©´ ì—ëŸ¬
+                            // default nodeµµ ¾ø°í range Á¤º¸µµ ¾ø´Ù¸é ¿¡·¯
                             IDE_TEST_RAISE(
-                                ( sShardObjInfo->mTableInfo.mDefaultNodeId == ID_UINT_MAX ) &&
+                                ( sShardObjInfo->mTableInfo.mDefaultNodeId == SDI_NODE_NULL_ID ) &&
                                 ( sShardObjInfo->mRangeInfo.mCount == 0 ),
                                 ERR_INCOMPLETE_RANGE_SET );
                         }
@@ -1506,6 +2094,52 @@ IDE_RC sdi::getTableInfo( qcStatement    * aStatement,
                           qcmTableInfo   * aTableInfo,
                           sdiObjectInfo ** aShardObjInfo )
 {
+    IDE_TEST( sdi::getTableInfo( aStatement,
+                                 aTableInfo,
+                                 aShardObjInfo, 
+                                 ID_TRUE )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::validateObjectSMN( qcStatement    * aStatement,
+                               sdiObjectInfo * aShardObjInfo )
+{
+    ULong sDataSMN = SDI_NULL_SMN;
+
+    IDE_TEST( waitAndSetSMNForMetaNode( aStatement->mStatistics,
+                                        QC_SMI_STMT( aStatement ),
+                                        ( SMI_STATEMENT_NORMAL |
+                                        SMI_STATEMENT_SELF_TRUE |
+                                        SMI_STATEMENT_ALL_CURSOR ),
+                                        SDI_NULL_SMN,
+                                        &sDataSMN )
+            != IDE_SUCCESS );
+    IDE_TEST_RAISE(sDataSMN != aShardObjInfo->mSMN, ERR_SMN_IS_INVALID);
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_SMN_IS_INVALID )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::validateObjectSMN",
+                                  "ERR_SMN_IS_INVALID " ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::getTableInfo( qcStatement    * aStatement,
+                          qcmTableInfo   * aTableInfo,
+                          sdiObjectInfo ** aShardObjInfo,
+                          idBool           aIsRangeMerge )
+{
 /***********************************************************************
  *
  * Description : PROJ-2598 Shard Meta
@@ -1531,12 +2165,12 @@ IDE_RC sdi::getTableInfo( qcStatement    * aStatement,
      * sSMN[0] : sessionSMN
      * sSMN[1] : dataSMN
      */
-    ULong  sSMN[2] = { ID_ULONG(0), ID_ULONG(0) };
-    ULong  sSMNForShardObj = ID_ULONG(0);
+    ULong  sSMN[2] = { SDI_NULL_SMN, SDI_NULL_SMN };
+    ULong  sSMNForShardObj = SDI_NULL_SMN;
 
     if ( ( ( qciMisc::isStmtDML( aStatement->myPlan->parseTree->stmtKind ) == ID_TRUE ) ||
-           ( qciMisc::isStmtSP( aStatement->myPlan->parseTree->stmtKind ) == ID_TRUE ) )  &&
-         ( aTableInfo->tableOwnerID != QC_SYSTEM_USER_ID ) &&
+           ( qciMisc::isStmtSP( aStatement->myPlan->parseTree->stmtKind ) == ID_TRUE ) ||
+           ( qciMisc::isStmtDDL( aStatement->myPlan->parseTree->stmtKind ) == ID_TRUE ))  &&
          ( aTableInfo->tableOwnerID != getShardUserID() ) &&
          ( aTableInfo->tableType == QCM_USER_TABLE ) &&
          ( *aShardObjInfo == NULL ) )
@@ -1547,21 +2181,21 @@ IDE_RC sdi::getTableInfo( qcStatement    * aStatement,
         {
             sSMN[0] = QCG_GET_SESSION_SHARD_META_NUMBER( aStatement );
 
-            if ( sSMN[0] != ID_ULONG(0) )
+            if ( sSMN[0] != SDI_NULL_SMN )
             {
                 IDE_TEST( waitAndSetSMNForMetaNode( aStatement->mStatistics,
                                                     QC_SMI_STMT( aStatement ),
                                                     ( SMI_STATEMENT_NORMAL |
                                                       SMI_STATEMENT_SELF_TRUE |
                                                       SMI_STATEMENT_ALL_CURSOR ),
-                                                    ID_ULONG(0),
+                                                    SDI_NULL_SMN,
                                                     &sSMN[1] )
                           != IDE_SUCCESS );
             }
             else
             {
                 // sSMNCount = 0;
-                // Shardingì„ ì“°ì§€ ì•ŠìŒ.
+                // ShardingÀ» ¾²Áö ¾ÊÀ½.
                 // Nothing to do.
             }
         }
@@ -1571,9 +2205,9 @@ IDE_RC sdi::getTableInfo( qcStatement    * aStatement,
             // sMetaNodeInfo = { ID_ULONG(0) };
         }
         
-        // ë³„ë„ì˜ stmtë¥¼ ì—´ì–´ í•­ìƒ ìµœì‹ ì˜ viewë¥¼ ë³¸ë‹¤.
-        // (shard metaëŠ” ì¼ë°˜ memory tableì´ë¯€ë¡œ normalë¡œ ì—´ë˜,
-        // ìƒìœ„ stmtê°€ untouchableì¼ ìˆ˜ ìˆìœ¼ë¯€ë¡œ selfë¥¼ ì¶”ê°€í•œë‹¤.)
+        // º°µµÀÇ stmt¸¦ ¿­¾î Ç×»ó ÃÖ½ÅÀÇ view¸¦ º»´Ù.
+        // (shard meta´Â ÀÏ¹İ memory tableÀÌ¹Ç·Î normal·Î ¿­µÇ,
+        // »óÀ§ stmt°¡ untouchableÀÏ ¼ö ÀÖÀ¸¹Ç·Î self¸¦ Ãß°¡ÇÑ´Ù.)
         IDE_TEST( sSmiStmt.begin( aStatement->mStatistics,
                                   QC_SMI_STMT( aStatement ),
                                   SMI_STATEMENT_NORMAL |
@@ -1582,7 +2216,7 @@ IDE_RC sdi::getTableInfo( qcStatement    * aStatement,
                   != IDE_SUCCESS );
         sIsBeginStmt = ID_TRUE;
 
-        // SessionSMN ~ dataSMN ì‚¬ì´ì˜ shardObjInfoë¥¼ ìƒì„±í•œë‹¤.
+        // SessionSMN ~ dataSMN »çÀÌÀÇ shardObjInfo¸¦ »ı¼ºÇÑ´Ù.
         for ( sSMNForShardObj = sSMN[0]; sSMNForShardObj <= sSMN[1]; sSMNForShardObj++ )
         {
             if ( sdm::getTableInfo( &sSmiStmt,
@@ -1597,12 +2231,12 @@ IDE_RC sdi::getTableInfo( qcStatement    * aStatement,
                     if ( ( sShardTableInfo.mObjectType == 'T' ) &&
                          ( sShardTableInfo.mSplitMethod != SDI_SPLIT_NONE ) )
                     {
-                        IDE_TEST_RAISE( ( sShardTableInfo.mSplitMethod != SDI_SPLIT_CLONE ) &&
-                                        ( sShardTableInfo.mSplitMethod != SDI_SPLIT_SOLO ) &&
+                        IDE_TEST_RAISE( ( getSplitType( sShardTableInfo.mSplitMethod )
+                                          == SDI_SPLIT_TYPE_DIST ) &&
                                         ( sShardTableInfo.mKeyColumnName[0] == '\0' ),
                                         ERR_NO_SHARD_KEY_COLUMN );
 
-                        // keyFlagsë¥¼ ì¶”ê°€ìƒì„±í•œë‹¤.
+                        // keyFlags¸¦ Ãß°¡»ı¼ºÇÑ´Ù.
                         IDE_TEST( QC_QMP_MEM(aStatement)->alloc(
                                       ID_SIZEOF( sdiObjectInfo ) + aTableInfo->columnCount,
                                       (void**) & sShardObjInfo )
@@ -1619,10 +2253,9 @@ IDE_RC sdi::getTableInfo( qcStatement    * aStatement,
                         // set SMN
                         sShardObjInfo->mSMN = sSMNForShardObj;
 
-                        if ( ( sShardTableInfo.mSplitMethod != SDI_SPLIT_CLONE ) &&
-                             ( sShardTableInfo.mSplitMethod != SDI_SPLIT_SOLO ) )
+                        if ( getSplitType( sShardTableInfo.mSplitMethod ) == SDI_SPLIT_TYPE_DIST )
                         {
-                            // Hash, Range or List-based sharding ì˜ shard key columnì„ ì°¾ëŠ”ë‹¤.
+                            // Hash, Range or List-based sharding ÀÇ shard key columnÀ» Ã£´Â´Ù.
                             for ( i = 0; i < aTableInfo->columnCount; i++ )
                             {
                                 if ( idlOS::strMatch( aTableInfo->columns[i].name,
@@ -1708,15 +2341,15 @@ IDE_RC sdi::getTableInfo( qcStatement    * aStatement,
                                                      &sSmiStmt,
                                                      sShardObjInfo->mSMN,
                                                      &(sShardObjInfo->mTableInfo),
-                                                     &(sShardObjInfo->mRangeInfo) )
+                                                     &(sShardObjInfo->mRangeInfo),
+                                                     aIsRangeMerge )
                                   != IDE_SUCCESS );
 
-                        if ( ( sShardObjInfo->mSMN == sSMN[0] ) ||
-                             ( sShardObjInfo->mSMN == sSMN[1] ) )
+                        if ( sShardObjInfo->mSMN == sSMN[1] )
                         {
-                            // default nodeë„ ì—†ê³  range ì •ë³´ë„ ì—†ë‹¤ë©´ ì—ëŸ¬
+                            // default nodeµµ ¾ø°í range Á¤º¸µµ ¾ø´Ù¸é ¿¡·¯
                             IDE_TEST_RAISE(
-                                ( sShardObjInfo->mTableInfo.mDefaultNodeId == ID_UINT_MAX ) &&
+                                ( sShardObjInfo->mTableInfo.mDefaultNodeId == SDI_NODE_NULL_ID ) &&
                                 ( sShardObjInfo->mRangeInfo.mCount == 0 ),
                                 ERR_INCOMPLETE_RANGE_SET );
                         }
@@ -1809,6 +2442,85 @@ void sdi::finiOdbcLibrary()
     sdl::initOdbcLibrary();
 }
 
+IDE_RC sdi::allocLinkerParam( sdiClientInfo  * aClientInfo,
+                              sdiConnectInfo * aConnectInfo )
+{
+    UShort           i;
+    sdiLinkerParam * sLinkerParam = NULL;;
+
+    IDE_DASSERT( SDI_LINKER_PARAM_IS_USED( aConnectInfo ) == ID_FALSE );
+    IDE_TEST_RAISE( SDI_LINKER_PARAM_IS_USED( aConnectInfo ) == ID_TRUE,
+                    ErrAlreadyAllocated );
+
+    aConnectInfo->mLinkerParam = NULL;
+
+    for ( i = 0; i < SDI_NODE_MAX_COUNT; ++i )
+    {
+        sLinkerParam = &aClientInfo->mLinkerParamBuffer[i];
+
+        if ( sLinkerParam->mUsed == SDI_LINKER_PARAM_NOT_USED )
+        {
+            /* Found unused. */
+            sLinkerParam->mUsed = SDI_LINKER_PARAM_USED;
+           
+            aConnectInfo->mLinkerParam = sLinkerParam;
+            break;
+        }
+    }
+
+    IDE_TEST_RAISE( aConnectInfo->mLinkerParam == NULL,
+                    ErrAllocFail );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ErrAlreadyAllocated )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::allocLinkerParam",
+                                  "already allocated linker-param" ) );
+    }
+    IDE_EXCEPTION( ErrAllocFail )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::allocLinkerParam",
+                                  "fail to alloc linker-param" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+void sdi::freeLinkerParam( sdiConnectInfo * aConnectInfo )
+{
+    sdiLinkerParam * sLinkerParam = NULL;
+
+    IDE_DASSERT( SDI_LINKER_PARAM_IS_USED( aConnectInfo ) == ID_TRUE );
+
+    sLinkerParam = aConnectInfo->mLinkerParam;
+
+    if ( sLinkerParam != NULL )
+    {
+        aConnectInfo->mLinkerParam = NULL;
+
+        idlOS::memset( &sLinkerParam->param, 0, ID_SIZEOF(sLinkerParam->param) );
+
+        sLinkerParam->mUsed = SDI_LINKER_PARAM_NOT_USED;
+    }
+}
+
+void sdi::setLinkerParam( sdiConnectInfo * aConnectInfo )
+{
+    sdiLinkerParam * sLinkerParam = NULL;
+
+    if ( SDI_LINKER_PARAM_IS_USED( aConnectInfo ) == ID_TRUE )
+    {
+        sLinkerParam = aConnectInfo->mLinkerParam;
+
+        sLinkerParam->param.mMessageCallback.mFunction = sdi::printMessage;
+        sLinkerParam->param.mMessageCallback.mArgument = aConnectInfo;
+    }
+}
+
 IDE_RC sdi::initializeSession( qcSession * aSession,
                                void      * aDkiSession,
                                smiTrans  * aTrans,
@@ -1824,38 +2536,47 @@ IDE_RC sdi::initializeSession( qcSession * aSession,
  ***********************************************************************/
 
     sdiNodeInfo       sNodeInfo;
-    sdiNodeInfo       sNodeInfo4BeforeSMN;
     sdiClientInfo   * sClientInfo       = NULL;
     sdiConnectInfo  * sConnectInfo      = NULL;
     sdiNode         * sDataNode         = NULL;
     static SChar      sNullName[1]      = { '\0' };
+    SChar           * sSessionNodeName  = NULL;
     SChar           * sUserName         = NULL;
     static SChar      sNullPassword[1]  = { '\0' };
     SChar           * sUserPassword     = NULL;
     UInt              sPasswordLen      = 0;
     sdiShardPin       sShardPin         = SDI_SHARD_PIN_INVALID;
-    UInt              sDBLinkGTXLevel   = 0;
     UInt              sIsShardClient    = ID_FALSE;
     idBool            sIsUserAutoCommit = ID_TRUE;
     idBool            sIsMetaAutoCommit = ID_TRUE;
     UChar             sPlanAttr         = (UChar)ID_FALSE;
     UShort            i                 = 0;
+    sdiCoordinatorType sCoordinatorType = SDI_COORDINATOR_SHARD;
+    UInt              sGTXLevel         = 0;
+    idBool            sIsGTx            = ID_FALSE;
+    UInt              sState            = 0;
+    sdiInternalOperation sInternalLocalOperation = SDI_INTERNAL_OP_NOT;
 
     IDE_DASSERT( aSession->mQPSpecific.mClientInfo == NULL );
 
     if ( aSession->mMmSession != NULL )
     {
+        sSessionNodeName  = qci::mSessionCallback.mGetShardNodeName( aSession->mMmSession );
         sUserName         = qci::mSessionCallback.mGetUserName( aSession->mMmSession );
         sUserPassword     = qci::mSessionCallback.mGetUserPassword( aSession->mMmSession );
-        sDBLinkGTXLevel   = qci::mSessionCallback.mGetDBLinkGTXLevel( aSession->mMmSession );
         sShardPin         = qci::mSessionCallback.mGetShardPIN( aSession->mMmSession );
         sIsShardClient    = qci::mSessionCallback.mIsShardClient( aSession->mMmSession );
         sPlanAttr         = qci::mSessionCallback.mGetExplainPlan( aSession->mMmSession );
         sIsUserAutoCommit = qci::mSessionCallback.mIsAutoCommit( aSession->mMmSession );
         sIsMetaAutoCommit = sIsUserAutoCommit;
+        sGTXLevel         = qci::mSessionCallback.mGetGTXLevel( aSession->mMmSession );
+        sIsGTx            = qci::mSessionCallback.mIsGTx( aSession->mMmSession );
+        sInternalLocalOperation = (sdiInternalOperation)
+            qci::mSessionCallback.mGetShardInternalLocalOperation( aSession->mMmSession );
     }
     else
     {
+        sSessionNodeName  = sNullName;
         sUserName         = sNullName;
         sUserPassword     = sNullPassword;
         sPlanAttr         = (UChar)ID_FALSE;
@@ -1872,53 +2593,76 @@ IDE_RC sdi::initializeSession( qcSession * aSession,
                                    aConnectSMN )
               != IDE_SUCCESS );
 
-    if ( aIsShardMetaChanged == ID_TRUE )
+    if ( sSessionNodeName[0] != '\0' )
     {
-        // Get nodeInfo for oldSMN
-        IDE_TEST( getInternalNodeInfo( aTrans,
-                                       &sNodeInfo4BeforeSMN,
-                                       ID_FALSE,
-                                       aConnectSMN - 1 )
-                  != IDE_SUCCESS );
-
-        // Make nodeInfo for oldSMN union newSMN
-        IDE_TEST( unionNodeInfo( &sNodeInfo4BeforeSMN,
-                                 &sNodeInfo )
-                  != IDE_SUCCESS );
-    }
-    else
-    {
-        /* Nothing to do. */
+        sCoordinatorType = SDI_COORDINATOR_RESHARD;
     }
 
     if ( sNodeInfo.mCount != 0 )
     {
         IDE_TEST( iduMemMgr::calloc( IDU_MEM_QSN,  // BUGBUG check memory
                                      1,
-                                     ID_SIZEOF(sdiClientInfo) +
-                                     ID_SIZEOF(sdiConnectInfo) * sNodeInfo.mCount,
+                                     ID_SIZEOF(sdiClientInfo),
                                      (void **)&sClientInfo )
                   != IDE_SUCCESS );
 
-        /* BUG-45967 Data Nodeì˜ Shard Session ì •ë¦¬ */
+        sClientInfo->mTargetShardMetaNumber = aConnectSMN;
+
+        /* BUG-45967 Data NodeÀÇ Shard Session Á¤¸® */
         sClientInfo->mCount         = sNodeInfo.mCount;
 
-        /* BUG-46100 Session SMN Update */
-        sClientInfo->mNeedToDisconnect = ID_FALSE;
+        sClientInfo->mShardCoordFixCtrlCtx.mSession = aSession->mMmSession;
+        sClientInfo->mShardCoordFixCtrlCtx.mCount   = 0;
+        sClientInfo->mShardCoordFixCtrlCtx.mFunc    = shardCoordFixCtrlCallback;
+
+        sClientInfo->mTransactionLevel = sGTXLevel;
+
+        /* PROJ-2733-DistTxInfo */
+        initDistTxInfo( sClientInfo );
+
+        if ( sCoordinatorType == SDI_COORDINATOR_RESHARD )
+        {
+            sClientInfo->mGCTxInfo.mSessionTypeString = (UChar *)"RESHARD-COORD";
+        }
+        else
+        {
+            sClientInfo->mGCTxInfo.mSessionTypeString =
+                qci::mSessionCallback.mGetSessionTypeString( aSession->mMmSession );
+        }
+
+        sState = 1;
 
         sConnectInfo = sClientInfo->mConnectInfo;
         sDataNode = sNodeInfo.mNodes;
 
         for ( i = 0; i < sNodeInfo.mCount; i++, sConnectInfo++, sDataNode++ )
         {
+            IDE_DASSERT( sConnectInfo->mLinkerParam == NULL );
+
+            if ( SDI_LINKER_PARAM_IS_USED( sConnectInfo ) == ID_FALSE )
+            {
+                IDE_TEST( allocLinkerParam( sClientInfo,
+                                            sConnectInfo )
+                          != IDE_SUCCESS );
+            }
+
+            IDE_DASSERT( SDI_LINKER_PARAM_IS_USED( sConnectInfo ) == ID_TRUE )
+
+            setLinkerParam( sConnectInfo );
+
+
             // qcSession
             sConnectInfo->mSession = aSession;
             // dkiSession
-            sConnectInfo->mDkiSession       = aDkiSession;
-            sConnectInfo->mShardPin         = sShardPin;
-            sConnectInfo->mIsShardClient    = (sdiShardClient)sIsShardClient;
-            sConnectInfo->mShardMetaNumber  = aConnectSMN;
-            sConnectInfo->mFailoverTarget   = SDI_FAILOVER_NOT_USED;
+            sConnectInfo->mDkiSession             = aDkiSession;
+            sConnectInfo->mCoordinatorType        = sCoordinatorType;       /* DK ¿¡¼­ remote tx »ı¼º½Ã »ç¿ë */
+            sConnectInfo->mShardPin               = sShardPin;
+            sConnectInfo->mIsShardClient          = (sdiShardClient)sIsShardClient;
+            sConnectInfo->mShardMetaNumber        = aConnectSMN;
+            sConnectInfo->mRebuildShardMetaNumber = aConnectSMN;
+            sConnectInfo->mFailoverTarget         = SDI_FAILOVER_NOT_USED;
+            sConnectInfo->mFailoverSuspend.mSuspendType  = SDI_FAILOVER_SUSPEND_NONE;
+            sConnectInfo->mFailoverSuspend.mNewErrorCode = idERR_IGNORE_NoError;
 
             sdl::clearInternalConnectResult( sConnectInfo );
 
@@ -1956,21 +2700,19 @@ IDE_RC sdi::initializeSession( qcSession * aSession,
 
             sConnectInfo->mConnectType = sDataNode->mConnectType;
 
-            // node idì™€ node nameì€ ë¯¸ë¦¬ ì„¤ì •í•œë‹¤.
+            // node id¿Í node nameÀº ¹Ì¸® ¼³Á¤ÇÑ´Ù.
             sConnectInfo->mNodeId = sDataNode->mNodeId;
             idlOS::strncpy( sConnectInfo->mNodeName,
                             sDataNode->mNodeName,
                             SDI_NODE_NAME_MAX_SIZE );
             sConnectInfo->mNodeName[ SDI_NODE_NAME_MAX_SIZE ] = '\0';
 
-            // connectë¥¼ ìœ„í•œ ì„¸ì…˜ì •ë³´
-            sConnectInfo->mMessageCallback.mFunction = sdi::printMessage;
-            sConnectInfo->mMessageCallback.mArgument = sConnectInfo;
-
+            // connect¸¦ À§ÇÑ ¼¼¼ÇÁ¤º¸
+            sConnectInfo->mFlag = 0;
             sConnectInfo->mPlanAttr = sPlanAttr;
 
-            // Two Phase Commitì¸ ê²½ìš°, Meta Connectionì€ Non-Autocommitì´ì–´ì•¼ í•œë‹¤.
-            if ( ( sDBLinkGTXLevel == 2 ) && ( sIsMetaAutoCommit == ID_TRUE ) )
+            // Two Phase CommitÀÎ °æ¿ì, Meta ConnectionÀº Non-AutocommitÀÌ¾î¾ß ÇÑ´Ù.
+            if ( ( sIsGTx == ID_TRUE ) && ( sIsMetaAutoCommit == ID_TRUE ) )
             {
                 sIsMetaAutoCommit = ID_FALSE;
             }
@@ -1988,20 +2730,45 @@ IDE_RC sdi::initializeSession( qcSession * aSession,
             sConnectInfo->mFlag |= ( ( sIsMetaAutoCommit == ID_TRUE ) ?
                                      SDI_CONNECT_COORD_AUTOCOMMIT_MODE_ON :
                                      SDI_CONNECT_COORD_AUTOCOMMIT_MODE_OFF );
+
+            sConnectInfo->mInternalOP = sInternalLocalOperation;
+
             // xid
             xidInitialize( sConnectInfo );
+
+            sConnectInfo->mCoordPropertyFlag = 0;
         }
+
+        sState = 0;
+
+        aSession->mQPSpecific.mClientInfo = sClientInfo;
     }
     else
     {
         // Nothing to do.
     }
 
-    aSession->mQPSpecific.mClientInfo = sClientInfo;
+    /* ¿©±â¼­ ºÎÅÍ ¿¡·¯ ¹ß»ı ±İÁö */
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    switch ( sState )
+    {
+        case 1:
+            for ( i = 0; i < sNodeInfo.mCount; ++i )
+            {
+                if ( SDI_LINKER_PARAM_IS_USED( &sClientInfo->mConnectInfo[ i ] ) == ID_TRUE )
+                {
+                    sdi::freeLinkerParam( &sClientInfo->mConnectInfo[ i ] );
+                }
+            }
+            /* fall through */
+
+        default:
+            break;
+    }
 
     if ( sClientInfo != NULL )
     {
@@ -2014,6 +2781,290 @@ IDE_RC sdi::initializeSession( qcSession * aSession,
 
     return IDE_FAILURE;
 }
+
+void sdi::freeClientInfo( qcSession * aSession )
+{
+    sdiClientInfo * sClientInfo = aSession->mQPSpecific.mClientInfo;
+
+    if ( sClientInfo != NULL )
+    {
+        (void)iduMemMgr::free( sClientInfo );
+
+        aSession->mQPSpecific.mClientInfo = NULL;
+    }
+    else
+    {
+        // Nothing to do.
+    }
+}
+
+IDE_RC sdi::initializeSessionWithNodeList( qcSession * aSession,
+                                           void      * aDkiSession,
+                                           smiTrans  * aTrans,
+                                           idBool      aIsShardMetaChanged,
+                                           ULong       aConnectSMN,
+                                           iduList   * aNodeList )
+{
+/***********************************************************************
+ *
+ * Description :
+ *
+ * Implementation : set connect info for data node
+ *
+ ***********************************************************************/
+
+    sdiNodeInfo       sNodeInfo;
+    sdiNodeInfo       sAliveNodeInfo;
+    sdiClientInfo   * sClientInfo       = NULL;
+    sdiConnectInfo  * sConnectInfo      = NULL;
+    sdiNode         * sDataNode         = NULL;
+    static SChar      sNullName[1]      = { '\0' };
+    SChar           * sSessionNodeName  = NULL;
+    SChar           * sUserName         = NULL;
+    static SChar      sNullPassword[1]  = { '\0' };
+    SChar           * sUserPassword     = NULL;
+    UInt              sPasswordLen      = 0;
+    sdiShardPin       sShardPin         = SDI_SHARD_PIN_INVALID;
+    UInt              sIsShardClient    = ID_FALSE;
+    idBool            sIsUserAutoCommit = ID_TRUE;
+    idBool            sIsMetaAutoCommit = ID_TRUE;
+    UChar             sPlanAttr         = (UChar)ID_FALSE;
+    UShort            i                 = 0;
+    sdiCoordinatorType sCoordinatorType = SDI_COORDINATOR_SHARD;
+    UInt              sGTXLevel         = 0;
+    idBool            sIsGTx            = ID_FALSE;
+    UInt              sState            = 0;
+    sdiInternalOperation sInternalLocalOperation = SDI_INTERNAL_OP_NOT;
+
+    IDE_DASSERT( aSession->mQPSpecific.mClientInfo == NULL );
+
+    if ( aSession->mMmSession != NULL )
+    {
+        sSessionNodeName  = qci::mSessionCallback.mGetShardNodeName( aSession->mMmSession );
+        sUserName         = qci::mSessionCallback.mGetUserName( aSession->mMmSession );
+        sUserPassword     = qci::mSessionCallback.mGetUserPassword( aSession->mMmSession );
+        sShardPin         = qci::mSessionCallback.mGetShardPIN( aSession->mMmSession );
+        sIsShardClient    = qci::mSessionCallback.mIsShardClient( aSession->mMmSession );
+        sPlanAttr         = qci::mSessionCallback.mGetExplainPlan( aSession->mMmSession );
+        sIsUserAutoCommit = qci::mSessionCallback.mIsAutoCommit( aSession->mMmSession );
+        sIsMetaAutoCommit = sIsUserAutoCommit;
+        sGTXLevel         = qci::mSessionCallback.mGetGTXLevel( aSession->mMmSession );
+        sIsGTx            = qci::mSessionCallback.mIsGTx( aSession->mMmSession );
+        sInternalLocalOperation = (sdiInternalOperation)
+            qci::mSessionCallback.mGetShardInternalLocalOperation( aSession->mMmSession );
+    }
+    else
+    {
+        sSessionNodeName  = sNullName;
+        sUserName         = sNullName;
+        sUserPassword     = sNullPassword;
+        sPlanAttr         = (UChar)ID_FALSE;
+        sIsUserAutoCommit = ID_TRUE;
+        sIsMetaAutoCommit = sIsUserAutoCommit;
+
+        IDE_DASSERT( 0 );
+    }
+
+    // Get nodeInfo for internal session connectSMN
+    IDE_TEST( getInternalNodeInfo( aTrans,
+                                   &sNodeInfo,
+                                   aIsShardMetaChanged,
+                                   aConnectSMN )
+              != IDE_SUCCESS );
+
+    IDE_TEST( filterNodeInfo( &sNodeInfo,
+                              &sAliveNodeInfo,
+                              aNodeList )
+              != IDE_SUCCESS );
+    
+    if ( sSessionNodeName[0] != '\0' )
+    {
+        sCoordinatorType = SDI_COORDINATOR_RESHARD;
+    }
+
+    if ( sAliveNodeInfo.mCount != 0 )
+    {
+        IDE_TEST( iduMemMgr::calloc( IDU_MEM_QSN,  // BUGBUG check memory
+                                     1,
+                                     ID_SIZEOF(sdiClientInfo),
+                                     (void **)&sClientInfo )
+                  != IDE_SUCCESS );
+
+        sClientInfo->mTargetShardMetaNumber = aConnectSMN;
+
+        /* BUG-45967 Data NodeÀÇ Shard Session Á¤¸® */
+        sClientInfo->mCount         = sAliveNodeInfo.mCount;
+
+        sClientInfo->mShardCoordFixCtrlCtx.mSession = aSession->mMmSession;
+        sClientInfo->mShardCoordFixCtrlCtx.mCount   = 0;
+        sClientInfo->mShardCoordFixCtrlCtx.mFunc    = shardCoordFixCtrlCallback;
+
+        /* BUG-46100 Session SMN Update */
+        sClientInfo->mTransactionLevel = sGTXLevel;
+
+        /* PROJ-2733-DistTxInfo */
+        initDistTxInfo( sClientInfo );
+
+        if ( sCoordinatorType == SDI_COORDINATOR_RESHARD )
+        {
+            sClientInfo->mGCTxInfo.mSessionTypeString = (UChar *)"RESHARD-COORD";
+        }
+        else
+        {
+            sClientInfo->mGCTxInfo.mSessionTypeString =
+                qci::mSessionCallback.mGetSessionTypeString( aSession->mMmSession );
+        }
+
+        sState = 1;
+
+        sConnectInfo = sClientInfo->mConnectInfo;
+        sDataNode = sAliveNodeInfo.mNodes;
+
+        for ( i = 0; i < sAliveNodeInfo.mCount; i++, sConnectInfo++, sDataNode++ )
+        {
+            IDE_DASSERT( sConnectInfo->mLinkerParam == NULL );
+
+            if ( SDI_LINKER_PARAM_IS_USED( sConnectInfo ) == ID_FALSE )
+            {
+                IDE_TEST( allocLinkerParam( sClientInfo,
+                                            sConnectInfo )
+                          != IDE_SUCCESS );
+            }
+
+            IDE_DASSERT( SDI_LINKER_PARAM_IS_USED( sConnectInfo ) == ID_TRUE )
+
+            setLinkerParam( sConnectInfo );
+
+
+            // qcSession
+            sConnectInfo->mSession = aSession;
+            // dkiSession
+            sConnectInfo->mDkiSession             = aDkiSession;
+            sConnectInfo->mCoordinatorType        = sCoordinatorType;       /* DK ¿¡¼­ remote tx »ı¼º½Ã »ç¿ë */
+            sConnectInfo->mShardPin               = sShardPin;
+            sConnectInfo->mIsShardClient          = (sdiShardClient)sIsShardClient;
+            sConnectInfo->mShardMetaNumber        = aConnectSMN;
+            sConnectInfo->mRebuildShardMetaNumber = aConnectSMN;
+            sConnectInfo->mFailoverTarget         = SDI_FAILOVER_NOT_USED;
+            sConnectInfo->mFailoverSuspend.mSuspendType  = SDI_FAILOVER_SUSPEND_NONE;
+            sConnectInfo->mFailoverSuspend.mNewErrorCode = idERR_IGNORE_NoError;
+
+            sdl::clearInternalConnectResult( sConnectInfo );
+
+            sdi::initAffectedRow( sConnectInfo );
+
+            idlOS::memcpy( &(sConnectInfo->mNodeInfo),
+                           sDataNode,
+                           ID_SIZEOF( sdiNode ) );
+
+            if ( SDU_SHARD_TEST_ENABLE == 0 )
+            {
+                idlOS::strncpy( sConnectInfo->mUserName,
+                                sUserName,
+                                QCI_MAX_OBJECT_NAME_LEN );
+                sConnectInfo->mUserName[ QCI_MAX_OBJECT_NAME_LEN ] = '\0';
+                idlOS::strncpy( sConnectInfo->mUserPassword,
+                                sUserPassword,
+                                IDS_MAX_PASSWORD_LEN );
+                sConnectInfo->mUserPassword[ IDS_MAX_PASSWORD_LEN ] = '\0';
+            }
+            else
+            {
+                idlOS::strncpy( sConnectInfo->mUserName,
+                                sDataNode->mNodeName,
+                                SDI_NODE_NAME_MAX_SIZE );
+                sConnectInfo->mUserName[ SDI_NODE_NAME_MAX_SIZE ] = '\0';
+                idlOS::strncpy( sConnectInfo->mUserPassword,
+                                sDataNode->mNodeName,
+                                SDI_NODE_NAME_MAX_SIZE );
+                sConnectInfo->mUserPassword[ SDI_NODE_NAME_MAX_SIZE ] = '\0';
+
+                sPasswordLen = idlOS::strlen( sConnectInfo->mUserPassword );
+                sdi::charXOR( sConnectInfo->mUserPassword, sPasswordLen );
+            }
+
+            sConnectInfo->mConnectType = sDataNode->mConnectType;
+
+            // node id¿Í node nameÀº ¹Ì¸® ¼³Á¤ÇÑ´Ù.
+            sConnectInfo->mNodeId = sDataNode->mNodeId;
+            idlOS::strncpy( sConnectInfo->mNodeName,
+                            sDataNode->mNodeName,
+                            SDI_NODE_NAME_MAX_SIZE );
+            sConnectInfo->mNodeName[ SDI_NODE_NAME_MAX_SIZE ] = '\0';
+
+            // connect¸¦ À§ÇÑ ¼¼¼ÇÁ¤º¸
+            sConnectInfo->mFlag = 0;
+            sConnectInfo->mPlanAttr = sPlanAttr;
+
+            // Two Phase CommitÀÎ °æ¿ì, Meta ConnectionÀº Non-AutocommitÀÌ¾î¾ß ÇÑ´Ù.
+            if ( ( sIsGTx == ID_TRUE ) && ( sIsMetaAutoCommit == ID_TRUE ) )
+            {
+                sIsMetaAutoCommit = ID_FALSE;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+
+            sConnectInfo->mFlag &= ~SDI_CONNECT_USER_AUTOCOMMIT_MODE_MASK;
+            sConnectInfo->mFlag |= ( ( sIsUserAutoCommit == ID_TRUE ) ?
+                                     SDI_CONNECT_USER_AUTOCOMMIT_MODE_ON :
+                                     SDI_CONNECT_USER_AUTOCOMMIT_MODE_OFF );
+
+            sConnectInfo->mFlag &= ~SDI_CONNECT_COORD_AUTOCOMMIT_MODE_MASK;
+            sConnectInfo->mFlag |= ( ( sIsMetaAutoCommit == ID_TRUE ) ?
+                                     SDI_CONNECT_COORD_AUTOCOMMIT_MODE_ON :
+                                     SDI_CONNECT_COORD_AUTOCOMMIT_MODE_OFF );
+
+            sConnectInfo->mInternalOP = sInternalLocalOperation;
+
+            // xid
+            xidInitialize( sConnectInfo );
+
+            sConnectInfo->mCoordPropertyFlag = 0;
+        }
+
+        sState = 0;
+
+        aSession->mQPSpecific.mClientInfo = sClientInfo;
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    switch ( sState )
+    {
+        case 1:
+            for ( i = 0; i < sAliveNodeInfo.mCount; ++i )
+            {
+                if ( SDI_LINKER_PARAM_IS_USED( &sClientInfo->mConnectInfo[ i ] ) == ID_TRUE )
+                {
+                    sdi::freeLinkerParam( &sClientInfo->mConnectInfo[ i ] );
+                }
+            }
+            /* fall through */
+
+        default:
+            break;
+    }
+
+    if ( sClientInfo != NULL )
+    {
+        (void)iduMemMgr::free( sClientInfo );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    return IDE_FAILURE;
+}
+
 
 void sdi::finalizeSession( qcSession * aSession )
 {
@@ -2035,20 +3086,381 @@ void sdi::finalizeSession( qcSession * aSession )
 
     if ( sClientInfo != NULL )
     {
+        IDE_DASSERT( sClientInfo->mShardCoordFixCtrlCtx.mCount == 0 );
+
         sConnectInfo = sClientInfo->mConnectInfo;
 
         for ( i = 0; i < sClientInfo->mCount; i++, sConnectInfo++ )
         {
             /* Close shard connection. */
             qdkCloseShardConnection( sConnectInfo ); 
+
+            if ( SDI_LINKER_PARAM_IS_USED( sConnectInfo ) == ID_TRUE )
+            {
+                sdi::freeLinkerParam( sConnectInfo );
+            }
         }
 
-        (void)iduMemMgr::free( sClientInfo );
-        aSession->mQPSpecific.mClientInfo = NULL;
+        freeClientInfo( aSession );
     }
     else
     {
         // Nothing to do.
+    }
+}
+
+IDE_RC sdi::updateSession( qcSession * aSession,
+                           void      * aDkiSession,
+                           smiTrans  * aTrans,
+                           idBool      aIsShardMetaChanged,
+                           ULong       aNewSMN )
+{
+/***********************************************************************
+ *
+ * Description :
+ *
+ * Implementation : Merge connect info for data node
+ *                  and merge current SMN and NEW SMN
+ *
+ ***********************************************************************/
+
+    sdiNodeInfo          sNodeInfo4Added;
+    sdiNodeInfo          sNodeInfo4NewSMN;
+    sdiClientInfo      * sClientInfo       = NULL;
+    sdiConnectInfo     * sConnectInfo      = NULL;
+    sdiNode            * sDataNode         = NULL;
+    static SChar         sNullName[1]      = { '\0' };
+    SChar              * sSessionNodeName  = NULL;
+    SChar              * sUserName         = NULL;
+    static SChar         sNullPassword[1]  = { '\0' };
+    SChar              * sUserPassword     = NULL;
+    UInt                 sPasswordLen      = 0;
+    sdiShardPin          sShardPin         = SDI_SHARD_PIN_INVALID;
+    UInt                 sIsShardClient    = ID_FALSE;
+    idBool               sIsUserAutoCommit = ID_TRUE;
+    idBool               sIsMetaAutoCommit = ID_TRUE;
+    UChar                sPlanAttr         = (UChar)ID_FALSE;
+    UShort               i                 = 0;
+    UShort               j                 = 0;
+    sdiCoordinatorType   sCoordinatorType  = SDI_COORDINATOR_SHARD;
+    idBool               sIsGTx            = ID_FALSE;
+    UShort               sNewNodeCount     = 0;
+    UInt                 sState            = 0;
+
+    sClientInfo = aSession->mQPSpecific.mClientInfo;
+    IDE_DASSERT( sClientInfo != NULL );
+
+    IDE_TEST_CONT( sClientInfo->mTargetShardMetaNumber == aNewSMN,
+                   END_OF_FUNC );
+
+    // Get nodeInfo for internal session connectSMN
+    IDE_TEST( getInternalNodeInfo( aTrans,
+                                   &sNodeInfo4NewSMN,
+                                   aIsShardMetaChanged,
+                                   aNewSMN )
+              != IDE_SUCCESS );
+
+    sNodeInfo4Added.mCount = 0;
+
+    /*     Old Node Info (Current) : 1 2 3
+     *     New Node Info           :   2   4 5
+     * ---------------------------------------
+     *   Added Node Info          =>       4 5
+     */
+    IDE_TEST( getAddedNodeInfo( sClientInfo,
+                                &sNodeInfo4NewSMN,
+                                &sNodeInfo4Added )
+              != IDE_SUCCESS );
+
+
+    sNewNodeCount = sClientInfo->mCount + sNodeInfo4Added.mCount;
+
+    if ( sNodeInfo4Added.mCount != 0 )
+    {
+        if ( aSession->mMmSession != NULL )
+        {
+            sSessionNodeName  = qci::mSessionCallback.mGetShardNodeName( aSession->mMmSession );
+            sUserName         = qci::mSessionCallback.mGetUserName( aSession->mMmSession );
+            sUserPassword     = qci::mSessionCallback.mGetUserPassword( aSession->mMmSession );
+            sShardPin         = qci::mSessionCallback.mGetShardPIN( aSession->mMmSession );
+            sIsShardClient    = qci::mSessionCallback.mIsShardClient( aSession->mMmSession );
+            sPlanAttr         = qci::mSessionCallback.mGetExplainPlan( aSession->mMmSession );
+            sIsUserAutoCommit = qci::mSessionCallback.mIsAutoCommit( aSession->mMmSession );
+            sIsMetaAutoCommit = sIsUserAutoCommit;
+            sIsGTx            = qci::mSessionCallback.mIsGTx( aSession->mMmSession );
+        }
+        else
+        {
+            sSessionNodeName  = sNullName;
+            sUserName         = sNullName;
+            sUserPassword     = sNullPassword;
+            sPlanAttr         = (UChar)ID_FALSE;
+            sIsUserAutoCommit = ID_TRUE;
+            sIsMetaAutoCommit = sIsUserAutoCommit;
+
+            IDE_DASSERT( 0 );
+        }
+
+        if ( sSessionNodeName[0] != '\0' )
+        {
+            sCoordinatorType = SDI_COORDINATOR_RESHARD;
+        }
+
+        IDE_DASSERT( sNewNodeCount > sClientInfo->mCount );
+
+        /* set Added node info */
+        sState = 1;
+
+        i = sClientInfo->mCount;
+        sConnectInfo = &sClientInfo->mConnectInfo[ i ];
+        sDataNode = sNodeInfo4Added.mNodes;
+
+        for ( ; i < sNewNodeCount; ++i, ++sConnectInfo, ++sDataNode )
+        {
+            IDE_DASSERT( sConnectInfo->mLinkerParam == NULL );
+
+            if ( SDI_LINKER_PARAM_IS_USED( sConnectInfo ) == ID_FALSE )
+            {
+                IDE_TEST( allocLinkerParam( sClientInfo,
+                                            sConnectInfo )
+                          != IDE_SUCCESS );
+            }
+
+            IDE_DASSERT( SDI_LINKER_PARAM_IS_USED( sConnectInfo ) == ID_TRUE )
+
+            setLinkerParam( sConnectInfo );
+
+
+            // qcSession
+            sConnectInfo->mSession = aSession;
+            // dkiSession
+            sConnectInfo->mDkiSession                    = aDkiSession;
+            sConnectInfo->mCoordinatorType               = sCoordinatorType;       /* DK ¿¡¼­ remote tx »ı¼º½Ã »ç¿ë */
+            sConnectInfo->mShardPin                      = sShardPin;
+            sConnectInfo->mIsShardClient                 = (sdiShardClient)sIsShardClient;
+            sConnectInfo->mShardMetaNumber               = aNewSMN;
+            sConnectInfo->mRebuildShardMetaNumber        = aNewSMN;
+            sConnectInfo->mFailoverTarget                = SDI_FAILOVER_NOT_USED;
+            sConnectInfo->mFailoverSuspend.mSuspendType  = SDI_FAILOVER_SUSPEND_NONE;
+            sConnectInfo->mFailoverSuspend.mNewErrorCode = idERR_IGNORE_NoError;
+
+            sdl::clearInternalConnectResult( sConnectInfo );
+
+            sdi::initAffectedRow( sConnectInfo );
+
+            idlOS::memcpy( &(sConnectInfo->mNodeInfo),
+                           sDataNode,
+                           ID_SIZEOF( sdiNode ) );
+
+            if ( SDU_SHARD_TEST_ENABLE == 0 )
+            {
+                idlOS::strncpy( sConnectInfo->mUserName,
+                                sUserName,
+                                QCI_MAX_OBJECT_NAME_LEN );
+                sConnectInfo->mUserName[ QCI_MAX_OBJECT_NAME_LEN ] = '\0';
+                idlOS::strncpy( sConnectInfo->mUserPassword,
+                                sUserPassword,
+                                IDS_MAX_PASSWORD_LEN );
+                sConnectInfo->mUserPassword[ IDS_MAX_PASSWORD_LEN ] = '\0';
+            }
+            else
+            {
+                idlOS::strncpy( sConnectInfo->mUserName,
+                                sDataNode->mNodeName,
+                                SDI_NODE_NAME_MAX_SIZE );
+                sConnectInfo->mUserName[ SDI_NODE_NAME_MAX_SIZE ] = '\0';
+                idlOS::strncpy( sConnectInfo->mUserPassword,
+                                sDataNode->mNodeName,
+                                SDI_NODE_NAME_MAX_SIZE );
+                sConnectInfo->mUserPassword[ SDI_NODE_NAME_MAX_SIZE ] = '\0';
+
+                sPasswordLen = idlOS::strlen( sConnectInfo->mUserPassword );
+                sdi::charXOR( sConnectInfo->mUserPassword, sPasswordLen );
+            }
+
+            sConnectInfo->mConnectType = sDataNode->mConnectType;
+
+            // node id¿Í node nameÀº ¹Ì¸® ¼³Á¤ÇÑ´Ù.
+            sConnectInfo->mNodeId = sDataNode->mNodeId;
+            idlOS::strncpy( sConnectInfo->mNodeName,
+                            sDataNode->mNodeName,
+                            SDI_NODE_NAME_MAX_SIZE );
+            sConnectInfo->mNodeName[ SDI_NODE_NAME_MAX_SIZE ] = '\0';
+
+            // connect¸¦ À§ÇÑ ¼¼¼ÇÁ¤º¸
+            sConnectInfo->mPlanAttr = sPlanAttr;
+
+            // Two Phase CommitÀÎ °æ¿ì, Meta ConnectionÀº Non-AutocommitÀÌ¾î¾ß ÇÑ´Ù.
+            if ( ( sIsGTx == ID_TRUE ) && ( sIsMetaAutoCommit == ID_TRUE ) )
+            {
+                sIsMetaAutoCommit = ID_FALSE;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+
+            sConnectInfo->mFlag &= ~SDI_CONNECT_USER_AUTOCOMMIT_MODE_MASK;
+            sConnectInfo->mFlag |= ( ( sIsUserAutoCommit == ID_TRUE ) ?
+                                     SDI_CONNECT_USER_AUTOCOMMIT_MODE_ON :
+                                     SDI_CONNECT_USER_AUTOCOMMIT_MODE_OFF );
+
+            sConnectInfo->mFlag &= ~SDI_CONNECT_COORD_AUTOCOMMIT_MODE_MASK;
+            sConnectInfo->mFlag |= ( ( sIsMetaAutoCommit == ID_TRUE ) ?
+                                     SDI_CONNECT_COORD_AUTOCOMMIT_MODE_ON :
+                                     SDI_CONNECT_COORD_AUTOCOMMIT_MODE_OFF );
+            // xid
+            xidInitialize( sConnectInfo );
+
+            sConnectInfo->mCoordPropertyFlag = 0;
+        }
+
+        /* ¿©±â¼­ ºÎÅÍ ¿¡·¯ ¹ß»ı ±İÁö */
+        sState = 0;
+
+        sClientInfo->mCount = sNewNodeCount;
+    }
+
+
+    /* ¿©±â¼­ ºÎÅÍ ¿¡·¯ ¹ß»ı ±İÁö */
+
+    for ( j = 0 ; j < sNodeInfo4NewSMN.mCount; j++ )
+    {
+        sConnectInfo = sClientInfo->mConnectInfo;
+        for ( i = 0 ; i < sClientInfo->mCount; i++, sConnectInfo++ )
+        {
+            if ( sNodeInfo4NewSMN.mNodes[j].mNodeId ==
+                 sConnectInfo->mNodeInfo.mNodeId )
+            {
+                sConnectInfo->mNodeInfo.mSMN = aNewSMN;
+                break;
+            }
+        }
+    }
+
+    sClientInfo->mTargetShardMetaNumber = aNewSMN;
+
+    IDE_EXCEPTION_CONT( END_OF_FUNC );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    switch ( sState )
+    {
+        case 1:
+            i = sClientInfo->mCount;
+            for ( ; i < sNewNodeCount; ++i )
+            {
+                if ( SDI_LINKER_PARAM_IS_USED( &sClientInfo->mConnectInfo[ i ] ) == ID_TRUE )
+                {
+                    sdi::freeLinkerParam( &sClientInfo->mConnectInfo[ i ] );
+                }
+            }
+            /* fall through */
+
+        default:
+            break;
+    }
+
+    return IDE_FAILURE;
+}
+
+void sdi::cleanupShardRebuildSession( qcSession * aSession, idBool * aRemoved )
+{
+    sdiClientInfo  * sClientInfo    = NULL;
+    sdiConnectInfo * sConnectInfo   = NULL;
+    ULong            sTargetSMN     = SDI_NULL_SMN; 
+    SInt             i, j;
+
+    *aRemoved = ID_FALSE;
+
+    sClientInfo = aSession->mQPSpecific.mClientInfo;
+
+    if ( sClientInfo != NULL )
+    {
+        sTargetSMN = sClientInfo->mTargetShardMetaNumber;
+
+        sConnectInfo = sClientInfo->mConnectInfo;
+
+        for ( i = 0 ; i < sClientInfo->mCount; )
+        {
+            if ( sClientInfo->mConnectInfo[ i ].mNodeInfo.mSMN == sTargetSMN )
+            {
+                IDE_DASSERT( SDI_LINKER_PARAM_IS_USED( sConnectInfo ) == ID_TRUE )
+
+                if ( SDI_LINKER_PARAM_IS_USED( sConnectInfo ) == ID_TRUE )
+                {
+                    setLinkerParam( sConnectInfo );
+                }
+
+                ++i;
+                ++sConnectInfo;
+            }
+            else
+            {
+                /* PROJ-2745
+                 *  ³ëµå°¡ Á¦°ÅµÇ¸é¼­ mConnectInfo ¿¡ ±âÁ¸¿¡ »ç¿ëÇÏ´ø Á¤º¸°¡ ³²¾ÆÀÖ°ÔµÇ¸é
+                 *  ÀÌÈÄ Rebuild ¿¡ ÀÇÇØ È£ÃâµÇ´Â sdi::updateSession ¿¡¼­
+                 *  Garbage Á¤º¸¸¦ º¸°Ô µÈ´Ù.
+                 *  mClientInfo ¿Í mConnectInfo ´Â calloc À¸·Î »ı¼ºÇÏ¿©
+                 *  ÃÊ±âÈ­°¡ µÇ¾î ÀÖ´Ù´Â °¡Á¤À¸·Î »ç¿ëÇÏ°í ÀÖ±â ¶§¹®¿¡
+                 *  ³ëµå Á¦°Å ÈÄ¿¡ memset À¸·Î ÃÊ±âÈ­ ÇØÁØ´Ù.
+                 *  À¯Áöº¸¼ö¸¦ ¿ëÀÌÇÏ°Ô À§ÇÑ ÄÚµåÀÌ¸ç ½Ç¿ëÀûÀÌÁö ¸øÇÏ´Ù.
+                 *
+                 *  mConnectInfo:
+                 *   Remove Node: NODE1
+                 *   mCount = 3
+                 *  +-----------------------------------------+
+                 *  | NODE1 | NODE2 | NODE3 | ZERO | ZERO ... |
+                 *  +-----------------------------------------+
+                 */
+
+                /* Close shard connection. */
+                qdkCloseShardConnection( sConnectInfo ); 
+
+                IDE_DASSERT ( SDI_LINKER_PARAM_IS_USED( sConnectInfo ) == ID_TRUE );
+                if ( SDI_LINKER_PARAM_IS_USED( sConnectInfo ) == ID_TRUE )
+                {
+                    sdi::freeLinkerParam( sConnectInfo );
+                }
+
+                --sClientInfo->mCount;
+
+                for ( j = i; j < sClientInfo->mCount; j++ )
+                {
+                    idlOS::memcpy( &sClientInfo->mConnectInfo[ j ],
+                                   &sClientInfo->mConnectInfo[ j + 1 ],
+                                   ID_SIZEOF( sdiConnectInfo ) );
+                }
+
+                /* 
+                 *   mCount = 2
+                 *  +-----------------------------------------+
+                 *  | NODE2 | NODE3 | NODE3 | ZERO | ZERO ... |
+                 *  +-----------------------------------------+
+                 */
+
+                IDE_DASSERT( j == sClientInfo->mCount );
+
+                idlOS::memset( &sClientInfo->mConnectInfo[ j ],
+                               0,
+                               ID_SIZEOF( sdiConnectInfo ) );
+
+                /* 
+                 *   mCount = 2
+                 *  +-----------------------------------------+
+                 *  | NODE2 | NODE3 | ZERO  | ZERO | ZERO ... |
+                 *  +-----------------------------------------+
+                 */
+                *aRemoved = ID_TRUE;
+            }
+        }
+
+        if ( sClientInfo->mCount == 0 )
+        {
+            freeClientInfo( aSession );
+        }
     }
 }
 
@@ -2061,12 +3473,12 @@ IDE_RC sdi::allocConnect( sdiConnectInfo * aConnectInfo )
         aConnectInfo->mFlag &= ~SDI_CONNECT_PLANATTR_CHANGE_MASK;
         aConnectInfo->mFlag |= SDI_CONNECT_PLANATTR_CHANGE_FALSE;
 
-        // xid info ì´ˆê¸°í™”
+        // xid info ÃÊ±âÈ­
         xidInitialize( aConnectInfo );
     }
     else
     {
-        // ì´ì „ connectionì„ ì¬ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // ÀÌÀü connectionÀ» Àç»ç¿ëÇÏ´Â °æ¿ì
         if ( ( aConnectInfo->mFlag & SDI_CONNECT_TRANSACTION_END_MASK )
              == SDI_CONNECT_TRANSACTION_END_TRUE )
         {
@@ -2218,9 +3630,9 @@ IDE_RC sdi::rollback( sdiConnectInfo * aConnectInfo,
                              &(aConnectInfo->mLinkFailure) )
               != IDE_SUCCESS );
 
-        aConnectInfo->mTouchCount = 0;
-        aConnectInfo->mFlag &= ~SDI_CONNECT_TRANSACTION_END_MASK;
-        aConnectInfo->mFlag |= SDI_CONNECT_TRANSACTION_END_TRUE;
+    aConnectInfo->mTouchCount = 0;
+    aConnectInfo->mFlag &= ~SDI_CONNECT_TRANSACTION_END_MASK;
+    aConnectInfo->mFlag |= SDI_CONNECT_TRANSACTION_END_TRUE;
 
     return IDE_SUCCESS;
 
@@ -2294,18 +3706,57 @@ void sdi::setExplainPlanAttr( qcSession * aSession,
     }
 }
 
-IDE_RC sdi::shardExecDirect( qcStatement * aStatement,
-                             SChar       * aNodeName,
-                             SChar       * aQuery,
-                             UInt          aQueryLen,
-                             UInt        * aExecCount )
+IDE_RC sdi::setInternalOp( sdiInternalOperation   aValue, 
+                           sdiConnectInfo       * aConnectInfo, 
+                           idBool               * aOutIsLinkFailure )
+{
+    if ( aValue != SDI_INTERNAL_OP_NOT )
+    {
+        IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                    SDL_ALTIBASE_SHARD_INTERNAL_LOCAL_OPERATION,
+                                    aValue,
+                                    NULL,
+                                    aOutIsLinkFailure )
+                        != IDE_SUCCESS );
+    }
+    else
+    {
+        IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                            SDL_ALTIBASE_SHARD_INTERNAL_LOCAL_OPERATION,
+                            0,
+                            NULL,
+                            aOutIsLinkFailure )
+                != IDE_SUCCESS );
+    }
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::shardExecDirectNested( qcStatement          * aStatement,
+                                   SChar                * aNodeName,
+                                   SChar                * aQuery,
+                                   UInt                   aQueryLen,
+                                   sdiInternalOperation   aInternalLocalOperation,
+                                   UInt                 * aExecCount )
 {
     sdiStatement   * sSdStmt      = NULL;
-    sdlRemoteStmt  * sRemoteStmt  = NULL;
     sdiClientInfo  * sClientInfo  = NULL;
     sdiConnectInfo * sConnectInfo = NULL;
-    UShort           i = 0;
+    SShort           i = 0;
     idBool           sSuccess = ID_TRUE;
+    void           * sCallback    = NULL;
+
+    /* PROJ-2733-DistTxInfo */
+    sdiDataNodes     sDataInfo;
+    sdiDataNode    * sDataNode = sDataInfo.mNodes;
+    smSCN            sSCN;
+    idBool           sNeedUpdateSCN = ID_FALSE;
+    idBool           sDoingRemoteStmtInitStep = ID_FALSE;
+
+    SM_INIT_SCN( &sSCN );
 
     IDE_DASSERT( aStatement->session != NULL );
 
@@ -2315,98 +3766,765 @@ IDE_RC sdi::shardExecDirect( qcStatement * aStatement,
 
     sSdStmt = (sdiStatement *)qci::mSessionCallback.mGetShardStmt( QC_MM_STMT( aStatement ) );
 
-    if ( sClientInfo != NULL )
+    IDE_TEST_CONT( sClientInfo == NULL, NO_NEED_WORK );
+
+    sConnectInfo = sClientInfo->mConnectInfo;
+    idlOS::memset( &sDataInfo, 0x00, ID_SIZEOF(sdiDataNodes) );
+
+    /* PROJ-2733-DistTxInfo ¼öÇàÇÒ ³ëµå¸¦ ¼±ÅÃ */
+    IDE_TEST( buildDataNodes( sClientInfo, &sDataInfo, aNodeName, NULL ) != IDE_SUCCESS );
+
+    /* ¼±ÅÃµÈ ³ëµåµéÀº ºĞ»êÁ¤º¸¸¦ À§ÇØ Execute Àü¿¡ ¸ğµÎ Á¢¼ÓÇØ µĞ´Ù. */
+    for ( i = 0; i < sClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
     {
-        sConnectInfo = sClientInfo->mConnectInfo;
-
-        for ( i = 0; i < sClientInfo->mCount; i++, sConnectInfo++ )
+        if ( sDataNode->mState != SDI_NODE_STATE_EXECUTE_SELECTED )  /* PROJ-2733-DistTxInfo */
         {
-            if ( aNodeName != NULL )
-            {
-                if ( ( idlOS::strlen( aNodeName ) > 0 ) &&
-                     ( idlOS::strMatch( aNodeName,
-                                        idlOS::strlen( aNodeName ),
-                                        sConnectInfo->mNodeName,
-                                        idlOS::strlen( sConnectInfo->mNodeName ) ) )
-                     != 0 )
-                {
-                    continue;
-                }
-                else
-                {
-                    // Nothing to do.
-                }
-            }
-            else
-            {
-                // Nothing to do.
-            }
+            continue;
+        }
 
-            IDE_TEST( sdlStatementManager::allocRemoteStatement( sSdStmt,
-                                                                 sConnectInfo->mNodeId,
-                                                                 &sRemoteStmt )
-                      != IDE_SUCCESS );
+        sNeedUpdateSCN = (sConnectInfo->mDbc == NULL) ? ID_TRUE : ID_FALSE;
 
-            // open shard connection
-            IDE_TEST( qdkOpenShardConnection( sConnectInfo )
-                      != IDE_SUCCESS );
+        // open shard connection
+        IDE_TEST( qdkOpenShardConnection( sConnectInfo ) != IDE_SUCCESS );
 
-            IDE_TEST( sdl::allocStmt( sConnectInfo,
-                                      sRemoteStmt,
-                                      &(sConnectInfo->mLinkFailure) )
-                      != IDE_SUCCESS );
+        /* PROJ-2733-DistTxInfo Connection ÀÌÈÄ °¢ ³ëµå SCNÀ» ¾ò¾î ¿Â´Ù. */
+        if ( sNeedUpdateSCN == ID_TRUE )
+        {
+            IDE_TEST( sdl::getSCN( sConnectInfo, &sSCN ) != IDE_SUCCESS );
 
-            // add shard transaction
-            IDE_TEST( qdkAddShardTransaction(
-                          aStatement->mStatistics,
-                          QC_SMI_STMT(aStatement)->mTrans->getTransID(),
-                          sConnectInfo )
-                      != IDE_SUCCESS );
+            SM_SET_MAX_SCN( &(sClientInfo->mGCTxInfo.mCoordSCN), &sSCN );
+        }
 
-            // set first message flag
-            sConnectInfo->mFlag &= ~SDI_CONNECT_MESSAGE_FIRST_MASK;
-            sConnectInfo->mFlag |= SDI_CONNECT_MESSAGE_FIRST_TRUE;
+        // PROJ-2727
+        IDE_TEST( setShardSessionProperty( aStatement->session,
+                                           sClientInfo,
+                                           sConnectInfo )
+                  != IDE_SUCCESS );
+    }
 
-            if ( sdl::execDirect( sConnectInfo,
-                                  sRemoteStmt,
-                                  aQuery,
-                                  aQueryLen,
-                                  sClientInfo,
+    /* PROJ-2733-DistTxInfo ºĞ»êÁ¤º¸¸¦ °è»êÇÑ´Ù. */
+    calculateGCTxInfo( QC_PRIVATE_TMPLATE( aStatement ),
+                       &sDataInfo,
+                       ID_FALSE,
+                       SDI_COORD_PLAN_INDEX_NONE );
+
+    /* PROJ-2733-DistTxInfo Node¿¡ ºĞ»êÁ¤º¸¸¦ ÀüÆÄÇÑ´Ù. */
+    IDE_TEST( propagateDistTxInfoToNodes( aStatement, sClientInfo, &sDataInfo ) != IDE_SUCCESS );
+
+    sConnectInfo = sClientInfo->mConnectInfo;
+    sDataNode = sDataInfo.mNodes;
+    sDoingRemoteStmtInitStep = ID_TRUE;
+    for ( i = 0; i < sClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
+    {
+        if ( sDataNode->mState != SDI_NODE_STATE_EXECUTE_SELECTED )  /* PROJ-2733-DistTxInfo */
+        {
+            continue;
+        }
+
+        /* TASK-7219 Non-shard DML */
+        IDE_TEST( sdl::setStmtExecSeq( sConnectInfo, QCG_GET_SESSION_STMT_EXEC_SEQ_FOR_SHARD_TX(aStatement) ) != IDE_SUCCESS );
+
+        IDE_TEST( sdlStatementManager::allocRemoteStatement( sSdStmt,
+                                                             sConnectInfo->mNodeId,
+                                                             &sDataNode->mRemoteStmt )
+                  != IDE_SUCCESS );
+
+        if ( aInternalLocalOperation != SDI_INTERNAL_OP_NOT )
+        {
+            IDE_TEST(setInternalOp(aInternalLocalOperation,
+                                   sConnectInfo,
+                                   &(sConnectInfo->mLinkFailure))
+                     != IDE_SUCCESS);
+        }
+
+        IDE_TEST( sdl::allocStmt( sConnectInfo,
+                                  sDataNode->mRemoteStmt,
+                                  SDI_SHARD_PARTIAL_EXEC_TYPE_NONE, /* sPartialCoordExecType */
                                   &(sConnectInfo->mLinkFailure) )
+                  != IDE_SUCCESS );
+                      
+        // add shard transaction
+        IDE_TEST( qdkAddShardTransaction( aStatement->mStatistics,
+                                          QC_SMI_STMT(aStatement)->mTrans->getTransID(),
+                                          sClientInfo,
+                                          sConnectInfo )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( sdl::addExecDirectCallback( &sCallback,
+                                              i,
+                                              sConnectInfo,
+                                              sDataNode->mRemoteStmt,
+                                              aQuery,
+                                              aQueryLen,
+                                              &(sConnectInfo->mLinkFailure) )
+                  != IDE_SUCCESS );
+    }
+    IDE_TEST_CONT( sCallback == NULL, NO_NEED_WORK );
+    sdl::doCallback( sCallback );
+    // add shard tx ¼ø¼­ÀÇ ¹İ´ë·Î del shard tx¸¦ ¼öÇàÇØ¾ßÇÑ´Ù.
+    for ( i--, sConnectInfo--, sDataNode--;
+          i >= 0;
+          i--, sConnectInfo--, sDataNode-- )
+    {
+        if ( sDataNode->mState == SDI_NODE_STATE_EXECUTE_SELECTED )
+        {
+            // ¼öÇàÀü touch count Áõ°¡
+            sConnectInfo->mTouchCount++;
+            if ( sdl::resultCallback( sCallback,
+                                      i,
+                                      sConnectInfo,
+                                      ID_FALSE,
+                                      sClientInfo,
+                                      SQL_HANDLE_STMT,
+                                      sDataNode->mRemoteStmt->mStmt,
+                                      (SChar*)"SQLExecDirect",
+                                      &(sConnectInfo->mLinkFailure) )
                  == IDE_SUCCESS )
             {
+                sDataNode->mState = SDI_NODE_STATE_EXECUTED;
+                sDataNode->mExecCount++;
                 (*aExecCount)++;
             }
             else
             {
-                // ìˆ˜í–‰ì´ ì‹¤íŒ¨í•œ ê²½ìš°
+                sDataNode->mState = SDI_NODE_STATE_EXECUTE_CANDIDATED;
                 sSuccess = ID_FALSE;
             }
-
-            if ( sdl::freeStmt( sConnectInfo,
-                                sRemoteStmt,
-                                SQL_DROP,
-                                &(sConnectInfo->mLinkFailure) )
-                 != IDE_SUCCESS )
-            {
-                // ìˆ˜í–‰ì´ ì‹¤íŒ¨í•œ ê²½ìš°
-                sSuccess = ID_FALSE;
-            }
-
-            sdlStatementManager::setUnused( &sRemoteStmt );
+        }
+        else
+        {
+            // Nothing to do.
         }
     }
-    else
+
+    sConnectInfo = sClientInfo->mConnectInfo;
+    sDataNode = sDataInfo.mNodes;
+    for ( i = 0; i < sClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
     {
-        // Nothing to do.
+        if ( sDataNode->mRemoteStmt != NULL )
+        {
+            if ( sDataNode->mRemoteStmt->mStmt != NULL )
+            {
+                if ( sdl::freeStmt( sConnectInfo,
+                                    sDataNode->mRemoteStmt,
+                                    SQL_DROP,
+                                    &(sConnectInfo->mLinkFailure) )
+                     != IDE_SUCCESS )
+                {
+                    // ¼öÇàÀÌ ½ÇÆĞÇÑ °æ¿ì
+                    sSuccess = ID_FALSE;
+                }
+            }
+            sdlStatementManager::setUnused( &sDataNode->mRemoteStmt );
+        }
+        if ( ( aInternalLocalOperation != SDI_INTERNAL_OP_NOT ) &&
+             ( sConnectInfo->mLinkFailure != ID_TRUE ) &&
+             ( sConnectInfo->mDbc != NULL ) )
+        {
+            IDE_TEST(setInternalOp( SDI_INTERNAL_OP_NOT,
+                                    sConnectInfo,
+                                    &(sConnectInfo->mLinkFailure))
+                     != IDE_SUCCESS);
+            ideLog::log(IDE_SD_17,"[SHARD_META] Internal Remote SQL: %s", aQuery);
+        }
     }
+    sDoingRemoteStmtInitStep = ID_FALSE;
+
+    /* PROJ-2733-DistTxInfo
+     * !!! sdl::execDirect ÇÔ¼ö¸¦ ¼öÇàÇßÀ¸¸é sSuccess °ª¿¡ »ó°ü¾øÀÌ
+     *     updateMaxNodeSCNToCoordSCN ÇÔ¼ö¸¦ ¼öÇàÇØ¾ß ÇÑ´Ù
+     */
+    IDE_TEST( updateMaxNodeSCNToCoordSCN( aStatement, sClientInfo, &sDataInfo ) != IDE_SUCCESS );
 
     IDE_TEST( sSuccess == ID_FALSE );
+
+    sdl::removeCallback( sCallback );
+
+    IDE_EXCEPTION_CONT(NO_NEED_WORK);
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 
+    if (sDoingRemoteStmtInitStep == ID_TRUE)
+    {
+        sConnectInfo = sClientInfo->mConnectInfo;
+        sDataNode = sDataInfo.mNodes;
+        for ( i = 0; i < sClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
+        {
+            if ( sDataNode->mRemoteStmt != NULL )
+            {
+                if ( sDataNode->mRemoteStmt->mStmt != NULL )
+                {
+                    (void)sdl::freeStmt( sConnectInfo,
+                                         sDataNode->mRemoteStmt,
+                                         SQL_DROP,
+                                         &(sConnectInfo->mLinkFailure) );
+                }
+                sdlStatementManager::setUnused( &sDataNode->mRemoteStmt );
+            }
+            if ( ( aInternalLocalOperation != SDI_INTERNAL_OP_NOT ) &&
+                 ( sConnectInfo->mLinkFailure != ID_TRUE ) &&
+                 ( sConnectInfo->mDbc != NULL ) )
+            {
+                (void)setInternalOp( SDI_INTERNAL_OP_NOT, sConnectInfo, &(sConnectInfo->mLinkFailure));
+            }
+        }
+    }
+
+    sdl::removeCallback( sCallback );
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::shardExecDirect( qcStatement          * aStatement,
+                             SChar                * aNodeName,
+                             SChar                * aQuery,
+                             UInt                   aQueryLen,
+                             sdiInternalOperation   aInternalLocalOperation,
+                             UInt                 * aExecCount,
+                             ULong                * aNumResult,
+                             SChar                * aStrResult,
+                             UInt                   aMaxBuffer,
+                             idBool               * aFetchResult )
+{
+    sdiStatement   * sSdStmt      = NULL;
+    sdlRemoteStmt  * sRemoteStmt  = NULL;
+    sdiClientInfo  * sClientInfo  = NULL;
+    sdiConnectInfo * sConnectInfo = NULL;
+    UShort           i = 0;
+    idBool           sSuccess = ID_TRUE;
+    UInt             sState   = 0;
+
+    /* PROJ-2733-DistTxInfo */
+    sdiDataNodes     sDataInfo; 
+    sdiDataNode    * sDataNode = sDataInfo.mNodes;
+    smSCN            sSCN;
+    idBool           sNeedUpdateSCN = ID_FALSE;
+
+    idBool           sIsBindCol = ID_FALSE;
+    SInt             sValueLen = 0;
+    SShort           sFetchResult = ID_SSHORT_MAX;
+
+    SM_INIT_SCN( &sSCN );
+
+    IDE_DASSERT( aStatement->session != NULL );
+
+    sClientInfo = aStatement->session->mQPSpecific.mClientInfo;
+
+    *aExecCount = 0;
+
+    sSdStmt = (sdiStatement *)qci::mSessionCallback.mGetShardStmt( QC_MM_STMT( aStatement ) );
+
+    IDE_TEST_CONT( sClientInfo == NULL, NO_NEED_WORK );
+
+    sConnectInfo = sClientInfo->mConnectInfo;
+
+    // check bind col
+    if ( aMaxBuffer != 0 )
+    {
+        sIsBindCol = ID_TRUE;
+    }
+    
+    /* PROJ-2733-DistTxInfo ¼öÇàÇÒ ³ëµå¸¦ ¼±ÅÃ */
+    IDE_TEST( buildDataNodes( sClientInfo, &sDataInfo, aNodeName, NULL ) != IDE_SUCCESS );
+
+    /* ¼±ÅÃµÈ ³ëµåµéÀº ºĞ»êÁ¤º¸¸¦ À§ÇØ Execute Àü¿¡ ¸ğµÎ Á¢¼ÓÇØ µĞ´Ù. */
+    for ( i = 0; i < sClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
+    {
+        if ( sDataNode->mState != SDI_NODE_STATE_EXECUTE_SELECTED )  /* PROJ-2733-DistTxInfo */
+        {
+            continue;
+        }
+ 
+        IDE_TEST( checkTargetSMN( sClientInfo, sConnectInfo ) != IDE_SUCCESS );
+
+        sNeedUpdateSCN = (sConnectInfo->mDbc == NULL) ? ID_TRUE : ID_FALSE;
+
+        // open shard connection
+        IDE_TEST( qdkOpenShardConnection( sConnectInfo ) != IDE_SUCCESS );
+
+        /* PROJ-2733-DistTxInfo Connection ÀÌÈÄ °¢ ³ëµå SCNÀ» ¾ò¾î ¿Â´Ù. */
+        if ( sNeedUpdateSCN == ID_TRUE )
+        {
+            IDE_TEST( sdl::getSCN( sConnectInfo, &sSCN ) != IDE_SUCCESS );
+
+            SM_SET_MAX_SCN( &(sClientInfo->mGCTxInfo.mCoordSCN), &sSCN );
+        }
+
+        // PROJ-2727
+        IDE_TEST( setShardSessionProperty( aStatement->session,
+                                           sClientInfo,
+                                           sConnectInfo )
+                  != IDE_SUCCESS );
+    }
+
+    /* PROJ-2733-DistTxInfo ºĞ»êÁ¤º¸¸¦ °è»êÇÑ´Ù. */
+    calculateGCTxInfo( QC_PRIVATE_TMPLATE( aStatement ),
+                       &sDataInfo,
+                       ID_FALSE,
+                       SDI_COORD_PLAN_INDEX_NONE );
+
+    /* PROJ-2733-DistTxInfo Node¿¡ ºĞ»êÁ¤º¸¸¦ ÀüÆÄÇÑ´Ù. */
+    IDE_TEST( propagateDistTxInfoToNodes( aStatement, sClientInfo, &sDataInfo ) != IDE_SUCCESS );
+
+    sConnectInfo = sClientInfo->mConnectInfo;
+    sDataNode = sDataInfo.mNodes;
+
+    for ( i = 0; i < sClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
+    {
+        if ( sDataNode->mState != SDI_NODE_STATE_EXECUTE_SELECTED )  /* PROJ-2733-DistTxInfo */
+        {
+            continue;
+        }
+        sState = 1;
+
+        /* TASK-7219 Non-shard DML */
+        IDE_TEST( sdl::setStmtExecSeq( sConnectInfo, QCG_GET_SESSION_STMT_EXEC_SEQ_FOR_SHARD_TX(aStatement) ) != IDE_SUCCESS );
+
+        IDE_TEST( sdlStatementManager::allocRemoteStatement( sSdStmt,
+                                                             sConnectInfo->mNodeId,
+                                                             &sRemoteStmt )
+                  != IDE_SUCCESS );
+        sState = 2;
+
+        if ( aInternalLocalOperation != SDI_INTERNAL_OP_NOT )
+        {
+            IDE_TEST(setInternalOp(aInternalLocalOperation, 
+                                   sConnectInfo, 
+                                   &(sConnectInfo->mLinkFailure)) 
+                     != IDE_SUCCESS);
+        }
+        sState = 3;
+
+        IDE_TEST( sdl::allocStmt( sConnectInfo,
+                                  sRemoteStmt,
+                                  SDI_SHARD_PARTIAL_EXEC_TYPE_NONE, /* sPartialCoordExecType */
+                                  &(sConnectInfo->mLinkFailure) )
+                  != IDE_SUCCESS );        
+        sState = 4;
+
+        // add shard transaction
+        IDE_TEST( qdkAddShardTransaction( aStatement->mStatistics,
+                                          QC_SMI_STMT(aStatement)->mTrans->getTransID(),
+                                          sClientInfo,
+                                          sConnectInfo )
+                  != IDE_SUCCESS );
+
+        // TASK-7244 PSM partial rollback in Sharding
+        if ( ((sConnectInfo->mFlag & SDI_CONNECT_PSM_SVP_SET_MASK) == SDI_CONNECT_PSM_SVP_SET_FALSE) &&
+             (qciMisc::isBeginSP(aStatement) == ID_TRUE) )
+        {
+            IDE_TEST( sdl::setSavepoint( sConnectInfo,
+                                         SAVEPOINT_FOR_SHARD_GLOBAL_PROC_PARTIAL_ROLLBACK )
+                      != IDE_SUCCESS );
+            sConnectInfo->mFlag &= ~SDI_CONNECT_PSM_SVP_SET_MASK;
+            sConnectInfo->mFlag |= SDI_CONNECT_PSM_SVP_SET_TRUE;
+        }
+
+        if ( sIsBindCol == ID_TRUE )
+        {
+            if ( aNumResult != NULL )
+            {
+                IDE_TEST( sdl::bindCol( sConnectInfo,
+                                        sRemoteStmt,
+                                        1,
+                                        MTD_BIGINT_ID,
+                                        ID_SIZEOF(mtdBigintType),
+                                        (void *)aNumResult,
+                                        aMaxBuffer,
+                                        &sValueLen,
+                                        &(sConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                IDE_TEST( sdl::bindCol( sConnectInfo,
+                                        sRemoteStmt,
+                                        1,
+                                        MTD_VARCHAR_ID,
+                                        ID_SIZEOF(mtdCharType),
+                                        (void *)aStrResult,
+                                        aMaxBuffer,
+                                        &sValueLen,
+                                        &(sConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+        
+        if ( sdl::execDirect( sConnectInfo,
+                              sRemoteStmt,
+                              aQuery,
+                              aQueryLen,
+                              sClientInfo,
+                              &(sConnectInfo->mLinkFailure) )
+             == IDE_SUCCESS )
+        {
+            (*aExecCount)++;
+            sDataNode->mState = SDI_NODE_STATE_EXECUTED;  /* PROJ-2733-DistTxInfo */
+
+            if ( sIsBindCol == ID_TRUE )
+            {
+                IDE_TEST( sdl::fetch( sConnectInfo,
+                                      sRemoteStmt,
+                                      &sFetchResult,
+                                      &(sConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+
+                if ( sFetchResult == SQL_NO_DATA_FOUND )
+                {
+                    *aFetchResult = ID_FALSE;
+                }
+                else
+                {
+                    *aFetchResult = ID_TRUE;
+                }
+            
+                IDE_TEST_RAISE(sValueLen == SQL_NULL_DATA, ERR_GET_ROW_COUNT);
+            }        
+        }
+        else
+        {
+            // ¼öÇàÀÌ ½ÇÆĞÇÑ °æ¿ì
+            sSuccess = ID_FALSE;
+            sDataNode->mState = SDI_NODE_STATE_EXECUTE_CANDIDATED;  /* PROJ-2733-DistTxInfo */
+        }
+
+        sState = 3;
+        if ( sdl::freeStmt( sConnectInfo,
+                            sRemoteStmt,
+                            SQL_DROP,
+                            &(sConnectInfo->mLinkFailure) )
+             != IDE_SUCCESS )
+        {
+            // ¼öÇàÀÌ ½ÇÆĞÇÑ °æ¿ì
+            sSuccess = ID_FALSE;
+        }
+
+        sState = 2;
+        if ( ( aInternalLocalOperation != SDI_INTERNAL_OP_NOT ) && 
+             ( sConnectInfo->mLinkFailure != ID_TRUE ) &&
+             ( sConnectInfo->mDbc != NULL ) )
+        {
+            IDE_TEST(setInternalOp( SDI_INTERNAL_OP_NOT, 
+                                    sConnectInfo, 
+                                    &(sConnectInfo->mLinkFailure)) 
+                     != IDE_SUCCESS);
+            ideLog::log(IDE_SD_17,"[SHARD_META] Internal Remote SQL: %s", aQuery);
+        }
+        sState = 1;
+
+        sdlStatementManager::setUnused( &sRemoteStmt );
+    }
+
+    /* PROJ-2733-DistTxInfo
+     * !!! sdl::execDirect ÇÔ¼ö¸¦ ¼öÇàÇßÀ¸¸é sSuccess °ª¿¡ »ó°ü¾øÀÌ
+     *     updateMaxNodeSCNToCoordSCN ÇÔ¼ö¸¦ ¼öÇàÇØ¾ß ÇÑ´Ù
+     */
+    sState = 0;
+    IDE_TEST( updateMaxNodeSCNToCoordSCN( aStatement, sClientInfo, &sDataInfo ) != IDE_SUCCESS );
+
+    IDE_TEST( sSuccess == ID_FALSE );
+
+    IDE_EXCEPTION_CONT(NO_NEED_WORK);
+
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION( ERR_GET_ROW_COUNT )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::shardExecDirect",
+                                  "get row count fetch error" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    switch ( sState )
+    {
+        case 4 :
+            if ( sRemoteStmt->mStmt != NULL )
+            {
+                (void)sdl::freeStmt( sConnectInfo,
+                                     sRemoteStmt,
+                                     SQL_DROP,
+                                     &(sConnectInfo->mLinkFailure) );
+            }
+            /* fall through */
+
+        case 3 :
+            /* fall through */
+
+        case 2 :
+            sdlStatementManager::setUnused( &sRemoteStmt );
+            /* fall through */
+
+        case 1 :
+            (void)updateMaxNodeSCNToCoordSCN( aStatement, sClientInfo, &sDataInfo );
+            /* fall through */
+
+        default:
+            break;
+    }
+
+    sConnectInfo = sClientInfo->mConnectInfo;
+    sDataNode = sDataInfo.mNodes;
+    for ( i = 0; i < sClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
+    {
+        if ( ( aInternalLocalOperation != SDI_INTERNAL_OP_NOT ) &&
+             ( sConnectInfo->mLinkFailure != ID_TRUE ) &&
+             ( sConnectInfo->mDbc != NULL ) )
+        {
+            (void)setInternalOp( SDI_INTERNAL_OP_NOT, sConnectInfo, &(sConnectInfo->mLinkFailure));
+        }
+    }
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::getRemoteRowCount( qcStatement * aStatement,
+                               SChar       * aNodeName,
+                               SChar       * aUserName,
+                               SChar       * aTableName, 
+                               SChar       * aPartitionName,
+                               sdiInternalOperation aInternalLocalOperation,
+                               UInt        * aRowCount )
+{
+    sdiStatement   * sSdStmt      = NULL;
+    sdlRemoteStmt  * sRemoteStmt  = NULL;
+    sdiClientInfo  * sClientInfo  = NULL;
+    sdiConnectInfo * sConnectInfo = NULL;
+    UShort           i = 0;
+    idBool           sSuccess = ID_TRUE;
+
+    /* PROJ-2733-DistTxInfo */
+    sdiDataNodes     sDataInfo; 
+    idBool           sIsRequireUpdateMaxNodeSCN = ID_FALSE;
+
+    sdiDataNode    * sDataNode = sDataInfo.mNodes;
+    smSCN            sSCN;
+    idBool           sNeedUpdateSCN = ID_FALSE;
+
+    const SChar * sTableCountQuery = "select count(*) from %s.%s";
+    const SChar * sPartitionCountQuery = "select count(*) from %s.%s partition (%s)";
+    SChar         sQuery[ IDL_MAX(ID_SIZEOF(sTableCountQuery), ID_SIZEOF(sPartitionCountQuery)) + 
+                          (QC_MAX_OBJECT_NAME_LEN * 2) ] = {0, };
+    mtdBigintType    sRowCount = MTD_BIGINT_NULL;
+    SInt             sValueLen = 0;
+    SShort           sFetchResult = ID_SSHORT_MAX;
+
+    SM_INIT_SCN( &sSCN );
+
+    IDE_DASSERT( aStatement->session != NULL );
+
+    sClientInfo = aStatement->session->mQPSpecific.mClientInfo;
+    IDE_TEST_RAISE( sClientInfo == NULL, ERR_CLIENTINFO );
+
+    IDE_TEST_RAISE( aNodeName == NULL, ERR_NODENAME );
+    IDE_TEST_RAISE( idlOS::strlen( aNodeName ) <= 0, ERR_NODENAME );
+
+    IDE_DASSERT(aTableName != NULL);
+    IDE_DASSERT(aUserName != NULL);
+
+    sSdStmt = (sdiStatement *)qci::mSessionCallback.mGetShardStmt( QC_MM_STMT( aStatement ) );
+
+    /* PROJ-2733-DistTxInfo ¼öÇàÇÒ ³ëµå¸¦ ¼±ÅÃ */
+    IDE_TEST( buildDataNodes( sClientInfo, &sDataInfo, aNodeName, NULL ) != IDE_SUCCESS) ;
+
+    sConnectInfo = sClientInfo->mConnectInfo;
+
+    /* ¼±ÅÃµÈ ³ëµåµéÀº ºĞ»êÁ¤º¸¸¦ À§ÇØ Execute Àü¿¡ ¸ğµÎ Á¢¼ÓÇØ µĞ´Ù. */
+    for ( i = 0; i < sClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
+    {
+        if ( sDataNode->mState != SDI_NODE_STATE_EXECUTE_SELECTED )  /* PROJ-2733-DistTxInfo */
+        {
+            continue;
+        }
+ 
+        IDE_TEST( checkTargetSMN( sClientInfo, sConnectInfo ) != IDE_SUCCESS );
+
+        sNeedUpdateSCN = (sConnectInfo->mDbc == NULL) ? ID_TRUE : ID_FALSE;
+
+        // open shard connection
+        IDE_TEST( qdkOpenShardConnection( sConnectInfo ) != IDE_SUCCESS );
+
+        /* PROJ-2733-DistTxInfo Connection ÀÌÈÄ °¢ ³ëµå SCNÀ» ¾ò¾î ¿Â´Ù. */
+        if ( sNeedUpdateSCN == ID_TRUE )
+        {
+            IDE_TEST( sdl::getSCN( sConnectInfo, &sSCN ) != IDE_SUCCESS );
+
+            SM_SET_MAX_SCN( &(sClientInfo->mGCTxInfo.mCoordSCN), &sSCN );
+        }
+
+        // PROJ-2727
+        IDE_TEST( setShardSessionProperty( aStatement->session,
+                                           sClientInfo,
+                                           sConnectInfo )
+                  != IDE_SUCCESS );
+    }
+
+    /* PROJ-2733-DistTxInfo ºĞ»êÁ¤º¸¸¦ °è»êÇÑ´Ù. */
+    calculateGCTxInfo( QC_PRIVATE_TMPLATE( aStatement ),
+                       &sDataInfo,
+                       ID_FALSE,
+                       SDI_COORD_PLAN_INDEX_NONE );
+
+    /* PROJ-2733-DistTxInfo Node¿¡ ºĞ»êÁ¤º¸¸¦ ÀüÆÄÇÑ´Ù. */
+    IDE_TEST( propagateDistTxInfoToNodes( aStatement, sClientInfo, &sDataInfo ) != IDE_SUCCESS );
+
+    sConnectInfo = sClientInfo->mConnectInfo;
+    sDataNode = sDataInfo.mNodes;
+
+    for ( i = 0; i < sClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
+    {
+        if ( sDataNode->mState != SDI_NODE_STATE_EXECUTE_SELECTED )  /* PROJ-2733-DistTxInfo */
+        {
+            continue;
+        }
+
+        /* TASK-7219 Non-shard DML */
+        IDE_TEST( sdl::setStmtExecSeq( sConnectInfo, QCG_GET_SESSION_STMT_EXEC_SEQ_FOR_SHARD_TX(aStatement) ) != IDE_SUCCESS );
+
+        IDE_TEST( sdlStatementManager::allocRemoteStatement( sSdStmt,
+                                                             sConnectInfo->mNodeId,
+                                                             &sRemoteStmt )
+                  != IDE_SUCCESS );
+
+        if ( aInternalLocalOperation != SDI_INTERNAL_OP_NOT )
+        {
+            IDE_TEST(setInternalOp(aInternalLocalOperation, 
+                                   sConnectInfo, 
+                                   &(sConnectInfo->mLinkFailure)) 
+                     != IDE_SUCCESS);
+        }
+            
+        IDE_TEST( sdl::allocStmt( sConnectInfo,
+                                  sRemoteStmt,
+                                  SDI_SHARD_PARTIAL_EXEC_TYPE_NONE, /* sPartialCoordExecType */
+                                  &(sConnectInfo->mLinkFailure) )
+                  != IDE_SUCCESS );        
+
+        // add shard transaction
+        IDE_TEST( qdkAddShardTransaction( aStatement->mStatistics,
+                                          QC_SMI_STMT(aStatement)->mTrans->getTransID(),
+                                          sClientInfo,
+                                          sConnectInfo )
+                  != IDE_SUCCESS );
+            
+        if ( aPartitionName == NULL )
+        {
+            idlOS::snprintf( sQuery, ID_SIZEOF(sQuery), sTableCountQuery, aUserName, aTableName);
+        }
+        else
+        {
+            idlOS::snprintf( sQuery, ID_SIZEOF(sQuery), sPartitionCountQuery, aUserName, aTableName, aPartitionName);
+        }
+
+        IDE_TEST( sdl::bindCol( sConnectInfo,
+                                sRemoteStmt,
+                                1,
+                                MTD_BIGINT_ID,
+                                ID_SIZEOF(mtdBigintType),
+                                (void *)&sRowCount,
+                                ID_SIZEOF(sRowCount),
+                                &sValueLen,
+                                &(sConnectInfo->mLinkFailure) ) != IDE_SUCCESS );
+
+        sIsRequireUpdateMaxNodeSCN = ID_TRUE;
+        if ( sdl::execDirect( sConnectInfo,
+                              sRemoteStmt,
+                              sQuery,
+                              idlOS::strlen(sQuery),
+                              sClientInfo,
+                              &(sConnectInfo->mLinkFailure) )
+             == IDE_SUCCESS )
+        {
+            sDataNode->mState = SDI_NODE_STATE_EXECUTED;  /* PROJ-2733-DistTxInfo */
+        }
+        else
+        {
+            // ¼öÇàÀÌ ½ÇÆĞÇÑ °æ¿ì
+            sSuccess = ID_FALSE;
+            sDataNode->mState = SDI_NODE_STATE_EXECUTE_CANDIDATED;  /* PROJ-2733-DistTxInfo */
+        }
+
+        IDE_TEST( sdl::fetch( sConnectInfo,
+                              sRemoteStmt,
+                              &sFetchResult,
+                              &(sConnectInfo->mLinkFailure) )
+                    != IDE_SUCCESS );
+
+        IDE_TEST_RAISE(sFetchResult == SQL_NO_DATA_FOUND, ERR_NO_DATA_FOUND);
+        IDE_TEST_RAISE(sValueLen == SQL_NULL_DATA, ERR_GET_ROW_COUNT);
+        *aRowCount = sRowCount;
+
+        if ( sdl::freeStmt( sConnectInfo,
+                            sRemoteStmt,
+                            SQL_DROP,
+                            &(sConnectInfo->mLinkFailure) )
+             != IDE_SUCCESS )
+        {
+            // ¼öÇàÀÌ ½ÇÆĞÇÑ °æ¿ì
+            sSuccess = ID_FALSE;
+        }
+
+        if ( ( aInternalLocalOperation != SDI_INTERNAL_OP_NOT ) && 
+             ( sConnectInfo->mLinkFailure != ID_TRUE ) &&
+             ( sConnectInfo->mDbc != NULL ) )
+        {
+            IDE_TEST(setInternalOp( SDI_INTERNAL_OP_NOT, 
+                                    sConnectInfo, 
+                                    &(sConnectInfo->mLinkFailure)) 
+                     != IDE_SUCCESS);
+            ideLog::log(IDE_SD_17,"[SHARD_META] Internal Remote SQL: %s", sQuery);
+        }
+
+        sdlStatementManager::setUnused( &sRemoteStmt );
+    }
+
+    /* PROJ-2733-DistTxInfo
+     * !!! sdl::execDirect ÇÔ¼ö¸¦ ¼öÇàÇßÀ¸¸é sSuccess °ª¿¡ »ó°ü¾øÀÌ
+     *     updateMaxNodeSCNToCoordSCN ÇÔ¼ö¸¦ ¼öÇàÇØ¾ß ÇÑ´Ù
+     */
+    sIsRequireUpdateMaxNodeSCN = ID_FALSE;
+    IDE_TEST( updateMaxNodeSCNToCoordSCN( aStatement, sClientInfo, &sDataInfo ) != IDE_SUCCESS );
+
+    IDE_TEST( sSuccess == ID_FALSE );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_CLIENTINFO )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::getRemoteRowCount",
+                                  "not exist client info" ) );
+    }
+    IDE_EXCEPTION( ERR_NODENAME )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::getRemoteRowCount node name wrong",
+                                  aNodeName ) );
+    }
+    IDE_EXCEPTION( ERR_NO_DATA_FOUND )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::getRemoteRowCount",
+                                  "get row count fetch no data found" ) );
+    }
+    IDE_EXCEPTION( ERR_GET_ROW_COUNT )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::getRemoteRowCount",
+                                  "get row count fetch error" ) );
+        ideLog::log(IDE_SD_31,"[DEBUG] Shard get row count: %"ID_INT32_FMT, sFetchResult);
+    }
+    IDE_EXCEPTION_END;
+
+    if ( sIsRequireUpdateMaxNodeSCN == ID_TRUE )
+    {
+        /* PROJ-2733-DistTxInfo
+         * !!! sdl::execDirect ÇÔ¼ö¸¦ ¼öÇàÇßÀ¸¸é sSuccess °ª¿¡ »ó°ü¾øÀÌ
+         *     updateMaxNodeSCNToCoordSCN ÇÔ¼ö¸¦ ¼öÇàÇØ¾ß ÇÑ´Ù
+         */
+        (void) updateMaxNodeSCNToCoordSCN( aStatement, sClientInfo, &sDataInfo );
+    }
     if ( sRemoteStmt != NULL )
     {
         if ( sRemoteStmt->mStmt != NULL )
@@ -2419,6 +4537,12 @@ IDE_RC sdi::shardExecDirect( qcStatement * aStatement,
         sdlStatementManager::setUnused( &sRemoteStmt );
     }
 
+    if ( ( aInternalLocalOperation != SDI_INTERNAL_OP_NOT ) && 
+         ( sConnectInfo->mLinkFailure != ID_TRUE ) &&
+         ( sConnectInfo->mDbc != NULL ) )
+    {
+        (void)setInternalOp( SDI_INTERNAL_OP_NOT, sConnectInfo, &(sConnectInfo->mLinkFailure));
+    }
     return IDE_FAILURE;
 }
 
@@ -2428,6 +4552,13 @@ void sdi::initDataInfo( qcShardExecData * aExecData )
     aExecData->execInfo = NULL;
     aExecData->dataSize = 0;
     aExecData->data = NULL;
+    aExecData->partialStmt = ID_FALSE;
+    SMI_INIT_SCN( &aExecData->leadingRequestSCN );
+    aExecData->leadingPlanIndex = ID_UINT_MAX;
+    aExecData->globalPSM = ID_FALSE;
+
+    /* TASK-7219 Non-shard DML */
+    aExecData->partialExecType = SDI_SHARD_PARTIAL_EXEC_TYPE_NONE;
 }
 
 IDE_RC sdi::allocDataInfo( qcShardExecData * aExecData,
@@ -2476,15 +4607,15 @@ IDE_RC sdi::allocDataInfo( qcShardExecData * aExecData,
 void sdi::setDataNodePrepared( sdiClientInfo * aClientInfo,
                                sdiDataNodes  * aDataNode )
 {
-    sdiConnectInfo * sConnectInfo;
     sdiDataNode    * sDataNode;
     UInt             i;
 
-    sConnectInfo = aClientInfo->mConnectInfo;
+    ACP_UNUSED( aClientInfo );
+
     sDataNode = aDataNode->mNodes;
 
     // executed -> prepared
-    for ( i = 0; i < aClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
+    for ( i = 0; i < aDataNode->mCount; i++, sDataNode++ )
     {
         if ( sDataNode->mState >= SDI_NODE_STATE_EXECUTED )
         {
@@ -2509,7 +4640,7 @@ void sdi::closeDataInfo( qcStatement     * aStatement,
         sClientInfo = aStatement->session->mQPSpecific.mClientInfo;
         sDataInfo = (sdiDataNodes*)aExecData->execInfo;
 
-        // statementê°€ clearë˜ëŠ” ê²½ìš° stmtë“¤ì„ freeí•œë‹¤.
+        // statement°¡ clearµÇ´Â °æ¿ì stmtµéÀ» freeÇÑ´Ù.
         for ( i = 0; i < aExecData->planCount; i++, sDataInfo++ )
         {
             if ( sDataInfo->mInitialized == ID_TRUE )
@@ -2531,8 +4662,6 @@ void sdi::closeDataInfo( qcStatement     * aStatement,
 void sdi::clearDataInfo( qcStatement     * aStatement,
                          qcShardExecData * aExecData )
 {
-    sdiClientInfo  * sClientInfo;
-    sdiConnectInfo * sConnectInfo;
     sdiDataNodes   * sDataInfo;
     sdiDataNode    * sDataNode;
     UInt             i;
@@ -2540,18 +4669,16 @@ void sdi::clearDataInfo( qcStatement     * aStatement,
 
     if ( ( aExecData->execInfo != NULL ) && ( aStatement->session != NULL ) )
     {
-        sClientInfo = aStatement->session->mQPSpecific.mClientInfo;
         sDataInfo = (sdiDataNodes*)aExecData->execInfo;
 
-        // statementê°€ clearë˜ëŠ” ê²½ìš° stmtë“¤ì„ freeí•œë‹¤.
+        // statement°¡ clearµÇ´Â °æ¿ì stmtµéÀ» freeÇÑ´Ù.
         for ( i = 0; i < aExecData->planCount; i++, sDataInfo++ )
         {
             if ( sDataInfo->mInitialized == ID_TRUE )
             {
-                sConnectInfo = sClientInfo->mConnectInfo;
                 sDataNode    = sDataInfo->mNodes;
 
-                for ( j = 0; j < sClientInfo->mCount; j++, sConnectInfo++, sDataNode++ )
+                for ( j = 0; j < sDataInfo->mCount; j++, sDataNode++ )
                 {
                     sdlStatementManager::setUnused( &sDataNode->mRemoteStmt );
                 }
@@ -2581,6 +4708,52 @@ void sdi::clearDataInfo( qcStatement     * aStatement,
     {
         // Nothing to do.
     }
+
+    aExecData->partialStmt = ID_FALSE;
+    SMI_INIT_SCN( &aExecData->leadingRequestSCN );
+    aExecData->leadingPlanIndex = ID_UINT_MAX;
+    aExecData->globalPSM = ID_FALSE;
+
+    /* TASK-7219 Non-shard DML */
+    aExecData->partialExecType = SDI_SHARD_PARTIAL_EXEC_TYPE_NONE;
+}
+
+void sdi::clearShardDataInfoForRebuild( qcStatement     * aStatement,
+                                        qcShardExecData * aExecData )
+{
+    sdiDataNodes   * sDataInfo;
+    sdiDataNode    * sDataNode;
+    UInt             i;
+    UInt             j;
+
+    if ( ( aExecData->execInfo != NULL ) && ( aStatement->session != NULL ) )
+    {
+        sDataInfo = (sdiDataNodes*)aExecData->execInfo;
+
+        for ( i = 0; i < aExecData->planCount; i++, sDataInfo++ )
+        {
+            if ( sDataInfo->mInitialized == ID_TRUE )
+            {
+                sDataNode    = sDataInfo->mNodes;
+
+                for ( j = 0; j < sDataInfo->mCount; j++, sDataNode++ )
+                {
+                    sdlStatementManager::setUnused( &sDataNode->mRemoteStmt );
+                }
+
+                sDataInfo->mInitialized = ID_FALSE;
+            }
+            else
+            {
+                // Nothing to do.
+            }
+        }
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
 }
 
 IDE_RC sdi::initShardDataInfo( qcTemplate     * aTemplate,
@@ -2607,16 +4780,20 @@ IDE_RC sdi::initShardDataInfo( qcTemplate     * aTemplate,
 
     sdiStatement * sSdStmt = NULL;
 
+    ULong          sTargetSMN = SDI_NULL_SMN;
+
     IDE_TEST_RAISE( aShardAnalysis == NULL, ERR_NOT_EXIST_SHARD_ANALYSIS );
 
     //----------------------------------------
-    // data info ì´ˆê¸°í™”
+    // data info ÃÊ±âÈ­
     //----------------------------------------
 
     aDataInfo->mCount = aClientInfo->mCount;
 
     sConnectInfo = aClientInfo->mConnectInfo;
     sDataNode = aDataInfo->mNodes;
+
+    sTargetSMN = aClientInfo->mTargetShardMetaNumber;
 
     sSdStmt = (sdiStatement *)qci::mSessionCallback.mGetShardStmt( QC_MM_STMT( aTemplate->stmt ) );
     IDE_DASSERT( sSdStmt != NULL );
@@ -2634,23 +4811,28 @@ IDE_RC sdi::initShardDataInfo( qcTemplate     * aTemplate,
     }
 
     //----------------------------------------
-    // data node prepare í›„ë³´ ì„ íƒ
+    // data node prepare ÈÄº¸ ¼±ÅÃ
     //----------------------------------------
 
     if ( aShardAnalysis == & gAnalyzeInfoForAllNodes )
     {
-        // ì „ì²´ data nodeë¥¼ ì„ íƒ
-        for ( i = 0; i < aClientInfo->mCount; i++ )
+        // ÀüÃ¼ data node¸¦ ¼±ÅÃ
+        sConnectInfo = aClientInfo->mConnectInfo;
+        sDataNode = aDataInfo->mNodes;
+
+        for ( i = 0; i < aClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
         {
-            aDataInfo->mNodes[i].mState = SDI_NODE_STATE_PREPARE_CANDIDATED;
+            if ( sConnectInfo->mNodeInfo.mSMN == sTargetSMN )
+            {
+                sDataNode->mState = SDI_NODE_STATE_PREPARE_CANDIDATED;
+            }
         }
     }
     else
     {
-        if ( ( aShardAnalysis->mValueCount > 0 ) &&
+        if ( ( aShardAnalysis->mValuePtrCount > 0 ) &&
              ( findBindParameter( aShardAnalysis ) == ID_FALSE ) &&
-             ( aShardAnalysis->mSplitMethod != SDI_SPLIT_CLONE ) &&
-             ( aShardAnalysis->mSplitMethod != SDI_SPLIT_SOLO ) )
+             ( getSplitType ( aShardAnalysis->mSplitMethod ) == SDI_SPLIT_TYPE_DIST ) )
         {
             sConnectInfo = aClientInfo->mConnectInfo;
             sDataNode = aDataInfo->mNodes;
@@ -2674,7 +4856,7 @@ IDE_RC sdi::initShardDataInfo( qcTemplate     * aTemplate,
             {
                 for ( i = 0; i < aClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
                 {
-                    // rangeInfoì— í¬í•¨ë˜ì–´ ìˆê±°ë‚˜, default nodeëŠ” prepare ëŒ€ìƒì´ë‹¤.
+                    // rangeInfo¿¡ Æ÷ÇÔµÇ¾î ÀÖ°Å³ª, default node´Â prepare ´ë»óÀÌ´Ù.
                     if ( ( findRangeInfo( &(aShardAnalysis->mRangeInfo),
                                           sConnectInfo->mNodeId ) == ID_TRUE ) ||
                          ( aShardAnalysis->mDefaultNodeId == sConnectInfo->mNodeId ) )
@@ -2732,17 +4914,20 @@ IDE_RC sdi::initShardDataInfo( qcTemplate     * aTemplate,
 
                     for ( i = 0; i < aClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
                     {
-                        if ( isMatchedNodeName( sNodeName,
-                                                sConnectInfo->mNodeName ) == ID_TRUE )
+                        if ( sConnectInfo->mNodeInfo.mSMN == sTargetSMN )
                         {
-                            sDataNode->mState = SDI_NODE_STATE_PREPARE_CANDIDATED;
+                            if ( isMatchedNodeName( sNodeName,
+                                                    sConnectInfo->mNodeName ) == ID_TRUE )
+                            {
+                                sDataNode->mState = SDI_NODE_STATE_PREPARE_CANDIDATED;
 
-                            sFound = ID_TRUE;
-                            break;
-                        }
-                        else
-                        {
-                            // Nothing to do.
+                                sFound = ID_TRUE;
+                                break;
+                            }
+                            else
+                            {
+                                // Nothing to do.
+                            }
                         }
                     }
 
@@ -2754,10 +4939,10 @@ IDE_RC sdi::initShardDataInfo( qcTemplate     * aTemplate,
                 sConnectInfo = aClientInfo->mConnectInfo;
                 sDataNode = aDataInfo->mNodes;
 
-                // cloneì´ë¼ë„ range nodeì •ë³´ëŠ” ìˆë‹¤.
+                // cloneÀÌ¶óµµ range nodeÁ¤º¸´Â ÀÖ´Ù.
                 for ( i = 0; i < aClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
                 {
-                    // rangeInfoì— í¬í•¨ë˜ì–´ ìˆê±°ë‚˜, default nodeëŠ” prepare ëŒ€ìƒì´ë‹¤.
+                    // rangeInfo¿¡ Æ÷ÇÔµÇ¾î ÀÖ°Å³ª, default node´Â prepare ´ë»óÀÌ´Ù.
                     if ( ( findRangeInfo( &(aShardAnalysis->mRangeInfo),
                                           sConnectInfo->mNodeId ) == ID_TRUE ) ||
                          ( aShardAnalysis->mDefaultNodeId == sConnectInfo->mNodeId ) )
@@ -2787,7 +4972,7 @@ IDE_RC sdi::initShardDataInfo( qcTemplate     * aTemplate,
     }
     IDE_EXCEPTION( ERR_NODE_NOT_FOUND )
     {
-        // ê¸¸ì´ê²€ì‚¬ëŠ” ì´ë¯¸ í–ˆë‹¤.
+        // ±æÀÌ°Ë»ç´Â ÀÌ¹Ì Çß´Ù.
         IDE_DASSERT( sNodeName->namePos.size <= SDI_NODE_NAME_MAX_SIZE );
 
         if ( isNameInDoubleQuotation( &(sNodeName->namePos) ) == ID_FALSE )
@@ -2822,11 +5007,11 @@ IDE_RC sdi::reuseShardDataInfo( qcTemplate     * aTemplate,
     sdiDataNode    * sDataNode = NULL;
     UInt             i;
 
-    SD_UNUSED( aTemplate );
-    SD_UNUSED( aClientInfo );
+    ACP_UNUSED( aTemplate );
+    ACP_UNUSED( aClientInfo );
 
     //----------------------------------------
-    // data info ì´ˆê¸°í™”
+    // data info ÃÊ±âÈ­
     //----------------------------------------
 
     if ( aDataInfo->mCount > 0 )
@@ -2855,12 +5040,12 @@ IDE_RC sdi::reuseShardDataInfo( qcTemplate     * aTemplate,
         {
             IDE_DASSERT( sDataNode->mBindParamCount == aBindParamCount );
 
-            // bind parameterê°€ ë³€ê²½ë˜ì—ˆë‚˜?
+            // bind parameter°¡ º¯°æµÇ¾ú³ª?
             if ( idlOS::memcmp( sDataNode->mBindParams,
                                 aBindParams,
                                 ID_SIZEOF( sdiBindParam ) * aBindParamCount ) != 0 )
             {
-                // bind ì •ë³´ëŠ” í˜„ì¬ í•œë²Œì´ë¯€ë¡œ í•œë²ˆë§Œ ë³µì‚¬í•œë‹¤.
+                // bind Á¤º¸´Â ÇöÀç ÇÑ¹úÀÌ¹Ç·Î ÇÑ¹ø¸¸ º¹»çÇÑ´Ù.
                 idlOS::memcpy( sDataNode->mBindParams,
                                aBindParams,
                                ID_SIZEOF( sdiBindParam ) * aBindParamCount );
@@ -2921,12 +5106,12 @@ IDE_RC sdi::decideShardDataInfo( qcTemplate     * aTemplate,
                     ERR_NULL_SHARD_QUERY );
 
     //----------------------------------------
-    // data node execute í›„ë³´ ì„ íƒ
+    // data node execute ÈÄº¸ ¼±ÅÃ
     //----------------------------------------
 
     if ( aShardAnalysis == & gAnalyzeInfoForAllNodes )
     {
-        // ì „ì²´ data nodeë¥¼ ì„ íƒ
+        // ÀüÃ¼ data node¸¦ ¼±ÅÃ
         IDE_TEST( setPrepareSelected( aClientInfo,
                                       aDataInfo,
                                       ID_TRUE,  // all nodes
@@ -2939,7 +5124,7 @@ IDE_RC sdi::decideShardDataInfo( qcTemplate     * aTemplate,
         {
             case SDI_SPLIT_CLONE:
 
-                if ( aShardAnalysis->mValueCount == 0 )
+                if ( aShardAnalysis->mValuePtrCount == 0 )
                 {
                     if ( QCU_DISPLAY_PLAN_FOR_NATC == 0 )
                     {
@@ -2998,8 +5183,8 @@ IDE_RC sdi::decideShardDataInfo( qcTemplate     * aTemplate,
             case SDI_SPLIT_LIST:
 
                 /*
-                 * Shard value( bind or constant value )ê°€
-                 * Analysis resultìƒì˜ range infoì—ì„œ ëª‡ ë²ˆ ì§¸(range index) ìœ„ì¹˜í•œ valueì¸ì§€ ì°¾ëŠ”ë‹¤.
+                 * Shard value( bind or constant value )°¡
+                 * Analysis result»óÀÇ range info¿¡¼­ ¸î ¹ø Â°(range index) À§Ä¡ÇÑ valueÀÎÁö Ã£´Â´Ù.
                  */
                 IDE_TEST( getExecNodeRangeIndex( aTemplate,
                                                  aShardKeyTuple,
@@ -3030,15 +5215,15 @@ IDE_RC sdi::decideShardDataInfo( qcTemplate     * aTemplate,
                     if ( sExecDefaultNode == ID_TRUE )
                     {
                         /* BUG-45738 */
-                        // Default nodeì™¸ì— ìˆ˜í–‰ ëŒ€ìƒ ë…¸ë“œê°€ ì—†ëŠ”ë°
-                        // Default nodeê°€ ì„¤ì • ë˜ì–´ìˆì§€ ì•Šë‹¤ë©´ ì—ëŸ¬
+                        // Default node¿Ü¿¡ ¼öÇà ´ë»ó ³ëµå°¡ ¾ø´Âµ¥
+                        // Default node°¡ ¼³Á¤ µÇ¾îÀÖÁö ¾Ê´Ù¸é ¿¡·¯
                         IDE_TEST_RAISE( ( sRangeIndexCount == 0 ) &&
-                                        ( aShardAnalysis->mDefaultNodeId == ID_UINT_MAX ),
+                                        ( aShardAnalysis->mDefaultNodeId == SDI_NODE_NULL_ID ),
                                         ERR_NO_EXEC_NODE_FOUND );
 
-                        // Default nodeê°€ ì—†ë”ë¼ë„, ìˆ˜í–‰ ëŒ€ìƒ ë…¸ë“œê°€ í•˜ë‚˜ë¼ë„ ìˆìœ¼ë©´
-                        // ê·¸ ë…¸ë“œì—ì„œë§Œ ìˆ˜í–‰ì‹œí‚¨ë‹¤. ( for SELECT )
-                        if ( aShardAnalysis->mDefaultNodeId != ID_UINT_MAX )
+                        // Default node°¡ ¾ø´õ¶óµµ, ¼öÇà ´ë»ó ³ëµå°¡ ÇÏ³ª¶óµµ ÀÖÀ¸¸é
+                        // ±× ³ëµå¿¡¼­¸¸ ¼öÇà½ÃÅ²´Ù. ( for SELECT )
+                        if ( aShardAnalysis->mDefaultNodeId != SDI_NODE_NULL_ID )
                         {
                             IDE_TEST( setPrepareSelected( aClientInfo,
                                                           aDataInfo,
@@ -3120,10 +5305,11 @@ IDE_RC sdi::decideShardDataInfo( qcTemplate     * aTemplate,
     }
 
     //----------------------------------------
-    // data node execute í›„ë³´ ì¤€ë¹„
+    // data node execute ÈÄº¸ ÁØºñ
     //----------------------------------------
 
-    IDE_TEST( prepare( aClientInfo,
+    IDE_TEST( prepare( aTemplate,
+                       aClientInfo,
                        aDataInfo,
                        aShardQuery )
               != IDE_SUCCESS );
@@ -3176,12 +5362,13 @@ IDE_RC sdi::getExecNodeRangeIndex( qcTemplate        * aTemplate,
     idBool  sIsFound = ID_FALSE;
     idBool  sIsSame = ID_FALSE;
 
-    if ( ( aShardAnalysis->mValueCount == 0 ) && ( aShardAnalysis->mSubValueCount == 0 ) )
+    if ( ( aShardAnalysis->mValuePtrCount == 0 ) && 
+         ( aShardAnalysis->mSubValuePtrCount == 0 ) )
     {
         /*
          * CASE 1 : ( mValueCount == 0 && mSubValueCount == 0 )
          *
-         * Shard valueê°€ ì—†ë‹¤ë©´, ëª¨ë“  ë…¸ë“œê°€ ìˆ˜í–‰ ëŒ€ìƒì´ë‹¤.
+         * Shard value°¡ ¾ø´Ù¸é, ¸ğµç ³ëµå°¡ ¼öÇà ´ë»óÀÌ´Ù.
          *
          */
         *aExecAllNodes = ID_TRUE;
@@ -3189,14 +5376,14 @@ IDE_RC sdi::getExecNodeRangeIndex( qcTemplate        * aTemplate,
     }
     else
     {
-        // shard key valueì— í•´ë‹¹í•˜ëŠ” range infoì˜ indexë“¤ì„ êµ¬í•œë‹¤.
-        for ( i = 0; i < aShardAnalysis->mValueCount; i++ )
+        // shard key value¿¡ ÇØ´çÇÏ´Â range infoÀÇ indexµéÀ» ±¸ÇÑ´Ù.
+        for ( i = 0; i < aShardAnalysis->mValuePtrCount; i++ )
         {
             IDE_TEST( getRangeIndexByValue( aTemplate,
                                             aShardKeyTuple,
                                             aShardAnalysis,
                                             i,
-                                            &aShardAnalysis->mValue[i],
+                                            aShardAnalysis->mValuePtrArray[i],
                                             sFirstRangeIndex,
                                             &sFirstRangeIndexCount,
                                             aExecDefaultNode,
@@ -3204,27 +5391,27 @@ IDE_RC sdi::getExecNodeRangeIndex( qcTemplate        * aTemplate,
                       != IDE_SUCCESS );
         }
 
-        // Sub-shard keyê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+        // Sub-shard key°¡ Á¸ÀçÇÏ´Â °æ¿ì
         if ( aShardAnalysis->mSubKeyExists == ID_TRUE )
         {
-            if ( aShardAnalysis->mValueCount > 1 )
+            if ( aShardAnalysis->mValuePtrCount > 1 )
             {
                 /*
-                 * Sub-shard keyê°€ ìˆëŠ” ê²½ìš°,
-                 * ì²« ë²ˆ ì§¸ shard keyì— ëŒ€í•œ value ê°€ ë‘˜ ì´ìƒì´ë¼ë©´, ìˆ˜í–‰ë…¸ë“œë¥¼ ì •í™•íˆ êµ¬ë¶„ í•´ ë‚¼ ìˆ˜ ì—†ë‹¤.
-                 * ë‹¤ë§Œ, ì²« ë²ˆ ì§¸ shard keyì— ëŒ€í•œ valueê°€ ì—¬ëŸ¬ê°œë¼ë„ ëª¨ë‘ ê°™ì€ ê°’ì´ë¼ë©´,
-                 * ìˆ˜í–‰ë…¸ë“œë¥¼ íŒë³„ í•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì— í—ˆìš©í•œë‹¤.
+                 * Sub-shard key°¡ ÀÖ´Â °æ¿ì,
+                 * Ã¹ ¹ø Â° shard key¿¡ ´ëÇÑ value °¡ µÑ ÀÌ»óÀÌ¶ó¸é, ¼öÇà³ëµå¸¦ Á¤È®È÷ ±¸ºĞ ÇØ ³¾ ¼ö ¾ø´Ù.
+                 * ´Ù¸¸, Ã¹ ¹ø Â° shard key¿¡ ´ëÇÑ value°¡ ¿©·¯°³¶óµµ ¸ğµÎ °°Àº °ªÀÌ¶ó¸é,
+                 * ¼öÇà³ëµå¸¦ ÆÇº° ÇÒ ¼ö ÀÖ±â ¶§¹®¿¡ Çã¿ëÇÑ´Ù.
                  *
                  * e.x.    WHERE ( KEY1 = 100 AND KEY2 = 200 ) OR ( KEY1 = 100 AND KEY2 = 300 )
                  *       = WHERE ( KEY1 = 100 ) AND ( KEY2 = 100 OR KEY2 = 200 )
                  */
-                for ( i = 1; i < aShardAnalysis->mValueCount; i++ )
+                for ( i = 1; i < aShardAnalysis->mValuePtrCount; i++ )
                 {
                     IDE_TEST( sdi::checkValuesSame( aTemplate,
                                                     aShardKeyTuple,
                                                     aShardAnalysis->mKeyDataType,
-                                                    &aShardAnalysis->mValue[0],
-                                                    &aShardAnalysis->mValue[i],
+                                                    aShardAnalysis->mValuePtrArray[0],
+                                                    aShardAnalysis->mValuePtrArray[i],
                                                     &sIsSame )
                               != IDE_SUCCESS );
 
@@ -3246,13 +5433,13 @@ IDE_RC sdi::getExecNodeRangeIndex( qcTemplate        * aTemplate,
 
             if ( *aExecAllNodes == ID_FALSE )
             {
-                for ( i = 0; i < aShardAnalysis->mSubValueCount; i++ )
+                for ( i = 0; i < aShardAnalysis->mSubValuePtrCount; i++ )
                 {
                     IDE_TEST( getRangeIndexByValue( aTemplate,
                                                     aShardSubKeyTuple,
                                                     aShardAnalysis,
                                                     i,
-                                                    &aShardAnalysis->mSubValue[i],
+                                                    aShardAnalysis->mSubValuePtrArray[i],
                                                     sSecondRangeIndex,
                                                     &sSecondRangeIndexCount,
                                                     aExecDefaultNode,
@@ -3272,14 +5459,15 @@ IDE_RC sdi::getExecNodeRangeIndex( qcTemplate        * aTemplate,
 
         if ( *aExecAllNodes == ID_FALSE )
         {
-            if ( aShardAnalysis->mValueCount > 0 )
+            if ( aShardAnalysis->mValuePtrCount > 0 )
             {
-                if ( ( aShardAnalysis->mSubKeyExists == ID_TRUE ) && ( aShardAnalysis->mSubValueCount > 0 ) )
+                if ( ( aShardAnalysis->mSubKeyExists == ID_TRUE ) && 
+                     ( aShardAnalysis->mSubValuePtrCount > 0 ) )
                 {
                     /*
                      * CASE 2 : ( mValueCount > 0 && mSubValueCount > 0 )
                      *
-                     * valueì™€ sub valueì˜ range indexê°€ ê°™ì€ ë…¸ë“œë“¤ì´ ìˆ˜í–‰ëŒ€ìƒì´ ëœë‹¤.
+                     * value¿Í sub valueÀÇ range index°¡ °°Àº ³ëµåµéÀÌ ¼öÇà´ë»óÀÌ µÈ´Ù.
                      *
                      */
 
@@ -3336,7 +5524,7 @@ IDE_RC sdi::getExecNodeRangeIndex( qcTemplate        * aTemplate,
                     /*
                      * CASE 3 : ( mValueCount > 0 && mSubValueCount == 0 )
                      *
-                     * valueì˜ range indexì— í•´ë‹¹í•˜ëŠ” ë…¸ë“œë“¤ì´ ìˆ˜í–‰ëŒ€ìƒì´ ëœë‹¤.
+                     * valueÀÇ range index¿¡ ÇØ´çÇÏ´Â ³ëµåµéÀÌ ¼öÇà´ë»óÀÌ µÈ´Ù.
                      *
                      */
                     for ( i = 0; i < sFirstRangeIndexCount; i++ )
@@ -3363,7 +5551,7 @@ IDE_RC sdi::getExecNodeRangeIndex( qcTemplate        * aTemplate,
                 /*
                  * CASE 4 : ( mValueCount == 0 && mSubValueCount > 0 )
                  *
-                 * sub valueì˜ range indexì— í•´ë‹¹í•˜ëŠ” ë…¸ë“œë“¤ì´ ìˆ˜í–‰ëŒ€ìƒì´ ëœë‹¤.
+                 * sub valueÀÇ range index¿¡ ÇØ´çÇÏ´Â ³ëµåµéÀÌ ¼öÇà´ë»óÀÌ µÈ´Ù.
                  *
                  */
                 for ( j = 0; j < sSecondRangeIndexCount; j++ )
@@ -3407,11 +5595,14 @@ IDE_RC sdi::setPrepareSelected( sdiClientInfo    * aClientInfo,
     sdiConnectInfo * sConnectInfo = NULL;
     sdiDataNode    * sDataNode = NULL;
     UInt             i = 0;
+    ULong            sTargetSMN = SDI_NULL_SMN;
 
     IDE_DASSERT( aClientInfo != NULL );
 
     sConnectInfo = aClientInfo->mConnectInfo;
     sDataNode    = aDataInfo->mNodes;
+
+    sTargetSMN   = aClientInfo->mTargetShardMetaNumber;
 
     for ( i = 0; i < aClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
     {
@@ -3419,7 +5610,7 @@ IDE_RC sdi::setPrepareSelected( sdiClientInfo    * aClientInfo,
              ( sConnectInfo->mNodeId == aNodeId ) )
         {
             //-------------------------------
-            // shard statement ì¤€ë¹„
+            // shard statement ÁØºñ
             //-------------------------------
 
             if ( sDataNode->mState == SDI_NODE_STATE_PREPARED )
@@ -3442,11 +5633,14 @@ IDE_RC sdi::setPrepareSelected( sdiClientInfo    * aClientInfo,
             }
 
             //-------------------------------
-            // í›„ë³´ ì„ ì •
+            // ÈÄº¸ ¼±Á¤
             //-------------------------------
 
             if ( sDataNode->mState == SDI_NODE_STATE_PREPARE_CANDIDATED )
             {
+                IDE_TEST_RAISE( sConnectInfo->mNodeInfo.mSMN != sTargetSMN,
+                                ERR_UNSET_NODE_SELECTED );
+
                 sDataNode->mState = SDI_NODE_STATE_PREPARE_SELECTED;
             }
             else if ( sDataNode->mState == SDI_NODE_STATE_EXECUTE_CANDIDATED )
@@ -3466,60 +5660,105 @@ IDE_RC sdi::setPrepareSelected( sdiClientInfo    * aClientInfo,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_UNSET_NODE_SELECTED )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDI_INVALID_NODE_NAME2,
+                                  sConnectInfo->mNodeInfo.mNodeName ) );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 }
 
-IDE_RC sdi::prepare( sdiClientInfo    * aClientInfo,
+IDE_RC sdi::prepare( qcTemplate       * aTemplate,
+                     sdiClientInfo    * aClientInfo,
                      sdiDataNodes     * aDataInfo,
                      qcNamePosition   * aShardQuery )
 {
     sdiConnectInfo * sConnectInfo = NULL;
     sdiDataNode    * sDataNode    = NULL;
     void           * sCallback    = NULL;
+    void           * sData        = NULL;
     idBool           sSuccess     = ID_TRUE;
     UInt             i = 0;
     UInt             j = 0;
+    smSCN            sSCN;
+    idBool           sNeedUpdateSCN = ID_FALSE;
+    idBool           sIsAlreadyCheck = ID_FALSE;
+
+    /* TASK-7219 Non-shard DML */
+    sdiShardPartialExecType sPartialExecType = SDI_SHARD_PARTIAL_EXEC_TYPE_NONE;
 
     IDE_DASSERT( aClientInfo != NULL );
 
     sConnectInfo = aClientInfo->mConnectInfo;
     sDataNode    = aDataInfo->mNodes;
+    
+    SM_INIT_SCN( &sSCN );
+
+    /* TASK-7218 */
+    ideErrorCollectionClear();
+
+    /* TASK-7219 Non-shard DML */
+    sPartialExecType = aTemplate->shardExecData.partialExecType;
 
     for ( i = 0; i < aClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
     {
         //-------------------------------
-        // shard statement ì´ˆê¸°í™”
+        // shard statement ÃÊ±âÈ­
         //-------------------------------
 
         if ( sDataNode->mState == SDI_NODE_STATE_PREPARE_SELECTED )
         {
+            sNeedUpdateSCN = (sConnectInfo->mDbc == NULL) ? ID_TRUE : ID_FALSE;
+
             // open shard connection
             IDE_TEST( qdkOpenShardConnection( sConnectInfo )
                       != IDE_SUCCESS );
+
+            /* PROJ-2733-DistTxInfo Connection ÀÌÈÄ °¢ ³ëµå SCNÀ» ¾ò¾î ¿Â´Ù. */
+            if ( sNeedUpdateSCN == ID_TRUE )
+            {
+                IDE_TEST( sdl::getSCN( sConnectInfo, &sSCN ) != IDE_SUCCESS );
+
+                SM_SET_MAX_SCN( &(aClientInfo->mGCTxInfo.mCoordSCN), &sSCN );
+            }
         }
         else
         {
             // Nothing to do.
         }
 
-        if ( ( ( sDataNode->mState == SDI_NODE_STATE_PREPARE_SELECTED ) ||
-               ( sDataNode->mState == SDI_NODE_STATE_EXECUTE_SELECTED ) )
-             &&
-             ( ( sConnectInfo->mFlag & SDI_CONNECT_PLANATTR_CHANGE_MASK )
-               == SDI_CONNECT_PLANATTR_CHANGE_TRUE ) )
+        if (( sDataNode->mState == SDI_NODE_STATE_PREPARE_SELECTED ) ||
+            ( sDataNode->mState == SDI_NODE_STATE_EXECUTE_SELECTED ))
         {
-            IDE_TEST( sdl::setConnAttr( sConnectInfo,
-                                        SDL_ALTIBASE_EXPLAIN_PLAN,
-                                        (sConnectInfo->mPlanAttr > 0) ?
-                                        SDL_EXPLAIN_PLAN_ON :
-                                        SDL_EXPLAIN_PLAN_OFF,
-                                        &(sConnectInfo->mLinkFailure) )
-                      != IDE_SUCCESS );
+            IDE_TEST( checkTargetSMN( aClientInfo, sConnectInfo ) != IDE_SUCCESS );
 
-            sConnectInfo->mFlag &= ~SDI_CONNECT_PLANATTR_CHANGE_MASK;
-            sConnectInfo->mFlag |= SDI_CONNECT_PLANATTR_CHANGE_FALSE;
+            if (( sConnectInfo->mFlag & SDI_CONNECT_PLANATTR_CHANGE_MASK )
+                == SDI_CONNECT_PLANATTR_CHANGE_TRUE )
+            {
+                IDE_TEST( sdl::setConnAttr( sConnectInfo,
+                                            SDL_ALTIBASE_EXPLAIN_PLAN,
+                                            (sConnectInfo->mPlanAttr > 0) ?
+                                            SDL_EXPLAIN_PLAN_ON :
+                                            SDL_EXPLAIN_PLAN_OFF,
+                                            NULL,
+                                            &(sConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+
+                sConnectInfo->mFlag &= ~SDI_CONNECT_PLANATTR_CHANGE_MASK;
+                sConnectInfo->mFlag |= SDI_CONNECT_PLANATTR_CHANGE_FALSE;
+            }
+            else
+            {
+                // nothing to do
+            }
+
+            // PROJ-2727
+            IDE_TEST( setShardSessionProperty( aTemplate->stmt->session,
+                                               aClientInfo,
+                                               sConnectInfo )
+                      != IDE_SUCCESS );
         }
         else
         {
@@ -3528,8 +5767,15 @@ IDE_RC sdi::prepare( sdiClientInfo    * aClientInfo,
 
         if ( sDataNode->mState == SDI_NODE_STATE_PREPARE_SELECTED )
         {
+            if ( sIsAlreadyCheck == ID_FALSE )
+            {
+                IDE_TEST( qdkCheckGlobalTransactionStatus( sConnectInfo ) != IDE_SUCCESS );
+                sIsAlreadyCheck = ID_TRUE;
+            }
+
             IDE_TEST( sdl::allocStmt( sConnectInfo,
                                       sDataNode->mRemoteStmt,
+                                      sPartialExecType,
                                       &(sConnectInfo->mLinkFailure) )
                       != IDE_SUCCESS );
 
@@ -3549,6 +5795,37 @@ IDE_RC sdi::prepare( sdiClientInfo    * aClientInfo,
         }
     }
 
+    // BUG-47765
+    if (( aTemplate->stmt->session->mQPSpecific.mFlag & QC_SESSION_ATTR_CHANGE_MASK )
+         == QC_SESSION_ATTR_CHANGE_TRUE )
+    {
+        sConnectInfo = aClientInfo->mConnectInfo;
+        
+        for ( i = 0; i < aClientInfo->mCount; i++, sConnectInfo++ )
+        {
+            if (( sConnectInfo->mFlag & SDI_CONNECT_ATTR_CHANGE_MASK )
+                 == SDI_CONNECT_ATTR_CHANGE_TRUE )
+            {
+                // Àü ³ëµå¿¡ ÇÁ·ÎÆÛÆ¼°¡ ÀüÆÄ µÇÁö ¾ÊÀ½
+                aTemplate->stmt->session->mQPSpecific.mFlag &= ~QC_SESSION_ATTR_SET_NODE_MASK;
+                aTemplate->stmt->session->mQPSpecific.mFlag |= QC_SESSION_ATTR_SET_NODE_FALSE;
+
+                break;
+            }
+            else
+            {
+                // nothing to do
+            }
+
+            if (( aClientInfo->mCount -1 ) == i )
+            {
+                // Àü ³ëµå¿¡ ÇÁ·ÎÆÛÆ¼°¡ ÀüÆÄ µÊ
+                // PROJ-2727
+                unSetSessionPropertyFlag( aTemplate->stmt->session );
+            }
+        }
+    }     
+            
     // PROJ-2670 nested execution
     sdl::doCallback( sCallback );
 
@@ -3570,7 +5847,7 @@ IDE_RC sdi::prepare( sdiClientInfo    * aClientInfo,
                                       &(sConnectInfo->mLinkFailure) )
                  == IDE_SUCCESS )
             {
-                // bindë¥¼ í•´ì•¼í•œë‹¤.
+                // bind¸¦ ÇØ¾ßÇÑ´Ù.
                 sDataNode->mBindParamChanged = ID_TRUE;
                 sDataNode->mExecCount = 0;
                 sDataNode->mState = SDI_NODE_STATE_PREPARED;
@@ -3596,7 +5873,7 @@ IDE_RC sdi::prepare( sdiClientInfo    * aClientInfo,
     for ( i = 0; i < aClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
     {
         //-------------------------------
-        // shard statement ì¬ë°”ì¸ë“œ
+        // shard statement Àç¹ÙÀÎµå
         //-------------------------------
 
         if ( ( sDataNode->mState == SDI_NODE_STATE_EXECUTE_SELECTED ) &&
@@ -3604,16 +5881,26 @@ IDE_RC sdi::prepare( sdiClientInfo    * aClientInfo,
         {
             for ( j = 0; j < sDataNode->mBindParamCount; j++ )
             {
+                /* PROJ-2728 Sharding LOB */
+                if ( sDataNode->mOutBindParams[j].mShadowData != NULL )
+                {
+                    sData = SDI_GET_SHADOW_DATA( sDataNode, i, j );
+                }
+                else
+                {
+                    sData = sDataNode->mBindParams[j].mData;
+                }
                 IDE_TEST( sdl::bindParam(
                               sConnectInfo,
                               sDataNode->mRemoteStmt,
                               sDataNode->mBindParams[j].mId,
                               sDataNode->mBindParams[j].mInoutType,
                               sDataNode->mBindParams[j].mType,
-                              sDataNode->mBindParams[j].mData,
+                              sData,
                               sDataNode->mBindParams[j].mDataSize,
                               sDataNode->mBindParams[j].mPrecision,
                               sDataNode->mBindParams[j].mScale,
+                              &(sDataNode->mOutBindParams[j].mIndicator),
                               &(sConnectInfo->mLinkFailure) )
                           != IDE_SUCCESS );
             }
@@ -3651,6 +5938,9 @@ IDE_RC sdi::prepare( sdiClientInfo    * aClientInfo,
         }
     }
 
+    // PROJ-2727
+    unSetSessionPropertyFlag( aTemplate->stmt->session );
+            
     sdl::removeCallback( sCallback );
 
     return IDE_FAILURE;
@@ -3659,6 +5949,7 @@ IDE_RC sdi::prepare( sdiClientInfo    * aClientInfo,
 IDE_RC sdi::executeDML( qcStatement    * aStatement,
                         sdiClientInfo  * aClientInfo,
                         sdiDataNodes   * aDataInfo,
+                        qmxLobInfo     * aLobInfo,
                         vSLong         * aNumRows )
 {
     sdiConnectInfo * sConnectInfo = NULL;
@@ -3671,16 +5962,37 @@ IDE_RC sdi::executeDML( qcStatement    * aStatement,
     sConnectInfo = aClientInfo->mConnectInfo;
     sDataNode    = aDataInfo->mNodes;
 
+    /* TASK-7218 */
+    ideErrorCollectionClear();
+
+    /* PROJ-2733-DistTxInfo */
+    IDE_TEST( propagateDistTxInfoToNodes( aStatement, aClientInfo, aDataInfo ) != IDE_SUCCESS );
+
     for ( i = 0; i < aClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
     {
         if ( sDataNode->mState == SDI_NODE_STATE_EXECUTE_SELECTED )
         {
+            /* TASK-7219 Non-shard DML */
+            IDE_TEST( sdl::setStmtExecSeq( sConnectInfo, QCG_GET_SESSION_STMT_EXEC_SEQ_FOR_SHARD_TX(aStatement) ) != IDE_SUCCESS );
+
             // add shard transaction
             IDE_TEST( qdkAddShardTransaction(
                           aStatement->mStatistics,
                           QC_SMI_STMT(aStatement)->mTrans->getTransID(),
+                          aClientInfo,
                           sConnectInfo )
                       != IDE_SUCCESS );
+
+            // TASK-7244 PSM partial rollback in Sharding
+            if ( ((sConnectInfo->mFlag & SDI_CONNECT_PSM_SVP_SET_MASK) == SDI_CONNECT_PSM_SVP_SET_FALSE) &&
+                 (qciMisc::isBeginSP(aStatement) == ID_TRUE) )
+            {
+                IDE_TEST( sdl::setSavepoint( sConnectInfo,
+                                             SAVEPOINT_FOR_SHARD_GLOBAL_PROC_PARTIAL_ROLLBACK )
+                          != IDE_SUCCESS );
+                sConnectInfo->mFlag &= ~SDI_CONNECT_PSM_SVP_SET_MASK;
+                sConnectInfo->mFlag |= SDI_CONNECT_PSM_SVP_SET_TRUE;
+            }
 
             IDE_TEST( sdl::addExecuteCallback( &sCallback,
                                                i,
@@ -3697,17 +6009,19 @@ IDE_RC sdi::executeDML( qcStatement    * aStatement,
 
     IDE_TEST_CONT( sCallback == NULL, NORMAL_EXIT );
 
+    IDU_FIT_POINT( "sdi::executeDML" );
+
     // PROJ-2670 nested execution
     sdl::doCallback( sCallback );
 
-    // add shard tx ìˆœì„œì˜ ë°˜ëŒ€ë¡œ del shard txë¥¼ ìˆ˜í–‰í•´ì•¼í•œë‹¤.
+    // add shard tx ¼ø¼­ÀÇ ¹İ´ë·Î del shard tx¸¦ ¼öÇàÇØ¾ßÇÑ´Ù.
     for ( i--, sConnectInfo--, sDataNode--;
           i >= 0;
           i--, sConnectInfo--, sDataNode-- )
     {
         if ( sDataNode->mState == SDI_NODE_STATE_EXECUTE_SELECTED )
         {
-            // ìˆ˜í–‰ì „ touch count ì¦ê°€
+            // ¼öÇàÀü touch count Áõ°¡
             sConnectInfo->mTouchCount++;
 
             if ( sdl::resultCallback( sCallback,
@@ -3721,7 +6035,13 @@ IDE_RC sdi::executeDML( qcStatement    * aStatement,
                                       &(sConnectInfo->mLinkFailure) )
                  == IDE_SUCCESS )
             {
-                // ìˆ˜í–‰í›„
+                /* BUG-47459 */
+                if ( sDataNode->mSVPStep == SDI_SVP_STEP_PROCEDURE_SAVEPOINT )
+                {
+                    sDataNode->mSVPStep = SDI_SVP_STEP_SET_SAVEPOINT;
+                }
+
+                // ¼öÇàÈÄ
                 sDataNode->mState = SDI_NODE_STATE_EXECUTED;
                 sDataNode->mExecCount++;
 
@@ -3734,6 +6054,28 @@ IDE_RC sdi::executeDML( qcStatement    * aStatement,
                     // result row count
                     (*aNumRows) += sNumRows;
                     sConnectInfo->mAffectedRowCount = sNumRows;
+
+                    /* PROJ-2728 Sharding LOB */
+                    if ( aLobInfo != NULL && sNumRows > 0 )
+                    {
+                        if ( qmxShard::copyAndOutBindLobInfo( aStatement,
+                                                              sConnectInfo,
+                                                              i,
+                                                              aLobInfo,
+                                                              sDataNode )
+                             != IDE_SUCCESS )
+                        {
+                            sSuccess = ID_FALSE;
+                        }
+                        else
+                        {
+                            // Nothing to do.
+                        }
+                    }
+                    else
+                    {
+                        // Nothing to do.
+                    }
                 }
                 else
                 {
@@ -3742,7 +6084,7 @@ IDE_RC sdi::executeDML( qcStatement    * aStatement,
             }
             else
             {
-                // ìˆ˜í–‰ì´ ì‹¤íŒ¨í•œ ê²½ìš°
+                // ¼öÇàÀÌ ½ÇÆĞÇÑ °æ¿ì
                 sDataNode->mState = SDI_NODE_STATE_EXECUTE_CANDIDATED;
 
                 sSuccess = ID_FALSE;
@@ -3754,7 +6096,16 @@ IDE_RC sdi::executeDML( qcStatement    * aStatement,
         }
     }
 
+    /* PROJ-2733-DistTxInfo
+     * !!! sdl::doCallback ÇÔ¼ö¸¦ ¼öÇàÇßÀ¸¸é sSuccess °ª¿¡ »ó°ü¾øÀÌ
+     *     updateMaxNodeSCNToCoordSCN ÇÔ¼ö¸¦ ¼öÇàÇØ¾ß ÇÑ´Ù
+     */
+    IDE_TEST( updateMaxNodeSCNToCoordSCN( aStatement, aClientInfo, aDataInfo ) != IDE_SUCCESS );
+
     IDE_TEST( sSuccess == ID_FALSE );
+
+    (void) qmxShard::closeLobLocatorForCopy( aStatement->mStatistics,
+                                             aLobInfo );
 
     sdl::removeCallback( sCallback );
 
@@ -3766,7 +6117,11 @@ IDE_RC sdi::executeDML( qcStatement    * aStatement,
 
     processExecuteError( aStatement,
                          aClientInfo,
-                         aDataInfo->mNodes );
+                         aDataInfo->mNodes,
+                         ID_FALSE );
+
+    (void) qmxShard::closeLobLocatorForCopy( aStatement->mStatistics,
+                                             aLobInfo );
 
     sdl::removeCallback( sCallback );
 
@@ -3776,6 +6131,7 @@ IDE_RC sdi::executeDML( qcStatement    * aStatement,
 IDE_RC sdi::executeInsert( qcStatement    * aStatement,
                            sdiClientInfo  * aClientInfo,
                            sdiDataNodes   * aDataInfo,
+                           qmxLobInfo     * aLobInfo,
                            vSLong         * aNumRows )
 {
     sdiConnectInfo * sConnectInfo = NULL;
@@ -3787,33 +6143,54 @@ IDE_RC sdi::executeInsert( qcStatement    * aStatement,
     sConnectInfo = aClientInfo->mConnectInfo;
     sDataNode    = aDataInfo->mNodes;
 
+    /* TASK-7218 */
+    ideErrorCollectionClear();
+
+    /* PROJ-2733-DistTxInfo */
+    IDE_TEST( propagateDistTxInfoToNodes( aStatement, aClientInfo, aDataInfo ) != IDE_SUCCESS );
+
     for ( i = 0; i < aClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
     {
         if ( sDataNode->mState == SDI_NODE_STATE_EXECUTE_SELECTED )
         {
+            /* TASK-7219 Non-shard DML */
+            IDE_TEST( sdl::setStmtExecSeq( sConnectInfo, QCG_GET_SESSION_STMT_EXEC_SEQ_FOR_SHARD_TX(aStatement) ) != IDE_SUCCESS );
+
             // add shard transaction
             IDE_TEST( qdkAddShardTransaction(
                           aStatement->mStatistics,
                           QC_SMI_STMT(aStatement)->mTrans->getTransID(),
+                          aClientInfo,
                           sConnectInfo )
                       != IDE_SUCCESS );
+
+            // TASK-7244 PSM partial rollback in Sharding
+            if ( ((sConnectInfo->mFlag & SDI_CONNECT_PSM_SVP_SET_MASK) == SDI_CONNECT_PSM_SVP_SET_FALSE) &&
+                 (qciMisc::isBeginSP(aStatement) == ID_TRUE) )
+            {
+                IDE_TEST( sdl::setSavepoint( sConnectInfo,
+                                             SAVEPOINT_FOR_SHARD_GLOBAL_PROC_PARTIAL_ROLLBACK )
+                          != IDE_SUCCESS );
+                sConnectInfo->mFlag &= ~SDI_CONNECT_PSM_SVP_SET_MASK;
+                sConnectInfo->mFlag |= SDI_CONNECT_PSM_SVP_SET_TRUE;
+            }
 
             if ( sDataNode->mSVPStep == SDI_SVP_STEP_NEED_SAVEPOINT )
             {
                 IDE_TEST( sdl::setSavepoint( sConnectInfo,
-                                             SAVEPOINT_FOR_SHARD_STMT_PARTIAL_ROLLBACK )
-                          != IDE_SUCCESS );
+                            SAVEPOINT_FOR_SHARD_STMT_PARTIAL_ROLLBACK )
+                        != IDE_SUCCESS );
 
                 sDataNode->mSVPStep = SDI_SVP_STEP_SET_SAVEPOINT;
 
             }
 
             IDE_TEST( sdl::addExecuteCallback( &sCallback,
-                                               i,
-                                               sConnectInfo,
-                                               sDataNode,
-                                               &(sConnectInfo->mLinkFailure) )
-                      != IDE_SUCCESS );
+                        i,
+                        sConnectInfo,
+                        sDataNode,
+                        &(sConnectInfo->mLinkFailure) )
+                    != IDE_SUCCESS );
         }
         else
         {
@@ -3823,17 +6200,19 @@ IDE_RC sdi::executeInsert( qcStatement    * aStatement,
 
     IDE_TEST_CONT( sCallback == NULL, NORMAL_EXIT );
 
+    IDU_FIT_POINT( "sdi::executeInsert" );
+
     // PROJ-2670 nested execution
     sdl::doCallback( sCallback );
 
-    // add shard tx ìˆœì„œì˜ ë°˜ëŒ€ë¡œ del shard txë¥¼ ìˆ˜í–‰í•´ì•¼í•œë‹¤.
+    // add shard tx ¼ø¼­ÀÇ ¹İ´ë·Î del shard tx¸¦ ¼öÇàÇØ¾ßÇÑ´Ù.
     for ( i--, sConnectInfo--, sDataNode--;
           i >= 0;
           i--, sConnectInfo--, sDataNode-- )
     {
         if ( sDataNode->mState == SDI_NODE_STATE_EXECUTE_SELECTED )
         {
-            // ìˆ˜í–‰ì „ touch count ì¦ê°€
+            // ¼öÇàÀü touch count Áõ°¡
             sConnectInfo->mTouchCount++;
 
             if ( sdl::resultCallback( sCallback,
@@ -3847,17 +6226,39 @@ IDE_RC sdi::executeInsert( qcStatement    * aStatement,
                                       &(sConnectInfo->mLinkFailure) )
                  == IDE_SUCCESS )
             {
-                // ìˆ˜í–‰í›„
+                // ¼öÇàÈÄ
                 sDataNode->mState = SDI_NODE_STATE_EXECUTED;
                 sDataNode->mExecCount++;
 
                 // result row count
                 (*aNumRows)++;
                 sConnectInfo->mAffectedRowCount = 1;
+
+                /* PROJ-2728 Sharding LOB */
+                if ( aLobInfo != NULL )
+                {
+                    if ( qmxShard::copyAndOutBindLobInfo( aStatement,
+                                                          sConnectInfo,
+                                                          i,
+                                                          aLobInfo,
+                                                          sDataNode )
+                         != IDE_SUCCESS )
+                    {
+                        sSuccess = ID_FALSE;
+                    }
+                    else
+                    {
+                        // Nothing to do.
+                    }
+                }
+                else
+                {
+                    // Nothing to do.
+                }
             }
             else
             {
-                // ìˆ˜í–‰ì´ ì‹¤íŒ¨í•œ ê²½ìš°
+                // ¼öÇàÀÌ ½ÇÆĞÇÑ °æ¿ì
                 sDataNode->mState = SDI_NODE_STATE_EXECUTE_CANDIDATED;
 
                 sSuccess = ID_FALSE;
@@ -3869,7 +6270,16 @@ IDE_RC sdi::executeInsert( qcStatement    * aStatement,
         }
     }
 
+    /* PROJ-2733-DistTxInfo
+     * !!! sdl::doCallback ÇÔ¼ö¸¦ ¼öÇàÇßÀ¸¸é sSuccess °ª¿¡ »ó°ü¾øÀÌ
+     *     updateMaxNodeSCNToCoordSCN ÇÔ¼ö¸¦ ¼öÇàÇØ¾ß ÇÑ´Ù
+     */
+    IDE_TEST( updateMaxNodeSCNToCoordSCN( aStatement, aClientInfo, aDataInfo ) != IDE_SUCCESS );
+
     IDE_TEST( sSuccess == ID_FALSE );
+
+    (void) qmxShard::closeLobLocatorForCopy( aStatement->mStatistics,
+                                             aLobInfo );
 
     sdl::removeCallback( sCallback );
 
@@ -3881,7 +6291,11 @@ IDE_RC sdi::executeInsert( qcStatement    * aStatement,
 
     processExecuteError( aStatement,
                          aClientInfo,
-                         aDataInfo->mNodes );
+                         aDataInfo->mNodes,
+                         ID_FALSE );
+
+    (void) qmxShard::closeLobLocatorForCopy( aStatement->mStatistics,
+                                             aLobInfo );
 
     sdl::removeCallback( sCallback );
 
@@ -3901,14 +6315,24 @@ IDE_RC sdi::executeSelect( qcStatement    * aStatement,
     sConnectInfo = aClientInfo->mConnectInfo;
     sDataNode    = aDataInfo->mNodes;
 
+    /* TASK-7218 */
+    ideErrorCollectionClear();
+
+    /* PROJ-2733-DistTxInfo */
+    IDE_TEST( propagateDistTxInfoToNodes( aStatement, aClientInfo, aDataInfo ) != IDE_SUCCESS );
+
     for ( i = 0; i < aClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
     {
         if ( sDataNode->mState == SDI_NODE_STATE_EXECUTE_SELECTED )
         {
+            /* TASK-7219 Non-shard DML */
+            IDE_TEST( sdl::setStmtExecSeq( sConnectInfo, QCG_GET_SESSION_STMT_EXEC_SEQ_FOR_SHARD_TX(aStatement) ) != IDE_SUCCESS );
+
             // add shard transaction
             IDE_TEST( qdkAddShardTransaction(
                           aStatement->mStatistics,
                           QC_SMI_STMT(aStatement)->mTrans->getTransID(),
+                          aClientInfo,
                           sConnectInfo )
                       != IDE_SUCCESS );
 
@@ -3927,10 +6351,12 @@ IDE_RC sdi::executeSelect( qcStatement    * aStatement,
 
     IDE_TEST_CONT( sCallback == NULL, NORMAL_EXIT );
 
+    IDU_FIT_POINT( "sdi::executeSelect" );
+
     // PROJ-2670 nested execution
     sdl::doCallback( sCallback );
 
-    // add shard tx ìˆœì„œì˜ ë°˜ëŒ€ë¡œ del shard txë¥¼ ìˆ˜í–‰í•´ì•¼í•œë‹¤.
+    // add shard tx ¼ø¼­ÀÇ ¹İ´ë·Î del shard tx¸¦ ¼öÇàÇØ¾ßÇÑ´Ù.
     for ( i--, sConnectInfo--, sDataNode--;
           i >= 0;
           i--, sConnectInfo--, sDataNode-- )
@@ -3948,13 +6374,13 @@ IDE_RC sdi::executeSelect( qcStatement    * aStatement,
                                       &(sConnectInfo->mLinkFailure) )
                  == IDE_SUCCESS )
             {
-                // ìˆ˜í–‰í›„
+                // ¼öÇàÈÄ
                 sDataNode->mState = SDI_NODE_STATE_EXECUTED;
                 sDataNode->mExecCount++;
             }
             else
             {
-                // ìˆ˜í–‰ì´ ì‹¤íŒ¨í•œ ê²½ìš°
+                // ¼öÇàÀÌ ½ÇÆĞÇÑ °æ¿ì
                 sDataNode->mState = SDI_NODE_STATE_EXECUTE_CANDIDATED;
 
                 sSuccess = ID_FALSE;
@@ -3965,6 +6391,12 @@ IDE_RC sdi::executeSelect( qcStatement    * aStatement,
             // Nothing to do.
         }
     }
+
+    /* PROJ-2733-DistTxInfo
+     * !!! sdl::doCallback ÇÔ¼ö¸¦ ¼öÇàÇßÀ¸¸é sSuccess °ª¿¡ »ó°ü¾øÀÌ
+     *     updateMaxNodeSCNToCoordSCN ÇÔ¼ö¸¦ ¼öÇàÇØ¾ß ÇÑ´Ù
+     */
+    IDE_TEST( updateMaxNodeSCNToCoordSCN( aStatement, aClientInfo, aDataInfo ) != IDE_SUCCESS );
 
     IDE_TEST( sSuccess == ID_FALSE );
 
@@ -3978,7 +6410,8 @@ IDE_RC sdi::executeSelect( qcStatement    * aStatement,
 
     processExecuteError( aStatement,
                          aClientInfo,
-                         aDataInfo->mNodes );
+                         aDataInfo->mNodes,
+                         ID_TRUE );
 
     sdl::removeCallback( sCallback );
 
@@ -4067,31 +6500,6 @@ IDE_RC sdi::printMessage( SChar * aMessage,
                           void  * aArgument )
 {
     sdiConnectInfo * sConnectInfo = (sdiConnectInfo*)aArgument;
-    SChar            sFirstMessage[42 + SDI_NODE_NAME_MAX_SIZE + 2 + 42 + 1];
-    UInt             sFirstMessageLength;
-
-    if ( ( sConnectInfo->mFlag & SDI_CONNECT_MESSAGE_FIRST_MASK ) ==
-         SDI_CONNECT_MESSAGE_FIRST_TRUE )
-    {
-        sFirstMessageLength = (UInt)idlOS::snprintf( sFirstMessage,
-                                                     ID_SIZEOF(sFirstMessage),
-                                                     ":----------------------------------------\n"
-                                                     ":%s\n"
-                                                     ":----------------------------------------\n",
-                                                     sConnectInfo->mNodeName );
-
-        (void) qci::mSessionCallback.mPrintToClient(
-            sConnectInfo->mSession->mMmSession,
-            (UChar*)sFirstMessage,
-            sFirstMessageLength );
-
-        sConnectInfo->mFlag &= ~SDI_CONNECT_MESSAGE_FIRST_MASK;
-        sConnectInfo->mFlag |= SDI_CONNECT_MESSAGE_FIRST_FALSE;
-    }
-    else
-    {
-        // Nothing to do.
-    }
 
     (void) qci::mSessionCallback.mPrintToClient(
         sConnectInfo->mSession->mMmSession,
@@ -4114,7 +6522,7 @@ void sdi::setShardMetaTouched( qcSession * aSession )
         // Nothing to do.
     }
 
-    // í˜„ì¬ ì„¸ì…˜ì—ì„œ plan cache ì‚¬ìš©ê¸ˆì§€
+    // ÇöÀç ¼¼¼Ç¿¡¼­ plan cache »ç¿ë±İÁö
     if ( ( aSession->mQPSpecific.mFlag & QC_SESSION_PLAN_CACHE_MASK ) ==
          QC_SESSION_PLAN_CACHE_ENABLE )
     {
@@ -4149,6 +6557,31 @@ void sdi::unsetShardMetaTouched( qcSession * aSession )
     else
     {
         // Nothing to do.
+    }
+}
+
+/* BUG-48586 */
+void sdi::setInternalTableSwap( qcSession * aSession )
+{
+    IDE_DASSERT( isShardEnable() == ID_TRUE );
+
+    if ( ( aSession->mQPSpecific.mFlag & QC_SESSION_INTERNAL_TABLE_SWAP_MASK ) ==
+         QC_SESSION_INTERNAL_TABLE_SWAP_FALSE )
+    {
+        aSession->mQPSpecific.mFlag &= ~QC_SESSION_INTERNAL_TABLE_SWAP_MASK;
+        aSession->mQPSpecific.mFlag |= QC_SESSION_INTERNAL_TABLE_SWAP_TRUE;
+    }
+}
+
+void sdi::unsetInternalTableSwap( qcSession * aSession )
+{
+    IDE_DASSERT( isShardEnable() == ID_TRUE );
+
+    if ( ( aSession->mQPSpecific.mFlag & QC_SESSION_INTERNAL_TABLE_SWAP_MASK ) ==
+         QC_SESSION_INTERNAL_TABLE_SWAP_TRUE )
+    {
+        aSession->mQPSpecific.mFlag &= ~QC_SESSION_INTERNAL_TABLE_SWAP_MASK;
+        aSession->mQPSpecific.mFlag |= QC_SESSION_INTERNAL_TABLE_SWAP_FALSE;
     }
 }
 
@@ -4197,6 +6630,7 @@ IDE_RC sdi::touchShardNode( qcSession * aSession,
     // add shard transaction
     IDE_TEST( qdkAddShardTransaction( aStatistics,
                                       aTransID,
+                                      sClientInfo,
                                       sConnectInfo )
               != IDE_SUCCESS );
 
@@ -4228,15 +6662,7 @@ IDE_RC sdi::openAllShardConnections( qcSession * aSession )
 
         for ( i = 0; i < sClientInfo->mCount; i++, sConnectInfo++ )
         {
-            /* BUG-46100 SMN Propagation Failure Ignore */
-            if ( SDU_SHARD_IGNORE_SMN_PROPAGATION_FAILURE == 0 )
-            {
-                IDE_TEST( qdkOpenShardConnection( sConnectInfo ) != IDE_SUCCESS );
-            }
-            else
-            {
-                (void)qdkOpenShardConnection( sConnectInfo );
-            }
+            (void)qdkOpenShardConnection( sConnectInfo );
         }
     }
     else
@@ -4245,58 +6671,6 @@ IDE_RC sdi::openAllShardConnections( qcSession * aSession )
     }
 
     return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    IDE_PUSH();
-
-    /* Meta Node SMN ì „íŒŒë¥¼ ìœ„í•´ì„œ ëª¨ë“  Data Nodeì— ì—°ê²°ì„ ì‹œë„í•œë‹¤. */
-    for ( i++, sConnectInfo++; i < sClientInfo->mCount; i++, sConnectInfo++ )
-    {
-        (void)qdkOpenShardConnection( sConnectInfo );
-    }
-
-    IDE_POP();
-
-    return IDE_FAILURE;
-}
-
-idBool sdi::getNeedToDisconnect( qcSession * aSession )
-{
-    sdiClientInfo    * sClientInfo       = NULL;
-    idBool             sNeedToDisconnect = ID_FALSE;
-
-    IDE_DASSERT( aSession != NULL );
-
-    sClientInfo = aSession->mQPSpecific.mClientInfo;
-
-    if ( sClientInfo != NULL )
-    {
-        sNeedToDisconnect = sClientInfo->mNeedToDisconnect;
-    }
-    else
-    {
-        /* Nothing to do */
-    }
-
-    return sNeedToDisconnect;
-}
-
-void sdi::setNeedToDisconnect( sdiClientInfo * aClientInfo,
-                               idBool          aNeedToDisconnect )
-{
-    IDE_DASSERT( aClientInfo != NULL );
-
-    if ( aNeedToDisconnect == ID_TRUE )
-    {
-        aClientInfo->mNeedToDisconnect = ID_TRUE;
-    }
-    else
-    {
-        /* Nothing to do */
-    }
-
-    return;
 }
 
 void sdi::xidInitialize( sdiConnectInfo * aConnectInfo )
@@ -4318,6 +6692,25 @@ IDE_RC sdi::addPrepareTranCallback( void           ** aCallback,
                                            &(aNode->mXID),
                                            &(aNode->mReadOnly),
                                            &(aNode->mLinkFailure) )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::addEndPendingTranCallback( void           ** aCallback,
+                                       sdiConnectInfo  * aNode,
+                                       idBool            aIsCommit )
+{
+    IDE_TEST( sdl::addEndPendingTranCallback( aCallback,
+                                              aNode->mNodeId,
+                                              aNode,
+                                              &(aNode->mXID),
+                                              aIsCommit,
+                                              &(aNode->mLinkFailure) )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -4378,6 +6771,64 @@ void sdi::removeCallback( void * aCallback )
     sdl::removeCallback( aCallback );
 }
 
+IDE_RC sdi::setFailoverSuspend( qcSession              * aSession,
+                                sdiFailoverSuspendType   aSuspendOnType,
+                                UInt                     aNewErrorCode )
+{
+    sdiClientInfo  * sClientInfo    = NULL;
+    sdiConnectInfo * sConnectInfo   = NULL;
+    SInt             i;
+
+    if ( aSuspendOnType != SDI_FAILOVER_SUSPEND_NONE )
+    {
+        IDE_DASSERT( aNewErrorCode != idERR_IGNORE_NoError );
+    }
+
+    sClientInfo = aSession->mQPSpecific.mClientInfo;
+    if ( sClientInfo != NULL )
+    {
+        sConnectInfo = sClientInfo->mConnectInfo;
+
+        for ( i = 0 ; i < sClientInfo->mCount; i++, sConnectInfo++ )
+        {
+            if ( sConnectInfo->mDbc != NULL )
+            {
+                IDE_TEST( sdl::setFailoverSuspend( sConnectInfo,
+                                                   aSuspendOnType,
+                                                   aNewErrorCode )
+                          != IDE_SUCCESS );
+            }
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::setFailoverSuspend( sdiConnectInfo         * aConnectInfo,
+                                sdiFailoverSuspendType   aSuspendOnType,
+                                UInt                     aNewErrorCode )
+{
+    if ( aSuspendOnType != SDI_FAILOVER_SUSPEND_NONE )
+    {
+        IDE_DASSERT( aNewErrorCode != idERR_IGNORE_NoError );
+    }
+
+    IDE_TEST( sdl::setFailoverSuspend( aConnectInfo,
+                                       aSuspendOnType,
+                                       aNewErrorCode )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 sdiShardPin sdi::makeShardPin()
 {
     return sdmShardPinMgr::getNewShardPin();
@@ -4390,24 +6841,26 @@ void sdi::shardPinToString( SChar *aDst, UInt aLen, sdiShardPin aShardPin )
 
 IDE_RC sdi::setCommitMode( qcSession * aSession,
                            idBool      aIsAutoCommit,
-                           UInt        aDBLinkGTXLevel )
+                           UInt        /* aDBLinkGTXLevel */,
+                           idBool      aIsGTx,
+                           idBool      aIsGCTx )
 {
-    sdiClientInfo  * sClientInfo        = NULL;
-    sdiConnectInfo * sConnectInfo       = NULL;
+    sdiClientInfo  * sClientInfo          = NULL;
+    sdiConnectInfo * sConnectInfo         = NULL;
     idBool           sOldIsUserAutoCommit = ID_FALSE;
-    UInt             sOldIsMetaAutoCommit = ID_FALSE;
+    idBool           sOldIsMetaAutoCommit = ID_FALSE;
     idBool           sNewIsUserAutoCommit = aIsAutoCommit;
     idBool           sNewIsMetaAutoCommit = aIsAutoCommit;
-    UShort           i                  = 0;
-    UShort           j                  = 0;
+    UShort           i                    = 0;
+    UShort           j                    = 0;
 
     IDE_DASSERT( aSession != NULL );
 
     sClientInfo = aSession->mQPSpecific.mClientInfo;
     if ( sClientInfo != NULL )
     {
-        // Global Transactionì¸ ê²½ìš°, Meta Connectionì€ Non-Autocommitì´ì–´ì•¼ í•œë‹¤.
-        if ( ( aDBLinkGTXLevel == 2 ) && ( sNewIsMetaAutoCommit == ID_TRUE ) )
+        // Global TransactionÀÎ °æ¿ì, Meta ConnectionÀº Non-AutocommitÀÌ¾î¾ß ÇÑ´Ù.
+        if ( ( aIsGTx == ID_TRUE ) && ( sNewIsMetaAutoCommit == ID_TRUE ) )
         {
             sNewIsMetaAutoCommit = ID_FALSE;
         }
@@ -4431,6 +6884,7 @@ IDE_RC sdi::setCommitMode( qcSession * aSession,
                                                 ( sNewIsMetaAutoCommit == ID_TRUE
                                                   ? SDL_COMMITMODE_AUTOCOMMIT
                                                   : SDL_COMMITMODE_NONAUTOCOMMIT ),
+                                                NULL,
                                                 & sConnectInfo->mLinkFailure )
                               != IDE_SUCCESS );
                 }
@@ -4453,6 +6907,17 @@ IDE_RC sdi::setCommitMode( qcSession * aSession,
             sConnectInfo->mFlag |= ( ( sNewIsMetaAutoCommit == ID_TRUE ) ?
                                      SDI_CONNECT_COORD_AUTOCOMMIT_MODE_ON :
                                      SDI_CONNECT_COORD_AUTOCOMMIT_MODE_OFF );
+        }
+
+        /* PROJ-2733-DistTxInfo Non-Autocommit ¸ğµå·Î ¼³Á¤ÇÑ °æ¿ì ÃÊ±âÈ­ ÇØ ÁÖÀÚ. */
+        if ( sNewIsUserAutoCommit == ID_FALSE )
+        {
+            #if defined(DEBUG)
+            ideLog::log( IDE_SD_18, "[GLOBAL_CONSISTENT_TRANSACTION_DISTTXINFO] =[%s] setCommitMode, endTranDistTx()",
+                         sClientInfo->mGCTxInfo.mSessionTypeString );
+            #endif
+
+            endTranDistTx( sClientInfo, aIsGCTx );
         }
     }
     else
@@ -4478,6 +6943,7 @@ IDE_RC sdi::setCommitMode( qcSession * aSession,
                                          ( sOldIsMetaAutoCommit == ID_TRUE
                                            ? SDL_COMMITMODE_AUTOCOMMIT
                                            : SDL_COMMITMODE_NONAUTOCOMMIT ),
+                                         NULL,
                                          & sConnectInfo->mLinkFailure );
             }
             else
@@ -4508,28 +6974,169 @@ IDE_RC sdi::setCommitMode( qcSession * aSession,
     return IDE_FAILURE;
 }
 
-/* BUG-45967 Rebuild Data ì™„ë£Œ ëŒ€ê¸° */
-IDE_RC sdi::waitToRebuildData( idvSQL * aStatistics )
+IDE_RC sdi::setTransactionLevel( qcSession * aSession,
+                                 UInt        aOldDBLinkGTXLevel,
+                                 UInt        aNewDBLinkGTXLevel )
 {
-    const SChar * sName     = (const SChar *)"SHARD_REBUILD_DATA_STEP";
-    SChar         sValue[2] = { '2', '\0' };
+    sdiClientInfo  * sClientInfo        = NULL;
+    sdiConnectInfo * sConnectInfo       = NULL;
+    UShort           i                  = 0;
+    UShort           j                  = 0;
 
-    // SHARD_REBUILD_DATA_STEPì´ 1 ì´ë©´, 2 ë¡œ ê°±ì‹ 
-    if ( SDU_SHARD_REBUILD_DATA_STEP == 1 )
+    IDE_DASSERT( aSession != NULL );
+
+    sClientInfo = aSession->mQPSpecific.mClientInfo;
+    if ( sClientInfo != NULL )
     {
-        // BUG-19498 value range check
-        IDE_TEST( idp::validate( sName, sValue ) != IDE_SUCCESS );
+        sConnectInfo = sClientInfo->mConnectInfo;
+        for ( i = 0; i < sClientInfo->mCount; i++, sConnectInfo++ )
+        {
+            if ( aOldDBLinkGTXLevel != aNewDBLinkGTXLevel )
+            {
+                if ( sConnectInfo->mDbc != NULL )
+                {
+                    IDE_TEST( sdl::setConnAttr( sConnectInfo,
+                                                SDL_ALTIBASE_GLOBAL_TRANSACTION_LEVEL,
+                                                aNewDBLinkGTXLevel,
+                                                NULL,
+                                                & sConnectInfo->mLinkFailure )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
 
-        IDE_TEST( idp::update( NULL, sName, sValue, 0, NULL ) != IDE_SUCCESS );
-
-        ideLog::log( IDE_SD_0, "[SET-PROP-INTERNAL] SHARD_REBUILD_DATA_STEP=[2]\n" );
+        sClientInfo->mTransactionLevel = aNewDBLinkGTXLevel;
     }
     else
     {
         /* Nothing to do */
     }
 
-    // SHARD_REBUILD_DATA_STEPì´ 0 ì´ ë  ë•Œê¹Œì§€ ëŒ€ê¸°
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    IDE_PUSH();
+
+    sConnectInfo = sClientInfo->mConnectInfo;
+    for ( j = 0; ( j <= i ) && ( j < sClientInfo->mCount ); j++, sConnectInfo++ )
+    {
+        if ( aOldDBLinkGTXLevel != aNewDBLinkGTXLevel )
+        {
+            if ( sConnectInfo->mDbc != NULL )
+            {
+                (void) sdl::setConnAttr( sConnectInfo,
+                                         SDL_ALTIBASE_GLOBAL_TRANSACTION_LEVEL,
+                                         aOldDBLinkGTXLevel,
+                                         NULL,
+                                         & sConnectInfo->mLinkFailure );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        sConnectInfo->mLinkFailure = ID_TRUE;
+    }
+
+    IDE_POP();
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::setTransactionalDDLMode( qcSession * aSession, idBool aTransactionalDDL )
+{
+    sdiClientInfo  * sClientInfo        = NULL;
+    sdiConnectInfo * sConnectInfo       = NULL;
+    UShort           i                  = 0;
+    UShort           j                  = 0;
+
+    IDE_DASSERT( aSession != NULL );
+
+    sClientInfo = aSession->mQPSpecific.mClientInfo;
+    IDE_TEST_RAISE( sClientInfo == NULL, ERR_CONNECT_NODES );
+
+    sConnectInfo = sClientInfo->mConnectInfo;
+    for ( i = 0; i < sClientInfo->mCount; i++, sConnectInfo++ )
+    {
+        if ( sConnectInfo->mDbc != NULL )
+        {
+            IDE_TEST( sdl::setConnAttr( sConnectInfo,
+                                        SDL_ALTIBASE_TRANSACTIONAL_DDL,
+                                        aTransactionalDDL,
+                                        NULL,
+                                        &(sConnectInfo->mLinkFailure) )
+                      != IDE_SUCCESS );
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_CONNECT_NODES )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::setTransactionalDDLMode",
+                                  "Need Client Info" ) );
+
+    }
+    IDE_EXCEPTION_END;
+
+    if ( sClientInfo != NULL )
+    {
+        sConnectInfo = sClientInfo->mConnectInfo;
+        for ( j = 0; j < i; j++, sConnectInfo++ )
+        {
+            if ( sConnectInfo->mDbc != NULL )
+            {
+                (void)sdl::setConnAttr( sConnectInfo,
+                                        SDL_ALTIBASE_TRANSACTIONAL_DDL,
+                                        !aTransactionalDDL,
+                                        NULL,
+                                        &(sConnectInfo->mLinkFailure) );
+            }
+        }
+    }
+
+    return IDE_FAILURE;
+}
+
+/* BUG-45967 Rebuild Data ¿Ï·á ´ë±â */
+IDE_RC sdi::waitToRebuildData( idvSQL * aStatistics )
+{
+    const SChar * sName     = (const SChar *)"SHARD_REBUILD_DATA_STEP";
+    SChar         sValue[2] = { '2', '\0' };
+
+    // SHARD_REBUILD_DATA_STEPÀÌ 1 ÀÌ¸é, 2 ·Î °»½Å
+    if ( SDU_SHARD_REBUILD_DATA_STEP == 1 )
+    {
+        // BUG-19498 value range check
+        IDE_TEST( idp::validate( sName, sValue,
+                                 ID_TRUE )  // isSystem
+                  != IDE_SUCCESS );
+
+        IDE_TEST( idp::update( NULL, sName, sValue, 0, NULL ) != IDE_SUCCESS );
+
+        ideLog::log( IDE_SD_31, "[DEBUG] Set Property Internal. SHARD_REBUILD_DATA_STEP=[2]\n" );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    // SHARD_REBUILD_DATA_STEPÀÌ 0 ÀÌ µÉ ¶§±îÁö ´ë±â
     while ( SDU_SHARD_REBUILD_DATA_STEP != 0 )
     {
         idlOS::sleep( 1 );
@@ -4551,21 +7158,21 @@ void sdi::setNonShardQueryReason( sdiPrintInfo * aPrintInfo,
     sda::setNonShardQueryReason( aPrintInfo, aReason );
 }
 
-void sdi::setPrintInfoFromAnalyzeInfo( sdiPrintInfo   * aPrintInfo,
-                                       sdiAnalyzeInfo * aAnalyzeInfo )
+SChar * sdi::getNonShardQueryReasonArr( UShort aArrIdx )
 {
-    sda::setPrintInfoFromAnalyzeInfo( aPrintInfo, aAnalyzeInfo );
+    return gNonShardQueryReason[aArrIdx];
 }
 
-void sdi::setPrintInfoFromPrintInfo( sdiPrintInfo * aDst,
-                                     sdiPrintInfo * aSrc )
+idBool sdi::isGCTxPlanPrintable( qcStatement * aStatement )
 {
-    sda::setPrintInfoFromPrintInfo( aDst, aSrc );
-}
+    idBool sResult = ID_FALSE;
 
-SChar * sdi::getCanNotMergeReasonArr( UShort aArrIdx )
-{
-    return gCanNotMergeReasonArr[aArrIdx];
+    if ( QCG_GET_SESSION_IS_GCTX( aStatement ) == ID_TRUE )
+    {
+        sResult = ID_TRUE;
+    }
+
+    return sResult;
 }
 
 idBool sdi::isAnalysisInfoPrintable( qcStatement * aStatement )
@@ -4580,6 +7187,63 @@ idBool sdi::isAnalysisInfoPrintable( qcStatement * aStatement )
     }
 
     return sResult;
+}
+
+void sdi::printGCTxPlan( qcTemplate   * aTemplate,
+                         iduVarString * aString )
+{
+    qcShardExecData * sExecData = NULL;
+    const UChar       sYesNoStr[2][4] = { "NO", "YES" };
+    UInt              sYesNoIdx = 0;
+
+    if ( ( isAnalysisInfoPrintable( aTemplate->stmt ) == ID_TRUE ) &&
+         ( isGCTxPlanPrintable( aTemplate->stmt ) == ID_TRUE ) )
+    {
+        sExecData = &aTemplate->shardExecData;
+
+        iduVarStringAppend( aString, "[ GLOBAL CONSISTENCY INFO ]\n" );
+
+        sYesNoIdx = ( sExecData->partialStmt == ID_TRUE ) ? 1 : 0;
+        iduVarStringAppendFormat( aString,
+                                  "%.*s: %s\n",
+                                  20, "Partial Statement",
+                                  sYesNoStr[sYesNoIdx] );
+
+        if ( QCU_DISPLAY_PLAN_FOR_NATC == 0 )
+        {
+            iduVarStringAppendFormat( aString,
+                                      "%.*s: %"ID_UINT64_FMT"\n",
+                                      20, "Leading Request SCN",
+                                      sExecData->leadingRequestSCN );
+        }
+        else
+        {
+            iduVarStringAppendFormat( aString,
+                                      "%.*s: %s\n",
+                                      20, "Leading Request SCN",
+                                      (sExecData->leadingRequestSCN == 0)? "0":"NNN");
+        }
+
+        if ( sExecData->leadingPlanIndex == ID_UINT_MAX )
+        {
+            iduVarStringAppendFormat( aString,
+                                      "%.*s: -\n",
+                                      20, "Leading Plan Index" );
+        }
+        else
+        {
+            iduVarStringAppendFormat( aString,
+                                      "%.*s: %"ID_UINT32_FMT"\n",
+                                      20, "Leading Plan Index",
+                                      sExecData->leadingPlanIndex );
+        }
+
+        sYesNoIdx = ( sExecData->globalPSM == ID_TRUE ) ? 1 : 0;
+        iduVarStringAppendFormat( aString,
+                                  "%.*s: %s\n",
+                                  20, "Global PSM",
+                                  sYesNoStr[sYesNoIdx] );
+    }
 }
 
 void sdi::printAnalysisInfo( qcStatement  * aStatement,
@@ -4611,34 +7275,34 @@ void sdi::printAnalysisInfo( qcStatement  * aStatement,
                 }
                 else
                 {
-                    // ìƒ¤ë“œ ê°ì²´ê°€ ì—†ê±°ë‚˜ node[meta]ë¡œ ì§€ì •í•´ì„œ ìˆ˜í–‰ë˜ëŠ” ê²½ìš° ë¶„ì„ skip
+                    // »şµå °´Ã¼°¡ ¾ø°Å³ª node[meta]·Î ÁöÁ¤ÇØ¼­ ¼öÇàµÇ´Â °æ¿ì ºĞ¼® skip
                     iduVarStringAppend( aString, "QUERY TYPE             : -\n" );
                 }
 
                 iduVarStringAppend( aString, "NON-SHARD QUERY REASON : ");
-                if ( sPrintInfo->mNonShardQueryReason < SDI_SUB_KEY_EXISTS )
+                if ( sPrintInfo->mNonShardQueryReason < SDI_NON_SHARD_QUERY_REASON_MAX )
                 {
-                    iduVarStringAppend( aString, gCanNotMergeReasonArr[sPrintInfo->mNonShardQueryReason] );
+                    iduVarStringAppend( aString, gNonShardQueryReason[sPrintInfo->mNonShardQueryReason] );
                 }
                 else
                 {
                     //IDE_DASSERT(0);
-                    iduVarStringAppend( aString, gCanNotMergeReasonArr[SDI_UNSUPPORT_SHARD_QUERY] );
+                    iduVarStringAppend( aString, gNonShardQueryReason[SDI_UNKNOWN_REASON] );
                 }
 
                 if ( sPrintInfo->mTransformable )
                 {
-                    iduVarStringAppend( aString, ".\nQUERY TRANSFORMABLE    : Yes\n" );
+                    iduVarStringAppend( aString, "\nQUERY TRANSFORMABLE    : Yes\n" );
                 }
                 else
                 {
-                    iduVarStringAppend( aString, ".\nQUERY TRANSFORMABLE    : No\n" );
+                    iduVarStringAppend( aString, "\nQUERY TRANSFORMABLE    : No\n" );
                 }
             }
             else
             {
                 //IDE_DASSERT(0);
-                iduVarStringAppend( aString, gCanNotMergeReasonArr[SDI_UNSUPPORT_SHARD_QUERY] );
+                iduVarStringAppend( aString, gNonShardQueryReason[SDI_UNKNOWN_REASON] );
                 iduVarStringAppend( aString, "\n" );
             }
         }
@@ -4650,11 +7314,11 @@ void sdi::printAnalysisInfo( qcStatement  * aStatement,
 
 sdiQueryType sdi::getQueryType( qciStatement * aStatement )
 {
-    // s$statement ë¡œ ë³´ì—¬ì£¼ëŠ” shard query type
-    // - trclog_detail_shard ê³¼ ë¬´ê´€í•˜ê²Œ ë™ì‘
-    // - plan cache ê°€ ì ìš©
-    // => ë”°ë¼ì„œ qcStatement.mShardPrintInfo ê°€ ì•„ë‹Œ
-    //    qcStatement.myPlan->mShardAnalysis ì •ë³´ë¥¼ ìš°ì„ ì ìœ¼ë¡œ ì œê³µí•œë‹¤.
+    // s$statement ·Î º¸¿©ÁÖ´Â shard query type
+    // - trclog_detail_shard °ú ¹«°üÇÏ°Ô µ¿ÀÛ
+    // - plan cache °¡ Àû¿ë
+    // => µû¶ó¼­ qcStatement.mShardPrintInfo °¡ ¾Æ´Ñ
+    //    qcStatement.myPlan->mShardAnalysis Á¤º¸¸¦ ¿ì¼±ÀûÀ¸·Î Á¦°øÇÑ´Ù.
 
     IDE_DASSERT( aStatement != NULL );
 
@@ -4666,7 +7330,7 @@ sdiQueryType sdi::getQueryType( qciStatement * aStatement )
     {
         if ( qci::getShardAnalyzeInfo( aStatement, &sAnalyzeInfo ) == IDE_SUCCESS )
         {
-            sQueryType = ( sAnalyzeInfo->mIsCanMerge == ID_TRUE ) ? SDI_QUERY_TYPE_SHARD: SDI_QUERY_TYPE_NONSHARD;
+            sQueryType = ( sAnalyzeInfo->mIsShardQuery == ID_TRUE ) ? SDI_QUERY_TYPE_SHARD: SDI_QUERY_TYPE_NONSHARD;
         }
         else
         {
@@ -4688,64 +7352,88 @@ idBool sdi::isShardEnable()
 
 idBool sdi::isShardCoordinator( qcStatement * aStatement )
 {
-    idBool   sIsShard = ID_FALSE;
-    SChar  * sNodeName;
+    idBool sIsCoord = ID_FALSE;
 
-    // shard enableì´ì–´ì•¼ í•˜ê³ 
-    // data node connectionì´ ì•„ë‹ˆì–´ì•¼ í•œë‹¤. (shard_node_nameì´ ì—†ì–´ì•¼ í•œë‹¤.)
+    // R2HA ±âÁ¸ Å×½ºÆ® ÄÉÀÌ½º pass¸¦ À§ÇØ Ãß°¡ ÃßÈÄ Á¦°Å
+    if( SDU_SHARD_ZOOKEEPER_TEST == 0 )
+    {
+        sdi::setShardStatus(1);
+    }
+    
+    // shard enableÀÌ¾î¾ß ÇÏ°í
+    // user connection ÀÌ¾î¾ß ÇÑ´Ù.
+    // SHARD DDLÀº SHARD·Î ¼öÇà µÈ´Ù.
+    if ((( SDU_SHARD_ENABLE == 1 ) &&
+         ( QCG_GET_SESSION_SHARD_IN_PSM_ENABLE(aStatement) == ID_TRUE ) &&
+         ( sdi::getShardStatus() == 1 )) ||
+        (( SDU_SHARD_ENABLE == 1 ) &&
+         ( sdi::isShardDDL(aStatement) == ID_TRUE )))
+    {
+        if ( QCG_GET_SESSION_SHARD_SESSION_TYPE( aStatement ) == SDI_SESSION_TYPE_USER )
+        {
+            sIsCoord = ID_TRUE;
+        }
+    }
+
+    return sIsCoord;
+}
+
+/* PROJ-2745
+ * isRebuildCoordinator ÇÔ¼öÀÇ º¯Çü.
+ * ´õÀÌ»ó Rebuild coordinator °¡ »ı¼ºµÇÁö ¾Ê°í
+ * ÇØ´ç ÇÔ¼ö¿¡¼­ SMN º¯°æÀ» °¨ÁöÇÏ¹Ç·Î
+ * ÇÔ¼ö ÀÌ¸§À» detectShardMetaChange ·Î º¯°æÇÑ´Ù.
+ */
+idBool sdi::detectShardMetaChange( qcStatement * aStatement )
+{
+    idBool sDetect = ID_FALSE;
     if ( SDU_SHARD_ENABLE == 1 )
     {
-        sNodeName = QCG_GET_SESSION_SHARD_NODE_NAME( aStatement );
-
-        if ( sNodeName == NULL )
+        if ( aStatement->session->mMmSession != NULL )
         {
-            sIsShard = ID_TRUE;
+            sDetect =
+                qci::mSessionCallback.mDetectShardMetaChange(
+                    aStatement->session->mMmSession );
         }
         else
         {
-            if ( sNodeName[0] == '\0' )
-            {
-                sIsShard = ID_TRUE;
-            }
+            /* Nothing to do */
         }
     }
 
-    return sIsShard;
+    return sDetect;
 }
 
-idBool sdi::isRebuildCoordinator( qcStatement * aStatement )
+idBool sdi::isPartialCoordinator( qcStatement * aStatement )
 {
-    idBool   sIsRebuildCoord = ID_FALSE;
-    SChar  * sNodeName = NULL;
+    idBool   sIsDMLCoord = ID_FALSE;
 
     /*
-     * PROJ-2701 Sharding online data rebuild
+     * TASK-7219 Non-shard DML
      *
-     * Rebuild coordinator ìˆ˜í–‰ì˜ ì¡°ê±´
-     *     1. shard_meta enableì´ì–´ì•¼ í•œë‹¤.
-     *     2. data node connectionì´ì–´ì•¼ í•œë‹¤. (shard_node_nameì´ ìˆì–´ì•¼ í•œë‹¤.)
-     *     3. sessionSMN < dataSMNì´ì–´ì•¼ í•œë‹¤.
-     *
+     * DML coordinator ¼öÇàÀÇ Á¶°Ç
+     *     1. shard enableÀÌ¾î¾ß ÇÑ´Ù.
+     *     2. user connection ÀÌ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
+     *     3. partial execution typeÀÌ COORD ¿©¾ß ÇÑ´Ù.
      */
-    if ( SDU_SHARD_ENABLE == 1 )
-    {
-        sNodeName = QCG_GET_SESSION_SHARD_NODE_NAME( aStatement );
 
-        if ( sNodeName != NULL )
+    if ( (SDU_SHARD_ENABLE == 1) &&
+         (QCG_GET_SESSION_SHARD_IN_PSM_ENABLE(aStatement) == ID_TRUE) )
+    {
+        if ( QCG_GET_SESSION_SHARD_SESSION_TYPE( aStatement ) != SDI_SESSION_TYPE_USER )
         {
-            if ( sNodeName[0] != '\0' )
+            if ( aStatement->mShardPartialExecType == SDI_SHARD_PARTIAL_EXEC_TYPE_COORD )
             {
-                // Data (node) session
-                if ( QCG_GET_SESSION_SHARD_META_NUMBER( aStatement ) < getSMNForDataNode() )
-                {
-                    // session SMN < data SMN
-                    sIsRebuildCoord = ID_TRUE;
-                }
+                sIsDMLCoord = ID_TRUE;
+            }
+            else
+            {
+                /* Nothing to do. */
             }
         }
     }
 
-    return sIsRebuildCoord;
+    return sIsDMLCoord;
 }
 
 UInt sdi::getShardInternalConnAttrRetryCount()
@@ -4800,10 +7488,12 @@ void sdi::closeShardSessionByNodeId( qcSession * aSession,
     if ( sFound != ID_TRUE )
     {
         /* impossible case. */
-        ideLog::log( IDE_SD_0, "[SHARD META : FAILURE] Not found shard fail-over align destination data node.: node-id %"ID_UINT32_FMT"\n",
+        ideLog::log( IDE_SD_1, "[SHARD_META_ERROR] Not found shard fail-over align destination data node.: node-id %"ID_UINT32_FMT"\n",
                                aNodeId );
 
-        IDE_DASSERT( 0 );
+        /* PROJ-2755 will fix
+         * IDE_DASSERT( 0 );
+         */
     }
 }
 
@@ -4834,7 +7524,9 @@ void sdi::shardStmtPartialRollbackUsingSavepoint( qcStatement    * aStatement,
         if ( sDataNode->mSVPStep == SDI_SVP_STEP_SET_SAVEPOINT )
         {
             sDataNode->mSVPStep = SDI_SVP_STEP_ROLLBACK_TO_SAVEPOINT;
-            if ( sdi::rollback( sConnectInfo, SAVEPOINT_FOR_SHARD_STMT_PARTIAL_ROLLBACK ) != IDE_SUCCESS )
+            if ( sdi::rollback( sConnectInfo,
+                                getShardSavepointName( aStatement->myPlan->parseTree->stmtKind ) )
+                 != IDE_SUCCESS )
             {
                 sdi::setTransactionBroken( QCG_GET_SESSION_IS_AUTOCOMMIT( aStatement ),
                                            (void*)QCG_GET_DATABASE_LINK_SESSION( aStatement ),
@@ -4853,14 +7545,14 @@ IDE_RC sdi::waitAndSetSMNForMetaNode( idvSQL       * aStatistics,
     /*
      * PROJ-2701 Online data rebuild
      */
-    sdiGlobalMetaNodeInfo sMetaNodeInfo;
-    ULong                 sDataSMN = ID_ULONG(0);
+    sdiGlobalMetaInfo sMetaNodeInfo;
+    ULong                 sDataSMN = SDI_NULL_SMN;
     UInt                  sSleep = 0;
 
     smiStatement          sSmiStmt;
     idBool                sIsBeginStmt = ID_FALSE;
 
-    if ( aNeededSMN == ID_ULONG(0) )
+    if ( aNeededSMN == SDI_NULL_SMN )
     {
         // get dataSMN
         sDataSMN = getSMNForDataNode();
@@ -4870,8 +7562,8 @@ IDE_RC sdi::waitAndSetSMNForMetaNode( idvSQL       * aStatistics,
         sDataSMN = aNeededSMN;
     }
 
-    // metaSMNCacheê°€ ì•„ì§ ê°±ì‹ ë˜ì§€ ì•Šì•˜ì„ ìˆ˜ ìˆë‹¤.
-    // Shard meta tableì—ì„œ shard meta numberë¥¼ ì§ì ‘ ì½ëŠ”ë‹¤.
+    // metaSMNCache°¡ ¾ÆÁ÷ °»½ÅµÇÁö ¾Ê¾ÒÀ» ¼ö ÀÖ´Ù.
+    // Shard meta table¿¡¼­ shard meta number¸¦ Á÷Á¢ ÀĞ´Â´Ù.
     while( getSMNForMetaNode() < sDataSMN )
     {
         IDE_TEST_RAISE( sSleep > SDU_SHARD_META_PROPAGATION_TIMEOUT,
@@ -4883,7 +7575,7 @@ IDE_RC sdi::waitAndSetSMNForMetaNode( idvSQL       * aStatistics,
                   != IDE_SUCCESS );
         sIsBeginStmt = ID_TRUE;
                 
-        IDE_TEST( sdm::getGlobalMetaNodeInfoCore( &sSmiStmt,
+        IDE_TEST( sdm::getGlobalMetaInfoCore( &sSmiStmt,
                                                   &sMetaNodeInfo )
                   != IDE_SUCCESS );
 
@@ -4955,22 +7647,65 @@ IDE_RC sdi::compareKeyData( UInt       aKeyDataType,
     return IDE_FAILURE;
 }
 
+idBool sdi::isShardDDL( qcStatement * aStatement )
+{
+    if (( aStatement->session->mQPSpecific.mFlag & QC_SESSION_SHARD_DDL_MASK ) ==
+        QC_SESSION_SHARD_DDL_TRUE )
+    {
+        return ID_TRUE;
+    }
+    else
+    {
+        return ID_FALSE;
+    }
+}
+
+idBool sdi::isShardDDLForAddClone( qcStatement * aStatement )
+{
+    if (( aStatement->session->mQPSpecific.mFlag & QC_SESSION_SAHRD_ADD_CLONE_MASK ) ==
+        QC_SESSION_SAHRD_ADD_CLONE_TRUE )
+    {
+        return ID_TRUE;
+    }
+    else
+    {
+        return ID_FALSE;
+    }
+}
+
 idBool sdi::hasShardCoordPlan( qcStatement * aStatement )
 {
     qmnPlan     * sPlan = NULL;
     idBool        sRet = ID_FALSE;
 
-    if ( ( isShardCoordinator( aStatement ) == ID_TRUE ) ||
-         ( isRebuildCoordinator( aStatement ) == ID_TRUE ) )
+    if ( aStatement != NULL )
     {
-        sPlan = aStatement->myPlan->plan;
-
-        if ( sPlan != NULL )
+        if ( ( isShardCoordinator( aStatement ) == ID_TRUE ) ||
+             ( isPartialCoordinator( aStatement ) == ID_TRUE ) )
         {
-            if ( ( sPlan->type == QMN_SDEX ) ||
-                 ( sPlan->type == QMN_SDIN ) )
+            sPlan = aStatement->myPlan->plan;
+
+            if ( sPlan != NULL )
             {
-                sRet = ID_TRUE;
+                if ( ( sPlan->type == QMN_SDEX ) ||
+                     ( sPlan->type == QMN_SDIN ) )
+                {
+                    sRet = ID_TRUE;
+                }
+                else
+                {
+                    /* Nothing to do. */
+                }
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
+
+            if ( sRet == ID_FALSE )
+            {
+                isShardSelectExists( sPlan,
+                                     &sRet );
             }
             else
             {
@@ -4981,20 +7716,6 @@ idBool sdi::hasShardCoordPlan( qcStatement * aStatement )
         {
             /* Nothing to do. */
         }
-
-        if ( sRet == ID_FALSE )
-        {
-            isShardSelectExists( sPlan,
-                                 &sRet );
-        }
-        else
-        {
-            /* Nothing to do. */
-        }
-    }
-    else
-    {
-        /* Nothing to do. */
     }
 
     return sRet;
@@ -5061,6 +7782,54 @@ void sdi::getShardObjInfoForSMN( ULong            aSMN,
     }
 }
 
+IDE_RC sdi::filterNodeInfo( sdiNodeInfo * aSourceNodeInfo,
+                            sdiNodeInfo * aAliveNodeInfo,
+                            iduList     * aNodeList )
+{
+    UShort sSourceNodeIdx = 0;
+
+    iduListNode  * sIterator = NULL; 
+
+    /* nodeinfo init */
+    aAliveNodeInfo->mCount = 0;
+    
+    for ( sSourceNodeIdx = 0;
+          sSourceNodeIdx < aSourceNodeInfo->mCount;
+          sSourceNodeIdx++ )
+    {
+        IDU_LIST_ITERATE( aNodeList, sIterator )
+        {
+            if ( idlOS::strncmp ( (SChar*)sIterator->mObj, 
+                                  aSourceNodeInfo->mNodes[sSourceNodeIdx].mNodeName, 
+                                  SDI_NODE_NAME_MAX_SIZE + 1 ) == 0 )
+            {
+                IDE_TEST_RAISE( aAliveNodeInfo->mCount >= SDI_NODE_MAX_COUNT, ERR_NODE_INFO_OVERFLOW );
+
+                idlOS::memcpy( (void*) &aAliveNodeInfo->mNodes[aAliveNodeInfo->mCount],
+                               (void*) &aSourceNodeInfo->mNodes[sSourceNodeIdx],
+                               ID_SIZEOF(sdiNode) );
+
+                aAliveNodeInfo->mCount++;
+
+                /* Alive Node Found */
+                break;
+            }
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NODE_INFO_OVERFLOW )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::filterNodeInfo",
+                                  "Too many node count for shard meta changes" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 IDE_RC sdi::unionNodeInfo( sdiNodeInfo * aSourceNodeInfo,
                            sdiNodeInfo * aTargetNodeInfo )
 {
@@ -5115,3 +7884,6112 @@ IDE_RC sdi::unionNodeInfo( sdiNodeInfo * aSourceNodeInfo,
 
     return IDE_FAILURE;
 }
+
+IDE_RC sdi::getAddedNodeInfo( sdiClientInfo * aClientInfo,
+                              sdiNodeInfo   * aNewNodeInfo,
+                              sdiNodeInfo   * aTarget )
+{
+    UShort sIdx4New;
+    UShort sIdx4Cur;
+    idBool sIsFound;
+
+    sdiConnectInfo  * sConnectInfo = NULL;
+
+    for ( sIdx4New = 0, sIsFound = ID_FALSE;
+          sIdx4New < aNewNodeInfo->mCount;
+          ++sIdx4New, sIsFound = ID_FALSE )
+    {
+        for ( sIdx4Cur = 0, sConnectInfo = aClientInfo->mConnectInfo;
+              sIdx4Cur < aClientInfo->mCount;
+              ++sIdx4Cur, ++sConnectInfo )
+        {
+            if (    aNewNodeInfo->mNodes[sIdx4New].mNodeId
+                 == sConnectInfo->mNodeInfo.mNodeId )
+            {
+                sIsFound = ID_TRUE;
+                break;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+
+        if ( sIsFound == ID_TRUE )
+        {
+            /* Nothing to do */
+        }
+        else
+        {
+            IDE_TEST_RAISE( aTarget->mCount >= SDI_NODE_MAX_COUNT, ERR_NODE_INFO_OVERFLOW );
+
+            idlOS::memcpy( (void*) &aTarget->mNodes[aTarget->mCount],
+                           (void*) &aNewNodeInfo->mNodes[sIdx4New],
+                           ID_SIZEOF(sdiNode) );
+
+            aTarget->mCount++;
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NODE_INFO_OVERFLOW )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::getAddedNodeInfo",
+                                  "Too many node count for shard meta changes" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/* BUG-47459 */
+const SChar * sdi::getShardSavepointName( qciStmtType aStmtKind )
+{
+    switch( aStmtKind )
+    {
+        case QCI_STMT_INSERT:
+        case QCI_STMT_UPDATE:
+        case QCI_STMT_DELETE:
+        case QCI_STMT_SELECT_FOR_UPDATE:
+            return (SChar*)SAVEPOINT_FOR_SHARD_STMT_PARTIAL_ROLLBACK;
+            break;
+
+        case QCI_STMT_EXEC_PROC:
+            return (SChar*)SAVEPOINT_FOR_SHARD_CLONE_PROC_PARTIAL_ROLLBACK;
+            break;
+
+        default:
+            IDE_DASSERT( 0 );
+            return NULL;
+            break;            
+    }
+}
+
+/* ³ªÁß¿¡ SHARD JOINÀÌ³ª ADD ±¸¹®¿¡¼­ È£ÃâÇØ¾ßÇÑ´Ù. */
+IDE_RC sdi::updateLocalMetaInfoForReplication( qcStatement  * aStatement,
+                                               UInt           aKSafety,
+                                               SChar        * aReplicationMode,
+                                               UInt           aParallelCount,
+                                               UInt         * aRowCnt )
+{
+    UInt sRowCnt = 0;
+    /* update local meta info */
+    IDE_TEST( sdm::updateLocalMetaInfoForReplication( aStatement,
+                               (UInt) aKSafety,
+                               (SChar*) aReplicationMode,
+                               (UInt) aParallelCount,
+                               &sRowCnt )
+              != IDE_SUCCESS );
+
+    IDE_TEST_RAISE( sRowCnt != 1, ERR_SHARD_META );
+
+    if ( aRowCnt != NULL )
+    {
+        *aRowCnt = (UInt)sRowCnt;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_SHARD_META );
+    {
+        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDF_SHARD_LOCAL_META_ERROR));
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+// PROJ-2727
+IDE_RC sdi::setShardSessionProperty( qcSession      * aSession,
+                                     sdiClientInfo  * aClientInfo,
+                                     sdiConnectInfo * aConnectInfo )
+{
+    UInt   sPropertyAttribute = 0;
+    SChar  sNlsTerritory[IDP_MAX_VALUE_LEN + 1] = {0,};
+    smSCN  sSCN;
+
+    if ((( aConnectInfo->mFlag & SDI_CONNECT_ATTR_CHANGE_MASK )
+         == SDI_CONNECT_ATTR_CHANGE_TRUE ))
+    {
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_DATE_FORMAT_MASK )
+             == QC_SESSION_ATTR_DATE_FORMAT_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "DEFAULT_DATE_FORMAT",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_DATE_FORMAT,
+                                            0,
+                                            qci::mSessionCallback.mGetDateFormat( aSession->mMmSession ),
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+        
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR___OPTIMIZER_DEFAULT_TEMP_TBS_TYPE_MASK )
+             == QC_SESSION_ATTR___OPTIMIZER_DEFAULT_TEMP_TBS_TYPE_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "__OPTIMIZER_DEFAULT_TEMP_TBS_TYPE",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE___OPTIMIZER_DEFAULT_TEMP_TBS_TYPE,
+                                            qci::mSessionCallback.mGetOptimizerDefaultTempTbsType( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR___OPTIMIZER_TRANSITIVITY_OLD_RULE_MASK )
+             == QC_SESSION_ATTR___OPTIMIZER_TRANSITIVITY_OLD_RULE_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "__OPTIMIZER_TRANSITIVITY_OLD_RULE",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE___OPTIMIZER_TRANSITIVITY_OLD_RULE,
+                                            qci::mSessionCallback.mGetOptimizerTransitivityOldRule( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+       
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR___PRINT_OUT_ENABLE_MASK )
+             == QC_SESSION_ATTR___PRINT_OUT_ENABLE_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "__PRINT_OUT_ENABLE",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE___PRINT_OUT_ENABLE,
+                                            qci::mSessionCallback.mGetPrintOutEnable( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR___USE_OLD_SORT_MASK )
+             == QC_SESSION_ATTR___USE_OLD_SORT_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "__USE_OLD_SORT",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE___USE_OLD_SORT,
+                                            qci::mSessionCallback.mGetUseOldSort( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_ARITHMETIC_OPERATION_MODE_MASK )
+             == QC_SESSION_ATTR_ARITHMETIC_OPERATION_MODE_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "ARITHMETIC_OPERATION_MODE",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_ARITHMETIC_OPERATION_MODE,
+                                            qci::mSessionCallback.mGetArithmeticOpMode( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_AUTO_REMOTE_EXEC_MASK )
+             == QC_SESSION_ATTR_AUTO_REMOTE_EXEC_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "AUTO_REMOTE_EXEC",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_AUTO_REMOTE_EXEC,
+                                            qci::mSessionCallback.mGetAutoRemoteExec( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_COMMIT_WRITE_WAIT_MODE_MASK )
+             == QC_SESSION_ATTR_COMMIT_WRITE_WAIT_MODE_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "COMMIT_WRITE_WAIT_MODE",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                // add session callback
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_COMMIT_WRITE_WAIT_MODE,
+                                            qci::mSessionCallback.mGetCommitWriteWaitMode( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_DBLINK_REMOTE_STATEMENT_AUTOCOMMIT_MASK )
+             == QC_SESSION_ATTR_DBLINK_REMOTE_STATEMENT_AUTOCOMMIT_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "DBLINK_REMOTE_STATEMENT_AUTOCOMMIT",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+            // add session callback
+            IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                        SDL_ALTIBASE_DBLINK_REMOTE_STATEMENT_AUTOCOMMIT,
+                                        qci::mSessionCallback.mGetDblinkRemoteStatementAutoCommit( aSession->mMmSession ),
+                                        NULL,
+                                        &(aConnectInfo->mLinkFailure) )
+                      != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_DDL_TIMEOUT_MASK )
+             == QC_SESSION_ATTR_DDL_TIMEOUT_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "DDL_TIMEOUT",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                // add session callback
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_DDL_TIMEOUT,
+                                            qci::mSessionCallback.mGetDdlTimeout( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_FETCH_TIMEOUT_MASK )
+             == QC_SESSION_ATTR_FETCH_TIMEOUT_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "FETCH_TIMEOUT",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                // add session callback            
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_FETCH_TIMEOUT,
+                                            qci::mSessionCallback.mGetFetchTimeout( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_GLOBAL_TRANSACTION_LEVEL_MASK )
+             == QC_SESSION_ATTR_GLOBAL_TRANSACTION_LEVEL_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "GLOBAL_TRANSACTION_LEVEL",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_GLOBAL_TRANSACTION_LEVEL,
+                                            qci::mSessionCallback.mGetGTXLevel( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+
+                /* PROJ-2733-DistTxInfo GCTxÀÎ °æ¿ì ³ëµå SCNÀ» ¾ò¾î¿Í COORD SCNÀ¸·Î °»½ÅÇÑ´Ù. */
+                if ( qci::mSessionCallback.mIsGCTx( aSession->mMmSession ) == ID_TRUE )
+                {
+                    IDE_TEST( sdl::getSCN( aConnectInfo, &sSCN ) != IDE_SUCCESS );
+
+                    #if defined(DEBUG)
+                    ideLog::log( IDE_SD_18, "[GLOBAL_CONSISTENT_TRANSACTION_DISTTXINFO] = [%s] setShardSessionProperty %s SCN : %"ID_UINT64_FMT,
+                                 aClientInfo->mGCTxInfo.mSessionTypeString,
+                                 aConnectInfo->mNodeName,
+                                 sSCN );
+                    #endif
+
+                    SM_SET_MAX_SCN( &(aClientInfo->mGCTxInfo.mCoordSCN), &sSCN );
+                }
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_IDLE_TIMEOUT_MASK )
+             == QC_SESSION_ATTR_IDLE_TIMEOUT_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "IDLE_TIMEOUT",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                // add session callback 
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_IDLE_TIMEOUT,
+                                            qci::mSessionCallback.mGetIdleTimeout( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_LOB_CACHE_THRESHOLD_MASK )
+             == QC_SESSION_ATTR_LOB_CACHE_THRESHOLD_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "LOB_CACHE_THRESHOLD",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_LOB_CACHE_THRESHOLD,
+                                            qci::mSessionCallback.mGetLobCacheThreshold( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+        
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_NLS_TERRITORY_MASk )
+             == QC_SESSION_ATTR_NLS_TERRITORY_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "NLS_TERRITORY",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                // add session callback
+                qci::mSessionCallback.mGetNlsTerritory( aSession->mMmSession, sNlsTerritory );
+            
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_NLS_TERRITORY,
+                                            0,
+                                            sNlsTerritory,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+        
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_MAX_STATEMENTS_PER_SESSION_MASK )
+             == QC_SESSION_ATTR_MAX_STATEMENTS_PER_SESSION_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "MAX_STATEMENTS_PER_SESSION",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                // add session callback             
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_MAX_STATEMENTS_PER_SESSION,
+                                            qci::mSessionCallback.mGetMaxStatementsPerSession( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS);
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_NLS_CURRENCY_MASK )
+             == QC_SESSION_ATTR_NLS_CURRENCY_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "NLS_CURRENCY",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_NLS_CURRENCY,
+                                            0,
+                                            qci::mSessionCallback.mGetNlsCurrency( aSession->mMmSession ),
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_NLS_ISO_CURRENCY_MASK )
+             == QC_SESSION_ATTR_NLS_ISO_CURRENCY_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "NLS_ISO_CURRENCY",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( mtlTerritory::searchNlsISOTerritoryName(
+                              qci::mSessionCallback.mGetNlsISOCurrency( aSession->mMmSession ),
+                              sNlsTerritory )
+                          != IDE_SUCCESS );
+                       
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_NLS_ISO_CURRENCY,
+                                            0,
+                                            sNlsTerritory,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_NLS_NCHAR_CONV_EXCP_MASK )
+             == QC_SESSION_ATTR_NLS_NCHAR_CONV_EXCP_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "NLS_NCHAR_CONV_EXCP",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                // add session callback            
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_NLS_NCHAR_CONV_EXCP,
+                                            qci::mSessionCallback.mGetNlsNcharConvExcp( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_NLS_NUMERIC_CHARACTERS_MASK )
+             == QC_SESSION_ATTR_NLS_NUMERIC_CHARACTERS_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "NLS_NUMERIC_CHARACTERS",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_NLS_NUMERIC_CHARACTERS,
+                                            0,
+                                            qci::mSessionCallback.mGetNlsNumChar( aSession->mMmSession ),
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_NORMALFORM_MAXIMUM_MASK )
+             == QC_SESSION_ATTR_NORMALFORM_MAXIMUM_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "NORMALFORM_MAXIMUM",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_NORMALFORM_MAXIMUM,
+                                            qci::mSessionCallback.mGetNormalFormMaximum( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_OPTIMIZER_AUTO_STATS_MASK )
+             == QC_SESSION_ATTR_OPTIMIZER_AUTO_STATS_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "OPTIMIZER_AUTO_STATS",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_OPTIMIZER_AUTO_STATS,
+                                            qci::mSessionCallback.mGetOptimizerAutoStats( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_OPTIMIZER_DISK_INDEX_COST_ADJ_MASK )
+             == QC_SESSION_ATTR_OPTIMIZER_DISK_INDEX_COST_ADJ_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "OPTIMIZER_DISK_INDEX_COST_ADJ",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_OPTIMIZER_DISK_INDEX_COST_ADJ,
+                                            qci::mSessionCallback.mGetOptimizerDiskIndexCostAdj( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_OPTIMIZER_MEMORY_INDEX_COST_ADJ_MASK )
+             == QC_SESSION_ATTR_OPTIMIZER_MEMORY_INDEX_COST_ADJ_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "OPTIMIZER_MEMORY_INDEX_COST_ADJ",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_OPTIMIZER_MEMORY_INDEX_COST_ADJ,
+                                            qci::mSessionCallback.mGetOptimizerMemoryIndexCostAdj( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_OPTIMIZER_MODE_MASK )
+             == QC_SESSION_ATTR_OPTIMIZER_MODE_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "OPTIMIZER_MODE",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                if ( qci::mSessionCallback.mGetOptimizerMode( aSession->mMmSession ) == 0)
+                {
+                    IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                                SDL_ALTIBASE_OPTIMIZER_MODE,
+                                                2,
+                                                NULL,
+                                                &(aConnectInfo->mLinkFailure) )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                                SDL_ALTIBASE_OPTIMIZER_MODE,
+                                                qci::mSessionCallback.mGetOptimizerMode( aSession->mMmSession ),
+                                                NULL,
+                                                &(aConnectInfo->mLinkFailure) )
+                              != IDE_SUCCESS );
+                }
+            }
+        }
+        
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_OPTIMIZER_PERFORMANCE_VIEW_MASK )
+             == QC_SESSION_ATTR_OPTIMIZER_PERFORMANCE_VIEW_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "OPTIMIZER_PERFORMANCE_VIEW",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_OPTIMIZER_PERFORMANCE_VIEW,
+                                            qci::mSessionCallback.mGetOptimizerPerformanceView( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_PARALLEL_DML_MODE_MASK )
+             == QC_SESSION_ATTR_PARALLEL_DML_MODE_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "PARALLEL_DML_MODE",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_PARALLEL_DML_MODE,
+                                            qci::mSessionCallback.mIsParallelDml( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_QUERY_REWRITE_ENABLE_MASK )
+             == QC_SESSION_ATTR_QUERY_REWRITE_ENABLE_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "QUERY_REWRITE_ENABLE",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_QUERY_REWRITE_ENABLE,
+                                            qci::mSessionCallback.mGetQueryRewriteEnable( aSession->mMmSession ),
+                                            NULL,
+
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_QUERY_TIMEOUT_MASK )
+             == QC_SESSION_ATTR_QUERY_TIMEOUT_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "QUERY_TIMEOUT",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                // add session callback 
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_SQL_ATTR_QUERY_TIMEOUT,
+                                            qci::mSessionCallback.mGetQueryTimeout( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_RECYCLEBIN_ENABLE_MASK )
+             == QC_SESSION_ATTR_RECYCLEBIN_ENABLE_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "RECYCLEBIN_ENABLE",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_RECYCLEBIN_ENABLE,
+                                            qci::mSessionCallback.mGetRecyclebinEnable( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_REPLICATION_DDL_SYNC_MASK )
+             == QC_SESSION_ATTR_REPLICATION_DDL_SYNC_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "REPLICATION_DDL_SYNC",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_REPLICATION_DDL_SYNC,
+                                            qci::mSessionCallback.mGetReplicationDDLSync( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_REPLICATION_DDL_SYNC_TIMEOUT_MASK )
+             == QC_SESSION_ATTR_REPLICATION_DDL_SYNC_TIMEOUT_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "REPLICATION_DDL_SYNC_TIMEOUT",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                // add session callback 
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_REPLICATION_DDL_SYNC_TIMEOUT,
+                                            qci::mSessionCallback.mGetReplicationDDLSyncTimeout( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_RESULT_CACHE_ENABLE_MASK )
+             ==  QC_SESSION_ATTR_RESULT_CACHE_ENABLE_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "RESULT_CACHE_ENABLE",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+            
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_RESULT_CACHE_ENABLE,
+                                            qci::mSessionCallback.mGetResultCacheEnable( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_SELECT_HEADER_DISPLAY_MASK )
+             == QC_SESSION_ATTR_SELECT_HEADER_DISPLAY_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "SELECT_HEADER_DISPLAY",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_HEADER_DISPLAY_MODE,
+                                            qci::mSessionCallback.mGetSelectHeaderDisplay( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_SERIAL_EXECUTE_MODE_MASK )
+             == QC_SESSION_ATTR_SERIAL_EXECUTE_MODE_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "SERIAL_EXECUTE_MODE",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+            
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_SERIAL_EXECUTE_MODE,
+                                            qci::mSessionCallback.mGetSerialExecuteMode( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_ST_OBJECT_BUFFER_SIZE_MASK )
+             == QC_SESSION_ATTR_ST_OBJECT_BUFFER_SIZE_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "ST_OBJECT_BUFFER_SIZE",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_ST_OBJECT_BUFFER_SIZE,
+                                            qci::mSessionCallback.mGetSTObjBufSize( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_TIME_ZONE_MASK )
+             == QC_SESSION_ATTR_TIME_ZONE_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "TIME_ZONE",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_TIME_ZONE,
+                                            0,
+                                            qci::mSessionCallback.mGetSessionTimezoneString( aSession->mMmSession ),
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_TOP_RESULT_CACHE_MODE_MASK )
+             == QC_SESSION_ATTR_TOP_RESULT_CACHE_MODE_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "TOP_RESULT_CACHE_MODE",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_TOP_RESULT_CACHE_MODE,
+                                            qci::mSessionCallback.mGetTopResultCacheMode( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_TRCLOG_DETAIL_INFORMATION_MASK )
+             == QC_SESSION_ATTR_TRCLOG_DETAIL_INFORMATION_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "TRCLOG_DETAIL_INFORMATION",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_TRCLOG_DETAIL_INFORMATION,
+                                            qci::mSessionCallback.mGetTrclogDetailInformation( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_TRCLOG_DETAIL_PREDICATE_MASK )
+             == QC_SESSION_ATTR_TRCLOG_DETAIL_PREDICATE_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "TRCLOG_DETAIL_PREDICATE",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {   
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_TRCLOG_DETAIL_PREDICATE,
+                                            qci::mSessionCallback.mGetTrclogDetailPredicate( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_TRCLOG_DETAIL_SHARD_MASK )
+             == QC_SESSION_ATTR_TRCLOG_DETAIL_SHARD_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "TRCLOG_DETAIL_SHARD",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_TRCLOG_DETAIL_SHARD,
+                                            qci::mSessionCallback.mGetTrclogDetailShard( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_TRX_UPDATE_MAX_LOGSIZE_MASK )
+             == QC_SESSION_ATTR_TRX_UPDATE_MAX_LOGSIZE_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "TRX_UPDATE_MAX_LOGSIZE",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                // add session callback
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_TRX_UPDATE_MAX_LOGSIZE,
+                                            qci::mSessionCallback.mGetUpdateMaxLogSize( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_UTRANS_TIMEOUT_MASK )
+             == QC_SESSION_ATTR_UTRANS_TIMEOUT_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "UTRANS_TIMEOUT",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                // add session callback
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_UTRANS_TIMEOUT,
+                                            qci::mSessionCallback.mGetUTransTimeout( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR___REDUCE_PARTITION_PREPARE_MEMORY_MASK )
+             == QC_SESSION_ATTR___REDUCE_PARTITION_PREPARE_MEMORY_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "__REDUCE_PARTITION_PREPARE_MEMORY",
+                                     &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE___REDUCE_PARTITION_PREPARE_MEMORY,
+                                            qci::mSessionCallback.mGetReducePartPrepareMemory( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_INVOKE_USER_MASK )
+             == QC_SESSION_ATTR_INVOKE_USER_TRUE )
+        {
+            IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                        SDL_ALTIBASE_INVOKE_USER,
+                                        0,
+                                        qci::mSessionCallback.mGetInvokeUserName( aSession->mMmSession ),
+                                        &(aConnectInfo->mLinkFailure) )
+                      != IDE_SUCCESS );
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_TRANSACTIONAL_DDL_MASK )
+             == QC_SESSION_ATTR_TRANSACTIONAL_DDL_TRUE )
+        {
+            IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                        SDL_ALTIBASE_TRANSACTIONAL_DDL,
+                                        qci::mSessionCallback.mTransactionalDDL( aSession->mMmSession ),
+                                        NULL,
+                                        &(aConnectInfo->mLinkFailure) )
+                      != IDE_SUCCESS );
+        }
+
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_SHARD_STATEMENT_RETRY_MASK )
+             == QC_SESSION_ATTR_SHARD_STATEMENT_RETRY_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "SHARD_STATEMENT_RETRY", &sPropertyAttribute ) != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_SHARD_STATEMENT_RETRY,
+                                            qci::mSessionCallback.mGetShardStatementRetry( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+        
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_INDOUBT_FETCH_TIMEOUT_MASK )
+             == QC_SESSION_ATTR_INDOUBT_FETCH_TIMEOUT_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "INDOUBT_FETCH_TIMEOUT", &sPropertyAttribute ) != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_INDOUBT_FETCH_TIMEOUT,
+                                            qci::mSessionCallback.mGetIndoubtFetchTimeout( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+        
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_INDOUBT_FETCH_METHOD_MASK )
+             == QC_SESSION_ATTR_INDOUBT_FETCH_METHOD_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "INDOUBT_FETCH_METHOD", &sPropertyAttribute ) != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_INDOUBT_FETCH_METHOD,
+                                            qci::mSessionCallback.mGetIndoubtFetchMethod( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+        /* BUG-48132 */ 
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR___OPTIMIZER_PLAN_HASH_OR_SORT_METHOD_MASK )
+             == QC_SESSION_ATTR___OPTIMIZER_PLAN_HASH_OR_SORT_METHOD_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "__OPTIMIZER_PLAN_HASH_OR_SORT_METHOD", &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE___OPTIMIZER_PLAN_HASH_OR_SORT_METHOD,
+                                            qci::mSessionCallback.mGetPlanHashOrSortMethod( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR_DDL_LOCK_TIMEOUT_MASK )
+             == QC_SESSION_ATTR_DDL_LOCK_TIMEOUT_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "DDL_LOCK_TIMEOUT", &sPropertyAttribute ) != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE_DDL_LOCK_TIMEOUT,
+                                            qci::mSessionCallback.mGetDDLLockTimeout( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+        /* BUG-48161 */ 
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR___OPTIMIZER_BUCKET_COUNT_MAX_MASK )
+             == QC_SESSION_ATTR___OPTIMIZER_BUCKET_COUNT_MAX_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "__OPTIMIZER_BUCKET_COUNT_MAX", &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE___OPTIMIZER_BUCKET_COUNT_MAX,
+                                            qci::mSessionCallback.mGetBucketCountMax( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+        /* BUG-48348 */
+        if ( ( aConnectInfo->mCoordPropertyFlag & QC_SESSION_ATTR___OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION_MASK )
+             == QC_SESSION_ATTR___OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION_TRUE )
+        {
+            IDE_TEST( idp::getPropertyAttribute( "__OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION", &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            if ( sPropertyAttribute == IDP_ATTR_SHARD_ALL )
+            {
+                IDE_TEST( sdl::setConnAttr( aConnectInfo,
+                                            SDL_ALTIBASE___OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION,
+                                            qci::mSessionCallback.mGetEliminateCommonSubexpression( aSession->mMmSession ),
+                                            NULL,
+                                            &(aConnectInfo->mLinkFailure) )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        // BUG-47765
+        aConnectInfo->mFlag &= ~SDI_CONNECT_ATTR_CHANGE_MASK;
+        aConnectInfo->mFlag |= SDI_CONNECT_ATTR_CHANGE_FALSE;
+    
+        aConnectInfo->mCoordPropertyFlag = 0;
+    }
+    else
+    {
+        // nothing to do
+    }
+        
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION_END;
+
+    // BUG-47765
+    aConnectInfo->mFlag &= ~SDI_CONNECT_ATTR_CHANGE_MASK;
+    aConnectInfo->mFlag |= SDI_CONNECT_ATTR_CHANGE_FALSE;
+
+    aConnectInfo->mCoordPropertyFlag = 0;
+    
+    return IDE_FAILURE;
+}
+
+// PROJ-2727
+void sdi::unSetSessionPropertyFlag( qcSession * aSession )
+{
+    if (( aSession->mQPSpecific.mFlag & QC_SESSION_ATTR_CHANGE_MASK )
+        == QC_SESSION_ATTR_CHANGE_TRUE )
+    {
+        aSession->mQPSpecific.mFlag &= ~QC_SESSION_ATTR_CHANGE_MASK;
+        aSession->mQPSpecific.mFlag |= QC_SESSION_ATTR_CHANGE_FALSE;
+
+        aSession->mQPSpecific.mFlag &= ~QC_SESSION_ATTR_SET_NODE_MASK;
+        aSession->mQPSpecific.mFlag |= QC_SESSION_ATTR_SET_NODE_FALSE;
+        
+        aSession->mQPSpecific.mPropertyFlag = 0;
+    }
+    else
+    {
+        // nothing to do
+    }
+}
+
+IDE_RC sdi::setSessionPropertyFlag( qcSession * aSession,
+                                    UShort      aSessionPropID )
+{
+    IDE_DASSERT( aSession != NULL );
+
+    if (( sdi::isShardEnable() == ID_TRUE ) &&
+        (( aSession->mQPSpecific.mFlag & QC_SESSION_ATTR_SHARD_META_MASK )
+         != QC_SESSION_ATTR_SHARD_META_TRUE )) 
+    {
+        aSession->mQPSpecific.mFlag &= ~QC_SESSION_ATTR_SET_NODE_MASK;
+        aSession->mQPSpecific.mFlag |= QC_SESSION_ATTR_SET_NODE_TRUE;
+
+        aSession->mQPSpecific.mFlag &= ~QC_SESSION_ATTR_CHANGE_MASK;
+        aSession->mQPSpecific.mFlag |= QC_SESSION_ATTR_CHANGE_TRUE;
+
+        switch ( aSessionPropID )
+        {
+            case CMP_DB_PROPERTY_DATE_FORMAT:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_DATE_FORMAT_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_DATE_FORMAT_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_QUERY_TIMEOUT:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_QUERY_TIMEOUT_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_QUERY_TIMEOUT_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_DDL_TIMEOUT:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_DDL_TIMEOUT_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_DDL_TIMEOUT_TRUE;
+                break;
+
+            case CMP_DB_PROPERTY_FETCH_TIMEOUT:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_FETCH_TIMEOUT_MASK;
+                aSession->mQPSpecific.mPropertyFlag |=  QC_SESSION_ATTR_FETCH_TIMEOUT_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_UTRANS_TIMEOUT:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_UTRANS_TIMEOUT_MASK;
+                aSession->mQPSpecific.mPropertyFlag |=  QC_SESSION_ATTR_UTRANS_TIMEOUT_TRUE;
+                break;
+
+            case CMP_DB_PROPERTY_IDLE_TIMEOUT:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_IDLE_TIMEOUT_MASK;
+                aSession->mQPSpecific.mPropertyFlag |=  QC_SESSION_ATTR_IDLE_TIMEOUT_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_OPTIMIZER_MODE:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_OPTIMIZER_MODE_MASK;
+                aSession->mQPSpecific.mPropertyFlag |=  QC_SESSION_ATTR_OPTIMIZER_MODE_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_HEADER_DISPLAY_MODE:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_SELECT_HEADER_DISPLAY_MASK;
+                aSession->mQPSpecific.mPropertyFlag |=  QC_SESSION_ATTR_SELECT_HEADER_DISPLAY_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_NORMALFORM_MAXIMUM:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_NORMALFORM_MAXIMUM_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_NORMALFORM_MAXIMUM_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY___OPTIMIZER_DEFAULT_TEMP_TBS_TYPE:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR___OPTIMIZER_DEFAULT_TEMP_TBS_TYPE_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR___OPTIMIZER_DEFAULT_TEMP_TBS_TYPE_TRUE;
+                break;
+
+            case CMP_DB_PROPERTY_COMMIT_WRITE_WAIT_MODE:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_COMMIT_WRITE_WAIT_MODE_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_COMMIT_WRITE_WAIT_MODE_TRUE;
+                break;
+
+            case CMP_DB_PROPERTY_ST_OBJECT_BUFFER_SIZE:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_ST_OBJECT_BUFFER_SIZE_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_ST_OBJECT_BUFFER_SIZE_TRUE;
+                break;
+                
+            case CMP_DB_PROPERTY_TRX_UPDATE_MAX_LOGSIZE:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_TRX_UPDATE_MAX_LOGSIZE_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_TRX_UPDATE_MAX_LOGSIZE_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_PARALLEL_DML_MODE:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_PARALLEL_DML_MODE_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_PARALLEL_DML_MODE_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_NLS_NCHAR_CONV_EXCP:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_NLS_NCHAR_CONV_EXCP_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_NLS_NCHAR_CONV_EXCP_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_AUTO_REMOTE_EXEC:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_AUTO_REMOTE_EXEC_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_AUTO_REMOTE_EXEC_TRUE;
+                break;
+     
+            case CMP_DB_PROPERTY_MAX_STATEMENTS_PER_SESSION:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_MAX_STATEMENTS_PER_SESSION_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_MAX_STATEMENTS_PER_SESSION_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_TRCLOG_DETAIL_PREDICATE:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_TRCLOG_DETAIL_PREDICATE_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_TRCLOG_DETAIL_PREDICATE_TRUE;
+                break;
+                                        
+            case CMP_DB_PROPERTY_OPTIMIZER_DISK_INDEX_COST_ADJ:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_OPTIMIZER_DISK_INDEX_COST_ADJ_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_OPTIMIZER_DISK_INDEX_COST_ADJ_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_OPTIMIZER_MEMORY_INDEX_COST_ADJ:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_OPTIMIZER_MEMORY_INDEX_COST_ADJ_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_OPTIMIZER_MEMORY_INDEX_COST_ADJ_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_NLS_TERRITORY:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_NLS_TERRITORY_MASk;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_NLS_TERRITORY_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_NLS_ISO_CURRENCY:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_NLS_ISO_CURRENCY_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_NLS_ISO_CURRENCY_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_NLS_CURRENCY:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_NLS_CURRENCY_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_NLS_CURRENCY_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_NLS_NUMERIC_CHARACTERS:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_NLS_NUMERIC_CHARACTERS_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_NLS_NUMERIC_CHARACTERS_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_TIME_ZONE:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_TIME_ZONE_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_TIME_ZONE_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_LOB_CACHE_THRESHOLD:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_LOB_CACHE_THRESHOLD_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_LOB_CACHE_THRESHOLD_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_QUERY_REWRITE_ENABLE:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_QUERY_REWRITE_ENABLE_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_QUERY_REWRITE_ENABLE_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_GLOBAL_TRANSACTION_LEVEL:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_GLOBAL_TRANSACTION_LEVEL_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_GLOBAL_TRANSACTION_LEVEL_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_DBLINK_REMOTE_STATEMENT_AUTOCOMMIT:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_DBLINK_REMOTE_STATEMENT_AUTOCOMMIT_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_DBLINK_REMOTE_STATEMENT_AUTOCOMMIT_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_RECYCLEBIN_ENABLE:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_RECYCLEBIN_ENABLE_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_RECYCLEBIN_ENABLE_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY___USE_OLD_SORT:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR___USE_OLD_SORT_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR___USE_OLD_SORT_TRUE;
+                break;
+
+            case CMP_DB_PROPERTY_ARITHMETIC_OPERATION_MODE:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_ARITHMETIC_OPERATION_MODE_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_ARITHMETIC_OPERATION_MODE_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_RESULT_CACHE_ENABLE:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_RESULT_CACHE_ENABLE_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_RESULT_CACHE_ENABLE_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_TOP_RESULT_CACHE_MODE:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_TOP_RESULT_CACHE_MODE_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_TOP_RESULT_CACHE_MODE_TRUE;
+                break;
+
+            case CMP_DB_PROPERTY_OPTIMIZER_AUTO_STATS:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_OPTIMIZER_AUTO_STATS_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_OPTIMIZER_AUTO_STATS_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY___OPTIMIZER_TRANSITIVITY_OLD_RULE:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR___OPTIMIZER_TRANSITIVITY_OLD_RULE_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR___OPTIMIZER_TRANSITIVITY_OLD_RULE_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_OPTIMIZER_PERFORMANCE_VIEW:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_OPTIMIZER_PERFORMANCE_VIEW_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_OPTIMIZER_PERFORMANCE_VIEW_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_REPLICATION_DDL_SYNC:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_REPLICATION_DDL_SYNC_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_REPLICATION_DDL_SYNC_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_REPLICATION_DDL_SYNC_TIMEOUT:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_REPLICATION_DDL_SYNC_TIMEOUT_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_REPLICATION_DDL_SYNC_TIMEOUT_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY___PRINT_OUT_ENABLE:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR___PRINT_OUT_ENABLE_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR___PRINT_OUT_ENABLE_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_TRCLOG_DETAIL_SHARD:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_TRCLOG_DETAIL_SHARD_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_TRCLOG_DETAIL_SHARD_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_SERIAL_EXECUTE_MODE:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_SERIAL_EXECUTE_MODE_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_SERIAL_EXECUTE_MODE_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY_TRCLOG_DETAIL_INFORMATION:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_TRCLOG_DETAIL_INFORMATION_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_TRCLOG_DETAIL_INFORMATION_TRUE;
+                break;
+                    
+            case CMP_DB_PROPERTY___REDUCE_PARTITION_PREPARE_MEMORY:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR___REDUCE_PARTITION_PREPARE_MEMORY_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR___REDUCE_PARTITION_PREPARE_MEMORY_TRUE;
+                break;
+            
+            case CMP_DB_PROPERTY_INVOKE_USER:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_INVOKE_USER_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_INVOKE_USER_TRUE;
+                break;
+
+            case CMP_DB_PROPERTY_TRANSACTIONAL_DDL:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_TRANSACTIONAL_DDL_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_TRANSACTIONAL_DDL_TRUE;
+                break;
+
+            case CMP_DB_PROPERTY_SHARD_STATEMENT_RETRY:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_SHARD_STATEMENT_RETRY_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_SHARD_STATEMENT_RETRY_TRUE;
+                break;
+
+            case CMP_DB_PROPERTY_INDOUBT_FETCH_TIMEOUT:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_INDOUBT_FETCH_TIMEOUT_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_INDOUBT_FETCH_TIMEOUT_TRUE;
+                break;
+
+            case CMP_DB_PROPERTY_INDOUBT_FETCH_METHOD:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_INDOUBT_FETCH_METHOD_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_INDOUBT_FETCH_METHOD_TRUE;
+                break;
+            /* BUG-48132 */
+            case CMP_DB_PROPERTY___OPTIMIZER_PLAN_HASH_OR_SORT_METHOD:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR___OPTIMIZER_PLAN_HASH_OR_SORT_METHOD_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR___OPTIMIZER_PLAN_HASH_OR_SORT_METHOD_TRUE;
+                break;
+            /* BUG-48161 */
+            case CMP_DB_PROPERTY___OPTIMIZER_BUCKET_COUNT_MAX:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR___OPTIMIZER_BUCKET_COUNT_MAX_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR___OPTIMIZER_BUCKET_COUNT_MAX_TRUE;
+                break;
+            case CMP_DB_PROPERTY_DDL_LOCK_TIMEOUT:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR_DDL_LOCK_TIMEOUT_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR_DDL_LOCK_TIMEOUT_TRUE;
+                break;
+            /* BUG-48348 */
+            case CMP_DB_PROPERTY___OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION:
+                aSession->mQPSpecific.mPropertyFlag &= ~QC_SESSION_ATTR___OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION_MASK;
+                aSession->mQPSpecific.mPropertyFlag |= QC_SESSION_ATTR___OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION_TRUE;
+                break;
+            /* Àü¼ÛÇÏÁö ¾ÊÀ» ÇÁ·ÎÆÛÆ¼´Â ÇÃ·¡±×¸¦ ¼¼ÆÃÇØÁÖÁö ¾Ê´Â´Ù. */
+            case CMP_DB_PROPERTY_GLOBAL_DDL:
+                break;
+            default:
+                IDE_RAISE( ERR_NOT_EXIST_PROPERTY );
+                break;
+        }
+    }
+    else
+    {
+        // Nothing to do.
+    }
+    aSession->mQPSpecific.mFlag &= ~QC_SESSION_ATTR_SHARD_META_MASK;
+    aSession->mQPSpecific.mFlag |= QC_SESSION_ATTR_SHARD_META_FALSE;
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NOT_EXIST_PROPERTY )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::setSessionPropertyFlag",
+                                  "not exist property" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    unSetSessionPropertyFlag( aSession );
+    
+    return IDE_FAILURE;
+}
+
+// BUG-47765
+IDE_RC sdi::copyPropertyFlagToCoordPropertyFlag( qcSession     * aSession,
+                                                 sdiClientInfo * aClientInfo )
+{
+    sdiConnectInfo  * sConnectInfo = NULL;
+    UShort            i            = 0;
+
+    if ( aClientInfo != NULL )
+    {
+        sConnectInfo = aClientInfo->mConnectInfo;
+    
+        if (( aSession->mQPSpecific.mFlag & QC_SESSION_ATTR_CHANGE_MASK )
+            == QC_SESSION_ATTR_CHANGE_TRUE )
+        {
+            sConnectInfo = aClientInfo->mConnectInfo;
+            
+            for ( i = 0; i < aClientInfo->mCount; i++, sConnectInfo++ )
+            {
+                if (( aSession->mQPSpecific.mFlag & QC_SESSION_ATTR_SET_NODE_MASK )
+                    == QC_SESSION_ATTR_SET_NODE_TRUE )
+                {
+                    // 1. ALTER SESSION SET º¯°æ
+                    // 2. SQLSetConnectAttr() º¯°æ
+                    sConnectInfo->mFlag &= ~SDI_CONNECT_ATTR_CHANGE_MASK;
+                    sConnectInfo->mFlag |= SDI_CONNECT_ATTR_CHANGE_TRUE;
+
+                    sConnectInfo->mCoordPropertyFlag = aSession->mQPSpecific.mPropertyFlag;
+                }
+                else
+                {
+                    // 1. ALTER SESSION SET -> 2. SELECT NODE2 -> 3. SELECT NODE1, NODE2, NODE3
+                    // 2¹ø¿¡¼­ NODE2¿¡¸¸ ÇÁ·ÎÆÛÆ¼°¡ º¯°æ µÇ¾î(Àü ³ëµå ÀüÆÄ°¡ µÇÁö ¾ÊÀ½)
+                    // 3¹ø ¼öÇà °æ¿ì  nothing to do 
+                    // nothing to do
+                }
+            }
+        }
+        else
+        {
+            sConnectInfo->mCoordPropertyFlag = 0;
+        }
+    }
+    else
+    {
+        // nothing to do
+    }
+    
+    return IDE_SUCCESS;
+}
+
+/* PROJ-2728 Sharding LOB */
+UInt sdi::getRemoteStmtId( sdiDataNode * aDataNode )
+{
+    return aDataNode->mRemoteStmt->mRemoteStmtId;
+}
+
+IDE_RC sdi::getSplitMethodCharByType(sdiSplitMethod aSplitMethod, SChar* aOutChar)
+{
+    SChar sSplitMethod = '\0';
+
+    switch (aSplitMethod)
+    {
+        case SDI_SPLIT_HASH:
+            sSplitMethod = 'H';
+            break;
+        case SDI_SPLIT_RANGE:
+            sSplitMethod = 'R';
+            break;
+        case SDI_SPLIT_LIST:
+            sSplitMethod = 'L';
+            break;
+        case SDI_SPLIT_CLONE:
+            sSplitMethod = 'C';
+            break;
+        case SDI_SPLIT_SOLO:
+            sSplitMethod = 'S';
+            break;
+        default:
+            IDE_RAISE(ERR_INVALID_SHARD_SPLIT_METHOD_NAME);
+    }
+
+    *aOutChar = sSplitMethod;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_INVALID_SHARD_SPLIT_METHOD_NAME );
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDF_INVALID_SHARD_SPLIT_METHOD_NAME ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::getSplitMethodCharByStr(SChar* aSplitMethodStr, SChar* aOutChar)
+{
+    SChar sSplitMethod = '\0';
+
+    if ( idlOS::strMatch( aSplitMethodStr, idlOS::strlen(aSplitMethodStr),
+                          "H", 1 ) == 0 )
+    {
+        sSplitMethod = 'H';
+    }
+    else if ( idlOS::strMatch( aSplitMethodStr, idlOS::strlen(aSplitMethodStr),
+                               "R", 1 ) == 0 )
+    {
+        sSplitMethod = 'R';
+    }
+    else if ( idlOS::strMatch( aSplitMethodStr, idlOS::strlen(aSplitMethodStr),
+                               "C", 1 ) == 0 )
+    {
+        sSplitMethod = 'C';
+    }
+    else if ( idlOS::strMatch( aSplitMethodStr, idlOS::strlen(aSplitMethodStr),
+                               "L", 1 ) == 0 )
+    {
+        sSplitMethod = 'L';
+    }
+    else if ( idlOS::strMatch( aSplitMethodStr, idlOS::strlen(aSplitMethodStr),
+                               "S", 1 ) == 0 )
+    {
+        sSplitMethod = 'S';
+    }
+    else
+    {
+        IDE_RAISE( ERR_INVALID_SHARD_SPLIT_METHOD_NAME );
+    }
+
+    *aOutChar = sSplitMethod;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_INVALID_SHARD_SPLIT_METHOD_NAME );
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDF_INVALID_SHARD_SPLIT_METHOD_NAME ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/* QDSD¿¡¼­ gShardDBInfo¿¡ Á¢±ÙÇÏ±â À§ÇÑ getting ÇÔ¼ö */
+sdiDatabaseInfo sdi::getShardDBInfo()
+{
+    return gShardDBInfo;
+}
+
+/* QDSD¿¡¼­ sdm::getLocalMetaInfo¿¡ Á¢±ÙÇÏ±â À§ÇÑ warper ÇÔ¼ö */
+IDE_RC sdi::getLocalMetaInfo( sdiLocalMetaInfo * aLocalMetaInfo )
+{
+    IDE_TEST( sdm::getLocalMetaInfo( aLocalMetaInfo ) != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::getLocalMetaInfoAndCheckKSafety( sdiLocalMetaInfo * aLocalMetaInfo, idBool * aOutIsKSafetyNULL )
+{
+    IDE_TEST( sdm::getLocalMetaInfoAndCheckKSafety( aLocalMetaInfo, aOutIsKSafetyNULL ) != IDE_SUCCESS );
+    
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION_END;
+    
+    return IDE_FAILURE;
+}
+
+/* 
+ * PROJ-2733-DistTxInfo ¾Æ·¡ ¼ø¼­·Î ¼öÇàµÈ´Ù.
+ *  1. sdi::calculateGCTxInfo
+ *     + sdi::calcDistTxInfo()
+ *     + sdi::decideRequestSCN()
+ *  3. sdi::propagateDistTxInfoToNodes()
+ *  4. sdi::executeInsert() || sdi::executeSelect() || sdi::executeDML()
+ *  5. sdi::updateMaxNodeSCNToCoordSCN()
+ */
+
+/**
+ *  propagateDistTxInfoToNodes
+ *  @aStatement:
+ *  @aClientInfo:
+ *  @aDataInfo:
+ *
+ *  ±¸¹® ¼öÇà Àü¿¡ ºĞ»êÁ¤º¸¸¦ °¢ ³ëµå¿¡ ÀüÆÄÇÑ´Ù.
+ */
+IDE_RC sdi::propagateDistTxInfoToNodes( qcStatement    * aStatement,
+                                        sdiClientInfo  * aClientInfo,
+                                        sdiDataNodes   * aDataInfo )
+{
+    sdiConnectInfo * sConnectInfo = aClientInfo->mConnectInfo;
+    sdiDataNode    * sDataNode    = aDataInfo->mNodes;
+
+    SInt   i = 0;
+
+    ACP_UNUSED( aStatement );
+
+    #if defined(DEBUG)
+    ideLog::log( IDE_SD_18, "[GLOBAL_CONSISTENT_TRANSACTION_DISTTXINFO] = [%s] propagateDistTxInfoToNodes, RequestSCN : %"ID_UINT64_FMT
+                            ", TxFirstStmtSCN : %"ID_UINT64_FMT
+                            ", TxFirstStmtTime : %"ID_INT64_FMT
+                            ", DistLevel : %"ID_UINT32_FMT,
+                 aClientInfo->mGCTxInfo.mSessionTypeString,
+                 aClientInfo->mGCTxInfo.mRequestSCN,
+                 aClientInfo->mGCTxInfo.mTxFirstStmtSCN,
+                 aClientInfo->mGCTxInfo.mTxFirstStmtTime,
+                 aClientInfo->mGCTxInfo.mDistLevel );
+    #endif
+
+    IDE_DASSERT( aClientInfo->mCount == aDataInfo->mCount );
+
+    for ( i = 0; i < aClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
+    {
+        if ( sDataNode->mState == SDI_NODE_STATE_EXECUTE_SELECTED )
+        {
+            IDE_TEST( sdl::setSCN( sConnectInfo, &aClientInfo->mGCTxInfo.mRequestSCN ) != IDE_SUCCESS );
+            IDE_TEST( sdl::setTxFirstStmtSCN( sConnectInfo, &aClientInfo->mGCTxInfo.mTxFirstStmtSCN ) != IDE_SUCCESS );
+            IDE_TEST( sdl::setTxFirstStmtTime( sConnectInfo, aClientInfo->mGCTxInfo.mTxFirstStmtTime ) != IDE_SUCCESS );
+            IDE_TEST( sdl::setDistLevel( sConnectInfo, aClientInfo->mGCTxInfo.mDistLevel ) != IDE_SUCCESS );
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/**
+ *  updateMaxNodeSCNToCoordSCN
+ *  @aStatement:
+ *  @aClientInfo:
+ *  @aDataInfo:
+ *
+ *  ±¸¹® ¼öÇà ÈÄ °¢ ³ëµåÀÇ SCN °ªÀ» ¼öÁıÇØ Max °ªÀ» COORD SCN¿¡ ¾÷µ¥ÀÌÆ®ÇÑ´Ù.
+ */
+IDE_RC sdi::updateMaxNodeSCNToCoordSCN( qcStatement    * aStatement,
+                                        sdiClientInfo  * aClientInfo,
+                                        sdiDataNodes   * aDataInfo )
+{
+    sdiConnectInfo * sConnectInfo = aClientInfo->mConnectInfo;
+    sdiDataNode    * sDataNode    = aDataInfo->mNodes;
+
+    smSCN            sSCN;
+    smSCN            sMaxSCN;
+    smSCN            sLastSystemSCN;
+    SInt             i = 0;
+
+    if ( QCG_GET_SESSION_IS_GCTX( aStatement ) == ID_TRUE )
+    {
+        SM_INIT_SCN( &sSCN );
+        SM_INIT_SCN( &sMaxSCN );
+
+        #if defined(DEBUG)
+        ideLog::log( IDE_SD_18, "[GLOBAL_CONSISTENT_TRANSACTION_DISTTXINFO] = [%s] +updateMaxNodeSCNToCoordSCN",
+                     aClientInfo->mGCTxInfo.mSessionTypeString );
+        #endif
+
+        IDE_DASSERT( aClientInfo->mCount == aDataInfo->mCount );
+
+        for ( i = 0; i < aClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
+        {
+            if ( ( sDataNode->mState == SDI_NODE_STATE_EXECUTED ) ||
+                 ( sDataNode->mState == SDI_NODE_STATE_EXECUTE_CANDIDATED ) )
+            {
+                IDE_TEST( sdl::getSCN( sConnectInfo, &sSCN ) != IDE_SUCCESS );
+
+                #if defined(DEBUG)
+                ideLog::log( IDE_SD_18, "[GLOBAL_CONSISTENT_TRANSACTION_DISTTXINFO] = [%s] %s SCN : %"ID_UINT64_FMT,
+                             aClientInfo->mGCTxInfo.mSessionTypeString,
+                             sConnectInfo->mNodeName,
+                             sSCN );
+                #endif
+
+                SM_SET_MAX_SCN( &sMaxSCN, &sSCN );
+            }
+        }
+
+        if ( SM_SCN_IS_NOT_INIT( sMaxSCN ) )
+        {
+            IDE_DASSERT( QCG_GET_SESSION_IS_GCTX( aStatement ) == ID_TRUE );
+
+            SM_SET_MAX_SCN( &(aClientInfo->mGCTxInfo.mCoordSCN), &sMaxSCN );
+
+            IDU_FIT_POINT( "sdi::updateMaxNodeSCNToCoordSCN::statementEndSync" );
+
+            /* PROJ-2733-DistTxInfo Statement SCN Sync (statement end) */
+            IDE_TEST( syncSystemSCN4GCTx( &(aClientInfo->mGCTxInfo.mCoordSCN),
+                                          &sLastSystemSCN )
+                      != IDE_SUCCESS );
+
+            /* PROJ-2733-DistTxInfo */
+            SM_SET_MAX_SCN( &(aClientInfo->mGCTxInfo.mCoordSCN), &sLastSystemSCN );
+
+            #if defined(DEBUG)
+            ideLog::log( IDE_SD_18, "[GLOBAL_CONSISTENT_TRANSACTION_DISTTXINFO] = [%s] SCN to CoordSCN : %"ID_UINT64_FMT,
+                         aClientInfo->mGCTxInfo.mSessionTypeString,
+                         aClientInfo->mGCTxInfo.mCoordSCN );
+            #endif
+        }
+
+        #if defined(DEBUG)
+        ideLog::log( IDE_SD_18, "[GLOBAL_CONSISTENT_TRANSACTION_DISTTXINFO] = [%s] -updateMaxNodeSCNToCoordSCN",
+                     aClientInfo->mGCTxInfo.mSessionTypeString );
+        #endif
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/* PROJ-2733-DistTxInfo */
+IDE_RC sdi::getSCN( sdiConnectInfo * aConnectInfo, smSCN * aSCN )
+{
+    return sdl::getSCN( aConnectInfo, aSCN );
+}
+
+IDE_RC sdi::setSCN( sdiConnectInfo * aConnectInfo, smSCN * aSCN )
+{
+    return sdl::setSCN( aConnectInfo, aSCN );
+}
+
+IDE_RC sdi::setTxFirstStmtSCN( sdiConnectInfo * aConnectInfo, smSCN * aTxFirstStmtSCN )
+{
+    return sdl::setTxFirstStmtSCN( aConnectInfo, aTxFirstStmtSCN );
+}
+
+IDE_RC sdi::setTxFirstStmtTime( sdiConnectInfo * aConnectInfo, SLong aTxFirstStmtTime )
+{
+    return sdl::setTxFirstStmtTime( aConnectInfo, aTxFirstStmtTime );
+}
+
+IDE_RC sdi::setDistLevel( sdiConnectInfo * aConnectInfo, sdiDistLevel aDistLevel )
+{
+    return sdl::setDistLevel( aConnectInfo, aDistLevel );
+}
+
+/* PROJ-2733-DistTxInfo Distribution Transaction Information */
+
+/**
+ *  calcDistTxInfo
+ *  @aTemplate:
+ *  @aDataInfo:
+ *
+ *  ºĞ»êÁ¤º¸(TxFirstStmtSCN, TxFirstStmtTime, DistLevel)¸¦ °è»êÇØ¼­
+ *  ClientInfo->mGCTxInfo¿¡ ¾÷µ¥ÀÌÆ® ÇÑ´Ù.
+ */
+void sdi::calcDistTxInfo( qcTemplate   * aTemplate,
+                          sdiDataNodes * aDataInfo,
+                          idBool         aCalledByPSM )
+{
+    sdiClientInfo  * sClientInfo  = aTemplate->stmt->session->mQPSpecific.mClientInfo;
+    sdiConnectInfo * sConnectInfo = sClientInfo->mConnectInfo;
+    qcStatement    * sStatement   = aTemplate->stmt;
+    sdiDataNode    * sDataNode    = aDataInfo->mNodes;
+
+    idBool       sIsGCTx     = QCG_GET_SESSION_IS_GCTX( aTemplate->stmt );
+    smSCN        sRequestSCN;
+    smSCN        sTxFirstStmtSCN;
+    SLong        sTxFirstStmtTime = 0;
+    smSCN        sLastSystemSCN;
+    sdiDistLevel sDistLevel = SDI_DIST_LEVEL_INIT;
+    SInt         i = 0;
+    UInt         sNodeCount = 0;
+    SShort       sBeforeExecutedDataNodeIndex = -1;
+
+    PDL_Time_Value sCurTime;
+
+    sCurTime.initialize();
+    SM_INIT_SCN( &sRequestSCN );
+    SM_INIT_SCN( &sTxFirstStmtSCN );
+
+    ACP_UNUSED( aCalledByPSM );
+
+    qci::mSessionCallback.mGetStatementRequestSCN( QC_MM_STMT( sStatement ), &sRequestSCN );
+    qci::mSessionCallback.mGetStatementTxFirstStmtSCN( QC_MM_STMT( sStatement ), &sTxFirstStmtSCN );
+    sTxFirstStmtTime = qci::mSessionCallback.mGetStatementTxFirstStmtTime( QC_MM_STMT( sStatement ) );
+    sDistLevel = qci::mSessionCallback.mGetStatementDistLevel( QC_MM_STMT( sStatement ) );
+
+#if defined(DEBUG)
+    /* BUG-48109 Non-GCTx, RequestSCN : 0, TxFirstStmtSCN : 1 */
+    if ( ( sIsGCTx != ID_TRUE ) && ( sConnectInfo->mIsShardClient == SDI_SHARD_CLIENT_TRUE ) )
+    {
+        IDE_DASSERT( ( SM_SCN_IS_INIT( sRequestSCN ) ) &&
+                     ( SM_SCN_IS_NON_GCTX_TX_FIRST_STMT_SCN( sTxFirstStmtSCN ) ) );
+    }
+#endif
+
+    #if defined(DEBUG)
+    ideLog::log( IDE_SD_18, "[GLOBAL_CONSISTENT_TRANSACTION_DISTTXINFO] = [%s] calcDistTxInfo From Client GCTx : %s"
+                            ", SCN : %"ID_UINT64_FMT
+                            ", TxFirstStmtSCN : %"ID_UINT64_FMT
+                            ", TxFirstStmtTime : %"ID_INT64_FMT
+                            ", DistLevel : %"ID_UINT32_FMT,
+                 sClientInfo->mGCTxInfo.mSessionTypeString,
+                 (sIsGCTx == ID_TRUE) ? "True" : "False",
+                 sRequestSCN,
+                 sTxFirstStmtSCN,
+                 sTxFirstStmtTime,
+                 sDistLevel );
+    #endif
+
+    /* PROJ-2733-DistTxInfo
+     *  (server-side execute)
+     *  ¼º´É¿¡ ¹®Á¦µÇÁö ¾Ê´Â´Ù¸é
+     *  ¿ä±¸ÀÚ SCN ¶Ç´Â Coordinator SCN ÀÌ ÇöÀç LastSystemSCN º¸´Ù ÀÛÀ¸¸é ¾÷µ¥ÀÌÆ® ÇÏÀÚ
+     */
+    if ( sIsGCTx == ID_TRUE )
+    {
+        getSystemSCN4GCTx( &sLastSystemSCN );
+        SM_SET_MAX_SCN( &sClientInfo->mGCTxInfo.mCoordSCN, &sLastSystemSCN );
+    }
+
+    if ( sConnectInfo->mCoordinatorType == SDI_COORDINATOR_SHARD )
+    {
+        /* User ¼¼¼ÇÀÌ ShardCLI¿¡¼­ Á¢¼ÓÇÑ °æ¿ì Client¿¡¼­ º¸³½ °ªÀ» »ç¿ëÇØ¾ß ÇÑ´Ù. */
+        if ( sConnectInfo->mIsShardClient == SDI_SHARD_CLIENT_TRUE )
+        {
+            SM_SET_SCN( &sClientInfo->mGCTxInfo.mTxFirstStmtSCN, &sTxFirstStmtSCN );
+            sClientInfo->mGCTxInfo.mTxFirstStmtTime = sTxFirstStmtTime;
+            sClientInfo->mGCTxInfo.mDistLevel       = sDistLevel;
+        }
+        else
+        {
+#if defined(DEBUG)
+            if (sIsGCTx == ID_TRUE)
+            {
+                IDE_DASSERT(  ( ( SM_SCN_IS_INIT( sClientInfo->mGCTxInfo.mTxFirstStmtSCN ) ) &&
+                                ( sClientInfo->mGCTxInfo.mTxFirstStmtTime == 0 ) )
+                              ||
+                              ( ( SM_SCN_IS_NOT_INIT( sClientInfo->mGCTxInfo.mTxFirstStmtSCN ) ) &&
+                                ( SM_SCN_IS_NOT_NON_GCTX_TX_FIRST_STMT_SCN( sClientInfo->mGCTxInfo.mTxFirstStmtSCN ) ) &&
+                                ( sClientInfo->mGCTxInfo.mTxFirstStmtTime != 0 ) )  );
+            }
+            else
+            {
+                IDE_DASSERT(  ( ( SM_SCN_IS_INIT( sClientInfo->mGCTxInfo.mTxFirstStmtSCN ) ) &&
+                                ( sClientInfo->mGCTxInfo.mTxFirstStmtTime == 0 ) )
+                              ||
+                              ( ( SM_SCN_IS_NON_GCTX_TX_FIRST_STMT_SCN( sClientInfo->mGCTxInfo.mTxFirstStmtSCN ) ) &&
+                                ( sClientInfo->mGCTxInfo.mTxFirstStmtTime != 0 ) )  );
+            }
+#endif
+
+            /*
+             * GCTx (or GTx) ÀÎ °æ¿ì Coordinator sessionÀº Ç×»ó Nonautocommit ¸ğµå
+             * commitÀÌ³ª commitmode º¯°æ½Ã endTranDistTx()¿¡¼­ mTxFirst*¸¦ 0À¸·Î ¼³Á¤ÇÑ´Ù.
+             */
+            if ( SM_SCN_IS_INIT( sClientInfo->mGCTxInfo.mTxFirstStmtSCN ) )
+            {
+                if ( sIsGCTx == ID_TRUE )
+                {
+                    SM_SET_SCN( &sClientInfo->mGCTxInfo.mTxFirstStmtSCN, &sClientInfo->mGCTxInfo.mCoordSCN );
+                }
+                else
+                {
+                    /* BUG-48109 Non-GCTx */
+                    SM_SET_NON_GCTX_TX_FIRST_STMT_SCN( &sClientInfo->mGCTxInfo.mTxFirstStmtSCN );
+                }
+            }
+            if ( sClientInfo->mGCTxInfo.mTxFirstStmtTime == 0 )
+            {
+                sCurTime = idlOS::gettimeofday();
+                sClientInfo->mGCTxInfo.mTxFirstStmtTime = sCurTime.msec();
+            }
+        }
+    }
+    else  /* SDI_COORDINATOR_RESHARD */
+    {
+        SM_SET_SCN( &sClientInfo->mGCTxInfo.mTxFirstStmtSCN, &sTxFirstStmtSCN );
+        sClientInfo->mGCTxInfo.mTxFirstStmtTime = sTxFirstStmtTime;
+
+        /* ReshardingµÈ °æ¿ì PARALLELÀº À¯ÁöÇÏ°í ±× ¿Ü´Â MULTI·Î º¯°æ */
+        if ( sDistLevel == SDI_DIST_LEVEL_PARALLEL)
+        {
+            sClientInfo->mGCTxInfo.mDistLevel = SDI_DIST_LEVEL_PARALLEL;
+        }
+        else
+        {
+            sClientInfo->mGCTxInfo.mDistLevel = SDI_DIST_LEVEL_MULTI;
+        }
+    }
+
+    for ( i = 0; i < aDataInfo->mCount; i++, sDataNode++ )
+    {
+        if ( sDataNode->mState == SDI_NODE_STATE_EXECUTE_SELECTED )
+        {
+            if (sBeforeExecutedDataNodeIndex == -1)
+            {
+                sBeforeExecutedDataNodeIndex = i;
+            }
+            sNodeCount += 1;
+        }
+    }
+
+    if ( ( sNodeCount >= 2 ) ||
+         ( aTemplate->shardExecData.partialExecType == SDI_SHARD_PARTIAL_EXEC_TYPE_COORD ) )
+    {
+        /* BUG-48831 Partial coordinating SQLÀÇ °æ¿ì ¼öÇà ³ëµå°¡ ÇÏ³ªÀÏ °æ¿ì¿¡µµ dist levelÀ» parallel·Î °¡Á®°£´Ù. */
+        sClientInfo->mGCTxInfo.mDistLevel = SDI_DIST_LEVEL_PARALLEL;
+    }
+    else
+    {
+        /* ³ëµå°¡ 1°³ÀÎ °æ¿ì */
+        switch ( sClientInfo->mGCTxInfo.mDistLevel )
+        {
+            case SDI_DIST_LEVEL_INIT:
+                sClientInfo->mGCTxInfo.mBeforeExecutedDataNodeIndex = sBeforeExecutedDataNodeIndex;
+                sClientInfo->mGCTxInfo.mDistLevel = SDI_DIST_LEVEL_SINGLE;
+                break;
+
+            case SDI_DIST_LEVEL_SINGLE:
+                IDE_DASSERT( sClientInfo->mGCTxInfo.mBeforeExecutedDataNodeIndex != -1 );
+                if ( sClientInfo->mGCTxInfo.mBeforeExecutedDataNodeIndex != sBeforeExecutedDataNodeIndex )
+                {
+                    sClientInfo->mGCTxInfo.mDistLevel = SDI_DIST_LEVEL_MULTI;
+                }
+                break;
+
+            case SDI_DIST_LEVEL_MULTI:
+                break;
+
+            case SDI_DIST_LEVEL_PARALLEL:
+                /* RESHARDÀÏ¶§´Â ¼öÇà³ëµå°¡ 1°³¶óµµ COORD¿¡¼­ º¸³½ PARALLELÀ» À¯ÁöÇØ¾ß ÇÑ´Ù. */
+                if ( sConnectInfo->mCoordinatorType == SDI_COORDINATOR_SHARD )
+                {
+                    sClientInfo->mGCTxInfo.mDistLevel = SDI_DIST_LEVEL_MULTI;
+                }
+                break;
+
+            default:
+                IDE_DASSERT(0);
+                sClientInfo->mGCTxInfo.mDistLevel = SDI_DIST_LEVEL_MULTI;  /* Release */
+                break;
+        }
+    }
+}
+
+/**
+ *  decideRequestSCN
+ *  @aTemplate:
+ *
+ *  ºĞ»êÁ¤º¸(RequestSCN)¸¦ °è»êÇØ¼­ ClientInfo->mGCTxInfo¿¡ ¾÷µ¥ÀÌÆ® ÇÑ´Ù.
+ */
+void sdi::decideRequestSCN( qcTemplate * aTemplate,
+                            idBool       aCalledByPSM,
+                            UInt         aPlanIndex )
+{
+    qcStatement     * sStatement     = aTemplate->stmt;
+    qcShardExecData * sExecData      = &aTemplate->shardExecData;
+    sdiClientInfo   * sClientInfo    = aTemplate->stmt->session->mQPSpecific.mClientInfo;
+    sdiConnectInfo  * sConnectInfo   = sClientInfo->mConnectInfo;
+    idBool            sIsGCTx        = QCG_GET_SESSION_IS_GCTX( aTemplate->stmt );
+
+    smSCN             sClientRequestSCN;
+    smSCN             sRequestSCN;
+
+    SM_INIT_SCN( &sRequestSCN );
+    SM_INIT_SCN( &sClientRequestSCN );
+
+    IDE_TEST_CONT( sIsGCTx != ID_TRUE, SKIP_DECIDE_REQUEST_SCN );
+
+    /* SCN from client */
+    qci::mSessionCallback.mGetStatementRequestSCN( QC_MM_STMT( sStatement ), &sClientRequestSCN );
+
+    SM_SET_MAX_SCN( &sClientInfo->mGCTxInfo.mCoordSCN, &sClientRequestSCN );
+
+    if ( aCalledByPSM == ID_FALSE )
+    {
+        /* NOT-PSM */
+        if ( sConnectInfo->mIsShardClient == SDI_SHARD_CLIENT_TRUE )
+        {
+            /* NOT-PSM + SDI_SHARD_CLIENT_TRUE */
+            if ( sConnectInfo->mCoordinatorType == SDI_COORDINATOR_SHARD )
+            {
+                /* NOT-PSM + SDI_SHARD_CLIENT_TRUE + SDI_COORDINATOR_SHARD */
+                IDE_DASSERT( SM_SCN_IS_INIT( sClientRequestSCN ) == 0 );
+
+                if ( sExecData->partialStmt == ID_TRUE )
+                {
+                    /* SC01 */
+                    IDU_FIT_POINT( "sdi::decideRequestSCN_NOT-PSM_SHARD-CLIENT_COORD-SHARD_PARTIAL-STMT" );
+
+                    SM_SET_SCN( &sRequestSCN, &sClientInfo->mGCTxInfo.mCoordSCN );
+                }
+                else
+                {
+                    switch ( sClientInfo->mGCTxInfo.mDistLevel )
+                    {
+                        case SDI_DIST_LEVEL_SINGLE:
+                        case SDI_DIST_LEVEL_MULTI:
+                            /* SC02 */
+                            /* Nothing to do */
+                            IDU_FIT_POINT( "sdi::decideRequestSCN_NOT-PSM_SHARD-CLIENT_COORD-SHARD_NOT-PARTIAL-STMT_DIST-MULTI" );
+                            break;
+
+                        case SDI_DIST_LEVEL_PARALLEL:
+                            /* SC03 */
+                            IDU_FIT_POINT( "sdi::decideRequestSCN_NOT-PSM_SHARD-CLIENT_COORD-SHARD_NOT-PARTIAL-STMT_DIST-PARALLEL" );
+                            SM_SET_SCN( &sRequestSCN, &sClientInfo->mGCTxInfo.mCoordSCN );
+                            break;
+
+                        default:
+                            IDE_DASSERT( 0 );
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                /* NOT-PSM + SDI_SHARD_CLIENT_TRUE + SDI_COORDINATOR_RESHARD */
+                if ( SM_SCN_IS_INIT( sClientRequestSCN ) )
+                {
+                    /* Recv Request SCN == 0 */
+                    if ( sExecData->partialStmt == ID_TRUE )
+                    {
+                        /* SR04 */
+                        IDU_FIT_POINT( "sdi::decideRequestSCN_NOT-PSM_SHARD-CLIENT_COORD-RESHARD_NO-REQ-SCN_PARTIAL-STMT" );
+
+                        SM_SET_SCN( &sRequestSCN, &sClientInfo->mGCTxInfo.mCoordSCN );
+                    }
+                    else
+                    {
+                        switch ( sClientInfo->mGCTxInfo.mDistLevel )
+                        {
+                            case SDI_DIST_LEVEL_SINGLE:
+                            case SDI_DIST_LEVEL_MULTI:
+                                /* SR05 */
+                                IDU_FIT_POINT( "sdi::decideRequestSCN_NOT-PSM_SHARD-CLIENT_COORD-RESHARD_NO-REQ-SCN_NOT-PARTIAL-STMT_DIST-MULTI" );
+                                /* Nothing to do */
+                                break;
+
+                            case SDI_DIST_LEVEL_PARALLEL:
+                                /* SR06 */
+                                IDU_FIT_POINT( "sdi::decideRequestSCN_NOT-PSM_SHARD-CLIENT_COORD-RESHARD_NO-REQ-SCN_NOT-PARTIAL-STMT_DIST-PARALLEL" );
+                                SM_SET_SCN( &sRequestSCN, &sClientInfo->mGCTxInfo.mCoordSCN );
+                                break;
+
+                            default:
+                                IDE_DASSERT( 0 );
+                                break;
+                        }
+                    }
+                }
+                else
+                {
+                    /* Recv Request SCN != 0 */
+#ifdef ALTIBASE_FIT_CHECK
+                    if ( sExecData->partialStmt == ID_TRUE )
+                    {
+                        /* SR01 */
+                        IDU_FIT_POINT( "sdi::decideRequestSCN_NOT-PSM_SHARD-CLIENT_COORD-RESHARD_REQ-SCN_PARTIAL-STMT" );
+                    }
+                    else
+                    {
+                        switch ( sClientInfo->mGCTxInfo.mDistLevel )
+                        {
+                            case SDI_DIST_LEVEL_SINGLE:
+                            case SDI_DIST_LEVEL_MULTI:
+                                /* SR02 */
+                                IDU_FIT_POINT( "sdi::decideRequestSCN_NOT-PSM_SHARD-CLIENT_COORD-RESHARD_REQ-SCN_NOT-PARTIAL-STMT_DIST-MULTI" );
+                                break;
+
+                            case SDI_DIST_LEVEL_PARALLEL:
+                                /* SR03 */
+                                IDU_FIT_POINT( "sdi::decideRequestSCN_NOT-PSM_SHARD-CLIENT_COORD-RESHARD_REQ-SCN_NOT-PARTIAL-STMT_DIST-PARALLEL" );
+                                break;
+
+                            default:
+                                IDE_DASSERT( 0 );
+                                break;
+                        }
+                    }
+#endif
+
+                    SM_SET_SCN( &sRequestSCN, &sClientRequestSCN );
+                }
+            }
+        }
+        else
+        {
+            /* NOT-PSM + SDI_SHARD_CLIENT_FALSE */
+            if ( sConnectInfo->mCoordinatorType == SDI_COORDINATOR_SHARD )
+            {
+                /* NOT-PSM + SDI_SHARD_CLIENT_FALSE + SDI_COORDINATOR_SHARD */
+                IDE_DASSERT( SM_SCN_IS_INIT( sClientRequestSCN ) );
+
+                if ( sExecData->partialStmt == ID_TRUE )
+                {
+                    /* OC01 */
+                    IDU_FIT_POINT( "sdi::decideRequestSCN_NOT-PSM_ODBC-CLIENT_COORD-SHARD_PARTIAL-STMT" );
+
+                    SM_SET_SCN( &sRequestSCN, &sClientInfo->mGCTxInfo.mCoordSCN );
+                }
+                else
+                {
+                    switch ( sClientInfo->mGCTxInfo.mDistLevel )
+                    {
+                        case SDI_DIST_LEVEL_SINGLE:
+                        case SDI_DIST_LEVEL_MULTI:
+                            /* OC02 */
+                            IDU_FIT_POINT( "sdi::decideRequestSCN_NOT-PSM_ODBC-CLIENT_COORD-SHARD_NOT-PARTIAL-STMT_DIST-MULTI" );
+                            /* Nothing to do */
+                            break;
+
+                        case SDI_DIST_LEVEL_PARALLEL:
+                            /* OC03 */
+                            IDU_FIT_POINT( "sdi::decideRequestSCN_NOT-PSM_ODBC-CLIENT_COORD-SHARD_NOT-PARTIAL-STMT_DIST-PARALLEL" );
+
+                            SM_SET_SCN( &sRequestSCN, &sClientInfo->mGCTxInfo.mCoordSCN );
+                            break;
+
+                        default:
+                            IDE_DASSERT( 0 );
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                /* NOT-PSM + SDI_SHARD_CLIENT_FALSE + SDI_COORDINATOR_RESHARD */
+                if ( SM_SCN_IS_INIT( sClientRequestSCN ) )
+                {
+                    /* Recv Request SCN == 0 */
+                    if ( sExecData->partialStmt == ID_TRUE )
+                    {
+                        /* OR04 */
+                        IDU_FIT_POINT( "sdi::decideRequestSCN_NOT-PSM_ODBC-CLIENT_COORD-RESHARD_NO-REQ-SCN_PARTIAL-STMT" );
+
+                        SM_SET_SCN( &sRequestSCN, &sClientInfo->mGCTxInfo.mCoordSCN );
+                    }
+                    else
+                    {
+                        switch ( sClientInfo->mGCTxInfo.mDistLevel )
+                        {
+                            case SDI_DIST_LEVEL_SINGLE:
+                            case SDI_DIST_LEVEL_MULTI:
+                                /* OR05 */
+                                IDU_FIT_POINT( "sdi::decideRequestSCN_NOT-PSM_ODBC-CLIENT_COORD-RESHARD_NO-REQ-SCN_NOT-PARTIAL-STMT_DIST-MULTI" );
+                                /* Nothing to do */
+                                break;
+
+                            case SDI_DIST_LEVEL_PARALLEL:
+                                /* OR06 */
+                                IDU_FIT_POINT( "sdi::decideRequestSCN_NOT-PSM_ODBC-CLIENT_COORD-RESHARD_NO-REQ-SCN_NOT-PARTIAL-STMT_DIST-PARALLEL" );
+
+                                SM_SET_SCN( &sRequestSCN, &sClientInfo->mGCTxInfo.mCoordSCN );
+                                break;
+
+                            default:
+                                IDE_DASSERT( 0 );
+                                break;
+                        }
+                    }
+                }
+                else
+                {
+                    /* Recv Request SCN != 0 */
+#ifdef ALTIBASE_FIT_CHECK
+                    if ( sExecData->partialStmt == ID_TRUE )
+                    {
+                        /* OR01 */
+                        IDU_FIT_POINT( "sdi::decideRequestSCN_NOT-PSM_ODBC-CLIENT_COORD-RESHARD_REQ-SCN_PARTIAL-STMT" );
+                    }
+                    else
+                    {
+                        switch ( sClientInfo->mGCTxInfo.mDistLevel )
+                        {
+                            case SDI_DIST_LEVEL_SINGLE:
+                            case SDI_DIST_LEVEL_MULTI:
+                                /* OR02 */
+                                IDU_FIT_POINT( "sdi::decideRequestSCN_NOT-PSM_ODBC-CLIENT_COORD-RESHARD_REQ-SCN_NOT-PARTIAL-STMT_DIST-MULTI" );
+                                break;
+
+                            case SDI_DIST_LEVEL_PARALLEL:
+                                /* OR03 */
+                                IDU_FIT_POINT( "sdi::decideRequestSCN_NOT-PSM_ODBC-CLIENT_COORD-RESHARD_REQ-SCN_NOT-PARTIAL-STMT_DIST-PARALLEL" );
+                                break;
+
+                            default:
+                                IDE_DASSERT( 0 );
+                                break;
+                        }
+                    }
+#endif
+
+                    SM_SET_SCN( &sRequestSCN, &sClientRequestSCN );
+                }
+            }
+        }
+    }
+    else
+    {
+        /* aCalledByPSM == ID_TRUE */
+        if ( sExecData->partialStmt == ID_TRUE )
+        {
+            IDU_FIT_POINT( "sdi::decideRequestSCN_PSM_PARTIAL-STMT" );
+
+            SM_SET_SCN( &sRequestSCN, &sClientInfo->mGCTxInfo.mCoordSCN );
+        }
+        else
+        {
+            IDU_FIT_POINT( "sdi::decideRequestSCN_PSM_NOT-PARTIAL-STMT" );
+
+            switch ( sClientInfo->mGCTxInfo.mDistLevel )
+            {
+                case SDI_DIST_LEVEL_SINGLE:
+                case SDI_DIST_LEVEL_MULTI:
+                    /* Nothing to do */
+                    break;
+
+                case SDI_DIST_LEVEL_PARALLEL:
+                    SM_SET_SCN( &sRequestSCN, &sClientInfo->mGCTxInfo.mCoordSCN );
+                    break;
+
+                default:
+                    IDE_DASSERT( 0 );
+                    break;
+            }
+        }
+    }
+
+    if ( sExecData->partialStmt == ID_TRUE )
+    {
+        if ( SM_SCN_IS_INIT( sExecData->leadingRequestSCN ) )
+        {
+            /* first time execution of partial statement */
+            IDE_DASSERT( sExecData->leadingPlanIndex == ID_UINT_MAX );
+
+            sExecData->leadingPlanIndex = aPlanIndex;
+
+            SM_SET_SCN( &sExecData->leadingRequestSCN, &sRequestSCN );
+        }
+        else if ( sExecData->leadingPlanIndex == aPlanIndex )
+        {
+            /* shard statement retry */
+            SM_SET_SCN( &sExecData->leadingRequestSCN, &sRequestSCN );
+        }
+        else
+        {
+            /* Not first statement. use leadingRequestSCN.
+             * Nothing to do. */
+        }
+    }
+    else
+    {
+        SM_SET_SCN( &sExecData->leadingRequestSCN, &sRequestSCN );
+    }
+
+    IDE_EXCEPTION_CONT( SKIP_DECIDE_REQUEST_SCN );
+
+    /* BUG-48109 Non-GCTx */
+    if ( sIsGCTx == ID_TRUE )
+    {
+        SM_SET_SCN( &sClientInfo->mGCTxInfo.mRequestSCN, &sExecData->leadingRequestSCN );
+    }
+    else
+    {
+        /* CoordSCNÀº À¯ÁöÇÏÀÚ. */
+        SM_INIT_SCN( &sClientInfo->mGCTxInfo.mRequestSCN );
+
+#if defined(DEBUG)
+        if ( sConnectInfo->mIsShardClient == SDI_SHARD_CLIENT_TRUE )
+        {
+            IDE_DASSERT( ( SM_SCN_IS_INIT( sClientInfo->mGCTxInfo.mRequestSCN ) ) &&
+                         ( SM_SCN_IS_NON_GCTX_TX_FIRST_STMT_SCN( sClientInfo->mGCTxInfo.mTxFirstStmtSCN ) ) );
+        }
+#endif
+    }
+
+    #if defined(DEBUG)
+    ideLog::log( IDE_SD_18, "[GLOBAL_CONSISTENT_TRANSACTION_DISTTXINFO] = [%s] decideRequestSCN "
+                            "PSM: %"ID_UINT32_FMT
+                            ", SHARDCLI: %"ID_UINT32_FMT
+                            ", COORD: %"ID_UINT32_FMT
+                            ", PARTIAL: %"ID_UINT32_FMT
+                            ", GCTxInfo, Coord SCN : %"ID_UINT64_FMT
+                            ", RequestSCN : %"ID_UINT64_FMT
+                            ", TxFirstStmtSCN : %"ID_UINT64_FMT
+                            ", TxFirstStmtTime : %"ID_INT64_FMT
+                            ", DistLevel : %"ID_UINT32_FMT,
+                 sClientInfo->mGCTxInfo.mSessionTypeString,
+                 aCalledByPSM,
+                 sConnectInfo->mIsShardClient,
+                 sConnectInfo->mCoordinatorType,
+                 sExecData->partialStmt,
+                 sClientInfo->mGCTxInfo.mCoordSCN,
+                 sClientInfo->mGCTxInfo.mRequestSCN,
+                 sClientInfo->mGCTxInfo.mTxFirstStmtSCN,
+                 sClientInfo->mGCTxInfo.mTxFirstStmtTime,
+                 sClientInfo->mGCTxInfo.mDistLevel );
+    #endif
+
+#ifdef ALTIBASE_FIT_CHECK
+    IDE_EXCEPTION_END;
+#endif
+}
+
+void sdi::calculateGCTxInfo( qcTemplate   * aTemplate,
+                             sdiDataNodes * aDataInfo,
+                             idBool         aCalledByPSM,
+                             UInt           aPlanIndex )
+{
+    /* BUG-48109 Non-GCTx */
+    calcDistTxInfo( aTemplate, aDataInfo, aCalledByPSM );
+    decideRequestSCN( aTemplate, aCalledByPSM, aPlanIndex );
+}
+
+/**
+ *  buildDataNodes
+ *  @aDataInfo:
+ *  @aClientInfo:
+ *  @aNodeName:
+ *
+ *  aNodeName¿¡ ÇØ´çÇÏ´Â NodeµéÀÇ State¸¦ ¼³Á¤ÇÑ´Ù.
+ *  aNodeNameÀÌ NULLÀÌ³ª ºó½ºÆ®¸µÀÌ¸é ¸ğµç Node¸¦ ÀÇ¹ÌÇÑ´Ù.
+ *  aSelectedNodeCnt¿¡ ¼±ÅÃµÈ ³ëµåÀÇ ¼ö¸¦ ¹İÈ¯ÇÑ´Ù.
+ */
+IDE_RC sdi::buildDataNodes( sdiClientInfo * aClientInfo,
+                            sdiDataNodes  * aDataInfo,
+                            SChar         * aNodeName,
+                            UInt          * aSelectedNodeCnt )
+{
+    sdiConnectInfo * sConnectInfo = aClientInfo->mConnectInfo;
+    sdiDataNode    * sDataNode    = aDataInfo->mNodes;
+
+    idBool sIsAllNodeExec = ID_TRUE;
+    UInt i = 0;
+    UInt sSelectedNodeCnt = 0;
+
+    if ( aNodeName != NULL )
+    {
+        if ( aNodeName[0] != '\0' )
+        {
+            sIsAllNodeExec = ID_FALSE;
+        }
+    }
+
+    for ( i = 0; i < aClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
+    {
+        if ( sIsAllNodeExec == ID_TRUE )
+        {
+            sDataNode->mState = SDI_NODE_STATE_EXECUTE_SELECTED;
+            sSelectedNodeCnt += 1;
+        }
+        else if ( idlOS::strMatch( aNodeName,
+                                   idlOS::strlen( aNodeName ),
+                                   sConnectInfo->mNodeName,
+                                   idlOS::strlen( sConnectInfo->mNodeName ) ) == 0 )
+        {
+            sDataNode->mState = SDI_NODE_STATE_EXECUTE_SELECTED;
+            sSelectedNodeCnt += 1;
+        }
+        else
+        {
+            sDataNode->mState = SDI_NODE_STATE_NONE;
+        }
+    }
+
+    aDataInfo->mCount = aClientInfo->mCount;
+    aDataInfo->mInitialized = ID_TRUE;
+
+    if (aSelectedNodeCnt != NULL)
+    {
+        *aSelectedNodeCnt = sSelectedNodeCnt;
+    }
+
+    /* BUG-48666 ¼±ÅÃµÈ ³ëµå°¡ ¾øÀ¸¸é NODE ÀÌ¸§ÀÌ Àß¸øµÈ °æ¿ìÀÌ´Ù. */
+    IDE_TEST_RAISE( sSelectedNodeCnt == 0, ERR_NODE_NOT_EXIST );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NODE_NOT_EXIST )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDM_SHARD_NODE_NOT_EXIST ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+void sdi::checkErrorIsShardRetry( sdiStmtShardRetryType * aRetryType )
+{
+    UInt                    sErrCnt_StmtViewOld = 0; 
+    UInt                    sErrCnt_RebuilRetry = 0; 
+    UInt                    sErrCnt_SMNProp     = 0; 
+    UInt                    sErrCnt_Others      = 0; 
+
+    iduListNode             * sIterator         = NULL;
+    iduList                 * sErrorList        = &(gIdeErrorMgr.mErrors.mErrorList);
+    ideErrorCollectionStack * sError            = NULL;
+
+    *aRetryType = SDI_STMT_SHARD_RETRY_NONE;
+
+    /* GTx, GCTx ÀÎ °æ¿ì
+     * Coordinator session Àº autocommit off ·Î µ¿ÀÛÇÏ±â ¶§¹®¿¡
+     * user session ÀÌ autocommit on ÀÎ °æ¿ìµµ shard statement retry ±â´É µ¿ÀÛÀÌ °¡´ÉÇÏ´Ù. */
+
+    if ( ideErrorCollectionSize() != 0 )
+    {
+        IDU_LIST_ITERATE( sErrorList, sIterator )
+        {
+            sError = (ideErrorCollectionStack *)sIterator->mObj;
+
+            if ( E_ERROR_CODE( sError->mErrorCode ) ==
+                 E_ERROR_CODE( sdERR_ABORT_SHARD_META_OUT_OF_DATE ) )
+            {
+                ++sErrCnt_RebuilRetry;
+            }
+            else if ( E_ERROR_CODE( sError->mErrorCode ) ==
+                      E_ERROR_CODE( smERR_ABORT_StatementTooOld ) )
+            {
+                ++sErrCnt_StmtViewOld;
+            }
+            else if ( E_ERROR_CODE( sError->mErrorCode ) ==
+                      E_ERROR_CODE( sdERR_ABORT_SHARD_MULTIPLE_ERRORS ) )
+            {
+                /*  Nothig to do */
+            }
+            else
+            {
+                ++sErrCnt_Others;
+                break;
+            }
+        }
+    }
+    else
+    {
+        if ( ideGetErrorCode() == sdERR_ABORT_FAILED_TO_PROPAGATE_SHARD_META_NUMBER )
+        {
+            ++sErrCnt_SMNProp;
+        }
+        else if ( ideGetErrorCode() == sdERR_ABORT_SHARD_META_OUT_OF_DATE )
+        {
+            ++sErrCnt_RebuilRetry;
+        }
+        else if ( ideGetErrorCode() == smERR_ABORT_StatementTooOld )
+        {
+            ++sErrCnt_StmtViewOld;
+        }
+        else if ( ideGetErrorCode() == sdERR_ABORT_SHARD_MULTIPLE_ERRORS )
+        {
+            /* Nothing to do */
+        }
+        else
+        {
+            ++sErrCnt_Others;
+        }
+    }
+
+    if ( sErrCnt_SMNProp != 0 )
+    {
+        /* SMN Propagation event ¸¦ ¿ì¼±ÇÑ´Ù.
+         */
+        *aRetryType = SDI_STMT_SHARD_SMN_PROPAGATION;
+    }
+    else if ( sErrCnt_Others == 0 )
+    {
+        if ( sErrCnt_RebuilRetry != 0 )
+        {
+            /* Rebuild event ¸¦ ¿ì¼±ÇÑ´Ù.
+             * Statement Too Old ¿¡·¯°¡ ¹ß»ıÇßÀ»¶§ Rebuild Retry ¸¦ ¼öÇàÇØµµ µÈ´Ù.
+             */
+            *aRetryType = SDI_STMT_SHARD_REBUILD_RETRY;
+        }
+        else if ( sErrCnt_StmtViewOld != 0 )
+        {
+            /* Statement Too Old ¿¡·¯ ÀÎ °æ¿ì */
+            *aRetryType = SDI_STMT_SHARD_VIEW_OLD_RETRY;
+        }
+        else
+        {
+            IDE_DASSERT( 0 );
+        }
+    }
+}
+
+idBool sdi::isNeedRequestSCN( qciStatement * aStatement )
+{
+    idBool      sIsSupportGCTx = ID_FALSE;
+    qciStmtType sStmtType      = QCI_STMT_MASK_MAX;
+
+    IDE_TEST_CONT( isShardCoordinator( &aStatement->statement ) == ID_TRUE,
+                   EndOfFunction );
+
+    IDE_TEST_CONT( qci::getStmtType( aStatement, &sStmtType ) != IDE_SUCCESS,
+                   EndOfFunction );
+
+    IDE_TEST_CONT( qciMisc::isStmtDML( sStmtType ) == ID_FALSE,
+                   EndOfFunction );
+
+    sIsSupportGCTx = ID_TRUE;
+
+    IDE_EXCEPTION_CONT( EndOfFunction );
+
+    return sIsSupportGCTx;
+}
+
+
+IDE_RC sdi::makeShardMeta4NewSMN( qcStatement * aStatement )
+{
+    IDE_TEST( sdm::makeShardMeta4NewSMN( aStatement )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::getGlobalMetaInfoCore( smiStatement          * aSmiStmt,
+                                   sdiGlobalMetaInfo * aMetaNodeInfo )
+{
+    IDE_TEST( sdm::getGlobalMetaInfoCore( aSmiStmt,
+                                          aMetaNodeInfo )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::getAllReplicaSetInfoSortedByPName( smiStatement       * aSmiStmt,
+                                               sdiReplicaSetInfo  * aReplicaSetsInfo,
+                                               ULong                aSMN )
+{
+    IDE_TEST( sdm::getAllReplicaSetInfoSortedByPName( aSmiStmt,
+                                                      aReplicaSetsInfo,
+                                                      aSMN )
+              != IDE_SUCCESS );
+
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::getTableInfoAllObject( qcStatement        * aStatement,
+                                   sdiTableInfoList  ** aTableInfoList,
+                                   ULong                aSMN )
+{
+    IDE_TEST( sdm::getTableInfoAllObject( aStatement,
+                                          aTableInfoList,
+                                          aSMN )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::getRangeInfo( qcStatement  * aStatement,
+                          smiStatement * aSmiStmt,
+                          ULong          aSMN,
+                          sdiTableInfo * aTableInfo,
+                          sdiRangeInfo * aRangeInfo,
+                          idBool         aNeedMerge )
+{                                                                                            
+    IDE_TEST( sdm::getRangeInfo ( aStatement,
+                                  aSmiStmt,
+                                  aSMN,
+                                  aTableInfo,
+                                  aRangeInfo,
+                                  aNeedMerge ) 
+              != IDE_SUCCESS );
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::getNodeByName( smiStatement * aSmiStmt,
+                           SChar        * aNodeName,
+                           ULong          aSMN,
+                           sdiNode      * aNode )
+{
+    IDE_TEST( sdm::getNodeByName( aSmiStmt,
+                                  aNodeName,
+                                  aSMN,
+                                  aNode )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::addReplTable( qcStatement * aStatement,
+                          SChar       * aNodeName,
+                          SChar       * aReplName,
+                          SChar       * aUserName,
+                          SChar       * aTableName,
+                          SChar       * aPartitionName,
+                          sdiReplDirectionalRole aRole,
+                          idBool        aIsNewTrans )
+{
+    if ( aRole == SDI_REPL_SENDER )
+    {   
+        IDE_TEST( sdm::addReplTable( aStatement,
+                                     aNodeName,
+                                     aReplName,
+                                     aUserName,
+                                     aTableName,
+                                     aPartitionName,
+                                     SDM_REPL_SENDER,
+                                     aIsNewTrans )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        IDE_TEST( sdm::addReplTable( aStatement,
+                                     aNodeName,
+                                     aReplName,
+                                     aUserName,
+                                     aTableName,
+                                     aPartitionName,
+                                     SDM_REPL_RECEIVER,
+                                     aIsNewTrans )
+                  != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::findSendReplInfoFromReplicaSet( sdiReplicaSetInfo   * aReplicaSetInfo,
+                                            SChar               * aNodeName,
+                                            sdiReplicaSetInfo   * aOutReplicaSetInfo )
+{
+    IDE_TEST( sdm::findSendReplInfoFromReplicaSet( aReplicaSetInfo,
+                                                   aNodeName,
+                                                   aOutReplicaSetInfo )
+              != IDE_SUCCESS );
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/*
+ * Description : Validate aReShardAttr and extract from node and return it.
+ *               if aReShardAttr is clone then aFromNode return Null.
+ * IN: aStatement, aReShardAttr, aRangeInfo
+ */
+IDE_RC sdi::validateOneReshardTable( qcStatement * aStatement,
+                                     SChar * aUserName,
+                                     SChar * aTableName, 
+                                     SChar * aPartitionName, 
+                                     sdiObjectInfo * aTableObjInfo,
+                                     SChar * aOutFromNodeName,
+                                     SChar * aOutDefaultNodeName )
+{
+    sdiTableInfo      *sTableInfo = &(aTableObjInfo->mTableInfo);
+    sdiRangeInfo      *sRangeInfo = &(aTableObjInfo->mRangeInfo);
+
+    SInt              i = 0;
+    sdiNode           sNode; 
+    sdiShardObjectType sSplitType = SDI_NON_SHARD_OBJECT;
+
+    IDE_TEST_RAISE( idlOS::strncmp(sTableInfo->mUserName, 
+                                   aUserName,
+                                   QC_MAX_OBJECT_NAME_LEN ) != 0,
+                    ERR_USER_NAME );
+    IDE_TEST_RAISE( idlOS::strncmp(sTableInfo->mObjectName,
+                                   aTableName,
+                                   QC_MAX_OBJECT_NAME_LEN) != 0,
+                    ERR_TABLE_NAME );
+
+    sSplitType = sdi::getShardObjectType( sTableInfo );
+    SDI_INIT_NODE(&sNode);
+    switch ( sSplitType )
+    {
+        case SDI_SINGLE_SHARD_KEY_DIST_OBJECT:
+            IDE_TEST_RAISE( aPartitionName[0] == '\0' ||
+                            SDI_IS_NULL_NAME(aPartitionName) == ID_TRUE,
+                            ERR_PARTITION_NAME );
+
+            for ( i = 0; i < sRangeInfo->mCount; i++ )
+            {
+                IDE_TEST_RAISE( idlOS::strncmp( sRangeInfo->mRanges[i].mPartitionName, 
+                                                SDM_NA_STR, 
+                                                QC_MAX_OBJECT_NAME_LEN) == 0, ERR_NOT_PARTITIONED_TABLE);
+
+                if( idlOS::strncmp( sRangeInfo->mRanges[i].mPartitionName, aPartitionName, QC_MAX_OBJECT_NAME_LEN) == 0 )
+                {
+                    IDE_TEST_RAISE(sNode.mNodeId != SDI_NODE_NULL_ID, ERR_TOO_MANY_FROM_NODE);
+                    IDE_TEST( sdm::getNodeByID( QC_SMI_STMT( aStatement ),
+                                                sRangeInfo->mRanges[i].mNodeId,
+                                                aTableObjInfo->mSMN,
+                                                &sNode )
+                              != IDE_SUCCESS );
+                }
+            }
+            if ( sNode.mNodeId == SDI_NODE_NULL_ID )
+            {
+                if( idlOS::strncmp( sTableInfo->mDefaultPartitionName, aPartitionName, QC_MAX_OBJECT_NAME_LEN) == 0 )
+                {
+                    IDE_TEST( sdm::getNodeByID( QC_SMI_STMT( aStatement ),
+                                                sTableInfo->mDefaultNodeId,
+                                                aTableObjInfo->mSMN,
+                                                &sNode )
+                            != IDE_SUCCESS );
+                }
+            }
+            break;
+        case SDI_CLONE_DIST_OBJECT:
+        case SDI_SOLO_DIST_OBJECT:
+            IDE_TEST_RAISE( aPartitionName[0] != '\0' &&
+                            SDI_IS_NULL_NAME(aPartitionName) != ID_TRUE,
+                            ERR_PARTITION_NAME_FOR_SOLO );
+            IDE_TEST( sdm::getNodeByID( QC_SMI_STMT( aStatement ),
+                                        sRangeInfo->mRanges[0].mNodeId,
+                                        aTableObjInfo->mSMN,
+                                        &sNode )
+                    != IDE_SUCCESS );
+
+            break;
+        case SDI_NON_SHARD_OBJECT:
+        case SDI_COMPOSITE_SHARD_KEY_DIST_OBJECT:
+        default:
+            IDE_RAISE(ERR_SPLIT_TYPE);
+            break;
+    }
+
+    IDE_TEST_RAISE( sNode.mNodeId == SDI_NODE_NULL_ID, ERR_NOT_FOUND_NODE);
+    idlOS::strncpy(aOutFromNodeName, sNode.mNodeName, SDI_NODE_NAME_MAX_SIZE);
+    aOutFromNodeName[SDI_NODE_NAME_MAX_SIZE] = '\0';
+
+    SDI_INIT_NODE(&sNode);
+    if ( sTableInfo->mDefaultNodeId != SDI_NODE_NULL_ID )
+    {
+        IDE_TEST( sdm::getNodeByID( QC_SMI_STMT( aStatement ),
+                                    sTableInfo->mDefaultNodeId,
+                                    aTableObjInfo->mSMN,
+                                    &sNode )
+                  != IDE_SUCCESS );
+        IDE_TEST_RAISE( sNode.mNodeId == SDI_NODE_NULL_ID, ERR_NOT_FOUND_NODE);
+        idlOS::strncpy( aOutDefaultNodeName, sNode.mNodeName, SDI_NODE_NAME_MAX_SIZE );
+        aOutDefaultNodeName[SDI_NODE_NAME_MAX_SIZE] = '\0';
+    }
+    else
+    {
+        SDI_SET_NULL_NAME(aOutDefaultNodeName);
+    }
+
+    return IDE_SUCCESS;
+    IDE_EXCEPTION( ERR_PARTITION_NAME )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDI_DATA_NODE_NOT_FOUND_BY_PART,
+                                  aPartitionName ) );
+    }
+    IDE_EXCEPTION( ERR_NOT_FOUND_NODE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDI_DATA_NODE_NOT_FOUND_BY_PART,
+                                  aPartitionName ) );
+    }
+    IDE_EXCEPTION( ERR_PARTITION_NAME_FOR_SOLO )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDI_PART_NAME_ERROR,
+                                  aTableName,
+                                  aPartitionName ) );
+    }
+    IDE_EXCEPTION( ERR_TABLE_NAME )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::validateOneReshardTable",
+                                  "Invalid table name" ) );
+    }
+    IDE_EXCEPTION( ERR_USER_NAME )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::validateOneReshardTable",
+                                  "Invalid user name" ) );
+    }
+    IDE_EXCEPTION( ERR_NOT_PARTITIONED_TABLE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::validateOneReshardTable",
+                                  "not partitioned table" ) );
+    }
+    IDE_EXCEPTION( ERR_SPLIT_TYPE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::validateOneReshardTable",
+                                  "Invalid split type " ) );
+    }
+    IDE_EXCEPTION( ERR_TOO_MANY_FROM_NODE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::validateOneReshardTable",
+                                  "ERR_TOO_MANY_FROM_NODE " ) );
+    }
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::validateOneReshardProc( qcStatement * aStatement,
+                                    SChar * aUserName,
+                                    SChar * aProcName,
+                                    SChar * aKeyValue,
+                                    sdiObjectInfo * aProcObjInfo,
+                                    SChar * aOutFromNodeName,
+                                    SChar * aOutDefaultNodeName )
+{
+    sdiTableInfo     *sProcInfo = &(aProcObjInfo->mTableInfo);
+    sdiRangeInfo     *sRangeInfo = &(aProcObjInfo->mRangeInfo);
+    sdiValue          sValueStr;
+    SInt              i = 0;
+    sdiNode           sNode;
+    SChar            *sKeyValue = aKeyValue;
+    sdiShardObjectType sSplitType = SDI_NON_SHARD_OBJECT;
+
+    IDE_TEST_RAISE( idlOS::strncmp(sProcInfo->mUserName,
+                                   aUserName,
+                                   QC_MAX_OBJECT_NAME_LEN ) != 0,
+                    ERR_USER_NAME );
+    IDE_TEST_RAISE( idlOS::strncmp(sProcInfo->mObjectName,
+                                   aProcName,
+                                   QC_MAX_OBJECT_NAME_LEN) != 0,
+                    ERR_OBJECT_NAME );
+
+    SDI_INIT_NODE(&sNode);
+    sSplitType = sdi::getShardObjectType( sProcInfo );
+    switch ( sSplitType )
+    {
+        case SDI_SINGLE_SHARD_KEY_DIST_OBJECT:
+            if ( aKeyValue != NULL )
+            {
+                for ( i = 0; i < sRangeInfo->mCount; i++ )
+                {
+                    IDE_TEST( sdi::getValueStr( sProcInfo->mKeyDataType,
+                                                &sRangeInfo->mRanges[i].mValue,
+                                                &sValueStr )
+                                      != IDE_SUCCESS );
+                    if( idlOS::strncmp( (SChar*)sValueStr.mCharMax.value, aKeyValue, SDI_RANGE_VARCHAR_MAX_SIZE ) == 0 )
+                    {
+                        IDE_TEST_RAISE(sNode.mNodeId != SDI_NODE_NULL_ID, ERR_TOO_MANY_FROM_NODE);
+                        IDE_TEST( sdm::getNodeByID( QC_SMI_STMT( aStatement ),
+                                                    sRangeInfo->mRanges[i].mNodeId,
+                                                    aProcObjInfo->mSMN,
+                                                    &sNode )
+                                  != IDE_SUCCESS );
+                    }
+                }
+            }
+            else
+            {
+                IDE_TEST( sdm::getNodeByID( QC_SMI_STMT( aStatement ),
+                                            sProcInfo->mDefaultNodeId,
+                                            aProcObjInfo->mSMN,
+                                            &sNode )
+                        != IDE_SUCCESS );
+                sKeyValue = (SChar*)"DEFAULT";
+            }
+            break;
+        case SDI_CLONE_DIST_OBJECT:
+            IDE_TEST_RAISE(aKeyValue != NULL, ERR_SHARD_KEY_CLONE);
+            IDE_TEST( sdm::getNodeByID( QC_SMI_STMT( aStatement ),
+                                        sRangeInfo->mRanges[0].mNodeId,
+                                        aProcObjInfo->mSMN,
+                                        &sNode )
+                    != IDE_SUCCESS );
+            break;
+        case SDI_SOLO_DIST_OBJECT:
+            IDE_TEST_RAISE(aKeyValue != NULL, ERR_SHARD_KEY_SOLO);
+            IDE_TEST( sdm::getNodeByID( QC_SMI_STMT( aStatement ),
+                                        sRangeInfo->mRanges[0].mNodeId,
+                                        aProcObjInfo->mSMN,
+                                        &sNode )
+                    != IDE_SUCCESS );
+            break;
+        case SDI_NON_SHARD_OBJECT:
+        case SDI_COMPOSITE_SHARD_KEY_DIST_OBJECT:
+        default:
+            IDE_RAISE(ERR_SPLIT_TYPE);
+            break;
+    }
+
+    IDE_TEST_RAISE( sNode.mNodeId == SDI_NODE_NULL_ID, ERR_NOT_FOUND_NODE);
+    idlOS::strncpy(aOutFromNodeName, sNode.mNodeName, SDI_NODE_NAME_MAX_SIZE);
+    aOutFromNodeName[SDI_NODE_NAME_MAX_SIZE] = '\0';
+
+    SDI_INIT_NODE(&sNode);
+    if ( sProcInfo->mDefaultNodeId != SDI_NODE_NULL_ID )
+    {
+        IDE_TEST( sdm::getNodeByID( QC_SMI_STMT( aStatement ),
+                                    sProcInfo->mDefaultNodeId,
+                                    aProcObjInfo->mSMN,
+                                    &sNode )
+                  != IDE_SUCCESS );
+        IDE_TEST_RAISE( sNode.mNodeId == SDI_NODE_NULL_ID, ERR_NOT_FOUND_NODE);
+        idlOS::strncpy( aOutDefaultNodeName, sNode.mNodeName, SDI_NODE_NAME_MAX_SIZE );
+        aOutDefaultNodeName[SDI_NODE_NAME_MAX_SIZE] = '\0';
+    }
+    else
+    {
+        SDI_SET_NULL_NAME(aOutDefaultNodeName);
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NOT_FOUND_NODE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDI_DATA_NODE_NOT_FOUND_BY_VALUE,
+                                  sKeyValue ) );
+    }
+    IDE_EXCEPTION( ERR_OBJECT_NAME )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::validateOneReshardProc",
+                                  "Invalid table name" ) );
+    }
+    IDE_EXCEPTION( ERR_USER_NAME )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::validateOneReshardProc",
+                                  "Invalid user name" ) );
+    }
+    IDE_EXCEPTION( ERR_SPLIT_TYPE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::validateOneReshardProc",
+                                  "Invalid split type " ) );
+    }
+    IDE_EXCEPTION( ERR_TOO_MANY_FROM_NODE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::validateOneReshardProc",
+                                  "ERR_TOO_MANY_FROM_NODE " ) );
+    }
+    IDE_EXCEPTION( ERR_SHARD_KEY_CLONE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDI_SHARD_KEY_ERROR,
+                                  aProcName) );
+    }
+    IDE_EXCEPTION( ERR_SHARD_KEY_SOLO )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDI_SHARD_KEY_ERROR,
+                                  aProcName) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::getReplicaSet( smiTrans          * aTrans,
+                           SChar             * aPrimaryNodeName,
+                           idBool              aIsShardMetaChanged,
+                           ULong               aSMN,
+                           sdiReplicaSetInfo * aReplicaSetsInfo )
+{
+    smiTrans       sTrans;
+    smiStatement   sSmiStmt;
+    smiStatement * sDummySmiStmt = NULL;
+    UShort         sTransStage = 0;
+    idBool         sIsStmtBegun = ID_FALSE;
+
+    ULong          sDataSMNForMetaInfo = ID_ULONG(0);
+    idvSQL       * sStatistics = NULL;
+    smiStatement * sSmiStmtForMetaInfo = NULL;
+
+    if ( aTrans == NULL )
+    {
+        IDE_TEST( sTrans.initialize() != IDE_SUCCESS );
+        sTransStage = 1;
+
+        IDE_TEST( sTrans.begin( &sDummySmiStmt, NULL )
+                  != IDE_SUCCESS );
+        sTransStage = 2;
+
+        sStatistics = NULL;
+        sSmiStmtForMetaInfo = sDummySmiStmt;
+    }
+    else
+    {
+        IDE_TEST_RAISE( aTrans->isBegin() == ID_FALSE, ERR_INVALID_TRANS );
+
+        sStatistics = aTrans->getStatistics();
+        sSmiStmtForMetaInfo = aTrans->getStatement();
+    }
+
+    // PROJ-2701 Online data rebuild
+    if ( aIsShardMetaChanged == ID_TRUE )
+    {
+        /* Shard Meta¸¦ º¯°æÇÑ TransactionÀÌ¹Ç·Î aSMN¿¡ ÇØ´çÇÏ´Â Internal Node Info¸¦ ¾òÀ» ¼ö ÀÖ´Ù. */
+        sDataSMNForMetaInfo = aSMN;
+    }
+    else if ( getSMNForMetaNode() < aSMN )
+    {
+        IDE_TEST( waitAndSetSMNForMetaNode( sStatistics,
+                                            sSmiStmtForMetaInfo,
+                                            ( SMI_STATEMENT_UNTOUCHABLE | SMI_STATEMENT_MEMORY_CURSOR ),
+                                            aSMN,
+                                            &sDataSMNForMetaInfo )
+                  != IDE_SUCCESS );
+
+        IDE_DASSERT( aSMN == sDataSMNForMetaInfo );
+    }
+    else
+    {
+        sDataSMNForMetaInfo = aSMN;
+    }
+
+    IDE_TEST( sSmiStmt.begin( sStatistics,
+                              sSmiStmtForMetaInfo,
+                              (SMI_STATEMENT_UNTOUCHABLE |
+                               SMI_STATEMENT_MEMORY_CURSOR) )
+              != IDE_SUCCESS );
+    sIsStmtBegun = ID_TRUE;
+
+
+    IDE_TEST(sdm::getReplicaSetsByPName( &sSmiStmt,
+                                         aPrimaryNodeName,
+                                         sDataSMNForMetaInfo,
+                                         aReplicaSetsInfo ) != IDE_SUCCESS );
+
+    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    sIsStmtBegun = ID_FALSE;
+
+    if ( aTrans == NULL )
+    {
+        IDE_TEST( sTrans.commit() != IDE_SUCCESS );
+        sTransStage = 1;
+
+        sTransStage = 0;
+        IDE_TEST( sTrans.destroy( NULL ) != IDE_SUCCESS );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_INVALID_TRANS )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::getReplicaSet",
+                                  "Invalid transaction" ) );
+    }
+    IDE_EXCEPTION_END;    
+
+    if ( sIsStmtBegun == ID_TRUE )
+    {
+        (void)sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    switch ( sTransStage )
+    {
+        case 2:
+            ( void )sTrans.rollback();
+            /* fall through */
+        case 1:
+            ( void )sTrans.destroy( NULL );
+            /* fall through */
+        default:
+            break;
+    }
+
+    ideLog::log( IDE_SD_1, "[SHARD_META_ERROR] Failure. errorcode 0x%05"ID_XINT32_FMT" %s\n",
+                           E_ERROR_CODE(ideGetErrorCode()),
+                           ideGetErrorMsg(ideGetErrorCode()));
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::checkBackupReplicationRunning( UInt            aKSafety,
+                                           sdiReplicaSet * aReplicaSet,
+                                           UInt            aNodeCount )
+{
+    IDE_TEST_RAISE( aReplicaSet->mReplicaSetId == SDI_REPLICASET_NULL_ID, ERR_REPLICA_SET );
+
+    switch ( aKSafety )
+    {
+        case 2:
+            if ( aNodeCount != 2 )
+            {
+                IDE_TEST_RAISE( idlOS::strncmp( aReplicaSet->mSecondBackupNodeName,
+                                                SDM_NA_STR,
+                                                SDI_NODE_NAME_MAX_SIZE) == 0,
+                                ERR_SECOND_BACKUP_REPLICATION );
+            }            
+            /* fall through */
+        case 1:
+            IDE_TEST_RAISE( idlOS::strncmp( aReplicaSet->mFirstBackupNodeName,
+                                            SDM_NA_STR,
+                                            SDI_NODE_NAME_MAX_SIZE) == 0,
+                            ERR_FIRST_BACKUP_REPLICATION );
+            break;
+        case 0:
+            /* do nothing */
+            break;
+        default:
+            IDE_RAISE(ERR_INVALID_KSAFETY);
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_INVALID_KSAFETY )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::checkBackupReplicationRunning",
+                                  "Invalid ksafety" ) );
+    }
+    IDE_EXCEPTION( ERR_REPLICA_SET )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::checkBackupReplicationRunning",
+                                  "Invalid replica set ID" ) );
+    }
+    IDE_EXCEPTION( ERR_FIRST_BACKUP_REPLICATION )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_NOT_RUNNING_REPLICATION,
+                                  aReplicaSet->mFirstReplName) );
+    }
+    IDE_EXCEPTION( ERR_SECOND_BACKUP_REPLICATION )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_NOT_RUNNING_REPLICATION,
+                                  aReplicaSet->mSecondReplName) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::shardExecTempDDLWithNewTrans(qcStatement * aStatement,
+                                         SChar       * aNodeName,
+                                         SChar       * aQuery,
+                                         UInt          aQueryLen )
+{
+    SChar         sNodeNameStr[SDI_NODE_NAME_MAX_SIZE + 1] = {0,};
+    SChar       * sSqlStr = NULL;
+    void        * sMmSession = NULL;
+    idBool        sIsAllocMmSession = ID_FALSE;
+    const SChar * sRemoteSQLFmt;
+    const SChar * sRemoteLockTimeoutSQLStr;
+    SInt          sLen = 0;
+    sdiLocalMetaInfo    sLocalMetaInfo;
+    qcSession         * sQcSession;
+    
+    IDE_TEST( sdi::getLocalMetaInfo( &sLocalMetaInfo ) != IDE_SUCCESS );
+            
+    IDE_TEST( qci::mSessionCallback.mAllocInternalSession( &sMmSession, 
+                                                           aStatement->session->mMmSession )
+              != IDE_SUCCESS );
+    IDE_TEST_RAISE( sMmSession == NULL, ERR_INVALID_CONDITION );
+    sIsAllocMmSession = ID_TRUE;
+    
+    qci::mSessionCallback.mSetShardMetaNumber( sMmSession,
+                                               sdi::getSMNForDataNode());    
+    qci::mSessionCallback.mSetNewShardPIN( sMmSession );
+    IDE_TEST(qci::mSessionCallback.mSetShardInternalLocalOperation( sMmSession,
+                                                                    SDI_INTERNAL_OP_NORMAL )
+             != IDE_SUCCESS);
+    
+    if ( isShardDDL( aStatement ) == ID_TRUE )
+    {
+        sQcSession = qci::mSessionCallback.mGetQcSession( sMmSession );
+        
+        sQcSession->mQPSpecific.mFlag &= ~QC_SESSION_SHARD_DDL_MASK;
+        sQcSession->mQPSpecific.mFlag |= QC_SESSION_SHARD_DDL_TRUE;
+    }
+
+    //IDE_TEST( qcg::setSessionIsInternalLocalOperation( aStatement->session->mMmSession, 1) != IDE_SUCCESS);
+    if ( aNodeName != NULL )
+    {
+        idlOS::strncpy(sNodeNameStr, aNodeName, ID_SIZEOF(sNodeNameStr));
+    }
+    else
+    {
+        idlOS::strncpy(sNodeNameStr, "NULL", ID_SIZEOF(sNodeNameStr));
+    }
+
+    // BUG-48616
+    if ( isSameNode( sLocalMetaInfo.mNodeName, aNodeName ) == ID_TRUE )
+    {
+        sRemoteSQLFmt = "%s";
+        sRemoteLockTimeoutSQLStr = "alter session set ddl_lock_timeout = %"ID_INT32_FMT"";
+
+        sLen = IDL_MAX( (aQueryLen + idlOS::strlen(sRemoteSQLFmt) + 1 ), 
+                        (idlOS::strlen(sRemoteLockTimeoutSQLStr) + 1 + 5 ) ) + 1;
+    }
+    else
+    {
+        sRemoteSQLFmt = "exec DBMS_SHARD.EXECUTE_IMMEDIATE('%s', '"QCM_SQL_STRING_SKIP_FMT"')";
+        sRemoteLockTimeoutSQLStr = "exec DBMS_SHARD.EXECUTE_IMMEDIATE('alter session set ddl_lock_timeout = %"ID_INT32_FMT"', '"QCM_SQL_STRING_SKIP_FMT"')";
+
+        sLen = IDL_MAX( (aQueryLen + idlOS::strlen(sRemoteSQLFmt) + 1 + ID_SIZEOF(sNodeNameStr)), 
+                        (idlOS::strlen(sRemoteLockTimeoutSQLStr) + 1 + 5 + ID_SIZEOF(sNodeNameStr)) ) + 1;
+    }
+    
+    IDE_TEST_RAISE( iduMemMgr::malloc(IDU_MEM_SDI,
+                                sLen,
+                                (void **)&sSqlStr,
+                                IDU_MEM_IMMEDIATE )
+              != IDE_SUCCESS, InsufficientMemory );
+    
+    idlOS::snprintf(sSqlStr,
+                    sLen,
+                    sRemoteLockTimeoutSQLStr,
+                    QCG_GET_SESSION_SHARD_DDL_LOCK_TIMEOUT(aStatement),
+                    sNodeNameStr);
+    
+    IDE_TEST( qciMisc::executeTempSQL( sMmSession, sSqlStr, ID_TRUE ) != IDE_SUCCESS );
+    ideLog::log(IDE_SD_17,"[SHARD_META] execute tempSQL success: %s", sSqlStr);
+
+    idlOS::snprintf( sSqlStr,
+                     sLen,
+                     sRemoteSQLFmt,
+                     aQuery,
+                     sNodeNameStr );
+
+    IDE_TEST( qciMisc::executeTempSQL( sMmSession, sSqlStr, ID_TRUE ) != IDE_SUCCESS );
+    ideLog::log(IDE_SD_17,"[SHARD_META] execute tempSQL success: %s", sSqlStr);
+
+    sIsAllocMmSession = ID_FALSE;
+    qci::mSessionCallback.mFreeInternalSession( sMmSession,
+                                                ID_TRUE /* aIsSuccess */ );
+
+    (void)iduMemMgr::free( sSqlStr );
+    sSqlStr = NULL;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(ERR_INVALID_CONDITION)
+    {
+        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                "sdi::shardExecTempDDLWithNewTrans",
+                                "invliad condition"));
+    }
+    IDE_EXCEPTION( InsufficientMemory );
+    {
+        IDE_SET( ideSetErrorCode( idERR_ABORT_InsufficientMemory ) );
+    } 
+    IDE_EXCEPTION_END;
+
+    ideLog::log(IDE_SD_17,"[SHARD_META] execute tempSQL failure: %s", sSqlStr);
+
+    if ( sSqlStr != NULL )
+    {
+        (void)iduMemMgr::free( sSqlStr );
+    }
+
+    if ( sIsAllocMmSession == ID_TRUE )
+    {
+        qci::mSessionCallback.mFreeInternalSession( sMmSession,
+                                                    ID_FALSE /* aIsSuccess */ );
+    }
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::shardExecTempDMLOrDCLWithNewTrans( qcStatement * aStatement,
+                                               SChar       * aQuery )
+{
+    void         * sMmSession = NULL;
+    idBool         sIsAllocMmSession = ID_FALSE;
+    idBool         sIsSmiStmtEnd = ID_FALSE;
+    smiStatement * spRootStmt    = QC_SMI_STMT(aStatement)->getTrans()->getStatement();
+    UInt           sSmiStmtFlag  = QC_SMI_STMT(aStatement)->mFlag;
+    qcSession    * sQcSession;
+    
+    IDE_TEST( qci::mSessionCallback.mAllocInternalSession( &sMmSession, 
+                                                           aStatement->session->mMmSession )
+              != IDE_SUCCESS );
+    IDE_TEST_RAISE( sMmSession == NULL, ERR_INVALID_CONDITION );
+    sIsAllocMmSession = ID_TRUE;
+
+    qci::mSessionCallback.mSetShardMetaNumber( sMmSession,
+                                               sdi::getSMNForDataNode());
+    qci::mSessionCallback.mSetNewShardPIN( sMmSession );
+    IDE_TEST(qci::mSessionCallback.mSetShardInternalLocalOperation( sMmSession, SDI_INTERNAL_OP_NORMAL )
+             != IDE_SUCCESS);
+
+    if ( isShardDDL( aStatement ) == ID_TRUE )
+    {
+        sQcSession = qci::mSessionCallback.mGetQcSession( sMmSession );
+        
+        sQcSession->mQPSpecific.mFlag &= ~QC_SESSION_SHARD_DDL_MASK;
+        sQcSession->mQPSpecific.mFlag |= QC_SESSION_SHARD_DDL_TRUE;
+    }
+    
+    IDE_TEST( qciMisc::executeTempSQL( sMmSession,
+                                       aQuery,
+                                       ID_TRUE )
+              != IDE_SUCCESS );
+    
+    ideLog::log(IDE_SD_17,"[SHARD_META] execute tempSQL: %s", aQuery);
+    
+    sIsAllocMmSession = ID_FALSE;
+
+    qci::mSessionCallback.mFreeInternalSession( sMmSession,
+                                                ID_TRUE /* aIsSuccess */ );
+    
+    // commitµÈ ´ÙÀ½ ÇØ´ç Á¤º¸¸¦ º¸±â À§ÇØ
+    // statement end, begin ¼öÇà
+    IDE_TEST( QC_SMI_STMT(aStatement)->end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS );
+    sIsSmiStmtEnd = ID_TRUE;
+
+    IDE_TEST( QC_SMI_STMT(aStatement)->begin( aStatement->mStatistics,
+                                              spRootStmt,
+                                              sSmiStmtFlag )
+              != IDE_SUCCESS );
+    sIsSmiStmtEnd = ID_FALSE;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(ERR_INVALID_CONDITION)
+    {
+        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                "sdi::shardExecTempDMLWithNewTrans",
+                                "invliad condition"));
+    }
+    IDE_EXCEPTION_END;
+
+    if ( sIsAllocMmSession == ID_TRUE )
+    {
+        qci::mSessionCallback.mFreeInternalSession( sMmSession,
+                                                    ID_FALSE /* aIsSuccess */ );
+    }
+
+    if( sIsSmiStmtEnd == ID_TRUE )
+    {
+        IDE_ASSERT( QC_SMI_STMT(aStatement)->begin( aStatement->mStatistics,
+                                                    spRootStmt,
+                                                    SMI_STATEMENT_NORMAL|SMI_STATEMENT_ALL_CURSOR ) 
+                    == IDE_SUCCESS);
+    }
+    ideLog::log(IDE_SD_1,"[SHARD_META_ERROR] shardExecTempDMLOrDCLWithNewTrans. Failed to execute tempSQL: %s", aQuery);
+    return IDE_FAILURE;
+}
+
+/*
+ * OUT: aTableInfo, aTableSCN, aTableHandle, aShardObjInfo
+ */
+IDE_RC sdi::getTableInfoAllForDDL( qcStatement    * aStatement,
+                                   UInt             aUserID,
+                                   UChar          * aTableName,
+                                   SInt             aTableNameSize,
+                                   idBool           aIsRangeMerge,
+                                   qcmTableInfo  ** aTableInfo,
+                                   smSCN          * aTableSCN,
+                                   void          ** aTableHandle,
+                                   sdiObjectInfo ** aShardObjInfo )
+{
+    qcmTableInfo   * sTableInfo = NULL;
+    smSCN            sTableSCN = SM_SCN_INIT;
+    void           * sTableHandle = NULL;
+    sdiObjectInfo  * sShardObjInfo = NULL;
+
+    smiTrans          sSmiTrans;
+    smiStatement    * sDummySmiStmt = NULL;
+    smiStatement    * sSmiStmtOrg   = NULL;
+    smiStatement      sSmiStmt;
+    SInt              sState        = 0;
+    UInt              sSmiStmtFlag  = 0;
+
+    IDE_TEST( sSmiTrans.initialize() != IDE_SUCCESS );
+    sState = 1;
+
+    IDE_TEST( sSmiTrans.begin( &sDummySmiStmt,
+                               aStatement->mStatistics )
+              != IDE_SUCCESS );
+    sState = 2;
+
+    sSmiStmtFlag &= ~SMI_STATEMENT_MASK;
+    sSmiStmtFlag |= SMI_STATEMENT_UNTOUCHABLE;
+
+    sSmiStmtFlag &= ~SMI_STATEMENT_CURSOR_MASK;
+    sSmiStmtFlag |= SMI_STATEMENT_MEMORY_CURSOR;
+
+    IDE_TEST( sSmiStmt.begin( aStatement->mStatistics, sDummySmiStmt, sSmiStmtFlag )
+              != IDE_SUCCESS );
+    sState = 3;
+
+    /* swap smistatement */
+    qcg::getSmiStmt( aStatement, &sSmiStmtOrg );
+    qcg::setSmiStmt( aStatement, &sSmiStmt );
+    sState = 4;
+
+    IDE_TEST( qcm::getTableInfo(aStatement,
+                                aUserID,
+                                aTableName,
+                                aTableNameSize,
+                                &(sTableInfo),
+                                &(sTableSCN),
+                                &(sTableHandle)) != IDE_SUCCESS );
+
+    IDE_TEST( qcm::lockTableForDDLValidation(aStatement,
+                                             sTableHandle, 
+                                             sTableSCN)
+              != IDE_SUCCESS );
+
+    IDE_TEST( sdi::getTableInfo( aStatement,
+                                 sTableInfo,
+                                 &(sShardObjInfo),
+                                 aIsRangeMerge)
+              != IDE_SUCCESS );
+    IDE_TEST_RAISE(sShardObjInfo == NULL, ERR_GET_SHARD_OBJ);
+
+    /* restore */
+    sState = 3;
+    qcg::setSmiStmt( aStatement, sSmiStmtOrg );
+
+    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS )!= IDE_SUCCESS );
+    sState = 2;
+
+    sState = 1;
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
+
+    sState = 0;
+    IDE_TEST( sSmiTrans.destroy( aStatement->mStatistics ) != IDE_SUCCESS );
+
+    *aTableInfo = sTableInfo;
+    *aTableSCN = sTableSCN;
+    *aTableHandle = sTableHandle;
+    *aShardObjInfo = sShardObjInfo;
+
+    ACP_UNUSED(aTableInfo);
+    ACP_UNUSED(aTableSCN);
+    ACP_UNUSED(aTableHandle);
+    ACP_UNUSED(aShardObjInfo);
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_GET_SHARD_OBJ )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDI_SHARD_OBJECT_NOT_EXIST, aTableName ) );
+    }
+    IDE_EXCEPTION_END;
+
+    switch(sState)
+    {
+        case 4:
+            qcg::setSmiStmt( aStatement, sSmiStmtOrg );
+        case 3:
+            (void)sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+        case 2:
+            (void)sSmiTrans.rollback();
+        case 1:
+            (void)sSmiTrans.destroy( aStatement->mStatistics );
+        case 0:
+        default:
+            break;
+    }
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::getRangeValueStrFromPartition(SChar * aPartitionName, sdiObjectInfo * aShardObjectInfo, SChar * aOutValueBuf)
+{
+    SInt i = 0;
+    sdiValue  sValueStr;
+    idBool    sIsFound = ID_FALSE;
+
+    for ( i = 0;i < aShardObjectInfo->mRangeInfo.mCount; i++ )
+    {
+        if ( idlOS::strncmp(aShardObjectInfo->mRangeInfo.mRanges[i].mPartitionName, aPartitionName, QC_MAX_OBJECT_NAME_LEN) == 0 )
+        {
+            IDE_TEST( getValueStr(aShardObjectInfo->mTableInfo.mKeyDataType, 
+                                  &aShardObjectInfo->mRangeInfo.mRanges[i].mValue, 
+                                  &sValueStr) != IDE_SUCCESS );
+            sIsFound = ID_TRUE;
+            break;
+        }
+    }
+    IDE_TEST_RAISE(sIsFound != ID_TRUE, ERR_NOT_FOUND);
+    idlOS::strncpy(aOutValueBuf, (SChar*)sValueStr.mCharMax.value, sValueStr.mCharMax.length);
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NOT_FOUND )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::getRangeValueStrFromPartition",
+                                  "Invalid partition " ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::getValueStr( UInt       aKeyDataType,
+                         sdiValue * aValue,
+                         sdiValue * aValueStr )
+{
+    switch(aKeyDataType)
+    {
+        case MTD_CHAR_ID:
+        case MTD_VARCHAR_ID:
+            idlOS::memcpy( (void*)aValueStr,
+                        (void*)aValue,
+                        ID_SIZEOF(sdiValue) );
+            break;
+        case MTD_SMALLINT_ID:
+            aValueStr->mCharMax.length = idlOS::snprintf( (SChar*)aValueStr->mCharMax.value,
+                ID_SIZEOF(aValueStr),
+                "%"ID_INT32_FMT,
+                (SShort)aValue->mSmallintMax );
+            break;
+        case MTD_INTEGER_ID:
+            aValueStr->mCharMax.length = idlOS::snprintf( (SChar*)aValueStr->mCharMax.value,
+                ID_SIZEOF(aValueStr),
+                "%"ID_INT32_FMT,
+                (SInt)aValue->mIntegerMax );
+            break;
+        case MTD_BIGINT_ID:
+            aValueStr->mCharMax.length = idlOS::snprintf( (SChar*)aValueStr->mCharMax.value,
+                ID_SIZEOF(aValueStr),
+                "%"ID_INT64_FMT,
+                (SLong)aValue->mBigintMax );
+            break;
+        default :
+                // ¹ß»ıÇÏÁö ¾Ê´Â´Ù.
+            IDE_DASSERT(0);
+            IDE_RAISE(ERR_SHARD_REBUILD_ERROR);
+            break;
+    }
+    
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION( ERR_SHARD_REBUILD_ERROR )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SHARD_REBUILD_ERROR ) );
+    }
+    IDE_EXCEPTION_END;
+    
+    return IDE_FAILURE;
+}
+
+
+IDE_RC sdi::validateSMNForShardDDL( qcStatement * aStatement )
+{
+    ULong             sDataSMN = SDI_NULL_SMN;
+    sdiGlobalMetaInfo sGlobalMetaInfo = { ID_ULONG(0) };
+    
+    IDE_TEST( waitAndSetSMNForMetaNode( aStatement->mStatistics,
+                                        QC_SMI_STMT( aStatement ),
+                                        ( SMI_STATEMENT_NORMAL |
+                                        SMI_STATEMENT_SELF_TRUE |
+                                        SMI_STATEMENT_ALL_CURSOR ),
+                                        SDI_NULL_SMN,
+                                        &sDataSMN )
+            != IDE_SUCCESS );
+    
+    // Meta SMN of another transaction
+    IDE_TEST ( sdm::getGlobalMetaInfo ( &sGlobalMetaInfo ) != IDE_SUCCESS );
+
+    IDE_TEST_RAISE( sDataSMN != sGlobalMetaInfo.mShardMetaNumber,
+                    ERR_SMN_IS_INVALID);
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_SMN_IS_INVALID )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::validateSMNForShardDDL",
+                                  "ERR_SMN_IS_INVALID " ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::compareDataAndSessionSMN( qcStatement * aStatement )
+{
+    ULong sSessionSMN = ID_ULONG(0);
+    ULong sDataSMN    = ID_ULONG(0);
+
+    sDataSMN = getSMNForDataNode();
+    
+    if ( sdi::isShardCoordinator( aStatement ) == ID_TRUE )
+    {
+        // shardCoordinator using sessionSMN 
+        sSessionSMN = QCG_GET_SESSION_SHARD_META_NUMBER( aStatement );
+
+        IDE_TEST_RAISE( sDataSMN < sSessionSMN, ERR_INVALID_SMN );        
+        IDE_TEST_RAISE( sDataSMN > sSessionSMN, REBUILD_RETRY );        
+    }
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_INVALID_SMN  )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDI_SHARD_NOT_SAME_DATA_SESSION_SMN ));
+    }
+    IDE_EXCEPTION( REBUILD_RETRY )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SHARD_META_OUT_OF_DATE ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::checkReferenceObj( qcStatement * aStatement,
+                               SChar       * aNodeName )
+{
+    IDE_TEST( sdm::checkReferenceObj( aStatement,
+                                      aNodeName,
+                                      getSMNForDataNode() )
+              != IDE_SUCCESS);
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/* if one node name is $$N/A then they are not equal node */
+idBool sdi::isSameNode(SChar * aNodeName1, SChar * aNodeName2)
+{
+    idBool sResult = ID_FALSE;
+    
+    if ( (aNodeName1 != NULL) && (aNodeName2 != NULL) )
+    {
+        if ( ( SDI_IS_NULL_NAME(aNodeName1) != ID_TRUE ) && 
+            ( SDI_IS_NULL_NAME(aNodeName2) != ID_TRUE ) &&
+            idlOS::strncmp(aNodeName1, aNodeName2, SDI_NODE_NAME_MAX_SIZE) == 0 )
+        {
+            sResult = ID_TRUE;
+        }
+        else
+        {
+            sResult = ID_FALSE;
+        }
+    }
+    else
+    {
+        sResult = ID_FALSE;
+    }
+    return sResult;
+}
+
+
+
+IDE_RC sdi::shardExecTempSQLWithoutSession( SChar       * aSqlStr,
+                                            SChar       * aExecNodeName,
+                                            UInt          aDDLLockTimeout,
+                                            qciStmtType   aSQLStmtType )
+{
+    void              * sMmSession = NULL;
+    idBool              sIsAllocMmSession = ID_FALSE;
+
+    qciUserInfo         sUserInfo;
+
+    QCD_HSTMT           sHstmt;
+
+    qcStatement       * sStatement;
+
+    sdiClientInfo     * sClientInfo  = NULL;
+
+    UInt                sExecCount = 0;
+    qciStmtType         sStmtType;
+
+    smiStatement        sSmiStmt;
+    smiStatement      * sDummySmiStmt;
+    UInt                sSmiStmtFlag;
+    UInt                sStage = 0;
+
+    SChar               sSqlStr[QD_MAX_SQL_LENGTH + 1];
+
+    iduList           * sNodeList;
+    idBool              sIsAllocList = ID_FALSE;
+    idBool              sIsStmtAlloc = ID_FALSE;
+    idBool              sIsTransBegin  = ID_FALSE;
+    SChar             * sDummyPrepareSQL = (SChar*)"select 1 from dual";
+
+    smiTrans          * sTrans = NULL;
+    vSLong              sRowCnt = 0;
+    sdiLocalMetaInfo    sLocalMetaInfo;
+    
+    idlOS::memcpy( &sUserInfo,
+                   &sdiZookeeper::mUserInfo,
+                   ID_SIZEOF( qciUserInfo ) );
+
+    IDE_TEST( qci::mSessionCallback.mAllocInternalSessionWithUserInfo( &sMmSession,
+                                                                       (void*)&sUserInfo )
+              != IDE_SUCCESS );
+    IDE_TEST_RAISE( sMmSession == NULL, ERR_INVALID_CONDITION );
+    sIsAllocMmSession = ID_TRUE;
+
+    qci::mSessionCallback.mSetNewShardPIN( sMmSession );
+
+    qci::mSessionCallback.mSetShardMetaNumber( sMmSession,
+                                               sdi::getSMNForDataNode());
+
+    ideLog::log(IDE_SD_17,"shardExecTempDMLOrDCLWithOutSession: %s", aSqlStr);
+
+    sTrans     = qci::mSessionCallback.mGetTransWithBegin( sMmSession );
+    IDE_TEST_RAISE( sTrans == NULL, ERR_INVALID_CONDITION );
+    sIsTransBegin = ID_TRUE;
+
+    IDE_TEST( qcd::allocStmtNoParent( sMmSession,
+                                      ID_TRUE,  // dedicated mode
+                                      & sHstmt )
+              != IDE_SUCCESS );
+    sIsStmtAlloc = ID_TRUE;
+
+    IDE_TEST( qcd::getQcStmt( sHstmt,
+                              &sStatement )
+              != IDE_SUCCESS );
+
+    sStatement->session->mQPSpecific.mFlag &= ~QC_SESSION_TEMP_SQL_MASK;
+    sStatement->session->mQPSpecific.mFlag |= QC_SESSION_TEMP_SQL_TRUE;
+
+    IDE_TEST( qcd::prepare( sHstmt,
+                            NULL,
+                            NULL,
+                            & sStmtType,
+                            sDummyPrepareSQL,
+                            ID_SIZEOF(sDummyPrepareSQL),
+                            ID_TRUE )  // direct-execute mode
+              != IDE_SUCCESS );
+
+    if ( QCG_GET_SESSION_TRANSACTIONAL_DDL( sStatement) != ID_TRUE )
+    {
+        sStatement->session->mBakSessionProperty.mTransactionalDDL = 0;
+
+        idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
+                         "ALTER SESSION SET TRANSACTIONAL_DDL = 1 " );
+
+        IDE_TEST( qciMisc::runDCLforInternal( sStatement,
+                                              sSqlStr,
+                                              sStatement->session->mMmSession )
+                  != IDE_SUCCESS );
+    }
+    if ( QCG_GET_SESSION_GTX_LEVEL( sStatement ) < 2 )
+    {
+        sStatement->session->mBakSessionProperty.mGlobalTransactionLevel = QCG_GET_SESSION_GTX_LEVEL( sStatement );
+
+        idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
+                         "ALTER SESSION SET  GLOBAL_TRANSACTION_LEVEL = 2 " );
+
+        IDE_TEST( qciMisc::runDCLforInternal( sStatement,
+                                              sSqlStr,
+                                              sStatement->session->mMmSession )
+                  != IDE_SUCCESS );
+    }
+
+    if ( aDDLLockTimeout != 0 )
+    {
+        idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
+                         "ALTER SESSION SET DDL_LOCK_TIMEOUT = %"ID_INT32_FMT" ", aDDLLockTimeout);
+
+        IDE_TEST( qciMisc::runDCLforInternal( sStatement,
+                                              sSqlStr,
+                                              sStatement->session->mMmSession )
+                  != IDE_SUCCESS );
+    }
+
+    sDummySmiStmt = sTrans->getStatement();
+
+    sSmiStmtFlag = SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR;
+    IDE_TEST( sSmiStmt.begin( NULL,
+                              sDummySmiStmt,
+                              sSmiStmtFlag )
+              != IDE_SUCCESS );
+    sStage = 1;
+
+    QC_SMI_STMT(sStatement) = &sSmiStmt;
+
+    IDE_TEST( sdiZookeeper::getAliveNodeNameList( &sNodeList ) != IDE_SUCCESS );
+    sIsAllocList = ID_TRUE;
+
+    IDE_TEST( sdi::checkShardLinkerWithNodeList ( sStatement,
+                                                  QCG_GET_SESSION_SHARD_META_NUMBER( sStatement ),
+                                                  sTrans, 
+                                                  sNodeList ) != IDE_SUCCESS );
+    
+    IDE_TEST( sdi::getLocalMetaInfo( &sLocalMetaInfo ) != IDE_SUCCESS );
+    
+    sClientInfo = sStatement->session->mQPSpecific.mClientInfo;
+
+    // ÀüÃ¼ Node ´ë»óÀ¸·Î Meta Update ½ÇÇà
+    if ( sClientInfo != NULL )
+    {   
+        if (( idlOS::strMatch( sLocalMetaInfo.mNodeName,
+                               idlOS::strlen( sLocalMetaInfo.mNodeName ),
+                               aExecNodeName,
+                               idlOS::strlen( aExecNodeName )) == 0 ) &&
+            ( aSQLStmtType != QCI_STMT_MASK_MAX ))
+        {
+            // BUG-48616
+            switch ( qciMisc::getStmtType( aSQLStmtType ))
+            {
+                case QCI_STMT_MASK_DDL:
+                    IDE_TEST( qci::mSessionCallback.mSetShardInternalLocalOperation(
+                                  sStatement->session->mMmSession,
+                                  SDI_INTERNAL_OP_NORMAL ) 
+                              != IDE_SUCCESS );
+
+                    IDE_TEST( qciMisc::runDDLforInternalWithMmSession(
+                                  sStatement->mStatistics,
+                                  sStatement->session->mMmSession,
+                                  QC_SMI_STMT( sStatement ),
+                                  QC_EMPTY_USER_ID,
+                                  QCI_SESSION_INTERNAL_DDL_TRUE,
+                                  aSqlStr )
+                              != IDE_SUCCESS );
+                    break;
+                case QCI_STMT_MASK_SP:
+                case QCI_STMT_MASK_DML:
+                    IDE_TEST( qcg::runDMLforDDL( QC_SMI_STMT( sStatement ),
+                                                 aSqlStr,
+                                                 &sRowCnt ) != IDE_SUCCESS);
+                    break;
+                case QCI_STMT_MASK_DCL:
+                    IDE_TEST( qciMisc::runDCLforInternal( sStatement,
+                                                          aSqlStr,
+                                                          sStatement->session->mMmSession )
+                              != IDE_SUCCESS );
+                    break;
+                default:
+                    IDE_DASSERT(0);
+                    break;
+            }
+        }
+        else
+        {
+
+            IDE_TEST( sdi::shardExecDirectNested( sStatement,
+                                                  aExecNodeName,
+                                                  (SChar*)aSqlStr,
+                                                  (UInt) idlOS::strlen( aSqlStr ),
+                                                  SDI_INTERNAL_OP_NORMAL,
+                                                  &sExecCount)
+                      != IDE_SUCCESS );
+
+            IDE_TEST_RAISE( sExecCount != 1, ERR_REMOTE_EXECUTION );    
+        }
+    }
+
+    sStage = 0;
+    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+
+    sIsStmtAlloc = ID_FALSE;
+    IDE_TEST( qcd::freeStmt( sHstmt,
+                             ID_TRUE )  // free & drop
+              != IDE_SUCCESS );
+
+    IDE_TEST_RAISE( qci::mSessionCallback.mCommit( sMmSession, ID_FALSE )
+                    != IDE_SUCCESS, COMMIT_FAIL );
+    sIsTransBegin = ID_FALSE;
+
+    sIsAllocMmSession = ID_FALSE;
+    qci::mSessionCallback.mFreeInternalSession( sMmSession,
+                                                ID_TRUE /* aIsSuccess */ );
+
+    sIsAllocList = ID_FALSE;
+    sdiZookeeper::freeList( sNodeList, SDI_ZKS_LIST_NODENAME );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(COMMIT_FAIL)
+    {
+        ideLog::log( IDE_QP_0, "[Temporary SQL: COMMIT FAILURE] ERR-%05X : %s",
+                     E_ERROR_CODE(ideGetErrorCode()),
+                     ideGetErrorMsg(ideGetErrorCode()));
+    }
+    IDE_EXCEPTION( ERR_REMOTE_EXECUTION );
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_EXECUTE_REMOTE_SQL_FAILED, aSqlStr ) );
+    }
+    IDE_EXCEPTION(ERR_INVALID_CONDITION)
+    {
+        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                "sdi::shardExecTempSQLWithoutSession",
+                                "invliad condition"));
+    }
+    IDE_EXCEPTION_END;
+
+    if ( sStage > 0 )
+    {
+        switch ( sStage )
+        {
+            case 1:
+                ( void )sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+            default:
+                break;
+        }
+    }
+
+    if ( sIsStmtAlloc != ID_FALSE )
+    {
+        (void)qcd::freeStmt( sHstmt, ID_TRUE );
+    }
+
+    if ( sIsTransBegin == ID_TRUE )
+    {
+        (void)qci::mSessionCallback.mRollback( sMmSession, NULL, ID_FALSE );
+    }
+
+    if ( sIsAllocMmSession == ID_TRUE )
+    {
+        qci::mSessionCallback.mFreeInternalSession( sMmSession,
+                                                    ID_FALSE /* aIsSuccess */ );
+    }
+
+    if ( sIsAllocList == ID_TRUE )
+    {
+        sdiZookeeper::freeList( sNodeList, SDI_ZKS_LIST_NODENAME );
+    }
+
+    return IDE_FAILURE;
+}
+
+/* TASK-7219 Shard Transformer Refactoring */
+IDE_RC sdi::allocAndInitQuerySetList( qcStatement * aStatement )
+{
+    IDE_TEST( sdo::allocAndInitQuerySetList( aStatement )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::makeAndSetQuerySetList( qcStatement * aStatement,
+                                    qmsQuerySet * aQuerySet )
+{
+    IDE_TEST( sdo::makeAndSetQuerySetList( aStatement,
+                                           aQuerySet )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::setQuerySetListState( qcStatement  * aStatement,
+                                  qmsParseTree * aParseTree,
+                                  idBool       * aIsChanged )
+{
+    IDE_TEST( sdo::setQuerySetListState( aStatement,
+                                         aParseTree,
+                                         aIsChanged )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::unsetQuerySetListState( qcStatement * aStatement,
+                                    idBool        aIsChanged )
+{
+    IDE_TEST( sdo::unsetQuerySetListState( aStatement,
+                                           aIsChanged )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::setStatementFlagForShard( qcStatement * aStatement,
+                                      UInt          aFlag )
+{
+    IDE_TEST( sdo::setStatementFlagForShard( aStatement,
+                                             aFlag )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::isTransformNeeded( qcStatement * aStatement,
+                               idBool      * aIsTransformNeeded )
+{
+    IDE_TEST( sdo::isTransformNeeded( aStatement,
+                                      aIsTransformNeeded )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::isRebuildTransformNeeded( qcStatement * aStatement,
+                                      idBool      * aIsTransformNeeded )
+{
+    qcShardStmtType sStmtType = QC_STMT_SHARD_NONE;
+
+    sStmtType = aStatement->myPlan->parseTree->stmtShard;
+
+    switch ( sStmtType )
+    {
+        case QC_STMT_SHARD_NONE:
+        case QC_STMT_SHARD_ANALYZE:
+            IDE_TEST( sdo::isTransformNeeded( aStatement,
+                                              aIsTransformNeeded )
+                      != IDE_SUCCESS );
+            break;
+
+        case QC_STMT_SHARD_DATA:
+            IDE_RAISE( REBUILD_RETRY );
+            break;
+
+        case QC_STMT_SHARD_META:
+            *aIsTransformNeeded = ID_FALSE;
+            break;
+
+        default:
+            IDE_RAISE( ERR_INVALID_STMT_TYPE );
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( REBUILD_RETRY )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SHARD_META_OUT_OF_DATE ) );
+    }
+    IDE_EXCEPTION( ERR_INVALID_STMT_TYPE )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "sdi::isRebuildTransformNeeded",
+                                  "stmt type is invalid" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::setPrintInfoFromTransformAble( qcStatement * aStatement )
+{
+    IDE_TEST( sdo::setPrintInfoFromTransformAble( aStatement )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::raiseInvalidShardQueryError( qcStatement * aStatement,
+                                         qcParseTree * aParseTree )
+{
+    IDE_TEST( sdo::raiseInvalidShardQueryError( aStatement,
+                                                aParseTree )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::preAnalyzeQuerySet( qcStatement * aStatement,
+                                qmsQuerySet * aQuerySet,
+                                ULong         aSMN )
+{
+    IDE_TEST( sdo::preAnalyzeQuerySet( aStatement,
+                                       aQuerySet,
+                                       aSMN )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::preAnalyzeSubquery( qcStatement * aStatement,
+                                qtcNode     * aNode,
+                                ULong         aSMN )
+{
+    IDE_TEST( sdo::preAnalyzeSubquery( aStatement,
+                                       aNode,
+                                       aSMN )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::makeAndSetAnalysis( qcStatement * aSrcStatement,
+                                qcStatement * aDstStatement,
+                                qmsQuerySet * aDstQuerySet )
+{
+    IDE_TEST( sdo::makeAndSetAnalysis( aSrcStatement,
+                                       aDstStatement,
+                                       aDstQuerySet )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::allocAndCopyTableInfoList( qcStatement       * aStatement,
+                                       sdiTableInfoList  * aSrcTableInfoList,
+                                       sdiTableInfoList ** aDstTableInfoList )
+{
+    IDE_TEST( sdo::allocAndCopyTableInfoList( aStatement,
+                                              aSrcTableInfoList,
+                                              aDstTableInfoList )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::makeAndSetAnalyzeInfoFromStatement( qcStatement * aStatement )
+{
+    IDE_TEST( sdo::makeAndSetAnalyzeInfoFromStatement( aStatement )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::makeAndSetAnalyzeInfoFromParseTree( qcStatement     * aStatement,
+                                                qcParseTree     * aParseTree,
+                                                sdiAnalyzeInfo ** aAnalyzeInfo )
+{
+    IDE_TEST( sdo::makeAndSetAnalyzeInfoFromParseTree( aStatement,
+                                                       aParseTree,
+                                                       aAnalyzeInfo )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::makeAndSetAnalyzeInfoFromQuerySet( qcStatement     * aStatement,
+                                               qmsQuerySet     * aQuerySet,
+                                               sdiAnalyzeInfo ** aAnalyzeInfo )
+{
+    IDE_TEST( sdo::makeAndSetAnalyzeInfoFromQuerySet( aStatement,
+                                                      aQuerySet,
+                                                      aAnalyzeInfo )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::makeAndSetAnalyzeInfoFromObjectInfo( qcStatement     * aStatement,
+                                                 sdiObjectInfo   * aShardObjInfo,
+                                                 sdiAnalyzeInfo ** aAnalyzeInfo )
+{
+    IDE_TEST( sdo::makeAndSetAnalyzeInfoFromObjectInfo( aStatement,
+                                                        aShardObjInfo,
+                                                        aAnalyzeInfo )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::isShardParseTree( qcParseTree * aParseTree,
+                              idBool      * aIsShardParseTree )
+{
+    IDE_TEST( sdo::isShardParseTree( aParseTree,
+                                     aIsShardParseTree )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::isShardQuerySet( qmsQuerySet * aQuerySet,
+                             idBool      * aIsShardQuerySet,
+                             idBool      * aIsTransformAble )
+{
+    IDE_TEST( sdo::isShardQuerySet( aQuerySet,
+                                    aIsShardQuerySet,
+                                    aIsTransformAble )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::isShardObject( qcParseTree * aParseTree,
+                           idBool      * aIsShardObject )
+{
+    IDE_TEST( sdo::isShardObject( aParseTree,
+                                  aIsShardObject )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::isSupported( qmsQuerySet * aQuerySet,
+                         idBool      * aIsSupported )
+{
+    IDE_TEST( sdo::isSupported( aQuerySet,
+                                aIsSupported )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::setShardPlanStmtVariable( qcStatement    * aStatement,
+                                      qcShardStmtType  aStmtType,
+                                      qcNamePosition * aStmtPos )
+{
+    IDE_TEST( sdo::setShardPlanStmtVariable( aStatement,
+                                             aStmtType,
+                                             aStmtPos )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::setShardPlanCommVariable( qcStatement      * aStatement,
+                                      sdiAnalyzeInfo   * aAnalyzeInfo,
+                                      UShort             aParamCount,
+                                      UShort             aParamOffset,
+                                      qcShardParamInfo * aParamInfo )
+{
+    IDE_TEST( sdo::setShardPlanCommVariable( aStatement,
+                                             aAnalyzeInfo,
+                                             aParamCount,
+                                             aParamOffset,
+                                             aParamInfo )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::setShardStmtType( qcStatement * aStatement,
+                              qcStatement * aViewStatement )
+{
+    IDE_TEST( sdo::setShardStmtType( aStatement,
+                                     aViewStatement )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::propagateShardMetaNumber( qcSession * aSession )
+{
+    sdiClientInfo  * sClientInfo          = NULL;
+    sdiConnectInfo * sConnectInfo         = NULL;
+    ULong            sTargetSMN           = SDI_NULL_SMN;
+    UShort           i                    = 0;
+    idBool           sFail                = ID_FALSE;
+
+    IDE_DASSERT( aSession != NULL );
+
+    sClientInfo = aSession->mQPSpecific.mClientInfo;
+    if ( sClientInfo != NULL )
+    {
+        sTargetSMN = sClientInfo->mTargetShardMetaNumber;
+
+        sConnectInfo = sClientInfo->mConnectInfo;
+        for ( i = 0; i < sClientInfo->mCount; i++, sConnectInfo++ )
+        {
+            if ( ( sConnectInfo->mNodeInfo.mSMN == sTargetSMN ) &&
+                 ( sConnectInfo->mShardMetaNumber != sTargetSMN ) )
+            {
+                if ( sConnectInfo->mDbc != NULL )
+                {
+                    if ( sdl::setTargetShardMetaNumber( sClientInfo,
+                                                        sConnectInfo )
+                         == IDE_SUCCESS )
+                    {
+                        if ( sdl::setConnAttr( sConnectInfo,
+                                               SDL_ALTIBASE_SHARD_META_NUMBER,
+                                               sTargetSMN,
+                                               NULL,
+                                               & sConnectInfo->mLinkFailure )
+                             == IDE_SUCCESS )
+                        {
+                            sConnectInfo->mShardMetaNumber = sTargetSMN;
+                        }
+                        else
+                        {
+                            sFail = ID_TRUE;
+                        }
+                    }
+                    else
+                    {
+                        sFail = ID_TRUE;
+                    }
+                }
+                else
+                {
+                    /* DBC == NULL, Success case */
+                    sConnectInfo->mShardMetaNumber = sTargetSMN;
+                }
+            }
+            else
+            {
+                /* sConnectInfo->mShardMetaNumber == sTargetSMN
+                 * Nothing to do */
+            }
+        } /* FOR sConnectInfo++ */
+    }
+    else
+    {
+        /* sClientInfo == NULL
+         * Nothing to do */
+    }
+
+    IDE_TEST( sFail == ID_TRUE );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    IDE_PUSH();
+
+    sConnectInfo = sClientInfo->mConnectInfo;
+    for ( i = 0; i < sClientInfo->mCount; i++, sConnectInfo++ )
+    {
+        if ( sConnectInfo->mShardMetaNumber != sTargetSMN )
+        {
+            if ( sConnectInfo->mDbc != NULL )
+            {
+                sConnectInfo->mLinkFailure = ID_TRUE;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    IDE_POP();
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::propagateRebuildShardMetaNumber( qcSession * aSession )
+{
+    sdiClientInfo  * sClientInfo          = NULL;
+    sdiConnectInfo * sConnectInfo         = NULL;
+    ULong            sTargetSMN           = SDI_NULL_SMN;
+    ULong            sSentSMN             = SDI_NULL_SMN;
+    UShort           i                    = 0;
+    idBool           sFail                = ID_FALSE;
+
+    IDE_DASSERT( aSession != NULL );
+
+    sClientInfo = aSession->mQPSpecific.mClientInfo;
+    if ( sClientInfo != NULL )
+    {
+        sTargetSMN = sClientInfo->mTargetShardMetaNumber;
+
+        sConnectInfo = sClientInfo->mConnectInfo;
+        for ( i = 0; i < sClientInfo->mCount; i++, sConnectInfo++ )
+        {
+            sSentSMN = PDL_MAX( sConnectInfo->mShardMetaNumber,
+                                sConnectInfo->mRebuildShardMetaNumber );
+            if ( ( sConnectInfo->mNodeInfo.mSMN == sTargetSMN ) &&
+                 ( sSentSMN != sTargetSMN ) )
+            {
+                if ( sConnectInfo->mDbc != NULL )
+                {
+                    if ( sdl::setTargetShardMetaNumber( sClientInfo,
+                                                        sConnectInfo )
+                         == IDE_SUCCESS )
+                    {
+                        if ( sdl::setConnAttr( sConnectInfo,
+                                               SDL_ALTIBASE_REBUILD_SHARD_META_NUMBER,
+                                               sTargetSMN,
+                                               NULL,
+                                               & sConnectInfo->mLinkFailure )
+                             == IDE_SUCCESS )
+                        {
+                            sConnectInfo->mRebuildShardMetaNumber = sTargetSMN;
+                        }
+                        else
+                        {
+                            sFail = ID_TRUE;
+                        }
+                    }
+                    else
+                    {
+                        sFail = ID_TRUE;
+                    }
+                }
+                else
+                {
+                    /* DBC == NULL, Success case */
+                    sConnectInfo->mRebuildShardMetaNumber = sTargetSMN;
+                }
+            }
+            else
+            {
+                /* sConnectInfo->mShardMetaNumber == sTargetSMN
+                 * Nothing to do */
+            }
+        } /* FOR sConnectInfo++ */
+    }
+    else
+    {
+        /* sClientInfo == NULL
+         * Nothing to do */
+    }
+
+    IDE_TEST( sFail == ID_TRUE );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    sConnectInfo = sClientInfo->mConnectInfo;
+    for ( i = 0; i < sClientInfo->mCount; i++, sConnectInfo++ )
+    {
+        sSentSMN = PDL_MAX( sConnectInfo->mShardMetaNumber,
+                            sConnectInfo->mRebuildShardMetaNumber );
+        if ( sSentSMN != sTargetSMN )
+        {
+            if ( sConnectInfo->mDbc != NULL )
+            {
+                sConnectInfo->mLinkFailure = ID_TRUE;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    return IDE_FAILURE;
+}
+
+idBool sdi::isReshardOccurred( ULong aSessionSMN,
+                               ULong aLastSessionSMN )
+{
+    /* Meta+Data ±¸Á¶ (TC Shard1) ¿¡¼­´Â FALSE ¸¦ ¹İÇÑÇØ¾ß ÇÑ´Ù.
+     *  SHARD_ENABLE=0 ÀÎ °æ¿ì Shard Meta Á¤º¸°¡ ¾ø±â¶§¹®¿¡ Resharding ÇÒ¼ö ¾ø´Ù. */
+    return ( ( SDU_SHARD_ENABLE == 1 ) &&
+             ( aLastSessionSMN != aSessionSMN ) )
+           ? ID_TRUE
+           : ID_FALSE;
+}
+
+IDE_RC sdi::makeShardSession( qcSession             * aSession,
+                              void                  * aDkiSession,
+                              smiTrans              * aTrans,
+                              idBool                  aIsShardMetaChanged,
+                              ULong                   aSessionSMN,
+                              ULong                   aLastSessionSMN,
+                              sdiRebuildPropaOption   aRebuildPropaOpt,
+                              idBool                  aIsPartialCoord )
+{
+    UInt sShardSessionType = SDI_SESSION_TYPE_USER;
+
+    if ( aSession->mQPSpecific.mClientInfo != NULL )
+    {
+        IDE_TEST_RAISE( aSessionSMN < aLastSessionSMN,
+                        ErrInvalidSMN );
+    }
+
+    sShardSessionType = qci::mSessionCallback.mGetShardSessionType( aSession->mMmSession );
+        
+    if ( isReshardOccurred( aSessionSMN, aLastSessionSMN ) == ID_TRUE )
+    {
+        /* TASK-7219 Non-shard DML
+         * Partial coordinator¿¡ ÀÇÇØ »ı¼ºµÈ client info¸¦ °í·ÁÇÑ´Ù.
+         * Partial coordinator´Â non-shard DML statementÀÇ execution ½Ã(first init) »ı¼ºµÉ ¼ö ÀÖ°í,
+         * ÀÌ·Î ÀÎÇØ ÀÌ¹Ì »ı¼ºµÇ¾î ÀÖ´Â °æ¿ì
+         *     1. ±×´ë·Î »ç¿ëÇÏ°Å³ª ( isReshardOccured == false )
+         *     2. °»½ÅÇÑ´Ù. ( isReshardOccured == true )
+         * ÀÏ¹İ »óÈ²(isReshardOccured == false) ¿¡¼­´Â
+         * isPartialCoordinator()¿¡ ÀÇÇØ °áÁ¤µÇ¾î Àü´ŞµÈ aIsPartialCoord¿¡ ÀÇÇØ
+         * initializeSession()ÀÇ ¼öÇà¿©ºÎ°¡ °áÁ¤µÈ´Ù.
+         *
+         */
+        if ( ( sShardSessionType == SDI_SESSION_TYPE_USER ) ||
+             ( aIsPartialCoord == ID_TRUE ) )
+        {
+            if ( aSession->mQPSpecific.mClientInfo == NULL )
+            {
+                IDE_TEST( initializeSession( aSession,
+                                             aDkiSession,
+                                             aTrans,
+                                             aIsShardMetaChanged,
+                                             aLastSessionSMN )
+                          != IDE_SUCCESS );
+            }
+
+            if ( aSession->mQPSpecific.mClientInfo == NULL )
+            {
+                IDE_TEST( initializeSession( aSession,
+                                             aDkiSession,
+                                             aTrans,
+                                             aIsShardMetaChanged,
+                                             aSessionSMN )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                IDE_TEST( updateSession( aSession,
+                                         aDkiSession,
+                                         aTrans,
+                                         aIsShardMetaChanged,
+                                         aSessionSMN )
+                          != IDE_SUCCESS );
+
+                if ( aRebuildPropaOpt == SDI_REBUILD_SMN_PROPAGATE )
+                {
+                    IDE_TEST( propagateRebuildShardMetaNumber( aSession )
+                              != IDE_SUCCESS );
+                }
+
+            }
+        }
+        else
+        {
+            if ( aSession->mQPSpecific.mClientInfo != NULL )
+            {
+                IDE_TEST( updateSession( aSession,
+                                         aDkiSession,
+                                         aTrans,
+                                         aIsShardMetaChanged,
+                                         aSessionSMN )
+                          != IDE_SUCCESS );
+
+                if ( aRebuildPropaOpt == SDI_REBUILD_SMN_PROPAGATE )
+                {
+                    IDE_TEST( propagateRebuildShardMetaNumber( aSession )
+                              != IDE_SUCCESS );
+                }
+            }
+        }
+    }
+    else
+    {
+        if ( ( sShardSessionType == SDI_SESSION_TYPE_USER ) ||
+             ( aIsPartialCoord == ID_TRUE ) )
+        {
+            if ( aSession->mQPSpecific.mClientInfo == NULL )
+            {
+                IDE_TEST( initializeSession( aSession,
+                                             aDkiSession,
+                                             aTrans,
+                                             ID_FALSE,
+                                             aSessionSMN )
+                          != IDE_SUCCESS );
+            }
+        }
+        else
+        {
+            /* Nothing to do. */
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ErrInvalidSMN )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SESSION_SMN_REVERSED ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::checkTargetSMN( sdiClientInfo * aClientInfo, sdiConnectInfo * aConnectInfo )
+{
+    IDE_TEST_RAISE( ( ( aClientInfo->mTargetShardMetaNumber
+                         != aConnectInfo->mRebuildShardMetaNumber ) &&
+                      ( aClientInfo->mTargetShardMetaNumber
+                         != aConnectInfo->mShardMetaNumber ) ),
+                    ERR_SMN_MISMATCH );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_SMN_MISMATCH )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_FAILED_TO_PROPAGATE_SHARD_META_NUMBER ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+// TASK-7244 PSM partial rollback in Sharding
+IDE_RC sdi::rollbackForPSM ( qcStatement   * aStatement,
+                             sdiClientInfo * aClientInfo )
+{
+    sdiConnectInfo * sConnectInfo = NULL;
+    UInt i;
+
+    if ( aClientInfo != NULL )
+    {
+        sConnectInfo = aClientInfo->mConnectInfo;
+
+        for ( i = 0; i < aClientInfo->mCount; i++, sConnectInfo++ )
+        {
+            if ( (sConnectInfo->mFlag & SDI_CONNECT_PSM_SVP_SET_MASK) == SDI_CONNECT_PSM_SVP_SET_TRUE )
+            {
+                if ( sdi::rollback( sConnectInfo,
+                                    SAVEPOINT_FOR_SHARD_GLOBAL_PROC_PARTIAL_ROLLBACK )
+                     != IDE_SUCCESS )
+                {
+                    sdi::setTransactionBroken( QCG_GET_SESSION_IS_AUTOCOMMIT( aStatement ),
+                                               (void*)QCG_GET_DATABASE_LINK_SESSION( aStatement ),
+                                               QC_SMI_STMT(aStatement)->mTrans );
+                }
+            }
+        }
+    }
+
+    return IDE_SUCCESS;
+}
+
+// TASK-7244 PSM partial rollback in Sharding
+IDE_RC sdi::clearPsmSvp( sdiClientInfo * aClientInfo )
+{
+    UInt i;
+    sdiConnectInfo * sConnectInfo = NULL;
+
+    if ( aClientInfo != NULL )
+    {
+        sConnectInfo = aClientInfo->mConnectInfo;
+
+        for ( i = 0; i < aClientInfo->mCount; i++, sConnectInfo++ )
+        {
+            sConnectInfo->mFlag &= ~SDI_CONNECT_PSM_SVP_SET_MASK;
+            sConnectInfo->mFlag |= SDI_CONNECT_PSM_SVP_SET_FALSE;
+        }
+    }
+
+    return IDE_SUCCESS;
+}
+
+IDE_RC sdi::checkShardObjectForDDL( qcStatement * aQcStmt,
+                                    sdiDDLType    aDDLType )
+{
+    qdTableParseTree  * sQdParseTree = NULL;
+    qsProcParseTree   * sQsParseTree = NULL;
+    qdIndexParseTree  * sIndexParseTree = NULL;
+    qsDropParseTree   * sProcDropParseTree = NULL;
+    qdDropParseTree   * sDropParseTree = NULL;
+    qdDisjoinTableParseTree * sDisJoinParseTree = NULL;
+
+    qcNamePosition    * sUserNamePos = NULL;
+    qcNamePosition    * sObjectNamePos = NULL;
+
+    switch( aDDLType )
+    {
+        case SDI_DDL_TYPE_TABLE:
+            sQdParseTree = (qdTableParseTree *)aQcStmt->myPlan->parseTree;
+            sUserNamePos = &(sQdParseTree->userName);
+            sObjectNamePos = &(sQdParseTree->tableName);
+            break;
+
+        case SDI_DDL_TYPE_PROCEDURE:
+            sQsParseTree = (qsProcParseTree *)aQcStmt->myPlan->parseTree;
+            sUserNamePos = &(sQsParseTree->userNamePos);
+            sObjectNamePos = &(sQsParseTree->procNamePos);
+            break;
+
+        case SDI_DDL_TYPE_INDEX:
+            sIndexParseTree = (qdIndexParseTree *)aQcStmt->myPlan->parseTree;
+            sUserNamePos = &(sIndexParseTree->userNameOfTable);
+            sObjectNamePos = &(sIndexParseTree->tableName);
+            break;
+
+        case SDI_DDL_TYPE_PROCEDURE_DROP:
+            sProcDropParseTree = (qsDropParseTree*)aQcStmt->myPlan->parseTree;
+            sUserNamePos = &(sProcDropParseTree->userNamePos);
+            sObjectNamePos = &(sProcDropParseTree->procNamePos);
+            break;
+
+        case SDI_DDL_TYPE_DROP:
+            sDropParseTree = (qdDropParseTree*)aQcStmt->myPlan->parseTree;
+            sUserNamePos = &(sDropParseTree->userName);
+            sObjectNamePos = &(sDropParseTree->objectName);
+            break;
+
+        case SDI_DDL_TYPE_DISJOIN:
+            sDisJoinParseTree = (qdDisjoinTableParseTree*)aQcStmt->myPlan->parseTree;
+            sUserNamePos = &(sDisJoinParseTree->userName);
+            sObjectNamePos = &(sDisJoinParseTree->tableName);
+
+        default:
+            IDE_CONT( NORMAL_EXIT );
+            break;
+    }
+
+    IDE_TEST( checkShardObjectForDDLInternal( aQcStmt,
+                                              *sUserNamePos,
+                                              *sObjectNamePos ) != IDE_SUCCESS );
+
+    IDE_EXCEPTION_CONT( NORMAL_EXIT );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::checkShardObjectForDDLInternal( qcStatement *    aQcStmt,
+                                            qcNamePosition   aUserNamePos,
+                                            qcNamePosition   aObjectNamePos )
+{
+    qcNamePosition    * sUserNamePos = NULL;
+    qcNamePosition    * sObjectNamePos = NULL;
+    qcNamePosition      sBakObjectNamePos;
+    SChar               sUserName[QC_MAX_OBJECT_NAME_LEN + 1] = {0,};
+    SChar               sObjectName[QC_MAX_OBJECT_NAME_LEN + 1] = {0,};
+    UInt                sUserID = 0;
+    sdiTableInfo        sObjectInfo;
+    sdiGlobalMetaInfo   sMetaNodeInfo = { ID_ULONG(0) };
+    ULong               sSMN = 0;
+    SInt                sState = 0;
+    smiTrans            sSmiTrans;
+    smiStatement      * sDummySmiStmt = NULL;
+    smiStatement      * sSmiStmtOrg = NULL;
+    smiStatement        sSmiStmt;
+    UInt                sSmiStmtFlag = 0;
+    idBool              sIsObjectFound = ID_FALSE;
+
+    sUserNamePos = &aUserNamePos;
+    sObjectNamePos = &aObjectNamePos;
+
+    if( ( SDU_SHARD_ENABLE != 1 ) ||
+        ( sdi::checkMetaCreated() == ID_FALSE ) ||
+        ( gShardUserID == ID_UINT_MAX ) ||  /* metaCreate µµÁß È£Ãâ ÇÏ´Â °æ¿ì ¶§¹®¿¡ Ãß°¡ */
+        ( QCG_GET_SESSION_IS_SHARD_INTERNAL_LOCAL_OPERATION( aQcStmt ) == ID_TRUE ) )
+    {
+        IDE_CONT( NORMAL_EXIT );
+    }
+
+    /* set UserName */
+    if ( (sUserNamePos->size) > 0 && (sUserNamePos->size <= QC_MAX_OBJECT_NAME_LEN ) )
+    {
+        QC_STR_COPY( sUserName, *sUserNamePos );
+    }
+    else
+    {
+        sUserID = QCG_GET_SESSION_USER_ID(aQcStmt);
+        IDE_TEST(qciMisc::getUserName(aQcStmt, sUserID, sUserName) != IDE_SUCCESS);
+    }
+
+    if( idlOS::strMatch( sUserName, idlOS::strlen( sUserName ), "SYS_SHARD", 9 ) == 0 )
+    {
+        /* ÇØ´ç object°¡ SYS_SHARD userÀÇ °ÍÀÏ °æ¿ì ½ÇÆĞÃ³¸® ÇØ¾ßÇÑ´Ù. */
+        IDE_RAISE( ERR_SHARD_OBJECT );
+    }
+
+    /* set ObjectName */
+    if ( (sObjectNamePos->size > 0) && (sObjectNamePos->size <= QC_MAX_OBJECT_NAME_LEN ) )
+    {
+        if ( idlOS::strncmp( sObjectNamePos->stmtText + sObjectNamePos->offset,
+                             SDI_BACKUP_TABLE_PREFIX,
+                             idlOS::strlen( SDI_BACKUP_TABLE_PREFIX ) ) == 0 )
+        {
+            /* _BAK_ Å×ÀÌºíÃ³¸® */
+            sBakObjectNamePos = *sObjectNamePos;
+            sBakObjectNamePos.offset += 5;
+            sBakObjectNamePos.size -= 5;
+
+            QC_STR_COPY( sObjectName, sBakObjectNamePos );
+        }
+        else
+        {
+            QC_STR_COPY( sObjectName, *sObjectNamePos );
+        }
+    }
+
+    IDE_TEST( sSmiTrans.initialize() != IDE_SUCCESS );
+    sState = 1;
+
+    IDE_TEST( sSmiTrans.begin( &sDummySmiStmt,
+                               aQcStmt->mStatistics )
+              != IDE_SUCCESS );
+    sState = 2;
+
+    sSmiStmtFlag &= ~SMI_STATEMENT_MASK;
+    sSmiStmtFlag |= SMI_STATEMENT_UNTOUCHABLE;
+
+    sSmiStmtFlag &= ~SMI_STATEMENT_CURSOR_MASK;
+    sSmiStmtFlag |= SMI_STATEMENT_MEMORY_CURSOR;
+
+    sSmiStmtFlag &= ~SMI_TRANS_GCTX_MASK;
+    sSmiStmtFlag |= SMI_TRANS_GCTX_ON;
+
+    IDE_TEST( sSmiStmt.begin( aQcStmt->mStatistics, sDummySmiStmt, sSmiStmtFlag )
+              != IDE_SUCCESS );
+    sState = 3;
+
+    /* swap smistatement */
+    qcg::getSmiStmt( aQcStmt, &sSmiStmtOrg );
+    qcg::setSmiStmt( aQcStmt, &sSmiStmt );
+    sState = 4;
+
+    IDE_TEST( sdm::getGlobalMetaInfoCore( &sSmiStmt, &sMetaNodeInfo ) != IDE_SUCCESS );
+
+    sSMN = sMetaNodeInfo.mShardMetaNumber;
+
+    IDE_TEST( sdm::getTableInfo( &sSmiStmt,
+                                 sUserName,
+                                 sObjectName,
+                                 sSMN,
+                                 &sObjectInfo,
+                                 &sIsObjectFound )
+              != IDE_SUCCESS );
+
+    IDE_TEST_RAISE( sIsObjectFound == ID_TRUE, ERR_SHARD_OBJECT );
+
+    /* restore */
+    sState = 3;
+    qcg::setSmiStmt( aQcStmt, sSmiStmtOrg );
+
+    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS )!= IDE_SUCCESS );
+    sState = 2;
+
+    sState = 1;
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
+
+    sState = 0;
+    IDE_TEST( sSmiTrans.destroy( aQcStmt->mStatistics ) != IDE_SUCCESS );
+
+    IDE_EXCEPTION_CONT( NORMAL_EXIT );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(ERR_SHARD_OBJECT)
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDI_SHARD_OBJECT_CANNOT_EXEC_DDL ) );
+    }
+    IDE_EXCEPTION_END;
+
+    switch( sState )
+    {
+        case 4:
+            qcg::setSmiStmt( aQcStmt, sSmiStmtOrg );
+        case 3:
+            (void)sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+        case 2:
+            (void)sSmiTrans.rollback();
+        case 1:
+            (void)sSmiTrans.destroy( aQcStmt->mStatistics );
+        case 0:
+        default:
+            break;
+    }
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::checkShardReplication( qcStatement * aQcStmt )
+{
+    qriParseTree      * sParseTree = NULL;
+    sdiReplicaSetInfo   sReplicaSetInfo;
+    ULong               sSMN = 0;
+    SChar               sReplName[QC_MAX_NAME_LEN + 1] = {0,};
+    UInt                i = 0;
+
+    /* 1. ÇöÀç sharding È¯°æÀÎÁö Ã¼Å©ÇÑ´Ù. */
+    if( ( SDU_SHARD_ENABLE != 1 ) ||
+        ( sdi::checkMetaCreated() == ID_FALSE ) ||
+        ( gShardUserID == ID_UINT_MAX ) ||  //metaCreate µµÁß È£Ãâ ÇÏ´Â °æ¿ì¸¦ Á¦¿ÜÇÏ±â À§ÇØ Ãß°¡
+        ( QCG_GET_SESSION_IS_SHARD_INTERNAL_LOCAL_OPERATION( aQcStmt ) == ID_TRUE ) )
+    {
+        IDE_CONT( NORMAL_EXIT );
+    }
+
+    /* 2. ±¸¹®¿¡¼­ replication ÀÌ¸§À» °¡Á®¿Â´Ù. */
+    sParseTree = (qriParseTree *)aQcStmt->myPlan->parseTree;
+    QC_STR_COPY( sReplName, sParseTree->replName );
+
+    /* 3. metaÀÇ replicaSetÀ» °¡Á®¿Â´Ù. */
+    sSMN = sdi::getSMNForDataNode();
+    IDE_TEST( sdm::getAllReplicaSetInfoSortedByPName( QC_SMI_STMT( aQcStmt ),
+                                                      &sReplicaSetInfo,
+                                                      sSMN )
+              != IDE_SUCCESS );
+
+    /* 4. replicaSetÀ» ¼øÈ¸ÇÏ¸é¼­ ÇØ´çÇÏ´Â ÀÌ¸§ÀÇ replicationÀÌ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù. */
+    for( i = 0; i < sReplicaSetInfo.mCount; i++ )
+    {
+        if( idlOS::strMatch( sReplName,
+                             idlOS::strlen( sReplName ),
+                             sReplicaSetInfo.mReplicaSets[i].mFirstReplName,
+                             idlOS::strlen( sReplicaSetInfo.mReplicaSets[i].mFirstReplName ) ) == 0 )
+        {
+            IDE_RAISE( ERR_SHARD_REPLICATION );
+        }
+
+        if( idlOS::strMatch( sReplName,
+                             idlOS::strlen( sReplName ),
+                             sReplicaSetInfo.mReplicaSets[i].mSecondReplName,
+                             idlOS::strlen( sReplicaSetInfo.mReplicaSets[i].mSecondReplName ) ) == 0 )
+        {
+            IDE_RAISE( ERR_SHARD_REPLICATION );
+        }
+
+        /* Â÷ÈÄ failover project·Î ½Ã½ºÅÛ¿¡¼­ »ç¿ëÇÒ replicationÀÌ Ãß°¡µÉ °æ¿ì
+         * ÇØ´ç replicationµµ Ã¼Å©ÇØ¾ß ÇÑ´Ù. */
+    }
+
+    IDE_EXCEPTION_CONT( NORMAL_EXIT );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_SHARD_REPLICATION )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDI_SHARD_REPL_CANNOT_EXEC_DCLDDL ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/* ÇØ´çÇÔ¼ö´Â qdsd::resetShardMeta¿Í ³»¿ëÀÌ À¯»ç */
+IDE_RC sdi::resetShardMetaWithDummyStmt()
+{
+    smiTrans       sTrans;
+    smiStatement   sSmiStmt;
+    smiStatement * sDummySmiStmt = NULL;
+    SChar          sSqlStr[QD_MAX_SQL_LENGTH + 1];
+    vSLong         sRowCnt       = 0;
+    UInt           sStage        = 0;
+    UInt           sSmiStmtFlag  = 0;
+
+    sSmiStmtFlag &= ~SMI_STATEMENT_MASK;
+    sSmiStmtFlag |= SMI_STATEMENT_NORMAL;
+
+    sSmiStmtFlag &= ~SMI_STATEMENT_CURSOR_MASK;
+    sSmiStmtFlag |= SMI_STATEMENT_MEMORY_CURSOR;
+
+    IDE_TEST( sTrans.initialize() != IDE_SUCCESS );
+    sStage = 1;
+
+    IDE_TEST( sTrans.begin( &sDummySmiStmt,
+                            NULL,
+                            ( SMI_ISOLATION_NO_PHANTOM     |
+                              SMI_TRANSACTION_NORMAL       |
+                              SMI_TRANSACTION_REPL_DEFAULT |
+                              SMI_COMMIT_WRITE_NOWAIT ) )
+              != IDE_SUCCESS );
+    sStage = 2;
+
+    IDE_TEST( sSmiStmt.begin( NULL,
+                              sDummySmiStmt,
+                              ( SMI_STATEMENT_NORMAL |
+                                SMI_STATEMENT_MEMORY_CURSOR ) )
+              != IDE_SUCCESS );
+    sStage = 3;
+
+    idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
+                     "DELETE FROM SYS_SHARD.NODES_ " );
+
+    IDE_TEST( qciMisc::runDMLforDDL( &sSmiStmt,
+                                     sSqlStr,
+                                     &sRowCnt )
+              != IDE_SUCCESS );
+
+    idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
+                     "DELETE FROM SYS_SHARD.OBJECTS_ " );
+
+    IDE_TEST( qciMisc::runDMLforDDL( &sSmiStmt,
+                                     sSqlStr,
+                                     &sRowCnt )
+              != IDE_SUCCESS );
+
+    idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
+                     "DELETE FROM SYS_SHARD.RANGES_ " );
+
+    IDE_TEST( qciMisc::runDMLforDDL( &sSmiStmt,
+                                     sSqlStr,
+                                     &sRowCnt )
+              != IDE_SUCCESS );
+
+    idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
+                     "DELETE FROM SYS_SHARD.CLONES_ " );
+
+    IDE_TEST( qciMisc::runDMLforDDL( &sSmiStmt,
+                                     sSqlStr,
+                                     &sRowCnt )
+              != IDE_SUCCESS );
+
+    idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
+                     "DELETE FROM SYS_SHARD.SOLOS_ " );
+
+    IDE_TEST( qciMisc::runDMLforDDL( &sSmiStmt,
+                                     sSqlStr,
+                                     &sRowCnt )
+              != IDE_SUCCESS );
+
+    idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
+                     "DELETE FROM SYS_SHARD.REPLICA_SETS_ " );
+
+    IDE_TEST( qciMisc::runDMLforDDL( &sSmiStmt,
+                                     sSqlStr,
+                                     &sRowCnt )
+              != IDE_SUCCESS );
+
+    idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
+                     "DELETE FROM SYS_SHARD.FAILOVER_HISTORY_ " );
+
+    IDE_TEST( qciMisc::runDMLforDDL( &sSmiStmt,
+                                     sSqlStr,
+                                     &sRowCnt )
+              != IDE_SUCCESS );
+
+    /* SMNÀº ÀÏ´Ü °Çµå¸®Áö ¾Ê´Â´Ù. */
+    //sdi::setSMNCacheForMetaNode( ID_ULONG(1) );
+    //sdi::setSMNForDataNode( ID_ULONG(1) );
+
+    // reset shard sequence
+    IDE_TEST( qdsd::resetShardSequence( &sSmiStmt,
+                                        (SChar*)"NEXT_NODE_ID" )
+              != IDE_SUCCESS );
+
+    IDE_TEST( qdsd::resetShardSequence( &sSmiStmt,
+                                        (SChar*)"NEXT_SHARD_ID" )
+              != IDE_SUCCESS );
+
+    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS )
+              != IDE_SUCCESS );
+    sStage = 2;
+
+    IDE_TEST( sTrans.commit() != IDE_SUCCESS );
+    sStage = 1;
+
+    sStage = 0;
+    IDE_TEST( sTrans.destroy( NULL ) != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    switch ( sStage )
+    {
+        case 3:
+            ( void )sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+        case 2:
+            ( void )sTrans.rollback();
+        case 1:
+            ( void )sTrans.destroy( NULL );
+        default:
+            break;
+    }
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::closeSessionForShardDrop( qcStatement * aQcStmt )
+{
+    smiTrans        sTrans;
+    smiStatement    sSmiStmt;
+    smiStatement  * sDummySmiStmt = NULL;
+    sdiDatabaseInfo sShardDBInfo;
+    SChar           sSqlStr[QD_MAX_SQL_LENGTH + 1];
+    UInt            sStage        = 0;
+    UInt            sSmiStmtFlag  = 0;
+
+    sSmiStmtFlag &= ~SMI_STATEMENT_MASK;
+    sSmiStmtFlag |= SMI_STATEMENT_NORMAL;
+
+    sSmiStmtFlag &= ~SMI_STATEMENT_CURSOR_MASK;
+    sSmiStmtFlag |= SMI_STATEMENT_MEMORY_CURSOR;
+
+    sShardDBInfo = sdi::getShardDBInfo();
+
+    IDE_TEST( sTrans.initialize() != IDE_SUCCESS );
+    sStage = 1;
+
+    IDE_TEST( sTrans.begin( &sDummySmiStmt,
+                            NULL,
+                            ( SMI_ISOLATION_NO_PHANTOM     |
+                              SMI_TRANSACTION_NORMAL       |
+                              SMI_TRANSACTION_REPL_DEFAULT |
+                              SMI_COMMIT_WRITE_NOWAIT ) )
+              != IDE_SUCCESS );
+    sStage = 2;
+
+    IDE_TEST( sSmiStmt.begin( aQcStmt->mStatistics,
+                              QC_SMI_STMT( aQcStmt ),
+                              ( SMI_STATEMENT_NORMAL |
+                                SMI_STATEMENT_ALL_CURSOR ) )
+              != IDE_SUCCESS );
+    sStage = 3;
+
+    idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
+                     "ALTER DATABASE %s SESSION CLOSE ALL", sShardDBInfo.mDBName );
+
+    /* º°µµÀÇ tx¸¦ ¿­¾î Ã³¸®ÇÏ¹Ç·Î ±âÁ¸ statementÀÇ mMmSession Á¤º¸¸¦ »õ statment¿¡ ¿¬°áÇØ¾ß ÇÑ´Ù. */
+    IDE_TEST( qciMisc::runDDLforInternalWithMmSession( sTrans.getStatistics(),
+                                                       aQcStmt->session->mMmSession,
+                                                       &sSmiStmt,
+                                                       QC_EMPTY_USER_ID,
+                                                       QCI_SESSION_INTERNAL_DDL_TRUE,
+                                                       sSqlStr )
+              != IDE_SUCCESS );
+
+    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS )
+              != IDE_SUCCESS );
+    sStage = 2;
+
+    IDE_TEST( sTrans.commit() != IDE_SUCCESS );
+    sStage = 1;
+
+    sStage = 0;
+    IDE_TEST( sTrans.destroy( NULL ) != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    switch ( sStage )
+    {
+        case 3:
+            ( void )sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+        case 2:
+            ( void )sTrans.rollback();
+        case 1:
+            ( void )sTrans.destroy( NULL );
+        default:
+            break;
+    }
+
+    return IDE_FAILURE;
+}
+
+// TASK-7219 Non-shard DML
+IDE_RC sdi::getParseTreeAnalysis( qcParseTree       * aParseTree,
+                                  sdiShardAnalysis ** aAnalysis )
+{
+    IDE_TEST( sda::getParseTreeAnalysis( aParseTree,
+                                         aAnalysis )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::findRequestNodeNGetResultWithoutSession( ID_XID * aXID, 
+                                                     idBool * aFindRequestNode,
+                                                     idBool * aIsCommit,
+                                                     smSCN  * aGlobalCommitSCN )
+{
+    void           * sMmSession = NULL;
+    idBool           sIsAllocMmSession = ID_FALSE;
+    UShort           i = 0;
+    qciUserInfo      sUserInfo;
+
+    idBool           sIsRequireUpdateMaxNodeSCN = ID_FALSE;
+    smSCN            sSCN;
+    smSCN            sGlobalCommitSCN;
+    idBool           sNeedUpdateSCN = ID_FALSE;
+    SInt             sValueLen = 0;
+    sdlRemoteStmt  * sRemoteStmt  = NULL;
+    mtdIntegerType   sTransResult = MTD_INTEGER_NULL;
+    mtdIntegerType   sIsRequestNode = MTD_INTEGER_NULL;
+    QCD_HSTMT        sHstmt;
+
+    qcStatement    * sStatement;
+
+    SShort           sFetchResult = ID_SSHORT_MAX;
+    sdiClientInfo  * sClientInfo  = NULL;
+
+    qciStmtType      sStmtType;
+
+    smiStatement     sSmiStmt;
+    smiStatement   * sDummySmiStmt;
+    UInt             sSmiStmtFlag;
+    UInt             sStage = 0;
+
+    sdiStatement   * sSdStmt = NULL;
+    idBool           sIsStmtAlloc = ID_FALSE;
+    idBool           sIsTransBegin  = ID_FALSE;
+    SChar          * sDummyPrepareSQL = (SChar*)"select 1 from dual";
+
+    const SChar    * sSql = "SELECT REQUEST_TRANSACTION, TRANSACTION_STATE, COMMIT_SCN FROM " 
+                            "V$DBLINK_SHARD_TRANSACTION_INFO WHERE XID LIKE '%s%%'";
+
+    UChar            sXIDStr[ID_XID_DATA_MAX_LEN]; 
+    SChar            sQuery[ ID_SIZEOF(sSql) + ID_SIZEOF(sXIDStr)+ 1] = {0, };
+
+    sdiConnectInfo * sConnectInfo      = NULL;
+    smiTrans       * sTrans = NULL;
+
+    sdiDataNodes     sDataInfo;
+    sdiDataNode    * sDataNode = sDataInfo.mNodes;
+
+    (void)idaXaConvertGlobalXIDToString( NULL, aXID, sXIDStr, ID_XID_DATA_MAX_LEN );
+
+    SMI_INIT_SCN( &sGlobalCommitSCN );
+
+    idlOS::memcpy( &sUserInfo,
+                   &sdiZookeeper::mUserInfo,
+                   ID_SIZEOF( qciUserInfo ) );
+
+    IDE_TEST( qci::mSessionCallback.mAllocInternalSessionWithUserInfo( &sMmSession,
+                                                                       (void*)&sUserInfo )
+              != IDE_SUCCESS );
+    IDE_TEST_RAISE( sMmSession == NULL, ERR_INVALID_CONDITION );
+    sIsAllocMmSession = ID_TRUE;
+
+    qci::mSessionCallback.mSetNewShardPIN( sMmSession );
+
+    qci::mSessionCallback.mSetShardMetaNumber( sMmSession,
+                                               sdi::getSMNForDataNode());
+
+    sTrans = qci::mSessionCallback.mGetTransWithBegin( sMmSession );
+    IDE_TEST_RAISE( sTrans == NULL, ERR_INVALID_CONDITION );
+    sIsTransBegin = ID_TRUE;
+
+    IDE_TEST( qcd::allocStmtNoParent( sMmSession,
+                                      ID_TRUE,  // dedicated mode
+                                      & sHstmt )
+              != IDE_SUCCESS );
+    sIsStmtAlloc = ID_TRUE;
+
+    IDE_TEST( qcd::getQcStmt( sHstmt,
+                              &sStatement )
+              != IDE_SUCCESS );
+
+    IDE_TEST( qcd::prepare( sHstmt,
+                            NULL,
+                            NULL,
+                            & sStmtType,
+                            sDummyPrepareSQL,
+                            ID_SIZEOF(sDummyPrepareSQL),
+                            ID_TRUE )  // direct-execute mode
+              != IDE_SUCCESS );
+
+    sDummySmiStmt = sTrans->getStatement();
+
+    sSmiStmtFlag = SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR;
+    IDE_TEST( sSmiStmt.begin( NULL,
+                              sDummySmiStmt,
+                              sSmiStmtFlag )
+              != IDE_SUCCESS );
+    sStage = 1;
+
+    QC_SMI_STMT(sStatement) = &sSmiStmt;
+
+    IDE_TEST( sdi::checkShardLinker( sStatement ) != IDE_SUCCESS );
+
+    IDE_DASSERT( sStatement->session != NULL );
+
+    sSdStmt = (sdiStatement *)qci::mSessionCallback.mGetShardStmt( QC_MM_STMT( sStatement ) );
+
+    sClientInfo = sStatement->session->mQPSpecific.mClientInfo;
+    sConnectInfo = sClientInfo->mConnectInfo;
+
+    buildDataNodes( sClientInfo, &sDataInfo, NULL, NULL );
+
+    for ( i = 0; i < sClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
+    {
+        if ( sDataNode->mState != SDI_NODE_STATE_EXECUTE_SELECTED )  /* PROJ-2733-DistTxInfo */
+        {
+            continue;
+        }
+
+        sNeedUpdateSCN = (sConnectInfo->mDbc == NULL) ? ID_TRUE : ID_FALSE;
+
+        // open shard connection
+        if ( qdkOpenShardConnection( sConnectInfo ) != IDE_SUCCESS )
+        {
+            sDataNode->mState = SDI_NODE_STATE_NONE;
+            continue;
+        }
+
+        /* PROJ-2733-DistTxInfo Connection ÀÌÈÄ °¢ ³ëµå SCNÀ» ¾ò¾î ¿Â´Ù. */
+        if ( sNeedUpdateSCN == ID_TRUE )
+        {
+            IDE_TEST( sdl::getSCN( sConnectInfo, &sSCN ) != IDE_SUCCESS );
+
+            SM_SET_MAX_SCN( &(sClientInfo->mGCTxInfo.mCoordSCN), &sSCN );
+        }
+
+        // PROJ-2727
+        IDE_TEST( setShardSessionProperty( sStatement->session,
+                                           sClientInfo,
+                                           sConnectInfo )
+                  != IDE_SUCCESS );
+
+    }
+    /* PROJ-2733-DistTxInfo ºĞ»êÁ¤º¸¸¦ °è»êÇÑ´Ù. */
+    calculateGCTxInfo( QC_PRIVATE_TMPLATE( sStatement ),
+                       &sDataInfo,
+                       ID_FALSE,
+                       SDI_COORD_PLAN_INDEX_NONE );
+
+    /* PROJ-2733-DistTxInfo Node¿¡ ºĞ»êÁ¤º¸¸¦ ÀüÆÄÇÑ´Ù. */
+    IDE_TEST( propagateDistTxInfoToNodes( sStatement, sClientInfo, &sDataInfo ) != IDE_SUCCESS );
+
+    sConnectInfo = sClientInfo->mConnectInfo;
+    sDataNode = sDataInfo.mNodes;
+
+    for ( i = 0; i < sClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
+    {
+        if ( sDataNode->mState != SDI_NODE_STATE_EXECUTE_SELECTED )  /* PROJ-2733-DistTxInfo */
+        {
+            continue;
+        }
+
+        
+        IDE_TEST( sdlStatementManager::allocRemoteStatement( sSdStmt,
+                                                             sConnectInfo->mNodeId,
+                                                             &sRemoteStmt )
+                  != IDE_SUCCESS );
+
+        IDE_TEST(setInternalOp(SDI_INTERNAL_OP_NOT,
+                               sConnectInfo,
+                               &(sConnectInfo->mLinkFailure))
+                 != IDE_SUCCESS);
+
+        IDE_TEST( sdl::allocStmt( sConnectInfo,
+                                  sRemoteStmt,
+                                  SDI_SHARD_PARTIAL_EXEC_TYPE_NONE, /* sPartialCoordExecType */
+                                  &(sConnectInfo->mLinkFailure) )
+                  != IDE_SUCCESS );
+
+        // add shard transaction
+        IDE_TEST( qdkAddShardTransaction( sStatement->mStatistics,
+                                          QC_SMI_STMT(sStatement)->mTrans->getTransID(),
+                                          sClientInfo,
+                                          sConnectInfo )
+                  != IDE_SUCCESS );
+
+        idlOS::snprintf( sQuery, ID_SIZEOF(sQuery), sSql, sXIDStr );
+
+        IDE_TEST( sdl::bindCol( sConnectInfo,
+                                sRemoteStmt,
+                                1,
+                                MTD_BIGINT_ID,
+                                ID_SIZEOF(mtdBigintType),
+                                (void *)&sIsRequestNode,
+                                ID_SIZEOF(sIsRequestNode),
+                                &sValueLen,
+                                &(sConnectInfo->mLinkFailure) ) != IDE_SUCCESS );
+
+        IDE_TEST( sdl::bindCol( sConnectInfo,
+                                sRemoteStmt,
+                                2,
+                                MTD_BIGINT_ID,
+                                ID_SIZEOF(mtdBigintType),
+                                (void *)&sTransResult,
+                                ID_SIZEOF(sTransResult),
+                                &sValueLen,
+                                &(sConnectInfo->mLinkFailure) ) != IDE_SUCCESS );
+
+        IDE_TEST( sdl::bindCol( sConnectInfo,
+                                sRemoteStmt,
+                                3,
+                                MTD_BIGINT_ID,
+                                ID_SIZEOF(mtdBigintType),
+                                (void *)&sGlobalCommitSCN,
+                                ID_SIZEOF(sGlobalCommitSCN),
+                                &sValueLen,
+                                &(sConnectInfo->mLinkFailure) ) != IDE_SUCCESS );
+
+        sIsRequireUpdateMaxNodeSCN = ID_TRUE;
+        if ( sdl::execDirect( sConnectInfo,
+                              sRemoteStmt,
+                              sQuery,
+                              idlOS::strlen(sQuery),
+                              sClientInfo,
+                              &(sConnectInfo->mLinkFailure) )
+             == IDE_SUCCESS )
+        {
+            sDataNode->mState = SDI_NODE_STATE_EXECUTED;  /* PROJ-2733-DistTxInfo */
+        }
+        else
+        {
+            // ¼öÇàÀÌ ½ÇÆĞÇÑ °æ¿ì
+            sDataNode->mState = SDI_NODE_STATE_EXECUTE_CANDIDATED;  /* PROJ-2733-DistTxInfo */
+        }
+
+        IDE_TEST( sdl::fetch( sConnectInfo,
+                              sRemoteStmt,
+                              &sFetchResult,
+                              &(sConnectInfo->mLinkFailure) )
+                    != IDE_SUCCESS );
+        IDE_TEST_RAISE(sValueLen == SQL_NULL_DATA, ERR_GET_ROW_COUNT);
+
+        if ( sdl::freeStmt( sConnectInfo,
+                            sRemoteStmt,
+                            SQL_DROP,
+                            &(sConnectInfo->mLinkFailure) )
+             != IDE_SUCCESS )
+        {
+            ideLog::log( IDE_SD_17,"freeStmt fail" );
+        }
+
+        if ( ( sConnectInfo->mLinkFailure != ID_TRUE ) &&
+             ( sConnectInfo->mDbc != NULL ) )
+        {
+            IDE_TEST(setInternalOp( SDI_INTERNAL_OP_NOT,
+                                    sConnectInfo,
+                                    &(sConnectInfo->mLinkFailure))
+                     != IDE_SUCCESS);
+            ideLog::log(IDE_SD_17,"[SHARD_META] Internal Remote SQL: %s", sQuery);
+        }
+
+        sdlStatementManager::setUnused( &sRemoteStmt );
+
+        if ( sFetchResult != SQL_NO_DATA_FOUND )
+        {
+            if ( sIsRequestNode == 1 )
+            {
+                *aFindRequestNode = ID_TRUE;
+                if ( (smiDtxLogType)sTransResult == SMI_DTX_COMMIT )
+                {
+                    *aIsCommit = ID_TRUE;
+                    *aGlobalCommitSCN = sGlobalCommitSCN;
+                }
+                else
+                {
+                    *aIsCommit = ID_FALSE;
+                }
+
+                break;
+            }
+        }
+    }
+
+    sIsRequireUpdateMaxNodeSCN = ID_FALSE;
+    IDE_TEST( updateMaxNodeSCNToCoordSCN( sStatement, sClientInfo, &sDataInfo ) != IDE_SUCCESS );
+
+    sStage = 0;
+    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+
+    sIsStmtAlloc = ID_FALSE;
+    IDE_TEST( qcd::freeStmt( sHstmt,
+                             ID_TRUE )  // free & drop
+              != IDE_SUCCESS );
+
+    if ( qci::mSessionCallback.mCommit( sMmSession, ID_FALSE ) != IDE_SUCCESS )
+    {
+        ideLog::log( IDE_QP_0, "[Temporary SQL: COMMIT FAILURE] ERR-%05X : %s",
+                     E_ERROR_CODE(ideGetErrorCode()),
+                     ideGetErrorMsg(ideGetErrorCode()));
+        
+        (void)qci::mSessionCallback.mRollback( sMmSession, NULL, ID_FALSE );
+    }
+    sIsTransBegin = ID_FALSE;
+
+    sIsAllocMmSession = ID_FALSE;
+    qci::mSessionCallback.mFreeInternalSession( sMmSession,
+                                                ID_TRUE /* aIsSuccess */ );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(ERR_INVALID_CONDITION)
+    {
+        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                "sdi::findRequestNodeNGetResultWithoutSession",
+                                "invliad condition"));
+    }
+    IDE_EXCEPTION( ERR_GET_ROW_COUNT )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::findRequestNodeNGetResultWithoutSession",
+                                  "get row count fetch error" ) );
+        ideLog::log(IDE_SD_31,"[DEBUG] Shard get row count: %"ID_INT32_FMT, sFetchResult);
+    }
+
+    IDE_EXCEPTION_END;
+
+    if ( sIsRequireUpdateMaxNodeSCN == ID_TRUE )
+    {
+        (void) updateMaxNodeSCNToCoordSCN( sStatement, sClientInfo, &sDataInfo );
+    }
+
+    if ( sRemoteStmt != NULL )
+    {
+        if ( sRemoteStmt->mStmt != NULL )
+        {
+            (void)sdl::freeStmt( sConnectInfo,
+                                 sRemoteStmt,
+                                 SQL_DROP,
+                                 &(sConnectInfo->mLinkFailure) );
+        }
+        sdlStatementManager::setUnused( &sRemoteStmt );
+    }
+
+    if ( sStage > 0 )
+    {
+        switch ( sStage )
+        {
+            case 1:
+                ( void )sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+            default:
+                break;
+        }
+    }
+
+
+    if ( sIsStmtAlloc != ID_FALSE )
+    {
+        (void)qcd::freeStmt( sHstmt, ID_TRUE );
+    }
+
+    if ( sIsTransBegin == ID_TRUE )
+    {
+        (void)qci::mSessionCallback.mRollback( sMmSession, NULL, ID_FALSE );
+    }
+
+    if ( sIsAllocMmSession == ID_TRUE )
+    {
+        qci::mSessionCallback.mFreeInternalSession( sMmSession,
+                                                    ID_FALSE /* aIsSuccess */ );
+    }
+
+    return IDE_FAILURE;
+
+}
+
+IDE_RC sdi::getAllBranchWithoutSession( void * aDtxInfo )
+{
+    UShort            i = 0;
+
+    void            * sMmSession = NULL;
+    idBool            sIsAllocMmSession = ID_FALSE;
+    qciUserInfo       sUserInfo;
+
+    idBool            sNeedUpdateSCN = ID_FALSE;
+    smSCN             sSCN;
+
+    qciStmtType       sStmtType;
+    QCD_HSTMT         sHstmt;
+    qcStatement     * sStatement    = NULL;
+    smiTrans        * sTrans        = NULL;
+    smiStatement    * sDummySmiStmt = NULL;
+    smiStatement      sSmiStmt;
+    UInt              sSmiStmtFlag;
+    UInt              sStage = 0;
+
+    idBool            sIsStmtAlloc     = ID_FALSE;
+    idBool            sIsTransBegin    = ID_FALSE;
+    SChar           * sDummyPrepareSQL = (SChar*)"select 1 from dual";
+
+    sdiConnectInfo  * sConnectInfo = NULL;
+    sdiClientInfo   * sClientInfo  = NULL;
+    sdiDataNodes      sDataInfo;
+    sdiDataNode     * sDataNode    = sDataInfo.mNodes;
+
+    idlOS::memcpy( &sUserInfo,
+                   &sdiZookeeper::mUserInfo,
+                   ID_SIZEOF( qciUserInfo ) );
+
+    IDE_TEST( qci::mSessionCallback.mAllocInternalSessionWithUserInfo( &sMmSession,
+                                                                       (void*)&sUserInfo )
+              != IDE_SUCCESS );
+    IDE_TEST_RAISE( sMmSession == NULL, ERR_INVALID_CONDITION );
+    sIsAllocMmSession = ID_TRUE;
+
+    qci::mSessionCallback.mSetNewShardPIN( sMmSession );
+
+    qci::mSessionCallback.mSetShardMetaNumber( sMmSession,
+                                               sdi::getSMNForDataNode());
+
+    sTrans = qci::mSessionCallback.mGetTransWithBegin( sMmSession );
+    IDE_TEST_RAISE( sTrans == NULL, ERR_INVALID_CONDITION );
+    sIsTransBegin = ID_TRUE;
+
+    IDE_TEST( qcd::allocStmtNoParent( sMmSession,
+                                      ID_TRUE,  // dedicated mode
+                                      & sHstmt )
+              != IDE_SUCCESS );
+    sIsStmtAlloc = ID_TRUE;
+
+    IDE_TEST( qcd::getQcStmt( sHstmt,
+                              &sStatement )
+              != IDE_SUCCESS );
+
+    IDE_TEST( qcd::prepare( sHstmt,
+                            NULL,
+                            NULL,
+                            & sStmtType,
+                            sDummyPrepareSQL,
+                            ID_SIZEOF(sDummyPrepareSQL),
+                            ID_TRUE )  // direct-execute mode
+              != IDE_SUCCESS );
+
+    sDummySmiStmt = sTrans->getStatement();
+    sSmiStmtFlag = SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR;
+    IDE_TEST( sSmiStmt.begin( NULL,
+                              sDummySmiStmt,
+                              sSmiStmtFlag )
+              != IDE_SUCCESS );
+    sStage = 1;
+
+    QC_SMI_STMT(sStatement) = &sSmiStmt;
+
+    IDE_TEST( sdi::checkShardLinker ( sStatement ) != IDE_SUCCESS );
+
+    sClientInfo = sStatement->session->mQPSpecific.mClientInfo;
+    sConnectInfo = sClientInfo->mConnectInfo;
+
+    buildDataNodes( sClientInfo, &sDataInfo, NULL, NULL );
+    for ( i = 0; i < sClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
+    {
+        if ( sDataNode->mState != SDI_NODE_STATE_EXECUTE_SELECTED )  /* PROJ-2733-DistTxInfo */
+        {
+            continue;
+        }
+
+        sNeedUpdateSCN = (sConnectInfo->mDbc == NULL) ? ID_TRUE : ID_FALSE;
+
+        // open shard connection
+        if ( qdkOpenShardConnection( sConnectInfo ) != IDE_SUCCESS )
+        {
+            sDataNode->mState = SDI_NODE_STATE_NONE;
+            continue;
+        }
+
+        /* PROJ-2733-DistTxInfo Connection ÀÌÈÄ °¢ ³ëµå SCNÀ» ¾ò¾î ¿Â´Ù. */
+        if ( sNeedUpdateSCN == ID_TRUE )
+        {
+            IDE_TEST( sdl::getSCN( sConnectInfo, &sSCN ) != IDE_SUCCESS );
+
+            SM_SET_MAX_SCN( &(sClientInfo->mGCTxInfo.mCoordSCN), &sSCN );
+        }
+
+        // PROJ-2727
+        IDE_TEST( setShardSessionProperty( sStatement->session,
+                                           sClientInfo,
+                                           sConnectInfo )
+                  != IDE_SUCCESS );
+
+    }
+    
+    /* PROJ-2733-DistTxInfo ºĞ»êÁ¤º¸¸¦ °è»êÇÑ´Ù. */
+    calculateGCTxInfo( QC_PRIVATE_TMPLATE( sStatement ),
+                       &sDataInfo,
+                       ID_FALSE,
+                       SDI_COORD_PLAN_INDEX_NONE );
+
+    /* PROJ-2733-DistTxInfo Node¿¡ ºĞ»êÁ¤º¸¸¦ ÀüÆÄÇÑ´Ù. */
+    IDE_TEST( propagateDistTxInfoToNodes( sStatement, sClientInfo, &sDataInfo ) != IDE_SUCCESS );
+
+    sConnectInfo = sClientInfo->mConnectInfo;
+    sDataNode = sDataInfo.mNodes;
+
+    for ( i = 0; i < sClientInfo->mCount; i++, sConnectInfo++, sDataNode++ )
+    {
+        IDE_TEST( qdkAddDtxBranchTx( aDtxInfo,
+                                     (UChar)sConnectInfo->mCoordinatorType,
+                                     sConnectInfo->mNodeName,
+                                     sConnectInfo->mUserName,
+                                     sConnectInfo->mUserPassword,
+                                     sConnectInfo->mServerIP,
+                                     sConnectInfo->mPortNo,
+                                     sConnectInfo->mConnectType )
+                  != IDE_SUCCESS );
+    }
+
+    sStage = 0;
+    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+
+    sIsStmtAlloc = ID_FALSE;
+    IDE_TEST( qcd::freeStmt( sHstmt,
+                             ID_TRUE )  // free & drop
+              != IDE_SUCCESS );
+
+    /* just need node info */
+    (void)qci::mSessionCallback.mRollback( sMmSession, NULL, ID_FALSE );
+    sIsTransBegin = ID_FALSE;
+
+    sIsAllocMmSession = ID_FALSE;
+    qci::mSessionCallback.mFreeInternalSession( sMmSession,
+                                                ID_TRUE /* aIsSuccess */ );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(ERR_INVALID_CONDITION)
+    {
+        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                "sdi::shardExecTempSQLWithoutSession",
+                                "invliad condition"));
+    }
+    IDE_EXCEPTION_END;
+
+    if ( sStage > 0 )
+    {
+        switch ( sStage )
+        {
+            case 1:
+                ( void )sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+            default:
+                break;
+        }
+    }
+
+    if ( sIsStmtAlloc != ID_FALSE )
+    {
+        (void)qcd::freeStmt( sHstmt, ID_TRUE );
+    }
+
+    if ( sIsTransBegin == ID_TRUE )
+    {
+        (void)qci::mSessionCallback.mRollback( sMmSession, NULL, ID_FALSE );
+    }
+
+    if ( sIsAllocMmSession == ID_TRUE )
+    {
+        qci::mSessionCallback.mFreeInternalSession( sMmSession,
+                                                    ID_FALSE /* aIsSuccess */ );
+    }
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::systemPropertyForShard( qcStatement * aStatement,
+                                    SChar       * aNodeName,
+                                    SChar       * aSqlStr )
+{
+    void              * sMmSession = NULL;
+    idBool              sIsAllocMmSession = ID_FALSE;
+
+    qciUserInfo         sUserInfo;
+
+    QCD_HSTMT           sHstmt;
+
+    qcStatement       * sInternalStatement;
+
+    sdiClientInfo     * sClientInfo  = NULL;
+
+    UInt                sExecCount = 0;
+    qciStmtType         sStmtType;
+
+    smiStatement        sSmiStmt;
+    smiStatement      * sDummySmiStmt;
+    UInt                sSmiStmtFlag;
+    UInt                sStage = 0;
+
+    SChar               sSqlStr[QD_MAX_SQL_LENGTH + 1];
+
+    iduList           * sNodeList;
+    idBool              sIsAllocList = ID_FALSE;
+    idBool              sIsStmtAlloc = ID_FALSE;
+    idBool              sIsTransBegin  = ID_FALSE;
+    SChar             * sDummyPrepareSQL = (SChar*)"select 1 from dual";
+
+    smiTrans          * sTrans = NULL;
+    sdiLocalMetaInfo    sLocalMetaInfo;
+
+    if( SDU_SHARD_ZOOKEEPER_TEST == 1 )
+    {            
+        idlOS::memcpy( &sUserInfo,
+                       &sdiZookeeper::mUserInfo,
+                       ID_SIZEOF( qciUserInfo ) );
+    }
+    else
+    {
+        qci::mSessionCallback.mGetUserInfo( aStatement->session->mMmSession,
+                                            &sUserInfo );
+    }
+        
+    IDE_TEST( qci::mSessionCallback.mAllocInternalSessionWithUserInfo( &sMmSession,
+                                                                       (void*)&sUserInfo )
+              != IDE_SUCCESS );
+    IDE_TEST_RAISE( sMmSession == NULL, ERR_INVALID_CONDITION );
+    sIsAllocMmSession = ID_TRUE;
+
+    qci::mSessionCallback.mSetNewShardPIN( sMmSession );
+
+    qci::mSessionCallback.mSetShardMetaNumber( sMmSession,
+                                               sdi::getSMNForDataNode());
+
+    ideLog::log(IDE_SD_17,"[SHARD SYSTEM PROPERTY] : %s", aSqlStr);
+
+    sTrans     = qci::mSessionCallback.mGetTransWithBegin( sMmSession );
+    IDE_TEST_RAISE( sTrans == NULL, ERR_INVALID_CONDITION );
+    sIsTransBegin = ID_TRUE;
+
+    IDE_TEST( qcd::allocStmtNoParent( sMmSession,
+                                      ID_TRUE,  // dedicated mode
+                                      & sHstmt )
+              != IDE_SUCCESS );
+    sIsStmtAlloc = ID_TRUE;
+
+    IDE_TEST( qcd::getQcStmt( sHstmt,
+                              &sInternalStatement )
+              != IDE_SUCCESS );
+
+    sInternalStatement->session->mQPSpecific.mFlag &= ~QC_SESSION_TEMP_SQL_MASK;
+    sInternalStatement->session->mQPSpecific.mFlag |= QC_SESSION_TEMP_SQL_TRUE;
+
+    IDE_TEST( qcd::prepare( sHstmt,
+                            NULL,
+                            NULL,
+                            & sStmtType,
+                            sDummyPrepareSQL,
+                            ID_SIZEOF(sDummyPrepareSQL),
+                            ID_TRUE )  // direct-execute mode
+              != IDE_SUCCESS );
+
+    sDummySmiStmt = sTrans->getStatement();
+
+    sSmiStmtFlag = SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR;
+    IDE_TEST( sSmiStmt.begin( NULL,
+                              sDummySmiStmt,
+                              sSmiStmtFlag )
+              != IDE_SUCCESS );
+    sStage = 1;
+
+    QC_SMI_STMT(sInternalStatement) = &sSmiStmt;
+    
+    if( SDU_SHARD_ZOOKEEPER_TEST == 1 )
+    {
+        IDE_TEST( sdiZookeeper::getAliveNodeNameList( &sNodeList ) != IDE_SUCCESS );
+        sIsAllocList = ID_TRUE;
+    }
+    
+    IDE_TEST( sdi::checkShardLinkerWithNodeList ( sInternalStatement,
+                                                  QCG_GET_SESSION_SHARD_META_NUMBER( sInternalStatement ),
+                                                  sTrans, 
+                                                  sNodeList ) != IDE_SUCCESS );
+    
+    IDE_TEST( sdi::getLocalMetaInfo( &sLocalMetaInfo ) != IDE_SUCCESS );
+
+    if ( QCG_GET_SESSION_GTX_LEVEL( sInternalStatement ) < 1 )
+    {
+        sInternalStatement->session->mBakSessionProperty.mGlobalTransactionLevel = QCG_GET_SESSION_GTX_LEVEL( sInternalStatement );
+
+        idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
+                         "ALTER SESSION SET  GLOBAL_TRANSACTION_LEVEL = 1 " );
+
+        IDE_TEST( qciMisc::runDCLforInternal( sInternalStatement,
+                                              sSqlStr,
+                                              sInternalStatement->session->mMmSession )
+                  != IDE_SUCCESS );
+    }
+
+    sClientInfo = sInternalStatement->session->mQPSpecific.mClientInfo;
+
+    // ÀüÃ¼ Node ´ë»óÀ¸·Î Meta Update ½ÇÇà
+    if ( sClientInfo != NULL )
+    {   
+        if ( idlOS::strMatch( sLocalMetaInfo.mNodeName,
+                              idlOS::strlen( sLocalMetaInfo.mNodeName ),
+                              aNodeName,
+                              idlOS::strlen( aNodeName )) == 0 )
+        {
+            IDE_TEST( qcg::setSessionIsInternalLocalOperation( sInternalStatement,
+                                                               SDI_INTERNAL_OP_NORMAL)
+                      != IDE_SUCCESS);
+            
+            IDE_TEST( qciMisc::runDCLforInternal( sInternalStatement,
+                                                  aSqlStr,
+                                                  sInternalStatement->session->mMmSession )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            IDE_TEST( sdi::shardExecDirectNested( sInternalStatement,
+                                                  aNodeName,
+                                                  (SChar*)aSqlStr,
+                                                  (UInt) idlOS::strlen( aSqlStr ),
+                                                  SDI_INTERNAL_OP_NORMAL,
+                                                  &sExecCount)
+                      != IDE_SUCCESS );
+
+            IDE_TEST_RAISE( sExecCount != 1, ERR_REMOTE_EXECUTION );    
+        }
+    }
+
+    sStage = 0;
+    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+
+    sIsStmtAlloc = ID_FALSE;
+    IDE_TEST( qcd::freeStmt( sHstmt,
+                             ID_TRUE )  // free & drop
+              != IDE_SUCCESS );
+
+    IDE_TEST_RAISE( qci::mSessionCallback.mCommit( sMmSession, ID_FALSE )
+                    != IDE_SUCCESS, COMMIT_FAIL );
+    sIsTransBegin = ID_FALSE;
+
+    sIsAllocMmSession = ID_FALSE;
+    qci::mSessionCallback.mFreeInternalSession( sMmSession,
+                                                ID_TRUE /* aIsSuccess */ );
+
+    if( SDU_SHARD_ZOOKEEPER_TEST == 1 )
+    {            
+        sIsAllocList = ID_FALSE;
+        sdiZookeeper::freeList( sNodeList, SDI_ZKS_LIST_NODENAME );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(COMMIT_FAIL)
+    {
+        ideLog::log( IDE_QP_0, "[SHARD SYSTEM PROPERTY: COMMIT FAILURE] ERR-%05X : %s",
+                     E_ERROR_CODE(ideGetErrorCode()),
+                     ideGetErrorMsg(ideGetErrorCode()));
+    }
+    IDE_EXCEPTION( ERR_REMOTE_EXECUTION );
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_EXECUTE_REMOTE_SQL_FAILED, aSqlStr ) );
+    }
+    IDE_EXCEPTION(ERR_INVALID_CONDITION)
+    {
+        IDE_SET(ideSetErrorCode(sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                "sdi::systemPropertyForShard",
+                                "invliad condition"));
+    }
+    IDE_EXCEPTION_END;
+
+    IDE_PUSH();
+    
+    if ( sStage > 0 )
+    {
+        switch ( sStage )
+        {
+            case 1:
+                ( void )sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+            default:
+                break;
+        }
+    }
+
+    if ( sIsStmtAlloc != ID_FALSE )
+    {
+        (void)qcd::freeStmt( sHstmt, ID_TRUE );
+    }
+
+    if ( sIsTransBegin == ID_TRUE )
+    {
+        (void)qci::mSessionCallback.mRollback( sMmSession, NULL, ID_FALSE );
+    }
+
+    if ( sIsAllocMmSession == ID_TRUE )
+    {
+        qci::mSessionCallback.mFreeInternalSession( sMmSession,
+                                                    ID_FALSE /* aIsSuccess */ );
+    }
+    
+    if( SDU_SHARD_ZOOKEEPER_TEST == 1 )
+    {    
+        if ( sIsAllocList == ID_TRUE )
+        {
+            sdiZookeeper::freeList( sNodeList, SDI_ZKS_LIST_NODENAME );
+        }
+    }
+    
+    IDE_POP();
+    
+    return IDE_FAILURE;
+}
+

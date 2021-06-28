@@ -17,7 +17,8 @@
 package Altibase.jdbc.driver.sharding.core;
 
 import Altibase.jdbc.driver.AltibaseFailover;
-import Altibase.jdbc.driver.AltibaseStatement;
+import Altibase.jdbc.driver.AltibasePreparedStatement;
+import Altibase.jdbc.driver.cm.CmProtocolContextShardConnect;
 import Altibase.jdbc.driver.cm.CmProtocolContextShardStmt;
 import Altibase.jdbc.driver.datatype.Column;
 import Altibase.jdbc.driver.datatype.ColumnFactory;
@@ -34,12 +35,13 @@ import java.util.*;
 
 import static Altibase.jdbc.driver.sharding.util.ShardingTraceLogger.shard_log;
 
-public class AltibaseShardingPreparedStatement extends AltibaseShardingStatement implements PreparedStatement
+public class AltibaseShardingPreparedStatement extends AbstractShardingPreparedStatement
 {
-    List<Column>                      mParameters;
-    InternalShardingPreparedStatement mInternalPstmt;
-    protected PreparedStatement       mServersidePstmt;
-    private ColumnFactory             mColumnFactory;
+    private List<Column>                  mParameters;
+    InternalShardingPreparedStatement     mInternalPstmt;
+    private AltibasePreparedStatement     mServersidePstmt;
+    private ColumnFactory                 mColumnFactory;
+    private boolean                       mShouldRecordBindParameters;
 
     AltibaseShardingPreparedStatement(AltibaseShardingConnection aShardCon,
                                       String aSql, int aResultSetType, int aResultSetConcurrency,
@@ -51,9 +53,13 @@ public class AltibaseShardingPreparedStatement extends AltibaseShardingStatement
         mSetParamInvocationMap = new LinkedHashMap<Integer, JdbcMethodInvocation>();
         mColumnFactory = new ColumnFactory();
         mColumnFactory.setProperties(aShardCon.getProps());
+        // BUG-47460 bind paramter∏¶ record«ÿæﬂ «œ¥¬ ¡∂∞«
+        mShouldRecordBindParameters = aShardCon.isLazyNodeConnect() || mIsReshardEnabled;
+
         try
         {
-            mShardProtocol.shardAnalyze(mShardStmtCtx, aSql);
+            // BUG-47274 analyzeΩ√ ±‚¡∏ø° πﬁæ∆ø¬ statement id∏¶ ¿ÃøÎ«—¥Ÿ.
+            mMetaConn.getShardProtocol().shardAnalyze(mShardStmtCtx, aSql, mStatementForAnalyze.getID());
         }
         catch (SQLException aEx)
         {
@@ -75,36 +81,60 @@ public class AltibaseShardingPreparedStatement extends AltibaseShardingStatement
                                                                    this);
         }
         mInternalStmt = mInternalPstmt;
-        mShardMetaNumber = mShardContextConnect.getShardMetaNumber();
+        mShardMetaNumber = mMetaConn.getShardContextConnect().getShardMetaNumber();
     }
 
     private void createServerSideStatement(AltibaseShardingConnection aShardCon, String aSql,
                                            int aResultSetType, int aResultSetConcurrency,
                                            int aResultSetHoldability) throws SQLException
     {
-        // BUG-46513 ONENODEÏù¥Í≥† analyze Í≤∞Í≥ºÍ∞Ä ÏÑ±Í≥µÏù¥ ÏïÑÎãêÍ≤ΩÏö∞ÏóêÎäî ÏòàÏô∏Î•º ÎçòÏßÑÎã§.
-        if (mShardStmtCtx.getShardTransactionLevel() == ShardTransactionLevel.ONE_NODE)
+        // BUG-46513 ONENODE¿Ã∞Ì analyze ∞·∞˙∞° º∫∞¯¿Ã æ∆¥“∞ÊøÏø°¥¬ øπø‹∏¶ ¥¯¡¯¥Ÿ.
+        if (mShardStmtCtx.getGlobalTransactionLevel() == GlobalTransactionLevel.ONE_NODE)
         {
             mSqlwarning = Error.processServerError(mSqlwarning, mShardStmtCtx.getError());
         }
         Connection sCon = aShardCon.getMetaConnection();
-        mServersidePstmt = sCon.prepareStatement(aSql, aResultSetType, aResultSetConcurrency,
-                                                aResultSetHoldability);
-        // BUG-46513 ÏÑúÎ≤ÑÏÇ¨Ïù¥Îìú ÏÉ§Îî©ÏùºÎïå fetchÏãúÏ†êÏùò SMNÍ∞íÏùÑ Ï≤¥ÌÅ¨ÌïòÍ∏∞ ÏúÑÌï¥ meta connectionÏùÑ AltibaseStatementÏóê Ï£ºÏûÖÌïúÎã§.
-        ((AltibaseStatement)mServersidePstmt).setMetaConnection(mMetaConn);
+        mServersidePstmt = (AltibasePreparedStatement)sCon.prepareStatement(aSql, aResultSetType,
+                                                                            aResultSetConcurrency,
+                                                                            aResultSetHoldability);
+        // BUG-46513 º≠πˆªÁ¿ÃµÂ ª˛µ˘¿œ∂ß fetchΩ√¡°¿« SMN∞™¿ª √º≈©«œ±‚ ¿ß«ÿ meta connection¿ª AltibaseStatementø° ¡÷¿‘«—¥Ÿ.
+        mServersidePstmt.setMetaConnection(mMetaConn);
         mServerSideStmt = mServersidePstmt;
-        mShardContextConnect = aShardCon.getShardContext();
-        mInternalPstmt = new ServerSideShardingPreparedStatement(mServersidePstmt, mShardContextConnect);
+        mInternalPstmt = new ServerSideShardingPreparedStatement(mServersidePstmt, mMetaConn);
         mIsCoordQuery = true;
     }
 
     public ResultSet executeQuery() throws SQLException
     {
+        mMetaConn.checkCommitState();
         reAnalyzeIfNecessary();
 
-        ResultSet sResult = mInternalPstmt.executeQuery();
-        updateShardMetaNumberIfNecessary();
-        // BUG-46513 autocommit on ÏÉÅÌÉúÏù¥Í≥† ÎÖ∏ÎìúÍ∞Ä Ï†úÍ±∞Îêú ÏÉÅÌÉúÎùºÎ©¥ Ìï¥ÎãπÌïòÎäî StatementÏùò resultsetÏùÑ Ï†ïÎ¶¨Ìï¥Ï§ÄÎã§.
+        ResultSet sResult;
+        short sRetryCount = mMetaConn.getShardStatementRetry();
+
+        try
+        {
+            while(true)
+            {
+                try
+                {
+                    sResult = mInternalPstmt.executeQuery();
+                    break;
+                }
+                catch (SQLException aEx)
+                {
+                    // STATEMENT_TOO_OLD ¿Ã ø‹ ø°∑Ø∞° ¿÷¿ª ∞ÊøÏ¥¬ stmt retry «œ¡ˆ æ ¥¬¥Ÿ. 
+                    checkStmtTooOld(aEx, sRetryCount);
+                    --sRetryCount;
+                }
+            }
+        }
+        finally
+        {
+            // BUG-46790 SMN update¥¬ execute √≥∏Æ»ƒ ø°∑Ø∞° πﬂª˝«ÿµµ ºˆ«‡«ÿæﬂ «—¥Ÿ.
+            updateShardMetaNumberIfNecessary();
+        }
+        // BUG-46513 autocommit on ªÛ≈¬¿Ã∞Ì ≥ÎµÂ∞° ¡¶∞≈µ» ªÛ≈¬∂Û∏È «ÿ¥Á«œ¥¬ Statement¿« resultset¿ª ¡§∏Æ«ÿ¡ÿ¥Ÿ.
         clearClosedResultSets(sResult);
 
         return sResult;
@@ -118,10 +148,33 @@ public class AltibaseShardingPreparedStatement extends AltibaseShardingStatement
 
     public int executeUpdate() throws SQLException
     {
+        mMetaConn.checkCommitState();
         reAnalyzeIfNecessary();
 
-        int sResult = mInternalPstmt.executeUpdate();
-        updateShardMetaNumberIfNecessary();
+        int sResult;
+        short sRetryCount = mMetaConn.getShardStatementRetry();
+
+        try
+        {
+            while(true)
+            {
+                try
+                {
+                    sResult = mInternalPstmt.executeUpdate();
+                    break;
+                }
+                catch (SQLException aEx)
+                {
+                    // STATEMENT_TOO_OLD ¿Ã ø‹ ø°∑Ø∞° ¿÷¿ª ∞ÊøÏ¥¬ stmt retry «œ¡ˆ æ ¥¬¥Ÿ. 
+                    checkStmtTooOld(aEx, sRetryCount);
+                    --sRetryCount;
+                }
+            }
+        }
+        finally
+        {
+            updateShardMetaNumberIfNecessary();
+        }
 
         return sResult;
     }
@@ -153,152 +206,152 @@ public class AltibaseShardingPreparedStatement extends AltibaseShardingStatement
     public void setNull(int aParameterIndex, int aSqlType) throws SQLException
     {
         setParameter(aParameterIndex, null, Types.NULL);
-        recordSetParameterForNull(new Class[] {int.class, int.class}, aParameterIndex, aSqlType);
-        if (mIsCoordQuery)
+        if (mShouldRecordBindParameters)
         {
-            mServersidePstmt.setNull(aParameterIndex, aSqlType);
+            recordSetParameterForNull(new Class[] { int.class, int.class }, aParameterIndex, aSqlType);
         }
+        mInternalPstmt.setNull(aParameterIndex, aSqlType);
     }
 
     public void setBoolean(int aParameterIndex, boolean aValue) throws SQLException
     {
         setParameter(aParameterIndex, aValue, Types.VARCHAR);
-        recordSetParameter("setBoolean", new Class[] {int.class, boolean.class}, aParameterIndex, aValue);
-        if (mIsCoordQuery)
+        if (mShouldRecordBindParameters)
         {
-            mServersidePstmt.setBoolean(aParameterIndex, aValue);
+            recordSetParameter("setBoolean", new Class[] { int.class, boolean.class }, aParameterIndex, aValue);
         }
+        mInternalPstmt.setBoolean(aParameterIndex, aValue);
     }
 
     public void setByte(int aParameterIndex, byte aValue) throws SQLException
     {
         setParameter(aParameterIndex, aValue, Types.SMALLINT);
-        recordSetParameter("setByte", new Class[] {int.class, byte.class}, aParameterIndex, aValue);
-        if (mIsCoordQuery)
+        if (mShouldRecordBindParameters)
         {
-            mServersidePstmt.setByte(aParameterIndex, aValue);
+            recordSetParameter("setByte", new Class[] { int.class, byte.class }, aParameterIndex, aValue);
         }
+        mInternalPstmt.setByte(aParameterIndex, aValue);
     }
 
     public void setShort(int aParameterIndex, short aValue) throws SQLException
     {
         setParameter(aParameterIndex, aValue, Types.SMALLINT);
-        recordSetParameter("setShort", new Class[] {int.class, short.class}, aParameterIndex, aValue);
-        if (mIsCoordQuery)
+        if (mShouldRecordBindParameters)
         {
-            mServersidePstmt.setShort(aParameterIndex, aValue);
+            recordSetParameter("setShort", new Class[] { int.class, short.class }, aParameterIndex, aValue);
         }
+        mInternalPstmt.setShort(aParameterIndex, aValue);
     }
 
     public void setInt(int aParameterIndex, int aValue) throws SQLException
     {
         setParameter(aParameterIndex, aValue, Types.INTEGER);
-        recordSetParameter("setInt", new Class[] {int.class, int.class}, aParameterIndex, aValue);
-        if (mIsCoordQuery)
+        if (mShouldRecordBindParameters)
         {
-            mServersidePstmt.setInt(aParameterIndex, aValue);
+            recordSetParameter("setInt", new Class[] { int.class, int.class }, aParameterIndex, aValue);
         }
+        mInternalPstmt.setInt(aParameterIndex, aValue);
     }
 
     public void setLong(int aParameterIndex, long aValue) throws SQLException
     {
         setParameter(aParameterIndex, aValue, Types.BIGINT);
-        recordSetParameter("setLong", new Class[] {int.class, long.class}, aParameterIndex, aValue);
-        if (mIsCoordQuery)
+        if (mShouldRecordBindParameters)
         {
-            mServersidePstmt.setLong(aParameterIndex, aValue);
+            recordSetParameter("setLong", new Class[] { int.class, long.class }, aParameterIndex, aValue);
         }
+        mInternalPstmt.setLong(aParameterIndex, aValue);
     }
 
     public void setFloat(int aParameterIndex, float aValue) throws SQLException
     {
         setParameter(aParameterIndex, aValue, Types.REAL);
-        recordSetParameter("setFloat", new Class[] {int.class, float.class}, aParameterIndex, aValue);
-        if (mIsCoordQuery)
+        if (mShouldRecordBindParameters)
         {
-            mServersidePstmt.setFloat(aParameterIndex, aValue);
+            recordSetParameter("setFloat", new Class[] { int.class, float.class }, aParameterIndex, aValue);
         }
+        mInternalPstmt.setFloat(aParameterIndex, aValue);
     }
 
     public void setDouble(int aParameterIndex, double aValue) throws SQLException
     {
         setParameter(aParameterIndex, aValue, Types.DOUBLE);
-        recordSetParameter("setDouble", new Class[] {int.class, double.class}, aParameterIndex, aValue);
-        if (mIsCoordQuery)
+        if (mShouldRecordBindParameters)
         {
-            mServersidePstmt.setDouble(aParameterIndex, aValue);
+            recordSetParameter("setDouble", new Class[] { int.class, double.class }, aParameterIndex, aValue);
         }
+        mInternalPstmt.setDouble(aParameterIndex, aValue);
     }
 
     public void setBigDecimal(int aParameterIndex, BigDecimal aValue) throws SQLException
     {
         setParameter(aParameterIndex, aValue, Types.NUMERIC);
-        recordSetParameter("setBigDecimal", new Class[] {int.class, BigDecimal.class}, aParameterIndex, aValue);
-        if (mIsCoordQuery)
+        if (mShouldRecordBindParameters)
         {
-            mServersidePstmt.setBigDecimal(aParameterIndex, aValue);
+            recordSetParameter("setBigDecimal", new Class[] { int.class, BigDecimal.class }, aParameterIndex, aValue);
         }
+        mInternalPstmt.setBigDecimal(aParameterIndex, aValue);
     }
 
     public void setString(int aParameterIndex, String aValue) throws SQLException
     {
         setParameter(aParameterIndex, aValue, Types.VARCHAR);
-        recordSetParameter("setString", new Class[] {int.class, String.class}, aParameterIndex, aValue);
-        if (mIsCoordQuery)
+        if (mShouldRecordBindParameters)
         {
-            mServersidePstmt.setString(aParameterIndex, aValue);
+            recordSetParameter("setString", new Class[] { int.class, String.class }, aParameterIndex, aValue);
         }
+        mInternalPstmt.setString(aParameterIndex, aValue);
     }
 
     public void setBytes(int aParameterIndex, byte[] aValue) throws SQLException
     {
         setParameter(aParameterIndex, aValue, Types.BINARY);
-        recordSetParameter("setBytes", new Class[] {int.class, byte[].class}, aParameterIndex, aValue);
-        if (mIsCoordQuery)
+        if (mShouldRecordBindParameters)
         {
-            mServersidePstmt.setBytes(aParameterIndex, aValue);
+            recordSetParameter("setBytes", new Class[] { int.class, byte[].class }, aParameterIndex, aValue);
         }
+        mInternalPstmt.setBytes(aParameterIndex, aValue);
     }
 
     public void setDate(int aParameterIndex, Date aValue) throws SQLException
     {
         setParameter(aParameterIndex, aValue, Types.DATE);
-        recordSetParameter("setDate", new Class[] {int.class, Date.class}, aParameterIndex, aValue);
-        if (mIsCoordQuery)
+        if (mShouldRecordBindParameters)
         {
-            mServersidePstmt.setDate(aParameterIndex, aValue);
+            recordSetParameter("setDate", new Class[] { int.class, Date.class }, aParameterIndex, aValue);
         }
+        mInternalPstmt.setDate(aParameterIndex, aValue);
     }
 
     public void setTime(int aParameterIndex, Time aValue) throws SQLException
     {
         setParameter(aParameterIndex, aValue, Types.TIME);
-        recordSetParameter("setTime", new Class[] {int.class, Time.class}, aParameterIndex, aValue);
-        if (mIsCoordQuery)
+        if (mShouldRecordBindParameters)
         {
-            mServersidePstmt.setTime(aParameterIndex, aValue);
+            recordSetParameter("setTime", new Class[] { int.class, Time.class }, aParameterIndex, aValue);
         }
+        mInternalPstmt.setTime(aParameterIndex, aValue);
     }
 
     public void setTimestamp(int aParameterIndex, Timestamp aValue) throws SQLException
     {
         setParameter(aParameterIndex, aValue, Types.TIMESTAMP);
-        recordSetParameter("setTimestamp", new Class[]{int.class, Timestamp.class}, aParameterIndex, aValue);
-        if (mIsCoordQuery)
+        if (mShouldRecordBindParameters)
         {
-            mServersidePstmt.setTimestamp(aParameterIndex, aValue);
+            recordSetParameter("setTimestamp", new Class[] { int.class, Timestamp.class }, aParameterIndex, aValue);
         }
+        mInternalPstmt.setTimestamp(aParameterIndex, aValue);
     }
 
     public void setAsciiStream(int aParameterIndex, InputStream aValue, int aLength) throws SQLException
     {
         setParameter(aParameterIndex, aValue, Types.CLOB);
-        recordSetParameter("setAsciiStream", new Class[] {int.class, InputStream.class, int.class},
-                           aParameterIndex, aValue, aLength);
-        if (mIsCoordQuery)
+        if (mShouldRecordBindParameters)
         {
-            mServersidePstmt.setAsciiStream(aParameterIndex, aValue, aLength);
+            recordSetParameter("setAsciiStream", new Class[] { int.class, InputStream.class, int.class },
+                               aParameterIndex, aValue, aLength);
         }
+        mInternalPstmt.setAsciiStream(aParameterIndex, aValue, aLength);
     }
 
     public void setUnicodeStream(int aParameterIndex, InputStream aValue, int aLength) throws SQLException
@@ -309,12 +362,12 @@ public class AltibaseShardingPreparedStatement extends AltibaseShardingStatement
     public void setBinaryStream(int aParameterIndex, InputStream aValue, int aLength) throws SQLException
     {
         setParameter(aParameterIndex, aValue, Types.BLOB);
-        recordSetParameter("setBinaryStream", new Class[] {int.class, InputStream.class, int.class},
-                           aParameterIndex, aValue, aLength);
-        if (mIsCoordQuery)
+        if (mShouldRecordBindParameters)
         {
-            mServersidePstmt.setBinaryStream(aParameterIndex, aValue, aLength);
+            recordSetParameter("setBinaryStream", new Class[] { int.class, InputStream.class, int.class },
+                               aParameterIndex, aValue, aLength);
         }
+        mInternalPstmt.setBinaryStream(aParameterIndex, aValue, aLength);
     }
 
     public void clearParameters() throws SQLException
@@ -328,23 +381,23 @@ public class AltibaseShardingPreparedStatement extends AltibaseShardingStatement
     public void setObject(int aParameterIndex, Object aValue, int aTargetSqlType, int aScale) throws SQLException
     {
         setParameter(aParameterIndex, aValue, aTargetSqlType);
-        recordSetParameter("setObject", new Class[] {int.class, Object.class, int.class, int.class},
-                           aParameterIndex, aValue, aTargetSqlType, aScale);
-        if (mIsCoordQuery)
+        if (mShouldRecordBindParameters)
         {
-            mServersidePstmt.setObject(aParameterIndex, aValue, aTargetSqlType, aScale);
+            recordSetParameter("setObject", new Class[] { int.class, Object.class, int.class, int.class },
+                               aParameterIndex, aValue, aTargetSqlType, aScale);
         }
+        mInternalPstmt.setObject(aParameterIndex, aValue, aTargetSqlType, aScale);
     }
 
     public void setObject(int aParameterIndex, Object aValue, int aTargetSqlType) throws SQLException
     {
         setParameter(aParameterIndex, aValue, aTargetSqlType);
-        recordSetParameter("setObject", new Class[]{int.class, Object.class, int.class},
-                           aParameterIndex, aValue, aTargetSqlType);
-        if (mIsCoordQuery)
+        if (mShouldRecordBindParameters)
         {
-            mServersidePstmt.setObject(aParameterIndex, aValue, aTargetSqlType);
+            recordSetParameter("setObject", new Class[] { int.class, Object.class, int.class },
+                               aParameterIndex, aValue, aTargetSqlType);
         }
+        mInternalPstmt.setObject(aParameterIndex, aValue, aTargetSqlType);
     }
 
     public void setObject(int aParameterIndex, Object aValue) throws SQLException
@@ -433,10 +486,33 @@ public class AltibaseShardingPreparedStatement extends AltibaseShardingStatement
 
     public boolean execute() throws SQLException
     {
+        mMetaConn.checkCommitState();
         reAnalyzeIfNecessary();
 
-        boolean sResult = mInternalPstmt.execute();
-        updateShardMetaNumberIfNecessary();
+        boolean sResult;
+        short sRetryCount = mMetaConn.getShardStatementRetry();
+
+        try
+        {
+            while(true)
+            {
+                try
+                {
+                    sResult = mInternalPstmt.execute();
+                    break;
+                }
+                catch (SQLException aEx)
+                {
+                    // STATEMENT_TOO_OLD ¿Ã ø‹ ø°∑Ø∞° ¿÷¿ª ∞ÊøÏ¥¬ stmt retry «œ¡ˆ æ ¥¬¥Ÿ. 
+                    checkStmtTooOld(aEx, sRetryCount);
+                    --sRetryCount;
+                }
+            }
+        }
+        finally
+        {
+            updateShardMetaNumberIfNecessary();
+        }
 
         return sResult;
     }
@@ -472,10 +548,33 @@ public class AltibaseShardingPreparedStatement extends AltibaseShardingStatement
 
     public int[] executeBatch() throws SQLException
     {
+        mMetaConn.checkCommitState();
         reAnalyzeIfNecessary();
 
-        int[] sResults = mInternalPstmt.executeBatch();
-        updateShardMetaNumberIfNecessary();
+        int[] sResults;
+        short sRetryCount = mMetaConn.getShardStatementRetry();
+
+        try
+        {
+            while(true)
+            {
+                try
+                {
+                    sResults = mInternalPstmt.executeBatch();
+                    break;
+                }
+                catch (SQLException aEx)
+                {
+                    // STATEMENT_TOO_OLD ¿Ã ø‹ ø°∑Ø∞° ¿÷¿ª ∞ÊøÏ¥¬ stmt retry «œ¡ˆ æ ¥¬¥Ÿ. 
+                    checkStmtTooOld(aEx, sRetryCount);
+                    --sRetryCount;
+                }
+            }
+        }
+        finally
+        {
+            updateShardMetaNumberIfNecessary();
+        }
 
         return sResults;
     }
@@ -483,12 +582,12 @@ public class AltibaseShardingPreparedStatement extends AltibaseShardingStatement
     public void setCharacterStream(int aParameterIndex, Reader aReader, int aLength) throws SQLException
     {
         setParameter(aParameterIndex, aReader, Types.CLOB);
-        recordSetParameter("setCharacterStream", new Class[] {int.class, Reader.class, int.class},
-                           aParameterIndex, aReader, aLength);
-        if (mIsCoordQuery)
+        if (mShouldRecordBindParameters)
         {
-            mServersidePstmt.setCharacterStream(aParameterIndex, aReader, aLength);
+            recordSetParameter("setCharacterStream", new Class[] { int.class, Reader.class, int.class },
+                               aParameterIndex, aReader, aLength);
         }
+        mInternalPstmt.setCharacterStream(aParameterIndex, aReader, aLength);
     }
 
     public void setRef(int aParameterIndex, Ref aValue) throws SQLException
@@ -499,21 +598,21 @@ public class AltibaseShardingPreparedStatement extends AltibaseShardingStatement
     public void setBlob(int aParameterIndex, Blob aValue) throws SQLException
     {
         setParameter(aParameterIndex, aValue, Types.BLOB);
-        recordSetParameter("setBlob", new Class[] {int.class, Blob.class}, aParameterIndex, aValue);
-        if (mIsCoordQuery)
+        if (mShouldRecordBindParameters)
         {
-            mServersidePstmt.setBlob(aParameterIndex, aValue);
+            recordSetParameter("setBlob", new Class[] { int.class, Blob.class }, aParameterIndex, aValue);
         }
+        mInternalPstmt.setBlob(aParameterIndex, aValue);
     }
 
     public void setClob(int aParameterIndex, Clob aValue) throws SQLException
     {
         setParameter(aParameterIndex, aValue, Types.CLOB);
-        recordSetParameter("setClob", new Class[] {int.class, Clob.class}, aParameterIndex, aValue);
-        if (mIsCoordQuery)
+        if (mShouldRecordBindParameters)
         {
-            mServersidePstmt.setClob(aParameterIndex, aValue);
+            recordSetParameter("setClob", new Class[] { int.class, Clob.class }, aParameterIndex, aValue);
         }
+        mInternalPstmt.setClob(aParameterIndex, aValue);
     }
 
     public void setArray(int aParameterIndex, Array aValue) throws SQLException
@@ -529,44 +628,44 @@ public class AltibaseShardingPreparedStatement extends AltibaseShardingStatement
     public void setDate(int aParameterIndex, Date aValue, Calendar aCal) throws SQLException
     {
         setParameter(aParameterIndex, aValue, Types.DATE);
-        recordSetParameter("setDate", new Class[] {int.class, Date.class, Calendar.class},
-                           aParameterIndex, aValue, aCal);
-        if (mIsCoordQuery)
+        if (mShouldRecordBindParameters)
         {
-            mServersidePstmt.setDate(aParameterIndex, aValue, aCal);
+            recordSetParameter("setDate", new Class[] { int.class, Date.class, Calendar.class },
+                               aParameterIndex, aValue, aCal);
         }
+        mInternalPstmt.setDate(aParameterIndex, aValue, aCal);
     }
 
     public void setTime(int aParameterIndex, Time aValue, Calendar aCal) throws SQLException
     {
         setParameter(aParameterIndex, aValue, Types.TIME);
-        recordSetParameter("setTime", new Class[]{int.class, Time.class, Calendar.class}, aParameterIndex, aValue, aCal);
-        if (mIsCoordQuery)
+        if (mShouldRecordBindParameters)
         {
-            mServersidePstmt.setTime(aParameterIndex, aValue, aCal);
+            recordSetParameter("setTime", new Class[] { int.class, Time.class, Calendar.class }, aParameterIndex, aValue, aCal);
         }
+        mInternalPstmt.setTime(aParameterIndex, aValue, aCal);
     }
 
     public void setTimestamp(int aParameterIndex, Timestamp aValue, Calendar aCal) throws SQLException
     {
         setParameter(aParameterIndex, aValue, Types.TIMESTAMP);
-        recordSetParameter("setTimestamp", new Class[] {int.class, Timestamp.class, Calendar.class},
-                           aParameterIndex, aValue, aCal);
-        if (mIsCoordQuery)
+        if (mShouldRecordBindParameters)
         {
-            mServersidePstmt.setTimestamp(aParameterIndex, aValue, aCal);
+            recordSetParameter("setTimestamp", new Class[] { int.class, Timestamp.class, Calendar.class },
+                               aParameterIndex, aValue, aCal);
         }
+        mInternalPstmt.setTimestamp(aParameterIndex, aValue, aCal);
     }
 
     public void setNull(int aParameterIndex, int aSqlType, String aTypeName) throws SQLException
     {
         setParameter(aParameterIndex, null, Types.NULL);
-        recordSetParameterForNull(new Class[]{int.class, int.class, String.class},
-                                  aParameterIndex, aSqlType, aTypeName);
-        if (mIsCoordQuery)
+        if (mShouldRecordBindParameters)
         {
-            mServersidePstmt.setNull(aParameterIndex, aSqlType, aTypeName);
+            recordSetParameterForNull(new Class[] { int.class, int.class, String.class },
+                                      aParameterIndex, aSqlType, aTypeName);
         }
+        mInternalPstmt.setNull(aParameterIndex, aSqlType, aTypeName);
     }
 
     public void setURL(int aParameterIndex, URL aValue) throws SQLException
@@ -585,39 +684,43 @@ public class AltibaseShardingPreparedStatement extends AltibaseShardingStatement
     }
 
     /**
-     * SMN Í∞íÏù¥ ÎßûÏßÄ ÏïäÏùÄ Í≤ΩÏö∞ analyzeÎ•º Îã§Ïãú ÏàòÌñâÌïúÎã§.
-     * @throws SQLException shard analyze Ï§ë ÏóêÎü¨Í∞Ä Î∞úÏÉùÌñàÏùÑÎïå
+     * SMN ∞™¿Ã ∏¬¡ˆ æ ¿∫ ∞ÊøÏ analyze∏¶ ¥ŸΩ√ ºˆ«‡«—¥Ÿ.
+     * @throws SQLException shard analyze ¡ﬂ ø°∑Ø∞° πﬂª˝«ﬂ¿ª∂ß
      */
-    void reAnalyzeIfNecessary() throws SQLException
+    private void reAnalyzeIfNecessary() throws SQLException
     {
-        if (mShardMetaNumber < mShardContextConnect.getShardMetaNumber())
+        if (!mIsReshardEnabled)
         {
-            mShardStmtCtx = new CmProtocolContextShardStmt(mShardContextConnect);
-            mShardProtocol.shardAnalyze(mShardStmtCtx, mSql);
-            // BUG-46513 ONENODEÏù¥Í≥† analyze Í≤∞Í≥ºÍ∞Ä ÏÑ±Í≥µÏù¥ ÏïÑÎãêÍ≤ΩÏö∞ÏóêÎäî ÏòàÏô∏Î•º ÎçòÏßÑÎã§.
-            if (mShardStmtCtx.getShardTransactionLevel() == ShardTransactionLevel.ONE_NODE)
-            {
-                mSqlwarning = Error.processServerError(mSqlwarning, mShardStmtCtx.getError());
-            }
-            setShardMetaNumber(mShardContextConnect.getShardMetaNumber());
-
-            if (mShardStmtCtx.getShardAnalyzeResult().isCoordQuery())
-            {
-                createServerSideStatement(mMetaConn, mSql, mResultSetType, mResultSetConcurrency,
-                                          mResultSetHoldability);
-                replaySetParameter(mServersidePstmt);
-            }
-            else
-            {
-                mInternalStmt = new DataNodeShardingPreparedStatement(mMetaConn,
-                                                                      mSql,
-                                                                      mResultSetType,
-                                                                      mResultSetConcurrency,
-                                                                      mResultSetHoldability,
-                                                                      this);
-                mInternalPstmt = (InternalShardingPreparedStatement)mInternalStmt;
-            }
+            return;
         }
+        CmProtocolContextShardConnect sShardContextConnect = mMetaConn.getShardContextConnect();
+        if (mShardMetaNumber >= sShardContextConnect.getShardMetaNumber())
+        {
+            return;
+        }
+        mShardStmtCtx = new CmProtocolContextShardStmt(mMetaConn, mStatementForAnalyze);
+        try
+        {
+            mMetaConn.getShardProtocol().shardAnalyze(mShardStmtCtx, mSql, mStatementForAnalyze.getID());
+        }
+        catch (SQLException aEx)
+        {
+            AltibaseFailover.trySTF(mMetaConn.getMetaConnection().failoverContext(), aEx);
+        }
+        // BUG-46513 ONENODE¿Ã∞Ì analyze ∞·∞˙∞° º∫∞¯¿Ã æ∆¥“∞ÊøÏø°¥¬ øπø‹∏¶ ¥¯¡¯¥Ÿ.
+        if (mShardStmtCtx.getGlobalTransactionLevel() == GlobalTransactionLevel.ONE_NODE)
+        {
+            mSqlwarning = Error.processServerError(mSqlwarning, mShardStmtCtx.getError());
+        }
+        // BUG-47357 mInternalPstmt∏¶ ªı∑Œ ∏∏µÈ¡ˆ æ ∞Ì ¿Á»∞øÎ«—¥Ÿ.
+        mInternalPstmt.rePrepare(mShardStmtCtx);
+
+        if (mShardStmtCtx.getShardAnalyzeResult().isCoordQuery())
+        {
+            // BUG-47357 º≠πˆªÁ¿ÃµÂ¿Œ ∞ÊøÏ prepare»ƒ setParameter∏¶ ¥ŸΩ√ «ÿ¡‡æﬂ «—¥Ÿ.
+            replaySetParameter(mServersidePstmt);
+        }
+        setShardMetaNumber(sShardContextConnect.getShardMetaNumber());
     }
 
     private void setParameter(int aParameterIndex, Object aValue, int aType) throws SQLException
@@ -652,8 +755,7 @@ public class AltibaseShardingPreparedStatement extends AltibaseShardingStatement
         mParameters.set(aParameterIndex - 1, sColumn);
     }
 
-    private void recordSetParameter(String aMethodName, Class[] aArgTypes,
-                                    Object... aArgs) throws SQLException
+    private void recordSetParameter(String aMethodName, Class[] aArgTypes, Object... aArgs) throws SQLException
     {
         try
         {
@@ -668,8 +770,7 @@ public class AltibaseShardingPreparedStatement extends AltibaseShardingStatement
         }
     }
 
-    private void recordSetParameterForNull(Class[] aArgumentTypes,
-                                           Object... aArguments) throws SQLException
+    private void recordSetParameterForNull(Class[] aArgumentTypes, Object... aArguments) throws SQLException
     {
         try
         {
@@ -685,9 +786,74 @@ public class AltibaseShardingPreparedStatement extends AltibaseShardingStatement
         }
     }
 
-    public List<Column> getParameters()
+    List<Column> getParameters()
     {
         return mParameters;
     }
 
+    @Override
+    public void setAsciiStream(int aParameterIndex, InputStream aStream, long aLength) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setBinaryStream(int aParameterIndex, InputStream aStream, long aLength) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setCharacterStream(int aParameterIndex, Reader aReader, long aLength) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setAsciiStream(int aParameterIndex, InputStream aStream) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setBinaryStream(int aParameterIndex, InputStream aStream) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setCharacterStream(int aParameterIndex, Reader aReader) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setClob(int aParameterIndex, Reader aReader) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setBlob(int aParameterIndex, InputStream aInputStream) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setNString(int aParameterIndex, String aValue) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setClob(int aParameterIndex, Reader aReader, long aLength) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setBlob(int aParameterIndex, InputStream aInputStream, long aLength) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
 }

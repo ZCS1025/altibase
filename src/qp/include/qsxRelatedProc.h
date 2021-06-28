@@ -26,13 +26,13 @@
 
 typedef struct qsxProcPlanList
 {
-    /* procedure, function, package spec, table Îì±Ïùò Ï†ïÎ≥¥ */
+    /* procedure, function, package spec, table µÓ¿« ¡§∫∏ */
     qsOID              objectID;
     UInt               modifyCount;
     /* BUG-38844 object type */
     SInt               objectType;
     smSCN              objectSCN; /* PROJ-2268 */
-    /* BUG-38720 package body Ï†ïÎ≥¥ */
+    /* BUG-38720 package body ¡§∫∏ */
     qsOID              pkgBodyOID;
     UInt               pkgBodyModifyCount;
     smSCN              pkgBodySCN; /* PROJ-2268 */

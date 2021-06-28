@@ -63,7 +63,7 @@ public final class CharsetUtils
         mNLSToCharsetMap.put("ZHS16CGB231280", "GB2312");
         mNLSToCharsetMap.put("ZHS16CGB231280FIXED", "GB2312");
 
-        /* PROJ-2414 [Í∏∞Îä•ÏÑ±] GBK, CP936 character set Ï∂îÍ∞Ä */
+        /* PROJ-2414 [±‚¥…º∫] GBK, CP936 character set √ﬂ∞° */
         mNLSToCharsetMap.put("GBK", "GBK");
         mNLSToCharsetMap.put("CP936", "GBK");
         mNLSToCharsetMap.put("MS936", "GBK");
@@ -78,7 +78,7 @@ public final class CharsetUtils
         mNLSToCharsetMap.put("JAPANESE", "Shift_JIS");
         mNLSToCharsetMap.put("SHIFTJIS", "Shift_JIS");
 
-        /* PROJ-2590 [Í∏∞Îä•ÏÑ±] CP932 database character set ÏßÄÏõê */
+        /* PROJ-2590 [±‚¥…º∫] CP932 database character set ¡ˆø¯ */
         mNLSToCharsetMap.put("MS932", "MS932");
         mNLSToCharsetMap.put("CP932", "MS932");
         mNLSToCharsetMap.put("WINDOWS932", "MS932");

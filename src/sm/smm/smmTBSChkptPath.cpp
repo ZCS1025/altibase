@@ -33,7 +33,7 @@
 #include <smmTBSMultiPhase.h>
 
 /*
-  ìƒì„±ì (ì•„ë¬´ê²ƒë„ ì•ˆí•¨)
+  »ı¼ºÀÚ (¾Æ¹«°Íµµ ¾ÈÇÔ)
 */
 smmTBSChkptPath::smmTBSChkptPath()
 {
@@ -42,11 +42,11 @@ smmTBSChkptPath::smmTBSChkptPath()
 
 
 /*
-  PRJ-1548 User Memory TableSpace ê°œë…ë„ì… 
-  Checkpoint Path Attributeì— Checkpoint Pathë¥¼ ì„¤ì •í•œë‹¤.
+  PRJ-1548 User Memory TableSpace °³³äµµÀÔ 
+  Checkpoint Path Attribute¿¡ Checkpoint Path¸¦ ¼³Á¤ÇÑ´Ù.
     
   [IN] aCPathAttr - Checkpoint Path Attribute
-  [IN] aChkptPath - Checkpoint Path ë¬¸ìì—´ 
+  [IN] aChkptPath - Checkpoint Path ¹®ÀÚ¿­ 
 */
 IDE_RC smmTBSChkptPath::setChkptPath( smiChkptPathAttr * aCPathAttr,
                                     SChar            * aChkptPath )
@@ -66,12 +66,12 @@ IDE_RC smmTBSChkptPath::setChkptPath( smiChkptPathAttr * aCPathAttr,
 
 
 /*
-    Checkpoint Path Attributeë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+    Checkpoint Path Attribute¸¦ ÃÊ±âÈ­ÇÑ´Ù.
     
-    [IN] aCPathAttr - ì´ˆê¸°í™”í•  Checkpoint Path Attribute
-    [IN] aSpaceID   - ì´ˆê¸°í™”í•  Checkpoint Path Attributeê°€
-                      ì†í•˜ëŠ” Tablespaceì˜ ID
-    [IN] aChkptPath - ì´ˆê¸°í™”í•  Checkpoint Path Attributeê°€ ì§€ë‹ Path
+    [IN] aCPathAttr - ÃÊ±âÈ­ÇÒ Checkpoint Path Attribute
+    [IN] aSpaceID   - ÃÊ±âÈ­ÇÒ Checkpoint Path Attribute°¡
+                      ¼ÓÇÏ´Â TablespaceÀÇ ID
+    [IN] aChkptPath - ÃÊ±âÈ­ÇÒ Checkpoint Path Attribute°¡ Áö´Ò Path
  */
 IDE_RC smmTBSChkptPath::initializeChkptPathAttr(
                           smiChkptPathAttr * aCPathAttr,
@@ -92,12 +92,12 @@ IDE_RC smmTBSChkptPath::initializeChkptPathAttr(
 }
 
 /*
-    Checkpoint Path Nodeë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+    Checkpoint Path Node¸¦ ÃÊ±âÈ­ÇÑ´Ù.
     
-    [IN] aCPathNode - ì´ˆê¸°í™”í•  Checkpoint Path Node
-    [IN] aSpaceID   - ì´ˆê¸°í™”í•  Checkpoint Path Attributeê°€ ì†í•˜ëŠ”
-                      Tablespaceì˜ ID
-    [IN] aChkptPath - ì´ˆê¸°í™”í•  Checkpoint Path Attributeê°€ ì§€ë‹ Path
+    [IN] aCPathNode - ÃÊ±âÈ­ÇÒ Checkpoint Path Node
+    [IN] aSpaceID   - ÃÊ±âÈ­ÇÒ Checkpoint Path Attribute°¡ ¼ÓÇÏ´Â
+                      TablespaceÀÇ ID
+    [IN] aChkptPath - ÃÊ±âÈ­ÇÒ Checkpoint Path Attribute°¡ Áö´Ò Path
     
  */
 IDE_RC smmTBSChkptPath::initializeChkptPathNode(
@@ -121,14 +121,14 @@ IDE_RC smmTBSChkptPath::initializeChkptPathNode(
 }
 
 /*
-     Checkpoint Path Nodeë¥¼ íŒŒê´´í•œë‹¤.
+     Checkpoint Path Node¸¦ ÆÄ±«ÇÑ´Ù.
   
-    [IN] aCPathNode - íŒŒê´´í•  Checkpoint Path Node
+    [IN] aCPathNode - ÆÄ±«ÇÒ Checkpoint Path Node
  */
 IDE_RC smmTBSChkptPath::destroyChkptPathNode(smmChkptPathNode * aCPathNode )
 {
-    // ì•„ë¬´ ê²ƒë„ í•  ê²ƒì´ ì—†ë‹¤.
-    // ë‹¨ì§€ Checkpoint Pathì˜ ì´ë¦„ì„ destroyë˜ì—ˆë‹¤ê³  ì €ì¥í•´ë‘”ë‹¤.
+    // ¾Æ¹« °Íµµ ÇÒ °ÍÀÌ ¾ø´Ù.
+    // ´ÜÁö Checkpoint PathÀÇ ÀÌ¸§À» destroyµÇ¾ú´Ù°í ÀúÀåÇØµĞ´Ù.
 
     IDE_TEST( setChkptPath( & aCPathNode->mChkptPathAttr,
                             (SChar*)"destroyedTBS" )
@@ -145,11 +145,11 @@ IDE_RC smmTBSChkptPath::destroyChkptPathNode(smmChkptPathNode * aCPathNode )
     
 
 /*
-    Checkpoint Path Nodeë¥¼ í• ë‹¹í•˜ê³  ì´ˆê¸°í™”í•œë‹¤.
+    Checkpoint Path Node¸¦ ÇÒ´çÇÏ°í ÃÊ±âÈ­ÇÑ´Ù.
 
-    [IN]  aSpaceID   - Checkpoint Pathë¥¼ ì§€ë‹ˆê²Œ ë  Tablespaceì˜ ID
-    [IN]  aChkptPath - Checkpoint Path ( ë””ë ‰í† ë¦¬ ê²½ë¡œ ë¬¸ìì—´ )
-    [OUT] aCPathNode - ìƒ
+    [IN]  aSpaceID   - Checkpoint Path¸¦ Áö´Ï°Ô µÉ TablespaceÀÇ ID
+    [IN]  aChkptPath - Checkpoint Path ( µğ·ºÅä¸® °æ·Î ¹®ÀÚ¿­ )
+    [OUT] aCPathNode - »ı
  */
 IDE_RC smmTBSChkptPath::makeChkptPathNode( scSpaceID           aSpaceID,
                                            SChar             * aChkptPath,
@@ -205,10 +205,10 @@ IDE_RC smmTBSChkptPath::makeChkptPathNode( scSpaceID           aSpaceID,
 
 
 /*
- * Checkpoint Path Nodeë¥¼ íŠ¹ì • Tablespaceì— ì¶”ê°€í•œë‹¤. 
+ * Checkpoint Path Node¸¦ Æ¯Á¤ Tablespace¿¡ Ãß°¡ÇÑ´Ù. 
  *
- * aTBSNode       [IN] - Checkpoint Path Nodeê°€ ì¶”ê°€ë  Tablespace
- * aChkptPathNode [IN] - ì¶”ê°€í•  Checkpoint Path Node
+ * aTBSNode       [IN] - Checkpoint Path Node°¡ Ãß°¡µÉ Tablespace
+ * aChkptPathNode [IN] - Ãß°¡ÇÒ Checkpoint Path Node
  */
 IDE_RC smmTBSChkptPath::addChkptPathNode( smmTBSNode       * aTBSNode,
                                         smmChkptPathNode * aChkptPathNode )
@@ -254,11 +254,11 @@ IDE_RC smmTBSChkptPath::addChkptPathNode( smmTBSNode       * aTBSNode,
 }
 
 /*
-    Checkpoint Path Nodeì™€ Checkpoint Path ë¬¸ìì—´ì„ ë¹„êµí•˜ì—¬
-    ê°™ì€ Checkpoint Pathì¸ì§€ ì²´í¬í•œë‹¤.
+    Checkpoint Path Node¿Í Checkpoint Path ¹®ÀÚ¿­À» ºñ±³ÇÏ¿©
+    °°Àº Checkpoint PathÀÎÁö Ã¼Å©ÇÑ´Ù.
 
-    [IN] aCPathNode - ë¹„êµí•  Checkpoint Path Node
-    [IN] aChkptPath - ë¹„êµí•  Checkpoint Path ë¬¸ìì—´
+    [IN] aCPathNode - ºñ±³ÇÒ Checkpoint Path Node
+    [IN] aChkptPath - ºñ±³ÇÒ Checkpoint Path ¹®ÀÚ¿­
  */
 idBool smmTBSChkptPath::isSameChkptPath(smmChkptPathNode * aCPathNode,
                                       SChar            * aChkptPath)
@@ -286,11 +286,11 @@ idBool smmTBSChkptPath::isSameChkptPath(smmChkptPathNode * aCPathNode,
 
 
 /*
- * íŠ¹ì • Tablespaceì—ì„œ íŠ¹ì • Checkpoint Path Nodeë¥¼ ì°¾ëŠ”ë‹¤.
+ * Æ¯Á¤ Tablespace¿¡¼­ Æ¯Á¤ Checkpoint Path Node¸¦ Ã£´Â´Ù.
  *
- * aTBSNode       [IN] - Checkpoint Path Nodeë¥¼ ì°¾ì„ Tablespace
- * aChkptPath     [IN] - ì°¾ê³ ì í•˜ëŠ” Checkpoint Path ë¬¸ìì—´
- * aChkptPathNode [IN] - ì°¾ì•„ë‚¸ Checkpoint Path Node
+ * aTBSNode       [IN] - Checkpoint Path Node¸¦ Ã£À» Tablespace
+ * aChkptPath     [IN] - Ã£°íÀÚ ÇÏ´Â Checkpoint Path ¹®ÀÚ¿­
+ * aChkptPathNode [IN] - Ã£¾Æ³½ Checkpoint Path Node
  */  
 IDE_RC smmTBSChkptPath::findChkptPathNode( smmTBSNode        * aTBSNode,
                                          SChar             * aChkptPath,
@@ -327,10 +327,10 @@ IDE_RC smmTBSChkptPath::findChkptPathNode( smmTBSNode        * aTBSNode,
 
 
 /*
- * Checkpoint Path Nodeë¥¼ íŠ¹ì • Tablespaceì—ì„œ ì œê±°í•œë‹¤.
+ * Checkpoint Path Node¸¦ Æ¯Á¤ Tablespace¿¡¼­ Á¦°ÅÇÑ´Ù.
  *
- * aTBSNode       [IN] - Checkpoint Path Nodeê°€ ì œê±°ë  Tablespace
- * aChkptPathNode [IN] - ì œê±°í•  Checkpoint Path Node
+ * aTBSNode       [IN] - Checkpoint Path Node°¡ Á¦°ÅµÉ Tablespace
+ * aChkptPathNode [IN] - Á¦°ÅÇÒ Checkpoint Path Node
  */  
 IDE_RC smmTBSChkptPath::removeChkptPathNode(
                           smmTBSNode       * aTBSNode,
@@ -344,7 +344,7 @@ IDE_RC smmTBSChkptPath::removeChkptPathNode(
     
     sListNode = SMU_LIST_GET_FIRST( & aTBSNode->mChkptPathBase );
 
-    // ìµœì†Œí•œ í•˜ë‚˜ì˜ Checkpoint Pathê°€ ìˆì–´ì•¼ í•œë‹¤.
+    // ÃÖ¼ÒÇÑ ÇÏ³ªÀÇ Checkpoint Path°¡ ÀÖ¾î¾ß ÇÑ´Ù.
     IDE_DASSERT( sListNode != & aTBSNode->mChkptPathBase );
 
     while ( sListNode !=  & aTBSNode->mChkptPathBase )
@@ -356,8 +356,8 @@ IDE_RC smmTBSChkptPath::removeChkptPathNode(
 
             IDE_TEST( destroyChkptPathNode( sCPathNode ) != IDE_SUCCESS );
 
-            // Chkpt Path List ì—ì„œ Nodeì˜ ì œê±°ë„ì¤‘
-            // Checkpoint Path Count ê°ì†Œí•˜ê¸° ì „ì— ì—ëŸ¬ê°€ ë°œìƒí•´ì„œëŠ” ì•ˆëœë‹¤
+            // Chkpt Path List ¿¡¼­ NodeÀÇ Á¦°ÅµµÁß
+            // Checkpoint Path Count °¨¼ÒÇÏ±â Àü¿¡ ¿¡·¯°¡ ¹ß»ıÇØ¼­´Â ¾ÈµÈ´Ù
             IDE_ASSERT( iduMemMgr::free( sCPathNode ) == IDE_SUCCESS );
             
             SMU_LIST_DELETE( sListNode );
@@ -379,10 +379,10 @@ IDE_RC smmTBSChkptPath::removeChkptPathNode(
 
 
 /*
- * Checkpoint Path Nodeì˜ Checkpoint Pathë¥¼ ë³€ê²½í•œë‹¤.
+ * Checkpoint Path NodeÀÇ Checkpoint Path¸¦ º¯°æÇÑ´Ù.
  *
- * aChkptPathNode [IN] - ë³€ê²½í•  Checkpoint Path Node
- * aChkptPath     [IN] - ìƒˆë¡œ ì„¤ì •í•  Checkpoint Path ë¬¸ìì—´ 
+ * aChkptPathNode [IN] - º¯°æÇÒ Checkpoint Path Node
+ * aChkptPath     [IN] - »õ·Î ¼³Á¤ÇÒ Checkpoint Path ¹®ÀÚ¿­ 
  */  
 IDE_RC smmTBSChkptPath::renameChkptPathNode(
                           smmChkptPathNode * aChkptPathNode,
@@ -404,10 +404,10 @@ IDE_RC smmTBSChkptPath::renameChkptPathNode(
 
 
 /*
- * Checkpoint Path Nodeì˜ ìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.
+ * Checkpoint Path NodeÀÇ ¼ö¸¦ ¸®ÅÏÇÑ´Ù.
  *
- * [IN]  aTBSNode        - Checkpoint Pathì˜ ìˆ˜ë¥¼ Countí•  Tablespace
- * [OUT] aChkptPathCount - Checkpoint Pathì˜ ìˆ˜ 
+ * [IN]  aTBSNode        - Checkpoint PathÀÇ ¼ö¸¦ CountÇÒ Tablespace
+ * [OUT] aChkptPathCount - Checkpoint PathÀÇ ¼ö 
  */  
 IDE_RC smmTBSChkptPath::getChkptPathNodeCount( smmTBSNode * aTBSNode,
                                              UInt       * aChkptPathCount )
@@ -433,11 +433,11 @@ IDE_RC smmTBSChkptPath::getChkptPathNodeCount( smmTBSNode * aTBSNode,
 }
 
 /*
-   Në²ˆì§¸ Checkpoint Path Nodeë¥¼ ë¦¬í„´í•œë‹¤.
+   N¹øÂ° Checkpoint Path Node¸¦ ¸®ÅÏÇÑ´Ù.
    
-   [IN]  aTBSNode   - Checkpoint Pathë¥¼ ê²€ìƒ‰í•  Tablespace Node
-   [IN]  aIndex     - ëª‡ë²ˆì§¸ Checkpoint Pathë¥¼ ë¦¬í„´í• ì§€ (0-based index)
-   [OUT] aCPathNode - ê²€ìƒ‰í•œ Checkpoint Path Node
+   [IN]  aTBSNode   - Checkpoint Path¸¦ °Ë»öÇÒ Tablespace Node
+   [IN]  aIndex     - ¸î¹øÂ° Checkpoint Path¸¦ ¸®ÅÏÇÒÁö (0-based index)
+   [OUT] aCPathNode - °Ë»öÇÑ Checkpoint Path Node
  */
 IDE_RC smmTBSChkptPath::getChkptPathNodeByIndex(
                           smmTBSNode        * aTBSNode,
@@ -471,12 +471,12 @@ IDE_RC smmTBSChkptPath::getChkptPathNodeByIndex(
 
 
 /*
- * í•˜ë‚˜ í˜¹ì€ ê·¸ ì´ìƒì˜ Checkpoint Pathë¥¼ TBSNodeì—ì„œ ì œê±°í•œë‹¤.
+ * ÇÏ³ª È¤Àº ±× ÀÌ»óÀÇ Checkpoint Path¸¦ TBSNode¿¡¼­ Á¦°ÅÇÑ´Ù.
  *
- * Checkpoint Pathê°€ Tablespaceì— ì¡´ì¬í•˜ëŠ” ê²½ìš°ì—ë§Œ ì œê±°í•œë‹¤.
+ * Checkpoint Path°¡ Tablespace¿¡ Á¸ÀçÇÏ´Â °æ¿ì¿¡¸¸ Á¦°ÅÇÑ´Ù.
  *
- * aTBSNode       [IN] - Checkpoint Pathê°€ ì œê±°ë  Tabelspaceì˜ Node
- * aChkptPathList [IN] - ì œê±°í•  Checkpoint Pathì˜ List
+ * aTBSNode       [IN] - Checkpoint Path°¡ Á¦°ÅµÉ TabelspaceÀÇ Node
+ * aChkptPathList [IN] - Á¦°ÅÇÒ Checkpoint PathÀÇ List
  */
 IDE_RC smmTBSChkptPath::removeChkptPathNodesIfExist(
                           smmTBSNode           * aTBSNode,
@@ -496,13 +496,13 @@ IDE_RC smmTBSChkptPath::removeChkptPathNodesIfExist(
         sChkptPath = sCPAttrList->mCPathAttr.mChkptPath;
 
         //////////////////////////////////////////////////////////////////
-        // (e-020) ì´ë¯¸ Tablespaceì— ì¡´ì¬í•˜ëŠ” Checkpoint Pathê°€ ìˆìœ¼ë©´ ì—ëŸ¬
+        // (e-020) ÀÌ¹Ì Tablespace¿¡ Á¸ÀçÇÏ´Â Checkpoint Path°¡ ÀÖÀ¸¸é ¿¡·¯
         IDE_TEST( findChkptPathNode( aTBSNode,
                                      sChkptPath,
                                      & sCPathNode )
                   != IDE_SUCCESS );
 
-        // Checkpoint Pathê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°ì—ë§Œ ì œê±° 
+        // Checkpoint Path°¡ Á¸ÀçÇÏ´Â °æ¿ì¿¡¸¸ Á¦°Å 
         if ( sCPathNode != NULL )
         {
             IDE_TEST( removeChkptPathNode( aTBSNode, sCPathNode )
@@ -520,14 +520,14 @@ IDE_RC smmTBSChkptPath::removeChkptPathNodesIfExist(
 
 
 /*
-    Checkpoint Pathì˜ ì ‘ê·¼ ê°€ëŠ¥ì—¬ë¶€ ì²´í¬ 
+    Checkpoint PathÀÇ Á¢±Ù °¡´É¿©ºÎ Ã¼Å© 
 
-    [IN] aChkptPath - ì ‘ê·¼ ê°€ëŠ¥ì—¬ë¶€ë¥¼ ì²´í¬í•  Checkpoint Path
+    [IN] aChkptPath - Á¢±Ù °¡´É¿©ºÎ¸¦ Ã¼Å©ÇÒ Checkpoint Path
     
-    [ ì•Œê³ ë¦¬ì¦˜ ]
-      (010) NewPathê°€ ì—†ëŠ” ë””ë ‰í† ë¦¬ì´ë©´ ì—ëŸ¬
-      (020) NewPathê°€ ë””ë ‰í† ë¦¬ê°€ ì•„ë‹Œ íŒŒì¼ì´ë©´ ì—ëŸ¬
-      (030) NewPathì— read/write/execute permissionì´ ì—†ìœ¼ë©´ ì—ëŸ¬
+    [ ¾Ë°í¸®Áò ]
+      (010) NewPath°¡ ¾ø´Â µğ·ºÅä¸®ÀÌ¸é ¿¡·¯
+      (020) NewPath°¡ µğ·ºÅä¸®°¡ ¾Æ´Ñ ÆÄÀÏÀÌ¸é ¿¡·¯
+      (030) NewPath¿¡ read/write/execute permissionÀÌ ¾øÀ¸¸é ¿¡·¯
  */
 IDE_RC smmTBSChkptPath::checkAccess2ChkptPath( SChar * aChkptPath )
 {
@@ -535,18 +535,18 @@ IDE_RC smmTBSChkptPath::checkAccess2ChkptPath( SChar * aChkptPath )
     IDE_DASSERT( aChkptPath != NULL );
 
     ////////////////////////////////////////////////////////////////////
-    // (010) NewPathê°€ ì—†ëŠ” ë””ë ‰í† ë¦¬ì´ë©´ ì—ëŸ¬
+    // (010) NewPath°¡ ¾ø´Â µğ·ºÅä¸®ÀÌ¸é ¿¡·¯
     IDE_TEST_RAISE( idf::access( aChkptPath, F_OK ) != 0,
                     err_path_not_found );
 
     ////////////////////////////////////////////////////////////////////
-    // (020) NewPathê°€ ë””ë ‰í† ë¦¬ê°€ ì•„ë‹Œ íŒŒì¼ì´ë©´ ì—ëŸ¬
+    // (020) NewPath°¡ µğ·ºÅä¸®°¡ ¾Æ´Ñ ÆÄÀÏÀÌ¸é ¿¡·¯
     sDir = idf::opendir( aChkptPath );
     IDE_TEST_RAISE( sDir == NULL, err_path_is_not_directory );
     (void)idf::closedir(sDir);
     
     ////////////////////////////////////////////////////////////////////
-    // (030) NewPathì— read/write/execute permissionì´ ì—†ìœ¼ë©´ ì—ëŸ¬
+    // (030) NewPath¿¡ read/write/execute permissionÀÌ ¾øÀ¸¸é ¿¡·¯
     IDE_TEST_RAISE( idf::access( aChkptPath, R_OK ) != 0,
                     err_path_no_read_perm );
 
@@ -589,9 +589,9 @@ IDE_RC smmTBSChkptPath::checkAccess2ChkptPath( SChar * aChkptPath )
 }
 
 /*
- * Tablespaceì˜ ë‹¤ë‹¨ê³„ í•´ì œì¤‘ Media Phaseë¥¼ ë‚´ë¦´ë•Œ í˜¸ì¶œëœë‹¤
+ * TablespaceÀÇ ´Ù´Ü°è ÇØÁ¦Áß Media Phase¸¦ ³»¸±¶§ È£ÃâµÈ´Ù
  *
- * aTBSNode [IN] - ëª¨ë“  Checkpoint Path Nodeë¥¼ Freeí•  Tablespace
+ * aTBSNode [IN] - ¸ğµç Checkpoint Path Node¸¦ FreeÇÒ Tablespace
  */  
 IDE_RC smmTBSChkptPath::freeAllChkptPathNode( smmTBSNode       * aTBSNode )
 {
@@ -603,8 +603,8 @@ IDE_RC smmTBSChkptPath::freeAllChkptPathNode( smmTBSNode       * aTBSNode )
     
     sListNode = SMU_LIST_GET_FIRST( & aTBSNode->mChkptPathBase );
 
-    // Create Tablespaceì˜ Undoì‹œì—ëŠ” Checkpoint Pathê°€ ì—†ì„ ìˆ˜ë„ ìˆë‹¤
-    // ì•„ë˜ ASSERTë¥¼ ê±¸ì–´ì„œëŠ” ì•ˆëœë‹¤.
+    // Create TablespaceÀÇ Undo½Ã¿¡´Â Checkpoint Path°¡ ¾øÀ» ¼öµµ ÀÖ´Ù
+    // ¾Æ·¡ ASSERT¸¦ °É¾î¼­´Â ¾ÈµÈ´Ù.
     // IDE_DASSERT( sListNode != & aTBSNode->mChkptPathBase );
 
     while ( sListNode !=  & aTBSNode->mChkptPathBase )
@@ -615,8 +615,8 @@ IDE_RC smmTBSChkptPath::freeAllChkptPathNode( smmTBSNode       * aTBSNode )
         
         IDE_TEST( destroyChkptPathNode( sCPathNode ) != IDE_SUCCESS );
         
-        // Chkpt Path List ì—ì„œ Nodeì˜ ì œê±°ë„ì¤‘
-        // Checkpoint Path Count ê°ì†Œí•˜ê¸° ì „ì— ì—ëŸ¬ê°€ ë°œìƒí•´ì„œëŠ” ì•ˆëœë‹¤
+        // Chkpt Path List ¿¡¼­ NodeÀÇ Á¦°ÅµµÁß
+        // Checkpoint Path Count °¨¼ÒÇÏ±â Àü¿¡ ¿¡·¯°¡ ¹ß»ıÇØ¼­´Â ¾ÈµÈ´Ù
         IDE_ASSERT( iduMemMgr::free( sCPathNode ) == IDE_SUCCESS );
         
         SMU_LIST_DELETE( sListNode );

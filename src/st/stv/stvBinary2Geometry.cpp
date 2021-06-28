@@ -93,7 +93,7 @@ static IDE_RC stvBinary2GeoEstimate( mtcNode*     aNode,
     aTemplate->rows[aNode->table].execute[aNode->column] = stvBinary2GeoExecute;
     
     // To Fix BUG-16031
-    // Binary ì— Geometry Headerë¥¼ í¬í•¨í•˜ê³  ìˆìŒ.
+    // Binary ¿¡ Geometry Header¸¦ Æ÷ÇÔÇÏ°í ÀÖÀ½.
     sGeoPrecision = aStack[1].column->precision - ID_SIZEOF(stdGeometryHeader);
     
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
@@ -131,7 +131,7 @@ IDE_RC stvCalculate_Binary2Geometry( mtcNode*,
     sValueLength = ((mtdBinaryType*)aStack[1].value)->mLength;
 
     // BUG-24425
-    // ë°”ì´ë„ˆë¦¬ íƒ€ì…ì˜ null ì„ ê²€ì‚¬í•´ì•¼ í•œë‹¤.
+    // ¹ÙÀÌ³Ê¸® Å¸ÀÔÀÇ null À» °Ë»çÇØ¾ß ÇÑ´Ù.
     if(aStack[1].column->module->isNull( aStack[1].column,
                                          aStack[1].value ) == ID_TRUE)
     {
@@ -151,7 +151,7 @@ IDE_RC stvCalculate_Binary2Geometry( mtcNode*,
 
         //-----------------------
         // To Fix BUG-15854
-        // Endian ë³€ê²½
+        // Endian º¯°æ
         //-----------------------
 
         IDE_TEST( stdUtils::isEquiEndian( (stdGeometryHeader*) aStack[0].value,
@@ -160,11 +160,11 @@ IDE_RC stvCalculate_Binary2Geometry( mtcNode*,
 
         if ( sEquiEndian == ID_TRUE )
         {
-            // ë™ì¼í•œ Endianì„.
+            // µ¿ÀÏÇÑ EndianÀÓ.
         }
         else
         {
-            // ì„œë¡œ ë‹¤ë¥¸ Endianì„.
+            // ¼­·Î ´Ù¸¥ EndianÀÓ.
             stdGeometry.endian( aStack[0].value );
         }
 
@@ -174,12 +174,12 @@ IDE_RC stvCalculate_Binary2Geometry( mtcNode*,
         sQcTmplate = (qcTemplate*) aTemplate;
         sQmxMem    = QC_QMX_MEM( sQcTmplate->stmt );
 
-        // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
+        // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
         IDE_TEST( sQmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS);
         sStage = 1;
         
         // To Fix BUG-16346
-        // Binary ê°ì²´ì— ëŒ€í•œ Validationì„ ìˆ˜í–‰í•œë‹¤.
+        // Binary °´Ã¼¿¡ ´ëÇÑ ValidationÀ» ¼öÇàÇÑ´Ù.
 
         if ( STU_VALIDATION_ENABLE == STU_VALIDATION_ENABLE_TRUE )
         {

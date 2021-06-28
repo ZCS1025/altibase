@@ -89,7 +89,7 @@
     <!-- clean phase -->
     <target name="clean" depends="init">
         <delete includeEmptyDirs="true">
-            <fileset dir="${bin.dir}" includes="**/*" excludes=".svn" />
+            <fileset dir="${bin.dir}" includes="**/*" excludes=".svn,.empty" />
         </delete>
         <delete file="${dist.dir}/${pkg.file}" />
         <echo>clean completed.</echo>

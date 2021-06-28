@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdcTXSegFreeList.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdcTXSegFreeList.cpp 89495 2020-12-14 05:19:22Z emlee $
  **********************************************************************/
 
 # include <idl.h>
@@ -29,21 +29,21 @@
 
 /***********************************************************************
  *
- * Description : íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ FreeList ì´ˆê¸°í™”
+ * Description : Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® FreeList ÃÊ±âÈ­
  *
- * FreeListì˜ ë™ì‹œì„±ì œì–´ë¥¼ ìœ„í•œ Mutexë¥¼ ì´ˆê¸°í™”í•˜ê³ ,
- * íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ë“¤ì„ ëª¨ë‘ FreeListì— ì—°ê²°í•œë‹¤.
+ * FreeListÀÇ µ¿½Ã¼ºÁ¦¾î¸¦ À§ÇÑ Mutex¸¦ ÃÊ±âÈ­ÇÏ°í,
+ * Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸®µéÀ» ¸ğµÎ FreeList¿¡ ¿¬°áÇÑ´Ù.
  *
- * í•œê°€ì§€ ê³ ë ¤í•  ì ì€ Prepare íŠ¸ëœì­ì…˜ì„ ê³ ë ¤í•´ì•¼í•œë‹¤.
+ * ÇÑ°¡Áö °í·ÁÇÒ Á¡Àº Prepare Æ®·£Àè¼ÇÀ» °í·ÁÇØ¾ßÇÑ´Ù.
  *
- * ì„œë²„ë³µêµ¬ê³¼ì •ì—ì„œ UndoAll ìˆ˜í–‰í›„ Prepare íŠ¸ëœì­ì…˜ë“¤ì´ ì‚¬ìš©í•˜ë˜
- * íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ëŠ” Online ìƒíƒœì´ê¸° ë•Œë¬¸ì— ì´ë¥¼ ì œì™¸í•œ
- * ë‚˜ë¨¸ì§€ë“¤ì„ ê°€ì§€ê³  FreeListë¡œ êµ¬ì„±í•´ì•¼í•œë‹¤.
+ * ¼­¹öº¹±¸°úÁ¤¿¡¼­ UndoAll ¼öÇàÈÄ Prepare Æ®·£Àè¼ÇµéÀÌ »ç¿ëÇÏ´ø
+ * Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸®´Â Online »óÅÂÀÌ±â ¶§¹®¿¡ ÀÌ¸¦ Á¦¿ÜÇÑ
+ * ³ª¸ÓÁöµéÀ» °¡Áö°í FreeList·Î ±¸¼ºÇØ¾ßÇÑ´Ù.
  *
- * aArrEntry        - [IN] íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ í…Œì´ë¸” Pointer
- * aEntryIdx        - [IN] FreeList ìˆœë²ˆ
- * aFstEntry        - [IN] FreeListê°€ ê´€ë¦¬í•  ì²«ë²ˆì§¸ Entry ìˆœë²ˆ
- * aLstEntry        - [IN] FreeListê°€ ê´€ë¦¬í•  ì²«ë²ˆì§¸ Entry ìˆœë²ˆ
+ * aArrEntry        - [IN] Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® Å×ÀÌºí Pointer
+ * aEntryIdx        - [IN] FreeList ¼ø¹ø
+ * aFstEntry        - [IN] FreeList°¡ °ü¸®ÇÒ Ã¹¹øÂ° Entry ¼ø¹ø
+ * aLstEntry        - [IN] FreeList°¡ °ü¸®ÇÒ Ã¹¹øÂ° Entry ¼ø¹ø
  *
  ***********************************************************************/
 IDE_RC sdcTXSegFreeList::initialize( sdcTXSegEntry   * aArrEntry,
@@ -89,7 +89,7 @@ IDE_RC sdcTXSegFreeList::initialize( sdcTXSegEntry   * aArrEntry,
 
 /***********************************************************************
  *
- * Description : íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ FreeList í•´ì œ
+ * Description : Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® FreeList ÇØÁ¦
  *
  ***********************************************************************/
 IDE_RC sdcTXSegFreeList::destroy()
@@ -100,11 +100,11 @@ IDE_RC sdcTXSegFreeList::destroy()
 
 /***********************************************************************
  *
- * Description : íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ í• ë‹¹
+ * Description : Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® ÇÒ´ç
  *
- * íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ë¥¼ í• ë‹¹í•œë‹¤.
+ * Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸®¸¦ ÇÒ´çÇÑ´Ù.
  *
- * aEntry           - [OUT] íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ Entry Reference Pointer
+ * aEntry           - [OUT] Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® Entry Reference Pointer
  *
  ***********************************************************************/
 void sdcTXSegFreeList::allocEntry( sdcTXSegEntry ** aEntry )
@@ -144,13 +144,13 @@ void sdcTXSegFreeList::allocEntry( sdcTXSegEntry ** aEntry )
 
 /***********************************************************************
  *
- * Description : íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ í• ë‹¹
+ * Description : Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® ÇÒ´ç
  *
- * BUG-29839 ì¬ì‚¬ìš©ëœ undo pageì—ì„œ ì´ì „ CTSë¥¼ ë³´ë ¤ê³  í•  ìˆ˜ ìˆìŒ.
- * transactionì— íŠ¹ì • segment entryë¥¼ bindingí•˜ëŠ” ê¸°ëŠ¥ ì¶”ê°€
+ * BUG-29839 Àç»ç¿ëµÈ undo page¿¡¼­ ÀÌÀü CTS¸¦ º¸·Á°í ÇÒ ¼ö ÀÖÀ½.
+ * transaction¿¡ Æ¯Á¤ segment entry¸¦ bindingÇÏ´Â ±â´É Ãß°¡
  * 
- * aEntryID         - [IN]  í• ë‹¹ë°›ì„ íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ Entry ID
- * aEntry           - [OUT] íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ Entry Reference Pointer
+ * aEntryID         - [IN]  ÇÒ´ç¹ŞÀ» Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® Entry ID
+ * aEntry           - [OUT] Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® Entry Reference Pointer
  *
  ***********************************************************************/
 void sdcTXSegFreeList::allocEntryByEntryID( UInt             aEntryID,
@@ -173,17 +173,17 @@ void sdcTXSegFreeList::allocEntryByEntryID( UInt             aEntryID,
     {
         if( SMU_LIST_IS_EMPTY( &mBase ) || (sNode == &mBase) )
         {
-            // aEntryIDì˜ freeListê°€ emptyì´ê±°ë‚˜
-            // list ìˆœíšŒê°€ ëë‚¬ì„ ê²½ìš° ì¢…ë£Œ
+            // aEntryIDÀÇ freeList°¡ emptyÀÌ°Å³ª
+            // list ¼øÈ¸°¡ ³¡³µÀ» °æ¿ì Á¾·á
             break;
         }
             
         sEntry = (sdcTXSegEntry*)sNode->mData;
 
-        // íŠ¹ì • entry IDì˜ segment entryë¥¼ ì°¾ëŠ”ë‹¤.
+        // Æ¯Á¤ entry IDÀÇ segment entry¸¦ Ã£´Â´Ù.
         if( sEntry->mEntryIdx == aEntryID )
         {
-            // í• ë‹¹í•  segment entryê°€ ë§ìœ¼ë©´
+            // ÇÒ´çÇÒ segment entry°¡ ¸ÂÀ¸¸é
             SMU_LIST_DELETE( sNode );
             mFreeEntryCnt--;
             SMU_LIST_INIT_NODE( sNode );
@@ -196,7 +196,7 @@ void sdcTXSegFreeList::allocEntryByEntryID( UInt             aEntryID,
         }
         else
         {
-            // í• ë‹¹í•  segment entryë¥¼ ì°¾ì„ ë•Œê¹Œì§€ list ìˆœíšŒ
+            // ÇÒ´çÇÒ segment entry¸¦ Ã£À» ¶§±îÁö list ¼øÈ¸
             sNode = SMU_LIST_GET_NEXT( sNode );
         }
     }
@@ -210,11 +210,11 @@ void sdcTXSegFreeList::allocEntryByEntryID( UInt             aEntryID,
 
 /***********************************************************************
  *
- * Description : íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ í•´ì œ
+ * Description : Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® ÇØÁ¦
  *
- * íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ë¥¼ í•´ì œí•œë‹¤.
+ * Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸®¸¦ ÇØÁ¦ÇÑ´Ù.
  *
- * aEntry        - [IN] íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ Entry í¬ì¸í„°
+ * aEntry        - [IN] Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® Entry Æ÷ÀÎÅÍ
  *
  ***********************************************************************/
 void sdcTXSegFreeList::freeEntry( sdcTXSegEntry * aEntry,
@@ -231,14 +231,14 @@ void sdcTXSegFreeList::freeEntry( sdcTXSegEntry * aEntry,
     if( aMoveToFirst == ID_TRUE )
     {
         /*
-         * ì¼ë°˜ì ì¸ ê²½ìš°ì˜ freeEntryëŠ” Buffer Hitë¥¼ ê³ ë ¤í•˜ì—¬ ì¬ì‚¬ìš© í™•ë¥ ì„ ë†’ì¸ë‹¤.
+         * ÀÏ¹İÀûÀÎ °æ¿ìÀÇ freeEntry´Â Buffer Hit¸¦ °í·ÁÇÏ¿© Àç»ç¿ë È®·üÀ» ³ôÀÎ´Ù.
          */
         SMU_LIST_ADD_FIRST( &mBase, &aEntry->mListNode );
     }
     else
     {
         /*
-         * STEALë¡œ ì¸í•œ freeEntryëŠ” ë’¤ë¡œ ì´ë™í•˜ì—¬ ì¬ì‚¬ìš© í™•ë¥ ì„ ì¤„ì¸ë‹¤
+         * STEAL·Î ÀÎÇÑ freeEntry´Â µÚ·Î ÀÌµ¿ÇÏ¿© Àç»ç¿ë È®·üÀ» ÁÙÀÎ´Ù
          */
         SMU_LIST_ADD_LAST( &mBase, &aEntry->mListNode );
     }
@@ -252,13 +252,13 @@ void sdcTXSegFreeList::freeEntry( sdcTXSegEntry * aEntry,
 
 /***********************************************************************
  *
- * Description : ì§€ì •ëœ íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ê°€ ì˜¤í”„ë¼ì¸ì´ë©´ì„œ
- *               Expiredë˜ì—ˆëŠ”ì§€ í™•ì¸í•˜ê³  ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°
+ * Description : ÁöÁ¤µÈ Æ®·£Àè¼Ç ¼¼±×¸ÕÆ®°¡ ¿ÀÇÁ¶óÀÎÀÌ¸é¼­
+ *               ExpiredµÇ¾ú´ÂÁö È®ÀÎÇÏ°í ¸®½ºÆ®¿¡¼­ Á¦°Å
  *
- * aEntry           - [IN] íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ Entry í¬ì¸í„°
+ * aEntry           - [IN] Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® Entry Æ÷ÀÎÅÍ
  * aSegType         - [IN] Segment Type
- * aOldestTransBSCN - [IN] ê°€ì¥ ì˜¤ë˜ëœ íŠ¸ëœì­ì…˜ì˜ Stmtì˜ SCN
- * aTrySuccess      - [OUT] í• ë‹¹ì—¬ë¶€
+ * aOldestTransBSCN - [IN] °¡Àå ¿À·¡µÈ Æ®·£Àè¼ÇÀÇ StmtÀÇ SCN
+ * aTrySuccess      - [OUT] ÇÒ´ç¿©ºÎ
  *
  ***********************************************************************/
 void sdcTXSegFreeList::tryAllocExpiredEntryByIdx(
@@ -287,8 +287,8 @@ void sdcTXSegFreeList::tryAllocExpiredEntryByIdx(
     IDE_TEST_CONT( sEntry->mStatus == SDC_TXSEG_ONLINE, CONT_NO_ENTRY );
 
     IDE_TEST_CONT( isEntryExpired( sEntry, 
-                                    aSegType, 
-                                    aOldestTransBSCN ) == ID_FALSE,
+                                   aSegType, 
+                                   aOldestTransBSCN ) == ID_FALSE,
                     CONT_NO_ENTRY );
 
     IDE_ASSERT( sFreeList->mFreeEntryCnt != 0 );
@@ -317,10 +317,10 @@ void sdcTXSegFreeList::tryAllocExpiredEntryByIdx(
 
 /***********************************************************************
  *
- * Description : ì§€ì •ëœ íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ê°€ ì˜¤í”„ë¼ì¸ì´ë©´ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°
+ * Description : ÁöÁ¤µÈ Æ®·£Àè¼Ç ¼¼±×¸ÕÆ®°¡ ¿ÀÇÁ¶óÀÎÀÌ¸é ¸®½ºÆ®¿¡¼­ Á¦°Å
  *
  * aEntryIdx     - [IN]
- * aEntry        - [OUT] íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ Entry í¬ì¸í„°
+ * aEntry        - [OUT] Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® Entry Æ÷ÀÎÅÍ
  *
  ***********************************************************************/
 void sdcTXSegFreeList::tryAllocEntryByIdx( UInt               aEntryIdx,

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdx.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qdx.h 86367 2019-11-18 07:32:25Z donghyun1 $
  **********************************************************************/
 #ifndef _O_QDX_H_
 #define  _O_QDX_H_  1
@@ -449,7 +449,7 @@ private:
                                           smiSegStorageAttr aSegStoAttr, 
                                           ULong             aDirectKeyMaxSize );
 
-    /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
     static IDE_RC validateIndexRestriction( qcStatement * aStatement,
                                             idBool        aCheckKeySizeLimit,
                                             UInt          aIndexType );

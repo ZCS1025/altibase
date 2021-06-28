@@ -1,4 +1,4 @@
-/** 
+/**
  *  Copyright (c) 1999~2017, Altibase Corp. and/or its affiliates. All rights reserved.
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -13,7 +13,7 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 /***********************************************************************
  *
  {
@@ -24,7 +24,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: smlLockMgr.h 83541 2018-07-20 01:50:06Z donghyun $
+ * $Id: smlLockMgr.h 89355 2020-11-25 01:48:09Z justin.kwon $
  **********************************************************************/
 
 #ifndef _O_SML_LOCK_MGR_H_
@@ -35,21 +35,24 @@
 #include <smiDef.h>
 #include <smlDef.h>
 #include <smu.h>
+#include <smxTrans.h>
 
-#define SML_END_ITEM        (ID_USHORT_MAX - 1)
-#define SML_EMPTY           ((SInt)-1)
+#define SML_END_ITEM          (ID_USHORT_MAX - 1)
+#define SML_EMPTY             ((SInt)-1)
+#define SML_FLAG_LIGHT_MODE   (0x00000020)
+#define SML_DECISION_TBL_SIZE (32)
 
-typedef IDE_RC (*smlLockTableFunc)(SInt, smlLockItem*, smlLockMode, ULong,
-                                  smlLockMode*, idBool*, smlLockNode**,
-                                  smlLockSlot**, idBool);
 
-typedef IDE_RC (*smlUnlockTableFunc)(SInt, smlLockNode*, smlLockSlot*, idBool);
-typedef IDE_RC (*smlAllocLockItemFunc)(void **);
-typedef IDE_RC (*smlInitLockItemFunc)(scSpaceID, ULong, smiLockItemType, void*);
-typedef void   (*smlRegistRecordLockWaitFunc)(SInt, SInt);
-typedef idBool (*smlDidLockReleasedFunc)(SInt, SInt);
-typedef IDE_RC (*smlFreeAllRecordLockFunc)(SInt);
-typedef void   (*smlClearWaitItemColsOfTransFunc)(idBool, SInt);   
+/* PROJ-2734 
+   ∫–ªÍµ•µÂ∂Ù¿Ã∂Û ≈Ω¡ˆµ«æ˙¿ª∂ß, Ω«¡¶ ∫–ªÍµ•µÂ∂Ù¿œ ∞°¥…º∫ */
+typedef enum
+{
+    SML_DIST_DEADLOCK_RISK_NONE = 0,
+    SML_DIST_DEADLOCK_RISK_LOW,
+    SML_DIST_DEADLOCK_RISK_MID,
+    SML_DIST_DEADLOCK_RISK_HIGH,
+} smlDistDeadlockRiskType;
+
 typedef IDE_RC (*smlAllocLockNodeFunc)(SInt, smlLockNode**);
 typedef IDE_RC (*smlFreeLockNodeFunc)(smlLockNode*);
 
@@ -57,6 +60,14 @@ class smlLockMgr
 {
 //For Operation
 public:
+
+    /* PROJ-2734 */
+    static ULong getDistDeadlockWaitTime( smlDistDeadlockRiskType aRisk );
+    static smxDistDeadlockDetection detectDistDeadlock( SInt aWaitSlot, ULong * aWaitTime );
+    static smxDistDeadlockDetection compareTx4DistDeadlock( smxTrans * aWaitTx, smxTrans * aHoldTx );
+    static void clearTxList4DistDeadlock( SInt aWaitSlot );
+    static void dumpTxList4DistDeadlock( SInt aWaitSlot );
+
     static IDE_RC initialize(UInt               aTransCnt,
                              smiLockWaitFunc    aLockWaitFunc,
                              smiLockWakeupFunc  aLockWakeupFunc );
@@ -64,90 +75,161 @@ public:
 
     static void   initTransLockList(SInt aSlot);
 
-    /* BUG-28752 lock table ... in row share mode Íµ¨Î¨∏Ïù¥ Î®πÌûàÏßÄ ÏïäÏäµÎãàÎã§.
-     * implicit/explicit lockÏùÑ Íµ¨Î∂ÑÌïòÏó¨ Í≤ÅÎãàÎã§. */ 
-    static inline IDE_RC lockTable(SInt          aSlot, 
-                                   smlLockItem  *aLockItem, 
-                                   smlLockMode   aLockMode,
-                                   ULong         aLockWaitMicroSec = ID_ULONG_MAX,
-                                   smlLockMode  *aCurLockMode = NULL,
-                                   idBool       *aLocked = NULL,
-                                   smlLockNode **aLockNode = NULL,
-                                   smlLockSlot **aLockSlot = NULL,
-                                   idBool        aIsExplicitLock = ID_FALSE );
-                            
-    static inline IDE_RC unlockTable( SInt         aSlot , 
-                                      smlLockNode *aTableLockNode,
-                                      smlLockSlot *aTableLockSlot,
-                                      idBool       aDoMutexLock = ID_TRUE);
+    /* BUG-28752 lock table ... in row share mode ±∏πÆ¿Ã ∏‘»˜¡ˆ æ Ω¿¥œ¥Ÿ.
+     * implicit/explicit lock¿ª ±∏∫–«œø© ∞Ã¥œ¥Ÿ. */
+    static IDE_RC lockTable(SInt          aSlot,
+                            smlLockItem  *aLockItem,
+                            smlLockMode   aLockMode,
+                            ULong         aLockWaitMicroSec = ID_ULONG_MAX,
+                            smlLockMode  *aCurLockMode = NULL,
+                            idBool       *aLocked = NULL,
+                            smlLockNode **aLockNode = NULL,
+                            smlLockSlot **aLockSlot = NULL,
+                            idBool        aIsExplicitLock = ID_FALSE );
 
-public:
+    static IDE_RC unlockTable( SInt         aSlot ,
+                               smlLockNode *aTableLockNode,
+                               smlLockSlot *aTableLockSlot,
+                               idBool       aDoMutexLock = ID_TRUE);
 
-    // PRJ-1548
-    // ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§Ïóê ÎåÄÌïú Ïû†Í∏àÏöîÏ≤≠Ïãú DML,DDLÏóê Îî∞ÎùºÏÑú
-    // Lock Wait ÏãúÍ∞ÑÏùÑ Ïù∏ÏûêÎ°ú ÎÇ¥Î†§Ï§Ñ Ïàò ÏûàÏñ¥Ïïº ÌïòÎØÄÎ°ú
-    // Ïù∏ÏûêÎ•º Ï∂îÍ∞ÄÌïòÏòÄÎã§.
-    static IDE_RC lockItem( void       * aTrans,
-                            void       * aLockItem,
-                            idBool       aIsIntent,
-                            idBool       aIsExclusive,
-                            ULong        aLockWaitMicroSec,
-                            idBool     * aLocked,
-                            void      ** aLockSlot );
 
-    /* Don't worry. Finally,it's ok to call unlockItem() directly.
-     * If you doubt it, lock at the code of unlockItem(). 
-     */
-    static IDE_RC unlockItem( void    *aTrans,
-                              void    *aLockSlot );
+private:
+    static IDE_RC lockTableInternal( idvSQL       * aStatistics,
+                                     SInt           aSlot,
+                                     smlLockItem  * aLockItem,
+                                     smlLockMode    aLockMode,
+                                     ULong          aLockWaitMicroSec,
+                                     smlLockMode  * aCurLockMode,
+                                     idBool       * aLocked,
+                                     smlLockNode  * aCurTransLockNode,
+                                     smlLockSlot ** aLockSlot,
+                                     idBool         aIsExplicit );
     
-    static inline idBool isCycle(SInt aSlot);
+    static IDE_RC unlockTableInternal( idvSQL      * aStatistics,
+                                       SInt          aSlot,
+                                       smlLockItem * aLockItem,
+                                       smlLockNode  *aLockNode,
+                                       smlLockSlot  *aLockSlot,
+                                       idBool        aDoMutexLock );
 
-    static inline IDE_RC initLockItem(scSpaceID         aSpaceID,
-                                      ULong             aItemID,
-                                      smiLockItemType   aLockItemType,
-                                      void*             aLockItem );
+   static IDE_RC toLightMode( idvSQL      * aStatistics,
+                              smlLockItem * aLockItem );
 
-    static IDE_RC destroyLockItem(void *aLockItem);
+   static  IDE_RC wakeupRequestLockNodeInLockItem( idvSQL      * aStatistics,
+                                                   smlLockItem * aLockItem );
 
     static void addLockNodeToHead(smlLockNode *&aFstLockNode,
                                   smlLockNode *&aLstLockNode,
                                   smlLockNode *&aNewLockNode);
-    
+
     static void addLockNodeToTail(smlLockNode *&aFstLockNode,
                                   smlLockNode *&aLstLockNode,
                                   smlLockNode *&aNewLockNode);
-    
+
     static void  removeLockNode(smlLockNode *&aFstLockNode,
                                 smlLockNode *&aLstLockNode,
                                 smlLockNode *&aLockNode);
 
-    static void   getTxLockInfo(SInt  aSlot, smTID *aOwnerList,
-                                UInt *aOwnerCount);
-    
-    static void   initLockNode(smlLockNode *aLockNode);
+    static   void decTblLockModeAndTryUpdate(smlLockItem *, smlLockMode);
+    static   void incTblLockModeAndUpdate(smlLockItem *, smlLockMode);
 
-    /* added by mskim for check table_lock_info statement */
-    static ULong  getLockStartTimeElapsed(smlLockNode *aLockNode);
+    /* BUG-28752 lock table ... in row share mode ±∏πÆ¿Ã ∏‘»˜¡ˆ æ Ω¿¥œ¥Ÿ.
+     * implicit/explicit lock¿ª ±∏∫–«œø© ∞Ã¥œ¥Ÿ. */
+    static IDE_RC allocLockNodeAndInit(SInt           aSlot,
+                                       smlLockMode    aLockMode,
+                                       smlLockItem  * aLockItem,
+                                       smlLockNode ** aNewLockNode,
+                                       idBool         aIsExplicitLock);
+    static inline IDE_RC freeLockNode(smlLockNode*  aLockNode);
 
-    
-    static inline IDE_RC allocLockItem(void **aLockItem);
-    static IDE_RC freeLockItem(void *aLockItem);
+    static   void   clearWaitTableRows(smlLockNode* aLockNode,
+                                       SInt aSlot);
+
+
+    static  void registTblLockWaitListByReq(SInt aSlot,
+                                            smlLockNode* aLockNode);
+    static  void registTblLockWaitListByGrant(SInt aSlot,
+                                              smlLockNode* aLockNode);
+
+    static  void setLockModeAndAddLockSlot( SInt         aSlot,
+                                            smlLockNode* aTxLockNode,
+                                            smlLockMode* aCurLockMode,
+                                            smlLockMode  aLockMode,
+                                            idBool       aIsLocked,
+                                            smlLockSlot** aLockSlot );
+
+    static void updateStatistics( idvSQL     * aStatistics,
+                                  idvStatIndex aStatIdx );
 
     //move from smxTrans to smlLockMgr
-    static  inline smlLockNode * findLockNode( smlLockItem * aLockItem, SInt aSlot );
+    static  smlLockNode   * findLockNode( smlLockItem * aLockItem, SInt aSlot );
     static  void            addLockNode(smlLockNode* aLockNode, SInt aSlot);
-    static  inline void     addLockSlot( smlLockSlot *, SInt aSlot );
-    static  inline void     clearWaitItemColsOfTrans(idBool, SInt aSlot);   
+    static  void            addLockSlot( smlLockSlot *, SInt aSlot );
+    static  smlLockMode     getDecision( SInt aFlag )
+    {
+        IDE_ASSERT( aFlag < SML_DECISION_TBL_SIZE );
+        return  mDecisionTBL[ aFlag ];
+    };
+
+    static  idBool          isLockNodeExist( smlLockNode *aLockNode );
+    static  idBool          isLockNodeExistInGrant( smlLockItem * aLockItem, smlLockNode *aLockNode );
+    static  void            validateNodeListInLockItem( smlLockItem * aLockItem );
+
+public:
+    static  void registRecordLockWait(SInt aSlot, SInt aWaitSlot);
+    // PRJ-1548
+    // ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫ø° ¥Î«— ¿·±›ø‰√ªΩ√ DML,DDLø° µ˚∂Ûº≠
+    // Lock Wait Ω√∞£¿ª ¿Œ¿⁄∑Œ ≥ª∑¡¡Ÿ ºˆ ¿÷æÓæﬂ «œπ«∑Œ
+    // ¿Œ¿⁄∏¶ √ﬂ∞°«œø¥¥Ÿ.
+    inline static IDE_RC lockItem( void       * aTrans,
+                                   void       * aLockItem,
+                                   idBool       aIsIntent,
+                                   idBool       aIsExclusive,
+                                   ULong        aLockWaitMicroSec,
+                                   idBool     * aLocked,
+                                   void      ** aLockSlot );
+
+    /* Don't worry. Finally,it's ok to call unlockItem() directly.
+     * If you doubt it, lock at the code of unlockItem().
+     */
+    inline static IDE_RC unlockItem( void    *aTrans,
+                                     void    *aLockSlot );
+
+    static idBool isCycle( SInt aSlot, idBool aIsReadyDistDeadlock );
+
+    static IDE_RC initLockItem( scSpaceID         aSpaceID,
+                                ULong             aItemID,
+                                smiLockItemType   aLockItemType,
+                                void          *   aLockItem );
+    static UInt getSlotCount() { return mTransCnt;};
+    static smlTransLockList* getTransLockList( UInt aSlot )
+    { return mArrOfLockList + aSlot; };
+
+private:
+    static void   clearLockItem( smlLockItem  *   aLockItem );
+    static void   initLockNode(smlLockNode *aLockNode);
+
+public:
+    inline static IDE_RC destroyLockItem(void *aLockItem);
+
+    static void   getTxLockInfo(SInt  aSlot, smTID *aOwnerList,
+                                UInt *aOwnerCount);
+
+    static IDE_RC allocLockItem(void **aLockItem);
+    static IDE_RC freeLockItem(void *aLockItem)
+    {  return iduMemMgr::free(aLockItem); };
+
+    static  void            clearWaitItemColsOfTrans(idBool, SInt aSlot);
+    static  void            revertWaitItemColsOfTrans( SInt aSlot );
     static  void            removeLockNode(smlLockNode* aLockNode);
-    static  inline void     removeLockSlot( smlLockSlot * );
+    static  void            removeLockSlot( smlLockSlot * );
     static  IDE_RC          freeAllItemLock(SInt aSlot);
     /* PROJ-1381 Fetch Across Commits */
     static  IDE_RC          freeAllItemLockExceptIS(SInt aSlot);
-    
+
     static  void*           getLastLockSlotPtr(SInt aSlot);
     static  ULong           getLastLockSequence(SInt aSlot);
-    static  IDE_RC          partialItemUnlock(SInt   aSlot, 
+    static  IDE_RC          partialItemUnlock(SInt   aSlot,
                                               ULong  aLockSequence,
                                               idBool aIsSeveralLock);
 
@@ -156,187 +238,89 @@ public:
      * Legacy lock mgr - Mutex
      */
     static   inline idBool  didLockReleased(SInt aSlot, SInt aWaitSlot);
-    static   inline IDE_RC  freeAllRecordLock(SInt aSlot);
+    static          IDE_RC  freeAllRecordLock(SInt aSlot);
 
     /* BUG-18981 */
-    static    IDE_RC        logLocks( void*   aTrans,
-                                      smTID   aTID,
-                                      UInt    aFlag,
-                                      ID_XID* aXID,
-                                      SChar*  aLogBuffer,
-                                      SInt    aSlot,
-                                      smSCN*  aFstDskViewSCN );
+    static    IDE_RC        logLocks( smxTrans * aTrans, ID_XID * aXID );
 
-    static    IDE_RC        lockWaitFunc(ULong aWaitDuration, idBool* aFlag );
-    static    IDE_RC        lockWakeupFunc();
-    static    IDE_RC        lockTableModeX(void* aTrans, void* aLockItem);
-    static    IDE_RC        lockTableModeIX(void *aTrans, void    *aLockItem);
-    static    IDE_RC        lockTableModeIS(void *aTrans, void    *aLockItem);
-    static    IDE_RC        lockTableModeXAndCheckLocked(void   *aTrans,
+    static         IDE_RC   lockWaitFunc(ULong aWaitDuration, idBool* aFlag );
+    static         IDE_RC   lockWakeupFunc();
+    static inline  IDE_RC   lockTableModeX(void* aTrans, void* aLockItem);
+    static inline  IDE_RC   lockTableModeIX(void *aTrans, void    *aLockItem);
+    static inline  IDE_RC   lockTableModeIS(void *aTrans, void    *aLockItem);
+    static inline  IDE_RC   lockTableModeIS4FixedTable(void *aTrans, void    *aLockItem);
+    static inline  IDE_RC   lockTableModeXAndCheckLocked(void   *aTrans,
                                                          void   *aLockItem,
                                                          idBool *aIsLock );
     /* BUG-33048 [sm_transaction] The Mutex of LockItem can not be the Native
      * mutex.
-     * LockItemÏúºÎ°ú NativeMutexÏùÑ ÏÇ¨Ïö©Ìï† Ïàò ÏûàÎèÑÎ°ù ÏàòÏ†ïÌï® */
-    static     iduMutex   * getMutexOfLockItem(void *aLockItem);
-    static     void         lockTableByPreparedLog(void* aTrans, 
-                                                   SChar* aLog, 
+     * LockItem¿∏∑Œ NativeMutex¿ª ªÁøÎ«“ ºˆ ¿÷µµ∑œ ºˆ¡§«‘ */
+    static     iduMutex   * getMutexOfLockItem(void *aLockItem)
+    {    return &( ((smlLockItem *)aLockItem)->mMutex );};
+
+    static     void         lockTableByPreparedLog(void* aTrans,
+                                                   SChar* aLog,
                                                    UInt aLockCnt,
                                                    UInt* aOffset);
-    
-    static   void decTblLockModeAndTryUpdate(smlLockItemMutex*, smlLockMode);
-    static   void incTblLockModeAndUpdate(smlLockItemMutex*, smlLockMode);
-    
-    /* BUG-28752 lock table ... in row share mode Íµ¨Î¨∏Ïù¥ Î®πÌûàÏßÄ ÏïäÏäµÎãàÎã§.
-     * implicit/explicit lockÏùÑ Íµ¨Î∂ÑÌïòÏó¨ Í≤ÅÎãàÎã§. */ 
-    static IDE_RC allocLockNodeAndInit(SInt           aSlot,
-                                       smlLockMode    aLockMode,
-                                       smlLockItem  * aLockItem,
-                                       smlLockNode ** aNewLockNode,
-                                       idBool         aIsExplicitLock);
-    static inline IDE_RC freeLockNode(smlLockNode*  aLockNode);
-    
-    static   void   clearWaitTableRows(smlLockNode* aLockNode,
-                                       SInt aSlot);
-    
-    
-    static  void registTblLockWaitListByReq(SInt aSlot,
-                                            smlLockNode* aLockNode);
-    static  void registTblLockWaitListByGrant(SInt aSlot,
-                                              smlLockNode* aLockNode);
-    
-    static  inline void registRecordLockWait(SInt aSlot, SInt aWaitSlot);
-    
-    static  void setLockModeAndAddLockSlotMutex
-                                          (SInt         aSlot,
-                                           smlLockNode* aTxLockNode,
-                                           smlLockMode* aCurLockMode,
-                                           smlLockMode  aLockMode,
-                                           idBool       aIsLocked,
-                                           smlLockSlot** aLockSlot);
-    static  void setLockModeAndAddLockSlotSpin
-                                          (SInt         aSlot,
-                                           smlLockNode* aTxLockNode,
-                                           smlLockMode* aCurLockMode,
-                                           smlLockMode  aLockMode,
-                                           idBool       aIsLocked,
-                                           smlLockSlot** aLockSlot,
-                                           smlLockMode  aOldMode = SML_NLOCK,
-                                           smlLockMode  aNewMode = SML_NLOCK);
 
     // PRJ-1548 User Memory Tablespace
-    // smlLockModeÍ∞Ä S, ISÍ∞Ä ÏïÑÎãå Í≤ΩÏö∞ TRUEÎ•º Î∞òÌôòÌïúÎã§.
+    // smlLockMode∞° S, IS∞° æ∆¥— ∞ÊøÏ TRUE∏¶ π›»Ø«—¥Ÿ.
     static idBool isNotISorS( smlLockMode    aLockMode );
+    static smlLockMode getConversionLockMode( smlLockMode aBaseLockMode , smlLockMode aNewLockNode )
+    { return mConversionTBL[ aBaseLockMode ][ aNewLockNode ]; };
+    static idBool isExistLockModeMask( SInt aFlag , smlLockMode aFindLockNode )
+    {
+        if( aFindLockNode < SML_NUMLOCKTYPES )
+        {
+            if (( aFlag & smlLockMgr::mLockModeToMask[ aFindLockNode ] ) !=
+                smlLockMgr::mLockModeToMask[ aFindLockNode ] )
+            {
+                return ID_TRUE;
+            }
+        }
+        return ID_FALSE;
+    }
 
+    static IDE_RC dumpLockTBL();
+    static void getLockItemNodes( smlLockItem * aLockItem );
+    static void dumpLockWait();
+
+    static void lockTransNodeList( idvSQL * aStatistics, SInt aSlot )
+    {  (void)mArrOfLockListMutex[aSlot].lock( aStatistics ); };
+    static void unlockTransNodeList( SInt aSlot )
+    {  (void)mArrOfLockListMutex[aSlot].unlock(); };
+private:
 //For Member
-    static idBool              mCompatibleTBL[SML_NUMLOCKTYPES]
-    [SML_NUMLOCKTYPES];
-    // ÏÉàÎ°ú grantÎêú lockÍ≥º tableÏùò ÎåÄÌëúÎùΩÏùÑ Í∞ÄÏßÄÍ≥†,
-    // tableÏùò ÏÉàÎ°úÏö¥ ÎåÄÌëúÎùΩÏùÑ Í≤∞Ï†ïÌï†Îïå ÏÇ¨Ïö©ÌïúÎã§.
-    static smlLockMode         mConversionTBL[SML_NUMLOCKTYPES]
-    [SML_NUMLOCKTYPES];
-    // table lockÏùÑ unlockÌï†Îïå ,tableÏùò ÎåÄÌëúÎùΩÏùÑ Í≤∞Ï†ïÌïòÍ∏∞
-    // ÏúÑÌïòÏó¨ ÎØ∏Î¶¨ Í≥ÑÏÇ∞Ìï¥ ÎÜìÏùÄ lock mode Í≤∞Ï†ï Î∞∞Ïó¥ÏûÑ.
-    static smlLockMode         mDecisionTBL[64];
+
+    /* PROJ-2734 */
+    static smlDistDeadlockRiskType mDistDeadlockRisk[SMI_DIST_LEVEL_MAX][SMI_DIST_LEVEL_MAX];
+
+    static idBool              mCompatibleTBL[SML_NUMLOCKTYPES][SML_NUMLOCKTYPES];
+    // ªı∑Œ grantµ» lock∞˙ table¿« ¥Î«•∂Ù¿ª ∞°¡ˆ∞Ì,
+    // table¿« ªı∑ŒøÓ ¥Î«•∂Ù¿ª ∞·¡§«“∂ß ªÁøÎ«—¥Ÿ.
+    static smlLockMode         mConversionTBL[SML_NUMLOCKTYPES][SML_NUMLOCKTYPES];
+    // table lock¿ª unlock«“∂ß ,table¿« ¥Î«•∂Ù¿ª ∞·¡§«œ±‚
+    // ¿ß«œø© πÃ∏Æ ∞ËªÍ«ÿ ≥ı¿∫ lock mode ∞·¡§ πËø≠¿”.
+    static smlLockMode         mDecisionTBL[SML_DECISION_TBL_SIZE];
     static SInt                mLockModeToMask[SML_NUMLOCKTYPES];
 
+public:
     static smlLockMatrixItem** mWaitForTable;
+    //add for performance view.
+    static smlLockMode2StrTBL  mLockMode2StrTBL[SML_NUMLOCKTYPES];
+    static smlTransLockList  * mArrOfLockList;
+
+    /* PROJ-2734 */
+    static smlDistDeadlockNode ** mTxList4DistDeadlock;
+
+private:
     static SInt                mTransCnt;
-    static SInt                mSpinSlotCnt;
     static iduMemPool          mLockPool;
     static smiLockWaitFunc     mLockWaitFunc;
     static smiLockWakeupFunc   mLockWakeupFunc;
-    static smlTransLockList*   mArrOfLockList;
-    //add for formance view.
-    static smlLockMode2StrTBL  mLockMode2StrTBL[SML_NUMLOCKTYPES];
-
-    /* 
-     * PROJ-2620
-     * New lock manager - Spin
-     */
-public:
-    static inline void  incTXPendCount(void) {(void)acpAtomicInc64(&mTXPendCount);}
-    static inline void  decTXPendCount(void) {(void)acpAtomicDec64(&mTXPendCount);}
-    static smlLockMode  getLockMode(const SLong);
-    static smlLockMode  getLockMode(const smlLockItemSpin*);
-    static smlLockMode  getLockMode(const smlLockNode*);
-    static SLong        getGrantedCnt(const smlLockItemSpin*,
-                                      const smlLockMode = SML_NLOCK);
-
-    static SInt**               mPendingMatrix;
-
-private:
-    static const SLong          mLockDelta[SML_NUMLOCKTYPES];
-    static const SLong          mLockMax  [SML_NUMLOCKTYPES];
-    static const SLong          mLockMask [SML_NUMLOCKTYPES];
-    static const SInt           mLockBit  [SML_NUMLOCKTYPES];
-    static const smlLockMode    mPriority [SML_NUMLOCKTYPES];
-
-    static SInt*                mPendingArray;
-
-    static idBool*              mIsCycle;
-    static idBool*              mIsChecked;
-    static idBool*              mIsDetected;
-    static SInt*                mDetectQueue;
-    static ULong*               mSerialArray;
-    static ULong                mPendSerial;
-    static ULong                mTXPendCount;
-    static SInt                 mStopDetect;
-    static idtThreadRunner      mDetectDeadlockThread;
-
-    static void                 calcIndex(const SInt, SInt&, SInt&);
-
-public:
-    static void                 beginPending(const SInt);
+    static iduMutex          * mArrOfLockListMutex;
 
     /*
-     * PROJ-2620
-     * init, lock/unlock, detecting deadlock
-     * will work as LOCK_MGR_TYPE directs
-     */
-private:
-    static IDE_RC initLockItemCore(scSpaceID, ULong, smiLockItemType, void*);
-
-    static IDE_RC initializeMutex(UInt);
-    static IDE_RC destroyMutex();
-    static IDE_RC allocLockItemMutex(void**);
-    static IDE_RC initLockItemMutex(scSpaceID, ULong, smiLockItemType, void*);
-    static IDE_RC lockTableMutex(SInt, smlLockItem*, smlLockMode,
-                                 ULong, smlLockMode*, idBool*,
-                                 smlLockNode**, smlLockSlot**,
-                                 idBool);
-    static IDE_RC unlockTableMutex(SInt, smlLockNode*, smlLockSlot*, idBool);
-    static idBool detectDeadlockMutex(SInt);
-    static void   clearWaitItemColsOfTransMutex(idBool, SInt);   
-    static idBool didLockReleasedMutex(SInt, SInt);
-    static IDE_RC freeAllRecordLockMutex(SInt);
-    static void   registRecordLockWaitMutex(SInt, SInt);
-
-    static IDE_RC initializeSpin(UInt);
-    static IDE_RC destroySpin();
-    static IDE_RC allocLockItemSpin(void**);
-    static IDE_RC initLockItemSpin(scSpaceID, ULong, smiLockItemType, void*);
-    static IDE_RC lockTableSpin(SInt, smlLockItem*, smlLockMode,
-                                ULong, smlLockMode*, idBool*,
-                                smlLockNode**, smlLockSlot**,
-                                idBool);
-    static IDE_RC unlockTableSpin(SInt, smlLockNode*, smlLockSlot*, idBool);
-    static void*  detectDeadlockSpin(void*);
-    static void   clearWaitItemColsOfTransSpin(idBool, SInt);   
-    static idBool didLockReleasedSpin(SInt, SInt);
-    static IDE_RC freeAllRecordLockSpin(SInt);
-    static void   registLockWaitSpin(SInt, SInt);
-
-    static smlLockTableFunc                 mLockTableFunc;
-    static smlUnlockTableFunc               mUnlockTableFunc;
-    static smlRegistRecordLockWaitFunc      mRegistRecordLockWaitFunc;
-    static smlDidLockReleasedFunc           mDidLockReleasedFunc;
-    static smlFreeAllRecordLockFunc         mFreeAllRecordLockFunc;
-    static smlAllocLockItemFunc             mAllocLockItemFunc;
-    static smlInitLockItemFunc              mInitLockItemFunc;
-    static smlClearWaitItemColsOfTransFunc  mClearWaitItemColsOfTransFunc;
-
-    /* 
      * PROJ-2620
      * Cache lock node
      */
@@ -357,55 +341,15 @@ private:
     static smlFreeLockNodeFunc              mFreeLockNodeFunc;
 };
 
-inline IDE_RC smlLockMgr::lockTable(SInt          aSlot, 
-                                    smlLockItem  *aLockItem, 
-                                    smlLockMode   aLockMode,
-                                    ULong         aLockWaitMicroSec,
-                                    smlLockMode  *aCurLockMode,
-                                    idBool       *aLocked,
-                                    smlLockNode **aLockNode,
-                                    smlLockSlot **aLockSlot,
-                                    idBool        aIsExplicitLock)
-{
-    return mLockTableFunc(aSlot, aLockItem, aLockMode, aLockWaitMicroSec,
-                          aCurLockMode, aLocked, aLockNode, aLockSlot,
-                          aIsExplicitLock);
-}
-
-inline IDE_RC smlLockMgr::unlockTable(SInt         aSlot, 
-                                      smlLockNode *aLockNode,
-                                      smlLockSlot *aLockSlot,
-                                      idBool       aDoMutexLock)
-{
-    return mUnlockTableFunc(aSlot, aLockNode, aLockSlot, aDoMutexLock);
-}
-
-inline IDE_RC smlLockMgr::initLockItem(scSpaceID        aSpaceID,
-                                       ULong            aItemID,
-                                       smiLockItemType  aLockItemType,
-                                       void           * aLockItem )
-{
-    return mInitLockItemFunc(aSpaceID, aItemID, aLockItemType, aLockItem);
-}
-
-inline IDE_RC smlLockMgr::allocLockItem(void **aLockItem)
-{
-    return mAllocLockItemFunc(aLockItem);
-}
-
+/*********************************************************
+  function description: didLockReleased
+  ∆Æ∑£¿Ëº«ø° ¥Î¿¿«œ¥¬  aSlot¿Ã  aWaitSlot ∆Æ∑£¿Ëº«ø°∞‘
+  record lock wait∂«¥¬ table lock wait¿Ã ¿«πÃ clearµ«æÓ
+  ¿÷¥¬¡ˆ »Æ¿Œ«—¥Ÿ.
+  *********************************************************/
 idBool  smlLockMgr::didLockReleased(SInt aSlot, SInt aWaitSlot)
 {
-    return mDidLockReleasedFunc(aSlot, aWaitSlot);
-}
-
-inline void smlLockMgr::registRecordLockWait(SInt aSlot, SInt aWaitSlot)
-{
-    mRegistRecordLockWaitFunc(aSlot, aWaitSlot);
-}
-
-IDE_RC smlLockMgr::freeAllRecordLock(SInt aSlot)
-{
-    return mFreeAllRecordLockFunc(aSlot);
+    return (mWaitForTable[aSlot][aWaitSlot].mIndex == 0) ?  ID_TRUE: ID_FALSE;
 }
 
 inline void*  smlLockMgr::getLastLockSlotPtr(SInt aSlot)
@@ -429,7 +373,7 @@ inline  IDE_RC smlLockMgr::lockWakeupFunc()
 }
 
 // PRJ-1548 User Memory Tablespace
-// smlLockModeÍ∞Ä S, ISÍ∞Ä ÏïÑÎãå Í≤ΩÏö∞ TRUEÎ•º Î∞òÌôòÌïúÎã§.
+// smlLockMode∞° S, IS∞° æ∆¥— ∞ÊøÏ TRUE∏¶ π›»Ø«—¥Ÿ.
 inline idBool smlLockMgr::isNotISorS(smlLockMode aLockMode)
 {
     if ( (aLockMode == SML_ISLOCK) || (aLockMode == SML_SLOCK) )
@@ -440,106 +384,181 @@ inline idBool smlLockMgr::isNotISorS(smlLockMode aLockMode)
     return ID_TRUE;
 }
 
-inline idBool smlLockMgr::isCycle(SInt aSlot)
-{
-    switch(smuProperty::getLockMgrType())
-    {
-    case 0:
-        return detectDeadlockMutex(aSlot);
-    case 1:
-        return mIsCycle[aSlot];
-    default:
-        IDE_ASSERT(0);
-        return ID_FALSE;
-    }
-}
-
-inline void smlLockMgr::clearWaitItemColsOfTrans(idBool aDoInit, SInt aSlot)
-{
-    mClearWaitItemColsOfTransFunc(aDoInit, aSlot);
-}
-    
 inline IDE_RC smlLockMgr::freeLockNode(smlLockNode*  aLockNode)
 {
-    return mFreeLockNodeFunc(aLockNode);
+    IDE_ASSERT( NULL == aLockNode->mPrvLockNode );
+    IDE_ASSERT( NULL == aLockNode->mNxtLockNode );
+    IDE_ASSERT( NULL == aLockNode->mPrvTransLockNode );
+    IDE_ASSERT( NULL == aLockNode->mNxtTransLockNode );
+    IDE_DASSERT( isLockNodeExist( aLockNode ) == ID_FALSE );
+
+    return mFreeLockNodeFunc( aLockNode );
 }
 
-/*********************************************************
-  function description: findLockNode
-  Ìä∏ÎûúÏû≠ÏÖòÏù¥ Ïù¥Ï†Ñ statementÏóê ÏùòÌïòÏó¨,
-  ÌòÑÏû¨  table AÏóê ÎåÄÌïòÏó¨ lockÏùÑ Ïû°Í≥† ÏûàÎäî
-  lock node  Î•º Ï∞æÎäîÎã§.
-***********************************************************/
-inline smlLockNode * smlLockMgr::findLockNode( smlLockItem * aLockItem, SInt aSlot )
+inline IDE_RC smlLockMgr::destroyLockItem( void *aLockItem )
 {
-    smlLockNode *sCurLockNode;
-    smlLockNode* sLockNodeHeader = &(mArrOfLockList[aSlot].mLockNodeHeader);
-    sCurLockNode = mArrOfLockList[aSlot].mLockNodeHeader.mPrvTransLockNode;
+    IDE_TEST( ((smlLockItem*)(aLockItem))->mMutex.destroy() != IDE_SUCCESS );
 
-    while ( sCurLockNode != sLockNodeHeader )
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    IDE_SET(ideSetErrorCode(smERR_FATAL_ThrMutexDestroy));
+
+    return IDE_FAILURE;
+}
+
+inline IDE_RC smlLockMgr::lockItem( void        *aTrans,
+                                    void        *aLockItem,
+                                    idBool       aIsIntent,
+                                    idBool       aIsExclusive,
+                                    ULong        aLockWaitMicroSec,
+                                    idBool     * aLocked,
+                                    void      ** aLockSlot )
+{
+    smlLockMode sLockMode;
+
+    if ( aIsIntent == ID_TRUE )
     {
-        if ( (sCurLockNode->mLockItem == aLockItem) && (sCurLockNode->mDoRemove == ID_FALSE ) )
-        {
-            break;
-        }
-
-        sCurLockNode = sCurLockNode->mPrvTransLockNode;
+        sLockMode = ( aIsExclusive == ID_TRUE ) ? SML_IXLOCK : SML_ISLOCK;
+    }
+    else
+    {
+        sLockMode = ( aIsExclusive == ID_TRUE ) ? SML_XLOCK : SML_SLOCK;
     }
 
-    return ( sCurLockNode == sLockNodeHeader ) ? NULL : sCurLockNode;
+    return lockTable( smxTrans::getTransSlot( aTrans ) ,
+                      (smlLockItem *)aLockItem,
+                      sLockMode,
+                      aLockWaitMicroSec, /* wait micro second */
+                      NULL,      /* current lock mode */
+                      aLocked,   /* is locked */
+                      NULL,      /* get locked node */
+                      (smlLockSlot**)aLockSlot ) ;
+}
+inline IDE_RC smlLockMgr::unlockItem( void *aTrans,
+                                      void *aLockSlot )
+{
+    IDE_DASSERT( aLockSlot != NULL );
+
+    return unlockTable( smxTrans::getTransSlot( aTrans ) ,
+                        NULL,
+                        (smlLockSlot*)aLockSlot );
+}
+
+inline IDE_RC smlLockMgr::lockTableModeX( void     *aTrans,
+                                          void     *aLockItem )
+{
+    return lockTable( smxTrans::getTransSlot( aTrans ),
+                      (smlLockItem *)aLockItem,
+                      SML_XLOCK );
+}
+/*********************************************************
+  function description: lockTableModeIX
+  IX lock mode¿∏∑Œ table lock¿ª ∞«¥Ÿ.
+ ***********************************************************/
+inline IDE_RC smlLockMgr::lockTableModeIX( void    *aTrans,
+                                           void    *aLockItem )
+{
+    return lockTable( smxTrans::getTransSlot( aTrans ),
+                      (smlLockItem *)aLockItem,
+                      SML_IXLOCK );
+}
+/*********************************************************
+  function description: lockTableModeIS
+  IS lock mode¿∏∑Œ table lock¿ª ∞«¥Ÿ.
+ ***********************************************************/
+inline IDE_RC smlLockMgr::lockTableModeIS(void    *aTrans,
+                                          void    *aLockItem )
+{
+    return lockTable( smxTrans::getTransSlot( aTrans ),
+                      (smlLockItem *)aLockItem,
+                      SML_ISLOCK );
+}
+
+/***********************************************************
+  function description: lockTableModeIS4FixedTable
+  IS lock mode¿∏∑Œ table lock¿ª ∞«¥Ÿ.
+  smuProperty::getSkipLockedTableAtFixedTable() == 1 ø°º≠
+  lock¿ª πŸ∑Œ ∞… ºˆ æ¯¿ª ∂ß Ω«∆–∏¶ π›»Ø«—¥Ÿ.
+ ***********************************************************/
+IDE_RC smlLockMgr::lockTableModeIS4FixedTable( void    *aTrans,
+                                               void    *aLockItem )
+{
+    if ( smuProperty::getSkipLockedTableAtFixedTable() == 1 )
+    {
+        /* try lock */
+        return lockTable( smxTrans::getTransSlot( aTrans ),
+                          (smlLockItem *)aLockItem,
+                          SML_ISLOCK,
+                          0 );
+    }
+    else
+    {
+        /* lock wait */
+        return lockTable( smxTrans::getTransSlot( aTrans ),
+                          (smlLockItem *)aLockItem,
+                          SML_ISLOCK );
+    }
 }
 
 /*********************************************************
-  function description: addLockSlot
-  transation lock slot listÏóê insertÌïòÎ©∞,
-  lock nodeÏ∂îÍ∞Ä ÎåÄÏã†, nodeÏïàÏóê lock slotÏùÑ Ïù¥Ïö©ÌïòÎ†§Ìï†Îïå
-  Î∂àÎ¶∞Îã§.
-***********************************************************/
-inline void smlLockMgr::addLockSlot( smlLockSlot * aLockSlot, SInt aSlot )
+  function description: lockTableModeXAndCheckLocked
+  X lock mode¿∏∑Œ table lock¿ª ∞«¥Ÿ.
+ ***********************************************************/
+inline IDE_RC smlLockMgr::lockTableModeXAndCheckLocked( void   *aTrans,
+                                                        void   *aLockItem,
+                                                        idBool *aIsLock )
 {
-    smlLockSlot * sTransLockSlotHdr = &(mArrOfLockList[aSlot].mLockSlotHeader);
-    //Add Lock Slot To Tail of Lock Slot List
-    IDE_DASSERT( aLockSlot->mNxtLockSlot == NULL );
-    IDE_DASSERT( aLockSlot->mPrvLockSlot == NULL );
-    IDE_DASSERT( aLockSlot->mLockSequence == 0 );
-
-    aLockSlot->mNxtLockSlot = sTransLockSlotHdr;
-    aLockSlot->mPrvLockSlot = sTransLockSlotHdr->mPrvLockSlot;
-
-    /* BUG-15906: non-autocommitÎ™®ÎìúÏóêÏÑú SelectÏôÑÎ£åÌõÑ IS_LOCKÏù¥ Ìï¥Ï†úÎêòÎ©¥
-     * Ï¢ãÍ≤†ÏäµÎãàÎã§. StatementÏãúÏûëÏãú TransactionÏùò ÎßàÏßÄÎßâ Lock SlotÏùò
-     * Lock Sequence NumberÎ•º Ï†ÄÏû•Ìï¥ ÎëêÍ≥† Statement EndÏãúÏóê TransactionÏùò
-     * Lock Slot ListÎ•º Ïó≠ÏúºÎ°ú Í∞ÄÎ©¥ÏÑú Ï†ÄÏû•Ìï¥Îëî Lock Sequence NumberÎ≥¥Îã§
-     * Ìï¥Îãπ Lock SlotÏùò Lock Sequence NumberÍ∞Ä ÏûëÍ±∞ÎÇò Í∞ôÏùÑÎïåÍπåÏßÄ LockÏùÑ Ìï¥Ï†úÌïúÎã§.
-     */
-    IDE_ASSERT( sTransLockSlotHdr->mPrvLockSlot->mLockSequence !=
-                ID_ULONG_MAX );
-    IDE_ASSERT( aLockSlot->mLockSequence == 0 );
-
-    aLockSlot->mLockSequence =
-        sTransLockSlotHdr->mPrvLockSlot->mLockSequence + 1;
-
-    sTransLockSlotHdr->mPrvLockSlot->mNxtLockSlot = aLockSlot;
-    sTransLockSlotHdr->mPrvLockSlot = aLockSlot;
+    return lockTable( smxTrans::getTransSlot( aTrans ),
+                      (smlLockItem *)aLockItem,
+                      SML_XLOCK,
+                      sctTableSpaceMgr::getDDLLockTimeOut((smxTrans*)aTrans),
+                      NULL,
+                      aIsLock );
 }
 
-/*********************************************************
-  function description: removeLockSlot
-  transactionÏùò slotidÏóê
-  Ìï¥ÎãπÌïòÎäî lock slot listÏóêÏÑú lock slotÏùÑ  Ï†úÍ±∞ÌïúÎã§.
-***********************************************************/
-inline void smlLockMgr::removeLockSlot( smlLockSlot * aLockSlot )
+inline void smlLockMgr::clearTxList4DistDeadlock( SInt aWaitSlot )
 {
-    aLockSlot->mNxtLockSlot->mPrvLockSlot = aLockSlot->mPrvLockSlot;
-    aLockSlot->mPrvLockSlot->mNxtLockSlot = aLockSlot->mNxtLockSlot;
+    SInt i;
 
-    aLockSlot->mPrvLockSlot  = NULL;
-    aLockSlot->mNxtLockSlot  = NULL;
-    aLockSlot->mLockSequence = 0;
+    for ( i = 0;
+          i < mTransCnt;
+          i++ )
+    {
+        mTxList4DistDeadlock[aWaitSlot][i].mTransID    = SM_NULL_TID;
+        mTxList4DistDeadlock[aWaitSlot][i].mDistTxType = SML_DIST_DEADLOCK_TX_NON_DIST_INFO;
+    }
+}
 
-    aLockSlot->mOldMode      = SML_NLOCK;
-    aLockSlot->mNewMode      = SML_NLOCK;
+inline void smlLockMgr::dumpTxList4DistDeadlock( SInt aWaitSlot )
+{
+    SInt i;
+    SChar sBuffer[2048] = {0, };
+    SInt  sLen = 0;
+
+    sLen = idlOS::snprintf( sBuffer,
+                            ID_SIZEOF(sBuffer),
+                            "<DUMP mTxList4DistDeadlock[%"ID_INT32_FMT"]>\n", aWaitSlot );
+
+    for ( i = 0;
+          i < mTransCnt;
+          i++ )
+    {
+        if (  mTxList4DistDeadlock[aWaitSlot][i].mTransID == SM_NULL_TID )
+        {
+            continue;
+        }
+
+        sLen += idlOS::snprintf( sBuffer + sLen,
+                                 ID_SIZEOF(sBuffer) - sLen,
+                                 "[HolderSlot %"ID_INT32_FMT"] HolderTxID : %"ID_UINT32_FMT", DistTxType : %"ID_INT32_FMT"\n", 
+                                 i,
+                                 mTxList4DistDeadlock[aWaitSlot][i].mTransID,
+                                 mTxList4DistDeadlock[aWaitSlot][i].mDistTxType );
+    }
+
+    ideLog::log( IDE_SD_19, "%s", sBuffer );
 }
 
 #endif
-

@@ -16,7 +16,7 @@
 
 /***********************************************************************
  *
- * Spatio-Temporal ê¸°íƒ€ í•¨ìˆ˜ 
+ * Spatio-Temporal ±âÅ¸ ÇÔ¼ö 
  *
  ***********************************************************************/
 
@@ -57,6 +57,9 @@ ACI_RC ulsIsEquiEndian( ulsHandle         * aHandle,
 
 ACI_RC ulsEndianHeader( ulsHandle         * aHandle,
                         stdGeometryHeader * aObjHeader );
+
+ACI_RC ulsEndianSRID( ulsHandle     * aHandle,
+                      acp_sint32_t  * aSRID );
 
 ACI_RC ulsEndianPoint2D( ulsHandle         * aHandle,
                          acp_bool_t          aIsEquiEndian,

@@ -20,9 +20,9 @@
  * Description :
  *
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
 
  **********************************************************************/
 
@@ -39,11 +39,11 @@
 /***********************************************************************
  * Description :
  *
- *    DUMP OBJECTì˜ ì •ë³´ë¥¼ íšë“í•œë‹¤.
+ *    DUMP OBJECTÀÇ Á¤º¸¸¦ È¹µæÇÑ´Ù.
  *
  * Implementation :
  *
- *    DUMP TABLEì˜ ì¢…ë¥˜ì— ë”°ë¥¸ DUMP OBJECT ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
+ *    DUMP TABLEÀÇ Á¾·ù¿¡ µû¸¥ DUMP OBJECT Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
  *
  **********************************************************************/
 
@@ -69,7 +69,7 @@ qcmDump::getDumpObjectInfo( qcStatement * aStatement,
     if ( aTableRef->mDumpObjList == NULL )
     {
         // Nothing To Do
-        // Dump Object ë¥¼ ëª…ì‹œí•˜ì§€ ì•ŠìŒ
+        // Dump Object ¸¦ ¸í½ÃÇÏÁö ¾ÊÀ½
         // ex) desc D$DISK_INDEX_BTREE_STRUCTURE
     }
     else
@@ -463,7 +463,7 @@ qcmDump::getDumpObjectInfo( qcStatement * aStatement,
 /***********************************************************************
  * Description :
  *
- *    Index ì •ë³´ë¥¼ íšë“í•œë‹¤.
+ *    Index Á¤º¸¸¦ È¹µæÇÑ´Ù.
  *
  * Implementation :
  *
@@ -542,7 +542,7 @@ IDE_RC qcmDump::getIndexInfo( qcStatement    * aStatement,
         IDE_TEST( qcmPartition::validateAndLockOnePartition( aStatement,
                                                              sTableHandle,
                                                              sSCN,
-                                                             SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                             SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                              SMI_TABLE_LOCK_IS,
                                                              ID_ULONG_MAX )
                   != IDE_SUCCESS );
@@ -552,7 +552,7 @@ IDE_RC qcmDump::getIndexInfo( qcStatement    * aStatement,
         /* Nothing to do */
     }
 
-    // ì›ì¹˜ ì•ŠëŠ” Indexì¸ê°€?
+    // ¿øÄ¡ ¾Ê´Â IndexÀÎ°¡?
     IDE_TEST_RAISE( ( (aEnableDiskIdx == ID_FALSE) &&
                       (smiIsDiskTable( sTableHandle ) == ID_TRUE) ) ||
                     ( (aEnableMemIdx == ID_FALSE) &&
@@ -572,17 +572,17 @@ IDE_RC qcmDump::getIndexInfo( qcStatement    * aStatement,
 
     if( sTempIndexHandle != NULL )
     {
-        /* session temporary tableì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°ì´ë‹¤.
-         * ë‚˜ í˜¼ìë§Œ ë³¼ ìˆ˜ ìˆëŠ” tableì´ë¯€ë¡œ
-         * ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ session tableì„ ë³€ê²½í•˜ì§€ ì•ŠëŠ”ë‹¤.
-         * session temp table ì„ ìœ„í•œ ë³„ë„ì˜ ì¶”ê°€ table lockì„ ì¡ì„
-         * í•„ìš”ê°€ ì—†ë‹¤.*/
+        /* session temporary tableÀÌ Á¸ÀçÇÏ´Â °æ¿ìÀÌ´Ù.
+         * ³ª È¥ÀÚ¸¸ º¼ ¼ö ÀÖ´Â tableÀÌ¹Ç·Î
+         * ´Ù¸¥ Æ®·£Àè¼ÇÀÌ session tableÀ» º¯°æÇÏÁö ¾Ê´Â´Ù.
+         * session temp table À» À§ÇÑ º°µµÀÇ Ãß°¡ table lockÀ» ÀâÀ»
+         * ÇÊ¿ä°¡ ¾ø´Ù.*/
         aDumpObjList->mObjInfo = (void*)sTempIndexHandle;
     }
     else
     {
-        // temporary tableì´ ì•„ë‹ˆê±°ë‚˜ temporary tableì´ë”ë¼ë„
-        // session temp tableì´ ìƒì„±ë˜ì§€ ì•Šì€ ê²½ìš°
+        // temporary tableÀÌ ¾Æ´Ï°Å³ª temporary tableÀÌ´õ¶óµµ
+        // session temp tableÀÌ »ı¼ºµÇÁö ¾ÊÀº °æ¿ì
 
         for ( i = 0; i < sTableInfo->indexCount; i++)
         {
@@ -621,7 +621,7 @@ IDE_RC qcmDump::getIndexInfo( qcStatement    * aStatement,
 /***********************************************************************
  * Description :
  *
- *    TableSpace ì´ë¦„ì„ ë°”íƒ•ìœ¼ë¡œ SpaceIDë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+ *    TableSpace ÀÌ¸§À» ¹ÙÅÁÀ¸·Î SpaceID¸¦ °¡Á®¿Â´Ù.
  *
  * Implementation :
  *
@@ -643,8 +643,8 @@ IDE_RC qcmDump::getTBSID( qcStatement    * aStatement,
 
     IDE_TEST_RAISE( aDumpObjList->mNext != NULL, ERR_TOO_MANY_DUMP_OBJECT );
 
-    /* BUG-28678  [SM] qmsDumpObjList::mObjInfoì— ì„¤ì •ë  ë©”ëª¨ë¦¬ ì£¼ì†ŒëŠ”
-     * ë°˜ë“œì‹œ ê³µê°„ì„ í• ë‹¹í•´ì„œ ì„¤ì •í•´ì•¼í•©ë‹ˆë‹¤. */
+    /* BUG-28678  [SM] qmsDumpObjList::mObjInfo¿¡ ¼³Á¤µÉ ¸Ş¸ğ¸® ÁÖ¼Ò´Â
+     * ¹İµå½Ã °ø°£À» ÇÒ´çÇØ¼­ ¼³Á¤ÇØ¾ßÇÕ´Ï´Ù. */
     IDU_LIMITPOINT("qcmDump::getTBSID::malloc");
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(scSpaceID ),
                                              (void**)&( sSpaceID ) )
@@ -677,7 +677,7 @@ IDE_RC qcmDump::getTBSID( qcStatement    * aStatement,
     *sSpaceID = sTBSAttr.mID;
     aDumpObjList->mObjInfo = (void*)sSpaceID;
 
-    // ì›ì¹˜ ì•ŠëŠ” í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì¸ê°€?
+    // ¿øÄ¡ ¾Ê´Â Å×ÀÌºí½ºÆäÀÌ½º ÀÎ°¡?
     IDE_TEST_RAISE( ( (aEnableDiskTBS == ID_FALSE) &&
                       ( ( sTBSAttr.mType == SMI_DISK_SYSTEM_DATA ) ||
                         ( sTBSAttr.mType == SMI_DISK_USER_DATA ) ||
@@ -717,7 +717,7 @@ IDE_RC qcmDump::getTBSID( qcStatement    * aStatement,
 /***********************************************************************
  * Description :
  *
- *    MEMORY/DISK TABLEì˜ OBJECT ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *    MEMORY/DISK TABLEÀÇ OBJECT Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  * Implementation :
  *
@@ -775,7 +775,7 @@ IDE_RC qcmDump::getTableInfo( qcStatement    * aStatement,
             IDE_TEST_RAISE( !SM_SCN_IS_EQ( &sSCN, &sBaseTableSCN ),
                             ERR_TEMPORARY_TABLE_EXIST );
 
-            // session temporary tableì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°.
+            // session temporary tableÀÌ Á¸ÀçÇÏ´Â °æ¿ì.
             sTableHandle = (void*)sTempTableHandle;
         }
     }
@@ -793,13 +793,13 @@ IDE_RC qcmDump::getTableInfo( qcStatement    * aStatement,
         IDE_TEST( qcmPartition::validateAndLockOnePartition( aStatement,
                                                              sTableHandle,
                                                              sSCN,
-                                                             SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                             SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                              SMI_TABLE_LOCK_IS,
                                                              ID_ULONG_MAX )
                   != IDE_SUCCESS );
     }
 
-    // ì›ì¹˜ ì•ŠëŠ” Tableì¸ê°€?
+    // ¿øÄ¡ ¾Ê´Â TableÀÎ°¡?
     IDE_TEST_RAISE( ( (aEnableDiskTable == ID_FALSE) &&
                       (smiIsDiskTable( sTableHandle ) == ID_TRUE) ) ||
                     ( (aEnableMemTable == ID_FALSE) &&
@@ -830,9 +830,9 @@ IDE_RC qcmDump::getTableInfo( qcStatement    * aStatement,
     return IDE_FAILURE;
 }
 
-/* TASK-4007 [SM] PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
- * D$BUFFER_FRAME, D$DISK_PAGE, D$MEM_PAGEì„ ìœ„í•´
- * SIDì™€ PIDë¥¼ ê°€ì ¸ì˜´*/
+/* TASK-4007 [SM] PBT¸¦ À§ÇÑ ±â´É Ãß°¡
+ * D$BUFFER_FRAME, D$DISK_PAGE, D$MEM_PAGEÀ» À§ÇØ
+ * SID¿Í PID¸¦ °¡Á®¿È*/
 IDE_RC qcmDump::getGRID( qcStatement    * aStatement,
                          qmsDumpObjList * aDumpObjList,
                          idBool           aEnableDiskTBS,
@@ -849,8 +849,8 @@ IDE_RC qcmDump::getGRID( qcStatement    * aStatement,
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aDumpObjList != NULL );
 
-    /* ì¸ì ê°œìˆ˜ ì²´í¬ :
-     * ì²«ë²ˆì§¸ ì¸ì: Tablespace ì´ë¦„, ë‘ë²ˆì§¸ ì¸ì: PID */
+    /* ÀÎÀÚ °³¼ö Ã¼Å© :
+     * Ã¹¹øÂ° ÀÎÀÚ: Tablespace ÀÌ¸§, µÎ¹øÂ° ÀÎÀÚ: PID */
     sDumpObjList = aDumpObjList;
 
     for( i = 0; i < 2 ; i ++ )
@@ -864,7 +864,7 @@ IDE_RC qcmDump::getGRID( qcStatement    * aStatement,
 
 
 
-    // ë©”ëª¨ë¦¬ í• ë‹¹
+    // ¸Ş¸ğ¸® ÇÒ´ç
     IDU_LIMITPOINT("qcmDump::getGRID::malloc");
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( scGRID ),
                                              (void**)&( sGRID ) )
@@ -872,7 +872,7 @@ IDE_RC qcmDump::getGRID( qcStatement    * aStatement,
 
 
 
-    // TableSpaceID íšë“
+    // TableSpaceID È¹µæ
     if( sDumpObjList->mDumpObjPos.size > 255 )
     {
         sqlInfo.setSourceInfo( aStatement,
@@ -899,7 +899,7 @@ IDE_RC qcmDump::getGRID( qcStatement    * aStatement,
     sGRID->mSpaceID = sTBSAttr.mID;
     sDumpObjList = sDumpObjList->mNext;
 
-    // ì›ì¹˜ ì•ŠëŠ” í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì¸ê°€?
+    // ¿øÄ¡ ¾Ê´Â Å×ÀÌºí½ºÆäÀÌ½º ÀÎ°¡?
     IDE_TEST_RAISE( ( (aEnableDiskTBS == ID_FALSE) &&
                       ( ( sTBSAttr.mType == SMI_DISK_SYSTEM_DATA ) ||
                         ( sTBSAttr.mType == SMI_DISK_USER_DATA ) ||
@@ -914,7 +914,7 @@ IDE_RC qcmDump::getGRID( qcStatement    * aStatement,
                         ( sTBSAttr.mType == SMI_VOLATILE_USER_DATA ) ),
                     ERR_INVALID_ARGUMENT );
 
-    // PageID íšë“
+    // PageID È¹µæ
     if( sDumpObjList->mDumpObjPos.size > 255 )
     {
         sqlInfo.setSourceInfo( aStatement,

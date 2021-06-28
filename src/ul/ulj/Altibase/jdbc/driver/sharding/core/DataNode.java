@@ -18,21 +18,31 @@
 package Altibase.jdbc.driver.sharding.core;
 
 /**
- * Shard DataNodeë¥¼ ë‚˜íƒ€ë‚´ë©° ê° ì •ë³´ëŠ” í†µì‹  í”„ë¡œí† ì½œì„ í†µí•´ ë°›ì•„ì˜¨ë‹¤.
+ * Shard DataNode¸¦ ³ªÅ¸³»¸ç °¢ Á¤º¸´Â Åë½Å ÇÁ·ÎÅäÄİÀ» ÅëÇØ ¹Ş¾Æ¿Â´Ù.
  */
 public class DataNode implements Comparable<DataNode>
 {
+    private long          mSMN;
     private int           mNodeId;
     private String        mNodeName;
     private String        mServerIp;
     private int           mPortNo;
     private String        mAlternativeServerIp;
     private int           mAlternativePortNo;
-    private boolean       mClosedOnExecute;
     private boolean       mTouched;
 
     public DataNode()
     {
+    }
+
+    public long getSMN()
+    {
+        return mSMN;
+    }
+
+    public void setSMN(long aSMN)
+    {
+        this.mSMN = aSMN;
     }
 
     public int getNodeId()
@@ -113,19 +123,14 @@ public class DataNode implements Comparable<DataNode>
         return mAlternativePortNo;
     }
 
-    boolean hasNoErrorOnExecute()
-    {
-        return !mClosedOnExecute;
-    }
-
     boolean isTouched()
     {
         return mTouched;
     }
 
-    void setTouched(boolean aTouched)
+    public void setTouched(boolean aTouched)
     {
-        this.mTouched = aTouched;
+        mTouched = aTouched;
     }
 
     @Override
@@ -157,11 +162,6 @@ public class DataNode implements Comparable<DataNode>
         return sResult;
     }
 
-    public void setClosedOnExecute(boolean aClosedOnExecute)
-    {
-        mClosedOnExecute = aClosedOnExecute;
-    }
-
     public int compareTo(DataNode aNode)
     {
         return (mNodeId < aNode.mNodeId ? -1 : (mNodeId == aNode.mNodeId ? 0 : 1));
@@ -177,7 +177,6 @@ public class DataNode implements Comparable<DataNode>
         sSb.append(", mPortNo=").append(mPortNo);
         sSb.append(", mAlternativeServerIp='").append(mAlternativeServerIp).append('\'');
         sSb.append(", mAlternativePortNo=").append(mAlternativePortNo);
-        sSb.append(", mClosedOnExecute=").append(mClosedOnExecute);
         sSb.append(", mTouched=").append(mTouched);
         sSb.append('}');
         return sSb.toString();

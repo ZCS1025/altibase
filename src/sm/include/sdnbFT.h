@@ -18,7 +18,7 @@
 /***********************************************************************
  * $Id: sdnbFT.h 19550 2007-02-07 03:09:40Z leekmo $
  *
- * Disk BTree IndexÏùò DUMPÎ•º ÏúÑÌïú Ìï®Ïàò
+ * Disk BTree Index¿« DUMP∏¶ ¿ß«— «‘ºˆ
  *
  **********************************************************************/
 
@@ -30,7 +30,7 @@
 # include <sdnbDef.h>
 
 //-------------------------------
-// D$DISK_INDEX_BTREE_STRUCTURE Ïùò Íµ¨Ï°∞
+// D$DISK_INDEX_BTREE_STRUCTURE ¿« ±∏¡∂
 //-------------------------------
 
 typedef struct sdnbDumpTreePage       // for sdnbNodeHdr
@@ -58,7 +58,7 @@ typedef struct sdnbDumpTreePage       // for sdnbNodeHdr
 } sdnbDumpTreePage;
 
 //-------------------------------
-// D$DISK_INDEX_BTREE_KEY Ïùò Íµ¨Ï°∞
+// D$DISK_INDEX_BTREE_KEY ¿« ±∏¡∂
 //-------------------------------
 
 typedef struct sdnbDumpKey            // for sdnbIKey, sdnbLKey
@@ -79,9 +79,9 @@ typedef struct sdnbDumpKey            // for sdnbIKey, sdnbLKey
     UChar          mState;            // STATE
     UChar          mDuplicated;       // DUPLICATED
     UShort         mCreateCTS;        // CREATE_CTS_NO
-    UChar          mCreateChained;    // CREATE_CHAINED
+    UChar          mCreateChained;    // CREATE_CHAINED - unused
     UShort         mLimitCTS;         // LIMIT_CTS_NO
-    UChar          mLimitChained;     // LIMIT_CHAINED
+    UChar          mLimitChained;     // LIMIT_CHAINED - unused
     UChar          mTxBoundType;      // TB_TYPE
     ULong          mCreateTSS;        // CREATE_TSS_RID
     ULong          mLimitTSS;         // LIMIT_TSS_RID
@@ -90,7 +90,7 @@ typedef struct sdnbDumpKey            // for sdnbIKey, sdnbLKey
 } sdnbDumpKey;
 
 //-------------------------------
-// X$DISK_BTREE_HEADER Ïùò Íµ¨Ï°∞
+// X$DISK_BTREE_HEADER ¿« ±∏¡∂
 //-------------------------------
 
 typedef struct sdnbHeader4PerfV
@@ -118,7 +118,7 @@ typedef struct sdnbHeader4PerfV
     SChar             mIsConsistent;     // IS_CONSISTENT
 
     // BUG-17957
-    // X$DISK_BTREE_HEADERÏóê creation option(logging, force) Ï∂îÍ∞Ä
+    // X$DISK_BTREE_HEADERø° creation option(logging, force) √ﬂ∞°
     SChar             mIsCreatedWithLogging;  // IS_CREATED_WITH_LOGGING
     SChar             mIsCreatedWithForce;    // IS_CREATED_WITH_FORCE
 
@@ -129,7 +129,7 @@ typedef struct sdnbHeader4PerfV
 } sdnbHeader4PerfV;
 
 //-------------------------------
-// X$DISK_BTREE_STAT Ïùò Íµ¨Ï°∞
+// X$DISK_BTREE_STAT ¿« ±∏¡∂
 //-------------------------------
 
 typedef struct sdnbStat4PerfV

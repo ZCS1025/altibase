@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpi.h 84983 2019-03-08 11:08:24Z yoonhee.kim $
+ * $Id: rpi.h 90266 2021-03-19 05:23:09Z returns $
  **********************************************************************/
 
 #ifndef _O_RPI_H_
@@ -27,8 +27,8 @@
 #include <rpuProperty.h>
 
 // PROJ-1726 performance view definition
-// rp/rpi/rpi.cpp ÏôÄ qp/qcm/qcmPerformanceView.cpp Îëê Íµ∞Îç∞ÏóêÏÑú
-// ÏÇ¨Ïö©ÎêòÎØÄÎ°ú Ìïú ÏΩîÎìúÎ°ú Í¥ÄÎ¶¨ÌïòÍ∏∞ ÏúÑÌïòÏó¨ #define ÏúºÎ°ú Ï†ïÏùòÌï®.
+// rp/rpi/rpi.cpp øÕ qp/qcm/qcmPerformanceView.cpp µŒ ±∫µ•ø°º≠
+// ªÁøÎµ«π«∑Œ «— ƒ⁄µÂ∑Œ ∞¸∏Æ«œ±‚ ¿ß«œø© #define ¿∏∑Œ ¡§¿««‘.
 #define RP_PERFORMANCE_VIEWS \
     (SChar*)"CREATE VIEW V$REPEXEC "\
                 "( PORT, MAX_SENDER_COUNT, MAX_RECEIVER_COUNT ) "\
@@ -70,12 +70,14 @@
                 "( REP_NAME, PARALLEL_APPLIER_INDEX, APPLY_XSN, "\
                 "INSERT_SUCCESS_COUNT, INSERT_FAILURE_COUNT, "\
                 "UPDATE_SUCCESS_COUNT, UPDATE_FAILURE_COUNT, "\
-                "DELETE_SUCCESS_COUNT, DELETE_FAILURE_COUNT ) "\
+                "DELETE_SUCCESS_COUNT, DELETE_FAILURE_COUNT, "\
+                "STATUS ) "    \
             "AS SELECT "\
                 "REP_NAME, PARALLEL_APPLIER_INDEX, APPLY_XSN, "\
                 "INSERT_SUCCESS_COUNT, INSERT_FAILURE_COUNT, "\
                 "UPDATE_SUCCESS_COUNT, UPDATE_FAILURE_COUNT, "\
-                "DELETE_SUCCESS_COUNT, DELETE_FAILURE_COUNT "\
+                "DELETE_SUCCESS_COUNT, DELETE_FAILURE_COUNT, "\
+                "DECODE( STATUS, 0, 'INITIALIZE', 1, 'WORKING', 2, 'DEQUEUEING', 3, 'WAITING', 4, 'STOP', 'N/A' ) "\
             "FROM X$REPRECEIVER_PARALLEL_APPLY ",\
 \
     (SChar*)"CREATE VIEW V$REPSENDER "\
@@ -91,11 +93,11 @@
                 "REP_NAME, "\
                 "CAST(DECODE(CURRENT_TYPE, 0, 0, 1, 1, 2, 2, 3, 3, 4, 6, 5, 7, 6, 8, -1) AS BIGINT) START_FLAG, "\
                 "NET_ERROR_FLAG, XSN, COMMIT_XSN, "\
-                "CAST(DECODE(STATUS, 0,0, 1,6, 2,3, 3,4, 4,5, 5,1, 6,7, 7,8, 8,9, 9,2, -1) AS BIGINT) STATUS, "\
+                "CAST(DECODE(STATUS, 0,0, 1,6, 2,3, 3,4, 4,5, 5,1, 6,7, 7,8, 8,9, 9,2, 10,3 -1) AS BIGINT) STATUS, "\
                 "SENDER_IP, PEER_IP, SENDER_PORT, PEER_PORT, "\
                 "READ_LOG_COUNT, SEND_LOG_COUNT, "\
-                "DECODE(REPL_MODE, 0, 'LAZY', 2, 'EAGER', 3, 'USELESS', 'UNKNOWN' ) REPL_MODE, "\
-                "DECODE(ACT_REPL_MODE, 0, 'LAZY', 2, 'EAGER', 3, 'USELESS', 'UNKNOWN' ) ACT_REPL_MODE "\
+                "DECODE(REPL_MODE, 0, 'LAZY', 2, 'EAGER', 3, 'USELESS', 10, 'NOWAIT', 'UNKNOWN' ) REPL_MODE, "\
+                "DECODE(ACT_REPL_MODE, 0, 'LAZY', 2, 'EAGER', 3, 'USELESS', 10, 'NOWAIT', 'UNKNOWN' ) ACT_REPL_MODE "\
             "FROM X$REPSENDER "\
             "WHERE PARALLEL_ID = 0",\
 \
@@ -105,7 +107,7 @@
                 "REP_NAME, SYNC_TABLE, SYNC_PARTITION, SYNC_RECORD_COUNT, SYNC_SN "\
             "FROM X$REPSYNC ",\
 \
-    /* PROJ-1915 V$REPSENDER_TRANSTBLÏóê start_flag Ï∂îÍ∞Ä */\
+    /* PROJ-1915 V$REPSENDER_TRANSTBLø° start_flag √ﬂ∞° */\
     (SChar*)"CREATE VIEW V$REPSENDER_TRANSTBL "\
                 "( REP_NAME, "\
                 "START_FLAG, "\
@@ -259,11 +261,12 @@
                 "TABLE_OID, INSERT_LOG_COUNT, DELETE_LOG_COUNT, UPDATE_LOG_COUNT, LOB_LOG_COUNT "\
             "FROM X$REPSENDER_SENT_LOG_COUNT"\
 
-// Ï£ºÏùò : ÎßàÏßÄÎßâ performance view ÏóêÎäî ',' Î•º ÏÉùÎûµÌï† Í≤É!
+// ¡÷¿« : ∏∂¡ˆ∏∑ performance view ø°¥¬ ',' ∏¶ ª˝∑´«“ ∞Õ!
 
 class rpi
 {
 public:
+    static IDE_RC   initRPProperty();
     static IDE_RC   initREPLICATION           ();
     static IDE_RC   finalREPLICATION          ();
 
@@ -279,17 +282,21 @@ public:
     static IDE_RC   alterReplicationSetHost   ( void        * aQcStatement );
     static IDE_RC   dropReplication           ( void        * aQcStatement );
 
-    //BUG-22703 : Begin StatementÎ•º ÏàòÌñâÌïú ÌõÑÏóê HangÏù¥ Í±∏Î¶¨ÏßÄ ÏïäÏïÑÏïº Ìï©ÎãàÎã§.
-    // aStatistics  ÌÜµÍ≥Ñ Ï†ïÎ≥¥ ÌååÎùºÎ©îÌÑ∞Î•º Ï∂îÍ∞Ä Ìï©ÎãàÎã§.
+    //BUG-22703 : Begin Statement∏¶ ºˆ«‡«— »ƒø° Hang¿Ã ∞…∏Æ¡ˆ æ æ∆æﬂ «’¥œ¥Ÿ.
+    // aStatistics  ≈Î∞Ë ¡§∫∏ ∆ƒ∂Û∏ﬁ≈Õ∏¶ √ﬂ∞° «’¥œ¥Ÿ.
     //startSenderThread(), stopSenderThread(), resetReplication(), stopReceiverThreads()
-    static IDE_RC   startSenderThread( smiStatement  * aSmiStmt,
-                                       SChar         * aReplName,
-                                       RP_SENDER_TYPE  astartType,
-                                       idBool          aTryHandshakeOnce,
-                                       smSN            aStartSN,
-                                       qciSyncItems  * aSyncItemList,
-                                       SInt            aParallelFactor,
-                                       idvSQL        * aStatistics);
+    static IDE_RC   startSenderThread( idvSQL               * aStatistics,
+                                       iduVarMemList        * aMemory,
+                                       smiStatement         * aSmiStmt,
+                                       SChar                * aReplName,
+                                       RP_SENDER_TYPE         astartType,
+                                       idBool                 aTryHandshakeOnce,
+                                       smSN                   aStartSN,
+                                       qciSyncItems         * aSyncItemList,
+                                       SInt                   aParallelFactor,
+                                       void                 * aLockTable );
+
+    static IDE_RC   startTempSync( void * aQcStatement );
 
     static IDE_RC   stopSenderThread( smiStatement * aSmiStmt,
                                       SChar        * aReplName,
@@ -312,7 +319,7 @@ public:
 
     static IDE_RC alterReplicationSetDDLReplicate( void * aQcStatement );
 
-    // PROJ-1442 Replication Online Ï§ë DDL ÌóàÏö©
+    // PROJ-1442 Replication Online ¡ﬂ DDL «„øÎ
     static IDE_RC   stopReceiverThreads(smiStatement * aSmiStmt,
                                         smOID          aTableOID,
                                         idvSQL       * aStatistics);
@@ -360,6 +367,7 @@ public:
     {    
         rpuProperty::setReplicationDDLSyncTimeout( aValue );
     }
+
 };
 
 #endif /* _O_RPI_H_ */

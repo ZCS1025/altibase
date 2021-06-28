@@ -155,19 +155,19 @@ mtdModule mtcdEchar = {
     {
         // Key Comparison
         {
-            // mt valueë“¤ ê°„ì˜ compare 
+            // mt valueµé °£ÀÇ compare 
             mtdEcharMtdMtdKeyAscComp, // Ascending Key Comparison
             mtdEcharMtdMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt valueì™€ stored valueê°„ì˜ compare 
+            // mt value¿Í stored value°£ÀÇ compare 
             mtdEcharStoredMtdKeyAscComp, // Ascending Key Comparison
             mtdEcharStoredMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // stored valueë“¤ ê°„ì˜ compare 
+            // stored valueµé °£ÀÇ compare 
             mtdEcharStoredStoredKeyAscComp, // Ascending Key Comparison
             mtdEcharStoredStoredKeyDescComp // Descending Key Comparison
         }
@@ -194,7 +194,7 @@ ACI_RC mtdInitializeEchar( acp_uint32_t aNo )
     ACI_TEST( mtdInitializeModule( &mtcdEchar, aNo )
               != ACI_SUCCESS );
 
-    // mtdColumnì˜ ì´ˆê¸°í™”
+    // mtdColumnÀÇ ÃÊ±âÈ­
     ACI_TEST( mtcInitializeColumn( & mtdColumn,
                                    & mtcdEchar,
                                    0,   // arguments
@@ -268,8 +268,8 @@ ACI_RC mtdValue( mtcTemplate*  aTemplate,
     *aResult = ACI_SUCCESS;
 
     // To fix BUG-13444
-    // tokenFenceì™€ RowFenceëŠ” ë³„ê°œì˜ ê²€ì‚¬ê³¼ì •ì´ë¯€ë¡œ,
-    // ë¨¼ì € RowFenceê²€ì‚¬ í›„ TokenFenceê²€ì‚¬ë¥¼ í•´ì•¼ í•œë‹¤.
+    // tokenFence¿Í RowFence´Â º°°³ÀÇ °Ë»ç°úÁ¤ÀÌ¹Ç·Î,
+    // ¸ÕÀú RowFence°Ë»ç ÈÄ TokenFence°Ë»ç¸¦ ÇØ¾ß ÇÑ´Ù.
     sIterator = sValue->mValue;
     sFence    = (acp_uint8_t*)aValue + aValueSize;
     if( sIterator >= sFence )
@@ -300,30 +300,30 @@ ACI_RC mtdValue( mtcTemplate*  aTemplate,
     
     if( *aResult == ACI_SUCCESS )
     {
-        // valueì— cipher text length ì…‹íŒ…
+        // value¿¡ cipher text length ¼ÂÆÃ
         sValue->mCipherLength = sIterator - sValue->mValue;
 
         //-----------------------------------------------------
         // PROJ-2002 Column Security
         //
-        // [padding ì œê±°í•˜ëŠ” ì´ìœ ]
-        // char typeì˜ compareëŠ” paddingì„ ë¬´ì‹œí•˜ê³  ë¹„êµí•œë‹¤.
-        // ë”°ë¼ì„œ echar typeì˜ paddingì„ ì œê±°í•˜ì—¬ eccë¥¼ ìƒì„±í•˜ë©´ 
-        // eccì˜ memcmpë§Œìœ¼ë¡œ echar typeì˜ ë¹„êµê°€ ê°€ëŠ¥í•˜ë‹¤.
+        // [padding Á¦°ÅÇÏ´Â ÀÌÀ¯]
+        // char typeÀÇ compare´Â paddingÀ» ¹«½ÃÇÏ°í ºñ±³ÇÑ´Ù.
+        // µû¶ó¼­ echar typeÀÇ paddingÀ» Á¦°ÅÇÏ¿© ecc¸¦ »ı¼ºÇÏ¸é 
+        // eccÀÇ memcmp¸¸À¸·Î echar typeÀÇ ºñ±³°¡ °¡´ÉÇÏ´Ù.
         // 
-        // ë‹¨, NULLê³¼ ' ', '  'ì˜ ë¹„êµë¥¼ ìœ„í•˜ì—¬ 
-        // NULLì— ëŒ€í•´ì„œëŠ” eccë¥¼ ìƒì„±í•˜ì§€ ì•Šìœ¼ë©°, ' ', '  'ëŠ”
-        // space padding í•˜ë‚˜(' ')ë¡œ eccë¥¼ ìƒì„±í•œë‹¤.
+        // ´Ü, NULL°ú ' ', '  'ÀÇ ºñ±³¸¦ À§ÇÏ¿© 
+        // NULL¿¡ ´ëÇØ¼­´Â ecc¸¦ »ı¼ºÇÏÁö ¾ÊÀ¸¸ç, ' ', '  '´Â
+        // space padding ÇÏ³ª(' ')·Î ecc¸¦ »ı¼ºÇÑ´Ù.
         // 
-        // ì˜ˆì œ) char'NULL' => echar( encrypt(''),   ecc('')  )
+        // ¿¹Á¦) char'NULL' => echar( encrypt(''),   ecc('')  )
         //       char' '    => echar( encrypt(' '),  ecc(' ') )
         //       char'  '   => echar( encrypt('  '), ecc(' ') )
         //       char'a'    => echar( encrypt('a'),  ecc('a') )
         //       char'a '   => echar( encrypt('a '), ecc('a') )
         //-----------------------------------------------------
         
-        // padding ì œê±°
-        // sEcharValueì—ì„œ space padingì„ ì œì™¸í•œ ê¸¸ì´ë¥¼ ì°¾ëŠ”ë‹¤.
+        // padding Á¦°Å
+        // sEcharValue¿¡¼­ space padingÀ» Á¦¿ÜÇÑ ±æÀÌ¸¦ Ã£´Â´Ù.
         for( sLength = sValue->mCipherLength; sLength > 1; sLength-- )
         {
             if( sValue->mValue[sLength - 1] != ' ' )
@@ -334,7 +334,7 @@ ACI_RC mtdValue( mtcTemplate*  aTemplate,
 
         if( sValue->mCipherLength > 0 )
         {
-            // valueì— ecc value & ecc length ì…‹íŒ…
+            // value¿¡ ecc value & ecc length ¼ÂÆÃ
             ACI_TEST( aTemplate->encodeECC( sValue->mValue,
                                             sLength,
                                             sIterator,
@@ -348,16 +348,16 @@ ACI_RC mtdValue( mtcTemplate*  aTemplate,
         
         sValueLength = sValue->mCipherLength + sValue->mEccLength;
 
-        // precision, scale ì¬ ì„¤ì • í›„, estimateë¡œ semantic ê²€ì‚¬
+        // precision, scale Àç ¼³Á¤ ÈÄ, estimate·Î semantic °Ë»ç
         aColumn->flag         = 1;
         aColumn->precision    = sValue->mCipherLength != 0 ? sValue->mCipherLength : 1;
         aColumn->scale        = 0;
-        aColumn->encPrecision = sValueLength != 0 ? sValueLength : 1;
-        aColumn->policy[0]    = '\0';
+        aColumn->mColumnAttr.mEncAttr.mEncPrecision = sValueLength != 0 ? sValueLength : 1;
+        aColumn->mColumnAttr.mEncAttr.mPolicy[0]    = '\0';
         
         ACI_TEST( mtdEstimate( & aColumn->column.size,
                                & aColumn->flag,
-                               & aColumn->encPrecision,
+                               & aColumn->mColumnAttr.mEncAttr.mEncPrecision,
                                & aColumn->scale )
                   != ACI_SUCCESS );
 
@@ -433,7 +433,7 @@ acp_uint32_t mtdHash( acp_uint32_t     aHash,
                            aFlag,
                            mtcdEchar.staticNull );
 
-    // eccë¡œ í•´ì‹œ ìˆ˜í–‰
+    // ecc·Î ÇØ½Ã ¼öÇà
     return mtcHash( aHash, sValue->mValue + sValue->mCipherLength,
                     sValue->mEccLength );
 }
@@ -477,7 +477,7 @@ mtdEcharMtdMtdKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -514,7 +514,7 @@ mtdEcharMtdMtdKeyAscComp( mtdValueInfo* aValueInfo1,
     // compare
     //---------
 
-    // eccë¡œ ë¹„êµ
+    // ecc·Î ºñ±³
     if( (sEccLength1 != 0) && (sEccLength2 != 0) )
     {
         sValue1  = sEcharValue1->mValue + sEcharValue1->mCipherLength;
@@ -559,7 +559,7 @@ mtdEcharMtdMtdKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
+ * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
  *
  * Implementation :
  *
@@ -596,7 +596,7 @@ mtdEcharMtdMtdKeyDescComp( mtdValueInfo* aValueInfo1,
     // compare
     //---------
 
-    // eccë¡œ ë¹„êµ
+    // ecc·Î ºñ±³
     if( (sEccLength1 != 0) && (sEccLength2 != 0) )
     {
         sValue1  = sEcharValue1->mValue + sEcharValue1->mCipherLength;
@@ -641,7 +641,7 @@ mtdEcharStoredMtdKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -681,7 +681,7 @@ mtdEcharStoredMtdKeyAscComp( mtdValueInfo* aValueInfo1,
     // compare
     //---------
 
-    // eccë¡œ ë¹„êµ
+    // ecc·Î ºñ±³
     if( (sEccLength1 != 0) && (sEccLength2 != 0) )
     {
         MTC_SHORT_BYTE_ASSIGN( &sCipherLength1,
@@ -729,7 +729,7 @@ mtdEcharStoredMtdKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ descending compare
+ * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ descending compare
  *
  * Implementation :
  *
@@ -769,7 +769,7 @@ mtdEcharStoredMtdKeyDescComp( mtdValueInfo* aValueInfo1,
     // compare
     //---------
 
-    // eccë¡œ ë¹„êµ
+    // ecc·Î ºñ±³
     if( (sEccLength1 != 0) && (sEccLength2 != 0) )
     {
         MTC_SHORT_BYTE_ASSIGN( &sCipherLength1,
@@ -817,7 +817,7 @@ mtdEcharStoredStoredKeyAscComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyë“¤ ê°„ì˜ ascending compare
+ * Description : Stored Keyµé °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -860,7 +860,7 @@ mtdEcharStoredStoredKeyAscComp( mtdValueInfo* aValueInfo1,
     // compare
     //---------
 
-    // eccë¡œ ë¹„êµ
+    // ecc·Î ºñ±³
     if( (sEccLength1 != 0) && (sEccLength2 != 0) )
     {
         MTC_SHORT_BYTE_ASSIGN( &sCipherLength1,
@@ -910,7 +910,7 @@ mtdEcharStoredStoredKeyDescComp( mtdValueInfo* aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyë“¤ ê°„ì˜ descending compare
+ * Description : Stored Keyµé °£ÀÇ descending compare
  *
  * Implementation :
  *
@@ -953,7 +953,7 @@ mtdEcharStoredStoredKeyDescComp( mtdValueInfo* aValueInfo1,
     // compare
     //---------
 
-    // eccë¡œ ë¹„êµ
+    // ecc·Î ºñ±³
     if( (aValueInfo1->length != 0) && (aValueInfo2->length != 0) )
     {
         MTC_SHORT_BYTE_ASSIGN( &sCipherLength1,
@@ -1015,8 +1015,9 @@ static ACI_RC mtdCanonize( const mtcColumn* aCanon,
     sCanonized = (mtdEcharType*)*aCanonized;
     sPlain     = sDecryptedBuf;
     
-    // ì»¬ëŸ¼ì˜ ë³´ì•ˆì •ì±…ìœ¼ë¡œ ì•”í˜¸í™”
-    if( ( aColumn->policy[0] == '\0' ) && ( aCanon->policy[0] == '\0' ) )
+    // ÄÃ·³ÀÇ º¸¾ÈÁ¤Ã¥À¸·Î ¾ÏÈ£È­
+    if ( ( aColumn->mColumnAttr.mEncAttr.mPolicy[0] == '\0' ) &&
+         ( aCanon->mColumnAttr.mEncAttr.mPolicy[0] == '\0' ) )
     {
         //-----------------------------------------------------
         // case 1. default policy -> default policy
@@ -1025,7 +1026,8 @@ static ACI_RC mtdCanonize( const mtcColumn* aCanon,
         if( sValue->mCipherLength == aCanon->precision )
         {
             ACI_TEST_RAISE( sValue->mCipherLength + sValue->mEccLength >
-                            aCanon->encPrecision, ERR_INVALID_LENGTH );
+                            aCanon->mColumnAttr.mEncAttr.mEncPrecision,
+                            ERR_INVALID_LENGTH );
             
             *aCanonized = aValue;
         }
@@ -1067,7 +1069,8 @@ static ACI_RC mtdCanonize( const mtcColumn* aCanon,
             
                 // c. copy ecc value
                 ACI_TEST_RAISE( aCanon->precision + sValue->mEccLength >
-                                aCanon->encPrecision, ERR_INVALID_LENGTH );
+                                aCanon->mColumnAttr.mEncAttr.mEncPrecision,
+                                ERR_INVALID_LENGTH );
             
                 acpMemCpy( sCanonized->mValue + aCanon->precision,
                            sValue->mValue + sValue->mCipherLength,
@@ -1078,7 +1081,8 @@ static ACI_RC mtdCanonize( const mtcColumn* aCanon,
             }
         }
     }
-    else if( ( aColumn->policy[0] != '\0' ) && ( aCanon->policy[0] == '\0' ) )
+    else if ( ( aColumn->mColumnAttr.mEncAttr.mPolicy[0] != '\0' ) &&
+              ( aCanon->mColumnAttr.mEncAttr.mPolicy[0] == '\0' ) )
     {
         //-----------------------------------------------------
         // case 2. policy1 -> default policy
@@ -1098,7 +1102,7 @@ static ACI_RC mtdCanonize( const mtcColumn* aCanon,
             if( sValue->mCipherLength > 0 )
             {            
                 ACI_TEST( aTemplate->decrypt( aColumnInfo,
-                                              (acp_char_t*) aColumn->policy,
+                                              (acp_char_t*) aColumn->mColumnAttr.mEncAttr.mPolicy,
                                               sValue->mValue,
                                               sValue->mCipherLength,
                                               sPlain,
@@ -1132,7 +1136,8 @@ static ACI_RC mtdCanonize( const mtcColumn* aCanon,
             
             // c. copy ecc value
             ACI_TEST_RAISE( aCanon->precision + sValue->mEccLength >
-                            aCanon->encPrecision, ERR_INVALID_LENGTH );
+                            aCanon->mColumnAttr.mEncAttr.mEncPrecision,
+                            ERR_INVALID_LENGTH );
             
             acpMemCpy( sCanonized->mValue + aCanon->precision,
                        sValue->mValue + sValue->mCipherLength,
@@ -1142,7 +1147,8 @@ static ACI_RC mtdCanonize( const mtcColumn* aCanon,
             sCanonized->mEccLength    = sValue->mEccLength;
         }
     }
-    else if( ( aColumn->policy[0] == '\0' ) && ( aCanon->policy[0] != '\0' ) )
+    else if ( ( aColumn->mColumnAttr.mEncAttr.mPolicy[0] == '\0' ) &&
+              ( aCanon->mColumnAttr.mEncAttr.mPolicy[0] != '\0' ) )
     {
         //-----------------------------------------------------
         // case 3. default policy -> policy2
@@ -1189,7 +1195,7 @@ static ACI_RC mtdCanonize( const mtcColumn* aCanon,
 
             // b. copy cipher value
             ACI_TEST( aTemplate->encrypt( aCanonInfo,
-                                          (acp_char_t*) aCanon->policy,
+                                          (acp_char_t*) aCanon->mColumnAttr.mEncAttr.mPolicy,
                                           sPlain,
                                           aCanon->precision,
                                           sCanonized->mValue,
@@ -1198,7 +1204,8 @@ static ACI_RC mtdCanonize( const mtcColumn* aCanon,
         
             // c. copy ecc value
             ACI_TEST_RAISE( sCanonized->mCipherLength + sValue->mEccLength >
-                            aCanon->encPrecision, ERR_INVALID_LENGTH );
+                            aCanon->mColumnAttr.mEncAttr.mEncPrecision,
+                            ERR_INVALID_LENGTH );
             
             acpMemCpy( sCanonized->mValue + sCanonized->mCipherLength,
                        sValue->mValue + sValue->mCipherLength,
@@ -1228,7 +1235,7 @@ static ACI_RC mtdCanonize( const mtcColumn* aCanon,
             if( sValue->mCipherLength > 0 )
             {            
                 ACI_TEST( aTemplate->decrypt( aColumnInfo,
-                                              (acp_char_t*) aColumn->policy,
+                                              (acp_char_t*) aColumn->mColumnAttr.mEncAttr.mPolicy,
                                               sValue->mValue,
                                               sValue->mCipherLength,
                                               sPlain,
@@ -1259,7 +1266,7 @@ static ACI_RC mtdCanonize( const mtcColumn* aCanon,
                 
             // c. copy cipher value
             ACI_TEST( aTemplate->encrypt( aCanonInfo,
-                                          (acp_char_t*) aCanon->policy,
+                                          (acp_char_t*) aCanon->mColumnAttr.mEncAttr.mPolicy,
                                           sPlain,
                                           aCanon->precision,
                                           sCanonized->mValue,
@@ -1268,7 +1275,8 @@ static ACI_RC mtdCanonize( const mtcColumn* aCanon,
                 
             // d. copy ecc value
             ACI_TEST_RAISE( sCanonized->mCipherLength + sValue->mEccLength >
-                            aCanon->encPrecision, ERR_INVALID_LENGTH );
+                            aCanon->mColumnAttr.mEncAttr.mEncPrecision,
+                            ERR_INVALID_LENGTH );
             
             acpMemCpy( sCanonized->mValue + sCanonized->mCipherLength,
                        sValue->mValue + sValue->mCipherLength,
@@ -1314,7 +1322,7 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
 {
 /***********************************************************************
  *
- * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColumn ì´ˆê¸°í™”
+ * Description : valueÀÇ semantic °Ë»ç ¹× mtcColumn ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -1328,9 +1336,9 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
                     + sizeof(acp_uint16_t) + sizeof(acp_uint16_t) != aValueSize,
                     ERR_INVALID_LENGTH );
     
-    // ì´ˆê¸°í™”ëœ aColumnì€ cannonize() ì‹œì— ì‚¬ìš©
-    // ì´ë•Œ, data type moduleì˜ precision ì •ë³´ë§Œì„ ì‚¬ìš©í•˜ë¯€ë¡œ,
-    // language ì •ë³´ ì„¤ì •í•  í•„ìš”ì—†ìŒ 
+    // ÃÊ±âÈ­µÈ aColumnÀº cannonize() ½Ã¿¡ »ç¿ë
+    // ÀÌ¶§, data type moduleÀÇ precision Á¤º¸¸¸À» »ç¿ëÇÏ¹Ç·Î,
+    // language Á¤º¸ ¼³Á¤ÇÒ ÇÊ¿ä¾øÀ½ 
     ACI_TEST( mtcInitializeColumn( aColumn,
                                    & mtcdEchar,
                                    1,                           // arguments
@@ -1361,8 +1369,8 @@ static ACI_RC mtdStoredValue2MtdValue( acp_uint32_t aColumnSize,
 {
 /*******************************************************************
  * PROJ-1705
- * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
- * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
+ * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
+ * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
  *******************************************************************/
 
     mtdEcharType* sEcharValue;
@@ -1371,7 +1379,7 @@ static ACI_RC mtdStoredValue2MtdValue( acp_uint32_t aColumnSize,
     
     if( ( aDestValueOffset == 0 ) && ( aLength == 0 ) )
     {
-        // NULL ë°ì´íƒ€
+        // NULL µ¥ÀÌÅ¸
         sEcharValue->mCipherLength = 0;
         sEcharValue->mEccLength = 0;
     }
@@ -1400,9 +1408,9 @@ acp_uint32_t mtdNullValueSize()
 {
 /*******************************************************************
  * PROJ-1705
- * ê° ë°ì´íƒ€íƒ€ì…ì˜ null Valueì˜ í¬ê¸° ë°˜í™˜    
- * ì˜ˆ ) mtdEcharType( acp_uint16_t length; acp_uint8_t value[1] ) ì—ì„œ
- *      length íƒ€ì…ì¸ acp_uint16_tì˜ í¬ê¸°ë¥¼ ë°˜í™˜
+ * °¢ µ¥ÀÌÅ¸Å¸ÀÔÀÇ null ValueÀÇ Å©±â ¹İÈ¯    
+ * ¿¹ ) mtdEcharType( acp_uint16_t length; acp_uint8_t value[1] ) ¿¡¼­
+ *      length Å¸ÀÔÀÎ acp_uint16_tÀÇ Å©±â¸¦ ¹İÈ¯
  *******************************************************************/
 
     return mtdActualSize( NULL,
@@ -1414,10 +1422,10 @@ static acp_uint32_t mtdHeaderSize()
 {
 /***********************************************************************
  * PROJ-1705
- * lengthë¥¼ ê°€ì§€ëŠ” ë°ì´íƒ€íƒ€ì…ì˜ length ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ë³€ìˆ˜ì˜ í¬ê¸° ë°˜í™˜
- * ì˜ˆ ) mtdEcharType( acp_uint16_t length; acp_uint8_t value[1] ) ì—ì„œ
- *      length íƒ€ì…ì¸ acp_uint16_tì˜ í¬ê¸°ë¥¼ ë°˜í™˜
- *  integerì™€ ê°™ì€ ê³ ì •ê¸¸ì´ ë°ì´íƒ€íƒ€ì…ì€ 0 ë°˜í™˜
+ * length¸¦ °¡Áö´Â µ¥ÀÌÅ¸Å¸ÀÔÀÇ length Á¤º¸¸¦ ÀúÀåÇÏ´Â º¯¼öÀÇ Å©±â ¹İÈ¯
+ * ¿¹ ) mtdEcharType( acp_uint16_t length; acp_uint8_t value[1] ) ¿¡¼­
+ *      length Å¸ÀÔÀÎ acp_uint16_tÀÇ Å©±â¸¦ ¹İÈ¯
+ *  integer¿Í °°Àº °íÁ¤±æÀÌ µ¥ÀÌÅ¸Å¸ÀÔÀº 0 ¹İÈ¯
  **********************************************************************/
 
     return sizeof(acp_uint16_t) + sizeof(acp_uint16_t);

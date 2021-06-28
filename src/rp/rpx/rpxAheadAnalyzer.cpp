@@ -156,9 +156,10 @@ IDE_RC rpxAheadAnalyzer::initializeThread( void )
                    "mLogMgr->initialize" );
     IDE_TEST( mLogMgr.initialize( mInitSN,
                                   RPU_PREFETCH_LOGFILE_COUNT,
-                                  ID_FALSE,
-                                  0,
-                                  NULL )
+                                  ID_FALSE,  // aIsRemoteLog
+                                  0,         // aLogFileSize
+                                  NULL,      // aLogDirPath
+                                  ID_TRUE ) // ¾ÐÃàµÈ ·Î±×ÆÄÀÏÀÇ °æ¿ì ¾ÐÃàÀ» Ç®Áö¾Ê°í ¹ÝÈ¯ÇÒÁö ¿©ºÎ
               != IDE_SUCCESS );
     sStage = 1;
     mIsLogMgrInit = ID_TRUE;
@@ -275,9 +276,9 @@ void rpxAheadAnalyzer::run( void )
         IDE_CLEAR();
 
         /* 
-         * Thread ê°€ ì‹œìž‘í•˜ê¸°ì „ì— ë¶„ì„ ì‹œìž‘ Flag ê°€ ì„¤ì •ë˜ì–´ 
-         * ìžˆì„ìˆ˜ ìžˆë‹¤. ê·¸ë ‡ê²Œ ë•Œë¬¸ì— timedwait ìœ¼ë¡œ ë“¤ì–´ ê°€ê¸°ì „
-         * mIsAnalyzing Flag ì„ í™•ì¸í•œë‹¤.
+         * Thread °¡ ½ÃÀÛÇÏ±âÀü¿¡ ºÐ¼® ½ÃÀÛ Flag °¡ ¼³Á¤µÇ¾î 
+         * ÀÖÀ»¼ö ÀÖ´Ù. ±×·¸°Ô ¶§¹®¿¡ timedwait À¸·Î µé¾î °¡±âÀü
+         * mIsAnalyzing Flag À» È®ÀÎÇÑ´Ù.
          */
         if ( mIsAnalyzing == ID_TRUE ) 
         {
@@ -297,8 +298,8 @@ void rpxAheadAnalyzer::run( void )
         if ( mExitFlag != ID_TRUE )
         {
             /* 
-             * í• ì¼ì„ ì™„ë£Œ í•˜ì˜€ìœ¼ë©´ 
-             * Sender ê°€ ì§€ì‹œí•˜ê¸°ì „ê¹Œì§€ sleep ìƒíƒœë¡œ ë³€ê²½í•œë‹¤.
+             * ÇÒÀÏÀ» ¿Ï·á ÇÏ¿´À¸¸é 
+             * Sender °¡ Áö½ÃÇÏ±âÀü±îÁö sleep »óÅÂ·Î º¯°æÇÑ´Ù.
              */
             mStatus = RPX_AHEAD_ANALYZER_STATUS_WAIT_ANALYZE;
 
@@ -420,11 +421,11 @@ IDE_RC rpxAheadAnalyzer::runAnalyze( void )
 
 IDE_RC rpxAheadAnalyzer::analyze( smiLogRec     * aLog )
 {
-    idBool          sIsOK = ID_FALSE;
+    idBool          sIsValid   = ID_FALSE;
     smSN            sCurrentSN = SM_SN_NULL;
     smLSN           sReadLSN;
-    SChar         * sLogHeadPtr = NULL;
-    SChar         * sLogPtr = NULL;
+    smiLogHdr       sLogHead;
+    SChar         * sMyLogPtr = NULL;
 
     idBool          sIsEndOfLogFile = ID_FALSE;
 
@@ -433,27 +434,28 @@ IDE_RC rpxAheadAnalyzer::analyze( smiLogRec     * aLog )
     rpdMetaItem   * sMetaItem = NULL;
     smiTableMeta  * sItemMeta = NULL;
     
+    UInt            i = 0;
+    UInt            sGCCnt = SM_NULL_TID;
+
     IDU_FIT_POINT( "rpxAheadAnalyzer::analyze::readLog::mLogMgr",
                    rpERR_ABORT_RP_INTERNAL_ARG,
                    "mLogMgr.readLog" );
-    IDE_TEST( mLogMgr.readLog( &sCurrentSN,
-                               &sReadLSN,
-                               (void**)&sLogHeadPtr,
-                               (void**)&sLogPtr,
-                               &sIsOK )
+    IDE_TEST( readMyLog( &sCurrentSN,
+                         &sReadLSN,
+                         (SChar*)&sLogHead,
+                         &sMyLogPtr,
+                         &sIsValid )
               != IDE_SUCCESS );
 
-    if ( sIsOK == ID_TRUE )
+    if ( ( sIsValid == ID_TRUE ) && ( sMyLogPtr != NULL ) )
     {
-        mAheadReadLogFileNo = sReadLSN.mFileNo;
-
         aLog->reset();
 
         IDU_FIT_POINT( "rpxAheadAnalyzer::analyze::readFrom::aLog",
                        rpERR_ABORT_RP_INTERNAL_ARG,
                        "aLog->readFrom" );
-        IDE_TEST( aLog->readFrom( sLogHeadPtr,
-                                  sLogPtr,
+        IDE_TEST( aLog->readFrom( &sLogHead,
+                                  sMyLogPtr,
                                   &sReadLSN )
                   != IDE_SUCCESS );
 
@@ -473,11 +475,12 @@ IDE_RC rpxAheadAnalyzer::analyze( smiLogRec     * aLog )
             case SMI_LT_TABLE_META:
                 sItemMeta = aLog->getTblMeta();
 
-                // Table Meta Log Recordë¥¼ Transaction Tableì— ë³´ê´€í•œë‹¤.
+                // Table Meta Log Record¸¦ Transaction Table¿¡ º¸°üÇÑ´Ù.
                 IDE_TEST( mTransTable.addItemMetaEntry( sTransID,
                                                         sItemMeta,
                                                         (const void*)aLog->getTblMetaLogBodyPtr(),
-                                                        aLog->getTblMetaLogBodySize() )
+                                                        aLog->getTblMetaLogBodySize(),
+                                                        aLog->getRecordSN())
                           != IDE_SUCCESS );
                 break;
             case SMI_LT_TRANS_COMMIT:
@@ -491,7 +494,10 @@ IDE_RC rpxAheadAnalyzer::analyze( smiLogRec     * aLog )
                     /* do nothing */
                 }
                 break;
-
+            case SMI_LT_TRANS_GROUPCOMMIT:
+                /* GROUP COMMITÀº DDL TxÀ» Æ÷ÇÔÇÏÁö ¾Ê´Â´Ù.
+                 * ÃßÈÄ º¯°æ½Ã °í·ÁÇØ ÁÖ¾î¾ß ÇÔ. */
+                break;
 
             default:
                 break;
@@ -504,10 +510,30 @@ IDE_RC rpxAheadAnalyzer::analyze( smiLogRec     * aLog )
                                    &sMetaItem )
                       != IDE_SUCCESS );
 
-            buildAnalyzingTable( aLog,
-                                 sMetaItem );
+            if ( sLogType == SMI_LT_TRANS_GROUPCOMMIT )
+            {
+                sGCCnt = aLog->getGroupCommitCnt( aLog->getLogPtr() );
 
-            IDE_TEST( checkAndAddReplicatedTransGroup( aLog ) != IDE_SUCCESS );
+                for ( i = 0; i < sGCCnt; i++ )
+                {
+                    sTransID = aLog->getNthTIDFromGroupCommit( aLog->getLogPtr(), i );
+
+                    buildAnalyzingTable( aLog,
+                                         sMetaItem,
+                                         sTransID );
+
+                    IDE_TEST( checkAndAddReplicatedTransGroup( aLog, sTransID ) != IDE_SUCCESS );
+                }
+            }
+            else
+            {
+                buildAnalyzingTable( aLog,
+                                     sMetaItem,
+                                     sTransID );
+
+                IDE_TEST( checkAndAddReplicatedTransGroup( aLog, sTransID ) != IDE_SUCCESS );
+            }
+
         }
         else
         {
@@ -527,19 +553,18 @@ IDE_RC rpxAheadAnalyzer::analyze( smiLogRec     * aLog )
 }
 
 void rpxAheadAnalyzer::buildAnalyzingTable( smiLogRec     * aLog,
-                                            rpdMetaItem   * aMetaItem )
+                                            rpdMetaItem   * aMetaItem,
+                                            smTID           aTransID )
 {
-    smTID       sTransID = SM_NULL_TID;
     smSN        sSN = SM_SN_NULL;
     smiLogType  sLogType;
 
-    sTransID = aLog->getTransID();
     sSN = aLog->getRecordSN();
     sLogType = aLog->getType();
 
     if ( aLog->isBeginLog() == ID_TRUE )
     {
-        mTransTable.setActiveTrans( sTransID, sSN );
+        mTransTable.setActiveTrans( aTransID, sSN );
     }
     else
     {
@@ -547,10 +572,10 @@ void rpxAheadAnalyzer::buildAnalyzingTable( smiLogRec     * aLog,
     }
 
     /* TODO add comment */
-    if ( mTransTable.isActiveTrans( sTransID ) != ID_TRUE )
+    if ( mTransTable.isActiveTrans( aTransID ) != ID_TRUE )
     {
-        mTransTable.setActiveTrans( sTransID, sSN );
-        mTransTable.setDisableToGroup( sTransID );
+        mTransTable.setActiveTrans( aTransID, sSN );
+        mTransTable.setDisableToGroup( aTransID );
     }
     else
     {
@@ -559,7 +584,7 @@ void rpxAheadAnalyzer::buildAnalyzingTable( smiLogRec     * aLog,
 
     if ( aMetaItem != NULL )
     {
-        mTransTable.setReplicationTrans( sTransID );
+        mTransTable.setReplicationTrans( aTransID );
     }
     else
     {
@@ -569,11 +594,11 @@ void rpxAheadAnalyzer::buildAnalyzingTable( smiLogRec     * aLog,
     switch ( sLogType )
     {
         case SMI_LT_DDL:
-            mTransTable.setDDLTrans( sTransID );
+            mTransTable.setDDLTrans( aTransID );
             /* fall through */
         case SMI_LT_TABLE_META:
         case SMI_LT_SAVEPOINT_ABORT:
-            mTransTable.setDisableToGroup( sTransID );
+            mTransTable.setDisableToGroup( aTransID );
             break;
 
         default:
@@ -582,22 +607,22 @@ void rpxAheadAnalyzer::buildAnalyzingTable( smiLogRec     * aLog,
 
 }
 
-IDE_RC rpxAheadAnalyzer::checkAndAddReplicatedTransGroupInCommit( smiLogRec     * aLog )
+IDE_RC rpxAheadAnalyzer::checkAndAddReplicatedTransGroupInCommit( smiLogRec     * aLog,
+                                                                  smTID           aTransID )
 {
-    smTID       sTransID = SM_NULL_TID;
     smSN        sSN = SM_SN_NULL;
     smSN        sBeginSN = SM_SN_NULL;
 
-    sTransID = aLog->getTransID();
     sSN = aLog->getRecordSN();
 
-    IDE_DASSERT( aLog->getType() == SMI_LT_TRANS_COMMIT );
+    IDE_DASSERT( ( aLog->getType() == SMI_LT_TRANS_COMMIT ) ||
+                 ( aLog->getType() == SMI_LT_TRANS_GROUPCOMMIT ) );
 
-    sBeginSN = mTransTable.getBeginSN( sTransID );
+    sBeginSN = mTransTable.getBeginSN( aTransID );
 
-    if ( mTransTable.shouldBeGroup( sTransID ) == ID_TRUE )
+    if ( mTransTable.shouldBeGroup( aTransID ) == ID_TRUE )
     {
-        mReplicatedTransGroup.insertCompleteTrans( sTransID,
+        mReplicatedTransGroup.insertCompleteTrans( aTransID,
                                                    sBeginSN,
                                                    sSN );
 
@@ -618,7 +643,7 @@ IDE_RC rpxAheadAnalyzer::checkAndAddReplicatedTransGroupInCommit( smiLogRec     
             /* do nothing */
         }
 
-        mReplicatedTransGroup.insertCompleteTrans( sTransID,
+        mReplicatedTransGroup.insertCompleteTrans( aTransID,
                                                    sBeginSN,
                                                    sSN );
 
@@ -673,24 +698,23 @@ IDE_RC rpxAheadAnalyzer::checkAndAddReplicatedTransGroupInAbort( smiLogRec     *
     return IDE_FAILURE;
 }
 
-IDE_RC rpxAheadAnalyzer::checkAndAddReplicatedTransGroup( smiLogRec   * aLog )
+IDE_RC rpxAheadAnalyzer::checkAndAddReplicatedTransGroup( smiLogRec   * aLog,
+                                                          smTID         aTransID )
 {
-    smTID       sTransID = SM_NULL_TID;
     smiLogType  sLogType;
 
-    sTransID = aLog->getTransID();
-
-    IDE_DASSERT( mTransTable.isActiveTrans( sTransID ) == ID_TRUE );
+    IDE_DASSERT( mTransTable.isActiveTrans( aTransID ) == ID_TRUE );
 
     sLogType = aLog->getType();
 
     switch ( sLogType )
     {
+        case SMI_LT_TRANS_GROUPCOMMIT:
         case SMI_LT_TRANS_COMMIT:
 
-            if ( mTransTable.isReplicationTrans( sTransID ) == ID_TRUE )
+            if ( mTransTable.isReplicationTrans( aTransID ) == ID_TRUE )
             {
-                IDE_TEST( checkAndAddReplicatedTransGroupInCommit( aLog )
+                IDE_TEST( checkAndAddReplicatedTransGroupInCommit( aLog, aTransID )
                           != IDE_SUCCESS );
             }
             else
@@ -698,13 +722,13 @@ IDE_RC rpxAheadAnalyzer::checkAndAddReplicatedTransGroup( smiLogRec   * aLog )
                 /* do nothing */
             }
 
-            mTransTable.clearTransNodeFromTransID( sTransID );
+            mTransTable.clearTransNodeFromTransID( aTransID );
 
             break;
 
         case SMI_LT_TRANS_PREABORT:
 
-            if ( mTransTable.isReplicationTrans( sTransID ) == ID_TRUE )
+            if ( mTransTable.isReplicationTrans( aTransID ) == ID_TRUE )
             {
                 IDE_TEST( checkAndAddReplicatedTransGroupInAbort( aLog )
                           != IDE_SUCCESS );
@@ -714,7 +738,7 @@ IDE_RC rpxAheadAnalyzer::checkAndAddReplicatedTransGroup( smiLogRec   * aLog )
                 /* do nothing */
             }
 
-            mTransTable.clearTransNodeFromTransID( sTransID );
+            mTransTable.clearTransNodeFromTransID( aTransID );
 
             break;
 
@@ -1088,7 +1112,6 @@ IDE_RC rpxAheadAnalyzer::applyTableMetaLog( smTID aTID )
     idBool             sIsTxBegin = ID_FALSE;
     smiStatement     * spRootStmt = NULL;
     smiStatement       sSmiStmt;
-    smSCN              sDummySCN = SM_SCN_INIT;
     UInt               sFlag = RPU_ISOLATION_LEVEL |
                                SMI_TRANSACTION_NORMAL |
                                SMI_TRANSACTION_REPL_NONE |
@@ -1125,7 +1148,7 @@ IDE_RC rpxAheadAnalyzer::applyTableMetaLog( smTID aTID )
                        rpERR_ABORT_RP_INTERNAL_ARG,
                        "sSmiStmt->begin" );
 
-        // Table Metaì™€ Table Meta Cacheë¥¼ ê°±ì‹ í•œë‹¤.
+        // Table Meta¿Í Table Meta Cache¸¦ °»½ÅÇÑ´Ù.
         IDE_TEST( sSmiStmt.begin( NULL,
                                   spRootStmt,
                                   SMI_STATEMENT_NORMAL |
@@ -1145,7 +1168,7 @@ IDE_RC rpxAheadAnalyzer::applyTableMetaLog( smTID aTID )
         mTransTable.removeFirstItemMetaEntry( aTID );
     }
     sStage = 1;
-    IDE_TEST( sTrans.commit( &sDummySCN ) != IDE_SUCCESS );
+    IDE_TEST( sTrans.commit() != IDE_SUCCESS );
     sIsTxBegin = ID_FALSE;
 
     sStage = 0;
@@ -1155,7 +1178,7 @@ IDE_RC rpxAheadAnalyzer::applyTableMetaLog( smTID aTID )
 
     IDE_EXCEPTION_END;
 
-    // ì´í›„ Senderê°€ ì¢…ë£Œë˜ë¯€ë¡œ, Table Meta Cacheë¥¼ ë³µì›í•˜ì§€ ì•ŠëŠ”ë‹¤
+    // ÀÌÈÄ Sender°¡ Á¾·áµÇ¹Ç·Î, Table Meta Cache¸¦ º¹¿øÇÏÁö ¾Ê´Â´Ù
     IDE_PUSH();
 
     switch ( sStage )
@@ -1192,7 +1215,7 @@ IDE_RC rpxAheadAnalyzer::updateMeta( smiStatement     * aSmiStmt,
 {
     rpdMetaItem  * sMetaItem = NULL;
 
-    switch( getTableMetaType( aOldTableOID, aNewTableOID ) )
+    switch( rpdMeta::getTableMetaType( aOldTableOID, aNewTableOID ) )
     {
         case RP_META_INSERT_ITEM:
             IDE_TEST( mMeta.insertNewTableInfo( aSmiStmt,
@@ -1203,7 +1226,11 @@ IDE_RC rpxAheadAnalyzer::updateMeta( smiStatement     * aSmiStmt,
                       != IDE_SUCCESS );
             break;
         case RP_META_DELETE_ITEM:
-            IDE_TEST( mMeta.deleteOldTableInfo( aSmiStmt, aOldTableOID ) != IDE_SUCCESS );
+            IDE_TEST( mMeta.deleteOldTableInfo( aSmiStmt, 
+                                                (const void *)aItemMetaEntry->mLogBody,
+                                                aOldTableOID,
+                                                ID_FALSE ) 
+                      != IDE_SUCCESS );
             break;
         case RP_META_UPDATE_ITEM:
             IDE_TEST( mMeta.searchTable( &sMetaItem, aOldTableOID ) != IDE_SUCCESS );
@@ -1232,31 +1259,110 @@ IDE_RC rpxAheadAnalyzer::updateMeta( smiStatement     * aSmiStmt,
     return IDE_FAILURE;
 }
 
-rpdTableMetaType rpxAheadAnalyzer::getTableMetaType( smOID aOldTableOID, smOID aNewTableOID )
-{
-    rpdTableMetaType sType = RP_META_NONE_ITEM;
-
-    if ( ( aOldTableOID == SM_OID_NULL ) && ( aNewTableOID != SM_OID_NULL ) )
-    {
-        sType = RP_META_INSERT_ITEM;
-    }
-    else if ( ( aOldTableOID != SM_OID_NULL ) && ( aNewTableOID == SM_OID_NULL ) )
-    {
-        sType = RP_META_DELETE_ITEM;
-    }
-    else if ( ( aOldTableOID != SM_OID_NULL ) && ( aNewTableOID != SM_OID_NULL ) )
-    {
-        sType = RP_META_UPDATE_ITEM;
-    }
-    else
-    {
-        sType = RP_META_NONE_ITEM;
-    }
-
-    return sType;
-}
-
 idBool rpxAheadAnalyzer::isThereGroupNode( void )
 {
     return mReplicatedTransGroup.isThereGroupNode();
 }
+
+IDE_RC rpxAheadAnalyzer::readMyLog( smSN    * aCurrentSN,
+                                    smLSN   * aReadLSN,
+                                    SChar   * aLogHead,
+                                    SChar  ** aLogPtr,
+                                    idBool  * aIsValid )
+{
+    SChar       * sLogPtr         = NULL;
+    SChar       * sLogPtrTemp     = NULL;
+    SChar       * sLogHeadPtrTemp = NULL;
+    idBool        sIsNeedDecompress = ID_FALSE;
+
+    IDE_TEST_RAISE( mLogMgr.readLog( aCurrentSN,
+                                     aReadLSN,
+                                     (void**)&sLogHeadPtrTemp,
+                                     (void**)&sLogPtrTemp,
+                                     aIsValid )
+                    != IDE_SUCCESS, ERR_READ_LOG_RECORD );
+
+    if ( *aIsValid == ID_TRUE )
+    {
+        mAheadReadLogFileNo = aReadLSN->mFileNo;
+
+        if ( mLogMgr.isCompressedLog( sLogPtrTemp ) != ID_TRUE )
+        {
+            *aLogPtr = sLogPtrTemp;
+            idlOS::memcpy( aLogHead, sLogHeadPtrTemp, ID_SIZEOF(smiLogHdr) );
+        }
+        else
+        {
+            IDE_TEST( isNeedDecompress( sLogPtrTemp,
+                                        sLogHeadPtrTemp,
+                                        &sIsNeedDecompress )
+                      != IDE_SUCCESS );
+
+            if ( sIsNeedDecompress == ID_TRUE )
+            {
+                IDE_TEST( mLogMgr.decompressLog( sLogPtrTemp,
+                                                 aReadLSN,
+                                                 (smiLogHdr*)aLogHead,
+                                                 &sLogPtr )
+                          != IDE_SUCCESS );
+
+                *aLogPtr = sLogPtr;
+            }
+            else
+            {
+                *aLogPtr = NULL;
+            }
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_READ_LOG_RECORD );
+    {
+        IDE_ERRLOG( IDE_RP_0 );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpxAheadAnalyzer::isNeedDecompress( SChar  * aRawLogPtr,
+                                           SChar  * aRawHeadLogPtr,
+                                           idBool * aIsNeedDecompress )
+{
+    smOID         sTableOID = SM_OID_NULL;
+    rpdMetaItem * sMetaItem = NULL;
+
+    if ( smiLogRec::isNeedDecompressFromHdr( (smiLogHdr*)aRawHeadLogPtr ) == ID_TRUE )
+    {
+        *aIsNeedDecompress = ID_TRUE;
+    }
+    else
+    {
+        sTableOID = mLogMgr.getTableOID( aRawLogPtr );
+        if ( sTableOID == SM_OID_NULL )
+        {
+            *aIsNeedDecompress = ID_TRUE;
+        }
+        else
+        {
+            IDE_TEST( mMeta.searchTable( &sMetaItem, sTableOID )
+                      != IDE_SUCCESS );
+            if ( sMetaItem != NULL )
+            {
+                *aIsNeedDecompress = ID_TRUE;
+            }
+            else
+            {
+                *aIsNeedDecompress = ID_FALSE;
+            }
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+

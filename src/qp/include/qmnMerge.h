@@ -21,11 +21,11 @@
  * Description :
  *     MRGE(MeRGE) Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ mergeë¥¼ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     °ü°èÇü ¸ğµ¨¿¡¼­ merge¸¦ ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -59,7 +59,7 @@
 typedef struct qmncMRGE  
 {
     //---------------------------------
-    // Code ì˜ì—­ ê³µí†µ ì •ë³´
+    // Code ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmnPlan               plan;
@@ -67,13 +67,13 @@ typedef struct qmncMRGE
     UInt                  planID;
 
     //---------------------------------
-    // target ê´€ë ¨ ì •ë³´
+    // target °ü·Ã Á¤º¸
     //---------------------------------
     
     qmsTableRef         * tableRef;
 
     //---------------------------------
-    // merge ê´€ë ¨ ì •ë³´
+    // merge °ü·Ã Á¤º¸
     //---------------------------------
 
     // child statements
@@ -95,7 +95,7 @@ typedef struct qmncMRGE
     UInt                  resetExecInfoEndIndex;
     
     //---------------------------------
-    // Display ê´€ë ¨ ì •ë³´
+    // Display °ü·Ã Á¤º¸
     //---------------------------------
 
     qmsNamePosition       tableOwnerName;     // Table Owner Name
@@ -107,7 +107,7 @@ typedef struct qmncMRGE
 typedef struct qmndMRGE
 {
     //---------------------------------
-    // Data ì˜ì—­ ê³µí†µ ì •ë³´
+    // Data ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmndPlan              plan;
@@ -115,7 +115,7 @@ typedef struct qmndMRGE
     UInt                * flag;
 
     //---------------------------------
-    // merge ê´€ë ¨ ì •ë³´
+    // merge °ü·Ã Á¤º¸
     //---------------------------------
 
     qcStatement           selectSourceStatement;
@@ -134,7 +134,7 @@ typedef struct qmndMRGE
     
     qcStatement         * originalStatement;
 
-    // 1íšŒ doItì‹œ mergeëœ rowìˆ˜
+    // 1È¸ doIt½Ã mergeµÈ row¼ö
     vSLong                mergedCount;
     
 } qmndMRGE;
@@ -147,11 +147,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ìˆ˜í–‰ í•¨ìˆ˜
+    // ¼öÇà ÇÔ¼ö
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -160,44 +160,44 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
     
-    // Plan ì •ë³´ ì¶œë ¥
+    // Plan Á¤º¸ Ãâ·Â
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
                              iduVarString * aString,
                              qmnDisplay     aMode );
     
-    // merged row count ë°˜í™˜í•¨ìˆ˜
+    // merged row count ¹İÈ¯ÇÔ¼ö
     static IDE_RC getMergedRowCount( qcTemplate * aTemplate,
                                      qmnPlan    * aPlan,
                                      vSLong     * aCount );
 
-    // Cursorì˜ Close
+    // CursorÀÇ Close
     static IDE_RC closeCursor( qcTemplate * aTemplate,
                                qmnPlan    * aPlan );
     
 private:    
 
     //------------------------
-    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
+    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
     //------------------------
 
-    // ìµœì´ˆ ì´ˆê¸°í™”
+    // ÃÖÃÊ ÃÊ±âÈ­
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncMRGE   * aCodePlan,
                              qmndMRGE   * aDataPlan );
 
-    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨.
+    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ.
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // ìµœì´ˆ MRGEì„ ìˆ˜í–‰
+    // ÃÖÃÊ MRGEÀ» ¼öÇà
     static IDE_RC doItFirst( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              qmcRowFlag * aFlag );
 
-    // ë‹¤ìŒ MRGEì„ ìˆ˜í–‰
+    // ´ÙÀ½ MRGEÀ» ¼öÇà
     static IDE_RC doItNext( qcTemplate * aTemplate,
                             qmnPlan    * aPlan,
                             qmcRowFlag * aFlag );
@@ -237,7 +237,7 @@ private:
                               qmcCursor        * aCursorMgr,
                               qmcdTempTableMgr * aTempTableMgr );
 
-    /* BUG-45763 MERGE êµ¬ë¬¸ì—ì„œ CLOB Column Update ì¤‘ FATAL ë°œìƒí•©ë‹ˆë‹¤. */
+    /* BUG-45763 MERGE ±¸¹®¿¡¼­ CLOB Column Update Áß FATAL ¹ß»ıÇÕ´Ï´Ù. */
     static IDE_RC setBindParam( qcTemplate * aTemplate,
                                 qmndMRGE   * aDataPlan );
 };

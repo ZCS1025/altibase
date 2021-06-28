@@ -21,11 +21,11 @@
  * Description :
  *     SDIN(SharD INsert) Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ insertë¥¼ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     °ü°èÇü ¸ğµ¨¿¡¼­ insert¸¦ ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -36,6 +36,7 @@
 #include <qmnShardInsert.h>
 #include <qdbCommon.h>
 #include <qmx.h>
+#include <qmxShard.h>
 
 IDE_RC qmnSDIN::init( qcTemplate * aTemplate,
                       qmnPlan    * aPlan )
@@ -43,7 +44,7 @@ IDE_RC qmnSDIN::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SDIN ë…¸ë“œì˜ ì´ˆê¸°í™”
+ *    SDIN ³ëµåÀÇ ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -57,17 +58,17 @@ IDE_RC qmnSDIN::init( qcTemplate * aTemplate,
     sDataPlan->doIt = qmnSDIN::doItDefault;
 
     //------------------------------------------------
-    // ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰ ì—¬ë¶€ íŒë‹¨
+    // ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà ¿©ºÎ ÆÇ´Ü
     //------------------------------------------------
 
     if ( ( *sDataPlan->flag & QMND_SDIN_INIT_DONE_MASK )
          == QMND_SDIN_INIT_DONE_FALSE )
     {
-        // ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰
+        // ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà
         IDE_TEST( firstInit(aTemplate, sCodePlan, sDataPlan) != IDE_SUCCESS );
 
         //---------------------------------
-        // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
+        // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
         //---------------------------------
 
         *sDataPlan->flag &= ~QMND_SDIN_INIT_DONE_MASK;
@@ -75,11 +76,22 @@ IDE_RC qmnSDIN::init( qcTemplate * aTemplate,
     }
     else
     {
-        // Nothing to do.
+        //-----------------------------------
+        // init lob info
+        //-----------------------------------
+
+        if ( sDataPlan->lobInfo != NULL )
+        {
+            (void) qmxShard::initLobInfo( sDataPlan->lobInfo );
+        }
+        else
+        {
+            // Nothing to do.
+        }
     }
 
     //------------------------------------------------
-    // Child Planì˜ ì´ˆê¸°í™”
+    // Child PlanÀÇ ÃÊ±âÈ­
     //------------------------------------------------
 
     if ( aPlan->left != NULL )
@@ -93,7 +105,7 @@ IDE_RC qmnSDIN::init( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
+    // ¼öÇà ÇÔ¼ö °áÁ¤
     //------------------------------------------------
 
     if ( sCodePlan->isInsertSelect == ID_TRUE )
@@ -119,10 +131,10 @@ IDE_RC qmnSDIN::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SDIN ì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
+ *    SDIN ÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *    ì§€ì •ëœ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *    ÁöÁ¤µÈ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼öÇàÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -138,8 +150,8 @@ IDE_RC qmnSDIN::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SDIN ë…¸ë“œëŠ” ë³„ë„ì˜ null rowë¥¼ ê°€ì§€ì§€ ì•Šìœ¼ë©°,
- *    Childì— ëŒ€í•˜ì—¬ padNull()ì„ í˜¸ì¶œí•œë‹¤.
+ *    SDIN ³ëµå´Â º°µµÀÇ null row¸¦ °¡ÁöÁö ¾ÊÀ¸¸ç,
+ *    Child¿¡ ´ëÇÏ¿© padNull()À» È£ÃâÇÑ´Ù.
  *
  * Implementation :
  *
@@ -152,7 +164,7 @@ IDE_RC qmnSDIN::padNull( qcTemplate * aTemplate,
     if ( (aTemplate->planFlag[sCodePlan->planID] & QMND_SDIN_INIT_DONE_MASK)
          == QMND_SDIN_INIT_DONE_FALSE )
     {
-        // ì´ˆê¸°í™”ë˜ì§€ ì•Šì€ ê²½ìš° ì´ˆê¸°í™” ìˆ˜í–‰
+        // ÃÊ±âÈ­µÇÁö ¾ÊÀº °æ¿ì ÃÊ±âÈ­ ¼öÇà
         IDE_TEST( aPlan->init( aTemplate, aPlan ) != IDE_SUCCESS );
     }
     else
@@ -160,7 +172,7 @@ IDE_RC qmnSDIN::padNull( qcTemplate * aTemplate,
         // Nothing To Do
     }
 
-    // Child Planì— ëŒ€í•˜ì—¬ Null Paddingìˆ˜í–‰
+    // Child Plan¿¡ ´ëÇÏ¿© Null Padding¼öÇà
     if ( aPlan->left != NULL )
     {
         IDE_TEST( aPlan->left->padNull( aTemplate, aPlan->left )
@@ -187,7 +199,7 @@ IDE_RC qmnSDIN::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SDIN ë…¸ë“œì˜ ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *    SDIN ³ëµåÀÇ ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  * Implementation :
  *
@@ -204,10 +216,10 @@ IDE_RC qmnSDIN::printPlan( qcTemplate   * aTemplate,
     sDataPlan->flag = & aTemplate->planFlag[sCodePlan->planID];
 
     //------------------------------------------------------
-    // SDIN Target ì •ë³´ì˜ ì¶œë ¥
+    // SDIN Target Á¤º¸ÀÇ Ãâ·Â
     //------------------------------------------------------
 
-    // SDIN ì •ë³´ì˜ ì¶œë ¥
+    // SDIN Á¤º¸ÀÇ Ãâ·Â
     qmn::printSpaceDepth( aString, aDepth );
     iduVarStringAppendFormat( aString,
                               "SHARD-INSERT ( TABLE: " );
@@ -226,7 +238,7 @@ IDE_RC qmnSDIN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Table Name ì¶œë ¥
+    // Table Name Ãâ·Â
     //----------------------------
 
     if ( ( sCodePlan->tableName.size <= QC_MAX_OBJECT_NAME_LEN ) &&
@@ -243,14 +255,14 @@ IDE_RC qmnSDIN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Alias Name ì¶œë ¥
+    // Alias Name Ãâ·Â
     //----------------------------
 
     if ( sCodePlan->aliasName.name != NULL &&
          sCodePlan->aliasName.size > 0  &&
          sCodePlan->aliasName.name != sCodePlan->tableName.name )
     {
-        // Table ì´ë¦„ ì •ë³´ì™€ Alias ì´ë¦„ ì •ë³´ê°€ ë‹¤ë¥¼ ê²½ìš°
+        // Table ÀÌ¸§ Á¤º¸¿Í Alias ÀÌ¸§ Á¤º¸°¡ ´Ù¸¦ °æ¿ì
         // (alias name)
         iduVarStringAppend( aString, " " );
 
@@ -267,17 +279,17 @@ IDE_RC qmnSDIN::printPlan( qcTemplate   * aTemplate,
     }
     else
     {
-        // Alias ì´ë¦„ ì •ë³´ê°€ ì—†ê±°ë‚˜ Table ì´ë¦„ ì •ë³´ê°€ ë™ì¼í•œ ê²½ìš°
+        // Alias ÀÌ¸§ Á¤º¸°¡ ¾ø°Å³ª Table ÀÌ¸§ Á¤º¸°¡ µ¿ÀÏÇÑ °æ¿ì
         // Nothing To Do
     }
 
     //----------------------------
-    // New line ì¶œë ¥
+    // New line Ãâ·Â
     //----------------------------
     iduVarStringAppend( aString, " )\n" );
 
     //------------------------------------------------------
-    // BUG-38343 VALUES ë‚´ë¶€ì˜ Subquery ì •ë³´ ì¶œë ¥
+    // BUG-38343 VALUES ³»ºÎÀÇ Subquery Á¤º¸ Ãâ·Â
     //------------------------------------------------------
 
     for ( sMultiRows = sCodePlan->rows;
@@ -297,7 +309,7 @@ IDE_RC qmnSDIN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // ìˆ˜í–‰ ì •ë³´ì˜ ìƒì„¸ ì¶œë ¥
+    // ¼öÇà Á¤º¸ÀÇ »ó¼¼ Ãâ·Â
     //----------------------------
 
     if ( ( ( QCG_GET_SESSION_TRCLOG_DETAIL_PREDICATE(aTemplate->stmt) == 1 ) ||
@@ -323,7 +335,7 @@ IDE_RC qmnSDIN::printPlan( qcTemplate   * aTemplate,
     }
 
     //------------------------------------------------------
-    // Child Plan ì •ë³´ì˜ ì¶œë ¥
+    // Child Plan Á¤º¸ÀÇ Ãâ·Â
     //------------------------------------------------------
 
     if ( aPlan->left != NULL )
@@ -353,10 +365,10 @@ IDE_RC qmnSDIN::firstInit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SDIN nodeì˜ Data ì˜ì—­ì˜ ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
+ *    SDIN nodeÀÇ Data ¿µ¿ªÀÇ ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
  *
  * Implementation :
- *    - Data ì˜ì—­ì˜ ì£¼ìš” ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
+ *    - Data ¿µ¿ªÀÇ ÁÖ¿ä ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
  *
  ***********************************************************************/
 
@@ -367,13 +379,48 @@ IDE_RC qmnSDIN::firstInit( qcTemplate * aTemplate,
     sdiSVPStep       sSVPStep = SDI_SVP_STEP_DO_NOT_NEED_SAVEPOINT;
 
     //---------------------------------
-    // ê¸°ë³¸ ì„¤ì •
+    // ±âº» ¼³Á¤
     //---------------------------------
+
+    IDE_TEST_RAISE( aTemplate->shardExecData.execInfo == NULL,
+                    ERR_NO_SHARD_INFO );
+
+    aDataPlan->mDataInfo = ((sdiDataNodes*)aTemplate->shardExecData.execInfo)
+        + aCodePlan->shardDataIndex;
 
     aDataPlan->rows = aCodePlan->rows;
 
+    /*
+     * PROJ-2728 Sharding LOB
+     */
+    if ( aCodePlan->tableRef->tableInfo->lobColumnCount > 0 )
+    {
+        // PROJ-1362
+        IDE_TEST( qmxShard::initializeLobInfo(
+                    aTemplate->stmt,
+                    &(aDataPlan->lobInfo),
+                    (UShort)aCodePlan->tableRef->tableInfo->lobColumnCount )
+                  != IDE_SUCCESS );
+
+        /* BUG-30351
+         * insert into select¿¡¼­ °¢ Row Insert ÈÄ ÇØ´ç Lob Cursor¸¦ ¹Ù·Î ÇØÁ¦ÇßÀ¸¸é ÇÕ´Ï´Ù.
+         */
+        if ( aCodePlan->isInsertSelect == ID_TRUE )
+        {
+            qmx::setImmediateCloseLobInfo( aDataPlan->lobInfo, ID_TRUE );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+    }
+    else
+    {
+        aDataPlan->lobInfo = NULL;
+    }
+
     //------------------------------------------
-    // INSERTë¥¼ ìœ„í•œ Default ROW êµ¬ì„±
+    // INSERT¸¦ À§ÇÑ Default ROW ±¸¼º
     //------------------------------------------
 
     if ( aCodePlan->isInsertSelect == ID_TRUE )
@@ -388,7 +435,7 @@ IDE_RC qmnSDIN::firstInit( qcTemplate * aTemplate,
                                                   aTemplate,
                                                   aCodePlan->tableRef->tableInfo,
                                                   sInsertedRow,
-                                                  NULL )
+                                                  aDataPlan->lobInfo )
                       != IDE_SUCCESS);
         }
         else
@@ -402,20 +449,14 @@ IDE_RC qmnSDIN::firstInit( qcTemplate * aTemplate,
     }
 
     //-------------------------------
-    // ìˆ˜í–‰ë…¸ë“œ ì´ˆê¸°í™”
+    // ¼öÇà³ëµå ÃÊ±âÈ­
     //-------------------------------
 
-    // shard linker ê²€ì‚¬ & ì´ˆê¸°í™”
+    // shard linker °Ë»ç & ÃÊ±âÈ­
     IDE_TEST( sdi::checkShardLinker( aTemplate->stmt ) != IDE_SUCCESS );
 
-    IDE_TEST_RAISE( aTemplate->shardExecData.execInfo == NULL,
-                    ERR_NO_SHARD_INFO );
-
-    aDataPlan->mDataInfo = ((sdiDataNodes*)aTemplate->shardExecData.execInfo)
-        + aCodePlan->shardDataIndex;
-
     //-------------------------------
-    // shard ìˆ˜í–‰ì„ ìœ„í•œ ì¤€ë¹„
+    // shard ¼öÇàÀ» À§ÇÑ ÁØºñ
     //-------------------------------
     
     if ( QCG_GET_SESSION_IS_AUTOCOMMIT( aTemplate->stmt ) == ID_TRUE )
@@ -437,7 +478,13 @@ IDE_RC qmnSDIN::firstInit( qcTemplate * aTemplate,
         sDataNodeArg.mBindParams = (sdiBindParam*)
             ( aTemplate->shardExecData.data + aCodePlan->bindParam );
 
-        // ì´ˆê¸°í™”
+        /* PROJ-2728 Sharding LOB */
+        sDataNodeArg.mOutBindParams = (sdiOutBindParam*)
+            ( aTemplate->shardExecData.data + aCodePlan->outBindParam );
+        idlOS::memset( sDataNodeArg.mOutBindParams, 0x00,
+                ID_SIZEOF(sdiOutBindParam) * aCodePlan->shardParamCount );
+
+        // ÃÊ±âÈ­
         IDE_TEST( setParamInfo( aTemplate,
                                 aCodePlan,
                                 sDataNodeArg.mBindParams )
@@ -527,7 +574,7 @@ IDE_RC qmnSDIN::setParamInfo( qcTemplate   * aTemplate,
             aBindParams[j].mPrecision = sMtcColumn->precision;
             aBindParams[j].mScale     = sMtcColumn->scale;
 
-            /* BUG-46623 padding ë³€ìˆ˜ë¥¼ 0ìœ¼ë¡œ ì´ˆê¸°í™” í•´ì•¼ í•œë‹¤. */
+            /* BUG-46623 padding º¯¼ö¸¦ 0À¸·Î ÃÊ±âÈ­ ÇØ¾ß ÇÑ´Ù. */
             aBindParams[j].padding    = 0;
 
             j++;
@@ -549,7 +596,7 @@ IDE_RC qmnSDIN::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨.
+ *    ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ¸é ¾ÈµÊ.
  *
  * Implementation :
  *
@@ -567,11 +614,11 @@ IDE_RC qmnSDIN::doItFirst( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SDINì˜ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
+ *    SDINÀÇ ÃÖÃÊ ¼öÇà ÇÔ¼ö
  *
  * Implementation :
- *    - Tableì— IX Lockì„ ê±´ë‹¤.
- *    - Session Event Check (ë¹„ì •ìƒ ì¢…ë£Œ Detect)
+ *    - Table¿¡ IX LockÀ» °Ç´Ù.
+ *    - Session Event Check (ºñÁ¤»ó Á¾·á Detect)
  *    - Cursor Open
  *    - insert one record
  *
@@ -582,7 +629,7 @@ IDE_RC qmnSDIN::doItFirst( qcTemplate * aTemplate,
         (qmndSDIN*) (aTemplate->tmplate.data + aPlan->offset);
 
     //-----------------------------------
-    // Child Planì„ ìˆ˜í–‰í•¨
+    // Child PlanÀ» ¼öÇàÇÔ
     //-----------------------------------
 
     // doIt left child
@@ -590,7 +637,7 @@ IDE_RC qmnSDIN::doItFirst( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Insertë¥¼ ìˆ˜í–‰í•¨
+    // Insert¸¦ ¼öÇàÇÔ
     //-----------------------------------
 
     if ( ( *aFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
@@ -609,6 +656,11 @@ IDE_RC qmnSDIN::doItFirst( qcTemplate * aTemplate,
 
     IDE_EXCEPTION_END;
 
+    if ( sDataPlan->lobInfo != NULL )
+    {
+        (void)qmx::finalizeLobInfo( aTemplate->stmt, sDataPlan->lobInfo );
+    }
+
     return IDE_FAILURE;
 }
 
@@ -619,8 +671,8 @@ IDE_RC qmnSDIN::doItNext( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SDINì˜ ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
- *    ë‹¤ìŒ Recordë¥¼ ì‚­ì œí•œë‹¤.
+ *    SDINÀÇ ´ÙÀ½ ¼öÇà ÇÔ¼ö
+ *    ´ÙÀ½ Record¸¦ »èÁ¦ÇÑ´Ù.
  *
  * Implementation :
  *    - insert one record
@@ -632,7 +684,7 @@ IDE_RC qmnSDIN::doItNext( qcTemplate * aTemplate,
         (qmndSDIN*) (aTemplate->tmplate.data + aPlan->offset);
 
     //-----------------------------------
-    // Child Planì„ ìˆ˜í–‰í•¨
+    // Child PlanÀ» ¼öÇàÇÔ
     //-----------------------------------
 
     // doIt left child
@@ -640,7 +692,7 @@ IDE_RC qmnSDIN::doItNext( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Insertë¥¼ ìˆ˜í–‰í•¨
+    // Insert¸¦ ¼öÇàÇÔ
     //-----------------------------------
 
     if ( ( *aFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
@@ -650,14 +702,19 @@ IDE_RC qmnSDIN::doItNext( qcTemplate * aTemplate,
     }
     else
     {
-        // recordê°€ ì—†ëŠ” ê²½ìš°
-        // ë‹¤ìŒ ìˆ˜í–‰ì„ ìœ„í•´ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜ë¡œ ì„¤ì •í•¨.
+        // record°¡ ¾ø´Â °æ¿ì
+        // ´ÙÀ½ ¼öÇàÀ» À§ÇØ ÃÖÃÊ ¼öÇà ÇÔ¼ö·Î ¼³Á¤ÇÔ.
         sDataPlan->doIt = qmnSDIN::doItFirst;
     }
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    if ( sDataPlan->lobInfo != NULL )
+    {
+        (void)qmx::finalizeLobInfo( aTemplate->stmt, sDataPlan->lobInfo );
+    }
 
     return IDE_FAILURE;
 }
@@ -671,7 +728,7 @@ IDE_RC qmnSDIN::doItFirstMultiRows( qcTemplate * aTemplate,
         (qmndSDIN*) (aTemplate->tmplate.data + aPlan->offset);
 
     //-----------------------------------
-    // Insertë¥¼ ìˆ˜í–‰í•¨
+    // Insert¸¦ ¼öÇàÇÔ
     //-----------------------------------
 
     // insert one record
@@ -694,6 +751,11 @@ IDE_RC qmnSDIN::doItFirstMultiRows( qcTemplate * aTemplate,
 
     IDE_EXCEPTION_END;
 
+    if ( sDataPlan->lobInfo != NULL )
+    {
+        (void)qmx::finalizeLobInfo( aTemplate->stmt, sDataPlan->lobInfo );
+    }
+
     return IDE_FAILURE;
 }
 
@@ -708,12 +770,12 @@ IDE_RC qmnSDIN::doItNextMultiRows( qcTemplate * aTemplate,
     IDE_TEST_RAISE( sDataPlan->rows->next == NULL, ERR_UNEXPECTED );
 
     //-----------------------------------
-    // ë‹¤ë¦„ Rowë¥¼ ì„ íƒ
+    // ´Ù¸§ Row¸¦ ¼±ÅÃ
     //-----------------------------------
     sDataPlan->rows = sDataPlan->rows->next;
 
     //-----------------------------------
-    // Insertë¥¼ ìˆ˜í–‰í•¨
+    // Insert¸¦ ¼öÇàÇÔ
     //-----------------------------------
 
     // insert one record
@@ -724,7 +786,7 @@ IDE_RC qmnSDIN::doItNextMultiRows( qcTemplate * aTemplate,
         *aFlag &= ~QMC_ROW_DATA_MASK;
         *aFlag |= QMC_ROW_DATA_NONE;
 
-        // ë‹¤ìŒ ìˆ˜í–‰ì„ ìœ„í•´ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜ë¡œ ì„¤ì •í•¨.
+        // ´ÙÀ½ ¼öÇàÀ» À§ÇØ ÃÖÃÊ ¼öÇà ÇÔ¼ö·Î ¼³Á¤ÇÔ.
         sDataPlan->doIt = qmnSDIN::doItFirstMultiRows;
     }
     else
@@ -743,6 +805,11 @@ IDE_RC qmnSDIN::doItNextMultiRows( qcTemplate * aTemplate,
     }
     IDE_EXCEPTION_END;
 
+    if ( sDataPlan->lobInfo != NULL )
+    {
+        (void)qmx::finalizeLobInfo( aTemplate->stmt, sDataPlan->lobInfo );
+    }
+
     return IDE_FAILURE;
 }
 
@@ -752,10 +819,10 @@ IDE_RC qmnSDIN::insertOneRow( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    SDIN ì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
+ *    SDIN ÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *    - insert one record ìˆ˜í–‰
+ *    - insert one record ¼öÇà
  *
  ***********************************************************************/
 
@@ -772,14 +839,14 @@ IDE_RC qmnSDIN::insertOneRow( qcTemplate * aTemplate,
     vSLong             sNumRows = 0;
 
     //---------------------------------
-    // ê¸°ë³¸ ì„¤ì •
+    // ±âº» ¼³Á¤
     //---------------------------------
 
     sCanonizedTuple = &(aTemplate->tmplate.rows[sCodePlan->canonizedTuple]);
     sTableForInsert = sCodePlan->tableRef->tableInfo;
     sInsertedRow = aTemplate->insOrUptRow[sCodePlan->valueIdx];
 
-    // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
+    // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
     IDE_TEST( aTemplate->stmt->qmxMem->getStatus( &sQmxMemStatus )
               != IDE_SUCCESS );
 
@@ -787,7 +854,7 @@ IDE_RC qmnSDIN::insertOneRow( qcTemplate * aTemplate,
     // set next sequence
     //-----------------------------------
 
-    // Sequence Value íšë“
+    // Sequence Value È¹µæ
     if ( sCodePlan->nextValSeqs != NULL )
     {
         IDE_TEST( qmx::readSequenceNextVals(
@@ -804,12 +871,12 @@ IDE_RC qmnSDIN::insertOneRow( qcTemplate * aTemplate,
     // make insert value
     //-----------------------------------
 
-    // stackì˜ ê°’ì„ ì´ìš©
+    // stackÀÇ °ªÀ» ÀÌ¿ë
     IDE_TEST( qmx::makeSmiValueWithResult( sCodePlan->columns,
                                            aTemplate,
                                            sTableForInsert,
                                            sInsertedRow,
-                                           NULL )
+                                           sDataPlan->lobInfo )
               != IDE_SUCCESS );
 
     //-----------------------------------
@@ -824,7 +891,7 @@ IDE_RC qmnSDIN::insertOneRow( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // Shard Insertë¥¼ ìœ„í•œ Default ROW êµ¬ì„±
+    // Shard Insert¸¦ À§ÇÑ Default ROW ±¸¼º
     //------------------------------------------
 
     if ( ( sCodePlan->columnsForValues != NULL ) &&
@@ -839,7 +906,7 @@ IDE_RC qmnSDIN::insertOneRow( qcTemplate * aTemplate,
                                               aTemplate,
                                               sTableForInsert,
                                               sInsertedRow,
-                                              NULL )
+                                              sDataPlan->lobInfo )
                   != IDE_SUCCESS );
     }
     else
@@ -848,16 +915,22 @@ IDE_RC qmnSDIN::insertOneRow( qcTemplate * aTemplate,
     }
 
     //-----------------------------------
-    // canonized tupleë¡œ ê°’ì„ ë³µì‚¬
+    // canonized tuple·Î °ªÀ» º¹»ç
     //-----------------------------------
 
-    IDE_TEST( copySmiValueToTuple( sTableForInsert,
+    IDE_TEST( copySmiValueToTuple( aTemplate,
+                                   sTableForInsert,
                                    sInsertedRow,
-                                   sCanonizedTuple )
+                                   sCanonizedTuple,
+                                   (sdiBindParam *)(aTemplate->shardExecData.data +
+                                       sCodePlan->bindParam),
+                                   (sdiOutBindParam *)(aTemplate->shardExecData.data +
+                                       sCodePlan->outBindParam),
+                                   sDataPlan->lobInfo )
               != IDE_SUCCESS );
 
     //-------------------------------
-    // ìˆ˜í–‰ë…¸ë“œ ê²°ì •
+    // ¼öÇà³ëµå °áÁ¤
     //-------------------------------
 
     IDE_TEST( sdi::decideShardDataInfo(
@@ -869,13 +942,20 @@ IDE_RC qmnSDIN::insertOneRow( qcTemplate * aTemplate,
                   &(sCodePlan->shardQuery) )
               != IDE_SUCCESS );
 
+    /* PROJ-2733-DistTxInfo ºĞ»êÁ¤º¸¸¦ ¼³Á¤ÇÏÀÚ. */ 
+    sdi::calculateGCTxInfo( aTemplate,
+                            sDataPlan->mDataInfo,
+                            aTemplate->shardExecData.globalPSM,
+                            sCodePlan->shardDataIndex );
+
     //-------------------------------
-    // ìˆ˜í–‰
+    // ¼öÇà
     //-------------------------------
 
     IDE_TEST( sdi::executeInsert( aTemplate->stmt,
                                   sClientInfo,
                                   sDataPlan->mDataInfo,
+                                  sDataPlan->lobInfo,
                                   & sNumRows )
               != IDE_SUCCESS );
 
@@ -883,10 +963,22 @@ IDE_RC qmnSDIN::insertOneRow( qcTemplate * aTemplate,
     aTemplate->numRows += sNumRows;
 
     //-----------------------------------
-    // ì™„ë£Œ
+    // clear lob info
+    //-----------------------------------
+    if ( sDataPlan->lobInfo != NULL )
+    {
+        (void) qmxShard::initLobInfo( sDataPlan->lobInfo );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    //-----------------------------------
+    // ¿Ï·á
     //-----------------------------------
 
-    // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
+    // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
     IDE_TEST( aTemplate->stmt->qmxMem->setStatus( &sQmxMemStatus )
               != IDE_SUCCESS);
 
@@ -914,17 +1006,17 @@ IDE_RC qmnSDIN::insertOnce( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    insertOnceëŠ” insertOneRowì™€ cursorë¥¼ opení•˜ëŠ” ì‹œì ì´ ë‹¤ë¥´ë‹¤.
- *    insertOnceì—ì„œëŠ” makeSmiValueì´í›„ì— cursorë¥¼ opení•œë‹¤.
- *    ë‹¤ìŒ ì¿¼ë¦¬ì—ì„œ t1 insert cursorë¥¼ ë¨¼ì € ì—´ë©´ subqueryê°€ ìˆ˜í–‰ë  ìˆ˜ ì—†ë‹¤.
+ *    insertOnce´Â insertOneRow¿Í cursor¸¦ openÇÏ´Â ½ÃÁ¡ÀÌ ´Ù¸£´Ù.
+ *    insertOnce¿¡¼­´Â makeSmiValueÀÌÈÄ¿¡ cursor¸¦ openÇÑ´Ù.
+ *    ´ÙÀ½ Äõ¸®¿¡¼­ t1 insert cursor¸¦ ¸ÕÀú ¿­¸é subquery°¡ ¼öÇàµÉ ¼ö ¾ø´Ù.
  *
  *    ex)
  *    insert into t1 values ( select max(i1) from t1 );
  *
  * Implementation :
  *    - cursor open
- *    - insert one record ìˆ˜í–‰
- *    - trigger each row ìˆ˜í–‰
+ *    - insert one record ¼öÇà
+ *    - trigger each row ¼öÇà
  *
  ***********************************************************************/
 
@@ -947,7 +1039,7 @@ IDE_RC qmnSDIN::insertOnce( qcTemplate * aTemplate,
     // set next sequence
     //-----------------------------------
 
-    // Sequence Value íšë“
+    // Sequence Value È¹µæ
     if ( sCodePlan->nextValSeqs != NULL )
     {
         IDE_TEST( qmx::readSequenceNextVals(
@@ -964,23 +1056,29 @@ IDE_RC qmnSDIN::insertOnce( qcTemplate * aTemplate,
     // make insert value
     //-----------------------------------
 
-    // valuesì˜ ê°’ì„ ì´ìš©
+    // valuesÀÇ °ªÀ» ÀÌ¿ë
     IDE_TEST( qmx::makeSmiValueWithValue( aTemplate,
                                           sTableForInsert,
                                           sCodePlan->canonizedTuple,
                                           sDataPlan->rows->values,
                                           sCodePlan->queueMsgIDSeq,
                                           sInsertedRow,
-                                          NULL )
+                                          sDataPlan->lobInfo )
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // canonized tupleë¡œ ê°’ì„ ë³µì‚¬
+    // canonized tuple·Î °ªÀ» º¹»ç
     //-----------------------------------
 
-    IDE_TEST( copySmiValueToTuple( sTableForInsert,
+    IDE_TEST( copySmiValueToTuple( aTemplate,
+                                   sTableForInsert,
                                    sInsertedRow,
-                                   sCanonizedTuple )
+                                   sCanonizedTuple,
+                                   (sdiBindParam *)(aTemplate->shardExecData.data +
+                                       sCodePlan->bindParam),
+                                   (sdiOutBindParam *)(aTemplate->shardExecData.data +
+                                       sCodePlan->outBindParam),
+                                   sDataPlan->lobInfo )
               != IDE_SUCCESS );
 
     //-----------------------------------
@@ -995,7 +1093,7 @@ IDE_RC qmnSDIN::insertOnce( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     //-------------------------------
-    // ìˆ˜í–‰ë…¸ë“œ ê²°ì •
+    // ¼öÇà³ëµå °áÁ¤
     //-------------------------------
 
     IDE_TEST( sdi::decideShardDataInfo(
@@ -1007,13 +1105,20 @@ IDE_RC qmnSDIN::insertOnce( qcTemplate * aTemplate,
                   &(sCodePlan->shardQuery) )
               != IDE_SUCCESS );
 
+    /* PROJ-2733-DistTxInfo ºĞ»êÁ¤º¸¸¦ ¼³Á¤ÇÏÀÚ. */ 
+    sdi::calculateGCTxInfo( aTemplate,
+                            sDataPlan->mDataInfo,
+                            aTemplate->shardExecData.globalPSM,
+                            sCodePlan->shardDataIndex );
+
     //-------------------------------
-    // ìˆ˜í–‰
+    // ¼öÇà
     //-------------------------------
 
     IDE_TEST( sdi::executeInsert( aTemplate->stmt,
                                   sClientInfo,
                                   sDataPlan->mDataInfo,
+                                  sDataPlan->lobInfo,
                                   & sNumRows )
               != IDE_SUCCESS );
 
@@ -1021,7 +1126,19 @@ IDE_RC qmnSDIN::insertOnce( qcTemplate * aTemplate,
     aTemplate->numRows += sNumRows;
 
     //-----------------------------------
-    // ì™„ë£Œ
+    // clear lob info
+    //-----------------------------------
+    if ( sDataPlan->lobInfo != NULL )
+    {
+        (void) qmxShard::initLobInfo( sDataPlan->lobInfo );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    //-----------------------------------
+    // ¿Ï·á
     //-----------------------------------
 
     if ( ( *sDataPlan->flag & QMND_SDIN_INSERT_MASK )
@@ -1042,9 +1159,13 @@ IDE_RC qmnSDIN::insertOnce( qcTemplate * aTemplate,
     return IDE_FAILURE;
 }
 
-IDE_RC qmnSDIN::copySmiValueToTuple( qcmTableInfo * aTableInfo,
-                                     smiValue     * aInsertedRow,
-                                     mtcTuple     * aTuple )
+IDE_RC qmnSDIN::copySmiValueToTuple( qcTemplate      * aTemplate,
+                                     qcmTableInfo    * aTableInfo,
+                                     smiValue        * aInsertedRow,
+                                     mtcTuple        * aTuple,
+                                     sdiBindParam    * aBindParams,
+                                     sdiOutBindParam * aOutBindParams,
+                                     qmxLobInfo      * aLobInfo )
 {
     qcmColumn  * sColumn          = NULL;
     SInt         sColumnOrder;
@@ -1053,11 +1174,15 @@ IDE_RC qmnSDIN::copySmiValueToTuple( qcmTableInfo * aTableInfo,
     void       * sCanonizedValue  = NULL;
     void       * sValue           = NULL;
     UInt         sActualSize;
+    UInt         sClientCount;
+    SInt         sBindId;
+
+    sClientCount = aTemplate->stmt->session->mQPSpecific.mClientInfo->mCount;
 
     IDE_DASSERT( aTableInfo != NULL );
     IDE_DASSERT( aTuple != NULL );
 
-    for ( sColumn = aTableInfo->columns;
+    for ( sColumn = aTableInfo->columns, sBindId = 0;
           sColumn != NULL;
           sColumn = sColumn->next )
     {
@@ -1070,46 +1195,158 @@ IDE_RC qmnSDIN::copySmiValueToTuple( qcmTableInfo * aTableInfo,
             sCanonizedColumn = &(aTuple->columns[sColumnOrder]);
             sStoringColumn = sColumn->basicInfo;
 
-            IDE_TEST_RAISE( ( sStoringColumn->column.flag & SMI_COLUMN_TYPE_MASK )
-                            == SMI_COLUMN_TYPE_LOB,
-                            UNSUPPORTED_COLUMN_ERROR );
-
             IDE_DASSERT( sCanonizedColumn != NULL );
             sCanonizedValue = (void*)
                 ((UChar*)aTuple->row + sCanonizedColumn->column.offset);
 
             IDE_DASSERT( sColumn->basicInfo->column.id == sCanonizedColumn->column.id );
 
-            IDE_TEST( qdbCommon::storingValue2MtdValue(
-                          sCanonizedColumn,
-                          (void*) aInsertedRow[sColumnOrder].value,
-                          & sValue )
-                      != IDE_SUCCESS );
+            if ( (sColumn->basicInfo->column.flag & SMI_COLUMN_TYPE_MASK)
+                  != SMI_COLUMN_TYPE_LOB )
+            {
+                IDE_TEST( qdbCommon::storingValue2MtdValue(
+                              sStoringColumn,
+                              (void*) aInsertedRow[sColumnOrder].value,
+                              & sValue )
+                          != IDE_SUCCESS );
 
-            // BUG-45751
-            if ( sValue == NULL )
-            {
-                sValue = sCanonizedColumn->module->staticNull;
+                // BUG-45751
+                if ( sValue == NULL )
+                {
+                    sValue = sCanonizedColumn->module->staticNull;
+                }
+                else
+                {
+                    // Nothing to do.
+                }
+
+                if ( sCanonizedValue != sValue )
+                {
+                    sActualSize = sCanonizedColumn->module->actualSize(
+                        sCanonizedColumn,
+                        sValue );
+
+                    idlOS::memcpy( sCanonizedValue,
+                                   sValue,
+                                   sActualSize );
+                }
+                else
+                {
+                    // Nothing to do.
+                }
+
+                aOutBindParams[sBindId].mIndicator  = 0;
+                aOutBindParams[sBindId].mShadowData = NULL;
             }
-            else
+            else // LOB
             {
-                // Nothing to do.
+                /*
+                 * PROJ-2728 Sharding LOB 
+                 *
+                 * 1. qmx::makeSmiValueWithResult/WithValue¸¦ ÅëÇØ¼­
+                 *    lobInfo¿¡ src. locator°¡ ÀúÀåµÇ¾ú´Ù¸é (qmx::addLobInfoForCopy)
+                 *    locator OUT ¹ÙÀÎµùÈÄ, getLob -> putLob (qmxShard::copyAndOutBindLobInfo)
+                 * 2. ±×·¸Áö ¾Ê´Ù¸é CHAR ¶Ç´Â BINARY ¹ÙÀÎµù
+                 */
+                // 1. locator
+                if ( existInLobInfoAndAdjustBindId( aLobInfo,
+                                                    sColumnOrder,
+                                                    sBindId )
+                     == ID_TRUE )
+                {
+                    sActualSize = ID_SIZEOF(smLobLocator);
+
+                    aBindParams[sBindId].mInoutType = CMP_DB_PARAM_OUTPUT;
+                    aBindParams[sBindId].mType = sColumn->basicInfo->module->id + 1;
+                    aBindParams[sBindId].mDataSize  = sActualSize;
+
+                    if ( aOutBindParams[sBindId].mShadowData == NULL )
+                    {
+                        IDE_TEST( QC_QME_MEM( aTemplate->stmt)->alloc(
+                                  sActualSize * sClientCount,
+                                  (void**) &(aOutBindParams[sBindId].mShadowData) )
+                              != IDE_SUCCESS );
+                    }
+                    else
+                    {
+                        // Nothing to do.
+                    }
+                }
+                // 2. non-locator
+                else
+                {
+                    /* constant value like 'INSERT INTO T1 SELECT 'ABC' FROM T1' */
+
+                    // clobÀ» SQL_C_CHAR·Î, blobÀ» SQL_C_BINARY·Î ¹ÙÀÎµù.
+                    //        sdl::bindParam¿¡¼­ ¹ÙÀÎµù Å¸ÀÔ ÁöÁ¤.
+                    //   autocommit onÀÌ¾îµµ °¡´É.
+                    if ( aInsertedRow[sColumnOrder].length > 0 )
+                    {
+                        sActualSize = aInsertedRow[sColumnOrder].length;
+                        idlOS::memcpy( sCanonizedValue,
+                                       aInsertedRow[sColumnOrder].value,
+                                       aInsertedRow[sColumnOrder].length );
+                    }
+                    else
+                    {
+                        sActualSize = 0;
+                    }
+                    aBindParams[sBindId].mInoutType = CMP_DB_PARAM_INPUT;
+                    aBindParams[sBindId].mPrecision = MTD_CHAR_PRECISION_MAXIMUM;
+                    aBindParams[sBindId].mDataSize  = MTD_CHAR_PRECISION_MAXIMUM;
+
+                    aOutBindParams[sBindId].mIndicator  = sActualSize;
+                    aOutBindParams[sBindId].mShadowData = NULL;
+#if 0
+                    // locator¸¦ »ç¿ëÇÏ´Â ¹æ¹ı.
+                    //        locator OUT À¸·Î ¹ÙÀÎµùÇÑ ÈÄ putLob.
+                    //   autocommit offÀÏ ¶§¸¸ °¡´É.
+                    aBindParams[sBindId].mInoutType = CMP_DB_PARAM_OUTPUT;
+                    aBindParams[sBindId].mType = sColumn->basicInfo->module->id + 1;
+                    aBindParams[sBindId].mDataSize  = ID_SIZEOF(smLobLocator);
+
+                    // dest.
+                    if ( aOutBindParams[sBindId].mShadowData == NULL )
+                    {
+                        IDE_TEST( QC_QME_MEM( aTemplate->stmt)->alloc(
+                                  ID_SIZEOF(smLobLocator) * sClientCount,
+                                  (void**) &(aOutBindParams[sBindId].mShadowData) )
+                              != IDE_SUCCESS );
+                    }
+                    else
+                    {
+                        // Nothing to do.
+                    }
+                    (void) qmxShard::addLobInfoForPutLob(
+                                      aLobInfo,
+                                      sBindId );
+
+                    // src.
+                    sLobValue = (mtdLobType *) sCanonizedValue;
+                    if ( aInsertedRow[sColumnOrder].value == NULL )
+                    {
+                        sLobValue->length = MTD_LOB_NULL_LENGTH;
+                    }
+                    else
+                    {
+                        sLobValue->length = aInsertedRow[sColumnOrder].length;
+                    }
+                    if ( aInsertedRow[sColumnOrder].length > 0 )
+                    {
+                        sLobValue->length = aInsertedRow[sColumnOrder].length;
+                        idlOS::memcpy( sLobValue->value,
+                                       aInsertedRow[sColumnOrder].value,
+                                       aInsertedRow[sColumnOrder].length );
+                    }
+                    else
+                    {
+                        // Nothing to do.
+                    }
+#endif
+                }
             }
 
-            if ( sCanonizedValue != sValue )
-            {
-                sActualSize = sCanonizedColumn->module->actualSize(
-                    sCanonizedColumn,
-                    sValue );
-
-                idlOS::memcpy( sCanonizedValue,
-                               sValue,
-                               sActualSize );
-            }
-            else
-            {
-                // Nothing to do.
-            }
+            sBindId++;
         }
         else
         {
@@ -1119,11 +1356,6 @@ IDE_RC qmnSDIN::copySmiValueToTuple( qcmTableInfo * aTableInfo,
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION( UNSUPPORTED_COLUMN_ERROR )
-    {
-        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMV_NOT_APPLICABLE_TYPE_IN_TARGET,
-                                  sStoringColumn->module->names->string ) );
-    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -1135,7 +1367,46 @@ void qmnSDIN::shardStmtPartialRollbackUsingSavepoint( qcTemplate  * aTemplate,
     qmndSDIN        * sDataPlan = (qmndSDIN*)(aTemplate->tmplate.data + aPlan->offset);
     sdiClientInfo   * sClientInfo = aTemplate->stmt->session->mQPSpecific.mClientInfo;
 
-    sdi::shardStmtPartialRollbackUsingSavepoint( aTemplate->stmt,
-                                                 sClientInfo, 
-                                                 sDataPlan->mDataInfo );
+    if ( ( sDataPlan->mDataInfo != NULL ) &&
+         ( sDataPlan->mDataInfo->mInitialized == ID_TRUE ) )
+    {
+        sdi::shardStmtPartialRollbackUsingSavepoint( aTemplate->stmt,
+                                                     sClientInfo, 
+                                                     sDataPlan->mDataInfo );
+    }
+}
+
+/*
+ * PROJ-2728 Sharding LOB
+ *   hidden columnÀÌ ÀÖ´Â °æ¿ì ColumnOrder¿Í BindId°¡ ´Ù¸£¹Ç·Î Á¶Á¤ÇØ¾ß ÇÔ
+ */
+idBool qmnSDIN::existInLobInfoAndAdjustBindId(
+                                     qmxLobInfo   * aLobInfo,
+                                     SInt           aColumnOrder,
+                                     SInt           aBindId )
+{
+    UInt   i;
+    idBool sExist = ID_FALSE;
+
+    if ( aLobInfo != NULL )
+    {
+        // for copy
+        for ( i = 0;
+              i < aLobInfo->count;
+              i++ )
+        {
+            if ( aLobInfo->dstBindId[i] == aColumnOrder )
+            {
+                sExist = ID_TRUE;
+
+                if ( aColumnOrder != aBindId )
+                {
+                    aLobInfo->dstBindId[i] = aBindId;
+                }
+                break;
+            }
+        }
+    }
+
+    return sExist;
 }

@@ -58,7 +58,7 @@ cmpOpMap gCmpOpRPMap[] =
     {"CMP_OP_RP_FailbackEnd"        } ,
     {"CMP_OP_RP_SyncTableNumber"    } ,
     {"CMP_OP_RP_SyncStart"          } ,
-    {"CMP_OP_RP_SyncRebuildIndex"   } ,
+    {"CMP_OP_RP_SyncEnd"            } ,
     {"CMP_OP_RP_LobTrim"            } ,
     {"CMP_OP_RP_MetaReplCheck"      } ,
     {"CMP_OP_RP_MetaDictTableCount" } ,
@@ -74,6 +74,18 @@ cmpOpMap gCmpOpRPMap[] =
     {"CMP_OP_RP_DDLReplicateAck"    },
     {"CMP_OP_RP_MetaPartitionCount" },
     {"CMP_OP_RP_MetaInitialize    " },
+    {"CMP_OP_RP_TemporarySyncInfo"  },
+    {"CMP_OP_RP_TemporarySyncItem"  },
+    {"CMP_OP_RP_TemporarySyncHandshakeAck"  },
+    {"CMP_OP_RP_MetaReplTblCondition"       },
+    {"CMP_OP_RP_MetaReplTblConditionResult" },
+    {"CMP_OP_RP_Truncate"           },
+    {"CMP_OP_RP_TruncateAck"        },
+    {"CMP_OP_RP_XA_START_REQ"       },  /* PROJ-2747 Global Tx Consistent */
+    {"CMP_OP_RP_XA_PREPARE_REQ"     },
+    {"CMP_OP_RP_XA_PREPARE"         },
+    {"CMP_OP_RP_XA_COMMIT"          },
+    {"CMP_OP_RP_XA_END"             },
     {"CMP_OP_RP_MAX_VER1"           }
 };
 
@@ -363,7 +375,7 @@ cmpArgFunction gCmpArgInitializeFunctionRP[CMP_OP_RP_MAX] =
     cmpArgNULL,                       /* CMP_OP_RP_FailbackEnd      */
     cmpArgNULL,                       /* CMP_OP_RP_SyncTableNumber  */
     cmpArgNULL,                       /* CMP_OP_RP_SyncStart        */
-    cmpArgNULL,                       /* CMP_OP_RP_SyncRebuildIndex */
+    cmpArgNULL,                       /* CMP_OP_RP_SyncEnd          */
     cmpArgNULL,                       /* CMP_OP_RP_LobTrim          */
     cmpArgNULL,                       /* CMP_OP_RP_MetaReplCheck    */
     cmpArgNULL,                       /* CMP_OP_RP_MetaDictTableCount*/
@@ -378,7 +390,19 @@ cmpArgFunction gCmpArgInitializeFunctionRP[CMP_OP_RP_MAX] =
     cmpArgNULL,                       /* CMP_OP_RP_DDLReplicateExecute        */
     cmpArgNULL,                       /* CMP_OP_RP_DDLReplicateAck  */
     cmpArgNULL,                       /* CMP_OP_RP_MetaPartitionCount */
-    cmpArgNULL                        /* CMP_OP_RP_MetaInitialize */
+    cmpArgNULL,                       /* CMP_OP_RP_MetaInitialize */
+    cmpArgNULL,                       /* CMP_OP_RP_TemporarySyncInfo */
+    cmpArgNULL,                       /* CMP_OP_RP_TemporarySyncItem */
+    cmpArgNULL,                       /* CMP_OP_RP_TemporarySyncHandshakeAck */
+    cmpArgNULL,                       /* CMP_OP_RP_MetaReplTblCondition */
+    cmpArgNULL,                       /* CMP_OP_RP_MetaReplTblConditionResult */
+    cmpArgNULL,                       /* CMP_OP_RP_Truncate */
+    cmpArgNULL,                       /* CMP_OP_RP_TruncateAck */
+    cmpArgNULL,                       /* CMP_OP_RP_XA_START_REQ */
+    cmpArgNULL,                       /* CMP_OP_RP_XA_PREPARE_REQ */
+    cmpArgNULL,                       /* CMP_OP_RP_XA_PREPARE */
+    cmpArgNULL,                       /* CMP_OP_RP_XA_COMMIT */
+    cmpArgNULL                        /* CMP_OP_RP_XA_END */
 };
 
 cmpArgFunction gCmpArgFinalizeFunctionRP[CMP_OP_RP_MAX] =
@@ -423,7 +447,7 @@ cmpArgFunction gCmpArgFinalizeFunctionRP[CMP_OP_RP_MAX] =
     cmpArgNULL,                       /* CMP_OP_RP_FailbackEnd      */
     cmpArgNULL,                       /* CMP_OP_RP_SyncTableNumber  */
     cmpArgNULL,                       /* CMP_OP_RP_SyncStart        */
-    cmpArgNULL,                       /* CMP_OP_RP_SyncRebuildIndex */
+    cmpArgNULL,                       /* CMP_OP_RP_SyncEnd          */
     cmpArgNULL,                       /* CMP_OP_RP_LobTrim          */
     cmpArgNULL,                       /* CMP_OP_RP_MetaReplCheck    */
     cmpArgNULL,                       /* CMP_OP_RP_MetaDictTableCount*/
@@ -438,5 +462,17 @@ cmpArgFunction gCmpArgFinalizeFunctionRP[CMP_OP_RP_MAX] =
     cmpArgNULL,                       /* CMP_OP_RP_DDLReplicateExecute        */
     cmpArgNULL,                       /* CMP_OP_RP_DDLReplicateAck  */
     cmpArgNULL,                       /* CMP_OP_RP_MetaPartitionCount */
-    cmpArgNULL                        /* CMP_OP_RP_MetaInitialize */
+    cmpArgNULL,                       /* CMP_OP_RP_MetaInitialize */
+    cmpArgNULL,                       /* CMP_OP_RP_TemporarySyncInfo */
+    cmpArgNULL,                       /* CMP_OP_RP_TemporarySyncItem */
+    cmpArgNULL,                       /* CMP_OP_RP_TemporarySyncHandshakeAck */
+    cmpArgNULL,                       /* CMP_OP_RP_MetaReplTblCondition */
+    cmpArgNULL,                       /* CMP_OP_RP_MetaReplTblConditionResult */
+    cmpArgNULL,                       /* CMP_OP_RP_Truncate */
+    cmpArgNULL,                       /* CMP_OP_RP_TruncateAck */
+    cmpArgNULL,                       /* CMP_OP_RP_XA_START_REQ */
+    cmpArgNULL,                       /* CMP_OP_RP_XA_PREPARE_REQ */
+    cmpArgNULL,                       /* CMP_OP_RP_XA_PREPARE */
+    cmpArgNULL,                       /* CMP_OP_RP_XA_COMMIT */
+    cmpArgNULL                        /* CMP_OP_RP_XA_END */
 };

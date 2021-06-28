@@ -93,7 +93,7 @@ typedef struct ideFaultMgr
     ID_FT_VOLATILE idBool     mIsExceptionDisable;    /* [EXPT] only for exception section (with from signal handler) */
     sigset_t                  mSavedSigMask;
     SInt                      mDummyFlag;             /* dummy flag for preventing a specific code optimization which can be used for register like %rax instead of stack for local variable */
-    SInt                      mRootBeginDepth;        /* IDE_FT_ROOT_BEGINì´ ì—¬ëŸ¬ë²ˆ í˜¸ì¶œë˜ë„ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ ë³€ìˆ˜ */
+    SInt                      mRootBeginDepth;        /* IDE_FT_ROOT_BEGINÀÌ ¿©·¯¹ø È£ÃâµÇµµ Ã³¸®ÇÏ±â À§ÇÑ º¯¼ö */
 } ideFaultMgr;
 
 IDE_RC ideEnableFaultMgr(idBool aIsThreadEnable);

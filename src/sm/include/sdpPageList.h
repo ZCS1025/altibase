@@ -16,21 +16,21 @@
  
 
 /***********************************************************************
- * $Id: sdpPageList.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdpPageList.h 86435 2019-12-13 05:59:48Z jiwon.kim $
  *
  * Description :
  *
- *  ë³¸ íŒŒì¼ì€ disk table list entryì— ëŒ€í•œ í—¤ë” íŒŒì¼ì´ë‹¤.
+ *  º» ÆÄÀÏÀº disk table list entry¿¡ ´ëÇÑ Çì´õ ÆÄÀÏÀÌ´Ù.
  *
- * # ê°œë…
+ * # °³³ä
  *
- *   disk íƒ€ì… tableì˜ page list entry(segment)ë¥¼ ê´€ë¦¬í•œë‹¤.
+ *   disk Å¸ÀÔ tableÀÇ page list entry(segment)¸¦ °ü¸®ÇÑ´Ù.
  *
- * # êµ¬ì¡°
+ * # ±¸Á¶
  *
- * # ê´€ë ¨ìë£Œêµ¬ì¡°
+ * # °ü·ÃÀÚ·á±¸Á¶
  *
- * # ì°¸ê³ 
+ * # Âü°í
  *
  **********************************************************************/
 
@@ -47,23 +47,23 @@ class sdpPageList
 {
 public:
 
-    /* page list entry ì´ˆê¸°í™” */
+    /* page list entry ÃÊ±âÈ­ */
     static void initializePageListEntry( sdpPageListEntry*  aPageEntry,
                                          vULong             aSlotSize,
                                          smiSegAttr         aSegAttr,
                                          smiSegStorageAttr  aSegStoAttr);
 
-    // Page List Entryì˜ Runtime Itemì„ NULLë¡œ ì„¸íŒ…í•œë‹¤.
+    // Page List EntryÀÇ Runtime ItemÀ» NULL·Î ¼¼ÆÃÇÑ´Ù.
     static IDE_RC setRuntimeNull( sdpPageListEntry* aPageEntry );
 
-    /* runtime ì •ë³´ ë° mutex ì´ˆê¸°í™” */
+    /* runtime Á¤º¸ ¹× mutex ÃÊ±âÈ­ */
     static IDE_RC initEntryAtRuntime( scSpaceID          aSpaceID,
                                       smOID              aTableOID,
                                       UInt               aIndexID,
                                       sdpPageListEntry * aPageEntry,
                                       idBool             aDoInitMutex = ID_TRUE );
 
-    /* runtime ì •ë³´ ë° mutex í•´ì œ */
+    /* runtime Á¤º¸ ¹× mutex ÇØÁ¦ */
     static IDE_RC finEntryAtRuntime( sdpPageListEntry* aPageEntry );
 
     static IDE_RC findPage( idvSQL            *aStatistics,
@@ -78,7 +78,7 @@ public:
                             UChar            **aPagePtr,
                             UChar             *aCTSlotIdx );
 
-    // PROJ-1566 : insert append ìˆ˜í–‰ ì‹œ, free pageë¥¼ ì°¾ëŠ” í•¨ìˆ˜
+    // PROJ-1566 : insert append ¼öÇà ½Ã, free page¸¦ Ã£´Â ÇÔ¼ö
     static IDE_RC allocPage4AppendRec( idvSQL           * aStatistics,
                                        scSpaceID          aSpaceID,
                                        sdpPageListEntry * aPageEntry,
@@ -88,8 +88,8 @@ public:
                                        idBool             aIsLogging,
                                        UChar           ** aAllocPagePtr );
 
-    // PROJ-1566 : insert append ìˆ˜í–‰ ì‹œ, insertë¥¼ ìœ„í•œ slotì„ í• ë‹¹í•´ì£¼ëŠ”
-    //             í•¨ìˆ˜
+    // PROJ-1566 : insert append ¼öÇà ½Ã, insert¸¦ À§ÇÑ slotÀ» ÇÒ´çÇØÁÖ´Â
+    //             ÇÔ¼ö
     static IDE_RC findSlot4AppendRec( idvSQL           * aStatistics,
                                       scSpaceID          aSpaceID,
                                       sdpPageListEntry * aPageEntry,
@@ -111,7 +111,7 @@ public:
                                    UChar             * aPagePtr,
                                    sdrMtx            * aMtx );
 
-    /* slot í•´ì œ */
+    /* slot ÇØÁ¦ */
     static IDE_RC freeSlot( idvSQL            *aStatistics,
                             scSpaceID          aTableSpaceID,
                             sdpPageListEntry  *aPageEntry,
@@ -119,22 +119,22 @@ public:
                             scGRID             aSlotGRID,
                             sdrMtx            *aMtx );
 
-    /* record ê°œìˆ˜ë¥¼ ë°˜í™˜ */
+    /* record °³¼ö¸¦ ¹İÈ¯ */
     static IDE_RC getRecordCount( idvSQL           * aStatistics,
                                   sdpPageListEntry * aPageEntry,
                                   ULong            * aRecordCount,
                                   idBool             aLockMutex = ID_TRUE);
 
-    /* page list entryì˜ item sizeë¥¼ alignì‹œí‚¨ slot size ë°˜í™˜ */
+    /* page list entryÀÇ item size¸¦ align½ÃÅ² slot size ¹İÈ¯ */
     static UInt getSlotSize( sdpPageListEntry* aPageEntry );
 
-    /* page list entryì˜ seg desc PID ë°˜í™˜ */
+    /* page list entryÀÇ seg desc PID ¹İÈ¯ */
     static scPageID getTableSegDescPID( sdpPageListEntry* aPageEntry );
 
-    /* page list entryì˜ insert rec count ë°˜í™˜ */
+    /* page list entryÀÇ insert rec count ¹İÈ¯ */
     static ULong getRecCnt( sdpPageListEntry*  aPageEntry );
 
-    /* ë¡œê¹…ì— í•„ìš”í•œ page list entry ì •ë³´ ë°˜í™˜ */
+    /* ·Î±ë¿¡ ÇÊ¿äÇÑ page list entry Á¤º¸ ¹İÈ¯ */
     static void getPageListEntryInfo( void*     aPageEntry,
                                       scPageID* aSegPID );
 
@@ -148,15 +148,14 @@ public:
                                          UInt              aDataSize );
 
 
-    /* ë¯¸ë¦¬ page ìƒíƒœ ë³€ê²½ ê²€ì‚¬ */
+    /* ¹Ì¸® page »óÅÂ º¯°æ °Ë»ç */
     static void check4FreeSlot( sdRID      aRowRID,
                                 sdrMtx*    aMtx );
 
     // PROJ-1566
     static idBool isTablePageType ( UChar * aWritePtr );
 
-    static IDE_RC validateMaxRow( idvSQL           * aStatistics,
-                                  sdpPageListEntry * aPageEntry,
+    static IDE_RC validateMaxRow( sdpPageListEntry * aPageEntry,
                                   void             * aTableInfoPtr,
                                   ULong              aMaxRow );
 

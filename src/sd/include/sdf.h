@@ -26,14 +26,113 @@
 #include <mt.h>
 #include <sdi.h>
 
+#define SDF_QUERY_LEN (1024)
+#define SDF_DIGEST_LEN (64)
+
+typedef enum
+{
+    SDF_REPL_CREATE,
+    SDF_REPL_ADD,
+    SDF_REPL_START,
+    SDF_REPL_STOP,
+    SDF_REPL_FLUSH,
+    SDF_REPL_DROP
+} sdfReplicationFunction;
+
+typedef struct sdfArgument
+{
+    SChar       * mArgument1; // partition name or value
+    SChar       * mArgument2; // node name
+    idBool        mIsCheck;   // irregular option check
+    idBool        mIsFlush;   // use SET_SHARD_TABLE_SHARDKEY()
+    sdfArgument * mNext;
+} sdfArgument;
+
+typedef enum
+{
+    SDF_REPL_SENDER,
+    SDF_REPL_RECEIVER
+}sdfReplDirectionalRole;
+
+
 class sdf
 {
 public:
-    /* shard meta enableÏãúÏóêÎßå ÎèôÏûëÌïòÎäî Ìï®ÏàòÎì§ */
+    /* shard meta enableΩ√ø°∏∏ µø¿€«œ¥¬ «‘ºˆµÈ */
     static const mtfModule * extendedFunctionModules[];
 
-    /* data nodeÏóêÏÑú Ìï≠ÏÉÅ ÎèôÏûëÌïòÎäî Ìï®ÏàòÎì§ */
+    /* data nodeø°º≠ «◊ªÛ µø¿€«œ¥¬ «‘ºˆµÈ */
     static const mtfModule * extendedFunctionModules2[];
+
+    static IDE_RC checkShardObjectSchema( qcStatement * aStatement,
+                                          SChar       * aSqlStr );
+    
+    static IDE_RC makeArgumentList( qcStatement    * aStatement,
+                                    SChar          * aArgumentListStr,
+                                    sdfArgument   ** aArgumentList,
+                                    UInt           * aArgumentCnt,
+                                    SChar          * aDefaultPartitionNameStr );
+    
+    static IDE_RC stringTrim( SChar * aDestString,
+                              SChar * aSrcString );
+
+    static IDE_RC stringRemoveCrlf( SChar * aDestString,
+                                    SChar * aSrcString );
+    
+    static IDE_RC validateNode( qcStatement    * aStatement,
+                                sdfArgument    * aArgumentList,
+                                SChar          * aNodeName,
+                                sdiSplitMethod   aSplitMethod );
+    
+    static IDE_RC makeReplName( SChar * aDestReplName,
+                                SChar * aSrcReplName );
+    
+    static IDE_RC executeRemoteSQLWithNewTrans( qcStatement * aStatement,
+                                                SChar       * aNodeName,
+                                                SChar       * aSqlStr,
+                                                idBool        aIsDDLTimeOut );
+
+    static IDE_RC remoteSQLWithNewTrans( qcStatement * aStatement,
+                                         SChar       * aSqlStr );
+    
+    static IDE_RC createReplicationForInternal( qcStatement * aStatement,
+                                                SChar       * aNodeName,
+                                                SChar       * aReplName,
+                                                SChar       * aHostIP,
+                                                UInt          aPortNo );
+
+    static IDE_RC startReplicationForInternal( qcStatement * aStatement,
+                                               SChar       * aNodeName,
+                                               SChar       * aReplName,
+                                               SInt          aReplParallelCnt );
+
+    static IDE_RC stopReplicationForInternal( qcStatement * aStatement,
+                                              SChar       * aNodeName,
+                                              SChar       * aReplName );
+
+    static IDE_RC dropReplicationForInternal( qcStatement * aStatement,
+                                              SChar       * aNodeName,
+                                              SChar       * aReplName );
+    
+    static IDE_RC searchReplicaSet( qcStatement            * aStatement,
+                                    iduList                * aNodeInfoList,
+                                    sdiReplicaSetInfo      * aReplicaSetInfo,
+                                    SChar                  * aNodeNameStr,
+                                    SChar                  * aUserNameStr,
+                                    SChar                  * aTableNameStr,
+                                    SChar                  * aPartNameStr,
+                                    SInt                     aReplParallelCnt,
+                                    sdfReplicationFunction   aReplicationFunction,
+                                    sdfReplDirectionalRole   aRole,
+                                    UInt                     aNth );
+
+    static IDE_RC getCurrentAccessMode( qcStatement     * aStatement,
+                                        SChar           * aTableNameStr,
+                                        UInt            * aAccessMode );
+
+    static IDE_RC runRemoteQuery( qcStatement * aStatement,
+                                  SChar       * aSqlStr );
+    
 };
 
 #endif /* _O_SDF_H_ */

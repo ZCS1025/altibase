@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLMain.cpp 84322 2018-11-12 02:04:29Z bethy $
+ * $Id: iSQLMain.cpp 88494 2020-09-04 04:29:31Z chkim $
  **********************************************************************/
 
 #include <idp.h>
@@ -117,18 +117,17 @@ SChar * isqlprompt(EditLine * /*__ el __*/)
 }
 #endif
 
-ACI_RC ProcedurePrintCallback( acp_char_t *aMessage,
-                               acp_uint32_t aLength,
-                               void * /*aArgument*/ )
+/* BUG-46019 */
+void ProcedurePrintCallback( acp_uint8_t *aMessage,
+                             acp_uint32_t aLength,
+                             void * /*aUserData*/ )
 {
     idlOS::memcpy(gSpool->m_Buf, aMessage, aLength);
     gSpool->m_Buf[aLength] = '\0';
     gSpool->Print();
-
-    return ACI_SUCCESS;
 }
 
-ulnServerMessageCallbackStruct gMessageCallbackStruct =
+SQLMessageCallbackStruct gMessageCallback =
 {
     ProcedurePrintCallback, NULL
 };
@@ -149,7 +148,7 @@ static void sigfunc( SInt /* signo */ )
     }
 
     /* BUG-32568 Support Cancel
-     * êµ³ì´ Fetch ì¤‘ì¸ì§€ í™•ì¸í•˜ì§€ ì•ŠëŠ”ë‹¤. ê± ì„¤ì •í•˜ë‚˜ í™•ì¸í•˜ë‚˜ ê·¸ê²Œ ê·¸ê±°ë¼.. */
+     * ±»ÀÌ Fetch ÁßÀÎÁö È®ÀÎÇÏÁö ¾Ê´Â´Ù. °Á ¼³Á¤ÇÏ³ª È®ÀÎÇÏ³ª ±×°Ô ±×°Å¶ó.. */
     gExecuteCommand->FetchCancel();
 
     // fix BUG-19750
@@ -171,28 +170,28 @@ IDE_RC checkUser()
     uid = idlOS::getuid();
 
     // bug-26749 windows isql filename parse error
-    // windowsì—ì„œ bin/isql -sysdba ì´ëŸ° ì‹ìœ¼ë¡œ ì‹¤í–‰í•˜ë©´
-    // ë’¤ì— exeë¥¼ ë¶™ì´ì§€ ì•Šì•„ error ë°œìƒ.
-    // ë³€ê²½ì‚¬í•­:
-    // 1. windowsì¸ ê²½ìš° ì˜ë¯¸ ì—†ëŠ” ì½”ë“œì˜€ìœ¼ë¯€ë¡œ ì•„ì˜ˆ ê²€ì‚¬í•˜ì§€ ì•ŠìŒ.
-    // 2. isql íŒŒì¼ userid ê²€ì‚¬ë¥¼ altibase_home dir userid ê²€ì‚¬ë¡œ ë³€ê²½.
-    // why? isql íŒŒì¼ì„ ë³µì‚¬í•˜ì—¬ ìˆ˜í–‰í•˜ë©´ ê²€ì‚¬ë¥¼ í”¼í•´ê°ˆ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ.
-    // ê·¸ëŸ¬ë‚˜, altibase_homeì„ ìžê¸° dirë¡œ ì„¤ì •í›„ ìˆ˜í–‰í•˜ë©´
-    // ì—¬ì „ížˆ ê²€ì‚¬ë¥¼ í”¼í• ìˆ˜ëŠ” ìžˆë‹¤. í•˜ì§€ë§Œ, dir ê²€ì‚¬ê°€ ì¢€ ë” ë‚«ë‹¤ëŠ”
-    // bug reporter ë¶„ì˜ ì˜ê²¬ì´ ìžˆì–´ ê·¸ë ‡ê²Œ ê°€ê¸°ë¡œ í•œë‹¤.
-    // ì–´ì§œí”¼ ìµœì†Œí•œì˜ ê²€ì‚¬ì´ë¯€ë¡œ í¬ê²Œ ì˜ë¯¸ë¥¼ ë‘ì§€ ì•Šë„ë¡ í•˜ìž.
-    // cf) oraì˜ ê²½ìš° ì—­ì‹œ error ê°€ ë°œìƒí•˜ì§€ë§Œ log file create ë¬¸ì œë¡œ,
-    // altiì²˜ëŸ¼ ê¶Œí•œ ê²€ì‚¬ë¥¼ í•˜ì§€ëŠ” ì•ŠëŠ” ê²ƒ ê°™ìŒ.
+    // windows¿¡¼­ bin/isql -sysdba ÀÌ·± ½ÄÀ¸·Î ½ÇÇàÇÏ¸é
+    // µÚ¿¡ exe¸¦ ºÙÀÌÁö ¾Ê¾Æ error ¹ß»ý.
+    // º¯°æ»çÇ×:
+    // 1. windowsÀÎ °æ¿ì ÀÇ¹Ì ¾ø´Â ÄÚµå¿´À¸¹Ç·Î ¾Æ¿¹ °Ë»çÇÏÁö ¾ÊÀ½.
+    // 2. isql ÆÄÀÏ userid °Ë»ç¸¦ altibase_home dir userid °Ë»ç·Î º¯°æ.
+    // why? isql ÆÄÀÏÀ» º¹»çÇÏ¿© ¼öÇàÇÏ¸é °Ë»ç¸¦ ÇÇÇØ°¥ ¼ö ÀÖÀ¸¹Ç·Î.
+    // ±×·¯³ª, altibase_homeÀ» ÀÚ±â dir·Î ¼³Á¤ÈÄ ¼öÇàÇÏ¸é
+    // ¿©ÀüÈ÷ °Ë»ç¸¦ ÇÇÇÒ¼ö´Â ÀÖ´Ù. ÇÏÁö¸¸, dir °Ë»ç°¡ Á» ´õ ³´´Ù´Â
+    // bug reporter ºÐÀÇ ÀÇ°ßÀÌ ÀÖ¾î ±×·¸°Ô °¡±â·Î ÇÑ´Ù.
+    // ¾îÂ¥ÇÇ ÃÖ¼ÒÇÑÀÇ °Ë»çÀÌ¹Ç·Î Å©°Ô ÀÇ¹Ì¸¦ µÎÁö ¾Êµµ·Ï ÇÏÀÚ.
+    // cf) oraÀÇ °æ¿ì ¿ª½Ã error °¡ ¹ß»ýÇÏÁö¸¸ log file create ¹®Á¦·Î,
+    // altiÃ³·³ ±ÇÇÑ °Ë»ç¸¦ ÇÏÁö´Â ¾Ê´Â °Í °°À½.
     sHomePath = idlOS::getenv(IDP_HOME_ENV);
     IDE_TEST_RAISE(((sHomePath == NULL) || (sHomePath[0] == '\0')), env_error);
     // bug-33948: codesonar: Buffer Overrun: strcpy
     idlOS::strncpy(sExFileName, sHomePath, WORD_LEN-1);
     sExFileName[WORD_LEN-1] = '\0';
 
-    // cf) ë§Œì¼ ì´ì¤‘í™” testcaseì—ì„œ stat error 2 ê°€ ë°œìƒí•œë‹¤ë©´ ì´ê²ƒì€
-    // atafì—ì„œ altibase_home í™˜ê²½ ë³€ìˆ˜ë¥¼ í™•ìž¥ì—†ì´ ë„˜ê¸°ê¸° ë•Œë¬¸ìž„.
+    // cf) ¸¸ÀÏ ÀÌÁßÈ­ testcase¿¡¼­ stat error 2 °¡ ¹ß»ýÇÑ´Ù¸é ÀÌ°ÍÀº
+    // ataf¿¡¼­ altibase_home È¯°æ º¯¼ö¸¦ È®Àå¾øÀÌ ³Ñ±â±â ¶§¹®ÀÓ.
     // ex) server.conf: ALTIBASE_HOME=$ATC_HOME/TC/Server/repl4/db1
-    // í•´ê²°ë°©ë²•: sql íŒŒì¼ì•ˆì—ì„œ ì§ì ‘ connect êµ¬ë¬¸ ì“°ì§€ ë§ê³  isql í˜¸ì¶œ ìš”ë§.
+    // ÇØ°á¹æ¹ý: sql ÆÄÀÏ¾È¿¡¼­ Á÷Á¢ connect ±¸¹® ¾²Áö ¸»°í isql È£Ãâ ¿ä¸Á.
     // ex) connect .. as sysdba => SYSTEM @DB1 isql .. -sysdba
     IDE_TEST_RAISE( idlOS::stat(sExFileName, &sBuf) != 0, stat_error );
 
@@ -223,7 +222,7 @@ IDE_RC checkUser()
     return IDE_FAILURE;
 
 // bug-26749 windows isql filename parse error
-// windowsì¸ ê²½ìš° sysdba ì ‘ì†ì‹œ íŒŒì¼ userid ê²€ì‚¬ë¥¼ í•˜ì§€ ì•Šë„ë¡ í•¨.
+// windowsÀÎ °æ¿ì sysdba Á¢¼Ó½Ã ÆÄÀÏ userid °Ë»ç¸¦ ÇÏÁö ¾Êµµ·Ï ÇÔ.
 // Win32's stat return uid as 0
 #else
     gSameUser = ID_TRUE;
@@ -246,12 +245,12 @@ main( int     argc,
     g_inLoad   = ID_FALSE;
     g_inEdit   = ID_FALSE;
     g_isSIGINT = ID_FALSE; // fix BUG-19750
-    g_glogin   = ID_FALSE; // SetScriptFileì—ì„œ ì´ê°’ ì²´í¬
+    g_glogin   = ID_FALSE; // SetScriptFile¿¡¼­ ÀÌ°ª Ã¼Å©
     g_login    = ID_FALSE;
     empty      = NULL;
     gTmpBuf    = NULL;
     /* bug 18731 */
-    /* ë§ˆì§€ë§‰ ëª…ë ¹ì˜ returnì„ ì €ìž¥í•œë‹¤. */
+    /* ¸¶Áö¸· ¸í·ÉÀÇ returnÀ» ÀúÀåÇÑ´Ù. */
     gLastReturnValue = IDE_SUCCESS;
 
     commandLen = gProperty.GetCommandLen();
@@ -322,9 +321,9 @@ main( int     argc,
         ShowCopyRight();
     }
 
-    /* BUG-31387: ConnTypeì„ ì¡°ì •í•˜ê³  ê²½ìš°ì— ë”°ë¼ ê²½ê³  ì¶œë ¥.
-       ConnTypeì„ ReadEnviroment(), ReadServerProperties()ì—ì„œ
-       ì°¸ì¡°í•˜ë¯€ë¡œ ì´ í•¨ìˆ˜ë“¤ì„ í˜¸ì¶œí•˜ê¸° ì „ì— í˜¸ì¶œ. */
+    /* BUG-31387: ConnTypeÀ» Á¶Á¤ÇÏ°í °æ¿ì¿¡ µû¶ó °æ°í Ãâ·Â.
+       ConnTypeÀ» ReadEnviroment(), ReadServerProperties()¿¡¼­
+       ÂüÁ¶ÇÏ¹Ç·Î ÀÌ ÇÔ¼öµéÀ» È£ÃâÇÏ±â Àü¿¡ È£Ãâ. */
     gProgOption.AdjustConnType();
 
     /* ============================================
@@ -332,7 +331,7 @@ main( int     argc,
      * ============================================ */
     IDE_TEST(gProgOption.ReadEnvironment() != IDE_SUCCESS);
 
-    // BUG-26287: ìžˆìœ¼ë©´ altibase.propertiesë„ ì°¸ì¡° (for server)
+    // BUG-26287: ÀÖÀ¸¸é altibase.propertiesµµ ÂüÁ¶ (for server)
     gProgOption.ReadServerProperties();
 
     /* ============================================
@@ -374,7 +373,7 @@ main( int     argc,
         // bypass user check if atc mode is true
         
         // bug-26749 windows isql filename parse error
-        // sysdbaë¡œ ì ‘ì†í•œ ê²½ìš°ë§Œ exefile userid ê²€ì‚¬
+        // sysdba·Î Á¢¼ÓÇÑ °æ¿ì¸¸ exefile userid °Ë»ç
         if (gProperty.IsSysDBA() == ID_TRUE)
         {
             IDE_TEST(checkUser() != IDE_SUCCESS);
@@ -406,7 +405,7 @@ main( int     argc,
     {
         /* ============================================
          * Case of -f option
-         * SetFileRead   : íŒŒì¼ ì‹¤í–‰ì´ ëë‚˜ë©´ isql ì¢…ë£Œí•˜ê¸° ìœ„í•´
+         * SetFileRead   : ÆÄÀÏ ½ÇÇàÀÌ ³¡³ª¸é isql Á¾·áÇÏ±â À§ÇØ
          * SetScriptFile : input file setting
          * ============================================ */
         gSQLCompiler->SetFileRead(ID_TRUE);
@@ -418,7 +417,7 @@ main( int     argc,
     else
     {
         /* ============================================
-         * -f optionì´ ì•„ë‹Œ ê²½ìš°
+         * -f optionÀÌ ¾Æ´Ñ °æ¿ì
          * RegStdin : input file setting with stdin
          * ============================================ */
         gSQLCompiler->RegStdin();
@@ -484,8 +483,8 @@ main( int     argc,
         g_memmgr->freeAll();
         gBufMgr->Reset();
         gCommand->reset();
-        // ISQL_COMMENT2ì´ë©´ iSQL>ì—ì„œ ì£¼ì„ìœ¼ë¡œ ì‹œìž‘í•˜ì—¬ ì£¼ì„ì€ ëë‚¬ìœ¼ë‚˜ ë¼ì¸ë³€ê²½í•˜ì§€ ì•Šê³  ëª…ë ¹ì–´ë¥¼ ì´ì–´ì„œ ì‚¬ìš©í•œ ê²½ìš°.
-        // ì´ ê²½ìš° í”„ë¡¬í”„íŠ¸ë¥¼ ì¶œë ¥í•˜ì§€ ì•Šê³  ë¼ì¸ë„˜ë²„ë¥¼ ì¶œë ¥í•´ì•¼ í•¨.
+        // ISQL_COMMENT2ÀÌ¸é iSQL>¿¡¼­ ÁÖ¼®À¸·Î ½ÃÀÛÇÏ¿© ÁÖ¼®Àº ³¡³µÀ¸³ª ¶óÀÎº¯°æÇÏÁö ¾Ê°í ¸í·É¾î¸¦ ÀÌ¾î¼­ »ç¿ëÇÑ °æ¿ì.
+        // ÀÌ °æ¿ì ÇÁ·ÒÇÁÆ®¸¦ Ãâ·ÂÇÏÁö ¾Ê°í ¶óÀÎ³Ñ¹ö¸¦ Ãâ·ÂÇØ¾ß ÇÔ.
         if ( ret != ISQL_COMMENT2 &&
              g_inEdit != ID_TRUE &&
              g_glogin == ID_FALSE &&
@@ -541,11 +540,11 @@ main( int     argc,
                 (void)idlOS::printf( "\n$$EOF$$\n" );
                 (void)idlOS::fflush( stdout );
             }
-            if (gProgOption.IsInFile() ) /* ëª…ë ¹ì–´ê°€ ëë‚˜ì§€ ì•Šê³  íŒŒì¼ì´ ì¢…ë£Œí•œ ê²½ìš° with @ */
+            if (gProgOption.IsInFile() ) /* ¸í·É¾î°¡ ³¡³ªÁö ¾Ê°í ÆÄÀÏÀÌ Á¾·áÇÑ °æ¿ì with @ */
             {
                 IDE_RAISE(exit_pos);
             }
-            else /* ëª…ë ¹ì–´ê°€ ëë‚˜ì§€ ì•Šê³  íŒŒì¼ì´ ì¢…ë£Œí•œ ê²½ìš° with @ */
+            else /* ¸í·É¾î°¡ ³¡³ªÁö ¾Ê°í ÆÄÀÏÀÌ Á¾·áÇÑ °æ¿ì with @ */
             {
                 continue;
             }
@@ -632,7 +631,8 @@ main( int     argc,
             gLastReturnValue = gCommand->mExecutor();
         }
 
-        if( gProgOption.IsATAF() == ID_TRUE )
+        if( ( gProgOption.IsATAF() == ID_TRUE ) &&
+            ( g_glogin == ID_FALSE ) ) // BUG-47644
         {
             (void)idlOS::printf( "\n$$EOF$$\n" );
             (void)idlOS::fflush( stdout );
@@ -780,7 +780,8 @@ LoadFileData( const SChar *  file,
     }
     len = st.st_size;
 
-    if ( (fp = isql_fopen(file, "r")) == NULL )
+    /* BUG-47652 Set file permission */
+    if ( (fp = isql_fopen( file, "r", gProgOption.isExistFilePerm() )) == NULL )
     {
         return 0;
     }
@@ -816,7 +817,8 @@ SaveFileData( const SChar * file,
     SInt len;
     FILE *fp;
 
-    if ( (fp = isql_fopen(file, "w")) == NULL )
+    /* BUG-47652 Set file permission */
+    if ( (fp = isql_fopen( file, "w", gProgOption.isExistFilePerm()) ) == NULL )
     {
         return 0;
     }
@@ -840,7 +842,8 @@ QueryLogging( const SChar *aQuery )
 
     IDE_TEST( gProperty.GetQueryLogging() != ID_TRUE );
 
-    fp = isql_fopen(QUERY_LOGFILE, "a");
+    /* BUG-47652 Set file permission */
+    fp = isql_fopen( QUERY_LOGFILE, "a", gProgOption.isExistFilePerm() );
     IDE_TEST( fp == NULL );
     sState = 1;
 

@@ -32,8 +32,8 @@ static IDE_RC answerPrepareResult(cmiProtocolContext *aProtocolContext, mmcState
     // bug-25109 support ColAttribute baseTableName
     SChar  sBaseTableOwnerName[QC_MAX_OBJECT_NAME_LEN+1];
     SChar  sBaseTableName[QC_MAX_OBJECT_NAME_LEN+1];
-    UInt   sBaseTableOwnerNameLen = 0;
-    UInt   sBaseTableNameLen      = 0;
+    UInt   sBaseTableOwnerNameLen  = 0;
+    UInt   sBaseTableNameLen       = 0;
 
     idBool sBaseTableUpdatable = ID_FALSE;
 
@@ -55,8 +55,8 @@ static IDE_RC answerPrepareResult(cmiProtocolContext *aProtocolContext, mmcState
     sBaseTableOwnerName[0] = '\0';
     sBaseTableName[0]      = '\0';
 
-    // cf) viewì¸ ê²½ìš° QPì—ì„œ table ëª…ì´ ì•„ë‹Œ view ëª…ì„ ë°˜í™˜.
-    // í•˜ì§€ë§Œ, viewì¸ ê²½ìš° ì‚¬ìš©ì•ˆí•  ê²ƒì´ë¯€ë¡œ ìƒê´€ì—†ìŒ.
+    // cf) viewÀÎ °æ¿ì QP¿¡¼­ table ¸íÀÌ ¾Æ´Ñ view ¸íÀ» ¹ÝÈ¯.
+    // ÇÏÁö¸¸, viewÀÎ °æ¿ì »ç¿ë¾ÈÇÒ °ÍÀÌ¹Ç·Î »ó°ü¾øÀ½.
     IDE_TEST(qci::getBaseTableInfo(sQciStmt,
                                    sBaseTableOwnerName,
                                    sBaseTableName,
@@ -173,7 +173,7 @@ IDE_RC mmtServiceThread::prepareProtocolA5(cmiProtocolContext *aProtocolContext,
         sStatement->setStmtState(MMC_STMT_STATE_ALLOC);
     }
     // bug-34746: query_timeout flag is cleared by other stmt
-    // query_timeout í™•ì¸ì‹œ mCurrStmtIDë¡œ ë¹„êµí•œë‹¤
+    // query_timeout È®ÀÎ½Ã mCurrStmtID·Î ºñ±³ÇÑ´Ù
     sSession->getInfo()->mCurrStmtID = sStatement->getStmtID();
 
     /* BUG-38472 Query timeout applies to one statement. */
@@ -227,7 +227,6 @@ IDE_RC mmtServiceThread::prepareProtocolA5(cmiProtocolContext *aProtocolContext,
             {    
                 sThread->setStatement(NULL);
 
-                /* BUG-38585 IDE_ASSERT remove */
                 IDE_ASSERT(sStatement->closeCursor(ID_TRUE) == IDE_SUCCESS);
                 IDE_ASSERT(mmcStatementManager::freeStatement(sStatement) == IDE_SUCCESS);
 

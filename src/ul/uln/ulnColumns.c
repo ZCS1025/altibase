@@ -65,7 +65,7 @@ static ACI_RC ulnColumnsCreateQueryString(ulnFnContext *aFnContext,
                                  "decode(a.data_type, 60, VARCHAR'CHAR', 61, VARCHAR'VARCHAR', t.type_name))"
                                                     " as TYPE_NAME,"       // PROJ-2002 Column Security
                             "cast( decode(a.precision,0, "
-                            "             decode(a.data_type, "            // fix BUG-26817 ë¬¸ìžì—´ì˜ pricisionì´ 0ì´ë©´ 0 ë°˜í™˜
+                            "             decode(a.data_type, "            // fix BUG-26817 ¹®ÀÚ¿­ÀÇ pricisionÀÌ 0ÀÌ¸é 0 ¹ÝÈ¯
                             "                    1, a.precision, "
                             "                    12, a.precision, "
                             "                    -8, a.precision, "
@@ -132,7 +132,11 @@ static ACI_RC ulnColumnsCreateQueryString(ulnFnContext *aFnContext,
 
                             /* PROJ-2002 Column Security */
                             "cast( decode(a.data_type, 60, 1, 61, 1, 0) as SMALLINT )"
-                                                    " as ENCRYPT "
+                                                    " as ENCRYPT, "
+
+                            /* PROJ-2422 srid */
+                            "cast( decode(a.data_type, 10003, 1, 0) as SMALLINT )"
+                                                    " as GEOMETRY "
 
                             "FROM "
                             "system_.sys_tables_  b,"
@@ -157,7 +161,7 @@ static ACI_RC ulnColumnsCreateQueryString(ulnFnContext *aFnContext,
     sSize = acpCStrLen(aQueryString, aQueryStringLength);
 
     // bug-25905: conn nls not applied to client lang module
-    // aFnContext ì¸ìž ì¶”ê°€
+    // aFnContext ÀÎÀÚ Ãß°¡
     sSize = ulnAppendFormatParameter(aFnContext,
             aQueryString,
             aQueryStringLength,
@@ -184,7 +188,7 @@ static ACI_RC ulnColumnsCreateQueryString(ulnFnContext *aFnContext,
     sSize += acpCStrLen(aQueryString + sSize, aQueryStringLength - sSize);
 
     // bug-25905: conn nls not applied to client lang module
-    // aFnContext ì¸ìž ì¶”ê°€
+    // aFnContext ÀÎÀÚ Ãß°¡
     sSize =  ulnAppendFormatParameter(aFnContext,
             aQueryString,
             aQueryStringLength,
@@ -198,7 +202,7 @@ static ACI_RC ulnColumnsCreateQueryString(ulnFnContext *aFnContext,
     ACI_TEST_RAISE(sSize >= (acp_sint32_t)aQueryStringLength, ERR_HY001);
 
     // bug-25905: conn nls not applied to client lang module
-    // aFnContext ì¸ìž ì¶”ê°€
+    // aFnContext ÀÎÀÚ Ãß°¡
     sSize = ulnAppendFormatParameter(aFnContext,
             aQueryString,
             aQueryStringLength,
@@ -363,7 +367,7 @@ SQLRETURN ulnColumns(ulnStmt      *aStmt,
                                          ACI_SIZEOF(sQueryString)) != ACI_SUCCESS);
 
     /*
-     * Protocol Context ì´ˆê¸°í™”
+     * Protocol Context ÃÊ±âÈ­
      */
     ACI_TEST(ulnInitializeProtocolContext(&sFnContext,
                                           //fix BUG-17722
@@ -391,11 +395,11 @@ SQLRETURN ulnColumns(ulnStmt      *aStmt,
                                      aStmt->mParentDbc->mConnTimeoutValue) != ACI_SUCCESS);
 
     /*
-     * BUGBUG : ê° ì»¬ëŸ¼ì˜ íƒ€ìž…ì„ ê°•ì œë¡œ ì§€ì •í•´ ì£¼ëŠ” ì½”ë“œê°€ cli2 ì—ëŠ” ìžˆì—ˆë‹¤.
+     * BUGBUG : °¢ ÄÃ·³ÀÇ Å¸ÀÔÀ» °­Á¦·Î ÁöÁ¤ÇØ ÁÖ´Â ÄÚµå°¡ cli2 ¿¡´Â ÀÖ¾ú´Ù.
      */
 
     /*
-     * Protocol Context ì •ë¦¬
+     * Protocol Context Á¤¸®
      */
     sNeedFinPtContext = ACP_FALSE;
 

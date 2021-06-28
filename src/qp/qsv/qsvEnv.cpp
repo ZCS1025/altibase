@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qsvEnv.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsvEnv.cpp 86306 2019-10-24 07:17:35Z donovan.seo $
  **********************************************************************/
 
 #include <idl.h>
@@ -55,10 +55,10 @@ void qsvEnv::clearEnv(qsvEnvInfo * aEnv)
     aEnv->createProc        = NULL;
     aEnv->objectSynonymList = NULL;
     aEnv->procPlanList      = NULL;
-    aEnv->latched           = ID_TRUE;   // procPlanListë¥¼ ìƒì„±í•˜ë©´ì„œ
-                                         // ID_TRUEê°€ ë˜ì–´ì•¼ í•˜ì§€ë§Œ
-                                         // procPlanListëŠ” NULLì´ë¯€ë¡œ
-                                         // ìƒì„±ì‹œ ID_TRUEê°€ ë˜ì–´ë„ ë¬´ë°©í•˜ë‹¤.
+    aEnv->latched           = ID_TRUE;   // procPlanList¸¦ »ý¼ºÇÏ¸é¼­
+                                         // ID_TRUE°¡ µÇ¾î¾ß ÇÏÁö¸¸
+                                         // procPlanList´Â NULLÀÌ¹Ç·Î
+                                         // »ý¼º½Ã ID_TRUE°¡ µÇ¾îµµ ¹«¹æÇÏ´Ù.
     aEnv->modifiedTableList = NULL;
     aEnv->currDeclItem      = NULL;
   
@@ -76,10 +76,11 @@ void qsvEnv::clearEnv(qsvEnvInfo * aEnv)
 
     // BUGBUG BUG-36203
     aEnv->mStmtList         = NULL;
+    aEnv->mStmtList2        = NULL;
 
     /* BUG-39004
-       package intialize sectionì— ëŒ€í•´ì„œ
-       validation ì§„í–‰ ì—¬ë¶€ í‘œì‹œ */
+       package intialize section¿¡ ´ëÇØ¼­
+       validation ÁøÇà ¿©ºÎ Ç¥½Ã */
     aEnv->isPkgInitializeSection = ID_FALSE;
 }
 

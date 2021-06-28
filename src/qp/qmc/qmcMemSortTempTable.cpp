@@ -19,11 +19,11 @@
  * $Id: qmcMemSortTempTable.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     Memory Sort Temp Tableì„ ìœ„í•œ í•¨ìˆ˜
+ *     Memory Sort Temp TableÀ» À§ÇÑ ÇÔ¼ö
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  *
  **********************************************************************/
@@ -47,37 +47,37 @@ qmcMemSort::init( qmcdMemSortTemp * aTempTable,
  *
  * Description :
  *
- *    í•´ë‹¹ Memory Sort Temp Tableê°ì²´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ *    ÇØ´ç Memory Sort Temp Table°´Ã¼¸¦ ÃÊ±âÈ­ÇÑ´Ù.
  *
  * Implementation :
  *
  *    BUG-38290
- *    Temp table ì€ ë‚´ë¶€ì— qcTemplate ê³¼ qmcMemory ë¥¼ ê°€ì§€ê³ 
- *    temp table ìƒì„±ì— ì‚¬ìš©í•œë‹¤.
- *    ì´ ë‘ê°€ì§€ëŠ” temp table ì„ init í•  ë•Œì˜ template ê³¼ ê·¸ template ì—
- *    ì—°ê²°ëœ QMX memory ì´ë‹¤.
- *    ë§Œì•½ temp table init ì‹œì ê³¼ temp table build ì‹œì ì— ì„œë¡œ ë‹¤ë¥¸
- *    template ì„ ì‚¬ìš©í•´ì•¼ í•œë‹¤ë©´ ì´ êµ¬ì¡°ê°€ ë³€ê²½ë˜ì–´ì•¼ í•œë‹¤.
- *    Parallel query ëŒ€ìƒì´ ì¦ê°€í•˜ë©´ì„œ temp table build ê°€ parallel ë¡œ
- *    ì§„í–‰ë  ê²½ìš° ì´ ë‚´ìš©ì„ ê³ ë ¤í•´ì•¼ í•œë‹¤.
+ *    Temp table Àº ³»ºÎ¿¡ qcTemplate °ú qmcMemory ¸¦ °¡Áö°í
+ *    temp table »ı¼º¿¡ »ç¿ëÇÑ´Ù.
+ *    ÀÌ µÎ°¡Áö´Â temp table À» init ÇÒ ¶§ÀÇ template °ú ±× template ¿¡
+ *    ¿¬°áµÈ QMX memory ÀÌ´Ù.
+ *    ¸¸¾à temp table init ½ÃÁ¡°ú temp table build ½ÃÁ¡¿¡ ¼­·Î ´Ù¸¥
+ *    template À» »ç¿ëÇØ¾ß ÇÑ´Ù¸é ÀÌ ±¸Á¶°¡ º¯°æµÇ¾î¾ß ÇÑ´Ù.
+ *    Parallel query ´ë»óÀÌ Áõ°¡ÇÏ¸é¼­ temp table build °¡ parallel ·Î
+ *    ÁøÇàµÉ °æ¿ì ÀÌ ³»¿ëÀ» °í·ÁÇØ¾ß ÇÑ´Ù.
  *
- *    Temp table build ëŠ” temp table ì´ ì¡´ì¬í•˜ëŠ” plan node ì˜
- *    init ì‹œì ì— ì‹¤í–‰ëœë‹¤.
- *    í•˜ì§€ë§Œ í˜„ì¬ parallel query ëŠ” partitioned table ì´ë‚˜ HASH, SORT,
- *    GRAG  ë…¸ë“œì—ë§Œ PRLQ ë…¸ë“œë¥¼ ìƒì„±, parallel ì‹¤í–‰í•˜ë¯€ë¡œ 
- *    temp table ì´ ì¡´ì¬í•˜ëŠ” plan node ë¥¼ ì§ì ‘ init  í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *    Temp table build ´Â temp table ÀÌ Á¸ÀçÇÏ´Â plan node ÀÇ
+ *    init ½ÃÁ¡¿¡ ½ÇÇàµÈ´Ù.
+ *    ÇÏÁö¸¸ ÇöÀç parallel query ´Â partitioned table ÀÌ³ª HASH, SORT,
+ *    GRAG  ³ëµå¿¡¸¸ PRLQ ³ëµå¸¦ »ı¼º, parallel ½ÇÇàÇÏ¹Ç·Î 
+ *    temp table ÀÌ Á¸ÀçÇÏ´Â plan node ¸¦ Á÷Á¢ init  ÇÏÁö ¾Ê´Â´Ù.
  *
- *    ë‹¤ë§Œ subqeury filter ë‚´ì—ì„œ temp table ì„ ì‚¬ìš©í•  ê²½ìš°ëŠ” ì˜ˆì™¸ê°€ ìˆì„ ìˆ˜
- *    ìˆìœ¼ë‚˜, subquery filter ëŠ” plan node ê°€ ì‹¤í–‰ë  ë•Œ ì´ˆê¸°í™” ë˜ë¯€ë¡œ
- *    ë™ì‹œì— temp table  ì´ ìƒì„±ë˜ëŠ” ì¼ì€ ì—†ë‹¤.
- *    (qmcTempTableMgr::addTempTable ì˜ ê´€ë ¨ ì£¼ì„ ì°¸ì¡°)
+ *    ´Ù¸¸ subqeury filter ³»¿¡¼­ temp table À» »ç¿ëÇÒ °æ¿ì´Â ¿¹¿Ü°¡ ÀÖÀ» ¼ö
+ *    ÀÖÀ¸³ª, subquery filter ´Â plan node °¡ ½ÇÇàµÉ ¶§ ÃÊ±âÈ­ µÇ¹Ç·Î
+ *    µ¿½Ã¿¡ temp table  ÀÌ »ı¼ºµÇ´Â ÀÏÀº ¾ø´Ù.
+ *    (qmcTempTableMgr::addTempTable ÀÇ °ü·Ã ÁÖ¼® ÂüÁ¶)
  *
  ***********************************************************************/
 
     IDE_DASSERT( aTempTable != NULL );
 
     //------------------------------------------------------------
-    // Sort Index Table ì˜ ê´€ë¦¬ë¥¼ ìœ„í•œ Memory ê´€ë¦¬ìì˜ ìƒì„± ë° ì´ˆê¸°í™”
+    // Sort Index Table ÀÇ °ü¸®¸¦ À§ÇÑ Memory °ü¸®ÀÚÀÇ »ı¼º ¹× ÃÊ±âÈ­
     //------------------------------------------------------------
     aTempTable->mMemory = aMemory;
 
@@ -102,7 +102,7 @@ qmcMemSort::init( qmcdMemSortTemp * aTempTable,
              != IDE_SUCCESS);
 
     //------------------------------------------------------------
-    // Memory Sort Temp Table ê°ì²´ì˜ ì´ˆê¸°í™”
+    // Memory Sort Temp Table °´Ã¼ÀÇ ÃÊ±âÈ­
     //------------------------------------------------------------
 
     aTempTable->mArray->parent      = NULL;
@@ -137,7 +137,7 @@ qmcMemSort::clear( qmcdMemSortTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    ì €ì¥ëœ Sorting Data ì •ë³´ë¥¼ ì œê±°í•œë‹¤.
+ *    ÀúÀåµÈ Sorting Data Á¤º¸¸¦ Á¦°ÅÇÑ´Ù.
  *
  * Implementation :
  *
@@ -185,11 +185,11 @@ qmcMemSort::clearHitFlag( qmcdMemSortTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    ì €ì¥ëœ ëª¨ë“  Recordì˜ Hit Flagì„ resetí•œë‹¤.
+ *    ÀúÀåµÈ ¸ğµç RecordÀÇ Hit FlagÀ» resetÇÑ´Ù.
  *
  * Implementation :
- *    ìµœì´ˆ ìœ„ì¹˜ë¡œ ì´ë™í•˜ì—¬ ëª¨ë“  Recordë¥¼ ê²€ìƒ‰í•˜ê³ ,
- *    ì´ì— ëŒ€í•œ Hit Flagì„ resetí•œë‹¤.
+ *    ÃÖÃÊ À§Ä¡·Î ÀÌµ¿ÇÏ¿© ¸ğµç Record¸¦ °Ë»öÇÏ°í,
+ *    ÀÌ¿¡ ´ëÇÑ Hit FlagÀ» resetÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -222,11 +222,11 @@ qmcMemSort::attach( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Memory Sort Temp Tableì— Recordë¥¼ ì¶”ê°€í•œë‹¤.
+ *    Memory Sort Temp Table¿¡ Record¸¦ Ãß°¡ÇÑ´Ù.
  *
  * Implementation :
- *    ì €ì¥ë  ìœ„ì¹˜ë¥¼ ì°¾ì•„, Pointerë¥¼ ì—°ê²°í•œë‹¤.
- *    ì´í›„ Sort Arrayë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
+ *    ÀúÀåµÉ À§Ä¡¸¦ Ã£¾Æ, Pointer¸¦ ¿¬°áÇÑ´Ù.
+ *    ÀÌÈÄ Sort Array¸¦ Áõ°¡½ÃÅ²´Ù.
  *
  ***********************************************************************/
 
@@ -256,10 +256,10 @@ qmcMemSort::sort( qmcdMemSortTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *     Sortingì„ ìˆ˜í–‰í•œë‹¤.
+ *     SortingÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *     ì €ì¥ëœ Record ìˆ˜ë§Œí¼ quick sortë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *     ÀúÀåµÈ Record ¼ö¸¸Å­ quick sort¸¦ ¼öÇàÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -297,14 +297,14 @@ qmcMemSort::shiftAndAppend( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *     Limit Sortingì„ ìˆ˜í–‰í•œë‹¤.
+ *     Limit SortingÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *     ì…ë ¥í•  Rowê°€ ì…ë ¥ ê°€ëŠ¥í•œì§€ë¥¼ ê²€ì‚¬
- *     ì…ë ¥ ê°€ëŠ¥í•  ê²½ìš° ë§ˆì§€ë§‰ Rowë¥¼ ë°€ì–´ë‚´ê³  Row ì‚½ì…
+ *     ÀÔ·ÂÇÒ Row°¡ ÀÔ·Â °¡´ÉÇÑÁö¸¦ °Ë»ç
+ *     ÀÔ·Â °¡´ÉÇÒ °æ¿ì ¸¶Áö¸· Row¸¦ ¹Ğ¾î³»°í Row »ğÀÔ
  *
- *     Ex)   3ì„ ì…ë ¥
- *                  +-- [3]ì´ ì‚½ì…ë  ìœ„ì¹˜
+ *     Ex)   3À» ÀÔ·Â
+ *                  +-- [3]ÀÌ »ğÀÔµÉ À§Ä¡
  *                  V
  *           [1, 2, 3, 4, 5]
  *                 ||
@@ -324,10 +324,10 @@ qmcMemSort::shiftAndAppend( qmcdMemSortTemp * aTempTable,
     void  ** sDiscardRow;
 
     //-------------------------------------------
-    // ì‚½ì… ê°€ëŠ¥ ì—¬ë¶€ ê²°ì •
-    // - ë§ˆì§€ë§‰ì— ì €ì¥ëœ Dataì™€ ë¹„êµí•˜ì—¬
-    //   ì™¼ìª½ì— í•´ë‹¹í•˜ë©´ ì‚½ì…í•  Dataì´ë©°,
-    //   ê·¸ ì™¸ì˜ ê²½ìš°ë¼ë©´ ë²„ë ¤ì•¼ í•  Dataì´ë‹¤.
+    // »ğÀÔ °¡´É ¿©ºÎ °áÁ¤
+    // - ¸¶Áö¸·¿¡ ÀúÀåµÈ Data¿Í ºñ±³ÇÏ¿©
+    //   ¿ŞÂÊ¿¡ ÇØ´çÇÏ¸é »ğÀÔÇÒ DataÀÌ¸ç,
+    //   ±× ¿ÜÀÇ °æ¿ì¶ó¸é ¹ö·Á¾ß ÇÒ DataÀÌ´Ù.
     //-------------------------------------------
 
     IDE_TEST( findInsertPosition ( aTempTable, aRow, & sInsertPos )
@@ -335,16 +335,16 @@ qmcMemSort::shiftAndAppend( qmcdMemSortTemp * aTempTable,
 
     if ( sInsertPos >= 0 )
     {
-        // Discard Rowê²°ì •
-        // ë§ˆì§€ë§‰ ìœ„ì¹˜ì˜ Rowë¥¼ discard rowë¡œ ê²°ì •
+        // Discard Row°áÁ¤
+        // ¸¶Áö¸· À§Ä¡ÀÇ Row¸¦ discard row·Î °áÁ¤
 
         sMaxIndex = aTempTable->mArray->index - 1;
 
         get( aTempTable, aTempTable->mArray, sMaxIndex, & sDiscardRow );
         *aReturnRow = *sDiscardRow;
 
-        // Shifting ìˆ˜í–‰
-        // ëì—ì„œë¶€í„° í•´ë‹¹ ì‚½ì… ìœ„ì¹˜ê¹Œì§€ Shifting
+        // Shifting ¼öÇà
+        // ³¡¿¡¼­ºÎÅÍ ÇØ´ç »ğÀÔ À§Ä¡±îÁö Shifting
 
         if ( sInsertPos < sMaxIndex )
         {
@@ -354,13 +354,13 @@ qmcMemSort::shiftAndAppend( qmcdMemSortTemp * aTempTable,
                 get( aTempTable, aTempTable->mArray, i-1, & sSrcIndex );
                 *sDstIndex = *sSrcIndex;
             }
-            // ì‚½ì… ìˆ˜í–‰
+            // »ğÀÔ ¼öÇà
             *sSrcIndex = aRow;
         }
         else
         {
             // To Fix PR-8201
-            // ëì— ì‚½ì…ë  ê²½ìš°
+            // ³¡¿¡ »ğÀÔµÉ °æ¿ì
             IDE_DASSERT( sInsertPos == sMaxIndex );
 
             get( aTempTable, aTempTable->mArray, sInsertPos, & sSrcIndex );
@@ -369,7 +369,7 @@ qmcMemSort::shiftAndAppend( qmcdMemSortTemp * aTempTable,
     }
     else
     {
-        // ì‚½ì…í•  Rowê°€ ì•„ë‹˜
+        // »ğÀÔÇÒ Row°¡ ¾Æ´Ô
         *aReturnRow = aRow;
     }
 
@@ -388,12 +388,12 @@ qmcMemSort::changeMinMax( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *     Min-Max ì €ì¥ì„ ìœ„í•œ Limit Sortingì„ ìˆ˜í–‰í•œë‹¤.
+ *     Min-Max ÀúÀåÀ» À§ÇÑ Limit SortingÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *     Right-Mostì™€ ë¹„êµí•˜ì—¬ ë³´ë‹¤ Rightì´ë©´ Right-Most êµì²´
- *     Left-Mostì™€ ë¹„êµí•˜ì—¬ ë³´ë‹¤ Leftì´ë©´ Left-Most êµì²´
- *     ì´ ì™¸ì˜ ê²½ìš°ëŠ” ì‚½ì…í•˜ì§€ ì•ŠìŒ.
+ *     Right-Most¿Í ºñ±³ÇÏ¿© º¸´Ù RightÀÌ¸é Right-Most ±³Ã¼
+ *     Left-Most¿Í ºñ±³ÇÏ¿© º¸´Ù LeftÀÌ¸é Left-Most ±³Ã¼
+ *     ÀÌ ¿ÜÀÇ °æ¿ì´Â »ğÀÔÇÏÁö ¾ÊÀ½.
  *
  ***********************************************************************/
 
@@ -401,14 +401,14 @@ qmcMemSort::changeMinMax( qmcdMemSortTemp * aTempTable,
     SInt     sOrder;
 
     //-------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //-------------------------------------------
 
-    // Min-Max ë‘ ê±´ë§Œì´ ì €ì¥ë˜ì–´ ìˆì–´ì•¼ í•¨.
+    // Min-Max µÎ °Ç¸¸ÀÌ ÀúÀåµÇ¾î ÀÖ¾î¾ß ÇÔ.
     IDE_DASSERT( aTempTable->mArray->index == 2 );
 
     //-------------------------------------------
-    // Right-Most ê°’ êµì²´ ì—¬ë¶€ ê²°ì •
+    // Right-Most °ª ±³Ã¼ ¿©ºÎ °áÁ¤
     //-------------------------------------------
 
     get( aTempTable, aTempTable->mArray, 1, & sIndex );
@@ -417,14 +417,14 @@ qmcMemSort::changeMinMax( qmcdMemSortTemp * aTempTable,
 
     if ( sOrder > 0 )
     {
-        // Right-Most ë³´ë‹¤ ì˜¤ë¥¸ ìª½ì— ìˆëŠ” ê²½ìš°
-        // Right-Mostë¥¼ êµì²´í•œë‹¤.
+        // Right-Most º¸´Ù ¿À¸¥ ÂÊ¿¡ ÀÖ´Â °æ¿ì
+        // Right-Most¸¦ ±³Ã¼ÇÑ´Ù.
         *aReturnRow = *sIndex;
         *sIndex = aRow;
     }
     else
     {
-        // Right-Most ë³´ë‹¤ ê°™ê±°ë‚˜ ì™¼ìª½ì— ìˆëŠ” ê²½ìš°
+        // Right-Most º¸´Ù °°°Å³ª ¿ŞÂÊ¿¡ ÀÖ´Â °æ¿ì
 
         get( aTempTable, aTempTable->mArray, 0, & sIndex );
 
@@ -432,15 +432,15 @@ qmcMemSort::changeMinMax( qmcdMemSortTemp * aTempTable,
 
         if ( sOrder < 0 )
         {
-            // Left-Mostë³´ë‹¤ ì™¼ìª½ì— ìˆëŠ” ê²½ìš°
-            // Left-Mostë¥¼ êµì²´í•œë‹¤.
+            // Left-Mostº¸´Ù ¿ŞÂÊ¿¡ ÀÖ´Â °æ¿ì
+            // Left-Most¸¦ ±³Ã¼ÇÑ´Ù.
             *aReturnRow = *sIndex;
             *sIndex = aRow;
         }
         else
         {
-            // Left-Mostì™€ Right-Mostì˜ ì¤‘ê°„ì— ìˆëŠ” ê²½ìš°ë¡œ
-            // ì‚½ì… ëŒ€ìƒì´ ì•„ë‹ˆë‹¤.
+            // Left-Most¿Í Right-MostÀÇ Áß°£¿¡ ÀÖ´Â °æ¿ì·Î
+            // »ğÀÔ ´ë»óÀÌ ¾Æ´Ï´Ù.
             *aReturnRow = aRow;
         }
     }
@@ -456,7 +456,7 @@ qmcMemSort::getElement( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ì§€ì •ëœ ìœ„ì¹˜ì˜ Recordë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+ *    ÁöÁ¤µÈ À§Ä¡ÀÇ Record¸¦ °¡Á®¿Â´Ù.
  *
  * Implementation :
  *
@@ -469,8 +469,8 @@ qmcMemSort::getElement( qmcdMemSortTemp * aTempTable,
 
     if( aTempTable->mArray->index > 0 )
     {
-        // sort temp tableì— ì €ì¥ëœ ë ˆì½”ë“œê°€ í•˜ë‚˜ ì´ìƒì¸ ê²½ìš°ë¡œ
-        // ì €ì¥ëœ ìœ„ì¹˜ì˜ recordë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+        // sort temp table¿¡ ÀúÀåµÈ ·¹ÄÚµå°¡ ÇÏ³ª ÀÌ»óÀÎ °æ¿ì·Î
+        // ÀúÀåµÈ À§Ä¡ÀÇ record¸¦ °¡Á®¿Â´Ù.
         IDE_DASSERT ( aIndex < aTempTable->mArray->index );
 
         get( aTempTable, aTempTable->mArray, aIndex, &sBuffer );
@@ -478,7 +478,7 @@ qmcMemSort::getElement( qmcdMemSortTemp * aTempTable,
     }
     else
     {
-        // sort temp tableì— ì €ì¥ëœ ë ˆì½”ë“œê°€ í•˜ë‚˜ë„ ì—†ëŠ” ê²½ìš°
+        // sort temp table¿¡ ÀúÀåµÈ ·¹ÄÚµå°¡ ÇÏ³ªµµ ¾ø´Â °æ¿ì
         IDE_DASSERT( aIndex == 0 );
 
         *aElement = NULL;
@@ -494,10 +494,10 @@ qmcMemSort::getFirstSequence( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ì²« ë²ˆì§¸ ìˆœì°¨ ê²€ìƒ‰
+ *    Ã¹ ¹øÂ° ¼øÂ÷ °Ë»ö
  *
  * Implementation :
- *    ìµœì´ˆ ìœ„ì¹˜ë¡œ ì´ë™í•˜ì—¬ í•´ë‹¹ Recordë¥¼ íšë“í•œë‹¤.
+ *    ÃÖÃÊ À§Ä¡·Î ÀÌµ¿ÇÏ¿© ÇØ´ç Record¸¦ È¹µæÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -520,10 +520,10 @@ qmcMemSort::getNextSequence( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ë‹¤ìŒ ìˆœì°¨ ê²€ìƒ‰
+ *    ´ÙÀ½ ¼øÂ÷ °Ë»ö
  *
  * Implementation :
- *    í•´ë‹¹ Recordë¥¼ íšë“í•œë‹¤.
+ *    ÇØ´ç Record¸¦ È¹µæÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -545,10 +545,10 @@ qmcMemSort::getFirstRange( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ì²« ë²ˆì§¸ Range ê²€ìƒ‰
+ *    Ã¹ ¹øÂ° Range °Ë»ö
  *
  * Implementation :
- *    ì£¼ì–´ì§„ Rangeë¥¼ ì„¤ì •í•˜ê³ , ì´ì— ë¶€í•©í•˜ëŠ” Recordë¥¼ ê²€ìƒ‰í•¨.
+ *    ÁÖ¾îÁø Range¸¦ ¼³Á¤ÇÏ°í, ÀÌ¿¡ ºÎÇÕÇÏ´Â Record¸¦ °Ë»öÇÔ.
  *
  ***********************************************************************/
 
@@ -570,10 +570,10 @@ qmcMemSort::getNextRange( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ë‹¤ìŒ Range ê²€ìƒ‰
+ *    ´ÙÀ½ Range °Ë»ö
  *
  * Implementation :
- *    Rangeì— ë¶€í•©í•˜ëŠ” Recordë¥¼ ê²€ìƒ‰í•¨.
+ *    Range¿¡ ºÎÇÕÇÏ´Â Record¸¦ °Ë»öÇÔ.
  *
  ***********************************************************************/
 
@@ -592,11 +592,11 @@ IDE_RC qmcMemSort::getFirstHit( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description : PROJ-2385
- *    Hitëœ ìµœì´ˆ Record ê²€ìƒ‰
+ *    HitµÈ ÃÖÃÊ Record °Ë»ö
  *
  * Implementation :
- *    ìµœì´ˆ ìœ„ì¹˜ë¡œ ì´ë™í•˜ì—¬, Hitëœ Recordë¥¼ ì°¾ì„ ë•Œê¹Œì§€
- *    ë°˜ë³µ ê²€ìƒ‰í•¨.
+ *    ÃÖÃÊ À§Ä¡·Î ÀÌµ¿ÇÏ¿©, HitµÈ Record¸¦ Ã£À» ¶§±îÁö
+ *    ¹İº¹ °Ë»öÇÔ.
  *
  ***********************************************************************/
 
@@ -610,12 +610,12 @@ IDE_RC qmcMemSort::getFirstHit( qmcdMemSortTemp * aTempTable,
     {
         if ( (sRow->flag & QMC_ROW_HIT_MASK) == QMC_ROW_HIT_TRUE )
         {
-            // Hitëœ Recordì¼ ê²½ìš°
+            // HitµÈ RecordÀÏ °æ¿ì
             break;
         }
         else
         {
-            // Hitë˜ì§€ ì•Šì€ Reocrdì¼ ê²½ìš° ë‹¤ìŒ Recordíšë“
+            // HitµÇÁö ¾ÊÀº ReocrdÀÏ °æ¿ì ´ÙÀ½ RecordÈ¹µæ
             IDE_TEST( getNextElement( aTempTable,
                                       (void**) & sRow ) != IDE_SUCCESS );
         }
@@ -636,10 +636,10 @@ IDE_RC qmcMemSort::getNextHit( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description : PROJ-2385
- *    Hitëœ ë‹¤ìŒ Record ê²€ìƒ‰
+ *    HitµÈ ´ÙÀ½ Record °Ë»ö
  *
  * Implementation :
- *    Hitëœ Recordë¥¼ ì°¾ì„ ë•Œê¹Œì§€ ë°˜ë³µ ê²€ìƒ‰í•¨.
+ *    HitµÈ Record¸¦ Ã£À» ¶§±îÁö ¹İº¹ °Ë»öÇÔ.
  *
  ***********************************************************************/
 
@@ -651,12 +651,12 @@ IDE_RC qmcMemSort::getNextHit( qmcdMemSortTemp * aTempTable,
     {
         if ( (sRow->flag & QMC_ROW_HIT_MASK) == QMC_ROW_HIT_TRUE )
         {
-            // Hitëœ Recordì¼ ê²½ìš°
+            // HitµÈ RecordÀÏ °æ¿ì
             break;
         }
         else
         {
-            // Hitë˜ì§€ ì•Šì€ Reocrdì¼ ê²½ìš° ë‹¤ìŒ Recordíšë“
+            // HitµÇÁö ¾ÊÀº ReocrdÀÏ °æ¿ì ´ÙÀ½ RecordÈ¹µæ
             IDE_TEST( getNextElement( aTempTable,
                                       (void**) & sRow ) != IDE_SUCCESS );
         }
@@ -678,11 +678,11 @@ qmcMemSort::getFirstNonHit( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Hitë˜ì§€ ì•Šì€ ìµœì´ˆ Record ê²€ìƒ‰
+ *    HitµÇÁö ¾ÊÀº ÃÖÃÊ Record °Ë»ö
  *
  * Implementation :
- *    ìµœì´ˆ ìœ„ì¹˜ë¡œ ì´ë™í•˜ì—¬, Hitë˜ì§€ ì•Šì€ Recordë¥¼ ì°¾ì„ ë•Œê¹Œì§€
- *    ë°˜ë³µ ê²€ìƒ‰í•¨.
+ *    ÃÖÃÊ À§Ä¡·Î ÀÌµ¿ÇÏ¿©, HitµÇÁö ¾ÊÀº Record¸¦ Ã£À» ¶§±îÁö
+ *    ¹İº¹ °Ë»öÇÔ.
  *
  ***********************************************************************/
 
@@ -696,12 +696,12 @@ qmcMemSort::getFirstNonHit( qmcdMemSortTemp * aTempTable,
     {
         if ( (sRow->flag & QMC_ROW_HIT_MASK) == QMC_ROW_HIT_FALSE )
         {
-            // Hit ë˜ì§€ ì•Šì€ Recordì¼ ê²½ìš°
+            // Hit µÇÁö ¾ÊÀº RecordÀÏ °æ¿ì
             break;
         }
         else
         {
-            // Hit ëœ Reocrdì¼ ê²½ìš° ë‹¤ìŒ Recordíšë“
+            // Hit µÈ ReocrdÀÏ °æ¿ì ´ÙÀ½ RecordÈ¹µæ
             IDE_TEST( getNextElement( aTempTable,
                                       (void**) & sRow ) != IDE_SUCCESS );
         }
@@ -723,10 +723,10 @@ qmcMemSort::getNextNonHit( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Hitë˜ì§€ ì•Šì€ ë‹¤ìŒ Record ê²€ìƒ‰
+ *    HitµÇÁö ¾ÊÀº ´ÙÀ½ Record °Ë»ö
  *
  * Implementation :
- *    Hitë˜ì§€ ì•Šì€ Recordë¥¼ ì°¾ì„ ë•Œê¹Œì§€ ë°˜ë³µ ê²€ìƒ‰í•¨.
+ *    HitµÇÁö ¾ÊÀº Record¸¦ Ã£À» ¶§±îÁö ¹İº¹ °Ë»öÇÔ.
  *
  ***********************************************************************/
 
@@ -738,12 +738,12 @@ qmcMemSort::getNextNonHit( qmcdMemSortTemp * aTempTable,
     {
         if ( (sRow->flag & QMC_ROW_HIT_MASK) == QMC_ROW_HIT_FALSE )
         {
-            // Hit ë˜ì§€ ì•Šì€ Recordì¼ ê²½ìš°
+            // Hit µÇÁö ¾ÊÀº RecordÀÏ °æ¿ì
             break;
         }
         else
         {
-            // Hit ëœ Reocrdì¼ ê²½ìš° ë‹¤ìŒ Recordíšë“
+            // Hit µÈ ReocrdÀÏ °æ¿ì ´ÙÀ½ RecordÈ¹µæ
             IDE_TEST( getNextElement( aTempTable,
                                       (void**) & sRow ) != IDE_SUCCESS );
         }
@@ -766,7 +766,7 @@ qmcMemSort::getNumOfElements( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ì €ì¥ë˜ì–´ ìˆëŠ” Recordì˜ ê°œìˆ˜ë¥¼ íšë“í•œë‹¤.
+ *    ÀúÀåµÇ¾î ÀÖ´Â RecordÀÇ °³¼ö¸¦ È¹µæÇÑ´Ù.
  *
  * Implementation :
  *
@@ -797,15 +797,15 @@ qmcMemSort::getCurrPosition( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    í˜„ì¬ ê²€ìƒ‰ì¤‘ì¸ Recordì˜ ìœ„ì¹˜ê°’ì„ íšë“í•œë‹¤.
- *    Merge Joinì—ì„œ Cursor ìœ„ì¹˜ë¥¼ ì €ì¥í•˜ê¸° ìœ„í•˜ì—¬ ì‚¬ìš©í•¨.
+ *    ÇöÀç °Ë»öÁßÀÎ RecordÀÇ À§Ä¡°ªÀ» È¹µæÇÑ´Ù.
+ *    Merge Join¿¡¼­ Cursor À§Ä¡¸¦ ÀúÀåÇÏ±â À§ÇÏ¿© »ç¿ëÇÔ.
  *
  * Implementation :
- *    í˜„ì¬ ê²€ìƒ‰ ìœ„ì¹˜ë¥¼ ë¦¬í„´í•¨.
+ *    ÇöÀç °Ë»ö À§Ä¡¸¦ ¸®ÅÏÇÔ.
  *
  ***********************************************************************/
 
-    // ìœ íš¨ì„± ê²€ì‚¬
+    // À¯È¿¼º °Ë»ç
     IDE_DASSERT( aTempTable->mIndex >= 0 &&
                  aTempTable->mIndex < aTempTable->mArray->index );
 
@@ -821,15 +821,15 @@ qmcMemSort::setCurrPosition( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ì§€ì •ëœ ìœ„ì¹˜ë¡œ Cursorë¥¼ ì˜®ê¹€
- *    Merge Joinì—ì„œ Cursor ìœ„ì¹˜ë¥¼ ì¬ì§€ì • í•˜ê¸° ìœ„í•˜ì—¬ ì‚¬ìš©í•¨.
+ *    ÁöÁ¤µÈ À§Ä¡·Î Cursor¸¦ ¿Å±è
+ *    Merge Join¿¡¼­ Cursor À§Ä¡¸¦ ÀçÁöÁ¤ ÇÏ±â À§ÇÏ¿© »ç¿ëÇÔ.
  *
  * Implementation :
- *    ì§€ì •ëœ ìœ„ì¹˜ë¡œ indexê°’ì„ ë³€ê²½ì‹œí‚´.
+ *    ÁöÁ¤µÈ À§Ä¡·Î index°ªÀ» º¯°æ½ÃÅ´.
  *
  ***********************************************************************/
 
-    // ìœ íš¨ì„± ê²€ì‚¬
+    // À¯È¿¼º °Ë»ç
     IDE_DASSERT( aPosition >= 0 &&
                  aPosition < aTempTable->mArray->index );
 
@@ -845,8 +845,8 @@ qmcMemSort::setSortNode( qmcdMemSortTemp  * aTempTable,
 /***********************************************************************
  *
  * Description 
- *    í˜„ì¬ ì •ë ¬í‚¤(sortNode)ë¥¼ ë³€ê²½
- *    Window Sort(WNST)ì—ì„œ ì •ë ¬ì„ ë°˜ë³µí•˜ê¸° ìœ„í•´ ì‚¬ìš©í•¨.
+ *    ÇöÀç Á¤·ÄÅ°(sortNode)¸¦ º¯°æ
+ *    Window Sort(WNST)¿¡¼­ Á¤·ÄÀ» ¹İº¹ÇÏ±â À§ÇØ »ç¿ëÇÔ.
  *
  * Implementation :
  *
@@ -866,11 +866,11 @@ qmcMemSort::get( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ì§€ì •ëœ ìœ„ì¹˜ì˜ Reocrd ìœ„ì¹˜ë¥¼ íšë“í•œë‹¤.
+ *    ÁöÁ¤µÈ À§Ä¡ÀÇ Reocrd À§Ä¡¸¦ È¹µæÇÑ´Ù.
  *
  * Implementation :
- *    Leafì— í•´ë‹¹í•˜ëŠ” Sort Arrayë¥¼ ì°¾ê³ ,
- *    Sort Arrayë‚´ì—ì„œ ì§€ì •ëœ ìœ„ì¹˜ì˜ Record ìœ„ì¹˜ë¥¼ íšë“í•œë‹¤.
+ *    Leaf¿¡ ÇØ´çÇÏ´Â Sort Array¸¦ Ã£°í,
+ *    Sort Array³»¿¡¼­ ÁöÁ¤µÈ À§Ä¡ÀÇ Record À§Ä¡¸¦ È¹µæÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -894,11 +894,11 @@ IDE_RC qmcMemSort::increase( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Sort Arrayì˜ ì €ì¥ ê³µê°„ì„ ì¦ê°€ì‹œí‚¨ë‹¤.
+ *    Sort ArrayÀÇ ÀúÀå °ø°£À» Áõ°¡½ÃÅ²´Ù.
  *
  * Implementation :
- *    Sort Arrayì˜ ì €ì¥ ê³µê°„ì„ ì¦ê°€ì‹œí‚¤ê³ ,
- *    ì €ì¥ ê³µê°„ì´ ì—†ì„ ê²½ìš°, Sort Arrayë¥¼ ì¶”ê°€í•œë‹¤.
+ *    Sort ArrayÀÇ ÀúÀå °ø°£À» Áõ°¡½ÃÅ°°í,
+ *    ÀúÀå °ø°£ÀÌ ¾øÀ» °æ¿ì, Sort Array¸¦ Ãß°¡ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -985,11 +985,11 @@ IDE_RC qmcMemSort::increase( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Sort Arrayì˜ ì €ì¥ ê³µê°„ì„ ì¦ê°€ì‹œí‚¨ë‹¤.
+ *    Sort ArrayÀÇ ÀúÀå °ø°£À» Áõ°¡½ÃÅ²´Ù.
  *
  * Implementation :
- *    Sort Arrayì˜ ì €ì¥ ê³µê°„ì„ ì¦ê°€ì‹œí‚¤ê³ ,
- *    ì €ì¥ ê³µê°„ì´ ì—†ì„ ê²½ìš°, Sort Arrayë¥¼ ì¶”ê°€í•œë‹¤.
+ *    Sort ArrayÀÇ ÀúÀå °ø°£À» Áõ°¡½ÃÅ°°í,
+ *    ÀúÀå °ø°£ÀÌ ¾øÀ» °æ¿ì, Sort Array¸¦ Ãß°¡ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1083,14 +1083,14 @@ qmcMemSort::quicksort( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ì§€ì •ëœ lowì™€ highê°„ì˜ Dataë“¤ì„ Quick Sortingí•œë‹¤.
+ *    ÁöÁ¤µÈ low¿Í high°£ÀÇ DataµéÀ» Quick SortingÇÑ´Ù.
  *
  * Implementation :
  *
- *    Stack Overflowê°€ ë°œìƒí•˜ì§€ ì•Šë„ë¡ Stackê³µê°„ì„ ë§ˆë ¨í•œë‹¤.
- *    Partitionì„ ë¶„í• í•˜ì—¬ í•´ë‹¹ Partition ë‹¨ìœ„ë¡œ Recursiveí•˜ê²Œ
- *    Quick Sortingí•œë‹¤.
- *    ìì„¸í•œ ë‚´ìš©ì€ ì¼ë°˜ì ì¸ quick sorting algorithmì„ ì°¸ê³ .
+ *    Stack Overflow°¡ ¹ß»ıÇÏÁö ¾Êµµ·Ï Stack°ø°£À» ¸¶·ÃÇÑ´Ù.
+ *    PartitionÀ» ºĞÇÒÇÏ¿© ÇØ´ç Partition ´ÜÀ§·Î RecursiveÇÏ°Ô
+ *    Quick SortingÇÑ´Ù.
+ *    ÀÚ¼¼ÇÑ ³»¿ëÀº ÀÏ¹İÀûÀÎ quick sorting algorithmÀ» Âü°í.
  *
  ***********************************************************************/
 
@@ -1182,12 +1182,12 @@ qmcMemSort::partition( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *     Partitionë‚´ì—ì„œì˜ ì •ë ¬ì„ ìˆ˜í–‰í•œë‹¤.
+ *     Partition³»¿¡¼­ÀÇ Á¤·ÄÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *     Partitionë‚´ì—ì„œì˜ ì •ë ¬ì„ ìˆ˜í–‰í•˜ê³ ,
- *     ê¸°ì¤€ì´ ë˜ëŠ” Partitionì˜ ìœ„ì¹˜ë¥¼ ê²°ì •í•œë‹¤.
- *     ìì„¸í•œ ë‚´ìš©ì€ ì¼ë°˜ì ì¸ quick sorting algorithm ì°¸ì¡°
+ *     Partition³»¿¡¼­ÀÇ Á¤·ÄÀ» ¼öÇàÇÏ°í,
+ *     ±âÁØÀÌ µÇ´Â PartitionÀÇ À§Ä¡¸¦ °áÁ¤ÇÑ´Ù.
+ *     ÀÚ¼¼ÇÑ ³»¿ëÀº ÀÏ¹İÀûÀÎ quick sorting algorithm ÂüÁ¶
  *
  ***********************************************************************/
 
@@ -1269,8 +1269,8 @@ qmcMemSort::partition( qmcdMemSortTemp * aTempTable,
     else
     {
         // BUG-41048 Improve orderby sort algorithm.
-        // ì •ë ¬í•´ì•¼í•˜ëŠ” ë°ì´í„°ì˜ ê°¯ìˆ˜ê°€ QMC_MEM_SORT_SMALL_SIZE ë³´ë‹¤ ì ì„ë•ŒëŠ”
-        // insertion sort ë¥¼ ì´ìš©í•œë‹¤.
+        // Á¤·ÄÇØ¾ßÇÏ´Â µ¥ÀÌÅÍÀÇ °¹¼ö°¡ QMC_MEM_SORT_SMALL_SIZE º¸´Ù ÀûÀ»¶§´Â
+        // insertion sort ¸¦ ÀÌ¿ëÇÑ´Ù.
         IDE_TEST( insertionSort( aTempTable,
                                  aLow,
                                  aHigh )
@@ -1296,13 +1296,13 @@ qmcMemSort::compare( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *     Sortingì‹œì— ë‘ Recordê°„ì˜ ëŒ€ì†Œ ë¹„êµë¥¼ í•œë‹¤.
- *     ORDER BYë“±ì„ ìœ„í•œ ì •ë ¬ì„ ìœ„í•´ì„œëŠ” ì—¬ëŸ¬ ê°œì˜ Columnì— ëŒ€í•œ
- *     ëŒ€ì†Œ ë¹„êµê°€ ê°€ëŠ¥í•˜ì§€ë§Œ, Rangeê²€ìƒ‰ì„ ìœ„í•œ ì •ë ¬ì—ì„œëŠ” í•˜ë‚˜ì˜
- *     Columnì— ëŒ€í•œ ì •ë ¬ë§Œì´ ê°€ëŠ¥í•˜ë‹¤.
+ *     Sorting½Ã¿¡ µÎ Record°£ÀÇ ´ë¼Ò ºñ±³¸¦ ÇÑ´Ù.
+ *     ORDER BYµîÀ» À§ÇÑ Á¤·ÄÀ» À§ÇØ¼­´Â ¿©·¯ °³ÀÇ Column¿¡ ´ëÇÑ
+ *     ´ë¼Ò ºñ±³°¡ °¡´ÉÇÏÁö¸¸, Range°Ë»öÀ» À§ÇÑ Á¤·Ä¿¡¼­´Â ÇÏ³ªÀÇ
+ *     Column¿¡ ´ëÇÑ Á¤·Ä¸¸ÀÌ °¡´ÉÇÏ´Ù.
  *
  * Implementation :
- *     í•´ë‹¹ Sort Nodeì˜ ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬, ëŒ€ì†Œ ë¹„êµë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *     ÇØ´ç Sort NodeÀÇ Á¤º¸¸¦ ÀÌ¿ëÇÏ¿©, ´ë¼Ò ºñ±³¸¦ ¼öÇàÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1329,13 +1329,13 @@ qmcMemSort::compare( qmcdMemSortTemp * aTempTable,
         if ( ( sNode->flag & QMC_MTR_SORT_NULLS_ORDER_MASK )
              == QMC_MTR_SORT_NULLS_ORDER_NONE )
         {
-            /* NULLS first/last ê°€ ì—†ì„ê²½ìš° ê¸°ì¡´ë™ì‘ ìˆ˜í–‰*/
+            /* NULLS first/last °¡ ¾øÀ»°æ¿ì ±âÁ¸µ¿ÀÛ ¼öÇà*/
             sResult = sNode->func.compare( &sValueInfo1,
                                            &sValueInfo2 );
         }
         else
         {
-            /* 1. 2ê°œì˜ valueì˜ Null ì—¬ë¶€ë¥¼ ì¡°ì‚¬í•œë‹¤. */
+            /* 1. 2°³ÀÇ valueÀÇ Null ¿©ºÎ¸¦ Á¶»çÇÑ´Ù. */
             sIsNull1 = sNode->func.isNull( sNode,
                                            (void *)aElem1 );
             sIsNull2 = sNode->func.isNull( sNode,
@@ -1345,13 +1345,13 @@ qmcMemSort::compare( qmcdMemSortTemp * aTempTable,
             {
                 if ( sIsNull1 == ID_FALSE )
                 {
-                    /* 2. NULLì´ì—†ì„ê²½ìš° ê¸°ì¡´ë™ì‘ ìˆ˜í–‰*/
+                    /* 2. NULLÀÌ¾øÀ»°æ¿ì ±âÁ¸µ¿ÀÛ ¼öÇà*/
                     sResult = sNode->func.compare( &sValueInfo1,
                                                    &sValueInfo2 );
                 }
                 else
                 {
-                    /* 3. ë‘˜ë‹¤ NULL ì¼ ê²½ìš° 0 */
+                    /* 3. µÑ´Ù NULL ÀÏ °æ¿ì 0 */
                     sResult = 0;
                 }
             }
@@ -1360,7 +1360,7 @@ qmcMemSort::compare( qmcdMemSortTemp * aTempTable,
                 if ( ( sNode->flag & QMC_MTR_SORT_NULLS_ORDER_MASK )
                      == QMC_MTR_SORT_NULLS_ORDER_FIRST )
                 {
-                    /* 4. NULLS FIRST ì¼ê²½ìš° Nullì„ ìµœì†Œë¡œ í•œë‹¤. */
+                    /* 4. NULLS FIRST ÀÏ°æ¿ì NullÀ» ÃÖ¼Ò·Î ÇÑ´Ù. */
                     if ( sIsNull1 == ID_TRUE )
                     {
                         sResult = -1;
@@ -1372,7 +1372,7 @@ qmcMemSort::compare( qmcdMemSortTemp * aTempTable,
                 }
                 else
                 {
-                    /* 5. NULLS LAST ì¼ê²½ìš° Nullì„ ìµœëŒ€ë¡œ í•œë‹¤. */
+                    /* 5. NULLS LAST ÀÏ°æ¿ì NullÀ» ÃÖ´ë·Î ÇÑ´Ù. */
                     if ( sIsNull1 == ID_TRUE )
                     {
                         sResult = 1;
@@ -1404,7 +1404,7 @@ qmcMemSort::beforeFirstElement( qmcdMemSortTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    ìˆœì°¨ ê²€ìƒ‰ì„ ìœ„í•´ ìµœì´ˆì˜ Record ì´ì „ì˜ ìœ„ì¹˜ë¡œ ì´ë™í•œë‹¤.
+ *    ¼øÂ÷ °Ë»öÀ» À§ÇØ ÃÖÃÊÀÇ Record ÀÌÀüÀÇ À§Ä¡·Î ÀÌµ¿ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1422,12 +1422,12 @@ qmcMemSort::getNextElement( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ë‹¤ìŒ ìœ„ì¹˜ì˜ Recordë¥¼ ê²€ìƒ‰í•œë‹¤.
+ *    ´ÙÀ½ À§Ä¡ÀÇ Record¸¦ °Ë»öÇÑ´Ù.
  *
  * Implementation :
  *
- *    ë‹¤ìŒ ìœ„ì¹˜ë¡œ ì´ë™í•˜ì—¬, ê·¸ ìœ„ì¹˜ì˜ Recordë¥¼ ê²€ìƒ‰í•œë‹¤.
- *    Recordê°€ ì—†ì„ ê²½ìš°, NULLì„ ë¦¬í„´í•œë‹¤.
+ *    ´ÙÀ½ À§Ä¡·Î ÀÌµ¿ÇÏ¿©, ±× À§Ä¡ÀÇ Record¸¦ °Ë»öÇÑ´Ù.
+ *    Record°¡ ¾øÀ» °æ¿ì, NULLÀ» ¸®ÅÏÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1459,7 +1459,7 @@ qmcMemSort::setKeyRange( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Key Range ê²€ìƒ‰ì„ ìœ„í•´ Rangeë¥¼ ì„¤ì •í•œë‹¤.
+ *    Key Range °Ë»öÀ» À§ÇØ Range¸¦ ¼³Á¤ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1476,13 +1476,13 @@ qmcMemSort::getFirstKey( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Rangeë¥¼ ë§Œì¡±í•˜ëŠ” ìµœì´ˆì˜ Recordë¥¼ ê²€ìƒ‰í•œë‹¤.
+ *    Range¸¦ ¸¸Á·ÇÏ´Â ÃÖÃÊÀÇ Record¸¦ °Ë»öÇÑ´Ù.
  *
  * Implementation :
  *
- *    Rangeë¥¼ ë§Œì¡±í•˜ëŠ” Minimum Keyì˜ ìœ„ì¹˜ë¥¼ ì°¾ê³ ,
- *    ìˆì„ ê²½ìš°, Maximum Keyì˜ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.
- *    Minimum Keyì˜ Recordë¥¼ ë¦¬í„´í•œë‹¤.
+ *    Range¸¦ ¸¸Á·ÇÏ´Â Minimum KeyÀÇ À§Ä¡¸¦ Ã£°í,
+ *    ÀÖÀ» °æ¿ì, Maximum KeyÀÇ À§Ä¡¸¦ Ã£´Â´Ù.
+ *    Minimum KeyÀÇ Record¸¦ ¸®ÅÏÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1522,7 +1522,7 @@ qmcMemSort::getNextKey( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Rangeë¥¼ ë§Œì¡±í•˜ëŠ” ë‹¤ìŒ Recordë¥¼ ê²€ìƒ‰í•œë‹¤.
+ *    Range¸¦ ¸¸Á·ÇÏ´Â ´ÙÀ½ Record¸¦ °Ë»öÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1555,7 +1555,7 @@ qmcMemSort::setFirstKey( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Rangeë¥¼ ë§Œì¡±í•˜ëŠ” Minimum Keyì˜ ìœ„ì¹˜ë¥¼ ì„¤ì •í•œë‹¤.
+ *    Range¸¦ ¸¸Á·ÇÏ´Â Minimum KeyÀÇ À§Ä¡¸¦ ¼³Á¤ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1590,7 +1590,7 @@ qmcMemSort::setFirstKey( qmcdMemSortTemp * aTempTable,
             // sResult = ID_FALSE;
         }
 
-        // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+        // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
         for( sNode = aTempTable->mSortNode;
              sNode != NULL;
              sNode = sNode->next )
@@ -1636,7 +1636,7 @@ qmcMemSort::setFirstKey( qmcdMemSortTemp * aTempTable,
                                    sMed,
                                    & sElement ) != IDE_SUCCESS );
 
-            // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+            // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
             for( sNode = aTempTable->mSortNode;
                  sNode != NULL;
                  sNode = sNode->next )
@@ -1723,7 +1723,7 @@ qmcMemSort::setLastKey(qmcdMemSortTemp * aTempTable)
 /***********************************************************************
  *
  * Description :
- *     Rangeë¥¼ ë§Œì¡±í•˜ëŠ” Maximum Keyì˜ ìœ„ì¹˜ë¥¼ ì„¤ì •í•œë‹¤.
+ *     Range¸¦ ¸¸Á·ÇÏ´Â Maximum KeyÀÇ À§Ä¡¸¦ ¼³Á¤ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1747,7 +1747,7 @@ qmcMemSort::setLastKey(qmcdMemSortTemp * aTempTable)
                                sMed,
                                & sElement ) != IDE_SUCCESS );
 
-        // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+        // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
         for( sNode = aTempTable->mSortNode;
              sNode != NULL;
              sNode = sNode->next )
@@ -1802,12 +1802,12 @@ qmcMemSort::findInsertPosition( qmcdMemSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Limit Sortingì—ì„œ Shift And Appendë¥¼ í•˜ê¸° ìœ„í•œ ìœ„ì¹˜ë¥¼
- *    ê²€ìƒ‰í•œë‹¤.
+ *    Limit Sorting¿¡¼­ Shift And Append¸¦ ÇÏ±â À§ÇÑ À§Ä¡¸¦
+ *    °Ë»öÇÑ´Ù.
  *
  * Implementation :
- *    ë§ˆì§€ë§‰ Rowë³´ë‹¤ ì™¼ìª½ì— ìœ„ì¹˜í•  ê²½ìš°, ê·¸ ìœ„ì¹˜ë¥¼ ê²€ìƒ‰í•œë‹¤.
- *    ì‚½ì… ëŒ€ìƒì´ ì•„ë‹ ê²½ìš° -1 ê°’ì„ ë¦¬í„´í•œë‹¤.
+ *    ¸¶Áö¸· Rowº¸´Ù ¿ŞÂÊ¿¡ À§Ä¡ÇÒ °æ¿ì, ±× À§Ä¡¸¦ °Ë»öÇÑ´Ù.
+ *    »ğÀÔ ´ë»óÀÌ ¾Æ´Ò °æ¿ì -1 °ªÀ» ¸®ÅÏÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1822,7 +1822,7 @@ qmcMemSort::findInsertPosition( qmcdMemSortTemp * aTempTable,
     void  ** sMaxRow;
 
     //------------------------------------------
-    // ê°€ì¥ ìš°ì¸¡ Rowì™€ì˜ ë¹„êµ
+    // °¡Àå ¿ìÃø Row¿ÍÀÇ ºñ±³
     //------------------------------------------
 
     sMax = aTempTable->mArray->index - 1;
@@ -1831,14 +1831,14 @@ qmcMemSort::findInsertPosition( qmcdMemSortTemp * aTempTable,
     sOrder = compare( aTempTable, aRow, *sMaxRow );
 
     //------------------------------------------
-    // ì‚½ì…í•  ìœ„ì¹˜ ê²°ì •
+    // »ğÀÔÇÒ À§Ä¡ °áÁ¤
     //------------------------------------------
 
     sInsertPos = -1;
 
     if ( sOrder < 0 )
     {
-        // ì‚½ì…í•  ìœ„ì¹˜ë¥¼ ê²€ìƒ‰í•¨.
+        // »ğÀÔÇÒ À§Ä¡¸¦ °Ë»öÇÔ.
         sMin = 0;
         do
         {
@@ -1861,8 +1861,8 @@ qmcMemSort::findInsertPosition( qmcdMemSortTemp * aTempTable,
     }
     else
     {
-        // Right-Most Rowë³´ë‹¤ ìš°ì¸¡ì— ìˆëŠ” Rowì„
-        // ì‚½ì… ëŒ€ìƒì´ ì•„ë‹˜ì„ í‘œí˜„í•˜ê²Œ ë¨
+        // Right-Most Rowº¸´Ù ¿ìÃø¿¡ ÀÖ´Â RowÀÓ
+        // »ğÀÔ ´ë»óÀÌ ¾Æ´ÔÀ» Ç¥ÇöÇÏ°Ô µÊ
     }
 
     *aInsertPos = sInsertPos;
@@ -1875,12 +1875,12 @@ qmcMemSort::findInsertPosition( qmcdMemSortTemp * aTempTable,
  * Description : Proj-2334 PMT memory variable column
  *
  * Implementation :
- *     1. MEMORY PARTITIONED TABLE ì³¬í¬, MEMORY VARIABLE ì³¬í¬.
- *     2. columnDescëŠ” partitionì˜ columnì´ê¸° ë•Œë¬¸ì— srcTuple columnê³¼ ê°™ì€
- *        colum idë¥¼ ì°¾ëŠ”ë‹¤.
- *        (sortNodeì˜ srcTupleì˜ columnì€ partitionì˜ columnì´ë‹¤.
- *         PCRDì—ì„œ srcTupleì˜ columns, rowì •ë³´ê°€ partition ì •ë³´ë¡œ ë³€ê²½ ë˜ê¸° ë•Œë¬¸)
- *     3. columnDesc column id == srcTuple column id ë™ì¼ í•˜ë©´ ë³µì‚¬.
+ *     1. MEMORY PARTITIONED TABLE ÃÇÅ©, MEMORY VARIABLE ÃÇÅ©.
+ *     2. columnDesc´Â partitionÀÇ columnÀÌ±â ¶§¹®¿¡ srcTuple column°ú °°Àº
+ *        colum id¸¦ Ã£´Â´Ù.
+ *        (sortNodeÀÇ srcTupleÀÇ columnÀº partitionÀÇ columnÀÌ´Ù.
+ *         PCRD¿¡¼­ srcTupleÀÇ columns, rowÁ¤º¸°¡ partition Á¤º¸·Î º¯°æ µÇ±â ¶§¹®)
+ *     3. columnDesc column id == srcTuple column id µ¿ÀÏ ÇÏ¸é º¹»ç.
  *     
  ***********************************************************************/
 void qmcMemSort::changePartitionColumn( qmdMtrNode  * aNode,
@@ -1899,7 +1899,7 @@ void qmcMemSort::changePartitionColumn( qmdMtrNode  * aNode,
               sData != NULL;
               sData  = sData->next )
         {
-            /* BUG-39957 null rangeëŠ” columnDescê°€ ì„¤ì •ë˜ì–´ìˆì§€ ì•Šë‹¤. */
+            /* BUG-39957 null range´Â columnDesc°¡ ¼³Á¤µÇ¾îÀÖÁö ¾Ê´Ù. */
             if ( sData->compare != mtk::compareMinimumLimit )
             {
                 for ( sNode = aNode;
@@ -1925,7 +1925,7 @@ void qmcMemSort::changePartitionColumn( qmdMtrNode  * aNode,
                               ID_SIZEOF(smiColumn) );
                             */
 
-                            /* memcpy ëŒ€ì‹  colSpaceë§Œ ë°”ê¾¼ë‹¤. */
+                            /* memcpy ´ë½Å colSpace¸¸ ¹Ù²Û´Ù. */
                             sData->columnDesc.column.colSpace = sColumn->column.colSpace;
                         }
                         else
@@ -1960,18 +1960,18 @@ IDE_RC qmcMemSort::timsort( qmcdMemSortTemp * aTempTable,
  *
  * Description : TASK-6445
  *
- *  Timsort (Insertion Sort + Mergesort) ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *  Timsort (Insertion Sort + Mergesort) ¸¦ ¼öÇàÇÑ´Ù.
  *
- *  1. ë°°ì—´ì—ì„œ Runì„ ì°¾ì•„, Run Stackì— ì‚½ì…
- *     1-a. ë°°ì—´ì—ì„œ Natural Runì´ ìˆë‹¤ë©´, ê·¸ëŒ€ë¡œ Runìœ¼ë¡œ ì„¤ì •
- *     1-b. ë°°ì—´ì—ì„œ Natural Runì´ ì—†ë‹¤ë©´, MIN(minrun, ë‚¨ì€ Record ê°œìˆ˜) ë§Œí¼ì˜
- *          ë¶€ë¶„ ë°°ì—´ì„ Insertion Sortë¡œ ê°•ì œ ì •ë ¬í•´ Run ìƒì„±
+ *  1. ¹è¿­¿¡¼­ RunÀ» Ã£¾Æ, Run Stack¿¡ »ğÀÔ
+ *     1-a. ¹è¿­¿¡¼­ Natural RunÀÌ ÀÖ´Ù¸é, ±×´ë·Î RunÀ¸·Î ¼³Á¤
+ *     1-b. ¹è¿­¿¡¼­ Natural RunÀÌ ¾ø´Ù¸é, MIN(minrun, ³²Àº Record °³¼ö) ¸¸Å­ÀÇ
+ *          ºÎºĞ ¹è¿­À» Insertion Sort·Î °­Á¦ Á¤·ÄÇØ Run »ı¼º
  *
- *  2. Run Stack ìœ ì§€ ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ”ì§€ í™•ì¸
- *     2-a. ìœ ì§€ì¡°ê±´ì„ ë§Œì¡±í•˜ë©´, (1)ë¡œ ëŒì•„ê°€ì„œ ê³„ì† Runì„ íƒìƒ‰
- *     2-b. ìœ ì§€ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•Šìœ¼ë©´, ë§Œì¡±í•  ë•Œ ê¹Œì§€ Stackì˜ Runë“¤ì„ Mergesort
+ *  2. Run Stack À¯Áö Á¶°ÇÀ» ¸¸Á·ÇÏ´ÂÁö È®ÀÎ
+ *     2-a. À¯ÁöÁ¶°ÇÀ» ¸¸Á·ÇÏ¸é, (1)·Î µ¹¾Æ°¡¼­ °è¼Ó RunÀ» Å½»ö
+ *     2-b. À¯ÁöÁ¶°ÇÀ» ¸¸Á·ÇÏÁö ¾ÊÀ¸¸é, ¸¸Á·ÇÒ ¶§ ±îÁö StackÀÇ RunµéÀ» Mergesort
  *
- *  ìì„¸í•œ ë‚´ìš©ì€ NoK Page (http://nok.altibase.com/x/qaMRAg) ë¥¼ ì°¸ê³ í•œë‹¤.
+ *  ÀÚ¼¼ÇÑ ³»¿ëÀº NoK Page (http://nok.altibase.com/x/qaMRAg) ¸¦ Âü°íÇÑ´Ù.
  *
  ****************************************************************************/
 
@@ -1985,13 +1985,13 @@ IDE_RC qmcMemSort::timsort( qmcdMemSortTemp * aTempTable,
     UShort         sState         = 0;
 
     //--------------------------------------------------------------
-    // minrun (Runì´ ë  ìµœì†Œ ê¸¸ì´) ê³„ì‚°
+    // minrun (RunÀÌ µÉ ÃÖ¼Ò ±æÀÌ) °è»ê
     //--------------------------------------------------------------
     sMinRun = calcMinrun( sRecCount );
 
     //--------------------------------------------------------------
-    // Run Stack ì˜ì—­ í• ë‹¹
-    // Runì€ ìµœëŒ€ (N/minrun) + 1 ê¹Œì§€ ìƒì„±ë  ìˆ˜ ìˆë‹¤.
+    // Run Stack ¿µ¿ª ÇÒ´ç
+    // RunÀº ÃÖ´ë (N/minrun) + 1 ±îÁö »ı¼ºµÉ ¼ö ÀÖ´Ù.
     //--------------------------------------------------------------
     IDU_FIT_POINT( "qmcMemSort::timsort::malloc",
                    idERR_ABORT_InsufficientMemory );
@@ -2002,8 +2002,8 @@ IDE_RC qmcMemSort::timsort( qmcdMemSortTemp * aTempTable,
     sState = 1;
 
     //-------------------------------------------------
-    // ì„ì‹œ ì˜ì—­ì„ ìœ„í•œ Temp Arrayë¥¼ ë§Œë“ ë‹¤.
-    // ì‚¬ìš©í•˜ëŠ” ì„ì‹œ ì˜ì—­ì€ (N/2) ë¥¼ ë„˜ì„ ìˆ˜ ì—†ë‹¤.
+    // ÀÓ½Ã ¿µ¿ªÀ» À§ÇÑ Temp Array¸¦ ¸¸µç´Ù.
+    // »ç¿ëÇÏ´Â ÀÓ½Ã ¿µ¿ªÀº (N/2) ¸¦ ³ÑÀ» ¼ö ¾ø´Ù.
     //-------------------------------------------------
     IDU_FIT_POINT( "qmcMemSort::timsort::malloc2",
                    idERR_ABORT_InsufficientMemory );
@@ -2028,17 +2028,17 @@ IDE_RC qmcMemSort::timsort( qmcdMemSortTemp * aTempTable,
               != IDE_SUCCESS );
     sState = 3;
 
-    // Temp Tableì— ì„¤ì •
+    // Temp Table¿¡ ¼³Á¤
     aTempTable->mTempArray = sTempArray;
 
     //--------------------------------------------------------------
-    // Run íƒìƒ‰ & Merging
+    // Run Å½»ö & Merging
     //--------------------------------------------------------------
     sStartIdx = aLow;
 
     while ( sRecCount > 0 ) 
     {
-        // Run íƒìƒ‰
+        // Run Å½»ö
         searchRun( aTempTable,        // Array
                    sStartIdx,         // Start Index
                    aHigh + 1,         // Fence
@@ -2047,11 +2047,11 @@ IDE_RC qmcMemSort::timsort( qmcdMemSortTemp * aTempTable,
 
         if ( sLength < sMinRun )
         {
-            // íƒìƒ‰í•œ Runì´ minrunë³´ë‹¤ ì‘ì€ ê²½ìš°
-            // ë‚¨ì•„ìˆëŠ” ë ˆì½”ë“œ ê°œìˆ˜ vs. minrun ê°’ ì¤‘ ì‘ì€ ê°’ì„ Lengthë¡œ ì„ íƒ
+            // Å½»öÇÑ RunÀÌ minrunº¸´Ù ÀÛÀº °æ¿ì
+            // ³²¾ÆÀÖ´Â ·¹ÄÚµå °³¼ö vs. minrun °ª Áß ÀÛÀº °ªÀ» Length·Î ¼±ÅÃ
             sLength = IDL_MIN( sRecCount, sMinRun );
 
-            // Run ìƒì„±
+            // Run »ı¼º
             IDE_TEST( insertionSort( aTempTable,
                                      sStartIdx,
                                      sStartIdx + sLength - 1 )
@@ -2059,50 +2059,50 @@ IDE_RC qmcMemSort::timsort( qmcdMemSortTemp * aTempTable,
         }
         else
         {
-            // íƒìƒ‰í•œ Runì´ ì¶©ë¶„íˆ ê¸´ ê²½ìš°
+            // Å½»öÇÑ RunÀÌ ÃæºĞÈ÷ ±ä °æ¿ì
             if ( sIsReverseRun == ID_TRUE )
             {
-                // ì›ì¹˜ ì•ŠëŠ” ìˆœì„œë¡œ ëœ Runì¸ ê²½ìš° ë’¤ì§‘ëŠ”ë‹¤.
+                // ¿øÄ¡ ¾Ê´Â ¼ø¼­·Î µÈ RunÀÎ °æ¿ì µÚÁı´Â´Ù.
                 reverseOrder( aTempTable, 
                               sStartIdx,                 // aLow
                               sStartIdx + sLength - 1 ); // aHigh (not fence)
             }
             else
             {
-                // ì›í•˜ëŠ” ìˆœì„œëŒ€ë¡œ Runê°€ í˜•ì„±ëœ ê²½ìš°
+                // ¿øÇÏ´Â ¼ø¼­´ë·Î Run°¡ Çü¼ºµÈ °æ¿ì
                 // Noting to do.
             }
         }
 
-        // [ sStartIdx, sStartIdx+sLength ) ì¸ Runì„ Stackì— ë„£ê¸°
+        // [ sStartIdx, sStartIdx+sLength ) ÀÎ RunÀ» Stack¿¡ ³Ö±â
         sCurrRun = & aTempTable->mRunStack[aTempTable->mRunStackSize];
         sCurrRun->mStart  = sStartIdx;
         sCurrRun->mEnd    = sStartIdx + sLength - 1;
         sCurrRun->mLength = sLength;
 
-        // Run Stack Size ì¦ê°€
+        // Run Stack Size Áõ°¡
         aTempTable->mRunStackSize++;
 
-        // ë‹¤ìŒ Run íƒìƒ‰ ì¤€ë¹„
+        // ´ÙÀ½ Run Å½»ö ÁØºñ
         sStartIdx += sLength;
         sRecCount -= sLength;
 
         //----------------------------------------------------------
-        // Stack ìœ ì§€ ì¡°ê±´ì„ ê²€ì‚¬í•˜ê³ , ì¡°ê±´ì„ ë§Œì¡±í•  ë•Œ ê¹Œì§€ Merge
+        // Stack À¯Áö Á¶°ÇÀ» °Ë»çÇÏ°í, Á¶°ÇÀ» ¸¸Á·ÇÒ ¶§ ±îÁö Merge
         //----------------------------------------------------------
         IDE_TEST( collapseStack( aTempTable ) != IDE_SUCCESS );
     }
 
     //--------------------------------------------------------------
-    // Stackì— ë‚¨ì•„ìˆëŠ” Runë“¤ì„ ê°•ì œë¡œ Merging
+    // Stack¿¡ ³²¾ÆÀÖ´Â RunµéÀ» °­Á¦·Î Merging
     //--------------------------------------------------------------
     IDE_TEST( collapseStackForce( aTempTable ) != IDE_SUCCESS );
 
-    // ì´í›„ì—ëŠ” Stackì— Runì´ í•˜ë‚˜ë§Œ ë“¤ì–´ ìˆì–´ì•¼ í•œë‹¤.
+    // ÀÌÈÄ¿¡´Â Stack¿¡ RunÀÌ ÇÏ³ª¸¸ µé¾î ÀÖ¾î¾ß ÇÑ´Ù.
     IDE_DASSERT( aTempTable->mRunStackSize == 1 );
 
     //--------------------------------------------------------------
-    // ì„ì‹œ ì˜ì—­ ì´ˆê¸°í™”
+    // ÀÓ½Ã ¿µ¿ª ÃÊ±âÈ­
     //--------------------------------------------------------------
     sState = 2;
     IDE_TEST( iduMemMgr::free( sTempArray->elements ) != IDE_SUCCESS );
@@ -2112,11 +2112,11 @@ IDE_RC qmcMemSort::timsort( qmcdMemSortTemp * aTempTable,
     IDE_TEST( iduMemMgr::free( sTempArray ) != IDE_SUCCESS );
     sTempArray = NULL;
 
-    // Temp Table ì„¤ì •
+    // Temp Table ¼³Á¤
     aTempTable->mTempArray = NULL;
 
     //--------------------------------------------------------------
-    // RunStack í•´ì œ / RunStack Size ì´ˆê¸°í™”
+    // RunStack ÇØÁ¦ / RunStack Size ÃÊ±âÈ­
     //--------------------------------------------------------------
     sState = 0;
     IDE_TEST( iduMemMgr::free( aTempTable->mRunStack ) != IDE_SUCCESS );
@@ -2141,7 +2141,7 @@ IDE_RC qmcMemSort::timsort( qmcdMemSortTemp * aTempTable,
             (void)iduMemMgr::free( aTempTable->mRunStack );
             /* fall through */
         default:
-            // free() ì—¬ë¶€ì— ê´€ê³„ì—†ì´ Temp Table ë³€ìˆ˜ëŠ” ì´ˆê¸°í™”í•´ì•¼ í•œë‹¤.
+            // free() ¿©ºÎ¿¡ °ü°è¾øÀÌ Temp Table º¯¼ö´Â ÃÊ±âÈ­ÇØ¾ß ÇÑ´Ù.
             aTempTable->mRunStack     = NULL;
             aTempTable->mRunStackSize = 0;
             aTempTable->mTempArray    = NULL;
@@ -2157,35 +2157,35 @@ SLong qmcMemSort::calcMinrun( SLong aLength )
  *
  * Description : TASK-6445
  *
- *  Timsortì— í•„ìš”í•œ Minimum Run Length (minrun)ë¥¼ ê³„ì‚°í•œë‹¤.
- *  ë²”ìœ„ëŠ” MINRUN_FENCE/2 <= sMinRun <= MINRUN_FENCE ì´ë‹¤.
+ *  Timsort¿¡ ÇÊ¿äÇÑ Minimum Run Length (minrun)¸¦ °è»êÇÑ´Ù.
+ *  ¹üÀ§´Â MINRUN_FENCE/2 <= sMinRun <= MINRUN_FENCE ÀÌ´Ù.
  *
- *  ê¸°ë³¸ì ìœ¼ë¡œ, ì „ì²´ ë°°ì—´ì„ minrunìœ¼ë¡œ ë‚˜ëˆŒ ë•Œ
- *  Run ê°œìˆ˜ê°€ 2ì˜ ê±°ë“­ì œê³±ìˆ˜ê°€ ë˜ëŠ” minrunì„ ê³„ì‚°í•œë‹¤.
- *  ë¶ˆê°€ëŠ¥í•œ ê²½ìš°, Run ê°œìˆ˜ê°€ 2ì˜ ê±°ë“­ì œê³±ìˆ˜ì— ê°€ê¹ì§€ë§Œ
- *  ê±°ë“­ì œê³±ìˆ˜ë³´ë‹¤ëŠ” ëª¨ìë¼ê²Œ ë§Œë“œëŠ” minrunì„ ì°¾ëŠ”ë‹¤.
+ *  ±âº»ÀûÀ¸·Î, ÀüÃ¼ ¹è¿­À» minrunÀ¸·Î ³ª´­ ¶§
+ *  Run °³¼ö°¡ 2ÀÇ °ÅµìÁ¦°ö¼ö°¡ µÇ´Â minrunÀ» °è»êÇÑ´Ù.
+ *  ºÒ°¡´ÉÇÑ °æ¿ì, Run °³¼ö°¡ 2ÀÇ °ÅµìÁ¦°ö¼ö¿¡ °¡±õÁö¸¸
+ *  °ÅµìÁ¦°ö¼öº¸´Ù´Â ¸ğÀÚ¶ó°Ô ¸¸µå´Â minrunÀ» Ã£´Â´Ù.
  *
- *  ì´ë ‡ê²Œ í•´ì•¼, ë§ˆì§€ë§‰ Runì˜ í¬ê¸°ê°€ minrunì— ê°€ê¹Œì›Œì ¸ì„œ
- *  ìµœì¢… Merge ë‹¨ê³„ì—ì„œ ë™ì¼í•˜ê±°ë‚˜ ë¹„ìŠ·í•œ í¬ê¸°ì˜ Run ë¼ë¦¬ ì§„í–‰ë˜ê¸° ë•Œë¬¸ì´ë‹¤.
- *  Mergesort ì—ì„œëŠ” ë‘ Runì˜ ê¸¸ì´ ì°¨ì´ê°€ ë§ì´ ë‚  ìˆ˜ë¡ ì„±ëŠ¥ ì €í•˜ê°€ ìƒê¸´ë‹¤.
+ *  ÀÌ·¸°Ô ÇØ¾ß, ¸¶Áö¸· RunÀÇ Å©±â°¡ minrun¿¡ °¡±î¿öÁ®¼­
+ *  ÃÖÁ¾ Merge ´Ü°è¿¡¼­ µ¿ÀÏÇÏ°Å³ª ºñ½ÁÇÑ Å©±âÀÇ Run ³¢¸® ÁøÇàµÇ±â ¶§¹®ÀÌ´Ù.
+ *  Mergesort ¿¡¼­´Â µÎ RunÀÇ ±æÀÌ Â÷ÀÌ°¡ ¸¹ÀÌ ³¯ ¼ö·Ï ¼º´É ÀúÇÏ°¡ »ı±ä´Ù.
  *
- *  ìì„¸í•œ ê³„ì‚° ê¸°ì¤€ê³¼ ê³µì‹ ì„±ë¦½ ê³¼ì •ì— ëŒ€í•œ ìì„¸í•œ ë‚´ìš©ì€
- *  NoK Page (http://nok.altibase.com/x/qaMRAg) ë¥¼ ì°¸ê³ í•œë‹¤.
+ *  ÀÚ¼¼ÇÑ °è»ê ±âÁØ°ú °ø½Ä ¼º¸³ °úÁ¤¿¡ ´ëÇÑ ÀÚ¼¼ÇÑ ³»¿ëÀº
+ *  NoK Page (http://nok.altibase.com/x/qaMRAg) ¸¦ Âü°íÇÑ´Ù.
  *
  * Implementation : 
  *
- *  MINRUN_FENCEê°€ 2^Nì¸ ê²½ìš°, sQuotientì™€ sRemainì„ ì•„ë˜ì™€ ê°™ì´ ê³„ì‚°í•´
- *  ë‘ ê°’ì„ ë”í•˜ë©´ minrunì´ ëœë‹¤.
+ *  MINRUN_FENCE°¡ 2^NÀÎ °æ¿ì, sQuotient¿Í sRemainÀ» ¾Æ·¡¿Í °°ÀÌ °è»êÇØ
+ *  µÎ °ªÀ» ´õÇÏ¸é minrunÀÌ µÈ´Ù.
  *
- *  - sQuotient = ê°€ì¥ ì™¼ìª½ N Bit
- *  - sRemain   = ë‚˜ë¨¸ì§€ Bitê°€ ì¡´ì¬í•˜ë©´ 1, ì•„ë‹ˆë©´ 0
+ *  - sQuotient = °¡Àå ¿ŞÂÊ N Bit
+ *  - sRemain   = ³ª¸ÓÁö Bit°¡ Á¸ÀçÇÏ¸é 1, ¾Æ´Ï¸é 0
  *
  *  (e.g.) 2174 = 100001111110(2)
  *                | Q  || Re |
  *                  33 + 1    = 34
  *
  *  2174/34 = 63 2174%34 = 33 
- *  (ì¦‰, ê¸¸ì´ 34ì¸ Runì´ 63ê°œ, 32ì¸ Run 1ê°œ ìƒì„±)
+ *  (Áï, ±æÀÌ 34ÀÎ RunÀÌ 63°³, 32ÀÎ Run 1°³ »ı¼º)
  *
  ****************************************************************************/
 
@@ -2213,11 +2213,11 @@ void qmcMemSort::searchRun( qmcdMemSortTemp * aTempTable,
  *
  * Description : TASK-6445
  *
- *  ì›í•˜ëŠ” ë°©í–¥ìœ¼ë¡œ ë¯¸ë¦¬ ì •ë ¬ëœ Natural Runì„ ì°¾ëŠ”ë‹¤.
- *  í•˜ì§€ë§Œ ì›í•˜ëŠ” ìˆœì„œì™€ ë°˜ëŒ€ ë°©í–¥ì¸ Runë„ Natural Runìœ¼ë¡œ ê°„ì£¼í•œë‹¤.
+ *  ¿øÇÏ´Â ¹æÇâÀ¸·Î ¹Ì¸® Á¤·ÄµÈ Natural RunÀ» Ã£´Â´Ù.
+ *  ÇÏÁö¸¸ ¿øÇÏ´Â ¼ø¼­¿Í ¹İ´ë ¹æÇâÀÎ Runµµ Natural RunÀ¸·Î °£ÁÖÇÑ´Ù.
  *
- *  Runì„ ì°¾ëŠ” ê³¼ì •ì—ì„œ ì¶”ê°€ ë¹„ìš©ì´ ë“¤ì§€ë§Œ, ì‚¬ì‹¤ì€ ê·¸ë ‡ì§€ ì•Šë‹¤.
- *  ì˜ë¯¸ìˆëŠ” Natural Runì„ ì°¾ì•„ ë‚¸ë‹¤ë©´ Insertion Sort ë¹„ìš©ì´ ì—†ì–´ì§€ê¸° ë•Œë¬¸ì´ë‹¤.
+ *  RunÀ» Ã£´Â °úÁ¤¿¡¼­ Ãß°¡ ºñ¿ëÀÌ µéÁö¸¸, »ç½ÇÀº ±×·¸Áö ¾Ê´Ù.
+ *  ÀÇ¹ÌÀÖ´Â Natural RunÀ» Ã£¾Æ ³½´Ù¸é Insertion Sort ºñ¿ëÀÌ ¾ø¾îÁö±â ¶§¹®ÀÌ´Ù.
  *
  ****************************************************************************/
 
@@ -2229,7 +2229,7 @@ void qmcMemSort::searchRun( qmcdMemSortTemp * aTempTable,
 
     if ( sNext == aFence )
     {
-        // Run LengthëŠ” 1
+        // Run Length´Â 1
         *aRunLength = 1;
     }
     else
@@ -2237,14 +2237,14 @@ void qmcMemSort::searchRun( qmcdMemSortTemp * aTempTable,
         get( aTempTable, aTempTable->mArray, sNext - 1, & sCurrRow );
         get( aTempTable, aTempTable->mArray, sNext, & sNextRow );
 
-        // ì•„ë˜ if-else êµ¬ë¬¸ì„ í•©ì¹˜ê²Œ ë˜ë©´ ë¶ˆí•„ìš”í•œ ì½”ë“œê°€ ì¤„ì–´ë“¤ ìˆ˜ ìˆì§€ë§Œ,
-        // forë¬¸ ì•ˆì—ì„œ Reverse ì—¬ë¶€ë¥¼ í•­ìƒ ì²´í¬í•˜ëŠ” ê²ƒì€ ì‹¤í–‰ ì¸¡ë©´ì—ì„œ ë¹„íš¨ìœ¨ì ì´ë‹¤.
+        // ¾Æ·¡ if-else ±¸¹®À» ÇÕÄ¡°Ô µÇ¸é ºÒÇÊ¿äÇÑ ÄÚµå°¡ ÁÙ¾îµé ¼ö ÀÖÁö¸¸,
+        // for¹® ¾È¿¡¼­ Reverse ¿©ºÎ¸¦ Ç×»ó Ã¼Å©ÇÏ´Â °ÍÀº ½ÇÇà Ãø¸é¿¡¼­ ºñÈ¿À²ÀûÀÌ´Ù.
         if ( compare( aTempTable, *sNextRow, *sCurrRow ) >= 0 )
         {
-            // ì›í–ˆë˜ ìˆœì„œ
+            // ¿øÇß´ø ¼ø¼­
             *aReverseOrder = ID_FALSE;
             
-            // ê³„ì† ì´ ìˆœì„œë¡œ íƒìƒ‰í•œë‹¤.
+            // °è¼Ó ÀÌ ¼ø¼­·Î Å½»öÇÑ´Ù.
             for ( sNext = sNext + 1; sNext < aFence; sNext++ )
             {
                 get( aTempTable, aTempTable->mArray, sNext - 1, & sCurrRow );
@@ -2256,17 +2256,17 @@ void qmcMemSort::searchRun( qmcdMemSortTemp * aTempTable,
                 }
                 else
                 {
-                    // í˜„ì¬ ìˆœì„œì™€ ë°˜ëŒ€ ë°©í–¥ì´ ë˜ë¯€ë¡œ ë¹ ì ¸ ë‚˜ì˜¨ë‹¤.
+                    // ÇöÀç ¼ø¼­¿Í ¹İ´ë ¹æÇâÀÌ µÇ¹Ç·Î ºüÁ® ³ª¿Â´Ù.
                     break;
                 }
             }
         }
         else
         {
-            // ë°˜ëŒ€ ìˆœì„œ
+            // ¹İ´ë ¼ø¼­
             *aReverseOrder = ID_TRUE;
 
-            // ê³„ì† ì´ ìˆœì„œë¡œ íƒìƒ‰í•œë‹¤.
+            // °è¼Ó ÀÌ ¼ø¼­·Î Å½»öÇÑ´Ù.
             for ( sNext = sNext + 1; sNext < aFence; sNext++ )
             {
                 get( aTempTable, aTempTable->mArray, sNext - 1, & sCurrRow );
@@ -2274,7 +2274,7 @@ void qmcMemSort::searchRun( qmcdMemSortTemp * aTempTable,
 
                 if ( compare( aTempTable, *sNextRow, *sCurrRow ) > 0 )
                 {
-                    // í˜„ì¬ ìˆœì„œì™€ ë°˜ëŒ€ ë°©í–¥ì´ ë˜ë¯€ë¡œ ë¹ ì ¸ ë‚˜ì˜¨ë‹¤.
+                    // ÇöÀç ¼ø¼­¿Í ¹İ´ë ¹æÇâÀÌ µÇ¹Ç·Î ºüÁ® ³ª¿Â´Ù.
                     break;
                 }
                 else
@@ -2284,7 +2284,7 @@ void qmcMemSort::searchRun( qmcdMemSortTemp * aTempTable,
             }
         }
 
-        // Run Length ì§€ì •
+        // Run Length ÁöÁ¤
         *aRunLength = sNext - aStart;
     }
 
@@ -2298,14 +2298,14 @@ IDE_RC qmcMemSort::insertionSort( qmcdMemSortTemp * aTempTable,
  *
  * Description : 
  *
- *  [aLow, aHigh] ê¹Œì§€ Insertion Sortë¡œ ì •ë ¬í•œë‹¤.
- *  2ê°œì˜ ì•Œê³ ë¦¬ì¦˜ ëª¨ë‘, ë‹¤ìŒì˜ ê²½ìš°ì— í•œí•´ ì´ í•¨ìˆ˜ë¥¼ í•„ìš”ë¡œ í•œë‹¤.
+ *  [aLow, aHigh] ±îÁö Insertion Sort·Î Á¤·ÄÇÑ´Ù.
+ *  2°³ÀÇ ¾Ë°í¸®Áò ¸ğµÎ, ´ÙÀ½ÀÇ °æ¿ì¿¡ ÇÑÇØ ÀÌ ÇÔ¼ö¸¦ ÇÊ¿ä·Î ÇÑ´Ù.
  *
- *  - Quicksortì—ì„œëŠ” Partitionì˜ ê¸¸ì´ê°€ QMC_MEM_SORT_SMALL_SIZE ë³´ë‹¤ ì‘ì€ ê²½ìš°,
- *    Partitioningì„ í•˜ëŠ” ê²ƒë³´ë‹¤ ì§ì ‘ ì •ë ¬í•˜ëŠ” ê²ƒì´ ë” ë‚«ë‹¤.
+ *  - Quicksort¿¡¼­´Â PartitionÀÇ ±æÀÌ°¡ QMC_MEM_SORT_SMALL_SIZE º¸´Ù ÀÛÀº °æ¿ì,
+ *    PartitioningÀ» ÇÏ´Â °Íº¸´Ù Á÷Á¢ Á¤·ÄÇÏ´Â °ÍÀÌ ´õ ³´´Ù.
  *
- *  - Timsortì—ì„œëŠ” Natural Run ê¸¸ì´ê°€ minrunë³´ë‹¤ ì ê±°ë‚˜ Natural Runì´ ì—†ì„ ê²½ìš°,
- *    minrun ê¸¸ì´ë§Œí¼ ì •ë ¬ì‹œì¼œ Runì„ ìƒì„±í•´ì•¼ í•œë‹¤.
+ *  - Timsort¿¡¼­´Â Natural Run ±æÀÌ°¡ minrunº¸´Ù Àû°Å³ª Natural RunÀÌ ¾øÀ» °æ¿ì,
+ *    minrun ±æÀÌ¸¸Å­ Á¤·Ä½ÃÄÑ RunÀ» »ı¼ºÇØ¾ß ÇÑ´Ù.
  *
  ****************************************************************************/
 
@@ -2354,12 +2354,12 @@ void qmcMemSort::reverseOrder( qmcdMemSortTemp * aTempTable,
  *
  * Description : TASK-6445
  *
- *  [aLow, aHigh] ì˜ ì •ë ¬ ìˆœì„œë¥¼ ë°”ê¾¼ë‹¤.
- *  ì›í•˜ëŠ” ë°©í–¥ê³¼ ì—­ë°©í–¥ì¸ Runì„ ëŒ€ìƒìœ¼ë¡œ í˜¸ì¶œí•œë‹¤.
+ *  [aLow, aHigh] ÀÇ Á¤·Ä ¼ø¼­¸¦ ¹Ù²Û´Ù.
+ *  ¿øÇÏ´Â ¹æÇâ°ú ¿ª¹æÇâÀÎ RunÀ» ´ë»óÀ¸·Î È£ÃâÇÑ´Ù.
  *
  * Implementation :
  *
- *  ì–‘ ëë‹¨ë¶€í„° ì‹œì‘í•´ ì¤‘ì‹¬ìœ¼ë¡œ ì˜¤ë©´ì„œ, ì„œë¡œì˜ ê°’ì„ ë°”ê¿”ë‚˜ê°„ë‹¤.
+ *  ¾ç ³¡´ÜºÎÅÍ ½ÃÀÛÇØ Áß½ÉÀ¸·Î ¿À¸é¼­, ¼­·ÎÀÇ °ªÀ» ¹Ù²ã³ª°£´Ù.
  *
  ****************************************************************************/
 
@@ -2387,36 +2387,36 @@ IDE_RC qmcMemSort::collapseStack( qmcdMemSortTemp * aTempTable )
  *
  * Description : TASK-6445
  *
- *  Run Stackì— ìˆëŠ” Runë“¤ì´ Merge ê°€ëŠ¥í•œì§€ ê²€ì‚¬í•œë‹¤.
+ *  Run Stack¿¡ ÀÖ´Â RunµéÀÌ Merge °¡´ÉÇÑÁö °Ë»çÇÑ´Ù.
  *
- *  Stackì˜ ë§ˆì§€ë§‰ 3ê°œ ( ì‚½ì… ì‹œì  ìˆœì„œëŒ€ë¡œ A, B, C )ê°€ A <= B + C ë¥¼ ë§Œì¡±í•  ë•Œ
- *   - A <  C --> Aì™€ Bë¥¼ Merge
- *   - A >= C --> Bì™€ Cë¥¼ Merge
+ *  StackÀÇ ¸¶Áö¸· 3°³ ( »ğÀÔ ½ÃÁ¡ ¼ø¼­´ë·Î A, B, C )°¡ A <= B + C ¸¦ ¸¸Á·ÇÒ ¶§
+ *   - A <  C --> A¿Í B¸¦ Merge
+ *   - A >= C --> B¿Í C¸¦ Merge
  *
- *  ì´ ì™¸ì˜ ê²½ìš° ( Stackì— Runì´ 2ê°œ, ë˜ëŠ” A > B + C )ì—
- *   - B <= C --> Bì™€ Cë¥¼ Merge
+ *  ÀÌ ¿ÜÀÇ °æ¿ì ( Stack¿¡ RunÀÌ 2°³, ¶Ç´Â A > B + C )¿¡
+ *   - B <= C --> B¿Í C¸¦ Merge
  *
  * Implementation :  
  *
- *  ê¸°ì¤€ì ì„ Bë¡œ ì •í•œë‹¤.
- *  mergeRuns() ì€ 'ê¸°ì¤€ì 'ê³¼ 'ê¸°ì¤€ì  ë‹¤ìŒ Run'ì„ Merge ì‹œí‚¨ë‹¤.
+ *  ±âÁØÁ¡À» B·Î Á¤ÇÑ´Ù.
+ *  mergeRuns() Àº '±âÁØÁ¡'°ú '±âÁØÁ¡ ´ÙÀ½ Run'À» Merge ½ÃÅ²´Ù.
  *
- *  ë§ˆì§€ë§‰ 3ê°œê°€ ì¡´ì¬í•˜ëŠ” ìƒí™©ì—ì„œ A <= B + C ë¼ë©´,
- *  A, Cì˜ ëŒ€ì†Œë¹„êµë¥¼ í•œ ë‹¤ìŒ ì‘ì€ ìª½ìœ¼ë¡œ Mergeí•œë‹¤.
+ *  ¸¶Áö¸· 3°³°¡ Á¸ÀçÇÏ´Â »óÈ²¿¡¼­ A <= B + C ¶ó¸é,
+ *  A, CÀÇ ´ë¼Òºñ±³¸¦ ÇÑ ´ÙÀ½ ÀÛÀº ÂÊÀ¸·Î MergeÇÑ´Ù.
  *
- *   - A >= C : Bì™€ Cë¥¼ í•œë‹¤. ( ê¸°ì¤€ì  B ê·¸ëŒ€ë¡œ mergeRuns() )
- *   - A <  C : Aì™€ Bë¥¼ í•œë‹¤. ( ê¸°ì¤€ì  Bì—ì„œ Aë¡œ ì˜®ê¸´ ë’¤ mergeRuns() )
+ *   - A >= C : B¿Í C¸¦ ÇÑ´Ù. ( ±âÁØÁ¡ B ±×´ë·Î mergeRuns() )
+ *   - A <  C : A¿Í B¸¦ ÇÑ´Ù. ( ±âÁØÁ¡ B¿¡¼­ A·Î ¿Å±ä µÚ mergeRuns() )
  *
- *  2ê°œê°€ ë‚¨ì•˜ê±°ë‚˜ ìœ„ ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•Šìœ¼ë©´,
- *  B <= Cì¸ ìƒí™©ì—ì„œë§Œ ê¸°ì¤€ì ì„ B ê·¸ëŒ€ë¡œ ë‘ê³  mergeRuns() ì„ í˜¸ì¶œí•œë‹¤.
+ *  2°³°¡ ³²¾Ò°Å³ª À§ Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾ÊÀ¸¸é,
+ *  B <= CÀÎ »óÈ²¿¡¼­¸¸ ±âÁØÁ¡À» B ±×´ë·Î µÎ°í mergeRuns() À» È£ÃâÇÑ´Ù.
  *
  * Note :
  *  
- *  Merge ê²°ê³¼ Runê³¼ ì•„ì§ ë‚¨ì•„ìˆëŠ” ì¸ì ‘í•œ Runì˜ í¬ê¸° ì°¨ì´ê°€
- *  ê°€ì¥ ì‘ê²Œ ì¼ì–´ë‚˜ëŠ” ìˆœì„œë¥¼ ì„ íƒí•˜ëŠ” ê²ƒì´ë‹¤. ( ì˜ˆ : 30, 20, 10 => 30, 30 )
+ *  Merge °á°ú Run°ú ¾ÆÁ÷ ³²¾ÆÀÖ´Â ÀÎÁ¢ÇÑ RunÀÇ Å©±â Â÷ÀÌ°¡
+ *  °¡Àå ÀÛ°Ô ÀÏ¾î³ª´Â ¼ø¼­¸¦ ¼±ÅÃÇÏ´Â °ÍÀÌ´Ù. ( ¿¹ : 30, 20, 10 => 30, 30 )
  *  
- *  Merge ì¡°ê±´ì— ëŒ€í•œ ìì„¸í•œ ì„¤ëª…ì€
- *  NoK Page (http://nok.altibase.com/x/qaMRAg) ë¥¼ ì°¸ê³ í•œë‹¤.
+ *  Merge Á¶°Ç¿¡ ´ëÇÑ ÀÚ¼¼ÇÑ ¼³¸íÀº
+ *  NoK Page (http://nok.altibase.com/x/qaMRAg) ¸¦ Âü°íÇÑ´Ù.
  *
  ****************************************************************************/
 
@@ -2427,44 +2427,44 @@ IDE_RC qmcMemSort::collapseStack( qmcdMemSortTemp * aTempTable )
 
     while ( aTempTable->mRunStackSize > 1 )
     {
-        // ìµœê·¼ 3ê°œì˜ Runì„ R[n-1], R[n], R[n+1] ë¡œ ë³¸ë‹¤
+        // ÃÖ±Ù 3°³ÀÇ RunÀ» R[n-1], R[n], R[n+1] ·Î º»´Ù
         sRunStackIdx = aTempTable->mRunStackSize - 2;
 
         IDE_DASSERT( sRunStackIdx >= 0 );
 
-        // 3ê°œ ëª¨ë‘ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+        // 3°³ ¸ğµÎ Á¸ÀçÇÏ´Â °æ¿ì
         if ( sRunStackIdx > 0 )
         {
-            // R[n-1].length <= R[n].length + R[n+1].lengthì„ ë§Œì¡±í•˜ë©´
+            // R[n-1].length <= R[n].length + R[n+1].lengthÀ» ¸¸Á·ÇÏ¸é
             if ( sRunStack[sRunStackIdx - 1].mLength <=
                  ( sRunStack[sRunStackIdx].mLength + sRunStack[sRunStackIdx + 1].mLength ) )
             {
                 // R[n-1].length < R[n+1].length
                 if ( sRunStack[sRunStackIdx - 1].mLength < sRunStack[sRunStackIdx + 1].mLength )
                 {
-                    // Merge ê¸°ì¤€ ì¸ë±ìŠ¤ë¥¼ ì˜®ê²¨ì„œ R[n-1]ê³¼ R[n]ì„ Merge
+                    // Merge ±âÁØ ÀÎµ¦½º¸¦ ¿Å°Ü¼­ R[n-1]°ú R[n]À» Merge
                     sRunStackIdx--;
                 }
                 else
                 {
-                    // Merge ê¸°ì¤€ ì¸ë±ìŠ¤ë¥¼ ì˜®ê¸°ì§€ ì•Šê³  R[n]ê³¼ R[n+1]ì„ Merge
+                    // Merge ±âÁØ ÀÎµ¦½º¸¦ ¿Å±âÁö ¾Ê°í R[n]°ú R[n+1]À» Merge
                 }
 
                 // merge
                 IDE_TEST( mergeRuns( aTempTable, sRunStackIdx ) != IDE_SUCCESS );
 
-                // whileë¬¸ ì¡°ê±´ì„ ë‹¤ì‹œ ê²€ì‚¬í•˜ê²Œ í•œë‹¤.
+                // while¹® Á¶°ÇÀ» ´Ù½Ã °Ë»çÇÏ°Ô ÇÑ´Ù.
                 continue;
             }
             else
             {
-                // ì¡°ê±´ ì„±ë¦½ì´ ì•ˆ ë˜ëŠ” ê²½ìš°, ì•„ë˜ ì¡°ê±´ì„ ê²€ì‚¬í•œë‹¤.
+                // Á¶°Ç ¼º¸³ÀÌ ¾È µÇ´Â °æ¿ì, ¾Æ·¡ Á¶°ÇÀ» °Ë»çÇÑ´Ù.
                 // Nothing to do.
             }
         }
         else
         {
-            // Runì´ 2ê°œ ì´í•˜ì¸ ê²½ìš°, ì•„ë˜ ì¡°ê±´ì„ ê²€ì‚¬í•œë‹¤.
+            // RunÀÌ 2°³ ÀÌÇÏÀÎ °æ¿ì, ¾Æ·¡ Á¶°ÇÀ» °Ë»çÇÑ´Ù.
             // Nothing to do.
         }
 
@@ -2476,7 +2476,7 @@ IDE_RC qmcMemSort::collapseStack( qmcdMemSortTemp * aTempTable )
         }
         else
         {
-            // Mergeë¥¼ ì¢…ë£Œí•˜ê³ , Stackì„ ìœ ì§€í•œë‹¤.
+            // Merge¸¦ Á¾·áÇÏ°í, StackÀ» À¯ÁöÇÑ´Ù.
             break;
         }
     }
@@ -2494,17 +2494,17 @@ IDE_RC qmcMemSort::collapseStackForce( qmcdMemSortTemp * aTempTable )
  *
  * Description : TASK-6445
  *
- *  Timsort Run Stackì— ìˆëŠ” Runë“¤ì„ ê°•ì œë¡œ Mergeí•œë‹¤.
- *  ê·œì¹™ì€ ë™ì¼í•˜ë‚˜, ì¡°ê¸ˆ ê°„ì†Œí™” ëœ í˜•íƒœì´ë‹¤.
+ *  Timsort Run Stack¿¡ ÀÖ´Â RunµéÀ» °­Á¦·Î MergeÇÑ´Ù.
+ *  ±ÔÄ¢Àº µ¿ÀÏÇÏ³ª, Á¶±İ °£¼ÒÈ­ µÈ ÇüÅÂÀÌ´Ù.
  *
  * Implementation :
  *
- *  while() ë¬¸ ì•ˆì—ì„œ 1ê°œê°€ ë‚¨ì„ ë•Œ ê°€ì§€ ì•„ë˜ mergeRuns()ê°€ í˜¸ì¶œëœë‹¤.
- *  3ê°œê°€ ë‚¨ì€ ìƒí™©ì—ì„œëŠ” A, Cì˜ ëŒ€ì†Œë¹„êµë¥¼ í•œ ë‹¤ìŒ ì‘ì€ ìª½ìœ¼ë¡œ Mergeí•œë‹¤.
- *   - A >= C : Bì™€ Cë¥¼ í•œë‹¤. ( ê¸°ì¤€ì  B ê·¸ëŒ€ë¡œ mergeRuns() )
- *   - A <  C : Aì™€ Bë¥¼ í•œë‹¤. ( ê¸°ì¤€ì  Bì—ì„œ Aë¡œ ì˜®ê¸´ ë’¤ mergeRuns() )
+ *  while() ¹® ¾È¿¡¼­ 1°³°¡ ³²À» ¶§ °¡Áö ¾Æ·¡ mergeRuns()°¡ È£ÃâµÈ´Ù.
+ *  3°³°¡ ³²Àº »óÈ²¿¡¼­´Â A, CÀÇ ´ë¼Òºñ±³¸¦ ÇÑ ´ÙÀ½ ÀÛÀº ÂÊÀ¸·Î MergeÇÑ´Ù.
+ *   - A >= C : B¿Í C¸¦ ÇÑ´Ù. ( ±âÁØÁ¡ B ±×´ë·Î mergeRuns() )
+ *   - A <  C : A¿Í B¸¦ ÇÑ´Ù. ( ±âÁØÁ¡ B¿¡¼­ A·Î ¿Å±ä µÚ mergeRuns() )
  *
- *  2ê°œê°€ ë‚¨ì€ ìƒí™©ì—ì„œëŠ” 2ê°œë¥¼ ê³§ë°”ë¡œ Mergeí•œë‹¤.
+ *  2°³°¡ ³²Àº »óÈ²¿¡¼­´Â 2°³¸¦ °ğ¹Ù·Î MergeÇÑ´Ù.
  *
  ****************************************************************************/
 
@@ -2515,7 +2515,7 @@ IDE_RC qmcMemSort::collapseStackForce( qmcdMemSortTemp * aTempTable )
 
     while ( aTempTable->mRunStackSize > 1 )
     {
-        // ì§ì „ 3ê°œì˜ Runì„ R[n-1], R[n], R[n+1] ë¡œ ë³¸ë‹¤
+        // Á÷Àü 3°³ÀÇ RunÀ» R[n-1], R[n], R[n+1] ·Î º»´Ù
         sRunStackIdx = aTempTable->mRunStackSize - 2;
 
         IDE_DASSERT( sRunStackIdx >= 0 );
@@ -2548,17 +2548,17 @@ IDE_RC qmcMemSort::mergeRuns( qmcdMemSortTemp * aTempTable,
  *
  * Description : TASK-6445
  *
- *  ë‘ ê°œì˜ Run (A)ì™€ Run (B) ê°„ Mergesortë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *  µÎ °³ÀÇ Run (A)¿Í Run (B) °£ Mergesort¸¦ ¼öÇàÇÑ´Ù.
  *
  * Implementation : 
  *
- *  Mergesort ì „ì—, ë‘ Runì—ì„œ ì •ë ¬í•  í•„ìš”ê°€ ì—†ëŠ” ë¶€ë¶„ì„ ê±´ë„ˆë›°ë„ë¡ í•œë‹¤.
+ *  Mergesort Àü¿¡, µÎ Run¿¡¼­ Á¤·ÄÇÒ ÇÊ¿ä°¡ ¾ø´Â ºÎºĞÀ» °Ç³Ê¶Ùµµ·Ï ÇÑ´Ù.
  *
- *  Mergesortì— ì°¸ì—¬í•˜ì§€ ì•Šê³  ê·¸ ìë¦¬ì— ê³„ì† ìˆì„ ìˆ˜ ìˆëŠ” ì›ì†ŒëŠ”,
- *  (ì˜¤ë¦„ì°¨ìˆœ ê¸°ì¤€ìœ¼ë¡œ)
+ *  Mergesort¿¡ Âü¿©ÇÏÁö ¾Ê°í ±× ÀÚ¸®¿¡ °è¼Ó ÀÖÀ» ¼ö ÀÖ´Â ¿ø¼Ò´Â,
+ *  (¿À¸§Â÷¼ø ±âÁØÀ¸·Î)
  *
- *  - Aì˜ ê°€ì¥ í° ìˆ˜ (= ê°€ì¥ ì˜¤ë¥¸ìª½ì˜ ìˆ˜)ë³´ë‹¤ ë” í¬ê±°ë‚˜ ê°™ì€ Bì˜ ì›ì†Œë“¤
- *  - Bì˜ ê°€ì¥ ì‘ì€ ìˆ˜ (=ê°€ì¥ ì™¼ìª½ì˜ ìˆ˜)ë³´ë‹¤ ë” ì‘ê±°ë‚˜ ê°™ì€ Aì˜ ì›ì†Œë“¤
+ *  - AÀÇ °¡Àå Å« ¼ö (= °¡Àå ¿À¸¥ÂÊÀÇ ¼ö)º¸´Ù ´õ Å©°Å³ª °°Àº BÀÇ ¿ø¼Òµé
+ *  - BÀÇ °¡Àå ÀÛÀº ¼ö (=°¡Àå ¿ŞÂÊÀÇ ¼ö)º¸´Ù ´õ ÀÛ°Å³ª °°Àº AÀÇ ¿ø¼Òµé
  *
  *    [A]                       [B]
  *                     (max)    (min)
@@ -2566,14 +2566,14 @@ IDE_RC qmcMemSort::mergeRuns( qmcdMemSortTemp * aTempTable,
  *    | 1 | 3 | 5 | 7 | 10 |    | 4 | 6 | 8 | 10 | 12 |
  *    ----------------------    -----------------------
  *          ^                                 ^
- *          ì—¬ê¸°ê¹Œì§€ 4ë³´ë‹¤ ì‘ìŒ               ì—¬ê¸°ë¶€í„° 10ë³´ë‹¤ í¬ê±°ë‚˜ ê°™ìŒ
+ *          ¿©±â±îÁö 4º¸´Ù ÀÛÀ½               ¿©±âºÎÅÍ 10º¸´Ù Å©°Å³ª °°À½
  *
  *     (gallopRight->) [A']           [B']           (<-gallopLeft)
  *     ---------       -------------- -------------  -----------
  *  => | 1 | 3 |       | 5 | 7 | 10 | | 4 | 6 | 8 |  | 10 | 12 |
  *     ---------       -------------- -------------  -----------
  *
- *  => (A'ì™€ B'ë§Œ Mergesortì— ì°¸ì—¬)
+ *  => (A'¿Í B'¸¸ Mergesort¿¡ Âü¿©)
  *
  ****************************************************************************/
 
@@ -2594,12 +2594,12 @@ IDE_RC qmcMemSort::mergeRuns( qmcdMemSortTemp * aTempTable,
     sBase2 = sRun2->mStart;
     sLen2  = sRun2->mLength;
 
-    // Stack ì •ë³´ ê°±ì‹ 
+    // Stack Á¤º¸ °»½Å
     sRun1->mLength = sLen1 + sLen2;
 
-    // Aê°€ Stackì˜ (ëì—ì„œ) 3ë²ˆì§¸ Runì´ì—ˆë‹¤ë©´
-    // ì¤‘ê°„ì—ì„œ Mergeê°€ ì¼ì–´ë‚˜ëŠ” ê²ƒì´ë¯€ë¡œ ë§ˆì§€ë§‰ Run (C) ì •ë³´ë¥¼ ë³´ì¡´í•´ì•¼ í•œë‹¤.
-    // Bì˜ ì •ë³´ì— Cì˜ ì •ë³´ë¥¼ ë®ì–´ ì“´ë‹¤. (BëŠ” ì‚¬ìš© ì™„ë£Œë¨)
+    // A°¡ StackÀÇ (³¡¿¡¼­) 3¹øÂ° RunÀÌ¾ú´Ù¸é
+    // Áß°£¿¡¼­ Merge°¡ ÀÏ¾î³ª´Â °ÍÀÌ¹Ç·Î ¸¶Áö¸· Run (C) Á¤º¸¸¦ º¸Á¸ÇØ¾ß ÇÑ´Ù.
+    // BÀÇ Á¤º¸¿¡ CÀÇ Á¤º¸¸¦ µ¤¾î ¾´´Ù. (B´Â »ç¿ë ¿Ï·áµÊ)
     if ( aRunStackIdx == aTempTable->mRunStackSize - 3 )
     {
         sRun3 = & aTempTable->mRunStack[aRunStackIdx + 2];
@@ -2612,7 +2612,7 @@ IDE_RC qmcMemSort::mergeRuns( qmcdMemSortTemp * aTempTable,
         // Nothing to do.
     }
 
-    // RunStack Size ê°ì†Œ
+    // RunStack Size °¨¼Ò
     aTempTable->mRunStackSize--;
     
     //-------------------------------------------------------
@@ -2694,35 +2694,35 @@ SLong qmcMemSort::gallopLeft( qmcdMemSortTemp  * aTempTable,
  *
  * Desciption : TASK-6445
  *
- *  Runì˜ [aBase, aBase+aLength) ë²”ìœ„ì—ì„œ,
- *  ì •ë ¬ ìˆœì„œ ìƒ aKeyê°€ ìœ„ì¹˜í•´ì•¼ í•˜ëŠ” ì¸ë±ìŠ¤ë¥¼ ë°˜í™˜í•œë‹¤.
- *  ì´ ì¸ë±ìŠ¤ëŠ” aBaseì—ì„œì˜ ìƒëŒ€ì  ìœ„ì¹˜ë¡œ ë°˜í™˜ëœë‹¤.
+ *  RunÀÇ [aBase, aBase+aLength) ¹üÀ§¿¡¼­,
+ *  Á¤·Ä ¼ø¼­ »ó aKey°¡ À§Ä¡ÇØ¾ß ÇÏ´Â ÀÎµ¦½º¸¦ ¹İÈ¯ÇÑ´Ù.
+ *  ÀÌ ÀÎµ¦½º´Â aBase¿¡¼­ÀÇ »ó´ëÀû À§Ä¡·Î ¹İÈ¯µÈ´Ù.
  *  
- *  ë§Œì•½ ì˜¤ë¦„ì°¨ìˆœì´ë¼ë©´
- *  a[aBase+Ret-1] < key <= a[aBase+Ret] ì„ ë§Œì¡±í•˜ëŠ” Retì„ ë°˜í™˜í•œë‹¤.
+ *  ¸¸¾à ¿À¸§Â÷¼øÀÌ¶ó¸é
+ *  a[aBase+Ret-1] < key <= a[aBase+Ret] À» ¸¸Á·ÇÏ´Â RetÀ» ¹İÈ¯ÇÑ´Ù.
  *
- *  ì—¬ê¸°ì„œ LeftëŠ” 'ì™¼ìª½ ë°©í–¥' ì´ë€ ì˜ë¯¸ë„ ìˆì§€ë§Œ,
- *  ê°™ì€ ê°’ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš° ê°€ì¥ 'ì™¼ìª½'ì— ìœ„ì¹˜í•˜ëŠ” ì¸ë±ìŠ¤ë¥¼ êµ¬í•˜ë¼ëŠ” ì˜ë¯¸ì´ë‹¤.
+ *  ¿©±â¼­ Left´Â '¿ŞÂÊ ¹æÇâ' ÀÌ¶õ ÀÇ¹Ìµµ ÀÖÁö¸¸,
+ *  °°Àº °ªÀÌ Á¸ÀçÇÏ´Â °æ¿ì °¡Àå '¿ŞÂÊ'¿¡ À§Ä¡ÇÏ´Â ÀÎµ¦½º¸¦ ±¸ÇÏ¶ó´Â ÀÇ¹ÌÀÌ´Ù.
  *
  * Implementation :
  *
- *  íŒíŠ¸(Hint) ìœ„ì¹˜ë¶€í„° ì‹œì‘í•œë‹¤.
- *  Galloping í•  ë•ŒëŠ”, 1ì¹¸ì”© ê±´ë„ˆë›°ì§€ì•Šê³ , 2^n-1ì¹¸ì”© ê±´ë„ˆ ë›´ë‹¤.
+ *  ÈùÆ®(Hint) À§Ä¡ºÎÅÍ ½ÃÀÛÇÑ´Ù.
+ *  Galloping ÇÒ ¶§´Â, 1Ä­¾¿ °Ç³Ê¶ÙÁö¾Ê°í, 2^n-1Ä­¾¿ °Ç³Ê ¶Ú´Ù.
  *
- *   - a[Hint] -> Key ìˆœì„œê°€ ìˆœë°©í–¥ì´ë©´,
- *     ë‹¤ìŒì„ ë§Œì¡±í•  ë•Œ ê¹Œì§€ ì˜¤ë¥¸ìª½ìœ¼ë¡œ Galloping
+ *   - a[Hint] -> Key ¼ø¼­°¡ ¼ø¹æÇâÀÌ¸é,
+ *     ´ÙÀ½À» ¸¸Á·ÇÒ ¶§ ±îÁö ¿À¸¥ÂÊÀ¸·Î Galloping
  *     > ASC  : if ( a[Hint] < Key ) searchCond = ( Key <= a[Hint + Offset] )
  *     > DESC : if ( a[Hint] > Key ) searchCond = ( Key >= a[Hint + Offset] )
  *
- *   - a[Hint] -> Key ìˆœì„œê°€ 'ê°™ì€ ê°’ì´ê±°ë‚˜' ì—­ë°©í–¥ì¸ ê²½ìš°,
- *     ë‹¤ìŒì„ ë§Œì¡±í•  ë•Œ ê¹Œì§€ ì™¼ìª½ìœ¼ë¡œ Galloping
+ *   - a[Hint] -> Key ¼ø¼­°¡ '°°Àº °ªÀÌ°Å³ª' ¿ª¹æÇâÀÎ °æ¿ì,
+ *     ´ÙÀ½À» ¸¸Á·ÇÒ ¶§ ±îÁö ¿ŞÂÊÀ¸·Î Galloping
  *     > ASC  : if ( a[Hint] >= Key ) searchCond = ( a[Hint - Offset] < Key )
  *     > DESC : if ( a[Hint] <= Key ) searchCond = ( a[Hint - Offset] > Key )
  *
- *  Gallopingì´ ì™„ë£Œë˜ë©´, (ì§ì „ Offset - í˜„ì¬ Offset) ë²”ìœ„ ì•ˆì—ì„œ
- *  Binary Searchë¥¼ í•´ì„œ ì •í™•í•œ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.
+ *  GallopingÀÌ ¿Ï·áµÇ¸é, (Á÷Àü Offset - ÇöÀç Offset) ¹üÀ§ ¾È¿¡¼­
+ *  Binary Search¸¦ ÇØ¼­ Á¤È®ÇÑ À§Ä¡¸¦ Ã£´Â´Ù.
  *
- *  ìì„¸í•œ ë‚´ìš©ì€ NoK ë¬¸ì„œë¥¼ ì°¸ê³  (http://nok.altibase.com/x/qaMRAg)
+ *  ÀÚ¼¼ÇÑ ³»¿ëÀº NoK ¹®¼­¸¦ Âü°í (http://nok.altibase.com/x/qaMRAg)
  *
  ****************************************************************************/
 
@@ -2737,8 +2737,8 @@ SLong qmcMemSort::gallopLeft( qmcdMemSortTemp  * aTempTable,
 
     if ( compare( aTempTable, *aKey, *sGallopRow ) > 0 )
     {
-        // a[Hint] -> Key ìˆœì„œê°€ ìˆœë°©í–¥ => ì˜¤ë¥¸ìª½ìœ¼ë¡œ Galloping
-        // sMaxIdx / sIdx / sLastIdxëŠ” sStartIdxì—ì„œì˜ ìƒëŒ€ ì¸ë±ìŠ¤ì´ë‹¤.
+        // a[Hint] -> Key ¼ø¼­°¡ ¼ø¹æÇâ => ¿À¸¥ÂÊÀ¸·Î Galloping
+        // sMaxIdx / sIdx / sLastIdx´Â sStartIdx¿¡¼­ÀÇ »ó´ë ÀÎµ¦½ºÀÌ´Ù.
         sMaxIdx  = aLength - aHint;
         sLastIdx = 0;
         sIdx     = 1;
@@ -2749,13 +2749,13 @@ SLong qmcMemSort::gallopLeft( qmcdMemSortTemp  * aTempTable,
 
             if ( compare( aTempTable, *aKey, *sGallopRow ) > 0 )
             {
-                // ê³„ì† ìˆœì„œê°€ ìˆœë°©í–¥
+                // °è¼Ó ¼ø¼­°¡ ¼ø¹æÇâ
                 sLastIdx = sIdx;
 
-                // 2^n-1 ë§Œí¼ Index ì¦ê°€
+                // 2^n-1 ¸¸Å­ Index Áõ°¡
                 sIdx = ( sIdx << 1 ) + 1;
 
-                // overflow ì²˜ë¦¬
+                // overflow Ã³¸®
                 if ( sIdx <= 0 )
                 {
                     sIdx = sMaxIdx;
@@ -2767,12 +2767,12 @@ SLong qmcMemSort::gallopLeft( qmcdMemSortTemp  * aTempTable,
             }
             else
             {
-                // ì²˜ìŒìœ¼ë¡œ ê°™ì€ ê°’ì´ê±°ë‚˜ ìˆœì„œê°€ ì—­ë°©í–¥ì¸ ì›ì†Œ ì¶œí˜„
+                // Ã³À½À¸·Î °°Àº °ªÀÌ°Å³ª ¼ø¼­°¡ ¿ª¹æÇâÀÎ ¿ø¼Ò ÃâÇö
                 break;
             }
         }
 
-        // sIdxë¥¼ sMaxIdxë¡œ ë³´ì •
+        // sIdx¸¦ sMaxIdx·Î º¸Á¤
         if ( sIdx > sMaxIdx )
         {
             sIdx = sMaxIdx;
@@ -2782,14 +2782,14 @@ SLong qmcMemSort::gallopLeft( qmcdMemSortTemp  * aTempTable,
             // Nothing to do.
         }
 
-        // sLastIdx / sIdxì˜ ìœ„ì¹˜ë¥¼ ì ˆëŒ€ìœ„ì¹˜ë¡œ ì¡°ì •
+        // sLastIdx / sIdxÀÇ À§Ä¡¸¦ Àı´ëÀ§Ä¡·Î Á¶Á¤
         sLastIdx += sStartIdx;
         sIdx     += sStartIdx;
     }
     else
     {
-        // a[Hint] -> Key ìˆœì„œê°€ ì—­ë°©í–¥ì´ê±°ë‚˜, ê°™ì€ ê°’ => ì™¼ìª½ìœ¼ë¡œ Galloping
-        // sMaxIdx / sIdx / sLastIdxëŠ” sStartIdxì—ì„œì˜ ìƒëŒ€ ì¸ë±ìŠ¤ì´ë‹¤.
+        // a[Hint] -> Key ¼ø¼­°¡ ¿ª¹æÇâÀÌ°Å³ª, °°Àº °ª => ¿ŞÂÊÀ¸·Î Galloping
+        // sMaxIdx / sIdx / sLastIdx´Â sStartIdx¿¡¼­ÀÇ »ó´ë ÀÎµ¦½ºÀÌ´Ù.
         sMaxIdx  = aHint + 1;
         sLastIdx = 0;
         sIdx     = 1;
@@ -2800,18 +2800,18 @@ SLong qmcMemSort::gallopLeft( qmcdMemSortTemp  * aTempTable,
 
             if ( compare( aTempTable, *aKey, *sGallopRow ) > 0 )
             {
-                // ì²˜ìŒìœ¼ë¡œ ìˆœì„œê°€ ìˆœë°©í–¥ì¸ ì›ì†Œ ì¶œí˜„
+                // Ã³À½À¸·Î ¼ø¼­°¡ ¼ø¹æÇâÀÎ ¿ø¼Ò ÃâÇö
                 break;
             }
             else
             {
-                // ê³„ì† ê°’ì´ ê°™ê±°ë‚˜ ì—­ë°©í–¥
+                // °è¼Ó °ªÀÌ °°°Å³ª ¿ª¹æÇâ
                 sLastIdx = sIdx;
 
-                // 2^n-1 ë§Œí¼ Index ì¦ê°€
+                // 2^n-1 ¸¸Å­ Index Áõ°¡
                 sIdx = ( sIdx << 1 ) + 1;
 
-                // overflow ì²˜ë¦¬
+                // overflow Ã³¸®
                 if ( sIdx <= 0 )
                 {
                     sIdx = sMaxIdx;
@@ -2823,7 +2823,7 @@ SLong qmcMemSort::gallopLeft( qmcdMemSortTemp  * aTempTable,
             }
         }
 
-        // sIdxë¥¼ sMaxIdxë¡œ ë³´ì •
+        // sIdx¸¦ sMaxIdx·Î º¸Á¤
         if ( sIdx > sMaxIdx )
         {
             sIdx = sMaxIdx;
@@ -2833,15 +2833,15 @@ SLong qmcMemSort::gallopLeft( qmcdMemSortTemp  * aTempTable,
             // Nothing to do.
         }
 
-        // sLastIdx / sIdxì˜ ìœ„ì¹˜ë¥¼ ì ˆëŒ€ìœ„ì¹˜ë¡œ ì¡°ì •
-        // ì´ ë•Œ, sLastIdx < sIdxê°€ ë˜ë„ë¡ ë°”ê¾¼ë‹¤.
+        // sLastIdx / sIdxÀÇ À§Ä¡¸¦ Àı´ëÀ§Ä¡·Î Á¶Á¤
+        // ÀÌ ¶§, sLastIdx < sIdx°¡ µÇµµ·Ï ¹Ù²Û´Ù.
         sTempIdx = sLastIdx;
         sLastIdx = sStartIdx - sIdx;
         sIdx     = sStartIdx - sTempIdx;
     }
 
-    // ì™¼ìª½ìœ¼ë¡œ ê°”ê±´ ì˜¤ë¥¸ìª½ìœ¼ë¡œ ê°”ê±´,
-    // ì •í™•í•œ ë²”ìœ„ë¥¼ ì°¾ê¸° ìœ„í•´ sLastIdx -> sIdx ë¡œ Binary Search
+    // ¿ŞÂÊÀ¸·Î °¬°Ç ¿À¸¥ÂÊÀ¸·Î °¬°Ç,
+    // Á¤È®ÇÑ ¹üÀ§¸¦ Ã£±â À§ÇØ sLastIdx -> sIdx ·Î Binary Search
     sLastIdx++;
     while ( sLastIdx < sIdx )
     {
@@ -2850,14 +2850,14 @@ SLong qmcMemSort::gallopLeft( qmcdMemSortTemp  * aTempTable,
 
         if ( compare( aTempTable, *aKey, *sGallopRow ) > 0 )
         {
-            // ì›ì†Œê°€ Keyë³´ë‹¤ ì—­ë°©í–¥ì¸ ê²½ìš°
-            // í•´ë‹¹ ìœ„ì¹˜ê°€ End
+            // ¿ø¼Ò°¡ Keyº¸´Ù ¿ª¹æÇâÀÎ °æ¿ì
+            // ÇØ´ç À§Ä¡°¡ End
             sLastIdx = sTempIdx + 1;
         }
         else
         {
-            // ì›ì†Œê°€ Keyì™€ ê°™ê±°ë‚˜ ìˆœë°©í–¥ì¸ ê²½ìš°
-            // í•´ë‹¹ ìœ„ì¹˜ ë‹¤ìŒì´ Start
+            // ¿ø¼Ò°¡ Key¿Í °°°Å³ª ¼ø¹æÇâÀÎ °æ¿ì
+            // ÇØ´ç À§Ä¡ ´ÙÀ½ÀÌ Start
             sIdx = sTempIdx;
         }
     }
@@ -2865,7 +2865,7 @@ SLong qmcMemSort::gallopLeft( qmcdMemSortTemp  * aTempTable,
     IDE_DASSERT( sLastIdx == sIdx );
     IDE_DASSERT( sIdx - aBase <= aLength );
 
-    // ì¸ë±ìŠ¤ì—ì„œ aBaseë¥¼ ë¹¼ì•¼í•œë‹¤.
+    // ÀÎµ¦½º¿¡¼­ aBase¸¦ »©¾ßÇÑ´Ù.
     return ( sIdx - aBase );
 }
 
@@ -2880,41 +2880,41 @@ SLong qmcMemSort::gallopRight( qmcdMemSortTemp  * aTempTable,
  *
  * Desciption : TASK-6445
  * 
- *  Runì˜ [aBase, aBase+aLength) ë²”ìœ„ì—ì„œ,
- *  ì •ë ¬ ìˆœì„œ ìƒ keyê°€ ìœ„ì¹˜í•´ì•¼ í•˜ëŠ” ì¸ë±ìŠ¤ë¥¼ ë°˜í™˜í•œë‹¤.
- *  ì´ ì¸ë±ìŠ¤ëŠ” aBaseì—ì„œì˜ ìƒëŒ€ì  ìœ„ì¹˜ë¡œ ë°˜í™˜ëœë‹¤.
+ *  RunÀÇ [aBase, aBase+aLength) ¹üÀ§¿¡¼­,
+ *  Á¤·Ä ¼ø¼­ »ó key°¡ À§Ä¡ÇØ¾ß ÇÏ´Â ÀÎµ¦½º¸¦ ¹İÈ¯ÇÑ´Ù.
+ *  ÀÌ ÀÎµ¦½º´Â aBase¿¡¼­ÀÇ »ó´ëÀû À§Ä¡·Î ¹İÈ¯µÈ´Ù.
  *
- *  ë§Œì•½ ì˜¤ë¦„ì°¨ìˆœì´ë¼ë©´
- *  a[aBase+Ret-1] <= key < a[aBase+Ret] ì„ ë§Œì¡±í•˜ëŠ” Retì„ ë°˜í™˜í•œë‹¤.
+ *  ¸¸¾à ¿À¸§Â÷¼øÀÌ¶ó¸é
+ *  a[aBase+Ret-1] <= key < a[aBase+Ret] À» ¸¸Á·ÇÏ´Â RetÀ» ¹İÈ¯ÇÑ´Ù.
  *
- *  ì—¬ê¸°ì„œ RightëŠ” 'ì˜¤ë¥¸ìª½ ë°©í–¥' ì´ë€ ì˜ë¯¸ë„ ìˆì§€ë§Œ,
- *  ê°™ì€ ê°’ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš° ê°€ì¥ 'ì˜¤ë¥¸ìª½'ì— ìœ„ì¹˜í•˜ëŠ” ì¸ë±ìŠ¤ë¥¼ êµ¬í•˜ë¼ëŠ” ì˜ë¯¸ì´ë‹¤.
+ *  ¿©±â¼­ Right´Â '¿À¸¥ÂÊ ¹æÇâ' ÀÌ¶õ ÀÇ¹Ìµµ ÀÖÁö¸¸,
+ *  °°Àº °ªÀÌ Á¸ÀçÇÏ´Â °æ¿ì °¡Àå '¿À¸¥ÂÊ'¿¡ À§Ä¡ÇÏ´Â ÀÎµ¦½º¸¦ ±¸ÇÏ¶ó´Â ÀÇ¹ÌÀÌ´Ù.
  *
  * Implementation :
  *
- *  gallopLeft()ì™€ ë¹„êµ ì¡°ê±´ë§Œ ë‹¤ë¥´ë‹¤.
+ *  gallopLeft()¿Í ºñ±³ Á¶°Ç¸¸ ´Ù¸£´Ù.
  *
- *   - a[Hint] -> Key ìˆœì„œê°€ 'ê°™ì€ ê°’ì´ê±°ë‚˜' ìˆœë°©í–¥ì¸ ê²½ìš°,
- *     ë‹¤ìŒì„ ë§Œì¡±í•  ë•Œ ê¹Œì§€ ì˜¤ë¥¸ìª½ìœ¼ë¡œ Galloping
+ *   - a[Hint] -> Key ¼ø¼­°¡ '°°Àº °ªÀÌ°Å³ª' ¼ø¹æÇâÀÎ °æ¿ì,
+ *     ´ÙÀ½À» ¸¸Á·ÇÒ ¶§ ±îÁö ¿À¸¥ÂÊÀ¸·Î Galloping
  *     > ASC  : if ( a[Hint] <= Key ) searchCond = ( Key < a[Hint + Offset] )
  *     > DESC : if ( a[Hint] >= Key ) searchCond = ( Key > a[Hint + Offset] )
  *
- *   - a[Hint] -> Key ìˆœì„œê°€ ì—­ë°©í–¥ì´ë©´,
- *     ë‹¤ìŒì„ ë§Œì¡±í•  ë•Œ ê¹Œì§€ ì™¼ìª½ìœ¼ë¡œ Galloping
+ *   - a[Hint] -> Key ¼ø¼­°¡ ¿ª¹æÇâÀÌ¸é,
+ *     ´ÙÀ½À» ¸¸Á·ÇÒ ¶§ ±îÁö ¿ŞÂÊÀ¸·Î Galloping
  *     > ASC  : if ( a[Hint] > Key ) searchCond = ( a[Hint - Offset] <= Key )
  *     > DESC : if ( a[Hint] < Key ) searchCond = ( a[Hint - Offset] >= Key )
  *
- *  Gallopingì´ ì™„ë£Œë˜ë©´, (ì§ì „ Offset - í˜„ì¬ Offset) ë²”ìœ„ ì•ˆì—ì„œ
- *  Binary Searchë¥¼ í•´ì„œ ì •í™•í•œ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤.
+ *  GallopingÀÌ ¿Ï·áµÇ¸é, (Á÷Àü Offset - ÇöÀç Offset) ¹üÀ§ ¾È¿¡¼­
+ *  Binary Search¸¦ ÇØ¼­ Á¤È®ÇÑ À§Ä¡¸¦ Ã£´Â´Ù.
  *
- *  ìì„¸í•œ ë‚´ìš©ì€ NoK ë¬¸ì„œë¥¼ ì°¸ê³  (http://nok.altibase.com/x/qaMRAg)
+ *  ÀÚ¼¼ÇÑ ³»¿ëÀº NoK ¹®¼­¸¦ Âü°í (http://nok.altibase.com/x/qaMRAg)
  *
  * Note :
  *
- *  gallopLeft() ì™€ ë§¤ìš° ìœ ì‚¬í•˜ì§€ë§Œ, ì½”ë“œë¥¼ í†µí•©í•  ê²½ìš° ìœ ì§€ë³´ìˆ˜ë„ ì–´ë ¤ìš¸ ë¿ë”ëŸ¬
- *  Loop ë‚´ë¶€ì— Branchê°€ ë§ì•„ì§€ë¯€ë¡œ ì„±ëŠ¥ ì €í•˜ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+ *  gallopLeft() ¿Í ¸Å¿ì À¯»çÇÏÁö¸¸, ÄÚµå¸¦ ÅëÇÕÇÒ °æ¿ì À¯Áöº¸¼öµµ ¾î·Á¿ï »Ó´õ·¯
+ *  Loop ³»ºÎ¿¡ Branch°¡ ¸¹¾ÆÁö¹Ç·Î ¼º´É ÀúÇÏ¸¦ °¡Á®¿Â´Ù.
  *
- *  ë”°ë¼ì„œ, ë³„ë„ í•¨ìˆ˜ë¡œ ì‘ì„±í–ˆë‹¤.
+ *  µû¶ó¼­, º°µµ ÇÔ¼ö·Î ÀÛ¼ºÇß´Ù.
  *
  ****************************************************************************/
 
@@ -2929,8 +2929,8 @@ SLong qmcMemSort::gallopRight( qmcdMemSortTemp  * aTempTable,
 
     if ( compare( aTempTable, *aKey, *sGallopRow ) >= 0 )
     {
-        // a[Hint] -> Key ìˆœì„œê°€ ìˆœë°©í–¥ì´ê±°ë‚˜, ê°™ì€ ê°’ => ì˜¤ë¥¸ìª½ìœ¼ë¡œ Galloping
-        // sMaxIdx / sIdx / sLastIdxëŠ” sStartIdxì—ì„œì˜ ìƒëŒ€ ì¸ë±ìŠ¤ì´ë‹¤.
+        // a[Hint] -> Key ¼ø¼­°¡ ¼ø¹æÇâÀÌ°Å³ª, °°Àº °ª => ¿À¸¥ÂÊÀ¸·Î Galloping
+        // sMaxIdx / sIdx / sLastIdx´Â sStartIdx¿¡¼­ÀÇ »ó´ë ÀÎµ¦½ºÀÌ´Ù.
         sMaxIdx  = aLength - aHint;
         sLastIdx = 0;
         sIdx     = 1;
@@ -2941,18 +2941,18 @@ SLong qmcMemSort::gallopRight( qmcdMemSortTemp  * aTempTable,
 
             if ( compare( aTempTable, *sGallopRow, *aKey ) > 0 )
             {
-                // ì²˜ìŒìœ¼ë¡œ ìˆœì„œê°€ ì—­ë°©í–¥ì¸ ì›ì†Œ ì¶œí˜„
+                // Ã³À½À¸·Î ¼ø¼­°¡ ¿ª¹æÇâÀÎ ¿ø¼Ò ÃâÇö
                 break;
             }
             else
             {
-                // ê³„ì† ìˆœì„œê°€ ìˆœë°©í–¥ì´ê±°ë‚˜, ê°™ì€ ê°’
+                // °è¼Ó ¼ø¼­°¡ ¼ø¹æÇâÀÌ°Å³ª, °°Àº °ª
                 sLastIdx = sIdx;
 
-                // 2^n-1 ë§Œí¼ Index ì¦ê°€
+                // 2^n-1 ¸¸Å­ Index Áõ°¡
                 sIdx = ( sIdx << 1 ) + 1;
 
-                // overflow ì²˜ë¦¬
+                // overflow Ã³¸®
                 if ( sIdx <= 0 )
                 {
                     sIdx = sMaxIdx;
@@ -2964,7 +2964,7 @@ SLong qmcMemSort::gallopRight( qmcdMemSortTemp  * aTempTable,
             }
         }
 
-        // sIdxë¥¼ sMaxIdxë¡œ ë³´ì •
+        // sIdx¸¦ sMaxIdx·Î º¸Á¤
         if ( sIdx > sMaxIdx )
         {
             sIdx = sMaxIdx;
@@ -2974,14 +2974,14 @@ SLong qmcMemSort::gallopRight( qmcdMemSortTemp  * aTempTable,
             // Nothing to do.
         }
 
-        // sLastIdx / sIdxì˜ ìœ„ì¹˜ë¥¼ ì ˆëŒ€ìœ„ì¹˜ë¡œ ì¡°ì •
+        // sLastIdx / sIdxÀÇ À§Ä¡¸¦ Àı´ëÀ§Ä¡·Î Á¶Á¤
         sLastIdx += sStartIdx;
         sIdx     += sStartIdx;
     }
     else
     {
-        // a[Hint] -> Key ìˆœì„œê°€ ì—­ë°©í–¥ => ì™¼ìª½ìœ¼ë¡œ Galloping
-        // sMaxIdx / sIdx / sLastIdxëŠ” sStartIdxì—ì„œì˜ ìƒëŒ€ ì¸ë±ìŠ¤ì´ë‹¤.
+        // a[Hint] -> Key ¼ø¼­°¡ ¿ª¹æÇâ => ¿ŞÂÊÀ¸·Î Galloping
+        // sMaxIdx / sIdx / sLastIdx´Â sStartIdx¿¡¼­ÀÇ »ó´ë ÀÎµ¦½ºÀÌ´Ù.
         sMaxIdx  = aHint + 1;
         sLastIdx = 0;
         sIdx     = 1;
@@ -2992,13 +2992,13 @@ SLong qmcMemSort::gallopRight( qmcdMemSortTemp  * aTempTable,
 
             if ( compare( aTempTable, *sGallopRow, *aKey ) > 0 )
             {
-                // ê³„ì† ì—­ë°©í–¥
+                // °è¼Ó ¿ª¹æÇâ
                 sLastIdx = sIdx;
 
                 // Gallop(2^n-1)
                 sIdx = ( sIdx << 1 ) + 1;
 
-                // overflow ì²˜ë¦¬
+                // overflow Ã³¸®
                 if ( sIdx <= 0 )
                 {
                     sIdx = sMaxIdx;
@@ -3010,12 +3010,12 @@ SLong qmcMemSort::gallopRight( qmcdMemSortTemp  * aTempTable,
             }
             else
             {
-                // ì²˜ìŒìœ¼ë¡œ ê°’ì´ ê°™ê±°ë‚˜ ìˆœì„œê°€ ìˆœë°©í–¥ì¸ ì›ì†Œ ì¶œí˜„
+                // Ã³À½À¸·Î °ªÀÌ °°°Å³ª ¼ø¼­°¡ ¼ø¹æÇâÀÎ ¿ø¼Ò ÃâÇö
                 break;
             }
         }
 
-        // sIdxë¥¼ sMaxIdxë¡œ ë³´ì •
+        // sIdx¸¦ sMaxIdx·Î º¸Á¤
         if ( sIdx > sMaxIdx )
         {
             sIdx = sMaxIdx;
@@ -3025,15 +3025,15 @@ SLong qmcMemSort::gallopRight( qmcdMemSortTemp  * aTempTable,
             // Nothing to do.
         }
 
-        // sLastIdx / sIdxì˜ ìœ„ì¹˜ë¥¼ ì ˆëŒ€ìœ„ì¹˜ë¡œ ì¡°ì •
-        // ì´ ë•Œ, sLastIdx < sIdxê°€ ë˜ë„ë¡ ë°”ê¾¼ë‹¤.
+        // sLastIdx / sIdxÀÇ À§Ä¡¸¦ Àı´ëÀ§Ä¡·Î Á¶Á¤
+        // ÀÌ ¶§, sLastIdx < sIdx°¡ µÇµµ·Ï ¹Ù²Û´Ù.
         sTempIdx = sLastIdx;
         sLastIdx = sStartIdx - sIdx;
         sIdx     = sStartIdx - sTempIdx;
     }
 
-    // ì™¼ìª½ìœ¼ë¡œ ê°”ê±´ ì˜¤ë¥¸ìª½ìœ¼ë¡œ ê°”ê±´,
-    // ì •í™•í•œ ë²”ìœ„ë¥¼ ì°¾ê¸° ìœ„í•´ sLastIdx -> sIdx ë¡œ Binary Search
+    // ¿ŞÂÊÀ¸·Î °¬°Ç ¿À¸¥ÂÊÀ¸·Î °¬°Ç,
+    // Á¤È®ÇÑ ¹üÀ§¸¦ Ã£±â À§ÇØ sLastIdx -> sIdx ·Î Binary Search
     sLastIdx++;
     while ( sLastIdx < sIdx )
     {
@@ -3042,14 +3042,14 @@ SLong qmcMemSort::gallopRight( qmcdMemSortTemp  * aTempTable,
 
         if ( compare( aTempTable, *sGallopRow, *aKey ) > 0 )
         {
-            // ì›ì†Œê°€ Keyë³´ë‹¤ ìˆœë°©í–¥ì¸ ê²½ìš°
-            // í•´ë‹¹ ìœ„ì¹˜ê°€ End
+            // ¿ø¼Ò°¡ Keyº¸´Ù ¼ø¹æÇâÀÎ °æ¿ì
+            // ÇØ´ç À§Ä¡°¡ End
             sIdx = sTempIdx;
         }
         else
         {
-            // ì›ì†Œê°€ Keyì™€ ê°™ê±°ë‚˜ ì—­ë°©í–¥ì¸ ê²½ìš°
-            // í•´ë‹¹ ìœ„ì¹˜ ë‹¤ìŒì´ Start
+            // ¿ø¼Ò°¡ Key¿Í °°°Å³ª ¿ª¹æÇâÀÎ °æ¿ì
+            // ÇØ´ç À§Ä¡ ´ÙÀ½ÀÌ Start
             sLastIdx = sTempIdx + 1;
         }
     }
@@ -3057,7 +3057,7 @@ SLong qmcMemSort::gallopRight( qmcdMemSortTemp  * aTempTable,
     IDE_DASSERT( sLastIdx == sIdx );
     IDE_DASSERT( sIdx - aBase <= aLength );
 
-    // ì¸ë±ìŠ¤ì—ì„œ aBaseë¥¼ ë¹¼ì•¼í•œë‹¤.
+    // ÀÎµ¦½º¿¡¼­ aBase¸¦ »©¾ßÇÑ´Ù.
     return ( sIdx - aBase );
 }
 
@@ -3071,11 +3071,11 @@ IDE_RC qmcMemSort::mergeLowerRun( qmcdMemSortTemp * aTempTable,
  *
  * Description : TASK-6445
  *
- *  ì²« ë²ˆì§¸ Runì„ Left, ë‘ ë²ˆì§¸ Runì„ Rightë¼ê³  í•  ë•Œ
- *  Leftê°€ Rightë³´ë‹¤ ì‘ì€ ê²½ìš°ì— ìˆ˜í–‰ë˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ *  Ã¹ ¹øÂ° RunÀ» Left, µÎ ¹øÂ° RunÀ» Right¶ó°í ÇÒ ¶§
+ *  Left°¡ Rightº¸´Ù ÀÛÀº °æ¿ì¿¡ ¼öÇàµÇ´Â ÇÔ¼öÀÌ´Ù.
  *
- *  Left Lì„ ì„ì‹œ ì˜ì—­ L'ì— ë³µì‚¬í•˜ê³ , ì›ë˜ ì˜ì—­ì— L'ì™€ Right Rì„ Mergesortí•œë‹¤.
- *  ì´ ì•Œê³ ë¦¬ì¦˜ì€ In-place Sorting ì´ë¯€ë¡œ ì›ë˜ ì˜ì—­ì— ì •ë ¬ì‹œì¼œì•¼ í•œë‹¤.
+ *  Left LÀ» ÀÓ½Ã ¿µ¿ª L'¿¡ º¹»çÇÏ°í, ¿ø·¡ ¿µ¿ª¿¡ L'¿Í Right RÀ» MergesortÇÑ´Ù.
+ *  ÀÌ ¾Ë°í¸®ÁòÀº In-place Sorting ÀÌ¹Ç·Î ¿ø·¡ ¿µ¿ª¿¡ Á¤·Ä½ÃÄÑ¾ß ÇÑ´Ù.
  *
  *  --------
  *  |  L'  | (Temp)
@@ -3087,24 +3087,24 @@ IDE_RC qmcMemSort::mergeLowerRun( qmcdMemSortTemp * aTempTable,
  *
  * Implementation : 
  *
- *  Merging ì „ Gallopingìœ¼ë¡œ ì¸í•´, ì•„ë˜ íŠ¹ì§•ì„ í™œìš©í•  ìˆ˜ ìˆë‹¤.
+ *  Merging Àü GallopingÀ¸·Î ÀÎÇØ, ¾Æ·¡ Æ¯Â¡À» È°¿ëÇÒ ¼ö ÀÖ´Ù.
  *
- *  - Rì˜ ì²« ë²ˆì§¸ ì›ì†ŒëŠ” í•­ìƒ Mì˜ ì²« ë²ˆì§¸ ì›ì†Œê°€ ëœë‹¤.
- *  - Lì˜ ë§ˆì§€ë§‰ ì›ì†ŒëŠ” í•­ìƒ Mì˜ ë§ˆì§€ë§‰ ì›ì†Œê°€ ëœë‹¤.
+ *  - RÀÇ Ã¹ ¹øÂ° ¿ø¼Ò´Â Ç×»ó MÀÇ Ã¹ ¹øÂ° ¿ø¼Ò°¡ µÈ´Ù.
+ *  - LÀÇ ¸¶Áö¸· ¿ø¼Ò´Â Ç×»ó MÀÇ ¸¶Áö¸· ¿ø¼Ò°¡ µÈ´Ù.
  *
- *  ì§„í–‰ ë°©í–¥ì€ ì™¼ìª½ì´ë‹¤.
- *  ì•„ë˜ì˜ ì„¸ ì¸ë±ìŠ¤ê°€ ì™¼ìª½ ëì—ì„œ ì˜¤ë¥¸ìª½ìœ¼ë¡œ ì´ë™í•œë‹¤.
+ *  ÁøÇà ¹æÇâÀº ¿ŞÂÊÀÌ´Ù.
+ *  ¾Æ·¡ÀÇ ¼¼ ÀÎµ¦½º°¡ ¿ŞÂÊ ³¡¿¡¼­ ¿À¸¥ÂÊÀ¸·Î ÀÌµ¿ÇÑ´Ù.
  *
- *  - sTargetIdx  : í˜„ì¬ ì •ë ¬ ê²°ê³¼ê°€ ë“¤ì–´ê°€ì•¼ í•˜ëŠ” ìœ„ì¹˜
- *  - sLeftIdx    : Lì—ì„œ ì •ë ¬ë˜ì§€ ì•Šì€ í˜„ì¬ ìœ„ì¹˜
- *  - sRightIdx   : Rì—ì„œ ì •ë ¬ë˜ì§€ ì•Šì€ í˜„ì¬ ìœ„ì¹˜
+ *  - sTargetIdx  : ÇöÀç Á¤·Ä °á°ú°¡ µé¾î°¡¾ß ÇÏ´Â À§Ä¡
+ *  - sLeftIdx    : L¿¡¼­ Á¤·ÄµÇÁö ¾ÊÀº ÇöÀç À§Ä¡
+ *  - sRightIdx   : R¿¡¼­ Á¤·ÄµÇÁö ¾ÊÀº ÇöÀç À§Ä¡
  *
- *  ê° ì¸ë±ìŠ¤ì˜ FenceëŠ” ì˜¤ë¥¸ìª½ ëì— ê²½ê³„ë¥¼ ë§Œë“ ë‹¤.
+ *  °¢ ÀÎµ¦½ºÀÇ Fence´Â ¿À¸¥ÂÊ ³¡¿¡ °æ°è¸¦ ¸¸µç´Ù.
  *
- *  - TargetFenceëŠ” Rightì˜ Fenceì™€ ë™ì¼í•˜ë‹¤.
+ *  - TargetFence´Â RightÀÇ Fence¿Í µ¿ÀÏÇÏ´Ù.
  *
- *  Galloping Mode ìœ ì§€ ì¡°ê±´ì€ GALLOPING_WINCNTë¡œ ê³ ì •ëœë‹¤.
- *  Galloping Mode ì§„ì… ì¡°ê±´ì€ sMinToGallopModeë¡œ ì¡°ì •í•œë‹¤.
+ *  Galloping Mode À¯Áö Á¶°ÇÀº GALLOPING_WINCNT·Î °íÁ¤µÈ´Ù.
+ *  Galloping Mode ÁøÀÔ Á¶°ÇÀº sMinToGallopMode·Î Á¶Á¤ÇÑ´Ù.
  *
  *******************************************************************/
 
@@ -3123,14 +3123,14 @@ IDE_RC qmcMemSort::mergeLowerRun( qmcdMemSortTemp * aTempTable,
     SInt            sMinGalloping = QMC_MEM_SORT_GALLOPING_WINCNT;
     
     //-------------------------------------------------
-    // L' ì„¤ì •
+    // L' ¼³Á¤
     //-------------------------------------------------
 
     sLeftArray = aTempTable->mTempArray;
     sLeftRows  = (void **)sLeftArray->elements;
 
     //-------------------------------------------------
-    // Lë¥¼ L'ë¡œ ë³µì‚¬
+    // L¸¦ L'·Î º¹»ç
     //-------------------------------------------------
 
     IDE_TEST( moveArrayToArray( aTempTable,
@@ -3143,37 +3143,37 @@ IDE_RC qmcMemSort::mergeLowerRun( qmcdMemSortTemp * aTempTable,
               != IDE_SUCCESS );
 
     //--------------------------------------------------
-    // Row ì¤€ë¹„, ì²« ì›ì†Œ ë³´ì •
+    // Row ÁØºñ, Ã¹ ¿ø¼Ò º¸Á¤
     //--------------------------------------------------
 
-    // L / Rì˜ ì²« Row ì¤€ë¹„
+    // L / RÀÇ Ã¹ Row ÁØºñ
     sLeftRow = sLeftRows[sLeftIdx];
     get( aTempTable, aTempTable->mArray, sRightIdx, & sRightRow );
 
-    // Target Row ì¤€ë¹„
+    // Target Row ÁØºñ
     get( aTempTable, aTempTable->mArray, sTargetIdx, & sTargetRow );
     sTargetIdx++;
 
-    // L'ì˜ ì›ì†Œê°€ í•˜ë‚˜ë§Œ ìˆëŠ” ê²½ìš°, ë°”ë¡œ ê±´ë„ˆë›´ë‹¤.
+    // L'ÀÇ ¿ø¼Ò°¡ ÇÏ³ª¸¸ ÀÖ´Â °æ¿ì, ¹Ù·Î °Ç³Ê¶Ú´Ù.
     IDE_TEST_CONT( aLen1 == 1, FINISH_LINE );
 
-    // Rì˜ ì²« ë²ˆì§¸ ì›ì†ŒëŠ” ë¬´ì¡°ê±´ ì²« ì›ì†Œê°€ ë˜ë¯€ë¡œ, ë¯¸ë¦¬ ì§‘ì–´ë„£ëŠ”ë‹¤.
+    // RÀÇ Ã¹ ¹øÂ° ¿ø¼Ò´Â ¹«Á¶°Ç Ã¹ ¿ø¼Ò°¡ µÇ¹Ç·Î, ¹Ì¸® Áı¾î³Ö´Â´Ù.
     IDE_DASSERT( compare( aTempTable, *sTargetRow, *sRightRow ) > 0 );
     *sTargetRow = *sRightRow;
     sRightIdx++;
 
-    // ë‹¤ìŒ Rì˜ Row ì¤€ë¹„
+    // ´ÙÀ½ RÀÇ Row ÁØºñ
     get( aTempTable, aTempTable->mArray, sRightIdx, & sRightRow );
 
     //--------------------------------------------------
-    // íƒìƒ‰ ì‹œì‘
+    // Å½»ö ½ÃÀÛ
     //--------------------------------------------------
 
     while ( ID_TRUE )
     {
         //----------------------------------------
         // Normal Mode
-        // í•œ ê±´ì”© ë¹„êµí•´ê°€ë©´ì„œ ì „ì§„í•œë‹¤.
+        // ÇÑ °Ç¾¿ ºñ±³ÇØ°¡¸é¼­ ÀüÁøÇÑ´Ù.
         //----------------------------------------
         while ( ID_TRUE )
         {
@@ -3182,7 +3182,7 @@ IDE_RC qmcMemSort::mergeLowerRun( qmcdMemSortTemp * aTempTable,
 
             if ( compare( aTempTable, *sRightRow, sLeftRow ) >= 0 )
             {
-                // L'ê°€ ë¨¼ì € ì •ë ¬ë˜ì–´ì•¼ í•˜ëŠ” ê²½ìš°
+                // L'°¡ ¸ÕÀú Á¤·ÄµÇ¾î¾ß ÇÏ´Â °æ¿ì
                 *sTargetRow = sLeftRow;
                 sLeftIdx++;
                 sLeftWinCnt++;
@@ -3190,12 +3190,12 @@ IDE_RC qmcMemSort::mergeLowerRun( qmcdMemSortTemp * aTempTable,
 
                 if ( ( sLeftIdx + 1 ) < sLeftFence )
                 {
-                    // ë‹¤ìŒ L'ì˜ Row ì¤€ë¹„
+                    // ´ÙÀ½ L'ÀÇ Row ÁØºñ
                     sLeftRow = sLeftRows[sLeftIdx];
 
                     if ( sLeftWinCnt >= sMinGalloping )
                     {
-                        // Galloping Modeë¡œ ì „í™˜
+                        // Galloping Mode·Î ÀüÈ¯
                         break;
                     }
                     else
@@ -3205,13 +3205,13 @@ IDE_RC qmcMemSort::mergeLowerRun( qmcdMemSortTemp * aTempTable,
                 }
                 else
                 {
-                    // L'ì˜ ë§ˆì§€ë§‰ë§Œ ë‚¨ì€ ê²½ìš°ì´ê±°ë‚˜ ëª¨ë‘ ì†Œì§„ëœ ê²½ìš° ì¢…ë£Œ
+                    // L'ÀÇ ¸¶Áö¸·¸¸ ³²Àº °æ¿ìÀÌ°Å³ª ¸ğµÎ ¼ÒÁøµÈ °æ¿ì Á¾·á
                     IDE_CONT( FINISH_LINE );
                 }
             }
             else
             {
-                // Rì´ ë¨¼ì € ì •ë ¬ë˜ì–´ì•¼ í•˜ëŠ” ê²½ìš°
+                // RÀÌ ¸ÕÀú Á¤·ÄµÇ¾î¾ß ÇÏ´Â °æ¿ì
                 *sTargetRow = *sRightRow;
                 sRightIdx++;
                 sRightWinCnt++;
@@ -3219,12 +3219,12 @@ IDE_RC qmcMemSort::mergeLowerRun( qmcdMemSortTemp * aTempTable,
 
                 if ( sRightIdx < sRightFence )
                 {
-                    // ë‹¤ìŒ Rì˜ Row ì¤€ë¹„
+                    // ´ÙÀ½ RÀÇ Row ÁØºñ
                     get( aTempTable, aTempTable->mArray, sRightIdx, & sRightRow );
 
                     if ( sRightWinCnt >= sMinGalloping )
                     {
-                        // Galloping Modeë¡œ ì „í™˜
+                        // Galloping Mode·Î ÀüÈ¯
                         break;
                     }
                     else
@@ -3234,35 +3234,35 @@ IDE_RC qmcMemSort::mergeLowerRun( qmcdMemSortTemp * aTempTable,
                 }
                 else
                 {
-                    // Rì´ ëª¨ë‘ ì†Œì§„ëœ ê²½ìš° ì¢…ë£Œ
+                    // RÀÌ ¸ğµÎ ¼ÒÁøµÈ °æ¿ì Á¾·á
                     IDE_CONT( FINISH_LINE );
                 }
             }
 
-        } // End of while : Normal Mode ì¢…ë£Œ
+        } // End of while : Normal Mode Á¾·á
         
         //--------------------------------------------------------------
         // Galloping Mode
-        // Normal Modeì—ì„œ ë‚˜ì™”ë‹¤ë©´, ì–´ëŠ í•œ ìª½ì´ ê³„ì† ì •ë ¬ë˜ì–´ì•¼ í•˜ëŠ” ê²½ìš°
-        // ë‘ gallop í•¨ìˆ˜ì˜ ê²°ê³¼ê°€ GALLOPING_WINCNTë³´ë‹¤ ëª¨ë‘ ì‘ì„ ë•Œ ê¹Œì§€
-        // ì•„ë˜ ê³¼ì •ì„ ë°˜ë³µí•œë‹¤.
+        // Normal Mode¿¡¼­ ³ª¿Ô´Ù¸é, ¾î´À ÇÑ ÂÊÀÌ °è¼Ó Á¤·ÄµÇ¾î¾ß ÇÏ´Â °æ¿ì
+        // µÎ gallop ÇÔ¼öÀÇ °á°ú°¡ GALLOPING_WINCNTº¸´Ù ¸ğµÎ ÀÛÀ» ¶§ ±îÁö
+        // ¾Æ·¡ °úÁ¤À» ¹İº¹ÇÑ´Ù.
         //
-        // (1) R  Rowë¥¼ ê¸°ì¤€ìœ¼ë¡œ L'ì— ëŒ€í•œ gallopRight() ì´í›„
-        //     (GallopCnt) ë§Œí¼ ë°°ì—´ë¡œ ì´ë™
-        // (2) R Rowë¥¼ ë¬´ì¡°ê±´ ë°°ì—´ë¡œ ì´ë™
-        // (3) L' Rowë¥¼ ê¸°ì¤€ìœ¼ë¡œ R ì— ëŒ€í•œ gallopLeft()  ì´í›„
-        //     (GallopCnt) ë§Œí¼ ë°°ì—´ë¡œ ì´ë™
-        // (4) L' Rowë¥¼ ë¬´ì¡°ê±´ ë°°ì—´ë¡œ ì´ë™
+        // (1) R  Row¸¦ ±âÁØÀ¸·Î L'¿¡ ´ëÇÑ gallopRight() ÀÌÈÄ
+        //     (GallopCnt) ¸¸Å­ ¹è¿­·Î ÀÌµ¿
+        // (2) R Row¸¦ ¹«Á¶°Ç ¹è¿­·Î ÀÌµ¿
+        // (3) L' Row¸¦ ±âÁØÀ¸·Î R ¿¡ ´ëÇÑ gallopLeft()  ÀÌÈÄ
+        //     (GallopCnt) ¸¸Å­ ¹è¿­·Î ÀÌµ¿
+        // (4) L' Row¸¦ ¹«Á¶°Ç ¹è¿­·Î ÀÌµ¿
         //--------------------------------------------------------------
 
-        // ë‹¤ìŒ Galloping Mode ì§„ì… ì¡°ê±´ ê°•í™”
+        // ´ÙÀ½ Galloping Mode ÁøÀÔ Á¶°Ç °­È­
         sMinGalloping++;
 
         while ( ( sLeftWinCnt  >= QMC_MEM_SORT_GALLOPING_WINCNT ) || 
                 ( sRightWinCnt >= QMC_MEM_SORT_GALLOPING_WINCNT ) )
         {
-            // 1íšŒ ìˆ˜í–‰í•  ë•Œ ë§ˆë‹¤ Galloping ê¸°ì¤€ê°’ì„ ê°ì†Œì‹œí‚¨ë‹¤.
-            // ë‹¨, GALLOPING_WINCNT_MIN ë³´ë‹¤ ë‚®ì•„ì ¸ì„œëŠ” ì•ˆëœë‹¤.
+            // 1È¸ ¼öÇàÇÒ ¶§ ¸¶´Ù Galloping ±âÁØ°ªÀ» °¨¼Ò½ÃÅ²´Ù.
+            // ´Ü, GALLOPING_WINCNT_MIN º¸´Ù ³·¾ÆÁ®¼­´Â ¾ÈµÈ´Ù.
             if ( sMinGalloping > QMC_MEM_SORT_GALLOPING_WINCNT_MIN )
             {
                 sMinGalloping--;
@@ -3272,7 +3272,7 @@ IDE_RC qmcMemSort::mergeLowerRun( qmcdMemSortTemp * aTempTable,
                 // Nothing to do.
             }
 
-            // Rì˜ í˜„ì¬ Rowë¥¼ ê¸°ì¤€ìœ¼ë¡œ, L'ì— ëŒ€í•œ Right Galloping
+            // RÀÇ ÇöÀç Row¸¦ ±âÁØÀ¸·Î, L'¿¡ ´ëÇÑ Right Galloping
             sLeftWinCnt = gallopRight( aTempTable, 
                                        sLeftArray,                // TargetArray
                                        sRightRow,                 // Key  
@@ -3282,7 +3282,7 @@ IDE_RC qmcMemSort::mergeLowerRun( qmcdMemSortTemp * aTempTable,
 
             if ( sLeftWinCnt > 0 )
             {
-                // í•´ë‹¹ êµ¬ê°„ë§Œí¼ L'ë¥¼ ê·¸ëŒ€ë¡œ ë‚´ë¦¼
+                // ÇØ´ç ±¸°£¸¸Å­ L'¸¦ ±×´ë·Î ³»¸²
                 IDE_TEST( moveArrayToArray( aTempTable,
                                             sLeftArray,         // SrcArr
                                             sLeftIdx,           // SrcBase
@@ -3292,18 +3292,18 @@ IDE_RC qmcMemSort::mergeLowerRun( qmcdMemSortTemp * aTempTable,
                                             ID_FALSE )          // IsOverlapped
                           != IDE_SUCCESS );
 
-                // Index ì¦ê°€
+                // Index Áõ°¡
                 sLeftIdx   += sLeftWinCnt;
                 sTargetIdx += sLeftWinCnt;
 
                 if ( ( sLeftIdx + 1 ) < sLeftFence )
                 {
-                    // L'ì˜ ìœ„ì¹˜ë¥¼ ì˜®ê¸´ë‹¤.
+                    // L'ÀÇ À§Ä¡¸¦ ¿Å±ä´Ù.
                     sLeftRow = sLeftRows[sLeftIdx];
                 }
                 else
                 {
-                    // L'ì˜ ë§ˆì§€ë§‰ë§Œ ë‚¨ì€ ê²½ìš°ì´ê±°ë‚˜ ëª¨ë‘ ì†Œì§„ëœ ê²½ìš° ì¢…ë£Œ
+                    // L'ÀÇ ¸¶Áö¸·¸¸ ³²Àº °æ¿ìÀÌ°Å³ª ¸ğµÎ ¼ÒÁøµÈ °æ¿ì Á¾·á
                     IDE_CONT( FINISH_LINE );
                 }
             }
@@ -3312,7 +3312,7 @@ IDE_RC qmcMemSort::mergeLowerRun( qmcdMemSortTemp * aTempTable,
                 // Nothing to do.
             }
 
-            // Rì˜ í˜„ì¬ Rowë¥¼ ì˜®ê²¨ ë‹´ëŠ”ë‹¤. (ë‹¤ìŒ ì°¨ë¡€ì—ì„  ë¬´ì¡°ê±´ ì •ë ¬ë˜ì–´ì•¼ í•˜ê¸° ë•Œë¬¸)
+            // RÀÇ ÇöÀç Row¸¦ ¿Å°Ü ´ã´Â´Ù. (´ÙÀ½ Â÷·Ê¿¡¼± ¹«Á¶°Ç Á¤·ÄµÇ¾î¾ß ÇÏ±â ¶§¹®)
             get( aTempTable, aTempTable->mArray, sTargetIdx, & sTargetRow );
             *sTargetRow = *sRightRow;
             sTargetIdx++;
@@ -3320,16 +3320,16 @@ IDE_RC qmcMemSort::mergeLowerRun( qmcdMemSortTemp * aTempTable,
 
             if ( sRightIdx < sRightFence )
             {
-                // Rì˜ ìœ„ì¹˜ë¥¼ ì˜®ê¸´ë‹¤.
+                // RÀÇ À§Ä¡¸¦ ¿Å±ä´Ù.
                 get( aTempTable, aTempTable->mArray, sRightIdx, & sRightRow );
             }
             else
             {
-                // Rì´ ëª¨ë‘ ì†Œì§„ëœ ê²½ìš° ì¢…ë£Œ
+                // RÀÌ ¸ğµÎ ¼ÒÁøµÈ °æ¿ì Á¾·á
                 IDE_CONT( FINISH_LINE );
             }
 
-            // L'ì˜ í˜„ì¬ Rowë¥¼ ê¸°ì¤€ìœ¼ë¡œ, Rì— ëŒ€í•œ Left Galloping
+            // L'ÀÇ ÇöÀç Row¸¦ ±âÁØÀ¸·Î, R¿¡ ´ëÇÑ Left Galloping
             sRightWinCnt = gallopLeft( aTempTable, 
                                        aTempTable->mArray,
                                        & sLeftRow,
@@ -3339,7 +3339,7 @@ IDE_RC qmcMemSort::mergeLowerRun( qmcdMemSortTemp * aTempTable,
             
             if ( sRightWinCnt > 0 )
             {
-                // í•´ë‹¹ êµ¬ê°„ë§Œí¼ Rì„ ì˜®ê¹€
+                // ÇØ´ç ±¸°£¸¸Å­ RÀ» ¿Å±è
                 IDE_TEST( moveArrayToArray( aTempTable,
                                             aTempTable->mArray, // SrcArr
                                             sRightIdx,          // SrcBase
@@ -3349,18 +3349,18 @@ IDE_RC qmcMemSort::mergeLowerRun( qmcdMemSortTemp * aTempTable,
                                             ID_TRUE )           // IsOverlapped
                           != IDE_SUCCESS );
 
-                // Index ì¦ê°€
+                // Index Áõ°¡
                 sRightIdx += sRightWinCnt;
                 sTargetIdx  += sRightWinCnt;
 
                 if ( sRightIdx < sRightFence )
                 {
-                    // Rì˜ ìœ„ì¹˜ë¥¼ ì˜®ê¸´ë‹¤.
+                    // RÀÇ À§Ä¡¸¦ ¿Å±ä´Ù.
                     get( aTempTable, aTempTable->mArray, sRightIdx, & sRightRow );
                 }
                 else
                 {
-                    // Rì´ ëª¨ë‘ ì†Œì§„ëœ ê²½ìš° ì¢…ë£Œ
+                    // RÀÌ ¸ğµÎ ¼ÒÁøµÈ °æ¿ì Á¾·á
                     IDE_CONT( FINISH_LINE );
                 }
             }
@@ -3369,7 +3369,7 @@ IDE_RC qmcMemSort::mergeLowerRun( qmcdMemSortTemp * aTempTable,
                 // Nothing to do.
             }
 
-            // L'ì˜ í˜„ì¬ Rowë¥¼ ì˜®ê²¨ ë‹´ëŠ”ë‹¤. (ë‹¤ìŒ ì°¨ë¡€ì—ì„  ë¬´ì¡°ê±´ ì •ë ¬ë˜ì–´ì•¼ í•˜ê¸° ë•Œë¬¸)
+            // L'ÀÇ ÇöÀç Row¸¦ ¿Å°Ü ´ã´Â´Ù. (´ÙÀ½ Â÷·Ê¿¡¼± ¹«Á¶°Ç Á¤·ÄµÇ¾î¾ß ÇÏ±â ¶§¹®)
             get( aTempTable, aTempTable->mArray, sTargetIdx, & sTargetRow );
             *sTargetRow = sLeftRow;
             sTargetIdx++;
@@ -3377,41 +3377,41 @@ IDE_RC qmcMemSort::mergeLowerRun( qmcdMemSortTemp * aTempTable,
 
             if ( ( sLeftIdx + 1 ) < sLeftFence )
             {
-                // L'ì˜ ìœ„ì¹˜ë¥¼ ì˜®ê¸´ë‹¤.
+                // L'ÀÇ À§Ä¡¸¦ ¿Å±ä´Ù.
                 sLeftRow = sLeftRows[sLeftIdx];
             }
             else
             {
-                // L'ì˜ ë§ˆì§€ë§‰ë§Œ ë‚¨ì€ ê²½ìš°ì´ê±°ë‚˜ ëª¨ë‘ ì†Œì§„ëœ ê²½ìš° ì¢…ë£Œ
+                // L'ÀÇ ¸¶Áö¸·¸¸ ³²Àº °æ¿ìÀÌ°Å³ª ¸ğµÎ ¼ÒÁøµÈ °æ¿ì Á¾·á
                 IDE_CONT( FINISH_LINE );
             }
 
-            // sTargetIdxëŠ” sRightFenceë³´ë‹¤ ì‘ì•„ì•¼ í•œë‹¤.
+            // sTargetIdx´Â sRightFenceº¸´Ù ÀÛ¾Æ¾ß ÇÑ´Ù.
             IDE_DASSERT( sRightFence > sTargetIdx );
 
-        } // End of while : Galloping Mode ì¢…ë£Œ
+        } // End of while : Galloping Mode Á¾·á
 
-        // ë‹¤ìŒ Galloping Mode ì§„ì… ì¡°ê±´ ê°•í™”
+        // ´ÙÀ½ Galloping Mode ÁøÀÔ Á¶°Ç °­È­
         sMinGalloping++;
     }
 
     //-------------------------------------------
-    // ë§ˆë¬´ë¦¬ êµ¬ê°„
+    // ¸¶¹«¸® ±¸°£
     //-------------------------------------------
 
     IDE_EXCEPTION_CONT( FINISH_LINE ); 
 
-    // L'ê°€ ë‚¨ì•„ìˆëŠ” ê²½ìš°
+    // L'°¡ ³²¾ÆÀÖ´Â °æ¿ì
     if ( sLeftIdx < sLeftFence )
     {
-        // Rë„ ë‚¨ì•„ìˆë‹¤ë©´, Rì„ ëª¨ë‘ ì˜®ê¸´ ë‹¤ìŒì— L'ë¥¼ ì˜®ê¸´ë‹¤.
+        // Rµµ ³²¾ÆÀÖ´Ù¸é, RÀ» ¸ğµÎ ¿Å±ä ´ÙÀ½¿¡ L'¸¦ ¿Å±ä´Ù.
         if ( sRightIdx < sRightFence )
         {
-            // ì´ ê²½ìš°ë¼ë©´, L'ì—” ë”± í•˜ë‚˜ë§Œ ìˆì–´ì•¼ í•œë‹¤.
-            // ë‘ ê°œ ì´ìƒì¸ ê²½ìš°ì˜€ë‹¤ë©´ ìœ„ì—ì„œ ì²˜ë¦¬ë˜ì–´ì•¼ í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+            // ÀÌ °æ¿ì¶ó¸é, L'¿£ µü ÇÏ³ª¸¸ ÀÖ¾î¾ß ÇÑ´Ù.
+            // µÎ °³ ÀÌ»óÀÎ °æ¿ì¿´´Ù¸é À§¿¡¼­ Ã³¸®µÇ¾î¾ß ÇÏ±â ¶§¹®ÀÌ´Ù.
             IDE_DASSERT( sLeftIdx + 1 == sLeftFence );
 
-            // Rì„ í•œ ì¹¸ ì•ìœ¼ë¡œ ì˜®ê¸´ë‹¤.
+            // RÀ» ÇÑ Ä­ ¾ÕÀ¸·Î ¿Å±ä´Ù.
             IDE_TEST( moveArrayToArray( aTempTable,
                                         aTempTable->mArray,          // SrcArr
                                         sRightIdx,                   // SrcBase
@@ -3421,7 +3421,7 @@ IDE_RC qmcMemSort::mergeLowerRun( qmcdMemSortTemp * aTempTable,
                                         ID_TRUE )                    // IsOverlapped
                       != IDE_SUCCESS );
 
-            // L'ì˜ ë§ˆì§€ë§‰ ì›ì†Œë¥¼ Rì˜ ë§ˆì§€ë§‰ì— ë„£ê¸°
+            // L'ÀÇ ¸¶Áö¸· ¿ø¼Ò¸¦ RÀÇ ¸¶Áö¸·¿¡ ³Ö±â
             sLeftRow = sLeftRows[sLeftIdx];
             get( aTempTable, aTempTable->mArray, ( sRightFence - 1 ), & sRightRow );
 
@@ -3429,8 +3429,8 @@ IDE_RC qmcMemSort::mergeLowerRun( qmcdMemSortTemp * aTempTable,
         }
         else
         {
-            // Rì€ ì´ë¯¸ ì •ë ¬ì´ ë˜ì–´ ìˆê³ , L'ê°€ ì¼ë¶€ ë‚¨ì€ ê²½ìš°ì—”,
-            // L'ë¥¼ ëª¨ë‘ ì˜®ê¸´ë‹¤.
+            // RÀº ÀÌ¹Ì Á¤·ÄÀÌ µÇ¾î ÀÖ°í, L'°¡ ÀÏºÎ ³²Àº °æ¿ì¿£,
+            // L'¸¦ ¸ğµÎ ¿Å±ä´Ù.
             IDE_TEST( moveArrayToArray( aTempTable,
                                         sLeftArray,                // SrcArr
                                         sLeftIdx,                  // SrcBase
@@ -3443,8 +3443,8 @@ IDE_RC qmcMemSort::mergeLowerRun( qmcdMemSortTemp * aTempTable,
     }
     else
     {
-        // Galloping Modeë¥¼ í†µí•´ L'ê°€ ë‚¨ì•„ìˆì§€ ì•Šì€ ê²½ìš°
-        // ì´ë¯¸ ì •ë ¬ì´ ì™„ë£Œë˜ì—ˆë‹¤.
+        // Galloping Mode¸¦ ÅëÇØ L'°¡ ³²¾ÆÀÖÁö ¾ÊÀº °æ¿ì
+        // ÀÌ¹Ì Á¤·ÄÀÌ ¿Ï·áµÇ¾ú´Ù.
 
         // Nothing to do.
     }
@@ -3466,11 +3466,11 @@ IDE_RC qmcMemSort::mergeHigherRun( qmcdMemSortTemp * aTempTable,
  *
  * Description : TASK-6445
  *
- *  ì²« ë²ˆì§¸ Runì„ Left, ë‘ ë²ˆì§¸ Runì„ Rightë¼ê³  í•  ë•Œ
- *  Righttê°€ Leftë³´ë‹¤ ì‘ì€ ê²½ìš°ì— ìˆ˜í–‰ë˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ *  Ã¹ ¹øÂ° RunÀ» Left, µÎ ¹øÂ° RunÀ» Right¶ó°í ÇÒ ¶§
+ *  Rightt°¡ Leftº¸´Ù ÀÛÀº °æ¿ì¿¡ ¼öÇàµÇ´Â ÇÔ¼öÀÌ´Ù.
  *
- *  Right Rì„ ì„ì‹œ ì˜ì—­ R'ì— ë³µì‚¬í•˜ê³ , ì›ë˜ ì˜ì—­ì— Left Lê³¼ Rì„ Mergesortí•œë‹¤.
- *  ì´ ì•Œê³ ë¦¬ì¦˜ì€ In-place Sorting ì´ë¯€ë¡œ ì›ë˜ ì˜ì—­ì— ì •ë ¬ì‹œì¼œì•¼ í•œë‹¤.
+ *  Right RÀ» ÀÓ½Ã ¿µ¿ª R'¿¡ º¹»çÇÏ°í, ¿ø·¡ ¿µ¿ª¿¡ Left L°ú RÀ» MergesortÇÑ´Ù.
+ *  ÀÌ ¾Ë°í¸®ÁòÀº In-place Sorting ÀÌ¹Ç·Î ¿ø·¡ ¿µ¿ª¿¡ Á¤·Ä½ÃÄÑ¾ß ÇÑ´Ù.
  *
  *              -------
  *       (Temp) |  R' |
@@ -3482,22 +3482,22 @@ IDE_RC qmcMemSort::mergeHigherRun( qmcdMemSortTemp * aTempTable,
  *
  * Implementation : 
  * 
- *  mergeLowerRun() ì™€ ìœ ì‚¬í•˜ì§€ë§Œ, ì™¼ìª½ ë°©í–¥ìœ¼ë¡œ ì§„í–‰ëœë‹¤.
- *  ì˜¤ë¥¸ìª½ì´ ì•„ë‹ˆë¯€ë¡œ ì¡°ê¸ˆ ë” ë³µì¡í•˜ë©°,
- *  ëª¨ë“  ì¸ë±ìŠ¤ê°€ ì˜¤ë¥¸ìª½ ëì—ì„œ ì™¼ìª½ìœ¼ë¡œ ì´ë™í•œë‹¤.
+ *  mergeLowerRun() ¿Í À¯»çÇÏÁö¸¸, ¿ŞÂÊ ¹æÇâÀ¸·Î ÁøÇàµÈ´Ù.
+ *  ¿À¸¥ÂÊÀÌ ¾Æ´Ï¹Ç·Î Á¶±İ ´õ º¹ÀâÇÏ¸ç,
+ *  ¸ğµç ÀÎµ¦½º°¡ ¿À¸¥ÂÊ ³¡¿¡¼­ ¿ŞÂÊÀ¸·Î ÀÌµ¿ÇÑ´Ù.
  *
- *  - sTargetIdx  : í˜„ì¬ ì •ë ¬ ê²°ê³¼ê°€ ë“¤ì–´ê°€ì•¼ í•˜ëŠ” ìœ„ì¹˜
- *  - sLeftIdx    : Lì—ì„œ ì •ë ¬ë˜ì§€ ì•Šì€ í˜„ì¬ ìœ„ì¹˜
- *  - sRightIdx   : Rì—ì„œ ì •ë ¬ë˜ì§€ ì•Šì€ í˜„ì¬ ìœ„ì¹˜
+ *  - sTargetIdx  : ÇöÀç Á¤·Ä °á°ú°¡ µé¾î°¡¾ß ÇÏ´Â À§Ä¡
+ *  - sLeftIdx    : L¿¡¼­ Á¤·ÄµÇÁö ¾ÊÀº ÇöÀç À§Ä¡
+ *  - sRightIdx   : R¿¡¼­ Á¤·ÄµÇÁö ¾ÊÀº ÇöÀç À§Ä¡
  *
- *  ê° ì¸ë±ìŠ¤ì˜ FenceëŠ” ì™¼ìª½ ëì— ê²½ê³„ë¥¼ ë§Œë“ ë‹¤.
+ *  °¢ ÀÎµ¦½ºÀÇ Fence´Â ¿ŞÂÊ ³¡¿¡ °æ°è¸¦ ¸¸µç´Ù.
  *
- *  - LeftFenceëŠ” Base1ê³¼ ë™ì¼í•˜ë¯€ë¡œ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•œë‹¤.
- *  - RightFenceëŠ” ë¬´ì¡°ê±´ -1ì´ë¯€ë¡œ ë³€ìˆ˜ë¡œ ì„ ì–¸í•˜ì§€ ì•ŠëŠ”ë‹¤.
- *  - TargetFenceëŠ” Leftì˜ Fenceì™€ ë™ì¼í•˜ë‹¤.
+ *  - LeftFence´Â Base1°ú µ¿ÀÏÇÏ¹Ç·Î ±×´ë·Î »ç¿ëÇÑ´Ù.
+ *  - RightFence´Â ¹«Á¶°Ç -1ÀÌ¹Ç·Î º¯¼ö·Î ¼±¾ğÇÏÁö ¾Ê´Â´Ù.
+ *  - TargetFence´Â LeftÀÇ Fence¿Í µ¿ÀÏÇÏ´Ù.
  *
- *  Galloping Mode ìœ ì§€ ì¡°ê±´ì€ GALLOPING_WINCNTë¡œ ê³ ì •ëœë‹¤.
- *  Galloping Mode ì§„ì… ì¡°ê±´ì€ sMinToGallopModeë¡œ ì¡°ì •í•œë‹¤.
+ *  Galloping Mode À¯Áö Á¶°ÇÀº GALLOPING_WINCNT·Î °íÁ¤µÈ´Ù.
+ *  Galloping Mode ÁøÀÔ Á¶°ÇÀº sMinToGallopMode·Î Á¶Á¤ÇÑ´Ù.
  *
  *******************************************************************/
 
@@ -3515,14 +3515,14 @@ IDE_RC qmcMemSort::mergeHigherRun( qmcdMemSortTemp * aTempTable,
     SInt            sMinToGallopMode = QMC_MEM_SORT_GALLOPING_WINCNT;
 
     //-------------------------------------------------
-    // R' ì„¤ì •
+    // R' ¼³Á¤
     //-------------------------------------------------
 
     sRightArray = aTempTable->mTempArray;
     sRightRows  = (void **)sRightArray->elements;
 
     //-------------------------------------------------
-    // Rì„ R'ë¡œ ë³µì‚¬
+    // RÀ» R'·Î º¹»ç
     //-------------------------------------------------
 
     IDE_TEST( moveArrayToArray( aTempTable,
@@ -3535,38 +3535,38 @@ IDE_RC qmcMemSort::mergeHigherRun( qmcdMemSortTemp * aTempTable,
               != IDE_SUCCESS );
 
     //--------------------------------------------------
-    // Row ì¤€ë¹„, ì²« ì›ì†Œ ë³´ì •
+    // Row ÁØºñ, Ã¹ ¿ø¼Ò º¸Á¤
     //--------------------------------------------------
 
-    // L / Rì˜ ë§ˆì§€ë§‰ Row ì¤€ë¹„
+    // L / RÀÇ ¸¶Áö¸· Row ÁØºñ
     get( aTempTable, aTempTable->mArray, sLeftIdx, & sLeftRow );
     sRightRow = sRightRows[sRightIdx];
 
-    // Target Row (ë§ˆì§€ë§‰ Row) ì¤€ë¹„
+    // Target Row (¸¶Áö¸· Row) ÁØºñ
     get( aTempTable, aTempTable->mArray, sTargetIdx, & sTargetRow );
     sTargetIdx--;
 
-    // R'ì˜ ì›ì†Œê°€ í•˜ë‚˜ë§Œ ìˆëŠ” ê²½ìš°, ë°”ë¡œ ê±´ë„ˆë›´ë‹¤.
+    // R'ÀÇ ¿ø¼Ò°¡ ÇÏ³ª¸¸ ÀÖ´Â °æ¿ì, ¹Ù·Î °Ç³Ê¶Ú´Ù.
     IDE_TEST_CONT( aLen2 == 1, FINISH_LINE );
 
-    // Lì˜ ë§ˆì§€ë§‰ ì›ì†ŒëŠ” í•­ìƒ ë§ˆì§€ë§‰ì— ì •ë ¬ë˜ì–´ì•¼ í•˜ë‹ˆ ë¯¸ë¦¬ ì§‘ì–´ë„£ëŠ”ë‹¤.
-    // Left Rowê°€ Target Rowë³´ë‹¤ ì•ì— ìœ„ì¹˜í•´ì•¼ í•œë‹¤.
+    // LÀÇ ¸¶Áö¸· ¿ø¼Ò´Â Ç×»ó ¸¶Áö¸·¿¡ Á¤·ÄµÇ¾î¾ß ÇÏ´Ï ¹Ì¸® Áı¾î³Ö´Â´Ù.
+    // Left Row°¡ Target Rowº¸´Ù ¾Õ¿¡ À§Ä¡ÇØ¾ß ÇÑ´Ù.
     IDE_DASSERT( compare( aTempTable, *sLeftRow, *sTargetRow ) > 0 );
     *sTargetRow = *sLeftRow;
     sLeftIdx--;
 
-    // Lì˜ ì´ì „ Row ì¤€ë¹„
+    // LÀÇ ÀÌÀü Row ÁØºñ
     get( aTempTable, aTempTable->mArray, sLeftIdx, & sLeftRow );
 
     //--------------------------------------------------
-    // íƒìƒ‰ ì‹œì‘
+    // Å½»ö ½ÃÀÛ
     //--------------------------------------------------
 
     while ( ID_TRUE )
     {
         //----------------------------------------
         // Normal Mode
-        // í•œ ê±´ì”© ë¹„êµí•´ê°€ë©´ì„œ ì „ì§„í•œë‹¤.
+        // ÇÑ °Ç¾¿ ºñ±³ÇØ°¡¸é¼­ ÀüÁøÇÑ´Ù.
         //----------------------------------------
         while ( ID_TRUE )
         {
@@ -3575,7 +3575,7 @@ IDE_RC qmcMemSort::mergeHigherRun( qmcdMemSortTemp * aTempTable,
 
             if ( compare( aTempTable, *sLeftRow, sRightRow ) >= 0 )
             {
-                // Lì´ ë¨¼ì € ì •ë ¬ë˜ì–´ì•¼ í•˜ëŠ” ê²½ìš°
+                // LÀÌ ¸ÕÀú Á¤·ÄµÇ¾î¾ß ÇÏ´Â °æ¿ì
                 *sTargetRow = *sLeftRow;
                 sLeftIdx--;
                 sLeftWinCnt++;
@@ -3583,12 +3583,12 @@ IDE_RC qmcMemSort::mergeHigherRun( qmcdMemSortTemp * aTempTable,
 
                 if ( sLeftIdx >= aBase1 )
                 {
-                    // Lì˜ ì´ì „ Row ì¤€ë¹„
+                    // LÀÇ ÀÌÀü Row ÁØºñ
                     get( aTempTable, aTempTable->mArray, sLeftIdx, & sLeftRow );
 
                     if ( sLeftWinCnt >= sMinToGallopMode )
                     {
-                        // Galloping Modeë¡œ ì „í™˜
+                        // Galloping Mode·Î ÀüÈ¯
                         break;
                     }
                     else
@@ -3598,13 +3598,13 @@ IDE_RC qmcMemSort::mergeHigherRun( qmcdMemSortTemp * aTempTable,
                 }
                 else
                 {
-                    // Lì´ ëª¨ë‘ ì†Œì§„ë  ê²½ìš° ì¢…ë£Œ
+                    // LÀÌ ¸ğµÎ ¼ÒÁøµÉ °æ¿ì Á¾·á
                     IDE_CONT( FINISH_LINE );
                 }
             }
             else
             {
-                // R'ì´ ë¨¼ì € ì •ë ¬ë˜ì–´ì•¼ í•˜ëŠ” ê²½ìš°
+                // R'ÀÌ ¸ÕÀú Á¤·ÄµÇ¾î¾ß ÇÏ´Â °æ¿ì
                 *sTargetRow = sRightRow;
                 sRightIdx--;
                 sRightWinCnt++;
@@ -3612,12 +3612,12 @@ IDE_RC qmcMemSort::mergeHigherRun( qmcdMemSortTemp * aTempTable,
 
                 if ( sRightIdx > 0 )
                 {
-                    // Rì˜ ì´ì „ Row ì¤€ë¹„
+                    // RÀÇ ÀÌÀü Row ÁØºñ
                     sRightRow = sRightRows[sRightIdx];
 
                     if ( sRightWinCnt >= sMinToGallopMode )
                     {
-                        // Galloping Modeë¡œ ì „í™˜
+                        // Galloping Mode·Î ÀüÈ¯
                         break;
                     }
                     else
@@ -3627,35 +3627,35 @@ IDE_RC qmcMemSort::mergeHigherRun( qmcdMemSortTemp * aTempTable,
                 }
                 else
                 {
-                    // R'ì˜ ë§ˆì§€ë§‰ë§Œ ë‚¨ì€ ê²½ìš°ì´ê±°ë‚˜ ëª¨ë‘ ì†Œì§„ëœ ê²½ìš° ì¢…ë£Œ
+                    // R'ÀÇ ¸¶Áö¸·¸¸ ³²Àº °æ¿ìÀÌ°Å³ª ¸ğµÎ ¼ÒÁøµÈ °æ¿ì Á¾·á
                     IDE_CONT( FINISH_LINE );
                 }
             }
 
-        } // End of while : Normal Mode ì¢…ë£Œ
+        } // End of while : Normal Mode Á¾·á
         
         //--------------------------------------------------------------
         // Galloping Mode
-        // Normal Modeì—ì„œ ë‚˜ì™”ë‹¤ë©´, ì–´ëŠ í•œ ìª½ì´ ê³„ì† ë¨¼ì € ì •ë ¬ë˜ëŠ” ê²½ìš°.
-        // ë‘ gallop í•¨ìˆ˜ì˜ ê²°ê³¼ê°€ GALLOPING_WINCNTë³´ë‹¤ ëª¨ë‘ ì‘ì„ ë•Œ ê¹Œì§€
-        // ì•„ë˜ ê³¼ì •ì„ ë°˜ë³µí•œë‹¤.
+        // Normal Mode¿¡¼­ ³ª¿Ô´Ù¸é, ¾î´À ÇÑ ÂÊÀÌ °è¼Ó ¸ÕÀú Á¤·ÄµÇ´Â °æ¿ì.
+        // µÎ gallop ÇÔ¼öÀÇ °á°ú°¡ GALLOPING_WINCNTº¸´Ù ¸ğµÎ ÀÛÀ» ¶§ ±îÁö
+        // ¾Æ·¡ °úÁ¤À» ¹İº¹ÇÑ´Ù.
         //
-        // (1) R' Rowë¥¼ ê¸°ì¤€ìœ¼ë¡œ L ì— ëŒ€í•œ gallopRight() ì´í›„
-        //     (í˜„ì¬ Length) - (GallopCnt) ë§Œí¼ ëº€ ë‚˜ë¨¸ì§€ë¥¼ ë°°ì—´ë¡œ ì´ë™
-        // (2) R' Rowë¥¼ ë¬´ì¡°ê±´ ë°°ì—´ë¡œ ì´ë™
-        // (3) L  Rowë¥¼ ê¸°ì¤€ìœ¼ë¡œ R'ì— ëŒ€í•œ gallopLeft()  ì´í›„
-        //     (í˜„ì¬ Length) - (GallopCnt) ë§Œí¼ ëº€ ë‚˜ë¨¸ì§€ë¥¼ ë°°ì—´ë¡œ ì´ë™
-        // (4) L  Rowë¥¼ ë¬´ì¡°ê±´ ë°°ì—´ë¡œ ì´ë™
+        // (1) R' Row¸¦ ±âÁØÀ¸·Î L ¿¡ ´ëÇÑ gallopRight() ÀÌÈÄ
+        //     (ÇöÀç Length) - (GallopCnt) ¸¸Å­ »« ³ª¸ÓÁö¸¦ ¹è¿­·Î ÀÌµ¿
+        // (2) R' Row¸¦ ¹«Á¶°Ç ¹è¿­·Î ÀÌµ¿
+        // (3) L  Row¸¦ ±âÁØÀ¸·Î R'¿¡ ´ëÇÑ gallopLeft()  ÀÌÈÄ
+        //     (ÇöÀç Length) - (GallopCnt) ¸¸Å­ »« ³ª¸ÓÁö¸¦ ¹è¿­·Î ÀÌµ¿
+        // (4) L  Row¸¦ ¹«Á¶°Ç ¹è¿­·Î ÀÌµ¿
         //--------------------------------------------------------------
 
-        // ë‹¤ìŒ Galloping Mode ì§„ì… ì¡°ê±´ ê°•í™”
+        // ´ÙÀ½ Galloping Mode ÁøÀÔ Á¶°Ç °­È­
         sMinToGallopMode++;
 
         while ( ( sLeftWinCnt  >= QMC_MEM_SORT_GALLOPING_WINCNT ) || 
                 ( sRightWinCnt >= QMC_MEM_SORT_GALLOPING_WINCNT ) )
         {
-            // 1íšŒ ìˆ˜í–‰í•  ë•Œ ë§ˆë‹¤ Galloping ê¸°ì¤€ê°’ì„ ê°ì†Œì‹œí‚¨ë‹¤.
-            // ë‹¨, GALLOPING_WINCNT_MIN ë³´ë‹¤ ë‚®ì•„ì ¸ì„œëŠ” ì•ˆëœë‹¤.
+            // 1È¸ ¼öÇàÇÒ ¶§ ¸¶´Ù Galloping ±âÁØ°ªÀ» °¨¼Ò½ÃÅ²´Ù.
+            // ´Ü, GALLOPING_WINCNT_MIN º¸´Ù ³·¾ÆÁ®¼­´Â ¾ÈµÈ´Ù.
             if ( sMinToGallopMode > QMC_MEM_SORT_GALLOPING_WINCNT_MIN )
             {
                 sMinToGallopMode--;
@@ -3665,7 +3665,7 @@ IDE_RC qmcMemSort::mergeHigherRun( qmcdMemSortTemp * aTempTable,
                 // Nothing to do.
             }
 
-            // R'ì˜ í˜„ì¬ Rowë¥¼ ê¸°ì¤€ìœ¼ë¡œ, Lì— ëŒ€í•œ Right Galloping
+            // R'ÀÇ ÇöÀç Row¸¦ ±âÁØÀ¸·Î, L¿¡ ´ëÇÑ Right Galloping
             sGallopIndex = gallopRight( aTempTable,                
                                         aTempTable->mArray,        // TargetArray
                                         & sRightRow,               // Key  
@@ -3673,19 +3673,19 @@ IDE_RC qmcMemSort::mergeHigherRun( qmcdMemSortTemp * aTempTable,
                                         ( sLeftIdx - aBase1 + 1 ), // Length
                                         0 );                       // Hint
 
-            // GallopIndexê°€ ê°€ë¦¬í‚¤ëŠ” ê³³ 'ë¶€í„°' ëë¶€ë¶„ê¹Œì§€ ì˜®ê²¨ì•¼ í•˜ë¯€ë¡œ
-            // Winning CountëŠ” ì•„ë˜ì™€ ê°™ì´ ê³„ì‚°í•œë‹¤.
+            // GallopIndex°¡ °¡¸®Å°´Â °÷ 'ºÎÅÍ' ³¡ºÎºĞ±îÁö ¿Å°Ü¾ß ÇÏ¹Ç·Î
+            // Winning Count´Â ¾Æ·¡¿Í °°ÀÌ °è»êÇÑ´Ù.
             // (Length) - (GallopCnt)
             sLeftWinCnt = ( sLeftIdx - aBase1 + 1 ) - sGallopIndex;
 
             if ( sLeftWinCnt > 0 )
             {
-                // í•´ë‹¹ êµ¬ê°„ë§Œí¼ ì¸ë±ìŠ¤ ì¡°ì •
-                // Winning CountëŠ” ê¸¸ì´ì´ìœ¼ë¡œ, 1ì„ ëº€ ê°’ìœ¼ë¡œ ì¸ë±ìŠ¤ë¥¼ ì¡°ì •í•œë‹¤.
+                // ÇØ´ç ±¸°£¸¸Å­ ÀÎµ¦½º Á¶Á¤
+                // Winning Count´Â ±æÀÌÀÌÀ¸·Î, 1À» »« °ªÀ¸·Î ÀÎµ¦½º¸¦ Á¶Á¤ÇÑ´Ù.
                 sTargetIdx -= ( sLeftWinCnt - 1 );
                 sLeftIdx   -= ( sLeftWinCnt - 1 );
 
-                // í•´ë‹¹ êµ¬ê°„ë§Œí¼ Lì„ ê·¸ëŒ€ë¡œ ì˜®ê¹€
+                // ÇØ´ç ±¸°£¸¸Å­ LÀ» ±×´ë·Î ¿Å±è
                 IDE_TEST( moveArrayToArray( aTempTable,
                                             aTempTable->mArray, // SrcArr
                                             sLeftIdx,           // SrcBase
@@ -3695,18 +3695,18 @@ IDE_RC qmcMemSort::mergeHigherRun( qmcdMemSortTemp * aTempTable,
                                             ID_TRUE )           // IsOverlapped
                           != IDE_SUCCESS );
 
-                // ë¯¸ì²˜ ëª» ë‚´ë¦° 1ì¹¸ì„ ë” ë‚´ë¦°ë‹¤.
+                // ¹ÌÃ³ ¸ø ³»¸° 1Ä­À» ´õ ³»¸°´Ù.
                 sTargetIdx--;
                 sLeftIdx--;
 
                 if ( sLeftIdx >= aBase1 )
                 {
-                    // Lì˜ ì´ì „ Row ì¤€ë¹„
+                    // LÀÇ ÀÌÀü Row ÁØºñ
                     get( aTempTable, aTempTable->mArray, sLeftIdx, & sLeftRow );
                 }
                 else
                 {
-                    // Lì´ ëª¨ë‘ ì†Œì§„ëœ ê²½ìš° ì¢…ë£Œ
+                    // LÀÌ ¸ğµÎ ¼ÒÁøµÈ °æ¿ì Á¾·á
                     IDE_CONT( FINISH_LINE );
                 }
             }
@@ -3715,7 +3715,7 @@ IDE_RC qmcMemSort::mergeHigherRun( qmcdMemSortTemp * aTempTable,
                 // Nothing to do.
             }
 
-            // R'ì˜ í˜„ì¬ Rowë¥¼ ì˜®ê²¨ ë‹´ëŠ”ë‹¤. (ë‹¤ìŒ ì°¨ë¡€ì—ì„  ë¬´ì¡°ê±´ ì •ë ¬ë˜ì–´ì•¼ í•˜ê¸° ë•Œë¬¸)
+            // R'ÀÇ ÇöÀç Row¸¦ ¿Å°Ü ´ã´Â´Ù. (´ÙÀ½ Â÷·Ê¿¡¼± ¹«Á¶°Ç Á¤·ÄµÇ¾î¾ß ÇÏ±â ¶§¹®)
             get( aTempTable, aTempTable->mArray, sTargetIdx, & sTargetRow );
             *sTargetRow = sRightRow;
             sTargetIdx--;
@@ -3723,16 +3723,16 @@ IDE_RC qmcMemSort::mergeHigherRun( qmcdMemSortTemp * aTempTable,
 
             if ( sRightIdx > 0 )
             {
-                // R'ì˜ ì´ì „ Row ì¤€ë¹„
+                // R'ÀÇ ÀÌÀü Row ÁØºñ
                 sRightRow = sRightRows[sRightIdx];
             }
             else
             {
-                // R'ì˜ ë§ˆì§€ë§‰ë§Œ ë‚¨ì€ ê²½ìš°ì´ê±°ë‚˜ ëª¨ë‘ ì†Œì§„ëœ ê²½ìš° ì¢…ë£Œ
+                // R'ÀÇ ¸¶Áö¸·¸¸ ³²Àº °æ¿ìÀÌ°Å³ª ¸ğµÎ ¼ÒÁøµÈ °æ¿ì Á¾·á
                 IDE_CONT( FINISH_LINE );
             }
 
-            // Lì˜ í˜„ì¬ Rowë¥¼ ê¸°ì¤€ìœ¼ë¡œ, R'ì— ëŒ€í•œ Left Galloping
+            // LÀÇ ÇöÀç Row¸¦ ±âÁØÀ¸·Î, R'¿¡ ´ëÇÑ Left Galloping
             sGallopIndex = gallopLeft( aTempTable, 
                                        sRightArray,
                                        sLeftRow,
@@ -3740,19 +3740,19 @@ IDE_RC qmcMemSort::mergeHigherRun( qmcdMemSortTemp * aTempTable,
                                        ( sRightIdx + 1 ),
                                        sRightIdx );
             
-            // GallopIndexê°€ ê°€ë¦¬í‚¤ëŠ” ê³³ ë¶€í„° ì´í›„ì˜ ë¶€ë¶„ì„ ì˜®ê²¨ì•¼ í•˜ë¯€ë¡œ
-            // Winning CountëŠ” ì•„ë˜ì™€ ê°™ì´ ê³„ì‚°í•œë‹¤.
+            // GallopIndex°¡ °¡¸®Å°´Â °÷ ºÎÅÍ ÀÌÈÄÀÇ ºÎºĞÀ» ¿Å°Ü¾ß ÇÏ¹Ç·Î
+            // Winning Count´Â ¾Æ·¡¿Í °°ÀÌ °è»êÇÑ´Ù.
             // (Length) - (GallopIndex)
             sRightWinCnt = ( sRightIdx + 1 ) - sGallopIndex;
 
             if ( sRightWinCnt > 0 )
             {
-                // í•´ë‹¹ êµ¬ê°„ë§Œí¼ ì¸ë±ìŠ¤ ì¡°ì •
-                // Winning CountëŠ” ê¸¸ì´ì´ìœ¼ë¡œ, 1ì„ ëº€ ê°’ìœ¼ë¡œ ì¸ë±ìŠ¤ë¥¼ ì¡°ì •í•œë‹¤.
+                // ÇØ´ç ±¸°£¸¸Å­ ÀÎµ¦½º Á¶Á¤
+                // Winning Count´Â ±æÀÌÀÌÀ¸·Î, 1À» »« °ªÀ¸·Î ÀÎµ¦½º¸¦ Á¶Á¤ÇÑ´Ù.
                 sTargetIdx -= ( sRightWinCnt - 1 );
                 sRightIdx  -= ( sRightWinCnt - 1 );
 
-                // í•´ë‹¹ êµ¬ê°„ë§Œí¼ Rì„ ì˜®ê¹€
+                // ÇØ´ç ±¸°£¸¸Å­ RÀ» ¿Å±è
                 IDE_TEST( moveArrayToArray( aTempTable,
                                             sRightArray,        // SrcArr
                                             sRightIdx,          // SrcBase
@@ -3762,18 +3762,18 @@ IDE_RC qmcMemSort::mergeHigherRun( qmcdMemSortTemp * aTempTable,
                                             ID_FALSE )          // IsOverlapped
                           != IDE_SUCCESS );
 
-                // ë¯¸ì²˜ ëª» ë‚´ë¦° 1ì¹¸ì„ ë” ë‚´ë¦°ë‹¤.
+                // ¹ÌÃ³ ¸ø ³»¸° 1Ä­À» ´õ ³»¸°´Ù.
                 sTargetIdx--;
                 sRightIdx--;
 
                 if ( sRightIdx > 0 )
                 {
-                    // R'ì˜ ì´ì „ Row ì¤€ë¹„
+                    // R'ÀÇ ÀÌÀü Row ÁØºñ
                     sRightRow = sRightRows[sRightIdx];
                 }
                 else
                 {
-                    // R'ì˜ ë§ˆì§€ë§‰ë§Œ ë‚¨ì€ ê²½ìš°ì´ê±°ë‚˜ ëª¨ë‘ ì†Œì§„ëœ ê²½ìš° ì¢…ë£Œ
+                    // R'ÀÇ ¸¶Áö¸·¸¸ ³²Àº °æ¿ìÀÌ°Å³ª ¸ğµÎ ¼ÒÁøµÈ °æ¿ì Á¾·á
                     IDE_CONT( FINISH_LINE );
                 }
             }
@@ -3782,7 +3782,7 @@ IDE_RC qmcMemSort::mergeHigherRun( qmcdMemSortTemp * aTempTable,
                 // Nothing to do.
             }
 
-            // Lì˜ í˜„ì¬ Rowë¥¼ ì˜®ê²¨ ë‹´ëŠ”ë‹¤. (ë‹¤ìŒ ì°¨ë¡€ì—ì„  ë¬´ì¡°ê±´ ì •ë ¬ë˜ì–´ì•¼ í•˜ê¸° ë•Œë¬¸)
+            // LÀÇ ÇöÀç Row¸¦ ¿Å°Ü ´ã´Â´Ù. (´ÙÀ½ Â÷·Ê¿¡¼± ¹«Á¶°Ç Á¤·ÄµÇ¾î¾ß ÇÏ±â ¶§¹®)
             get( aTempTable, aTempTable->mArray, sTargetIdx, & sTargetRow );
             *sTargetRow = *sLeftRow;
             sTargetIdx--;
@@ -3790,41 +3790,41 @@ IDE_RC qmcMemSort::mergeHigherRun( qmcdMemSortTemp * aTempTable,
 
             if ( sLeftIdx >= aBase1 )
             {
-                // Lì˜ ì´ì „ Row ì¤€ë¹„
+                // LÀÇ ÀÌÀü Row ÁØºñ
                 get( aTempTable, aTempTable->mArray, sLeftIdx, & sLeftRow );
             }
             else
             {
-                // Lì´ ëª¨ë‘ ì†Œì§„ëœ ê²½ìš° ì¢…ë£Œ
+                // LÀÌ ¸ğµÎ ¼ÒÁøµÈ °æ¿ì Á¾·á
                 IDE_CONT( FINISH_LINE );
             }
 
-            // sTargetIdxëŠ” aBase1ë³´ë‹¤ í¬ê±°ë‚˜ ê°™ì•„ì•¼ í•œë‹¤.
+            // sTargetIdx´Â aBase1º¸´Ù Å©°Å³ª °°¾Æ¾ß ÇÑ´Ù.
             IDE_DASSERT( sTargetIdx >= aBase1 );
 
-        } // End of while : Galloping Mode ì¢…ë£Œ
+        } // End of while : Galloping Mode Á¾·á
 
-        // ë‹¤ìŒ Galloping Mode ì§„ì… ì¡°ê±´ ê°•í™”
+        // ´ÙÀ½ Galloping Mode ÁøÀÔ Á¶°Ç °­È­
         sMinToGallopMode++;
     }
 
     //-------------------------------------------
-    // ë§ˆë¬´ë¦¬ êµ¬ê°„
+    // ¸¶¹«¸® ±¸°£
     //-------------------------------------------
 
     IDE_EXCEPTION_CONT( FINISH_LINE ); 
 
-    // R'ê°€ ë‚¨ì•„ìˆëŠ” ê²½ìš°
+    // R'°¡ ³²¾ÆÀÖ´Â °æ¿ì
     if ( sRightIdx >= 0 )
     {
-        // Lë„ ë‚¨ì•„ìˆë‹¤ë©´, Lì„ ëª¨ë‘ ì˜®ê¸´ ë‹¤ìŒì— R'ë¥¼ ì˜®ê¸´ë‹¤.
+        // Lµµ ³²¾ÆÀÖ´Ù¸é, LÀ» ¸ğµÎ ¿Å±ä ´ÙÀ½¿¡ R'¸¦ ¿Å±ä´Ù.
         if ( sLeftIdx >= aBase1 )
         {
-            // ì´ ê²½ìš°ë¼ë©´, R'ì—” ë”± í•˜ë‚˜ë§Œ ìˆì–´ì•¼ í•œë‹¤.
-            // ë‘ ê°œ ì´ìƒì¸ ê²½ìš°ì˜€ë‹¤ë©´ ìœ„ì—ì„œ ì²˜ë¦¬ë˜ì–´ì•¼ í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+            // ÀÌ °æ¿ì¶ó¸é, R'¿£ µü ÇÏ³ª¸¸ ÀÖ¾î¾ß ÇÑ´Ù.
+            // µÎ °³ ÀÌ»óÀÎ °æ¿ì¿´´Ù¸é À§¿¡¼­ Ã³¸®µÇ¾î¾ß ÇÏ±â ¶§¹®ÀÌ´Ù.
             IDE_DASSERT( sRightIdx == 0 );
 
-            // Lì˜ ë‚˜ë¨¸ì§€ë¥¼ í•œ ì¹¸ ë’¤ë¡œ ì˜®ê¸´ë‹¤.
+            // LÀÇ ³ª¸ÓÁö¸¦ ÇÑ Ä­ µÚ·Î ¿Å±ä´Ù.
             IDE_TEST( moveArrayToArray( aTempTable,
                                         aTempTable->mArray,        // SrcArr
                                         aBase1,                    // SrcBase
@@ -3834,7 +3834,7 @@ IDE_RC qmcMemSort::mergeHigherRun( qmcdMemSortTemp * aTempTable,
                                         ID_TRUE )                  // IsOverlapped
                       != IDE_SUCCESS );
 
-            // R'ì˜ ë§ˆì§€ë§‰ ì›ì†Œë¥¼ Lì˜ ì²˜ìŒì— ë„£ê¸°
+            // R'ÀÇ ¸¶Áö¸· ¿ø¼Ò¸¦ LÀÇ Ã³À½¿¡ ³Ö±â
             sRightRow = sRightRows[sRightIdx];
             get( aTempTable, aTempTable->mArray, aBase1, & sLeftRow );
 
@@ -3842,10 +3842,10 @@ IDE_RC qmcMemSort::mergeHigherRun( qmcdMemSortTemp * aTempTable,
         }
         else
         {
-            // Lì€ ì´ë¯¸ ì •ë ¬ì´ ë˜ì–´ ìˆê³ , R'ê°€ ì¼ë¶€ ë‚¨ì€ ê²½ìš°ì—”,
-            // R'ë¥¼ ëª¨ë‘ ì˜®ê¸´ë‹¤.
-            // ì—¬ê¸°ì„œ DestBaseê°€ aBase1 ì¸ ì´ìœ ëŠ”
-            // R' ë‚´ìš©ì´ ëª¨ë‘ 'ì•ìª½'ìœ¼ë¡œ ë“¤ì–´ê°€ì•¼ í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+            // LÀº ÀÌ¹Ì Á¤·ÄÀÌ µÇ¾î ÀÖ°í, R'°¡ ÀÏºÎ ³²Àº °æ¿ì¿£,
+            // R'¸¦ ¸ğµÎ ¿Å±ä´Ù.
+            // ¿©±â¼­ DestBase°¡ aBase1 ÀÎ ÀÌÀ¯´Â
+            // R' ³»¿ëÀÌ ¸ğµÎ '¾ÕÂÊ'À¸·Î µé¾î°¡¾ß ÇÏ±â ¶§¹®ÀÌ´Ù.
             IDE_TEST( moveArrayToArray( aTempTable,
                                         sRightArray,        // SrcArr
                                         0,                  // SrcBase
@@ -3858,8 +3858,8 @@ IDE_RC qmcMemSort::mergeHigherRun( qmcdMemSortTemp * aTempTable,
     }
     else
     {
-        // Galloping Modeë¥¼ í†µí•´ R'ê°€ ë‚¨ì•„ìˆì§€ ì•Šì€ ê²½ìš°
-        // ì´ë¯¸ ì •ë ¬ì´ ì™„ë£Œë˜ì—ˆë‹¤.
+        // Galloping Mode¸¦ ÅëÇØ R'°¡ ³²¾ÆÀÖÁö ¾ÊÀº °æ¿ì
+        // ÀÌ¹Ì Á¤·ÄÀÌ ¿Ï·áµÇ¾ú´Ù.
 
         // Nothing to do.
     }
@@ -3873,7 +3873,7 @@ IDE_RC qmcMemSort::mergeHigherRun( qmcdMemSortTemp * aTempTable,
 
 //---------------------------------------------------------------
 // TASK-6445 Utilities
-// ì•Œê³ ë¦¬ì¦˜ê³¼ëŠ” ë³„ê°œë¡œ, SortArrayë¥¼ í™œìš©í•˜ê¸° ìœ„í•´ ë§Œë“  í•¨ìˆ˜ë“¤
+// ¾Ë°í¸®Áò°ú´Â º°°³·Î, SortArray¸¦ È°¿ëÇÏ±â À§ÇØ ¸¸µç ÇÔ¼öµé
 //---------------------------------------------------------------
 
 IDE_RC qmcMemSort::moveArrayToArray( qmcdMemSortTemp * aTempTable,
@@ -3888,10 +3888,10 @@ IDE_RC qmcMemSort::moveArrayToArray( qmcdMemSortTemp * aTempTable,
  *
  * Description :
  *
- *  aSrcBase ì—ì„œ aMoveLength ë§Œí¼ì˜ elements ì˜ì—­ì„ ì˜®ê¸´ë‹¤.
+ *  aSrcBase ¿¡¼­ aMoveLength ¸¸Å­ÀÇ elements ¿µ¿ªÀ» ¿Å±ä´Ù.
  *
- *  ë‘ ì˜ì—­ì´ ê²¹ì¹˜ê²Œ ë  ê²½ìš°, Srcë¥¼ ìœ„í•œ ì„ì‹œ ì˜ì—­ì„ ë§Œë“¤ê²Œ ëœë‹¤.
- *  ì´ ì˜ì—­ì— Src ë‚´ìš©ì„ ë„£ì€ ë’¤ Destë¡œ ì´ë™í•œë‹¤.
+ *  µÎ ¿µ¿ªÀÌ °ãÄ¡°Ô µÉ °æ¿ì, Src¸¦ À§ÇÑ ÀÓ½Ã ¿µ¿ªÀ» ¸¸µé°Ô µÈ´Ù.
+ *  ÀÌ ¿µ¿ª¿¡ Src ³»¿ëÀ» ³ÖÀº µÚ Dest·Î ÀÌµ¿ÇÑ´Ù.
  *
  ********************************************************************/
 
@@ -3911,12 +3911,12 @@ IDE_RC qmcMemSort::moveArrayToArray( qmcdMemSortTemp * aTempTable,
     idBool          sIsDestRemain = ID_FALSE;
 
     //-------------------------------------------------
-    // Srcì˜ ê¸°ì¤€ì´ ë˜ëŠ” Base Array ìƒì„±/ì§€ì •
+    // SrcÀÇ ±âÁØÀÌ µÇ´Â Base Array »ı¼º/ÁöÁ¤
     //-------------------------------------------------
 
     if ( aIsOverlapped == ID_TRUE )
     {
-        // ê²¹ì¹  ìˆ˜ ìˆë‹¤ë©´, ì„ì‹œ Arrayë¥¼ ìƒì„±
+        // °ãÄ¥ ¼ö ÀÖ´Ù¸é, ÀÓ½Ã Array¸¦ »ı¼º
         sTempArray.parent   = NULL;
         sTempArray.depth    = 0;
         sTempArray.numIndex = aMoveLength;
@@ -3931,7 +3931,7 @@ IDE_RC qmcMemSort::moveArrayToArray( qmcdMemSortTemp * aTempTable,
                                      (void**) & sTempArray.elements )
                   != IDE_SUCCESS );
         
-        // ìƒì„±í•œ Arrayì— Src ë³µì‚¬
+        // »ı¼ºÇÑ Array¿¡ Src º¹»ç
         IDE_TEST( moveArrayToArray( aTempTable,
                                     aSrcArray,     // SrcArr
                                     aSrcBase,      // SrcBase
@@ -3952,12 +3952,12 @@ IDE_RC qmcMemSort::moveArrayToArray( qmcdMemSortTemp * aTempTable,
     }
 
     //---------------------------------------------------
-    // ì´ë™
+    // ÀÌµ¿
     //---------------------------------------------------
     
     while ( sMoveLength > 0 )
     {
-        // Array ì„ ì •
+        // Array ¼±Á¤
 
         if ( sIsSrcRemain == ID_FALSE )
         {
@@ -3968,8 +3968,8 @@ IDE_RC qmcMemSort::moveArrayToArray( qmcdMemSortTemp * aTempTable,
         }
         else
         {
-            // SrcArrayê°€ ì•„ì§ ë‹¤ ì´ì „í•˜ì§€ ì•Šì€ ê²½ìš°
-            // sSrcBase / sSrcIdx ê·¸ëŒ€ë¡œ ì‚¬ìš©
+            // SrcArray°¡ ¾ÆÁ÷ ´Ù ÀÌÀüÇÏÁö ¾ÊÀº °æ¿ì
+            // sSrcBase / sSrcIdx ±×´ë·Î »ç¿ë
         }
 
         if ( sIsDestRemain == ID_FALSE )
@@ -3981,8 +3981,8 @@ IDE_RC qmcMemSort::moveArrayToArray( qmcdMemSortTemp * aTempTable,
         }
         else
         {
-            // DestArrayê°€ ì•„ì§ ë‹¤ ì°¨ì§€ ì•Šì€ ê²½ìš°
-            // sDestBase / sDestIdx ê·¸ëŒ€ë¡œ ì‚¬ìš©
+            // DestArray°¡ ¾ÆÁ÷ ´Ù Â÷Áö ¾ÊÀº °æ¿ì
+            // sDestBase / sDestIdx ±×´ë·Î »ç¿ë
         }
 
         //---------------------------------------------------
@@ -4010,17 +4010,17 @@ IDE_RC qmcMemSort::moveArrayToArray( qmcdMemSortTemp * aTempTable,
             sLength = sDestLength;
         }
 
-        // sMoveLengthê°€ ë” ì‘ìœ¼ë©´ sMoveLengthë¡œ ì„¤ì •
+        // sMoveLength°¡ ´õ ÀÛÀ¸¸é sMoveLength·Î ¼³Á¤
         sLength = IDL_MIN( sLength, sMoveLength );
 
-        // memcpy()ë¡œ ì´ë™
-        // ë®ì–´ì“°ì´ëŠ” ì˜ì—­ì€ ì´ë¯¸ ì •ë ¬ ì˜ì—­ì— ì´ë™í–ˆê±°ë‚˜ ì„ì‹œ ì˜ì—­ì— ì¡´ì¬í•œë‹¤.
-        // ê·¸ ì™¸ì˜ ê²½ìš°ê°€ ì¼ì–´ë‚˜ì§€ ì•Šë„ë¡ í•œë‹¤.
+        // memcpy()·Î ÀÌµ¿
+        // µ¤¾î¾²ÀÌ´Â ¿µ¿ªÀº ÀÌ¹Ì Á¤·Ä ¿µ¿ª¿¡ ÀÌµ¿Çß°Å³ª ÀÓ½Ã ¿µ¿ª¿¡ Á¸ÀçÇÑ´Ù.
+        // ±× ¿ÜÀÇ °æ¿ì°¡ ÀÏ¾î³ªÁö ¾Êµµ·Ï ÇÑ´Ù.
         idlOS::memcpy( (void **)sDestArray->elements + sDestIdx,
                        (void **)sSrcArray->elements + sSrcIdx,
                        ID_SIZEOF(void*) * sLength );
 
-        // Index ì¦ê°€
+        // Index Áõ°¡
         sSrcBase    += sLength;
         sDestBase   += sLength;
         sSrcIdx     += sLength;
@@ -4028,7 +4028,7 @@ IDE_RC qmcMemSort::moveArrayToArray( qmcdMemSortTemp * aTempTable,
         sMoveLength -= sLength;
     }
 
-    // í• ë‹¹í–ˆë˜ ì„ì‹œ ì˜ì—­ì„ í•´ì œ
+    // ÇÒ´çÇß´ø ÀÓ½Ã ¿µ¿ªÀ» ÇØÁ¦
     if ( aIsOverlapped == ID_TRUE )
     {
         IDE_DASSERT( sTempArray.elements != NULL );
@@ -4044,7 +4044,7 @@ IDE_RC qmcMemSort::moveArrayToArray( qmcdMemSortTemp * aTempTable,
 
     IDE_EXCEPTION_END;
 
-    // í• ë‹¹í–ˆë˜ ì„ì‹œ ì˜ì—­ì„ í•´ì œ
+    // ÇÒ´çÇß´ø ÀÓ½Ã ¿µ¿ªÀ» ÇØÁ¦
     if ( sTempArray.elements != NULL )
     {
         (void)iduMemMgr::free( sTempArray.elements );
@@ -4067,8 +4067,8 @@ void qmcMemSort::getLeafArray( qmcSortArray  * aArray,
  *
  * Description :
  *   
- *   SortArrayì—ì„œ aIndex ìœ„ì¹˜ì— í•´ë‹¹í•˜ëŠ” Leaf Arrayë¥¼ ë°˜í™˜í•˜ê³ ,
- *   Leaf Arrayì—ì„œì˜ ìƒëŒ€ì ì¸ ì¸ë±ìŠ¤ ê°’ë„ ë°˜í™˜í•œë‹¤.
+ *   SortArray¿¡¼­ aIndex À§Ä¡¿¡ ÇØ´çÇÏ´Â Leaf Array¸¦ ¹İÈ¯ÇÏ°í,
+ *   Leaf Array¿¡¼­ÀÇ »ó´ëÀûÀÎ ÀÎµ¦½º °ªµµ ¹İÈ¯ÇÑ´Ù.
  *
  *******************************************************************/
 

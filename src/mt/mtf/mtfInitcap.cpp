@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfInitcap.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfInitcap.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -44,7 +44,7 @@ static IDE_RC mtfInitcapEstimate( mtcNode*     aNode,
 mtfModule mtfInitcap = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfInitcapFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -168,8 +168,8 @@ IDE_RC mtfInitcapEstimate( mtcNode*     aNode,
     */
 
     // PROJ-1579 NCHAR
-    // ASCII ì´ì™¸ì˜ ë¬¸ìžì— ëŒ€í•œ ëŒ€ì†Œë¬¸ìž ë³€í™˜ì—ì„œë„
-    // precisionì´ ë³€í•˜ì§€ëŠ” ì•ŠëŠ”ë‹¤.
+    // ASCII ÀÌ¿ÜÀÇ ¹®ÀÚ¿¡ ´ëÇÑ ´ë¼Ò¹®ÀÚ º¯È¯¿¡¼­µµ
+    // precisionÀÌ º¯ÇÏÁö´Â ¾Ê´Â´Ù.
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      sModules[0],
                                      1,
@@ -203,8 +203,8 @@ IDE_RC mtfInitcapCalculate( mtcNode*     aNode,
  * Implementation :
  *    INITCAP( char )
  *
- *    aStack[0] : ì£¼ì–´ì§„ ë¬¸ìžì—´ì˜ ì²«ê¸€ìžë¥¼ ëŒ€ë¬¸ìžë¡œ ë³€í™˜
- *    aStack[1] : char ( ì£¼ì–´ì§„ ë¬¸ìžì—´ )
+ *    aStack[0] : ÁÖ¾îÁø ¹®ÀÚ¿­ÀÇ Ã¹±ÛÀÚ¸¦ ´ë¹®ÀÚ·Î º¯È¯
+ *    aStack[1] : char ( ÁÖ¾îÁø ¹®ÀÚ¿­ )
  *
  *    ex) initcap( 'the soap' )
  *        --> result : The soap
@@ -241,10 +241,10 @@ IDE_RC mtfInitcapCalculate( mtcNode*     aNode,
         sResult = (mtdCharType*)aStack[0].value;
         sSource  = (mtdCharType*)aStack[1].value;
 
-        // sResult->lengthì— ì£¼ì–´ì§„ ë¬¸ìžì—´ì˜ ê¸¸ì´ ì €ìž¥
+        // sResult->length¿¡ ÁÖ¾îÁø ¹®ÀÚ¿­ÀÇ ±æÀÌ ÀúÀå
         sResult->length = sSource->length;
 
-        // sResult->valueì— ì£¼ì–´ì§„ ë¬¸ìžì—´ì˜ ì²«ê¸€ìžë¥¼ ëŒ€ë¬¸ìžë¡œ ë³€í™˜í•˜ì—¬ ì €ìž¥
+        // sResult->value¿¡ ÁÖ¾îÁø ¹®ÀÚ¿­ÀÇ Ã¹±ÛÀÚ¸¦ ´ë¹®ÀÚ·Î º¯È¯ÇÏ¿© ÀúÀå
         for( sCurResult = sResult->value,
              sCurInput  = sSource->value,
              sFence     = sCurInput + sSource->length;
@@ -252,14 +252,14 @@ IDE_RC mtfInitcapCalculate( mtcNode*     aNode,
              sCurInput++, sCurResult++ )
         {
 
-            // PR-13399ì— ì˜í•´ ê¸°ì¡´ ë¡œì§ì„ oracleê³¼ ë™ì¼í•˜ê²Œ ëŒ€ì²´.
+            // PR-13399¿¡ ÀÇÇØ ±âÁ¸ ·ÎÁ÷À» oracle°ú µ¿ÀÏÇÏ°Ô ´ëÃ¼.
             
             if( *sCurInput == ' ' ||
                 *sCurInput == '\t' ||
                 *sCurInput == '\n' ||
                 isalnum( *sCurInput ) == 0 )
             {
-                // ê³µë°±, íƒ­, ê°œí–‰ ë¬¸ìžì¸ ê²½ìš°, ê·¸ëŒ€ë¡œ ì €ìž¥
+                // °ø¹é, ÅÇ, °³Çà ¹®ÀÚÀÎ °æ¿ì, ±×´ë·Î ÀúÀå
                 *sCurResult = *sCurInput;
                 sCharStatus = 0;
             }
@@ -273,7 +273,7 @@ IDE_RC mtfInitcapCalculate( mtcNode*     aNode,
                     }
                     else
                     {
-                        // ê·¸ëŒ€ë¡œ ì €ìž¥
+                        // ±×´ë·Î ÀúÀå
                         *sCurResult = *sCurInput;
                     }
                     sCharStatus = 1;
@@ -286,7 +286,7 @@ IDE_RC mtfInitcapCalculate( mtcNode*     aNode,
                     }
                     else
                     {
-                        // ê·¸ëŒ€ë¡œ ì €ìž¥
+                        // ±×´ë·Î ÀúÀå
                         *sCurResult = *sCurInput;
                     }
                 }
@@ -320,8 +320,8 @@ IDE_RC mtfInitcapCalculateChar4MB( mtcNode*     aNode,
  * Implementation :
  *    INITCAP( char )
  *
- *    aStack[0] : ì£¼ì–´ì§„ ë¬¸ìžì—´ì˜ ì²«ê¸€ìžë¥¼ ëŒ€ë¬¸ìžë¡œ ë³€í™˜
- *    aStack[1] : char ( ì£¼ì–´ì§„ ë¬¸ìžì—´ )
+ *    aStack[0] : ÁÖ¾îÁø ¹®ÀÚ¿­ÀÇ Ã¹±ÛÀÚ¸¦ ´ë¹®ÀÚ·Î º¯È¯
+ *    aStack[1] : char ( ÁÖ¾îÁø ¹®ÀÚ¿­ )
  *
  *    ex) initcap( 'the soap' )
  *        --> result : The soap
@@ -376,13 +376,13 @@ IDE_RC mtfInitcapCalculateChar4MB( mtcNode*     aNode,
         sSrcRemain   = sSource->length;
         sSourceFence = sSourceIndex + sSrcRemain;
 
-        // ë³€í™˜ ê²°ê³¼ì˜ í¬ê¸°ë¥¼ ì²´í¬í•˜ê¸° ìœ„í•¨
+        // º¯È¯ °á°úÀÇ Å©±â¸¦ Ã¼Å©ÇÏ±â À§ÇÔ
         sDestRemain = aStack[0].column->precision;
 
         sResultValue = sResult->value;
         sResultFence = sResultValue + sDestRemain;
 
-        // sResult->lengthì— ì£¼ì–´ì§„ ë¬¸ìžì—´ì˜ ê¸¸ì´ ì €ìž¥
+        // sResult->length¿¡ ÁÖ¾îÁø ¹®ÀÚ¿­ÀÇ ±æÀÌ ÀúÀå
         sResult->length = sSource->length;
 
         sSrcCharSet = aStack[1].column->language;
@@ -391,7 +391,7 @@ IDE_RC mtfInitcapCalculateChar4MB( mtcNode*     aNode,
         sIdnSrcCharSet = mtl::getIdnCharSet( sSrcCharSet );
         sIdnDestCharSet = mtl::getIdnCharSet( sDestCharSet );
 
-        // sResult->valueì— ì£¼ì–´ì§„ ë¬¸ìžì—´ì˜ ì²«ê¸€ìžë¥¼ ëŒ€ë¬¸ìžë¡œ ë³€í™˜í•˜ì—¬ ì €ìž¥
+        // sResult->value¿¡ ÁÖ¾îÁø ¹®ÀÚ¿­ÀÇ Ã¹±ÛÀÚ¸¦ ´ë¹®ÀÚ·Î º¯È¯ÇÏ¿© ÀúÀå
         while( sSourceIndex < sSourceFence )
         {
             IDE_TEST_RAISE( sResultValue >= sResultFence,
@@ -399,12 +399,12 @@ IDE_RC mtfInitcapCalculateChar4MB( mtcNode*     aNode,
 
             sTempRemain = sDestRemain;
                         
-            // PR-13399ì— ì˜í•´ ê¸°ì¡´ ë¡œì§ì„ oracleê³¼ ë™ì¼í•˜ê²Œ ëŒ€ì²´.
+            // PR-13399¿¡ ÀÇÇØ ±âÁ¸ ·ÎÁ÷À» oracle°ú µ¿ÀÏÇÏ°Ô ´ëÃ¼.
             if( *sSourceIndex == ' ' ||
                 *sSourceIndex == '\t' ||
                 *sSourceIndex == '\n' )
             {
-                // ê³µë°±, íƒ­, ê°œí–‰ ë¬¸ìžì¸ ê²½ìš°, ê·¸ëŒ€ë¡œ ì €ìž¥
+                // °ø¹é, ÅÇ, °³Çà ¹®ÀÚÀÎ °æ¿ì, ±×´ë·Î ÀúÀå
                 *sResultValue = *sSourceIndex;
                 sCharStatus = 0;
                 sDestRemain -= 1;
@@ -419,19 +419,19 @@ IDE_RC mtfInitcapCalculateChar4MB( mtcNode*     aNode,
                 }
                 else
                 {
-                    // 7bit ASCIIê°€ ì•„ë‹Œ ê²½ìš°ë¡œ
-                    // ëŒ€ì†Œë¬¸ìž ë³€í™˜í‘œì— ì˜í•œ ë³€í™˜ì´ í•„ìš”í•˜ë‹¤.
+                    // 7bit ASCII°¡ ¾Æ´Ñ °æ¿ì·Î
+                    // ´ë¼Ò¹®ÀÚ º¯È¯Ç¥¿¡ ÀÇÇÑ º¯È¯ÀÌ ÇÊ¿äÇÏ´Ù.
 
                     // --------------------------------------------------------
-                    // ì•„ëž˜ì™€ ê°™ì€ ìž‘ì—…ì´ í•„ìš”í•˜ë‹¤.
-                    // 1. SrcCharSet => UTF16ìœ¼ë¡œ ë³€í™˜
-                    // 2. ëŒ€ì†Œë¬¸ìž ë³€í™˜í‘œ ì ìš©
-                    // 3. UTF16 => SrcCharSetìœ¼ë¡œ ë³€í™˜
+                    // ¾Æ·¡¿Í °°Àº ÀÛ¾÷ÀÌ ÇÊ¿äÇÏ´Ù.
+                    // 1. SrcCharSet => UTF16À¸·Î º¯È¯
+                    // 2. ´ë¼Ò¹®ÀÚ º¯È¯Ç¥ Àû¿ë
+                    // 3. UTF16 => SrcCharSetÀ¸·Î º¯È¯
                     // --------------------------------------------------------
 
                     sU16ResultLen = MTL_UTF16_PRECISION;
 
-                    // 1. SrcCharSet(UTF8) => DestCharSet(UTF16)ìœ¼ë¡œ ë³€í™˜
+                    // 1. SrcCharSet(UTF8) => DestCharSet(UTF16)À¸·Î º¯È¯
                     IDE_TEST( convertCharSet( sIdnSrcCharSet,
                                               sIdnDestCharSet,
                                               sSourceIndex,
@@ -441,13 +441,13 @@ IDE_RC mtfInitcapCalculateChar4MB( mtcNode*     aNode,
                                               -1 /* mNlsNcharConvExcp */ )
                               != IDE_SUCCESS );
 
-                    /* BUG-42671 ê¹¨ì§„ ë¬¸ìžê°€ ìžˆì„ ê²½ìš°
-                     * UTF16ì˜ Replaceement characterì€ 2Byteì¸ ë°˜ëª…
-                     * utf8ì˜ Replacement characterì€ 3byteë¡œ ì¸í•´
-                     * DestRemainì€ 3byteì”© ì¤„ë¡œ SrcëŠ” 1byteì”© ì¦ê°€ë˜ì–´
-                     * ê²°êµ­ ì§„í–‰ë˜ë‹¤ë³´ë³€ ë²„í¼ê°€ ëª¨ìžë¥´ê²Œ ë˜ë¯€ë¡œ
-                     * utf18ì˜ ? ì„ utf8 ì˜ ? ë¡œ ë³€í™˜í•˜ì§€ ì•Šê³  ê¸€ìž ê·¸ëŒ€ë¡œ
-                     * ë¥¼ copy í•œë‹¤
+                    /* BUG-42671 ±úÁø ¹®ÀÚ°¡ ÀÖÀ» °æ¿ì
+                     * UTF16ÀÇ Replaceement characterÀº 2ByteÀÎ ¹Ý¸í
+                     * utf8ÀÇ Replacement characterÀº 3byte·Î ÀÎÇØ
+                     * DestRemainÀº 3byte¾¿ ÁÙ·Î Src´Â 1byte¾¿ Áõ°¡µÇ¾î
+                     * °á±¹ ÁøÇàµÇ´Ùº¸º¯ ¹öÆÛ°¡ ¸ðÀÚ¸£°Ô µÇ¹Ç·Î
+                     * utf18ÀÇ ? À» utf8 ÀÇ ? ·Î º¯È¯ÇÏÁö ¾Ê°í ±ÛÀÚ ±×´ë·Î
+                     * ¸¦ copy ÇÑ´Ù
                      */
                     if ( ( sU16Result.value1 == 0xff ) &&
                          ( sU16Result.value2 == 0xfd ) )
@@ -457,10 +457,10 @@ IDE_RC mtfInitcapCalculateChar4MB( mtcNode*     aNode,
                     }
                     else
                     {
-                        // 2. ëŒ€ì†Œë¬¸ìž ë³€í™˜í‘œ ì ìš©
-                        // IDN_NLS_CASE_UNICODE_MAXë³´ë‹¤ ìž‘ì„ ê²½ìš°ì—ë§Œ ë³€í™˜í•œë‹¤.
-                        // IDN_NLS_CASE_UNICODE_MAXë³´ë‹¤ í¬ë©´ ëŒ€ì†Œë¬¸ìž ë³€í™˜ì´
-                        // ì˜ë¯¸ê°€ ì—†ìœ¼ë¯€ë¡œ ê·¸ëŒ€ë¡œ copyí•œë‹¤.
+                        // 2. ´ë¼Ò¹®ÀÚ º¯È¯Ç¥ Àû¿ë
+                        // IDN_NLS_CASE_UNICODE_MAXº¸´Ù ÀÛÀ» °æ¿ì¿¡¸¸ º¯È¯ÇÑ´Ù.
+                        // IDN_NLS_CASE_UNICODE_MAXº¸´Ù Å©¸é ´ë¼Ò¹®ÀÚ º¯È¯ÀÌ
+                        // ÀÇ¹Ì°¡ ¾øÀ¸¹Ç·Î ±×´ë·Î copyÇÑ´Ù.
 
                         if ( sCharStatus == 0 )
                         {
@@ -472,7 +472,7 @@ IDE_RC mtfInitcapCalculateChar4MB( mtcNode*     aNode,
                             mtl::getUTF16LowerStr( &sCaseResult, &sU16Result );
                         }
                         
-                        // 3. DestCharSet(UTF16) => SrcCharSet(UTF8)ìœ¼ë¡œ ë³€í™˜
+                        // 3. DestCharSet(UTF16) => SrcCharSet(UTF8)À¸·Î º¯È¯
                         IDE_TEST( convertCharSet( sIdnDestCharSet,
                                                   sIdnSrcCharSet,
                                                   & sCaseResult,
@@ -494,7 +494,7 @@ IDE_RC mtfInitcapCalculateChar4MB( mtcNode*     aNode,
                     }
                     else
                     {
-                        // ê·¸ëŒ€ë¡œ ì €ìž¥
+                        // ±×´ë·Î ÀúÀå
                         *sResultValue = *sSourceIndex;
                     }
                     sCharStatus = 1;
@@ -507,7 +507,7 @@ IDE_RC mtfInitcapCalculateChar4MB( mtcNode*     aNode,
                     }
                     else
                     {
-                        // ê·¸ëŒ€ë¡œ ì €ìž¥
+                        // ±×´ë·Î ÀúÀå
                         *sResultValue = *sSourceIndex;
                     }
                 }
@@ -556,8 +556,8 @@ IDE_RC mtfInitcapCalculateNchar4MB( mtcNode*     aNode,
  * Implementation :
  *    INITCAP( nchar )
  *
- *    aStack[0] : ì£¼ì–´ì§„ ë¬¸ìžì—´ì˜ ì²«ê¸€ìžë¥¼ ëŒ€ë¬¸ìžë¡œ ë³€í™˜
- *    aStack[1] : nchar ( ì£¼ì–´ì§„ ë¬¸ìžì—´ )
+ *    aStack[0] : ÁÖ¾îÁø ¹®ÀÚ¿­ÀÇ Ã¹±ÛÀÚ¸¦ ´ë¹®ÀÚ·Î º¯È¯
+ *    aStack[1] : nchar ( ÁÖ¾îÁø ¹®ÀÚ¿­ )
  *
  *    ex) initcap( 'the soap' )
  *        --> result : The soap
@@ -620,18 +620,18 @@ IDE_RC mtfInitcapCalculateNchar4MB( mtcNode*     aNode,
         sSrcRemain   = sSource->length;
         sSourceFence = sSourceIndex + sSrcRemain;
 
-        // ë³€í™˜ ê²°ê³¼ì˜ í¬ê¸°ë¥¼ ì²´í¬í•˜ê¸° ìœ„í•¨
+        // º¯È¯ °á°úÀÇ Å©±â¸¦ Ã¼Å©ÇÏ±â À§ÇÔ
         sDestRemain = sSrcCharSet->maxPrecision(aStack[0].column->precision);
 
         sResultValue = sResult->value;
         sResultFence = sResultValue + sDestRemain;
 
-        // sResult->lengthì— ì£¼ì–´ì§„ ë¬¸ìžì—´ì˜ ê¸¸ì´ ì €ìž¥
+        // sResult->length¿¡ ÁÖ¾îÁø ¹®ÀÚ¿­ÀÇ ±æÀÌ ÀúÀå
         sResult->length = sSource->length;
 
         // ------------------------------------
-        // ëŒ€ì†Œë¬¸ìž ë³€í™˜í‘œë¥¼ ì ìš©í•˜ê¸° ìœ„í•´
-        // UTF16 ìºë¦­í„° ì…‹ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
+        // ´ë¼Ò¹®ÀÚ º¯È¯Ç¥¸¦ Àû¿ëÇÏ±â À§ÇØ
+        // UTF16 Ä³¸¯ÅÍ ¼ÂÀ¸·Î º¯È¯ÇÑ´Ù.
         // ------------------------------------
 
         if( sSrcCharSet->id == MTL_UTF16_ID )
@@ -667,7 +667,7 @@ IDE_RC mtfInitcapCalculateNchar4MB( mtcNode*     aNode,
                     (sIsTabSame == ID_TRUE) ||
                     (sIsNewLineSame == ID_TRUE) )
                 {
-                    // ê³µë°±, íƒ­, ê°œí–‰ ë¬¸ìžì¸ ê²½ìš°, ê·¸ëŒ€ë¡œ ì €ìž¥
+                    // °ø¹é, ÅÇ, °³Çà ¹®ÀÚÀÎ °æ¿ì, ±×´ë·Î ÀúÀå
                     sResultValue[0] = sSourceIndex[0];
                     sResultValue[1] = sSourceIndex[1];
                     sCharStatus = 0;
@@ -695,10 +695,10 @@ IDE_RC mtfInitcapCalculateNchar4MB( mtcNode*     aNode,
         else
         {
             // --------------------------------------------------------
-            // SrcCharSetì´ UTF16ì´ ì•„ë‹ˆë©´ ì•„ëž˜ì™€ ê°™ì€ ìž‘ì—…ì´ í•„ìš”í•˜ë‹¤.
-            // 1. SrcCharSet(UTF8) => UTF16ìœ¼ë¡œ ë³€í™˜
-            // 2. ëŒ€ì†Œë¬¸ìž ë³€í™˜í‘œ ì ìš©
-            // 3. UTF16 => SrcCharSet(UTF8)ìœ¼ë¡œ ë³€í™˜
+            // SrcCharSetÀÌ UTF16ÀÌ ¾Æ´Ï¸é ¾Æ·¡¿Í °°Àº ÀÛ¾÷ÀÌ ÇÊ¿äÇÏ´Ù.
+            // 1. SrcCharSet(UTF8) => UTF16À¸·Î º¯È¯
+            // 2. ´ë¼Ò¹®ÀÚ º¯È¯Ç¥ Àû¿ë
+            // 3. UTF16 => SrcCharSet(UTF8)À¸·Î º¯È¯
             // --------------------------------------------------------
 
             sIdnSrcCharSet = mtl::getIdnCharSet( sSrcCharSet );
@@ -711,12 +711,12 @@ IDE_RC mtfInitcapCalculateNchar4MB( mtcNode*     aNode,
 
                 sTempRemain = sDestRemain;
 
-                // PR-13399ì— ì˜í•´ ê¸°ì¡´ ë¡œì§ì„ oracleê³¼ ë™ì¼í•˜ê²Œ ëŒ€ì²´.
+                // PR-13399¿¡ ÀÇÇØ ±âÁ¸ ·ÎÁ÷À» oracle°ú µ¿ÀÏÇÏ°Ô ´ëÃ¼.
                 if( *sSourceIndex == ' ' ||
                     *sSourceIndex == '\t' ||
                     *sSourceIndex == '\n' )
                 {
-                    // ê³µë°±, íƒ­, ê°œí–‰ ë¬¸ìžì¸ ê²½ìš°, ê·¸ëŒ€ë¡œ ì €ìž¥
+                    // °ø¹é, ÅÇ, °³Çà ¹®ÀÚÀÎ °æ¿ì, ±×´ë·Î ÀúÀå
                     *sResultValue = *sSourceIndex;
                     sCharStatus = 0;
 
@@ -732,19 +732,19 @@ IDE_RC mtfInitcapCalculateNchar4MB( mtcNode*     aNode,
                     }
                     else
                     {
-                        // 7bit ASCIIê°€ ì•„ë‹Œ ê²½ìš°ë¡œ
-                        // ëŒ€ì†Œë¬¸ìž ë³€í™˜í‘œì— ì˜í•œ ë³€í™˜ì´ í•„ìš”í•˜ë‹¤.
+                        // 7bit ASCII°¡ ¾Æ´Ñ °æ¿ì·Î
+                        // ´ë¼Ò¹®ÀÚ º¯È¯Ç¥¿¡ ÀÇÇÑ º¯È¯ÀÌ ÇÊ¿äÇÏ´Ù.
 
                         // --------------------------------------
-                        // ì•„ëž˜ì™€ ê°™ì€ ìž‘ì—…ì´ í•„ìš”í•˜ë‹¤.
-                        // 1. SrcCharSet => UTF16ìœ¼ë¡œ ë³€í™˜
-                        // 2. ëŒ€ì†Œë¬¸ìž ë³€í™˜í‘œ ì ìš©
-                        // 3. UTF16 => SrcCharSetìœ¼ë¡œ ë³€í™˜
+                        // ¾Æ·¡¿Í °°Àº ÀÛ¾÷ÀÌ ÇÊ¿äÇÏ´Ù.
+                        // 1. SrcCharSet => UTF16À¸·Î º¯È¯
+                        // 2. ´ë¼Ò¹®ÀÚ º¯È¯Ç¥ Àû¿ë
+                        // 3. UTF16 => SrcCharSetÀ¸·Î º¯È¯
                         // --------------------------------------
 
                         sU16ResultLen = MTL_UTF16_PRECISION;
 
-                        // 1. SrcCharSet(UTF8) => DestCharSet(UTF16)ìœ¼ë¡œ ë³€í™˜
+                        // 1. SrcCharSet(UTF8) => DestCharSet(UTF16)À¸·Î º¯È¯
                         IDE_TEST( convertCharSet( sIdnSrcCharSet,
                                                   sIdnDestCharSet,
                                                   sSourceIndex,
@@ -754,13 +754,13 @@ IDE_RC mtfInitcapCalculateNchar4MB( mtcNode*     aNode,
                                                   -1 /* mNlsNcharConvExcp */ )
                                   != IDE_SUCCESS );
 
-                        /* BUG-42671 ê¹¨ì§„ ë¬¸ìžê°€ ìžˆì„ ê²½ìš°
-                         * UTF16ì˜ Replaceement characterì€ 2Byteì¸ ë°˜ëª…
-                         * utf8ì˜ Replacement characterì€ 3byteë¡œ ì¸í•´
-                         * DestRemainì€ 3byteì”© ì¤„ë¡œ SrcëŠ” 1byteì”© ì¦ê°€ë˜ì–´
-                         * ê²°êµ­ ì§„í–‰ë˜ë‹¤ë³´ë³€ ë²„í¼ê°€ ëª¨ìžë¥´ê²Œ ë˜ë¯€ë¡œ
-                         * utf18ì˜ ? ì„ utf8 ì˜ ? ë¡œ ë³€í™˜í•˜ì§€ ì•Šê³  ê¸€ìž ê·¸ëŒ€ë¡œ
-                         * ë¥¼ copy í•œë‹¤
+                        /* BUG-42671 ±úÁø ¹®ÀÚ°¡ ÀÖÀ» °æ¿ì
+                         * UTF16ÀÇ Replaceement characterÀº 2ByteÀÎ ¹Ý¸í
+                         * utf8ÀÇ Replacement characterÀº 3byte·Î ÀÎÇØ
+                         * DestRemainÀº 3byte¾¿ ÁÙ·Î Src´Â 1byte¾¿ Áõ°¡µÇ¾î
+                         * °á±¹ ÁøÇàµÇ´Ùº¸º¯ ¹öÆÛ°¡ ¸ðÀÚ¸£°Ô µÇ¹Ç·Î
+                         * utf18ÀÇ ? À» utf8 ÀÇ ? ·Î º¯È¯ÇÏÁö ¾Ê°í ±ÛÀÚ ±×´ë·Î
+                         * ¸¦ copy ÇÑ´Ù
                          */
                         if ( ( sU16Result.value1 == 0xff ) &&
                              ( sU16Result.value2 == 0xfd ) )
@@ -770,10 +770,10 @@ IDE_RC mtfInitcapCalculateNchar4MB( mtcNode*     aNode,
                         }
                         else
                         {
-                            // 2. ëŒ€ì†Œë¬¸ìž ë³€í™˜í‘œ ì ìš©
-                            // IDN_NLS_CASE_UNICODE_MAXë³´ë‹¤ ìž‘ì„ ê²½ìš°ì—ë§Œ ë³€í™˜í•œë‹¤.
-                            // IDN_NLS_CASE_UNICODE_MAXë³´ë‹¤ í¬ë©´ ëŒ€ì†Œë¬¸ìž ë³€í™˜ì´
-                            // ì˜ë¯¸ê°€ ì—†ìœ¼ë¯€ë¡œ ê·¸ëŒ€ë¡œ copyí•œë‹¤.
+                            // 2. ´ë¼Ò¹®ÀÚ º¯È¯Ç¥ Àû¿ë
+                            // IDN_NLS_CASE_UNICODE_MAXº¸´Ù ÀÛÀ» °æ¿ì¿¡¸¸ º¯È¯ÇÑ´Ù.
+                            // IDN_NLS_CASE_UNICODE_MAXº¸´Ù Å©¸é ´ë¼Ò¹®ÀÚ º¯È¯ÀÌ
+                            // ÀÇ¹Ì°¡ ¾øÀ¸¹Ç·Î ±×´ë·Î copyÇÑ´Ù.
 
                             if ( sCharStatus == 0 )
                             {
@@ -785,7 +785,7 @@ IDE_RC mtfInitcapCalculateNchar4MB( mtcNode*     aNode,
                                 mtl::getUTF16LowerStr( &sCaseResult, &sU16Result );
                             }
 
-                            // 3. DestCharSet(UTF16) => SrcCharSet(UTF8)ìœ¼ë¡œ ë³€í™˜
+                            // 3. DestCharSet(UTF16) => SrcCharSet(UTF8)À¸·Î º¯È¯
                             IDE_TEST( convertCharSet( sIdnDestCharSet,
                                                       sIdnSrcCharSet,
                                                       & sCaseResult,
@@ -807,7 +807,7 @@ IDE_RC mtfInitcapCalculateNchar4MB( mtcNode*     aNode,
                         }
                         else
                         {
-                            // ê·¸ëŒ€ë¡œ ì €ìž¥
+                            // ±×´ë·Î ÀúÀå
                             *sResultValue = *sSourceIndex;
                         }
                         sCharStatus = 1;
@@ -820,7 +820,7 @@ IDE_RC mtfInitcapCalculateNchar4MB( mtcNode*     aNode,
                         }
                         else
                         {
-                            // ê·¸ëŒ€ë¡œ ì €ìž¥
+                            // ±×´ë·Î ÀúÀå
                             *sResultValue = *sSourceIndex;
                         }
                     }

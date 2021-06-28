@@ -147,8 +147,8 @@ public:
     static IDE_RC getReplOfflineDirCount(smiStatement * aSmiStmt,
                                          SChar        * aReplName,
                                          UInt         * aReplOfflineDirCount);
-    /* PROJ-1442 Replication Online Ï§ë DDL ÌóàÏö©
-     * SYS_REPL_OLD_ITEMS_ Í¥ÄÎ†®
+    /* PROJ-1442 Replication Online ¡ﬂ DDL «„øÎ
+     * SYS_REPL_OLD_ITEMS_ ∞¸∑√
      */
     static IDE_RC insertReplOldItem( smiStatement * aSmiStmt,
                                      SChar        * aRepName,
@@ -166,8 +166,8 @@ public:
                                       rpdOldItem   * aItemArr,
                                       vSLong         aItemCount );
 
-    /* PROJ-1442 Replication Online Ï§ë DDL ÌóàÏö©
-     * SYS_REPL_OLD_COLUMNS_ Í¥ÄÎ†®
+    /* PROJ-1442 Replication Online ¡ﬂ DDL «„øÎ
+     * SYS_REPL_OLD_COLUMNS_ ∞¸∑√
      */
     static IDE_RC insertReplOldColumn(smiStatement  * aSmiStmt,
                                       SChar         * aRepName,
@@ -188,8 +188,8 @@ public:
                                        smiColumnMeta * aColumnArr,
                                        vSLong          aColumnCount);
 
-    /* PROJ-1442 Replication Online Ï§ë DDL ÌóàÏö©
-     * SYS_REPL_OLD_INDICES_ Í¥ÄÎ†®
+    /* PROJ-1442 Replication Online ¡ﬂ DDL «„øÎ
+     * SYS_REPL_OLD_INDICES_ ∞¸∑√
      */
     static IDE_RC insertReplOldIndex(smiStatement * aSmiStmt,
                                      SChar        * aRepName,
@@ -210,8 +210,8 @@ public:
                                        smiIndexMeta * aIndexArr,
                                        vSLong         aIndexCount);
 
-    /* PROJ-1442 Replication Online Ï§ë DDL ÌóàÏö©
-     * SYS_REPL_OLD_INDEX_COLUMNS_ Í¥ÄÎ†®
+    /* PROJ-1442 Replication Online ¡ﬂ DDL «„øÎ
+     * SYS_REPL_OLD_INDEX_COLUMNS_ ∞¸∑√
      */
     static IDE_RC insertReplOldIndexCol(smiStatement       * aSmiStmt,
                                         SChar              * aRepName,
@@ -297,13 +297,20 @@ public:
                                               const void           * aRow );
 
 
-    /* PROJ-1442 Replication Online Ï§ë DDL ÌóàÏö©
-     * SYS_REPL_ITEMS_Ïùò TABLE_OID Í∞±Ïã†
+    /* PROJ-1442 Replication Online ¡ﬂ DDL «„øÎ
+     * SYS_REPL_ITEMS_¿« TABLE_OID ∞ªΩ≈
      */
     static IDE_RC updateReplItemsTableOID(smiStatement * aSmiStmt,
                                           smOID          aBeforeTableOID,
                                           smOID          aAfterTableOID);
-
+    static IDE_RC updateReplItemsTableOIDArray( void         * aQcStatement,
+                                                smOID        * aBeforeTableOIDArray,
+                                                smOID        * aAfterTableOIDArray,
+                                                UInt           aTableOIDCount );
+    static IDE_RC isExistInReplItemsHistory( smiStatement * aSmiStmt,
+                                             SChar  * aRepName,
+                                             smOID    aOID,
+                                             idBool * aOutIsExist );
     static IDE_RC updateLastUsedHostNo( smiStatement  * aSmiStmt,
                                         SChar         * aRepName, 
                                         SChar         * aHostIP, 
@@ -352,6 +359,10 @@ public:
                                          rpdReplItems * aReplItems,
                                          smSN           aSN );
 
+    static IDE_RC updateCurrentXLogfileLSN( smiStatement * aSmiStmt,
+                                            SChar        * aRepName,
+                                            smLSN          aCurrentXLogfileLSN );
+
     static IDE_RC selectReplicationsWithSmiStatement( smiStatement    * aSmiStmt,
                                                       UInt            * aNumReplications,
                                                       rpdReplications * aReplications,
@@ -373,13 +384,15 @@ public:
     static IDE_RC selectReplItems( smiStatement   * aSmiStmt,
                                    SChar          * aRepName,
                                    rpdMetaItem    * aMetaItems,
-                                   SInt             aItemCount );
+                                   SInt             aItemCount,
+                                   idBool           aForUpdateFlag );
 
     static IDE_RC selectReplItemsWithCursor( smiStatement   * aSmiStmt,
-                                             SChar          * aReplName,
+                                             SChar          * aRepName,
                                              rpdMetaItem    * aMetaItems,
                                              SInt             aItemCount,
-                                             smiTableCursor * aCursor );
+                                             smiTableCursor * aCursor,
+                                             idBool           aForUpdateFlag );
 
     static IDE_RC getIndexByAddr( SInt          aLastUsedIP,
                                   rpdReplHosts *aReplHosts,
@@ -487,9 +500,40 @@ public:
 
     static IDE_RC updateRemoteDataInit( smiStatement * aSmiStmt,
                                         SChar        * aReplName );
+
+
+    static IDE_RC updateConditionalSyncedWithOID( smiStatement      * aSmiStmt,
+                                                  SChar             * aReplName,
+                                                  smOID               aTableOID,
+                                                  idBool              aIsConditionSynced );
+
+    static IDE_RC updateConditionalSyncedWithItem( smiStatement      * aSmiStmt,
+                                                   rpdReplItems      * aReplItems,
+                                                   idBool              aIsConditionSynced );
+
+    static IDE_RC removeReplItemReplaceHistory( smiStatement * aSmiStmt,
+                                                SChar        * aReplName );
+
+    static IDE_RC deleteReplItemReplaceHistory( smiStatement * aSmiStmt,
+                                                rpdReplItems * aReplItems,
+                                                idBool         aIsPartition );
+
+    static IDE_RC selectXLogfileCurrentLSNByName( smiStatement      * aSmiStatement,
+                                                  SChar             * aReplName,
+                                                  smLSN             * aLSN );
+
+    static IDE_RC isConsistentReplication( void          * aQcStatement,
+                                           qciNamePosition aReplName,
+                                           idBool        * aIsTrue);
+   
+    static IDE_RC setTableOIDReferToItemReplaceHistory( smiStatement  * aSmiStmt,
+                                                        rpdReplItems  * aReplItems );
+
 private:
     static IDE_RC setReplMember( rpdReplications * aRepl, 
                                  const void      * aRow );
+    static IDE_RC selectReplReceiver( smiStatement * aSmiStmt,
+                                      rpdReplications * aRepl );
     static void   setReplHostMember( rpdReplHosts * aReplHost,
                                      const void   * aRow );
     static void   setReplItemMember( rpdReplItems * aReplItem,
@@ -499,7 +543,7 @@ private:
     static void   setReplOfflineDirMember(rpdReplOfflineDirs * aReplOfflineDirs,
                                           const void         * aRow);
 
-    // PROJ-1442 Replication Online Ï§ë DDL ÌóàÏö©
+    // PROJ-1442 Replication Online ¡ﬂ DDL «„øÎ
     static void   setReplOldItemMember( rpdOldItem * aReplOldItem,
                                         const void   * aRow );
     static IDE_RC setReplOldColumnMember( smiColumnMeta * aReplOldColumn,
@@ -519,5 +563,8 @@ private:
     static const char *   ConnTypeEnumToString( RP_SOCKET_TYPE aConnType ); 
     static RP_SOCKET_TYPE ConnTypeStrToEnum( mtdCharType  * aConnStr );
     static rpIBLatency    IBLatencyStrToEnum( mtdCharType * aConnStr );
+
+    static void setXLogfileCurrentLSN( smLSN * aXLogfileCurrentLSN,
+                                         const void  * aRow );
 };
 #endif /* _O_RPD_CATALOG_DEFAULT_H_ */

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smiTrans.cpp 85343 2019-04-30 01:50:33Z returns $
+ * $Id: smiTrans.cpp 90824 2021-05-13 05:35:21Z minku.kang $
  **********************************************************************/
 
 #include <idl.h>
@@ -27,6 +27,8 @@
 #include <smiTrans.h>
 #include <smiLegacyTrans.h>
 #include <smiMain.h>
+
+smiTransactionalDDLCallback smiTrans::mTransactionalDDLCallback;
 
 IDE_RC smiTrans::initialize()
 {
@@ -41,8 +43,8 @@ IDE_RC smiTrans::initialize()
                     insufficient_memory );
 
     /* PROJ-1381 Fetch Across Commits
-     * mStmtListHeadì˜ mAllPrev/mAllNextëŠ” ì´ê³³ì—ì„œë§Œ ì´ˆê¸°í™” í•œë‹¤.
-     * Commit ì´í›„ì—ë„ Legacy TXì˜ STMTì— ì ‘ê·¼í•  ìˆ˜ ìžˆì–´ì•¼í•˜ê¸° ë•Œë¬¸ì´ë‹¤. */
+     * mStmtListHeadÀÇ mAllPrev/mAllNext´Â ÀÌ°÷¿¡¼­¸¸ ÃÊ±âÈ­ ÇÑ´Ù.
+     * Commit ÀÌÈÄ¿¡µµ Legacy TXÀÇ STMT¿¡ Á¢±ÙÇÒ ¼ö ÀÖ¾î¾ßÇÏ±â ¶§¹®ÀÌ´Ù. */
     mStmtListHead->mAllPrev =
     mStmtListHead->mAllNext = mStmtListHead;
 
@@ -51,6 +53,8 @@ IDE_RC smiTrans::initialize()
 
     mStmtListHead->mChildStmtCnt = 0;
     mStmtListHead->mUpdate       = NULL;
+
+    mImpSVP4Shard = NULL; /* BUG-46786 */
 
     return IDE_SUCCESS;
 
@@ -80,9 +84,6 @@ IDE_RC smiTrans::initializeInternal( void )
 
     SM_LSN_INIT( mBeginLSN );
     SM_LSN_INIT( mCommitLSN );
-
-    mImpSVP4Shard = NULL; /* BUG-46786 */
-
     return IDE_SUCCESS;
 }
 
@@ -108,6 +109,10 @@ IDE_RC smiTrans::destroy( idvSQL * /*aStatistics*/ )
 
     if ( mTrans != NULL )
     {
+        /* BUG-48210 commit ½ÇÆÐ¿¡ ´ëÇÑ ¿¹¿Ü Ã³¸® º¸°­ */
+        IDE_TEST_RAISE( ((smxTrans*)mTrans)->mStatus != SMX_TX_END,
+                        ERR_UNTERMINATIED_TRANSACTION );
+
         IDE_TEST( smxTransMgr::freeTrans( (smxTrans*)mTrans )
                   != IDE_SUCCESS );
         mTrans = NULL;
@@ -119,6 +124,17 @@ IDE_RC smiTrans::destroy( idvSQL * /*aStatistics*/ )
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_UNTERMINATIED_TRANSACTION );
+    {
+        /* BUG-48210 commit ½ÇÆÐ¿¡ ´ëÇÑ ¿¹¿Ü Ã³¸® º¸°­ */
+        ideLog::logCallStack( IDE_ERR_0 );
+        ideLog::log( IDE_ERR_0,
+                     "transaction was not commited\n"
+                     "transaction ID: %"ID_UINT32_FMT", status: %"ID_UINT32_FMT"\n",
+                     smxTrans::getTransID( mTrans ),
+                     ((smxTrans*)mTrans)->mStatus ) ;
+        IDE_SET( ideSetErrorCode( smERR_ABORT_INTERNAL ) );
+    }
     IDE_EXCEPTION( ERR_UPDATE_STATEMENT_EXIST );
     {
         IDE_SET( ideSetErrorCode( smERR_ABORT_smiUpdateStatementExist ) );
@@ -132,11 +148,20 @@ IDE_RC smiTrans::destroy( idvSQL * /*aStatistics*/ )
     return IDE_FAILURE;
 }
 
+void smiTrans::setDistTxInfo( smiDistTxInfo * aDistTxInfo )
+{
+    if ( ( aDistTxInfo != NULL ) && SMI_DIST_LEVEL_IS_VALID( aDistTxInfo->mDistLevel ) )
+    {
+        ((smxTrans*)getTrans())->setDistTxInfo( aDistTxInfo );
+    }
+}
+
 IDE_RC smiTrans::begin(smiStatement** aStatement,
                        idvSQL        *aStatistics,
                        UInt           aFlag,
                        UInt           aReplID,
-                       idBool         aIgnoreRetry)
+                       idBool         aIgnoreRetry,
+                       idBool         aIsServiceTX )
 {
     smxTrans* sTrans = (smxTrans*)mTrans;
 
@@ -160,8 +185,11 @@ IDE_RC smiTrans::begin(smiStatement** aStatement,
         /* nothing to do */
     }
 
-    IDE_ASSERT( ((smxTrans*)mTrans)->begin( aStatistics, aFlag, aReplID )
-                == IDE_SUCCESS );
+    IDE_TEST( ((smxTrans*)mTrans)->begin( aStatistics,
+                                          aFlag,
+                                          aReplID,
+                                          aIsServiceTX )
+              != IDE_SUCCESS );
 
     mFlag = aFlag;
 
@@ -180,7 +208,7 @@ IDE_RC smiTrans::begin(smiStatement** aStatement,
     {
         IDE_SET( ideSetErrorCode( smERR_ABORT_smiUpdateStatementExist ) );
 
-        /* BUG-42584 INC-30976 í•´ê²°ì„ ìœ„í•œ ë””ë²„ê·¸ ì½”ë“œ ì¶”ê°€ */
+        /* BUG-42584 INC-30976 ÇØ°áÀ» À§ÇÑ µð¹ö±× ÄÚµå Ãß°¡ */
         ideLog::log( IDE_SM_0,
                      "Transaction has child statement.\n"
                      "Statement Info\n"
@@ -207,12 +235,12 @@ IDE_RC smiTrans::begin(smiStatement** aStatement,
 
     if ( mTrans != NULL )
     {
-        /* BUG-46782 Begin transaction ë””ë²„ê¹… ì •ë³´ ì¶”ê°€.
-         * mTrans NULLì¸ ê²½ìš°ëŠ”, ì´ì „ì— í• ë‹¹ í•œ ì ì´ ì—†ê³ , ìƒˆë¡œ í• ë‹¹ë„ ì‹¤íŒ¨í•œ ê²½ìš°ì´ë‹¤.
-         *   1. mTrans == NULL , sTrans == NULL Transaction alloc ì‹¤íŒ¨, ë³¸ ì •ë³´ ì¶œë ¥ í•˜ì§€ ì•ŠìŒ
-         * > 2. mTrans != NULL , sTrans == NULL ìƒˆë¡œ Transaction alloc ë°›ì•„ì„œ begin ì‹¤íŒ¨
-         * > 3. mTrans == sTrans != NULL        ì´ì „ì— alloc ë°›ì€ transaction ìž¬í™œìš©
-         *   4. mTrans != sTrans != NULL        ì—†ëŠ” ê²½ìš°ì˜ ìˆ˜
+        /* BUG-46782 Begin transaction µð¹ö±ë Á¤º¸ Ãß°¡.
+         * mTrans NULLÀÎ °æ¿ì´Â, ÀÌÀü¿¡ ÇÒ´ç ÇÑ ÀûÀÌ ¾ø°í, »õ·Î ÇÒ´çµµ ½ÇÆÐÇÑ °æ¿ìÀÌ´Ù.
+         *   1. mTrans == NULL , sTrans == NULL Transaction alloc ½ÇÆÐ, º» Á¤º¸ Ãâ·Â ÇÏÁö ¾ÊÀ½
+         * > 2. mTrans != NULL , sTrans == NULL »õ·Î Transaction alloc ¹Þ¾Æ¼­ begin ½ÇÆÐ
+         * > 3. mTrans == sTrans != NULL        ÀÌÀü¿¡ alloc ¹ÞÀº transaction ÀçÈ°¿ë
+         *   4. mTrans != sTrans != NULL        ¾ø´Â °æ¿ìÀÇ ¼ö
          * */
 
         ideLog::log( IDE_ERR_0,
@@ -263,8 +291,8 @@ IDE_RC smiTrans::begin(smiStatement** aStatement,
     }
     else
     {
-        /* alloc transactionì„ ì‹¤íŒ¨í•œ ê²½ìš°ëŠ” ìžˆì„ ìˆ˜ ìžˆë‹¤.
-         * Debug Info ë° Assert ì—†ì´ ì˜ˆì™¸ì²˜ë¦¬ë§Œ í•¨*/
+        /* alloc transactionÀ» ½ÇÆÐÇÑ °æ¿ì´Â ÀÖÀ» ¼ö ÀÖ´Ù.
+         * Debug Info ¹× Assert ¾øÀÌ ¿¹¿ÜÃ³¸®¸¸ ÇÔ*/
     }
 
     return IDE_FAILURE;
@@ -306,9 +334,9 @@ IDE_RC smiTrans::savepoint(const SChar* aSavePoint,
 
 }
 
-void smiTrans::reservePsmSvp( )
+void smiTrans::reservePsmSvp( idBool aIsShard )
 {
-    ((smxTrans*)mTrans)->reservePsmSvp();
+    ((smxTrans*)mTrans)->reservePsmSvp( aIsShard );
 }
 
 void smiTrans::clearPsmSvp( )
@@ -327,9 +355,28 @@ IDE_RC smiTrans::abortToPsmSvp( )
     return IDE_FAILURE;
 }
 
+/* BUG-48489 */
+idBool smiTrans::isExistExpSavepoint(const SChar *aSavepointName)
+{
+    return ((smxTrans *)mTrans)->isExistExpSavepoint(aSavepointName);
+}
 
-// partial rollback ë˜ëŠ” total rollbackì„ í•œë‹¤.
-// total rollbackì‹œ transaction slotì„ freeí•œë‹¤.
+// TASK-7244 PSM partial rollback in Sharding
+idBool smiTrans::isShardPsmSvpReserved( )
+{
+    idBool sRet = ID_FALSE;
+
+    if ( mTrans != NULL )
+    {
+        sRet = smxTrans::isShardPsmSvpReserved( mTrans );
+    }
+
+    return sRet ;
+}
+
+
+// partial rollback ¶Ç´Â total rollbackÀ» ÇÑ´Ù.
+// total rollback½Ã transaction slotÀ» freeÇÑ´Ù.
 IDE_RC smiTrans::rollback(const SChar* aSavePoint,
                           UInt         aTransReleasePolicy )
 {
@@ -341,7 +388,7 @@ IDE_RC smiTrans::rollback(const SChar* aSavePoint,
     IDE_TEST_RAISE( mStmtListHead->mUpdate != NULL,
                     ERR_UPDATE_STATEMENT_EXIST );
 
-    /* BUG-46786 : Txì— ê¸°ë¡ëœ implicit savepointë¥¼ ì •ë¦¬í•œë‹¤. */
+    /* BUG-46786 : Tx¿¡ ±â·ÏµÈ implicit savepoint¸¦ Á¤¸®ÇÑ´Ù. */
     if ( mImpSVP4Shard != NULL  ) 
     {
         IDE_TEST( ((smxTrans *)mTrans)->unsetImpSavepoint( mImpSVP4Shard )
@@ -361,10 +408,10 @@ IDE_RC smiTrans::rollback(const SChar* aSavePoint,
         /* total rollback. */
 
         /* PROJ-2694 Fetch Across Rollback
-         * rollback ì‹œì ì— ChildStmtê°€ ë‚¨ì•„ ìžˆë‹¤ë©´ cursorì˜ viewë¥¼ ìœ ì§€í•˜ê¸° ìœ„í•´
-         * Legacy Transë¥¼ ìƒì„±í•´ì•¼ í•  ìˆ˜ ìžˆë‹¤.
-         * ë‹¨, rollbackìœ¼ë¡œ ì¸í•´ viewê°€ ê¹¨ì§ˆ ê²½ìš°ì—ëŠ” cursorì˜ ìž¬ì‚¬ìš©ì´ ë¶ˆê°€ëŠ¥í•˜ë¯€ë¡œ
-         * ì´ ê²½ìš°ì—ëŠ” cursorë¥¼ ìž¬ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+         * rollback ½ÃÁ¡¿¡ ChildStmt°¡ ³²¾Æ ÀÖ´Ù¸é cursorÀÇ view¸¦ À¯ÁöÇÏ±â À§ÇØ
+         * Legacy Trans¸¦ »ý¼ºÇØ¾ß ÇÒ ¼ö ÀÖ´Ù.
+         * ´Ü, rollbackÀ¸·Î ÀÎÇØ view°¡ ±úÁú °æ¿ì¿¡´Â cursorÀÇ Àç»ç¿ëÀÌ ºÒ°¡´ÉÇÏ¹Ç·Î
+         * ÀÌ °æ¿ì¿¡´Â cursor¸¦ Àç»ç¿ëÇÏÁö ¾Ê´Â´Ù. */
         sIsLegacyTrans = isReusableRollback();
 
         IDE_TEST( ((smxTrans*)mTrans)->abort( sIsLegacyTrans,
@@ -385,7 +432,7 @@ IDE_RC smiTrans::rollback(const SChar* aSavePoint,
             }
             else
             {
-                /* rollback ì‹œì ì— ChildStmtê°€ ì—†ì„ ê²½ìš° legacyTxë¥¼ ìƒì„±í•  í•„ìš”ê°€ ì—†ë‹¤. */
+                /* rollback ½ÃÁ¡¿¡ ChildStmt°¡ ¾øÀ» °æ¿ì legacyTx¸¦ »ý¼ºÇÒ ÇÊ¿ä°¡ ¾ø´Ù. */
             }
         }
 
@@ -413,8 +460,8 @@ IDE_RC smiTrans::rollback(const SChar* aSavePoint,
 
 }
 
-IDE_RC smiTrans::commit(smSCN * aCommitSCN,
-                        UInt    aTransReleasePolicy)
+IDE_RC smiTrans::commit( smSCN * aCommitSCN,
+                         UInt    aTransReleasePolicy )
 {
     idBool      sIsLegacyTrans  = ID_FALSE;
     idBool      sWriteCommitLog = ID_FALSE; /* BUG-41342 */
@@ -424,7 +471,7 @@ IDE_RC smiTrans::commit(smSCN * aCommitSCN,
     IDE_TEST_RAISE( mStmtListHead->mUpdate != NULL,
                     ERR_UPDATE_STATEMENT_EXIST );
 
-    /* BUG-46786 : Txì— ê¸°ë¡ëœ implicit savepointë¥¼ ì •ë¦¬í•œë‹¤. */
+    /* BUG-46786 : Tx¿¡ ±â·ÏµÈ implicit savepoint¸¦ Á¤¸®ÇÑ´Ù. */
     if ( mImpSVP4Shard != NULL ) 
     {
         IDE_TEST( ((smxTrans *)mTrans)->unsetImpSavepoint( mImpSVP4Shard )
@@ -434,13 +481,13 @@ IDE_RC smiTrans::commit(smSCN * aCommitSCN,
     }
 
     /* PROJ-1381 Fetch Across Commits
-     * commit ì‹œì ì— ChildStmtê°€ ë‚¨ì•„ìžˆìœ¼ë©´ fetchë¥¼ ê³„ì† í•  ìˆ˜ ìžˆë„ë¡
-     * Legacy Transë¥¼ ìƒì„±í•œë‹¤. */
+     * commit ½ÃÁ¡¿¡ ChildStmt°¡ ³²¾ÆÀÖÀ¸¸é fetch¸¦ °è¼Ó ÇÒ ¼ö ÀÖµµ·Ï
+     * Legacy Trans¸¦ »ý¼ºÇÑ´Ù. */
     if ( mStmtListHead->mChildStmtCnt != 0 )
     {
-        /* Autocommit Modeì´ê±°ë‚˜ íŠ¸ëžœì ì…˜ì„ ì™„ì „ížˆ ì¢…ë£Œí•  ë•ŒëŠ”
-         * Release Policyë¥¼ SMI_RELEASE_TRANSACTIONìœ¼ë¡œ í•œë‹¤.
-         * ì´ë•ŒëŠ” commit ì‹œì ì— ë‚¨ì•„ìžˆëŠ” ChildStmtê°€ ìžˆì–´ì„œëŠ” ì•ˆëœë‹¤. */
+        /* Autocommit ModeÀÌ°Å³ª Æ®·£Á§¼ÇÀ» ¿ÏÀüÈ÷ Á¾·áÇÒ ¶§´Â
+         * Release Policy¸¦ SMI_RELEASE_TRANSACTIONÀ¸·Î ÇÑ´Ù.
+         * ÀÌ¶§´Â commit ½ÃÁ¡¿¡ ³²¾ÆÀÖ´Â ChildStmt°¡ ÀÖ¾î¼­´Â ¾ÈµÈ´Ù. */
         IDE_TEST_RAISE( aTransReleasePolicy == SMI_RELEASE_TRANSACTION,
                         ERR_STATEMENT_EXIST );
 
@@ -454,6 +501,7 @@ IDE_RC smiTrans::commit(smSCN * aCommitSCN,
                                            &sLegacyTrans )
               != IDE_SUCCESS );
     sWriteCommitLog = ID_TRUE;
+
 
     /* PROJ-1381 Fetch Across Commits */
     if ( sIsLegacyTrans == ID_TRUE )
@@ -494,7 +542,7 @@ IDE_RC smiTrans::commit(smSCN * aCommitSCN,
     }
     IDE_EXCEPTION_END;
 
-    /* BUG-41342 Commit Logë¥¼ ë‚¨ê¸´ í›„ì—ëŠ” ì˜ˆì™¸ì²˜ë¦¬í•˜ë©´ ì•ˆëœë‹¤. */
+    /* BUG-41342 Commit Log¸¦ ³²±ä ÈÄ¿¡´Â ¿¹¿ÜÃ³¸®ÇÏ¸é ¾ÈµÈ´Ù. */
     IDE_ASSERT( sWriteCommitLog == ID_FALSE );
 
     return IDE_FAILURE;
@@ -503,7 +551,7 @@ IDE_RC smiTrans::commit(smSCN * aCommitSCN,
 smTID smiTrans::getTransID()
 {
     /* ------------------------------------------------
-     *  mTransê°€ NULLì¼ ìˆ˜ ìžˆê¸° ë•Œë¬¸ì— ìž„ì‹œì €ìž¥ í›„ check & getID
+     *  mTrans°¡ NULLÀÏ ¼ö ÀÖ±â ¶§¹®¿¡ ÀÓ½ÃÀúÀå ÈÄ check & getID
      * ----------------------------------------------*/
     smxTrans *sTrans = (smxTrans*)mTrans;
     return (sTrans == NULL) ? 0 : ((smTID)((smxTrans*)sTrans)->mTransID);
@@ -513,10 +561,13 @@ smTID smiTrans::getTransID()
      For Global Transaction
    ---------------------------------- */
 /* BUG-18981 */
-IDE_RC smiTrans::prepare(ID_XID *aXID)
+IDE_RC smiTrans::prepare( ID_XID *aXID, smSCN * aPrepareSCN, idBool aLogging )
 {
 
-    IDE_TEST( ((smxTrans*)mTrans)->prepare(aXID) != IDE_SUCCESS );
+    IDE_TEST( ((smxTrans*)mTrans)->prepare( aXID, 
+                                            aPrepareSCN, 
+                                            aLogging ) 
+              != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -531,12 +582,56 @@ IDE_RC smiTrans::attach( SInt aSlotID )
 {
 
     smxTrans *sTrans;
-
+    
     sTrans = smxTransMgr::getTransBySID(aSlotID);
     mTrans   = sTrans;
 
     return IDE_SUCCESS;
 
+}
+
+IDE_RC smiTrans::dettach()
+{
+    IDE_TEST_RAISE( mStmtListHead->mUpdate != NULL,
+                    ERR_UPDATE_STATEMENT_EXIST );
+
+    /* BUG-46786 : Tx¿¡ ±â·ÏµÈ implicit savepoint¸¦ Á¤¸®ÇÑ´Ù. */
+    if ( mImpSVP4Shard != NULL ) 
+    {
+        IDE_TEST( ((smxTrans *)mTrans)->unsetImpSavepoint( mImpSVP4Shard )
+                  != IDE_SUCCESS );
+
+        mImpSVP4Shard = NULL;
+    }
+
+    mTrans = NULL;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_UPDATE_STATEMENT_EXIST );
+    {
+        IDE_SET( ideSetErrorCode( smERR_ABORT_smiUpdateStatementExist ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC smiTrans::realloc( idvSQL *aStatistics, idBool aIgnoreRetry )
+{
+    if ( mTrans == NULL )
+    {
+        IDE_TEST( smxTransMgr::alloc( (smxTrans **)&mTrans,
+                                      aStatistics,
+                                      aIgnoreRetry )
+                  != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
 IDE_RC smiTrans::isReadOnly(idBool *aIsReadOnly)
@@ -547,7 +642,7 @@ IDE_RC smiTrans::isReadOnly(idBool *aIsReadOnly)
     sIsReadOnly = ((smxTrans *)mTrans)->isReadOnly();
     if ( sIsReadOnly == ID_TRUE )
     {
-        /* BUG-42991 smiTrans::isReadOnly()ì—ì„œ Volatile Tablespaceë¥¼ ê²€ì‚¬í•˜ë„ë¡ í•©ë‹ˆë‹¤. */
+        /* BUG-42991 smiTrans::isReadOnly()¿¡¼­ Volatile Tablespace¸¦ °Ë»çÇÏµµ·Ï ÇÕ´Ï´Ù. */
         sIsVolatileTBSTouched = ((smxTrans *)mTrans)->isVolatileTBSTouched();
         if ( sIsVolatileTBSTouched == ID_FALSE )
         {
@@ -590,8 +685,8 @@ UInt smiTrans::getFirstUpdateTime()
     }
 }
 
-// QPì—ì„œ Metaê°€ ì ‘ê·¼ëœ ê²½ìš° ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì—¬
-// Transactionì— Metaì ‘ê·¼ ì—¬ë¶€ë¥¼ ì„¸íŒ…í•œë‹¤
+// QP¿¡¼­ Meta°¡ Á¢±ÙµÈ °æ¿ì ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ¿©
+// Transaction¿¡ MetaÁ¢±Ù ¿©ºÎ¸¦ ¼¼ÆÃÇÑ´Ù
 IDE_RC smiTrans::setMetaTableModified()
 {
     ((smxTrans*)mTrans)->setMetaTableModified();
@@ -609,7 +704,7 @@ smSN smiTrans::getCommitSN()
 }
 
 /*******************************************************************************
- * Description : DDL Transactionì„ í‘œì‹œí•˜ëŠ” Log Recordë¥¼ ê¸°ë¡í•œë‹¤.
+ * Description : DDL TransactionÀ» Ç¥½ÃÇÏ´Â Log Record¸¦ ±â·ÏÇÑ´Ù.
  ******************************************************************************/
 IDE_RC smiTrans::writeDDLLog()
 {
@@ -617,10 +712,10 @@ IDE_RC smiTrans::writeDDLLog()
 }
 
 /*******************************************************************************
- * Description : Staticsticsë¥¼ ì„¸íŠ¸í•œë‹¤.
+ * Description : Staticstics¸¦ ¼¼Æ®ÇÑ´Ù.
  *
- *  BUG-22651  smrLogMgr::updateTransLSNInfoì—ì„œ
- *             ë¹„ì •ìƒì¢…ë£Œë˜ëŠ” ê²½ìš°ê°€ ì¢…ì¢…ìžˆìŠµë‹ˆë‹¤.
+ *  BUG-22651  smrLogMgr::updateTransLSNInfo¿¡¼­
+ *             ºñÁ¤»óÁ¾·áµÇ´Â °æ¿ì°¡ Á¾Á¾ÀÖ½À´Ï´Ù.
  ******************************************************************************/
 void smiTrans::setStatistics( idvSQL * aStatistics )
 {
@@ -629,7 +724,14 @@ void smiTrans::setStatistics( idvSQL * aStatistics )
 
 idvSQL * smiTrans::getStatistics( void )
 {
-    return ((smxTrans*)mTrans)->getStatistics( mTrans );
+    idvSQL * sStatistics = NULL;
+
+    if ( mTrans != NULL )
+    {
+        sStatistics = ((smxTrans*)mTrans)->getStatistics( mTrans );
+    }
+
+    return sStatistics;
 }
 
 IDE_RC smiTrans::setReplTransLockTimeout( UInt aReplTransLockTimeout )
@@ -648,7 +750,7 @@ idBool smiTrans::isBegin()
 {
     idBool sIsBegin = ID_FALSE;
 
-    if (mTrans != NULL)
+    if ( mTrans != NULL )
     {
         sIsBegin = smxTrans::isTxBeginStatus((smxTrans*)mTrans);
     }
@@ -667,14 +769,14 @@ idBool smiTrans::isReusableRollback( void )
 
     if ( ( sTrans != NULL ) && 
          ( sTrans->mIsReusableRollback == ID_TRUE ) && 
-         ( mStmtListHead->mChildStmtCnt != 0 ) )
-    {
+         ( mStmtListHead->mChildStmtCnt != 0 ) ) 
+    {   
         sResult = ID_TRUE;
     }   
     else
-    {
+    {   
         sResult = ID_FALSE;
-    }
+    }   
 
     return sResult;
 }
@@ -690,7 +792,7 @@ void smiTrans::setCursorHoldable( void )
 }
 
 /* BUG-46786
-   smiTransì— ì €ìž¥ëœ implicit savepointê°€ ìžˆëŠ”ì§€ í™•ì¸í•œë‹¤. */
+   smiTrans¿¡ ÀúÀåµÈ implicit savepoint°¡ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù. */
 idBool smiTrans::checkImpSVP4Shard( smiTrans * aTrans )
 {
     if ( ( aTrans != NULL ) &&
@@ -706,7 +808,7 @@ idBool smiTrans::checkImpSVP4Shard( smiTrans * aTrans )
 }
 
 /* BUG-46786
-   smiTransì— ì €ìž¥ëœ implicit savepointê¹Œì§€ ROLLBACK í•œë‹¤. */
+   smiTrans¿¡ ÀúÀåµÈ implicit savepoint±îÁö ROLLBACK ÇÑ´Ù. */
 IDE_RC smiTrans::abortToImpSVP4Shard( smiTrans * aTrans )
 {
     IDE_DASSERT( checkImpSVP4Shard( aTrans ) == ID_TRUE );
@@ -724,4 +826,175 @@ IDE_RC smiTrans::abortToImpSVP4Shard( smiTrans * aTrans )
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
+}
+
+IDE_RC smiTrans::setExpSvpForBackupDDLTargetTableInfo( smOID   aOldTableOID, 
+                                                       UInt    aOldPartOIDCount,
+                                                       smOID * aOldPartOIDArray,
+                                                       smOID   aNewTableOID,
+                                                       UInt    aNewPartOIDCount,
+                                                       smOID * aNewPartOIDArray )
+{
+    IDE_TEST_RAISE( mStmtListHead->mUpdate != NULL,
+                    ERR_UPDATE_STATEMENT_EXIST );
+
+    IDE_TEST( ((smxTrans*)mTrans)->setExpSvpForBackupDDLTargetTableInfo( aOldTableOID, 
+                                                                         aOldPartOIDCount,
+                                                                         aOldPartOIDArray,
+                                                                         aNewTableOID,
+                                                                         aNewPartOIDCount,                       
+                                                                         aNewPartOIDArray ) 
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_UPDATE_STATEMENT_EXIST );
+    {
+        IDE_SET( ideSetErrorCode( smERR_ABORT_smiUpdateStatementExist ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC smiTrans::allocNSetDDLTargetTableInfo( UInt                     aTableID, 
+                                              void                   * aOldTableInfo,
+                                              void                   * aNewTableInfo,
+                                              idBool                   aIsReCreated,
+                                              smiDDLTargetTableInfo ** aInfo )
+{
+    smiDDLTargetTableInfo * sInfo = NULL;
+
+    IDU_FIT_POINT_RAISE( "smiTrans::allocNSetDDLTargetTableInfo::malloc::insufficient_memory",
+                      insufficient_memory );
+    IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMI,
+                                       ID_SIZEOF(smiDDLTargetTableInfo),
+                                       (void **)&sInfo) != IDE_SUCCESS,
+                    insufficient_memory );
+
+    sInfo->mTableID = aTableID;
+    sInfo->mOldTableInfo = aOldTableInfo;
+    sInfo->mNewTableInfo = aNewTableInfo;
+    sInfo->mIsReCreated  = aIsReCreated; 
+    IDU_LIST_INIT( &(sInfo->mPartInfoList) );
+
+    *aInfo = sInfo;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( insufficient_memory );
+    {
+        IDE_SET(ideSetErrorCode(idERR_ABORT_InsufficientMemory));
+    }
+    IDE_EXCEPTION_END;
+
+    if ( sInfo != NULL )
+    {
+        iduMemMgr::free( sInfo );
+        sInfo = NULL;
+    }
+
+    return IDE_FAILURE;
+}
+
+void smiTrans::freeDDLTargetTableInfo( smiDDLTargetTableInfo * aDDLTargetTableInfo )
+{
+    if ( aDDLTargetTableInfo != NULL )
+    {
+        freeDDLTargetPartTableInfo( aDDLTargetTableInfo );
+
+        iduMemMgr::free( aDDLTargetTableInfo );
+    }
+}
+
+IDE_RC smiTrans::allocNSetDDLTargetPartTableInfo( smiDDLTargetTableInfo * aInfo,                                 
+                                                  UInt                    aTableID, 
+                                                  idBool                  aIsRecreated,
+                                                  void                  * aPartOldTableInfo,
+                                                  void                  * aPartNewTableInfo )
+{
+    smiDDLTargetTableInfo * sPartInfo = NULL;
+
+    IDE_TEST( allocNSetDDLTargetTableInfo( aTableID,
+                                           aPartOldTableInfo,
+                                           aPartNewTableInfo,
+                                           aIsRecreated,
+                                           &sPartInfo )
+              != IDE_SUCCESS );
+
+    IDU_LIST_INIT( &(sPartInfo->mPartInfoList) );
+
+    IDU_LIST_INIT_OBJ( &(sPartInfo->mNode), (void*)sPartInfo );
+    IDU_LIST_ADD_LAST( &(aInfo->mPartInfoList), &(sPartInfo->mNode) );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    if ( sPartInfo != NULL )
+    {
+        iduMemMgr::free( sPartInfo );
+        sPartInfo = NULL;
+    }
+
+    return IDE_FAILURE;
+}
+
+void smiTrans::freeDDLTargetPartTableInfo( smiDDLTargetTableInfo * aInfo )
+{
+    iduListNode * sPartNode  = NULL;
+    iduListNode * sPartDummy = NULL;
+    smiDDLTargetTableInfo * sPartInfo  = NULL;
+
+    IDE_DASSERT( aInfo != NULL );
+
+    IDU_LIST_ITERATE_SAFE( &(aInfo->mPartInfoList), sPartNode, sPartDummy )
+    {
+        sPartInfo = (smiDDLTargetTableInfo*)sPartNode->mObj;
+
+        IDU_LIST_REMOVE( &( sPartInfo->mNode ) );
+        iduMemMgr::free( sPartInfo );
+    }
+}
+
+/* BUG-48250 : TX¿¡ ¼³Á¤µÈ Session ProperyÀÎ INDOUBT_FETCH_TIMEOUT¸¦ °»½ÅÇÑ´Ù. */
+void smiTrans::setIndoubtFetchTimeout( UInt aTimeout )
+{
+    smxTrans * sTrans = (smxTrans *)mTrans;
+
+    if ( ( sTrans != NULL ) &&
+         ( sTrans->mStatus != SMX_TX_END ) )
+    {
+        sTrans->mIndoubtFetchTimeout = aTimeout;
+    }
+}
+/* BUG-48250 : TX¿¡ ¼³Á¤µÈ Session ProperyÀÎ INDOUBT_FETCH_METHOD¸¦ °»½ÅÇÑ´Ù. */
+void smiTrans::setIndoubtFetchMethod( UInt aMethod )
+{
+    smxTrans * sTrans = (smxTrans *)mTrans;
+
+    if ( ( sTrans != NULL ) &&
+         ( sTrans->mStatus != SMX_TX_END ) )
+    {
+        sTrans->mIndoubtFetchMethod = aMethod;
+    }
+}
+/* BUG-48829 :TX¿¡ ¼³Á¤µÈ Session ProperyÀÎ GLOBAL_TRANSACTION_LEVEL ¸¦ °»½ÅÇÑ´Ù. */
+void smiTrans::setGlobalTransactionLevel( idBool aIsGCTx )
+{
+    smxTrans * sTrans = (smxTrans *)mTrans;
+
+    if ( ( sTrans != NULL ) &&
+         ( sTrans->mStatus != SMX_TX_END ) )
+    {
+        sTrans->mIsGCTx = aIsGCTx ;
+
+        if ( aIsGCTx == ID_FALSE )
+        {
+            if( sTrans->mLegacyTransCnt == 0 )
+            {
+                SM_SET_SCN_INFINITE( &(sTrans->mLastRequestSCN) );
+            }
+        }
+    }
 }

@@ -25,12 +25,12 @@ public class SmnErrorParseTest extends TestCase
 {
     private String mErrMsg = "The shard meta number(SMN) is invalid.: [ Session SMN=13, Data Node SMN=14, Disconnect=N, Protocol=ExecuteV2Result 65537 1 1 18446744073709551615 0 0  ]";
 
-    public void testParseExecuteV2()
+    public void testParseExecuteV3()
     {
         CmProtocolContext sContext = new CmProtocolContext();
         CmExecutionResult sExecResult = new CmExecutionResult();
         sContext.addCmResult(sExecResult);
-        Error.parseExecuteResults(sContext, mErrMsg);
+        ShardError.parseExecuteResults(sContext, mErrMsg);
         assertEquals(sExecResult.getStatementId(), 65537);
         assertEquals(sExecResult.getRowNumber(), 1);
         assertEquals(sExecResult.getResultSetCount(), 1);
@@ -39,13 +39,13 @@ public class SmnErrorParseTest extends TestCase
 
     public void testParseSMN()
     {
-        long sSmn = Error.getSMNOfDataNodeFromErrorMsg(mErrMsg);
+        long sSmn = ShardError.getSMNOfDataNodeFromErrorMsg(mErrMsg);
         assertEquals(sSmn, 14);
     }
 
     public void testDisconnect()
     {
-        boolean sDisconnect = Error.getShardDiconnectFromErrorMsg(mErrMsg);
+        boolean sDisconnect = ShardError.getShardDiconnectFromErrorMsg(mErrMsg);
         assertFalse(sDisconnect);
     }
 }

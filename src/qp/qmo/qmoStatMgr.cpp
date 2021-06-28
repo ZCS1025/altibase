@@ -16,28 +16,28 @@
  
 
 /***********************************************************************
- * $Id: qmoStatMgr.cpp 83963 2018-09-12 05:46:48Z donovan.seo $
+ * $Id: qmoStatMgr.cpp 90850 2021-05-17 05:09:54Z donovan.seo $
  *
  * Description :
  *     Statistical Information Manager
  *
- *     Îã§ÏùåÍ≥º Í∞ôÏùÄ Í∞ÅÏ¢Ö Ïã§ÏãúÍ∞Ñ ÌÜµÍ≥Ñ Ï†ïÎ≥¥Ïùò Ï∂îÏ∂úÏùÑ Îã¥ÎãπÌïúÎã§.
- *          - TableÏùò Record Í∞úÏàò
- *          - TableÏùò Disk Page Í∞úÏàò
- *          - IndexÏùò Cardinality
- *          - ColumnÏùò Cardinality
- *          - ColumnÏùò MIN Value
- *          - ColumnÏùò MAX Value
+ *     ¥Ÿ¿Ω∞˙ ∞∞¿∫ ∞¢¡æ Ω«Ω√∞£ ≈Î∞Ë ¡§∫∏¿« √ﬂ√‚¿ª ¥„¥Á«—¥Ÿ.
+ *          - Table¿« Record ∞≥ºˆ
+ *          - Table¿« Disk Page ∞≥ºˆ
+ *          - Index¿« Cardinality
+ *          - Column¿« Cardinality
+ *          - Column¿« MIN Value
+ *          - Column¿« MAX Value
  *
- * Ïö©Ïñ¥ ÏÑ§Î™Ö :
+ * øÎæÓ º≥∏Ì :
  *
- *     1. columnNDV        : Ï§ëÎ≥µÏùÑ Ï†úÍ±∞Ìïú value Ïàò
- *     2. index columnNDV  : indexÍ∞Ä Í∞ÄÏßÄÍ≥† ÏûàÎäî columnNDV Ï†ïÎ≥¥
- *     3. column columnNDV : Ïª¨ÎüºÏùò Ïã§Ï†ú columnNDV
- *     4. MIN, MAX value     : Ïª¨ÎüºÍ∞í Ï§ë Í∞ÄÏû• ÏûëÏùÄ Í∞í, Í∞ÄÏû• ÌÅ∞ Í∞í
- *                             ( Ïà´ÏûêÌòïÍ≥º ÎÇ†ÏßúÌòïÎßå ÏùòÎØ∏Î•º Î∂ÄÏó¨Ìï®. )
+ *     1. columnNDV        : ¡ﬂ∫π¿ª ¡¶∞≈«— value ºˆ
+ *     2. index columnNDV  : index∞° ∞°¡ˆ∞Ì ¿÷¥¬ columnNDV ¡§∫∏
+ *     3. column columnNDV : ƒ√∑≥¿« Ω«¡¶ columnNDV
+ *     4. MIN, MAX value     : ƒ√∑≥∞™ ¡ﬂ ∞°¿Â ¿€¿∫ ∞™, ∞°¿Â ≈´ ∞™
+ *                             ( º˝¿⁄«¸∞˙ ≥Ø¬•«¸∏∏ ¿«πÃ∏¶ ∫Œø©«‘. )
  *
- * ÏïΩÏñ¥ :
+ * æ‡æÓ :
  *
  **********************************************************************/
 
@@ -64,27 +64,27 @@ compareKeyCountAsceding( const void * aElem1,
 {
 /***********************************************************************
  *
- * Description : ÌÜµÍ≥ÑÏ†ïÎ≥¥Ïùò indexCardInfoÎ•º
- *               Ïù∏Îç±Ïä§Ïùò key column countÍ∞Ä ÏûëÏùÄ ÏàúÏÑúÎåÄÎ°ú Ï†ïÎ†¨ÌïúÎã§.
- *               ( DISK tableÏùò index : access ÌöüÏàòÎ•º Ï§ÑÏù¥Í∏∞ ÏúÑÌï¥ )
+ * Description : ≈Î∞Ë¡§∫∏¿« indexCardInfo∏¶
+ *               ¿Œµ¶Ω∫¿« key column count∞° ¿€¿∫ º¯º≠¥Î∑Œ ¡§∑ƒ«—¥Ÿ.
+ *               ( DISK table¿« index : access »Ωºˆ∏¶ ¡Ÿ¿Ã±‚ ¿ß«ÿ )
  *
  * Implementation :
  *
- *     Ïù∏ÏûêÎ°ú ÎÑòÏñ¥Ïò® Îëê indexCardInfoÏùò index key column count ÎπÑÍµêÌï¥ÏÑú,
- *     Ïù∏Îç±Ïä§Ïùò key column countÍ∞Ä ÏûëÏùÄ ÏàúÏÑúÎåÄÎ°ú Ï†ïÎ†¨
- *     ÎßåÏïΩ, key column countÍ∞Ä Í∞ôÎã§Î©¥, selectivityÍ∞Ä ÏûëÏùÄ ÏàúÏÑúÎ°ú Ï†ïÎ†¨
+ *     ¿Œ¿⁄∑Œ ≥—æÓø¬ µŒ indexCardInfo¿« index key column count ∫Ò±≥«ÿº≠,
+ *     ¿Œµ¶Ω∫¿« key column count∞° ¿€¿∫ º¯º≠¥Î∑Œ ¡§∑ƒ
+ *     ∏∏æ‡, key column count∞° ∞∞¥Ÿ∏È, selectivity∞° ¿€¿∫ º¯º≠∑Œ ¡§∑ƒ
  *
  ***********************************************************************/
 
     //--------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //--------------------------------------
 
     IDE_DASSERT( aElem1 != NULL );
     IDE_DASSERT( aElem2 != NULL );
 
     //--------------------------------------
-    // key column count ÎπÑÍµê
+    // key column count ∫Ò±≥
     //--------------------------------------
 
     if( ((qmoIdxCardInfo *)aElem1)->index->keyColCount >
@@ -99,8 +99,8 @@ compareKeyCountAsceding( const void * aElem1,
     }
     else
     {
-        // ÎëêÍ∞úÏùò Ïù∏Îç±Ïä§ key countÍ∞Ä Í∞ôÏúºÎ©¥,
-        // selectivityÍ∞Ä ÏûëÏùÄ Ïù∏Îç±Ïä§Í∞Ä Î®ºÏ†Ä Ï†ïÎ†¨ÎêòÎèÑÎ°ù ÌïúÎã§.
+        // µŒ∞≥¿« ¿Œµ¶Ω∫ key count∞° ∞∞¿∏∏È,
+        // selectivity∞° ¿€¿∫ ¿Œµ¶Ω∫∞° ∏’¿˙ ¡§∑ƒµ«µµ∑œ «—¥Ÿ.
 
         if( ((qmoIdxCardInfo *)aElem1)->KeyNDV >
             ((qmoIdxCardInfo *)aElem2)->KeyNDV )
@@ -114,9 +114,9 @@ compareKeyCountAsceding( const void * aElem1,
         }
         else
         {
-            // indexÏùò key count, selectivityÍ∞Ä Î™®Îëê Í∞ôÎã§Î©¥,
-            // Index ID Í∞íÏùÑ Ïù¥Ïö©Ìï¥ÏÑú Ï†ïÎ†¨ÌïúÎã§.
-            // ÌîåÎû´ÌèºÍ∞ÑÏùò diff Î∞©ÏßÄÎ•º ÏúÑÌïú ÎÇ¥Ïö©ÏûÑ.
+            // index¿« key count, selectivity∞° ∏µŒ ∞∞¥Ÿ∏È,
+            // Index ID ∞™¿ª ¿ÃøÎ«ÿº≠ ¡§∑ƒ«—¥Ÿ.
+            // «√∑ß∆˚∞£¿« diff πÊ¡ˆ∏¶ ¿ß«— ≥ªøÎ¿”.
             if( ((qmoIdxCardInfo *)aElem1)->indexId <
                 ((qmoIdxCardInfo *)aElem2)->indexId )
             {
@@ -137,27 +137,27 @@ compareKeyCountDescending( const void * aElem1,
 {
 /***********************************************************************
  *
- * Description : ÌÜµÍ≥ÑÏ†ïÎ≥¥Ïùò indexCardInfoÎ•º
- *               Ïù∏Îç±Ïä§Ïùò key column countÍ∞Ä ÌÅ∞ ÏàúÏÑúÎåÄÎ°ú Ï†ïÎ†¨ÌïúÎã§.
- *               ( MEMORY tableÏùò index : Ïù∏Îç±Ïä§ ÏÇ¨Ïö© Í∑πÎåÄÌôî )
+ * Description : ≈Î∞Ë¡§∫∏¿« indexCardInfo∏¶
+ *               ¿Œµ¶Ω∫¿« key column count∞° ≈´ º¯º≠¥Î∑Œ ¡§∑ƒ«—¥Ÿ.
+ *               ( MEMORY table¿« index : ¿Œµ¶Ω∫ ªÁøÎ ±ÿ¥Î»≠ )
  *
  * Implementation :
  *
- *     Ïù∏ÏûêÎ°ú ÎÑòÏñ¥Ïò® Îëê indexCardInfoÏùò index key column count ÎπÑÍµêÌï¥ÏÑú,
- *     Ïù∏Îç±Ïä§Ïùò key column countÍ∞Ä ÌÅ∞ ÏàúÏÑúÎåÄÎ°ú Ï†ïÎ†¨.
- *     ÎßåÏïΩ, key column countÍ∞Ä Í∞ôÎã§Î©¥, selectivityÍ∞Ä ÏûëÏùÄ ÏàúÏÑúÎ°ú Ï†ïÎ†¨.
+ *     ¿Œ¿⁄∑Œ ≥—æÓø¬ µŒ indexCardInfo¿« index key column count ∫Ò±≥«ÿº≠,
+ *     ¿Œµ¶Ω∫¿« key column count∞° ≈´ º¯º≠¥Î∑Œ ¡§∑ƒ.
+ *     ∏∏æ‡, key column count∞° ∞∞¥Ÿ∏È, selectivity∞° ¿€¿∫ º¯º≠∑Œ ¡§∑ƒ.
  *
  ***********************************************************************/
     
     //--------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //--------------------------------------
 
     IDE_DASSERT( aElem1 != NULL );
     IDE_DASSERT( aElem2 != NULL );
 
     //--------------------------------------
-    // key column count ÎπÑÍµê
+    // key column count ∫Ò±≥
     //--------------------------------------
 
     if( ((qmoIdxCardInfo *)aElem1)->index->keyColCount <
@@ -172,8 +172,8 @@ compareKeyCountDescending( const void * aElem1,
     }
     else
     {
-        // ÎëêÍ∞úÏùò Ïù∏Îç±Ïä§ key countÍ∞Ä Í∞ôÏúºÎ©¥,
-        // selectivityÍ∞Ä ÏûëÏùÄ Ïù∏Îç±Ïä§Í∞Ä Î®ºÏ†Ä Ï†ïÎ†¨ÎêòÎèÑÎ°ù ÌïúÎã§.
+        // µŒ∞≥¿« ¿Œµ¶Ω∫ key count∞° ∞∞¿∏∏È,
+        // selectivity∞° ¿€¿∫ ¿Œµ¶Ω∫∞° ∏’¿˙ ¡§∑ƒµ«µµ∑œ «—¥Ÿ.
 
         if( ((qmoIdxCardInfo *)aElem1)->KeyNDV >
             ((qmoIdxCardInfo *)aElem2)->KeyNDV )
@@ -187,9 +187,9 @@ compareKeyCountDescending( const void * aElem1,
         }
         else
         {
-            // indexÏùò key count, selectivityÍ∞Ä Î™®Îëê Í∞ôÎã§Î©¥,
-            // Index ID Í∞íÏùÑ Ïù¥Ïö©Ìï¥ÏÑú Ï†ïÎ†¨ÌïúÎã§.
-            // ÌîåÎû´ÌèºÍ∞ÑÏùò diff Î∞©ÏßÄÎ•º ÏúÑÌïú ÎÇ¥Ïö©ÏûÑ.
+            // index¿« key count, selectivity∞° ∏µŒ ∞∞¥Ÿ∏È,
+            // Index ID ∞™¿ª ¿ÃøÎ«ÿº≠ ¡§∑ƒ«—¥Ÿ.
+            // «√∑ß∆˚∞£¿« diff πÊ¡ˆ∏¶ ¿ß«— ≥ªøÎ¿”.
             if( ((qmoIdxCardInfo *)aElem1)->indexId <
                 ((qmoIdxCardInfo *)aElem2)->indexId )
             {
@@ -211,15 +211,15 @@ qmoStat::getStatInfo4View( qcStatement    * aStatement,
 {
 /***********************************************************************
  *
- * Description : ViewÏóê ÎåÄÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥ Íµ¨Ï∂ï
+ * Description : Viewø° ¥Î«— ≈Î∞Ë ¡§∫∏ ±∏√‡
  *
  * Implementation :
- *    (1) qmoStatistics ÎßåÌÅº Î©îÎ™®Î¶¨ Ìï†Îãπ Î∞õÏùå
- *    (2) totalRecorCnt ÏÑ§Ï†ï
- *    (3) pageCnt ÏÑ§Ï†ï
- *    (4) indexCntÎäî 0ÏúºÎ°ú, indexCardInfoÎäî NULLÎ°ú ÏÑ§Ï†ïÌïúÎã§.
- *    (5) columnCntÎäî ÌïòÏúÑ qmgProjection::myTarget Í∞úÏàòÎ°ú,
- *        colCardInfoÎäî columnCntÎßåÌÅº Î∞∞Ïó¥Í≥µÍ∞Ñ Ìï†Îãπ ÌõÑ, Í∞í ÏÑ§Ï†ï
+ *    (1) qmoStatistics ∏∏≈≠ ∏ﬁ∏∏Æ «“¥Á πﬁ¿Ω
+ *    (2) totalRecorCnt º≥¡§
+ *    (3) pageCnt º≥¡§
+ *    (4) indexCnt¥¬ 0¿∏∑Œ, indexCardInfo¥¬ NULL∑Œ º≥¡§«—¥Ÿ.
+ *    (5) columnCnt¥¬ «œ¿ß qmgProjection::myTarget ∞≥ºˆ∑Œ,
+ *        colCardInfo¥¬ columnCnt∏∏≈≠ πËø≠∞¯∞£ «“¥Á »ƒ, ∞™ º≥¡§
  *
  ***********************************************************************/
 
@@ -236,25 +236,25 @@ qmoStat::getStatInfo4View( qcStatement    * aStatement,
     IDU_FIT_POINT_FATAL( "qmoStat::getStatInfo4View::__FT__" );
 
     //--------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //--------------------------------------
-    // Í∏∞Î≥∏ Ï¥àÍ∏∞Ìôî
+    // ±‚∫ª √ ±‚»≠
     //--------------------------------------
 
     sViewColCardCnt = 0;
     sProjGraph = ((qmgPROJ *)(aGraph->left));
 
-    // qmoStatistics ÎßåÌÅº Î©îÎ™®Î¶¨ Ìï†Îãπ Î∞õÏùå
+    // qmoStatistics ∏∏≈≠ ∏ﬁ∏∏Æ «“¥Á πﬁ¿Ω
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmoStatistics ),
                                              (void**) & sStatInfo )
               != IDE_SUCCESS );
 
-    // BUG-40913 v$table Ï°∞Ïù∏ ÏßàÏùòÍ∞Ä ÏÑ±Îä•Ïù¥ ÎäêÎ¶º
+    // BUG-40913 v$table ¡∂¿Œ ¡˙¿«∞° º∫¥…¿Ã ¥¿∏≤
     if ( aGraph->myFrom->tableRef->tableType == QCM_PERFORMANCE_VIEW )
     {
         sStatInfo->totalRecordCnt  = QMO_STAT_PFVIEW_RECORD_COUNT;
@@ -274,11 +274,11 @@ qmoStat::getStatInfo4View( qcStatement    * aStatement,
     sStatInfo->firstRowsFactor = QMO_COST_FIRST_ROWS_FACTOR_DEFAULT;
     sStatInfo->firstRowsN      = 0;
 
-    // indexCntÎäî 0, indexCardInfoÎäî NULLÎ°ú ÏÑ§Ï†ï
+    // indexCnt¥¬ 0, indexCardInfo¥¬ NULL∑Œ º≥¡§
     sStatInfo->indexCnt = 0;
     sStatInfo->idxCardInfo = NULL;
 
-    // columnCntÎäî ÌïòÏúÑ qmgProjection::myTargetÍ∞úÏàò
+    // columnCnt¥¬ «œ¿ß qmgProjection::myTarget∞≥ºˆ
     for ( sTarget = sProjGraph->target;
           sTarget != NULL;
           sTarget = sTarget->next )
@@ -288,7 +288,7 @@ qmoStat::getStatInfo4View( qcStatement    * aStatement,
 
     sStatInfo->columnCnt = sViewColCardCnt;
 
-    // columnCnt Í∞úÏùò Î∞∞Ïó¥Í≥µÍ∞Ñ ÌôïÎ≥¥
+    // columnCnt ∞≥¿« πËø≠∞¯∞£ »Æ∫∏
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmoColCardInfo) *
                                              sViewColCardCnt,
                                              (void**) & sViewColCardInfo )
@@ -298,7 +298,7 @@ qmoStat::getStatInfo4View( qcStatement    * aStatement,
           sTarget != NULL;
           sTarget = sTarget->next, i++ )
     {
-        // BUG-39219 pass ÎÖ∏ÎìúÎ•º Í≥†Î†§Ìï¥Ïïº Ìï©ÎãàÎã§.
+        // BUG-39219 pass ≥ÎµÂ∏¶ ∞Ì∑¡«ÿæﬂ «’¥œ¥Ÿ.
         if ( sTarget->targetColumn->node.module == &qtc::passModule )
         {
             sNode = (qtcNode*)sTarget->targetColumn->node.arguments;
@@ -312,7 +312,7 @@ qmoStat::getStatInfo4View( qcStatement    * aStatement,
 
         sCurColCardInfo->isValidStat = ID_TRUE;
 
-        // To Fix BUG-11480 flagÎ•º Ï¥àÍ∏∞Ìôî Ìï®.
+        // To Fix BUG-11480 flag∏¶ √ ±‚»≠ «‘.
         sCurColCardInfo->flag = QMO_STAT_CLEAR;
 
 
@@ -323,8 +323,8 @@ qmoStat::getStatInfo4View( qcStatement    * aStatement,
         if ( ( sCurColCardInfo->column->module->flag &
                MTD_SELECTIVITY_MASK ) == MTD_SELECTIVITY_ENABLE )
         {
-            // Min, Max Value ÏÑ§Ï†ï Í∞ÄÎä•Ìïú Data TypeÏù∏ Í≤ΩÏö∞
-            // Min Value, Max ValueÎ•º Ï¥àÍ∏∞Ìôî
+            // Min, Max Value º≥¡§ ∞°¥…«— Data Type¿Œ ∞ÊøÏ
+            // Min Value, Max Value∏¶ √ ±‚»≠
             sCurColCardInfo->column->module->null( sCurColCardInfo->column,
                                                    sCurColCardInfo->minValue );
 
@@ -336,12 +336,12 @@ qmoStat::getStatInfo4View( qcStatement    * aStatement,
             // nothing to do
         }
 
-        // BUG-38613 _prowid Î•º ÏÇ¨Ïö©Ìïú view Î•º select Ìï†Ïàò ÏûàÏñ¥ÏïºÌï®
+        // BUG-38613 _prowid ∏¶ ªÁøÎ«— view ∏¶ select «“ºˆ ¿÷æÓæﬂ«‘
         if ( (QTC_IS_COLUMN( aStatement, sNode ) == ID_TRUE) &&
              (sNode->node.column != MTC_RID_COLUMN_ID) )
         {
-            // targetÏùò qtcNode TypeÏù¥ ÏπºÎüºÏù∏ Í≤ΩÏö∞
-            // tableMapÏùÑ Ïù¥Ïö©ÌïòÏó¨ Ìï¥Îãπ ÏπºÎüºÏùò columnNDV, MIN, MAXÍ∞íÏùÑ Íµ¨Ìï®
+            // target¿« qtcNode Type¿Ã ƒÆ∑≥¿Œ ∞ÊøÏ
+            // tableMap¿ª ¿ÃøÎ«œø© «ÿ¥Á ƒÆ∑≥¿« columnNDV, MIN, MAX∞™¿ª ±∏«‘
 
             sColCardInfo = &(QC_SHARED_TMPLATE(aStatement)->tableMap[sNode->node.table].
                              from->tableRef->statInfo->colCardInfo[sNode->node.column]);
@@ -398,7 +398,7 @@ qmoStat::printStat( qmsFrom       * aFrom,
 /***********************************************************************
  *
  * Description :
- *    ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Ï∂úÎ†•ÌïúÎã§.
+ *    ≈Î∞Ë ¡§∫∏∏¶ √‚∑¬«—¥Ÿ.
  *
  *
  * Implementation :
@@ -423,7 +423,7 @@ qmoStat::printStat( qmsFrom       * aFrom,
     IDU_FIT_POINT_FATAL( "qmoStat::printStat::__FT__" );
 
     //-----------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //-----------------------------------
 
     IDE_DASSERT( aFrom != NULL );
@@ -436,7 +436,7 @@ qmoStat::printStat( qmsFrom       * aFrom,
     sStatInfo = aFrom->tableRef->statInfo;
 
     //-----------------------------------
-    // Table Ï†ïÎ≥¥Ïùò Ï∂úÎ†•
+    // Table ¡§∫∏¿« √‚∑¬
     //-----------------------------------
 
     QMG_PRINT_LINE_FEED( i, aDepth, aString );
@@ -492,7 +492,7 @@ qmoStat::printStat( qmsFrom       * aFrom,
     }
 
     //-----------------------------------
-    // Column Ï†ïÎ≥¥Ïùò Ï∂úÎ†•
+    // Column ¡§∫∏¿« √‚∑¬
     //-----------------------------------
 
     sColumn = sTableRef->tableInfo->columns;
@@ -510,10 +510,10 @@ qmoStat::printStat( qmsFrom       * aFrom,
                                   sStatColumn[j].columnNDV );
 
         // fix BUG-13516 valgrind UMR
-        // MIN, MAX Í∞íÏùÄ selectivityÎ•º ÏòàÏ∏°Ìï† Ïàò ÏûàÎäî data typeÏóê ÎåÄÌï¥ÏÑúÎßå
-        // Ïã§Ï†ú MIN, MAX, NULL Í∞íÏùÑ Ï†ÄÏû•ÌïòÍ∏∞ÎïåÎ¨∏Ïóê
-        // Ìï¥Îãπ data typeÏóê ÎåÄÌï¥ÏÑúÎßå Ï∂úÎ†•ÌïòÎèÑÎ°ù Ìï®.
-        // PROJ-2242 Ïª¨ÎüºÏùò min,max Î•º ÏÑ§Ï†ïÎêòÏóàÎäîÏßÄ flag Î•º Î¥êÏïº ÌïúÎã§.
+        // MIN, MAX ∞™¿∫ selectivity∏¶ øπ√¯«“ ºˆ ¿÷¥¬ data typeø° ¥Î«ÿº≠∏∏
+        // Ω«¡¶ MIN, MAX, NULL ∞™¿ª ¿˙¿Â«œ±‚∂ßπÆø°
+        // «ÿ¥Á data typeø° ¥Î«ÿº≠∏∏ √‚∑¬«œµµ∑œ «‘.
+        // PROJ-2242 ƒ√∑≥¿« min,max ∏¶ º≥¡§µ«æ˙¥¬¡ˆ flag ∏¶ ∫¡æﬂ «—¥Ÿ.
         if( (sStatColumn[j].flag & QMO_STAT_MINMAX_COLUMN_SET_MASK) ==
             QMO_STAT_MINMAX_COLUMN_SET_TRUE )
         {
@@ -584,25 +584,25 @@ qmoStat::printStat( qmsFrom       * aFrom,
                 }
                 else
                 {
-                    // Numeric Îì±Ïùò TypeÏùÄ Ï∂úÎ†• Î∞©Î≤ïÏù¥ ÎÇúÌï¥ÌïòÎã§.
-                    // ÏùºÎã® Î≥¥Î•òÌï®.
+                    // Numeric µÓ¿« Type¿∫ √‚∑¬ πÊπ˝¿Ã ≥≠«ÿ«œ¥Ÿ.
+                    // ¿œ¥‹ ∫∏∑˘«‘.
                 }
             }
             else
             {
-                // Null ValueÏù∏ Í≤ΩÏö∞Î°ú ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Ï∂úÎ†•ÌïòÏßÄ ÏïäÏùå
+                // Null Value¿Œ ∞ÊøÏ∑Œ ≈Î∞Ë ¡§∫∏∏¶ √‚∑¬«œ¡ˆ æ ¿Ω
             }
 
         }
         else
         {
-            // selectivityÎ•º Íµ¨Ìï† Ïàò ÏóÜÎäî data type
+            // selectivity∏¶ ±∏«“ ºˆ æ¯¥¬ data type
             // Nothing To Do
         }
     }
 
     //-----------------------------------
-    // Index Ï†ïÎ≥¥Ïùò Ï∂úÎ†•
+    // Index ¡§∫∏¿« √‚∑¬
     //-----------------------------------
 
     QMG_PRINT_LINE_FEED( i, aDepth, aString );
@@ -636,7 +636,7 @@ qmoStat::printStat4Partition( qmsTableRef     * aTableRef,
 /***********************************************************************
  *
  * Description : PROJ-1502 PARTITIONED DISK TABLE
- *    partitionÏóê ÎåÄÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Ï∂úÎ†•ÌïúÎã§.
+ *    partitionø° ¥Î«— ≈Î∞Ë ¡§∫∏∏¶ √‚∑¬«—¥Ÿ.
  *
  *
  * Implementation :
@@ -658,7 +658,7 @@ qmoStat::printStat4Partition( qmsTableRef     * aTableRef,
     IDU_FIT_POINT_FATAL( "qmoStat::printStat4Partition::__FT__" );
 
     //-----------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //-----------------------------------
 
     IDE_DASSERT( aPartitionRef != NULL );
@@ -669,7 +669,7 @@ qmoStat::printStat4Partition( qmsTableRef     * aTableRef,
     sStatInfo = aPartitionRef->statInfo;
 
     //-----------------------------------
-    // Table Ï†ïÎ≥¥Ïùò Ï∂úÎ†•
+    // Table ¡§∫∏¿« √‚∑¬
     //-----------------------------------
 
     QMG_PRINT_LINE_FEED( i, aDepth, aString );
@@ -681,21 +681,21 @@ qmoStat::printStat4Partition( qmsTableRef     * aTableRef,
     iduVarStringAppend( aString,
                         "PARTITION NAME         : " );
 
-    /* BUG-44659 ÎØ∏ÏÇ¨Ïö© PartitionÏùò ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Ï∂úÎ†•ÌïòÎã§Í∞Ä,
-     *           GraphÏùò Partition/Column/Index Name Î∂ÄÎ∂ÑÏóêÏÑú ÎπÑÏ†ïÏÉÅ Ï¢ÖÎ£åÌï† Ïàò ÏûàÏäµÎãàÎã§.
-     *  LockÏùÑ Ïû°ÏßÄ ÏïäÍ≥† Meta CacheÎ•º ÏÇ¨Ïö©ÌïòÎ©¥, ÎπÑÏ†ïÏÉÅ Ï¢ÖÎ£åÌï† Ïàò ÏûàÏäµÎãàÎã§.
-     *  qmgSELTÏóêÏÑú Partition NameÏùÑ Î≥¥Í¥ÄÌïòÎèÑÎ°ù ÏàòÏ†ïÌï©ÎãàÎã§.
+    /* BUG-44659 πÃªÁøÎ Partition¿« ≈Î∞Ë ¡§∫∏∏¶ √‚∑¬«œ¥Ÿ∞°,
+     *           Graph¿« Partition/Column/Index Name ∫Œ∫–ø°º≠ ∫Ò¡§ªÛ ¡æ∑·«“ ºˆ ¿÷Ω¿¥œ¥Ÿ.
+     *  Lock¿ª ¿‚¡ˆ æ ∞Ì Meta Cache∏¶ ªÁøÎ«œ∏È, ∫Ò¡§ªÛ ¡æ∑·«“ ºˆ ¿÷Ω¿¥œ¥Ÿ.
+     *  qmgSELTø°º≠ Partition Name¿ª ∫∏∞¸«œµµ∑œ ºˆ¡§«’¥œ¥Ÿ.
      */
     iduVarStringAppend( aString, aPartitionName );
 
     //-----------------------------------
-    // Column Ï†ïÎ≥¥Ïùò Ï∂úÎ†•
+    // Column ¡§∫∏¿« √‚∑¬
     //-----------------------------------
 
-    /* BUG-44659 ÎØ∏ÏÇ¨Ïö© PartitionÏùò ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Ï∂úÎ†•ÌïòÎã§Í∞Ä,
-     *           GraphÏùò Partition/Column/Index Name Î∂ÄÎ∂ÑÏóêÏÑú ÎπÑÏ†ïÏÉÅ Ï¢ÖÎ£åÌï† Ïàò ÏûàÏäµÎãàÎã§.
-     *  LockÏùÑ Ïû°ÏßÄ ÏïäÍ≥† Meta CacheÎ•º ÏÇ¨Ïö©ÌïòÎ©¥, ÎπÑÏ†ïÏÉÅ Ï¢ÖÎ£åÌï† Ïàò ÏûàÏäµÎãàÎã§.
-     *  Column NameÏùÑ Partitioned TableÏóêÏÑú ÏñªÎèÑÎ°ù ÏàòÏ†ïÌï©ÎãàÎã§.
+    /* BUG-44659 πÃªÁøÎ Partition¿« ≈Î∞Ë ¡§∫∏∏¶ √‚∑¬«œ¥Ÿ∞°,
+     *           Graph¿« Partition/Column/Index Name ∫Œ∫–ø°º≠ ∫Ò¡§ªÛ ¡æ∑·«“ ºˆ ¿÷Ω¿¥œ¥Ÿ.
+     *  Lock¿ª ¿‚¡ˆ æ ∞Ì Meta Cache∏¶ ªÁøÎ«œ∏È, ∫Ò¡§ªÛ ¡æ∑·«“ ºˆ ¿÷Ω¿¥œ¥Ÿ.
+     *  Column Name¿ª Partitioned Tableø°º≠ æÚµµ∑œ ºˆ¡§«’¥œ¥Ÿ.
      */
     sColumn = aTableRef->tableInfo->columns;
     sStatColumn = sStatInfo->colCardInfo;
@@ -712,98 +712,105 @@ qmoStat::printStat4Partition( qmsTableRef     * aTableRef,
                                   sStatColumn[j].columnNDV );
 
         // fix BUG-13516 valgrind UMR
-        // MIN, MAX Í∞íÏùÄ selectivityÎ•º ÏòàÏ∏°Ìï† Ïàò ÏûàÎäî data typeÏóê ÎåÄÌï¥ÏÑúÎßå
-        // Ïã§Ï†ú MIN, MAX, NULL Í∞íÏùÑ Ï†ÄÏû•ÌïòÍ∏∞ÎïåÎ¨∏Ïóê
-        // Ìï¥Îãπ data typeÏóê ÎåÄÌï¥ÏÑúÎßå Ï∂úÎ†•ÌïòÎèÑÎ°ù Ìï®.
+        // MIN, MAX ∞™¿∫ selectivity∏¶ øπ√¯«“ ºˆ ¿÷¥¬ data typeø° ¥Î«ÿº≠∏∏
+        // Ω«¡¶ MIN, MAX, NULL ∞™¿ª ¿˙¿Â«œ±‚∂ßπÆø°
+        // «ÿ¥Á data typeø° ¥Î«ÿº≠∏∏ √‚∑¬«œµµ∑œ «‘.
         if( ( sColumn[j].basicInfo->module->flag & MTD_SELECTIVITY_MASK )
             == MTD_SELECTIVITY_ENABLE )
         {
-
-            if ( sColumn[j].basicInfo->
-                 module->isNull( sColumn[j].basicInfo,
-                                 sStatColumn[j].minValue )
-                 != ID_TRUE )
+            if ( ( sStatColumn[j].flag & QMO_STAT_MINMAX_COLUMN_SET_MASK) ==
+                   QMO_STAT_MINMAX_COLUMN_SET_TRUE )
             {
-                // Min, Max Value
-                if ( sColumn[j].basicInfo->module == & mtdSmallint )
-                {
-                    iduVarStringAppendFormat( aString,
-                                              ", %"ID_INT32_FMT", %"ID_INT32_FMT,
-                                              *(SShort *) sStatColumn[j].minValue,
-                                              *(SShort *) sStatColumn[j].maxValue );
-                }
-                else if ( sColumn[j].basicInfo->module == & mtdInteger )
-                {
-                    iduVarStringAppendFormat( aString,
-                                              ", %"ID_INT32_FMT", %"ID_INT32_FMT,
-                                              *(SInt *) sStatColumn[j].minValue,
-                                              *(SInt *) sStatColumn[j].maxValue );
-                }
-                else if ( sColumn[j].basicInfo->module == & mtdBigint )
-                {
-                    iduVarStringAppendFormat( aString,
-                                              ", %"ID_INT64_FMT", %"ID_INT64_FMT,
-                                              *(SLong *) sStatColumn[j].minValue,
-                                              *(SLong *) sStatColumn[j].maxValue );
-                }
-                else if ( sColumn[j].basicInfo->module == & mtdReal )
-                {
-                    iduVarStringAppendFormat( aString,
-                                              ", %"ID_PRINT_G_FMT", %"ID_PRINT_G_FMT,
-                                              *(SFloat *) sStatColumn[j].minValue,
-                                              *(SFloat *) sStatColumn[j].maxValue );
-                }
-                else if ( sColumn[j].basicInfo->module == & mtdDouble )
-                {
-                    iduVarStringAppendFormat( aString,
-                                              ", %"ID_PRINT_G_FMT", %"ID_PRINT_G_FMT,
-                                              *(SDouble *) sStatColumn[j].minValue,
-                                              *(SDouble *) sStatColumn[j].maxValue );
-                }
-                else if ( sColumn[j].basicInfo->module == & mtdDate )
-                {
-                    sMinDate = (mtdDateType*) sStatColumn[j].minValue;
-                    sMaxDate = (mtdDateType*) sStatColumn[j].maxValue;
 
-                    iduVarStringAppendFormat( aString,
-                                              ", %"ID_INT32_FMT"/%"ID_INT32_FMT"/%"ID_INT32_FMT
-                                              " %"ID_INT32_FMT":%"ID_INT32_FMT":%"ID_INT32_FMT
-                                              ", %"ID_INT32_FMT"/%"ID_INT32_FMT"/%"ID_INT32_FMT
-                                              " %"ID_INT32_FMT":%"ID_INT32_FMT":%"ID_INT32_FMT,
-                                              mtdDateInterface::year(sMinDate),
-                                              (SInt)mtdDateInterface::month(sMinDate),
-                                              (SInt)mtdDateInterface::day(sMinDate),
-                                              (SInt)mtdDateInterface::hour(sMinDate),
-                                              (SInt)mtdDateInterface::minute(sMinDate),
-                                              (SInt)mtdDateInterface::second(sMinDate),
-                                              mtdDateInterface::year(sMaxDate),
-                                              (SInt)mtdDateInterface::month(sMaxDate),
-                                              (SInt)mtdDateInterface::day(sMaxDate),
-                                              (SInt)mtdDateInterface::hour(sMaxDate),
-                                              (SInt)mtdDateInterface::minute(sMaxDate),
-                                              (SInt)mtdDateInterface::second(sMaxDate) );
+                if ( sColumn[j].basicInfo->
+                     module->isNull( sColumn[j].basicInfo,
+                                     sStatColumn[j].minValue )
+                     != ID_TRUE )
+                {
+                    // Min, Max Value
+                    if ( sColumn[j].basicInfo->module == & mtdSmallint )
+                    {
+                        iduVarStringAppendFormat( aString,
+                                                  ", %"ID_INT32_FMT", %"ID_INT32_FMT,
+                                                  *(SShort *) sStatColumn[j].minValue,
+                                                  *(SShort *) sStatColumn[j].maxValue );
+                    }
+                    else if ( sColumn[j].basicInfo->module == & mtdInteger )
+                    {
+                        iduVarStringAppendFormat( aString,
+                                                  ", %"ID_INT32_FMT", %"ID_INT32_FMT,
+                                                  *(SInt *) sStatColumn[j].minValue,
+                                                  *(SInt *) sStatColumn[j].maxValue );
+                    }
+                    else if ( sColumn[j].basicInfo->module == & mtdBigint )
+                    {
+                        iduVarStringAppendFormat( aString,
+                                                  ", %"ID_INT64_FMT", %"ID_INT64_FMT,
+                                                  *(SLong *) sStatColumn[j].minValue,
+                                                  *(SLong *) sStatColumn[j].maxValue );
+                    }
+                    else if ( sColumn[j].basicInfo->module == & mtdReal )
+                    {
+                        iduVarStringAppendFormat( aString,
+                                                  ", %"ID_PRINT_G_FMT", %"ID_PRINT_G_FMT,
+                                                  *(SFloat *) sStatColumn[j].minValue,
+                                                  *(SFloat *) sStatColumn[j].maxValue );
+                    }
+                    else if ( sColumn[j].basicInfo->module == & mtdDouble )
+                    {
+                        iduVarStringAppendFormat( aString,
+                                                  ", %"ID_PRINT_G_FMT", %"ID_PRINT_G_FMT,
+                                                  *(SDouble *) sStatColumn[j].minValue,
+                                                  *(SDouble *) sStatColumn[j].maxValue );
+                    }
+                    else if ( sColumn[j].basicInfo->module == & mtdDate )
+                    {
+                        sMinDate = (mtdDateType*) sStatColumn[j].minValue;
+                        sMaxDate = (mtdDateType*) sStatColumn[j].maxValue;
+
+                        iduVarStringAppendFormat( aString,
+                                                  ", %"ID_INT32_FMT"/%"ID_INT32_FMT"/%"ID_INT32_FMT
+                                                  " %"ID_INT32_FMT":%"ID_INT32_FMT":%"ID_INT32_FMT
+                                                  ", %"ID_INT32_FMT"/%"ID_INT32_FMT"/%"ID_INT32_FMT
+                                                  " %"ID_INT32_FMT":%"ID_INT32_FMT":%"ID_INT32_FMT,
+                                                  mtdDateInterface::year(sMinDate),
+                                                  (SInt)mtdDateInterface::month(sMinDate),
+                                                  (SInt)mtdDateInterface::day(sMinDate),
+                                                  (SInt)mtdDateInterface::hour(sMinDate),
+                                                  (SInt)mtdDateInterface::minute(sMinDate),
+                                                  (SInt)mtdDateInterface::second(sMinDate),
+                                                  mtdDateInterface::year(sMaxDate),
+                                                  (SInt)mtdDateInterface::month(sMaxDate),
+                                                  (SInt)mtdDateInterface::day(sMaxDate),
+                                                  (SInt)mtdDateInterface::hour(sMaxDate),
+                                                  (SInt)mtdDateInterface::minute(sMaxDate),
+                                                  (SInt)mtdDateInterface::second(sMaxDate) );
+                    }
+                    else
+                    {
+                        // Numeric µÓ¿« Type¿∫ √‚∑¬ πÊπ˝¿Ã ≥≠«ÿ«œ¥Ÿ.
+                        // ¿œ¥‹ ∫∏∑˘«‘.
+                    }
                 }
                 else
                 {
-                    // Numeric Îì±Ïùò TypeÏùÄ Ï∂úÎ†• Î∞©Î≤ïÏù¥ ÎÇúÌï¥ÌïòÎã§.
-                    // ÏùºÎã® Î≥¥Î•òÌï®.
+                    // Null Value¿Œ ∞ÊøÏ∑Œ ≈Î∞Ë ¡§∫∏∏¶ √‚∑¬«œ¡ˆ æ ¿Ω
                 }
             }
             else
             {
-                // Null ValueÏù∏ Í≤ΩÏö∞Î°ú ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Ï∂úÎ†•ÌïòÏßÄ ÏïäÏùå
+                /* Nothing to do */
             }
-
         }
         else
         {
-            // selectivityÎ•º Íµ¨Ìï† Ïàò ÏóÜÎäî data type
+            // selectivity∏¶ ±∏«“ ºˆ æ¯¥¬ data type
             // Nothing To Do
         }
     }
 
     //-----------------------------------
-    // Index Ï†ïÎ≥¥Ïùò Ï∂úÎ†•
+    // Index ¡§∫∏¿« √‚∑¬
     //-----------------------------------
 
     QMG_PRINT_LINE_FEED( i, aDepth, aString );
@@ -842,14 +849,14 @@ qmoStat::getStatInfo4AllBaseTables( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : ÏùºÎ∞ò ÌÖåÏù¥Î∏îÏóê ÎåÄÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Íµ¨Ï∂ïÌïúÎã§.
+ * Description : ¿œπ› ≈◊¿Ã∫Ìø° ¥Î«— ≈Î∞Ë ¡§∫∏∏¶ ±∏√‡«—¥Ÿ.
  *
- *     qmsSFWGH->fromÏóê Îã¨Î†§ÏûàÎäî Î™®Îì† Base TableÏóê ÎåÄÌïú ÌÜµÍ≥ÑÏ†ïÎ≥¥Î•º Íµ¨Ï∂ïÌïúÎã§.
- *     [ JOINÏù∏ Í≤ΩÏö∞, ÌïòÏúÑ ÏùºÎ∞ò ÌÖåÏù¥Î∏îÎèÑ Î™®Îëê Í≤ÄÏÇ¨ ]
+ *     qmsSFWGH->fromø° ¥ﬁ∑¡¿÷¥¬ ∏µÁ Base Tableø° ¥Î«— ≈Î∞Ë¡§∫∏∏¶ ±∏√‡«—¥Ÿ.
+ *     [ JOIN¿Œ ∞ÊøÏ, «œ¿ß ¿œπ› ≈◊¿Ã∫Ìµµ ∏µŒ ∞ÀªÁ ]
  *
- *      ÏùºÎ∞ò Table : qmsSFWGH->from->joinType = QMS_NO_JOIN Ïù¥Í≥†,
- *                   qmsSFWGH->from->tableRef->view == NULL Ïù∏ÏßÄÎ•º Í≤ÄÏÇ¨.
- *      VIEW Îäî skip
+ *      ¿œπ› Table : qmsSFWGH->from->joinType = QMS_NO_JOIN ¿Ã∞Ì,
+ *                   qmsSFWGH->from->tableRef->view == NULL ¿Œ¡ˆ∏¶ ∞ÀªÁ.
+ *      VIEW ¥¬ skip
  *
  * Implementation :
  *
@@ -860,13 +867,13 @@ qmoStat::getStatInfo4AllBaseTables( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoStat::getStatInfo4AllBaseTables::__FT__" );
 
     //--------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //--------------------------------------
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aSFWGH != NULL );
 
     //--------------------------------------
-    // Î™®Îì† base TableÏóê ÌÜµÍ≥ÑÏ†ïÎ≥¥ ÏÑ§Ï†ï.
+    // ∏µÁ base Tableø° ≈Î∞Ë¡§∫∏ º≥¡§.
     //--------------------------------------
 
     for( sFrom = aSFWGH->from; sFrom != NULL; sFrom = sFrom->next )
@@ -879,7 +886,7 @@ qmoStat::getStatInfo4AllBaseTables( qcStatement * aStatement,
                   == QMS_TABLE_REF_RECURSIVE_VIEW_FALSE ) )
             {
                 //-----------------------------------------
-                // ÌòÑÏû¨ ÌÖåÏù¥Î∏îÏù¥ base tableÎ°ú ÌÜµÍ≥ÑÏ†ïÎ≥¥ ÏÑ§Ï†ï.
+                // «ˆ¿Á ≈◊¿Ã∫Ì¿Ã base table∑Œ ≈Î∞Ë¡§∫∏ º≥¡§.
                 //-----------------------------------------
 
                 /* PROJ-1832 New database link */
@@ -893,8 +900,8 @@ qmoStat::getStatInfo4AllBaseTables( qcStatement * aStatement,
                 else if( sFrom->tableRef->tableInfo->tablePartitionType ==
                          QCM_PARTITIONED_TABLE )
                 {
-                    // partitioned tableÏù∏ Í≤ΩÏö∞ rule-basedÌÜµÍ≥ÑÏ†ïÎ≥¥Î•º ÎßåÎì†Îã§.
-                    // Ïò§Î°úÏßÄ partition keyrangeÎ•º ÎΩëÏïÑÎÇ¥Í∏∞ ÏúÑÌï®ÏûÑ.
+                    // partitioned table¿Œ ∞ÊøÏ rule-based≈Î∞Ë¡§∫∏∏¶ ∏∏µÁ¥Ÿ.
+                    // ø¿∑Œ¡ˆ partition keyrange∏¶ ªÃæ∆≥ª±‚ ¿ß«‘¿”.
                     IDE_TEST( getStatInfo4BaseTable( aStatement,
                                                      QMO_OPT_GOAL_TYPE_RULE,
                                                      sFrom->tableRef->tableInfo,
@@ -912,16 +919,16 @@ qmoStat::getStatInfo4AllBaseTables( qcStatement * aStatement,
             }
             else
             {
-                // VIEW ÌòπÏùÄ Recursive View Ïù∏ Í≤ΩÏö∞Î°ú,
-                // optimizerÎã®Í≥ÑÏóêÏÑú viewÏóê ÎåÄÌïú ÌÜµÍ≥ÑÏ†ïÎ≥¥ ÏÑ§Ï†ï.
+                // VIEW »§¿∫ Recursive View ¿Œ ∞ÊøÏ∑Œ,
+                // optimizer¥‹∞Ëø°º≠ viewø° ¥Î«— ≈Î∞Ë¡§∫∏ º≥¡§.
             }
         }
         else
         {
             //---------------------------------------
-            // ÌòÑÏû¨ ÌÖåÏù¥Î∏îÏù¥ base ÌÖåÏù¥Î∏îÏù¥ ÏïÑÎãàÎØÄÎ°ú,
-            // left, right fromÏùÑ ÏàúÌöåÌïòÎ©¥ÏÑú,
-            // base tableÏùÑ Ï∞æÏïÑÏÑú ÌÜµÍ≥ÑÏ†ïÎ≥¥ ÏÑ§Ï†ï.
+            // «ˆ¿Á ≈◊¿Ã∫Ì¿Ã base ≈◊¿Ã∫Ì¿Ã æ∆¥œπ«∑Œ,
+            // left, right from¿ª º¯»∏«œ∏Èº≠,
+            // base table¿ª √£æ∆º≠ ≈Î∞Ë¡§∫∏ º≥¡§.
             //---------------------------------------
 
             IDE_TEST( findBaseTableNGetStatInfo( aStatement,
@@ -930,7 +937,7 @@ qmoStat::getStatInfo4AllBaseTables( qcStatement * aStatement,
         }
     }
 
-    // qmoSystemStatistics Î©îÎ™®Î¶¨ Ìï†Îãπ
+    // qmoSystemStatistics ∏ﬁ∏∏Æ «“¥Á
     IDE_TEST( QC_QME_MEM(aStatement)->alloc( ID_SIZEOF(qmoSystemStatistics),
                                              (void **)&(aStatement->mSysStat) )
               != IDE_SUCCESS );
@@ -959,25 +966,25 @@ qmoStat::findBaseTableNGetStatInfo( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : ÌòÑÏû¨ ÌÖåÏù¥Î∏îÏùò left, right ÌÖåÏù¥Î∏îÏùÑ ÏàúÌöåÌïòÎ©¥ÏÑú,
- *               base tableÏùÑ Ï∞æÏïÑÏÑú ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Íµ¨Ï∂ïÌïúÎã§.
+ * Description : «ˆ¿Á ≈◊¿Ã∫Ì¿« left, right ≈◊¿Ã∫Ì¿ª º¯»∏«œ∏Èº≠,
+ *               base table¿ª √£æ∆º≠ ≈Î∞Ë ¡§∫∏∏¶ ±∏√‡«—¥Ÿ.
  *
  * Implementation :
- *     Ïù¥ Ìï®ÏàòÎäî base tableÏùÑ Ï∞æÏùÑÎïåÍπåÏßÄ Ïû¨Í∑ÄÏ†ÅÏúºÎ°ú Ìò∏Ï∂úÎêúÎã§.
- *     1. left FromÏóê ÎåÄÌïú Ï≤òÎ¶¨
- *     2. right FromÏóê ÎåÄÌïú Ï≤òÎ¶¨
+ *     ¿Ã «‘ºˆ¥¬ base table¿ª √£¿ª∂ß±Ó¡ˆ ¿Á±Õ¿˚¿∏∑Œ »£√‚µ»¥Ÿ.
+ *     1. left Fromø° ¥Î«— √≥∏Æ
+ *     2. right Fromø° ¥Î«— √≥∏Æ
  *
  ***********************************************************************/
 
     IDU_FIT_POINT_FATAL( "qmoStat::findBaseTableNGetStatInfo::__FT__" );
 
     //--------------------------------------
-    // ÌòÑÏû¨ FromÏùò left, right Î•º Î∞©Î¨∏Ìï¥ÏÑú,
-    // base tableÏùÑ Ï∞æÍ≥†, ÌÜµÍ≥ÑÏ†ïÎ≥¥Î•º ÏÑ§Ï†ïÌïúÎã§.
+    // «ˆ¿Á From¿« left, right ∏¶ πÊπÆ«ÿº≠,
+    // base table¿ª √£∞Ì, ≈Î∞Ë¡§∫∏∏¶ º≥¡§«—¥Ÿ.
     //--------------------------------------
 
     //--------------------------------------
-    // left FromÏóê ÎåÄÌïú Ï≤òÎ¶¨
+    // left Fromø° ¥Î«— √≥∏Æ
     //--------------------------------------
 
     if( aFrom->left->joinType == QMS_NO_JOIN )
@@ -997,7 +1004,7 @@ qmoStat::findBaseTableNGetStatInfo( qcStatement * aStatement,
             }
             else
             {
-                // ÌÖåÏù¥Î∏îÏóê ÎåÄÌïú ÌÜµÍ≥ÑÏ†ïÎ≥¥Î•º Íµ¨Ï∂ïÌïúÎã§.
+                // ≈◊¿Ã∫Ìø° ¥Î«— ≈Î∞Ë¡§∫∏∏¶ ±∏√‡«—¥Ÿ.
                 IDE_TEST( getStatInfo4BaseTable( aStatement,
                                                  aSFWGH->hints->optGoalType,
                                                  aFrom->left->tableRef->tableInfo,
@@ -1007,8 +1014,8 @@ qmoStat::findBaseTableNGetStatInfo( qcStatement * aStatement,
         }
         else
         {
-            // VIEW, RECURSIVE VIEW Ïù∏ Í≤ΩÏö∞Î°ú,
-            // optimizerÎã®Í≥ÑÏóêÏÑú viewÏóê ÎåÄÌïú ÌÜµÍ≥ÑÏ†ïÎ≥¥ ÏÑ§Ï†ï
+            // VIEW, RECURSIVE VIEW ¿Œ ∞ÊøÏ∑Œ,
+            // optimizer¥‹∞Ëø°º≠ viewø° ¥Î«— ≈Î∞Ë¡§∫∏ º≥¡§
         }
     }
     else
@@ -1020,7 +1027,7 @@ qmoStat::findBaseTableNGetStatInfo( qcStatement * aStatement,
     }
 
     //--------------------------------------
-    // right FromÏóê ÎåÄÌïú Ï≤òÎ¶¨
+    // right Fromø° ¥Î«— √≥∏Æ
     //--------------------------------------
 
     if( aFrom->right->joinType == QMS_NO_JOIN )
@@ -1040,7 +1047,7 @@ qmoStat::findBaseTableNGetStatInfo( qcStatement * aStatement,
             }
             else
             {
-                // ÌÖåÏù¥Î∏îÏóê ÎåÄÌïú ÌÜµÍ≥ÑÏ†ïÎ≥¥Î•º Íµ¨Ï∂ïÌïúÎã§.
+                // ≈◊¿Ã∫Ìø° ¥Î«— ≈Î∞Ë¡§∫∏∏¶ ±∏√‡«—¥Ÿ.
                 IDE_TEST( getStatInfo4BaseTable( aStatement,
                                                  aSFWGH->hints->optGoalType,
                                                  aFrom->right->tableRef->tableInfo,
@@ -1050,8 +1057,8 @@ qmoStat::findBaseTableNGetStatInfo( qcStatement * aStatement,
         }
         else
         {
-            // VIEW, RECURSIVE VIEW Ïù∏ Í≤ΩÏö∞Î°ú,
-            // optimizer Îã®Í≥ÑÏóêÏÑú viewÏóê ÎåÄÌïú ÌÜµÍ≥ÑÏ†ïÎ≥¥ ÏÑ§Ï†ï
+            // VIEW, RECURSIVE VIEW ¿Œ ∞ÊøÏ∑Œ,
+            // optimizer ¥‹∞Ëø°º≠ viewø° ¥Î«— ≈Î∞Ë¡§∫∏ º≥¡§
         }
     }
     else
@@ -1074,7 +1081,7 @@ qmoStat::getSystemStatistics( qmoSystemStatistics * aStatistics )
 {
 /***********************************************************************
  *
- * Description : Í∞Å index columnNDV,
+ * Description : ∞¢ index columnNDV,
  * Implementation :
  *
  ***********************************************************************/
@@ -1106,13 +1113,14 @@ qmoStat::getSystemStatistics( qmoSystemStatistics * aStatistics )
         aStatistics->isValidStat      = sIsValid;
 
         // BUG-37125 tpch plan optimization
-        // TimeÏù¥ 0Ïù¥ ÎÇòÏò¨Îïå Í∏∞Î≥∏Í∞íÏùÑ ÏÑ§Ï†ïÌïòÎ©¥ ÏïàÎêúÎã§.
+        // Time¿Ã 0¿Ã ≥™ø√∂ß ±‚∫ª∞™¿ª º≥¡§«œ∏È æ»µ»¥Ÿ.
         aStatistics->singleIoScanTime = IDL_MAX(sSingleReadTime, QMO_STAT_TIME_MIN);
         aStatistics->multiIoScanTime  = IDL_MAX(sMultiReadTime,  QMO_STAT_TIME_MIN);
         aStatistics->mMTCallTime      = IDL_MAX(sCompareTime,    QMO_STAT_TIME_MIN);
         aStatistics->mHashTime        = IDL_MAX(sHashTime,       QMO_STAT_TIME_MIN);
         aStatistics->mCompareTime     = IDL_MAX(sCompareTime,    QMO_STAT_TIME_MIN);
         aStatistics->mStoreTime       = IDL_MAX(sStoreTime,      QMO_STAT_TIME_MIN);
+        aStatistics->mIndexNlJoinPenalty = QCU_OPTIMIZER_INDEX_NL_JOIN_PENALTY;
     }
     else
     {
@@ -1137,6 +1145,7 @@ qmoStat::getSystemStatistics4Rule( qmoSystemStatistics * aStatistics )
     aStatistics->mHashTime        = QMO_STAT_SYSTEM_HASH_TIME;
     aStatistics->mCompareTime     = QMO_STAT_SYSTEM_COMPARE_TIME;
     aStatistics->mStoreTime       = QMO_STAT_SYSTEM_STORE_TIME;
+    aStatistics->mIndexNlJoinPenalty = QCU_OPTIMIZER_INDEX_NL_JOIN_PENALTY;
 }
 
 IDE_RC
@@ -1147,14 +1156,14 @@ qmoStat::getStatInfo4BaseTable( qcStatement    * aStatement,
 {
 /***********************************************************************
  *
- * Description : ÏùºÎ∞ò ÌÖåÏù¥Î∏îÏóê ÎåÄÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Íµ¨Ï∂ïÌïúÎã§.
+ * Description : ¿œπ› ≈◊¿Ã∫Ìø° ¥Î«— ≈Î∞Ë ¡§∫∏∏¶ ±∏√‡«—¥Ÿ.
  *
  * Implementation :
  *
- *     1. qmoStatisticsÏóê ÎåÄÌïú Î©îÎ™®Î¶¨Î•º Ìï†ÎãπÎ∞õÎäîÎã§.
- *     2. table record count ÏÑ§Ï†ï
- *     3. table disk blcok count ÏÑ§Ï†ï
- *     4. index/column columnNDV, MIN/MAX Ï†ïÎ≥¥ ÏÑ§Ï†ï
+ *     1. qmoStatisticsø° ¥Î«— ∏ﬁ∏∏Æ∏¶ «“¥Áπﬁ¥¬¥Ÿ.
+ *     2. table record count º≥¡§
+ *     3. table disk blcok count º≥¡§
+ *     4. index/column columnNDV, MIN/MAX ¡§∫∏ º≥¡§
  *
  ***********************************************************************/
 
@@ -1166,11 +1175,12 @@ qmoStat::getStatInfo4BaseTable( qcStatement    * aStatement,
     idBool           sDynamicStats      = ID_FALSE;
     UInt             sAutoStatsLevel    = 0;
     SFloat           sPercentage        = 0.0;
+    idBool           sIsAutoDBMSStat    = ID_FALSE;
 
     IDU_FIT_POINT_FATAL( "qmoStat::getStatInfo4BaseTable::__FT__" );
 
     //--------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1179,18 +1189,18 @@ qmoStat::getStatInfo4BaseTable( qcStatement    * aStatement,
     IDE_DASSERT( aStatInfo != NULL );
 
     //--------------------------------------
-    // ÌÜµÍ≥ÑÏ†ïÎ≥¥Íµ¨Ï∂ïÏùÑ ÏúÑÌïú ÏûêÎ£åÍµ¨Ï°∞Ïóê ÎåÄÌïú Î©îÎ™®Î¶¨ Ìï†Îãπ
+    // ≈Î∞Ë¡§∫∏±∏√‡¿ª ¿ß«— ¿⁄∑·±∏¡∂ø° ¥Î«— ∏ﬁ∏∏Æ «“¥Á
     //--------------------------------------
 
     IDU_FIT_POINT("qmoStat::getStatInfo4BaseTable::malloc1");
 
-    // qmoStatistics Î©îÎ™®Î¶¨ Ìï†Îãπ
+    // qmoStatistics ∏ﬁ∏∏Æ «“¥Á
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmoStatistics ),
                                                (void **)& sStatistics )
               != IDE_SUCCESS );
 
     // PROJ-2492 Dynamic sample selection
-    // ÌÜµÍ≥ÑÏ†ïÎ≥¥Î•º Î™®Îëê Í∞ÄÏ†∏Ïò¨ Î©îÎ™®Î¶¨Î•º Ìï†ÎãπÎ∞õÎäîÎã§.
+    // ≈Î∞Ë¡§∫∏∏¶ ∏µŒ ∞°¡Æø√ ∏ﬁ∏∏Æ∏¶ «“¥Áπﬁ¥¬¥Ÿ.
     IDE_TEST( QC_QME_MEM( aStatement )->alloc( ID_SIZEOF( smiAllStat ),
                                                (void **)& sAllStat )
               != IDE_SUCCESS );
@@ -1198,13 +1208,13 @@ qmoStat::getStatInfo4BaseTable( qcStatement    * aStatement,
     if( aTableInfo->indexCount != 0 )
     {
         // fix BUG-10095
-        // tableÏùò index ÏÉùÏÑ±Ï†ïÎ≥¥Í∞Ä enableÏù∏ Í≤ΩÏö∞Îßå Ïù∏Îç±Ïä§ ÌÜµÍ≥ÑÏ†ïÎ≥¥ÏÉùÏÑ±
+        // table¿« index ª˝º∫¡§∫∏∞° enable¿Œ ∞ÊøÏ∏∏ ¿Œµ¶Ω∫ ≈Î∞Ë¡§∫∏ª˝º∫
         if ( ( aTableInfo->tableFlag & SMI_TABLE_DISABLE_ALL_INDEX_MASK )
              == SMI_TABLE_ENABLE_ALL_INDEX )
         {
             /* BUG-43006 FixedTable Indexing Filter
-             * optimizer formance vie propery Í∞Ä 0Ïù¥ÎùºÎ©¥
-             * FixedTable Ïùò indexÎäî ÏóÜÎã§Í≥† ÏÑ§Ï†ïÌï¥Ï§òÏïºÌïúÎã§
+             * optimizer formance vie propery ∞° 0¿Ã∂Û∏È
+             * FixedTable ¿« index¥¬ æ¯¥Ÿ∞Ì º≥¡§«ÿ¡‡æﬂ«—¥Ÿ
              */
             if ( ( ( aTableInfo->tableType == QCM_FIXED_TABLE ) ||
                    ( aTableInfo->tableType == QCM_DUMP_TABLE ) ||
@@ -1224,7 +1234,7 @@ qmoStat::getStatInfo4BaseTable( qcStatement    * aStatement,
 
                 IDU_FIT_POINT("qmoStat::getStatInfo4BaseTable::malloc2");
 
-                // index ÌÜµÍ≥ÑÏ†ïÎ≥¥Î•º ÏúÑÌïú Î©îÎ™®Î¶¨ Ìï†Îãπ
+                // index ≈Î∞Ë¡§∫∏∏¶ ¿ß«— ∏ﬁ∏∏Æ «“¥Á
                 IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmoIdxCardInfo ) * aTableInfo->indexCount,
                                                            (void **)& sStatistics->idxCardInfo )
                           != IDE_SUCCESS );
@@ -1252,7 +1262,7 @@ qmoStat::getStatInfo4BaseTable( qcStatement    * aStatement,
         sAllStat->mIndexStat  = NULL;
     }
 
-    // column ÌÜµÍ≥ÑÏ†ïÎ≥¥Î•º ÏúÑÌïú Î©îÎ™®Î¶¨ Ìï†Îãπ
+    // column ≈Î∞Ë¡§∫∏∏¶ ¿ß«— ∏ﬁ∏∏Æ «“¥Á
     sStatistics->columnCnt = aTableInfo->columnCount;
     sAllStat->mColumnCount = aTableInfo->columnCount;
 
@@ -1263,20 +1273,20 @@ qmoStat::getStatInfo4BaseTable( qcStatement    * aStatement,
               != IDE_SUCCESS );
 
     // PROJ-2492 Dynamic sample selection
-    // ÌÜµÍ≥ÑÏ†ïÎ≥¥Î•º Î™®Îëê Í∞ÄÏ†∏Ïò¨ Î©îÎ™®Î¶¨Î•º Ìï†ÎãπÎ∞õÎäîÎã§.
+    // ≈Î∞Ë¡§∫∏∏¶ ∏µŒ ∞°¡Æø√ ∏ﬁ∏∏Æ∏¶ «“¥Áπﬁ¥¬¥Ÿ.
     IDE_TEST( QC_QME_MEM( aStatement )->alloc( ID_SIZEOF( smiColumnStat ) * aTableInfo->columnCount,
                                                (void **)& sAllStat->mColumnStat )
               != IDE_SUCCESS );
 
     //--------------------------------------
-    // ÌÜµÍ≥ÑÏ†ïÎ≥¥ ÏûêÎ£åÍµ¨Ï°∞Ïùò indexÏôÄ Ïª¨Îüº Ï†ïÎ≥¥ Ï†ÄÏû•
+    // ≈Î∞Ë¡§∫∏ ¿⁄∑·±∏¡∂¿« indexøÕ ƒ√∑≥ ¡§∫∏ ¿˙¿Â
     //--------------------------------------
 
     sIsDiskTable = QCM_TABLE_TYPE_IS_DISK( aTableInfo->tableFlag );
 
     for( sCnt=0; sCnt < sStatistics->indexCnt; sCnt++ )
     {
-        /* Meta CacheÏùò IndexÎäî Index ID ÏàúÏÑúÎ°ú Ï†ïÎ†¨ÎêòÏñ¥ ÏûàÎã§. */
+        /* Meta Cache¿« Index¥¬ Index ID º¯º≠∑Œ ¡§∑ƒµ«æÓ ¿÷¥Ÿ. */
         sStatistics->idxCardInfo[sCnt].indexId = aTableInfo->indices[sCnt].indexId;
         sStatistics->idxCardInfo[sCnt].index = &(aTableInfo->indices[sCnt]);
         sStatistics->idxCardInfo[sCnt].flag  = QMO_STAT_CLEAR;
@@ -1309,20 +1319,20 @@ qmoStat::getStatInfo4BaseTable( qcStatement    * aStatement,
     {
         case QMO_OPT_GOAL_TYPE_RULE :
             //------------------------------
-            // ÌÖåÏù¥Î∏î ÌÜµÍ≥ÑÏ†ïÎ≥¥ ÏàòÏßë
+            // ≈◊¿Ã∫Ì ≈Î∞Ë¡§∫∏ ºˆ¡˝
             //------------------------------
             getTableStatistics4Rule( sStatistics,
                                      aTableInfo,
                                      sIsDiskTable );
 
             //------------------------------
-            // Ïù∏Îç±Ïä§ ÌÜµÍ≥ÑÏ†ïÎ≥¥ ÏàòÏßë
+            // ¿Œµ¶Ω∫ ≈Î∞Ë¡§∫∏ ºˆ¡˝
             //------------------------------
             getIndexStatistics4Rule( sStatistics,
                                      sIsDiskTable );
 
             //------------------------------
-            // Ïª¨Îüº ÌÜµÍ≥ÑÏ†ïÎ≥¥ ÏàòÏßë
+            // ƒ√∑≥ ≈Î∞Ë¡§∫∏ ºˆ¡˝
             //------------------------------
             getColumnStatistics4Rule( sStatistics );
             break;
@@ -1333,13 +1343,13 @@ qmoStat::getStatInfo4BaseTable( qcStatement    * aStatement,
             // PROJ-2492 Dynamic sample selection
             sAutoStatsLevel = QCG_GET_SESSION_OPTIMIZER_AUTO_STATS( aStatement );
 
-            // startup Ïù¥ ÏôÑÎ£åÎêúÌõÑÏóêÎßå ÏÉòÌîåÎßÅÏùÑ ÌïúÎã§.
-            // SMU_DBMS_STAT_METHOD_AUTO Îäî ÏòàÏ†ÑÎ∞©ÏãùÏúºÎ°ú
-            // ÌÜµÍ≥ÑÏ†ïÎ≥¥Î•º ÏàòÏßëÌïòÍ∏∞ÎïåÎ¨∏Ïóê ÏÉòÌîåÎßÅÏùÑ ÌïòÏßÄ ÏïäÎäîÎã§.
+            // startup ¿Ã øœ∑·µ»»ƒø°∏∏ ª˘«√∏µ¿ª «—¥Ÿ.
+            // SMU_DBMS_STAT_METHOD_AUTO ¥¬ øπ¿¸πÊΩƒ¿∏∑Œ
+            // ≈Î∞Ë¡§∫∏∏¶ ºˆ¡˝«œ±‚∂ßπÆø° ª˘«√∏µ¿ª «œ¡ˆ æ ¥¬¥Ÿ.
 
-            // BUG-43629 OPTIMIZER_AUTO_STATS ÎèôÏûëÏãú aexport Í∞Ä ÎäêÎ†§ÏßëÎãàÎã§.
-            // system_.sys_* ÌÖåÏù¥Î∏îÎì§ÏùÄ auto_stats Î•º ÏÇ¨Ïö©ÌïòÏßÄ ÏïäÎèÑÎ°ù ÌïúÎã§.
-            // SMI_MEMORY_SYSTEM_DICTIONARY ÌÖåÏù¥Î∏î Ïä§ÌéòÏù¥Ïä§Í≤ÉÏùÄ Î™®Îëê Ï†úÏô∏ÏãúÌÇ®Îã§.
+            // BUG-43629 OPTIMIZER_AUTO_STATS µø¿€Ω√ aexport ∞° ¥¿∑¡¡˝¥œ¥Ÿ.
+            // system_.sys_* ≈◊¿Ã∫ÌµÈ¿∫ auto_stats ∏¶ ªÁøÎ«œ¡ˆ æ µµ∑œ «—¥Ÿ.
+            // SMI_MEMORY_SYSTEM_DICTIONARY ≈◊¿Ã∫Ì Ω∫∆‰¿ÃΩ∫∞Õ¿∫ ∏µŒ ¡¶ø‹Ω√≈≤¥Ÿ.
             if ( (sAutoStatsLevel != 0) &&
                  (smiGetStartupPhase() == SMI_STARTUP_SERVICE) &&
                  (smuProperty::getDBMSStatMethod() == SMU_DBMS_STAT_METHOD_MANUAL ) &&
@@ -1362,9 +1372,14 @@ qmoStat::getStatInfo4BaseTable( qcStatement    * aStatement,
                 sPercentage   = 0;
             }
 
-            // ÌÜµÍ≥ÑÏ†ïÎ≥¥Î•º Í∞ÄÏ†∏Ïò®Îã§.
-            // sDynamicStats ID_TRUE ÏùºÎïå ÌÜµÍ≥ÑÏ†ïÎ≥¥Î•º ÏàòÏßëÌï¥ÏÑú Í∞ÄÏ†∏Ïò®Îã§.
-            // Îã® Index Ïùò Í≤ΩÏö∞ Í∏∞Ï°¥Ïùò ÌÜµÍ≥ÑÏ†ïÎ≥¥Í∞Ä ÏûàÏùÑÎïåÎäî Í∏∞Ï°¥Ïùò ÌÜµÍ≥ÑÏ†ïÎ≥¥Î•º Í∞ÄÏ†∏Ïò®Îã§.
+            if ( smuProperty::getDBMSStatMethod() == SMU_DBMS_STAT_METHOD_AUTO )
+            {
+                sIsAutoDBMSStat = ID_TRUE;
+            }
+
+            // ≈Î∞Ë¡§∫∏∏¶ ∞°¡Æø¬¥Ÿ.
+            // sDynamicStats ID_TRUE ¿œ∂ß ≈Î∞Ë¡§∫∏∏¶ ºˆ¡˝«ÿº≠ ∞°¡Æø¬¥Ÿ.
+            // ¥‹ Index ¿« ∞ÊøÏ ±‚¡∏¿« ≈Î∞Ë¡§∫∏∞° ¿÷¿ª∂ß¥¬ ±‚¡∏¿« ≈Î∞Ë¡§∫∏∏¶ ∞°¡Æø¬¥Ÿ.
             IDE_NOFT_TEST( smiStatistics::getTableAllStat(
                                aStatement->mStatistics,
                                (QC_SMI_STMT(aStatement))->getTrans(),
@@ -1375,7 +1390,7 @@ qmoStat::getStatInfo4BaseTable( qcStatement    * aStatement,
                            != IDE_SUCCESS );
 
             //------------------------------
-            // ÌÖåÏù¥Î∏î ÌÜµÍ≥ÑÏ†ïÎ≥¥ ÏàòÏßë
+            // ≈◊¿Ã∫Ì ≈Î∞Ë¡§∫∏ ºˆ¡˝
             //------------------------------
             IDE_TEST ( getTableStatistics( aStatement,
                                            aTableInfo,
@@ -1383,16 +1398,17 @@ qmoStat::getStatInfo4BaseTable( qcStatement    * aStatement,
                                            &sAllStat->mTableStat ) != IDE_SUCCESS );
 
             //------------------------------
-            // Ïª¨Îüº ÌÜµÍ≥ÑÏ†ïÎ≥¥ ÏàòÏßë
+            // ƒ√∑≥ ≈Î∞Ë¡§∫∏ ºˆ¡˝
             //------------------------------
             IDE_TEST( getColumnStatistics( sStatistics,
                                            sAllStat->mColumnStat ) != IDE_SUCCESS );
 
             //------------------------------
-            // Ïù∏Îç±Ïä§ ÌÜµÍ≥ÑÏ†ïÎ≥¥ ÏàòÏßë
+            // ¿Œµ¶Ω∫ ≈Î∞Ë¡§∫∏ ºˆ¡˝
             //------------------------------
             IDE_TEST( getIndexStatistics( aStatement,
                                           sStatistics,
+                                          sIsAutoDBMSStat,
                                           sAllStat->mIndexStat ) != IDE_SUCCESS );
             break;
         default :
@@ -1400,17 +1416,17 @@ qmoStat::getStatInfo4BaseTable( qcStatement    * aStatement,
     }
 
     //--------------------------------------
-    // Íµ¨Ï∂ïÎêú index ÌÜµÍ≥ÑÏ†ïÎ≥¥Î•º Ï†ïÎ†¨ÌïúÎã§.
-    // disk table   : index key Column CountÍ∞Ä ÏûëÏùÄ ÏàúÏÑúÎ°ú
-    // memory table : index key Column CountÍ∞Ä ÌÅ∞ ÏàúÏÑúÎ°ú
+    // ±∏√‡µ» index ≈Î∞Ë¡§∫∏∏¶ ¡§∑ƒ«—¥Ÿ.
+    // disk table   : index key Column Count∞° ¿€¿∫ º¯º≠∑Œ
+    // memory table : index key Column Count∞° ≈´ º¯º≠∑Œ
     //--------------------------------------
     if ( sStatistics->idxCardInfo != NULL )
     {
         if( sIsDiskTable == ID_TRUE )
         {
             //--------------------------------------
-            // Disk TableÏùò Í≤ΩÏö∞ Column Cardinaltiy ÌöçÎìù Í≥ºÏ†ïÏóêÏÑú
-            // Íµ¨Ï∂ïÎêú Index Ï†ïÎ†¨ Ï†ïÎ≥¥Î•º Í∑∏ÎåÄÎ°ú ÏÇ¨Ïö©Ìï®.
+            // Disk Table¿« ∞ÊøÏ Column Cardinaltiy »πµÊ ∞˙¡§ø°º≠
+            // ±∏√‡µ» Index ¡§∑ƒ ¡§∫∏∏¶ ±◊¥Î∑Œ ªÁøÎ«‘.
             //--------------------------------------
 
             // Nothing To Do
@@ -1418,13 +1434,13 @@ qmoStat::getStatInfo4BaseTable( qcStatement    * aStatement,
         else
         {
             //--------------------------------------
-            // Memory TableÏùò Í≤ΩÏö∞
-            // Key ColumnÏùò Í∞úÏàòÍ∞Ä ÎßéÏùÄ ÏàúÏÑúÎ°ú IndexÎ•º Ï†ïÎ†¨ÌïúÎã§.
-            // Îî∞ÎùºÏÑú, Í∏∞Ï°¥Ïóê Íµ¨ÏÑ±Îêú Ï†ïÎ†¨ Ï†ïÎ≥¥Î•º Ïû¨Ï†ïÎ†¨ÌïúÎã§.
+            // Memory Table¿« ∞ÊøÏ
+            // Key Column¿« ∞≥ºˆ∞° ∏π¿∫ º¯º≠∑Œ Index∏¶ ¡§∑ƒ«—¥Ÿ.
+            // µ˚∂Ûº≠, ±‚¡∏ø° ±∏º∫µ» ¡§∑ƒ ¡§∫∏∏¶ ¿Á¡§∑ƒ«—¥Ÿ.
             //--------------------------------------
 
             IDE_TEST( sortIndexInfo( sStatistics,
-                                     ID_FALSE, // Descending Ï†ïÎ†¨
+                                     ID_FALSE, // Descending ¡§∑ƒ
                                      &sSortedIdxInfoArray ) != IDE_SUCCESS );
 
             sStatistics->idxCardInfo = sSortedIdxInfoArray;
@@ -1432,11 +1448,11 @@ qmoStat::getStatInfo4BaseTable( qcStatement    * aStatement,
     }
     else
     {
-        // IndexÍ∞Ä ÏóÜÏùå
+        // Index∞° æ¯¿Ω
         // Nothing To Do
     }
 
-    // TPC-HÎ•º ÏúÑÌïú Í∞ÄÏÉÅ ÌÜµÍ≥Ñ Ï†ïÎ≥¥ Íµ¨Ï∂ï
+    // TPC-H∏¶ ¿ß«— ∞°ªÛ ≈Î∞Ë ¡§∫∏ ±∏√‡
     if ( QCU_FAKE_TPCH_SCALE_FACTOR > 0 )
     {
         IDE_TEST( getFakeStatInfo( aStatement, aTableInfo, sStatistics )
@@ -1475,7 +1491,7 @@ qmoStat::getTableStatistics( qcStatement    * aStatement,
         aStatInfo->isValidStat = ID_TRUE;
 
         //-----------------------------
-        // ÌÖåÏù¥Î∏îÏùò Î†àÏΩîÎìú ÌèâÍ∑† Í∏∏Ïù¥
+        // ≈◊¿Ã∫Ì¿« ∑πƒ⁄µÂ ∆Ú±’ ±Ê¿Ã
         //-----------------------------
 
         if( aData->mAverageRowLen <= 0 )
@@ -1488,7 +1504,7 @@ qmoStat::getTableStatistics( qcStatement    * aStatement,
         }
 
         //-----------------------------
-        // ÌÖåÏù¥Î∏îÏùò Î†àÏΩîÎìú ÌèâÍ∑† ÏùΩÍ∏∞ ÏãúÍ∞Ñ
+        // ≈◊¿Ã∫Ì¿« ∑πƒ⁄µÂ ∆Ú±’ ¿–±‚ Ω√∞£
         //-----------------------------
         aStatInfo->readRowTime = IDL_MAX(aData->mOneRowReadTime, QMO_STAT_READROW_TIME_MIN);
     }
@@ -1500,7 +1516,7 @@ qmoStat::getTableStatistics( qcStatement    * aStatement,
     }
 
     //-----------------------------
-    // ÌÖåÏù¥Î∏îÏùò Ï¥ù Î†àÏΩîÎìú Ïàò
+    // ≈◊¿Ã∫Ì¿« √— ∑πƒ⁄µÂ ºˆ
     //-----------------------------
     // BUG-44795
     if ( ( QC_SHARED_TMPLATE(aStatement)->optimizerDBMSStatPolicy == 1 ) ||
@@ -1544,7 +1560,7 @@ qmoStat::getTableStatistics( qcStatement    * aStatement,
     }
 
     //-----------------------------
-    // ÌÖåÏù¥Î∏îÏùò Ï¥ù ÎîîÏä§ÌÅ¨ ÌéòÏù¥ÏßÄ Ïàò
+    // ≈◊¿Ã∫Ì¿« √— µΩ∫≈© ∆‰¿Ã¡ˆ ºˆ
     //-----------------------------
     IDE_TEST( setTablePageCount( aStatement,
                                  aTableInfo,
@@ -1620,13 +1636,13 @@ qmoStat::setTablePageCount( qcStatement    * aStatement,
     IDU_FIT_POINT_FATAL( "qmoStat::setTablePageCount::__FT__" );
 
     //--------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //--------------------------------------
     IDE_DASSERT( aTableInfo != NULL );
     IDE_DASSERT( aStatInfo  != NULL );
 
     //--------------------------------------
-    // disk page count Íµ¨ÌïòÍ∏∞
+    // disk page count ±∏«œ±‚
     //--------------------------------------
     if( aStatInfo->isValidStat == ID_TRUE )
     {
@@ -1648,7 +1664,7 @@ qmoStat::setTablePageCount( qcStatement    * aStatement,
         }
     }
 
-    // ÌòÑÏû¨ ÌÖåÏù¥Î∏îÏù¥ diskÏù∏ÏßÄ memoryÏù∏ÏßÄÎ•º ÌåêÎã®ÌïúÎã§.
+    // «ˆ¿Á ≈◊¿Ã∫Ì¿Ã disk¿Œ¡ˆ memory¿Œ¡ˆ∏¶ ∆«¥‹«—¥Ÿ.
     if( smiTableSpace::isDiskTableSpaceType( aTableInfo->TBSType ) == ID_TRUE )
     {
         if( sPageCnt == SMI_STAT_NULL )
@@ -1680,23 +1696,37 @@ qmoStat::setTablePageCount( qcStatement    * aStatement,
 
 IDE_RC qmoStat::getIndexStatistics( qcStatement   * aStatement,
                                     qmoStatistics * aStatistics,
+                                    idBool          aIsAutoDBMStat,
                                     smiIndexStat  * aData )
 {
     qmoIdxCardInfo * sIdxCardInfo   = NULL;
     smiIndexStat   * sIdxData       = NULL;
     UInt             i  = 0;
+    UInt             j  = 0;
 
     IDU_FIT_POINT_FATAL( "qmoStat::getIndexStatistics::__FT__" );
 
     //--------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //--------------------------------------
     IDE_DASSERT( aStatistics != NULL );
 
     for ( i = 0; i < aStatistics->indexCnt; i++ )
     {
         sIdxCardInfo = &(aStatistics->idxCardInfo[i]);
-        sIdxData     = &(aData[i]);
+
+        // BUG-47884
+        sIdxData = NULL;
+        for ( j = 0; j < aStatistics->indexCnt; j++ )
+        {
+            if ( sIdxCardInfo->indexId == aData[j].mId )
+            {
+                sIdxData     = &(aData[j]);
+                break;
+            }
+        }
+
+        IDE_TEST_RAISE( sIdxData == NULL, ERR_NOT_FOUND );
 
         if ( smiStatistics::isValidIndexStat( sIdxCardInfo->index->indexHandle ) == ID_TRUE )
         {
@@ -1704,7 +1734,7 @@ IDE_RC qmoStat::getIndexStatistics( qcStatement   * aStatement,
         }
         else
         {
-            if ( aData->mCreateTV > 0 )
+            if ( sIdxData->mCreateTV > 0 )
             {
                 sIdxCardInfo->isValidStat = ID_TRUE;
             }
@@ -1717,11 +1747,19 @@ IDE_RC qmoStat::getIndexStatistics( qcStatement   * aStatement,
         if ( sIdxCardInfo->isValidStat == ID_TRUE )
         {
             //--------------------------------------
-            // Ïù∏Îç±Ïä§ keyNDV ÏñªÍ∏∞
+            // ¿Œµ¶Ω∫ keyNDV æÚ±‚
             //--------------------------------------
-            if( sIdxData->mNumDist <= 0 )
+            if ( sIdxData->mNumDist <= 0 )
             {
-                sIdxCardInfo->KeyNDV = 1;
+                /* BUG-48971 */
+                if ( aIsAutoDBMStat == ID_TRUE )
+                {
+                    sIdxCardInfo->KeyNDV = 1;
+                }
+                else
+                {
+                    sIdxCardInfo->KeyNDV = QMO_STAT_INDEX_KEY_NDV + 1;
+                }
             }
             else
             {
@@ -1729,7 +1767,7 @@ IDE_RC qmoStat::getIndexStatistics( qcStatement   * aStatement,
             }
 
             //--------------------------------------
-            // Ïù∏Îç±Ïä§ ÌèâÍ∑† Slot Í∞ØÏàò
+            // ¿Œµ¶Ω∫ ∆Ú±’ Slot ∞πºˆ
             //--------------------------------------
             if( sIdxData->mAvgSlotCnt <= 0 )
             {
@@ -1741,7 +1779,7 @@ IDE_RC qmoStat::getIndexStatistics( qcStatement   * aStatement,
             }
 
             //--------------------------------------
-            // Ïù∏Îç±Ïä§ ÎÜíÏù¥
+            // ¿Œµ¶Ω∫ ≥Ù¿Ã
             //--------------------------------------
             if( sIdxData->mIndexHeight <= 0 )
             {
@@ -1753,7 +1791,7 @@ IDE_RC qmoStat::getIndexStatistics( qcStatement   * aStatement,
             }
 
             //--------------------------------------
-            // Ïù∏Îç±Ïä§ ÌÅ¥Îü¨Ïä§ÌÑ∞ÎßÅ Ìå©ÌÑ∞
+            // ¿Œµ¶Ω∫ ≈¨∑ØΩ∫≈Õ∏µ ∆—≈Õ
             //--------------------------------------
             if( sIdxData->mClusteringFactor <= 0 )
             {
@@ -1777,7 +1815,7 @@ IDE_RC qmoStat::getIndexStatistics( qcStatement   * aStatement,
         }
 
         //--------------------------------------
-        // Ïù∏Îç±Ïä§ ÎîîÏä§ÌÅ¨ page Í∞ØÏàò
+        // ¿Œµ¶Ω∫ µΩ∫≈© page ∞πºˆ
         //--------------------------------------
         IDE_TEST( setIndexPageCnt( aStatement,
                                    sIdxCardInfo->index,
@@ -1788,6 +1826,16 @@ IDE_RC qmoStat::getIndexStatistics( qcStatement   * aStatement,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_NOT_FOUND )
+    {
+        ideLog::log( IDE_QP_0,
+                     "[qmoStat::getIndexStatistics] not found index id : %"ID_UINT32_FMT"",
+                     sIdxCardInfo->indexId );
+
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmoStat::getIndexStatistics",
+                                  "index statistic not found" ) );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -1833,7 +1881,7 @@ IDE_RC qmoStat::setIndexPageCnt( qcStatement    * aStatement,
     IDU_FIT_POINT_FATAL( "qmoStat::setIndexPageCnt::__FT__" );
 
     //--------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //--------------------------------------
     IDE_DASSERT( aIndex       != NULL );
     IDE_DASSERT( aIdxInfo     != NULL );
@@ -1907,7 +1955,7 @@ IDE_RC qmoStat::getColumnStatistics( qmoStatistics * aStatistics,
             sColCardInfo->isValidStat   = ID_TRUE;
 
             //--------------------------------------
-            // Ïª¨Îüº NDV
+            // ƒ√∑≥ NDV
             //--------------------------------------
             if( sColData->mNumDist <= 0 )
             {
@@ -1919,7 +1967,7 @@ IDE_RC qmoStat::getColumnStatistics( qmoStatistics * aStatistics,
             }
 
             //--------------------------------------
-            // Ïª¨Îüº null value Í∞ØÏàò
+            // ƒ√∑≥ null value ∞πºˆ
             //--------------------------------------
             if( sColData->mNumNull < 0 )
             {
@@ -1931,7 +1979,7 @@ IDE_RC qmoStat::getColumnStatistics( qmoStatistics * aStatistics,
             }
 
             //--------------------------------------
-            // Ïª¨Îüº ÌèâÍ∑† Í∏∏Ïù¥
+            // ƒ√∑≥ ∆Ú±’ ±Ê¿Ã
             //--------------------------------------
             if( sColData->mAverageColumnLen <= 0 )
             {
@@ -1943,7 +1991,7 @@ IDE_RC qmoStat::getColumnStatistics( qmoStatistics * aStatistics,
             }
 
             //--------------------------------------
-            // Ïª¨Îüº MIN, MAX
+            // ƒ√∑≥ MIN, MAX
             //--------------------------------------
             if( ( sColCardInfo->column->module->flag & MTD_SELECTIVITY_MASK )
                 == MTD_SELECTIVITY_ENABLE )
@@ -2025,7 +2073,7 @@ qmoStat::setColumnNDV( qcmTableInfo   * aTableInfo,
     IDU_FIT_POINT_FATAL( "qmoStat::setColumnNDV::__FT__" );
 
     //--------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //--------------------------------------
     IDE_DASSERT( aColInfo     != NULL );
 
@@ -2063,7 +2111,7 @@ qmoStat::setColumnNullCount( qcmTableInfo   * aTableInfo,
     IDU_FIT_POINT_FATAL( "qmoStat::setColumnNullCount::__FT__" );
 
     //--------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //--------------------------------------
     IDE_DASSERT( aColInfo     != NULL );
 
@@ -2101,7 +2149,7 @@ qmoStat::setColumnAvgLen( qcmTableInfo   * aTableInfo,
     IDU_FIT_POINT_FATAL( "qmoStat::setColumnAvgLen::__FT__" );
 
     //--------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //--------------------------------------
     IDE_DASSERT( aColInfo     != NULL );
 
@@ -2137,10 +2185,10 @@ qmoStat::sortIndexInfo( qmoStatistics   * aStatInfo,
 {
 /***********************************************************************
  *
- * Description : ÌÜµÍ≥ÑÏ†ïÎ≥¥Ïùò idxCardInfoÎ•º Ï†ïÎ†¨ÌïúÎã§.
+ * Description : ≈Î∞Ë¡§∫∏¿« idxCardInfo∏¶ ¡§∑ƒ«—¥Ÿ.
  *
- *    memory table index : index key column countÍ∞Ä ÎßéÏùÄ ÏàúÏÑúÎ°ú
- *    disk table index   : index key column countÍ∞Ä ÏûëÏùÄ ÏàúÏÑúÎ°ú
+ *    memory table index : index key column count∞° ∏π¿∫ º¯º≠∑Œ
+ *    disk table index   : index key column count∞° ¿€¿∫ º¯º≠∑Œ
  *
  * Implementation :
  *
@@ -2151,16 +2199,16 @@ qmoStat::sortIndexInfo( qmoStatistics   * aStatInfo,
     IDU_FIT_POINT_FATAL( "qmoStat::sortIndexInfo::__FT__" );
 
     //--------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //--------------------------------------
 
     IDE_DASSERT( aStatInfo != NULL );
     IDE_DASSERT( aStatInfo->idxCardInfo != NULL );
 
     //--------------------------------------
-    // ÌÜµÍ≥ÑÏ†ïÎ≥¥Ïùò idxCardInfoÎ•º Ï†ïÎ†¨ÌïúÎã§.
-    // memory table index : index key column countÍ∞Ä ÎßéÏùÄ ÏàúÏÑúÎ°ú
-    // disk table index   : index key column countÍ∞Ä ÏûëÏùÄ ÏàúÏÑúÎ°ú
+    // ≈Î∞Ë¡§∫∏¿« idxCardInfo∏¶ ¡§∑ƒ«—¥Ÿ.
+    // memory table index : index key column count∞° ∏π¿∫ º¯º≠∑Œ
+    // disk table index   : index key column count∞° ¿€¿∫ º¯º≠∑Œ
     //--------------------------------------
 
     sIdxCardInfoArray = aStatInfo->idxCardInfo;
@@ -2170,8 +2218,8 @@ qmoStat::sortIndexInfo( qmoStatistics   * aStatInfo,
         if( aIsAscending == ID_TRUE )
         {
             // qsort:
-            // disk table indexÎäî access ÌöüÏàòÎ•º Ï§ÑÏù¥Í∏∞ ÏúÑÌï¥,
-            // key column countÍ∞Ä ÏûëÏùÄÏàúÏÑúÎåÄÎ°ú Ï†ïÎ†¨
+            // disk table index¥¬ access »Ωºˆ∏¶ ¡Ÿ¿Ã±‚ ¿ß«ÿ,
+            // key column count∞° ¿€¿∫º¯º≠¥Î∑Œ ¡§∑ƒ
             idlOS::qsort( sIdxCardInfoArray,
                           aStatInfo->indexCnt,
                           ID_SIZEOF(qmoIdxCardInfo),
@@ -2180,8 +2228,8 @@ qmoStat::sortIndexInfo( qmoStatistics   * aStatInfo,
         else
         {
             // qsort:
-            // memory table indexÎäî index ÏÇ¨Ïö©ÏùÑ Í∑πÎåÄÌôîÌïòÍ∏∞ ÏúÑÌï¥ÏÑú,
-            // key column countÍ∞Ä ÌÅ∞ ÏàúÏÑúÎåÄÎ°ú Ï†ïÎ†¨
+            // memory table index¥¬ index ªÁøÎ¿ª ±ÿ¥Î»≠«œ±‚ ¿ß«ÿº≠,
+            // key column count∞° ≈´ º¯º≠¥Î∑Œ ¡§∑ƒ
             idlOS::qsort( sIdxCardInfoArray,
                           aStatInfo->indexCnt,
                           ID_SIZEOF(qmoIdxCardInfo),
@@ -2205,7 +2253,7 @@ qmoStat::getStatInfo4PartitionedTable( qcStatement    * aStatement,
                                        qmoStatistics  * aStatInfo )
 {
     UInt               sCnt;
-    UInt               sCnt2;
+    UInt               sCnt2 = 0;
 
     qmsPartitionRef  * sPartitionRef;
     qmsIndexTableRef * sIndexTable;
@@ -2215,7 +2263,7 @@ qmoStat::getStatInfo4PartitionedTable( qcStatement    * aStatement,
     IDU_FIT_POINT_FATAL( "qmoStat::getStatInfo4PartitionedTable::__FT__" );
 
     //--------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2230,7 +2278,7 @@ qmoStat::getStatInfo4PartitionedTable( qcStatement    * aStatement,
 
     if( aOptimizerMode == QMO_OPT_GOAL_TYPE_RULE )
     {
-        // partitioned tableÏùÄ Í∏∞Î≥∏Ï†ÅÏúºÎ°ú rule-basedÎ°ú Í≥ÑÏÇ∞Ïù¥ ÎêòÏóàÎã§.
+        // partitioned table¿∫ ±‚∫ª¿˚¿∏∑Œ rule-based∑Œ ∞ËªÍ¿Ã µ«æ˙¥Ÿ.
         // Nothing to do.
     }
     else
@@ -2256,7 +2304,7 @@ qmoStat::getStatInfo4PartitionedTable( qcStatement    * aStatement,
             aStatInfo->firstRowsN      = 0;
         }
 
-        // record count, page countÎ•º Ìï©ÏÇ∞ÌïúÎã§.
+        // record count, page count∏¶ «’ªÍ«—¥Ÿ.
         for( sPartitionRef = aTableRef->partitionRef;
              sPartitionRef != NULL;
              sPartitionRef = sPartitionRef->next )
@@ -2281,7 +2329,7 @@ qmoStat::getStatInfo4PartitionedTable( qcStatement    * aStatement,
         }
 
         //--------------------------------------
-        // Index ÌÜµÍ≥ÑÏ†ïÎ≥¥
+        // Index ≈Î∞Ë¡§∫∏
         //--------------------------------------
         for( sCnt=0; sCnt < aStatInfo->indexCnt ; sCnt++ )
         {
@@ -2306,7 +2354,7 @@ qmoStat::getStatInfo4PartitionedTable( qcStatement    * aStatement,
                     }
                 }
 
-                // Ï∞æÏßÄÎ™ªÌïòÎ©¥ Î≠îÍ∞Ä Î¨∏Ï†úÍ∞Ä ÏûàÎäî Í≤ÉÏûÑ
+                // √£¡ˆ∏¯«œ∏È π∫∞° πÆ¡¶∞° ¿÷¥¬ ∞Õ¿”
                 IDE_TEST_RAISE( sFound == ID_FALSE, ERR_NOT_FOUND );
 
                 for( sCnt2 = 0;
@@ -2337,11 +2385,11 @@ qmoStat::getStatInfo4PartitionedTable( qcStatement    * aStatement,
             }
             else
             {
-                // BUG-42372 ÌååÌã∞ÏÖò ÌîÑÎ£®ÎãùÏóê ÏùòÌï¥ÏÑú ÌååÌã∞ÏÖòÏù¥ Î™®Îëê Ï†úÍ±∞Í∞ÄÎêú Í≤ΩÏö∞
-                // Selectivity Í∞Ä ÏûòÎ™ª Í≥ÑÏÇ∞Îê®
+                // BUG-42372 ∆ƒ∆ºº« «¡∑Á¥◊ø° ¿««ÿº≠ ∆ƒ∆ºº«¿Ã ∏µŒ ¡¶∞≈∞°µ» ∞ÊøÏ
+                // Selectivity ∞° ¿ﬂ∏¯ ∞ËªÍµ 
                 if ( aTableRef->partitionRef != NULL )
                 {
-                    // ÎàÑÏ†Å ÏãúÌÇ§Í∏∞ ÏúÑÌïú Ï¥àÍ∏∞Í∞í
+                    // ¥©¿˚ Ω√≈∞±‚ ¿ß«— √ ±‚∞™
                     aStatInfo->idxCardInfo[sCnt].isValidStat        = aStatInfo->isValidStat;
                     aStatInfo->idxCardInfo[sCnt].flag               = QMO_STAT_CLEAR;
                     aStatInfo->idxCardInfo[sCnt].KeyNDV             = 0;
@@ -2352,8 +2400,8 @@ qmoStat::getStatInfo4PartitionedTable( qcStatement    * aStatement,
                 }
                 else
                 {
-                    // ÌååÌã∞ÏÖò ÌîÑÎ£®ÎãùÏóê ÏùòÌï¥ÏÑú ÌååÌã∞ÏÖòÏù¥ Î™®Îëê Ï†úÍ±∞Îêú Í≤ΩÏö∞
-                    // Default Í∞íÏúºÎ°ú ÏÑ∏ÌåÖÌï®
+                    // ∆ƒ∆ºº« «¡∑Á¥◊ø° ¿««ÿº≠ ∆ƒ∆ºº«¿Ã ∏µŒ ¡¶∞≈µ» ∞ÊøÏ
+                    // Default ∞™¿∏∑Œ ºº∆√«‘
                     aStatInfo->idxCardInfo[sCnt].isValidStat        = ID_FALSE;
                     aStatInfo->idxCardInfo[sCnt].flag               = QMO_STAT_CLEAR;
                     aStatInfo->idxCardInfo[sCnt].KeyNDV             = QMO_STAT_INDEX_KEY_NDV;
@@ -2374,29 +2422,29 @@ qmoStat::getStatInfo4PartitionedTable( qcStatement    * aStatement,
                         if( aStatInfo->idxCardInfo[sCnt].index->indexId ==
                             sPartitionRef->statInfo->idxCardInfo[sCnt2].index->indexId )
                         {
-                            // KeyNDV Î™®Îëê ÎçîÌïúÎã§.
+                            // KeyNDV ∏µŒ ¥ı«—¥Ÿ.
                             aStatInfo->idxCardInfo[sCnt].KeyNDV +=
                                 sPartitionRef->statInfo->idxCardInfo[sCnt2].KeyNDV;
 
-                            // avgSlotCount ÏµúÎåÄÍ∞íÏùÑ ÏÑ∏ÌåÖÌïúÎã§.
+                            // avgSlotCount √÷¥Î∞™¿ª ºº∆√«—¥Ÿ.
                             aStatInfo->idxCardInfo[sCnt].avgSlotCount =
                                 IDL_MAX( aStatInfo->idxCardInfo[sCnt].avgSlotCount,
                                          sPartitionRef->statInfo->idxCardInfo[sCnt2].avgSlotCount );
 
-                            // pageCnt Î™®Îëê ÎçîÌïúÎã§.
+                            // pageCnt ∏µŒ ¥ı«—¥Ÿ.
                             aStatInfo->idxCardInfo[sCnt].pageCnt +=
                                 sPartitionRef->statInfo->idxCardInfo[sCnt2].pageCnt;
 
-                            // indexLevel ÏµúÎåÄÍ∞íÏùÑ ÏÑ∏ÌåÖÌïúÎã§.
+                            // indexLevel √÷¥Î∞™¿ª ºº∆√«—¥Ÿ.
                             aStatInfo->idxCardInfo[sCnt].indexLevel =
                                 IDL_MAX( aStatInfo->idxCardInfo[sCnt].indexLevel,
                                          sPartitionRef->statInfo->idxCardInfo[sCnt2].indexLevel );
 
-                            // clusteringFactor ÏµúÎåÄÍ∞íÏùÑ ÏÑ∏ÌåÖÌïúÎã§.
+                            // clusteringFactor √÷¥Î∞™¿ª ºº∆√«—¥Ÿ.
                             aStatInfo->idxCardInfo[sCnt].clusteringFactor =
                                 IDL_MAX( aStatInfo->idxCardInfo[sCnt].clusteringFactor,
                                          sPartitionRef->statInfo->idxCardInfo[sCnt2].clusteringFactor );
-                            // min, max Í∞íÏùÄ Î≥ÑÎèÑÎ°ú ÏÑ∏ÌåÖÌïòÏßÄ ÏïäÎäîÎã§.
+                            // min, max ∞™¿∫ ∫∞µµ∑Œ ºº∆√«œ¡ˆ æ ¥¬¥Ÿ.
                         }
                         else
                         {
@@ -2425,7 +2473,7 @@ qmoStat::getStatInfo4PartitionedTable( qcStatement    * aStatement,
 
 
         //--------------------------------------
-        // Ïª¨Îüº ÌÜµÍ≥ÑÏ†ïÎ≥¥
+        // ƒ√∑≥ ≈Î∞Ë¡§∫∏
         //--------------------------------------
         for( sCnt=0; sCnt < aStatInfo->columnCnt ; sCnt++ )
         {
@@ -2448,7 +2496,7 @@ qmoStat::getStatInfo4PartitionedTable( qcStatement    * aStatement,
         }
 
         //--------------------------------------
-        // TPC-HÎ•º ÏúÑÌïú Í∞ÄÏÉÅ ÌÜµÍ≥Ñ Ï†ïÎ≥¥ Íµ¨Ï∂ï
+        // TPC-H∏¶ ¿ß«— ∞°ªÛ ≈Î∞Ë ¡§∫∏ ±∏√‡
         //--------------------------------------
         if ( QCU_FAKE_TPCH_SCALE_FACTOR > 0 )
         {
@@ -2482,22 +2530,22 @@ qmoStat::getFakeStatInfo( qcStatement    * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Ìï¥Îãπ Ìï®ÏàòÎäî ÌÖåÏä§Ìä∏ Ïö©ÎèÑÎ°úÎßå ÏÇ¨Ïö©ÎêòÏñ¥Ïïº Ìï®.
- *     TPC-H Ïö© ÌÖåÏù¥Î∏îÏùº Í≤ΩÏö∞ Í∞ÄÏÉÅÏùò ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Íµ¨Ï∂ïÌïúÎã§.
+ *     «ÿ¥Á «‘ºˆ¥¬ ≈◊Ω∫∆Æ øÎµµ∑Œ∏∏ ªÁøÎµ«æÓæﬂ «‘.
+ *     TPC-H øÎ ≈◊¿Ã∫Ì¿œ ∞ÊøÏ ∞°ªÛ¿« ≈Î∞Ë ¡§∫∏∏¶ ±∏√‡«—¥Ÿ.
  *
  * Implementation :
  *
- *     1. qmoStatisticsÏóê ÎåÄÌïú Î©îÎ™®Î¶¨Î•º Ìï†ÎãπÎ∞õÎäîÎã§.
- *     2. table record count ÏÑ§Ï†ï
- *     3. table disk blcok count ÏÑ§Ï†ï
- *     4. index/column columnNDV, MIN/MAX Ï†ïÎ≥¥ ÏÑ§Ï†ï
+ *     1. qmoStatisticsø° ¥Î«— ∏ﬁ∏∏Æ∏¶ «“¥Áπﬁ¥¬¥Ÿ.
+ *     2. table record count º≥¡§
+ *     3. table disk blcok count º≥¡§
+ *     4. index/column columnNDV, MIN/MAX ¡§∫∏ º≥¡§
  *
  ***********************************************************************/
 
     IDU_FIT_POINT_FATAL( "qmoStat::getFakeStatInfo::__FT__" );
 
     //--------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2505,10 +2553,10 @@ qmoStat::getFakeStatInfo( qcStatement    * aStatement,
     IDE_DASSERT( aStatInfo != NULL );
 
     //--------------------------------------
-    // TPC-H Ï†ÑÏö© ÌÖåÏù¥Î∏î Ïó¨Î∂ÄÏùò Í≤ÄÏÇ¨
+    // TPC-H ¿¸øÎ ≈◊¿Ã∫Ì ø©∫Œ¿« ∞ÀªÁ
     //--------------------------------------
 
-    // REGION_M ÌÖåÏù¥Î∏îÏù∏ Í≤ΩÏö∞
+    // REGION_M ≈◊¿Ã∫Ì¿Œ ∞ÊøÏ
     if ( idlOS::strMatch( aTableInfo->name,
                           idlOS::strlen( aTableInfo->name ),
                           "REGION_M",
@@ -2523,7 +2571,7 @@ qmoStat::getFakeStatInfo( qcStatement    * aStatement,
         // Nothing To Do
     }
 
-    // REGION_D ÌÖåÏù¥Î∏îÏù∏ Í≤ΩÏö∞
+    // REGION_D ≈◊¿Ã∫Ì¿Œ ∞ÊøÏ
     if ( idlOS::strMatch( aTableInfo->name,
                           idlOS::strlen( aTableInfo->name ),
                           "REGION_D",
@@ -2538,7 +2586,7 @@ qmoStat::getFakeStatInfo( qcStatement    * aStatement,
         // Nothing To Do
     }
 
-    // NATION_M ÌÖåÏù¥Î∏îÏù∏ Í≤ΩÏö∞
+    // NATION_M ≈◊¿Ã∫Ì¿Œ ∞ÊøÏ
     if ( idlOS::strMatch( aTableInfo->name,
                           idlOS::strlen( aTableInfo->name ),
                           "NATION_M",
@@ -2553,7 +2601,7 @@ qmoStat::getFakeStatInfo( qcStatement    * aStatement,
         // Nothing To Do
     }
 
-    // NATION_D ÌÖåÏù¥Î∏îÏù∏ Í≤ΩÏö∞
+    // NATION_D ≈◊¿Ã∫Ì¿Œ ∞ÊøÏ
     if ( idlOS::strMatch( aTableInfo->name,
                           idlOS::strlen( aTableInfo->name ),
                           "NATION_D",
@@ -2569,7 +2617,7 @@ qmoStat::getFakeStatInfo( qcStatement    * aStatement,
         // Nothing To Do
     }
 
-    // SUPPLIER_M ÌÖåÏù¥Î∏îÏù∏ Í≤ΩÏö∞
+    // SUPPLIER_M ≈◊¿Ã∫Ì¿Œ ∞ÊøÏ
     if ( idlOS::strMatch( aTableInfo->name,
                           idlOS::strlen( aTableInfo->name ),
                           "SUPPLIER_M",
@@ -2584,7 +2632,7 @@ qmoStat::getFakeStatInfo( qcStatement    * aStatement,
         // Nothing To Do
     }
 
-    // SUPPLIER_D ÌÖåÏù¥Î∏îÏù∏ Í≤ΩÏö∞
+    // SUPPLIER_D ≈◊¿Ã∫Ì¿Œ ∞ÊøÏ
     if ( idlOS::strMatch( aTableInfo->name,
                           idlOS::strlen( aTableInfo->name ),
                           "SUPPLIER_D",
@@ -2599,7 +2647,7 @@ qmoStat::getFakeStatInfo( qcStatement    * aStatement,
         // Nothing To Do
     }
 
-    // CUSTOMER_M ÌÖåÏù¥Î∏îÏù∏ Í≤ΩÏö∞
+    // CUSTOMER_M ≈◊¿Ã∫Ì¿Œ ∞ÊøÏ
     if ( idlOS::strMatch( aTableInfo->name,
                           idlOS::strlen( aTableInfo->name ),
                           "CUSTOMER_M",
@@ -2615,7 +2663,7 @@ qmoStat::getFakeStatInfo( qcStatement    * aStatement,
         // Nothing To Do
     }
 
-    // CUSTOMER_D ÌÖåÏù¥Î∏îÏù∏ Í≤ΩÏö∞
+    // CUSTOMER_D ≈◊¿Ã∫Ì¿Œ ∞ÊøÏ
     if ( idlOS::strMatch( aTableInfo->name,
                           idlOS::strlen( aTableInfo->name ),
                           "CUSTOMER_D",
@@ -2631,7 +2679,7 @@ qmoStat::getFakeStatInfo( qcStatement    * aStatement,
         // Nothing To Do
     }
 
-    // PART_M ÌÖåÏù¥Î∏îÏù∏ Í≤ΩÏö∞
+    // PART_M ≈◊¿Ã∫Ì¿Œ ∞ÊøÏ
     if ( idlOS::strMatch( aTableInfo->name,
                           idlOS::strlen( aTableInfo->name ),
                           "PART_M",
@@ -2647,7 +2695,7 @@ qmoStat::getFakeStatInfo( qcStatement    * aStatement,
         // Nothing To Do
     }
 
-    // PART_D ÌÖåÏù¥Î∏îÏù∏ Í≤ΩÏö∞
+    // PART_D ≈◊¿Ã∫Ì¿Œ ∞ÊøÏ
     if ( idlOS::strMatch( aTableInfo->name,
                           idlOS::strlen( aTableInfo->name ),
                           "PART_D",
@@ -2662,7 +2710,7 @@ qmoStat::getFakeStatInfo( qcStatement    * aStatement,
         // Nothing To Do
     }
 
-    // PARTSUPP_M ÌÖåÏù¥Î∏îÏù∏ Í≤ΩÏö∞
+    // PARTSUPP_M ≈◊¿Ã∫Ì¿Œ ∞ÊøÏ
     if ( idlOS::strMatch( aTableInfo->name,
                           idlOS::strlen( aTableInfo->name ),
                           "PARTSUPP_M",
@@ -2677,7 +2725,7 @@ qmoStat::getFakeStatInfo( qcStatement    * aStatement,
         // Nothing To Do
     }
 
-    // PARTSUPP_D ÌÖåÏù¥Î∏îÏù∏ Í≤ΩÏö∞
+    // PARTSUPP_D ≈◊¿Ã∫Ì¿Œ ∞ÊøÏ
     if ( idlOS::strMatch( aTableInfo->name,
                           idlOS::strlen( aTableInfo->name ),
                           "PARTSUPP_D",
@@ -2693,7 +2741,7 @@ qmoStat::getFakeStatInfo( qcStatement    * aStatement,
         // Nothing To Do
     }
 
-    // ORDERS_M ÌÖåÏù¥Î∏îÏù∏ Í≤ΩÏö∞
+    // ORDERS_M ≈◊¿Ã∫Ì¿Œ ∞ÊøÏ
     if ( idlOS::strMatch( aTableInfo->name,
                           idlOS::strlen( aTableInfo->name ),
                           "ORDERS_M",
@@ -2710,7 +2758,7 @@ qmoStat::getFakeStatInfo( qcStatement    * aStatement,
         // Nothing To Do
     }
 
-    // ORDERS_D ÌÖåÏù¥Î∏îÏù∏ Í≤ΩÏö∞
+    // ORDERS_D ≈◊¿Ã∫Ì¿Œ ∞ÊøÏ
     if ( idlOS::strMatch( aTableInfo->name,
                           idlOS::strlen( aTableInfo->name ),
                           "ORDERS_D",
@@ -2727,7 +2775,7 @@ qmoStat::getFakeStatInfo( qcStatement    * aStatement,
         // Nothing To Do
     }
 
-    // LINEITEM_M ÌÖåÏù¥Î∏îÏù∏ Í≤ΩÏö∞
+    // LINEITEM_M ≈◊¿Ã∫Ì¿Œ ∞ÊøÏ
     if ( idlOS::strMatch( aTableInfo->name,
                           idlOS::strlen( aTableInfo->name ),
                           "LINEITEM_M",
@@ -2743,7 +2791,7 @@ qmoStat::getFakeStatInfo( qcStatement    * aStatement,
         // Nothing To Do
     }
 
-    // LINEITEM_D ÌÖåÏù¥Î∏îÏù∏ Í≤ΩÏö∞
+    // LINEITEM_D ≈◊¿Ã∫Ì¿Œ ∞ÊøÏ
     if ( idlOS::strMatch( aTableInfo->name,
                           idlOS::strlen( aTableInfo->name ),
                           "LINEITEM_D",
@@ -2774,12 +2822,12 @@ qmoStat::getFakeStat4Region( idBool           aIsDisk,
 /***********************************************************************
  *
  * Description :
- *     Ìï¥Îãπ Ìï®ÏàòÎäî ÌÖåÏä§Ìä∏ Ïö©ÎèÑÎ°úÎßå ÏÇ¨Ïö©ÎêòÏñ¥Ïïº Ìï®.
- *     TPC-H Ïö© ÌÖåÏù¥Î∏îÏùº Í≤ΩÏö∞ Í∞ÄÏÉÅÏùò ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Íµ¨Ï∂ïÌïúÎã§.
+ *     «ÿ¥Á «‘ºˆ¥¬ ≈◊Ω∫∆Æ øÎµµ∑Œ∏∏ ªÁøÎµ«æÓæﬂ «‘.
+ *     TPC-H øÎ ≈◊¿Ã∫Ì¿œ ∞ÊøÏ ∞°ªÛ¿« ≈Î∞Ë ¡§∫∏∏¶ ±∏√‡«—¥Ÿ.
  *
  * Implementation :
  *
- *     REGION ÌÖåÏù¥Î∏î Ïö© Í∞ÄÏÉÅ ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Íµ¨Ï∂ïÌïúÎã§.
+ *     REGION ≈◊¿Ã∫Ì øÎ ∞°ªÛ ≈Î∞Ë ¡§∫∏∏¶ ±∏√‡«—¥Ÿ.
  *
  ***********************************************************************/
 
@@ -2788,13 +2836,13 @@ qmoStat::getFakeStat4Region( idBool           aIsDisk,
     IDU_FIT_POINT_FATAL( "qmoStat::getFakeStat4Region::__FT__" );
 
     //-----------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //-----------------------------
 
     IDE_DASSERT( aStatInfo != NULL );
 
     //-----------------------------
-    // Scale FactorÏóê Îî∞Î•∏ ÌÜµÍ≥Ñ Ï†ïÎ≥¥ Íµ¨Ï∂ï
+    // Scale Factorø° µ˚∏• ≈Î∞Ë ¡§∫∏ ±∏√‡
     //-----------------------------
 
     switch ( QCU_FAKE_TPCH_SCALE_FACTOR )
@@ -2803,7 +2851,7 @@ qmoStat::getFakeStat4Region( idBool           aIsDisk,
         case 10:
 
             //-----------------------
-            // ÌÖåÏù¥Î∏î ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ≈◊¿Ã∫Ì ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             aStatInfo->totalRecordCnt = 5;
@@ -2817,12 +2865,12 @@ qmoStat::getFakeStat4Region( idBool           aIsDisk,
             }
 
             //-----------------------
-            // Ïù∏Îç±Ïä§ ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ¿Œµ¶Ω∫ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->indexCnt; i++ )
             {
-                // R_PK_REGIONKEY_M ÎòêÎäî R_PK_REGIONKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // R_PK_REGIONKEY_M ∂«¥¬ R_PK_REGIONKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 14 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         14,
@@ -2838,7 +2886,7 @@ qmoStat::getFakeStat4Region( idBool           aIsDisk,
             }
 
             //-----------------------
-            // Ïª¨Îüº ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ƒ√∑≥ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->columnCnt; i++ )
@@ -2880,12 +2928,12 @@ qmoStat::getFakeStat4Nation( idBool           aIsDisk,
 /***********************************************************************
  *
  * Description :
- *     Ìï¥Îãπ Ìï®ÏàòÎäî ÌÖåÏä§Ìä∏ Ïö©ÎèÑÎ°úÎßå ÏÇ¨Ïö©ÎêòÏñ¥Ïïº Ìï®.
- *     TPC-H Ïö© ÌÖåÏù¥Î∏îÏùº Í≤ΩÏö∞ Í∞ÄÏÉÅÏùò ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Íµ¨Ï∂ïÌïúÎã§.
+ *     «ÿ¥Á «‘ºˆ¥¬ ≈◊Ω∫∆Æ øÎµµ∑Œ∏∏ ªÁøÎµ«æÓæﬂ «‘.
+ *     TPC-H øÎ ≈◊¿Ã∫Ì¿œ ∞ÊøÏ ∞°ªÛ¿« ≈Î∞Ë ¡§∫∏∏¶ ±∏√‡«—¥Ÿ.
  *
  * Implementation :
  *
- *     NATION ÌÖåÏù¥Î∏î Ïö© Í∞ÄÏÉÅ ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Íµ¨Ï∂ïÌïúÎã§.
+ *     NATION ≈◊¿Ã∫Ì øÎ ∞°ªÛ ≈Î∞Ë ¡§∫∏∏¶ ±∏√‡«—¥Ÿ.
  *
  ***********************************************************************/
 
@@ -2894,13 +2942,13 @@ qmoStat::getFakeStat4Nation( idBool           aIsDisk,
     IDU_FIT_POINT_FATAL( "qmoStat::getFakeStat4Nation::__FT__" );
 
     //-----------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //-----------------------------
 
     IDE_DASSERT( aStatInfo != NULL );
 
     //-----------------------------
-    // Scale FactorÏóê Îî∞Î•∏ ÌÜµÍ≥Ñ Ï†ïÎ≥¥ Íµ¨Ï∂ï
+    // Scale Factorø° µ˚∏• ≈Î∞Ë ¡§∫∏ ±∏√‡
     //-----------------------------
 
     switch ( QCU_FAKE_TPCH_SCALE_FACTOR )
@@ -2908,7 +2956,7 @@ qmoStat::getFakeStat4Nation( idBool           aIsDisk,
         case 1:
         case 10:
             //-----------------------
-            // ÌÖåÏù¥Î∏î ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ≈◊¿Ã∫Ì ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             aStatInfo->totalRecordCnt = 25;
@@ -2922,12 +2970,12 @@ qmoStat::getFakeStat4Nation( idBool           aIsDisk,
             }
 
             //-----------------------
-            // Ïù∏Îç±Ïä§ ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ¿Œµ¶Ω∫ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->indexCnt; i++ )
             {
-                // N_PK_NATIONKEY_M ÎòêÎäî N_PK_NATIONKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // N_PK_NATIONKEY_M ∂«¥¬ N_PK_NATIONKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 14 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         14,
@@ -2941,7 +2989,7 @@ qmoStat::getFakeStat4Nation( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // N_IDX_NAME_M ÎòêÎäî N_IDX_NAME_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // N_IDX_NAME_M ∂«¥¬ N_IDX_NAME_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 10 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         10,
@@ -2955,7 +3003,7 @@ qmoStat::getFakeStat4Nation( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // N_FK_REGIONKEY_M ÎòêÎäî N_FK_REGIONKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // N_FK_REGIONKEY_M ∂«¥¬ N_FK_REGIONKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 14 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         14,
@@ -2972,7 +3020,7 @@ qmoStat::getFakeStat4Nation( idBool           aIsDisk,
             }
 
             //-----------------------
-            // Ïª¨Îüº ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ƒ√∑≥ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->columnCnt; i++ )
@@ -3019,12 +3067,12 @@ qmoStat::getFakeStat4Supplier( idBool           aIsDisk,
 /***********************************************************************
  *
  * Description :
- *     Ìï¥Îãπ Ìï®ÏàòÎäî ÌÖåÏä§Ìä∏ Ïö©ÎèÑÎ°úÎßå ÏÇ¨Ïö©ÎêòÏñ¥Ïïº Ìï®.
- *     TPC-H Ïö© ÌÖåÏù¥Î∏îÏùº Í≤ΩÏö∞ Í∞ÄÏÉÅÏùò ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Íµ¨Ï∂ïÌïúÎã§.
+ *     «ÿ¥Á «‘ºˆ¥¬ ≈◊Ω∫∆Æ øÎµµ∑Œ∏∏ ªÁøÎµ«æÓæﬂ «‘.
+ *     TPC-H øÎ ≈◊¿Ã∫Ì¿œ ∞ÊøÏ ∞°ªÛ¿« ≈Î∞Ë ¡§∫∏∏¶ ±∏√‡«—¥Ÿ.
  *
  * Implementation :
  *
- *     SUPPLIER ÌÖåÏù¥Î∏î Ïö© Í∞ÄÏÉÅ ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Íµ¨Ï∂ïÌïúÎã§.
+ *     SUPPLIER ≈◊¿Ã∫Ì øÎ ∞°ªÛ ≈Î∞Ë ¡§∫∏∏¶ ±∏√‡«—¥Ÿ.
  *
  ***********************************************************************/
 
@@ -3033,20 +3081,20 @@ qmoStat::getFakeStat4Supplier( idBool           aIsDisk,
     IDU_FIT_POINT_FATAL( "qmoStat::getFakeStat4Supplier::__FT__" );
 
     //-----------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //-----------------------------
 
     IDE_DASSERT( aStatInfo != NULL );
 
     //-----------------------------
-    // Scale FactorÏóê Îî∞Î•∏ ÌÜµÍ≥Ñ Ï†ïÎ≥¥ Íµ¨Ï∂ï
+    // Scale Factorø° µ˚∏• ≈Î∞Ë ¡§∫∏ ±∏√‡
     //-----------------------------
 
     switch ( QCU_FAKE_TPCH_SCALE_FACTOR )
     {
         case 1:
             //-----------------------
-            // ÌÖåÏù¥Î∏î ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ≈◊¿Ã∫Ì ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             aStatInfo->totalRecordCnt = 10000;
@@ -3060,12 +3108,12 @@ qmoStat::getFakeStat4Supplier( idBool           aIsDisk,
             }
 
             //-----------------------
-            // Ïù∏Îç±Ïä§ ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ¿Œµ¶Ω∫ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->indexCnt; i++ )
             {
-                // S_PK_SUPPKEY_M ÎòêÎäî S_PK_SUPPKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // S_PK_SUPPKEY_M ∂«¥¬ S_PK_SUPPKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 12 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         12,
@@ -3079,7 +3127,7 @@ qmoStat::getFakeStat4Supplier( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // S_FK_NATIONKEY_M ÎòêÎäî S_FK_NATIONKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // S_FK_NATIONKEY_M ∂«¥¬ S_FK_NATIONKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 14 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         14,
@@ -3096,7 +3144,7 @@ qmoStat::getFakeStat4Supplier( idBool           aIsDisk,
             }
 
             //-----------------------
-            // Ïª¨Îüº ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ƒ√∑≥ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->columnCnt; i++ )
@@ -3139,7 +3187,7 @@ qmoStat::getFakeStat4Supplier( idBool           aIsDisk,
 
         case 10:
             //-----------------------
-            // ÌÖåÏù¥Î∏î ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ≈◊¿Ã∫Ì ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             aStatInfo->totalRecordCnt = 100000;
@@ -3153,12 +3201,12 @@ qmoStat::getFakeStat4Supplier( idBool           aIsDisk,
             }
 
             //-----------------------
-            // Ïù∏Îç±Ïä§ ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ¿Œµ¶Ω∫ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->indexCnt; i++ )
             {
-                // S_PK_SUPPKEY_M ÎòêÎäî S_PK_SUPPKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // S_PK_SUPPKEY_M ∂«¥¬ S_PK_SUPPKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 12 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         12,
@@ -3172,7 +3220,7 @@ qmoStat::getFakeStat4Supplier( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // S_FK_NATIONKEY_M ÎòêÎäî S_FK_NATIONKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // S_FK_NATIONKEY_M ∂«¥¬ S_FK_NATIONKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 14 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         14,
@@ -3189,7 +3237,7 @@ qmoStat::getFakeStat4Supplier( idBool           aIsDisk,
             }
 
             //-----------------------
-            // Ïª¨Îüº ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ƒ√∑≥ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->columnCnt; i++ )
@@ -3244,12 +3292,12 @@ qmoStat::getFakeStat4Customer( idBool           aIsDisk,
 /***********************************************************************
  *
  * Description :
- *     Ìï¥Îãπ Ìï®ÏàòÎäî ÌÖåÏä§Ìä∏ Ïö©ÎèÑÎ°úÎßå ÏÇ¨Ïö©ÎêòÏñ¥Ïïº Ìï®.
- *     TPC-H Ïö© ÌÖåÏù¥Î∏îÏùº Í≤ΩÏö∞ Í∞ÄÏÉÅÏùò ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Íµ¨Ï∂ïÌïúÎã§.
+ *     «ÿ¥Á «‘ºˆ¥¬ ≈◊Ω∫∆Æ øÎµµ∑Œ∏∏ ªÁøÎµ«æÓæﬂ «‘.
+ *     TPC-H øÎ ≈◊¿Ã∫Ì¿œ ∞ÊøÏ ∞°ªÛ¿« ≈Î∞Ë ¡§∫∏∏¶ ±∏√‡«—¥Ÿ.
  *
  * Implementation :
  *
- *     CUSTOMER ÌÖåÏù¥Î∏î Ïö© Í∞ÄÏÉÅ ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Íµ¨Ï∂ïÌïúÎã§.
+ *     CUSTOMER ≈◊¿Ã∫Ì øÎ ∞°ªÛ ≈Î∞Ë ¡§∫∏∏¶ ±∏√‡«—¥Ÿ.
  *
  ***********************************************************************/
 
@@ -3258,20 +3306,20 @@ qmoStat::getFakeStat4Customer( idBool           aIsDisk,
     IDU_FIT_POINT_FATAL( "qmoStat::getFakeStat4Customer::__FT__" );
 
     //-----------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //-----------------------------
 
     IDE_DASSERT( aStatInfo != NULL );
 
     //-----------------------------
-    // Scale FactorÏóê Îî∞Î•∏ ÌÜµÍ≥Ñ Ï†ïÎ≥¥ Íµ¨Ï∂ï
+    // Scale Factorø° µ˚∏• ≈Î∞Ë ¡§∫∏ ±∏√‡
     //-----------------------------
 
     switch ( QCU_FAKE_TPCH_SCALE_FACTOR )
     {
         case 1:
             //-----------------------
-            // ÌÖåÏù¥Î∏î ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ≈◊¿Ã∫Ì ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             aStatInfo->totalRecordCnt = 150000;
@@ -3285,12 +3333,12 @@ qmoStat::getFakeStat4Customer( idBool           aIsDisk,
             }
 
             //-----------------------
-            // Ïù∏Îç±Ïä§ ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ¿Œµ¶Ω∫ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->indexCnt; i++ )
             {
-                // C_PK_CUSTKEY_M ÎòêÎäî C_PK_CUSTKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // C_PK_CUSTKEY_M ∂«¥¬ C_PK_CUSTKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 12 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         12,
@@ -3304,7 +3352,7 @@ qmoStat::getFakeStat4Customer( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // C_IDX_ACCTBAL_M ÎòêÎäî C_IDX_ACCTBAL_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // C_IDX_ACCTBAL_M ∂«¥¬ C_IDX_ACCTBAL_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 13 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         13,
@@ -3318,7 +3366,7 @@ qmoStat::getFakeStat4Customer( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // C_FK_NATIONKEY_M ÎòêÎäî C_FK_NATIONKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // C_FK_NATIONKEY_M ∂«¥¬ C_FK_NATIONKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 14 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         14,
@@ -3332,7 +3380,7 @@ qmoStat::getFakeStat4Customer( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // C_IDX_MKTSEGMENT_M ÎòêÎäî C_IDX_MKTSEGMENT_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // C_IDX_MKTSEGMENT_M ∂«¥¬ C_IDX_MKTSEGMENT_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 16 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         16,
@@ -3349,7 +3397,7 @@ qmoStat::getFakeStat4Customer( idBool           aIsDisk,
             }
 
             //-----------------------
-            // Ïª¨Îüº ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ƒ√∑≥ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->columnCnt; i++ )
@@ -3400,7 +3448,7 @@ qmoStat::getFakeStat4Customer( idBool           aIsDisk,
         case 10:
 
             //-----------------------
-            // ÌÖåÏù¥Î∏î ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ≈◊¿Ã∫Ì ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             aStatInfo->totalRecordCnt = 1500000;
@@ -3414,12 +3462,12 @@ qmoStat::getFakeStat4Customer( idBool           aIsDisk,
             }
 
             //-----------------------
-            // Ïù∏Îç±Ïä§ ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ¿Œµ¶Ω∫ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->indexCnt; i++ )
             {
-                // C_PK_CUSTKEY_M ÎòêÎäî C_PK_CUSTKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // C_PK_CUSTKEY_M ∂«¥¬ C_PK_CUSTKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 12 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         12,
@@ -3433,7 +3481,7 @@ qmoStat::getFakeStat4Customer( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // C_IDX_ACCTBAL_M ÎòêÎäî C_IDX_ACCTBAL_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // C_IDX_ACCTBAL_M ∂«¥¬ C_IDX_ACCTBAL_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 13 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         13,
@@ -3447,7 +3495,7 @@ qmoStat::getFakeStat4Customer( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // C_FK_NATIONKEY_M ÎòêÎäî C_FK_NATIONKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // C_FK_NATIONKEY_M ∂«¥¬ C_FK_NATIONKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 14 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         14,
@@ -3461,7 +3509,7 @@ qmoStat::getFakeStat4Customer( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // C_IDX_MKTSEGMENT_M ÎòêÎäî C_IDX_MKTSEGMENT_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // C_IDX_MKTSEGMENT_M ∂«¥¬ C_IDX_MKTSEGMENT_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 16 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         16,
@@ -3478,7 +3526,7 @@ qmoStat::getFakeStat4Customer( idBool           aIsDisk,
             }
 
             //-----------------------
-            // Ïª¨Îüº ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ƒ√∑≥ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->columnCnt; i++ )
@@ -3540,12 +3588,12 @@ qmoStat::getFakeStat4Part( idBool           aIsDisk,
 /***********************************************************************
  *
  * Description :
- *     Ìï¥Îãπ Ìï®ÏàòÎäî ÌÖåÏä§Ìä∏ Ïö©ÎèÑÎ°úÎßå ÏÇ¨Ïö©ÎêòÏñ¥Ïïº Ìï®.
- *     TPC-H Ïö© ÌÖåÏù¥Î∏îÏùº Í≤ΩÏö∞ Í∞ÄÏÉÅÏùò ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Íµ¨Ï∂ïÌïúÎã§.
+ *     «ÿ¥Á «‘ºˆ¥¬ ≈◊Ω∫∆Æ øÎµµ∑Œ∏∏ ªÁøÎµ«æÓæﬂ «‘.
+ *     TPC-H øÎ ≈◊¿Ã∫Ì¿œ ∞ÊøÏ ∞°ªÛ¿« ≈Î∞Ë ¡§∫∏∏¶ ±∏√‡«—¥Ÿ.
  *
  * Implementation :
  *
- *     PART ÌÖåÏù¥Î∏î Ïö© Í∞ÄÏÉÅ ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Íµ¨Ï∂ïÌïúÎã§.
+ *     PART ≈◊¿Ã∫Ì øÎ ∞°ªÛ ≈Î∞Ë ¡§∫∏∏¶ ±∏√‡«—¥Ÿ.
  *
  ***********************************************************************/
 
@@ -3554,20 +3602,20 @@ qmoStat::getFakeStat4Part( idBool           aIsDisk,
     IDU_FIT_POINT_FATAL( "qmoStat::getFakeStat4Part::__FT__" );
 
     //-----------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //-----------------------------
 
     IDE_DASSERT( aStatInfo != NULL );
 
     //-----------------------------
-    // Scale FactorÏóê Îî∞Î•∏ ÌÜµÍ≥Ñ Ï†ïÎ≥¥ Íµ¨Ï∂ï
+    // Scale Factorø° µ˚∏• ≈Î∞Ë ¡§∫∏ ±∏√‡
     //-----------------------------
 
     switch ( QCU_FAKE_TPCH_SCALE_FACTOR )
     {
         case 1:
             //-----------------------
-            // ÌÖåÏù¥Î∏î ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ≈◊¿Ã∫Ì ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             aStatInfo->totalRecordCnt = 200000;
@@ -3581,12 +3629,12 @@ qmoStat::getFakeStat4Part( idBool           aIsDisk,
             }
 
             //-----------------------
-            // Ïù∏Îç±Ïä§ ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ¿Œµ¶Ω∫ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->indexCnt; i++ )
             {
-                // P_PK_PARTKEY_M ÎòêÎäî P_PK_PARTKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // P_PK_PARTKEY_M ∂«¥¬ P_PK_PARTKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 12 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         12,
@@ -3600,7 +3648,7 @@ qmoStat::getFakeStat4Part( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // P_IDX_TYPE_M ÎòêÎäî P_IDX_TYPE_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // P_IDX_TYPE_M ∂«¥¬ P_IDX_TYPE_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 10 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         10,
@@ -3614,7 +3662,7 @@ qmoStat::getFakeStat4Part( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // P_IDX_SIZE_M ÎòêÎäî P_IDX_SIZE_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // P_IDX_SIZE_M ∂«¥¬ P_IDX_SIZE_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 10 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         10,
@@ -3628,7 +3676,7 @@ qmoStat::getFakeStat4Part( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // P_IDX_CONTAINER_M ÎòêÎäî P_IDX_CONTAINER_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // P_IDX_CONTAINER_M ∂«¥¬ P_IDX_CONTAINER_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 15 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         15,
@@ -3642,7 +3690,7 @@ qmoStat::getFakeStat4Part( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // P_IDX_BRAND_M ÎòêÎäî P_IDX_BRAND_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // P_IDX_BRAND_M ∂«¥¬ P_IDX_BRAND_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 11 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         11,
@@ -3656,8 +3704,8 @@ qmoStat::getFakeStat4Part( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // P_COMP_SIZE_BRAND_TYPE_M ÎòêÎäî
-                // P_COMP_SIZE_BRAND_TYPE_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // P_COMP_SIZE_BRAND_TYPE_M ∂«¥¬
+                // P_COMP_SIZE_BRAND_TYPE_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 22 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         22,
@@ -3674,7 +3722,7 @@ qmoStat::getFakeStat4Part( idBool           aIsDisk,
             }
 
             //-----------------------
-            // Ïª¨Îüº ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ƒ√∑≥ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->columnCnt; i++ )
@@ -3724,7 +3772,7 @@ qmoStat::getFakeStat4Part( idBool           aIsDisk,
         case 10:
 
             //-----------------------
-            // ÌÖåÏù¥Î∏î ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ≈◊¿Ã∫Ì ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             aStatInfo->totalRecordCnt = 2000000;
@@ -3738,12 +3786,12 @@ qmoStat::getFakeStat4Part( idBool           aIsDisk,
             }
 
             //-----------------------
-            // Ïù∏Îç±Ïä§ ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ¿Œµ¶Ω∫ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->indexCnt; i++ )
             {
-                // P_PK_PARTKEY_M ÎòêÎäî P_PK_PARTKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // P_PK_PARTKEY_M ∂«¥¬ P_PK_PARTKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 12 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         12,
@@ -3757,7 +3805,7 @@ qmoStat::getFakeStat4Part( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // P_IDX_TYPE_M ÎòêÎäî P_IDX_TYPE_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // P_IDX_TYPE_M ∂«¥¬ P_IDX_TYPE_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 10 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         10,
@@ -3771,7 +3819,7 @@ qmoStat::getFakeStat4Part( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // P_IDX_SIZE_M ÎòêÎäî P_IDX_SIZE_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // P_IDX_SIZE_M ∂«¥¬ P_IDX_SIZE_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 10 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         10,
@@ -3785,7 +3833,7 @@ qmoStat::getFakeStat4Part( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // P_IDX_CONTAINER_M ÎòêÎäî P_IDX_CONTAINER_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // P_IDX_CONTAINER_M ∂«¥¬ P_IDX_CONTAINER_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 15 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         15,
@@ -3799,7 +3847,7 @@ qmoStat::getFakeStat4Part( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // P_IDX_BRAND_M ÎòêÎäî P_IDX_BRAND_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // P_IDX_BRAND_M ∂«¥¬ P_IDX_BRAND_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 11 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         11,
@@ -3813,8 +3861,8 @@ qmoStat::getFakeStat4Part( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // P_COMP_SIZE_BRAND_TYPE_M ÎòêÎäî
-                // P_COMP_SIZE_BRAND_TYPE_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // P_COMP_SIZE_BRAND_TYPE_M ∂«¥¬
+                // P_COMP_SIZE_BRAND_TYPE_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 22 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         22,
@@ -3831,7 +3879,7 @@ qmoStat::getFakeStat4Part( idBool           aIsDisk,
             }
 
             //-----------------------
-            // Ïª¨Îüº ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ƒ√∑≥ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->columnCnt; i++ )
@@ -3893,12 +3941,12 @@ qmoStat::getFakeStat4PartSupp( idBool           aIsDisk,
 /***********************************************************************
  *
  * Description :
- *     Ìï¥Îãπ Ìï®ÏàòÎäî ÌÖåÏä§Ìä∏ Ïö©ÎèÑÎ°úÎßå ÏÇ¨Ïö©ÎêòÏñ¥Ïïº Ìï®.
- *     TPC-H Ïö© ÌÖåÏù¥Î∏îÏùº Í≤ΩÏö∞ Í∞ÄÏÉÅÏùò ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Íµ¨Ï∂ïÌïúÎã§.
+ *     «ÿ¥Á «‘ºˆ¥¬ ≈◊Ω∫∆Æ øÎµµ∑Œ∏∏ ªÁøÎµ«æÓæﬂ «‘.
+ *     TPC-H øÎ ≈◊¿Ã∫Ì¿œ ∞ÊøÏ ∞°ªÛ¿« ≈Î∞Ë ¡§∫∏∏¶ ±∏√‡«—¥Ÿ.
  *
  * Implementation :
  *
- *     PARTSUPP ÌÖåÏù¥Î∏î Ïö© Í∞ÄÏÉÅ ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Íµ¨Ï∂ïÌïúÎã§.
+ *     PARTSUPP ≈◊¿Ã∫Ì øÎ ∞°ªÛ ≈Î∞Ë ¡§∫∏∏¶ ±∏√‡«—¥Ÿ.
  *
  ***********************************************************************/
 
@@ -3907,20 +3955,20 @@ qmoStat::getFakeStat4PartSupp( idBool           aIsDisk,
     IDU_FIT_POINT_FATAL( "qmoStat::getFakeStat4PartSupp::__FT__" );
 
     //-----------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //-----------------------------
 
     IDE_DASSERT( aStatInfo != NULL );
 
     //-----------------------------
-    // Scale FactorÏóê Îî∞Î•∏ ÌÜµÍ≥Ñ Ï†ïÎ≥¥ Íµ¨Ï∂ï
+    // Scale Factorø° µ˚∏• ≈Î∞Ë ¡§∫∏ ±∏√‡
     //-----------------------------
 
     switch ( QCU_FAKE_TPCH_SCALE_FACTOR )
     {
         case 1:
             //-----------------------
-            // ÌÖåÏù¥Î∏î ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ≈◊¿Ã∫Ì ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             aStatInfo->totalRecordCnt = 800000;
@@ -3934,12 +3982,12 @@ qmoStat::getFakeStat4PartSupp( idBool           aIsDisk,
             }
 
             //-----------------------
-            // Ïù∏Îç±Ïä§ ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ¿Œµ¶Ω∫ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->indexCnt; i++ )
             {
-                // PS_FK_PARTKEY_M ÎòêÎäî PS_FK_PARTKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // PS_FK_PARTKEY_M ∂«¥¬ PS_FK_PARTKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 13 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         13,
@@ -3953,8 +4001,8 @@ qmoStat::getFakeStat4PartSupp( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // PS_IDX_SUPPLYCOST_M ÎòêÎäî PS_IDX_SUPPLYCOST_D Î•º
-                // ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // PS_IDX_SUPPLYCOST_M ∂«¥¬ PS_IDX_SUPPLYCOST_D ∏¶
+                // ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 17 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         17,
@@ -3968,7 +4016,7 @@ qmoStat::getFakeStat4PartSupp( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // PS_FK_SUPPKEY_M ÎòêÎäî PS_FK_SUPPKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // PS_FK_SUPPKEY_M ∂«¥¬ PS_FK_SUPPKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 13 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         13,
@@ -3982,8 +4030,8 @@ qmoStat::getFakeStat4PartSupp( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // PS_PK_PARTKEY_SUPPKEY_M ÎòêÎäî PS_PK_PARTKEY_SUPPKEY_D Î•º
-                // ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // PS_PK_PARTKEY_SUPPKEY_M ∂«¥¬ PS_PK_PARTKEY_SUPPKEY_D ∏¶
+                // ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 21 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         21,
@@ -4000,7 +4048,7 @@ qmoStat::getFakeStat4PartSupp( idBool           aIsDisk,
             }
 
             //-----------------------
-            // Ïª¨Îüº ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ƒ√∑≥ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->columnCnt; i++ )
@@ -4040,7 +4088,7 @@ qmoStat::getFakeStat4PartSupp( idBool           aIsDisk,
         case 10:
 
             //-----------------------
-            // ÌÖåÏù¥Î∏î ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ≈◊¿Ã∫Ì ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             aStatInfo->totalRecordCnt = 8000000;
@@ -4054,12 +4102,12 @@ qmoStat::getFakeStat4PartSupp( idBool           aIsDisk,
             }
 
             //-----------------------
-            // Ïù∏Îç±Ïä§ ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ¿Œµ¶Ω∫ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->indexCnt; i++ )
             {
-                // PS_FK_PARTKEY_M ÎòêÎäî PS_FK_PARTKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // PS_FK_PARTKEY_M ∂«¥¬ PS_FK_PARTKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 13 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         13,
@@ -4073,8 +4121,8 @@ qmoStat::getFakeStat4PartSupp( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // PS_IDX_SUPPLYCOST_M ÎòêÎäî PS_IDX_SUPPLYCOST_D Î•º
-                // ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // PS_IDX_SUPPLYCOST_M ∂«¥¬ PS_IDX_SUPPLYCOST_D ∏¶
+                // ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 17 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         17,
@@ -4088,7 +4136,7 @@ qmoStat::getFakeStat4PartSupp( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // PS_FK_SUPPKEY_M ÎòêÎäî PS_FK_SUPPKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // PS_FK_SUPPKEY_M ∂«¥¬ PS_FK_SUPPKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 13 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         13,
@@ -4102,8 +4150,8 @@ qmoStat::getFakeStat4PartSupp( idBool           aIsDisk,
                     // Nothing To Do
                 }
 
-                // PS_PK_PARTKEY_SUPPKEY_M ÎòêÎäî PS_PK_PARTKEY_SUPPKEY_D Î•º
-                // ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // PS_PK_PARTKEY_SUPPKEY_M ∂«¥¬ PS_PK_PARTKEY_SUPPKEY_D ∏¶
+                // ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 21 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         21,
@@ -4120,7 +4168,7 @@ qmoStat::getFakeStat4PartSupp( idBool           aIsDisk,
             }
 
             //-----------------------
-            // Ïª¨Îüº ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ƒ√∑≥ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->columnCnt; i++ )
@@ -4174,12 +4222,12 @@ qmoStat::getFakeStat4Orders( qcStatement    * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Ìï¥Îãπ Ìï®ÏàòÎäî ÌÖåÏä§Ìä∏ Ïö©ÎèÑÎ°úÎßå ÏÇ¨Ïö©ÎêòÏñ¥Ïïº Ìï®.
- *     TPC-H Ïö© ÌÖåÏù¥Î∏îÏùº Í≤ΩÏö∞ Í∞ÄÏÉÅÏùò ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Íµ¨Ï∂ïÌïúÎã§.
+ *     «ÿ¥Á «‘ºˆ¥¬ ≈◊Ω∫∆Æ øÎµµ∑Œ∏∏ ªÁøÎµ«æÓæﬂ «‘.
+ *     TPC-H øÎ ≈◊¿Ã∫Ì¿œ ∞ÊøÏ ∞°ªÛ¿« ≈Î∞Ë ¡§∫∏∏¶ ±∏√‡«—¥Ÿ.
  *
  * Implementation :
  *
- *     ORDERS ÌÖåÏù¥Î∏î Ïö© Í∞ÄÏÉÅ ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Íµ¨Ï∂ïÌïúÎã§.
+ *     ORDERS ≈◊¿Ã∫Ì øÎ ∞°ªÛ ≈Î∞Ë ¡§∫∏∏¶ ±∏√‡«—¥Ÿ.
  *
  ***********************************************************************/
 
@@ -4191,21 +4239,21 @@ qmoStat::getFakeStat4Orders( qcStatement    * aStatement,
     sTemplate = &(QC_SHARED_TMPLATE(aStatement)->tmplate);
 
     //-----------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //-----------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aStatInfo != NULL );
 
     //-----------------------------
-    // Scale FactorÏóê Îî∞Î•∏ ÌÜµÍ≥Ñ Ï†ïÎ≥¥ Íµ¨Ï∂ï
+    // Scale Factorø° µ˚∏• ≈Î∞Ë ¡§∫∏ ±∏√‡
     //-----------------------------
 
     switch ( QCU_FAKE_TPCH_SCALE_FACTOR )
     {
         case 1:
             //-----------------------
-            // ÌÖåÏù¥Î∏î ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ≈◊¿Ã∫Ì ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             aStatInfo->totalRecordCnt = 1500000;
@@ -4219,12 +4267,12 @@ qmoStat::getFakeStat4Orders( qcStatement    * aStatement,
             }
 
             //-----------------------
-            // Ïù∏Îç±Ïä§ ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ¿Œµ¶Ω∫ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->indexCnt; i++ )
             {
-                // O_PK_ORDERKEY_M ÎòêÎäî O_PK_ORDERKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // O_PK_ORDERKEY_M ∂«¥¬ O_PK_ORDERKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 13 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         13,
@@ -4238,7 +4286,7 @@ qmoStat::getFakeStat4Orders( qcStatement    * aStatement,
                     // Nothing To Do
                 }
 
-                // O_FK_CUSTKEY_M ÎòêÎäî O_FK_CUSTKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // O_FK_CUSTKEY_M ∂«¥¬ O_FK_CUSTKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 12 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         12,
@@ -4252,7 +4300,7 @@ qmoStat::getFakeStat4Orders( qcStatement    * aStatement,
                     // Nothing To Do
                 }
 
-                // O_IDX_ORDERDATE_M ÎòêÎäî O_IDX_ORDERDATE_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // O_IDX_ORDERDATE_M ∂«¥¬ O_IDX_ORDERDATE_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 15 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         15,
@@ -4269,7 +4317,7 @@ qmoStat::getFakeStat4Orders( qcStatement    * aStatement,
             }
 
             //-----------------------
-            // Ïª¨Îüº ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ƒ√∑≥ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->columnCnt; i++ )
@@ -4334,7 +4382,7 @@ qmoStat::getFakeStat4Orders( qcStatement    * aStatement,
         case 10:
 
             //-----------------------
-            // ÌÖåÏù¥Î∏î ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ≈◊¿Ã∫Ì ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             aStatInfo->totalRecordCnt = 15000000;
@@ -4348,12 +4396,12 @@ qmoStat::getFakeStat4Orders( qcStatement    * aStatement,
             }
 
             //-----------------------
-            // Ïù∏Îç±Ïä§ ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ¿Œµ¶Ω∫ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->indexCnt; i++ )
             {
-                // O_PK_ORDERKEY_M ÎòêÎäî O_PK_ORDERKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // O_PK_ORDERKEY_M ∂«¥¬ O_PK_ORDERKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 13 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         13,
@@ -4367,7 +4415,7 @@ qmoStat::getFakeStat4Orders( qcStatement    * aStatement,
                     // Nothing To Do
                 }
 
-                // O_FK_CUSTKEY_M ÎòêÎäî O_FK_CUSTKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // O_FK_CUSTKEY_M ∂«¥¬ O_FK_CUSTKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 12 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         12,
@@ -4381,7 +4429,7 @@ qmoStat::getFakeStat4Orders( qcStatement    * aStatement,
                     // Nothing To Do
                 }
 
-                // O_IDX_ORDERDATE_M ÎòêÎäî O_IDX_ORDERDATE_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // O_IDX_ORDERDATE_M ∂«¥¬ O_IDX_ORDERDATE_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 15 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         15,
@@ -4398,7 +4446,7 @@ qmoStat::getFakeStat4Orders( qcStatement    * aStatement,
             }
 
             //-----------------------
-            // Ïª¨Îüº ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ƒ√∑≥ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->columnCnt; i++ )
@@ -4481,12 +4529,12 @@ qmoStat::getFakeStat4LineItem( qcStatement    * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Ìï¥Îãπ Ìï®ÏàòÎäî ÌÖåÏä§Ìä∏ Ïö©ÎèÑÎ°úÎßå ÏÇ¨Ïö©ÎêòÏñ¥Ïïº Ìï®.
- *     TPC-H Ïö© ÌÖåÏù¥Î∏îÏùº Í≤ΩÏö∞ Í∞ÄÏÉÅÏùò ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Íµ¨Ï∂ïÌïúÎã§.
+ *     «ÿ¥Á «‘ºˆ¥¬ ≈◊Ω∫∆Æ øÎµµ∑Œ∏∏ ªÁøÎµ«æÓæﬂ «‘.
+ *     TPC-H øÎ ≈◊¿Ã∫Ì¿œ ∞ÊøÏ ∞°ªÛ¿« ≈Î∞Ë ¡§∫∏∏¶ ±∏√‡«—¥Ÿ.
  *
  * Implementation :
  *
- *     LINEITEM ÌÖåÏù¥Î∏î Ïö© Í∞ÄÏÉÅ ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Íµ¨Ï∂ïÌïúÎã§.
+ *     LINEITEM ≈◊¿Ã∫Ì øÎ ∞°ªÛ ≈Î∞Ë ¡§∫∏∏¶ ±∏√‡«—¥Ÿ.
  *
  ***********************************************************************/
 
@@ -4498,21 +4546,21 @@ qmoStat::getFakeStat4LineItem( qcStatement    * aStatement,
     sTemplate = &(QC_SHARED_TMPLATE(aStatement)->tmplate);
     
     //-----------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //-----------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aStatInfo != NULL );
 
     //-----------------------------
-    // Scale FactorÏóê Îî∞Î•∏ ÌÜµÍ≥Ñ Ï†ïÎ≥¥ Íµ¨Ï∂ï
+    // Scale Factorø° µ˚∏• ≈Î∞Ë ¡§∫∏ ±∏√‡
     //-----------------------------
 
     switch ( QCU_FAKE_TPCH_SCALE_FACTOR )
     {
         case 1:
             //-----------------------
-            // ÌÖåÏù¥Î∏î ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ≈◊¿Ã∫Ì ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             aStatInfo->totalRecordCnt = 6001215;
@@ -4526,12 +4574,12 @@ qmoStat::getFakeStat4LineItem( qcStatement    * aStatement,
             }
 
             //-----------------------
-            // Ïù∏Îç±Ïä§ ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ¿Œµ¶Ω∫ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->indexCnt; i++ )
             {
-                // L_FK_ORDERKEY_M ÎòêÎäî L_FK_ORDERKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // L_FK_ORDERKEY_M ∂«¥¬ L_FK_ORDERKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 13 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         13,
@@ -4545,7 +4593,7 @@ qmoStat::getFakeStat4LineItem( qcStatement    * aStatement,
                     // Nothing To Do
                 }
 
-                // L_FK_PARTKEY_M ÎòêÎäî L_FK_PARTKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // L_FK_PARTKEY_M ∂«¥¬ L_FK_PARTKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 12 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         12,
@@ -4559,7 +4607,7 @@ qmoStat::getFakeStat4LineItem( qcStatement    * aStatement,
                     // Nothing To Do
                 }
 
-                // L_FK_SUPPKEY_M ÎòêÎäî L_FK_SUPPKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // L_FK_SUPPKEY_M ∂«¥¬ L_FK_SUPPKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 12 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         12,
@@ -4573,8 +4621,8 @@ qmoStat::getFakeStat4LineItem( qcStatement    * aStatement,
                     // Nothing To Do
                 }
 
-                // L_IDX_RECEIPTDATE_M ÎòêÎäî L_IDX_RECEIPTDATE_D Î•º
-                // ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // L_IDX_RECEIPTDATE_M ∂«¥¬ L_IDX_RECEIPTDATE_D ∏¶
+                // ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 17 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         17,
@@ -4588,8 +4636,8 @@ qmoStat::getFakeStat4LineItem( qcStatement    * aStatement,
                     // Nothing To Do
                 }
 
-                // L_IDX_SHIPDATE_M ÎòêÎäî L_IDX_SHIPDATE_D Î•º
-                // ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // L_IDX_SHIPDATE_M ∂«¥¬ L_IDX_SHIPDATE_D ∏¶
+                // ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 14 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         14,
@@ -4603,8 +4651,8 @@ qmoStat::getFakeStat4LineItem( qcStatement    * aStatement,
                     // Nothing To Do
                 }
 
-                // L_IDX_QUANTITY_M ÎòêÎäî L_IDX_QUANTITY_D Î•º
-                // ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // L_IDX_QUANTITY_M ∂«¥¬ L_IDX_QUANTITY_D ∏¶
+                // ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 14 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         14,
@@ -4618,8 +4666,8 @@ qmoStat::getFakeStat4LineItem( qcStatement    * aStatement,
                     // Nothing To Do
                 }
 
-                // L_PK_ORDERKEY_LINENUMBER_M ÎòêÎäî
-                // L_PK_ORDERKEY_LINENUMBER_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // L_PK_ORDERKEY_LINENUMBER_M ∂«¥¬
+                // L_PK_ORDERKEY_LINENUMBER_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 24 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         24,
@@ -4633,8 +4681,8 @@ qmoStat::getFakeStat4LineItem( qcStatement    * aStatement,
                     // Nothing To Do
                 }
 
-                // L_COMP_PARTKEY_SUPPKEY_M ÎòêÎäî
-                // L_COMP_PARTKEY_SUPPKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // L_COMP_PARTKEY_SUPPKEY_M ∂«¥¬
+                // L_COMP_PARTKEY_SUPPKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 22 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         22,
@@ -4650,7 +4698,7 @@ qmoStat::getFakeStat4LineItem( qcStatement    * aStatement,
             }
 
             //-----------------------
-            // Ïª¨Îüº ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ƒ√∑≥ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->columnCnt; i++ )
@@ -4756,7 +4804,7 @@ qmoStat::getFakeStat4LineItem( qcStatement    * aStatement,
         case 10:
 
             //-----------------------
-            // ÌÖåÏù¥Î∏î ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ≈◊¿Ã∫Ì ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             aStatInfo->totalRecordCnt = 59986052;
@@ -4770,12 +4818,12 @@ qmoStat::getFakeStat4LineItem( qcStatement    * aStatement,
             }
 
             //-----------------------
-            // Ïù∏Îç±Ïä§ ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ¿Œµ¶Ω∫ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->indexCnt; i++ )
             {
-                // L_FK_ORDERKEY_M ÎòêÎäî L_FK_ORDERKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // L_FK_ORDERKEY_M ∂«¥¬ L_FK_ORDERKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 13 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         13,
@@ -4789,7 +4837,7 @@ qmoStat::getFakeStat4LineItem( qcStatement    * aStatement,
                     // Nothing To Do
                 }
 
-                // L_FK_PARTKEY_M ÎòêÎäî L_FK_PARTKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // L_FK_PARTKEY_M ∂«¥¬ L_FK_PARTKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 12 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         12,
@@ -4803,7 +4851,7 @@ qmoStat::getFakeStat4LineItem( qcStatement    * aStatement,
                     // Nothing To Do
                 }
 
-                // L_FK_SUPPKEY_M ÎòêÎäî L_FK_SUPPKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // L_FK_SUPPKEY_M ∂«¥¬ L_FK_SUPPKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 12 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         12,
@@ -4817,8 +4865,8 @@ qmoStat::getFakeStat4LineItem( qcStatement    * aStatement,
                     // Nothing To Do
                 }
 
-                // L_IDX_RECEIPTDATE_M ÎòêÎäî L_IDX_RECEIPTDATE_D Î•º
-                // ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // L_IDX_RECEIPTDATE_M ∂«¥¬ L_IDX_RECEIPTDATE_D ∏¶
+                // ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 17 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         17,
@@ -4832,8 +4880,8 @@ qmoStat::getFakeStat4LineItem( qcStatement    * aStatement,
                     // Nothing To Do
                 }
 
-                // L_IDX_SHIPDATE_M ÎòêÎäî L_IDX_SHIPDATE_D Î•º
-                // ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // L_IDX_SHIPDATE_M ∂«¥¬ L_IDX_SHIPDATE_D ∏¶
+                // ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 14 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         14,
@@ -4847,8 +4895,8 @@ qmoStat::getFakeStat4LineItem( qcStatement    * aStatement,
                     // Nothing To Do
                 }
 
-                // L_IDX_QUANTITY_M ÎòêÎäî L_IDX_QUANTITY_D Î•º
-                // ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // L_IDX_QUANTITY_M ∂«¥¬ L_IDX_QUANTITY_D ∏¶
+                // ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 14 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         14,
@@ -4862,8 +4910,8 @@ qmoStat::getFakeStat4LineItem( qcStatement    * aStatement,
                     // Nothing To Do
                 }
 
-                // L_PK_ORDERKEY_LINENUMBER_M ÎòêÎäî
-                // L_PK_ORDERKEY_LINENUMBER_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // L_PK_ORDERKEY_LINENUMBER_M ∂«¥¬
+                // L_PK_ORDERKEY_LINENUMBER_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 24 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         24,
@@ -4877,8 +4925,8 @@ qmoStat::getFakeStat4LineItem( qcStatement    * aStatement,
                     // Nothing To Do
                 }
 
-                // L_COMP_PARTKEY_SUPPKEY_M ÎòêÎäî
-                // L_COMP_PARTKEY_SUPPKEY_D Î•º ÏúÑÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+                // L_COMP_PARTKEY_SUPPKEY_M ∂«¥¬
+                // L_COMP_PARTKEY_SUPPKEY_D ∏¶ ¿ß«— ≈Î∞Ë ¡§∫∏
                 if ( ( idlOS::strlen( aStatInfo->idxCardInfo[i].index->name ) >= 22 ) &&
                      ( idlOS::strMatch( aStatInfo->idxCardInfo[i].index->name,
                                         22,
@@ -4894,7 +4942,7 @@ qmoStat::getFakeStat4LineItem( qcStatement    * aStatement,
             }
 
             //-----------------------
-            // Ïª¨Îüº ÌÜµÍ≥Ñ Ï†ïÎ≥¥
+            // ƒ√∑≥ ≈Î∞Ë ¡§∫∏
             //-----------------------
 
             for ( i = 0; i < aStatInfo->columnCnt; i++ )
@@ -5045,10 +5093,21 @@ IDE_RC qmoStat::getStatInfo4RemoteTable( qcStatement     * aStatement,
         sStatistics->colCardInfo[ i ].nullValueCount = QMO_STAT_COLUMN_NULL_VALUE_COUNT;
         sStatistics->colCardInfo[ i ].avgColumnLen   = QMO_STAT_COLUMN_AVG_LEN;
 
-        sStatistics->colCardInfo[ i ].column->module->null( sStatistics->colCardInfo[ i ].column,
-                                                            sStatistics->colCardInfo[ i ].minValue );
-        sStatistics->colCardInfo[ i ].column->module->null( sStatistics->colCardInfo[ i ].column,
-                                                            sStatistics->colCardInfo[ i ].maxValue );
+        /* TASK-7219 Shard Transformer Refactoring
+         *  - To Fix BUG-8697
+         */
+        if ( ( sStatistics->colCardInfo[ i ].column->module->flag & MTD_SELECTIVITY_MASK )
+             == MTD_SELECTIVITY_ENABLE )
+        {
+            sStatistics->colCardInfo[ i ].column->module->null( sStatistics->colCardInfo[ i ].column,
+                                                                sStatistics->colCardInfo[ i ].minValue );
+            sStatistics->colCardInfo[ i ].column->module->null( sStatistics->colCardInfo[ i ].column,
+                                                                sStatistics->colCardInfo[ i ].maxValue );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
     }
 
     sStatistics->totalRecordCnt = QMO_STAT_TABLE_RECORD_COUNT;
@@ -5074,11 +5133,11 @@ IDE_RC qmoStat::calculateSamplePercentage( qcmTableInfo   * aTableInfo,
  *
  * Description :
  *    PROJ-2492 Dynamic sample selection
- *    ÌîÑÎ°úÌçºÌã∞Ïóê ÎßûÎäî % Î•º Í≥ÑÏÇ∞ÌïúÎã§.
+ *    «¡∑Œ∆€∆ºø° ∏¬¥¬ % ∏¶ ∞ËªÍ«—¥Ÿ.
  *
  * Implementation :
- *    1. ÌîÑÎ°úÌçºÌã∞ / Ïã§Ï†ú PAGE Í∞ØÏàò
- *    2. Í≤∞Í≥ºÍ∞í Î≥¥Ï†ï : 0 <= Í≤∞Í≥ºÍ∞í <= 1
+ *    1. «¡∑Œ∆€∆º / Ω«¡¶ PAGE ∞πºˆ
+ *    2. ∞·∞˙∞™ ∫∏¡§ : 0 <= ∞·∞˙∞™ <= 1
  *
  ***********************************************************************/
 

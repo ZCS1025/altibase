@@ -23,11 +23,14 @@
 #include <utmMisc.h>
 #include <utmExtern.h>
 
+/* BUG-47652 Set file permission */
+extern UInt gFilePerm;
+
 /**
  * utmSetErrorMsgAfterAllocEnv.
  *
- * SQLAllocEnv() í˜¸ì¶œì—ì„œ ì˜¤ë¥˜ ë°œìƒ ì‹œ
- * ì „ì—­ ë³€ìˆ˜ gErrorMgrì— ì˜¤ë¥˜ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
+ * SQLAllocEnv() È£Ãâ¿¡¼­ ¿À·ù ¹ß»ı ½Ã
+ * Àü¿ª º¯¼ö gErrorMgr¿¡ ¿À·ù Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
  */
 IDE_RC utmSetErrorMsgAfterAllocEnv()
 {
@@ -35,10 +38,15 @@ IDE_RC utmSetErrorMsgAfterAllocEnv()
     return IDE_SUCCESS;
 }
 
+UInt utmGetErrorCODE()
+{
+    return uteGetErrorCODE(&gErrorMgr);
+}
+
 /**
  * utmSetErrorMsgWithHandle.
  *
- * í•¸ë“¤ê³¼ ì—°ê´€ëœ ì˜¤ë¥˜ ì •ë³´ë¥¼ ì–»ì–´ì™€ ì „ì—­ ë³€ìˆ˜ gErrorMgrì— ì„¤ì •í•œë‹¤.
+ * ÇÚµé°ú ¿¬°üµÈ ¿À·ù Á¤º¸¸¦ ¾ò¾î¿Í Àü¿ª º¯¼ö gErrorMgr¿¡ ¼³Á¤ÇÑ´Ù.
  */
 IDE_RC utmSetErrorMsgWithHandle(SQLSMALLINT aHandleType,
                                        SQLHANDLE   aHandle)
@@ -121,7 +129,7 @@ void eraseWhiteSpace( SChar * buf )
     SInt i, j;
     SInt len;
 
-    // 1. Â¾OÂ¿Â¡Â¼Â­ ÂºIAI Â°Eâ‰«c Â½AAU..
+    // 1. ¨úO¢¯¢®¨ù¡© ¨¬IAI ¡ÆE¡íc ¨öAAU..
 
     len = idlOS::strlen(buf);
     if( len <= 0 )
@@ -131,7 +139,7 @@ void eraseWhiteSpace( SChar * buf )
 
     for (i=0; i<len && buf[i]; i++)
     {
-        if (buf[i]==' ') // Â½ÂºÃ†aAIÂ½Âº AO
+        if (buf[i]==' ') // ¨ö¨¬¨¡aAI¨ö¨¬ AO
         {
             for (j=i; buf[j]; j++)
             {
@@ -145,7 +153,7 @@ void eraseWhiteSpace( SChar * buf )
         }
     }
 
-    // 2. Â³Â¡Â¿Â¡Â¼Â­ ÂºIAI Â°Eâ‰«c Â½AAU.. : Â½ÂºÃ†aAIÂ½Âº Â¾Ã¸Â¾OÂ±a
+    // 2. ©ø¢®¢¯¢®¨ù¡© ¨¬IAI ¡ÆE¡íc ¨öAAU.. : ¨ö¨¬¨¡aAI¨ö¨¬ ¨ú©ª¨úO¡¾a
 
     len = idlOS::strlen(buf);
     if( len <= 0 )
@@ -155,7 +163,7 @@ void eraseWhiteSpace( SChar * buf )
 
     for (i=len-1; buf[i] && len>=0; i--)
     {
-        if (buf[i]==' ') // Â½ÂºÃ†aAIÂ½Âº Â¾Ã¸Â¾OÂ±a
+        if (buf[i]==' ') // ¨ö¨¬¨¡aAI¨ö¨¬ ¨ú©ª¨úO¡¾a
         {
             buf[i] = 0;
         }
@@ -231,6 +239,17 @@ SQLRETURN open_file(SChar *a_file_name,
 
     IDE_TEST_RAISE((*a_fp = idlOS::fopen(a_file_name, "w+")) == NULL,
                    open_error);
+
+    /* BUG-47652 Set file permission */
+#if defined( ALTI_CFG_OS_WINDOWS )
+    // Unable to set file permission at Windows OS
+#else
+    if ( gProgOption.IsExistFilePerm() == ID_TRUE && *a_fp != NULL)
+    {
+        (void) idlOS::fchmod( fileno( *a_fp ), gFilePerm );
+        idlOS::printf( "FilePerm: %d\n", gFilePerm );
+    }
+#endif
 
     return SQL_SUCCESS;
 

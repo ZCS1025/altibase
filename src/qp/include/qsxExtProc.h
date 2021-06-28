@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsxExtProc.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsxExtProc.h 86373 2019-11-19 23:12:16Z khkwak $
  **********************************************************************/
 
 #ifndef _O_QSX_EXTPROC_H_
@@ -24,7 +24,30 @@
 
 #include <idx.h>
 #include <mtc.h>
+#include <qs.h>
 #include <qsParseTree.h>
+
+#define QSX_EXTPROC_INIT_MSG( msg )         \
+{                                           \
+    (msg)->mErrorCode = 0;                  \
+    (msg)->mParamCount = 0;                 \
+}
+
+#define QSX_EXTPROC_INIT_PARAM_INFO( param )    \
+{                                               \
+    (param)->mSize       = 0;                   \
+    (param)->mColumn     = 0;                   \
+    (param)->mTable      = 0;                   \
+    (param)->mOrder      = 0;                   \
+    (param)->mType       = IDX_TYPE_NONE;       \
+    (param)->mPropType   = IDX_TYPE_PROP_NONE;  \
+    (param)->mMode       = IDX_MODE_NONE;       \
+    (param)->mIsPtr      = ID_FALSE;            \
+    (param)->mIndicator  = ID_TRUE;             \
+    (param)->mLength     = 0;                   \
+    (param)->mMaxLength  = 0;                   \
+}
+
 
 class qsxExtProc
 {
@@ -41,7 +64,8 @@ private:
                                          mtcColumn    * aColumn,
                                          SChar        * aRow,
                                          qcTemplate   * aTmplate,
-                                         idxParamInfo * aParamInfo );
+                                         idxParamInfo * aParamInfo,
+                                         qsProcType     aProcType );
 
     static IDE_RC fillTimestampParamValue( UInt             aDataTypeId,
                                            SChar          * aValue,
@@ -64,24 +88,26 @@ private:
                                      UShort    * aOutLength );
 
 public:
-    static void   initializeMsg( idxExtProcMsg * aMsg );
-
-    static void   initializeParamInfo( idxParamInfo * aParamInfo );
-
     static IDE_RC fillParamInfo( iduMemory        * aQxeMem,
                                  qsCallSpecParam  * aParam,
                                  qcTemplate       * aTmplate,
                                  idxParamInfo     * aParamInfo,
-                                 UInt               aOrder );
+                                 UInt               aOrder,
+                                 qsProcType         aProcType );
 
     static IDE_RC fillReturnInfo( iduMemory        * aQxeMem,
                                   qsVariableItems    aRetItem,
                                   qcTemplate       * aTmplate,
-                                  idxParamInfo     * aParamInfo );
+                                  idxParamInfo     * aParamInfo,
+                                  qsProcType         aProcType );
 
     static IDE_RC returnAllParams( iduMemory     * aQxeMem,
                                    idxExtProcMsg * aMsg,
                                    qcTemplate    * aTmplate );
+
+    static IDE_RC returnAllParams4IntProc( iduMemory     * aQxeMem,
+                                           idxIntProcMsg * aMsg,
+                                           qcTemplate    * aTmplate );
 };
 
 #endif /* _O_QSX_EXTPROC_H_ */

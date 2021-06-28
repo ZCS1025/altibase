@@ -97,6 +97,11 @@ public class IntervalColumn extends AbstractColumn
         ((ObjectDynamicArray) aArray).put(new AltibaseInterval(mSecond, mNanos));
     }
 
+    public void storeTo()
+    {
+        mValues.add(new AltibaseInterval(mSecond, mNanos));
+    }
+
     protected void readFromSub(CmChannel aChannel) throws SQLException
     {
         AltibaseInterval sInterval = readInterval(aChannel);
@@ -114,9 +119,21 @@ public class IntervalColumn extends AbstractColumn
         ((ObjectDynamicArray) aArray).put(readInterval(aChannel));
     }
 
+    protected void readAndStoreValue(CmChannel aChannel) throws SQLException
+    {
+        mValues.add(readInterval(aChannel));
+    }
+
     protected void loadFromSub(DynamicArray aArray)
     {
         AltibaseInterval sThis = (AltibaseInterval) ((ObjectDynamicArray) aArray).get();
+        mSecond = sThis.getSecond();
+        mNanos = sThis.getNanos();
+    }
+
+    protected void loadFromSub(int aLoadIndex)
+    {
+        AltibaseInterval sThis = (AltibaseInterval)(mValues.get(aLoadIndex));
         mSecond = sThis.getSecond();
         mNanos = sThis.getNanos();
     }
@@ -140,13 +157,13 @@ public class IntervalColumn extends AbstractColumn
 
     protected long getLongSub() throws SQLException
     {
-        // í•˜ìœ„ í˜¸í™˜ì„±
+        // ÇÏÀ§ È£È¯¼º
         return (long)getDoubleSub();
     }
 
     protected double getDoubleSub() throws SQLException
     {
-        // í•˜ìœ„ í˜¸í™˜ì„±
+        // ÇÏÀ§ È£È¯¼º
         return AltibaseInterval.toNumberOfDays(mSecond, mNanos);
     }
 
@@ -170,7 +187,7 @@ public class IntervalColumn extends AbstractColumn
         }
         else
         {
-            // Interval íƒ€ì…ì€ ê°’ì„ ì„œë²„ë¡œ ë³´ë‚¼ ì¼ì´ ì „í˜€ ì—†ë‹¤.
+            // Interval Å¸ÀÔÀº °ªÀ» ¼­¹ö·Î º¸³¾ ÀÏÀÌ ÀüÇô ¾ø´Ù.
             Error.throwInternalError(ErrorDef.INVALID_METHOD_INVOCATION);
         }
     }

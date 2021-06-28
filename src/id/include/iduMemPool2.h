@@ -23,7 +23,7 @@ struct iduMemPool2ChunkHeader;
 struct iduMemPool2FreeInfo;
 class iduMemPool2;
 
-/* Free Block List ìœ ì§€ì‹œ ì‚¬ìš© */
+/* Free Block List À¯Áö½Ã »ç¿ë */
 typedef struct iduMemPool2FreeInfo
 {
     iduMemPool2FreeInfo    *mNext;
@@ -32,19 +32,19 @@ typedef struct iduMemPool2FreeInfo
 } iduMemPool2FreeInfo;
 
 
-/* ië²ˆì§¸ Blockì˜ Free Infoë¥¼ ê°€ì ¸ì˜¨ë‹¤. */
+/* i¹øÂ° BlockÀÇ Free Info¸¦ °¡Á®¿Â´Ù. */
 #define IDU_MEMPOOL2_BLOCK_FREE_INFO( aFreeChunk, i ) \
 ( (iduMemPool2FreeInfo*)( (SChar*)(aFreeChunk) + (aFreeChunk)->mChunkSize - ID_SIZEOF( iduMemPool2FreeInfo ) * (i + 1) ) )
 
-/* Chunkì˜ ì²«ë²ˆì§¸ Blockì˜ Chunkë‚´ì—ì„œì˜ ìœ„ì¹˜ */
+/* ChunkÀÇ Ã¹¹øÂ° BlockÀÇ Chunk³»¿¡¼­ÀÇ À§Ä¡ */
 #define IDU_MEMPOOL2_FST_BLOCK( aFreeChunk ) \
 ( (SChar*)idlOS::align( (SChar*)(aFreeChunk) + ID_SIZEOF( iduMemPool2ChunkHeader ), (aFreeChunk)->mAlignSize ) )
 
-/* Chunkì˜ në²ˆì§¸ Block */
+/* ChunkÀÇ n¹øÂ° Block */
 #define IDU_MEMPOOL2_NTH_BLOCK( aFreeChunk, n ) ( IDU_MEMPOOL2_FST_BLOCK( aFreeChunk ) + aFreeChunk->mBlockSize * (n) )
 
 /*
-                   Chunk êµ¬ì¡°
+                   Chunk ±¸Á¶
    *------------------------------------------*
    |         iduMemPool2ChunkHeader           |
    |------------------------------------------|
@@ -57,43 +57,43 @@ typedef struct iduMemPool2FreeInfo
 */
 typedef struct iduMemPool2ChunkHeader
 {
-    /* í• ë‹¹ëœ Chunk List */
+    /* ÇÒ´çµÈ Chunk List */
     iduList                 mChunkNode;
 
-    /* Chunk Matrixì— ëŒ€í•œ Linked List */
+    /* Chunk Matrix¿¡ ´ëÇÑ Linked List */
     iduList                 mMtxNode;
 
-    /* Chunkë¥¼ ê°€ì§€ê³  ìˆëŠ” iduMemPool2ì— ëŒ€í•œ Pointer */
+    /* Chunk¸¦ °¡Áö°í ÀÖ´Â iduMemPool2¿¡ ´ëÇÑ Pointer */
     iduMemPool2            *mOwner;
 
     /* Chunk Size */
     UInt                    mChunkSize;
 
-    /* Chunkì—ì„œ í•œë²ˆì´ë¼ë„ í• ë‹¹í•œ Blockì˜ ê°¯ìˆ˜ */
+    /* Chunk¿¡¼­ ÇÑ¹øÀÌ¶óµµ ÇÒ´çÇÑ BlockÀÇ °¹¼ö */
     UInt                    mNewAllocCnt;
 
-    /* Chunkê°€ ê°€ì§ˆ ìˆ˜ ìˆëŠ” Total Block ìˆ˜ */
+    /* Chunk°¡ °¡Áú ¼ö ÀÖ´Â Total Block ¼ö */
     UInt                    mTotalBlockCnt;
 
-    /* Allocëœ íšŸìˆ˜ */
+    /* AllocµÈ È½¼ö */
     UInt                    mFreeBlockCnt;
 
-    /* Freeëœ Blockì´ ë§ì„ ìˆ˜ë¡ ì‘ì•„ì§„ë‹¤. */
+    /* FreeµÈ BlockÀÌ ¸¹À» ¼ö·Ï ÀÛ¾ÆÁø´Ù. */
     UInt                    mFullness;
 
-    /* ë§ˆì§€ë§‰ìœ¼ë¡œ Freeëœ Blockì˜ FreeInfoì„ ê°€ë¦¬í‚¤ê³  ìˆë‹¤. */
+    /* ¸¶Áö¸·À¸·Î FreeµÈ BlockÀÇ FreeInfoÀ» °¡¸®Å°°í ÀÖ´Ù. */
     iduMemPool2FreeInfo*    mFstFreeInfo;
 
     /* Block Size */
     UInt                    mBlockSize;
 
-    /* ê° Blockì˜ Aligní¬ê¸°. */
+    /* °¢ BlockÀÇ AlignÅ©±â. */
     UInt                    mAlignSize;
 } iduMemPool2ChunkHeader;
 
 
 /*******************************************************************
-      iduMemPool2 êµ¬ì¡°ë„
+      iduMemPool2 ±¸Á¶µµ
 
       |-This - Child 1 |
       |-Child 2        |
@@ -103,16 +103,16 @@ typedef struct iduMemPool2ChunkHeader
       |- ...           |  <----
       *-Child n        |
 
-      Child 1ì€ ìê¸°ìì‹ ì´ë‹¤. 
-      Child 1ì„ ì œì™¸í•œ ë‚˜ë¨¸ì§€ MemPoolë“¤ì€ ìƒˆë¡œ ìƒì„±í•œë‹¤.
+      Child 1Àº ÀÚ±âÀÚ½ÅÀÌ´Ù. 
+      Child 1À» Á¦¿ÜÇÑ ³ª¸ÓÁö MemPoolµéÀº »õ·Î »ı¼ºÇÑ´Ù.
 
-      Fullness: Chunkê°€ ì–¼ë§ˆë‚˜ ë§ì€ Blockì„ í• ë‹¹í–ˆëŠ”ì§€ì— ë”°ë¼
-                Levì„ ì •í•œê²ƒìœ¼ë¡œ í´ìˆ˜ë¡ ë§ì€ Blockì„ í• ë‹¹í•œ ê²ƒì´ë‹¤.
+      Fullness: Chunk°¡ ¾ó¸¶³ª ¸¹Àº BlockÀ» ÇÒ´çÇß´ÂÁö¿¡ µû¶ó
+                LevÀ» Á¤ÇÑ°ÍÀ¸·Î Å¬¼ö·Ï ¸¹Àº BlockÀ» ÇÒ´çÇÑ °ÍÀÌ´Ù.
 
-      Matrix[n]: ê° Fullness Levelì— ë”°ë¼ì„œ Chunk Listë¥¼ êµ¬ì„±í–ˆë‹¤.
+      Matrix[n]: °¢ Fullness Level¿¡ µû¶ó¼­ Chunk List¸¦ ±¸¼ºÇß´Ù.
 
-      í• ë‹¹ì‹œ Fullnessê°€ ë†’ì€ Chunkë¥¼ ë¨¼ì € í• ë‹¹í•˜ê¸° ìœ„í•´ Matrixì˜
-      nì˜ ê°’ì„ í° ê°’ì—ì„œ ì‘ì€ ê°’ìœ¼ë¡œ ê°€ë©´ì„œ Chunkê°€ ìˆëŠ”ì§€ ì¡°ì‚¬í•œë‹¤.
+      ÇÒ´ç½Ã Fullness°¡ ³ôÀº Chunk¸¦ ¸ÕÀú ÇÒ´çÇÏ±â À§ÇØ MatrixÀÇ
+      nÀÇ °ªÀ» Å« °ª¿¡¼­ ÀÛÀº °ªÀ¸·Î °¡¸é¼­ Chunk°¡ ÀÖ´ÂÁö Á¶»çÇÑ´Ù.
 
 ********************************************************************/
 
@@ -208,44 +208,44 @@ private:
     /* MemPool List Count */
     UInt                   mPoolCnt;
 
-    /* í• ë‹¹ë°›ì€ Chunkì˜ ê°¯ìˆ˜. */
+    /* ÇÒ´ç¹ŞÀº ChunkÀÇ °¹¼ö. */
     ULong                  mChunkCnt;
 
-    /* Chunk í¬ê¸°. */
+    /* Chunk Å©±â. */
     UInt                   mChunkSize;
 
-    /* Block í¬ê¸°. */
+    /* Block Å©±â. */
     UInt                   mBlockSize;
 
     /*
-      ChildëŠ” mChildCacheCntì´ìƒì˜ Free Block Countë¥¼
-      ê°€ì§€ê²Œ ë˜ë©´ ê°€ì¥ë§ì€ Free Blockì„ ê°€ì§„ Chunkë¥¼ Parentì—ê²Œ
-      ë°˜í™˜í•œë‹¤.
+      Child´Â mChildCacheCntÀÌ»óÀÇ Free Block Count¸¦
+      °¡Áö°Ô µÇ¸é °¡Àå¸¹Àº Free BlockÀ» °¡Áø Chunk¸¦ Parent¿¡°Ô
+      ¹İÈ¯ÇÑ´Ù.
     */
     ULong                  mCacheBlockCnt;
 
-    /* í•˜ë‚˜ì˜ Chunkê°€ ê°€ì§€ëŠ” ì´ Blockìˆ˜ */
+    /* ÇÏ³ªÀÇ Chunk°¡ °¡Áö´Â ÃÑ Block¼ö */
     UInt                   mTotalBlockCntInChunk;
 
     /*
-      Chunkê°€ mFullnessì— ë”°ë¼ì„œ mCHMatrixì— ë§¤ë‹¬ë ¤ ìˆëŠ”ë° ì´ ê²½ìš°
-      mFullnessì— ë”°ë¼ì„œ ë§¤ë‹¬ë ¤ ìˆëŠ” Chunkì˜ ê°¯ìˆ˜
+      Chunk°¡ mFullness¿¡ µû¶ó¼­ mCHMatrix¿¡ ¸Å´Ş·Á ÀÖ´Âµ¥ ÀÌ °æ¿ì
+      mFullness¿¡ µû¶ó¼­ ¸Å´Ş·Á ÀÖ´Â ChunkÀÇ °¹¼ö
     */
     UInt                   mFreeChkCntOfMatrix[ BLOCK_FULLNESS_GROUP ];
 
-    /* Chunkì˜ mFullnessì— ë”°ë¼ì„œ ê°€ì§ˆ ìˆ˜ ìˆëŠ” ëŒ€ëµì˜ Free Block ê°¯ìˆ˜ */
+    /* ChunkÀÇ mFullness¿¡ µû¶ó¼­ °¡Áú ¼ö ÀÖ´Â ´ë·«ÀÇ Free Block °¹¼ö */
     UInt                   mApproximateFBCntByFN[ BLOCK_FULLNESS_GROUP ];
 
     /* Chunk Header Matrix
-       Chunkì˜ mFullnessì— ë”°ë¼ì„œ mCHMarix[mFullness]ì— ì¶”ê°€ë¨ */
+       ChunkÀÇ mFullness¿¡ µû¶ó¼­ mCHMarix[mFullness]¿¡ Ãß°¡µÊ */
     iduList                mCHMatrix[ BLOCK_FULLNESS_GROUP ];
 
-    /* í• ë‹¹ëœ Chunk List Header */
+    /* ÇÒ´çµÈ Chunk List Header */
     iduList                mChunkList;
 
-    /* Free Chunkì„ ì°¾ì„ë•Œ mCHMatrixì—ì„œ mLeastBinIndexì´
-     * ê°€ë¦¬í‚¤ëŠ” Chunk Listë¶€í„° ì°¾ëŠ”ë‹¤. ì´ ê°’ì€ Free Blockì˜
-     * ê°¯ìˆ˜ê°€ ì ì€ Chunk Listë¥¼ ë˜ë„ë¡ ê°€ë¦¬í‚¤ë„ë¡ í•œë‹¤. */
+    /* Free ChunkÀ» Ã£À»¶§ mCHMatrix¿¡¼­ mLeastBinIndexÀÌ
+     * °¡¸®Å°´Â Chunk ListºÎÅÍ Ã£´Â´Ù. ÀÌ °ªÀº Free BlockÀÇ
+     * °¹¼ö°¡ ÀûÀº Chunk List¸¦ µÇµµ·Ï °¡¸®Å°µµ·Ï ÇÑ´Ù. */
     SInt                   mLeastBinIndex;
 
     iduMemoryClientIndex   mIndex;
@@ -255,7 +255,7 @@ private:
 
     UInt                   mAlignSize;
 
-    /* í• ë‹¹ëœ Block ê°¯ìˆ˜ */
+    /* ÇÒ´çµÈ Block °¹¼ö */
     ULong                  mAllocBlkCnt;
 };
 
@@ -269,7 +269,7 @@ inline IDE_RC iduMemPool2::unlock()
     return mLock.unlock();
 }
 
-/* Chunkë¥¼ ì´ˆê¸°í™” í•©ë‹ˆë‹¤. */
+/* Chunk¸¦ ÃÊ±âÈ­ ÇÕ´Ï´Ù. */
 inline void iduMemPool2::initChunk( iduMemPool2ChunkHeader *aChunk )
 {
     IDU_LIST_INIT_OBJ( &aChunk->mChunkNode, aChunk );
@@ -287,25 +287,25 @@ inline void iduMemPool2::initChunk( iduMemPool2ChunkHeader *aChunk )
     aChunk->mAlignSize     = mAlignSize;
 }
 
-/* Listì— ëŒ€í•´ Chunkë¥¼ Addí•œë‹¤. */
+/* List¿¡ ´ëÇØ Chunk¸¦ AddÇÑ´Ù. */
 inline void iduMemPool2::addChunkToList( iduMemPool2ChunkHeader* aChunk )
 {
     IDU_LIST_ADD_AFTER( &mChunkList, &aChunk->mChunkNode );
 }
 
-/* Listì—ì„œ Chunkë¥¼ ì œê±°í•œë‹¤. */
+/* List¿¡¼­ Chunk¸¦ Á¦°ÅÇÑ´Ù. */
 inline void iduMemPool2::removeChunkFromList( iduMemPool2ChunkHeader* aChunk )
 {
     IDU_LIST_REMOVE( &aChunk->mChunkNode );
 }
 
-/* Matrixì—ì„œ Chunkë¥¼ ì œê±°í•œë‹¤. */
+/* Matrix¿¡¼­ Chunk¸¦ Á¦°ÅÇÑ´Ù. */
 inline void iduMemPool2::removeChunkFromMP( iduMemPool2ChunkHeader* aChunk )
 {
     IDU_LIST_REMOVE( &aChunk->mMtxNode );
 }
 
-/* Chunkë¥¼ ìì‹ ì˜ Fullnessë§ëŠ” Matrixì— ì¶”ê°€í•œë‹¤. */
+/* Chunk¸¦ ÀÚ½ÅÀÇ Fullness¸Â´Â Matrix¿¡ Ãß°¡ÇÑ´Ù. */
 inline void iduMemPool2::moveChunkToMP( iduMemPool2ChunkHeader* aChunk )
 {
     iduList *sCHListOfMatrix;
@@ -318,14 +318,14 @@ inline void iduMemPool2::moveChunkToMP( iduMemPool2ChunkHeader* aChunk )
     IDU_LIST_ADD_AFTER( sCHListOfMatrix, &aChunk->mMtxNode );
 }
 
-/* Fullnessë¥¼ ê³„ì‚°í•œë‹¤ */
+/* Fullness¸¦ °è»êÇÑ´Ù */
 inline UInt iduMemPool2::computeFullness( UInt aTotal, UInt aAvailable )
 {
     return (((BLOCK_FULLNESS_GROUP - 1)
              * (aTotal - aAvailable)) / aTotal);
 }
 
-/* Blockì˜ Free Infoë¥¼ Free Info Listì— ì¶”ê°€í•œë‹¤. */
+/* BlockÀÇ Free Info¸¦ Free Info List¿¡ Ãß°¡ÇÑ´Ù. */
 inline void iduMemPool2::addBlkFreeInfo2FreeLst( iduMemPool2FreeInfo *aFreeInfo )
 {
     iduMemPool2ChunkHeader *sChunk;
@@ -340,7 +340,7 @@ inline void iduMemPool2::addBlkFreeInfo2FreeLst( iduMemPool2FreeInfo *aFreeInfo 
     sChunk->mFreeBlockCnt++;
 }
 
-/* Chunkì˜ Fullnessìƒˆë¡œ ê°±ì‹ í•œë‹¤. */
+/* ChunkÀÇ Fullness»õ·Î °»½ÅÇÑ´Ù. */
 inline void iduMemPool2::updateFullness( iduMemPool2ChunkHeader* aChunk )
 {
     SInt sOldFullness;
@@ -365,13 +365,13 @@ inline void iduMemPool2::updateFullness( iduMemPool2ChunkHeader* aChunk )
 
 }
 
-/* í˜„ì¬ MemPoolì˜ Free Blockì˜ ê°¯ìˆ˜ë¥¼ êµ¬í•œë‹¤. */
+/* ÇöÀç MemPoolÀÇ Free BlockÀÇ °¹¼ö¸¦ ±¸ÇÑ´Ù. */
 inline ULong iduMemPool2::getFreeBlockCnt()
 {
     return mTotalBlockCntInChunk * mChunkCnt - mAllocBlkCnt;
 }
 
-/* í˜„ì¬ MemPoolì´ ì‚¬ìš©ì¤‘ì¸ Memoryí¬ê¸°ë¥¼ êµ¬í•œë‹¤ .*/
+/* ÇöÀç MemPoolÀÌ »ç¿ëÁßÀÎ MemoryÅ©±â¸¦ ±¸ÇÑ´Ù .*/
 inline ULong iduMemPool2::getMemSize()
 {
     return mChunkCnt * mChunkSize;

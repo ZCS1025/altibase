@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iloCommandParser.y 80545 2017-07-19 08:05:23Z daramix $
+ * $Id: iloCommandParser.y 90270 2021-03-21 23:20:18Z bethy $
  **********************************************************************/
 
 %pure_parser
@@ -57,7 +57,8 @@ SInt iloCommandParserlex(YYSTYPE *aLValPtr, void *aParam);
 %token T_FIRSTROW_OPT T_LASTROW_OPT T_FIELDTERM_OPT T_ROWTERM_OPT
 %token T_MODETYPE_OPT T_ARRAYCOUNT_OPT T_ATOMIC_OPT T_PARALLELCOUNT_OPT T_DIRECT_OPT
 %token T_IOPARALLELCOUNT_OPT T_COMMITUNIT_OPT T_ERRORCOUNT_OPT T_READSIZE_OPT T_LOGFILE_OPT 
-%token T_BADFILE_OPT T_ENCLOSING_OPT T_REPLICATION_OPT T_SPLIT_OPT T_INFORMIX_OPT T_NOEXP_OPT T_MSSQL_OPT T_FLOCK_OPT T_PARTITION_OPT
+%token T_BADFILE_OPT T_ENCLOSING_OPT T_REPLICATION_OPT T_SPLIT_OPT T_INFORMIX_OPT T_EXTRA_COL_DELIMITER_OPT 
+%token T_NOEXP_OPT T_MSSQL_OPT T_FLOCK_OPT T_PARTITION_OPT
 %token T_DRYRUN_OPT T_PREFETCH_ROWS_OPT
 %token T_ASYNC_PREFETCH_OPT T_OFF T_ON T_AUTO
 %token T_ISPEENER T_ORACLE T_SQLSERVER T_APPEND T_REPLACE T_TRUNCATE T_LOGGING T_NOLOGGING
@@ -67,7 +68,7 @@ SInt iloCommandParserlex(YYSTYPE *aLValPtr, void *aParam);
 %token T_USE_SEPARATE_FILES_KEYWORD T_LOB_FILE_SIZE_KEYWORD
 %token T_LOB_INDICATOR_KEYWORD T_EQUAL T_LOB_OPT_VALUE_YES T_LOB_OPT_VALUE_NO
 %token T_SIZE_NUMBER T_SIZE_UNIT_T T_SIZE_UNIT_G T_LOB_INDICATOR
-
+%token T_STMT_PREFIX_OPT T_TXLEVEL_OPT
 %start ILOADER_COMMANDLINE
 
 %%
@@ -183,6 +184,7 @@ OPTION_KIND : TABLENAME_OPTION
             | REPLICATION_OPTION
             | SPLIT_OPTION
             | INFORMIX_OPTION
+            | EXTRA_COL_DELIMITER_OPTION
             | NOEXP_OPTION
             | MSSQL_OPTION
             | LOB_OPTION
@@ -191,6 +193,8 @@ OPTION_KIND : TABLENAME_OPTION
             | DRYRUN_OPTION
             | PREFETCH_ROWS_OPTION
             | ASYNC_PREFETCH_OPTION
+            | STMT_PREFIX_OPTION
+            | TXLEVEL_OPTION
             ;
 
 TABLENAME_OPTION : T_TABLENAME_OPT TABLE_NAME_LIST
@@ -207,7 +211,7 @@ TABLENAME_OPTION : T_TABLENAME_OPT TABLE_NAME_LIST
                     }
                  ;
 
-/* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
+/* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
 TABLE_NAME_LIST : TABLE_NAME
                     {
                         PARAM->mProgOption->m_TableOwner[0][0] = '\0';
@@ -237,7 +241,7 @@ TABLE_NAME_LIST : TABLE_NAME
                     }
                 ;
 
-/* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
+/* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
 TABLE_NAME : T_IDENTIFIER
            | T_QUOTED_IDENTIFIER
            ;
@@ -312,7 +316,7 @@ DATA_FILENAME   : T_FILENAME
 /* TASK-2657 */
 DATAFORMAT_OPTION : T_DATAFORMAT_OPT DATAFORMAT_LIST
                   {
-                     /* BUG-29779: csvì˜ rowtermì„ \r\nìœ¼ë¡œ ì§€ì •í•˜ëŠ” ê¸°ëŠ¥ */
+                     /* BUG-29779: csvÀÇ rowtermÀ» \r\nÀ¸·Î ÁöÁ¤ÇÏ´Â ±â´É */
                      if ( PARAM->mProgOption->mExistRule )
                      {
                         PARAM->mProgOption->m_bErrorExist = SQL_TRUE;
@@ -329,7 +333,7 @@ DATAFORMAT_LIST : T_IDENTIFIER
                 {
                         if ( idlOS::strcmp($<str>1, "csv") == 0)
                         {
-                            /* BUG-29779: csvì˜ rowtermì„ \r\nìœ¼ë¡œ ì§€ì •í•˜ëŠ” ê¸°ëŠ¥ */
+                            /* BUG-29779: csvÀÇ rowtermÀ» \r\nÀ¸·Î ÁöÁ¤ÇÏ´Â ±â´É */
                             if( PARAM->mProgOption->m_bExist_t || PARAM->mProgOption->m_bExist_e )
                             {
                                 PARAM->mProgOption->m_bErrorExist = SQL_TRUE;
@@ -622,10 +626,10 @@ IOPARALLEL_OPTION : T_IOPARALLELCOUNT_OPT T_NUMBER
                         }
                         else
                         {
-                            // PROJ-2068 Direct-Path INSERT ì„±ëŠ¥ ê°œì„ 
-                            //  Parallel DIrect-Path INSERTê°€ ì œê±°ë¨ì— ë”°ë¼
-                            // ioparallel ì˜µì…˜ì´ ë¬´ì˜ë¯¸í•´ì¡Œë‹¤.
-                            // í˜¸í™˜ì„±ì„ ìœ„í•´ ì˜µì…˜ ìžì²´ëŠ” ë‚¨ê²¨ë‘ë˜, ë¬´ì‹œí•œë‹¤.
+                            // PROJ-2068 Direct-Path INSERT ¼º´É °³¼±
+                            //  Parallel DIrect-Path INSERT°¡ Á¦°ÅµÊ¿¡ µû¶ó
+                            // ioparallel ¿É¼ÇÀÌ ¹«ÀÇ¹ÌÇØÁ³´Ù.
+                            // È£È¯¼ºÀ» À§ÇØ ¿É¼Ç ÀÚÃ¼´Â ³²°ÜµÎµÇ, ¹«½ÃÇÑ´Ù.
                             (void)idlOS::printf("NOTICE: -ioparallel option is deprecated. " \
                                                 "Thus, the option will be ignored.\n");
 
@@ -875,6 +879,24 @@ INFORMIX_OPTION
                         }
                     }
                    ;
+
+EXTRA_COL_DELIMITER_OPTION
+                   : T_EXTRA_COL_DELIMITER_OPT
+                    {
+                        /* BUG-47677 -extra_col_delimiter sub for -informix */
+                        if (PARAM->mProgOption->m_bExist_informix)
+                        {
+                            PARAM->mProgOption->m_bErrorExist = SQL_TRUE;
+                            uteSetErrorCode(PARAM->mErrorMgr,
+                                            utERR_ABORT_Dup_Option_Error,
+                                            "-extra_col_delimiter");
+                        }
+                        else
+                        {
+                            PARAM->mProgOption->mInformix = SQL_TRUE;
+                        }
+                    }
+                   ;
 MSSQL_OPTION
                    : T_MSSQL_OPT
                     {
@@ -1011,12 +1033,12 @@ LOB_FILE_SIZE_VALUE : T_SIZE_NUMBER
                         sNumber = idlOS::strtod($<str>1, (SChar **)NULL);
                         PARAM->mProgOption->mLOBFileSize = (ULong)
                                (sNumber * (double)0x40000000 + .5);
-                        /* longì´ 4ë°”ì´íŠ¸ì¸ í”Œëž«í¼ì—ì„œ íŒŒì¼ í¬ê¸°ê°€ 2GB ì´ìƒì´ë©´
-                         * ë¬¸ì œ ë°œìƒì˜ ì†Œì§€ê°€ ìžˆê¸° ë•Œë¬¸ì—,
-                         * ì‚¬ìš©ìžê°€ íŒŒì¼ í¬ê¸° ì œí•œìœ¼ë¡œ 2GB ì´ìƒì„ ì§€ì •í•œ ê²½ìš°
-                         * 2GB-1ì„ íŒŒì¼ í¬ê¸° ì œí•œìœ¼ë¡œ ì‚¬ìš©í† ë¡ í•œë‹¤.
-                         * ë‹¨, WindowsëŠ” longì´ 4ë°”ì´íŠ¸ì—¬ë„ ë³„ë„ì˜ APIë¥¼ í†µí•´
-                         * 2GB ì´ìƒì¸ íŒŒì¼ì„ ì‚¬ìš©í•  ìˆ˜ ìžˆìœ¼ë¯€ë¡œ ì˜ˆì™¸ë¡œ í•œë‹¤. */
+                        /* longÀÌ 4¹ÙÀÌÆ®ÀÎ ÇÃ·§Æû¿¡¼­ ÆÄÀÏ Å©±â°¡ 2GB ÀÌ»óÀÌ¸é
+                         * ¹®Á¦ ¹ß»ýÀÇ ¼ÒÁö°¡ ÀÖ±â ¶§¹®¿¡,
+                         * »ç¿ëÀÚ°¡ ÆÄÀÏ Å©±â Á¦ÇÑÀ¸·Î 2GB ÀÌ»óÀ» ÁöÁ¤ÇÑ °æ¿ì
+                         * 2GB-1À» ÆÄÀÏ Å©±â Á¦ÇÑÀ¸·Î »ç¿ëÅä·Ï ÇÑ´Ù.
+                         * ´Ü, Windows´Â longÀÌ 4¹ÙÀÌÆ®¿©µµ º°µµÀÇ API¸¦ ÅëÇØ
+                         * 2GB ÀÌ»óÀÎ ÆÄÀÏÀ» »ç¿ëÇÒ ¼ö ÀÖÀ¸¹Ç·Î ¿¹¿Ü·Î ÇÑ´Ù. */
 #if !defined(VC_WIN32) && !defined(VC_WIN64)
                         if (ID_SIZEOF(long) < 8 &&
                             PARAM->mProgOption->mLOBFileSize >= ID_ULONG(0x80000000))
@@ -1031,12 +1053,12 @@ LOB_FILE_SIZE_VALUE : T_SIZE_NUMBER
                         sNumber = idlOS::strtod($<str>1, (SChar **)NULL);
                         PARAM->mProgOption->mLOBFileSize = (ULong)
                                (sNumber * (double)0x40000000 + .5);
-                        /* longì´ 4ë°”ì´íŠ¸ì¸ í”Œëž«í¼ì—ì„œ íŒŒì¼ í¬ê¸°ê°€ 2GB ì´ìƒì´ë©´
-                         * ë¬¸ì œ ë°œìƒì˜ ì†Œì§€ê°€ ìžˆê¸° ë•Œë¬¸ì—,
-                         * ì‚¬ìš©ìžê°€ íŒŒì¼ í¬ê¸° ì œí•œìœ¼ë¡œ 2GB ì´ìƒì„ ì§€ì •í•œ ê²½ìš°
-                         * 2GB-1ì„ íŒŒì¼ í¬ê¸° ì œí•œìœ¼ë¡œ ì‚¬ìš©í† ë¡ í•œë‹¤.
-                         * ë‹¨, WindowsëŠ” longì´ 4ë°”ì´íŠ¸ì—¬ë„ ë³„ë„ì˜ APIë¥¼ í†µí•´
-                         * 2GB ì´ìƒì¸ íŒŒì¼ì„ ì‚¬ìš©í•  ìˆ˜ ìžˆìœ¼ë¯€ë¡œ ì˜ˆì™¸ë¡œ í•œë‹¤. */
+                        /* longÀÌ 4¹ÙÀÌÆ®ÀÎ ÇÃ·§Æû¿¡¼­ ÆÄÀÏ Å©±â°¡ 2GB ÀÌ»óÀÌ¸é
+                         * ¹®Á¦ ¹ß»ýÀÇ ¼ÒÁö°¡ ÀÖ±â ¶§¹®¿¡,
+                         * »ç¿ëÀÚ°¡ ÆÄÀÏ Å©±â Á¦ÇÑÀ¸·Î 2GB ÀÌ»óÀ» ÁöÁ¤ÇÑ °æ¿ì
+                         * 2GB-1À» ÆÄÀÏ Å©±â Á¦ÇÑÀ¸·Î »ç¿ëÅä·Ï ÇÑ´Ù.
+                         * ´Ü, Windows´Â longÀÌ 4¹ÙÀÌÆ®¿©µµ º°µµÀÇ API¸¦ ÅëÇØ
+                         * 2GB ÀÌ»óÀÎ ÆÄÀÏÀ» »ç¿ëÇÒ ¼ö ÀÖÀ¸¹Ç·Î ¿¹¿Ü·Î ÇÑ´Ù. */
 #if !defined(VC_WIN32) && !defined(VC_WIN64)
                         if (ID_SIZEOF(long) < 8 &&
                             PARAM->mProgOption->mLOBFileSize >= ID_ULONG(0x80000000))
@@ -1051,12 +1073,12 @@ LOB_FILE_SIZE_VALUE : T_SIZE_NUMBER
                         sNumber = idlOS::strtod($<str>1, (SChar **)NULL);
                         PARAM->mProgOption->mLOBFileSize = (ULong)
                                (sNumber * (double)ID_LONG(0x10000000000) + .5);
-                        /* longì´ 4ë°”ì´íŠ¸ì¸ í”Œëž«í¼ì—ì„œ íŒŒì¼ í¬ê¸°ê°€ 2GB ì´ìƒì´ë©´
-                         * ë¬¸ì œ ë°œìƒì˜ ì†Œì§€ê°€ ìžˆê¸° ë•Œë¬¸ì—,
-                         * ì‚¬ìš©ìžê°€ íŒŒì¼ í¬ê¸° ì œí•œìœ¼ë¡œ 2GB ì´ìƒì„ ì§€ì •í•œ ê²½ìš°
-                         * 2GB-1ì„ íŒŒì¼ í¬ê¸° ì œí•œìœ¼ë¡œ ì‚¬ìš©í† ë¡ í•œë‹¤.
-                         * ë‹¨, WindowsëŠ” longì´ 4ë°”ì´íŠ¸ì—¬ë„ ë³„ë„ì˜ APIë¥¼ í†µí•´
-                         * 2GB ì´ìƒì¸ íŒŒì¼ì„ ì‚¬ìš©í•  ìˆ˜ ìžˆìœ¼ë¯€ë¡œ ì˜ˆì™¸ë¡œ í•œë‹¤. */
+                        /* longÀÌ 4¹ÙÀÌÆ®ÀÎ ÇÃ·§Æû¿¡¼­ ÆÄÀÏ Å©±â°¡ 2GB ÀÌ»óÀÌ¸é
+                         * ¹®Á¦ ¹ß»ýÀÇ ¼ÒÁö°¡ ÀÖ±â ¶§¹®¿¡,
+                         * »ç¿ëÀÚ°¡ ÆÄÀÏ Å©±â Á¦ÇÑÀ¸·Î 2GB ÀÌ»óÀ» ÁöÁ¤ÇÑ °æ¿ì
+                         * 2GB-1À» ÆÄÀÏ Å©±â Á¦ÇÑÀ¸·Î »ç¿ëÅä·Ï ÇÑ´Ù.
+                         * ´Ü, Windows´Â longÀÌ 4¹ÙÀÌÆ®¿©µµ º°µµÀÇ API¸¦ ÅëÇØ
+                         * 2GB ÀÌ»óÀÎ ÆÄÀÏÀ» »ç¿ëÇÒ ¼ö ÀÖÀ¸¹Ç·Î ¿¹¿Ü·Î ÇÑ´Ù. */
 #if !defined(VC_WIN32) && !defined(VC_WIN64)
                         if (ID_SIZEOF(long) < 8 &&
                             PARAM->mProgOption->mLOBFileSize >= ID_ULONG(0x80000000))
@@ -1131,6 +1153,58 @@ DRYRUN_OPTION
                  {
                      PARAM->mProgOption->mDryrun = ILO_TRUE;
                  }
+             }
+             ; 
+
+STMT_PREFIX_OPTION 
+            : T_STMT_PREFIX_OPT
+             {
+                 /* 
+                    BUG-47608 stmt_prefrix 
+                    STMT_PREFIX °ªÀ» ÀÔ·ÂÇÏÁö ¾ÊÀ¸¸é NODE [META]¸¦ ±âº»°ªÀ¸·Î ÇÑ´Ù.
+                 */
+                 SInt sEndPos = 0;
+                 if (PARAM->mProgOption->m_bExist_StmtPrefix == ID_TRUE)
+                 {
+                     PARAM->mProgOption->m_bErrorExist = SQL_TRUE;
+                     uteSetErrorCode(PARAM->mErrorMgr,
+                                     utERR_ABORT_Dup_Option_Error,
+                                     (SChar*) OPT_STMT_PREFIX);
+                 }
+                 else
+                 {
+                     PARAM->mProgOption->m_bExist_StmtPrefix = ID_TRUE;
+                     idlOS::strcpy(PARAM->mProgOption->m_StmtPrefix, (SChar*) NODE_META);
+                     sEndPos = idlOS::strlen(PARAM->mProgOption->m_StmtPrefix);
+                     PARAM->mProgOption->m_StmtPrefix[sEndPos] = 0;
+#ifdef _ILOADER_DEBUG
+                     idlOS::printf("STMT_PREFIX [%s]\n", PARAM->mProgOption->m_StmtPrefix);
+#endif
+                 }
+             }
+             |
+             T_STMT_PREFIX_OPT T_QUOTED_IDENTIFIER
+             {
+                 SInt sEndPos = 0;
+                 if (PARAM->mProgOption->m_bExist_StmtPrefix == ID_TRUE)
+                 {
+                     PARAM->mProgOption->m_bErrorExist = SQL_TRUE;
+                     uteSetErrorCode(PARAM->mErrorMgr,
+                                     utERR_ABORT_Dup_Option_Error,
+                                     (SChar*) OPT_STMT_PREFIX);
+                 }
+                 else
+                 {
+                     PARAM->mProgOption->m_bExist_StmtPrefix = ID_TRUE;
+                     /* Exclude quotation marks */
+                     idlOS::strcpy(PARAM->mProgOption->m_StmtPrefix, $<str>2+1);
+                     sEndPos = idlOS::strlen(PARAM->mProgOption->m_StmtPrefix) - 1;
+                     PARAM->mProgOption->m_StmtPrefix[sEndPos] = 0;
+#ifdef _ILOADER_DEBUG
+                     idlOS::printf("STMT_PREFIX [%s]\n", PARAM->mProgOption->m_StmtPrefix);
+#endif
+                 }
+
              }
              ; 
 
@@ -1216,4 +1290,33 @@ ASYNC_PREFETCH_OPTION
                  }
              }
              ;
+
+TXLEVEL_OPTION : T_TXLEVEL_OPT T_NUMBER
+               {
+                   if (PARAM->mProgOption->mExistTxLevel)
+                   {
+                       PARAM->mProgOption->m_bErrorExist = SQL_TRUE;
+                       uteSetErrorCode(PARAM->mErrorMgr,
+                                       utERR_ABORT_Dup_Option_Error,
+                                       "-txlevel");
+                   }
+                   else
+                   {
+                       PARAM->mProgOption->mTxLevel = idlOS::atoi($<str>2);
+                       if ( PARAM->mProgOption->mTxLevel < 0 ||
+                            PARAM->mProgOption->mTxLevel > 3 )
+                       {
+                           PARAM->mProgOption->m_bErrorExist = SQL_TRUE;
+                           uteSetErrorCode(PARAM->mErrorMgr,
+                                           utERR_ABORT_Option_Value_Range_Error,
+                                           "-txlevel",
+                                           (UInt)0);
+                       }
+                       else
+                       {
+                           PARAM->mProgOption->mExistTxLevel = SQL_TRUE;
+                       }
+                   }
+               }
+               ;
 

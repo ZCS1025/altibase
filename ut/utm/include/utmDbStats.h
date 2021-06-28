@@ -29,23 +29,6 @@ SQLRETURN getSystemStats( FILE  *a_DbStatsFp );
 /* BUG-40174 Support export and import DBMS Stats */
 SQLRETURN getTableStats( SChar *a_user,
                          SChar *a_table,
-                         SChar *a_partition,
                          FILE  *a_DbStatsfp );
-
-/* BUG-40174 Support export and import DBMS Stats */
-SQLRETURN getColumnStats( SChar *a_user,
-                          SChar *a_table,
-                          SChar *a_column,
-                          SChar *a_partition,
-                          FILE  *a_DbStatsFp );
-
-/* BUG-44831 Exporting INDEX Stats for PK, Unique constraint
- * with system-given name */
-/* BUG-40174 Support export and import DBMS Stats */
-SQLRETURN getIndexStats( SChar *a_user,
-                         SChar *a_table,
-                         SChar *a_index,
-                         FILE  *a_DbStatsfp,
-                         utmIndexStatProcType aIdxStatProcType );
 
 #endif /* _O_UTM_STATS_H_ */

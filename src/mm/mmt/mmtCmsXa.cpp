@@ -59,9 +59,9 @@ static IDE_RC xaOpTransaction(cmiProtocolContext   *aCtx,
     SLong       sGTRIDLength;
     SLong       sBQUALLength;
 
-    /* PROJ-2160 CM íƒ€ìž…ì œê±°
-       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
-    // XID êµ¬ì¡°ë©¤ë²„ê°€  ê°€ë³€ê¸¸ì´ longí˜•ì´ì–´ì„œ ê³ ì •ê¸¸ì´ ë²„í¼ê°€ í•„ìš”
+    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
+       ¸ðµÎ ÀÐÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄÝÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
+    // XID ±¸Á¶¸â¹ö°¡  °¡º¯±æÀÌ longÇüÀÌ¾î¼­ °íÁ¤±æÀÌ ¹öÆÛ°¡ ÇÊ¿ä
     CMI_RD8(aCtx, (ULong*)&(sFormatID));
     CMI_RD8(aCtx, (ULong*)&(sGTRIDLength));
     CMI_RD8(aCtx, (ULong*)&(sBQUALLength));
@@ -70,10 +70,10 @@ static IDE_RC xaOpTransaction(cmiProtocolContext   *aCtx,
     sXid.gtrid_length = sGTRIDLength;
     sXid.bqual_length = sBQUALLength;
 
-    CMI_RCP(aCtx, sXid.data, ID_XIDDATASIZE);
+    CMI_RCP(aCtx, sXid.data, ID_MAXXIDDATASIZE);
 
     /* bug-36037: invalid xid
-       invalid xid ê´€ë ¨ ì„œë²„ìª½ ê²€ì‚¬ì½”ë“œ ì¶”ê°€ */
+       invalid xid °ü·Ã ¼­¹öÂÊ °Ë»çÄÚµå Ãß°¡ */
     if ((sXid.gtrid_length <= (vSLong) 0)               ||
         (sXid.gtrid_length >  (vSLong) ID_MAXGTRIDSIZE) ||
         (sXid.bqual_length <= (vSLong) 0)               ||
@@ -85,7 +85,7 @@ static IDE_RC xaOpTransaction(cmiProtocolContext   *aCtx,
     /* BUG-20726 */
     idlOS::memset(&(sXid.data[sXid.gtrid_length+sXid.bqual_length]),
                   0x00,
-                  ID_XIDDATASIZE-sXid.gtrid_length-sXid.bqual_length);
+                  ID_MAXXIDDATASIZE-sXid.gtrid_length-sXid.bqual_length);
 
     aXaFunc(aXaContext, &sXid);
 
@@ -124,18 +124,18 @@ static IDE_RC xaOpRecover(cmiProtocolContext *aCtx,
 
     for (i = 0; i < sPreparedXidsCnt; i++)
     {
-        // XID êµ¬ì¡°ë©¤ë²„ê°€  ê°€ë³€ê¸¸ì´ longí˜•ì´ì–´ì„œ ê³ ì •ê¸¸ì´ ë²„í¼ê°€ í•„ìš”
+        // XID ±¸Á¶¸â¹ö°¡  °¡º¯±æÀÌ longÇüÀÌ¾î¼­ °íÁ¤±æÀÌ ¹öÆÛ°¡ ÇÊ¿ä
         sFormatID    = sPreparedXids[i].formatID;
         sGTRIDLength = sPreparedXids[i].gtrid_length;
         sBQUALLength = sPreparedXids[i].bqual_length;
 
-        CMI_WRITE_CHECK(aCtx, 1 + 24 + ID_XIDDATASIZE);
+        CMI_WRITE_CHECK(aCtx, 1 + 24 + ID_MAXXIDDATASIZE);
 
         CMI_WOP(aCtx, CMP_OP_DB_XaXid);
         CMI_WR8(aCtx, (ULong*)&(sFormatID));
         CMI_WR8(aCtx, (ULong*)&(sGTRIDLength));
         CMI_WR8(aCtx, (ULong*)&(sBQUALLength));
-        CMI_WCP(aCtx, sPreparedXids[i].data, ID_XIDDATASIZE);
+        CMI_WCP(aCtx, sPreparedXids[i].data, ID_MAXXIDDATASIZE);
     }
 
     for (i = 0; i < sHeuristicXidsCnt; i++)
@@ -144,13 +144,13 @@ static IDE_RC xaOpRecover(cmiProtocolContext *aCtx,
         sGTRIDLength = sHeuristicXids[i].gtrid_length;
         sBQUALLength = sHeuristicXids[i].bqual_length;
 
-        CMI_WRITE_CHECK(aCtx, 1 + 24 + ID_XIDDATASIZE);
+        CMI_WRITE_CHECK(aCtx, 1 + 24 + ID_MAXXIDDATASIZE);
 
         CMI_WOP(aCtx, CMP_OP_DB_XaXid);
         CMI_WR8(aCtx, (ULong*)&(sFormatID));
         CMI_WR8(aCtx, (ULong*)&(sGTRIDLength));
         CMI_WR8(aCtx, (ULong*)&(sBQUALLength));
-        CMI_WCP(aCtx, sHeuristicXids[i].data, ID_XIDDATASIZE);
+        CMI_WCP(aCtx, sHeuristicXids[i].data, ID_MAXXIDDATASIZE);
     }
 
     if (sPreparedXids != NULL)
@@ -200,8 +200,8 @@ IDE_RC mmtServiceThread::xaOperationProtocol(cmiProtocolContext *aCtx,
     SLong       sFlag;
     SLong       sArgument;
 
-    /* PROJ-2160 CM íƒ€ìž…ì œê±°
-       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
+    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
+       ¸ðµÎ ÀÐÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄÝÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
     CMI_RD1(aCtx, sOperation);
     CMI_RD4(aCtx, (UInt*)&sRmID);
     CMI_RD8(aCtx, (ULong*)&sFlag);
@@ -288,8 +288,8 @@ IDE_RC mmtServiceThread::xaTransactionProtocol(cmiProtocolContext *aCtx,
     SLong       sFlag;
     SLong       sArgument;
 
-    /* PROJ-2160 CM íƒ€ìž…ì œê±°
-       ëª¨ë‘ ì½ì€ ë‹¤ìŒì— í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•´ì•¼ í•œë‹¤. */
+    /* PROJ-2160 CM Å¸ÀÔÁ¦°Å
+       ¸ðµÎ ÀÐÀº ´ÙÀ½¿¡ ÇÁ·ÎÅäÄÝÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù. */
     CMI_RD1(aCtx, sOperation);
     CMI_RD4(aCtx, (UInt*)&sRmID);
     CMI_RD8(aCtx, (ULong*)&sFlag);
@@ -426,7 +426,7 @@ IDE_RC mmtServiceThread::xaTransactionProtocol(cmiProtocolContext *aCtx,
     IDE_EXCEPTION_END;
 
     /* bug-36037: invalid xid
-       invalid xidì˜ ê²½ìš° clientë¡œ ì—ëŸ¬ì‘ë‹µì„ ë¨¼ì €ì£¼ê³  ëŠëŠ”ë‹¤ */
+       invalid xidÀÇ °æ¿ì client·Î ¿¡·¯ÀÀ´äÀ» ¸ÕÀúÁÖ°í ²÷´Â´Ù */
     if (sXaContext.mReturnValue != XA_OK )
     {
         sThread->answerErrorResult(aCtx,

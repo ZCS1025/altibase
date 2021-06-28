@@ -8,7 +8,7 @@
 # 브랜치에서 에러코드를 할당받으시면 안됩니다.
 # 반드시 main trunk에서 번호를 할당받은 후 브랜치에서 사용하셔야 합니다.
 # 의문 사항이 있으시면 AK팀 혹은 QP(품질본부)팀에 문의 부탁드립니다.
-# Last Number = 323
+# Last Number = 328
 
 SECTION = 9
 
@@ -246,6 +246,22 @@ SECTION = 9
 # *Cause: The auto tuning is only supported on Linux environment.
 # *Action: 'AsyncPrefetch on' is automatically applied on operating systems other than Linux. However, 'AsyncPrefetch on' should be specified whether or not to display a warning.
 
+325, HY000, utERR_ABORT_Open_Altibase_Properties_FileError = Unable to open altibase.properties file.
+# *Cause: The altibase.properties file has not been found.
+# *Action: Check altibase.properties file.
+
+326, HY000, utERR_ABORT_FilePerm_OutOfRange_Error = File permission value is out of range (<0%s>=<1%s>)
+# *Cause: File permission value is out of range.
+# *Action: Use valid file permission value.
+
+327, HY000, utERR_ABORT_Option_No_Value_Error = No value specified for the option (<0%s>)
+# *Cause: Option value was not specified.
+# *Action: Specify option value.
+
+328, HY000, utERR_ABORT_Option_Invalid_Value_Error = Invalid option value specified (<0%s> <1%s>)
+# *Cause: Invalid option value was specified.
+# *Action: Use valid option value.
+
 ###### AEXPORT #########
 ############# iLoader ##############
 
@@ -297,7 +313,7 @@ SECTION = 9
 # *Cause: A terminator conflict occurred.
 # *Action: Use a different terminator.
 
-#52, HY000, utERR_ABORT_no_index_Error = The table (<0%s>) does not have an index.
+52, HY000, utERR_ABORT_no_index_Error = The table (<0%s>) does not have an index.
 # *Cause: The table does not have an index.
 # *Action: Add an index to the table.
 
@@ -439,6 +455,9 @@ SECTION = 9
 # *Cause: An invalid or nonexistent property path was specified.
 # *Action: Check the property file.
 
+324, HY000, utERR_ABORT_DbmsMetadata_No_Exist_Error = DBMS_METADATA package does not exist.
+# *Cause: DBMS_METADATA package does not exist.
+# *Action: Create the DBMS_METADATA pacakge with dbms_metadata.sql and dbms_metadata.plb in the $ALTIBASE_HOME/packages directory.
 
 ############# AUDIT ##############
 

@@ -17,8 +17,6 @@
 #include <idl.h>
 #include <ide.h>
 #include <idu.h>
-#include <ideErrorMgr.h>
-#include <iduSync.h>
 #include <smErrorCode.h>
 #include <svm.h>
 #include <smp.h>
@@ -31,34 +29,34 @@
 #include <sgmManager.h>
 
 /***********************************************************************
- * Description : aHeaderê°€ ê°€ë¦¬í‚¤ëŠ” Tableì— ëŒ€í•´ì„œ Insertë¥¼ ìˆ˜í–‰í•œë‹¤.
+ * Description : aHeader°¡ °¡¸®Å°´Â Table¿¡ ´ëÇØ¼­ Insert¸¦ ¼öÇàÇÑ´Ù.
  *
  * aStatistics     - [IN] None
  * aTrans          - [IN] Transaction Pointer
- * aTableInfoPtr   - [IN] Table Info Pointer(Tableì— Transactionì´ Insert,
- *                        Deleteí•œ Record Countì— ëŒ€í•œ ì •ë³´ë¥¼ ê°€ì§€ê³  ìˆë‹¤.
+ * aTableInfoPtr   - [IN] Table Info Pointer(Table¿¡ TransactionÀÌ Insert,
+ *                        DeleteÇÑ Record Count¿¡ ´ëÇÑ Á¤º¸¸¦ °¡Áö°í ÀÖ´Ù.
  * aHeader         - [IN] Table Header Pointer
- * aInfinite       - [IN] Insertì‹œ ìƒˆë¡œìš´ Recordë¥¼ í• ë‹¹í•´ì•¼ ë˜ëŠ”ë° ê·¸ ë•Œ
- *                        Record Headerì˜ SCNì— Settingë  ê°’
- * aRow            - [IN] Insertí•˜ê¸° ìœ„í•´ ìƒˆë¡­ê²Œ í• ë‹¹ëœ Recordì˜ Pointer
+ * aInfinite       - [IN] Insert½Ã »õ·Î¿î Record¸¦ ÇÒ´çÇØ¾ß µÇ´Âµ¥ ±× ¶§
+ *                        Record HeaderÀÇ SCN¿¡ SettingµÉ °ª
+ * aRow            - [IN] InsertÇÏ±â À§ÇØ »õ·Ó°Ô ÇÒ´çµÈ RecordÀÇ Pointer
  *
  * aRetInsertSlotGRID - [IN] None
  * aValueList      - [IN] Value List
- * aAddOIDFlag     - [IN] 1.SM_INSERT_ADD_OID_OK : OID Listì— Insertí•œ ì‘ì—…ê¸°ë¡.
- *                        2.SM_INSERT_ADD_OID_NO : OID Listì— Insertí•œ ì‘ì—…ì„ ê¸°ë¡í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ * aAddOIDFlag     - [IN] 1.SM_INSERT_ADD_OID_OK : OID List¿¡ InsertÇÑ ÀÛ¾÷±â·Ï.
+ *                        2.SM_INSERT_ADD_OID_NO : OID List¿¡ InsertÇÑ ÀÛ¾÷À» ±â·ÏÇÏÁö ¾Ê´Â´Ù.
                           1.SM_UNDO_LOGGING_OK : refineDB, createTable 
-                          2.SM_UNDO_LOGGING_NO : undoì‹œ Compensation Logë¥¼ ê¸°ë¡í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                          2.SM_UNDO_LOGGING_NO : undo½Ã Compensation Log¸¦ ±â·ÏÇÏÁö ¾Ê´Â´Ù.
  *  log structure:
  *   <update_log, NewOid, FixedRow_size, Fixed_Row, var_col1, var_col2...>
  ***********************************************************************/
-IDE_RC svcRecord::insertVersion( idvSQL*          /*aStatistics*/,
-                                 void*            aTrans,
-                                 void*            aTableInfoPtr,
-                                 smcTableHeader*  aHeader,
+IDE_RC svcRecord::insertVersion( idvSQL         * /*aStatistics*/,
+                                 void           * aTrans,
+                                 void           * aTableInfoPtr,
+                                 smcTableHeader * aHeader,
                                  smSCN            aInfinite,
-                                 SChar**          aRow,
-                                 scGRID*          aRetInsertSlotGRID,
-                                 const smiValue*  aValueList,
+                                 SChar         ** aRow,
+                                 scGRID         * aRetInsertSlotGRID,
+                                 const smiValue * aValueList,
                                  UInt             aAddOIDFlag )
 {
     const smiColumn   * sCurColumn;
@@ -81,7 +79,7 @@ IDE_RC svcRecord::insertVersion( idvSQL*          /*aStatistics*/,
 
     IDU_FIT_POINT( "1.PROJ-2118@svcRecord::insertVersion" );
 
-    /* insertí•˜ê¸° ìœ„í•˜ì—¬ ìƒˆë¡œìš´ Slot í• ë‹¹ ë°›ìŒ.*/
+    /* insertÇÏ±â À§ÇÏ¿© »õ·Î¿î Slot ÇÒ´ç ¹ŞÀ½.*/
     IDE_TEST( svpFixedPageList::allocSlot( aTrans,
                                            aHeader->mSpaceID,
                                            aTableInfoPtr,
@@ -98,14 +96,14 @@ IDE_RC svcRecord::insertVersion( idvSQL*          /*aStatistics*/,
                            SMP_SLOT_GET_OFFSET( (smpSlotHeader*)sNewFixRowPtr ) );
 
     /* BUG-32091 [sm_collection] add TableOID in PageHeader
-     * TableOIDë¥¼ Getí•œë‹¤.*/
-    IDE_ASSERT( svmManager::getPersPagePtr( aHeader->mSpaceID,
+     * TableOID¸¦ GetÇÑ´Ù.*/
+    IDE_ASSERT( smmManager::getPersPagePtr( aHeader->mSpaceID,
                                             sPageID,
                                             (void**)&sPagePtr )
                 == IDE_SUCCESS );
     IDE_ASSERT( sPagePtr->mTableOID == aHeader->mSelfOID );
 
-    /* Insertí•œ Rowì— ëŒ€í•˜ì—¬ version list ì¶”ê°€ */
+    /* InsertÇÑ Row¿¡ ´ëÇÏ¿© version list Ãß°¡ */
     if ( SM_INSERT_ADD_OID_IS_OK(aAddOIDFlag) )
     {
         sIsAddOID = ID_TRUE;
@@ -122,25 +120,25 @@ IDE_RC svcRecord::insertVersion( idvSQL*          /*aStatistics*/,
     }
 
     /* --------------------------------------------------------
-     * [4] Rowì˜ fixed ì˜ì—­ì— ëŒ€í•œ ë¡œê¹… ë°
-     *     variable columnì— ëŒ€í•œ ì‹¤ì œ ë°ì´íƒ€ ì‚½ì…
-     *     (ë¡œê·¸ë ˆì½”ë“œë¥¼ êµ¬ì„±í•˜ëŠ” ì‘ì—…ì´ë©°
-     *      ì‹¤ì œ ë°ì´íƒ€ë ˆì½”ë“œì˜ ì‘ì—…ì€ ë§ˆì§€ë§‰ ë¶€ë¶„ì—ì„œ ìˆ˜í–‰í•¨)
+     * [4] RowÀÇ fixed ¿µ¿ª¿¡ ´ëÇÑ ·Î±ë ¹×
+     *     variable column¿¡ ´ëÇÑ ½ÇÁ¦ µ¥ÀÌÅ¸ »ğÀÔ
+     *     (·Î±×·¹ÄÚµå¸¦ ±¸¼ºÇÏ´Â ÀÛ¾÷ÀÌ¸ç
+     *      ½ÇÁ¦ µ¥ÀÌÅ¸·¹ÄÚµåÀÇ ÀÛ¾÷Àº ¸¶Áö¸· ºÎºĞ¿¡¼­ ¼öÇàÇÔ)
      * -------------------------------------------------------- */
     sColumnCount = aHeader->mColumnCount;
     sCurValue    = aValueList;
 
     for( i = 0; i < sColumnCount; i++ )
     {
-        /* Variable columnì˜ ê²½ìš°
-            (1) Variabel pageì—ì„œ slot í• ë‹¹í•˜ì—¬ ì‹¤ì œ ë°ì´íƒ€ ë ˆì½”ë“œ  ì„¤ì •.
-            (2) ë ˆì½”ë“œì˜ fixed ì˜ì—­ì— smVCDesc ì •ë³´ êµ¬ì„± */
+        /* Variable columnÀÇ °æ¿ì
+            (1) Variabel page¿¡¼­ slot ÇÒ´çÇÏ¿© ½ÇÁ¦ µ¥ÀÌÅ¸ ·¹ÄÚµå  ¼³Á¤.
+            (2) ·¹ÄÚµåÀÇ fixed ¿µ¿ª¿¡ smVCDesc Á¤º¸ ±¸¼º */
         sCurColumn = smcTable::getColumn(aHeader,i);
 
         /* --------------------------------------------------------------------
-         *  [4-1] Variable columnì˜ ê²½ìš°
-         *        (1) Variabel pageì—ì„œ slot í• ë‹¹í•˜ì—¬ ì‹¤ì œ ë°ì´íƒ€ ë ˆì½”ë“œ  ì„¤ì •.
-         *        (2) ë ˆì½”ë“œì˜ fixed ì˜ì—­ì— smVarColumn ì •ë³´ êµ¬ì„±
+         *  [4-1] Variable columnÀÇ °æ¿ì
+         *        (1) Variabel page¿¡¼­ slot ÇÒ´çÇÏ¿© ½ÇÁ¦ µ¥ÀÌÅ¸ ·¹ÄÚµå  ¼³Á¤.
+         *        (2) ·¹ÄÚµåÀÇ fixed ¿µ¿ª¿¡ smVarColumn Á¤º¸ ±¸¼º
          * -------------------------------------------------------------------- */
         if( (sCurColumn->flag & SMI_COLUMN_TYPE_MASK) == SMI_COLUMN_TYPE_LOB )
         {
@@ -189,12 +187,12 @@ IDE_RC svcRecord::insertVersion( idvSQL*          /*aStatistics*/,
 
                 sCurLobDesc = (smcLobDesc *)(sNewFixRowPtr + sCurColumn->offset);
 
-                /* prepareì—ì„œ ê¸°ì¡´ LobDescë¥¼ old versionìœ¼ë¡œ ì¸ì‹í•˜ê¸° ë•Œë¬¸ì— ì´ˆê¸°í™” */
+                /* prepare¿¡¼­ ±âÁ¸ LobDesc¸¦ old versionÀ¸·Î ÀÎ½ÄÇÏ±â ¶§¹®¿¡ ÃÊ±âÈ­ */
                 SMC_LOB_DESC_INIT( sCurLobDesc );
 
                 if( sCurValue->length > 0 )
                 {
-                    /* SQLë¡œ ì§ì ‘ Lob ë°ì´í„°ë¥¼ ë„£ì„ ê²½ìš° */
+                    /* SQL·Î Á÷Á¢ Lob µ¥ÀÌÅÍ¸¦ ³ÖÀ» °æ¿ì */
                     IDE_TEST( svcLob::reserveSpaceInternal(
                                                       aTrans,
                                                       (smcTableHeader *)aHeader,
@@ -245,7 +243,7 @@ IDE_RC svcRecord::insertVersion( idvSQL*          /*aStatistics*/,
 
                 IDU_FIT_POINT( "3.PROJ-2118@svcRecord::insertVersion" );
 
-                // BUG-30104 Fixed Columnì˜ lengthëŠ” 0ì´ ë  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.
+                // BUG-30104 Fixed ColumnÀÇ length´Â 0ÀÌ µÉ ¼ö ¾ø½À´Ï´Ù.
                 IDE_ERROR_MSG( sCurValue->length > 0,
                                "Table OID  : %"ID_vULONG_FMT"\n"
                                "Space ID   : %"ID_UINT32_FMT"\n"
@@ -254,8 +252,8 @@ IDE_RC svcRecord::insertVersion( idvSQL*          /*aStatistics*/,
                                aHeader->mSpaceID,
                                i );
 
-                /* Fixed columnì˜ ê²½ìš°
-                   (1) ë ˆì½”ë“œì˜ fixed ì˜ì—­ì— ì‹¤ì œ ê°’ ì„¤ì • */
+                /* Fixed columnÀÇ °æ¿ì
+                   (1) ·¹ÄÚµåÀÇ fixed ¿µ¿ª¿¡ ½ÇÁ¦ °ª ¼³Á¤ */
                 idlOS::memcpy(sNewFixRowPtr + sCurColumn->offset,
                               sCurValue->value,
                               sCurValue->length);
@@ -295,12 +293,12 @@ IDE_RC svcRecord::insertVersion( idvSQL*          /*aStatistics*/,
         /* Nothing to do */
     }
     /*
-     * [BUG-24353] volatile tableì˜ modify column ì‹¤íŒ¨í›„ ë ˆì½”ë“œê°€ ì‚¬ë¼ì§‘ë‹ˆë‹¤.
-     * - Volatile Tableì€ Compensation Logë¥¼ ê¸°ë¡í•˜ì§€ ì•ŠëŠ”ë‹¤.
+     * [BUG-24353] volatile tableÀÇ modify column ½ÇÆĞÈÄ ·¹ÄÚµå°¡ »ç¶óÁı´Ï´Ù.
+     * - Volatile TableÀº Compensation Log¸¦ ±â·ÏÇÏÁö ¾Ê´Â´Ù.
      */
     if( SM_UNDO_LOGGING_IS_OK(aAddOIDFlag) )
     {
-        /* Insertì— ëŒ€í•œ Logë¥¼ ê¸°ë¡í•œë‹¤. */
+        /* Insert¿¡ ´ëÇÑ Log¸¦ ±â·ÏÇÑ´Ù. */
         IDE_TEST( svcRecordUndo::logInsert( smLayerCallback::getLogEnv( aTrans ),
                                             aTrans,
                                             aHeader->mSelfOID,
@@ -309,15 +307,15 @@ IDE_RC svcRecord::insertVersion( idvSQL*          /*aStatistics*/,
                   != IDE_SUCCESS);
     }
 
-    /* BUG-14513: Fixed Slotì„ í• ë‹¹ì‹œ Alloc Slot Logë¥¼ ê¸°ë¡í•˜ì§€
-       ì•Šë„ë¡ ìˆ˜ì •. insert logê°€ Alloc Slotì— ëŒ€í•œ Redo, Undoìˆ˜í–‰.
-       ì´ ë•Œë¬¸ì— insert logê¸°ë¡ í›„ Slot headerì— ëŒ€í•œ Updateìˆ˜í–‰
+    /* BUG-14513: Fixed SlotÀ» ÇÒ´ç½Ã Alloc Slot Log¸¦ ±â·ÏÇÏÁö
+       ¾Êµµ·Ï ¼öÁ¤. insert log°¡ Alloc Slot¿¡ ´ëÇÑ Redo, Undo¼öÇà.
+       ÀÌ ¶§¹®¿¡ insert log±â·Ï ÈÄ Slot header¿¡ ´ëÇÑ Update¼öÇà
     */
     svpFixedPageList::setAllocatedSlot( aInfinite, sNewFixRowPtr );
 
     if (aTableInfoPtr != NULL)
     {
-        /* Recordê°€ ìƒˆë¡œ ì¶”ê°€ë˜ì—ˆìœ¼ë¯€ë¡œ Record Countë¥¼ ì¦ê°€ì‹œì¼œì¤€ë‹¤.*/
+        /* Record°¡ »õ·Î Ãß°¡µÇ¾úÀ¸¹Ç·Î Record Count¸¦ Áõ°¡½ÃÄÑÁØ´Ù.*/
         smLayerCallback::incRecCntOfTableInfo( aTableInfoPtr );
     }
 
@@ -348,18 +346,20 @@ IDE_RC svcRecord::insertVersion( idvSQL*          /*aStatistics*/,
  * Description : BUG-39399, BUG-39507
  *
  * aTrans        - [IN] Transaction Pointer
- * aViewSCN      - [IN] ì´ ì—°ì‚°ì„ ìˆ˜í–‰í•˜ëŠ” Cursorì˜ ViewSCN
- * aHeader       - [IN] aRowê°€ ì†í•´ ìˆëŠ” Table Header Pointer
- * aRow          - [IN] Updateí•  Row.
- * aInfinite     - [IN] New Versionì˜ Row SCN
- * aIsUpdatedBySameStmt - [OUT] ê°™ì€ statementì—ì„œ update í–ˆëŠ”ì§€ ì—¬ë¶€
+ * aViewSCN      - [IN] ÀÌ ¿¬»êÀ» ¼öÇàÇÏ´Â CursorÀÇ ViewSCN
+ * aHeader       - [IN] aRow°¡ ¼ÓÇØ ÀÖ´Â Table Header Pointer
+ * aRow          - [IN] UpdateÇÒ Row.
+ * aInfinite     - [IN] New VersionÀÇ Row SCN
+ * aIsUpdatedBySameStmt - [OUT] °°Àº statement¿¡¼­ update Çß´ÂÁö ¿©ºÎ
+ * aForbiddenToRetry - [IN] retry error ¿Ã¸®´Â°Å ±İÁö, abort ¹ß»ı 
  ***********************************************************************/
 IDE_RC svcRecord::isUpdatedVersionBySameStmt( void            * aTrans,
                                               smSCN             aViewSCN,
                                               smcTableHeader  * aHeader,
                                               SChar           * aRow,
                                               smSCN             aInfinite,
-                                              idBool          * aIsUpdatedBySameStmt )
+                                              idBool          * aIsUpdatedBySameStmt,
+                                              idBool            aForbiddenToRetry )
 {
     UInt        sState      = 0;
     scPageID    sPageID     = SMP_SLOT_GET_PID( aRow );
@@ -375,7 +375,8 @@ IDE_RC svcRecord::isUpdatedVersionBySameStmt( void            * aTrans,
                                              aHeader,
                                              aRow,
                                              aInfinite,
-                                             aIsUpdatedBySameStmt )
+                                             aIsUpdatedBySameStmt,
+                                             aForbiddenToRetry )
               != IDE_SUCCESS );
 
     /* 3. relase latch */
@@ -406,17 +407,19 @@ IDE_RC svcRecord::isUpdatedVersionBySameStmt( void            * aTrans,
  *
  * aTrans        - [IN] Transaction Pointer
  * aViewSCN      - [IN] ViewSCN
- * aHeader       - [IN] aRowê°€ ì†í•´ ìˆëŠ” Table Header Pointer
- * aRow          - [IN] Deleteë‚˜ UpdateëŒ€ìƒ Row
- * aInfiniteSCN  - [IN] New Versionì˜ Row SCN
- * aIsUpdatedBySameStmt - [OUT] ê°™ì€ statementì—ì„œ update í–ˆëŠ”ì§€ ì—¬ë¶€
+ * aHeader       - [IN] aRow°¡ ¼ÓÇØ ÀÖ´Â Table Header Pointer
+ * aRow          - [IN] Delete³ª Update´ë»ó Row
+ * aInfiniteSCN  - [IN] New VersionÀÇ Row SCN
+ * aIsUpdatedBySameStmt - [OUT] °°Àº statement¿¡¼­ update Çß´ÂÁö ¿©ºÎ
+ * aForbiddenToRetry - [IN] retry error ¿Ã¸®´Â°Å ±İÁö, abort ¹ß»ı 
  ***********************************************************************/
 IDE_RC svcRecord::checkUpdatedVersionBySameStmt( void             * aTrans,
                                                  smSCN              aViewSCN,
                                                  smcTableHeader   * aHeader,
                                                  SChar            * aRow,
                                                  smSCN              aInfiniteSCN,
-                                                 idBool           * aIsUpdatedBySameStmt )
+                                                 idBool           * aIsUpdatedBySameStmt,
+                                                 idBool             aForbiddenToRetry )
 {
     smSCN   sNxtRowSCN;
     smSCN   sInfiniteSCNWithDeleteBit;
@@ -433,35 +436,35 @@ IDE_RC svcRecord::checkUpdatedVersionBySameStmt( void             * aTrans,
     SM_SET_SCN( &sInfiniteSCNWithDeleteBit, &aInfiniteSCN );
     SM_SET_SCN_DELETE_BIT( &sInfiniteSCNWithDeleteBit );
 
-    /* BUG-15642 Recordê°€ ë‘ë²ˆ Freeë˜ëŠ” ê²½ìš°ê°€ ë°œìƒí•¨.:
-     * ì´ëŸ° ê²½ìš°ê°€ ë°œìƒí•˜ê¸°ì „ì— validateUpdateTargetRowì—ì„œ
-     * ì²´í¬í•˜ì—¬ ë¬¸ì œê°€ ìˆë‹¤ë©´ Rollbackì‹œí‚¤ê³  ë‹¤ì‹œ retryë¥¼ ìˆ˜í–‰ì‹œí‚´*/
-    /* ì´ í•¨ìˆ˜ ë‚´ì—ì„œëŠ” rowì˜ ë³€í•˜ëŠ” ë¶€ë¶„ì´ ì°¸ì¡°ë˜ì§€ ì•ŠëŠ”ë‹¤.
-     * ê·¸ë ‡ê¸° ë•Œë¬¸ì— rowì˜ ë³€í•˜ëŠ” ë¶€ë¶„ì„ ë”°ë¡œ í• ë‹¹í•˜ì—¬
-     * í•¨ìˆ˜ì˜ì¸ìë¡œ ì¤„ í•„ìš”ê°€ ì—†ë‹¤. */
+    /* BUG-15642 Record°¡ µÎ¹ø FreeµÇ´Â °æ¿ì°¡ ¹ß»ıÇÔ.:
+     * ÀÌ·± °æ¿ì°¡ ¹ß»ıÇÏ±âÀü¿¡ validateUpdateTargetRow¿¡¼­
+     * Ã¼Å©ÇÏ¿© ¹®Á¦°¡ ÀÖ´Ù¸é Rollback½ÃÅ°°í ´Ù½Ã retry¸¦ ¼öÇà½ÃÅ´*/
+    /* ÀÌ ÇÔ¼ö ³»¿¡¼­´Â rowÀÇ º¯ÇÏ´Â ºÎºĞÀÌ ÂüÁ¶µÇÁö ¾Ê´Â´Ù.
+     * ±×·¸±â ¶§¹®¿¡ rowÀÇ º¯ÇÏ´Â ºÎºĞÀ» µû·Î ÇÒ´çÇÏ¿©
+     * ÇÔ¼öÀÇÀÎÀÚ·Î ÁÙ ÇÊ¿ä°¡ ¾ø´Ù. */
 
    IDE_TEST_RAISE( validateUpdateTargetRow( aTrans,
-                                             aHeader->mSpaceID,
-                                             aViewSCN,
-                                             (smpSlotHeader *)aRow,
-                                             NULL /*aRetryInfo*/ )
+                                            aHeader->mSpaceID,
+                                            aViewSCN,
+                                            (smpSlotHeader *)aRow,
+                                            NULL /*aRetryInfo*/ )
                     != IDE_SUCCESS, already_modified );
 
     SMX_GET_SCN_AND_TID( ((smpSlotHeader *)aRow)->mLimitSCN,
                          sNxtRowSCN,
                          sNxtRowTID );
 
-    /* Next Versionì´ Lock Rowì¸ ê²½ìš° */
+    /* Next VersionÀÌ Lock RowÀÎ °æ¿ì */
     if( SM_SCN_IS_LOCK_ROW( sNxtRowSCN ) )
     {
         if ( sNxtRowTID == smLayerCallback::getTransID( aTrans ) )
         {
-            /* aRowì— ëŒ€í•œ Lockì„ aTransê°€ ì´ë¯¸ ì¡ì•˜ë‹¤.*/
+            /* aRow¿¡ ´ëÇÑ LockÀ» aTrans°¡ ÀÌ¹Ì Àâ¾Ò´Ù.*/
             /* BUG-39399, BUG-39507
-             * 1. aInfiniteSCNê³¼ sNxtRowSCNì˜ InfiniteSCN ì´ ê°™ë‹¤ë©´,
-             *    ê°™ì€ statementì—ì„œ update í•œ ê²½ìš°ì´ë‹¤.
-             * 2. sNxtRowSCNì´ aInfiniteSCN + SM_SCN_INF_DELETE_BIT ì´ë©´
-             *    ê°™ì€ statementì—ì„œ delete í•œ ê²½ìš°ì´ë‹¤. */
+             * 1. aInfiniteSCN°ú sNxtRowSCNÀÇ InfiniteSCN ÀÌ °°´Ù¸é,
+             *    °°Àº statement¿¡¼­ update ÇÑ °æ¿ìÀÌ´Ù.
+             * 2. sNxtRowSCNÀÌ aInfiniteSCN + SM_SCN_INF_DELETE_BIT ÀÌ¸é
+             *    °°Àº statement¿¡¼­ delete ÇÑ °æ¿ìÀÌ´Ù. */
             if( SM_SCN_IS_EQ( &sNxtRowSCN, &aInfiniteSCN ) ||
                 SM_SCN_IS_EQ( &sNxtRowSCN, &sInfiniteSCNWithDeleteBit ) )
             {
@@ -474,17 +477,17 @@ IDE_RC svcRecord::checkUpdatedVersionBySameStmt( void             * aTrans,
         }
         else
         {
-            /* ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ lockì„ ì¡ì•˜ìœ¼ë¯€ë¡œ ë‚´ stmtì—ì„œ update í–ˆì„ ìˆ˜ ì—†ë‹¤. */
+            /* ´Ù¸¥ Æ®·£Àè¼ÇÀÌ lockÀ» Àâ¾ÒÀ¸¹Ç·Î ³» stmt¿¡¼­ update ÇßÀ» ¼ö ¾ø´Ù. */
             *aIsUpdatedBySameStmt = ID_FALSE;
         }
     }
     else
     {
         /* BUG-39399, BUG-39507
-         * 1. aInfiniteSCNê³¼ sNxtRowSCNì˜ InfiniteSCN ì´ ê°™ë‹¤ë©´,
-         *    ê°™ì€ statementì—ì„œ update í•œ ê²½ìš°ì´ë‹¤.
-         * 2. sNxtRowSCNì´ aInfiniteSCN + SM_SCN_INF_DELETE_BIT ì´ë©´
-         *    ê°™ì€ statementì—ì„œ delete í•œ ê²½ìš°ì´ë‹¤. */
+         * 1. aInfiniteSCN°ú sNxtRowSCNÀÇ InfiniteSCN ÀÌ °°´Ù¸é,
+         *    °°Àº statement¿¡¼­ update ÇÑ °æ¿ìÀÌ´Ù.
+         * 2. sNxtRowSCNÀÌ aInfiniteSCN + SM_SCN_INF_DELETE_BIT ÀÌ¸é
+         *    °°Àº statement¿¡¼­ delete ÇÑ °æ¿ìÀÌ´Ù. */
         if( SM_SCN_IS_EQ( &sNxtRowSCN, &aInfiniteSCN ) ||
             SM_SCN_IS_EQ( &sNxtRowSCN, &sInfiniteSCNWithDeleteBit ) )
         {
@@ -500,7 +503,29 @@ IDE_RC svcRecord::checkUpdatedVersionBySameStmt( void             * aTrans,
 
     IDE_EXCEPTION( already_modified );
     {
-        IDE_SET(ideSetErrorCode (smERR_RETRY_Already_Modified));
+        if( aForbiddenToRetry == ID_TRUE )
+        {
+            IDE_DASSERT( ((smxTrans*)aTrans)->mIsGCTx == ID_TRUE ); 
+
+            SChar sMsgBuf[SMI_MAX_ERR_MSG_LEN];
+            idlOS::snprintf( sMsgBuf,
+                             SMI_MAX_ERR_MSG_LEN,
+                             "[UPDATE VALIDATION] "
+                             "TableOID:%"ID_vULONG_FMT", "
+                             "ViewSCN:%"ID_UINT64_FMT", "
+                             "CreateSCN:%"ID_UINT64_FMT,
+                             aHeader->mSelfOID,
+                             SM_SCN_TO_LONG(aViewSCN),
+                             SM_SCN_TO_LONG(((smpSlotHeader *)aRow)->mCreateSCN) );
+
+            IDE_SET( ideSetErrorCode(smERR_ABORT_StatementTooOld, sMsgBuf) ); 
+
+            IDE_ERRLOG( IDE_SD_19 );
+        }
+        else
+        {
+            IDE_SET( ideSetErrorCode(smERR_RETRY_Already_Modified) );
+        }
     }
     IDE_EXCEPTION_END;
 
@@ -508,29 +533,29 @@ IDE_RC svcRecord::checkUpdatedVersionBySameStmt( void             * aTrans,
 }
 
 /***********************************************************************
- * Description : aOldRowë¥¼ Updateí•œë‹¤. Updateì‹œ MMDBì˜ MVCCì— ì˜í•´ì„œ
- *               ìƒˆë¡œìš´ Versionì„ ë§Œë“¤ì–´ ë‚¸ë‹¤. Updateê°€ ëë‚˜ê²Œ ë˜ë©´
- *               aOldRowëŠ” ìƒˆë¡œìš´ Versionì„ ê°€ë¦¬í‚¤ê²Œ ëœë‹¤.
+ * Description : aOldRow¸¦ UpdateÇÑ´Ù. Update½Ã MMDBÀÇ MVCC¿¡ ÀÇÇØ¼­
+ *               »õ·Î¿î VersionÀ» ¸¸µé¾î ³½´Ù. Update°¡ ³¡³ª°Ô µÇ¸é
+ *               aOldRow´Â »õ·Î¿î VersionÀ» °¡¸®Å°°Ô µÈ´Ù.
  *
  * aStatistics   - [IN] None
  * aTrans        - [IN] Transaction Pointer
- * aViewSCN      - [IN] ì´ ì—°ì‚°ì„ ìˆ˜í–‰í•˜ëŠ” Cursorì˜ ViewSCN
- * aHeader       - [IN] aOldRowê°€ ì†í•´ ìˆëŠ” Table Header Pointer
- * aOldRow       - [IN] Updateí•  Row.
+ * aViewSCN      - [IN] ÀÌ ¿¬»êÀ» ¼öÇàÇÏ´Â CursorÀÇ ViewSCN
+ * aHeader       - [IN] aOldRow°¡ ¼ÓÇØ ÀÖ´Â Table Header Pointer
+ * aOldRow       - [IN] UpdateÇÒ Row.
  * aOldGRID      - [IN] None
- * aRow          - [OUT] Updateì˜í•´ ë§Œë“¤ì–´ì§„ New Versionì˜ Row Pointerë¥¼ ë„˜ê²¨ì¤€ë‹¤.
+ * aRow          - [OUT] UpdateÀÇÇØ ¸¸µé¾îÁø New VersionÀÇ Row Pointer¸¦ ³Ñ°ÜÁØ´Ù.
  * aRetSlotGRID  - [IN] None
- * aColumnList   - [IN] Updateë  Column List
- * aValueList    - [IN] Updateë  Columnë“¤ì˜ ìƒˆë¡œìš´ Vaule List
- * aRetryInfo    - [IN] Retryë¥¼ ìœ„í•´ ì ê²€í•  columnì˜ list
- * aInfinite     - [IN] New Versionì˜ Row SCN
- * aOldRecImage  - [IN] None
+ * aColumnList   - [IN] UpdateµÉ Column List
+ * aValueList    - [IN] UpdateµÉ ColumnµéÀÇ »õ·Î¿î Vaule List
+ * aRetryInfo    - [IN] Retry¸¦ À§ÇØ Á¡°ËÇÒ columnÀÇ list
+ * aInfinite     - [IN] New VersionÀÇ Row SCN
  * aModifyIdxBit - [IN] None
+ * aForbiddenToRetry - [IN] retry error ¿Ã¸®´Â°Å ±İÁö, abort ¹ß»ı 
  ***********************************************************************/
 IDE_RC svcRecord::updateVersion( idvSQL               * /*aStatistics*/,
                                  void                 * aTrans,
                                  smSCN                  aViewSCN,
-                                 void                 */*aTableInfoPtr*/,
+                                 void                 * /*aTableInfoPtr*/,
                                  smcTableHeader       * aHeader,
                                  SChar                * aOldRow,
                                  scGRID                 /*aOldGRID*/,
@@ -541,7 +566,8 @@ IDE_RC svcRecord::updateVersion( idvSQL               * /*aStatistics*/,
                                  const smiDMLRetryInfo* aRetryInfo,
                                  smSCN                  aInfinite,
                                  void                 * /*aLobInfo4Update*/,
-                                 ULong                * /*aModifyIdxBit*/)
+                                 ULong                  /*aModifyIdxBit*/,
+                                 idBool                 aForbiddenToRetry )
 {
     const smiColumn       * sColumn;
     const smiColumnList   * sCurColumnList;
@@ -563,11 +589,7 @@ IDE_RC svcRecord::updateVersion( idvSQL               * /*aStatistics*/,
     UInt                    sUnitedVarColumnCount = 0;
     const smiColumn       * sUnitedVarColumns[SMI_COLUMN_ID_MAXIMUM];
     smiValue                sUnitedVarValues[SMI_COLUMN_ID_MAXIMUM];
-    //PROJ-1677 DEQUEUE
-    //ê¸°ì¡´ record lockëŒ€ê¸° schemeì„ ì¤€ìˆ˜í•œë‹¤.
-    smiRecordLockWaitInfo   sRecordLockWaitInfo;
 
-    sRecordLockWaitInfo.mRecordLockWaitFlag = SMI_RECORD_LOCKWAIT;
     SM_MAX_SCN( &sBeforeLimit );
 
     IDE_ERROR( aTrans  != NULL );
@@ -577,43 +599,43 @@ IDE_RC svcRecord::updateVersion( idvSQL               * /*aStatistics*/,
     IDU_FIT_POINT( "1.PROJ-2118@svcRecord::updateVersion" );
 
     /* BUGBUG: By Newdaily
-       aColumnListì™€ aValueListê°€ NULLì¸ ê²½ìš°ê°€ ì¡´ì¬í•¨.
-       ì´ì— ëŒ€í•œ ê²€ì¦ì´ í•„ìš”í•©ë‹ˆë‹¤.
+       aColumnList¿Í aValueList°¡ NULLÀÎ °æ¿ì°¡ Á¸ÀçÇÔ.
+       ÀÌ¿¡ ´ëÇÑ °ËÁõÀÌ ÇÊ¿äÇÕ´Ï´Ù.
     */
 
-    /* !!Fixd RowëŠ” Updateì‹œ ë¬´ì¡°ê±´ New Versionì´ ë§Œë“¤ì–´ì§„ë‹¤ */
+    /* !!Fixd Row´Â Update½Ã ¹«Á¶°Ç New VersionÀÌ ¸¸µé¾îÁø´Ù */
 
     sOldSlotHeader = (smpSlotHeader*)aOldRow;
     sPageID     = SMP_SLOT_GET_PID(aOldRow);
     sTargetOID  = SM_MAKE_OID( sPageID,
                                SMP_SLOT_GET_OFFSET( sOldSlotHeader ) );
 
-    /* updateí•˜ê¸° ìœ„í•˜ì—¬ old versionì´ ì†í•œ pageì— ëŒ€í•˜ì—¬
+    /* updateÇÏ±â À§ÇÏ¿© old versionÀÌ ¼ÓÇÑ page¿¡ ´ëÇÏ¿©
        holdPageXLatch  */
     IDE_TEST( svmManager::holdPageXLatch( aHeader->mSpaceID, sPageID )
               != IDE_SUCCESS );
     sState = 1;
 
-    /* aOldRowë¥¼ ë‹¤ë¥¸ Transactionì´ ì´ë¯¸ Updateí–ˆëŠ”ì§€ ì¡°ì‚¬.*/
+    /* aOldRow¸¦ ´Ù¸¥ TransactionÀÌ ÀÌ¹Ì UpdateÇß´ÂÁö Á¶»ç.*/
     IDE_TEST( recordLockValidation( aTrans,
                                     aViewSCN,
                                     aHeader->mSpaceID,
                                     &aOldRow,
                                     ID_ULONG_MAX,
                                     &sState,
-                                    &sRecordLockWaitInfo,
-                                    aRetryInfo )
+                                    aRetryInfo,
+                                    aForbiddenToRetry )
               != IDE_SUCCESS );
 
     // PROJ-1784 DML without retry
-    // sOldFixRowPtrì´ ë³€ê²½ ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ ê°’ì„ ë‹¤ì‹œ ì„¤ì •í•´ì•¼ í•¨
-    // ( ì´ê²½ìš° page latch ë„ ë‹¤ì‹œ ì¡ì•˜ìŒ )
+    // sOldFixRowPtrÀÌ º¯°æ µÉ ¼ö ÀÖÀ¸¹Ç·Î °ªÀ» ´Ù½Ã ¼³Á¤ÇØ¾ß ÇÔ
+    // ( ÀÌ°æ¿ì page latch µµ ´Ù½Ã Àâ¾ÒÀ½ )
     sOldSlotHeader = (smpSlotHeader*)aOldRow;
     sPageID     = SMP_SLOT_GET_PID(aOldRow);
     sTargetOID  = SM_MAKE_OID( sPageID,
                                SMP_SLOT_GET_OFFSET( sOldSlotHeader ) );
 
-    /* New Versionì„ í• ë‹¹í•œë‹¤. */
+    /* New VersionÀ» ÇÒ´çÇÑ´Ù. */
     IDE_TEST( svpFixedPageList::allocSlot(aTrans,
                                           aHeader->mSpaceID,
                                           NULL,
@@ -630,14 +652,14 @@ IDE_RC svcRecord::updateVersion( idvSQL               * /*aStatistics*/,
                                  SMP_SLOT_GET_OFFSET( (smpSlotHeader*)sNewFixRowPtr ) );
 
     /* BUG-32091 [sm_collection] add TableOID in PageHeader
-     * TableOIDë¥¼ Getí•œë‹¤.*/
-    IDE_ASSERT( svmManager::getPersPagePtr( aHeader->mSpaceID,
+     * TableOID¸¦ GetÇÑ´Ù.*/
+    IDE_ASSERT( smmManager::getPersPagePtr( aHeader->mSpaceID,
                                             sPageID,
                                             (void**)&sPagePtr )
                 == IDE_SUCCESS );
     IDE_ASSERT( sPagePtr->mTableOID == aHeader->mSelfOID );
 
-    /* Tx OID Listì— Old Version ì¶”ê°€. */
+    /* Tx OID List¿¡ Old Version Ãß°¡. */
     IDE_TEST( smLayerCallback::addOID( aTrans,
                                        aHeader->mSelfOID,
                                        sTargetOID,
@@ -646,28 +668,28 @@ IDE_RC svcRecord::updateVersion( idvSQL               * /*aStatistics*/,
               != IDE_SUCCESS );
 
     /* PROJ-2174 Supporting LOB in the volatile tablespace
-     * LOB CURSORì— ì˜í•´ í˜¸ì¶œëœ ê²½ìš° aColumnListì™€ aValueListê°€
-     * ë‘˜ ë‹¤ NULLì´ë‹¤.
-     * ë”°ë¼ì„œ ë‘ ê°’ì´ NULLì´ë©´ LOB CURSORì— ì˜í•œ í˜¸ì¶œë¡œ íŒë‹¨í•˜ê³ ,
-     * ì•„ë‹ê²½ìš° TABLE CURSORì— ì˜í•œ í˜¸ì¶œë¡œ íŒë‹¨í•œë‹¤. */
+     * LOB CURSOR¿¡ ÀÇÇØ È£ÃâµÈ °æ¿ì aColumnList¿Í aValueList°¡
+     * µÑ ´Ù NULLÀÌ´Ù.
+     * µû¶ó¼­ µÎ °ªÀÌ NULLÀÌ¸é LOB CURSOR¿¡ ÀÇÇÑ È£Ãâ·Î ÆÇ´ÜÇÏ°í,
+     * ¾Æ´Ò°æ¿ì TABLE CURSOR¿¡ ÀÇÇÑ È£Ãâ·Î ÆÇ´ÜÇÑ´Ù. */
     if ( (aColumnList == NULL) && (aValueList == NULL) )
     {
-        /* LOB Cursorì˜ UpdateëŠ” Cursor Closeì‹œì— Rowê°€ Insertë˜ì§€ ì•Šê³ 
-         * ì—…ë°ì´íŠ¸í›„ì— ë°”ë¡œ ì—…ë°ì´íŠ¸í•œë‹¤. ë•Œë¬¸ì— Cursor Closeì‹œì— ë˜
-         * Insertê°€ ë˜ì§€ì•Šë„ë¡ SM_OID_ACT_CURSOR_INDEXì„ Clearí•´ì„œ
-         * OID Listì— ì¶”ê°€í•œë‹¤.
+        /* LOB CursorÀÇ Update´Â Cursor Close½Ã¿¡ Row°¡ InsertµÇÁö ¾Ê°í
+         * ¾÷µ¥ÀÌÆ®ÈÄ¿¡ ¹Ù·Î ¾÷µ¥ÀÌÆ®ÇÑ´Ù. ¶§¹®¿¡ Cursor Close½Ã¿¡ ¶Ç
+         * Insert°¡ µÇÁö¾Êµµ·Ï SM_OID_ACT_CURSOR_INDEXÀ» ClearÇØ¼­
+         * OID List¿¡ Ãß°¡ÇÑ´Ù.
          *
          * BUG-33127 [SM] when lob update operation is rolled back, index keys
          *           does not be deleted.
          *
-         * lob update ì¤‘ rollback ë˜ëŠ” ê²½ìš° SM_OID_ACT_CURSOR_INDEX í”Œë˜ê·¸ë¥¼
-         * ì œê±°í•˜ê¸° ë•Œë¬¸ì— Cursor closeì‹œ ì¸ë±ìŠ¤ì— í‚¤ë¥¼ ì‚½ì…í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
-         * ê·¸ë¦¬ê³  rollbackì‹œ agingë˜í•œ SM_OID_ACT_CURSOR_INDEXí”Œë˜ê·¸ë¡œ ì¸í•´
-         * í•˜ì§€ ì•Šê²Œ ë©ë‹ˆë‹¤.
-         * í•˜ì§€ë§Œ lobì¸ ê²½ìš° ì¸ë±ìŠ¤ í‚¤ë¥¼ ë°”ë¡œ ì‚½ì…í•˜ê¸° ë•Œë¬¸ì— rollbackì´ ë°œìƒí•˜ë©´
-         * ì¸ë±ìŠ¤ í‚¤ë¥¼ ì‚­ì œí•´ ì£¼ì–´ì•¼ í•©ë‹ˆë‹¤.
-         * ë”°ë¼ì„œ SM_OID_ACT_AGING_INDEX í”Œë˜ê·¸ë¥¼ ì¶”ê°€í•˜ì—¬ rollbackì‹œ ì¸ë±ìŠ¤ì—ì„œ
-         * í‚¤ë¥¼ ì‚­ì œí•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤. */
+         * lob update Áß rollback µÇ´Â °æ¿ì SM_OID_ACT_CURSOR_INDEX ÇÃ·¡±×¸¦
+         * Á¦°ÅÇÏ±â ¶§¹®¿¡ Cursor close½Ã ÀÎµ¦½º¿¡ Å°¸¦ »ğÀÔÇÏÁö ¾Ê½À´Ï´Ù.
+         * ±×¸®°í rollback½Ã aging¶ÇÇÑ SM_OID_ACT_CURSOR_INDEXÇÃ·¡±×·Î ÀÎÇØ
+         * ÇÏÁö ¾Ê°Ô µË´Ï´Ù.
+         * ÇÏÁö¸¸ lobÀÎ °æ¿ì ÀÎµ¦½º Å°¸¦ ¹Ù·Î »ğÀÔÇÏ±â ¶§¹®¿¡ rollbackÀÌ ¹ß»ıÇÏ¸é
+         * ÀÎµ¦½º Å°¸¦ »èÁ¦ÇØ ÁÖ¾î¾ß ÇÕ´Ï´Ù.
+         * µû¶ó¼­ SM_OID_ACT_AGING_INDEX ÇÃ·¡±×¸¦ Ãß°¡ÇÏ¿© rollback½Ã ÀÎµ¦½º¿¡¼­
+         * Å°¸¦ »èÁ¦ÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù. */
         
         IDE_TEST( smLayerCallback::addOID( aTrans,
                                            aHeader->mSelfOID,
@@ -687,11 +709,11 @@ IDE_RC svcRecord::updateVersion( idvSQL               * /*aStatistics*/,
                   != IDE_SUCCESS );
     }
 
-    /* aOldRowì˜ Next Versionì„ New Versionìœ¼ë¡œ Setting.*/
-    /* sPageIDì— ëŒ€í•œ latchë¥¼ í’€ê¸° ì „ì— ë°˜ë“œì‹œ ë°”ê¿”ì•¼ í•œë‹¤. */
+    /* aOldRowÀÇ Next VersionÀ» New VersionÀ¸·Î Setting.*/
+    /* sPageID¿¡ ´ëÇÑ latch¸¦ Ç®±â Àü¿¡ ¹İµå½Ã ¹Ù²ã¾ß ÇÑ´Ù. */
     SMP_SLOT_SET_NEXT_OID( sOldSlotHeader, sFixOID );
-    /* aOldRow->mNextë¥¼ ë°”ê¾¸ê¸° ì „ì— ê°’ì„ ì €ì¥í•´ë†“ëŠ”ë‹¤. ì´ëŠ” ë‚˜ì¤‘ì—
-       ë¡œê¹…í•  ë•Œ ê¸°ë¡ëœë‹¤. */
+    /* aOldRow->mNext¸¦ ¹Ù²Ù±â Àü¿¡ °ªÀ» ÀúÀåÇØ³õ´Â´Ù. ÀÌ´Â ³ªÁß¿¡
+       ·Î±ëÇÒ ¶§ ±â·ÏµÈ´Ù. */
     SM_SET_SCN( &sBeforeLimit, &(sOldSlotHeader->mLimitSCN ) );
     SM_SET_SCN( &(sOldSlotHeader->mLimitSCN), &aInfinite );
     sIsHeadNextChanged = ID_TRUE;
@@ -700,9 +722,9 @@ IDE_RC svcRecord::updateVersion( idvSQL               * /*aStatistics*/,
     IDE_TEST( svmManager::releasePageLatch(aHeader->mSpaceID, sPageID)
               != IDE_SUCCESS );
 
-    /* ìœ„ ì—°ì‚°ì´ ëë‚˜ê²Œ ë˜ë©´ Rowì— Lockì¡íˆê²Œ ëœë‹¤. ì™œëƒë©´ Next Versionì—
-       ëë‚˜ì§€ ì•Šì€ Transactionì´ ë§Œë“  New Versionì´ ìˆê²Œ ë˜ë©´ ë‹¤ë¥¸ Transactionë“¤ì€
-       Waití•˜ê²Œ ë˜ê¸°ë•Œë¬¸ì´ë‹¤. ê·¸ë˜ì„œ ìœ„ì—ì„œ Page Latch ë˜í•œ í’€ì—ˆë‹¤.*/
+    /* À§ ¿¬»êÀÌ ³¡³ª°Ô µÇ¸é Row¿¡ LockÀâÈ÷°Ô µÈ´Ù. ¿Ö³Ä¸é Next Version¿¡
+       ³¡³ªÁö ¾ÊÀº TransactionÀÌ ¸¸µç New VersionÀÌ ÀÖ°Ô µÇ¸é ´Ù¸¥ TransactionµéÀº
+       WaitÇÏ°Ô µÇ±â¶§¹®ÀÌ´Ù. ±×·¡¼­ À§¿¡¼­ Page Latch ¶ÇÇÑ Ç®¾ú´Ù.*/
 
     sFixedRowSize = aHeader->mFixed.mVRDB.mSlotSize - SMP_SLOT_HEADER_SIZE;
 
@@ -710,12 +732,12 @@ IDE_RC svcRecord::updateVersion( idvSQL               * /*aStatistics*/,
                    aOldRow + SMP_SLOT_HEADER_SIZE,
                    sFixedRowSize);
 
-    /* updateë˜ëŠ” ê°’ì„ ì„¤ì • */
+    /* updateµÇ´Â °ªÀ» ¼³Á¤ */
     sCurColumnList = aColumnList;
     sCurValue      = aValueList;
 
-    /* Fixed Rowì™€ ë³„ë„ì˜ Variable Columnì— ì €ì¥ë˜ëŠ” Var Columnì€
-       Updateë˜ëŠ” Columnë§Œ New Versionì„ ë§Œë“ ë‹¤.*/
+    /* Fixed Row¿Í º°µµÀÇ Variable Column¿¡ ÀúÀåµÇ´Â Var ColumnÀº
+       UpdateµÇ´Â Column¸¸ New VersionÀ» ¸¸µç´Ù.*/
     for( sColumnSeq = 0 ;
          sCurColumnList != NULL;
          sCurColumnList = sCurColumnList->next, sCurValue++, sColumnSeq++ )
@@ -769,7 +791,7 @@ IDE_RC svcRecord::updateVersion( idvSQL               * /*aStatistics*/,
 
                 sCurLobDesc = (smcLobDesc*)(sNewFixRowPtr + sColumn->offset);
 
-                /* SQLë¡œ ì§ì ‘ Lob ë°ì´í„°ë¥¼ ë„£ì€ ê²½ìš° */
+                /* SQL·Î Á÷Á¢ Lob µ¥ÀÌÅÍ¸¦ ³ÖÀº °æ¿ì */
                 IDE_TEST( svcLob::reserveSpaceInternal(
                                       aTrans,
                                       (smcTableHeader *)aHeader,
@@ -823,7 +845,7 @@ IDE_RC svcRecord::updateVersion( idvSQL               * /*aStatistics*/,
 
                 IDU_FIT_POINT( "3.PROJ-2118@svcRecord::updateVersion" );
 
-                // BUG-30104 Fixed Columnì˜ lengthëŠ” 0ì´ ë  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.
+                // BUG-30104 Fixed ColumnÀÇ length´Â 0ÀÌ µÉ ¼ö ¾ø½À´Ï´Ù.
                 IDE_ERROR_MSG( sCurValue->length > 0,
                                "Table OID  : %"ID_vULONG_FMT"\n"
            "Space ID   : %"ID_UINT32_FMT"\n"
@@ -855,7 +877,7 @@ IDE_RC svcRecord::updateVersion( idvSQL               * /*aStatistics*/,
 
     if ( sUnitedVarColumnCount > 0)
     {
-        /* ëª¨ë“  united var column ì„ ì—…ë°ì´íŠ¸í•œë‹¤ë©´, list ì¬êµ¬ì„±ì„ ê±°ì¹  í•„ìš”ê°€ ì—†ë‹¤ */
+        /* ¸ğµç united var column À» ¾÷µ¥ÀÌÆ®ÇÑ´Ù¸é, list Àç±¸¼ºÀ» °ÅÄ¥ ÇÊ¿ä°¡ ¾ø´Ù */
         if ( aHeader->mUnitedVarColumnCount == sUnitedVarColumnCount )
         {
             IDE_TEST( insertUnitedVarColumns ( aTrans,
@@ -884,13 +906,13 @@ IDE_RC svcRecord::updateVersion( idvSQL               * /*aStatistics*/,
                     != IDE_SUCCESS );
         }
     }
-    else /* united var col updateê°€ ë°œìƒí•˜ì§€ ì•Šì€ ê²½ìš° */
+    else /* united var col update°¡ ¹ß»ıÇÏÁö ¾ÊÀº °æ¿ì */
     {
         sFstVCPieceOID = ((smpSlotHeader*)aOldRow)->mVarOID;
         ((smpSlotHeader*)sNewFixRowPtr)->mVarOID = sFstVCPieceOID;
     }
-    /* undo logë¥¼ ê¸°ë¡í•œë‹¤. */
-    /* aOldRow->mNextë¥¼ ë°”ê¾¸ê¸° ì „ì— ë¡œê¹…í•´ì•¼ ì´ì „ ê°’ì„ ì•Œ ìˆ˜ ìˆë‹¤. */
+    /* undo log¸¦ ±â·ÏÇÑ´Ù. */
+    /* aOldRow->mNext¸¦ ¹Ù²Ù±â Àü¿¡ ·Î±ëÇØ¾ß ÀÌÀü °ªÀ» ¾Ë ¼ö ÀÖ´Ù. */
     IDE_TEST( svcRecordUndo::logUpdate( smLayerCallback::getLogEnv( aTrans ),
                                         aTrans,
                                         aHeader->mSelfOID,
@@ -900,9 +922,9 @@ IDE_RC svcRecord::updateVersion( idvSQL               * /*aStatistics*/,
                                         sBeforeLimit )
               != IDE_SUCCESS );
 
-    /* BUG-14513: Fixed Slotì„ í• ë‹¹ì‹œ Alloc Slot Logë¥¼ ê¸°ë¡í•˜ì§€
-       ì•Šë„ë¡ ìˆ˜ì •. Update logê°€ Alloc Slotì— ëŒ€í•œ Redo, Undoìˆ˜í–‰.
-       ì´ ë•Œë¬¸ì— Update logê¸°ë¡ í›„ Slot headerì— ëŒ€í•œ Updateìˆ˜í–‰
+    /* BUG-14513: Fixed SlotÀ» ÇÒ´ç½Ã Alloc Slot Log¸¦ ±â·ÏÇÏÁö
+       ¾Êµµ·Ï ¼öÁ¤. Update log°¡ Alloc Slot¿¡ ´ëÇÑ Redo, Undo¼öÇà.
+       ÀÌ ¶§¹®¿¡ Update log±â·Ï ÈÄ Slot header¿¡ ´ëÇÑ Update¼öÇà
     */
     svpFixedPageList::setAllocatedSlot( aInfinite, sNewFixRowPtr );
 
@@ -951,7 +973,7 @@ IDE_RC svcRecord::updateVersion( idvSQL               * /*aStatistics*/,
     if( sState != 0 )
     {
         // PROJ-1784 DML without retry
-        // aOldRowê°€ ë³€ê²½ ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ PIDë¥¼ ë‹¤ì‹œ ê°€ì ¸ì™€ì•¼ í•¨
+        // aOldRow°¡ º¯°æ µÉ ¼ö ÀÖÀ¸¹Ç·Î PID¸¦ ´Ù½Ã °¡Á®¿Í¾ß ÇÔ
         sPageID = SMP_SLOT_GET_PID( aOldRow );
         IDE_ASSERT(svmManager::releasePageLatch(aHeader->mSpaceID,
                                                 sPageID)
@@ -963,17 +985,17 @@ IDE_RC svcRecord::updateVersion( idvSQL               * /*aStatistics*/,
 }
 
 /***********************************************************************
- * Description : aOldRowë¥¼ Updateí•œë‹¤. MVCCì•„ë‹ˆë¼ Inplaceë¡œ Updateí•œë‹¤.
+ * Description : aOldRow¸¦ UpdateÇÑ´Ù. MVCC¾Æ´Ï¶ó Inplace·Î UpdateÇÑ´Ù.
  *
  * aTrans           - [IN] Transaction Pointer
  * aHeader          - [IN] Table Header
- * aOldRow          - [IN] ê¸°ì¡´ value ë¥¼ ê°€ì§„ old row
- * aNewRow          - [IN] ìƒˆ value ë¥¼ ì €ì¥í•  new row
+ * aOldRow          - [IN] ±âÁ¸ value ¸¦ °¡Áø old row
+ * aNewRow          - [IN] »õ value ¸¦ ÀúÀåÇÒ new row
  * aColumns         - [IN] VC Column Description
- * aAddOIDFlag      - [IN] Variable Columnì„ êµ¬ì„±í•˜ëŠ” VCë¥¼ Transaction OID Listì—
- *                         Addë¥¼ ì›í•˜ë©´ ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE.
- * aValues          - [IN] Variable Columnì˜ Values
- * aVarcolumnCount  - [IN] Variable Columnê³¼ Valueì˜ ìˆ«ì
+ * aAddOIDFlag      - [IN] Variable ColumnÀ» ±¸¼ºÇÏ´Â VC¸¦ Transaction OID List¿¡
+ *                         Add¸¦ ¿øÇÏ¸é ID_TRUE, ¾Æ´Ï¸é ID_FALSE.
+ * aValues          - [IN] Variable ColumnÀÇ Values
+ * aVarcolumnCount  - [IN] Variable Column°ú ValueÀÇ ¼ıÀÚ
  ***********************************************************************/
 IDE_RC svcRecord::updateUnitedVarColumns( void                * aTrans,
                                           smcTableHeader      * aHeader,
@@ -1010,7 +1032,7 @@ IDE_RC svcRecord::updateUnitedVarColumns( void                * aTrans,
     
     if ( sOID != SM_NULL_OID )
     {
-        IDE_ASSERT( svmManager::getOIDPtr( aColumns[0]->colSpace,
+        IDE_ASSERT( smmManager::getOIDPtr( aColumns[0]->colSpace,
                                            sOID,
                                            (void**)&sVCPieceHeader)
                     == IDE_SUCCESS );
@@ -1020,7 +1042,7 @@ IDE_RC svcRecord::updateUnitedVarColumns( void                * aTrans,
         /* Nothing to do */
     }
 
-    for ( i = 0 ; i < aHeader->mColumnCount ; i++) /* ë£¨í”„ë¥¼ ëŒë©° ìƒˆ value list ìƒì„± */
+    for ( i = 0 ; i < aHeader->mColumnCount ; i++) /* ·çÇÁ¸¦ µ¹¸ç »õ value list »ı¼º */
     {
         sCurColumn = smcTable::getColumn( aHeader, i); // Column Idx
 
@@ -1028,7 +1050,7 @@ IDE_RC svcRecord::updateUnitedVarColumns( void                * aTrans,
         {
             sColumns[sUnitedVarColCnt]  = sCurColumn;
 
-            /* update í•  ì»¬ëŸ¼ì€ ìƒˆ value ì¹´í”¼ */
+            /* update ÇÒ ÄÃ·³Àº »õ value Ä«ÇÇ */
             if ( ( sUpdateColIdx < aVarColumnCount )
                     && ( sCurColumn->id == aColumns[sUpdateColIdx]->id ))
             {
@@ -1036,7 +1058,7 @@ IDE_RC svcRecord::updateUnitedVarColumns( void                * aTrans,
                 sValues[sUnitedVarColCnt].value = aValues[sUpdateColIdx].value;
                 sUpdateColIdx++;
             }
-            else /* ë°”ë€Œì§€ ì•Šì€ ì»¬ëŸ¼ì€ old value ì¹´í”¼ */
+            else /* ¹Ù²îÁö ¾ÊÀº ÄÃ·³Àº old value Ä«ÇÇ */
             {
                 sOldValueCnt++;
 
@@ -1051,7 +1073,7 @@ IDE_RC svcRecord::updateUnitedVarColumns( void                * aTrans,
                         sSumOfColCnt        += sVCPieceHeader->colCount;
                         sOID                = sVCPieceHeader->nxtPieceOID;
 
-                        IDE_ASSERT( svmManager::getOIDPtr( sCurColumn->colSpace,
+                        IDE_ASSERT( smmManager::getOIDPtr( sCurColumn->colSpace,
                                                            sOID,
                                                            (void**)&sVCPieceHeader)
                                 == IDE_SUCCESS );
@@ -1108,23 +1130,24 @@ IDE_RC svcRecord::updateUnitedVarColumns( void                * aTrans,
     return IDE_FAILURE;
 }
 /***********************************************************************
- * Description : aOldRowë¥¼ Updateí•œë‹¤. MVCCì•„ë‹ˆë¼ Inplaceë¡œ Updateí•œë‹¤.
+ * Description : aOldRow¸¦ UpdateÇÑ´Ù. MVCC¾Æ´Ï¶ó Inplace·Î UpdateÇÑ´Ù.
  *
  * aStatistics   - [IN] None
  * aTrans        - [IN] Transaction Pointer
- * aViewSCN      - [IN] ì´ ì—°ì‚°ì„ ìˆ˜í–‰í•˜ëŠ” Cursorì˜ ViewSCN
- * aHeader       - [IN] aOldRowê°€ ì†í•´ ìˆëŠ” Table Header Pointer
- * aOldRow       - [IN] Updateí•  Row
+ * aViewSCN      - [IN] ÀÌ ¿¬»êÀ» ¼öÇàÇÏ´Â CursorÀÇ ViewSCN
+ * aHeader       - [IN] aOldRow°¡ ¼ÓÇØ ÀÖ´Â Table Header Pointer
+ * aOldRow       - [IN] UpdateÇÒ Row
  * aOldGRID      - [IN] None
- * aRow          - [OUT] aOldRowì™€ ê°™ì€ ê°’ì„ ë„˜ê²¨ì¤€ë‹¤.
+ * aRow          - [OUT] aOldRow¿Í °°Àº °ªÀ» ³Ñ°ÜÁØ´Ù.
  * aRetSlotGRID  - [IN] None
- * aColumnList   - [IN] Updateë  Column List
- * aValueList    - [IN] Updateë  Columnë“¤ì˜ ìƒˆë¡œìš´ Vaule List
+ * aColumnList   - [IN] UpdateµÉ Column List
+ * aValueList    - [IN] UpdateµÉ ColumnµéÀÇ »õ·Î¿î Vaule List
  * aRetryInfo    - [IN] None
  * aInfinite     - [IN] None
  * aLogInfo4Update-[IN] None
  * aOldRecImage  - [IN] None
- * aModifyIdxBit - [IN] Updateí•  Index List
+ * aModifyIdxBit - [IN] UpdateÇÒ Index List
+ * aForbiddenToRetry - [IN] None
  ***********************************************************************/
 IDE_RC svcRecord::updateInplace(idvSQL                * /*aStatistics*/,
                                 void                  * aTrans,
@@ -1140,7 +1163,8 @@ IDE_RC svcRecord::updateInplace(idvSQL                * /*aStatistics*/,
                                 const smiDMLRetryInfo * /*aRetryInfo*/,
                                 smSCN                   /*aInfinite*/,
                                 void                  * /*aLobInfo4Update*/,
-                                ULong                 * aModifyIdxBit )
+                                ULong                   aModifyIdxBit,
+                                idBool                  /*aForbiddenToRetry*/ )
 {
     const smiColumn       * sColumn;
     const smiColumnList   * sCurColumnList;
@@ -1160,34 +1184,38 @@ IDE_RC svcRecord::updateInplace(idvSQL                * /*aStatistics*/,
     IDE_ERROR( aColumnList != NULL );
     IDE_ERROR( aValueList  != NULL );
 
-    /* inplace updateì— ëŒ€í•œ undo ë¡œê·¸ë¥¼ ë¨¼ì € ê¸°ë¡í•œë‹¤.
-       ì™œëƒí•˜ë©´ updateê°€ ê¸°ì¡´ rowì— ëŒ€í•´ ì§ì ‘ ì¼ì–´ë‚˜ê¸° ë•Œë¬¸ì—
-       ë°ì´í„°ê°€ ë³€ê²½ë˜ê¸° ì „ì— ë¡œê¹…ì´ ë¨¼ì € ì´ë£¨ì–´ì ¸ì•¼ í•œë‹¤. */
+    /* inplace update¿¡ ´ëÇÑ undo ·Î±×¸¦ ¸ÕÀú ±â·ÏÇÑ´Ù.
+       ¿Ö³ÄÇÏ¸é update°¡ ±âÁ¸ row¿¡ ´ëÇØ Á÷Á¢ ÀÏ¾î³ª±â ¶§¹®¿¡
+       µ¥ÀÌÅÍ°¡ º¯°æµÇ±â Àü¿¡ ·Î±ëÀÌ ¸ÕÀú ÀÌ·ç¾îÁ®¾ß ÇÑ´Ù. */
     IDE_TEST( svcRecordUndo::logUpdateInplace( smLayerCallback::getLogEnv( aTrans ),
                                                aTrans,
                                                aHeader->mSpaceID,
                                                aHeader->mSelfOID,
                                                aRowPtr,
-                                               aColumnList )
+                                               aColumnList,
+                                               aModifyIdxBit )
               != IDE_SUCCESS );
 
     sPageID = SMP_SLOT_GET_PID(aRowPtr);
 
-    /* Tableì˜ Indexì—ì„œ aRowPtrë¥¼ ì§€ìš´ë‹¤. */
-    IDE_TEST( smLayerCallback::deleteRowFromIndex( aRowPtr,
-                                                   aHeader,
-                                                   aModifyIdxBit )
-              != IDE_SUCCESS );
+    if ( aModifyIdxBit != 0 )
+    {
+        /* TableÀÇ Index¿¡¼­ aRowPtr¸¦ Áö¿î´Ù. */
+        IDE_TEST( smLayerCallback::deleteRowFromIndex( aRowPtr,
+                                                       aHeader,
+                                                       aModifyIdxBit )
+                  != IDE_SUCCESS );
+    }
 
-    /* Fixed Rowì˜ Row IDë¥¼ ê°€ì ¸ì˜¨ë‹¤. */
+    /* Fixed RowÀÇ Row ID¸¦ °¡Á®¿Â´Ù. */
     sFixedRowID = SM_MAKE_OID( sPageID,
                                SMP_SLOT_GET_OFFSET( (smpSlotHeader*)aRowPtr ) );
 
     sCurColumnList = aColumnList;
     sCurValue      = aValueList;
 
-    /* Updateëœ VC( Variable Column ) ì— ìƒˆë¡œìš´ VCë¥¼ ë§Œë“ ë‹¤.
-       VCì˜ UpdateëŠ” ìƒˆë¡œìš´ Rowë¥¼ ë§Œë“œëŠ” ê²ƒìœ¼ë¡œ ìˆ˜í–‰ëœë‹¤. */
+    /* UpdateµÈ VC( Variable Column ) ¿¡ »õ·Î¿î VC¸¦ ¸¸µç´Ù.
+       VCÀÇ Update´Â »õ·Î¿î Row¸¦ ¸¸µå´Â °ÍÀ¸·Î ¼öÇàµÈ´Ù. */
     for( sColumnSeq = 0 ;
          sCurColumnList != NULL;
          sCurColumnList  = sCurColumnList->next, sCurValue++, sColumnSeq++ )
@@ -1239,14 +1267,14 @@ IDE_RC svcRecord::updateInplace(idvSQL                * /*aStatistics*/,
 
                 sCurLobDesc = (smcLobDesc*)(aRowPtr + sColumn->offset);
 
-                /* smcLob::prepare4WriteInternalì—ì„œ sCurLobDescì„ ë°”ê¿€ìˆ˜
-                 * ìˆê¸° ë•Œë¬¸ì— ë°ì´í„°ë¥¼ ë³µì‚¬í•´ì„œ ë„˜ê²¨ì•¼ í•œë‹¤.
-                 * ì™œëƒí•˜ë©´ UpdateInplaceë¡œ í•˜ê¸°ë•Œë¬¸ì— ë°ì´í„°ì˜ì—­ì— ëŒ€í•œ
-                 * ê°±ì‹ ì„ í•˜ê¸°ì „ì— ë¡œê·¸ë¥¼ ë¨¼ì € ê¸°ë¡í•´ì•¼ í•˜ë‚˜ ë³€ê²½ì‹œ ë¡œê·¸ë¥¼
-                 * ê¸°ë¡í•˜ì§€ ì•Šê³  ì´í›„ì— ê¸°ë¡ë˜ê¸° ë•Œë¬¸ì´ë‹¤.
+                /* smcLob::prepare4WriteInternal¿¡¼­ sCurLobDescÀ» ¹Ù²Ü¼ö
+                 * ÀÖ±â ¶§¹®¿¡ µ¥ÀÌÅÍ¸¦ º¹»çÇØ¼­ ³Ñ°Ü¾ß ÇÑ´Ù.
+                 * ¿Ö³ÄÇÏ¸é UpdateInplace·Î ÇÏ±â¶§¹®¿¡ µ¥ÀÌÅÍ¿µ¿ª¿¡ ´ëÇÑ
+                 * °»½ÅÀ» ÇÏ±âÀü¿¡ ·Î±×¸¦ ¸ÕÀú ±â·ÏÇØ¾ß ÇÏ³ª º¯°æ½Ã ·Î±×¸¦
+                 * ±â·ÏÇÏÁö ¾Ê°í ÀÌÈÄ¿¡ ±â·ÏµÇ±â ¶§¹®ÀÌ´Ù.
                  */
 
-                /* SQLë¡œ ì§ì ‘ Lob ë°ì´í„°ë¥¼ ë„£ì€ ê²½ìš° */
+                /* SQL·Î Á÷Á¢ Lob µ¥ÀÌÅÍ¸¦ ³ÖÀº °æ¿ì */
                 IDE_TEST( svcLob::reserveSpaceInternal(
                                       aTrans,
                                       (smcTableHeader *)aHeader,
@@ -1298,7 +1326,7 @@ IDE_RC svcRecord::updateInplace(idvSQL                * /*aStatistics*/,
 
             case SMI_COLUMN_TYPE_FIXED:
 
-                // BUG-30104 Fixed Columnì˜ lengthëŠ” 0ì´ ë  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.
+                // BUG-30104 Fixed ColumnÀÇ length´Â 0ÀÌ µÉ ¼ö ¾ø½À´Ï´Ù.
                 IDE_ERROR_MSG( sCurValue->length > 0,
                                "Table OID  : %"ID_vULONG_FMT"\n"
                                "Space ID   : %"ID_UINT32_FMT"\n"
@@ -1308,8 +1336,8 @@ IDE_RC svcRecord::updateInplace(idvSQL                * /*aStatistics*/,
                                sColumnSeq );
 
                 /* BUG-42407
-                 * Fixed columnì˜ ê²½ìš° í•­ìƒ ì»¬ëŸ¼ ê¸¸ì´ê°€ ê³ ì •.
-                 * source ì™€ destination ì´ ê°™ìœ¼ë©´ memcpyë¥¼ skip í•œë‹¤. */
+                 * Fixed columnÀÇ °æ¿ì Ç×»ó ÄÃ·³ ±æÀÌ°¡ °íÁ¤.
+                 * source ¿Í destination ÀÌ °°À¸¸é memcpy¸¦ skip ÇÑ´Ù. */
                 if ( (aRowPtr + sColumn->offset) != (sCurValue->value) )
                 {    
                     idlOS::memcpy(aRowPtr + sColumn->offset,
@@ -1381,24 +1409,24 @@ IDE_RC svcRecord::updateInplace(idvSQL                * /*aStatistics*/,
 }
 
 /***********************************************************************
- * task-2399 Lock Rowì™€ Delete Rowë¥¼ ì—†ì• ì.
- * ìœ¼ë¡œ ì¸í•´ ë³€ê²½ëœ ì‚¬í•­ì„ ì•Œê³  ì‹¶ìœ¼ë©´ smcRecord::removeVersionì— ì íŒ ì£¼ì„ì„ ì°¸ì¡°
+ * task-2399 Lock Row¿Í Delete Row¸¦ ¾ø¾ÖÀÚ.
+ * À¸·Î ÀÎÇØ º¯°æµÈ »çÇ×À» ¾Ë°í ½ÍÀ¸¸é smcRecord::removeVersion¿¡ ÀûÈù ÁÖ¼®À» ÂüÁ¶
  ***********************************************************************/
 /***********************************************************************
- * Description : aRowê°€ ê°€ë¦¬í‚¤ëŠ” rowë¥¼ ì‚­ì œí•œë‹¤.
+ * Description : aRow°¡ °¡¸®Å°´Â row¸¦ »èÁ¦ÇÑ´Ù.
  *
  * aStatistics    - [IN] None
  * aTrans         - [IN] Transaction Pointer
- * aViewSCN       - [IN] ì´ ì—°ì‚°ì„ ìˆ˜í–‰í•˜ëŠ” Cursorì˜ ViewSCN
- * aTableInfoPtr  - [IN] Table Info Pointer(Tableì— Transactionì´ Insert,
- *                        Deleteí•œ Record Countì— ëŒ€í•œ ì •ë³´ë¥¼ ê°€ì§€ê³  ìˆë‹¤.
+ * aViewSCN       - [IN] ÀÌ ¿¬»êÀ» ¼öÇàÇÏ´Â CursorÀÇ ViewSCN
+ * aTableInfoPtr  - [IN] Table Info Pointer(Table¿¡ TransactionÀÌ Insert,
+ *                        DeleteÇÑ Record Count¿¡ ´ëÇÑ Á¤º¸¸¦ °¡Áö°í ÀÖ´Ù.
 
  * aHeader      - [IN] Table Header Pointer
- * aRow         - [IN] ì‚­ì œí•  Row
+ * aRow         - [IN] »èÁ¦ÇÒ Row
  * aRetSlotRID  - [IN] None
- * aInfinite    - [IN] Cursorì˜ Infinite SCN
+ * aInfinite    - [IN] CursorÀÇ Infinite SCN
  * aIterator    - [IN] None
- * aOldRecImage - [IN] None
+ * aForbiddenToRetry - [IN] retry error ¿Ã¸®´Â°Å ±İÁö, abort ¹ß»ı 
  ***********************************************************************/
 IDE_RC svcRecord::removeVersion( idvSQL               * /*aStatistics*/,
                                  void                 * aTrans,
@@ -1409,10 +1437,11 @@ IDE_RC svcRecord::removeVersion( idvSQL               * /*aStatistics*/,
                                  scGRID                 /*aSlotRID*/,
                                  smSCN                  aInfinite,
                                  const smiDMLRetryInfo* aRetryInfo,
-                                 smiRecordLockWaitInfo* aRecordLockWaitInfo)
+                                 idBool                 aIsDequeue, 
+                                 idBool                 aForbiddenToRetry )
 {
     const smiColumn * sColumn;
-    UInt              sState = 0;
+    UInt              sLockState = 0;
     scPageID          sPageID;
     UInt              i;
     smOID             sRemoveOID;
@@ -1420,54 +1449,48 @@ IDE_RC svcRecord::removeVersion( idvSQL               * /*aStatistics*/,
     smpSlotHeader   * sSlotHeader = (smpSlotHeader*)aRow;
     smSCN             sDeleteSCN;
     ULong             sNxtSCN;
+    smTID             sNxtTID;
 
     IDE_ERROR( aRow    != NULL );
     IDE_ERROR( aTrans  != NULL );
     IDE_ERROR( aHeader != NULL );
-    //PROJ-1677
-    IDE_ERROR( aRecordLockWaitInfo != NULL );
 
     IDU_FIT_POINT( "1.PROJ-2118@svcRecord::removeVersion" );
 
     sPageID     = SMP_SLOT_GET_PID(aRow);
     sRemoveOID  = SM_MAKE_OID( sPageID,
                                SMP_SLOT_GET_OFFSET( sSlotHeader ) );
+    SMX_GET_SCN_AND_TID( sSlotHeader->mLimitSCN, sNxtSCN, sNxtTID );
 
-    /*  removeí•˜ê¸° ìœ„í•˜ì—¬ ì´ rowê°€ ì†í•œ pageì— ëŒ€í•˜ì—¬ holdPageXLatch */
-    IDE_TEST( svmManager::holdPageXLatch( aHeader->mSpaceID,
-                                          sPageID ) != IDE_SUCCESS );
-    sState = 1;
-
-    IDE_TEST( recordLockValidation(aTrans,
-                                   aViewSCN,
-                                   aHeader->mSpaceID,
-                                   &aRow,
-                                   ID_ULONG_MAX,
-                                   &sState,
-                                   //PROJ-1677 DEQUEUE
-                                   aRecordLockWaitInfo,
-                                   aRetryInfo)
-              != IDE_SUCCESS );
-
-    // PROJ-1784 DML without retry
-    // sOldFixRowPtrì´ ë³€ê²½ ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ ê°’ì„ ë‹¤ì‹œ ì„¤ì •í•´ì•¼ í•¨
-    // ( ì´ê²½ìš° page latch ë„ ë‹¤ì‹œ ì¡ì•˜ìŒ )
-    sSlotHeader = (smpSlotHeader*)aRow;
-    sPageID     = SMP_SLOT_GET_PID(aRow);
-    sRemoveOID  = SM_MAKE_OID( sPageID,
-                               SMP_SLOT_GET_OFFSET( sSlotHeader ) );
-
-    //PROJ-1677
-    if( aRecordLockWaitInfo->mRecordLockWaitStatus == SMI_ESCAPE_RECORD_LOCKWAIT)
+    if (( SM_SCN_IS_NOT_LOCK_ROW( sNxtSCN ) ) ||
+        ( smxTrans::getTransID( aTrans ) != sNxtTID ))
     {
-         sState = 0;
-         IDE_TEST( svmManager::releasePageLatch(aHeader->mSpaceID, sPageID)
-                   != IDE_SUCCESS );
-         IDE_CONT(SKIP_REMOVE_VERSION);
+        /*  removeÇÏ±â À§ÇÏ¿© ÀÌ row°¡ ¼ÓÇÑ page¿¡ ´ëÇÏ¿© holdPageXLatch */
+        IDE_TEST( svmManager::holdPageXLatch( aHeader->mSpaceID,
+                                              sPageID ) != IDE_SUCCESS );
+        sLockState = 1;
+
+        IDE_TEST( recordLockValidation(aTrans,
+                                       aViewSCN,
+                                       aHeader->mSpaceID,
+                                       &aRow,
+                                       ID_ULONG_MAX,
+                                       &sLockState,
+                                       aRetryInfo,
+                                       aForbiddenToRetry )
+                  != IDE_SUCCESS );
+
+        // PROJ-1784 DML without retry
+        // sOldFixRowPtrÀÌ º¯°æ µÉ ¼ö ÀÖÀ¸¹Ç·Î °ªÀ» ´Ù½Ã ¼³Á¤ÇØ¾ß ÇÔ
+        // ( ÀÌ°æ¿ì page latch µµ ´Ù½Ã Àâ¾ÒÀ½ )
+        sSlotHeader = (smpSlotHeader*)aRow;
+        sPageID     = SMP_SLOT_GET_PID(aRow);
+        sRemoveOID  = SM_MAKE_OID( sPageID,
+                                   SMP_SLOT_GET_OFFSET( sSlotHeader ) );
     }
 
-    //remove ì—°ì‚°ì´ ìˆ˜í–‰ë  ìˆ˜ ìˆëŠ” rowì˜ ì¡°ê±´ì€ nextë²„ì „ì´ ì—†ê±°ë‚˜,
-    //nextê°€ ì¡´ì¬í•œë‹¤ë©´, ê·¸ê²ƒì´ lockì¼ ë•Œë§Œ ê°€ëŠ¥í•˜ë‹¤.
+    //remove ¿¬»êÀÌ ¼öÇàµÉ ¼ö ÀÖ´Â rowÀÇ Á¶°ÇÀº next¹öÀüÀÌ ¾ø°Å³ª,
+    //next°¡ Á¸ÀçÇÑ´Ù¸é, ±×°ÍÀÌ lockÀÏ ¶§¸¸ °¡´ÉÇÏ´Ù.
     if( !( SM_SCN_IS_FREE_ROW( sSlotHeader->mLimitSCN ) ||
            SM_SCN_IS_LOCK_ROW( sSlotHeader->mLimitSCN ) ) )
     {
@@ -1489,14 +1512,21 @@ IDE_RC svcRecord::removeVersion( idvSQL               * /*aStatistics*/,
         IDE_ASSERT( 0 );
     }
 
-    //slotHeaderì˜ mNextì— ë“¤ì–´ê°ˆ ê°’ì„ ì„¸íŒ…í•œë‹¤. deleteì—°ì‚°ì´ ìˆ˜í–‰ë˜ë©´
-    //ì´ ì—°ì‚°ì„ ìˆ˜í–‰í•˜ëŠ” íŠ¸ëœì­ì…˜ì˜ aInfiniteì •ë³´ê°€ ì„¸íŒ…ëœë‹¤. (with deletebit)
+    //slotHeaderÀÇ mNext¿¡ µé¾î°¥ °ªÀ» ¼¼ÆÃÇÑ´Ù. delete¿¬»êÀÌ ¼öÇàµÇ¸é
+    //ÀÌ ¿¬»êÀ» ¼öÇàÇÏ´Â Æ®·£Àè¼ÇÀÇ aInfiniteÁ¤º¸°¡ ¼¼ÆÃµÈ´Ù. (with deletebit)
     SM_SET_SCN( &sDeleteSCN, &aInfinite );
     SM_SET_SCN_DELETE_BIT( &sDeleteSCN );
 
-    SM_SET_SCN( &sNxtSCN, &( sSlotHeader->mLimitSCN ) );
+    if ( aIsDequeue == ID_FALSE )
+    {
+        SM_SET_SCN( &sNxtSCN,  &( sSlotHeader->mLimitSCN ) );
+    }
+    else
+    {
+        SM_SET_SCN_FREE_ROW( &sNxtSCN );
+    }
 
-    /* deleteì— ëŒ€í•œ ë¡œê·¸ë¥¼ ê¸°ë¡í•œë‹¤. */
+    /* delete¿¡ ´ëÇÑ ·Î±×¸¦ ±â·ÏÇÑ´Ù. */
     IDE_TEST( svcRecordUndo::logDelete( smLayerCallback::getLogEnv( aTrans ),
                                         aTrans,
                                         aHeader->mSelfOID,
@@ -1508,10 +1538,12 @@ IDE_RC svcRecord::removeVersion( idvSQL               * /*aStatistics*/,
 
     SM_SET_SCN( &(sSlotHeader->mLimitSCN), &sDeleteSCN );
 
-    IDE_TEST( svmManager::releasePageLatch(aHeader->mSpaceID, sPageID)
-              != IDE_SUCCESS );
-    sState = 0;
-
+    if( sLockState == 1 )
+    {
+        IDE_TEST( svmManager::releasePageLatch(aHeader->mSpaceID, sPageID)
+                  != IDE_SUCCESS );
+        sLockState = 0;
+    }
     sColumnCnt = aHeader->mColumnCount;
 
     for(i=0 ; i < sColumnCnt; i++ )
@@ -1522,19 +1554,19 @@ IDE_RC svcRecord::removeVersion( idvSQL               * /*aStatistics*/,
         {
             /* PROJ-2174 Supporting LOB in the volatile tablespace */
             case SMI_COLUMN_TYPE_LOB:
-                /* LOBì— ì†í•œ Pieceë“¤ì˜ Delete Flagë§Œ Deleteë˜ì—ˆë‹¤ê³ 
-                 * ì„¤ì •í•œë‹¤.*/
+                /* LOB¿¡ ¼ÓÇÑ PieceµéÀÇ Delete Flag¸¸ DeleteµÇ¾ú´Ù°í
+                 * ¼³Á¤ÇÑ´Ù.*/
                 IDE_TEST( deleteLob( aTrans, (smcTableHeader *)aHeader, sColumn, aRow)
                           != IDE_SUCCESS );
 
                 break;
 
             case SMI_COLUMN_TYPE_VARIABLE:
-                /* United VC ëŠ” ë°‘ì—ì„œ í•œë²ˆì— ë‹¤ ì§€ìš´ë‹¤ */
+                /* United VC ´Â ¹Ø¿¡¼­ ÇÑ¹ø¿¡ ´Ù Áö¿î´Ù */
                 break;
 
             case SMI_COLUMN_TYPE_VARIABLE_LARGE:
-                /* volitile ì€ geometry ë¥¼ ì§€ì›í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ large varê°€ ë“¤ì–´ì˜¬ìˆ˜ ì—†ë‹¤ */
+                /* volitile Àº geometry ¸¦ Áö¿øÇÏÁö ¾ÊÀ¸¹Ç·Î large var°¡ µé¾î¿Ã¼ö ¾ø´Ù */
                 IDE_ASSERT( 0 );
                 break;
 
@@ -1563,17 +1595,15 @@ IDE_RC svcRecord::removeVersion( idvSQL               * /*aStatistics*/,
         smLayerCallback::decRecCntOfTableInfo( aTableInfoPtr );
     }
 
-    IDE_EXCEPTION_CONT(SKIP_REMOVE_VERSION);
-
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 
-    if( sState != 0 )
+    if( sLockState != 0 )
     {
         IDE_PUSH();
         // PROJ-1784 DML without retry
-        // aRowê°€ ë³€ê²½ ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ PIDë¥¼ ë‹¤ì‹œ ê°€ì ¸ì™€ì•¼ í•¨
+        // aRow°¡ º¯°æ µÉ ¼ö ÀÖÀ¸¹Ç·Î PID¸¦ ´Ù½Ã °¡Á®¿Í¾ß ÇÔ
         sPageID = SMP_SLOT_GET_PID(aRow);
         IDE_ASSERT(svmManager::releasePageLatch(aHeader->mSpaceID,
                                                 sPageID) == IDE_SUCCESS);
@@ -1657,7 +1687,8 @@ IDE_RC svcRecord::freeFixRowPending( void            * aTrans,
 IDE_RC svcRecord::setFreeVarRowPending( void            * aTrans,
                                         smcTableHeader  * aHeader,
                                         smOID             aPieceOID,
-                                        SChar           * aRow )
+                                        SChar           * aRow,
+                                        smSCN             aSCN )
 {
     if(smcTable::isDropedTable(aHeader) == ID_FALSE)
     {
@@ -1666,7 +1697,8 @@ IDE_RC svcRecord::setFreeVarRowPending( void            * aTrans,
                                           aHeader->mVar.mVRDB,
                                           aPieceOID,
                                           aRow,
-                                          SMP_TABLE_NORMAL)
+                                          SMP_TABLE_NORMAL,
+                                          aSCN )
                  != IDE_SUCCESS );
     }
 
@@ -1682,7 +1714,8 @@ IDE_RC svcRecord::setFreeVarRowPending( void            * aTrans,
  ***********************************************************************/
 IDE_RC svcRecord::setFreeFixRowPending( void            * aTrans,
                                         smcTableHeader  * aHeader,
-                                        SChar           * aRow )
+                                        SChar           * aRow,
+                                        smSCN             aSCN )
 {
     if(smcTable::isDropedTable(aHeader) == ID_FALSE)
     {
@@ -1690,7 +1723,8 @@ IDE_RC svcRecord::setFreeFixRowPending( void            * aTrans,
                                             aHeader->mSpaceID,
                                             &(aHeader->mFixed.mVRDB),
                                             aRow,
-                                            SMP_TABLE_NORMAL)
+                                            SMP_TABLE_NORMAL,
+                                            aSCN )
                  != IDE_SUCCESS );
     }
 
@@ -1727,7 +1761,7 @@ IDE_RC svcRecord::setDeleteBitOnHeader( smpSlotHeader * aRowHeader )
 }
 
 /***********************************************************************
- * Description : aRowHeaderì˜ SCNì— Delete Bitì„ Settingí•œë‹¤.
+ * Description : aRowHeaderÀÇ SCN¿¡ Delete BitÀ» SettingÇÑ´Ù.
  *
  * aTrans     - [IN]: Transaction Pointer
  * aRowHeader - [IN]: Row Header Pointer
@@ -1743,10 +1777,10 @@ IDE_RC svcRecord::setDeleteBit( scSpaceID          aSpaceID,
     IDE_TEST(svmManager::holdPageXLatch(aSpaceID, sPageID) != IDE_SUCCESS);
     sState = 1;
 
-    /* BUG-14953 : PKê°€ ë‘ê°œë“¤ì–´ê°. Rollbackì‹œ SCNê°’ì´
-       í•­ìƒ ë¬´í•œëŒ€ Bitê°€ Settingë˜ì–´ ìˆì–´ì•¼ í•œë‹¤. ê·¸ë ‡ì§€
-       ì•Šìœ¼ë©´ Indexì˜ Unique Checkê°€ ì˜¤ë™ì‘í•˜ì—¬ Duplicate
-       Keyê°€ ë“¤ì–´ê°„ë‹¤.*/
+    /* BUG-14953 : PK°¡ µÎ°³µé¾î°¨. Rollback½Ã SCN°ªÀÌ
+       Ç×»ó ¹«ÇÑ´ë Bit°¡ SettingµÇ¾î ÀÖ¾î¾ß ÇÑ´Ù. ±×·¸Áö
+       ¾ÊÀ¸¸é IndexÀÇ Unique Check°¡ ¿Àµ¿ÀÛÇÏ¿© Duplicate
+       Key°¡ µé¾î°£´Ù.*/
     SM_SET_SCN_DELETE_BIT( &(((smpSlotHeader*)aRowHeader)->mCreateSCN) );
 
     IDE_TEST(svmManager::releasePageLatch(aSpaceID, sPageID) != IDE_SUCCESS);
@@ -1770,12 +1804,12 @@ IDE_RC svcRecord::setDeleteBit( scSpaceID          aSpaceID,
 
 /* PROJ-2174 Supporting LOB in the volatile tablespace */
  /***********************************************************************
- * Description : aRIDê°€ ê°€ë¦¬í‚¤ëŠ” Variable Column Pieceì˜ Flagê°’ì„
- *               aFlagë¡œ ë°”ê¾¼ë‹¤.
+ * Description : aRID°¡ °¡¸®Å°´Â Variable Column PieceÀÇ Flag°ªÀ»
+ *               aFlag·Î ¹Ù²Û´Ù.
  *
  * aTrans       - [IN] Transaction Pointer
  * aTableOID    - [IN] Table OID
- * aSpaceID     - [IN] Variable Column Piece ê°€ ì†í•œ Tablespaceì˜ ID
+ * aSpaceID     - [IN] Variable Column Piece °¡ ¼ÓÇÑ TablespaceÀÇ ID
  * aVCPieceOID  - [IN] Variable Column Piece OID
  * aVCPiecePtr  - [IN] Variabel Column Piece Ptr
  * aVCPieceFlag - [IN] Variabel Column Piece Flag
@@ -1801,31 +1835,28 @@ IDE_RC svcRecord::setFreeFlagAtVCPieceHdr( void       * aVCPiecePtr,
 }
 
 /***********************************************************************
- * task-2399 Lock Rowì™€ Delete Rowë¥¼ ì—†ì• ì.
- * ìœ¼ë¡œ ì¸í•´ ë³€ê²½ëœ ì‚¬í•­ì„ ì•Œê³  ì‹¶ìœ¼ë©´ smcRecord::lockRowì— ì íŒ ì£¼ì„ì„ ì°¸ì¡°
+ * task-2399 Lock Row¿Í Delete Row¸¦ ¾ø¾ÖÀÚ.
+ * À¸·Î ÀÎÇØ º¯°æµÈ »çÇ×À» ¾Ë°í ½ÍÀ¸¸é smcRecord::lockRow¿¡ ÀûÈù ÁÖ¼®À» ÂüÁ¶
  ***********************************************************************/
 /***********************************************************************
- * Description : select for updateë¥¼ ìˆ˜í–‰í• ë•Œ ë¶ˆë¦¬ëŠ” í•¨ìˆ˜. ì¦‰, select for update
- *          ë¥¼ ìˆ˜í–‰í•œ rowì— ëŒ€í•´ì„œ Lockì—°ì‚°ì´ ìˆ˜í–‰ëœë‹¤. ì´ë•Œ, smpSlotHeaderì˜
- *          mNextì— LockRowì„ì„ í‘œì‹œí•œë‹¤.  ì´ì •ë³´ëŠ” í˜„ì¬ íŠ¸ëœì­ì…˜ì´ ìˆ˜í–‰ì¤‘ì¸ ë™ì•ˆë§Œ
- *          ìœ íš¨í•˜ë‹¤.
+ * Description : select for update¸¦ ¼öÇàÇÒ¶§ ºÒ¸®´Â ÇÔ¼ö. Áï, select for update
+ *          ¸¦ ¼öÇàÇÑ row¿¡ ´ëÇØ¼­ Lock¿¬»êÀÌ ¼öÇàµÈ´Ù. ÀÌ¶§, smpSlotHeaderÀÇ
+ *          mNext¿¡ LockRowÀÓÀ» Ç¥½ÃÇÑ´Ù.  ÀÌÁ¤º¸´Â ÇöÀç Æ®·£Àè¼ÇÀÌ ¼öÇàÁßÀÎ µ¿¾È¸¸
+ *          À¯È¿ÇÏ´Ù.
  ***********************************************************************/
 IDE_RC svcRecord::lockRow(void           * aTrans,
                           smSCN            aViewSCN,
                           smcTableHeader * aHeader,
                           SChar          * aRow,
-                          ULong            aLockWaitTime)
+                          ULong            aLockWaitTime,
+                          idBool           aForbiddenToRetry )
+                            
 {
     smpSlotHeader *sSlotHeader;
     scPageID       sPageID;
     UInt           sState = 0;
     smSCN          sRowSCN;
     smTID          sRowTID;
-
-    //PROJ-1677 DEQUEUE
-    //ê¸°ì¡´ record lockëŒ€ê¸° schemeì„ ì¤€ìˆ˜í•œë‹¤.
-    smiRecordLockWaitInfo  sRecordLockWaitInfo;
-    sRecordLockWaitInfo.mRecordLockWaitFlag = SMI_RECORD_LOCKWAIT;
 
     sSlotHeader = (smpSlotHeader*)aRow;
 
@@ -1837,8 +1868,8 @@ IDE_RC svcRecord::lockRow(void           * aTrans,
 
     SMX_GET_SCN_AND_TID( sSlotHeader->mLimitSCN, sRowSCN, sRowTID );
 
-    //ì´ë¯¸ Lockì´ ê±¸ë ¤ ìˆì„ ê²½ìš°ì—” ë‹¤ì‹œ lockì„ ê±¸ì§€ ì•ŠëŠ”ë‹¤.
-    if ( ( !SM_SCN_IS_LOCK_ROW( sRowSCN ) ) || 
+    //ÀÌ¹Ì LockÀÌ °É·Á ÀÖÀ» °æ¿ì¿£ ´Ù½Ã lockÀ» °ÉÁö ¾Ê´Â´Ù.
+    if ( ( SM_SCN_IS_NOT_LOCK_ROW( sRowSCN ) ) || 
          ( sRowTID != smLayerCallback::getTransID( aTrans ) ) )
     {
         IDE_TEST(recordLockValidation( aTrans,
@@ -1847,11 +1878,11 @@ IDE_RC svcRecord::lockRow(void           * aTrans,
                                        &aRow,
                                        aLockWaitTime,
                                        &sState,
-                                       &sRecordLockWaitInfo,
-                                       NULL ) // Without Retry Info
+                                       NULL, // Without Retry Info
+                                       aForbiddenToRetry )
                  != IDE_SUCCESS );
 
-        // PROJ-1784 retry infoê°€ ì—†ìœ¼ë¯€ë¡œ ë³€ê²½ë˜ì§€ ì•ŠëŠ”ë‹¤.
+        // PROJ-1784 retry info°¡ ¾øÀ¸¹Ç·Î º¯°æµÇÁö ¾Ê´Â´Ù.
         IDE_ASSERT( aRow == (SChar*)sSlotHeader );
 
         IDE_TEST( lockRowInternal( aTrans,
@@ -1880,13 +1911,13 @@ IDE_RC svcRecord::lockRow(void           * aTrans,
 
 
 /***********************************************************************
- * Description : record locì„ ì¡ëŠ”ë‹¤.
- *               ì´ë¯¸ record lock validationì´ ëœ ìƒíƒœì—ì„œ
- *               Lock rowë¥¼ í•˜ëŠ” ê²½ìš° ì‚¬ìš©.
+ * Description : record locÀ» Àâ´Â´Ù.
+ *               ÀÌ¹Ì record lock validationÀÌ µÈ »óÅÂ¿¡¼­
+ *               Lock row¸¦ ÇÏ´Â °æ¿ì »ç¿ë.
  *
  *     aTrans   - [IN] Transaction Pointer
  *     aHeader  - [IN] Table header
- *     aRow     - [IN] lockì„ ì¡ì„ row
+ *     aRow     - [IN] lockÀ» ÀâÀ» row
  ***********************************************************************/
 IDE_RC svcRecord::lockRowInternal(void           * aTrans,
                                   smcTableHeader * aHeader,
@@ -1900,7 +1931,7 @@ IDE_RC svcRecord::lockRowInternal(void           * aTrans,
 
     SMX_GET_SCN_AND_TID( sSlotHeader->mLimitSCN, sRowSCN, sRowTID );
 
-    //ì´ë¯¸ ìì‹ ì´ LOCKì„ ê±¸ì—ˆë‹¤ë©´ ë‹¤ì‹œ LOCKì„ ê±¸ë ¤ê³  í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    //ÀÌ¹Ì ÀÚ½ÅÀÌ LOCKÀ» °É¾ú´Ù¸é ´Ù½Ã LOCKÀ» °É·Á°í ÇÏÁö ¾Ê´Â´Ù.
     if ( ( SM_SCN_IS_LOCK_ROW( sRowSCN ) ) &&
          ( sRowTID == smLayerCallback::getTransID( aTrans ) ) )
     {
@@ -1908,7 +1939,9 @@ IDE_RC svcRecord::lockRowInternal(void           * aTrans,
     }
     else
     {
-        /* mNext ë³€ê²½ì— ë”°ë¥¸ physical log ê¸°ë¡ */
+        IDE_DASSERT( SM_SCN_IS_FREE_ROW(sSlotHeader->mLimitSCN) );
+    
+        /* mNext º¯°æ¿¡ µû¸¥ physical log ±â·Ï */
         IDE_TEST( svcRecordUndo::logPhysical8( smLayerCallback::getLogEnv( aTrans ),
                                                (SChar*)&sSlotHeader->mLimitSCN,
                                                ID_SIZEOF(ULong) )
@@ -1936,7 +1969,7 @@ IDE_RC svcRecord::lockRowInternal(void           * aTrans,
 }
 
 /***********************************************************************
- * Description : lockRowê°€ ìˆ˜í–‰ëœ rowì— ëŒ€í•´ lockì„ í•´ì œí• ë•Œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜
+ * Description : lockRow°¡ ¼öÇàµÈ row¿¡ ´ëÇØ lockÀ» ÇØÁ¦ÇÒ¶§ È£ÃâµÇ´Â ÇÔ¼ö
  ***********************************************************************/
 IDE_RC svcRecord::unlockRow( void           * aTrans,
                              SChar          * aRow )
@@ -1958,17 +1991,17 @@ IDE_RC svcRecord::unlockRow( void           * aTrans,
 }
 
 /***********************************************************************
- * Description : tableì— nullrowë¥¼ ìƒì„±
+ * Description : table¿¡ nullrow¸¦ »ı¼º
  *
- * memory tableì˜ null rowë¥¼ ì‚½ì…í•˜ê³ , table headerì—
- * nullrowì˜ OIDë¥¼ assign í•œë‹¤.
+ * memory tableÀÇ null row¸¦ »ğÀÔÇÏ°í, table header¿¡
+ * nullrowÀÇ OID¸¦ assign ÇÑ´Ù.
  *
  * - 2nd code design
- *   + table íƒ€ì…ì— ë”°ë¼ NullRowë¥¼ data pageì— insert ë° ë¡œê¹…
- *   + insertëœ nullrowì— ëŒ€í•˜ì—¬ NULL_ROW_SCN ì„¤ì • ë° ë¡œê¹…
- *     : SMR_LT_UPDATEì˜ SMR_SVC_PERS_UPDATE_FIXED_ROW
- *   + table headerì— nullrowì— ëŒ€í•œ ì„¤ì • ë° ë¡œê¹…
- *     : SMR_LT_UPDATEì˜ SMR_SVC_TABLEHEADER_SET_NULLROW
+ *   + table Å¸ÀÔ¿¡ µû¶ó NullRow¸¦ data page¿¡ insert ¹× ·Î±ë
+ *   + insertµÈ nullrow¿¡ ´ëÇÏ¿© NULL_ROW_SCN ¼³Á¤ ¹× ·Î±ë
+ *     : SMR_LT_UPDATEÀÇ SMR_SVC_PERS_UPDATE_FIXED_ROW
+ *   + table header¿¡ nullrow¿¡ ´ëÇÑ ¼³Á¤ ¹× ·Î±ë
+ *     : SMR_LT_UPDATEÀÇ SMR_SVC_TABLEHEADER_SET_NULLROW
  ***********************************************************************/
 IDE_RC svcRecord::makeNullRow( void*           aTrans,
                                smcTableHeader* aHeader,
@@ -1985,7 +2018,7 @@ IDE_RC svcRecord::makeNullRow( void*           aTrans,
 
     SM_SET_SCN_NULL_ROW( &sNullRowSCN );
 
-    /* memory tableì— nullrowë¥¼ ì‚½ì…í•œë‹¤.*/
+    /* memory table¿¡ nullrow¸¦ »ğÀÔÇÑ´Ù.*/
     IDE_TEST( insertVersion( NULL,
                              aTrans,
                              NULL,
@@ -2005,7 +2038,7 @@ IDE_RC svcRecord::makeNullRow( void*           aTrans,
     sNullRowOID = SM_MAKE_OID( sNullRowPID,
                                SMP_SLOT_GET_OFFSET( sNullSlotHeaderPtr ) );
 
-    /* insert ëœ nullrowì— scnì„ ì„¤ì •í•œë‹¤. */
+    /* insert µÈ nullrow¿¡ scnÀ» ¼³Á¤ÇÑ´Ù. */
     IDE_TEST(setSCN((SChar*)sNullSlotHeaderPtr,
                     sNullRowSCN) != IDE_SUCCESS);
 
@@ -2019,24 +2052,24 @@ IDE_RC svcRecord::makeNullRow( void*           aTrans,
 }
 
 /***********************************************************************
- * Description : ì—¬ëŸ¬ê°œì˜ Variable Columnì„ í•˜ë‚˜ì˜ variable slot ì— Insertí•œë‹¤.
- *               í•­ìƒ out-modeë¡œ ì €ì¥í•˜ë©° vcDescëŠ” fixed row slot headerì— ìˆë‹¤.
+ * Description : ¿©·¯°³ÀÇ Variable ColumnÀ» ÇÏ³ªÀÇ variable slot ¿¡ InsertÇÑ´Ù.
+ *               Ç×»ó out-mode·Î ÀúÀåÇÏ¸ç vcDesc´Â fixed row slot header¿¡ ÀÖ´Ù.
  *
- *               ì£¼ì˜: VC Pieceì˜ ê° Headerì— ëŒ€í•´ì„œëŠ” Allocì‹œ loggingì„
- *                    í•˜ì§€ë§Œ VC Pieceì˜ Valueê°€ ì €ì¥ëœ ë¶€ë¶„ì— ëŒ€í•´ì„œëŠ” Logging
- *                    í•˜ì§€ ì•ŠëŠ”ë‹¤. ì™œëƒí•˜ë©´ Insert, Updateì‹œ ê·¸ ë¶€ë¶„ì— ëŒ€í•œ
- *                    Loggingì„ í•˜ê¸° ë•Œë¬¸ì´ë‹¤. ì—¬ê¸°ì„œ Loggingì„ Updateí›„ì—
- *                    í•˜ë”ë¼ë„ ë¬¸ì œê°€ ì—†ëŠ” ì´ ì´ìœ ëŠ” Updateì˜ì—­ì˜ Before Imageê°€
- *                    ì˜ë¯¸ê°€ ì—†ê¸° ë•Œë¬¸ì´ë‹¤.
+ *               ÁÖÀÇ: VC PieceÀÇ °¢ Header¿¡ ´ëÇØ¼­´Â Alloc½Ã loggingÀ»
+ *                    ÇÏÁö¸¸ VC PieceÀÇ Value°¡ ÀúÀåµÈ ºÎºĞ¿¡ ´ëÇØ¼­´Â Logging
+ *                    ÇÏÁö ¾Ê´Â´Ù. ¿Ö³ÄÇÏ¸é Insert, Update½Ã ±× ºÎºĞ¿¡ ´ëÇÑ
+ *                    LoggingÀ» ÇÏ±â ¶§¹®ÀÌ´Ù. ¿©±â¼­ LoggingÀ» UpdateÈÄ¿¡
+ *                    ÇÏ´õ¶óµµ ¹®Á¦°¡ ¾ø´Â ÀÌ ÀÌÀ¯´Â Update¿µ¿ªÀÇ Before Image°¡
+ *                    ÀÇ¹Ì°¡ ¾ø±â ¶§¹®ÀÌ´Ù.
  *
  * aTrans           - [IN] Transaction Pointer
  * aHeader          - [IN] Table Header
- * aFixedRow        - [IN] VCì˜ VCDescê°€ ì €ì¥ë  Fixed Row Pointer
+ * aFixedRow        - [IN] VCÀÇ VCDesc°¡ ÀúÀåµÉ Fixed Row Pointer
  * aColumns         - [IN] VC Column Description
- * aAddOIDFlag      - [IN] Variable Columnì„ êµ¬ì„±í•˜ëŠ” VCë¥¼ Transaction OID Listì—
- *                         Addë¥¼ ì›í•˜ë©´ ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE.
- * aValues          - [IN] Variable Columnì˜ Values
- * aVarcolumnCount  - [IN] Variable Columnê³¼ Valueì˜ ìˆ«ì
+ * aAddOIDFlag      - [IN] Variable ColumnÀ» ±¸¼ºÇÏ´Â VC¸¦ Transaction OID List¿¡
+ *                         Add¸¦ ¿øÇÏ¸é ID_TRUE, ¾Æ´Ï¸é ID_FALSE.
+ * aValues          - [IN] Variable ColumnÀÇ Values
+ * aVarcolumnCount  - [IN] Variable Column°ú ValueÀÇ ¼ıÀÚ
  ***********************************************************************/
 IDE_RC svcRecord::insertUnitedVarColumns( void            *  aTrans,
                                           smcTableHeader  *  aHeader,
@@ -2049,18 +2082,18 @@ IDE_RC svcRecord::insertUnitedVarColumns( void            *  aTrans,
     smOID         sCurVCPieceOID    = SM_NULL_OID;
     smOID         sNxtVCPieceOID    = SM_NULL_OID;
     
-    // Piece í¬ê¸° ì´ˆê¸°í™” : LastOffsetArray size
+    // Piece Å©±â ÃÊ±âÈ­ : LastOffsetArray size
     UInt          sVarPieceLen      = ID_SIZEOF(UShort);
     
     UInt          sPrevVarPieceLen  = 0;
     UShort        sVarPieceColCnt   = 0;
     idBool        sIsTrailingNull   = ID_FALSE;
-    SInt          i                 = ( aVarColumnCount - 1 ); /* ê°€ì¥ ë§ˆì§€ë§‰ Column ë¶€í„° ì‚½ì…í•œë‹¤. */
+    SInt          i                 = ( aVarColumnCount - 1 ); /* °¡Àå ¸¶Áö¸· Column ºÎÅÍ »ğÀÔÇÑ´Ù. */
 
     // BUG-43117
-    // í˜„ì¬ì˜ ì• ìˆœë²ˆ(ex. 5ë²ˆ colì´ë©´ 4ë²ˆ col) ì»¬ëŸ¼ì˜ íŒ¨ë”© í¬ê¸°
+    // ÇöÀçÀÇ ¾Õ ¼ø¹ø(ex. 5¹ø colÀÌ¸é 4¹ø col) ÄÃ·³ÀÇ ÆĞµù Å©±â
     UInt          sPrvAlign         = 0;
-    // í˜„ì¬ ì»¬ëŸ¼ì˜ ì¶”ì • íŒ¨ë”© í¬ê¸°
+    // ÇöÀç ÄÃ·³ÀÇ ÃßÁ¤ ÆĞµù Å©±â
     UInt          sCurAlign         = 0;
 
     IDE_ASSERT( aTrans    != NULL );
@@ -2073,25 +2106,25 @@ IDE_RC svcRecord::insertUnitedVarColumns( void            *  aTrans,
                    aAddOIDFlag );
 
     /* =================================================================
-     * Valueë©ì–´ë¦¬ê°€ SMP_VC_PIECE_MAX_SIZEë¥¼ ë„˜ëŠ” ê²½ìš° ì—¬ëŸ¬ í˜ì´ì§€ì— ê±¸ì³ ì €ì¥í•˜ê³  ë„˜ì§€
-     * ì•ŠëŠ”ë‹¤ë©´ í•˜ë‚˜ì˜ Variable Pieceì— ì €ì¥í•œë‹¤. ì´ë•Œ VCë¥¼ êµ¬ì„±í•  Pieceì˜ ì €ì¥ ìˆœì„œ
-     * ëŠ” ë§¨ ë§ˆì§€ë§‰ Pieceë¶€í„° ì €ì¥í•œë‹¤. ì´ë ‡ê²Œ í•˜ëŠ” ì´ìœ ëŠ” Valueì˜ ì•ë¶€í„° ì €ì¥í•  ê²½ìš°
-     * ë‹¤ìŒ Pieceì˜ OIDë¥¼ ì•Œìˆ˜ ì—†ê¸° ë•Œë¬¸ì— Pieceì— ëŒ€í•œ Loggingê³¼ ë³„ë„ë¡œ í˜„ì¬ Piece
-     * ì˜ ì•ë‹¨ì— Pieceê°€ ì¡´ì¬í•  ê²½ìš° ì•ë‹¨ì˜ Pieceì˜ nextPieceOIDì— ëŒ€í•œ loggingì„
-     * ë³„ë„ë¡œ ìˆ˜í–‰í•´ì•¼í•œë‹¤. í•˜ì§€ë§Œ ë§¨ ë§ˆì§€ë§‰ Pieceë¶€í„° ì—­ìˆœìœ¼ë¡œ ì €ì¥í•  ê²½ìš° í˜„ì¬ Piece
-     * ì˜ Next Piece OIDì„ ì•Œê¸° ë•Œë¬¸ì— Variable Pieceì˜ AllocSlotì‹œ next pieceì—
-     * ëŒ€í•œ oid loggingì„ ê°™ì´ í•˜ì—¬ loggingì–‘ì„ ì¤„ì¼ ìˆ˜ ìˆë‹¤.
-     * í•˜ë‚˜ì˜ columnì´ ì„œë¡œ ë‹¤ë¥¸ var pieceì— ë‚˜ë‰˜ì–´ ì €ì¥ë˜ì§€ ì•ŠëŠ”ë‹¤.
+     * Valueµ¢¾î¸®°¡ SMP_VC_PIECE_MAX_SIZE¸¦ ³Ñ´Â °æ¿ì ¿©·¯ ÆäÀÌÁö¿¡ °ÉÃÄ ÀúÀåÇÏ°í ³ÑÁö
+     * ¾Ê´Â´Ù¸é ÇÏ³ªÀÇ Variable Piece¿¡ ÀúÀåÇÑ´Ù. ÀÌ¶§ VC¸¦ ±¸¼ºÇÒ PieceÀÇ ÀúÀå ¼ø¼­
+     * ´Â ¸Ç ¸¶Áö¸· PieceºÎÅÍ ÀúÀåÇÑ´Ù. ÀÌ·¸°Ô ÇÏ´Â ÀÌÀ¯´Â ValueÀÇ ¾ÕºÎÅÍ ÀúÀåÇÒ °æ¿ì
+     * ´ÙÀ½ PieceÀÇ OID¸¦ ¾Ë¼ö ¾ø±â ¶§¹®¿¡ Piece¿¡ ´ëÇÑ Logging°ú º°µµ·Î ÇöÀç Piece
+     * ÀÇ ¾Õ´Ü¿¡ Piece°¡ Á¸ÀçÇÒ °æ¿ì ¾Õ´ÜÀÇ PieceÀÇ nextPieceOID¿¡ ´ëÇÑ loggingÀ»
+     * º°µµ·Î ¼öÇàÇØ¾ßÇÑ´Ù. ÇÏÁö¸¸ ¸Ç ¸¶Áö¸· PieceºÎÅÍ ¿ª¼øÀ¸·Î ÀúÀåÇÒ °æ¿ì ÇöÀç Piece
+     * ÀÇ Next Piece OIDÀ» ¾Ë±â ¶§¹®¿¡ Variable PieceÀÇ AllocSlot½Ã next piece¿¡
+     * ´ëÇÑ oid loggingÀ» °°ÀÌ ÇÏ¿© logging¾çÀ» ÁÙÀÏ ¼ö ÀÖ´Ù.
+     * ÇÏ³ªÀÇ columnÀÌ ¼­·Î ´Ù¸¥ var piece¿¡ ³ª´µ¾î ÀúÀåµÇÁö ¾Ê´Â´Ù.
      * ================================================================ */
 
     /* BUG-44463 SM codesonar warning
-     *           aVarColumnCountê°€ 1ë³´ë‹¤ í´ë•Œë§Œ í•´ë‹¹ í•¨ìˆ˜ì— ë“¤ì–´ì˜¤ë¯€ë¡œ 
-     *           ë”°ë¡œ iê°€ 0ë³´ë‹¤ í°ì§€ëŠ” ì²´í¬í•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
-     *           í•´ë‹¹ í•¨ìˆ˜ëŠ” ìì£¼ í˜¸ì¶œë˜ë¯€ë¡œ ì„±ëŠ¥í–¥ìƒì„ ìœ„í•´ i ê°’ì˜ ì²´í¬ë¥¼ ìƒëµí•œë‹¤. */
+     *           aVarColumnCount°¡ 1º¸´Ù Å¬¶§¸¸ ÇØ´ç ÇÔ¼ö¿¡ µé¾î¿À¹Ç·Î 
+     *           µû·Î i°¡ 0º¸´Ù Å«Áö´Â Ã¼Å©ÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
+     *           ÇØ´ç ÇÔ¼ö´Â ÀÚÁÖ È£ÃâµÇ¹Ç·Î ¼º´ÉÇâ»óÀ» À§ÇØ i °ªÀÇ Ã¼Å©¸¦ »ı·«ÇÑ´Ù. */
 
-    /* BUG-43320 ë§ˆì§€ë§‰ Columnì´ NULL ì´ë¼ë©´
-     * Trailing null ì´ë‹¤. */
-    if ( aValues[i].length == 0 ) /* ëì»¬ëŸ¼ì´ê³  ê¸¸ì´ê°€ 0ì¸ê²½ìš°, start of trailing null */
+    /* BUG-43320 ¸¶Áö¸· ColumnÀÌ NULL ÀÌ¶ó¸é
+     * Trailing null ÀÌ´Ù. */
+    if ( aValues[i].length == 0 ) /* ³¡ÄÃ·³ÀÌ°í ±æÀÌ°¡ 0ÀÎ°æ¿ì, start of trailing null */
     {
         sIsTrailingNull = ID_TRUE;
         i--;
@@ -2120,39 +2153,39 @@ IDE_RC svcRecord::insertUnitedVarColumns( void            *  aTrans,
         }
 
 
-        if ( i > 0 ) /* ì²«ì»¬ëŸ¼ ì œì™¸í•œ ë‚˜ë¨¸ì§€ ì»¬ëŸ¼ë“¤ */
+        if ( i > 0 ) /* Ã¹ÄÃ·³ Á¦¿ÜÇÑ ³ª¸ÓÁö ÄÃ·³µé */
         {
             sVarPieceColCnt++;
 
-            // BUG-43117 : varPieceì˜ ê¸¸ì´ë¥¼ ì¶”ì •
+            // BUG-43117 : varPieceÀÇ ±æÀÌ¸¦ ÃßÁ¤
 
-            // valueì˜ ê¸¸ì´ + offset array 1ì¹¸ í¬ê¸°
+            // valueÀÇ ±æÀÌ + offset array 1Ä­ Å©±â
             sVarPieceLen += aValues[i].length + ID_SIZEOF(UShort);
 
-            // í˜„ì¬ì˜ ì• ìˆœë²ˆ ì»¬ëŸ¼ì˜ íŒ¨ë”© í¬ê¸° ì¶”ì •   
+            // ÇöÀçÀÇ ¾Õ ¼ø¹ø ÄÃ·³ÀÇ ÆĞµù Å©±â ÃßÁ¤   
             sPrvAlign = SMC_GET_COLUMN_PAD_LENGTH( aValues[i-1], aColumns[i-1] );            
 
-            // í˜„ì¬ ì»¬ëŸ¼ì˜ íŒ¨ë”© í¬ê¸° ì¶”ì •              
+            // ÇöÀç ÄÃ·³ÀÇ ÆĞµù Å©±â ÃßÁ¤              
             sCurAlign = SMC_GET_COLUMN_PAD_LENGTH( aValues[i], aColumns[i] );
 
-            // ì¶”ì •í•œ í˜„ì¬ ì»¬ëŸ¼ì˜ íŒ¨ë”©í¬ê¸° varPiece ê¸¸ì´ì— ì¶”ê°€
+            // ÃßÁ¤ÇÑ ÇöÀç ÄÃ·³ÀÇ ÆĞµùÅ©±â varPiece ±æÀÌ¿¡ Ãß°¡
             sVarPieceLen += sCurAlign;  
             
-            // í˜„ì¬ ì• ìˆœë²ˆ ì»¬ëŸ¼ì˜ ê¸¸ì´
+            // ÇöÀç ¾Õ ¼ø¹ø ÄÃ·³ÀÇ ±æÀÌ
             sPrevVarPieceLen = aValues[i - 1].length;
 
-            /* í˜„ì¬ ê¹Œì§€ ì¶”ì •ë˜ëŠ” varPieceì˜ ì´ ê¸¸ì´ =
-             * ëˆ„ì ëœ varPiece ê¸¸ì´ + ì• ìˆœë²ˆ ì»¬ëŸ¼ì˜ ê¸¸ì´(íŒ¨ë”©+valueê¸¸ì´)
-             *                      + ì• ìˆœë²ˆ offset array í¬ê¸°
+            /* ÇöÀç ±îÁö ÃßÁ¤µÇ´Â varPieceÀÇ ÃÑ ±æÀÌ =
+             * ´©ÀûµÈ varPiece ±æÀÌ + ¾Õ ¼ø¹ø ÄÃ·³ÀÇ ±æÀÌ(ÆĞµù+value±æÀÌ)
+             *                      + ¾Õ ¼ø¹ø offset array Å©±â
              */
             if ( ( sVarPieceLen + sPrvAlign + sPrevVarPieceLen + ID_SIZEOF(UShort) )  
                  <= SMP_VC_PIECE_MAX_SIZE )
             {
-                /* Previous Column ê¹Œì§€ ì§€ê¸ˆì˜ slot ì— ì €ì¥ ê°€ëŠ¥ í•˜ë‹¤ë©´ ê·¸ëƒ¥ ë„˜ì–´ê°„ë‹¤ */
+                /* Previous Column ±îÁö Áö±İÀÇ slot ¿¡ ÀúÀå °¡´É ÇÏ´Ù¸é ±×³É ³Ñ¾î°£´Ù */
             }
             else
             {
-                /* Previous Columnì„ ë”í•˜ë©´ ìµœëŒ€í¬ê¸°ë¥¼ ë„˜ê¸°ë¯€ë¡œ, ì§€ê¸ˆê¹Œì§€ ì»¬ëŸ¼ë“¤ insert */
+                /* Previous ColumnÀ» ´õÇÏ¸é ÃÖ´ëÅ©±â¸¦ ³Ñ±â¹Ç·Î, Áö±İ±îÁö ÄÃ·³µé insert */
                 IDE_TEST( insertUnitedVarPiece( aTrans,
                                                 aHeader,
                                                 aAddOIDFlag,
@@ -2167,18 +2200,18 @@ IDE_RC svcRecord::insertUnitedVarColumns( void            *  aTrans,
                 sNxtVCPieceOID  = sCurVCPieceOID;
                 sVarPieceColCnt = 0;
                 
-                /* insert í–ˆìœ¼ë¯€ë¡œ ë‹¤ì‹œ ì´ˆê¸°í™” */
+                /* insert ÇßÀ¸¹Ç·Î ´Ù½Ã ÃÊ±âÈ­ */
                 sVarPieceLen    =  ID_SIZEOF(UShort);
             }
         }
-        else /* ì²«ì»¬ëŸ¼ì— ë„ë‹¬í•œ ê²½ìš°, insert */
+        else /* Ã¹ÄÃ·³¿¡ µµ´ŞÇÑ °æ¿ì, insert */
         {
             sVarPieceColCnt++; 
 
-            // valueì˜ ê¸¸ì´ + offset array 1ì¹¸ í¬ê¸°
+            // valueÀÇ ±æÀÌ + offset array 1Ä­ Å©±â
             sVarPieceLen += aValues[i].length + ID_SIZEOF(UShort);
 
-            //í˜„ì¬ ì»¬ëŸ¼ì˜ íŒ¨ë”© í¬ê¸° ì¶”ì •
+            //ÇöÀç ÄÃ·³ÀÇ ÆĞµù Å©±â ÃßÁ¤
             sCurAlign = SMC_GET_COLUMN_PAD_LENGTH( aValues[i], aColumns[i] );
  
             sVarPieceLen += sCurAlign;  /* BUG-43117 */
@@ -2196,7 +2229,7 @@ IDE_RC svcRecord::insertUnitedVarColumns( void            *  aTrans,
         }
     }
 
-    /* fixed row ì—ì„œ ì²« var piece ë¡œ ì´ì–´ì§€ë„ë¡ oid ì„¤ì • */
+    /* fixed row ¿¡¼­ Ã¹ var piece ·Î ÀÌ¾îÁöµµ·Ï oid ¼³Á¤ */
     ((smpSlotHeader*)aFixedRow)->mVarOID = sCurVCPieceOID;
 
     return IDE_SUCCESS;
@@ -2207,24 +2240,24 @@ IDE_RC svcRecord::insertUnitedVarColumns( void            *  aTrans,
 }
 
 /***********************************************************************
- * Description : ì—¬ëŸ¬ê°œì˜ Variable Columnì„ í•˜ë‚˜ì˜ variable slot ì— Insertí•œë‹¤.
- *               í•­ìƒ out-modeë¡œ ì €ì¥í•˜ë©° vcDescëŠ” fixed row slot headerì— ìˆë‹¤.
+ * Description : ¿©·¯°³ÀÇ Variable ColumnÀ» ÇÏ³ªÀÇ variable slot ¿¡ InsertÇÑ´Ù.
+ *               Ç×»ó out-mode·Î ÀúÀåÇÏ¸ç vcDesc´Â fixed row slot header¿¡ ÀÖ´Ù.
  *
- *               ì£¼ì˜: VC Pieceì˜ ê° Headerì— ëŒ€í•´ì„œëŠ” Allocì‹œ loggingì„
- *                    í•˜ì§€ë§Œ VC Pieceì˜ Valueê°€ ì €ì¥ëœ ë¶€ë¶„ì— ëŒ€í•´ì„œëŠ” Logging
- *                    í•˜ì§€ ì•ŠëŠ”ë‹¤. ì™œëƒí•˜ë©´ Insert, Updateì‹œ ê·¸ ë¶€ë¶„ì— ëŒ€í•œ
- *                    Loggingì„ í•˜ê¸° ë•Œë¬¸ì´ë‹¤. ì—¬ê¸°ì„œ Loggingì„ Updateí›„ì—
- *                    í•˜ë”ë¼ë„ ë¬¸ì œê°€ ì—†ëŠ” ì´ ì´ìœ ëŠ” Updateì˜ì—­ì˜ Before Imageê°€
- *                    ì˜ë¯¸ê°€ ì—†ê¸° ë•Œë¬¸ì´ë‹¤.
+ *               ÁÖÀÇ: VC PieceÀÇ °¢ Header¿¡ ´ëÇØ¼­´Â Alloc½Ã loggingÀ»
+ *                    ÇÏÁö¸¸ VC PieceÀÇ Value°¡ ÀúÀåµÈ ºÎºĞ¿¡ ´ëÇØ¼­´Â Logging
+ *                    ÇÏÁö ¾Ê´Â´Ù. ¿Ö³ÄÇÏ¸é Insert, Update½Ã ±× ºÎºĞ¿¡ ´ëÇÑ
+ *                    LoggingÀ» ÇÏ±â ¶§¹®ÀÌ´Ù. ¿©±â¼­ LoggingÀ» UpdateÈÄ¿¡
+ *                    ÇÏ´õ¶óµµ ¹®Á¦°¡ ¾ø´Â ÀÌ ÀÌÀ¯´Â Update¿µ¿ªÀÇ Before Image°¡
+ *                    ÀÇ¹Ì°¡ ¾ø±â ¶§¹®ÀÌ´Ù.
  *
  * aTrans           - [IN] Transaction Pointer
  * aHeader          - [IN] Table Header
- * aFixedRow        - [IN] VCì˜ VCDescê°€ ì €ì¥ë  Fixed Row Pointer
+ * aFixedRow        - [IN] VCÀÇ VCDesc°¡ ÀúÀåµÉ Fixed Row Pointer
  * aColumns         - [IN] VC Column Description
- * aAddOIDFlag      - [IN] Variable Columnì„ êµ¬ì„±í•˜ëŠ” VCë¥¼ Transaction OID Listì—
- *                         Addë¥¼ ì›í•˜ë©´ ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE.
- * aValues          - [IN] Variable Columnì˜ Values
- * aVarcolnCount    - [IN] Variable Columnê³¼ Valueì˜ ìˆ«ì
+ * aAddOIDFlag      - [IN] Variable ColumnÀ» ±¸¼ºÇÏ´Â VC¸¦ Transaction OID List¿¡
+ *                         Add¸¦ ¿øÇÏ¸é ID_TRUE, ¾Æ´Ï¸é ID_FALSE.
+ * aValues          - [IN] Variable ColumnÀÇ Values
+ * aVarcolnCount    - [IN] Variable Column°ú ValueÀÇ ¼ıÀÚ
  ***********************************************************************/
 IDE_RC svcRecord::insertUnitedVarPiece( void            * aTrans,
                                         smcTableHeader  * aHeader,
@@ -2242,8 +2275,8 @@ IDE_RC svcRecord::insertUnitedVarPiece( void            * aTrans,
     UShort        sValueOffset      = 0;
     SInt          i                 = 0;
 
-    /* PROJ-2419 allocSlot ë‚´ë¶€ì—ì„œ Variable Columnì˜
-     * NxtOIDëŠ” NULLOIDë¡œ, FlagëŠ” Usedë¡œ ì´ˆê¸°í™” ë˜ì–´ ë„˜ì–´ì˜¨ë‹¤. */
+    /* PROJ-2419 allocSlot ³»ºÎ¿¡¼­ Variable ColumnÀÇ
+     * NxtOID´Â NULLOID·Î, Flag´Â Used·Î ÃÊ±âÈ­ µÇ¾î ³Ñ¾î¿Â´Ù. */
     IDE_TEST( svpVarPageList::allocSlot( aTrans,
                                          aHeader->mSpaceID,
                                          aHeader->mSelfOID,
@@ -2254,10 +2287,10 @@ IDE_RC svcRecord::insertUnitedVarPiece( void            * aTrans,
                                          &sPiecePtr )
             != IDE_SUCCESS );
 
-    /* VarPiece Headerì˜ Countê°’ì„ ê°±ì‹  */
+    /* VarPiece HeaderÀÇ Count°ªÀ» °»½Å */
     ((smVCPieceHeader*)sPiecePtr)->colCount = aVarColCount;
 
-    /* VarPieceì˜ Offset Arrayì˜ ì‹œì‘ ì£¼ì†Œë¥¼ ê°€ì ¸ì˜´ */
+    /* VarPieceÀÇ Offset ArrayÀÇ ½ÃÀÛ ÁÖ¼Ò¸¦ °¡Á®¿È */
     sColOffsetPtr = (UShort*)(sPiecePtr + ID_SIZEOF(smVCPieceHeader));
 
     sValueOffset = ID_SIZEOF(smVCPieceHeader) + ( ID_SIZEOF(UShort) * (aVarColCount+1) );
@@ -2266,12 +2299,12 @@ IDE_RC svcRecord::insertUnitedVarPiece( void            * aTrans,
     {
         sCurValue   = &aValues[i];
 
-        /* BUG-43287 lengthê°€ 0ì¸ column, ì¦‰ NULL Columnì˜ ê²½ìš°
-         * Column ìì‹ ì˜ align ê°’ì„ ì‚¬ìš©í•˜ì—¬ alignì„ ë§ì¶”ë©´ ì•ˆëœë‹¤.
-         * ë‹¤ìŒ Columnì˜ align ê°’ì´ ë” í° ê°’ì¼ ê²½ìš°
-         * ì‹œì‘ Offsetì´ ë‹¬ë¼ì ¸ì„œ NULL Columnì„ì—ë„ Sizeê°€ 0ì´ ì•„ë‹ˆê²Œë˜ì–´
-         * NULL Columnì´ë¼ê³  íŒë‹¨ì„ í•˜ì§€ ëª»í•˜ê²Œ ë˜ê¸° ë•Œë¬¸
-         * NULLì˜ ê²½ìš° Column List ë‚´ë¶€ì˜ ê°€ì¥ í° align ê°’ìœ¼ë¡œ alignì„ ë§ì¶°ì£¼ì–´ì•¼ í•œë‹¤. */
+        /* BUG-43287 length°¡ 0ÀÎ column, Áï NULL ColumnÀÇ °æ¿ì
+         * Column ÀÚ½ÅÀÇ align °ªÀ» »ç¿ëÇÏ¿© alignÀ» ¸ÂÃß¸é ¾ÈµÈ´Ù.
+         * ´ÙÀ½ ColumnÀÇ align °ªÀÌ ´õ Å« °ªÀÏ °æ¿ì
+         * ½ÃÀÛ OffsetÀÌ ´Ş¶óÁ®¼­ NULL ColumnÀÓ¿¡µµ Size°¡ 0ÀÌ ¾Æ´Ï°ÔµÇ¾î
+         * NULL ColumnÀÌ¶ó°í ÆÇ´ÜÀ» ÇÏÁö ¸øÇÏ°Ô µÇ±â ¶§¹®
+         * NULLÀÇ °æ¿ì Column List ³»ºÎÀÇ °¡Àå Å« align °ªÀ¸·Î alignÀ» ¸ÂÃçÁÖ¾î¾ß ÇÑ´Ù. */
         if ( sCurValue->length != 0 )
         {
             //BUG-43117 align problem
@@ -2289,12 +2322,12 @@ IDE_RC svcRecord::insertUnitedVarPiece( void            * aTrans,
             sColOffsetPtr[i] = sValueOffset;
         }
     }
-    //var piece ì˜ ë offset ì €ì¥. ì‚¬ì´ì¦ˆ êµ¬í•˜ëŠ”ë° í•„ìš”.
+    //var piece ÀÇ ³¡ offset ÀúÀå. »çÀÌÁî ±¸ÇÏ´Âµ¥ ÇÊ¿ä.
     sColOffsetPtr[aVarColCount] = sValueOffset;
 
     if ( aAddOIDFlag == ID_TRUE )
     {
-        /* ìƒˆë¡œ í• ë‹¹ë°›ì€ variable pieceë¥¼ versioning listì— ì¶”ê°€ */
+        /* »õ·Î ÇÒ´ç¹ŞÀº variable piece¸¦ versioning list¿¡ Ãß°¡ */
         IDE_TEST( smLayerCallback::addOID( aTrans,
                                            aHeader->mSelfOID,
                                            *aCurVCPieceOID,
@@ -2314,7 +2347,7 @@ IDE_RC svcRecord::insertUnitedVarPiece( void            * aTrans,
     return IDE_FAILURE;
 }
 /***********************************************************************
- * Description : aRowì— ëŒ€í•´ì„œ Deleteë‚˜ Updateí• ìˆ˜ìˆëŠ”ì§€ ì¡°ì‚¬í•œë‹¤.
+ * Description : aRow¿¡ ´ëÇØ¼­ Delete³ª UpdateÇÒ¼öÀÖ´ÂÁö Á¶»çÇÑ´Ù.
  *
  *               :check
  *               if aRow doesn't have next version, OK
@@ -2332,16 +2365,13 @@ IDE_RC svcRecord::insertUnitedVarPiece( void            * aTrans,
  * aTrans        - [IN] Transaction Pointer
  * aViewSCN      - [IN] ViewSCN
  * aSpaceID      - [IN] SpaceID
- * aRow          - [IN] Deleteë‚˜ UpdateëŒ€ìƒ Row
- * aLockWaitTime - [IN] Lock Waitì‹œ Time Outì‹œê°„.
- * aState        - [IN] function returnì‹œ í˜„ì¬ Rowê°€ ì†í•´ìˆëŠ” Pageê°€ Latchë¥¼
- *                      ì¡ê³  ìˆë‹¤ë©´ 1, ì•„ë‹ˆë©´ 0
+ * aRow          - [IN] Delete³ª Update´ë»ó Row
+ * aLockWaitTime - [IN] Lock Wait½Ã Time Out½Ã°£.
+ * aState        - [IN] function return½Ã ÇöÀç Row°¡ ¼ÓÇØÀÖ´Â Page°¡ Latch¸¦
+ *                      Àâ°í ÀÖ´Ù¸é 1, ¾Æ´Ï¸é 0
  *
- * aRecordLockWaitInfo- [INOUT] PROJ-1677 DEQUEUE Scalabilityí–¥ìƒì„ ìœ„í•˜ì—¬
- *      aRecordLockWaitInfo->mRecordLockWaitFlag == SMI_RECORD_NO_LOCKWAITì´ë©´
- *      record lockì„ ëŒ€ê¸°í•˜ì—¬ì•¼ í•˜ëŠ” ìƒí™©ì—ì„œ record lockëŒ€ê¸°ë¥¼ í•˜ì§€ ì•Šê³ 
- *      skipí•œë‹¤.
  * aRetryInfo    - [IN] Retry Info
+ * aForbiddenToRetry - [IN] retry error ¿Ã¸®´Â°Å ±İÁö, abort ¹ß»ı 
  ***********************************************************************/
 IDE_RC svcRecord::recordLockValidation(void                   *aTrans,
                                        smSCN                   aViewSCN,
@@ -2349,8 +2379,8 @@ IDE_RC svcRecord::recordLockValidation(void                   *aTrans,
                                        SChar                 **aRow,
                                        ULong                   aLockWaitTime,
                                        UInt                   *aState,
-                                       smiRecordLockWaitInfo  *aRecordLockWaitInfo,
-                                       const smiDMLRetryInfo * aRetryInfo )
+                                       const smiDMLRetryInfo * aRetryInfo,
+                                       idBool                  aForbiddenToRetry )
 {
     smpSlotHeader * sCurSlotHeaderPtr;
     smpSlotHeader * sPrvSlotHeaderPtr;
@@ -2366,16 +2396,13 @@ IDE_RC svcRecord::recordLockValidation(void                   *aTrans,
     IDE_ASSERT( aRow   != NULL );
     IDE_ASSERT( *aRow  != NULL );
     IDE_ASSERT( aState != NULL );
-    IDE_ASSERT( aRecordLockWaitInfo != NULL );
 
-    //PROJ-1677
-    aRecordLockWaitInfo->mRecordLockWaitStatus = SMI_NO_ESCAPE_RECORD_LOCKWAIT;
     sPrvSlotHeaderPtr = (smpSlotHeader *)*aRow;
     sCurSlotHeaderPtr = sPrvSlotHeaderPtr;
 
-    /* BUG-15642 Recordê°€ ë‘ë²ˆ Freeë˜ëŠ” ê²½ìš°ê°€ ë°œìƒí•¨.:
-     * ì´ëŸ° ê²½ìš°ê°€ ë°œìƒí•˜ê¸°ì „ì— validateUpdateTargetRowì—ì„œ
-     * ì²´í¬í•˜ì—¬ ë¬¸ì œê°€ ìˆë‹¤ë©´ Rollbackì‹œí‚¤ê³  ë‹¤ì‹œ retryë¥¼ ìˆ˜í–‰ì‹œí‚´*/
+    /* BUG-15642 Record°¡ µÎ¹ø FreeµÇ´Â °æ¿ì°¡ ¹ß»ıÇÔ.:
+     * ÀÌ·± °æ¿ì°¡ ¹ß»ıÇÏ±âÀü¿¡ validateUpdateTargetRow¿¡¼­
+     * Ã¼Å©ÇÏ¿© ¹®Á¦°¡ ÀÖ´Ù¸é Rollback½ÃÅ°°í ´Ù½Ã retry¸¦ ¼öÇà½ÃÅ´*/
     IDE_TEST_RAISE( validateUpdateTargetRow( aTrans,
                                              aSpaceID,
                                              aViewSCN,
@@ -2387,21 +2414,21 @@ IDE_RC svcRecord::recordLockValidation(void                   *aTrans,
 
     sTransID = smLayerCallback::getTransID( aTrans );
 
-    while(! SM_SCN_IS_FREE_ROW( sCurSlotHeaderPtr->mLimitSCN ) /* aRowê°€ ìµœì‹ ë²„ì „ì¸ê°€?*/)
+    while(! SM_SCN_IS_FREE_ROW( sCurSlotHeaderPtr->mLimitSCN ) /* aRow°¡ ÃÖ½Å¹öÀüÀÎ°¡?*/)
     {
         SMX_GET_SCN_AND_TID( sCurSlotHeaderPtr->mLimitSCN, sNxtRowSCN, sNxtRowTID );
 
-        /* Next Versionì´ Lock Rowì¸ ê²½ìš° */
+        /* Next VersionÀÌ Lock RowÀÎ °æ¿ì */
         if( SM_SCN_IS_LOCK_ROW( sNxtRowSCN ) )
         {
             if( sNxtRowTID == sTransID )
             {
-                /* aRowì— ëŒ€í•œ Lockì„ aTransê°€ ì´ë¯¸ ì¡ì•˜ë‹¤.*/
+                /* aRow¿¡ ´ëÇÑ LockÀ» aTrans°¡ ÀÌ¹Ì Àâ¾Ò´Ù.*/
                 break;
             }
             else
             {
-                /*ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´ lockì„ ì¡ì•˜ë‹¤ë©´ ê·¸ê°€ ëë‚˜ê¸°ë¥¼ ê¸°ë‹¤ë¦°ë‹¤.*/
+                /*´Ù¸¥ Æ®·£Àè¼ÇÀÌ lockÀ» Àâ¾Ò´Ù¸é ±×°¡ ³¡³ª±â¸¦ ±â´Ù¸°´Ù.*/
             }
         }
         else
@@ -2410,16 +2437,16 @@ IDE_RC svcRecord::recordLockValidation(void                   *aTrans,
             {
                 IDE_TEST_RAISE( aRetryInfo == NULL, already_modified );
 
-                // ë°”ë¡œ ì²˜ë¦¬í•œë‹¤.
+                // ¹Ù·Î Ã³¸®ÇÑ´Ù.
                 IDE_TEST_RAISE( SM_SCN_IS_DELETED( sNxtRowSCN ), already_modified );
 
                 sNextOID = SMP_SLOT_GET_NEXT_OID( sCurSlotHeaderPtr );
 
                 IDE_ASSERT( SM_IS_VALID_OID( sNextOID ) );
 
-                // Next Row ê°€ ìˆëŠ” ê²½ìš° ë”°ë¼ê°„ë‹¤
-                // Next Rowì˜ Page IDê°€ ë‹¤ë¥´ë©´ Page Latchë¥¼ ë‹¤ì‹œ ì¡ëŠ”ë‹¤.
-                IDE_ASSERT( svmManager::getOIDPtr( aSpaceID,
+                // Next Row °¡ ÀÖ´Â °æ¿ì µû¶ó°£´Ù
+                // Next RowÀÇ Page ID°¡ ´Ù¸£¸é Page Latch¸¦ ´Ù½Ã Àâ´Â´Ù.
+                IDE_ASSERT( smmManager::getOIDPtr( aSpaceID,
                                                    sNextOID,
                                                    (void**)&sCurSlotHeaderPtr )
                             == IDE_SUCCESS );
@@ -2439,44 +2466,32 @@ IDE_RC svcRecord::recordLockValidation(void                   *aTrans,
                     *aState = 1;
                     sPageID = sNxtPageID;
                 }
-            }
-        }
+            } //if
+        } // else
 
         sWaitTransID = sNxtRowTID;
 
-        /* lock waitì‹œ Latchë¥¼ í’€ê³  í•´ì•¼ëœë‹¤. ì™œëƒí•˜ë©´ Deadlock CheckëŠ”
-           Lockì— ëŒ€í•´ì„œë§Œ í•˜ê¸°ë•Œë¬¸ì´ë‹¤. ë§Œì•½ Latchë¥¼ ì¡ê³  Lock Watingì„
-           í•˜ê²Œ ë˜ë©´ Latch ì™€ Lockì˜ ì˜í•œ Deadlockì´ ë°œìƒí•  ìˆ˜ ìˆê³ ,
-           ì´ëŸ° Deadlockì€ Detectë˜ì§€ ì•ŠëŠ”ë‹¤.
-        */
-        //PROJ-1677 Dequeue
-        if(aRecordLockWaitInfo->mRecordLockWaitFlag == SMI_RECORD_NO_LOCKWAIT)
-        {
-           aRecordLockWaitInfo->mRecordLockWaitStatus = SMI_ESCAPE_RECORD_LOCKWAIT;
-           //latchëŠ” remove versionì™€ê°™ì´ callerì—ì„œ í‘¼ë‹¤.
-           *aState = 1;
-           IDE_CONT(ESC_RECORD_LOCK_WAIT);
-        }
         *aState = 0;
         IDE_TEST( svmManager::releasePageLatch( aSpaceID, sPageID )
                   != IDE_SUCCESS );
 
-        /* Next Versionì˜ Transactionì´ ëë‚ ë•Œê¹Œì§€ ê¸°ë‹¤ë¦°ë‹¤. */
+        /* Next VersionÀÇ TransactionÀÌ ³¡³¯¶§±îÁö ±â´Ù¸°´Ù. */
         IDE_TEST( smLayerCallback::waitLockForTrans( aTrans,
                                                      sWaitTransID,
+                                                     aSpaceID,
                                                      aLockWaitTime )
                   != IDE_SUCCESS );
 
         IDE_TEST(svmManager::holdPageXLatch(aSpaceID, sPageID) != IDE_SUCCESS);
         *aState = 1;
-    }
+    } // while
 
     if( sCurSlotHeaderPtr != sPrvSlotHeaderPtr )
     {
         IDE_ASSERT( aRetryInfo != NULL );
         IDE_ASSERT( aRetryInfo->mIsRowRetry == ID_FALSE );
 
-        // Curê³¼ prvë¥¼ ë¹„êµí•œë‹¤.
+        // Cur°ú prv¸¦ ºñ±³ÇÑ´Ù.
         if( aRetryInfo->mStmtRetryColLst != NULL )
         {
             IDE_TEST_RAISE( isSameColumnValue( aSpaceID,
@@ -2496,16 +2511,37 @@ IDE_RC svcRecord::recordLockValidation(void                   *aTrans,
         }
     }
 
-    //PROJ-1677
-    IDE_EXCEPTION_CONT(ESC_RECORD_LOCK_WAIT);
-
     *aRow = (SChar*)sCurSlotHeaderPtr;
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( already_modified );
     {
-        IDE_SET(ideSetErrorCode (smERR_RETRY_Already_Modified));
+        if( aForbiddenToRetry == ID_TRUE )
+        {
+            IDE_DASSERT( ((smxTrans*)aTrans)->mIsGCTx == ID_TRUE );
+
+            SChar sMsgBuf[SMI_MAX_ERR_MSG_LEN];
+            idlOS::snprintf( sMsgBuf,
+                             SMI_MAX_ERR_MSG_LEN,
+                             "[RECORD VALIDATION] "
+                             "SpaceID:%"ID_UINT32_FMT", "
+                             "ViewSCN:%"ID_UINT64_FMT", "
+                             "CreateSCN:%"ID_UINT64_FMT", "
+                             "LimitSCN:%"ID_UINT64_FMT,
+                             aSpaceID,
+                             SM_SCN_TO_LONG(aViewSCN),
+                             SM_SCN_TO_LONG(sCurSlotHeaderPtr->mCreateSCN),
+                             SM_SCN_TO_LONG(sCurSlotHeaderPtr->mLimitSCN) );
+
+            IDE_SET( ideSetErrorCode(smERR_ABORT_StatementTooOld, sMsgBuf) );
+
+            IDE_ERRLOG( IDE_SD_19 );
+        }
+        else
+        {
+            IDE_SET( ideSetErrorCode(smERR_RETRY_Already_Modified) );
+        }
     }
     IDE_EXCEPTION( need_row_retry );
     {
@@ -2519,13 +2555,13 @@ IDE_RC svcRecord::recordLockValidation(void                   *aTrans,
 }
 
 /***********************************************************************
- * Description : Column listë¥¼ ê¸°ì¤€ìœ¼ë¡œ ë‘ê°œì˜ rowì˜ valueê°€ ê°™ì€ì§€
- *               ë¹„êµí•œë‹¤.
+ * Description : Column list¸¦ ±âÁØÀ¸·Î µÎ°³ÀÇ rowÀÇ value°¡ °°ÀºÁö
+ *               ºñ±³ÇÑ´Ù.
  *
  * aSpaceID          - [IN] Space ID
- * aChkColumnList    - [IN] ë¹„êµ í•  column ì˜ list
- * aPrvSlotHeaderPtr - [IN] ë¹„êµ í•  Record 1
- * aCurSlotHeaderPtr - [IN] ë¹„êµ í•  Record 2
+ * aChkColumnList    - [IN] ºñ±³ ÇÒ column ÀÇ list
+ * aPrvSlotHeaderPtr - [IN] ºñ±³ ÇÒ Record 1
+ * aCurSlotHeaderPtr - [IN] ºñ±³ ÇÒ Record 2
  *
  ***********************************************************************/
 idBool svcRecord::isSameColumnValue( scSpaceID               /* aSpaceID */,
@@ -2549,8 +2585,8 @@ idBool svcRecord::isSameColumnValue( scSpaceID               /* aSpaceID */,
     IDE_ASSERT( sPrvRowPtr != NULL );
     IDE_ASSERT( sCurRowPtr != NULL );
 
-    /* Fixed Rowì™€ ë³„ë„ì˜ Variable Columnì— ì €ì¥ë˜ëŠ” Var Columnì€
-       Updateë˜ëŠ” Columnë§Œ New Versionì„ ë§Œë“ ë‹¤.*/
+    /* Fixed Row¿Í º°µµÀÇ Variable Column¿¡ ÀúÀåµÇ´Â Var ColumnÀº
+       UpdateµÇ´Â Column¸¸ New VersionÀ» ¸¸µç´Ù.*/
     for( sCurColumnList = aChkColumnList;
          (( sCurColumnList != NULL ) &&
           ( sIsSameColumnValue != ID_FALSE )) ;
@@ -2600,14 +2636,14 @@ idBool svcRecord::isSameColumnValue( scSpaceID               /* aSpaceID */,
                 sCurLobDesc = (smcLobDesc*)(sCurRowPtr + sColumn->offset);
 
                 /* BUG-41952
-                   1. SM_VCDESC_MODE_IN ì¸ ê²½ìš°(ì¦‰, in-mode LOBì¸ ê²½ìš°),
-                      smcLobDesc ë§Œí¼ ë¹„êµí•˜ë©´ ì•ˆë©ë‹ˆë‹¤.
-                      in-modeì˜ ê²½ìš° smVCDescInModeë§Œ ì €ì¥ë˜ê³ , ë’¤ì— ë°ì´í„°ê°€ ì €ì¥ë©ë‹ˆë‹¤.
-                   2. smVCDescInMode ì™€ smcLobDesc ë‘˜ ë‹¤ êµ¬ì¡°ì²´ì…ë‹ˆë‹¤.
-                      in-mode, out-mode ëª¨ë‘ memcmpë¥¼ ì‚¬ìš©í•˜ë©´ ì•ˆë˜ê³ ,
-                      êµ¬ì¡°ì²´ ì•ˆì˜ ë©¤ë²„ë¥¼ ì§ì ‘ ë¹„êµ í•´ì•¼ í•©ë‹ˆë‹¤. */
+                   1. SM_VCDESC_MODE_IN ÀÎ °æ¿ì(Áï, in-mode LOBÀÎ °æ¿ì),
+                      smcLobDesc ¸¸Å­ ºñ±³ÇÏ¸é ¾ÈµË´Ï´Ù.
+                      in-modeÀÇ °æ¿ì smVCDescInMode¸¸ ÀúÀåµÇ°í, µÚ¿¡ µ¥ÀÌÅÍ°¡ ÀúÀåµË´Ï´Ù.
+                   2. smVCDescInMode ¿Í smcLobDesc µÑ ´Ù ±¸Á¶Ã¼ÀÔ´Ï´Ù.
+                      in-mode, out-mode ¸ğµÎ memcmp¸¦ »ç¿ëÇÏ¸é ¾ÈµÇ°í,
+                      ±¸Á¶Ã¼ ¾ÈÀÇ ¸â¹ö¸¦ Á÷Á¢ ºñ±³ ÇØ¾ß ÇÕ´Ï´Ù. */
 
-                // In-modeì™€ out-modeì— ê³µë™ì ìœ¼ë¡œ ì‚¬ìš©ë˜ëŠ” ê°’ ë¹„êµ
+                // In-mode¿Í out-mode¿¡ °øµ¿ÀûÀ¸·Î »ç¿ëµÇ´Â °ª ºñ±³
                 if ( ( sPrvLobDesc->flag   != sCurLobDesc->flag   ) ||
                      ( sPrvLobDesc->length != sCurLobDesc->length ) )
                 {
@@ -2617,7 +2653,7 @@ idBool svcRecord::isSameColumnValue( scSpaceID               /* aSpaceID */,
 
                 if ( SM_VCDESC_IS_MODE_IN( sCurLobDesc) )
                 {
-                    // In-modeì¼ ê²½ìš°ì—ëŠ” ë‚´ë¶€ ê°’ì„ ë¹„êµ
+                    // In-modeÀÏ °æ¿ì¿¡´Â ³»ºÎ °ªÀ» ºñ±³
                     if ( idlOS::memcmp( ((UChar*)sPrvLobDesc) + ID_SIZEOF(smVCDescInMode),
                                         ((UChar*)sCurLobDesc) + ID_SIZEOF(smVCDescInMode),
                                         sCurLobDesc->length ) != 0 )
@@ -2630,16 +2666,16 @@ idBool svcRecord::isSameColumnValue( scSpaceID               /* aSpaceID */,
                 {
                     IDE_DASSERT( ( sCurLobDesc->flag & SM_VCDESC_MODE_MASK ) == SM_VCDESC_MODE_OUT );
 
-                    /* Out-modeì¼ ê²½ìš°ì—ëŠ” ê° êµ¬ì¡°ì²´ì˜ ê°’ë“¤ì„ ë¹„êµí•œë‹¤.
-                       1. LOB ì „ì²´ê°€ ê°±ì‹ ë˜ì—ˆì„ ê²½ìš°,
-                          mLobVersionì€ 0ì´ ë˜ê³ , mFirstLPCHê°€ ìƒˆë¡­ê²Œ í• ë‹¹ë˜ë©°,
-                          í• ë‹¹ëœ mFirstLPCH[0]ì˜ mOIDê°€ fstPieceOIDë¡œ í• ë‹¹ì´ ëœë‹¤.
-                          ê·¸ëŸ¬ë¯€ë¡œ mFirstLPCHì˜ ê°’ê³¼ fstPieceOID ê°’ì´ ë‹¤ë¥¸ì§€ ë¹„êµí•˜ë©´ ëœë‹¤.
-                       2. LOB ë¶€ë¶„ë§Œ ê°±ì‹ ë˜ì—ˆì„ ê²½ìš°,
-                          mLobVersionì´ ì¦ê°€í•˜ê²Œ ë˜ê³ , mLobVersionë§Œ ë¹„êµí•˜ë©´ ëœë‹¤.
-                       3. LOBì—ì„œ LPCHê°€ ì¶”ê°€ëœ ê²½ìš°,
-                          mLPCHCount ê°’ì´ ì¦ê°€í•˜ë¯€ë¡œ, mLPCHCountë§Œ ë¹„êµí•˜ë©´ ëœë‹¤.
-                       ì¦‰, ê° êµ¬ì¡°ì²´ì˜ ë©¤ë²„ ë³€ìˆ˜ë¥¼ ë¹„êµí•˜ëŠ” ê²ƒìœ¼ë¡œ ì»¬ëŸ¼ ê°’ì˜ ë™ì¼ ìœ ë¬´ íŒë‹¨ ê°€ëŠ¥ */
+                    /* Out-modeÀÏ °æ¿ì¿¡´Â °¢ ±¸Á¶Ã¼ÀÇ °ªµéÀ» ºñ±³ÇÑ´Ù.
+                       1. LOB ÀüÃ¼°¡ °»½ÅµÇ¾úÀ» °æ¿ì,
+                          mLobVersionÀº 0ÀÌ µÇ°í, mFirstLPCH°¡ »õ·Ó°Ô ÇÒ´çµÇ¸ç,
+                          ÇÒ´çµÈ mFirstLPCH[0]ÀÇ mOID°¡ fstPieceOID·Î ÇÒ´çÀÌ µÈ´Ù.
+                          ±×·¯¹Ç·Î mFirstLPCHÀÇ °ª°ú fstPieceOID °ªÀÌ ´Ù¸¥Áö ºñ±³ÇÏ¸é µÈ´Ù.
+                       2. LOB ºÎºĞ¸¸ °»½ÅµÇ¾úÀ» °æ¿ì,
+                          mLobVersionÀÌ Áõ°¡ÇÏ°Ô µÇ°í, mLobVersion¸¸ ºñ±³ÇÏ¸é µÈ´Ù.
+                       3. LOB¿¡¼­ LPCH°¡ Ãß°¡µÈ °æ¿ì,
+                          mLPCHCount °ªÀÌ Áõ°¡ÇÏ¹Ç·Î, mLPCHCount¸¸ ºñ±³ÇÏ¸é µÈ´Ù.
+                       Áï, °¢ ±¸Á¶Ã¼ÀÇ ¸â¹ö º¯¼ö¸¦ ºñ±³ÇÏ´Â °ÍÀ¸·Î ÄÃ·³ °ªÀÇ µ¿ÀÏ À¯¹« ÆÇ´Ü °¡´É */
                     if ( ( sPrvLobDesc->fstPieceOID != sCurLobDesc->fstPieceOID ) ||
                          ( sPrvLobDesc->mLPCHCount  != sCurLobDesc->mLPCHCount  ) ||
                          ( sPrvLobDesc->mLobVersion != sCurLobDesc->mLobVersion ) ||
@@ -2652,7 +2688,7 @@ idBool svcRecord::isSameColumnValue( scSpaceID               /* aSpaceID */,
 
                 break;
 
-            /* volatileì—ëŠ” Geometryê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+            /* volatile¿¡´Â Geometry°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù. */
             case SMI_COLUMN_TYPE_VARIABLE_LARGE:
             default:
                 IDE_ASSERT(0);
@@ -2665,17 +2701,17 @@ idBool svcRecord::isSameColumnValue( scSpaceID               /* aSpaceID */,
 }
 
 /***********************************************************************
- *  Update, delete, lock rowí•˜ë ¤ëŠ” rowê°€ ì •ìƒì¸ì§€ Testí•œë‹¤.
- *  ë‹¤ìŒê³¼ ê°™ì€ ì²´í¬ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *  Update, delete, lock rowÇÏ·Á´Â row°¡ Á¤»óÀÎÁö TestÇÑ´Ù.
+ *  ´ÙÀ½°ú °°Àº Ã¼Å©¸¦ ¼öÇàÇÑ´Ù.
  *
- *  1. ì„ íƒí•œ Rowì— Delete Bitê°€ Settingë  ìˆ˜ê°€ ì—†ë‹¤.
- *  2. ì„ íƒí•œ RowëŠ” Rowì˜ SCNì´ SM_SCN_ROLLBACK_NEWê°€ ë ìˆ˜ê°€ ì—†ë‹¤.
- *  3. Rowì˜ SCNì´ ë¬´í•œëŒ€ê°€ ì•„ë‹ˆë¼ë©´ Rowì˜ SCNì€ ë°˜ë“œì‹œ aViewSCNë³´ë‹¤ ì‘ì•„ì•¼ í•œë‹¤.
+ *  1. ¼±ÅÃÇÑ Row¿¡ Delete Bit°¡ SettingµÉ ¼ö°¡ ¾ø´Ù.
+ *  2. ¼±ÅÃÇÑ Row´Â RowÀÇ SCNÀÌ SM_SCN_ROLLBACK_NEW°¡ µÉ¼ö°¡ ¾ø´Ù.
+ *  3. RowÀÇ SCNÀÌ ¹«ÇÑ´ë°¡ ¾Æ´Ï¶ó¸é RowÀÇ SCNÀº ¹İµå½Ã aViewSCNº¸´Ù ÀÛ¾Æ¾ß ÇÑ´Ù.
  *
  *  aRowPtr   - [IN] Row Pointer
- *  aSpaceID  - [IN] Rowì˜ Tableì´ ì†í•œ Tablespaceì˜ ID
+ *  aSpaceID  - [IN] RowÀÇ TableÀÌ ¼ÓÇÑ TablespaceÀÇ ID
  *  aViewSCN  - [IN] View SCN
- *  aRowPtr   - [IN] ê²€ì¦ì„ ìˆ˜í–‰í•  Row Pointer
+ *  aRowPtr   - [IN] °ËÁõÀ» ¼öÇàÇÒ Row Pointer
  *  aRetryInfo- [IN] Retry Info
  *
  ***********************************************************************/
@@ -2694,12 +2730,13 @@ IDE_RC svcRecord::validateUpdateTargetRow(void                  * aTrans,
     smxTrans      * sTrans = (smxTrans*)aTrans;
 
     sSlotHeader = (smpSlotHeader *)aRowPtr;
+
     SMX_GET_SCN_AND_TID( sSlotHeader->mCreateSCN, sRowSCN, sRowTID );
 
-    /* 1. ì„ íƒí•œ Rowì— Delete Bitê°€ Settingë  ìˆ˜ê°€ ì—†ë‹¤. */
+    /* 1. ¼±ÅÃÇÑ Row¿¡ Delete Bit°¡ SettingµÉ ¼ö°¡ ¾ø´Ù. */
     if( SM_SCN_IS_DELETED( sRowSCN ) )
     {
-        // Deleteë  Rowë¥¼ Updateí•˜ë ¤ê³  í•œë‹¤.
+        // DeleteµÉ Row¸¦ UpdateÇÏ·Á°í ÇÑ´Ù.
         sIsError = ID_TRUE;
 
         ideLog::log(SM_TRC_LOG_LEVEL_WARNNING,
@@ -2708,10 +2745,10 @@ IDE_RC svcRecord::validateUpdateTargetRow(void                  * aTrans,
 
     if( sIsError == ID_FALSE )
     {
-        /* 2. ì„ íƒí•œ RowëŠ” Rowì˜ SCNì´ SM_SCN_ROLLBACK_NEWê°€ ë ìˆ˜ê°€ ì—†ë‹¤. */
+        /* 2. ¼±ÅÃÇÑ Row´Â RowÀÇ SCNÀÌ SM_SCN_ROLLBACK_NEW°¡ µÉ¼ö°¡ ¾ø´Ù. */
         if( SM_SCN_IS_FREE_ROW( sRowSCN ) )
         {
-            // ì´ë¯¸ Agerê°€ Freeí•œ Rowë¥¼ Freeí•˜ë ¤ê³  í•œë‹¤.
+            // ÀÌ¹Ì Ager°¡ FreeÇÑ Row¸¦ FreeÇÏ·Á°í ÇÑ´Ù.
             sIsError = ID_TRUE;
             ideLog::log(SM_TRC_LOG_LEVEL_WARNNING,
                         "[##WARNING ##WARNING!!] The Row was already freed\n");
@@ -2720,8 +2757,8 @@ IDE_RC svcRecord::validateUpdateTargetRow(void                  * aTrans,
 
     if( sIsError == ID_FALSE )
     {
-        /* 3. ë§Œì•½ Rowì˜ SCNì´ ë¬´í•œëŒ€ë¼ë©´, Rowì˜ TIDëŠ” ì´ ì—°ì‚°ì„ ìˆ˜í–‰í•˜ëŠ”
-           Transactionê³¼ ë™ì¼í•´ì•¼ í•œë‹¤. */
+        /* 3. ¸¸¾à RowÀÇ SCNÀÌ ¹«ÇÑ´ë¶ó¸é, RowÀÇ TID´Â ÀÌ ¿¬»êÀ» ¼öÇàÇÏ´Â
+           Transaction°ú µ¿ÀÏÇØ¾ß ÇÑ´Ù. */
         if( SM_SCN_IS_INFINITE( sRowSCN ) )
         {
             if ( smLayerCallback::getTransID( aTrans ) != sRowTID )
@@ -2733,8 +2770,8 @@ IDE_RC svcRecord::validateUpdateTargetRow(void                  * aTrans,
             else
             {
                 /* PROJ-2694 Fetch Across Rollback
-                 * holdable cursor open ì´ì „ ìì‹ ì´ ìƒì„±í•œ rowì— ì ‘ê·¼í–ˆì„ ê²½ìš°
-                 * í•´ë‹¹ Txë¥¼ rollbackì‹œ cursorë¥¼ ì¬í™œìš©í•  ìˆ˜ ì—†ë‹¤. */
+                 * holdable cursor open ÀÌÀü ÀÚ½ÅÀÌ »ı¼ºÇÑ row¿¡ Á¢±ÙÇßÀ» °æ¿ì
+                 * ÇØ´ç Tx¸¦ rollback½Ã cursor¸¦ ÀçÈ°¿ëÇÒ ¼ö ¾ø´Ù. */
                 if ( ( sTrans->mCursorOpenInfSCN != SM_SCN_INIT ) &&
                      ( SM_SCN_IS_LT( &sRowSCN, &( sTrans->mCursorOpenInfSCN ) ) == ID_TRUE ) )
                 {
@@ -2744,10 +2781,10 @@ IDE_RC svcRecord::validateUpdateTargetRow(void                  * aTrans,
         }
         else
         {
-            /* 4. ë¬´í•œëŒ€ê°€ ì•„ë‹ˆë¼ë©´ Rowì˜ SCNì€ ë°˜ë“œì‹œ aViewSCNë³´ë‹¤ ì‘ì•„ì•¼ í•œë‹¤. */
+            /* 4. ¹«ÇÑ´ë°¡ ¾Æ´Ï¶ó¸é RowÀÇ SCNÀº ¹İµå½Ã aViewSCNº¸´Ù ÀÛ¾Æ¾ß ÇÑ´Ù. */
             if( SM_SCN_IS_GT( &sRowSCN, &aViewSCN ) )
             {
-                /* PROJ-1784 Row retry ì—ì„œëŠ” View SCNë³´ë‹¤ í´ìˆ˜ë„ ìˆë‹¤ */
+                /* PROJ-1784 Row retry ¿¡¼­´Â View SCNº¸´Ù Å¬¼öµµ ÀÖ´Ù */
                 if( aRetryInfo == NULL )
                 {
                     sIsError = ID_TRUE;
@@ -2784,7 +2821,7 @@ IDE_RC svcRecord::validateUpdateTargetRow(void                  * aTrans,
         {
             ideLog::log( SM_TRC_LOG_LEVEL_WARNNING,
                          "[##WARNING ##WARNING!!] Next row of target row info\n");
-            IDE_ASSERT( svmManager::getOIDPtr( aSpaceID, 
+            IDE_ASSERT( smmManager::getOIDPtr( aSpaceID, 
                                                sRowOID,
                                                &sLogSlotPtr )
                         == IDE_SUCCESS );
@@ -2824,11 +2861,11 @@ IDE_RC svcRecord::validateUpdateTargetRow(void                  * aTrans,
 }
 
 /***********************************************************************
- * Description : aFixedRowì—ì„œ aColumnì´ ê°€ë¦¬í‚¤ëŠ” Variable Columnì„ ì‚­ì œí•œë‹¤.
+ * Description : aFixedRow¿¡¼­ aColumnÀÌ °¡¸®Å°´Â Variable ColumnÀ» »èÁ¦ÇÑ´Ù.
  *
  * aTrans     - [IN] Transaction Pointer
  * aHeader    - [IN] Table Header
- * aFstOID    - [IN] VC Piece ì˜ ì²« OID
+ * aFstOID    - [IN] VC Piece ÀÇ Ã¹ OID
  ***********************************************************************/
 IDE_RC svcRecord::deleteVC(void              *aTrans,
                            smcTableHeader    *aHeader,
@@ -2840,11 +2877,11 @@ IDE_RC svcRecord::deleteVC(void              *aTrans,
 
     sVCPieceOID = aFstOID;
 
-    /* VCê°€ ì—¬ëŸ¬ê°œì˜ VC Pieceêµ¬ì„±ë  ê²½ìš° ëª¨ë“ 
-       Pieceì— ëŒ€í•´ì„œ ì‚­ì œ ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤. */
+    /* VC°¡ ¿©·¯°³ÀÇ VC Piece±¸¼ºµÉ °æ¿ì ¸ğµç
+       Piece¿¡ ´ëÇØ¼­ »èÁ¦ ÀÛ¾÷À» ¼öÇàÇÑ´Ù. */
     while ( sVCPieceOID != SM_NULL_OID )
     {
-        IDE_ASSERT( svmManager::getOIDPtr( aHeader->mSpaceID,
+        IDE_ASSERT( smmManager::getOIDPtr( aHeader->mSpaceID,
                                            sVCPieceOID,
                                            (void**)&sVCPiecePtr )
                 == IDE_SUCCESS );
@@ -2874,7 +2911,7 @@ IDE_RC svcRecord::deleteVC(void              *aTrans,
 }
 
 /***********************************************************************
- * description : aRowì—ì„œ aColumnì´ ê°€ë¦¬í‚¤ëŠ” vcì˜ Headerë¥¼ êµ¬í•œë‹¤.
+ * description : aRow¿¡¼­ aColumnÀÌ °¡¸®Å°´Â vcÀÇ Header¸¦ ±¸ÇÑ´Ù.
  *
  * aRow     - [in] fixed row pointer
  * aColumn  - [in] column desc
@@ -2895,7 +2932,7 @@ IDE_RC svcRecord::getVCPieceHeader( const void      *  aRow,
 
     IDE_DASSERT( sOID != SM_NULL_OID );
 
-    IDE_ASSERT( svmManager::getOIDPtr( aColumn->colSpace,
+    IDE_ASSERT( smmManager::getOIDPtr( aColumn->colSpace,
                                        sOID,
                                        (void**)&sVCPieceHeader)
             == IDE_SUCCESS );
@@ -2909,7 +2946,7 @@ IDE_RC svcRecord::getVCPieceHeader( const void      *  aRow,
             sOffsetIdx -= sVCPieceHeader->colCount;
             sOID    = sVCPieceHeader->nxtPieceOID;
 
-            IDE_ASSERT( svmManager::getOIDPtr( aColumn->colSpace,
+            IDE_ASSERT( smmManager::getOIDPtr( aColumn->colSpace,
                                                sOID,
                                                (void**)&sVCPieceHeader)
                     == IDE_SUCCESS );
@@ -2930,7 +2967,7 @@ IDE_RC svcRecord::getVCPieceHeader( const void      *  aRow,
 
 /* PROJ-2174 Supporting LOB in the volatile tablespace */
  /***********************************************************************
- * Description : aRowì˜ aColumnì´ ê°€ë¦¬í‚¤ëŠ” Lob Columnì„ ì§€ìš´ë‹¤.
+ * Description : aRowÀÇ aColumnÀÌ °¡¸®Å°´Â Lob ColumnÀ» Áö¿î´Ù.
  *
  * aTrans    - [IN] Transaction Pointer
  * aHeader   - [IN] Table Header
@@ -2970,7 +3007,7 @@ IDE_RC svcRecord::deleteLob(void              * aTrans,
     }
     else
     {
-        /* Nothing to do. inmode ëŠ” fixed recordì—ì„œ í•¨ê»˜ ì²˜ë¦¬ëœë‹¤. */
+        /* Nothing to do. inmode ´Â fixed record¿¡¼­ ÇÔ²² Ã³¸®µÈ´Ù. */
     }
 
     return IDE_SUCCESS;
@@ -2981,16 +3018,16 @@ IDE_RC svcRecord::deleteLob(void              * aTrans,
 }
 
 /***********************************************************************
- * Description: Variable Length Dataë¥¼ ì½ëŠ”ë‹¤. ë§Œì•½ ê¸¸ì´ê°€ ìµœëŒ€ Pieceê¸¸ì´ ë³´ë‹¤
- *              ì‘ê³  ì½ì–´ì•¼ í•  Pieceê°€ í•˜ë‚˜ì˜ í˜ì´ì§€ì— ì¡´ì¬í•œë‹¤ë©´ ì½ì–´ì•¼ í•  ìœ„ì¹˜ì˜
- *              ì²«ë²ˆì§¸ ë°”ì´íŠ¸ê°€ ìœ„ì¹˜í•œ ë©”ëª¨ë¦¬ í¬ì¸í„°ë¥¼ ë¦¬í„´í•œë‹¤. ê·¸ë ‡ì§€ ì•Šì„ ê²½ìš° Rowì˜
- *              ê°’ì„ ë³µì‚¬í•´ì„œ ë„˜ê²¨ì¤€ë‹¤.
+ * Description: Variable Length Data¸¦ ÀĞ´Â´Ù. ¸¸¾à ±æÀÌ°¡ ÃÖ´ë Piece±æÀÌ º¸´Ù
+ *              ÀÛ°í ÀĞ¾î¾ß ÇÒ Piece°¡ ÇÏ³ªÀÇ ÆäÀÌÁö¿¡ Á¸ÀçÇÑ´Ù¸é ÀĞ¾î¾ß ÇÒ À§Ä¡ÀÇ
+ *              Ã¹¹øÂ° ¹ÙÀÌÆ®°¡ À§Ä¡ÇÑ ¸Ş¸ğ¸® Æ÷ÀÎÅÍ¸¦ ¸®ÅÏÇÑ´Ù. ±×·¸Áö ¾ÊÀ» °æ¿ì RowÀÇ
+ *              °ªÀ» º¹»çÇØ¼­ ³Ñ°ÜÁØ´Ù.
  *
- * aRow         - [IN] ì½ì–´ë“¤ì¼ ì»´ëŸ¼ì„ ê°€ì§€ê³  ìˆëŠ” Row Pointer
- * aColumn      - [IN] ì½ì–´ë“¤ì¼ ì»¬ëŸ¼ì˜ ì •ë³´
+ * aRow         - [IN] ÀĞ¾îµéÀÏ ÄÄ·³À» °¡Áö°í ÀÖ´Â Row Pointer
+ * aColumn      - [IN] ÀĞ¾îµéÀÏ ÄÃ·³ÀÇ Á¤º¸
  * aLength      - [IN-OUT] IN : IsReturnLength == ID_FALSE
  *                         OUT: isReturnLength == ID_TRUE
- * aBuffer      - [IN] valueê°€ ë³µì‚¬ë¨.
+ * aBuffer      - [IN] value°¡ º¹»çµÊ.
  *
  ***********************************************************************/
 SChar* svcRecord::getVarRow( const void      * aRow,
@@ -3037,17 +3074,17 @@ SChar* svcRecord::getVarRow( const void      * aRow,
             IDE_DASSERT( sOffsetIdx != ID_USHORT_MAX );
             IDE_DASSERT( sOffsetIdx < sVCPieceHeader->colCount );
 
-            /* +1 ì€ í—¤ë” ì‚¬ì´ì¦ˆë¥¼ ê±´ë„ˆë›°ê³  offset array ë¥¼ íƒìƒ‰í•˜ê¸° ìœ„í•¨ì´ë‹¤. */
+            /* +1 Àº Çì´õ »çÀÌÁî¸¦ °Ç³Ê¶Ù°í offset array ¸¦ Å½»öÇÏ±â À§ÇÔÀÌ´Ù. */
             sCurrOffsetPtr = ((UShort*)(sVCPieceHeader + 1) + sOffsetIdx);
 
             IDE_DASSERT( *(sCurrOffsetPtr + 1) >= *sCurrOffsetPtr );
 
-            /* next offset ê³¼ì˜ ì°¨ê°€ ê¸¸ì´ê°€ ëœë‹¤. */
+            /* next offset °úÀÇ Â÷°¡ ±æÀÌ°¡ µÈ´Ù. */
             *aLength    = ( *( sCurrOffsetPtr + 1 )) - ( *sCurrOffsetPtr );
 
             if ( *aLength == 0 )
             {
-                /* ì¤‘ê°„ì— ë‚€ NULL valueëŠ” offset ì°¨ì´ê°€ 0 ì´ë‹¤ */
+                /* Áß°£¿¡ ³¤ NULL value´Â offset Â÷ÀÌ°¡ 0 ÀÌ´Ù */
                 sRet = NULL;
             }
             else
@@ -3061,7 +3098,7 @@ SChar* svcRecord::getVarRow( const void      * aRow,
 }
 
 /***********************************************************************
- * description : aRowPtrì—ì„œ aColumnì´ ê°€ë¦¬í‚¤ëŠ” valueì˜ lengthë¥¼ êµ¬í•œë‹¤.
+ * description : aRowPtr¿¡¼­ aColumnÀÌ °¡¸®Å°´Â valueÀÇ length¸¦ ±¸ÇÑ´Ù.
  *
  * aRowPtr  - [in] fixed row pointer
  * aColumn  - [in] column desc
@@ -3095,14 +3132,14 @@ UInt svcRecord::getVarColumnLen( const smiColumn    * aColumn,
             IDE_DASSERT( sOffsetIdx != ID_USHORT_MAX );
             IDE_DASSERT( sOffsetIdx < sVCPieceHeader->colCount );
 
-            /* +1 ì€ í—¤ë” ì‚¬ì´ì¦ˆë¥¼ ê±´ë„ˆë›°ê³  offset array ë¥¼ íƒìƒ‰í•˜ê¸° ìœ„í•¨ì´ë‹¤. */
+            /* +1 Àº Çì´õ »çÀÌÁî¸¦ °Ç³Ê¶Ù°í offset array ¸¦ Å½»öÇÏ±â À§ÇÔÀÌ´Ù. */
             sCurrOffsetPtr = ((UShort*)(sVCPieceHeader + 1) + sOffsetIdx);
 
             IDE_DASSERT( *(sCurrOffsetPtr + 1) >= *sCurrOffsetPtr );
 
-            sCurrOffsetPtr = (UShort*)(sVCPieceHeader + 1) + sOffsetIdx; /* +1 headersize ê±´ë„ˆë›°ê¸°*/
+            sCurrOffsetPtr = (UShort*)(sVCPieceHeader + 1) + sOffsetIdx; /* +1 headersize °Ç³Ê¶Ù±â*/
 
-            sLength = ( *( sCurrOffsetPtr + 1 )) - ( *sCurrOffsetPtr ); /* +1 ì€ next offset */
+            sLength = ( *( sCurrOffsetPtr + 1 )) - ( *sCurrOffsetPtr ); /* +1 Àº next offset */
         }
     }
 
@@ -3110,11 +3147,11 @@ UInt svcRecord::getVarColumnLen( const smiColumn    * aColumn,
 }
 
 /***********************************************************************
- * Description : aRowPtrì´ ê°€ë¦¬í‚¤ëŠ” Rowì—ì„œ aColumnì— í•´ë‹¹í•˜ëŠ”
- *               Columnì˜ ê¸¸ì´ëŠ” ë¦¬í„´í•œë‹¤.
+ * Description : aRowPtrÀÌ °¡¸®Å°´Â Row¿¡¼­ aColumn¿¡ ÇØ´çÇÏ´Â
+ *               ColumnÀÇ ±æÀÌ´Â ¸®ÅÏÇÑ´Ù.
  *      
  * aRowPtr - [IN] Row Pointer
- * aColumn - [IN] Columnì •ë³´.
+ * aColumn - [IN] ColumnÁ¤º¸.
  ***********************************************************************/
 UInt svcRecord::getColumnLen( const smiColumn * aColumn,
                               SChar           * aRowPtr )

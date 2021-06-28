@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qcuSessionPkg.cpp 83637 2018-08-07 05:40:38Z khkwak $
+ * $Id: qcuSessionPkg.cpp 91010 2021-06-17 01:33:11Z hykim $
  **********************************************************************/
 
 #include <idl.h>
@@ -59,7 +59,7 @@ IDE_RC qcuSessionPkg::makeSessionPkgInfo( qcSessionPkgInfo ** aNewSessionPkgInfo
 {
     qcSessionPkgInfo * sNewPkgInfo;
 
-    // qcSessionPkgInfo ë° template í• ë‹¹
+    // qcSessionPkgInfo ¹× template ÇÒ´ç
     IDE_TEST( qcg::allocSessionPkgInfo( &sNewPkgInfo ) != IDE_SUCCESS );
 
     *aNewSessionPkgInfo = sNewPkgInfo;
@@ -91,7 +91,7 @@ IDE_RC qcuSessionPkg::delSessionPkgInfo( qcStatement * aStatement, qsOID aPkgOID
             }
             else
             {
-                // Prevê°€ ì—†ìœ¼ë©´ ì œì¼ ì²˜ìŒ
+                // Prev°¡ ¾øÀ¸¸é Á¦ÀÏ Ã³À½
                 aStatement->session->mQPSpecific.mSessionPkg = sNextSessionPkg;
             }
 
@@ -135,12 +135,12 @@ IDE_RC qcuSessionPkg::searchPkgInfoFromSession( qcStatement        * aStatement,
         if( sSessionPkg->pkgOID == aPkgInfo->pkgOID )
         {
             /* PROJ-2268 Reuse Catalog Table Slot
-             * Sessionì— ì €ìž¥ëœ Pkg ê°ì²´ì— ë³€ê²½ì´ ìžˆì—ˆëŠ”ì§€ í™•ì¸í•œë‹¤. */
+             * Session¿¡ ÀúÀåµÈ Pkg °´Ã¼¿¡ º¯°æÀÌ ÀÖ¾ú´ÂÁö È®ÀÎÇÑ´Ù. */
             if ( smiValidatePlanHandle( smiGetTable( sSessionPkg->pkgOID ),
                                         sSessionPkg->pkgSCN ) 
                 != IDE_SUCCESS )
             {
-                /* Pkgì— ë³€ê²½ì´ ìžˆì—ˆë‹¤. ë“±ë¡ëœ ì •ë³´ë¥¼ ì§€ìš´ë‹¤. */
+                /* Pkg¿¡ º¯°æÀÌ ÀÖ¾ú´Ù. µî·ÏµÈ Á¤º¸¸¦ Áö¿î´Ù. */
                 IDE_TEST( delSessionPkgInfo( aStatement, sSessionPkg->pkgOID ) != IDE_SUCCESS );
                 sFoundPkgInfo = ID_FALSE;
                 break;
@@ -156,8 +156,8 @@ IDE_RC qcuSessionPkg::searchPkgInfoFromSession( qcStatement        * aStatement,
                 sTemplate = sSessionPkg->pkgTemplate;
                 break;
             }
-            // ë™ì¼í•œ OIDë¥¼ ê°€ì§„ packageëŠ” ì¡´ìž¬í•˜ë‚˜,
-            // ìž˜ëª»ëœ templateì„ ì •ë³´ë¥¼ ê°€ì§€ê³  ìžˆëŠ” ìžˆìœ¼ë¯€ë¡œ ì§€ìš´ë‹¤.
+            // µ¿ÀÏÇÑ OID¸¦ °¡Áø package´Â Á¸ÀçÇÏ³ª,
+            // Àß¸øµÈ templateÀ» Á¤º¸¸¦ °¡Áö°í ÀÖ´Â ÀÖÀ¸¹Ç·Î Áö¿î´Ù.
             else
             {
                 IDE_TEST( delSessionPkgInfo( aStatement, sSessionPkg->pkgOID ) != IDE_SUCCESS );
@@ -173,7 +173,7 @@ IDE_RC qcuSessionPkg::searchPkgInfoFromSession( qcStatement        * aStatement,
 
     if( sFoundPkgInfo == ID_FALSE )
     {
-        // sessionì— package ì •ë³´ë¥¼ ì €ìž¥í•  ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
+        // session¿¡ package Á¤º¸¸¦ ÀúÀåÇÒ ³ëµå¸¦ »ý¼ºÇÑ´Ù.
         IDE_TEST( makeSessionPkgInfo( &sNewSessionPkg ) != IDE_SUCCESS );
         sStage = 1;
 
@@ -194,8 +194,8 @@ IDE_RC qcuSessionPkg::searchPkgInfoFromSession( qcStatement        * aStatement,
                   != IDE_SUCCESS );
 
         /* BUG-41847
-           package ë³€ìˆ˜ì˜ default ê°’ìœ¼ë¡œ functionì„ ì‚¬ìš©í•  ìˆ˜ ìžˆì–´ì•¼ í•©ë‹ˆë‹¤.
-           í•´ë‹¹ í•¨ìˆ˜ì—ì„œ package ë³€ìˆ˜ ì´ˆê¸°í™” ë° initialize sectionì„ ìˆ˜í–‰í•œë‹¤. */
+           package º¯¼öÀÇ default °ªÀ¸·Î functionÀ» »ç¿ëÇÒ ¼ö ÀÖ¾î¾ß ÇÕ´Ï´Ù.
+           ÇØ´ç ÇÔ¼ö¿¡¼­ package º¯¼ö ÃÊ±âÈ­ ¹× initialize sectionÀ» ¼öÇàÇÑ´Ù. */
         IDE_TEST( qsx::pkgInitWithNode( aStatement,
                                         aStack,
                                         aStackRemain,
@@ -206,7 +206,7 @@ IDE_RC qcuSessionPkg::searchPkgInfoFromSession( qcStatement        * aStatement,
         if( aPkgInfo->objType == QS_PKG )
         {
             /* BUG-38844
-               ë™ì¼í•œ ì´ë¦„ì„ ê°€ì§„ package bodyì˜ qsxPkgInfoë¥¼ ì–»ì–´ì˜¨ë‹¤. */
+               µ¿ÀÏÇÑ ÀÌ¸§À» °¡Áø package bodyÀÇ qsxPkgInfo¸¦ ¾ò¾î¿Â´Ù. */
             IDE_TEST( getPkgInfo( aStatement,
                                   aPkgInfo->planTree->userID,
                                   aPkgInfo->planTree->pkgNamePos,
@@ -246,18 +246,10 @@ IDE_RC qcuSessionPkg::searchPkgInfoFromSession( qcStatement        * aStatement,
 
     IDE_EXCEPTION_END;
 
-    // error ë‚˜ë©´ ìƒì„±í•œ ë…¸ë“œëŠ” ë¬´ì¡°ê±´ ì‚­ì œ
-    switch( sStage )
+    if( sStage == 1 )
     {
-        case 1 :
-            // error ë‚˜ë©´ ìƒì„±í•œ ë…¸ë“œëŠ” ë¬´ì¡°ê±´ ì‚­ì œ
-            if( delSessionPkgInfo( aStatement, aPkgInfo->pkgOID ) != IDE_SUCCESS )
-            {
-                IDE_ERRLOG(IDE_QP_10);
-            }
-            break;
-        case 0:
-            break;
+        // error ³ª¸é »ý¼ºÇÑ ³ëµå´Â ¹«Á¶°Ç »èÁ¦
+        (void)delSessionPkgInfo( aStatement, aPkgInfo->pkgOID );
     }
 
     return IDE_FAILURE;
@@ -308,7 +300,7 @@ IDE_RC qcuSessionPkg::initPkgVariable( qsxExecutorInfo * aExecInfo,
     qcuSqlSourceInfo    sSqlInfo;
     /* BUG-37854 */
     qsPkgStmtBlock    * sPkgBlock;
-    mtcStack            sAssignStack[2];        // assignë¥¼ ìœ„í•œ variable
+    mtcStack            sAssignStack[2];        // assign¸¦ À§ÇÑ variable
 
     idBool              sCopyRef = ID_FALSE;
     SChar             * sErrorMsg = NULL; 
@@ -399,7 +391,7 @@ IDE_RC qcuSessionPkg::initPkgVariable( qsxExecutorInfo * aExecInfo,
                     }
                     else
                     {
-                        // stackì˜ ë‘ë²ˆì§¸ ë¶€ë¶„ì— defaultì˜ ê²°ê³¼ê°’ ì„¸íŒ…
+                        // stackÀÇ µÎ¹øÂ° ºÎºÐ¿¡ defaultÀÇ °á°ú°ª ¼¼ÆÃ
                         sAssignStack[1].column = aTemplate->tmplate.stack[0].column;
                         sAssignStack[1].value  = aTemplate->tmplate.stack[0].value;
                     }
@@ -427,7 +419,7 @@ IDE_RC qcuSessionPkg::initPkgVariable( qsxExecutorInfo * aExecInfo,
                 else
                 {
                     // PROJ-1904 Extend UDT
-                    // UDT variableì€ ì´ˆê¸°í™”í•œ ìƒíƒœìž„.
+                    // UDT variableÀº ÃÊ±âÈ­ÇÑ »óÅÂÀÓ.
                     if ( (sVariable->variableType == QS_ASSOCIATIVE_ARRAY_TYPE) ||
                          (sVariable->variableType == QS_ROW_TYPE) ||
                          (sVariable->variableType == QS_RECORD_TYPE) )
@@ -485,7 +477,7 @@ IDE_RC qcuSessionPkg::initPkgVariable( qsxExecutorInfo * aExecInfo,
     IDE_EXCEPTION( err_pass_wrap_sqltext);
     {
         // To fix BUG-13208
-        // system_ìœ ì €ê°€ ë§Œë“  í”„ë¡œì‹œì ¸ëŠ” ë‚´ë¶€ê³µê°œ ì•ˆí•¨.
+        // system_À¯Àú°¡ ¸¸µç ÇÁ·Î½ÃÁ®´Â ³»ºÎ°ø°³ ¾ÈÇÔ.
         if( aPkgInfo->planTree->userID == QC_SYSTEM_USER_ID )
         {
             qsxEnv::setErrorCode( QC_QSX_ENV(aStatement) );
@@ -497,7 +489,7 @@ IDE_RC qcuSessionPkg::initPkgVariable( qsxExecutorInfo * aExecInfo,
             qsxEnv::setErrorCode( QC_QSX_ENV(aStatement) );
 
             // BUG-43998
-            // PSM ìƒì„± ì˜¤ë¥˜ ë°œìƒì‹œ ì˜¤ë¥˜ ë°œìƒ ìœ„ì¹˜ë¥¼ í•œ ë²ˆë§Œ ì¶œë ¥í•˜ë„ë¡ í•©ë‹ˆë‹¤.
+            // PSM »ý¼º ¿À·ù ¹ß»ý½Ã ¿À·ù ¹ß»ý À§Ä¡¸¦ ÇÑ ¹ø¸¸ Ãâ·ÂÇÏµµ·Ï ÇÕ´Ï´Ù.
             if ( ideHasErrorPosition() == ID_FALSE )
             {
                 (void)sSqlInfo.initWithBeforeMessage( QC_QMX_MEM(aStatement) );
@@ -687,7 +679,6 @@ IDE_RC qcuSessionPkg::getPkgInfo( qcStatement     * aStatement,
     smiStatement       sSmiStmt;
     smiStatement     * sSmiStmtOri;
     smiStatement     * sDummySmiStmt;
-    smSCN              sDummySCN;
     UInt               sSmiStmtFlag = 0;
     UInt               sStage = 0;
 
@@ -753,7 +744,7 @@ IDE_RC qcuSessionPkg::getPkgInfo( qcStatement     * aStatement,
     IDE_TEST(sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
 
     sStage = 1;
-    IDE_TEST(sTrans.commit(&sDummySCN) != IDE_SUCCESS);
+    IDE_TEST(sTrans.commit() != IDE_SUCCESS);
 
     sStage = 0;
     IDE_TEST(sTrans.destroy( aStatement->mStatistics ) != IDE_SUCCESS);

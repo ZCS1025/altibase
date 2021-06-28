@@ -43,6 +43,7 @@
 #include <qdpRole.h>
 #include <qdbComment.h>
 #include <qdtCommon.h>
+#include <sdi.h>
 
 IDE_RC qdbJoin::validateJoinTable( qcStatement * aStatement )
 {
@@ -63,23 +64,23 @@ IDE_RC qdbJoin::validateJoinTable( qcStatement * aStatement )
  *    LOB ( ... ) STORE AS ( TABLESPACE ... LOGGING/NOLOGGING BUFFER/NOBUFFER )
  *
  * Implementation :
- *    1. í…Œì´ë¸” dollar name ì²´í¬
- *    2. íŒŒí‹°ì…˜ ì´ë¦„(ì „í™˜ëœ í›„) ì¤‘ë³µ ê²€ì‚¬
- *       2-1. í…Œì´ë¸” ì´ë¦„(ì „í™˜ë˜ê¸° ì „, JOIN TABLEë¡œ ë¬¶ëŠ” ê²ƒë“¤) ì¤‘ë³µ ê²€ì‚¬
- *    3. íŒŒí‹°ì…˜ë“œ í…Œì´ë¸” ì´ë¦„ ì¤‘ë³µ ì²´í¬(ì¡´ì¬ ì—¬ë¶€)
- *    4. í…Œì´ë¸” ìƒì„± ê¶Œí•œ ì²´í¬
- *    5. ëŒ€ìƒ í…Œì´ë¸” ì „ì²´ ì´ë¦„ìœ¼ë¡œ ì¡´ì¬ ì—¬ë¶€ ê²€ì‚¬
- *    6. ì˜µì…˜ ê²€ì‚¬
+ *    1. Å×ÀÌºí dollar name Ã¼Å©
+ *    2. ÆÄÆ¼¼Ç ÀÌ¸§(ÀüÈ¯µÈ ÈÄ) Áßº¹ °Ë»ç
+ *       2-1. Å×ÀÌºí ÀÌ¸§(ÀüÈ¯µÇ±â Àü, JOIN TABLE·Î ¹­´Â °Íµé) Áßº¹ °Ë»ç
+ *    3. ÆÄÆ¼¼Çµå Å×ÀÌºí ÀÌ¸§ Áßº¹ Ã¼Å©(Á¸Àç ¿©ºÎ)
+ *    4. Å×ÀÌºí »ı¼º ±ÇÇÑ Ã¼Å©
+ *    5. ´ë»ó Å×ÀÌºí ÀüÃ¼ ÀÌ¸§À¸·Î Á¸Àç ¿©ºÎ °Ë»ç
+ *    6. ¿É¼Ç °Ë»ç
  *       6-1. TBS
- *       6-2. Segment Storage ì†ì„±
- *    7. ëŒ€ìƒ í…Œì´ë¸” ì „ì²´ validation
- *    8. ëŒ€ìƒ í…Œì´ë¸” ì „ì²´ schema ì¼ì¹˜ ì—¬ë¶€ ê²€ì‚¬
- *    9. ì¹¼ëŸ¼ typeì— LOBì´ ìˆëŠ” ê²½ìš° ì¶”ê°€ë¡œ lob columnì„ ìœ„í•œ validationì„ í•œë‹¤.
- *    10. íŒŒí‹°ì…˜ ì˜µì…˜ ì²´í¬
- *       10-1. íŒŒí‹°ì…˜ í‚¤ ì»¬ëŸ¼ validation
- *       10-2. ë²”ìœ„ íŒŒí‹°ì…˜ì¸ ê²½ìš°, íŒŒí‹°ì…˜ í‚¤ ê°’ì˜ ê°œìˆ˜ ì²´í¬
- *       10-3. ì¤‘ë³µëœ íŒŒí‹°ì…˜ ì¡°ê±´ ê°’ ì²´í¬
- *       10-4. Hybrid Partitioned Tableì´ë©´ ì—ëŸ¬
+ *       6-2. Segment Storage ¼Ó¼º
+ *    7. ´ë»ó Å×ÀÌºí ÀüÃ¼ validation
+ *    8. ´ë»ó Å×ÀÌºí ÀüÃ¼ schema ÀÏÄ¡ ¿©ºÎ °Ë»ç
+ *    9. Ä®·³ type¿¡ LOBÀÌ ÀÖ´Â °æ¿ì Ãß°¡·Î lob columnÀ» À§ÇÑ validationÀ» ÇÑ´Ù.
+ *    10. ÆÄÆ¼¼Ç ¿É¼Ç Ã¼Å©
+ *       10-1. ÆÄÆ¼¼Ç Å° ÄÃ·³ validation
+ *       10-2. ¹üÀ§ ÆÄÆ¼¼ÇÀÎ °æ¿ì, ÆÄÆ¼¼Ç Å° °ªÀÇ °³¼ö Ã¼Å©
+ *       10-3. Áßº¹µÈ ÆÄÆ¼¼Ç Á¶°Ç °ª Ã¼Å©
+ *       10-4. Hybrid Partitioned TableÀÌ¸é ¿¡·¯
  *
  ***********************************************************************/
 
@@ -108,7 +109,7 @@ IDE_RC qdbJoin::validateJoinTable( qcStatement * aStatement )
     sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;
     sPartTable = sParseTree->partTable;
 
-    /* 1. í…Œì´ë¸” dollar name ì²´í¬ */
+    /* 1. Å×ÀÌºí dollar name Ã¼Å© */
     /* BUG-30059 */
     if ( qdbCommon::containDollarInName( &(sParseTree->tableName) ) == ID_TRUE )
     {
@@ -122,7 +123,7 @@ IDE_RC qdbJoin::validateJoinTable( qcStatement * aStatement )
         /* Nothing To Do */
     }
 
-    /* 2. íŒŒí‹°ì…˜/í…Œì´ë¸” ì´ë¦„ ì¤‘ë³µ ì²´í¬(ê°™ì€ ì´ë¦„ ì£¼ì–´ì¡ŒëŠ”ì§€) */
+    /* 2. ÆÄÆ¼¼Ç/Å×ÀÌºí ÀÌ¸§ Áßº¹ Ã¼Å©(°°Àº ÀÌ¸§ ÁÖ¾îÁ³´ÂÁö) */
     for ( sPartAttr = sPartTable->partAttr;
           sPartAttr != NULL;
           sPartAttr = sPartAttr->next )
@@ -160,7 +161,7 @@ IDE_RC qdbJoin::validateJoinTable( qcStatement * aStatement )
         }
     }
     
-    /* 3. í…Œì´ë¸” ì´ë¦„ ì¤‘ë³µ ì²´í¬(ì¡´ì¬ ì—¬ë¶€) */
+    /* 3. Å×ÀÌºí ÀÌ¸§ Áßº¹ Ã¼Å©(Á¸Àç ¿©ºÎ) */
     IDE_TEST( qcm::existObject( aStatement,
                                 ID_FALSE,
                                 sParseTree->userName,
@@ -173,7 +174,7 @@ IDE_RC qdbJoin::validateJoinTable( qcStatement * aStatement )
 
     IDE_TEST_RAISE( sExist == ID_TRUE, ERR_EXIST_OBJECT_NAME );
 
-    /* 4. í…Œì´ë¸” ìƒì„± ê¶Œí•œ ì²´í¬ */
+    /* 4. Å×ÀÌºí »ı¼º ±ÇÇÑ Ã¼Å© */
     IDE_TEST( qdpRole::checkDDLCreateTablePriv( aStatement,
                                                 sParseTree->userID )
               != IDE_SUCCESS );
@@ -181,7 +182,7 @@ IDE_RC qdbJoin::validateJoinTable( qcStatement * aStatement )
                                                 sParseTree->userID )
               != IDE_SUCCESS );
 
-    /* 5. ëŒ€ìƒ í…Œì´ë¸” ì „ì²´ ì´ë¦„ìœ¼ë¡œ ì¡´ì¬ ì—¬ë¶€ ê²€ì‚¬ */
+    /* 5. ´ë»ó Å×ÀÌºí ÀüÃ¼ ÀÌ¸§À¸·Î Á¸Àç ¿©ºÎ °Ë»ç */
     for ( sPartAttr = sPartTable->partAttr;
           sPartAttr != NULL;
           sPartAttr = sPartAttr->next )
@@ -199,13 +200,13 @@ IDE_RC qdbJoin::validateJoinTable( qcStatement * aStatement )
                                              &(sPartInfoList->partSCN) )
                   != IDE_SUCCESS );
 
-        // íŒŒí‹°ì…˜ë“œ í…Œì´ë¸”ì— LOCK(IS)
+        // ÆÄÆ¼¼Çµå Å×ÀÌºí¿¡ LOCK(IS)
         IDE_TEST( qcm::lockTableForDDLValidation( aStatement,
                                                   sPartInfoList->partHandle,
                                                   sPartInfoList->partSCN )
                   != IDE_SUCCESS );
 
-        // partAttrì™€ ê°™ì€ ìˆœì„œë¡œ parse treeì˜ info listë¥¼ ì‘ì„±í•œë‹¤.
+        // partAttr¿Í °°Àº ¼ø¼­·Î parse treeÀÇ info list¸¦ ÀÛ¼ºÇÑ´Ù.
         if ( sLastPartInfoList == NULL )
         {
             sPartInfoList->next = NULL;
@@ -218,30 +219,35 @@ IDE_RC qdbJoin::validateJoinTable( qcStatement * aStatement )
             sLastPartInfoList->next = sPartInfoList;
             sLastPartInfoList = sLastPartInfoList->next;
         }
+
+        /* BUG-48290 shard object¿¡ ´ëÇÑ DDL Â÷´Ü */
+        IDE_TEST( sdi::checkShardObjectForDDLInternal( aStatement,
+                                                       sParseTree->userName,
+                                                       sPartAttr->oldTableName ) != IDE_SUCCESS );
     }
 
-    /* 6. ì˜µì…˜ ê²€ì‚¬ */
+    /* 6. ¿É¼Ç °Ë»ç */
     IDE_TEST( qdbCreate::validateTableSpace( aStatement )
               != IDE_SUCCESS );
     
-    /* PROJ-2464 hybrid partitioned table ì§€ì›
-     *  - ê´€ë ¨ë‚´ìš© : PRJ-1671 Bitmap TableSpace And Segment Space Management
-     *               Segment Storage ì†ì„± validation
+    /* PROJ-2464 hybrid partitioned table Áö¿ø
+     *  - °ü·Ã³»¿ë : PRJ-1671 Bitmap TableSpace And Segment Space Management
+     *               Segment Storage ¼Ó¼º validation
      */
     IDE_TEST( qdbCommon::validatePhysicalAttr( sParseTree )
               != IDE_SUCCESS );
 
-    // logging, nologging ì†ì„±
+    // logging, nologging ¼Ó¼º
     IDE_TEST( qdbCreate::calculateTableAttrFlag( aStatement,
                                                  sParseTree )
               != IDE_SUCCESS );
 
-    /* 7~9. í…Œì´ë¸”, ì»¬ëŸ¼ validation & schema ë™ì¼ ê²€ì‚¬ */
+    /* 7~9. Å×ÀÌºí, ÄÃ·³ validation & schema µ¿ÀÏ °Ë»ç */
     IDE_TEST( validateAndCompareTables( aStatement ) != IDE_SUCCESS );
 
     /* copy columns */
-    /* ì²«ë²ˆì§¸ ì»¬ëŸ¼ì„ ëŒ€ìƒìœ¼ë¡œ ë¨¼ì € ë³µì‚¬í•œë‹¤. */
-    /* ê·¸ë¦¬ê³  lob ì»¬ëŸ¼ì˜ ì˜µì…˜ì´ ë‹¤ë¥¼ ìˆ˜ ìˆìœ¼ë¯€ë¡œ, ì»¬ëŸ¼ì˜ ì˜µì…˜ì„ ìˆ˜ì •í•œë‹¤. */
+    /* Ã¹¹øÂ° ÄÃ·³À» ´ë»óÀ¸·Î ¸ÕÀú º¹»çÇÑ´Ù. */
+    /* ±×¸®°í lob ÄÃ·³ÀÇ ¿É¼ÇÀÌ ´Ù¸¦ ¼ö ÀÖÀ¸¹Ç·Î, ÄÃ·³ÀÇ ¿É¼ÇÀ» ¼öÁ¤ÇÑ´Ù. */
     sColumnCount = sPartInfoList->partitionInfo->columnCount;
     IDE_TEST( STRUCT_ALLOC_WITH_COUNT(  QC_QMP_MEM( aStatement ),
                                         qcmColumn,
@@ -263,34 +269,34 @@ IDE_RC qdbJoin::validateJoinTable( qcStatement * aStatement )
         sColumn->defaultValueStr = NULL;
     }
 
-    /* 10. íŒŒí‹°ì…˜ ì˜µì…˜ ì²´í¬ */
+    /* 10. ÆÄÆ¼¼Ç ¿É¼Ç Ã¼Å© */
     IDE_TEST( qdbCommon::validatePartitionedTable( aStatement,
                                                    ID_FALSE ) /* aIsCreateTable */
               != IDE_SUCCESS );
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì›
-     *  - 10-4. Hybrid Partitioned Tableì´ë©´ ì—ëŸ¬
+    /* PROJ-2464 hybrid partitioned table Áö¿ø
+     *  - 10-4. Hybrid Partitioned TableÀÌ¸é ¿¡·¯
      */
-    /* 10-4.1. Partitioned êµ¬ì„±ì„ ê²€ì‚¬í•œë‹¤. */
+    /* 10-4.1. Partitioned ±¸¼ºÀ» °Ë»çÇÑ´Ù. */
     sTableType = qdbCommon::getTableTypeFromTBSID( sParseTree->TBSAttr.mID );
 
-    /* 10-4.2. Partition êµ¬ì„±ì„ ê²€ì‚¬í•œë‹¤. */
+    /* 10-4.2. Partition ±¸¼ºÀ» °Ë»çÇÑ´Ù. */
     qdbCommon::getTableTypeCountInPartInfoList( & sTableType,
                                                 sPartTable->partInfoList,
                                                 & sCountDiskType,
                                                 & sCountMemType,
                                                 & sCountVolType );
 
-    /* 10-4.3. Hybrid Partitioned Table ì—ì„œëŠ” Join Tableë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+    /* 10-4.3. Hybrid Partitioned Table ¿¡¼­´Â Join Table¸¦ Áö¿øÇÏÁö ¾Ê´Â´Ù. */
     sTotalCount = sCountDiskType + sCountMemType + sCountVolType;
 
-    /* 10-4.4. ëª¨ë‘ ê°™ì€ Typeì¸ì§€ ê²€ì‚¬í•œë‹¤. Hybrid Partitioned Tableê°€ ì•„ë‹ˆë‹¤. */
+    /* 10-4.4. ¸ğµÎ °°Àº TypeÀÎÁö °Ë»çÇÑ´Ù. Hybrid Partitioned Table°¡ ¾Æ´Ï´Ù. */
     IDE_TEST_RAISE( !( ( sTotalCount == sCountDiskType ) ||
                        ( sTotalCount == sCountMemType ) ||
                        ( sTotalCount == sCountVolType ) ),
                     ERR_UNSUPPORT_ON_HYBRID_PARTITIONED_TABLE );
     
-    /* lob column attribute ì²´í¬ */
+    /* lob column attribute Ã¼Å© */
     IDE_TEST( qdbCommon::validateLobAttributeList( aStatement,
                                                    NULL,
                                                    sParseTree->columns,
@@ -326,7 +332,7 @@ IDE_RC qdbJoin::validateJoinTable( qcStatement * aStatement )
     {
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_EXIST_OBJECT_NAME ) );
     }
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     IDE_EXCEPTION( ERR_UNSUPPORT_ON_HYBRID_PARTITIONED_TABLE );
     {
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_CANNOT_SUPPORT_ON_HYBRID_PARTITIONED_TABLE ) );
@@ -342,28 +348,28 @@ IDE_RC qdbJoin::validateAndCompareTables( qcStatement   * aStatement )
  *
  * Description :
  *      PROJ-1810 Partition Exchange
- *      JOIN TABLEì—ì„œ í…Œì´ë¸” ê´€ë ¨ validateí•œë‹¤.
- *      JOIN TABLEì—ì„œ íŒŒí‹°ì…˜ìœ¼ë¡œ ì „í™˜ë˜ëŠ” ëª¨ë“  í…Œì´ë¸”ì˜ schemaê°€ ì¼ì¹˜í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
- *      ì¶”ê°€ë¡œ Lob ì»¬ëŸ¼ì´ ìˆìœ¼ë©´ validateí•œë‹¤.
- *      validateJoinTableì—ì„œ í˜¸ì¶œëœë‹¤.
+ *      JOIN TABLE¿¡¼­ Å×ÀÌºí °ü·Ã validateÇÑ´Ù.
+ *      JOIN TABLE¿¡¼­ ÆÄÆ¼¼ÇÀ¸·Î ÀüÈ¯µÇ´Â ¸ğµç Å×ÀÌºíÀÇ schema°¡ ÀÏÄ¡ÇÏ´ÂÁö °Ë»çÇÑ´Ù.
+ *      Ãß°¡·Î Lob ÄÃ·³ÀÌ ÀÖÀ¸¸é validateÇÑ´Ù.
+ *      validateJoinTable¿¡¼­ È£ÃâµÈ´Ù.
  *
  * Implementation :
- *      schema ê²€ì‚¬ ëŒ€ìƒì€ column ê°œìˆ˜, type, precision, scale, ì´ë¦„, ìˆœì„œ,
- *      constraint ê°œìˆ˜, ì¢…ë¥˜, ì»¬ëŸ¼, condition(CHECK)ë‹¤.
- *    1. í…Œì´ë¸” ë³„ë¡œ ì œì•½ ì¡°ê±´ì„ ê²€ì‚¬í•œë‹¤.
- *       1-1. TBS type íŒŒí‹°ì…˜ë“œ í…Œì´ë¸”ê³¼ ì¼ì¹˜, Table Typeì€ 'T'(í…Œì´ë¸”), check Operatable(DROP)
- *       1-2. íŒŒí‹°ì…˜ë“œ í…Œì´ë¸” -> x
+ *      schema °Ë»ç ´ë»óÀº column °³¼ö, type, precision, scale, ÀÌ¸§, ¼ø¼­,
+ *      constraint °³¼ö, Á¾·ù, ÄÃ·³, condition(CHECK)´Ù.
+ *    1. Å×ÀÌºí º°·Î Á¦¾à Á¶°ÇÀ» °Ë»çÇÑ´Ù.
+ *       1-1. TBS type ÆÄÆ¼¼Çµå Å×ÀÌºí°ú ÀÏÄ¡, Table TypeÀº 'T'(Å×ÀÌºí), check Operatable(DROP)
+ *       1-2. ÆÄÆ¼¼Çµå Å×ÀÌºí -> x
  *       1-3. replication X
- *       1-4. ì¸ë±ìŠ¤, PK, Unique, FK, Trigger(ìì‹ ì´ DML ëŒ€ìƒì¸ ê²ƒ ë§ê³ ) ì¡´ì¬ -> x
+ *       1-4. ÀÎµ¦½º, PK, Unique, FK, Trigger(ÀÚ½ÅÀÌ DML ´ë»óÀÎ °Í ¸»°í) Á¸Àç -> x
  *       1-5. hidden/compression/encrypted column -> x
- *       1-6. ACCESSê°€ READ_WRITEì¸ í…Œì´ë¸”ë§Œ ê°€ëŠ¥
- *    2. í…Œì´ë¸”ê³¼ ì»¬ëŸ¼ì„ ìˆœíšŒí•˜ë©´ì„œ ì´ì „ ë²ˆì— ì¡°íšŒí•œ í…Œì´ë¸”ê³¼ ì»¬ëŸ¼, constraintë¥¼ ë¹„êµí•œë‹¤.
- *       2-1. column ê°œìˆ˜, constraint ê°œìˆ˜
+ *       1-6. ACCESS°¡ READ_WRITEÀÎ Å×ÀÌºí¸¸ °¡´É
+ *    2. Å×ÀÌºí°ú ÄÃ·³À» ¼øÈ¸ÇÏ¸é¼­ ÀÌÀü ¹ø¿¡ Á¶È¸ÇÑ Å×ÀÌºí°ú ÄÃ·³, constraint¸¦ ºñ±³ÇÑ´Ù.
+ *       2-1. column °³¼ö, constraint °³¼ö
  *       2-2. column type/precision/scale
- *       2-3. column ì´ë¦„, ìˆœì„œ
- *       2-4. constraint ì´ë¦„, ê°œìˆ˜, ì¢…ë¥˜, condition(CHECK)
+ *       2-3. column ÀÌ¸§, ¼ø¼­
+ *       2-4. constraint ÀÌ¸§, °³¼ö, Á¾·ù, condition(CHECK)
  *       2-5. compressed logging flag
- *    3. ì¹¼ëŸ¼ typeì— LOBì´ ìˆëŠ” ê²½ìš° ì¶”ê°€ë¡œ lob columnì„ ìœ„í•œ validationì„ í•œë‹¤.
+ *    3. Ä®·³ type¿¡ LOBÀÌ ÀÖ´Â °æ¿ì Ãß°¡·Î lob columnÀ» À§ÇÑ validationÀ» ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -373,7 +379,7 @@ IDE_RC qdbJoin::validateAndCompareTables( qcStatement   * aStatement )
     qcmPartitionInfoList   * sPartInfoList = NULL;
     qcmColumn              * sColumn = NULL;
 
-    /* table ê°„ schema ëŒ€ì¡° ì‹œ ì‚¬ìš© */
+    /* table °£ schema ´ëÁ¶ ½Ã »ç¿ë */
     qcmTableInfo           * sPrevInfo = NULL;
     qcmTableInfo           * sTableInfo = NULL;
     UInt                     sColOrder = 0;
@@ -385,7 +391,7 @@ IDE_RC qdbJoin::validateAndCompareTables( qcStatement   * aStatement )
     sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;
     sPartTable = sParseTree->partTable;
 
-    /* parse treeì— ë‹¬ë¦° table info listë¥¼ ìˆœíšŒí•˜ë©´ì„œ validation, schema ë¹„êµ. */
+    /* parse tree¿¡ ´Ş¸° table info list¸¦ ¼øÈ¸ÇÏ¸é¼­ validation, schema ºñ±³. */
     for ( sPartInfoList = sPartTable->partInfoList;
           sPartInfoList != NULL;
           sPartInfoList = sPartInfoList->next )
@@ -404,7 +410,7 @@ IDE_RC qdbJoin::validateAndCompareTables( qcStatement   * aStatement )
         IDE_TEST_RAISE( QCM_IS_OPERATABLE_QP_DROP_TABLE( sTableInfo->operatableFlag ) != ID_TRUE,
                         ERR_NOT_EXIST_TABLE );
 
-        /* 1-2. íŒŒí‹°ì…˜ë“œ í…Œì´ë¸” -> x */
+        /* 1-2. ÆÄÆ¼¼Çµå Å×ÀÌºí -> x */
         IDE_TEST_RAISE( sTableInfo->tablePartitionType != QCM_NONE_PARTITIONED_TABLE,
                         ERR_CANNOT_JOIN_PARTITIONED_TABLE );
 
@@ -412,7 +418,7 @@ IDE_RC qdbJoin::validateAndCompareTables( qcStatement   * aStatement )
         IDE_TEST_RAISE( sTableInfo->replicationCount > 0,
                         ERR_DDL_WITH_REPLICATED_TABLE );
 
-        /* 1-4. ì¸ë±ìŠ¤, PK, Unique, FK, Trigger(ìì‹ ì´ DML ëŒ€ìƒì¸ ê²ƒ ë§ê³ ) ì¡´ì¬ -> x */
+        /* 1-4. ÀÎµ¦½º, PK, Unique, FK, Trigger(ÀÚ½ÅÀÌ DML ´ë»óÀÎ °Í ¸»°í) Á¸Àç -> x */
         IDE_TEST_RAISE( sTableInfo->primaryKey != NULL,
                         ERR_JOIN_DISJOIN_TABLE_SPEC );
 
@@ -428,15 +434,21 @@ IDE_RC qdbJoin::validateAndCompareTables( qcStatement   * aStatement )
         IDE_TEST_RAISE( sTableInfo->triggerCount != 0,
                         ERR_JOIN_DISJOIN_TABLE_SPEC );
 
-        /* 1-6. READ_WRITEì¸ í…Œì´ë¸”ë§Œ ê°€ëŠ¥ */
+        /* TASK-7307 DML Data Consistency in Shard
+         *   USABLEÀÎ Å×ÀÌºí¸¸ °¡´É: ACCESS ¿É¼ÇÀ» µû¶óÇÔ */
+        IDE_TEST_RAISE( ( QCG_CHECK_SHARD_DML_CONSISTENCY( aStatement ) == ID_TRUE ) &&
+                        ( sTableInfo->mIsUsable != ID_TRUE ),
+                        ERR_JOIN_DISJOIN_NOT_USABLE );
+
+        /* 1-6. READ_WRITEÀÎ Å×ÀÌºí¸¸ °¡´É */
         IDE_TEST_RAISE( sTableInfo->accessOption != QCM_ACCESS_OPTION_READ_WRITE,
                         ERR_JOIN_DISJOIN_NOT_READ_WRITE );
 
-        /* 2-1. ì»¬ëŸ¼ ê°œìˆ˜/constraint ë¹„êµ */
+        /* 2-1. ÄÃ·³ °³¼ö/constraint ºñ±³ */
         if ( sPrevInfo != NULL )
         {
-            /* ì»¬ëŸ¼ ê°œìˆ˜, constraint ê°œìˆ˜ê°€ ê°™ì•„ì•¼ í•œë‹¤. */
-            /* compressed logging ì˜µì…˜ì´ ê°™ì•„ì•¼ í•œë‹¤. */
+            /* ÄÃ·³ °³¼ö, constraint °³¼ö°¡ °°¾Æ¾ß ÇÑ´Ù. */
+            /* compressed logging ¿É¼ÇÀÌ °°¾Æ¾ß ÇÑ´Ù. */
             IDE_TEST_RAISE( sTableInfo->columnCount != sPrevInfo->columnCount,
                             ERR_JOIN_NOT_SAME_TABLE_SPEC );
 
@@ -463,7 +475,7 @@ IDE_RC qdbJoin::validateAndCompareTables( qcStatement   * aStatement )
                   sNotNullCount < sTableInfo->notNullCount;
                   sNotNullCount++ )
             {
-                /* not null ì»¬ëŸ¼ì˜ column orderë¥¼ êµ¬í•´ ì´ì „ í…Œì´ë¸”ì˜ ê²ƒê³¼ ë¹„êµí•œë‹¤. */
+                /* not null ÄÃ·³ÀÇ column order¸¦ ±¸ÇØ ÀÌÀü Å×ÀÌºíÀÇ °Í°ú ºñ±³ÇÑ´Ù. */
                 sColOrder = ( sTableInfo->notNulls[sNotNullCount].constraintColumn[0] %
                               SMI_COLUMN_ID_MAXIMUM );
                 sPrevColOrder = ( sPrevInfo->notNulls[sNotNullCount].constraintColumn[0] %
@@ -474,7 +486,7 @@ IDE_RC qdbJoin::validateAndCompareTables( qcStatement   * aStatement )
             }
 
             /* compare CHECK */
-            // check ì¡°ê±´ì„ ìˆœì„œì— ë§ì¶°ì„œ ë¹„êµí•œë‹¤.
+            // check Á¶°ÇÀ» ¼ø¼­¿¡ ¸ÂÃç¼­ ºñ±³ÇÑ´Ù.
             for ( sCheckCount = 0;
                   sCheckCount < sTableInfo->checkCount;
                   sCheckCount++ )
@@ -505,16 +517,16 @@ IDE_RC qdbJoin::validateAndCompareTables( qcStatement   * aStatement )
         }
         else
         {
-            /* sPrevInfo = NULL -> ì²« ë²ˆì§¸ í…Œì´ë¸” ê²€ì‚¬. */
+            /* sPrevInfo = NULL -> Ã¹ ¹øÂ° Å×ÀÌºí °Ë»ç. */
             /* Nothing To Do */
         }
 
-        /* ì»¬ëŸ¼ ê´€ë ¨ validation + Schema ë¹„êµ */
+        /* ÄÃ·³ °ü·Ã validation + Schema ºñ±³ */
         for ( sColumn = sTableInfo->columns, sColCount = 0;
               sColumn != NULL;
               sColumn = sColumn->next, sColCount++  )
         {
-            /* 1-5. hidden/compression/encrypted ì»¬ëŸ¼ ì—†ì–´ì•¼ í•œë‹¤. */
+            /* 1-5. hidden/compression/encrypted ÄÃ·³ ¾ø¾î¾ß ÇÑ´Ù. */
             IDE_TEST_RAISE( ( sColumn->flag & QCM_COLUMN_HIDDEN_COLUMN_MASK )
                             == QCM_COLUMN_HIDDEN_COLUMN_TRUE,
                             ERR_JOIN_DISJOIN_COLUMN_SPEC );
@@ -527,18 +539,18 @@ IDE_RC qdbJoin::validateAndCompareTables( qcStatement   * aStatement )
                             == MTD_ENCRYPT_TYPE_TRUE,
                             ERR_JOIN_DISJOIN_COLUMN_SPEC );
 
-            /* 2. schema ë¹„êµ */
+            /* 2. schema ºñ±³ */
             if ( sPrevInfo != NULL )
             {
-                /* ì• ì°¨ë¡€ tableì˜ ê°™ì€ ìˆœë²ˆ ì»¬ëŸ¼ê³¼ ë¹„êµí•œë‹¤.*/
-                // ì»¬ëŸ¼ ì´ë¦„ string ë¹„êµ
+                /* ¾Õ Â÷·Ê tableÀÇ °°Àº ¼ø¹ø ÄÃ·³°ú ºñ±³ÇÑ´Ù.*/
+                // ÄÃ·³ ÀÌ¸§ string ºñ±³
                 IDE_TEST_RAISE( idlOS::strMatch( sColumn->name,
                                                  idlOS::strlen( sColumn->name ),
                                                  sPrevInfo->columns[sColCount].name,
                                                  idlOS::strlen( sPrevInfo->columns[sColCount].name ) ) != 0,
                                 ERR_JOIN_NOT_SAME_TABLE_SPEC );
 
-                // mtcColumn ë¹„êµ
+                // mtcColumn ºñ±³
                 IDE_TEST_RAISE( sColumn->basicInfo->type.dataTypeId !=
                                 sPrevInfo->columns[sColCount].basicInfo->type.dataTypeId,
                                 ERR_JOIN_NOT_SAME_TABLE_SPEC );
@@ -559,7 +571,7 @@ IDE_RC qdbJoin::validateAndCompareTables( qcStatement   * aStatement )
                                 sPrevInfo->columns[sColCount].basicInfo->flag,
                                 ERR_JOIN_NOT_SAME_TABLE_SPEC );
 
-                // smiColumn ë¹„êµ
+                // smiColumn ºñ±³
                 IDE_TEST_RAISE( sColumn->basicInfo->column.flag !=
                                 sPrevInfo->columns[sColCount].basicInfo->column.flag,
                                 ERR_JOIN_NOT_SAME_TABLE_SPEC );
@@ -578,12 +590,12 @@ IDE_RC qdbJoin::validateAndCompareTables( qcStatement   * aStatement )
             }
             else
             {
-                /* ì²« í…Œì´ë¸”ì´ë¼ ë¹„êµ ëŒ€ìƒ ì—†ìŒ. ê·¸ëƒ¥ continue */
+                /* Ã¹ Å×ÀÌºíÀÌ¶ó ºñ±³ ´ë»ó ¾øÀ½. ±×³É continue */
                 /* Nothing To Do */
             }
         }
 
-        /* ë‹¤ìŒ ìˆœë²ˆìœ¼ë¡œ ë„˜ì–´ê°€ë©´ì„œ prev ì •ë³´ì— í˜„ì¬ í…Œì´ë¸” infoë¥¼ ì €ì¥. */
+        /* ´ÙÀ½ ¼ø¹øÀ¸·Î ³Ñ¾î°¡¸é¼­ prev Á¤º¸¿¡ ÇöÀç Å×ÀÌºí info¸¦ ÀúÀå. */
         sPrevInfo = sTableInfo;
     }
 
@@ -623,6 +635,15 @@ IDE_RC qdbJoin::validateAndCompareTables( qcStatement   * aStatement )
                          "%s",
                          sTableInfo->name );
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QCV_NOT_EXISTS_TABLE,
+                                  sErrorObjName ) );
+    }
+    IDE_EXCEPTION( ERR_JOIN_DISJOIN_NOT_USABLE )
+    {
+        idlOS::snprintf( sErrorObjName,
+                         QC_MAX_OBJECT_NAME_LEN + 1,
+                         "%s",
+                         sTableInfo->name );
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMX_TABLE_PARTITION_UNUSABLE,
                                   sErrorObjName ) );
     }
     IDE_EXCEPTION( ERR_JOIN_DISJOIN_NOT_READ_WRITE )
@@ -697,18 +718,18 @@ IDE_RC qdbJoin::executeJoinTable( qcStatement * aStatement )
  *    LOB ( ... ) STORE AS ( TABLESPACE ... LOGGING/NOLOGGING BUFFER/NOBUFFER )
  *
  * Implementation :
- *    1. JOIN ëŒ€ìƒì¸ í…Œì´ë¸”ë“¤ì˜ infoë¥¼ ê°€ì ¸ì˜¨ë‹¤.
- *    2. íŒŒí‹°ì…˜ë“œ í…Œì´ë¸”ì„ ìƒì„±í•œë‹¤.
- *    3. ìƒˆë¡œ ë§Œë“  íŒŒí‹°ì…˜ë“œ í…Œì´ë¸”ì˜ ë©”íƒ€ ì •ë³´ë¥¼ INSERTí•œë‹¤.
- *    4. í…Œì´ë¸”(ì´ì œ ê³§ íŒŒí‹°ì…˜) ë³„ë¡œ ë‹¤ìŒì„ ìˆ˜í–‰í•œë‹¤.
- *       4-1. í…Œì´ë¸”ì„ ìœ„í•œ partition IDë¥¼ ìƒì„±.
- *       4-2. í…Œì´ë¸”ë“¤ì˜ ì •ë³´ë¥¼ ê°€ì§€ê³  partition ë°ì´í„°ë¥¼ ë©”íƒ€ í…Œì´ë¸”ì— ì¶”ê°€
- *       4-3. íŒŒí‹°ì…˜ ë³„ë¡œ column IDë¥¼ ìˆ˜ì •í•œë‹¤. (íŒŒí‹°ì…˜ë“œ í…Œì´ë¸” ê²ƒìœ¼ë¡œ modifyColumn)
- *       4-4. ê¸°ì¡´ í…Œì´ë¸”ë“¤ì˜ ë©”íƒ€ ì •ë³´ë¥¼ ì‚­ì œí•œë‹¤.
- *       4-5. ê´€ë ¨ psm, pkg, view invalid
- *       4-6. constraint ê´€ë ¨ function/procedure ì •ë³´ ì‚­ì œ
- *       4-7. í…Œì´ë¸”(ì´ì œëŠ” íŒŒí‹°ì…˜) ë©”íƒ€ ìºì‹œ ì¬êµ¬ì„±
- *   5. íŒŒí‹°ì…˜ë“œ í…Œì´ë¸” ë©”íƒ€ ìºì‹œ ìˆ˜í–‰
+ *    1. JOIN ´ë»óÀÎ Å×ÀÌºíµéÀÇ info¸¦ °¡Á®¿Â´Ù.
+ *    2. ÆÄÆ¼¼Çµå Å×ÀÌºíÀ» »ı¼ºÇÑ´Ù.
+ *    3. »õ·Î ¸¸µç ÆÄÆ¼¼Çµå Å×ÀÌºíÀÇ ¸ŞÅ¸ Á¤º¸¸¦ INSERTÇÑ´Ù.
+ *    4. Å×ÀÌºí(ÀÌÁ¦ °ğ ÆÄÆ¼¼Ç) º°·Î ´ÙÀ½À» ¼öÇàÇÑ´Ù.
+ *       4-1. Å×ÀÌºíÀ» À§ÇÑ partition ID¸¦ »ı¼º.
+ *       4-2. Å×ÀÌºíµéÀÇ Á¤º¸¸¦ °¡Áö°í partition µ¥ÀÌÅÍ¸¦ ¸ŞÅ¸ Å×ÀÌºí¿¡ Ãß°¡
+ *       4-3. ÆÄÆ¼¼Ç º°·Î column ID¸¦ ¼öÁ¤ÇÑ´Ù. (ÆÄÆ¼¼Çµå Å×ÀÌºí °ÍÀ¸·Î modifyColumn)
+ *       4-4. ±âÁ¸ Å×ÀÌºíµéÀÇ ¸ŞÅ¸ Á¤º¸¸¦ »èÁ¦ÇÑ´Ù.
+ *       4-5. °ü·Ã psm, pkg, view invalid
+ *       4-6. constraint °ü·Ã function/procedure Á¤º¸ »èÁ¦
+ *       4-7. Å×ÀÌºí(ÀÌÁ¦´Â ÆÄÆ¼¼Ç) ¸ŞÅ¸ Ä³½Ã Àç±¸¼º
+ *   5. ÆÄÆ¼¼Çµå Å×ÀÌºí ¸ŞÅ¸ Ä³½Ã ¼öÇà
  *
  ***********************************************************************/
     qdTableParseTree       * sParseTree = NULL;
@@ -742,11 +763,11 @@ IDE_RC qdbJoin::executeJoinTable( qcStatement * aStatement )
     UInt                      sPartCount = 0;
 
     //---------------------------------
-    // ê¸°ë³¸ ì •ë³´ ì´ˆê¸°í™”
+    // ±âº» Á¤º¸ ÃÊ±âÈ­
     //---------------------------------
     sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;
 
-    /* ëª¨ë“  íŒŒí‹°ì…˜(ì•„ì§ì€ í…Œì´ë¸”)ì— LOCK(X) */
+    /* ¸ğµç ÆÄÆ¼¼Ç(¾ÆÁ÷Àº Å×ÀÌºí)¿¡ LOCK(X) */
     for ( sPartInfoList = sParseTree->partTable->partInfoList, sPartitionCount = 0;
           sPartInfoList != NULL;
           sPartInfoList = sPartInfoList->next, sPartitionCount++ )
@@ -758,15 +779,15 @@ IDE_RC qdbJoin::executeJoinTable( qcStatement * aStatement )
                   != IDE_SUCCESS );
     }
 
-    /* ë‹¤ì‹œ ì²« ë²ˆì§¸ íŒŒí‹°ì…˜(ì•„ì§ì€ í…Œì´ë¸”)ì„ ê°€ë¦¬í‚¨ë‹¤ */
+    /* ´Ù½Ã Ã¹ ¹øÂ° ÆÄÆ¼¼Ç(¾ÆÁ÷Àº Å×ÀÌºí)À» °¡¸®Å²´Ù */
     sPartInfoList = sParseTree->partTable->partInfoList;
     sPartInfo = sPartInfoList->partitionInfo;
 
     if ( sParseTree->parallelDegree == 0 )
     {
         // PROJ-1071 Parallel query
-        // Table ìƒì„± ì‹œ parallel degree ê°€ ì§€ì •ë˜ì§€ ì•Šì•˜ë‹¤ë©´
-        // ìµœì†Œê°’ì¸ 1 ë¡œ ë³€ê²½í•œë‹¤.
+        // Table »ı¼º ½Ã parallel degree °¡ ÁöÁ¤µÇÁö ¾Ê¾Ò´Ù¸é
+        // ÃÖ¼Ò°ªÀÎ 1 ·Î º¯°æÇÑ´Ù.
         sParseTree->parallelDegree = 1;
     }
     else
@@ -776,9 +797,9 @@ IDE_RC qdbJoin::executeJoinTable( qcStatement * aStatement )
 
     if ( ( QCU_FORCE_PARALLEL_DEGREE > 1 ) && ( sParseTree->parallelDegree == 1 ) )
     {
-        // 1. Dictionary table ì´ ì•„ë‹ ë•Œ
-        // 2. Parallel degree ì´ 1 ì¼ ë•Œ
-        // ê°•ì œë¡œ parallel degree ë¥¼ property í¬ê¸°ë¡œ ì§€ì •í•œë‹¤.
+        // 1. Dictionary table ÀÌ ¾Æ´Ò ¶§
+        // 2. Parallel degree ÀÌ 1 ÀÏ ¶§
+        // °­Á¦·Î parallel degree ¸¦ property Å©±â·Î ÁöÁ¤ÇÑ´Ù.
         sParseTree->parallelDegree = QCU_FORCE_PARALLEL_DEGREE;
     }
     else
@@ -786,14 +807,14 @@ IDE_RC qdbJoin::executeJoinTable( qcStatement * aStatement )
         /* nothing to do */
     }
 
-    /* 2. íŒŒí‹°ì…˜ë“œ í…Œì´ë¸”ì„ ìƒì„±í•œë‹¤. */
+    /* 2. ÆÄÆ¼¼Çµå Å×ÀÌºíÀ» »ı¼ºÇÑ´Ù. */
     IDE_TEST( qcm::getNextTableID( aStatement, &sTableID ) != IDE_SUCCESS );
 
     IDE_TEST( qdbCommon::createTableOnSM( aStatement,
-                                          sParseTree->columns, /* ì•ˆì—ì„œ column ID ì„¸íŒ…ëœë‹¤. */
+                                          sParseTree->columns, /* ¾È¿¡¼­ column ID ¼¼ÆÃµÈ´Ù. */
                                           sParseTree->userID,
                                           sTableID,            /* new table ID */
-                                          0,        // partitioned tableì€ maxrow ë¶ˆê°€ëŠ¥
+                                          0,        // partitioned tableÀº maxrow ºÒ°¡´É
                                           sParseTree->TBSAttr.mID,
                                           sParseTree->segAttr,
                                           sParseTree->segStoAttr,
@@ -818,10 +839,11 @@ IDE_RC qdbJoin::executeJoinTable( qcStatement * aStatement )
                                                   sParseTree->segAttr,
                                                   sParseTree->segStoAttr,
                                                   QCM_TEMPORARY_ON_COMMIT_NONE,
-                                                  sParseTree->parallelDegree )     // PROJ-1071
+                                                  sParseTree->parallelDegree,     // PROJ-1071
+                                                  QCM_SHARD_FLAG_TABLE_NONE )     // TASK-7307
              != IDE_SUCCESS);
 
-    /* ìƒˆë¡œ ìƒì„±ë˜ëŠ” íŒŒí‹°ì…˜ë“œ í…Œì´ë¸”ì˜ ì»¬ëŸ¼ IDëŠ” createTableOnSMì—ì„œ ìë™ìœ¼ë¡œ ì…ë ¥ëœë‹¤. */
+    /* »õ·Î »ı¼ºµÇ´Â ÆÄÆ¼¼Çµå Å×ÀÌºíÀÇ ÄÃ·³ ID´Â createTableOnSM¿¡¼­ ÀÚµ¿À¸·Î ÀÔ·ÂµÈ´Ù. */
     IDE_TEST( qdbCommon::insertColumnSpecIntoMeta( aStatement,
                                                    sParseTree->userID,
                                                    sTableID,            /* new table ID */
@@ -852,15 +874,15 @@ IDE_RC qdbJoin::executeJoinTable( qcStatement * aStatement )
                                                           QCM_TABLE_OBJECT_TYPE )
              != IDE_SUCCESS );
     
-    /* ëŒ€ìƒ í…Œì´ë¸”ë“¤ì„ ê¸°ë°˜ìœ¼ë¡œ constraint ìƒì„± */
-    /* DISJOINì—ì„œëŠ” í…Œì´ë¸”->íŒŒí‹°ì…˜ 1ê°œë§ˆë‹¤ copyë¥¼ í•œë‹¤. */
-    /* JOINì—ì„œëŠ” í…Œì´ë¸”(íŒŒí‹°ì…˜ìœ¼ë¡œ ì „í™˜ë )->íŒŒí‹°ì…˜ë“œ í…Œì´ë¸”(ì‹ ê·œìƒì„±)ë¡œ 1ë²ˆë§Œ copy. */
+    /* ´ë»ó Å×ÀÌºíµéÀ» ±â¹İÀ¸·Î constraint »ı¼º */
+    /* DISJOIN¿¡¼­´Â Å×ÀÌºí->ÆÄÆ¼¼Ç 1°³¸¶´Ù copy¸¦ ÇÑ´Ù. */
+    /* JOIN¿¡¼­´Â Å×ÀÌºí(ÆÄÆ¼¼ÇÀ¸·Î ÀüÈ¯µÉ)->ÆÄÆ¼¼Çµå Å×ÀÌºí(½Å±Ô»ı¼º)·Î 1¹ø¸¸ copy. */
     IDE_TEST( qdbDisjoin::copyConstraintSpec( aStatement,
                                               sPartInfo->tableID,   /* old table(1st part) ID */
                                               sTableID )            /* new table ID */
               != IDE_SUCCESS );
     
-    /* íŒŒí‹°ì…˜ë“œ í…Œì´ë¸” ë©”íƒ€ ìºì‹œ ìˆ˜í–‰ */
+    /* ÆÄÆ¼¼Çµå Å×ÀÌºí ¸ŞÅ¸ Ä³½Ã ¼öÇà */
     IDE_TEST( qcm::makeAndSetQcmTableInfo( QC_SMI_STMT( aStatement ),
                                            sTableID,
                                            sTableOID ) != IDE_SUCCESS );
@@ -872,8 +894,8 @@ IDE_RC qdbJoin::executeJoinTable( qcStatement * aStatement )
                                      &sTableHandle )
               != IDE_SUCCESS );
 
-    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
-       DDL Statement Textì˜ ë¡œê¹…
+    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
+       DDL Statement TextÀÇ ·Î±ë
      */
     if ( QCU_DDL_SUPPLEMENTAL_LOG == 1 )
     {
@@ -893,7 +915,7 @@ IDE_RC qdbJoin::executeJoinTable( qcStatement * aStatement )
                                          SMI_TABLE_LOCK_X )
               != IDE_SUCCESS );
 
-    /* 4. íŒŒí‹°ì…˜ ë³„ë¡œ í•„ìš”í•œ meta ì •ë³´ë¥¼ ìƒì„± */
+    /* 4. ÆÄÆ¼¼Ç º°·Î ÇÊ¿äÇÑ meta Á¤º¸¸¦ »ı¼º */
     IDU_LIMITPOINT("qdbJoin::executeJoin::malloc1");
     IDE_TEST( STRUCT_ALLOC_WITH_SIZE( aStatement->qmxMem,
                                       SChar,
@@ -915,7 +937,7 @@ IDE_RC qdbJoin::executeJoinTable( qcStatement * aStatement )
                                       & sOldPartMaxVal )
               != IDE_SUCCESS);
 
-    /* ë‹¤ì‹œ ì²« ë²ˆì§¸ íŒŒí‹°ì…˜(ì•„ì§ì€ í…Œì´ë¸”)ì„ ê°€ë¦¬í‚¨ë‹¤ */
+    /* ´Ù½Ã Ã¹ ¹øÂ° ÆÄÆ¼¼Ç(¾ÆÁ÷Àº Å×ÀÌºí)À» °¡¸®Å²´Ù */
     sPartInfoList = sParseTree->partTable->partInfoList;
     sPartMethod = sParseTree->partTable->partMethod;
 
@@ -926,7 +948,7 @@ IDE_RC qdbJoin::executeJoinTable( qcStatement * aStatement )
         sPartInfo = sPartInfoList->partitionInfo;
         IDE_TEST( qdbCommon::getPartitionMinMaxValue( aStatement,
                                                       sPartAttr,        /* partition attr */
-                                                      sPartCount,       /* partition ìˆœë²ˆ */
+                                                      sPartCount,       /* partition ¼ø¹ø */
                                                       sPartMethod,
                                                       sPartMaxVal,
                                                       sPartMinVal,
@@ -956,7 +978,7 @@ IDE_RC qdbJoin::executeJoinTable( qcStatement * aStatement )
             sLastPartIdList = sLastPartIdList->next;
         }
 
-        /* ë©”íƒ€ ì¶”ê°€ */
+        /* ¸ŞÅ¸ Ãß°¡ */
         QC_STR_COPY( sNewTablePartName, sPartAttr->tablePartName );
 
         /* sys_table_partitions_ */
@@ -988,7 +1010,7 @@ IDE_RC qdbJoin::executeJoinTable( qcStatement * aStatement )
                                               sPartInfo->tableHandle )   /* old table handle */
                   != IDE_SUCCESS );
 
-        /* ë©”íƒ€ ì‚­ì œ */
+        /* ¸ŞÅ¸ »èÁ¦ */
 
         /* delete from constraint related meta */
         IDE_TEST( qdd::deleteConstraintsFromMeta( aStatement, sPartInfo->tableID )
@@ -1009,7 +1031,7 @@ IDE_RC qdbJoin::executeJoinTable( qcStatement * aStatement )
         IDE_TEST( qdnTrigger::dropTrigger4DropTable( aStatement, sPartInfo )
                   != IDE_SUCCESS );
 
-        /* ê´€ë ¨ psm, pkg, view invalid */
+        /* °ü·Ã psm, pkg, view invalid */
         /* PROJ-2197 PSM Renewal */
         // related PSM
         IDE_TEST( qcmProc::relSetInvalidProcOfRelated( aStatement,
@@ -1035,8 +1057,8 @@ IDE_RC qdbJoin::executeJoinTable( qcStatement * aStatement )
                                                     QS_TABLE )
                   != IDE_SUCCESS );
 
-        /* constraint ê´€ë ¨ function, procedure ì •ë³´ ì‚­ì œ */
-        /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
+        /* constraint °ü·Ã function, procedure Á¤º¸ »èÁ¦ */
+        /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
         IDE_TEST( qcmProc::relRemoveRelatedToConstraintByTableID(
                         aStatement,
                         sPartInfo->tableID )
@@ -1059,16 +1081,16 @@ IDE_RC qdbJoin::executeJoinTable( qcStatement * aStatement )
                                           sPartInfo->name )
                   != IDE_SUCCESS );
 
-        /* ë‹¤ìŒ í…Œì´ë¸”(ì´ì œ íŒŒí‹°ì…˜ìœ¼ë¡œ ì „í™˜í•  ì°¨ë¡€)ë¡œ ë„˜ì–´ê°„ë‹¤. */
+        /* ´ÙÀ½ Å×ÀÌºí(ÀÌÁ¦ ÆÄÆ¼¼ÇÀ¸·Î ÀüÈ¯ÇÒ Â÷·Ê)·Î ³Ñ¾î°£´Ù. */
         sPartInfoList = sPartInfoList->next;
         
         IDU_FIT_POINT_RAISE( "qdbJoin::executeJoinTable::joinTableLoop::fail",
                              ERR_FIT_TEST );
     }
 
-    /* í…Œì´ë¸”(ì´ì œëŠ” íŒŒí‹°ì…˜) ë©”íƒ€ ìºì‹œ ì¬êµ¬ì„± */
+    /* Å×ÀÌºí(ÀÌÁ¦´Â ÆÄÆ¼¼Ç) ¸ŞÅ¸ Ä³½Ã Àç±¸¼º */
 
-    // ìƒˆë¡œìš´ qcmPartitionInfoë“¤ì˜ pointerì •ë³´ë¥¼ ê°€ì§€ëŠ” ë°°ì—´ ìƒì„±
+    // »õ·Î¿î qcmPartitionInfoµéÀÇ pointerÁ¤º¸¸¦ °¡Áö´Â ¹è¿­ »ı¼º
     sAllocSize = (ULong)sPartitionCount * ID_SIZEOF(qcmTableInfo*);
     IDU_FIT_POINT_RAISE( "qdbJoin::executeJoinTable::cralloc::sNewPartitionInfoArr",
                          ERR_MEMORY_ALLOCATION );
@@ -1103,8 +1125,8 @@ IDE_RC qdbJoin::executeJoinTable( qcStatement * aStatement )
                   != IDE_SUCCESS );
 
         /////////////////////////////////////////////////////////////////////////
-        // í˜„ì¬ JOIN TABLE êµ¬ë¬¸ì—ì„œ íŠ¸ë¦¬ê±° ìˆëŠ” í…Œì´ë¸”ì„ í—ˆìš©í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ
-        // ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // ÇöÀç JOIN TABLE ±¸¹®¿¡¼­ Æ®¸®°Å ÀÖ´Â Å×ÀÌºíÀ» Çã¿ëÇÏÁö ¾ÊÀ¸¹Ç·Î
+        // »ç¿ëÇÏÁö ¾Ê´Â´Ù.
         // IDE_TEST( qdnTrigger::freeTriggerCaches4DropTable( sPartInfo )
         //           != IDE_SUCCESS );
         /////////////////////////////////////////////////////////////////////////
@@ -1113,7 +1135,7 @@ IDE_RC qdbJoin::executeJoinTable( qcStatement * aStatement )
                              ERR_FIT_TEST );
     }
 
-    /* (êµ¬) íŒŒí‹°ì…˜ ë©”íƒ€ ìºì‰¬ ì‚­ì œ */
+    /* (±¸) ÆÄÆ¼¼Ç ¸ŞÅ¸ Ä³½¬ »èÁ¦ */
     for ( sPartInfoList = sParseTree->partTable->partInfoList;
           sPartInfoList != NULL;
           sPartInfoList = sPartInfoList->next )
@@ -1174,13 +1196,13 @@ IDE_RC qdbJoin::createTablePartitionSpec( qcStatement             * aStatement,
 /***********************************************************************
  *
  *  Description : PROJ-1810 Partition Exchange
- *                íŒŒí‹°ì…˜ìœ¼ë¡œ ì „í™˜ë˜ëŠ” ì›ë³¸ í…Œì´ë¸”ì˜ table ë©”íƒ€ ì •ë³´ë¥¼ ë³µì‚¬í•˜ì—¬
- *                í•˜ë‚˜ì˜ table partition specì„ ë©”íƒ€ì— ì¶”ê°€í•œë‹¤.
+ *                ÆÄÆ¼¼ÇÀ¸·Î ÀüÈ¯µÇ´Â ¿øº» Å×ÀÌºíÀÇ table ¸ŞÅ¸ Á¤º¸¸¦ º¹»çÇÏ¿©
+ *                ÇÏ³ªÀÇ table partition specÀ» ¸ŞÅ¸¿¡ Ãß°¡ÇÑ´Ù.
  *
  *  Implementation :
- *      SYS_TABLES_ì—ì„œ íŒŒí‹°ì…˜ë“œ í…Œì´ë¸”ì˜ TABLE IDë¡œ SELECTí•œ ë’¤
- *      PARTITION_ID, PARTITION_NAME, MIN VALUE, MAX VALUEëŠ” ì¸ìë¡œ ë°›ì€ ê²ƒì„ ì“°ê³ 
- *      ë‚˜ë¨¸ì§€ëŠ” SYS_TABLES_ì˜ ê°’ì„ ì‚¬ìš©í•´ SYS_TABLE_PARTITIONS_ì— INSERTí•œë‹¤.
+ *      SYS_TABLES_¿¡¼­ ÆÄÆ¼¼Çµå Å×ÀÌºíÀÇ TABLE ID·Î SELECTÇÑ µÚ
+ *      PARTITION_ID, PARTITION_NAME, MIN VALUE, MAX VALUE´Â ÀÎÀÚ·Î ¹ŞÀº °ÍÀ» ¾²°í
+ *      ³ª¸ÓÁö´Â SYS_TABLES_ÀÇ °ªÀ» »ç¿ëÇØ SYS_TABLE_PARTITIONS_¿¡ INSERTÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1202,7 +1224,7 @@ IDE_RC qdbJoin::createTablePartitionSpec( qcStatement             * aStatement,
     else
     {
         sPartValue = (SChar*)sPartValueTmp;
-        // ë¬¸ìì—´ ì•ˆì— 'ê°€ ìˆì„ ê²½ìš° 'ë¥¼ í•˜ë‚˜ ë” ë„£ì–´ì¤˜ì•¼í•¨
+        // ¹®ÀÚ¿­ ¾È¿¡ '°¡ ÀÖÀ» °æ¿ì '¸¦ ÇÏ³ª ´õ ³Ö¾îÁà¾ßÇÔ
         (void)qdbCommon::addSingleQuote4PartValue( aPartMinVal,
                                                    (SInt)idlOS::strlen( aPartMinVal ),
                                                    &sPartValue );
@@ -1224,7 +1246,7 @@ IDE_RC qdbJoin::createTablePartitionSpec( qcStatement             * aStatement,
     else
     {
         sPartValue = (SChar*)sPartValueTmp;
-        // ë¬¸ìì—´ ì•ˆì— 'ê°€ ìˆì„ ê²½ìš° 'ë¥¼ í•˜ë‚˜ ë” ë„£ì–´ì¤˜ì•¼í•¨
+        // ¹®ÀÚ¿­ ¾È¿¡ '°¡ ÀÖÀ» °æ¿ì '¸¦ ÇÏ³ª ´õ ³Ö¾îÁà¾ßÇÔ
         (void)qdbCommon::addSingleQuote4PartValue( aPartMaxVal,
                                                    (SInt)idlOS::strlen( aPartMaxVal ),
                                                    &sPartValue );
@@ -1247,6 +1269,7 @@ IDE_RC qdbJoin::createTablePartitionSpec( qcStatement             * aStatement,
                          "NULL, "
                          "TBS_ID, "                         /* TBS_ID(table) */
                          "ACCESS, "
+                         "USABLE, "                         /* PARITION_USABLE (TASK-7307) */
                          "REPLICATION_COUNT, "
                          "REPLICATION_RECOVERY_COUNT, "
                          "CREATED, "
@@ -1287,12 +1310,12 @@ IDE_RC qdbJoin::createPartLobSpec( qcStatement             * aStatement,
 /***********************************************************************
  *
  *  Description : PROJ-1810 Partition Exchange
- *                ì›ë³¸ í…Œì´ë¸”ì˜ lob column í•˜ë‚˜ì˜ ë©”íƒ€ ì •ë³´ë¥¼ ë³µì‚¬í•˜ì—¬
- *                í•´ë‹¹ lob column specì„ sys_part_lobs ë©”íƒ€ì— ì¶”ê°€í•œë‹¤.
+ *                ¿øº» Å×ÀÌºíÀÇ lob column ÇÏ³ªÀÇ ¸ŞÅ¸ Á¤º¸¸¦ º¹»çÇÏ¿©
+ *                ÇØ´ç lob column specÀ» sys_part_lobs ¸ŞÅ¸¿¡ Ãß°¡ÇÑ´Ù.
  *
  *  Implementation :
- *      SYS_COLUMNS_ì—ì„œ íŒŒí‹°ì…˜ë“œ í…Œì´ë¸” ì¹¼ëŸ¼ì˜ COLUMN_IDë¡œ SELECTí•œ ë’¤
- *      COLUMN_ID, TABLE_IDë§Œ ìˆ˜ì •í•´ì„œ SYS_COLUMNS_ì— INSERT.
+ *      SYS_COLUMNS_¿¡¼­ ÆÄÆ¼¼Çµå Å×ÀÌºí Ä®·³ÀÇ COLUMN_ID·Î SELECTÇÑ µÚ
+ *      COLUMN_ID, TABLE_ID¸¸ ¼öÁ¤ÇØ¼­ SYS_COLUMNS_¿¡ INSERT.
  *
  ***********************************************************************/
 

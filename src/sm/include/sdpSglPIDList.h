@@ -20,28 +20,28 @@
  *
  * Description :
  *
- * File Based PID Linked-list ê´€ë¦¬ì
+ * File Based PID Linked-list °ü¸®ÀÚ
  *
  *
- * # ê°œë…
+ * # °³³ä
  *
- * ê°ì¢… tablespaceì˜ ë…¼ë¦¬ì ì¸ page listë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ
- * ì¸í„°í˜ì´ìŠ¤
+ * °¢Á¾ tablespaceÀÇ ³í¸®ÀûÀÎ page list¸¦ °ü¸®ÇÏ±â À§ÇÑ
+ * ÀÎÅÍÆäÀÌ½º
  *
- * # ëª©ì 
+ * # ¸ñÀû
  *
- *  + tablespaceì— ì €ì¥ë˜ëŠ” ê°ì¢… ë…¼ë¦¬ì ì¸ page list ê´€ë¦¬
+ *  + tablespace¿¡ ÀúÀåµÇ´Â °¢Á¾ ³í¸®ÀûÀÎ page list °ü¸®
  *
- *      - tablespaceì˜ seg.dir full list (base)
- *      - tablespaceì˜ seg.dir free list (base)
- *      - tablespaceì˜ ext.dir full list (base)
- *      - segment dirì˜ seg.dir list     (node)
- *      - segment descì˜ used page list  (base)
- *      - extent  dirì˜ ext.dir list     (node)
- *      - persistent pageì˜ page list    (node)
+ *      - tablespaceÀÇ seg.dir full list (base)
+ *      - tablespaceÀÇ seg.dir free list (base)
+ *      - tablespaceÀÇ ext.dir full list (base)
+ *      - segment dirÀÇ seg.dir list     (node)
+ *      - segment descÀÇ used page list  (base)
+ *      - extent  dirÀÇ ext.dir list     (node)
+ *      - persistent pageÀÇ page list    (node)
  *
  *
- * # êµ¬ì¡°
+ * # ±¸Á¶
  *              sdpPageListBase
  *                  ______________
  *                  |____len_____|
@@ -53,15 +53,15 @@
  *
  *         sdpPageListNode
  *
- * PID ë¦¬ìŠ¤íŠ¸ëŠ” ë™ì¼í•œ tablespaceì—ì„œë§Œ ìœ ì§€ ê´€ë¦¬ê°€ ê°€ëŠ¥í•˜ë©°, ìœ„ì™€ê°™ì€
- * circular double linked-listì˜ êµ¬ì¡°ë¥¼ ìœ ì§€í•œë‹¤. ë¦¬ìŠ¤íŠ¸ì— ëŒ€í•œ ë³€ê²½ì—°ì‚°ì€
- * base ë…¸ë“œë¥¼ fixí•œ ìƒíƒœì—ì„œ ì´ë£¨ì–´ì ¸ì•¼í•œë‹¤.
- * ë™ì¼í•œ pageë‚´ì— ë¦¬ìŠ¤íŠ¸ì˜ ì—¬ëŸ¬ ë…¸ë“œê°€ ì¡´ì¬í•  ìˆ˜ ì—†ë‹¤(ASSERT ì²˜ë¦¬)
+ * PID ¸®½ºÆ®´Â µ¿ÀÏÇÑ tablespace¿¡¼­¸¸ À¯Áö °ü¸®°¡ °¡´ÉÇÏ¸ç, À§¿Í°°Àº
+ * circular double linked-listÀÇ ±¸Á¶¸¦ À¯ÁöÇÑ´Ù. ¸®½ºÆ®¿¡ ´ëÇÑ º¯°æ¿¬»êÀº
+ * base ³ëµå¸¦ fixÇÑ »óÅÂ¿¡¼­ ÀÌ·ç¾îÁ®¾ßÇÑ´Ù.
+ * µ¿ÀÏÇÑ page³»¿¡ ¸®½ºÆ®ÀÇ ¿©·¯ ³ëµå°¡ Á¸ÀçÇÒ ¼ö ¾ø´Ù(ASSERT Ã³¸®)
  *
  * # Releate data structure
  *
- * sdpSglPIDListBase êµ¬ì¡°ì²´
- * sdpSglPIDListNode êµ¬ì¡°ì²´
+ * sdpSglPIDListBase ±¸Á¶Ã¼
+ * sdpSglPIDListNode ±¸Á¶Ã¼
  *
  **********************************************************************/
 
@@ -155,7 +155,7 @@ private:
 
 
 /***********************************************************************
- * Description : Base ë…¸ë“œì˜ length ë°˜í™˜
+ * Description : Base ³ëµåÀÇ length ¹İÈ¯
  ***********************************************************************/
 inline ULong sdpSglPIDList::getNodeCnt( sdpSglPIDListBase*   aBaseNode )
 {
@@ -165,7 +165,7 @@ inline ULong sdpSglPIDList::getNodeCnt( sdpSglPIDListBase*   aBaseNode )
 }
 
 /***********************************************************************
- * Description : ë…¸ë“œì˜ next ë…¸ë“œ ë°˜í™˜ í˜¹ì€ base ë…¸ë“œì˜ tail ë…¸ë“œ ë°˜í™˜
+ * Description : ³ëµåÀÇ next ³ëµå ¹İÈ¯ È¤Àº base ³ëµåÀÇ tail ³ëµå ¹İÈ¯
  ***********************************************************************/
 inline scPageID sdpSglPIDList::getNxtOfNode( sdpSglPIDListNode*  aNode )
 {
@@ -175,7 +175,7 @@ inline scPageID sdpSglPIDList::getNxtOfNode( sdpSglPIDListNode*  aNode )
 }
 
 /***********************************************************************
- * Description : base ë…¸ë“œì˜ head ë…¸ë“œ ë°˜í™˜
+ * Description : base ³ëµåÀÇ head ³ëµå ¹İÈ¯
  ***********************************************************************/
 inline scPageID sdpSglPIDList::getHeadOfList(sdpSglPIDListBase* aBaseNode)
 {
@@ -184,7 +184,7 @@ inline scPageID sdpSglPIDList::getHeadOfList(sdpSglPIDListBase* aBaseNode)
 }
 
 /***********************************************************************
- * Description : base ë…¸ë“œì˜ tail ë…¸ë“œ ë°˜í™˜
+ * Description : base ³ëµåÀÇ tail ³ëµå ¹İÈ¯
  ***********************************************************************/
 inline scPageID sdpSglPIDList::getTailOfList(sdpSglPIDListBase* aBaseNode)
 {

@@ -43,12 +43,24 @@
 class sgmManager
 {
   public:
-    static inline IDE_RC getOIDPtr( scSpaceID      aSpaceID,
-                                    smOID          aOID,
-                                    void        ** aPtr );
+    static inline  void * getOIDPtr( scSpaceID     aSpaceID,
+                                     smOID         aOID );
+
+    static smVCPieceHeader* getNxtVCPieceHeader( smVCPieceHeader *  aVCPieceHeader,
+                                                 const smiColumn *  aColumn,
+                                                 UShort          *  aOffsetIdx ); 
+   static inline smVCPieceHeader* getVCPieceHeader( const void      *  aRow,
+                                                    const smiColumn *  aColumn,
+                                                    UShort          *  aOffsetIdx );
+    static inline SChar* getVarColumnDirect( SChar           * aRow,
+                                             const smiColumn * aColumn,
+                                             UInt*             aLength );
     static SChar* getVarColumn( SChar           * aRow,
                                 const smiColumn * aColumn,
                                 UInt*             aLength );
+    static SChar* getVarColumnDisk( SChar           * aRow,
+                                    const smiColumn * aColumn,
+                                    UInt*             aLength );
     static SChar* getVarColumn( SChar           * aRow,
                                 const smiColumn * aColumn,
                                 SChar           * aDestBuffer );
@@ -59,36 +71,120 @@ class sgmManager
 };
 
 /***********************************************************************
- * Description :
- *    smmManager::getOIDPtr, svmManager::getOidPtrì„ í†µí•©í•˜ëŠ” ì—­í• ì„ í•œë‹¤.
+ * Description : smiGetVarColumn() ¿ë ³»ºÎ ÇÔ¼ö, BUG-48513
+ *               get Valiable Column ¼º´É ¿ì¼±
  ***********************************************************************/
-inline IDE_RC sgmManager::getOIDPtr( scSpaceID     aSpaceID,
-                                     smOID         aOID,
-                                     void       ** aPtr )
+SChar* sgmManager::getVarColumnDirect( SChar           * aRow,
+                                       const smiColumn * aColumn,
+                                       UInt            * aLength )
 {
-    IDE_RC sRC;
+    UShort          * sCurrOffsetPtr;
+    smVCPieceHeader * sVCPieceHeader;
+    UShort            sOffsetIdx ;
 
-    if ( sctTableSpaceMgr::isMemTableSpace( aSpaceID ) == ID_TRUE )
+    /*  aColumnsÀÇ Å¸ÀÔÀÌ Memory typeÀÌ¸é */
+    if ( (aColumn->flag & SMI_COLUMN_STORAGE_MASK)
+         != SMI_COLUMN_STORAGE_MEMORY )
     {
-        sRC = smmManager::getOIDPtr( aSpaceID,
-                                     aOID,
-                                     aPtr );
-    }
-    else if ( sctTableSpaceMgr::isVolatileTableSpace( aSpaceID ) == ID_TRUE )
-    {
-        sRC = svmManager::getOIDPtr( aSpaceID,
-                                     aOID,
-                                     aPtr );
-    }
-    else
-    {
-        /* DISK TBSì˜ ê²½ìš° ì´ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ë©´ ì•ˆëœë‹¤. */
-        IDE_ASSERT(0);
+        return getVarColumnDisk( aRow, aColumn, aLength );
     }
 
-    return sRC;
+    if ( ( aColumn->flag & SMI_COLUMN_TYPE_MASK ) == SMI_COLUMN_TYPE_VARIABLE_LARGE )
+    {
+        return smcRecord::getVarLarge( aRow,
+                                       aColumn,
+                                       0,
+                                       aLength,
+                                       (SChar*)(aColumn->value),
+                                       ID_TRUE );
+    }
+    
+    if (( (smpSlotHeader*)aRow)->mVarOID != SM_NULL_OID )
+    {
+        sVCPieceHeader = getVCPieceHeader( aRow, aColumn, &sOffsetIdx );
+        if ( sVCPieceHeader != NULL ) 
+        {
+            IDE_DASSERT( sOffsetIdx != ID_USHORT_MAX );
+            IDE_DASSERT( sOffsetIdx < sVCPieceHeader->colCount );
+
+            /* +1 Àº Çì´õ »çÀÌÁî¸¦ °Ç³Ê¶Ù°í offset array ¸¦ Å½»öÇÏ±â À§ÇÔÀÌ´Ù. */
+            sCurrOffsetPtr = ((UShort*)(sVCPieceHeader + 1) + sOffsetIdx);
+
+            IDE_DASSERT( *(sCurrOffsetPtr + 1) >= *sCurrOffsetPtr );
+
+            /* next offset °úÀÇ Â÷°¡ ±æÀÌ°¡ µÈ´Ù. */
+            *aLength    = ( *( sCurrOffsetPtr + 1 )) - ( *sCurrOffsetPtr );
+
+            if ( *aLength != 0 )
+            {
+                return (SChar*)sVCPieceHeader + (*sCurrOffsetPtr);
+            }
+        }
+    }
+
+    *aLength    = 0;
+    
+    return NULL;
 }
 
+/***********************************************************************
+ * Description : Variable slot header ¸¦ °¡Á®¿Â´Ù. 
+ ***********************************************************************/
+smVCPieceHeader* sgmManager::getVCPieceHeader( const void      *  aRow,
+                                               const smiColumn *  aColumn,
+                                               UShort          *  aOffsetIdx )
+{
+    UShort            sOffsetIdx;
+    smVCPieceHeader * sVCPieceHeader ;
+    smOID             sOID = ((smpSlotHeader*)aRow)->mVarOID;
+
+    IDE_DASSERT( sOID != SM_NULL_OID );
+
+    sVCPieceHeader = (smVCPieceHeader*)getOIDPtr( aColumn->colSpace,
+                                                  sOID );
+    if ( sVCPieceHeader == NULL )
+    {
+        /* BUG-47474 smpSlotHeaderÀÇ mVarOID¿Í smpFreeSlotHeaderÀÇ next free slot pointer¸¦
+         *           µ¿ÀÏÇÑ À§Ä¡¿¡ »ç¿ëÇÏ°í ÀÖÀ¸¹Ç·Î ÀÎµ¦½º¿¡¼­ lockÀ» ÀâÁö ¾Ê°í ÀÎÅÍ³Î³ëµå¸¦ Å½»öÇÏ´Â °æ¿ì
+         *           ÀÌ¹Ì Á¤¸®µÈ slotÀ» »ì¾ÆÀÖ´Â slotÀ¸·Î ÆÇ´ÜÇÏ°í Á¢±ÙÇÒ °æ¿ì°¡ ¹ß»ýÇÒ ¼ö ÀÖ´Ù.
+         *           ÀÌ °æ¿ì next free slot pointer¸¦ OID·Î ÆÇ´ÜÇÏ´Â ¹®Á¦°¡ ¹ß»ýÇÒ ¼ö ÀÖÀ¸¹Ç·Î
+         *           ÀÌ Çö»óÀÌ ¹ß»ýÇÑ °æ¿ì ¼­¹ö¸¦ Á×ÀÌÁö ¾Ê°í »óÀ§·Î ¿Ã¸®¸é ÀÎµ¦½º ¸ðµâ¿¡¼­
+         *           ³ëµåÀÇ º¯°æÀ» È®ÀÎÇÏ°í Å½»öÀ» Àç¼öÇàÇÑ´Ù. */
+        *aOffsetIdx = ID_USHORT_MAX;
+
+        return NULL;
+    }
+
+    sOffsetIdx = aColumn->varOrder;
+
+    if ( sOffsetIdx >= sVCPieceHeader->colCount )
+    {
+        return getNxtVCPieceHeader( sVCPieceHeader,
+                                    aColumn,
+                                    aOffsetIdx );
+    }
+
+    *aOffsetIdx     = sOffsetIdx;
+    return sVCPieceHeader;
+}
+
+/***********************************************************************
+ * Description : getOIDPtr °£·«È­ ¹öÀü
+ ***********************************************************************/
+void * sgmManager::getOIDPtr( scSpaceID     aSpaceID,
+                              smOID         aOID )
+{
+    scOffset sOffset  = (scOffset)(aOID & SM_OFFSET_MASK);
+    scPageID sPageID  = (scPageID)(aOID >> SM_OFFSET_BIT_SIZE);
+    SChar  * sPagePtr = (SChar*)smmManager::getPagePtr( aSpaceID, sPageID );
+
+    if ( sPagePtr != NULL )
+    {
+        return (void *)( sPagePtr + sOffset  );
+    }
+    
+    return NULL;
+}
 
 #endif
 

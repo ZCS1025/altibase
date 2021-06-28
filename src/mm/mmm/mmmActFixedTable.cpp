@@ -25,8 +25,8 @@
 
 /* =======================================================
  * Regist Fixed Table Descriptor
- *  ÏïÑÎûòÏùò SectionÏóê Î™®Îì† Fixed TableÏùò Îì±Î°ù Îß§ÌÅ¨Î°úÎ•º
- *  ÏÇ¨Ïö©ÌïòÎèÑÎ°ù Ìï©ÎãàÎã§.
+ *  æ∆∑°¿« Sectionø° ∏µÁ Fixed Table¿« µÓ∑œ ∏≈≈©∑Œ∏¶
+ *  ªÁøÎ«œµµ∑œ «’¥œ¥Ÿ.
  * =====================================================*/
 IDU_FIXED_TABLE_DEFINE(gPropertyTable);
 IDU_FIXED_TABLE_DEFINE(gTableListTable);
@@ -36,7 +36,7 @@ IDU_FIXED_TABLE_DEFINE(gTableSpaceTableDesc);
 IDU_FIXED_TABLE_DEFINE(gDataFileTableDesc);
 IDU_FIXED_TABLE_DEFINE(gMemBaseTableDesc);
 IDU_FIXED_TABLE_DEFINE(gMemBaseMgrTableDesc);
-// BUG-24049 aexport ÏóêÏÑú volatile tablespace Î•º Ï≤òÎ¶¨ÌïòÏßÄ Î™ªÌï©ÎãàÎã§.
+// BUG-24049 aexport ø°º≠ volatile tablespace ∏¶ √≥∏Æ«œ¡ˆ ∏¯«’¥œ¥Ÿ.
 IDU_FIXED_TABLE_DEFINE(gVolTablespaceDescTableDesc);
 IDU_FIXED_TABLE_DEFINE(gTxMgrTableDesc);
 IDU_FIXED_TABLE_DEFINE(gTxListTableDesc);
@@ -116,6 +116,8 @@ IDU_FIXED_TABLE_DEFINE(gLockWaitTableDesc);
 IDU_FIXED_TABLE_DEFINE(gTracelogTable);
 IDU_FIXED_TABLE_DEFINE(gCatalogDesc);
 IDU_FIXED_TABLE_DEFINE(gTempCatalogDesc); // PROJ-1407 Temporary Table
+IDU_FIXED_TABLE_DEFINE(gLockRecordDesc);
+IDU_FIXED_TABLE_DEFINE(gDistLockWaitDesc);
 
 // PROJ-1618 On-line Dump
 IDU_FIXED_TABLE_DEFINE( gDumpDiskBTreeStructureTableDesc );
@@ -199,13 +201,13 @@ IDU_FIXED_TABLE_DEFINE( gNlsTerritoryTable );
 /* PROJ-2209 DBTIMEZONE */
 IDU_FIXED_TABLE_DEFINE( gTimezoneNamesTable );
 
-/*  BUG-24767  [SD] slot direcotry dumpÌïòÎäî Í∏∞Îä• Ï∂îÍ∞Ä */
+/*  BUG-24767  [SD] slot direcotry dump«œ¥¬ ±‚¥… √ﬂ∞° */
 IDU_FIXED_TABLE_DEFINE( gDumpDiskTableSlotDirTableDesc );
 
-/*  PROJ-1862 [SD] rowÎÇ¥Ïùò Lob DescriptorÎ•º dump ÌïòÎäî Í∏∞Îä• Ï∂îÍ∞Ä */
+/*  PROJ-1862 [SD] row≥ª¿« Lob Descriptor∏¶ dump «œ¥¬ ±‚¥… √ﬂ∞° */
 IDU_FIXED_TABLE_DEFINE( gDumpDiskTableLobInfoTableDesc );
 
-/* TASK-4007 [SM] PBTÎ•º ÏúÑÌïú Í∏∞Îä• Ï∂îÍ∞Ä */
+/* TASK-4007 [SM] PBT∏¶ ¿ß«— ±‚¥… √ﬂ∞° */
 IDU_FIXED_TABLE_DEFINE(gDumpDiskDBPageTableDesc);
 IDU_FIXED_TABLE_DEFINE(gDumpDiskDBPhyPageHdrTableDesc);
 IDU_FIXED_TABLE_DEFINE(gDumpMemDBPageTableDesc);
@@ -213,7 +215,7 @@ IDU_FIXED_TABLE_DEFINE(gDumpVolDBPageTableDesc);
 IDU_FIXED_TABLE_DEFINE(gDumpMemTBSPCHTableDesc);
 IDU_FIXED_TABLE_DEFINE(gDumpVolTBSPCHTableDesc);
 
-// PROJ-2068 [SM] Direct-Path INSERT ÏÑ±Îä• Í∞úÏÑ†
+// PROJ-2068 [SM] Direct-Path INSERT º∫¥… ∞≥º±
 IDU_FIXED_TABLE_DEFINE( gDPathInsertDesc );
 
 /* Proj-2059 [SM] DB Upgrade  */
@@ -222,7 +224,7 @@ IDU_FIXED_TABLE_DEFINE(gDataPortFileHeader);
 IDU_FIXED_TABLE_DEFINE(gDataPortFileCursor);
 
 /*
- *PROJ-2065  ÌïúÍ≥Ñ ÏÉÅÌô© ÌÖåÏä§Ìä∏
+ *PROJ-2065  «—∞Ë ªÛ»≤ ≈◊Ω∫∆Æ
  */
 IDU_FIXED_TABLE_DEFINE(gDumpMemPoolDesc);
 
@@ -240,7 +242,6 @@ IDU_FIXED_TABLE_DEFINE(gLegacyTxListTableDesc);
 
 /* PROJ-2201 */
 IDU_FIXED_TABLE_DEFINE(gTempTableStatsDesc);
-IDU_FIXED_TABLE_DEFINE(gTempTableOprDesc);
 IDU_FIXED_TABLE_DEFINE(gTempInfoDesc);
 
 // PROJ-1685
@@ -259,13 +260,20 @@ IDU_FIXED_TABLE_DEFINE(gINTERNALSESSIONTableDesc);
 /* PROJ-2626 Snapshot Export */
 IDU_FIXED_TABLE_DEFINE(gSnapshotExportTableDesc);
 
-/* PROJ-2624 [Í∏∞Îä•ÏÑ±] MM - Ïú†Ïó∞Ìïú access_list Í¥ÄÎ¶¨Î∞©Î≤ï Ï†úÍ≥µ */
+/* PROJ-2624 [±‚¥…º∫] MM - ¿Øø¨«— access_list ∞¸∏ÆπÊπ˝ ¡¶∞¯ */
 IDU_FIXED_TABLE_DEFINE(gAccessListDesc);
 
 /* TASK-6780 */
 IDU_FIXED_TABLE_DEFINE(gRBHashTableDesc);
 
 IDU_FIXED_TABLE_DEFINE(gReservedTableDesc);
+
+IDU_FIXED_TABLE_DEFINE(gLibraryTableDesc);
+IDU_FIXED_TABLE_DEFINE(gPROCInfoDesc);
+
+/* PROJ-2733 */
+IDU_FIXED_TABLE_DEFINE(gTimeSCNListTableDesc); 
+IDU_FIXED_TABLE_DEFINE(gPendingWaitTableDesc);
 
 /* =======================================================
  * Action Function

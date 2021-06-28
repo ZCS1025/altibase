@@ -23,6 +23,7 @@
 #include <mmErrorCode.h>
 #include <mmtServiceThread.h>
 #include <mmuProperty.h>
+#include <sdiZookeeper.h>
 
 static IDE_RC doCreateDatabase(idvSQL * aStatistics, qciArgCreateDB *aArg)
 {
@@ -37,7 +38,7 @@ static IDE_RC doCreateDatabase(idvSQL * aStatistics, qciArgCreateDB *aArg)
     UInt      i = 0;
 
     /* ---------------------------
-     *  DB í™”ì¼ëª… ê¸¸ì´ ê²€ì‚¬
+     *  DB È­ÀÏ¸í ±æÀÌ °Ë»ç
      * --------------------------*/
     sDBName = mmuProperty::getDbName();
 
@@ -46,13 +47,13 @@ static IDE_RC doCreateDatabase(idvSQL * aStatistics, qciArgCreateDB *aArg)
                    DBNameLengthError);
 
     // PROJ-1579 NCHAR
-    // DB ì´ë¦„ìœ¼ë¡œ ASCII ì´ì™¸ì˜ ë¬¸ìê°€ ì˜¬ ìˆ˜ ì—†ë‹¤.
+    // DB ÀÌ¸§À¸·Î ASCII ÀÌ¿ÜÀÇ ¹®ÀÚ°¡ ¿Ã ¼ö ¾ø´Ù.
     for( i = 0; i < sDBNameLen; i++ )
     {
         IDE_TEST_RAISE( IDN_IS_ASCII(sDBName[i]) == 0, DBNameAsciiError);
     }
 
-    // fix BUG-10470 DBName ê²€ì‚¬
+    // fix BUG-10470 DBName °Ë»ç
     IDE_TEST_RAISE(idlOS::strCaselessMatch(sDBName,
                                            sDBNameLen,
                                            aArg->mDBName,
@@ -60,7 +61,15 @@ static IDE_RC doCreateDatabase(idvSQL * aStatistics, qciArgCreateDB *aArg)
                    DBNameError);
 
     /* -------------------------------------------
-     *  SHM ì¡´ì¬ ê²€ì‚¬ : ì¡´ì¬í•˜ë©´ ì—ëŸ¬!!!
+     *  Zookeeper ¸ŞÅ¸ µ¿ÀÏ¼º °Ë»ç
+     * ------------------------------------------*/
+#ifndef ALTI_CFG_OS_LINUX
+    IDE_TEST( sdiZookeeper::validateDB( sDBName,
+                                        aArg->mDBCharSet,
+                                        aArg->mNationalCharSet ) != IDE_SUCCESS );
+#endif
+    /* -------------------------------------------
+     *  SHM Á¸Àç °Ë»ç : Á¸ÀçÇÏ¸é ¿¡·¯!!!
      * ------------------------------------------*/
 
     sShmDBKey = mmuProperty::getShmDbKey();
@@ -77,18 +86,18 @@ static IDE_RC doCreateDatabase(idvSQL * aStatistics, qciArgCreateDB *aArg)
 
     IDE_TEST( smiCheckMemMaxDBSize() != IDE_SUCCESS );
 
-    // ì‚¬ìš©ìê°€ ì§€ì •í•œ Pageìˆ˜ë¥¼ í† ëŒ€ë¡œ SMì´ ìƒì„±í•  ìˆ˜ ìˆëŠ” Pageì˜ ìˆ˜ë¥¼ ê³„ì‚°í•œë‹¤.
+    // »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Page¼ö¸¦ Åä´ë·Î SMÀÌ »ı¼ºÇÒ ¼ö ÀÖ´Â PageÀÇ ¼ö¸¦ °è»êÇÑ´Ù.
     IDE_TEST(smiCalculateDBSize(aArg->mUserCreatePageCount,
                                 & sCreatePageCountExeptMeta ) != IDE_SUCCESS);
 
-    // smiCalculateDBSizeë¥¼ í†µí•´ ê³„ì‚°í•œ
-    // sCreatePageCountì—ëŠ” 0ë²ˆ í˜ì´ì§€ë¥¼ ì €ì¥í•˜ëŠ”
-    // META PAGEìˆ˜ê°€ ë¹ ì ¸ìˆëŠ” ìƒíƒœì´ë‹¤.
-    // ì‹¤ì œ ìƒì„±ë  Pageìˆ˜ëŠ” Meta Pageìˆ˜ë§Œí¼ì„ ë”í•˜ì—¬ì•¼ í•œë‹¤.
+    // smiCalculateDBSize¸¦ ÅëÇØ °è»êÇÑ
+    // sCreatePageCount¿¡´Â 0¹ø ÆäÀÌÁö¸¦ ÀúÀåÇÏ´Â
+    // META PAGE¼ö°¡ ºüÁ®ÀÖ´Â »óÅÂÀÌ´Ù.
+    // ½ÇÁ¦ »ı¼ºµÉ Page¼ö´Â Meta Page¼ö¸¸Å­À» ´õÇÏ¿©¾ß ÇÑ´Ù.
     sCreatePageCount = sCreatePageCountExeptMeta + 1;
 
     /* --------------------
-     *  page range ê²€ì‚¬
+     *  page range °Ë»ç
      * -------------------*/
     sHLimitPageCnt = smiGetMaxDBPageCount();
     sLLimitPageCnt = smiGetMinDBPageCount();
@@ -98,7 +107,7 @@ static IDE_RC doCreateDatabase(idvSQL * aStatistics, qciArgCreateDB *aArg)
                     PageRangeError );
 
     /* ---------------------------
-     *  DB & LOG í™”ì¼ í¬ê¸° ê²€ì‚¬
+     *  DB & LOG È­ÀÏ Å©±â °Ë»ç
      * --------------------------*/
 #if !defined(WRS_VXWORKS)
     {
@@ -249,12 +258,12 @@ static IDE_RC doCreateDatabase(idvSQL * aStatistics, qciArgCreateDB *aArg)
 
         IDE_CALLBACK_SEND_MSG("FAILURE of createdb.\n");
 
-        // BUG-31098 DB ìƒì„± ì‹¤íŒ¨ ì‹œ ì˜¤ë¥˜ë¥¼ ì¶œë ¥í•˜ê³  ì„œë²„ ì¢…ë£Œ
+        // BUG-31098 DB »ı¼º ½ÇÆĞ ½Ã ¿À·ù¸¦ Ãâ·ÂÇÏ°í ¼­¹ö Á¾·á
         idlOS::snprintf(sOutputMsg,
                         ID_SIZEOF(sOutputMsg),
                         "%s\n",
                         ideGetErrorMsg(ideGetErrorCode()));
-
+        IDE_ERRLOG(IDE_SERVER_0);
         IDE_CALLBACK_SEND_MSG( sOutputMsg );
 
         IDE_ASSERT(0);

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfUpper.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfUpper.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -43,7 +43,7 @@ static IDE_RC mtfUpperEstimate( mtcNode*     aNode,
 mtfModule mtfUpper = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfUpperFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -167,8 +167,8 @@ IDE_RC mtfUpperEstimate( mtcNode*     aNode,
     */
 
     // PROJ-1579 NCHAR
-    // ASCII ì´ì™¸ì˜ ë¬¸ìžì— ëŒ€í•œ ëŒ€ì†Œë¬¸ìž ë³€í™˜ì—ì„œë„
-    // precisionì´ ë³€í•˜ì§€ëŠ” ì•ŠëŠ”ë‹¤.
+    // ASCII ÀÌ¿ÜÀÇ ¹®ÀÚ¿¡ ´ëÇÑ ´ë¼Ò¹®ÀÚ º¯È¯¿¡¼­µµ
+    // precisionÀÌ º¯ÇÏÁö´Â ¾Ê´Â´Ù.
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      sModules[0],
                                      1,
@@ -202,8 +202,8 @@ IDE_RC mtfUpperCalculate( mtcNode*     aNode,
  * Implementation :
  *    UPPER( char )
  *
- *    aStack[0] : ìž…ë ¥ ë¬¸ìžì—´ì„ ëŒ€ë¬¸ìžë¡œ ë³€í™˜í•œ ê°’
- *    aStack[1] : char ( ìž…ë ¥ ë¬¸ìžì—´ )
+ *    aStack[0] : ÀÔ·Â ¹®ÀÚ¿­À» ´ë¹®ÀÚ·Î º¯È¯ÇÑ °ª
+ *    aStack[1] : char ( ÀÔ·Â ¹®ÀÚ¿­ )
  *
  *    ex) UPPER( 'Capital' ) ==> 'CAPITAL'
  *
@@ -269,13 +269,13 @@ IDE_RC mtfUpperCalculateChar4MB( mtcNode*     aNode,
  *
  * Description : 
  *      PROJ-1579 NCHAR
- *      CHAR íƒ€ìž…ì— ëŒ€í•œ ëŒ€ë¬¸ìž ë³€í™˜
+ *      CHAR Å¸ÀÔ¿¡ ´ëÇÑ ´ë¹®ÀÚ º¯È¯
  *
  * Implementation :
  *    UPPER( char )
  *
- *    aStack[0] : ìž…ë ¥ ë¬¸ìžì—´ì„ ëŒ€ë¬¸ìžë¡œ ë³€í™˜í•œ ê°’
- *    aStack[1] : char ( ìž…ë ¥ ë¬¸ìžì—´ )
+ *    aStack[0] : ÀÔ·Â ¹®ÀÚ¿­À» ´ë¹®ÀÚ·Î º¯È¯ÇÑ °ª
+ *    aStack[1] : char ( ÀÔ·Â ¹®ÀÚ¿­ )
  *
  *    ex) UPPER( 'Capital' ) ==> 'CAPITAL'
  *
@@ -322,23 +322,23 @@ IDE_RC mtfUpperCalculateChar4MB( mtcNode*     aNode,
         sSrcRemain   = sSource->length;
         sSourceFence = sSourceIndex + sSrcRemain;
 
-        // ë³€í™˜ ê²°ê³¼ì˜ í¬ê¸°ë¥¼ ì²´í¬í•˜ê¸° ìœ„í•¨
+        // º¯È¯ °á°úÀÇ Å©±â¸¦ Ã¼Å©ÇÏ±â À§ÇÔ
         sDestRemain = aStack[0].column->precision;
 
         sResultValue = sResult->value;
         sResultFence = sResultValue + sDestRemain;
 
-        // ê²°ê³¼ì˜ ê¸¸ì´ì™€ ìž…ë ¥ì˜ ê¸¸ì´ëŠ” ê°™ë‹¤.
+        // °á°úÀÇ ±æÀÌ¿Í ÀÔ·ÂÀÇ ±æÀÌ´Â °°´Ù.
         sResult->length = sSource->length;
 
         sSrcCharSet = aStack[1].column->language;
         sDestCharSet = & mtlUTF16;
 
         // --------------------------------------------------------
-        // ì•„ëž˜ì™€ ê°™ì€ ìž‘ì—…ì´ í•„ìš”í•˜ë‹¤.
-        // 1. SrcCharSet => UTF16ìœ¼ë¡œ ë³€í™˜
-        // 2. ëŒ€ì†Œë¬¸ìž ë³€í™˜í‘œ ì ìš©
-        // 3. UTF16 => SrcCharSetìœ¼ë¡œ ë³€í™˜
+        // ¾Æ·¡¿Í °°Àº ÀÛ¾÷ÀÌ ÇÊ¿äÇÏ´Ù.
+        // 1. SrcCharSet => UTF16À¸·Î º¯È¯
+        // 2. ´ë¼Ò¹®ÀÚ º¯È¯Ç¥ Àû¿ë
+        // 3. UTF16 => SrcCharSetÀ¸·Î º¯È¯
         // --------------------------------------------------------
 
         sIdnSrcCharSet = mtl::getIdnCharSet( sSrcCharSet );
@@ -351,7 +351,7 @@ IDE_RC mtfUpperCalculateChar4MB( mtcNode*     aNode,
 
             sTempRemain = sDestRemain;
             
-            // 7bit ASCIIì¼ ê²½ìš°ì—ëŠ” ë³€í™˜í‘œ ì ìš©ì´ í•„ìš”ì—†ë‹¤.
+            // 7bit ASCIIÀÏ °æ¿ì¿¡´Â º¯È¯Ç¥ Àû¿ëÀÌ ÇÊ¿ä¾ø´Ù.
             if( IDN_IS_ASCII( *sSourceIndex ) == ID_TRUE )
             {
                 if( *sSourceIndex >= 'a' && *sSourceIndex <= 'z' )
@@ -368,7 +368,7 @@ IDE_RC mtfUpperCalculateChar4MB( mtcNode*     aNode,
             {
                 sU16ResultLen = MTL_UTF16_PRECISION;
 
-                // 1. SrcCharSet => DestCharSet(UTF16)ìœ¼ë¡œ ë³€í™˜
+                // 1. SrcCharSet => DestCharSet(UTF16)À¸·Î º¯È¯
                 IDE_TEST( convertCharSet( sIdnSrcCharSet,
                                           sIdnDestCharSet,
                                           sSourceIndex,
@@ -378,13 +378,13 @@ IDE_RC mtfUpperCalculateChar4MB( mtcNode*     aNode,
                                           -1 /* mNlsNcharConvExcp */ )
                           != IDE_SUCCESS );
 
-                /* BUG-42671 ê¹¨ì§„ ë¬¸ìžê°€ ìžˆì„ ê²½ìš°
-                 * UTF16ì˜ Replaceement characterì€ 2Byteì¸ ë°˜ëª…
-                 * utf8ì˜ Replacement characterì€ 3byteë¡œ ì¸í•´
-                 * DestRemainì€ 3byteì”© ì¤„ë¡œ SrcëŠ” 1byteì”© ì¦ê°€ë˜ì–´
-                 * ê²°êµ­ ì§„í–‰ë˜ë‹¤ë³´ë³€ ë²„í¼ê°€ ëª¨ìžë¥´ê²Œ ë˜ë¯€ë¡œ
-                 * utf18ì˜ ? ì„ utf8 ì˜ ? ë¡œ ë³€í™˜í•˜ì§€ ì•Šê³  ê¸€ìž ê·¸ëŒ€ë¡œ
-                 * ë¥¼ copy í•œë‹¤
+                /* BUG-42671 ±úÁø ¹®ÀÚ°¡ ÀÖÀ» °æ¿ì
+                 * UTF16ÀÇ Replaceement characterÀº 2ByteÀÎ ¹Ý¸í
+                 * utf8ÀÇ Replacement characterÀº 3byte·Î ÀÎÇØ
+                 * DestRemainÀº 3byte¾¿ ÁÙ·Î Src´Â 1byte¾¿ Áõ°¡µÇ¾î
+                 * °á±¹ ÁøÇàµÇ´Ùº¸º¯ ¹öÆÛ°¡ ¸ðÀÚ¸£°Ô µÇ¹Ç·Î
+                 * utf18ÀÇ ? À» utf8 ÀÇ ? ·Î º¯È¯ÇÏÁö ¾Ê°í ±ÛÀÚ ±×´ë·Î
+                 * ¸¦ copy ÇÑ´Ù
                  */
                 if ( ( sU16Result.value1 == 0xff ) &&
                      ( sU16Result.value2 == 0xfd ) )
@@ -394,14 +394,14 @@ IDE_RC mtfUpperCalculateChar4MB( mtcNode*     aNode,
                 }
                 else
                 {
-                    // 2. ëŒ€ì†Œë¬¸ìž ë³€í™˜í‘œ ì ìš©
-                    // IDN_NLS_CASE_UNICODE_MAXë³´ë‹¤ ìž‘ì„ ê²½ìš°ì—ë§Œ ë³€í™˜í•œë‹¤.
-                    // IDN_NLS_CASE_UNICODE_MAXë³´ë‹¤ í¬ë©´ ëŒ€ì†Œë¬¸ìž ë³€í™˜ì´ 
-                    // ì˜ë¯¸ê°€ ì—†ìœ¼ë¯€ë¡œ ê·¸ëŒ€ë¡œ copyí•œë‹¤.
+                    // 2. ´ë¼Ò¹®ÀÚ º¯È¯Ç¥ Àû¿ë
+                    // IDN_NLS_CASE_UNICODE_MAXº¸´Ù ÀÛÀ» °æ¿ì¿¡¸¸ º¯È¯ÇÑ´Ù.
+                    // IDN_NLS_CASE_UNICODE_MAXº¸´Ù Å©¸é ´ë¼Ò¹®ÀÚ º¯È¯ÀÌ 
+                    // ÀÇ¹Ì°¡ ¾øÀ¸¹Ç·Î ±×´ë·Î copyÇÑ´Ù.
 
                     mtl::getUTF16UpperStr( &sUpperResult, &sU16Result );
 
-                    // 3. DestCharSet(UTF16) => SrcCharSetìœ¼ë¡œ ë³€í™˜
+                    // 3. DestCharSet(UTF16) => SrcCharSetÀ¸·Î º¯È¯
                     IDE_TEST( convertCharSet( sIdnDestCharSet,
                                               sIdnSrcCharSet,
                                               & sUpperResult,
@@ -445,13 +445,13 @@ IDE_RC mtfUpperCalculateNchar4MB( mtcNode*     aNode,
  *
  * Description : 
  *      PROJ-1579 NCHAR
- *      NCHAR íƒ€ìž…ì— ëŒ€í•œ ëŒ€ë¬¸ìž ë³€í™˜
+ *      NCHAR Å¸ÀÔ¿¡ ´ëÇÑ ´ë¹®ÀÚ º¯È¯
  *
  * Implementation :
  *    UPPER( nchar )
  *
- *    aStack[0] : ìž…ë ¥ ë¬¸ìžì—´ì„ ëŒ€ë¬¸ìžë¡œ ë³€í™˜í•œ ê°’
- *    aStack[1] : nchar ( ìž…ë ¥ ë¬¸ìžì—´ )
+ *    aStack[0] : ÀÔ·Â ¹®ÀÚ¿­À» ´ë¹®ÀÚ·Î º¯È¯ÇÑ °ª
+ *    aStack[1] : nchar ( ÀÔ·Â ¹®ÀÚ¿­ )
  *
  *    ex) UPPER( 'Capital' ) ==> 'CAPITAL'
  *
@@ -508,12 +508,12 @@ IDE_RC mtfUpperCalculateNchar4MB( mtcNode*     aNode,
         sDestRemain  = sSrcCharSet->maxPrecision(aStack[0].column->precision);
         sResultFence = sResultValue + sDestRemain;
 
-        // ê²°ê³¼ì˜ ê¸¸ì´ì™€ ìž…ë ¥ì˜ ê¸¸ì´ëŠ” ê°™ë‹¤.
+        // °á°úÀÇ ±æÀÌ¿Í ÀÔ·ÂÀÇ ±æÀÌ´Â °°´Ù.
         sResult->length = sSource->length;
 
         // ------------------------------------
-        // ëŒ€ì†Œë¬¸ìž ë³€í™˜í‘œë¥¼ ì ìš©í•˜ê¸° ìœ„í•´ 
-        // UTF16 ìºë¦­í„° ì…‹ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
+        // ´ë¼Ò¹®ÀÚ º¯È¯Ç¥¸¦ Àû¿ëÇÏ±â À§ÇØ 
+        // UTF16 Ä³¸¯ÅÍ ¼ÂÀ¸·Î º¯È¯ÇÑ´Ù.
         // ------------------------------------
         if( sSrcCharSet->id == MTL_UTF16_ID )
         {
@@ -533,10 +533,10 @@ IDE_RC mtfUpperCalculateNchar4MB( mtcNode*     aNode,
         else
         {
             // --------------------------------------------------------
-            // SrcCharSetì´ UTF16ì´ ì•„ë‹ˆë©´ ì•„ëž˜ì™€ ê°™ì€ ìž‘ì—…ì´ í•„ìš”í•˜ë‹¤.
-            // 1. SrcCharSet(UTF8) => UTF16ìœ¼ë¡œ ë³€í™˜
-            // 2. ëŒ€ì†Œë¬¸ìž ë³€í™˜í‘œ ì ìš©
-            // 3. UTF16 => SrcCharSet(UTF8)ìœ¼ë¡œ ë³€í™˜
+            // SrcCharSetÀÌ UTF16ÀÌ ¾Æ´Ï¸é ¾Æ·¡¿Í °°Àº ÀÛ¾÷ÀÌ ÇÊ¿äÇÏ´Ù.
+            // 1. SrcCharSet(UTF8) => UTF16À¸·Î º¯È¯
+            // 2. ´ë¼Ò¹®ÀÚ º¯È¯Ç¥ Àû¿ë
+            // 3. UTF16 => SrcCharSet(UTF8)À¸·Î º¯È¯
             // --------------------------------------------------------
 
             sIdnSrcCharSet = mtl::getIdnCharSet( sSrcCharSet );
@@ -549,7 +549,7 @@ IDE_RC mtfUpperCalculateNchar4MB( mtcNode*     aNode,
 
                 sTempRemain = sDestRemain;
                 
-                // 7bit ASCIIì¼ ê²½ìš°ì—ëŠ” ë³€í™˜í‘œ ì ìš©ì´ í•„ìš”ì—†ë‹¤.
+                // 7bit ASCIIÀÏ °æ¿ì¿¡´Â º¯È¯Ç¥ Àû¿ëÀÌ ÇÊ¿ä¾ø´Ù.
                 if( IDN_IS_ASCII( *sSourceIndex ) == ID_TRUE )
                 {
                     if( *sSourceIndex >= 'a' && *sSourceIndex <= 'z' )
@@ -566,7 +566,7 @@ IDE_RC mtfUpperCalculateNchar4MB( mtcNode*     aNode,
                 {
                     sU16ResultLen = MTL_UTF16_PRECISION;
 
-                    // 1. SrcCharSet(UTF8) => DestCharSet(UTF16)ìœ¼ë¡œ ë³€í™˜
+                    // 1. SrcCharSet(UTF8) => DestCharSet(UTF16)À¸·Î º¯È¯
                     IDE_TEST( convertCharSet( sIdnSrcCharSet,
                                               sIdnDestCharSet,
                                               sSourceIndex,
@@ -576,13 +576,13 @@ IDE_RC mtfUpperCalculateNchar4MB( mtcNode*     aNode,
                                               -1 /* mNlsNcharConvExcp */ )
                               != IDE_SUCCESS );
 
-                    /* BUG-42671 ê¹¨ì§„ ë¬¸ìžê°€ ìžˆì„ ê²½ìš°
-                     * UTF16ì˜ Replaceement characterì€ 2Byteì¸ ë°˜ëª…
-                     * utf8ì˜ Replacement characterì€ 3byteë¡œ ì¸í•´
-                     * DestRemainì€ 3byteì”© ì¤„ë¡œ SrcëŠ” 1byteì”© ì¦ê°€ë˜ì–´
-                     * ê²°êµ­ ì§„í–‰ë˜ë‹¤ë³´ë³€ ë²„í¼ê°€ ëª¨ìžë¥´ê²Œ ë˜ë¯€ë¡œ
-                     * utf18ì˜ ? ì„ utf8 ì˜ ? ë¡œ ë³€í™˜í•˜ì§€ ì•Šê³  ê¸€ìž ê·¸ëŒ€ë¡œ
-                     * ë¥¼ copy í•œë‹¤
+                    /* BUG-42671 ±úÁø ¹®ÀÚ°¡ ÀÖÀ» °æ¿ì
+                     * UTF16ÀÇ Replaceement characterÀº 2ByteÀÎ ¹Ý¸í
+                     * utf8ÀÇ Replacement characterÀº 3byte·Î ÀÎÇØ
+                     * DestRemainÀº 3byte¾¿ ÁÙ·Î Src´Â 1byte¾¿ Áõ°¡µÇ¾î
+                     * °á±¹ ÁøÇàµÇ´Ùº¸º¯ ¹öÆÛ°¡ ¸ðÀÚ¸£°Ô µÇ¹Ç·Î
+                     * utf18ÀÇ ? À» utf8 ÀÇ ? ·Î º¯È¯ÇÏÁö ¾Ê°í ±ÛÀÚ ±×´ë·Î
+                     * ¸¦ copy ÇÑ´Ù
                      */
                     if ( ( sU16Result.value1 == 0xff ) &&
                          ( sU16Result.value2 == 0xfd ) )
@@ -592,13 +592,13 @@ IDE_RC mtfUpperCalculateNchar4MB( mtcNode*     aNode,
                     }
                     else
                     {
-                        // 2. ëŒ€ì†Œë¬¸ìž ë³€í™˜í‘œ ì ìš©
-                        // IDN_NLS_CASE_UNICODE_MAXë³´ë‹¤ ìž‘ì„ ê²½ìš°ì—ë§Œ ë³€í™˜í•œë‹¤.
-                        // IDN_NLS_CASE_UNICODE_MAXë³´ë‹¤ í¬ë©´ ëŒ€ì†Œë¬¸ìž ë³€í™˜ì´ 
-                        // ì˜ë¯¸ê°€ ì—†ìœ¼ë¯€ë¡œ ê·¸ëŒ€ë¡œ copyí•œë‹¤.
+                        // 2. ´ë¼Ò¹®ÀÚ º¯È¯Ç¥ Àû¿ë
+                        // IDN_NLS_CASE_UNICODE_MAXº¸´Ù ÀÛÀ» °æ¿ì¿¡¸¸ º¯È¯ÇÑ´Ù.
+                        // IDN_NLS_CASE_UNICODE_MAXº¸´Ù Å©¸é ´ë¼Ò¹®ÀÚ º¯È¯ÀÌ 
+                        // ÀÇ¹Ì°¡ ¾øÀ¸¹Ç·Î ±×´ë·Î copyÇÑ´Ù.
                         mtl::getUTF16UpperStr( &sUpperResult, &sU16Result );
 
-                        // 3. DestCharSet(UTF16) => SrcCharSet(UTF8)ìœ¼ë¡œ ë³€í™˜
+                        // 3. DestCharSet(UTF16) => SrcCharSet(UTF8)À¸·Î º¯È¯
                         IDE_TEST( convertCharSet( sIdnDestCharSet,
                                                   sIdnSrcCharSet,
                                                   & sUpperResult,

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfPKCS7PAD.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfPKCS7PAD.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -41,7 +41,7 @@ static IDE_RC mtfPKCS7PADEstimate( mtcNode*     aNode,
 mtfModule mtfPKCS7PAD = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfPKCS7PADFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -95,7 +95,7 @@ IDE_RC mtfPKCS7PADEstimate( mtcNode*     aNode,
                                         sModules )
               != IDE_SUCCESS );
 
-    /* ê²°ê³¼ë¥¼ ì €ìž¥í•¨ */
+    /* °á°ú¸¦ ÀúÀåÇÔ */
     sPrecision = ( ( aStack[1].column->precision / 16 ) + 1 ) * 16;
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      &mtdVarchar,

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfTo_date.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfTo_date.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -47,7 +47,7 @@ static IDE_RC mtfTo_dateEstimate( mtcNode*     aNode,
 mtfModule mtfTo_date = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfTo_dateFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -183,10 +183,10 @@ IDE_RC mtfTo_dateCalculateFor1Arg( mtcNode*     aNode,
  * Implementation :
  *    TO_DATE( char )
  *
- *    aStack[0] : CHAR, VARCHAR íƒ€ì…ì˜ charë¥¼ DATE íƒ€ì…ìœ¼ë¡œ ë³€í™˜í•œ ê°’ 
+ *    aStack[0] : CHAR, VARCHAR Å¸ÀÔÀÇ char¸¦ DATE Å¸ÀÔÀ¸·Î º¯È¯ÇÑ °ª 
  *    aStack[1] : date
  *
- *    ex) TO_DATE( '09-JUN-2005' ) ==> DATE íƒ€ì…ì˜ 09-JUN-2005
+ *    ex) TO_DATE( '09-JUN-2005' ) ==> DATE Å¸ÀÔÀÇ 09-JUN-2005
  *
  ***********************************************************************/
     
@@ -265,12 +265,12 @@ IDE_RC mtfTo_dateCalculateFor2Args( mtcNode*     aNode,
  * Implementation :
  *    TO_DATE( date, 'fmt' )
  *
- *    aStack[0] : CHAR, VARCHAR íƒ€ì…ì˜ charë¥¼ DATE íƒ€ì…ìœ¼ë¡œ ë³€í™˜í•œ ê°’ 
+ *    aStack[0] : CHAR, VARCHAR Å¸ÀÔÀÇ char¸¦ DATE Å¸ÀÔÀ¸·Î º¯È¯ÇÑ °ª 
  *    aStack[1] : date
- *    aStack[2] : fmt ( charì˜ ë‚ ì§œ í˜•ì‹ )
+ *    aStack[2] : fmt ( charÀÇ ³¯Â¥ Çü½Ä )
  *
  *    ex) TO_CHAR( '2005-06-09 00:00:00, 'YYYY-MM-DD HH:MI::SS' )
- *       ==> DATE íƒ€ì…ì˜ 2005-06-09
+ *       ==> DATE Å¸ÀÔÀÇ 2005-06-09
  *
  ***********************************************************************/
 
@@ -305,12 +305,12 @@ IDE_RC mtfTo_dateCalculateFor2Args( mtcNode*     aNode,
         sVarchar1 = (mtdCharType*)aStack[1].value;
         sVarchar2 = (mtdCharType*)aStack[2].value;
 
-        // ë‚ ì§œ ì´ˆê¸°í™”
+        // ³¯Â¥ ÃÊ±âÈ­
         sValue->year = ID_SSHORT_MAX;
         sValue->mon_day_hour = 0;
         sValue->min_sec_mic = 0;
 
-        // 'ì¼'ì€ 1ë¡œ ì„¤ì •
+        // 'ÀÏ'Àº 1·Î ¼³Á¤
         sValue->mon_day_hour &= ~MTD_DATE_DAY_MASK;
         sValue->mon_day_hour |= 1 << MTD_DATE_DAY_SHIFT;
 
@@ -322,7 +322,7 @@ IDE_RC mtfTo_dateCalculateFor2Args( mtcNode*     aNode,
                   != IDE_SUCCESS );
 
         // fix BUG-18787
-        // ë…„ ë˜ëŠ” ì›”ì´ ì„¸íŒ…ì´ ì•ˆëœ ê²½ìš°ì— í˜„ì¬ ë‚ ì§œë¡œ ë‹¤ì‹œ ì„¸íŒ…í•´ì¤˜ì•¼ í•¨.
+        // ³â ¶Ç´Â ¿ùÀÌ ¼¼ÆÃÀÌ ¾ÈµÈ °æ¿ì¿¡ ÇöÀç ³¯Â¥·Î ´Ù½Ã ¼¼ÆÃÇØÁà¾ß ÇÔ.
         if( (sValue->year == ID_SSHORT_MAX ) ||
             (mtdDateInterface::month(sValue)) == 0 )
         {
@@ -348,8 +348,8 @@ IDE_RC mtfTo_dateCalculateFor2Args( mtcNode*     aNode,
                 sRealMonth = (UShort)mtdDateInterface::month(sValue);
             }
 
-            // year, month, dayì˜ ì¡°í•©ì´ ì˜¬ë°”ë¥¸ì§€ ì²´í¬í•˜ê³ ,
-            // sValueì— ë‹¤ì‹œ ì„¸íŒ…í•´ì¤€ë‹¤.
+            // year, month, dayÀÇ Á¶ÇÕÀÌ ¿Ã¹Ù¸¥Áö Ã¼Å©ÇÏ°í,
+            // sValue¿¡ ´Ù½Ã ¼¼ÆÃÇØÁØ´Ù.
             IDE_TEST( mtdDateInterface::checkYearMonthDayAndSetDateValue(
                                             sValue,
                                             (SShort)sRealYear,

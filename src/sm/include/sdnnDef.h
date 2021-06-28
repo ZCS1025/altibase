@@ -16,13 +16,13 @@
  
 
 /***********************************************************************
- * $Id: sdnnDef.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdnnDef.h 88191 2020-07-27 03:08:54Z mason.lee $
  **********************************************************************/
 
 #ifndef _O_SDNN_DEF_H_
 # define _O_SDNN_DEF_H_ 1
 
-//disk tableì— ëŒ€í•œ sequential iterator
+//disk table¿¡ ´ëÇÑ sequential iterator
 #include <smDef.h>
 #include <sdbMPRMgr.h>
 #include <smuHash.h>
@@ -36,16 +36,17 @@ typedef struct sdnnIterator
     smSCN       mInfinite;
     void*       mTrans;
     void*       mTable;
-    SChar*      mCurRecPtr;  // MRDB scan moduleì—ì„œë§Œ ì •ì˜í•´ì„œ ì“°ë„ë¡ ìˆ˜ì •?
+    SChar*      mCurRecPtr;  // MRDB scan module¿¡¼­¸¸ Á¤ÀÇÇØ¼­ ¾²µµ·Ï ¼öÁ¤?
     SChar*      mLstFetchRecPtr;
     scGRID      mRowGRID;
     smTID       mTid;
     UInt        mFlag;
 
     smiCursorProperties  * mProperties;
-    /* smiIterator ê³µí†µ ë³€ìˆ˜ ë */
+    smiStatement         * mStatement;
+    /* smiIterator °øÅë º¯¼ö ³¡ */
 
-    // tableì˜ spaceID
+    // tableÀÇ spaceID
     scSpaceID          mSpaceID;
     const smiCallBack *mFilter;
 

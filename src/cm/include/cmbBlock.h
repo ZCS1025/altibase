@@ -24,7 +24,7 @@
 #define CMB_BLOCK_DEFAULT_SIZE   (32* 1024)
 #endif
 
-/*BUG-44275 "IPCDA select test ì—ì„œ fetch ì´ìƒ" */
+/*BUG-44275 "IPCDA select test ¿¡¼­ fetch ÀÌ»ó" */
 typedef enum
 {
     CMB_IPCDA_SHM_ACTIVATED   = 1,
@@ -47,10 +47,10 @@ typedef struct cmbBlock
 typedef struct cmbBlockIPCDA
 {
     cmbBlock                       mBlock;
-    volatile UInt                  mOperationCount;              /* ë°ì´í„° ì˜ì—­ì— ìˆëŠ” Protocol_Blockì˜ ìˆ˜ */
+    volatile UInt                  mOperationCount;              /* µ¥ÀÌÅÍ ¿µ¿ª¿¡ ÀÖ´Â Protocol_BlockÀÇ ¼ö */
     volatile cmbIPCDAChannelState  mWFlag;                       /* Write lock flag */
     volatile cmbIPCDAChannelState  mRFlag;                       /* Read lock flag */
-    UChar                          mData;                        /* ì‹¤ì œ ë°ì´í„° ì˜ì—­ */
+    UChar                          mData;                        /* ½ÇÁ¦ µ¥ÀÌÅÍ ¿µ¿ª */
 }cmbBlockIPCDA;
 
 typedef struct cmbBlockSimpleQueryFetchIPCDA

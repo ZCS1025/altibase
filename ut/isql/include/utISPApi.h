@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: utISPApi.h 80544 2017-07-19 08:04:46Z daramix $
+ * $Id: utISPApi.h 88348 2020-08-14 01:19:36Z chkim $
  **********************************************************************/
 
 #ifndef _O_UTISPAPI_H_
@@ -36,7 +36,7 @@ enum iSQLForeignKeyKind
 
 typedef enum iSQLForkRunType
 {
-    FORKONLYDAEMON = 0, // PROJ-2446: hdb serverìš©ìœ¼ë¡œë„ ì‚¬ìš©
+    FORKONLYDAEMON = 0, // PROJ-2446: hdb server¿ëÀ¸·Îµµ »ç¿ë
     FORKONLYWSERVER,
     FORKONLYDAEMONANDWSERVER
 }iSQLForkRunType;
@@ -160,7 +160,7 @@ public:
 		, SInt   aPortNo
 		, SInt   aConnType
 		, SChar  *aTimezone       /* PROJ-2209 DBTimezone */
-		, SQL_MESSAGE_CALLBACK_STRUCT *aMessageCallbackStruct
+		, SQLMessageCallbackStruct *aMessageCallback
 		, SChar *aSslCa      = "" /* BUG-41281 SSL, use default value for compatibility */
 		, SChar *aSslCapath  = ""
 		, SChar *aSslCert    = ""
@@ -180,7 +180,7 @@ public:
     IDE_RC Close();
     IDE_RC StmtClose(idBool aPrepare);
 
-    /* íŠ¹ì • í…Œì´ë¸”ì´ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬í•œë‹¤. */
+    /* Æ¯Á¤ Å×ÀÌºíÀÌ Á¸ÀçÇÏ´ÂÁö Ã¼Å©ÇÑ´Ù. */
     IDE_RC CheckTableExist(SChar *aUserName, SChar *aTableName, idBool *aIsExist);
 
     IDE_RC Tables(SChar *a_UserName, idBool a_IsSysUser, TableInfo *aObjInfo);
@@ -215,7 +215,7 @@ public:
                         SChar              *aFKName,
                         SShort             *aKeySeq );
 
-    /* PROJ-1107 Check Constraint ì§€ì› */
+    /* PROJ-1107 Check Constraint Áö¿ø */
     IDE_RC CheckConstraints( SChar * aUserName,
                              SChar * aTableName,
                              SChar * aConstrName,
@@ -252,7 +252,7 @@ public:
     SQLRETURN MoreResults(idBool aPrepare);
     IDE_RC    BuildBindInfo(idBool aPrepare, idBool aExecute);
 
-/* BUGBUG-procedure, function directExecute ìˆ˜í–‰í•˜ë©´ ì—ëŸ¬ */
+/* BUGBUG-procedure, function directExecute ¼öÇàÇÏ¸é ¿¡·¯ */
     IDE_RC    Prepare();
     IDE_RC    Execute(idBool aAllowCancel=ID_FALSE);
     IDE_RC    GetConnectAttr(SInt aAttr, SInt *aValue);
@@ -350,6 +350,8 @@ private:
     UInt   GetDateFmtLenFromDateFmt(SChar *aDateFmt);
 
     IDE_RC AppendConnStrAttr( SChar *aConnStr, UInt aConnStrSize, SChar *aAttrKey, SChar *aAttrVal );
+    /* BUG-48000 Need to print ideGetErrorMsg first */
+    IDE_RC GetIsCaseSensitivePasswd( idBool *aIsCaseSensitivePasswd );
 
 public:
     utColumns m_Result;
@@ -360,7 +362,7 @@ private:
     SQLHSTMT  m_IStmt;
     SQLHSTMT  m_TmpStmt;    // use Tables, Columns, GetProcInfo, FetchProcInfo
     SQLHSTMT  m_TmpStmt2;   // use GetReturnType
-    SQLHSTMT  m_TmpStmt3;   // use Prepare, ProcBindPara, Execute, BUGBUG-stmt prepare ì‚¬ìš© í›„ directExecute ì‚¬ìš©í•˜ë©´ ì—ëŸ¬
+    SQLHSTMT  m_TmpStmt3;   // use Prepare, ProcBindPara, Execute, BUGBUG-stmt prepare »ç¿ë ÈÄ directExecute »ç¿ëÇÏ¸é ¿¡·¯
     SQLHSTMT  m_ObjectStmt;
     SQLHSTMT  m_SynonymStmt;
     SQLHDESC  mIRD; // BUG-42521
@@ -375,10 +377,10 @@ private:
     uteErrorMgr *mErrorMgr;
 
     /* for admin */
-    /* ì´ˆê¸°ê°’ì€ ID_FALSEì´ë‹¤.
-     * ê´€ë¦¬ì ëª¨ë“œì—ì„œ Open()ì´ í˜¸ì¶œëì„ ë•Œ,
-     * ì„œë²„ í”„ë¡œì„¸ìŠ¤ê°€ ì•„ì§ ì‹œì‘ë˜ì§€ ì•Šì€ ìƒíƒœì—¬ì„œ Open()ì´ ì‹¤íŒ¨í•œ ê²½ìš° ID_TRUEë¡œ ì„¤ì •ëœë‹¤.
-     * ì„œë²„ í”„ë¡œì„¸ìŠ¤ê°€ ì‹œì‘ëœ ìƒíƒœì—ì„œ ì„œë²„ì™€ì˜ ì—°ê²°ì— ì„±ê³µí•˜ë©´ ID_FALSEë¡œ ì„¤ì •ëœë‹¤. */
+    /* ÃÊ±â°ªÀº ID_FALSEÀÌ´Ù.
+     * °ü¸®ÀÚ ¸ğµå¿¡¼­ Open()ÀÌ È£ÃâµÆÀ» ¶§,
+     * ¼­¹ö ÇÁ·Î¼¼½º°¡ ¾ÆÁ÷ ½ÃÀÛµÇÁö ¾ÊÀº »óÅÂ¿©¼­ Open()ÀÌ ½ÇÆĞÇÑ °æ¿ì ID_TRUE·Î ¼³Á¤µÈ´Ù.
+     * ¼­¹ö ÇÁ·Î¼¼½º°¡ ½ÃÀÛµÈ »óÅÂ¿¡¼­ ¼­¹ö¿ÍÀÇ ¿¬°á¿¡ ¼º°øÇÏ¸é ID_FALSE·Î ¼³Á¤µÈ´Ù. */
     idBool       mIsConnToIdleInstance;
 
     /* for SQLCancel */
@@ -391,6 +393,10 @@ private:
     SChar       *mNumFormat;
     UChar       *mNumToken;
     mtlCurrency  mCurrency;
+
+    /* TASK-7218 */
+    SQLLEN       mMultiErrorSize;
+    uteErrorMgr *mMultiErrorMgr;
 
 public:
 
@@ -412,13 +418,17 @@ public:
         mNumToken = aToken;
     }
     SChar  *GetNumFormat()            { return mNumFormat; }
+
+    /* TASK-7218 */
+    SInt         GetMultiErrorSize()  { return mMultiErrorSize; }
+    uteErrorMgr *GetMultiErrorMgr()   { return mMultiErrorMgr; }
 };
 
 /**
  * DeclareSQLExecuteBegin.
  *
- * SQL statement ì‹¤í–‰ ì§ì „ í˜¸ì¶œë˜ë©°,
- * SQL statement ì‹¤í–‰ ì·¨ì†Œë¥¼ í—ˆìš©í•˜ê¸° ìœ„í•œ ì„¤ì •ì„ í•œë‹¤.
+ * SQL statement ½ÇÇà Á÷Àü È£ÃâµÇ¸ç,
+ * SQL statement ½ÇÇà Ãë¼Ò¸¦ Çã¿ëÇÏ±â À§ÇÑ ¼³Á¤À» ÇÑ´Ù.
  */
 inline void utISPApi::DeclareSQLExecuteBegin(SQLHSTMT aExecutingStmt)
 {
@@ -430,8 +440,8 @@ inline void utISPApi::DeclareSQLExecuteBegin(SQLHSTMT aExecutingStmt)
 /**
  * DeclareSQLExecuteEnd.
  *
- * SQL statement ì‹¤í–‰ ì§í›„ í˜¸ì¶œë˜ë©°,
- * SQL statement ì‹¤í–‰ ì·¨ì†Œë¥¼ í—ˆìš©í•˜ê¸° ìœ„í•œ ì„¤ì •ì„ í•´ì œí•œë‹¤.
+ * SQL statement ½ÇÇà Á÷ÈÄ È£ÃâµÇ¸ç,
+ * SQL statement ½ÇÇà Ãë¼Ò¸¦ Çã¿ëÇÏ±â À§ÇÑ ¼³Á¤À» ÇØÁ¦ÇÑ´Ù.
  */
 inline void utISPApi::DeclareSQLExecuteEnd()
 {

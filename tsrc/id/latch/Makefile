@@ -12,10 +12,10 @@ OBJS = $(foreach src, $(SRCS),$(notdir $(src:.cpp=.$(OBJEXT))))
 
 BINS	= genErrMsg$(BINEXT)
 
-# 소스코드에 include 될 에러코드 화일
+# �ҽ��ڵ忡 include �� �����ڵ� ȭ��
 E_HEADER = idErrorCode.ih
 
-# 에러코드 메시지 화일
+# �����ڵ� �޽��� ȭ��
 
 ofiles: $(BINS) ErrorFiles
 shobjs: 

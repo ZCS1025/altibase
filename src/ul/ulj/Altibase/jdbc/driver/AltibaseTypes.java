@@ -19,9 +19,9 @@ package Altibase.jdbc.driver;
 import java.sql.Types;
 
 /**
- * {@link Types}ì˜ í™•ì¥.
+ * {@link Types}ÀÇ È®Àå.
  * <p>
- * {@link Types}ì—ì„œ ì œê³µí•˜ëŠ” contant ì™¸ì—, Altibaseë¥¼ ìœ„í•œ constantë¥¼ ì¶”ê°€ë¡œ ì œê³µí•œë‹¤.
+ * {@link Types}¿¡¼­ Á¦°øÇÏ´Â contant ¿Ü¿¡, Altibase¸¦ À§ÇÑ constant¸¦ Ãß°¡·Î Á¦°øÇÑ´Ù.
  */
 public final class AltibaseTypes
 {

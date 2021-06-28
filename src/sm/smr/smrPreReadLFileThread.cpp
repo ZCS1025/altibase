@@ -15,12 +15,9 @@
  */
  
 /***********************************************************************
- * $Id: smrPreReadLFileThread.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smrPreReadLFileThread.cpp 82426 2018-03-09 05:12:27Z emlee $
  **********************************************************************/
 
-#include <idl.h>
-#include <ide.h>
-#include <idu.h>
 #include <smErrorCode.h>
 #include <smDef.h>
 #include <smr.h>
@@ -36,7 +33,7 @@ smrPreReadLFileThread::~smrPreReadLFileThread()
 }
 
 /***********************************************************************
- * Description : ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ * Description : ÃÊ±âÈ­¸¦ ¼öÇàÇÑ´Ù.
  *
  */
 IDE_RC smrPreReadLFileThread::initialize()
@@ -57,10 +54,10 @@ IDE_RC smrPreReadLFileThread::initialize()
                                      IDV_WAIT_INDEX_NULL )
               != IDE_SUCCESS );
     
-    /* Open LogFile Request Listë¥¼ ì´ˆê¸°í™”í•œë‹¤.*/
+    /* Open LogFile Request List¸¦ ÃÊ±âÈ­ÇÑ´Ù.*/
     mOpenLFRequestList.mPrev = &mOpenLFRequestList;
     mOpenLFRequestList.mNext = &mOpenLFRequestList;
-    /* Open LogFile Listë¥¼ ì´ˆê¸°í™”í•œë‹¤.*/
+    /* Open LogFile List¸¦ ÃÊ±âÈ­ÇÑ´Ù.*/
     mOpenLFList.mPrev = &mOpenLFList;
     mOpenLFList.mNext = &mOpenLFList;
 
@@ -69,7 +66,7 @@ IDE_RC smrPreReadLFileThread::initialize()
                                              (SChar*) "SMR_PREREADLF_INFO_POOL",
                                              ID_SIZEOF(smrPreReadLFInfo),
                                              SMR_PREREADLF_INFO_POOL_ELEMENT_COUNT,
-                                             10, /* 10ê°œì´ìƒë©´ Free */
+                                             10, /* 10°³ÀÌ»ó¸é Free */
                                              ID_TRUE )
               != IDE_SUCCESS );
     
@@ -85,7 +82,7 @@ IDE_RC smrPreReadLFileThread::initialize()
 }
 
 /***********************************************************************
- * Description : openëœ Logfileì„ closeí•˜ê³  í• ë‹¹ëœ Resourceë¥¼ ë°˜í™˜í•œë‹¤.
+ * Description : openµÈ LogfileÀ» closeÇÏ°í ÇÒ´çµÈ Resource¸¦ ¹İÈ¯ÇÑ´Ù.
  *
  */
 IDE_RC smrPreReadLFileThread::destroy()
@@ -93,8 +90,8 @@ IDE_RC smrPreReadLFileThread::destroy()
     smrPreReadLFInfo *sCurPreReadInfo;
     smrPreReadLFInfo *sNxtPreReadInfo;
 
-    /* open logfile request listì— ëª¨ë“  requestë¥¼ ì·¨ì†Œí•˜ê³ 
-       ì‚­ì œí•œë‹¤.*/
+    /* open logfile request list¿¡ ¸ğµç request¸¦ Ãë¼ÒÇÏ°í
+       »èÁ¦ÇÑ´Ù.*/
     sCurPreReadInfo = mOpenLFRequestList.mNext;
     
     while(sCurPreReadInfo != &mOpenLFRequestList)
@@ -109,11 +106,11 @@ IDE_RC smrPreReadLFileThread::destroy()
         
     }
 
-    /* open Log file listì—ì„œ fileì´ openë˜ì–´ ìˆìœ¼ë©´ closeí•˜ê³ 
-       í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¥¼ ë°˜ë‚©í•œë‹¤.*/
+    /* open Log file list¿¡¼­ fileÀÌ openµÇ¾î ÀÖÀ¸¸é closeÇÏ°í
+       ÇÒ´çµÈ ¸Ş¸ğ¸®¸¦ ¹İ³³ÇÑ´Ù.*/
     sCurPreReadInfo = mOpenLFList.mNext;
 
-    // ì—´ë ¤ ìˆëŠ” ëª¨ë“  LogFileì„ Closeí•œë‹¤.
+    // ¿­·Á ÀÖ´Â ¸ğµç LogFileÀ» CloseÇÑ´Ù.
     while ( sCurPreReadInfo != &mOpenLFList )
     {
         sNxtPreReadInfo = sCurPreReadInfo->mNext;
@@ -121,8 +118,8 @@ IDE_RC smrPreReadLFileThread::destroy()
         if ( ( sCurPreReadInfo->mFlag & SMR_PRE_READ_FILE_MASK ) 
              == SMR_PRE_READ_FILE_OPEN )
         {
-            /* mFlagê°’ì— SMR_PRE_READ_FILE_OPENì´ ë˜ì–´ ìˆìœ¼ë©´ logfileì´
-               Openë˜ì–´ ìˆëŠ”ê²ƒì´ë‹¤.*/
+            /* mFlag°ª¿¡ SMR_PRE_READ_FILE_OPENÀÌ µÇ¾î ÀÖÀ¸¸é logfileÀÌ
+               OpenµÇ¾î ÀÖ´Â°ÍÀÌ´Ù.*/
             IDE_TEST( smrLogMgr::closeLogFile(sCurPreReadInfo->mLogFilePtr)
                       != IDE_SUCCESS );
         }
@@ -152,15 +149,15 @@ IDE_RC smrPreReadLFileThread::destroy()
 }
 
 /***********************************************************************
- * Description : open logfile requestë¥¼ ê³„ì† ë³´ê³  ìˆë‹¤ê³  requestê°€ ë“¤ì–´ì˜¤ë©´
- *               ì¼ë‹¨ requestë¥¼ ìì‹  open logfile listë¡œ ì˜®ê¸°ê³  openì„ ìˆ˜í–‰í•œë‹¤.
- *               ì´ë•Œ logfile openì€ ë©”ëª¨ë¦¬ì— ëª¨ë“  logfileì„ ì½ì–´ë“¤ì´ëŠ” ê²ƒì´ë‹¤.
- *               ê·¸ë¦¬ê³  logfileì˜ openì´ ì™„ë£Œë˜ë©´ request infoì— mFlagì—
- *               fileì˜ openì´ ì™„ë£Œë˜ì–´ë‹¤ëŠ” ê²ƒì„ í‘œì‹œí•˜ê¸° ìœ„í•´
- *               SMR_PRE_READ_FILE_OPENì„ Settingí•œë‹¤. ê·¸ëŸ°ë° mFlagê°’ì—
- *               SMR_PRE_READ_FILE_CLOSEì´ ë˜ì–´ ìˆë‹¤ë©´ ì´ëŠ” openì„ requestí•œìª½ì—ì„œ
- *               PreReadThreadê°€ Opení•˜ëŠ” ì‚¬ì´ì— closeë¥¼ ìš”ì²­í•œ ê²ƒì´ë‹¤. ì´ë• ë‹¤ì‹œ
- *               logfileì„ closeí•˜ê³  í• ë‹¹ëœ resoruceë¥¼ ë°˜ë‚©í•œë‹¤.
+ * Description : open logfile request¸¦ °è¼Ó º¸°í ÀÖ´Ù°í request°¡ µé¾î¿À¸é
+ *               ÀÏ´Ü request¸¦ ÀÚ½Å open logfile list·Î ¿Å±â°í openÀ» ¼öÇàÇÑ´Ù.
+ *               ÀÌ¶§ logfile openÀº ¸Ş¸ğ¸®¿¡ ¸ğµç logfileÀ» ÀĞ¾îµéÀÌ´Â °ÍÀÌ´Ù.
+ *               ±×¸®°í logfileÀÇ openÀÌ ¿Ï·áµÇ¸é request info¿¡ mFlag¿¡
+ *               fileÀÇ openÀÌ ¿Ï·áµÇ¾î´Ù´Â °ÍÀ» Ç¥½ÃÇÏ±â À§ÇØ
+ *               SMR_PRE_READ_FILE_OPENÀ» SettingÇÑ´Ù. ±×·±µ¥ mFlag°ª¿¡
+ *               SMR_PRE_READ_FILE_CLOSEÀÌ µÇ¾î ÀÖ´Ù¸é ÀÌ´Â openÀ» requestÇÑÂÊ¿¡¼­
+ *               PreReadThread°¡ OpenÇÏ´Â »çÀÌ¿¡ close¸¦ ¿äÃ»ÇÑ °ÍÀÌ´Ù. ÀÌ¶© ´Ù½Ã
+ *               logfileÀ» closeÇÏ°í ÇÒ´çµÈ resoruce¸¦ ¹İ³³ÇÑ´Ù.
  *
  *****************************************************************************/
 void smrPreReadLFileThread::run()
@@ -187,8 +184,8 @@ void smrPreReadLFileThread::run()
         
         if ( rc != IDE_SUCCESS )
         {
-            // ì¼ë°˜ UNIX SYSTEM CALL RETURN ê·œì•½: err == ETIME
-            // PDL CALL RETURN ê·œì•½: err == -1 && errno == ETIME 
+            // ÀÏ¹İ UNIX SYSTEM CALL RETURN ±Ô¾à: err == ETIME
+            // PDL CALL RETURN ±Ô¾à: err == -1 && errno == ETIME 
             IDE_TEST_RAISE(mCV.isTimedOut() != ID_TRUE, err_cond_wait);
             mResume = ID_TRUE;
         }
@@ -196,7 +193,7 @@ void smrPreReadLFileThread::run()
         {
             if ( mResume == ID_FALSE ) 
             {
-                // clear checkpoint intervalì˜ ê²½ìš°ì´ë¯€ë¡œ timeì„ reset í•œë‹¤.
+                // clear checkpoint intervalÀÇ °æ¿ìÀÌ¹Ç·Î timeÀ» reset ÇÑ´Ù.
                 continue;
             }
         }
@@ -204,7 +201,7 @@ void smrPreReadLFileThread::run()
         if ( smuProperty::isRunLogPreReadThread() == SMU_THREAD_OFF )
         {
             // To Fix PR-14783
-            // System Threadì˜ ì‘ì—…ì„ ìˆ˜í–‰í•˜ì§€ ì•Šë„ë¡ í•œë‹¤.
+            // System ThreadÀÇ ÀÛ¾÷À» ¼öÇàÇÏÁö ¾Êµµ·Ï ÇÑ´Ù.
             continue;
         }
         else
@@ -217,8 +214,8 @@ void smrPreReadLFileThread::run()
         
         sCurPreReadInfo = NULL;
             
-        /* logfile open request listì—ì„œ reqestë¥¼ ê°€ì ¸ì™€ì„œ
-           open logfile listì— ì¶”ê°€í•œë‹¤. */
+        /* logfile open request list¿¡¼­ reqest¸¦ °¡Á®¿Í¼­
+           open logfile list¿¡ Ãß°¡ÇÑ´Ù. */
         IDE_TEST( getJobOfPreReadInfo(&sCurPreReadInfo)
                   != IDE_SUCCESS );
         
@@ -254,8 +251,8 @@ void smrPreReadLFileThread::run()
                        == SMR_PRE_READ_FILE_CLOSE ) || 
                      ( rc != IDE_SUCCESS ) )
                 {
-                    /* PreReadThreadê°€ logfileì„ opení•˜ê³  ìˆëŠ”ì‚¬ì´ì— ë‹¤ë¥¸ìª½ì—ì„œ
-                       closeë¥¼ ìš”ì²­í–ˆë‹¤.*/
+                    /* PreReadThread°¡ logfileÀ» openÇÏ°í ÀÖ´Â»çÀÌ¿¡ ´Ù¸¥ÂÊ¿¡¼­
+                       close¸¦ ¿äÃ»Çß´Ù.*/
                     IDE_TEST( smrLogMgr::closeLogFile(sCurPreReadInfo->mLogFilePtr )
                               != IDE_SUCCESS);
                     
@@ -267,8 +264,8 @@ void smrPreReadLFileThread::run()
                 }
                 else
                 {
-                    /* open logfile listì— ìˆëŠ” PreReadInfoì˜ mFlagê°’ì—
-                       SMR_PRE_READ_FILE_OPENì„ settingí•œë‹¤.*/
+                    /* open logfile list¿¡ ÀÖ´Â PreReadInfoÀÇ mFlag°ª¿¡
+                       SMR_PRE_READ_FILE_OPENÀ» settingÇÑ´Ù.*/
                     sCurPreReadInfo->mFlag &= ~SMR_PRE_READ_FILE_MASK;
                     sCurPreReadInfo->mFlag |= SMR_PRE_READ_FILE_OPEN;
                 }
@@ -318,8 +315,8 @@ void smrPreReadLFileThread::run()
 }
 
 /***********************************************************************
- * Description : PreReadThreadì—ê²Œ aFileNoì— í•´ë‹¹í•˜ëŠ” íŒŒì¼ì—
- *               ëŒ€í•´ì„œ openì„ ìš”ì²­í•œë‹¤.
+ * Description : PreReadThread¿¡°Ô aFileNo¿¡ ÇØ´çÇÏ´Â ÆÄÀÏ¿¡
+ *               ´ëÇØ¼­ openÀ» ¿äÃ»ÇÑ´Ù.
  *
  * aFileNo  - [IN] LogFile No
  */
@@ -338,7 +335,7 @@ IDE_RC smrPreReadLFileThread::addOpenLFRequest( UInt aFileNo )
     
     sCurPreReadInfo->mFileNo = aFileNo;
 
-    /* LogFile Open Requestì— PreReadInfoë¥¼ ì¶”ê°€í•œë‹¤.*/
+    /* LogFile Open Request¿¡ PreReadInfo¸¦ Ãß°¡ÇÑ´Ù.*/
     addToLFRequestList(sCurPreReadInfo);
 
     IDE_DASSERT(findInOpenLFRequestList( aFileNo ) ==
@@ -364,7 +361,7 @@ IDE_RC smrPreReadLFileThread::addOpenLFRequest( UInt aFileNo )
 }
 
 /***********************************************************************
- * Description : <aFileNo>ì— í•´ë‹¹í•˜ëŠ” Logfileì— ëŒ€í•´ì„œ Closeë¥¼ ìš”ì²­í•œë‹¤.
+ * Description : <aFileNo>¿¡ ÇØ´çÇÏ´Â Logfile¿¡ ´ëÇØ¼­ Close¸¦ ¿äÃ»ÇÑ´Ù.
  *
  * aFileNo - [IN] LogFile No
  */
@@ -376,7 +373,7 @@ IDE_RC smrPreReadLFileThread::closeLogFile( UInt aFileNo )
     IDE_TEST( lock() != IDE_SUCCESS );
     sState = 1;
 
-    /* Open LogFile Listì— ìˆëŠ”ì§€ Checkí•œë‹¤.*/
+    /* Open LogFile List¿¡ ÀÖ´ÂÁö CheckÇÑ´Ù.*/
     sCurPreReadInfo = findInOpenLFList( aFileNo );
 
     if(sCurPreReadInfo == NULL)
@@ -385,8 +382,8 @@ IDE_RC smrPreReadLFileThread::closeLogFile( UInt aFileNo )
 
         if(sCurPreReadInfo != NULL)
         {
-            // í˜„ì¬ Request Listì—ë§Œ ìˆê³  íŒŒì¼ì€ Openë˜ì§€ ì•Šì•˜ê¸° ë•Œë¬¸ì—
-            // Listì—ì„œ ì œê±°ë§Œ í•œë‹¤.
+            // ÇöÀç Request List¿¡¸¸ ÀÖ°í ÆÄÀÏÀº OpenµÇÁö ¾Ê¾Ò±â ¶§¹®¿¡
+            // List¿¡¼­ Á¦°Å¸¸ ÇÑ´Ù.
             removeFromLFRequestList(sCurPreReadInfo);
             IDE_TEST( mPreReadLFInfoPool.memfree((void*)sCurPreReadInfo)
                       != IDE_SUCCESS );
@@ -397,7 +394,7 @@ IDE_RC smrPreReadLFileThread::closeLogFile( UInt aFileNo )
         if ( ( sCurPreReadInfo->mFlag & SMR_PRE_READ_FILE_MASK )
                == SMR_PRE_READ_FILE_OPEN )
         {
-            /* Fileì´ Openë˜ì–´ ìˆë‹¤.*/
+            /* FileÀÌ OpenµÇ¾î ÀÖ´Ù.*/
             IDE_TEST( smrLogMgr::closeLogFile( sCurPreReadInfo->mLogFilePtr )
                       != IDE_SUCCESS );
 
@@ -410,9 +407,9 @@ IDE_RC smrPreReadLFileThread::closeLogFile( UInt aFileNo )
         }
         else
         {
-            // í˜„ì¬ PreRead Threadê°€ ì´ íŒŒì¼ì„ opení•˜ê³  ìˆë‹¤. ë‚˜ì¤‘ì— openì´
-            // ëë‚˜ê³  ë‚˜ì„œ sCurPreReadInfo->mFlagì˜ ê°’ì„ Checkí•˜ì—¬
-            // SMR_PRE_READ_FILE_CLOSEì´ë©´ Fileì„ Closeí•˜ê³  ì •ë¦¬í•œë‹¤.
+            // ÇöÀç PreRead Thread°¡ ÀÌ ÆÄÀÏÀ» openÇÏ°í ÀÖ´Ù. ³ªÁß¿¡ openÀÌ
+            // ³¡³ª°í ³ª¼­ sCurPreReadInfo->mFlagÀÇ °ªÀ» CheckÇÏ¿©
+            // SMR_PRE_READ_FILE_CLOSEÀÌ¸é FileÀ» CloseÇÏ°í Á¤¸®ÇÑ´Ù.
             IDE_ASSERT( (sCurPreReadInfo->mFlag & SMR_PRE_READ_FILE_MASK)
                          == SMR_PRE_READ_FILE_NON );
             sCurPreReadInfo->mFlag &= ~SMR_PRE_READ_FILE_MASK;
@@ -439,7 +436,7 @@ IDE_RC smrPreReadLFileThread::closeLogFile( UInt aFileNo )
 }
 
 /***********************************************************************
- * Description : open logfile Request listì—ì„œ aFileNoì„ ì°¾ëŠ”ë‹¤.
+ * Description : open logfile Request list¿¡¼­ aFileNoÀ» Ã£´Â´Ù.
  *
  * aFileNo - [IN] LogFile No
  */
@@ -467,7 +464,7 @@ smrPreReadLFInfo* smrPreReadLFileThread::findInOpenLFRequestList( UInt aFileNo )
 }
 
 /***********************************************************************
- * Description : open logfile listì—ì„œ aFileNoì„ ì°¾ëŠ”ë‹¤.
+ * Description : open logfile list¿¡¼­ aFileNoÀ» Ã£´Â´Ù.
  *
  * aFileNo - [IN] LogFile No
  */
@@ -495,11 +492,11 @@ smrPreReadLFInfo* smrPreReadLFileThread::findInOpenLFList( UInt aFileNo )
 }
 
 /***********************************************************************
- * Description : open logfile Request listì— requestê°€ ìˆë‹¤ë©´ ì´ê²ƒì´ lst log
- *               file noë³´ë‹¤ ì‘ê±°ë‚˜ ê°™ìœ¼ë©´ ì´ë¥¼ request listì—ì„œ open listë¡œ
- *               ì´ë™í•˜ê³  ì´ì—ëŒ€í•œ prereadinfoë¥¼ aPreReadInfoì— ë„£ì–´ì¤€ë‹¤.
+ * Description : open logfile Request list¿¡ request°¡ ÀÖ´Ù¸é ÀÌ°ÍÀÌ lst log
+ *               file noº¸´Ù ÀÛ°Å³ª °°À¸¸é ÀÌ¸¦ request list¿¡¼­ open list·Î
+ *               ÀÌµ¿ÇÏ°í ÀÌ¿¡´ëÇÑ prereadinfo¸¦ aPreReadInfo¿¡ ³Ö¾îÁØ´Ù.
  *               
- * aPreReadInfo - [OUT] Opení•´ì•¼ë  PreReadInfo
+ * aPreReadInfo - [OUT] OpenÇØ¾ßµÉ PreReadInfo
  *
  */
 IDE_RC smrPreReadLFileThread::getJobOfPreReadInfo(smrPreReadLFInfo **aPreReadInfo)
@@ -515,7 +512,7 @@ IDE_RC smrPreReadLFileThread::getJobOfPreReadInfo(smrPreReadLFInfo **aPreReadInf
 
     if ( isEmptyOpenLFRequestList() == ID_FALSE )
     {
-        IDE_TEST( smrLogMgr::getLstLSN( &sLstLSN ) != IDE_SUCCESS );
+        smrLogMgr::getLstLSN( &sLstLSN ) ;
             
         IDE_TEST( lock() != IDE_SUCCESS );
         sState = 1;
@@ -526,7 +523,7 @@ IDE_RC smrPreReadLFileThread::getJobOfPreReadInfo(smrPreReadLFInfo **aPreReadInf
 
             while ( sCurPreReadInfo != &mOpenLFRequestList )
             {
-                // ì‹¤ì œë¡œ ë¡œê·¸ê°€ ê¸°ë¡ëœ ë¡œê·¸íŒŒì¼ì¸ì§€ Checkí•œë‹¤.
+                // ½ÇÁ¦·Î ·Î±×°¡ ±â·ÏµÈ ·Î±×ÆÄÀÏÀÎÁö CheckÇÑ´Ù.
                 if ( sCurPreReadInfo->mFileNo <= sLstLSN.mFileNo )
                 {
                     removeFromLFRequestList( sCurPreReadInfo );
@@ -570,7 +567,7 @@ IDE_RC smrPreReadLFileThread::getJobOfPreReadInfo(smrPreReadLFInfo **aPreReadInf
 }
 
 /***********************************************************************
- * Description : PreReadThreadë¥¼ ì¢…ë£Œí•œë‹¤.
+ * Description : PreReadThread¸¦ Á¾·áÇÑ´Ù.
  *
  */
 IDE_RC smrPreReadLFileThread::shutdown()
@@ -579,7 +576,7 @@ IDE_RC smrPreReadLFileThread::shutdown()
     
     IDL_MEM_BARRIER;
 
-    // ì“°ë ˆë“œê°€ ì™„ì „íˆ ì¢…ë£Œë  ë•Œê¹Œì§€ ê¸°ë‹¤ë¦°ë‹¤.
+    // ¾²·¹µå°¡ ¿ÏÀüÈ÷ Á¾·áµÉ ¶§±îÁö ±â´Ù¸°´Ù.
     IDE_TEST_RAISE( join() != IDE_SUCCESS, err_thr_join );
     
     return IDE_SUCCESS;
@@ -594,7 +591,7 @@ IDE_RC smrPreReadLFileThread::shutdown()
 }
 
 /***********************************************************************
- * Description : PreReadThreadë¥¼ ê¹¨ìš´ë‹¤. ì´ë¯¸ ì‘ì—…ì¤‘ì´ë©´ ë¬´ì‹œëœë‹¤.
+ * Description : PreReadThread¸¦ ±ú¿î´Ù. ÀÌ¹Ì ÀÛ¾÷ÁßÀÌ¸é ¹«½ÃµÈ´Ù.
  *
  */
 IDE_RC smrPreReadLFileThread::resume()

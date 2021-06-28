@@ -89,11 +89,14 @@ private:
     void        run( void );
 
     void        buildAnalyzingTable( smiLogRec     * aLog,
-                                     rpdMetaItem   * aMetaItem );
+                                     rpdMetaItem   * aMetaItem,
+                                     smTID           aTransID );
 
-    IDE_RC      checkAndAddReplicatedTransGroupInCommit( smiLogRec     * aLog );
+    IDE_RC      checkAndAddReplicatedTransGroupInCommit( smiLogRec     * aLog,
+                                                         smTID           aTransID );
     IDE_RC      checkAndAddReplicatedTransGroupInAbort( smiLogRec     * aLog );
-    IDE_RC      checkAndAddReplicatedTransGroup( smiLogRec   * aLog );
+    IDE_RC      checkAndAddReplicatedTransGroup( smiLogRec    * aLog,
+                                                 smTID          aTransID );
 
     void        waitForNewRecord( void );
 
@@ -115,7 +118,15 @@ private:
                             smOID              aOldTableOID,
                             smOID              aNewTableOID );
 
-    rpdTableMetaType getTableMetaType( smOID aOldTableOID, smOID aNewTableOID );
+    IDE_RC      readMyLog( smSN    * aCurrentSN,
+                           smLSN   * aReadLSN,
+                           SChar   * aLogHead,
+                           SChar  ** aLogPtr,
+                           idBool  * aIsValid );
+    IDE_RC      isNeedDecompress( SChar  * aRawLogPtr,
+                                  SChar  * aRawHeadLogPtr,
+                                  idBool * aIsNeedDecompress );
+
 
 public:
     rpxAheadAnalyzer() : idtBaseThread() { };

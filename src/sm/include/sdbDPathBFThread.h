@@ -43,10 +43,10 @@ private:
     PDL_Time_Value    mTV;
     idBool            mFinish;
 
-    /* Direct Path Insertì‹œ  í•„ìš”í•œ ì •ë³´ */
+    /* Direct Path Insert½Ã  ÇÊ¿äÇÑ Á¤º¸ */
     sdbDPathBuffInfo*   mDPathBCBInfo;
 
-    /* Direct Path Insertì‹œ Bulk IOë¥¼ í• ë•Œ í•„ìš”í•œ ì •ë³´ */
+    /* Direct Path Insert½Ã Bulk IO¸¦ ÇÒ¶§ ÇÊ¿äÇÑ Á¤º¸ */
     sdbDPathBulkIOInfo  mDPathBulkIOInfo;
 };
 

@@ -25,7 +25,7 @@ import Altibase.jdbc.driver.sharding.util.Range;
 import junit.framework.TestCase;
 
 import java.sql.SQLException;
-import java.util.Set;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -38,17 +38,17 @@ public class StandardRangeShardingAlgorithmTest extends TestCase
         StandardRangeShardingAlgorithm<Integer> sAlgorithm =
                 new StandardRangeShardingAlgorithm<Integer>(makeRangeInfo());
 
-        PreciseShardingValue<Integer> sShardingValue = new PreciseShardingValue<Integer>(1, 100);
-        Set<DataNode> sResult = sAlgorithm.doSharding(sShardingValue, null);
+        Comparable<Integer> sShardingValue = 100;
+        List<DataNode> sResult = sAlgorithm.doSharding(sShardingValue, null);
         assertThat(sResult.size(), is(1));
         assertThat(sResult.iterator().next().getNodeName(), is("NODE1"));
 
-        sShardingValue = new PreciseShardingValue<Integer>(1, 300);
+        sShardingValue = 300;
         sResult = sAlgorithm.doSharding(sShardingValue, null);
         assertThat(sResult.size(), is(1));
         assertThat(sResult.iterator().next().getNodeName(), is("NODE2"));
 
-        sShardingValue = new PreciseShardingValue<Integer>(1, 600);
+        sShardingValue = 600;
         sResult = sAlgorithm.doSharding(sShardingValue, null);
         assertThat(sResult.iterator().next().getNodeName(), is("NODE3"));
     }
@@ -57,11 +57,11 @@ public class StandardRangeShardingAlgorithmTest extends TestCase
     {
         StandardRangeShardingAlgorithm<Integer> sAlgorithm =
                 new StandardRangeShardingAlgorithm<Integer>(makeRangeInfo());
-        PreciseShardingValue<Integer> sShardingValue = new PreciseShardingValue<Integer>(1, 900);
+        Comparable<Integer> sShardingValue = 900;
         DataNode sNode4 = new DataNode();
         sNode4.setNodeId(4);
         sNode4.setNodeName("NODE4");
-        Set<DataNode> sResult = sAlgorithm.doSharding(sShardingValue, sNode4);
+        List<DataNode> sResult = sAlgorithm.doSharding(sShardingValue, sNode4);
         assertThat(sResult.size(), is(1));
         assertThat(sResult.iterator().next(), is(sNode4));
     }
@@ -71,7 +71,7 @@ public class StandardRangeShardingAlgorithmTest extends TestCase
         StandardRangeShardingAlgorithm<Integer> sAlgorithm =
                 new StandardRangeShardingAlgorithm<Integer>(makeEmptyRangeInfo());
 
-        PreciseShardingValue<Integer> sShardingValue = new PreciseShardingValue<Integer>(1, 900);
+        Comparable<Integer> sShardingValue = 900;
         try
         {
             sAlgorithm.doSharding(sShardingValue, null);

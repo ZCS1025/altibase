@@ -19,9 +19,6 @@
  * $Id: sdnCTL.cpp 29513 2008-11-21 11:12:43Z upinel9 $
  **********************************************************************/
 
-#include <idl.h>
-#include <ide.h>
-#include <idu.h>
 #include <smDef.h>
 #include <smErrorCode.h>
 #include <smu.h>
@@ -33,7 +30,7 @@
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::init                          *
  * ------------------------------------------------------------------*
- * Touched Transaction Layerë¥¼ ì´ˆê¸°í™” í•œë‹¤.                          *
+ * Touched Transaction Layer¸¦ ÃÊ±âÈ­ ÇÑ´Ù.                          *
  *********************************************************************/
 IDE_RC sdnIndexCTL::init( sdrMtx         * aMtx,
                           sdpSegHandle   * aSegHandle,
@@ -71,7 +68,7 @@ IDE_RC sdnIndexCTL::init( sdrMtx         * aMtx,
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::initLow                       *
  * ------------------------------------------------------------------*
- * Physical Layerì—ì„œì˜ CTLì •ë³´ë¥¼ ì´ˆê¸°í™” í•œë‹¤.                       *
+ * Physical Layer¿¡¼­ÀÇ CTLÁ¤º¸¸¦ ÃÊ±âÈ­ ÇÑ´Ù.                       *
  *********************************************************************/
 IDE_RC sdnIndexCTL::initLow( sdpPhyPageHdr  * aPage,
                              UChar            aInitSize )
@@ -129,18 +126,17 @@ IDE_RC sdnIndexCTL::initLow( sdpPhyPageHdr  * aPage,
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::allocCTS                      *
  * ------------------------------------------------------------------*
- * Keyì˜ íŠ¸ëžœìž­ì…˜ ì •ë³´ë¥¼ ì €ìž¥í•˜ê¸° ìœ„í•œ ê³µê°„ì„ í™•ë³´í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.     *
- * í•´ë‹¹ í•¨ìˆ˜ëŠ” Key Insertion/Deletionì— ì˜í•´ì„œ í˜¸ì¶œëœë‹¤.             *
- * 6ê°€ì§€ Stepìœ¼ë¡œ êµ¬ì„±ë˜ì–´ ìžˆìœ¼ë©°,                                   *
- *  1. ìžì‹ ì´ ì†Œìœ í•œ íŠ¸ëžœìž­ì…˜ì´ ìžˆë‹¤ë©´                               *
- *  2. DEAD CTSê°€ ìžˆë‹¤ë©´                                             *
- *  3. Agable CTSê°€ ìžˆë‹¤ë©´                                           *
- *  4. Committed CTSê°€ ìžˆë‹¤ë©´                                        *
- *  5. Uncommitted CTSì¤‘ì— Commitëœ CTSê°€ ìžˆë‹¤ë©´                     *
- *  6. CTLì„ í™•ìž¥í• ìˆ˜ ìžˆë‹¤ë©´                                         *
- * AllocCTSëŠ” ì„±ê³µí•œë‹¤. ê·¸ë ‡ì§€ ì•Šì€ ê²½ìš°ì—ëŠ” ë°˜ë“œì‹œ ìž¬ì‹œë„ë¥¼ í•´ì•¼    *
- * í•œë‹¤. ìž¬ì‹œë„ë¥¼ ê°€ëŠ¥í•˜ê²Œ í•˜ë ¤ë©´ ì ˆëŒ€ë¡œ rollbackë  ë‚´ìš©ì„ ê¸°ë¡í•´ì„œ  *
- * ëŠ” ì•ˆëœë‹¤.                                                        *
+ * KeyÀÇ Æ®·£Àè¼Ç Á¤º¸¸¦ ÀúÀåÇÏ±â À§ÇÑ °ø°£À» È®º¸ÇÏ´Â ÇÔ¼öÀÌ´Ù.     *
+ * ÇØ´ç ÇÔ¼ö´Â Key Insertion/Deletion¿¡ ÀÇÇØ¼­ È£ÃâµÈ´Ù.             *
+ * 5°¡Áö StepÀ¸·Î ±¸¼ºµÇ¾î ÀÖÀ¸¸ç,                                   *
+ *  1. ÀÚ½ÅÀÌ ¼ÒÀ¯ÇÑ Æ®·£Àè¼ÇÀÌ ÀÖ´Ù¸é                               *
+ *  2. DEAD CTS°¡ ÀÖ´Ù¸é                                             *
+ *  3. Agable CTS°¡ ÀÖ´Ù¸é                                           *
+ *  4. Uncommitted CTSÁß¿¡ CommitµÈ CTS°¡ ÀÖ´Ù¸é                     *
+ *  5. CTLÀ» È®ÀåÇÒ¼ö ÀÖ´Ù¸é                                         *
+ * AllocCTS´Â ¼º°øÇÑ´Ù. ±×·¸Áö ¾ÊÀº °æ¿ì¿¡´Â ¹Ýµå½Ã Àç½Ãµµ¸¦ ÇØ¾ß    *
+ * ÇÑ´Ù. Àç½Ãµµ¸¦ °¡´ÉÇÏ°Ô ÇÏ·Á¸é Àý´ë·Î rollbackµÉ ³»¿ëÀ» ±â·ÏÇØ¼­  *
+ * ´Â ¾ÈµÈ´Ù.                                                        *
  *********************************************************************/
 IDE_RC sdnIndexCTL::allocCTS( idvSQL             * aStatistics,
                               sdrMtx             * aMtx,
@@ -157,8 +153,6 @@ IDE_RC sdnIndexCTL::allocCTS( idvSQL             * aStatistics,
     idBool      sSuccess;
     UChar       sDeadCTS;
     UChar       sAgableCTS;
-    UChar       sChainableCTS;
-    UChar       sChainableChainedCTS;
     UChar     * sPageStartPtr;
     SChar     * sDumpBuf;
     smSCN       sSysMinDskViewSCN;
@@ -166,20 +160,18 @@ IDE_RC sdnIndexCTL::allocCTS( idvSQL             * aStatistics,
     *aCTSlotNum          = SDN_CTS_INFINITE;
     sDeadCTS             = SDN_CTS_INFINITE;
     sAgableCTS           = SDN_CTS_INFINITE;
-    sChainableCTS        = SDN_CTS_INFINITE;
-    sChainableChainedCTS = SDN_CTS_INFINITE;
 
-    // BUG-29506 TBTê°€ TBKë¡œ ì „í™˜ì‹œ offsetì„ CTSì— ë°˜ì˜í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
-    // ìž¬í˜„í•˜ê¸° ìœ„í•´ CTS í• ë‹¹ ì—¬ë¶€ë¥¼ ìž„ì˜ë¡œ ì œì–´í•˜ê¸° ìœ„í•œ PROPERTYë¥¼ ì¶”ê°€
+    // BUG-29506 TBT°¡ TBK·Î ÀüÈ¯½Ã offsetÀ» CTS¿¡ ¹Ý¿µÇÏÁö ¾Ê½À´Ï´Ù.
+    // ÀçÇöÇÏ±â À§ÇØ CTS ÇÒ´ç ¿©ºÎ¸¦ ÀÓÀÇ·Î Á¦¾îÇÏ±â À§ÇÑ PROPERTY¸¦ Ãß°¡
     IDE_TEST_CONT( smuProperty::getDisableTransactionBoundInCTS() == 1,
                     RETURN_SUCCESS );
 
     sCTL = getCTL( aPage );
 
-    smLayerCallback::getSysMinDskViewSCN( &sSysMinDskViewSCN );
+    SMX_GET_MIN_DISK_VIEW( &sSysMinDskViewSCN );
 
     /*
-     * 1. ìžì‹ ì˜ íŠ¸ëžœìž­ì…˜ì´ ì†Œìœ í•œ CTSê°€ ìžˆëŠ” ê²½ìš°
+     * 1. ÀÚ½ÅÀÇ Æ®·£Àè¼ÇÀÌ ¼ÒÀ¯ÇÑ CTS°¡ ÀÖ´Â °æ¿ì
      */
     for( i = 0; i < getCount(sCTL); i++ )
     {
@@ -223,27 +215,6 @@ IDE_RC sdnIndexCTL::allocCTS( idvSQL             * aStatistics,
 
                         sAgableCTS = i;
                     }
-                    else
-                    {
-                        /*
-                         * Chainë  CTSëŠ” ê°€ëŠ¥í•˜ë©´ Unchained CTSë¥¼ ì´ìš©í•œë‹¤.
-                         */
-                        if ( hasChainedCTS( sCTS ) == ID_FALSE )
-                        {
-                            sChainableCTS = i;
-                        }
-                        else
-                        {
-                            if ( sChainableChainedCTS == SDN_CTS_INFINITE )
-                            {
-                                sChainableChainedCTS = i;
-                            }
-                            else
-                            {
-                                /* do nothing... */
-                            }
-                        }
-                    }
                 }
                 break;
             }
@@ -257,7 +228,7 @@ IDE_RC sdnIndexCTL::allocCTS( idvSQL             * aStatistics,
                              i, sCTS->mState, aCTSlotNum );
                 dumpIndexNode( aPage );
 
-                // BUG-28785 Case-23923ì˜ Server ë¹„ì •ìƒ ì¢…ë£Œì— ëŒ€í•œ ë””ë²„ê¹… ì½”ë“œ ì¶”ê°€
+                // BUG-28785 Case-23923ÀÇ Server ºñÁ¤»ó Á¾·á¿¡ ´ëÇÑ µð¹ö±ë ÄÚµå Ãß°¡
                 ideLog::log( IDE_SERVER_0,
                              "sCTL->CTS[%u] State(%u) is invalied\n",
                              i,
@@ -291,7 +262,7 @@ IDE_RC sdnIndexCTL::allocCTS( idvSQL             * aStatistics,
     }
 
     /*
-     * 2. DEADìƒíƒœ CTSê°€ ì¡´ìž¬í•˜ëŠ” ê²½ìš° CTSë¥¼ ë°”ë¡œ ìž¬ì‚¬ìš©í•œë‹¤.
+     * 2. DEAD»óÅÂ CTS°¡ Á¸ÀçÇÏ´Â °æ¿ì CTS¸¦ ¹Ù·Î Àç»ç¿ëÇÑ´Ù.
      */
     if( sDeadCTS != SDN_CTS_INFINITE )
     {
@@ -301,8 +272,8 @@ IDE_RC sdnIndexCTL::allocCTS( idvSQL             * aStatistics,
     IDE_TEST_CONT( *aCTSlotNum != SDN_CTS_INFINITE, RETURN_SUCCESS );
 
     /*
-     * 3. AGINGì´ ê°€ëŠ¥í•œ CTSê°€ ì¡´ìž¬í•˜ëŠ” ê²½ìš°
-     *    CTSë¥¼ ë°”ë¡œ ìž¬ì‚¬ìš©í•œë‹¤.
+     * 3. AGINGÀÌ °¡´ÉÇÑ CTS°¡ Á¸ÀçÇÏ´Â °æ¿ì
+     *    CTS¸¦ ¹Ù·Î Àç»ç¿ëÇÑ´Ù.
      */
     if( sAgableCTS != SDN_CTS_INFINITE )
     {
@@ -312,26 +283,8 @@ IDE_RC sdnIndexCTL::allocCTS( idvSQL             * aStatistics,
     IDE_TEST_CONT( *aCTSlotNum != SDN_CTS_INFINITE, RETURN_SUCCESS );
 
     /*
-     * 4. AGINGì€ ì•ˆë˜ì§€ë§Œ, ì»¤ë°‹ëœ íŠ¸ëžœìž­ì…˜ì´ ìžˆëŠ” ê²½ìš°
-     *    Bindì—ì„œ CTSë¥¼ Chainì— ì—°ê²°í•˜ê³  ìž¬ì‚¬ìš©í•œë‹¤.
-     */
-    if( sChainableCTS != SDN_CTS_INFINITE )
-    {
-        *aCTSlotNum = sChainableCTS;
-    }
-
-    IDE_TEST_CONT( *aCTSlotNum != SDN_CTS_INFINITE, RETURN_SUCCESS );
-
-    if( sChainableChainedCTS != SDN_CTS_INFINITE )
-    {
-        *aCTSlotNum = sChainableChainedCTS;
-    }
-
-    IDE_TEST_CONT( *aCTSlotNum != SDN_CTS_INFINITE, RETURN_SUCCESS );
-
-    /*
-     * 5. UNCOMMITTEDìƒíƒœì§€ë§Œ, ì»¤ë°‹ëœ íŠ¸ëžœìž­ì…˜ì´ ìžˆëŠ” ê²½ìš°
-     *    delayed tts timestampingì„ í•˜ê³  ìž¬ì‚¬ìš©í•œë‹¤.
+     * 4. UNCOMMITTED»óÅÂÁö¸¸, Ä¿¹ÔµÈ Æ®·£Àè¼ÇÀÌ ÀÖ´Â °æ¿ì
+     *    delayed tts timestampingÀ» ÇÏ°í Àç»ç¿ëÇÑ´Ù.
      */
     for( i = 0; i < getCount(sCTL); i++ )
     {
@@ -354,55 +307,13 @@ IDE_RC sdnIndexCTL::allocCTS( idvSQL             * aStatistics,
                 *aCTSlotNum = i;
                 break;
             }
-            else
-            {
-                if ( sCTS->mState == SDN_CTS_STAMPED )
-                {
-                    /*
-                     * Chainë  CTSëŠ” ê°€ëŠ¥í•˜ë©´ Unchained CTSë¥¼ ì´ìš©í•œë‹¤.
-                     */
-                    if ( hasChainedCTS( sCTS ) == ID_FALSE )
-                    {
-                        sChainableCTS = i;
-                    }
-                    else
-                    {
-                        if ( sChainableChainedCTS == SDN_CTS_INFINITE )
-                        {
-                            sChainableChainedCTS = i;
-                        }
-                        else
-                        {
-                            /* do nothing...*/
-                        }
-                    }
-                }
-                else
-                {
-                    /* do nothing... */
-                }
-            }
         }
     }
 
     IDE_TEST_CONT( *aCTSlotNum != SDN_CTS_INFINITE, RETURN_SUCCESS );
 
-    if( sChainableCTS != SDN_CTS_INFINITE )
-    {
-        *aCTSlotNum = sChainableCTS;
-    }
-
-    IDE_TEST_CONT( *aCTSlotNum != SDN_CTS_INFINITE, RETURN_SUCCESS );
-
-    if( sChainableChainedCTS != SDN_CTS_INFINITE )
-    {
-        *aCTSlotNum = sChainableChainedCTS;
-    }
-
-    IDE_TEST_CONT( *aCTSlotNum != SDN_CTS_INFINITE, RETURN_SUCCESS );
-
     /*
-     * 6. CTLì„ í™•ìž¥ ê°€ëŠ¥í•˜ë‹¤ë©´ í™•ìž¥ëœ CTSë¥¼ ì‚¬ìš©í•œë‹¤.
+     * 5. CTLÀ» È®Àå °¡´ÉÇÏ´Ù¸é È®ÀåµÈ CTS¸¦ »ç¿ëÇÑ´Ù.
      */
     IDE_TEST( extend( aMtx,
                       aSegHandle,
@@ -436,12 +347,12 @@ IDE_RC sdnIndexCTL::allocCTS( idvSQL             * aStatistics,
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::allocCTS                      *
  * ------------------------------------------------------------------*
- * Keyì˜ íŠ¸ëžœìž­ì…˜ ì •ë³´ë¥¼ ì €ìž¥í•˜ê¸° ìœ„í•œ ê³µê°„ì„ í™•ë³´í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.     *
- * í•´ë‹¹ í•¨ìˆ˜ëŠ” SMO(KEY ìž¬ë¶„ë°°/SPLIT)ì‹œì— í˜¸ì¶œëœë‹¤.                   *
- * ì´ë¯¸ ê°™ì€ íŠ¸ëžœìž­ì…˜ì˜ ì •ë³´ê°€ ìžˆëŠ” ê²½ìš°ì—ëŠ” í•´ë‹¹ CTSë¥¼ ì‚¬ìš©í•˜ê³      *
- * ê·¸ë ‡ì§€ ì•Šì€ ê²½ìš°ì—ëŠ” DEAD CTSë¥¼ ìž¬ì‚¬ìš©í•œë‹¤.                       *
- * SMOì‹œì— CTSë¥¼ ìœ„í•œ ê³µê°„ì„ ë¯¸ë¦¬ í• ë‹¹ë°›ì•˜ê¸° ë•Œë¬¸ì— í•´ë‹¹ í•¨ìˆ˜ê°€ ì‹¤íŒ¨ *
- * í•˜ëŠ” ê²½ìš°ëŠ” ì—†ì–´ì•¼ í•œë‹¤.                                          *
+ * KeyÀÇ Æ®·£Àè¼Ç Á¤º¸¸¦ ÀúÀåÇÏ±â À§ÇÑ °ø°£À» È®º¸ÇÏ´Â ÇÔ¼öÀÌ´Ù.     *
+ * ÇØ´ç ÇÔ¼ö´Â SMO(KEY ÀçºÐ¹è/SPLIT)½Ã¿¡ È£ÃâµÈ´Ù.                   *
+ * ÀÌ¹Ì °°Àº Æ®·£Àè¼ÇÀÇ Á¤º¸°¡ ÀÖ´Â °æ¿ì¿¡´Â ÇØ´ç CTS¸¦ »ç¿ëÇÏ°í     *
+ * ±×·¸Áö ¾ÊÀº °æ¿ì¿¡´Â DEAD CTS¸¦ Àç»ç¿ëÇÑ´Ù.                       *
+ * SMO½Ã¿¡ CTS¸¦ À§ÇÑ °ø°£À» ¹Ì¸® ÇÒ´ç¹Þ¾Ò±â ¶§¹®¿¡ ÇØ´ç ÇÔ¼ö°¡ ½ÇÆÐ *
+ * ÇÏ´Â °æ¿ì´Â ¾ø¾î¾ß ÇÑ´Ù.                                          *
  *********************************************************************/
 IDE_RC sdnIndexCTL::allocCTS( sdpPhyPageHdr * aSrcPage,
                               UChar           aSrcCTSlotNum,
@@ -464,7 +375,7 @@ IDE_RC sdnIndexCTL::allocCTS( sdpPhyPageHdr * aSrcPage,
     *aDstCTSlotNum = SDN_CTS_INFINITE;
 
     /*
-     * 1. ê°™ì€ íŠ¸ëžœìž­ì…˜ì´ ìžˆëŠ”ì§€ ê²€ì‚¬
+     * 1. °°Àº Æ®·£Àè¼ÇÀÌ ÀÖ´ÂÁö °Ë»ç
      */
     for( i = 0; i < getCount(sDstCTL); i++ )
     {
@@ -472,26 +383,10 @@ IDE_RC sdnIndexCTL::allocCTS( sdpPhyPageHdr * aSrcPage,
 
         if( sDstCTS->mState != SDN_CTS_DEAD )
         {
-            /*
-             * Chained CTSëŠ” STAMPEDìƒíƒœì˜ ê°™ì€ íŠ¸ëžœìž­ì…˜ì´ ìžˆë‹¤í•˜ì—¬ë„
-             * ì„œë¡œ ë‹¤ë¥¸ UndoRIDë¥¼ ê°–ëŠ”ë‹¤ë©´ ìƒˆë¡œìš´ CTSë¥¼ í• ë‹¹ë°›ì•„ì•¼ í•œë‹¤.
-             */
             if( isSameTransaction( sDstCTS, sSrcCTS ) == ID_TRUE )
             {
-                if( hasChainedCTS( sDstCTS ) == ID_FALSE )
-                {
-                    *aDstCTSlotNum = i;
-                    break;
-                }
-                else
-                {
-                    if( (sDstCTS->mUndoPID == sSrcCTS->mUndoPID) &&
-                        (sDstCTS->mUndoSlotNum == sSrcCTS->mUndoSlotNum) )
-                    {
-                        *aDstCTSlotNum = i;
-                        break;
-                    }
-                }
+                *aDstCTSlotNum = i;
+                break;
             }
         }
         else
@@ -506,7 +401,7 @@ IDE_RC sdnIndexCTL::allocCTS( sdpPhyPageHdr * aSrcPage,
     IDE_TEST_CONT( *aDstCTSlotNum != SDN_CTS_INFINITE, RETURN_SUCCESS );
 
     /*
-     * 2. DEADìƒíƒœ CTSê°€ ì¡´ìž¬í•˜ëŠ” ê²½ìš° CTSë¥¼ ë°”ë¡œ ìž¬ì‚¬ìš©í•œë‹¤.
+     * 2. DEAD»óÅÂ CTS°¡ Á¸ÀçÇÏ´Â °æ¿ì CTS¸¦ ¹Ù·Î Àç»ç¿ëÇÑ´Ù.
      */
     if( sDeadCTS != SDN_CTS_INFINITE )
     {
@@ -521,73 +416,41 @@ IDE_RC sdnIndexCTL::allocCTS( sdpPhyPageHdr * aSrcPage,
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::bindCTS                       *
  * ------------------------------------------------------------------*
- * Key Insertion/Deletionì— ì˜í•´ì„œ í˜¸ì¶œë˜ë©°, íŠ¸ëžœìž­ì…˜ ì •ë³´ë¥¼ í•´ë‹¹    *
- * CTSì— ì„¤ì •í•œë‹¤. ë§Œì•½, CTS.stateê°€ STAMPED ë¼ë©´ í•´ë‹¹ CTSë¥¼         *
- * Chainingì‹œí‚¨ í›„ì— bindí•´ì•¼ í•œë‹¤.                                  *
- * ê·¸ë ‡ì§€ ì•Šê³  DEADìƒíƒœì¸ ê²½ìš°ëŠ” ì´ˆê¸°í™”í›„ ìž¬ì‚¬ìš©í•œë‹¤.                *
- * í•´ë‹¹ í•¨ìˆ˜ë¥¼ ìˆ˜í–‰í•œ ì´í›„ì—ëŠ” ì ˆëŒ€ë¡œ ì—°ì‚°ì´ ë¡¤ë°±ë˜ì–´ì„œëŠ” ì•ˆëœë‹¤.    *
+ * Key Insertion/Deletion¿¡ ÀÇÇØ¼­ È£ÃâµÇ¸ç,                         *
+ * Æ®·£Àè¼Ç Á¤º¸¸¦ ÇØ´ç CTS¿¡ ¼³Á¤ÇÑ´Ù.                              *
+ * DEAD»óÅÂÀÎ °æ¿ì´Â ÃÊ±âÈ­ÈÄ Àç»ç¿ëÇÑ´Ù.                            *
+ * ÇØ´ç ÇÔ¼ö¸¦ ¼öÇàÇÑ ÀÌÈÄ¿¡´Â Àý´ë·Î ¿¬»êÀÌ ·Ñ¹éµÇ¾î¼­´Â ¾ÈµÈ´Ù.    *
  *********************************************************************/
-IDE_RC sdnIndexCTL::bindCTS( idvSQL           * aStatistics,
-                             sdrMtx           * aMtx,
+IDE_RC sdnIndexCTL::bindCTS( sdrMtx           * aMtx,
                              scSpaceID          aSpaceID,
                              sdpPhyPageHdr    * aPage,
                              UChar              aCTSlotNum,
-                             UShort             aKeyOffset,
-                             sdnCallbackFuncs * aCallbackFunc,
-                             UChar            * aContext )
+                             UShort             aKeyOffset )
 {
     sdnCTL * sCTL;
     sdnCTS * sCTS;
     sdSID    sTSSlotSID;
     UChar    sUsedCount;
     UInt     i;
-    sdSID    sUndoSID;
 
     sCTL       = getCTL( aPage );
     sCTS       = getCTS( aPage, aCTSlotNum );
     sTSSlotSID = smLayerCallback::getTSSlotSID( aMtx->mTrans );
 
-    if( (sCTS->mState == SDN_CTS_DEAD) ||
-        (sCTS->mState == SDN_CTS_STAMPED) )
+    /* BUG-48064 : CTS CHAING ±â´ÉÀ» Á¦°ÅÇßÀ¸¹Ç·Î STAMPED »óÅÂÀÇ CTS´Â ¿Ã¼ö¾ø´Ù. */
+    IDE_DASSERT(sCTS->mState != SDN_CTS_STAMPED);
+
+    if ( sCTS->mState == SDN_CTS_DEAD )
     {
-        /*
-         * DEADìƒíƒœì˜ CTSëŠ” ë°”ë¡œ ìž¬ì‚¬ìš©í•˜ê³ , STAMPEDìƒíƒœì˜ CTSëŠ”
-         * Chained CTSë¥¼ ë§Œë“¤ê³  ìž¬ì‚¬ìš©í•œë‹¤.
-         */
-
-        if( sCTS->mState == SDN_CTS_STAMPED )
+        sUsedCount = sCTL->mUsedCount + 1;
+        if ( sUsedCount >= SDN_CTS_INFINITE )
         {
-            IDE_TEST( makeChainedCTS( aStatistics,
-                                      aMtx,
-                                      aPage,
-                                      aCTSlotNum,
-                                      aCallbackFunc,
-                                      aContext,
-                                      &sUndoSID )
-                      != IDE_SUCCESS );
-
-            sCTS->mUndoPID      = SD_MAKE_PID(sUndoSID);
-            sCTS->mUndoSlotNum  = SD_MAKE_SLOTNUM(sUndoSID);
-            sCTS->mNxtCommitSCN = sCTS->mCommitSCN;
-
-            sUsedCount = sCTL->mUsedCount;
-        }
-        else
-        {
-            sCTS->mUndoPID     = 0;
-            sCTS->mUndoSlotNum = 0;
-            SM_SET_SCN_INFINITE( &sCTS->mNxtCommitSCN );
-
-            sUsedCount = sCTL->mUsedCount + 1;
-            if( sUsedCount >= SDN_CTS_INFINITE )
-            {
-                ideLog::log( IDE_SERVER_0,
-                             "CT slot number : %u"
-                             "\nUsed count : %u\n",
-                             aCTSlotNum, sUsedCount );
-                dumpIndexNode( aPage );
-                IDE_ASSERT( 0 );
-            }
+            ideLog::log( IDE_SERVER_0,
+                         "CT slot number : %u"
+                         "\nUsed count : %u\n",
+                         aCTSlotNum, sUsedCount );
+            dumpIndexNode( aPage );
+            IDE_ASSERT( 0 );
         }
 
         sCTS->mCommitSCN = smLayerCallback::getFstDskViewSCN( aMtx->mTrans );
@@ -611,7 +474,7 @@ IDE_RC sdnIndexCTL::bindCTS( idvSQL           * aStatistics,
     else
     {
         /*
-         * UNCOMMITTEDìƒíƒœì˜ CTSëŠ” Cacheì •ë³´ë§Œì„ ê°±ì‹ í•œë‹¤.
+         * UNCOMMITTED»óÅÂÀÇ CTS´Â CacheÁ¤º¸¸¸À» °»½ÅÇÑ´Ù.
          */
         for( i = 0; i < SDN_CTS_MAX_KEY_CACHE; i++ )
         {
@@ -650,10 +513,9 @@ IDE_RC sdnIndexCTL::bindCTS( idvSQL           * aStatistics,
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::bindCTS                       *
  * ------------------------------------------------------------------*
- * SMO(Key ìž¬ë¶„ë°°/SPLIT)ì— ì˜í•´ì„œ í˜¸ì¶œë˜ë©°, íŠ¸ëžœìž­ì…˜ ì •ë³´ë¥¼ í•´ë‹¹     *
- * CTSì— ì„¤ì •í•œë‹¤. ë§Œì•½, SourceCTSê°€ chainì„ ê°€ì§€ê³  ìžˆë‹¤ë©´ sourceì˜  *
- * chainì •ë³´ë¥¼ destCTSì— ì„¤ì •í•œë‹¤.                                   *
- * ê·¸ë ‡ì§€ ì•Šê³  DEADìƒíƒœì¸ ê²½ìš°ëŠ” ì´ˆê¸°í™”í›„ ìž¬ì‚¬ìš©í•œë‹¤.                *
+ * SMO(Key ÀçºÐ¹è/SPLIT)¿¡ ÀÇÇØ¼­ È£ÃâµÇ¸ç,                          *
+ * Æ®·£Àè¼Ç Á¤º¸¸¦ ÇØ´ç CTS¿¡ ¼³Á¤ÇÑ´Ù.                              *
+ * DEAD»óÅÂÀÎ °æ¿ì´Â ÃÊ±âÈ­ÈÄ Àç»ç¿ëÇÑ´Ù.                            *
  *********************************************************************/
 IDE_RC sdnIndexCTL::bindCTS( sdrMtx        * aMtx,
                              scSpaceID       aSpaceID,
@@ -705,17 +567,6 @@ IDE_RC sdnIndexCTL::bindCTS( sdrMtx        * aMtx,
     }
     else
     {
-        /*
-         * Chained CTSë¼ë©´ Source Chainì˜ ì •ë³´ë¥¼ DstCTSì— ì„¤ì •í•œë‹¤.
-         */
-        if( hasChainedCTS( sSrcCTS ) == ID_TRUE )
-        {
-            SM_SET_SCN( &sDstCTS->mNxtCommitSCN, &sSrcCTS->mNxtCommitSCN );
-
-            sDstCTS->mUndoPID = sSrcCTS->mUndoPID;
-            sDstCTS->mUndoSlotNum = sSrcCTS->mUndoSlotNum;
-        }
-
         for( i = 0; i < SDN_CTS_MAX_KEY_CACHE; i++ )
         {
             if( sDstCTS->mRefKey[i] == SDN_CTS_KEY_CACHE_NULL )
@@ -754,12 +605,12 @@ IDE_RC sdnIndexCTL::bindCTS( sdrMtx        * aMtx,
 
     return IDE_FAILURE;
 }
-
+#if 0
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::bindChainedCTS                *
  * ------------------------------------------------------------------*
- * Chainì„ ê°–ëŠ” Dummy CTSë¥¼ ë§Œë“ ë‹¤.                                  *
- * ì´ëŸ¬í•œ ê²½ìš°ëŠ” SourceCTSê°€ Chainìƒì— ìžˆëŠ” ê²½ìš°ì— í˜¸ì¶œë ìˆ˜ ìžˆë‹¤.    *
+ * ChainÀ» °®´Â Dummy CTS¸¦ ¸¸µç´Ù.                                  *
+ * ÀÌ·¯ÇÑ °æ¿ì´Â SourceCTS°¡ Chain»ó¿¡ ÀÖ´Â °æ¿ì¿¡ È£ÃâµÉ¼ö ÀÖ´Ù.    *
  *********************************************************************/
 IDE_RC sdnIndexCTL::bindChainedCTS( sdrMtx        * aMtx,
                                     scSpaceID       aSpaceID,
@@ -780,7 +631,7 @@ IDE_RC sdnIndexCTL::bindChainedCTS( sdrMtx        * aMtx,
     if( sDstCTS->mState == SDN_CTS_DEAD )
     {
         /*
-         * reference countê°€ 0ì¸ Dummy CTSë¥¼ ë§Œë“ ë‹¤.
+         * reference count°¡ 0ÀÎ Dummy CTS¸¦ ¸¸µç´Ù.
          */
         idlOS::memcpy( sDstCTS, sSrcCTS, ID_SIZEOF(sdnCTS) );
 
@@ -823,7 +674,7 @@ IDE_RC sdnIndexCTL::bindChainedCTS( sdrMtx        * aMtx,
     else
     {
         /*
-         * Chained CTSë¼ë©´ Source Chainì˜ ì •ë³´ë¥¼ DstCTSì— ì„¤ì •í•œë‹¤.
+         * Chained CTS¶ó¸é Source ChainÀÇ Á¤º¸¸¦ DstCTS¿¡ ¼³Á¤ÇÑ´Ù.
          */
         if( hasChainedCTS( sSrcCTS ) == ID_TRUE )
         {
@@ -847,11 +698,11 @@ IDE_RC sdnIndexCTL::bindChainedCTS( sdrMtx        * aMtx,
 
     return IDE_FAILURE;
 }
-
+#endif
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::freeCTS                       *
  * ------------------------------------------------------------------*
- * CTSë¥¼ DEADìƒíƒœë¡œ ë§Œë“ ë‹¤.                                          *
+ * CTS¸¦ DEAD»óÅÂ·Î ¸¸µç´Ù.                                          *
  *********************************************************************/
 IDE_RC sdnIndexCTL::freeCTS( sdrMtx        * aMtx,
                              sdpPhyPageHdr * aPage,
@@ -864,8 +715,8 @@ IDE_RC sdnIndexCTL::freeCTS( sdrMtx        * aMtx,
     sCTL = getCTL( aPage );
     sCTS = getCTS( aPage, aSlotNum );
 
-    /* BUG-38304 ì´ë¯¸ DEADë¡œ ì²˜ë¦¬ëœ CTSì— ë‹¤ì‹œ freeCTSê°€ í˜¸ì¶œë  ê²½ìš° 
-     * CTSì™€ CTLê°„ ì •ë³´ ë¶ˆì¼ì¹˜ê°€ ë°œìƒí•  ìˆ˜ ìžˆë‹¤. */
+    /* BUG-38304 ÀÌ¹Ì DEAD·Î Ã³¸®µÈ CTS¿¡ ´Ù½Ã freeCTS°¡ È£ÃâµÉ °æ¿ì 
+     * CTS¿Í CTL°£ Á¤º¸ ºÒÀÏÄ¡°¡ ¹ß»ýÇÒ ¼ö ÀÖ´Ù. */
     IDE_ASSERT( sCTS->mState != SDN_CTS_DEAD );
 
     setCTSlotState( sCTS, SDN_CTS_DEAD );
@@ -896,7 +747,7 @@ IDE_RC sdnIndexCTL::freeCTS( sdrMtx        * aMtx,
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::freeCTS                       *
  * ------------------------------------------------------------------*
- * CTSê°€ DEADìƒíƒœê°€ ë˜ì—ˆìŒì„ ë¡œê¹…í•œë‹¤.                               *
+ * CTS°¡ DEAD»óÅÂ°¡ µÇ¾úÀ½À» ·Î±ëÇÑ´Ù.                               *
  *********************************************************************/
 IDE_RC sdnIndexCTL::logFreeCTS( sdrMtx        * aMtx,
                                 sdpPhyPageHdr * aPage,
@@ -924,7 +775,7 @@ IDE_RC sdnIndexCTL::logFreeCTS( sdrMtx        * aMtx,
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::extend                        *
  * ------------------------------------------------------------------*
- * CTLì˜ í¬ê¸°ë¥¼ 1ë§Œí¼ í™•ìž¥í•œë‹¤..                                     *
+ * CTLÀÇ Å©±â¸¦ 1¸¸Å­ È®ÀåÇÑ´Ù..                                     *
  *********************************************************************/
 IDE_RC sdnIndexCTL::extend( sdrMtx        * aMtx,
                             sdpSegHandle  * aSegHandle,
@@ -937,8 +788,8 @@ IDE_RC sdnIndexCTL::extend( sdrMtx        * aMtx,
     UChar    sCount;
     idBool   sTrySuccess = ID_FALSE;
 
-    // BUG-29506 TBTê°€ TBKë¡œ ì „í™˜ì‹œ offsetì„ CTSì— ë°˜ì˜í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
-    // ìž¬í˜„í•˜ê¸° ìœ„í•´ CTS í• ë‹¹ ì—¬ë¶€ë¥¼ ìž„ì˜ë¡œ ì œì–´í•˜ê¸° ìœ„í•œ PROPERTYë¥¼ ì¶”ê°€
+    // BUG-29506 TBT°¡ TBK·Î ÀüÈ¯½Ã offsetÀ» CTS¿¡ ¹Ý¿µÇÏÁö ¾Ê½À´Ï´Ù.
+    // ÀçÇöÇÏ±â À§ÇØ CTS ÇÒ´ç ¿©ºÎ¸¦ ÀÓÀÇ·Î Á¦¾îÇÏ±â À§ÇÑ PROPERTY¸¦ Ãß°¡
     *aSuccess = ID_FALSE;
     IDE_TEST_CONT( smuProperty::getDisableTransactionBoundInCTS() == 1,
                     RETURN_SUCCESS );
@@ -995,8 +846,8 @@ IDE_RC sdnIndexCTL::extend( sdrMtx        * aMtx,
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::fastStamping                  *
  * ------------------------------------------------------------------*
- * Transaction Commitì‹œì— í˜¸ì¶œë˜ë©°, CTSì— CommitSCNì„ ì„¤ì •í•˜ê³  ìƒíƒœ  *
- * ë¥¼ STAMPEDë¡œ ë³€ê²½í•œë‹¤.                                            *
+ * Transaction Commit½Ã¿¡ È£ÃâµÇ¸ç, CTS¿¡ CommitSCNÀ» ¼³Á¤ÇÏ°í »óÅÂ  *
+ * ¸¦ STAMPED·Î º¯°æÇÑ´Ù.                                            *
  *********************************************************************/
 IDE_RC sdnIndexCTL::fastStamping( void   * aTrans,
                                   UChar  * aPage,
@@ -1005,8 +856,8 @@ IDE_RC sdnIndexCTL::fastStamping( void   * aTrans,
 {
     sdnCTS    * sCTS;
 
-    // BUG-29442: stamping ëŒ€ìƒ Pageê°€ freeëœ í›„ ìž¬ì‚¬ìš©ë  ê²½ìš°
-    //            ìž˜ëª»ëœ Stampingì„ ìˆ˜í–‰í•  ìˆ˜ ìžˆë‹¤.
+    // BUG-29442: stamping ´ë»ó Page°¡ freeµÈ ÈÄ Àç»ç¿ëµÉ °æ¿ì
+    //            Àß¸øµÈ StampingÀ» ¼öÇàÇÒ ¼ö ÀÖ´Ù.
 
     IDE_TEST_CONT( aSlotNum >= getCount( (sdpPhyPageHdr*)aPage ),
                     SKIP_STAMPING );
@@ -1035,18 +886,18 @@ IDE_RC sdnIndexCTL::fastStamping( void   * aTrans,
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::fastStampingAll               
  * -------------------------------------------------------------------
- * Description : DRDBRedo Valdationì„ ìœ„í•´ FastStampingì„ ì‹œë„í•©ë‹ˆë‹¤.
+ * Description : DRDBRedo ValdationÀ» À§ÇØ FastStampingÀ» ½ÃµµÇÕ´Ï´Ù.
  *
- * 1) Stampingì„ í–ˆëŠëƒ í•˜ì§€ ì•Šì•˜ëŠëƒì— ë”°ë¼ SCNì´ ë‹¤ë¥¼ ìˆ˜ ìžˆê¸° ë•Œë¬¸ì´ë‹ˆë‹¤.
- * 2) Stamping ë˜ì—ˆì–´ë„ ë‹¤ì‹œ Stampingì„ ì‹œë„í•©ë‹ˆë‹¤. TSSê°€ ì™„ì „ížˆ ìž¬í™œìš©
- *    ë˜ì–´ CommitSCNì´ 0ì¼ ìˆ˜ë„ ìžˆê¸° ë•Œë¬¸ìž…ë‹ˆë‹¤.
- * 3) ë‘ íŽ˜ì´ì§€ë¥¼ ë™ì‹œì— Stampingí•©ë‹ˆë‹¤. ë‘ë²ˆì— ê±¸ì³ Stampingí•˜ë©´
- *    getCommitSCNì˜ íƒ€ì´ë°ì— ë”°ë¼, í•œìª½ì€ Stamping ë˜ë©´ì„œ ë‹¤ë¥¸ í•œìª½ì€
- *    Stamping ì•ˆë  ìˆ˜ë„ ìžˆê¸° ë•Œë¬¸ìž…ë‹ˆë‹¤.
+ * 1) StampingÀ» Çß´À³Ä ÇÏÁö ¾Ê¾Ò´À³Ä¿¡ µû¶ó SCNÀÌ ´Ù¸¦ ¼ö ÀÖ±â ¶§¹®ÀÌ´Ï´Ù.
+ * 2) Stamping µÇ¾ú¾îµµ ´Ù½Ã StampingÀ» ½ÃµµÇÕ´Ï´Ù. TSS°¡ ¿ÏÀüÈ÷ ÀçÈ°¿ë
+ *    µÇ¾î CommitSCNÀÌ 0ÀÏ ¼öµµ ÀÖ±â ¶§¹®ÀÔ´Ï´Ù.
+ * 3) µÎ ÆäÀÌÁö¸¦ µ¿½Ã¿¡ StampingÇÕ´Ï´Ù. µÎ¹ø¿¡ °ÉÃÄ StampingÇÏ¸é
+ *    getCommitSCNÀÇ Å¸ÀÌ¹Ö¿¡ µû¶ó, ÇÑÂÊÀº Stamping µÇ¸é¼­ ´Ù¸¥ ÇÑÂÊÀº
+ *    Stamping ¾ÈµÉ ¼öµµ ÀÖ±â ¶§¹®ÀÔ´Ï´Ù.
  *
- * aStatistics    - [IN] Dummyí†µê³„ì •ë³´
- * aPagePtr1      - [IN] íŽ˜ì´ì§€ í—¤ë” ì‹œìž‘ í¬ì¸í„°
- * aPagePtr2      - [IN] íŽ˜ì´ì§€ í—¤ë” ì‹œìž‘ í¬ì¸í„°
+ * aStatistics    - [IN] DummyÅë°èÁ¤º¸
+ * aPagePtr1      - [IN] ÆäÀÌÁö Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
+ * aPagePtr2      - [IN] ÆäÀÌÁö Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
  *********************************************************************/
 IDE_RC sdnIndexCTL::stampingAll4RedoValidation( idvSQL * aStatistics,
                                                 UChar  * aPage1,
@@ -1057,12 +908,12 @@ IDE_RC sdnIndexCTL::stampingAll4RedoValidation( idvSQL * aStatistics,
     sdnCTL *  sCTL2;
     sdnCTS *  sCTS2;
     sdSID     sTSSlotSID;
-    smTID     sTransID;
+    smTID     sDummyTID4Wait;
     smSCN     sCommitSCN;
     UInt      i;
 
-    /* Internal Nodeì—ëŠ” CTSê°€ ì—†ìœ¼ë©°, íƒ€ ëª¨ë“ˆì—ì„œëŠ” ì´ë¥¼ êµ¬ë³„í•  ìˆ˜ ì—†ìŒ.
-     * ë”°ë¼ì„œ Index ë‚´ë¶€ì—ì„œ êµ¬ë³„í•´ì„œ, CTSê°€ ìžˆëŠ” ê²½ìš°ì—ë§Œ ì²˜ë¦¬í•¨ */
+    /* Internal Node¿¡´Â CTS°¡ ¾øÀ¸¸ç, Å¸ ¸ðµâ¿¡¼­´Â ÀÌ¸¦ ±¸º°ÇÒ ¼ö ¾øÀ½.
+     * µû¶ó¼­ Index ³»ºÎ¿¡¼­ ±¸º°ÇØ¼­, CTS°¡ ÀÖ´Â °æ¿ì¿¡¸¸ Ã³¸®ÇÔ */
     IDE_TEST_CONT( sdpPhyPage::getSizeOfCTL( ((sdpPhyPageHdr*)aPage1) ) == 0,
                     SKIP );
 
@@ -1076,16 +927,14 @@ IDE_RC sdnIndexCTL::stampingAll4RedoValidation( idvSQL * aStatistics,
         sCTS1 = sdnIndexCTL::getCTS( sCTL1, i );
         sCTS2 = sdnIndexCTL::getCTS( sCTL2, i );
 
-        /* Stamping ëœ ìƒíƒœë¼ë„, ë‹¤ì‹œ Stampnigì„ í•©ë‹ˆë‹¤.
-         * ì™œëƒí•˜ë©´ TSSê°€ ì™„ì „ížˆ ìž¬í™œìš©ë˜ì–´ CommtSCNì´ 0ì¸ ìƒíƒœì¼ ìˆ˜ë„
-         * ìžˆê¸° ë•Œë¬¸ìž…ë‹ˆë‹¤. */
+        /* Stamping µÈ »óÅÂ¶óµµ, ´Ù½Ã StampnigÀ» ÇÕ´Ï´Ù.
+         * ¿Ö³ÄÇÏ¸é TSS°¡ ¿ÏÀüÈ÷ ÀçÈ°¿ëµÇ¾î CommtSCNÀÌ 0ÀÎ »óÅÂÀÏ ¼öµµ
+         * ÀÖ±â ¶§¹®ÀÔ´Ï´Ù. */
         if( ( sdnIndexCTL::getCTSlotState( sCTS1 ) == SDN_CTS_UNCOMMITTED ) ||
             ( sdnIndexCTL::getCTSlotState( sCTS1 ) == SDN_CTS_STAMPED ) )
         {
-            IDE_ERROR( ( sdnIndexCTL::getCTSlotState( sCTS2 ) 
-                                == SDN_CTS_UNCOMMITTED ) ||
-                       ( sdnIndexCTL::getCTSlotState( sCTS2 ) 
-                                == SDN_CTS_STAMPED ) );
+            IDE_ERROR( ( sdnIndexCTL::getCTSlotState( sCTS2 ) == SDN_CTS_UNCOMMITTED ) ||
+                       ( sdnIndexCTL::getCTSlotState( sCTS2 ) == SDN_CTS_STAMPED ) );
 
             sTSSlotSID = SD_MAKE_SID( sCTS1->mTSSlotPID, sCTS1->mTSSlotNum );
 
@@ -1093,9 +942,11 @@ IDE_RC sdnIndexCTL::stampingAll4RedoValidation( idvSQL * aStatistics,
                        SD_MAKE_SID( sCTS2->mTSSlotPID, sCTS2->mTSSlotNum ) );
 
             IDE_TEST( sdcTSSegment::getCommitSCN( aStatistics,
+                                                  NULL,        /* aTrans */
                                                   sTSSlotSID,
                                                   &sCTS1->mCommitSCN,
-                                                  &sTransID,
+                                                  SM_SCN_INIT, /* aStmtViewSCN */
+                                                  &sDummyTID4Wait, 
                                                   &sCommitSCN )
                       != IDE_SUCCESS );
             if( SM_SCN_IS_NOT_INFINITE( sCommitSCN ) )
@@ -1108,13 +959,12 @@ IDE_RC sdnIndexCTL::stampingAll4RedoValidation( idvSQL * aStatistics,
         }
         else
         {
-            /* ë¶ˆí•„ìš”í•œ Diffê°€ ì—†ë„ë¡ ì´ˆê¸°í™”í•œë‹¤. */
-            IDE_ERROR( 
-                ( sdnIndexCTL::getCTSlotState( sCTS1 ) == SDN_CTS_NONE ) || 
-                ( sdnIndexCTL::getCTSlotState( sCTS1 ) == SDN_CTS_DEAD ) );
-            IDE_ERROR( 
-                ( sdnIndexCTL::getCTSlotState( sCTS2 ) == SDN_CTS_NONE ) || 
-                ( sdnIndexCTL::getCTSlotState( sCTS2 ) == SDN_CTS_DEAD ) );
+            /* ºÒÇÊ¿äÇÑ Diff°¡ ¾øµµ·Ï ÃÊ±âÈ­ÇÑ´Ù. */
+            IDE_ERROR( ( sdnIndexCTL::getCTSlotState( sCTS1 ) == SDN_CTS_NONE ) || 
+                       ( sdnIndexCTL::getCTSlotState( sCTS1 ) == SDN_CTS_DEAD ) );
+            IDE_ERROR( ( sdnIndexCTL::getCTSlotState( sCTS2 ) == SDN_CTS_NONE ) || 
+                       ( sdnIndexCTL::getCTSlotState( sCTS2 ) == SDN_CTS_DEAD ) );
+
             idlOS::memset( sCTS1, 0, ID_SIZEOF( sdnCTS ) );
             sCTS1->mState  = SDN_CTS_DEAD;
             idlOS::memset( sCTS2, 0, ID_SIZEOF( sdnCTS ) );
@@ -1131,72 +981,38 @@ IDE_RC sdnIndexCTL::stampingAll4RedoValidation( idvSQL * aStatistics,
     return IDE_FAILURE;
 }
 
-
-
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::delayedStamping               *
  * ------------------------------------------------------------------*
- * Internal DelayedStampingì„ ìœ„í•œ Wrapper Function                  *
+ * ´Ù¸¥ Transaction(SELECT/DML)¿¡ ÀÇÇØ¼­ ¼öÇàµÇ¸ç, CTS¿¡ CommitSCNÀ» *
+ * ¼³Á¤ÇÏ°í »óÅÂ ¸¦ STAMPED·Î º¯°æÇÑ´Ù.                              *
  *                                                                   *
- * BUG-31372: ì„¸ê·¸ë¨¼íŠ¸ ì‹¤ì‚¬ìš©ì–‘ ì •ë³´ë¥¼ ì¡°íšŒí•  ë°©ë²•ì´ í•„ìš”í•©ë‹ˆë‹¤      *
- *            Aging ì‹œì— MPRì„ ì´ìš©í•˜ê¸° ë•Œë¬¸ì— Page Read Modeê°€ í•„ìš” * 
+ * BUG-31372: ¼¼±×¸ÕÆ® ½Ç»ç¿ë¾ç Á¤º¸¸¦ Á¶È¸ÇÒ ¹æ¹ýÀÌ ÇÊ¿äÇÕ´Ï´Ù      *
+ *            Aging ½Ã¿¡ MPRÀ» ÀÌ¿ëÇÏ±â ¶§¹®¿¡ Page Read Mode°¡ ÇÊ¿ä * 
  *********************************************************************/
 IDE_RC sdnIndexCTL::delayedStamping( idvSQL          * aStatistics,
-                                     sdpPhyPageHdr   * aPage,
-                                     UChar             aSlotNum,
-                                     sdbPageReadMode   aPageReadMode,
-                                     smSCN           * aCommitSCN,
-                                     idBool          * aSuccess )
-{
-    sdnCTS * sCTS;
-
-    sCTS = getCTS( aPage, aSlotNum );
-
-    if( getCTSlotState( sCTS ) == SDN_CTS_UNCOMMITTED )
-    {
-        IDE_TEST( delayedStamping( aStatistics,
-                                   sCTS,
-                                   aPageReadMode,
-                                   aCommitSCN,
-                                   aSuccess )
-                  != IDE_SUCCESS );
-    }
-    else
-    {
-        *aSuccess = ID_TRUE;
-    }
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-
-/*********************************************************************
- * FUNCTION DESCRIPTION : sdnIndexCTL::delayedStamping               *
- * ------------------------------------------------------------------*
- * ë‹¤ë¥¸ Transaction(SELECT/DML)ì— ì˜í•´ì„œ ìˆ˜í–‰ë˜ë©°, CTSì— CommitSCNì„ *
- * ì„¤ì •í•˜ê³  ìƒíƒœ ë¥¼ STAMPEDë¡œ ë³€ê²½í•œë‹¤.                              *
- *********************************************************************/
-IDE_RC sdnIndexCTL::delayedStamping( idvSQL          * aStatistics,
+                                     void            * aTrans,
                                      sdnCTS          * aCTS,
                                      sdbPageReadMode   aPageReadMode,
+                                     smSCN             aStmtViewSCN,
                                      smSCN           * aCommitSCN,
                                      idBool          * aSuccess )
 {
     sdSID         sTSSlotSID;
-    smTID         sTransID;
+    smTID         sDummyTID4Wait;
     UChar       * sPageHdr;
     idBool        sTrySuccess = ID_FALSE;
 
+    IDE_DASSERT( aCTS->mState == SDN_CTS_UNCOMMITTED );
+     
     sTSSlotSID = SD_MAKE_SID( aCTS->mTSSlotPID, aCTS->mTSSlotNum );
 
     IDE_TEST( sdcTSSegment::getCommitSCN( aStatistics,
+                                          (smxTrans*)aTrans,
                                           sTSSlotSID,
                                           &aCTS->mCommitSCN,
-                                          &sTransID,
+                                          aStmtViewSCN,
+                                          &sDummyTID4Wait, 
                                           aCommitSCN )
               != IDE_SUCCESS );
 
@@ -1237,7 +1053,7 @@ IDE_RC sdnIndexCTL::delayedStamping( idvSQL          * aStatistics,
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::getCTL                        *
  * ------------------------------------------------------------------*
- * CTL Headerë¥¼ ì–»ëŠ”ë‹¤.                                              *
+ * CTL Header¸¦ ¾ò´Â´Ù.                                              *
  *********************************************************************/
 sdnCTL* sdnIndexCTL::getCTL( sdpPhyPageHdr  * aPage )
 {
@@ -1247,7 +1063,7 @@ sdnCTL* sdnIndexCTL::getCTL( sdpPhyPageHdr  * aPage )
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::getCTS                        *
  * ------------------------------------------------------------------*
- * CTS Pointerë¥¼ ì–»ëŠ”ë‹¤.                                             *
+ * CTS Pointer¸¦ ¾ò´Â´Ù.                                             *
  *********************************************************************/
 sdnCTS* sdnIndexCTL::getCTS( sdnCTL  * aCTL,
                              UChar     aSlotNum )
@@ -1260,7 +1076,7 @@ sdnCTS* sdnIndexCTL::getCTS( sdnCTL  * aCTL,
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::getCTS                        *
  * ------------------------------------------------------------------*
- * CTS Pointerë¥¼ ì–»ëŠ”ë‹¤.                                             *
+ * CTS Pointer¸¦ ¾ò´Â´Ù.                                             *
  *********************************************************************/
 sdnCTS* sdnIndexCTL::getCTS( sdpPhyPageHdr  * aPage,
                              UChar            aSlotNum )
@@ -1271,7 +1087,7 @@ sdnCTS* sdnIndexCTL::getCTS( sdpPhyPageHdr  * aPage,
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::getCount                      *
  * ------------------------------------------------------------------*
- * CTLì˜ í¬ê¸°ë¥¼ ë¦¬í„´í•œë‹¤.                                            *
+ * CTLÀÇ Å©±â¸¦ ¸®ÅÏÇÑ´Ù.                                            *
  *********************************************************************/
 UChar sdnIndexCTL::getCount( sdnCTL  * aCTL )
 {
@@ -1281,7 +1097,7 @@ UChar sdnIndexCTL::getCount( sdnCTL  * aCTL )
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::getCount                      *
  * ------------------------------------------------------------------*
- * CTLì˜ í¬ê¸°ë¥¼ ë¦¬í„´í•œë‹¤.                                            *
+ * CTLÀÇ Å©±â¸¦ ¸®ÅÏÇÑ´Ù.                                            *
  *********************************************************************/
 UChar sdnIndexCTL::getCount( sdpPhyPageHdr  * aPage )
 {
@@ -1291,7 +1107,7 @@ UChar sdnIndexCTL::getCount( sdpPhyPageHdr  * aPage )
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::getCount                      *
  * ------------------------------------------------------------------*
- * Active CTSì˜ ê°œìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.                                     *
+ * Active CTSÀÇ °³¼ö¸¦ ¸®ÅÏÇÑ´Ù.                                     *
  *********************************************************************/
 UChar sdnIndexCTL::getUsedCount( sdnCTL  * aCTL )
 {
@@ -1301,7 +1117,7 @@ UChar sdnIndexCTL::getUsedCount( sdnCTL  * aCTL )
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::getCount                      *
  * ------------------------------------------------------------------*
- * Active CTSì˜ ê°œìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.                                     *
+ * Active CTSÀÇ °³¼ö¸¦ ¸®ÅÏÇÑ´Ù.                                     *
  *********************************************************************/
 UChar sdnIndexCTL::getUsedCount( sdpPhyPageHdr  * aPage )
 {
@@ -1311,7 +1127,7 @@ UChar sdnIndexCTL::getUsedCount( sdpPhyPageHdr  * aPage )
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::getCTSlotState                *
  * ------------------------------------------------------------------*
- * CTSì˜ ìƒíƒœë¥¼ ë¦¬í„´í•œë‹¤.                                            *
+ * CTSÀÇ »óÅÂ¸¦ ¸®ÅÏÇÑ´Ù.                                            *
  *********************************************************************/
 UChar sdnIndexCTL::getCTSlotState( sdpPhyPageHdr * aPage,
                                    UChar           aSlotNum )
@@ -1326,7 +1142,7 @@ UChar sdnIndexCTL::getCTSlotState( sdpPhyPageHdr * aPage,
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::getCTSlotState                *
  * ------------------------------------------------------------------*
- * CTSì˜ ìƒíƒœë¥¼ ë¦¬í„´í•œë‹¤.                                            *
+ * CTSÀÇ »óÅÂ¸¦ ¸®ÅÏÇÑ´Ù.                                            *
  *********************************************************************/
 UChar sdnIndexCTL::getCTSlotState( sdnCTS  * aCTS )
 {
@@ -1336,7 +1152,7 @@ UChar sdnIndexCTL::getCTSlotState( sdnCTS  * aCTS )
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::setCTSlotState                *
  * ------------------------------------------------------------------*
- * CTSì˜ ìƒíƒœë¥¼ ì„¤ì •í•œë‹¤.                                            *
+ * CTSÀÇ »óÅÂ¸¦ ¼³Á¤ÇÑ´Ù.                                            *
  *********************************************************************/
 void sdnIndexCTL::setCTSlotState( sdnCTS * aCTS,
                                   UChar    aState )
@@ -1347,7 +1163,7 @@ void sdnIndexCTL::setCTSlotState( sdnCTS * aCTS,
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::getCommitSCN                  *
  * ------------------------------------------------------------------*
- * CTS.CommitSCNì„ ë¦¬í„´í•œë‹¤.                                         *
+ * CTS.CommitSCNÀ» ¸®ÅÏÇÑ´Ù.                                         *
  *********************************************************************/
 smSCN sdnIndexCTL::getCommitSCN( sdnCTS  * aCTS )
 {
@@ -1357,22 +1173,16 @@ smSCN sdnIndexCTL::getCommitSCN( sdnCTS  * aCTS )
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::getCommitSCN                  *
  * ------------------------------------------------------------------*
- * Transactionì˜ CommitSCNì„ êµ¬í•œë‹¤.                                 *
- * Chainedìƒì— ìžˆëŠ” CTSë¼ë©´ Undo Pageë¡œ ë¶€í„° CommitSCNì„ ì°¾ê³ ,       *
- * ê·¸ë ‡ì§€ ì•Šì€ ê²½ìš°ë©´ Delayed Stampingì„ í†µí•´ì„œ CommitSCNì„ ì–»ì–´ì•¼   *
- * í•œë‹¤.                                                             *
- * CTS->mNxtCommitSCNì´ StmtSCNë³´ë‹¤ ìž‘ë‹¤ë©´ Undo Pageë¥¼ fetchí•  í•„ìš”  *
- * ì—†ì´ Upper Bound SCN(mNxtCommitSCN)ì„ ë¦¬í„´í•œë‹¤.                   *
+ * TransactionÀÇ CommitSCNÀ» ±¸ÇÑ´Ù.                                 *
+ * UNCOMMITTED »óÅÂ¶ó¸é Delayed StampingÀ» ÅëÇØ¼­ CommitSCNÀ» ¾ò¾î¾ß *
+ * ÇÑ´Ù.                                                             *
  *********************************************************************/
 IDE_RC sdnIndexCTL::getCommitSCN( idvSQL           * aStatistics,
+                                  void             * aTrans,
                                   sdpPhyPageHdr    * aPage,
                                   sdbPageReadMode    aPageReadMode,
-                                  smSCN            * aStmtSCN,
                                   UChar              aCTSlotNum,
-                                  UChar              aChained,
-                                  sdnCallbackFuncs * aCallbackFunc,
-                                  UChar            * aContext,
-                                  idBool             aIsCreateSCN,
+                                  smSCN              aStmtViewSCN,
                                   smSCN            * aCommitSCN )
 {
     sdnCTS    * sCTS;
@@ -1380,50 +1190,20 @@ IDE_RC sdnIndexCTL::getCommitSCN( idvSQL           * aStatistics,
 
     sCTS = getCTS( aPage, aCTSlotNum );
 
-    if( aChained == SDN_CHAINED_YES )
+    if ( sCTS->mState == SDN_CTS_STAMPED )
     {
-        if( SM_SCN_IS_INFINITE( sCTS->mNxtCommitSCN ) )
-        {
-            ideLog::log( IDE_SERVER_0,
-                         "CT slot number : %u\n",
-                         aCTSlotNum );
-            dumpIndexNode( aPage );
-            IDE_ASSERT( 0 );
-        }
-
-        if( SM_SCN_IS_LT( &sCTS->mNxtCommitSCN, aStmtSCN ) )
-        {
-            SM_GET_SCN(aCommitSCN, &sCTS->mNxtCommitSCN);
-        }
-        else
-        {
-            IDE_TEST( getCommitSCNfromUndo( aStatistics,
-                                            aPage,
-                                            sCTS,
-                                            aCTSlotNum,
-                                            aStmtSCN,
-                                            aCallbackFunc,
-                                            aContext,
-                                            aIsCreateSCN,
-                                            aCommitSCN )
-                      != IDE_SUCCESS );
-        }
+        SM_GET_SCN(aCommitSCN, &sCTS->mCommitSCN);
     }
     else
     {
-        if( sCTS->mState == SDN_CTS_STAMPED )
-        {
-            SM_GET_SCN(aCommitSCN, &sCTS->mCommitSCN);
-        }
-        else
-        {
-            IDE_TEST( delayedStamping( aStatistics,
-                                       sCTS,
-                                       aPageReadMode,
-                                       aCommitSCN,
-                                       &sSuccess )
-                      != IDE_SUCCESS );
-        }
+        IDE_TEST( delayedStamping( aStatistics,
+                                   aTrans,
+                                   sCTS,
+                                   aPageReadMode,
+                                   aStmtViewSCN,
+                                   aCommitSCN,
+                                   &sSuccess )
+                  != IDE_SUCCESS );
     }
 
     return IDE_SUCCESS;
@@ -1432,22 +1212,22 @@ IDE_RC sdnIndexCTL::getCommitSCN( idvSQL           * aStatistics,
 
     return IDE_FAILURE;
 }
-
+#if 0
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::getCommitSCNfromUndo          *
  * ------------------------------------------------------------------*
- * Undo Chainìƒì— ì €ìž¥ë˜ì–´ ìžˆëŠ” CommitSCNì„ êµ¬í•œë‹¤. Keyê°€ ì €ìž¥ë˜ì–´   *
- * ìžˆëŠ” CTSë¥¼ ì°¾ì•„ì•¼ í•˜ê³ ,                                           *
- * ê·¸ëŸ¬í•œ CTSëŠ” [ROW_PID, ROW_SLOTNUM, KEY_VALUE, WHICH_CTS]ë¥¼       *
- * ê°€ì§€ê³  ì°¾ëŠ”ë‹¤. ê°™ì€ [ROW_PID, ROW_SLOTNUM, KEY_VALUE]ë¥¼ ê°–ëŠ” í‚¤ê°€ *
- * Chainìƒì— 2ê°œ(Create/Limit)ê°€ ì¡´ìž¬í• ìˆ˜ ìžˆê¸° ë•Œë¬¸ì— WHICH_CTSë¥¼    *
- * ê°€ì§€ê³  Createì¸ì§€ Limitì¸ì§€ í™•ì¸í•´ì•¼ í•œë‹¤.                        *
+ * Undo Chain»ó¿¡ ÀúÀåµÇ¾î ÀÖ´Â CommitSCNÀ» ±¸ÇÑ´Ù. Key°¡ ÀúÀåµÇ¾î   *
+ * ÀÖ´Â CTS¸¦ Ã£¾Æ¾ß ÇÏ°í,                                           *
+ * ±×·¯ÇÑ CTS´Â [ROW_PID, ROW_SLOTNUM, KEY_VALUE, WHICH_CTS]¸¦       *
+ * °¡Áö°í Ã£´Â´Ù. °°Àº [ROW_PID, ROW_SLOTNUM, KEY_VALUE]¸¦ °®´Â Å°°¡ *
+ * Chain»ó¿¡ 2°³(Create/Limit)°¡ Á¸ÀçÇÒ¼ö ÀÖ±â ¶§¹®¿¡ WHICH_CTS¸¦    *
+ * °¡Áö°í CreateÀÎÁö LimitÀÎÁö È®ÀÎÇØ¾ß ÇÑ´Ù.                        *
  *********************************************************************/
 IDE_RC sdnIndexCTL::getCommitSCNfromUndo( idvSQL           * aStatistics,
                                           sdpPhyPageHdr    * aPage,
                                           sdnCTS           * aCTS,
                                           UChar              aCTSlotNum,
-                                          smSCN            * aStmtSCN,
+                                          smSCN            * aStmtViewSCN,
                                           sdnCallbackFuncs * aCallbackFunc,
                                           UChar            * aContext,
                                           idBool             aIsCreateSCN,
@@ -1486,13 +1266,13 @@ IDE_RC sdnIndexCTL::getCommitSCNfromUndo( idvSQL           * aStatistics,
                                  &sKeyListSize,
                                  &sIsReusedUndoRec ) != IDE_SUCCESS );
 
-        /* BUG-29839 BTreeì—ì„œ ìž¬ì‚¬ìš©ëœ undo pageì— ì ‘ê·¼í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤.
-         * chainëœ CTSì˜ commit SCNì„ êµ¬í•˜ëŠ” ê³¼ì •ì—ì„œ ë‹¤ë¥¸ txì— ì˜í•´
-         * chainëœ CTSì˜ undo pageê°€ ìž¬ì‚¬ìš©ë˜ì—ˆì„ ìˆ˜ ìžˆìŠµë‹ˆë‹¤.
-         * ì´ë¡œ ì¸í•œ ì˜¤ë¥˜ë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•´ ê¸°ì¡´ì— ì½ì€ CTSì˜ mNxtCommitSCN
-         * ìž¬ì‚¬ìš© ì¡°ê±´ì¸ sysMinDskSCNë³´ë‹¤ í° ê²½ìš°ì—ëŠ” ë¬´ì¡°ê±´ INIT_SCN ìœ¼ë¡œ
-         * íŒë‹¨í•˜ì—¬ íŽ˜ì´ì§€ì— ëŒ€í•œ ì ‘ê·¼ì„ í•˜ì§€ ì•Šë„ë¡ í•©ë‹ˆë‹¤.
-         * ì´ëŠ” íŽ˜ì´ì§€ì— ëŒ€í•œ S Latchë¥¼ ìž¡ì€ í›„ì— ë¹„êµí•˜ì—¬ì•¼ í•©ë‹ˆë‹¤.*/
+        /* BUG-29839 BTree¿¡¼­ Àç»ç¿ëµÈ undo page¿¡ Á¢±ÙÇÒ ¼ö ÀÖ½À´Ï´Ù.
+         * chainµÈ CTSÀÇ commit SCNÀ» ±¸ÇÏ´Â °úÁ¤¿¡¼­ ´Ù¸¥ tx¿¡ ÀÇÇØ
+         * chainµÈ CTSÀÇ undo page°¡ Àç»ç¿ëµÇ¾úÀ» ¼ö ÀÖ½À´Ï´Ù.
+         * ÀÌ·Î ÀÎÇÑ ¿À·ù¸¦ ¹æÁöÇÏ±â À§ÇØ ±âÁ¸¿¡ ÀÐÀº CTSÀÇ mNxtCommitSCN
+         * Àç»ç¿ë Á¶°ÇÀÎ sysMinDskSCNº¸´Ù Å« °æ¿ì¿¡´Â ¹«Á¶°Ç INIT_SCN À¸·Î
+         * ÆÇ´ÜÇÏ¿© ÆäÀÌÁö¿¡ ´ëÇÑ Á¢±ÙÀ» ÇÏÁö ¾Êµµ·Ï ÇÕ´Ï´Ù.
+         * ÀÌ´Â ÆäÀÌÁö¿¡ ´ëÇÑ S Latch¸¦ ÀâÀº ÈÄ¿¡ ºñ±³ÇÏ¿©¾ß ÇÕ´Ï´Ù.*/
 
         if( sIsReusedUndoRec == ID_TRUE )
         {
@@ -1509,10 +1289,10 @@ IDE_RC sdnIndexCTL::getCommitSCNfromUndo( idvSQL           * aStatistics,
                                             aContext ) == ID_TRUE )
         {
             /*
-             * Chainìƒì—ëŠ” ê°™ì€ [ROW_PID, ROW_SLOTNUM, KEY_VALUE]ë¥¼ ê°–ëŠ” Keyë“¤ì´
-             * ì¡´ìž¬í• ìˆ˜ ìžˆê¸° ë•Œë¬¸ì— WHICH_CHAINì¸ì§€ë¥¼ êµ¬ë¶„í•´ì•¼ í•œë‹¤.
-             * ë§Œì•½ CreateCTSë¥¼ ìœ„í•œ Chainì´ë¼ë©´ ë°˜ë“œì‹œ ChainedCCTSê°€
-             * SDN_CHAINED_YESë¡œ ì„¤ì •ë˜ì–´ ìžˆì–´ì•¼ë§Œ í•œë‹¤.
+             * Chain»ó¿¡´Â °°Àº [ROW_PID, ROW_SLOTNUM, KEY_VALUE]¸¦ °®´Â KeyµéÀÌ
+             * Á¸ÀçÇÒ¼ö ÀÖ±â ¶§¹®¿¡ WHICH_CHAINÀÎÁö¸¦ ±¸ºÐÇØ¾ß ÇÑ´Ù.
+             * ¸¸¾à CreateCTS¸¦ À§ÇÑ ChainÀÌ¶ó¸é ¹Ýµå½Ã ChainedCCTS°¡
+             * SDN_CHAINED_YES·Î ¼³Á¤µÇ¾î ÀÖ¾î¾ß¸¸ ÇÑ´Ù.
              */
             if ( ((aIsCreateSCN == ID_TRUE) &&
                   (sChainedCCTS == SDN_CHAINED_YES)) ||
@@ -1525,7 +1305,7 @@ IDE_RC sdnIndexCTL::getCommitSCNfromUndo( idvSQL           * aStatistics,
         }
         else
         {
-            if( SM_SCN_IS_LT( &sCTS.mNxtCommitSCN, aStmtSCN ) )
+            if( SM_SCN_IS_LT( &sCTS.mNxtCommitSCN, aStmtViewSCN ) )
             {
                 *aCommitSCN = sCTS.mNxtCommitSCN;
                 break;
@@ -1539,11 +1319,11 @@ IDE_RC sdnIndexCTL::getCommitSCNfromUndo( idvSQL           * aStatistics,
 
     return IDE_FAILURE;
 }
-
+#endif
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::getCommitSCN                  *
  * ------------------------------------------------------------------*
- * CTS.CommitSCNì„ ë¦¬í„´í•œë‹¤.                                         *
+ * CTS.CommitSCNÀ» ¸®ÅÏÇÑ´Ù.                                         *
  *********************************************************************/
 smSCN sdnIndexCTL::getCommitSCN( sdpPhyPageHdr * aPage,
                                  UChar           aSlotNum )
@@ -1558,20 +1338,12 @@ smSCN sdnIndexCTL::getCommitSCN( sdpPhyPageHdr * aPage,
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::unbindCTS                     *
  * ------------------------------------------------------------------*
- * Keyê°€ ê°€ë¦¬í‚¤ëŠ” Transactionì •ë³´ì˜ ì°¸ì¡°ê°œìˆ˜ë¥¼ ê°ì†Œì‹œí‚¨ë‹¤. ë§Œì•½ ì°¸ì¡° *
- * ê°œìˆ˜ê°€ 0ì´ ë˜ëŠ” ê²½ìš°ëŠ” CTSë¥¼ DEADìƒíƒœë¡œ ë§Œë“ ë‹¤.
- * ê·¸ëŸ¬ë‚˜ ì°¸ì¡° ê°œìˆ˜ê°€ 0ì´ë¼ í• ì§€ë¼ë„ Chainingì´ 'N'ì¸ CTSëŠ” CTSë¥¼    *
- * ì‚­ì œí•˜ì§€ ì•ŠëŠ”ë‹¤. Chainingì´ 'N'ì´ë¼ëŠ” ì˜ë¯¸ëŠ” í•´ë‹¹ ì •ë³´ë¥¼ ì‚­ì œí•´ì„œ *
- * ëŠ” ì•ˆë¨ì„ ì˜ë¯¸í•˜ê¸° ë•Œë¬¸ì´ë‹¤. ë§Œì•½ í•´ë‹¹ CTSë¥¼ ì‚­ì œí•œë‹¤ë©´ Rollbackì‹œ*
- * CTSë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹ë°›ì•„ì•¼ í•˜ëŠ” ë³µìž¡í•œ ë¬¸ì œë¥¼ ì•¼ê¸°ì‹œí‚¨ë‹¤.       *
+ * Key°¡ °¡¸®Å°´Â TransactionÁ¤º¸ÀÇ ÂüÁ¶°³¼ö¸¦ °¨¼Ò½ÃÅ²´Ù. ¸¸¾à ÂüÁ¶ *
+ * °³¼ö°¡ 0ÀÌ µÇ´Â °æ¿ì´Â CTS¸¦ DEAD»óÅÂ·Î ¸¸µç´Ù.
  *********************************************************************/
-IDE_RC sdnIndexCTL::unbindCTS( idvSQL           * aStatistics,
-                               sdrMtx           * aMtx,
+IDE_RC sdnIndexCTL::unbindCTS( sdrMtx           * aMtx,
                                sdpPhyPageHdr    * aPage,
                                UChar              aSlotNum,
-                               sdnCallbackFuncs * aCallbackFunc,
-                               UChar            * aContext,
-                               idBool             aDoUnchaining,
                                UShort             aKeyOffset )
 {
     sdnCTS  * sCTS;
@@ -1581,47 +1353,17 @@ IDE_RC sdnIndexCTL::unbindCTS( idvSQL           * aStatistics,
     sCTS = getCTS( aPage, aSlotNum );
     sRefCnt = sCTS->mRefCnt - 1;
 
-    if( sRefCnt == 0 )
+    if ( sRefCnt == 0 )
     {
-        if( hasChainedCTS( sCTS ) == ID_FALSE )
-        {
-            IDE_TEST( freeCTS( aMtx,
-                               aPage,
-                               aSlotNum,
-                               ID_TRUE )
-                      != IDE_SUCCESS );
+        IDE_TEST( freeCTS( aMtx,
+                           aPage,
+                           aSlotNum,
+                           ID_TRUE )
+                  != IDE_SUCCESS );
 
-            IDE_CONT( SKIP_ADJUST_REFKEY );
-        }
-        else
-        {
-            /*
-             * SMOë¡œ ì¸í•œ Splitê²½ìš°ì—ëŠ” Casecade Unchainingì´
-             * ë°œìƒí• ìˆ˜ ìžˆë‹¤.
-             */
-            if ( aDoUnchaining == ID_TRUE )
-            {
-                IDE_TEST( unchainingCTS( aStatistics,
-                                         aMtx,
-                                         aPage,
-                                         sCTS,
-                                         aSlotNum,
-                                         aCallbackFunc,
-                                         aContext )
-                          != IDE_SUCCESS );
-
-                IDE_CONT( SKIP_ADJUST_REFKEY );
-            }
-            else
-            {
-                /* do nothing... */
-            }
-        }
+        IDE_CONT( SKIP_ADJUST_REFKEY );
     }
 
-    /*
-     * Dummy CTSê°€ ë§Œë“¤ì–´ì§ˆ ìˆ˜ë„ ìžˆë‹¤.
-     */
     for( i = SDN_CTS_MAX_KEY_CACHE - 1; i >= 0 ; i-- )
     {
         if( sCTS->mRefKey[i] == aKeyOffset )
@@ -1637,10 +1379,20 @@ IDE_RC sdnIndexCTL::unbindCTS( idvSQL           * aStatistics,
                                          ID_SIZEOF(UShort) )
               != IDE_SUCCESS );
 
+    /* BUG-48064
+       writeNBytes() ÇÔ¼ö´Â 1bytes,2bytes,4bytes,8bytes¸¸ ±æÀÌ·Î ¹Þ´Â´Ù.
+       UChar mRefKey[3]À» ÀúÀåÇÏ±âÀ§ÇØ 4bytes, 2bytes ±æÀÌ·Î µÎ¹ø È£ÃâÇÑ´Ù.
+       ¸¸¾à, SDN_CTS_MAX_KEY_CACHE ¸¦ º¯°æÇÏ°Ô µÇ¸é ÀÌ°÷µµ ¼öÁ¤ÇØ¾ßÇÑ´Ù.
+     */
     IDE_TEST( sdrMiniTrans::writeNBytes( aMtx,
                                          (UChar*)sCTS->mRefKey,
                                          (UChar*)sCTS->mRefKey,
-                                         ID_SIZEOF(UShort)*SDN_CTS_MAX_KEY_CACHE )
+                                         ID_SIZEOF(UShort)*2 )
+              != IDE_SUCCESS );
+    IDE_TEST( sdrMiniTrans::writeNBytes( aMtx,
+                                         (UChar*)((sCTS->mRefKey) + 2),
+                                         (UChar*)((sCTS->mRefKey) + 2),
+                                         ID_SIZEOF(UShort) )
               != IDE_SUCCESS );
 
     IDE_EXCEPTION_CONT( SKIP_ADJUST_REFKEY );
@@ -1651,12 +1403,12 @@ IDE_RC sdnIndexCTL::unbindCTS( idvSQL           * aStatistics,
 
     return IDE_FAILURE;
 }
-
+#if 0
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::makeChainedCTS                *
  * ------------------------------------------------------------------*
- * Unchained Keyë¥¼ Chained Keyë¡œ ë§Œë“¤ê³ , í•´ë‹¹ í‚¤ ë¦¬ìŠ¤íŠ¸ë¥¼ undo page  *
- * ì— ê¸°ë¡í•œë‹¤.                                                      *
+ * Unchained Key¸¦ Chained Key·Î ¸¸µé°í, ÇØ´ç Å° ¸®½ºÆ®¸¦ undo page  *
+ * ¿¡ ±â·ÏÇÑ´Ù.                                                      *
  * Undo Format ==> | sdnCTS | KeyListSize | KeyList(Key1,Key2,...) | *
  *********************************************************************/
 IDE_RC sdnIndexCTL::makeChainedCTS( idvSQL           * aStatistics,
@@ -1702,8 +1454,8 @@ IDE_RC sdnIndexCTL::makeChainedCTS( idvSQL           * aStatistics,
     sUndoSegment = smLayerCallback::getUDSegPtr( (smxTrans*)aMtx->mTrans );
 
     /*
-     * aTableOIDë¥¼ NULL_OIDë¡œ ì„¤ì •í•˜ì—¬ Cursor Closeì‹œ Index ì²˜ë¦¬ë¥¼
-     * Skip í•˜ê²Œ í•œë‹¤.
+     * aTableOID¸¦ NULL_OID·Î ¼³Á¤ÇÏ¿© Cursor Close½Ã Index Ã³¸®¸¦
+     * Skip ÇÏ°Ô ÇÑ´Ù.
      */
     if ( sUndoSegment->addIndexCTSlotUndoRec(
                           aStatistics,
@@ -1713,7 +1465,7 @@ IDE_RC sdnIndexCTL::makeChainedCTS( idvSQL           * aStatistics,
                           ID_SIZEOF(sdnCTS) + ID_SIZEOF(ULong) + *sKeyListSize,
                           aRollbackSID ) != IDE_SUCCESS )
     {
-        sdrMiniTrans::setIgnoreMtxUndo( aMtx );
+        //BUG-47715: setIgnoreMtxUndo »èÁ¦ 
         IDE_TEST( 1 );
     }
 
@@ -1727,7 +1479,7 @@ IDE_RC sdnIndexCTL::makeChainedCTS( idvSQL           * aStatistics,
     IDE_EXCEPTION_END;
 
     /*
-     * Undo Page Fullë¡œ ì¸í•´ì„œ ë”ì´ìƒ ê³µê°„ì´ ì—†ëŠ” ê²½ìš°
+     * Undo Page Full·Î ÀÎÇØ¼­ ´õÀÌ»ó °ø°£ÀÌ ¾ø´Â °æ¿ì
      */
     if( sMadeChainedKeys == ID_TRUE )
     {
@@ -1760,11 +1512,11 @@ IDE_RC sdnIndexCTL::makeChainedCTS( idvSQL           * aStatistics,
 
     return IDE_FAILURE;
 }
-
+#endif
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::canAllocCTS                   *
  * ------------------------------------------------------------------*
- * SMOì‹œì— í˜¸ì¶œë˜ë©°, CTSê³µê°„ì„ í• ë‹¹ë°›ì„ìˆ˜ ìžˆì„ì§€ ê²€ì‚¬í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.  *
+ * SMO½Ã¿¡ È£ÃâµÇ¸ç, CTS°ø°£À» ÇÒ´ç¹ÞÀ»¼ö ÀÖÀ»Áö °Ë»çÇÏ´Â ÇÔ¼öÀÌ´Ù.  *
  *********************************************************************/
 idBool sdnIndexCTL::canAllocCTS( sdpPhyPageHdr * aPage,
                                  UChar           aNeedCount )
@@ -1781,15 +1533,15 @@ idBool sdnIndexCTL::canAllocCTS( sdpPhyPageHdr * aPage,
     return ID_FALSE;
 }
 
-
+#if 0
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::unchaining                    *
  * ------------------------------------------------------------------*
- * Undo pageì— ì €ìž¥ë˜ì–´ ìžˆì—ˆë˜ Chained Keyë¥¼ Unchained Keyë¡œ ë§Œë“ ë‹¤. *
- * í•´ë‹¹ íŽ˜ì´ì§€ì— chainingë‹¹ì‹œì—ëŠ” ìžˆì—ˆì§€ë§Œ unchainingì´ ë˜ê¸° ì „ì—    *
- * SMOì— ì˜í•´ì„œ ë‹¤ë¥¸ íŽ˜ì´ì§€ë¡œ ì´ë™ëœ ê²½ìš°ë„ ìžˆë‹¤. ë”°ë¼ì„œ, Unchained  *
- * key countê°€ 0ì¸ ê²½ìš° ìƒê¸¸ìˆ˜ ìžˆìœ¼ë©°, ë§Œì•½ chainì„ ê°€ì§€ê³  ìžˆì§€ ì•Šì€ *
- * CTSë¼ë©´ DEADìƒíƒœë¡œ ë§Œë“ ë‹¤.                                        *
+ * Undo page¿¡ ÀúÀåµÇ¾î ÀÖ¾ú´ø Chained Key¸¦ Unchained Key·Î ¸¸µç´Ù. *
+ * ÇØ´ç ÆäÀÌÁö¿¡ chaining´ç½Ã¿¡´Â ÀÖ¾úÁö¸¸ unchainingÀÌ µÇ±â Àü¿¡    *
+ * SMO¿¡ ÀÇÇØ¼­ ´Ù¸¥ ÆäÀÌÁö·Î ÀÌµ¿µÈ °æ¿ìµµ ÀÖ´Ù. µû¶ó¼­, Unchained  *
+ * key count°¡ 0ÀÎ °æ¿ì »ý±æ¼ö ÀÖÀ¸¸ç, ¸¸¾à chainÀ» °¡Áö°í ÀÖÁö ¾ÊÀº *
+ * CTS¶ó¸é DEAD»óÅÂ·Î ¸¸µç´Ù.                                        *
  *********************************************************************/
 IDE_RC sdnIndexCTL::unchainingCTS( idvSQL           * aStatistics,
                                    sdrMtx           * aMtx,
@@ -1820,8 +1572,8 @@ IDE_RC sdnIndexCTL::unchainingCTS( idvSQL           * aStatistics,
     if( sIsReusedUndoRec == ID_FALSE )
     {
         /*
-         * Chainingì‹œì  ì´í›„ì— Compactë˜ì—ˆì„ìˆ˜ë„ ìžˆê¸° ë•Œë¬¸ì—
-         * Reference Infoë¥¼ resetí•˜ê³  MakeUnchainedKeyì—ì„œ ë‹¤ì‹œ êµ¬ì„±í•œë‹¤.
+         * Chaining½ÃÁ¡ ÀÌÈÄ¿¡ CompactµÇ¾úÀ»¼öµµ ÀÖ±â ¶§¹®¿¡
+         * Reference Info¸¦ resetÇÏ°í MakeUnchainedKey¿¡¼­ ´Ù½Ã ±¸¼ºÇÑ´Ù.
          */
         cleanRefInfo( aPage, aCTSlotNum );
 
@@ -1837,8 +1589,8 @@ IDE_RC sdnIndexCTL::unchainingCTS( idvSQL           * aStatistics,
                   != IDE_SUCCESS );
 
         /*
-         * Unchainingë  í‚¤ê°€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´ SMOë¡œ ì¸í•˜ì—¬
-         * ëª¨ë“  í‚¤ê°€ ì´ë™í•œ ê²½ìš°ì´ë‹¤. ë°”ë¡œ ì‚­ì œí•œë‹¤.
+         * UnchainingµÉ Å°°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù¸é SMO·Î ÀÎÇÏ¿©
+         * ¸ðµç Å°°¡ ÀÌµ¿ÇÑ °æ¿ìÀÌ´Ù. ¹Ù·Î »èÁ¦ÇÑ´Ù.
          */
         if( (sUnchainedKeyCount == 0) &&
             (hasChainedCTS( aCTS ) == ID_FALSE) )
@@ -1868,29 +1620,30 @@ IDE_RC sdnIndexCTL::unchainingCTS( idvSQL           * aStatistics,
 
     return IDE_FAILURE;
 }
-
+#endif
+#if 0
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::getChainedCTS                 *
  * ------------------------------------------------------------------*
- * BUG-29839,34499 BTreeì—ì„œ ìž¬ì‚¬ìš©ëœ undo pageì— ì ‘ê·¼í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤.*
- * chainëœ CTSì˜ commit SCNì„ êµ¬í•˜ëŠ” ê³¼ì •ì—ì„œ ë‹¤ë¥¸ txì— ì˜í•´         *
- * chainëœ CTSì˜ undo pageê°€ ìž¬ì‚¬ìš©ë˜ì—ˆì„ ìˆ˜ ìžˆìŠµë‹ˆë‹¤.               *
- * ì´ë¡œ ì¸í•œ ì˜¤ë¥˜ë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•´ ê¸°ì¡´ì— ì½ì€ CTSì˜ mNxtCommitSCN    *
- * ìž¬ì‚¬ìš© ì¡°ê±´ì¸ sysMinDskSCNë³´ë‹¤ í° ê²½ìš°ì—ëŠ” ë¬´ì¡°ê±´ ìž¬í™œìš©ìœ¼ë¡œ      *
- * íŒë‹¨í•˜ì—¬ íŽ˜ì´ì§€ì— ëŒ€í•œ ì ‘ê·¼ì„ í•˜ì§€ ì•Šë„ë¡ í•©ë‹ˆë‹¤.                 *
- * ì´ëŠ” íŽ˜ì´ì§€ì— ëŒ€í•œ S Latchë¥¼ ìž¡ì€ í›„ì— ë¹„êµí•˜ì—¬ì•¼ í•©ë‹ˆë‹¤.         *
+ * BUG-29839,34499 BTree¿¡¼­ Àç»ç¿ëµÈ undo page¿¡ Á¢±ÙÇÒ ¼ö ÀÖ½À´Ï´Ù.*
+ * chainµÈ CTSÀÇ commit SCNÀ» ±¸ÇÏ´Â °úÁ¤¿¡¼­ ´Ù¸¥ tx¿¡ ÀÇÇØ         *
+ * chainµÈ CTSÀÇ undo page°¡ Àç»ç¿ëµÇ¾úÀ» ¼ö ÀÖ½À´Ï´Ù.               *
+ * ÀÌ·Î ÀÎÇÑ ¿À·ù¸¦ ¹æÁöÇÏ±â À§ÇØ ±âÁ¸¿¡ ÀÐÀº CTSÀÇ mNxtCommitSCN    *
+ * Àç»ç¿ë Á¶°ÇÀÎ sysMinDskSCNº¸´Ù Å« °æ¿ì¿¡´Â ¹«Á¶°Ç ÀçÈ°¿ëÀ¸·Î      *
+ * ÆÇ´ÜÇÏ¿© ÆäÀÌÁö¿¡ ´ëÇÑ Á¢±ÙÀ» ÇÏÁö ¾Êµµ·Ï ÇÕ´Ï´Ù.                 *
+ * ÀÌ´Â ÆäÀÌÁö¿¡ ´ëÇÑ S Latch¸¦ ÀâÀº ÈÄ¿¡ ºñ±³ÇÏ¿©¾ß ÇÕ´Ï´Ù.         *
  *
- *  aStatistics      - [IN] í†µê³„ì •ë³´
+ *  aStatistics      - [IN] Åë°èÁ¤º¸
  *  aMtx             - [IN] Mini transaction,
- *  aPage            - [IN] TTSê°€ í¬í•¨ëœ pageì˜ pointer
+ *  aPage            - [IN] CTS°¡ Æ÷ÇÔµÈ pageÀÇ pointer
  *  aCallbackFunc    - [IN] callback func
  *  aContext         - [IN] context
- *  aCommitSCN       - [IN] undo page ìž¬í™œìš©ì„ í™•ì¸ í•  commit scn
- *  aCTSlotNum       - [IN] CTSì˜ slot number
- *  aCTS             - [IN/OUT] CTSë¥¼ ë°›ì•„ì„œ Chained CTSë¡œ ë°˜í™˜
+ *  aCommitSCN       - [IN] undo page ÀçÈ°¿ëÀ» È®ÀÎ ÇÒ commit scn
+ *  aCTSlotNum       - [IN] CTSÀÇ slot number
+ *  aCTS             - [IN/OUT] CTS¸¦ ¹Þ¾Æ¼­ Chained CTS·Î ¹ÝÈ¯
  *  aKeyList         - [OUT] Key List
- *  aKeyListSize     - [OUT] Key Listì˜ í¬ê¸°
- *  aIsReusedUndoRec - [OUT] Undo Pageì˜ ìž¬ì‚¬ìš© ì—¬ë¶€
+ *  aKeyListSize     - [OUT] Key ListÀÇ Å©±â
+ *  aIsReusedUndoRec - [OUT] Undo PageÀÇ Àç»ç¿ë ¿©ºÎ
  *********************************************************************/
 IDE_RC sdnIndexCTL::getChainedCTS( idvSQL           * aStatistics,
                                    sdrMtx           * aMtx,
@@ -1919,25 +1672,25 @@ IDE_RC sdnIndexCTL::getChainedCTS( idvSQL           * aStatistics,
     smSCN           sSysMinDskSCN = SM_SCN_INIT;
     smSCN           sChainedCTSCommitSCN = SM_SCN_INIT;
 
-    /* ë²„ê·¸ ìˆ˜ì •ì‹œ CTSì˜ mCommitSCNì´ ë¬´í•œëŒ€ì¸ ê²½ìš°ê°€ ì—†ë‹¤ê³ 
-     * íŒë‹¨í•˜ì˜€ë‹¤. ë§Œì•½ ê°€ì •ì´ í‹€ë ¸ìœ¼ë©´ ë‹¤ì‹œ ìˆ˜ì •í•´ì•¼ í•œë‹¤.*/
+    /* ¹ö±× ¼öÁ¤½Ã CTSÀÇ mCommitSCNÀÌ ¹«ÇÑ´ëÀÎ °æ¿ì°¡ ¾ø´Ù°í
+     * ÆÇ´ÜÇÏ¿´´Ù. ¸¸¾à °¡Á¤ÀÌ Æ²·ÈÀ¸¸é ´Ù½Ã ¼öÁ¤ÇØ¾ß ÇÑ´Ù.*/
     IDE_TEST_RAISE( SM_SCN_IS_INFINITE( *aCommitSCN ),
                     ERR_INFINITE_CTS_COMMIT_SCN );
 
     smLayerCallback::getSysMinDskViewSCN( &sSysMinDskSCN );
 
     /* BUG-38962
-     * sSysMinDskSCNì´ ì´ˆê¸°ê°’ì´ë©´, restart recovery ê³¼ì • ì¤‘ì„ ì˜ë¯¸í•œë‹¤. */
+     * sSysMinDskSCNÀÌ ÃÊ±â°ªÀÌ¸é, restart recovery °úÁ¤ ÁßÀ» ÀÇ¹ÌÇÑ´Ù. */
     if( SM_SCN_IS_LT( aCommitSCN, &sSysMinDskSCN ) ||
         SM_SCN_IS_INIT( sSysMinDskSCN ) )
     {
-        /* getCommitSCNë“±ì—ì„œ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
-         * hardkeystampingì„ í•˜ì§€ ì•Šê³  ë°”ë¡œ ë¹ ì ¸ë‚˜ê°„ë‹¤.*/
+        /* getCommitSCNµî¿¡¼­ »ç¿ëÇÏ´Â °æ¿ì
+         * hardkeystampingÀ» ÇÏÁö ¾Ê°í ¹Ù·Î ºüÁ®³ª°£´Ù.*/
         IDE_TEST_CONT( aTryHardKeyStamping == ID_FALSE, CONT_REUSE_UNDO_PAGE );
 
         IDE_ASSERT( aMtx != NULL );
 
-        /* ìž¬í™œìš©ìœ¼ë¡œ íŒë‹¨ ë˜ë©´ ë°”ë¡œ hard key stamping í•©ë‹ˆë‹¤.*/
+        /* ÀçÈ°¿ëÀ¸·Î ÆÇ´Ü µÇ¸é ¹Ù·Î hard key stamping ÇÕ´Ï´Ù.*/
         IDE_TEST( aCallbackFunc->mHardKeyStamping( aStatistics,
                                                    aMtx,
                                                    aPage,
@@ -1946,11 +1699,11 @@ IDE_RC sdnIndexCTL::getChainedCTS( idvSQL           * aStatistics,
                                                    &sIsSuccess )
                   != IDE_SUCCESS );
 
-        /* hard key stampingì´ ì„±ê³µí•  ê²½ìš° ìž¬í™œìš© ëœ ê²½ìš°ì´ë‹¤.*/
+        /* hard key stampingÀÌ ¼º°øÇÒ °æ¿ì ÀçÈ°¿ë µÈ °æ¿ìÀÌ´Ù.*/
 
-        /* BUG-44919 íŽ˜ì´ì§€ ëž˜ì¹˜ì˜ escalateê°€ ì‹¤íŒ¨í•  ê²½ìš°ì—ëŠ” hardkeystampingì´ ì‹¤íŒ¨í•©ë‹ˆë‹¤.
-         *           ì´ ê²½ìš°ì—ëŠ” undo pageê°€ ìž¬í™œìš© ë˜ì—ˆì„ ê°€ëŠ¥ì„±ì´ ìžˆìœ¼ë¯€ë¡œ
-         *           hardkeystampingì˜ ì„±ê³µ ì—¬ë¶€ì™€ ê´€ê³„ì—†ì´ ë¹ ì ¸ë‚˜ì˜¤ë„ë¡ í•©ë‹ˆë‹¤. */
+        /* BUG-44919 ÆäÀÌÁö ·¡Ä¡ÀÇ escalate°¡ ½ÇÆÐÇÒ °æ¿ì¿¡´Â hardkeystampingÀÌ ½ÇÆÐÇÕ´Ï´Ù.
+         *           ÀÌ °æ¿ì¿¡´Â undo page°¡ ÀçÈ°¿ë µÇ¾úÀ» °¡´É¼ºÀÌ ÀÖÀ¸¹Ç·Î
+         *           hardkeystampingÀÇ ¼º°ø ¿©ºÎ¿Í °ü°è¾øÀÌ ºüÁ®³ª¿Àµµ·Ï ÇÕ´Ï´Ù. */
     }
     else
     {
@@ -1966,8 +1719,8 @@ IDE_RC sdnIndexCTL::getChainedCTS( idvSQL           * aStatistics,
 
         sIsReusedUndoRec = ID_FALSE;
 
-        /* ì´í•˜ëŠ” undo pageê°€ ìž¬í™œìš© ë˜ì§€ ì•Šì€ ê²½ìš°ì´ë‹ˆ
-         * ë°˜ë“œì‹œ ì½ì„ ìˆ˜ ìžˆì–´ì•¼ í•œë‹¤.*/
+        /* ÀÌÇÏ´Â undo page°¡ ÀçÈ°¿ë µÇÁö ¾ÊÀº °æ¿ìÀÌ´Ï
+         * ¹Ýµå½Ã ÀÐÀ» ¼ö ÀÖ¾î¾ß ÇÑ´Ù.*/
         sPageType = sdpPhyPage::getPageType( (sdpPhyPageHdr*)sPagePtr );
 
         IDE_TEST_RAISE( sPageType != SDP_PAGE_UNDO, ERR_INVALID_PAGE_TYPE );
@@ -1990,15 +1743,15 @@ IDE_RC sdnIndexCTL::getChainedCTS( idvSQL           * aStatistics,
 
         sCTS = (sdnCTS*)(sUNDOREC_HDR + SDC_UNDOREC_HDR_SIZE);
 
-        /* BUG-34542 Undo Recordì˜ CTSëŠ” Alignì´ ë§žì§€ ì•ŠìŠµë‹ˆë‹¤.
-         * Commit SCNì„ ë¹„êµí•˜ê¸° ìœ„í•´ memcpyí•´ì™€ì•¼ í•©ë‹ˆë‹¤.*/
+        /* BUG-34542 Undo RecordÀÇ CTS´Â AlignÀÌ ¸ÂÁö ¾Ê½À´Ï´Ù.
+         * Commit SCNÀ» ºñ±³ÇÏ±â À§ÇØ memcpyÇØ¿Í¾ß ÇÕ´Ï´Ù.*/
         idlOS::memcpy( (UChar*)&sChainedCTSCommitSCN,
                        (UChar*)sCTS,
                        ID_SIZEOF( smSCN ) );
 
         IDU_FIT_POINT_RAISE( "BUG-45303@sdnIndexCTL::getCommitSCN", ERR_INVALID_CTS_COMMIT_SCN );
 
-        /* NxtCommitSCNì€ chainingëœ CTSì˜ Commit SCNì„ ë‚˜íƒ€ë‚¸ë‹¤. ê°™ì•„ì•¼í•œë‹¤. */
+        /* NxtCommitSCNÀº chainingµÈ CTSÀÇ Commit SCNÀ» ³ªÅ¸³½´Ù. °°¾Æ¾ßÇÑ´Ù. */
         IDE_TEST_RAISE( ! SM_SCN_IS_EQ( &(aCTS->mNxtCommitSCN), &(sChainedCTSCommitSCN) ),
                         ERR_INVALID_CTS_COMMIT_SCN );
 
@@ -2187,13 +1940,13 @@ IDE_RC sdnIndexCTL::getChainedCTS( idvSQL           * aStatistics,
 
     return IDE_FAILURE;
 }
-
+#endif
 
 
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::isMyTransaction               *
  * ------------------------------------------------------------------*
- * ìžì‹ ì˜ íŠ¸ëžœìž­ì…˜ì¸ì§€ë¥¼ ê²€ì‚¬í•œë‹¤.                                   *
+ * ÀÚ½ÅÀÇ Æ®·£Àè¼ÇÀÎÁö¸¦ °Ë»çÇÑ´Ù.                                   *
  *********************************************************************/
 idBool sdnIndexCTL::isMyTransaction( void          * aTrans,
                                      sdpPhyPageHdr * aPage,
@@ -2232,7 +1985,7 @@ idBool sdnIndexCTL::isMyTransaction( void          * aTrans,
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::isSameTransaction             *
  * ------------------------------------------------------------------*
- * ì£¼ì–´ì§„ 2ê°œì˜ CTSê°€ ê°™ì€ íŠ¸ëžœìž­ì…˜ì¸ì§€ë¥¼ ê²€ì‚¬í•œë‹¤.                  *
+ * ÁÖ¾îÁø 2°³ÀÇ CTS°¡ °°Àº Æ®·£Àè¼ÇÀÎÁö¸¦ °Ë»çÇÑ´Ù.                  *
  *********************************************************************/
 idBool sdnIndexCTL::isSameTransaction( sdnCTS * aCTS1,
                                        sdnCTS * aCTS2 )
@@ -2258,7 +2011,7 @@ idBool sdnIndexCTL::isSameTransaction( sdnCTS * aCTS1,
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::getTSSlotSID                  *
  * ------------------------------------------------------------------*
- * CTSlotSIDì„ ì–»ëŠ”ë‹¤.                                               *
+ * CTSlotSIDÀ» ¾ò´Â´Ù.                                               *
  *********************************************************************/
 sdSID sdnIndexCTL::getTSSlotSID( sdpPhyPageHdr * aPage,
                                  UChar           aSlotNum )
@@ -2274,7 +2027,7 @@ sdSID sdnIndexCTL::getTSSlotSID( sdpPhyPageHdr * aPage,
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::getRefKey                     *
  * ------------------------------------------------------------------*
- * CTS reference infomationì„ ë¦¬í„´í•œë‹¤.                              *
+ * CTS reference infomationÀ» ¸®ÅÏÇÑ´Ù.                              *
  *********************************************************************/
 void sdnIndexCTL::getRefKey( sdpPhyPageHdr * aPage,
                              UChar           aSlotNum,
@@ -2288,11 +2041,11 @@ void sdnIndexCTL::getRefKey( sdpPhyPageHdr * aPage,
     *aRefKeyCount = sCTS->mRefCnt;
     *aArrRefKey = sCTS->mRefKey;
 }
-
+#if 0
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::getRefKeyCount                *
  * ------------------------------------------------------------------*
- * CTS reference countë¥¼ ë¦¬í„´í•œë‹¤.                                   *
+ * CTS reference count¸¦ ¸®ÅÏÇÑ´Ù.                                   *
  *********************************************************************/
 UShort sdnIndexCTL::getRefKeyCount( sdpPhyPageHdr * aPage,
                                     UChar           aSlotNum )
@@ -2303,11 +2056,11 @@ UShort sdnIndexCTL::getRefKeyCount( sdpPhyPageHdr * aPage,
 
     return (sCTS->mRefCnt);
 }
-
+#endif
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::addRefKey                     *
  * ------------------------------------------------------------------*
- * CTS reference keyë¥¼ ë¦¬í„´í•œë‹¤.                                     *
+ * CTS reference key¸¦ ¸®ÅÏÇÑ´Ù.                                     *
  *********************************************************************/
 void sdnIndexCTL::addRefKey( sdpPhyPageHdr * aPage,
                              UChar           aSlotNum,
@@ -2333,8 +2086,8 @@ void sdnIndexCTL::addRefKey( sdpPhyPageHdr * aPage,
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::updateRefKey                  *
  * ------------------------------------------------------------------*
- * BUG-29506 TBTê°€ TBKë¡œ ì „í™˜ì‹œ offsetì„ CTSì— ë°˜ì˜í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.    *
- * CTS reference keyë¥¼ ë³€ê²½í•œë‹¤.                                     *
+ * BUG-29506 TBT°¡ TBK·Î ÀüÈ¯½Ã offsetÀ» CTS¿¡ ¹Ý¿µÇÏÁö ¾Ê½À´Ï´Ù.    *
+ * CTS reference key¸¦ º¯°æÇÑ´Ù.                                     *
  *********************************************************************/
 IDE_RC sdnIndexCTL::updateRefKey( sdrMtx        * aMtx,
                                   sdpPhyPageHdr * aPage,
@@ -2370,7 +2123,7 @@ IDE_RC sdnIndexCTL::updateRefKey( sdrMtx        * aMtx,
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::cleanRefInfo                  *
  * ------------------------------------------------------------------*
- * CTLì˜ reference ì •ë³´ë¥¼ resetí•œë‹¤.                                 *
+ * CTLÀÇ reference Á¤º¸¸¦ resetÇÑ´Ù.                                 *
  *********************************************************************/
 void sdnIndexCTL::cleanAllRefInfo( sdpPhyPageHdr * aPage )
 {
@@ -2391,11 +2144,11 @@ void sdnIndexCTL::cleanAllRefInfo( sdpPhyPageHdr * aPage )
         }
     }
 }
-
+#if 0
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::cleanRefInfo                  *
  * ------------------------------------------------------------------*
- * CTSì˜ reference ì •ë³´ë¥¼ resetí•œë‹¤.                                 *
+ * CTSÀÇ reference Á¤º¸¸¦ resetÇÑ´Ù.                                 *
  *********************************************************************/
 void sdnIndexCTL::cleanRefInfo( sdpPhyPageHdr * aPage,
                                 UChar           aCTSlotNum )
@@ -2414,12 +2167,12 @@ void sdnIndexCTL::cleanRefInfo( sdpPhyPageHdr * aPage,
         sCTS->mRefKey[i] = SDN_CTS_KEY_CACHE_NULL;
     }
 }
-
+#endif
 #if 0 // not used
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::getVictimTrans                *
  * ------------------------------------------------------------------*
- * Uncommitted CTSì¤‘ victimì„ ì„ ì •í•œë‹¤.                              *
+ * Uncommitted CTSÁß victimÀ» ¼±Á¤ÇÑ´Ù.                              *
  *********************************************************************/
 IDE_RC sdnIndexCTL::getVictimTrans( idvSQL        * aStatistics,
                                     sdpPhyPageHdr * aPage,
@@ -2479,11 +2232,11 @@ IDE_RC sdnIndexCTL::getVictimTrans( idvSQL        * aStatistics,
     return IDE_FAILURE;
 }
 #endif
-
+#if 0
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::isChainedCTS                  *
  * ------------------------------------------------------------------*
- * chainì„ ê°€ì§€ê³  ìžˆëŠ” CTSì¸ì§€ë¥¼ ê²€ì‚¬í•œë‹¤.                           *
+ * chainÀ» °¡Áö°í ÀÖ´Â CTSÀÎÁö¸¦ °Ë»çÇÑ´Ù.                           *
  *********************************************************************/
 idBool sdnIndexCTL::hasChainedCTS( sdpPhyPageHdr * aPage,
                                   UChar           aCTSlotNum )
@@ -2496,11 +2249,12 @@ idBool sdnIndexCTL::hasChainedCTS( sdpPhyPageHdr * aPage,
 
     return hasChainedCTS( sCTS );
 }
-
+#endif
+#if 0
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::isChainedCTS                  *
  * ------------------------------------------------------------------*
- * chainì„ ê°€ì§€ê³  ìžˆëŠ” CTSì¸ì§€ë¥¼ ê²€ì‚¬í•œë‹¤.                           *
+ * chainÀ» °¡Áö°í ÀÖ´Â CTSÀÎÁö¸¦ °Ë»çÇÑ´Ù.                           *
  *********************************************************************/
 idBool sdnIndexCTL::hasChainedCTS( sdnCTS * aCTS )
 {
@@ -2510,11 +2264,11 @@ idBool sdnIndexCTL::hasChainedCTS( sdnCTS * aCTS )
     }
     return ID_TRUE;
 }
-
+#endif
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::getCTLayerSize                *
  * ------------------------------------------------------------------*
- * CTLì˜ ì´ í¬ê¸°ë¥¼ ë¦¬í„´í•œë‹¤.                                         *
+ * CTLÀÇ ÃÑ Å©±â¸¦ ¸®ÅÏÇÑ´Ù.                                         *
  *********************************************************************/
 UShort sdnIndexCTL::getCTLayerSize( UChar * aPage )
 {
@@ -2526,23 +2280,23 @@ UShort sdnIndexCTL::getCTLayerSize( UChar * aPage )
            ID_SIZEOF(sdnCTLayerHdr);
 }
 
-
+#if 0
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::wait4Trans                    *
  * ------------------------------------------------------------------*
- * CTSë¥¼ í• ë‹¹í•œ íŠ¸ëžœìž­ì…˜ì´ ì™„ë£Œë˜ê¸°ë¥¼ íŠ¹ì •ì‹œê°„ë§Œí¼ë§Œ ëŒ€ê¸°í•œë‹¤.
+ * CTS¸¦ ÇÒ´çÇÑ Æ®·£Àè¼ÇÀÌ ¿Ï·áµÇ±â¸¦ Æ¯Á¤½Ã°£¸¸Å­¸¸ ´ë±âÇÑ´Ù.
  *
- * BUG-24140 Index/Data CTL í• ë‹¹ê³¼ì •ì—ì„œ TRANS_WAIT_TIME_FOR_CTS
- *           ë¥¼ ì´ˆê³¼í•˜ëŠ” ê²½ìš° Errorê°€ ë°œìƒí•´ì„œëŠ” ì•ˆë¨.
+ * BUG-24140 Index/Data CTL ÇÒ´ç°úÁ¤¿¡¼­ TRANS_WAIT_TIME_FOR_CTS
+ *           ¸¦ ÃÊ°úÇÏ´Â °æ¿ì Error°¡ ¹ß»ýÇØ¼­´Â ¾ÈµÊ.
  *
- * ëŒ€ê¸°ì‹œê°„ ì´ˆê³¼ë¡œ ì¸í•´ì„œ Error ê°€ ë°œìƒí•œ ê²½ìš° IDE_SUCCESSë¥¼ ë°˜í™˜í•œë‹¤.
- * ì¦‰, í•˜ë‚˜ì˜ íŠ¸ëžœìž­ì…˜ì„ ì„ íƒí•˜ì§€ë§Œ, ê·¸ íŠ¸ëžœìž­ì…˜ì´ ì™„ë£Œë ë•Œê¹Œì§€ ëŒ€ê¸°í•˜ì§€ ì•Šê³ ,
- * í”„ë¡œí¼í‹°ë¡œ ì£¼ì–´ì§„ ì‹œê°„ë‚´ì— ì™„ë£Œë˜ì§€ ì•Šì•˜ë‹¤ë©´ AllocCTS ê³¼ì •ìœ¼ë¡œ ì²˜ìŒë¶€í„° ë‹¤ì‹œ
- * ìˆ˜í–‰í•œë‹¤.
+ * ´ë±â½Ã°£ ÃÊ°ú·Î ÀÎÇØ¼­ Error °¡ ¹ß»ýÇÑ °æ¿ì IDE_SUCCESS¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ * Áï, ÇÏ³ªÀÇ Æ®·£Àè¼ÇÀ» ¼±ÅÃÇÏÁö¸¸, ±× Æ®·£Àè¼ÇÀÌ ¿Ï·áµÉ¶§±îÁö ´ë±âÇÏÁö ¾Ê°í,
+ * ÇÁ·ÎÆÛÆ¼·Î ÁÖ¾îÁø ½Ã°£³»¿¡ ¿Ï·áµÇÁö ¾Ê¾Ò´Ù¸é AllocCTS °úÁ¤À¸·Î Ã³À½ºÎÅÍ ´Ù½Ã
+ * ¼öÇàÇÑ´Ù.
  *
- * aStatistics  - [IN] í†µê³„ì •ë³´
- * aTrans       - [IN] íŠ¸ëžœìž­ì…˜ í¬ì¸í„°
- * aWait4TID    - [IN] ëŒ€ê¸°í•´ì•¼í•  íŠ¸ëžœìž­ì…˜ ID
+ * aStatistics  - [IN] Åë°èÁ¤º¸
+ * aTrans       - [IN] Æ®·£Àè¼Ç Æ÷ÀÎÅÍ
+ * aWait4TID    - [IN] ´ë±âÇØ¾ßÇÒ Æ®·£Àè¼Ç ID
  *
  ***********************************************************************/
 IDE_RC sdnIndexCTL::wait4Trans( void   * aTrans,
@@ -2566,15 +2320,16 @@ IDE_RC sdnIndexCTL::wait4Trans( void   * aTrans,
 
     return IDE_FAILURE;
 }
+#endif
 /*********************************************************************
  * FUNCTION DESCRIPTION : sdnIndexCTL::dump                          *
  * ------------------------------------------------------------------*
- * TASK-4007 [SM] PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€ - dumpddfì •ìƒí™”               *
- * IndexPageì—ì„œ CTSë¥¼ Dumpí•œë‹¤.                                     *
+ * TASK-4007 [SM] PBT¸¦ À§ÇÑ ±â´É Ãß°¡ - dumpddfÁ¤»óÈ­               *
+ * IndexPage¿¡¼­ CTS¸¦ DumpÇÑ´Ù.                                     *
  *                                                                   *
- * BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ë‚´ì—ì„œ      *
- * local Arrayì˜ ptrë¥¼ ë°˜í™˜í•˜ê³  ìžˆìŠµë‹ˆë‹¤.                            *
- * Local ArrayëŒ€ì‹  OutBufë¥¼ ë°›ì•„ ë¦¬í„´í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤.              *
+ * BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ³»¿¡¼­      *
+ * local ArrayÀÇ ptr¸¦ ¹ÝÈ¯ÇÏ°í ÀÖ½À´Ï´Ù.                            *
+ * Local Array´ë½Å OutBuf¸¦ ¹Þ¾Æ ¸®ÅÏÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù.              *
  *********************************************************************/
 IDE_RC sdnIndexCTL::dump( UChar *aPage  ,
                           SChar *aOutBuf ,
@@ -2606,30 +2361,22 @@ IDE_RC sdnIndexCTL::dump( UChar *aPage  ,
                              aOutSize,
                              "[%"ID_UINT32_FMT"] CTS ----------------\n"
                              "mCommitSCN    : 0x%"ID_xINT64_FMT"\n"
-                             "mNxtCommitSCN : 0x%"ID_xINT64_FMT"\n"
                              "mTSSlotPID    : %"ID_UINT32_FMT"\n"
                              "mTSSlotNum    : %"ID_UINT32_FMT"\n"
                              "mState        : %"ID_UINT32_FMT"\n"
-                             "mUndoPID      : %"ID_UINT32_FMT"\n"
-                             "mUndoSlotNum  : %"ID_UINT32_FMT"\n"
                              "mRefCnt       : %"ID_UINT32_FMT"\n"
                              "mRefKey[ 0 ]  : %"ID_UINT32_FMT"\n"
                              "mRefKey[ 1 ]  : %"ID_UINT32_FMT"\n"
-                             "mRefKey[ 2 ]  : %"ID_UINT32_FMT"\n"
-                             "mRefKey[ 3 ]  : %"ID_UINT32_FMT"\n",
+                             "mRefKey[ 2 ]  : %"ID_UINT32_FMT"\n",
                              i,
                              SM_SCN_TO_LONG( sCTS->mCommitSCN ),
-                             SM_SCN_TO_LONG( sCTS->mNxtCommitSCN ),
                              sCTS->mTSSlotPID,
                              sCTS->mTSSlotNum,
                              sCTS->mState,
-                             sCTS->mUndoPID,
-                             sCTS->mUndoSlotNum,
                              sCTS->mRefCnt,
                              sCTS->mRefKey[ 0 ],
                              sCTS->mRefKey[ 1 ],
-                             sCTS->mRefKey[ 2 ],
-                             sCTS->mRefKey[ 3 ] );
+                             sCTS->mRefKey[ 2 ] );
     }
 
     idlVA::appendFormat( aOutBuf,

@@ -36,6 +36,7 @@ extern IDE_RC dkivRegisterDblinkLinkerDataSessionInfo( void );
 extern IDE_RC dkivRegisterDblinkGlobalTransactionInfo( void );
 extern IDE_RC dkivRegisterDblinkRemoteTransactionInfo( void );
 extern IDE_RC dkivRegisterDblinkNotifierTransactionInfo( void );
+extern IDE_RC dkivRegisterDblinkShardNotifierTransactionInfo( void );
 extern IDE_RC dkivRegisterDblinkRemoteStatementInfo( void );
 
 #endif /* _O_DKIV_H_ */

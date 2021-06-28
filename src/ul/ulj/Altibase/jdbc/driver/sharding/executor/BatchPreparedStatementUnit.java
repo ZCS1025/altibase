@@ -18,7 +18,7 @@
 package Altibase.jdbc.driver.sharding.executor;
 
 import Altibase.jdbc.driver.datatype.Column;
-import Altibase.jdbc.driver.sharding.routing.SQLExecutionUnit;
+import Altibase.jdbc.driver.sharding.core.DataNode;
 
 import java.sql.PreparedStatement;
 import java.util.LinkedHashMap;
@@ -27,24 +27,24 @@ import java.util.Map;
 
 public class BatchPreparedStatementUnit implements BaseStatementUnit
 {
-    private final SQLExecutionUnit      mSqlExecutionUnit;
+    private final DataNode              mNode;
     private final PreparedStatement     mStatement;
-    private List<Column>                mParameters;
+    private       List<Column>          mParameters;
     private final Map<Integer, Integer> mAddBatchCallTimesMap;
-    private int                         mActualCallAddBatchTimes;
+    private       int                   mActualCallAddBatchTimes;
 
-    public BatchPreparedStatementUnit(SQLExecutionUnit aSqlExecutionUnit, PreparedStatement aStatement,
+    public BatchPreparedStatementUnit(DataNode aNode, PreparedStatement aStatement,
                                       List<Column> aParameters)
     {
-        this.mSqlExecutionUnit = aSqlExecutionUnit;
+        this.mNode = aNode;
         this.mStatement = aStatement;
         this.mParameters = aParameters;
         this.mAddBatchCallTimesMap =  new LinkedHashMap<Integer, Integer>();
     }
 
-    public SQLExecutionUnit getSqlExecutionUnit()
+    public DataNode getNode()
     {
-        return mSqlExecutionUnit;
+        return mNode;
     }
 
     public PreparedStatement getStatement()
@@ -66,7 +66,7 @@ public class BatchPreparedStatementUnit implements BaseStatementUnit
     public String toString()
     {
         final StringBuilder sSb = new StringBuilder("BatchPreparedStatementUnit{");
-        sSb.append("mSqlExecutionUnit=").append(mSqlExecutionUnit);
+        sSb.append("mNode=").append(mNode);
         sSb.append(", mStatement=").append(mStatement);
         sSb.append(", mParameters=").append(mParameters);
         sSb.append(", mActualCallAddBatchTimes=").append(mActualCallAddBatchTimes);

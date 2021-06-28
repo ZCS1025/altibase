@@ -20,6 +20,7 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,9 +32,10 @@ import javax.sql.DataSource;
 
 import Altibase.jdbc.driver.logging.LoggingProxy;
 import Altibase.jdbc.driver.logging.TraceFlag;
+import Altibase.jdbc.driver.sharding.core.AltibaseShardingConnection;
 import Altibase.jdbc.driver.util.AltibaseProperties;
 
-public class AltibaseDataSource implements DataSource, Serializable, Referenceable
+public class AltibaseDataSource extends WrapperAdapter implements DataSource, Serializable, Referenceable
 {
     private static final long serialVersionUID = 2931597340257536711L;
     private transient Logger mLogger;
@@ -66,6 +68,14 @@ public class AltibaseDataSource implements DataSource, Serializable, Referenceab
         logConnectionProperties();
 
         return new AltibaseConnection(mProperties, this);
+    }
+
+    // BUG-46790 node connectionÀ» »ı¼ºÇÒ¶§ È£ÃâµÈ´Ù.
+    public Connection getConnection(AltibaseShardingConnection aMetaConn) throws SQLException
+    {
+        logConnectionProperties();
+
+        return new AltibaseConnection(mProperties, this, aMetaConn);
     }
 
     private void logConnectionProperties()
@@ -108,7 +118,7 @@ public class AltibaseDataSource implements DataSource, Serializable, Referenceab
     {
         return mProperties.getLoginTimeout();
     }
-    
+
     public PrintWriter getLogWriter()
     {
         return mLogWriter;
@@ -219,10 +229,10 @@ public class AltibaseDataSource implements DataSource, Serializable, Referenceab
     // #endregion
 
     /**
-     * aDSNì— í•´ë‹¹í•˜ëŠ” AltibaseDataSourceë¥¼ ì–»ëŠ”ë‹¤.
+     * aDSN¿¡ ÇØ´çÇÏ´Â AltibaseDataSource¸¦ ¾ò´Â´Ù.
      * 
      * @param aDSN Data Source Name (case insensitive)
-     * @return aDSNì— í•´ë‹¹í•˜ëŠ” AltibaseDataSource ê°ì²´. ì—†ìœ¼ë©´ null.
+     * @return aDSN¿¡ ÇØ´çÇÏ´Â AltibaseDataSource °´Ã¼. ¾øÀ¸¸é null.
      */
     public static DataSource getDataSource(String aDSN)
     {
@@ -235,5 +245,16 @@ public class AltibaseDataSource implements DataSource, Serializable, Referenceab
         Reference ref = new Reference(getClass().getName(), AltibaseDataSourceFactory.class.getName(), null);
         ref.add(new StringRefAddr("properties", mProperties.toString()));
         return ref;
+    }
+
+    @Override
+    public Logger getParentLogger()
+    {
+        if (TraceFlag.TRACE_COMPILE && TraceFlag.TRACE_ENABLED)
+        {
+            return Logger.getLogger(LoggingProxy.JDBC_LOGGER_DEFAULT);
+        }
+
+        return null;
     }
 }

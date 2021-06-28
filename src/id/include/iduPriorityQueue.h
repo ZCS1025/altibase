@@ -22,7 +22,7 @@
 #include <iduMemMgr.h>
 
 /*-----------------------------------------------------------------
- TASK-2457 heap sortë¥¼ êµ¬í˜„í•©ë‹ˆë‹¤.
+ TASK-2457 heap sort¸¦ ±¸ÇöÇÕ´Ï´Ù.
 
  -----------------------------------------------------------------*/
 
@@ -45,12 +45,12 @@ public:
     IDE_RC  destroy(){ return mHeap.destroy();};
 
 
-    //íì— ìƒˆë¡œìš´ ì›ì†Œë¥¼ ë„£ëŠ”ë‹¤.
+    //Å¥¿¡ »õ·Î¿î ¿ø¼Ò¸¦ ³Ö´Â´Ù.
     void    enqueue (void *aData,idBool *aOverflow) {mHeap.insert(aData,aOverflow);};
-    //í˜„ì¬ íì—ì„œ ê°€ì¥ í° ì›ì†Œë¥¼ ì œê±°í•œë‹¤.
+    //ÇöÀç Å¥¿¡¼­ °¡Àå Å« ¿ø¼Ò¸¦ Á¦°ÅÇÑ´Ù.
     void    dequeue (void *aData,idBool *aUnderflow){mHeap.remove(aData,aUnderflow);};
 
-    //í˜„ì¬ íì˜ ì›ì†Œë¥¼ ëª¨ë‘ ì‚­ì œí•œë‹¤.
+    //ÇöÀç Å¥ÀÇ ¿ø¼Ò¸¦ ¸ğµÎ »èÁ¦ÇÑ´Ù.
     void    empty(){ mHeap.empty();};
 
     UInt    getDataMaxCnt() { return mHeap.getDataMaxCnt();};

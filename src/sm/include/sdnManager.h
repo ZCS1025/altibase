@@ -33,7 +33,8 @@ public:
                            smSCN               * aViewSCN,
                            smSCN               * aInfiniteSCN,
                            scSpaceID             aSpaceID,
-                           sdRID                 aRowRID );
+                           sdRID                 aRowRID,
+                           idBool                aForbiddenToRetry );
 
     static IDE_RC makeFetchColumnList( smcTableHeader      * aTableHeader, 
                                        smiFetchColumnList ** aFetchColumnList,

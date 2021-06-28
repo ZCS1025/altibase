@@ -19,7 +19,7 @@
  * $Id$
  *
  * Description :
- *     Cost ê³„ì‚°ì‹
+ *     Cost °è»ê½Ä
  *
  **********************************************************************/
 
@@ -30,9 +30,9 @@
 #include <qcgPlan.h>
 #include <smiTableSpace.h>
 
-// TASK-6699 TPC-H ì„±ëŠ¥ ê°œì„ 
-// íŒ¨ë„í‹°ê°’ì€ TPC-H ìˆ˜í–‰ì‹œê°„ì— ì í•©í•˜ê²Œ ì„¤ì •ëœ ê°’ì´ë‹¤.
-#define QMO_COST_NL_JOIN_PENALTY (6.0)
+// TASK-6699 TPC-H ¼º´É °³¼±
+// ÆÐ³ÎÆ¼°ªÀº TPC-H ¼öÇà½Ã°£¿¡ ÀûÇÕÇÏ°Ô ¼³Á¤µÈ °ªÀÌ´Ù.
+//#define QMO_COST_NL_JOIN_PENALTY (6.0)
 #define QMO_COST_HASH_JOIN_PENALTY (3.0)
 
 extern mtfModule mtfNotLike;
@@ -80,7 +80,7 @@ SDouble qmoCost::getTableRIDScanCost( qmoStatistics       * aTableStat,
 
     *aMemCost  = aTableStat->readRowTime;
 
-    // ë²„í¼ hit ìƒí™©ì„ ê°€ì •í•˜ê³  ë””ìŠ¤í¬ ë¹„ìš©ì€ 0 ìœ¼ë¡œ ì²˜ë¦¬í•©ë‹ˆë‹¤.
+    // ¹öÆÛ hit »óÈ²À» °¡Á¤ÇÏ°í µð½ºÅ© ºñ¿ëÀº 0 À¸·Î Ã³¸®ÇÕ´Ï´Ù.
     *aDiskCost = 0;
 
     sCost       = *aMemCost + *aDiskCost;
@@ -104,7 +104,7 @@ SDouble qmoCost::getIndexScanCost( qcStatement         * aStatement,
 /******************************************************************************
  *
  * Description : index scan cost
- *               btree, rtree scan ì˜ ì½”ìŠ¤íŠ¸ë¥¼ êµ¬í•œë‹¤.
+ *               btree, rtree scan ÀÇ ÄÚ½ºÆ®¸¦ ±¸ÇÑ´Ù.
  *****************************************************************************/
 
     SDouble     sCost;
@@ -116,14 +116,14 @@ SDouble qmoCost::getIndexScanCost( qcStatement         * aStatement,
     idBool      sWithTableScan = ID_FALSE;
 
     //--------------------------------------
-    // table ìŠ¤ìº”ì„ í•´ì•¼í•˜ëŠ”ì§€ íŒë‹¨
+    // table ½ºÄµÀ» ÇØ¾ßÇÏ´ÂÁö ÆÇ´Ü
     //--------------------------------------
 
     if ( ( aColumns->column.flag & SMI_COLUMN_STORAGE_MASK )
          == SMI_COLUMN_STORAGE_DISK )
     {
         // BUG-39854
-        // predicate ì—†ì„ë•ŒëŠ” table scan ì„ í•˜ê²Œ ëœë‹¤.
+        // predicate ¾øÀ»¶§´Â table scan À» ÇÏ°Ô µÈ´Ù.
         if ( aJoinPred == NULL )
         {
             sWithTableScan = ID_TRUE;
@@ -144,7 +144,7 @@ SDouble qmoCost::getIndexScanCost( qcStatement         * aStatement,
                     }
                 }
 
-                // key ì»¬ëŸ¼ì™€ ë™ì¼í•œ ì»¬ëŸ¼ì´ ì—†ëŠ” ê²½ìš° ì§ˆì˜ë¬¸ì— ì‚¬ìš©ë˜ëŠ” ì»¬ëŸ¼ì¸ì§€ í™•ì¸í•œë‹¤.
+                // key ÄÃ·³¿Í µ¿ÀÏÇÑ ÄÃ·³ÀÌ ¾ø´Â °æ¿ì ÁúÀÇ¹®¿¡ »ç¿ëµÇ´Â ÄÃ·³ÀÎÁö È®ÀÎÇÑ´Ù.
                 if ( j == aIndexStat->index->keyColCount )
                 {
                     if ( (sTableColumn->flag & MTC_COLUMN_USE_COLUMN_MASK) ==
@@ -160,7 +160,7 @@ SDouble qmoCost::getIndexScanCost( qcStatement         * aStatement,
     else
     {
         // BUG-38152
-        // predicate ì—†ì„ë•ŒëŠ” table scan ì„ í•˜ê²Œ ëœë‹¤.
+        // predicate ¾øÀ»¶§´Â table scan À» ÇÏ°Ô µÈ´Ù.
         if ( aJoinPred == NULL )
         {
             sWithTableScan = ID_TRUE;
@@ -168,8 +168,8 @@ SDouble qmoCost::getIndexScanCost( qcStatement         * aStatement,
         else
         {
             // BUG-36514
-            // mem index ì¼ë•ŒëŠ” table scan cost ê°€ ì¶”ê°€ë˜ì§€ ì•ŠëŠ”ë‹¤.
-            // í¬ì¸í„°ë¥¼ ì´ìš©í•˜ì—¬ ë°”ë¡œ record ì— ì ‘ê·¼ì´ ê°€ëŠ¥í•˜ë‹¤.
+            // mem index ÀÏ¶§´Â table scan cost °¡ Ãß°¡µÇÁö ¾Ê´Â´Ù.
+            // Æ÷ÀÎÅÍ¸¦ ÀÌ¿ëÇÏ¿© ¹Ù·Î record ¿¡ Á¢±ÙÀÌ °¡´ÉÇÏ´Ù.
             sWithTableScan = ID_FALSE;
         }
     }
@@ -244,8 +244,8 @@ SDouble qmoCost::getIndexBtreeScanCost( qmoSystemStatistics * aSystemStat,
 /******************************************************************************
  *
  * Description : getIndexBtreeScanCost
- *               sLeafPageCnt ëŠ” í†µê³„ì •ë³´ë¡œ ì•Œìˆ˜ ì—†ìœ¼ë¯€ë¡œ ë‹¤ìŒê³¼ ê°™ì´ ì¶”ì •í•˜ì—¬ ì‚¬ìš©í•œë‹¤.
- *               ì „ì²´ ë ˆì½”ë“œ ê°¯ìˆ˜ / avgSlotCount
+ *               sLeafPageCnt ´Â Åë°èÁ¤º¸·Î ¾Ë¼ö ¾øÀ¸¹Ç·Î ´ÙÀ½°ú °°ÀÌ ÃßÁ¤ÇÏ¿© »ç¿ëÇÑ´Ù.
+ *               ÀüÃ¼ ·¹ÄÚµå °¹¼ö / avgSlotCount
  *****************************************************************************/
 
     SDouble     sCost;
@@ -284,7 +284,7 @@ SDouble qmoCost::getIndexWithTableCost( qmoSystemStatistics * aSystemStat,
 /******************************************************************************
  *
  * Description : getIndexWithTableCost
- *               indexì— ì—†ëŠ” ì»¬ëŸ¼ë“¤ì„ ì°¸ì¡°í• ë•Œ ë°œìƒí•˜ëŠ” ë¹„ìš©ì„ ê³„ì‚°í•œë‹¤.
+ *               index¿¡ ¾ø´Â ÄÃ·³µéÀ» ÂüÁ¶ÇÒ¶§ ¹ß»ýÇÏ´Â ºñ¿ëÀ» °è»êÇÑ´Ù.
  *****************************************************************************/
 
     SDouble sCost;
@@ -370,8 +370,8 @@ SDouble qmoCost::getFullStoreJoinCost( qmgGraph            * aLeft,
     sLeftCostInfo  = &(aLeft->costInfo);
     sRightCostInfo = &(aRight->costInfo);
 
-    // BUGBUG sRightTempScanCost ì˜ ê°’ì„ ë³´ì •í•´ì•¼ í•œë‹¤.
-    // ë©”ëª¨ë¦¬ ë””ìŠ¤í¬ í…œí”„í…Œì´ë¸”ì¼ë•Œë¥¼ ê³ ë ¤í•´ì•¼í•¨
+    // BUGBUG sRightTempScanCost ÀÇ °ªÀ» º¸Á¤ÇØ¾ß ÇÑ´Ù.
+    // ¸Þ¸ð¸® µð½ºÅ© ÅÛÇÁÅ×ÀÌºíÀÏ¶§¸¦ °í·ÁÇØ¾ßÇÔ
     if( aRight->type == QMG_SELECTION ||
         aRight->type == QMG_SHARD_SELECT || // PROJ-2638
         aRight->type == QMG_PARTITION )
@@ -381,7 +381,7 @@ SDouble qmoCost::getFullStoreJoinCost( qmgGraph            * aLeft,
     }
     else
     {
-        // Join ê·¸ëž˜í”„ê°€ ì˜¤ëŠ” ê²½ìš° ë ˆì½”ë“œì˜ ì½ê¸°ì‹œê°„ì„ ì•Œìˆ˜ ì—†ì–´ì„œ 1ë¡œ ê°€ì •í•œë‹¤.
+        // Join ±×·¡ÇÁ°¡ ¿À´Â °æ¿ì ·¹ÄÚµåÀÇ ÀÐ±â½Ã°£À» ¾Ë¼ö ¾ø¾î¼­ 1·Î °¡Á¤ÇÑ´Ù.
         sRightTempScanCost = sRightCostInfo->outputRecordCnt;
     }
 
@@ -440,24 +440,25 @@ SDouble qmoCost::getIndexNestedJoinCost( qmgGraph            * aLeft,
 
     sLeftCostInfo  = &(aLeft->costInfo);
 
-    // TASK-6699 TPC-H ì„±ëŠ¥ ê°œì„ 
+    // TASK-6699 TPC-H ¼º´É °³¼±
+    /* BUG-48135 NL Join Penalty °ªÀ» Á¶ÀýÇÒ¼ö ÀÖ´Â property Ãß°¡ */
     *aMemCost =  sLeftCostInfo->totalAccessCost +
-               ( sLeftCostInfo->outputRecordCnt * (aRightMemCost + QMO_COST_NL_JOIN_PENALTY) ) +
+               ( sLeftCostInfo->outputRecordCnt * (aRightMemCost + aSystemStat->mIndexNlJoinPenalty) ) +
                  aFilterCost;
 
     // BUG-37125 tpch plan optimization
-    // Disk index ì˜ ê²½ìš° ì¸ë±ìŠ¤ì˜ page ê°¯ìˆ˜ê°€ buffer ì‚¬ì´ì¦ˆë³´ë‹¤ í° ê²½ìš°ê°€ ìžˆë‹¤.
+    // Disk index ÀÇ °æ¿ì ÀÎµ¦½ºÀÇ page °¹¼ö°¡ buffer »çÀÌÁîº¸´Ù Å« °æ¿ì°¡ ÀÖ´Ù.
     if( aIndexStat->pageCnt > 0 )
     {
-        // ì¤‘ë³µì„ ê³ ë ¤í•˜ì§€ ì•Šì€ read page ê°¯ìˆ˜
+        // Áßº¹À» °í·ÁÇÏÁö ¾ÊÀº read page °¹¼ö
         sTotalReadPageCnt = sLeftCostInfo->outputRecordCnt *
                                 ( aRightDiskCost / aSystemStat->singleIoScanTime );
 
-        // ì¤‘ë³µì„ ê³ ë ¤í•œ read page ê°¯ìˆ˜
+        // Áßº¹À» °í·ÁÇÑ read page °¹¼ö
         sMaxReadPageCnt = IDL_MIN( sTotalReadPageCnt,
                                    aTableStat->pageCnt + aIndexStat->pageCnt );
 
-        // ë²„í¼ ì‚¬ì´ì¦ˆë³´ë‹¤ í° ê²½ìš° ë²„í¼ ë¦¬í”Œë ˆì´ìŠ¤ê°€ ì¼ì–´ë‚œë‹¤.
+        // ¹öÆÛ »çÀÌÁîº¸´Ù Å« °æ¿ì ¹öÆÛ ¸®ÇÃ·¹ÀÌ½º°¡ ÀÏ¾î³­´Ù.
         if( smiGetBufferPoolSize() > sMaxReadPageCnt )
         {
             *aDiskCost = sLeftCostInfo->totalDiskCost +
@@ -489,10 +490,10 @@ SDouble qmoCost::getFullNestedJoin4SemiCost( qmgGraph    * aLeft,
 /******************************************************************************
  *
  * Description : left scan cost +
- *               left output * ( semi ë¹„ìš© * ì„ íƒë„ +
-                                 full scan ë¹„ìš© * (1 - ì„ íƒë„) )
- *               semi ë¹„ìš©      = right scan cost / 2
- *               full scan ë¹„ìš© = right scan cost
+ *               left output * ( semi ºñ¿ë * ¼±ÅÃµµ +
+                                 full scan ºñ¿ë * (1 - ¼±ÅÃµµ) )
+ *               semi ºñ¿ë      = right scan cost / 2
+ *               full scan ºñ¿ë = right scan cost
  *****************************************************************************/
 
     SDouble        sCost;
@@ -529,7 +530,7 @@ SDouble qmoCost::getIndexNestedJoin4SemiCost( qmgGraph            * aLeft,
 /******************************************************************************
  *
  * Description : left scan cost + ( left output * index level )
-                 semi,anti ì¡°ì¸ì˜ ê²½ìš° 1ê°œì˜ key ê°’ì— ëŒ€í•´ì„œ index ë¥¼ í•œë²ˆë§Œ ì‚¬ìš©í•œë‹¤.
+                 semi,anti Á¶ÀÎÀÇ °æ¿ì 1°³ÀÇ key °ª¿¡ ´ëÇØ¼­ index ¸¦ ÇÑ¹ø¸¸ »ç¿ëÇÑ´Ù.
  *****************************************************************************/
 
     SDouble          sCost;
@@ -539,23 +540,24 @@ SDouble qmoCost::getIndexNestedJoin4SemiCost( qmgGraph            * aLeft,
 
     sLeftCostInfo  = &(aLeft->costInfo);
 
-    // TASK-6699 TPC-H ì„±ëŠ¥ ê°œì„ 
+    // TASK-6699 TPC-H ¼º´É °³¼±
+    /* BUG-48135 NL Join Penalty °ªÀ» Á¶ÀýÇÒ¼ö ÀÖ´Â property Ãß°¡ */
     *aMemCost = sLeftCostInfo->totalAccessCost +
                 ( sLeftCostInfo->outputRecordCnt * 0.5 *
                     ( aIndexStat->indexLevel *
                       aTableStat->readRowTime +
-                      QMO_COST_NL_JOIN_PENALTY ) ) +
+                      aSystemStat->mIndexNlJoinPenalty ) ) +
                 aFilterCost;
 
     if( aIndexStat->pageCnt > 0 )
     {
-        // tpch Q21 semi index nl join cost ë¥¼ ë‚®ì¶”ì–´ì•¼ í•©ë‹ˆë‹¤.
+        // tpch Q21 semi index nl join cost ¸¦ ³·Ãß¾î¾ß ÇÕ´Ï´Ù.
         sTotalReadPageCnt = sLeftCostInfo->outputRecordCnt * 0.5 *
                             aIndexStat->indexLevel;
 
         sMaxReadPageCnt = IDL_MIN( sTotalReadPageCnt, aIndexStat->pageCnt );
 
-        // ë²„í¼ ì‚¬ì´ì¦ˆë³´ë‹¤ í° ê²½ìš° ë²„í¼ ë¦¬í”Œë ˆì´ìŠ¤ê°€ ì¼ì–´ë‚œë‹¤.
+        // ¹öÆÛ »çÀÌÁîº¸´Ù Å« °æ¿ì ¹öÆÛ ¸®ÇÃ·¹ÀÌ½º°¡ ÀÏ¾î³­´Ù.
         if( smiGetBufferPoolSize() > sMaxReadPageCnt )
         {
             *aDiskCost = sLeftCostInfo->totalDiskCost +
@@ -587,10 +589,10 @@ SDouble qmoCost::getFullNestedJoin4AntiCost( qmgGraph    * aLeft,
 /******************************************************************************
  *
  * Description : left scan cost +
- *               left output * ( anti ë¹„ìš© * (1 - ì„ íƒë„) +
-                                 full scan ë¹„ìš© * ì„ íƒë„ )
- *               anti ë¹„ìš©       = right scan cost / 2
- *               full scan ë¹„ìš©  = right scan cost
+ *               left output * ( anti ºñ¿ë * (1 - ¼±ÅÃµµ) +
+                                 full scan ºñ¿ë * ¼±ÅÃµµ )
+ *               anti ºñ¿ë       = right scan cost / 2
+ *               full scan ºñ¿ë  = right scan cost
  *****************************************************************************/
 
     SDouble        sCost;
@@ -656,7 +658,7 @@ SDouble qmoCost::getInverseIndexNestedJoinCost( qmgGraph            * aLeft,
  * Description : PROJ-2385 Inverse Index NL for Semi Join
  *
  *               left scan cost + left hashing cost + ( left output * right index level )
- *               Semi ì¡°ì¸ì˜ ê²½ìš° 1ê°œì˜ key ê°’ì— ëŒ€í•´ì„œ index ë¥¼ í•œë²ˆë§Œ ì‚¬ìš©í•œë‹¤.
+ *               Semi Á¶ÀÎÀÇ °æ¿ì 1°³ÀÇ key °ª¿¡ ´ëÇØ¼­ index ¸¦ ÇÑ¹ø¸¸ »ç¿ëÇÑ´Ù.
  *****************************************************************************/
 
     SDouble          sCost;
@@ -668,7 +670,7 @@ SDouble qmoCost::getInverseIndexNestedJoinCost( qmgGraph            * aLeft,
 
     sLeftCostInfo = &(aLeft->costInfo);
 
-    // LEFTëŠ” Distinct Hashing ëœë‹¤
+    // LEFT´Â Distinct Hashing µÈ´Ù
     if ( aUseLeftDiskTemp == ID_FALSE )
     {
         sLeftMemTempCost = getMemHashTempCost( aSystemStat,
@@ -689,13 +691,14 @@ SDouble qmoCost::getInverseIndexNestedJoinCost( qmgGraph            * aLeft,
                                                  sLeftCostInfo->recordSize );
     }
 
-    // TASK-6699 TPC-H ì„±ëŠ¥ ê°œì„ 
+    // TASK-6699 TPC-H ¼º´É °³¼±
+    /* BUG-48135 NL Join Penalty °ªÀ» Á¶ÀýÇÒ¼ö ÀÖ´Â property Ãß°¡ */
     *aMemCost = sLeftCostInfo->totalAccessCost +
                 sLeftMemTempCost +
                 ( sLeftCostInfo->outputRecordCnt *
                     ( aIndexStat->indexLevel *
                       aTableStat->readRowTime +
-                      QMO_COST_NL_JOIN_PENALTY ) ) +
+                      aSystemStat->mIndexNlJoinPenalty ) ) +
                 aFilterCost;
 
     if( aIndexStat->pageCnt > 0 )
@@ -705,7 +708,7 @@ SDouble qmoCost::getInverseIndexNestedJoinCost( qmgGraph            * aLeft,
 
         sMaxReadPageCnt = IDL_MIN( sTotalReadPageCnt, aIndexStat->pageCnt );
 
-        // ë²„í¼ ì‚¬ì´ì¦ˆë³´ë‹¤ í° ê²½ìš° ë²„í¼ ë¦¬í”Œë ˆì´ìŠ¤ê°€ ì¼ì–´ë‚œë‹¤.
+        // ¹öÆÛ »çÀÌÁîº¸´Ù Å« °æ¿ì ¹öÆÛ ¸®ÇÃ·¹ÀÌ½º°¡ ÀÏ¾î³­´Ù.
         if( smiGetBufferPoolSize() > sMaxReadPageCnt )
         {
             *aDiskCost = sLeftCostInfo->totalDiskCost +
@@ -785,8 +788,8 @@ SDouble qmoCost::getOnePassHashJoinCost( qmgGraph            * aLeft,
     sLeftCostInfo  = &(aLeft->costInfo);
     sRightCostInfo = &(aRight->costInfo);
 
-    // BUGBUG sRightTempScanCost ì˜ ê°’ì„ ë³´ì •í•´ì•¼ í•œë‹¤.
-    // ë©”ëª¨ë¦¬ ë””ìŠ¤í¬ í…œí”„í…Œì´ë¸”ì¼ë•Œë¥¼ ê³ ë ¤í•´ì•¼í•¨
+    // BUGBUG sRightTempScanCost ÀÇ °ªÀ» º¸Á¤ÇØ¾ß ÇÑ´Ù.
+    // ¸Þ¸ð¸® µð½ºÅ© ÅÛÇÁÅ×ÀÌºíÀÏ¶§¸¦ °í·ÁÇØ¾ßÇÔ
     if( aRight->type == QMG_SELECTION ||
         aRight->type == QMG_SHARD_SELECT || // PROJ-2638
         aRight->type == QMG_PARTITION )
@@ -819,8 +822,8 @@ SDouble qmoCost::getOnePassHashJoinCost( qmgGraph            * aLeft,
                                                   sRightCostInfo->recordSize );
     }
 
-    // TASK-6699 TPC-H ì„±ëŠ¥ ê°œì„ 
-    // PROJ-2553 ì—ì„œ ì¶”ê°€ëœ Hash Temp Table ì— ìµœì í™”ëœ ê³„ì‚°ì‹
+    // TASK-6699 TPC-H ¼º´É °³¼±
+    // PROJ-2553 ¿¡¼­ Ãß°¡µÈ Hash Temp Table ¿¡ ÃÖÀûÈ­µÈ °è»ê½Ä
     if ( sLeftCostInfo->outputRecordCnt >
          (QMC_MEM_PART_HASH_MAX_PART_COUNT * QMC_MEM_PART_HASH_AVG_RECORD_COUNT) )
     {
@@ -843,7 +846,7 @@ SDouble qmoCost::getOnePassHashJoinCost( qmgGraph            * aLeft,
     }
     else
     {
-        // ê¸°ì¡´ ê³„ì‚°ì‹ì„ ê·¸ëŒ€ë¡œ ì´ìš©í•œë‹¤.
+        // ±âÁ¸ °è»ê½ÄÀ» ±×´ë·Î ÀÌ¿ëÇÑ´Ù.
         *aMemCost =  sLeftCostInfo->totalAccessCost +
                      sRightCostInfo->totalAccessCost +
                      sRightMemTempCost +
@@ -891,7 +894,7 @@ SDouble qmoCost::getTwoPassHashJoinCost( qmgGraph            * aLeft,
     sLeftCostInfo  = &(aLeft->costInfo);
     sRightCostInfo = &(aRight->costInfo);
 
-    // BUGBUG sRightTempScanCost ì˜ ê°’ì„ ë³´ì •í•´ì•¼ í•œë‹¤.
+    // BUGBUG sRightTempScanCost ÀÇ °ªÀ» º¸Á¤ÇØ¾ß ÇÑ´Ù.
     if( aLeft->type == QMG_SELECTION ||
         aLeft->type == QMG_SHARD_SELECT || // PROJ-2638
         aLeft->type == QMG_PARTITION )
@@ -956,8 +959,8 @@ SDouble qmoCost::getTwoPassHashJoinCost( qmgGraph            * aLeft,
                                                   sRightCostInfo->recordSize );
     }
 
-    // TASK-6699 TPC-H ì„±ëŠ¥ ê°œì„ 
-    // PROJ-2553 ì—ì„œ ì¶”ê°€ëœ Hash Temp Table ì— ìµœì í™”ëœ ê³„ì‚°ì‹
+    // TASK-6699 TPC-H ¼º´É °³¼±
+    // PROJ-2553 ¿¡¼­ Ãß°¡µÈ Hash Temp Table ¿¡ ÃÖÀûÈ­µÈ °è»ê½Ä
     if ( sLeftCostInfo->outputRecordCnt >
          (QMC_MEM_PART_HASH_MAX_PART_COUNT * QMC_MEM_PART_HASH_AVG_RECORD_COUNT) )
     {
@@ -1027,8 +1030,8 @@ SDouble qmoCost::getInverseHashJoinCost( qmgGraph            * aLeft,
     sLeftCostInfo  = &(aLeft->costInfo);
     sRightCostInfo = &(aRight->costInfo);
 
-    // BUGBUG sRightTempScanCost ì˜ ê°’ì„ ë³´ì •í•´ì•¼ í•œë‹¤.
-    // ë©”ëª¨ë¦¬ ë””ìŠ¤í¬ í…œí”„í…Œì´ë¸”ì¼ë•Œë¥¼ ê³ ë ¤í•´ì•¼í•¨
+    // BUGBUG sRightTempScanCost ÀÇ °ªÀ» º¸Á¤ÇØ¾ß ÇÑ´Ù.
+    // ¸Þ¸ð¸® µð½ºÅ© ÅÛÇÁÅ×ÀÌºíÀÏ¶§¸¦ °í·ÁÇØ¾ßÇÔ
     if ( ( aRight->type == QMG_SELECTION ) ||
          ( aRight->type == QMG_SHARD_SELECT ) || // PROJ-2638
          ( aRight->type == QMG_PARTITION ) )
@@ -1061,8 +1064,8 @@ SDouble qmoCost::getInverseHashJoinCost( qmgGraph            * aLeft,
                                                   sRightCostInfo->recordSize );
     }
 
-    // TASK-6699 TPC-H ì„±ëŠ¥ ê°œì„ 
-    // PROJ-2553 ì—ì„œ ì¶”ê°€ëœ Hash Temp Table ì— ìµœì í™”ëœ ê³„ì‚°ì‹
+    // TASK-6699 TPC-H ¼º´É °³¼±
+    // PROJ-2553 ¿¡¼­ Ãß°¡µÈ Hash Temp Table ¿¡ ÃÖÀûÈ­µÈ °è»ê½Ä
     if ( sLeftCostInfo->outputRecordCnt >
          (QMC_MEM_PART_HASH_MAX_PART_COUNT * QMC_MEM_PART_HASH_AVG_RECORD_COUNT) )
     {
@@ -1771,7 +1774,7 @@ SDouble qmoCost::getMemSortTempCost( qmoSystemStatistics * aSystemStat,
 {
 /******************************************************************************
  * Description : mem sort temp
- *               Quick sort ë¥¼ ì‚¬ìš©í•œë‹¤.
+ *               Quick sort ¸¦ »ç¿ëÇÑ´Ù.
  *****************************************************************************/
 
     SDouble sCost;
@@ -1799,8 +1802,8 @@ SDouble qmoCost::getMemHashTempCost( qmoSystemStatistics * aSystemStat,
 
     SDouble sCost;
 
-    // BUG-40394 hash join costê°€ ë„ˆë¬´ ë‚®ìŠµë‹ˆë‹¤.
-    // hash bucket ì„ 1/2 ë¡œ ì˜ˆì¸¡í•˜ê¸°ë•Œë¬¸ì— 2.0 ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
+    // BUG-40394 hash join cost°¡ ³Ê¹« ³·½À´Ï´Ù.
+    // hash bucket À» 1/2 ·Î ¿¹ÃøÇÏ±â¶§¹®¿¡ 2.0 À¸·Î º¯°æÇÑ´Ù.
     sCost  = aCostInfo->outputRecordCnt *
              aSystemStat->mHashTime *
              aHashNodeCnt * (2.0);
@@ -1834,8 +1837,8 @@ SDouble qmoCost::getDiskSortTempCost( qmoSystemStatistics * aSystemStat,
 {
 /******************************************************************************
  * Description : disk sort temp
- *               ì—¬ëŸ¬ê°œì˜ run ìœ¼ë¡œ ë¶„ë¦¬í›„ ê°ê°ì˜ runì„ quick sort í•œë‹¤.
- *               ì •ë ¬ëœ runë“¤ì„ heap sort í•œë‹¤.
+ *               ¿©·¯°³ÀÇ run À¸·Î ºÐ¸®ÈÄ °¢°¢ÀÇ runÀ» quick sort ÇÑ´Ù.
+ *               Á¤·ÄµÈ runµéÀ» heap sort ÇÑ´Ù.
  *****************************************************************************/
 
     SDouble  sCost;
@@ -1848,7 +1851,7 @@ SDouble qmoCost::getDiskSortTempCost( qmoSystemStatistics * aSystemStat,
     IDE_DASSERT( aSortNodeCnt > 0 );
     IDE_DASSERT( aSortNodeLen > 0 );
 
-    // í•œë²ˆì— sort í• ìˆ˜ ìžˆëŠ” rowì˜ ê°¯ìˆ˜
+    // ÇÑ¹ø¿¡ sort ÇÒ¼ö ÀÖ´Â rowÀÇ °¹¼ö
     sSortCnt = IDL_MIN( smuProperty::getSortAreaSize()                 *
                        (smuProperty::getTempSortGroupRatio() / 100.0 ) *
                         aSortNodeLen,
@@ -1883,9 +1886,9 @@ SDouble qmoCost::getDiskHashTempCost( qmoSystemStatistics * aSystemStat,
 {
 /******************************************************************************
  * Description : disk sort temp
- *               disk hash temp í…Œì´ë¸”ì€ 2ê°€ì§€ ë°©ì‹ìœ¼ë¡œ ë™ìž‘í•œë‹¤.
- *               í˜„ìž¬ëŠ” UNIQUE ë°©ì‹ìœ¼ë¡œ ë§Œ ë™ìž‘í•œë‹¤.
- *               í–¥í›„ CLUSTER ë°©ì‹ì„ ê³ ë ¤í•´ì•¼ í•œë‹¤.
+ *               disk hash temp Å×ÀÌºíÀº 2°¡Áö ¹æ½ÄÀ¸·Î µ¿ÀÛÇÑ´Ù.
+ *               ÇöÀç´Â UNIQUE ¹æ½ÄÀ¸·Î ¸¸ µ¿ÀÛÇÑ´Ù.
+ *               ÇâÈÄ CLUSTER ¹æ½ÄÀ» °í·ÁÇØ¾ß ÇÑ´Ù.
  *****************************************************************************/
 
     SDouble sCost;
@@ -1900,7 +1903,7 @@ SDouble qmoCost::getDiskHashTempCost( qmoSystemStatistics * aSystemStat,
     sCost += getDiskStoreTempCost( aSystemStat,
                                    aCostInfo->outputRecordCnt,
                                    aHashNodeLen,
-                                   QMO_COST_STORE_UNIQUE_HASH_TEMP );
+                                   QMO_COST_STORE_HASH_TEMP );
 
     return sCost;
 }
@@ -1913,10 +1916,10 @@ SDouble qmoCost::getDiskHashGroupCost( qmoSystemStatistics * aSystemStat,
 {
 /******************************************************************************
  * Description : disk hash temp Group by
- *               hash group by ëŠ” ë‹¤ìŒê³¼ ê°™ì´ ë™ìž‘í•œë‹¤.
- *               1. ê°ê°ì˜ group ì— ëŒ€í•´ì„œ 1ê°œì˜ ë ˆì½”ë“œë§Œ ì €ìž¥í•œë‹¤.
- *               2. ë™ì¼í•œ group ì´ ìžˆëŠ”ì§€ í™•ì¸í•˜ê¸° ìœ„í•´ fetch ë¥¼ í•œë‹¤.
- *                   2.1 temp ì˜ì—­ì´ ëª¨ìžë¥´ê²Œ ë˜ë©´ replace ê°€ ì¼ì–´ë‚˜ê²Œ ëœë‹¤.
+ *               hash group by ´Â ´ÙÀ½°ú °°ÀÌ µ¿ÀÛÇÑ´Ù.
+ *               1. °¢°¢ÀÇ group ¿¡ ´ëÇØ¼­ 1°³ÀÇ ·¹ÄÚµå¸¸ ÀúÀåÇÑ´Ù.
+ *               2. µ¿ÀÏÇÑ group ÀÌ ÀÖ´ÂÁö È®ÀÎÇÏ±â À§ÇØ fetch ¸¦ ÇÑ´Ù.
+ *                   2.1 temp ¿µ¿ªÀÌ ¸ðÀÚ¸£°Ô µÇ¸é replace °¡ ÀÏ¾î³ª°Ô µÈ´Ù.
  *               cost = hash time +
  *                      replace time +
  *                      hash temp table store time
@@ -1936,26 +1939,26 @@ SDouble qmoCost::getDiskHashGroupCost( qmoSystemStatistics * aSystemStat,
              aSystemStat->mHashTime *
              aHashNodeCnt;
 
-    // Hash temp table ì˜ ê°€ìš© í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
+    // Hash temp table ÀÇ °¡¿ë Å©±â¸¦ ±¸ÇÑ´Ù.
     sUseAbleTempArea = smuProperty::getHashAreaSize()    *
                      ( 1 - (smuProperty::getTempHashGroupRatio() / 100.0) );
 
     sStoreSize       = aGroupCnt * (aHashNodeLen + SMI_TR_HEADER_SIZE_FULL);
 
     ////////////////////////////////
-    // ë²„í¼ê°€ replace ë˜ëŠ” íšŸìˆ˜ë¥¼ êµ¬í•œë‹¤.
+    // ¹öÆÛ°¡ replace µÇ´Â È½¼ö¸¦ ±¸ÇÑ´Ù.
     ////////////////////////////////
 
     if(sStoreSize > sUseAbleTempArea)
     {
-        // ë™ì¼í•œ group ì˜ ë ˆì½”ë“œë¥¼ ì—°ì†ìœ¼ë¡œ fetch í•˜ëŠ”ê²½ìš°
-        // replace ê°€ ì•ˆì¼ì–´ë‚˜ê²Œ ëœë‹¤. ë‹¤ìŒê³¼ ê°™ì´ êµ¬í•œë‹¤.
-        // replace í™•ë¥  =  1- (ê·¸ë£¹ ê°¯ìˆ˜ / ì „ì²´ ë ˆì½”ë“œ ê°¯ìˆ˜)
+        // µ¿ÀÏÇÑ group ÀÇ ·¹ÄÚµå¸¦ ¿¬¼ÓÀ¸·Î fetch ÇÏ´Â°æ¿ì
+        // replace °¡ ¾ÈÀÏ¾î³ª°Ô µÈ´Ù. ´ÙÀ½°ú °°ÀÌ ±¸ÇÑ´Ù.
+        // replace È®·ü =  1- (±×·ì °¹¼ö / ÀüÃ¼ ·¹ÄÚµå °¹¼ö)
         sReplaceRatio = 1 - (aGroupCnt / aCostInfo->outputRecordCnt);
 
         sReplaceRatio = IDL_MAX( sReplaceRatio, 0 );
 
-        // replace ê°€ ë˜ëŠ” íšŸìˆ˜ëŠ” temp ì— ì €ìž¥í•˜ê³  ë‚¨ì€ ë‚˜ë¨¸ì§€ë‹¤.
+        // replace °¡ µÇ´Â È½¼ö´Â temp ¿¡ ÀúÀåÇÏ°í ³²Àº ³ª¸ÓÁö´Ù.
         sReplaceCount = aCostInfo->outputRecordCnt -
                         (sUseAbleTempArea / (aHashNodeLen + 24));
 
@@ -1968,14 +1971,14 @@ SDouble qmoCost::getDiskHashGroupCost( qmoSystemStatistics * aSystemStat,
         sReplaceCount = 0;
     }
 
-    // replace ê°€ ë°œìƒí• ë•Œë§ˆë‹¤ IO ê°€ ì¼ì–´ë‚˜ê²Œ ëœë‹¤.
+    // replace °¡ ¹ß»ýÇÒ¶§¸¶´Ù IO °¡ ÀÏ¾î³ª°Ô µÈ´Ù.
     sCost += sReplaceCount *
              aSystemStat->singleIoScanTime;
 
     sCost += getDiskStoreTempCost( aSystemStat,
                                    aGroupCnt,
                                    aHashNodeLen,
-                                   QMO_COST_STORE_UNIQUE_HASH_TEMP );
+                                   QMO_COST_STORE_HASH_TEMP );
 
     return sCost;
 }
@@ -1987,7 +1990,7 @@ SDouble qmoCost::getDiskStoreTempCost( qmoSystemStatistics * aSystemStat,
 {
 /******************************************************************************
  * Description : disk store temp cost
- *               temp table ì¢…ë¥˜ë³„ë¡œ ì‚¬ì´ì¦ˆë¥¼ ê³„ì‚°í•˜ëŠ” ë°©ì‹ì´ ë‹¤ë¥´ë‹¤.
+ *               temp table Á¾·ùº°·Î »çÀÌÁî¸¦ °è»êÇÏ´Â ¹æ½ÄÀÌ ´Ù¸£´Ù.
  *****************************************************************************/
 
     SDouble sCost;
@@ -2006,16 +2009,9 @@ SDouble qmoCost::getDiskStoreTempCost( qmoSystemStatistics * aSystemStat,
             sStoreNodeLen    = aStoreNodeLen + SMI_TR_HEADER_SIZE_FULL;
             break;
 
-        case QMO_COST_STORE_UNIQUE_HASH_TEMP :
+        case QMO_COST_STORE_HASH_TEMP :
             sUseAbleTempArea = smuProperty::getHashAreaSize()    *
                                ( 1- (smuProperty::getTempHashGroupRatio() / 100.0) );
-
-            sStoreNodeLen    = aStoreNodeLen + SMI_TR_HEADER_SIZE_FULL;
-            break;
-
-        case QMO_COST_STORE_CLUSTER_HASH_TEMP :
-            sUseAbleTempArea = smuProperty::getHashAreaSize()    *
-                               smuProperty::getTempClusterHashGroupRatio() / 100.0;
 
             sStoreNodeLen    = aStoreNodeLen + SMI_TR_HEADER_SIZE_FULL;
             break;
@@ -2031,8 +2027,8 @@ SDouble qmoCost::getDiskStoreTempCost( qmoSystemStatistics * aSystemStat,
     sCost  = aStoreRowCnt * aSystemStat->mStoreTime;
 
     // DISK IO cost
-    // TASK-6699 TPC-H ì„±ëŠ¥ ê°œì„ 
-    // 10 : TPC-H 100SF ì˜ ê²½í—˜ì ìœ¼ë¡œ ì„¤ì •ëœ ê°’ì´ë‹¤.
+    // TASK-6699 TPC-H ¼º´É °³¼±
+    // 10 : TPC-H 100SF ÀÇ °æÇèÀûÀ¸·Î ¼³Á¤µÈ °ªÀÌ´Ù.
     sCost += idlOS::ceil((sStoreSize / smiGetPageSize( SMI_DISK_USER_TEMP ))) *
              aSystemStat->singleIoScanTime * 10;
 
@@ -2050,7 +2046,7 @@ SDouble qmoCost::getKeyRangeCost( qmoSystemStatistics * aSystemStat,
 {
 /******************************************************************************
  * Description : Key range cost
- *               key range ë…¸ë“œì˜ ê°¯ìˆ˜ë§Œí¼ cost ì¦ê°€í•œë‹¤.
+ *               key range ³ëµåÀÇ °¹¼ö¸¸Å­ cost Áõ°¡ÇÑ´Ù.
  *****************************************************************************/
 
     SDouble          sCost;
@@ -2082,7 +2078,7 @@ SDouble qmoCost::getKeyFilterCost( qmoSystemStatistics * aSystemStat,
 {
 /******************************************************************************
  * Description : Key filter cost
- *               key filter ë…¸ë“œì˜ ê°¯ìˆ˜ë§Œí¼ cost ì¦ê°€í•œë‹¤.
+ *               key filter ³ëµåÀÇ °¹¼ö¸¸Å­ cost Áõ°¡ÇÑ´Ù.
  *****************************************************************************/
 
     SDouble          sCost;
@@ -2116,7 +2112,7 @@ UInt countFilterNode( mtcNode * aNode, SDouble * aSubQueryCost )
          sNode   = sNode->next )
     {
         // Self Node
-        // TPC-H 9 ë²ˆ ì§ˆì˜ì—ì„œ like ì—°ì‚°ì„ ë§Žì´ ìˆ˜í–‰í•˜ê²Œë˜ë©´ ì„±ëŠ¥ì´ ëŠë ¤ì§€ëŠ” ê²½ìš°ê°€ ì¡´ìž¬í•œë‹¤.
+        // TPC-H 9 ¹ø ÁúÀÇ¿¡¼­ like ¿¬»êÀ» ¸¹ÀÌ ¼öÇàÇÏ°ÔµÇ¸é ¼º´ÉÀÌ ´À·ÁÁö´Â °æ¿ì°¡ Á¸ÀçÇÑ´Ù.
         if( (sNode->module == &mtfLike) ||
             (sNode->module == &mtfNotLike) )
         {
@@ -2127,8 +2123,8 @@ UInt countFilterNode( mtcNode * aNode, SDouble * aSubQueryCost )
             sCount += 1;
         }
 
-        // TASK-6699 TPC-H ì„±ëŠ¥ ê°œì„ 
-        // QTC_NODE_CONVERSION_TRUE : 1+1 ê³¼ ê°™ì€ ìƒìˆ˜ì—°ì‚°ì´ ì—°ì‚°ì´ ì™„ë£Œëœ ê²½ìš°ì´ë‹¤.
+        // TASK-6699 TPC-H ¼º´É °³¼±
+        // QTC_NODE_CONVERSION_TRUE : 1+1 °ú °°Àº »ó¼ö¿¬»êÀÌ ¿¬»êÀÌ ¿Ï·áµÈ °æ¿ìÀÌ´Ù.
         if( (((qtcNode*)sNode)->lflag & QTC_NODE_CONVERSION_MASK) == QTC_NODE_CONVERSION_TRUE )
         {
             continue;
@@ -2179,8 +2175,8 @@ SDouble qmoCost::getFilterCost4PredWrapper(
 {
 /******************************************************************************
  * Description : filter cost
- *               filter ë…¸ë“œì˜ ê°¯ìˆ˜ë§Œí¼ ë¹„ìš©ì´ ì¦ê°€í•œë‹¤.
- *               qmoPredWrapper ì— filter ê°€ ë‹´ê²¨ìžˆì„ë•Œ ë¹„ìš© ê³„ì‚°í•¨ìˆ˜
+ *               filter ³ëµåÀÇ °¹¼ö¸¸Å­ ºñ¿ëÀÌ Áõ°¡ÇÑ´Ù.
+ *               qmoPredWrapper ¿¡ filter °¡ ´ã°ÜÀÖÀ»¶§ ºñ¿ë °è»êÇÔ¼ö
  *****************************************************************************/
 
     SDouble          sCost = 0;
@@ -2191,7 +2187,7 @@ SDouble qmoCost::getFilterCost4PredWrapper(
          sFilter != NULL;
          sFilter = sFilter->next )
     {
-        // BUG-42480 qmoPredWrapper ì˜ ê²½ìš° qmoPredicate ì˜ next ë¥¼ ë”°ë¼ê°€ë©´ ì•ˆëœë‹¤.
+        // BUG-42480 qmoPredWrapper ÀÇ °æ¿ì qmoPredicate ÀÇ next ¸¦ µû¶ó°¡¸é ¾ÈµÈ´Ù.
         idlOS::memcpy( &sTemp, sFilter->pred, ID_SIZEOF( qmoPredicate ) );
         sTemp.next = NULL;
 
@@ -2209,8 +2205,8 @@ SDouble qmoCost::getFilterCost( qmoSystemStatistics * aSystemStat,
 {
 /******************************************************************************
  * Description : filter cost
- *               filter ë…¸ë“œì˜ ê°¯ìˆ˜ë§Œí¼ ë¹„ìš©ì´ ì¦ê°€í•œë‹¤.
- *               qmoPredicate ì— filter ê°€ ë‹´ê²¨ìžˆì„ë•Œ ë¹„ìš© ê³„ì‚°í•¨ìˆ˜
+ *               filter ³ëµåÀÇ °¹¼ö¸¸Å­ ºñ¿ëÀÌ Áõ°¡ÇÑ´Ù.
+ *               qmoPredicate ¿¡ filter °¡ ´ã°ÜÀÖÀ»¶§ ºñ¿ë °è»êÇÔ¼ö
  *****************************************************************************/
 
     SDouble         sCost;
@@ -2231,7 +2227,7 @@ SDouble qmoCost::getFilterCost( qmoSystemStatistics * aSystemStat,
              sMorePredicate != NULL;
              sMorePredicate = sMorePredicate->more )
         {
-            // BUG-42480 OR, AND ì¼ë•Œ next ë¥¼ ë”°ë¼ê°€ë©´ ì•ˆëœë‹¤.
+            // BUG-42480 OR, AND ÀÏ¶§ next ¸¦ µû¶ó°¡¸é ¾ÈµÈ´Ù.
             if( ( sMorePredicate->node->node.lflag & MTC_NODE_LOGICAL_CONDITION_MASK )
                   == MTC_NODE_LOGICAL_CONDITION_TRUE )
             {
@@ -2248,9 +2244,9 @@ SDouble qmoCost::getFilterCost( qmoSystemStatistics * aSystemStat,
 
     sCost  = aLoopCnt * aSystemStat->mMTCallTime * sFilterNodeCnt;
 
-    // SubQueryëŠ” 1ë²ˆë§Œ ìˆ˜í–‰ëœë‹¤ê³  ê°€ì •í•œë‹¤.
-    // ë‹¤ì–‘í•œ ê²½ìš°ê°€ ì¡´ìž¬í•˜ì—¬ ì œëŒ€ë¡œ ì˜ˆì¸¡í•˜ê¸°ê°€ íž˜ë“¤ê³ 
-    // ìž˜ëª» ì˜ˆì¸¡í•œê²½ìš° ë§¤ìš° ìž˜ëª»ëœ plan ì´ ë‚˜ì˜¬ìˆ˜ ìžˆë‹¤.
+    // SubQuery´Â 1¹ø¸¸ ¼öÇàµÈ´Ù°í °¡Á¤ÇÑ´Ù.
+    // ´Ù¾çÇÑ °æ¿ì°¡ Á¸ÀçÇÏ¿© Á¦´ë·Î ¿¹ÃøÇÏ±â°¡ Èûµé°í
+    // Àß¸ø ¿¹ÃøÇÑ°æ¿ì ¸Å¿ì Àß¸øµÈ plan ÀÌ ³ª¿Ã¼ö ÀÖ´Ù.
     sCost += sSubQueryCost;
 
     return sCost;
@@ -2262,7 +2258,7 @@ SDouble qmoCost::getTargetCost( qmoSystemStatistics * aSystemStat,
 {
 /******************************************************************************
  * Description : target cost
- *               target ë…¸ë“œì˜ ê°¯ìˆ˜ë§Œí¼ ë¹„ìš©ì´ ì¦ê°€í•œë‹¤.
+ *               target ³ëµåÀÇ °¹¼ö¸¸Å­ ºñ¿ëÀÌ Áõ°¡ÇÑ´Ù.
  *****************************************************************************/
 
     SDouble sCost;
@@ -2276,9 +2272,9 @@ SDouble qmoCost::getTargetCost( qmoSystemStatistics * aSystemStat,
 
     sCost  = aLoopCnt * aSystemStat->mMTCallTime * sNodeCnt;
 
-    // SubQueryëŠ” 1ë²ˆë§Œ ìˆ˜í–‰ëœë‹¤ê³  ê°€ì •í•œë‹¤.
-    // ë‹¤ì–‘í•œ ê²½ìš°ê°€ ì¡´ìž¬í•˜ì—¬ ì œëŒ€ë¡œ ì˜ˆì¸¡í•˜ê¸°ê°€ íž˜ë“¤ê³ 
-    // ìž˜ëª» ì˜ˆì¸¡í•œê²½ìš° ë§¤ìš° ìž˜ëª»ëœ plan ì´ ë‚˜ì˜¬ìˆ˜ ìžˆë‹¤.
+    // SubQuery´Â 1¹ø¸¸ ¼öÇàµÈ´Ù°í °¡Á¤ÇÑ´Ù.
+    // ´Ù¾çÇÑ °æ¿ì°¡ Á¸ÀçÇÏ¿© Á¦´ë·Î ¿¹ÃøÇÏ±â°¡ Èûµé°í
+    // Àß¸ø ¿¹ÃøÇÑ°æ¿ì ¸Å¿ì Àß¸øµÈ plan ÀÌ ³ª¿Ã¼ö ÀÖ´Ù.
     sCost += sSubQueryCost;
 
     return sCost;

@@ -102,6 +102,11 @@ public class NullColumn extends AbstractColumn
         ((ByteDynamicArray)aArray).put(mValue);
     }
 
+    public void storeTo()
+    {
+        mValues.add(mValue);
+    }
+
     protected void readFromSub(CmChannel aChannel) throws SQLException
     {
         mValue = aChannel.readByte();
@@ -112,9 +117,19 @@ public class NullColumn extends AbstractColumn
         ((ByteDynamicArray)aArray).put(aChannel.readByte());
     }
 
+    protected void readAndStoreValue(CmChannel aChannel) throws SQLException
+    {
+        mValues.add(aChannel.readByte());
+    }
+
     protected void loadFromSub(DynamicArray aArray)
     {
         mValue = ((ByteDynamicArray)aArray).get();
+    }
+
+    protected void loadFromSub(int aLoadIndex)
+    {
+        mValue = (Byte)mValues.get(aLoadIndex);
     }
 
     protected void setNullValue()

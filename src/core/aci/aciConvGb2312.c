@@ -2550,7 +2550,7 @@ acp_sint32_t aciConvConvertMbToWc4Gb2312( void         * aSrc,
             else
             {
                 /* BUG-29135
-                 * GB231280ì˜ code pageëŠ” 0x80ì„ ë¹¼ì„œ ì ìš©í•´ì•¼ í•œë‹¤.
+                 * GB231280ÀÇ code page´Â 0x80À» »©¼­ Àû¿ëÇØ¾ß ÇÑ´Ù.
                  */
                 sSrcChar[0] = sSrcCharPtr[0] - 0x80;
                 sSrcChar[1] = sSrcCharPtr[1] - 0x80;
@@ -2704,7 +2704,7 @@ acp_sint32_t aciConvConvertWcToMb4Gb2312( void         * aSrc,
 
                     /*
                      * BUG-29135
-                     * GB231280ì˜ code pageëŠ” 0x80ì„ ë”í•´ì„œ ì ìš©í•´ì•¼ í•œë‹¤.
+                     * GB231280ÀÇ code page´Â 0x80À» ´õÇØ¼­ Àû¿ëÇØ¾ß ÇÑ´Ù.
                      */
                     sDestCharPtr[0] = sDestChar[0] + 0x80;
                     sDestCharPtr[1] = sDestChar[1] + 0x80;
@@ -2738,12 +2738,12 @@ ACP_EXPORT acp_sint32_t aciConvCopyGb2312( void         * aSrc,
 /***********************************************************************
  *
  * Description :
- *     PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€
+ *     PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡
  *     ex) GB2312 ==> GBK
  *                ==> CP936
  *                ==> GB18030
  *
- * Implementation : ê¸°ì¡´ì˜ ìºë¦­í„° ì…‹ ë³µì‚¬í•¨ìˆ˜ì™€ ì„¤ê³„ ë° êµ¬í˜„ì´ ë™ì¼í•˜ë‹¤.
+ * Implementation : ±âÁ¸ÀÇ Ä³¸¯ÅÍ ¼Â º¹»çÇÔ¼ö¿Í ¼³°è ¹× ±¸ÇöÀÌ µ¿ÀÏÇÏ´Ù.
  *
  ***********************************************************************/
 
@@ -2751,7 +2751,7 @@ ACP_EXPORT acp_sint32_t aciConvCopyGb2312( void         * aSrc,
     acp_uint8_t  * sDestCharPtr = (acp_uint8_t *)aDest;
     acp_sint32_t   sRet;
 
-    /* PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
+    /* PROJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
     if ( sSrcCharPtr[0] < 0x80 )
     {
         *sDestCharPtr = *sSrcCharPtr;

@@ -72,7 +72,7 @@ void accsSymbolMgr::addSymbolItem(accsSymbolItem *item)
     }
 }
 
-/* and ì¡°ê±´ìž„ */
+/* and Á¶°ÇÀÓ */
 accsSymbolItem* accsSymbolMgr::findSymbolItem(SYMBOL_SCOPE scope,
                                               SChar *name,
                                               SYMBOL_KIND kind)

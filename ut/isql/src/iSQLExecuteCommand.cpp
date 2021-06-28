@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLExecuteCommand.cpp 84891 2019-02-15 05:17:06Z bethy $
+ * $Id: iSQLExecuteCommand.cpp 89739 2021-01-11 01:36:56Z chkim $
  **********************************************************************/
 
 #include <iSQL.h>
@@ -32,7 +32,7 @@
 #include <iSQLCompiler.h>
 
 /*
- * bugbug : C portingí›„ smiDef.h ë¥¼ í¬í•¨í•˜ë©´ mtccDef.h ì™€ ì«‘ì´ë‚¨.
+ * bugbug : C portingÈÄ smiDef.h ¸¦ Æ÷ÇÔÇÏ¸é mtccDef.h ¿Í ÂĞÀÌ³².
  */
 # define SMI_TABLE_TYPE_MASK               (0x0000F000)
 # define SMI_TABLE_META                    (0x00000000)
@@ -48,7 +48,7 @@ extern iSQLCommandQueue              *gCommandQueue;
 extern iSQLProperty                   gProperty;
 extern iSQLProgOption                 gProgOption;
 extern iSQLHostVarMgr                 gHostVarMgr;
-extern ulnServerMessageCallbackStruct gMessageCallbackStruct;
+extern SQLMessageCallbackStruct       gMessageCallback;
 extern iSQLCompiler                 * gSQLCompiler;
 
 extern void Finalize();
@@ -85,7 +85,7 @@ iSQLExecuteCommand::ConnectDB()
                                   gProgOption.GetPortNo(),
                                   sConnType,
                                   gProgOption.getTimezone(),
-                                  &gMessageCallbackStruct,
+                                  &gMessageCallback,
                                   gProgOption.GetSslCa(),
                                   gProgOption.GetSslCapath(),
                                   gProgOption.GetSslCert(),
@@ -98,7 +98,7 @@ iSQLExecuteCommand::ConnectDB()
                                   gProperty.GetCaseSensitivePasswd(),
                                   gProperty.GetUnixdomainFilepath(),
                                   gProperty.GetIpcFilepath(),
-                                  (SChar*)PRODUCT_PREFIX"isql", // fix BUG-17969 ì§€ì›í¸ì˜ì„±ì„ ìœ„í•´ APP_INFO ì„¤ì •
+                                  (SChar*)PRODUCT_PREFIX"isql", // fix BUG-17969 Áö¿øÆíÀÇ¼ºÀ» À§ÇØ APP_INFO ¼³Á¤
                                   gProperty.IsSysDBA(),
                                   gProgOption.IsPreferIPv6()) /* BUG-29915 */
                    != IDE_SUCCESS, Error);
@@ -158,9 +158,9 @@ iSQLExecuteCommand::DisconnectDB(IDE_RC aISQLRC)
 }
 
 /*
- * í˜„ì¬ ì‚¬ìš©ìê°€ ê´€ë¦¬ì ê¶Œí•œì„ ê°€ì§„ ìŠˆí¼ìœ ì €ì¸ì§€ ì•Œì•„ë‚¸ë‹¤.
+ * ÇöÀç »ç¿ëÀÚ°¡ °ü¸®ÀÚ ±ÇÇÑÀ» °¡Áø ½´ÆÛÀ¯ÀúÀÎÁö ¾Ë¾Æ³½´Ù.
  *
- * [ RETURN ] ìŠˆí¼ìœ ì €ì´ë©´ ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE
+ * [ RETURN ] ½´ÆÛÀ¯ÀúÀÌ¸é ID_TRUE, ¾Æ´Ï¸é ID_FALSE
  */
 idBool
 iSQLExecuteCommand::IsSysUser()
@@ -195,44 +195,42 @@ void iSQLExecuteCommand::EndTran(SInt aAutocommit)
 }
 
 /*
- * [select * from tab ì¿¼ë¦¬ì˜ ì‹¤í–‰]
- * í…Œì´ë¸” ë¦¬ìŠ¤íŠ¸ë¥¼ ë³´ì—¬ì£¼ê±°ë‚˜ TABí…Œì´ë¸”ì˜ ROWë¥¼ ë³´ì—¬ì¤€ë‹¤.
+ * [select * from tab Äõ¸®ÀÇ ½ÇÇà]
+ * Å×ÀÌºí ¸®½ºÆ®¸¦ º¸¿©ÁÖ°Å³ª TABÅ×ÀÌºíÀÇ ROW¸¦ º¸¿©ÁØ´Ù.
  *
- * To Fix BUG-14965 Tab í…Œì´ë¸” ì¡´ì¬í• ë•Œ SELECT * FROM TABìœ¼ë¡œ ë‚´ìš©ì¡°íšŒ ë¶ˆê°€
+ * To Fix BUG-14965 Tab Å×ÀÌºí Á¸ÀçÇÒ¶§ SELECT * FROM TABÀ¸·Î ³»¿ëÁ¶È¸ ºÒ°¡
  *
- * aCmdStr   [IN] "select * from tab;\n" ì»¤ë§¨ë“œ
- * aQueryStr [IN] "select * from tab" ì¿¼ë¦¬
+ * aCmdStr   [IN] "select * from tab;\n" Ä¿¸Çµå
+ * aQueryStr [IN] "select * from tab" Äõ¸®
  *
  */
 IDE_RC
-iSQLExecuteCommand::DisplayTableListOrSelect(SChar *aCmdStr, SChar *aQueryStr)
+iSQLExecuteCommand::DisplayTableListOrSelect(SChar *aQueryStr)
 {
     idBool sIsTabExist;
 
-    /* TAB í…Œì´ë¸”ì´ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬(í…Œì´ë¸” ìˆ˜ ì¡°íšŒ) */
+    /* TAB Å×ÀÌºíÀÌ Á¸ÀçÇÏ´ÂÁö Ã¼Å©(Å×ÀÌºí ¼ö Á¶È¸) */
     IDE_TEST_RAISE(m_ISPApi->CheckTableExist(gProperty.GetUserName(),
                                              (SChar *)"TAB", &sIsTabExist)
                    != IDE_SUCCESS, TableExistCheckError);
 
-    if (sIsTabExist == ID_TRUE) /* TAB í…Œì´ë¸” ì¡´ì¬ */
+    if (sIsTabExist == ID_TRUE) /* TAB Å×ÀÌºí Á¸Àç */
     {
-        /* TAB í…Œì´ë¸”ì˜ ëª¨ë“  rowë¥¼ fetch */
-        IDE_TEST(ExecuteSelectOrDMLStmt(aCmdStr, aQueryStr, SELECT_COM)
+        /* TAB Å×ÀÌºíÀÇ ¸ğµç row¸¦ fetch */
+        IDE_TEST(ExecuteSelectOrDMLStmt(aQueryStr, SELECT_COM)
                  != IDE_SUCCESS);
     }
-    else /* TAB ì´ë¼ëŠ” í…Œì´ë¸”ì´ ì—†ìŒ */
+    else /* TAB ÀÌ¶ó´Â Å×ÀÌºíÀÌ ¾øÀ½ */
     {
-        /* ì‹œìŠ¤í…œì— ì¡´ì¬í•˜ëŠ” ëª¨ë“  í…Œì´ë¸” ë¦¬ìŠ¤íŠ¸ë¥¼ fetch */
-        IDE_TEST(DisplayTableList(aCmdStr) != IDE_SUCCESS);
+        /* ½Ã½ºÅÛ¿¡ Á¸ÀçÇÏ´Â ¸ğµç Å×ÀÌºí ¸®½ºÆ®¸¦ fetch */
+        IDE_TEST(DisplayTableList() != IDE_SUCCESS);
     }
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(TableExistCheckError);
     {
-        uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(),
-                            &gErrorMgr);
-        m_Spool->Print();
+        PrintMultiError();
 
         if (idlOS::strcmp(m_ISPApi->GetErrorState(), "08S01") == 0)
         {
@@ -245,7 +243,7 @@ iSQLExecuteCommand::DisplayTableListOrSelect(SChar *aCmdStr, SChar *aQueryStr)
 }
 
 IDE_RC
-iSQLExecuteCommand::DisplayTableList( SChar * a_CommandStr )
+iSQLExecuteCommand::DisplayTableList()
 {
     SInt      i;
     SInt      sTableCnt = 0;
@@ -254,9 +252,6 @@ iSQLExecuteCommand::DisplayTableList( SChar * a_CommandStr )
 
     idBool is_sysuser;
     SInt   sAutocommit;
-
-    idlOS::sprintf(m_Spool->m_Buf, "%s", a_CommandStr);
-    m_Spool->PrintCommand();
 
     is_sysuser = IsSysUser();
 
@@ -342,8 +337,7 @@ iSQLExecuteCommand::DisplayTableList( SChar * a_CommandStr )
     {
         m_ISPApi->StmtClose4Meta();
 
-        uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(), &gErrorMgr);
-        m_Spool->Print();
+        PrintMultiError();
 
         if ( idlOS::strcmp(m_ISPApi->GetErrorState(), "08S01") == 0 )
         {
@@ -357,8 +351,7 @@ iSQLExecuteCommand::DisplayTableList( SChar * a_CommandStr )
     }
     IDE_EXCEPTION_END;
 
-    uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(), &gErrorMgr);
-    m_Spool->Print();
+    PrintMultiError();
 
     if ( idlOS::strcmp(m_ISPApi->GetErrorState(), "08S01") == 0 )
     {
@@ -369,8 +362,7 @@ iSQLExecuteCommand::DisplayTableList( SChar * a_CommandStr )
 }
 
 IDE_RC
-iSQLExecuteCommand::DisplayFixedTableList(const SChar * a_CommandStr,
-                                          const SChar * a_PrefixName,
+iSQLExecuteCommand::DisplayFixedTableList(const SChar * a_PrefixName,
                                           const SChar * a_TableType)
 {
     SInt   i;
@@ -379,9 +371,6 @@ iSQLExecuteCommand::DisplayFixedTableList(const SChar * a_CommandStr,
 
     SQLRETURN nResult;
     TableInfo sObjInfo;
-
-    idlOS::sprintf(m_Spool->m_Buf, "%s", a_CommandStr);
-    m_Spool->PrintCommand();
 
     IDE_TEST( m_ISPApi->GetConnectAttr(SQL_ATTR_AUTOCOMMIT, &sAutocommit)
               != IDE_SUCCESS );
@@ -426,8 +415,7 @@ iSQLExecuteCommand::DisplayFixedTableList(const SChar * a_CommandStr,
     {
         m_ISPApi->StmtClose4Meta();
 
-        uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(), &gErrorMgr);
-        m_Spool->Print();
+        PrintMultiError();
 
         if ( idlOS::strcmp(m_ISPApi->GetErrorState(), "08S01") == 0 )
         {
@@ -452,8 +440,7 @@ iSQLExecuteCommand::DisplayFixedTableList(const SChar * a_CommandStr,
     }
     IDE_EXCEPTION_END;
 
-    uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(), &gErrorMgr);
-    m_Spool->Print();
+    PrintMultiError();
 
     if ( idlOS::strcmp(m_ISPApi->GetErrorState(), "08S01") == 0 )
     {
@@ -465,7 +452,7 @@ iSQLExecuteCommand::DisplayFixedTableList(const SChar * a_CommandStr,
 
 
 IDE_RC
-iSQLExecuteCommand::DisplaySequenceList( SChar * a_CommandStr )
+iSQLExecuteCommand::DisplaySequenceList()
 {
     SInt      i;
     SInt      m = 0;
@@ -477,9 +464,6 @@ iSQLExecuteCommand::DisplaySequenceList( SChar * a_CommandStr )
     SInt      sAutocommit;
     SQLRETURN nResult;
     SInt      sColCnt = 0;
-
-    idlOS::sprintf(m_Spool->m_Buf, "%s", a_CommandStr);
-    m_Spool->PrintCommand();
 
     is_sysuser = IsSysUser();
 
@@ -557,15 +541,13 @@ iSQLExecuteCommand::DisplaySequenceList( SChar * a_CommandStr )
 
     IDE_EXCEPTION( network_error );
     {
-        uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(), &gErrorMgr);
+        PrintMultiError();
 
-        m_Spool->Print();
         DisconnectDB();
     }
     IDE_EXCEPTION( exec_error );
     {
-        uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(), &gErrorMgr);
-        m_Spool->Print();
+        PrintMultiError();
 
         if ( idlOS::strcmp(m_ISPApi->GetErrorState(), "08S01") == 0 )
         {
@@ -582,8 +564,7 @@ iSQLExecuteCommand::DisplaySequenceList( SChar * a_CommandStr )
     IDE_EXCEPTION( invalidColCnt );
     {
         idlOS::printf("Invalid column count: %"ID_INT32_FMT"\n", sColCnt);
-        uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(), &gErrorMgr);
-        m_Spool->Print();
+        PrintMultiError();
         DisconnectDB();
     }
     IDE_EXCEPTION_END;
@@ -609,16 +590,12 @@ iSQLExecuteCommand::DisplaySequenceList( SChar * a_CommandStr )
 }
 
 IDE_RC
-iSQLExecuteCommand::DisplayAttributeList( SChar * a_CommandStr,
-                                          SChar * a_UserName,
+iSQLExecuteCommand::DisplayAttributeList( SChar * a_UserName,
                                           SChar * a_TableName )
 {
     SInt      sAutocommit;
     idBool    sIsDollar = ID_FALSE;
     
-    idlOS::sprintf(m_Spool->m_Buf, "%s", a_CommandStr);
-    m_Spool->PrintCommand();
-
     IDE_TEST( m_ISPApi->GetConnectAttr(SQL_ATTR_AUTOCOMMIT, &sAutocommit)
               != IDE_SUCCESS );
 
@@ -634,7 +611,7 @@ iSQLExecuteCommand::DisplayAttributeList( SChar * a_CommandStr,
     // find of SYNONYM's OBJECT
     //----------------------------------------
     m_ISPApi->FindSynonymObject( a_UserName, a_TableName, TYPE_TABLE );
-    // --> BUG-40103ì—ì„œ ì¶”ê°€ëœ TYPE_TEMP_TABLE ì²˜ë¦¬ëŠ” í•„ìš”ì—†ì–´ ë³´ì¸ë‹¤.
+    // --> BUG-40103¿¡¼­ Ãß°¡µÈ TYPE_TEMP_TABLE Ã³¸®´Â ÇÊ¿ä¾ø¾î º¸ÀÎ´Ù.
 
     if (idlOS::strlen(a_TableName) > 2)
     {
@@ -664,7 +641,7 @@ iSQLExecuteCommand::DisplayAttributeList( SChar * a_CommandStr,
                 }
             }
 
-            /* PROJ-1107 Check Constraint ì§€ì› */
+            /* PROJ-1107 Check Constraint Áö¿ø */
             if ( gProperty.GetCheckConstraints() == ID_TRUE )
             {
                 (void)ShowCheckConstraints( a_UserName, a_TableName );
@@ -697,14 +674,10 @@ iSQLExecuteCommand::DisplayAttributeList( SChar * a_CommandStr,
 }
 
 IDE_RC
-iSQLExecuteCommand::DisplayAttributeList4FTnPV( SChar * a_CommandStr,
-                                                SChar * a_UserName,
+iSQLExecuteCommand::DisplayAttributeList4FTnPV( SChar * a_UserName,
                                                 SChar * a_TableName )
 {
     SInt      sAutocommit;
-
-    idlOS::sprintf(m_Spool->m_Buf, "%s", a_CommandStr);
-    m_Spool->PrintCommand();
 
     IDE_TEST( m_ISPApi->GetConnectAttr(SQL_ATTR_AUTOCOMMIT, &sAutocommit)
               != IDE_SUCCESS );
@@ -755,12 +728,6 @@ iSQLExecuteCommand::ShowColumns( SChar * a_UserName,
     SChar      sNQTableName[UT_MAX_NAME_BUFFER_SIZE];
     ColumnInfo sColInfo;
 
-    IDE_TEST_RAISE(m_ISPApi->getTBSName(a_UserName, a_TableName,
-                                        sTBSName) != IDE_SUCCESS,
-                   error);
-    idlOS::sprintf(m_Spool->m_Buf, "[ TABLESPACE : %s ]\n", sTBSName);
-    m_Spool->Print();
-
     // To Fix BUG-17430
     utString::makeNameInSQL( sNQUserName,
                              ID_SIZEOF(sNQUserName),
@@ -783,6 +750,12 @@ iSQLExecuteCommand::ShowColumns( SChar * a_UserName,
     {
         if (i == 0)
         {
+            /* BUG-47993 TBS name should be shown only when table exists */
+            IDE_TEST_RAISE(m_ISPApi->getTBSName(a_UserName, a_TableName,
+                        sTBSName) != IDE_SUCCESS, error);
+            idlOS::sprintf(m_Spool->m_Buf, "[ TABLESPACE : %s ]\n", sTBSName);
+            m_Spool->Print();
+           
             idlOS::sprintf(m_Spool->m_Buf, "[ ATTRIBUTE ]                                                         \n");
             m_Spool->Print();
 
@@ -883,7 +856,7 @@ iSQLExecuteCommand::ShowColumns( SChar * a_UserName,
                 idlOS::sprintf(tmp, "FLOAT");
             }
             break;
-        case SQL_REAL : // ì‹¤ì œ FLOAT
+        case SQL_REAL : // ½ÇÁ¦ FLOAT
             idlOS::strcpy(tmp, "REAL");
             break;
         case SQL_DOUBLE :
@@ -942,7 +915,7 @@ iSQLExecuteCommand::ShowColumns( SChar * a_UserName,
             break;
         }
         // PROJ-2002 Column Security
-        // ë³´ì•ˆ ì»¬ëŸ¼ì˜ ì†ì„± ì¶”ê°€
+        // º¸¾È ÄÃ·³ÀÇ ¼Ó¼º Ãß°¡
         if (sColInfo.mEncrypt == 1)
         {
             idlOS::strcat(tmp, " ENCRYPT");
@@ -973,8 +946,7 @@ iSQLExecuteCommand::ShowColumns( SChar * a_UserName,
     {
         m_ISPApi->StmtClose(ID_FALSE);
 
-        uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(), &gErrorMgr);
-        m_Spool->Print();
+        PrintMultiError();
 
         if ( idlOS::strcmp(m_ISPApi->GetErrorState(), "08S01") == 0 )
         {
@@ -1077,8 +1049,7 @@ iSQLExecuteCommand::ShowColumns4FTnPV( SChar * a_UserName,
     {
         m_ISPApi->StmtClose(ID_FALSE);
 
-        uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(), &gErrorMgr);
-        m_Spool->Print();
+        PrintMultiError();
 
         if ( idlOS::strcmp(m_ISPApi->GetErrorState(), "08S01") == 0 )
         {
@@ -1230,8 +1201,7 @@ iSQLExecuteCommand::ShowIndexInfo( SChar * a_UserName,
     {
         m_ISPApi->StmtClose(ID_FALSE);
 
-        uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(), &gErrorMgr);
-        m_Spool->Print();
+        PrintMultiError();
 
         if ( idlOS::strcmp(m_ISPApi->GetErrorState(), "08S01") == 0 )
         {
@@ -1306,8 +1276,7 @@ iSQLExecuteCommand::ShowPrimaryKeys( SChar * a_UserName,
     {
         m_ISPApi->StmtClose(ID_FALSE);
 
-        uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(), &gErrorMgr);
-        m_Spool->Print();
+        PrintMultiError();
 
         if ( idlOS::strcmp(m_ISPApi->GetErrorState(), "08S01") == 0 )
         {
@@ -1506,8 +1475,7 @@ iSQLExecuteCommand::ShowForeignKeys( SChar * a_UserName,
 
     IDE_EXCEPTION( error );
     {
-        uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(), &gErrorMgr);
-        m_Spool->Print();
+        PrintMultiError();
 
         if ( idlOS::strcmp(m_ISPApi->GetErrorState(), "08S01") == 0 )
         {
@@ -1553,8 +1521,7 @@ iSQLExecuteCommand::ShowCheckConstraints( SChar * aUserName,
 
     IDE_EXCEPTION( ERR_GET_DATA );
     {
-        uteSprintfErrorCode( m_Spool->m_Buf, gProperty.GetCommandLen(), &gErrorMgr );
-        m_Spool->Print();
+        PrintMultiError();
 
         if ( idlOS::strcmp( m_ISPApi->GetErrorState(), "08S01" ) == 0 )
         {
@@ -1628,9 +1595,7 @@ iSQLExecuteCommand::ShowPartitions( SChar * aUserName,
 
     IDE_EXCEPTION( ERR_GET_DATA );
     {
-        uteSprintfErrorCode( m_Spool->m_Buf, gProperty.GetCommandLen(),
-                             &gErrorMgr );
-        m_Spool->Print();
+        PrintMultiError();
 
         if ( idlOS::strcmp( m_ISPApi->GetErrorState(), "08S01" ) == 0 )
         {
@@ -1837,13 +1802,9 @@ iSQLExecuteCommand::ShowPartitionTbs( SInt   aUserId,
 }
 
 IDE_RC
-iSQLExecuteCommand::ExecuteDDLStmt( SChar           * a_CommandStr,
-                                    SChar           * a_DDLStmt,
+iSQLExecuteCommand::ExecuteDDLStmt( SChar           * a_DDLStmt,
                                     iSQLCommandKind   a_CommandKind )
 {
-    idlOS::sprintf(m_Spool->m_Buf, "%s", a_CommandStr);
-    m_Spool->PrintCommand();
-
     if ( gProperty.GetTiming() == ID_TRUE )
     {
         m_uttTime.reset();
@@ -1946,8 +1907,7 @@ iSQLExecuteCommand::ExecuteDDLStmt( SChar           * a_CommandStr,
 
     IDE_EXCEPTION(error);
     {
-        uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(), &gErrorMgr);
-        m_Spool->Print();
+        PrintMultiError();
 
         if ( idlOS::strcmp(m_ISPApi->GetErrorState(), "08S01") == 0 )
         {
@@ -1964,27 +1924,23 @@ iSQLExecuteCommand::ExecuteDDLStmt( SChar           * a_CommandStr,
 /**
  * ExecuteSelectOrDMLStmt.
  *
- * SELECT ë˜ëŠ” DML statementë¥¼ ì‹¤í–‰í•˜ê³  ê²°ê³¼ë¥¼ ì¶œë ¥í•œë‹¤.
+ * SELECT ¶Ç´Â DML statement¸¦ ½ÇÇàÇÏ°í °á°ú¸¦ Ãâ·ÂÇÑ´Ù.
  *
  * @param[in] aCmdStr
- *  ì‚¬ìš©ì ë˜ëŠ” ìŠ¤í¬ë¦½íŠ¸ë¡œë¶€í„° ì…ë ¥ë°›ì€ ëª…ë ¹ ë¬¸ìì—´.
+ *  »ç¿ëÀÚ ¶Ç´Â ½ºÅ©¸³Æ®·ÎºÎÅÍ ÀÔ·Â¹ŞÀº ¸í·É ¹®ÀÚ¿­.
  * @param[in] aQueryStr
- *  ëª…ë ¹ ë¬¸ìì—´ ì¤‘ SQL ì¿¼ë¦¬ì— í•´ë‹¹í•˜ëŠ” ë¶€ë¶„ì˜ ë¬¸ìì—´.
+ *  ¸í·É ¹®ÀÚ¿­ Áß SQL Äõ¸®¿¡ ÇØ´çÇÏ´Â ºÎºĞÀÇ ¹®ÀÚ¿­.
  * @param[in] aCmdKind
- *  iSQL ëª…ë ¹ì˜ ì¢…ë¥˜. ë‹¤ìŒ ê°’ ì¤‘ í•˜ë‚˜ì´ë‹¤.
+ *  iSQL ¸í·ÉÀÇ Á¾·ù. ´ÙÀ½ °ª Áß ÇÏ³ªÀÌ´Ù.
  *  SELECT_COM, INSERT_COM, UPDATE_COM, DELETE_COM, MOVE_COM, MERGE_COM, PREP_SELECT_COM,
  *  PREP_INSERT_COM, PRE_UPDATE_COM, PREP_DELETE_COM, PREP_MOVE_COM.
  */
-IDE_RC iSQLExecuteCommand::ExecuteSelectOrDMLStmt(SChar           * aCmdStr,
-                                                  SChar           * aQueryStr,
+IDE_RC iSQLExecuteCommand::ExecuteSelectOrDMLStmt(SChar           * aQueryStr,
                                                   iSQLCommandKind   aCmdKind)
 {
     idBool sPrepare = ID_FALSE;
     SInt   sRowCnt;
     SQLLEN sTmpSQLLEN;
-
-    idlOS::snprintf(m_Spool->m_Buf, gProperty.GetCommandLen(), "%s", aCmdStr);
-    m_Spool->PrintCommand();
 
     m_ISPApi->SetQuery(aQueryStr);
 
@@ -2047,8 +2003,7 @@ IDE_RC iSQLExecuteCommand::ExecuteSelectOrDMLStmt(SChar           * aCmdStr,
             m_Spool->Print();
             DisconnectDB();
         }
-        uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(), &gErrorMgr);
-        m_Spool->Print();
+        PrintMultiError();
     }
 
     IDE_EXCEPTION_END;
@@ -2066,17 +2021,17 @@ iSQLExecuteCommand::FetchSelectStmt(idBool aPrepare, SInt * aRowCnt)
     int *space       = NULL;
     int  i;
     int    nResult;
-    UInt   sMaxLen = 0; // BUG-22685; ì»¬ëŸ¼ë“¤ì¤‘ ì´ë¦„ì´ ê°€ì¥ ê¸´ ê²ƒì˜ ê¸¸ì´
+    UInt   sMaxLen = 0; // BUG-22685; ÄÃ·³µéÁß ÀÌ¸§ÀÌ °¡Àå ±ä °ÍÀÇ ±æÀÌ
     SInt   sColCnt = 0;
     SInt   sRowCnt = 0;
     idBool sCallPrint = ID_FALSE;
 
-    /* BUG-32568 : Fetch Cancel ì„¤ì • ì´ˆê¸°í™” */
+    /* BUG-32568 : Fetch Cancel ¼³Á¤ ÃÊ±âÈ­ */
     ResetFetchCancel();
 
     // bug-33948: codesonar: Integer Overflow of Allocation Size
     sColCnt = m_ISPApi->m_Result.GetSize();
-    // PSMì„ ì‹¤í–‰í• ê²½ìš° ì»¬ëŸ¼ ê°¯ìˆ˜ëŠ” 0ì´ë‹¤
+    // PSMÀ» ½ÇÇàÇÒ°æ¿ì ÄÃ·³ °¹¼ö´Â 0ÀÌ´Ù
     IDE_TEST(sColCnt == 0);
     IDE_TEST_RAISE(sColCnt < 0, invalidColCnt);
 
@@ -2095,7 +2050,7 @@ iSQLExecuteCommand::FetchSelectStmt(idBool aPrepare, SInt * aRowCnt)
     {
         sCallPrint = ID_TRUE;
     }
-    /* BUG-44614 Spoolì´ ì„¤ì •ëœ ê²½ìš° í•´ë‹¹ íŒŒì¼ì— ê²°ê³¼ë¥¼ ì €ì¥í•´ì•¼ í•¨ */
+    /* BUG-44614 SpoolÀÌ ¼³Á¤µÈ °æ¿ì ÇØ´ç ÆÄÀÏ¿¡ °á°ú¸¦ ÀúÀåÇØ¾ß ÇÔ */
     else if ( m_Spool->IsSpoolOn() == ID_TRUE )
     {
         sCallPrint = ID_TRUE;
@@ -2122,7 +2077,7 @@ iSQLExecuteCommand::FetchSelectStmt(idBool aPrepare, SInt * aRowCnt)
     /* BUG-37926 To enhance isql performance when termout are deactivated. */
     if( sCallPrint == ID_TRUE )
     {
-        // BUG-22685; vertical onì¼ ê²½ìš° ì»¬ëŸ¼ ëª…ì„ í—¤ë”ë¡œ ë¿Œë¦¬ì§€ ì•ŠëŠ”ë‹¤.
+        // BUG-22685; vertical onÀÏ °æ¿ì ÄÃ·³ ¸íÀ» Çì´õ·Î »Ñ¸®Áö ¾Ê´Â´Ù.
         if ( ( gProperty.GetPageSize() == 0 ) &&
              ( gProperty.GetVertical() == ID_FALSE ) )
         {
@@ -2131,7 +2086,7 @@ iSQLExecuteCommand::FetchSelectStmt(idBool aPrepare, SInt * aRowCnt)
     }
 
     // BUG-22685
-    // ì»¬ëŸ¼ëª… ì¤‘ ê°€ì¥ ê¸´ ì»¬ëŸ¼ëª…ì˜ ê¸¸ì´ë¥¼ êµ¬í•œë‹¤.
+    // ÄÃ·³¸í Áß °¡Àå ±ä ÄÃ·³¸íÀÇ ±æÀÌ¸¦ ±¸ÇÑ´Ù.
     if (gProperty.GetVertical() == ID_TRUE)
     {
         for ( i = 0; i < sColCnt; i++ )
@@ -2165,15 +2120,14 @@ iSQLExecuteCommand::FetchSelectStmt(idBool aPrepare, SInt * aRowCnt)
                     m_Spool->Print();
                     DisconnectDB();
                 }
-                uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(), &gErrorMgr);
-                m_Spool->Print();
+                PrintMultiError();
                 break;
             }
 
             /* 
-             * BUG-32568 Support Cancel : Row ë‹¨ìœ„ë¡œ Fetch Cancel
+             * BUG-32568 Support Cancel : Row ´ÜÀ§·Î Fetch Cancel
              *
-             * Fetch()ì˜ ë¦¬í„´ê°’ í™•ì¸ í›„ IsFetchCanceled()ë¥¼ í™•ì¸í•´ì•¼ í•œë‹¤.
+             * Fetch()ÀÇ ¸®ÅÏ°ª È®ÀÎ ÈÄ IsFetchCanceled()¸¦ È®ÀÎÇØ¾ß ÇÑ´Ù.
              */
             IDE_TEST_RAISE(IsFetchCanceled() == ID_TRUE, FetchCanceled);
 
@@ -2184,7 +2138,7 @@ iSQLExecuteCommand::FetchSelectStmt(idBool aPrepare, SInt * aRowCnt)
             }
 
             // BUG-22685
-            // ì»¬ëŸ¼ì˜ ë‚´ìš©ì„ ì¶œë ¥í•˜ê¸° ì „ì— ì»¬ëŸ¼ëª…ì„ ì¶œë ¥í•œë‹¤.
+            // ÄÃ·³ÀÇ ³»¿ëÀ» Ãâ·ÂÇÏ±â Àü¿¡ ÄÃ·³¸íÀ» Ãâ·ÂÇÑ´Ù.
             if (gProperty.GetVertical() == ID_TRUE)
             {
                 for (i = 0; i < sColCnt; i++)
@@ -2210,7 +2164,7 @@ iSQLExecuteCommand::FetchSelectStmt(idBool aPrepare, SInt * aRowCnt)
                     m_Spool->Print();
 
                     // BUG-22685
-                    // vertical onì¼ ê²½ìš° ë§¤ ì»¬ëŸ¼ë§ˆë‹¤ lineì„ ë„£ëŠ”ë‹¤.
+                    // vertical onÀÏ °æ¿ì ¸Å ÄÃ·³¸¶´Ù lineÀ» ³Ö´Â´Ù.
                     idlOS::sprintf(m_Spool->m_Buf, " \n");
                     m_Spool->Print();
                 }
@@ -2250,18 +2204,17 @@ iSQLExecuteCommand::FetchSelectStmt(idBool aPrepare, SInt * aRowCnt)
         uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(), &gErrorMgr);
         m_Spool->Print();
     }
-    // fix BUG-24553 LOB ì²˜ë¦¬ì‹œ ì—ëŸ¬ê°€ ë°œìƒí•  ê²½ìš° ì—ëŸ¬ ì„¤ì •
+    // fix BUG-24553 LOB Ã³¸®½Ã ¿¡·¯°¡ ¹ß»ıÇÒ °æ¿ì ¿¡·¯ ¼³Á¤
     IDE_EXCEPTION(LobError);
     {
         // ERR-110C4 : LobLocator can not span the transaction
         if (m_ISPApi->GetErrorCode() == 0x110c4)
         {
-            // lobì€ autocommit onì—ì„œëŠ” í•  ìˆ˜ ì—†ë‹¤ê³  ì—ëŸ¬ë¥¼ ì¶œë ¥
+            // lobÀº autocommit on¿¡¼­´Â ÇÒ ¼ö ¾ø´Ù°í ¿¡·¯¸¦ Ãâ·Â
             uteSetErrorCode(&gErrorMgr, utERR_ABORT_LOB_AUTOCOMMIT_MODE_ERR);
         }
 
-        uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(), &gErrorMgr);
-        m_Spool->Print();
+        PrintMultiError();
     }
     IDE_EXCEPTION( invalidColCnt );
     {
@@ -2291,20 +2244,20 @@ iSQLExecuteCommand::FetchSelectStmt(idBool aPrepare, SInt * aRowCnt)
 /**
  * PrintFoot.
  *
- * SELECT ë˜ëŠ” DML ìˆ˜í–‰ ê²°ê³¼ì˜ ë ë¶€ë¶„ì„ ì¶œë ¥í•œë‹¤.
- * ì¶œë ¥í•˜ëŠ” ë‚´ìš©ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
- *     . SELECTë˜ê±°ë‚˜ ë³€ê²½ëœ í–‰ì˜ ê°œìˆ˜.
- *     . Plan ì •ë³´.
- *     . ìˆ˜í–‰ ì‹œê°„ ì •ë³´.
+ * SELECT ¶Ç´Â DML ¼öÇà °á°úÀÇ ³¡ ºÎºĞÀ» Ãâ·ÂÇÑ´Ù.
+ * Ãâ·ÂÇÏ´Â ³»¿ëÀº ´ÙÀ½°ú °°´Ù.
+ *     . SELECTµÇ°Å³ª º¯°æµÈ ÇàÀÇ °³¼ö.
+ *     . Plan Á¤º¸.
+ *     . ¼öÇà ½Ã°£ Á¤º¸.
  *
  * @param[in] aRowCnt
- *  SELECTë˜ê±°ë‚˜ ë³€ê²½ëœ í–‰ì˜ ê°œìˆ˜.
+ *  SELECTµÇ°Å³ª º¯°æµÈ ÇàÀÇ °³¼ö.
  * @param[in] aCmdKind
- *  iSQL ëª…ë ¹ì˜ ì¢…ë¥˜. ë‹¤ìŒ ê°’ ì¤‘ í•˜ë‚˜ì´ë‹¤.
+ *  iSQL ¸í·ÉÀÇ Á¾·ù. ´ÙÀ½ °ª Áß ÇÏ³ªÀÌ´Ù.
  *  SELECT_COM, INSERT_COM, UPDATE_COM, DELETE_COM, MOVE_COM, MERGE_COM, PREP_SELECT_COM,
  *  PREP_INSERT_COM, PREP_UPDATE_COM, PREP_DELETE_COM, PREP_MOVE_COM.
  * @param[in] aPrepare
- *  Prepareë¥¼ ì‚¬ìš©í•˜ì—¬ ì¿¼ë¦¬ë¬¸ì´ ìˆ˜í–‰ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€.
+ *  Prepare¸¦ »ç¿ëÇÏ¿© Äõ¸®¹®ÀÌ ¼öÇàµÇ¾ú´ÂÁö ¿©ºÎ.
  */
 IDE_RC iSQLExecuteCommand::PrintFoot(SInt            aRowCnt,
                                      iSQLCommandKind aCmdKind,
@@ -2415,8 +2368,8 @@ IDE_RC iSQLExecuteCommand::PrintPlan(idBool aPrepare)
             m_Spool->m_Buf[sPlanTreeLen - 1] = '\n';
         }
 
-        /* Altibase 4.3.10.x ì´ì „ ë²„ì „ì˜ ì¶œë ¥ í˜•ì‹ê³¼
-         * ë™ì¼í•˜ê²Œ ë§Œë“¤ê¸° ìœ„í•œ ì½”ë“œ */
+        /* Altibase 4.3.10.x ÀÌÀü ¹öÀüÀÇ Ãâ·Â Çü½Ä°ú
+         * µ¿ÀÏÇÏ°Ô ¸¸µé±â À§ÇÑ ÄÚµå */
         if( gProgOption.IsATAF() != ID_TRUE )
         {
             if (sPlanTreeLen < (UInt)(gProperty.GetCommandLen() - 1))
@@ -2435,8 +2388,7 @@ IDE_RC iSQLExecuteCommand::PrintPlan(idBool aPrepare)
 
     IDE_EXCEPTION_END;
 
-    uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(), &gErrorMgr);
-    m_Spool->Print();
+    PrintMultiError();
 
     return IDE_FAILURE;
 }
@@ -2452,8 +2404,7 @@ void iSQLExecuteCommand::PrintTime()
 // BUG-39845 when assign to nibble type, isql may be fatal.
 /* BUG-37002 isql cannot parse package as a assigned variable */
 IDE_RC
-iSQLExecuteCommand::ExecutePSMStmt( SChar * a_CommandStr,
-                                    SChar * a_PSMStmt,
+iSQLExecuteCommand::ExecutePSMStmt( SChar * a_PSMStmt,
                                     SChar * a_UserName,
                                     SChar * /* a_PkgName */,
                                     SChar * /* a_ProcName */,
@@ -2468,9 +2419,6 @@ iSQLExecuteCommand::ExecutePSMStmt( SChar * a_CommandStr,
     SInt         i;
     SInt         sRowCnt;
     void        *sValuePtr = NULL;
-
-    idlOS::sprintf(m_Spool->m_Buf, "%s", a_CommandStr);
-    m_Spool->PrintCommand();
 
     m_ISPApi->SetQuery(a_PSMStmt);
 
@@ -2548,7 +2496,8 @@ iSQLExecuteCommand::ExecutePSMStmt( SChar * a_CommandStr,
 
     while (FetchSelectStmt(ID_TRUE, &sRowCnt) == IDE_SUCCESS)
     {
-        IDE_TEST(PrintFoot(sRowCnt, SELECT_COM, ID_FALSE) != IDE_SUCCESS);
+        /* BUG-47051 */
+        IDE_TEST(PrintFoot(sRowCnt, SELECT_COM, ID_TRUE) != IDE_SUCCESS);
 
         idlOS::sprintf(m_Spool->m_Buf, "\n");
         m_Spool->Print();
@@ -2566,7 +2515,7 @@ iSQLExecuteCommand::ExecutePSMStmt( SChar * a_CommandStr,
 
     if (r_node != NULL)
     {
-        gHostVarMgr.setHostVar(a_IsFunc, r_node); // BUGBUG : r_node ëŠ” ë¶ˆí•„ìš”í•œ parameter
+        gHostVarMgr.setHostVar(a_IsFunc, r_node); // BUGBUG : r_node ´Â ºÒÇÊ¿äÇÑ parameter
     }
 
     idlOS::sprintf(m_Spool->m_Buf, "Execute success.\n");
@@ -2584,8 +2533,7 @@ iSQLExecuteCommand::ExecutePSMStmt( SChar * a_CommandStr,
 
     IDE_EXCEPTION(error);
     {
-        uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(), &gErrorMgr);
-        m_Spool->Print();
+        PrintMultiError();
 
         if ( idlOS::strcmp(m_ISPApi->GetErrorState(), "08S01") == 0 )
         {
@@ -2602,8 +2550,7 @@ iSQLExecuteCommand::ExecutePSMStmt( SChar * a_CommandStr,
 }
 
 IDE_RC
-iSQLExecuteCommand::ExecuteConnectStmt(const SChar * aCmdStr,
-                                       SChar       * /* aQueryStr */,
+iSQLExecuteCommand::ExecuteConnectStmt(SChar       * /* aQueryStr */,
                                        SChar       * aCmdUser,
                                        SChar       * aCmdPasswd,
                                        SChar       * aCmdNlsUse,
@@ -2613,11 +2560,8 @@ iSQLExecuteCommand::ExecuteConnectStmt(const SChar * aCmdStr,
     SInt sConnType;
     SChar *sUnixPath = (SChar *)"";
 
-    idlOS::snprintf(m_Spool->m_Buf, gProperty.GetCommandLen(), "%s", aCmdStr);
-    m_Spool->PrintCommand();
-
     /*
-     * BUGBUG: ì„œë²„ ë¬¸ì œë¡œ ì¸í•˜ì—¬ connect/disconnectì˜ SQLì²˜ë¦¬ë¥¼ ë‹¤ìŒìœ¼ë¡œ ë¯¸ë£¬ë‹¤.
+     * BUGBUG: ¼­¹ö ¹®Á¦·Î ÀÎÇÏ¿© connect/disconnectÀÇ SQLÃ³¸®¸¦ ´ÙÀ½À¸·Î ¹Ì·é´Ù.
      */
 #ifdef CONNECT_SQL_EXEC
     if (gProperty.IsConnToRealInstance() == ID_TRUE)
@@ -2657,7 +2601,7 @@ iSQLExecuteCommand::ExecuteConnectStmt(const SChar * aCmdStr,
                                       gProgOption.GetPortNo(),
                                       sConnType,
                                       gProgOption.getTimezone(),
-                                      &gMessageCallbackStruct,
+                                      &gMessageCallback,
                                       gProgOption.GetSslCa(),
                                       gProgOption.GetSslCapath(),
                                       gProgOption.GetSslCert(),
@@ -2690,9 +2634,7 @@ iSQLExecuteCommand::ExecuteConnectStmt(const SChar * aCmdStr,
 #ifdef CONNECT_SQL_EXEC
     IDE_EXCEPTION(DirectExecuteError);
     {
-        uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(),
-                            &gErrorMgr);
-        m_Spool->Print();
+        PrintMultiError();
 
         if ( idlOS::strcmp(m_ISPApi->GetErrorState(), "08S01") == 0 )
         {
@@ -2717,16 +2659,12 @@ iSQLExecuteCommand::ExecuteConnectStmt(const SChar * aCmdStr,
             }
             else
             {
-                uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(),
-                                    &gErrorMgr);
-                m_Spool->Print();
+                PrintMultiError();
             }
         }
         else
         {
-            uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(),
-                                &gErrorMgr);
-            m_Spool->Print();
+            PrintMultiError();
         }
     }
     
@@ -2736,15 +2674,11 @@ iSQLExecuteCommand::ExecuteConnectStmt(const SChar * aCmdStr,
 }
 
 IDE_RC
-iSQLExecuteCommand::ExecuteDisconnectStmt(const SChar * aCmdStr,
-                                          SChar       * /* aQueryStr */,
+iSQLExecuteCommand::ExecuteDisconnectStmt(SChar       * /* aQueryStr */,
                                           idBool        aDisplayMode)
 {
-    idlOS::snprintf(m_Spool->m_Buf, gProperty.GetCommandLen(), "%s", aCmdStr);
-    m_Spool->PrintCommand();
-
     /*
-     * BUGBUG: ì„œë²„ ë¬¸ì œë¡œ ì¸í•˜ì—¬ connect/disconnectì˜ SQLì²˜ë¦¬ë¥¼ ë‹¤ìŒìœ¼ë¡œ ë¯¸ë£¬ë‹¤.
+     * BUGBUG: ¼­¹ö ¹®Á¦·Î ÀÎÇÏ¿© connect/disconnectÀÇ SQLÃ³¸®¸¦ ´ÙÀ½À¸·Î ¹Ì·é´Ù.
      */
 #ifdef CONNECT_SQL_EXEC
     if (gProperty.IsConnToRealInstance() == ID_TRUE)
@@ -2778,9 +2712,7 @@ iSQLExecuteCommand::ExecuteDisconnectStmt(const SChar * aCmdStr,
 #ifdef CONNECT_SQL_EXEC
     IDE_EXCEPTION(DirectExecuteError);
     {
-        uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(),
-                            &gErrorMgr);
-        m_Spool->Print();
+        PrintMultiError();
 
         if ( idlOS::strcmp(m_ISPApi->GetErrorState(), "08S01") == 0 )
         {
@@ -2801,9 +2733,6 @@ iSQLExecuteCommand::ExecuteAutoCommitStmt( SChar * a_CommandStr,
                                            idBool  a_IsAutoCommitOn )
 {
     SChar *sStr;
-
-    idlOS::sprintf(m_Spool->m_Buf, "%s", a_CommandStr);
-    m_Spool->PrintCommand();
 
     IDE_TEST_RAISE(m_ISPApi->AutoCommit(a_IsAutoCommitOn) != IDE_SUCCESS, error);
 
@@ -2830,8 +2759,7 @@ iSQLExecuteCommand::ExecuteAutoCommitStmt( SChar * a_CommandStr,
 
     IDE_EXCEPTION(error);
     {
-        uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(), &gErrorMgr);
-        m_Spool->Print();
+        PrintMultiError();
 
         if ( idlOS::strcmp(m_ISPApi->GetErrorState(), "08S01") == 0 )
         {
@@ -2919,7 +2847,7 @@ iSQLExecuteCommand::ExecuteEditStmt(
 
     editCommand[WORD_LEN-1] = '\0';
     sysCommand[WORD_LEN-1] = '\0';
-    // BUG-21412: a_InFileNameì´ ì„¤ì •ë˜ì–´ìˆì§€ ì•Šìœ¼ë©´ a_PathTypeì„ ë¬´ì‹œí•˜ë˜ê²ƒ ìˆ˜ì •.
+    // BUG-21412: a_InFileNameÀÌ ¼³Á¤µÇ¾îÀÖÁö ¾ÊÀ¸¸é a_PathTypeÀ» ¹«½ÃÇÏ´ø°Í ¼öÁ¤.
     /* BUG-34502: handling quoted identifiers */
     idlOS::snprintf(sysCommand, WORD_LEN-1, "%s \"", editCommand);
     if ( a_PathType == ISQL_PATH_HOME )
@@ -2986,12 +2914,8 @@ iSQLExecuteCommand::ExecuteShellStmt( SChar * a_ShellStmt )
 }
 
 IDE_RC
-iSQLExecuteCommand::ExecuteOtherCommandStmt( SChar * a_CommandStr,
-                                             SChar * a_OtherCommandStmt )
+iSQLExecuteCommand::ExecuteOtherCommandStmt( SChar * a_OtherCommandStmt )
 {
-    idlOS::sprintf(m_Spool->m_Buf, "%s", a_CommandStr);
-    m_Spool->PrintCommand();
-
     m_ISPApi->SetQuery(a_OtherCommandStmt);
 
     if ( gProperty.GetTiming() == ID_TRUE )
@@ -3022,8 +2946,7 @@ iSQLExecuteCommand::ExecuteOtherCommandStmt( SChar * a_CommandStr,
 
     IDE_EXCEPTION(error);
     {
-        uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(), &gErrorMgr);
-        m_Spool->Print();
+        PrintMultiError();
 
         if ( idlOS::strcmp(m_ISPApi->GetErrorState(), "08S01") == 0 )
         {
@@ -3039,8 +2962,7 @@ iSQLExecuteCommand::ExecuteOtherCommandStmt( SChar * a_CommandStr,
 }
 
 IDE_RC
-iSQLExecuteCommand::PrintHelpString(SChar * /*a_CommandStr*/,
-                                    iSQLCommandKind eHelpArguKind)
+iSQLExecuteCommand::PrintHelpString(iSQLCommandKind eHelpArguKind)
 {
     iSQLHelp cHelp;
 
@@ -3058,21 +2980,21 @@ iSQLExecuteCommand::PrintHeader( int * ColSize,
  *
  * Arguments :
  *
- *     ColSize [Input]  : ì¹¼ëŸ¼ë³„ ë°ì´í„° ì¶œë ¥ í¬ê¸°
+ *     ColSize [Input]  : Ä®·³º° µ¥ÀÌÅÍ Ãâ·Â Å©±â
  *
- *     pg      [Output] : í•œ ë¼ì¸ì— ì¶œë ¥í•  ì¹¼ëŸ¼ì˜ ê°¯ìˆ˜.
- *         ì¹¼ëŸ¼ ê°¯ìˆ˜ê°€ nì¸ ê²½ìš°, pg[0] + ... + pg[n-1] = n ì´ë‹¤.
- *         ì˜ˆ1) ì¶œë ¥í•  ì „ì²´ ì¹¼ëŸ¼ ìˆ˜ê°€ 2ì´ê³  pg[0] = 2ì´ë©´, 0ë²ˆì§¸ ì¹¼ëŸ¼ë¶€í„°
- *             2ê°œì˜ ì¹¼ëŸ¼ì„ í•œ ë¼ì¸ì— ì¶œë ¥í•˜ë¼ëŠ” ì˜ë¯¸ì´ë‹¤. ì´ ë•Œ pg[1]ì€ 0ì¼ ê²ƒì´ë‹¤.
- *         ì˜ˆ2) ì¶œë ¥í•  ì „ì²´ ì¹¼ëŸ¼ ìˆ˜ê°€ 4ì´ê³  ëª¨ë“  pg[k]ì˜ ê°’ì´ 1ì¸ ê²½ìš°,
- *             ê°ê°ì˜ ì¹¼ëŸ¼ ë°ì´í„°ê°€ ëª¨ë‘ ë‹¤ë¥¸ ë¼ì¸ì— ì¶œë ¥ë  ê²ƒì´ë‹¤.
- *         ì˜ˆ3) ì¶œë ¥í•  ì „ì²´ ì¹¼ëŸ¼ ìˆ˜ê°€ 3ì´ê³  1,2ë²ˆì§¸ ì¹¼ëŸ¼ì´ í•œ ë¼ì¸ì—, 3ë²ˆì§¸ ì¹¼ëŸ¼ì´
- *             ë‹¤ë¥¸ ë¼ì¸ì— ì¶œë ¥ëœë‹¤ë©´, pg[0]=2, pg[1]=1, pg[2]=0
+ *     pg      [Output] : ÇÑ ¶óÀÎ¿¡ Ãâ·ÂÇÒ Ä®·³ÀÇ °¹¼ö.
+ *         Ä®·³ °¹¼ö°¡ nÀÎ °æ¿ì, pg[0] + ... + pg[n-1] = n ÀÌ´Ù.
+ *         ¿¹1) Ãâ·ÂÇÒ ÀüÃ¼ Ä®·³ ¼ö°¡ 2ÀÌ°í pg[0] = 2ÀÌ¸é, 0¹øÂ° Ä®·³ºÎÅÍ
+ *             2°³ÀÇ Ä®·³À» ÇÑ ¶óÀÎ¿¡ Ãâ·ÂÇÏ¶ó´Â ÀÇ¹ÌÀÌ´Ù. ÀÌ ¶§ pg[1]Àº 0ÀÏ °ÍÀÌ´Ù.
+ *         ¿¹2) Ãâ·ÂÇÒ ÀüÃ¼ Ä®·³ ¼ö°¡ 4ÀÌ°í ¸ğµç pg[k]ÀÇ °ªÀÌ 1ÀÎ °æ¿ì,
+ *             °¢°¢ÀÇ Ä®·³ µ¥ÀÌÅÍ°¡ ¸ğµÎ ´Ù¸¥ ¶óÀÎ¿¡ Ãâ·ÂµÉ °ÍÀÌ´Ù.
+ *         ¿¹3) Ãâ·ÂÇÒ ÀüÃ¼ Ä®·³ ¼ö°¡ 3ÀÌ°í 1,2¹øÂ° Ä®·³ÀÌ ÇÑ ¶óÀÎ¿¡, 3¹øÂ° Ä®·³ÀÌ
+ *             ´Ù¸¥ ¶óÀÎ¿¡ Ãâ·ÂµÈ´Ù¸é, pg[0]=2, pg[1]=1, pg[2]=0
  *         
- *     space   [Output] : í—¤ë”ì˜ ì¹¼ëŸ¼ ì¶œë ¥ í¬ê¸°ê°€ ë°ì´í„° ì¶œë ¥ í¬ê¸°ì¸ 
- *         ColSize[i] ë³´ë‹¤ í´ ê²½ìš°, ê·¸ ì°¨ì´ê°€ space[i]ì— ì…ë ¥ëœë‹¤.
- *         ì¹¼ëŸ¼ë³„ ë°ì´í„° ì¶œë ¥ì‹œ space[i] ë§Œí¼ ê³µë°±ì„ ì±„ì›Œì•¼ 
- *         ì¶œë ¥ ëª¨ì–‘ì´ ì •ë ¬ë˜ì§€ë§Œ, í˜„ì¬ëŠ” ì‚¬ìš©ë˜ì§€ ì•Šê³  ìˆë‹¤.
+ *     space   [Output] : Çì´õÀÇ Ä®·³ Ãâ·Â Å©±â°¡ µ¥ÀÌÅÍ Ãâ·Â Å©±âÀÎ 
+ *         ColSize[i] º¸´Ù Å¬ °æ¿ì, ±× Â÷ÀÌ°¡ space[i]¿¡ ÀÔ·ÂµÈ´Ù.
+ *         Ä®·³º° µ¥ÀÌÅÍ Ãâ·Â½Ã space[i] ¸¸Å­ °ø¹éÀ» Ã¤¿ö¾ß 
+ *         Ãâ·Â ¸ğ¾çÀÌ Á¤·ÄµÇÁö¸¸, ÇöÀç´Â »ç¿ëµÇÁö ¾Ê°í ÀÖ´Ù.
  *
  **********************************************************************/
     int i, j, k, a, p, q;
@@ -3095,7 +3017,7 @@ iSQLExecuteCommand::PrintHeader( int * ColSize,
         nLen = idlOS::strlen(sColName);
         if (nLen > ColSize[i])
         {
-            /* BUG-40342 ì¹¼ëŸ¼ì˜ ìµœëŒ€ display í¬ê¸°ë¥¼ ë„˜ì§€ ì•Šë„ë¡...   */
+            /* BUG-40342 Ä®·³ÀÇ ÃÖ´ë display Å©±â¸¦ ³ÑÁö ¾Êµµ·Ï...   */
             if (nLen > MAX_COL_SIZE)
             {
                 nLen = MAX_COL_SIZE;
@@ -3160,7 +3082,7 @@ iSQLExecuteCommand::PrintHeader( int * ColSize,
              * If LineSize is greater than sMaxBufSize(the size of m_Buf),
              * be careful not to write array out of range: m_Buf
              * when underlining column headings. */
-            sFullCnt = LineSize / (sMaxBufSize - 1); // '\0' ê³ ë ¤
+            sFullCnt = LineSize / (sMaxBufSize - 1); // '\0' °í·Á
             sRestCnt = LineSize % (sMaxBufSize - 1);
             for (a=0; a <sFullCnt; a++)
             {
@@ -3199,21 +3121,14 @@ iSQLExecuteCommand::PrintHeader( int * ColSize,
 }
 
 void
-iSQLExecuteCommand::ShowHostVar( SChar * a_CommandStr )
+iSQLExecuteCommand::ShowHostVar()
 {
-    idlOS::sprintf(m_Spool->m_Buf, "%s", a_CommandStr);
-    m_Spool->PrintCommand();
-
     gHostVarMgr.print();
 }
 
 void
-iSQLExecuteCommand::ShowHostVar( SChar * a_CommandStr,
-                                 SChar * a_HostVarName )
+iSQLExecuteCommand::ShowHostVar( SChar * a_HostVarName )
 {
-    idlOS::sprintf(m_Spool->m_Buf, "%s", a_CommandStr);
-    m_Spool->PrintCommand();
-
     gHostVarMgr.showVar(a_HostVarName);
 }
 
@@ -3242,7 +3157,7 @@ iSQLExecuteCommand::ShowElapsedTime()
 }
 
 /* BUG-39620
- * ë””ìŠ¤í”Œë ˆì´ ì‚¬ì´ì¦ˆ(40 or 128)ì— ë”°ë¼ ì¶œë ¥í•  ê°ì²´ ì´ë¦„ì„ ì¡°ì‘í•˜ê³  ì¶œë ¥í•œë‹¤.
+ * µğ½ºÇÃ·¹ÀÌ »çÀÌÁî(40 or 128)¿¡ µû¶ó Ãâ·ÂÇÒ °´Ã¼ ÀÌ¸§À» Á¶ÀÛÇÏ°í Ãâ·ÂÇÑ´Ù.
  */
 void
 iSQLExecuteCommand::printObjectForDesc( const SChar  * aName,
@@ -3276,7 +3191,7 @@ iSQLExecuteCommand::printObjectForDesc( const SChar  * aName,
 }
 
 /* BUG-39620
- * ë””ìŠ¤í”Œë ˆì´ ì‚¬ì´ì¦ˆ(40 or 128)ì— ë”°ë¼ ì¶œë ¥í•  ìŠ¤í‚¤ë§ˆ ì´ë¦„ê³¼ ê°ì²´ ì´ë¦„ì„ ì¡°ì‘í•˜ê³  ì¶œë ¥í•œë‹¤.
+ * µğ½ºÇÃ·¹ÀÌ »çÀÌÁî(40 or 128)¿¡ µû¶ó Ãâ·ÂÇÒ ½ºÅ°¸¶ ÀÌ¸§°ú °´Ã¼ ÀÌ¸§À» Á¶ÀÛÇÏ°í Ãâ·ÂÇÑ´Ù.
  */
 void
 iSQLExecuteCommand::printSchemaObject( const idBool   aIsSysUser,
@@ -3332,7 +3247,7 @@ iSQLExecuteCommand::printSchemaObject( const idBool   aIsSysUser,
 }
 
 /* BUG-39620
- * ë””ìŠ¤í”Œë ˆì´ ì‚¬ì´ì¦ˆ(40 or 128)ì— ë”°ë¼ ì¶œë ¥í•  ê°ì²´ ì´ë¦„ì„ ì¡°ì‘í•œ í›„ ë°˜í™˜
+ * µğ½ºÇÃ·¹ÀÌ »çÀÌÁî(40 or 128)¿¡ µû¶ó Ãâ·ÂÇÒ °´Ã¼ ÀÌ¸§À» Á¶ÀÛÇÑ ÈÄ ¹İÈ¯
  */
 void
 iSQLExecuteCommand::getObjectNameForDesc( const SChar  * aName,
@@ -3466,4 +3381,38 @@ iSQLExecuteCommand::SetAsyncPrefetch(AsyncPrefetchType aType)
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
+}
+
+/* TASK-7218 Handling Multi-Error */
+IDE_RC
+iSQLExecuteCommand::PrintMultiError()
+{
+    SInt         i = 0;
+    SInt         sErrorSize = 0;
+    uteErrorMgr *sMultiErrorMgr = NULL;
+
+    uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(),
+                        &gErrorMgr);
+    m_Spool->Print();
+
+    if ( gProperty.GetMultiError() == ID_TRUE )
+    {
+        sErrorSize = m_ISPApi->GetMultiErrorSize();
+        sMultiErrorMgr = m_ISPApi->GetMultiErrorMgr();
+
+        for (i = 0; i < sErrorSize; i++)
+        {
+            uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(),
+                                &(sMultiErrorMgr[i]));
+            m_Spool->Print();
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    /*
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+    */
 }

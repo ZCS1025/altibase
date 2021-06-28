@@ -16,22 +16,22 @@
  
 
 /***********************************************************************
- * $Id: qmoStatMgr.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmoStatMgr.h 90850 2021-05-17 05:09:54Z donovan.seo $
  *
  * Description :
  *     Statistical Information Manager
  *
- *     ë‹¤ìŒê³¼ ê°™ì€ ê°ì¢… ì‹¤ì‹œê°„ í†µê³„ ì •ë³´ì˜ ì¶”ì¶œì„ ë‹´ë‹¹í•œë‹¤.
- *          - Tableì˜ Record ê°œìˆ˜
- *          - Tableì˜ Disk Page ê°œìˆ˜
- *          - Indexì˜ Cardinality
- *          - Columnì˜ Cardinality
- *          - Columnì˜ MIN Value
- *          - Columnì˜ MAX Value
+ *     ´ÙÀ½°ú °°Àº °¢Á¾ ½Ç½Ã°£ Åë°è Á¤º¸ÀÇ ÃßÃâÀ» ´ã´çÇÑ´Ù.
+ *          - TableÀÇ Record °³¼ö
+ *          - TableÀÇ Disk Page °³¼ö
+ *          - IndexÀÇ Cardinality
+ *          - ColumnÀÇ Cardinality
+ *          - ColumnÀÇ MIN Value
+ *          - ColumnÀÇ MAX Value
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -46,9 +46,9 @@
 #include <smiDef.h>
 
 //-------------------------------------------------------
-// default í†µê³„ì •ë³´
+// default Åë°èÁ¤º¸
 //-------------------------------------------------------
-// TASK-6699 TPC-H ì„±ëŠ¥ ê°œì„ 
+// TASK-6699 TPC-H ¼º´É °³¼±
 # define QMO_STAT_SYSTEM_SREAD_TIME                  (87.70000000)
 # define QMO_STAT_SYSTEM_MREAD_TIME                  (17.25000000)
 # define QMO_STAT_SYSTEM_MTCALL_TIME                 (0.01130000)
@@ -56,7 +56,7 @@
 # define QMO_STAT_SYSTEM_COMPARE_TIME                (0.01130000)
 # define QMO_STAT_SYSTEM_STORE_TIME                  (0.05000000)
 
-// BUG-40913 v$table ì¡°ì¸ ì§ˆì˜ê°€ ì„±ëŠ¥ì´ ëŠë¦¼
+// BUG-40913 v$table Á¶ÀÎ ÁúÀÇ°¡ ¼º´ÉÀÌ ´À¸²
 # define QMO_STAT_PFVIEW_RECORD_COUNT                (1024)
 
 # define QMO_STAT_TABLE_RECORD_COUNT                 (10240)
@@ -76,25 +76,25 @@
 # define QMO_STAT_COLUMN_AVG_LEN                     (20)
 
 // bug-37125
-// ì¸¡ì •ê°’ì´ 1ë³´ë‹¤ ì‘ê²Œ ì¸¡ì •ì´ ë˜ê³ 
-// 0ì´ ë‚˜ì˜¬ëŠ” ê²½ìš°ë„ ìˆê¸° ë•Œë¬¸ì— ìµœì†Œí•œì˜ ê°’ìœ¼ë¡œ ì§€ì •í•œë‹¤.
+// ÃøÁ¤°ªÀÌ 1º¸´Ù ÀÛ°Ô ÃøÁ¤ÀÌ µÇ°í
+// 0ÀÌ ³ª¿Ã´Â °æ¿ìµµ ÀÖ±â ¶§¹®¿¡ ÃÖ¼ÒÇÑÀÇ °ªÀ¸·Î ÁöÁ¤ÇÑ´Ù.
 # define QMO_STAT_TIME_MIN                           (QMO_COST_EPS)
 
-// TASK-6699 TPC-H ì„±ëŠ¥ ê°œì„ 
+// TASK-6699 TPC-H ¼º´É °³¼±
 # define QMO_STAT_READROW_TIME_MIN                   (0.05290000)
 
 //-------------------------------------------------------
-// qmoIdxCardInfoì™€ qmoColCardInfoì˜ flag ì´ˆê¸°í™”
+// qmoIdxCardInfo¿Í qmoColCardInfoÀÇ flag ÃÊ±âÈ­
 //-------------------------------------------------------
-/* qmoColCardInfoì™€ qmoIdxCardInfoì˜ flagë¥¼ ì´ˆê¸°í™”ì‹œí‚´ */
+/* qmoColCardInfo¿Í qmoIdxCardInfoÀÇ flag¸¦ ÃÊ±âÈ­½ÃÅ´ */
 # define QMO_STAT_CLEAR                       (0x00000000)
 
 //-------------------------------------------------------
-// qmoIdxCardInfoì˜ flag ì •ì˜
+// qmoIdxCardInfoÀÇ flag Á¤ÀÇ
 //-------------------------------------------------------
 
 /* qmoIdxCardInfo.flag                                 */
-// NO INDEX Hintê°€ ì£¼ì–´ì§„ ê²½ìš°
+// NO INDEX Hint°¡ ÁÖ¾îÁø °æ¿ì
 # define QMO_STAT_CARD_IDX_HINT_MASK          (0x00000007)
 # define QMO_STAT_CARD_IDX_HINT_NONE          (0x00000000)
 # define QMO_STAT_CARD_IDX_NO_INDEX           (0x00000001)
@@ -109,47 +109,52 @@
      ((aFlag & QMO_STAT_CARD_IDX_HINT_MASK) == QMO_STAT_CARD_IDX_INDEX_DESC))
 
 /* qmoIdxCardInfo.flag                                 */
-// í•´ë‹¹ indexë¥¼ í¬í•¨í•˜ëŠ” predicateì˜ ì¡´ì¬ ìœ ë¬´
+// ÇØ´ç index¸¦ Æ÷ÇÔÇÏ´Â predicateÀÇ Á¸Àç À¯¹«
 # define QMO_STAT_CARD_IDX_EXIST_PRED_MASK    (0x00000010)
 # define QMO_STAT_CARD_IDX_EXIST_PRED_FALSE   (0x00000000)
 # define QMO_STAT_CARD_IDX_EXIST_PRED_TRUE    (0x00000010)
 
 // To Fix PR-9181
 /* qmoIdxCardInfo.flag                                 */
-// IN SUBQUERY KEYRANGEê°€ ì‚¬ìš©ë˜ëŠ” ì§€ì˜ ì—¬ë¶€
+// IN SUBQUERY KEYRANGE°¡ »ç¿ëµÇ´Â ÁöÀÇ ¿©ºÎ
 # define QMO_STAT_CARD_IDX_IN_SUBQUERY_MASK   (0x00000020)
 # define QMO_STAT_CARD_IDX_IN_SUBQUERY_FALSE  (0x00000000)
 # define QMO_STAT_CARD_IDX_IN_SUBQUERY_TRUE   (0x00000020)
 
 
 /* qmoIdxCardInfo.flag                                 */
-// PRIMARY KEYì˜ ì—¬ë¶€
+// PRIMARY KEYÀÇ ¿©ºÎ
 # define QMO_STAT_CARD_IDX_PRIMARY_MASK       (0x00000040)
 # define QMO_STAT_CARD_IDX_PRIMARY_FALSE      (0x00000000)
 # define QMO_STAT_CARD_IDX_PRIMARY_TRUE       (0x00000040)
 
+/* qmoIdxCardInfo.flag                                 */
+// indexable ÇÁ¸®µğÅ¶À¸·Î¸¸ index key columnÀÌ ±¸¼º ¿©ºÎ
+# define QMO_STAT_CARD_ALL_EQUAL_IDX_MASK     (0x00000080)
+# define QMO_STAT_CARD_ALL_EQUAL_IDX_FALSE    (0x00000000)
+# define QMO_STAT_CARD_ALL_EQUAL_IDX_TRUE     (0x00000080)
 
 //-------------------------------------------------------
-// qmoColCardInfoì˜ flag ì •ì˜
+// qmoColCardInfoÀÇ flag Á¤ÀÇ
 //-------------------------------------------------------
 
 /* qmoColCardInfo.flag                                 */
 
 /* qmoColCardInfo.flag                                 */
-// columnì˜ MIN, MAX ê°’ì´ ì„¤ì •ë˜ì—ˆëŠ”ì§€ì˜ ì—¬ë¶€
+// columnÀÇ MIN, MAX °ªÀÌ ¼³Á¤µÇ¾ú´ÂÁöÀÇ ¿©ºÎ
 # define QMO_STAT_MINMAX_COLUMN_SET_MASK     (0x00000002)
 # define QMO_STAT_MINMAX_COLUMN_SET_FALSE    (0x00000000)
 # define QMO_STAT_MINMAX_COLUMN_SET_TRUE     (0x00000002)
 
 /* qmoColCardInfo.flag                                 */
-// fix BUG-11214 default cardinalityê°€ ì„¤ì •ë˜ì—ˆëŠ”ì§€ì˜ ì—¬ë¶€
+// fix BUG-11214 default cardinality°¡ ¼³Á¤µÇ¾ú´ÂÁöÀÇ ¿©ºÎ
 # define QMO_STAT_DEFAULT_CARD_COLUMN_SET_MASK   (0x00000004)
 # define QMO_STAT_DEFAULT_CARD_COLUMN_SET_FALSE  (0x00000000)
 # define QMO_STAT_DEFAULT_CARD_COLUMN_SET_TRUE   (0x00000004)
 
 
 //-------------------------------------------------------
-// í†µê³„ ì •ë³´ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+// Åë°è Á¤º¸¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
 //-------------------------------------------------------
 
 //--------------------------------------
@@ -165,11 +170,12 @@ typedef struct qmoSystemStatistics
     SDouble      mHashTime;
     SDouble      mCompareTime;
     SDouble      mStoreTime;
+    SDouble      mIndexNlJoinPenalty;
 } qmoSystemStatistics;
 
 
 //--------------------------------------
-// Index Cardinality ì •ë³´
+// Index Cardinality Á¤º¸
 //--------------------------------------
 
 typedef struct qmoKeyRangeColumn
@@ -180,8 +186,8 @@ typedef struct qmoKeyRangeColumn
 
 typedef struct qmoIdxCardInfo
 {
-    // index orderingê³¼ì •ì—ì„œ í”Œë«í¼ê°„ diff ë°©ì§€ë¥¼ ìœ„í•´
-    // qsort ë‚´ì˜ compareí•¨ìˆ˜ë‚´ì—ì„œ ì‚¬ìš©ë¨.
+    // index ordering°úÁ¤¿¡¼­ ÇÃ·§Æû°£ diff ¹æÁö¸¦ À§ÇØ
+    // qsort ³»ÀÇ compareÇÔ¼ö³»¿¡¼­ »ç¿ëµÊ.
     idBool              isValidStat;
 
     UInt                indexId;
@@ -198,37 +204,37 @@ typedef struct qmoIdxCardInfo
 } qmoIdxCardInfo;
 
 //--------------------------------------
-// Column Cardinality ì •ë³´
+// Column Cardinality Á¤º¸
 //--------------------------------------
 
 typedef struct qmoColCardInfo
 {
     //---------------------------------------------------
-    // flag : cardinalityì™€ MIN,MAXì •ë³´ê°€ ì €ì¥ë˜ì—ˆëŠ”ì§€ì˜ ì •ë³´
+    // flag : cardinality¿Í MIN,MAXÁ¤º¸°¡ ÀúÀåµÇ¾ú´ÂÁöÀÇ Á¤º¸
     //---------------------------------------------------
     idBool              isValidStat;
 
     UInt                flag;
     mtcColumn         * column;        // column pointer
 
-    SDouble             columnNDV;     // í•´ë‹¹ columnì˜ cardinality ê°’
+    SDouble             columnNDV;     // ÇØ´ç columnÀÇ cardinality °ª
     SDouble             nullValueCount;
     SDouble             avgColumnLen;
 
     //---------------------------------------------------
-    // MIN, MAX ê°’
-    //    - MIN, MAX ê°’ì„ ê°–ëŠ” Data Typeì€ ìˆ«ìí˜•ê³¼
-    //      ë‚ ì§œí˜•ì´ë‹¤.
-    //    - ì´ ì¤‘ ê°€ì¥ í° í¬ê¸°ë¥¼ ê°–ëŠ” Numericì˜ Maximum
-    //      ë§Œí¼ ê³µê°„ì„ í• ë‹¹í•˜ì—¬, Data Typeì— ë”°ë¥¸
-    //      êµ¬í˜„ì˜ ë³µì¡ë„ë¥¼ ì¤„ì¸ë‹¤.
+    // MIN, MAX °ª
+    //    - MIN, MAX °ªÀ» °®´Â Data TypeÀº ¼ıÀÚÇü°ú
+    //      ³¯Â¥ÇüÀÌ´Ù.
+    //    - ÀÌ Áß °¡Àå Å« Å©±â¸¦ °®´Â NumericÀÇ Maximum
+    //      ¸¸Å­ °ø°£À» ÇÒ´çÇÏ¿©, Data Type¿¡ µû¸¥
+    //      ±¸ÇöÀÇ º¹Àâµµ¸¦ ÁÙÀÎ´Ù.
     //---------------------------------------------------
     ULong               minValue[SMI_MAX_MINMAX_VALUE_SIZE/ID_SIZEOF(ULong)];
     ULong               maxValue[SMI_MAX_MINMAX_VALUE_SIZE/ID_SIZEOF(ULong)];
 } qmoColCardInfo;
 
 //-------------------------------------------------------
-// í†µê³„ ì •ë³´
+// Åë°è Á¤º¸
 //-------------------------------------------------------
 
 typedef struct qmoStatistics
@@ -244,23 +250,22 @@ typedef struct qmoStatistics
     SDouble             firstRowsFactor;
     UInt                firstRowsN;
 
-    UInt                indexCnt;          // Indexì˜ ê°œìˆ˜
-    qmoIdxCardInfo    * idxCardInfo;       // ê° indexì˜ cardinality ì •ë³´
+    UInt                indexCnt;          // IndexÀÇ °³¼ö
+    qmoIdxCardInfo    * idxCardInfo;       // °¢ indexÀÇ cardinality Á¤º¸
 
-    UInt                columnCnt;         // Columnì˜ ê°œìˆ˜
-    qmoColCardInfo    * colCardInfo;       // ê° columnì˜ cardinality ì •ë³´
-
+    UInt                columnCnt;         // ColumnÀÇ °³¼ö
+    qmoColCardInfo    * colCardInfo;       // °¢ columnÀÇ cardinality Á¤º¸
 } qmoStatistics;
 
 /***********************************************************************
- * [Access Methodë¥¼ ê²°ì •í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°]
- *     method : Indexì— ëŒ€í•œ í†µê³„ ì •ë³´
- *            : Full Scanì˜ ê²½ìš° NULL ê°’ì„.
+ * [Access Method¸¦ °áÁ¤ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶]
+ *     method : Index¿¡ ´ëÇÑ Åë°è Á¤º¸
+ *            : Full ScanÀÇ °æ¿ì NULL °ªÀÓ.
  ***********************************************************************/
 
 typedef struct qmoAccessMethod
 {
-    qmoIdxCardInfo        * method;          // indexì™€ cardinality ì •ë³´
+    qmoIdxCardInfo        * method;          // index¿Í cardinality Á¤º¸
     SDouble                 keyRangeSelectivity;
     SDouble                 keyFilterSelectivity;
     SDouble                 filterSelectivity;
@@ -274,7 +279,7 @@ typedef struct qmoAccessMethod
 } qmoAccessMethod;
 
 //---------------------------------------------------
-// í†µê³„ ì •ë³´ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+// Åë°è Á¤º¸¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
 //---------------------------------------------------
 
 class qmoStat
@@ -282,7 +287,7 @@ class qmoStat
 public:
 
     //--------------------------------------------
-    // Viewì— ëŒ€í•œ í†µê³„ ì •ë³´ êµ¬ì¶•ì„ ìœ„í•œ Interface
+    // View¿¡ ´ëÇÑ Åë°è Á¤º¸ ±¸ÃàÀ» À§ÇÑ Interface
     //--------------------------------------------
 
     static IDE_RC    getStatInfo4View( qcStatement     * aStatement,
@@ -290,29 +295,29 @@ public:
                                        qmoStatistics  ** aStatInfo);
 
     //--------------------------------------------
-    // ì¼ë°˜ í…Œì´ë¸”ì— ëŒ€í•œ í†µê³„ ì •ë³´ë¥¼ êµ¬ì¶•í•œë‹¤.
-    // qmsSFWGH->fromì— ë‹¬ë ¤ìˆëŠ” ëª¨ë“  Base Tableì— ëŒ€í•œ í†µê³„ì •ë³´ë¥¼ êµ¬ì¶•í•œë‹¤.
-    // Validation ê³¼ì •ì¤‘ì— í˜¸ì¶œë¨.
+    // ÀÏ¹İ Å×ÀÌºí¿¡ ´ëÇÑ Åë°è Á¤º¸¸¦ ±¸ÃàÇÑ´Ù.
+    // qmsSFWGH->from¿¡ ´Ş·ÁÀÖ´Â ¸ğµç Base Table¿¡ ´ëÇÑ Åë°èÁ¤º¸¸¦ ±¸ÃàÇÑ´Ù.
+    // Validation °úÁ¤Áß¿¡ È£ÃâµÊ.
     //--------------------------------------------
     static IDE_RC  getStatInfo4AllBaseTables( qcStatement    * aStatement,
                                               qmsSFWGH       * aSFWGH );
 
-    // í†µê³„ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
+    // Åë°è Á¤º¸¸¦ Ãâ·ÂÇÔ.
     static IDE_RC  printStat( qmsFrom       * aFrom,
                               ULong           aDepth,
                               iduVarString  * aString );
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // partitionì— ëŒ€í•œ í†µê³„ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
+    // partition¿¡ ´ëÇÑ Åë°è Á¤º¸¸¦ Ãâ·ÂÇÔ.
     static IDE_RC  printStat4Partition( qmsTableRef     * aTableRef,
                                         qmsPartitionRef * aPartitionRef,
                                         SChar           * aPartitionName,
                                         ULong             aDepth,
                                         iduVarString    * aString );
 
-    // qmoAccessMethodë¡œ ë¶€í„° indexë¥¼ ì–»ê¸° ìœ„í•´ì„œ
-    // í•­ìƒ methodê°€ NULLì¸ì§€ ê²€ì‚¬ë¥¼ í•´ì•¼ í•˜ëŠ”ë°,
-    // ì´ ë¶ˆí¸ì„ ì¤„ì´ê¸° ìœ„í•´ì„œ í•œë‹¨ê³„ ì¶”ìƒí™”í•œë‹¤.
+    // qmoAccessMethod·Î ºÎÅÍ index¸¦ ¾ò±â À§ÇØ¼­
+    // Ç×»ó method°¡ NULLÀÎÁö °Ë»ç¸¦ ÇØ¾ß ÇÏ´Âµ¥,
+    // ÀÌ ºÒÆíÀ» ÁÙÀÌ±â À§ÇØ¼­ ÇÑ´Ü°è Ãß»óÈ­ÇÑ´Ù.
     inline static qcmIndex* getMethodIndex( qmoAccessMethod * aMethod )
     {
         IDE_DASSERT( aMethod != NULL );
@@ -329,7 +334,7 @@ public:
 
     // PROJ-1502 PARTITIONED DISK TABLE
     // private->public
-    // í•˜ë‚˜ì˜ Base Tableì— ëŒ€í•œ í†µê³„ì •ë³´ë¥¼ êµ¬ì¶•í•œë‹¤.
+    // ÇÏ³ªÀÇ Base Table¿¡ ´ëÇÑ Åë°èÁ¤º¸¸¦ ±¸ÃàÇÑ´Ù.
     static IDE_RC    getStatInfo4BaseTable( qcStatement    * aStatement,
                                             qmoOptGoalType   aOptimizerMode,
                                             qcmTableInfo   * aTableInfo,
@@ -341,9 +346,9 @@ public:
                                            qmoStatistics   ** aStatInfo );
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // tableRefì— ë‹¬ë ¤ìˆëŠ” partitionRefì˜ í†µê³„ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬
-    // partitioned tableì— ëŒ€í•œ í†µê³„ì •ë³´ë¥¼ êµ¬ì¶•í•œë‹¤.
-    // aStatInfoëŠ” ì´ë¯¸ í• ë‹¹ë˜ì–´ ìˆìœ¼ë¯€ë¡œ pointerë§Œì„ ë„˜ê¸´ë‹¤.
+    // tableRef¿¡ ´Ş·ÁÀÖ´Â partitionRefÀÇ Åë°èÁ¤º¸¸¦ ÀÌ¿ëÇÏ¿©
+    // partitioned table¿¡ ´ëÇÑ Åë°èÁ¤º¸¸¦ ±¸ÃàÇÑ´Ù.
+    // aStatInfo´Â ÀÌ¹Ì ÇÒ´çµÇ¾î ÀÖÀ¸¹Ç·Î pointer¸¸À» ³Ñ±ä´Ù.
     static IDE_RC    getStatInfo4PartitionedTable(
         qcStatement    * aStatement,
         qmoOptGoalType   aOptimizerMode,
@@ -355,8 +360,8 @@ public:
 
 private:
 
-    // í˜„ì¬ í…Œì´ë¸”ì˜ left, right í…Œì´ë¸”ì„ ìˆœíšŒí•˜ë©´ì„œ,
-    // base tableì„ ì°¾ì•„ì„œ í†µê³„ì •ë³´ë¥¼ êµ¬ì¶•í•œë‹¤.
+    // ÇöÀç Å×ÀÌºíÀÇ left, right Å×ÀÌºíÀ» ¼øÈ¸ÇÏ¸é¼­,
+    // base tableÀ» Ã£¾Æ¼­ Åë°èÁ¤º¸¸¦ ±¸ÃàÇÑ´Ù.
     static IDE_RC    findBaseTableNGetStatInfo( qcStatement * aStatement,
                                                 qmsSFWGH    * aSFWGH,
                                                 qmsFrom     * aFrom );
@@ -370,15 +375,16 @@ private:
                                               qcmTableInfo  * aTableInfo,
                                               idBool          aIsDiskTable );
 
-    // í…Œì´ë¸”ì´ ì°¨ì§€í•˜ê³  ìˆëŠ” ì´ disk page ìˆ˜ë¥¼ ì–»ìŒ.
+    // Å×ÀÌºíÀÌ Â÷ÁöÇÏ°í ÀÖ´Â ÃÑ disk page ¼ö¸¦ ¾òÀ½.
     static IDE_RC    setTablePageCount( qcStatement    * aStatement,
                                         qcmTableInfo   * aTableInfo,
                                         qmoStatistics  * aStatInfo,
                                         smiTableStat   * aData );
 
-    // ì¸ë±ìŠ¤ í†µê³„ì •ë³´
+    // ÀÎµ¦½º Åë°èÁ¤º¸
     static IDE_RC    getIndexStatistics( qcStatement   * aStatement,
                                          qmoStatistics * aStatistics,
+                                         idBool          aIsAutoDBMStat,
                                          smiIndexStat  * aData );
 
     static void      getIndexStatistics4Rule( qmoStatistics * aStatistics,
@@ -389,8 +395,8 @@ private:
                                       qmoIdxCardInfo * aIdxInfo,
                                       smiIndexStat   * aData );
 
-    // ê° columnì˜ cardinalityì™€ MIX,MAX ê°’ì„ êµ¬í•´ì„œ,
-    // í•´ë‹¹ í†µê³„ì •ë³´ ìë£Œêµ¬ì¡°ì— ì €ì¥í•œë‹¤.
+    // °¢ columnÀÇ cardinality¿Í MIX,MAX °ªÀ» ±¸ÇØ¼­,
+    // ÇØ´ç Åë°èÁ¤º¸ ÀÚ·á±¸Á¶¿¡ ÀúÀåÇÑ´Ù.
     static IDE_RC    getColumnStatistics( qmoStatistics * aStatistics,
                                           smiColumnStat * aData );
 
@@ -405,7 +411,7 @@ private:
     static IDE_RC    setColumnAvgLen( qcmTableInfo   * aTableInfo,
                                       qmoColCardInfo * aColInfo );
 
-    // í†µê³„ì •ë³´ì˜ idxCardInfoë¥¼ ì •ë ¬í•œë‹¤.
+    // Åë°èÁ¤º¸ÀÇ idxCardInfo¸¦ Á¤·ÄÇÑ´Ù.
     static IDE_RC    sortIndexInfo( qmoStatistics   * aStatInfo,
                                     idBool            aIsAscending,
                                     qmoIdxCardInfo ** aSortedIdxInfoArry );
@@ -416,44 +422,44 @@ private:
                                                 SFloat         * aPercentage );
 
     //-----------------------------------------------------
-    // TPC-H Data ì—†ì´ ê°€ìƒì˜ í†µê³„ ì •ë³´ êµ¬ì¶•ì„ ìœ„í•œ Interface
+    // TPC-H Data ¾øÀÌ °¡»óÀÇ Åë°è Á¤º¸ ±¸ÃàÀ» À§ÇÑ Interface
     //-----------------------------------------------------
 
-    // TPC-H ë¥¼ ìœ„í•œ ê°€ìƒì˜ í†µê³„ ì •ë³´ êµ¬ì¶•
+    // TPC-H ¸¦ À§ÇÑ °¡»óÀÇ Åë°è Á¤º¸ ±¸Ãà
     static IDE_RC    getFakeStatInfo( qcStatement    * aStatement,
                                       qcmTableInfo   * aTableInfo,
                                       qmoStatistics  * aStatInfo );
 
-    // REGION í…Œì´ë¸”ì„ ìœ„í•œ ê°€ìƒ í†µê³„ ì •ë³´ êµ¬ì¶•
+    // REGION Å×ÀÌºíÀ» À§ÇÑ °¡»ó Åë°è Á¤º¸ ±¸Ãà
     static IDE_RC    getFakeStat4Region( idBool          aIsDisk,
                                          qmoStatistics * aStatInfo );
 
-    // NATION í…Œì´ë¸”ì„ ìœ„í•œ ê°€ìƒ í†µê³„ ì •ë³´ êµ¬ì¶•
+    // NATION Å×ÀÌºíÀ» À§ÇÑ °¡»ó Åë°è Á¤º¸ ±¸Ãà
     static IDE_RC    getFakeStat4Nation( idBool          aIsDisk,
                                          qmoStatistics * aStatInfo );
 
-    // SUPPLIER í…Œì´ë¸”ì„ ìœ„í•œ ê°€ìƒ í†µê³„ ì •ë³´ êµ¬ì¶•
+    // SUPPLIER Å×ÀÌºíÀ» À§ÇÑ °¡»ó Åë°è Á¤º¸ ±¸Ãà
     static IDE_RC    getFakeStat4Supplier( idBool          aIsDisk,
                                            qmoStatistics * aStatInfo );
 
-    // CUSTOMER í…Œì´ë¸”ì„ ìœ„í•œ ê°€ìƒ í†µê³„ ì •ë³´ êµ¬ì¶•
+    // CUSTOMER Å×ÀÌºíÀ» À§ÇÑ °¡»ó Åë°è Á¤º¸ ±¸Ãà
     static IDE_RC    getFakeStat4Customer( idBool          aIsDisk,
                                            qmoStatistics * aStatInfo );
 
-    // PART í…Œì´ë¸”ì„ ìœ„í•œ ê°€ìƒ í†µê³„ ì •ë³´ êµ¬ì¶•
+    // PART Å×ÀÌºíÀ» À§ÇÑ °¡»ó Åë°è Á¤º¸ ±¸Ãà
     static IDE_RC    getFakeStat4Part( idBool          aIsDisk,
                                        qmoStatistics * aStatInfo );
 
-    // PARTSUPP í…Œì´ë¸”ì„ ìœ„í•œ ê°€ìƒ í†µê³„ ì •ë³´ êµ¬ì¶•
+    // PARTSUPP Å×ÀÌºíÀ» À§ÇÑ °¡»ó Åë°è Á¤º¸ ±¸Ãà
     static IDE_RC    getFakeStat4PartSupp( idBool          aIsDisk,
                                            qmoStatistics * aStatInfo );
 
-    // ORDERS í…Œì´ë¸”ì„ ìœ„í•œ ê°€ìƒ í†µê³„ ì •ë³´ êµ¬ì¶•
+    // ORDERS Å×ÀÌºíÀ» À§ÇÑ °¡»ó Åë°è Á¤º¸ ±¸Ãà
     static IDE_RC    getFakeStat4Orders( qcStatement   * aStatement,
                                          idBool          aIsDisk,
                                          qmoStatistics * aStatInfo );
 
-    // LINEITEM í…Œì´ë¸”ì„ ìœ„í•œ ê°€ìƒ í†µê³„ ì •ë³´ êµ¬ì¶•
+    // LINEITEM Å×ÀÌºíÀ» À§ÇÑ °¡»ó Åë°è Á¤º¸ ±¸Ãà
     static IDE_RC    getFakeStat4LineItem( qcStatement   * aStatement,
                                            idBool          aIsDisk,
                                            qmoStatistics * aStatInfo );

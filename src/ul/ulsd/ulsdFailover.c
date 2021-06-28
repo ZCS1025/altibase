@@ -102,9 +102,9 @@ void ulsdGetNodeConnectionReport( ulnDbc *aNodeDbc, ulsdNodeReport *aReport )
     }
     else
     {
-        /* í˜„ìž¬ data node ì£¼ì†ŒëŠ” active, alternate ë‘ê°œë§Œ ì§€ì • ê°€ëŠ¥í•˜ë¯€ë¡œ
-         * active ì™€ ë¹„êµí•˜ì—¬ ë™ì¼í•˜ë©´ active ì— ì ‘ì†,
-         * active ì™€ ë¹„êµí•˜ì—¬ ë™ì¼í•˜ì§€ ì•Šìœ¼ë©´ alternate ì— ì ‘ì†í•œê²ƒìœ¼ë¡œ ê°€ì •í•œë‹¤.
+        /* ÇöÀç data node ÁÖ¼Ò´Â active, alternate µÎ°³¸¸ ÁöÁ¤ °¡´ÉÇÏ¹Ç·Î
+         * active ¿Í ºñ±³ÇÏ¿© µ¿ÀÏÇÏ¸é active ¿¡ Á¢¼Ó,
+         * active ¿Í ºñ±³ÇÏ¿© µ¿ÀÏÇÏÁö ¾ÊÀ¸¸é alternate ¿¡ Á¢¼ÓÇÑ°ÍÀ¸·Î °¡Á¤ÇÑ´Ù.
          */
         if ( ( acpCStrCmp( sCurServerInfo->mHost,
                            sDataNodeInfo->mServerIP,

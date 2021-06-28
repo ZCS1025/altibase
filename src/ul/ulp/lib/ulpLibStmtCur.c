@@ -23,7 +23,7 @@ ulpLibStmtNode* ulpLibStNewNode(ulpSqlstmt* aSqlstmt, acp_char_t *aStmtName )
 /***********************************************************************
  *
  * Description :
- *    ìƒˆë¡œìš´ statement nodeë¥¼ ë§Œë“ ë‹¤.
+ *    »õ·Î¿î statement node¸¦ ¸¸µç´Ù.
  *
  * Implementation :
  *
@@ -119,9 +119,9 @@ ulpLibStmtNode* ulpLibStLookupStmt( ulpLibStmtHASHTAB *aStmtHashT, acp_char_t *a
 /***********************************************************************
  *
  * Description :
- *    stmt hash tableì—ì„œ í•´ë‹¹ stmtì´ë¦„ìœ¼ë¡œ stmt nodeë¥¼ ì°¾ëŠ”ë‹¤.
+ *    stmt hash table¿¡¼­ ÇØ´ç stmtÀÌ¸§À¸·Î stmt node¸¦ Ã£´Â´Ù.
  *
- *    ì°¾ì§€ ëª»í•˜ë©´ NULL ë¦¬í„´.
+ *    Ã£Áö ¸øÇÏ¸é NULL ¸®ÅÏ.
  *
  * Implementation :
  *
@@ -207,12 +207,12 @@ ulpLibStmtNode* ulpLibStAddStmt( ulpLibStmtHASHTAB *aStmtHashT, ulpLibStmtNode *
 /***********************************************************************
  *
  * Description :
- *    stmt hash tableì— í•´ë‹¹ stmtì´ë¦„ìœ¼ë¡œ stmt nodeë¥¼ ì¶”ê°€í•œë‹¤.
- *    Listì˜ ì œì¼ ë’¤ì— ë§¤ë‹¨ë‹¤.
+ *    stmt hash table¿¡ ÇØ´ç stmtÀÌ¸§À¸·Î stmt node¸¦ Ãß°¡ÇÑ´Ù.
+ *    ListÀÇ Á¦ÀÏ µÚ¿¡ ¸Å´Ü´Ù.
  *
  * Implementation :
- *    1. stmt ì´ë¦„ìœ¼ë¡œ hash tableì—ì„œ stmt nodeë¥¼ ì°¾ëŠ”ë‹¤.
- *    2. ì°¾ì§€ëª»í•˜ë©´ ìƒˆ stmt nodeë¥¼ ë§Œë“¤ê³  hash tableì— ì¶”ê°€í•œë‹¤.
+ *    1. stmt ÀÌ¸§À¸·Î hash table¿¡¼­ stmt node¸¦ Ã£´Â´Ù.
+ *    2. Ã£Áö¸øÇÏ¸é »õ stmt node¸¦ ¸¸µé°í hash table¿¡ Ãß°¡ÇÑ´Ù.
  *
  ***********************************************************************/
     acp_sint32_t    sIndex;
@@ -313,7 +313,7 @@ void ulpLibStDelAllStmtCur( ulpLibStmtHASHTAB *aStmtTab,
 /***********************************************************************
  *
  * Description :
- *    statement/cursor hash tableë‚´ì˜ ëª¨ë“  stmt nodeë“¤ì„ ì œê±°í•œë‹¤.
+ *    statement/cursor hash table³»ÀÇ ¸ğµç stmt nodeµéÀ» Á¦°ÅÇÑ´Ù.
  *
  * Implementation :
  *
@@ -323,7 +323,7 @@ void ulpLibStDelAllStmtCur( ulpLibStmtHASHTAB *aStmtTab,
     ulpErrorMgr     sErrorMgr;
     acp_sint32_t    i;
 
-    /* BUG-26370 [valgrind error] :  cursor hash tableì„ í•´ì œí•´ì•¼í•œë‹¤. */
+    /* BUG-26370 [valgrind error] :  cursor hash tableÀ» ÇØÁ¦ÇØ¾ßÇÑ´Ù. */
     if( aCurTab->mNumNode == 0 )
     {
         /* Do nothing */
@@ -417,7 +417,7 @@ ulpLibStmtNode* ulpLibStLookupCur( ulpLibStmtHASHTAB *aCurHashT, acp_char_t *aCu
 /***********************************************************************
  *
  * Description :
- *    cursor hash tableì—ì„œ í•´ë‹¹ cursorì´ë¦„ìœ¼ë¡œ cursor nodeë¥¼ ì°¾ëŠ”ë‹¤.
+ *    cursor hash table¿¡¼­ ÇØ´ç cursorÀÌ¸§À¸·Î cursor node¸¦ Ã£´Â´Ù.
  *
  * Implementation :
  *
@@ -509,7 +509,7 @@ ACI_RC ulpLibStAddCurLink( ulpLibStmtHASHTAB *aCurHashT,
 /***********************************************************************
  *
  * Description :
- *    cursor hash tableì˜ bucket list ë§ˆì§€ë§‰ì— í•´ë‹¹ stmt nodeì— ëŒ€í•œ ìƒˆlinkë¥¼ ì—°ê²°í•œë‹¤.
+ *    cursor hash tableÀÇ bucket list ¸¶Áö¸·¿¡ ÇØ´ç stmt node¿¡ ´ëÇÑ »õlink¸¦ ¿¬°áÇÑ´Ù.
  *
  * Implementation :
  *
@@ -536,7 +536,7 @@ ACI_RC ulpLibStAddCurLink( ulpLibStmtHASHTAB *aCurHashT,
     }
 
     sStmtNode = aCurHashT->mTable[ sIndex ].mList;
-    /* bucket listì˜ ë§ˆì§€ë§‰ì„ ì°¾ëŠ”ë‹¤. */
+    /* bucket listÀÇ ¸¶Áö¸·À» Ã£´Â´Ù. */
     while ( sStmtNode != NULL )
     {
         sStmtNodeP = sStmtNode;
@@ -552,7 +552,7 @@ ACI_RC ulpLibStAddCurLink( ulpLibStmtHASHTAB *aCurHashT,
         sStmtNodeP->mNextCur = aStmtNode;
     }
 
-    /* cusor ì´ë¦„ ë³µì‚¬ */
+    /* cusor ÀÌ¸§ º¹»ç */
     acpSnprintf(aStmtNode->mCursorName, MAX_CUR_NAME_LEN, aCurName);
 
     (aCurHashT->mNumNode)++;
@@ -610,8 +610,8 @@ ACI_RC ulpLibStDeleteCur( ulpLibStmtHASHTAB *aCurHashT, acp_char_t *aCurName )
 /***********************************************************************
  *
  * Description :
- *    cursor hash tableì— í•´ë‹¹ cursorì´ë¦„ì„ ê°–ëŠ” cursor nodeë¥¼ ì œê±°í•œë‹¤.
- *    statement ì´ë¦„ì´ ìˆì€ê²½ìš° linkë§Œ ì œê±°í•˜ë©°, ì—†ëŠ” ê²½ìš°ì—ëŠ” stmt nodeìì²´ë¥¼ ì œê±°í•œë‹¤.
+ *    cursor hash table¿¡ ÇØ´ç cursorÀÌ¸§À» °®´Â cursor node¸¦ Á¦°ÅÇÑ´Ù.
+ *    statement ÀÌ¸§ÀÌ ÀÖÀº°æ¿ì link¸¸ Á¦°ÅÇÏ¸ç, ¾ø´Â °æ¿ì¿¡´Â stmt nodeÀÚÃ¼¸¦ Á¦°ÅÇÑ´Ù.
  *
  * Implementation :
  *
@@ -741,7 +741,7 @@ ulpLibStmtNode *ulpLibStLookupUnnamedStmt( ulpLibStmtLIST *aStmtList, acp_char_t
 /***********************************************************************
  *
  * Description :
- *    unnamed stmt listì—ì„œ í•´ë‹¹ queryë¡œ stmt nodeë¥¼ ì°¾ëŠ”ë‹¤.
+ *    unnamed stmt list¿¡¼­ ÇØ´ç query·Î stmt node¸¦ Ã£´Â´Ù.
  *
  * Implementation :
  *
@@ -831,8 +831,8 @@ ACI_RC ulpLibStAddUnnamedStmt( ulpLibStmtLIST *aStmtList, ulpLibStmtNode *aStmtN
 /***********************************************************************
  *
  * Description :
- *    unnamed stmt listì— ìƒˆ stmt nodeë¥¼ ì¶”ê°€í•œë‹¤.
- *    list ì œì¼ ì•ì— ì¶”ê°€.
+ *    unnamed stmt list¿¡ »õ stmt node¸¦ Ãß°¡ÇÑ´Ù.
+ *    list Á¦ÀÏ ¾Õ¿¡ Ãß°¡.
  * Implementation :
  *
  ***********************************************************************/
@@ -853,7 +853,7 @@ ACI_RC ulpLibStAddUnnamedStmt( ulpLibStmtLIST *aStmtList, ulpLibStmtNode *aStmtN
     }
 
     if ( aStmtList->mNumNode < aStmtList->mSize )
-    {   /* í˜„ì œ listì˜ ë…¸ë“œìˆ˜ê°€ listê°€ ê°–ì„ìˆ˜ìˆëŠ” ìµœëŒ€ìˆ˜ë³´ë‹¤ ì‘ì„ë•Œ, add front.*/
+    {   /* ÇöÁ¦ listÀÇ ³ëµå¼ö°¡ list°¡ °®À»¼öÀÖ´Â ÃÖ´ë¼öº¸´Ù ÀÛÀ»¶§, add front.*/
         if( aStmtList->mList == NULL )
         {
             aStmtList->mList = aStmtNode;
@@ -866,8 +866,8 @@ ACI_RC ulpLibStAddUnnamedStmt( ulpLibStmtLIST *aStmtList, ulpLibStmtNode *aStmtN
         (aStmtList->mNumNode)++;
     }
     else
-    {   /* í˜„ì œ listì˜ ë…¸ë“œìˆ˜ê°€ listê°€ ê°–ì„ìˆ˜ìˆëŠ” ìµœëŒ€ìˆ˜ë³´ë‹¤ í¬ë©´,*/
-        /* ì œì¼ ë’¤ ë…¸ë“œë¥¼ ì œê±°í•œë‹¤ìŒ add front.*/
+    {   /* ÇöÁ¦ listÀÇ ³ëµå¼ö°¡ list°¡ °®À»¼öÀÖ´Â ÃÖ´ë¼öº¸´Ù Å©¸é,*/
+        /* Á¦ÀÏ µÚ ³ëµå¸¦ Á¦°ÅÇÑ´ÙÀ½ add front.*/
         sStmtNode = aStmtList->mList;
         while( sStmtNode != NULL )
         {
@@ -879,7 +879,7 @@ ACI_RC ulpLibStAddUnnamedStmt( ulpLibStmtLIST *aStmtList, ulpLibStmtNode *aStmtN
             sStmtNode = sStmtNode->mNextStmt;
         }
 
-        if ( sStmtNode != NULL ) /* NULLì´ ë ì¼ì€ ì—†ì§€ë§Œ... */
+        if ( sStmtNode != NULL ) /* NULLÀÌ µÉÀÏÀº ¾øÁö¸¸... */
         {
             /* BUG-30789: Memory usage per prepared statement is too BIG. (>300k) */
             acpMemFree( sStmtNode->mQueryStr );
@@ -893,7 +893,7 @@ ACI_RC ulpLibStAddUnnamedStmt( ulpLibStmtLIST *aStmtList, ulpLibStmtNode *aStmtN
         {
             sStmtNodeP->mNextStmt = NULL;
         }
-        else /* ìˆ˜í–‰ë ì¼ì€ ì—†ì§€ë§Œ... */
+        else /* ¼öÇàµÉÀÏÀº ¾øÁö¸¸... */
         {
             aStmtList->mList = NULL;
         }
@@ -953,7 +953,7 @@ void ulpLibStDelAllUnnamedStmt( ulpLibStmtLIST *aStmtList )
 /***********************************************************************
  *
  * Description :
- *    unnamed stmt listì— ë§¤ë‹¬ë¦° ëª¨ë“  stmt nodeë“¤ì„ ì œê±°í•œë‹¤.
+ *    unnamed stmt list¿¡ ¸Å´Ş¸° ¸ğµç stmt nodeµéÀ» Á¦°ÅÇÑ´Ù.
  *
  * Implementation :
  *

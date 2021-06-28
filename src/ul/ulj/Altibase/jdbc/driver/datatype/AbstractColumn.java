@@ -26,15 +26,14 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.sql.*;
-import java.util.Calendar;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.sql.Date;
+import java.util.*;
 
 abstract class AbstractColumn implements Column
 {
-    // JDBC ìŠ¤í™ì—ì„œ ì •í•œ null value
-    // ì´ ê°’ì€ ì•Œí‹°ë² ì´ìŠ¤ì—ì„œ ì €ì¥í•  ë•Œ ì‚¬ìš©í•˜ëŠ” null valueê°€ ì•„ë‹ˆë‹¤.
-    // mt typeì—ì„œ ì •í•œ null valueëŠ” ê° íƒ€ì…ë³„ classì— ì •ì˜ë˜ì–´ ìˆë‹¤.
+    // JDBC ½ºÆå¿¡¼­ Á¤ÇÑ null value
+    // ÀÌ °ªÀº ¾ËÆ¼º£ÀÌ½º¿¡¼­ ÀúÀåÇÒ ¶§ »ç¿ëÇÏ´Â null value°¡ ¾Æ´Ï´Ù.
+    // mt type¿¡¼­ Á¤ÇÑ null value´Â °¢ Å¸ÀÔº° class¿¡ Á¤ÀÇµÇ¾î ÀÖ´Ù.
     private static final boolean BOOLEAN_NULL_VALUE             = false;
     private static final byte    BYTE_NULL_VALUE                = 0;
     private static final short   SHORT_NULL_VALUE               = 0;
@@ -48,8 +47,11 @@ abstract class AbstractColumn implements Column
 
     protected int                mMaxBinaryLength   = 0;
 
+    // BUG-48380 ArrayListRowHandle¿¡¼­ »ç¿ëÇÏ´Â resultset row data ÀúÀå¿ë ArrayList
+    protected List<Object>       mValues            = new ArrayList<>();
+
     /**
-     * fetchì‹œ ì»¬ëŸ¼ì˜ ìˆœì„œë¥¼ ì €ì¥í•˜ê³  ìˆë‹¤.
+     * fetch½Ã ÄÃ·³ÀÇ ¼ø¼­¸¦ ÀúÀåÇÏ°í ÀÖ´Ù.
      */
     private int                  mColumnIdx;
 
@@ -59,7 +61,9 @@ abstract class AbstractColumn implements Column
 
     protected abstract void loadFromSub(DynamicArray aArray);
 
-    // BUG-46480 JdbcType ì •ë³´ë¥¼ ì €ì¥í•˜ê¸° ìœ„í•œ LinkedHashSet ê°ì²´ ìƒì„±
+    protected abstract void loadFromSub(int aLoadIndex);
+
+    // BUG-46480 JdbcType Á¤º¸¸¦ ÀúÀåÇÏ±â À§ÇÑ LinkedHashSet °´Ã¼ »ı¼º
     protected Set<Integer> mMappedJdbcTypeSet = new LinkedHashSet<Integer>();
 
     protected void addMappedJdbcTypeSet(int aType)
@@ -74,11 +78,13 @@ abstract class AbstractColumn implements Column
 
     protected abstract void readFromSub(CmChannel aChannel) throws SQLException;
 
+    protected abstract void readAndStoreValue(CmChannel aChannel) throws SQLException;
+
     /**
-     * ì±„ë„ë¡œë¶€í„° ì»¬ëŸ¼ë°ì´í„°ë¥¼ ì½ì–´ ë°”ë¡œ DynamicArrayì— ì €ì¥í•œë‹¤.
-     * @param aChannel ì†Œì¼“í†µì‹ ì„ ìœ„í•œ ì±„ë„ê°ì²´
-     * @param aArray ì»¬ëŸ¼ë°ì´í„°ë¥¼ ì €ì¥í•  DynamicArrayê°ì²´
-     * @throws SQLException ì •ìƒì ìœ¼ë¡œ ì»¬ëŸ¼ë°ì´í„°ë¥¼ ë¡œë“œí•˜ì§€ ëª»í•œ ê²½ìš°
+     * Ã¤³Î·ÎºÎÅÍ ÄÃ·³µ¥ÀÌÅÍ¸¦ ÀĞ¾î ¹Ù·Î DynamicArray¿¡ ÀúÀåÇÑ´Ù.
+     * @param aChannel ¼ÒÄÏÅë½ÅÀ» À§ÇÑ Ã¤³Î°´Ã¼
+     * @param aArray ÄÃ·³µ¥ÀÌÅÍ¸¦ ÀúÀåÇÒ DynamicArray°´Ã¼
+     * @throws SQLException Á¤»óÀûÀ¸·Î ÄÃ·³µ¥ÀÌÅÍ¸¦ ·ÎµåÇÏÁö ¸øÇÑ °æ¿ì
      */
     protected abstract void readFromSub(CmChannel aChannel, DynamicArray aArray) throws SQLException;
 
@@ -246,7 +252,7 @@ abstract class AbstractColumn implements Column
 
     public boolean isMappedJDBCType(int aSqlType)
     {
-        // BUG-46480 ì„±ëŠ¥ì„ ìœ„í•´ HashSet.containsë¥¼ ì‚¬ìš©í•œë‹¤.
+        // BUG-46480 ¼º´ÉÀ» À§ÇØ HashSet.contains¸¦ »ç¿ëÇÑ´Ù.
         return mMappedJdbcTypeSet.contains(aSqlType);
     }
 
@@ -269,12 +275,20 @@ abstract class AbstractColumn implements Column
     {
         if (aFetchResult.fetchRemains())
         {
-            readFromSub(aChannel, aFetchResult.getDynamicArray(this.getColumnIndex()));
+            // BUG-48380 ArrayListRowHandleÀ» »ç¿ëÇÒ ¼ö ÀÖÀ¸¸é ArrayList¿¡ µ¥ÀÌÅÍ¸¦ ÀúÀåÇÏ°í ±×·¸Áö ¾ÊÀº °æ¿ì ±âÁ¸ ·ÎÁ÷À» Åº´Ù.
+            if (aFetchResult.useArrayListRowHandle())
+            {
+                readAndStoreValue(aChannel);
+            }
+            else
+            {
+                readFromSub(aChannel, aFetchResult.getDynamicArray(this.getColumnIndex()));
+            }
         }
         else
         {
-            /* BUG-43807 TotalReceivedRowCountê°€ MaxRowCountë³´ë‹¤ í¬ê±°ë‚˜ ê°™ë”ë¼ë„ í”„ë¡œí† ì½œ ìƒìœ¼ë¡œëŠ”
-               ë°ì´í„°ê°€ ë‚ ì•„ì˜¤ê¸° ë•Œë¬¸ì— í•´ë‹¹ ë°ì´í„°ë¥¼ ì½ì–´ë“¤ì¸ë‹¤.  */
+            /* BUG-43807 TotalReceivedRowCount°¡ MaxRowCountº¸´Ù Å©°Å³ª °°´õ¶óµµ ÇÁ·ÎÅäÄİ »óÀ¸·Î´Â
+               µ¥ÀÌÅÍ°¡ ³¯¾Æ¿À±â ¶§¹®¿¡ ÇØ´ç µ¥ÀÌÅÍ¸¦ ÀĞ¾îµéÀÎ´Ù.  */
             readFromSub(aChannel);
         }
     }
@@ -292,6 +306,12 @@ abstract class AbstractColumn implements Column
     public void loadFrom(DynamicArray aArray)
     {
         loadFromSub(aArray);
+        setNullOrNotNull();
+    }
+
+    public void loadFrom(int aLoadIndex)
+    {
+        loadFromSub(aLoadIndex);
         setNullOrNotNull();
     }
 
@@ -514,7 +534,7 @@ abstract class AbstractColumn implements Column
         return getObjectSub();
     }
 
-    // BUG-37418 LOBì€ null locatorë§Œ ì•„ë‹ˆë¼ë©´ ê°ì²´ë¥¼ ì–»ì„ ìˆ˜ ìˆì–´ì•¼ í•œë‹¤.
+    // BUG-37418 LOBÀº null locator¸¸ ¾Æ´Ï¶ó¸é °´Ã¼¸¦ ¾òÀ» ¼ö ÀÖ¾î¾ß ÇÑ´Ù.
     private boolean canReturnNullObject()
     {
         if (this instanceof LobLocatorColumn)
@@ -544,5 +564,10 @@ abstract class AbstractColumn implements Column
     public void setColumnIndex(int aColumnIndex)
     {
         this.mColumnIdx = aColumnIndex;
+    }
+
+    public void clearValues()
+    {
+        mValues.clear();
     }
 }

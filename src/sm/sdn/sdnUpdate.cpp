@@ -16,11 +16,11 @@
  
 
 /***********************************************************************
- * $Id: sdnUpdate.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdnUpdate.cpp 89495 2020-12-14 05:19:22Z emlee $
  *
  * Description :
  *
- * ë³¸ íŒŒì¼ì€ index ê´€ë ¨ redo í•¨ìˆ˜ì— ëŒ€í•œ êµ¬í˜„íŒŒì¼ì´ë‹¤.
+ * º» ÆÄÀÏÀº index °ü·Ã redo ÇÔ¼ö¿¡ ´ëÇÑ ±¸ÇöÆÄÀÏÀÌ´Ù.
  *
  **********************************************************************/
 
@@ -113,11 +113,11 @@ IDE_RC sdnUpdate::redo_SDR_SDN_INSERT_INDEX_KEY( SChar       * aLogPtr,
 
 /***********************************************************************
  *
- * Description : SMR_DLT_REF_NTA ë¡œê·¸ë¡œë¶€í„° RollbackContextEx íŒë…
+ * Description : SMR_DLT_REF_NTA ·Î±×·ÎºÎÅÍ RollbackContextEx ÆÇµ¶
  *
- * aLogType [IN]  - ë¡œê·¸íƒ€ì…
- * aLogPtr  [IN]  - SMR_DLT_REF_NTA ë¡œê·¸ì˜ RefOffset + ID_SIZEOF(sdrLogHdr)
- *                  í•´ë‹¹í•˜ëŠ” LogPtr
+ * aLogType [IN]  - ·Î±×Å¸ÀÔ
+ * aLogPtr  [IN]  - SMR_DLT_REF_NTA ·Î±×ÀÇ RefOffset + ID_SIZEOF(sdrLogHdr)
+ *                  ÇØ´çÇÏ´Â LogPtr
  * aContext [OUT] - RollbackContext
  *
  **********************************************************************/
@@ -147,11 +147,11 @@ void sdnUpdate::getRollbackContextEx( sdrLogType              aLogType,
 
 /***********************************************************************
  *
- * Description : SMR_DLT_REF_NTA ë¡œê·¸ë¡œë¶€í„° RollbackContext íŒë…
+ * Description : SMR_DLT_REF_NTA ·Î±×·ÎºÎÅÍ RollbackContext ÆÇµ¶
  *
- * aLogType [IN]  - ë¡œê·¸íƒ€ì…
- * aLogPtr  [IN]  - SMR_DLT_REF_NTA ë¡œê·¸ì˜ RefOffset + ID_SIZEOF(sdrLogHdr)
- *                  í•´ë‹¹í•˜ëŠ” LogPtr
+ * aLogType [IN]  - ·Î±×Å¸ÀÔ
+ * aLogPtr  [IN]  - SMR_DLT_REF_NTA ·Î±×ÀÇ RefOffset + ID_SIZEOF(sdrLogHdr)
+ *                  ÇØ´çÇÏ´Â LogPtr
  * aContext [OUT] - RollbackContext
  *
  **********************************************************************/
@@ -184,14 +184,14 @@ void sdnUpdate::getRollbackContext( sdrLogType            aLogType,
 
 /***********************************************************************
  *
- * Description : SMR_DLT_REF_NTA ë¡œê·¸ë¡œë¶€í„° ë¬´ê²°ì„± ê²€ì¦í•  ì¸ë±ìŠ¤ë¥¼
- *               íŠ¸ëœì­ì…˜ì˜ VerfiyOIDListì— ì¶”ê°€í•œë‹¤.
+ * Description : SMR_DLT_REF_NTA ·Î±×·ÎºÎÅÍ ¹«°á¼º °ËÁõÇÒ ÀÎµ¦½º¸¦
+ *               Æ®·£Àè¼ÇÀÇ VerfiyOIDList¿¡ Ãß°¡ÇÑ´Ù.
  *
- * aTrans    [IN]  - íŠ¸ëœì­ì…˜
- * aLogPtr   [IN]  - SMR_DLT_REF_NTA ë¡œê·¸ì˜ RefOffsetì— í•´ë‹¹í•˜ëŠ” LogPtr
- * aTableOID [OUT] - ë¡œê·¸ë¡œë¶€í„° íŒë…í•œ TableOIDë¥¼ ë°˜í™˜í•œë‹¤.
- * aIndexOID [OUT] - ë¡œê·¸ë¡œë¶€í„° íŒë…í•œ IndexOIDë¥¼ ë°˜í™˜í•œë‹¤.
- * aSpaceID  [OUT] - ë¡œê·¸ë¡œë¶€í„° íŒë…í•œ Indexì˜ TableSpace IDë¥¼ ë°˜í™˜í•œë‹¤.
+ * aTrans    [IN]  - Æ®·£Àè¼Ç
+ * aLogPtr   [IN]  - SMR_DLT_REF_NTA ·Î±×ÀÇ RefOffset¿¡ ÇØ´çÇÏ´Â LogPtr
+ * aTableOID [OUT] - ·Î±×·ÎºÎÅÍ ÆÇµ¶ÇÑ TableOID¸¦ ¹İÈ¯ÇÑ´Ù.
+ * aIndexOID [OUT] - ·Î±×·ÎºÎÅÍ ÆÇµ¶ÇÑ IndexOID¸¦ ¹İÈ¯ÇÑ´Ù.
+ * aSpaceID  [OUT] - ·Î±×·ÎºÎÅÍ ÆÇµ¶ÇÑ IndexÀÇ TableSpace ID¸¦ ¹İÈ¯ÇÑ´Ù.
  *
  **********************************************************************/
 IDE_RC sdnUpdate::getIndexInfoToVerify( SChar     * aLogPtr,
@@ -850,7 +850,7 @@ IDE_RC sdnUpdate::undo_SDR_SDN_DELETE_KEY_WITH_NTA( idvSQL   * aStatistics,
                                    (void*)sIndexHeader,
                                    (SChar*)(SDNB_LKEY_KEY_PTR( sLeafKey )),
                                    SD_MAKE_SID( sLeafKey->mRowPID,
-                                   sLeafKey->mRowSlotNum ),
+                                                sLeafKey->mRowSlotNum ),
                                    (UChar*)&sContext )
               != IDE_SUCCESS );
 
@@ -1021,7 +1021,7 @@ IDE_RC sdnUpdate::redo_SDR_SDN_COMPACT_INDEX_PAGE( SChar       * aLogPtr,
     return IDE_FAILURE;
 }
 
-
+#if 0
 /***********************************************************************
  * Description : SDR_SDN_MAKE_CHAINED_KEYS
  **********************************************************************/
@@ -1080,8 +1080,8 @@ IDE_RC sdnUpdate::redo_SDR_SDN_MAKE_CHAINED_KEYS( SChar       * aLogPtr,
 
     return IDE_FAILURE;
 }
-
-
+#endif
+#if 0
 /***********************************************************************
  * Description : SDR_SDN_MAKE_UNCHAINED_KEYS
  **********************************************************************/
@@ -1146,7 +1146,7 @@ IDE_RC sdnUpdate::redo_SDR_SDN_MAKE_UNCHAINED_KEYS( SChar       * aLogPtr,
 
     return IDE_FAILURE;
 }
-
+#endif
 
 /***********************************************************************
  * Description : SDR_SDN_KEY_STAMPING
@@ -1191,8 +1191,8 @@ IDE_RC sdnUpdate::redo_SDR_SDN_KEY_STAMPING( SChar       * aLogPtr,
     if ( sCTSlotNum == SDN_CTS_IN_KEY )
     {
         /* 
-         * CTS Slot Numì´ SDN_CTS_IN_KEY ì´ë©´,
-         * TBK STAMPINGì„ ìˆ˜í–‰í•œë‹¤. (BUG-44973)
+         * CTS Slot NumÀÌ SDN_CTS_IN_KEY ÀÌ¸é,
+         * TBK STAMPINGÀ» ¼öÇàÇÑ´Ù. (BUG-44973)
          */
         aLogPtr += SDNB_COLLENINFO_LIST_SIZE( sColLenInfoList );
 
@@ -1247,7 +1247,7 @@ IDE_RC sdnUpdate::redo_SDR_SDN_KEY_STAMPING( SChar       * aLogPtr,
     else
     {
         /* 
-         * TBTì— ëŒ€í•œ SOFT KEY STAMPINGì„ ìˆ˜í–‰í•œë‹¤.
+         * TBT¿¡ ´ëÇÑ SOFT KEY STAMPINGÀ» ¼öÇàÇÑ´Ù.
          */
         IDE_ERROR( aSize == ( ID_SIZEOF(UChar) + SDNB_COLLENINFO_LIST_SIZE(sColLenInfoList) ) );
 
@@ -1262,7 +1262,6 @@ IDE_RC sdnUpdate::redo_SDR_SDN_KEY_STAMPING( SChar       * aLogPtr,
             {
                 SDNB_SET_CCTS_NO( sLeafKey, SDN_CTS_INFINITE );
                 SDNB_SET_DUPLICATED( sLeafKey, SDNB_DUPKEY_NO );
-                SDNB_SET_CHAINED_CCTS( sLeafKey, SDN_CHAINED_NO );
 
                 /*
                  * To fix BUG-23337
@@ -1288,17 +1287,10 @@ IDE_RC sdnUpdate::redo_SDR_SDN_KEY_STAMPING( SChar       * aLogPtr,
                                                    ID_TRUE );
                 sNodeHdr->mTotalDeadKeySize += sKeyLen + ID_SIZEOF(sdpSlotEntry);
 
-                /* BUG- 30709 Disk Indexì— Chainingëœ Dead Keyì˜ CTSê°€ 
-                 * Chaining ë˜ì§€ ì•Šì€ DeadKeyì´ê¸° ë•Œë¬¸ì— ë¹„ì •ìƒ ì¢…ë£Œí•©ë‹ˆë‹¤. 
-                 *
-                 * DeadKeyê°€ ìœ íš¨í•œ CreateCTSë¥¼ bindí•˜ê³  ìˆì–´ì„œ ìƒê¸´ ë¬¸ì œ
-                 * ì…ë‹ˆë‹¤. DeadKeyë¡œ ë§Œë“¤ë•Œ CreateCTSë„ ë¬´í•œëŒ€ë¡œ ë°”ê¿”ì¤ë‹ˆë‹¤.*/
                 SDNB_SET_CCTS_NO( sLeafKey, SDN_CTS_INFINITE );
                 SDNB_SET_LCTS_NO( sLeafKey, SDN_CTS_INFINITE );
                 SDNB_SET_STATE( sLeafKey, SDNB_KEY_DEAD );
                 SDNB_SET_DUPLICATED( sLeafKey, SDNB_DUPKEY_NO );
-                SDNB_SET_CHAINED_CCTS( sLeafKey, SDN_CHAINED_NO );
-                SDNB_SET_CHAINED_LCTS( sLeafKey, SDN_CHAINED_NO );
             }
             else
             {

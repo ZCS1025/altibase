@@ -17,11 +17,11 @@
 
 package Altibase.jdbc.driver.sharding.executor;
 
-import Altibase.jdbc.driver.sharding.routing.SQLExecutionUnit;
+import Altibase.jdbc.driver.sharding.core.DataNode;
 
 import java.sql.SQLException;
 
 public interface GenerateCallback<T>
 {
-    T generate(SQLExecutionUnit aSqlExecutionUnit) throws SQLException;
+    T generate(DataNode aNode) throws SQLException;
 }

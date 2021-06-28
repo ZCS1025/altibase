@@ -19,7 +19,7 @@
  * $Id: stfFunctions.h 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * Geometry ê°ì²´ê°€ íƒ€ì… ë³„ë¡œ ê°€ì§€ëŠ” ì†ì„± í•¨ìˆ˜
+ * Geometry °´Ã¼°¡ Å¸ÀÔ º°·Î °¡Áö´Â ¼Ó¼º ÇÔ¼ö
  **********************************************************************/
 
 #ifndef _O_STF_FUNCTIONS_H_
@@ -244,7 +244,7 @@ public:
         mtcTemplate* aTemplate,
         stGetMinMaxXYParam aParam);
 
-    /* BUG-45645 ST_Reverse, ST_MakeEnvelope í•¨ìˆ˜ ì§€ì› */
+    /* BUG-45645 ST_Reverse, ST_MakeEnvelope ÇÔ¼ö Áö¿ø */
     static IDE_RC reverseGeometry( mtcNode     * aNode,
                                    mtcStack    * aStack,
                                    SInt          aRemain,
@@ -259,6 +259,13 @@ public:
                                 SInt          aRemain,
                                 void        * aInfo,
                                 mtcTemplate * aTemplate );
+
+    /* BUG-47857 ST_MakePoint, ST_Point ÇÔ¼ö Áö¿ø */ 
+    static IDE_RC makePoint( mtcNode     * aNode,
+                             mtcStack    * aStack,
+                             SInt          aRemain,
+                             void        * aInfo,
+                             mtcTemplate * aTemplate );
 };
 
 #endif /* _O_STF_FUNCTIONS_H_ */

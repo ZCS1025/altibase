@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qs.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qs.h 89835 2021-01-22 10:10:02Z andrew.shin $
  **********************************************************************/
 
 #ifndef _O_QS_H_
@@ -45,17 +45,22 @@ enum qsVariableType
     QS_PRIM_TYPE,
     QS_ROW_TYPE,
     QS_COL_TYPE,
-    QS_UD_TYPE,    // PROJ-1075 record/array typeÏ∂îÍ∞Ä.
+    QS_UD_TYPE,    // PROJ-1075 record/array type√ﬂ∞°.
     QS_RECORD_TYPE,
     QS_ASSOCIATIVE_ARRAY_TYPE,
     QS_REF_CURSOR_TYPE
 };
 
 // PROJ-1685
+// PROJ-2717 Internal procedure
+//  1. ±‚¡∏¿« QS_INTERNAL¿ª QS_NORMAL∑Œ ∫Ø∞Ê
+//  2. ±‚¡∏¿« QS_EXTERNAL¿ª QS_EXTERNAL_C∑Œ ∫Ø∞Ê
+//  3. ªı∑Œ QS_INTERNAL_C∏¶ √ﬂ∞°
 enum qsProcType
 {
-    QS_INTERNAL = 0,
-    QS_EXTERNAL
+    QS_NORMAL = 0,
+    QS_EXTERNAL_C,
+    QS_INTERNAL_C
 };
 
 typedef smOID qsOID;
@@ -68,8 +73,8 @@ typedef smOID qsOID;
 #define     QS_PKG_VARIABLE_ID     ( ID_UINT_MAX )
 
 /* PROJ-2586 PSM Parameters and return without precision
-   char typeÏùò default precisionÏóê ÎåÄÌï¥ Í∏∞Ï°¥Í≥º ÎèôÏùºÌïú ÎπÑÏú®Î°ú
-   bitÏôÄ byteÏùò precisionÏùò default precision Í≤∞Ï†ï */
+   char type¿« default precisionø° ¥Î«ÿ ±‚¡∏∞˙ µø¿œ«— ∫Ò¿≤∑Œ
+   bitøÕ byte¿« precision¿« default precision ∞·¡§ */
 #define   QS_BIT_PRECISION_DEFAULT      ( 2 * QCU_PSM_CHAR_DEFAULT_PRECISION )
 #define   QS_VARBIT_PRECISION_DEFAULT   ( QS_BIT_PRECISION_DEFAULT )
 #define   QS_BYTE_PRECISION_DEFAULT      ( QCU_PSM_CHAR_DEFAULT_PRECISION )
@@ -121,7 +126,7 @@ typedef struct qsExecParseTree
     idBool                  isDeterministic;
     
     UInt                    userID;
-    /* procedure, function, package specÏùò OID */
+    /* procedure, function, package spec¿« OID */
     qsOID                   procOID;
     /* BUG-38720 package body OID */
     qsOID                   pkgBodyOID;     
@@ -133,6 +138,8 @@ typedef struct qsExecParseTree
     // PROJ-2646 shard analyzer
     struct sdiObjectInfo  * mShardObjInfo;
 
+    /* TASK-7219 Shard Transformer Refactoring */
+    struct sdiShardAnalysis * mShardAnalysis;
 } qsExecParseTree;
 
 #define     QS_ID_INIT_VALUE   ( -1000 )

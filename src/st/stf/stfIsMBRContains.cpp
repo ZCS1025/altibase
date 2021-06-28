@@ -165,7 +165,7 @@ IDE_RC stfIsMBRContainsEstimate(
 
 /***********************************************************************
  * Description:
- * ë‘ Geometry ê°ì²´ì˜ ê´€ê³„ê°€ MBR Contains ì¸ì§€ íŒë³„
+ * µÎ Geometry °´Ã¼ÀÇ °ü°è°¡ MBR Contains ÀÎÁö ÆÇº°
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -179,7 +179,7 @@ IDE_RC isMBRContains(
     stdGeometryHeader*      sValue1 = (stdGeometryHeader *)aStack[1].value;
     stdGeometryHeader*      sValue2 = (stdGeometryHeader *)aStack[2].value;
 
-    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
+    // Fix BUG-15412 mtdModule.isNull »ç¿ë
     if( (stdGeometry.isNull( NULL, sValue1 )==ID_TRUE) ||
         (stdGeometry.isNull( NULL, sValue2 )==ID_TRUE) )
     {
@@ -217,7 +217,7 @@ IDE_RC stfIsMBRContainsEstimateRange(
                         UInt*        aSize )
 {
     // BUG-28934
-    // merge rangeì—ì„œ ì‚¬ìš©í•  stdMBR ê³µê°„ì„ í™•ë³´í•œë‹¤.
+    // merge range¿¡¼­ »ç¿ëÇÒ stdMBR °ø°£À» È®º¸ÇÑ´Ù.
     *aSize = ID_SIZEOF(smiRange) + (ID_SIZEOF(mtkRangeCallBack) << 1)
         + ID_SIZEOF(stdMBR);
 
@@ -268,7 +268,7 @@ IDE_RC stfIsMBRContainsExtractRange(
 
     sValueColumn = aTemplate->rows[sValueNode->table].columns
         + sValueNode->column;
-    sValue       = aTemplate->rows[sValueNode->table].row; //rowì— mbrê°’ì€ ì–´ë””ì—?
+    sValue       = aTemplate->rows[sValueNode->table].row; //row¿¡ mbr°ªÀº ¾îµğ¿¡?
 
     sValueTemp = (void*)mtd::valueForModule( (smiColumn*)sValueColumn,
                                              sValue,

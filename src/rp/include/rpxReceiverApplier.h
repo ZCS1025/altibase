@@ -31,14 +31,14 @@
 
 struct rpxReceiverParallelApplyInfo;
 
-typedef enum rpxRecevierApplyStatus
+typedef enum rpxReceiverApplyStatus
 {
     RECV_APPLIER_STATUS_INITIALIZE  = 0,
     RECV_APPLIER_STATUS_WORKING     = 1,
     RECV_APPLIER_STATUS_DEQUEUEING  = 2,
     RECV_APPLIER_STATUS_WAITING     = 3,
     RECV_APPLIER_STATUS_STOP        = 4
-} rpxRecevierApplyStatus;
+} rpxReceiverApplyStatus;
 
 class rpxReceiverApplier : public idtBaseThread
 {
@@ -59,7 +59,7 @@ private:
     iduCond                 mCV;
     idBool                  mIsWait;
 
-    rpxRecevierApplyStatus  mStatus;
+    rpxReceiverApplyStatus  mStatus;
 
     smSN                    mProcessedSN;
     smSN                    mLastCommitSN;

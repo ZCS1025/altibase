@@ -15,21 +15,15 @@
  */
  
 /***********************************************************************
- * $Id: iloDef.h 80545 2017-07-19 08:05:23Z daramix $
+ * $Id: iloDef.h 88494 2020-09-04 04:29:31Z chkim $
  **********************************************************************/
 
 #ifndef _O_ILO_DEF_H
 #define _O_ILO_DEF_H
 
-#define ENVIRON_FILE       "iloader.ini"
+#include <uttEnv.h>
 
-#define ENV_ISQL_PREFIX                        "ISQL_"
-#define ENV_ILO_PREFIX                         "ILO_"
-#define ENV_ALTIBASE_PORT_NO                   "ALTIBASE_PORT_NO"
-#define ENV_ALTIBASE_IPCDA_PORT_NO             "ALTIBASE_IPCDA_PORT_NO"
-#define PROPERTY_PORT_NO                       "PORT_NO"
-#define PROPERTY_IPCDA_PORT_NO                 "IPCDA_PORT_NO"
-#define DEFAULT_PORT_NO                        20300
+#define ENVIRON_FILE       "iloader.ini"
 
 #ifdef COMPILE_SHARDCLI
 #define BAN_FILENAME                           "SHARDLOADER.ban"
@@ -39,15 +33,11 @@
 #define ILO_PRODUCT_NAME                       "ILOADER"
 #endif /* COMPILE_SHARDCLI */
 
-/* BUG-41406 */
-#define ENV_ALTIBASE_SSL_PORT_NO               ALTIBASE_ENV_PREFIX"SSL_PORT_NO"
-
 #define ENV_ALTIBASE_DATE_FORMAT               ALTIBASE_ENV_PREFIX"DATE_FORMAT"
 #define ENV_ALTIBASE_EDITOR                    ALTIBASE_ENV_PREFIX"EDITOR"
-#define ENV_ISQL_CONNECTION                    ENV_ISQL_PREFIX"CONNECTION"
 #define ENV_ILO_DATEFORM                       ENV_ILO_PREFIX"DATEFORM"
 
-/* BUG-31404: í•­ìƒ STD_GEOHEAD_SIZE ë³´ë‹¤ ì»¤ì•¼ í•¨ */
+/* BUG-31404: Ç×»ó STD_GEOHEAD_SIZE º¸´Ù Ä¿¾ß ÇÔ */
 #define ILO_GEOHEAD_SIZE   56
 
 /* BUG-31387: define Connection Type */
@@ -59,7 +49,7 @@
 #define ILO_CONNTYPE_IPCDA 7
 
 #define MAX_OBJNAME_LEN    128+30    //BUG-39621 "MaxLengthName"\0 + alpha
-/* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
+/* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
 #define MAX_FILEPATH_LEN   1024     //BUG-24583
 #define MAX_WORD_LEN       128
 #define MAX_ATTR_COUNT     1024
@@ -76,9 +66,9 @@
 #define ILOADER_WARNING     -2
 
 #define MAX_VARCHAR_SIZE   32*1024 // BUGBUG : TODO ..(SMC_PERS_PAGE_BODY_SIZE - sizeof(smcVarPageHeader) - sizeof(smVarColumn))
-/* ìˆ«ì íƒ€ì…ë“¤ì—ëŒ€í•œ ê¸¸ì´ì œí•œ ê°’ :
- * doubleì„ ê¸°ì¤€ìœ¼ë¡œ í–ˆì„ë•Œ, ì…ë ¥ë ìˆ˜ ìˆëŠ” ìˆ«ìì˜ ê°€ì¥ê¸´ string ê¸¸ì´ëŠ” 312byte. 
- * ì˜ˆì™¸ìƒí™©ì„ ê³ ë ¤í•˜ì—¬ ë„‰ë„‰íˆ 511byteë¡œ í• ë‹¹í•¨.
+/* ¼ıÀÚ Å¸ÀÔµé¿¡´ëÇÑ ±æÀÌÁ¦ÇÑ °ª :
+ * doubleÀ» ±âÁØÀ¸·Î ÇßÀ»¶§, ÀÔ·ÂµÉ¼ö ÀÖ´Â ¼ıÀÚÀÇ °¡Àå±ä string ±æÀÌ´Â 312byte. 
+ * ¿¹¿Ü»óÈ²À» °í·ÁÇÏ¿© ³Ë³ËÈ÷ 511byte·Î ÇÒ´çÇÔ.
  */
 /* BUG - 18804 */
 #define MAX_NUMBER_SIZE    511
@@ -90,7 +80,7 @@
 
 #define MAX_PASS_LEN       40
 
-#define SYS_ERROR          -1   // BUG-28208: malloc ë“±ì— ì‹¤íŒ¨í–ˆì„ ë•Œ iloader ë°”ë¡œ ì¢…ë£Œ 
+#define SYS_ERROR          -1   // BUG-28208: malloc µî¿¡ ½ÇÆĞÇßÀ» ¶§ iloader ¹Ù·Î Á¾·á 
 #define READ_ERROR         0
 #define READ_SUCCESS       1
 #define END_OF_FILE        2
@@ -108,19 +98,19 @@
 //PROJ-1714
 #define MAX_PARALLEL_COUNT      32
 #define MAX_CIRCULAR_BUF        1024 * 1024 * 10    //10M
-// BUG-18803 readsize ì˜µì…˜ ì¶”ê°€
-// readsize ì˜µì…˜ì˜ ê¸°ë³¸ê°’ì´ë‹¤.
+// BUG-18803 readsize ¿É¼Ç Ãß°¡
+// readsize ¿É¼ÇÀÇ ±âº»°ªÀÌ´Ù.
 #define FILE_READ_SIZE_DEFAULT  1024 * 1024         //1M
 
 /* BUG-21064 : CLOB type CSV up/download error */
-// CSV í¬ë§· í˜•íƒœì˜ CLOB dataì¼ê²½ìš°.
+// CSV Æ÷¸Ë ÇüÅÂÀÇ CLOB dataÀÏ°æ¿ì.
 #define CLOB4CSV ( sHandle->mProgOption->mRule == csv ) && ( mLOBLocCType == SQL_C_CLOB_LOCATOR )
 
 // PROJ-2075
 
-/*iLoader build ì‹œ í˜„ì¬ ë²„ì „ì„ ëª…ì‹œ í•œë‹¤. 
- * ALTIBASE_ILOADER_MAX_VER ì€ ALTIBASE_ILOADER_V(x)ì˜ 
- * ìµœëŒ€ ë²„ì „ ê°’ê³¼ ë™ì¼ í•´ì•¼ í•œë‹¤. 
+/*iLoader build ½Ã ÇöÀç ¹öÀüÀ» ¸í½Ã ÇÑ´Ù. 
+ * ALTIBASE_ILOADER_MAX_VER Àº ALTIBASE_ILOADER_V(x)ÀÇ 
+ * ÃÖ´ë ¹öÀü °ª°ú µ¿ÀÏ ÇØ¾ß ÇÑ´Ù. 
  */
 
 #define ALTIBASE_ILOADER_MAX_VER 1

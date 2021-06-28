@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLProgOption.h 80544 2017-07-19 08:04:46Z daramix $
+ * $Id: iSQLProgOption.h 91040 2021-06-23 02:06:58Z chkim $
  **********************************************************************/
 
 #ifndef _O_ISQLPROGOPTION_H_
@@ -24,6 +24,7 @@
 #include <idnCharSet.h>
 #include <utISPApi.h>
 #include <iSQL.h>
+#include <uttEnv.h>
 
 class iSQLProgOption
 {
@@ -32,11 +33,11 @@ public:
 
     IDE_RC ParsingCommandLine(SInt aArgc, SChar **aArgv);
     IDE_RC ReadProgOptionInteractive();
-    // BUG-26287: ÏòµÏÖò Ï≤òÎ¶¨Î∞©Î≤ï ÌÜµÏùº
+    // BUG-26287: ø…º« √≥∏ÆπÊπ˝ ≈Î¿œ
     IDE_RC ReadEnvironment();
     void   ReadServerProperties();
 
-    /* BUG-31387: ConnTypeÏùÑ Î≥¥Ï†ïÌïòÍ≥† Í≤ΩÏö∞Ïóê Îî∞Îùº Í≤ΩÍ≥† Ï∂úÎ†• */
+    /* BUG-31387: ConnType¿ª ∫∏¡§«œ∞Ì ∞ÊøÏø° µ˚∂Û ∞Ê∞Ì √‚∑¬ */
     void   AdjustConnType();
 
     SChar * GetServerName() { return m_ServerName; }
@@ -86,6 +87,13 @@ public:
     	return ( (aEnvValue != NULL) &&
     			 (aEnvValue[0] != '\0'))? ID_TRUE:ID_FALSE;
     }
+
+    /* BUG-47652 Set file permission */
+    idBool isExistFilePerm() { return mbExistFilePerm; }
+    IDE_RC setFilePermission();
+
+    /* BUG-48618 keep_sysdba */
+    idBool  IsKeepSysdba()      { return m_bExist_KEEP_SYSDBA; }
 
 public:
     FILE   * m_OutFile;
@@ -149,6 +157,11 @@ private:
     idBool   m_bExist_NOLOG; /* BUG-41476 */
 
     SInt     m_ConnectRetryMax; /* BUG-43352 */
+    
+    /* BUG-47652 Set file permission */
+    idBool   mbExistFilePerm;
+    /* BUG-48618 keep_sysdba */
+    idBool   m_bExist_KEEP_SYSDBA;
 };
 
 #endif // _O_ISQLPROGOPTION_H_

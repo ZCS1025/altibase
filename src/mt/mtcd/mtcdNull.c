@@ -155,7 +155,7 @@ ACI_RC mtdInitializeNull( acp_uint32_t aNo )
 {
     ACI_TEST( mtdInitializeModule( &mtcdNull, aNo ) != ACI_SUCCESS );    
 
-    // mtdColumnì˜ ì´ˆê¸°í™”
+    // mtdColumnÀÇ ÃÊ±âÈ­
     ACI_TEST( mtcInitializeColumn( & mtdColumn,
                                    & mtcdNull,
                                    0,   // arguments
@@ -219,7 +219,7 @@ ACI_RC mtdValue( mtcTemplate*  aTemplate,
         }
         
         // BUG-25739
-        // ì ì–´ë„ 1byteì˜ ê³µê°„ì´ í•„ìš”í•˜ë‹¤.
+        // Àû¾îµµ 1byteÀÇ °ø°£ÀÌ ÇÊ¿äÇÏ´Ù.
         if( *aValueOffset < aValueSize )
         {
             aColumn->column.offset   = *aValueOffset;
@@ -300,7 +300,7 @@ mtdNullComp( mtdValueInfo*  aValueInfo1 ,
     ACP_UNUSED(aValueInfo1);
     ACP_UNUSED(aValueInfo2);
     
-    // ORDER BY NULL DESC ë“±ì—ì„œ ì‚¬ìš©ë¨.
+    // ORDER BY NULL DESC µî¿¡¼­ »ç¿ëµÊ.
     return 0;
 }
 
@@ -316,7 +316,7 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
 {
 /***********************************************************************
  *
- * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColum ì´ˆê¸°í™”
+ * Description : valueÀÇ semantic °Ë»ç ¹× mtcColum ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -326,9 +326,9 @@ ACI_RC mtdValidate( mtcColumn*   aColumn,
     
     ACI_TEST_RAISE( aValueSize != MTD_NULL_SIZE, ERR_INVALID_LENGTH );
 
-    // ì´ˆê¸°í™”ëœ aColumnì€ cannonize() ì‹œì— ì‚¬ìš©
-    // ì´ë•Œ, data type moduleì˜ precision ì •ë³´ë§Œì„ ì‚¬ìš©í•˜ë¯€ë¡œ,
-    // language ì •ë³´ ì„¤ì •í•  í•„ìš”ì—†ìŒ 
+    // ÃÊ±âÈ­µÈ aColumnÀº cannonize() ½Ã¿¡ »ç¿ë
+    // ÀÌ¶§, data type moduleÀÇ precision Á¤º¸¸¸À» »ç¿ëÇÏ¹Ç·Î,
+    // language Á¤º¸ ¼³Á¤ÇÒ ÇÊ¿ä¾øÀ½ 
     ACI_TEST( mtcInitializeColumn( aColumn,
                                    & mtcdNull,
                                    0,   // arguments
@@ -359,12 +359,12 @@ static ACI_RC mtdStoredValue2MtdValue( acp_uint32_t    aColumnSize ,
 {
 /*******************************************************************
  * PROJ-1705
- * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
- * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
+ * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
+ * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
  *******************************************************************/
 
-    // ê³ ì •ê¸¸ì´ ë°ì´íƒ€ íƒ€ì…ì˜ ê²½ìš°
-    // í•˜ë‚˜ì˜ ì»¬ëŸ¼ ë°ì´íƒ€ê°€ ì—¬ëŸ¬í˜ì´ì§€ì— ë‚˜ëˆ„ì–´ ì €ì¥ë˜ëŠ” ê²½ìš°ëŠ” ì—†ë‹¤.
+    // °íÁ¤±æÀÌ µ¥ÀÌÅ¸ Å¸ÀÔÀÇ °æ¿ì
+    // ÇÏ³ªÀÇ ÄÃ·³ µ¥ÀÌÅ¸°¡ ¿©·¯ÆäÀÌÁö¿¡ ³ª´©¾î ÀúÀåµÇ´Â °æ¿ì´Â ¾ø´Ù.
     ACP_UNUSED(aColumnSize);
     ACP_UNUSED(aDestValueOffset);
     ACP_UNUSED(aLength);

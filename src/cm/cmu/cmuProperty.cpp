@@ -79,7 +79,7 @@ IDE_RC cmuProperty::load()
     IDE_ASSERT(idp::read("SSL_CLIENT_AUTHENTICATION", &mSslClientAuthentication) == IDE_SUCCESS);
     IDE_ASSERT(idp::read("__SSL_VERIFY_PEER_CERTIFICATE", &mSslVerifyPeerCert) == IDE_SUCCESS);
 
-    /* PROJ-2616 IPCDAëŠ” ì¶”ê°€ê¸°ëŠ¥ì˜ ì„±ê²©ì´ ìžˆìœ¼ë¯€ë¡œ ASSERTë¥¼ ë°œìƒì‹œí‚¤ì§€ ì•ŠìŒ */
+    /* PROJ-2616 IPCDA´Â Ãß°¡±â´ÉÀÇ ¼º°ÝÀÌ ÀÖÀ¸¹Ç·Î ASSERT¸¦ ¹ß»ý½ÃÅ°Áö ¾ÊÀ½ */
     if (idp::read("IPCDA_DATABLOCK_SIZE",&mIPCDASimpleQueryDataBlockSize) == IDE_SUCCESS)
     {
         /* Do nothing. */
@@ -90,7 +90,7 @@ IDE_RC cmuProperty::load()
     }
 
 #if defined(ALTI_CFG_OS_LINUX)
-    /* BUG-46390 ìž˜ëª»ëœ ì˜µì…˜ ë¬¸ìž ìˆ˜ì • */
+    /* BUG-46390 Àß¸øµÈ ¿É¼Ç ¹®ÀÚ ¼öÁ¤ */
     if (idp::read("IPCDA_MESSAGEQ_MODE", &mIPCDAIsMessageQ) == IDE_SUCCESS)
     {
         /* Do nothing */

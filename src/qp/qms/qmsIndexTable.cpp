@@ -97,7 +97,7 @@ qmsIndexTable::makeIndexTableRef( qcStatement       * aStatement,
                                               & sIndexTableRef )
                      != IDE_SUCCESS );
 
-        // index table refë¥¼ êµ¬ì„±í•œë‹¤.
+        // index table ref¸¦ ±¸¼ºÇÑ´Ù.
         for ( i = 0, j = 0; i < aTableInfo->indexCount; i++ )
         {
             sIndex = & aTableInfo->indices[i];
@@ -116,7 +116,7 @@ qmsIndexTable::makeIndexTableRef( qcStatement       * aStatement,
             }
         }
         
-        // listë¥¼ êµ¬ì„±í•œë‹¤.
+        // list¸¦ ±¸¼ºÇÑ´Ù.
         for ( i = 0; i < sIndexTableCount - 1; i++ )
         {
             sIndexTableRef[i].next = & sIndexTableRef[i + 1];
@@ -146,7 +146,7 @@ qmsIndexTable::makeOneIndexTableRef( qcStatement      * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1623 non-partitioned index
- *     table idë¥¼ ì´ìš©í•˜ì—¬ indexTableRef êµ¬ì„±.
+ *     table id¸¦ ÀÌ¿ëÇÏ¿© indexTableRef ±¸¼º.
  *    
  * Implementation :
  *
@@ -192,14 +192,7 @@ IDE_RC qmsIndexTable::validateAndLockIndexTableRefList( qcStatement      * aStat
 
     if ( ( aStatement->myPlan->parseTree->stmtKind & QCI_STMT_MASK_MASK ) == QCI_STMT_MASK_DDL )
     {
-        if ( smiGetDDLLockTimeOut() == -1 )
-        {
-            /* Nothing to do */
-        }
-        else
-        {
-            sTimeout = smiGetDDLLockTimeOut() * 1000000;
-        }
+        sTimeout = smiGetDDLLockTimeOut((QC_SMI_STMT( aStatement ))->getTrans());
     }
     else
     {
@@ -213,10 +206,10 @@ IDE_RC qmsIndexTable::validateAndLockIndexTableRefList( qcStatement      * aStat
         IDE_TEST(smiValidateAndLockObjects( (QC_SMI_STMT( aStatement ))->getTrans(),
                                             sIndexTableRef->tableHandle,
                                             sIndexTableRef->tableSCN,
-                                            SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                            SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                             aLockMode,
                                             sTimeout,
-                                            ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
+                                            ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
                  != IDE_SUCCESS);
     }
     
@@ -243,14 +236,7 @@ IDE_RC qmsIndexTable::validateAndLockOneIndexTableRef( qcStatement      * aState
 
     if ( ( aStatement->myPlan->parseTree->stmtKind & QCI_STMT_MASK_MASK ) == QCI_STMT_MASK_DDL )
     {
-        if ( smiGetDDLLockTimeOut() == -1 )
-        {
-            /* Nothing to do */
-        }
-        else
-        {
-            sTimeout = smiGetDDLLockTimeOut() * 1000000;
-        }
+        sTimeout = smiGetDDLLockTimeOut((QC_SMI_STMT( aStatement ))->getTrans());
     }
     else
     {
@@ -260,10 +246,10 @@ IDE_RC qmsIndexTable::validateAndLockOneIndexTableRef( qcStatement      * aState
     IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT( aStatement ))->getTrans(),
                                          aIndexTableRef->tableHandle,
                                          aIndexTableRef->tableSCN,
-                                         SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                         SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                          aLockMode,
                                          sTimeout,
-                                         ID_FALSE ) // BUG-28752 ëª…ì‹œì  Lockê³¼ ë‚´ì¬ì  Lockì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
+                                         ID_FALSE ) // BUG-28752 ¸í½ÃÀû Lock°ú ³»ÀçÀû LockÀ» ±¸ºĞÇÕ´Ï´Ù.
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -308,7 +294,7 @@ qmsIndexTable::findKeyIndex( qcmTableInfo  * aTableInfo,
         }
     }
     
-    // index tableì˜ indexëŠ” ë°˜ë“œì‹œ ì¡´ì¬í•œë‹¤.
+    // index tableÀÇ index´Â ¹İµå½Ã Á¸ÀçÇÑ´Ù.
     IDE_TEST_RAISE( sFound == ID_FALSE, ERR_NOT_FOUND );
 
     *aKeyIndex = sIndex;
@@ -361,7 +347,7 @@ qmsIndexTable::findRidIndex( qcmTableInfo  * aTableInfo,
         }
     }
     
-    // index tableì˜ indexëŠ” ë°˜ë“œì‹œ ì¡´ì¬í•œë‹¤.
+    // index tableÀÇ index´Â ¹İµå½Ã Á¸ÀçÇÑ´Ù.
     IDE_TEST_RAISE( sFound == ID_FALSE, ERR_NOT_FOUND );
 
     *aRidIndex = sIndex;
@@ -387,7 +373,7 @@ qmsIndexTable::findIndexTableRefInList( qmsIndexTableRef  * aIndexTableRef,
 /***********************************************************************
  *
  * Description : PROJ-1623 non-partitioned index
- *     index table listì—ì„œ indexIDì— í•´ë‹¹í•˜ëŠ” index tableì„ ì°¾ëŠ”ë‹¤.
+ *     index table list¿¡¼­ indexID¿¡ ÇØ´çÇÏ´Â index tableÀ» Ã£´Â´Ù.
  *
  * Implementation :
  *
@@ -437,7 +423,7 @@ qmsIndexTable::initializePartitionRefIndex( qcStatement         * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1623 non-partitioned index
- *     aPartIndexInfoë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ *     aPartIndexInfo¸¦ ÃÊ±âÈ­ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -490,7 +476,7 @@ qmsIndexTable::findPartitionRefIndex( qmsPartRefIndexInfo  * aPartIndexInfo,
 /***********************************************************************
  *
  * Description : PROJ-1623 non-partitioned index
- *     partition ref listì—ì„œ partition oidì— í•´ë‹¹í•˜ëŠ” partitionì„ ì°¾ëŠ”ë‹¤.
+ *     partition ref list¿¡¼­ partition oid¿¡ ÇØ´çÇÏ´Â partitionÀ» Ã£´Â´Ù.
  *
  * Implementation :
  *
@@ -558,7 +544,7 @@ qmsIndexTable::makeUpdateSmiColumnList( UInt                aUpdateColumnCount,
 
     sIndexTableInfo = aIndexTable->tableInfo;
     
-    // updateí•  ì»¬ëŸ¼ì„ ì°¾ëŠ”ë‹¤.
+    // updateÇÒ ÄÃ·³À» Ã£´Â´Ù.
     for ( i = 0; i < aIndexTable->index->keyColCount; i++ )
     {
         for ( j = 0; j < aUpdateColumnCount; j++ )
@@ -567,7 +553,7 @@ qmsIndexTable::makeUpdateSmiColumnList( UInt                aUpdateColumnCount,
             {
                 sIndexUpdateColumn = sIndexTableInfo->columns[i].basicInfo;
 
-                // update column list êµ¬ì„±
+                // update column list ±¸¼º
                 aIndexUpdateColumnList[sIndexUpdateColumnCount].column =
                     (smiColumn*) sIndexUpdateColumn;
                 aIndexUpdateColumnList[sIndexUpdateColumnCount].next   =
@@ -612,7 +598,7 @@ qmsIndexTable::makeUpdateSmiColumnList( UInt                aUpdateColumnCount,
         // Nothing to do.
     }
 
-    // ë§ˆì§€ë§‰ì„ nullë¡œ ì±„ìš´ë‹¤.
+    // ¸¶Áö¸·À» null·Î Ã¤¿î´Ù.
     if ( sIndexUpdateColumnCount > 0 )
     {
         aIndexUpdateColumnList[sIndexUpdateColumnCount - 1].next = NULL;
@@ -650,14 +636,14 @@ qmsIndexTable::makeUpdateSmiValue( UInt                aUpdateColumnCount,
     UInt   i;
     UInt   j;
 
-    // updateí•  ì»¬ëŸ¼ì„ ì°¾ëŠ”ë‹¤.
+    // updateÇÒ ÄÃ·³À» Ã£´Â´Ù.
     for ( i = 0; i < aIndexTable->index->keyColCount; i++ )
     {
         for ( j = 0; j < aUpdateColumnCount; j++ )
         {
             if ( aIndexTable->index->keyColumns[i].column.id == aUpdateColumnID[j] )
             {
-                // smi value êµ¬ì„±
+                // smi value ±¸¼º
                 aIndexUpdateValue[sIndexUpdateColumnCount] = aUpdateValue[j];
                 sIndexUpdateColumnCount++;
                 break;
@@ -709,7 +695,7 @@ qmsIndexTable::makeInsertSmiValue( smiValue          * aInsertValue,
     UInt  sColumnOrder;
     UInt  i;
 
-    // insertí•  ì»¬ëŸ¼ì„ ì°¾ëŠ”ë‹¤.
+    // insertÇÒ ÄÃ·³À» Ã£´Â´Ù.
     for ( i = 0; i < aIndexTable->index->keyColCount; i++ )
     {
         sColumnOrder =
@@ -767,14 +753,14 @@ qmsIndexTable::initializeIndexTableCursors( qcStatement          * aStatement,
     if ( ( aIndexTableCount == 1 ) &&
          ( aSelectedIndexTableRef != NULL ) )
     {
-        // index tableì´ í•˜ë‚˜ì´ê³  selected index tableì´ë©´ ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // index tableÀÌ ÇÏ³ªÀÌ°í selected index tableÀÌ¸é ¾Æ¹«°Íµµ ÇÏÁö ¾Ê´Â´Ù.
         IDE_DASSERT( aIndexTableRef == aSelectedIndexTableRef );
 
         // Nothing to do.
     }
     else
     {
-        // non-partitioned indexë“¤
+        // non-partitioned indexµé
         IDE_TEST( STRUCT_ALLOC_WITH_COUNT( aStatement->qmxMem,
                                            qmsIndexCursor,
                                            aIndexTableCount,
@@ -789,8 +775,8 @@ qmsIndexTable::initializeIndexTableCursors( qcStatement          * aStatement,
                 
             if ( sIndexTable == aSelectedIndexTableRef )
             {
-                // selectionì— ì‚¬ìš©ëœ index table
-                // ì§ì ‘ ì‚­ì œë˜ë¯€ë¡œ ì œì™¸í•œë‹¤.
+                // selection¿¡ »ç¿ëµÈ index table
+                // Á÷Á¢ »èÁ¦µÇ¹Ç·Î Á¦¿ÜÇÑ´Ù.
                 sIndexCursor->cursorStatus = QMS_INDEX_CURSOR_STATUS_SKIP;
             }
             else
@@ -891,7 +877,7 @@ qmsIndexTable::initializeIndexTableCursors4Insert( qcStatement          * aState
     aCursorInfo->indexCursors          = NULL;
     aCursorInfo->row                   = NULL;
 
-    // non-partitioned indexë“¤
+    // non-partitioned indexµé
     IDE_TEST( STRUCT_ALLOC_WITH_COUNT( aStatement->qmxMem,
                                        qmsIndexCursor,
                                        aIndexTableCount,
@@ -946,7 +932,7 @@ qmsIndexTable::deleteIndexTableCursors( qcStatement          * aStatement,
         
             if ( sIndexCursor->cursorStatus == QMS_INDEX_CURSOR_STATUS_SKIP )
             {
-                // selectedIndexTableì€ ì œì™¸í•œë‹¤.
+                // selectedIndexTableÀº Á¦¿ÜÇÑ´Ù.
                 continue;
             }
             else
@@ -1010,7 +996,7 @@ qmsIndexTable::deleteIndexTableCursors( qcStatement          * aStatement,
                                                     SMI_FIND_NEXT )
                       != IDE_SUCCESS );
             
-            // ë°˜ë“œì‹œ ì¡´ì¬í•´ì•¼í•œë‹¤.
+            // ¹İµå½Ã Á¸ÀçÇØ¾ßÇÑ´Ù.
             IDE_TEST_RAISE( sRow == NULL, ERR_RID_NOT_FOUND );
             
             IDE_TEST( sIndexCursor->cursor.deleteRow()
@@ -1075,7 +1061,7 @@ qmsIndexTable::updateIndexTableCursors( qcStatement          * aStatement,
         
             if ( sIndexCursor->cursorStatus == QMS_INDEX_CURSOR_STATUS_SKIP )
             {
-                // selectedIndexTableì´ê±°ë‚˜ update columnì´ ì—†ëŠ” ê²½ìš°ëŠ” ì œì™¸í•œë‹¤.
+                // selectedIndexTableÀÌ°Å³ª update columnÀÌ ¾ø´Â °æ¿ì´Â Á¦¿ÜÇÑ´Ù.
                 continue;
             }
             else
@@ -1085,7 +1071,7 @@ qmsIndexTable::updateIndexTableCursors( qcStatement          * aStatement,
 
             if ( sIndexCursor->cursorStatus == QMS_INDEX_CURSOR_STATUS_ALLOC )
             {
-                // updateí•  ì»¬ëŸ¼ì„ ì°¾ëŠ”ë‹¤.
+                // updateÇÒ ÄÃ·³À» Ã£´Â´Ù.
                 IDE_TEST( makeUpdateSmiColumnList( aUpdateColumnCount,
                                                    aUpdateColumnID,
                                                    sIndexTable,
@@ -1094,7 +1080,7 @@ qmsIndexTable::updateIndexTableCursors( qcStatement          * aStatement,
                                                    sIndexCursor->updateColumnList )
                           != IDE_SUCCESS );
 
-                // updateí•  ì»¬ëŸ¼ì´ ì—†ëŠ” ê²½ìš° skipí•œë‹¤.
+                // updateÇÒ ÄÃ·³ÀÌ ¾ø´Â °æ¿ì skipÇÑ´Ù.
                 if ( sIndexCursor->updateColumnCount == 0 )
                 {
                     sIndexCursor->cursorStatus = QMS_INDEX_CURSOR_STATUS_SKIP;
@@ -1112,15 +1098,15 @@ qmsIndexTable::updateIndexTableCursors( qcStatement          * aStatement,
                 // Nothing to do.
             }
 
-            // ì‹¤ì œë¡œ updateí•  ì»¬ëŸ¼ì´ ì—†ëŠ” ê²½ìš°ë„ skipí•œë‹¤.
+            // ½ÇÁ¦·Î updateÇÒ ÄÃ·³ÀÌ ¾ø´Â °æ¿ìµµ skipÇÑ´Ù.
             //
-            // ì˜ˆ)
+            // ¿¹)
             // create table t1( i1, i2, i3 ) partition by hash(i3) rowmovement enable;
             // create index idx1 on t1(i1);
             // update t1 set i2=i2+1;
             if ( ( sIndexCursor->updateColumnCount == 2 ) &&
                  ( aKeyNRidUpdate == ID_TRUE ) &&
-                 ( SC_GRID_IS_EQUAL( *aRowGRID, aOldRowGRID ) == ID_TRUE ) )
+                 ( SC_GRID_IS_EQUAL( *aRowGRID, aOldRowGRID ) ) )
             {
                 continue;
             }
@@ -1185,10 +1171,10 @@ qmsIndexTable::updateIndexTableCursors( qcStatement          * aStatement,
                                                     SMI_FIND_NEXT )
                       != IDE_SUCCESS );
 
-            // ë°˜ë“œì‹œ ì¡´ì¬í•´ì•¼í•œë‹¤.
+            // ¹İµå½Ã Á¸ÀçÇØ¾ßÇÑ´Ù.
             IDE_TEST_RAISE( sRow == NULL, ERR_RID_NOT_FOUND );
         
-            // updateí•  ê°’ì„ ì„¤ì •í•œë‹¤.
+            // updateÇÒ °ªÀ» ¼³Á¤ÇÑ´Ù.
             IDE_TEST( makeUpdateSmiValue( aUpdateColumnCount,
                                           aUpdateColumnID,
                                           aUpdateValue,
@@ -1284,7 +1270,7 @@ qmsIndexTable::insertIndexTableCursors( qcStatement          * aStatement,
             // Nothing to do.
         }
 
-        // insertí•  ì»¬ëŸ¼ì„ ì°¾ëŠ”ë‹¤.
+        // insertÇÒ ÄÃ·³À» Ã£´Â´Ù.
         IDE_TEST( makeInsertSmiValue( aInsertValue,
                                       sIndexTable,
                                       & sPartOID,
@@ -1440,7 +1426,7 @@ qmsIndexTable::insertIndexTable4OneRow( smiStatement      * aSmiStmt,
                   != IDE_SUCCESS );
         sCursorOpened = ID_TRUE;
 
-        // insertí•  ì»¬ëŸ¼ì„ ì°¾ëŠ”ë‹¤.
+        // insertÇÒ ÄÃ·³À» Ã£´Â´Ù.
         IDE_TEST( makeInsertSmiValue( aInsertValue,
                                       sIndexTable,
                                       & sPartOID,
@@ -1513,7 +1499,7 @@ qmsIndexTable::updateIndexTable4OneRow( smiStatement      * aSmiStmt,
     {
         sIndexTableInfo = sIndexTable->tableInfo;
 
-        // updateí•  ì»¬ëŸ¼ì„ ì°¾ëŠ”ë‹¤.
+        // updateÇÒ ÄÃ·³À» Ã£´Â´Ù.
         IDE_TEST( makeUpdateSmiColumnList( aUpdateColumnCount,
                                            aUpdateColumnID,
                                            sIndexTable,
@@ -1522,7 +1508,7 @@ qmsIndexTable::updateIndexTable4OneRow( smiStatement      * aSmiStmt,
                                            sUpdateColumnList )
                       != IDE_SUCCESS );
 
-            // updateí•  ì»¬ëŸ¼ì´ ì—†ëŠ” ê²½ìš° skipí•œë‹¤.
+            // updateÇÒ ÄÃ·³ÀÌ ¾ø´Â °æ¿ì skipÇÑ´Ù.
         if ( sUpdateColumnCount == 0 )
         {
             continue;
@@ -1583,10 +1569,10 @@ qmsIndexTable::updateIndexTable4OneRow( smiStatement      * aSmiStmt,
                                    SMI_FIND_NEXT )
                   != IDE_SUCCESS );
 
-        // ë°˜ë“œì‹œ ì¡´ì¬í•´ì•¼í•œë‹¤.
+        // ¹İµå½Ã Á¸ÀçÇØ¾ßÇÑ´Ù.
         IDE_TEST_RAISE( sRow == NULL, ERR_RID_NOT_FOUND );
         
-        // updateí•  ê°’ì„ ì„¤ì •í•œë‹¤.
+        // updateÇÒ °ªÀ» ¼³Á¤ÇÑ´Ù.
         IDE_TEST( makeUpdateSmiValue( aUpdateColumnCount,
                                       aUpdateColumnID,
                                       aUpdateValue,
@@ -1710,7 +1696,7 @@ qmsIndexTable::deleteIndexTable4OneRow( smiStatement      * aSmiStmt,
                                    SMI_FIND_NEXT )
                   != IDE_SUCCESS );
 
-        // ë°˜ë“œì‹œ ì¡´ì¬í•´ì•¼í•œë‹¤.
+        // ¹İµå½Ã Á¸ÀçÇØ¾ßÇÑ´Ù.
         IDE_TEST_RAISE( sRow == NULL, ERR_RID_NOT_FOUND );
         
         IDE_TEST( sCursor.deleteRow() != IDE_SUCCESS );

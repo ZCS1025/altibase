@@ -24,7 +24,10 @@
 
 #include <ulsd.h>
 #include <ulsdFailover.h>
-
+#include <ulsdDistTxInfo.h>
+#include <ulsdnEx.h>
+#include <ulsdRebuild.h>
+#include <ulsdUtils.h>
 
 ACI_RC ulsdModuleHandshake_META(ulnFnContext *aFnContext)
 {
@@ -40,6 +43,25 @@ SQLRETURN ulsdModuleNodeDriverConnect_META(ulnDbc       *aDbc,
                                  aFnContext,
                                  aConnString,
                                  aConnStringLength);
+}
+
+SQLRETURN ulsdModuleNodeConnect_META( ulnDbc       * aDbc,
+                                      ulnFnContext * aFnContext,
+                                      acp_char_t   * aServerName,
+                                      acp_sint16_t   aServerNameLength,
+                                      acp_char_t   * aUserName,
+                                      acp_sint16_t   aUserNameLength,
+                                      acp_char_t   * aPassword,
+                                      acp_sint16_t   aPasswordLength )
+{
+    return ulsdNodeConnect( aDbc,
+                            aFnContext,
+                            aServerName,
+                            aServerNameLength,
+                            aUserName,
+                            aUserNameLength,
+                            aPassword,
+                            aPasswordLength );
 }
 
 ACI_RC ulsdModuleEnvRemoveDbc_META(ulnEnv *aEnv, ulnDbc *aDbc)
@@ -78,34 +100,34 @@ SQLRETURN ulsdModuleExecute_META(ulnFnContext *aFnContext,
     acp_uint16_t  sNodeDbcIndex;
     acp_uint16_t  sOnTransactionNodeIndex;
     acp_bool_t    sIsValidOnTransactionNodeIndex;
-    acp_bool_t    sIsOneNodeTransaction = ACP_FALSE;
     SQLRETURN     sNodeResult;
     acp_uint16_t  i;
 
     ulsdGetShardFromDbc(aStmt->mParentDbc, &sShard);
 
-    /* ìˆ˜í–‰í•  ë°ì´í„°ë…¸ë“œë¥¼ ê²°ì •í•¨ */
+    sNodeResult = ulsdCheckDbcSMN( aFnContext, aStmt->mParentDbc );
+    ACI_TEST( sNodeResult != SQL_SUCCESS );
+
+    /* ¼öÇàÇÒ µ¥ÀÌÅÍ³ëµå¸¦ °áÁ¤ÇÔ */
     sNodeResult = ulsdNodeDecideStmt(aStmt, ULN_FID_EXECUTE);
     ACI_TEST_RAISE(!SQL_SUCCEEDED(sNodeResult), LABEL_SHARD_NODE_DECIDE_STMT_FAIL);
 
     if ( aStmt->mParentDbc->mAttrAutoCommit == SQL_AUTOCOMMIT_OFF )
     {
-        if ( aStmt->mParentDbc->mShardDbcCxt.mShardTransactionLevel == ULN_SHARD_TX_ONE_NODE )
+        if ( aStmt->mParentDbc->mAttrGlobalTransactionLevel == ULN_GLOBAL_TX_ONE_NODE )
         {
-            /* one node txì—ì„œ 1ê°œì´ìƒ ë…¸ë“œê°€ ì„ íƒëœ ê²½ìš° ì—ëŸ¬ */
+            /* one node tx¿¡¼­ 1°³ÀÌ»ó ³ëµå°¡ ¼±ÅÃµÈ °æ¿ì ¿¡·¯ */
             ACI_TEST_RAISE(aStmt->mShardStmtCxt.mNodeDbcIndexCount > 1,
                            LABEL_SHARD_MULTI_NODE_SELECTED);
 
             sNodeDbcIndex = aStmt->mShardStmtCxt.mNodeDbcIndexArr[0];
 
-            /* one node txì—ì„œ ì´ì „ ë…¸ë“œì™€ ë‹¤ë¥´ë©´ ì—ëŸ¬ */
+            /* one node tx¿¡¼­ ÀÌÀü ³ëµå¿Í ´Ù¸£¸é ¿¡·¯ */
             ulsdIsValidOnTransactionNodeIndex(aStmt->mParentDbc,
                                               sNodeDbcIndex,
                                               &sIsValidOnTransactionNodeIndex);
             ACI_TEST_RAISE(sIsValidOnTransactionNodeIndex != ACP_TRUE,
                            LABEL_SHARD_NODE_INVALID_TOUCH);
-
-            sIsOneNodeTransaction = ACP_TRUE;
         }
         else
         {
@@ -123,19 +145,38 @@ SQLRETURN ulsdModuleExecute_META(ulnFnContext *aFnContext,
     else
     {
         /* Do Nothing */
+        /* Autocommit on + global transaction ÀÌ¸é¼­
+         * ¿©·¯ Âü¿© ³ëµå·Î ½ÇÇàµÇ´Â ±¸¹®Àº
+         * Server-side ·Î ¼öÇàµÇ°Ô µÇ¾îÀÖ´Ù. (BUG-45640 ulsdCallbackAnalyzeResult) */
+#if defined(DEBUG)
+        if ( ulsdIsGTx( aStmt->mParentDbc->mAttrGlobalTransactionLevel ) == ACP_TRUE )
+        {
+            ACE_DASSERT( aStmt->mShardStmtCxt.mNodeDbcIndexCount == 1 );
+        }
+#endif
     }
+
+    ulsdSetOnTransactionNodeIndex(aStmt->mParentDbc, sNodeDbcIndex);
+
+#if 0
+    /* BUG-48384 Á¤Ã¥º¯°æÀ¸·Î LIB SessionÀ¸·Î´Â º¸³»Áö ¾Ê¾Æµµ µÈ´Ù.
+                 (Shard, Solo Clone ÇÁ·Î½ÃÁ®)
+                 Â÷ÈÄ º¯°æµÉ ¼ö ÀÖÀ¸¹Ç·Î ÄÚµå´Â À¯ÁöÇÏÀÚ. */
+    ACI_TEST( ulsdBuildClientTouchNodeArr( aFnContext,
+                                           sShard,
+                                           ulnStmtGetStatementType(aStmt) )
+              != ACI_SUCCESS );
+
+    for ( i = 0; i < aStmt->mShardStmtCxt.mNodeDbcIndexCount; i++ )
+    {
+        sNodeDbcIndex = aStmt->mShardStmtCxt.mNodeDbcIndexArr[i];
+        sNodeStmt = aStmt->mShardStmtCxt.mShardNodeStmt[sNodeDbcIndex];
+
+        ulsdPropagateClientTouchNodeArrToNode( sNodeStmt->mParentDbc, sShard->mMetaDbc );
+    }
+#endif
 
     sNodeResult = ulsdExecuteNodes(aFnContext, aStmt);
-
-    if ( sIsOneNodeTransaction == ACP_TRUE )
-    {
-        /* one node txì´ë©´ ê¸°ë¡ */
-        ulsdSetOnTransactionNodeIndex(aStmt->mParentDbc, sNodeDbcIndex);
-    }
-    else
-    {
-        /* Do Nothing */
-    }
 
     return sNodeResult;
 
@@ -179,7 +220,7 @@ SQLRETURN ulsdModuleFetch_META(ulnFnContext *aFnContext,
 {
     SQLRETURN     sNodeResult;
 
-    /* ìˆ˜í–‰í•œ ë°ì´í„°ë…¸ë“œë¥¼ ê°€ì ¸ì˜´ */
+    /* ¼öÇàÇÑ µ¥ÀÌÅÍ³ëµå¸¦ °¡Á®¿È */
     sNodeResult = ulsdNodeDecideStmt(aStmt, ULN_FID_FETCH);
     ACI_TEST_RAISE(!SQL_SUCCEEDED(sNodeResult), LABEL_SHARD_NODE_DECIDE_STMT_FAIL);
 
@@ -215,7 +256,7 @@ SQLRETURN ulsdModuleRowCount_META(ulnFnContext *aFnContext,
 {
     SQLRETURN     sNodeResult;
 
-    /* ìˆ˜í–‰í•œ ë°ì´í„°ë…¸ë“œë¥¼ ê°€ì ¸ì˜´ */
+    /* ¼öÇàÇÑ µ¥ÀÌÅÍ³ëµå¸¦ °¡Á®¿È */
     sNodeResult = ulsdNodeDecideStmt(aStmt, ULN_FID_ROWCOUNT);
     ACI_TEST_RAISE(!SQL_SUCCEEDED(sNodeResult), LABEL_SHARD_NODE_DECIDE_STMT_FAIL);
 
@@ -241,7 +282,7 @@ SQLRETURN ulsdModuleMoreResults_META(ulnFnContext *aFnContext,
 {
     SQLRETURN     sNodeResult;
 
-    /* ìˆ˜í–‰í•œ ë°ì´í„°ë…¸ë“œë¥¼ ê°€ì ¸ì˜´ */
+    /* ¼öÇàÇÑ µ¥ÀÌÅÍ³ëµå¸¦ °¡Á®¿È */
     sNodeResult = ulsdNodeDecideStmt(aStmt, ULN_FID_MORERESULTS);
     ACI_TEST_RAISE(!SQL_SUCCEEDED(sNodeResult), LABEL_SHARD_NODE_DECIDE_STMT_FAIL);
 
@@ -270,8 +311,9 @@ ulnStmt* ulsdModuleGetPreparedStmt_META(ulnStmt *aStmt)
 
     ulsdGetShardFromDbc(aStmt->mParentDbc, &sShard);
 
-    /* executeí›„ì— í˜¸ì¶œí•œ ê²½ìš° ì§ì „ì— executeí•œ stmtë¥¼ ë„˜ê²¨ì¤€ë‹¤. */
-    if ( aStmt->mShardStmtCxt.mNodeDbcIndexCur == -1 )
+    /* executeÈÄ¿¡ È£ÃâÇÑ °æ¿ì Á÷Àü¿¡ executeÇÑ stmt¸¦ ³Ñ°ÜÁØ´Ù. */
+    if ( ( aStmt->mShardStmtCxt.mNodeDbcIndexCur == -1 ) ||
+         ( aStmt->mShardStmtCxt.mNodeDbcIndexCount <= 0 ) )
     {
         for ( i = 0; i < sShard->mNodeCount; i++ )
         {
@@ -288,8 +330,6 @@ ulnStmt* ulsdModuleGetPreparedStmt_META(ulnStmt *aStmt)
     }
     else
     {
-        ACE_DASSERT( aStmt->mShardStmtCxt.mNodeDbcIndexCount > 0 );
-
         i = aStmt->mShardStmtCxt.mNodeDbcIndexArr[0];
 
         sStmt = aStmt->mShardStmtCxt.mShardNodeStmt[i];
@@ -318,12 +358,48 @@ void ulsdModuleOnCmError_META(ulnFnContext     *aFnContext,
 ACI_RC ulsdModuleUpdateNodeList_META(ulnFnContext  *aFnContext,
                                      ulnDbc        *aDbc)
 {
-    return ulsdUpdateNodeList(aFnContext, &(aDbc->mPtContext));
+    ACI_RC sRc;
+
+    /* BUG-47131 Stop shard META DBC failover. */
+    ulnDbcSetFailoverSuspendState( aDbc, ULN_FAILOVER_SUSPEND_ON_STATE );
+
+    sRc = ulsdUpdateNodeList(aFnContext, &(aDbc->mPtContext));
+    ACI_TEST( sRc != ACI_SUCCESS );
+
+    /* BUG-47131 Restore shard META DBC failover suspend status. */
+    ulnDbcSetFailoverSuspendState( aDbc, ULN_FAILOVER_SUSPEND_OFF_STATE );
+
+    return sRc;
+
+    ACI_EXCEPTION_END;
+
+    /* BUG-47131 Restore shard META DBC failover suspend status. */
+    ulnDbcSetFailoverSuspendState( aDbc, ULN_FAILOVER_SUSPEND_OFF_STATE );
+
+    return sRc;
 }
 
 ACI_RC ulsdModuleNotifyFailOver_META( ulnDbc *aDbc )
 {
-    return ulsdNotifyFailoverOnMeta( aDbc );
+    ACI_RC sRc;
+
+    /* BUG-47131 Stop shard META DBC failover. */
+    ulnDbcSetFailoverSuspendState( aDbc, ULN_FAILOVER_SUSPEND_ON_STATE );
+
+    sRc = ulsdNotifyFailoverOnMeta( aDbc );
+    ACI_TEST( sRc != ACI_SUCCESS );
+
+    /* BUG-47131 Restore shard META DBC failover suspend status. */
+    ulnDbcSetFailoverSuspendState( aDbc, ULN_FAILOVER_SUSPEND_OFF_STATE );
+
+    return sRc;
+
+    ACI_EXCEPTION_END;
+
+    /* BUG-47131 Restore shard META DBC failover suspend status. */
+    ulnDbcSetFailoverSuspendState( aDbc, ULN_FAILOVER_SUSPEND_OFF_STATE );
+
+    return sRc;
 }
 
 void ulsdModuleAlignDataNodeConnection_META( ulnFnContext * aFnContext,
@@ -343,10 +419,188 @@ acp_bool_t ulsdModuleHasNoData_META( ulnStmt * aStmt )
     return ulsdStmtHasNoDataOnNodes( aStmt );
 }
 
+/*
+ * PROJ-2739 Client-side Sharding LOB
+ */
+SQLRETURN ulsdModuleGetLobLength_META( ulnFnContext * aFnContext,
+                                       ulnStmt      * aStmt,
+                                       acp_uint64_t   aLocator,
+                                       acp_sint16_t   aLocatorType,
+                                       acp_uint32_t * aLengthPtr )
+{
+    /* ¼öÇàÇÑ µ¥ÀÌÅÍ³ëµå¸¦ °¡Á®¿È */
+    ACI_TEST_RAISE( ulsdNodeDecideStmt(aStmt, ULN_FID_GETLOBLENGTH)
+                    != SQL_SUCCESS, LABEL_SHARD_NODE_DECIDE_STMT_FAIL );
+
+    ACI_TEST( ulsdGetLobLengthNodes( aFnContext,
+                                     aStmt,
+                                     aLocator,
+                                     aLocatorType,
+                                     aLengthPtr )
+              != SQL_SUCCESS );
+
+    return ULN_FNCONTEXT_GET_RC(aFnContext);;
+
+    ACI_EXCEPTION(LABEL_SHARD_NODE_DECIDE_STMT_FAIL)
+    {
+        return SQL_ERROR;
+    }
+    ACI_EXCEPTION_END;
+
+    ULN_TRACE_LOG(aFnContext, ULN_TRACELOG_LOW, NULL, 0,
+                  "%-18s| fail: %"ACI_INT32_FMT,
+                  "ulsdModuleGetLobLength", aFnContext->mSqlReturn);
+
+    return ULN_FNCONTEXT_GET_RC(aFnContext);
+}
+
+SQLRETURN ulsdModuleGetLob_META( ulnFnContext * aFnContext,
+                                 ulnStmt      * aStmt,
+                                 acp_sint16_t   aLocatorCType,
+                                 acp_uint64_t   aSrcLocator,
+                                 acp_uint32_t   aFromPosition,
+                                 acp_uint32_t   aForLength,
+                                 acp_sint16_t   aTargetCType,
+                                 void         * aBuffer,
+                                 acp_uint32_t   aBufferSize,
+                                 acp_uint32_t * aLengthWritten )
+{
+    /* ¼öÇàÇÑ µ¥ÀÌÅÍ³ëµå¸¦ °¡Á®¿È */
+    ACI_TEST_RAISE( ulsdNodeDecideStmt(aStmt, ULN_FID_GETLOB)
+                    != SQL_SUCCESS, LABEL_SHARD_NODE_DECIDE_STMT_FAIL );
+
+    ACI_TEST( ulsdGetLobNodes( aFnContext,
+                               aStmt,
+                               aLocatorCType,
+                               aSrcLocator,
+                               aFromPosition,
+                               aForLength,
+                               aTargetCType,
+                               aBuffer,
+                               aBufferSize,
+                               aLengthWritten )
+              != SQL_SUCCESS );
+
+    return ULN_FNCONTEXT_GET_RC(aFnContext);;
+
+    ACI_EXCEPTION(LABEL_SHARD_NODE_DECIDE_STMT_FAIL)
+    {
+        return SQL_ERROR;
+    }
+    ACI_EXCEPTION_END;
+
+    ULN_TRACE_LOG(aFnContext, ULN_TRACELOG_LOW, NULL, 0,
+                  "%-18s| fail: %"ACI_INT32_FMT,
+                  "ulsdModuleGetLob", aFnContext->mSqlReturn);
+
+    return ULN_FNCONTEXT_GET_RC(aFnContext);
+}
+
+SQLRETURN ulsdModulePutLob_META( ulnFnContext * aFnContext,
+                                 ulnStmt      * aStmt,
+                                 acp_sint16_t   aLocatorCType,
+                                 acp_uint64_t   aLocator,
+                                 acp_uint32_t   aFromPosition,
+                                 acp_uint32_t   aForLength,
+                                 acp_sint16_t   aSourceCType,
+                                 void         * aBuffer,
+                                 acp_uint32_t   aBufferSize )
+{
+    /* ¼öÇàÇÑ µ¥ÀÌÅÍ³ëµå¸¦ °¡Á®¿È */
+    ACI_TEST_RAISE( ulsdNodeDecideStmt(aStmt, ULN_FID_PUTLOB)
+                    != SQL_SUCCESS, LABEL_SHARD_NODE_DECIDE_STMT_FAIL );
+
+    ACI_TEST( ulsdPutLobNodes( aFnContext,
+                               aStmt,
+                               aLocatorCType,
+                               aLocator,
+                               aFromPosition,
+                               aForLength,
+                               aSourceCType,
+                               aBuffer,
+                               aBufferSize )
+              != SQL_SUCCESS );
+
+    return ULN_FNCONTEXT_GET_RC(aFnContext);;
+
+    ACI_EXCEPTION(LABEL_SHARD_NODE_DECIDE_STMT_FAIL)
+    {
+        return SQL_ERROR;
+    }
+    ACI_EXCEPTION_END;
+
+    ULN_TRACE_LOG(aFnContext, ULN_TRACELOG_LOW, NULL, 0,
+                  "%-18s| fail: %"ACI_INT32_FMT,
+                  "ulsdModulePutLob", aFnContext->mSqlReturn);
+
+    return ULN_FNCONTEXT_GET_RC(aFnContext);
+}
+
+SQLRETURN ulsdModuleFreeLob_META( ulnFnContext * aFnContext,
+                                  ulnStmt      * aStmt,
+                                  acp_uint64_t   aLocator)
+{
+    /* ¼öÇàÇÑ µ¥ÀÌÅÍ³ëµå¸¦ °¡Á®¿È */
+    ACI_TEST_RAISE( ulsdNodeDecideStmt(aStmt, ULN_FID_FREELOB)
+                    != SQL_SUCCESS, LABEL_SHARD_NODE_DECIDE_STMT_FAIL );
+
+    ACI_TEST( ulsdFreeLobNodes( aFnContext,
+                                aStmt,
+                                aLocator )
+              != SQL_SUCCESS );
+
+    return ULN_FNCONTEXT_GET_RC(aFnContext);;
+
+    ACI_EXCEPTION(LABEL_SHARD_NODE_DECIDE_STMT_FAIL)
+    {
+        return SQL_ERROR;
+    }
+    ACI_EXCEPTION_END;
+
+    ULN_TRACE_LOG(aFnContext, ULN_TRACELOG_LOW, NULL, 0,
+                  "%-18s| fail: %"ACI_INT32_FMT,
+                  "ulsdModuleFreeLob", aFnContext->mSqlReturn);
+
+    return ULN_FNCONTEXT_GET_RC(aFnContext);
+}
+
+SQLRETURN ulsdModuleTrimLob_META( ulnFnContext * aFnContext,
+                                  ulnStmt      * aStmt,
+                                  acp_sint16_t   aLocatorCType,
+                                  acp_uint64_t   aLocator,
+                                  acp_uint32_t   aStartOffset )
+{
+    /* ¼öÇàÇÑ µ¥ÀÌÅÍ³ëµå¸¦ °¡Á®¿È */
+    ACI_TEST_RAISE( ulsdNodeDecideStmt(aStmt, ULN_FID_TRIMLOB)
+                    != SQL_SUCCESS, LABEL_SHARD_NODE_DECIDE_STMT_FAIL );
+
+    ACI_TEST( ulsdTrimLobNodes( aFnContext,
+                                aStmt,
+                                aLocatorCType,
+                                aLocator,
+                                aStartOffset )
+              != SQL_SUCCESS );
+
+    return ULN_FNCONTEXT_GET_RC(aFnContext);;
+
+    ACI_EXCEPTION(LABEL_SHARD_NODE_DECIDE_STMT_FAIL)
+    {
+        return SQL_ERROR;
+    }
+    ACI_EXCEPTION_END;
+
+    ULN_TRACE_LOG(aFnContext, ULN_TRACELOG_LOW, NULL, 0,
+                  "%-18s| fail: %"ACI_INT32_FMT,
+                  "ulsdModuleTrimLob", aFnContext->mSqlReturn);
+
+    return ULN_FNCONTEXT_GET_RC(aFnContext);
+}
+
 ulsdModule gShardModuleMETA =
 {
     ulsdModuleHandshake_META,
     ulsdModuleNodeDriverConnect_META,
+    ulsdModuleNodeConnect_META,
     ulsdModuleEnvRemoveDbc_META,
     ulsdModuleStmtDestroy_META,
     ulsdModulePrepare_META,
@@ -361,5 +615,12 @@ ulsdModule gShardModuleMETA =
     ulsdModuleNotifyFailOver_META,
     ulsdModuleAlignDataNodeConnection_META,
     ulsdModuleErrorCheckAndAlignDataNode_META,
-    ulsdModuleHasNoData_META
+    ulsdModuleHasNoData_META,
+
+    /* PROJ-2739 Client-side Sharding LOB */
+    ulsdModuleGetLobLength_META,
+    ulsdModuleGetLob_META,
+    ulsdModulePutLob_META,
+    ulsdModuleFreeLob_META,
+    ulsdModuleTrimLob_META
 };

@@ -15,17 +15,17 @@
  */
  
 /**********************************************************************
- * Volatile Tablespace ì—°ì‚°ì„ ìœ„í•œ ë¡œê·¸ ë§¤ë‹ˆì €
+ * Volatile Tablespace ¿¬»êÀ» À§ÇÑ ·Î±× ¸Å´ÏÀú
  *
- *    ë©”ëª¨ë¦¬ì— ë¡œê·¸ë¥¼ ê¸°ë¡í•˜ëŠ” í•¨ìˆ˜ì™€ ë¡œê·¸ë¥¼ ì½ëŠ” í•¨ìˆ˜ë¥¼ ì œê³µí•œë‹¤.
- *    ë¡œê·¸ê°€ ê¸°ë¡ë˜ëŠ” ë©”ëª¨ë¦¬ëŠ” ìžì²´ì ìœ¼ë¡œ ê´€ë¦¬ë¥¼ í•œë‹¤.
+ *    ¸Þ¸ð¸®¿¡ ·Î±×¸¦ ±â·ÏÇÏ´Â ÇÔ¼ö¿Í ·Î±×¸¦ ÀÐ´Â ÇÔ¼ö¸¦ Á¦°øÇÑ´Ù.
+ *    ·Î±×°¡ ±â·ÏµÇ´Â ¸Þ¸ð¸®´Â ÀÚÃ¼ÀûÀ¸·Î °ü¸®¸¦ ÇÑ´Ù.
  *
  * Abstraction
- *    svrLogMgrëŠ” log recordë¥¼ ì“°ê³  ì½ëŠ” ì¸í„°íŽ˜ì´ìŠ¤ë¥¼ ì œê³µí•œë‹¤.
- *    ì‚¬ìš©ìžëŠ” ê¸°ë¡í•  logì˜ bodyë¥¼ êµ¬ì„±í•´ writeLogí•¨ìˆ˜ë¥¼ í†µí•´
- *    ë¡œê·¸ ë ˆì½”ë“œë¥¼ ê¸°ë¡í•  ìˆ˜ ìžˆë‹¤. ë¡œê·¸ ë²„í¼ëŠ” ë¬´í•œì •ì˜ ì—°ì†ëœ
- *    ë©”ëª¨ë¦¬ ê³µê°„ìœ¼ë¡œ ê°„ì£¼í•  ìˆ˜ ìžˆë‹¤.
- *    ë‹¤ìŒì˜ ì¸í„°íŽ˜ì´ìŠ¤ë¥¼ ì œê³µí•œë‹¤.
+ *    svrLogMgr´Â log record¸¦ ¾²°í ÀÐ´Â ÀÎÅÍÆäÀÌ½º¸¦ Á¦°øÇÑ´Ù.
+ *    »ç¿ëÀÚ´Â ±â·ÏÇÒ logÀÇ body¸¦ ±¸¼ºÇØ writeLogÇÔ¼ö¸¦ ÅëÇØ
+ *    ·Î±× ·¹ÄÚµå¸¦ ±â·ÏÇÒ ¼ö ÀÖ´Ù. ·Î±× ¹öÆÛ´Â ¹«ÇÑÁ¤ÀÇ ¿¬¼ÓµÈ
+ *    ¸Þ¸ð¸® °ø°£À¸·Î °£ÁÖÇÒ ¼ö ÀÖ´Ù.
+ *    ´ÙÀ½ÀÇ ÀÎÅÍÆäÀÌ½º¸¦ Á¦°øÇÑ´Ù.
  *      - initializeStatic
  *      - destroyStatic
  *      - initEnv
@@ -35,11 +35,11 @@
  *      - getLastLSN
  *
  * Implementation
- *    ë¡œê·¸ëŠ” ê³ ì • í¬ê¸° ë©”ëª¨ë¦¬ì¸ íŽ˜ì´ì§€ ë‹¨ìœ„ë¡œ ìª¼ê°œì§„ ê³µê°„ì— ì €ìž¥ëœë‹¤.
- *    ë¡œê·¸ë¥¼ ì½ì„ ë•Œ ë³µì‚¬ ë¹„ìš©ì„ ì¤„ì´ê¸° ìœ„í•´ í•˜ë‚˜ì˜ ë¡œê·¸ê°€ í•œ íŽ˜ì´ì§€ ë‚´ì—
- *    ìžˆì–´ì•¼ í•œë‹¤ëŠ” ì œì•½ì„ ê°€ì •í•œë‹¤.
- *    in-place update ë¡œê·¸ëŠ” ìµœëŒ€ 32Kê¹Œì§€ ê·¸ í¬ê¸°ë¥¼ ê°€ì§€ê¸° ë•Œë¬¸ì—
- *    íŽ˜ì´ì§€ í•˜ë‚˜ëŠ” 32Kê°€ ë˜ì•¼ í•œë‹¤.
+ *    ·Î±×´Â °íÁ¤ Å©±â ¸Þ¸ð¸®ÀÎ ÆäÀÌÁö ´ÜÀ§·Î ÂÉ°³Áø °ø°£¿¡ ÀúÀåµÈ´Ù.
+ *    ·Î±×¸¦ ÀÐÀ» ¶§ º¹»ç ºñ¿ëÀ» ÁÙÀÌ±â À§ÇØ ÇÏ³ªÀÇ ·Î±×°¡ ÇÑ ÆäÀÌÁö ³»¿¡
+ *    ÀÖ¾î¾ß ÇÑ´Ù´Â Á¦¾àÀ» °¡Á¤ÇÑ´Ù.
+ *    in-place update ·Î±×´Â ÃÖ´ë 32K±îÁö ±× Å©±â¸¦ °¡Áö±â ¶§¹®¿¡
+ *    ÆäÀÌÁö ÇÏ³ª´Â 32K°¡ µÇ¾ß ÇÑ´Ù.
  *    
  **********************************************************************/
 
@@ -49,11 +49,11 @@
 #include <smErrorCode.h>
 #include <svrLogMgr.h>
 
-/* ì•„ëž˜ ì •ì˜ëœ ìžë£Œ êµ¬ì¡°ë“¤ì€ svrLogMgr.cpp ì•ˆì—ì„œë§Œ ë³¼ ìˆ˜ ìžˆê²Œ í•˜ê¸° ìœ„í•´
- * cpp íŒŒì¼ì— ì •ì˜ë¥¼ í•œë‹¤. */
+/* ¾Æ·¡ Á¤ÀÇµÈ ÀÚ·á ±¸Á¶µéÀº svrLogMgr.cpp ¾È¿¡¼­¸¸ º¼ ¼ö ÀÖ°Ô ÇÏ±â À§ÇØ
+ * cpp ÆÄÀÏ¿¡ Á¤ÀÇ¸¦ ÇÑ´Ù. */
 
 /*****************************************************************
- * typedefì™€ define ë¬¸
+ * typedef¿Í define ¹®
  *****************************************************************/
 typedef struct svrLogPage
 {
@@ -61,10 +61,10 @@ typedef struct svrLogPage
     SChar           mLogBuf[1];
 } svrLogPage;
 
-/* logì˜ ì¢…ë¥˜
-   - sub logë¥¼ ê°€ì§€ì§€ ì•ŠëŠ” ì¼ë°˜ ë¡œê·¸ -> mPrev ì„¸íŒ…
-   - sub logë¥¼ ê°€ì§€ëŠ” ì¼ë°˜ ë¡œê·¸      -> mPrev, mNext ì„¸íŒ…
-   - sub log                         -> mNext ì„¸íŒ…  */
+/* logÀÇ Á¾·ù
+   - sub log¸¦ °¡ÁöÁö ¾Ê´Â ÀÏ¹Ý ·Î±× -> mPrev ¼¼ÆÃ
+   - sub log¸¦ °¡Áö´Â ÀÏ¹Ý ·Î±×      -> mPrev, mNext ¼¼ÆÃ
+   - sub log                         -> mNext ¼¼ÆÃ  */
 typedef struct svrLogRec
 {
     svrLogPage     *mPageBelongTo;
@@ -79,22 +79,22 @@ typedef struct svrLogRec
 #define SVR_LOG_PAGE_BODY_SIZE  (SVR_LOG_PAGE_SIZE - SVR_LOG_PAGE_HEAD_SIZE)
 #define SVR_LOG_HEAD_SIZE       (offsetof(svrLogRec, mLogBody))
 
-/* mempoolì—ì„œ ë©”ëª¨ë¦¬ í• ë‹¹ ë‹¨ìœ„ëŠ” chunk ë‹¨ìœ„ì´ë‹¤.
-   ì¦‰ 32ê°œ íŽ˜ì´ì§€ ì”© í• ë‹¹í•œë‹¤.
-   ì´ˆê¸°ì—” 32ê°œì˜ íŽ˜ì´ì§€ê°€ í• ë‹¹ëœë‹¤. ì¦‰ 1Më¥¼ ì‚¬ìš©í•˜ê²Œ ëœë‹¤. */
+/* mempool¿¡¼­ ¸Þ¸ð¸® ÇÒ´ç ´ÜÀ§´Â chunk ´ÜÀ§ÀÌ´Ù.
+   Áï 32°³ ÆäÀÌÁö ¾¿ ÇÒ´çÇÑ´Ù.
+   ÃÊ±â¿£ 32°³ÀÇ ÆäÀÌÁö°¡ ÇÒ´çµÈ´Ù. Áï 1M¸¦ »ç¿ëÇÏ°Ô µÈ´Ù. */
 #define SVR_LOG_PAGE_COUNT_PER_CHUNK      (32)
 
-/* mempoolì´ í•œë²ˆ ëŠ˜ì—ˆë‹¤ê°€ ì¤„ì–´ë“¤ì–´ì•¼ í•˜ëŠ” ìµœì†Œ í¬ê¸°ë¥¼ ì •í•œë‹¤.
-   10ê°œì˜ chunkëŠ” 10Mì´ë‹¤.  */
+/* mempoolÀÌ ÇÑ¹ø ´Ã¾ú´Ù°¡ ÁÙ¾îµé¾î¾ß ÇÏ´Â ÃÖ¼Ò Å©±â¸¦ Á¤ÇÑ´Ù.
+   10°³ÀÇ chunk´Â 10MÀÌ´Ù.  */
 #define SVR_LOG_PAGE_CHUNK_SHRINK_LIMIT   (10)
  
 /*****************************************************************
- * ì´ íŒŒì¼ì—ì„œë§Œ ì°¸ì¡°í•˜ëŠ” private ìš© static instance ì •ì˜
+ * ÀÌ ÆÄÀÏ¿¡¼­¸¸ ÂüÁ¶ÇÏ´Â private ¿ë static instance Á¤ÀÇ
  *****************************************************************/
 static iduMemPool   mLogMemPool;
 
 /*****************************************************************
- * ì´ íŒŒì¼ì—ì„œë§Œ ì°¸ì¡°í•˜ëŠ” private ìš© static í•¨ìˆ˜ ì„ ì–¸
+ * ÀÌ ÆÄÀÏ¿¡¼­¸¸ ÂüÁ¶ÇÏ´Â private ¿ë static ÇÔ¼ö ¼±¾ð
  *****************************************************************/
 static IDE_RC allocNewLogPage(svrLogEnv *aEnv);
 
@@ -102,8 +102,8 @@ static UInt logRecSize(svrLogEnv *aEnv, UInt aLogDataSize);
 
 static SChar* curPos(svrLogEnv *aEnv);
 
-/* svrLogEnv.mPageOffsetì€ alignì´ ê³ ë ¤ë˜ì–´ì•¼ í•œë‹¤.
-   ë‹¤ìŒ ë‘ í•¨ìˆ˜ì— ì˜í•´ mPageOffsetì´ ê°±ì‹ ë˜ì–´ì•¼ í•œë‹¤. */
+/* svrLogEnv.mPageOffsetÀº alignÀÌ °í·ÁµÇ¾î¾ß ÇÑ´Ù.
+   ´ÙÀ½ µÎ ÇÔ¼ö¿¡ ÀÇÇØ mPageOffsetÀÌ °»½ÅµÇ¾î¾ß ÇÑ´Ù. */
 static void initOffset(svrLogEnv *aEnv);
 
 static void updateOffset(svrLogEnv *aEnv, UInt aIncOffset);
@@ -111,20 +111,20 @@ static void updateOffset(svrLogEnv *aEnv, UInt aIncOffset);
 static svrLogRec* getLastSubLogRec(svrLogRec *aLogRec);
 
 /*****************************************************************
- * svrLogMgr ì¸í„°íŽ˜ì´ìŠ¤ í•¨ìˆ˜ë“¤ ì •ì˜
+ * svrLogMgr ÀÎÅÍÆäÀÌ½º ÇÔ¼öµé Á¤ÀÇ
  *****************************************************************/
 
 /*****************************************************************
  * Description:
- *    volatile loggingì„ í•˜ê¸° ìœ„í•´ì„œ ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•´ì•¼ í•œë‹¤.
- *    volatile tablespaceê°€ ì—†ë‹¤ë©´ ì´ í•¨ìˆ˜ë¥¼ ë¶€ë¥´ëŠ” ê²ƒì€ ë©”ëª¨ë¦¬
- *    ë‚­ë¹„ì¼ ë¿ì´ë‹¤.
- *    ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ë©´ ì¢…ë£Œì‹œ destory()ë¥¼ í˜¸ì¶œí•´ì„œ ë©”ëª¨ë¦¬ë¥¼
- *    í•´ì œí•´ì•¼ í•œë‹¤.
+ *    volatile loggingÀ» ÇÏ±â À§ÇØ¼­ ÀÌ ÇÔ¼ö¸¦ È£ÃâÇØ¾ß ÇÑ´Ù.
+ *    volatile tablespace°¡ ¾ø´Ù¸é ÀÌ ÇÔ¼ö¸¦ ºÎ¸£´Â °ÍÀº ¸Þ¸ð¸®
+ *    ³¶ºñÀÏ »ÓÀÌ´Ù.
+ *    ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ¸é Á¾·á½Ã destory()¸¦ È£ÃâÇØ¼­ ¸Þ¸ð¸®¸¦
+ *    ÇØÁ¦ÇØ¾ß ÇÑ´Ù.
  *****************************************************************/
 IDE_RC svrLogMgr::initializeStatic()
 {
-    /* mLogMemPoolì„ ì´ˆê¸°í™”í•œë‹¤. */
+    /* mLogMemPoolÀ» ÃÊ±âÈ­ÇÑ´Ù. */
     IDE_TEST(mLogMemPool.initialize(IDU_MEM_SM_SVR,
                                     (SChar*)"Volatile log memory pool",
                                     ID_SCALABILITY_SYS,
@@ -159,14 +159,14 @@ IDE_RC svrLogMgr::destroyStatic()
 
 /*****************************************************************
  * Desciption:
- *   volatile logë¥¼ ê¸°ë¡í•˜ê¸° ìœ„í•´ì„œëŠ” svrLogEnv ìžë£Œêµ¬ì¡°ê°€ í•„ìš”í•˜ë‹¤.
- *   initEnv()ë¥¼ í†µí•´ì„œ svrLogEnvë¥¼ ì´ˆê¸°í™”í•œë‹¤.
- *   initEnvì—ì„œëŠ” svrLogEnvì˜ memPoolì„ ì´ˆê¸°í™”í•˜ê³  ë¹ˆ íŽ˜ì´ì§€ë¥¼ í•˜ë‚˜
- *   í• ë‹¹í•˜ë©° offsetì„ ì´ˆê¸°í™”í•œë‹¤.
+ *   volatile log¸¦ ±â·ÏÇÏ±â À§ÇØ¼­´Â svrLogEnv ÀÚ·á±¸Á¶°¡ ÇÊ¿äÇÏ´Ù.
+ *   initEnv()¸¦ ÅëÇØ¼­ svrLogEnv¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ *   initEnv¿¡¼­´Â svrLogEnvÀÇ memPoolÀ» ÃÊ±âÈ­ÇÏ°í ºó ÆäÀÌÁö¸¦ ÇÏ³ª
+ *   ÇÒ´çÇÏ¸ç offsetÀ» ÃÊ±âÈ­ÇÑ´Ù.
  *****************************************************************/
 IDE_RC svrLogMgr::initEnv(svrLogEnv *aEnv, idBool aAlignForce)
 {
-    /* svrLogEnvì˜ ê° ë§´ë²„ë¥¼ ì´ˆê¸°í™”í•œë‹¤. */
+    /* svrLogEnvÀÇ °¢ ¸É¹ö¸¦ ÃÊ±âÈ­ÇÑ´Ù. */
     aEnv->mHeadPage = NULL;
     aEnv->mCurrentPage = NULL;
     aEnv->mPageOffset = SVR_LOG_PAGE_SIZE;
@@ -181,10 +181,10 @@ IDE_RC svrLogMgr::initEnv(svrLogEnv *aEnv, idBool aAlignForce)
 
 /*****************************************************************
  * Desciption:
- *   initEnvì—ì„œ ì´ˆê¸°í™”í–ˆë˜ ìžì›ë“¤ì„ destroyEnv()ë¥¼ í†µí•´ì„œ í•´ì œí•œë‹¤.
+ *   initEnv¿¡¼­ ÃÊ±âÈ­Çß´ø ÀÚ¿øµéÀ» destroyEnv()¸¦ ÅëÇØ¼­ ÇØÁ¦ÇÑ´Ù.
  *
  * Imeplementation:
- *    ì´ë•Œê¹Œì§€ allocí•œ log pageë“¤ì„ ìˆœíšŒí•˜ë©´ì„œ ëª¨ë‘ freeí•´ì¤€ë‹¤.
+ *    ÀÌ¶§±îÁö allocÇÑ log pageµéÀ» ¼øÈ¸ÇÏ¸é¼­ ¸ðµÎ freeÇØÁØ´Ù.
  *****************************************************************/
 IDE_RC svrLogMgr::destroyEnv(svrLogEnv *aEnv)
 {
@@ -216,7 +216,7 @@ IDE_RC svrLogMgr::destroyEnv(svrLogEnv *aEnv)
 
 /*****************************************************************
  * Description:
- *   ë¡œê·¸ë¥¼ ê¸°ë¡í•˜ê¸° ìœ„í•´ í• ë‹¹í•œ ë©”ëª¨ë¦¬ì˜ ì´ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
+ *   ·Î±×¸¦ ±â·ÏÇÏ±â À§ÇØ ÇÒ´çÇÑ ¸Þ¸ð¸®ÀÇ ÃÑ Å©±â¸¦ ±¸ÇÑ´Ù.
  *****************************************************************/
 UInt svrLogMgr::getAllocMemSize(svrLogEnv *aEnv)
 {
@@ -225,17 +225,17 @@ UInt svrLogMgr::getAllocMemSize(svrLogEnv *aEnv)
 
 /*****************************************************************
  * Description:
- *   log recordë¥¼ ë¡œê·¸ ë²„í¼ì— ê¸°ë¡í•œë‹¤.
- *   log recordëŠ” sub logë¥¼ ê°€ì§ˆ ìˆ˜ ìžˆë‹¤.
- *   - aEnvëŠ” initEnv()ë¥¼ í†µí•´ì„œ ì´ˆê¸°í™”ëœ ìƒíƒœì´ì–´ì•¼ í•˜ë©°,
- *   - aLogDataëŠ” ë¡œê·¸ ë‚´ìš©ì„ ê°€ë¦¬í‚¤ê³  ìžˆëŠ” í¬ì¸í„°ì´ë©°,
- *   - aLogSizeëŠ” ë¡œê·¸ ë‚´ìš©ì˜ ê¸¸ì´ì´ë‹¤.
+ *   log record¸¦ ·Î±× ¹öÆÛ¿¡ ±â·ÏÇÑ´Ù.
+ *   log record´Â sub log¸¦ °¡Áú ¼ö ÀÖ´Ù.
+ *   - aEnv´Â initEnv()¸¦ ÅëÇØ¼­ ÃÊ±âÈ­µÈ »óÅÂÀÌ¾î¾ß ÇÏ¸ç,
+ *   - aLogData´Â ·Î±× ³»¿ëÀ» °¡¸®Å°°í ÀÖ´Â Æ÷ÀÎÅÍÀÌ¸ç,
+ *   - aLogSize´Â ·Î±× ³»¿ëÀÇ ±æÀÌÀÌ´Ù.
  *
  * Implementation:
- *   í˜„ìž¬ ë¡œê·¸ ë²„í¼ íŽ˜ì´ì§€ë¥¼ ì²´í¬í•´ì„œ ë¡œê·¸ë¥¼ ê¸°ë¡í•  ê³µê°„ì´ ìžˆëŠ”ì§€
- *   ë¨¼ì € ê²€ì‚¬í•œë‹¤. ë§Œì•½ í˜„ìž¬ íŽ˜ì´ì§€ì— ë„£ì„ ìˆ˜ ì—†ìœ¼ë©´
- *   ìƒˆë¡œìš´ íŽ˜ì´ì§€ë¥¼ í• ë‹¹í•œë‹¤.
- *   mLastLogRecì„ ê°±ì‹ í•˜ê³  mLastSubLogRecì„ NULLë¡œ ì„¸íŒ…í•œë‹¤.
+ *   ÇöÀç ·Î±× ¹öÆÛ ÆäÀÌÁö¸¦ Ã¼Å©ÇØ¼­ ·Î±×¸¦ ±â·ÏÇÒ °ø°£ÀÌ ÀÖ´ÂÁö
+ *   ¸ÕÀú °Ë»çÇÑ´Ù. ¸¸¾à ÇöÀç ÆäÀÌÁö¿¡ ³ÖÀ» ¼ö ¾øÀ¸¸é
+ *   »õ·Î¿î ÆäÀÌÁö¸¦ ÇÒ´çÇÑ´Ù.
+ *   mLastLogRecÀ» °»½ÅÇÏ°í mLastSubLogRecÀ» NULL·Î ¼¼ÆÃÇÑ´Ù.
  *****************************************************************/
 IDE_RC svrLogMgr::writeLog(svrLogEnv *aEnv,
                            svrLog    *aLogData,
@@ -245,8 +245,8 @@ IDE_RC svrLogMgr::writeLog(svrLogEnv *aEnv,
 
     IDE_ASSERT(logRecSize(aEnv, aLogSize) <= SVR_LOG_PAGE_BODY_SIZE);
 
-    /* í˜„ìž¬ íŽ˜ì´ì§€ì— ë¡œê·¸ë¥¼ ê¸°ë¡í•  ìˆ˜ ìžˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
-       ê¸°ë¡í•  ìˆ˜ ì—†ìœ¼ë©´ ìƒˆë¡œìš´ pageë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤. */
+    /* ÇöÀç ÆäÀÌÁö¿¡ ·Î±×¸¦ ±â·ÏÇÒ ¼ö ÀÖ´ÂÁö °Ë»çÇÑ´Ù.
+       ±â·ÏÇÒ ¼ö ¾øÀ¸¸é »õ·Î¿î page¸¦ ÇÒ´ç¹Þ´Â´Ù. */
     if (aEnv->mPageOffset + logRecSize(aEnv, aLogSize) >
         SVR_LOG_PAGE_SIZE)
     {
@@ -254,29 +254,29 @@ IDE_RC svrLogMgr::writeLog(svrLogEnv *aEnv,
                        cannot_alloc_logbuffer);
     }
 
-    /* ë¡œê·¸ í—¤ë“œ ì„¸íŒ… */
+    /* ·Î±× Çìµå ¼¼ÆÃ */
     sLogRec.mPageBelongTo = aEnv->mCurrentPage;
     sLogRec.mPrevLogRec = aEnv->mLastLogRec;
     sLogRec.mNextSubLogRec = SVR_LSN_BEFORE_FIRST;
     sLogRec.mBodySize = aLogSize;
 
-    /* ë§ˆì§€ë§‰ log record í¬ì¸í„° ê°±ì‹  */
+    /* ¸¶Áö¸· log record Æ÷ÀÎÅÍ °»½Å */
     aEnv->mLastLogRec = (svrLogRec*)(curPos(aEnv));
     aEnv->mLastSubLogRec = SVR_LSN_BEFORE_FIRST;
 
-    /* log head ê¸°ë¡ */
+    /* log head ±â·Ï */
     idlOS::memcpy(curPos(aEnv),
                   &sLogRec,
                   SVR_LOG_HEAD_SIZE);
     updateOffset(aEnv, SVR_LOG_HEAD_SIZE);
 
-    /* log body ê¸°ë¡ */
+    /* log body ±â·Ï */
     idlOS::memcpy(curPos(aEnv),
                   aLogData,
                   aLogSize);
     updateOffset(aEnv, aLogSize);
 
-    /* mFirstLSN ê°±ì‹  */
+    /* mFirstLSN °»½Å */
     if (aEnv->mFirstLSN == SVR_LSN_BEFORE_FIRST)
     {
         aEnv->mFirstLSN = aEnv->mLastLogRec;
@@ -296,16 +296,16 @@ IDE_RC svrLogMgr::writeLog(svrLogEnv *aEnv,
 
 /*****************************************************************
  * Description:
- *   sub log recordë¥¼ ë¡œê·¸ ë²„í¼ì— ê¸°ë¡í•œë‹¤.
- *   - aEnvëŠ” initEnv()ë¥¼ í†µí•´ì„œ ì´ˆê¸°í™”ëœ ìƒíƒœì´ì–´ì•¼ í•˜ë©°,
- *   - aLogDataëŠ” ë¡œê·¸ ë‚´ìš©ì„ ê°€ë¦¬í‚¤ê³  ìžˆëŠ” í¬ì¸í„°ì´ë©°,
- *   - aLogSizeëŠ” ë¡œê·¸ ë‚´ìš©ì˜ ê¸¸ì´ì´ë‹¤.
+ *   sub log record¸¦ ·Î±× ¹öÆÛ¿¡ ±â·ÏÇÑ´Ù.
+ *   - aEnv´Â initEnv()¸¦ ÅëÇØ¼­ ÃÊ±âÈ­µÈ »óÅÂÀÌ¾î¾ß ÇÏ¸ç,
+ *   - aLogData´Â ·Î±× ³»¿ëÀ» °¡¸®Å°°í ÀÖ´Â Æ÷ÀÎÅÍÀÌ¸ç,
+ *   - aLogSize´Â ·Î±× ³»¿ëÀÇ ±æÀÌÀÌ´Ù.
  *
  * Implementation:
- *   í˜„ìž¬ ë¡œê·¸ ë²„í¼ íŽ˜ì´ì§€ë¥¼ ì²´í¬í•´ì„œ ë¡œê·¸ë¥¼ ê¸°ë¡í•  ê³µê°„ì´ ìžˆëŠ”ì§€
- *   ë¨¼ì € ê²€ì‚¬í•œë‹¤. ë§Œì•½ í˜„ìž¬ íŽ˜ì´ì§€ì— ë„£ì„ ìˆ˜ ì—†ìœ¼ë©´
- *   ìƒˆë¡œìš´ íŽ˜ì´ì§€ë¥¼ í• ë‹¹í•œë‹¤.
- *   mLastLogRecì€ ê°±ì‹ í•˜ì§€ ì•Šê³  mLastSubLogRecì„ ê°±ì‹ í•œë‹¤.
+ *   ÇöÀç ·Î±× ¹öÆÛ ÆäÀÌÁö¸¦ Ã¼Å©ÇØ¼­ ·Î±×¸¦ ±â·ÏÇÒ °ø°£ÀÌ ÀÖ´ÂÁö
+ *   ¸ÕÀú °Ë»çÇÑ´Ù. ¸¸¾à ÇöÀç ÆäÀÌÁö¿¡ ³ÖÀ» ¼ö ¾øÀ¸¸é
+ *   »õ·Î¿î ÆäÀÌÁö¸¦ ÇÒ´çÇÑ´Ù.
+ *   mLastLogRecÀº °»½ÅÇÏÁö ¾Ê°í mLastSubLogRecÀ» °»½ÅÇÑ´Ù.
  *****************************************************************/
 IDE_RC svrLogMgr::writeSubLog(svrLogEnv *aEnv,
                               svrLog    *aLogData, 
@@ -315,8 +315,8 @@ IDE_RC svrLogMgr::writeSubLog(svrLogEnv *aEnv,
 
     IDE_ASSERT(logRecSize(aEnv, aLogSize) <= SVR_LOG_PAGE_BODY_SIZE);
 
-    /* í˜„ìž¬ íŽ˜ì´ì§€ì— ë¡œê·¸ë¥¼ ê¸°ë¡í•  ìˆ˜ ìžˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
-       ê¸°ë¡í•  ìˆ˜ ì—†ìœ¼ë©´ ìƒˆë¡œìš´ pageë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤. */
+    /* ÇöÀç ÆäÀÌÁö¿¡ ·Î±×¸¦ ±â·ÏÇÒ ¼ö ÀÖ´ÂÁö °Ë»çÇÑ´Ù.
+       ±â·ÏÇÒ ¼ö ¾øÀ¸¸é »õ·Î¿î page¸¦ ÇÒ´ç¹Þ´Â´Ù. */
     if (aEnv->mPageOffset + logRecSize(aEnv, aLogSize) >
         SVR_LOG_PAGE_SIZE)
     {
@@ -324,19 +324,19 @@ IDE_RC svrLogMgr::writeSubLog(svrLogEnv *aEnv,
                        cannot_alloc_logbuffer);
     }
 
-    /* ë¡œê·¸ í—¤ë“œ ì„¸íŒ… */
+    /* ·Î±× Çìµå ¼¼ÆÃ */
     sSubLogRec.mPageBelongTo = aEnv->mCurrentPage;
     sSubLogRec.mPrevLogRec = SVR_LSN_BEFORE_FIRST;
     sSubLogRec.mNextSubLogRec = SVR_LSN_BEFORE_FIRST;
     sSubLogRec.mBodySize = aLogSize;
 
-    /* ì´ì „ ë¡œê·¸(mLastLogRecì´ê±°ë‚˜ mLastSubLogRec)ì˜ mNextSubLogRecì„
-       ê°±ì‹ í•œë‹¤. */
+    /* ÀÌÀü ·Î±×(mLastLogRecÀÌ°Å³ª mLastSubLogRec)ÀÇ mNextSubLogRecÀ»
+       °»½ÅÇÑ´Ù. */
     if (aEnv->mLastSubLogRec == SVR_LSN_BEFORE_FIRST)
     {
-        /* mLastSubLogRecì´ SVR_LSN_BEFORE_FIRSTë¼ë©´
-           ì•„ì§ sub logê°€ ê¸°ë¡ë˜ì§€ ì•Šì•˜ë‹¤.
-           ì´ ê²½ìš° last logì˜ mNextSubLogRecì„ ê°±ì‹ í•´ì•¼ í•œë‹¤. */
+        /* mLastSubLogRecÀÌ SVR_LSN_BEFORE_FIRST¶ó¸é
+           ¾ÆÁ÷ sub log°¡ ±â·ÏµÇÁö ¾Ê¾Ò´Ù.
+           ÀÌ °æ¿ì last logÀÇ mNextSubLogRecÀ» °»½ÅÇØ¾ß ÇÑ´Ù. */
         IDE_ASSERT(aEnv->mLastLogRec != SVR_LSN_BEFORE_FIRST);
 
         aEnv->mLastLogRec->mNextSubLogRec = (svrLogRec*)curPos(aEnv);
@@ -346,17 +346,17 @@ IDE_RC svrLogMgr::writeSubLog(svrLogEnv *aEnv,
         aEnv->mLastSubLogRec->mNextSubLogRec = (svrLogRec*)curPos(aEnv);
     }
 
-    /* aEnvì˜ mLastSubLogRecì„ ê°±ì‹ í•œë‹¤.
-       mLastLogRecì€ ê°±ì‹ í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+    /* aEnvÀÇ mLastSubLogRecÀ» °»½ÅÇÑ´Ù.
+       mLastLogRecÀº °»½ÅÇÏÁö ¾Ê´Â´Ù. */
     aEnv->mLastSubLogRec = (svrLogRec*)curPos(aEnv);
 
-    /* log head ê¸°ë¡ */
+    /* log head ±â·Ï */
     idlOS::memcpy(curPos(aEnv),
                   &sSubLogRec,
                   SVR_LOG_HEAD_SIZE);
     updateOffset(aEnv, SVR_LOG_HEAD_SIZE);
 
-    /* log body ê¸°ë¡ */
+    /* log body ±â·Ï */
     idlOS::memcpy(curPos(aEnv),
                   aLogData,
                   aLogSize);
@@ -376,7 +376,7 @@ IDE_RC svrLogMgr::writeSubLog(svrLogEnv *aEnv,
 
 /*****************************************************************
  * Description:
- *    ì´ë•Œê¹Œì§€ ê¸°ë¡í•œ ë¡œê·¸ ë ˆì½”ë“œì¤‘ ë§ˆì§€ë§‰ ë¡œê·¸ ë ˆì½”ë“œì˜ LSNì„ ì–»ëŠ”ë‹¤.
+ *    ÀÌ¶§±îÁö ±â·ÏÇÑ ·Î±× ·¹ÄÚµåÁß ¸¶Áö¸· ·Î±× ·¹ÄÚµåÀÇ LSNÀ» ¾ò´Â´Ù.
  *****************************************************************/
 svrLSN svrLogMgr::getLastLSN(svrLogEnv *aEnv)
 {
@@ -390,10 +390,10 @@ idBool svrLogMgr::isOnceUpdated(svrLogEnv *aEnv)
 
 /*****************************************************************
  * Description:
- *    aLSNToReadê°€ ê°€ë¦¬í‚¤ëŠ” ë¡œê·¸ ë ˆì½”ë“œë¥¼ ì½ì–´ aBufToLoadAtì—
- *    ê¸°ë¡í•œë‹¤.
- *    undo ì‹œ ë‹¤ìŒì— ì½ì„ ë¡œê·¸ ë ˆì½”ë“œì˜ LSNì„ aUndoNextLSNë¡œ
- *    ë°˜í™˜í•œë‹¤.
+ *    aLSNToRead°¡ °¡¸®Å°´Â ·Î±× ·¹ÄÚµå¸¦ ÀÐ¾î aBufToLoadAt¿¡
+ *    ±â·ÏÇÑ´Ù.
+ *    undo ½Ã ´ÙÀ½¿¡ ÀÐÀ» ·Î±× ·¹ÄÚµåÀÇ LSNÀ» aUndoNextLSN·Î
+ *    ¹ÝÈ¯ÇÑ´Ù.
  *****************************************************************/
 IDE_RC svrLogMgr::readLogCopy(svrLogEnv *aEnv,
                               svrLSN     aLSNToRead,
@@ -406,13 +406,13 @@ IDE_RC svrLogMgr::readLogCopy(svrLogEnv *aEnv,
 
     IDE_ASSERT(sLogRec != SVR_LSN_BEFORE_FIRST);
 
-    /* ë‹¤ìŒ undoí•  log recordì˜ lsnì„ ì„¸íŒ…í•œë‹¤. */
+    /* ´ÙÀ½ undoÇÒ log recordÀÇ lsnÀ» ¼¼ÆÃÇÑ´Ù. */
     idlOS::memcpy(aUndoNextLSN, &sLogRec->mPrevLogRec, ID_SIZEOF(svrLSN*));
 
-    /* ë‹¤ìŒì— ì½ì„ sub log recordê°€ ìžˆìœ¼ë©´ ì„¸íŒ…í•œë‹¤. */
+    /* ´ÙÀ½¿¡ ÀÐÀ» sub log record°¡ ÀÖÀ¸¸é ¼¼ÆÃÇÑ´Ù. */
     idlOS::memcpy(aNextSubLSN, &sLogRec->mNextSubLogRec, ID_SIZEOF(svrLSN*));
 
-    /* ë¡œê·¸ ë°ì´í„°ë¥¼ ë²„í¼ì— ë³µì‚¬í•œë‹¤. */
+    /* ·Î±× µ¥ÀÌÅÍ¸¦ ¹öÆÛ¿¡ º¹»çÇÑ´Ù. */
     if (aEnv->mAlignForce == ID_TRUE)
     {
         idlOS::memcpy(aBufToLoadAt, 
@@ -430,8 +430,8 @@ IDE_RC svrLogMgr::readLogCopy(svrLogEnv *aEnv,
 
 /*****************************************************************
  * Description:
- *    ë¡œê·¸ê°€ ê¸°ë¡ëœ ìœ„ì¹˜ë¥¼ ë¦¬í„´í•œë‹¤. alignì´ ì•ˆë˜ì–´ ìžˆê¸° ë•Œë¬¸ì—
- *    primitive type ì¼€ìŠ¤íŒ…í•˜ë©´ ì•ˆëœë‹¤.
+ *    ·Î±×°¡ ±â·ÏµÈ À§Ä¡¸¦ ¸®ÅÏÇÑ´Ù. alignÀÌ ¾ÈµÇ¾î ÀÖ±â ¶§¹®¿¡
+ *    primitive type ÄÉ½ºÆÃÇÏ¸é ¾ÈµÈ´Ù.
  *****************************************************************/
 IDE_RC svrLogMgr::readLog(svrLogEnv *aEnv,
                           svrLSN     aLSNToRead,
@@ -443,7 +443,7 @@ IDE_RC svrLogMgr::readLog(svrLogEnv *aEnv,
 
     IDE_ASSERT(sLogRec != SVR_LSN_BEFORE_FIRST);
 
-    /* ì½ì„ ë¡œê·¸ ìœ„ì¹˜ë¥¼ ì„¸íŒ…í•œë‹¤. */
+    /* ÀÐÀ» ·Î±× À§Ä¡¸¦ ¼¼ÆÃÇÑ´Ù. */
     if (aEnv->mAlignForce == ID_TRUE)
     {
         *aLogData = (svrLog *)(vULong)
@@ -451,15 +451,15 @@ IDE_RC svrLogMgr::readLog(svrLogEnv *aEnv,
     }
     else
     {
-        /* mAlignForceê°€ flaseì¼ ê²½ìš°ì—” ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œ ê³³ì—ì„œ
-           ë¡œê·¸ë¥¼ memcpyí•œ í›„ ì½ì–´ì•¼ í•œë‹¤. */
+        /* mAlignForce°¡ flaseÀÏ °æ¿ì¿£ ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÑ °÷¿¡¼­
+           ·Î±×¸¦ memcpyÇÑ ÈÄ ÀÐ¾î¾ß ÇÑ´Ù. */
         *aLogData = (svrLog *)sLogRec->mLogBody;
     }
 
-    /* ë‹¤ìŒ undoí•  log recordì˜ lsnì„ ì„¸íŒ…í•œë‹¤. */
+    /* ´ÙÀ½ undoÇÒ log recordÀÇ lsnÀ» ¼¼ÆÃÇÑ´Ù. */
     idlOS::memcpy(aUndoNextLSN, &sLogRec->mPrevLogRec, ID_SIZEOF(svrLSN*));
 
-    /* ë‹¤ìŒì— ì½ì„ sub log recordê°€ ìžˆìœ¼ë©´ ì„¸íŒ…í•œë‹¤. */
+    /* ´ÙÀ½¿¡ ÀÐÀ» sub log record°¡ ÀÖÀ¸¸é ¼¼ÆÃÇÑ´Ù. */
     idlOS::memcpy(aNextSubLSN, &sLogRec->mNextSubLogRec, ID_SIZEOF(svrLSN*));
 
     return IDE_SUCCESS;
@@ -475,15 +475,15 @@ IDE_RC svrLogMgr::removeLogHereafter(svrLogEnv *aEnv,
 
     if (aThisLSN == SVR_LSN_BEFORE_FIRST)
     {
-        /* total rollbackì‹œ aThisLSNì´ SVR_LSN_BEFORE_FIRSTë¡œ
-           ë„˜ì–´ì˜¨ë‹¤. ì´ ê²½ìš° aEnvë¥¼ ì™„ì „ ì´ˆê¸°í™”í•´ì•¼ í•œë‹¤. */
+        /* total rollback½Ã aThisLSNÀÌ SVR_LSN_BEFORE_FIRST·Î
+           ³Ñ¾î¿Â´Ù. ÀÌ °æ¿ì aEnv¸¦ ¿ÏÀü ÃÊ±âÈ­ÇØ¾ß ÇÑ´Ù. */
         sAlignForce = aEnv->mAlignForce;
         destroyEnv(aEnv);
         initEnv(aEnv, sAlignForce);
     }
     else
     {
-        /* aEnvì˜ ê° ë©¤ë²„ë“¤ì„ ì¡°ì •í•œë‹¤. */
+        /* aEnvÀÇ °¢ ¸â¹öµéÀ» Á¶Á¤ÇÑ´Ù. */
         aEnv->mLastLogRec = aThisLSN;
         aEnv->mLastSubLogRec = getLastSubLogRec(aEnv->mLastLogRec);
 
@@ -502,7 +502,7 @@ IDE_RC svrLogMgr::removeLogHereafter(svrLogEnv *aEnv,
         updateOffset(aEnv, SVR_LOG_HEAD_SIZE);
         updateOffset(aEnv, sLastPosLogRec->mBodySize);
 
-        /* mCurrentPage ì´í›„ì˜ íŽ˜ì´ì§€ë“¤ì„ ëª¨ë‘ ì‚­ì œí•œë‹¤. */
+        /* mCurrentPage ÀÌÈÄÀÇ ÆäÀÌÁöµéÀ» ¸ðµÎ »èÁ¦ÇÑ´Ù. */
         sPrevPage = aEnv->mCurrentPage->mNext;
         while (sPrevPage != NULL)
         {
@@ -515,12 +515,12 @@ IDE_RC svrLogMgr::removeLogHereafter(svrLogEnv *aEnv,
             aEnv->mAllocPageCount--;
         }
 
-        /* BUG-18018 : svrLogMgrTestê°€ ì‹¤íŒ¨í•©ë‹ˆë‹¤.
+        /* BUG-18018 : svrLogMgrTest°¡ ½ÇÆÐÇÕ´Ï´Ù.
          *
-         * aEnv->mCurrentPageì´í›„ íŽ˜ì´ì§€ë¥¼ Freeí•œí›„ì—
-         * aEnv->mCurrentPageì´ Tailì´ ë˜ëŠ”ë° Tailì˜
-         * mNextë¥¼ Nullí•˜ì§€ ì•Šì•„ì„œ ì¶”í›„ì— ì´ linkë¥¼ ë”°ë¼ì„œ
-         * Freeí•˜ëŠ” Logicì—ì„œ ì£½ìŠµë‹ˆë‹¤. */
+         * aEnv->mCurrentPageÀÌÈÄ ÆäÀÌÁö¸¦ FreeÇÑÈÄ¿¡
+         * aEnv->mCurrentPageÀÌ TailÀÌ µÇ´Âµ¥ TailÀÇ
+         * mNext¸¦ NullÇÏÁö ¾Ê¾Æ¼­ ÃßÈÄ¿¡ ÀÌ link¸¦ µû¶ó¼­
+         * FreeÇÏ´Â Logic¿¡¼­ Á×½À´Ï´Ù. */
         aEnv->mCurrentPage->mNext = NULL;
     }
     
@@ -533,7 +533,7 @@ IDE_RC svrLogMgr::removeLogHereafter(svrLogEnv *aEnv,
 
 /*****************************************************************
  * Description:
- *   ìƒˆë¡œìš´ ë¡œê·¸ ë²„í¼ íŽ˜ì´ì§€ë¥¼ í• ë‹¹í•œë‹¤.
+ *   »õ·Î¿î ·Î±× ¹öÆÛ ÆäÀÌÁö¸¦ ÇÒ´çÇÑ´Ù.
  *****************************************************************/
 IDE_RC allocNewLogPage(svrLogEnv *aEnv)
 {
@@ -552,8 +552,8 @@ IDE_RC allocNewLogPage(svrLogEnv *aEnv)
     }
     else
     {
-        /* mCurrentPageê°€ NULLì´ë©´ ì²˜ìŒ allocí•˜ëŠ” ê²ƒì´ê¸° ë•Œë¬¸ì—
-           nextë¥¼ ì„¸íŒ…í•  í•„ìš”ê°€ ì—†ë‹¤. */
+        /* mCurrentPage°¡ NULLÀÌ¸é Ã³À½ allocÇÏ´Â °ÍÀÌ±â ¶§¹®¿¡
+           next¸¦ ¼¼ÆÃÇÒ ÇÊ¿ä°¡ ¾ø´Ù. */
         aEnv->mHeadPage = sNewPage;
     }
 
@@ -572,9 +572,9 @@ IDE_RC allocNewLogPage(svrLogEnv *aEnv)
 
 /*****************************************************************
  * Description:
- *    ë¡œê·¸ ë°ì´í„° í¬ê¸°ë¥¼ ìž…ë ¥ë°›ì•„ ì‹¤ì œ ë¡œê·¸ ë ˆì½”ë“œê°€ 
- *    ë¡œê·¸ ë²„í¼ì— ì €ìž¥ë  ë•Œ ì°¨ì§€í•˜ëŠ” í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
- *    ì´ í•¨ìˆ˜ëŠ” alignì„ ê³ ë ¤í•œë‹¤.
+ *    ·Î±× µ¥ÀÌÅÍ Å©±â¸¦ ÀÔ·Â¹Þ¾Æ ½ÇÁ¦ ·Î±× ·¹ÄÚµå°¡ 
+ *    ·Î±× ¹öÆÛ¿¡ ÀúÀåµÉ ¶§ Â÷ÁöÇÏ´Â Å©±â¸¦ ±¸ÇÑ´Ù.
+ *    ÀÌ ÇÔ¼ö´Â alignÀ» °í·ÁÇÑ´Ù.
  *****************************************************************/
 UInt logRecSize(svrLogEnv *aEnv, UInt aLogDataSize)
 {
@@ -589,8 +589,8 @@ UInt logRecSize(svrLogEnv *aEnv, UInt aLogDataSize)
 
 /*****************************************************************
  * Description:
- *    ë¡œê·¸ë¥¼ ê¸°ë¡í•  ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚¤ëŠ” mPageOffsetì„ ì´ˆê¸°í™”í•œë‹¤.
- *    aEnv->mAlignForceë¥¼ ì°¸ì¡°í•˜ì—¬ align ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
+ *    ·Î±×¸¦ ±â·ÏÇÒ À§Ä¡¸¦ °¡¸®Å°´Â mPageOffsetÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ *    aEnv->mAlignForce¸¦ ÂüÁ¶ÇÏ¿© align ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
  *****************************************************************/
 void initOffset(svrLogEnv *aEnv)
 {
@@ -606,8 +606,8 @@ void initOffset(svrLogEnv *aEnv)
 
 /*****************************************************************
  * Description:
- *    ë¡œê·¸ë¥¼ ê¸°ë¡í•  ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚¤ëŠ” mPageOffsetì„ ê°±ì‹ í•œë‹¤.
- *    ì´ë•Œ alignì„ ê³ ë ¤í•˜ì—¬ ê°±ì‹ í•´ì•¼ í•œë‹¤.
+ *    ·Î±×¸¦ ±â·ÏÇÒ À§Ä¡¸¦ °¡¸®Å°´Â mPageOffsetÀ» °»½ÅÇÑ´Ù.
+ *    ÀÌ¶§ alignÀ» °í·ÁÇÏ¿© °»½ÅÇØ¾ß ÇÑ´Ù.
  *****************************************************************/
 void updateOffset(svrLogEnv *aEnv, UInt aIncOffset)
 {
@@ -623,11 +623,11 @@ void updateOffset(svrLogEnv *aEnv, UInt aIncOffset)
 
 /*****************************************************************
  * Description:
- *    aEnvê°€ ê°€ì§€ê³  ìžˆëŠ” í˜„ìž¬ ë ˆì½”ë”© ìœ„ì¹˜ë¥¼ ì–»ì–´ì˜¨ë‹¤.
+ *    aEnv°¡ °¡Áö°í ÀÖ´Â ÇöÀç ·¹ÄÚµù À§Ä¡¸¦ ¾ò¾î¿Â´Ù.
  *
  * Implementation:
- *    mCurrentPageëŠ” svrLogPage* íƒ€ìž…ì´ê¸° ë•Œë¬¸ì— SChar*ë¡œ ìºìŠ¤íŒ… í›„
- *    offsetì„ ë”í•´ì•¼ í•œë‹¤.
+ *    mCurrentPage´Â svrLogPage* Å¸ÀÔÀÌ±â ¶§¹®¿¡ SChar*·Î Ä³½ºÆÃ ÈÄ
+ *    offsetÀ» ´õÇØ¾ß ÇÑ´Ù.
  *****************************************************************/
 SChar* curPos(svrLogEnv *aEnv)
 {
@@ -636,8 +636,8 @@ SChar* curPos(svrLogEnv *aEnv)
 
 /*****************************************************************
  * Description:
- *    ì£¼ì–´ì§„ log recordì— ëŒ€í•´ ê·¸ log recordì˜ ë§ˆì§€ë§‰ sub log
- *    recordë¥¼ êµ¬í•œë‹¤.
+ *    ÁÖ¾îÁø log record¿¡ ´ëÇØ ±× log recordÀÇ ¸¶Áö¸· sub log
+ *    record¸¦ ±¸ÇÑ´Ù.
  *****************************************************************/
 svrLogRec* getLastSubLogRec(svrLogRec *aLogRec)
 {

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdrReq.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdrReq.h 88414 2020-08-25 04:45:02Z justin.kwon $
  **********************************************************************/
 
 #ifndef _O_SDR_REQ_H_
@@ -58,7 +58,8 @@ class sdrReqFunc
                                           ULong           * aArrData,
                                           UInt              aDataCount,
                                           smLSN           * aBeginLSN,
-                                          smLSN           * aEndLSN )
+                                          smLSN           * aEndLSN,
+                                          smOID             aTableOID )
         {
             return smrLogMgr::writeDiskNTALogRec( aStatistics,
                                                   aTrans,
@@ -70,7 +71,8 @@ class sdrReqFunc
                                                   aArrData,
                                                   aDataCount,
                                                   aBeginLSN,
-                                                  aEndLSN );
+                                                  aEndLSN,
+                                                  aTableOID );
         };
         static IDE_RC writeDiskRefNTALogRec( idvSQL          * aStatistics,
                                              void            * aTrans,
@@ -81,7 +83,8 @@ class sdrReqFunc
                                              smLSN           * aPPrevLSN,
                                              scSpaceID         aSpaceID,
                                              smLSN           * aBeginLSN,
-                                             smLSN           * aEndLSN )
+                                             smLSN           * aEndLSN,
+                                             smOID             aTableOID )
         {
             return smrLogMgr::writeDiskRefNTALogRec( aStatistics,
                                                      aTrans,
@@ -92,7 +95,8 @@ class sdrReqFunc
                                                      aPPrevLSN,
                                                      aSpaceID,
                                                      aBeginLSN,
-                                                     aEndLSN );
+                                                     aEndLSN,
+                                                     aTableOID );
         };
         static IDE_RC writeDiskCMPSLogRec( idvSQL           * aStatistics,
                                            void             * aTrans,
@@ -100,7 +104,8 @@ class sdrReqFunc
                                            UInt               aWriteOption,
                                            smLSN            * aPrevLSN,
                                            smLSN            * aBeginLSN,
-                                           smLSN            * aEndLSN )
+                                           smLSN            * aEndLSN,
+                                           smOID              aTableOID )
         {
             return smrLogMgr::writeDiskCMPSLogRec( aStatistics,
                                                    aTrans,
@@ -108,7 +113,8 @@ class sdrReqFunc
                                                    aWriteOption,
                                                    aPrevLSN,
                                                    aBeginLSN,
-                                                   aEndLSN );
+                                                   aEndLSN,
+                                                   aTableOID );
         };
         static IDE_RC writeDiskLogRec( idvSQL           * aStatistics,
                                        void             * aTrans,
@@ -319,30 +325,6 @@ class sdrReqFunc
                                                                aPagePtr,
                                                                aRedoInfo,
                                                                aMtx );
-        };
-        static IDE_RC redo_SDR_SDN_MAKE_CHAINED_KEYS( SChar       * aData,
-                                                      UInt          aLength,
-                                                      UChar       * aPagePtr,
-                                                      sdrRedoInfo * aRedoInfo,
-                                                      sdrMtx      * aMtx )
-        {
-            return sdnUpdate::redo_SDR_SDN_MAKE_CHAINED_KEYS( aData,
-                                                              aLength,
-                                                              aPagePtr,
-                                                              aRedoInfo,
-                                                              aMtx );
-        };
-        static IDE_RC redo_SDR_SDN_MAKE_UNCHAINED_KEYS( SChar       * aData,
-                                                        UInt          aLength,
-                                                        UChar       * aPagePtr,
-                                                        sdrRedoInfo * aRedoInfo,
-                                                        sdrMtx      * aMtx )
-        {
-            return sdnUpdate::redo_SDR_SDN_MAKE_UNCHAINED_KEYS( aData,
-                                                                aLength,
-                                                                aPagePtr,
-                                                                aRedoInfo,
-                                                                aMtx );
         };
         static IDE_RC redo_SDR_SDN_KEY_STAMPING( SChar       * aData,
                                                  UInt          aLength,

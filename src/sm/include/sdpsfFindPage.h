@@ -79,7 +79,7 @@ private:
 /***********************************************************************
  *
  * Description :
- *  Page ìƒíƒœê°€ Insertableì¸ì§€ë¥¼ Checkí•œë‹¤.
+ *  Page »óÅÂ°¡ InsertableÀÎÁö¸¦ CheckÇÑ´Ù.
  *
  *  aPageHdr - [IN] physical page header
  *  aPctUsed - [IN] PCTUSED
@@ -93,7 +93,7 @@ inline idBool sdpsfFindPage::isPageInsertable( sdpPhyPageHdr *aPageHdr,
     UInt   sPctUsedSize;
 
     IDE_DASSERT( aPageHdr != NULL );
-    /* PCTUSEDëŠ” 0~99ì‚¬ì´ì˜ ê°’ì„ ê°€ì ¸ì•¼ í•œë‹¤. */
+    /* PCTUSED´Â 0~99»çÀÌÀÇ °ªÀ» °¡Á®¾ß ÇÑ´Ù. */
     IDE_DASSERT( aPctUsed < 100 );
 
     sIsInsertable = ID_FALSE;
@@ -109,8 +109,8 @@ inline idBool sdpsfFindPage::isPageInsertable( sdpPhyPageHdr *aPageHdr,
 
         if( sUsedSize < sPctUsedSize )
         {
-            /* Pageì˜ ê³µê°„ ì‚¬ìš©ëŸ‰ì´ PCTUSEDë³´ë‹¤ ì‘ì•„ì§€ë©´,
-             * ë‹¤ì‹œ insertí•  ìˆ˜ ìˆë‹¤. */
+            /* PageÀÇ °ø°£ »ç¿ë·®ÀÌ PCTUSEDº¸´Ù ÀÛ¾ÆÁö¸é,
+             * ´Ù½Ã insertÇÒ ¼ö ÀÖ´Ù. */
             sIsInsertable = ID_TRUE;
         }
     }
@@ -121,7 +121,7 @@ inline idBool sdpsfFindPage::isPageInsertable( sdpPhyPageHdr *aPageHdr,
 /***********************************************************************
  *
  * Description :
- *  Page ìƒíƒœê°€ Update Onlyì¸ì§€ë¥¼ Checkí•œë‹¤.
+ *  Page »óÅÂ°¡ Update OnlyÀÎÁö¸¦ CheckÇÑ´Ù.
  *
  *  aPageHdr - [IN] physical page header
  *  aPctFree - [IN] PCTFREE
@@ -135,7 +135,7 @@ inline idBool sdpsfFindPage::isPageUpdateOnly( sdpPhyPageHdr *aPageHdr,
     UInt   sPctFreeSize;
 
     IDE_DASSERT( aPageHdr != NULL );
-    /* PCTFREEëŠ” 0~99ì‚¬ì´ì˜ ê°’ì„ ê°€ì ¸ì•¼ í•œë‹¤. */
+    /* PCTFREE´Â 0~99»çÀÌÀÇ °ªÀ» °¡Á®¾ß ÇÑ´Ù. */
     IDE_DASSERT( aPctFree < 100 );
 
     sIsUpdateOnly = ID_FALSE;
@@ -149,8 +149,8 @@ inline idBool sdpsfFindPage::isPageUpdateOnly( sdpPhyPageHdr *aPageHdr,
 
         if( sFreeSize < sPctFreeSize )
         {
-            /* í˜ì´ì§€ì˜ ê°€ìš©ê³µê°„ì´ PCTFREEë³´ë‹¤ ì‘ê²Œë˜ë©´,
-             * ì´ í˜ì´ì§€ì— ìƒˆë¡œìš´ rowë¥¼ insertí•  ìˆ˜ ì—†ë‹¤. */
+            /* ÆäÀÌÁöÀÇ °¡¿ë°ø°£ÀÌ PCTFREEº¸´Ù ÀÛ°ÔµÇ¸é,
+             * ÀÌ ÆäÀÌÁö¿¡ »õ·Î¿î row¸¦ insertÇÒ ¼ö ¾ø´Ù. */
             sIsUpdateOnly = ID_TRUE;
         }
     }

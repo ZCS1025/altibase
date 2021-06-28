@@ -43,7 +43,7 @@ IDE_RC mmdXid::initialize(ID_XID           *aUserXid,
 
     mBeginFlag   = ID_FALSE;
     mFixCount = 0;
-    //fix BUG-22669 XID listì— ëŒ€í•œ performance view í•„ìš”.
+    //fix BUG-22669 XID list¿¡ ´ëÇÑ performance view ÇÊ¿ä.
     mAssocSessionID = 0;
     mAssocSession   = NULL;         //BUG-25020
     mHeuristicXaEnd = ID_FALSE;     //BUG-29351
@@ -56,12 +56,12 @@ IDE_RC mmdXid::initialize(ID_XID           *aUserXid,
     IDU_LIST_INIT(&mAssocFetchList);
 
     // bug-35382: mutex optimization during alloc and dealloc
-    // mutex ë¥¼ pool (hash chain)ì—ì„œ í•˜ë‚˜ ê°€ì ¸ì™€ì„œ mmdXidì— ë“±ë¡
+    // mutex ¸¦ pool (hash chain)¿¡¼­ ÇÏ³ª °¡Á®¿Í¼­ mmdXid¿¡ µî·Ï
     mMutex     = NULL;
 
     // PROJ-2408
     IDE_ASSERT( aBucket->mXidMutexBucketLatch.lockWrite(NULL, NULL) == IDE_SUCCESS);
-    // mutexê°€ ì—†ìœ¼ë©´ ìƒˆë¡œ í• ë‹¹í•˜ì—¬ ì‚¬ìš©. latchëŠ” ë°”ë¡œ í’€ì–´ì¤€ë‹¤
+    // mutex°¡ ¾øÀ¸¸é »õ·Î ÇÒ´çÇÏ¿© »ç¿ë. latch´Â ¹Ù·Î Ç®¾îÁØ´Ù
     if (IDU_LIST_IS_EMPTY(&(aBucket->mXidMutexChain)))
     {
         IDE_ASSERT( aBucket->mXidMutexBucketLatch.unlock() == IDE_SUCCESS);
@@ -75,7 +75,7 @@ IDE_RC mmdXid::initialize(ID_XID           *aUserXid,
         mMutex = sMutex;
         mMutexNeedDestroy = ID_TRUE;
     }
-    // mutexê°€ ìˆìœ¼ë©´ mutex pool ë³´í˜¸ìš© latch ì¡ê³  í•˜ë‚˜ ê°€ì ¸ì˜¨ë‹¤
+    // mutex°¡ ÀÖÀ¸¸é mutex pool º¸È£¿ë latch Àâ°í ÇÏ³ª °¡Á®¿Â´Ù
     else
     {
         sNode = IDU_LIST_GET_FIRST(&(aBucket->mXidMutexChain));
@@ -95,13 +95,13 @@ IDE_RC mmdXid::initialize(ID_XID           *aUserXid,
 IDE_RC mmdXid::finalize(mmdXidHashBucket *aBucket, idBool aFreeTrans)
 {
     // bug-35382: mutex optimization during alloc and dealloc
-    // mutex poolì—ì„œ ê°€ì ¸ì˜¨ ê²ƒì´ ì•„ë‹ˆë¼ë©´ ë°”ë¡œ freeì‹œí‚¨ë‹¤
+    // mutex pool¿¡¼­ °¡Á®¿Â °ÍÀÌ ¾Æ´Ï¶ó¸é ¹Ù·Î free½ÃÅ²´Ù
     if (mMutexNeedDestroy == ID_TRUE)
     {
         IDE_TEST(mMutex->mMutex.destroy() != IDE_SUCCESS);
         IDE_TEST(mmdXidManager::mXidMutexPool.memfree(mMutex) != IDE_SUCCESS);
     }
-    // mutex poolì—ì„œ ê°€ì ¸ì˜¨ ê²ƒì´ë©´ latch ì¡ê³  ë°˜í™˜í•œë‹¤
+    // mutex pool¿¡¼­ °¡Á®¿Â °ÍÀÌ¸é latch Àâ°í ¹İÈ¯ÇÑ´Ù
     else
     {
         IDE_ASSERT( aBucket->mXidMutexBucketLatch.lockWrite(NULL, NULL) == IDE_SUCCESS );
@@ -143,8 +143,8 @@ IDE_RC mmdXid::finalize(mmdXidHashBucket *aBucket, idBool aFreeTrans)
         /* nothing to do */
     }
 
-    /* PROJ-1381 FAC : ë™ì‘ì¤‘ì¸ê±´ rollbackí•œë‹¤.
-     * ê·¸ëŸ¬ë¯€ë¡œ ì´ ì‹œì ì—ëŠ” AssocFetchListê°€ ëª¨ë‘ ì •ë¦¬ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤. */
+    /* PROJ-1381 FAC : µ¿ÀÛÁßÀÎ°Ç rollbackÇÑ´Ù.
+     * ±×·¯¹Ç·Î ÀÌ ½ÃÁ¡¿¡´Â AssocFetchList°¡ ¸ğµÎ Á¤¸®µÇ¾î ÀÖ¾î¾ß ÇÑ´Ù. */
     IDE_ASSERT( IDU_LIST_IS_EMPTY(&mAssocFetchList) == ID_TRUE );
 
     return IDE_SUCCESS;
@@ -154,7 +154,7 @@ IDE_RC mmdXid::finalize(mmdXidHashBucket *aBucket, idBool aFreeTrans)
 
 IDE_RC mmdXid::attachTrans(UInt aSlotID)
 {
-    /* BUG-46644 attach ì‹œì ì— mTransëŠ” ì´ˆê¸°í™” ë˜ì–´ ìˆê¸°ì— ì´ˆê¸°í™”ëŠ” ì œê±°í•œë‹¤. */
+    /* BUG-46644 attach ½ÃÁ¡¿¡ mTrans´Â ÃÊ±âÈ­ µÇ¾î ÀÖ±â¿¡ ÃÊ±âÈ­´Â Á¦°ÅÇÑ´Ù. */
     mmcTrans::attachXA(mTrans, aSlotID);
     setState(MMD_XA_STATE_PREPARED);
 
@@ -197,14 +197,14 @@ IDE_RC mmdXid::commitTrans(mmcSession *aSession)
         sTrans->setStatistics(NULL);
     }
 
-    /* PROJ-1381 FAC : Commitëœ FetchListë¥¼ mmcSessionìœ¼ë¡œ ì˜®ê¸´ë‹¤. */
+    /* PROJ-1381 FAC : CommitµÈ FetchList¸¦ mmcSessionÀ¸·Î ¿Å±ä´Ù. */
     IDU_LIST_ITERATE_SAFE(&mAssocFetchList, sIterator, sNodeNext)
     {
         sItem = (AssocFetchListItem *)sIterator->mObj;
 
         if ( IDU_LIST_IS_EMPTY(&sItem->mFetchList) == ID_FALSE )
         {
-            /* ë°©ì–´ì½”ë“œ: finalizeëœ Sessionì€ AssocFetchListì— ë‚¨ì•„ìˆìœ¼ë©´ ì•ˆëœë‹¤. */
+            /* ¹æ¾îÄÚµå: finalizeµÈ SessionÀº AssocFetchList¿¡ ³²¾ÆÀÖÀ¸¸é ¾ÈµÈ´Ù. */
             IDE_ASSERT(sItem->mSession->getSessionState() != MMC_SESSION_STATE_INIT);
 
             sItem->mSession->lockForFetchList();
@@ -252,14 +252,14 @@ void mmdXid::rollbackTrans(mmcSession *aSession)
         sTrans->setStatistics(NULL);
     }
 
-    /* PROJ-1381 FAC : Rollbackëœ FetchListë¥¼ Closeí•œë‹¤. */
+    /* PROJ-1381 FAC : RollbackµÈ FetchList¸¦ CloseÇÑ´Ù. */
     IDU_LIST_ITERATE_SAFE(&mAssocFetchList, sIterator, sNodeNext)
     {
         sItem = (AssocFetchListItem *)sIterator->mObj;
 
         if ( IDU_LIST_IS_EMPTY(&sItem->mFetchList) == ID_FALSE )
         {
-            /* ë°©ì–´ì½”ë“œ: finalizeëœ Sessionì€ AssocFetchListì— ë‚¨ì•„ìˆìœ¼ë©´ ì•ˆëœë‹¤. */
+            /* ¹æ¾îÄÚµå: finalizeµÈ SessionÀº AssocFetchList¿¡ ³²¾ÆÀÖÀ¸¸é ¾ÈµÈ´Ù. */
             IDE_ASSERT(sItem->mSession->getSessionState() != MMC_SESSION_STATE_INIT);
 
             sItem->mSession->closeAllCursorByFetchList( &sItem->mFetchList, ID_FALSE );
@@ -269,7 +269,7 @@ void mmdXid::rollbackTrans(mmcSession *aSession)
         IDE_TEST_RAISE( iduMemMgr::free(sItem) != IDE_SUCCESS, RollbackError );
     }
 
-    // BUG-24887 rollback ì‹¤íŒ¨ì‹œ ì •ë³´ë¥¼ ë‚¨ê¸°ê³  ì£½ì„ê²ƒ
+    // BUG-24887 rollback ½ÇÆĞ½Ã Á¤º¸¸¦ ³²±â°í Á×À»°Í
     IDE_TEST( mmcTrans::rollbackXA( mTrans, aSession, SMI_RELEASE_TRANSACTION ) != IDE_SUCCESS);
     setState(MMD_XA_STATE_NO_TX);
 
@@ -277,7 +277,7 @@ void mmdXid::rollbackTrans(mmcSession *aSession)
 
     return ;
 
-    // BUG-24887 rollback ì‹¤íŒ¨ì‹œ ì •ë³´ë¥¼ ë‚¨ê¸°ê³  ì£½ì„ê²ƒ
+    // BUG-24887 rollback ½ÇÆĞ½Ã Á¤º¸¸¦ ³²±â°í Á×À»°Í
     IDE_EXCEPTION(RollbackError);
     {
         sErrorCode = ideGetErrorCode();
@@ -324,21 +324,21 @@ SInt mmdXid::compFunc(void *aLhs, void *aRhs)
 
 /***********************************************************************
  * Description:
-XIDì™€ sessionê³¼ ê´€ê³„ë¥¼ ì„±ë¦½í•œë‹¤.
-ê·¸ë¦¬ê³  XIDì— ìˆëŠ” SM íŠ¸ëœì­ì…˜ì—ê²Œ  sessionì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
+XID¿Í session°ú °ü°è¸¦ ¼º¸³ÇÑ´Ù.
+±×¸®°í XID¿¡ ÀÖ´Â SM Æ®·£Àè¼Ç¿¡°Ô  sessionÁ¤º¸¸¦ °»½ÅÇÑ´Ù.
 
 ***********************************************************************/
 //fix BUG-22669 need to XID List performance view. 
 void   mmdXid::associate(mmcSession * aSession)
 {
-    //fix BUG-23656 session,xid ,transactionì„ ì—°ê³„í•œ performance viewë¥¼ ì œê³µí•˜ê³ ,
-    //ê·¸ë“¤ê°„ì˜ ê´€ê³„ë¥¼ ì •í™•íˆ ìœ ì§€í•´ì•¼ í•¨.
+    //fix BUG-23656 session,xid ,transactionÀ» ¿¬°èÇÑ performance view¸¦ Á¦°øÇÏ°í,
+    //±×µé°£ÀÇ °ü°è¸¦ Á¤È®È÷ À¯ÁöÇØ¾ß ÇÔ.
 
-    //XID ì™€ associateëœ sessionì •ë³´ ê°±ì‹ .
+    //XID ¿Í associateµÈ sessionÁ¤º¸ °»½Å.
     mAssocSessionID     = aSession->getSessionID();
     mAssocSession       = aSession;         //BUG-25020
     
-    // SMì—ê²Œ transactionì„ì‚¬ìš©í•˜ëŠ” session ì´ë³€ê²½ë¨ì„ ì•Œë¦¼.
+    // SM¿¡°Ô transactionÀ»»ç¿ëÇÏ´Â session ÀÌº¯°æµÊÀ» ¾Ë¸².
     if(mTrans != NULL)
     {
         mmcTrans::getSmiTrans(mTrans)->setStatistics(aSession->getStatSQL());
@@ -348,20 +348,20 @@ void   mmdXid::associate(mmcSession * aSession)
 
 /***********************************************************************
  * Description:
-XIDì™€ sessionê³¼ ê´€ê³„ë¥¼ ë‹¨ì ˆí•œë‹¤.
-ê·¸ë¦¬ê³  XIDì— ìˆëŠ” SM íŠ¸ëœì­ì…˜ì—ê²Œ  sessionì •ë³´ë¥¼ clearní•œë‹¤.
+XID¿Í session°ú °ü°è¸¦ ´ÜÀıÇÑ´Ù.
+±×¸®°í XID¿¡ ÀÖ´Â SM Æ®·£Àè¼Ç¿¡°Ô  sessionÁ¤º¸¸¦ clearnÇÑ´Ù.
 
 ***********************************************************************/
-//fix BUG-23656 session,xid ,transactionì„ ì—°ê³„í•œ performance viewë¥¼ ì œê³µí•˜ê³ ,
-//ê·¸ë“¤ê°„ì˜ ê´€ê³„ë¥¼ ì •í™•íˆ ìœ ì§€í•´ì•¼ í•¨.
+//fix BUG-23656 session,xid ,transactionÀ» ¿¬°èÇÑ performance view¸¦ Á¦°øÇÏ°í,
+//±×µé°£ÀÇ °ü°è¸¦ Á¤È®È÷ À¯ÁöÇØ¾ß ÇÔ.
 void   mmdXid::disAssociate(mmdXaState aState)
 {
     mAssocSessionID     = ID_NULL_SESSION_ID;
     mAssocSession       = NULL;             //BUG-25020
     
     /* BUG-26164
-     * Heuristicí•˜ê²Œ ì²˜ë¦¬ë˜ì—ˆê±°ë‚˜ NO_TXì¸ ê²½ìš°ì—ëŠ”
-     * í•´ë‹¹ Transactionì´ ì´ë¯¸ ì—†ìœ¼ë¯€ë¡œ, Transaction ì²˜ë¦¬ë¥¼ í•  í•„ìš”ê°€ ì—†ë‹¤.
+     * HeuristicÇÏ°Ô Ã³¸®µÇ¾ú°Å³ª NO_TXÀÎ °æ¿ì¿¡´Â
+     * ÇØ´ç TransactionÀÌ ÀÌ¹Ì ¾øÀ¸¹Ç·Î, Transaction Ã³¸®¸¦ ÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
      */
     switch (aState)
     {
@@ -370,7 +370,7 @@ void   mmdXid::disAssociate(mmdXaState aState)
         case MMD_XA_STATE_ROLLBACK_ONLY:
             if(mTrans != NULL)
             {
-                // SMì—ê²Œ transactionì„ì‚¬ìš©í•˜ëŠ” sessionì´ ì—†ìŒì„ ì•Œë¦¼.
+                // SM¿¡°Ô transactionÀ»»ç¿ëÇÏ´Â sessionÀÌ ¾øÀ½À» ¾Ë¸².
                 mmcTrans::getSmiTrans(mTrans)->setStatistics(NULL);
             }
             break;
@@ -385,8 +385,8 @@ void   mmdXid::disAssociate(mmdXaState aState)
     }
 }
 
-/* BUG-27968 XA Fix/Unfix Scalabilityë¥¼ í–¥ìƒì‹œì¼œì•¼ í•©ë‹ˆë‹¤.
- XA fix ì‹œì— xid list latchë¥¼ shared ê±¸ë•Œ xid fix count ì •í•©ì„±ì„ ìœ„í•œ í•¨ìˆ˜ */
+/* BUG-27968 XA Fix/Unfix Scalability¸¦ Çâ»ó½ÃÄÑ¾ß ÇÕ´Ï´Ù.
+ XA fix ½Ã¿¡ xid list latch¸¦ shared °É¶§ xid fix count Á¤ÇÕ¼ºÀ» À§ÇÑ ÇÔ¼ö */
 void mmdXid::fixWithLatch()
 {
     IDE_ASSERT(mMutex->mMutex.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
@@ -394,9 +394,9 @@ void mmdXid::fixWithLatch()
     IDE_ASSERT(mMutex->mMutex.unlock() == IDE_SUCCESS);
 }
 
-/* BUG-27968 XA Fix/Unfix Scalabilityë¥¼ í–¥ìƒì‹œì¼œì•¼ í•©ë‹ˆë‹¤.
-  XA Unfix ì‹œì— latch duarationì„ ì¤„ì´ê¸°ìœ„í•˜ì—¬ xid fix-Countë¥¼ xid list latch releaseì „ì—
-  êµ¬í•œë‹¤.*/
+/* BUG-27968 XA Fix/Unfix Scalability¸¦ Çâ»ó½ÃÄÑ¾ß ÇÕ´Ï´Ù.
+  XA Unfix ½Ã¿¡ latch duarationÀ» ÁÙÀÌ±âÀ§ÇÏ¿© xid fix-Count¸¦ xid list latch releaseÀü¿¡
+  ±¸ÇÑ´Ù.*/
 void mmdXid::unfix(UInt *aFixCount)
 {
     // prvent minus 
@@ -409,10 +409,10 @@ void mmdXid::unfix(UInt *aFixCount)
 /* PROJ-1381 Fetch Across Commits */
 
 /**
- * Sessionì˜ Non-Commited FetchListë¥¼ Xidì™€ ê´€ë ¨ëœ FetchListë¡œ ì¶”ê°€í•œë‹¤.
+ * SessionÀÇ Non-Commited FetchList¸¦ Xid¿Í °ü·ÃµÈ FetchList·Î Ãß°¡ÇÑ´Ù.
  *
- * @param aSession[IN] FetchListì™€ ì—°ê´€ëœ Session
- * @return ì„±ê³µí•˜ë©´ IDE_SUCCESS, ì•„ë‹ˆë©´ IDE_FAILURE
+ * @param aSession[IN] FetchList¿Í ¿¬°üµÈ Session
+ * @return ¼º°øÇÏ¸é IDE_SUCCESS, ¾Æ´Ï¸é IDE_FAILURE
  */
 IDE_RC mmdXid::addAssocFetchListItem(mmcSession *aSession)
 {

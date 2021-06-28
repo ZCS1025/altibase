@@ -16,13 +16,9 @@
  
 
 /***********************************************************************
- * $Id: smaLogicalAger.cpp 84166 2018-10-15 07:54:37Z justin.kwon $
+ * $Id: smaLogicalAger.cpp 90259 2021-03-19 01:22:22Z emlee $
  **********************************************************************/
 
-#include <idl.h>
-#include <ide.h>
-#include <iduSync.h>
-#include <idu.h>
 #include <smErrorCode.h>
 #include <smm.h>
 #include <sma.h>
@@ -30,20 +26,19 @@
 #include <smi.h>
 #include <sgmManager.h>
 
-smmSlotList*    smaLogicalAger::mSlotList[3];
+smmSlotList*    smaLogicalAger::mSlotList;
 iduMutex        smaLogicalAger::mBlock;
 iduMutex        smaLogicalAger::mCheckMutex;
-smaOidList*     smaLogicalAger::mHead;
-smaOidList*     smaLogicalAger::mTailLogicalAger;
-smaOidList*     smaLogicalAger::mTailDeleteThread;
+smaOidList**    smaLogicalAger::mHead;
+smaOidList**    smaLogicalAger::mTailLogicalAger;
+smaOidList**    smaLogicalAger::mTailDeleteThread;
+UInt            smaLogicalAger::mListCnt;
 smaLogicalAger* smaLogicalAger::mLogicalAgerList;
 ULong           smaLogicalAger::mAddCount;
 ULong           smaLogicalAger::mHandledCount;
 UInt            smaLogicalAger::mCreatedThreadCount;
 UInt            smaLogicalAger::mRunningThreadCount;
 idBool          smaLogicalAger::mIsInitialized = ID_FALSE;
-iduMutex        smaLogicalAger::mMetaMtxForAddRequest;
-iduMutex        smaLogicalAger::mMetaMtxForAddProcess;
 ULong           smaLogicalAger::mAgingRequestOIDCnt;
 ULong           smaLogicalAger::mAgingProcessedOIDCnt;
 ULong           smaLogicalAger::mSleepCountOnAgingCondition;
@@ -51,6 +46,8 @@ iduMutex        smaLogicalAger::mAgerCountChangeMutex;
 iduMutex        smaLogicalAger::mFreeNodeListMutex;
 SInt            smaLogicalAger::mBlockFreeNodeCount;
 UInt            smaLogicalAger::mIsParallelMode;
+iduMutex*       smaLogicalAger::mListLock;
+
 
 smaLogicalAger::smaLogicalAger() : idtBaseThread()
 {
@@ -63,72 +60,71 @@ IDE_RC smaLogicalAger::initializeStatic()
 
     UInt i;
 
-    mSlotList[0]     = NULL;
-    mSlotList[1]     = NULL;
-    mSlotList[2]     = NULL;
     mLogicalAgerList = NULL;
+
+    mSlotList = NULL;
+    mListCnt  = smuProperty::getAgerListCount(); 
 
     /* TC/FIT/Limit/sm/sma/smaLogicalAger_alloc_malloc1.sql */
     IDU_FIT_POINT_RAISE( "smaLogicalAger::alloc::malloc1",
                           insufficient_memory );
-
-    //fix bug-23007
-    IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_SM_SMA,
-                               ID_SIZEOF(smmSlotList),
-                               (void**)&(mSlotList[0])) != IDE_SUCCESS,
-                   insufficient_memory );
-
-
-    IDE_TEST( mSlotList[0]->initialize( IDU_MEM_SM_SMA_LOGICAL_AGER,
-                                        "SMA_AGER_OID_LIST",
-                                        ID_SIZEOF( smaOidList ),
-                                        SMA_NODE_POOL_MAXIMUM,
-                                        SMA_NODE_POOL_CACHE )
-              != IDE_SUCCESS );
-
     /* TC/FIT/Limit/sm/sma/smaLogicalAger_alloc_malloc2.sql */
     IDU_FIT_POINT_RAISE( "smaLogicalAger::alloc::malloc2",
                           insufficient_memory );
-
-    IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_SM_SMA,
-                               ID_SIZEOF(smmSlotList),
-                               (void**)&(mSlotList[1])) != IDE_SUCCESS,
-                   insufficient_memory );
-
-    IDE_TEST( mSlotList[0]->makeChild( SMA_NODE_POOL_MAXIMUM,
-                                       SMA_NODE_POOL_CACHE,
-                                       mSlotList[1] )
-              != IDE_SUCCESS );
-
     /* TC/FIT/Limit/sm/sma/smaLogicalAger_alloc_malloc3.sql */
     IDU_FIT_POINT_RAISE( "smaLogicalAger::alloc::malloc3",
                           insufficient_memory );
 
-    IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_SM_SMA,
-                               ID_SIZEOF(smmSlotList),
-                               (void**)&(mSlotList[2])) != IDE_SUCCESS,
-                   insufficient_memory );
+    //fix bug-23007
+    IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMA,
+                                       ID_SIZEOF(smmSlotList) * mListCnt ,
+                                       (void**)&(mSlotList)) != IDE_SUCCESS,
+                    insufficient_memory );
 
-    IDE_TEST( mSlotList[0]->makeChild( SMA_NODE_POOL_MAXIMUM,
-                                       SMA_NODE_POOL_CACHE,
-                                       mSlotList[2] )
-              != IDE_SUCCESS );
+    IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMA,
+                                       ID_SIZEOF(smaOidList*) * mListCnt ,
+                                       (void**)&(mHead)) != IDE_SUCCESS,
+                    insufficient_memory );
+
+    IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMA,
+                                       ID_SIZEOF(smaOidList*) * mListCnt ,
+                                       (void**)&(mTailLogicalAger)) != IDE_SUCCESS,
+                    insufficient_memory );
+
+    IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMA,
+                                       ID_SIZEOF(smaOidList*) * mListCnt ,
+                                       (void**)&(mTailDeleteThread)) != IDE_SUCCESS,
+                    insufficient_memory );
+
+    IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMA,
+                                       ID_SIZEOF(iduMutex) * mListCnt ,
+                                       (void**)&(mListLock)) != IDE_SUCCESS,
+                    insufficient_memory );
+
+    for( i = 0; i < mListCnt; i++)
+    {
+        /* BUG-47367 ±âÁ¸¿¡´Â SlotList¸¦ 3°³ ¸¸µé¾î¼­ ÇÒ´ç¿ë ¹İ³³¿ëÀÌ µû·Î ÀÖ¾úÁö¸¸
+         * ÀÌÁ¦´Â °¢ Listº°·Î µû·Î List¸¦ µÎ¾î addList½Ã º´¸ñÀ» ºĞ»ê½ÃÅ²´Ù.
+         * List´ç 1°³ ÀÌ±â ¶§¹®¿¡ ÇÒ´ç/¹İ³³½Ã¿¡ Ager¿Í Tx°£ÀÇ °£¼·Àº ¹ß»ıÇÑ´Ù. */
+        IDE_TEST( mSlotList[i].initialize( IDU_MEM_SM_SMA_LOGICAL_AGER,
+                                           "SMA_AGER_OID_LIST",
+                                           ID_SIZEOF( smaOidList ),
+                                           SMA_NODE_POOL_MAXIMUM,
+                                           SMA_NODE_POOL_CACHE )
+                  != IDE_SUCCESS );
+
+        mHead[i]             = NULL;
+        mTailLogicalAger[i]  = NULL;
+        mTailDeleteThread[i] = NULL;
+
+        IDE_TEST( mListLock[i].initialize( (SChar*)"MEMORY_LOGICAL_GC_MUTEX",
+                                           IDU_MUTEX_KIND_NATIVE,
+                                           IDV_WAIT_INDEX_NULL ) != IDE_SUCCESS );
+    }
 
     IDE_TEST( mBlock.initialize((SChar*)"MEMORY_LOGICAL_GC_MUTEX",
                                 IDU_MUTEX_KIND_NATIVE,
                                 IDV_WAIT_INDEX_NULL ) != IDE_SUCCESS );
-
-    IDE_TEST( mMetaMtxForAddRequest.initialize(
-                  (SChar*)"MEMORY_LOGICAL_GC_META_MUTEX_FOR_ADD_REQUEST",
-                  IDU_MUTEX_KIND_NATIVE,
-                  IDV_WAIT_INDEX_NULL)
-              != IDE_SUCCESS );
-
-    IDE_TEST( mMetaMtxForAddProcess.initialize(
-                  (SChar*)"MEMORY_LOGICAL_GC_META_MUTEX_FOR_ADD_PROCESS",
-                  IDU_MUTEX_KIND_NATIVE,
-                  IDV_WAIT_INDEX_NULL)
-              != IDE_SUCCESS );
 
     IDE_TEST( mCheckMutex.initialize((SChar*)"MEMORY_LOGICAL_GC_CHECK_MUTEX",
                                      IDU_MUTEX_KIND_NATIVE,
@@ -136,20 +132,17 @@ IDE_RC smaLogicalAger::initializeStatic()
               != IDE_SUCCESS );
 
     IDE_TEST( mAgerCountChangeMutex.initialize(
-                  (SChar*)"MEMORY_LOGICAL_GC_COUNT_CHANGE_MUTEX",
-                  IDU_MUTEX_KIND_NATIVE,
-                  IDV_WAIT_INDEX_NULL) 
+                                  (SChar*)"MEMORY_LOGICAL_GC_COUNT_CHANGE_MUTEX",
+                                  IDU_MUTEX_KIND_NATIVE,
+                                  IDV_WAIT_INDEX_NULL) 
               != IDE_SUCCESS );
 
     IDE_TEST( mFreeNodeListMutex.initialize(
-                (SChar*)"MEMORY_LOGICAL_GC_FREE_NODE_LIST_MUTEX",
-                IDU_MUTEX_KIND_NATIVE,
-                IDV_WAIT_INDEX_NULL) 
-            != IDE_SUCCESS );
+                                (SChar*)"MEMORY_LOGICAL_GC_FREE_NODE_LIST_MUTEX",
+                                IDU_MUTEX_KIND_NATIVE,
+                                IDV_WAIT_INDEX_NULL) 
+              != IDE_SUCCESS );
 
-    mHead             = NULL;
-    mTailLogicalAger  = NULL;
-    mTailDeleteThread = NULL;
 
     mBlockFreeNodeCount = 0;
 
@@ -165,11 +158,11 @@ IDE_RC smaLogicalAger::initializeStatic()
     IDU_FIT_POINT_RAISE( "smaLogicalAger::alloc::malloc4",
                           insufficient_memory );
 
-    IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_SM_SMA,
-                               ID_SIZEOF(smaLogicalAger) *
-                               smuProperty::getMaxLogicalAgerCount(),
-                               (void**)&(mLogicalAgerList)) != IDE_SUCCESS,
-                   insufficient_memory );
+    IDE_TEST_RAISE( iduMemMgr::malloc(IDU_MEM_SM_SMA,
+                                 ID_SIZEOF(smaLogicalAger) *
+                                 smuProperty::getMaxLogicalAgerCount(),
+                                 (void**)&(mLogicalAgerList)) != IDE_SUCCESS,
+                    insufficient_memory );
 
     mCreatedThreadCount = smuProperty::getLogicalAgerCount();
     mRunningThreadCount = mCreatedThreadCount;
@@ -207,40 +200,38 @@ IDE_RC smaLogicalAger::destroyStatic()
 
     for(i = 0; i <  mCreatedThreadCount; i++)
     {
-        IDE_TEST(mLogicalAgerList[i].destroy()
-                 != IDE_SUCCESS);
+        IDE_TEST( mLogicalAgerList[i].destroy() != IDE_SUCCESS );
     }
 
     IDE_TEST( mBlock.destroy() != IDE_SUCCESS );
-    IDE_TEST( mMetaMtxForAddRequest.destroy() != IDE_SUCCESS );
-    IDE_TEST( mMetaMtxForAddProcess.destroy() != IDE_SUCCESS );
     IDE_TEST( mCheckMutex.destroy() != IDE_SUCCESS );
     IDE_TEST( mAgerCountChangeMutex.destroy() != IDE_SUCCESS );
     IDE_TEST( mFreeNodeListMutex.destroy() != IDE_SUCCESS );
-    
-    IDE_TEST( mSlotList[2]->release( ) != IDE_SUCCESS );
-    IDE_TEST( mSlotList[2]->destroy( ) != IDE_SUCCESS );
 
-    IDE_TEST(iduMemMgr::free(mSlotList[2])
-             != IDE_SUCCESS);
-    mSlotList[2] = NULL;
+    for ( i = 0; i < mListCnt; i++ )
+    {    
+        IDE_TEST( mSlotList[i].release( ) != IDE_SUCCESS );
+        IDE_TEST( mSlotList[i].destroy( ) != IDE_SUCCESS );
 
-    IDE_TEST( mSlotList[1]->release( ) != IDE_SUCCESS );
-    IDE_TEST( mSlotList[1]->destroy( ) != IDE_SUCCESS );
+        IDE_TEST( mListLock[i].destroy() != IDE_SUCCESS );
+    }
 
-    IDE_TEST(iduMemMgr::free(mSlotList[1])
-             != IDE_SUCCESS);
-    mSlotList[1] = NULL;
+    IDE_TEST( iduMemMgr::free( mListLock ) != IDE_SUCCESS );
+    mListLock = NULL;
 
-    IDE_TEST( mSlotList[0]->release( ) != IDE_SUCCESS );
-    IDE_TEST( mSlotList[0]->destroy( ) != IDE_SUCCESS );
+    IDE_TEST( iduMemMgr::free( mTailDeleteThread ) != IDE_SUCCESS );
+    mTailDeleteThread = NULL;
 
-    IDE_TEST(iduMemMgr::free(mSlotList[0])
-             != IDE_SUCCESS);
-    mSlotList[0] = NULL;
+    IDE_TEST( iduMemMgr::free( mTailLogicalAger ) != IDE_SUCCESS );
+    mTailLogicalAger = NULL;
 
-    IDE_TEST(iduMemMgr::free(mLogicalAgerList)
-             != IDE_SUCCESS);
+    IDE_TEST( iduMemMgr::free( mHead ) != IDE_SUCCESS );
+    mHead = NULL;
+
+    IDE_TEST( iduMemMgr::free(mSlotList) != IDE_SUCCESS );
+    mSlotList = NULL;
+
+    IDE_TEST( iduMemMgr::free(mLogicalAgerList) != IDE_SUCCESS );
     mLogicalAgerList = NULL;
 
     return IDE_SUCCESS;
@@ -274,22 +265,23 @@ IDE_RC smaLogicalAger::initialize( UInt aThreadID )
     mContinue         = ID_TRUE;
 
     mTimeOut = smuProperty::getAgerWaitMax();
-
+    mThreadID = aThreadID;
+    
     idlOS::snprintf( sMutexName,
                      128,
                      "MEMORY_LOGICAL_GC_THREAD_MUTEX_%"ID_UINT32_FMT,
                      aThreadID );
 
     /* BUG-35179 Add property for parallel logical ager
-     * drop table, drop tablespaceì™€ì˜ ë™ì‹œì„± ë¬¸ì œë¥¼ í•´ê²°í•˜ê¸° ìœ„í•´ ê° threadë³„ë¡œ
-     * lockì„ ì¶”ê°€í•œë‹¤. */
+     * drop table, drop tablespace¿ÍÀÇ µ¿½Ã¼º ¹®Á¦¸¦ ÇØ°áÇÏ±â À§ÇØ °¢ threadº°·Î
+     * lockÀ» Ãß°¡ÇÑ´Ù. */
     IDE_TEST( mWaitForNoAccessAftDropTblLock.initialize(
                                         sMutexName,
                                         IDU_MUTEX_KIND_NATIVE,
                                         IDV_WAIT_INDEX_NULL ) != IDE_SUCCESS );
 
     IDE_TEST( start() != IDE_SUCCESS );
-    IDE_TEST(waitToStart(0) != IDE_SUCCESS);
+    IDE_TEST( waitToStart(0) != IDE_SUCCESS );
 
     SM_MAX_SCN( &mViewSCN );
 
@@ -303,10 +295,9 @@ IDE_RC smaLogicalAger::initialize( UInt aThreadID )
 
 IDE_RC smaLogicalAger::destroy( void )
 {
-
     /* BUG-35179 Add property for parallel logical ager
-     * drop table, drop tablespaceì™€ì˜ ë™ì‹œì„± ë¬¸ì œë¥¼ í•´ê²°í•˜ê¸° ìœ„í•´ ê° threadë³„ë¡œ
-     * lockì„ ì¶”ê°€í•œë‹¤. */
+     * drop table, drop tablespace¿ÍÀÇ µ¿½Ã¼º ¹®Á¦¸¦ ÇØ°áÇÏ±â À§ÇØ °¢ threadº°·Î
+     * lockÀ» Ãß°¡ÇÑ´Ù. */
     IDE_TEST( mWaitForNoAccessAftDropTblLock.destroy() != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -321,11 +312,11 @@ IDE_RC smaLogicalAger::shutdown( void )
 {
 
 
-    // BUGBUG smi interface layerêµ¬í˜„ë˜ë©´ ê·¸ë•Œ í•˜ì.
+    // BUGBUG smi interface layer±¸ÇöµÇ¸é ±×¶§ ÇÏÀÚ.
     //IDE_RC _smiSetAger( idBool aValue );
 
     mContinue = ID_FALSE;
-    // BUGBUG smi interface layerêµ¬í˜„ë˜ë©´ ê·¸ë•Œ í•˜ì.
+    // BUGBUG smi interface layer±¸ÇöµÇ¸é ±×¶§ ÇÏÀÚ.
     //IDE_TEST( _smiSetAger( ID_TRUE ) != IDE_SUCCESS );
 
     IDE_TEST( setAger( ID_TRUE ) != IDE_SUCCESS );
@@ -369,13 +360,13 @@ IDE_RC smaLogicalAger::setAger( idBool aValue )
 }
 
 /*
-    Agerê°€ ì´ˆê¸°í™”ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ ë¦¬í„´í•œë‹¤.
+    Ager°¡ ÃÊ±âÈ­µÇ¾ú´ÂÁö ¿©ºÎ¸¦ ¸®ÅÏÇÑ´Ù.
 
-    BLOCK/UNBLOCKì„ í˜¸ì¶œí•˜ê¸° ì „ì— ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì—¬
-    AGERê°€ ì´ˆê¸°í™”ë˜ì—ˆëŠ”ì§€ë¥¼ ê²€ì‚¬í•  ìˆ˜ ìˆë‹¤.
+    BLOCK/UNBLOCKÀ» È£ÃâÇÏ±â Àü¿¡ ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ¿©
+    AGER°¡ ÃÊ±âÈ­µÇ¾ú´ÂÁö¸¦ °Ë»çÇÒ ¼ö ÀÖ´Ù.
 
-    Agerê°€ ì´ˆê¸°í™”ë˜ì§€ ì•Šì€ METAì´ì „ ë‹¨ê³„ì—ì„œ BLOCK/UNBLOCKì„
-    í˜¸ì¶œí•˜ì§€ ì•Šë„ë¡ í•˜ê¸° ìœ„í•´ ì‚¬ìš©ëœë‹¤.
+    Ager°¡ ÃÊ±âÈ­µÇÁö ¾ÊÀº METAÀÌÀü ´Ü°è¿¡¼­ BLOCK/UNBLOCKÀ»
+    È£ÃâÇÏÁö ¾Êµµ·Ï ÇÏ±â À§ÇØ »ç¿ëµÈ´Ù.
 */
 idBool smaLogicalAger::isInitialized( void )
 {
@@ -386,14 +377,20 @@ idBool smaLogicalAger::isInitialized( void )
 IDE_RC smaLogicalAger::block( void )
 {
     UInt sStage = 0;
+    UInt i = 0;
 
-    // Agerê°€ ì´ˆê¸°í™” ëœ METAìƒíƒœì—ì„œë§Œ Block/Unblockì´ í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
+    // Ager°¡ ÃÊ±âÈ­ µÈ META»óÅÂ¿¡¼­¸¸ Block/UnblockÀÌ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
     IDE_ASSERT( mIsInitialized == ID_TRUE );
 
-    IDE_TEST( lock() != IDE_SUCCESS );
+    /* ¸ğµç Ager¸¦ ¸ØÃç¾ß ÇÑ´Ù. ¸ğµç ListÀÇ lockÀ» È¹µæÇÑ´Ù. */
+    for ( i = 0; i< mListCnt; i++ )
+    {
+        mListLock[i].lock(NULL);
+    }
+
     sStage = 1;
 
-    IDE_TEST( smaDeleteThread::lock() != IDE_SUCCESS );
+    IDE_TEST( smaDeleteThread::lockAll() != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -403,7 +400,11 @@ IDE_RC smaLogicalAger::block( void )
     switch( sStage )
     {
         case 1:
-            (void)unlock();
+        for ( i = 0; i < mListCnt; i++ )
+        {
+            mListLock[i].unlock();
+        }
+        break;
     }
     IDE_POP();
 
@@ -415,14 +416,18 @@ IDE_RC smaLogicalAger::unblock( void )
 {
 
     UInt sStage = 1;
+    UInt i = 0;
 
-    // Agerê°€ ì´ˆê¸°í™” ëœ METAìƒíƒœì—ì„œë§Œ Block/Unblockì´ í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
+    // Ager°¡ ÃÊ±âÈ­ µÈ META»óÅÂ¿¡¼­¸¸ Block/UnblockÀÌ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
     IDE_ASSERT( mIsInitialized == ID_TRUE );
 
-    IDE_TEST( smaDeleteThread::unlock() != IDE_SUCCESS );
+    IDE_TEST( smaDeleteThread::unlockAll() != IDE_SUCCESS );
 
     sStage = 0;
-    IDE_TEST( unlock() != IDE_SUCCESS );
+    for ( i = 0; i< mListCnt; i++ )
+    {
+        mListLock[i].unlock();
+    }
 
     return IDE_SUCCESS;
 
@@ -432,7 +437,11 @@ IDE_RC smaLogicalAger::unblock( void )
     switch( sStage )
     {
         case 1:
-            (void)unlock();
+        for ( i = 0; i < mListCnt; i++ )
+        {
+            mListLock[i].unlock();
+        }
+        break;
     }
     IDE_POP();
 
@@ -440,28 +449,47 @@ IDE_RC smaLogicalAger::unblock( void )
 
 }
 
-IDE_RC smaLogicalAger::addList(smTID         aTID,
-                               idBool        aIsDDL,
-                               smSCN        *aSCN,
-                               smLSN        *aLSN,
-                               UInt          aCondition,
-                               smxOIDList*   aList,
-                               void**        aAgerListPtr)
+IDE_RC smaLogicalAger::addList( smTID         aTID,
+                                idBool        aIsDDL,
+                                smSCN       * aSCN,
+                                UInt          aCondition,
+                                smxOIDList  * aList,    
+                                void       ** aAgerListPtr ) 
 {
 
-    UInt        sCondition;
     smaOidList* sOidList;
+    SInt        sListN;
 
-    if(aAgerListPtr != NULL)
+#ifdef DEBUG
+        if( aCondition == 0 ) // for dummy
+        {
+            IDE_DASSERT( SM_SCN_IS_INIT( *aSCN ) );
+        }
+        else
+        {
+            IDE_DASSERT( (aCondition == SM_OID_ACT_AGING_COMMIT)   ||
+                         (aCondition == SM_OID_ACT_AGING_ROLLBACK) ); 
+            IDE_DASSERT( SM_SCN_IS_NOT_INIT( *aSCN ) );
+        }
+#endif
+
+    sListN = aTID % mListCnt;
+
+    if( aAgerListPtr != NULL )
     {
         *(smaOidList**)aAgerListPtr = NULL;
     }
 
-    if( mSlotList[1] != NULL )
+    /* SlotList°¡ ÇÒ´çµÇ¾ú´ÂÁö È®ÀÎ */
+    if( mSlotList != NULL )
     {
-        IDE_TEST( mSlotList[1]->allocateSlots( 1,
-                                               (smmSlot**)&sOidList,
-                                               SMM_SLOT_LIST_MUTEX_NEEDLESS )
+        /* BUG-47367 Slot lockÀ» È¹µæÇÑ´Ù.
+         * ÇØ´ç lockÀº ÇÒ´ç/¹İ³³/AgerList¿¡ µî·ÏÀ» Á¦¾î ÇÑ´Ù. */
+        mSlotList[sListN].lock();
+
+        IDE_TEST( mSlotList[sListN].allocateSlots( 1,
+                                                   (smmSlot**)&sOidList,
+                                                   SMM_SLOT_LIST_MUTEX_NEEDLESS )
                   != IDE_SUCCESS );
 
         sOidList->mSCN       = *aSCN;
@@ -469,6 +497,7 @@ IDE_RC smaLogicalAger::addList(smTID         aTID,
         sOidList->mCondition = aCondition;
         sOidList->mNext      = NULL;
         sOidList->mTransID   = aTID;
+        sOidList->mListN     = sListN; /* BUG-47367 ¹İ³³ÇÒ¶§ List¹øÈ£¸¦ ¾Ë¾Æ¾ß ÇÑ´Ù. */
         SM_SET_SCN_INFINITE_AND_TID(&(sOidList->mKeyFreeSCN), aTID);
 
 
@@ -481,13 +510,11 @@ IDE_RC smaLogicalAger::addList(smTID         aTID,
             sOidList->mFinished  = ID_TRUE;
         }
 
-        sOidList->mLSN       = *aLSN;
-
         // BUG-15306
-        // DummyOIDì¼ ê²½ìš°ì—” add countë¥¼ ì¦ê°€ì‹œí‚¤ì§€ ì•ŠëŠ”ë‹¤.
+        // DummyOIDÀÏ °æ¿ì¿£ add count¸¦ Áõ°¡½ÃÅ°Áö ¾Ê´Â´Ù.
         if( isDummyOID( sOidList ) != ID_TRUE )
         {
-            mAddCount++;
+            acpAtomicInc64( &mAddCount );
         }
 
         if(aList != NULL)
@@ -504,27 +531,31 @@ IDE_RC smaLogicalAger::addList(smTID         aTID,
 
         IDL_MEM_BARRIER;
 
-        if( mHead != NULL )
+        if( mHead[sListN] != NULL )
         {
-            mHead->mNext = sOidList;
-            mHead       = sOidList;
+            mHead[sListN]->mNext = sOidList;
+            mHead[sListN]        = sOidList;
         }
         else
         {
-            mHead             = sOidList;
-            mTailLogicalAger  = mHead;
-            mTailDeleteThread = mHead;
+            mHead[sListN]             = sOidList;
+            mTailLogicalAger[sListN]  = mHead[sListN];
+            mTailDeleteThread[sListN] = mHead[sListN];
         }
+
+        mSlotList[sListN].unlock();
 
         if(aIsDDL == ID_TRUE)
         {
-            sCondition = aCondition;
-
-
-            IDE_TEST(addList(aTID, ID_FALSE, aSCN, aLSN, sCondition, NULL, NULL)
-                     != IDE_SUCCESS);
+            IDE_TEST( addList( aTID,   
+                               ID_FALSE,  // aIsDDL
+                               aSCN, 
+                               aCondition, 
+                               NULL,      // aList,
+                               NULL )     // aAgerListPtr
+                      != IDE_SUCCESS );
         }
-
+        
         if(aAgerListPtr != NULL)
         {
             *(smaOidList**)aAgerListPtr = sOidList;
@@ -542,49 +573,53 @@ IDE_RC smaLogicalAger::addList(smTID         aTID,
 
 /************************************************************************
  * Description :
- *    OID listì— OIDê°€ í•˜ë‚˜ë§Œ ë‹¬ë ¤ ìˆìœ¼ë©´ ì´ í•¨ìˆ˜ë¥¼ í†µí•´ì„œ
- *    dummy OIDë¥¼ í•˜ë‚˜ ì¶”ê°€í•œë‹¤. ì´ë ‡ê²Œ í•¨ìœ¼ë¡œì¨
- *    OID listì— ì²˜ë¦¬ ì•ˆë˜ê³  ë‚¨ì•„ ìˆëŠ” í•˜ë‚˜ì˜ OIDë¥¼ ì²˜ë¦¬í•˜ë„ë¡ í•œë‹¤.
+ *    OID list¿¡ OID°¡ ÇÏ³ª¸¸ ´Ş·Á ÀÖÀ¸¸é ÀÌ ÇÔ¼ö¸¦ ÅëÇØ¼­
+ *    dummy OID¸¦ ÇÏ³ª Ãß°¡ÇÑ´Ù. ÀÌ·¸°Ô ÇÔÀ¸·Î½á
+ *    OID list¿¡ Ã³¸® ¾ÈµÇ°í ³²¾Æ ÀÖ´Â ÇÏ³ªÀÇ OID¸¦ Ã³¸®ÇÏµµ·Ï ÇÑ´Ù.
  *
- *    BUG-15306ì„ ìœ„í•´ ì¶”ê°€ëœ í•¨ìˆ˜
+ *    BUG-15306À» À§ÇØ Ãß°¡µÈ ÇÔ¼ö
  ************************************************************************/
-IDE_RC smaLogicalAger::addDummyOID( void )
+IDE_RC smaLogicalAger::addDummyOID( SInt aListN )
 {
     SInt  sState = 0;
-    smLSN sNullLSN;
     smSCN sNullSCN;
 
-    // OID listê°€ í•˜ë‚˜ë§Œ ìˆìœ¼ë©´ ì´ í•¨ìˆ˜ê°€ ë¶ˆë ¤ì§„ë‹¤.
-    // í•˜ì§€ë§Œ OID listëŠ” ìˆ˜ì‹œë¡œ addë˜ê³  ìˆê¸° ë•Œë¬¸ì—
-    // mutexë¥¼ ì¡ê³  ë‹¤ì‹œí•œë²ˆ ê²€ì‚¬í•´ì•¼ í•œë‹¤.
+    // OID list°¡ ÇÏ³ª¸¸ ÀÖÀ¸¸é ÀÌ ÇÔ¼ö°¡ ºÒ·ÁÁø´Ù.
+    // ÇÏÁö¸¸ OID list´Â ¼ö½Ã·Î addµÇ°í ÀÖ±â ¶§¹®¿¡
+    // mutex¸¦ Àâ°í ´Ù½ÃÇÑ¹ø °Ë»çÇØ¾ß ÇÑ´Ù.
 
-    IDE_TEST(smxTransMgr::lock() != IDE_SUCCESS);
+    // addList¿Í µ¿½Ã¼º Á¦¾î±â ¶§¹®¿¡ mSlotListÀÇ lockÀ» È¹µæÇØ¾ß ÇÑ´Ù.
+    mSlotList[aListN].lock();
     sState = 1;
 
-    if( ( mHead != NULL )                   &&
-        ( mTailLogicalAger == mHead )       &&
-        ( mTailLogicalAger->mNext == NULL ) &&
-        ( isDummyOID( mHead ) == ID_FALSE ) )
+    if( ( mHead[aListN] != NULL )                     &&
+        ( mTailLogicalAger[aListN] == mHead[aListN] ) &&
+        ( mTailLogicalAger[aListN]->mNext == NULL )   &&
+        ( isDummyOID( mHead[aListN] ) == ID_FALSE ) )
     {
-        SM_LSN_INIT( sNullLSN );
         SM_INIT_SCN( &sNullSCN );
 
-        IDE_TEST( addList( 0,              // aTID,
+        /* BUG-47367 addList¿¡¼­ µ¿ÀÏÇÑ lockÀ» È¹µæÇÏ·Á ÇÏ±â ¶§¹®¿¡
+         * È£ÃâÀü¿¡ Ç®¾îÁÖ¾î¾ßÇÑ´Ù.
+         * ÀÎÀÚ Ãß°¡·Î ³»ºÎ¿¡¼­ ÆÇ´ÜÇØµµ µÇÁö¸¸
+         * dummy°¡ Áß°£¿¡ ÀÖ´Ù°í Å« ¹®Á¦´Â ¾ÈµÇ±â ¶§¹®¿¡ lock ±¸°£À» ÁÙ¿´´Ù. */
+        sState = 0;
+
+        mSlotList[aListN].unlock();
+
+        IDE_TEST( addList( aListN,         // ¿ø·¡ TID ÀÌÁö¸¸ ³»ºÎ¿¡¼­ TID¸¦ ÀÌ¿ë ListN·Î ¹Ù²î±â ¶§¹®¿¡ »ó°ü¾ø´Ù
                            ID_FALSE,       // aIsDDL
                            &sNullSCN,      // aSCN
-                           &sNullLSN,      // aLSN
                            0,              // aCondition
                            NULL,           // aList,
-                           NULL )          // aAgerListPtr
+                           NULL )          // aAgerListPtr 
                   != IDE_SUCCESS );
     }
     else
     {
-        // Nothing to do...
+        sState = 0;
+        mSlotList[aListN].unlock();
     }
-
-    sState = 0;
-    IDE_TEST(smxTransMgr::unlock() != IDE_SUCCESS);
 
     return IDE_SUCCESS;
 
@@ -592,7 +627,7 @@ IDE_RC smaLogicalAger::addDummyOID( void )
 
     if( sState == 1 )
     {
-        IDE_ASSERT(smxTransMgr::unlock() == IDE_SUCCESS);
+        mSlotList[aListN].unlock();
     }
 
     return IDE_FAILURE;
@@ -604,170 +639,132 @@ void smaLogicalAger::setOIDListFinished( void* aOIDList, idBool aFlag)
 }
 
 /*
-    Agingí•  OIDë¥¼ ê°€ë¦¬í‚¤ëŠ” Index Slotì„ ì œê±°í•œë‹¤.
+    AgingÇÒ OID¸¦ °¡¸®Å°´Â Index SlotÀ» Á¦°ÅÇÑ´Ù.
+    logical ager¿¡¼­ È£ÃâÇÑ´Ù.
 
-    [IN] aOIDList          - Agingí•  OID List
-    [IN] aAgingFilter      - Instant Agingì‹œ ì ìš©í•  Filter
-                             ( smaDef.hì£¼ì„ì°¸ê³  )
+    [IN] aOIDList          - AgingÇÒ OID List
     [OUT] aDidDelOldKey -
  */
 IDE_RC smaLogicalAger::deleteIndex(smaOidList            * aOIDList,
-                                   smaInstantAgingFilter * aAgingFilter,
                                    UInt                  * aDidDelOldKey )
 {
 
     smxOIDNode*     sNode;
     smxOIDInfo*     sCursor = NULL;
     smxOIDInfo*     sFence;
-    UInt            sCondition;
     smcTableHeader* sLastTable;
     smcTableHeader* sTable;
     smcTableHeader* sNextTable;
-    smcTableHeader* sCurTable;
+    smcTableHeader* sCurTable = NULL;
     UInt            sStage = 0;
-    
-    sCondition  = aOIDList->mCondition|SM_OID_ACT_AGING_INDEX;
+
     sLastTable  = NULL;
     sTable      = NULL;
     sNode       = aOIDList->mTail;
 
-    if(sNode != NULL)
+    while( sNode != NULL )
     {
-        do
+        sCursor = sNode->mArrOIDInfo + sNode->mOIDCnt - 1;
+        sFence  = sNode->mArrOIDInfo - 1 ;
+        for( ; sCursor != sFence; sCursor-- )
         {
-            sCursor = sNode->mArrOIDInfo + sNode->mOIDCnt - 1;
-            sFence  = sNode->mArrOIDInfo - 1 ;
-            for( ; sCursor != sFence; sCursor-- )
+            if( smxOIDList::checkIsAgingTarget( aOIDList->mCondition,
+                                                sCursor ) == ID_FALSE )
             {
-                /* BUG-17417 V$Agerì •ë³´ì˜ Add OIDê°¯ìˆ˜ëŠ” ì‹¤ì œ Agerê°€
-                 *           í•´ì•¼í•  ì‘ì—…ì˜ ê°¯ìˆ˜ê°€ ì•„ë‹ˆë‹¤.
-                 *
-                 * í•˜ë‚˜ì˜ OIDì— ëŒ€í•´ì„œ Agingì„ ìˆ˜í–‰í•˜ë©´
-                 * mAgingProcessedOIDCntë¥¼ 1ì¦ê°€ ì‹œí‚¨ë‹¤. */
-                if( smxOIDList::checkIsAgingTarget( aOIDList->mCondition,
-                                                    sCursor ) == ID_TRUE )
-                {
-                    if( aAgingFilter == NULL ) // Instant Aging Filter ì•„ë‹˜?
-                    {
-                        IDE_ASSERT( lockMetaAddProcMtx() == IDE_SUCCESS );
-                        mAgingProcessedOIDCnt++;
-                        IDE_DASSERT( mAgingRequestOIDCnt >= mAgingProcessedOIDCnt );
-                        IDE_ASSERT( unlockMetaAddProcMtx() == IDE_SUCCESS );
-                    }
-                    else
-                    {
-                        /* InstantAgingí•  ê²½ìš°.  Aging Filterì¡°ê±´ì— ë¶€í•©? */
-                        if ( isAgingFilterTrue(
-                                 aAgingFilter,
-                                 sCursor->mSpaceID,
-                                 sCursor->mTableOID ) == ID_TRUE )
-                        {
-                            IDE_ASSERT( lockMetaAddProcMtx() == IDE_SUCCESS );
-                            mAgingProcessedOIDCnt++;
-                            IDE_DASSERT( mAgingRequestOIDCnt >= mAgingProcessedOIDCnt );
-                            IDE_ASSERT( unlockMetaAddProcMtx() == IDE_SUCCESS );
-                        }
-                    }
-                }
-                else
-                {
-                    /* nothing to do ... */
-                }
+                continue;
+            }
 
-                if ( (( sCursor->mFlag & sCondition ) == sCondition ) &&
-                     (( sCursor->mFlag & SM_OID_ACT_COMPRESSION ) == 0) )
+            idCore::acpAtomicInc64( &mAgingProcessedOIDCnt );
+            IDE_DASSERT( checkAgingProcessedCnt() == ID_TRUE );
+
+            if ( (( sCursor->mFlag & SM_OID_ACT_AGING_INDEX ) == SM_OID_ACT_AGING_INDEX ) &&
+                 (( sCursor->mFlag & SM_OID_ACT_COMPRESSION ) == 0) )
+            {
+                IDE_ASSERT( sCursor->mTableOID != SM_NULL_OID );
+
+                if (( sCurTable == NULL ) ||
+                    ( sCursor->mTableOID != sCurTable->mSelfOID ))
                 {
-                    IDE_ASSERT( sCursor->mTableOID != SM_NULL_OID );
                     IDE_ASSERT( smcTable::getTableHeaderFromOID( sCursor->mTableOID,
                                                                  (void**)&sCurTable )
                                 == IDE_SUCCESS );
-
-                    if( sCurTable != sLastTable )
-                    {
-                        sNextTable = sCurTable;
-
-                        if(smcTable::isDropedTable(sNextTable) == ID_TRUE)
-                        {
-                            continue;
-                        }
-
-                        if( sStage == 1)
-                        {
-                            sStage = 0;
-                            IDE_TEST( smcTable::unlatch( sTable )
-                                      != IDE_SUCCESS );
-                        }
-
-                        sLastTable  = sNextTable;
-                        sTable      = sNextTable;
-
-                        IDE_TEST( smcTable::latchShared( sTable )
-                                  != IDE_SUCCESS );
-                        sStage = 1;
-                    }
-
-                    if( aAgingFilter != NULL ) // Instant Aging Filter ì¡´ì¬?
-                    {
-                        // Aging Filterì¡°ê±´ì— ë¶€í•©?
-                        if ( isAgingFilterTrue(
-                                 aAgingFilter,
-                                 sCursor->mSpaceID,
-                                 sCursor->mTableOID ) == ID_TRUE )
-                        {
-                            // Agingì„ ì‹¤ì‹œ.
-                        }
-                        else
-                        {
-                            continue;
-                        }
-                    }
-                    else
-                    {
-                        /* BUG-41026 */
-                        IDU_FIT_POINT( "2.BUG-41026@smaLogicalAger::run::wakeup_1" );
-                        IDU_FIT_POINT( "3.BUG-41026@smaLogicalAger::run::sleep_2" );
-                        
-                        // Aging Filterë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” ì¼ë°˜ì ì¸ ê²½ìš°ì´ë‹¤.
-                        // ì•„ë˜ì˜ ì½”ë“œë¥¼ ìˆ˜í–‰í•˜ì—¬ Agingì‹¤ì‹œ.
-                        sCursor->mFlag &= ~SM_OID_ACT_AGING_INDEX;
-                    }
-
-                    IDE_ASSERT( sCursor->mTargetOID != SM_NULL_OID );
-                    IDE_ASSERT( sTable != NULL );
-
-                    IDU_FIT_POINT( "1.PROJ-1407@smaLogicalAger::deleteIndex" );
-
-                    //old version rowë¥¼ ê°€ë¦¬ì¼°ë˜ indexë“¤ì˜ key slotì„ í•´ì œí•œë‹¤.
-                    IDE_TEST( freeOldKeyFromIndexes(sTable,
-                                                    sCursor->mTargetOID,
-                                                    aDidDelOldKey)
-                              != IDE_SUCCESS);
-
-                    // ë‹¤ìŒë²ˆì— Agingë  ë•Œ Index Slotì— ëŒ€í•´
-                    // Agingì„ í•œë²ˆ ë” í•˜ëŠ”ì¼ì´ ì—†ë„ë¡ Flagë¥¼ ëˆë‹¤.
-                    sCursor->mFlag &= ~SM_OID_ACT_AGING_INDEX;
                 }
-            }
-            sNode = sNode->mPrvNode;
-        }
-        while( sNode != NULL );
 
-        if( sStage == 1)
-        {
-            sStage = 0;
-            IDE_TEST( smcTable::unlatch( sTable ) != IDE_SUCCESS );
+                if( sCurTable != sLastTable )
+                {
+                    sNextTable = sCurTable;
+
+                    if(smcTable::isDropedTable4Ager( sNextTable , aOIDList->mSCN ) == ID_TRUE)
+                    {
+                        continue;
+                    }
+
+                    if( sStage == 1)
+                    {
+                        sStage = 0;
+                        IDE_TEST( smcTable::unlatch( sTable )
+                                  != IDE_SUCCESS );
+                    }
+
+                    sLastTable  = sNextTable;
+                    sTable      = sNextTable;
+
+                    IDE_TEST( smcTable::latchShared( sTable )
+                              != IDE_SUCCESS );
+                    sStage = 1;
+                }
+
+                /* Fit Wait */
+                IDU_FIT_POINT( "2.BUG-41026@smaLogicalAger::run::wakeup_1" );
+                IDU_FIT_POINT( "3.BUG-41026@smaLogicalAger::run::sleep_2" );
+
+                IDE_ASSERT( sCursor->mTargetOID != SM_NULL_OID );
+                IDE_ASSERT( sTable != NULL );
+
+                /* Fit  Wait */
+                IDU_FIT_POINT( "1.PROJ-1407@smaLogicalAger::deleteIndex" );
+
+                //old version row¸¦ °¡¸®Ä×´ø indexµéÀÇ key slotÀ» ÇØÁ¦ÇÑ´Ù.
+                IDE_TEST_RAISE( freeOldKeyFromIndexes( sTable,
+                                                       sCursor->mTargetOID,
+                                                       aDidDelOldKey )
+                                != IDE_SUCCESS, ERR_FREE_OIDKEY_FROM_IDX );
+                sCursor->mFlag &= ~SM_OID_ACT_AGING_INDEX;
+            }
         }
+        sNode = sNode->mPrvNode;
     }
 
+    if( sStage == 1 )
+    {
+        sStage = 0;
+        IDE_TEST( smcTable::unlatch( sTable ) != IDE_SUCCESS );
+    }
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_FREE_OIDKEY_FROM_IDX );
+    {
+        sCursor->mFlag &= ~SM_OID_ACT_AGING_INDEX;
+    }
     IDE_EXCEPTION_END;
+
+    /* BUG-47619 µğ¹ö±ë Á¤º¸ º¸°­, free slot¿¡ ÇÊ¿äÇÑ ager Á¤º¸ Ãâ·Â*/
+    ideLog::log( IDE_ERR_0,
+                 "smaLogicalAger::deleteIndex\n"
+                 "__PARALLEL_LOGICAL_AGER : %"ID_UINT32_FMT"\n"
+                 "LOGICAL_AGER_COUNT_     : %"ID_UINT32_FMT"\n"
+                 "MIN_LOGICAL_AGER_COUNT  : %"ID_UINT32_FMT"\n"
+                 "MAX_LOGICAL_AGER_COUNT  : %"ID_UINT32_FMT"\n",
+                 smuProperty::getParallelLogicalAger(),
+                 smuProperty::getLogicalAgerCount(),
+                 smuProperty::getMinLogicalAgerCount(),
+                 smuProperty::getMaxLogicalAgerCount() );
 
     /* BUG-32655 [sm-mem-index] The MMDB Ager must not ignore the failure of
      * index aging. */
     if( sCursor != NULL )
     {
-        ideLog::log( IDE_SM_0, 
+        ideLog::log( IDE_ERR_0, 
                      "smaLogicalAger::deleteIndex\n"
                      "sCursor->mTableOID  : %"ID_UINT64_FMT"\n"
                      "sCursor->mTargetOID : %"ID_UINT64_FMT"\n"
@@ -778,27 +775,176 @@ IDE_RC smaLogicalAger::deleteIndex(smaOidList            * aOIDList,
                      sCursor->mSpaceID,
                      sCursor->mFlag );
     }
-
-    IDE_PUSH();
-    
-    switch( sStage )
+  
+    if ( sStage == 1 )
     {
-        case 1:
-            IDE_ASSERT( smcTable::unlatch( sTable ) == IDE_SUCCESS );
+        sStage = 0;
+        IDE_ASSERT( smcTable::unlatch( sTable ) == IDE_SUCCESS );
     }
 
-    IDE_POP();
+    return IDE_FAILURE;
+}
+
+/*
+    AgingÇÒ OID¸¦ °¡¸®Å°´Â Index SlotÀ» Á¦°ÅÇÑ´Ù.
+    DDL µî¿¡¼­ ÀÓ½Ã·Î ÇØ´ç Å×ÀÌºí¿¡ ´ëÇÑ °ÍÀ» ¸ğµÎ Á¤¸® ÇÒ ¶§ È£Ãâ µÈ´Ù.
+    BUG-47637 ¿¡¼­ deleteIndex¿¡¼­ ºĞ¸®µÇ¾ú´Ù.
+
+    [IN] aOIDList          - AgingÇÒ OID List
+    [IN] aAgingFilter      - Instant Aging½Ã Àû¿ëÇÒ Filter
+                             ( smaDef.hÁÖ¼®Âü°í )
+    [OUT] aDidDelOldKey -
+ */
+IDE_RC smaLogicalAger::deleteIndexInstantly( smaOidList            * aOIDList,
+                                             smaInstantAgingFilter * aAgingFilter,
+                                             UInt                  * aDidDelOldKey )
+{
+
+    smxOIDNode*     sNode;
+    smxOIDInfo*     sCursor = NULL;
+    smxOIDInfo*     sFence;
+    smcTableHeader* sLastTable;
+    smcTableHeader* sTable;
+    smcTableHeader* sNextTable;
+    smcTableHeader* sCurTable = NULL;
+    UInt            sStage    = 0;
+
+    sLastTable  = NULL;
+    sTable      = NULL;
+    sNode       = aOIDList->mTail;
+
+    while( sNode != NULL )
+    {
+        sCursor = sNode->mArrOIDInfo + sNode->mOIDCnt - 1;
+        sFence  = sNode->mArrOIDInfo - 1 ;
+        for( ; sCursor != sFence; sCursor-- )
+        {
+            /* BUG-47637: SM_OID_DROP_INDEXÃ³·³ Aging ´ë»óÀÌÁö¸¸ 
+             * old version ÇØÁ¦°¡ ÇÊ¿äÇÏÁö ¾ÊÀº °æ¿ì */
+            if( smxOIDList::checkIsAgingTarget( aOIDList->mCondition,
+                                                sCursor ) == ID_FALSE )
+            {
+                continue;
+            }
+
+            if ( isAgingFilterTrue( aAgingFilter,
+                                    sCursor->mSpaceID,
+                                    sCursor->mTableOID ) == ID_FALSE )
+            {
+                continue;
+            }
+
+            IDE_ASSERT( sCursor->mTableOID != SM_NULL_OID );
+
+            if (( sCurTable == NULL ) ||
+                ( sCursor->mTableOID != sCurTable->mSelfOID ))
+            {
+                IDE_ASSERT( smcTable::getTableHeaderFromOID( sCursor->mTableOID,
+                                                             (void**)&sCurTable )
+                            == IDE_SUCCESS );
+            }
+
+            if( sCurTable != sLastTable )
+            {
+                sNextTable = sCurTable;
+
+                if(smcTable::isDropedTable4Ager( sNextTable , aOIDList->mSCN ) == ID_TRUE)
+                {
+                    continue;
+                }
+
+                if( sStage == 1)
+                {
+                    sStage = 0;
+                    IDE_TEST( smcTable::unlatch( sTable )
+                              != IDE_SUCCESS );
+                }
+
+                sLastTable  = sNextTable;
+                sTable      = sNextTable;
+
+                IDE_TEST( smcTable::latchShared( sTable )
+                          != IDE_SUCCESS );
+                sStage = 1;
+            }
+
+            /* BUG-47637 ¿©±â±îÁö Åë°úÇÏ¸é delete thread aging ´ë»óÀÌ´Ù.
+             * index°¡ ¾Æ´Ï´õ¶óµµ ¿©±â¿¡¼­ count ÇÑ´Ù. */
+            idCore::acpAtomicInc64( &mAgingProcessedOIDCnt );
+            IDE_DASSERT( checkAgingProcessedCnt() == ID_TRUE );
+
+            if ( (( sCursor->mFlag & SM_OID_ACT_AGING_INDEX ) == SM_OID_ACT_AGING_INDEX  ) &&
+                 (( sCursor->mFlag & SM_OID_ACT_COMPRESSION ) == 0) )
+            {
+                IDE_ASSERT( sCursor->mTargetOID != SM_NULL_OID );
+                IDE_ASSERT( sTable != NULL );
+
+                /* old version row¸¦ °¡¸®Ä×´ø indexµéÀÇ key slotÀ» ÇØÁ¦ÇÑ´Ù.*/
+                IDE_TEST( freeOldKeyFromIndexes( sTable,
+                                                 sCursor->mTargetOID,
+                                                 aDidDelOldKey ));
+
+                /* ´ÙÀ½¹ø¿¡ AgingµÉ ¶§ Index Slot¿¡ ´ëÇØ
+                 * AgingÀ» ÇÑ¹ø ´õ ÇÏ´ÂÀÏÀÌ ¾øµµ·Ï Flag¸¦ ²ö´Ù. */
+                sCursor->mFlag &= ~SM_OID_ACT_AGING_INDEX;
+            }
+        }
+        sNode = sNode->mPrvNode;
+    }
+
+    if( sStage == 1 )
+    {
+        sStage = 0;
+        IDE_TEST( smcTable::unlatch( sTable ) != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    /* BUG-47619 µğ¹ö±ë Á¤º¸ º¸°­, free slot¿¡ ÇÊ¿äÇÑ ager Á¤º¸ Ãâ·Â*/
+    ideLog::log( IDE_ERR_0,
+                 "smaLogicalAger::deleteIndexInstantly\n"
+                 "__PARALLEL_LOGICAL_AGER : %"ID_UINT32_FMT"\n"
+                 "LOGICAL_AGER_COUNT_     : %"ID_UINT32_FMT"\n"
+                 "MIN_LOGICAL_AGER_COUNT  : %"ID_UINT32_FMT"\n"
+                 "MAX_LOGICAL_AGER_COUNT  : %"ID_UINT32_FMT"\n",
+                 smuProperty::getParallelLogicalAger(),
+                 smuProperty::getLogicalAgerCount(),
+                 smuProperty::getMinLogicalAgerCount(),
+                 smuProperty::getMaxLogicalAgerCount() );
+
+    /* BUG-32655 [sm-mem-index] The MMDB Ager must not ignore the failure of
+     * index aging. */
+    if( sCursor != NULL )
+    {
+        ideLog::log( IDE_ERR_0, 
+                     "smaLogicalAger::deleteIndexInstantly\n"
+                     "sCursor->mTableOID  : %"ID_UINT64_FMT"\n"
+                     "sCursor->mTargetOID : %"ID_UINT64_FMT"\n"
+                     "sCursor->mSpaceID   : %"ID_UINT32_FMT"\n"
+                     "sCursor->mFlag      : %"ID_UINT32_FMT"\n",
+                     sCursor->mTableOID,
+                     sCursor->mTargetOID,
+                     sCursor->mSpaceID,
+                     sCursor->mFlag );
+    }
+
+    if ( sStage == 1 )
+    {
+        sStage = 0;
+        IDE_ASSERT( smcTable::unlatch( sTable ) == IDE_SUCCESS );
+    }
 
     return IDE_FAILURE;
-
 }
 
 
 /*********************************************************************
   Name: sdaGC::freeOldKeyFromIndexes
   Description:
-  old verion  rowë¥¼ ê°€ë¦¬ì¼°ë˜ old index key slotì„
-  table ì˜ ì¸ë±ìŠ¤(ë“¤)ìœ¼ë¡œ ë¶€í„° freeí•œë‹¤.
+  old verion  row¸¦ °¡¸®Ä×´ø old index key slotÀ»
+  table ÀÇ ÀÎµ¦½º(µé)À¸·Î ºÎÅÍ freeÇÑ´Ù.
  *********************************************************************/
 IDE_RC smaLogicalAger::freeOldKeyFromIndexes(smcTableHeader*  aTableHeader,
                                              smOID            aOldVersionRowOID,
@@ -810,7 +956,7 @@ IDE_RC smaLogicalAger::freeOldKeyFromIndexes(smcTableHeader*  aTableHeader,
     SChar          * sRowPtr;
     idBool           sIsExistFreeKey = ID_FALSE;
    
-    IDE_ASSERT( sgmManager::getOIDPtr( aTableHeader->mSpaceID,
+    IDE_ASSERT( smmManager::getOIDPtr( aTableHeader->mSpaceID,
                                        aOldVersionRowOID, 
                                        (void**)&sRowPtr)
                 == IDE_SUCCESS );
@@ -849,11 +995,10 @@ IDE_RC smaLogicalAger::freeOldKeyFromIndexes(smcTableHeader*  aTableHeader,
 /*********************************************************************
   Name: sdaGC::checkOldKeyFromIndexes
   Description:
-  old verion  rowë¥¼ ê°€ë¦¬ì¼°ë˜ old index key slotì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+  old verion  row¸¦ °¡¸®Ä×´ø old index key slotÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù.
  *********************************************************************/
 IDE_RC smaLogicalAger::checkOldKeyFromIndexes(smcTableHeader*  aTableHeader,
-                                              smOID            aOldVersionRowOID,
-                                              idBool         * aExistKey )
+                                              smOID            aOldVersionRowOID )
 {
     UInt             i ;
     UInt             sIndexCnt;
@@ -866,9 +1011,8 @@ IDE_RC smaLogicalAger::checkOldKeyFromIndexes(smcTableHeader*  aTableHeader,
     sState = 1;
 
     sIndexCnt    = smcTable::getIndexCount(aTableHeader);
-    (*aExistKey) = ID_FALSE;
 
-    IDE_ASSERT( sgmManager::getOIDPtr( aTableHeader->mSpaceID,
+    IDE_ASSERT( smmManager::getOIDPtr( aTableHeader->mSpaceID,
                                        aOldVersionRowOID, 
                                        (void**)&sRowPtr)
                 == IDE_SUCCESS );
@@ -877,40 +1021,26 @@ IDE_RC smaLogicalAger::checkOldKeyFromIndexes(smcTableHeader*  aTableHeader,
     {
         sIndexHeader = (smnIndexHeader*)smcTable::getTableIndex(aTableHeader,i);
 
-        if( ( smnManager::isIndexEnabled( sIndexHeader ) == ID_TRUE ) )
+        if( sIndexHeader->mType == SMI_ADDITIONAL_RTREE_INDEXTYPE_ID )
         {
-            IDE_ASSERT( sIndexHeader->mHeader != NULL );
-            IDE_ASSERT( sIndexHeader->mModule != NULL );
+            /* MRDB R-Tree´Â mExistKey ÇÔ¼ö°¡ ±¸ÇöµÇ¾î ÀÖÁö ¾Ê´Ù. */
+            continue;
+        }
 
-            if( sIndexHeader->mModule->mExistKey == NULL )
-            {
-                /* MRDB R-TreeëŠ” mExistKey í•¨ìˆ˜ê°€ êµ¬í˜„ë˜ì–´ ìˆì§€ ì•Šë‹¤. */
-                if( sIndexHeader->mType == SMI_ADDITIONAL_RTREE_INDEXTYPE_ID )
-                {
-                    continue;
-                }
-                else
-                {
-                    IDE_ASSERT(0);
-                }
-            }
+        if ( smnManager::isIndexEnabled( sIndexHeader ) == ID_FALSE )
+        {
+            continue;
+        }
 
-            IDE_TEST( sIndexHeader->mModule->mExistKey(
-                            sIndexHeader, // aIndex
-                            sRowPtr,
-                            aExistKey )
-                      != IDE_SUCCESS )
-            if( *aExistKey == ID_TRUE )
-            {
-                /* Keyê°€ ì¡´ì¬í•˜ë©´ ì•ˆë¨. ë°”ë¡œ ë¹ ì ¸ ë‚˜ê°. */
-                break;
-            }
-            else
-            {
-                /* ì‹¤íŒ¨í•˜ëŠ” ê²ƒì´ ì •ìƒ ì¼€ì´ìŠ¤.
-                 * ë‹¤ìŒ Indexë¥¼ í–¥í•´ ë„˜ì–´ê° */
-            }
-        }//if
+        IDE_ASSERT( sIndexHeader->mHeader != NULL );
+        IDE_ASSERT( sIndexHeader->mModule != NULL );
+
+        // BUG-47526 Free SlotÀÌ NullÀÏ °æ¿ì°¡ Exist Checkµµ ¾ÈµÈ´Ù.
+        IDE_ASSERT( sIndexHeader->mModule->mFreeSlot != NULL );
+
+        IDE_TEST( smnbBTree::checkExistKey( sIndexHeader, // aIndex
+                                            sRowPtr )
+                  != IDE_SUCCESS );
     }//for
 
     sState = 0;
@@ -932,11 +1062,11 @@ IDE_RC smaLogicalAger::checkOldKeyFromIndexes(smcTableHeader*  aTableHeader,
 
 
 // added for A4
-// smaPhysical agerê°€ ì œê±°ë¨ì— ë”°ë¼
-// ì¶”ê°€ëœ í•¨ìˆ˜ì´ë©°, free node listë¥¼ ê´€ë¦¬í•œë‹¤.
-// ì‹¤ì œ ë°ì´í„°ëŠ” smnManagerì— ìˆëŠ” Listë¥¼ ì‚¬ìš©í•œë‹¤.
-// ì¸ë±ìŠ¤ ìœ í˜•(memory b+ tree,R tree)ì— ë”°ë¼
-// free node listë¥¼ ê°ê° ê°€ì§€ê²Œ ëœë‹¤.
+// smaPhysical ager°¡ Á¦°ÅµÊ¿¡ µû¶ó
+// Ãß°¡µÈ ÇÔ¼öÀÌ¸ç, free node list¸¦ °ü¸®ÇÑ´Ù.
+// ½ÇÁ¦ µ¥ÀÌÅÍ´Â smnManager¿¡ ÀÖ´Â List¸¦ »ç¿ëÇÑ´Ù.
+// ÀÎµ¦½º À¯Çü(memory b+ tree,R tree)¿¡ µû¶ó
+// free node list¸¦ °¢°¢ °¡Áö°Ô µÈ´Ù.
 void smaLogicalAger::addFreeNodes(void*     aFreeNodeList,
                                   smnNode*   aNodes)
 {
@@ -956,12 +1086,13 @@ void smaLogicalAger::addFreeNodes(void*     aFreeNodeList,
         {
             sFreeNodeList->mHandledCnt = 0;
         }
-        // í˜„ì¬ system view scnì„ ê°€ì ¸ì˜¨ë‹¤.
-        // nodeë¥¼ indexì—ì„œ ì œê±°í•œ í›„ì— view SCNì„ ì„¤ì •í•´ì•¼ í•œë‹¤.
-        smmDatabase::getViewSCN(&(aNodes->mSCN));
+        // ÇöÀç system view scnÀ» °¡Á®¿Â´Ù.
+        // node¸¦ index¿¡¼­ Á¦°ÅÇÑ ÈÄ¿¡ view SCNÀ» ¼³Á¤ÇØ¾ß ÇÑ´Ù.
+        SMX_GET_SYSTEM_VIEW_SCN( &(aNodes->mSCN) );
+
         if( sFreeNodeList->mHead != NULL )
         {
-            // empty node listì— ì¶”ê°€.
+            // empty node list¿¡ Ãß°¡.
             aNodes->mNext        = NULL;
             sFreeNodeList->mHead->mNext = aNodes;
             sFreeNodeList->mHead       = aNodes;
@@ -979,8 +1110,8 @@ void smaLogicalAger::addFreeNodes(void*     aFreeNodeList,
 }
 
 //added for A4.
-//indexìœ í˜•ë³„ë¡œ ìˆëŠ” free node listë“¤ì„ traverseí•˜ë©´ì„œ
-//ì§€ìš¸ ë…¸ë“œê°€ ìˆìœ¼ë©´ ë…¸ë“œë¥¼ ì§€ìš´ë‹¤.
+//indexÀ¯Çüº°·Î ÀÖ´Â free node listµéÀ» traverseÇÏ¸é¼­
+//Áö¿ï ³ëµå°¡ ÀÖÀ¸¸é ³ëµå¸¦ Áö¿î´Ù.
 void smaLogicalAger::freeNodesIfPossible()
 {
 
@@ -988,7 +1119,7 @@ void smaLogicalAger::freeNodesIfPossible()
     smnNode*         sHead = NULL;
     smnFreeNodeList* sCurFreeNodeList;
     smSCN            sMinSCN;
-    smTID            sTID;
+    smTID            sDummyTID;
     UInt             i;
 
     IDE_ASSERT( mFreeNodeListMutex.lock( NULL ) == IDE_SUCCESS );
@@ -996,10 +1127,10 @@ void smaLogicalAger::freeNodesIfPossible()
     if( mBlockFreeNodeCount > 0 )
     {
         /* TASK-4990 changing the method of collecting index statistics
-         * í†µê³„ì •ë³´ ì¬êµ¬ì¶• ë“±ìœ¼ë¡œ Indexë¥¼ ì¡°íšŒí•˜ëŠ” ì¤‘.
-         * FreeNodeë¥¼ ë§‰ìŒìœ¼ë¡œì¨ Nodeì˜ ì¬í™œìš©ì„ ë§‰ê³ ,
-         * ì´ë¥¼ í†µí•´ í†µê³„ì •ë³´ ì¬êµ¬ì¶•ì„ ìœ„í•´ Index Node
-         * ìˆœíšŒì‹œ TreeLockë“± ì—†ì´ë„ ì§„í–‰í•  ìˆ˜ ìˆë„ë¡ í•œë‹¤.*/
+         * Åë°èÁ¤º¸ Àç±¸Ãà µîÀ¸·Î Index¸¦ Á¶È¸ÇÏ´Â Áß.
+         * FreeNode¸¦ ¸·À½À¸·Î½á NodeÀÇ ÀçÈ°¿ëÀ» ¸·°í,
+         * ÀÌ¸¦ ÅëÇØ Åë°èÁ¤º¸ Àç±¸ÃàÀ» À§ÇØ Index Node
+         * ¼øÈ¸½Ã TreeLockµî ¾øÀÌµµ ÁøÇàÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.*/
     }
     else
     {
@@ -1014,11 +1145,13 @@ void smaLogicalAger::freeNodesIfPossible()
             }
 
             // fix BUG-9620.
-            ID_SERIAL_BEGIN(sHead = sCurFreeNodeList->mHead);
-            ID_SERIAL_END(smxTransMgr::getMinMemViewSCNofAll(&sMinSCN, &sTID));
+            ID_SERIAL_BEGIN(
+                    sHead = sCurFreeNodeList->mHead );
+            ID_SERIAL_END(
+                    SMX_GET_MIN_MEM_VIEW( &sMinSCN, &sDummyTID ) );
 
-            // BUG-39122 parallel logical agingì—ì„œëŠ” logical agerì˜
-            // view SCNë„ ê³ ë ¤í•´ì•¼ í•©ë‹ˆë‹¤.
+            // BUG-39122 parallel logical aging¿¡¼­´Â logical agerÀÇ
+            // view SCNµµ °í·ÁÇØ¾ß ÇÕ´Ï´Ù.
             if( mIsParallelMode == SMA_PARALLEL_LOGICAL_AGER_ON )
             {
                 for( i = 0; i < mCreatedThreadCount; i++ )
@@ -1066,15 +1199,17 @@ void smaLogicalAger::freeNodesIfPossible()
 void smaLogicalAger::run()
 {
     PDL_Time_Value   sTimeOut;
-    idBool           sHandled;
+    idBool           sHandled = ID_FALSE;
     smSCN            sMinSCN;
     smaOidList*      sTail = NULL;
-    smTID            sTID;
+    smTID            sDummyTID;
     idBool           sState = ID_FALSE;
+    idBool           sState2 = ID_FALSE;
     idBool           sDropTableLockState = ID_FALSE;
     UInt             sAgerWaitMin;
     UInt             sAgerWaitMax;
     UInt             sDidDelOldKey = 0;
+    UInt             sListN = mThreadID % smaLogicalAger::mListCnt  ;
 
   startPos:
     sState              = ID_FALSE;
@@ -1085,16 +1220,32 @@ void smaLogicalAger::run()
 
     while( mContinue == ID_TRUE )
     {
-        if( mTimeOut > sAgerWaitMin )
+        /* BUG-47601: ÀüºÎ ¼øÈ¸ ÇÏ°í ³ª¸é SleepÇÑ¹ø.. */
+        if ( sListN == (mThreadID % smaLogicalAger::mListCnt) )
         {
-            sTimeOut.set( 0, mTimeOut );
-            idlOS::sleep( sTimeOut );
+            if( sHandled == ID_TRUE )
+            {
+                mTimeOut >>= 1;
+                mTimeOut = ( mTimeOut < sAgerWaitMin ) ? sAgerWaitMin : mTimeOut;
+                sHandled = ID_FALSE;
+            }
+            else
+            {
+                mTimeOut <<= 1;
+                mTimeOut = ( mTimeOut > sAgerWaitMax ) ? sAgerWaitMax : mTimeOut;
+            }
+
+            if( mTimeOut > sAgerWaitMin )
+            {
+                sTimeOut.set( 0, mTimeOut );
+                idlOS::sleep( sTimeOut );
+            }
         }
 
         if ( smuProperty::isRunMemGCThread() == SMU_THREAD_OFF )
         {
             // To Fix PR-14783
-            // System Threadì˜ ì‘ì—…ì„ ìˆ˜í–‰í•˜ì§€ ì•Šë„ë¡ í•œë‹¤.
+            // System ThreadÀÇ ÀÛ¾÷À» ¼öÇàÇÏÁö ¾Êµµ·Ï ÇÑ´Ù.
             mTimeOut = sAgerWaitMax;
             continue;
         }
@@ -1109,108 +1260,123 @@ void smaLogicalAger::run()
 
         IDU_FIT_POINT("1.smaLogicalAger::run");
 
-        IDE_TEST( lock() != IDE_SUCCESS );
-        sState = ID_TRUE;
+        /* BUG-47367 ÀÌ¹ø¿¡ Ã³¸®ÇÒ ListÀÇ LockÀ» È¹µæÇÑ´Ù.
+         * °¢ Listº°·Î LockÀ» Àâ±â ¶§¹®¿¡ Parallel Ager°¡ ÄÑÁ® ÀÖÁö ¾Ê¾Æµµ
+         * ¼­·Î ´Ù¸¥ Ager°¡ ´Ù¸¥ ListÀÇ Á¢±Ù ÇÏ´Â °æ¿ì Parallel Ã³·³ µ¿ÀÛÇÑ´Ù.
+         * ParallelÀ» ¸·À¸·Á¸é List lock´ë½Å ÀüÃ¼ lockÀ» Àâµµ·Ï ÇØÁÖ¸é µÈ´Ù.
+         */
+//        IDE_TEST( mListLock[sListN].lock(NULL) !=IDE_SUCCESS );
+//        sState = ID_TRUE;
 
-        sHandled = ID_FALSE;
+        mListLock[sListN].trylock( sState );
 
-        if( mTailLogicalAger != NULL )
+        if ( sState != ID_TRUE )
+        {
+            IDE_CONT( skip_list );
+        }
+
+        if( mTailLogicalAger[sListN] != NULL )
         {
             // BUG-15306
-            // mTailLogicalAgerê°€ í•˜ë‚˜ ë°–ì— ì—†ìœ¼ë©´ ì²˜ë¦¬í•˜ì§€ ëª»í•˜ë¯€ë¡œ
-            // DummyOIDë¥¼ í•˜ë‚˜ ë‹¬ì•„ì„œ ë‘ê°œê°€ ë˜ê²Œ í•œë‹¤.
-            if( ( isDummyOID( mHead ) != ID_TRUE ) && ( mTailLogicalAger->mNext == NULL ) )
+            // mTailLogicalAger°¡ ÇÏ³ª ¹Û¿¡ ¾øÀ¸¸é Ã³¸®ÇÏÁö ¸øÇÏ¹Ç·Î
+            // DummyOID¸¦ ÇÏ³ª ´Ş¾Æ¼­ µÎ°³°¡ µÇ°Ô ÇÑ´Ù.
+            if( ( isDummyOID( mHead[sListN] ) != ID_TRUE ) && ( mTailLogicalAger[sListN]->mNext == NULL ) )
             {
-                IDE_TEST( addDummyOID() != IDE_SUCCESS );
+                IDE_TEST( addDummyOID( sListN ) != IDE_SUCCESS );
             }
 
             // fix BUG-9620.
-            smxTransMgr::getMinMemViewSCNofAll( &sMinSCN, &sTID );
+            SMX_GET_MIN_MEM_VIEW( &sMinSCN, &sDummyTID );
 
-            /* í†µê³„ì¹˜ê°€ ì •í™•í•œì§€ ê²€ì‚¬í•´ë´„ */
+            /* Åë°èÄ¡°¡ Á¤È®ÇÑÁö °Ë»çÇØº½ */
 #if defined(DEBUG)
 
+            /* BUG-47367 List°¡ ¿©·¯°³ ÀÏ °æ¿ì µ¿½Ã¼º ¹®Á¦°¡ »ı±æ ¼ö ÀÖ±â ¶§¹®¿¡
+             * ÇØ´ç ÀÛ¾÷Àº List 1°³ ÀÏ¶§¸¸ µ¿ÀÛÇÏµµ·Ï ÇÑ´Ù.*/
             /* 
              * BUG-35179 Add property for parallel logical ager
-             * ë‹¤ìŒ í†µê³„ì¹˜ ê²€ì‚¬ëŠ” LogicalAgerê°€ parallelë¡œ ë™ì‘í•˜ì§€
-             * ì•Šì„ ë•Œë§Œ ìœ íš¨í•˜ë‹¤. parallelë¡œ ë™ì‘í• ê²½ìš° ë™ì‹œì„±ë¬¸ì œë¡œ ì ê¹ë™ì•ˆ
-             * í†µê³„ì¹˜ê°€ ì¼ì¹˜í•˜ì§€ ì•Šì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤.
+             * ´ÙÀ½ Åë°èÄ¡ °Ë»ç´Â LogicalAger°¡ parallel·Î µ¿ÀÛÇÏÁö
+             * ¾ÊÀ» ¶§¸¸ À¯È¿ÇÏ´Ù. parallel·Î µ¿ÀÛÇÒ°æ¿ì µ¿½Ã¼º¹®Á¦·Î Àá±ñµ¿¾È
+             * Åë°èÄ¡°¡ ÀÏÄ¡ÇÏÁö ¾ÊÀ» ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù.
              */
-            if( ( mTailLogicalAger->mNext == NULL ) &&
-                ( isDummyOID( mTailLogicalAger ) == ID_TRUE ) &&
-                ( mIsParallelMode == SMA_PARALLEL_LOGICAL_AGER_OFF ) )
+            if( ( mTailLogicalAger[sListN]->mNext == NULL ) &&
+                ( isDummyOID( mTailLogicalAger[sListN] ) == ID_TRUE ) &&
+                ( mIsParallelMode == SMA_PARALLEL_LOGICAL_AGER_OFF ) &&
+                ( mListCnt == 1) )
             {
-                /* Transactionê³¼ì˜ ë™ì‹œì„±ì„ ìœ„í•´ Lock */
-                IDE_TEST( smxTransMgr::lock() != IDE_SUCCESS );
-                /* Lock í›„ ë‹¤ì‹œ í™•ì¸í•´ë´„ */
-                if( ( mTailLogicalAger->mNext == NULL ) &&
-                    ( isDummyOID( mTailLogicalAger ) == ID_TRUE ) )
+                /* Transaction°úÀÇ µ¿½Ã¼ºÀ» À§ÇØ Lock */
+                /* BUG-47367 addList¿ÍÀÇ µ¿½Ã¼º¸¸ Á¦¾îÇÏ¸é µÊ. List°¡ 1°³ »ÓÀÌ¶ó Ç×»ó 0ÀÓ. */
+                mSlotList[0].lock();
+                /* Lock ÈÄ ´Ù½Ã È®ÀÎÇØº½ */
+                if( ( mTailLogicalAger[sListN]->mNext == NULL ) &&
+                    ( isDummyOID( mTailLogicalAger[sListN] ) == ID_TRUE ) )
                 {
                     IDE_ASSERT( mAddCount == mHandledCount );
+                    IDE_ASSERT( checkAgingProcessedCnt() == ID_TRUE );
                     IDE_ASSERT( mAgingRequestOIDCnt == mAgingProcessedOIDCnt );
                 }
-                IDE_TEST( smxTransMgr::unlock() != IDE_SUCCESS );
+                mSlotList[0].unlock();
             }
 #endif
 
-            while( (mTailLogicalAger->mNext != NULL) &&
-                   (mTailLogicalAger->mFinished == ID_TRUE) )
+            while( ( mTailLogicalAger[sListN]->mNext != NULL )  &&
+                   ( mTailLogicalAger[sListN]->mFinished == ID_TRUE ) )
             {
-                if( SM_SCN_IS_LT( &(mTailLogicalAger->mSCN), &sMinSCN ) )
+                if( SM_SCN_IS_LT( &(mTailLogicalAger[sListN]->mSCN), &sMinSCN ) )
                 {
-                    sTail            = mTailLogicalAger;
-                    mTailLogicalAger = mTailLogicalAger->mNext;
+                    sTail                    = mTailLogicalAger[sListN];
+                    mTailLogicalAger[sListN] = mTailLogicalAger[sListN]->mNext;
 
                     sDidDelOldKey = 0;
 
                     /* BUG-35179 Add property for parallel logical ager */
                     if( mIsParallelMode == SMA_PARALLEL_LOGICAL_AGER_ON )
                     {
+                        // ´Ù¸¥ ager°¡ list¸¦ Ã³¸®ÇÒ ¼ö ÀÖµµ·Ï list lockÀ» Ç®¾îÁØ´Ù.
                         sState = ID_FALSE;
-                        IDE_TEST( unlock() != IDE_SUCCESS );
+                        IDE_TEST( mListLock[sListN].unlock() != IDE_SUCCESS );
 
-                        /* BUG-39122 parallel logical agingì—ì„œëŠ”
-                         * logical agerì˜ view SCNë„ ê³ ë ¤í•´ì•¼ í•©ë‹ˆë‹¤.
-                         * í˜„ì¬ system view scnì„ ê°€ì ¸ì˜¨ë‹¤.*/
-                        smmDatabase::getViewSCN( &mViewSCN );
+                        /* BUG-39122 parallel logical aging¿¡¼­´Â
+                         * logical agerÀÇ view SCNµµ °í·ÁÇØ¾ß ÇÕ´Ï´Ù.
+                         * ÇöÀç system view scnÀ» °¡Á®¿Â´Ù.*/
+                        SMX_GET_SYSTEM_VIEW_SCN( &mViewSCN );
                     }
 
-                    IDE_TEST(deleteIndex( sTail,
-                                          NULL, /* No Instant Aging Filter */
-                                          &sDidDelOldKey )
-                             != IDE_SUCCESS );
+                    IDE_TEST( deleteIndex( sTail,
+                                           &sDidDelOldKey )
+                              != IDE_SUCCESS );
 
-                    // delete key slotì„ ì™„ë£Œí•œ ì‹œì ì—ì„œ
-                    // system view scnì„ ë”´ë‹¤.
+                    // delete key slotÀ» ¿Ï·áÇÑ ½ÃÁ¡¿¡¼­
+                    // system view scnÀ» µı´Ù.
                     if( sDidDelOldKey != 0 )
                     {
-                        smmDatabase::getViewSCN( &( sTail->mKeyFreeSCN ) );
+                        SMX_GET_SYSTEM_VIEW_SCN( &(sTail->mKeyFreeSCN) );
                     }
                     else
                     {
-                        // old keyë¥¼ ì‚­ì œ ì•ˆí•œ ê²½ìš°ëŠ” ë“±ë¡ì‹œì ì´
-                        // physical agingê¹Œì§€ ì™„ë£Œí•œ ì‹œì ì´ë‹¤.
+                        // old key¸¦ »èÁ¦ ¾ÈÇÑ °æ¿ì´Â µî·Ï½ÃÁ¡ÀÌ
+                        // physical aging±îÁö ¿Ï·áÇÑ ½ÃÁ¡ÀÌ´Ù.
                         SM_SET_SCN( &( sTail->mKeyFreeSCN ), &( sTail->mSCN ) );
                     }
 
                     // BUG-15306
-                    // dummy oidë¥¼ ì²˜ë¦¬í•  ë• mHandledCountë¥¼ ì¦ê°€ì‹œí‚¤ì§€ ì•ŠëŠ”ë‹¤.
+                    // dummy oid¸¦ Ã³¸®ÇÒ ¶© mHandledCount¸¦ Áõ°¡½ÃÅ°Áö ¾Ê´Â´Ù.
                     if( isDummyOID( sTail ) != ID_TRUE )
                     {
                         /* BUG-41026 */
                         acpAtomicInc( &mHandledCount );
                     }
 
-                    sTail->mErasable  = ID_TRUE;
+                    sTail->mErasable = ID_TRUE;
                     sHandled         = ID_TRUE;
                     
                     /* BUG-35179 Add property for parallel logical ager */
-                    /* BUG-41026 lock ìœ„ì¹˜ ë³€ê²½ */
+                    /* BUG-41026 lock À§Ä¡ º¯°æ */
                     if ( mIsParallelMode == SMA_PARALLEL_LOGICAL_AGER_ON )
                     {
                         SM_MAX_SCN( &mViewSCN );
 
-                        IDE_TEST( lock() != IDE_SUCCESS );
+                        IDE_TEST( mListLock[sListN].lock(NULL) != IDE_SUCCESS );
                         sState = ID_TRUE;
                     }
                     else
@@ -1220,50 +1386,43 @@ void smaLogicalAger::run()
                 }//if
                 else
                 {
-                    //BUG-17371 [MMDB] Agingì´ ë°€ë¦´ê²½ìš° Systemì— ê³¼ë¶€í™” ë°
-                    //                 Agingì´ ë°€ë¦¬ëŠ” í˜„ì‚°ì´ ë” ì‹¬í™”ë¨.
+                    //BUG-17371 [MMDB] AgingÀÌ ¹Ğ¸±°æ¿ì System¿¡ °úºÎÈ­ ¹×
+                    //                 AgingÀÌ ¹Ğ¸®´Â Çö»êÀÌ ´õ ½ÉÈ­µÊ.
                     mSleepCountOnAgingCondition++;
                     break;
                 }//else
             }//while
 
-            //free nodesë“¤ì— ëŒ€í•œ  í•´ì œì‹œë„.
+            //free nodesµé¿¡ ´ëÇÑ  ÇØÁ¦½Ãµµ.
             freeNodesIfPossible();
         }//if
 
         sState = ID_FALSE;
-        IDE_TEST( unlock() != IDE_SUCCESS );
+        IDE_TEST( mListLock[sListN].unlock() != IDE_SUCCESS );
+
+        IDE_EXCEPTION_CONT( skip_list );
 
         /* BUG-35179 Add property for parallel logical ager */
         sDropTableLockState = ID_FALSE;
         IDE_TEST( unlockWaitForNoAccessAftDropTbl() != IDE_SUCCESS );
-
-        if( sHandled == ID_TRUE )
+        
+        sListN++;
+        if ( sListN >= mListCnt )
         {
-            mTimeOut >>= 1;
-            mTimeOut = mTimeOut < sAgerWaitMin ?  sAgerWaitMin  : mTimeOut;
-        }
-        else
-        {
-            mTimeOut <<= 1;
-            mTimeOut = mTimeOut > sAgerWaitMax ? sAgerWaitMax : mTimeOut;
+            sListN = 0;
         }
     }
 
     IDE_TEST( lock() != IDE_SUCCESS );
-    sState = ID_TRUE;
+    sState2 = ID_TRUE;
 
     mRunningThreadCount--;
-    while( (mTailLogicalAger != NULL) && (mRunningThreadCount == 0) )
-    {
-        sTail            = mTailLogicalAger;
-        mTailLogicalAger = mTailLogicalAger->mNext;
-        smmDatabase::getViewSCN((&sTail->mKeyFreeSCN));
-        sTail->mErasable  = ID_TRUE;
-        sHandled         = ID_TRUE;
-    }
 
-    sState = ID_FALSE;
+    // BUG-47526 Logical Ager¸¦ Á¤¸® ÇÒ ¶§ node¸¦ ¸ğµÎ Á¤¸®ÇÏ´Â ÄÚµå¸¦ Á¦°ÅÇÕ´Ï´Ù.
+    // Delete Thread ¿¡¼­ ThreadÁ¾·á½Ã¿¡ ¸ğµç Delete¸¦ ¸ğµÎ Áö¿ï ¶§
+    // SCNÀ» È®ÀÎÇÏÁö ¾ÊÀ¸¹Ç·Î ÇÊ¿ä¾ø´Â ÀÛ¾÷ÀÔ´Ï´Ù.
+
+    sState2 = ID_FALSE;
     IDE_TEST( unlock() != IDE_SUCCESS );
 
     return;
@@ -1274,18 +1433,15 @@ void smaLogicalAger::run()
      * index aging. */
     if( sTail != NULL )
     {
-        ideLog::log( IDE_SM_0, 
+        ideLog::log( IDE_ERR_0, 
                      "smaLogicalAger::run\n"
                      "sTail->mSCN         : %"ID_UINT64_FMT"\n"
-                     "sTail->mLSN         : %"ID_UINT32_FMT",%"ID_UINT32_FMT"\n"
                      "sTail->mKeyFreeSCN  : %"ID_UINT64_FMT"\n"
                      "sTail->mErasable    : %"ID_UINT32_FMT"\n"
                      "sTail->mFinished    : %"ID_UINT32_FMT"\n"
                      "sTail->mCondition   : %"ID_UINT32_FMT"\n"
                      "sTail->mTransID     : %"ID_UINT32_FMT"\n",
                      SM_SCN_TO_LONG( sTail->mSCN ),
-                     sTail->mLSN.mFileNo,
-                     sTail->mLSN.mOffset,
                      SM_SCN_TO_LONG( sTail->mKeyFreeSCN ),
                      sTail->mErasable,
                      sTail->mFinished,
@@ -1298,6 +1454,11 @@ void smaLogicalAger::run()
     IDE_PUSH();
     
     if( sState == ID_TRUE )
+    {
+        IDE_ASSERT( mListLock[sListN].unlock() == IDE_SUCCESS );
+    }
+
+    if( sState2 == ID_TRUE )
     {
         IDE_ASSERT( unlock() == IDE_SUCCESS );
     }
@@ -1317,31 +1478,31 @@ void smaLogicalAger::run()
 }
 
 /***********************************************************************
- * Description : Table Dropì„ Commití›„ì— Transactionì´ ì§ì ‘ ìˆ˜í–‰í•˜ê¸°ë•Œë¬¸ì—
- *               Agerê°€ Drop Tableì— ëŒ€í•´ì„œ Agingì‘ì—…ì„ í•˜ë©´ ì•ˆëœë‹¤. ì´ë¥¼ ìœ„í•´
- *               AgerëŠ” í•´ë‹¹ Tableì— ëŒ€í•´ Agingì‘ì—…ì„ í•˜ê¸°ì „ì— Tableì´ Dropë˜
- *               ì—ˆëŠ”ì§€ ì¡°ì‚¬í•œë‹¤. ê·¸ëŸ°ë° ì´ Tableì´ Dropë˜ì—ˆëŠ”ì§€ Checkí•˜ê³  ê°„ì‚¬ì´
- *               ì— Tableì´ Transactionì— ì˜í•´ì„œ Dropë  ìˆ˜ ìˆê¸° ë•Œë¬¸ì— ë¬¸ì œê°€ëœë‹¤.
- *               ì´ë•Œë¬¸ì— AgerëŠ” ì—°ì‚° ìˆ˜í–‰ì‹œ mCheckMutexë¥¼ ê±¸ê³  ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
- *               ë”°ë¼ì„œ Table Dropì„ ìˆ˜í–‰í•œ Transactionì´ mCheckMutexë¥¼ ì¡ì•˜ë‹¤ëŠ”
- *               ì´ì•¼ê¸°ëŠ” ì•„ë¬´ë„ Agerê°€ Tableì— ì ‘ê·¼í•˜ì§€ ì•Šê³  ìˆë‹¤ëŠ” ê²ƒì„ ë³´ì¥í•˜ê³ 
- *               ë˜í•œ ê·¸ ì´í›„ì— Agerê°€ ì ‘ê·¼í• ë•ŒëŠ” í…Œì´ë¸”ì— Setëœ Drop Flagë¥¼
- *               ë³´ê²Œ ë˜ì–´ Tableì— ëŒ€í•´ Agingì‘ì—…ì„ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ * Description : Table DropÀ» CommitÈÄ¿¡ TransactionÀÌ Á÷Á¢ ¼öÇàÇÏ±â¶§¹®¿¡
+ *               Ager°¡ Drop Table¿¡ ´ëÇØ¼­ AgingÀÛ¾÷À» ÇÏ¸é ¾ÈµÈ´Ù. ÀÌ¸¦ À§ÇØ
+ *               Ager´Â ÇØ´ç Table¿¡ ´ëÇØ AgingÀÛ¾÷À» ÇÏ±âÀü¿¡ TableÀÌ DropµÇ
+ *               ¾ú´ÂÁö Á¶»çÇÑ´Ù. ±×·±µ¥ ÀÌ TableÀÌ DropµÇ¾ú´ÂÁö CheckÇÏ°í °£»çÀÌ
+ *               ¿¡ TableÀÌ Transaction¿¡ ÀÇÇØ¼­ DropµÉ ¼ö ÀÖ±â ¶§¹®¿¡ ¹®Á¦°¡µÈ´Ù.
+ *               ÀÌ¶§¹®¿¡ Ager´Â ¿¬»ê ¼öÇà½Ã mCheckMutex¸¦ °É°í ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+ *               µû¶ó¼­ Table DropÀ» ¼öÇàÇÑ TransactionÀÌ mCheckMutex¸¦ Àâ¾Ò´Ù´Â
+ *               ÀÌ¾ß±â´Â ¾Æ¹«µµ Ager°¡ Table¿¡ Á¢±ÙÇÏÁö ¾Ê°í ÀÖ´Ù´Â °ÍÀ» º¸ÀåÇÏ°í
+ *               ¶ÇÇÑ ±× ÀÌÈÄ¿¡ Ager°¡ Á¢±ÙÇÒ¶§´Â Å×ÀÌºí¿¡ SetµÈ Drop Flag¸¦
+ *               º¸°Ô µÇ¾î Table¿¡ ´ëÇØ AgingÀÛ¾÷À» ¼öÇàÇÏÁö ¾Ê´Â´Ù.
  *
- * ê´€ë ¨ BUG: 15047
+ * °ü·Ã BUG: 15047
  **********************************************************************/
 void smaLogicalAger::waitForNoAccessAftDropTbl()
 {
     UInt i;
 
     /* BUG-35179 Add property for parallel logical ager 
-     * drop table, drop tablespaceì™€ì˜ ë™ì‹œì„± ë¬¸ì œë¥¼ í•´ê²°í•˜ê¸° ìœ„í•´ ê° threadë³„ë¡œ
-     * lockì„ ì¶”ê°€í•œë‹¤.
+     * drop table, drop tablespace¿ÍÀÇ µ¿½Ã¼º ¹®Á¦¸¦ ÇØ°áÇÏ±â À§ÇØ °¢ threadº°·Î
+     * lockÀ» Ãß°¡ÇÑ´Ù.
      *
-     * parallel logical agerì½”ë“œ ì¶”ê°€ë¡œì¸í•´ ê¸°ì¡´ì˜ lock(), unlock()í•¨ìˆ˜ëŠ”
-     * OidListì™€ í†µê³„ì •ë³´ë¥¼ ê°±ì‹ ì„ ìœ„í•œ lockì—­í• ë§Œ í•œë‹¤. ë”°ë¼ì„œ
-     * ê° logical ager thread ë³„ë¡œ ì¡´ì¬í•˜ëŠ” mWaitForNoAccessAftDropTblLockì„
-     * ì¡ì•„ì•¼ì§€ë§Œ drop table, drop tablespaceì™€ì˜ ë™ì‹œì„± ì œì–´ê°€ ëœë‹¤.
+     * parallel logical agerÄÚµå Ãß°¡·ÎÀÎÇØ ±âÁ¸ÀÇ lock(), unlock()ÇÔ¼ö´Â
+     * OidList¿Í Åë°èÁ¤º¸¸¦ °»½ÅÀ» À§ÇÑ lock¿ªÇÒ¸¸ ÇÑ´Ù. µû¶ó¼­
+     * °¢ logical ager thread º°·Î Á¸ÀçÇÏ´Â mWaitForNoAccessAftDropTblLockÀ»
+     * Àâ¾Æ¾ßÁö¸¸ drop table, drop tablespace¿ÍÀÇ µ¿½Ã¼º Á¦¾î°¡ µÈ´Ù.
      */ 
 
     for( i = 0; i < mRunningThreadCount; i++ )
@@ -1353,16 +1514,16 @@ void smaLogicalAger::waitForNoAccessAftDropTbl()
                     == IDE_SUCCESS );
     }
 
-    /* BUG-15969: ë©”ëª¨ë¦¬ Delete Threadì—ì„œ ë¹„ì •ìƒ ì¢…ë£Œ
-     * Delete Threadë„ ì ‘ê·¼í•˜ì§€ ì•ŠëŠ”ë‹¤ëŠ” ê²ƒì„ ë³´ì¥í•´ì•¼ í•œë‹¤.*/
+    /* BUG-15969: ¸Ş¸ğ¸® Delete Thread¿¡¼­ ºñÁ¤»ó Á¾·á
+     * Delete Threadµµ Á¢±ÙÇÏÁö ¾Ê´Â´Ù´Â °ÍÀ» º¸ÀåÇØ¾ß ÇÑ´Ù.*/
     smaDeleteThread::waitForNoAccessAftDropTbl();
 
     /*
        BUG-42760
-       LEGACY Transactionì˜ OID LIstëŠ” AGER ì—ì„œ ì²˜ë¦¬í•˜ì§€ ì•Šê³ ,
-       Transactionì´ ì¢…ë£Œí• ë•Œ Transactinoì—ì„œ ì§ì ‘ ì²˜ë¦¬í•œë‹¤.
-       ë”°ë¼ì„œ, AGERì™€ ë§ˆì°¬ê°€ì§€ë¡œ LEGACY Transactionì—ì„œë„ Dropëœ Tableì˜ OIDë¥¼
-       ì²˜ë¦¬í•˜ì§€ ì•Šë„ë¡ lockì„ ì¶”ê°€í•œë‹¤.
+       LEGACY TransactionÀÇ OID LIst´Â AGER ¿¡¼­ Ã³¸®ÇÏÁö ¾Ê°í,
+       TransactionÀÌ Á¾·áÇÒ¶§ Transactino¿¡¼­ Á÷Á¢ Ã³¸®ÇÑ´Ù.
+       µû¶ó¼­, AGER¿Í ¸¶Âù°¡Áö·Î LEGACY Transaction¿¡¼­µµ DropµÈ TableÀÇ OID¸¦
+       Ã³¸®ÇÏÁö ¾Êµµ·Ï lockÀ» Ãß°¡ÇÑ´Ù.
      */
     smxLegacyTransMgr::waitForNoAccessAftDropTbl();
 }
@@ -1370,13 +1531,13 @@ void smaLogicalAger::waitForNoAccessAftDropTbl()
 
 
 /*
-    Aging Filterì¡°ê±´ì— ë¶€í•©í•˜ëŠ”ì§€ ì²´í¬
+    Aging FilterÁ¶°Ç¿¡ ºÎÇÕÇÏ´ÂÁö Ã¼Å©
 
-    [IN] aAgingFilter - ê²€ì‚¬í•  Filter ì¡°ê±´
-    [IN] aTBSID       - Agingí•˜ë ¤ëŠ” OIDê°€ ì†í•œ Tablespaceì˜ ID
-    [IN] aTableOID    - Agingí•˜ë ¤ëŠ” OIDê°€ ì†í•œ Tableì˜ OID
+    [IN] aAgingFilter - °Ë»çÇÒ Filter Á¶°Ç
+    [IN] aTBSID       - AgingÇÏ·Á´Â OID°¡ ¼ÓÇÑ TablespaceÀÇ ID
+    [IN] aTableOID    - AgingÇÏ·Á´Â OID°¡ ¼ÓÇÑ TableÀÇ OID
 
-    <RETURN> - ì¡°ê±´ì— ë¶€í•©í•  ê²½ìš° ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE
+    <RETURN> - Á¶°Ç¿¡ ºÎÇÕÇÒ °æ¿ì ID_TRUE, ¾Æ´Ï¸é ID_FALSE
  */
 idBool smaLogicalAger::isAgingFilterTrue( smaInstantAgingFilter * aAgingFilter,
                                           scSpaceID               aTBSID,
@@ -1386,7 +1547,7 @@ idBool smaLogicalAger::isAgingFilterTrue( smaInstantAgingFilter * aAgingFilter,
 
     idBool sIsFilterTrue = ID_FALSE;
 
-    // íŠ¹ì • Tablespaceì•ˆì˜ OIDì— ëŒ€í•´ì„œë§Œ Agingì‹¤ì‹œ?
+    // Æ¯Á¤ Tablespace¾ÈÀÇ OID¿¡ ´ëÇØ¼­¸¸ Aging½Ç½Ã?
     if ( aAgingFilter->mTBSID != SC_NULL_SPACEID )
     {
         if(aTBSID == aAgingFilter->mTBSID)
@@ -1396,7 +1557,7 @@ idBool smaLogicalAger::isAgingFilterTrue( smaInstantAgingFilter * aAgingFilter,
     }
     else
     {
-        // íŠ¹ì • Tableì•ˆì˜ OIDì— ëŒ€í•´ì„œë§Œ Agingì‹¤ì‹œ?
+        // Æ¯Á¤ Table¾ÈÀÇ OID¿¡ ´ëÇØ¼­¸¸ Aging½Ç½Ã?
         if ( aAgingFilter->mTableOID != SM_NULL_OID )
         {
             if(aTableOID == aAgingFilter->mTableOID)
@@ -1406,11 +1567,11 @@ idBool smaLogicalAger::isAgingFilterTrue( smaInstantAgingFilter * aAgingFilter,
         }
         else
         {
-            // Aging Filterì— mTableOIDë‚˜ mSpaceIDì¤‘ í•˜ë‚˜ê°€
-            // ì„¤ì •ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
+            // Aging Filter¿¡ mTableOID³ª mSpaceIDÁß ÇÏ³ª°¡
+            // ¼³Á¤µÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
 
-            // ì´ ê²½ìš°ëŠ” ë‘˜ë‹¤ ì„¤ì •ë˜ì§€ ì•Šì€ ê²½ìš°ì´ë¯€ë¡œ
-            // ASSERTë¡œ ì£½ì¸ë‹¤.
+            // ÀÌ °æ¿ì´Â µÑ´Ù ¼³Á¤µÇÁö ¾ÊÀº °æ¿ìÀÌ¹Ç·Î
+            // ASSERT·Î Á×ÀÎ´Ù.
             IDE_ASSERT(0);
         }
     }
@@ -1421,7 +1582,7 @@ idBool smaLogicalAger::isAgingFilterTrue( smaInstantAgingFilter * aAgingFilter,
 
 
 /*
-    Instant Aging Filterë¥¼ ì´ˆê¸°í™”í•œë‹¤ ( smaDef.h ì°¸ê³  )
+    Instant Aging Filter¸¦ ÃÊ±âÈ­ÇÑ´Ù ( smaDef.h Âü°í )
  */
 void smaLogicalAger::initInstantAgingFilter( smaInstantAgingFilter * sAgingFilter )
 {
@@ -1434,71 +1595,85 @@ void smaLogicalAger::initInstantAgingFilter( smaInstantAgingFilter * sAgingFilte
 
 
 /*
-    íŠ¹ì • Tableì•ˆì˜ OIDë‚˜ íŠ¹ì • Tablespaceì•ˆì˜ OIDì— ëŒ€í•´ ì¦‰ì‹œ Agingì„ ì‹¤ì‹œí•œë‹¤.
+    Æ¯Á¤ Table¾ÈÀÇ OID³ª Æ¯Á¤ Tablespace¾ÈÀÇ OID¿¡ ´ëÇØ Áï½Ã AgingÀ» ½Ç½ÃÇÑ´Ù.
 
-    [íŠ¹ì´ì‚¬í•­]
-       Agingí•˜ë ¤ëŠ” OIDì˜ SCNì´ Active Transactionë“¤ì˜ Minimum ViewSCN ë³´ë‹¤
-       í¬ë”ë¼ë„ Agingì„ ì‹¤ì‹œí•œë‹¤.
+    [Æ¯ÀÌ»çÇ×]
+       AgingÇÏ·Á´Â OIDÀÇ SCNÀÌ Active TransactionµéÀÇ Minimum ViewSCN º¸´Ù
+       Å©´õ¶óµµ AgingÀ» ½Ç½ÃÇÑ´Ù.
 
-    [ì£¼ì˜ì‚¬í•­]
-       ì´ Functionì„ ì‚¬ìš©ì‹œ ë‹¤ë¥¸ ìª½ì—ì„œ Aging Filterì— ì§€ì •í•œ Tableì´ë‚˜
-       Tablespaceì— ëŒ€í•´ì„œ ë‹¤ë¥¸ Transactionì´ ì ‘ê·¼í•˜ì§€ ì•ŠëŠ”ë‹¤ëŠ” ê²ƒì„ ë³´ì¥
-       í•´ì•¼ í•œë‹¤.
+    [ÁÖÀÇ»çÇ×]
+       ÀÌ FunctionÀ» »ç¿ë½Ã ´Ù¸¥ ÂÊ¿¡¼­ Aging Filter¿¡ ÁöÁ¤ÇÑ TableÀÌ³ª
+       Tablespace¿¡ ´ëÇØ¼­ ´Ù¸¥ TransactionÀÌ Á¢±ÙÇÏÁö ¾Ê´Â´Ù´Â °ÍÀ» º¸Àå
+       ÇØ¾ß ÇÑ´Ù.
 
-       Tableì´ë‚˜ Tablespaceì—  X-Lockì„ ì¡ëŠ” ê²ƒìœ¼ë¡œ ì´ë¥¼ ë³´ì¥í•  ìˆ˜ ìˆë‹¤.
+       TableÀÌ³ª Tablespace¿¡  X-LockÀ» Àâ´Â °ÍÀ¸·Î ÀÌ¸¦ º¸ÀåÇÒ ¼ö ÀÖ´Ù.
 
-    [IN] aAgingFilter - Agingí•  ì¡°ê±´ ( smaDef.h ì°¸ê³  )
+    [IN] aAgingFilter - AgingÇÒ Á¶°Ç ( smaDef.h Âü°í )
  */
 IDE_RC smaLogicalAger::agingInstantly( smaInstantAgingFilter * aAgingFilter )
 {
     smaOidList*      sCurOIDList;
     UInt             sDidDelOldKey = 0;
-    SInt             sState = 0;
+    UInt             sListN = 0;
+    UInt             sLocked = 0;
 
     IDE_DASSERT( aAgingFilter != NULL );
 
     /* BUG-41026 */
     IDU_FIT_POINT( "1.BUG-41026@smaLogicalAger::agingInstantly::sleep_1" );
 
-    IDE_TEST( lock() != IDE_SUCCESS );
-    sState = 1;
-
-    /* BUG-32655 [sm-mem-index] The MMDB Ager must not ignore the failure of
-     * index aging.
-     *
-     * Agerì˜ AgingJobì€ Headì— ë‹¬ë¦½ë‹ˆë‹¤. ê·¸ë˜ì„œ Tailë¶€í„° ì«“ì•„ê°€ì•¼ í•©ë‹ˆë‹¤.
-     * ê·¸ë¦¼ìœ¼ë¡œ í‘œí˜„í•˜ìë©´....
-     *
-     *      Next Next Next
-     * mTail -> A -> B -> C -> mHead
-     * ë”°ë¼ì„œ mHeadì—ì„œ mNextë¥¼ ì«“ì•„ê°€ë©´ ì•„ë¬´ê²ƒë„ ì—†ìŠµë‹ˆë‹¤. */
-    sCurOIDList = mTailLogicalAger;
-
-    while(sCurOIDList != NULL)
+    /* BUG-47637 Instantly Aging ¿¡¼­ delete Thread¿¡¼­ Ã³¸®ÇÏ´Â °Í ±îÁö ¸ğµÎ LockÀ» Àâ¾Æ¾ß ÇÑ´Ù.
+     * Logical AgerÀÇ Processed Count¸¦ countingÇÏ´Â °ÍÀº smaLogicalAger::deleteIndexInstantly() ÀÌ°í,
+     * smaLogicalAger::deleteIndex() ¿¡¼­ Processed Count¸¦ counting ÇÒ ¶§ ÂüÁ¶ÇÏ´Â Flag´Â
+     * smaDeleteThread::deleteInstantly() ¿¡¼­ Á¦°ÅµÈ´Ù.
+     * smaLogicalAger::deleteIndexInstantly() ¿Í smaDeleteThread::deleteInstantly() »çÀÌ¿¡
+     * smaLogicalAger::deleteIndex() °¡ µé¾î¿À¸é Processed Count°¡ Áßº¹ °è»ê µÈ´Ù.*/
+    for ( sLocked = 0; sLocked < mListCnt; sLocked++ )
     {
-        IDE_TEST(deleteIndex(sCurOIDList,
-                             aAgingFilter,
-                             &sDidDelOldKey)
-                 != IDE_SUCCESS);
-
-        sCurOIDList = sCurOIDList->mNext;
+        mListLock[ sLocked ].lock(NULL);
     }
 
+    for ( sListN = 0 ; sListN < mListCnt; sListN ++ )
+    {
+        /* BUG-32655 [sm-mem-index] The MMDB Ager must not ignore the failure of
+         * index aging.
+         *
+         * AgerÀÇ AgingJobÀº Head¿¡ ´Ş¸³´Ï´Ù. ±×·¡¼­ TailºÎÅÍ ÂÑ¾Æ°¡¾ß ÇÕ´Ï´Ù.
+         * ±×¸²À¸·Î Ç¥ÇöÇÏÀÚ¸é....
+         *
+         *      Next Next Next
+         * mTail -> A -> B -> C -> mHead
+         * µû¶ó¼­ mHead¿¡¼­ mNext¸¦ ÂÑ¾Æ°¡¸é ¾Æ¹«°Íµµ ¾ø½À´Ï´Ù. */
+        sCurOIDList = mTailLogicalAger[sListN];
+
+        while(sCurOIDList != NULL)
+        {
+            IDE_TEST( deleteIndexInstantly( sCurOIDList,
+                                            aAgingFilter,
+                                            &sDidDelOldKey )
+                      != IDE_SUCCESS );
+
+            sCurOIDList = sCurOIDList->mNext;
+        }
+    }
+
+    /* delete Thread ³»ºÎ¿¡¼­µµ ¸ğµç List¸¦ Å½»öÇÏµµ·Ï µÇ¾î ÀÖ´Ù. */
     /* BUG-32780 */
     IDE_TEST(smaDeleteThread::deleteInstantly( aAgingFilter )
              != IDE_SUCCESS);
 
-    sState = 0;
-    IDE_TEST( unlock() != IDE_SUCCESS );
-
+    for ( sListN = 0 ; sListN < sLocked ; sListN++ )
+    {
+        mListLock[ sListN ].unlock();
+    }
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 
-    if(sState != 0)
+    for ( sListN = 0 ; sListN < sLocked ; sListN++ )
     {
-        (void)unlock();
+        mListLock[ sListN ].unlock();
     }
 
     return IDE_FAILURE;
@@ -1506,9 +1681,9 @@ IDE_RC smaLogicalAger::agingInstantly( smaInstantAgingFilter * aAgingFilter )
 
 
 /*
-    íŠ¹ì • Tablespaceì— ì†í•œ OIDì— ëŒ€í•´ì„œ ì¦‰ì‹œ Agingì‹¤ì‹œ
+    Æ¯Á¤ Tablespace¿¡ ¼ÓÇÑ OID¿¡ ´ëÇØ¼­ Áï½Ã Aging½Ç½Ã
 
-    [IN] aTBSID - Agingí•  OIDê°€ ì†í•œ Tablespaceì˜ ID
+    [IN] aTBSID - AgingÇÒ OID°¡ ¼ÓÇÑ TablespaceÀÇ ID
  */
 IDE_RC smaLogicalAger::doInstantAgingWithTBS( scSpaceID aTBSID )
 {
@@ -1530,9 +1705,9 @@ IDE_RC smaLogicalAger::doInstantAgingWithTBS( scSpaceID aTBSID )
 
 
 /*
-    íŠ¹ì • Tableì— ì†í•œ OIDì— ëŒ€í•´ì„œ ì¦‰ì‹œ Agingì‹¤ì‹œ
+    Æ¯Á¤ Table¿¡ ¼ÓÇÑ OID¿¡ ´ëÇØ¼­ Áï½Ã Aging½Ç½Ã
 
-    [IN] aTBSID - Agingí•  OIDê°€ ì†í•œ Tablespaceì˜ ID
+    [IN] aTBSID - AgingÇÒ OID°¡ ¼ÓÇÑ TablespaceÀÇ ID
  */
 IDE_RC smaLogicalAger::doInstantAgingWithTable( smOID aTableOID )
 {
@@ -1552,18 +1727,18 @@ IDE_RC smaLogicalAger::doInstantAgingWithTable( smOID aTableOID )
 }
 
 /*
-    Ager Threadë¥¼ í•˜ë‚˜ ì¶”ê°€í•œë‹¤.
+    Ager Thread¸¦ ÇÏ³ª Ãß°¡ÇÑ´Ù.
  */
 IDE_RC smaLogicalAger::addOneAger()
 {
     smaLogicalAger * sEmptyAgerObj = NULL;
 
-    // Shutdownì¤‘ì—ëŠ” ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë  ìˆ˜ ì—†ë‹¤.
-    // mRunningThreadCountëŠ” Shutdownì‹œì—ë§Œ ê°ì†Œë˜ë©°
-    // ì‹œìŠ¤í…œ ìš´ì˜ì¤‘ì—ëŠ” mCreatedThreadCountì™€ í•­ìƒ ê°™ì€ ê°’ì´ì–´ì•¼ í•œë‹¤.
+    // ShutdownÁß¿¡´Â ÀÌ ÇÔ¼ö°¡ È£ÃâµÉ ¼ö ¾ø´Ù.
+    // mRunningThreadCount´Â Shutdown½Ã¿¡¸¸ °¨¼ÒµÇ¸ç
+    // ½Ã½ºÅÛ ¿î¿µÁß¿¡´Â mCreatedThreadCount¿Í Ç×»ó °°Àº °ªÀÌ¾î¾ß ÇÑ´Ù.
     IDE_ASSERT( mCreatedThreadCount == mRunningThreadCount );
     
-    // í•˜ë‚˜ ì¦ê°€ ì§ì „ì´ë¯€ë¡œ smuProperty::getMaxAgerCount() ë³´ë‹¤ëŠ” ì‘ì•„ì•¼í•¨
+    // ÇÏ³ª Áõ°¡ Á÷ÀüÀÌ¹Ç·Î smuProperty::getMaxAgerCount() º¸´Ù´Â ÀÛ¾Æ¾ßÇÔ
     IDE_ASSERT( mCreatedThreadCount < smuProperty::getMaxLogicalAgerCount() );
     IDE_ASSERT( mCreatedThreadCount >= smuProperty::getMinLogicalAgerCount() );
 
@@ -1584,29 +1759,29 @@ IDE_RC smaLogicalAger::addOneAger()
 }
     
 /*
-    Ager Threadë¥¼ í•˜ë‚˜ ì œê±°í•œë‹¤.
+    Ager Thread¸¦ ÇÏ³ª Á¦°ÅÇÑ´Ù.
  */
 IDE_RC smaLogicalAger::removeOneAger()
 {
     smaLogicalAger * sLastAger = NULL;
 
-    // Shutdownì¤‘ì—ëŠ” ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë  ìˆ˜ ì—†ë‹¤.
-    // mRunningThreadCountëŠ” Shutdownì‹œì—ë§Œ ê°ì†Œë˜ë©°
-    // ì‹œìŠ¤í…œ ìš´ì˜ì¤‘ì—ëŠ” mCreatedThreadCountì™€ í•­ìƒ ê°™ì€ ê°’ì´ì–´ì•¼ í•œë‹¤.
+    // ShutdownÁß¿¡´Â ÀÌ ÇÔ¼ö°¡ È£ÃâµÉ ¼ö ¾ø´Ù.
+    // mRunningThreadCount´Â Shutdown½Ã¿¡¸¸ °¨¼ÒµÇ¸ç
+    // ½Ã½ºÅÛ ¿î¿µÁß¿¡´Â mCreatedThreadCount¿Í Ç×»ó °°Àº °ªÀÌ¾î¾ß ÇÑ´Ù.
     IDE_ASSERT( mCreatedThreadCount == mRunningThreadCount );
 
     IDE_ASSERT( mCreatedThreadCount <= smuProperty::getMaxLogicalAgerCount() );
-    // í•˜ë‚˜ ê°ì†Œ ì§ì „ì´ë¯€ë¡œ smuProperty::getMinAgerCount() ë³´ë‹¤ëŠ” ì»¤ì•¼í•¨
+    // ÇÏ³ª °¨¼Ò Á÷ÀüÀÌ¹Ç·Î smuProperty::getMinAgerCount() º¸´Ù´Â Ä¿¾ßÇÔ
     IDE_ASSERT( mCreatedThreadCount > smuProperty::getMinLogicalAgerCount() );
 
     mCreatedThreadCount--;
     sLastAger = & mLogicalAgerList[ mCreatedThreadCount ];
 
-    // runí•¨ìˆ˜ ì¢…ë£Œì‹œí‚¤ê³  thread joinê¹Œì§€ ì‹¤ì‹œ
+    // runÇÔ¼ö Á¾·á½ÃÅ°°í thread join±îÁö ½Ç½Ã
     IDE_TEST( sLastAger->shutdown() != IDE_SUCCESS );
 
-    // runí•¨ìˆ˜ë¥¼ ë¹ ì ¸ë‚˜ì˜¤ë©´ì„œ mRunningThreadCountê°€ ê°ì†Œëœë‹¤
-    // ê·¸ëŸ¬ë¯€ë¡œ joiní›„ì— Createdì™€ Runningê°¯ìˆ˜ê°€ ê°™ì•„ì•¼ í•œë‹¤.
+    // runÇÔ¼ö¸¦ ºüÁ®³ª¿À¸é¼­ mRunningThreadCount°¡ °¨¼ÒµÈ´Ù
+    // ±×·¯¹Ç·Î joinÈÄ¿¡ Created¿Í Running°¹¼ö°¡ °°¾Æ¾ß ÇÑ´Ù.
     IDE_ASSERT( mCreatedThreadCount == mRunningThreadCount );
     
     IDE_TEST( sLastAger->destroy() != IDE_SUCCESS );
@@ -1620,12 +1795,12 @@ IDE_RC smaLogicalAger::removeOneAger()
 
 
 /*
-    Ager Threadì˜ ê°¯ìˆ˜ë¥¼ íŠ¹ì • ê°¯ìˆ˜ê°€ ë˜ë„ë¡ ìƒì„±,ì œê±°í•œë‹¤.
+    Ager ThreadÀÇ °¹¼ö¸¦ Æ¯Á¤ °¹¼ö°¡ µÇµµ·Ï »ı¼º,Á¦°ÅÇÑ´Ù.
     
-    [IN] aAgerCount - Ager thread ìƒì„±,ì œê±°í›„ì˜ Agerê°¯ìˆ˜
+    [IN] aAgerCount - Ager thread »ı¼º,Á¦°ÅÈÄÀÇ Ager°¹¼ö
 
-    [ì°¸ê³ ] ë³¸ í•¨ìˆ˜ëŠ” ë‹¤ìŒê³¼ ê°™ì€ ì‚¬ìš©ìì˜
-            LOGICAL AGER Thread ìˆ˜ ë³€ê²½ ëª…ë ¹ì— ì˜í•´ ìˆ˜í–‰ëœë‹¤.
+    [Âü°í] º» ÇÔ¼ö´Â ´ÙÀ½°ú °°Àº »ç¿ëÀÚÀÇ
+            LOGICAL AGER Thread ¼ö º¯°æ ¸í·É¿¡ ÀÇÇØ ¼öÇàµÈ´Ù.
 
             ALTER SYSTEM SET LOGICA_AGER_COUNT_ = 10;
  */
@@ -1636,13 +1811,13 @@ IDE_RC smaLogicalAger::changeAgerCount( UInt aAgerCount )
 
     IDE_ASSERT( mCreatedThreadCount == mRunningThreadCount );
 
-    // ì´ í•¨ìˆ˜ í˜¸ì¶œì „ì— aAgerCountì˜ ë²”ìœ„ ì²´í¬ ì™„ë£Œí•œ ìƒíƒœ.
-    // AgerCountëŠ” Min,Maxë²”ìœ„ ì•ˆìª½ì— ìˆì–´ì•¼ í•œë‹¤.
+    // ÀÌ ÇÔ¼ö È£ÃâÀü¿¡ aAgerCountÀÇ ¹üÀ§ Ã¼Å© ¿Ï·áÇÑ »óÅÂ.
+    // AgerCount´Â Min,Max¹üÀ§ ¾ÈÂÊ¿¡ ÀÖ¾î¾ß ÇÑ´Ù.
     IDE_ASSERT( aAgerCount <= smuProperty::getMaxLogicalAgerCount() );
     IDE_ASSERT( aAgerCount >= smuProperty::getMinLogicalAgerCount() );
 
-    // mAgerCountChangeMutex ì˜ ì—­í• 
-    // - ALTER SYSTEM SET LOGICA_AGER_COUNT_ êµ¬ë¬¸ì´ ë™ì‹œì— ìˆ˜í–‰ë˜ì§€ ì•Šë„ë¡
+    // mAgerCountChangeMutex ÀÇ ¿ªÇÒ
+    // - ALTER SYSTEM SET LOGICA_AGER_COUNT_ ±¸¹®ÀÌ µ¿½Ã¿¡ ¼öÇàµÇÁö ¾Êµµ·Ï
     IDE_TEST( lockChangeMtx() != IDE_SUCCESS );
     sStage = 1;
 
@@ -1674,20 +1849,3 @@ IDE_RC smaLogicalAger::changeAgerCount( UInt aAgerCount )
     
     return IDE_FAILURE;
 }
-
-/*
- * aAgingRequestCntë¥¼ Logical Aging Request Countì— ë”í•œë‹¤.
- *
- * aAgingRequestCnt - [IN] ë”í•´ì§ˆ Aging Requestê°¯ìˆ˜
- *
- */
-void smaLogicalAger::addAgingRequestCnt( ULong aAgingRequestCnt )
-{
-    IDE_ASSERT( lockMetaAddReqMtx() == IDE_SUCCESS );
-
-    mAgingRequestOIDCnt += aAgingRequestCnt;
-
-    IDE_ASSERT( unlockMetaAddReqMtx() == IDE_SUCCESS );
-}
-
-

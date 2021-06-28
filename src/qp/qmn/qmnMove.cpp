@@ -21,11 +21,11 @@
  * Description :
  *     MOVE Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ moveë¥¼ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     °ü°èÇü ¸ğµ¨¿¡¼­ move¸¦ ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -48,7 +48,7 @@ qmnMOVE::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    MOVE ë…¸ë“œì˜ ì´ˆê¸°í™”
+ *    MOVE ³ëµåÀÇ ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -65,39 +65,39 @@ qmnMOVE::init( qcTemplate * aTemplate,
     sDataPlan->doIt = qmnMOVE::doItDefault;
     
     //------------------------------------------------
-    // ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰ ì—¬ë¶€ íŒë‹¨
+    // ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà ¿©ºÎ ÆÇ´Ü
     //------------------------------------------------
 
     if ( ( *sDataPlan->flag & QMND_MOVE_INIT_DONE_MASK )
          == QMND_MOVE_INIT_DONE_FALSE )
     {
-        // ìµœì´ˆ ì´ˆê¸°í™” ìˆ˜í–‰
+        // ÃÖÃÊ ÃÊ±âÈ­ ¼öÇà
         IDE_TEST( firstInit(aTemplate, sCodePlan, sDataPlan) != IDE_SUCCESS );
         
         //------------------------------------------------
-        // Child Planì˜ ì´ˆê¸°í™”
+        // Child PlanÀÇ ÃÊ±âÈ­
         //------------------------------------------------
         
         IDE_TEST( aPlan->left->init( aTemplate,
                                      aPlan->left ) != IDE_SUCCESS);
 
         //---------------------------------
-        // trigger rowë¥¼ ìƒì„±
+        // trigger row¸¦ »ı¼º
         //---------------------------------
 
-        // childì˜ offsetì„ ì´ìš©í•˜ë¯€ë¡œ firstInitì´ ëë‚˜ì•¼ offsetì„ ì´ìš©í•  ìˆ˜ ìˆë‹¤.
+        // childÀÇ offsetÀ» ÀÌ¿ëÇÏ¹Ç·Î firstInitÀÌ ³¡³ª¾ß offsetÀ» ÀÌ¿ëÇÒ ¼ö ÀÖ´Ù.
         IDE_TEST( allocTriggerRow(aTemplate, sCodePlan, sDataPlan)
                   != IDE_SUCCESS );
         
         //---------------------------------
-        // index table cursorë¥¼ ìƒì„±
+        // index table cursor¸¦ »ı¼º
         //---------------------------------
         
         IDE_TEST( allocIndexTableCursor(aTemplate, sCodePlan, sDataPlan)
                   != IDE_SUCCESS );
     
         //---------------------------------
-        // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
+        // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
         //---------------------------------
         
         *sDataPlan->flag &= ~QMND_MOVE_INIT_DONE_MASK;
@@ -106,7 +106,7 @@ qmnMOVE::init( qcTemplate * aTemplate,
     else
     {
         //------------------------------------------------
-        // Child Planì˜ ì´ˆê¸°í™”
+        // Child PlanÀÇ ÃÊ±âÈ­
         //------------------------------------------------
         
         IDE_TEST( aPlan->left->init( aTemplate,
@@ -127,14 +127,14 @@ qmnMOVE::init( qcTemplate * aTemplate,
     }
         
     //------------------------------------------------
-    // ê°€ë³€ Data ì˜ ì´ˆê¸°í™”
+    // °¡º¯ Data ÀÇ ÃÊ±âÈ­
     //------------------------------------------------
 
-    // Limit ì‹œì‘ ê°œìˆ˜ì˜ ì´ˆê¸°í™”
+    // Limit ½ÃÀÛ °³¼öÀÇ ÃÊ±âÈ­
     sDataPlan->limitCurrent = 1;
 
     //------------------------------------------------
-    // ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
+    // ¼öÇà ÇÔ¼ö °áÁ¤
     //------------------------------------------------
 
     sDataPlan->doIt = qmnMOVE::doItFirst;
@@ -156,10 +156,10 @@ qmnMOVE::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    MOVE ì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
+ *    MOVE ÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *    ì§€ì •ëœ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *    ÁöÁ¤µÈ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼öÇàÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -181,8 +181,8 @@ qmnMOVE::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    MOVE ë…¸ë“œëŠ” ë³„ë„ì˜ null rowë¥¼ ê°€ì§€ì§€ ì•Šìœ¼ë©°,
- *    Childì— ëŒ€í•˜ì—¬ padNull()ì„ í˜¸ì¶œí•œë‹¤.
+ *    MOVE ³ëµå´Â º°µµÀÇ null row¸¦ °¡ÁöÁö ¾ÊÀ¸¸ç,
+ *    Child¿¡ ´ëÇÏ¿© padNull()À» È£ÃâÇÑ´Ù.
  *
  * Implementation :
  *
@@ -198,7 +198,7 @@ qmnMOVE::padNull( qcTemplate * aTemplate,
     if ( (aTemplate->planFlag[sCodePlan->planID] & QMND_MOVE_INIT_DONE_MASK)
          == QMND_MOVE_INIT_DONE_FALSE )
     {
-        // ì´ˆê¸°í™”ë˜ì§€ ì•Šì€ ê²½ìš° ì´ˆê¸°í™” ìˆ˜í–‰
+        // ÃÊ±âÈ­µÇÁö ¾ÊÀº °æ¿ì ÃÊ±âÈ­ ¼öÇà
         IDE_TEST( aPlan->init( aTemplate, aPlan ) != IDE_SUCCESS );
     }
     else
@@ -206,7 +206,7 @@ qmnMOVE::padNull( qcTemplate * aTemplate,
         // Nothing To Do
     }
 
-    // Child Planì— ëŒ€í•˜ì—¬ Null Paddingìˆ˜í–‰
+    // Child Plan¿¡ ´ëÇÏ¿© Null Padding¼öÇà
     IDE_TEST( aPlan->left->padNull( aTemplate, aPlan->left )
               != IDE_SUCCESS );
 
@@ -229,7 +229,7 @@ qmnMOVE::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    MOVE ë…¸ë“œì˜ ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *    MOVE ³ëµåÀÇ ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  * Implementation :
  *
@@ -247,7 +247,7 @@ qmnMOVE::printPlan( qcTemplate   * aTemplate,
     sDataPlan->flag = & aTemplate->planFlag[sCodePlan->planID];
 
     //------------------------------------------------------
-    // ì‹œì‘ ì •ë³´ì˜ ì¶œë ¥
+    // ½ÃÀÛ Á¤º¸ÀÇ Ãâ·Â
     //------------------------------------------------------
 
     for ( i = 0; i < aDepth; i++ )
@@ -257,10 +257,10 @@ qmnMOVE::printPlan( qcTemplate   * aTemplate,
     }
 
     //------------------------------------------------------
-    // MOVE Target ì •ë³´ì˜ ì¶œë ¥
+    // MOVE Target Á¤º¸ÀÇ Ãâ·Â
     //------------------------------------------------------
 
-    // MOVE ì •ë³´ì˜ ì¶œë ¥
+    // MOVE Á¤º¸ÀÇ Ãâ·Â
     if ( sCodePlan->targetTableRef->tableType == QCM_VIEW )
     {
         iduVarStringAppendFormat( aString,
@@ -286,7 +286,7 @@ qmnMOVE::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Table Name ì¶œë ¥
+    // Table Name Ãâ·Â
     //----------------------------
 
     if ( ( sCodePlan->tableName.size <= QC_MAX_OBJECT_NAME_LEN ) &&
@@ -303,14 +303,14 @@ qmnMOVE::printPlan( qcTemplate   * aTemplate,
     }
     
     //----------------------------
-    // Alias Name ì¶œë ¥
+    // Alias Name Ãâ·Â
     //----------------------------
     
     if ( sCodePlan->aliasName.name != NULL &&
          sCodePlan->aliasName.size > 0  &&
          sCodePlan->aliasName.name != sCodePlan->tableName.name )
     {
-        // Table ì´ë¦„ ì •ë³´ì™€ Alias ì´ë¦„ ì •ë³´ê°€ ë‹¤ë¥¼ ê²½ìš°
+        // Table ÀÌ¸§ Á¤º¸¿Í Alias ÀÌ¸§ Á¤º¸°¡ ´Ù¸¦ °æ¿ì
         // (alias name)
         iduVarStringAppend( aString, " " );
         
@@ -327,18 +327,18 @@ qmnMOVE::printPlan( qcTemplate   * aTemplate,
     }
     else
     {
-        // Alias ì´ë¦„ ì •ë³´ê°€ ì—†ê±°ë‚˜ Table ì´ë¦„ ì •ë³´ê°€ ë™ì¼í•œ ê²½ìš°
+        // Alias ÀÌ¸§ Á¤º¸°¡ ¾ø°Å³ª Table ÀÌ¸§ Á¤º¸°¡ µ¿ÀÏÇÑ °æ¿ì
         // Nothing To Do
     }
 
     //----------------------------
-    // Cost ì¶œë ¥
+    // Cost Ãâ·Â
     //----------------------------
     qmn::printCost( aString,
                     sCodePlan->plan.qmgAllCost );
 
     //------------------------------------------------------
-    // Child Plan ì •ë³´ì˜ ì¶œë ¥
+    // Child Plan Á¤º¸ÀÇ Ãâ·Â
     //------------------------------------------------------
 
     IDE_TEST( aPlan->left->printPlan( aTemplate,
@@ -364,10 +364,10 @@ qmnMOVE::firstInit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    MOVE nodeì˜ Data ì˜ì—­ì˜ ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
+ *    MOVE nodeÀÇ Data ¿µ¿ªÀÇ ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
  *
  * Implementation :
- *    - Data ì˜ì—­ì˜ ì£¼ìš” ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
+ *    - Data ¿µ¿ªÀÇ ÁÖ¿ä ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
  *
  ***********************************************************************/
 
@@ -378,49 +378,50 @@ qmnMOVE::firstInit( qcTemplate * aTemplate,
     UShort   sTableID;
 
     //--------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------
 
     //--------------------------------
-    // DETE ê³ ìœ  ì •ë³´ì˜ ì´ˆê¸°í™”
+    // DETE °íÀ¯ Á¤º¸ÀÇ ÃÊ±âÈ­
     //--------------------------------
 
-    // Tuple Setì •ë³´ì˜ ì´ˆê¸°í™”
+    // Tuple SetÁ¤º¸ÀÇ ÃÊ±âÈ­
     aDataPlan->deleteTuple = & aTemplate->tmplate.rows[aCodePlan->tableRef->table];
     aDataPlan->deleteCursor = NULL;
     aDataPlan->deleteTupleID = ID_USHORT_MAX;
     
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     aDataPlan->deletePartInfo = NULL;
 
-    // index table cursor ì´ˆê¸°í™”
+    // index table cursor ÃÊ±âÈ­
     aDataPlan->indexDeleteCursor = NULL;
 
-    // where column list ì´ˆê¸°í™”
+    // where column list ÃÊ±âÈ­
     smiInitDMLRetryInfo( &(aDataPlan->retryInfo) );
 
     /* PROJ-2359 Table/Partition Access Option */
     aDataPlan->accessOption = QCM_ACCESS_OPTION_READ_WRITE;
 
     //--------------------------------
-    // cursorInfo ìƒì„±
+    // cursorInfo »ı¼º
     //--------------------------------
     
     IDE_TEST( allocCursorInfo( aTemplate, aCodePlan, aDataPlan )
               != IDE_SUCCESS );
     
     //---------------------------------
-    // insert cursor manager ì´ˆê¸°í™”
+    // insert cursor manager ÃÊ±âÈ­
     //---------------------------------
     
     IDE_TEST( aDataPlan->insertCursorMgr.initialize(
                   aTemplate->stmt->qmxMem,
                   aCodePlan->targetTableRef,
+                  ID_TRUE,
                   ID_FALSE )
               != IDE_SUCCESS );
     
     //---------------------------------
-    // lob info ì´ˆê¸°í™”
+    // lob info ÃÊ±âÈ­
     //---------------------------------
 
     if ( aCodePlan->targetTableRef->tableInfo->lobColumnCount > 0 )
@@ -438,7 +439,7 @@ qmnMOVE::firstInit( qcTemplate * aTemplate,
     }
 
     //--------------------------------
-    // Limitation ê´€ë ¨ ì •ë³´ì˜ ì´ˆê¸°í™”
+    // Limitation °ü·Ã Á¤º¸ÀÇ ÃÊ±âÈ­
     //--------------------------------
     
     if( aCodePlan->limit != NULL )
@@ -470,7 +471,7 @@ qmnMOVE::firstInit( qcTemplate * aTemplate,
         aDataPlan->limitEnd   = 0;
     }
 
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     if ( aDataPlan->limitEnd > 0 )
     {
         IDE_ASSERT( (aCodePlan->flag & QMNC_MOVE_LIMIT_MASK)
@@ -478,7 +479,7 @@ qmnMOVE::firstInit( qcTemplate * aTemplate,
     }
 
     //------------------------------------------
-    // Default Exprì˜ Row Buffer êµ¬ì„±
+    // Default ExprÀÇ Row Buffer ±¸¼º
     //------------------------------------------
 
     if ( aCodePlan->defaultExprColumns != NULL )
@@ -500,7 +501,7 @@ qmnMOVE::firstInit( qcTemplate * aTemplate,
         }
         else
         {
-            /* Disk Tableì˜ ê²½ìš°, qmc::setRowSize()ì—ì„œ ì´ë¯¸ í• ë‹¹ */
+            /* Disk TableÀÇ °æ¿ì, qmc::setRowSize()¿¡¼­ ÀÌ¹Ì ÇÒ´ç */
         }
 
         aDataPlan->defaultExprRowBuffer = aTemplate->tmplate.rows[sTableID].row;
@@ -541,14 +542,14 @@ qmnMOVE::allocCursorInfo( qcTemplate * aTemplate,
     UInt                i = 0;
 
     //--------------------------------
-    // cursorInfo ìƒì„±
+    // cursorInfo »ı¼º
     //--------------------------------
     
     IDE_TEST( aTemplate->stmt->qmxMem->alloc( ID_SIZEOF(qmnCursorInfo),
                                               (void**)& sCursorInfo )
               != IDE_SUCCESS );
         
-    // cursorInfo ì´ˆê¸°í™”
+    // cursorInfo ÃÊ±âÈ­
     sCursorInfo->cursor              = NULL;
     sCursorInfo->selectedIndex       = NULL;
     sCursorInfo->selectedIndexTuple  = NULL;
@@ -559,15 +560,15 @@ qmnMOVE::allocCursorInfo( qcTemplate * aTemplate,
     sCursorInfo->inplaceUpdate       = ID_FALSE;
     sCursorInfo->lockMode            = SMI_LOCK_WRITE;
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     sCursorInfo->stmtRetryColLst     = aCodePlan->whereColumnList;
     sCursorInfo->rowRetryColLst      = NULL;
 
-    // cursorInfo ì„¤ì •
+    // cursorInfo ¼³Á¤
     aDataPlan->deleteTuple->cursorInfo = sCursorInfo;
     
     //--------------------------------
-    // partition cursorInfo ìƒì„±
+    // partition cursorInfo »ı¼º
     //--------------------------------
     
     if ( aCodePlan->tableRef->partitionRef != NULL )
@@ -580,7 +581,7 @@ qmnMOVE::allocCursorInfo( qcTemplate * aTemplate,
             sPartitionCount++;
         }
         
-        // cursorInfo ìƒì„±
+        // cursorInfo »ı¼º
         IDE_TEST( aTemplate->stmt->qmxMem->alloc(
                       sPartitionCount * ID_SIZEOF(qmnCursorInfo),
                       (void**)& sCursorInfo )
@@ -590,7 +591,7 @@ qmnMOVE::allocCursorInfo( qcTemplate * aTemplate,
               sPartitionRef != NULL;
               sPartitionRef = sPartitionRef->next, sCursorInfo++, i++ )
         {
-            // cursorInfo ì´ˆê¸°í™”
+            // cursorInfo ÃÊ±âÈ­
             sCursorInfo->cursor              = NULL;
             sCursorInfo->selectedIndex       = NULL;
             sCursorInfo->selectedIndexTuple  = NULL;
@@ -602,11 +603,11 @@ qmnMOVE::allocCursorInfo( qcTemplate * aTemplate,
             sCursorInfo->inplaceUpdate       = ID_FALSE;
             sCursorInfo->lockMode            = SMI_LOCK_WRITE;
 
-            /* PROJ-2464 hybrid partitioned table ì§€ì› */
+            /* PROJ-2464 hybrid partitioned table Áö¿ø */
             sCursorInfo->stmtRetryColLst     = aCodePlan->wherePartColumnList[i];
             sCursorInfo->rowRetryColLst      = NULL;
 
-            // cursorInfo ì„¤ì •
+            // cursorInfo ¼³Á¤
             aTemplate->tmplate.rows[sPartitionRef->table].cursorInfo = sCursorInfo;
         }
     }
@@ -643,7 +644,7 @@ qmnMOVE::allocTriggerRow( qcTemplate * aTemplate,
     UInt sMaxRowOffset = 0;
 
     //---------------------------------
-    // Insert Triggerë¥¼ ìœ„í•œ ê³µê°„ì„ ë§ˆë ¨
+    // Insert Trigger¸¦ À§ÇÑ °ø°£À» ¸¶·Ã
     //---------------------------------
 
     if ( aCodePlan->targetTableRef->tableInfo->triggerCount > 0 )
@@ -658,7 +659,7 @@ qmnMOVE::allocTriggerRow( qcTemplate * aTemplate,
     }
     
     //---------------------------------
-    // Delete Triggerë¥¼ ìœ„í•œ ê³µê°„ì„ ë§ˆë ¨
+    // Delete Trigger¸¦ À§ÇÑ °ø°£À» ¸¶·Ã
     //---------------------------------
     
     if ( aCodePlan->tableRef->tableInfo->triggerCount > 0 )
@@ -666,14 +667,18 @@ qmnMOVE::allocTriggerRow( qcTemplate * aTemplate,
         sMaxRowOffset = qmx::getMaxRowOffset( &(aTemplate->tmplate),
                                               aCodePlan->tableRef );
 
-        // ì í•©ì„± ê²€ì‚¬
-        IDE_DASSERT( sMaxRowOffset > 0 );
-        
-        // Old Row Referencingì„ ìœ„í•œ ê³µê°„ í• ë‹¹
-        IDE_TEST( aTemplate->stmt->qmxMem->alloc(
-                sMaxRowOffset,
-                (void**) & aDataPlan->oldRow )
-            != IDE_SUCCESS);
+        if ( sMaxRowOffset > 0 )
+        {
+            // Old Row ReferencingÀ» À§ÇÑ °ø°£ ÇÒ´ç
+            IDE_TEST( aTemplate->stmt->qmxMem->alloc(
+                    sMaxRowOffset,
+                    (void**) & aDataPlan->oldRow )
+                != IDE_SUCCESS);
+        }
+        else
+        {
+            aDataPlan->oldRow = NULL;
+        }
 
         aDataPlan->columnsForRow = aCodePlan->tableRef->tableInfo->columns;
 
@@ -714,7 +719,7 @@ qmnMOVE::allocIndexTableCursor( qcTemplate * aTemplate,
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY("qmnMOVE::allocIndexTableCursor"));
 
     //---------------------------------
-    // target index table ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
+    // target index table Ã³¸®¸¦ À§ÇÑ Á¤º¸
     //---------------------------------
 
     if ( aCodePlan->targetTableRef->indexTableRef != NULL )
@@ -735,7 +740,7 @@ qmnMOVE::allocIndexTableCursor( qcTemplate * aTemplate,
     }
     
     //---------------------------------
-    // source index table ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
+    // source index table Ã³¸®¸¦ À§ÇÑ Á¤º¸
     //---------------------------------
     
     if ( aCodePlan->tableRef->indexTableRef != NULL )
@@ -773,7 +778,7 @@ qmnMOVE::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨.
+ *    ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ¸é ¾ÈµÊ.
  *
  * Implementation :
  *
@@ -797,11 +802,11 @@ qmnMOVE::doItFirst( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    MOVEì˜ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
+ *    MOVEÀÇ ÃÖÃÊ ¼öÇà ÇÔ¼ö
  *
  * Implementation :
- *    - Tableì— IX Lockì„ ê±´ë‹¤.
- *    - Session Event Check (ë¹„ì •ìƒ ì¢…ë£Œ Detect)
+ *    - Table¿¡ IX LockÀ» °Ç´Ù.
+ *    - Session Event Check (ºñÁ¤»ó Á¾·á Detect)
  *    - Cursor Open
  *    - move one record
  *
@@ -818,13 +823,20 @@ qmnMOVE::doItFirst( qcTemplate * aTemplate,
     idBool     sIsTableCursorChanged;
 
     //-----------------------------------
-    // Child Planì„ ìˆ˜í–‰í•¨
+    // Child PlanÀ» ¼öÇàÇÔ
     //-----------------------------------
 
     // To fix PR-3921
     if ( sDataPlan->limitCurrent == sDataPlan->limitEnd )
     {
-        // ì£¼ì–´ì§„ Limit ì¡°ê±´ì— ë‹¤ë‹¤ë¥¸ ê²½ìš°
+        // ÁÖ¾îÁø Limit Á¶°Ç¿¡ ´Ù´Ù¸¥ °æ¿ì
+        *aFlag = QMC_ROW_DATA_NONE;
+    }
+    /* TASK-7307 DML Data Consistency in Shard */
+    else if ( ( QCG_CHECK_SHARD_DML_CONSISTENCY( aTemplate->stmt ) == ID_TRUE ) &&
+              ( sCodePlan->tableRef->tableInfo->mIsUsable == ID_FALSE ) )
+    {
+        // ¹«½ÃÇÑ´Ù
         *aFlag = QMC_ROW_DATA_NONE;
     }
     else
@@ -836,13 +848,13 @@ qmnMOVE::doItFirst( qcTemplate * aTemplate,
 
     if ( ( *aFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        // Limit Start ì²˜ë¦¬
+        // Limit Start Ã³¸®
         for ( ;
               sDataPlan->limitCurrent < sDataPlan->limitStart;
               sDataPlan->limitCurrent++ )
         {
-            // Limitation ë²”ìœ„ì— ë“¤ì§€ ì•ŠëŠ”ë‹¤.
-            // ë”°ë¼ì„œ Deleteì—†ì´ Childë¥¼ ìˆ˜í–‰í•˜ê¸°ë§Œ í•œë‹¤.
+            // Limitation ¹üÀ§¿¡ µéÁö ¾Ê´Â´Ù.
+            // µû¶ó¼­ Delete¾øÀÌ Child¸¦ ¼öÇàÇÏ±â¸¸ ÇÑ´Ù.
             IDE_TEST( aPlan->left->doIt( aTemplate, aPlan->left, aFlag )
                       != IDE_SUCCESS );
 
@@ -861,12 +873,12 @@ qmnMOVE::doItFirst( qcTemplate * aTemplate,
             if ( ( sDataPlan->limitCurrent >= sDataPlan->limitStart ) &&
                  ( sDataPlan->limitCurrent < sDataPlan->limitEnd ) )
             {
-                // Limitê°’ ì¦ê°€
+                // Limit°ª Áõ°¡
                 sDataPlan->limitCurrent++;
             }
             else
             {
-                // Limitation ë²”ìœ„ë¥¼ ë²—ì–´ë‚œ ê²½ìš°
+                // Limitation ¹üÀ§¸¦ ¹ş¾î³­ °æ¿ì
                 *aFlag = QMC_ROW_DATA_NONE;
             }
         }
@@ -885,7 +897,8 @@ qmnMOVE::doItFirst( qcTemplate * aTemplate,
                 
             /* PROJ-2359 Table/Partition Access Option */
             IDE_TEST( qmx::checkAccessOption( sCodePlan->targetTableRef->tableInfo,
-                                              ID_TRUE /* aIsInsertion */ )
+                                              ID_TRUE, /* aIsInsertion */
+                                              QCG_CHECK_SHARD_DML_CONSISTENCY( aTemplate->stmt ) )
                       != IDE_SUCCESS );
 
             // insert one record
@@ -948,8 +961,8 @@ qmnMOVE::doItNext( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    MOVEì˜ ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
- *    ë‹¤ìŒ Recordë¥¼ ì‚­ì œí•œë‹¤.
+ *    MOVEÀÇ ´ÙÀ½ ¼öÇà ÇÔ¼ö
+ *    ´ÙÀ½ Record¸¦ »èÁ¦ÇÑ´Ù.
  *
  * Implementation :
  *    - move one record
@@ -967,13 +980,13 @@ qmnMOVE::doItNext( qcTemplate * aTemplate,
     idBool     sIsTableCursorChanged;
 
     //-----------------------------------
-    // Child Planì„ ìˆ˜í–‰í•¨
+    // Child PlanÀ» ¼öÇàÇÔ
     //-----------------------------------
 
     // To fix PR-3921
     if ( sDataPlan->limitCurrent == sDataPlan->limitEnd )
     {
-        // ì£¼ì–´ì§„ Limit ì¡°ê±´ì— ë‹¤ë‹¤ë¥¸ ê²½ìš°
+        // ÁÖ¾îÁø Limit Á¶°Ç¿¡ ´Ù´Ù¸¥ °æ¿ì
         *aFlag = QMC_ROW_DATA_NONE;
     }
     else
@@ -990,12 +1003,12 @@ qmnMOVE::doItNext( qcTemplate * aTemplate,
             if ( ( sDataPlan->limitCurrent >= sDataPlan->limitStart ) &&
                  ( sDataPlan->limitCurrent < sDataPlan->limitEnd ) )
             {
-                // Limitê°’ ì¦ê°€
+                // Limit°ª Áõ°¡
                 sDataPlan->limitCurrent++;
             }
             else
             {
-                // Limitation ë²”ìœ„ë¥¼ ë²—ì–´ë‚œ ê²½ìš°
+                // Limitation ¹üÀ§¸¦ ¹ş¾î³­ °æ¿ì
                 *aFlag = QMC_ROW_DATA_NONE;
             }
         }
@@ -1037,15 +1050,15 @@ qmnMOVE::doItNext( qcTemplate * aTemplate,
         }
         else
         {
-            // recordê°€ ì—†ëŠ” ê²½ìš°
-            // ë‹¤ìŒ ìˆ˜í–‰ì„ ìœ„í•´ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜ë¡œ ì„¤ì •í•¨.
+            // record°¡ ¾ø´Â °æ¿ì
+            // ´ÙÀ½ ¼öÇàÀ» À§ÇØ ÃÖÃÊ ¼öÇà ÇÔ¼ö·Î ¼³Á¤ÇÔ.
             sDataPlan->doIt = qmnMOVE::doItFirst;
         }
     }
     else
     {
-        // recordê°€ ì—†ëŠ” ê²½ìš°
-        // ë‹¤ìŒ ìˆ˜í–‰ì„ ìœ„í•´ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜ë¡œ ì„¤ì •í•¨.
+        // record°¡ ¾ø´Â °æ¿ì
+        // ´ÙÀ½ ¼öÇàÀ» À§ÇØ ÃÖÃÊ ¼öÇà ÇÔ¼ö·Î ¼³Á¤ÇÔ.
         sDataPlan->doIt = qmnMOVE::doItFirst;
     }
 
@@ -1091,7 +1104,7 @@ qmnMOVE::checkTrigger( qcTemplate * aTemplate,
     
     if ( sDataPlan->existTriggerForInsert == ID_TRUE )
     {
-        // Triggerë¥¼ ìœ„í•œ Referencing Rowê°€ í•„ìš”í•œì§€ë¥¼ ê²€ì‚¬
+        // Trigger¸¦ À§ÇÑ Referencing Row°¡ ÇÊ¿äÇÑÁö¸¦ °Ë»ç
         IDE_TEST( qdnTrigger::needTriggerRow(
                       aTemplate->stmt,
                       sCodePlan->targetTableRef->tableInfo,
@@ -1130,7 +1143,7 @@ qmnMOVE::checkTrigger( qcTemplate * aTemplate,
     
     if ( sDataPlan->existTriggerForDelete == ID_TRUE )
     {
-        // Triggerë¥¼ ìœ„í•œ Referencing Rowê°€ í•„ìš”í•œì§€ë¥¼ ê²€ì‚¬
+        // Trigger¸¦ À§ÇÑ Referencing Row°¡ ÇÊ¿äÇÑÁö¸¦ °Ë»ç
         IDE_TEST( qdnTrigger::needTriggerRow(
                       aTemplate->stmt,
                       sCodePlan->tableRef->tableInfo,
@@ -1182,7 +1195,7 @@ qmnMOVE::getCursor( qcTemplate * aTemplate,
  * Description :
  *
  * Implementation :
- *     í•˜ìœ„ scanì´ opení•œ cursorë¥¼ ì–»ëŠ”ë‹¤.
+ *     ÇÏÀ§ scanÀÌ openÇÑ cursor¸¦ ¾ò´Â´Ù.
  *
  ***********************************************************************/
 
@@ -1204,7 +1217,7 @@ qmnMOVE::getCursor( qcTemplate * aTemplate,
         {
             sDataPlan->deleteTupleID = sCodePlan->tableRef->table;
             
-            // cursorë¥¼ ì–»ëŠ”ë‹¤.
+            // cursor¸¦ ¾ò´Â´Ù.
             sCursorInfo = (qmnCursorInfo*)
                 aTemplate->tmplate.rows[sDataPlan->deleteTupleID].cursorInfo;
             
@@ -1212,7 +1225,7 @@ qmnMOVE::getCursor( qcTemplate * aTemplate,
 
             sDataPlan->deleteCursor = sCursorInfo->cursor;
 
-            /* PROJ-2464 hybrid partitioned table ì§€ì› */
+            /* PROJ-2464 hybrid partitioned table Áö¿ø */
             sDataPlan->deletePartInfo = sCodePlan->tableRef->tableInfo;
 
             sDataPlan->retryInfo.mIsWithoutRetry  = sCodePlan->withoutRetry;
@@ -1233,7 +1246,7 @@ qmnMOVE::getCursor( qcTemplate * aTemplate,
         {
             sDataPlan->deleteTupleID = sDataPlan->deleteTuple->partitionTupleID;
             
-            // partitionì˜ cursorë¥¼ ì–»ëŠ”ë‹¤.
+            // partitionÀÇ cursor¸¦ ¾ò´Â´Ù.
             sCursorInfo = (qmnCursorInfo*)
                 aTemplate->tmplate.rows[sDataPlan->deleteTupleID].cursorInfo;
             
@@ -1241,7 +1254,7 @@ qmnMOVE::getCursor( qcTemplate * aTemplate,
             
             sDataPlan->deleteCursor = sCursorInfo->cursor;
 
-            /* PROJ-2464 hybrid partitioned table ì§€ì› */
+            /* PROJ-2464 hybrid partitioned table Áö¿ø */
             IDE_TEST( smiGetTableTempInfo( sDataPlan->deleteTuple->tableHandle,
                                            (void **)&(sDataPlan->deletePartInfo) )
                       != IDE_SUCCESS );
@@ -1258,7 +1271,7 @@ qmnMOVE::getCursor( qcTemplate * aTemplate,
             /* Nothing to do */
         }
         
-        // index table cursorë¥¼ ì–»ëŠ”ë‹¤.
+        // index table cursor¸¦ ¾ò´Â´Ù.
         if ( sDataPlan->indexDeleteCursor == NULL )
         {
             sCursorInfo = (qmnCursorInfo*)
@@ -1298,7 +1311,7 @@ qmnMOVE::openInsertCursor( qcTemplate * aTemplate,
  * Description :
  *
  * Implementation :
- *     insert cursorë¥¼ opení•œë‹¤.
+ *     insert cursor¸¦ openÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1318,7 +1331,7 @@ qmnMOVE::openInsertCursor( qcTemplate * aTemplate,
     if ( ( *sDataPlan->flag & QMND_MOVE_CURSOR_MASK )
          == QMND_MOVE_CURSOR_CLOSED )
     {
-        // MOVE ë¥¼ ìœ„í•œ Cursor êµ¬ì„±
+        // MOVE ¸¦ À§ÇÑ Cursor ±¸¼º
         SMI_CURSOR_PROP_INIT_FOR_FULL_SCAN( &sCursorProperty, aTemplate->stmt->mStatistics );
 
         if ( sCodePlan->targetTableRef->tableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
@@ -1351,7 +1364,7 @@ qmnMOVE::openInsertCursor( qcTemplate * aTemplate,
             sNeedAllFetchColumn = sDataPlan->needTriggerRowForInsert;
             
             // PROJ-1705
-            // í¬ë¦°í‚¤ ì²´í¬ë¥¼ ìœ„í•´ ì½ì–´ì•¼ í•  íŒ¨ì¹˜ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ ìƒì„±
+            // Æ÷¸°Å° Ã¼Å©¸¦ À§ÇØ ÀĞ¾î¾ß ÇÒ ÆĞÄ¡ÄÃ·³¸®½ºÆ® »ı¼º
             IDE_TEST( qdbCommon::makeFetchColumnList4TupleID(
                           aTemplate,
                           sTupleID,
@@ -1361,7 +1374,7 @@ qmnMOVE::openInsertCursor( qcTemplate * aTemplate,
                           & sFetchColumnList )
                       != IDE_SUCCESS );
         
-            /* PROJ-1107 Check Constraint ì§€ì› */
+            /* PROJ-1107 Check Constraint Áö¿ø */
             if ( (sDataPlan->needTriggerRowForInsert == ID_FALSE) &&
                  (sCodePlan->checkConstrList != NULL) )
             {
@@ -1493,11 +1506,11 @@ qmnMOVE::insertOneRow( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    MOVE ì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
+ *    MOVE ÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *    - move one record ìˆ˜í–‰
- *    - trigger each row ìˆ˜í–‰
+ *    - move one record ¼öÇà
+ *    - trigger each row ¼öÇà
  *
  ***********************************************************************/
 
@@ -1523,7 +1536,7 @@ qmnMOVE::insertOneRow( qcTemplate * aTemplate,
     sInsertedRow = aTemplate->insOrUptRow[sCodePlan->valueIdx];
     sInsertedRowValueCount = aTemplate->insOrUptRowValueCount[sCodePlan->valueIdx];
     
-    // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
+    // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
     IDE_TEST_RAISE( aTemplate->stmt->qmxMem->getStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
     
     //-----------------------------------
@@ -1543,9 +1556,9 @@ qmnMOVE::insertOneRow( qcTemplate * aTemplate,
     // set next sequence
     //-----------------------------------
     
-    // fix BUG-11917 1Rowì”© insertí•  ë•Œë§ˆë‹¤ sequence next valueë¥¼
-    // ì–»ì–´ì™€ì•¼ í•¨.
-    // Sequence Value íšë“
+    // fix BUG-11917 1Row¾¿ insertÇÒ ¶§¸¶´Ù sequence next value¸¦
+    // ¾ò¾î¿Í¾ß ÇÔ.
+    // Sequence Value È¹µæ
     if ( sCodePlan->nextValSeqs != NULL )
     {
         IDE_TEST( qmx::readSequenceNextVals( aTemplate->stmt,
@@ -1576,7 +1589,7 @@ qmnMOVE::insertOneRow( qcTemplate * aTemplate,
     if ( sDataPlan->existTriggerForInsert == ID_TRUE )
     {
         // PROJ-1359 Trigger
-        // ROW GRANULARITY TRIGGERì˜ ìˆ˜í–‰
+        // ROW GRANULARITY TRIGGERÀÇ ¼öÇà
         IDE_TEST( qdnTrigger::fireTrigger(
                       aTemplate->stmt,
                       aTemplate->stmt->qmxMem,
@@ -1653,7 +1666,8 @@ qmnMOVE::insertOneRow( qcTemplate * aTemplate,
     if ( sSelectedPartitionInfo != NULL )
     {
         IDE_TEST( qmx::checkAccessOption( sSelectedPartitionInfo,
-                                          ID_TRUE /* aIsInsertion */ )
+                                          ID_TRUE, /* aIsInsertion */
+                                          QCG_CHECK_SHARD_DML_CONSISTENCY( aTemplate->stmt ) )
                   != IDE_SUCCESS );
     }
     else
@@ -1678,8 +1692,8 @@ qmnMOVE::insertOneRow( qcTemplate * aTemplate,
         if ( QCM_TABLE_TYPE_IS_DISK( sTableForInsert->tableFlag ) !=
              QCM_TABLE_TYPE_IS_DISK( sSelectedPartitionInfo->tableFlag ) )
         {
-            /* PROJ-2464 hybrid partitioned table ì§€ì›
-             * Partitioned Tableì„ ê¸°ì¤€ìœ¼ë¡œ ë§Œë“  smiValue Arrayë¥¼ Table Partitionì— ë§ê²Œ ë³€í™˜í•œë‹¤.
+            /* PROJ-2464 hybrid partitioned table Áö¿ø
+             * Partitioned TableÀ» ±âÁØÀ¸·Î ¸¸µç smiValue Array¸¦ Table Partition¿¡ ¸Â°Ô º¯È¯ÇÑ´Ù.
              */
             IDE_TEST( qmx::makeSmiValueWithSmiValue( sTableForInsert,
                                                      sSelectedPartitionInfo,
@@ -1714,7 +1728,7 @@ qmnMOVE::insertOneRow( qcTemplate * aTemplate,
               != IDE_SUCCESS );
     
     //------------------------------------------
-    // insertë¥¼ ìˆ˜í–‰í›„ Lob ì»¬ëŸ¼ì„ ì²˜ë¦¬
+    // insert¸¦ ¼öÇàÈÄ Lob ÄÃ·³À» Ã³¸®
     //------------------------------------------
     
     IDE_TEST( qmx::copyAndOutBindLobInfo( aTemplate->stmt,
@@ -1755,10 +1769,10 @@ qmnMOVE::insertOneRow( qcTemplate * aTemplate,
     }
     else
     {
-        // BUG-36914 insert valueê°€ subqueryì¸ ê²½ìš° memoryë¥¼ í•´ì œí•˜ë©´ UMRì´ ë°œìƒí•œë‹¤.
-        // BUG-33567ê³¼ ìœ ì‚¬í•˜ê²Œ ì²«ë²ˆì§¸ makeSmiValueWithValueì˜ qmxMemì€ ìœ ì§€í•œë‹¤.
+        // BUG-36914 insert value°¡ subqueryÀÎ °æ¿ì memory¸¦ ÇØÁ¦ÇÏ¸é UMRÀÌ ¹ß»ıÇÑ´Ù.
+        // BUG-33567°ú À¯»çÇÏ°Ô Ã¹¹øÂ° makeSmiValueWithValueÀÇ qmxMemÀº À¯ÁöÇÑ´Ù.
         
-        // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
+        // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
         IDE_TEST_RAISE( aTemplate->stmt->qmxMem->setStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
     }
 
@@ -1785,11 +1799,11 @@ qmnMOVE::deleteOneRow( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    MOVE ì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
+ *    MOVE ÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *    - delete one record ìˆ˜í–‰
- *    - trigger each row ìˆ˜í–‰
+ *    - delete one record ¼öÇà
+ *    - trigger each row ¼öÇà
  *
  ***********************************************************************/
 
@@ -1808,7 +1822,7 @@ qmnMOVE::deleteOneRow( qcTemplate * aTemplate,
     
     if ( sDataPlan->needTriggerRowForDelete == ID_TRUE )
     {
-        // OLD ROW REFERENCINGì„ ìœ„í•œ ì €ì¥
+        // OLD ROW REFERENCINGÀ» À§ÇÑ ÀúÀå
         idlOS::memcpy( sDataPlan->oldRow,
                        sDataPlan->deleteTuple->row,
                        sDataPlan->deleteTuple->rowOffset );
@@ -1839,7 +1853,7 @@ qmnMOVE::deleteOneRow( qcTemplate * aTemplate,
     if ( sDataPlan->existTriggerForDelete == ID_TRUE )
     {
         // PROJ-1359 Trigger
-        // ROW GRANULARITY TRIGGERì˜ ìˆ˜í–‰
+        // ROW GRANULARITY TRIGGERÀÇ ¼öÇà
         IDE_TEST( qdnTrigger::fireTrigger(
                       aTemplate->stmt,
                       aTemplate->stmt->qmxMem,
@@ -1910,7 +1924,7 @@ qmnMOVE::deleteOneRow( qcTemplate * aTemplate,
     if ( sDataPlan->existTriggerForDelete == ID_TRUE )
     {
         // PROJ-1359 Trigger
-        // ROW GRANULARITY TRIGGERì˜ ìˆ˜í–‰
+        // ROW GRANULARITY TRIGGERÀÇ ¼öÇà
         IDE_TEST( qdnTrigger::fireTrigger(
                       aTemplate->stmt,
                       aTemplate->stmt->qmxMem,
@@ -1977,13 +1991,13 @@ qmnMOVE::checkInsertRef( qcTemplate * aTemplate,
     sDataPlan = (qmndMOVE*) ( aTemplate->tmplate.data + aPlan->offset );
     
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aTemplate != NULL );
     
     //------------------------------------------
-    // parent constraint ê²€ì‚¬
+    // parent constraint °Ë»ç
     //------------------------------------------
 
     if ( sCodePlan->parentConstraints != NULL )
@@ -2009,7 +2023,7 @@ qmnMOVE::checkInsertRef( qcTemplate * aTemplate,
                               aTemplate,
                               sCodePlan,
                               sCursorIter->partitionRef->partitionInfo,
-                              sCursorIter->partitionRef->table,  // table tuple ì‚¬ìš©
+                              sCursorIter->partitionRef->table,  // table tuple »ç¿ë
                               sCursorIter,
                               & sRow )
                           != IDE_SUCCESS );
@@ -2040,7 +2054,7 @@ IDE_RC qmnMOVE::checkInsertChildRefOnScan( qcTemplate           * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    INSERT êµ¬ë¬¸ ìˆ˜í–‰ ì‹œ Parent Tableì— ëŒ€í•œ Referencing ì œì•½ ì¡°ê±´ì„ ê²€ì‚¬
+ *    INSERT ±¸¹® ¼öÇà ½Ã Parent Table¿¡ ´ëÇÑ Referencing Á¦¾à Á¶°ÇÀ» °Ë»ç
  *
  * Implementation :
  *
@@ -2057,7 +2071,7 @@ IDE_RC qmnMOVE::checkInsertChildRefOnScan( qcTemplate           * aTemplate,
     mtcTuple          * sTuple;
 
     //----------------------------
-    // Record ê³µê°„ í™•ë³´
+    // Record °ø°£ È®º¸
     //----------------------------
 
     sTuple = &(aTemplate->tmplate.rows[aTable]);
@@ -2067,8 +2081,8 @@ IDE_RC qmnMOVE::checkInsertChildRefOnScan( qcTemplate           * aTemplate,
     if ( ( sTableType == SMI_TABLE_DISK ) &&
          ( sRow == NULL ) )
     {
-        // Disk Tableì¸ ê²½ìš°
-        // Record Readë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹í•œë‹¤.
+        // Disk TableÀÎ °æ¿ì
+        // Record Read¸¦ À§ÇÑ °ø°£À» ÇÒ´çÇÑ´Ù.
         IDE_TEST( qdbCommon::getDiskRowSize( aTableInfo,
                                              & sRowSize )
                   != IDE_SUCCESS );
@@ -2081,13 +2095,13 @@ IDE_RC qmnMOVE::checkInsertChildRefOnScan( qcTemplate           * aTemplate,
     }
     else
     {
-        // Memory Tableì¸ ê²½ìš°
+        // Memory TableÀÎ °æ¿ì
         // Nothing to do.
     }
 
     //------------------------------------------
-    // INSERTëœ ë¡œìš° ê²€ìƒ‰ì„ ìœ„í•´,
-    // ê°±ì‹ ì—°ì‚°ì´ ìˆ˜í–‰ëœ ì²«ë²ˆì§¸ row ì´ì „ ìœ„ì¹˜ë¡œ cursor ìœ„ì¹˜ ì„¤ì •
+    // INSERTµÈ ·Î¿ì °Ë»öÀ» À§ÇØ,
+    // °»½Å¿¬»êÀÌ ¼öÇàµÈ Ã¹¹øÂ° row ÀÌÀü À§Ä¡·Î cursor À§Ä¡ ¼³Á¤
     //------------------------------------------
 
     IDE_TEST( aCursorIter->cursor.beforeFirstModified( SMI_FIND_MODIFIED_NEW )
@@ -2098,16 +2112,16 @@ IDE_RC qmnMOVE::checkInsertChildRefOnScan( qcTemplate           * aTemplate,
               != IDE_SUCCESS);
 
     //----------------------------
-    // ë°˜ë³µ ê²€ì‚¬
+    // ¹İº¹ °Ë»ç
     //----------------------------
 
     while ( sRow != NULL )
     {
         //------------------------------
-        // ì œì•½ ì¡°ê±´ ê²€ì‚¬
+        // Á¦¾à Á¶°Ç °Ë»ç
         //------------------------------
 
-        // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
+        // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
         IDE_TEST_RAISE( aTemplate->stmt->qmxMem->getStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
 
         IDE_TEST( qdnForeignKey::checkParentRef( aTemplate->stmt,
@@ -2118,7 +2132,7 @@ IDE_RC qmnMOVE::checkInsertChildRefOnScan( qcTemplate           * aTemplate,
                                                  0 )
                   != IDE_SUCCESS);
 
-        // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
+        // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
         IDE_TEST_RAISE( aTemplate->stmt->qmxMem->setStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
         
         IDE_TEST( aCursorIter->cursor.readNewRow( (const void **) & sRow,
@@ -2168,22 +2182,22 @@ qmnMOVE::checkDeleteRef( qcTemplate * aTemplate,
     sDataPlan = (qmndMOVE*) ( aTemplate->tmplate.data + aPlan->offset );
     
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aTemplate != NULL );
     
     //------------------------------------------
-    // child constraint ê²€ì‚¬
+    // child constraint °Ë»ç
     //------------------------------------------
 
     if ( sCodePlan->childConstraints != NULL )
     {
-        // BUG-17940 parent keyë¥¼ ê°±ì‹ í•˜ê³  child keyë¥¼ ì°¾ì„ë•Œ
-        // parent rowì— lockì„ ì¡ì€ ì´í›„ viewë¥¼ ë³´ê¸°ìœ„í•´
-        // ìƒˆë¡œìš´ smiStmtë¥¼ ì´ìš©í•œë‹¤.
-        // Delete cascade ì˜µì…˜ì— ëŒ€ë¹„í•´ì„œ normalë¡œ í•œë‹¤.
-        // child tableì˜ íƒ€ì…ì„ í˜„ì¬ ì•Œ ìˆ˜ ì—†ê¸° ë•Œë¬¸ì— ALL CURSORë¡œ í•œë‹¤.
+        // BUG-17940 parent key¸¦ °»½ÅÇÏ°í child key¸¦ Ã£À»¶§
+        // parent row¿¡ lockÀ» ÀâÀº ÀÌÈÄ view¸¦ º¸±âÀ§ÇØ
+        // »õ·Î¿î smiStmt¸¦ ÀÌ¿ëÇÑ´Ù.
+        // Delete cascade ¿É¼Ç¿¡ ´ëºñÇØ¼­ normal·Î ÇÑ´Ù.
+        // child tableÀÇ Å¸ÀÔÀ» ÇöÀç ¾Ë ¼ö ¾ø±â ¶§¹®¿¡ ALL CURSOR·Î ÇÑ´Ù.
         qcg::getSmiStmt( aTemplate->stmt, & sSmiStmtOrg );
 
         IDE_TEST( sSmiStmt.begin( aTemplate->stmt->mStatistics,
@@ -2265,7 +2279,7 @@ qmnMOVE::checkDeleteChildRefOnScan( qcTemplate     * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    DELETE êµ¬ë¬¸ ìˆ˜í–‰ ì‹œ Child Tableì— ëŒ€í•œ Referencing ì œì•½ ì¡°ê±´ì„ ê²€ì‚¬
+ *    DELETE ±¸¹® ¼öÇà ½Ã Child Table¿¡ ´ëÇÑ Referencing Á¦¾à Á¶°ÇÀ» °Ë»ç
  *
  * Implementation :
  *
@@ -2281,15 +2295,15 @@ qmnMOVE::checkDeleteChildRefOnScan( qcTemplate     * aTemplate,
     qmnCursorInfo   * sCursorInfo;
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aTemplate != NULL );
     IDE_DASSERT( aCodePlan->childConstraints != NULL );
 
     //------------------------------------------
-    // DELETEëœ ë¡œìš° ê²€ìƒ‰ì„ ìœ„í•´,
-    // ê°±ì‹ ì—°ì‚°ì´ ìˆ˜í–‰ëœ ì²«ë²ˆì§¸ row ì´ì „ ìœ„ì¹˜ë¡œ cursor ìœ„ì¹˜ ì„¤ì •
+    // DELETEµÈ ·Î¿ì °Ë»öÀ» À§ÇØ,
+    // °»½Å¿¬»êÀÌ ¼öÇàµÈ Ã¹¹øÂ° row ÀÌÀü À§Ä¡·Î cursor À§Ä¡ ¼³Á¤
     //------------------------------------------
 
     sCursorInfo = (qmnCursorInfo*) aDeleteTuple->cursorInfo;
@@ -2299,14 +2313,14 @@ qmnMOVE::checkDeleteChildRefOnScan( qcTemplate     * aTemplate,
     sDeleteCursor = sCursorInfo->cursor;
 
     // PROJ-1624 non-partitioned index
-    // index table scanìœ¼ë¡œ openë˜ì§€ ì•Šì€ partitionì´ ì¡´ì¬í•œë‹¤.
+    // index table scanÀ¸·Î openµÇÁö ¾ÊÀº partitionÀÌ Á¸ÀçÇÑ´Ù.
     if ( sDeleteCursor != NULL )
     {
         IDE_TEST( sDeleteCursor->beforeFirstModified( SMI_FIND_MODIFIED_OLD )
                   != IDE_SUCCESS );
 
         //------------------------------------------
-        // Referencing ê²€ì‚¬ë¥¼ ìœ„í•´ ì‚­ì œëœ Rowë“¤ì„ ê²€ìƒ‰
+        // Referencing °Ë»ç¸¦ À§ÇØ »èÁ¦µÈ RowµéÀ» °Ë»ö
         //------------------------------------------
 
         sOrgRow = sSearchRow = aDeleteTuple->row;
@@ -2319,11 +2333,11 @@ qmnMOVE::checkDeleteChildRefOnScan( qcTemplate     * aTemplate,
 
         while( sSearchRow != NULL )
         {
-            // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
+            // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
             IDE_TEST_RAISE( aTemplate->stmt->qmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
 
             //------------------------------------------
-            // Child Tableì— ëŒ€í•œ Referencing ê²€ì‚¬
+            // Child Table¿¡ ´ëÇÑ Referencing °Ë»ç
             //------------------------------------------
         
             IDE_TEST( qdnForeignKey::checkChildRefOnDelete(
@@ -2335,7 +2349,7 @@ qmnMOVE::checkDeleteChildRefOnScan( qcTemplate     * aTemplate,
                           ID_TRUE )
                       != IDE_SUCCESS );
         
-            // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
+            // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
             IDE_TEST_RAISE( aTemplate->stmt->qmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
 
             sOrgRow = sSearchRow = aDeleteTuple->row;
@@ -2385,7 +2399,7 @@ qmnMOVE::insertIndexTableCursor( qcTemplate     * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    MOVE êµ¬ë¬¸ ìˆ˜í–‰ ì‹œ index tableì— ëŒ€í•œ insert ìˆ˜í–‰
+ *    MOVE ±¸¹® ¼öÇà ½Ã index table¿¡ ´ëÇÑ insert ¼öÇà
  *
  * Implementation :
  *
@@ -2434,7 +2448,7 @@ qmnMOVE::deleteIndexTableCursor( qcTemplate     * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    MOVE êµ¬ë¬¸ ìˆ˜í–‰ ì‹œ index tableì— ëŒ€í•œ delete ìˆ˜í–‰
+ *    MOVE ±¸¹® ¼öÇà ½Ã index table¿¡ ´ëÇÑ delete ¼öÇà
  *
  * Implementation :
  *
@@ -2458,7 +2472,7 @@ qmnMOVE::deleteIndexTableCursor( qcTemplate     * aTemplate,
             // Nothing to do.
         }
 
-        // ë‹¤ë¥¸ index tableë„ update
+        // ´Ù¸¥ index tableµµ update
         IDE_TEST( qmsIndexTable::deleteIndexTableCursors(
                       aTemplate->stmt,
                       & (aDataPlan->deleteIndexTableCursorInfo),

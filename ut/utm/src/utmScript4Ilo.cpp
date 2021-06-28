@@ -22,7 +22,7 @@
  * NAME: utmScript4Ilo.cpp
  * 
  * DESCRIPTION: BUG-44234 Code Refactoring
- *   iloader ì‹¤í–‰ ìŠ¤í¬ë¦½íŠ¸ ì¶œë ¥ì„ ìœ„í•œ í•¨ìˆ˜ ëª¨ìŒ
+ *   iloader ½ÇÇà ½ºÅ©¸³Æ® Ãâ·ÂÀ» À§ÇÑ ÇÔ¼ö ¸ğÀ½
  */
 
 #include <utm.h>
@@ -68,7 +68,7 @@ void printFormOutScript( FILE  *aIlOutFp,
     idlOS::fprintf(aIlOutFp, " formout"); 
 
     /* BUG-44243 Code refactoring of iloader option printing.
-     * formout ì»¤ë§¨ë“œì—ì„œëŠ” íŒŒì¼ ì´ë¦„ì— parallel numberê°€ í•„ìš”í•˜ì§€ ì•ŠìŒ */
+     * formout Ä¿¸Çµå¿¡¼­´Â ÆÄÀÏ ÀÌ¸§¿¡ parallel number°¡ ÇÊ¿äÇÏÁö ¾ÊÀ½ */
     printOptionWithFile( aIlOutFp, aNeedQuote4File, ILO_FMT,
                          aUser, aTable, NULL, ILO_NO_PARALLEL );
 
@@ -102,7 +102,7 @@ void printOutScript( FILE  *aIlOutFp,
     idlOS::fprintf(aIlOutFp, " %s", UTM_STR_OUT); 
 
     /* BUG-44243 Code refactoring of iloader option printing.
-     * out ì»¤ë§¨ë“œì—ì„œëŠ” íŒŒì¼ ì´ë¦„ì— parallel numberê°€ í•„ìš”í•˜ì§€ ì•ŠìŒ */
+     * out Ä¿¸Çµå¿¡¼­´Â ÆÄÀÏ ÀÌ¸§¿¡ parallel number°¡ ÇÊ¿äÇÏÁö ¾ÊÀ½ */
     printOptionWithFile( aIlOutFp, aNeedQuote4File, ILO_FMT,
                          aUser, aTable, aPartName, ILO_NO_PARALLEL );
     printOptionWithFile( aIlOutFp, aNeedQuote4File, ILO_DAT,
@@ -155,6 +155,13 @@ void printOutScript( FILE  *aIlOutFp,
         /* Do nothing */
     }
 
+    /* BUG-48358 GeomFormat WKB */
+    if ( gProgOption.mbExistGeomFormat == ID_TRUE )
+    {
+        idlOS::fprintf(aIlOutFp, " -geom WKB");
+    }
+
+
     idlOS::fprintf(aIlOutFp, "\n");
 }
 
@@ -189,8 +196,8 @@ void printInScript( FILE  *aIlInFp,
         idlOS::fprintf(aIlInFp, " %s", UTM_STR_IN); 
 
         /* BUG-44243 Code refactoring of iloader option printing.
-         * in ì»¤ë§¨ë“œì—ì„œëŠ” íŒŒì¼ ì´ë¦„ì— parallel numberê°€ í•„ìš”í•˜ì§€ë§Œ, 
-         * -f ì˜µì…˜ì—ì„œëŠ” í•„ìš”ì—†ìŒ */
+         * in Ä¿¸Çµå¿¡¼­´Â ÆÄÀÏ ÀÌ¸§¿¡ parallel number°¡ ÇÊ¿äÇÏÁö¸¸, 
+         * -f ¿É¼Ç¿¡¼­´Â ÇÊ¿ä¾øÀ½ */
         printOptionWithFile( aIlInFp, aNeedQuote4File, ILO_FMT,
                              aUser, aTable, aPartName, ILO_NO_PARALLEL );
         printOptionWithFile( aIlInFp, aNeedQuote4File, ILO_DAT,
@@ -256,7 +263,7 @@ void printInScript( FILE  *aIlInFp,
 
 /*
  * BUG-44234 Code Refactoring
- *   iloader ì‹¤í–‰ ìŠ¤í¬ë¦½íŠ¸ì— íŒŒì¼ ì´ë¦„ê³¼ í•¨ê»˜ ì¶œë ¥ë˜ëŠ” ì˜µì…˜ì„ ìœ„í•œ í•¨ìˆ˜
+ *   iloader ½ÇÇà ½ºÅ©¸³Æ®¿¡ ÆÄÀÏ ÀÌ¸§°ú ÇÔ²² Ãâ·ÂµÇ´Â ¿É¼ÇÀ» À§ÇÑ ÇÔ¼ö
      ex) -d user_table.dat
          -d user_table.dat0
          -d user_table.dat.part

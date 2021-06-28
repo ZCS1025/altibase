@@ -26,14 +26,14 @@
 #include <smxTrans.h>
 #include <smxLegacyTransMgr.h>
 
-/* smiLegacyTransëŠ” smxLegacyTransMgrì„ ìœ„í•œ interfaceë‹¤. */
+/* smiLegacyTrans´Â smxLegacyTransMgrÀ» À§ÇÑ interface´Ù. */
 
 /***********************************************************************
  *
- * Description : Legacy Statementë¥¼ ìƒì„±í•œë‹¤.
+ * Description : Legacy Statement¸¦ »ı¼ºÇÑ´Ù.
  *
- * aLegacyTrans     - [IN] ìƒˆë¡œ ìƒì„±í•œ Legacy íŠ¸ëœì ì…˜ 
- * aOrgStmtListHead - [IN]  Commití•˜ëŠ” íŠ¸ëœì ì…˜ì˜ Statement List Header
+ * aLegacyTrans     - [IN] »õ·Î »ı¼ºÇÑ Legacy Æ®·£Á§¼Ç 
+ * aOrgStmtListHead - [IN]  CommitÇÏ´Â Æ®·£Á§¼ÇÀÇ Statement List Header
  *
  **********************************************************************/
 IDE_RC smiLegacyTrans::makeLegacyStmt( void          * aLegacyTrans,
@@ -50,7 +50,7 @@ IDE_RC smiLegacyTrans::makeLegacyStmt( void          * aLegacyTrans,
     IDE_ASSERT( aOrgStmtListHead != NULL );
 
     /* BUG-41342
-     * aOrgStmtListHead ì¤‘ ë°”ë€ŒëŠ” ê°’ì„ ë¯¸ë¦¬ ë°±ì—… */
+     * aOrgStmtListHead Áß ¹Ù²î´Â °ªÀ» ¹Ì¸® ¹é¾÷ */
     sBackupPrev     = aOrgStmtListHead->mNext->mPrev;
     sBackupNext     = aOrgStmtListHead->mPrev->mNext;
     sBackupAllPrev  = aOrgStmtListHead->mAllPrev;
@@ -162,7 +162,7 @@ IDE_RC smiLegacyTrans::makeLegacyStmt( void          * aLegacyTrans,
     {
         case 1:
             /* BUG-41342
-             * aOrgStmtListHead ì˜ ê°’ì´ ë³€ê²½ë  ìˆ˜ ìˆë‹¤. ë³µêµ¬í•´ ì¤€ë‹¤. */
+             * aOrgStmtListHead ÀÇ °ªÀÌ º¯°æµÉ ¼ö ÀÖ´Ù. º¹±¸ÇØ ÁØ´Ù. */
             aOrgStmtListHead->mNext->mPrev  = sBackupPrev;
             aOrgStmtListHead->mPrev->mNext  = sBackupNext;
             aOrgStmtListHead->mAllPrev      = sBackupAllPrev;
@@ -187,11 +187,11 @@ IDE_RC smiLegacyTrans::makeLegacyStmt( void          * aLegacyTrans,
 
 /***********************************************************************
  *
- * Description : Legacy Transactionì„ Listì—ì„œ ì œê±°í•˜ê³ ,
- *               í• ë‹¹ë°›ì€ ìì›ì„ í•´ì œí•œë‹¤.
+ * Description : Legacy TransactionÀ» List¿¡¼­ Á¦°ÅÇÏ°í,
+ *               ÇÒ´ç¹ŞÀº ÀÚ¿øÀ» ÇØÁ¦ÇÑ´Ù.
  *
- * aStmtListHead - [IN] ë™ì‘ì„ ì™„ë£Œí•œ Legacy TXì˜ Statement List Header
- * aSmxTrans     - [IN] ë™ì‘ì„ ì™„ë£Œí•œ íŠ¸ëœì ì…˜ (smxTrans)
+ * aStmtListHead - [IN] µ¿ÀÛÀ» ¿Ï·áÇÑ Legacy TXÀÇ Statement List Header
+ * aSmxTrans     - [IN] µ¿ÀÛÀ» ¿Ï·áÇÑ Æ®·£Á§¼Ç (smxTrans)
  *
  **********************************************************************/
 IDE_RC smiLegacyTrans::removeLegacyTrans( smiStatement * aStmtListHead,

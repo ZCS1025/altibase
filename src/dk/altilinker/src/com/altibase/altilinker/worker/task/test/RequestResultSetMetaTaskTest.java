@@ -184,84 +184,84 @@ public class RequestResultSetMetaTaskTest extends TaskTestCase
             
             sColumnMeta = sResultOperation.mColumnMeta[0];
             assertTrue(sColumnMeta.mColumnName.equals("C00"));
-            assertEquals(sColumnMeta.mColumnType, SQLType.SQL_CHAR);
+            assertEquals(sColumnMeta.mColumnType, AltibaseSQLType.SQL_CHAR);
             assertEquals(sColumnMeta.mNullable, Nullable.Nullable);
             assertEquals(sColumnMeta.mPrecision, 10);
             assertEquals(sColumnMeta.mScale, 0);
 
             sColumnMeta = sResultOperation.mColumnMeta[1];
             assertTrue(sColumnMeta.mColumnName.equals("C01"));
-            assertEquals(sColumnMeta.mColumnType, SQLType.SQL_VARCHAR);
+            assertEquals(sColumnMeta.mColumnType, AltibaseSQLType.SQL_VARCHAR);
             assertEquals(sColumnMeta.mNullable, Nullable.Nullable);
             assertEquals(sColumnMeta.mPrecision, 10);
             assertEquals(sColumnMeta.mScale, 0);
 
             sColumnMeta = sResultOperation.mColumnMeta[2];
             assertTrue(sColumnMeta.mColumnName.equals("C02"));
-            assertEquals(sColumnMeta.mColumnType, SQLType.SQL_SMALLINT);
+            assertEquals(sColumnMeta.mColumnType, AltibaseSQLType.SQL_SMALLINT);
             assertEquals(sColumnMeta.mNullable, Nullable.Nullable);
             assertEquals(sColumnMeta.mPrecision, 0);
             assertEquals(sColumnMeta.mScale, 0);
 
             sColumnMeta = sResultOperation.mColumnMeta[3];
             assertTrue(sColumnMeta.mColumnName.equals("C03"));
-            assertEquals(sColumnMeta.mColumnType, SQLType.SQL_INTEGER);
+            assertEquals(sColumnMeta.mColumnType, AltibaseSQLType.SQL_INTEGER);
             assertEquals(sColumnMeta.mNullable, Nullable.Nullable);
             assertEquals(sColumnMeta.mPrecision, 0);
             assertEquals(sColumnMeta.mScale, 0);
 
             sColumnMeta = sResultOperation.mColumnMeta[4];
             assertTrue(sColumnMeta.mColumnName.equals("C04"));
-            assertEquals(sColumnMeta.mColumnType, SQLType.SQL_BIGINT);
+            assertEquals(sColumnMeta.mColumnType, AltibaseSQLType.SQL_BIGINT);
             assertEquals(sColumnMeta.mNullable, Nullable.Nullable);
             assertEquals(sColumnMeta.mPrecision, 0);
             assertEquals(sColumnMeta.mScale, 0);
 
             sColumnMeta = sResultOperation.mColumnMeta[5];
             assertTrue(sColumnMeta.mColumnName.equals("C05"));
-            assertEquals(sColumnMeta.mColumnType, SQLType.SQL_REAL);
+            assertEquals(sColumnMeta.mColumnType, AltibaseSQLType.SQL_REAL);
             assertEquals(sColumnMeta.mNullable, Nullable.Nullable);
             assertEquals(sColumnMeta.mPrecision, 0);
             assertEquals(sColumnMeta.mScale, 0);
 
             sColumnMeta = sResultOperation.mColumnMeta[6];
             assertTrue(sColumnMeta.mColumnName.equals("C06"));
-            assertEquals(sColumnMeta.mColumnType, SQLType.SQL_FLOAT);
+            assertEquals(sColumnMeta.mColumnType, AltibaseSQLType.SQL_FLOAT);
             assertEquals(sColumnMeta.mNullable, Nullable.Nullable);
             assertEquals(sColumnMeta.mPrecision, 38);
             assertEquals(sColumnMeta.mScale, 0);
 
             sColumnMeta = sResultOperation.mColumnMeta[7];
             assertTrue(sColumnMeta.mColumnName.equals("C07"));
-            assertEquals(sColumnMeta.mColumnType, SQLType.SQL_DOUBLE);
+            assertEquals(sColumnMeta.mColumnType, AltibaseSQLType.SQL_DOUBLE);
             assertEquals(sColumnMeta.mNullable, Nullable.Nullable);
             assertEquals(sColumnMeta.mPrecision, 0);
             assertEquals(sColumnMeta.mScale, 0);
 
             sColumnMeta = sResultOperation.mColumnMeta[8];
             assertTrue(sColumnMeta.mColumnName.equals("C08"));
-            assertEquals(sColumnMeta.mColumnType, SQLType.SQL_TIMESTAMP);
+            assertEquals(sColumnMeta.mColumnType, AltibaseSQLType.SQL_TIMESTAMP);
             assertEquals(sColumnMeta.mNullable, Nullable.Nullable);
             assertEquals(sColumnMeta.mPrecision, 0);
             assertEquals(sColumnMeta.mScale, 0);
 
             sColumnMeta = sResultOperation.mColumnMeta[9];
             assertTrue(sColumnMeta.mColumnName.equals("C09"));
-            assertEquals(sColumnMeta.mColumnType, SQLType.SQL_NUMERIC);
+            assertEquals(sColumnMeta.mColumnType, AltibaseSQLType.SQL_NUMERIC);
             assertEquals(sColumnMeta.mNullable, Nullable.Nullable);
             assertEquals(sColumnMeta.mPrecision, 38);
             assertEquals(sColumnMeta.mScale, 20);
 
             sColumnMeta = sResultOperation.mColumnMeta[10];
             assertTrue(sColumnMeta.mColumnName.equals("C10"));
-            assertEquals(sColumnMeta.mColumnType, SQLType.SQL_NUMERIC);
+            assertEquals(sColumnMeta.mColumnType, AltibaseSQLType.SQL_NUMERIC);
             assertEquals(sColumnMeta.mNullable, Nullable.Nullable);
             assertEquals(sColumnMeta.mPrecision, 38);
             assertEquals(sColumnMeta.mScale, 20);
 
             sColumnMeta = sResultOperation.mColumnMeta[11];
             assertTrue(sColumnMeta.mColumnName.equals("C11"));
-            assertEquals(sColumnMeta.mColumnType, SQLType.SQL_FLOAT);
+            assertEquals(sColumnMeta.mColumnType, AltibaseSQLType.SQL_FLOAT);
             assertEquals(sColumnMeta.mNullable, Nullable.Nullable);
             assertEquals(sColumnMeta.mPrecision, 38);
             assertEquals(sColumnMeta.mScale, 0);

@@ -43,7 +43,7 @@ static IDE_RC mtfTo_fidEstimate( mtcNode     * aNode,
 mtfModule mtfTo_fid = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0, // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
+    1.0, // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfTo_fidFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -137,7 +137,7 @@ IDE_RC mtfTo_fidCalculate( mtcNode     * aNode,
 
     sInteger = *(mtdIntegerType*)aStack[1].value;
 
-    // XXX SD_MAKE_FIDë¥¼ smië¡œ ë°”ê¾¸ì–´ì•¼ í•œë‹¤.
+    // XXX SD_MAKE_FID¸¦ smi·Î ¹Ù²Ù¾î¾ß ÇÑ´Ù.
     *(mtdIntegerType*)aStack[0].value = SD_MAKE_FID( sInteger );
 
     return IDE_SUCCESS;

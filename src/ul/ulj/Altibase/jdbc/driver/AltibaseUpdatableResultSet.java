@@ -20,15 +20,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.sql.Array;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.Ref;
-import java.sql.SQLException;
-import java.sql.Time;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.List;
 
 import Altibase.jdbc.driver.datatype.Column;
@@ -40,9 +32,9 @@ public class AltibaseUpdatableResultSet extends AltibaseResultSet
 {
     private AltibaseReadableResultSet mBaseResultSet;
     private int                       mBaseResultRowIdColumnIndex;
-    private PreparedStatement         mUpdateStmt;
-    private PreparedStatement         mInsertStmt;
-    private PreparedStatement         mDeleteStmt;
+    private AltibasePreparedStatement mUpdateStmt;
+    private AltibasePreparedStatement mInsertStmt;
+    private AltibasePreparedStatement mDeleteStmt;
 
     private AltibaseReadableResultSet mInsertRow;
     private AltibaseReadableResultSet mUpdateRow;
@@ -50,7 +42,7 @@ public class AltibaseUpdatableResultSet extends AltibaseResultSet
 
     private boolean[]                 mUsedAsParameterForInsert;
     private boolean[]                 mUsedAsParameterForUpdate;
-    private int[]                     mLobLength;
+    private long[]                    mLobLength;  // BUG-47456 Support updateXXXStream(xxx, xxx, long)
 
     private static final byte         NOT_UPDATED           = 0x01;
     private static final byte         UPDATED_FOR_BINARY    = 0x02;
@@ -64,17 +56,17 @@ public class AltibaseUpdatableResultSet extends AltibaseResultSet
         mBaseResultSet = aBaseResultSet;
         mStatement = mBaseResultSet.mStatement;
 
-        // row idëŠ” targetì ˆ ë§¨ ëì— ë§ë¶™ëŠ”ë‹¤.
+        // row id´Â targetÀı ¸Ç ³¡¿¡ µ¡ºÙ´Â´Ù.
         mBaseResultRowIdColumnIndex = mBaseResultSet.getTargetColumnCount();
         mUsedAsParameterForInsert = new boolean[mBaseResultRowIdColumnIndex - 1];
         mUsedAsParameterForUpdate = new boolean[mBaseResultRowIdColumnIndex - 1];
         mUpdated = new byte[mBaseResultRowIdColumnIndex - 1];
         clearUpdated();
         
-        mDeleteStmt = mStatement.mConnection.prepareStatement(AltiSqlProcessor.makeDeleteRowSql(getBaseTableName()));
-        mInsertStmt = null; // insert, update êµ¬ë¬¸ì€ updateë˜ëŠ” ì»¬ëŸ¼ì˜ ê°œìˆ˜ì— ë”°ë¼ sqlë¬¸ì´ ê°€ë³€ì ì´ë‹¤.
+        mDeleteStmt = (AltibasePreparedStatement)mStatement.mConnection.prepareStatement(AltiSqlProcessor.makeDeleteRowSql(getBaseTableName()));
+        mInsertStmt = null; // insert, update ±¸¹®Àº updateµÇ´Â ÄÃ·³ÀÇ °³¼ö¿¡ µû¶ó sql¹®ÀÌ °¡º¯ÀûÀÌ´Ù.
         mUpdateStmt = null;
-        mLobLength = new int[mBaseResultRowIdColumnIndex - 1];
+        mLobLength = new long[mBaseResultRowIdColumnIndex - 1];
         
         mInsertRow = new AltibaseTempResultSet(mStatement, mBaseResultSet.getTargetColumns());
         mUpdateRow = mBaseResultSet;
@@ -82,8 +74,8 @@ public class AltibaseUpdatableResultSet extends AltibaseResultSet
 
     private String getBaseTableName() throws SQLException
     {
-        // UpdatableResultSetì„ ì–»ìœ¼ë ¤ë©´ ì›ë³¸ ì¿¼ë¦¬ê°€ 'ë‹¨ì¼ í…Œì´ë¸”ì— ëŒ€í•œ ì§ˆì˜'ì—¬ì•¼ í•œë‹¤ëŠ” ì œì•½ì´ ìˆë‹¤.
-        // ê·¸ëŸ¬ë¯€ë¡œ ì•„ë¬´ ì»¬ëŸ¼ì—ì„œë‚˜ í…Œì´ë¸” ì´ë¦„ì„ ì–»ì–´ì™€ë„ ëœë‹¤.
+        // UpdatableResultSetÀ» ¾òÀ¸·Á¸é ¿øº» Äõ¸®°¡ '´ÜÀÏ Å×ÀÌºí¿¡ ´ëÇÑ ÁúÀÇ'¿©¾ß ÇÑ´Ù´Â Á¦¾àÀÌ ÀÖ´Ù.
+        // ±×·¯¹Ç·Î ¾Æ¹« ÄÃ·³¿¡¼­³ª Å×ÀÌºí ÀÌ¸§À» ¾ò¾î¿Íµµ µÈ´Ù.
         return mBaseResultSet.getTargetColumnInfo(1).getBaseTableName();
     }
 
@@ -182,7 +174,7 @@ public class AltibaseUpdatableResultSet extends AltibaseResultSet
             {
                 mUpdateStmt.close();
             }
-            mUpdateStmt = mStatement.mConnection.prepareStatement(sBuf.toString());
+            mUpdateStmt = (AltibasePreparedStatement)mStatement.mConnection.prepareStatement(sBuf.toString());
         }
     }
 
@@ -228,7 +220,7 @@ public class AltibaseUpdatableResultSet extends AltibaseResultSet
             {
                 mInsertStmt.close();
             }
-            mInsertStmt = mStatement.mConnection.prepareStatement(sBuf.toString());
+            mInsertStmt = (AltibasePreparedStatement)mStatement.mConnection.prepareStatement(sBuf.toString());
         }
     }
 
@@ -387,7 +379,7 @@ public class AltibaseUpdatableResultSet extends AltibaseResultSet
                     break;
             }
         }
-        // ë§ˆì§€ë§‰ìœ¼ë¡œ where ì¡°ê±´ì˜ _prowidë¥¼ ì„¸íŒ…í•œë‹¤.
+        // ¸¶Áö¸·À¸·Î where Á¶°ÇÀÇ _prowid¸¦ ¼¼ÆÃÇÑ´Ù.
         mUpdateStmt.setLong(sPstmtParamIndex, mBaseResultSet.getLong(mBaseResultRowIdColumnIndex));
         mUpdateStmt.executeUpdate();
 
@@ -418,7 +410,7 @@ public class AltibaseUpdatableResultSet extends AltibaseResultSet
         Error.throwSQLException(ErrorDef.UNSUPPORTED_FEATURE, "Array type");
     }
 
-    public void updateAsciiStream(int aColumnIndex, InputStream aValue, int aLength) throws SQLException
+    public void updateAsciiStream(int aColumnIndex, InputStream aValue, long aLength) throws SQLException
     {
         throwErrorForClosed();
         mUpdated[aColumnIndex - 1] = UPDATED_FOR_ASCII;
@@ -431,7 +423,7 @@ public class AltibaseUpdatableResultSet extends AltibaseResultSet
         updateObject(aColumnIndex, aValue);
     }
 
-    public void updateBinaryStream(int aColumnIndex, InputStream aValue, int aLength) throws SQLException
+    public void updateBinaryStream(int aColumnIndex, InputStream aValue, long aLength) throws SQLException
     {
         throwErrorForClosed();
         mUpdated[aColumnIndex - 1] = UPDATED_FOR_BINARY; 
@@ -459,7 +451,7 @@ public class AltibaseUpdatableResultSet extends AltibaseResultSet
         updateObject(aColumnIndex, aValue);
     }
 
-    public void updateCharacterStream(int aColumnIndex, Reader aValue, int aLength) throws SQLException
+    public void updateCharacterStream(int aColumnIndex, Reader aValue, long aLength) throws SQLException
     {
         throwErrorForClosed();
         mUpdated[aColumnIndex - 1] = UPDATED_FOR_CHARACTER;
@@ -688,5 +680,23 @@ public class AltibaseUpdatableResultSet extends AltibaseResultSet
     int size()
     {
         return mBaseResultSet.size();
+    }
+
+    @Override
+    public void updateBlob(int aColumnIndex, InputStream aValue, long aLength) throws SQLException
+    {
+        updateBinaryStream(aColumnIndex, aValue, aLength);
+    }
+
+    @Override
+    public void updateClob(int aColumnIndex, Reader aReader, long aLength) throws SQLException
+    {
+        updateCharacterStream(aColumnIndex, aReader, aLength);
+    }
+
+    @Override
+    public void updateNString(int aColumnIndex, String aValue) throws SQLException
+    {
+        updateString(aColumnIndex, aValue);
     }
 }

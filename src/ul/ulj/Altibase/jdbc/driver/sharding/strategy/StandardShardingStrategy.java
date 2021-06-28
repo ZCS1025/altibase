@@ -29,7 +29,7 @@ import java.util.logging.Level;
 import static Altibase.jdbc.driver.sharding.util.ShardingTraceLogger.shard_log;
 
 /**
- * ìƒ¤ë”© ì»¬ëŸ¼ì´ í•˜ë‚˜ì¼ë•Œì˜ ìƒ¤ë”©ì„ ì²˜ë¦¬í•œë‹¤.
+ * »şµù ÄÃ·³ÀÌ ÇÏ³ªÀÏ¶§ÀÇ »şµùÀ» Ã³¸®ÇÑ´Ù.
  */
 public class StandardShardingStrategy implements ShardingStrategy
 {
@@ -64,38 +64,22 @@ public class StandardShardingStrategy implements ShardingStrategy
     }
 
     @SuppressWarnings("unchecked")
-    public Set<DataNode> doSharding(List<ShardingValue> aShardingValues) throws SQLException
+    public List<DataNode> doSharding(List<Comparable<?>> aShardingValues) throws SQLException
     {
-        ShardingValue sShardingValue = aShardingValues.iterator().next();
-        Set<DataNode> sResult = new HashSet<DataNode>();
-        for (PreciseShardingValue<?> sEach : transferToPreciseShardingValues((ListShardingValue)sShardingValue))
+        Set<DataNode> sResults = new TreeSet<DataNode>(); // BUG-47653 Áßº¹À» Á¦°ÅÇÏ±â À§ÇØ TreeSetÀ¸·Î ¼±¾ğ
+        for (Comparable<?> sEach : aShardingValues)
         {
-            Set<DataNode> sResults;
             try
             {
-                sResults = mDefaultShardingAlgorithm.doSharding(sEach, mDefaultNode);
+                sResults.addAll(mDefaultShardingAlgorithm.doSharding(sEach, mDefaultNode));
             }
             catch (SQLException aEx)
             {
                 shard_log(Level.SEVERE, aEx);
                 throw aEx;
             }
-            sResult.addAll(sResults);
         }
 
-        return sResult;
+        return new ArrayList<DataNode>(sResults);
     }
-
-    @SuppressWarnings("unchecked")
-    private List<PreciseShardingValue> transferToPreciseShardingValues(ListShardingValue<?> aShardingValue)
-    {
-        List<PreciseShardingValue> sResult = new ArrayList<PreciseShardingValue>();
-        for (Comparable<?> each : aShardingValue.getValues())
-        {
-            sResult.add(new PreciseShardingValue(aShardingValue.getColumnIdx(), each));
-        }
-
-        return sResult;
-    }
-
 }

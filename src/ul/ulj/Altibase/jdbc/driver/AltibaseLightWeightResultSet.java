@@ -19,23 +19,25 @@ package Altibase.jdbc.driver;
 import java.sql.SQLException;
 import java.util.List;
 
+import Altibase.jdbc.driver.datatype.Column;
 import Altibase.jdbc.driver.datatype.RowHandle;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
 
 /** 
- * ping ì¿¼ë¦¬ì— ì˜í•´ì„œ ìƒì„±ë˜ëŠ” ResultSet</br>
- * SELECT 1 ì˜ ê²°ê³¼ì™€ ë™ì¼í•œ rowë¥¼ ê°€ì§„ë‹¤. 
+ * ping Äõ¸®¿¡ ÀÇÇØ¼­ »ı¼ºµÇ´Â ResultSet</br>
+ * SELECT 1 ÀÇ °á°ú¿Í µ¿ÀÏÇÑ row¸¦ °¡Áø´Ù. 
  * @author yjpark
  *
  */
 public class AltibaseLightWeightResultSet extends AltibaseReadableResultSet
 {
-    private final List    mColumns;
-    private final int     mType;
-    private       boolean mResultExist;
+    private final List<Column> mColumns;
+    private final int          mType;
+    private boolean            mResultExist;
     
-    public AltibaseLightWeightResultSet(AltibaseStatement aStatement, List aColumns, int aResultSetType)
+    public AltibaseLightWeightResultSet(AltibaseStatement aStatement, List<Column> aColumns,
+                                        int aResultSetType)
     {
         mStatement = aStatement;
         mColumns = aColumns;
@@ -125,7 +127,7 @@ public class AltibaseLightWeightResultSet extends AltibaseReadableResultSet
         return 1;
     }
 
-    protected List getTargetColumns()
+    protected List<Column> getTargetColumns()
     {
         return mColumns;
     }

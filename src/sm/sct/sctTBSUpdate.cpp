@@ -27,9 +27,9 @@
 #include <sctTBSUpdate.h>
 
 /*
-    Tablespaceì˜ Attribute Flagë³€ê²½ì— ëŒ€í•œ ë¡œê·¸ë¥¼ ë¶„ì„í•œë‹¤.
+    TablespaceÀÇ Attribute Flagº¯°æ¿¡ ´ëÇÑ ·Î±×¸¦ ºĞ¼®ÇÑ´Ù.
 
-    [IN]  aValueSize     - Log Image ì˜ í¬ê¸° 
+    [IN]  aValueSize     - Log Image ÀÇ Å©±â 
     [IN]  aValuePtr      - Log Image
     [OUT] aAutoExtMode   - Auto extent mode
  */
@@ -52,13 +52,13 @@ IDE_RC sctTBSUpdate::getAlterAttrFlagImage( UInt       aValueSize,
 
 
 /*
-    Tablespaceì˜ Attribute Flagë³€ê²½ì— ëŒ€í•œ ë¡œê·¸ì˜ Redoìˆ˜í–‰
+    TablespaceÀÇ Attribute Flagº¯°æ¿¡ ´ëÇÑ ·Î±×ÀÇ Redo¼öÇà
 
-    [ ë¡œê·¸ êµ¬ì¡° ]
+    [ ·Î±× ±¸Á¶ ]
     After Image   --------------------------------------------
       UInt                aAfterAttrFlag
     
-    [ ALTER_TBS_AUTO_EXTEND ì˜ REDO ì²˜ë¦¬ ]
+    [ ALTER_TBS_AUTO_EXTEND ÀÇ REDO Ã³¸® ]
       (r-010) TBSNode.AttrFlag := AfterImage.AttrFlag
 */
 IDE_RC sctTBSUpdate::redo_SCT_UPDATE_ALTER_ATTR_FLAG(
@@ -73,34 +73,28 @@ IDE_RC sctTBSUpdate::redo_SCT_UPDATE_ALTER_ATTR_FLAG(
 {
 
     sctTableSpaceNode  * sSpaceNode;
-    UInt               * sAttrFlagPtr;
     UInt                 sAttrFlag;
     
     IDE_DASSERT( aTrans != NULL );
     ACP_UNUSED( aTrans );
     
-    // aValueSize, aValuePtr ì— ëŒ€í•œ ì¸ì DASSERTIONì€
-    // getAlterAttrFlagImage ì—ì„œ ì‹¤ì‹œ.
+    // aValueSize, aValuePtr ¿¡ ´ëÇÑ ÀÎÀÚ DASSERTIONÀº
+    // getAlterAttrFlagImage ¿¡¼­ ½Ç½Ã.
     IDE_TEST( getAlterAttrFlagImage( aValueSize,
                                        aValuePtr,
                                        & sAttrFlag ) != IDE_SUCCESS );
 
-    sctTableSpaceMgr::findSpaceNodeWithoutException( aSpaceID,
-                                                     (void**)&sSpaceNode);
+    sSpaceNode = sctTableSpaceMgr::findSpaceNodeWithoutException( aSpaceID );
     
     if ( sSpaceNode != NULL )
     {
-
-        // Tablespace Attributeë³€ê²½ì„ ìœ„í•´ Attribute Flag Pointerë¥¼ ê°€ì ¸ì˜¨ë‹¤
-        IDE_TEST( sctTableSpaceMgr::getTBSAttrFlagPtrByID( sSpaceNode->mID,
-                                                           & sAttrFlagPtr)
-                  != IDE_SUCCESS );
-
-        *sAttrFlagPtr  = sAttrFlag;
+        // Tablespace Attributeº¯°æÇÑ´Ù
+        sctTableSpaceMgr::setTBSAttrFlag( sSpaceNode,
+                                          sAttrFlag );
     }
     else
     {
-        // ì´ë¯¸ Dropëœ Tablespaceì¸ ê²½ìš° 
+        // ÀÌ¹Ì DropµÈ TablespaceÀÎ °æ¿ì 
         // nothing to do ...
     }
         
@@ -113,13 +107,13 @@ IDE_RC sctTBSUpdate::redo_SCT_UPDATE_ALTER_ATTR_FLAG(
 
 
 /*
-    Tablespaceì˜ Attribute Flagë³€ê²½ì— ëŒ€í•œ ë¡œê·¸ì˜ Undoìˆ˜í–‰
+    TablespaceÀÇ Attribute Flagº¯°æ¿¡ ´ëÇÑ ·Î±×ÀÇ Undo¼öÇà
 
-    [ ë¡œê·¸ êµ¬ì¡° ]
+    [ ·Î±× ±¸Á¶ ]
     After Image   --------------------------------------------
       UInt                aBeforeAttrFlag
     
-    [ ALTER_TBS_AUTO_EXTEND ì˜ REDO ì²˜ë¦¬ ]
+    [ ALTER_TBS_AUTO_EXTEND ÀÇ REDO Ã³¸® ]
       (r-010) TBSNode.AttrFlag := AfterImage.AttrFlag
 */
 IDE_RC sctTBSUpdate::undo_SCT_UPDATE_ALTER_ATTR_FLAG(
@@ -134,45 +128,39 @@ IDE_RC sctTBSUpdate::undo_SCT_UPDATE_ALTER_ATTR_FLAG(
 {
 
     sctTableSpaceNode  * sSpaceNode;
-    UInt               * sAttrFlagPtr;
     UInt                 sAttrFlag;
     
     IDE_DASSERT( aTrans != NULL );
     ACP_UNUSED( aTrans );
     
-    // aValueSize, aValuePtr ì— ëŒ€í•œ ì¸ì DASSERTIONì€
-    // getAlterAttrFlagImage ì—ì„œ ì‹¤ì‹œ.
+    // aValueSize, aValuePtr ¿¡ ´ëÇÑ ÀÎÀÚ DASSERTIONÀº
+    // getAlterAttrFlagImage ¿¡¼­ ½Ç½Ã.
     IDE_TEST( getAlterAttrFlagImage( aValueSize,
                                        aValuePtr,
                                        & sAttrFlag ) != IDE_SUCCESS );
 
-    sctTableSpaceMgr::findSpaceNodeWithoutException( aSpaceID,
-                                                     (void**)&sSpaceNode);
+    sSpaceNode = sctTableSpaceMgr::findSpaceNodeWithoutException( aSpaceID );
     
     if ( sSpaceNode != NULL )
     {
-
-        // Tablespace Attributeë³€ê²½ì„ ìœ„í•´ Attribute Flag Pointerë¥¼ ê°€ì ¸ì˜¨ë‹¤
-        IDE_TEST( sctTableSpaceMgr::getTBSAttrFlagPtrByID( sSpaceNode->mID,
-                                                           & sAttrFlagPtr)
-                  != IDE_SUCCESS );
-
-        *sAttrFlagPtr  = sAttrFlag;
+        // Tablespace Attributeº¯°æÇÑ´Ù
+        sctTableSpaceMgr::setTBSAttrFlag( sSpaceNode,
+                                          sAttrFlag );
 
         if (aIsRestart == ID_FALSE)
         {
-            // Log Anchorì— flush.
+            // Log Anchor¿¡ flush.
             IDE_TEST( smLayerCallback::updateTBSNodeAndFlush( (sctTableSpaceNode*)sSpaceNode )
                       != IDE_SUCCESS );
         }
         else
         {
-            // RESTARTì‹œì—ëŠ” Loganchorë¥¼ flushí•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // RESTART½Ã¿¡´Â Loganchor¸¦ flushÇÏÁö ¾Ê´Â´Ù.
         }
     }
     else
     {
-        // ì´ë¯¸ Dropëœ Tablespaceì¸ ê²½ìš° 
+        // ÀÌ¹Ì DropµÈ TablespaceÀÎ °æ¿ì 
         // nothing to do ...
     }
         

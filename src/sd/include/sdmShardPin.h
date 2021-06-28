@@ -40,17 +40,17 @@ typedef enum {
 /**************************************************************
                   STRUCTURE DEFINITION
  **************************************************************/
-typedef struct sdmMetaNodeInfo
+typedef struct sdmShardNodeInfo
 {
     /* Meta Node Info for shard pin */
-    sdiMetaNodeId           mMetaNodeId;
-} sdmMetaNodeInfo;
+    sdiShardNodeId           mShardNodeId;
+} sdmShardNodeInfo;
 
 typedef struct sdmShardPinInfo
 {
     UChar                   mVersion;
     UChar                   mReserved;
-    sdmMetaNodeInfo         mMetaNodeInfo;
+    sdmShardNodeInfo        mShardNodeInfo;
     UInt                    mSeq;
 } sdmShardPinInfo;
 
@@ -64,7 +64,7 @@ class sdmShardPinMgr
     static void         initialize();
     static void         finalize();
     static void         loadShardPinInfo();
-    static void         updateShardPinInfoOnRuntime( sdiLocalMetaNodeInfo *aMetaNodeInfo );
+    static void         updateShardPinInfoOnRuntime( sdiLocalMetaInfo *aMetaNodeInfo );
     static sdiShardPin  getNewShardPin();
     static void         shardPinToString( SChar *aDst, UInt aLen, sdiShardPin aShardPin );
 
@@ -72,11 +72,11 @@ class sdmShardPinMgr
     static inline idBool      isSupport();
     static inline UChar       getShardPinVersion();
     static inline void        initShardPinInfo( sdmShardPinInfo *aShardPinInfo );
-    static inline void        initMetaNodeInfo( sdmMetaNodeInfo *aMetaNodeInfo );
+    static inline void        initShardNodeID( sdmShardNodeInfo *aMetaNodeInfo );
     static inline sdiShardPin toShardPin( sdmShardPinInfo *aShardPinInfo );
     static inline void        toShardPinInfo( sdmShardPinInfo *aShardPinInfo, sdiShardPin aShardPin );
     static inline void        copyShardPinInfo( sdmShardPinInfo *aDst, sdmShardPinInfo *aSrc );
-    static inline void        copyMetaNodeInfo( sdmMetaNodeInfo *aDst, sdiLocalMetaNodeInfo *aSrc );
+    static inline void        copyShardNodeID( sdmShardNodeInfo *aDst, sdiLocalMetaInfo *aSrc );
     static inline idBool      isValidShardPinInfo( sdmShardPinInfo *aShardPinInfo );
 
 

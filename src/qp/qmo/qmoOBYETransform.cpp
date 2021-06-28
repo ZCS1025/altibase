@@ -19,7 +19,7 @@
  *
  * Description : ORDER BY Elimination Transformation
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
  *****************************************************************************/
 
@@ -30,59 +30,193 @@
 
 extern mtfModule mtfCount;
 
-IDE_RC qmoOBYETransform::doTransform( qcStatement * aStatement,
-                                      qmsQuerySet * aQuerySet )
+IDE_RC qmoOBYETransform::doTransform( qcStatement  * aStatement,
+                                      qmsParseTree * aParseTree )
 {
 /***********************************************************************
  *
- * Description : BUG-41183 Inline view ì˜ ë¶ˆí•„ìš”í•œ ORDER BY ì œê±°
- *
+ * Description : BUG-41183 Inline view ÀÇ ºÒÇÊ¿äÇÑ ORDER BY Á¦°Å
+ *               BUG-48941 where/having ÀýÀÇ ¼­ºêÄõ¸® ÇÁ¸®µðÅ¶ÀÇ ÀÎ¶óÀÎºä¿¡ ORDER BY Á¦°Å
  * Implementation :
  *
- *       ë‹¤ìŒ ì¡°ê±´ì„ ë§Œì¡±í•  ê²½ìš° inline view ì˜ order by ì ˆì„ ì œê±°í•œë‹¤.
+ *       ´ÙÀ½ Á¶°ÇÀ» ¸¸Á·ÇÒ °æ¿ì inline view ÀÇ order by ÀýÀ» Á¦°ÅÇÑ´Ù.
  *
- *       - SELECT count(*) êµ¬ë¬¸ì— í•œí•´
- *       - FROM ì ˆì˜ ëª¨ë“  inline view ì— ëŒ€í•´
- *       - LIMIT ì ˆì´ ì—†ì„ ê²½ìš°
+ *       Mode1 BUG-41183 
+ *        - SELECT count(*) ±¸¹®¿¡ ÇÑÇØ
+ *        - FROM ÀýÀÇ ¸ðµç inline view ¿¡ ´ëÇØ
+ *        - LIMIT ÀýÀÌ ¾øÀ» °æ¿ì
+ *       Mode2 BUG-48941 
+ *        - WHERE/HAVINGÀýÀÇ SUBQUERY¿¡ ÇÑÇØ
+ *        - SUBQUERY¿¡ LIMIT/TOP/ROWNUM/LEVELÀÌ ¾ø°í
+ *        - SUBQUERYÀÇ inline view¿¡ ´ëÇØ ( create view / recursive with view Á¦¿Ü)
+ *        - inline view ¾È¿¡ ¾Æ·¡ÀÇ Á¶°ÇÀÌ ¸ðµÎ ¾ø´Â °æ¿ì
+ *            Set OP ( µ¿ÀÏÇÑ ÀÌÀ¯·Î recursive withµµ ¾ÈµÊ)
+ *            group by/having Àý
+ *            LIMIT/TOPÀý
+ *            ROWNUM/LEVEL ÀÇ»çÄÃ·³
+ *            aggregation/nested aggregation/window function
  *
  ***********************************************************************/
+    UInt   sOBYEproperty;
 
-    qmsFrom      * sFrom = NULL;
-    qmsParseTree * sParseTree = NULL;
-    qmsQuerySet  * sQuerySet = NULL;
+    sOBYEproperty = QCU_OPTIMIZER_ORDER_BY_ELIMINATION_ENABLE;
+
+    // environmentÀÇ ±â·Ï
+    qcgPlan::registerPlanProperty(
+        aStatement,
+        PLAN_PROPERTY_OPTIMIZER_ORDER_BY_ELIMINATION_ENABLE );
+
+    if ( sOBYEproperty > 0)
+    {
+        if ( (sOBYEproperty & QCU_OBYE_MASK_MODE1) == QCU_OBYE_MASK_MODE1 )
+        {
+            QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_OBYE_1_MASK;
+            QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_OBYE_1_TRUE;
+        }
+        else
+        {
+            QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_OBYE_1_MASK;
+            QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_OBYE_1_FALSE;
+        }
+
+        if ( (sOBYEproperty & QCU_OBYE_MASK_MODE2)
+             == QCU_OBYE_MASK_MODE2 )
+        {
+            QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_OBYE_2_MASK;
+            QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_OBYE_2_TRUE;
+        }
+        else
+        {
+            QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_OBYE_2_MASK;
+            QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_OBYE_2_FALSE;
+        }
+
+        IDE_TEST( doTransformInternal( aStatement,
+                                       aParseTree->querySet,
+                                       aParseTree->limit,
+                                       ID_FALSE )
+                  != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmoOBYETransform::doTransformInternal( qcStatement * aStatement,
+                                              qmsQuerySet * aQuerySet,
+                                              qmsLimit    * aLimit,
+                                              idBool        aIsSubQPred )
+{
+    qmsFrom      * sFrom         = NULL;
+    idBool         sIsTransMode2 = ID_FALSE;
 
     IDU_FIT_POINT_FATAL( "qmoOBYETransform::doTransform::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // Á¶°Ç °Ë»ç
     //------------------------------------------
-
-    IDE_DASSERT( aQuerySet != NULL );
-
-    //------------------------------------------
-    // ì¡°ê±´ ê²€ì‚¬
-    //------------------------------------------
-
-    if ( QCU_OPTIMIZER_ORDER_BY_ELIMINATION_ENABLE == 1 )
+    if ( aQuerySet->setOp == QMS_NONE )
     {
-        if ( aQuerySet->setOp == QMS_NONE )
+        if ( ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_OBYE_2_MASK )
+               == QC_TMP_OBYE_2_TRUE ) &&
+             ( aIsSubQPred == ID_TRUE ) )
         {
-            IDE_DASSERT( aQuerySet->SFWGH != NULL );
-
-            for ( sFrom = aQuerySet->SFWGH->from; sFrom != NULL; sFrom = sFrom->next )
+            /* BUG-48941
+             *  mode2ÀÏ ¶§ parent query blockÀÇ Á¶°Ç È®ÀÎ
+             *    line view À§ ¸ðµç Äõ¸®ºí·Ï¿¡ ¾Æ·¡ Á¶°ÇÀÌ ÀÖ´Â°æ¿ì
+             *    OBYEÇÒ ¼ö ¾ø´Ù. */
+            if ( ( aLimit != NULL ) ||
+                 ( aQuerySet->SFWGH->rownum != NULL ) ||
+                 ( aQuerySet->SFWGH->level  != NULL ) ||
+                 ( aQuerySet->SFWGH->top    != NULL ) )
             {
-                if ( ( sFrom->tableRef != NULL ) &&
-                     ( sFrom->tableRef->view != NULL ) &&
-                     ( sFrom->tableRef->tableInfo->tableType == QCM_USER_TABLE ) )
+                sIsTransMode2 = ID_FALSE;
+            }
+            else
+            {
+                sIsTransMode2 = ID_TRUE; 
+            }
+        }
+
+        // from
+        for ( sFrom = aQuerySet->SFWGH->from;
+              sFrom != NULL;
+              sFrom = sFrom->next )
+        {
+            IDE_TEST( doTransform4FromTree( aStatement,
+                                            aQuerySet,
+                                            sFrom,
+                                            sIsTransMode2 )
+                      != IDE_SUCCESS );
+        }
+
+        // where
+        IDE_TEST( doTransform4Predicate( aStatement,
+                                         aQuerySet->SFWGH->where ) 
+                  != IDE_SUCCESS ); 
+
+        // having
+        IDE_TEST( doTransform4Predicate( aStatement,
+                                         aQuerySet->SFWGH->having ) 
+                  != IDE_SUCCESS ); 
+    }
+    else
+    {
+        IDE_TEST( doTransformInternal( aStatement,
+                                       aQuerySet->left,
+                                       aLimit,
+                                       aIsSubQPred )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( doTransformInternal( aStatement,
+                                       aQuerySet->right,
+                                       aLimit,
+                                       aIsSubQPred )
+                  != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+
+IDE_RC qmoOBYETransform::doTransform4FromTree( qcStatement * aStatement,
+                                               qmsQuerySet * aQuerySet, 
+                                               qmsFrom     * aFrom,
+                                               idBool        aIsTransMode2 )
+{
+    qmsParseTree * sParseTree    = NULL;
+    qmsQuerySet  * sQuerySet     = NULL;
+
+    if ( aFrom->joinType == QMS_NO_JOIN )
+    {
+        if ( aFrom->tableRef != NULL )
+        {
+            // recursive with view Á¦¿Ü
+            if ( ( aFrom->tableRef->view != NULL ) &&
+                 ( aFrom->tableRef->tableInfo->tableType == QCM_USER_TABLE ) )
+            {
+                // inline viewÀÇ parseTree/QuerySet
+                sParseTree = (qmsParseTree*)(aFrom->tableRef->view->myPlan->parseTree);
+                sQuerySet = sParseTree->querySet;
+
+                IDE_TEST( doTransformInternal( aStatement,
+                                               sQuerySet,
+                                               sParseTree->limit,
+                                               aIsTransMode2 )
+                          != IDE_SUCCESS );
+
+                // mode1
+                if ( ( sParseTree->orderBy != NULL ) &&
+                     ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_OBYE_1_MASK )
+                       == QC_TMP_OBYE_1_TRUE ) ) 
                 {
-                    // inline view
-                    sParseTree = (qmsParseTree*)(sFrom->tableRef->view->myPlan->parseTree);
-                    sQuerySet = sParseTree->querySet;
-
-                    IDE_TEST( doTransform( aStatement,
-                                           sQuerySet )
-                              != IDE_SUCCESS );
-
                     if ( ( aQuerySet->target->targetColumn->node.module == &mtfCount ) &&
                          ( aQuerySet->target->next == NULL ) &&
                          ( sParseTree->limit == NULL ) &&
@@ -90,41 +224,143 @@ IDE_RC qmoOBYETransform::doTransform( qcStatement * aStatement,
                     {
                         sParseTree->orderBy = NULL;
                     }
-                    else
+                }
+
+                if ( ( sParseTree->orderBy != NULL ) && 
+                     ( aIsTransMode2 == ID_TRUE ) )
+                {
+                    // mode2ÀÏ ¶§ Inline viewÀÇ Á¶°Ç È®ÀÎ
+                    // inlin view°¡ With viewÀÎ °æ¿ì Á¦¿Ü
+                    if ( ( ( aFrom->tableRef->flag & QMS_TABLE_REF_WITH_VIEW_MASK )
+                           == QMS_TABLE_REF_WITH_VIEW_FALSE ) &&
+                         ( canTranMode2ForInlineView( sParseTree ) == ID_TRUE ) )
                     {
-                        // Nothing to do.
+                        sParseTree->orderBy = NULL;
                     }
                 }
-                else
-                {
-                    // Nothing to do.
-                }
             }
-        }
-        else
-        {
-            IDE_TEST( doTransform( aStatement,
-                                   aQuerySet->left )
-                      != IDE_SUCCESS );
-
-            IDE_TEST( doTransform( aStatement,
-                                   aQuerySet->right )
-                      != IDE_SUCCESS );
         }
     }
     else
     {
-        // Nothing to do.
+        IDE_TEST( doTransform4FromTree( aStatement,
+                                        aQuerySet,
+                                        aFrom->left,
+                                        aIsTransMode2)
+                  != IDE_SUCCESS );
+
+        IDE_TEST( doTransform4FromTree( aStatement,
+                                        aQuerySet,
+                                        aFrom->right,
+                                        aIsTransMode2 )
+                  != IDE_SUCCESS );
     }
 
-    // environmentì˜ ê¸°ë¡
-    qcgPlan::registerPlanProperty(
-            aStatement,
-            PLAN_PROPERTY_OPTIMIZER_ORDER_BY_ELIMINATION_ENABLE );
-
     return IDE_SUCCESS;
-
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
+}
+
+IDE_RC qmoOBYETransform::doTransform4Predicate( qcStatement * aStatement,
+                                            qtcNode     * aNode )
+{
+    qmsParseTree * sSubParseTree = NULL;
+    qmsQuerySet  * sSubQuerySet  = NULL;
+    qtcNode      * sNode;
+
+    if ( aNode != NULL )
+    {
+        if ( ( aNode->lflag & QTC_NODE_SUBQUERY_MASK ) == QTC_NODE_SUBQUERY_EXIST )
+        {
+            if ( QTC_IS_SUBQUERY(aNode) == ID_TRUE )
+            {
+                sSubParseTree = (qmsParseTree*)(aNode->subquery->myPlan->parseTree);
+                sSubQuerySet = sSubParseTree->querySet;
+
+                if ( sSubQuerySet->setOp == QMS_NONE )
+                { 
+                    IDE_TEST( doTransformInternal( aStatement,
+                                                   sSubQuerySet,
+                                                   sSubParseTree->limit,
+                                                   ID_TRUE )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    IDE_TEST( doTransformInternal( aStatement,
+                                                   sSubQuerySet->left,
+                                                   sSubParseTree->limit,
+                                                   ID_TRUE )
+                              != IDE_SUCCESS );
+
+                    IDE_TEST( doTransformInternal( aStatement,
+                                                   sSubQuerySet->right,
+                                                   sSubParseTree->limit,
+                                                   ID_TRUE )
+                              != IDE_SUCCESS );
+                }
+            }
+            else
+            {
+                for( sNode = (qtcNode *)aNode->node.arguments;
+                     sNode != NULL;
+                     sNode = (qtcNode *)sNode->node.next )
+                {
+                    IDE_TEST( doTransform4Predicate( aStatement,
+                                                     sNode )
+                              != IDE_SUCCESS );
+                }
+            }
+        }
+    }
+
+    return IDE_SUCCESS;
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+idBool qmoOBYETransform::canTranMode2ForInlineView( qmsParseTree * aParseTree )
+{
+    qmsSFWGH       * sSFWGH;
+    qmsTarget      * sTarget;
+
+    if ( aParseTree->querySet->setOp != QMS_NONE )
+    {
+        IDE_CONT( INVALID_FORM );
+    }
+
+    sSFWGH = aParseTree->querySet->SFWGH;
+
+    if ( ( aParseTree->limit  != NULL ) ||
+         ( sSFWGH->rownum     != NULL ) ||
+         ( sSFWGH->level      != NULL ) ||
+         ( sSFWGH->top        != NULL ) ||
+         ( sSFWGH->group      != NULL ) ||
+         ( sSFWGH->having     != NULL ) ||
+         ( sSFWGH->aggsDepth1 != NULL ) ||
+         ( sSFWGH->aggsDepth2 != NULL ) )
+    {
+        IDE_CONT( INVALID_FORM );
+    }
+
+    // SELECTÀý °Ë»ç
+    for ( sTarget = sSFWGH->target;
+          sTarget != NULL;
+          sTarget = sTarget->next )
+    {
+        if ( ( sTarget->targetColumn->lflag & QTC_NODE_ANAL_FUNC_MASK )
+             == QTC_NODE_ANAL_FUNC_EXIST )
+        {
+            // Window functionÀ» »ç¿ëÇÑ °æ¿ì
+            IDE_CONT( INVALID_FORM );
+        }
+    }
+
+    return ID_TRUE;
+
+    IDE_EXCEPTION_CONT( INVALID_FORM );
+
+    return ID_FALSE;
 }

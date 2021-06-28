@@ -22,7 +22,7 @@
 #include <stm.h>
 #include <stmFixedTable.h>
 
-// Fixed Tableì˜ ë ˆì½”ë“œë¥¼ ì •ì˜í•œë‹¤.
+// Fixed TableÀÇ ·¹ÄÚµå¸¦ Á¤ÀÇÇÑ´Ù.
 stmUnitsFixedTbl     gLinearUnits2StrTbl[STM_NUM_LINEAR_UNITS] =
 {
     { "M",                   "Meter",                         1.0 },        

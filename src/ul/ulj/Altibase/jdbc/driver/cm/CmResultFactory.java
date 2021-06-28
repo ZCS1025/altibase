@@ -37,14 +37,17 @@ public class CmResultFactory
         register(new CmGetPlanResult());
         register(new CmXAResult());
         register(new CmXidResult());
+        register(new CmSetPropertyResult());       // TASK-7220 고성능 분산공유트랜잭션 정합성  
+        register(new CmShardTransactionResult());  // TASK-7220 고성능 분산공유트랜잭션 정합성       
     }
 
     private static void register(CmResult aResult)
     {
-        mTypes.put(String.valueOf(aResult.getResultOp()), aResult.getClass());        
+        int sResultOp = Byte.toUnsignedInt(aResult.getResultOp());  // BUG-48775
+        mTypes.put(String.valueOf(sResultOp), aResult.getClass());
     }
 
-    public static CmResult getInstance(byte aResultOp)
+    public static CmResult getInstance(int aResultOp)
     {
         try
         {

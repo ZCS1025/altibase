@@ -18,7 +18,7 @@
 /***********************************************************************
  * $Id: stdTypes.h 18883 2006-11-14 01:48:40Z sabbra $
  *
- * Description: Geometry ê°ì²´ ìë£Œ êµ¬ì¡°
+ * Description: Geometry °´Ã¼ ÀÚ·á ±¸Á¶
  **********************************************************************/
 
 #include <mtdTypes.h>
@@ -28,7 +28,7 @@
 
 //------------------------------------------------
 // PROJ-1586, BUG-15570
-// Clientì™€ Serverê°€ ìë£Œ êµ¬ì¡°ë¥¼ ê³µìœ í•  ìˆ˜ ìˆë„ë¡ í•¨.
+// Client¿Í Server°¡ ÀÚ·á ±¸Á¶¸¦ °øÀ¯ÇÒ ¼ö ÀÖµµ·Ï ÇÔ.
 //------------------------------------------------
 
 // Native Geometry Object Types
@@ -56,7 +56,9 @@ extern stdGeometryHeader    stdGeometryEmpty;
 #define STD_GEOCOLLECTION_NAME              "GEOMETRYCOLLECTION"
 #define STD_NULL_NAME                       "NULL"
 #define STD_EMPTY_NAME                      "EMPTY"
-/* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()ë¥¼ ì§€ì›í•´ì•¼ í•©ë‹ˆë‹¤. */
+/* PROJ-2422 srid */
+#define STD_SRID_NAME                       "SRID"
+/* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()¸¦ Áö¿øÇØ¾ß ÇÕ´Ï´Ù. */
 #define STD_RECTANGLE_NAME                  "RECTANGLE"
 
 
@@ -70,7 +72,9 @@ extern stdGeometryHeader    stdGeometryEmpty;
 #define STD_GEOCOLLECTION_NAME_LEN              (18)
 #define STD_NULL_NAME_LEN                       (4)
 #define STD_EMPTY_NAME_LEN                      (5)
-/* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()ë¥¼ ì§€ì›í•´ì•¼ í•©ë‹ˆë‹¤. */
+/* PROJ-2422 srid */
+#define STD_SRID_NAME_LEN                       (4)
+/* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()¸¦ Áö¿øÇØ¾ß ÇÕ´Ï´Ù. */
 #define STD_RECTANGLE_NAME_LEN                  (9)
 
 #define STD_GEOMETRY_ALIGN                  (ID_SIZEOF(SDouble))
@@ -85,6 +89,7 @@ extern stdGeometryHeader    stdGeometryEmpty;
 #define STD_PGEOHEAD_SIZE       ID_SIZEOF(stdGeometryHeader*)
 #define STD_PT2D_SIZE           ID_SIZEOF(stdPoint2D)
 #define STD_RN2D_SIZE           ID_SIZEOF(stdLinearRing2D)
+
 #define STD_POINT2D_SIZE        ID_SIZEOF(stdPoint2DType)
 #define STD_LINE2D_SIZE         ID_SIZEOF(stdLineString2DType)
 #define STD_POLY2D_SIZE         ID_SIZEOF(stdPolygon2DType)
@@ -92,6 +97,16 @@ extern stdGeometryHeader    stdGeometryEmpty;
 #define STD_MLINE2D_SIZE        ID_SIZEOF(stdMultiLineString2DType)
 #define STD_MPOLY2D_SIZE        ID_SIZEOF(stdMultiPolygon2DType)
 #define STD_COLL2D_SIZE         ID_SIZEOF(stdGeoCollection2DType)
+
+// PROJ-2422 srid Áö¿ø
+// srid°¡ Ãß°¡µÈ È®Àå Å¸ÀÔ
+#define STD_POINT2D_EXT_SIZE    ID_SIZEOF(stdPoint2DExtType)
+#define STD_LINE2D_EXT_SIZE     ID_SIZEOF(stdLineString2DExtType)
+#define STD_POLY2D_EXT_SIZE     ID_SIZEOF(stdPolygon2DExtType)
+#define STD_MPOINT2D_EXT_SIZE   ID_SIZEOF(stdMultiPoint2DExtType)
+#define STD_MLINE2D_EXT_SIZE    ID_SIZEOF(stdMultiLineString2DExtType)
+#define STD_MPOLY2D_EXT_SIZE    ID_SIZEOF(stdMultiPolygon2DExtType)
+#define STD_COLL2D_EXT_SIZE     ID_SIZEOF(stdGeoCollection2DExtType)
 
 #define STD_N_POINTS(x)         ((x)->mNumPoints)
 #define STD_N_RINGS(x)          ((x)->mNumRings)
@@ -110,7 +125,7 @@ extern stdGeometryHeader    stdGeometryEmpty;
 // From stdLinearRing
 #define STD_NEXT_RN2D(r)        (stdLinearRing2D*)((UChar*)(r+1) + \
                                 STD_PT2D_SIZE*STD_N_POINTS(r))
-// From stdLinearRing, stdLineStringType, stdTemporalLineStringType
+// From stdLinearRing, stdLineStringType
 #define STD_FIRST_PT2D(x)       (stdPoint2D*)((x)+1)
 #define STD_LAST_PT2D(x)        (STD_FIRST_PT2D(x)+STD_N_POINTS(x)-1)
 #define STD_POS_PT2D(x,n)       (STD_FIRST_PT2D(x)+(n))
@@ -170,7 +185,16 @@ extern stdGeometryHeader    stdGeometryEmpty;
 #define WKB_COLL_SIZE           (9) //ID_SIZEOF(WKBGeometryCollection) ( 5 + 4 )
 #define WKB_INT32_SIZE          (4)
 #define WKB_DOUBLE_SIZE         (8)
+#define WKB_UCHAR_SIZE          (1)
 
+#define EWKB_SRID_SIZE          (4)
+#define EWKB_POINT_SIZE         (25)//ID_SIZEOF(EWKBPoint)              ( 5 + 16 + 4)
+#define EWKB_LINE_SIZE          (13)//ID_SIZEOF(EWKBLineString)         ( 5 + 4 + 4 )
+#define EWKB_POLY_SIZE          (13)//ID_SIZEOF(EWKBPolygon)            ( 5 + 4 + 4 )
+#define EWKB_MPOINT_SIZE        (13)//ID_SIZEOF(EWKBMultiPoint)         ( 5 + 4 + 4 )
+#define EWKB_MLINE_SIZE         (13)//ID_SIZEOF(EWKBMultiLineString)    ( 5 + 4 + 4 )
+#define EWKB_MPOLY_SIZE         (13)//ID_SIZEOF(EWKBMultiPolygon)       ( 5 + 4 + 4 )
+#define EWKB_COLL_SIZE          (13)//ID_SIZEOF(EWKBGeometryCollection) ( 5 + 4 + 4 )
 
 #define WKB_N_PT(x)             (*((UInt*)(x)->mNumPoints))
 #define WKB_N_RN(x)             (*((UInt*)(x)->mNumRings))
@@ -183,12 +207,13 @@ extern stdGeometryHeader    stdGeometryEmpty;
 #define WKB_NEXT_PT(p)          (wkbPoint*)((UChar*)(p)+WKB_PT_SIZE)
 
 // From wkbLinearRing
-#define WKB_NEXT_RN(r)          (wkbLinearRing*)((UChar*)(r) + \
-                                WKB_RN_SIZE + WKB_PT_SIZE*WKB_N_PT(r));
 #define WKB_FIRST_PTR(r)        (wkbPoint*)((UChar*)(r)+WKB_RN_SIZE)
 
 // From WKBPolygon
 #define WKB_FIRST_RN(A)         (wkbLinearRing*)((UChar*)(A)+WKB_POLY_SIZE)
+
+// From EWKBPolygon
+#define EWKB_FIRST_RN(A)        (wkbLinearRing*)((UChar*)(A)+EWKB_POLY_SIZE)
 
 //-------------------------------------------------------------
 // Get Object
@@ -197,9 +222,10 @@ extern stdGeometryHeader    stdGeometryEmpty;
 #define WKB_NEXT_POINT(P)       (WKBPoint*)((UChar*)(P)+WKB_POINT_SIZE)
 
 // From WKBLineString
-#define WKB_NEXT_LINE(L)        (WKBLineString*)((UChar*)(L) + \
-                                WKB_LINE_SIZE + WKB_PT_SIZE*(L)->mNumPoints);
 #define WKB_FIRST_PTL(L)        (wkbPoint*)((UChar*)(L)+WKB_LINE_SIZE)
+
+// From EWKBLineString
+#define EWKB_FIRST_PTL(L)       (wkbPoint*)((UChar*)(L)+EWKB_LINE_SIZE)
 
 // From WKBPolygon
 
@@ -216,6 +242,20 @@ extern stdGeometryHeader    stdGeometryEmpty;
 #define WKB_FIRST_COLL(CO)      (WKBGeometry*)((UChar*)(CO)+WKB_COLL_SIZE);
 
 #define WKB_NEXT_GEOM(x)
+
+// From WKBMultiPoint
+#define EWKB_FIRST_POINT(MP)    (WKBPoint*)((UChar*)(MP)+EWKB_MPOINT_SIZE);
+
+// From WKBMultiLineString
+#define EWKB_FIRST_LINE(ML)     (WKBLineString*)((UChar*)(ML)+EWKB_MLINE_SIZE);
+
+// From stdMultiPolygonType
+#define EWKB_FIRST_POLY(MA)     (WKBPolygon*)((UChar*)(MA)+EWKB_MPOLY_SIZE);
+
+// From stdGeoCollectionType
+#define EWKB_FIRST_COLL(CO)     (WKBGeometry*)((UChar*)(CO)+EWKB_COLL_SIZE);
+
+#define EWKB_NEXT_GEOM(x)
 
 // Fix BUG-15999
 //==============================================================================
@@ -237,14 +277,14 @@ enum GeoStatusTypes
 };
 
 //=======================================================
-// BUGBUG - ìƒìœ„ í”„ë¡œì íŠ¸ì— ì˜í•´ ì œê±°ë˜ì–´ì•¼ í•¨.
+// BUGBUG - »óÀ§ ÇÁ·ÎÁ§Æ®¿¡ ÀÇÇØ Á¦°ÅµÇ¾î¾ß ÇÔ.
 //=======================================================
 
-// PROJ-1583 BLOB ê³¼ì˜ í†µí•©
-// PROJ-1587 MTì˜ ê°€ë³€ê¸¸ì´ ì²˜ë¦¬ ê¸°ëŠ¥
+// PROJ-1583 BLOB °úÀÇ ÅëÇÕ
+// PROJ-1587 MTÀÇ °¡º¯±æÀÌ Ã³¸® ±â´É
 // To Fix BUG-15365
-// MAX ê¸¸ì´ì˜ ê²½ìš° Typeì˜ ì œí•œì´ë©°,
-// Page ì œí•œì— ì˜í•´ ìµœëŒ€ í¬ê¸°ê°€ ê²°ì •ë  ìˆ˜ ìˆë‹¤
+// MAX ±æÀÌÀÇ °æ¿ì TypeÀÇ Á¦ÇÑÀÌ¸ç,
+// Page Á¦ÇÑ¿¡ ÀÇÇØ ÃÖ´ë Å©±â°¡ °áÁ¤µÉ ¼ö ÀÖ´Ù
 
 #define STD_GEOMETRY_PRECISION_DEFAULT (32000)
 
@@ -252,8 +292,8 @@ enum GeoStatusTypes
 //=======================================================
 // BUG-28821
 //=======================================================
-// STD_GEOMETRY_PRECISION_MINIMUMì€ í•˜ìœ„ ê°ì²´ê°€ ì—†ëŠ” ë©€í‹° ê°ì²´ë¥¼ ìµœì†Œ í¬í‚¤ë¡œ í•œë‹¤
-// ì´ë¡œ ì¸í•´  ( UInt(mNumObjects)+ SChar(padding[4]))ì˜ í¬ê¸°ê°€ ë˜ì–´ 8ì´ ëœë‹¤.
+// STD_GEOMETRY_PRECISION_MINIMUMÀº ÇÏÀ§ °´Ã¼°¡ ¾ø´Â ¸ÖÆ¼ °´Ã¼¸¦ ÃÖ¼Ò Å©Å°·Î ÇÑ´Ù
+// ÀÌ·Î ÀÎÇØ  ( UInt(mNumObjects)+ SChar(padding[4]))ÀÇ Å©±â°¡ µÇ¾î 8ÀÌ µÈ´Ù.
 
 #define STD_GEOMETRY_PRECISION_MINIMUM (8)                     // BUG-28821
 #define STD_GEOMETRY_PRECISION_MAXIMUM (104857600)             // 100M

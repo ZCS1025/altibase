@@ -370,8 +370,8 @@ static acp_sint32_t connectTimedWait(acp_sint32_t     aSocket,
         /**
          * [CAUTION]
          *
-         * Berkeley socket ê³¼ ë‹¤ë¥´ê²Œ blocking mode ì´ë”ë¼ë„
-         * rconect() í•¨ìˆ˜ëŠ” 'connecting' ìƒíƒœë¡œ ë°˜í™˜ë  ìˆ˜ ìˆìŒ.
+         * Berkeley socket °ú ´Ù¸£°Ô blocking mode ÀÌ´õ¶óµµ
+         * rconect() ÇÔ¼ö´Â 'connecting' »óÅÂ·Î ¹İÈ¯µÉ ¼ö ÀÖÀ½.
          */
 
         /* wait until connecting */

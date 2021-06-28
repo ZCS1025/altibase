@@ -19,11 +19,11 @@
  * $Id$
  *
  * Description :
- *     Shard Insert Graphë¥¼ ìœ„í•œ ìˆ˜í–‰ í•¨ìˆ˜
+ *     Shard Insert Graph¸¦ À§ÇÑ ¼öÇà ÇÔ¼ö
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -42,12 +42,12 @@ qmgShardInsert::init( qcStatement      * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgShardInsert Graphì˜ ì´ˆê¸°í™”
+ * Description : qmgShardInsert GraphÀÇ ÃÊ±âÈ­
  *
  * Implementation :
- *    (1) qmgShardInsertì„ ìœ„í•œ ê³µê°„ í• ë‹¹
- *    (2) graph( ëª¨ë“  Graphë¥¼ ìœ„í•œ ê³µí†µ ìë£Œ êµ¬ì¡°) ì´ˆê¸°í™”
- *    (3) out ì„¤ì •
+ *    (1) qmgShardInsertÀ» À§ÇÑ °ø°£ ÇÒ´ç
+ *    (2) graph( ¸ğµç Graph¸¦ À§ÇÑ °øÅë ÀÚ·á ±¸Á¶) ÃÊ±âÈ­
+ *    (3) out ¼³Á¤
  *
  ***********************************************************************/
 
@@ -57,21 +57,21 @@ qmgShardInsert::init( qcStatement      * aStatement,
     IDU_FIT_POINT_FATAL( "qmgShardInsert::init::__FT__" );
 
     //---------------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
 
     //---------------------------------------------------
-    // Insert Graphë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
+    // Insert Graph¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
     //---------------------------------------------------
 
-    // qmgShardInsertì„ ìœ„í•œ ê³µê°„ í• ë‹¹
+    // qmgShardInsertÀ» À§ÇÑ °ø°£ ÇÒ´ç
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmgShardINST ),
                                              (void**) &sMyGraph )
               != IDE_SUCCESS );
 
-    // Graph ê³µí†µ ì •ë³´ì˜ ì´ˆê¸°í™”
+    // Graph °øÅë Á¤º¸ÀÇ ÃÊ±âÈ­
     IDE_TEST( qmg::initGraph( & sMyGraph->graph ) != IDE_SUCCESS );
 
     sMyGraph->graph.type = QMG_SHARD_INSERT;
@@ -86,7 +86,7 @@ qmgShardInsert::init( qcStatement      * aStatement,
         // Nothing to do.
     }
 
-    // insertëŠ” querySetì´ ì—†ìŒ
+    // insert´Â querySetÀÌ ¾øÀ½
     sMyGraph->graph.myQuerySet = NULL;
 
     sMyGraph->graph.optimize = qmgShardInsert::optimize;
@@ -95,7 +95,7 @@ qmgShardInsert::init( qcStatement      * aStatement,
 
     sInsertTableRef = aParseTree->insertTableRef;
 
-    // Disk/Memory ì •ë³´ ì„¤ì •
+    // Disk/Memory Á¤º¸ ¼³Á¤
     if ( ( QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sInsertTableRef->table].lflag
            & MTC_TUPLE_STORAGE_MASK ) == MTC_TUPLE_STORAGE_DISK )
     {
@@ -109,25 +109,25 @@ qmgShardInsert::init( qcStatement      * aStatement,
     }
 
     //---------------------------------------------------
-    // Insert Graph ë§Œì„ ìœ„í•œ ì´ˆê¸°í™”
+    // Insert Graph ¸¸À» À§ÇÑ ÃÊ±âÈ­
     //---------------------------------------------------
 
-    // ìµœìƒìœ„ graphì¸ insert graphì— insert table ì •ë³´ë¥¼ ì„¤ì •
+    // ÃÖ»óÀ§ graphÀÎ insert graph¿¡ insert table Á¤º¸¸¦ ¼³Á¤
     sMyGraph->tableRef = sInsertTableRef;
 
-    // ìµœìƒìœ„ graphì¸ insert graphì— insert columns ì •ë³´ë¥¼ ì„¤ì •
+    // ÃÖ»óÀ§ graphÀÎ insert graph¿¡ insert columns Á¤º¸¸¦ ¼³Á¤
     sMyGraph->columns          = aParseTree->insertColumns;
     sMyGraph->columnsForValues = aParseTree->columnsForValues;
 
-    // ìµœìƒìœ„ graphì¸ insert graphì— insert values ì •ë³´ë¥¼ ì„¤ì •
+    // ÃÖ»óÀ§ graphÀÎ insert graph¿¡ insert values Á¤º¸¸¦ ¼³Á¤
     sMyGraph->rows           = aParseTree->rows;
     sMyGraph->valueIdx       = aParseTree->valueIdx;
     sMyGraph->canonizedTuple = aParseTree->canonizedTuple;
 
-    // ìµœìƒìœ„ graphì¸ insert graphì— queue ì •ë³´ë¥¼ ì„¤ì •
+    // ÃÖ»óÀ§ graphÀÎ insert graph¿¡ queue Á¤º¸¸¦ ¼³Á¤
     sMyGraph->queueMsgIDSeq = aParseTree->queueMsgIDSeq;
 
-    // ìµœìƒìœ„ graphì¸ insert graphì— sequence ì •ë³´ë¥¼ ì„¤ì •
+    // ÃÖ»óÀ§ graphÀÎ insert graph¿¡ sequence Á¤º¸¸¦ ¼³Á¤
     sMyGraph->nextValSeqs = aParseTree->common.nextValSeqs;
 
     // insert position
@@ -146,7 +146,7 @@ qmgShardInsert::init( qcStatement      * aStatement,
         sMyGraph->insertPos.size += 1;
     }
 
-    // out ì„¤ì •
+    // out ¼³Á¤
     *aGraph = (qmgGraph *)sMyGraph;
 
     return IDE_SUCCESS;
@@ -161,12 +161,12 @@ qmgShardInsert::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- * Description : qmgShardInsertì˜ ìµœì í™”
+ * Description : qmgShardInsertÀÇ ÃÖÀûÈ­
  *
  * Implementation :
  *    (1) CASE 1 : INSERT...VALUE(...(subquery)...)
- *        qmoSubquery::optimizeExpr()ì˜ ìˆ˜í–‰
- *    (2) ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì •
+ *        qmoSubquery::optimizeExpr()ÀÇ ¼öÇà
+ *    (2) °øÅë ºñ¿ë Á¤º¸ ¼³Á¤
  *
  ***********************************************************************/
 
@@ -182,14 +182,14 @@ qmgShardInsert::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     IDU_FIT_POINT_FATAL( "qmgShardInsert::optimize::__FT__" );
 
     //---------------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
     IDE_FT_ASSERT( aGraph != NULL );
 
     //---------------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //---------------------------------------------------
 
     sMyGraph = (qmgShardINST*) aGraph;
@@ -207,19 +207,19 @@ qmgShardInsert::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     sAnalyzeInfo = &(sMyGraph->shardAnalysis);
 
     //---------------------------------------------------
-    // insertë¥¼ ìœ„í•œ analyzeInfo ìƒì„±
+    // insert¸¦ À§ÇÑ analyzeInfo »ı¼º
     //---------------------------------------------------
 
     IDE_FT_ASSERT( sShardObjInfo != NULL );
 
-    // analyzerë¥¼ í†µí•˜ì§€ ì•Šê³  ì§ì ‘ analyze ì •ë³´ë¥¼ ìƒì„±í•œë‹¤.
+    // analyzer¸¦ ÅëÇÏÁö ¾Ê°í Á÷Á¢ analyze Á¤º¸¸¦ »ı¼ºÇÑ´Ù.
     IDE_TEST( sdi::setAnalysisResultForInsert( aStatement,
                                                sAnalyzeInfo,
                                                sShardObjInfo )
               != IDE_SUCCESS );
 
     //---------------------------------------------------
-    // insert query ìƒì„±
+    // insert query »ı¼º
     //---------------------------------------------------
 
     idlOS::snprintf( sMyGraph->shardQueryBuf,
@@ -229,7 +229,7 @@ qmgShardInsert::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                      sMyGraph->insertPos.stmtText + sMyGraph->insertPos.offset );
     sLen = idlOS::strlen( sMyGraph->shardQueryBuf );
 
-    // ì²«ë²ˆì§¸ ì»¬ëŸ¼ì€ hidden columnì´ ì•„ë‹ˆë‹¤.
+    // Ã¹¹øÂ° ÄÃ·³Àº hidden columnÀÌ ¾Æ´Ï´Ù.
     IDE_FT_ASSERT( sTableInfo->columnCount > 0 );
     IDE_FT_ASSERT( (sTableInfo->columns[0].flag & QCM_COLUMN_HIDDEN_COLUMN_MASK)
                  == QCM_COLUMN_HIDDEN_COLUMN_FALSE );
@@ -257,13 +257,13 @@ qmgShardInsert::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                     ERR_QUERY_BUFFER_OVERFLOW );
     idlOS::strcat( sMyGraph->shardQueryBuf, ")" );
 
-    // name positionìœ¼ë¡œ ê¸°ë¡í•œë‹¤.
+    // name positionÀ¸·Î ±â·ÏÇÑ´Ù.
     sMyGraph->shardQuery.stmtText = sMyGraph->shardQueryBuf;
     sMyGraph->shardQuery.offset   = 0;
     sMyGraph->shardQuery.size     = sLen;
 
     //---------------------------------------------------
-    // ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì •
+    // °øÅë ºñ¿ë Á¤º¸ ¼³Á¤
     //---------------------------------------------------
 
     // inputRecordCnt
@@ -289,7 +289,7 @@ qmgShardInsert::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     sMyGraph->graph.costInfo.totalAllCost = 0;
 
     //---------------------------------------------------
-    // Preserved Order ì„¤ì •
+    // Preserved Order ¼³Á¤
     //---------------------------------------------------
 
     sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
@@ -320,10 +320,10 @@ qmgShardInsert::makePlan( qcStatement     * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgShardInsertìœ¼ë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
+ * Description : qmgShardInsertÀ¸·Î ºÎÅÍ PlanÀ» »ı¼ºÇÑ´Ù.
  *
  * Implementation :
- *    - qmgShardInsertìœ¼ë¡œ ìƒì„±ê°€ëŠ¥í•œ Plan
+ *    - qmgShardInsertÀ¸·Î »ı¼º°¡´ÉÇÑ Plan
  *
  *           [INST]
  *
@@ -343,7 +343,7 @@ qmgShardInsert::makePlan( qcStatement     * aStatement,
     sInsParseTree = (qmmInsParseTree *)aStatement->myPlan->parseTree;
 
     //---------------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
@@ -356,15 +356,15 @@ qmgShardInsert::makePlan( qcStatement     * aStatement,
     aGraph->flag |= QMG_PARALLEL_IMPOSSIBLE_FALSE;
 
     // BUG-38410
-    // ìµœìƒìœ„ plan ì´ë¯€ë¡œ ê¸°ë³¸ê°’ì„ ì„¸íŒ…í•œë‹¤.
+    // ÃÖ»óÀ§ plan ÀÌ¹Ç·Î ±âº»°ªÀ» ¼¼ÆÃÇÑ´Ù.
     aGraph->flag &= ~QMG_PLAN_EXEC_REPEATED_MASK;
     aGraph->flag |= QMG_PLAN_EXEC_REPEATED_FALSE;
 
     //---------------------------
-    // Planì˜ ìƒì„±
+    // PlanÀÇ »ı¼º
     //---------------------------
 
-    // ìµœìƒìœ„ planì´ë‹¤.
+    // ÃÖ»óÀ§ planÀÌ´Ù.
     IDE_FT_ASSERT( aParent == NULL );
 
     IDE_TEST( qmoOneNonPlan::initSDIN( aStatement ,
@@ -373,16 +373,16 @@ qmgShardInsert::makePlan( qcStatement     * aStatement,
     sMyGraph->graph.myPlan = sPlan;
 
     //---------------------------
-    // í•˜ìœ„ Planì˜ ìƒì„±
+    // ÇÏÀ§ PlanÀÇ »ı¼º
     //---------------------------
 
     if ( sMyGraph->graph.left != NULL )
     {
         // BUG-38410
-        // SCAN parallel flag ë¥¼ ìì‹ ë…¸ë“œë¡œ ë¬¼ë ¤ì¤€ë‹¤.
+        // SCAN parallel flag ¸¦ ÀÚ½Ä ³ëµå·Î ¹°·ÁÁØ´Ù.
         aGraph->left->flag  |= (aGraph->flag & QMG_PLAN_EXEC_REPEATED_MASK);
 
-        // subqueryì˜ statementë¡œ makePlaní•œë‹¤.
+        // subqueryÀÇ statement·Î makePlanÇÑ´Ù.
         sSubQStatement = sInsParseTree->select;
 
         IDE_TEST( sMyGraph->graph.left->makePlan( sSubQStatement ,
@@ -390,7 +390,7 @@ qmgShardInsert::makePlan( qcStatement     * aStatement,
                                                   sMyGraph->graph.left )
                   != IDE_SUCCESS);
 
-        // childê°€ì ¸ì˜¤ê¸°
+        // child°¡Á®¿À±â
         sChildPlan = sMyGraph->graph.left->myPlan;
     }
     else
@@ -399,7 +399,7 @@ qmgShardInsert::makePlan( qcStatement     * aStatement,
     }
 
     //----------------------------
-    // INSTì˜ ìƒì„±
+    // INSTÀÇ »ı¼º
     //----------------------------
 
     sINSTInfo.tableRef          = sMyGraph->tableRef;
@@ -428,15 +428,15 @@ qmgShardInsert::makePlan( qcStatement     * aStatement,
               sMultiRows = sMultiRows->next )
         {
             //------------------------------------------
-            // INSERT ... VALUES êµ¬ë¬¸ ë‚´ì˜ Subquery ìµœì í™”
+            // INSERT ... VALUES ±¸¹® ³»ÀÇ Subquery ÃÖÀûÈ­
             //------------------------------------------
             // BUG-32584
-            // ëª¨ë“  ì„œë¸Œì¿¼ë¦¬ì— ëŒ€í•´ì„œ MakeGraph í•œí›„ì— MakePlanì„ í•´ì•¼ í•œë‹¤.
+            // ¸ğµç ¼­ºêÄõ¸®¿¡ ´ëÇØ¼­ MakeGraph ÇÑÈÄ¿¡ MakePlanÀ» ÇØ¾ß ÇÑ´Ù.
             for ( sValueNode = sMultiRows->values;
                   sValueNode != NULL;
                   sValueNode = sValueNode->next )
             {
-                // Subquery ì¡´ì¬í•  ê²½ìš° Subquery ìµœì í™”
+                // Subquery Á¸ÀçÇÒ °æ¿ì Subquery ÃÖÀûÈ­
                 if ( (sValueNode->value->lflag & QTC_NODE_SUBQUERY_MASK )
                      == QTC_NODE_SUBQUERY_EXIST )
                 {
@@ -455,7 +455,7 @@ qmgShardInsert::makePlan( qcStatement     * aStatement,
                   sValueNode != NULL;
                   sValueNode = sValueNode->next )
             {
-                // Subquery ì¡´ì¬í•  ê²½ìš° Subquery ìµœì í™”
+                // Subquery Á¸ÀçÇÒ °æ¿ì Subquery ÃÖÀûÈ­
                 if ( (sValueNode->value->lflag & QTC_NODE_SUBQUERY_MASK )
                      == QTC_NODE_SUBQUERY_EXIST )
                 {
@@ -492,7 +492,7 @@ qmgShardInsert::printGraph( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Graphë¥¼ êµ¬ì„±í•˜ëŠ” ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *    Graph¸¦ ±¸¼ºÇÏ´Â °øÅë Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  *
  * Implementation :
@@ -505,7 +505,7 @@ qmgShardInsert::printGraph( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgShardInsert::printGraph::__FT__" );
 
     //-----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //-----------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
@@ -515,7 +515,7 @@ qmgShardInsert::printGraph( qcStatement  * aStatement,
     sMyGraph = (qmgShardINST*)aGraph;
 
     //-----------------------------------
-    // Graphì˜ ì‹œì‘ ì¶œë ¥
+    // GraphÀÇ ½ÃÀÛ Ãâ·Â
     //-----------------------------------
 
     if ( aDepth == 0 )
@@ -530,7 +530,7 @@ qmgShardInsert::printGraph( qcStatement  * aStatement,
     }
 
     //-----------------------------------
-    // Graph ê³µí†µ ì •ë³´ì˜ ì¶œë ¥
+    // Graph °øÅë Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
     IDE_TEST( qmg::printGraph( aStatement,
@@ -540,7 +540,7 @@ qmgShardInsert::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // shard ì •ë³´ ì¶œë ¥
+    // shard Á¤º¸ Ãâ·Â
     //-----------------------------------
 
     IDE_TEST( qmgShardDML::printShardInfo( aStatement,
@@ -551,7 +551,7 @@ qmgShardInsert::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Child Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
+    // Child Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
     if ( aGraph->left != NULL )
@@ -568,7 +568,7 @@ qmgShardInsert::printGraph( qcStatement  * aStatement,
     }
 
     //-----------------------------------
-    // Graphì˜ ë§ˆì§€ë§‰ ì¶œë ¥
+    // GraphÀÇ ¸¶Áö¸· Ãâ·Â
     //-----------------------------------
 
     if ( aDepth == 0 )

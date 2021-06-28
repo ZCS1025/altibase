@@ -34,6 +34,20 @@ do                                                          \
     }                                                       \
 } while(0)
 
+/*
+ * TASK-7218 Multi-Error Handling 2nd
+ *   Å¬¶óÀÌ¾ðÆ®°¡ shardcli°¡ ¾Æ´Ñ User ¼¼¼ÇÀÌ¸é Multiple Error¸¦ Àü¼Û.
+ *   ±× ¿Ü ¼¼¼ÇÀº shardcli ³»ºÎ¿¡¼­ Multiple Error¸¦ ¸¸µç´Ù.
+ *   arrary-bindingÀº Multiple Error Àû¿ëÀÌ Á¦¿ÜµÈ´Ù.
+ */
+#define MMT_NEED_TO_SEND_MULTIPLE_ERROR(aSession, aExecuteOption)          \
+  ((((aSession) != NULL) &&                                                \
+    ((aSession)->isShardClient() == SDI_SHARD_CLIENT_FALSE) &&             \
+    ((aSession)->getShardSessionType() == SDI_SESSION_TYPE_USER) &&        \
+    (ideErrorCollectionSize() > 1) &&                                      \
+    ((aExecuteOption) <= CMP_DB_EXECUTE_NORMAL_EXECUTE ))                  \
+   ? ID_TRUE : ID_FALSE)
+
 typedef enum mmtServiceThreadState
 {
     MMT_SERVICE_THREAD_STATE_NONE,
@@ -49,7 +63,7 @@ typedef enum mmtServiceThreadRunMode
 } mmtServiceThreadRunMode;
 
 /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-   Service Threadì˜ í˜„ìž¬ busy , idleì—¬ë¶€.
+   Service ThreadÀÇ ÇöÀç busy , idle¿©ºÎ.
 */
 typedef enum mmtServiceThreadRunStatus
 {
@@ -87,7 +101,7 @@ typedef struct mmtServiceThreadInfo
     idvTime               mExecuteBegin;
     idvTime               mExecuteEnd;
     /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-       load-balance ì´ë ¥ì„ ì¶”ì í•˜ê¸° ìœ„í•˜ì—¬ ì¶”ê°€í•œ í•„ë“œìž„.
+       load-balance ÀÌ·ÂÀ» ÃßÀûÇÏ±â À§ÇÏ¿© Ãß°¡ÇÑ ÇÊµåÀÓ.
     */
     UInt                  mCurAddedTasks;
     UInt                  mInTaskCntFromIdle;
@@ -104,8 +118,8 @@ typedef struct mmtServiceThreadInfo
 } mmtServiceThreadInfo;
 
 /* ------------------------------------------------
- *  aBindData(cmtAny)ì˜ ë‚´ë¶€ ì •ë³´ë¥¼
- *  ê° íƒ€ìž…ì— ë§žê²Œ DescInfoë¥¼ ì±„ìš´ë‹¤.
+ *  aBindData(cmtAny)ÀÇ ³»ºÎ Á¤º¸¸¦
+ *  °¢ Å¸ÀÔ¿¡ ¸Â°Ô DescInfo¸¦ Ã¤¿î´Ù.
  * ----------------------------------------------*/
 
 typedef struct mmtCmsBindProfContext

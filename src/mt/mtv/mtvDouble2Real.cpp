@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtvDouble2Real.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtvDouble2Real.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -120,7 +120,7 @@ IDE_RC mtvCalculate_Double2Real( mtcNode*,
                         == ID_TRUE, ERR_VALUE_OVERFLOW );
 
         // To fix BUG-12281
-        // underflow ê²€ì‚¬
+        // underflow °Ë»ç
         if( ( idlOS::fabs( sDouble ) < MTD_REAL_MINIMUM ) &&
             ( *(mtdRealType*)aStack[0].value != 0 ) )
         {

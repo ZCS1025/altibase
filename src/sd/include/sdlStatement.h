@@ -70,6 +70,7 @@ struct sdlRemoteStmt
     iduListNode    mListNode;
     void         * mStmt;
     sdlFreeFlag    mFreeFlag;
+    UInt           mRemoteStmtId;
 };
 
 typedef struct sdlRemoteNode sdlRemoteNode;
@@ -81,6 +82,7 @@ struct sdlRemoteNode
 {
     iduListNode    mListNode;
     UInt           mNodeId;
+    UInt           mCurRemoteStmtId;
     iduList        mStmtListHead;
 };
 

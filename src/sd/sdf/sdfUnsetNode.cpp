@@ -49,7 +49,7 @@ static IDE_RC sdfEstimate( mtcNode*        aNode,
 mtfModule sdfUnsetNodeModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     sdfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -154,8 +154,21 @@ IDE_RC sdfCalculate_UnsetNode( mtcNode*     aNode,
     smiStatement              sSmiStmt;
     UInt                      sSmiStmtFlag;
     SInt                      sState = 0;
+    idBool                    sIsOldSessionShardMetaTouched = ID_FALSE;
+
+    sdiInternalOperation      sInternalOP = SDI_INTERNAL_OP_NOT;
 
     sStatement   = ((qcTemplate*)aTemplate)->stmt;
+
+    sStatement->mFlag &= ~QC_STMT_SHARD_META_CHANGE_MASK;
+    sStatement->mFlag |= QC_STMT_SHARD_META_CHANGE_TRUE;
+
+    /* BUG-47623 »þµå ¸ÞÅ¸ º¯°æ¿¡ ´ëÇÑ trc ·Î±×Áß commit ·Î±×¸¦ ÀÛ¼ºÇÏ±âÀü¿¡ DASSERT ·Î Á×´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù. */
+    if ( ( sStatement->session->mQPSpecific.mFlag & QC_SESSION_SHARD_META_TOUCH_MASK ) ==
+         QC_SESSION_SHARD_META_TOUCH_TRUE )
+    {
+        sIsOldSessionShardMetaTouched = ID_TRUE;
+    }
 
     // BUG-46366
     IDE_TEST_RAISE( ( QC_SMI_STMT(sStatement)->getTrans() == NULL ) ||
@@ -188,13 +201,26 @@ IDE_RC sdfCalculate_UnsetNode( mtcNode*     aNode,
         // shard node name
         sNodeName = (mtdCharType*)aStack[1].value;
 
-        IDE_TEST_RAISE( sNodeName->length > SDI_NODE_NAME_MAX_SIZE,
+        IDE_TEST_RAISE( sNodeName->length > SDI_CHECK_NODE_NAME_MAX_SIZE,
                         ERR_SHARD_NODE_NAME_TOO_LONG );
         idlOS::strncpy( sNodeNameStr,
                         (SChar*)sNodeName->value,
                         sNodeName->length );
         sNodeNameStr[sNodeName->length] = '\0';
 
+        // Internal Option
+        sInternalOP = (sdiInternalOperation)QCG_GET_SESSION_SHARD_INTERNAL_LOCAL_OPERATION( sStatement );
+
+        /* R2HA remove comments
+         *if ( SDU_SHARD_LOCAL_FORCE != 1 )
+         *{
+         *   // Shard Local OperationÀº internal ¿¡¼­¸¸ ¼öÇàµÇ¾î¾ß ÇÑ´Ù.
+         *   IDE_TEST_RAISE( ( QCG_GET_SESSION_IS_SHARD_INTERNAL_LOCAL_OPERATION( sStatement ) != ID_TRUE ) &&
+         *                   ( ( sStatement->session->mQPSpecific.mFlag & QC_SESSION_ALTER_META_MASK )
+         *                        != QC_SESSION_ALTER_META_ENABLE),
+         *                   ERR_INTERNAL_OPERATION );
+         *}
+         */
         //---------------------------------
         // Begin Statement for meta
         //---------------------------------
@@ -211,13 +237,45 @@ IDE_RC sdfCalculate_UnsetNode( mtcNode*     aNode,
         sState = 2;
 
         //---------------------------------
-        // Delete Meta
+        // Delete Node Meta
         //---------------------------------
 
         IDE_TEST( sdm::deleteNode( sStatement,
                                    (SChar*)sNodeNameStr,
                                    &sRowCnt )
                   != IDE_SUCCESS );
+
+        IDE_TEST_RAISE( sRowCnt == 0,
+                        ERR_INVALID_SHARD_NODE );
+        //---------------------------------
+        // Delete Replica Set Meta
+        //---------------------------------
+        /* Failover ¼öÇà½Ã ReplicaSetÀº Á¦°ÅµÇÁö ¾Ê°í ÀÚµ¿À¸·Î Á¶Á¤µÈ´Ù. */
+        switch ( sInternalOP )
+        {
+            case SDI_INTERNAL_OP_NOT:
+            case SDI_INTERNAL_OP_NORMAL:
+                IDE_TEST( sdm::deleteReplicaSet( sStatement,
+                                                 (SChar*)sNodeNameStr,
+                                                 ID_FALSE, /* drop force flag */
+                                                 &sRowCnt )
+                          != IDE_SUCCESS );
+
+                IDE_TEST_RAISE( sRowCnt == 0,
+                                ERR_INVALID_SHARD_NODE );
+
+                IDE_TEST( sdm::reorganizeReplicaSet( sStatement,
+                                                    (SChar*)sNodeNameStr,
+                                                    &sRowCnt )
+                          != IDE_SUCCESS );
+                break;
+            case SDI_INTERNAL_OP_FAILOVER:
+            case SDI_INTERNAL_OP_FAILBACK:
+                break;
+            default:
+                IDE_DASSERT( 0 );
+                break;
+        }
 
         //---------------------------------
         // End Statement
@@ -228,9 +286,6 @@ IDE_RC sdfCalculate_UnsetNode( mtcNode*     aNode,
 
         sState = 0;
         QC_SMI_STMT(sStatement) = sOldStmt;
-
-        IDE_TEST_RAISE( sRowCnt == 0,
-                        ERR_INVALID_SHARD_NODE );
     }
 
     *(mtdIntegerType*)aStack[0].value = 0;
@@ -257,8 +312,18 @@ IDE_RC sdfCalculate_UnsetNode( mtcNode*     aNode,
     {
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QRC_NO_GRANT ) );
     }
+    /* R2HA
+     * IDE_EXCEPTION( ERR_INTERNAL_OPERATION )
+     * {
+     *    IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+     *                             "sdfCalculate_UnsetNode",
+     *                             "SHARD_INTERNAL_LOCAL_OPERATION is not 1" ) );
+     * }
+     */
     IDE_EXCEPTION_END;
 
+    IDE_PUSH();
+    
     switch ( sState )
     {
         case 2:
@@ -276,6 +341,18 @@ IDE_RC sdfCalculate_UnsetNode( mtcNode*     aNode,
             break;
     }
 
+    /* BUG-47623 »þµå ¸ÞÅ¸ º¯°æ¿¡ ´ëÇÑ trc ·Î±×Áß commit ·Î±×¸¦ ÀÛ¼ºÇÏ±âÀü¿¡ DASSERT ·Î Á×´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù. */
+    if ( sIsOldSessionShardMetaTouched == ID_TRUE )
+    {
+        sdi::setShardMetaTouched( sStatement->session );
+    }
+    else
+    {
+        sdi::unsetShardMetaTouched( sStatement->session );
+    }
+
+    IDE_POP();
+    
     return IDE_FAILURE;
 
 }

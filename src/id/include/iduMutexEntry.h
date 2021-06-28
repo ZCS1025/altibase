@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduMutexEntry.h 85186 2019-04-09 07:37:00Z jayce.park $
+ * $Id: iduMutexEntry.h 86279 2019-10-15 01:10:42Z hykim $
  **********************************************************************/
 #ifndef _O_IDU_MUTEX_ENTRY_H_
 #define _O_IDU_MUTEX_ENTRY_H_ 1
@@ -34,7 +34,6 @@ public:
     iduMutexEntry   *mInfoPrev;
 
     idBool           mIdle;
-    UInt             mRecursiveCount;
 public:
 
     IDE_RC create(iduMutexKind);
@@ -89,47 +88,6 @@ public:
         return &(mMutex.mPosix.mMutex);
     }
 
-    inline void lockRecursive( idvSQL * aStatSQL )
-    {
-        idBool sRet;
-        trylock( &sRet );
-        if ( sRet != ID_TRUE )
-        {
-            /* Not locked */
-            if ( mStat.mOwner == (ULong)idlOS::thr_self() )
-            {
-                /* already locked by me*/
-                mStat.mAccLockCount++;
-            }
-            else
-            {
-                lock(aStatSQL);
-            }
-        }
-        mRecursiveCount++;
-    }
-
-    inline void unlockRecursive()
-    {
-        if( mStat.mOwner == (ULong)idlOS::thr_self() )
-        {
-            mRecursiveCount--;
-            if ( mRecursiveCount == 0 )
-            {
-                unlock();
-            }
-            else
-            {
-                /*do nothing, already done recursive count --*/
-                mStat.mAccLockCount--;
-            }
-        }
-        else
-        {
-            IDE_DASSERT( mStat.mOwner == (ULong)idlOS::thr_self() );
-        }
-    }
-
     inline idBool setIdle(idBool aIdle) {return (mIdle = aIdle);}
     inline idBool getIdle() {return mIdle;}
 
@@ -147,7 +105,7 @@ public:
     void             resetStat();
     void             setName(SChar *aName);
 
-    /* BUG-43940 V$mutexÏóêÏÑú mutex lockÏùÑ ÌöçÎìùÌïú Ïä§Î†àÎìú IDÏ∂úÎ†• */
+    /* BUG-43940 V$mutexø°º≠ mutex lock¿ª »πµÊ«— Ω∫∑πµÂ ID√‚∑¬ */
     void             setThreadID();
     ULong            getOwner() { return mStat.mOwner; } 
 };

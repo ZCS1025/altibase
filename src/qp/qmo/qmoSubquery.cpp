@@ -21,13 +21,13 @@
  * Description :
  *     Subquery Manager
  *
- *     ì§ˆì˜ ì²˜ë¦¬ ì¤‘ì— ë“±ì¥í•˜ëŠ” Subqueryì— ëŒ€í•œ ìµœì í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
- *     Subqueryì— ëŒ€í•˜ì—¬ ìµœì í™”ë¥¼ í†µí•œ Graph ìƒì„±,
- *     Graphë¥¼ ì´ìš©í•œ Plan Tree ìƒì„±ì„ ë‹´ë‹¹í•œë‹¤.
+ *     ÁúÀÇ Ã³¸® Áß¿¡ µîÀåÇÏ´Â Subquery¿¡ ´ëÇÑ ÃÖÀûÈ­¸¦ ¼öÇàÇÑ´Ù.
+ *     Subquery¿¡ ´ëÇÏ¿© ÃÖÀûÈ­¸¦ ÅëÇÑ Graph »ı¼º,
+ *     Graph¸¦ ÀÌ¿ëÇÑ Plan Tree »ı¼ºÀ» ´ã´çÇÑ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -71,7 +71,7 @@ qmoSubquery::makePlan( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : subqueryì— ëŒ€í•œ planìƒì„±
+ * Description : subquery¿¡ ´ëÇÑ plan»ı¼º
  *
  * Implementation :
  *
@@ -82,28 +82,28 @@ qmoSubquery::makePlan( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSubquery::makePlan::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aNode != NULL );
 
     //--------------------------------------
-    // subqueryì— ëŒ€í•œ plan tree ìƒì„±
+    // subquery¿¡ ´ëÇÑ plan tree »ı¼º
     //--------------------------------------
 
     if( ( aNode->node.lflag & MTC_NODE_OPERATOR_MASK )
         == MTC_NODE_OPERATOR_SUBQUERY )
     {
-        // subqueryì— ëŒ€í•œ plan ìƒì„±ì—¬ë¶€ íŒë‹¨í›„,
-        // plan treeê°€ ìƒì„±ë˜ì§€ ì•Šì•˜ìœ¼ë©´, plan tree ìƒì„±.
+        // subquery¿¡ ´ëÇÑ plan »ı¼º¿©ºÎ ÆÇ´ÜÈÄ,
+        // plan tree°¡ »ı¼ºµÇÁö ¾Ê¾ÒÀ¸¸é, plan tree »ı¼º.
         if( aNode->subquery->myPlan->plan == NULL )
         {
             aNode->subquery->myPlan->graph->myQuerySet->parentTupleID = aTupleID;
 
             /*
              * PROJ-2402
-             * subquery ì¸ ê²½ìš° parallel ìˆ˜í–‰ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+             * subquery ÀÎ °æ¿ì parallel ¼öÇà ÇÏÁö ¾Ê´Â´Ù.
              */
             aNode->subquery->myPlan->graph->flag &= ~QMG_PARALLEL_IMPOSSIBLE_MASK;
             aNode->subquery->myPlan->graph->flag |= QMG_PARALLEL_IMPOSSIBLE_TRUE;
@@ -152,12 +152,12 @@ qmoSubquery::optimize( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : Subqueryë¥¼ í¬í•¨í•œ qtcNodeì— ëŒ€í•œ ìµœì í™” ì ìš©
+ * Description : Subquery¸¦ Æ÷ÇÔÇÑ qtcNode¿¡ ´ëÇÑ ÃÖÀûÈ­ Àû¿ë
  *
- *   1. predicate í˜• subquery :
- *     (1) ì¼ë°˜ queryì˜ ìµœì í™”ì™€ ë™ì¼í•œ ìµœì í™” ì ìš© ê°€ëŠ¥
- *     (2) predicate subqueryë¥¼ ìœ„í•œ optimization tipì„ ì¶”ê°€ì ìœ¼ë¡œ ì ìš© ê°€ëŠ¥.
- *     ì˜ˆ) select * from t1 where i1 > (select sum(i2) from t2);
+ *   1. predicate Çü subquery :
+ *     (1) ÀÏ¹İ queryÀÇ ÃÖÀûÈ­¿Í µ¿ÀÏÇÑ ÃÖÀûÈ­ Àû¿ë °¡´É
+ *     (2) predicate subquery¸¦ À§ÇÑ optimization tipÀ» Ãß°¡ÀûÀ¸·Î Àû¿ë °¡´É.
+ *     ¿¹) select * from t1 where i1 > (select sum(i2) from t2);
  *                                ------------------------------
  *         update t1 set i1=1 where i2 in (select i1 from t2);
  *                                 ---------------------------
@@ -166,38 +166,38 @@ qmoSubquery::optimize( qcStatement  * aStatement,
  *         select * from t1 where ( subquery ) = ( subquery );
  *                                ----------------------------
  *
- *   2. expression í˜• subquery :
- *      ì˜ˆ) select (select sum(i1) from t2 ) from t1;
+ *   2. expression Çü subquery :
+ *      ¿¹) select (select sum(i1) from t2 ) from t1;
  *                 -------------------------
- *      ì˜ˆ) select * from t1 where i1 > 1 + (select sum(i1) from t2);
+ *      ¿¹) select * from t1 where i1 > 1 + (select sum(i1) from t2);
  *                                 --------------------------------
- *         ì´ì™€ ê°™ì€ ê²½ìš°ëŠ”, constantSubquery()ë¡œ ì²˜ë¦¬ë˜ì–´ì•¼ í•œë‹¤.
+ *         ÀÌ¿Í °°Àº °æ¿ì´Â, constantSubquery()·Î Ã³¸®µÇ¾î¾ß ÇÑ´Ù.
  *
  * Implementation :
  *
- *     0. Predicate/Expressioní˜•ì˜ íŒë‹¨
- *        (1) ë¹„êµì—°ì‚°ìì¸ ê²½ìš°
- *            - subqueryê°€ predicate ë°”ë¡œ í•˜ìœ„ì— ì¡´ì¬í•˜ëŠ” ê²½ìš°, predicateí˜•
- *            - ê·¸ë ‡ì§€ ì•Šì€ ê²½ìš°,  expressioní˜•ìœ¼ë¡œ ì²˜ë¦¬.
- *        (2) ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹Œ ê²½ìš°
- *            - Expressioní˜•
+ *     0. Predicate/ExpressionÇüÀÇ ÆÇ´Ü
+ *        (1) ºñ±³¿¬»êÀÚÀÎ °æ¿ì
+ *            - subquery°¡ predicate ¹Ù·Î ÇÏÀ§¿¡ Á¸ÀçÇÏ´Â °æ¿ì, predicateÇü
+ *            - ±×·¸Áö ¾ÊÀº °æ¿ì,  expressionÇüÀ¸·Î Ã³¸®.
+ *        (2) ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ñ °æ¿ì
+ *            - ExpressionÇü
  *
- *     1. predicate í˜• subqueryì´ë©´, ì•„ë˜ì˜ ê³¼ì •ì„ ìˆ˜í–‰.
+ *     1. predicate Çü subqueryÀÌ¸é, ¾Æ·¡ÀÇ °úÁ¤À» ¼öÇà.
  *
- *        (1). graph ìƒì„± ì „, predicateí˜• subquery ìµœì í™” ì ìš©
+ *        (1). graph »ı¼º Àü, predicateÇü subquery ÃÖÀûÈ­ Àû¿ë
  *            1) no calculate (not)EXISTS/(not)UNIQUE subquery
  *            2) transform NJ
  *
- *        (2). graph ìƒì„±
+ *        (2). graph »ı¼º
  *
- *        (3). graph ìƒì„± í›„, predicateí˜• subquery ìµœì í™” ì ìš©
+ *        (3). graph »ı¼º ÈÄ, predicateÇü subquery ÃÖÀûÈ­ Àû¿ë
  *            1) store and search
- *            2) INì ˆì˜ subquery keyRange
+ *            2) INÀıÀÇ subquery keyRange
  *            3) subquery keyRange
  *
- *     2. expression í˜• subqueryì´ë©´,
- *        (1) graph ìƒì„±
- *        (2) Tip ì ìš© : constantSubquery()ë¥¼ í˜¸ì¶œí•œë‹¤.
+ *     2. expression Çü subqueryÀÌ¸é,
+ *        (1) graph »ı¼º
+ *        (2) Tip Àû¿ë : constantSubquery()¸¦ È£ÃâÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -211,38 +211,38 @@ qmoSubquery::optimize( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSubquery::optimize::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aNode != NULL );
-    // aNode : (1) whereì ˆ ì²˜ë¦¬ì‹œ í˜¸ì¶œ : ìµœìƒìœ„ ë…¸ë“œê°€ ë¹„êµì—°ì‚°ì
-    //             selection graphì˜ myPredicate
-    //             CNFì˜ constantPredicate
-    //         (2) projectionì˜ targetì ˆ ì²˜ë¦¬
-    //         (3) grouping graphì˜ aggr, group, having
+    // aNode : (1) whereÀı Ã³¸®½Ã È£Ãâ : ÃÖ»óÀ§ ³ëµå°¡ ºñ±³¿¬»êÀÚ
+    //             selection graphÀÇ myPredicate
+    //             CNFÀÇ constantPredicate
+    //         (2) projectionÀÇ targetÀı Ã³¸®
+    //         (3) grouping graphÀÇ aggr, group, having
 
     //--------------------------------------
-    // subqueryì˜ predicate/expression íŒë‹¨
+    // subqueryÀÇ predicate/expression ÆÇ´Ü
     //--------------------------------------
 
     if( ( aNode->node.lflag & MTC_NODE_COMPARISON_MASK )
         == MTC_NODE_COMPARISON_TRUE )
     {
-        // whereì ˆì˜ predicate ë˜ëŠ”
-        // grouping graphì˜ having ì— ëŒ€í•œ ì²˜ë¦¬
+        // whereÀıÀÇ predicate ¶Ç´Â
+        // grouping graphÀÇ having ¿¡ ´ëÇÑ Ã³¸®
 
-        // whereì ˆì˜ í•˜ìœ„ê°€ ëª¨ë‘ subqueryì¼ ìˆ˜ë„ ìˆìœ¼ë¯€ë¡œ,
-        // ë¹„êµì—°ì‚°ì í•˜ìœ„ ë‘ê°œ ë…¸ë“œ ëª¨ë‘ subqueryì— ëŒ€í•œ ì²˜ë¦¬ë¥¼ í•´ì•¼ í•¨.
+        // whereÀıÀÇ ÇÏÀ§°¡ ¸ğµÎ subqueryÀÏ ¼öµµ ÀÖÀ¸¹Ç·Î,
+        // ºñ±³¿¬»êÀÚ ÇÏÀ§ µÎ°³ ³ëµå ¸ğµÎ subquery¿¡ ´ëÇÑ Ã³¸®¸¦ ÇØ¾ß ÇÔ.
 
-        // ë¹„êµì—°ì‚°ìê°€
-        // (1) IS NULL, IS NOT NULL, (NOT)EXISTS, (NOT)UNIQUE ì¸ ê²½ìš°,
-        //     ë¹„êµì—°ì‚°ì í•˜ìœ„ ë…¸ë“œëŠ” í•˜ë‚˜
-        // (2) BETWEEN, NOT BETWEEN ì¸ ê²½ìš°,
-        //     ë¹„êµì—°ì‚°ì í•˜ìœ„ ë…¸ë“œëŠ” ì„¸ê°œ
-        //     LIKE ì¸ ê²½ìš°, ë¹„êµì—°ì‚°ì í•˜ìœ„ ë…¸ë“œê°€ ë‘ê°œ ë˜ëŠ” ì„¸ê°œ
-        // (3) (1),(2)ì œì™¸í•œ ë¹„êµì—°ì‚°ì í•˜ìœ„ ë…¸ë“œëŠ” ë‘ê°œ
-        // ì´ë¯€ë¡œ, ì´ì— ëŒ€í•œ ëª¨ë“  ê³ ë ¤ê°€ ì´ë£¨ì–´ì ¸ì•¼ í•œë‹¤.
+        // ºñ±³¿¬»êÀÚ°¡
+        // (1) IS NULL, IS NOT NULL, (NOT)EXISTS, (NOT)UNIQUE ÀÎ °æ¿ì,
+        //     ºñ±³¿¬»êÀÚ ÇÏÀ§ ³ëµå´Â ÇÏ³ª
+        // (2) BETWEEN, NOT BETWEEN ÀÎ °æ¿ì,
+        //     ºñ±³¿¬»êÀÚ ÇÏÀ§ ³ëµå´Â ¼¼°³
+        //     LIKE ÀÎ °æ¿ì, ºñ±³¿¬»êÀÚ ÇÏÀ§ ³ëµå°¡ µÎ°³ ¶Ç´Â ¼¼°³
+        // (3) (1),(2)Á¦¿ÜÇÑ ºñ±³¿¬»êÀÚ ÇÏÀ§ ³ëµå´Â µÎ°³
+        // ÀÌ¹Ç·Î, ÀÌ¿¡ ´ëÇÑ ¸ğµç °í·Á°¡ ÀÌ·ç¾îÁ®¾ß ÇÑ´Ù.
 
         for( sNode = (qtcNode *)aNode->node.arguments,
                  sIsPredicate = ID_TRUE;
@@ -271,19 +271,19 @@ qmoSubquery::optimize( qcStatement  * aStatement,
     }
     else
     {
-        // projectionì˜ target
-        // grouping graphì˜ aggr, groupì— ëŒ€í•œ ì²˜ë¦¬
+        // projectionÀÇ target
+        // grouping graphÀÇ aggr, group¿¡ ´ëÇÑ Ã³¸®
 
         sIsPredicate = ID_FALSE;
     }
 
     //--------------------------------------
-    // subquery ì²˜ë¦¬
+    // subquery Ã³¸®
     //--------------------------------------
 
     if( sIsPredicate == ID_TRUE )
     {
-        // predicateí˜• subquery ì¸ ê²½ìš°
+        // predicateÇü subquery ÀÎ °æ¿ì
 
         sLeftNode = (qtcNode *)(aNode->node.arguments);
         sRightNode = (qtcNode *)(aNode->node.arguments->next);
@@ -294,14 +294,14 @@ qmoSubquery::optimize( qcStatement  * aStatement,
             if( ( sLeftNode->node.lflag & MTC_NODE_OPERATOR_MASK )
                 == MTC_NODE_OPERATOR_SUBQUERY )
             {
-                // ë¹„êµì—°ì‚°ì í•˜ìœ„ ë…¸ë“œê°€ subqueryì¸ ê²½ìš°ë¡œ,
-                // predicateí˜• subqueryì´ë‹¤.
+                // ºñ±³¿¬»êÀÚ ÇÏÀ§ ³ëµå°¡ subqueryÀÎ °æ¿ì·Î,
+                // predicateÇü subqueryÀÌ´Ù.
 
                 if ( sLeftNode->subquery->myPlan->graph == NULL )
                 {
                     // BUG-23362
-                    // subqueryê°€ ìµœì í™” ë˜ì§€ ì•Šì€ ê²½ìš°
-                    // ì¦‰, ì²« optimizeì¸ ê²½ìš°ì—ë§Œ ìˆ˜í–‰
+                    // subquery°¡ ÃÖÀûÈ­ µÇÁö ¾ÊÀº °æ¿ì
+                    // Áï, Ã¹ optimizeÀÎ °æ¿ì¿¡¸¸ ¼öÇà
                     IDE_TEST( optimizePredicate( aStatement,
                                                  aNode,
                                                  sRightNode,
@@ -311,13 +311,13 @@ qmoSubquery::optimize( qcStatement  * aStatement,
                 }
                 else
                 {
-                    // ì´ë¯¸ ìµœì í™” ìˆ˜í–‰í•¨
+                    // ÀÌ¹Ì ÃÖÀûÈ­ ¼öÇàÇÔ
                 }
             }
             else
             {
-                // ë¹„êµì—°ì‚°ì í•˜ìœ„ ë…¸ë“œê°€ subqueryê°€ ì•„ë‹Œ ê²½ìš°ë¡œ,
-                // expressioní˜• subqueryë¡œ ì²˜ë¦¬ë¨.
+                // ºñ±³¿¬»êÀÚ ÇÏÀ§ ³ëµå°¡ subquery°¡ ¾Æ´Ñ °æ¿ì·Î,
+                // expressionÇü subquery·Î Ã³¸®µÊ.
             }
         }
         else
@@ -335,14 +335,14 @@ qmoSubquery::optimize( qcStatement  * aStatement,
                 if( ( sNode->node.lflag & MTC_NODE_OPERATOR_MASK )
                     == MTC_NODE_OPERATOR_SUBQUERY )
                 {
-                    // ë¹„êµì—°ì‚°ì í•˜ìœ„ ë…¸ë“œê°€ subqueryì¸ ê²½ìš°ë¡œ,
-                    // predicateí˜• subqueryì´ë‹¤.
+                    // ºñ±³¿¬»êÀÚ ÇÏÀ§ ³ëµå°¡ subqueryÀÎ °æ¿ì·Î,
+                    // predicateÇü subqueryÀÌ´Ù.
 
                     if ( sNode->subquery->myPlan->graph == NULL )
                     {
                         // BUG-23362
-                        // subqueryê°€ ìµœì í™” ë˜ì§€ ì•Šì€ ê²½ìš°
-                        // ì¦‰, ì²« optimizeì¸ ê²½ìš°ì—ë§Œ ìˆ˜í–‰
+                        // subquery°¡ ÃÖÀûÈ­ µÇÁö ¾ÊÀº °æ¿ì
+                        // Áï, Ã¹ optimizeÀÎ °æ¿ì¿¡¸¸ ¼öÇà
                         IDE_TEST( optimizePredicate( aStatement,
                                                      aNode,
                                                      sLeftNode,
@@ -352,13 +352,13 @@ qmoSubquery::optimize( qcStatement  * aStatement,
                     }
                     else
                     {
-                        // ì´ë¯¸ ìµœì í™” ìˆ˜í–‰í•¨
+                        // ÀÌ¹Ì ÃÖÀûÈ­ ¼öÇàÇÔ
                     }
                 }
                 else
                 {
-                    // ë¹„êµì—°ì‚°ì í•˜ìœ„ ë…¸ë“œê°€ subqueryê°€ ì•„ë‹Œ ê²½ìš°ë¡œ,
-                    // expressioní˜• subqueryë¡œ ì²˜ë¦¬ë¨.
+                    // ºñ±³¿¬»êÀÚ ÇÏÀ§ ³ëµå°¡ subquery°¡ ¾Æ´Ñ °æ¿ì·Î,
+                    // expressionÇü subquery·Î Ã³¸®µÊ.
                 }
             }
             else
@@ -369,18 +369,18 @@ qmoSubquery::optimize( qcStatement  * aStatement,
     }
     else
     {
-        // expression í˜• subqueryì¸ ê²½ìš°,
+        // expression Çü subqueryÀÎ °æ¿ì,
 
-        // projectionì˜ target
-        // grouping graphì˜ aggr, group
-        // whereì ˆì˜ predicate ì¤‘ ë¹„êµì—°ì‚°ì í•˜ìœ„ ë…¸ë“œê°€ subqueryê°€ ì•„ë‹Œ ê²½ìš°,
-        //  (ì˜ˆ: i1 = 1 + subquery)
+        // projectionÀÇ target
+        // grouping graphÀÇ aggr, group
+        // whereÀıÀÇ predicate Áß ºñ±³¿¬»êÀÚ ÇÏÀ§ ³ëµå°¡ subquery°¡ ¾Æ´Ñ °æ¿ì,
+        //  (¿¹: i1 = 1 + subquery)
         IDE_TEST( optimizeExpr4Select( aStatement,
                                        aNode ) != IDE_SUCCESS );
 
     }
 
-    // BUG-45212 ì„œë¸Œì¿¼ë¦¬ì˜ ì™¸ë¶€ ì°¸ì¡° ì»¬ëŸ¼ì´ ì—°ì‚°ì¼ë•Œ ê²°ê³¼ê°€ í‹€ë¦½ë‹ˆë‹¤.
+    // BUG-45212 ¼­ºêÄõ¸®ÀÇ ¿ÜºÎ ÂüÁ¶ ÄÃ·³ÀÌ ¿¬»êÀÏ¶§ °á°ú°¡ Æ²¸³´Ï´Ù.
     if ( QTC_IS_SUBQUERY(aNode) == ID_TRUE )
     {
         sQuerySet = ((qmsParseTree*)aNode->subquery->myPlan->parseTree)->querySet;
@@ -417,9 +417,9 @@ qmoSubquery::optimizeExprMakeGraph( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : expressioní˜• subqueryì— ëŒ€í•œ ì²˜ë¦¬
+ * Description : expressionÇü subquery¿¡ ´ëÇÑ Ã³¸®
  *
- *  ì˜ˆ) INSERT...VALUES(...(subquery)...)
+ *  ¿¹) INSERT...VALUES(...(subquery)...)
  *      : INSERT INTO T1 VALUES ( (SELECT SUM(I2) FROM T2) );
  *      UPDATE...SET column = (subquery)
  *      : UPDATE SET I1=(SELECT SUM(I1) FROM T2) WHERE I1>1;
@@ -428,8 +428,8 @@ qmoSubquery::optimizeExprMakeGraph( qcStatement * aStatement,
  *
  * Implementation :
  *
- *     1. graph ìƒì„±
- *     2. constant subquery ìµœì í™” ì ìš© (store and search)
+ *     1. graph »ı¼º
+ *     2. constant subquery ÃÖÀûÈ­ Àû¿ë (store and search)
  *
  ***********************************************************************/
 
@@ -438,14 +438,14 @@ qmoSubquery::optimizeExprMakeGraph( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSubquery::optimizeExprMakeGraph::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aNode != NULL );
 
     //--------------------------------------
-    // subquery nodeë¥¼ ì°¾ëŠ”ë‹¤.
+    // subquery node¸¦ Ã£´Â´Ù.
     //--------------------------------------
 
     if( ( aNode->node.lflag & MTC_NODE_OPERATOR_MASK )
@@ -454,8 +454,8 @@ qmoSubquery::optimizeExprMakeGraph( qcStatement * aStatement,
         if ( aNode->subquery->myPlan->graph == NULL )
         {
             // BUG-23362
-            // subqueryê°€ ìµœì í™” ë˜ì§€ ì•Šì€ ê²½ìš°
-            // ì¦‰, ì²« optimizeì¸ ê²½ìš°ì—ë§Œ ìˆ˜í–‰
+            // subquery°¡ ÃÖÀûÈ­ µÇÁö ¾ÊÀº °æ¿ì
+            // Áï, Ã¹ optimizeÀÎ °æ¿ì¿¡¸¸ ¼öÇà
             IDE_TEST( makeGraph( aNode->subquery ) != IDE_SUCCESS );
 
             IDE_TEST( constantSubquery( aStatement,
@@ -494,13 +494,13 @@ qmoSubquery::optimizeExprMakePlan( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : expressioní˜• subqueryì— ëŒ€í•œ ì²˜ë¦¬
- *              ëª¨ë“  ì„œë¸Œì¿¼ë¦¬ì— ëŒ€í•´ì„œ optimizeExprMakePlan í•œí›„ì— í˜¸ì¶œí•´ì•¼í•œë‹¤.
+ * Description : expressionÇü subquery¿¡ ´ëÇÑ Ã³¸®
+ *              ¸ğµç ¼­ºêÄõ¸®¿¡ ´ëÇØ¼­ optimizeExprMakePlan ÇÑÈÄ¿¡ È£ÃâÇØ¾ßÇÑ´Ù.
  *              ( BUG-32854 )
  *
  * Implementation :
  *
- *     1. plan ìƒì„±
+ *     1. plan »ı¼º
  *
  ***********************************************************************/
 
@@ -509,14 +509,14 @@ qmoSubquery::optimizeExprMakePlan( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSubquery::optimizeExprMakePlan::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aNode != NULL );
 
     //--------------------------------------
-    // subquery nodeë¥¼ ì°¾ëŠ”ë‹¤.
+    // subquery node¸¦ Ã£´Â´Ù.
     //--------------------------------------
 
     if( ( aNode->node.lflag & MTC_NODE_OPERATOR_MASK )
@@ -525,7 +525,7 @@ qmoSubquery::optimizeExprMakePlan( qcStatement * aStatement,
         if ( aNode->subquery->myPlan->plan == NULL )
         {
             // BUG-23362
-            // planì´ ìƒì„±ë˜ì§€ ì•Šì€ ê²½ìš°ì—ë§Œ ìˆ˜í–‰
+            // planÀÌ »ı¼ºµÇÁö ¾ÊÀº °æ¿ì¿¡¸¸ ¼öÇà
             IDE_TEST( makePlan( aStatement,
                                 aTupleID,
                                 aNode ) != IDE_SUCCESS );
@@ -561,32 +561,32 @@ qmoSubquery::makeGraph( qcStatement  * aSubQStatement )
 {
 /***********************************************************************
  *
- * Description : subqueryì— ëŒ€í•œ graph ìƒì„±
+ * Description : subquery¿¡ ´ëÇÑ graph »ı¼º
  *
  * Implementation :
  *
- *     qmo::makeGraph()í˜¸ì¶œ
+ *     qmo::makeGraph()È£Ãâ
  *
  ***********************************************************************/
 
     IDU_FIT_POINT_FATAL( "qmoSubquery::makeGraph::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aSubQStatement != NULL );
 
     //------------------------------------------
     // PROJ-1413
-    // subqueryì— ëŒ€í•œ Query Transformation ìˆ˜í–‰
+    // subquery¿¡ ´ëÇÑ Query Transformation ¼öÇà
     //------------------------------------------
 
     IDE_TEST( qmo::doTransform( aSubQStatement ) != IDE_SUCCESS );
 
     //------------------------------------------
     // PROJ-2469 Optimize View Materialization
-    // subquery í•˜ìœ„ì˜ ë¶ˆí•„ìš”í•œ View Columnì„ ì°¾ì•„ì„œ flagì²˜ë¦¬
+    // subquery ÇÏÀ§ÀÇ ºÒÇÊ¿äÇÑ View ColumnÀ» Ã£¾Æ¼­ flagÃ³¸®
     //------------------------------------------
 
     IDE_TEST( qmoCheckViewColumnRef::checkViewColumnRef( aSubQStatement,
@@ -594,7 +594,7 @@ qmoSubquery::makeGraph( qcStatement  * aSubQStatement )
                                                          ID_TRUE ) != IDE_SUCCESS );
 
     //--------------------------------------
-    // subqueryì— ëŒ€í•œ graph ìƒì„±
+    // subquery¿¡ ´ëÇÑ graph »ı¼º
     //--------------------------------------
 
     IDE_TEST( qmo::makeGraph( aSubQStatement ) != IDE_SUCCESS );
@@ -615,7 +615,7 @@ qmoSubquery::checkSubqueryType( qcStatement     * aStatement,
 {
 /***********************************************************************
  *
- * Description : Subquery typeì„ íŒë‹¨í•œë‹¤.
+ * Description : Subquery typeÀ» ÆÇ´ÜÇÑ´Ù.
  *
  *     < Subquery Type >
  *      -----------------------------------------------
@@ -632,17 +632,17 @@ qmoSubquery::checkSubqueryType( qcStatement     * aStatement,
  *
  * Implementation :
  *
- *     outer columnê³¼ aggregation ì¡´ì¬ìœ ë¬´ë¥¼ ì¡°ì‚¬í•´ì„œ, subquery typeì„ ë°˜í™˜.
+ *     outer column°ú aggregation Á¸ÀçÀ¯¹«¸¦ Á¶»çÇØ¼­, subquery typeÀ» ¹İÈ¯.
  *
- *     SETì ˆì˜ ê²½ìš°, ì¼ë°˜ queryì™€ ë™ì¼í•˜ê²Œ ì²˜ë¦¬ë˜ë©°, type N or Jë¡œ ì„¤ì •ëœë‹¤.
+ *     SETÀıÀÇ °æ¿ì, ÀÏ¹İ query¿Í µ¿ÀÏÇÏ°Ô Ã³¸®µÇ¸ç, type N or J·Î ¼³Á¤µÈ´Ù.
  *
- *     1. outer column ì¡´ì¬ìœ ë¬´ íŒë‹¨
- *        dependenciesë¡œ íŒë‹¨
+ *     1. outer column Á¸ÀçÀ¯¹« ÆÇ´Ü
+ *        dependencies·Î ÆÇ´Ü
  *        subqueryNode.dependencies != 0
  *
- *     2. aggregation ì¡´ì¬ìœ ë¬´ íŒë‹¨
- *        qmsSFWGHì—ì„œ ê´€ë¦¬í•˜ê³  ìˆëŠ”
- *        (1) aggregationì •ë³´ (2) group ì •ë³´ë¡œ íŒë‹¨.
+ *     2. aggregation Á¸ÀçÀ¯¹« ÆÇ´Ü
+ *        qmsSFWGH¿¡¼­ °ü¸®ÇÏ°í ÀÖ´Â
+ *        (1) aggregationÁ¤º¸ (2) group Á¤º¸·Î ÆÇ´Ü.
  *
  ***********************************************************************/
 
@@ -654,14 +654,14 @@ qmoSubquery::checkSubqueryType( qcStatement     * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSubquery::checkSubqueryType::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aSubqueryNode != NULL );
     IDE_DASSERT( aType != NULL );
 
     //--------------------------------------
-    // subquery type íŒë‹¨
+    // subquery type ÆÇ´Ü
     //--------------------------------------
 
     sQuerySet =
@@ -692,12 +692,12 @@ qmoSubquery::checkSubqueryType( qcStatement     * aStatement,
     if ( sExistOuterColumn == ID_FALSE )
     {
         //--------------------------------------
-        // outer columnì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
+        // outer columnÀÌ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
         //--------------------------------------
 
         if( sQuerySet->setOp == QMS_NONE )
         {
-            // SETì ˆì´ ì•„ë‹Œ ê²½ìš°,
+            // SETÀıÀÌ ¾Æ´Ñ °æ¿ì,
 
             IDE_FT_ASSERT( sSFWGH != NULL );
             
@@ -705,59 +705,59 @@ qmoSubquery::checkSubqueryType( qcStatement     * aStatement,
             {
                 if( sSFWGH->aggsDepth1 == NULL )
                 {
-                    // aggregationì´ ì¡´ì¬í•˜ì§€ ì•ŠìŒ.
+                    // aggregationÀÌ Á¸ÀçÇÏÁö ¾ÊÀ½.
                     sType = QMO_TYPE_N;
                 }
                 else
                 {
-                    // aggregationì´ ì¡´ì¬í•¨.
+                    // aggregationÀÌ Á¸ÀçÇÔ.
                     sType = QMO_TYPE_A;
                 }
             }
             else
             {
-                // aggregationì´ ì¡´ì¬í•¨.
+                // aggregationÀÌ Á¸ÀçÇÔ.
                 sType = QMO_TYPE_A;
             }
         }
         else
         {
-            // SETì ˆì¸ ê²½ìš°,
+            // SETÀıÀÎ °æ¿ì,
             sType = QMO_TYPE_N;
         }
     }
     else
     {
         //--------------------------------------
-        // outer columnì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+        // outer columnÀÌ Á¸ÀçÇÏ´Â °æ¿ì
         //--------------------------------------
 
         if( sQuerySet->setOp == QMS_NONE )
         {
-            // SET ì ˆì´ ì•„ë‹Œ ê²½ìš°,
+            // SET ÀıÀÌ ¾Æ´Ñ °æ¿ì,
 
             if( sSFWGH->group == NULL )
             {
                 if( sSFWGH->aggsDepth1 == NULL )
                 {
-                    // aggregationì´ ì¡´ì¬í•˜ì§€ ì•ŠìŒ.
+                    // aggregationÀÌ Á¸ÀçÇÏÁö ¾ÊÀ½.
                     sType = QMO_TYPE_J;
                 }
                 else
                 {
-                    // aggregationì´ ì¡´ì¬í•¨.
+                    // aggregationÀÌ Á¸ÀçÇÔ.
                     sType = QMO_TYPE_JA;
                 }
             }
             else
             {
-                // aggregationì´ ì¡´ì¬í•¨.
+                // aggregationÀÌ Á¸ÀçÇÔ.
                 sType = QMO_TYPE_JA;
             }
         }
         else
         {
-            // SET ì ˆì¸ ê²½ìš°,
+            // SET ÀıÀÎ °æ¿ì,
 
             sType = QMO_TYPE_J;
         }
@@ -776,20 +776,20 @@ void qmoSubquery::checkSubqueryDependency( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description : BUG-36575
- *               Subqueryê°€ parent querySetì— ì˜ì¡´ì„±ì´ ìˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+ *               Subquery°¡ parent querySet¿¡ ÀÇÁ¸¼ºÀÌ ÀÖ´ÂÁö °Ë»çÇÑ´Ù.
  *
- *   ì˜ˆ1) ë‹¤ìŒ ì¿¼ë¦¬ì—ì„œ t3.i1ì€ parent querySetê³¼ëŠ” ë¬´ê´€í•˜ë‹¤.
+ *   ¿¹1) ´ÙÀ½ Äõ¸®¿¡¼­ t3.i1Àº parent querySet°ú´Â ¹«°üÇÏ´Ù.
  *        select 
  *            (select count(*) from t1 where i1 in (select i1 from t2 where i1=t3.i1))
  *        from t3;                                                             ^^^^^
  *
- *   ì˜ˆ2) ë‹¤ìŒ ì¿¼ë¦¬ì—ì„œ t3.i1ì€ parent querySetê³¼ëŠ” ë¬´ê´€í•˜ë‹¤.
+ *   ¿¹2) ´ÙÀ½ Äõ¸®¿¡¼­ t3.i1Àº parent querySet°ú´Â ¹«°üÇÏ´Ù.
  *        select 
  *            (select count(*) from t1 where i1 in
  *                (select i1 from t2 where i1=t3.i1 union select i1 from t2 where i1=t4.i1))
  *        from t3, t4;                        ^^^^^                                  ^^^^^
  *
- *   ì˜ˆ3) ë‹¤ìŒ ì¿¼ë¦¬ì—ì„œ t1.i1ì€ parent querySetê³¼ ì˜ì¡´ì„±ì´ ìˆë‹¤.
+ *   ¿¹3) ´ÙÀ½ Äõ¸®¿¡¼­ t1.i1Àº parent querySet°ú ÀÇÁ¸¼ºÀÌ ÀÖ´Ù.
  *        select 
  *            (select count(*) from t1 where i1 in (select i1 from t2 where i1=t1.i1))
  *        from t3;                                                             ^^^^^
@@ -850,24 +850,24 @@ IDE_RC qmoSubquery::optimizeExpr4Select( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : selectë¬¸ì— ëŒ€í•œ expressioní˜• subquery ì²˜ë¦¬
+ * Description : select¹®¿¡ ´ëÇÑ expressionÇü subquery Ã³¸®
  *
- *      ì˜ˆ) select (select sum(i1) from t2 ) from t1;
+ *      ¿¹) select (select sum(i1) from t2 ) from t1;
  *                 -------------------------
- *      ì˜ˆ) select * from t1 where i1 > 1 + (select sum(i1) from t2);
+ *      ¿¹) select * from t1 where i1 > 1 + (select sum(i1) from t2);
  *                                 --------------------------------
  *
  *   qmoSubquery::optimizeExpr()
- *        : update, deleteë¬¸ì— ëŒ€í•œ subquery ì²˜ë¦¬
- *          graphìƒì„±->constant subqueryTipì ìš©->planìƒì„±
+ *        : update, delete¹®¿¡ ´ëÇÑ subquery Ã³¸®
+ *          graph»ı¼º->constant subqueryTipÀû¿ë->plan»ı¼º
  *   qmoSubquery::optimizeExpr4Select()
- *        : selectë¬¸ì˜ expressioní˜• subqueryì²˜ë¦¬
- *          ì´ í•¨ìˆ˜ë‚´ì—ì„œ planì„ ìƒì„±í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *        : select¹®ÀÇ expressionÇü subqueryÃ³¸®
+ *          ÀÌ ÇÔ¼ö³»¿¡¼­ planÀ» »ı¼ºÇÏÁö ¾Ê´Â´Ù.
  *
  * Implementation :
  *
- *     1. graph ìƒì„±
- *     2. constant subquery ìµœì í™” ì ìš© (store and search)
+ *     1. graph »ı¼º
+ *     2. constant subquery ÃÖÀûÈ­ Àû¿ë (store and search)
  *
  ***********************************************************************/
 
@@ -876,25 +876,25 @@ IDE_RC qmoSubquery::optimizeExpr4Select( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSubquery::optimizeExpr4Select::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aNode != NULL );
 
     //--------------------------------------
-    // subquery nodeë¥¼ ì°¾ëŠ”ë‹¤.
+    // subquery node¸¦ Ã£´Â´Ù.
     //--------------------------------------
 
     if( ( aNode->node.lflag & MTC_NODE_OPERATOR_MASK )
         == MTC_NODE_OPERATOR_SUBQUERY )
     {
-        // subquery nodeë¥¼ ì°¾ìŒ
+        // subquery node¸¦ Ã£À½
         if ( aNode->subquery->myPlan->graph == NULL )
         {
             // BUG-23362
-            // subqueryê°€ ìµœì í™” ë˜ì§€ ì•Šì€ ê²½ìš°
-            // ì¦‰, ì²« optimizeì¸ ê²½ìš°ì—ë§Œ ìˆ˜í–‰
+            // subquery°¡ ÃÖÀûÈ­ µÇÁö ¾ÊÀº °æ¿ì
+            // Áï, Ã¹ optimizeÀÎ °æ¿ì¿¡¸¸ ¼öÇà
             IDE_TEST( makeGraph( aNode->subquery ) != IDE_SUCCESS );
             
             IDE_TEST( constantSubquery( aStatement,
@@ -902,7 +902,7 @@ IDE_RC qmoSubquery::optimizeExpr4Select( qcStatement * aStatement,
         }
         else
         {
-            // ì´ë¯¸ ìµœì í™” ìˆ˜í–‰í•¨
+            // ÀÌ¹Ì ÃÖÀûÈ­ ¼öÇàÇÔ
         }
     }
     else
@@ -935,11 +935,11 @@ IDE_RC qmoSubquery::optimizePredicate( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : predicateí˜• subqueryì— ëŒ€í•œ subquery ìµœì í™”
+ * Description : predicateÇü subquery¿¡ ´ëÇÑ subquery ÃÖÀûÈ­
  *
  * Implementation :
  *
- *     ì˜ˆ) select * from t1 where i1 > (select sum(i2) from t2);
+ *     ¿¹) select * from t1 where i1 > (select sum(i2) from t2);
  *                                ------------------------------
  *         update t1 set i1=1 where i2 in (select i1 from t2);
  *                                 ---------------------------
@@ -948,15 +948,15 @@ IDE_RC qmoSubquery::optimizePredicate( qcStatement * aStatement,
  *         select * from t1 where ( subquery ) = ( subquery );
  *                                ----------------------------
  *
- *    1. graph ìƒì„± ì „, predicateí˜• subquery ìµœì í™” ì ìš©
+ *    1. graph »ı¼º Àü, predicateÇü subquery ÃÖÀûÈ­ Àû¿ë
  *       1) no calculate (not)EXISTS/(not)UNIQUE subquery
  *       2) transform NJ
  *
- *    2. graph ìƒì„±
+ *    2. graph »ı¼º
  *
- *    3. graph ìƒì„± í›„, predicateí˜• subquery ìµœì í™” ì ìš©
+ *    3. graph »ı¼º ÈÄ, predicateÇü subquery ÃÖÀûÈ­ Àû¿ë
  *       1) store and search
- *       2) INì ˆì˜ subquery keyRange
+ *       2) INÀıÀÇ subquery keyRange
  *       3) subquery keyRange
  *
  ***********************************************************************/
@@ -975,7 +975,7 @@ IDE_RC qmoSubquery::optimizePredicate( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSubquery::optimizePredicate::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -987,20 +987,20 @@ IDE_RC qmoSubquery::optimizePredicate( qcStatement * aStatement,
         ( aCompareNode->node.module == & mtfIsNull )    ||
         ( aCompareNode->node.module == & mtfIsNotNull ) )
     {
-        IDE_DASSERT( aNode == NULL ); // subquery nodeê°€ ì•„ë‹Œ ìª½ì˜ node
+        IDE_DASSERT( aNode == NULL ); // subquery node°¡ ¾Æ´Ñ ÂÊÀÇ node
     }
     else
     {
-        IDE_DASSERT( aNode != NULL ); // subquery nodeê°€ ì•„ë‹Œ ìª½ì˜ node
+        IDE_DASSERT( aNode != NULL ); // subquery node°¡ ¾Æ´Ñ ÂÊÀÇ node
     }
     IDE_DASSERT( aSubQNode != NULL ); // subquery node
 
     // BUG-23362
-    // ì´ë¯¸ ìµœì í™”ëœ subqueryëŠ” ë“¤ì–´ì˜¬ ìˆ˜ ì—†ìŒ
+    // ÀÌ¹Ì ÃÖÀûÈ­µÈ subquery´Â µé¾î¿Ã ¼ö ¾øÀ½
     IDE_DASSERT( aSubQNode->subquery->myPlan->graph == NULL ); 
 
     //--------------------------------------
-    // subquery nodeì— ëŒ€í•œ subquery type íŒë‹¨
+    // subquery node¿¡ ´ëÇÑ subquery type ÆÇ´Ü
     //--------------------------------------
 
     IDE_TEST( checkSubqueryType( aStatement,
@@ -1019,8 +1019,8 @@ IDE_RC qmoSubquery::optimizePredicate( qcStatement * aStatement,
 
     //--------------------------------------
     // transform NJ, store and search, IN subquery keyRange
-    // ì ìš©ì—¬ë¶€ë¥¼ íŒë‹¨í•˜ê¸° ìœ„í•œ
-    // predicate columnê³¼ subquery target columnì˜ cardinalityë¥¼ êµ¬í•œë‹¤.
+    // Àû¿ë¿©ºÎ¸¦ ÆÇ´ÜÇÏ±â À§ÇÑ
+    // predicate column°ú subquery target columnÀÇ cardinality¸¦ ±¸ÇÑ´Ù.
     //--------------------------------------
 
     if( aNode != NULL )
@@ -1036,13 +1036,13 @@ IDE_RC qmoSubquery::optimizePredicate( qcStatement * aStatement,
 
         if( sColumnNodeIsColumn == ID_TRUE )
         {
-            // predicate columnì˜ cardinalityë¥¼ êµ¬í•œë‹¤.
+            // predicate columnÀÇ cardinality¸¦ ±¸ÇÑ´Ù.
             IDE_TEST( getColumnCardinality( aStatement,
                                             aNode,
                                             &sColumnCardinality )
                       != IDE_SUCCESS );
 
-            // subquery nodeì˜ subquery target columnì˜ cardinalityë¥¼ êµ¬í•œë‹¤.
+            // subquery nodeÀÇ subquery target columnÀÇ cardinality¸¦ ±¸ÇÑ´Ù.
             IDE_TEST( getSubQTargetCardinality( aStatement,
                                                 aSubQNode,
                                                 &sTargetCardinality )
@@ -1055,7 +1055,7 @@ IDE_RC qmoSubquery::optimizePredicate( qcStatement * aStatement,
     }
     else
     {
-        // (NOT)EXISTS, (NOT)UNIQUE, IS NULL, IS NOT NULL ì¸ ê²½ìš°,
+        // (NOT)EXISTS, (NOT)UNIQUE, IS NULL, IS NOT NULL ÀÎ °æ¿ì,
         sColumnNodeIsColumn = ID_FALSE;
     }
 
@@ -1069,13 +1069,13 @@ IDE_RC qmoSubquery::optimizePredicate( qcStatement * aStatement,
     }
 
     //--------------------------------------
-    // graph ìƒì„± ì „, predicateí˜• subquery ìµœì í™” íŒ ì ìš©
+    // graph »ı¼º Àü, predicateÇü subquery ÃÖÀûÈ­ ÆÁ Àû¿ë
     //--------------------------------------
 
     if( sColumnNodeIsColumn == ID_FALSE )
     {
-        // ì˜ˆ: select * from t1 where ( subquery ) = ( subquery );
-        // transforNJ ìµœì í™”íŒì„ ì ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // ¿¹: select * from t1 where ( subquery ) = ( subquery );
+        // transforNJ ÃÖÀûÈ­ÆÁÀ» Àû¿ëÇÏÁö ¾Ê´Â´Ù.
     }
     else
     {
@@ -1084,8 +1084,8 @@ IDE_RC qmoSubquery::optimizePredicate( qcStatement * aStatement,
         {
             /*
              * BUG-34235
-             * in subquery key range tip ìš°ì„  ì ìš©
-             * => transform NJ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+             * in subquery key range tip ¿ì¼± Àû¿ë
+             * => transform NJ ÇÏÁö ¾Ê´Â´Ù.
              */
         }
         else
@@ -1094,8 +1094,8 @@ IDE_RC qmoSubquery::optimizePredicate( qcStatement * aStatement,
                 (QCU_OPTIMIZER_SUBQUERY_OPTIMIZE_METHOD == 2))
             {
                 //----------------------------------------------------------
-                // column cardinality < subquery target columnì˜ cardinality
-                // ì´ë©´, transform NJ ìµœì í™” íŒ ì ìš©
+                // column cardinality < subquery target columnÀÇ cardinality
+                // ÀÌ¸é, transform NJ ÃÖÀûÈ­ ÆÁ Àû¿ë
                 //----------------------------------------------------------
                 IDE_TEST(transformNJ(aStatement,
                                      aCompareNode,
@@ -1113,22 +1113,22 @@ IDE_RC qmoSubquery::optimizePredicate( qcStatement * aStatement,
     }
 
     //--------------------------------------
-    // graph ìƒì„±
+    // graph »ı¼º
     //--------------------------------------
 
     IDE_TEST( makeGraph( aSubQNode->subquery ) != IDE_SUCCESS );
 
     //--------------------------------------
-    // graph ìƒì„± í›„, transform NJ ìµœì í™” íŒ ì ìš©ì—¬ë¶€ ì €ì¥
+    // graph »ı¼º ÈÄ, transform NJ ÃÖÀûÈ­ ÆÁ Àû¿ë¿©ºÎ ÀúÀå
     //--------------------------------------
 
     //--------------------------------------
-    // graph ìƒì„± í›„, predicateí˜• subquery ìµœì í™” ì ìš©
+    // graph »ı¼º ÈÄ, predicateÇü subquery ÃÖÀûÈ­ Àû¿ë
     //--------------------------------------
 
     if( sIsTransformNJ == ID_TRUE )
     {
-        // transform NJê°€ ì ìš©ë˜ëŠ” ê²½ìš°
+        // transform NJ°¡ Àû¿ëµÇ´Â °æ¿ì
         sPROJ = (qmgPROJ *)(aSubQNode->subquery->myPlan->graph);
 
         sPROJ->subqueryTipFlag &= ~QMG_PROJ_SUBQUERY_TIP_MASK;
@@ -1136,25 +1136,25 @@ IDE_RC qmoSubquery::optimizePredicate( qcStatement * aStatement,
     }
     else
     {
-        // transform NJê°€ ì ìš©ë˜ì§€ ì•Šì€ ê²½ìš°,
-        // store and search ìµœì í™” íŒì„ ì ìš©í•  ìˆ˜ ìˆë‹¤.
-        // ë‹¤ë§Œ, leftê°€ subqueryì´ê³  ë¹„êµ ì—°ì‚°ìê°€ group ì—°ì‚°ìì´ë©´
-        // storeAndSearchë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // transform NJ°¡ Àû¿ëµÇÁö ¾ÊÀº °æ¿ì,
+        // store and search ÃÖÀûÈ­ ÆÁÀ» Àû¿ëÇÒ ¼ö ÀÖ´Ù.
+        // ´Ù¸¸, left°¡ subqueryÀÌ°í ºñ±³ ¿¬»êÀÚ°¡ group ¿¬»êÀÚÀÌ¸é
+        // storeAndSearch¸¦ ÇÏÁö ¾Ê´Â´Ù.
         // BUG-10328 fix, by kumdory
-        // ê·¸ì™¸ì—ë„
+        // ±×¿Ü¿¡µµ
         // fix BUG-12934
-        // columnì´ ì™€ì•¼ í•  ìë¦¬ì— host ë³€ìˆ˜ê°€ ì˜¤ê±°ë‚˜, ìƒìˆ˜ê°€ ì˜¬ ê²½ìš°ëŠ”
-        // constant filterë¡œ ë¶„ë¥˜ë  ê²ƒì´ë¯€ë¡œ
-        // store and search íš¨ê³¼ê°€ ì—†ì–´, store and searchë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
-        // ì˜ˆ) (subquery) in (subquery)
+        // columnÀÌ ¿Í¾ß ÇÒ ÀÚ¸®¿¡ host º¯¼ö°¡ ¿À°Å³ª, »ó¼ö°¡ ¿Ã °æ¿ì´Â
+        // constant filter·Î ºĞ·ùµÉ °ÍÀÌ¹Ç·Î
+        // store and search È¿°ú°¡ ¾ø¾î, store and search¸¦ ÇÏÁö ¾Ê´Â´Ù.
+        // ¿¹) (subquery) in (subquery)
         //     ? in (subquery), ?=(subquery)
         //     1 in (subquery), 1=(subquery) ...
         
-        // ì¶”ê°€ë¡œ,
-        // BUG-28929 ? between subqueryì™€ ê°™ì´
-        // whereì ˆì— í˜¸ìŠ¤íŠ¸ë³€ìˆ˜ ë¹„êµì—°ì‚°ì store and searchê°€ ë˜ëŠ” subqueryê°€ ì˜¤ëŠ” ê²½ìš°
-        // ì„œë²„ ë¹„ì •ìƒì¢…ë£Œ.
-        // ì˜ˆ) i1 between ? and (subquery)
+        // Ãß°¡·Î,
+        // BUG-28929 ? between subquery¿Í °°ÀÌ
+        // whereÀı¿¡ È£½ºÆ®º¯¼ö ºñ±³¿¬»êÀÚ store and search°¡ µÇ´Â subquery°¡ ¿À´Â °æ¿ì
+        // ¼­¹ö ºñÁ¤»óÁ¾·á.
+        // ¿¹) i1 between ? and (subquery)
         if( aNode != NULL )
         {
             if ( ( aSubQNode == (qtcNode*)aCompareNode->node.arguments ) &&
@@ -1166,10 +1166,10 @@ IDE_RC qmoSubquery::optimizePredicate( qcStatement * aStatement,
             }
             else
             {
-                // ì´ ì‹œì ì—ì„œ ë‹¤ì‹œ
-                // constantFilterì¸ì§€ë¥¼ íŒë‹¨í•˜ê¸°ê°€ ê°„ë‹¨í•˜ì§€ ì•Šì•„
-                // predicateë¶„ë¥˜ì‹œ, constant filterë¡œ íŒë‹¨ëœ ì •ë³´ë¥¼ ì´ìš©
-                // ì´ ì •ë³´ë¥¼ qtcNode.flagì— ì„ì‹œë¡œ ì €ì¥í•´ ë‘ê³ , ì´ë¥¼ ì´ìš©í•œë‹¤.
+                // ÀÌ ½ÃÁ¡¿¡¼­ ´Ù½Ã
+                // constantFilterÀÎÁö¸¦ ÆÇ´ÜÇÏ±â°¡ °£´ÜÇÏÁö ¾Ê¾Æ
+                // predicateºĞ·ù½Ã, constant filter·Î ÆÇ´ÜµÈ Á¤º¸¸¦ ÀÌ¿ë
+                // ÀÌ Á¤º¸¸¦ qtcNode.flag¿¡ ÀÓ½Ã·Î ÀúÀåÇØ µÎ°í, ÀÌ¸¦ ÀÌ¿ëÇÑ´Ù.
                 if( ( aCompareNode->lflag & QTC_NODE_CONSTANT_FILTER_MASK )
                     == QTC_NODE_CONSTANT_FILTER_TRUE )
                 {
@@ -1198,25 +1198,25 @@ IDE_RC qmoSubquery::optimizePredicate( qcStatement * aStatement,
     }
 
     // To Fix PR-11460
-    // Transform NJê°€ ì ìš©ë˜ì—ˆë‹¤ë©´,
-    // In Subquery KeyRangeë˜ëŠ” Store And Searchê°€ ì ìš©ë  ìˆ˜ ì—†ë‹¤.
+    // Transform NJ°¡ Àû¿ëµÇ¾ú´Ù¸é,
+    // In Subquery KeyRange¶Ç´Â Store And Search°¡ Àû¿ëµÉ ¼ö ¾ø´Ù.
     // To Fix PR-11461
-    // In Subquery KeyRange ë˜ëŠ” Subquery KeyRange ìµœì í™”ëŠ”
-    // ì¼ë°˜ Tableì˜ WHEREì— ëŒ€í•´ì„œë§Œ ê°€ëŠ¥í•˜ë‹¤.
+    // In Subquery KeyRange ¶Ç´Â Subquery KeyRange ÃÖÀûÈ­´Â
+    // ÀÏ¹İ TableÀÇ WHERE¿¡ ´ëÇØ¼­¸¸ °¡´ÉÇÏ´Ù.
     if ((sIsInSubqueryKeyRangePossible == ID_FALSE) ||
         (sIsTransformNJ == ID_TRUE))
     {
-        // ì˜ˆ: select * from t1 where ( subquery ) = ( subquery );
-        // IN subquery keyRange, subquery keyRange ìµœì í™” íŒì„
-        // ì ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // ¿¹: select * from t1 where ( subquery ) = ( subquery );
+        // IN subquery keyRange, subquery keyRange ÃÖÀûÈ­ ÆÁÀ»
+        // Àû¿ëÇÏÁö ¾Ê´Â´Ù.
     }
     else
     {
         // To Fix PR-11460
-        // In Subquery Key Range ì ìš© ê²€ì‚¬ì‹œ
-        // Target Cardinality ë¿ ì•„ë‹ˆë¼,
-        // Subqueryì˜ ê²°ê³¼ ê°œìˆ˜ë„ ê³ ë ¤í•˜ì—¬ì•¼ í•œë‹¤.
-        // ë‘˜ ì¤‘ì— ì‘ì€ ê°’ìœ¼ë¡œ ê²€ì‚¬í•œë‹¤.
+        // In Subquery Key Range Àû¿ë °Ë»ç½Ã
+        // Target Cardinality »Ó ¾Æ´Ï¶ó,
+        // SubqueryÀÇ °á°ú °³¼öµµ °í·ÁÇÏ¿©¾ß ÇÑ´Ù.
+        // µÑ Áß¿¡ ÀÛÀº °ªÀ¸·Î °Ë»çÇÑ´Ù.
 
         sSubqueryResultCnt =
             aSubQNode->subquery->myPlan->graph->costInfo.outputRecordCnt;
@@ -1229,11 +1229,11 @@ IDE_RC qmoSubquery::optimizePredicate( qcStatement * aStatement,
              (sColumnCardinality >= sSubqueryResultCnt)))
         {
             //-----------------------------------------------------------
-            // column cardinality >= subquery target columnì˜ cardinality
-            // ì´ë©´, IN subquery keyRange ìµœì í™” íŒ ì ìš©
+            // column cardinality >= subquery target columnÀÇ cardinality
+            // ÀÌ¸é, IN subquery keyRange ÃÖÀûÈ­ ÆÁ Àû¿ë
             //
             // BUG-34235
-            // cardinalityì— ê´€ê³„ì—†ì´ in subquery key range í•­ìƒ ì ìš©
+            // cardinality¿¡ °ü°è¾øÀÌ in subquery key range Ç×»ó Àû¿ë
             //-----------------------------------------------------------
 
             IDE_TEST( inSubqueryKeyRange( aCompareNode,
@@ -1272,35 +1272,35 @@ qmoSubquery::transformNJ( qcStatement     * aStatement,
 {
 /***********************************************************************
  *
- * Description : transform NJ ìµœì í™” íŒ ì ìš©
+ * Description : transform NJ ÃÖÀûÈ­ ÆÁ Àû¿ë
  *
- *  < transform NJ ìµœì í™” íŒ >
+ *  < transform NJ ÃÖÀûÈ­ ÆÁ >
  *
- *  subqueryë¥¼ type Ní˜• => type Jí˜•, type Jí˜• => type Jí˜•ìœ¼ë¡œ ë³€ê²½ì‹œí‚¨ë‹¤.
+ *  subquery¸¦ type NÇü => type JÇü, type JÇü => type JÇüÀ¸·Î º¯°æ½ÃÅ²´Ù.
  *
- *  ì˜ˆ) select * from t1 where i1 in ( select i1 from t2 );
+ *  ¿¹) select * from t1 where i1 in ( select i1 from t2 );
  *  ==> select * from t1 where i1 in ( select i1 from t2 where t2.i1=t1.i1;
  *
- *  ì´ëŸ¬í•œ ì§ˆì˜ ë³€ê²½ì€ subqueryë‚´ì— predicateì„ ì¶”ê°€í•˜ì—¬ ë³´ë‹¤ ë‚˜ì€
- *  selectionì„ ìˆ˜í–‰í•˜ëŠ”ë° ê·¸ ëª©ì ì´ ìˆë‹¤.
+ *  ÀÌ·¯ÇÑ ÁúÀÇ º¯°æÀº subquery³»¿¡ predicateÀ» Ãß°¡ÇÏ¿© º¸´Ù ³ªÀº
+ *  selectionÀ» ¼öÇàÇÏ´Âµ¥ ±× ¸ñÀûÀÌ ÀÖ´Ù.
  *
- *  < transform NJ íŒ ì ìš©ì¡°ê±´ >
- *  0. predicateì´ IN, NOT INì¸ ê²½ìš°.
- *  1. type N, type J í˜•  subqueryì¸ ê²½ìš°
- *  2. subqueryê°€ SETì ˆì´ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
- *  3. subqueryì— LIMITì ˆì´ ì—†ì–´ì•¼ í•œë‹¤.
- *  4. predicate columnì´ NOT NULLì´ê³ , subquery targetì´ NOT NULLì¸ ê²½ìš°
- *  5. subquery target columnì— ì¸ë±ìŠ¤ê°€ ìˆëŠ” ê²½ìš°(type Nì—ë§Œ í•´ë‹¹)
- *  6. PR-11632) Type N ì¸ ê²½ìš° Subqueryì˜ ê²°ê³¼ê°€ ì¤„ì–´ë“¤ ìˆ˜ ìˆëŠ” ê²½ìš°ëŠ”
- *     Transform NJë¥¼ ì ìš©í•˜ì§€ ì•ŠìŒ.
- *         - Subqueryì— DISTINCTê°€ ìˆëŠ” ê²½ìš°
- *         - Subqueryì— WHERE ì ˆì´ ìˆëŠ” ê²½ìš°
+ *  < transform NJ ÆÁ Àû¿ëÁ¶°Ç >
+ *  0. predicateÀÌ IN, NOT INÀÎ °æ¿ì.
+ *  1. type N, type J Çü  subqueryÀÎ °æ¿ì
+ *  2. subquery°¡ SETÀıÀÌ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
+ *  3. subquery¿¡ LIMITÀıÀÌ ¾ø¾î¾ß ÇÑ´Ù.
+ *  4. predicate columnÀÌ NOT NULLÀÌ°í, subquery targetÀÌ NOT NULLÀÎ °æ¿ì
+ *  5. subquery target column¿¡ ÀÎµ¦½º°¡ ÀÖ´Â °æ¿ì(type N¿¡¸¸ ÇØ´ç)
+ *  6. PR-11632) Type N ÀÎ °æ¿ì SubqueryÀÇ °á°ú°¡ ÁÙ¾îµé ¼ö ÀÖ´Â °æ¿ì´Â
+ *     Transform NJ¸¦ Àû¿ëÇÏÁö ¾ÊÀ½.
+ *         - Subquery¿¡ DISTINCT°¡ ÀÖ´Â °æ¿ì
+ *         - Subquery¿¡ WHERE ÀıÀÌ ÀÖ´Â °æ¿ì
  *
  * Implementation :
  *
- *     1. transform NJ íŒ ì ìš©ì¡°ê±´ ê²€ì‚¬
- *     2. subqueryë‚´ì— ì¶”ê°€í•  predicateì„ ë§Œë“¤ì–´ì„œ, ê¸°ì¡´ whereì ˆì— ì—°ê²°.
- *     3. subquery nodeì˜ dependenciesë¥¼ ì¡°ì •í•œë‹¤.
+ *     1. transform NJ ÆÁ Àû¿ëÁ¶°Ç °Ë»ç
+ *     2. subquery³»¿¡ Ãß°¡ÇÒ predicateÀ» ¸¸µé¾î¼­, ±âÁ¸ whereÀı¿¡ ¿¬°á.
+ *     3. subquery nodeÀÇ dependencies¸¦ Á¶Á¤ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1316,7 +1316,7 @@ qmoSubquery::transformNJ( qcStatement     * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSubquery::transformNJ::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1326,7 +1326,7 @@ qmoSubquery::transformNJ( qcStatement     * aStatement,
     IDE_DASSERT( aIsTransform != NULL );
 
     //--------------------------------------
-    // transform NJ ìµœì í™” íŒ
+    // transform NJ ÃÖÀûÈ­ ÆÁ
     //--------------------------------------
 
     while( sIsTemp == ID_TRUE )
@@ -1334,10 +1334,10 @@ qmoSubquery::transformNJ( qcStatement     * aStatement,
         sIsTemp = ID_FALSE;
 
         //--------------------------------------
-        // ì¡°ê±´ ê²€ì‚¬
+        // Á¶°Ç °Ë»ç
         //--------------------------------------
 
-        // ë¹„êµì—°ì‚°ì ê²€ì‚¬ ( in, not in )
+        // ºñ±³¿¬»êÀÚ °Ë»ç ( in, not in )
         if( ( aCompareNode->node.module == &mtfEqualAny ) ||
             ( aCompareNode->node.module == &mtfNotEqualAll ) )
         {
@@ -1350,8 +1350,8 @@ qmoSubquery::transformNJ( qcStatement     * aStatement,
 
         sSubQParseTree = (qmsParseTree *)(aSubQNode->subquery->myPlan->parseTree);
 
-        // type N, type J í˜•  subqueryì¸ ê²½ìš°ì´ê³ ,
-        // subqueryê°€ setì ˆì´ ì•„ë‹ˆê³ , subqueryì— LIMITì ˆì´ ì—†ì–´ì•¼ í•œë‹¤.
+        // type N, type J Çü  subqueryÀÎ °æ¿ìÀÌ°í,
+        // subquery°¡ setÀıÀÌ ¾Æ´Ï°í, subquery¿¡ LIMITÀıÀÌ ¾ø¾î¾ß ÇÑ´Ù.
 
         if( ( aSubQType == QMO_TYPE_N ) || ( aSubQType == QMO_TYPE_J ) )
         {
@@ -1376,8 +1376,8 @@ qmoSubquery::transformNJ( qcStatement     * aStatement,
             break;
         }
 
-        // predicate columnì´ NOT NULLì´ê³ ,
-        // subquery targetì´ NOT NULLì¸ ê²½ìš°
+        // predicate columnÀÌ NOT NULLÀÌ°í,
+        // subquery targetÀÌ NOT NULLÀÎ °æ¿ì
         IDE_TEST( checkNotNull( aStatement,
                                 aNode,
                                 aSubQNode,
@@ -1392,7 +1392,7 @@ qmoSubquery::transformNJ( qcStatement     * aStatement,
             break;
         }
 
-        // subquery target columnì— ì¸ë±ìŠ¤ê°€ ìˆëŠ” ê²½ìš°(type Nì—ë§Œ í•´ë‹¹)
+        // subquery target column¿¡ ÀÎµ¦½º°¡ ÀÖ´Â °æ¿ì(type N¿¡¸¸ ÇØ´ç)
         if( aSubQType == QMO_TYPE_N )
         {
             IDE_TEST( checkIndex4SubQTarget( aStatement,
@@ -1411,21 +1411,21 @@ qmoSubquery::transformNJ( qcStatement     * aStatement,
 
             //----------------------------------------------------
             // To Fix PR-11632
-            // ìì„¸í•œ ë‚´ìš©ì€ Bug Description ì°¸ì¡°
-            // Type N ì¸ ê²½ìš° Subqueryì˜ ê²°ê³¼ê°€ ì¤„ì–´ë“¤ ìˆ˜ ìˆëŠ” ê²½ìš°ëŠ”
-            // Transform NJë¥¼ ì ìš©í•˜ì§€ ì•ŠìŒ.
-            //   - Subqueryì— DISTINCTê°€ ìˆëŠ” ê²½ìš°
-            //   - Subqueryì— WHERE ì ˆì´ ìˆëŠ” ê²½ìš°
+            // ÀÚ¼¼ÇÑ ³»¿ëÀº Bug Description ÂüÁ¶
+            // Type N ÀÎ °æ¿ì SubqueryÀÇ °á°ú°¡ ÁÙ¾îµé ¼ö ÀÖ´Â °æ¿ì´Â
+            // Transform NJ¸¦ Àû¿ëÇÏÁö ¾ÊÀ½.
+            //   - Subquery¿¡ DISTINCT°¡ ÀÖ´Â °æ¿ì
+            //   - Subquery¿¡ WHERE ÀıÀÌ ÀÖ´Â °æ¿ì
             //----------------------------------------------------
 
             sSubQuerySet =
                 ((qmsParseTree *)(aSubQNode->subquery->myPlan->parseTree))->querySet;
 
-            // ë°˜ë“œì‹œ SFWGHê°€ ì¡´ì¬í•œë‹¤.
+            // ¹İµå½Ã SFWGH°¡ Á¸ÀçÇÑ´Ù.
             IDE_DASSERT( sSubQuerySet->SFWGH != NULL );
             sSubSFWGH = sSubQuerySet->SFWGH;
 
-            // Distinctê°€ ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬
+            // Distinct°¡ Á¸ÀçÇÏ´Â Áö °Ë»ç
             if ( sSubSFWGH->selectType == QMS_DISTINCT )
             {
                 break;
@@ -1435,7 +1435,7 @@ qmoSubquery::transformNJ( qcStatement     * aStatement,
                 // Nothing To Do
             }
 
-            // WHERE ì ˆì´ ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬
+            // WHERE ÀıÀÌ Á¸ÀçÇÏ´Â Áö °Ë»ç
             if ( sSubSFWGH->where != NULL )
             {
                 break;
@@ -1451,7 +1451,7 @@ qmoSubquery::transformNJ( qcStatement     * aStatement,
         }
 
         //--------------------------------------
-        // subqueryë‚´ì— ì¶”ê°€í•  predicateì„ ë§Œë“¤ì–´ì„œ, ê¸°ì¡´ whereì ˆì— ì—°ê²°.
+        // subquery³»¿¡ Ãß°¡ÇÒ predicateÀ» ¸¸µé¾î¼­, ±âÁ¸ whereÀı¿¡ ¿¬°á.
         //--------------------------------------
 
         IDE_TEST( makeNewPredAndLink( aStatement,
@@ -1462,10 +1462,10 @@ qmoSubquery::transformNJ( qcStatement     * aStatement,
 
 
         //--------------------------------------
-        // transform NJ ìµœì í™” íŒì´ ì ìš©ë˜ì—ˆìŒì„
-        // subquery projection graphì˜ subquery ìµœì í™” íŒ flagì—
-        // ì €ì¥í•´ì•¼ í•˜ë‚˜, ì•„ì§ graph ìƒì„± ì „ì´ë¯€ë¡œ,
-        // graph ìƒì„± ì§í›„, transform NJ ìµœì í™” íŒ ì ìš©ì •ë³´ ì €ì¥.
+        // transform NJ ÃÖÀûÈ­ ÆÁÀÌ Àû¿ëµÇ¾úÀ½À»
+        // subquery projection graphÀÇ subquery ÃÖÀûÈ­ ÆÁ flag¿¡
+        // ÀúÀåÇØ¾ß ÇÏ³ª, ¾ÆÁ÷ graph »ı¼º ÀüÀÌ¹Ç·Î,
+        // graph »ı¼º Á÷ÈÄ, transform NJ ÃÖÀûÈ­ ÆÁ Àû¿ëÁ¤º¸ ÀúÀå.
         //--------------------------------------
 
     }
@@ -1488,15 +1488,15 @@ qmoSubquery::checkNotNull( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : transform NJ ìµœì í™” íŒ ì ìš©ì‹œ
- *               predicate columnê³¼ subquery target columnì˜
- *               not null ì œì•½ì¡°ê±´ ê²€ì‚¬
+ * Description : transform NJ ÃÖÀûÈ­ ÆÁ Àû¿ë½Ã
+ *               predicate column°ú subquery target columnÀÇ
+ *               not null Á¦¾àÁ¶°Ç °Ë»ç
  *
  * Implementation :
  *
- *     1. predicate columnê³¼ subquery target columnì´
- *        base tableì˜ columnì¸ì§€ ê²€ì‚¬
- *     2. 1ì˜ ì¡°ê±´ì´ ë§Œì¡±í•˜ë©´, not null ì¡°ê±´ê²€ì‚¬.
+ *     1. predicate column°ú subquery target columnÀÌ
+ *        base tableÀÇ columnÀÎÁö °Ë»ç
+ *     2. 1ÀÇ Á¶°ÇÀÌ ¸¸Á·ÇÏ¸é, not null Á¶°Ç°Ë»ç.
  *
  ***********************************************************************/
 
@@ -1509,7 +1509,7 @@ qmoSubquery::checkNotNull( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSubquery::checkNotNull::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
@@ -1520,7 +1520,7 @@ qmoSubquery::checkNotNull( qcStatement * aStatement,
     sMtcTemplate = & QC_SHARED_TMPLATE(aStatement)->tmplate;
 
     //--------------------------------------
-    //  not null ê²€ì‚¬
+    //  not null °Ë»ç
     //--------------------------------------
 
     while( sIsTemp == ID_TRUE )
@@ -1530,7 +1530,7 @@ qmoSubquery::checkNotNull( qcStatement * aStatement,
         sIsNotNull = ID_TRUE;
 
         //--------------------------------------
-        // predicate columnì˜ not null ê²€ì‚¬
+        // predicate columnÀÇ not null °Ë»ç
         //--------------------------------------
 
         if( ( aNode->node.lflag & MTC_NODE_OPERATOR_MASK )
@@ -1595,7 +1595,7 @@ qmoSubquery::checkNotNull( qcStatement * aStatement,
         if( sIsNotNull == ID_TRUE )
         {
             //--------------------------------------
-            // subquery target columnì˜ not null ê²€ì‚¬
+            // subquery target columnÀÇ not null °Ë»ç
             //--------------------------------------
 
             IDE_TEST( checkNotNullSubQTarget( aStatement,
@@ -1625,8 +1625,8 @@ qmoSubquery::checkNotNullSubQTarget( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : transform NJ, store and search ìµœì í™” íŒ ì ìš©ì‹œ,
- *               subquery target columnì˜ not null ì œì•½ì¡°ê±´ ê²€ì‚¬
+ * Description : transform NJ, store and search ÃÖÀûÈ­ ÆÁ Àû¿ë½Ã,
+ *               subquery target columnÀÇ not null Á¦¾àÁ¶°Ç °Ë»ç
  *
  * Implementation :
  *
@@ -1643,7 +1643,7 @@ qmoSubquery::checkNotNullSubQTarget( qcStatement * aStatement,
 
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1653,7 +1653,7 @@ qmoSubquery::checkNotNullSubQTarget( qcStatement * aStatement,
     sMtcTemplate = & QC_SHARED_TMPLATE(aStatement)->tmplate;
 
     //--------------------------------------
-    // subquery target columnì˜ not null ê²€ì‚¬
+    // subquery target columnÀÇ not null °Ë»ç
     //--------------------------------------
 
     while( sIsTemp == ID_TRUE )
@@ -1671,13 +1671,13 @@ qmoSubquery::checkNotNullSubQTarget( qcStatement * aStatement,
             sNode = sTarget->targetColumn;
 
             // fix BUG-8936
-            // ì˜ˆ) create table t1( i1 not null );
+            // ¿¹) create table t1( i1 not null );
             //     create table t2( i1 not null );
             //     select i1 from t1
             //     where i1 in ( select i1 from t2 group by i1);
-            //     ìœ„ ì§ˆì˜ë¬¸ì˜ ê²½ìš°, subquery targetì´ passNodeë¡œ ì—°ê²°ë˜ë¯€ë¡œ
-            //     subquery targetì— ëŒ€í•œ not null ê²€ì‚¬ëŠ”
-            //     passNode->node.argumentì—ì„œ ìˆ˜í–‰í•œë‹¤.
+            //     À§ ÁúÀÇ¹®ÀÇ °æ¿ì, subquery targetÀÌ passNode·Î ¿¬°áµÇ¹Ç·Î
+            //     subquery target¿¡ ´ëÇÑ not null °Ë»ç´Â
+            //     passNode->node.argument¿¡¼­ ¼öÇàÇÑ´Ù.
  
             // BUG-20272
             if( (sNode->node.module == & qtc::passModule) ||
@@ -1730,8 +1730,8 @@ qmoSubquery::checkIndex4SubQTarget( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : transform NJ ìµœì í™” íŒ ì ìš©ì‹œ
- *               subquery target columnì— ì¸ë±ìŠ¤ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
+ * Description : transform NJ ÃÖÀûÈ­ ÆÁ Àû¿ë½Ã
+ *               subquery target column¿¡ ÀÎµ¦½º°¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç
  *
  * Implementation :
  *
@@ -1755,7 +1755,7 @@ qmoSubquery::checkIndex4SubQTarget( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSubquery::checkIndex4SubQTarget::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1763,7 +1763,7 @@ qmoSubquery::checkIndex4SubQTarget( qcStatement * aStatement,
     IDE_DASSERT( aIsExistIndex != NULL );
 
     //--------------------------------------
-    // subquery target columnì— ì¸ë±ìŠ¤ ì¡´ì¬ ìœ ë¬´ íŒë‹¨
+    // subquery target column¿¡ ÀÎµ¦½º Á¸Àç À¯¹« ÆÇ´Ü
     //--------------------------------------
 
     while( sIsTemp == ID_TRUE )
@@ -1774,10 +1774,10 @@ qmoSubquery::checkIndex4SubQTarget( qcStatement * aStatement,
             ((qmsParseTree *)(aSubQNode->subquery->myPlan->parseTree))->querySet;
 
         //--------------------------------------
-        // subquery target columnì´ ë™ì¼ í…Œì´ë¸”ì˜ ì»¬ëŸ¼ì¸ì§€ ê²€ì‚¬
-        // target columnì´ outer columnì¸ ê²½ìš°ëŠ”,
-        // subquery type Jí˜•ìœ¼ë¡œ íŒë‹¨ë˜ê¸°ë•Œë¬¸ì—, ì´ í•¨ìˆ˜ë¡œ ë“¤ì–´ì˜¤ì§€ ì•ŠìŒ.
-        // ë”°ë¼ì„œ, subuqery fromì ˆì˜ tableì¸ì§€ë¥¼ êµ³ì´ ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // subquery target columnÀÌ µ¿ÀÏ Å×ÀÌºíÀÇ ÄÃ·³ÀÎÁö °Ë»ç
+        // target columnÀÌ outer columnÀÎ °æ¿ì´Â,
+        // subquery type JÇüÀ¸·Î ÆÇ´ÜµÇ±â¶§¹®¿¡, ÀÌ ÇÔ¼ö·Î µé¾î¿ÀÁö ¾ÊÀ½.
+        // µû¶ó¼­, subuqery fromÀıÀÇ tableÀÎÁö¸¦ ±»ÀÌ °Ë»çÇÏÁö ¾Ê´Â´Ù.
         //--------------------------------------
 
         sTarget = sQuerySet->target;
@@ -1835,7 +1835,7 @@ qmoSubquery::checkIndex4SubQTarget( qcStatement * aStatement,
         }
 
         //--------------------------------------
-        // target columnì— ì¸ë±ìŠ¤ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬.
+        // target column¿¡ ÀÎµ¦½º°¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç.
         //--------------------------------------
         sTableInfo =
             QC_SHARED_TMPLATE(aStatement)->tableMap[sTable].
@@ -1912,12 +1912,12 @@ qmoSubquery::checkIndex4SubQTarget( qcStatement * aStatement,
                 {
                     if( sNode != NULL )
                     {
-                        // ì—°ì†ì ì¸ ì¸ë±ìŠ¤ ì‚¬ìš©
+                        // ¿¬¼ÓÀûÀÎ ÀÎµ¦½º »ç¿ë
                         // Nothing To Do
                     }
                     else
                     {
-                        // ì—°ì†ì ì¸ ì¸ë±ìŠ¤ ì‚¬ìš©ì´ ì•„ë‹˜.
+                        // ¿¬¼ÓÀûÀÎ ÀÎµ¦½º »ç¿ëÀÌ ¾Æ´Ô.
                         sIsExistIndex = ID_FALSE;
                         break;
                     }
@@ -1926,7 +1926,7 @@ qmoSubquery::checkIndex4SubQTarget( qcStatement * aStatement,
                 {
                     break;
                 }
-            } // target columnì´ ì†í•˜ëŠ” ì¸ë±ìŠ¤ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
+            } // target columnÀÌ ¼ÓÇÏ´Â ÀÎµ¦½º°¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç
 
             if( sIsExistIndex == ID_TRUE )
             {
@@ -1959,8 +1959,8 @@ qmoSubquery::makeNewPredAndLink( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : transform NJ ìµœì í™” íŒ ì ìš©ì‹œ
- *          ìƒˆë¡œìš´ predicateì„ ë§Œë“¤ì–´ì„œ, subqueryì˜ ê¸°ì¡´ whereì ˆì— ì—°ê²°
+ * Description : transform NJ ÃÖÀûÈ­ ÆÁ Àû¿ë½Ã
+ *          »õ·Î¿î predicateÀ» ¸¸µé¾î¼­, subqueryÀÇ ±âÁ¸ whereÀı¿¡ ¿¬°á
  *
  * Implementation :
  *
@@ -1982,7 +1982,7 @@ qmoSubquery::makeNewPredAndLink( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSubquery::makeNewPredAndLink::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1990,7 +1990,7 @@ qmoSubquery::makeNewPredAndLink( qcStatement * aStatement,
     IDE_DASSERT( aSubQNode != NULL );
 
     //--------------------------------------
-    // subquery target columnì— ëŒ€í•œ ë…¸ë“œ ìƒì„±
+    // subquery target column¿¡ ´ëÇÑ ³ëµå »ı¼º
     //--------------------------------------
 
     sSFWGH =
@@ -2020,10 +2020,10 @@ qmoSubquery::makeNewPredAndLink( qcStatement * aStatement,
     else
     {
         //--------------------------------------
-        // target columnì´ ì—¬ëŸ¬ê°œì¸ ê²½ìš°, LISTí˜•íƒœë¡œ ë…¸ë“œ ìƒì„±
+        // target columnÀÌ ¿©·¯°³ÀÎ °æ¿ì, LISTÇüÅÂ·Î ³ëµå »ı¼º
         //--------------------------------------
 
-        // LIST ë…¸ë“œ ìƒì„±
+        // LIST ³ëµå »ı¼º
         SET_EMPTY_POSITION( sPosition );
 
         IDE_TEST( qtc::makeNode( aStatement,
@@ -2031,7 +2031,7 @@ qmoSubquery::makeNewPredAndLink( qcStatement * aStatement,
                                  &sPosition,
                                  &mtfList ) != IDE_SUCCESS );
 
-        // subqueryì˜ target columnë“¤ì„ ë³µì‚¬í•´ì„œ ì—°ê²°í•œë‹¤.
+        // subqueryÀÇ target columnµéÀ» º¹»çÇØ¼­ ¿¬°áÇÑ´Ù.
 
         sTarget = sSFWGH->target;
 
@@ -2094,7 +2094,7 @@ qmoSubquery::makeNewPredAndLink( qcStatement * aStatement,
     }
 
     //--------------------------------------
-    // predicate columnì— ëŒ€í•œ ë…¸ë“œ ìƒì„±
+    // predicate column¿¡ ´ëÇÑ ³ëµå »ı¼º
     //--------------------------------------
 
     if( aNode->node.module == &mtfList )
@@ -2105,8 +2105,8 @@ qmoSubquery::makeNewPredAndLink( qcStatement * aStatement,
                                          ID_FALSE,
                                          ID_FALSE,
                                          ID_FALSE,
-                                         ID_FALSE ) // column nodeì´ë¯€ë¡œ
-                  // constant nodeê°€ ì—†ë‹¤.
+                                         ID_FALSE ) // column nodeÀÌ¹Ç·Î
+                  // constant node°¡ ¾ø´Ù.
                   != IDE_SUCCESS );
     }
     else
@@ -2121,7 +2121,7 @@ qmoSubquery::makeNewPredAndLink( qcStatement * aStatement,
     sPredColumn->node.next = NULL;
 
     //--------------------------------------
-    // equal ë¹„êµì—°ì‚°ì ìƒì„±
+    // equal ºñ±³¿¬»êÀÚ »ı¼º
     //--------------------------------------
 
     SET_EMPTY_POSITION(sPosition);
@@ -2141,7 +2141,7 @@ qmoSubquery::makeNewPredAndLink( qcStatement * aStatement,
               != IDE_SUCCESS );
 
     //--------------------------------------
-    // subqueryì˜ whereì ˆì— ìƒˆë¡œ ìƒì„±í•œ predicate ì—°ê²°
+    // subqueryÀÇ whereÀı¿¡ »õ·Î »ı¼ºÇÑ predicate ¿¬°á
     //--------------------------------------
 
     if( sSFWGH->where == NULL )
@@ -2193,71 +2193,71 @@ qmoSubquery::storeAndSearch( qcStatement    * aStatement,
 {
 /***********************************************************************
  *
- * Description : store and search ìµœì í™” íŒ ì ìš©
+ * Description : store and search ÃÖÀûÈ­ ÆÁ Àû¿ë
  *
- *  < store and search ìµœì í™” íŒ >
+ *  < store and search ÃÖÀûÈ­ ÆÁ >
  *
- *  type Aí˜•, type Ní˜• subqueryì˜ ê²½ìš°, outer queryì˜ ì§ˆì˜ì— ê´€ê³„ ì—†ì´
- *  ë™ì¼í•œ ê²°ê³¼ë¥¼ ìƒì„±í•œë‹¤. ë”°ë¼ì„œ, subqueryë¥¼ ë°˜ë³µì ìœ¼ë¡œ ìˆ˜í–‰í•˜ì§€ ì•Šê³ 
- *  ì§ˆì˜ ê²°ê³¼ë¥¼ ì €ì¥í•œ í›„ì— searchí•  ìˆ˜ ìˆë„ë¡ í•˜ì—¬ ì„±ëŠ¥ í–¥ìƒì„ ê¾€í•  ìˆ˜ ìˆë‹¤.
+ *  type AÇü, type NÇü subqueryÀÇ °æ¿ì, outer queryÀÇ ÁúÀÇ¿¡ °ü°è ¾øÀÌ
+ *  µ¿ÀÏÇÑ °á°ú¸¦ »ı¼ºÇÑ´Ù. µû¶ó¼­, subquery¸¦ ¹İº¹ÀûÀ¸·Î ¼öÇàÇÏÁö ¾Ê°í
+ *  ÁúÀÇ °á°ú¸¦ ÀúÀåÇÑ ÈÄ¿¡ searchÇÒ ¼ö ÀÖµµ·Ï ÇÏ¿© ¼º´É Çâ»óÀ» ²ÒÇÒ ¼ö ÀÖ´Ù.
  *
- *  < store and search íŒ ì ìš©ì¡°ê±´ >
- *  1. type Aí˜• ë˜ëŠ” type Ní˜• subquery ( transformNJê°€ ì ìš©ë˜ë©´ ì•ˆë¨)
- *  2. predicateì´
+ *  < store and search ÆÁ Àû¿ëÁ¶°Ç >
+ *  1. type AÇü ¶Ç´Â type NÇü subquery ( transformNJ°¡ Àû¿ëµÇ¸é ¾ÈµÊ)
+ *  2. predicateÀÌ
  *     (1) IN(=ANY), {>,>=,<,<=}ANY, {>,>=,<,<=}ALL
- *     (2) =,>,>=,<,<= : subquery filterì¸ ê²½ìš°,
- *                       subqueryê°€ ë§¤ë²ˆ ì¬ìˆ˜í–‰ë˜ëŠ” ê²ƒì„ ë°©ì§€í•˜ê¸° ìœ„í•´
- *                       í•œ ê±´ì˜ ë¡œìš°ë¼ë„ store and searchë¡œ ì²˜ë¦¬í•œë‹¤.
+ *     (2) =,>,>=,<,<= : subquery filterÀÎ °æ¿ì,
+ *                       subquery°¡ ¸Å¹ø Àç¼öÇàµÇ´Â °ÍÀ» ¹æÁöÇÏ±â À§ÇØ
+ *                       ÇÑ °ÇÀÇ ·Î¿ì¶óµµ store and search·Î Ã³¸®ÇÑ´Ù.
  *
  * Implementation :
  *
- *     subquery graphìƒì„± í›„, subquery type A, Ní˜•ì— ëŒ€í•´
- *     qmgProjection graphì— store and search tipê³¼ ì €ì¥ë°©ì‹ì„ ì„¤ì •í•˜ê³ ,
- *     HASHì¸ ê²½ìš°, qmgProjection graphì— storeNSearchPred ì„ ë‹¬ì•„ì¤€ë‹¤.
+ *     subquery graph»ı¼º ÈÄ, subquery type A, NÇü¿¡ ´ëÇØ
+ *     qmgProjection graph¿¡ store and search tip°ú ÀúÀå¹æ½ÄÀ» ¼³Á¤ÇÏ°í,
+ *     HASHÀÎ °æ¿ì, qmgProjection graph¿¡ storeNSearchPred À» ´Ş¾ÆÁØ´Ù.
  *
- *    [ì €ì¥ë°©ì‹ì§€ì •]
+ *    [ÀúÀå¹æ½ÄÁöÁ¤]
  *
  *    1. IN(=ANY), NOT IN(!=ALL)
- *       (1) í•œ ì»¬ëŸ¼ì¸ ê²½ìš°, hashë¡œ ì €ì¥.
- *       (2) ë‘ ì»¬ëŸ¼ ì´ìƒì¸ ê²½ìš°,
- *          predicate ì–‘ìª½ ëª¨ë‘ not null constraintê°€ ì¡´ì¬í•˜ëŠ”ì§€ë¥¼ ê²€ì‚¬.
- *          .not null constraintê°€ ì¡´ì¬ : hashë¡œ ì €ì¥
- *          .not null constraintê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŒ: SORTë…¸ë“œì— storeOnlyë¡œ ì €ì¥.
+ *       (1) ÇÑ ÄÃ·³ÀÎ °æ¿ì, hash·Î ÀúÀå.
+ *       (2) µÎ ÄÃ·³ ÀÌ»óÀÎ °æ¿ì,
+ *          predicate ¾çÂÊ ¸ğµÎ not null constraint°¡ Á¸ÀçÇÏ´ÂÁö¸¦ °Ë»ç.
+ *          .not null constraint°¡ Á¸Àç : hash·Î ÀúÀå
+ *          .not null constraint°¡ Á¸ÀçÇÏÁö ¾ÊÀ½: SORT³ëµå¿¡ storeOnly·Î ÀúÀå.
  *
  *    2. {>,>=,<,<=}ANY, {>,>=,<,<=}ALL
- *       LMSTë¡œ ì €ì¥
+ *       LMST·Î ÀúÀå
  *
  *    3. =ALL, !=ANY
- *       (1) í•œ ì»¬ëŸ¼ì¸ ê²½ìš°, LMSTë¡œ ì €ì¥.
- *       (2) ë‘ ì»¬ëŸ¼ ì´ìƒì¸ ê²½ìš°,
- *           predicate ì–‘ìª½ ëª¨ë‘ not null constraintê°€ ì¡´ì¬í•˜ëŠ”ì§€ë¥¼ ê²€ì‚¬.
- *           .not null constraintê°€ ì¡´ì¬ : LMSTë¡œ ì €ì¥
- *           .not null constraintê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŒ: SORTë…¸ë“œì— storeOnlyë¡œ ì €ì¥
+ *       (1) ÇÑ ÄÃ·³ÀÎ °æ¿ì, LMST·Î ÀúÀå.
+ *       (2) µÎ ÄÃ·³ ÀÌ»óÀÎ °æ¿ì,
+ *           predicate ¾çÂÊ ¸ğµÎ not null constraint°¡ Á¸ÀçÇÏ´ÂÁö¸¦ °Ë»ç.
+ *           .not null constraint°¡ Á¸Àç : LMST·Î ÀúÀå
+ *           .not null constraint°¡ Á¸ÀçÇÏÁö ¾ÊÀ½: SORT³ëµå¿¡ storeOnly·Î ÀúÀå
  *
  *    4. =, >, >=, <, <=
- *       SORTë…¸ë“œì— store onlyë¡œ ì €ì¥.
+ *       SORT³ëµå¿¡ store only·Î ÀúÀå.
  *
- *    [ IN(=ANY), NOT IN(!=ALL), =ALL, !=ANY ì €ì¥ë°©ì‹ì˜ ì œì•½ì‚¬í•­ ]
+ *    [ IN(=ANY), NOT IN(!=ALL), =ALL, !=ANY ÀúÀå¹æ½ÄÀÇ Á¦¾à»çÇ× ]
  *    ------------------------------------------------------------
- *      ì´ ê²½ìš°, ë‘ ì»¬ëŸ¼ì´ìƒì¸ ê²½ìš°, not null constraintê°€ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´,
- *      SORT ë…¸ë“œì— store onlyë¡œ ì €ì¥í•˜ê²Œ ëœë‹¤.
- *      ì´ë•Œ, subquery ìˆ˜í–‰ì‹œ ê²°ê³¼ê°€ ì¤„ì–´ë“œëŠ” ê²½ìš°ë§Œ, ì €ì¥í•˜ë„ë¡ í•œë‹¤.
- *      ( SORT ë…¸ë“œì— store onlyë¡œ ì €ì¥í•˜ê²Œ ë˜ë©´, full scanìœ¼ë¡œ ì²˜ë¦¬ë˜ë¯€ë¡œ)
+ *      ÀÌ °æ¿ì, µÎ ÄÃ·³ÀÌ»óÀÎ °æ¿ì, not null constraint°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é,
+ *      SORT ³ëµå¿¡ store only·Î ÀúÀåÇÏ°Ô µÈ´Ù.
+ *      ÀÌ¶§, subquery ¼öÇà½Ã °á°ú°¡ ÁÙ¾îµå´Â °æ¿ì¸¸, ÀúÀåÇÏµµ·Ï ÇÑ´Ù.
+ *      ( SORT ³ëµå¿¡ store only·Î ÀúÀåÇÏ°Ô µÇ¸é, full scanÀ¸·Î Ã³¸®µÇ¹Ç·Î)
  *
- *      1. SET ì ˆì¸ ê²½ìš°, ì €ì¥í•˜ì§€ ì•ŠëŠ”ë‹¤.
- *         UNION ALLì´ ì•„ë‹Œ ê²½ìš°ëŠ”, ì´ë¯¸ ê²°ê³¼ê°€ ì €ì¥ë˜ì–´ ìˆê³ ,
- *         UNION ALLì¸ ê²½ìš°ëŠ”, ëª¨ë“  subqueryì— ëŒ€í•œ ê²€ì‚¬ì— ëŒ€í•œ ë¶€í•˜ê°€ í¬ë¯€ë¡œ.
- *      2. SET ì ˆì´ ì•„ë‹Œ ê²½ìš°,
- *         (1) whereì ˆì´ ì¡´ì¬í•˜ê±°ë‚˜,
- *         (2) group byê°€ ì¡´ì¬í•˜ê±°ë‚˜,
- *         (3) aggregationì´ ì¡´ì¬í•˜ê±°ë‚˜,
- *         (4) distinctê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°ì— ì €ì¥í•œë‹¤.
+ *      1. SET ÀıÀÎ °æ¿ì, ÀúÀåÇÏÁö ¾Ê´Â´Ù.
+ *         UNION ALLÀÌ ¾Æ´Ñ °æ¿ì´Â, ÀÌ¹Ì °á°ú°¡ ÀúÀåµÇ¾î ÀÖ°í,
+ *         UNION ALLÀÎ °æ¿ì´Â, ¸ğµç subquery¿¡ ´ëÇÑ °Ë»ç¿¡ ´ëÇÑ ºÎÇÏ°¡ Å©¹Ç·Î.
+ *      2. SET ÀıÀÌ ¾Æ´Ñ °æ¿ì,
+ *         (1) whereÀıÀÌ Á¸ÀçÇÏ°Å³ª,
+ *         (2) group by°¡ Á¸ÀçÇÏ°Å³ª,
+ *         (3) aggregationÀÌ Á¸ÀçÇÏ°Å³ª,
+ *         (4) distinct°¡ Á¸ÀçÇÏ´Â °æ¿ì¿¡ ÀúÀåÇÑ´Ù.
  *
- *   [ì°¸ê³ ]
- *   ë‘ ì»¬ëŸ¼ì´ìƒì¸ ê²½ìš°,
- *   predicate ì–‘ìª½ ì»¬ëŸ¼ì´ ëª¨ë‘ not null constraintê°€ ì¡´ì¬í•´ì•¼ í•œë‹¤.
- *   ì•„ë˜ì˜ ì˜ˆì²˜ëŸ¼, ì§ˆì˜ ê²°ê³¼ê°€ í‹€ë¦´ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤.
- *   ì˜ˆ) (2,3,5) IN (4,7,NULL)       => FALSE
+ *   [Âü°í]
+ *   µÎ ÄÃ·³ÀÌ»óÀÎ °æ¿ì,
+ *   predicate ¾çÂÊ ÄÃ·³ÀÌ ¸ğµÎ not null constraint°¡ Á¸ÀçÇØ¾ß ÇÑ´Ù.
+ *   ¾Æ·¡ÀÇ ¿¹Ã³·³, ÁúÀÇ °á°ú°¡ Æ²¸±¼ö ÀÖ±â ¶§¹®ÀÌ´Ù.
+ *   ¿¹) (2,3,5) IN (4,7,NULL)       => FALSE
  *       (2,3,5) IN (NULL,3,NULL)    => UNKOWN
  *       (2,3,5) NOT IN (4,7,NULL)   => TRUE
  *       (2,3,5) NOT IN (NULL,3,NULL)=> UNKOWN
@@ -2271,7 +2271,7 @@ qmoSubquery::storeAndSearch( qcStatement    * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSubquery::storeAndSearch::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2279,14 +2279,14 @@ qmoSubquery::storeAndSearch( qcStatement    * aStatement,
     IDE_DASSERT( aSubQNode != NULL );
 
     //--------------------------------------
-    // store and search ìµœì í™” íŒ ì ìš©
+    // store and search ÃÖÀûÈ­ ÆÁ Àû¿ë
     //--------------------------------------
 
     //--------------------------------------
-    // ì¡°ê±´ê²€ì‚¬
+    // Á¶°Ç°Ë»ç
     //--------------------------------------
 
-    // subquery type ì¸ A, N í˜•ì´ì–´ì•¼ í•œë‹¤.
+    // subquery type ÀÎ A, N ÇüÀÌ¾î¾ß ÇÑ´Ù.
     if( ( aSubQType == QMO_TYPE_A ) || ( aSubQType == QMO_TYPE_N ) )
     {
         sQuerySet =
@@ -2294,7 +2294,7 @@ qmoSubquery::storeAndSearch( qcStatement    * aStatement,
         sPROJ  = (qmgPROJ *)(aSubQNode->subquery->myPlan->graph);
 
         //--------------------------------------
-        // ì €ì¥ë°©ì‹ ì§€ì •
+        // ÀúÀå¹æ½Ä ÁöÁ¤
         //--------------------------------------
 
         if( ( aCompareNode->node.module == & mtfEqualAny ) ||
@@ -2304,7 +2304,7 @@ qmoSubquery::storeAndSearch( qcStatement    * aStatement,
             // IN(=ANY), NOT IN(!=ALL)
             //--------------------------------------
             //-----------------------
-            // store and search ì ìš©ì—¬ë¶€ì™€ ì €ì¥ë°©ì‹ì§€ì •
+            // store and search Àû¿ë¿©ºÎ¿Í ÀúÀå¹æ½ÄÁöÁ¤
             //-----------------------
 
             IDE_TEST( setStoreFlagIN( aStatement,
@@ -2322,7 +2322,7 @@ qmoSubquery::storeAndSearch( qcStatement    * aStatement,
             // =ALL, !=ANY
             //--------------------------------------
             //------------------------
-            // store and search ì ìš©ì—¬ë¶€ì™€ ì €ì¥ë°©ì‹ì§€ì •
+            // store and search Àû¿ë¿©ºÎ¿Í ÀúÀå¹æ½ÄÁöÁ¤
             //------------------------
 
             IDE_TEST( setStoreFlagEqualAll( aStatement,
@@ -2340,8 +2340,8 @@ qmoSubquery::storeAndSearch( qcStatement    * aStatement,
                 case ( MTC_NODE_GROUP_COMPARISON_TRUE ) :
                 {
                     //--------------------------------------
-                    // {>,>=,<,<=}ANY, {>,>=,<,<=}ALL ì¸ ê²½ìš°,
-                    //  : LMSTë¡œ ì €ì¥
+                    // {>,>=,<,<=}ANY, {>,>=,<,<=}ALL ÀÎ °æ¿ì,
+                    //  : LMST·Î ÀúÀå
                     //--------------------------------------
 
                     switch( aCompareNode->node.module->lflag
@@ -2371,8 +2371,8 @@ qmoSubquery::storeAndSearch( qcStatement    * aStatement,
                 {
                     //--------------------------------------
                     //  =, !=, >, >=, <, <=,
-                    //  IS NULL, IS NOT NULL, LIKE, NOT LIKE ì¸ ê²½ìš°,
-                    //  : SORT ë…¸ë“œì— store onlyë¡œ ì €ì¥.
+                    //  IS NULL, IS NOT NULL, LIKE, NOT LIKE ÀÎ °æ¿ì,
+                    //  : SORT ³ëµå¿¡ store only·Î ÀúÀå.
                     //--------------------------------------
 
                     sIsSortNodeStoreOnly = ID_FALSE;
@@ -2433,7 +2433,7 @@ qmoSubquery::storeAndSearch( qcStatement    * aStatement,
     }
     else
     {
-        // subquery type J, JA í˜•ìœ¼ë¡œ,
+        // subquery type J, JA ÇüÀ¸·Î,
         // Nothing To Do
     }
 
@@ -2456,8 +2456,8 @@ qmoSubquery::setStoreFlagIN( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : store and search ìµœì í™” íŒ ì ìš©ì‹œ
- *               IN(=ANY), NOT IN(!=ALL)ì— ëŒ€í•œ ì €ì¥ë°©ì‹ ì§€ì •
+ * Description : store and search ÃÖÀûÈ­ ÆÁ Àû¿ë½Ã
+ *               IN(=ANY), NOT IN(!=ALL)¿¡ ´ëÇÑ ÀúÀå¹æ½Ä ÁöÁ¤
  *
  * Implementation :
  *
@@ -2470,7 +2470,7 @@ qmoSubquery::setStoreFlagIN( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSubquery::setStoreFlagIN::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2483,16 +2483,16 @@ qmoSubquery::setStoreFlagIN( qcStatement * aStatement,
     if( aQuerySet->target->next == NULL )
     {
         //--------------------------------------
-        // í•œ ì»¬ëŸ¼ì¸ ê²½ìš°,
-        // ë…¸ë“œì—ì„œ subquery target columnì— ëŒ€í•œ not null ê²€ì‚¬ì—¬ë¶€ì—
-        // ëŒ€í•œ flag ì„¤ì •.
-        // ì˜ˆ: i1 IN ( select a1 from ... )
-        //     i1ì€ ë…¸ë“œì—ì„œ null ê²€ì‚¬ë¥¼ ìˆ˜í–‰í•˜ë¯€ë¡œ,
-        //     subquery targetì¸ a1ì— ëŒ€í•´ì„œë§Œ ê²€ì‚¬.
-        //     1) a1ì´ not null ì´ë©´,
-        //        ë…¸ë“œì—ì„œ not null ê²€ì‚¬ë¥¼ í•˜ì§€ ì•Šì•„ë„ ëœë‹¤ëŠ” ì •ë³´ì„¤ì •.
-        //     2) a1ì´ not nullì´ ì•„ë‹ˆë©´,
-        //        ë…¸ë“œì—ì„œ not null ê²€ì‚¬ë¥¼ í•´ì•¼ í•œë‹¤ëŠ” ì •ë³´ ì„¤ì •.
+        // ÇÑ ÄÃ·³ÀÎ °æ¿ì,
+        // ³ëµå¿¡¼­ subquery target column¿¡ ´ëÇÑ not null °Ë»ç¿©ºÎ¿¡
+        // ´ëÇÑ flag ¼³Á¤.
+        // ¿¹: i1 IN ( select a1 from ... )
+        //     i1Àº ³ëµå¿¡¼­ null °Ë»ç¸¦ ¼öÇàÇÏ¹Ç·Î,
+        //     subquery targetÀÎ a1¿¡ ´ëÇØ¼­¸¸ °Ë»ç.
+        //     1) a1ÀÌ not null ÀÌ¸é,
+        //        ³ëµå¿¡¼­ not null °Ë»ç¸¦ ÇÏÁö ¾Ê¾Æµµ µÈ´Ù´Â Á¤º¸¼³Á¤.
+        //     2) a1ÀÌ not nullÀÌ ¾Æ´Ï¸é,
+        //        ³ëµå¿¡¼­ not null °Ë»ç¸¦ ÇØ¾ß ÇÑ´Ù´Â Á¤º¸ ¼³Á¤.
         //--------------------------------------
 
         IDE_TEST( checkNotNullSubQTarget( aStatement,
@@ -2501,7 +2501,7 @@ qmoSubquery::setStoreFlagIN( qcStatement * aStatement,
                   != IDE_SUCCESS );
 
 
-        // ì•„ë˜ì—ì„œ HASHë¡œ ì €ì¥ë°©ì‹ ì§€ì •ì„ ìœ„í•´,
+        // ¾Æ·¡¿¡¼­ HASH·Î ÀúÀå¹æ½Ä ÁöÁ¤À» À§ÇØ,
         sIsHash = ID_TRUE;
     }
     else
@@ -2517,12 +2517,12 @@ qmoSubquery::setStoreFlagIN( qcStatement * aStatement,
         }
         else
         {
-            // multi columnì¸ ê²½ìš°, not nullì œì•½ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•ŠëŠ” ê²½ìš°,
-            // In(=ANY), NOT IN(!=ALL), =ALL, !=ANY ì €ì¥ë°©ì‹ì˜ ì œì•½ì‚¬í•­ ì ìš©
+            // multi columnÀÎ °æ¿ì, not nullÁ¦¾àÁ¶°ÇÀ» ¸¸Á·ÇÏÁö ¾Ê´Â °æ¿ì,
+            // In(=ANY), NOT IN(!=ALL), =ALL, !=ANY ÀúÀå¹æ½ÄÀÇ Á¦¾à»çÇ× Àû¿ë
 
             if( aSubqueryIsSet == ID_TRUE )
             {
-                // store and search ìµœì í™” íŒì„ ì ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                // store and search ÃÖÀûÈ­ ÆÁÀ» Àû¿ëÇÏÁö ¾Ê´Â´Ù.
                 // Nothing To Do
             }
             else
@@ -2536,12 +2536,12 @@ qmoSubquery::setStoreFlagIN( qcStatement * aStatement,
                     ( aQuerySet->SFWGH->selectType == QMS_DISTINCT ) )
                 {
                     // fix BUG-8936
-                    // sort nodeì— store onlyë¡œ ì €ì¥
+                    // sort node¿¡ store only·Î ÀúÀå
                     sIsStoreOnly = ID_TRUE;
                 }
                 else
                 {
-                    // store and search ìµœì í™” íŒì„ ì ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                    // store and search ÃÖÀûÈ­ ÆÁÀ» Àû¿ëÇÏÁö ¾Ê´Â´Ù.
                     // Nothing To Do
                 }
             }
@@ -2549,14 +2549,14 @@ qmoSubquery::setStoreFlagIN( qcStatement * aStatement,
     }
 
     //--------------------------------------
-    // ì €ì¥ë°©ì‹ì§€ì •.
-    // (1) í•œ ì»¬ëŸ¼ì¸ ê²½ìš°, hashë¡œ ì €ì¥.
-    // (2) ë‘ ì»¬ëŸ¼ ì´ìƒì¸ ê²½ìš°,
-    //     predicate ì–‘ìª½ ëª¨ë‘ not null constraintê°€ ì¡´ì¬í•˜ëŠ”ì§€ë¥¼ ê²€ì‚¬.
-    //     .not null constraintê°€ ì¡´ì¬ : hashë¡œ ì €ì¥
-    //     .not null constraintê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŒ: SORTë…¸ë“œì— storeOnlyë¡œ ì €ì¥.
+    // ÀúÀå¹æ½ÄÁöÁ¤.
+    // (1) ÇÑ ÄÃ·³ÀÎ °æ¿ì, hash·Î ÀúÀå.
+    // (2) µÎ ÄÃ·³ ÀÌ»óÀÎ °æ¿ì,
+    //     predicate ¾çÂÊ ¸ğµÎ not null constraint°¡ Á¸ÀçÇÏ´ÂÁö¸¦ °Ë»ç.
+    //     .not null constraint°¡ Á¸Àç : hash·Î ÀúÀå
+    //     .not null constraint°¡ Á¸ÀçÇÏÁö ¾ÊÀ½: SORT³ëµå¿¡ storeOnly·Î ÀúÀå.
     //
-    // ì €ì¥ë°©ì‹ì´ HASHì¸ ê²½ìš°ëŠ”, projection graphì— í•´ë‹¹ predicateì„ ë‹¬ì•„ì¤€ë‹¤.
+    // ÀúÀå¹æ½ÄÀÌ HASHÀÎ °æ¿ì´Â, projection graph¿¡ ÇØ´ç predicateÀ» ´Ş¾ÆÁØ´Ù.
     //--------------------------------------
     if( sIsHash == ID_TRUE )
     {
@@ -2569,26 +2569,26 @@ qmoSubquery::setStoreFlagIN( qcStatement * aStatement,
             |= QMG_PROJ_SUBQUERY_STORENSEARCH_HASH;
 
         //--------------------------------------
-        // store and search predicateì„ qmgProjection graphì— ì—°ê²°.
+        // store and search predicateÀ» qmgProjection graph¿¡ ¿¬°á.
         //--------------------------------------
 
         aPROJ->storeNSearchPred = aCompareNode;
 
         //--------------------------------------
-        // not null ê²€ì‚¬ì—¬ë¶€ ì§€ì •
-        // 1. í•œ ì»¬ëŸ¼ì¸ ê²½ìš°,
-        //    ë…¸ë“œì—ì„œ subquery target columnì— ëŒ€í•œ not null ê²€ì‚¬ì—¬ë¶€ì—
-        //    ëŒ€í•œ flag ì„¤ì •.
-        //    ì˜ˆ: i1 IN ( select a1 from ... )
-        //        i1ì€ ë…¸ë“œì—ì„œ null ê²€ì‚¬ë¥¼ ìˆ˜í–‰í•˜ë¯€ë¡œ,
-        //        subquery targetì¸ a1ì— ëŒ€í•´ì„œë§Œ ê²€ì‚¬.
-        //        1) a1ì´ not null ì´ë©´,
-        //           ë…¸ë“œì—ì„œ not null ê²€ì‚¬ë¥¼ í•˜ì§€ ì•Šì•„ë„ ëœë‹¤ëŠ” ì •ë³´ì„¤ì •.
-        //        2) a1ì´ not nullì´ ì•„ë‹ˆë©´,
-        //           ë…¸ë“œì—ì„œ not null ê²€ì‚¬ë¥¼ í•´ì•¼ í•œë‹¤ëŠ” ì •ë³´ ì„¤ì •.
-        // 2. ì—¬ëŸ¬ ì»¬ëŸ¼ì¸ ê²½ìš°,
-        //    ë…¸ë“œì—ì„œ ì–‘ìª½ ì»¬ëŸ¼ì— ëŒ€í•œ
-        //    null ê²€ì‚¬ë¥¼ ìˆ˜í–‰í•˜ì§€ ì•Šì•„ë„ ëœë‹¤ëŠ” ì •ë³´ ì„¤ì •.
+        // not null °Ë»ç¿©ºÎ ÁöÁ¤
+        // 1. ÇÑ ÄÃ·³ÀÎ °æ¿ì,
+        //    ³ëµå¿¡¼­ subquery target column¿¡ ´ëÇÑ not null °Ë»ç¿©ºÎ¿¡
+        //    ´ëÇÑ flag ¼³Á¤.
+        //    ¿¹: i1 IN ( select a1 from ... )
+        //        i1Àº ³ëµå¿¡¼­ null °Ë»ç¸¦ ¼öÇàÇÏ¹Ç·Î,
+        //        subquery targetÀÎ a1¿¡ ´ëÇØ¼­¸¸ °Ë»ç.
+        //        1) a1ÀÌ not null ÀÌ¸é,
+        //           ³ëµå¿¡¼­ not null °Ë»ç¸¦ ÇÏÁö ¾Ê¾Æµµ µÈ´Ù´Â Á¤º¸¼³Á¤.
+        //        2) a1ÀÌ not nullÀÌ ¾Æ´Ï¸é,
+        //           ³ëµå¿¡¼­ not null °Ë»ç¸¦ ÇØ¾ß ÇÑ´Ù´Â Á¤º¸ ¼³Á¤.
+        // 2. ¿©·¯ ÄÃ·³ÀÎ °æ¿ì,
+        //    ³ëµå¿¡¼­ ¾çÂÊ ÄÃ·³¿¡ ´ëÇÑ
+        //    null °Ë»ç¸¦ ¼öÇàÇÏÁö ¾Ê¾Æµµ µÈ´Ù´Â Á¤º¸ ¼³Á¤.
         //--------------------------------------
 
         if( sIsNotNull == ID_TRUE )
@@ -2620,7 +2620,7 @@ qmoSubquery::setStoreFlagIN( qcStatement * aStatement,
         }
         else
         {
-            // store and search ìµœì í™”ë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // store and search ÃÖÀûÈ­¸¦ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
         }
     }
 
@@ -2642,8 +2642,8 @@ qmoSubquery::setStoreFlagEqualAll( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : store and search ìµœì í™” íŒ ì ìš©ì‹œ
- *               =ALL, !=ANYì— ëŒ€í•œ ì €ì¥ë°©ì‹ ì§€ì •.
+ * Description : store and search ÃÖÀûÈ­ ÆÁ Àû¿ë½Ã
+ *               =ALL, !=ANY¿¡ ´ëÇÑ ÀúÀå¹æ½Ä ÁöÁ¤.
  *
  * Implementation :
  *
@@ -2656,7 +2656,7 @@ qmoSubquery::setStoreFlagEqualAll( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSubquery::setStoreFlagEqualAll::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2666,13 +2666,13 @@ qmoSubquery::setStoreFlagEqualAll( qcStatement  * aStatement,
     IDE_DASSERT( aPROJ != NULL );
 
     //--------------------------------------
-    // ì €ì¥ë°©ì‹ì§€ì •
+    // ÀúÀå¹æ½ÄÁöÁ¤
     //--------------------------------------
 
     if( aQuerySet->target->next == NULL )
     {
         //--------------------------------------
-        // í•œ ì»¬ëŸ¼ì¸ ê²½ìš°, LMSTë¡œ ì €ì¥.
+        // ÇÑ ÄÃ·³ÀÎ °æ¿ì, LMST·Î ÀúÀå.
         //--------------------------------------
 
         sIsLMST = ID_TRUE;
@@ -2680,8 +2680,8 @@ qmoSubquery::setStoreFlagEqualAll( qcStatement  * aStatement,
     else
     {
         //--------------------------------------
-        // ì—¬ëŸ¬ ì»¬ëŸ¼ì¸ ê²½ìš°,
-        // predicate ì–‘ìª½ ëª¨ë‘ not null constraintê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬.
+        // ¿©·¯ ÄÃ·³ÀÎ °æ¿ì,
+        // predicate ¾çÂÊ ¸ğµÎ not null constraint°¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç.
         //--------------------------------------
 
         IDE_TEST( checkNotNull( aStatement,
@@ -2695,13 +2695,13 @@ qmoSubquery::setStoreFlagEqualAll( qcStatement  * aStatement,
         }
         else
         {
-            // multi columnì¸ ê²½ìš°,
-            // not null constrantì œì•½ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•ŠëŠ” ê²½ìš°
-            // IN(=ANY), NOT IN(!=ALL), =ALL, !=ANY ì €ì¥ë°©ì‹ì˜ ì œì•½ì‚¬í•­ ì ìš©
+            // multi columnÀÎ °æ¿ì,
+            // not null constrantÁ¦¾àÁ¶°ÇÀ» ¸¸Á·ÇÏÁö ¾Ê´Â °æ¿ì
+            // IN(=ANY), NOT IN(!=ALL), =ALL, !=ANY ÀúÀå¹æ½ÄÀÇ Á¦¾à»çÇ× Àû¿ë
 
             if( aSubqueryIsSet == ID_TRUE )
             {
-                // store and search ìµœì í™” íŒì„ ì ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                // store and search ÃÖÀûÈ­ ÆÁÀ» Àû¿ëÇÏÁö ¾Ê´Â´Ù.
                 // Nothing To Do
             }
             else
@@ -2714,12 +2714,12 @@ qmoSubquery::setStoreFlagEqualAll( qcStatement  * aStatement,
                     ( aQuerySet->SFWGH->selectType == QMS_DISTINCT ) )
                 {
                     // fix BUG-8936
-                    // sort nodeì— store onlyë¡œ ì €ì¥
+                    // sort node¿¡ store only·Î ÀúÀå
                     sIsStoreOnly = ID_TRUE;
                 }
                 else
                 {
-                    // store and search ìµœì í™” íŒì„ ì ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                    // store and search ÃÖÀûÈ­ ÆÁÀ» Àû¿ëÇÏÁö ¾Ê´Â´Ù.
                     // Nothing To Do
                 }
             }
@@ -2728,13 +2728,13 @@ qmoSubquery::setStoreFlagEqualAll( qcStatement  * aStatement,
 
     //--------------------------------------
     // =ALL, !=ANY
-    // (1) í•œ ì»¬ëŸ¼ì¸ ê²½ìš°, LMSTë¡œ ì €ì¥.
-    // (2) ë‘ ì»¬ëŸ¼ ì´ìƒì¸ ê²½ìš°,
-    //     predicate ì–‘ìª½ ëª¨ë‘ not null constraintê°€
-    //     ì¡´ì¬í•˜ëŠ”ì§€ë¥¼ ê²€ì‚¬.
-    //    .not null constraintê°€ ì¡´ì¬ : LMSTë¡œ ì €ì¥
-    //    .not null constraintê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŒ
-    //        : SORTë…¸ë“œì— storeOnlyë¡œ ì €ì¥
+    // (1) ÇÑ ÄÃ·³ÀÎ °æ¿ì, LMST·Î ÀúÀå.
+    // (2) µÎ ÄÃ·³ ÀÌ»óÀÎ °æ¿ì,
+    //     predicate ¾çÂÊ ¸ğµÎ not null constraint°¡
+    //     Á¸ÀçÇÏ´ÂÁö¸¦ °Ë»ç.
+    //    .not null constraint°¡ Á¸Àç : LMST·Î ÀúÀå
+    //    .not null constraint°¡ Á¸ÀçÇÏÁö ¾ÊÀ½
+    //        : SORT³ëµå¿¡ storeOnly·Î ÀúÀå
     //--------------------------------------
 
     if( sIsLMST == ID_TRUE )
@@ -2757,7 +2757,7 @@ qmoSubquery::setStoreFlagEqualAll( qcStatement  * aStatement,
         }
         else
         {
-            // store and search ìµœì í™”ë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // store and search ÃÖÀûÈ­¸¦ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
         }
     }
 
@@ -2776,23 +2776,23 @@ qmoSubquery::inSubqueryKeyRange( qtcNode        * aCompareNode,
 {
 /***********************************************************************
  *
- * Description : INì ˆì˜ subquery keyRange ìµœì í™” íŒ ì ìš©
+ * Description : INÀıÀÇ subquery keyRange ÃÖÀûÈ­ ÆÁ Àû¿ë
  *
- *   < INì ˆì˜ subquery keyRange ìµœì í™” íŒ >
+ *   < INÀıÀÇ subquery keyRange ÃÖÀûÈ­ ÆÁ >
  *
  *   FROM T1 WHERE I1 IN ( SELECT A1 FROM T2 );
- *   ì™€ ê°™ì´ quantify ë¹„êµ ì—°ì‚°ìì™€ subqueryë¥¼ í•¨ê»˜ ì‚¬ìš©í•˜ëŠ” ê²½ìš°,
- *   transformNJ ìµœì í™” íŒì„ ì‚¬ìš©í•  ìˆ˜ ìˆìœ¼ë‚˜, ì´ëŠ” ìˆ˜í–‰ë°©í–¥ì´ ì •í•´ì ¸ ìˆì–´,
- *   T1ì˜ ë ˆì½”ë“œ ìˆ˜ê°€ subqueryì˜ ë ˆì½”ë“œ ìˆ˜ë³´ë‹¤ ë§¤ìš° ë§ì€ ê²½ìš°, ê·¸ íš¨ìœ¨ì´
- *   ë–¨ì–´ì§€ëŠ” ë¬¸ì œê°€ ìˆë‹¤. ì´ì™€ ê°™ì´ IN subquery keyRange ìµœì í™”ëŠ” T1ì˜
- *   ë ˆì½”ë“œ ìˆ˜ê°€ subqueryì˜ ë ˆì½”ë“œ ìˆ˜ë³´ë‹¤ ë§¤ìš° ë§ì€ ê²½ìš°ì— ì ìš©í•˜ì—¬ íš¨ìœ¨ì„
- *   ë†’ì´ê²Œ ëœë‹¤.
+ *   ¿Í °°ÀÌ quantify ºñ±³ ¿¬»êÀÚ¿Í subquery¸¦ ÇÔ²² »ç¿ëÇÏ´Â °æ¿ì,
+ *   transformNJ ÃÖÀûÈ­ ÆÁÀ» »ç¿ëÇÒ ¼ö ÀÖÀ¸³ª, ÀÌ´Â ¼öÇà¹æÇâÀÌ Á¤ÇØÁ® ÀÖ¾î,
+ *   T1ÀÇ ·¹ÄÚµå ¼ö°¡ subqueryÀÇ ·¹ÄÚµå ¼öº¸´Ù ¸Å¿ì ¸¹Àº °æ¿ì, ±× È¿À²ÀÌ
+ *   ¶³¾îÁö´Â ¹®Á¦°¡ ÀÖ´Ù. ÀÌ¿Í °°ÀÌ IN subquery keyRange ÃÖÀûÈ­´Â T1ÀÇ
+ *   ·¹ÄÚµå ¼ö°¡ subqueryÀÇ ·¹ÄÚµå ¼öº¸´Ù ¸Å¿ì ¸¹Àº °æ¿ì¿¡ Àû¿ëÇÏ¿© È¿À²À»
+ *   ³ôÀÌ°Ô µÈ´Ù.
  *
  * Implementation :
  *
- *    subqueryì— ëŒ€í•œ graphë¥¼ ìƒì„±í•˜ê³  ë‚˜ë©´, subquery type A, Ní˜•ì¸ ê²½ìš°,
- *    column cardinality >= subquery target cardinality ì´ë©´,
- *    qmgProjection graphì— IN subquery keyRangeìµœì í™” íŒì„ ì„¤ì •
+ *    subquery¿¡ ´ëÇÑ graph¸¦ »ı¼ºÇÏ°í ³ª¸é, subquery type A, NÇüÀÎ °æ¿ì,
+ *    column cardinality >= subquery target cardinality ÀÌ¸é,
+ *    qmgProjection graph¿¡ IN subquery keyRangeÃÖÀûÈ­ ÆÁÀ» ¼³Á¤
  *
  ***********************************************************************/
 
@@ -2801,20 +2801,20 @@ qmoSubquery::inSubqueryKeyRange( qtcNode        * aCompareNode,
     IDU_FIT_POINT_FATAL( "qmoSubquery::inSubqueryKeyRange::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aCompareNode != NULL );
     IDE_DASSERT( aSubQNode != NULL );
 
     //--------------------------------------
-    // IN subquery keyRange ìµœì í™” íŒ ì ìš©
+    // IN subquery keyRange ÃÖÀûÈ­ ÆÁ Àû¿ë
     //--------------------------------------
 
     //--------------------------------------
-    // ì¡°ê±´ê²€ì‚¬
+    // Á¶°Ç°Ë»ç
     // 1. subquery type A, N
-    // 2. IN ë¹„êµì—°ì‚°ì
+    // 2. IN ºñ±³¿¬»êÀÚ
     //--------------------------------------
 
     if( ( aSubQType == QMO_TYPE_A ) || ( aSubQType == QMO_TYPE_N ) )
@@ -2823,7 +2823,7 @@ qmoSubquery::inSubqueryKeyRange( qtcNode        * aCompareNode,
         {
             sPROJ = (qmgPROJ *)(aSubQNode->subquery->myPlan->graph);
 
-            // IN subquery ìµœì í™” íŒ ì •ë³´ ì„¤ì •
+            // IN subquery ÃÖÀûÈ­ ÆÁ Á¤º¸ ¼³Á¤
             sPROJ->subqueryTipFlag &= ~QMG_PROJ_SUBQUERY_TIP_MASK;
             sPROJ->subqueryTipFlag |= QMG_PROJ_SUBQUERY_TIP_IN_KEYRANGE;
         }
@@ -2848,19 +2848,19 @@ qmoSubquery::subqueryKeyRange( qtcNode        * aCompareNode,
 {
 /***********************************************************************
  *
- * Description : subquery keyRange ìµœì í™” íŒ ì ìš©
+ * Description : subquery keyRange ÃÖÀûÈ­ ÆÁ Àû¿ë
  *
- *   < subquery keyRange ìµœì í™” íŒ >
+ *   < subquery keyRange ÃÖÀûÈ­ ÆÁ >
  *
- *   one-row one-column í˜•íƒœì˜ subqueryì˜ ê²½ìš°,
- *   subqueryë¥¼ ë¨¼ì € ì‹¤í–‰ì‹œì¼œ ì–»ì€ ê°’ìœ¼ë¡œ keyRangeë¥¼ êµ¬ì„±í•œë‹¤.
+ *   one-row one-column ÇüÅÂÀÇ subqueryÀÇ °æ¿ì,
+ *   subquery¸¦ ¸ÕÀú ½ÇÇà½ÃÄÑ ¾òÀº °ªÀ¸·Î keyRange¸¦ ±¸¼ºÇÑ´Ù.
  *
  * Implementation :
  *
- *   subqueryì— ëŒ€í•œ graphë¥¼ ìƒì„±í•˜ê³  ë‚˜ë©´, subquery type A, Ní˜•ì¸ ê²½ìš°,
- *   =, >, >=, <, <= ì— ëŒ€í•´ì„œ subquery keyRange ìµœì í™” íŒì„ ì„¤ì •í•˜ëŠ”ë°,
- *   íŒ ì„¤ì •ì‹œ, store and search ìµœì í™” íŒ flagì™€ oring ë˜ë„ë¡ í•œë‹¤.
- *   (ì´ìœ ëŠ”, inSubqueryKeyRange()ì™€ ë™ì¼)
+ *   subquery¿¡ ´ëÇÑ graph¸¦ »ı¼ºÇÏ°í ³ª¸é, subquery type A, NÇüÀÎ °æ¿ì,
+ *   =, >, >=, <, <= ¿¡ ´ëÇØ¼­ subquery keyRange ÃÖÀûÈ­ ÆÁÀ» ¼³Á¤ÇÏ´Âµ¥,
+ *   ÆÁ ¼³Á¤½Ã, store and search ÃÖÀûÈ­ ÆÁ flag¿Í oring µÇµµ·Ï ÇÑ´Ù.
+ *   (ÀÌÀ¯´Â, inSubqueryKeyRange()¿Í µ¿ÀÏ)
  *
  ***********************************************************************/
 
@@ -2869,20 +2869,20 @@ qmoSubquery::subqueryKeyRange( qtcNode        * aCompareNode,
     IDU_FIT_POINT_FATAL( "qmoSubquery::subqueryKeyRange::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aCompareNode != NULL );
     IDE_DASSERT( aSubQNode != NULL );
 
     //--------------------------------------
-    // subquery keyRange ìµœì í™” íŒ ì ìš©
+    // subquery keyRange ÃÖÀûÈ­ ÆÁ Àû¿ë
     //--------------------------------------
 
     //--------------------------------------
-    // ì¡°ê±´ê²€ì‚¬
+    // Á¶°Ç°Ë»ç
     // 1. subquery type A, N
-    // 2. ë¹„êµì—°ì‚°ì =, >, >=, <, <=
+    // 2. ºñ±³¿¬»êÀÚ =, >, >=, <, <=
     //--------------------------------------
 
     if( ( aSubQType == QMO_TYPE_A ) || ( aSubQType == QMO_TYPE_N ) )
@@ -2912,7 +2912,7 @@ qmoSubquery::subqueryKeyRange( qtcNode        * aCompareNode,
     }
     else
     {
-        // subquery typeì´ J, JA í˜•ì¸ ê²½ìš°,
+        // subquery typeÀÌ J, JA ÇüÀÎ °æ¿ì,
         // Nothing To Do
     }
 
@@ -2926,20 +2926,20 @@ qmoSubquery::constantSubquery( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : Expressioní˜• subqueryì— ëŒ€í•œ
- *               constant subquery ìµœì í™” íŒ ì ìš©
+ * Description : ExpressionÇü subquery¿¡ ´ëÇÑ
+ *               constant subquery ÃÖÀûÈ­ ÆÁ Àû¿ë
  *
- *   < constant subquery ìµœì í™” íŒ >
+ *   < constant subquery ÃÖÀûÈ­ ÆÁ >
  *
- *   one-row one-column í˜•íƒœ subqueryì¸ ê²½ìš°,
- *   subqueryê°€ ë§¤ë²ˆ ì¬ìˆ˜í–‰ë˜ì§€ ì•Šë„ë¡, í•œë²ˆ ìˆ˜í–‰ëœ ê²°ê³¼ë¥¼ ì €ì¥í•´ ë‘ê³ ,
- *   ì´ë¥¼ ì´ìš©í•œë‹¤.
+ *   one-row one-column ÇüÅÂ subqueryÀÎ °æ¿ì,
+ *   subquery°¡ ¸Å¹ø Àç¼öÇàµÇÁö ¾Êµµ·Ï, ÇÑ¹ø ¼öÇàµÈ °á°ú¸¦ ÀúÀåÇØ µÎ°í,
+ *   ÀÌ¸¦ ÀÌ¿ëÇÑ´Ù.
  *
  * Implementation :
  *
- *     subquery type A, Nì¸ ê²½ìš°,
- *     qmgProjection graphì— constant subquery ìµœì í™” íŒ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
- *     ì €ì¥ ë°©ì‹ì€ SORTë…¸ë“œì— store onlyë¡œ ì €ì¥.
+ *     subquery type A, NÀÎ °æ¿ì,
+ *     qmgProjection graph¿¡ constant subquery ÃÖÀûÈ­ ÆÁ Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
+ *     ÀúÀå ¹æ½ÄÀº SORT³ëµå¿¡ store only·Î ÀúÀå.
  *
  ***********************************************************************/
 
@@ -2949,18 +2949,18 @@ qmoSubquery::constantSubquery( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSubquery::constantSubquery::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aSubQNode != NULL );
 
     //--------------------------------------
-    // expressioní˜• subqueryì— ëŒ€í•œ constant subquery ìµœì í™” íŒ ì ìš©
+    // expressionÇü subquery¿¡ ´ëÇÑ constant subquery ÃÖÀûÈ­ ÆÁ Àû¿ë
     //--------------------------------------
 
     //--------------------------------------
-    // subquery nodeì— ëŒ€í•œ subquery type íŒë‹¨
+    // subquery node¿¡ ´ëÇÑ subquery type ÆÇ´Ü
     //--------------------------------------
 
     IDE_TEST( checkSubqueryType( aStatement,
@@ -2980,7 +2980,7 @@ qmoSubquery::constantSubquery( qcStatement * aStatement,
     }
     else
     {
-        // subquery typeì´ J, JAí˜•ì¸ ê²½ìš°
+        // subquery typeÀÌ J, JAÇüÀÎ °æ¿ì
         // Nothing To Do
     }
 
@@ -2999,10 +2999,10 @@ qmoSubquery::getColumnCardinality( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description :  predicate columnì˜ cardinalityë¥¼ êµ¬í•œë‹¤.
+ * Description :  predicate columnÀÇ cardinality¸¦ ±¸ÇÑ´Ù.
  *
- *    store and search, IN subquery keyRange, transform NJ íŒë‹¨ì‹œ
- *    í•„ìš”í•œ predicate columnì˜ cardinalityë¥¼ êµ¬í•œë‹¤.
+ *    store and search, IN subquery keyRange, transform NJ ÆÇ´Ü½Ã
+ *    ÇÊ¿äÇÑ predicate columnÀÇ cardinality¸¦ ±¸ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -3015,7 +3015,7 @@ qmoSubquery::getColumnCardinality( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSubquery::getColumnCardinality::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -3023,7 +3023,7 @@ qmoSubquery::getColumnCardinality( qcStatement * aStatement,
     IDE_DASSERT( aCardinality != NULL );
 
     //--------------------------------------
-    // predicate columnì˜ cardinalityë¥¼ êµ¬í•œë‹¤.
+    // predicate columnÀÇ cardinality¸¦ ±¸ÇÑ´Ù.
     //--------------------------------------
 
     if( ( aColumnNode->node.lflag & MTC_NODE_OPERATOR_MASK )
@@ -3080,10 +3080,10 @@ qmoSubquery::getSubQTargetCardinality( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description :  subquery Target columnì˜ cardinalityë¥¼ êµ¬í•œë‹¤.
+ * Description :  subquery Target columnÀÇ cardinality¸¦ ±¸ÇÑ´Ù.
  *
- *    store and search, IN subquery keyRange, transform NJ íŒë‹¨ì‹œ
- *    í•„ìš”í•œ subquery Target cardinalityë¥¼ êµ¬í•œë‹¤.
+ *    store and search, IN subquery keyRange, transform NJ ÆÇ´Ü½Ã
+ *    ÇÊ¿äÇÑ subquery Target cardinality¸¦ ±¸ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -3098,7 +3098,7 @@ qmoSubquery::getSubQTargetCardinality( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSubquery::getSubQTargetCardinality::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -3106,7 +3106,7 @@ qmoSubquery::getSubQTargetCardinality( qcStatement * aStatement,
     IDE_DASSERT( aCardinality != NULL );
 
     //--------------------------------------
-    // subquery target columnì— ëŒ€í•œ cardinalityë¥¼ êµ¬í•œë‹¤.
+    // subquery target column¿¡ ´ëÇÑ cardinality¸¦ ±¸ÇÑ´Ù.
     //--------------------------------------
 
     sQuerySet =  ((qmsParseTree *)(aSubQNode->subquery->myPlan->parseTree))->querySet;
@@ -3135,8 +3135,8 @@ qmoSubquery::getSubQTargetCardinality( qcStatement * aStatement,
                ( QC_SHARED_TMPLATE(aStatement)->tableMap[sNode->node.table].
                  from->tableRef->recursiveView == NULL ) ) )
         {
-            // target columnì´ columnì´ê³ ,
-            // base tableì¸ ê²½ìš°, í†µê³„ì •ë³´ë¥¼ í†µí•´ cardinalityë¥¼ ì–»ëŠ”ë‹¤.
+            // target columnÀÌ columnÀÌ°í,
+            // base tableÀÎ °æ¿ì, Åë°èÁ¤º¸¸¦ ÅëÇØ cardinality¸¦ ¾ò´Â´Ù.
             sOneCardinality =
                 QC_SHARED_TMPLATE(aStatement)->tableMap[sNode->node.table].
                 from->tableRef->statInfo->\
@@ -3144,8 +3144,8 @@ qmoSubquery::getSubQTargetCardinality( qcStatement * aStatement,
         }
         else
         {
-            // target columnì´ columnì´ ì•„ë‹ˆê±°ë‚˜,
-            // subqueryê°€ viewì¸ ê²½ìš°
+            // target columnÀÌ columnÀÌ ¾Æ´Ï°Å³ª,
+            // subquery°¡ viewÀÎ °æ¿ì
             sOneCardinality = QMO_STAT_COLUMN_NDV;
         }
 

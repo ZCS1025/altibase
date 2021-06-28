@@ -64,10 +64,12 @@ class svcReqFunc
         };
         static IDE_RC waitLockForTrans( void    * aTrans,
                                         smTID     aWaitTransID,
+                                        scSpaceID aSpaceID,
                                         ULong     aLockWaitTime )
         {
             return smxTransMgr::waitForTrans( aTrans,
                                               aWaitTransID,
+                                              aSpaceID,
                                               aLockWaitTime );
         };
         static IDE_RC undoInsertOfTableInfo( void * aTrans,
@@ -97,32 +99,36 @@ class svcReqFunc
         };
 
         /* smc */
-        /* ì•„ë˜ ë‘ í•¨ìˆ˜ëŠ” ë©”íƒ€ì— ì ‘ê·¼í•˜ëŠ” í•¨ìˆ˜ì´ë¯€ë¡œ ì–´ì©”ìˆ˜ ì—†ì´ smcë¥¼ callbackìœ¼ë¡œ
-           í˜¸ì¶œí•œë‹¤. ë‚˜ì¤‘ì— ë¦¬íŒ©í† ë§ì´ í•„ìš”í•˜ë‹¤.  */
+        /* ¾Æ·¡ µÎ ÇÔ¼ö´Â ¸ŞÅ¸¿¡ Á¢±ÙÇÏ´Â ÇÔ¼öÀÌ¹Ç·Î ¾îÂ¿¼ö ¾øÀÌ smc¸¦ callbackÀ¸·Î
+           È£ÃâÇÑ´Ù. ³ªÁß¿¡ ¸®ÆÑÅä¸µÀÌ ÇÊ¿äÇÏ´Ù.  */
         static IDE_RC insertRow2TBIdx( void       * aTrans,
                                        scSpaceID    aSpaceID,
                                        smOID        aTableOID,
-                                       smOID        aRowID )
+                                       smOID        aRowID,
+                                       ULong        aModifyIdxBit )
         {
             return smcRecordUpdate::insertRow2TBIdx( aTrans,
                                                      aSpaceID,
                                                      aTableOID,
-                                                     aRowID );
+                                                     aRowID,
+                                                     aModifyIdxBit );
         };
         static IDE_RC deleteRowFromTBIdx( scSpaceID aSpaceID,
                                           smOID     aTableOID,
-                                          smOID     aRowID )
+                                          smOID     aRowID,
+                                          ULong     aModifyIdxBit )
         {
             return smcRecordUpdate::deleteRowFromTBIdx( aSpaceID,
                                                         aTableOID,
-                                                        aRowID );
+                                                        aRowID,
+                                                        aModifyIdxBit );
         };
 
 
         /* smn */
         static IDE_RC deleteRowFromIndex( SChar          * aRow,
                                           smcTableHeader * aHeader,
-                                          ULong          * aModifyIdxBit )
+                                          ULong            aModifyIdxBit )
         {
             return smnManager::deleteRowFromIndexForSVC( aRow,
                                                          aHeader,

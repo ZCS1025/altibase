@@ -16,11 +16,11 @@
  
 
 /***********************************************************************
- * $Id: smrDef.h 85250 2019-04-16 07:15:32Z emlee $
+ * $Id: smrDef.h 90444 2021-04-02 10:15:58Z minku.kang $
  *
  * Description :
  *
- * Recovery Layer Common Header íŒŒì¼
+ * Recovery Layer Common Header ÆÄÀÏ
  *
  *
  **********************************************************************/
@@ -28,7 +28,6 @@
 #ifndef _O_SMR_DEF_H_
 #define _O_SMR_DEF_H_ 1
 
-#include <iduCompression.h>
 #include <smDef.h>
 #include <smu.h>
 #include <sdrDef.h>
@@ -36,7 +35,7 @@
 #include <sdsDef.h>
 
 /* --------------------------------------------------------------------
- * Memory Redo í•¨ìˆ˜
+ * Memory Redo ÇÔ¼ö
  * ----------------------------------------------------------------- */
 
 typedef IDE_RC (*smrRecFunction)(smTID,
@@ -58,28 +57,12 @@ typedef IDE_RC (*smrTBSUptRecFunction)( idvSQL*            aStatistics,
                                         SChar*             aValuePtr,
                                         idBool             aIsRestart );
 
-/* 
- * BUG-37018 There is some mistake on logfile Offset calculation 
- * dummy logì˜ í¬ê¸° 18Bytes [flag(4)][size(4)][SN(8)][magic(2)]
- */
-#define SMR_DUMMY_LOG_SIZE               (18)
-
 #define SMR_LOG_FULL_SIZE               (500)
 
-//#define SMR_LOG_BUFFER_POOL_LIST_COUNT  (4)
-//#define SMR_LOG_BUFFER_SIZE             (SM_PAGE_SIZE * 2)
-//#define SMR_LOG_BUFFER_POOL_SIZE        (20)
-
-//#define SMR_LOG_FILE_COUNT              (10)
-//#define SMR_MAX_LOGFILE_COUNT           (10)
 #define SMR_LOG_FILE_NAME               "logfile"
+#define SMR_TEMP_LOG_FILE_NAME          "logfile.tmp"  /* BUG-48409 */
+
 #define SMR_BACKUP_VER_NAME             "backup_ver"
-
-//#define SMR_LOG_FLUSH_NODE_SIZE         (1024)
-//#define SMR_LOG_FLUSH_INTERVAL          (1) //sec
-
-//#define SMR_MAX_TRANS_COUNT             (10)
-
 #define SMR_LOGANCHOR_RESERV_SIZE       (4)
 
 /* ------------------------------------------------
@@ -96,20 +79,20 @@ typedef UInt    smrBackupState;
 
 
 /*
- PRJ-1548 ë¯¸ë””ì–´ ì˜¤ë¥˜ ë§¤ì²´ ì¢…ë¥˜
- ë¯¸ë””ì–´ ë³µêµ¬ê°€ í•„ìš”í•œ ë°ì´íƒ€íŒŒì¼ì´
- ë©”ëª¨ë¦¬ì¸ì§€ ë””ìŠ¤í¬ì¸ì§€ ëª¨ë‘ë‹¤ ì¸ì§€ë¥¼ êµ¬ë¶„í•˜ì—¬
- ë¯¸ë””ì–´ ë³µêµ¬ì‹œ ì ë‹¹í•œ ë¡œê·¸ë ˆì½”ë“œë¥¼
- ì¬ìˆ˜í–‰í•˜ê¸° ìœ„í•´ì„œì´ë‹¤
+ PRJ-1548 ¹Ìµğ¾î ¿À·ù ¸ÅÃ¼ Á¾·ù
+ ¹Ìµğ¾î º¹±¸°¡ ÇÊ¿äÇÑ µ¥ÀÌÅ¸ÆÄÀÏÀÌ
+ ¸Ş¸ğ¸®ÀÎÁö µğ½ºÅ©ÀÎÁö ¸ğµÎ´Ù ÀÎÁö¸¦ ±¸ºĞÇÏ¿©
+ ¹Ìµğ¾î º¹±¸½Ã Àû´çÇÑ ·Î±×·¹ÄÚµå¸¦
+ Àç¼öÇàÇÏ±â À§ÇØ¼­ÀÌ´Ù
  */
-# define SMR_FAILURE_MEDIA_NONE      (0x00000000) // ë¯¸ë””ì–´ì˜¤ë¥˜ì—†ìŒ
-# define SMR_FAILURE_MEDIA_MRDB      (0x00000001) // ë©”ëª¨ë¦¬DB ì˜¤ë¥˜
-# define SMR_FAILURE_MEDIA_DRDB      (0x00000010) // ë””ìŠ¤í¬DB ì˜¤ë¥˜
-# define SMR_FAILURE_MEDIA_BOTH      (0x00000011) // ëª¨ë‘ ì˜¤ë¥˜
+# define SMR_FAILURE_MEDIA_NONE      (0x00000000) // ¹Ìµğ¾î¿À·ù¾øÀ½
+# define SMR_FAILURE_MEDIA_MRDB      (0x00000001) // ¸Ş¸ğ¸®DB ¿À·ù
+# define SMR_FAILURE_MEDIA_DRDB      (0x00000010) // µğ½ºÅ©DB ¿À·ù
+# define SMR_FAILURE_MEDIA_BOTH      (0x00000011) // ¸ğµÎ ¿À·ù
 
 /* ------------------------------------------------
- * drdbì˜ ë¡œê·¸ê°€ ì—¬ëŸ¬ ë¡œê·¸ì— ê±¸ì³ ì €ì¥ì´ ë˜ì—ˆëŠ”ì§€
- * ë‹¨ì¼ë¡œê·¸ì¸ì§€ë¥¼ íŒë‹¨ í•  ìˆ˜ ìˆëŠ” type
+ * drdbÀÇ ·Î±×°¡ ¿©·¯ ·Î±×¿¡ °ÉÃÄ ÀúÀåÀÌ µÇ¾ú´ÂÁö
+ * ´ÜÀÏ·Î±×ÀÎÁö¸¦ ÆÇ´Ü ÇÒ ¼ö ÀÖ´Â type
  * ----------------------------------------------*/
 typedef enum
 {
@@ -125,8 +108,8 @@ typedef enum
 } smrChkptType;
 
 /* ------------------------------------------------
- * redo ì ìš©ì‹œ runtime memoryì— ëŒ€í•˜ì—¬ í•¨ê»˜ ì¬ìˆ˜í–‰
- * í•  ê²ƒì¸ê°€ì˜ ì—¬ë¶€ë¥¼ í‘œì‹œ
+ * redo Àû¿ë½Ã runtime memory¿¡ ´ëÇÏ¿© ÇÔ²² Àç¼öÇà
+ * ÇÒ °ÍÀÎ°¡ÀÇ ¿©ºÎ¸¦ Ç¥½Ã
  * ----------------------------------------------*/
 typedef enum
 {
@@ -141,7 +124,7 @@ typedef enum
 } smrServerStatus;
 
 /*  PROJ-1362   replication for LOB */
-/*  LogType  SMR_LT_LOB_FOR_REPLì˜ sub type */
+/*  LogType  SMR_LT_LOB_FOR_REPLÀÇ sub type */
 typedef enum
 {
     SMR_MEM_LOB_CURSOR_OPEN = 0,
@@ -156,22 +139,22 @@ typedef enum
 
 
 /* --------------------------------------
-   ë¡œê·¸íƒ€ì… ì¶”ê°€, ë³€ê²½, ì‚­ì œì‹œ
-   smrLogFileDumpì—ì„œ ê°€ì§€ê³  ìˆëŠ” LogType
-   ì´ë¦„ì— ëŒ€í•œ ìˆ˜ì •ì´ í•„ìš”í•©ë‹ˆë‹¤.
+   ·Î±×Å¸ÀÔ Ãß°¡, º¯°æ, »èÁ¦½Ã
+   smrLogFileDump¿¡¼­ °¡Áö°í ÀÖ´Â LogType
+   ÀÌ¸§¿¡ ´ëÇÑ ¼öÁ¤ÀÌ ÇÊ¿äÇÕ´Ï´Ù.
 
-   ë¬¼ë¡  logType ê°œìˆ˜ê°€ ëŠ˜ì–´ë‚˜ UCharì—ì„œ ê·¸
-   ì´ìƒì˜ íƒ€ì…ìœ¼ë¡œ ëŠ˜ì–´ë‚  ê²½ìš°, ì´ë¦„ì„ ì €ì¥
-   í•˜ëŠ” ë¬¸ìì—´ ë°°ì—´ì˜ í¬ê¸°ë„ ì¡°ì •í•´ì•¼ í•©ë‹ˆ
-   ë‹¤.
+   ¹°·Ğ logType °³¼ö°¡ ´Ã¾î³ª UChar¿¡¼­ ±×
+   ÀÌ»óÀÇ Å¸ÀÔÀ¸·Î ´Ã¾î³¯ °æ¿ì, ÀÌ¸§À» ÀúÀå
+   ÇÏ´Â ¹®ÀÚ¿­ ¹è¿­ÀÇ Å©±âµµ Á¶Á¤ÇØ¾ß ÇÕ´Ï
+   ´Ù.
    -------------------------------------- */
 typedef UChar                       smrLogType;
 
-/* ì–´ë–¤ undo, redoë„ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ” ë¡œê·¸ë¡œì„œ
-   1. Repliction Sender ì‹œì‘ì‹œ Logì— ëŒ€í•´ì„œ ê¸°ë¡í•œë‹¤.
-   ìì„¸í•œ ì‚¬í•­ì€ smiReadLogByOrder.cppë¥¼ ì°¸ì¡°í•˜ê¸° ë°”ë€ë‹¤.
-   2. Checkpointì‹œ smrLogMgr :: getRestartRedoLSN
-   í˜¸ì¶œì‹œ Logì— ê¸°ë¡í•œë‹¤.
+/* ¾î¶² undo, redoµµ ¼öÇàÇÏÁö ¾Ê´Â ·Î±×·Î¼­
+   1. Repliction Sender ½ÃÀÛ½Ã Log¿¡ ´ëÇØ¼­ ±â·ÏÇÑ´Ù.
+   ÀÚ¼¼ÇÑ »çÇ×Àº smiReadLogByOrder.cpp¸¦ ÂüÁ¶ÇÏ±â ¹Ù¶õ´Ù.
+   2. Checkpoint½Ã smrLogMgr :: getRestartRedoLSN
+   È£Ãâ½Ã Log¿¡ ±â·ÏÇÑ´Ù.
 */
 
 #define SMR_LT_NULL                  (0)
@@ -184,11 +167,13 @@ typedef UChar                       smrLogType;
 #define SMR_LT_CHKPT_END            (22)
 
 /* Transaction */
+/* BUG-47525 */
+#define SMR_LT_MEMTRANS_GROUPCOMMIT (37)
 /*
- * BUG-24906 [valgrind] sdcUpdate::redo_SDR_SDC_UNBIND_TSS()ì—ì„œ 
- *           valgrind ì˜¤ë¥˜ê°€ ë°œìƒí•©ë‹ˆë‹¤.
- * ë””ìŠ¤í¬ íŠ¸ëœì­ì…˜ì™€ í•˜ì´ë¸Œë¦¬ë“œ íŠ¸ëœì­ì…˜ì˜ Commit/Abortë¡œê·¸ì™€
- * ë©”ëª¨ë¦¬ íŠ¸ëœì­ì…˜ì˜ Commit/Abortë¡œê·¸ë¥¼ ë¶„ë¥˜í•œë‹¤.
+ * BUG-24906 [valgrind] sdcUpdate::redo_SDR_SDC_UNBIND_TSS()¿¡¼­ 
+ *           valgrind ¿À·ù°¡ ¹ß»ıÇÕ´Ï´Ù.
+ * µğ½ºÅ© Æ®·£Àè¼Ç¿Í ÇÏÀÌºê¸®µå Æ®·£Àè¼ÇÀÇ Commit/Abort·Î±×¿Í
+ * ¸Ş¸ğ¸® Æ®·£Àè¼ÇÀÇ Commit/Abort·Î±×¸¦ ºĞ·ùÇÑ´Ù.
  */
 #define SMR_LT_MEMTRANS_COMMIT      (38)
 #define SMR_LT_MEMTRANS_ABORT       (39)
@@ -199,19 +184,19 @@ typedef UChar                       smrLogType;
 #define SMR_LT_SAVEPOINT_ABORT      (43)
 #define SMR_LT_XA_PREPARE           (44)
 #define SMR_LT_TRANS_PREABORT       (45)
-// PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+// PROJ-1442 Replication Online Áß DDL Çã¿ë
 #define SMR_LT_DDL                  (46)
-// PROJ-1705 Disk MVCC ë¦¬ë‰´ì–¼
-/* Prepare íŠ¸ëœì­ì…˜ì´ ì‚¬ìš©í•˜ë˜ íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì •ë³´ë¥¼ ë³µì› */
+// PROJ-1705 Disk MVCC ¸®´º¾ó
+/* Prepare Æ®·£Àè¼ÇÀÌ »ç¿ëÇÏ´ø Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® Á¤º¸¸¦ º¹¿ø */
 #define SMR_LT_XA_SEGS              (47)
 
 
   /*  PROJ-1362   replication for LOB */
 #define SMR_LT_LOB_FOR_REPL         (50)
 
-/*  PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
-   Table/Index/Sequenceì˜
-   Create/Alter/Drop DDLì— ëŒ€í•´ Query Stringì„ ë¡œê¹…í•œë‹¤.
+/*  PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
+   Table/Index/SequenceÀÇ
+   Create/Alter/Drop DDL¿¡ ´ëÇØ Query StringÀ» ·Î±ëÇÑ´Ù.
 */
 #define SMR_LT_DDL_QUERY_STRING     (51)
 
@@ -231,19 +216,19 @@ typedef UChar                       smrLogType;
 #define SMR_LT_FILE_END             (66)
 
 /*-------------------------------------------
-* DRDB ë¡œê·¸ íƒ€ì… ì¶”ê°€
+* DRDB ·Î±× Å¸ÀÔ Ãß°¡
 *
-* - íŠ¹ì • pageì— ëŒ€í•œ physical or logical redo ë¡œê·¸íƒ€ì…
+* - Æ¯Á¤ page¿¡ ´ëÇÑ physical or logical redo ·Î±×Å¸ÀÔ
 *   : SMR_DLT_REDOONLY
-* - undo record ê¸°ë¡ì— ëŒ€í•œ redo-undo ë¡œê·¸ íƒ€ì…
+* - undo record ±â·Ï¿¡ ´ëÇÑ redo-undo ·Î±× Å¸ÀÔ
 *   : SMR_DLT_UNDOABLE
-* - ì—°ì‚°ì— ëŒ€í•œ NTAë¡œê¹…
+* - ¿¬»ê¿¡ ´ëÇÑ NTA·Î±ë
 *   : SMR_DLT_NTA
 *-------------------------------------------*/
 
 /*
  * PRJ-1548 User Memory Tablespace
- * ë””ìŠ¤í¬ë¡œê·¸íƒ€ì…ì´ ì¶”ê°€ë˜ë©´ ë‹¤ìŒí•¨ìˆ˜ì—ë„ ì¶”ê°€í•´ì£¼ì–´ì•¼ í•œë‹¤.
+ * µğ½ºÅ©·Î±×Å¸ÀÔÀÌ Ãß°¡µÇ¸é ´ÙÀ½ÇÔ¼ö¿¡µµ Ãß°¡ÇØÁÖ¾î¾ß ÇÑ´Ù.
  * smrRecoveryMgr::isDiskLogType()
  */
 #define SMR_DLT_REDOONLY            (80)
@@ -256,26 +241,29 @@ typedef UChar                       smrLogType;
 #define SMR_LT_XA_PREPARE_REQ       (86)
 #define SMR_LT_XA_END               (87)
 
+/* PROJ-2747 GlobalTx Consistency */
+#define SMR_LT_XA_START_REQ         (88)
+
 /*-------------------------------------------
- * Meta ë¡œê·¸ íƒ€ì… ì¶”ê°€
+ * Meta ·Î±× Å¸ÀÔ Ãß°¡
  *------------------------------------------*/
-// PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+// PROJ-1442 Replication Online Áß DDL Çã¿ë
 #define SMR_LT_TABLE_META           (100)
 
 /*-------------------------------------------*/
-// Log Type Name êµ¬ì„±ë°©ë²•
-// SMR + Manager Name + Update ìœ„ì¹˜ + Action
+// Log Type Name ±¸¼º¹æ¹ı
+// SMR + Manager Name + Update À§Ä¡ + Action
 //
-// ì˜ˆ) SMR + SMM + MEMBASE + "Update Link"
+// ¿¹) SMR + SMM + MEMBASE + "Update Link"
 //     = SMR_SMM_MEMBASE_UPDATE_LINK
 /*-------------------------------------------*/
 
 //========================================================
-// smrUpdateLog ì˜ ì„¸ë¶€ ë¶„ë¥˜ íƒ€ì…
+// smrUpdateLog ÀÇ ¼¼ºÎ ºĞ·ù Å¸ÀÔ
 typedef UShort smrUpdateType;
 
 //========================================================
-// smrUpdateType ì˜ ë³€ìˆ˜ì— ê¸°ë¡ë  ê°’
+// smrUpdateType ÀÇ º¯¼ö¿¡ ±â·ÏµÉ °ª
 #define SMR_PHYSICAL                            (0)
 
 //SMM
@@ -334,7 +322,7 @@ typedef UShort smrUpdateType;
 
 /* ------------------------------------------------
  * LOG HEADER
- * BUG-35392 ì ìš©ì„ ìœ„í•´ UChar -> UIntë¡œ ë³€ê²½ ë¨
+ * BUG-35392 Àû¿ëÀ» À§ÇØ UChar -> UInt·Î º¯°æ µÊ
  * ----------------------------------------------*/
 #define SMR_LOG_TYPE_MASK               (0x00000003)
 #define SMR_LOG_TYPE_NORMAL             (0x00000000)
@@ -349,20 +337,20 @@ typedef UShort smrUpdateType;
 #define SMR_LOG_BEGINTRANS_NO           (0x00000000)
 #define SMR_LOG_BEGINTRANS_OK           (0x00000008)
 
-/* BUG-14513 : Insert, update, deleteì‹œ allot slotì‹œ alloc Slot logì œê±°.
- * DML Log(insert, update, deleteë¡œê·¸ê°€ Alloc Slotì— ëŒ€í•œ
- * ë¡œê·¸ë„ í¬í•¨í•˜ê³  ìˆëŠ”ì§€ í‘œì‹œ */
+/* BUG-14513 : Insert, update, delete½Ã allot slot½Ã alloc Slot logÁ¦°Å.
+ * DML Log(insert, update, delete·Î±×°¡ Alloc Slot¿¡ ´ëÇÑ
+ * ·Î±×µµ Æ÷ÇÔÇÏ°í ÀÖ´ÂÁö Ç¥½Ã */
 #define SMR_LOG_ALLOC_FIXEDSLOT_MASK    (0x00000010)
 #define SMR_LOG_ALLOC_FIXEDSLOT_NO      (0x00000000)
 #define SMR_LOG_ALLOC_FIXEDSLOT_OK      (0x00000010)
 
 /* TASK-2398 Log Compress
- * Log ì••ì¶•ì„ ì›í•˜ì§€ ì•ŠëŠ” ê²½ìš°,
- * smrLogHead(ë¹„ì••ì¶• Log Head)ì˜ Flagì— ì´ í”Œë˜ê·¸ë¥¼ ì„¤ì •í•œë‹¤
+ * Log ¾ĞÃàÀ» ¿øÇÏÁö ¾Ê´Â °æ¿ì,
+ * smrLogHead(ºñ¾ĞÃà Log Head)ÀÇ Flag¿¡ ÀÌ ÇÃ·¡±×¸¦ ¼³Á¤ÇÑ´Ù
  *
- * Disk Logì˜ ê²½ìš° Mini Transactionì´ ì ‘ê·¼í•œ ì—¬ëŸ¬ Tablespace ì¤‘
- * Log ì••ì¶•ì„ í•˜ì§€ ì•Šë„ë¡ ì„¤ì •ëœ Tablespaceê°€ í•˜ë‚˜ë¼ë„ ìˆìœ¼ë©´
- * ì´ Flagë¥¼ ì„¤ì •í•˜ì—¬ ë¡œê·¸ë¥¼ ì••ì¶•í•˜ì§€ ì•Šë„ë¡ í•œë‹¤. */
+ * Disk LogÀÇ °æ¿ì Mini TransactionÀÌ Á¢±ÙÇÑ ¿©·¯ Tablespace Áß
+ * Log ¾ĞÃàÀ» ÇÏÁö ¾Êµµ·Ï ¼³Á¤µÈ Tablespace°¡ ÇÏ³ª¶óµµ ÀÖÀ¸¸é
+ * ÀÌ Flag¸¦ ¼³Á¤ÇÏ¿© ·Î±×¸¦ ¾ĞÃàÇÏÁö ¾Êµµ·Ï ÇÑ´Ù. */
 #define SMR_LOG_FORBID_COMPRESS_MASK    (0x00000020)
 #define SMR_LOG_FORBID_COMPRESS_NO      (0x00000000)
 #define SMR_LOG_FORBID_COMPRESS_OK      (0x00000020)
@@ -372,34 +360,56 @@ typedef UShort smrUpdateType;
 #define SMR_LOG_FULL_XLOG_NO            (0x00000000)
 #define SMR_LOG_FULL_XLOG_OK            (0x00000040)
 
-/* í•´ë‹¹ ë¡œê·¸ ë ˆì½”ë“œê°€ ì••ì¶•ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€
- * ì´ FlagëŠ” ì••ì¶•ë¡œê·¸, ë¹„ì••ì¶•ë¡œê·¸ì˜ ì²«ë²ˆì§¸ ë°”ì´íŠ¸ì— ê¸°ë¡ëœë‹¤.
- * ì´ Flagë¥¼ í†µí•´ ë¡œê·¸ë¥¼ ì••ì¶•ë¡œê·¸ë¡œ í•´ì„í• ì§€,
- * ë¹„ì••ì¶• ë¡œê·¸ë¡œ í•´ì„í• ì§€ ì—¬ë¶€ë¥¼ íŒë‹¤ë¦„í•œë‹¤. */
+/* ÇØ´ç ·Î±× ·¹ÄÚµå°¡ ¾ĞÃàµÇ¾ú´ÂÁö ¿©ºÎ
+ * ÀÌ Flag´Â ¾ĞÃà·Î±×, ºñ¾ĞÃà·Î±×ÀÇ Ã¹¹øÂ° ¹ÙÀÌÆ®¿¡ ±â·ÏµÈ´Ù.
+ * ÀÌ Flag¸¦ ÅëÇØ ·Î±×¸¦ ¾ĞÃà·Î±×·Î ÇØ¼®ÇÒÁö,
+ * ºñ¾ĞÃà ·Î±×·Î ÇØ¼®ÇÒÁö ¿©ºÎ¸¦ ÆÇ´Ù¸§ÇÑ´Ù. */
 #define SMR_LOG_COMPRESSED_MASK         (0x00000080)
-#define SMR_LOG_COMPRESSED_NO           (0x00000000) // ì••ì¶•ì•ˆí•œ ë¡œê·¸
-#define SMR_LOG_COMPRESSED_OK           (0x00000080) // ì••ì¶•í•œ ë¡œê·¸
+#define SMR_LOG_COMPRESSED_NO           (0x00000000) // ¾ĞÃà¾ÈÇÑ ·Î±×
+#define SMR_LOG_COMPRESSED_OK           (0x00000080) // ¾ĞÃàÇÑ ·Î±×
 
 /* BUG-35392
- * dummy log ì¸ì§€ íŒë‹¨í•˜ê¸° ìœ„í•´ ì‚¬ìš© */
+ * dummy log ÀÎÁö ÆÇ´ÜÇÏ±â À§ÇØ »ç¿ë */
 #define SMR_LOG_DUMMY_LOG_MASK          (0x00000100)
-#define SMR_LOG_DUMMY_LOG_NO            (0x00000000) // ì •ìƒ ë¡œê·¸
-#define SMR_LOG_DUMMY_LOG_OK            (0x00000100) // ë”ë¯¸ ë¡œê·¸
+#define SMR_LOG_DUMMY_LOG_NO            (0x00000000) // Á¤»ó ·Î±×
+#define SMR_LOG_DUMMY_LOG_OK            (0x00000100) // ´õ¹Ì ·Î±×
+
+/* BUG-46854: RP Á¤º¸(ÇÁ¶óÀÌ¸Ó¸® Å°) ·Î±× ÀÛ¼º ¿©ºÎ  */
+#define SMR_LOG_RP_INFO_LOG_MASK        (0x00000200)
+#define SMR_LOG_RP_INFO_LOG_NO          (0x00000000) // ·Î±× ¾È ¾¸
+#define SMR_LOG_RP_INFO_LOG_OK          (0x00000200) // ·Î±× ¾¸ 
+
+/* BUG-46854: CMPS ·Î±× ¿©ºÎ
+ * delete¸¦ ·Ñ¹éÇßÀ» ¶§, redo °úÁ¤¿¡¼­ CMPS·Î±×(CLR)º¸°í undoÇÔ.
+ * ÀÌ °æ¿ì before flag¸¸ ·Î±×¿¡ ÀÖ±â ¶§¹®¿¡ delete versionÀÇ undo
+ * ÇÔ¼ö¿¡¼­ CLR¿¡ ÀÇÇÑ delete undo ÀÎÁö ¾Æ´ÑÁö ¾Ë¾Æ¾ß ÇÑ´Ù. */
+#define SMR_LOG_CMPS_LOG_MASK           (0x00000400)
+#define SMR_LOG_CMPS_LOG_NO             (0x00000000) // CMPS ·Î±× ¾Æ´Ô 
+#define SMR_LOG_CMPS_LOG_OK             (0x00000400) // CMPS ·Î±×
+
+
+/* BUG-48059 ÁÖÀÇÁÖÀÇ 
+ * smrLogHead.mFlag ¿¡ ÀúÀåÇÏ´Â flag ¾Æ´Ô
+ * GCTX Group CommitSCN À» ÀúÀåÇß´ÂÁö ±¸ºĞÇÏ±â À§ÇÑ ¿ëµµ 
+ * SMR_LOG_TYPE_XXX °ú ±¸º°µÇ¸é µÊ */
+#define SMR_LOG_COMMITSCN_MASK          (0x00000004)
+#define SMR_LOG_COMMITSCN_NO            (0x00000000) // CommitSCN ÀÌ ¾ø°Å³ª INIT ÀÎ °æ¿ì 
+#define SMR_LOG_COMMITSCN_OK            (0x00000004) // GCTX ¸é¼­ CommitSCN À» ±â·ÏÇÑ°æ¿ì
 
 /* PROJ-1527              */
-/* smrLogHead êµ¬ì¡°ì²´ ì¶•ì†Œ */
+/* smrLogHead ±¸Á¶Ã¼ Ãà¼Ò */
 /*
-   Tail ì„ Log Record êµ¬ì¡°ì²´ ì•ˆì— ê°€ì§€ëŠ” ë¡œê·¸ ë ˆì½”ë“œì˜ í¬ê¸° ê³„ì‚°
+   Tail À» Log Record ±¸Á¶Ã¼ ¾È¿¡ °¡Áö´Â ·Î±× ·¹ÄÚµåÀÇ Å©±â °è»ê
    ======================================================================
-   PROJ-1527ì— ì˜í•´ logëŠ” 8ë°”ì´íŠ¸ alignë  í•„ìš”ê°€ ì—†ê²Œë˜ì—ˆìœ¼ë©°
-   ë”°ë¼ì„œ smrXXXLogë¥¼ ì •ì˜í•  ë•Œ alignì„ ê³ ë ¤í•  í•„ìš”ê°€ ì—†ë‹¤.
-   í•˜ì§€ë§Œ 64ë¹„íŠ¸ í™˜ê²½ì—ì„œ 8ë°”ì´íŠ¸ ë©¤ë²„ë¥¼ ê°€ì§„ êµ¬ì¡°ì²´ì˜ í¬ê¸°ëŠ”
-   8ì˜ ë°°ìˆ˜ë¡œ êµ¬í•´ì§€ê¸° ë•Œë¬¸ì— logë¥¼ ê¸°ë¡í•  ë•Œ ID_SIZEOFë¥¼
-   ì‚¬ìš©í•˜ë©´ ì•ˆëœë‹¤. (ë‚­ë¹„ë¥¼ ì´ˆë˜í•¨)
-   ë”°ë¼ì„œ ë¡œê·¸ë¥¼ ê¸°ë¡í•  ë•Œ smrXXXLogì˜ ë§ˆì§€ë§‰ ë©¤ë²„ê¹Œì§€ë§Œ ê¸°ë¡í•˜ë©´
-   ë˜ëŠ”ë° ì´ ë§ˆì§€ë§‰ ë©¤ë²„ê¹Œì§€ì˜ ê¸¸ì´ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ëª¨ë“  smrXXXLogì—ëŠ”
-   mLogRecFenceë¼ëŠ” ë”ë¯¸ ë©¤ë²„ê°€ ì¡´ì¬í•œë‹¤.
-   SMR_LOGREC_SIZEëŠ” smrXXXLog êµ¬ì¡°ì²´ì—ì„œ mLogRecFence ì•ê¹Œì§€ì˜ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
+   PROJ-1527¿¡ ÀÇÇØ log´Â 8¹ÙÀÌÆ® alignµÉ ÇÊ¿ä°¡ ¾ø°ÔµÇ¾úÀ¸¸ç
+   µû¶ó¼­ smrXXXLog¸¦ Á¤ÀÇÇÒ ¶§ alignÀ» °í·ÁÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+   ÇÏÁö¸¸ 64ºñÆ® È¯°æ¿¡¼­ 8¹ÙÀÌÆ® ¸â¹ö¸¦ °¡Áø ±¸Á¶Ã¼ÀÇ Å©±â´Â
+   8ÀÇ ¹è¼ö·Î ±¸ÇØÁö±â ¶§¹®¿¡ log¸¦ ±â·ÏÇÒ ¶§ ID_SIZEOF¸¦
+   »ç¿ëÇÏ¸é ¾ÈµÈ´Ù. (³¶ºñ¸¦ ÃÊ·¡ÇÔ)
+   µû¶ó¼­ ·Î±×¸¦ ±â·ÏÇÒ ¶§ smrXXXLogÀÇ ¸¶Áö¸· ¸â¹ö±îÁö¸¸ ±â·ÏÇÏ¸é
+   µÇ´Âµ¥ ÀÌ ¸¶Áö¸· ¸â¹ö±îÁöÀÇ ±æÀÌ¸¦ ±¸ÇÏ±â À§ÇØ ¸ğµç smrXXXLog¿¡´Â
+   mLogRecFence¶ó´Â ´õ¹Ì ¸â¹ö°¡ Á¸ÀçÇÑ´Ù.
+   SMR_LOGREC_SIZE´Â smrXXXLog ±¸Á¶Ã¼¿¡¼­ mLogRecFence ¾Õ±îÁöÀÇ Å©±â¸¦ ±¸ÇÑ´Ù.
 
    +----------+--------------------+----------+-------+-------+
    | Log Head | Log Body                      | Fence | Dummy |
@@ -407,40 +417,40 @@ typedef UShort smrUpdateType;
                                               ^
                                               |
                                              size
-   ë”°ë¼ì„œ headì— setSizeë¥¼ í•˜ê¸°ìœ„í•´ì„œëŠ” ID_SIZEOFëŒ€ì‹  SMR_LOGREC_SIZEë¥¼
-   ì¨ì•¼í•œë‹¤.
-   ê·¸ë¦¬ê³  ë¡œê·¸ì–‘ì„ ì¤„ì´ê¸° ìœ„í•´ì„œëŠ” 8ë°”ì´íŠ¸ ë©¤ë²„ë¥¼ ì•ìª½ì—, ì‘ì€ ì‚¬ì´ì¦ˆì˜ ë©¤ë²„ë¥¼
-   ë’¤ìª½ì— ë‘ëŠ”ê²Œ í˜„ëª…í•˜ë‹¤.
+   µû¶ó¼­ head¿¡ setSize¸¦ ÇÏ±âÀ§ÇØ¼­´Â ID_SIZEOF´ë½Å SMR_LOGREC_SIZE¸¦
+   ½á¾ßÇÑ´Ù.
+   ±×¸®°í ·Î±×¾çÀ» ÁÙÀÌ±â À§ÇØ¼­´Â 8¹ÙÀÌÆ® ¸â¹ö¸¦ ¾ÕÂÊ¿¡, ÀÛÀº »çÀÌÁîÀÇ ¸â¹ö¸¦
+   µÚÂÊ¿¡ µÎ´Â°Ô Çö¸íÇÏ´Ù.
 */
 #define SMR_LOGREC_SIZE(STRUCT_NAME) (offsetof(STRUCT_NAME,mLogRecFence))
 
 /* BUG-35392
- * mFlag ì— ì¶”ê°€ ì •ë³´ë¥¼ ë„£ê¸° ìœ„í•´ ì‚¬ì´ì¦ˆë¥¼ UChar -> UIntë¡œ
- * ë³€ê²½í•˜ê³ , ë©¤ë²„ì˜ ìˆœì„œë¥¼ ë°”ê¾¼ë‹¤. */
+ * mFlag ¿¡ Ãß°¡ Á¤º¸¸¦ ³Ö±â À§ÇØ »çÀÌÁî¸¦ UChar -> UInt·Î
+ * º¯°æÇÏ°í, ¸â¹öÀÇ ¼ø¼­¸¦ ¹Ù²Û´Ù. */
 typedef struct smrLogHead
 {
-    /* mFlagëŠ” ì••ì¶•ë¡œê·¸ì™€ ë¹„ì••ì¶•ë¡œê·¸ì˜ ê³µí†µ Headì´ë‹¤. */
+    /* mFlag´Â ¾ĞÃà·Î±×¿Í ºñ¾ĞÃà·Î±×ÀÇ °øÅë HeadÀÌ´Ù. */
     UInt            mFlag;
 
     UInt            mSize;
 
     /* For Parallel Logging :
-     * ë¡œê·¸ê°€ ê¸°ë¡ë  ë•Œ LSN(Log Sequence Number)
-     * ê°’ì„ ê¸°ë¡í•¨ */
+     * ·Î±×°¡ ±â·ÏµÉ ¶§ LSN(Log Sequence Number)
+     * °ªÀ» ±â·ÏÇÔ */
     smLSN           mLSN;
 
-    /* ë¡œê·¸íŒŒì¼ ìƒì„±ì‹œ memsetí•˜ì§€ ì•Šì•„ì„œ garbageê°€ ì˜¬ë¼ì™€ë„
-     * Invalidí•œ Logë¥¼ Validí•œ ë¡œê·¸ë¡œ íŒë³„í•˜ëŠ” í™•ë¥ ì„ ë‚®ì¶”ê¸° ìœ„í•œ
+    /* ·Î±×ÆÄÀÏ »ı¼º½Ã memsetÇÏÁö ¾Ê¾Æ¼­ garbage°¡ ¿Ã¶ó¿Íµµ
+     * InvalidÇÑ Log¸¦ ValidÇÑ ·Î±×·Î ÆÇº°ÇÏ´Â È®·üÀ» ³·Ãß±â À§ÇÑ
      * Magic Number .
-     * ë¡œê·¸íŒŒì¼ ë²ˆí˜¸ì™€ ë¡œê·¸ë ˆì½”ë“œê°€ ê¸°ë¡ë˜ëŠ” ì˜¤í”„ì…‹ì˜ ì¡°í•©ìœ¼ë¡œ ë§Œë“¤ì–´ì§„ë‹¤. */
+     * ·Î±×ÆÄÀÏ ¹øÈ£¿Í ·Î±×·¹ÄÚµå°¡ ±â·ÏµÇ´Â ¿ÀÇÁ¼ÂÀÇ Á¶ÇÕÀ¸·Î ¸¸µé¾îÁø´Ù. */
     smMagic         mMagic;
 
     smrLogType      mType;
 
-    /* BUG-17033: ìµœìƒìœ„ Statementê°€ ì•„ë‹Œ Statmentì— ëŒ€í•´ì„œë„
-     * Partial Rollbackì„ ì§€ì›í•´ì•¼ í•©ë‹ˆë‹¤.
+    /* BUG-17033: ÃÖ»óÀ§ Statement°¡ ¾Æ´Ñ Statment¿¡ ´ëÇØ¼­µµ
+     * Partial RollbackÀ» Áö¿øÇØ¾ß ÇÕ´Ï´Ù.
      *
-     * Replicationì´ Statmentì˜ Savepointë¥¼ ì„¤ì •í• ë•Œ ì´ìš©í•´ì•¼í• 
+     * ReplicationÀÌ StatmentÀÇ Savepoint¸¦ ¼³Á¤ÇÒ¶§ ÀÌ¿ëÇØ¾ßÇÒ
      * Implicit SVN Name Number. */
     UChar           mReplSvPNumber;
 
@@ -471,8 +481,8 @@ typedef enum
     SMR_OP_CREATE_INDEX,
     SMR_OP_DROP_INDEX,
     SMR_OP_INIT_INDEX,
-    SMR_OP_SMC_FIXED_SLOT_FREE, /* BUG-31062 ë¡œ ì¸í•˜ì—¬ ì œê±°ë˜ì—ˆìœ¼ë‚˜*/
-    SMR_OP_SMC_VAR_SLOT_FREE,   /* ì´í›„ Log Typeì˜ ê°’ì„ ìœ ì§€í•˜ê¸° ìœ„í•´ ë‚¨ê²¨ë‘ */
+    SMR_OP_SMC_FIXED_SLOT_FREE, /* BUG-31062 ·Î ÀÎÇÏ¿© Á¦°ÅµÇ¾úÀ¸³ª*/
+    SMR_OP_SMC_VAR_SLOT_FREE,   /* ÀÌÈÄ Log TypeÀÇ °ªÀ» À¯ÁöÇÏ±â À§ÇØ ³²°ÜµÒ*/
     SMR_OP_ALTER_TABLE,
     SMR_OP_SMM_CREATE_TBS,
     SMR_OP_INSTANT_AGING_AT_ALTER_TABLE,
@@ -483,49 +493,49 @@ typedef enum
 
 
 /* ------------------------------------------------
- * FOR A4 : DRDBì˜ ë¡œê·¸ íƒ€ì…
+ * FOR A4 : DRDBÀÇ ·Î±× Å¸ÀÔ
  *
- * 1) íŠ¹ì • pageì— ëŒ€í•œ physical or logical redo ë¡œê·¸íƒ€ì…
- * smrLogTypeìœ¼ë¡œ SMR_DLT_REDO íƒ€ì…ì„ ê°€ì§€ë©°, redo ì „ìš©
- * íƒ€ì…ì´ë‹¤.
+ * 1) Æ¯Á¤ page¿¡ ´ëÇÑ physical or logical redo ·Î±×Å¸ÀÔ
+ * smrLogTypeÀ¸·Î SMR_DLT_REDO Å¸ÀÔÀ» °¡Áö¸ç, redo Àü¿ë
+ * Å¸ÀÔÀÌ´Ù.
  *
- * 2) undo record ê¸°ë¡ì— ëŒ€í•œ redo-undo ë¡œê·¸ íƒ€ì…
- * smrLogTypeìœ¼ë¡œSMR_DLT_UNDORECíƒ€ì…ì„ ê°€ì§€ë©°, redo ë°
- * undo ê°€ëŠ¥í•œ íƒ€ì…ì´ë‹¤.
+ * 2) undo record ±â·Ï¿¡ ´ëÇÑ redo-undo ·Î±× Å¸ÀÔ
+ * smrLogTypeÀ¸·ÎSMR_DLT_UNDORECÅ¸ÀÔÀ» °¡Áö¸ç, redo ¹×
+ * undo °¡´ÉÇÑ Å¸ÀÔÀÌ´Ù.
  * ----------------------------------------------*/
 typedef struct smrDiskLog
 {
-    smrLogHead  mHead;        /* ë¡œê·¸ header */
+    smrLogHead  mHead;        /* ·Î±× header */
     smOID       mTableOID;
-    UInt        mRefOffset;   /* disk log bufferì—ì„œ DMLê´€ë ¨
-                                 redo/undo ë¡œê·¸ ìœ„ì¹˜ */
-    UInt        mContType;    /* ë¡œê·¸ê°€ ë‚˜ëˆ„ì–´ì¡ŒëŠ”ì§€ ì•„ë‹Œì§€ ì—¬ë¶€ */
-    UInt        mRedoLogSize; /* redo log í¬ê¸° */
-    UInt        mRedoType;    /* runtime memory ë°ì´íƒ€ í¬í•¨ì—¬ë¶€ */
-    UChar       mLogRecFence; /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨ */
+    UInt        mRefOffset;   /* disk log buffer¿¡¼­ DML°ü·Ã
+                                 redo/undo ·Î±× À§Ä¡ */
+    UInt        mContType;    /* ·Î±×°¡ ³ª´©¾îÁ³´ÂÁö ¾Æ´ÑÁö ¿©ºÎ */
+    UInt        mRedoLogSize; /* redo log Å©±â */
+    UInt        mRedoType;    /* runtime memory µ¥ÀÌÅ¸ Æ÷ÇÔ¿©ºÎ */
+    UChar       mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
 } smrDiskLog;
 
 
 /* ------------------------------------------------
- * PROJ-1566 : disk NTA ë¡œê·¸
- * < extent í• ë‹¹ë°›ì„ ë•Œ >
+ * PROJ-1566 : disk NTA ·Î±×
+ * < extent ÇÒ´ç¹ŞÀ» ¶§ >
  * - mData1 : segment RID
  * - mData2 : extent RID
- * < page listë¥¼ metaì˜ page listì— ì¶”ê°€í•  ë•Œ >
+ * < page list¸¦ metaÀÇ page list¿¡ Ãß°¡ÇÒ ¶§ >
  * - mData1 : table OID
  * - mData2 : tail Page PID
- * - mData3 : ìƒì„±ëœ pageë“¤ ì¤‘, table typeì˜ page ê°œìˆ˜
- * - mData4 : ìƒì„±ëœ ëª¨ë“  page ê°œìˆ˜ ( multiple, external í¬í•¨ )
+ * - mData3 : »ı¼ºµÈ pageµé Áß, table typeÀÇ page °³¼ö
+ * - mData4 : »ı¼ºµÈ ¸ğµç page °³¼ö ( multiple, external Æ÷ÇÔ )
  * ----------------------------------------------*/
 typedef struct smrDiskNTALog
 {
-    smrLogHead  mHead;        /* ë¡œê·¸ header */
+    smrLogHead  mHead;        /* ·Î±× header */
     ULong       mData[ SM_DISK_NTALOG_DATA_COUNT ] ;
-    UInt        mDataCount;   /* Data ê°œìˆ˜ */
-    UInt        mOPType;      /* operation NTA íƒ€ì… */
-    UInt        mRedoLogSize; /* redo log í¬ê¸° */
+    UInt        mDataCount;   /* Data °³¼ö */
+    UInt        mOPType;      /* operation NTA Å¸ÀÔ */
+    UInt        mRedoLogSize; /* redo log Å©±â */
     scPageID    mSpaceID;     /* SpaceID */
-    UChar       mLogRecFence; /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨ */
+    UChar       mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
 } smrDiskNTALog;
 
 /* ------------------------------------------------
@@ -533,45 +543,45 @@ typedef struct smrDiskNTALog
  * ----------------------------------------------*/
 typedef struct smrDiskRefNTALog
 {
-    smrLogHead  mHead;        /* ë¡œê·¸ header */
-    UInt        mOPType;      /* operation NTA íƒ€ì… */
-    UInt        mRefOffset;   /* disk log bufferì—ì„œ indexê´€ë ¨
-                                 logical undo ë¡œê·¸ ìœ„ì¹˜ */
-    UInt        mRedoLogSize; /* redo log í¬ê¸° */
+    smrLogHead  mHead;        /* ·Î±× header */
+    UInt        mOPType;      /* operation NTA Å¸ÀÔ */
+    UInt        mRefOffset;   /* disk log buffer¿¡¼­ index°ü·Ã
+                                 logical undo ·Î±× À§Ä¡ */
+    UInt        mRedoLogSize; /* redo log Å©±â */
     scPageID    mSpaceID;     /* SpaceID */
-    UChar       mLogRecFence; /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨ */
+    UChar       mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
 } smrDiskRefNTALog;
 
 /* ------------------------------------------------
- * disk CLR ë¡œê·¸
- * smrLogTypeìœ¼ë¡œ SMR_DLT_COMPENSATION
+ * disk CLR ·Î±×
+ * smrLogTypeÀ¸·Î SMR_DLT_COMPENSATION
  * ----------------------------------------------*/
 typedef struct smrDiskCMPSLog
 {
-    smrLogHead      mHead;        /* ë¡œê·¸ header */
-    UInt            mRedoLogSize; /* redo log í¬ê¸° */
-    UChar           mLogRecFence; /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨ */
+    smrLogHead      mHead;        /* ·Î±× header */
+    UInt            mRedoLogSize; /* redo log Å©±â */
+    UChar           mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
 } smrDiskCMPSLog;
 
 /* ------------------------------------------------
  * PROJ-1867 Disk Page Img Log
- * DPath-Insertì˜ Page Img Logì™€ ê¸°ë³¸ êµ¬ì„±ì´ ê°™ë‹¤.
+ * DPath-InsertÀÇ Page Img Log¿Í ±âº» ±¸¼ºÀÌ °°´Ù.
  * ----------------------------------------------*/
 typedef struct smrDiskPILog
 {
-    smrLogHead  mHead;        /* ë¡œê·¸ header */
+    smrLogHead  mHead;        /* ·Î±× header */
     smOID       mTableOID;
-    UInt        mRefOffset;   /* disk log bufferì—ì„œ DMLê´€ë ¨
-                                 redo/undo ë¡œê·¸ ìœ„ì¹˜ */
-    UInt        mContType;    /* ë¡œê·¸ê°€ ë‚˜ëˆ„ì–´ì¡ŒëŠ”ì§€ ì•„ë‹Œì§€ ì—¬ë¶€ */
-    UInt        mRedoLogSize; /* redo log í¬ê¸° */
-    UInt        mRedoType;    /* runtime memory ë°ì´íƒ€ í¬í•¨ì—¬ë¶€ */
+    UInt        mRefOffset;   /* disk log buffer¿¡¼­ DML°ü·Ã
+                                 redo/undo ·Î±× À§Ä¡ */
+    UInt        mContType;    /* ·Î±×°¡ ³ª´©¾îÁ³´ÂÁö ¾Æ´ÑÁö ¿©ºÎ */
+    UInt        mRedoLogSize; /* redo log Å©±â */
+    UInt        mRedoType;    /* runtime memory µ¥ÀÌÅ¸ Æ÷ÇÔ¿©ºÎ */
 
     sdrLogHdr   mDiskLogHdr;
 
     UChar       mPage[SD_PAGE_SIZE]; /* page */
     smrLogTail  mTail;
-    UChar       mLogRecFence; /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨ */
+    UChar       mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
 } smrDiskPILog;
 
 /* ------------------------------------------------
@@ -579,33 +589,33 @@ typedef struct smrDiskPILog
  * ----------------------------------------------*/
 typedef struct smrPageConsistentLog
 {
-    smrLogHead  mHead;        /* ë¡œê·¸ header */
+    smrLogHead  mHead;        /* ·Î±× header */
     smOID       mTableOID;
-    UInt        mRefOffset;   /* disk log bufferì—ì„œ DMLê´€ë ¨
-                                 redo/undo ë¡œê·¸ ìœ„ì¹˜ */
-    UInt        mContType;    /* ë¡œê·¸ê°€ ë‚˜ëˆ„ì–´ì¡ŒëŠ”ì§€ ì•„ë‹Œì§€ ì—¬ë¶€ */
-    UInt        mRedoLogSize; /* redo log í¬ê¸° */
-    UInt        mRedoType;    /* runtime memory ë°ì´íƒ€ í¬í•¨ì—¬ë¶€ */
+    UInt        mRefOffset;   /* disk log buffer¿¡¼­ DML°ü·Ã
+                                 redo/undo ·Î±× À§Ä¡ */
+    UInt        mContType;    /* ·Î±×°¡ ³ª´©¾îÁ³´ÂÁö ¾Æ´ÑÁö ¿©ºÎ */
+    UInt        mRedoLogSize; /* redo log Å©±â */
+    UInt        mRedoType;    /* runtime memory µ¥ÀÌÅ¸ Æ÷ÇÔ¿©ºÎ */
 
     sdrLogHdr   mDiskLogHdr;
 
     UChar       mPageConsistent; /* page consistent */
     smrLogTail  mTail;
-    UChar       mLogRecFence; /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨ */
+    UChar       mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
 } smrPageCinsistentLog;
 
 /* ------------------------------------------------
- * í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ UPDATEì— ëŒ€í•œ ë¡œê·¸ BUG-9640
+ * Å×ÀÌºí½ºÆäÀÌ½º UPDATE¿¡ ´ëÇÑ ·Î±× BUG-9640
  * ----------------------------------------------*/
 typedef struct smrTBSUptLog
 {
-    smrLogHead  mHead;        /* ë¡œê·¸ header */
-    scSpaceID   mSpaceID;     /* í•´ë‹¹ tablespace ID */
+    smrLogHead  mHead;        /* ·Î±× header */
+    scSpaceID   mSpaceID;     /* ÇØ´ç tablespace ID */
     UInt        mFileID;
-    UInt        mTBSUptType;  /* file ì—°ì‚° íƒ€ì… */
-    SInt        mAImgSize;    /* after image í¬ê¸° */
-    SInt        mBImgSize;    /* before image í¬ê¸° */
-    UChar       mLogRecFence; /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨ */
+    UInt        mTBSUptType;  /* file ¿¬»ê Å¸ÀÔ */
+    SInt        mAImgSize;    /* after image Å©±â */
+    SInt        mBImgSize;    /* before image Å©±â */
+    UChar       mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
 } smrTBSUptLog;
 
 /* ------------------------------------------------
@@ -619,31 +629,31 @@ typedef struct smrNTALog
     ULong      mData2;
     smrOPType  mOPType;
     smrLogTail mTail;
-    UChar      mLogRecFence; /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨ */
+    UChar      mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
 } smrNTALog;
 
 /*---------------------------------------------------------------
  * FOR A4 :  checkpoint log
- * DRDBì˜ recovery LSNì„ ê¸°ë¡í•´ì•¼í•¨
+ * DRDBÀÇ recovery LSNÀ» ±â·ÏÇØ¾ßÇÔ
  *---------------------------------------------------------------*/
 typedef struct smrBeginChkptLog
 {
     smrLogHead     mHead;
-    /* redoallê³¼ì •ì—ì„œ MRDBì˜ recovery lsn */
+    /* redoall°úÁ¤¿¡¼­ MRDBÀÇ recovery lsn */
     smLSN          mEndLSN;
-    /* redoallê³¼ì •ì—ì„œ DRDBì˜ recovery lsn */
+    /* redoall°úÁ¤¿¡¼­ DRDBÀÇ recovery lsn */
     smLSN          mDiskRedoLSN;
-    /* PROJ-2569 ë¯¸ì™„ë£Œë¶„ì‚°íŠ¸ëœì­ì…˜ ë¡œê·¸ì™€ mDiskRedoLSN ì¤‘ì—ì„œ ì‘ì€ ê°’ìœ¼ë¡œ redoì‹œì‘ */
+    /* PROJ-2569 ¹Ì¿Ï·áºĞ»êÆ®·£Àè¼Ç ·Î±×¿Í mDiskRedoLSN Áß¿¡¼­ ÀÛÀº °ªÀ¸·Î redo½ÃÀÛ */
     smLSN          mDtxMinLSN;
     smrLogTail     mTail;
-    UChar          mLogRecFence; /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨ */
+    UChar          mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
 } smrBeginChkptLog;
 
 typedef struct smrEndChkptLog
 {
     smrLogHead     mHead;
     smrLogTail     mTail;
-    UChar          mLogRecFence; /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨ */
+    UChar          mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
 } smrEndChkptLog;
 
 /*---------------------------------------------------------------*/
@@ -652,30 +662,52 @@ typedef struct smrEndChkptLog
 /*---------------------------------------------------------------*/
 
 /* PROJ-1553 Replication self-deadlock */
-/* undo logê³¼ abort logë¥¼ ì°ê¸° ì „ì— pre-abort logë¥¼ ì°ëŠ”ë‹¤. */
+/* undo log°ú abort log¸¦ Âï±â Àü¿¡ pre-abort log¸¦ Âï´Â´Ù. */
 typedef struct smrTransPreAbortLog
 {
     smrLogHead     mHead;
     smrLogTail     mTail;
-    UChar          mLogRecFence; /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨ */
+    UChar          mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
 } smrTransPreAbortLog;
 
 typedef struct smrTransAbortLog
 {
     smrLogHead     mHead;
-    UInt           mDskRedoSize; /* Abort LogëŠ” Disk ì˜ ê²½ìš° TSS ë³€ê²½í•¨ */
+    UInt           mDskRedoSize; /* Abort Log´Â Disk ÀÇ °æ¿ì TSS º¯°æÇÔ */
     UInt           mGlobalTxId;
-    UChar          mLogRecFence; /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨ */
+    UChar          mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
 } smrTransAbortLog;
 
-typedef struct smrTransCommitLog
+typedef struct smrTransCommitLog // µğ½ºÅ©/¸Ş¸ğ¸® °øÅë
 {
     smrLogHead     mHead;
     UInt           mTxCommitTV;
-    UInt           mDskRedoSize; /* Commit LogëŠ” Disk ì˜ ê²½ìš° TSS ë³€ê²½í•¨ */
+    UInt           mDskRedoSize; /* Commit Log´Â Disk ÀÇ °æ¿ì TSS º¯°æÇÔ */
     UInt           mGlobalTxId;
-    UChar          mLogRecFence; /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨ */
+    smSCN          mCommitSCN;   /* Global TransÀÇ commitSCN */
+    UChar          mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
 } smrTransCommitLog;
+
+typedef struct smrTransMemCommitLog // ¸Ş¸ğ¸®¿ë  // smrTransCommitLog ¶û ±¸Á¶´Â °°´Ù. ´Ü °íÁ¤±æÀÌ.
+{
+    smrLogHead     mHead;
+    UInt           mTxCommitTV;
+    UInt           mDskRedoSize; /* Commit Log´Â Disk ÀÇ °æ¿ì TSS º¯°æÇÔ */
+    UInt           mGlobalTxId;
+    smSCN          mCommitSCN;   /* Global TransÀÇ commitSCN */
+    smrLogTail     mTail;
+    UChar          mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
+} smrTransMemCommitLog;
+
+typedef struct smrTransGroupCommitLog
+{
+    smrLogHead     mHead;
+    UInt           mTxCommitTV;
+    UInt           mGroupCnt;
+    UChar          mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
+} smrTransGroupCommitLog;
+
+#define SMR_LOG_GROUP_COMMIT_GROUPCNT_OFFSET   (offsetof(smrTransGroupCommitLog,mGroupCnt))
 
 /*--------------------------
     For Global Transaction
@@ -686,20 +718,30 @@ typedef struct smrXaPrepareLog
     /* BUG-18981 */
     ID_XID         mXaTransID;
     UInt           mLockCount;
+    idBool         mIsGCTx;        /* PROJ-2733 */
     timeval        mPreparedTime;
-    smSCN          mFstDskViewSCN; /* XA Transì˜ FstDskViewSCN */
-    UChar          mLogRecFence;   /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨ */
+    smSCN          mFstDskViewSCN; /* XA TransÀÇ FstDskViewSCN */
+    UChar          mLogRecFence;   /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
 } smrXaPrepareLog;
 
 /* BUG-2569 */
 #define SM_INIT_GTX_ID ( ID_UINT_MAX )
 
+typedef struct smrXaStartReqLog
+{
+    smrLogHead     mHead;
+    ID_XID         mXID;         /* PROJ-2747 Global Tx Consistent */
+    smrLogTail     mTail;
+    UChar          mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
+} smrXaStartReqLog;
+
 typedef struct smrXaPrepareReqLog
 {
     smrLogHead     mHead;
+    ID_XID         mXID;         /* PROJ-2747 Global Tx Consistent */
     UInt           mGlobalTxId;
     UInt           mBranchTxSize;
-    UChar          mLogRecFence; /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨ */
+    UChar          mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
 } smrXaPrepareReqLog;
 
 typedef struct smrXaEndLog
@@ -707,27 +749,27 @@ typedef struct smrXaEndLog
     smrLogHead     mHead;
     UInt           mGlobalTxId;
     smrLogTail     mTail;
-    UChar          mLogRecFence; /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨ */
+    UChar          mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
 } smrXaEndLog;
 
 /*
- * PROJ-1704 Disk MVCC ë¦¬ë‰´ì–¼
- * Prepare íŠ¸ëœì­ì…˜ì´ ì‚¬ìš©í•˜ë˜ íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ì— ëŒ€í•œ ë¡œê¹…
+ * PROJ-1704 Disk MVCC ¸®´º¾ó
+ * Prepare Æ®·£Àè¼ÇÀÌ »ç¿ëÇÏ´ø Æ®·£Àè¼Ç ¼¼±×¸ÕÆ®¿¡ ´ëÇÑ ·Î±ë
  */
 typedef struct smrXaSegsLog
 {
     smrLogHead     mHead;
     ID_XID         mXaTransID;
-    UInt           mTxSegEntryIdx;  /* ì‚¬ìš©í–ˆë˜ íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ìˆœë²ˆ */
-    sdRID          mExtRID4TSS;     /* TSSë¥¼ í¬í•¨í•œ ExtRID */
-    scPageID       mFstPIDOfLstExt4TSS; /* TSSë¥¼ í• ë‹¹í•œ Extì˜ ì²«ë²ˆì§¸ í˜ì´ì§€ID */
-    sdRID          mFstExtRID4UDS;  /* ì²˜ìŒ ì‚¬ìš©í–ˆë˜ Undo ExtRID */
-    sdRID          mLstExtRID4UDS;  /* ë§ˆì§€ë§‰ ì‚¬ìš©í–ˆë˜ Undo ExtRID */
-    scPageID       mFstPIDOfLstExt4UDS; /* ë§ˆì§€ë§‰ Undo Extì˜ ì²«ë²ˆì§¸ í˜ì´ì§€ID */
-    scPageID       mFstUndoPID;     /* ë§ˆì§€ë§‰ ì‚¬ìš©í–ˆë˜ TSS PID */
-    scPageID       mLstUndoPID;     /* ë§ˆì§€ë§‰ ì‚¬ìš©í–ˆë˜ Undo PID */
+    UInt           mTxSegEntryIdx;  /* »ç¿ëÇß´ø Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸®¼ø¹ø */
+    sdRID          mExtRID4TSS;     /* TSS¸¦ Æ÷ÇÔÇÑ ExtRID */
+    scPageID       mFstPIDOfLstExt4TSS; /* TSS¸¦ ÇÒ´çÇÑ ExtÀÇ Ã¹¹øÂ° ÆäÀÌÁöID */
+    sdRID          mFstExtRID4UDS;  /* Ã³À½ »ç¿ëÇß´ø Undo ExtRID */
+    sdRID          mLstExtRID4UDS;  /* ¸¶Áö¸· »ç¿ëÇß´ø Undo ExtRID */
+    scPageID       mFstPIDOfLstExt4UDS; /* ¸¶Áö¸· Undo ExtÀÇ Ã¹¹øÂ° ÆäÀÌÁöID */
+    scPageID       mFstUndoPID;     /* ¸¶Áö¸· »ç¿ëÇß´ø TSS PID */
+    scPageID       mLstUndoPID;     /* ¸¶Áö¸· »ç¿ëÇß´ø Undo PID */
     smrLogTail     mTail;
-    UChar          mLogRecFence;    /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš© */
+    UChar          mLogRecFence;    /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ë */
 } smrXaSegsLog;
 
 /*---------------------------------------------------------------*/
@@ -736,39 +778,39 @@ typedef struct smrXaSegsLog
 /*---------------------------------------------------------------*/
 
 /*
- * To Fix BUG-11450  LOG_DIR, ARCHIVE_DIR ì˜ í”„ë¡œí¼í‹° ë‚´ìš©ì´ ë³€ê²½ë˜ë©´
- *                   DBê°€ ê¹¨ì§
+ * To Fix BUG-11450  LOG_DIR, ARCHIVE_DIR ÀÇ ÇÁ·ÎÆÛÆ¼ ³»¿ëÀÌ º¯°æµÇ¸é
+ *                   DB°¡ ±úÁü
  *
- * ë¡œê·¸íƒ€ì… : SMR_LT_FILE_BEGIN
+ * ·Î±×Å¸ÀÔ : SMR_LT_FILE_BEGIN
  */
 
 typedef struct smrFileBeginLog
 {
     smrLogHead    mHead;
-    UInt          mFileNo;   // ë¡œê·¸íŒŒì¼ì˜ ë²ˆí˜¸
+    UInt          mFileNo;   // ·Î±×ÆÄÀÏÀÇ ¹øÈ£
     smrLogTail    mTail;
-    UChar         mLogRecFence; /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨ */
+    UChar         mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
 } smrFileBeginLog;
 
 typedef struct smrFileEndLog
 {
     smrLogHead    mHead;
     smrLogTail    mTail;
-    UChar         mLogRecFence; /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨ */
+    UChar         mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
 } smrFileEndLog;
 
 /*---------------------------------------------------------------*/
 //  Dummy Log
-//  ì–´ë–¤ Undo Redoì—°ì‚°ì‹œ í•˜ì§€ ì•ŠëŠ”ë‹¤. ìì„¸í•œ ì‚¬í•­ì€
+//  ¾î¶² Undo Redo¿¬»ê½Ã ÇÏÁö ¾Ê´Â´Ù. ÀÚ¼¼ÇÑ »çÇ×Àº
 //  1. smiReadLogByOrder::initialize
 //  2. smrLogMgr :: getRestartRedoLSN
-//  ë¥¼ ì°¸ì¡°í•˜ê¸° ë°”ë€ë‹¤.
+//  ¸¦ ÂüÁ¶ÇÏ±â ¹Ù¶õ´Ù.
 /*---------------------------------------------------------------*/
 typedef struct smrDummyLog
 {
     smrLogHead    mHead;
     smrLogTail    mTail;
-    UChar         mLogRecFence; /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨ */
+    UChar         mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
 } smrDummyLog;
 
 /*---------------------------------------------------------------*/
@@ -783,7 +825,7 @@ typedef struct smrUpdateLog
     SInt               mAImgSize;
     SInt               mBImgSize;
     smrUpdateType      mType;
-    UChar              mLogRecFence; /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨ */
+    UChar              mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
 } smrUpdateLog;
 
 /* ------------------------------------------------
@@ -794,11 +836,11 @@ typedef struct smrCMPSLog
     smrLogHead    mHead;
     scGRID        mGRID;
     UInt          mFileID;
-    UInt          mTBSUptType;  /* file ì—°ì‚° íƒ€ì… */
+    UInt          mTBSUptType;  /* file ¿¬»ê Å¸ÀÔ */
     vULong        mData;
     smrUpdateType mUpdateType;
     SInt          mBImgSize;
-    UChar         mLogRecFence; /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨ */
+    UChar         mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
 } smrCMPSLog;
 
 // PROJ-1362.
@@ -807,24 +849,30 @@ typedef struct smrLobLog
     smrLogHead    mHead;
     smLobLocator  mLocator;
     UChar         mOpType;     // lob operation code
-    UChar         mLogRecFence; /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨ */
+    UChar         mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
 }smrLobLog;
 
-/* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš© */
+/* PROJ-1442 Replication Online Áß DDL Çã¿ë */
 typedef struct smrDDLLog
 {
     smrLogHead    mHead;
-    UChar         mLogRecFence; /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨ */
+    UChar         mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
 } smrDDLLog;
 
 typedef struct smrTableMeta
 {
     /* Table Identifier */
+    UInt          mTableID;
     vULong        mTableOID;
     vULong        mOldTableOID;
-    SChar         mUserName[SM_MAX_NAME_LEN + 1 + 7];   // 7 ByteëŠ” Dummy
-    SChar         mTableName[SM_MAX_NAME_LEN + 1 + 7];  // 7 ByteëŠ” Dummy
-    SChar         mPartName[SM_MAX_NAME_LEN + 1 + 7];   // 7 ByteëŠ” Dummy
+    UInt          mTBSType; 
+    SChar         mRepName[SM_MAX_NAME_LEN + 1 + 7];    // 7 Byte´Â Dummy
+    SChar         mUserName[SM_MAX_NAME_LEN + 1 + 7];   // 7 Byte´Â Dummy
+    SChar         mTableName[SM_MAX_NAME_LEN + 1 + 7];  // 7 Byte´Â Dummy
+    SChar         mPartName[SM_MAX_NAME_LEN + 1 + 7];   // 7 Byte´Â Dummy
+    SChar         mRemoteUserName[SM_MAX_NAME_LEN + 1 + 7];   // 7 Byte´Â Dummy
+    SChar         mRemoteTableName[SM_MAX_NAME_LEN + 1 + 7];  // 7 Byte´Â Dummy
+    SChar         mRemotePartName[SM_MAX_NAME_LEN + 1 + 7];   // 7 Byte´Â Dummy
 
     /* Primary Key Index ID */
     UInt          mPKIndexID;
@@ -834,7 +882,7 @@ typedef struct smrTableMetaLog
 {
     smrLogHead    mHead;
     smrTableMeta  mTableMeta;
-    UChar         mLogRecFence; /* log recordì˜ í¬ê¸°ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì‚¬ìš©ë¨ */
+    UChar         mLogRecFence; /* log recordÀÇ Å©±â¸¦ ±¸ÇÏ±â À§ÇØ »ç¿ëµÊ */
 } smrTableMetaLog;
 
 /* ------------------------------------------------
@@ -846,10 +894,15 @@ typedef struct smrDDLStmtMeta
     SChar          mTableName[SM_MAX_NAME_LEN + 1 + 7];
 } smrDDLStmtMeta;
 
+typedef struct smrXaLog
+{
+    ID_XID mXID;
+} smrXaLog;
+
 /*---------------------------------------------------------------
- * - loganchor êµ¬ì¡°ì²´
- * ë‹¤ì¤‘ Loganchorë¥¼ ì§€ì›í•˜ë„ë¡ ì„¤ê³„
- * ì¶”ê°€ëœ ë¶€ë¶„ì€ checksumê³¼ DRDBì˜ tablespace ì •ë³´ë¥¼ ìœ ì§€
+ * - loganchor ±¸Á¶Ã¼
+ * ´ÙÁß Loganchor¸¦ Áö¿øÇÏµµ·Ï ¼³°è
+ * Ãß°¡µÈ ºÎºĞÀº checksum°ú DRDBÀÇ tablespace Á¤º¸¸¦ À¯Áö
  *---------------------------------------------------------------*/
 typedef struct smrLogAnchor
 {
@@ -858,19 +911,19 @@ typedef struct smrLogAnchor
     smLSN            mBeginChkptLSN;
     smLSN            mEndChkptLSN;
 
-    /* BEGIN CHKPT ë¡œê·¸ì—ë„ ì €ì¥ë˜ë©°, ë²„í¼ ì²´í¬í¬ì¸íŠ¸(DRDB)ì‹œì—ëŠ”
-     * ë³„ë„ì˜ BEGIN CHKPT ë¡œê·¸ë¥¼ ê¸°ë¡í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ ë°”ë¡œ Loganchorì—ë§Œ
-     * ê°±ì‹ í•œë‹¤. Restart Recovery ê³¼ì •ì—ì„œ BEGIN CHKPT ë¡œê·¸ì— ì €ì¥ëœ ê²ƒê³¼
-     * Loganchorì— ì €ì¥ëœ ê²ƒì„ ë¹„êµí•˜ì—¬ ë” í° ê²ƒì„ ì„ íƒí•œë‹¤. */
+    /* BEGIN CHKPT ·Î±×¿¡µµ ÀúÀåµÇ¸ç, ¹öÆÛ Ã¼Å©Æ÷ÀÎÆ®(DRDB)½Ã¿¡´Â
+     * º°µµÀÇ BEGIN CHKPT ·Î±×¸¦ ±â·ÏÇÏÁö ¾ÊÀ¸¹Ç·Î ¹Ù·Î Loganchor¿¡¸¸
+     * °»½ÅÇÑ´Ù. Restart Recovery °úÁ¤¿¡¼­ BEGIN CHKPT ·Î±×¿¡ ÀúÀåµÈ °Í°ú
+     * Loganchor¿¡ ÀúÀåµÈ °ÍÀ» ºñ±³ÇÏ¿© ´õ Å« °ÍÀ» ¼±ÅÃÇÑ´Ù. */
     smLSN            mDiskRedoLSN;
 
     /*
      * mMemEndLSN            : Restart Redo Point
-     * mLstCreatedLogFileNo  : ë§ˆì§€ë§‰ìœ¼ë¡œ ìƒì„±í•œ LogFile No
-     * mFstDeleteFileNo      : ì§€ì›Œì§„ ì²«ë²ˆì§¸ LogFile No
-     * mLstDeleteFileNo      : ì§€ì›Œì§„ ë§ˆì§€ë§‰ LogFile No
-     * mResetLSN             : ë¹„ì™„ë£Œ Recoveryí›„ mResetLogsê°€ ê°€ë¦¬í‚¤ëŠ” ì´í›„
-     *                         logëŠ” ë²„ë¦°ë‹¤.
+     * mLstCreatedLogFileNo  : ¸¶Áö¸·À¸·Î »ı¼ºÇÑ LogFile No
+     * mFstDeleteFileNo      : Áö¿öÁø Ã¹¹øÂ° LogFile No
+     * mLstDeleteFileNo      : Áö¿öÁø ¸¶Áö¸· LogFile No
+     * mResetLSN             : ºñ¿Ï·á RecoveryÈÄ mResetLogs°¡ °¡¸®Å°´Â ÀÌÈÄ
+     *                         log´Â ¹ö¸°´Ù.
      */
     smLSN            mMemEndLSN;
     UInt             mLstCreatedLogFileNo;
@@ -884,8 +937,8 @@ typedef struct smrLogAnchor
 
     smiArchiveMode   mArchiveMode;
 
-    /* PROJ-1704 Disk MVCC ë¦¬ë‰´ì–¼
-     * íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ ê°œìˆ˜ */
+    /* PROJ-1704 Disk MVCC ¸®´º¾ó
+     * Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® °³¼ö */
     UInt             mTXSEGEntryCnt;
 
     UInt             mNewTableSpaceID;
@@ -893,14 +946,16 @@ typedef struct smrLogAnchor
     UInt             mSmVersionID;
     /* proj-1608 recovery from replication */
     smLSN            mReplRecoveryLSN;
-    ULong            mReservArea[SMR_LOGANCHOR_RESERV_SIZE];
 
     /* change in run-time */
-    ULong            mUpdateAndFlushCount; /* Loganchor íŒŒì¼ì— Flushëœ íšŸìˆ˜ */
+    ULong            mUpdateAndFlushCount; /* Loganchor ÆÄÀÏ¿¡ FlushµÈ È½¼ö */
 
     /* PROJ-2133 incremental backup */
     smriCTFileAttr   mCTFileAttr;
     smriBIFileAttr   mBIFileAttr;
+
+    /* PROJ-1497 DB MigrationÀ» ¹æÁöÇÏ±â À§ÇØ Reserved ¿µ¿ªÀ» Ãß°¡ */
+    ULong            mReserveArea[SMR_LOGANCHOR_RESERV_SIZE];
 } smrLogAnchor;
 
 /*---------------------------------------------------------------*/
@@ -909,35 +964,6 @@ typedef struct smrLogAnchor
 /*---------------------------------------------------------------*/
 #define SMR_IMPLICIT_SVP_NAME           "$$IMPLICIT"
 #define SMR_IMPLICIT_SVP_NAME_SIZE      (10)
-
-/*---------------------------------------------------------------*/
-//  For LF Thread
-//
-/*---------------------------------------------------------------*/
-
-typedef struct smrTableBackupFile
-{
-    smLSN                mCommitLSN;
-    smOID                mOIDTable;
-    smrTableBackupFile * mPrevTableBackupFile;
-    smrTableBackupFile * mNextTableBackupFile;
-} smrTableBackupFile;
-
-#define SMR_LF_TABLE_BACKUP_FILE_FULL_SIZE (10)
-
-#define SMR_MK_LSN_TO_LONG(aLSN, aFileNo, aOffset) \
-      aLSN  = aFileNo;      \
-      aLSN  = aLSN << 32;   \
-      aLSN |= aOffset;      \
-
-/* No Logging,
-   guarantee transaction durability before Last checkpoint */
-#define SMR_LOGGING_LEVEL_0      (0x00000000)
-/* Logging for only rollback ,
-   guarantee transaction durability before Last checkpoint */
-#define SMR_LOGGING_LEVEL_1      (0x00000001)
-/* Full Logging, guarantee transaction durability */
-#define SMR_LOGGING_LEVEL_2      (0x00000002)
 
 /* checkpoint reason */
 #define SMR_CHECKPOINT_BY_SYSTEM           (0)
@@ -952,24 +978,24 @@ typedef struct smrArchLogFile
     smrArchLogFile    *mArchPrvLogFile;
 } smrArchLogFile;
 
-/* BUG-14778 Txì˜ Log Bufferë¥¼ ì¸í„°í˜ì´ìŠ¤ë¡œ ì‚¬ìš©í•´ì•¼ í•©ë‹ˆë‹¤.
+/* BUG-14778 TxÀÇ Log Buffer¸¦ ÀÎÅÍÆäÀÌ½º·Î »ç¿ëÇØ¾ß ÇÕ´Ï´Ù.
  *
- * Code Refactoringì„ ìœ„í•´ì„œ ì¶”ê°€ ë˜ì—ˆìŠµë‹ˆë‹¤. After Imageì™€
- * Before Imageì— ëŒ€í•œ ì •ë³´ë¥¼ í‘œí˜„í•˜ëŠ”ë° logê¸°ë¡í•¨ìˆ˜ì— ì—¬ëŸ¬ê°œì˜
- * After Image, Before Imageì— ëŒ€í•œ ì •ë³´ë¥¼ ë„˜ê¸°ê¸° ìœ„í•´ì„œ
- * ì‚¬ìš©ë©ë‹ˆë‹¤.
+ * Code RefactoringÀ» À§ÇØ¼­ Ãß°¡ µÇ¾ú½À´Ï´Ù. After Image¿Í
+ * Before Image¿¡ ´ëÇÑ Á¤º¸¸¦ Ç¥ÇöÇÏ´Âµ¥ log±â·ÏÇÔ¼ö¿¡ ¿©·¯°³ÀÇ
+ * After Image, Before Image¿¡ ´ëÇÑ Á¤º¸¸¦ ³Ñ±â±â À§ÇØ¼­
+ * »ç¿ëµË´Ï´Ù.
  *
- * logê¸°ë¡í•¨ìˆ˜ì—ëŠ” imageê°¯ìˆ˜, smrUptLogImgInfo mArr[imageê°¯ìˆ˜]
- * ë¡œ ê°ê°ì˜ After , Before Imageì— ëŒ€í•œ ì •ë³´ê°€ ë„˜ì–´ê°‘ë‹ˆë‹¤.
+ * log±â·ÏÇÔ¼ö¿¡´Â image°¹¼ö, smrUptLogImgInfo mArr[image°¹¼ö]
+ * ·Î °¢°¢ÀÇ After , Before Image¿¡ ´ëÇÑ Á¤º¸°¡ ³Ñ¾î°©´Ï´Ù.
  *
  * */
 typedef struct smrUptLogImgInfo
 {
-    SChar *mLogImg; /* Log Imageì— ëŒ€í•œ Pointer */
+    SChar *mLogImg; /* Log Image¿¡ ´ëÇÑ Pointer */
     UInt   mSize;   /* Image size(byte) */
 } smrUptLogImgInfo;
 
-/* Log Flushë¥¼ ìš”ì²­í•˜ëŠ” ê²½ìš°ë¥¼ ë¶„ë¥˜ */
+/* Log Flush¸¦ ¿äÃ»ÇÏ´Â °æ¿ì¸¦ ºĞ·ù */
 typedef enum
 {
     /* Transaction */
@@ -987,102 +1013,78 @@ typedef enum
 } smrSyncByWho;
 
 /* TASK-2398 Log Compress
-   Disk Logë¥¼ ê¸°ë¡í•˜ëŠ” í•¨ìˆ˜ë“¤ì— aWriteOptionì¸ìì— ë„˜ì–´ê°ˆ Flag
+   Disk Log¸¦ ±â·ÏÇÏ´Â ÇÔ¼öµé¿¡ aWriteOptionÀÎÀÚ¿¡ ³Ñ¾î°¥ Flag
 */
-// ë¡œê·¸ ì••ì¶•ì—¬ë¶€
+// ·Î±× ¾ĞÃà¿©ºÎ
 #define SMR_DISK_LOG_WRITE_OP_COMPRESS_MASK  (0x01)
 #define SMR_DISK_LOG_WRITE_OP_COMPRESS_FALSE (0x00)
 #define SMR_DISK_LOG_WRITE_OP_COMPRESS_TRUE  (0x01)
 
 #define SMR_DEFAULT_DISK_LOG_WRITE_OPTION SMR_DISK_LOG_WRITE_OP_COMPRESS_TRUE
 
-/* ë¡œê·¸ ì••ì¶•ì— í•„ìš”í•œ ë¦¬ì†ŒìŠ¤ */
+/* ·Î±× ¾ĞÃà¿¡ ÇÊ¿äÇÑ ¸®¼Ò½º */
 typedef struct smrCompRes
 {
-    // ë§ˆì§€ë§‰ìœ¼ë¡œ ì‚¬ìš©ëœ ì‹œê°
-    // ë§ˆì§€ë§‰ìœ¼ë¡œ ì‚¬ìš©ëœ ì‹œê°ê³¼ í˜„ì¬ì‹œê°ì˜ ì°¨ì´ê°€ íŠ¹ì • ì‹œê°„ì„ ë²—ì–´ë‚˜ë©´
-    // Poolì—ì„œ ì œê±°í•˜ê¸° ìœ„í•œ ìš©ë„ë¡œ ì‚¬ìš©ëœë‹¤.
+    // ¸¶Áö¸·À¸·Î »ç¿ëµÈ ½Ã°¢
+    // ¸¶Áö¸·À¸·Î »ç¿ëµÈ ½Ã°¢°ú ÇöÀç½Ã°¢ÀÇ Â÷ÀÌ°¡ Æ¯Á¤ ½Ã°£À» ¹ş¾î³ª¸é
+    // Pool¿¡¼­ Á¦°ÅÇÏ±â À§ÇÑ ¿ëµµ·Î »ç¿ëµÈ´Ù.
     idvTime                mLastUsedTime;
 
-
-    // íŠ¸ëœì­ì…˜ rollbackë•Œ ë¡œê·¸ ì••ì¶• í•´ì œë¥¼ ìœ„í•œ ë²„í¼ì˜ í•¸ë“¤
+    // Æ®·£Àè¼Ç rollback¶§ ·Î±× ¾ĞÃà ÇØÁ¦¸¦ À§ÇÑ ¹öÆÛÀÇ ÇÚµé
     iduReusedMemoryHandle  mDecompBufferHandle;
 
-    // ë¡œê·¸ ì••ì¶•ì— ì‚¬ìš©í•  ì••ì¶• ë²„í¼
+    // ·Î±× ¾ĞÃà¿¡ »ç¿ëÇÒ ¾ĞÃà ¹öÆÛ
     iduReusedMemoryHandle  mCompBufferHandle;
-    // ë¡œê·¸ ì••ì¶•ì— ì‚¬ìš©í•  ì‘ì—… ë©”ëª¨ë¦¬
-    // (í¬ê¸°ë° ì‹œì‘ì£¼ì†Œë¥¼ 8 byte aligní•œë‹¤ )
-    void                 * mCompWorkMem[(IDU_COMPRESSION_WORK_SIZE +
-                                         ID_SIZEOF(void *))
-                                        / ID_SIZEOF(void *)];
+
 } smrCompRes;
 
-// writeLogì—ì„œ ì„¤ì •í•œ lstLSNì„ atomicí•˜ê²Œ LogFlushThreadì—ì„œ ì½ì–´ê°€ê¸° ìœ„í•´ 
-// smrLSN4Unionì´ ìˆì—ˆëŠ”ë° ( BUG-28856 logging ë³‘ëª© ì œê±° )
-// [TASK-6757]LFG,SN ì œê±° ë¡œ ì¸í•´ smrLSN4Union -> smLSN ìœ¼ë¡œ ì‚¬ìš© ê°€ëŠ¥ 
-// smrLstLSNì€ atomic í•˜ê²Œ  mSyncë¡œ ì½ì€ë’¤ mLstLSN.mFileNo ë° mLstLSN. mOffsetì„ ê°€ì ¸ì˜¬ë•Œ ì‚¬ìš©
-typedef struct smrLstLSN
+// smrLSN4UnionÀº atomic ÇÏ°Ô  mSync·Î ÀĞÀºµÚ mLstLSN.mFileNo ¹× mLstLSN. mOffsetÀ» °¡Á®¿Ã¶§ »ç¿ë
+typedef struct smrLSN4Union
 {
     union
     {
         ULong mSync; // For 8 Byte Align
         smLSN mLSN;
     } ;
-} smrLstLSN;
+} smrLSN4Union;
 
 /********** BUG-35392 **********/
-// FAST_UNLOCK_LOG_ALLOC_MUTEXT = 1 ì¸ ê²½ìš° dummyLog ê°€ ë°œìƒí• ìˆ˜ ìˆëŠ”ë° 
-// ê²½ìš°ì— ë”°ë¼ dummy ë¥¼ í¬í•¨í•˜ì§€ ì•ŠëŠ” ë¡œê·¸ë¥¼ êµ¬í•´ì•¼ í•œë‹¤. 
-// ë¡œê·¸ë¥¼ ë‚¨ê¸°ê¸° ì „ì— LstLSN ê³¼ LstWriteLSN ì„ ì €ì¥í•˜ê³  setFstCheckLSN()  
-// ì£¼ê¸°ì ìœ¼ë¡œ LstLSN ê³¼ LstWriteLSN ì˜ ê°€ì¥ ì‘ì€ ê°’ì„ ê°±ì‹ í•˜ë©´ rebuildMinUCSN()
-// í•´ë‹¹ê°’ì´ ì“°ê¸°ì¤‘ì¸ Logê°€ ì•„ë‹Œ (í˜¹ì€ ë”ë¯¸ê°€ ì•„ë‹Œ) ì“°ê¸°ê°€ ë³´ì¥ëœ LogLSN ì„.
+// FAST_UNLOCK_LOG_ALLOC_MUTEXT = 1 ÀÎ °æ¿ì dummyLog °¡ ¹ß»ıÇÒ¼ö ÀÖ´Âµ¥ 
+// °æ¿ì¿¡ µû¶ó dummy ¸¦ Æ÷ÇÔÇÏÁö ¾Ê´Â ·Î±×¸¦ ±¸ÇØ¾ß ÇÑ´Ù. 
+// ·Î±×¸¦ ³²±â±â Àü¿¡ LstLSN °ú LstWriteLSN À» ÀúÀåÇÏ°í setFstCheckLSN()  
+// ÁÖ±âÀûÀ¸·Î LstLSN °ú LstWriteLSN ÀÇ °¡Àå ÀÛÀº °ªÀ» °»½ÅÇÏ¸é rebuildMinUCSN()
+// ÇØ´ç°ªÀÌ ¾²±âÁßÀÎ Log°¡ ¾Æ´Ñ (È¤Àº ´õ¹Ì°¡ ¾Æ´Ñ) ¾²±â°¡ º¸ÀåµÈ LogLSN ÀÓ.
 //
 //  -----------------------------------------------------
 //   LSN    | 100 | 101 | 102   | 103 | 104   | 105 | 106 |
 //   Status | ok  | ok  | dummy | ok  | dummy | ok  | ok  |
 //  ------------- A --- B-------------------------- C --- D --
 // 
-// smrUncompletedLogInfo.mLstWriteLSN (A) : ë”ë¯¸ë¥¼ í¬í•¨í•˜ì§€ ì•ŠëŠ” ë§ˆì§€ë§‰ ë¡œê·¸ ë ˆì½”ë“œì˜ LSN
-// smrUncompletedLogInfo.mLstLSN (B)      : ë”ë¯¸ë¥¼ í¬í•¨í•˜ì§€ ì•ŠëŠ” ë§ˆì§€ë§‰ ë¡œê·¸ ë ˆì½”ë“œì˜ Offset
-// mLstWriteLSN (C) : ë§ˆì§€ë§‰ ë¡œê·¸ ë ˆì½”ë“œì˜ LSN, FAST_UNLOCK_LOG_ALLOC_MUTEXT = 1ì¸ ê²½ìš° ë”ë¯¸ í¬í•¨ 
-// mLstLSN (D)      : ë§ˆì§€ë§‰ ë¡œê·¸ ë ˆì½”ë“œì˜ Offset, FAST_UNLOCK_LOG_ALLOC_MUTEXT = 1ì¸ ê²½ìš° ë”ë¯¸ í¬í•¨
+// smrUncompletedLogInfo.mLstWriteLSN (A) : ´õ¹Ì¸¦ Æ÷ÇÔÇÏÁö ¾Ê´Â ¸¶Áö¸· ·Î±× ·¹ÄÚµåÀÇ LSN
+// smrUncompletedLogInfo.mLstLSN (B)      : ´õ¹Ì¸¦ Æ÷ÇÔÇÏÁö ¾Ê´Â ¸¶Áö¸· ·Î±× ·¹ÄÚµåÀÇ Offset
+// mLstWriteLSN (C) : ¸¶Áö¸· ·Î±× ·¹ÄÚµåÀÇ LSN, FAST_UNLOCK_LOG_ALLOC_MUTEXT = 1ÀÎ °æ¿ì ´õ¹Ì Æ÷ÇÔ 
+// mLstLSN (D)      : ¸¶Áö¸· ·Î±× ·¹ÄÚµåÀÇ Offset, FAST_UNLOCK_LOG_ALLOC_MUTEXT = 1ÀÎ °æ¿ì ´õ¹Ì Æ÷ÇÔ
 // 
-// A,B,C,D ëŠ”.. 
-// A ì™€ B , Cì™€ D ëŠ” ê°ê° ê°™ì€ ë¡œê·¸ì˜ ì‹œì‘ê³¼ ë.
-// A <= C , B <= D ê°€ ì„±ë¦½ëœë‹¤. 
+// A,B,C,D ´Â.. 
+// A ¿Í B , C¿Í D ´Â °¢°¢ °°Àº ·Î±×ÀÇ ½ÃÀÛ°ú ³¡.
+// A <= C , B <= D °¡ ¼º¸³µÈ´Ù. 
 
 typedef struct smrUncompletedLogInfo
 {
-    smrLstLSN mLstLSN;
-    smLSN     mLstWriteLSN;  
+    smrLSN4Union mLstLSN;
+    smrLSN4Union mLstWriteLSN;  
 } smrUncompletedLogInfo;
 
-#define SM_SYNC_LSN_MAX( aLSN )                         \
-    {                                                       \
-        aLSN.mFileNo = ID_UINT_MAX;     \
-        aLSN.mOffset = ID_UINT_MAX;     \
-    }
+#define SM_SYNC_LSN_MAX( mSync )     (mSync = ID_ULONG_MAX)
 
-#define SM_IS_SYNC_LSN_MAX( aLSN )                          \
-    ((  aLSN.mFileNo == ID_UINT_MAX ) &&     \
-     ( (aSyncLSN).mLSN.mOffset == ID_UINT_MAX ))
+#define SM_IS_SYNC_LSN_MAX( mSync )  (mSync == ID_ULONG_MAX)
 
-#define SM_ATOMIC_SET_SYNC_LSN( aDestPtr, aDataPtr )        \
-        (idCore::acpAtomicSet64( (ULong*)(aDestPtr), *((ULong*)(aDataPtr)) ))
-
-#define SM_ATOMIC_GET_SYNC_LSN( aDestPtr, aDataPtr )        \
-        (*((ULong*)aDestPtr) = idCore::acpAtomicGet64( (ULong*)(aDataPtr) ))
 /********** END **********/
 
-// PROJ-1665
-// Direct-Path INSERTë¡œ ìˆ˜í–‰ëœ Page ì „ì²´ë¥¼ Logging í• ë•Œ
-// Log Record Size
-#define SMR_DPATH_PAGE_LOG_REC_SIZE ( ID_SIZEOF(smrDiskLog) + ID_SIZEOF(sdrLogHdr) + SD_PAGE_SIZE + ID_SIZEOF(smrLogTail) )
 
-
-/* TASK-4007 [SM] PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
- * Logë¥¼ Dumpí• ë•Œ, ì–´ë–¤ ë¡œê·¸ë¥¼ ì–´ë–»ê²Œ ì¶œë ¥í• ì§€ë¥¼ ì„œë²„ê°€ ì•„ë‹Œ Dumpí•˜ê³ ì í•˜ëŠ” 
- * Utilì—ì„œ ê²°ì •í•˜ë„ë¡, ì½ì–´ë“œë¦° ë¡œê·¸ì— ëŒ€í•œ ì²˜ë¦¬ìš© Callbackí•¨ìˆ˜ë¥¼ ë‘”ë‹¤.*/
+/* TASK-4007 [SM] PBT¸¦ À§ÇÑ ±â´É Ãß°¡
+ * Log¸¦ DumpÇÒ¶§, ¾î¶² ·Î±×¸¦ ¾î¶»°Ô Ãâ·ÂÇÒÁö¸¦ ¼­¹ö°¡ ¾Æ´Ñ DumpÇÏ°íÀÚ ÇÏ´Â 
+ * Util¿¡¼­ °áÁ¤ÇÏµµ·Ï, ÀĞ¾îµå¸° ·Î±×¿¡ ´ëÇÑ Ã³¸®¿ë CallbackÇÔ¼ö¸¦ µĞ´Ù.*/
 
 typedef IDE_RC (*smrLogDump)(UInt         aOffsetInFile,
                              smrLogHead * aLogHead,
@@ -1092,59 +1094,59 @@ typedef IDE_RC (*smrLogDump)(UInt         aOffsetInFile,
 /************************************************************************
  * PROJ-2162 RestartRiskReduction
  *
- *  - Recovery Target Object Info (RTOI) ì •ì˜
- * Recovery ëŒ€ìƒ ê°ì²´ê°€ Inconsistentí•œ ìƒí™©ì—ì„œ Recoveryë¥¼ ì‹œë„í•  ê²½ìš° ì–´ë–¤
- * ë¬¸ì œê°€ ë°œìƒí• ì§€ ëª¨ë¥¸ë‹¤. ë”°ë¼ì„œ ë¯¸ë¦¬ Logë¥¼ ë°”íƒ•ìœ¼ë¡œ Targetobjectì˜
- * Consistencyë¥¼ ê²€ì‚¬í•œë‹¤.
- *  ë˜í•œ ë§Œì•½ Recovery ì—°ì‚°ì´ ì‹¤íŒ¨í–ˆì„ ê²½ìš°, Recovery ëŒ€ìƒ ê°ì²´ì— Inconsistent
- * Flagë¥¼ ì„¤ì •í•˜ì—¬ ì´í›„ Recoveryê°€ ì‹¤íŒ¨í•˜ëŠ” ì¼ì„ ë§‰ì•„ì¤€ë‹¤.
- * Recovery ëŒ€ìƒ ê°ì²´ëŠ” Table, Index, MemPage, DiskPage, ë„¤ê°€ì§€ì´ë‹¤. 
- * ëª¨ë‘ TBSID, PID, OFFSET, ì¦‰ GRIDë¡œ ì •ë³´ë¥¼ í‘œí˜„í•œë‹¤. 
+ *  - Recovery Target Object Info (RTOI) Á¤ÀÇ
+ * Recovery ´ë»ó °´Ã¼°¡ InconsistentÇÑ »óÈ²¿¡¼­ Recovery¸¦ ½ÃµµÇÒ °æ¿ì ¾î¶²
+ * ¹®Á¦°¡ ¹ß»ıÇÒÁö ¸ğ¸¥´Ù. µû¶ó¼­ ¹Ì¸® Log¸¦ ¹ÙÅÁÀ¸·Î TargetobjectÀÇ
+ * Consistency¸¦ °Ë»çÇÑ´Ù.
+ *  ¶ÇÇÑ ¸¸¾à Recovery ¿¬»êÀÌ ½ÇÆĞÇßÀ» °æ¿ì, Recovery ´ë»ó °´Ã¼¿¡ Inconsistent
+ * Flag¸¦ ¼³Á¤ÇÏ¿© ÀÌÈÄ Recovery°¡ ½ÇÆĞÇÏ´Â ÀÏÀ» ¸·¾ÆÁØ´Ù.
+ * Recovery ´ë»ó °´Ã¼´Â Table, Index, MemPage, DiskPage, ³×°¡ÁöÀÌ´Ù. 
+ * ¸ğµÎ TBSID, PID, OFFSET, Áï GRID·Î Á¤º¸¸¦ Ç¥ÇöÇÑ´Ù. 
  *
  * - InconsistentObjectList (IOL)
- *  RTOIê°€ Inconsistentí•˜ë‹¤ëŠ” ê²ƒì´ ê²°ì •ë˜ì—ˆì„ ê²½ìš°, RecoveryMgrì— IOLë¡œ
- * ë¬¶ì´ê²Œ ëœë‹¤.
+ *  RTOI°¡ InconsistentÇÏ´Ù´Â °ÍÀÌ °áÁ¤µÇ¾úÀ» °æ¿ì, RecoveryMgr¿¡ IOL·Î
+ * ¹­ÀÌ°Ô µÈ´Ù.
  *
  ***********************************************************************/
 
-/* TOI ìƒíƒœ:
- * <INIT> ì´ˆê¸°í™”ë¨
+/* TOI »óÅÂ:
+ * <INIT> ÃÊ±âÈ­µÊ
  *    |
- * [prepareRTOI               Logì— ë”°ë¼ ëŒ€ìƒ Objectë¥¼ ê°€ì ¸ì˜´ ]
+ * [prepareRTOI               Log¿¡ µû¶ó ´ë»ó Object¸¦ °¡Á®¿È ]
  *    |                       
  * <PREPARED>                      
  *    |                       
- * [checkObjectConsistency    Objectê²€ì‚¬í•¨]
+ * [checkObjectConsistency    Object°Ë»çÇÔ]
  *    |                       
  * <CHECKED>                  
  *    |                       
- * [setObjectInconsistency    Objectì— ì˜³ì§€ ì•ŠìŒì„ ì„¤ì •]
+ * [setObjectInconsistency    Object¿¡ ¿ÇÁö ¾ÊÀ½À» ¼³Á¤]
  *    |
  * <DONE>
  *
- * ë‹¨, prepareRTOI í•¨ìˆ˜ì—ì„œ Logì— ë”°ë¼ CHECKED, ë˜ëŠ” DONE ìƒíƒœë¡œ ë°”ë¡œ 
- * ë³´ë‚´ëŠ” ê²½ìš°ê°€ ìˆìŒ. (í•´ë‹¹ í•¨ìˆ˜ ì°¸ì¡° ) */
+ * ´Ü, prepareRTOI ÇÔ¼ö¿¡¼­ Log¿¡ µû¶ó CHECKED, ¶Ç´Â DONE »óÅÂ·Î ¹Ù·Î 
+ * º¸³»´Â °æ¿ì°¡ ÀÖÀ½. (ÇØ´ç ÇÔ¼ö ÂüÁ¶ ) */
 
 typedef enum
 {
     SMR_RTOI_STATE_INIT,
-    SMR_RTOI_STATE_PREPARED,/* prepareRTOIì— ì˜í•´ Logë¥¼ ë¶„ì„í•¨*/
-    SMR_RTOI_STATE_CHECKED, /* checkObjectConsistencyë¥¼ í†µí•´ ê°ì²´ì •ë³´ ìŠµë“*/
-    SMR_RTOI_STATE_DONE     /* ì²˜ë¦¬ ì¢…ë£Œ*/
+    SMR_RTOI_STATE_PREPARED,/* prepareRTOI¿¡ ÀÇÇØ Log¸¦ ºĞ¼®ÇÔ*/
+    SMR_RTOI_STATE_CHECKED, /* checkObjectConsistency¸¦ ÅëÇØ °´Ã¼Á¤º¸ ½Àµæ*/
+    SMR_RTOI_STATE_DONE     /* Ã³¸® Á¾·á*/
 } smrRTOIState;
 
-/* TOIë¥¼ ë“±ë¡í•˜ê²Œ ëœ ì›ì¸ */
+/* TOI¸¦ µî·ÏÇÏ°Ô µÈ ¿øÀÎ */
 typedef enum
 {
     SMR_RTOI_CAUSE_INIT,
-    SMR_RTOI_CAUSE_OBJECT,   /* ê°ì²´(Table,index,Page)ë“±ì´ ì´ìƒí•¨*/
-    SMR_RTOI_CAUSE_REDO,     /* RedoRecoveryì—ì„œ ì‹¤íŒ¨í–ˆìŒ */
-    SMR_RTOI_CAUSE_UNDO,     /* UndoRecoveryì—ì„œ ì‹¤íŒ¨í–ˆìŒ */
-    SMR_RTOI_CAUSE_REFINE,   /* Refineì—ì„œ ì‹¤íŒ¨í–ˆìŒ */
-    SMR_RTOI_CAUSE_PROPERTY  /* Propertyì— ì˜í•´ ê°•ì œë¡œ ì œì™¸ë¨  */
+    SMR_RTOI_CAUSE_OBJECT,   /* °´Ã¼(Table,index,Page)µîÀÌ ÀÌ»óÇÔ*/
+    SMR_RTOI_CAUSE_REDO,     /* RedoRecovery¿¡¼­ ½ÇÆĞÇßÀ½ */
+    SMR_RTOI_CAUSE_UNDO,     /* UndoRecovery¿¡¼­ ½ÇÆĞÇßÀ½ */
+    SMR_RTOI_CAUSE_REFINE,   /* Refine¿¡¼­ ½ÇÆĞÇßÀ½ */
+    SMR_RTOI_CAUSE_PROPERTY  /* Property¿¡ ÀÇÇØ °­Á¦·Î Á¦¿ÜµÊ  */
 } smrRTOICause;
 
-/* TOIì— ë“±ë¡ëœ ëŒ€ìƒ Objectì˜ ì¢…ë¥˜  */
+/* TOI¿¡ µî·ÏµÈ ´ë»ó ObjectÀÇ Á¾·ù  */
 typedef enum
 {
     SMR_RTOI_TYPE_INIT,
@@ -1155,33 +1157,33 @@ typedef enum
 } smrRTOIType;
 
 /* PROJ-2162 RestartRiskReduction
- * Recovery ëŒ€ìƒ ê°ì²´ë“¤ì…ë‹ˆë‹¤. Logë¡œë¶€í„°, ë˜ëŠ” DRDBPageë¡œë¶€í„° ì¶”ì¶œí•©ë‹ˆë‹¤.
- * ì´ ìë£Œêµ¬ì¡°ë¥¼ ë°”íƒ•ìœ¼ë¡œ ì˜ëª»ëœ ê°ì²´ë“¤ì˜ Listë¥¼ ëª¨ì•„ë‘ì–´ ë§ˆì§€ë§‰ì— ì¶œë ¥í•´
- * ì¤ë‹ˆë‹¤.*/
+ * Recovery ´ë»ó °´Ã¼µéÀÔ´Ï´Ù. Log·ÎºÎÅÍ, ¶Ç´Â DRDBPage·ÎºÎÅÍ ÃßÃâÇÕ´Ï´Ù.
+ * ÀÌ ÀÚ·á±¸Á¶¸¦ ¹ÙÅÁÀ¸·Î Àß¸øµÈ °´Ã¼µéÀÇ List¸¦ ¸ğ¾ÆµÎ¾î ¸¶Áö¸·¿¡ Ãâ·ÂÇØ
+ * Áİ´Ï´Ù.*/
 typedef struct smrRTOI /* RecoveryTargetObjectInfo */
 {
-    /* TOIë¥¼ ì–»ì–´ë‚¸ ì›ë³¸ ê°ì²´ */
+    /* TOI¸¦ ¾ò¾î³½ ¿øº» °´Ã¼ */
     smrRTOICause   mCause;
     smLSN          mCauseLSN;
     UChar        * mCauseDiskPage;
 
-    /* TOIì˜ ìƒíƒœ */
+    /* TOIÀÇ »óÅÂ */
     smrRTOIState   mState;
 
-    /* TOIì— ëŒ€í•œ ì •ë³´ */
+    /* TOI¿¡ ´ëÇÑ Á¤º¸ */
     smrRTOIType    mType;
     scGRID         mGRID;
 
-    /* IndexCommonPersistentHeaderë“±ì˜ ê²½ìš° Alterë¬¸ì— ë”°ë¼ ìœ„ì¹˜ê°€ ë³€ê²½
-     * ë  ìˆ˜ ìˆê¸° ë•Œë¬¸ì—, TableHeader, IndexIDë¥¼ ê°€ì§€ê³  ìˆì–´ì•¼ í•¨
-     * checkObjectConsistencyì— ì˜í•´ ì„¤ì •ë¨*/
+    /* IndexCommonPersistentHeaderµîÀÇ °æ¿ì Alter¹®¿¡ µû¶ó À§Ä¡°¡ º¯°æ
+     * µÉ ¼ö ÀÖ±â ¶§¹®¿¡, TableHeader, IndexID¸¦ °¡Áö°í ÀÖ¾î¾ß ÇÔ
+     * checkObjectConsistency¿¡ ÀÇÇØ ¼³Á¤µÊ*/
     smOID          mTableOID;
     UInt           mIndexID;
 
     smrRTOI      * mNext;
 } smrRTOI;
 
-/*FixedTableì¶œë ¥ì„ ìœ„í•œ ê°’ */
+/*FixedTableÃâ·ÂÀ» À§ÇÑ °ª */
 typedef struct smrRTOI4FT
 {
     SChar      mType[9];  // INIT,TABLE,INDEX,MEMPAGE,DISKPAGE
@@ -1192,14 +1194,14 @@ typedef struct smrRTOI4FT
 
 typedef enum
 {
-    SMR_RECOVERY_NORMAL    = 0, // ê¸°ë³¸. ì–´ë– í•œ ê²€ì¦ë„ ë¬´ì‹œí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤
-    SMR_RECOVERY_EMERGENCY = 1, // ì˜ëª»ëœ ê°ì²´, ì˜ëª»ëœ Redoì— ëŒ€í•œ ì ‘ê·¼ì„ 
-                                // ë§‰ìœ¼ë©´ì„œ ì„œë²„ë¥¼ êµ¬ë™ì‹œí‚µë‹ˆë‹¤.
-    SMR_RECOVERY_SKIP      = 2  // Recoveryë¥¼ í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. í•˜ì§€ë§Œ DBê°€ 
-                                // Inconsistencyí•´ì§‘ë‹ˆë‹¤.
+    SMR_RECOVERY_NORMAL    = 0, // ±âº». ¾î¶°ÇÑ °ËÁõµµ ¹«½ÃÇÏÁö ¾Ê½À´Ï´Ù
+    SMR_RECOVERY_EMERGENCY = 1, // Àß¸øµÈ °´Ã¼, Àß¸øµÈ Redo¿¡ ´ëÇÑ Á¢±ÙÀ» 
+                                // ¸·À¸¸é¼­ ¼­¹ö¸¦ ±¸µ¿½ÃÅµ´Ï´Ù.
+    SMR_RECOVERY_SKIP      = 2  // Recovery¸¦ ÇÏÁö ¾Ê½À´Ï´Ù. ÇÏÁö¸¸ DB°¡ 
+                                // InconsistencyÇØÁı´Ï´Ù.
 } smrEmergencyRecoveryPolicy;
 
-/* iSQL, TRC ë¡œê·¸ë¡œ ë‚¨ê¸¸ ë©”ì‹œì§€ êµ¬ì„±ì„ ìœ„í•œ ë²„í¼ í¬ê¸° */
+/* iSQL, TRC ·Î±×·Î ³²±æ ¸Ş½ÃÁö ±¸¼ºÀ» À§ÇÑ ¹öÆÛ Å©±â */
 #define SMR_MESSAGE_BUFFER_SIZE (512)
 
 #endif /* _O_SMR_DEF_H_ */

@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: idConfig.h.in 80615 2017-07-27 01:20:29Z hjjun $
+ * $Id: idConfig.h.in 88304 2020-08-07 06:18:48Z kclee $
  **********************************************************************/
 
 /***********************************************************************
@@ -13,7 +13,7 @@
  *   smConfig.h   (auto creation from config.h.in by configure script )
  * 
  * DESCRIPTION
- * Configure ìŠ¤í¬ë¦½íŠ¸ì— ì˜í•´ ìžë™ì ìœ¼ë¡œ ìƒì„±ë˜ëŠ” ì‹œìŠ¤í…œ config í™”ì¼
+ * Configure ½ºÅ©¸³Æ®¿¡ ÀÇÇØ ÀÚµ¿ÀûÀ¸·Î »ý¼ºµÇ´Â ½Ã½ºÅÛ config È­ÀÏ
  *
  **********************************************************************/
 
@@ -21,27 +21,27 @@
 #define _O_ID_CONFIG_H_ 1
 
 /*
- * í˜„ìž¬ ê²€ì‚¬ë˜ëŠ” ìš´ì˜ì²´ì œ ë¦¬ìŠ¤íŠ¸ (ì•„ëž˜ì˜ #undef ì°¸ì¡°ìš”ë§)
+ * ÇöÀç °Ë»çµÇ´Â ¿î¿µÃ¼Á¦ ¸®½ºÆ® (¾Æ·¡ÀÇ #undef ÂüÁ¶¿ä¸Á)
  
- * ë³€ìˆ˜ëª… : 1. OS_TARGET (CPU ë° ìš´ì˜ì²´ì œ)
-               SPARC_SOLARIS : ìŠ¤íŒìš© ì†”ë¼ë¦¬ìŠ¤
-               INTEL_LINUX   : ì¸í…”ìš© ë¦¬ëˆ…ìŠ¤
+ * º¯¼ö¸í : 1. OS_TARGET (CPU ¹× ¿î¿µÃ¼Á¦)
+               SPARC_SOLARIS : ½ºÆÅ¿ë ¼Ö¶ó¸®½º
+               INTEL_LINUX   : ÀÎÅÚ¿ë ¸®´ª½º
                 
-            2. OS_MAJORVER (0 ~ n) : ë©”ì´ì € ìš´ì˜ì²´ì œ ë„˜ë²„
-            3. OS_MINORVER (0 ~ n) : ë§ˆì´ë„ˆ ìš´ì˜ì²´ì œ ë„˜ë²„
+            2. OS_MAJORVER (0 ~ n) : ¸ÞÀÌÀú ¿î¿µÃ¼Á¦ ³Ñ¹ö
+            3. OS_MINORVER (0 ~ n) : ¸¶ÀÌ³Ê ¿î¿µÃ¼Á¦ ³Ñ¹ö
 
-   ì˜ˆ1) ì†”ë¼ë¦¬ìŠ¤ 7ì˜ ê²½ìš° 
-        ì–»ì–´ì§€ëŠ” ê°’) sparc-sun-solaris2.7
+   ¿¹1) ¼Ö¶ó¸®½º 7ÀÇ °æ¿ì 
+        ¾ò¾îÁö´Â °ª) sparc-sun-solaris2.7
 
         OS_TARGET : SPARC_SOLARIS
         OS_MAJORVER : 2
         OS_MINORVER : 7
    
-   ì˜ˆ2) ì¸í…” ë¦¬ëˆ…ìŠ¤ì˜ ê²½ìš° (ìš´ì˜ì²´ì œë²„ì ¼ë³´ë‹¤, ë¼ì´ë¸ŒëŸ¬ë¦¬ ë²„ì ¼ì´ ë” ì¤‘ìš”)
-        ì–»ì–´ì§€ëŠ” ê°’) i686-pc-linux-gnu
+   ¿¹2) ÀÎÅÚ ¸®´ª½ºÀÇ °æ¿ì (¿î¿µÃ¼Á¦¹öÁ¯º¸´Ù, ¶óÀÌºê·¯¸® ¹öÁ¯ÀÌ ´õ Áß¿ä)
+        ¾ò¾îÁö´Â °ª) i686-pc-linux-gnu
 
         OS_TARGET : INTEL_LINUX
-        OS_MAJORVER : 0 (ë¦¬ëˆ…ìŠ¤ì˜ ê²½ìš° ë¼ì´ë¸ŒëŸ¬ë¦¬ ë²„ì ¼ì„ ë„£ì–´ì•¼ í•  ê²ƒìž„)
+        OS_MAJORVER : 0 (¸®´ª½ºÀÇ °æ¿ì ¶óÀÌºê·¯¸® ¹öÁ¯À» ³Ö¾î¾ß ÇÒ °ÍÀÓ)
         OS_MINORVER : 0
  */
 
@@ -54,10 +54,10 @@
 #undef ALTIBASE_3     
 #undef ALTIBASE_4
 
-/* í•´ë‹¹ ì‹œìŠ¤í…œì´ BIG ENDIANì´ë©´ ì•„ëž˜ì˜ ë§¤í¬ë¡œê°€ ì •ì˜ë¨ */
+/* ÇØ´ç ½Ã½ºÅÛÀÌ BIG ENDIANÀÌ¸é ¾Æ·¡ÀÇ ¸ÅÅ©·Î°¡ Á¤ÀÇµÊ */
 #undef ENDIAN_IS_BIG_ENDIAN
 
-/* SMP ê³ ë ¤í•œ ì»´íŒŒì¼ í”Œëž˜ê·¸ */
+/* SMP °í·ÁÇÑ ÄÄÆÄÀÏ ÇÃ·¡±× */
 #undef COMPILE_FOR_NO_SMP
 
 /* RP2 compile */
@@ -66,7 +66,7 @@
 /* block sigterm in linux */
 #undef BLOCK_SIGTERM_IN_LINUX
 
-/* OS ì¢…ë¥˜ ë° ë²„ì ¼ì •ë³´ */
+/* OS Á¾·ù ¹× ¹öÁ¯Á¤º¸ */
 
 #undef OS_SYSTEM_TYPE
 
@@ -152,7 +152,7 @@
 
 #undef OS_COMPAT_MODE
 
-/* ëª‡ë¹„íŠ¸ë¡œ ì»´íŒŒì¼ í•˜ëŠ”ê°€?  64ë¹„íŠ¸ì¼ ê²½ìš° COMPILE_64ê°€ 1ë¡œ ì •ì˜ë¨ */
+/* ¸îºñÆ®·Î ÄÄÆÄÀÏ ÇÏ´Â°¡?  64ºñÆ®ÀÏ °æ¿ì COMPILE_64°¡ 1·Î Á¤ÀÇµÊ */
 #undef COMPILE_64BIT
 
 #undef ALTIBASE_MEMORY_CHECK
@@ -167,13 +167,16 @@
 
 #undef ALTIBASE_ENABLE_SMARTSSD
 
+#undef ALTIBASE_HEAPMIN
+
+
 #undef USE_READLINE
 
 #undef COMPILE_FOR_PAGE64
 
 #undef ALTIBASE_VALGRIND_PATH
 
-/* dbadminì„ INETì„ ì´ìš©í•´ì„œ ì ‘ì†, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´, UNIX DOMAINìœ¼ë¡œ ì‚¬ìš©ë¨ */
+/* dbadminÀ» INETÀ» ÀÌ¿ëÇØ¼­ Á¢¼Ó, ±×·¸Áö ¾ÊÀ¸¸é, UNIX DOMAINÀ¸·Î »ç¿ëµÊ */
 #undef USE_ADMIN_INET
 
 /* cm network config */
@@ -182,6 +185,9 @@
 #undef CM_DISABLE_UNIX
 #undef CM_DISABLE_IPC
 #undef CM_DISABLE_SSL
+
+/* BUG-47816 ST_Transform ÇÔ¼ö Áö¿ø */
+#undef ST_ENABLE_PROJ4_LIBRARY
 
 #ifdef __CSURF__
 #define ALTIBASE_MEMORY_CHECK 1

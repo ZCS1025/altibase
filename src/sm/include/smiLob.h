@@ -47,31 +47,19 @@ public:
                                          smiLobCursorMode  aMode,
                                          smLobLocator*     aLobLocator );
 
-    /* BUG-33189 [sm_interface] need to add a lob interface for
-     * reading the latest lob column value like getLastModifiedRow */
-    static IDE_RC openLobCursor( smiTableCursor   * aTableCursor,
-                                 void             * aRow,
-                                 scGRID             aGRID,
-                                 smiColumn        * aLobColumn,
-                                 UInt               aInfo,
-                                 smiLobCursorMode   aMode,
-                                 smLobLocator     * aLobLocator );    
-    
-    static IDE_RC closeLobCursor( smLobLocator aLobLocator );
+    static IDE_RC closeLobCursor( idvSQL*      aStatistics,
+                                  smLobLocator aLobLocator );
 
     /* BUG-40427 [sm_resource] Closing cost of a LOB cursor 
      * which is used internally is too much expensive */
-    static IDE_RC closeAllLobCursors( smLobLocator aLobLocator,
-                                      UInt         aInfo );
-    static IDE_RC closeAllLobCursors( smiTableCursor * aTableCursor,
-                                      UInt             aInfo );
+    static IDE_RC closeAllLobCursors( idvSQL       * aStatistics,
+                                      smLobLocator   aLobLocator,
+                                      UInt           aInfo );
 
-    static IDE_RC closeAllLobCursors( smLobLocator aLobLocator );
-    static IDE_RC closeAllLobCursors( smiTableCursor * aTableCursor );
-    
     static idBool isOpen( smLobLocator aLobLoc );
     
-    static IDE_RC getLength( smLobLocator   aLobLocator,
+    static IDE_RC getLength( idvSQL       * aStatistics,
+                             smLobLocator   aLobLocator,
                              SLong        * aLobLen,
                              idBool       * aIsNullLob );
     
@@ -113,6 +101,30 @@ public:
 
     static IDE_RC getInfoPtr( smLobLocator aLobLocator,
                               UInt**       aInfo );
+
+    /* PROJ-2728 Sharding LOB */
+    static IDE_RC setShardLobModule(
+                smLobOpenFunc                   aOpen,
+                smLobReadFunc                   aRead,
+                smLobWriteFunc                  aWrite,
+                smLobEraseFunc                  aErase,
+                smLobTrimFunc                   aTrim,
+                smLobPrepare4WriteFunc          aPrepare4Write,
+                smLobFinishWriteFunc            aFinishWrite,
+                smLobGetLobInfoFunc             aGetLobInfo,
+                smLobWriteLog4LobCursorOpen     aWriteLog4CursorOpen,
+                smLobCloseFunc                  aClose );
+
+    static IDE_RC openShardLobCursor( smiTrans        * aSmiTrans,
+                                      UInt              aMmSessId,
+                                      UInt              aMmStmtId,
+                                      UInt              aRemoteStmtId,
+                                      UInt              aNodeId,
+                                      SShort            aLobLocatorType,
+                                      smLobLocator      aRemoteLobLocator,
+                                      UInt              aInfo,
+                                      smiLobCursorMode  aMode,
+                                      smLobLocator*     aShardLobLocator );
 
 private:
     static IDE_RC getLobCursorAndTrans( smLobLocator      aLobLocator,

@@ -41,13 +41,15 @@
                              "'M', CONCAT(a.related_object_name, '$VIEW'), a.related_object_name "      \
                        ") AS related_object_name, a.related_object_type, b.status "                     \
                 "FROM system_.sys_package_related_ a, system_.sys_packages_ b "                         \
-                "WHERE a.package_oid = b.package_oid AND a.user_id != 1 "
+                "WHERE a.package_oid = b.package_oid AND a.user_id != 1 " \
+                "AND b.package_name != 'DBMS_METADATA' "
 
 #define UNION_SUBOBJECTS_PACKAGE                                                                        \
                 "UNION ALL "                                                                            \
                                                                                                         \
                 "SELECT user_id, package_oid AS id, package_name AS name, package_type AS type, status "\
-                "FROM system_.sys_packages_ "
+                "FROM system_.sys_packages_ " \
+                "WHERE package_name != 'DBMS_METADATA' "
 
 #define TMP_TBL_SUBQUERY                                                                                \
         "SELECT relate.type, relate.user_id, relate.id, "                                               \
@@ -151,17 +153,18 @@
 #define GET_TOP_LEVEL_PACKAGE_QUERY                                                         \
         "UNION "                                                                            \
                                                                                             \
-        "SELECT parse.user_id, parse.package_oid AS obj_id, parse.seq_no, "                 \
-               "parse.parse, "                                                              \
+        "SELECT pkg.user_id, pkg.package_oid AS obj_id, "                                   \
                "CASE2( pkg.package_type = 6, '7', package_type = 7, '8' ) AS obj_type, "    \
                "pkg.status, pkg.package_name AS obj_name "                                  \
-        "FROM "                                                                             \
-             "( "                                                                           \
-                "SELECT user_id, package_oid, seq_no, parse "                               \
-                "FROM system_.sys_package_parse_ "                                          \
+        "FROM system_.sys_packages_ pkg "                                                   \
                 "WHERE user_id != 1 "                                                       \
                       "AND package_oid NOT IN "                                             \
                           "( "                                                              \
+                             "SELECT package_oid FROM system_.sys_packages_ "               \
+                             "WHERE package_name = 'DBMS_METADATA' "                        \
+                                                                                            \
+                             "UNION "                                                       \
+                                                                                            \
                              "SELECT DISTINCT a.package_oid "                               \
                              "FROM system_.sys_package_related_ a, system_.sys_procedures_ b "\
                              "WHERE a.related_user_id = b.user_id "                         \
@@ -185,22 +188,17 @@
                              "WHERE a.related_user_id = b.user_id "                         \
                                    "AND a.related_object_name = b.package_name "            \
                                    "AND a.related_object_type IN( 6, 7 ) "                  \
-                          ") "                                                              \
-             ") parse, system_.sys_packages_ pkg "                                          \
-             "WHERE parse.package_oid = pkg.package_oid "
+                          ") "
 
 #define GET_TOP_LEVEL_OBJECT_SYS_QUERY                                                      \
     "SELECT first.user_id, name.user_name, "                                                \
-           "first.obj_id, first.seq_no, first.parse, "                                      \
+           "first.obj_id, "                                                                 \
            "first.object_type, first.status, first.obj_name "                               \
     "FROM "                                                                                 \
     "( "                                                                                    \
-        "SELECT parse.user_id, parse.obj_id, parse.seq_no, "                                \
-               "parse.parse, proc.object_type, proc.status, proc.proc_name AS obj_name "    \
-        "FROM "                                                                             \
-        "( "                                                                                \
-            "SELECT user_id, proc_oid AS obj_id, seq_no, parse "                            \
-            "FROM system_.sys_proc_parse_ "                                                 \
+        "SELECT user_id, proc_oid AS obj_id, "                                              \
+               "object_type, status, proc_name AS obj_name "                                \
+        "FROM system_.sys_procedures_ "                                                     \
             "WHERE user_id != 1 "                                                           \
                   "AND proc_oid NOT IN "                                                    \
                   "( "                                                                      \
@@ -222,19 +220,16 @@
                                                                                             \
                         PROC_RELATED_PACKAGE                                                \
                   ") "                                                                      \
-        ") parse, system_.sys_procedures_ proc "                                            \
-        "WHERE parse.obj_id = proc.proc_oid "                                               \
                                                                                             \
         "UNION "                                                                            \
                                                                                             \
-        "SELECT a.user_id, a.view_id AS obj_id, a.seq_no, a.parse, "                        \
+        "SELECT b.user_id, b.view_id AS obj_id, "                                           \
                "CASE2( c.table_type = 'V', '2', c.table_type = 'A', '6' ) AS object_type, " \
                "b.status, c.table_name AS obj_name "                                        \
-        "FROM system_.sys_view_parse_ a, system_.sys_views_ b, system_.sys_tables_ c "      \
-        "WHERE a.view_id = b.view_id "                                                      \
-              "AND a.view_id = c.table_id "                                                 \
-              "AND a.user_id != 1 "                                                         \
-              "AND a.view_id NOT IN "                                                       \
+        "FROM system_.sys_views_ b, system_.sys_tables_ c "                                 \
+        "WHERE b.view_id = c.table_id "                                                     \
+              "AND b.user_id != 1 "                                                         \
+              "AND b.view_id NOT IN "                                                       \
               "( "                                                                          \
                     "SELECT DISTINCT a.view_id AS obj_id "                                  \
                     "FROM system_.sys_view_related_ a, system_.sys_tables_ b "              \
@@ -258,23 +253,20 @@
         GET_TOP_LEVEL_PACKAGE_QUERY                                                         \
     ") first, system_.sys_users_ name "                                                     \
     "WHERE first.user_id = name.user_id "                                                   \
-    "ORDER BY 2, 8, 4"
+    "ORDER BY 2, 6"
 
 // BUG-33503 The aexport was not considered about the function invalid.
 /* BUG-35151 aexport must consider materialized view dependency */
 /* BUG-36367 aexport must consider new objects, 'package' and 'library' */
 #define GET_TOP_LEVEL_OBJECT_QUERY                                                          \
     "SELECT first.user_id, name.user_name, "                                                \
-           "first.obj_id, first.seq_no, first.parse, "                                      \
+           "first.obj_id, "                                                                 \
            "first.object_type, first.status, first.obj_name "                               \
     "FROM "                                                                                 \
     "( "                                                                                    \
-        "SELECT parse.user_id, parse.obj_id, parse.seq_no, "                                \
-               "parse.parse, proc.object_type, proc.status, proc.proc_name AS obj_name "    \
-        "FROM "                                                                             \
-        "( "                                                                                \
-            "SELECT user_id, proc_oid AS obj_id, seq_no, parse "                            \
-            "FROM system_.sys_proc_parse_ "                                                 \
+        "SELECT user_id, proc_oid AS obj_id, "                                              \
+               "object_type, status, proc_name AS obj_name "                                \
+        "FROM system_.sys_procedures_ "                                                     \
             "WHERE user_id != 1 "                                                           \
                   "AND proc_oid NOT IN "                                                    \
                   "( "                                                                      \
@@ -296,18 +288,16 @@
                                                                                             \
                         PROC_RELATED_PACKAGE                                                \
                   ") "                                                                      \
-        ") parse, system_.sys_procedures_ proc "                                            \
-        "WHERE parse.obj_id = proc.proc_oid "                                               \
                                                                                             \
         "UNION "                                                                            \
                                                                                             \
-        "SELECT a.user_id, a.view_id AS obj_id, a.seq_no, a.parse, "                        \
+        "SELECT b.user_id, b.view_id AS obj_id, "                                           \
                "CASE2( c.table_type = 'V', '2', c.table_type = 'A', '6' ) AS object_type, " \
                "b.status, c.table_name AS obj_name "                                        \
-        "FROM system_.sys_view_parse_ a,system_.sys_views_ b, system_.sys_tables_ c "       \
-        "WHERE a.view_id = b.view_id "                                                      \
-              "AND a.view_id = c.table_id "                                                 \
-              "AND a.view_id NOT IN "                                                       \
+        "FROM system_.sys_views_ b, system_.sys_tables_ c "                                 \
+        "WHERE b.user_id != 1 "                                                             \
+              "AND b.view_id = c.table_id "                                                 \
+              "AND b.view_id NOT IN "                                                       \
               "( "                                                                          \
                     "SELECT DISTINCT a.view_id AS obj_id "                                  \
                     "FROM system_.sys_view_related_ a, system_.sys_tables_ b "              \
@@ -332,57 +322,61 @@
     ") first, system_.sys_users_ name "                                                     \
     "WHERE first.user_id = name.user_id "                                                   \
           "AND name.user_name =  ?  "                                                       \
-    "ORDER BY 2, 8, 4"
+    "ORDER BY 2, 6"
 
 /* BUG-36367 aexport must consider new objects, 'package' and 'library' */
 #define GET_PACKAGE_HIER_QUERY                                                              \
         "UNION "                                                                            \
                                                                                             \
-        "SELECT parse.user_id, parse.obj_id, parse.seq_no, "                                \
-               "parse.parse, "                                                              \
+        "SELECT user_id, package_oid AS obj_id, "                                           \
                "CASE2( pkg.package_type = 6, '7', pkg.package_type = 7, '8' ) AS object_type, " \
-               "parse.status, pkg.package_name AS obj_name "                                \
-        "FROM "                                                                             \
-             "( "                                                                           \
-                "SELECT a.user_id, a.package_oid AS obj_id, a.seq_no, a.parse, b.status "   \
-                "FROM system_.sys_package_parse_ a, system_.sys_packages_ b "               \
-                "WHERE a.package_oid = %"ID_INT64_FMT" "                                                  \
-                      "AND a.package_oid = b.package_oid "                                  \
-             ") parse, system_.sys_packages_ pkg "                                          \
-        "WHERE obj_id = pkg.package_oid "
+               "status, pkg.package_name AS obj_name "                                      \
+        "FROM system_.sys_packages_ pkg "                                                   \
+        "WHERE package_oid = %"ID_INT64_FMT" "
+
 #define GET_VIEWPROC_HIER_QUERY                                                             \
     "SELECT result.user_id, name.user_name, "                                               \
-           "result.obj_id, result.seq_no, result.parse, "                                   \
+           "result.obj_id, "                                                                \
            "result.object_type, result.status, result.obj_name "                            \
     "FROM "                                                                                 \
     "( "                                                                                    \
-        "SELECT parse.user_id, parse.obj_id, parse.seq_no, "                                \
-               "parse.parse, proc.object_type, parse.status, "                              \
+        "SELECT user_id, proc_oid AS obj_id, "                                              \
+               "proc.object_type, status, "                                                 \
                "proc.proc_name AS obj_name "                                                \
-        "FROM "                                                                             \
-        "( "                                                                                \
-            "SELECT a.user_id, a.proc_oid AS obj_id, a.seq_no, a.parse, b.status "          \
-            "FROM system_.sys_proc_parse_ a, system_.sys_procedures_ b "                    \
-            "WHERE a.proc_oid = %"ID_INT64_FMT" "                                                         \
-                  "AND a.proc_oid = b.proc_oid "                                            \
-        ") parse, system_.sys_procedures_ proc "                                            \
-        "WHERE obj_id = proc.proc_oid "                                                     \
+        "FROM system_.sys_procedures_ proc "                                                \
+        "WHERE proc_oid = %"ID_INT64_FMT" "                                                 \
                                                                                             \
         "UNION "                                                                            \
                                                                                             \
-        "SELECT a.user_id, a.view_id AS obj_id, a.seq_no, a.parse, "                        \
+        "SELECT b.user_id, b.view_id AS obj_id, "                                           \
                "CASE2( c.table_type = 'V', '2', c.table_type = 'A', '6' ) AS object_type, " \
                "b.status, c.table_name AS obj_name "                                        \
-        "FROM system_.sys_view_parse_ a, system_.sys_views_ b, system_.sys_tables_ c "      \
-        "WHERE a.view_id = %"ID_INT64_FMT" "                                                              \
-              "AND a.view_id = b.view_id "                                                  \
-              "AND a.view_id = c.table_id "                                                 \
+        "FROM system_.sys_views_ b, system_.sys_tables_ c "                                 \
+        "WHERE b.view_id = %"ID_INT64_FMT" "                                                \
+              "AND b.view_id = c.table_id "                                                 \
                                                                                             \
         GET_PACKAGE_HIER_QUERY                                                              \
     ") result, system_.sys_users_ name "                                                    \
     "WHERE result.user_id = name.user_id "                                                  \
     "ORDER BY 4"
 
+#define GET_PROC_PARSE                               \
+    "SELECT seq_no, parse "                          \
+    "FROM system_.sys_proc_parse_ "                  \
+    "WHERE proc_oid = %"ID_INT64_FMT" "              \
+    "ORDER BY seq_no"
+
+#define GET_VIEW_PARSE                               \
+    "SELECT seq_no, parse "                          \
+    "FROM system_.sys_view_parse_ "                  \
+    "WHERE view_id = %"ID_INT64_FMT" "               \
+    "ORDER BY seq_no"
+
+#define GET_PACKAGE_PARSE                            \
+    "SELECT seq_no, parse "                          \
+    "FROM system_.sys_package_parse_ "               \
+    "WHERE package_oid = %"ID_INT64_FMT" "           \
+    "ORDER BY seq_no"
 
 /* VIEW PROCEDURE 
  *
@@ -412,7 +406,7 @@ SQLRETURN getViewProcQuery( SChar *aUserName,
 
     IDE_TEST_RAISE( SQLAllocStmt( m_hdbc, &sConvStmt ) != SQL_SUCCESS, alloc_error );
 
-    /* USER Î™®Îìú Í≤ΩÏö∞ USER NAMEÏùÑ INT ÌòïÏúºÎ°ú Î≥ÄÌôò */
+    /* USER ∏µÂ ∞ÊøÏ USER NAME¿ª INT «¸¿∏∑Œ ∫Ø»Ø */
     idlOS::sprintf( sConvQuery, GET_USER_ID_QUERY );
 
     IDE_TEST( Prepare( sConvQuery, sConvStmt ) != SQL_SUCCESS );
@@ -606,8 +600,114 @@ void printParse(FILE  *aViewProcFp,
 }
 
 /*
- * VIEW, PROCEDURE, MATERIALIZED VIEW ÏùòÏ°¥ Í¥ÄÍ≥Ñ ÏóÜÏù¥ Ï°¥Ïû¨ ÌïòÎäî Í≤ΩÏö∞
- * ÏùòÏ°¥ Í¥ÄÍ≥ÑÏóêÏÑú LEVEL 0 Í≤ΩÏö∞
+ * BUG-47412 
+ *   EXECUTE_STMT_MEMORY ªÁøÎ¿ª ¡Ÿ¿Ãµµ∑œ PSM ∞¥√º∞£
+ *   dependency ∞ÀªÁ ƒı∏Æ∏¶ ºˆ¡§«ÿæﬂ «’¥œ¥Ÿ 
+ */
+SQLRETURN getViewProcParse( FILE  *aViewProcFp,
+                            SInt   aObjType,
+                            SLong  aObjId )
+{
+#define IDE_FN "getViewProcParse()"
+    SQLHSTMT     sStmt = SQL_NULL_HSTMT;
+    SQLRETURN    sRet;
+    SChar        sQuery[QUERY_LEN];
+    SInt         sSeqNo         = 0;
+    SChar        sParse[PARSE_LEN+1];
+    SChar        sDeferredParse[PARSE_LEN+1];
+    SQLLEN       sParseInd      = 0;
+
+    switch(aObjType)
+    {
+    case UTM_PROCEDURE:
+    case UTM_FUNCTION_PROCEDURE:
+        idlOS::sprintf( sQuery, GET_PROC_PARSE, aObjId );
+        break;
+    case UTM_VIEW:
+    case UTM_MVIEW:
+        idlOS::sprintf( sQuery, GET_VIEW_PARSE, aObjId );
+        break;
+    case UTM_PACKAGE_SPEC:
+    case UTM_PACKAGE_BODY:
+        idlOS::sprintf( sQuery, GET_PACKAGE_PARSE, aObjId );
+        break;
+    default:
+        return SQL_SUCCESS;
+    }
+
+    IDE_TEST_RAISE( SQLAllocStmt( m_hdbc, &sStmt )
+                                  != SQL_SUCCESS, alloc_error );
+    
+    IDE_TEST_RAISE(SQLExecDirect(sStmt, (SQLCHAR *)sQuery, SQL_NTS)
+            != SQL_SUCCESS, stmtError);  
+
+    IDE_TEST_RAISE( SQLBindCol( sStmt,
+                                1,
+                                SQL_C_SLONG,
+                                (SQLPOINTER)&sSeqNo,
+                                0,
+                                NULL ) != SQL_SUCCESS, stmtError );
+
+    IDE_TEST_RAISE( SQLBindCol( sStmt,
+                                2,
+                                SQL_C_CHAR,
+                                (SQLPOINTER)sParse,
+                                (SQLLEN)ID_SIZEOF( sParse ),
+                                &sParseInd ) != SQL_SUCCESS, stmtError );
+
+    sDeferredParse[0] = '\0'; /* BUG-46396 */
+
+    while ( ( sRet = SQLFetch( sStmt ) ) != SQL_NO_DATA )
+    {
+        IDE_TEST_RAISE( sRet != SQL_SUCCESS, stmtError );
+
+        if (sSeqNo > 1)
+        {
+            printParse(aViewProcFp,
+                       ID_FALSE, // rtrim or not
+                       sDeferredParse,
+                       aObjType);
+        }
+
+        /* BUG-46396 Need to rtrim the last parse */
+        idlOS::strcpy(sDeferredParse, sParse);
+    }
+
+    /* BUG-46396 Need to rtrim the last parse */
+    printParse(aViewProcFp,
+               ID_TRUE,
+               sDeferredParse,
+               aObjType);
+
+    /* BUG-46295 */
+    appendTerminator( aViewProcFp, aObjType );
+
+    FreeStmt( &sStmt );
+    
+    return SQL_SUCCESS;
+
+    IDE_EXCEPTION(alloc_error);
+    {
+        utmSetErrorMsgWithHandle(SQL_HANDLE_DBC, (SQLHANDLE)m_hdbc);
+    }
+    IDE_EXCEPTION(stmtError);
+    {
+        utmSetErrorMsgWithHandle(SQL_HANDLE_STMT, (SQLHANDLE)sStmt);
+    }
+    IDE_EXCEPTION_END;
+
+    if ( sStmt != SQL_NULL_HSTMT )
+    {
+        FreeStmt( &sStmt );
+    }
+    
+    return SQL_ERROR;
+#undef IDE_FN
+}
+
+/*
+ * VIEW, PROCEDURE, MATERIALIZED VIEW ¿«¡∏ ∞¸∞Ë æ¯¿Ã ¡∏¿Á «œ¥¬ ∞ÊøÏ
+ * ¿«¡∏ ∞¸∞Ëø°º≠ LEVEL 0 ∞ÊøÏ
  */
 SQLRETURN resultTopViewProcQuery( SChar *aUserName,
                                   FILE  *aViewProcFp,
@@ -620,24 +720,13 @@ SQLRETURN resultTopViewProcQuery( SChar *aUserName,
     SChar        sUserName[UTM_NAME_LEN+1];
     SChar        sObjName[UTM_NAME_LEN+1];
     SChar        sMViewName[UTM_NAME_LEN+1]; /* PROJ-2211 Materialized View */
-    SInt         sSeqNo         = 0;
-    SChar        sParse[PARSE_LEN+1];
-    SChar        sDeferredParse[PARSE_LEN+1];
     SInt         sUserId        = 0;
     SLong        sObjId         = 0;
     SInt         sObjType       = 0;
     SInt         sStatus        = 0;
     SQLLEN       sUserNameInd   = 0;
-    SQLLEN       sParseInd      = 0;
     SQLLEN       sObjNameInd    = 0;
-    SInt         sFirstFlag        = ID_TRUE;
-    SInt         sInvalidFlag      = ID_TRUE;
-    SInt         sPrevInvalidFlag  = ID_TRUE;
-    SInt         sPrevObjType   = 0;
-    SInt         sPrevUserId    = 0;
-    SLong        sPrevObjId     = 0;
     FILE        *sViewProcFp    = NULL;
-    FILE        *sPrevViewProcFp = NULL; /* BUG-46295 */
     SChar        sPasswd[STR_LEN];
 
     /* BUG-46292 */ 
@@ -691,33 +780,19 @@ SQLRETURN resultTopViewProcQuery( SChar *aUserName,
     IDE_TEST_RAISE( SQLBindCol( sResultStmt,
                                 4,
                                 SQL_C_SLONG,
-                                (SQLPOINTER)&sSeqNo,
-                                0,
-                                NULL ) != SQL_SUCCESS, stmtError );
-
-    IDE_TEST_RAISE( SQLBindCol( sResultStmt,
-                                5,
-                                SQL_C_CHAR,
-                                (SQLPOINTER)sParse,
-                                (SQLLEN)ID_SIZEOF( sParse ),
-                                &sParseInd ) != SQL_SUCCESS, stmtError );
-
-    IDE_TEST_RAISE( SQLBindCol( sResultStmt,
-                                6,
-                                SQL_C_SLONG,
                                 (SQLPOINTER)&sObjType,
                                 0,
                                 NULL ) != SQL_SUCCESS, stmtError );
 
     IDE_TEST_RAISE( SQLBindCol( sResultStmt,
-                                7,
+                                5,
                                 SQL_C_SLONG,
                                 (SQLPOINTER)&sStatus,
                                 0,
                                 NULL ) != SQL_SUCCESS, stmtError );
 
     IDE_TEST_RAISE( SQLBindCol( sResultStmt,
-                                8,
+                                6,
                                 SQL_C_CHAR,
                                 (SQLPOINTER)sObjName,
                                 (SQLLEN)ID_SIZEOF( sObjName ),
@@ -725,35 +800,20 @@ SQLRETURN resultTopViewProcQuery( SChar *aUserName,
 
     IDE_TEST( Execute( sResultStmt ) != SQL_SUCCESS );
 
-    sDeferredParse[0] = '\0'; /* BUG-46396 */
-
     while ( ( sRet = SQLFetch( sResultStmt ) ) != SQL_NO_DATA )
     {
         IDE_TEST_RAISE( sRet != SQL_SUCCESS, stmtError );
 
-        /* BUG-46396 Need to rtrim the last parse */
-        if (sFirstFlag != ID_TRUE)
-        {
-            printParse(sViewProcFp,
-                       ( sSeqNo == 1 )? ID_TRUE : ID_FALSE, // rtrim or not
-                       sDeferredParse,
-                       sObjType);
-        }
-
-        /* VIEW, PROCEDURE INVALIDÏù∏ Í≤ΩÏö∞ Í∞ÅÍ∞ÅÏùò Îã§Î•∏ ÌååÏùºÏóê WRITE Ìï® */
+        /* VIEW, PROCEDURE INVALID¿Œ ∞ÊøÏ ∞¢∞¢¿« ¥Ÿ∏• ∆ƒ¿œø° WRITE «‘ */
         if ( gProgOption.mbExistInvalidScript == ID_TRUE )
         {
             if ( sStatus == 0 ) // 0: valid, 1: invalid
             {
                 sViewProcFp = aViewProcFp;
-
-                sInvalidFlag = ID_TRUE;
             }
             else
             {
                 sViewProcFp = gFileStream.mInvalidFp;
-
-                sInvalidFlag = ID_FALSE;
             }
         }
         else
@@ -761,117 +821,79 @@ SQLRETURN resultTopViewProcQuery( SChar *aUserName,
             sViewProcFp = aViewProcFp;
         }
 
-        if ( sSeqNo == 1 )
+        IDE_TEST( getPasswd( sUserName, sPasswd ) != SQL_SUCCESS );
+
+        idlOS::fprintf( sViewProcFp, "connect \"%s\"/\"%s\";\n\n", sUserName, sPasswd );
+
+        /* BUG-36856 aexport writes wrong materialized view name on ALL_CRT_VIEW_PROC.sql */
+        /* PROJ-2211 Materialized View */
+        if ( sObjType == UTM_MVIEW )
         {
-            if ( sFirstFlag != ID_TRUE )
-            {
-                if ( gProgOption.mbExistInvalidScript == ID_TRUE )
-                {
-                    sPrevViewProcFp = sPrevInvalidFlag ? aViewProcFp : gFileStream.mInvalidFp;
-                }
-                else
-                {
-                    sPrevViewProcFp = sViewProcFp;
-                }
+            idlOS::fprintf( aRefreshMViewFp, "connect \"%s\"/\"%s\";\n", sUserName, sPasswd );
 
-                appendTerminator( sPrevViewProcFp, sPrevObjType ); /* BUG-46295 */ 
-                IDE_TEST( searchObjPrivQuery( sViewProcFp, sPrevObjType,
-                    sPrevUserId, sPrevObjId ) != SQL_SUCCESS );
+            /* View Nameø°º≠ $VIEW ¡¶∞≈ */
+            idlOS::memset( sMViewName, 0x00, ID_SIZEOF( sMViewName ) );
+            idlOS::memcpy( sMViewName, sObjName, idlOS::strlen( sObjName ) - UTM_MVIEW_VIEW_SUFFIX_SIZE );
+
+            idlOS::fprintf( aRefreshMViewFp, "EXEC REFRESH_MATERIALIZED_VIEW('%s', '%s');\n\n", sUserName, sMViewName );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        if ( gProgOption.mbExistDrop == ID_TRUE )
+        {
+            if ( sObjType == UTM_PROCEDURE )
+            {
+                idlOS::fprintf( sViewProcFp, "drop procedure \"%s\".\"%s\";\n", sUserName, sObjName );
             }
-
-            IDE_TEST( getPasswd( sUserName, sPasswd ) != SQL_SUCCESS );
-
-            idlOS::fprintf( sViewProcFp, "connect \"%s\"/\"%s\";\n\n", sUserName, sPasswd );
-
-            /* BUG-36856 aexport writes wrong materialized view name on ALL_CRT_VIEW_PROC.sql */
-            /* PROJ-2211 Materialized View */
-            if ( sObjType == UTM_MVIEW )
+            else if ( sObjType == UTM_FUNCTION_PROCEDURE )
             {
-                idlOS::fprintf( aRefreshMViewFp, "connect \"%s\"/\"%s\";\n", sUserName, sPasswd );
-
-                /* View NameÏóêÏÑú $VIEW Ï†úÍ±∞ */
-                idlOS::memset( sMViewName, 0x00, ID_SIZEOF( sMViewName ) );
-                idlOS::memcpy( sMViewName, sObjName, idlOS::strlen( sObjName ) - UTM_MVIEW_VIEW_SUFFIX_SIZE );
-
-                idlOS::fprintf( aRefreshMViewFp, "EXEC REFRESH_MATERIALIZED_VIEW('%s', '%s');\n\n", sUserName, sMViewName );
+                idlOS::fprintf( sViewProcFp, "drop function \"%s\".\"%s\";\n", sUserName, sObjName );
+            }
+            else if ( sObjType == UTM_VIEW )
+            {
+                idlOS::fprintf( sViewProcFp, "drop view \"%s\".\"%s\";\n", sUserName, sObjName );
+            }
+            else if ( sObjType == UTM_MVIEW ) /* PROJ-2211 Materialized View */
+            {
+                /* BUG-36856 aexport writes wrong materialized view name on ALL_CRT_VIEW_PROC.sql */
+                idlOS::fprintf( sViewProcFp, "drop materialized view \"%s\".\"%s\";\n", sUserName, sMViewName );
+            }
+            /* BUG-36367 aexport must consider new objects, 'package' and 'library' */
+            else if ( sObjType == UTM_PACKAGE_SPEC )
+            {
+                idlOS::fprintf( sViewProcFp, "drop package \"%s\".\"%s\";\n", sUserName, sObjName );
+            }
+            else if ( sObjType == UTM_PACKAGE_BODY )
+            {
+                idlOS::fprintf( sViewProcFp, "drop package body \"%s\".\"%s\";\n", sUserName, sObjName );
             }
             else
             {
                 /* Nothing to do */
             }
-
-            if ( gProgOption.mbExistDrop == ID_TRUE )
-            {
-                if ( sObjType == UTM_PROCEDURE )
-                {
-                    idlOS::fprintf( sViewProcFp, "drop procedure \"%s\".\"%s\";\n", sUserName, sObjName );
-                }
-                else if ( sObjType == UTM_FUNCTION_PROCEDURE )
-                {
-                    idlOS::fprintf( sViewProcFp, "drop function \"%s\".\"%s\";\n", sUserName, sObjName );
-                }
-                else if ( sObjType == UTM_VIEW )
-                {
-                    idlOS::fprintf( sViewProcFp, "drop view \"%s\".\"%s\";\n", sUserName, sObjName );
-                }
-                else if ( sObjType == UTM_MVIEW ) /* PROJ-2211 Materialized View */
-                {
-                    /* BUG-36856 aexport writes wrong materialized view name on ALL_CRT_VIEW_PROC.sql */
-                    idlOS::fprintf( sViewProcFp, "drop materialized view \"%s\".\"%s\";\n", sUserName, sMViewName );
-                }
-                /* BUG-36367 aexport must consider new objects, 'package' and 'library' */
-                else if ( sObjType == UTM_PACKAGE_SPEC )
-                {
-                    idlOS::fprintf( sViewProcFp, "drop package \"%s\".\"%s\";\n", sUserName, sObjName );
-                }
-                else if ( sObjType == UTM_PACKAGE_BODY )
-                {
-                    idlOS::fprintf( sViewProcFp, "drop package body \"%s\".\"%s\";\n", sUserName, sObjName );
-                }
-                else
-                {
-                    /* Nothing to do */
-                }
-            }
-
-            /* VIEW, PROCEDURE Ïóê ÎßàÏßÄÎßâ Ï¢ÖÎ£å Î¨∏Ïûê "/",";" Ï∂îÍ∞ÄÎ•º ÏúÑÌïòÏó¨ 
-             * ÏïûÏùò Í∞ùÏ≤¥Ïùò ÌÉÄÏûÖÏùÑ Íµ¨Ìï¥Ïò§Í≥† Ìï¥Îãπ Í∞ùÏ≤¥Ïùò Object Privilege
-             * Î•º Íµ¨ÌïòÍ∏∞ ÏúÑÌï¥ ÏïûÏùò Í∞ùÏ≤¥ Ï¶â Íµ¨ÌïòÍ≥†Ïûê ÌïòÎäî Í∞ùÏ≤¥Ïùò ObjId,
-             * UserId,ObjTypeÍ∞Ä  ÌïÑÏöî ÌïòÎã§ */
-
-            /* BUG-46292 */
-            sObjId = SQLBIGINT_TO_SLONG( sObjId2Bind );
-
-            sPrevUserId      = sUserId; 
-            sPrevObjId       = sObjId;
-            sPrevObjType     = sObjType;
-            sPrevInvalidFlag = sInvalidFlag;
         }
 
-        /* BUG-46396 Need to rtrim the last parse */
-        idlOS::strcpy(sDeferredParse, sParse);
+        /* VIEW, PROCEDURE ø° ∏∂¡ˆ∏∑ ¡æ∑· πÆ¿⁄ "/",";" √ﬂ∞°∏¶ ¿ß«œø© 
+         * æ’¿« ∞¥√º¿« ≈∏¿‘¿ª ±∏«ÿø¿∞Ì «ÿ¥Á ∞¥√º¿« Object Privilege
+         * ∏¶ ±∏«œ±‚ ¿ß«ÿ æ’¿« ∞¥√º ¡Ô ±∏«œ∞Ì¿⁄ «œ¥¬ ∞¥√º¿« ObjId,
+         * UserId,ObjType∞°  « ø‰ «œ¥Ÿ */
 
-        sFirstFlag = ID_FALSE;
-    }
+        /* BUG-46292 */
+        sObjId = SQLBIGINT_TO_SLONG( sObjId2Bind );
 
-    /* Fetch ÌõÑ ÎßàÏßÄÎßâ ÎÇ®ÏùÄ VIEW, PROCEDURE Ïóê ÎåÄÌïòÏó¨ OBJECT Í∂åÌïú Î∞è 
-     * Ï¢ÖÎ£å Î¨∏Ïûê Ï≤òÎ¶¨
-     * */
-    if ( sFirstFlag == ID_FALSE )
-    {
-        /* BUG-46396 Need to rtrim the last parse */
-        printParse(sViewProcFp,
-                   ID_TRUE,
-                   sDeferredParse,
-                   sObjType);
-
-        /* BUG-46295 */
-        appendTerminator( sViewProcFp, sPrevObjType );
+        /* BUG-47412 */
+        IDE_TEST( getViewProcParse( sViewProcFp,
+                                    sObjType,
+                                    sObjId ) != SQL_SUCCESS );
 
         IDE_TEST( searchObjPrivQuery( sViewProcFp,
-                                      sPrevObjType,
-                                      sPrevUserId,
-                                      sPrevObjId ) != SQL_SUCCESS );
+                                      sObjType,
+                                      sUserId,
+                                      sObjId ) != SQL_SUCCESS );
+
     }
 
     /* BUG-46295 */
@@ -910,7 +932,7 @@ SQLRETURN resultTopViewProcQuery( SChar *aUserName,
 #undef IDE_FN
 }
 
-/* view, procedure, MATERIALIZED VIEWÏùò Í≥ÑÏ∏µ ÏøºÎ¶¨Ïùò Í≤∞Í≥ºÎ•º Ï∂úÎ†• ÌïúÎã§.*/
+/* view, procedure, MATERIALIZED VIEW¿« ∞Ë√˛ ƒı∏Æ¿« ∞·∞˙∏¶ √‚∑¬ «—¥Ÿ.*/
 SQLRETURN resultViewProcQuery( FILE  *aViewProcFp,
                                FILE  *aRefreshMViewFp,
                                SLong  aObjId )
@@ -924,13 +946,9 @@ SQLRETURN resultViewProcQuery( FILE  *aViewProcFp,
     SChar        sMViewName[UTM_NAME_LEN+1]; /* PROJ-2211 Materialized View */
     SInt         sUserId        = 0;
     SLong        sObjId         = 0;
-    SInt         sSeqNo         = 0;
-    SChar        sParse[PARSE_LEN+1];
-    SChar        sDeferredParse[PARSE_LEN+1];
     SInt         sObjType       = 0;
     SInt         sStatus        = 0;
     SQLLEN       sUserNameInd   = 0;
-    SQLLEN       sParseInd      = 0;
     SQLLEN       sObjNameInd    = 0;
     FILE        *sViewProcFp    = NULL;
     SChar        sUserNameInSQL[UTM_NAME_LEN + 1]; /* BUG-45383 */
@@ -941,16 +959,10 @@ SQLRETURN resultViewProcQuery( FILE  *aViewProcFp,
 
     IDE_TEST_RAISE( SQLAllocStmt( m_hdbc, &sResultStmt ) != SQL_SUCCESS, alloc_error );
 
-    /* BUG-46292 */
-#ifdef ALTIBASE_PRODUCT_HDB
     idlOS::sprintf( sResultQuery, GET_VIEWPROC_HIER_QUERY, aObjId, aObjId, aObjId );
-#else
-    idlOS::sprintf( sResultQuery, GET_VIEWPROC_HIER_QUERY, aObjId, aObjId);
-#endif
 
     IDE_TEST_RAISE( SQLExecDirect(sResultStmt, (SQLCHAR *)sResultQuery, SQL_NTS)
-            != SQL_SUCCESS, stmtError);  
-    
+            != SQL_SUCCESS, stmtError);
 
     IDE_TEST_RAISE( SQLBindCol( sResultStmt,
                                 1,
@@ -976,33 +988,19 @@ SQLRETURN resultViewProcQuery( FILE  *aViewProcFp,
     IDE_TEST_RAISE( SQLBindCol( sResultStmt,
                                 4,
                                 SQL_C_SLONG,
-                                (SQLPOINTER)&sSeqNo,
-                                0,
-                                NULL ) != SQL_SUCCESS, stmtError );
-
-    IDE_TEST_RAISE( SQLBindCol( sResultStmt,
-                                5,
-                                SQL_C_CHAR,
-                                (SQLPOINTER)sParse,
-                                (SQLLEN)ID_SIZEOF( sParse ),
-                                &sParseInd ) != SQL_SUCCESS, stmtError );
-
-    IDE_TEST_RAISE( SQLBindCol( sResultStmt,
-                                6,
-                                SQL_C_SLONG,
                                 (SQLPOINTER)&sObjType,
                                 0,
                                 NULL ) != SQL_SUCCESS, stmtError );
 
     IDE_TEST_RAISE( SQLBindCol( sResultStmt,
-                                7,
+                                5,
                                 SQL_C_SLONG,
                                 (SQLPOINTER)&sStatus,
                                 0,
                                 NULL ) != SQL_SUCCESS, stmtError );
 
     IDE_TEST_RAISE( SQLBindCol( sResultStmt,
-                                8,
+                                6,
                                 SQL_C_CHAR,
                                 (SQLPOINTER)sObjName,
                                 (SQLLEN)ID_SIZEOF( sObjName ),
@@ -1011,22 +1009,11 @@ SQLRETURN resultViewProcQuery( FILE  *aViewProcFp,
     /* BUG-45383 */
     idlOS::strcpy( sUserNameInSQL, gProgOption.GetUserNameInSQL() );
 
-    sDeferredParse[0] = '\0'; /* BUG-46396 */
-
     while ( ( sRet = SQLFetch( sResultStmt ) ) != SQL_NO_DATA )
     {
         IDE_TEST_RAISE( sRet != SQL_SUCCESS, stmtError );
 
-        /* BUG-46396 Need to rtrim the last parse */
-        if ( sDeferredParse[0] != '\0' )
-        {
-            printParse(sViewProcFp,
-                       ID_FALSE,
-                       sDeferredParse,
-                       sObjType);
-        }
-
-        /* VIEW, PROCEDURE INVALIDÏù∏ Í≤ΩÏö∞ Í∞ÅÍ∞ÅÏùò Îã§Î•∏ ÌååÏùºÏóê WRITE Ìï® */
+        /* VIEW, PROCEDURE INVALID¿Œ ∞ÊøÏ ∞¢∞¢¿« ¥Ÿ∏• ∆ƒ¿œø° WRITE «‘ */
         if ( gProgOption.mbExistInvalidScript == ID_TRUE )
         {
             if ( sStatus == 0 ) // 0: valid, 1: invalid
@@ -1043,110 +1030,101 @@ SQLRETURN resultViewProcQuery( FILE  *aViewProcFp,
             sViewProcFp = aViewProcFp;
         }
 
-        if( sSeqNo == 1 )
+        // bug-34053: connection passwords in a psm file might be wrong
+        // if aexport is used in user mode
+        // ∫Ø∞Ê¿¸: ªÁøÎ¿⁄ ∏µÂ¿Œ ∞ÊøÏ, password∏¶ username¿∏∑Œ ºº∆√
+        // ∫Ø∞Ê»ƒ: ªÁøÎ¿⁄ ∏µÂ¿Œ ∞ÊøÏ, ∂«¥Ÿ∏• ªÁøÎ¿⁄ID¿Œ ∞ÊøÏø°∏∏
+        // password∏¶ username¿∏∑Œ ºº∆√ (cf)¥Ÿ∏• ªÁøÎ¿⁄ ∞¥√º∞° ¬¸¡∂)
+        // ex) aexport -u aaa -p pwd -> connect bbb/bbb in AAA_CRT_VIEW_PROC
+        /*
+         * BUG-45383 aexport∞° ªÁøÎ¿⁄ ∏µÂ∑Œ ∫‰ π◊ PSM ∞¥√º∏¶ ∞Àªˆ«“ ∂ß,
+         * ≈∏ ªÁøÎ¿⁄¿« ∫Òπ–π¯»£∏¶ √£¡ˆ ∏¯«ÿ ø°∑Ø∏¶ √‚∑¬«’¥œ¥Ÿ.
+         */
+        if ( ( idlOS::strcasecmp( sUserNameInSQL, (SChar *) UTM_STR_SYS ) == 0 )
+               || ( idlOS::strcmp( sUserNameInSQL, sUserName ) == 0 ) )
         {
-            // bug-34053: connection passwords in a psm file might be wrong
-            // if aexport is used in user mode
-            // Î≥ÄÍ≤ΩÏ†Ñ: ÏÇ¨Ïö©Ïûê Î™®ÎìúÏù∏ Í≤ΩÏö∞, passwordÎ•º usernameÏúºÎ°ú ÏÑ∏ÌåÖ
-            // Î≥ÄÍ≤ΩÌõÑ: ÏÇ¨Ïö©Ïûê Î™®ÎìúÏù∏ Í≤ΩÏö∞, ÎòêÎã§Î•∏ ÏÇ¨Ïö©ÏûêIDÏù∏ Í≤ΩÏö∞ÏóêÎßå
-            // passwordÎ•º usernameÏúºÎ°ú ÏÑ∏ÌåÖ (cf)Îã§Î•∏ ÏÇ¨Ïö©Ïûê Í∞ùÏ≤¥Í∞Ä Ï∞∏Ï°∞)
-            // ex) aexport -u aaa -p pwd -> connect bbb/bbb in AAA_CRT_VIEW_PROC
-            /*
-             * BUG-45383 aexportÍ∞Ä ÏÇ¨Ïö©Ïûê Î™®ÎìúÎ°ú Î∑∞ Î∞è PSM Í∞ùÏ≤¥Î•º Í≤ÄÏÉâÌï† Îïå,
-             * ÌÉÄ ÏÇ¨Ïö©ÏûêÏùò ÎπÑÎ∞ÄÎ≤àÌò∏Î•º Ï∞æÏßÄ Î™ªÌï¥ ÏóêÎü¨Î•º Ï∂úÎ†•Ìï©ÎãàÎã§.
-             */
-            if ( ( idlOS::strcasecmp( sUserNameInSQL, (SChar *) UTM_STR_SYS ) == 0 )
-                   || ( idlOS::strcmp( sUserNameInSQL, sUserName ) == 0 ) )
+            IDE_TEST( getPasswd( sUserName, sPasswd ) != SQL_SUCCESS );
+        }
+        else
+        {
+            idlOS::strcpy( sPasswd, sUserName );
+        }
+        
+        idlOS::fprintf( sViewProcFp, "\nconnect \"%s\"/\"%s\";\n\n", sUserName, sPasswd );
+
+        /* BUG-36856 aexport writes wrong materialized view name on ALL_CRT_VIEW_PROC.sql */
+        if ( sObjType == UTM_MVIEW )
+        {
+            idlOS::fprintf( aRefreshMViewFp, "connect \"%s\"/\"%s\";\n", sUserName, sPasswd );
+        }
+
+        /* BUG-36856 aexport writes wrong materialized view name on ALL_CRT_VIEW_PROC.sql */
+        /* PROJ-2211 Materialized View */
+        if ( sObjType == UTM_MVIEW )
+        {
+
+            /* View Nameø°º≠ $VIEW ¡¶∞≈ */
+            idlOS::memset( sMViewName, 0x00, ID_SIZEOF( sMViewName ) );
+            idlOS::memcpy( sMViewName, sObjName, idlOS::strlen( sObjName ) - UTM_MVIEW_VIEW_SUFFIX_SIZE );
+
+            idlOS::fprintf( aRefreshMViewFp, "EXEC REFRESH_MATERIALIZED_VIEW('%s', '%s');\n\n", sUserName, sMViewName );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        if ( gProgOption.mbExistDrop == ID_TRUE )
+        {
+            if ( sObjType == UTM_PROCEDURE )
             {
-                IDE_TEST( getPasswd( sUserName, sPasswd ) != SQL_SUCCESS );
+                idlOS::fprintf( sViewProcFp, "drop procedure \"%s\".\"%s\";\n", sUserName, sObjName );
             }
-            else
+            else if ( sObjType == UTM_FUNCTION_PROCEDURE )
             {
-                idlOS::strcpy( sPasswd, sUserName );
+                idlOS::fprintf( sViewProcFp, "drop function \"%s\".\"%s\";\n", sUserName, sObjName );
             }
-            
-            idlOS::fprintf( sViewProcFp, "\nconnect \"%s\"/\"%s\";\n\n", sUserName, sPasswd );
-
-            /* BUG-36856 aexport writes wrong materialized view name on ALL_CRT_VIEW_PROC.sql */
-            if ( sObjType == UTM_MVIEW )
+            else if ( sObjType == UTM_VIEW )
             {
-                idlOS::fprintf( aRefreshMViewFp, "connect \"%s\"/\"%s\";\n", sUserName, sPasswd );
+                idlOS::fprintf( sViewProcFp, "drop view \"%s\".\"%s\";\n", sUserName, sObjName );
             }
-
-            /* BUG-36856 aexport writes wrong materialized view name on ALL_CRT_VIEW_PROC.sql */
-            /* PROJ-2211 Materialized View */
-            if ( sObjType == UTM_MVIEW )
+            else if ( sObjType == UTM_MVIEW ) /* PROJ-2211 Materialized View */
             {
-
-                /* View NameÏóêÏÑú $VIEW Ï†úÍ±∞ */
-                idlOS::memset( sMViewName, 0x00, ID_SIZEOF( sMViewName ) );
-                idlOS::memcpy( sMViewName, sObjName, idlOS::strlen( sObjName ) - UTM_MVIEW_VIEW_SUFFIX_SIZE );
-
-                idlOS::fprintf( aRefreshMViewFp, "EXEC REFRESH_MATERIALIZED_VIEW('%s', '%s');\n\n", sUserName, sMViewName );
+                /* BUG-36856 aexport writes wrong materialized view name on ALL_CRT_VIEW_PROC.sql */
+                idlOS::fprintf( sViewProcFp, "drop materialized view \"%s\".\"%s\";\n", sUserName, sMViewName );
+            }
+            /* BUG-36367 aexport must consider new objects, 'package' and 'library' */
+            else if( sObjType == UTM_PACKAGE_SPEC )
+            {
+                idlOS::fprintf( sViewProcFp, "drop package \"%s\".\"%s\";\n", sUserName, sObjName );
+            }
+            else if( sObjType == UTM_PACKAGE_BODY )
+            {
+                idlOS::fprintf( sViewProcFp, "drop package body \"%s\".\"%s\";\n", sUserName, sObjName );
             }
             else
             {
                 /* Nothing to do */
             }
-
-            if ( gProgOption.mbExistDrop == ID_TRUE )
-            {
-                if ( sObjType == UTM_PROCEDURE )
-                {
-                    idlOS::fprintf( sViewProcFp, "drop procedure \"%s\".\"%s\";\n", sUserName, sObjName );
-                }
-                else if ( sObjType == UTM_FUNCTION_PROCEDURE )
-                {
-                    idlOS::fprintf( sViewProcFp, "drop function \"%s\".\"%s\";\n", sUserName, sObjName );
-                }
-                else if ( sObjType == UTM_VIEW )
-                {
-                    idlOS::fprintf( sViewProcFp, "drop view \"%s\".\"%s\";\n", sUserName, sObjName );
-                }
-                else if ( sObjType == UTM_MVIEW ) /* PROJ-2211 Materialized View */
-                {
-                    /* BUG-36856 aexport writes wrong materialized view name on ALL_CRT_VIEW_PROC.sql */
-                    idlOS::fprintf( sViewProcFp, "drop materialized view \"%s\".\"%s\";\n", sUserName, sMViewName );
-                }
-                /* BUG-36367 aexport must consider new objects, 'package' and 'library' */
-                else if( sObjType == UTM_PACKAGE_SPEC )
-                {
-                    idlOS::fprintf( sViewProcFp, "drop package \"%s\".\"%s\";\n", sUserName, sObjName );
-                }
-                else if( sObjType == UTM_PACKAGE_BODY )
-                {
-                    idlOS::fprintf( sViewProcFp, "drop package body \"%s\".\"%s\";\n", sUserName, sObjName );
-                }
-                else
-                {
-                    /* Nothing to do */
-                }
-            }
         }
 
-        /* BUG-46396 Need to rtrim the last parse */
-        idlOS::strcpy(sDeferredParse, sParse);
+        /* BUG-46292 */
+        sObjId = SQLBIGINT_TO_SLONG( sObjId2Bind );
+
+        /* BUG-47412 */
+        IDE_TEST( getViewProcParse( sViewProcFp,
+                                    sObjType,
+                                    sObjId ) != SQL_SUCCESS );
+
+        IDE_TEST( searchObjPrivQuery( sViewProcFp,
+                                      sObjType,
+                                      sUserId,
+                                      sObjId ) != SQL_SUCCESS );
+
     }
-
-    /* BUG-46396 Need to rtrim the last parse */
-    printParse(sViewProcFp,
-               ID_TRUE,
-               sDeferredParse,
-               sObjType);
-
-    /* BUG-46295 */
-    appendTerminator( sViewProcFp, sObjType );
 
     idlOS::fflush( sViewProcFp );
     idlOS::fflush( aRefreshMViewFp );
-
-    /* BUG-46292 */
-    sObjId = SQLBIGINT_TO_SLONG( sObjId2Bind );
-
-    IDE_TEST( searchObjPrivQuery( sViewProcFp,
-                                  sObjType,
-                                  sUserId,
-                                  sObjId ) != SQL_SUCCESS );
 
     // BUG-33995 aexport have wrong free handle code
     FreeStmt( &sResultStmt );
@@ -1182,8 +1160,8 @@ void appendTerminator( FILE  *aViewProcFp,
 {
 #define IDE_FN "appendTerminator()"
 
-    if ( ( aObjType == UTM_VIEW ) ||
-         ( aObjType == UTM_MVIEW ) ) /* PROJ-2211 Materialized View */
+    if ( ( aObjType == UTM_VIEW )
+        || ( aObjType == UTM_MVIEW ) ) /* PROJ-2211 Materialized View */
     {
         // SQL Terminator
         idlOS::fprintf( aViewProcFp, "\n;\n\n" );

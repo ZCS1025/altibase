@@ -26,8 +26,8 @@ ACI_RC ulnSFID_85(ulnFnContext *aFnContext)
     if(aFnContext->mWhere == ULN_STATE_EXIT_POINT)
     {
         /*
-         * Îπ†Ï†∏ÎÇòÍ∞à Îïå SQL_SUCCESS Î•º Î¶¨ÌÑ¥Ìï† Í≤ΩÏö∞, Ï¶â, Ïó∞Í≤∞Ïù¥ ÏÑ±Í≥µÌïú Í≤ΩÏö∞
-         * Connected ÏÉÅÌÉú (4Î≤à ÏÉÅÌÉú) Î°ú ÏÉÅÌÉú Ï†ÑÏù¥Î•º ÌïúÎã§.
+         * ∫¸¡Æ≥™∞• ∂ß SQL_SUCCESS ∏¶ ∏Æ≈œ«“ ∞ÊøÏ, ¡Ô, ø¨∞·¿Ã º∫∞¯«— ∞ÊøÏ
+         * Connected ªÛ≈¬ (4π¯ ªÛ≈¬) ∑Œ ªÛ≈¬ ¿¸¿Ã∏¶ «—¥Ÿ.
          */
         if(SQL_SUCCEEDED(ULN_FNCONTEXT_GET_RC(aFnContext)) != 0)
         {
@@ -232,9 +232,9 @@ SQLRETURN ulnConnect(ulnDbc       *aDbc,
     }
 
     /*
-     * User Profile (odbc.ini, registry Îì±) ÏùÑ Ïù¥Ïö©Ìïú DBC Attribute ÏÑ∏ÌåÖ
+     * User Profile (odbc.ini, registry µÓ) ¿ª ¿ÃøÎ«— DBC Attribute ºº∆√
      *
-     * cli Î•º ÏßÅÏ†ë Ïì∏ Í≤ΩÏö∞ ÏïÑÎ¨¥Í≤ÉÎèÑ ÏïàÌïòÎäî ÎçîÎØ∏ Ìï®Ïàò Ìò∏Ï∂ú
+     * cli ∏¶ ¡˜¡¢ æµ ∞ÊøÏ æ∆π´∞Õµµ æ»«œ¥¬ ¥ıπÃ «‘ºˆ »£√‚
      */
 
     ACI_TEST(ulnSetConnAttrByProfileFunc(&sFnContext,
@@ -244,9 +244,43 @@ SQLRETURN ulnConnect(ulnDbc       *aDbc,
     // fix BUG-19631
     ACI_TEST_RAISE( (aDbc->mUserName == NULL || aDbc->mPassword == NULL), LABEL_INVALID_USE_OF_NULL );
 
+    /* BUG-47327 */
+#ifdef COMPILE_SHARDCLI
+    /* BUG-45707 */
+    ulsdDbcSetShardCli( aDbc, ULSD_SHARD_CLIENT_TRUE );
+
+    aDbc->mShardDbcCxt.mTargetShardMetaNumber = 0UL;
+
+    ulnDbcSetShardMetaNumber( aDbc, 0 );
+
+    /* BUG-47272 */
+    if ( aDbc->mShardDbcCxt.mShardSessionType == ULSD_SESSION_TYPE_LIB )
+    {
+        ACI_TEST( ulsdSetConnAttrForLibConn( &sFnContext ) != ACI_SUCCESS );
+    }
+#endif /* COMPILE_SHARDCLI */
+
+    ulsdInitDistTxInfo(aDbc);  /* PROJ-2733-DistTxInfo */
+
+    /* TASK-7219 Non-shard DML */
+    ulnDbcInitStmtExecSeqForShardTx(aDbc);
+
     ACI_TEST( ulnFailoverBuildServerList(&sFnContext) != ACI_SUCCESS );
 
     ACI_TEST( ulnConnectCore(aDbc, &sFnContext) != ACI_SUCCESS );
+
+#ifdef COMPILE_SHARDCLI
+    // shard connection Ω«∆–Ω√
+    // sFnContext ø° SQL_SUCCESS_WITH_INFO ∏¶ ºº∆√«œ∞Ì SQL_ERROR ∏¶ π›»Ø
+    ACI_TEST( !SQL_SUCCEEDED( ulsdModuleNodeConnect( aDbc,
+                                                     &sFnContext,
+                                                     aServerName,
+                                                     aServerNameLength,
+                                                     aUserName,
+                                                     aUserNameLength,
+                                                     aPassword,
+                                                     aPasswordLength ) ) );
+#endif /* COMPILE_SHARDCLI */
 
     /*
      * ===========================
@@ -277,7 +311,7 @@ SQLRETURN ulnConnect(ulnDbc       *aDbc,
 
     /*
      * Note : to sjkim :
-     *        DBC Ïùò Î©îÎ™®Î¶¨Îäî SQLFreeHandle(DBC) Î•º Ìò∏Ï∂úÌïòÎ©¥ÏÑú Ìï¥Ï†úÎê©ÎãàÎã§ - shawn
+     *        DBC ¿« ∏ﬁ∏∏Æ¥¬ SQLFreeHandle(DBC) ∏¶ »£√‚«œ∏Èº≠ «ÿ¡¶µÀ¥œ¥Ÿ - shawn
      */
 
     ULN_IS_FLAG_UP(sNeedExit)
@@ -291,5 +325,3 @@ SQLRETURN ulnConnect(ulnDbc       *aDbc,
 
     return ULN_FNCONTEXT_GET_RC(&sFnContext);
 }
-
-

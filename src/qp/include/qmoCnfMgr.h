@@ -16,17 +16,17 @@
  
 
 /***********************************************************************
- * $Id: qmoCnfMgr.h 82490 2018-03-16 00:17:55Z donovan.seo $
+ * $Id: qmoCnfMgr.h 86122 2019-09-04 07:20:21Z donovan.seo $
  *
  * Description :
  *     CNF Critical Path Manager
  *
- *     CNF Normalized Formì— ëŒ€í•œ ìµœì í™”ë¥¼ ìˆ˜í–‰í•˜ê³ 
- *     í•´ë‹¹ Graphë¥¼ ìƒì„±í•œë‹¤.
+ *     CNF Normalized Form¿¡ ´ëÇÑ ÃÖÀûÈ­¸¦ ¼öÇàÇÏ°í
+ *     ÇØ´ç Graph¸¦ »ı¼ºÇÑ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -40,26 +40,26 @@
 //---------------------------------------------------------
 // [PROJ-1352] JOIN SELECTIVITY THRESHOLD
 //
-// Join Selectivityê°€ ì•„ì£¼ ì‘ì•„ì§€ë©´, join selectivityë§Œìœ¼ë¡œ
-// í‰ê°€í•˜ëŠ” ê²ƒì€ ë¬¸ì œê°€ ìˆë‹¤ (TPC-H 21).
-// ì´ë¥¼ ë³´ì™„í•˜ê¸° ìœ„í•˜ì—¬ íŠ¹ì • threshold ì´í•˜ì¸ ê²½ìš°ì— í•œí•´ì„œëŠ”
-// Output record countë¥¼ ë°˜ì˜í•˜ì—¬ì•¼ í•œë‹¤.
+// Join Selectivity°¡ ¾ÆÁÖ ÀÛ¾ÆÁö¸é, join selectivity¸¸À¸·Î
+// Æò°¡ÇÏ´Â °ÍÀº ¹®Á¦°¡ ÀÖ´Ù (TPC-H 21).
+// ÀÌ¸¦ º¸¿ÏÇÏ±â À§ÇÏ¿© Æ¯Á¤ threshold ÀÌÇÏÀÎ °æ¿ì¿¡ ÇÑÇØ¼­´Â
+// Output record count¸¦ ¹İ¿µÇÏ¿©¾ß ÇÑ´Ù.
 //
-// Join Selectivityì˜ ì˜ë¯¸ íŒŒì•…
+// Join SelectivityÀÇ ÀÇ¹Ì ÆÄ¾Ç
 //    [0.5]  : 100 JOIN 100 ==> 100
-//             WHERE T1.i1 = T2.i1 ì™€ ê°™ì´
-//             T1.i1 ê³¼ T2.i1ì— ì¤‘ë³µì´ ì—†ê³ , 1 : 1 ë¡œ ë§¤í•‘ë˜ëŠ” ê²½ìš°ì„
-//             ì•„ì£¼ íš¨ìœ¨ì ì¸ ì£ ì¸ ì¡°ê±´ì´ ìˆëŠ” ê²½ìš°ì„
+//             WHERE T1.i1 = T2.i1 ¿Í °°ÀÌ
+//             T1.i1 °ú T2.i1¿¡ Áßº¹ÀÌ ¾ø°í, 1 : 1 ·Î ¸ÅÇÎµÇ´Â °æ¿ìÀÓ
+//             ¾ÆÁÖ È¿À²ÀûÀÎ ÁÒÀÎ Á¶°ÇÀÌ ÀÖ´Â °æ¿ìÀÓ
 //    [0.1]  : 100 JOIN 100 ==> 20
-//             WHERE T1.i1 = T2.i1 AND T1.i2 > ? ê³¼ ê°™ì´
-//             [0.5] ì¸ ê²½ìš°ì˜ ì¡°ê±´ì— ì¼ì • ë¶€ë¶„(1/3~1/5)
-//             ê±¸ëŸ¬ ì£¼ëŠ” ì¡°ê±´ì´ ì¶”ê°€ëœ ê²½ìš°ì„.
+//             WHERE T1.i1 = T2.i1 AND T1.i2 > ? °ú °°ÀÌ
+//             [0.5] ÀÎ °æ¿ìÀÇ Á¶°Ç¿¡ ÀÏÁ¤ ºÎºĞ(1/3~1/5)
+//             °É·¯ ÁÖ´Â Á¶°ÇÀÌ Ãß°¡µÈ °æ¿ìÀÓ.
 //    [0.05] : 100 JOIN 100 ==> 10
-//             WHERE T1.i1 = T2.i1 AND T1.I2 = ? ê³¼ ê°™ì´
-//             [0.5] ì¸ ê²½ìš°ì˜ ì¡°ê±´ì— ìƒë‹¹ ë¶€ë¶„(1/10)ì„
-//             ê±¸ëŸ¬ ì£¼ëŠ” ì¡°ê±´ì´ ì¶”ê°€ëœ ê²½ìš°ì„
+//             WHERE T1.i1 = T2.i1 AND T1.I2 = ? °ú °°ÀÌ
+//             [0.5] ÀÎ °æ¿ìÀÇ Á¶°Ç¿¡ »ó´ç ºÎºĞ(1/10)À»
+//             °É·¯ ÁÖ´Â Á¶°ÇÀÌ Ãß°¡µÈ °æ¿ìÀÓ
 //---------------------------------------------------------
-// PROJ-1718 Semi/anti joinì„ ì¶”ê°€í•œ ê²°ê³¼ 0.1ì¼ ë•Œ ì„±ëŠ¥ì´ ë” ì¢‹ë‹¤.
+// PROJ-1718 Semi/anti joinÀ» Ãß°¡ÇÑ °á°ú 0.1ÀÏ ¶§ ¼º´ÉÀÌ ´õ ÁÁ´Ù.
 #define QMO_JOIN_SELECTIVITY_THRESHOLD           (0.1)
 
 // PROJ-1718 Subquery unnesting
@@ -71,7 +71,7 @@ enum qmoJoinRelationType
 };
 
 //------------------------------------------------------
-// Table Order ì •ë³´ë¥¼ í‘œí˜„í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+// Table Order Á¤º¸¸¦ Ç¥ÇöÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
 //------------------------------------------------------
 typedef struct qmoTableOrder
 {
@@ -89,7 +89,7 @@ typedef enum qmoPushApplicableType
 } qmoPushApplicableType;
 
 //-------------------------------------------------------
-// Join Relationì„ ë‚˜íƒ€ë‚´ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+// Join RelationÀ» ³ªÅ¸³»±â À§ÇÑ ÀÚ·á ±¸Á¶
 //-------------------------------------------------------
 
 typedef struct qmoJoinRelation
@@ -98,64 +98,64 @@ typedef struct qmoJoinRelation
     qmoJoinRelation     * next;
 
     // PROJ-1718 Subquery unnesting
-    // Semi/anti joinì˜ ê²½ìš° join typeê³¼ ë°©í–¥ì„ ë‚˜íƒ€ë‚¸ë‹¤.
+    // Semi/anti joinÀÇ °æ¿ì join type°ú ¹æÇâÀ» ³ªÅ¸³½´Ù.
     qmoJoinRelationType   joinType;
     UShort                innerRelation;
 } qmoJoinRelation;
 
 //----------------------------------------------------
-// Join Groupì„ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+// Join GroupÀ» °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
 //----------------------------------------------------
 
 typedef struct qmoJoinGroup
 {
     qmoPredicate        * joinPredicate;    // join predicate
 
-    // join ê´€ê³„ì— ìˆëŠ” tableë“¤ì˜ dependenciesë¥¼ ORing í•œ ê°’
+    // join °ü°è¿¡ ÀÖ´Â tableµéÀÇ dependencies¸¦ ORing ÇÑ °ª
     qmoJoinRelation     * joinRelation;     // linked list
-    UInt                  joinRelationCnt;  // join graph ìƒì„± ì‹œ í•„ìš”
+    UInt                  joinRelationCnt;  // join graph »ı¼º ½Ã ÇÊ¿ä
 
-    // join group ë‚´ì˜ ëª¨ë“  tableë“¤ì˜ dependenciesë¥¼ ORing í•œ ê°’
+    // join group ³»ÀÇ ¸ğµç tableµéÀÇ dependencies¸¦ ORing ÇÑ °ª
     qcDepInfo             depInfo;
 
-    // join orderingì´ ëë‚œ í›„, top graphë¥¼ pointing
+    // join orderingÀÌ ³¡³­ ÈÄ, top graph¸¦ pointing
     qmgGraph            * topGraph;
 
     //--------------------------------------------------------
-    // Base Graph ê´€ë ¨ ìë£Œ êµ¬ì¡°
+    // Base Graph °ü·Ã ÀÚ·á ±¸Á¶
     //-------------------------------------------------------
-    UInt                  baseGraphCnt;    // baseGraph ê°œìˆ˜
-    qmgGraph           ** baseGraph;       // baseGraph pointer ì €ì¥í•  ë°°ì—´
-
+    UInt                  baseGraphCnt;    // baseGraph °³¼ö
+    qmgGraph           ** baseGraph;       // baseGraph pointer ÀúÀåÇÒ ¹è¿­
+    idBool                mIsOnlyNL;
 } qmoJoinGroup;
 
 
 //---------------------------------------------------
-// CNF Critical Pathë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+// CNF Critical Path¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
 //---------------------------------------------------
 
 typedef struct qmoCNF
 {
-    qtcNode       * normalCNF;   // whereì ˆì„ CNFë¡œ normalizeí•œ ê²°ê³¼
-    qtcNode       * nnfFilter;   // NNF Filterì˜ ì§€ì›, PR-12743
+    qtcNode       * normalCNF;   // whereÀıÀ» CNF·Î normalizeÇÑ °á°ú
+    qtcNode       * nnfFilter;   // NNF FilterÀÇ Áö¿ø, PR-12743
 
-    qmsQuerySet   * myQuerySet;  // í•´ë‹¹ query setì„ ê°€ë¦¬í‚´
-    qmgGraph      * myGraph;     // CNF Form ê²°ê³¼ graphì˜ top
+    qmsQuerySet   * myQuerySet;  // ÇØ´ç query setÀ» °¡¸®Å´
+    qmgGraph      * myGraph;     // CNF Form °á°ú graphÀÇ top
     SDouble         cost;        // CNF Total Cost
 
-    // fromì˜ dependencies ê°’ì„ ë³µì‚¬í•´ì„œ ê°€ì§„ë‹¤.
+    // fromÀÇ dependencies °ªÀ» º¹»çÇØ¼­ °¡Áø´Ù.
     qcDepInfo       depInfo;
 
     //-------------------------------------------------------------------
-    // Predicate ê´€ë ¨ ìë£Œ êµ¬ì¡°
+    // Predicate °ü·Ã ÀÚ·á ±¸Á¶
     //
-    // constantPredicate : FROM ì ˆê³¼ ê´€ê³„ì—†ëŠ” predicate ì •ë³´
+    // constantPredicate : FROM Àı°ú °ü°è¾ø´Â predicate Á¤º¸
     //                     ex) 1 = 1
-    // oneTablePredicate : FROM ì ˆì— ì¡´ì¬í•˜ëŠ” ê°œë…ìƒ table ì¤‘ ì˜¤ì§ í•˜ë‚˜ì˜
-    //                     tableê³¼ ê´€ë ¨ëœ predicate
+    // oneTablePredicate : FROM Àı¿¡ Á¸ÀçÇÏ´Â °³³ä»ó table Áß ¿ÀÁ÷ ÇÏ³ªÀÇ
+    //                     table°ú °ü·ÃµÈ predicate
     //                     ex) T1.I1 = 1
-    // joinPredicate     : FROM ì ˆì— ì¡´ì¬í•˜ëŠ” ê°œë…ìƒ table ì¤‘ ë‘ê°œ ì´ìƒì˜
-    //                     tableê³¼ ê´€ë ¨ëœ predicate
+    // joinPredicate     : FROM Àı¿¡ Á¸ÀçÇÏ´Â °³³ä»ó table Áß µÎ°³ ÀÌ»óÀÇ
+    //                     table°ú °ü·ÃµÈ predicate
     //                     ex) T1.I1 = T2.I1
     // levelPredicate    : level predicate
     //                     ex) level = 1
@@ -168,18 +168,18 @@ typedef struct qmoCNF
     qmoPredicate  * connectByRownumPred;
 
     //-------------------------------------------------------
-    // Base Graph ê´€ë ¨ ìë£Œ êµ¬ì¡°
+    // Base Graph °ü·Ã ÀÚ·á ±¸Á¶
     //-------------------------------------------------------
 
-    UInt            graphCnt4BaseTable;    // baseGraph ê°œìˆ˜
-    qmgGraph     ** baseGraph;             // baseGraph pointerë¥¼ ì €ì¥í•  ë°°ì—´
+    UInt            graphCnt4BaseTable;    // baseGraph °³¼ö
+    qmgGraph     ** baseGraph;             // baseGraph pointer¸¦ ÀúÀåÇÒ ¹è¿­
 
     //------------------------------------------------------
-    // Join Group ê´€ë ¨ ìë£Œ êµ¬ì¡°
+    // Join Group °ü·Ã ÀÚ·á ±¸Á¶
     //
-    //   - maxJoinGroupCnt : ìµœëŒ€ joinGroupCnt = graphCnt4BaseTable
-    //   - joinGroupCnt    : ì‹¤ì œ joinGroupCnt
-    //   - joinGroup       : joinGroup ë°°ì—´
+    //   - maxJoinGroupCnt : ÃÖ´ë joinGroupCnt = graphCnt4BaseTable
+    //   - joinGroupCnt    : ½ÇÁ¦ joinGroupCnt
+    //   - joinGroup       : joinGroup ¹è¿­
     //------------------------------------------------------
 
     UInt            maxJoinGroupCnt;
@@ -187,12 +187,12 @@ typedef struct qmoCNF
     qmoJoinGroup  * joinGroup;
 
     //-------------------------------------------------------------------
-    // Table Order ì •ë³´
-    //    - tableCnt : table ê°œìˆ˜
-    //      outer joinì´ ì—†ëŠ” ê²½ìš° : graphCnt4BaseTableê³¼ ë™ì¼í•œ ê°’ì„ ê°€ì§
-    //      outer joinì´ ìˆëŠ” ê²½ìš° : outer joinì— ì°¸ê°€í•˜ëŠ” ëª¨ë“  table ê°œìˆ˜
-    //                               í¬í•¨í•˜ë¯€ë¡œ graphCnt4BaseTableë³´ê°€ í¼
-    //   - tableOrder : table ìˆœì„œ
+    // Table Order Á¤º¸
+    //    - tableCnt : table °³¼ö
+    //      outer joinÀÌ ¾ø´Â °æ¿ì : graphCnt4BaseTable°ú µ¿ÀÏÇÑ °ªÀ» °¡Áü
+    //      outer joinÀÌ ÀÖ´Â °æ¿ì : outer join¿¡ Âü°¡ÇÏ´Â ¸ğµç table °³¼ö
+    //                               Æ÷ÇÔÇÏ¹Ç·Î graphCnt4BaseTableº¸°¡ Å­
+    //   - tableOrder : table ¼ø¼­
     //-------------------------------------------------------------------
 
     UInt            tableCnt;
@@ -200,11 +200,11 @@ typedef struct qmoCNF
 
     // BUG-34295 Join ordering ANSI style query
     qmgGraph      * outerJoinGraph;
-
+    idBool          mIsOnlyNL;
 } qmoCNF;
 
 //----------------------------------------------------------
-// CNF Critical Pathë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+// CNF Critical Path¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
 //----------------------------------------------------------
 
 class qmoCnfMgr
@@ -212,17 +212,17 @@ class qmoCnfMgr
 public:
 
     //-----------------------------------------------------
-    // CNF Critical Path ìƒì„± ë° ì´ˆê¸°í™”
+    // CNF Critical Path »ı¼º ¹× ÃÊ±âÈ­
     //-----------------------------------------------------
 
-    // ì¼ë°˜ qmoCNFì˜ ì´ˆê¸°í™”
+    // ÀÏ¹İ qmoCNFÀÇ ÃÊ±âÈ­
     static IDE_RC    init( qcStatement * aStatement,
                            qmoCNF      * aCNF,
                            qmsQuerySet * aQuerySet,
                            qtcNode     * aNormalCNF,
                            qtcNode     * aNnfFilter );
 
-    // on Conditionì„ ìœ„í•œ qmoCNFì˜ ì´ˆê¸°í™”
+    // on ConditionÀ» À§ÇÑ qmoCNFÀÇ ÃÊ±âÈ­
     static IDE_RC    init( qcStatement * aStatement,
                            qmoCNF      * aCNF,
                            qmsQuerySet * aQuerySet,
@@ -231,63 +231,63 @@ public:
                            qtcNode     * aNnfFilter );
 
     //-----------------------------------------------------
-    // CNF Critical Pathì— ëŒ€í•œ ìµœì í™”
-    //     - Predicate ë¶„ë¥˜, ê° base graphìµœì í™”, Joinì˜ ì²˜ë¦¬ ìˆ˜í–‰
-    //     - qmgHierarcyì™€ left outer graph ê³„ì—´ì€ í˜¸ì¶œí•˜ì§€ ì•ŠìŒ
+    // CNF Critical Path¿¡ ´ëÇÑ ÃÖÀûÈ­
+    //     - Predicate ºĞ·ù, °¢ base graphÃÖÀûÈ­, JoinÀÇ Ã³¸® ¼öÇà
+    //     - qmgHierarcy¿Í left outer graph °è¿­Àº È£ÃâÇÏÁö ¾ÊÀ½
     //-----------------------------------------------------
 
     static IDE_RC   optimize( qcStatement * aStatement,
                               qmoCNF      * aCNF );
 
 
-    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
-    // optimizationë•Œ ë§Œë“  ì •ë³´ë¥¼ ì§€ìš¸ í•„ìš”ê°€ ìˆì„ ë•Œ
-    // ì´ í•¨ìˆ˜ì— ì¶”ê°€í•˜ë©´ ëœë‹¤.
+    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+    // optimization¶§ ¸¸µç Á¤º¸¸¦ Áö¿ï ÇÊ¿ä°¡ ÀÖÀ» ¶§
+    // ÀÌ ÇÔ¼ö¿¡ Ãß°¡ÇÏ¸é µÈ´Ù.
     static IDE_RC    removeOptimizationInfo( qcStatement * aStatement,
                                              qmoCNF      * aCNF );
 
     //-----------------------------------------------------
-    // Predicate ë¶„ë¥˜ í•¨ìˆ˜
+    // Predicate ºĞ·ù ÇÔ¼ö
     //-----------------------------------------------------
 
-    // whereì˜ Predicate ë¶„ë¥˜
+    // whereÀÇ Predicate ºĞ·ù
     static IDE_RC    classifyPred4Where( qcStatement       * aStatement,
                                          qmoCNF            * aCNF,
                                          qmsQuerySet       * aQuerySet );
 
-    // whereì˜ Predicate ë¶„ë¥˜
+    // whereÀÇ Predicate ºĞ·ù
     static IDE_RC    classifyPred4WhereHierachyJoin( qcStatement  * aStatement,
                                                      qmoCrtPath   * aCrtPath,
                                                      qmgGraph     * aGraph );
-    // on Condition Predicate ë¶„ë¥˜
+    // on Condition Predicate ºĞ·ù
     static IDE_RC    classifyPred4OnCondition( qcStatement       * aStatement,
                                                qmoCNF            * aCNF,
                                                qmoPredicate     ** aUpperPred,
                                                qmoPredicate      * aLowerPred,
                                                qmsJoinType         aJoinType );
 
-    // startWithì˜ Predicate ë¶„ë¥˜
+    // startWithÀÇ Predicate ºĞ·ù
     static IDE_RC    classifyPred4StartWith( qcStatement       * aStatement,
                                              qmoCNF            * aCNF,
                                              qcDepInfo         * aDepInfo );
 
-    // connectByì˜ Predicate ë¶„ë¥˜
+    // connectByÀÇ Predicate ºĞ·ù
     static IDE_RC    classifyPred4ConnectBy( qcStatement       * aStatement,
                                              qmoCNF            * aCNF,
                                              qcDepInfo         * aDepInfo );
 
-    // baseGraphë“¤ì˜ ì´ˆê¸°í™” í•¨ìˆ˜ í˜¸ì¶œí•˜ì—¬ baseGraphë¥¼ ìƒì„± ë° ì´ˆê¸°í™”í•¨
+    // baseGraphµéÀÇ ÃÊ±âÈ­ ÇÔ¼ö È£ÃâÇÏ¿© baseGraph¸¦ »ı¼º ¹× ÃÊ±âÈ­ÇÔ
     static IDE_RC    initBaseGraph( qcStatement   * aStatement,
                                     qmgGraph     ** aBaseGraph,
                                     qmsFrom       * aFrom,
                                     qmsQuerySet   * aQuerySet );
 
-    // Predicateì„ ë³µì‚¬í•˜ëŠ” í•¨ìˆ˜
+    // PredicateÀ» º¹»çÇÏ´Â ÇÔ¼ö
     static IDE_RC    copyPredicate( qcStatement   * aStatement,
                                     qmoPredicate ** aDstPredicate,
                                     qmoPredicate  * aSrcPredicate );
 
-    // Join Graphì˜ selectivityë¥¼ êµ¬í•˜ëŠ” í•¨ìˆ˜
+    // Join GraphÀÇ selectivity¸¦ ±¸ÇÏ´Â ÇÔ¼ö
     static IDE_RC    getJoinGraphSelectivity( qcStatement  * aStatement,
                                               qmgGraph     * aJoinGraph,
                                               qmoPredicate * aJoinPredicate,
@@ -295,47 +295,47 @@ public:
                                               SDouble      * aJoinSize );
 
     // fix BUG-9791, BUG-10419
-    // constant filterë¥¼ ì²˜ë¦¬ê°€ëŠ¥í•œ ìµœí•˜ìœ„ left graphë¡œ ë‚´ë ¤ì£¼ëŠ” í•¨ìˆ˜
+    // constant filter¸¦ Ã³¸®°¡´ÉÇÑ ÃÖÇÏÀ§ left graph·Î ³»·ÁÁÖ´Â ÇÔ¼ö
     static IDE_RC    pushSelection4ConstantFilter( qcStatement * aStatement,
                                                    qmgGraph    * aGraph,
                                                    qmoCNF      * aCNF );
 
     // PROJ-1404
-    // whereì ˆì˜ predicateìœ¼ë¡œ transitive predicateì„ ìƒì„±í•˜ê³  ì—°ê²°í•¨
+    // whereÀıÀÇ predicateÀ¸·Î transitive predicateÀ» »ı¼ºÇÏ°í ¿¬°áÇÔ
     static IDE_RC    generateTransitivePredicate( qcStatement * aStatement,
                                                   qmoCNF      * aCNF,
                                                   idBool        aIsOnCondition );
 
     // PROJ-1404
-    // onì ˆì˜ predicateìœ¼ë¡œ transitive predicateì„ ìƒì„±í•˜ê³  ì—°ê²°í•¨
-    // onì ˆê³¼ upper predicateìœ¼ë¡œ lower predicateì„ ìƒì„±í•˜ê³  ë°˜í™˜í•¨
+    // onÀıÀÇ predicateÀ¸·Î transitive predicateÀ» »ı¼ºÇÏ°í ¿¬°áÇÔ
+    // onÀı°ú upper predicateÀ¸·Î lower predicateÀ» »ı¼ºÇÏ°í ¹İÈ¯ÇÔ
     static IDE_RC    generateTransitivePred4OnCondition( qcStatement   * aStatement,
                                                          qmoCNF        * aCNF,
                                                          qmoPredicate  * aUpperPred,
                                                          qmoPredicate ** aLowerPred );
 
     // fix BUG-19203
-    // on Condition CNFì˜ ê° Predicateì˜ subuqery ì²˜ë¦¬
+    // on Condition CNFÀÇ °¢ PredicateÀÇ subuqery Ã³¸®
     static IDE_RC   optimizeSubQ4OnCondition( qcStatement * aStatement,
                                               qmoCNF      * aCNF );
 
 private:
     //------------------------------------------------------
-    // ì´ˆê¸°í™” í•¨ìˆ˜ì—ì„œ ì‚¬ìš©
+    // ÃÊ±âÈ­ ÇÔ¼ö¿¡¼­ »ç¿ë
     //------------------------------------------------------
 
-    // joinGroupë“¤ì„ ì´ˆê¸°í™”
+    // joinGroupµéÀ» ÃÊ±âÈ­
     static IDE_RC    initJoinGroup( qcStatement   * aStatement,
                                     qmoJoinGroup  * aJoinGroup,
                                     UInt            aJoinGroupCnt,
                                     UInt            aBaseGraphCnt );
 
     //-----------------------------------------------------
-    // Predicate ë¶„ë¥˜ í•¨ìˆ˜ì—ì„œ ì‚¬ìš©
+    // Predicate ºĞ·ù ÇÔ¼ö¿¡¼­ »ç¿ë
     //-----------------------------------------------------
 
-    // classifyPred4Where í•¨ìˆ˜ì—ì„œ í˜¸ì¶œ :
-    //    constant predicateì„ level/prior/constant ë¶„ë¥˜í•˜ì—¬ í•´ë‹¹ ìœ„ì¹˜ì— ì¶”ê°€
+    // classifyPred4Where ÇÔ¼ö¿¡¼­ È£Ãâ :
+    //    constant predicateÀ» level/prior/constant ºĞ·ùÇÏ¿© ÇØ´ç À§Ä¡¿¡ Ãß°¡
     static IDE_RC    addConstPred4Where( qmoPredicate * aPredicate,
                                          qmoCNF       * aCNF,
                                          idBool         aExistHierarchy );
@@ -345,9 +345,9 @@ private:
                                         qmsJoinType      aJoinType );
 
     // PROJ-1495
-    // classifyPred4Where í•¨ìˆ˜ì—ì„œ í˜¸ì¶œ :
-    //    PUSH_PRED hintë¡œ ì¸í•´ hintì˜ view tableê³¼ ê´€ë ¨ëœ
-    //    join predicateì„ viewë‚´ë¶€ë¡œ ë‚´ë¦¼
+    // classifyPred4Where ÇÔ¼ö¿¡¼­ È£Ãâ :
+    //    PUSH_PRED hint·Î ÀÎÇØ hintÀÇ view table°ú °ü·ÃµÈ
+    //    join predicateÀ» view³»ºÎ·Î ³»¸²
     static IDE_RC  pushJoinPredInView( qmoPredicate     * aPredicate,
                                        qmsPushPredHints * aPushPredHint,
                                        UInt               aBaseGraphCnt,
@@ -355,16 +355,16 @@ private:
                                        qmgGraph        ** aBaseGraph,
                                        idBool           * aIsPush );
 
-    // classifyPred4OnCondition í•¨ìˆ˜ì—ì„œ í˜¸ì¶œ :
-    //    onConditionCNFì˜ one table predicateì„ í•´ë‹¹ ìœ„ì¹˜ì— ì¶”ê°€
+    // classifyPred4OnCondition ÇÔ¼ö¿¡¼­ È£Ãâ :
+    //    onConditionCNFÀÇ one table predicateÀ» ÇØ´ç À§Ä¡¿¡ Ãß°¡
     static IDE_RC    addOneTblPredOnJoinType( qmoCNF       * aCNF,
                                               qmgGraph     * aGraph,
                                               qmoPredicate * aPredicate,
                                               qmsJoinType    aJoinType,
                                               idBool         aIsLeft );
 
-    // classifyPred4OnCondition í•¨ìˆ˜ì—ì„œ í˜¸ì¶œ
-    //    onConditionCNFë¥¼ ê°€ì§€ëŠ” Join Graphì˜ myPredicateì„ push selection
+    // classifyPred4OnCondition ÇÔ¼ö¿¡¼­ È£Ãâ
+    //    onConditionCNF¸¦ °¡Áö´Â Join GraphÀÇ myPredicateÀ» push selection
     static IDE_RC   pushSelectionOnJoinType( qcStatement   * aStatement,
                                              qmoPredicate ** aUpperPred,
                                              qmgGraph     ** aBaseGraph,
@@ -372,31 +372,31 @@ private:
                                              qmsJoinType     aJoinType );
 
 
-    // classifyPred4ConnectBy í•¨ìˆ˜ì—ì„œ í˜¸ì¶œ :
-    //    constant predicateì„ level/prior/constant ë¶„ë¥˜í•˜ì—¬ í•´ë‹¹ ìœ„ì¹˜ì— ì¶”ê°€
+    // classifyPred4ConnectBy ÇÔ¼ö¿¡¼­ È£Ãâ :
+    //    constant predicateÀ» level/prior/constant ºĞ·ùÇÏ¿© ÇØ´ç À§Ä¡¿¡ Ãß°¡
     static IDE_RC    addConstPred4ConnectBy( qmoCNF       * aCNF,
                                              qmoPredicate * aPredicate );
 
     //-----------------------------------------------------
-    // ìµœì í™” í•¨ìˆ˜ì—ì„œ ì‚¬ìš©
+    // ÃÖÀûÈ­ ÇÔ¼ö¿¡¼­ »ç¿ë
     //-----------------------------------------------------
 
-    // Join Orderë¥¼ ê²°ì •í•˜ëŠ” í•¨ìˆ˜
+    // Join Order¸¦ °áÁ¤ÇÏ´Â ÇÔ¼ö
     static IDE_RC    joinOrdering( qcStatement    * aStatement,
                                    qmoCNF         * aCNF );
 
     //-----------------------------------------------------
-    // Join Ordering í•¨ìˆ˜ì—ì„œ ì‚¬ìš©
+    // Join Ordering ÇÔ¼ö¿¡¼­ »ç¿ë
     //-----------------------------------------------------
 
-    // Join Groupì„ ë¶„ë¥˜í•˜ëŠ” í•¨ìˆ˜
+    // Join GroupÀ» ºĞ·ùÇÏ´Â ÇÔ¼ö
     static IDE_RC    joinGrouping( qmoCNF         * aCNF );
 
-    // Join Group ë‚´ Join Relation
+    // Join Group ³» Join Relation
     static IDE_RC    joinRelationing( qcStatement    * aStatement,
                                       qmoJoinGroup   * aJoinGroup );
 
-    // Join Group ë‚´ì—ì„œ Join Orderë¥¼ ê²°ì •í•˜ëŠ” í•¨ìˆ˜
+    // Join Group ³»¿¡¼­ Join Order¸¦ °áÁ¤ÇÏ´Â ÇÔ¼ö
     static IDE_RC    joinOrderingInJoinGroup( qcStatement    * aStatement,
                                               qmoJoinGroup   * aJoinGroup );
 
@@ -421,26 +421,26 @@ private:
                                     idBool            aExistOrderFactor );
 
     // PROJ-1495
-    // join groupê°„ì˜ ì¡°ì¸ìˆœì„œ ì¬ë°°ì¹˜
+    // join group°£ÀÇ Á¶ÀÎ¼ø¼­ Àç¹èÄ¡
     static IDE_RC relocateJoinGroup4PushPredHint(
         qcStatement      * aStatement,
         qmsPushPredHints * aPushPredHint,
         qmoJoinGroup    ** aJoinGroup,
         UInt               aJoinGroupCnt );
 
-    // Table Order ì •ë³´ë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
+    // Table Order Á¤º¸¸¦ »ı¼ºÇÏ´Â ÇÔ¼ö
     static IDE_RC    getTableOrder( qcStatement    * aStatement,
                                     qmgGraph       * aGraph,
                                     qmoTableOrder ** aTableOrder);
 
-    // Join Ordering, Join Groupintì—ì„œ í˜¸ì¶œ
-    // Join Predicateì—ì„œ í•´ë‹¹ Join Graphì˜ predicateì„ ë¶„ë¦¬í•˜ì—¬ ì—°ê²°
+    // Join Ordering, Join Groupint¿¡¼­ È£Ãâ
+    // Join Predicate¿¡¼­ ÇØ´ç Join GraphÀÇ predicateÀ» ºĞ¸®ÇÏ¿© ¿¬°á
     static IDE_RC connectJoinPredToJoinGraph(qcStatement   * aStatement,
                                              qmoPredicate ** aJoinGroupPred,
                                              qmgGraph     * aJoinGraph );
 
     //-----------------------------------------------------
-    // Join Grouping ì—ì„œ ì‚¬ìš©í•˜ëŠ” í•¨ìˆ˜
+    // Join Grouping ¿¡¼­ »ç¿ëÇÏ´Â ÇÔ¼ö
     //-----------------------------------------------------
 
     // BUG-42447 leading hint support
@@ -451,50 +451,50 @@ private:
                                                qmoCNF        * aCNF,
                                                UInt          * aJoinGroupCnt );
 
-    // base graphë¥¼ í•´ë‹¹ Join Groupì— ì—°ê²°ì‹œì¼œì£¼ëŠ” í•¨ìˆ˜
+    // base graph¸¦ ÇØ´ç Join Group¿¡ ¿¬°á½ÃÄÑÁÖ´Â ÇÔ¼ö
     static
         IDE_RC    connectBaseGraphToJoinGroup( qmoJoinGroup  * aJoinGroup,
                                                qmgGraph     ** aCNFBaseGraph,
                                                UInt            aCNFBaseGraphCnt );
 
     //-----------------------------------------------------
-    // Join Relationì—ì„œ ì‚¬ìš©í•˜ëŠ” í•¨ìˆ˜
+    // Join Relation¿¡¼­ »ç¿ëÇÏ´Â ÇÔ¼ö
     //-----------------------------------------------------
 
-    // ì´ë¯¸ ìƒì„±ëœ Join Relationì´ ìˆëŠ”ì§€ í™•ì¸
+    // ÀÌ¹Ì »ı¼ºµÈ Join RelationÀÌ ÀÖ´ÂÁö È®ÀÎ
     static idBool    existJoinRelation( qmoJoinRelation * aJoinRelationList,
                                         qcDepInfo       * aDepInfo );
 
-    // Semi/anti joinì‹œ inner tableì˜ IDë¥¼ ì–»ëŠ” í•¨ìˆ˜
+    // Semi/anti join½Ã inner tableÀÇ ID¸¦ ¾ò´Â ÇÔ¼ö
     static IDE_RC    getInnerTable( qcStatement * aStatement,
                                     qtcNode     * aNode,
                                     SInt        * aTableID );
 
-    // Semi/anti joinìš© Join Relation Listë¥¼ ë§Œë“¤ì–´ì£¼ëŠ” í•¨ìˆ˜
+    // Semi/anti join¿ë Join Relation List¸¦ ¸¸µé¾îÁÖ´Â ÇÔ¼ö
     static IDE_RC    makeSemiAntiJoinRelationList( qcStatement      * aStatement,
                                                    qtcNode          * aNode,
                                                    qmoJoinRelation ** aJoinRelationList,
                                                    UInt             * aJoinRelationCnt );
 
-    // Semi/anti joinì‹œ outer relationê°„ Join Relation Listë¥¼ ë§Œë“¤ì–´ì£¼ëŠ” í•¨ìˆ˜
+    // Semi/anti join½Ã outer relation°£ Join Relation List¸¦ ¸¸µé¾îÁÖ´Â ÇÔ¼ö
     static IDE_RC    makeCrossJoinRelationList( qcStatement      * aStatement,
                                                 qmoJoinGroup     * aJoinGroup,
                                                 qmoJoinRelation ** aJoinRelationList,
                                                 UInt             * aJoinRelationCnt );
 
-    // Join Relation Listë¥¼ ë§Œë“¤ì–´ì£¼ëŠ” í•¨ìˆ˜
+    // Join Relation List¸¦ ¸¸µé¾îÁÖ´Â ÇÔ¼ö
     static IDE_RC    makeJoinRelationList( qcStatement      * aStatement,
                                            qcDepInfo        * aDependencies,
                                            qmoJoinRelation ** aJoinRelationList,
                                            UInt             * aJoinRelationCnt );
 
-    // ë‘ ê°œì˜ conceptual tableë¡œë§Œ êµ¬ì„±ëœ Node ì—¬ë¶€
+    // µÎ °³ÀÇ conceptual table·Î¸¸ ±¸¼ºµÈ Node ¿©ºÎ
     static IDE_RC   isTwoConceptTblNode( qtcNode      * aNode,
                                          qmgGraph    ** aBaseGraph,
                                          UInt           aBaseGraphCnt,
                                          idBool       * aIsTwoConceptTbl);
 
-    // aDependencisì™€ ì—°ê´€ëœ ë‘ ê°œì˜ Graphë¥¼ ì°¾ì•„ì£¼ëŠ” í•¨ìˆ˜
+    // aDependencis¿Í ¿¬°üµÈ µÎ °³ÀÇ Graph¸¦ Ã£¾ÆÁÖ´Â ÇÔ¼ö
     static IDE_RC    getTwoRelatedGraph( qcDepInfo * aDependencies,
                                          qmgGraph ** aBaseGraph,
                                          UInt        aBaseGraphCnt,
@@ -502,29 +502,29 @@ private:
                                          qmgGraph ** aSecondGraph );
 
     //-----------------------------------------------------
-    // ê·¸ ì™¸ í•¨ìˆ˜ì—ì„œ í˜¸ì¶œ
+    // ±× ¿Ü ÇÔ¼ö¿¡¼­ È£Ãâ
     //-----------------------------------------------------
 
-    // pushSelectionOnJoinType() í•¨ìˆ˜ì—ì„œ ì‚¬ìš©
-    // push selectioní•  predicateì˜ ìœ„ì¹˜
+    // pushSelectionOnJoinType() ÇÔ¼ö¿¡¼­ »ç¿ë
+    // push selectionÇÒ predicateÀÇ À§Ä¡
     static IDE_RC    getPushPredPosition( qmoPredicate  * aPredicate,
                                           qmgGraph     ** aBaseGraph,
                                           qcDepInfo     * aFromDependencies,
                                           qmsJoinType     aJoinType,
                                           UInt          * aPredPos );
 
-    // addOneTblPredOnJoinType(), getPushPredPosition() í•¨ìˆ˜ì—ì„œ ì‚¬ìš©
-    // Push Selection ê°€ëŠ¥í•œ Predicateì¸ì§€ ê²€ì‚¬
+    // addOneTblPredOnJoinType(), getPushPredPosition() ÇÔ¼ö¿¡¼­ »ç¿ë
+    // Push Selection °¡´ÉÇÑ PredicateÀÎÁö °Ë»ç
     static qmoPushApplicableType isPushApplicable( qmoPredicate * aPredicate,
                                                    qmsJoinType    aJoinType );
 
     // PROJ-2418 
-    // Lateral Viewì— ê´€ì—¬ëœ Predicateì„ CNFì—ì„œ ë¹¼ë‚´ì„œ ë°˜í™˜
+    // Lateral View¿¡ °ü¿©µÈ PredicateÀ» CNF¿¡¼­ »©³»¼­ ¹İÈ¯
     static IDE_RC    discardLateralViewJoinPred( qmoCNF        * aCNF,
                                                  qmoPredicate ** aDiscardPredList );
 
     // PROJ-2418
-    // Lateral Viewì™€ ì™¸ë¶€ ì°¸ì¡°í•˜ëŠ” Relationê³¼ì˜ Left/Full-Outer Join ê²€ì¦
+    // Lateral View¿Í ¿ÜºÎ ÂüÁ¶ÇÏ´Â Relation°úÀÇ Left/Full-Outer Join °ËÁõ
     static IDE_RC    validateLateralViewJoin( qcStatement * aStatement,
                                               qmsFrom     * aFrom );
 };

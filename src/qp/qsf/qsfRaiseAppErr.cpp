@@ -16,11 +16,11 @@
  
 
 /***********************************************************************
- * $Id: qsfRaiseAppErr.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qsfRaiseAppErr.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  *
  * Description :
- *     PROJ-1335 PSM ê°œì„  (RAISE_APPLICATION_ERROR)
- *     ì‚¬ìš©ìž ì •ì˜ ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¤ëŠ” í•¨ìˆ˜.
+ *     PROJ-1335 PSM °³¼± (RAISE_APPLICATION_ERROR)
+ *     »ç¿ëÀÚ Á¤ÀÇ ¿¡·¯¸¦ ¹ß»ý½ÃÅ°´Â ÇÔ¼ö.
  *
  * Syntax :
  *     RAISE_APP_ERR( errCode INTEGER, errMsg VARCHAR(2047) );
@@ -48,7 +48,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfRaiseAppErrModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -145,9 +145,9 @@ IDE_RC qsfCalculate_RaiseAppErr( mtcNode*     aNode,
  *     qsfCalculate_RaiseAppErr
  *
  * Implementation :
- *     1. ì—ëŸ¬ì½”ë“œ ë²”ìœ„ ê²€ì‚¬. ë²”ìœ„ë„˜ìœ¼ë©´ ì—ëŸ¬
- *     2. ì—ëŸ¬ë©”ì‹œì§€ ê¸¸ì´ ê²€ì‚¬. ê¸¸ì´ê°€ 2047ì„ ë„˜ìœ¼ë©´ ì—ëŸ¬
- *     3. ì‚¬ìš©ìž ì—ëŸ¬ë¥¼ ì„¸íŒ…í•˜ì—¬ ì—ëŸ¬ë¥¼ ë‚´ë³´ëƒ„.
+ *     1. ¿¡·¯ÄÚµå ¹üÀ§ °Ë»ç. ¹üÀ§³ÑÀ¸¸é ¿¡·¯
+ *     2. ¿¡·¯¸Þ½ÃÁö ±æÀÌ °Ë»ç. ±æÀÌ°¡ 2047À» ³ÑÀ¸¸é ¿¡·¯
+ *     3. »ç¿ëÀÚ ¿¡·¯¸¦ ¼¼ÆÃÇÏ¿© ¿¡·¯¸¦ ³»º¸³¿.
  *
  ***********************************************************************/
     
@@ -188,7 +188,7 @@ IDE_RC qsfCalculate_RaiseAppErr( mtcNode*     aNode,
     sErrorMsg = (mtdCharType*)aStack[2].value;
     *sReturnValue = MTD_BOOLEAN_TRUE;
 
-    // ì—ëŸ¬ì½”ë“œì˜ ë²”ìœ„ê°€ ì‚¬ìš©ìž ë²”ìœ„ì— ë“¤ì–´ê°€ëŠ”ì§€ ê²€ì‚¬.
+    // ¿¡·¯ÄÚµåÀÇ ¹üÀ§°¡ »ç¿ëÀÚ ¹üÀ§¿¡ µé¾î°¡´ÂÁö °Ë»ç.
     IDE_TEST_RAISE( E_CHECK_UDE(sErrorCode) == ID_FALSE,
                     ERR_ERRORCODE_INVALID_RANGE );
     
@@ -211,7 +211,7 @@ IDE_RC qsfCalculate_RaiseAppErr( mtcNode*     aNode,
         
     IDE_RAISE( ERR_USER_DEFINED );
     
-    //  ì‚¬ìš©ìž ì •ì˜ ì—ëŸ¬ë©”ì‹œì§€ë¡œ raise. ë¬´ì¡°ê±´ failureí•¨.
+    //  »ç¿ëÀÚ Á¤ÀÇ ¿¡·¯¸Þ½ÃÁö·Î raise. ¹«Á¶°Ç failureÇÔ.
     IDE_DASSERT(0);
     
     return IDE_SUCCESS;

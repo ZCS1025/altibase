@@ -87,7 +87,7 @@ static ACI_RC ulnStatisticsCreateQueryString(ulnFnContext *aFnContext,
     sSize = acpCStrLen(aQueryString, aQueryStringLength);
 
     // bug-25905: conn nls not applied to client lang module
-    // aFnContext ì¸ìž ì¶”ê°€
+    // aFnContext ÀÎÀÚ Ãß°¡
     sSize = ulnAppendFormatParameter(aFnContext,
                                      aQueryString,
                                      aQueryStringLength,
@@ -171,7 +171,7 @@ SQLRETURN ulnStatistics(ulnStmt      *aStmt,
     sNeedExit = ACP_TRUE;
 
     /*
-     * BUGBUG : ë„˜ì–´ì˜¨ ì¸ìžë“¤ì´ ì ë²•í•œì§€ ì²´í¬í•´ì•¼ í•¨.
+     * BUGBUG : ³Ñ¾î¿Â ÀÎÀÚµéÀÌ Àû¹ýÇÑÁö Ã¼Å©ÇØ¾ß ÇÔ.
      */
 
     ACI_TEST(ulnStatisticsCreateQueryString(&sFnContext,
@@ -184,7 +184,7 @@ SQLRETURN ulnStatistics(ulnStmt      *aStmt,
                                             ACI_SIZEOF(sQueryString)) != ACI_SUCCESS);
 
     /*
-     * Protocol Context ì´ˆê¸°í™”
+     * Protocol Context ÃÊ±âÈ­
      */
     // fix BUG-17722
     ACI_TEST(ulnInitializeProtocolContext(&sFnContext,
@@ -215,14 +215,14 @@ SQLRETURN ulnStatistics(ulnStmt      *aStmt,
                                      aStmt->mParentDbc->mConnTimeoutValue) != ACI_SUCCESS);
 
     /*
-     * Protocol Context ì •ë¦¬
+     * Protocol Context Á¤¸®
      */
     sNeedFinPtContext = ACP_FALSE;
     // fix BUG-17722
     ACI_TEST(ulnFinalizeProtocolContext(&sFnContext,&(aStmt->mParentDbc->mPtContext)) != ACI_SUCCESS);
 
     /*
-     * BUGBUG : ê° ì»¬ëŸ¼ì˜ íƒ€ìž…ì„ ê°•ì œë¡œ ì§€ì •í•´ ì£¼ëŠ” ì½”ë“œê°€ cli2 ì—ëŠ” ìžˆì—ˆë‹¤.
+     * BUGBUG : °¢ ÄÃ·³ÀÇ Å¸ÀÔÀ» °­Á¦·Î ÁöÁ¤ÇØ ÁÖ´Â ÄÚµå°¡ cli2 ¿¡´Â ÀÖ¾ú´Ù.
      *
      *          stmt->bindings[ 4-1].forced_type = SQL_C_SSHORT;
      *          stmt->bindings[ 7-1].forced_type = SQL_C_SSHORT;

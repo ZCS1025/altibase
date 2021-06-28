@@ -18,7 +18,9 @@
 #include <ulnPrivate.h>
 #include <ulnLob.h>
 
-SQLRETURN ulnFreeLob(ulnStmt *aStmt, acp_uint64_t aLocator)
+SQLRETURN ulnFreeLob(acp_sint16_t  aHandleType,
+                     ulnObject    *aObject,
+                     acp_uint64_t  aLocator)
 {
     acp_bool_t    sNeedExit = ACP_FALSE;
     acp_bool_t    sNeedFinPtContext = ACP_FALSE;
@@ -26,7 +28,7 @@ SQLRETURN ulnFreeLob(ulnStmt *aStmt, acp_uint64_t aLocator)
 
     ulnFnContext  sFnContext;
 
-    ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_FREELOB, aStmt, ULN_OBJ_TYPE_STMT);
+    ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_FREELOB, aObject, aHandleType);
 
     /*
      * Enter
@@ -35,7 +37,7 @@ SQLRETURN ulnFreeLob(ulnStmt *aStmt, acp_uint64_t aLocator)
 
     sNeedExit = ACP_TRUE;
 
-    sDbc = aStmt->mParentDbc;
+    ULN_FNCONTEXT_GET_DBC(&sFnContext, sDbc); // PROJ-2728
 
     /*
      * initialize protocol context

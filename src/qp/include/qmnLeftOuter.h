@@ -16,23 +16,23 @@
  
 
 /***********************************************************************
- * $Id: qmnLeftOuter.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmnLeftOuter.h 90785 2021-05-06 07:26:22Z hykim $
  *
  * Description :
  *     LOJN(Left Outer JoiN) Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ Left Outer Joinë¥¼ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
- *     ë‹¤ì–‘í•œ Join Methodë“¤ì€ í•˜ìœ„ ë…¸ë“œì˜ í˜•íƒœì— ë”°ë¼ ê²°ì •ëœë‹¤.
+ *     °ü°èÇü ¸ğµ¨¿¡¼­ Left Outer Join¸¦ ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
+ *     ´Ù¾çÇÑ Join MethodµéÀº ÇÏÀ§ ³ëµåÀÇ ÇüÅÂ¿¡ µû¶ó °áÁ¤µÈ´Ù.
  *  
- *     ë‹¤ìŒê³¼ ê°™ì€ ê¸°ëŠ¥ì„ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
- *         - Nested Loop Join ê³„ì—´
- *         - Sort-based Join ê³„ì—´
- *         - Hash-based Join ê³„ì—´
- *         - Full Outer Joinì˜ Anti-Outer ìµœì í™” ì ìš©ì‹œ
+ *     ´ÙÀ½°ú °°Àº ±â´ÉÀ» À§ÇØ »ç¿ëµÈ´Ù.
+ *         - Nested Loop Join °è¿­
+ *         - Sort-based Join °è¿­
+ *         - Hash-based Join °è¿­
+ *         - Full Outer JoinÀÇ Anti-Outer ÃÖÀûÈ­ Àû¿ë½Ã
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -46,6 +46,11 @@
 //-----------------
 // Code Node Flags
 //-----------------
+// qmncLOJN.flag
+// PROJ-2750
+#define QMNC_LOJN_SKIP_RIGHT_COND_MASK     (0x00000001)
+#define QMNC_LOJN_SKIP_RIGHT_COND_FALSE    (0x00000000)
+#define QMNC_LOJN_SKIP_RIGHT_COND_TRUE     (0x00000001)
 
 //-----------------
 // Data Node Flags
@@ -60,7 +65,7 @@
 typedef struct qmncLOJN
 {
     //---------------------------------
-    // Code ì˜ì—­ ê³µí†µ ì •ë³´
+    // Code ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmnPlan        plan;
@@ -68,17 +73,17 @@ typedef struct qmncLOJN
     UInt           planID;
 
     //---------------------------------
-    // LOJN ê³ ìœ  ì •ë³´
+    // LOJN °íÀ¯ Á¤º¸
     //---------------------------------
 
-    qtcNode      * filter;    // ON Conditionë‚´ì˜ Filter ì¡°ê±´
+    qtcNode      * filter;    // ON Condition³»ÀÇ Filter Á¶°Ç
     
 } qmncLOJN;
 
 typedef struct qmndLOJN
 {
     //---------------------------------
-    // Data ì˜ì—­ ê³µí†µ ì •ë³´
+    // Data ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmndPlan            plan;
@@ -86,10 +91,11 @@ typedef struct qmndLOJN
     UInt              * flag;
 
     //---------------------------------
-    // LOJN ê³ ìœ  ì •ë³´
+    // LOJN °íÀ¯ Á¤º¸
     //---------------------------------
     
-    setHitFlagFunc      setHitFlag;  // Child(HASH)ì— ë”°ë¥¸ í•¨ìˆ˜
+    setHitFlagFunc      setHitFlag;  // Child(HASH)¿¡ µû¸¥ ÇÔ¼ö
+    UInt                mSkipRightCnt;   // PROJ-2750
 
 } qmndLOJN;
 
@@ -101,11 +107,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ìˆ˜í–‰ í•¨ìˆ˜
+    // ¼öÇà ÇÔ¼ö
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -114,34 +120,34 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan ì •ë³´ ì¶œë ¥
+    // Plan Á¤º¸ Ãâ·Â
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
                              iduVarString * aString,
                              qmnDisplay     aMode );
-    
+
 private:
 
     //------------------------
     // mapping by doIt() function pointer
     //------------------------
 
-    // í˜¸ì¶œë˜ë©´ ì•ˆë¨
+    // È£ÃâµÇ¸é ¾ÈµÊ
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // ìƒˆë¡œìš´ Left Rowì— ëŒ€í•œ ì²˜ë¦¬
+    // »õ·Î¿î Left Row¿¡ ´ëÇÑ Ã³¸®
     static IDE_RC doItLeft( qcTemplate * aTemplate,
                             qmnPlan    * aPlan,
                             qmcRowFlag * aFlag );
 
-    // ìƒˆë¡œìš´ Right Rowì— ëŒ€í•œ ì²˜ë¦¬
+    // »õ·Î¿î Right Row¿¡ ´ëÇÑ Ã³¸®
     static IDE_RC doItRight( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              qmcRowFlag * aFlag );
-    
+
     // Inverse Hash 
     static IDE_RC doItInverseLeft( qcTemplate * aTemplate,
                                    qmnPlan    * aPlan,
@@ -160,12 +166,23 @@ private:
                                          qmcRowFlag * aFlag );
 
     //------------------------
-    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
+    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
     //------------------------
 
-    // ìµœì´ˆ ì´ˆê¸°í™”
+    // ÃÖÃÊ ÃÊ±âÈ­
     static IDE_RC firstInit( qmncLOJN   * aCodePlan,
                              qmndLOJN   * aDataPlan );
+
+    //------------------------
+    // Ãâ·Â ÇÔ¼ö
+    //------------------------
+
+    // PROJ-2750
+    static void printSkipRightCnt( qcTemplate   * aTemplate,
+                                   iduVarString * aString,
+                                   UInt           aFlag,
+                                   UInt           aSkipRightCnt,
+                                   qmnDisplay     aMode );
 
 };
 

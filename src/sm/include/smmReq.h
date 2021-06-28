@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smmReq.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smmReq.h 89495 2020-12-14 05:19:22Z emlee $
  **********************************************************************/
 
 #ifndef _O_SMM_REQ_H_
@@ -330,9 +330,9 @@ class smmReqFunc
             return smrLogMgr::syncToLstLSN( aWhoSyncLog );
         };
 
-        static IDE_RC getLstLSN( smLSN * aLstLSN )
+        static void getLstLSN( smLSN * aLstLSN )
         {
-            return smrLogMgr::getLstLSN ( aLstLSN );
+            smrLogMgr::getLstLSN ( aLstLSN );
         };
 
         static IDE_RC updateAnchorOfTBS()
@@ -388,22 +388,22 @@ class smmReqFunc
         };
 
         static IDE_RC backupMemoryTBS( idvSQL     * aStatistics,
-                                       scSpaceID    aSpaceID,
+                                       smmTBSNode * aSpaceNode,
                                        SChar      * aBackupDir )
         {
             return smrBackupMgr::backupMemoryTBS( aStatistics,
-                                                  aSpaceID,
+                                                  aSpaceNode,
                                                   aBackupDir );
         };
 
         /* PROJ-2133 incremental backup */
         static IDE_RC incrementalBackupMemoryTBS( idvSQL     * aStatistics,
-                                                  scSpaceID    aSpaceID,
+                                                  smmTBSNode * aSpaceNode,
                                                   SChar      * aBackupDir,
                                                   smriBISlot * aCommonBackupInfo )
         {
             return smrBackupMgr::incrementalBackupMemoryTBS( aStatistics,
-                                                             aSpaceID,
+                                                             aSpaceNode,
                                                              aBackupDir,
                                                              aCommonBackupInfo );
         };
@@ -445,7 +445,7 @@ class smmReqFunc
             return smrChkptThread::blockCheckpoint();
         };
 
-        /* CheckpointÍ∞Ä Îã§Ïãú ÏàòÌñâÎêòÎèÑÎ°ù CheckpointÎ•º UnblockÌïúÎã§. */
+        /* Checkpoint∞° ¥ŸΩ√ ºˆ«‡µ«µµ∑œ Checkpoint∏¶ Unblock«—¥Ÿ. */
         static IDE_RC unblockCheckpoint()
         {
             return smrChkptThread::unblockCheckpoint();
@@ -500,18 +500,22 @@ class smmReqFunc
             return smxTrans::getTransLstUndoNxtLSN( aTrans );
         };
 
-        static void setTransCommitSCN( void     * aTrans,
-                                       smSCN      aSCN,
-                                       void     * aStatus )
+        static void setTransStatus( void     * aTrans,
+                                    UInt       aStatus )
         {
-            smxTrans::setTransCommitSCN( aTrans,
-                                         aSCN,
-                                         aStatus );
+            smxTrans::setTransStatus( aTrans,
+                                      aStatus );
         };
 
-        static IDE_RC syncToEnd()
+        static void setTransSCNnStatus( void     * aTrans,
+                                        idBool     aIsLegacyTrans,
+                                        smSCN    * aSCN,
+                                        void     * aStatus )
         {
-            return smxTrans::syncToEnd();
+            smxTrans::setTransSCNnStatus( aTrans,
+                                          aIsLegacyTrans,
+                                          aSCN,
+                                          aStatus );
         };
 
         static void allocRSGroupID( void * aTrans, UInt * aPageListIdx )

@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: utmProgOption.cpp 80542 2017-07-19 08:01:20Z daramix $
+ * $Id: utmProgOption.cpp 89611 2020-12-22 23:23:39Z chkim $
  **********************************************************************/
 
 #include <idl.h>
@@ -26,6 +26,9 @@
 #include <utmSQLApi.h>
 
 ObjectModeInfo *gObjectModeInfo;
+
+/* BUG-47652 Set file permission */
+UInt gFilePerm;
 
 SChar *getpass(const SChar *prompt);
 
@@ -70,7 +73,7 @@ static const SChar *HelpMessage =
 
 utmProgOption::utmProgOption()
 {
-    // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
+    // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
     m_bExist_PORT   = ID_FALSE;
     m_bIsOpt_PORT   = ID_FALSE;
 
@@ -139,6 +142,12 @@ utmProgOption::utmProgOption()
     mbExistIloParallel = ID_FALSE;
     mbExistIloCommit   = ID_FALSE;
     mbExistIloArray    = ID_FALSE;
+
+    /* BUG-47652 Set file permission */
+    mbExistFilePerm = ID_FALSE;
+
+    /* BUG-48358 GeomFormat WKB */
+    mbExistGeomFormat = ID_FALSE;
 }
 
 IDE_RC utmProgOption::getProperties()
@@ -335,9 +344,9 @@ IDE_RC utmProgOption::getProperties()
     sTmpProp = sPropMgr->getValue((SChar*)"ILOADER_PARTITION");
     if ( sTmpProp != NULL )
     {
-        /* aexport.properties ì—ì„œ ON/OFF í•©ë‹ˆë‹¤.
-         * default ê°’ì€ OFF ì´ë©° aexport.properties optionì„
-         * ëª…ì‹œ í•˜ì§€ ì•Šì„ê²½ìš° OFF ì…ë‹ˆë‹¤. */
+        /* aexport.properties ¿¡¼­ ON/OFF ÇÕ´Ï´Ù.
+         * default °ªÀº OFF ÀÌ¸ç aexport.properties optionÀ»
+         * ¸í½Ã ÇÏÁö ¾ÊÀ»°æ¿ì OFF ÀÔ´Ï´Ù. */
         if ( idlOS::strcmp(sTmpProp, "ON") == 0 )
         {
             mbExistIloaderPartition = ID_TRUE;
@@ -395,18 +404,31 @@ IDE_RC utmProgOption::getProperties()
     sTmpProp = sPropMgr->getValue((SChar*)"COLLECT_DBMS_STATS");
     if ( sTmpProp != NULL )
     {
-        /* aexport.properties ì—ì„œ ON/OFF í•©ë‹ˆë‹¤.
-         * default ê°’ì€ OFF ì´ë©° aexport.properties optionì„ 
-         * ëª…ì‹œ í•˜ì§€ ì•Šì„ê²½ìš° OFF ì…ë‹ˆë‹¤. */
+        /* aexport.properties ¿¡¼­ ON/OFF ÇÕ´Ï´Ù.
+         * default °ªÀº OFF ÀÌ¸ç aexport.properties optionÀ» 
+         * ¸í½Ã ÇÏÁö ¾ÊÀ»°æ¿ì OFF ÀÔ´Ï´Ù. */
         if ( idlOS::strcmp(sTmpProp, "ON") == 0 )
         {
             mbCollectDbStats = ID_TRUE;
         }
     }
+    
+    /* BUG-48358 GeomFormat WKB */
+    sTmpProp = sPropMgr->getValue((SChar*)"ILOADER_GEOM_FORMAT");
+    if ( sTmpProp != NULL )
+    {
+        /* At this moment, boolean type is enough 
+         * because it supports WKB only.
+         * Later need to change its data type to handle multiple choices. */
+        if ( idlOS::strcmp(sTmpProp, "WKB") == 0 )
+        {
+            mbExistGeomFormat = ID_TRUE;
+        }
+    }
 
-    // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
-    // NLSê°€ ì˜µì…˜ ë˜ëŠ” í™˜ê²½ ë³€ìˆ˜ë¥¼ í†µí•´ ì„¤ì •ëœ ê²½ìš°ì—ëŠ”
-    // í”„ë¡œí¼í‹° íŒŒì¼ì—ì„œ ì½ì§€ ì•ŠëŠ”ë‹¤.
+    // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
+    // NLS°¡ ¿É¼Ç ¶Ç´Â È¯°æ º¯¼ö¸¦ ÅëÇØ ¼³Á¤µÈ °æ¿ì¿¡´Â
+    // ÇÁ·ÎÆÛÆ¼ ÆÄÀÏ¿¡¼­ ÀĞÁö ¾Ê´Â´Ù.
     if (mbExistNLS == ID_FALSE)
     {
         sTmpProp = sPropMgr->getValue((SChar*)"NLS");
@@ -522,9 +544,9 @@ void utmProgOption::getSslProperties(utmPropertyMgr *aPropMgr)
     sTmpProp = aPropMgr->getValue((SChar*)"SSL_ENABLE");
     IDE_TEST_CONT( sTmpProp == NULL, skip_ssl_options );
 
-    /* aexport.properties ì—ì„œ ON/OFF í•©ë‹ˆë‹¤.
-     * default ê°’ì€ OFF ì´ë©° aexport.properties optionì„ 
-     * ëª…ì‹œ í•˜ì§€ ì•Šì„ê²½ìš° OFF ì…ë‹ˆë‹¤. */
+    /* aexport.properties ¿¡¼­ ON/OFF ÇÕ´Ï´Ù.
+     * default °ªÀº OFF ÀÌ¸ç aexport.properties optionÀ» 
+     * ¸í½Ã ÇÏÁö ¾ÊÀ»°æ¿ì OFF ÀÔ´Ï´Ù. */
     IDE_TEST_CONT( idlOS::strcmp(sTmpProp, "ON") != 0, skip_ssl_options );
     mbPropSslEnable = ID_TRUE;
 
@@ -587,7 +609,7 @@ IDE_RC utmProgOption::ParsingCommandLine(SInt argc, SChar **argv)
 
         if (idlOS::strcasecmp(argv[i], "-u") == 0)
         {
-            // useridê°€ ì—†ëŠ” ê²½ìš°
+            // userid°¡ ¾ø´Â °æ¿ì
             IDE_TEST_RAISE(argc <= i+1, print_help_screen);
             IDE_TEST_RAISE(idlOS::strncmp(argv[i+1], "-", 1) == 0,
                            print_help_screen);
@@ -606,7 +628,7 @@ IDE_RC utmProgOption::ParsingCommandLine(SInt argc, SChar **argv)
         }
         else if (idlOS::strcasecmp(argv[i], "-p") == 0)
         {
-            // passwdê°€ ì—†ëŠ” ê²½ìš°
+            // passwd°¡ ¾ø´Â °æ¿ì
             IDE_TEST_RAISE(argc <= i+1, print_help_screen);
             IDE_TEST_RAISE(idlOS::strncmp(argv[i+1], "-", 1) == 0,
                            print_help_screen);
@@ -616,7 +638,7 @@ IDE_RC utmProgOption::ParsingCommandLine(SInt argc, SChar **argv)
         }
         else if (idlOS::strcasecmp(argv[i], "-s") == 0)
         {
-            // servernameì´ ì—†ëŠ” ê²½ìš°
+            // servernameÀÌ ¾ø´Â °æ¿ì
             IDE_TEST_RAISE(argc <= i+1, print_help_screen);
             IDE_TEST_RAISE(idlOS::strncmp(argv[i+1], "-", 1) == 0,
                            print_help_screen);
@@ -629,8 +651,8 @@ IDE_RC utmProgOption::ParsingCommandLine(SInt argc, SChar **argv)
             IDE_TEST_RAISE(argc <= i+1, print_help_screen);
             IDE_TEST_RAISE( m_bExist_PORT == ID_TRUE, print_help_screen );
 
-            // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
-            // ì˜µì…˜ìœ¼ë¡œ ì„¤ì •í–ˆì„ë•Œë§Œ ìŠ¤í¬ë¦½íŠ¸ì— -port ì˜µì…˜ ì¶œë ¥
+            // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
+            // ¿É¼ÇÀ¸·Î ¼³Á¤ÇßÀ»¶§¸¸ ½ºÅ©¸³Æ®¿¡ -port ¿É¼Ç Ãâ·Â
             m_bIsOpt_PORT = ID_TRUE;
 
             m_bExist_PORT = ID_TRUE;
@@ -647,9 +669,9 @@ IDE_RC utmProgOption::ParsingCommandLine(SInt argc, SChar **argv)
             m_bExist_BAD = ID_TRUE;
             i--;
         }
-        // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
-        // NLS_USEë¥¼ ì§€ì •í•˜ëŠ” ì˜µì…˜ì„ -NLS_USEë¡œ í†µì¼
-        // -NLSëŠ” aexportë¥¼ ì‚¬ìš©í•˜ëŠ” ê¸°ì¡´ ìŠ¤í¬ë¦½íŠ¸ì™€ì˜ í˜¸í™˜ì„±ì„ ìœ„í•´ ë‚¨ê²¨ë‘”ë‹¤.
+        // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
+        // NLS_USE¸¦ ÁöÁ¤ÇÏ´Â ¿É¼ÇÀ» -NLS_USE·Î ÅëÀÏ
+        // -NLS´Â aexport¸¦ »ç¿ëÇÏ´Â ±âÁ¸ ½ºÅ©¸³Æ®¿ÍÀÇ È£È¯¼ºÀ» À§ÇØ ³²°ÜµĞ´Ù.
         else if (idlOS::strcasecmp(argv[i], "-NLS_USE") == 0
               || idlOS::strcasecmp(argv[i], "-NLS") == 0)
         {
@@ -663,7 +685,7 @@ IDE_RC utmProgOption::ParsingCommandLine(SInt argc, SChar **argv)
             mbExistNLS = ID_TRUE;
             idlOS::strcpy( mNLS, argv[i+1]);
         }
-        // BUG-25450 in,outì˜ ì„œë²„ë¥¼ ë‹¤ë¥´ê²Œ ì§€ì •í•  ìˆ˜ ìˆëŠ” ê¸°ëŠ¥ ì¶”ê°€ ìš”ì²­
+        // BUG-25450 in,outÀÇ ¼­¹ö¸¦ ´Ù¸£°Ô ÁöÁ¤ÇÒ ¼ö ÀÖ´Â ±â´É Ãß°¡ ¿äÃ»
         else if (idlOS::strcasecmp(argv[i], "-tserver") == 0)
         {
             IDE_TEST_RAISE(argc <= i+1, print_help_screen);
@@ -772,11 +794,14 @@ IDE_RC utmProgOption::ParsingCommandLine(SInt argc, SChar **argv)
     return IDE_FAILURE;
 }
 
-// BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
-void utmProgOption::ReadEnvironment()
+// BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
+IDE_RC utmProgOption::ReadEnvironment()
 {
     SChar  *sCharData;
     SChar  *sPtr;
+    
+    /* BUG-47652 Set file permission */
+    SChar  sEnvVarName[ENV_NAME_LEN+1];
 
     /* BUG-40407 SSL */
     m_ConnType = CLI_CONNTYPE_TCP;
@@ -813,12 +838,43 @@ void utmProgOption::ReadEnvironment()
             mbExistNLS = ID_TRUE;
         }
     }
+    
+    /* BUG-47652 Set file permission */
+    if (mbExistFilePerm == ID_FALSE)
+    {
+        idlOS::sprintf( sEnvVarName, "%s", ENV_ALTIBASE_UT_FILE_PERMISSION );
+        sCharData = idlOS::getenv( sEnvVarName );
+        IDE_TEST_RAISE ( uttEnv::setFilePermission( sCharData,
+                                                    &gFilePerm,
+                                                    &mbExistFilePerm ) != IDE_SUCCESS, 
+                         FilePerm_error );
+
+        idlOS::sprintf( sEnvVarName, "%s", ENV_AEXPORT_FILE_PERMISSION );
+        sCharData = idlOS::getenv( sEnvVarName );
+        IDE_TEST_RAISE ( uttEnv::setFilePermission( sCharData,
+                                                    &gFilePerm,
+                                                    &mbExistFilePerm ) != IDE_SUCCESS, 
+                         FilePerm_error );
+    }
+
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION_END;
+    
+    /* BUG-47652 Set file permission */
+    IDE_EXCEPTION( FilePerm_error );
+    {
+        uteSetErrorCode( &gErrorMgr, utERR_ABORT_FilePerm_OutOfRange_Error, 
+                         sEnvVarName, sCharData );
+    }
+
+    return IDE_FAILURE;
 }
 
-// BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
-// ì„œë²„ë¥¼ ì„¤ì¹˜í•œ ê²½ìš° í™˜ê²½ë³€ìˆ˜ë¥¼ ì„¤ì •í•˜ì§€ ì•Šê³  altibase.propertiesë§Œ ì„¤ì •í•´ì„œ
-// ì“¸ ìˆ˜ ìˆìœ¼ë¯€ë¡œ altibase.propertiesê°€ ìˆìœ¼ë©´ ì½ì–´ì˜¤ë„ë¡í•´ì•¼
-// ê¸°ì¡´ ìŠ¤í¬ë¦½íŠ¸ì—ì„œ ì—ëŸ¬ê°€ ì•ˆë‚œë‹¤.
+// BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
+// ¼­¹ö¸¦ ¼³Ä¡ÇÑ °æ¿ì È¯°æº¯¼ö¸¦ ¼³Á¤ÇÏÁö ¾Ê°í altibase.properties¸¸ ¼³Á¤ÇØ¼­
+// ¾µ ¼ö ÀÖÀ¸¹Ç·Î altibase.properties°¡ ÀÖÀ¸¸é ÀĞ¾î¿Àµµ·ÏÇØ¾ß
+// ±âÁ¸ ½ºÅ©¸³Æ®¿¡¼­ ¿¡·¯°¡ ¾È³­´Ù.
 void utmProgOption::ReadServerProperties()
 {
     IDE_RC  sRead;
@@ -880,7 +936,7 @@ void utmProgOption::ReadProgOptionInteractive()
         }
     }
 
-    // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
+    // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
     if (m_bExist_PORT == ID_FALSE)
     {
         idlOS::printf("Write PortNo (default:%d) : ", DEFAULT_PORT_NO);
@@ -905,12 +961,12 @@ void utmProgOption::ReadProgOptionInteractive()
         idlOS::gets(szInStr, WORD_LEN);
 
         m_bExist_U = ID_TRUE;
-        /* BUG-39969: like BUG-17563(iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°) */
-        /*    Interactive ëª¨ë“œì¼ ê²½ìš°ì—ë§Œ userIDì˜ caseë¥¼ "..."ë¡œ êµ¬ë¶„í•´ì¤Œ.
-         *    - Quoted Nameì¸ ê²½ìš°
-         *      : ê·¸ëŒ€ë¡œ ì‚¬ìš© - "Quoted Name" ==> "Quoted Name"
-         *    - Non-Quoted Nameì¸ ê²½ìš°
-         *      : ëŒ€ë¬¸ìë¡œ ë³€ê²½ - NonQuotedName ==> NONQUOTEDNAME
+        /* BUG-39969: like BUG-17563(iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å) */
+        /*    Interactive ¸ğµåÀÏ °æ¿ì¿¡¸¸ userIDÀÇ case¸¦ "..."·Î ±¸ºĞÇØÁÜ.
+         *    - Quoted NameÀÎ °æ¿ì
+         *      : ±×´ë·Î »ç¿ë - "Quoted Name" ==> "Quoted Name"
+         *    - Non-Quoted NameÀÎ °æ¿ì
+         *      : ´ë¹®ÀÚ·Î º¯°æ - NonQuotedName ==> NONQUOTEDNAME
         */
         utString::makeNameInCLI(m_LoginID,
                                 ID_SIZEOF(m_LoginID),
@@ -929,11 +985,11 @@ void utmProgOption::ReadProgOptionInteractive()
         m_bExist_P = ID_TRUE;
     }
 
-    // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
+    // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
     /* if (mbExistNLS == ID_FALSE)
     {
-        // BUG-24126 isql ì—ì„œ ALTIBASE_NLS_USE í™˜ê²½ë³€ìˆ˜ê°€ ì—†ì–´ë„ ê¸°ë³¸ NLSë¥¼ ì„¸íŒ…í•˜ë„ë¡ í•œë‹¤.
-        // ì˜¤ë¼í´ê³¼ ë™ì´í•˜ê²Œ US7ASCII ë¡œ í•©ë‹ˆë‹¤.
+        // BUG-24126 isql ¿¡¼­ ALTIBASE_NLS_USE È¯°æº¯¼ö°¡ ¾ø¾îµµ ±âº» NLS¸¦ ¼¼ÆÃÇÏµµ·Ï ÇÑ´Ù.
+        // ¿À¶óÅ¬°ú µ¿ÀÌÇÏ°Ô US7ASCII ·Î ÇÕ´Ï´Ù.
         idlOS::strncpy(mNLS, "US7ASCII", ID_SIZEOF(mNLS));
         mbExistNLS = ID_TRUE;
     } */
@@ -1001,7 +1057,7 @@ SQLRETURN utmProgOption::setNls()
 
 void utmProgOption::setConnectStr()
 {
-    // BUG-25450 in,outì˜ ì„œë²„ë¥¼ ë‹¤ë¥´ê²Œ ì§€ì •í•  ìˆ˜ ìˆëŠ” ê¸°ëŠ¥ ì¶”ê°€ ìš”ì²­
+    // BUG-25450 in,outÀÇ ¼­¹ö¸¦ ´Ù¸£°Ô ÁöÁ¤ÇÒ ¼ö ÀÖ´Â ±â´É Ãß°¡ ¿äÃ»
     if(m_bExist_TServer == ID_TRUE)
     {
         if ( m_bExist_TPORT == ID_TRUE )
@@ -1016,8 +1072,8 @@ void utmProgOption::setConnectStr()
     }
     else
     {
-        // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
-        // ì˜µì…˜ìœ¼ë¡œ ì„¤ì •í–ˆì„ë•Œë§Œ ìŠ¤í¬ë¦½íŠ¸ì— -port ì˜µì…˜ ì¶œë ¥
+        // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
+        // ¿É¼ÇÀ¸·Î ¼³Á¤ÇßÀ»¶§¸¸ ½ºÅ©¸³Æ®¿¡ -port ¿É¼Ç Ãâ·Â
         if ( m_bIsOpt_PORT == ID_TRUE )
         {
             idlOS::sprintf( mInConnectStr, "-s %s -port %d",
@@ -1133,7 +1189,7 @@ IDE_RC utmProgOption::setTerminator(SChar *aSrc, SChar *aDest)
     IDE_TEST( sLen > 10 );
 
     // fix BUG-22181
-    // %ê°€ ë“¤ì–´ì™”ì„ ê²½ìš°ì—ë„ ì¶”ê°€ì ìœ¼ë¡œ %ë¥¼ ë” ë¶™ì´ì§€ ì•ŠëŠ”ë‹¤.
+    // %°¡ µé¾î¿ÔÀ» °æ¿ì¿¡µµ Ãß°¡ÀûÀ¸·Î %¸¦ ´õ ºÙÀÌÁö ¾Ê´Â´Ù.
     for (i=0; i<sLen; i++)
     {
         aDest[sDestCnt++] = aSrc[i];
@@ -1147,7 +1203,7 @@ IDE_RC utmProgOption::setTerminator(SChar *aSrc, SChar *aDest)
     return IDE_FAILURE;
 }
 
-/* object ëª¨ë“œ ì‹¤í–‰ ì‹œ USER NAME, OBJECT NAME ì„ Parsing */
+/* object ¸ğµå ½ÇÇà ½Ã USER NAME, OBJECT NAME À» Parsing */
 IDE_RC utmProgOption::setParsingObject( SChar *aObjectName )
 {
     SChar   *sOption;

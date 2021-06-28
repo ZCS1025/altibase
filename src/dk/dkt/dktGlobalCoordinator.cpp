@@ -21,6 +21,7 @@
 
 #include <idu.h>
 
+#include <dki.h>
 #include <dktGlobalTxMgr.h>
 #include <dktGlobalCoordinator.h>
 #include <dksSessionMgr.h>
@@ -31,9 +32,9 @@
 #include <dkm.h>
 
 /************************************************************************
- * Description : Global coordinator Î•º Ï¥àÍ∏∞ÌôîÌïúÎã§.
+ * Description : Global coordinator ∏¶ √ ±‚»≠«—¥Ÿ.
  *
- *  aSession    - [IN] Ïù¥ global coordinator Î•º Í∞ñÎäî linker data session
+ *  aSession    - [IN] ¿Ã global coordinator ∏¶ ∞Æ¥¬ linker data session
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::initialize( dksDataSession * aSession )
@@ -43,10 +44,10 @@ IDE_RC  dktGlobalCoordinator::initialize( dksDataSession * aSession )
     IDE_ASSERT( aSession != NULL );
 
     /* BUG-44672
-     * Performance View Ï°∞ÌöåÌï†Îïå RemoteTransactioin Ïùò Ï∂îÍ∞Ä ÏÇ≠Ï†úÏãú PV Î•º Ï°∞ÌöåÌïòÎ©¥ ÎèôÏãúÏÑ± Î¨∏Ï†úÍ∞Ä ÏÉùÍ∏¥Îã§.
-     * Ïù¥Î•º Î∞©ÏßÄÌïòÍ∏∞ ÏúÑÌïú Lock ÏúºÎ°ú ÏùºÎ∞ò DK ÎèÑÏ§ë findRemoteTransaction ÏôÄ Í∞ôÏùÄ Ìï®ÏàòÎäî
-     * Í∞ôÏùÄ DK ÏÑ∏ÏÖòÏóêÏÑúÎßå Îì§Ïñ¥Ïò§ÎØÄÎ°ú ÎèôÏãúÏÑ±Ïóê Î¨∏Ï†úÍ∞Ä ÏóÜÏúºÎØÄÎ°ú
-     * RemoteTransaction Add ÏôÄ Remove Î•º Ï†úÏô∏ÌïòÍ≥†Îäî Lock ÏùÑ Ïû°ÏßÄ ÏïäÎäîÎã§. */
+     * Performance View ¡∂»∏«“∂ß RemoteTransactioin ¿« √ﬂ∞° ªË¡¶Ω√ PV ∏¶ ¡∂»∏«œ∏È µøΩ√º∫ πÆ¡¶∞° ª˝±‰¥Ÿ.
+     * ¿Ã∏¶ πÊ¡ˆ«œ±‚ ¿ß«— Lock ¿∏∑Œ ¿œπ› DK µµ¡ﬂ findRemoteTransaction øÕ ∞∞¿∫ «‘ºˆ¥¬
+     * ∞∞¿∫ DK ººº«ø°º≠∏∏ µÈæÓø¿π«∑Œ µøΩ√º∫ø° πÆ¡¶∞° æ¯¿∏π«∑Œ
+     * RemoteTransaction Add øÕ Remove ∏¶ ¡¶ø‹«œ∞Ì¥¬ Lock ¿ª ¿‚¡ˆ æ ¥¬¥Ÿ. */
     IDE_TEST_RAISE( mDktRTxMutex.initialize( (SChar *)"DKT_REMOTE_TRANSACTION_MUTEX",
                                           IDU_MUTEX_KIND_POSIX,
                                           IDV_WAIT_INDEX_NULL )
@@ -64,15 +65,20 @@ IDE_RC  dktGlobalCoordinator::initialize( dksDataSession * aSession )
     mLinkerType         = DKT_LINKER_TYPE_NONE;
     mDtxInfo            = NULL;
     mFlag               = 0;
+    mShardClientInfo    = NULL;
+    mIsGTx              = dkiIsGTx( mAtomicTxLevel );
+    mIsGCTx             = dkiIsGCTx( mAtomicTxLevel );
+
+    dktXid::initXID( &mGlobalXID );
 
     IDE_TEST_RAISE( mCoordinatorDtxInfoMutex.initialize( (SChar *)"DKT_COORDINATOR_MUTEX",
                                                          IDU_MUTEX_KIND_POSIX,
                                                          IDV_WAIT_INDEX_NULL )
                     != IDE_SUCCESS, ERR_MUTEX_INIT );
-    /* Remote transaction Ïùò Í¥ÄÎ¶¨Î•º ÏúÑÌïú list Ï¥àÍ∏∞Ìôî */
+    /* Remote transaction ¿« ∞¸∏Æ∏¶ ¿ß«— list √ ±‚»≠ */
     IDU_LIST_INIT( &mRTxList );
 
-    /* Savepoint Ïùò Í¥ÄÎ¶¨Î•º ÏúÑÌïú list Ï¥àÍ∏∞Ìôî */
+    /* Savepoint ¿« ∞¸∏Æ∏¶ ¿ß«— list √ ±‚»≠ */
     IDU_LIST_INIT( &mSavepointList );
 
     return IDE_SUCCESS;
@@ -97,9 +103,9 @@ IDE_RC  dktGlobalCoordinator::initialize( dksDataSession * aSession )
 }
 
 /************************************************************************
- * Description : Global coordinator Í∞Ä Í∞ñÍ≥† ÏûàÎäî ÏûêÏõêÏùÑ Ï†ïÎ¶¨ÌïúÎã§.
+ * Description : Global coordinator ∞° ∞Æ∞Ì ¿÷¥¬ ¿⁄ø¯¿ª ¡§∏Æ«—¥Ÿ.
  *
- *  BUG-37487 : return Í∞íÏùÑ IDE_RC --> void Î°ú Î≥ÄÍ≤Ω.
+ *  BUG-37487 : return ∞™¿ª IDE_RC --> void ∑Œ ∫Ø∞Ê.
  *
  ************************************************************************/
 void dktGlobalCoordinator::finalize()
@@ -135,8 +141,8 @@ void dktGlobalCoordinator::finalize()
         /* there is no savepoint */
     }
 
-    /* PROJ-2569 notifierÏóêÍ≤å Ïù¥Í¥ÄÏùÄ dktGlobalTxMgrÏù¥ globalCoordinatorÏùò finalize Ìò∏Ï∂ú Ï†ÑÏóê ÌïúÎã§.
-     * dtxInfo Î©îÎ™®Î¶¨ Ìï¥Ï†úÎäî commit/rollbackÏù¥ Ïã§Ìñâ ÌõÑ ÏÑ±Í≥µ Ïó¨Î∂ÄÎ•º Î≥¥Í≥† Í∑∏Í≥≥ÏóêÏÑú ÌïúÎã§.
+    /* PROJ-2569 notifierø°∞‘ ¿Ã∞¸¿∫ dktGlobalTxMgr¿Ã globalCoordinator¿« finalize »£√‚ ¿¸ø° «—¥Ÿ.
+     * dtxInfo ∏ﬁ∏∏Æ «ÿ¡¶¥¬ commit/rollback¿Ã Ω««‡ »ƒ º∫∞¯ ø©∫Œ∏¶ ∫∏∞Ì ±◊∞˜ø°º≠ «—¥Ÿ.
      * mDtxInfo         = NULL; */
 
     mGlobalTxId      = DK_INIT_GTX_ID;
@@ -146,6 +152,9 @@ void dktGlobalCoordinator::finalize()
     mCurRemoteStmtId = DK_INVALID_STMT_ID;
     mLinkerType      = DKT_LINKER_TYPE_NONE;
     mFlag            = 0;
+    mShardClientInfo = NULL;
+    mIsGTx           = ID_FALSE;
+    mIsGCTx          = ID_FALSE;
 
     (void) mCoordinatorDtxInfoMutex.destroy();
 
@@ -153,11 +162,11 @@ void dktGlobalCoordinator::finalize()
 }
 
 /************************************************************************
- * Description : Remote transaction ÏùÑ ÏÉùÏÑ±ÌïòÏó¨ list Ïóê Ï∂îÍ∞ÄÌïúÎã§.
+ * Description : Remote transaction ¿ª ª˝º∫«œø© list ø° √ﬂ∞°«—¥Ÿ.
  *
  *  aSession    - [IN] Linker data session 
- *  aLinkObjId  - [IN] Database link Ïùò id
- *  aRemoteTx   - [OUT] ÏÉùÏÑ±Ìïú remote transaction
+ *  aLinkObjId  - [IN] Database link ¿« id
+ *  aRemoteTx   - [OUT] ª˝º∫«— remote transaction
  *  
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::createRemoteTx( idvSQL          *aStatistics,
@@ -166,12 +175,12 @@ IDE_RC  dktGlobalCoordinator::createRemoteTx( idvSQL          *aStatistics,
                                               dktRemoteTx    **aRemoteTx )
 {
     UInt             sRemoteTxId;
-    dktRemoteTx     *sRemoteTx = NULL;
-    idBool           sIsAlloced = ID_FALSE;
-    idBool           sIsInited = ID_FALSE;
-    idBool           sIsAdded = ID_FALSE;
+    dktRemoteTx     *sRemoteTx   = NULL;
+    idBool           sIsAlloced  = ID_FALSE;
+    idBool           sIsInited   = ID_FALSE;
+    idBool           sIsAdded    = ID_FALSE;
 
-    /* Ïù¥ÎØ∏ shardÎ°ú ÏÇ¨Ïö©ÌïòÍ≥† ÏûàÎäî Í≤ΩÏö∞ ÏóêÎü¨ */
+    /* ¿ÃπÃ shard∑Œ ªÁøÎ«œ∞Ì ¿÷¥¬ ∞ÊøÏ ø°∑Ø */
     IDE_TEST_RAISE( mLinkerType == DKT_LINKER_TYPE_SHARD,
                     ERR_SHARD_TX_ALREADY_EXIST );
 
@@ -207,7 +216,7 @@ IDE_RC  dktGlobalCoordinator::createRemoteTx( idvSQL          *aStatistics,
 
     IDE_ASSERT( mDktRTxMutex.unlock() == IDE_SUCCESS );
 
-    if ( mAtomicTxLevel == DKT_ADLP_TWO_PHASE_COMMIT )
+    if ( isGTx() == ID_TRUE )
     {
         generateXID( mGlobalTxId, sRemoteTxId, &(sRemoteTx->mXID) );
         IDE_TEST( mDtxInfo->addDtxBranchTx( &(sRemoteTx->mXID), aLinkObj->mTargetName )
@@ -285,7 +294,7 @@ IDE_RC  dktGlobalCoordinator::createRemoteTxForShard( idvSQL          *aStatisti
     idBool           sIsInited = ID_FALSE;
     idBool           sIsAdded = ID_FALSE;
 
-    /* Ïù¥ÎØ∏ dblinkÎ°ú ÏÇ¨Ïö©ÌïòÍ≥† ÏûàÎäî Í≤ΩÏö∞ ÏóêÎü¨ */
+    /* ¿ÃπÃ dblink∑Œ ªÁøÎ«œ∞Ì ¿÷¥¬ ∞ÊøÏ ø°∑Ø */
     IDE_TEST_RAISE( mLinkerType == DKT_LINKER_TYPE_DBLINK,
                     ERR_DBLINK_TX_ALREADY_EXIST );
 
@@ -321,10 +330,11 @@ IDE_RC  dktGlobalCoordinator::createRemoteTxForShard( idvSQL          *aStatisti
 
     IDE_ASSERT( mDktRTxMutex.unlock() == IDE_SUCCESS );
 
-    if ( mAtomicTxLevel == DKT_ADLP_TWO_PHASE_COMMIT )
+    if ( isGTx() == ID_TRUE )
     {
         generateXID( mGlobalTxId, sRemoteTxId, &(sRemoteTx->mXID) );
         IDE_TEST( mDtxInfo->addDtxBranchTx( &(sRemoteTx->mXID),
+                                            aDataNode->mCoordinatorType,
                                             aDataNode->mNodeName,
                                             aDataNode->mUserName,
                                             aDataNode->mUserPassword,
@@ -333,7 +343,7 @@ IDE_RC  dktGlobalCoordinator::createRemoteTxForShard( idvSQL          *aStatisti
                                             aDataNode->mConnectType )
                   != IDE_SUCCESS );
 
-        /* shard dataÏóê XIDÎ•º ÏÑ§Ï†ïÌïúÎã§. */
+        /* shard dataø° XID∏¶ º≥¡§«—¥Ÿ. */
         dktXid::copyXID( &(aDataNode->mXID), &(sRemoteTx->mXID) );
     }
     else
@@ -398,12 +408,12 @@ IDE_RC  dktGlobalCoordinator::createRemoteTxForShard( idvSQL          *aStatisti
 }
 
 /************************************************************************
- * Description : Remote transaction ÏùÑ remote transaction list Î°úÎ∂ÄÌÑ∞ 
- *               Ï†úÍ±∞ÌïòÍ≥† Í∞ñÍ≥† ÏûàÎäî Î™®Îì† ÏûêÏõêÏùÑ Î∞òÎÇ©ÌïúÎã§. 
+ * Description : Remote transaction ¿ª remote transaction list ∑Œ∫Œ≈Õ 
+ *               ¡¶∞≈«œ∞Ì ∞Æ∞Ì ¿÷¥¬ ∏µÁ ¿⁄ø¯¿ª π›≥≥«—¥Ÿ. 
  *
- *  aRemoteTx   - [IN] Ï†úÍ±∞Ìï† remote transaction ÏùÑ Í∞ÄÎ¶¨ÌÇ§Îäî Ìè¨Ïù∏ÌÑ∞ 
+ *  aRemoteTx   - [IN] ¡¶∞≈«“ remote transaction ¿ª ∞°∏Æ≈∞¥¬ ∆˜¿Œ≈Õ 
  *
- *  BUG-37487 : return Í∞íÏùÑ IDE_RC --> void Î°ú Î≥ÄÍ≤Ω.
+ *  BUG-37487 : return ∞™¿ª IDE_RC --> void ∑Œ ∫Ø∞Ê.
  *
  ************************************************************************/
 void dktGlobalCoordinator::destroyRemoteTx( dktRemoteTx  *aRemoteTx )
@@ -476,9 +486,9 @@ void dktGlobalCoordinator::destroyAllRemoteTx()
 
 
 /************************************************************************
- * Description : Remote transaction Ïùò id Î•º ÏÉùÏÑ±ÌïúÎã§.
+ * Description : Remote transaction ¿« id ∏¶ ª˝º∫«—¥Ÿ.
  *
- *  aLinkObjId  - [IN] Database link Ïùò id
+ *  aLinkObjId  - [IN] Database link ¿« id
  *
  ************************************************************************/
 UInt    dktGlobalCoordinator::generateRemoteTxId( UInt aLinkObjId )
@@ -492,10 +502,10 @@ UInt    dktGlobalCoordinator::generateRemoteTxId( UInt aLinkObjId )
 }
 
 /************************************************************************
- * Description : Id Î•º ÏûÖÎ†•Î∞õÏïÑ remote transaction ÏùÑ Ï∞æÎäîÎã§. 
+ * Description : Id ∏¶ ¿‘∑¬πﬁæ∆ remote transaction ¿ª √£¥¬¥Ÿ. 
  *
  *  aId         - [IN] Remote transaction id
- *  aRemoteTx   - [OUT] Ï∞æÏùÄ remote transaction
+ *  aRemoteTx   - [OUT] √£¿∫ remote transaction
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::findRemoteTx( UInt            aId, 
@@ -536,11 +546,11 @@ IDE_RC  dktGlobalCoordinator::findRemoteTx( UInt            aId,
 }
 
 /************************************************************************
- * Description : Remote target name ÏùÑ ÏûÖÎ†•Î∞õÏïÑ Ìï¥ÎãπÌïòÎäî remote transaction 
- *               ÏùÑ Ï∞æÎäîÎã§.
+ * Description : Remote target name ¿ª ¿‘∑¬πﬁæ∆ «ÿ¥Á«œ¥¬ remote transaction 
+ *               ¿ª √£¥¬¥Ÿ.
  *
  *  aTargetName - [IN] Remote target server name
- *  aRemoteTx   - [OUT] Ï∞æÏùÄ remote transaction
+ *  aRemoteTx   - [OUT] √£¿∫ remote transaction
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::findRemoteTxWithTarget( SChar         *aTargetName,
@@ -550,7 +560,7 @@ IDE_RC  dktGlobalCoordinator::findRemoteTxWithTarget( SChar         *aTargetName
     iduListNode     *sIterator = NULL;
     dktRemoteTx     *sRemoteTx = NULL;
 
-    IDE_TEST_RAISE( ( getAtomicTxLevel() == DKT_ADLP_TWO_PHASE_COMMIT ) &&
+    IDE_TEST_RAISE( ( isGTx() == ID_TRUE ) &&
                     ( getGTxStatus() >= DKT_GTX_STATUS_PREPARE_REQUEST ),
                     ERR_NOT_EXECUTE_DML );
 
@@ -641,12 +651,12 @@ IDE_RC  dktGlobalCoordinator::findRemoteTxWithShardNode( UInt          aNodeId,
 }
 
 /************************************************************************
- * Description : ÏûÖÎ†•Î∞õÏùÄ savepoint Î•º savepoint list Î°úÎ∂ÄÌÑ∞ 
- *               Ï†úÍ±∞ÌïòÍ≥† ÏûêÏõêÏùÑ Î∞òÎÇ©ÌïúÎã§. 
+ * Description : ¿‘∑¬πﬁ¿∫ savepoint ∏¶ savepoint list ∑Œ∫Œ≈Õ 
+ *               ¡¶∞≈«œ∞Ì ¿⁄ø¯¿ª π›≥≥«—¥Ÿ. 
  *
- *  aSavepoint   - [IN] Ï†úÍ±∞Ìï† savepoint Î•º Í∞ÄÎ¶¨ÌÇ§Îäî Ìè¨Ïù∏ÌÑ∞ 
+ *  aSavepoint   - [IN] ¡¶∞≈«“ savepoint ∏¶ ∞°∏Æ≈∞¥¬ ∆˜¿Œ≈Õ 
  *
- *  BUG-37487 : return Í∞íÏùÑ IDE_RC --> void Î°ú Î≥ÄÍ≤Ω.
+ *  BUG-37487 : return ∞™¿ª IDE_RC --> void ∑Œ ∫Ø∞Ê.
  *
  ************************************************************************/
 void dktGlobalCoordinator::destroySavepoint( dktSavepoint  *aSavepoint )
@@ -658,9 +668,9 @@ void dktGlobalCoordinator::destroySavepoint( dktSavepoint  *aSavepoint )
 }
 
 /************************************************************************
- * Description : Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖò commit ÏùÑ ÏúÑÌïú prepare phase Î•º ÏàòÌñâÌïúÎã§.
- *               Remote statement execution level ÏóêÏÑúÎäî prepare Îã®Í≥ÑÍ∞Ä 
- *               Ï°¥Ïû¨ÌïòÏßÄ ÏïäÏúºÎØÄÎ°ú Ïù¥ Ìï®ÏàòÍ∞Ä ÏàòÌñâÎê† ÏùºÏùÄ ÏóÜÎã§. 
+ * Description : ±€∑Œπ˙ ∆Æ∑£¿Ëº« commit ¿ª ¿ß«— prepare phase ∏¶ ºˆ«‡«—¥Ÿ.
+ *               Remote statement execution level ø°º≠¥¬ prepare ¥‹∞Ë∞° 
+ *               ¡∏¿Á«œ¡ˆ æ ¿∏π«∑Œ ¿Ã «‘ºˆ∞° ºˆ«‡µ… ¿œ¿∫ æ¯¥Ÿ. 
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::executePrepare()
@@ -688,6 +698,8 @@ IDE_RC  dktGlobalCoordinator::executePrepare()
         }
 
         case DKT_ADLP_TWO_PHASE_COMMIT:
+            /* fall through */
+        case DKT_ADLP_GCTX:
         {
             switch ( mLinkerType )
             {
@@ -722,11 +734,11 @@ IDE_RC  dktGlobalCoordinator::executePrepare()
 }
 
 /************************************************************************
- * Description : ADLP Ïùò simple transaction commit level ÏóêÏÑúÏùò 
- *               Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖò commit ÏùÑ ÏúÑÌïú prepare phase Î•º ÏàòÌñâÌïúÎã§.
- *               ÎÇ¥Î∂ÄÏ†ÅÏúºÎ°úÎäî Î™®Îì† remote node session Îì§Ïùò ÎÑ§Ìä∏ÏõåÌÅ¨ Ïó∞Í≤∞
- *               Ïù¥ ÏÇ¥ÏïÑÏûàÎäîÏßÄ ÌôïÏù∏ÌïòÏó¨ Î™®Îì† Ïó∞Í≤∞Ïù¥ ÏÇ¥ÏïÑÏûàÎäî Í≤ΩÏö∞Îßå 
- *               prepared Î°ú ÏÉÅÌÉúÎ•º Î≥ÄÍ≤ΩÌïòÍ≥† SUCCESS Î•º return ÌïúÎã§. 
+ * Description : ADLP ¿« simple transaction commit level ø°º≠¿« 
+ *               ±€∑Œπ˙ ∆Æ∑£¿Ëº« commit ¿ª ¿ß«— prepare phase ∏¶ ºˆ«‡«—¥Ÿ.
+ *               ≥ª∫Œ¿˚¿∏∑Œ¥¬ ∏µÁ remote node session µÈ¿« ≥◊∆Æøˆ≈© ø¨∞·
+ *               ¿Ã ªÏæ∆¿÷¥¬¡ˆ »Æ¿Œ«œø© ∏µÁ ø¨∞·¿Ã ªÏæ∆¿÷¥¬ ∞ÊøÏ∏∏ 
+ *               prepared ∑Œ ªÛ≈¬∏¶ ∫Ø∞Ê«œ∞Ì SUCCESS ∏¶ return «—¥Ÿ. 
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitPrepare()
@@ -841,8 +853,8 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitPrepare()
 }
 
 /************************************************************************
- * Description : ADLP Ïùò two phase commit level ÏóêÏÑúÏùò Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖò
- *               commit ÏùÑ ÏúÑÌïú prepare phase Î•º ÏàòÌñâÌïúÎã§.
+ * Description : ADLP ¿« two phase commit level ø°º≠¿« ±€∑Œπ˙ ∆Æ∑£¿Ëº«
+ *               commit ¿ª ¿ß«— prepare phase ∏¶ ºˆ«‡«—¥Ÿ.
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitPrepare()
@@ -871,7 +883,7 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitPrepare()
         /* Nothing to do */
     }
 
-    IDE_TEST( writeXaPrepareLog() != IDE_SUCCESS );
+    IDE_TEST( writeXaPrepareReqLog() != IDE_SUCCESS );
 
     mGTxStatus = DKT_GTX_STATUS_PREPARE_REQUEST;
 
@@ -966,9 +978,9 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitPrepare()
 }
 
 /************************************************************************
- * Description : ADLP Ïóê ÏùòÌï¥ Ïù¥ Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖòÏóê ÏÜçÌïòÎäî Î™®Îì† remote 
- *               transaction Îì§Ïù¥ Î™®Îëê prepare Î•º Í∏∞Îã§Î¶¨Îäî ÏÉÅÌÉúÏù∏ÏßÄÎ•º 
- *               Í≤ÄÏÇ¨ÌïúÎã§. 
+ * Description : ADLP ø° ¿««ÿ ¿Ã ±€∑Œπ˙ ∆Æ∑£¿Ëº«ø° º”«œ¥¬ ∏µÁ remote 
+ *               transaction µÈ¿Ã ∏µŒ prepare ∏¶ ±‚¥Ÿ∏Æ¥¬ ªÛ≈¬¿Œ¡ˆ∏¶ 
+ *               ∞ÀªÁ«—¥Ÿ. 
  *
  ************************************************************************/
 idBool  dktGlobalCoordinator::isAllRemoteTxPrepareReady()
@@ -996,8 +1008,8 @@ idBool  dktGlobalCoordinator::isAllRemoteTxPrepareReady()
 }
 
 /************************************************************************
- * Description : Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖò commit ÏùÑ ÏúÑÌïú ADLP ÌîÑÎ°úÌÜ†ÏΩúÏùò 
- *               commit phase Î•º ÏàòÌñâÌïúÎã§.
+ * Description : ±€∑Œπ˙ ∆Æ∑£¿Ëº« commit ¿ª ¿ß«— ADLP «¡∑Œ≈‰ƒ›¿« 
+ *               commit phase ∏¶ ºˆ«‡«—¥Ÿ.
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::executeCommit()
@@ -1044,6 +1056,8 @@ IDE_RC  dktGlobalCoordinator::executeCommit()
         }
 
         case DKT_ADLP_TWO_PHASE_COMMIT:
+            /* fall through */
+        case DKT_ADLP_GCTX:
         {
             switch ( mLinkerType )
             {
@@ -1082,16 +1096,16 @@ IDE_RC  dktGlobalCoordinator::executeCommit()
 }
 
 /************************************************************************
- * Description : Ìä∏ÎûúÏû≠ÏÖòÏùò atomic transaction level Ïù¥ ADLP ÏóêÏÑú Ï†úÍ≥µÌïòÎäî
- *               remote statement execution level Î°ú ÏÑ§Ï†ïÎêú Í≤ΩÏö∞ Ìä∏ÎûúÏû≠ÏÖò 
- *               commit ÏùÑ ÏàòÌñâÌïúÎã§. 
- *               Remote statement execution level ÏùÄ DB-Link Î°ú Ïó∞Í≤∞Îêú 
- *               remote server Ïóê ÏûêÎèôÏúºÎ°ú auto-commit mode Î•º ON ÏúºÎ°ú 
- *               ÏÑ§Ï†ïÌïòÎØÄÎ°ú ÏÇ¨Ïã§ÏÉÅ ÏàòÌñâÏù¥ ÏÑ±Í≥µÌïú Î™®Îì† remote transaction
- *               ÏùÄ ÏÇ¨Ïã§ÏÉÅ remote server Ïóê commit ÎêòÏñ¥ ÏûàÎã§Í≥† Î≥º Ïàò ÏûàÎã§. 
- *               Í∑∏Îü¨ÎÇò remote server Í∞Ä auto-commit mode Î•º ÏßÄÏõêÌïòÏßÄ ÏïäÎäî
- *               Í≤ΩÏö∞ ÏÇ¨Ïö©ÏûêÍ∞Ä Î™ÖÏãúÏ†ÅÏúºÎ°ú commit ÏùÑ ÏàòÌñâÌï† Ïàò ÏûàÏñ¥Ïïº ÌïòÎ©∞ 
- *               Í∑∏Î†áÏßÄ ÏïäÏùÄ Í≤ΩÏö∞ÏóêÎèÑ ÏÇ¨Ïö©ÏûêÎäî commit ÏùÑ ÏàòÌñâÌï† Ïàò ÏûàÎã§. 
+ * Description : ∆Æ∑£¿Ëº«¿« atomic transaction level ¿Ã ADLP ø°º≠ ¡¶∞¯«œ¥¬
+ *               remote statement execution level ∑Œ º≥¡§µ» ∞ÊøÏ ∆Æ∑£¿Ëº« 
+ *               commit ¿ª ºˆ«‡«—¥Ÿ. 
+ *               Remote statement execution level ¿∫ DB-Link ∑Œ ø¨∞·µ» 
+ *               remote server ø° ¿⁄µø¿∏∑Œ auto-commit mode ∏¶ ON ¿∏∑Œ 
+ *               º≥¡§«œπ«∑Œ ªÁΩ«ªÛ ºˆ«‡¿Ã º∫∞¯«— ∏µÁ remote transaction
+ *               ¿∫ ªÁΩ«ªÛ remote server ø° commit µ«æÓ ¿÷¥Ÿ∞Ì ∫º ºˆ ¿÷¥Ÿ. 
+ *               ±◊∑Ø≥™ remote server ∞° auto-commit mode ∏¶ ¡ˆø¯«œ¡ˆ æ ¥¬
+ *               ∞ÊøÏ ªÁøÎ¿⁄∞° ∏ÌΩ√¿˚¿∏∑Œ commit ¿ª ºˆ«‡«“ ºˆ ¿÷æÓæﬂ «œ∏Á 
+ *               ±◊∑∏¡ˆ æ ¿∫ ∞ÊøÏø°µµ ªÁøÎ¿⁄¥¬ commit ¿ª ºˆ«‡«“ ºˆ ¿÷¥Ÿ. 
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::executeRemoteStatementExecutionCommit()
@@ -1160,8 +1174,8 @@ IDE_RC  dktGlobalCoordinator::executeRemoteStatementExecutionCommit()
 }
 
 /************************************************************************
- * Description : ADLP Ïùò simple transaction commit level ÏóêÏÑúÏùò 
- *               Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖò commit ÏùÑ ÏúÑÌïú commit phase Î•º ÏàòÌñâÌïúÎã§.
+ * Description : ADLP ¿« simple transaction commit level ø°º≠¿« 
+ *               ±€∑Œπ˙ ∆Æ∑£¿Ëº« commit ¿ª ¿ß«— commit phase ∏¶ ºˆ«‡«—¥Ÿ.
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitCommit()
@@ -1220,8 +1234,8 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitCommit()
 }
 
 /************************************************************************
- * Description : ADLP Ïùò two phase commit level ÏóêÏÑúÏùò Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖò
- *               commit ÏùÑ ÏúÑÌïú commit phase Î•º ÏàòÌñâÌïúÎã§.
+ * Description : ADLP ¿« two phase commit level ø°º≠¿« ±€∑Œπ˙ ∆Æ∑£¿Ëº«
+ *               commit ¿ª ¿ß«— commit phase ∏¶ ºˆ«‡«—¥Ÿ.
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitCommit()
@@ -1297,6 +1311,8 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitCommit()
             /* Nothing to do */
         }
         removeDtxInfo();
+
+        IDE_TEST( writeXaEndLog() != IDE_SUCCESS );
     }
     else
     {
@@ -1354,7 +1370,7 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitCommit()
 }
 
 /************************************************************************
- * Description : Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖò rollback ÏùÑ ÏàòÌñâÌïúÎã§.
+ * Description : ±€∑Œπ˙ ∆Æ∑£¿Ëº« rollback ¿ª ºˆ«‡«—¥Ÿ.
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::executeRollback( SChar  *aSavepointName )
@@ -1402,6 +1418,8 @@ IDE_RC  dktGlobalCoordinator::executeRollback( SChar  *aSavepointName )
         }
 
         case DKT_ADLP_TWO_PHASE_COMMIT:
+            /* fall through */
+        case DKT_ADLP_GCTX:
         {
             switch ( mLinkerType )
             {
@@ -1411,7 +1429,7 @@ IDE_RC  dktGlobalCoordinator::executeRollback( SChar  *aSavepointName )
                     break;
 
                 case DKT_LINKER_TYPE_SHARD:
-                    IDE_TEST( executeTwoPhaseCommitRollbackForShard()
+                    IDE_TEST( executeTwoPhaseCommitRollbackForShard( aSavepointName )
                               != IDE_SUCCESS );
                     break;
 
@@ -1438,7 +1456,7 @@ IDE_RC  dktGlobalCoordinator::executeRollback( SChar  *aSavepointName )
 }
 
 /************************************************************************
- * Description : Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖò rollback FORCE DATABASE_LINK Î•º ÏàòÌñâÌïúÎã§.
+ * Description : ±€∑Œπ˙ ∆Æ∑£¿Ëº« rollback FORCE DATABASE_LINK ∏¶ ºˆ«‡«—¥Ÿ.
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::executeRollbackForce()
@@ -1544,22 +1562,22 @@ IDE_RC  dktGlobalCoordinator::executeRollbackForceForDBLink()
 }
 
 /************************************************************************
- * Description : ADLP Ïùò remote statement execution level ÏóêÏÑúÏùò 
- *               Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖò rollback ÏùÑ ÏàòÌñâÌïúÎã§. 
+ * Description : ADLP ¿« remote statement execution level ø°º≠¿« 
+ *               ±€∑Œπ˙ ∆Æ∑£¿Ëº« rollback ¿ª ºˆ«‡«—¥Ÿ. 
  *   ____________________________________________________________________
  *  |                                                                    | 
- *  |  ÏõêÎûòÎäî Ïù¥ Ìï®ÏàòÎäî Ìï≠ÏÉÅ Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖò Î°§Î∞±Ï≤òÎ¶¨Î•º ÌïòÎ©¥ ÎêúÎã§.       |
- *  |  savepoint Í∞Ä ÎÑòÏñ¥ÏôÄÎèÑ ÎèôÏùºÌïòÎã§.                                   |
- *  |  Í∑∏Îü¨ÎÇò ÏµúÏ¥à ÏÑ§Í≥ÑÏùòÎèÑÏôÄÎäî Îã¨Î¶¨ REMOTE_STATEMENT_EXECUTION level    |
- *  |  ÏóêÏÑúÎèÑ ÏõêÍ≤©ÏÑúÎ≤ÑÏóê autocommit off Î•º Ìï† Ïàò ÏûàÎèÑÎ°ù ÌïòÎäî ÏöîÍµ¨ÏÇ¨Ìï≠Ïù¥  |
- *  |  Î∞òÏòÅÎêòÎ©¥ÏÑú executeSimpleTransactionCommitRollback Í≥º Ïú†ÏÇ¨ÌïòÍ≤å     |
- *  |  Ï≤òÎ¶¨ÎêòÎèÑÎ°ù ÏûëÏÑ±ÎêòÏóàÎã§.                                            | 
- *  |  Îî∞ÎùºÏÑú, executeSimpleTransactionCommitRollback Ïóê Î≥ÄÍ≤ΩÏÇ¨Ìï≠Ïù¥      |
- *  |  ÏÉùÍ∏∞Î©¥ Ïù¥ Ìï®ÏàòÏóêÎèÑ Î∞òÏòÅÎêòÏñ¥Ïïº ÌïúÎã§.                               |
+ *  |  ø¯∑°¥¬ ¿Ã «‘ºˆ¥¬ «◊ªÛ ±€∑Œπ˙ ∆Æ∑£¿Ëº« ∑—πÈ√≥∏Æ∏¶ «œ∏È µ»¥Ÿ.       |
+ *  |  savepoint ∞° ≥—æÓøÕµµ µø¿œ«œ¥Ÿ.                                   |
+ *  |  ±◊∑Ø≥™ √÷√  º≥∞Ë¿«µµøÕ¥¬ ¥ﬁ∏Æ REMOTE_STATEMENT_EXECUTION level    |
+ *  |  ø°º≠µµ ø¯∞›º≠πˆø° autocommit off ∏¶ «“ ºˆ ¿÷µµ∑œ «œ¥¬ ø‰±∏ªÁ«◊¿Ã  |
+ *  |  π›øµµ«∏Èº≠ executeSimpleTransactionCommitRollback ∞˙ ¿ØªÁ«œ∞‘     |
+ *  |  √≥∏Æµ«µµ∑œ ¿€º∫µ«æ˙¥Ÿ.                                            | 
+ *  |  µ˚∂Ûº≠, executeSimpleTransactionCommitRollback ø° ∫Ø∞ÊªÁ«◊¿Ã      |
+ *  |  ª˝±‚∏È ¿Ã «‘ºˆø°µµ π›øµµ«æÓæﬂ «—¥Ÿ.                               |
  *  |____________________________________________________________________|
  *
- *  aSavepointName  - [IN] Rollback to savepoint Î•º ÏàòÌñâÌï† savepoint name
- *                         Ïù¥ Í∞íÏù¥ NULL Ïù¥Î©¥ Ï†ÑÏ≤¥ Ìä∏ÎûúÏû≠ÏÖòÏùÑ rollback.
+ *  aSavepointName  - [IN] Rollback to savepoint ∏¶ ºˆ«‡«“ savepoint name
+ *                         ¿Ã ∞™¿Ã NULL ¿Ã∏È ¿¸√º ∆Æ∑£¿Ëº«¿ª rollback.
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::executeRemoteStatementExecutionRollback( SChar *aSavepointName )
@@ -1638,7 +1656,7 @@ IDE_RC  dktGlobalCoordinator::executeRemoteStatementExecutionRollback( SChar *aS
         /* >> BUG-37512 */
         if ( findSavepoint( aSavepointName ) == NULL )
         {
-            /* global transaction Ïùò ÏàòÌñâ Ïù¥Ï†ÑÏóê Ï∞çÌûå savepoint.
+            /* global transaction ¿« ºˆ«‡ ¿Ã¿¸ø° ¬Ô»˘ savepoint.
                set rollback all */
             sRollbackNodeCnt = 0;
         }
@@ -1782,16 +1800,16 @@ IDE_RC  dktGlobalCoordinator::executeRemoteStatementExecutionRollback( SChar *aS
 }
 
 /************************************************************************
- * Description : ADLP Ïùò simple transaction commit level ÏóêÏÑúÏùò 
- *               Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖò rollback ÏùÑ ÏàòÌñâÌïúÎã§.
+ * Description : ADLP ¿« simple transaction commit level ø°º≠¿« 
+ *               ±€∑Œπ˙ ∆Æ∑£¿Ëº« rollback ¿ª ºˆ«‡«—¥Ÿ.
  *   ___________________________________________________________________
  *  |                                                                   | 
- *  |  Ïù¥ Ìï®ÏàòÏùò Î≥ÄÍ≤ΩÏÇ¨Ìï≠ÏùÄ executeRemoteStatementExecutionRollback     |
- *  |  Ìï®ÏàòÏóêÎèÑ Î∞òÏòÅÎêòÏñ¥Ïïº ÌïúÎã§.                                        |
+ *  |  ¿Ã «‘ºˆ¿« ∫Ø∞ÊªÁ«◊¿∫ executeRemoteStatementExecutionRollback     |
+ *  |  «‘ºˆø°µµ π›øµµ«æÓæﬂ «—¥Ÿ.                                        |
  *  |___________________________________________________________________|
  *
- *  aSavepointName  - [IN] Rollback to savepoint Î•º ÏàòÌñâÌï† savepoint name
- *                         Ïù¥ Í∞íÏù¥ NULL Ïù¥Î©¥ Ï†ÑÏ≤¥ Ìä∏ÎûúÏû≠ÏÖòÏùÑ rollback.
+ *  aSavepointName  - [IN] Rollback to savepoint ∏¶ ºˆ«‡«“ savepoint name
+ *                         ¿Ã ∞™¿Ã NULL ¿Ã∏È ¿¸√º ∆Æ∑£¿Ëº«¿ª rollback.
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitRollback( SChar *aSavepointName )
@@ -1871,7 +1889,7 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitRollback( SChar *aSa
         /* >> BUG-37512 */
         if ( findSavepoint( aSavepointName ) == NULL )
         {
-            /* global transaction Ïùò ÏàòÌñâ Ïù¥Ï†ÑÏóê Ï∞çÌûå savepoint.
+            /* global transaction ¿« ºˆ«‡ ¿Ã¿¸ø° ¬Ô»˘ savepoint.
                set rollback all */
             sRollbackNodeCnt = 0;
         }
@@ -2022,8 +2040,8 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitRollback( SChar *aSa
 }
 
 /************************************************************************
- * Description : ADLP Ïùò two phase commit level ÏóêÏÑúÏùò Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖò 
- *               rollback ÏùÑ ÏàòÌñâÌïúÎã§. 
+ * Description : ADLP ¿« two phase commit level ø°º≠¿« ±€∑Œπ˙ ∆Æ∑£¿Ëº« 
+ *               rollback ¿ª ºˆ«‡«—¥Ÿ. 
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitRollback()
@@ -2150,6 +2168,11 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitRollback()
         }
     }
 
+    if ( sIsPrepared == ID_TRUE )
+    {
+        IDE_TEST( writeXaEndLog() != IDE_SUCCESS );
+    }
+
     setAllRemoteTxStatus( DKT_RTX_STATUS_ROLLBACKED );
     mGTxStatus = DKT_GTX_STATUS_ROLLBACKED;        
 
@@ -2183,9 +2206,9 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitRollback()
 }
 
 /************************************************************************
- * Description : Savepoint Î•º ÏÑ§Ï†ïÌïúÎã§.
+ * Description : Savepoint ∏¶ º≥¡§«—¥Ÿ.
  *              
- *  aSavepointName  - [IN] ÏÑ§Ï†ïÌï† savepoint name
+ *  aSavepointName  - [IN] º≥¡§«“ savepoint name
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::setSavepoint( const SChar   *aSavepointName )
@@ -2278,11 +2301,11 @@ IDE_RC  dktGlobalCoordinator::setSavepoint( const SChar   *aSavepointName )
 }
 
 /************************************************************************
- * Description : ÎèôÏùºÌïú Ïù¥Î¶ÑÏùò savepoint Î•º list ÏóêÏÑú Ï∞æÎäîÎã§.
+ * Description : µø¿œ«— ¿Ã∏ß¿« savepoint ∏¶ list ø°º≠ √£¥¬¥Ÿ.
  *  
- * Return : Ï∞æÏùÄ savepoint, list Ïóê ÏóÜÎäî Í≤ΩÏö∞Îäî NULL
+ * Return : √£¿∫ savepoint, list ø° æ¯¥¬ ∞ÊøÏ¥¬ NULL
  *
- *  aSavepointName  - [IN] Ï∞æÏùÑ savepoint name
+ *  aSavepointName  - [IN] √£¿ª savepoint name
  *
  ************************************************************************/
 dktSavepoint *  dktGlobalCoordinator::findSavepoint( const SChar *aSavepointName )
@@ -2303,7 +2326,8 @@ dktSavepoint *  dktGlobalCoordinator::findSavepoint( const SChar *aSavepointName
             }
             else
             {
-                /* iterate next */
+                /* iterate next or NULL return */
+                sSavepoint = NULL;
             }
         }
         else
@@ -2318,12 +2342,12 @@ dktSavepoint *  dktGlobalCoordinator::findSavepoint( const SChar *aSavepointName
 }
 
 /************************************************************************
- * Description : ÏûÖÎ†•Î∞õÏùÄ savepoint Î•º savepoint list Î°úÎ∂ÄÌÑ∞ Ï†úÍ±∞ÌïúÎã§.
+ * Description : ¿‘∑¬πﬁ¿∫ savepoint ∏¶ savepoint list ∑Œ∫Œ≈Õ ¡¶∞≈«—¥Ÿ.
  *
- *  aSavepointName  - [IN] Ï†úÍ±∞Ìï† savepoint name 
+ *  aSavepointName  - [IN] ¡¶∞≈«“ savepoint name 
  *
- *  BUG-37512 : ÏõêÎûò Í∏∞Îä•ÏùÄ removeAllNextSavepoint Ìï®ÏàòÍ∞Ä ÏàòÌñâÌïòÍ≥† 
- *              Ïù¥ Ìï®ÏàòÎäî ÏûÖÎ†•Î∞õÏùÄ savepoint Îßå Ï†úÍ±∞ÌïòÎäî Ìï®ÏàòÎ°ú Î≥ÄÍ≤Ω.
+ *  BUG-37512 : ø¯∑° ±‚¥…¿∫ removeAllNextSavepoint «‘ºˆ∞° ºˆ«‡«œ∞Ì 
+ *              ¿Ã «‘ºˆ¥¬ ¿‘∑¬πﬁ¿∫ savepoint ∏∏ ¡¶∞≈«œ¥¬ «‘ºˆ∑Œ ∫Ø∞Ê.
  *
  ************************************************************************/
 void    dktGlobalCoordinator::removeSavepoint( const SChar  *aSavepointName )
@@ -2363,9 +2387,9 @@ void    dktGlobalCoordinator::removeSavepoint( const SChar  *aSavepointName )
 }
 
 /************************************************************************
- * Description : Î™®Îì† savepoint Î•º list Î°úÎ∂ÄÌÑ∞ Ï†úÍ±∞ÌïúÎã§.
+ * Description : ∏µÁ savepoint ∏¶ list ∑Œ∫Œ≈Õ ¡¶∞≈«—¥Ÿ.
  *
- *  BUG-37512 : Ïã†ÏÑ§.
+ *  BUG-37512 : Ω≈º≥.
  *
  ************************************************************************/
 void    dktGlobalCoordinator::removeAllSavepoint()
@@ -2395,12 +2419,12 @@ void    dktGlobalCoordinator::removeAllSavepoint()
 }
 
 /************************************************************************
- * Description : ÏûÖÎ†•Î∞õÏùÄ savepoint Ïù¥ÌõÑÏóê Ï∞çÌûå Î™®Îì† savepoint Î•º list 
- *               ÏóêÏÑú Ï†úÍ±∞ÌïúÎã§.
+ * Description : ¿‘∑¬πﬁ¿∫ savepoint ¿Ã»ƒø° ¬Ô»˘ ∏µÁ savepoint ∏¶ list 
+ *               ø°º≠ ¡¶∞≈«—¥Ÿ.
  *
  *  aSavepointName  - [IN] savepoint name 
  *
- *  BUG-37512 : Ïã†ÏÑ§.
+ *  BUG-37512 : Ω≈º≥.
  *
  ************************************************************************/
 void    dktGlobalCoordinator::removeAllNextSavepoint( const SChar  *aSavepointName )
@@ -2408,6 +2432,7 @@ void    dktGlobalCoordinator::removeAllNextSavepoint( const SChar  *aSavepointNa
     iduList          sRemoveList;
     iduListNode     *sIterator        = NULL;
     iduListNode     *sNextNode        = NULL;
+    iduListNode     *sNextSavepointNode = NULL;
     dktRemoteTx     *sRemoteTx        = NULL;
     dktSavepoint    *sSavepoint       = NULL;
     dktSavepoint    *sRemoveSavepoint = NULL;
@@ -2419,8 +2444,8 @@ void    dktGlobalCoordinator::removeAllNextSavepoint( const SChar  *aSavepointNa
     if ( sSavepoint != NULL )
     {
         IDU_LIST_INIT( &sRemoveList );
-        IDU_LIST_SPLIT_LIST( &mSavepointList, (iduListNode *)(&sSavepoint->mNode)->mNext, &sRemoveList );
-
+        sNextSavepointNode = (iduListNode *)(&sSavepoint->mNode)->mNext;
+        IDU_LIST_SPLIT_LIST( &mSavepointList, sNextSavepointNode, &sRemoveList );
         IDU_LIST_ITERATE_SAFE( &sRemoveList, sIterator, sNextNode )
         {
             sRemoveSavepoint = (dktSavepoint *)sIterator->mObj;
@@ -2431,7 +2456,7 @@ void    dktGlobalCoordinator::removeAllNextSavepoint( const SChar  *aSavepointNa
 
                 if ( sRemoteTx->findSavepoint( (const SChar *)sRemoveSavepoint->mName ) != NULL ) 
                 {
-                    sRemoteTx->removeAllNextSavepoint( sRemoveSavepoint->mName );
+                    sRemoteTx->removeSavepoint( sRemoveSavepoint->mName );
                 }
                 else
                 {
@@ -2449,14 +2474,14 @@ void    dktGlobalCoordinator::removeAllNextSavepoint( const SChar  *aSavepointNa
 }
 
 /************************************************************************
- * Description : Ïù¥ Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖòÏóê ÏÜçÌïú Î™®Îì† remote transaction Îì§ÏùÑ
- *               Ï°∞ÏÇ¨ÌïòÏó¨ ÎèôÏùºÌïú savepoint Í∞Ä ÏÑ§Ï†ïÎêú remote transaction
- *               Ïù¥ Í∞ñÍ≥† ÏûàÎäî remote node session id Î•º ÏûÖÎ†•Î∞õÏùÄ Î∞∞Ïó¥Ïóê 
- *               Ï±ÑÏõåÏ§ÄÎã§.
+ * Description : ¿Ã ±€∑Œπ˙ ∆Æ∑£¿Ëº«ø° º”«— ∏µÁ remote transaction µÈ¿ª
+ *               ¡∂ªÁ«œø© µø¿œ«— savepoint ∞° º≥¡§µ» remote transaction
+ *               ¿Ã ∞Æ∞Ì ¿÷¥¬ remote node session id ∏¶ ¿‘∑¬πﬁ¿∫ πËø≠ø° 
+ *               √§øˆ¡ÿ¥Ÿ.
  *
  * Return      : the number of remote transactions with input savepoint
  *
- *  aSavepointName      - [IN] Í≤ÄÏÇ¨Ìï† savepoint name
+ *  aSavepointName      - [IN] ∞ÀªÁ«“ savepoint name
  *  aRemoteNodeIdArr    - [OUT] Remote node session id's array 
  *
  ************************************************************************/
@@ -2487,12 +2512,12 @@ UInt    dktGlobalCoordinator::getRemoteNodeIdArrWithSavepoint(
 }
 
 /************************************************************************
- * Description : List ÏóêÏÑú ÏûÖÎ†•Î∞õÏùÄ savepoint Í∞Ä Ï∞çÌûå remote transaction 
- *               Îì§ÏùÑ Ï∞æÏïÑ Ï†úÍ±∞ÌïúÎã§.
+ * Description : List ø°º≠ ¿‘∑¬πﬁ¿∫ savepoint ∞° ¬Ô»˘ remote transaction 
+ *               µÈ¿ª √£æ∆ ¡¶∞≈«—¥Ÿ.
  *              
  *  aSavepointName  - [IN] Savepoint name 
  *
- *  BUG-37487 : return Í∞íÏùÑ IDE_RC --> void Î°ú Î≥ÄÍ≤Ω.
+ *  BUG-37487 : return ∞™¿ª IDE_RC --> void ∑Œ ∫Ø∞Ê.
  *
  ************************************************************************/
 void dktGlobalCoordinator::destroyRemoteTransactionWithoutSavepoint( const SChar *aSavepointName )
@@ -2517,10 +2542,10 @@ void dktGlobalCoordinator::destroyRemoteTransactionWithoutSavepoint( const SChar
 }
 
 /************************************************************************
- * Description : Id Î•º ÌÜµÌï¥ Ìï¥ÎãπÌïòÎäî remote statement Î•º Ï∞æÏïÑ Î∞òÌôòÌïúÎã§.
+ * Description : Id ∏¶ ≈Î«ÿ «ÿ¥Á«œ¥¬ remote statement ∏¶ √£æ∆ π›»Ø«—¥Ÿ.
  *              
- *  aRemoteStmtId   - [IN] Ï∞æÏùÑ remote statement Ïùò id
- *  aRemoteStmt     - [OUT] Î∞òÌôòÎê† remote statement Í∞ùÏ≤¥Î•º Í∞ÄÎ¶¨ÌÇ§Îäî Ìè¨Ïù∏ÌÑ∞
+ *  aRemoteStmtId   - [IN] √£¿ª remote statement ¿« id
+ *  aRemoteStmt     - [OUT] π›»Øµ… remote statement ∞¥√º∏¶ ∞°∏Æ≈∞¥¬ ∆˜¿Œ≈Õ
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::findRemoteStmt( SLong            aRemoteStmtId,
@@ -2551,10 +2576,10 @@ IDE_RC  dktGlobalCoordinator::findRemoteStmt( SLong            aRemoteStmtId,
 }
 
 /************************************************************************
- * Description : Ïù¥ global coordinator ÏóêÏÑú ÏàòÌñâÏ§ëÏù∏ Î™®Îì† remote 
- *               statement Îì§Ïùò Í∞úÏàòÎ•º Íµ¨ÌïúÎã§.
+ * Description : ¿Ã global coordinator ø°º≠ ºˆ«‡¡ﬂ¿Œ ∏µÁ remote 
+ *               statement µÈ¿« ∞≥ºˆ∏¶ ±∏«—¥Ÿ.
  *              
- * Return      : remote statement Í∞úÏàò
+ * Return      : remote statement ∞≥ºˆ
  *
  ************************************************************************/
 UInt    dktGlobalCoordinator::getAllRemoteStmtCount()
@@ -2585,9 +2610,9 @@ UInt    dktGlobalCoordinator::getAllRemoteStmtCount()
 }
 
 /************************************************************************
- * Description : ÌòÑÏû¨ ÏàòÌñâÏ§ëÏù∏ Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖòÏùò Ï†ïÎ≥¥Î•º ÏñªÏñ¥Ïò®Îã§.
+ * Description : «ˆ¿Á ºˆ«‡¡ﬂ¿Œ ±€∑Œπ˙ ∆Æ∑£¿Ëº«¿« ¡§∫∏∏¶ æÚæÓø¬¥Ÿ.
  *              
- *  aInfo       - [IN] Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖòÏùò Ï†ïÎ≥¥Î•º Îã¥ÏùÑ Î∞∞Ïó¥Ìè¨Ïù∏ÌÑ∞
+ *  aInfo       - [IN] ±€∑Œπ˙ ∆Æ∑£¿Ëº«¿« ¡§∫∏∏¶ ¥„¿ª πËø≠∆˜¿Œ≈Õ
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::getGlobalTransactionInfo( dktGlobalTxInfo  *aInfo )
@@ -2603,13 +2628,13 @@ IDE_RC  dktGlobalCoordinator::getGlobalTransactionInfo( dktGlobalTxInfo  *aInfo 
 }
 
 /************************************************************************
- * Description : Ïù¥ global coordinator ÏóêÏÑú ÏàòÌñâÏ§ëÏù∏ Î™®Îì† remote 
- *               transaction Ïùò Ï†ïÎ≥¥Î•º Íµ¨ÌïúÎã§.
+ * Description : ¿Ã global coordinator ø°º≠ ºˆ«‡¡ﬂ¿Œ ∏µÁ remote 
+ *               transaction ¿« ¡§∫∏∏¶ ±∏«—¥Ÿ.
  *              
- *  aInfo           - [OUT] Î∞òÌôòÎê† remote transaction Îì§Ïùò Ï†ïÎ≥¥
- *  aRemainedCnt    - [IN/OUT] Îçî ÏñªÏñ¥Ïïº Ìï† remote transaction Ï†ïÎ≥¥Ïùò Í∞úÏàò
- *  aInfoCnt        - [OUT] Ïù¥ Ìï®ÏàòÏóêÏÑú Ï±ÑÏõåÏßÑ remote transaction info (aInfo)
- *                          Ïùò Í∞úÏàò
+ *  aInfo           - [OUT] π›»Øµ… remote transaction µÈ¿« ¡§∫∏
+ *  aRemainedCnt    - [IN/OUT] ¥ı æÚæÓæﬂ «“ remote transaction ¡§∫∏¿« ∞≥ºˆ
+ *  aInfoCnt        - [OUT] ¿Ã «‘ºˆø°º≠ √§øˆ¡¯ remote transaction info (aInfo)
+ *                          ¿« ∞≥ºˆ
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::getRemoteTransactionInfo( dktRemoteTxInfo  *aInfo,
@@ -2667,13 +2692,13 @@ IDE_RC  dktGlobalCoordinator::getRemoteTransactionInfo( dktRemoteTxInfo  *aInfo,
 }
 
 /************************************************************************
- * Description : Ïù¥ global coordinator ÏóêÏÑú ÏàòÌñâÏ§ëÏù∏ Î™®Îì† remote 
- *               statement Ïùò Ï†ïÎ≥¥Î•º Íµ¨ÌïúÎã§.
+ * Description : ¿Ã global coordinator ø°º≠ ºˆ«‡¡ﬂ¿Œ ∏µÁ remote 
+ *               statement ¿« ¡§∫∏∏¶ ±∏«—¥Ÿ.
  *              
- *  aInfo           - [OUT] Î∞òÌôòÎê† remote statement Îì§Ïùò Ï†ïÎ≥¥
- *  aRemaniedCnt    - [IN/OUT] ÎÇ®ÏïÑÏûàÎäî remote statement Ï†ïÎ≥¥Ïùò Í∞úÏàò
- *  aInfoCnt        - [OUT] Ïù¥ Ìï®ÏàòÏóêÏÑú Ï±ÑÏõåÏßÑ remote transaction info (aInfo)
- *                          Ïùò Í∞úÏàò
+ *  aInfo           - [OUT] π›»Øµ… remote statement µÈ¿« ¡§∫∏
+ *  aRemaniedCnt    - [IN/OUT] ≥≤æ∆¿÷¥¬ remote statement ¡§∫∏¿« ∞≥ºˆ
+ *  aInfoCnt        - [OUT] ¿Ã «‘ºˆø°º≠ √§øˆ¡¯ remote transaction info (aInfo)
+ *                          ¿« ∞≥ºˆ
  *
  ************************************************************************/
 IDE_RC  dktGlobalCoordinator::getRemoteStmtInfo( dktRemoteStmtInfo  *aInfo,
@@ -2741,7 +2766,15 @@ IDE_RC  dktGlobalCoordinator::createDtxInfo( UInt aLocalTxId, UInt aGlobalTxId )
                                        IDU_MEM_IMMEDIATE )
                     != IDE_SUCCESS, ERR_MEMORY_ALLOC_DTX_INFO_HEADER );
 
-    mDtxInfo->initialize( aLocalTxId, aGlobalTxId );
+    generateXID( mGlobalTxId, 0, &mGlobalXID );
+
+    IDE_TEST( mDtxInfo->initialize( &mGlobalXID, 
+                                    aLocalTxId, 
+                                    aGlobalTxId,
+                                    ID_FALSE )
+              != IDE_SUCCESS );
+
+    IDE_TEST( writeXaStartReqLog() != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -2769,6 +2802,7 @@ void  dktGlobalCoordinator::removeDtxInfo()
     IDE_ASSERT( mCoordinatorDtxInfoMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
 
     mDtxInfo->removeAllBranchTx();
+    mDtxInfo->finalize();
     (void)iduMemMgr::free( mDtxInfo );
     mDtxInfo = NULL;
 
@@ -2911,7 +2945,7 @@ IDE_RC  dktGlobalCoordinator::findRemoteTxNStmt( SLong            aRemoteStmtId,
     return IDE_SUCCESS;
 }
 /*
-  * XID: MACADDR (6byte) + Server Initial time sec from 2017 (4byte)+ Global Transaction ID(4byte)
+  * XID: MACADDR (6byte) + Server Initial time sec from 2017 (4byte) + ProcessID (4byte) + Global Transaction ID (4byte)
  */
 void dktGlobalCoordinator::generateXID( UInt     aGlobalTxId, 
                                         UInt     aRemoteTxId, 
@@ -2921,6 +2955,7 @@ void dktGlobalCoordinator::generateXID( UInt     aGlobalTxId,
 
     IDE_DASSERT( ID_SIZEOF(dktGlobalTxMgr::mMacAddr) +
                  ID_SIZEOF(dktGlobalTxMgr::mInitTime) +
+                 ID_SIZEOF(dktGlobalTxMgr::mProcessID) +
                  ID_SIZEOF(aGlobalTxId) == DKT_2PC_MAXGTRIDSIZE );
     IDE_DASSERT( ID_SIZEOF(aRemoteTxId) == DKT_2PC_MAXBQUALSIZE );
 
@@ -2931,6 +2966,9 @@ void dktGlobalCoordinator::generateXID( UInt     aGlobalTxId,
 
     idlOS::memcpy( sData, &dktGlobalTxMgr::mInitTime, ID_SIZEOF(dktGlobalTxMgr::mInitTime) ); /*4byte*/
     sData += ID_SIZEOF(dktGlobalTxMgr::mInitTime);
+
+    idlOS::memcpy( sData, &dktGlobalTxMgr::mProcessID, ID_SIZEOF(dktGlobalTxMgr::mProcessID) ); /*4byte*/
+    sData += ID_SIZEOF(dktGlobalTxMgr::mProcessID);
 
     idlOS::memcpy( sData, &aGlobalTxId, ID_SIZEOF(aGlobalTxId) ); /*4byte*/
     sData += ID_SIZEOF(aGlobalTxId);
@@ -2988,16 +3026,38 @@ IDE_RC dktGlobalCoordinator::freeAndDestroyAllRemoteStmt( dksSession *aSession, 
     return IDE_FAILURE;
 }
 
+IDE_RC dktGlobalCoordinator::writeXaStartReqLog()
+{
+    smLSN    sDummyLSN;
+
+    /* Write Start Log */
+    IDE_TEST( smiWriteXaStartReqLog( &mGlobalXID,
+                                     mLocalTxId,
+                                     &sDummyLSN )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 /************************************************************************
- * Description : Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖò commit ÏùÑ ÏúÑÌïú XA logÎ•º Í∏∞Î°ùÌïúÎã§.
+ * Description : ±€∑Œπ˙ ∆Æ∑£¿Ëº« commit ¿ª ¿ß«— XA log∏¶ ±‚∑œ«—¥Ÿ.
  *
  ************************************************************************/
-IDE_RC dktGlobalCoordinator::writeXaPrepareLog()
+IDE_RC dktGlobalCoordinator::writeXaPrepareReqLog()
 {
     UChar  * sSMBranchTx = NULL;
     UInt     sSMBranchTxSize = 0;
     smLSN    sPrepareLSN;
     idBool   sIsAlloced = ID_FALSE;
+
+#ifdef DEBUG
+    SChar    sBuf[2048];
+    UInt     sBranchTxCnt = 0;
+#endif
 
     if ( mGTxStatus < DKT_GTX_STATUS_PREPARE_REQUEST )
     {
@@ -3013,8 +3073,26 @@ IDE_RC dktGlobalCoordinator::writeXaPrepareLog()
         IDE_TEST( mDtxInfo->serializeBranchTx( sSMBranchTx, sSMBranchTxSize )
                   != IDE_SUCCESS );
 
+#ifdef DEBUG
+        mDtxInfo->dumpBranchTx( sBuf,
+                                ID_SIZEOF( sBuf ),
+                                &sBranchTxCnt );
+
+        ideLog::log( IDE_SD_19,
+                     "\n<SMR_LT_XA_PREPARE_REQ Logging> "
+                     "LocalID: %"ID_UINT32_FMT", "
+                     "GlobalID: %"ID_UINT32_FMT"\n"
+                     "BranchTx Count %"ID_UINT32_FMT"\n"
+                     "%s",
+                     mLocalTxId,
+                     mGlobalTxId,
+                     sBranchTxCnt,
+                     sBuf );
+#endif
+
         /* Write prepare Log */
-        IDE_TEST( smiWriteXaPrepareReqLog( mLocalTxId,
+        IDE_TEST( smiWriteXaPrepareReqLog( &mGlobalXID,
+                                           mLocalTxId,
                                            mGlobalTxId,
                                            sSMBranchTx,
                                            sSMBranchTxSize,
@@ -3053,6 +3131,24 @@ IDE_RC dktGlobalCoordinator::writeXaPrepareLog()
     return IDE_FAILURE;
 }
 
+/************************************************************************
+ * Description : ±€∑Œπ˙ ∆Æ∑£¿Ëº« commit ¿ª ¿ß«— XA log∏¶ ±‚∑œ«—¥Ÿ.
+ *
+ ************************************************************************/
+IDE_RC dktGlobalCoordinator::writeXaEndLog()
+{
+   /* Write End Log */
+   IDE_TEST( smiWriteXaEndLog( mLocalTxId,
+                               mGlobalTxId )
+             != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 IDE_RC dktGlobalCoordinator::executeSimpleTransactionCommitPrepareForShard()
 {
     iduListNode     *sIterator = NULL;
@@ -3083,11 +3179,22 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitPrepareForShard()
     sdiConnectInfo  * sNode     = NULL;
     void            * sCallback = NULL;
     idBool            sSuccess = ID_TRUE;
+    smSCN             sSCN;
+    smSCN             sMaxSCN;
+    sdiClientInfo   * sClientInfo = NULL;
+    idBool            sGCTxSupport = ID_FALSE;
 
-    IDE_TEST( writeXaPrepareLog() != IDE_SUCCESS );
+    sClientInfo = getShardClientInfo();
+    sGCTxSupport = ( ( isGCTx() == ID_TRUE ) && ( sClientInfo != NULL ) )
+                   ? ID_TRUE
+                   : ID_FALSE;
 
-    setAllRemoteTxStatus( DKT_RTX_STATUS_PREPARE_WAIT );
-    mGTxStatus = DKT_GTX_STATUS_PREPARE_WAIT;
+    SM_INIT_SCN( &sSCN );
+    SM_INIT_SCN( &sMaxSCN );
+
+    IDE_TEST( writeXaPrepareReqLog() != IDE_SUCCESS );
+
+    mGTxStatus = DKT_GTX_STATUS_PREPARE_REQUEST;
 
     IDU_LIST_ITERATE_SAFE( &mRTxList, sIterator, sNext )
     {
@@ -3098,6 +3205,11 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitPrepareForShard()
         if ( ( sNode->mFlag & SDI_CONNECT_COMMIT_PREPARE_MASK )
              == SDI_CONNECT_COMMIT_PREPARE_FALSE )
         {
+            IDE_TEST( sdi::setFailoverSuspend( sNode,
+                                               SDI_FAILOVER_SUSPEND_ALLOW_RETRY,
+                                               sdERR_ABORT_REMOTE_COMMIT_FAILED )
+                      != IDE_SUCCESS );
+
             IDE_TEST( sdi::addPrepareTranCallback( &sCallback, sNode )
                       != IDE_SUCCESS );
         }
@@ -3109,7 +3221,10 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitPrepareForShard()
 
     sdi::doCallback( sCallback );
 
-    /* add shard tx ÏàúÏÑúÏùò Î∞òÎåÄÎ°ú del shard txÎ•º ÏàòÌñâÌï¥ÏïºÌïúÎã§. */
+    setAllRemoteTxStatus( DKT_RTX_STATUS_PREPARE_WAIT );
+    mGTxStatus = DKT_GTX_STATUS_PREPARE_WAIT;
+
+    /* add shard tx º¯º≠¿« π›¥Î∑Œ del shard tx∏¶ ºˆ«‡«ÿæﬂ«—¥Ÿ. */
     IDU_LIST_ITERATE_SAFE( &mRTxList, sIterator, sNext )
     {
         sRemoteTx = (dktRemoteTx *)sIterator->mObj;
@@ -3132,6 +3247,9 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitPrepareForShard()
                 sNode->mRemoteTx = NULL;
                 sNode->mFlag &= ~SDI_CONNECT_REMOTE_TX_CREATE_MASK;
                 sNode->mFlag |= SDI_CONNECT_REMOTE_TX_CREATE_FALSE;
+                // TASK-7244 PSM Partial rollback
+                sNode->mFlag &= ~SDI_CONNECT_PSM_SVP_SET_MASK;
+                sNode->mFlag |= SDI_CONNECT_PSM_SVP_SET_FALSE;
             }
             else
             {
@@ -3140,8 +3258,38 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitPrepareForShard()
         }
         else
         {
-            /* ÏàòÌñâÏù¥ Ïã§Ìå®Ìïú Í≤ΩÏö∞ */
+            /* ºˆ«‡¿Ã Ω«∆–«— ∞ÊøÏ */
             sSuccess = ID_FALSE;
+        }
+
+        (void)sdi::setFailoverSuspend( sNode, SDI_FAILOVER_SUSPEND_NONE );
+
+        /* PROJ-2733-DistTxInfo */
+        if ( sGCTxSupport == ID_TRUE )
+        {
+            if ( sdi::getSCN( sNode, &sSCN ) == IDE_SUCCESS )
+            {
+                #if defined(DEBUG)
+                ideLog::log( IDE_SD_18, "= [%s] executeTwoPhaseCommitPrepareForShard"
+                                        ", %s: getSCN : %"ID_UINT64_FMT,
+                             sClientInfo->mGCTxInfo.mSessionTypeString,
+                             sNode->mNodeName,
+                             sSCN );
+                #endif
+
+                SM_SET_MAX_SCN( &sMaxSCN, &sSCN );
+            }
+            else
+            {
+                sSuccess = ID_FALSE;
+
+                ideLog::log( IDE_SD_0, "= [%s] executeTwoPhaseCommitPrepareForShard"
+                                       ", %s: failure getSCN"
+                                       ", %s",
+                             sClientInfo->mGCTxInfo.mSessionTypeString,
+                             sNode->mNodeName,
+                             ideGetErrorMsg( ideGetErrorCode() ) );
+            }
         }
     }
 
@@ -3152,11 +3300,43 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitPrepareForShard()
     setAllRemoteTxStatus( DKT_RTX_STATUS_PREPARED );
     mGTxStatus = DKT_GTX_STATUS_PREPARED;
 
+    /* PROJ-2733-DistTxInfo */
+    if ( sGCTxSupport == ID_TRUE )
+    {
+        SM_SET_SCN( &sClientInfo->mGCTxInfo.mPrepareSCN, &sMaxSCN );
+        SM_SET_SCN( &sClientInfo->mGCTxInfo.mGlobalCommitSCN, &sMaxSCN );
+
+        #if defined(DEBUG)
+        ideLog::log( IDE_SD_18, "= [%s] executeTwoPhaseCommitPrepareForShard"
+                                ", PrepareSCN : %"ID_UINT64_FMT,
+                     sClientInfo->mGCTxInfo.mSessionTypeString,
+                     sClientInfo->mGCTxInfo.mPrepareSCN );
+        #endif
+    }
+
+    IDU_FIT_POINT("5.TASK-7220@dktGlobalCoordinator::executeTwoPhaseCommitPrepareForShard::end");
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 
     sdi::removeCallback( sCallback );
+
+    if ( sGCTxSupport == ID_TRUE )
+    {
+        SM_INIT_SCN( &sClientInfo->mGCTxInfo.mPrepareSCN );
+        SM_INIT_SCN( &sClientInfo->mGCTxInfo.mGlobalCommitSCN );
+        SM_SET_MAX_SCN( &sClientInfo->mGCTxInfo.mCoordSCN, &sMaxSCN );
+
+        #if defined(DEBUG)
+        ideLog::log( IDE_SD_18, "= [%s] executeTwoPhaseCommitPrepareForShard"
+                                ", failure CoordSCN : %"ID_UINT64_FMT
+                                ", %s",
+                     sClientInfo->mGCTxInfo.mSessionTypeString,
+                     sClientInfo->mGCTxInfo.mCoordSCN,
+                     ideGetErrorMsg( ideGetErrorCode() ) );
+        #endif
+    }
 
     return IDE_FAILURE;
 }
@@ -3191,6 +3371,9 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitCommitForShard()
         sNode->mRemoteTx = NULL;
         sNode->mFlag &= ~SDI_CONNECT_REMOTE_TX_CREATE_MASK;
         sNode->mFlag |= SDI_CONNECT_REMOTE_TX_CREATE_FALSE;
+        // TASK-7244 PSM Partial rollback
+        sNode->mFlag &= ~SDI_CONNECT_PSM_SVP_SET_MASK;
+        sNode->mFlag |= SDI_CONNECT_PSM_SVP_SET_FALSE;
     }
 
     setAllRemoteTxStatus( DKT_RTX_STATUS_COMMITTED );
@@ -3213,11 +3396,37 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitCommitForShard()
     sdiConnectInfo * sNode     = NULL;
     void           * sCallback = NULL;
     idBool           sSuccess = ID_TRUE;
+    sdiClientInfo  * sClientInfo = NULL;
+    smSCN            sSCN;
+    smSCN            sMaxSCN;
+    idBool           sGCTxSupport = ID_FALSE;
+
+    sClientInfo = getShardClientInfo();
+    sGCTxSupport = ( ( isGCTx() == ID_TRUE ) && ( sClientInfo != NULL ) )
+                   ? ID_TRUE
+                   : ID_FALSE;
+
+    SM_INIT_SCN( &sMaxSCN );
+
+    /* PROJ-2733-DistTxInfo */
+    if ( sGCTxSupport == ID_TRUE )
+    {
+        SM_SET_SCN( &mDtxInfo->mGlobalCommitSCN, &sClientInfo->mGCTxInfo.mGlobalCommitSCN );
+
+        #if defined(DEBUG)
+        ideLog::log( IDE_SD_18, "= [%s] dktGlobalCoordinator::executeTwoPhaseCommitCommitForShard"
+                                ", CommitSCN : %"ID_UINT64_FMT,
+                     sClientInfo->mGCTxInfo.mSessionTypeString,
+                     sClientInfo->mGCTxInfo.mGlobalCommitSCN );
+        #endif
+    }
 
     mDtxInfo->mResult = SMI_DTX_COMMIT;
 
     setAllRemoteTxStatus( DKT_RTX_STATUS_COMMIT_WAIT );
     mGTxStatus = DKT_GTX_STATUS_COMMIT_WAIT;
+
+    IDU_FIT_POINT("5.TASK-7220@dktGlobalCoordinator::executeTwoPhaseCommitCommitForShard");
 
     IDU_LIST_ITERATE_SAFE( &mRTxList, sIterator, sNext )
     {
@@ -3227,15 +3436,35 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitCommitForShard()
         IDE_DASSERT( ( sNode->mFlag & SDI_CONNECT_COMMIT_PREPARE_MASK )
                      == SDI_CONNECT_COMMIT_PREPARE_TRUE );
 
-        IDE_TEST( sdi::addEndTranCallback( &sCallback,
-                                           sNode,
-                                           ID_TRUE )
+        IDE_TEST( sdi::setFailoverSuspend( sNode,
+                                           SDI_FAILOVER_SUSPEND_ALL,
+                                           sdERR_ABORT_REMOTE_COMMIT_FAILED )
+                  != IDE_SUCCESS );
+
+        /* PROJ-2733-DistTxInfo */
+        if ( sGCTxSupport == ID_TRUE )
+        {
+            IDE_TEST_RAISE( sdi::setSCN( sNode, &sClientInfo->mGCTxInfo.mGlobalCommitSCN ) != IDE_SUCCESS,
+                            ERR_SET_SCN);
+
+            #if defined(DEBUG)
+            ideLog::log( IDE_SD_18, "= [%s] executeTwoPhaseCommitCommitForShard"
+                                    ", %s: setSCN, GlobalCommitSCN : %"ID_UINT64_FMT,
+                         sClientInfo->mGCTxInfo.mSessionTypeString,
+                         sNode->mNodeName,
+                         sClientInfo->mGCTxInfo.mGlobalCommitSCN );
+            #endif
+        }
+
+        IDE_TEST( sdi::addEndPendingTranCallback( &sCallback,
+                                                  sNode,
+                                                  ID_TRUE )
                   != IDE_SUCCESS );
     }
 
     sdi::doCallback( sCallback );
 
-    /* add shard tx ÏàúÏÑúÏùò Î∞òÎåÄÎ°ú del shard txÎ•º ÏàòÌñâÌï¥ÏïºÌïúÎã§. */
+    /* add shard tx º¯º≠¿« π›¥Î∑Œ del shard tx∏¶ ºˆ«‡«ÿæﬂ«—¥Ÿ. */
     IDU_LIST_ITERATE_SAFE( &mRTxList, sIterator, sNext )
     {
         sRemoteTx = (dktRemoteTx *)sIterator->mObj;
@@ -3243,32 +3472,81 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitCommitForShard()
 
         if ( sdi::resultCallback( sCallback,
                                   sNode,
-                                  (SChar*)"SQLEndTrans",
-                                  ID_FALSE )
+                                  (SChar*)"SQLEndPending",
+                                  ID_TRUE )
              == IDE_SUCCESS )
         {
             removeDtxInfo( &sRemoteTx->mXID );
         }
         else
         {
-            /* ÏàòÌñâÏù¥ Ïã§Ìå®Ìïú Í≤ΩÏö∞ */
+            /* ºˆ«‡¿Ã Ω«∆–«— ∞ÊøÏ */
             sSuccess = ID_FALSE;
         }
+
+        (void)sdi::setFailoverSuspend( sNode, SDI_FAILOVER_SUSPEND_NONE );
 
         destroyRemoteTx( sRemoteTx );
 
         sNode->mRemoteTx = NULL;
         sNode->mFlag &= ~SDI_CONNECT_REMOTE_TX_CREATE_MASK;
         sNode->mFlag |= SDI_CONNECT_REMOTE_TX_CREATE_FALSE;
+        // TASK-7244 PSM Partial rollback
+        sNode->mFlag &= ~SDI_CONNECT_PSM_SVP_SET_MASK;
+        sNode->mFlag |= SDI_CONNECT_PSM_SVP_SET_FALSE;
+
+        /* PROJ-2733-DistTxInfo */
+        if ( sGCTxSupport == ID_TRUE )
+        {
+            if ( sdi::getSCN( sNode, &sSCN ) == IDE_SUCCESS )
+            {
+                #if defined(DEBUG)
+                ideLog::log( IDE_SD_18, "= [%s] executeTwoPhaseCommitCommitForShard"
+                                        ", %s: getSCN : %"ID_UINT64_FMT,
+                             sClientInfo->mGCTxInfo.mSessionTypeString,
+                             sNode->mNodeName,
+                             sSCN );
+                #endif
+
+                SM_SET_MAX_SCN( &sMaxSCN,  &sSCN);
+            }
+            else
+            {
+                sSuccess = ID_FALSE;
+
+                ideLog::log( IDE_SD_0, "= [%s] executeTwoPhaseCommitCommitForShard"
+                                       ", %s: failure getSCN"
+                                       ", %s",
+                             sClientInfo->mGCTxInfo.mSessionTypeString,
+                             sNode->mNodeName,
+                             ideGetErrorMsg( ideGetErrorCode() ) );
+            }
+        }
     }
 
+    IDU_FIT_POINT_RAISE( "dktGlobalCoordinator::executeTwoPhaseCommitCommitForShard::BeforeWriteXaEndLog",
+                          ERR_END_TRANS );
     IDE_TEST_RAISE( sSuccess == ID_FALSE, ERR_END_TRANS );
+
+    IDE_TEST( writeXaEndLog() != IDE_SUCCESS );
 
     sdi::removeCallback( sCallback );
 
     setAllRemoteTxStatus( DKT_RTX_STATUS_COMMITTED );
     mGTxStatus = DKT_GTX_STATUS_COMMITTED;
 
+    /* PROJ-2733-DistTxInfo */
+    if ( sGCTxSupport == ID_TRUE )
+    {
+        SM_SET_MAX_SCN( &sClientInfo->mGCTxInfo.mCoordSCN, &sMaxSCN );
+
+        #if defined(DEBUG)
+        ideLog::log( IDE_SD_18, "= [%s] executeTwoPhaseCommitCommitForShard"
+                                ", CoordSCN : %"ID_UINT64_FMT,
+                     sClientInfo->mGCTxInfo.mSessionTypeString,
+                     sClientInfo->mGCTxInfo.mCoordSCN );
+        #endif
+    }
 
     return IDE_SUCCESS;
 
@@ -3276,9 +3554,34 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitCommitForShard()
     {
         /* already set error code */
     }
+    IDE_EXCEPTION( ERR_SET_SCN )
+    {
+        /* already set error code */
+        ideLog::log( IDE_SD_0, "= [%s] executeTwoPhaseCommitCommitForShard"
+                                ", %s: failure setSCN, GlobalCommitSCN : %"ID_UINT64_FMT
+                                ", %s",
+                     sClientInfo->mGCTxInfo.mSessionTypeString,
+                     sNode->mNodeName,
+                     sClientInfo->mGCTxInfo.mGlobalCommitSCN,
+                     ideGetErrorMsg( ideGetErrorCode() ) );
+    }
     IDE_EXCEPTION_END;
 
     sdi::removeCallback( sCallback );
+
+    if ( sGCTxSupport == ID_TRUE )
+    {
+        SM_SET_MAX_SCN( &sClientInfo->mGCTxInfo.mCoordSCN, &sMaxSCN );
+
+        #if defined(DEBUG)
+        ideLog::log( IDE_SD_18, "= [%s] executeTwoPhaseCommitCommitForShard"
+                                ", failure CoordSCN : %"ID_UINT64_FMT
+                                ", %s",
+                     sClientInfo->mGCTxInfo.mSessionTypeString,
+                     sClientInfo->mGCTxInfo.mCoordSCN,
+                     ideGetErrorMsg( ideGetErrorCode() ) );
+        #endif
+    }
 
     return IDE_FAILURE;
 }
@@ -3289,44 +3592,22 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitRollbackForShard( SC
     iduListNode     *sNext     = NULL;
     dktRemoteTx     *sRemoteTx = NULL;
     sdiConnectInfo  *sNode     = NULL;
-    UInt             sRollbackNodeCnt = 0;
     idBool           sSuccess = ID_TRUE;
 
     setAllRemoteTxStatus( DKT_RTX_STATUS_ROLLBACK_WAIT );
     mGTxStatus = DKT_GTX_STATUS_ROLLBACK_WAIT;
 
-    IDU_LIST_ITERATE_SAFE( &mRTxList, sIterator, sNext )
+    if ( aSavepointName != NULL )
     {
-        sRemoteTx = (dktRemoteTx *)sIterator->mObj;
-        sNode     = sRemoteTx->getDataNode();
-
-        if ( aSavepointName != NULL )
+        IDE_TEST(executeSavepointRollbackForShard(aSavepointName) != IDE_SUCCESS);
+    }
+    else
+    {
+        IDU_LIST_ITERATE_SAFE( &mRTxList, sIterator, sNext )
         {
-            if ( sRemoteTx->findSavepoint( aSavepointName ) != NULL )
-            {
-                if ( sdi::rollback( sNode,
-                                    (const SChar*)aSavepointName ) != IDE_SUCCESS )
-                {
-                    sSuccess = ID_FALSE;
-                }
-                else
-                {
-                    /* Nothing to do */
-                }
+            sRemoteTx = (dktRemoteTx *)sIterator->mObj;
+            sNode     = sRemoteTx->getDataNode();
 
-                sRollbackNodeCnt++;
-            }
-            else
-            {
-                destroyRemoteTx( sRemoteTx );
-
-                sNode->mRemoteTx = NULL;
-                sNode->mFlag &= ~SDI_CONNECT_REMOTE_TX_CREATE_MASK;
-                sNode->mFlag |= SDI_CONNECT_REMOTE_TX_CREATE_FALSE;
-            }
-        }
-        else
-        {
             if ( sNode->mDbc != NULL )
             {
                 if ( sdi::rollback( sNode, NULL ) != IDE_SUCCESS )
@@ -3350,25 +3631,10 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitRollbackForShard( SC
             sNode->mRemoteTx = NULL;
             sNode->mFlag &= ~SDI_CONNECT_REMOTE_TX_CREATE_MASK;
             sNode->mFlag |= SDI_CONNECT_REMOTE_TX_CREATE_FALSE;
+            // TASK-7244 PSM Partial rollback
+            sNode->mFlag &= ~SDI_CONNECT_PSM_SVP_SET_MASK;
+            sNode->mFlag |= SDI_CONNECT_PSM_SVP_SET_FALSE;
         }
-    }
-
-    if ( aSavepointName != NULL )
-    {
-        /* >> BUG-37512 */
-        if ( sRollbackNodeCnt == 0 )
-        {
-            removeAllSavepoint();
-        }
-        else
-        {
-            removeAllNextSavepoint( aSavepointName );
-        }
-        /* << BUG-37512 */
-    }
-    else
-    {
-        removeAllSavepoint();
     }
 
     if ( mRTxCnt == 0 )
@@ -3380,6 +3646,41 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitRollbackForShard( SC
     {
         setAllRemoteTxStatus( DKT_RTX_STATUS_PREPARE_READY );
         mGTxStatus = DKT_GTX_STATUS_PREPARE_READY;
+    }
+
+    IDE_TEST( sSuccess == ID_FALSE );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC  dktGlobalCoordinator::executeSavepointRollbackForShard( SChar *aSavepointName )
+{
+    iduListNode     *sIterator = NULL;
+    iduListNode     *sNext     = NULL;
+    dktRemoteTx     *sRemoteTx = NULL;
+    sdiConnectInfo  *sNode     = NULL;
+    idBool           sSuccess = ID_TRUE;
+
+    IDE_DASSERT( aSavepointName != NULL );
+
+    IDU_LIST_ITERATE_SAFE( &mRTxList, sIterator, sNext )
+    {
+        sRemoteTx = (dktRemoteTx *)sIterator->mObj;
+        sNode     = sRemoteTx->getDataNode();
+
+        /* BUG-48489 Remoteø°º≠ Partial, Total rollback¿ª ∆«¥‹«—¥Ÿ. */
+        if ( sdi::rollback( sNode, (const SChar*)aSavepointName ) != IDE_SUCCESS )
+        {
+            sSuccess = ID_FALSE;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
     }
 
     IDE_TEST( sSuccess == ID_FALSE );
@@ -3422,19 +3723,20 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitRollbackForceForShar
         sNode->mRemoteTx = NULL;
         sNode->mFlag &= ~SDI_CONNECT_REMOTE_TX_CREATE_MASK;
         sNode->mFlag |= SDI_CONNECT_REMOTE_TX_CREATE_FALSE;
+        // TASK-7244 PSM Partial rollback
+        sNode->mFlag &= ~SDI_CONNECT_PSM_SVP_SET_MASK;
+        sNode->mFlag |= SDI_CONNECT_PSM_SVP_SET_FALSE;
     }
-
-    removeAllSavepoint();
 
     setAllRemoteTxStatus( DKT_RTX_STATUS_ROLLBACKED );
     mGTxStatus = DKT_GTX_STATUS_ROLLBACKED;
 
     return IDE_SUCCESS;
 
-    /* failure Î•º Î¶¨ÌÑ¥ÌïòÎ©¥ ÏïàÎêúÎã§. */
+    /* failure ∏¶ ∏Æ≈œ«œ∏È æ»µ»¥Ÿ. */
 }
 
-IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitRollbackForShard()
+IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitRollbackForShard(SChar * aSavepointName)
 {
     iduListNode    * sIterator = NULL;
     iduListNode    * sNext     = NULL;
@@ -3442,77 +3744,176 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitRollbackForShard()
     sdiConnectInfo * sNode     = NULL;
     void           * sCallback = NULL;
     idBool           sSuccess = ID_TRUE;
+    sdiClientInfo  * sClientInfo = NULL;
+    smSCN            sSCN;
+    smSCN            sMaxSCN;
+    idBool           sGCTxSupport = ID_FALSE;
 
-    mDtxInfo->mResult = SMI_DTX_ROLLBACK;
-    setAllRemoteTxStatus( DKT_RTX_STATUS_ROLLBACK_WAIT );
-    mGTxStatus = DKT_GTX_STATUS_ROLLBACK_WAIT;
+    idBool           sIsPrepared = ID_FALSE;
 
-    IDU_LIST_ITERATE_SAFE( &mRTxList, sIterator, sNext )
+    sClientInfo = getShardClientInfo();
+    sGCTxSupport = ( ( isGCTx() == ID_TRUE ) && ( sClientInfo != NULL ) )
+                   ? ID_TRUE
+                   : ID_FALSE;
+
+    SM_INIT_SCN( &sMaxSCN );
+
+    if( ( mGTxStatus >= DKT_GTX_STATUS_PREPARE_REQUEST ) &&
+        ( mGTxStatus <= DKT_GTX_STATUS_PREPARED ) )
     {
-        sRemoteTx = (dktRemoteTx *)sIterator->mObj;
-        sNode = sRemoteTx->getDataNode();
-
-        if ( sNode->mDbc != NULL )
-        {
-            IDE_TEST( sdi::addEndTranCallback( &sCallback,
-                                               sNode,
-                                               ID_FALSE )
-                      != IDE_SUCCESS );
-        }
-        else
-        {
-            /* Session is disconnected. Do it as success. */
-            IDE_DASSERT( getFlag( DKT_COORD_FLAG_TRANSACTION_BROKEN_MASK )
-                         == DKT_COORD_FLAG_TRANSACTION_BROKEN_TRUE );
-        }
+        sIsPrepared = ID_TRUE;
+    }
+    else
+    {
+        sIsPrepared = ID_FALSE;
     }
 
-    sdi::doCallback( sCallback );
-
-    /* add shard tx ÏàúÏÑúÏùò Î∞òÎåÄÎ°ú del shard txÎ•º ÏàòÌñâÌï¥ÏïºÌïúÎã§. */
-    IDU_LIST_ITERATE_SAFE( &mRTxList, sIterator, sNext )
+    if ( aSavepointName != NULL )
     {
-        sRemoteTx = (dktRemoteTx *)sIterator->mObj;
-        sNode = sRemoteTx->getDataNode();
+        /*prepareµ«æ˙¿∏∏È ø°∑Ø≥ªæﬂ«‘.*/
+        IDE_TEST_RAISE(sIsPrepared == ID_TRUE, ERR_CANT_SVP_ROLLBACK);
+        IDE_TEST(executeSavepointRollbackForShard(aSavepointName) != IDE_SUCCESS);
+    }
+    else
+    {
+        mDtxInfo->mResult = SMI_DTX_ROLLBACK;
+        setAllRemoteTxStatus( DKT_RTX_STATUS_ROLLBACK_WAIT );
+        mGTxStatus = DKT_GTX_STATUS_ROLLBACK_WAIT;
 
-        if ( sNode->mDbc != NULL )
+        IDU_LIST_ITERATE_SAFE( &mRTxList, sIterator, sNext )
         {
-            if ( sdi::resultCallback( sCallback,
-                                      sNode,
-                                      (SChar*)"SQLEndTrans",
-                                      ID_TRUE )
-                 == IDE_SUCCESS )
+            sRemoteTx = (dktRemoteTx *)sIterator->mObj;
+            sNode = sRemoteTx->getDataNode();
+
+            if ( sNode->mDbc != NULL )
             {
-                removeDtxInfo( &sRemoteTx->mXID );
+                IDE_TEST( sdi::setFailoverSuspend( sNode,
+                                                   SDI_FAILOVER_SUSPEND_ALL,
+                                                   sdERR_ABORT_REMOTE_COMMIT_FAILED )
+                          != IDE_SUCCESS );
+
+                if ( ( sNode->mFlag & SDI_CONNECT_COMMIT_PREPARE_MASK )
+                     == SDI_CONNECT_COMMIT_PREPARE_FALSE )
+                {
+                    IDE_TEST( sdi::addEndTranCallback( &sCallback,
+                                                       sNode,
+                                                       ID_FALSE )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    IDE_TEST( sdi::addEndPendingTranCallback( &sCallback,
+                                                              sNode,
+                                                              ID_FALSE )
+                              != IDE_SUCCESS );
+                }
             }
             else
             {
-                /* ÏàòÌñâÏù¥ Ïã§Ìå®Ìïú Í≤ΩÏö∞ */
-                sSuccess = ID_FALSE;
+                /* Session is disconnected. Do it as success. */
+                IDE_DASSERT( getFlag( DKT_COORD_FLAG_TRANSACTION_BROKEN_MASK )
+                             == DKT_COORD_FLAG_TRANSACTION_BROKEN_TRUE );
             }
         }
-        else
-        {
-            /* Session is disconnected. Do it as success. */
-            removeDtxInfo( &sRemoteTx->mXID );
 
-            IDE_DASSERT( getFlag( DKT_COORD_FLAG_TRANSACTION_BROKEN_MASK )
-                         == DKT_COORD_FLAG_TRANSACTION_BROKEN_TRUE );
+        sdi::doCallback( sCallback );
+
+        /* add shard tx º¯º≠¿« π›¥Î∑Œ del shard tx∏¶ ºˆ«‡«ÿæﬂ«—¥Ÿ. */
+        IDU_LIST_ITERATE_SAFE( &mRTxList, sIterator, sNext )
+        {
+            sRemoteTx = (dktRemoteTx *)sIterator->mObj;
+            sNode = sRemoteTx->getDataNode();
+
+            if ( sNode->mDbc != NULL )
+            {
+                if ( sdi::resultCallback( sCallback,
+                                          sNode,
+                                          (SChar*)"SQLEndTran",
+                                          ID_TRUE )
+                     == IDE_SUCCESS )
+                {
+                    removeDtxInfo( &sRemoteTx->mXID );
+                }
+                else
+                {
+                    /* ºˆ«‡¿Ã Ω«∆–«— ∞ÊøÏ */
+                    sSuccess = ID_FALSE;
+                }
+
+                (void)sdi::setFailoverSuspend( sNode, SDI_FAILOVER_SUSPEND_NONE );
+            }
+            else
+            {
+                /* Session is disconnected. Do it as success. */
+                removeDtxInfo( &sRemoteTx->mXID );
+
+                IDE_DASSERT( getFlag( DKT_COORD_FLAG_TRANSACTION_BROKEN_MASK )
+                             == DKT_COORD_FLAG_TRANSACTION_BROKEN_TRUE );
+            }
+
+            destroyRemoteTx( sRemoteTx );
+
+            sNode->mRemoteTx = NULL;
+            sNode->mFlag &= ~SDI_CONNECT_REMOTE_TX_CREATE_MASK;
+            sNode->mFlag |= SDI_CONNECT_REMOTE_TX_CREATE_FALSE;
+            // TASK-7244 PSM Partial rollback
+            sNode->mFlag &= ~SDI_CONNECT_PSM_SVP_SET_MASK;
+            sNode->mFlag |= SDI_CONNECT_PSM_SVP_SET_FALSE;
+
+            /* PROJ-2733-DistTxInfo */
+            if ( sGCTxSupport == ID_TRUE )
+            {
+                if ( sdi::getSCN( sNode, &sSCN ) == IDE_SUCCESS )
+                {
+                    #if defined(DEBUG)
+                    ideLog::log( IDE_SD_18, "= [%s] executeTwoPhaseCommitRollbackForShard"
+                                            ", %s: getSCN : %"ID_UINT64_FMT,
+                                 sClientInfo->mGCTxInfo.mSessionTypeString,
+                                 sNode->mNodeName,
+                                 sSCN );
+                    #endif
+
+                    SM_SET_MAX_SCN( &sMaxSCN,  &sSCN);
+                }
+                else
+                {
+                    sSuccess = ID_FALSE;
+
+                    ideLog::log( IDE_SD_0, "= [%s] executeTwoPhaseCommitRollbackForShard"
+                                           ", %s: failure getSCN"
+                                           ", %s",
+                                 sClientInfo->mGCTxInfo.mSessionTypeString,
+                                 sNode->mNodeName,
+                                 ideGetErrorMsg( ideGetErrorCode() ) );
+                }
+            }
         }
 
-        destroyRemoteTx( sRemoteTx );
+        IDE_TEST_RAISE( sSuccess == ID_FALSE, ERR_END_TRANS );
 
-        sNode->mRemoteTx = NULL;
-        sNode->mFlag &= ~SDI_CONNECT_REMOTE_TX_CREATE_MASK;
-        sNode->mFlag |= SDI_CONNECT_REMOTE_TX_CREATE_FALSE;
+        sdi::removeCallback( sCallback );
+
+        if( sIsPrepared == ID_TRUE )
+        {
+            IDE_TEST( writeXaEndLog() != IDE_SUCCESS );
+        }
+
+        setAllRemoteTxStatus( DKT_RTX_STATUS_ROLLBACKED );
+        mGTxStatus = DKT_GTX_STATUS_ROLLBACKED;
     }
 
-    IDE_TEST_RAISE( sSuccess == ID_FALSE, ERR_END_TRANS );
+    /* PROJ-2733-DistTxInfo */
+    if ( sGCTxSupport == ID_TRUE )
+    {
+        SM_SET_SCN( &sClientInfo->mGCTxInfo.mCoordSCN, &sMaxSCN );
 
-    sdi::removeCallback( sCallback );
-
-    setAllRemoteTxStatus( DKT_RTX_STATUS_ROLLBACKED );
-    mGTxStatus = DKT_GTX_STATUS_ROLLBACKED;
+        #if defined(DEBUG)
+        ideLog::log( IDE_SD_18, "= [%s] executeTwoPhaseCommitRollbackForShard"
+                                ", CoordSCN : %"ID_UINT64_FMT,
+                     sClientInfo->mGCTxInfo.mSessionTypeString,
+                     sClientInfo->mGCTxInfo.mCoordSCN );
+        #endif
+    }
 
     return IDE_SUCCESS;
 
@@ -3520,15 +3921,37 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitRollbackForShard()
     {
         /* already set error code */
     }
+    IDE_EXCEPTION( ERR_CANT_SVP_ROLLBACK )
+    {
+    	IDE_SET(ideSetErrorCode(dkERR_ABORT_DKM_GTX_ROLLBACK_IMPOSSIBLE));
+    }
+
     IDE_EXCEPTION_END;
 
-    sdi::removeCallback( sCallback );
+    if ( sCallback != NULL )
+    {
+        sdi::removeCallback( sCallback );
+    }
+
+    if ( sGCTxSupport == ID_TRUE )
+    {
+        SM_SET_MAX_SCN( &sClientInfo->mGCTxInfo.mCoordSCN, &sMaxSCN );
+
+        #if defined(DEBUG)
+        ideLog::log( IDE_SD_18, "= [%s] executeTwoPhaseCommitRollbackForShard"
+                                ", failure CoordSCN : %"ID_UINT64_FMT
+                                ", %s",
+                     sClientInfo->mGCTxInfo.mSessionTypeString,
+                     sClientInfo->mGCTxInfo.mCoordSCN,
+                     ideGetErrorMsg( ideGetErrorCode() ) );
+        #endif
+    }
 
     return IDE_FAILURE;
 }
 
 /************************************************************************
- * Description : SavepointÎ•º ÏàòÌñâÌïúÎã§.
+ * Description : Savepoint∏¶ ºˆ«‡«—¥Ÿ.
  *
  *  aSavepointName  - [IN] Savepoint name
  *
@@ -3553,3 +3976,21 @@ IDE_RC  dktGlobalCoordinator::executeSavepointForShard( const SChar *aSavepointN
 
     return IDE_FAILURE;
 }
+
+IDE_RC  dktGlobalCoordinator::closeAllShardTransasction()
+{
+    iduListNode    * sIterator = NULL;
+    dktRemoteTx    * sRemoteTx = NULL;
+    sdiConnectInfo * sNode     = NULL;
+
+    IDU_LIST_ITERATE( &mRTxList, sIterator )
+    {
+        sRemoteTx = (dktRemoteTx *)sIterator->mObj;
+        sNode = sRemoteTx->getDataNode();
+
+        sdi::freeConnectImmediately( sNode );
+    }
+
+    return IDE_SUCCESS;
+}
+

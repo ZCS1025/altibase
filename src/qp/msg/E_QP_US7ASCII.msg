@@ -15,7 +15,7 @@
 # 반드시 main trunk에서 번호를 할당받은 후 브랜치에서 사용하셔야 합니다.
 # 의문 사항이 있으시면 AK팀 혹은 QP(품질본부)팀에 문의 부탁드립니다.
 
-# Last Number = 1141
+# Last Number = 1187
 
 SECTION = 3
 
@@ -1199,6 +1199,26 @@ SECTION = 3
 # *Cause: The user tried to execute a replace DDL command, but does not support different schema in the partitioned table.
 # *Action: Verify that the source and target tables have the same schema.
 
+1139,qpERR_ABORT_QDB_INVALID_SRID = Cannot change the Spatial Reference ID(SRID).
+# *Cause: There is an invalid Spatial Reference ID(SRID) because the specific row has been SRID.
+# *Action: Check that a valid Spatial Reference ID(SRID) is being used.
+
+1180,qpERR_ABORT_QDB_NO_SHARD_TABLE = Unable to change the usable state for the none shard table.
+# *Cause: It is possible to change the usable state only for the shard table.
+# *Action: Check if the table is a shard table.
+
+1184,qpERR_ABORT_QDB_BOUND_HIGHER_THAN_LAST_PARTITION = Partition bound must higher than that of the last partition
+# *Cause: Partition bound specified in DDL did not collate higher than that of the table's last partition.
+# *Action: Check bound of table's last partition.
+
+1185,qpERR_ABORT_QDB_TOO_MANY_ADD_CONDITION_VALUE = Too many add condition values
+# *Cause: The number of add condition values should be less than or equal to the number of partition key columns.
+# *Action: Check the add condition values.
+
+1186,qpERR_ABORT_QDB_CANNOT_ADD_PARTITION_ON_NONE_RANGE_PART_TABLE = Cannot add a partition to a non-range partitioned table.
+# *Cause: Unable to add a partition to a non-range partitioned table.
+# *Action: Check the partitioning method or check syntax of the statement.
+
 ###############################################################################
 #########                 QCV ERROR CODE                              #########
 ###############################################################################
@@ -1282,6 +1302,10 @@ SECTION = 3
 981,qpERR_ABORT_QDS_CANNOT_ALTER_SEQ_TABLE = Unable to alter the sequence with sync table option
 # *Cause: Unable to alter the sequence with the sync table option.
 # *Action: Change the sync table option of the sequence.
+
+1155,qpERR_ABORT_QDS_CANNOT_ALTER_SHARDED_SEQUENCE = Scale of sharded sequence cannot be changed.
+# *Cause: Scale of sharded sequence cannot be changed.
+# *Action: Check scale of sharded sequence.
 
 ###############################################################################
 #########                 QDR ERROR CODE                              #########
@@ -2047,6 +2071,18 @@ SECTION = 3
 # *Cause: An analytic function cannot be used here.
 # *Action: Check all anaytic functions.
 
+1181,qpERR_ABORT_QMV_TABLE_WRITE_DENIED = Unable to write to the clone table <0%s>.: <1%s>
+# *Cause: Write operation can be only executed on a clone table when the transaction is executed with the GLOBAL_CONSISTENT_TRANSACTION in a joined shard node.
+# *Action: Check the global transaction level and the status of the shard node.
+
+1182,qpERR_ABORT_QMV_BAK_TABLE_WRITE_DENIED = Unable to write to backup tables.
+# *Cause: Backup tables cannot be inserted, deleted, or updated.
+# *Action: Check the name and type of the table.
+
+1187,qpERR_ABORT_QMV_CLONE_TABLE_WRITE_DENIED = Unable to write to the clone table in PSM when executed locally. [<0%s>]
+# *Cause: A clone table cannot be written in PSM when executed locally.
+# *Action: A clone table should be written in PSM when executed globally.
+
 ##############################################################################
 #########                 QMX ERROR CODE                              #########
 ###############################################################################
@@ -2097,6 +2133,10 @@ SECTION = 3
 1107,qpERR_ABORT_QMX_CANNOT_LOCK_TABLE_UNTIL_NEXT_DDL_MORE_THAN_ONCE = Cannot execute a LOCK TABLE statement with UNTIL NEXT DDL option twice or more.
 # *Cause: A LOCK TABLE statement with UNTIL NEXT DDL option cannot be executed twice or more.
 # *Action: Execute the COMMIT or ROLLBACK statement, and retry a LOCK TABLE statement.
+
+1183,qpERR_ABORT_QMX_TABLE_PARTITION_UNUSABLE = Unable to access to the table or the partition <0%s>, which of state is unusable.
+# *Cause : The table or the partition is unusable state.
+# *Action : Check if the state of tables or partitions is usable.
 
 ###############################################################################
 #########                 QMN ERROR CODE                              #########
@@ -2404,6 +2444,10 @@ SECTION = 3
 # *Cause: Return values of performance view single-row subquery has changed during execution.
 # *Action: This error can occur rarely when there is a change in the values of performance view single-row subquery during a query execution. You will get a result without error if you execute again the same query that produced this error. If you meet this error repeatedly, contact Altibase’s Support Center (http://support.altibase.com).
 
+1140,qpERR_ABORT_QTC_INVALID_SRID_DATATYPE = Fail to specify the Spatial Reference ID(SRID) because a SRID can be set only in the geometry dataype.
+# *Cause: A Spatial Reference ID(SRID) can be set only in the geometry dataype.
+# *Action:  Check the datatype for the Spatial Reference ID(SRID).
+
 ###############################################################################
 #########                 QCU ERROR CODE                              #########
 ###############################################################################
@@ -2480,6 +2524,12 @@ SECTION = 3
 #   - The number of requested user locks exceeds the maximum limit.
 # *Action:
 #   - Call the USER_LOCK_RELEASE function or change the USER_LOCK_REQUEST_LIMIT property value.
+
+1142,qpERR_ABORT_QCU_NOT_SUPPORT_SYSTEM_PROPERTY = <0%s> property cannot be changed using ALTER SYSTEM statement.
+# *Cause: 
+#   - The property can be changed using ALTER SESSION statement, becuase Alter level of the property is SESSION.
+# *Action:
+#   - Use ALTER SESSION statement
 
 ###############################################################################
 #########                 QCI ERROR CODE                              #########
@@ -2869,6 +2919,14 @@ SECTION = 3
 # *Cause: Illegal host variable name.
 # *Action: Check the host variable name.
 
+1153,qpERR_ABORT_ROLLBACKABLE_DDL_GLOBAL_NOT_ALLOWED_NON_PART_INDEX = A rollbackable DDL execution fails, because the table has global non partitioned index ( <0%s> ).
+# *Cause: A rollbackable DDL for the table that has global non partitioned index is not supported.
+# *Action: Retry after removing the global non partitioned index.
+
+1154,qpERR_ABORT_ROLLBACKABLE_DDL_GLOBAL_NOT_ALLOWED_DDL_ASYNC = A rollbackable DDL execution fails, because the table has DDL replicate option.
+# *Cause: A rollbackable DDL for table that has DDL replicate option is not supported.
+# *Action: Retry after removing DDL replicate option on the table.
+
 #############################################################################
 #########            STORED PROCEDURE ERROR CODE                    #########
 #############################################################################
@@ -3119,6 +3177,15 @@ SECTION = 3
 # *Cause: Snapshot can be running when the database is in the service phase.
 # *Action: Retry the statement only with the service phase.
 
+1170,qpERR_ABORT_QDC_CANNOT_CHANGE_AUTOCOMMIT_IN_SHARD_ENV = AUTO_COMMIT property cannot be changed to "1" in shard environment.
+# *Cause: AUTO_COMMIT property cannot be changed to "1" in shard environment.
+# *Action: Do not attempt to change AUTO_COMMIT property to "1" in shard environment.
+
+1177,qpERR_ABORT_QDC_GCTX_NOT_ALLOW = Global Consistent Transaction level is only supported by Altibase sharding.
+# *Cause: Global Consistent Transaction level is only supported by Altibase sharding.
+# *Action: Use another Global Transaction level.
+
+
 ###############################################################################
 #########                         QDM ERROR CODE                      #########
 ###############################################################################
@@ -3133,6 +3200,10 @@ SECTION = 3
 983,qpERR_ABORT_QDM_ACCESS_NOT_SUPPORT_MVIEW = Cannot set or change access mode of materialized views.
 # *Cause: An attempt was made to set or change the access mode of a materialized view.
 # *Action: Do not attempt to change the access mode of a materialized view.
+
+1179,qpERR_ABORT_QDM_USABLE_NOT_SUPPORT_OBJECT = Cannot change the usable state of objects other than user tables.
+# *Cause: An attempt was made to change the usable state of an object other than a user table.
+# *Action: Do not attempt to change the usable state of an object other than a user table.
 
 ###############################################################################
 #########                 QDP ERROR CODE                              #########
@@ -3599,6 +3670,10 @@ SECTION = 3
 # *Cause: A function or procedure defined in the DBMS_CONCURRENT_EXEC package calls itself again.
 # *Action: Modify the procedure so that recursive calls to the DBMS_CONCURRENT_EXEC package are not made.
 
+1146,qpERR_ABORT_QSF_NO_ROWS_DELETED = No rows deleted.
+# *Cause: There is no matching data in USER_SRS_ meta table.
+# *Action: Check the USER_SRS_ meta table for data that matches SRID arguement and AUTH_NAME argument.
+
 1046,qpERR_ABORT_QCI_DISABLED_TCP = The user cannot connect using TCP.
 # *Cause: This user cannot connect using TCP.
 # *Action: Connect using SSL/UNIX domain/IPC. JAVA users can change the connection method in the application (for iSQL, change the value of the iSQL_CONNECTION environment variable).
@@ -3690,6 +3765,138 @@ SECTION = 3
 1136,qpERR_ABORT_QDQ_NOT_EMPTY_QUEUE = A queue is not empty. Only empty queue can reset a msgid.
 # *Cause: Can not perform to reset a msgid because it is not a empty queue.
 # *Action: Check whether the queue is empty, otherwise remove the data from the queue.
+
+###############################################################################
+#########                 QDSD ERROR CODE                             #########
+###############################################################################
+
+1143,qpERR_ABORT_QDSD_ALTER_DATABASE_SHARD = Only SYS user can execute SHARD DDL.
+# *Cause: Only SYS user can execute SHARD DDL statement.
+# *Action: Log in as the SYS user and try again.
+
+1144,qpERR_ABORT_QDSD_INSUFFICIENT_ATTRIBUTE =To execute SHARD DDL statement, the property must be set "<0%s>".
+# *Cause: SHARD DDL statement cannot be executed because of insufficient property settings.
+# *Action: Change the session property value.
+
+1145,qpERR_ABORT_QDSD_SHARD_META_NOT_CREATED = There is no shard meta SYS_SHARD.
+# *Cause: The shard meta is not created.
+# *Action: Create shard meta.
+
+1147,qpERR_ABORT_QDSD_INVALID_NODE_NAME = The node name is not found. (Node Name : <0%s>).
+# *Cause: Wrong node name is inputted.
+# *Action: Check the node name.
+
+1148,qpERR_ABORT_QDSD_ZKC_DEADNODE_EXIST = Unable to perform the command, because failed node exists in sharding cluster.
+# *Cause: The command cannot be performed when there are failed node exists.
+# *Action: Recover failed node.
+
+1149,qpERR_ABORT_QDSD_ZKC_NOT_MY_TURN = Unable to failback, because the node is not the most recently failed node in sharding cluster.
+# *Cause: Only the most recent failed node can be a target for failback.
+# *Action: Recover the most recent failed node.  
+
+1150,qpERR_ABORT_QDSD_ZKC_CONNECTION_FAIL = Failed to connect Zookeeper.
+# *Cause: It is unable to connect to ZooKeeper.
+# *Action: Check the network connection with ZooKeeper.
+
+1151,qpERR_ABORT_QDSD_ZKC_NOT_SUPPORT_OS = This command can be used only Linux.
+# *Cause: Zookeeper C client only support Linux.
+# *Action: Check OS and contact Altibase's Support Center (http://support.altibase.com).
+
+1152,qpERR_ABORT_QDSD_INVALID_SHARD_NODE = Invalid shard data node was used.
+# *Cause: The host IP and port number for shard data node cannot be found.
+# *Action: Verify the host IP and port number for shard data node.
+
+1156,qpERR_ABORT_QDSD_INVALID_LOCAL_NODE_NAME = The local node name is not valid.
+# *Cause: The local node name was not inputted.
+# *Action: Check the local node name and execute dbms_shard.set_local_node that is shard package procedure to input local node name.
+
+1157,qpERR_ABORT_QDSD_INVALID_KSAFETY = The k-safety value of local node is not valid.
+# *Cause: The k-safety value is wrong.
+# *Action: Check the k-safety value. The value of k-safety can be 0, 1 or 2.
+
+1158,qpERR_ABORT_QDSD_EXECUTE_REMOTE_SQL_FAILED= Failed to execute remote SQL. <0%s>
+# *Cause: Failed to execute remote SQL.
+# *Action: Check the error number from the trace log and contact Altibase's Support Center (http://support.altibase.com).
+
+1159,qpERR_ABORT_QDSD_SYNTAX_ERROR_SHARD_DROP= Invalid Syntax : SHARD DROP statement cannot be used with node name. (Node Name : <0%s>).
+# *Cause: Syntax Error. SHARD DROP statement cannot be used with node name.
+# *Action: Execute SHARD DROP statement without node name on local node.
+
+1160,qpERR_ABORT_QDSD_TOO_MANY_SOURCE_NODES_FOR_RESHARDING= There is more than one source node for resharding.
+# *Cause: There must be one source node for resharding.
+# *Action: Check the number of source nodes.
+
+1161,qpERR_ABORT_QDSD_NOT_EXIST_OBJECT_NAME_FOR_RESHARDING= Object name for resharding is NULL due to unexpected internal error.
+# *Cause: Object name for resharding is NULL due to unexpected internal error.
+# *Action: Check the error number from the trace log and contact Altibase's Support Center (http://support.altibase.com).
+
+1162,qpERR_ABORT_QDSD_TOO_FEW_NODES_FOR_RESHARDING= Insufficient number of nodes for resharding.
+# *Cause: Cannot reshard when the number of nodes is less than 2.
+# *Action: Check the number of nodes for resharding.
+
+1163,qpERR_ABORT_QDSD_NOT_SUPPORT_REMOVE_SHARD_TABLE_WITH_DEFAULT_NODE= Shard table with default node cannot be removed in shard object.
+# *Cause: Shard table with default node cannot be removed in shard object.
+# *Action: Check if the table has default node.
+
+1164,qpERR_ABORT_QDSD_SAME_NODE_NAME= Unable to reshard, because source node name and destination node name are the same. <0%s>: <1%s>
+# *Cause: Unable to reshard when source node name and destination node name are same.
+# *Action: Check the source node name and destination node name.
+
+1165,qpERR_ABORT_QDSD_TOO_MANY_REPLICA_SETS= Unable to reshard, because there are several replica sets for the same SMN.
+# *Cause: The number of replica sets for the same SMN must be one for resharding.
+# *Action: Check the error number from the trace log and contact Altibase's Support Center (http://support.altibase.com).
+
+1166,qpERR_ABORT_QDSD_INVALID_REPLICA_SET_INFO= Replica set information is invalid.
+# *Cause: Replica set information is invalid.
+# *Action: Check the error number from the trace log and contact Altibase's Support Center (http://support.altibase.com).
+
+1167,qpERR_ABORT_QDSD_TRANSACTION_COMMIT_ERROR= Transaction commit fails due to unexpected internal error.
+# *Cause: Transaction commit fails due to unexpected internal error.
+# *Action: Check the error number from the trace log and contact Altibase's Support Center (http://support.altibase.com).
+
+1168,qpERR_ABORT_QDSD_INVALID_PROPERTY_FOR_SHARDING= Invalid property value for sharding. <0%s>
+# *Cause: Invalid property value for sharding.
+# *Action: Check the property value.
+
+1169,qpERR_ABORT_QDSD_SHARD_NOT_SAME_CLUSTER_META_DATA_SMN = Unable to execute SHARD DDL, because the cluster meta SMN(<0%lu>) is different from the data SMN(<1%lu>).
+# *Cause: Unable to execute SHARD DDL, because the cluster meta SMN is different from the data SMN.
+# *Action: Check the node metadata and the cluster meta information.
+
+1171,qpERR_ABORT_QDSD_INVALID_FAILOVER_NODE_NAME = Failed to failover, because the target node name is same as local node name. (Node Name : <0%s>).
+# *Cause: Unable to failover when target node name and local node name are same.
+# *Action: Check the target node name.
+
+1172,qpERR_ABORT_QDSD_SHARD_KEY_MAX_VALUE_TOO_LONG = The shard key value is too long.
+# *Cause: The length of the shard key exceeds 100 characters.
+# *Action: Refer to the sharding manual to verify the permissible length of the shard key value.
+
+1173,qpERR_ABORT_QDSD_SHARD_OBJECT_NOT_FOUND = The specified shard object [<0%s>.<1%s>] is not found.
+# *Cause: The table is not found in shard metadata(SYS_SHARD.OBJECTS_).
+# *Action: Check if the table is a shard object or not.
+ 
+1174,qpERR_ABORT_QDSD_ZKC_ALREADY_CONNECTED = The connection to the sharding cluster already exists.
+# *Cause: The node is already connected to the ZooKeeper.
+# *Action: Check the node status.
+ 
+1175,qpERR_ABORT_QDSD_NOT_SUPP_CLONE_RESHRD = The clone shard object cannot be the target for resharding.
+# *Cause: The table list includes a clone shard objects, which is not supported in resharding. 
+# *Action:  Check if the table list includes a clone shard object. Retry after removing the clone shard object from the table list for resharding. 
+ 
+1176,qpERR_ABORT_QDSD_SHARD_NOT_JOIN = The shard node has not yet been joined to the sharding cluster.
+# *Cause: Status of the shard node is not joined.
+# *Action: Check the shard node status and execute a shard DDL to join.
+
+1178,qpERR_ABORT_QDSD_EXIST_NOT_FAILEDOVER_DEADNODE = Failed to run failback because there are failed nodes that has not failed over.
+# *Cause: There are failed nodes that has not failed over.
+# *Action: Execute failover SHARD DDL for the failed nodes before failback.
+
+1188,qpERR_ABORT_QDSD_TOO_MANY_SESSION = The shard <0%s> DDL cannot be executed because another session is connected.
+# *Cause: The shard DDL joining the cluster cannot be executed it when there is another session.
+# *Action: Close another session and try again.
+
+1189,qpERR_ABORT_QDSD_SHARD_DDL_TRY_WITH_SHARD_CLI = The shard DDL cannot be executed with a shard CLI connection.
+# *Cause: The shard DDL cannot be executed with a shard CLI connection.
+# *Action: Connect with ODBC or isql and execute the shard DDL again.
 
 INTERNAL_TRACE_MESSAGE_BEGIN
 

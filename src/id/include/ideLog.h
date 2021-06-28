@@ -76,53 +76,53 @@ struct idvSQL;
 #define IDE_MSGLOG_TYPE_ERROR     0x00000010
 
 /* ------------------------------------------------
- *  ideLogModule ë¡œë¶€í„° Module ë²ˆí˜¸ì™€ ë ˆë²¨ì„ ì–»ëŠ”ë‹¤.
+ *  ideLogModule ·ÎºÎÅÍ Module ¹øÈ£¿Í ·¹º§À» ¾ò´Â´Ù.
  * ----------------------------------------------*/
 
 #define IDE_GET_TRC_MODULE(a)  ((a) >> 32)
 #define IDE_GET_TRC_LEVEL(a)   ((a) & ID_ULONG(0x00000000FFFFFFFF))
 
 /* ---------------------------------------------
- * TASK-4007 [SM]PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
+ * TASK-4007 [SM]PBT¸¦ À§ÇÑ ±â´É Ãß°¡
  *
- * Hexa codeë¡œ Dumpí•´ì£¼ëŠ” ê¸°ëŠ¥ ì¶”ê°€
+ * Hexa code·Î DumpÇØÁÖ´Â ±â´É Ãß°¡
  * --------------------------------------------- */
 
-/*   SRCëŠ” ë¤í”„ ëŒ€ìƒì˜ í¬ê¸°, DESTëŠ” ë¤í”„ë˜ì–´ ì €ìž¥ë˜ëŠ”
- * ë²„í¼ì˜ í¬ê¸°ìž…ë‹ˆë‹¤. SRC í¬ê¸°ê°€ ë‹¤ë¥¼ ê²½ìš°ì—ëŠ” LIMIT
- * ê¹Œì§€ ì¶œë ¥í•˜ê³ , DEST í¬ê¸°ê°€ ë‹¤ë¥¼ ê²½ìš°ì—ëŠ” ì•„ì˜ˆ ì¶œë ¥
- * í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
- *   SRC í¬ê¸°ê°€ ë‹¤ë¥¼ ê²½ìš°ëŠ” ì–´ì°¨í”¼ ê°’ì„ ì½ëŠ”ë° ë¬¸ì œê°€
- * ì—†ì§€ë§Œ, DESTí¬ê¸°ê°€ ë‹¤ë¥¼ ê²½ìš°ì—ëŠ” ì¶œë ¥ ëŒ€ìƒì´ ë˜ëŠ”
- * ë²„í¼ë¥¼ ì‹ ë¢°í•  ìˆ˜ ì—†ê¸° ë•Œë¬¸ìž…ë‹ˆë‹¤.
+/*   SRC´Â ´ýÇÁ ´ë»óÀÇ Å©±â, DEST´Â ´ýÇÁµÇ¾î ÀúÀåµÇ´Â
+ * ¹öÆÛÀÇ Å©±âÀÔ´Ï´Ù. SRC Å©±â°¡ ´Ù¸¦ °æ¿ì¿¡´Â LIMIT
+ * ±îÁö Ãâ·ÂÇÏ°í, DEST Å©±â°¡ ´Ù¸¦ °æ¿ì¿¡´Â ¾Æ¿¹ Ãâ·Â
+ * ÇÏÁö ¾Ê½À´Ï´Ù.
+ *   SRC Å©±â°¡ ´Ù¸¦ °æ¿ì´Â ¾îÂ÷ÇÇ °ªÀ» ÀÐ´Âµ¥ ¹®Á¦°¡
+ * ¾øÁö¸¸, DESTÅ©±â°¡ ´Ù¸¦ °æ¿ì¿¡´Â Ãâ·Â ´ë»óÀÌ µÇ´Â
+ * ¹öÆÛ¸¦ ½Å·ÚÇÒ ¼ö ¾ø±â ¶§¹®ÀÔ´Ï´Ù.
  */
 #define IDE_DUMP_SRC_LIMIT  ( 64*1024)
 #define IDE_DUMP_DEST_LIMIT (256*1024)
 
 // Format flag
 
-/* ê°œí–‰ ê³µë°± ë“±ì„ í†µí•´ BinaryBodyë¥¼ ì–´ë–»ê²Œ êµ¬ë¶„í•´ì¤„ì§€ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤. */
+/* °³Çà °ø¹é µîÀ» ÅëÇØ BinaryBody¸¦ ¾î¶»°Ô ±¸ºÐÇØÁÙÁö¸¦ ¼³Á¤ÇÕ´Ï´Ù. */
 #define IDE_DUMP_FORMAT_PIECE_MASK       (0x00000001)
-#define IDE_DUMP_FORMAT_PIECE_SINGLE     (0x00000000) /* ë‹¨ì¼í•œ í•œ ì¡°ê°ìœ¼ë¡œ ì¶œë ¥í•©ë‹ˆë‹¤. */
-#define IDE_DUMP_FORMAT_PIECE_4BYTE      (0x00000001) /* 4Byteë‹¨ìœ„ë¡œ êµ¬ë¶„í•©ë‹ˆë‹¤.*/
+#define IDE_DUMP_FORMAT_PIECE_SINGLE     (0x00000000) /* ´ÜÀÏÇÑ ÇÑ Á¶°¢À¸·Î Ãâ·ÂÇÕ´Ï´Ù. */
+#define IDE_DUMP_FORMAT_PIECE_4BYTE      (0x00000001) /* 4Byte´ÜÀ§·Î ±¸ºÐÇÕ´Ï´Ù.*/
 
-/* ì ˆëŒ€ì£¼ì†Œ ë˜ëŠ” ìƒëŒ€ì£¼ì†Œë¥¼ ì¶œë ¥í•´ì¤ë‹ˆë‹¤. */
+/* Àý´ëÁÖ¼Ò ¶Ç´Â »ó´ëÁÖ¼Ò¸¦ Ãâ·ÂÇØÁÝ´Ï´Ù. */
 #define IDE_DUMP_FORMAT_ADDR_MASK        (0x00000006)
-#define IDE_DUMP_FORMAT_ADDR_NONE        (0x00000000) /* ì£¼ì†Œë¥¼ ì¶œë ¥í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. */
-#define IDE_DUMP_FORMAT_ADDR_ABSOLUTE    (0x00000002) /* ì ˆëŒ€ì£¼ì†Œë¥¼ ì¶œë ¥í•©ë‹ˆë‹¤.     */
-#define IDE_DUMP_FORMAT_ADDR_RELATIVE    (0x00000004) /* ìƒëŒ€ì£¼ì†Œë¥¼ ì¶œë ¥í•©ë‹ˆë‹¤.     */
-#define IDE_DUMP_FORMAT_ADDR_BOTH        (0x00000006) /* ì ˆëŒ€ ìƒëŒ€ ëª¨ë‘ ì¶œë ¥í•©ë‹ˆë‹¤. */
+#define IDE_DUMP_FORMAT_ADDR_NONE        (0x00000000) /* ÁÖ¼Ò¸¦ Ãâ·ÂÇÏÁö ¾Ê½À´Ï´Ù. */
+#define IDE_DUMP_FORMAT_ADDR_ABSOLUTE    (0x00000002) /* Àý´ëÁÖ¼Ò¸¦ Ãâ·ÂÇÕ´Ï´Ù.     */
+#define IDE_DUMP_FORMAT_ADDR_RELATIVE    (0x00000004) /* »ó´ëÁÖ¼Ò¸¦ Ãâ·ÂÇÕ´Ï´Ù.     */
+#define IDE_DUMP_FORMAT_ADDR_BOTH        (0x00000006) /* Àý´ë »ó´ë ¸ðµÎ Ãâ·ÂÇÕ´Ï´Ù. */
 
-/* Binaryë¡œ ë°ì´í„°ë¥¼ ì¶œë ¥í•´ì¤ë‹ˆë‹¤. */
+/* Binary·Î µ¥ÀÌÅÍ¸¦ Ãâ·ÂÇØÁÝ´Ï´Ù. */
 #define IDE_DUMP_FORMAT_BODY_MASK        (0x00000008)
-#define IDE_DUMP_FORMAT_BODY_NONE        (0x00000000) /* Binaryë°ì´í„°ë¥¼ ì¶œë ¥í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. */
-#define IDE_DUMP_FORMAT_BODY_HEX         (0x00000008) /* 16ì§„ìˆ˜ë¡œ ì¶œë ¥í•©ë‹ˆë‹¤. */
+#define IDE_DUMP_FORMAT_BODY_NONE        (0x00000000) /* Binaryµ¥ÀÌÅÍ¸¦ Ãâ·ÂÇÏÁö ¾Ê½À´Ï´Ù. */
+#define IDE_DUMP_FORMAT_BODY_HEX         (0x00000008) /* 16Áø¼ö·Î Ãâ·ÂÇÕ´Ï´Ù. */
 
-/* Characterë¡œ ë°ì´í„°ë¥¼ ì¶œë ¥í•´ì¤ë‹ˆë‹¤. */
+/* Character·Î µ¥ÀÌÅÍ¸¦ Ãâ·ÂÇØÁÝ´Ï´Ù. */
 #define IDE_DUMP_FORMAT_CHAR_MASK        (0x00000010)
-#define IDE_DUMP_FORMAT_CHAR_NONE        (0x00000000) /* Charë°ì´í„°ë¥¼ ì¶œë ¥í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. */
-#define IDE_DUMP_FORMAT_CHAR_ASCII       (0x00000010) /* ê³µë°±(32) ~ 126 ì‚¬ì´ì˜ ê°’ë“¤ì„ \
-                                                       * Asciië¡œ ì¶œë ¥í•´ì¤ë‹ˆë‹¤. */
+#define IDE_DUMP_FORMAT_CHAR_NONE        (0x00000000) /* Charµ¥ÀÌÅÍ¸¦ Ãâ·ÂÇÏÁö ¾Ê½À´Ï´Ù. */
+#define IDE_DUMP_FORMAT_CHAR_ASCII       (0x00000010) /* °ø¹é(32) ~ 126 »çÀÌÀÇ °ªµéÀ» \
+                                                       * Ascii·Î Ãâ·ÂÇØÁÝ´Ï´Ù. */
 
 #define IDE_DUMP_FORMAT_BINARY         ( IDE_DUMP_FORMAT_PIECE_SINGLE | \
                                          IDE_DUMP_FORMAT_ADDR_NONE |    \
@@ -162,14 +162,14 @@ public:
     static const SChar *mMsgModuleName[];
     /*
      * BUG-32920
-     * Daemonìœ¼ë¡œ ìž‘ë™í•  ê²½ìš° assert ë©”ì‹œì§€ë¥¼ altibase_error.logë¡œ ì¶œë ¥í•˜ë„ë¡
+     * DaemonÀ¸·Î ÀÛµ¿ÇÒ °æ¿ì assert ¸Þ½ÃÁö¸¦ altibase_error.log·Î Ãâ·ÂÇÏµµ·Ï
      * Redirection
-     * DEBUG ëª¨ë“œë¡œ ìž‘ë™í•  ê²½ìš° assert ë©”ì‹œì§€ë¥¼ stdoutìœ¼ë¡œ ì¶œë ¥í•¨
+     * DEBUG ¸ðµå·Î ÀÛµ¿ÇÒ °æ¿ì assert ¸Þ½ÃÁö¸¦ stdoutÀ¸·Î Ãâ·ÂÇÔ
      */
     static IDE_RC initializeStaticBoot( iduShmProcType aProcType, idBool aDebug );
-    /* í”„ë¡œí¼í‹° ë¡œë”© ì´ì „ì— ì´ˆê¸°í™” */
-    static IDE_RC destroyStaticBoot();   /* í”„ë¡œí¼í‹° ë¡œë”© ì´ì „ì— ì´ˆê¸°í™” */
-    static IDE_RC initializeStaticModule(idBool aDebug=ID_FALSE); /* í”„ë¡œí¼í‹° ë¡œë”© ì´í›„ì— ì´ˆê¸°í™” */
+    /* ÇÁ·ÎÆÛÆ¼ ·Îµù ÀÌÀü¿¡ ÃÊ±âÈ­ */
+    static IDE_RC destroyStaticBoot();   /* ÇÁ·ÎÆÛÆ¼ ·Îµù ÀÌÀü¿¡ ÃÊ±âÈ­ */
+    static IDE_RC initializeStaticModule(idBool aDebug=ID_FALSE); /* ÇÁ·ÎÆÛÆ¼ ·Îµù ÀÌÈÄ¿¡ ÃÊ±âÈ­ */
     static IDE_RC destroyStaticModule();
 
     // BUG-40916
@@ -182,7 +182,7 @@ public:
 
     /*
      * BUG-34491
-     * altibase_error.logê°€ ë‹«ížˆëŠ” ê²½ìš°ê°€ ì—†ë„ë¡ ë”°ë¡œ ì²˜ë¦¬
+     * altibase_error.log°¡ ´ÝÈ÷´Â °æ¿ì°¡ ¾øµµ·Ï µû·Î Ã³¸®
      */
     static IDE_RC destroyStaticError();
 
@@ -242,6 +242,7 @@ public:
     {
         return mLogObj[IDE_ERR].getFD();
     }
+    static void  logErrorMgrStackInternalForDebug(UInt aChkFlag, ideLogModule aModule, UInt aLevel);
 };
 
 inline IDE_RC ideLog::log(UInt aChkFlag, ideLogModule aModule, UInt aLevel, const SChar *aFormat, ... )
@@ -262,9 +263,9 @@ inline IDE_RC ideLog::log(UInt aChkFlag, ideLogModule aModule, UInt aLevel, cons
 }
 
 // bug-24840 divide xa log
-// XA logë¥¼ í•œì¤„ë¡œ ë‚¨ê¸°ê¸° ìœ„í•´ ì¶”ê°€ëœ í•¨ìˆ˜
-// logInternal -> logInternalLine ë¡œ í˜¸ì¶œí•¨ìˆ˜ ë³€ê²½
-// ì¶”ê°€ëœ í•¨ìˆ˜: logLine, logInternalLine, logOpenLine
+// XA log¸¦ ÇÑÁÙ·Î ³²±â±â À§ÇØ Ãß°¡µÈ ÇÔ¼ö
+// logInternal -> logInternalLine ·Î È£ÃâÇÔ¼ö º¯°æ
+// Ãß°¡µÈ ÇÔ¼ö: logLine, logInternalLine, logOpenLine
 inline IDE_RC ideLog::logLine(UInt aChkFlag, ideLogModule aModule, UInt aLevel, const SChar *aFormat, ... )
 {
 #if !defined(ITRON)

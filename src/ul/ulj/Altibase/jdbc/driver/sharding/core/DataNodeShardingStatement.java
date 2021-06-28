@@ -17,6 +17,7 @@
 
 package Altibase.jdbc.driver.sharding.core;
 
+import Altibase.jdbc.driver.AltibaseConnection;
 import Altibase.jdbc.driver.AltibaseStatement;
 import Altibase.jdbc.driver.cm.CmProtocolContextShardConnect;
 import Altibase.jdbc.driver.cm.CmProtocolContextShardStmt;
@@ -28,6 +29,7 @@ import Altibase.jdbc.driver.sharding.routing.*;
 
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static Altibase.jdbc.driver.sharding.util.ShardingTraceLogger.shard_log;
 
@@ -35,15 +37,15 @@ public class DataNodeShardingStatement implements InternalShardingStatement
 {
     AltibaseShardingConnection         mMetaConn;
     CmProtocolContextShardStmt         mShardStmtCtx;
-    SQLRouteResult                     mRouteResult;
     ResultSet                          mCurrentResultSet;
+    // BUG-47460 RouteResult∏¶ ∫∞µµ¿« ∞¥√º∑Œ √≥∏Æ«œ¡ˆ æ ∞Ì ArrayList∑Œ √≥∏Æ
+    List<DataNode>                     mRouteResult;
     AltibaseShardingStatement          mShardStmt;
     Map<DataNode, Statement>           mRoutedStatementMap;
-    SQLWarning                         mSqlwarning;
     int                                mResultSetType;
     int                                mResultSetConcurrency;
     int                                mResultSetHoldability;
-    private ShardTransactionLevel      mShardTransactionLevel;
+    private SQLWarning                 mSqlwarning;
     private int                        mFetchSize;
     private StatementExecutor          mStmtExecutor;
 
@@ -57,30 +59,37 @@ public class DataNodeShardingStatement implements InternalShardingStatement
         mResultSetType = aResultSetType;
         mResultSetConcurrency = aResultSetConcurrency;
         mResultSetHoldability = aResultSetHoldability;
-        mRoutedStatementMap = aShardStmt.getRoutedStatementMap();
+        mRoutedStatementMap = new ConcurrentHashMap<DataNode, Statement>();
         mStmtExecutor = new StatementExecutor(mMetaConn.getExecutorEngine());
-        mShardTransactionLevel = mShardStmtCtx.getShardContextConnect().getShardTransactionLevel();
     }
 
     public ResultSet executeQuery(String aSql) throws SQLException
     {
         ResultSet sResult;
+        List<Statement> sStatements = null;
 
         try
         {
-            List<? extends BaseStatementUnit> sStatementUnits = route(aSql);
-            List<ResultSet> sResultSets = mStmtExecutor.executeQuery(sStatementUnits);
+            sStatements = route(aSql);
+            List<ResultSet> sResultSets = mStmtExecutor.executeQuery(sStatements);
             mShardStmtCtx.setUpdateRowcount(getNodeUpdateRowCount());
             sResult = new AltibaseShardingResultSet(sResultSets,
                                                     new IteratorStreamResultSetMerger(sResultSets),
                                                     mShardStmt);
-            setOneNodeTransactionInfo(mRouteResult.getExecutionUnits());
-            getNodeSqlWarnings();
+            setOneNodeTransactionInfo(mRouteResult);
+            getNodeSqlWarnings(mMetaConn.getShardContextConnect().needToDisconnect());
         }
         catch (ShardJdbcException aShardJdbcEx)
         {
             clearRoutedStatementMap(aShardJdbcEx);
+            getNodeSqlWarnings(true);
             throw aShardJdbcEx;
+        }
+        catch (SQLException aEx)
+        {
+            processExecuteError(sStatements, aEx);
+            getNodeSqlWarnings(true);
+            throw aEx;
         }
         finally
         {
@@ -94,41 +103,43 @@ public class DataNodeShardingStatement implements InternalShardingStatement
     public int executeUpdate(String aSql) throws SQLException
     {
         int sResult;
+        List<Statement> sStatementUnits = null;
+
         try
         {
-            List<? extends BaseStatementUnit> sStatementUnits = route(aSql);
+            sStatementUnits = route(aSql);
             sResult = mStmtExecutor.executeUpdate(sStatementUnits);
             mShardStmtCtx.setUpdateRowcount(sResult);
         }
         catch (ShardJdbcException aShardJdbcEx)
         {
             clearRoutedStatementMap(aShardJdbcEx);
+            getNodeSqlWarnings(true);
             throw aShardJdbcEx;
         }
-        setOneNodeTransactionInfo(mRouteResult.getExecutionUnits());
-        getNodeSqlWarnings();
+        catch (SQLException aEx)
+        {
+            processExecuteError(sStatementUnits, aEx);
+            getNodeSqlWarnings(true);
+            throw aEx;
+        }
+        setOneNodeTransactionInfo(mRouteResult);
+        getNodeSqlWarnings(mMetaConn.getShardContextConnect().needToDisconnect());
 
         return sResult;
     }
 
     public void close() throws SQLException
     {
-        List<SQLException> sExceptions = new LinkedList<SQLException>();
-
-        for (Statement sEach : mRoutedStatementMap.values())
+        try
         {
-            try
-            {
-                shard_log("(NODE STATEMENT CLOSE) {0} ", sEach);
-                sEach.close();
-            }
-            catch (SQLException aEx)
-            {
-                sExceptions.add(aEx);
-            }
+            // BUG-47460 node statement close∏¶ ∫¥∑ƒ∑Œ √≥∏Æ
+            mMetaConn.getExecutorEngine().closeStatements(mRoutedStatementMap.values());
         }
-        mRoutedStatementMap.clear();
-        throwSQLExceptionIfNecessary(sExceptions);
+        finally
+        {
+            mRoutedStatementMap.clear();
+        }
     }
 
     public int getMaxFieldSize() throws SQLException
@@ -204,18 +215,31 @@ public class DataNodeShardingStatement implements InternalShardingStatement
     public boolean execute(String aSql) throws SQLException
     {
         boolean sResult;
+        List<Statement> sStatementUnits = null;
+        
         try
         {
-            List<? extends BaseStatementUnit> sStatementUnits = route(aSql);
+            sStatementUnits = route(aSql);
             sResult = mStmtExecutor.execute(sStatementUnits);
             mShardStmtCtx.setUpdateRowcount(getNodeUpdateRowCount());
-            setOneNodeTransactionInfo(mRouteResult.getExecutionUnits());
-            getNodeSqlWarnings();
+            setOneNodeTransactionInfo(mRouteResult);
+            getNodeSqlWarnings(mMetaConn.getShardContextConnect().needToDisconnect());
         }
         catch (ShardJdbcException aShardJdbcEx)
         {
+            /* BUGBUG : ƒø≥ÿº«¿Ã ≤˜æÓ¡≥¥¬µ• sessionfailover=off¿Œ ∞ÊøÏ exception¿ª ±◊≥… ø√∏∞¥Ÿ... ø©±‚º≠ ∞…∑Ø¡ˆ¥¬∞°??
+                        partial rollback √≥∏Æ « ø‰?
+                        failoverøÕ ¿œπ› ø°∑Ø µ— ¥Ÿ πﬂª˝«œ∏È æÓ∂≤ exception¿Ã ø√∂Ûø¿¥¬¡ˆ »Æ¿Œ « ø‰.
+            */
             clearRoutedStatementMap(aShardJdbcEx);
+            getNodeSqlWarnings(true);
             throw aShardJdbcEx;
+        }
+        catch (SQLException aEx)
+        {
+            processExecuteError(sStatementUnits, aEx);
+            getNodeSqlWarnings(true);
+            throw aEx;
         }
         finally
         {
@@ -232,28 +256,34 @@ public class DataNodeShardingStatement implements InternalShardingStatement
             return mCurrentResultSet;
         }
 
-        if (mRoutedStatementMap.size() == 1)
+        // BUG-47360 prepare»ƒ execute∏¶ æ»«œ¥¬ ∞ÊøÏ route result∞° æ¯±‚∂ßπÆø° ¿Ã∑± ∞ÊøÏ øπø‹∏¶ ø√∏∞¥Ÿ.
+        if (mRouteResult == null)
         {
-            mCurrentResultSet = mRoutedStatementMap.values().iterator().next().getResultSet();
-            return mCurrentResultSet;
+            Error.throwSQLException(ErrorDef.STATEMENT_NOT_YET_EXECUTED);
         }
 
-        List<ResultSet> sResultSets = new ArrayList<ResultSet>(mRoutedStatementMap.size());
-        // BUG-46513 mRoutedStatementMapÏù¥ ÏàúÏÑúÎ•º Î≥¥Ïû•ÌïòÏßÄ ÏïäÍ∏∞ ÎïåÎ¨∏Ïóê TreeMapÏùÑ Ïù¥Ïö©Ìï¥ sortingÌïúÎã§.
-        TreeMap<DataNode, Statement> sSortedRouteStmtMap = new TreeMap<DataNode, Statement>(mRoutedStatementMap);
+        List<ResultSet> sResultSets = new ArrayList<ResultSet>(mRouteResult.size());
 
-        for (Statement sEach : sSortedRouteStmtMap.values())
+        // BUG-47360 mRouteResult∑Œ∫Œ≈Õ routeµ» ≥ÎµÂ∏¶ √£æ∆ Statement.getResultSet()¿ª ºˆ«‡«—¥Ÿ.
+        for (DataNode sEach : mRouteResult)
         {
-            sResultSets.add(sEach.getResultSet());
+            ResultSet sRs = mRoutedStatementMap.get(sEach).getResultSet();
+            if (sRs != null) // BUG-47360 ResultSet¿Ã ª˝º∫µ» ∞ÊøÏø°∏∏ sResultSetsø° add«—¥Ÿ.
+            {
+                sResultSets.add(sRs);
+            }
         }
 
-        if (mShardStmtCtx.getShardPrepareResult().isSelectStatement())
-        {
-            mCurrentResultSet = new AltibaseShardingResultSet(sResultSets, new IteratorStreamResultSetMerger(sResultSets), mShardStmt);
-        }
-        else
+        if (sResultSets.size() == 1)
         {
             mCurrentResultSet = sResultSets.get(0);
+        }
+        else if (sResultSets.size() > 1)
+        {
+            // BUG-47360 node∑Œ∫Œ≈Õ ª˝º∫µ» ResultSet¿Ã 2∞≥ ¿ÃªÛ¿Œ ∞ÊøÏ AltibaseShardingResultSet¿ª ª˝º∫«—¥Ÿ.
+            mCurrentResultSet = new AltibaseShardingResultSet(sResultSets,
+                                                              new IteratorStreamResultSetMerger(sResultSets),
+                                                              mShardStmt);
         }
 
         return mCurrentResultSet;
@@ -261,12 +291,59 @@ public class DataNodeShardingStatement implements InternalShardingStatement
 
     public int getUpdateCount()
     {
-        return mShardStmtCtx.getUpdateRowcount();
+        int sResult = mShardStmtCtx.getUpdateRowcount();
+        // BUG-47338 getUpdateCount∞° «—π¯ »£√‚µ» µ⁄ø£ -1 ∞™¿∏∑Œ √ ±‚»≠ «ÿæﬂ «—¥Ÿ.
+        mShardStmtCtx.setUpdateRowcount(AltibaseStatement.DEFAULT_UPDATE_COUNT);
+
+        return sResult;
     }
 
-    public boolean getMoreResults()
+    public boolean getMoreResults() throws SQLException
     {
-        return false;
+        return getMoreResultsInternal(new GetMoreResultsTemplate()
+        {
+            public boolean getMoreResults(Statement aStmt) throws SQLException
+            {
+                return aStmt.getMoreResults();
+            }
+        });
+    }
+
+    public boolean getMoreResults(final int aCurrent) throws SQLException
+    {
+        return getMoreResultsInternal(new GetMoreResultsTemplate()
+        {
+            public boolean getMoreResults(Statement aStmt) throws SQLException
+            {
+                return aStmt.getMoreResults(aCurrent);
+            }
+        });
+    }
+
+    private boolean getMoreResultsInternal(GetMoreResultsTemplate aTemplate) throws SQLException
+    {
+        boolean sResult = true;
+        int sNoDataCount = 0;
+
+        for (DataNode sEach : mRouteResult)
+        {
+            Statement sStmt = mRoutedStatementMap.get(sEach);
+            if (!aTemplate.getMoreResults(sStmt))
+            {
+                sNoDataCount++;
+            }
+        }
+        /* BUG-47360 node statement ¿¸√º∞° getMoreResultsø° Ω«∆–«— ∞ÊøÏø°∏∏ ∞·∞˙∏¶ false∑Œ ø√∏∞¥Ÿ.
+           ¡Ô «— ≥ÎµÂ∂Ûµµ getMoreResults∞° º∫∞¯«œ∏È true∏¶ ∏Æ≈œ«—¥Ÿ. */
+        if (sNoDataCount == mRouteResult.size())
+        {
+            sResult = false;
+        }
+
+        // BUG-47360 getMoreResults∞° »£√‚µ» ∞ÊøÏ ¥Ÿ¿Ω resultset¿ª ∞°∏Æƒ—æﬂ «œ±‚∂ßπÆø° mCurrentResultSet¿ª √ ±‚»≠ «ÿ¡ÿ¥Ÿ.
+        mCurrentResultSet = null;
+
+        return sResult;
     }
 
     public void setFetchSize(int aRows) throws SQLException
@@ -299,39 +376,44 @@ public class DataNodeShardingStatement implements InternalShardingStatement
         return mMetaConn;
     }
 
-    public boolean getMoreResults(int aCurrent)
+    public ResultSet getGeneratedKeys() throws SQLException
     {
-        return false;
-    }
-
-    public ResultSet getGeneratedKeys()
-    {
+        Error.throwSQLException(ErrorDef.UNSUPPORTED_FEATURE,
+                                "AutoGeneratedKey is not supported in client-side sharding");
         return null;
     }
 
     public int executeUpdate(String aSql, int aAutoGeneratedKeys) throws SQLException
     {
         Error.throwSQLException(ErrorDef.UNSUPPORTED_FEATURE,
-                                "executeUpdate with generatedKeys is not supported in sharding");
+                                "AutoGeneratedKey is not supported in client-side sharding");
         return 0;
     }
 
     public int executeUpdate(String aSql, int[] aColumnIndexes) throws SQLException
     {
         int sResult;
+        List<Statement> sStatementUnits = null;
 
         try
         {
-            List<? extends BaseStatementUnit> sStatementUnits = route(aSql);
+            sStatementUnits = route(aSql);
             sResult =  mStmtExecutor.executeUpdate(aColumnIndexes, sStatementUnits);
             mShardStmtCtx.setUpdateRowcount(sResult);
-            setOneNodeTransactionInfo(mRouteResult.getExecutionUnits());
-            getNodeSqlWarnings();
+            setOneNodeTransactionInfo(mRouteResult);
+            getNodeSqlWarnings(mMetaConn.getShardContextConnect().needToDisconnect());
         }
         catch (ShardJdbcException aShardJdbcEx)
         {
             clearRoutedStatementMap(aShardJdbcEx);
+            getNodeSqlWarnings(true);
             throw aShardJdbcEx;
+        }
+        catch (SQLException aEx)
+        {
+            processExecuteError(sStatementUnits, aEx);
+            getNodeSqlWarnings(true);
+            throw aEx;
         }
         finally
         {
@@ -344,19 +426,27 @@ public class DataNodeShardingStatement implements InternalShardingStatement
     public int executeUpdate(String aSql, String[] aColumnNames) throws SQLException
     {
         int sResult;
+        List<Statement> sStatementUnits = null;
 
         try
         {
-            List<? extends BaseStatementUnit> sStatementUnits = route(aSql);
+            sStatementUnits = route(aSql);
             sResult = mStmtExecutor.executeUpdate(aColumnNames, sStatementUnits);
             mShardStmtCtx.setUpdateRowcount(sResult);
-            setOneNodeTransactionInfo(mRouteResult.getExecutionUnits());
-            getNodeSqlWarnings();
+            setOneNodeTransactionInfo(mRouteResult);
+            getNodeSqlWarnings(mMetaConn.getShardContextConnect().needToDisconnect());
         }
         catch (ShardJdbcException aShardJdbcEx)
         {
             clearRoutedStatementMap(aShardJdbcEx);
+            getNodeSqlWarnings(true);
             throw aShardJdbcEx;
+        }
+        catch (SQLException aEx)
+        {
+            processExecuteError(sStatementUnits, aEx);
+            getNodeSqlWarnings(true);
+            throw aEx;
         }
         finally
         {
@@ -369,101 +459,82 @@ public class DataNodeShardingStatement implements InternalShardingStatement
     public boolean execute(String aSql, int aAutoGeneratedKeys) throws SQLException
     {
         Error.throwSQLException(ErrorDef.UNSUPPORTED_FEATURE,
-                                "execute with generatedKeys is not supported in sharding");
+                                "AutoGeneratedKey is not supported in client-side sharding");
         return false;
     }
 
     public boolean execute(String aSql, int[] aColumnIndexes) throws SQLException
     {
-        boolean sResult;
-        try
-        {
-            List<? extends BaseStatementUnit> sStatementUnits = route(aSql);
-            sResult = mStmtExecutor.execute(aColumnIndexes, sStatementUnits);
-            mShardStmtCtx.setUpdateRowcount(getNodeUpdateRowCount());
-            setOneNodeTransactionInfo(mRouteResult.getExecutionUnits());
-            getNodeSqlWarnings();
-        }
-        catch (ShardJdbcException aShardJdbcEx)
-        {
-            clearRoutedStatementMap(aShardJdbcEx);
-            throw aShardJdbcEx;
-        }
-        finally
-        {
-            mCurrentResultSet = null;
-        }
-
-        return sResult;
+        Error.throwSQLException(ErrorDef.UNSUPPORTED_FEATURE,
+                                "AutoGeneratedKey is not supported in client-side sharding");
+        return false;
     }
 
     public boolean execute(String aSql, String[] aColumnNames) throws SQLException
     {
-        boolean sResult;
-
-        try
-        {
-            List<? extends BaseStatementUnit> sStatementUnits = route(aSql);
-            sResult = mStmtExecutor.execute(aColumnNames, sStatementUnits);
-            mShardStmtCtx.setUpdateRowcount(getNodeUpdateRowCount());
-            setOneNodeTransactionInfo(mRouteResult.getExecutionUnits());
-            getNodeSqlWarnings();
-        }
-        catch (ShardJdbcException aShardJdbcEx)
-        {
-            clearRoutedStatementMap(aShardJdbcEx);
-            throw aShardJdbcEx;
-        }
-        finally
-        {
-            mCurrentResultSet = null;
-        }
-
-        return sResult;
+        Error.throwSQLException(ErrorDef.UNSUPPORTED_FEATURE,
+                                "AutoGeneratedKey is not supported in client-side sharding");
+        return false;
     }
 
-    private List<? extends BaseStatementUnit> route(String aSql) throws SQLException
+    private List<Statement> route(final String aSql) throws SQLException
     {
         mCurrentResultSet = null;
         mRouteResult = createRoutingEngine().route(aSql, null);
+        ExecutorEngine sExecutorEngine = mMetaConn.getExecutorEngine();
+
+        // PROJ-2690 ExecutorEngine¿ª ≈Î«ÿ ∫¥∑ƒ∑Œ Statement ∞¥√º ª˝º∫
+        List<Statement> sResults = sExecutorEngine.generateStatement(
+                                mRouteResult,
+                                new GenerateCallback<Statement>()
+                                {
+                                    public Statement generate(DataNode aNode) throws SQLException
+                                    {
+                                        Connection sConn = mMetaConn.getNodeConnection(aNode);
+                                        Statement sStatement = getStatement(aNode, sConn);
+                                        ((AltibaseStatement)sStatement).setSql(aSql);
+                                        mRoutedStatementMap.put(aNode, sStatement);
+                                        return sStatement;
+                                    }
+                                });
+        // BUG-47145 node statement∞° ¡§ªÛ¿˚¿∏∑Œ ª˝º∫µ» ¥Ÿ¿Ω node touch∏¶ ºˆ«‡«—¥Ÿ.
         if (!mShardStmtCtx.isAutoCommitMode())
         {
             touchNodes();
         }
-        ExecutorEngine sExecutorEngine = mMetaConn.getExecutorEngine();
-        // ExecutorEngineÏùÑ ÌÜµÌï¥ Î≥ëÎ†¨Î°ú Statement Í∞ùÏ≤¥ ÏÉùÏÑ±
-        List<StatementUnit> sStatementUnits = sExecutorEngine.generateStatement(
-                mRouteResult.getExecutionUnits(),
-                new GenerateCallback<StatementUnit>()
-                {
-                    public StatementUnit generate(SQLExecutionUnit aSqlExecutionUnit) throws SQLException
-                    {
-                        Connection sConn = mMetaConn.getNodeConnection(aSqlExecutionUnit.getNode());
-                        Statement sStatement = getStatement(aSqlExecutionUnit, sConn);
-                        mRoutedStatementMap.put(aSqlExecutionUnit.getNode(), sStatement);
-                        return new StatementUnit(aSqlExecutionUnit, sStatement);
-                    }
-                });
 
-        return sStatementUnits;
+        calcDistTxInfo(sResults);
+
+        return sResults;
+    }
+    
+    void calcDistTxInfo(List<Statement> aResults)
+    {
+        AltibaseStatement sStatement;
+        short sExecuteNodeCnt = (short)aResults.size();
+        // CalcDistTxInfoForDataNodeø°º≠ sExecuteNodeCnt=1¿œ∂ß∏∏ DistTxInfo.mBeforeExecutedNodeId∞˙ sNodeIndex∏¶ ∫Ò±≥«œπ«∑Œ, sNodeIndexø° √ππ¯¬∞ ≥ÎµÂ¿« id∏∏ ¿˙¿Â«œ∏È µ .
+        // ¬¸∞Ì∑Œ ¿œπ› execute¿œ ∂ß¥¬ mRouteResultø° √≥∏Æ«“ ∏µÁ ≥ÎµÂ∞° ¿˙¿Âµ«¡ˆ∏∏, batch¿« ∞ÊøÏ ∏∂¡ˆ∏∑ addBatch¿« route ∞·∞˙∏∏ ¿˙¿Âµ«æÓ ¿÷¿Ω.
+        // addBatch ∂ß∏∂¥Ÿ route ∞·∞˙∞° mRouteResultø° overwriteµ .
+        short sNodeIndex = (short)mRouteResult.get(0).getNodeId();
+        mMetaConn.getMetaConnection().getDistTxInfo().calcDistTxInfoForDataNode(mMetaConn, sExecuteNodeCnt, sNodeIndex);
+
+        for (int i = 0; i < sExecuteNodeCnt; i++)
+        {
+            sStatement = (AltibaseStatement)aResults.get(i);
+            sStatement.getProtocolContext().getDistTxInfo().propagateDistTxInfoToNode(mMetaConn.getMetaConnection().getDistTxInfo());
+        }
+
+        mMetaConn.getMetaConnection().setDistTxInfoForVerify();
     }
 
-    private Statement getStatement(SQLExecutionUnit aSqlExecutionUnit, Connection aConn) throws SQLException
+    private Statement getStatement(DataNode aNode, Connection aConn) throws SQLException
     {
-        Statement sStatement = mRoutedStatementMap.get(aSqlExecutionUnit.getNode());
+        Statement sStatement = mRoutedStatementMap.get(aNode);
         if (sStatement != null) return sStatement;
         
-        try
-        {
-            // routed statemapÏóê Ìï¥Îãπ statementÍ∞Ä ÏóÜÎã§Î©¥ ÏÉàÎ°ú ÏÉùÏÑ±ÌïúÎã§.
-            sStatement = aConn.createStatement(mResultSetType, mResultSetConcurrency, mResultSetHoldability);
-            mShardStmt.setShardMetaNumber(mMetaConn.getShardMetaNumber());
-        }
-        catch (ShardFailoverIsNotAvailableException aFailoverEx)
-        {
-            mMetaConn.getCachedConnections().remove(aSqlExecutionUnit.getNode());
-            throw aFailoverEx;
-        }
+        // routed statemapø° «ÿ¥Á statement∞° æ¯¥Ÿ∏È ªı∑Œ ª˝º∫«—¥Ÿ.
+        sStatement = aConn.createStatement(mResultSetType, mResultSetConcurrency, mResultSetHoldability);
+        mShardStmt.setShardMetaNumber(mMetaConn.getShardMetaNumber());
         mShardStmt.replayMethodsInvocation(sStatement);
         
         return sStatement;
@@ -477,8 +548,8 @@ public class DataNodeShardingStatement implements InternalShardingStatement
         switch (sSplitMethod)
         {
             case CLONE:
-                /* shard valueÍ∞Ä ÏóÜÎäî Í≤ΩÏö∞Îäî randomÌïòÍ≤å ÎÖ∏ÎìúÎ•º ÏÑ†ÌÉùÌï¥Ïïº ÌïòÎ©∞ Í∑∏Î†áÏßÄ ÏïäÏùÄ
-                   Í≤ΩÏö∞ÏóêÎäî Î™®Îì† ÎÖ∏ÎìúÍ∞Ä Ïã§ÌñâÎåÄÏÉÅÏù¥ ÎêúÎã§. */
+                /* shard value∞° æ¯¥¬ ∞ÊøÏ¥¬ random«œ∞‘ ≥ÎµÂ∏¶ º±≈√«ÿæﬂ «œ∏Á ±◊∑∏¡ˆ æ ¿∫
+                   ∞ÊøÏø°¥¬ ∏µÁ ≥ÎµÂ∞° Ω««‡¥ÎªÛ¿Ã µ»¥Ÿ. */
                 return (sShardValueCnt == 0) ? new RandomNodeRoutingEngine(mShardStmtCtx) :
                        new AllNodesRoutingEngine(mShardStmtCtx);
             case SOLO:
@@ -494,7 +565,7 @@ public class DataNodeShardingStatement implements InternalShardingStatement
                 {
                     return new SimpleShardKeyRoutingEngine(mShardStmtCtx);
                 }
-                else  // shard value Í∞Ä ÏóÜÎã§Î©¥ Î™®Îì† ÎÖ∏ÎìúÍ∞Ä ÏàòÌñâ ÎåÄÏÉÅÏù¥ ÎêúÎã§.
+                else  // shard value ∞° æ¯¥Ÿ∏È ∏µÁ ≥ÎµÂ∞° ºˆ«‡ ¥ÎªÛ¿Ã µ»¥Ÿ.
                 {
                     return new AllNodesRoutingEngine(mShardStmtCtx);
                 }
@@ -504,22 +575,22 @@ public class DataNodeShardingStatement implements InternalShardingStatement
     }
 
     /**
-     * Ìä∏ÎûúÏû≠ÏÖò Î™®ÎìúÏùºÎïå ÎÖ∏ÎìúÏùò touch ÌîåÎûòÍ∑∏Î•º ÏÖãÌåÖÌïúÎã§. ÎòêÌïú Ïù¥Îïå onenode transactionÏù∏ Í≤ΩÏö∞ÏóêÎäî <br>
-     * Ìä∏Ïû∞Ïû≠ÏÖòÏù¥ Ïú†Ìö®ÌïúÏßÄ Ï≤¥ÌÅ¨ÌïúÎã§.
-     * @throws SQLException onenodeÏùºÎïå Ï†ïÏÉÅÏ†ÅÏù∏ Ìä∏ÎûúÏû≠ÏÖò ÏÉÅÌÉúÍ∞Ä ÏïÑÎãå Í≤ΩÏö∞
+     * ∆Æ∑£¿Ëº« ∏µÂ¿œ∂ß ≥ÎµÂ¿« touch «√∑°±◊∏¶ º¬∆√«—¥Ÿ. ∂««— ¿Ã∂ß onenode transaction¿Œ ∞ÊøÏø°¥¬ <br>
+     * ∆Æ¿È¿Ëº«¿Ã ¿Ø»ø«—¡ˆ √º≈©«—¥Ÿ.
+     * @throws SQLException onenode¿œ∂ß ¡§ªÛ¿˚¿Œ ∆Æ∑£¿Ëº« ªÛ≈¬∞° æ∆¥— ∞ÊøÏ
      */
     void touchNodes() throws SQLException
     {
-        if (mShardTransactionLevel == ShardTransactionLevel.ONE_NODE)
+        if (mMetaConn.getGlobalTransactionLevel() == GlobalTransactionLevel.ONE_NODE)
         {
-            /* one node txÏóêÏÑú 1Í∞úÏù¥ÏÉÅ ÎÖ∏ÎìúÍ∞Ä ÏÑ†ÌÉùÎêú Í≤ΩÏö∞ ÏóêÎü¨ */
-            if (mRouteResult.getExecutionUnits().size() > 1)
+            /* one node txø°º≠ 1∞≥¿ÃªÛ ≥ÎµÂ∞° º±≈√µ» ∞ÊøÏ ø°∑Ø */
+            if (mRouteResult.size() > 1)
             {
                 Error.throwSQLException(ErrorDef.SHARD_MULTINODE_TRANSACTION_REQUIRED);
             }
-            // one node txÏóêÏÑú Ïù¥Ï†Ñ ÎÖ∏ÎìúÏôÄ Îã§Î•¥Î©¥ ÏóêÎü¨
+            // one node txø°º≠ ¿Ã¿¸ ≥ÎµÂøÕ ¥Ÿ∏£∏È ø°∑Ø
             DataNode sShardOnTransactionNode = mShardStmtCtx.getShardContextConnect().getShardOnTransactionNode();
-            DataNode sCurrentNode = mRouteResult.getExecutionUnits().iterator().next().getNode();
+            DataNode sCurrentNode = mRouteResult.get(0);
             if (!isValidTransaction(sShardOnTransactionNode, sCurrentNode))
             {
                 Error.throwSQLException(ErrorDef.SHARD_INVALID_NODE_TOUCH);
@@ -527,9 +598,9 @@ public class DataNodeShardingStatement implements InternalShardingStatement
         }
 
         // touch nodes
-        for (SQLExecutionUnit sEach : mRouteResult.getExecutionUnits())
+        for (DataNode sEach : mRouteResult)
         {
-            sEach.getNode().setTouched(true);
+            sEach.setTouched(true);
         }
     }
 
@@ -539,15 +610,15 @@ public class DataNodeShardingStatement implements InternalShardingStatement
                sOldNode.equals(sCurrentNode);
     }
 
-    void setOneNodeTransactionInfo(Set<SQLExecutionUnit> aSqlExecutionUnits)
+    void setOneNodeTransactionInfo(List<DataNode> aSqlExecutionUnits)
     {
         if (aSqlExecutionUnits.size() == 0) return;
 
-        if (mShardTransactionLevel == ShardTransactionLevel.ONE_NODE)
+        if (mMetaConn.getGlobalTransactionLevel() == GlobalTransactionLevel.ONE_NODE)
         {
-            SQLExecutionUnit sSqlExecutionUnit = aSqlExecutionUnits.iterator().next();
+            DataNode sNode = aSqlExecutionUnits.iterator().next();
             CmProtocolContextShardConnect sShardContextConnect = mShardStmtCtx.getShardContextConnect();
-            sShardContextConnect.setShardOnTransactionNode(sSqlExecutionUnit.getNode());
+            sShardContextConnect.setShardOnTransactionNode(sNode);
             sShardContextConnect.setNodeTransactionStarted(true);
         }
     }
@@ -558,9 +629,9 @@ public class DataNodeShardingStatement implements InternalShardingStatement
     }
 
     /**
-     * ShardRetryAvailableExceptionÏù¥ÎÇò STF success ÏÉÅÌô©Ïù∏ Í≤ΩÏö∞ÏóêÎäî statementÍ∞Ä Ïú†Ìö®ÌïòÏßÄ ÏïäÍ∏∞ ÎïåÎ¨∏Ïóê <br>
-     * Ìï¥Îãπ statementÎ•º routedStatementMapÏóêÏÑú clearÌïúÎã§.
-     * @param aShardJdbcEx ShardJdbcException Í∞ùÏ≤¥
+     * ShardRetryAvailableException¿Ã≥™ STF success ªÛ»≤¿Œ ∞ÊøÏø°¥¬ statement∞° ¿Ø»ø«œ¡ˆ æ ±‚ ∂ßπÆø° <br>
+     * «ÿ¥Á statement∏¶ routedStatementMapø°º≠ clear«—¥Ÿ.
+     * @param aShardJdbcEx ShardJdbcException ∞¥√º
      */
     void clearRoutedStatementMap(ShardJdbcException aShardJdbcEx)
     {
@@ -570,15 +641,16 @@ public class DataNodeShardingStatement implements InternalShardingStatement
     }
 
     /**
-     * RoutedStatementMapÏùÑ ÏàúÌôòÌïòÎ©¥ÏÑú SqlWarningÏù¥ ÏûàÏúºÎ©¥ Ï°∞Ìï©ÌïúÎã§.
-     * @throws SQLException ÎÖ∏Îìú StatementÏóêÏÑú SqlWarningÏùÑ Í∞ÄÏ†∏Ïò§Îäî ÎèÑÏ§ë ÏóêÎü¨Í∞Ä Î∞úÏÉùÌïú Í≤ΩÏö∞
+     * RoutedStatementMap¿ª º¯»Ø«œ∏Èº≠ SqlWarning¿Ã ¿÷¿∏∏È ¡∂«’«—¥Ÿ.
+     * @throws SQLException ≥ÎµÂ Statementø°º≠ SqlWarning¿ª ∞°¡Æø¿¥¬ µµ¡ﬂ ø°∑Ø∞° πﬂª˝«— ∞ÊøÏ
      */
-    void getNodeSqlWarnings() throws SQLException
+    void getNodeSqlWarnings(boolean aNeedToDisconnect) throws SQLException
     {
         boolean sWarningExists = false;
         for (Statement sEach : mRoutedStatementMap.values())
         {
-            if (sEach.getWarnings() != null)
+            AltibaseStatement sStmt = (AltibaseStatement)sEach;
+            if (!sStmt.isClosed() && sEach.getWarnings() != null)
             {
                 sWarningExists = true;
                 break;
@@ -586,37 +658,34 @@ public class DataNodeShardingStatement implements InternalShardingStatement
         }
         if (!sWarningExists) return;
 
-        // ÏàúÏÑúÎåÄÎ°ú SQLWarningÏùÑ Ï†ÄÏû•ÌïòÍ∏∞ ÏúÑÌï¥ TreeMapÏùÑ ÏÇ¨Ïö©ÌïúÎã§.
+        // º¯º≠¥Î∑Œ SQLWarning¿ª ¿˙¿Â«œ±‚ ¿ß«ÿ TreeMap¿ª ªÁøÎ«—¥Ÿ.
         Map<DataNode, Statement> sSortedMap = new TreeMap<DataNode, Statement>(mRoutedStatementMap);
         for (Map.Entry<DataNode, Statement> sEntry : sSortedMap.entrySet())
         {
             Statement sStmt = sEntry.getValue();
             SQLWarning sSqlWarning = sStmt.getWarnings();
-
-            if (sSqlWarning != null)
+            if (sSqlWarning == null) continue;
+            if (sSqlWarning.getErrorCode() == ErrorDef.SHARD_META_NUMBER_INVALID )
             {
-                if (sSqlWarning.getErrorCode() == ErrorDef.SHARD_META_NUMBER_INVALID)
+                if (aNeedToDisconnect)
                 {
-                    StringBuilder sSb = new StringBuilder();
-                    sSb.append("[").append(sEntry.getKey().getNodeName()).append("] The ").append("Execute");
                     mSqlwarning = Error.createWarning(mSqlwarning,
-                                                      ErrorDef.SHARD_OPERATION_FAILED,
-                                                      sSb.toString(), sSqlWarning.getMessage());
+                                                      ErrorDef.SHARD_SMN_OPERATION_FAILED,
+                                                      "[" + sEntry.getKey().getNodeName() + "] The " + "Execute",
+                                                      sSqlWarning.getMessage());
                 }
-                else
-                {
-                    getSQLWarningFromDataNode(sEntry.getKey().getNodeName(), sSqlWarning);
-                }
+            }
+            else
+            {
+                getSQLWarningFromDataNode(sEntry.getKey().getNodeName(), sSqlWarning);
             }
         }
     }
 
     private void getSQLWarningFromDataNode(String aNodeName, SQLWarning aWarning)
     {
-        StringBuilder sSb = new StringBuilder();
-        sSb.append("[").append(aNodeName).append("] ").append(aWarning.getMessage());
-        SQLWarning sNewWarning = new SQLWarning(sSb.toString(), aWarning.getSQLState(),
-                                                aWarning.getErrorCode());
+        SQLWarning sNewWarning = new SQLWarning("[" + aNodeName + "] " + aWarning.getMessage(),
+                                                aWarning.getSQLState(), aWarning.getErrorCode());
         if (mSqlwarning == null)
         {
             mSqlwarning = sNewWarning;
@@ -655,13 +724,13 @@ public class DataNodeShardingStatement implements InternalShardingStatement
         return true;
     }
 
-    public void removeFromStmtRouteMap(DataNode aNode)
+    void removeFromStmtRouteMap(DataNode aNode)
     {
-        // BUG-46513 connectionÏù¥ Ï†ïÎ¶¨Îê†Îïå Statement FreeÎ•º ÏàòÌñâÌïòÎØÄÎ°ú Ïó¨Í∏∞ÏÑúÎäî Î©îÌïëÏ†ïÎ≥¥Îßå Ï†ïÎ¶¨ÌïúÎã§.
+        // BUG-46513 connection¿Ã ¡§∏Æµ…∂ß Statement Free∏¶ ºˆ«‡«œπ«∑Œ ø©±‚º≠¥¬ ∏ﬁ«Œ¡§∫∏∏∏ ¡§∏Æ«—¥Ÿ.
         mRoutedStatementMap.remove(aNode);
     }
 
-    protected int getNodeUpdateRowCount()
+    int getNodeUpdateRowCount()
     {
         long sResult = 0;
         boolean sHasResult = false;
@@ -674,8 +743,8 @@ public class DataNodeShardingStatement implements InternalShardingStatement
             }
             catch (SQLException aEx)
             {
-                /* BUG-46513 lazyConnect Í∞Ä falseÏùºÎïåÎäî statementÍ∞Ä ÏïÑÏßÅ Ïã§ÌñâÏ†ÑÏùºÏàò ÏûàÍ∏∞ÎïåÎ¨∏Ïóê Ìï¥Îãπ exceptionÏù¥
-                   Î∞úÏÉùÌïòÎ©¥ Î°úÍ∑∏Î•º ÎÇ®Í∏∞Í≥† ÎÑòÏñ¥Í∞ÑÎã§. */
+                /* BUG-46513 lazyConnect ∞° false¿œ∂ß¥¬ statement∞° æ∆¡˜ Ω««‡¿¸¿œºˆ ¿÷±‚∂ßπÆø° «ÿ¥Á exception¿Ã
+                   πﬂª˝«œ∏È ∑Œ±◊∏¶ ≥≤±‚∞Ì ≥—æÓ∞£¥Ÿ. */
                 if (aEx.getErrorCode() == ErrorDef.STATEMENT_NOT_YET_EXECUTED)
                 {
                     shard_log("Statement not yet executed : {0}", sEach);
@@ -696,19 +765,99 @@ public class DataNodeShardingStatement implements InternalShardingStatement
         return sHasResult ? Long.valueOf(sResult).intValue() : -1;
     }
 
-    void throwSQLExceptionIfNecessary(List<SQLException> aExceptions) throws SQLException
+    public void makeQstrForGeneratedKeys(String aSql, int[] aColumnIndexes,
+                                         String[] aColumnNames) throws SQLException
     {
-        if (aExceptions.isEmpty())
+        // BUG-47168 ≈¨∂Û¿Ãæ∆Æ ªÁ¿ÃµÂ¿œ∂ß¥¬ AutoGenerated Key∏¶ ¡ˆø¯«œ¡ˆ æ ¥¬¥Ÿ.
+        Error.throwSQLException(ErrorDef.UNSUPPORTED_FEATURE,
+                                "AutoGeneratedKey is not supported in client-side sharding.");
+    }
+
+    public void clearForGeneratedKeys() throws SQLException
+    {
+        Error.throwSQLException(ErrorDef.UNSUPPORTED_FEATURE,
+                                "AutoGeneratedKey is not supported in client-side sharding.");
+    }
+
+    void processExecuteError(List<Statement> aStatementUnits, SQLException aEx) throws SQLException
+    {
+        // BUG-46785 : ø°∑Ø∞° «œ≥™∂Ûµµ ¿÷¿∏∏È partial rollback √≥∏Æ
+
+        // one node ºˆ«‡Ω√ø°¥¬ partial rollback ∫“« ø‰.
+        if (aStatementUnits == null || aStatementUnits.size() < 2)
         {
             return;
         }
+        
+        List<SQLException> sExceptionList = new ArrayList<SQLException>();
+        List<SQLWarning> sWarningList = new ArrayList<SQLWarning>();
 
-        SQLException sException = new SQLException();
-        for (SQLException sEach : aExceptions)
+        sExceptionList.add(aEx);
+        // BUGBUG : sWarningList.add(e) « ø‰«—∞°?
+        
+        // select for update¿« ∞ÊøÏ partial rollback ¿¸ø° close cursor ºˆ«‡
+        try
         {
-            sException.setNextException(sEach);
-        }
+            // BUGBUG : selectø©∫Œ∏¶ ∏’¿˙ √º≈©«œø© select¿œ∂ß∏∏ closeCursor »£√‚?
+            // AltibaseStatement sStmt0 = (AltibaseStatement)aStatementUnits.get(0);
+            mMetaConn.getExecutorEngine().closeCursor(aStatementUnits, 
+                    new ParallelProcessCallback<Statement>()
+                    {
+                        public Void processInParallel(Statement aStmt) throws SQLException 
+                        {
+                            ((AltibaseStatement)aStmt).closeCursor();
+                            return null;
+                        }
+                    });
 
-        throw sException;
+            mMetaConn.getExecutorEngine().doPartialRollback(aStatementUnits,
+                    new ParallelProcessCallback<Statement>()
+                    {
+                          public Void processInParallel(Statement aStmt) throws SQLException
+                          {
+                              if (((AltibaseStatement) aStmt).getIsSuccess())  // º∫∞¯¿Œ ≥ÎµÂ∏∏ partial rollback ºˆ«‡.
+                              {
+                                  AltibaseConnection sConn = (AltibaseConnection) aStmt.getConnection();
+                                  sConn.shardStmtPartialRollback();
+                              }
+                              return null;
+                          }
+                    });
+        }
+        catch (ShardJdbcException sShardJdbcEx1)
+        {
+            // BUGBUG : aShardJdbcEx.next æ»«ÿ∫¡µµ µ«≥™?
+            sExceptionList.add(sShardJdbcEx1);
+            clearRoutedStatementMap(sShardJdbcEx1);
+            getNodeSqlWarnings(true);
+            ShardError.throwSQLExceptionIfExists(sExceptionList);
+        }
+        catch (SQLException sEx1)
+        {
+            sExceptionList.add(sEx1);
+            
+            try
+            {
+                mMetaConn.sendNodeTransactionBrokenReport();
+            }
+            catch (ShardJdbcException sShardJdbcEx2)
+            {
+                clearRoutedStatementMap(sShardJdbcEx2);
+                getNodeSqlWarnings(true);
+                throw sShardJdbcEx2;
+            }
+            catch (SQLException sEx2)
+            {
+                sExceptionList.add(Error.createSQLException(ErrorDef.SHARD_INTERNAL_ERROR,
+                                   "ShardNodeReport(Transaction Broken) fails."));
+            }
+            
+            ShardError.throwSQLExceptionIfExists(sExceptionList);
+        }
+    }
+
+    private interface GetMoreResultsTemplate
+    {
+        boolean getMoreResults(Statement aStmt) throws SQLException;
     }
 }

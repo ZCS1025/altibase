@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsvPkgStmts.cpp 83637 2018-08-07 05:40:38Z khkwak $
+ * $Id: qsvPkgStmts.cpp 87967 2020-07-07 05:02:47Z khkwak $
  **********************************************************************/
 
 #include <idl.h>
@@ -54,8 +54,8 @@ IDE_RC qsvPkgStmts::parseSpecBlock( qcStatement * aStatement,
  *
  * Description : BUG-41847
  *
- *    Package Specì˜ blockì— ìˆëŠ” subprogramì— ëŒ€í•´ IDë¥¼ ë¶€ì—¬í•˜ê³ ,
- *    parseí•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
+ *    Package SpecÀÇ block¿¡ ÀÖ´Â subprogram¿¡ ´ëÇØ ID¸¦ ºÎ¿©ÇÏ°í,
+ *    parseÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -68,7 +68,7 @@ IDE_RC qsvPkgStmts::parseSpecBlock( qcStatement * aStatement,
     
     sBLOCK = (qsPkgStmtBlock *)aProcStmts;
 
-    /* subprogramIDë¥¼ ë¶€ì—¬í•œë‹¤. */
+    /* subprogramID¸¦ ºÎ¿©ÇÑ´Ù. */
     for( sCurrStmt = sBLOCK->subprograms;
          sCurrStmt != NULL;
          sCurrStmt = sCurrStmt->next )
@@ -109,10 +109,10 @@ IDE_RC qsvPkgStmts::parseBodyBlock( qcStatement * aStatement,
  *
  * Description : BUG-41847
  *
- *    - Package Bodyì˜ blockì— ìˆëŠ” subprogramì— ëŒ€í•´ IDë¥¼ ë¶€ì—¬í•˜ê³ ,
- *     parseí•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
- *    - Private subprogramIDëŠ” validateí•¨ìˆ˜ì—ì„œ ë™ì¼í•œ subprogramì¸ ê²½ìš°,
- *     ë™ì¼í•œ subprogramIDë¡œ í†µì¼ì‹œí‚¨ë‹¤.
+ *    - Package BodyÀÇ block¿¡ ÀÖ´Â subprogram¿¡ ´ëÇØ ID¸¦ ºÎ¿©ÇÏ°í,
+ *     parseÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+ *    - Private subprogramID´Â validateÇÔ¼ö¿¡¼­ µ¿ÀÏÇÑ subprogramÀÎ °æ¿ì,
+ *     µ¿ÀÏÇÑ subprogramID·Î ÅëÀÏ½ÃÅ²´Ù.
  *
  **************************************************************************/
 
@@ -133,7 +133,7 @@ IDE_RC qsvPkgStmts::parseBodyBlock( qcStatement * aStatement,
     sSubID            = sPkgSpecParseTree->subprogramCount;
     sPkgBodyBLOCK     = (qsPkgStmtBlock *)aProcStmts;
 
-    /* subprogramIDë¥¼ ë¶€ì—¬í•œë‹¤. */
+    /* subprogramID¸¦ ºÎ¿©ÇÑ´Ù. */
     for( sPkgSpecStmt = sPkgSpecBLOCK->subprograms;
          sPkgSpecStmt != NULL;
          sPkgSpecStmt = sPkgSpecStmt->next )
@@ -160,8 +160,8 @@ IDE_RC qsvPkgStmts::parseBodyBlock( qcStatement * aStatement,
         {
             sCurrSub = (qsPkgSubprograms *)sCurrStmt;
 
-            // private ì„œë¸Œ í”„ë¡œê·¸ë¨ì¸ ê²½ìš°
-            // ID ë¥¼ í• ë‹¹í•´ ì£¼ì–´ì•¼ validate ê°€ ê°€ëŠ¥í•˜ë‹¤.
+            // private ¼­ºê ÇÁ·Î±×·¥ÀÎ °æ¿ì
+            // ID ¸¦ ÇÒ´çÇØ ÁÖ¾î¾ß validate °¡ °¡´ÉÇÏ´Ù.
             if( sCurrSub->subprogramID == QS_PSM_SUBPROGRAM_ID )
             {
                 sSubID++;
@@ -204,19 +204,19 @@ IDE_RC qsvPkgStmts::validateSpecBlock( qcStatement       * aStatement,
  *
  * Description : 
  *
- *    Package Specì˜ blockì— ëŒ€í•œ validationì„ í•œë‹¤.
+ *    Package SpecÀÇ block¿¡ ´ëÇÑ validationÀ» ÇÑ´Ù.
  *        - exception variable
- *            ã„´ë™ì¼í•œ exception ë³€ìˆ˜ëª…ì´ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸
+ *            ¤¤µ¿ÀÏÇÑ exception º¯¼ö¸íÀÌ Á¸ÀçÇÏ´ÂÁö È®ÀÎ
  *        - variable
- *            ã„´ë™ì¼í•œ variable ëª…ì´ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸
- *            ã„´variable typeì— ë”°ë¼ validation
+ *            ¤¤µ¿ÀÏÇÑ variable ¸íÀÌ Á¸ÀçÇÏ´ÂÁö È®ÀÎ
+ *            ¤¤variable type¿¡ µû¶ó validation
  *        - validate subprogram header
- *            ã„´procedure / function ~ as êµ¬ë¬¸ ì‚¬ì´ì—
- *              ìˆëŠ” ì •ë³´ì— ëŒ€í•´ validation
+ *            ¤¤procedure / function ~ as ±¸¹® »çÀÌ¿¡
+ *              ÀÖ´Â Á¤º¸¿¡ ´ëÇØ validation
  *        - validate subprogram body
- *            ã„´specì— ì„ ì–¸ëœ variableê³¼ subprogram ì´ë¦„ì´ ì¤‘ë³µ ë˜ëŠ”ì§€ ê²€ì‚¬
- *            ã„´as ~ end ì‚¬ì´ì— ëŒ€í•´ì„œ validation
- *            ã„´variable , statement ë“±ë“±
+ *            ¤¤spec¿¡ ¼±¾ğµÈ variable°ú subprogram ÀÌ¸§ÀÌ Áßº¹ µÇ´ÂÁö °Ë»ç
+ *            ¤¤as ~ end »çÀÌ¿¡ ´ëÇØ¼­ validation
+ *            ¤¤variable , statement µîµî
  *
  ****************************************************************************/
 
@@ -286,7 +286,7 @@ IDE_RC qsvPkgStmts::validateSpecBlock( qcStatement       * aStatement,
          sCurrItem = sCurrItem->next )
     {
         // To fix BUG-14129
-        // í˜„ì¬ validateì¤‘ì¸ declare itemì„ ë§í¬.
+        // ÇöÀç validateÁßÀÎ declare itemÀ» ¸µÅ©.
         aStatement->spvEnv->currDeclItem = sCurrItem;
        
         if( ( sCurrItem->itemType == QS_VARIABLE ) ||
@@ -351,8 +351,8 @@ IDE_RC qsvPkgStmts::validateSpecBlock( qcStatement       * aStatement,
             switch ( sCurrItem->itemType )
             {
                 /* BUG-38509 autonomous transaction
-                   autonomous transactionì€ package(spec , body)ì˜
-                   declare_sectionì—ëŠ” ì •ì˜í•˜ì§€ ëª» í•¨ */
+                   autonomous transactionÀº package(spec , body)ÀÇ
+                   declare_section¿¡´Â Á¤ÀÇÇÏÁö ¸ø ÇÔ */
                 case QS_PRAGMA_AUTONOMOUS_TRANS:
                     sqlInfo.setSourceInfo( aStatement,
                                            & sCurrItem->name );
@@ -373,8 +373,8 @@ IDE_RC qsvPkgStmts::validateSpecBlock( qcStatement       * aStatement,
 
     aStatement->spvEnv->currDeclItem = NULL;
    
-    /* ì„œë¸Œ í”„ë¡œê·¸ë¨ì˜ ì¸ìì˜ ì •ë³´ë¥¼ ì•Œê¸° ìœ„í•´ì„œ
-       parameter ë° return ì •ë³´ì— ëŒ€í•œ validationì„ í•´ì•¼ í•œë‹¤. */
+    /* ¼­ºê ÇÁ·Î±×·¥ÀÇ ÀÎÀÚÀÇ Á¤º¸¸¦ ¾Ë±â À§ÇØ¼­
+       parameter ¹× return Á¤º¸¿¡ ´ëÇÑ validationÀ» ÇØ¾ß ÇÑ´Ù. */
     for( sCurrStmt = sBLOCK->subprograms;
          sCurrStmt != NULL;
          sCurrStmt = sCurrStmt->next )
@@ -394,8 +394,8 @@ IDE_RC qsvPkgStmts::validateSpecBlock( qcStatement       * aStatement,
         }
     }
 
-    /* subprogramì˜ ì¤‘ë³µ ì—¬ë¶€ë¥¼ ê²€ì‚¬í•˜ê³ ,
-       subprogramì˜ body( variable ë° statement )ì— ëŒ€í•œ validationì„ í•œë‹¤. */
+    /* subprogramÀÇ Áßº¹ ¿©ºÎ¸¦ °Ë»çÇÏ°í,
+       subprogramÀÇ body( variable ¹× statement )¿¡ ´ëÇÑ validationÀ» ÇÑ´Ù. */
     for( sCurrStmt = sBLOCK->subprograms;
          sCurrStmt != NULL;
          sCurrStmt = sCurrStmt->next )
@@ -406,7 +406,7 @@ IDE_RC qsvPkgStmts::validateSpecBlock( qcStatement       * aStatement,
             sCurrSubParseTree = sCurrSub->parseTree;
 
             // check duplication subprogram name
-            // ë³€ìˆ˜ëª…ê³¼ ë¹„êµ
+            // º¯¼ö¸í°ú ºñ±³
             for( sCurrItem = sBLOCK->variableItems;
                  sCurrItem != NULL;
                  sCurrItem = sCurrItem->next )
@@ -515,22 +515,22 @@ IDE_RC qsvPkgStmts::validateBodyBlock( qcStatement       * aStatement,
  *
  * Description : 
  *
- *    Package Specì˜ blockì— ëŒ€í•œ validationì„ í•œë‹¤.
+ *    Package SpecÀÇ block¿¡ ´ëÇÑ validationÀ» ÇÑ´Ù.
  *        - exception variable
- *            ã„´ spec / bodyì— ë™ì¼í•œ exception ë³€ìˆ˜ëª…ì´ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸
+ *            ¤¤ spec / body¿¡ µ¿ÀÏÇÑ exception º¯¼ö¸íÀÌ Á¸ÀçÇÏ´ÂÁö È®ÀÎ
  *        - variable
- *            ã„´spec / bodyì— ë™ì¼í•œ variable ëª…ì´ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸
- *            ã„´variable typeì— ë”°ë¼ validation
+ *            ¤¤spec / body¿¡ µ¿ÀÏÇÑ variable ¸íÀÌ Á¸ÀçÇÏ´ÂÁö È®ÀÎ
+ *            ¤¤variable type¿¡ µû¶ó validation
  *        - validate subprogram header
- *            ã„´procedure / function ~ as êµ¬ë¬¸ ì‚¬ì´ì—
- *              ìˆëŠ” ì •ë³´ì— ëŒ€í•´ validation
+ *            ¤¤procedure / function ~ as ±¸¹® »çÀÌ¿¡
+ *              ÀÖ´Â Á¤º¸¿¡ ´ëÇØ validation
  *        - validate subprogram body
- *            ã„´spec / bodyì— ì„ ì–¸ëœ variableê³¼ subprogram ì´ë¦„ì´ ì¤‘ë³µ ë˜ëŠ”ì§€ ê²€ì‚¬
- *            ã„´private subprogramì˜ subprogramID ë³´ì •
- *            ã„´as ~ end ì‚¬ì´ì— ëŒ€í•´ì„œ validation
- *            ã„´variable , statement ë“±ë“±
- *        - initialize sectionì— ëŒ€í•œ parse ë° validation
- *        - exception blockì— ëŒ€í•œ validation
+ *            ¤¤spec / body¿¡ ¼±¾ğµÈ variable°ú subprogram ÀÌ¸§ÀÌ Áßº¹ µÇ´ÂÁö °Ë»ç
+ *            ¤¤private subprogramÀÇ subprogramID º¸Á¤
+ *            ¤¤as ~ end »çÀÌ¿¡ ´ëÇØ¼­ validation
+ *            ¤¤variable , statement µîµî
+ *        - initialize section¿¡ ´ëÇÑ parse ¹× validation
+ *        - exception block¿¡ ´ëÇÑ validation
  *
  ****************************************************************************************/
 
@@ -550,6 +550,9 @@ IDE_RC qsvPkgStmts::validateBodyBlock( qcStatement       * aStatement,
     qsCursors           * sCursor;
     qcuSqlSourceInfo      sqlInfo;
     idBool                sExistDefinition = ID_FALSE;
+
+    qsPkgStmts       * sPkgSubprogramStmt       = NULL;
+    qsPkgSubprograms * sPkgSubprogramInfo       = NULL;
 
     IDE_DASSERT( aStatement->spvEnv->pkgPlanTree != NULL );
 
@@ -602,8 +605,8 @@ IDE_RC qsvPkgStmts::validateBodyBlock( qcStatement       * aStatement,
                 }
             }
 
-            // create package bodyì¼ ë•ŒëŠ” package specì˜
-            // ë³€ìˆ˜ì™€ë„ ë¹„êµí•´ì•¼ í•œë‹¤.
+            // create package bodyÀÏ ¶§´Â package specÀÇ
+            // º¯¼ö¿Íµµ ºñ±³ÇØ¾ß ÇÑ´Ù.
             for( sSpecItem = sSpecBLOCK->variableItems;
                  sSpecItem != NULL ;
                  sSpecItem = sSpecItem->next )
@@ -630,7 +633,7 @@ IDE_RC qsvPkgStmts::validateBodyBlock( qcStatement       * aStatement,
          sCurrItem = sCurrItem->next )
     {
         // To fix BUG-14129
-        // í˜„ì¬ validateì¤‘ì¸ declare itemì„ ë§í¬.
+        // ÇöÀç validateÁßÀÎ declare itemÀ» ¸µÅ©.
         aStatement->spvEnv->currDeclItem = sCurrItem;
 
         if( ( sCurrItem->itemType == QS_VARIABLE ) ||
@@ -658,8 +661,8 @@ IDE_RC qsvPkgStmts::validateBodyBlock( qcStatement       * aStatement,
                 }
             }
 
-            // create package bodyì¼ ë•ŒëŠ” package specì˜
-            // ë³€ìˆ˜ì™€ë„ ë¹„êµí•´ì•¼ í•œë‹¤.
+            // create package bodyÀÏ ¶§´Â package specÀÇ
+            // º¯¼ö¿Íµµ ºñ±³ÇØ¾ß ÇÑ´Ù.
             for( sSpecItem = sSpecParseTree->block->variableItems ;
                  sSpecItem != NULL ;
                  sSpecItem = sSpecItem->next )
@@ -716,8 +719,8 @@ IDE_RC qsvPkgStmts::validateBodyBlock( qcStatement       * aStatement,
             switch ( sCurrItem->itemType )
             {
                 /* BUG-38509 autonomous transaction
-                   autonomous transactionì€ package(spec , body)ì˜
-                   declare_sectionì—ëŠ” ì •ì˜í•˜ì§€ ëª» í•¨ */
+                   autonomous transactionÀº package(spec , body)ÀÇ
+                   declare_section¿¡´Â Á¤ÀÇÇÏÁö ¸ø ÇÔ */
                 case QS_PRAGMA_AUTONOMOUS_TRANS:
                     sqlInfo.setSourceInfo( aStatement,
                                            & sCurrItem->name );
@@ -738,8 +741,8 @@ IDE_RC qsvPkgStmts::validateBodyBlock( qcStatement       * aStatement,
 
     aStatement->spvEnv->currDeclItem = NULL;
 
-    /* ì„œë¸Œ í”„ë¡œê·¸ë¨ì˜ ì¸ìì˜ ì •ë³´ë¥¼ ì•Œê¸° ìœ„í•´ì„œ
-       parameter ë° return ì •ë³´ì— ëŒ€í•œ validationì„ í•´ì•¼ í•œë‹¤. */
+    /* ¼­ºê ÇÁ·Î±×·¥ÀÇ ÀÎÀÚÀÇ Á¤º¸¸¦ ¾Ë±â À§ÇØ¼­
+       parameter ¹× return Á¤º¸¿¡ ´ëÇÑ validationÀ» ÇØ¾ß ÇÑ´Ù. */
     for( sCurrStmt = sBLOCK->subprograms;
          sCurrStmt != NULL;
          sCurrStmt = sCurrStmt->next )
@@ -759,15 +762,15 @@ IDE_RC qsvPkgStmts::validateBodyBlock( qcStatement       * aStatement,
         else
         {
             /* BUG-37655
-               package bodyì—ì„œëŠ” pragma restrict_referenceë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
-               pragma restrict_referenceëŠ” package specì—ì„œë§Œ ê°€ëŠ¥í•˜ë‹¤. */
+               package body¿¡¼­´Â pragma restrict_reference¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù.
+               pragma restrict_reference´Â package spec¿¡¼­¸¸ °¡´ÉÇÏ´Ù. */
             IDE_RAISE( ERR_INVALID_PRAGMA_RESTRICT_REFERENCE );
         }
     }
 
-    /* subprogramì˜ ì¤‘ë³µ ì—¬ë¶€ë¥¼ ê²€ì‚¬í•˜ê³ ,
-       ë™ì¼í•œ private subprogramì— ëŒ€í•´ì„œëŠ” ë™ì¼í•œ subprogramIDë¥¼ ì…‹íŒ…í•œë‹¤.
-       ì´í›„, subprogramì˜ body( variable ë° statement )ì— ëŒ€í•œ validationì„ í•œë‹¤. */
+    /* subprogramÀÇ Áßº¹ ¿©ºÎ¸¦ °Ë»çÇÏ°í,
+       µ¿ÀÏÇÑ private subprogram¿¡ ´ëÇØ¼­´Â µ¿ÀÏÇÑ subprogramID¸¦ ¼ÂÆÃÇÑ´Ù.
+       ÀÌÈÄ, subprogramÀÇ body( variable ¹× statement )¿¡ ´ëÇÑ validationÀ» ÇÑ´Ù. */
     for( sCurrStmt = sBLOCK->subprograms;
          sCurrStmt != NULL;
          sCurrStmt = sCurrStmt->next )
@@ -797,8 +800,8 @@ IDE_RC qsvPkgStmts::validateBodyBlock( qcStatement       * aStatement,
                 }
             }
 
-            // create package bodyì¼ ë•ŒëŠ” package specì˜
-            // ë³€ìˆ˜ì™€ë„ ë¹„êµí•´ì•¼ í•œë‹¤.
+            // create package bodyÀÏ ¶§´Â package specÀÇ
+            // º¯¼ö¿Íµµ ºñ±³ÇØ¾ß ÇÑ´Ù.
             for( sSpecItem = sSpecParseTree->block->variableItems;
                  sSpecItem != NULL;
                  sSpecItem = sSpecItem->next )
@@ -858,11 +861,11 @@ IDE_RC qsvPkgStmts::validateBodyBlock( qcStatement       * aStatement,
             }
 
             if( (sCurrSubParseTree->block == NULL) &&
-                (sCurrSubParseTree->procType == QS_INTERNAL) &&
+                (sCurrSubParseTree->procType == QS_NORMAL) &&
                 (sExistDefinition == ID_FALSE ) )
             {
                 /* BUG-39220
-                   subprogramì˜ definitionë„ ìˆì–´ì•¼ í•œë‹¤. */
+                   subprogramÀÇ definitionµµ ÀÖ¾î¾ß ÇÑ´Ù. */
                 sqlInfo.setSourceInfo( aStatement,
                                        &(sCurrSubParseTree->procNamePos) );
                 IDE_RAISE( ERR_NOT_DEFINE_SUBPROGRAM );
@@ -875,6 +878,25 @@ IDE_RC qsvPkgStmts::validateBodyBlock( qcStatement       * aStatement,
             IDE_DASSERT( sCurrStmt->state == QS_PKG_STMTS_VALIDATE_HEADER_FINISHED );
 
             IDE_TEST( sCurrStmt->validateBody( aStatement, sCurrStmt, aPurpose ) != IDE_SUCCESS );
+
+            // BUG-47971 Package global variableÀÇ ºĞ»ê ½ÇÇàÀ» Á¦ÇÑÇÕ´Ï´Ù.
+            // Package bodyÀÇ subprogramÀ» validationÇØ¾ß package global variable ÂüÁ¶ ¿©ºÎ¸¦ ¾Ë ¼ö ÀÖ´Ù.
+            // Pakcage specÀÇ subprogram definition¿¡ package global variable ÂüÁ¶ ¿©ºÎ¸¦ º¹»çÇØÁØ´Ù.
+            for ( sPkgSubprogramStmt = sSpecBLOCK->subprograms;
+                  sPkgSubprogramStmt != NULL;
+                  sPkgSubprogramStmt = sPkgSubprogramStmt->next )
+            {
+                if ( sPkgSubprogramStmt->stmtType != QS_OBJECT_MAX )
+                {
+                    sPkgSubprogramInfo = (qsPkgSubprograms *)sPkgSubprogramStmt;
+
+                    if ( sPkgSubprogramInfo->subprogramID == sCurrSub->subprogramID )
+                    {
+                        sPkgSubprogramInfo->parseTree->referToPkgVar = sCurrSubParseTree->referToPkgVar;
+                        break;
+                    }
+                }
+            }
         }
         else
         {
@@ -1123,12 +1145,12 @@ IDE_RC qsvPkgStmts::makeNewRelatedObject(
         /* BUG-39821 set objectNamePos */
         if ( QC_IS_NULL_NAME( (*aUserName) ) == ID_FALSE )
         {
-            /* aUserNamedì— ë“¤ì–´ì˜¬ ìˆ˜ ìˆëŠ” ê²ƒì€ user name ë˜ëŠ” synonym nameì´ë‹¤.
-               ì´ë¥¼ êµ¬ë¶„í•˜ì—¬ sCurrObject->objectNamePosì— ì„¤ì •í•´ì¤˜ì•¼ í•œë‹¤.
+            /* aUserNamed¿¡ µé¾î¿Ã ¼ö ÀÖ´Â °ÍÀº user name ¶Ç´Â synonym nameÀÌ´Ù.
+               ÀÌ¸¦ ±¸ºĞÇÏ¿© sCurrObject->objectNamePos¿¡ ¼³Á¤ÇØÁà¾ß ÇÑ´Ù.
 
-               ex) syn1ì´ pkg1ì˜ synonymì´ë¼ê³  ê°€ì •í•œë‹¤.
-                   sys.syn1.func1 ì¼ ê²½ìš°ì—ëŠ” aUserNameì— user nameì´ ì¡´ì¬í•œë‹¤.
-                   syn1.rec1.field1 ì¼ ê²½ìš°ì—ëŠ” aUserNameì— package nameì´ ì¡´ì¬í•œë‹¤. */
+               ex) syn1ÀÌ pkg1ÀÇ synonymÀÌ¶ó°í °¡Á¤ÇÑ´Ù.
+                   sys.syn1.func1 ÀÏ °æ¿ì¿¡´Â aUserName¿¡ user nameÀÌ Á¸ÀçÇÑ´Ù.
+                   syn1.rec1.field1 ÀÏ °æ¿ì¿¡´Â aUserName¿¡ package nameÀÌ Á¸ÀçÇÑ´Ù. */
             if ( qcmUser::getUserID( aStatement, *aUserName, &sUserID ) 
                  == IDE_SUCCESS )
             {
@@ -1163,7 +1185,7 @@ IDE_RC qsvPkgStmts::makeNewRelatedObject(
         if( sCurrObject->userName.size > 0 ) 
         {
             /* check package name
-               aUserNameìœ¼ë¡œ packageê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ìƒ‰ */
+               aUserNameÀ¸·Î package°¡ Á¸ÀçÇÏ´ÂÁö °Ë»ö */
             IDE_TEST ( qcmPkg::getPkgExistWithEmptyByNamePtr( aStatement,
                                                               sCurrObject->userID,
                                                               (SChar*)(aUserName->stmtText +
@@ -1173,7 +1195,7 @@ IDE_RC qsvPkgStmts::makeNewRelatedObject(
                                                               &sPkgOID )
                        != IDE_SUCCESS );
 
-            /* aUserNameì€ package name ì´ë‹¤. */
+            /* aUserNameÀº package name ÀÌ´Ù. */
             if ( sPkgOID == sCurrObject->objectID )
             {
                 // connect user name
@@ -1200,7 +1222,7 @@ IDE_RC qsvPkgStmts::makeNewRelatedObject(
                 // objectNamePos
                 SET_POSITION( sCurrObject->objectNamePos, *aUserName );
             }
-            else /* aUserNameì€ user name ì´ë‹¤. */
+            else /* aUserNameÀº user name ÀÌ´Ù. */
             {
                 // set user name
                 sCurrObject->userName.size = aUserName->size;
@@ -1303,7 +1325,7 @@ IDE_RC qsvPkgStmts::makePkgSynonymList( qcStatement    * aStatement,
             }
             else
             {
-                // userNameì´ ìˆëŠ” ì •ë³´ê°€ objectì •ë³´ ì¼ ê²½ìš°
+                // userNameÀÌ ÀÖ´Â Á¤º¸°¡ objectÁ¤º¸ ÀÏ °æ¿ì
                 if ( ( idlOS::strMatch( aUserName.stmtText + aUserName.offset,
                                         aUserName.size,
                                         sSynonym->objectName,
@@ -1356,7 +1378,7 @@ IDE_RC qsvPkgStmts::makePkgSynonymList( qcStatement    * aStatement,
             else
             {
                 /* check user name
-                   aUserNameìœ¼ë¡œ í•´ë‹¹ ì´ë¦„ì˜ userê°€ ìˆëŠ”ì§€ ê²€ì‚¬ */
+                   aUserNameÀ¸·Î ÇØ´ç ÀÌ¸§ÀÇ user°¡ ÀÖ´ÂÁö °Ë»ç */
                 if ( qcmUser::getUserID( aStatement,
                                          aUserName,
                                          & sUserID )
@@ -1389,7 +1411,7 @@ IDE_RC qsvPkgStmts::makePkgSynonymList( qcStatement    * aStatement,
 
             sSynonym->next = aStatement->spvEnv->objectSynonymList;
 
-            // ì—°ê²°í•œë‹¤.
+            // ¿¬°áÇÑ´Ù.
             aStatement->spvEnv->objectSynonymList = sSynonym;
         }
     }
@@ -1426,19 +1448,19 @@ IDE_RC qsvPkgStmts::parseCreateProc( qcStatement * aStatement,
         IDE_RAISE( CANT_USE_RESERVED_WORD );
     }
 
-    // validationì‹œì— ì°¸ì¡°ë˜ê¸° ë•Œë¬¸ì— ì„ì‹œë¡œ ì§€ì •í•œë‹¤.
-    // PVOê°€ ì™„ë£Œë˜ë©´ ì •ìƒì ì¸ ê°’ìœ¼ë¡œ ì§€ì •ëœë‹¤.
-    // subprogramì˜ pasreTreeëŠ” í•˜ë‚˜ì˜ objectì˜ parseTreeë¼ ì•„ë‹Œ,
-    // package ì•ˆì— ìˆëŠ” ê° subprogram(procedure/function)ì˜ parseTreeì´ë‹¤.
-    // ê·¸ë ‡ê¸° ë•Œë¬¸ì—, userNameê³¼ userIDê°€ ì²˜ìŒ ì“°ë ˆê¸°ê°’ì´ ë“¤ì–´ ìˆì–´ì„œ
-    // packageì™€ ë™ì¼í•˜ê²Œ ë§ì¶°ì¤€ë‹¤.
+    // validation½Ã¿¡ ÂüÁ¶µÇ±â ¶§¹®¿¡ ÀÓ½Ã·Î ÁöÁ¤ÇÑ´Ù.
+    // PVO°¡ ¿Ï·áµÇ¸é Á¤»óÀûÀÎ °ªÀ¸·Î ÁöÁ¤µÈ´Ù.
+    // subprogramÀÇ pasreTree´Â ÇÏ³ªÀÇ objectÀÇ parseTree¶ó ¾Æ´Ñ,
+    // package ¾È¿¡ ÀÖ´Â °¢ subprogram(procedure/function)ÀÇ parseTreeÀÌ´Ù.
+    // ±×·¸±â ¶§¹®¿¡, userName°ú userID°¡ Ã³À½ ¾²·¹±â°ªÀÌ µé¾î ÀÖ¾î¼­
+    // package¿Í µ¿ÀÏÇÏ°Ô ¸ÂÃçÁØ´Ù.
     sParseTree->stmtText       = aStatement->myPlan->stmtText;
     sParseTree->stmtTextLen    = aStatement->myPlan->stmtTextLen;
     sParseTree->userNamePos    = aStatement->spvEnv->createPkg->userNamePos;
     sParseTree->userID         = aStatement->spvEnv->createPkg->userID;
     sParseTree->objectNameInfo = aStatement->spvEnv->createPkg->objectNameInfo;
     /* BUG-45306 PSM AUTHID 
-       package subprogramì˜ authidëŠ” packageì˜ authidì™€ ë™ì¼í•˜ê²Œ ì„¤ì •í•´ì•¼ í•œë‹¤. */
+       package subprogramÀÇ authid´Â packageÀÇ authid¿Í µ¿ÀÏÇÏ°Ô ¼³Á¤ÇØ¾ß ÇÑ´Ù. */
     sParseTree->isDefiner      = aStatement->spvEnv->createPkg->isDefiner;
 
     IDE_TEST( qsv::checkHostVariable( aStatement ) != IDE_SUCCESS );
@@ -1485,8 +1507,8 @@ IDE_RC qsvPkgStmts::validateCreateProcHeader( qcStatement       * aStatement,
     aStatement->spvEnv->createProc     = sParseTree;
     aStatement->spvEnv->currStmt       = NULL;
 
-    // qsProcParseTreeì˜ OIDì„¤ì •
-    // subprogramì˜ OIDëŠ” package specì˜ OIDë¥¼ ë”°ë¥¸ë‹¤.
+    // qsProcParseTreeÀÇ OID¼³Á¤
+    // subprogramÀÇ OID´Â package specÀÇ OID¸¦ µû¸¥´Ù.
     if( aStatement->spvEnv->createPkg->objType == QS_PKG )
     {
         sParseTree->procOID = aStatement->spvEnv->createPkg->pkgOID;
@@ -1518,8 +1540,8 @@ IDE_RC qsvPkgStmts::validateCreateProcHeader( qcStatement       * aStatement,
               != IDE_SUCCESS );
 
     /* BUG-39220
-       subprogram ì´ë¦„ê³¼ parameter ê°¯ìˆ˜ë§Œ ê°™ì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
-       parameter ë° return ëŒ€í•œ ìƒì„¸í•œ ë¹„êµê°€ í•„ìš”í•˜ë‹¤. */
+       subprogram ÀÌ¸§°ú parameter °¹¼ö¸¸ °°À» ¼ö ÀÖÀ¸¹Ç·Î,
+       parameter ¹× return ´ëÇÑ »ó¼¼ÇÑ ºñ±³°¡ ÇÊ¿äÇÏ´Ù. */
     if ( aStatement->spvEnv->createPkg->objType == QS_PKG_BODY )
     {
         IDE_TEST( compareParametersAndReturnVar( aStatement,
@@ -1607,7 +1629,8 @@ IDE_RC qsvPkgStmts::validateCreateProcBody( qcStatement       * aStatement,
     }
     else
     {
-        if( sParseTree->procType == QS_EXTERNAL )
+        if( (sParseTree->procType == QS_EXTERNAL_C) ||
+            (sParseTree->procType == QS_INTERNAL_C) )
         {
             IDE_TEST( qsv::validateExtproc( aStatement, sParseTree ) != IDE_SUCCESS )
         }
@@ -1622,7 +1645,7 @@ IDE_RC qsvPkgStmts::validateCreateProcBody( qcStatement       * aStatement,
          ((aStatement->spvEnv->flag & QSV_ENV_RETURN_STMT_MASK)
           == QSV_ENV_RETURN_STMT_ABSENT) &&
          ((sParseTree->block != NULL ) ||
-          (sParseTree->procType != QS_INTERNAL)) )
+          (sParseTree->procType != QS_NORMAL)) )
     {
         IDE_RAISE(ERR_NOT_HAVE_RETURN_STMT);
 
@@ -1666,13 +1689,13 @@ IDE_RC qsvPkgStmts::validateCreateFuncHeader( qcStatement       * aStatement,
     sParseTree     = ((qsPkgSubprograms *)aPkgStmt)->parseTree;
     sReturnTypeVar = sParseTree->returnTypeVar;
 
-    // ì í•©ì„± ê²€ì‚¬. returníƒ€ì…ì€ ë°˜ë“œì‹œ ìˆì–´ì•¼ í•¨.
+    // ÀûÇÕ¼º °Ë»ç. returnÅ¸ÀÔÀº ¹İµå½Ã ÀÖ¾î¾ß ÇÔ.
     IDE_DASSERT( sReturnTypeVar != NULL );
 
     // validation return data type
     if( sReturnTypeVar->variableType == QS_COL_TYPE )
     {
-        // return valueì—ì„œ column typeì„ í—ˆìš©í•˜ëŠ” ê²½ìš°ëŠ” ë‹¨ 2ê°€ì§€.
+        // return value¿¡¼­ column typeÀ» Çã¿ëÇÏ´Â °æ¿ì´Â ´Ü 2°¡Áö.
         // (1) table_name.column_name%TYPE
         // (2) user_name.table_name.column_name%TYPE
         if( QC_IS_NULL_NAME( sReturnTypeVar->variableTypeNode->tableName ) == ID_TRUE )
@@ -1698,7 +1721,7 @@ IDE_RC qsvPkgStmts::validateCreateFuncHeader( qcStatement       * aStatement,
     {
         if( QC_IS_NULL_NAME( sReturnTypeVar->variableTypeNode->userName ) == ID_TRUE )
         {
-            // PROJ-1075 rowtype ìƒì„± í—ˆìš©.
+            // PROJ-1075 rowtype »ı¼º Çã¿ë.
             // (1) user_name.table_name%ROWTYPE
             // (2) table_name%ROWTYPE
             IDE_TEST( qsvProcVar::checkAttributeRowType( aStatement, sReturnTypeVar )
@@ -1713,10 +1736,10 @@ IDE_RC qsvPkgStmts::validateCreateFuncHeader( qcStatement       * aStatement,
     }
     else if( sReturnTypeVar->variableType == QS_UD_TYPE )
     {
-        // PROJ-1075 parameterì— udt í—ˆìš©.
-        // typeset_name.type_name ì™€ user_name.typeset_name.type_name ë§Œ í—ˆìš©í•´ì•¼ í•¨.
+        // PROJ-1075 parameter¿¡ udt Çã¿ë.
+        // typeset_name.type_name ¿Í user_name.typeset_name.type_name ¸¸ Çã¿ëÇØ¾ß ÇÔ.
         /* BUG-41720
-           ë™ì¼ packageì— ì„ ì–¸ëœ array typeì„ return valueì— ì‚¬ìš© ê°€ëŠ¥í•´ì•¼ í•œë‹¤. */
+           µ¿ÀÏ package¿¡ ¼±¾ğµÈ array typeÀ» return value¿¡ »ç¿ë °¡´ÉÇØ¾ß ÇÑ´Ù. */
         if( (QC_IS_NULL_NAME( sReturnTypeVar->variableTypeNode->tableName ) == ID_TRUE) &&
             (aStatement->spvEnv->createPkg == NULL) )
         {
@@ -1733,7 +1756,7 @@ IDE_RC qsvPkgStmts::validateCreateFuncHeader( qcStatement       * aStatement,
     }
     else
     {
-        // ì í•©ì„± ê²€ì‚¬. ì´ ì´ì™¸ì˜ íƒ€ì…ì€ ì ˆëŒ€ë¡œ ì˜¬ ìˆ˜ ì—†ìŒ.
+        // ÀûÇÕ¼º °Ë»ç. ÀÌ ÀÌ¿ÜÀÇ Å¸ÀÔÀº Àı´ë·Î ¿Ã ¼ö ¾øÀ½.
         IDE_DASSERT(0);
     }
 
@@ -1750,24 +1773,24 @@ IDE_RC qsvPkgStmts::validateCreateFuncHeader( qcStatement       * aStatement,
     sReturnTypeNodeColumn->column.offset = 0;
 
     // sReturnTypeNodeColumn->flag = 0;
-    // to fix BUG-13600 precision, scaleì„ ë³µì‚¬í•˜ê¸° ìœ„í•´
-    // column argumentê°’ì€ ì €ì¥í•´ì•¼ í•¨.
+    // to fix BUG-13600 precision, scaleÀ» º¹»çÇÏ±â À§ÇØ
+    // column argument°ªÀº ÀúÀåÇØ¾ß ÇÔ.
     sReturnTypeNodeColumn->flag = sReturnTypeNodeColumn->flag & MTC_COLUMN_ARGUMENT_COUNT_MASK;
 
     sReturnTypeNodeColumn->type.languageId = sReturnTypeNodeColumn->language->id;
 
     /* PROJ-2586 PSM Parameters and return without precision
-       ì•„ë˜ ì¡°ê±´ ì¤‘ í•˜ë‚˜ë§Œ ë§Œì¡±í•˜ë©´ precisionì„ ì¡°ì •í•˜ê¸° ìœ„í•œ í•¨ìˆ˜ í˜¸ì¶œ.
+       ¾Æ·¡ Á¶°Ç Áß ÇÏ³ª¸¸ ¸¸Á·ÇÏ¸é precisionÀ» Á¶Á¤ÇÏ±â À§ÇÑ ÇÔ¼ö È£Ãâ.
 
-       ì¡°ê±´ 1. QCU_PSM_PARAM_AND_RETURN_WITHOUT_PRECISION_ENABLE == 1ì´ë©´ì„œ
-               datatypeì˜ flagì— QTC_NODE_SP_PARAM_OR_RETURN_PRECISION_ABSENT ì¼ ê²ƒ.
-       ì¡°ê±´ 2. QCU_PSM_PARAM_AND_RETURN_WITHOUT_PRECISION_ENABLE == 2 */
-    /* ì™œ ì•„ë˜ìª½ì— ë³µì‚¬í–ˆëŠ”ê°€?
-       allocì „ì— í•˜ë©´, mtcColumnì— ì…‹íŒ…í–ˆë˜ flag ì •ë³´ê°€ ë‚ ë¼ê°. */
+       Á¶°Ç 1. QCU_PSM_PARAM_AND_RETURN_WITHOUT_PRECISION_ENABLE == 1ÀÌ¸é¼­
+               datatypeÀÇ flag¿¡ QTC_NODE_SP_PARAM_OR_RETURN_PRECISION_ABSENT ÀÏ °Í.
+       Á¶°Ç 2. QCU_PSM_PARAM_AND_RETURN_WITHOUT_PRECISION_ENABLE == 2 */
+    /* ¿Ö ¾Æ·¡ÂÊ¿¡ º¹»çÇß´Â°¡?
+       allocÀü¿¡ ÇÏ¸é, mtcColumn¿¡ ¼ÂÆÃÇß´ø flag Á¤º¸°¡ ³¯¶ó°¨. */
     if( ((QCU_PSM_PARAM_AND_RETURN_WITHOUT_PRECISION_ENABLE == 1) &&
           (((sReturnTypeVar->variableTypeNode->lflag & QTC_NODE_SP_PARAM_OR_RETURN_PRECISION_MASK)
-            == QTC_NODE_SP_PARAM_OR_RETURN_PRECISION_ABSENT))) /* ì¡°ê±´1 */ ||
-        (QCU_PSM_PARAM_AND_RETURN_WITHOUT_PRECISION_ENABLE == 2) /* ì¡°ê±´2 */ )
+            == QTC_NODE_SP_PARAM_OR_RETURN_PRECISION_ABSENT))) /* Á¶°Ç1 */ ||
+        (QCU_PSM_PARAM_AND_RETURN_WITHOUT_PRECISION_ENABLE == 2) /* Á¶°Ç2 */ )
     {
         IDE_TEST( qsv::setPrecisionAndScale( aStatement,
                                              sReturnTypeVar )
@@ -1778,8 +1801,8 @@ IDE_RC qsvPkgStmts::validateCreateFuncHeader( qcStatement       * aStatement,
         // Nothing to do.
     }
     
-    /* BUG-44382 clone tuple ì„±ëŠ¥ê°œì„  */
-    // ë³µì‚¬ì™€ ì´ˆê¸°í™”ê°€ í•„ìš”í•¨
+    /* BUG-44382 clone tuple ¼º´É°³¼± */
+    // º¹»ç¿Í ÃÊ±âÈ­°¡ ÇÊ¿äÇÔ
     qtc::setTupleColumnFlag(
         QTC_STMT_TUPLE( aStatement, sReturnTypeVar->variableTypeNode ),
         ID_TRUE,
@@ -1788,14 +1811,14 @@ IDE_RC qsvPkgStmts::validateCreateFuncHeader( qcStatement       * aStatement,
     mtc::copyColumn( sParseTree->returnTypeColumn,
                      sReturnTypeNodeColumn );
 
-    // mtdModule ì„¤ì •
+    // mtdModule ¼³Á¤
     sParseTree->returnTypeModule = (mtdModule *)sReturnTypeNodeColumn->module;
 
     if ( aStatement->spvEnv->createPkg->objType == QS_PKG_BODY )
     {
         /* BUG-39220
-           subprogram ì´ë¦„ê³¼ parameter ê°¯ìˆ˜ë§Œ ê°™ì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
-           parameter ë° return ëŒ€í•œ ìƒì„¸í•œ ë¹„êµê°€ í•„ìš”í•˜ë‹¤. */
+           subprogram ÀÌ¸§°ú parameter °¹¼ö¸¸ °°À» ¼ö ÀÖÀ¸¹Ç·Î,
+           parameter ¹× return ´ëÇÑ »ó¼¼ÇÑ ºñ±³°¡ ÇÊ¿äÇÏ´Ù. */
         if ( sParseTree->procOID == QS_EMPTY_OID )
         {
             sIsPrivate = ID_TRUE;
@@ -1812,8 +1835,8 @@ IDE_RC qsvPkgStmts::validateCreateFuncHeader( qcStatement       * aStatement,
                   != IDE_SUCCESS );
 
         /* PROJ-1685 , BUG-41818
-           external procedureì—ì„œ return typeìœ¼ë¡œ ì§€ì›í•˜ì§€ ì•ŠëŠ” typeì— ëŒ€í•´
-           ì—ëŸ¬ë¥¼ ë°œìƒí•´ì•¼ í•œë‹¤ */
+           external procedure¿¡¼­ return typeÀ¸·Î Áö¿øÇÏÁö ¾Ê´Â type¿¡ ´ëÇØ
+           ¿¡·¯¸¦ ¹ß»ıÇØ¾ß ÇÑ´Ù */
         if( sParseTree->block == NULL )
         {
             // external procedure
@@ -1862,7 +1885,7 @@ IDE_RC qsvPkgStmts::validateCreateFuncHeader( qcStatement       * aStatement,
             switch( sParseTree->returnTypeColumn->type.dataTypeId )
             {
                 case MTD_LIST_ID:
-                    // list typeì„ ë°˜í™˜í•˜ëŠ” user-defined functionì€ ìƒì„±í•  ìˆ˜ ì—†ë‹¤.
+                    // list typeÀ» ¹İÈ¯ÇÏ´Â user-defined functionÀº »ı¼ºÇÒ ¼ö ¾ø´Ù.
                     sFound = ID_FALSE;
                     break;
                 default:
@@ -1914,7 +1937,7 @@ IDE_RC qsvPkgStmts::checkSubprogramDef( qcStatement * aStatement,
                                         qsPkgStmts  * aBodyStmt,
                                         qsPkgStmts  * aSpecStmt )
 {
-    // subprogramì˜ name ë¹„êµ
+    // subprogramÀÇ name ºñ±³
     qcuSqlSourceInfo   sqlInfo;
     qsPkgStmts       * sBodyStmt;
     qsPkgSubprograms * sBodySub;
@@ -1952,7 +1975,8 @@ IDE_RC qsvPkgStmts::checkSubprogramDef( qcStatement * aStatement,
                     }
                     else
                     {
-                        if( sBodyParseTree->procType == QS_EXTERNAL )
+                        if( (sBodyParseTree->procType == QS_EXTERNAL_C) ||
+                            (sBodyParseTree->procType == QS_INTERNAL_C) )
                         {
                             sBodySub->subprogramID   = sSpecSub->subprogramID;
                             sBodySub->subprogramType = QS_PUBLIC_SUBPROGRAM;
@@ -2017,7 +2041,7 @@ IDE_RC qsvPkgStmts::getPkgSubprogramID( qcStatement    * aStatement,
                                         UInt           * aSubprogramID )
 {
 /********************************************************
- * ë³¸ í•¨ìˆ˜ì—ì„œëŠ” subprogramIDë¥¼ ì…‹íŒ…í•œë‹¤.
+ * º» ÇÔ¼ö¿¡¼­´Â subprogramID¸¦ ¼ÂÆÃÇÑ´Ù.
  *
  *  No | userName | tableName | columnName | pkgName
  * ------------------------------------------------
@@ -2050,8 +2074,8 @@ IDE_RC qsvPkgStmts::getPkgSubprogramID( qcStatement    * aStatement,
     else
     {
         // BUG-37163
-        // user nameê³¼ package nameì´ ë™ì¼í•œ ê²½ìš°, user nameì„ package nameìœ¼ë¡œ íŒë‹¨í•˜ëŠ” ê²½ìš°ê°€ ë°œìƒí•œë‹¤.
-        // package nameê³¼ user nameì´ ë™ì¼í•˜ì§€ ì•Šê³ , package nameì¼ ë•Œ package nameìœ¼ë¡œ íŒë‹¨í•œë‹¤.
+        // user name°ú package nameÀÌ µ¿ÀÏÇÑ °æ¿ì, user nameÀ» package nameÀ¸·Î ÆÇ´ÜÇÏ´Â °æ¿ì°¡ ¹ß»ıÇÑ´Ù.
+        // package name°ú user nameÀÌ µ¿ÀÏÇÏÁö ¾Ê°í, package nameÀÏ ¶§ package nameÀ¸·Î ÆÇ´ÜÇÑ´Ù.
         if ( ( QC_IS_NAME_MATCHED( aUserName, sParseTree->pkgNamePos ) ) &&
              ( QC_IS_NAME_MATCHED( aUserName, aTableName ) == ID_FALSE) )
         {
@@ -2066,7 +2090,7 @@ IDE_RC qsvPkgStmts::getPkgSubprogramID( qcStatement    * aStatement,
     }
 
     // BUG-41262 PSM overloading
-    // ì¸ìê°€ estimate ë˜ì–´ì•¼ PSM overloading ì´ ê°€ëŠ¥í•˜ë‹¤.
+    // ÀÎÀÚ°¡ estimate µÇ¾î¾ß PSM overloading ÀÌ °¡´ÉÇÏ´Ù.
     for( sNode = aNode->node.arguments, sArgCount = 0;
          sNode != NULL;
          sNode = sNode->next )
@@ -2136,7 +2160,7 @@ IDE_RC qsvPkgStmts::getPkgSubprogramID( qcStatement    * aStatement,
     else
     {
         // Nothing to do.
-        // subprogram ì¡´ì¬
+        // subprogram Á¸Àç
     }
 
     IDE_TEST_RAISE( sExist == ID_FALSE, ERR_NOT_EXIST_SUBPROGRAM );
@@ -2160,8 +2184,8 @@ IDE_RC qsvPkgStmts::getMyPkgSubprogramID( qcStatement         * aStatement,
                                           UInt                * aSubprogramID )
 {
 /*************************************************************************************
- * ë³¸ í•¨ìˆ˜ì—ì„œëŠ”  private subprogramì˜ IDë¥¼ ì°¾ëŠ”ë‹¤.
- * create package body ì‹œ ì‚¬ìš©ëœë‹¤.
+ * º» ÇÔ¼ö¿¡¼­´Â  private subprogramÀÇ ID¸¦ Ã£´Â´Ù.
+ * create package body ½Ã »ç¿ëµÈ´Ù.
  *************************************************************************************/
 
     qsPkgParseTree          * sParseTree     = aStatement->spvEnv->createPkg;
@@ -2203,7 +2227,7 @@ IDE_RC qsvPkgStmts::getMyPkgSubprogramID( qcStatement         * aStatement,
     }
 
     // BUG-41262 PSM overloading
-    // ì¸ìê°€ estimate ë˜ì–´ì•¼ PSM overloading ì´ ê°€ëŠ¥í•˜ë‹¤.
+    // ÀÎÀÚ°¡ estimate µÇ¾î¾ß PSM overloading ÀÌ °¡´ÉÇÏ´Ù.
     for( sNode = aNode->node.arguments, sArgCount = 0;
          sNode != NULL;
          sNode = sNode->next )
@@ -2238,9 +2262,9 @@ IDE_RC qsvPkgStmts::getMyPkgSubprogramID( qcStatement         * aStatement,
     }
 
     // BUG-41262 PSM overloading
-    // ë¨¼ì € pkg spec ì—ì„œ ì°¾ëŠ”ë‹¤. private ì„œë¸Œ í”„ë¡œê·¸ë¨ì€ ì—†ë‹¤.
+    // ¸ÕÀú pkg spec ¿¡¼­ Ã£´Â´Ù. private ¼­ºê ÇÁ·Î±×·¥Àº ¾ø´Ù.
 
-    // BUG-41695 create or replace package ì—ì„œë„ í˜¸ì¶œë  ìˆ˜ ìˆë‹¤.
+    // BUG-41695 create or replace package ¿¡¼­µµ È£ÃâµÉ ¼ö ÀÖ´Ù.
     if ( sSpecParseTree != NULL )
     {
         IDE_TEST( matchingSubprogram( aStatement,
@@ -2259,7 +2283,7 @@ IDE_RC qsvPkgStmts::getMyPkgSubprogramID( qcStatement         * aStatement,
         // Nothing to do.
     }
 
-    // private ì„œë¸Œ í”„ë¡œê·¸ë¨ì„ pkg body ì—ì„œ ì°¾ëŠ”ë‹¤.
+    // private ¼­ºê ÇÁ·Î±×·¥À» pkg body ¿¡¼­ Ã£´Â´Ù.
     if ( sExist == ID_FALSE )
     {
         IDE_TEST( matchingSubprogram( aStatement,
@@ -2310,8 +2334,8 @@ IDE_RC qsvPkgStmts::makeUsingSubprogramList( qcStatement         * aStatement,
     sCurrNode = sSql->usingSubprograms;
 
     /* BUG-38456
-       columnNameê³¼ positionì˜ offsetì´ ë‹¤ë¥´ë‹¤ëŠ” ê²ƒì€
-       aNodeì˜ tableName ë˜ëŠ” userNameì´ ëª…ì‹œë˜ì–´ìˆë‹¤ëŠ” ì˜ë¯¸ì´ë‹¤. */
+       columnName°ú positionÀÇ offsetÀÌ ´Ù¸£´Ù´Â °ÍÀº
+       aNodeÀÇ tableName ¶Ç´Â userNameÀÌ ¸í½ÃµÇ¾îÀÖ´Ù´Â ÀÇ¹ÌÀÌ´Ù. */
     IDE_TEST_CONT( aNode->columnName.offset != aNode->position.offset,
                    skip_make_usingsubprogram );
 
@@ -2331,7 +2355,7 @@ IDE_RC qsvPkgStmts::makeUsingSubprogramList( qcStatement         * aStatement,
         if( sNewNode->subprogramNode->position.offset <
             sCurrNode->subprogramNode->position.offset )
         {
-            // newNodeê°€ ì œì¼ ì‘ì„ ê²½ìš°
+            // newNode°¡ Á¦ÀÏ ÀÛÀ» °æ¿ì
             sNewNode->next = sCurrNode;
             sSql->usingSubprograms = sNewNode;
         }
@@ -2354,7 +2378,7 @@ IDE_RC qsvPkgStmts::makeUsingSubprogramList( qcStatement         * aStatement,
                 sCurrNode = sCurrNode->next;
             }
 
-            // new Nodeê°€ ì œì¼ í´ ê²½ìš°
+            // new Node°¡ Á¦ÀÏ Å¬ °æ¿ì
             if( sCurrNode->next == NULL )
             {
                 sCurrNode->next = sNewNode;
@@ -2386,13 +2410,13 @@ IDE_RC qsvPkgStmts::validatePragmaRestrictReferences( qcStatement    * aStatemen
  *    validate pragma restrict references
  *
  * Implementation :
- *    (1) deault/íŠ¹ì • subprogram í™•ì¸
+ *    (1) deault/Æ¯Á¤ subprogram È®ÀÎ
  *        (a) default
- *            (a-1) default optionì´ë©´ ì ìš©
- *            (a-2) ê·¸ë ‡ì§€ ì•Šì„ ê²½ìš°(í•´ë‹¹ subprogramë§Œ ì ìš©ëœ optionì¼ ê²½ìš°)
- *                  default optionì„ ì ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
- *        (b) íŠ¹ì • subprogram
- *            (b-1) defualt optionì´ ì¡´ì¬í•  ê²½ìš°, ì´ˆê¸°í™”í•˜ê³  ì˜µì…˜ ì ìš©
+ *            (a-1) default optionÀÌ¸é Àû¿ë
+ *            (a-2) ±×·¸Áö ¾ÊÀ» °æ¿ì(ÇØ´ç subprogram¸¸ Àû¿ëµÈ optionÀÏ °æ¿ì)
+ *                  default optionÀ» Àû¿ëÇÏÁö ¾Ê´Â´Ù.
+ *        (b) Æ¯Á¤ subprogram
+ *            (b-1) defualt optionÀÌ Á¸ÀçÇÒ °æ¿ì, ÃÊ±âÈ­ÇÏ°í ¿É¼Ç Àû¿ë
  ***********************************************************************/
 
     qsPkgStmts                 * sCurrStmt;
@@ -2400,7 +2424,7 @@ IDE_RC qsvPkgStmts::validatePragmaRestrictReferences( qcStatement    * aStatemen
     qsProcParseTree            * sCurrSubParseTree;
     qsRestrictReferences       * sRestrictReferences;
     qsRestrictReferencesOption * sRestrictReferencesOptions;
-    ULong                        sFlag = 0;   // optionë“¤ì˜ or ì—°ì‚°
+    ULong                        sFlag = 0;   // optionµéÀÇ or ¿¬»ê
     idBool                       sIsExist = ID_FALSE;
     qcuSqlSourceInfo             sqlInfo;
 
@@ -2421,7 +2445,7 @@ IDE_RC qsvPkgStmts::validatePragmaRestrictReferences( qcStatement    * aStatemen
         }
     }
 
-    // defaultì¸ì§€ ì•„ë‹Œì§€ í™•ì¸
+    // defaultÀÎÁö ¾Æ´ÑÁö È®ÀÎ
     if( QC_IS_NULL_NAME( sRestrictReferences->subprogramName ) == ID_TRUE )
     {
         for( sCurrStmt = aBLOCK->subprograms;
@@ -2445,7 +2469,7 @@ IDE_RC qsvPkgStmts::validatePragmaRestrictReferences( qcStatement    * aStatemen
             }
             else
             {
-                // subprogramì´ ì•„ë‹˜.
+                // subprogramÀÌ ¾Æ´Ô.
                 // Nothing to do.
             }
         }
@@ -2488,7 +2512,7 @@ IDE_RC qsvPkgStmts::validatePragmaRestrictReferences( qcStatement    * aStatemen
             }
             else
             {
-                // subprogramì´ ì•„ë‹˜.
+                // subprogramÀÌ ¾Æ´Ô.
                 // Nothing to do.
             }
         }
@@ -2530,10 +2554,10 @@ IDE_RC qsvPkgStmts::checkPragmaRestrictReferencesOption( qcStatement * aStatemen
     {
         sProcParseTree = ((qsPkgSubprograms *)aPkgStmt)->parseTree;
 
-        if( sProcParseTree->procType == QS_INTERNAL )
+        if( sProcParseTree->procType == QS_NORMAL )
         {
             /* BUG-38509 autonomous transaction 
-               autonomous transaction blockì¼ ë•ŒëŠ” pragma restrict references ëŠ” ì ìš©ë˜ì§€ ì•ŠëŠ”ë‹¤ */
+               autonomous transaction blockÀÏ ¶§´Â pragma restrict references ´Â Àû¿ëµÇÁö ¾Ê´Â´Ù */
             if( ( aPkgStmt->flag != QS_PRAGMA_RESTRICT_REFERENCES_UNDEFINED ) &&
                 ( sProcParseTree->block->isAutonomousTransBlock == ID_FALSE ) )
             {
@@ -2577,7 +2601,7 @@ IDE_RC qsvPkgStmts::checkPragmaRestrictReferencesOption( qcStatement * aStatemen
             }
             else
             {
-                // ì œì•½ì´ ì¡´ì¬í•˜ì§€ ì•ŠìŒ.
+                // Á¦¾àÀÌ Á¸ÀçÇÏÁö ¾ÊÀ½.
                 // Nothing to do.
             } /* aPkgStmt->flag == QS_PRAGMA_RESTRICT_REFERENCES_UNDEFINED */
         }
@@ -2592,11 +2616,11 @@ IDE_RC qsvPkgStmts::checkPragmaRestrictReferencesOption( qcStatement * aStatemen
         IDE_DASSERT( aPkgStmt == NULL );
 
         /* BUG-39003
-           aPkgStmt == NULLì¼ ê²½ìš°
+           aPkgStmt == NULLÀÏ °æ¿ì
            1. validate variable.
            2. validate initialize section.
 
-           aIsPkgInitSection == ID_FALSEì¼ ê²½ìš°ëŠ” variableì— ëŒ€í•œ validationì¼ ë•Œì´ë‹¤. */
+           aIsPkgInitSection == ID_FALSEÀÏ °æ¿ì´Â variable¿¡ ´ëÇÑ validationÀÏ ¶§ÀÌ´Ù. */
         IDE_TEST_CONT( aIsPkgInitSection != ID_TRUE , is_not_initialize_section );
 
         /* initialize section */
@@ -2711,21 +2735,21 @@ IDE_RC qsvPkgStmts::getPkgSubprogramPlanTree( qcStatement          * aStatement,
  *
  * Description : 
  *
- *    Package subprogramì˜ plan treeë¥¼ ì°¾ëŠ”ë‹¤.
+ *    Package subprogramÀÇ plan tree¸¦ Ã£´Â´Ù.
  *
  * Implementation :
  *
- * (1) ë™ì¼í•œ packageì—ì„œ í˜¸ì¶œí•  ê²½ìš°
+ * (1) µ¿ÀÏÇÑ package¿¡¼­ È£ÃâÇÒ °æ¿ì
  *    - public subprogram
- *        ã„´package specì— ìˆëŠ”ì§€ í™•ì¸
- *        ã„´package bodyì—ì„œ ë™ì¼ plan treeë¥¼ ì°¾ìŒ
- *            a. header ë¶€ë¶„ì— ëŒ€í•œ validationì´ ë˜ì–´ ìˆì§€ ì•Šë‹¤ë©´,
- *              ì´ë¥¼ validation í•¨.
+ *        ¤¤package spec¿¡ ÀÖ´ÂÁö È®ÀÎ
+ *        ¤¤package body¿¡¼­ µ¿ÀÏ plan tree¸¦ Ã£À½
+ *            a. header ºÎºĞ¿¡ ´ëÇÑ validationÀÌ µÇ¾î ÀÖÁö ¾Ê´Ù¸é,
+ *              ÀÌ¸¦ validation ÇÔ.
  *    - private subprogram
- *        ã„´í˜„ì¬ validation ì¤‘ì¸ subprogram ì•ì—
- *         ì„ ì–¸ ë˜ëŠ” ì •ì˜ ëœ plan treeí•œì—ì„œ ì°¾ìŒ.
- * (2) ì™¸ë¶€ packageì˜ subprogramì„ í˜¸ì¶œí•  ê²½ìš°
- *     - aPkgParseTreeì—ì„œ aSubprogramIDì™€ ë™ì¼í•œ plan treeë¥¼ ì°¾ì•„ ë°˜í™˜
+ *        ¤¤ÇöÀç validation ÁßÀÎ subprogram ¾Õ¿¡
+ *         ¼±¾ğ ¶Ç´Â Á¤ÀÇ µÈ plan treeÇÑ¿¡¼­ Ã£À½.
+ * (2) ¿ÜºÎ packageÀÇ subprogramÀ» È£ÃâÇÒ °æ¿ì
+ *     - aPkgParseTree¿¡¼­ aSubprogramID¿Í µ¿ÀÏÇÑ plan tree¸¦ Ã£¾Æ ¹İÈ¯
  *
  ****************************************************************************/
 
@@ -2742,7 +2766,7 @@ IDE_RC qsvPkgStmts::getPkgSubprogramPlanTree( qcStatement          * aStatement,
 
     if ( aPkgPlanTree == aStatement->spvEnv->createPkg )
     {
-        /* ë™ì¼í•œ package ë‚´ì—ì„œ í˜¸ì¶œ */
+        /* µ¿ÀÏÇÑ package ³»¿¡¼­ È£Ãâ */
         if ( aPkgType == QS_PKG )
         {
             sPkgSpecPlanTree = aPkgPlanTree;
@@ -2792,10 +2816,10 @@ IDE_RC qsvPkgStmts::getPkgSubprogramPlanTree( qcStatement          * aStatement,
         {
             sSubprogramPlanTree = NULL;
 
-            /* public subporgramì¸ ê²½ìš°, package bodyì—ì„œ ì •ì˜ë˜ëŠ”ë°,
-               ì´ ë•Œ ì•„ì§ headerë¶€ë¶„ì— ëŒ€í•œ validationì´ ì•ˆ ë˜ì–´ ìˆì„ ê²½ìš°,
-               í•´ë‹¹ subprogramì˜ headerë¥¼ validation í•œë‹¤.
-               ì´ë ‡ê²Œ í•¨ìœ¼ë¡œì¨, specì˜ templateì— ì ‘ê·¼í•˜ì§€ ì•Šì•„ë„ ëœë‹¤. */
+            /* public subporgramÀÎ °æ¿ì, package body¿¡¼­ Á¤ÀÇµÇ´Âµ¥,
+               ÀÌ ¶§ ¾ÆÁ÷ headerºÎºĞ¿¡ ´ëÇÑ validationÀÌ ¾È µÇ¾î ÀÖÀ» °æ¿ì,
+               ÇØ´ç subprogramÀÇ header¸¦ validation ÇÑ´Ù.
+               ÀÌ·¸°Ô ÇÔÀ¸·Î½á, specÀÇ template¿¡ Á¢±ÙÇÏÁö ¾Ê¾Æµµ µÈ´Ù. */
             for ( sPkgStmt = aPkgPlanTree->block->subprograms;
                   sPkgStmt != NULL;
                   sPkgStmt = sPkgStmt->next )
@@ -2829,9 +2853,9 @@ IDE_RC qsvPkgStmts::getPkgSubprogramPlanTree( qcStatement          * aStatement,
                     // Nothing to do.
                 }
 
-                /* private subprogramì¸ ê²½ìš°,i
-                   í˜„ì¬ validation ì¤‘ì¸ subprogramì˜
-                   ì•ì—ì„œ ì„ ì–¸ ë˜ëŠ” ì •ì˜ ëœ subprogramë§Œ í˜¸ì¶œ ê°€ëŠ¥í•˜ë‹¤. */
+                /* private subprogramÀÎ °æ¿ì,i
+                   ÇöÀç validation ÁßÀÎ subprogramÀÇ
+                   ¾Õ¿¡¼­ ¼±¾ğ ¶Ç´Â Á¤ÀÇ µÈ subprogram¸¸ È£Ãâ °¡´ÉÇÏ´Ù. */
                 if ( (sIsPublic == ID_FALSE) &&
                      (sPkgStmt == sCurrPkgStmt) )
                 {
@@ -2889,8 +2913,8 @@ IDE_RC qsvPkgStmts::getPkgSubprogramPlanTree( qcStatement          * aStatement,
 }
 
 /* BUG-39220
-   subprogram ì´ë¦„ê³¼ parameter ê°¯ìˆ˜ë§Œ ê°™ì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
-   parameter ë° return ëŒ€í•œ ìƒì„¸í•œ ë¹„êµê°€ í•„ìš”í•˜ë‹¤. */
+   subprogram ÀÌ¸§°ú parameter °¹¼ö¸¸ °°À» ¼ö ÀÖÀ¸¹Ç·Î,
+   parameter ¹× return ´ëÇÑ »ó¼¼ÇÑ ºñ±³°¡ ÇÊ¿äÇÏ´Ù. */
 IDE_RC qsvPkgStmts::compareParametersAndReturnVar( qcStatement      * aStatement,
                                                    idBool             aIsPrivate,
                                                    idBool             aCheckParameters,
@@ -3067,7 +3091,7 @@ IDE_RC qsvPkgStmts::compareParametersAndReturnVar( qcStatement      * aStatement
         }
         else
         {
-            // package body ë‚´ì—ì„œ definitionë§Œ í•  ìˆ˜ë„ ìˆìŒ.
+            // package body ³»¿¡¼­ definition¸¸ ÇÒ ¼öµµ ÀÖÀ½.
             // Nothing to do.
         }
     }
@@ -3096,15 +3120,15 @@ idBool qsvPkgStmts::isSubprogramEqual( qsPkgSubprograms * aCurrent,
 {
 /***********************************************************************
  *
- * Description : ì„œë¸Œí”„ë¡œê·¸ë¨ì´ ì¤‘ë³µì´ ì—†ëŠ”ì§€ ê²€ì‚¬í• ë•Œ ì‚¬ìš©í•œë‹¤.
+ * Description : ¼­ºêÇÁ·Î±×·¥ÀÌ Áßº¹ÀÌ ¾ø´ÂÁö °Ë»çÇÒ¶§ »ç¿ëÇÑ´Ù.
  *
- *    1. ì„œë¸Œ í”„ë¡œê·¸ë¨ì˜ ì´ë¦„
- *    2. ì„œë¸Œ í”„ë¡œê·¸ë¨ì˜ íƒ€ì…
- *    3. ì„œë¸Œ í”„ë¡œê·¸ë¨ì˜ ì¸ì ê°¯ìˆ˜
- *    4. ì„œë¸Œ í”„ë¡œê·¸ë¨ì˜ ì¸ì ì´ë¦„
- *    5. ì„œë¸Œ í”„ë¡œê·¸ë¨ì˜ ì¸ì in out íƒ€ì…
- *    6. ì„œë¸Œ í”„ë¡œê·¸ë¨ì˜ ì¸ì ë°ì´íƒ€ íƒ€ì…
- *    7. ë¦¬í„´ ê°’ì˜ ë°ì´íƒ€ íƒ€ì…
+ *    1. ¼­ºê ÇÁ·Î±×·¥ÀÇ ÀÌ¸§
+ *    2. ¼­ºê ÇÁ·Î±×·¥ÀÇ Å¸ÀÔ
+ *    3. ¼­ºê ÇÁ·Î±×·¥ÀÇ ÀÎÀÚ °¹¼ö
+ *    4. ¼­ºê ÇÁ·Î±×·¥ÀÇ ÀÎÀÚ ÀÌ¸§
+ *    5. ¼­ºê ÇÁ·Î±×·¥ÀÇ ÀÎÀÚ in out Å¸ÀÔ
+ *    6. ¼­ºê ÇÁ·Î±×·¥ÀÇ ÀÎÀÚ µ¥ÀÌÅ¸ Å¸ÀÔ
+ *    7. ¸®ÅÏ °ªÀÇ µ¥ÀÌÅ¸ Å¸ÀÔ
  *
  ***********************************************************************/
 
@@ -3223,12 +3247,12 @@ IDE_RC qsvPkgStmts::matchingSubprogram( qcStatement         * aStatement,
 {
 /***********************************************************************
  *
- * Description : ì¸ìì— ì•Œë§ëŠ” ì„œë¸Œ í”„ë¡œê·¸ë¨ì„ ì°¾ëŠ”ë‹¤.
+ * Description : ÀÎÀÚ¿¡ ¾Ë¸Â´Â ¼­ºê ÇÁ·Î±×·¥À» Ã£´Â´Ù.
  *
- *    1. ì„œë¸Œ í”„ë¡œê·¸ë¨ì˜ ì´ë¦„
- *    2. ì„œë¸Œ í”„ë¡œê·¸ë¨ì˜ íƒ€ì…
- *    3. ì„œë¸Œ í”„ë¡œê·¸ë¨ì˜ ì¸ì ê°¯ìˆ˜
- *    4. ì„œë¸Œ í”„ë¡œê·¸ë¨ì˜ ì¸ì ë°ì´íƒ€ íƒ€ì…
+ *    1. ¼­ºê ÇÁ·Î±×·¥ÀÇ ÀÌ¸§
+ *    2. ¼­ºê ÇÁ·Î±×·¥ÀÇ Å¸ÀÔ
+ *    3. ¼­ºê ÇÁ·Î±×·¥ÀÇ ÀÎÀÚ °¹¼ö
+ *    4. ¼­ºê ÇÁ·Î±×·¥ÀÇ ÀÎÀÚ µ¥ÀÌÅ¸ Å¸ÀÔ
  *
  ***********************************************************************/
     idBool                    sExist = ID_FALSE;
@@ -3286,7 +3310,7 @@ IDE_RC qsvPkgStmts::matchingSubprogram( qcStatement         * aStatement,
         {
             sCurrParam = (qsVariables *)sCurrParameters;
 
-            // default, refCousor ì¼ë•ŒëŠ” ì¸ìë¥¼ ì…ë ¥í•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
+            // default, refCousor ÀÏ¶§´Â ÀÎÀÚ¸¦ ÀÔ·ÂÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
             if ( (sCurrParam->defaultValueNode != NULL) ||
                  (sCurrParam->variableType == QS_REF_CURSOR_TYPE) )
             {
@@ -3294,7 +3318,7 @@ IDE_RC qsvPkgStmts::matchingSubprogram( qcStatement         * aStatement,
             }
         }
 
-        // ì•„ì§ headerì— ëŒ€í•œ validationì´ ì•ˆëœ ê²½ìš°ì—ëŠ” skip
+        // ¾ÆÁ÷ header¿¡ ´ëÇÑ validationÀÌ ¾ÈµÈ °æ¿ì¿¡´Â skip
         if ( (sCurrPkgStmt->state == QS_PKG_STMTS_INIT_STATE) ||
              (sCurrPkgStmt->state == QS_PKG_STMTS_PARSE_FINISHED) )
         {
@@ -3305,7 +3329,7 @@ IDE_RC qsvPkgStmts::matchingSubprogram( qcStatement         * aStatement,
             // nothing to do
         }
 
-        // private ì„œë¸Œ í”„ë¡œê·¸ë¨ì¼ë•ŒëŠ” ì„ ì–¸ë§Œ ì°¾ëŠ”ë‹¤.
+        // private ¼­ºê ÇÁ·Î±×·¥ÀÏ¶§´Â ¼±¾ğ¸¸ Ã£´Â´Ù.
         if ( (sCurrSubprogram->subprogramType == QS_PRIVATE_SUBPROGRAM) &&
              (sCurrSubParseTree->block != NULL) )
         {
@@ -3350,7 +3374,7 @@ IDE_RC qsvPkgStmts::matchingSubprogram( qcStatement         * aStatement,
              sNode != NULL;
              sNode = sNode->next, i++ )
         {
-            // named íŒŒë¼ë¯¸í„°ì¼ë•ŒëŠ” ì´ë¦„ìœ¼ë¡œ ì°¾ëŠ”ë‹¤.
+            // named ÆÄ¶ó¹ÌÅÍÀÏ¶§´Â ÀÌ¸§À¸·Î Ã£´Â´Ù.
             if ( ( ((qtcNode*)sNode)->lflag & QTC_NODE_SP_PARAM_NAME_MASK )
                  == QTC_NODE_SP_PARAM_NAME_TRUE )
             {
@@ -3392,7 +3416,7 @@ IDE_RC qsvPkgStmts::matchingSubprogram( qcStatement         * aStatement,
                 sParaColumn = &(sCurrSubParseTree->paramColumns[i]);
             }
 
-            // bind ë³€ìˆ˜ì¼ë•Œ
+            // bind º¯¼öÀÏ¶§
             if ( sColumn->type.dataTypeId == MTD_UNDEF_ID )
             {
                 continue;
@@ -3402,7 +3426,7 @@ IDE_RC qsvPkgStmts::matchingSubprogram( qcStatement         * aStatement,
                 // nothing to do
             }
 
-            // ì»¨ë²„ì ¼ê¹Œì§€ ê³ ë ¤í•´ì„œ íƒ€ì… ë§¤ì¹­ì„ í•œë‹¤.
+            // ÄÁ¹öÁ¯±îÁö °í·ÁÇØ¼­ Å¸ÀÔ ¸ÅÄªÀ» ÇÑ´Ù.
             IDE_TEST( calTypeFriendly( aStatement,
                                        sNode,
                                        sColumn,
@@ -3416,7 +3440,7 @@ IDE_RC qsvPkgStmts::matchingSubprogram( qcStatement         * aStatement,
             }
             else
             {
-                // ì»¨ë²„ì ¼ì´ ë¶ˆê°€ëŠ¥í•œ ê²½ìš°ì´ë‹¤.
+                // ÄÁ¹öÁ¯ÀÌ ºÒ°¡´ÉÇÑ °æ¿ìÀÌ´Ù.
                 sTotalFriendly = sFriendly;
                 break;
             }
@@ -3467,7 +3491,7 @@ IDE_RC qsvPkgStmts::matchingSubprogram( qcStatement         * aStatement,
     {
         sqlInfo.setSourceInfo( aStatement, & aColumnName );
 
-        // ì°¾ì•„ë‚œ í•¨ìˆ˜ê°€ 2ê°œ ì´ìƒì¼ë•ŒëŠ” ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¨ë‹¤.
+        // Ã£¾Æ³­ ÇÔ¼ö°¡ 2°³ ÀÌ»óÀÏ¶§´Â ¿¡·¯¸¦ ¹ß»ı½ÃÅ²´Ù.
         IDE_TEST_RAISE( sExist == ID_TRUE, ERR_TOO_MANY_MATCH );
     }
     else
@@ -3475,8 +3499,8 @@ IDE_RC qsvPkgStmts::matchingSubprogram( qcStatement         * aStatement,
         // Nothing to do.
     }
 
-    // overloading ëœ í•¨ìˆ˜ë¥¼ ëª»ì°¾ì•˜ì„ë•ŒëŠ”
-    // estimate ì •ë³´ë¥¼ ì œì™¸í•˜ê³  ì°¾ëŠ”ë‹¤.
+    // overloading µÈ ÇÔ¼ö¸¦ ¸øÃ£¾ÒÀ»¶§´Â
+    // estimate Á¤º¸¸¦ Á¦¿ÜÇÏ°í Ã£´Â´Ù.
     if ( (aExactly == ID_FALSE) &&
          (sExist == ID_FALSE) )
     {
@@ -3523,7 +3547,7 @@ IDE_RC qsvPkgStmts::matchingSubprogram( qcStatement         * aStatement,
     else
     {
         // Nothing to do.
-        // subprogram ì¡´ì¬
+        // subprogram Á¸Àç
     }
 
     *aSubprogramType = sSubprogramType;
@@ -3553,10 +3577,10 @@ IDE_RC qsvPkgStmts::calTypeFriendly( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : ì»¨ë²„ì ¼ê¹Œì§€ ê³ ë ¤í•´ì„œ íƒ€ì… ë§¤ì¹­ì„ í•œë‹¤.
+ * Description : ÄÁ¹öÁ¯±îÁö °í·ÁÇØ¼­ Å¸ÀÔ ¸ÅÄªÀ» ÇÑ´Ù.
  *
- *    íƒ€ì…ì •ë³´ë¥¼ ì•Œìˆ˜ ìˆì„ë•ŒëŠ” 2ê°œ íƒ€ì…ê°„ì˜ ì»¨ë²„ì ¼ ë…¸ë“œê°€ ëª‡ê°œê°€ ìƒì„±ë˜ëŠ”ì§€ë¥¼ ê³„ì‚°í•œë‹¤.
- *    íƒ€ì…ì •ë³´ë¥¼ ì•Œìˆ˜ ì—†ì„ë•ŒëŠ” íƒ€ì… ê·¸ë£¹ì„ í†µí•´ì„œ íŒë‹¨í•œë‹¤.
+ *    Å¸ÀÔÁ¤º¸¸¦ ¾Ë¼ö ÀÖÀ»¶§´Â 2°³ Å¸ÀÔ°£ÀÇ ÄÁ¹öÁ¯ ³ëµå°¡ ¸î°³°¡ »ı¼ºµÇ´ÂÁö¸¦ °è»êÇÑ´Ù.
+ *    Å¸ÀÔÁ¤º¸¸¦ ¾Ë¼ö ¾øÀ»¶§´Â Å¸ÀÔ ±×·ìÀ» ÅëÇØ¼­ ÆÇ´ÜÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -3572,7 +3596,7 @@ IDE_RC qsvPkgStmts::calTypeFriendly( qcStatement * aStatement,
 
     if ( aArgColumn->module != NULL )
     {
-        // ì¸ìê°€ estimateê°€ ë˜ì–´ ìˆëŠ” ê²½ìš°
+        // ÀÎÀÚ°¡ estimate°¡ µÇ¾î ÀÖ´Â °æ¿ì
         sColumn = aArgColumn;
     }
     else
@@ -3587,10 +3611,10 @@ IDE_RC qsvPkgStmts::calTypeFriendly( qcStatement * aStatement,
         }
     }
 
-    // ì¸ìì˜ íƒ€ì…ì„ ì•Œìˆ˜ ìˆëŠ” ê²½ìš°
+    // ÀÎÀÚÀÇ Å¸ÀÔÀ» ¾Ë¼ö ÀÖ´Â °æ¿ì
     if ( sColumn != NULL )
     {
-        // PSM ìš© íƒ€ì…ë“¤ì€ ì•„ë˜ ë¡œì§ì„ ì´ìš©í• ìˆ˜ ì—†ë‹¤.
+        // PSM ¿ë Å¸ÀÔµéÀº ¾Æ·¡ ·ÎÁ÷À» ÀÌ¿ëÇÒ¼ö ¾ø´Ù.
         if ( (sColumn->type.dataTypeId < MTD_UDT_ID_MIN) &&
              (aParamColumn->type.dataTypeId < MTD_UDT_ID_MIN) )
         {
@@ -3617,7 +3641,7 @@ IDE_RC qsvPkgStmts::calTypeFriendly( qcStatement * aStatement,
         }
         else
         {
-            // PSM íƒ€ì…ì€ ë™ì¼í•œ ê²½ìš°ì—ë§Œ í—ˆìš©í•œë‹¤.
+            // PSM Å¸ÀÔÀº µ¿ÀÏÇÑ °æ¿ì¿¡¸¸ Çã¿ëÇÑ´Ù.
             if ( sColumn->type.dataTypeId ==
                  aParamColumn->type.dataTypeId )
             {
@@ -3651,9 +3675,9 @@ IDE_RC qsvPkgStmts::calTypeFriendly( qcStatement * aStatement,
 
         sParamTypeGroup = aParamColumn->module->flag & MTD_GROUP_MASK;
 
-        // ë™ì¼í•œ íƒ€ì… ê·¸ë£¹ì¼ë•ŒëŠ” QSV_TYPE_GROUP_PENALTY ë§Œ
-        // ì„œë¡œ ë‹¤ë¥¸ ê·¸ë£¹ì´ê³  í•œìª½ì´ TEXT ê·¸ë£¹ì¼ ë•ŒëŠ” QSV_TYPE_GROUP_PENALTY +1
-        // ì„œë¡œ ë‹¤ë¥¸ ê·¸ë£¹ì´ê³  TEXT ê·¸ë£¹ì´ ì•„ë‹ë•ŒëŠ” í—ˆìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // µ¿ÀÏÇÑ Å¸ÀÔ ±×·ìÀÏ¶§´Â QSV_TYPE_GROUP_PENALTY ¸¸
+        // ¼­·Î ´Ù¸¥ ±×·ìÀÌ°í ÇÑÂÊÀÌ TEXT ±×·ìÀÏ ¶§´Â QSV_TYPE_GROUP_PENALTY +1
+        // ¼­·Î ´Ù¸¥ ±×·ìÀÌ°í TEXT ±×·ìÀÌ ¾Æ´Ò¶§´Â Çã¿ëÇÏÁö ¾Ê´Â´Ù.
         if ( sArgTypeGroup == MTD_GROUP_TEXT )
         {
             if ( sParamTypeGroup == MTD_GROUP_TEXT )
@@ -4133,7 +4157,7 @@ IDE_RC qsvPkgStmts::inheritRelatedObjectFromPkgSpec( qcStatement * aStatement,
 }
 
 /* BUG-41847
-   package ë³€ìˆ˜ì˜ default ê°’ìœ¼ë¡œ functionì„ ì‚¬ìš©í•  ìˆ˜ ìˆì–´ì•¼ í•©ë‹ˆë‹¤. */
+   package º¯¼öÀÇ default °ªÀ¸·Î functionÀ» »ç¿ëÇÒ ¼ö ÀÖ¾î¾ß ÇÕ´Ï´Ù. */
 idBool qsvPkgStmts::checkIsRecursiveSubprogramCall( qsPkgStmts * aCurrPkgStmt,
                                                     UInt         aTargetSubprogramID )
 {

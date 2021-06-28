@@ -19,11 +19,11 @@
  * $Id: qmgInsert.cpp 53774 2012-06-15 04:53:31Z eerien $
  *
  * Description :
- *     Insert Graphë¥¼ ìœ„í•œ ìˆ˜í–‰ í•¨ìˆ˜
+ *     Insert Graph¸¦ À§ÇÑ ¼öÇà ÇÔ¼ö
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -42,12 +42,12 @@ qmgInsert::init( qcStatement      * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgInsert Graphì˜ ì´ˆê¸°í™”
+ * Description : qmgInsert GraphÀÇ ÃÊ±âÈ­
  *
  * Implementation :
- *    (1) qmgInsertì„ ìœ„í•œ ê³µê°„ í• ë‹¹
- *    (2) graph( ëª¨ë“  Graphë¥¼ ìœ„í•œ ê³µí†µ ìë£Œ êµ¬ì¡°) ì´ˆê¸°í™”
- *    (3) out ì„¤ì •
+ *    (1) qmgInsertÀ» À§ÇÑ °ø°£ ÇÒ´ç
+ *    (2) graph( ¸ğµç Graph¸¦ À§ÇÑ °øÅë ÀÚ·á ±¸Á¶) ÃÊ±âÈ­
+ *    (3) out ¼³Á¤
  *
  ***********************************************************************/
 
@@ -57,21 +57,21 @@ qmgInsert::init( qcStatement      * aStatement,
     IDU_FIT_POINT_FATAL( "qmgInsert::init::__FT__" );
 
     //---------------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //---------------------------------------------------
-    // Insert Graphë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
+    // Insert Graph¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
     //---------------------------------------------------
     
-    // qmgInsertì„ ìœ„í•œ ê³µê°„ í• ë‹¹
+    // qmgInsertÀ» À§ÇÑ °ø°£ ÇÒ´ç
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmgINST ),
                                              (void**) &sMyGraph )
               != IDE_SUCCESS );
 
-    // Graph ê³µí†µ ì •ë³´ì˜ ì´ˆê¸°í™”
+    // Graph °øÅë Á¤º¸ÀÇ ÃÊ±âÈ­
     IDE_TEST( qmg::initGraph( & sMyGraph->graph ) != IDE_SUCCESS );
 
     sMyGraph->graph.type = QMG_INSERT;
@@ -86,7 +86,7 @@ qmgInsert::init( qcStatement      * aStatement,
         // Nothing to do.
     }
 
-    // insertëŠ” querySetì´ ì—†ìŒ
+    // insert´Â querySetÀÌ ¾øÀ½
     sMyGraph->graph.myQuerySet = NULL;
 
     sMyGraph->graph.optimize = qmgInsert::optimize;
@@ -95,7 +95,7 @@ qmgInsert::init( qcStatement      * aStatement,
 
     sInsertTableRef = aParseTree->insertTableRef;
     
-    // Disk/Memory ì •ë³´ ì„¤ì •
+    // Disk/Memory Á¤º¸ ¼³Á¤
     if ( ( QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sInsertTableRef->table].lflag
            & MTC_TUPLE_STORAGE_MASK ) == MTC_TUPLE_STORAGE_DISK )
     {
@@ -109,32 +109,32 @@ qmgInsert::init( qcStatement      * aStatement,
     }
 
     //---------------------------------------------------
-    // Insert Graph ë§Œì„ ìœ„í•œ ì´ˆê¸°í™”
+    // Insert Graph ¸¸À» À§ÇÑ ÃÊ±âÈ­
     //---------------------------------------------------
 
-    // ìµœìƒìœ„ graphì¸ insert graphì— insert table ì •ë³´ë¥¼ ì„¤ì •
+    // ÃÖ»óÀ§ graphÀÎ insert graph¿¡ insert table Á¤º¸¸¦ ¼³Á¤
     sMyGraph->tableRef = sInsertTableRef;
     
-    // ìµœìƒìœ„ graphì¸ insert graphì— insert columns ì •ë³´ë¥¼ ì„¤ì •
+    // ÃÖ»óÀ§ graphÀÎ insert graph¿¡ insert columns Á¤º¸¸¦ ¼³Á¤
     sMyGraph->columns          = aParseTree->insertColumns;
     sMyGraph->columnsForValues = aParseTree->columnsForValues;
     
-    // ìµœìƒìœ„ graphì¸ insert graphì— insert values ì •ë³´ë¥¼ ì„¤ì •
+    // ÃÖ»óÀ§ graphÀÎ insert graph¿¡ insert values Á¤º¸¸¦ ¼³Á¤
     sMyGraph->rows           = aParseTree->rows;
     sMyGraph->valueIdx       = aParseTree->valueIdx;
     sMyGraph->canonizedTuple = aParseTree->canonizedTuple;
     sMyGraph->compressedTuple= aParseTree->compressedTuple;     // PROJ-2264
 
-    // ìµœìƒìœ„ graphì¸ insert graphì— queue ì •ë³´ë¥¼ ì„¤ì •
+    // ÃÖ»óÀ§ graphÀÎ insert graph¿¡ queue Á¤º¸¸¦ ¼³Á¤
     sMyGraph->queueMsgIDSeq = aParseTree->queueMsgIDSeq;
 
-    // ìµœìƒìœ„ graphì¸ insert graphì— hint ì •ë³´ë¥¼ ì„¤ì •
+    // ÃÖ»óÀ§ graphÀÎ insert graph¿¡ hint Á¤º¸¸¦ ¼³Á¤
     sMyGraph->hints = aParseTree->hints;
 
-    // ìµœìƒìœ„ graphì¸ insert graphì— sequence ì •ë³´ë¥¼ ì„¤ì •
+    // ÃÖ»óÀ§ graphÀÎ insert graph¿¡ sequence Á¤º¸¸¦ ¼³Á¤
     sMyGraph->nextValSeqs = aParseTree->common.nextValSeqs;
     
-    // ìµœìƒìœ„ graphì¸ insert graphì— multi-insert ì •ë³´ë¥¼ ì„¤ì •
+    // ÃÖ»óÀ§ graphÀÎ insert graph¿¡ multi-insert Á¤º¸¸¦ ¼³Á¤
     if ( (aParseTree->flag & QMM_MULTI_INSERT_MASK) == QMM_MULTI_INSERT_TRUE )
     {
         sMyGraph->multiInsertSelect = ID_TRUE;
@@ -144,24 +144,24 @@ qmgInsert::init( qcStatement      * aStatement,
         sMyGraph->multiInsertSelect = ID_FALSE;
     }
     
-    // ìµœìƒìœ„ graphì¸ insert graphì— instead of triggerì •ë³´ë¥¼ ì„¤ì •
+    // ÃÖ»óÀ§ graphÀÎ insert graph¿¡ instead of triggerÁ¤º¸¸¦ ¼³Á¤
     sMyGraph->insteadOfTrigger = aParseTree->insteadOfTrigger;
 
-    // ìµœìƒìœ„ graphì¸ insert graphì— constraintë¥¼ ì—°ê²°
+    // ÃÖ»óÀ§ graphÀÎ insert graph¿¡ constraint¸¦ ¿¬°á
     sMyGraph->parentConstraints = aParseTree->parentConstraints;
     sMyGraph->checkConstrList   = aParseTree->checkConstrList;
 
-    // ìµœìƒìœ„ graphì¸ insert graphì— return intoë¥¼ ì—°ê²°
+    // ÃÖ»óÀ§ graphÀÎ insert graph¿¡ return into¸¦ ¿¬°á
     sMyGraph->returnInto = aParseTree->returnInto;
 
-    // ìµœìƒìœ„ graphì¸ insert graphì— Default Exprì„ ì—°ê²°
+    // ÃÖ»óÀ§ graphÀÎ insert graph¿¡ Default ExprÀ» ¿¬°á
     sMyGraph->defaultExprTableRef = aParseTree->defaultTableRef;
     sMyGraph->defaultExprColumns  = aParseTree->defaultExprColumns;
 
     // BUG-43063 insert nowait
     sMyGraph->lockWaitMicroSec = aParseTree->lockWaitMicroSec;
     
-    // out ì„¤ì •
+    // out ¼³Á¤
     *aGraph = (qmgGraph *)sMyGraph;
 
     return IDE_SUCCESS;
@@ -176,12 +176,12 @@ qmgInsert::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- * Description : qmgInsertì˜ ìµœì í™”
+ * Description : qmgInsertÀÇ ÃÖÀûÈ­
  *
  * Implementation :
  *    (1) CASE 1 : INSERT...VALUE(...(subquery)...)
- *        qmoSubquery::optimizeExpr()ì˜ ìˆ˜í–‰
- *    (2) ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì •
+ *        qmoSubquery::optimizeExpr()ÀÇ ¼öÇà
+ *    (2) °øÅë ºñ¿ë Á¤º¸ ¼³Á¤
  *
  ***********************************************************************/
 
@@ -191,14 +191,14 @@ qmgInsert::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     IDU_FIT_POINT_FATAL( "qmgInsert::optimize::__FT__" );
 
     //---------------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //---------------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //---------------------------------------------------
 
     sMyGraph = (qmgINST*) aGraph;
@@ -206,8 +206,8 @@ qmgInsert::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     
     //-----------------------------------------
     // PROJ-1566
-    // INSERT APPEND Hint ì²˜ë¦¬
-    // ì•„ë˜ ì œì•½ ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•ŠëŠ” ê²½ìš°, append hintë¥¼ ì œê±°
+    // INSERT APPEND Hint Ã³¸®
+    // ¾Æ·¡ Á¦¾à Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾Ê´Â °æ¿ì, append hint¸¦ Á¦°Å
     //-----------------------------------------
 
     if ( sMyGraph->hints != NULL )
@@ -216,13 +216,13 @@ qmgInsert::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                SMI_INSERT_METHOD_MASK )
              == SMI_INSERT_METHOD_APPEND )
         {
-            // APPEND Hintê°€ ì£¼ì–´ì§„ ê²½ìš°
+            // APPEND Hint°¡ ÁÖ¾îÁø °æ¿ì
 
             while(1)
             {
                 if ( sTableInfo->indexCount != 0 )
                 {
-                    // (2) ëŒ€ìƒ tableì€ indexë¥¼ ê°€ì§ˆ ìˆ˜ ì—†ë‹¤.
+                    // (2) ´ë»ó tableÀº index¸¦ °¡Áú ¼ö ¾ø´Ù.
                     sMyGraph->hints->directPathInsHintFlag
                         = SMI_INSERT_METHOD_NORMAL;
                     break;
@@ -230,7 +230,7 @@ qmgInsert::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 
                 if ( sTableInfo->triggerCount != 0 )
                 {
-                    // (3) ëŒ€ìƒ tableì€ triggerë¥¼ ê°€ì§ˆ ìˆ˜ ì—†ë‹¤.
+                    // (3) ´ë»ó tableÀº trigger¸¦ °¡Áú ¼ö ¾ø´Ù.
                     sMyGraph->hints->directPathInsHintFlag
                         = SMI_INSERT_METHOD_NORMAL;
                     break;
@@ -238,27 +238,27 @@ qmgInsert::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 
                 if ( sTableInfo->foreignKeyCount != 0 )
                 {
-                    // (4) ëŒ€ìƒ tableì€ foreign keyë¥¼ ê°€ì§ˆ ìˆ˜ ì—†ë‹¤.
+                    // (4) ´ë»ó tableÀº foreign key¸¦ °¡Áú ¼ö ¾ø´Ù.
                     sMyGraph->hints->directPathInsHintFlag
                         = SMI_INSERT_METHOD_NORMAL;
                     break;
                 }
 
-                /* BUG-29753 Direct-Path INSERT ì œì•½ ì¡°ê±´ì—ì„œ
-                   NOT NULL constraint ì œì•½ ì‚­ì œ
+                /* BUG-29753 Direct-Path INSERT Á¦¾à Á¶°Ç¿¡¼­
+                   NOT NULL constraint Á¦¾à »èÁ¦
                 if ( sTableInfo->notNullCount != 0 )
                 {
-                    // (5) ëŒ€ìƒ tableì€ not null constraintë¥¼ ê°€ì§ˆ ìˆ˜ ì—†ë‹¤.
+                    // (5) ´ë»ó tableÀº not null constraint¸¦ °¡Áú ¼ö ¾ø´Ù.
                     sMyGraph->hints->directPathInsHintFlag
                         = SMI_INSERT_METHOD_NORMAL;
                     break;
                 }
                 */
 
-                /* PROJ-1107 Check Constraint ì§€ì› */
+                /* PROJ-1107 Check Constraint Áö¿ø */
                 if ( sTableInfo->checkCount != 0 )
                 {
-                    /* (6) ëŒ€ìƒ tableì€ check constraintë¥¼ ê°€ì§ˆ ìˆ˜ ì—†ë‹¤. */
+                    /* (6) ´ë»ó tableÀº check constraint¸¦ °¡Áú ¼ö ¾ø´Ù. */
                     sMyGraph->hints->directPathInsHintFlag
                         = SMI_INSERT_METHOD_NORMAL;
                     break;
@@ -270,20 +270,20 @@ qmgInsert::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 
                 if ( sTableInfo->replicationCount != 0 )
                 {
-                    // (7) replication í•  ìˆ˜ ì—†ë‹¤.
+                    // (7) replication ÇÒ ¼ö ¾ø´Ù.
                     sMyGraph->hints->directPathInsHintFlag
                         = SMI_INSERT_METHOD_NORMAL;
                     break;
                 }
 
-                /* PROJ-2464 hybrid partitioned table ì§€ì›
-                 *  APPEND HintëŠ” Partitioned Tableì— ìƒê´€ì—†ì´ Disk Partitionì´ ìˆëŠ” ê²½ìš°ì—ë§Œ ì§€ì›í•œë‹¤.
-                 *  ì—¬ê¸°ì—ì„œ Partition ì •ë³´ë¥¼ ì•Œ ìˆ˜ ì—†ë‹¤. qmgInsert::makePlan()ì—ì„œ ì²˜ë¦¬í•œë‹¤.
+                /* PROJ-2464 hybrid partitioned table Áö¿ø
+                 *  APPEND Hint´Â Partitioned Table¿¡ »ó°ü¾øÀÌ Disk PartitionÀÌ ÀÖ´Â °æ¿ì¿¡¸¸ Áö¿øÇÑ´Ù.
+                 *  ¿©±â¿¡¼­ Partition Á¤º¸¸¦ ¾Ë ¼ö ¾ø´Ù. qmgInsert::makePlan()¿¡¼­ Ã³¸®ÇÑ´Ù.
                  */
                 // if ( sTableFlag != SMI_TABLE_DISK )
                 // {
-                //     // (8) ëŒ€ìƒ tableì€ disk tableì´ì–´ì•¼ í•œë‹¤.
-                //     //     memory tableì€ APPEND ë°©ì‹ìœ¼ë¡œ insert í•  ìˆ˜ ì—†ìŒ
+                //     // (8) ´ë»ó tableÀº disk tableÀÌ¾î¾ß ÇÑ´Ù.
+                //     //     memory tableÀº APPEND ¹æ½ÄÀ¸·Î insert ÇÒ ¼ö ¾øÀ½
                 //     sMyGraph->hints->directPathInsHintFlag
                 //         = SMI_INSERT_METHOD_NORMAL;
                 //     break;
@@ -295,7 +295,7 @@ qmgInsert::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 
                 if ( sTableInfo->lobColumnCount != 0 )
                 {
-                    // (9) ëŒ€ìƒ tableì— lob columnì´ ì¡´ì¬í•˜ë©´ ì•ˆë¨
+                    // (9) ´ë»ó table¿¡ lob columnÀÌ Á¸ÀçÇÏ¸é ¾ÈµÊ
                     sMyGraph->hints->directPathInsHintFlag
                         = SMI_INSERT_METHOD_NORMAL;
                     break;
@@ -306,13 +306,13 @@ qmgInsert::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         }
         else
         {
-            // APPEND Hintê°€ ì£¼ì–´ì§€ì§€ ì•Šì€ ê²½ìš°
+            // APPEND Hint°¡ ÁÖ¾îÁöÁö ¾ÊÀº °æ¿ì
             // nothing to do
         }
     }
 
     //---------------------------------------------------
-    // ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì •
+    // °øÅë ºñ¿ë Á¤º¸ ¼³Á¤
     //---------------------------------------------------
 
     // inputRecordCnt
@@ -338,7 +338,7 @@ qmgInsert::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     sMyGraph->graph.costInfo.totalAllCost = 0;
 
     //---------------------------------------------------
-    // Preserved Order ì„¤ì •
+    // Preserved Order ¼³Á¤
     //---------------------------------------------------
 
     sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
@@ -353,10 +353,10 @@ qmgInsert::makePlan( qcStatement     * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgInsertìœ¼ë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
+ * Description : qmgInsertÀ¸·Î ºÎÅÍ PlanÀ» »ı¼ºÇÑ´Ù.
  *
  * Implementation :
- *    - qmgInsertìœ¼ë¡œ ìƒì„±ê°€ëŠ¥í•œ Plan
+ *    - qmgInsertÀ¸·Î »ı¼º°¡´ÉÇÑ Plan
  *
  *           [INST]
  *
@@ -371,13 +371,14 @@ qmgInsert::makePlan( qcStatement     * aStatement,
     qmmMultiRows    * sMultiRows;
     qmoINSTInfo       sINSTInfo;
     qmncINST        * sINST;
+    idBool            sIsConst = ID_FALSE;
 
     IDU_FIT_POINT_FATAL( "qmgInsert::makePlan::__FT__" );
 
     sInsParseTree = (qmmInsParseTree *)aStatement->myPlan->parseTree;
     
     //---------------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -390,15 +391,15 @@ qmgInsert::makePlan( qcStatement     * aStatement,
     aGraph->flag |= QMG_PARALLEL_IMPOSSIBLE_FALSE;
 
     // BUG-38410
-    // ìµœìƒìœ„ plan ì´ë¯€ë¡œ ê¸°ë³¸ê°’ì„ ì„¸íŒ…í•œë‹¤.
+    // ÃÖ»óÀ§ plan ÀÌ¹Ç·Î ±âº»°ªÀ» ¼¼ÆÃÇÑ´Ù.
     aGraph->flag &= ~QMG_PLAN_EXEC_REPEATED_MASK;
     aGraph->flag |= QMG_PLAN_EXEC_REPEATED_FALSE;
 
     //---------------------------
-    // Planì˜ ìƒì„±
+    // PlanÀÇ »ı¼º
     //---------------------------
 
-    // ìµœìƒìœ„ planì´ë‹¤.
+    // ÃÖ»óÀ§ planÀÌ´Ù.
     IDE_DASSERT( aParent == NULL );
     
     IDE_TEST( qmoOneNonPlan::initINST( aStatement ,
@@ -407,16 +408,16 @@ qmgInsert::makePlan( qcStatement     * aStatement,
     sMyGraph->graph.myPlan = sPlan;
     
     //---------------------------
-    // í•˜ìœ„ Planì˜ ìƒì„±
+    // ÇÏÀ§ PlanÀÇ »ı¼º
     //---------------------------
 
     if ( sMyGraph->graph.left != NULL )
     {
         // BUG-38410
-        // SCAN parallel flag ë¥¼ ìì‹ ë…¸ë“œë¡œ ë¬¼ë ¤ì¤€ë‹¤.
+        // SCAN parallel flag ¸¦ ÀÚ½Ä ³ëµå·Î ¹°·ÁÁØ´Ù.
         aGraph->left->flag  |= (aGraph->flag & QMG_PLAN_EXEC_REPEATED_MASK);
 
-        // subqueryì˜ statementë¡œ makePlaní•œë‹¤.
+        // subqueryÀÇ statement·Î makePlanÇÑ´Ù.
         sSubQStatement = sInsParseTree->select;
         
         IDE_TEST( sMyGraph->graph.left->makePlan( sSubQStatement ,
@@ -424,7 +425,7 @@ qmgInsert::makePlan( qcStatement     * aStatement,
                                                   sMyGraph->graph.left )
                   != IDE_SUCCESS);
 
-        // childê°€ì ¸ì˜¤ê¸°
+        // child°¡Á®¿À±â
         sChildPlan = sMyGraph->graph.left->myPlan;
     }
     else
@@ -433,7 +434,7 @@ qmgInsert::makePlan( qcStatement     * aStatement,
     }
 
     //----------------------------
-    // INSTì˜ ìƒì„±
+    // INSTÀÇ »ı¼º
     //----------------------------
 
     sINSTInfo.tableRef          = sMyGraph->tableRef;
@@ -472,15 +473,15 @@ qmgInsert::makePlan( qcStatement     * aStatement,
               sMultiRows = sMultiRows->next )
         {
             //------------------------------------------
-            // INSERT ... VALUES êµ¬ë¬¸ ë‚´ì˜ Subquery ìµœì í™”
+            // INSERT ... VALUES ±¸¹® ³»ÀÇ Subquery ÃÖÀûÈ­
             //------------------------------------------
             // BUG-32584
-            // ëª¨ë“  ì„œë¸Œì¿¼ë¦¬ì— ëŒ€í•´ì„œ MakeGraph í•œí›„ì— MakePlanì„ í•´ì•¼ í•œë‹¤.
+            // ¸ğµç ¼­ºêÄõ¸®¿¡ ´ëÇØ¼­ MakeGraph ÇÑÈÄ¿¡ MakePlanÀ» ÇØ¾ß ÇÑ´Ù.
             for ( sValueNode = sMultiRows->values;
                   sValueNode != NULL;
                   sValueNode = sValueNode->next )
             {
-                // Subquery ì¡´ì¬í•  ê²½ìš° Subquery ìµœì í™”
+                // Subquery Á¸ÀçÇÒ °æ¿ì Subquery ÃÖÀûÈ­
                 if ( (sValueNode->value->lflag & QTC_NODE_SUBQUERY_MASK )
                      == QTC_NODE_SUBQUERY_EXIST )
                 {
@@ -499,7 +500,7 @@ qmgInsert::makePlan( qcStatement     * aStatement,
                   sValueNode != NULL;
                   sValueNode = sValueNode->next )
             {
-                // Subquery ì¡´ì¬í•  ê²½ìš° Subquery ìµœì í™”
+                // Subquery Á¸ÀçÇÒ °æ¿ì Subquery ÃÖÀûÈ­
                 if ( (sValueNode->value->lflag & QTC_NODE_SUBQUERY_MASK )
                      == QTC_NODE_SUBQUERY_EXIST )
                 {
@@ -517,31 +518,81 @@ qmgInsert::makePlan( qcStatement     * aStatement,
     }
     else
     {
-        // insert selectì˜ ê²½ìš° validationì‹œ partitionRefë¥¼ êµ¬ì„±í–ˆë‹¤.
+        // insert selectÀÇ °æ¿ì validation½Ã partitionRef¸¦ ±¸¼ºÇß´Ù.
 
         // Nothing to do.
     }
 
     //----------------------------
-    // intoì ˆì— ëŒ€í•œ íŒŒí‹°ì…˜ë“œ í…Œì´ë¸” ìµœì í™”
+    // intoÀı¿¡ ´ëÇÑ ÆÄÆ¼¼Çµå Å×ÀÌºí ÃÖÀûÈ­
     //----------------------------
 
+    /* BUG-47614 partition table insert½Ã optimize ¼º´É °³¼± */
+    if ( sMyGraph->parentConstraints != NULL )
+    {
+        sIsConst = ID_TRUE;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
     // PROJ-1502 PARTITIONED DISK TABLE
-    /* PROJ-2464  hybrid partitioned table ì§€ì›
-     *  - Insert Selectì‹œ Partitionì˜ Tupleì„ êµ¬ì„±í•˜ì§€ ì•Šì•˜ë‹¤.
-     *  - HPTì˜ ì¶”ê°€ë¡œ ì‹¤ì œ Insertê°€ ë˜ëŠ” Partitionì˜ Tupleë¥¼ ì‚¬ìš©í•´ì•¼ í•˜ë¯€ë¡œ ë¬´ì¡°ê±´ í˜¸ì¶œí•œë‹¤.
-     *  - Move DMLì˜ í˜¸ì¶œ ìˆœì„œì™€ ë™ì¼í•˜ê²Œ ë³€ê²½í•œë‹¤.
+    /* PROJ-2464  hybrid partitioned table Áö¿ø
+     *  - Insert Select½Ã PartitionÀÇ TupleÀ» ±¸¼ºÇÏÁö ¾Ê¾Ò´Ù.
+     *  - HPTÀÇ Ãß°¡·Î ½ÇÁ¦ Insert°¡ µÇ´Â PartitionÀÇ Tuple¸¦ »ç¿ëÇØ¾ß ÇÏ¹Ç·Î ¹«Á¶°Ç È£ÃâÇÑ´Ù.
+     *  - Move DMLÀÇ È£Ãâ ¼ø¼­¿Í µ¿ÀÏÇÏ°Ô º¯°æÇÑ´Ù.
+     * BUG-47614 partition table insert½Ã optimize ¼º´É °³¼±
      */
-    IDE_TEST( qmoPartition::optimizeInto( aStatement,
-                                          sMyGraph->tableRef )
+    IDE_TEST( qmoPartition::optimizeIntoForInsert( aStatement,
+                                                   sMyGraph->tableRef,
+                                                   sIsConst )
               != IDE_SUCCESS );
+
+    sINST = (qmncINST *)sPlan;
+
+    /* BUG-47625 Insert execution ¼º´ÉÇâ»ó */
+    if ( ( sINST->isMultiInsertSelect == ID_TRUE ) ||
+         ( sMyGraph->tableRef->tableInfo->lobColumnCount > 0 ) ||
+         ( sMyGraph->tableRef->tableInfo->triggerCount > 0 ) ||
+         ( sINST->returnInto != NULL ) ||
+         ( sINST->checkConstrList != NULL ) ||
+         ( sINST->rows->next != NULL ) ||
+         ( sINST->compressedTuple != UINT_MAX ) ||
+         ( sINST->isAppend == ID_TRUE ) ||
+         ( sINST->insteadOfTrigger == ID_TRUE ) ||
+         ( sINST->defaultExprColumns != NULL ) ||
+         ( ( sINST->flag & QMNC_INST_EXIST_ENCRYPT_COLUMN_MASK )
+           == QMNC_INST_EXIST_ENCRYPT_COLUMN_TRUE ) ||
+         ( ( sINST->flag & QMNC_INST_EXIST_TIMESTAMP_MASK )
+           == QMNC_INST_EXIST_TIMESTAMP_TRUE ) ||
+         ( ( sINST->flag & QMNC_INST_EXIST_QUEUE_MASK )
+           == QMNC_INST_EXIST_QUEUE_TRUE ) )
+    {
+        sINST->flag &= ~QMNC_INST_COMPLEX_MASK;
+        sINST->flag |= QMNC_INST_COMPLEX_TRUE;
+    }
+    else
+    {
+        sINST->flag &= ~QMNC_INST_COMPLEX_MASK;
+        sINST->flag |= QMNC_INST_COMPLEX_FALSE;
+    }
 
     if ( sMyGraph->tableRef->partitionSummary != NULL )
     {
         if ( sMyGraph->tableRef->partitionSummary->diskPartitionCount > 0 )
         {
-            sINST = (qmncINST *)sPlan;
             sINST->isSimple = ID_FALSE;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        /* BUG-47625 Insert execution ¼º´ÉÇâ»ó */
+        if ( sMyGraph->tableRef->partitionSummary->isHybridPartitionedTable == ID_TRUE )
+        {
+            sINST->flag &= ~QMNC_INST_COMPLEX_MASK;
+            sINST->flag |= QMNC_INST_COMPLEX_TRUE;
         }
         else
         {
@@ -553,8 +604,8 @@ qmgInsert::makePlan( qcStatement     * aStatement,
         /* Nothing to do */
     }
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì›
-     *  APPEND HintëŠ” Partitioned Tableì— ìƒê´€ì—†ì´ Disk Partitionì´ ìˆëŠ” ê²½ìš°ì—ë§Œ ì§€ì›í•œë‹¤.
+    /* PROJ-2464 hybrid partitioned table Áö¿ø
+     *  APPEND Hint´Â Partitioned Table¿¡ »ó°ü¾øÀÌ Disk PartitionÀÌ ÀÖ´Â °æ¿ì¿¡¸¸ Áö¿øÇÑ´Ù.
      */
     fixHint( sPlan );
 
@@ -574,7 +625,7 @@ qmgInsert::printGraph( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Graphë¥¼ êµ¬ì„±í•˜ëŠ” ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *    Graph¸¦ ±¸¼ºÇÏ´Â °øÅë Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  *
  * Implementation :
@@ -586,7 +637,7 @@ qmgInsert::printGraph( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgInsert::printGraph::__FT__" );
 
     //-----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //-----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -594,7 +645,7 @@ qmgInsert::printGraph( qcStatement  * aStatement,
     IDE_DASSERT( aString != NULL );
 
     //-----------------------------------
-    // Graphì˜ ì‹œì‘ ì¶œë ¥
+    // GraphÀÇ ½ÃÀÛ Ãâ·Â
     //-----------------------------------
 
     if ( aDepth == 0 )
@@ -609,7 +660,7 @@ qmgInsert::printGraph( qcStatement  * aStatement,
     }
 
     //-----------------------------------
-    // Graph ê³µí†µ ì •ë³´ì˜ ì¶œë ¥
+    // Graph °øÅë Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
     IDE_TEST( qmg::printGraph( aStatement,
@@ -619,12 +670,12 @@ qmgInsert::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
+    // Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
 
     //-----------------------------------
-    // Child Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
+    // Child Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
     if ( aGraph->left != NULL )
@@ -641,7 +692,7 @@ qmgInsert::printGraph( qcStatement  * aStatement,
     }
 
     //-----------------------------------
-    // Graphì˜ ë§ˆì§€ë§‰ ì¶œë ¥
+    // GraphÀÇ ¸¶Áö¸· Ãâ·Â
     //-----------------------------------
 
     if ( aDepth == 0 )
@@ -664,7 +715,7 @@ qmgInsert::printGraph( qcStatement  * aStatement,
 
 /***********************************************************************
  *
- * Description : Disk Partitionì„ ê³ ë ¤í•˜ì—¬ INSERT êµ¬ë¬¸ì˜ HIntë¥¼ ì²˜ë¦¬í•œë‹¤.
+ * Description : Disk PartitionÀ» °í·ÁÇÏ¿© INSERT ±¸¹®ÀÇ HInt¸¦ Ã³¸®ÇÑ´Ù.
  *
  * Implementation :
  *

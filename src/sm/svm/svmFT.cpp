@@ -33,8 +33,8 @@
  * D$VOL_TBS_PCH
  *----------------------------------------- */
 
-/* TASK-4007 [SM] PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
- * PCHë¥¼ Dumpí•  ìˆ˜ ìžˆëŠ” ê¸°ëŠ¥ ì¶”ê°€ */
+/* TASK-4007 [SM] PBT¸¦ À§ÇÑ ±â´É Ãß°¡
+ * PCH¸¦ DumpÇÒ ¼ö ÀÖ´Â ±â´É Ãß°¡ */
 
 static iduFixedTableColDesc gDumpVolTBSPCHColDesc[] =
 {
@@ -97,7 +97,7 @@ static iduFixedTableColDesc gDumpVolTBSPCHColDesc[] =
 };
 
 // D$VOL_TBS_PCH
-// í•œ TBSì˜ ëª¨ë“  PCHë¥¼ Dumpí•œë‹¤.
+// ÇÑ TBSÀÇ ¸ðµç PCH¸¦ DumpÇÑ´Ù.
 static IDE_RC buildRecordVolTBSPCHDump(idvSQL              * /*aStatistics*/,
                                        void                *aHeader,
                                        void                *aDumpObj,
@@ -115,13 +115,13 @@ static IDE_RC buildRecordVolTBSPCHDump(idvSQL              * /*aStatistics*/,
 
     IDE_TEST_RAISE( aDumpObj == NULL, ERR_EMPTY_OBJECT );
 
-    /* BUG-28678  [SM] qmsDumpObjList::mObjInfoì— ì„¤ì •ë  ë©”ëª¨ë¦¬ ì£¼ì†ŒëŠ” 
-     * ë°˜ë“œì‹œ ê³µê°„ì„ í• ë‹¹í•´ì„œ ì„¤ì •í•´ì•¼í•©ë‹ˆë‹¤. 
+    /* BUG-28678  [SM] qmsDumpObjList::mObjInfo¿¡ ¼³Á¤µÉ ¸Þ¸ð¸® ÁÖ¼Ò´Â 
+     * ¹Ýµå½Ã °ø°£À» ÇÒ´çÇØ¼­ ¼³Á¤ÇØ¾ßÇÕ´Ï´Ù. 
      * 
-     * aDumpObjëŠ” Pointerë¡œ ë°ì´í„°ê°€ ì˜¤ê¸° ë•Œë¬¸ì— ê°’ì„ ê°€ì ¸ì™€ì•¼ í•©ë‹ˆë‹¤. */
+     * aDumpObj´Â Pointer·Î µ¥ÀÌÅÍ°¡ ¿À±â ¶§¹®¿¡ °ªÀ» °¡Á®¿Í¾ß ÇÕ´Ï´Ù. */
     sSpaceID  = *( (scSpaceID*)aDumpObj );
 
-    // VOL_TABLESPACEê°€ ë§žëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+    // VOL_TABLESPACE°¡ ¸Â´ÂÁö °Ë»çÇÑ´Ù.
     IDE_ASSERT( sctTableSpaceMgr::isVolatileTableSpace( sSpaceID ) == ID_TRUE );
 
 
@@ -132,16 +132,12 @@ static IDE_RC buildRecordVolTBSPCHDump(idvSQL              * /*aStatistics*/,
 
     for( i = 0 ; i < sDBMaxPageCount; i++ )
     {
-        if( svmManager::isValidSpaceID( sSpaceID ) != ID_TRUE )
-        {
-            continue;
-        }
-        if( svmManager::isValidPageID( sSpaceID, i ) != ID_TRUE )
+        if( smmManager::isValidPageID( sSpaceID, i ) != ID_TRUE )
         {
             continue;
         }
 
-        sPCH = svmManager::getPCH( sSpaceID, i );
+        sPCH = (svmPCH*)smmManager::getPCH( sSpaceID, i );
         if( sPCH == NULL )
         {
             continue;
@@ -149,7 +145,7 @@ static IDE_RC buildRecordVolTBSPCHDump(idvSQL              * /*aStatistics*/,
 
         sVolTBSPCHDump.mSpaceID          = sSpaceID;
         sVolTBSPCHDump.mMyPageID         = i;
-        sVolTBSPCHDump.mPage             = (vULong)sPCH->m_page;
+        sVolTBSPCHDump.mPage             = (vULong)smmManager::getPagePtr( sSpaceID, i );
         sVolTBSPCHDump.mNxtScanPID       = sPCH->mNxtScanPID;
         sVolTBSPCHDump.mPrvScanPID       = sPCH->mPrvScanPID;
         sVolTBSPCHDump.mModifySeqForScan = sPCH->mModifySeqForScan;
@@ -260,7 +256,7 @@ static iduFixedTableColDesc gVolTablespaceDescColDesc[] =
     }
 };
 
-/* Tablespace Nodeë¡œë¶€í„° X$VOL_TABLESPACE_DESCì˜ êµ¬ì¡°ì²´ êµ¬ì„±
+/* Tablespace Node·ÎºÎÅÍ X$VOL_TABLESPACE_DESCÀÇ ±¸Á¶Ã¼ ±¸¼º
  */
    
 IDE_RC constructTBSDesc( svmTBSNode     * aTBSNode,
@@ -271,10 +267,10 @@ IDE_RC constructTBSDesc( svmTBSNode     * aTBSNode,
     
     smiVolTableSpaceAttr * sVolAttr = & aTBSNode->mTBSAttr.mVolAttr;
 
-    // Tablespaceì˜ Performance Viewêµ¬ì¶•ì¤‘
-    // Offline, Dropìœ¼ë¡œì˜ ìƒíƒœì „ì´ë¥¼ ë§‰ê¸° ìœ„í•¨
-    IDE_ASSERT( sctTableSpaceMgr::lock(NULL /* idvSQL * */)
-                == IDE_SUCCESS );
+    // TablespaceÀÇ Performance View±¸ÃàÁß
+    // Offline, DropÀ¸·ÎÀÇ »óÅÂÀüÀÌ¸¦ ¸·±â À§ÇÔ
+    sctTableSpaceMgr::lockSpaceNode( NULL /* idvSQL * */,
+                                     aTBSNode );
     
     aTBSDesc->mSpaceID             = aTBSNode->mHeader.mID;
 
@@ -297,15 +293,15 @@ IDE_RC constructTBSDesc( svmTBSNode     * aTBSNode,
         aTBSNode->mMemBase.mCurrentExpandChunkCnt;
     aTBSDesc->mCurrentSize    *= SM_PAGE_SIZE ;
 
-    IDE_ASSERT( sctTableSpaceMgr::unlock() == IDE_SUCCESS );
+    sctTableSpaceMgr::unlockSpaceNode( aTBSNode  );
 
     return IDE_SUCCESS;
 
-    // ì—ëŸ¬ì²˜ë¦¬ í•´ì•¼í•  ê²½ìš° lock/unlockì— ëŒ€í•œ ìƒíƒœì²˜ë¦¬ í•„ìš”
+    // ¿¡·¯Ã³¸® ÇØ¾ßÇÒ °æ¿ì lock/unlock¿¡ ´ëÇÑ »óÅÂÃ³¸® ÇÊ¿ä
 }
 
 /*
-     X$VOL_TABLESPACE_DESC ì˜ ë ˆì½”ë“œë¥¼ êµ¬ì¶•í•œë‹¤.
+     X$VOL_TABLESPACE_DESC ÀÇ ·¹ÄÚµå¸¦ ±¸ÃàÇÑ´Ù.
  */
 
 IDE_RC buildRecordForVolTablespaceDesc(
@@ -320,14 +316,14 @@ IDE_RC buildRecordForVolTablespaceDesc(
     IDE_ERROR( aHeader != NULL );
     IDE_ERROR( aMemory != NULL );
 
-    sctTableSpaceMgr::getFirstSpaceNode((void**)&sCurTBS);
+    sCurTBS = (svmTBSNode*)sctTableSpaceMgr::getFirstSpaceNode();
     IDE_ASSERT(sCurTBS != NULL);
 
     while( sCurTBS != NULL )
     {
         if( sctTableSpaceMgr::isVolatileTableSpace(sCurTBS->mHeader.mID) != ID_TRUE ) 
         {
-            sctTableSpaceMgr::getNextSpaceNode(sCurTBS, (void**)&sCurTBS );
+            sCurTBS = (svmTBSNode*)sctTableSpaceMgr::getNextSpaceNode( sCurTBS->mHeader.mID );
             continue;
         }
 
@@ -341,8 +337,8 @@ IDE_RC buildRecordForVolTablespaceDesc(
                      (void *) &sTBSDesc )
                  != IDE_SUCCESS);
 
-        // Dropëœ TablespaceëŠ” SKIPí•œë‹¤
-        sctTableSpaceMgr::getNextSpaceNode((void*)sCurTBS, (void**)&sCurTBS);
+        // DropµÈ Tablespace´Â SKIPÇÑ´Ù
+        sCurTBS = (svmTBSNode*)sctTableSpaceMgr::getNextSpaceNode( sCurTBS->mHeader.mID );
     }
 
     return IDE_SUCCESS;
@@ -421,7 +417,7 @@ static iduFixedTableColDesc gVolTBSFreePageListTableColDesc[] =
 };
 
 /*
- * X$VOL_TABLESPACE_FREE_PAGE_LIST Performance View ì˜ ë ˆì½”ë“œë¥¼ ë§Œë“¤ì–´ë‚¸ë‹¤.
+ * X$VOL_TABLESPACE_FREE_PAGE_LIST Performance View ÀÇ ·¹ÄÚµå¸¦ ¸¸µé¾î³½´Ù.
  */
 IDE_RC buildRecordForVolTBSFreePageList(
     idvSQL              * /*aStatistics*/,
@@ -437,14 +433,14 @@ IDE_RC buildRecordForVolTBSFreePageList(
     IDE_ERROR( aHeader != NULL );
     IDE_ERROR( aMemory != NULL );
 
-    sctTableSpaceMgr::getFirstSpaceNode((void**)&sCurTBS);
+    sCurTBS = (svmTBSNode*)sctTableSpaceMgr::getFirstSpaceNode();
     IDE_ASSERT(sCurTBS != NULL);
 
     while( sCurTBS != NULL )
     {
         if( sctTableSpaceMgr::isVolatileTableSpace(sCurTBS->mHeader.mID) != ID_TRUE )
         {
-            sctTableSpaceMgr::getNextSpaceNode(sCurTBS, (void**)&sCurTBS );
+            sCurTBS = (svmTBSNode*)sctTableSpaceMgr::getNextSpaceNode( sCurTBS->mHeader.mID );
             continue;
         }
 
@@ -459,7 +455,7 @@ IDE_RC buildRecordForVolTBSFreePageList(
             sPerfVolTBSFreeList.mFreePageCount   =
                 sCurTBS->mMemBase.mFreePageLists[i].mFreePageCount;
 
-            /* BUG-31881 ì˜ˆì•½ëœ ì‚¬ìš©ë¶ˆê°€ íŽ˜ì´ì§€ì˜ ê°œìˆ˜ë¥¼ ì¶œë ¥í•¨ */
+            /* BUG-31881 ¿¹¾àµÈ »ç¿ëºÒ°¡ ÆäÀÌÁöÀÇ °³¼ö¸¦ Ãâ·ÂÇÔ */
             IDE_TEST( svmFPLManager::getUnusablePageCount(
                     & sCurTBS->mArrPageReservation[i],
                     NULL, // Transaction
@@ -472,7 +468,7 @@ IDE_RC buildRecordForVolTBSFreePageList(
                          (void *) &sPerfVolTBSFreeList )
                      != IDE_SUCCESS);
         }
-        sctTableSpaceMgr::getNextSpaceNode((void*)sCurTBS, (void**)&sCurTBS);
+        sCurTBS = (svmTBSNode*)sctTableSpaceMgr::getNextSpaceNode( sCurTBS->mHeader.mID );
     }
 
     return IDE_SUCCESS;

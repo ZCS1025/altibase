@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: utAtbQuery.cpp 82790 2018-04-15 23:41:55Z bethy $
+ * $Id: utAtbQuery.cpp 82786 2018-04-12 08:04:45Z bethy $
  ******************************************************************************/
 
 #include <uto.h>
@@ -73,7 +73,7 @@ Row * utAtbQuery::fetch(dba_t, bool aFileMode)
 
     IDE_TEST(!SQL_SUCCEEDED(ret));
 
-    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
+    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
     if ( aFileMode == true )
     {
         // do nothing
@@ -104,7 +104,7 @@ IDE_RC utAtbQuery::initialize(UInt)
     IDE_TEST(SQLAllocStmt(_conn->dbchp, &_stmt) != SQL_SUCCESS);
 
     mIsCursorOpened = ID_FALSE;
-    // BUG-40205 insure++ warning ì–´ë–¤ ê°’ìœ¼ë¡œ ì´ˆê¸°ê°’ ì„¤ì •???
+    // BUG-40205 insure++ warning ¾î¶² °ªÀ¸·Î ÃÊ±â°ª ¼³Á¤???
     lobCompareMode  = ID_FALSE;
 
     return Query::initialize();
@@ -136,13 +136,13 @@ IDE_RC utAtbQuery::close()
 }
 
 
-/* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
+/* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
 IDE_RC utAtbQuery::utaCloseCur(void)
 {
 /***********************************************************************
  *
  * Description :
- *    statementë¥¼ í•´ì œí•¨. SQL_CLOSE, SQL_UNBIND, SQL_RESET_PARAMS í•´ì¤€ë‹¤.
+ *    statement¸¦ ÇØÁ¦ÇÔ. SQL_CLOSE, SQL_UNBIND, SQL_RESET_PARAMS ÇØÁØ´Ù.
  *
  ***********************************************************************/
 
@@ -571,8 +571,8 @@ IDE_RC utAtbQuery::lobAtToAt(Query * aGetLob,
         /* 
          * BUG-32566
          *
-         * Queryê°€ ìž˜ëª»ë˜ì–´ LOB Column Select ì•ˆë˜ëŠ” ë¬¸ì œ ìˆ˜ì •
-         * ë””ë²„ê¹… ì¤‘ ì‹¤ìˆ˜ë¡œ ì£¼ì„ì²˜ë¦¬ í•˜ì§€ ì•Šì•˜ì„ê¹Œ????
+         * Query°¡ Àß¸øµÇ¾î LOB Column Select ¾ÈµÇ´Â ¹®Á¦ ¼öÁ¤
+         * µð¹ö±ë Áß ½Ç¼ö·Î ÁÖ¼®Ã³¸® ÇÏÁö ¾Ê¾ÒÀ»±î????
          */
         IDE_ASSERT(aGetLob->getRow()->getField(i)->getSChar(temp, BUF_LEN) != -1);
         idlOS::strcat(selectSql, temp);
@@ -924,10 +924,10 @@ IDE_RC utAtbQuery::bind(const UInt aPosition, void *aBuff,UInt aWidth, SInt sqlT
             locatorCType = SQL_C_CLOB_LOCATOR;        
         }
         /* BUG-40205 insure++ warning
-         * LOBì˜ ê²½ìš° SQL_PARAM_OUTPUTìœ¼ë¡œ ì„¤ì •í•˜ì—¬ locatorë¥¼ ë°›ì•„ì˜¨ í›„,
-         * SQLPubLobì—ì„œ ë°ì´í„°ë¥¼ ìž…ë ¥í•´ì•¼ í•¨: manual ì°¸ì¡°
-         * ì—¬ê¸°ì—ì„œ SQLBindParameterì— ì‚¬ìš©í•œ locatorë¥¼ ì‹¤ì œë¡œëŠ” ì‚¬ìš©í•˜ì§€ ì•Šìœ¼ë©°,
-         * utAtbQuery::lobAtToAt í•¨ìˆ˜ì—ì„œ lob ì¹¼ëŸ¼ì„ ë³„ë„ë¡œ ì²˜ë¦¬í•˜ê³  ìžˆìŒ.
+         * LOBÀÇ °æ¿ì SQL_PARAM_OUTPUTÀ¸·Î ¼³Á¤ÇÏ¿© locator¸¦ ¹Þ¾Æ¿Â ÈÄ,
+         * SQLPubLob¿¡¼­ µ¥ÀÌÅÍ¸¦ ÀÔ·ÂÇØ¾ß ÇÔ: manual ÂüÁ¶
+         * ¿©±â¿¡¼­ SQLBindParameter¿¡ »ç¿ëÇÑ locator¸¦ ½ÇÁ¦·Î´Â »ç¿ëÇÏÁö ¾ÊÀ¸¸ç,
+         * utAtbQuery::lobAtToAt ÇÔ¼ö¿¡¼­ lob Ä®·³À» º°µµ·Î Ã³¸®ÇÏ°í ÀÖÀ½.
          */
         pType = SQL_PARAM_OUTPUT;
         mLobInd = 0;

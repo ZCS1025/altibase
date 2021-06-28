@@ -15,7 +15,7 @@
  */
 
 /***********************************************************************
- * $Id: mtxFromDoubleTo.cpp 85045 2019-03-20 01:40:10Z andrew.shin $
+ * $Id: mtxFromDoubleTo.cpp 84859 2019-02-01 06:07:08Z andrew.shin $
  **********************************************************************/
 
 #include <mtx.h>
@@ -149,7 +149,7 @@ static IDE_RC mtxFromDoubleToReal( mtxEntry ** aEntry )
         IDE_TEST_RAISE( MTX_IS_NULL_REAL( sReturn ),
                         ERR_VALUE_OVERFLOW );
 
-        /* To fix BUG-12281 - underflow ê²€ì‚¬ */
+        /* To fix BUG-12281 - underflow °Ë»ç */
         if ( idlOS::fabs( sArg1Val ) < MTD_REAL_MINIMUM )
         {
             *sReturn = 0;
@@ -345,7 +345,7 @@ static IDE_RC mtxFromDoubleToInterval( mtxEntry ** aEntry )
 
         sReturn->microsecond = (SLong)sIntegralPart;
 
-        /* BUG-40967 - ì˜¤ì°¨ ë³´ì • (ë°˜ì˜¬ë¦¼) */
+        /* BUG-40967 - ¿ÀÂ÷ º¸Á¤ (¹Ý¿Ã¸²) */
         if ( sFractionalPart >= 0.5 )
         {
             sReturn->microsecond++;

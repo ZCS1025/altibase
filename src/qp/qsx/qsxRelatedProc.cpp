@@ -15,12 +15,13 @@
  */
  
 /***********************************************************************
- * $Id: qsxRelatedProc.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsxRelatedProc.cpp 89989 2021-02-15 04:54:24Z donovan.seo $
  **********************************************************************/
 
 #include <idl.h>
 #include <ide.h>
 #include <idu.h>
+#include <idx.h>
 #include <qcuProperty.h>
 #include <qcg.h>
 #include <qsx.h>
@@ -43,16 +44,15 @@ IDE_RC qsxRelatedProc::latchObjects( qsxProcPlanList * aObjectPlanList )
     smiTrans           sMetaTx;
     smiStatement     * sDummySmiStmt;
     smiStatement       sSmiStmt;
-    smSCN              sDummySCN;
     UInt               sState = 0;
 
     /* PROJ-2268 Reuse Catalog Table Slot
-     * Objectì— Latch ìž¡ê¸° ì „ì— Agerê°€ ë™ìž‘í•˜ì§€ ëª»í•˜ë„ë¡ MinViewSCNì„ ì„¤ì •í•´ ì¤€ë‹¤.
-     * MinViewSCNì„ ì–»ê¸°ì „ì— ì´ë¯¸ Drop ì²˜ë¦¬ë˜ì—ˆë‹¤ë©´ 
-     * Validateì—ì„œ Object_Changed Error ë¥¼ ë°˜í™˜ í•  ê²ƒì´ê³ 
-     * MinViewSCNì„ ì–»ì€ ì´í›„ì— Drop ëœë‹¤ë©´ Agerì—ì„œ ì²˜ë¦¬í•˜ì§€ ëª»í•˜ê¸° ë•Œë¬¸ì—
-     * ì •ìƒì ìœ¼ë¡œ Latchë¥¼ íšë“í•  ìˆ˜ ìžˆë‹¤.
-     * Validation ê³¼ì •ê³¼ Latch íšë“ ê³¼ì • ì¤‘ Drop ëœ ê²½ìš°ëŠ” Latch í•¨ìˆ˜ ë‚´ë¶€ì—ì„œ ì²˜ë¦¬ëœë‹¤. */
+     * Object¿¡ Latch Àâ±â Àü¿¡ Ager°¡ µ¿ÀÛÇÏÁö ¸øÇÏµµ·Ï MinViewSCNÀ» ¼³Á¤ÇØ ÁØ´Ù.
+     * MinViewSCNÀ» ¾ò±âÀü¿¡ ÀÌ¹Ì Drop Ã³¸®µÇ¾ú´Ù¸é 
+     * Validate¿¡¼­ Object_Changed Error ¸¦ ¹ÝÈ¯ ÇÒ °ÍÀÌ°í
+     * MinViewSCNÀ» ¾òÀº ÀÌÈÄ¿¡ Drop µÈ´Ù¸é Ager¿¡¼­ Ã³¸®ÇÏÁö ¸øÇÏ±â ¶§¹®¿¡
+     * Á¤»óÀûÀ¸·Î Latch¸¦ È¹µæÇÒ ¼ö ÀÖ´Ù.
+     * Validation °úÁ¤°ú Latch È¹µæ °úÁ¤ Áß Drop µÈ °æ¿ì´Â Latch ÇÔ¼ö ³»ºÎ¿¡¼­ Ã³¸®µÈ´Ù. */
     if ( smuProperty::getCatalogSlotReusable()  == 1 )
     {
         IDE_TEST( sMetaTx.initialize() != IDE_SUCCESS );
@@ -139,7 +139,7 @@ IDE_RC qsxRelatedProc::latchObjects( qsxProcPlanList * aObjectPlanList )
         IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
 
         sState = 1;
-        IDE_TEST( sMetaTx.commit( &sDummySCN ) != IDE_SUCCESS );
+        IDE_TEST( sMetaTx.commit() != IDE_SUCCESS );
 
         sState = 0;
         IDE_TEST( sMetaTx.destroy( NULL ) != IDE_SUCCESS );
@@ -211,7 +211,7 @@ IDE_RC qsxRelatedProc::latchObjects( qsxProcPlanList * aObjectPlanList )
             IDE_ASSERT( sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE ) == IDE_SUCCESS );
 
         case 2:
-            IDE_ASSERT( sMetaTx.commit( &sDummySCN ) == IDE_SUCCESS );
+            IDE_ASSERT( sMetaTx.commit() == IDE_SUCCESS );
 
         case 1:
             IDE_ASSERT( sMetaTx.destroy( NULL ) == IDE_SUCCESS );
@@ -519,18 +519,18 @@ IDE_RC qsxRelatedProc::doPrepareRelatedPlanTree (
                 }
                 else
                 {
-                    // 2. í”„ë¡œì‹œì € ìƒì„±ì‹œì— ìµœì´ˆ PVO í•˜ëŠ” ê²½ìš°
+                    // 2. ÇÁ·Î½ÃÀú »ý¼º½Ã¿¡ ÃÖÃÊ PVO ÇÏ´Â °æ¿ì
                     if( aQcStmt->spvEnv->createProc->procInfo == NULL )
                     {
                         sMemory = aQcStmt->myPlan->qmpMem;
                     }
                     else
                     {
-                        // 3. í”„ë¡œì‹œì € ìƒì„±ì‹œì— ë‘ë²ˆì§¸ë¡œ PVO í•˜ëŠ” ê²½ìš°
-                        // qsxProcInfoì˜ relatedObjectsì— í• ë‹¹ë˜ëŠ” ë©”ëª¨ë¦¬ëŠ” qmsMem ì´ ì‚¬ìš©
-                        // ë˜ì–´ì•¼ í•œë‹¤.
-                        // ê° statementì˜ qmpMemì´ ì‚¬ìš©ë˜ëŠ” ê²½ìš° í•´ë‹¹ statementê°€ ìž¬ë¹Œë“œ
-                        // ë˜ë©´ ì´ì „ì— í• ë‹¹í•œ ë©”ëª¨ë¦¬ ê³µê°„ì„ ëª¨ë‘ í•´ì œí•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+                        // 3. ÇÁ·Î½ÃÀú »ý¼º½Ã¿¡ µÎ¹øÂ°·Î PVO ÇÏ´Â °æ¿ì
+                        // qsxProcInfoÀÇ relatedObjects¿¡ ÇÒ´çµÇ´Â ¸Þ¸ð¸®´Â qmsMem ÀÌ »ç¿ë
+                        // µÇ¾î¾ß ÇÑ´Ù.
+                        // °¢ statementÀÇ qmpMemÀÌ »ç¿ëµÇ´Â °æ¿ì ÇØ´ç statement°¡ Àçºôµå
+                        // µÇ¸é ÀÌÀü¿¡ ÇÒ´çÇÑ ¸Þ¸ð¸® °ø°£À» ¸ðµÎ ÇØÁ¦ÇÏ±â ¶§¹®ÀÌ´Ù.
                         sMemory = aQcStmt->spvEnv->createProc->procInfo->qmsMem;
                     }
                 }
@@ -567,18 +567,18 @@ IDE_RC qsxRelatedProc::doPrepareRelatedPlanTree (
                 }
                 else
                 {
-                    // 2. í”„ë¡œì‹œì € ìƒì„±ì‹œì— ìµœì´ˆ PVO í•˜ëŠ” ê²½ìš°
+                    // 2. ÇÁ·Î½ÃÀú »ý¼º½Ã¿¡ ÃÖÃÊ PVO ÇÏ´Â °æ¿ì
                     if( aQcStmt->spvEnv->createPkg->pkgInfo == NULL )
                     {
                         sMemory = aQcStmt->myPlan->qmpMem;
                     }
                     else
                     {
-                        // 3. í”„ë¡œì‹œì € ìƒì„±ì‹œì— ë‘ë²ˆì§¸ë¡œ PVO í•˜ëŠ” ê²½ìš°
-                        // qsxProcInfoì˜ relatedObjectsì— í• ë‹¹ë˜ëŠ” ë©”ëª¨ë¦¬ëŠ” qmsMem ì´ ì‚¬ìš©
-                        // ë˜ì–´ì•¼ í•œë‹¤.
-                        // ê° statementì˜ qmpMemì´ ì‚¬ìš©ë˜ëŠ” ê²½ìš° í•´ë‹¹ statementê°€ ìž¬ë¹Œë“œ
-                        // ë˜ë©´ ì´ì „ì— í• ë‹¹í•œ ë©”ëª¨ë¦¬ ê³µê°„ì„ ëª¨ë‘ í•´ì œí•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+                        // 3. ÇÁ·Î½ÃÀú »ý¼º½Ã¿¡ µÎ¹øÂ°·Î PVO ÇÏ´Â °æ¿ì
+                        // qsxProcInfoÀÇ relatedObjects¿¡ ÇÒ´çµÇ´Â ¸Þ¸ð¸®´Â qmsMem ÀÌ »ç¿ë
+                        // µÇ¾î¾ß ÇÑ´Ù.
+                        // °¢ statementÀÇ qmpMemÀÌ »ç¿ëµÇ´Â °æ¿ì ÇØ´ç statement°¡ Àçºôµå
+                        // µÇ¸é ÀÌÀü¿¡ ÇÒ´çÇÑ ¸Þ¸ð¸® °ø°£À» ¸ðµÎ ÇØÁ¦ÇÏ±â ¶§¹®ÀÌ´Ù.
                         sMemory = aQcStmt->spvEnv->createPkg->pkgInfo->qmsMem;
                     }
                 }
@@ -604,8 +604,8 @@ IDE_RC qsxRelatedProc::doPrepareRelatedPlanTree (
                           != IDE_SUCCESS );
 
                 /* BUG-39770
-                   packageë¥¼ ì°¸ì¡°í•˜ê±°ë‚˜, packageë¥¼ ì°¸ì¡°í•˜ëŠ” ê°ì²´ë¥¼ ì°¸ì¡°í•  ê²½ìš°
-                   parallelí•˜ê²Œ ì‹¤í–‰í•˜ì§€ ëª» í•œë‹¤. */
+                   package¸¦ ÂüÁ¶ÇÏ°Å³ª, package¸¦ ÂüÁ¶ÇÏ´Â °´Ã¼¸¦ ÂüÁ¶ÇÒ °æ¿ì
+                   parallelÇÏ°Ô ½ÇÇàÇÏÁö ¸ø ÇÑ´Ù. */
                 if ( (aQcStmt->spvEnv->createProc != NULL) &&
                      (aQcStmt->spvEnv->createPkg == NULL) )
                 {
@@ -623,7 +623,7 @@ IDE_RC qsxRelatedProc::doPrepareRelatedPlanTree (
 
             // connect procPlanList
             // proc-1535
-            // preparePlanTreeê°€ ì„±ê³µí•œ procë§Œ ì¶”ê°€ëœë‹¤.
+            // preparePlanTree°¡ ¼º°øÇÑ proc¸¸ Ãß°¡µÈ´Ù.
             if (*aAllObjectPlanListHead == NULL)
             {
                 *aAllObjectPlanListHead = sNewObjectPlanList;
@@ -672,6 +672,7 @@ IDE_RC qsxRelatedProc::preparePlanTree (
     SInt                sLatchState   = 0;
     SInt                sProcState    = 0;
     qcuSqlSourceInfo    sSqlInfo;
+    qsCallSpec        * sCallSpec;
 
     sProcOID    = aObjectPlan->objectID;
 
@@ -753,6 +754,25 @@ IDE_RC qsxRelatedProc::preparePlanTree (
         IDE_TEST( qsxProc::getProcInfo ( sProcOID, &sProcInfo )
                   != IDE_SUCCESS );
 
+        // PROJ-2717 Internal procedure
+        //   Library¸¦ loadÇÏÁö ¸øÇß°Å³ª, functionÀ» Á¦´ë·Î Ã£Áö ¸øÇÑ°æ¿ì ¿¡·¯
+        if ( sProcInfo->planTree->procType == QS_INTERNAL_C )
+        {
+            sCallSpec = sProcInfo->planTree->expCallSpec;
+
+            IDE_TEST_RAISE( sCallSpec->libraryNode == NULL,
+                            ERR_LIB_NOT_FOUND );
+
+            IDE_TEST_RAISE( sCallSpec->libraryNode->mHandle == PDL_SHLIB_INVALID_HANDLE,
+                            ERR_LIB_NOT_FOUND );
+
+            IDE_TEST_RAISE( sCallSpec->libraryNode->mFunctionPtr == NULL,
+                            ERR_ENTRY_FUNCTION_NOT_FOUND );
+
+            IDE_TEST_RAISE( sCallSpec->functionPtr == NULL,
+                            ERR_FUNCTION_NOT_FOUND );
+        }
+
         IDE_TEST_RAISE( sProcInfo->isValid != ID_TRUE, err_object_invalid );
     }
     else
@@ -772,7 +792,7 @@ IDE_RC qsxRelatedProc::preparePlanTree (
         IDE_SET(ideSetErrorCode( qpERR_ABORT_QSX_PLAN_CHANGED ));
     }
     // BUG-43979
-    // PSM ì‹¤í–‰ì„ ìœ„í•œ recompile ì¤‘ì— ì˜¤ë¥˜ê°€ ë°œìƒí•œ ê²½ìš°, ì´ë¥¼ ì‚¬ìš©ìžì—ê²Œ ëª…ì‹œì ìœ¼ë¡œ ì•Œë¦½ë‹ˆë‹¤.
+    // PSM ½ÇÇàÀ» À§ÇÑ recompile Áß¿¡ ¿À·ù°¡ ¹ß»ýÇÑ °æ¿ì, ÀÌ¸¦ »ç¿ëÀÚ¿¡°Ô ¸í½ÃÀûÀ¸·Î ¾Ë¸³´Ï´Ù.
     IDE_EXCEPTION( RECOMPILE_ERR )
     {
         if ( ( sProcInfo->planTree != NULL ) &&
@@ -788,6 +808,21 @@ IDE_RC qsxRelatedProc::preparePlanTree (
     IDE_EXCEPTION( err_object_invalid );
     {
         IDE_SET( ideSetErrorCode(qpERR_ABORT_QSX_PLAN_INVALID) );
+    }
+    IDE_EXCEPTION( ERR_LIB_NOT_FOUND )
+    {
+        ideSetErrorCode( idERR_ABORT_IDX_LIBRARY_NOT_FOUND,
+                         idxLocalSock::mHomePath,
+                         IDX_LIB_DEFAULT_DIR,
+                         sCallSpec->libraryNode->mLibPath );
+    }
+    IDE_EXCEPTION( ERR_ENTRY_FUNCTION_NOT_FOUND )
+    {
+        ideSetErrorCode( idERR_ABORT_IDX_ENTRY_FUNCTION_NOT_FOUND );
+    }
+    IDE_EXCEPTION( ERR_FUNCTION_NOT_FOUND )
+    {
+        ideSetErrorCode( idERR_ABORT_IDX_FUNCTION_NOT_FOUND );
     }
     IDE_EXCEPTION_END;
 
@@ -911,6 +946,13 @@ IDE_RC qsxRelatedProc::preparePkgPlanTree(
                                                  ID_TRUE )
                             != IDE_SUCCESS,
                             RECOMPILE_ERR );
+
+            /* BUG-48443 */
+            if ( aObjectType == QS_PKG )
+            {
+                aQcStmt->mFlag &= ~QC_STMT_PACKAGE_RECOMPILE_MASK;
+                aQcStmt->mFlag |= QC_STMT_PACKAGE_RECOMPILE_TRUE;
+            }
         }
         else
         {
@@ -937,11 +979,11 @@ IDE_RC qsxRelatedProc::preparePkgPlanTree(
     if( aObjectType == QS_PKG )
     {
         /* BUG-39340
-           package bodyëŠ” ì‹¤í–‰ ì‹œì ì— recompile í•˜ë„ë¡ í•œë‹¤. */
+           package body´Â ½ÇÇà ½ÃÁ¡¿¡ recompile ÇÏµµ·Ï ÇÑ´Ù. */
         if ( (sTopStmtKind & QCI_STMT_MASK_MASK) != QCI_STMT_MASK_DDL )
         {
             /* BUG-38720
-               package body ì¡´ìž¬ ì—¬ë¶€ í™•ì¸ í›„ bodyì˜ qsxPkgInfoë¥¼ ê°€ì ¸ì˜¨ë‹¤. */
+               package body Á¸Àç ¿©ºÎ È®ÀÎ ÈÄ bodyÀÇ qsxPkgInfo¸¦ °¡Á®¿Â´Ù. */
             IDE_DASSERT( sPkgInfo->planTree != NULL );
 
             IDE_TEST( qcmPkg::getPkgExistWithEmptyByName( aQcStmt,
@@ -1056,7 +1098,7 @@ IDE_RC qsxRelatedProc::preparePkgPlanTree(
     return IDE_SUCCESS;
 
     // BUG-43979
-    // PSM ì‹¤í–‰ì„ ìœ„í•œ recompile ì¤‘ì— ì˜¤ë¥˜ê°€ ë°œìƒí•œ ê²½ìš°, ì´ë¥¼ ì‚¬ìš©ìžì—ê²Œ ëª…ì‹œì ìœ¼ë¡œ ì•Œë¦½ë‹ˆë‹¤.
+    // PSM ½ÇÇàÀ» À§ÇÑ recompile Áß¿¡ ¿À·ù°¡ ¹ß»ýÇÑ °æ¿ì, ÀÌ¸¦ »ç¿ëÀÚ¿¡°Ô ¸í½ÃÀûÀ¸·Î ¾Ë¸³´Ï´Ù.
     IDE_EXCEPTION( RECOMPILE_ERR )
     {
         if ( ( sPkgInfo->planTree != NULL ) &&

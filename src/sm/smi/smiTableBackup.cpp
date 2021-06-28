@@ -21,27 +21,21 @@
 #include <idl.h>
 #include <ide.h>
 #include <idu.h>
-#include <ideErrorMgr.h>
-#include <iduSync.h>
 #include <smErrorCode.h>
 #include <smDef.h>
 #include <smcDef.h>
 #include <smcTable.h>
-#include <smiTableCursor.h>
-#include <smiTrans.h>
-#include <smiStatement.h>
 #include <smi.h>
 #include <smiTableBackup.h>
 #include <smcLob.h>
-#include <smnManager.h>
 #include <smxTrans.h>
 
 #define SMI_MAX_LOB_BACKUP_BUFFER_SIZE (1024*1024)
 
 /***********************************************************************
- * Description : aTableì— ëŒ€í•´ Backup ë˜ëŠ” Restoreë¥¼ ì¤€ë¹„í•œë‹¤.
+ * Description : aTable¿¡ ´ëÇØ Backup ¶Ç´Â Restore¸¦ ÁØºñÇÑ´Ù.
  *
- * aTable    - [IN] Fileì— ëŒ€í•œ Table Header
+ * aTable    - [IN] File¿¡ ´ëÇÑ Table Header
  ***********************************************************************/
 IDE_RC smiTableBackup::initialize(const void* aTable, SChar * aBackupFileName)
 {
@@ -82,7 +76,7 @@ IDE_RC smiTableBackup::initialize(const void* aTable, SChar * aBackupFileName)
 }
 
 /***********************************************************************
- * Description : í• ë‹¹ëœ ìì›ì„ ë°˜ë‚©í•œë‹¤.
+ * Description : ÇÒ´çµÈ ÀÚ¿øÀ» ¹İ³³ÇÑ´Ù.
  *
  ***********************************************************************/
 IDE_RC smiTableBackup::destroy()
@@ -98,8 +92,8 @@ IDE_RC smiTableBackup::destroy()
 }
 
 /***********************************************************************
- * Description : aTableOIDì— í•´ë‹¹í•˜ëŠ” Tableì„ ë””ìŠ¤í¬ë¡œ ë‚´ë¦°ë‹¤.
- *               Filenameì€ ë‹¤ìŒê³¼ ê°™ì´ ëœë‹¤.
+ * Description : aTableOID¿¡ ÇØ´çÇÏ´Â TableÀ» µğ½ºÅ©·Î ³»¸°´Ù.
+ *               FilenameÀº ´ÙÀ½°ú °°ÀÌ µÈ´Ù.
  *                - Filename: smcTable::getBackupDir()/smcTable::getTableOID(aTable)
  *                - EXT: SM_TABLE_BACKUP_EXT
  *
@@ -109,10 +103,10 @@ IDE_RC smiTableBackup::destroy()
  *                  Column Cnt (UInt)
  *                  column1 .. column n (smiColumn)
  *                - Data
- *                   rowë“¤(column1, column2, column3)
- *                    - LOB Columnì€ íŒŒì¼ì— ê¸°ë¡ì‹œ ë’¤ì— ëª°ì•„ì„œ ê¸°ë¡í•œë‹¤.
+ *                   rowµé(column1, column2, column3)
+ *                    - LOB ColumnÀº ÆÄÀÏ¿¡ ±â·Ï½Ã µÚ¿¡ ¸ô¾Æ¼­ ±â·ÏÇÑ´Ù.
  *                       ex) c1: int, c2: lob, c3: lob, c4:string
- *                           c1, c4, c2, c3ìˆœìœ¼ë¡œ ë°±ì—…íŒŒì¼ì— ê¸°ë¡.
+ *                           c1, c4, c2, c3¼øÀ¸·Î ¹é¾÷ÆÄÀÏ¿¡ ±â·Ï.
  *
  *                    - Fixed: Data
  *                    - LOB, VAR: Length(UInt), Data
@@ -120,7 +114,7 @@ IDE_RC smiTableBackup::destroy()
  *
  * aStatement    - [IN] Statement
  * aTable        - [IN] Table Header
- * aStatistics   - [IN] í†µê³„ì •ë³´
+ * aStatistics   - [IN] Åë°èÁ¤º¸
  ***********************************************************************/
 IDE_RC smiTableBackup::backup(smiStatement* aStatement,
                               const void*   aTable,
@@ -135,7 +129,7 @@ IDE_RC smiTableBackup::backup(smiStatement* aStatement,
 
 /* BUG-34262 [SM] When alter table add/modify/drop column, backup file
  * cannot be deleted.
- * setNullRowì™€ ë™ì¼í•œ ì´ìœ ë¡œ ì£¼ì„ì²˜ë¦¬ ë¨
+ * setNullRow¿Í µ¿ÀÏÇÑ ÀÌÀ¯·Î ÁÖ¼®Ã³¸® µÊ
     scPageID              sCatPageID;
  */
     scGRID                sRowGRID;
@@ -156,11 +150,11 @@ IDE_RC smiTableBackup::backup(smiStatement* aStatement,
 
 /* BUG-34262 [SM] When alter table add/modify/drop column, backup file
  * cannot be deleted.
- * setNullRowì™€ ë™ì¼í•œ ì´ìœ ë¡œ ì£¼ì„ì²˜ë¦¬ ë¨
+ * setNullRow¿Í µ¿ÀÏÇÑ ÀÌÀ¯·Î ÁÖ¼®Ã³¸® µÊ
     sCatPageID = SM_MAKE_PID( mTableHeader->mSelfOID );
  */
     
-    sState  = 1;    /* ë°±ì—… íŒŒì¼ ì¤€ë¹„ */
+    sState  = 1;    /* ¹é¾÷ ÆÄÀÏ ÁØºñ */
 
     IDE_TEST_RAISE( smcTable::waitForFileDelete( sTrans->mStatistics,
                                                  mFile.getFileName() )
@@ -170,14 +164,14 @@ IDE_RC smiTableBackup::backup(smiStatement* aStatement,
     /* create backup file and write backup file header */
     IDE_TEST( prepareAccessFile(ID_TRUE/*Write*/) != IDE_SUCCESS );
     
-    sState = 2;     /* Lob Column List ìƒì„± */
+    sState = 2;     /* Lob Column List »ı¼º */
 
     IDE_TEST( smcTable::makeLobColumnList( mTableHeader,
                                            &sLobColumnList,
                                            &sLobColumnCnt )
               != IDE_SUCCESS );
 
-    sState = 3;     /* ë°±ì—… íŒŒì¼ header ë° ì»¬ëŸ¼ ì •ë³´ ì“°ê¸°, ì»¤ì„œ open */
+    sState = 3;     /* ¹é¾÷ ÆÄÀÏ header ¹× ÄÃ·³ Á¤º¸ ¾²±â, Ä¿¼­ open */
     
     IDU_FIT_POINT( "1.BUG-43436@smiTableBackup::backup::appendBackupFileHeader" );
 
@@ -185,11 +179,11 @@ IDE_RC smiTableBackup::backup(smiStatement* aStatement,
 
     IDU_FIT_POINT( "2.BUG-43436@smiTableBackup::backup::appendTableColumnInfo" );
 
-    // Tableì˜ smiColumn Listì •ë³´ë¥¼ íŒŒì¼ì— ê¸°ë¡í•œë‹¤.
+    // TableÀÇ smiColumn ListÁ¤º¸¸¦ ÆÄÀÏ¿¡ ±â·ÏÇÑ´Ù.
     IDE_TEST( appendTableColumnInfo() != IDE_SUCCESS );
 
     // BUGBUG, A4.
-    // key filerë“± ê¸°íƒ€ pointerë“±ì„ defaultë¡œ êµ¬í•´ì„œ settingí•´ì•¼ í•œë‹¤.
+    // key filerµî ±âÅ¸ pointerµîÀ» default·Î ±¸ÇØ¼­ settingÇØ¾ß ÇÑ´Ù.
     IDE_TEST(sCursor.open( aStatement,
                            aTable,
                            NULL,
@@ -203,9 +197,9 @@ IDE_RC smiTableBackup::backup(smiStatement* aStatement,
                            &sCursorProperties )
              != IDE_SUCCESS);
     
-    sState = 4;     /* ì‹¤ì œ data ë°±ì—… */
+    sState = 4;     /* ½ÇÁ¦ data ¹é¾÷ */
 
-    /* ì •ìƒì ì¸ tableì´ë©´ mNullOIDëŠ” ë°˜ë“œì‹œ ì¡´ì¬í•´ì•¼í•œë‹¤. */
+    /* Á¤»óÀûÀÎ tableÀÌ¸é mNullOID´Â ¹İµå½Ã Á¸ÀçÇØ¾ßÇÑ´Ù. */
     IDE_ASSERT( mTableHeader->mNullOID != SM_NULL_OID );
 
     IDE_ASSERT( smmManager::getOIDPtr( mTableHeader->mSpaceID,
@@ -265,7 +259,7 @@ IDE_RC smiTableBackup::backup(smiStatement* aStatement,
         }
     }
 
-    sState = 3;     /* ì»¤ì„œ close, ë°±ì—… íŒŒì¼ tail ì“°ê¸° */
+    sState = 3;     /* Ä¿¼­ close, ¹é¾÷ ÆÄÀÏ tail ¾²±â */
  
     IDE_TEST( sCursor.close() != IDE_SUCCESS );
  
@@ -273,21 +267,21 @@ IDE_RC smiTableBackup::backup(smiStatement* aStatement,
                                     mOffset + ID_SIZEOF( smcBackupFileTail ),
                                     sRowMaxSize ) != IDE_SUCCESS );
 
-    sState = 2;     /* Lob Column List íŒŒê´´ */
+    sState = 2;     /* Lob Column List ÆÄ±« */
     
     IDE_TEST( smcTable::destLobColumnList( sLobColumnList )
              != IDE_SUCCESS );
 
-    sState = 1;     /* ë°±ì—… íŒŒì¼ Close */
+    sState = 1;     /* ¹é¾÷ ÆÄÀÏ Close */
     
     IDE_TEST( finishAccessFile() != IDE_SUCCESS );
 
     /* BUG-34262 [SM] When alter table add/modify/drop column, backup file
      * cannot be deleted. 
-     * tableì„ backupí•˜ê³  mTableHeader->mNullOIDë¥¼ SM_NULL_OIDë³€ê²½í•˜ê³  ì˜ˆì™¸
-     * ë°œìƒì‹œ ì´ì „ OIDë¡œ ë³µì›í•´ì•¼ í•©ë‹ˆë‹¤. í•˜ì§€ë§Œ ë‚¨ëŠ” ë¡œê·¸ê°€ redo onlyì—¬ì„œ
-     * undoë˜ì§€ì•Šì•„ mTableHeader->mNullOIDì´ ì—‰ëš±í•œ ê°’ì´ë“¤ì–´ìˆëŠ” ìƒíƒœê°€ ë©ë‹ˆë‹¤.
-     * ì½”ë“œë¥¼ ì‚­ì œí•˜ëŠ” ëŒ€ì‹ ì— ì£¼ì„ì²˜ë¦¬ í•©ë‹ˆë‹¤.
+     * tableÀ» backupÇÏ°í mTableHeader->mNullOID¸¦ SM_NULL_OIDº¯°æÇÏ°í ¿¹¿Ü
+     * ¹ß»ı½Ã ÀÌÀü OID·Î º¹¿øÇØ¾ß ÇÕ´Ï´Ù. ÇÏÁö¸¸ ³²´Â ·Î±×°¡ redo only¿©¼­
+     * undoµÇÁö¾Ê¾Æ mTableHeader->mNullOIDÀÌ ¾û¶×ÇÑ °ªÀÌµé¾îÀÖ´Â »óÅÂ°¡ µË´Ï´Ù.
+     * ÄÚµå¸¦ »èÁ¦ÇÏ´Â ´ë½Å¿¡ ÁÖ¼®Ã³¸® ÇÕ´Ï´Ù.
  
     IDE_TEST( smrUpdate::setNullRow( NULL, // idvSQL
                                      sTrans,
@@ -303,7 +297,7 @@ IDE_RC smiTableBackup::backup(smiStatement* aStatement,
 
     /* BUG-34262 [SM] When alter table add/modify/drop column, backup file
      * cannot be deleted.
-     * setNullRowì™€ ë™ì¼í•œ ì´ìœ ë¡œ ì£¼ì„ì²˜ë¦¬ ë¨
+     * setNullRow¿Í µ¿ÀÏÇÑ ÀÌÀ¯·Î ÁÖ¼®Ã³¸® µÊ
     sState = 0;
     IDE_TEST( smmDirtyPageMgr::insDirtyPage(
                                    SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
@@ -331,12 +325,12 @@ IDE_RC smiTableBackup::backup(smiStatement* aStatement,
         IDE_PUSH();
         switch( sState )
         {
-            case 4:     /* ì»¤ì„œ close */
+            case 4:     /* Ä¿¼­ close */
                 IDE_ASSERT( sCursor.close() == IDE_SUCCESS );
-            case 3:     /* Lob Column List íŒŒê´´ */
+            case 3:     /* Lob Column List ÆÄ±« */
                 IDE_ASSERT( smcTable::destLobColumnList( sLobColumnList )
                             == IDE_SUCCESS );
-            case 2:     /* ë°±ì—… íŒŒì¼ close */
+            case 2:     /* ¹é¾÷ ÆÄÀÏ close */
                 IDE_ASSERT( finishAccessFile() == IDE_SUCCESS );
 
                 if( idf::access( mFile.getFileName(), F_OK) == 0 )
@@ -361,7 +355,7 @@ IDE_RC smiTableBackup::backup(smiStatement* aStatement,
                 ;
             /* BUG-34262 [SM] When alter table add/modify/drop column, backup file
              * cannot be deleted.
-             * setNullRowì™€ ë™ì¼í•œ ì´ìœ ë¡œ ì£¼ì„ì²˜ë¦¬ ë¨
+             * setNullRow¿Í µ¿ÀÏÇÑ ÀÌÀ¯·Î ÁÖ¼®Ã³¸® µÊ
                 IDE_ASSERT( smmDirtyPageMgr::insDirtyPage(
                                 SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
                                 sCatPageID )
@@ -376,16 +370,16 @@ IDE_RC smiTableBackup::backup(smiStatement* aStatement,
 }
 
 /***********************************************************************
- * Description : aDstTableì— aTableOIDì— í•´ë‹¹í•˜ëŠ” BackupFileì„ ì½ì–´ì„œ
- *               insertí•œë‹¤.
+ * Description : aDstTable¿¡ aTableOID¿¡ ÇØ´çÇÏ´Â BackupFileÀ» ÀĞ¾î¼­
+ *               insertÇÑ´Ù.
  *
  * aStatement       - [IN] Statement
- * aDstTable        - [IN] Restore Target Tableì— ëŒ€í•œ Table Handle
+ * aDstTable        - [IN] Restore Target Table¿¡ ´ëÇÑ Table Handle
  * aTableOID        - [IN] Source Table OID
- * aSrcColumnList   - [IN] ì›ë³¸ Tableì˜ Column List
- * aBothColumnList  - [IN] Restore Target Tableì— ëŒ€í•œ Column List
- * aNewRow          - [IN] Restore Target Tableì— ëŒ€í•œ Value List
- * aIsUndo          - [IN] Undoì‹œ í˜¸ì¶œë˜ë©´ ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE
+ * aSrcColumnList   - [IN] ¿øº» TableÀÇ Column List
+ * aBothColumnList  - [IN] Restore Target Table¿¡ ´ëÇÑ Column List
+ * aNewRow          - [IN] Restore Target Table¿¡ ´ëÇÑ Value List
+ * aIsUndo          - [IN] Undo½Ã È£ÃâµÇ¸é ID_TRUE, ¾Æ´Ï¸é ID_FALSE
  ***********************************************************************/
 IDE_RC smiTableBackup::restore(void                  * aTrans,
                                const void            * aDstTable,
@@ -442,10 +436,10 @@ IDE_RC smiTableBackup::restore(void                  * aTrans,
 
     mOffset = ID_SIZEOF( smcBackupFileHeader );
 
-    /* ê¸°ë¡ëœ Columnì •ë³´ëŠ” Skipí•œë‹¤. */
+    /* ±â·ÏµÈ ColumnÁ¤º¸´Â SkipÇÑ´Ù. */
     IDE_TEST( skipColumnInfo() != IDE_SUCCESS );
 
-    /* Max Rowí¬ê¸°ë¡œ ë²„í¼ë¥¼ í• ë‹¹í•œë‹¤.*/
+    /* Max RowÅ©±â·Î ¹öÆÛ¸¦ ÇÒ´çÇÑ´Ù.*/
     IDE_TEST( initBuffer( sBackupFileTail.mMaxRowSize )
               != IDE_SUCCESS );
     sState = 2;
@@ -462,10 +456,10 @@ IDE_RC smiTableBackup::restore(void                  * aTrans,
 
     if ( aIsUndo == ID_TRUE )
     {
-        /* Undoì‹œì—ëŠ” Record Countë¥¼ ì´ í•¨ìˆ˜ì—ì„œ ì›ë³µì‹œì¼œì¤€ë‹¤. ë•Œë¬¸ì— Insertì‹œì—
-           Table Infoë¥¼ ë„˜ê¸¸ í•„ìš”ê°€ ì—†ë‹¤. */
-        /* Undo ì‹œì—ëŠ” Null Rowë¥¼ ì´ë¯¸ Freeí–ˆê¸° ë•Œë¬¸ì— ë‹¤ì‹œ ë§Œë“¤ì–´
-           ì£¼ì–´ì•¼ í•œë‹¤. */
+        /* Undo½Ã¿¡´Â Record Count¸¦ ÀÌ ÇÔ¼ö¿¡¼­ ¿øº¹½ÃÄÑÁØ´Ù. ¶§¹®¿¡ Insert½Ã¿¡
+           Table Info¸¦ ³Ñ±æ ÇÊ¿ä°¡ ¾ø´Ù. */
+        /* Undo ½Ã¿¡´Â Null Row¸¦ ÀÌ¹Ì FreeÇß±â ¶§¹®¿¡ ´Ù½Ã ¸¸µé¾î
+           ÁÖ¾î¾ß ÇÑ´Ù. */
         IDE_ASSERT( aSrcColumnList == aBothColumnList );
 
         IDE_TEST( readNullRowAndSet( sTrans,
@@ -483,8 +477,8 @@ IDE_RC smiTableBackup::restore(void                  * aTrans,
         IDE_TEST( sTrans->getTableInfo( sDstTableHeader->mSelfOID, &sTableInfo )
                   != IDE_SUCCESS );
 
-        /* smcTable::createTableì—ì„œ Target Tableìƒì„±ì‹œ
-           Null Rowë¥¼ ìƒì„±í–ˆë‹¤. ë”°ë¼ì„œ Skipí•œë‹¤. */
+        /* smcTable::createTable¿¡¼­ Target Table»ı¼º½Ã
+           Null Row¸¦ »ı¼ºÇß´Ù. µû¶ó¼­ SkipÇÑ´Ù. */
         IDE_TEST( skipNullRow( aSrcColumnList )
                   != IDE_SUCCESS );
     }
@@ -530,7 +524,7 @@ IDE_RC smiTableBackup::restore(void                  * aTrans,
                                             sAddOIDFlag )
                   != IDE_SUCCESS );
 
-        /* LOB Column ì‚½ì… */
+        /* LOB Column »ğÀÔ */
         IDE_TEST( insertLobRow( sTrans,
                                 sDstTableHeader,
                                 sArrLobColumnInfo,
@@ -553,7 +547,7 @@ IDE_RC smiTableBackup::restore(void                  * aTrans,
         sCheckCount++;
 
 
-        //BUG-25505 Rollbackì‹œ Session Evnetì— ì˜í•´ Rollbackì´ ì¤‘ë‹¨ë˜ë©´ ì•ˆë¨
+        //BUG-25505 Rollback½Ã Session Evnet¿¡ ÀÇÇØ RollbackÀÌ Áß´ÜµÇ¸é ¾ÈµÊ
         if( ( aIsUndo == ID_FALSE ) && sCheckCount == 100 )
         {
             IDE_TEST( iduCheckSessionEvent( sTrans->mStatistics )
@@ -587,33 +581,33 @@ IDE_RC smiTableBackup::restore(void                  * aTrans,
 
     if( aIsUndo == ID_TRUE )
     {
-        /* BUG-18021: Record Countê°€ 0ì´ ì•„ë‹Œ Tableì´ Alter Table Add Columnì„ í•˜ë‹¤
-         * ê°€ ì‹¤íŒ¨í•˜ê²Œ ë˜ë©´ Record Countê°€ 0ì´ ë©ë‹ˆë‹¤.
+        /* BUG-18021: Record Count°¡ 0ÀÌ ¾Æ´Ñ TableÀÌ Alter Table Add ColumnÀ» ÇÏ´Ù
+         * °¡ ½ÇÆĞÇÏ°Ô µÇ¸é Record Count°¡ 0ÀÌ µË´Ï´Ù.
          *
-         * Rollbackì‹œì— Alter Table Add Columnê³¼ ê°™ì€ ê²½ìš° Tableì˜ Record ê°¯ìˆ˜ê°€
-         * 0ê°œë¡œ ë˜ì–´ ìˆë‹¤. ì™œëƒí•˜ë©´ Drop Tableì„ ìˆ˜í–‰í–ˆê¸° ë•Œë¬¸ì´ë‹¤. ê·¸ë¦¬ê³  ìœ„
-         * Insert Versionì‹œ Recordì˜ ê°¯ìˆ˜ëŠ” ì˜¬ë¼ê°€ì§€ ì•ŠëŠ”ë‹¤. ë•Œë¬¸ì— ì´ í•¨ìˆ˜ê°€
-         * Undoì‹œì— í˜¸ì¶œì´ ë˜ì—ˆë‹¤ë©´ í…Œì´ë¸”ì˜ ë ˆì½”ë“œ ê°¯ìˆ˜ë¥¼ ë³´ì •í•´ì•¼ í•œë‹¤. */
+         * Rollback½Ã¿¡ Alter Table Add Column°ú °°Àº °æ¿ì TableÀÇ Record °¹¼ö°¡
+         * 0°³·Î µÇ¾î ÀÖ´Ù. ¿Ö³ÄÇÏ¸é Drop TableÀ» ¼öÇàÇß±â ¶§¹®ÀÌ´Ù. ±×¸®°í À§
+         * Insert Version½Ã RecordÀÇ °¹¼ö´Â ¿Ã¶ó°¡Áö ¾Ê´Â´Ù. ¶§¹®¿¡ ÀÌ ÇÔ¼ö°¡
+         * Undo½Ã¿¡ È£ÃâÀÌ µÇ¾ú´Ù¸é Å×ÀÌºíÀÇ ·¹ÄÚµå °¹¼ö¸¦ º¸Á¤ÇØ¾ß ÇÑ´Ù. */
         IDE_TEST( smcTable::setRecordCount( sDstTableHeader,
                                             sRowCount )
                   != IDE_SUCCESS );
     }
 
-    /* BUG-16841: [AT-F5-2]  ART sequential testì¤‘ ART /Server/mm3/
+    /* BUG-16841: [AT-F5-2]  ART sequential testÁß ART /Server/mm3/
      * Statement/Rebuild/PrepareRebuild/TruncateTable/
-     * truncateTable.sqlì—ì„œ crash
-     * restart recoveryì‹œ undoì‹œì— refineì‹œì— ë¹Œë“œë˜ëŠ” temporal indexí—¤ë”ë¥¼
-     * ì ‘ê·¼í•˜ëŠ” ê²½ìš°ê°€ ë°œìƒí•˜ì—¬ restartì•ˆë˜ì—ˆìŒ. restartì‹œì—
-     * ì´ëŸ° ì •ë³´ì— ì ‘ê·¼í•˜ëŠ” ê²ƒì„ ë°©ì§€í•´ì•¼ í•œë‹¤.*/
+     * truncateTable.sql¿¡¼­ crash
+     * restart recovery½Ã undo½Ã¿¡ refine½Ã¿¡ ºôµåµÇ´Â temporal indexÇì´õ¸¦
+     * Á¢±ÙÇÏ´Â °æ¿ì°¡ ¹ß»ıÇÏ¿© restart¾ÈµÇ¾úÀ½. restart½Ã¿¡
+     * ÀÌ·± Á¤º¸¿¡ Á¢±ÙÇÏ´Â °ÍÀ» ¹æÁöÇØ¾ß ÇÑ´Ù.*/
     if( smrRecoveryMgr::isRestart() == ID_FALSE )
     {
         if( smcTable::getIndexCount( sDstTableHeader ) != 0 )
         {
-            // Indexë¥¼ ì‚­ì œí•œë‹¤.
+            // Index¸¦ »èÁ¦ÇÑ´Ù.
             IDE_TEST( smnManager::dropIndexes( sDstTableHeader )
                       != IDE_SUCCESS );
 
-            // Restoreëœ Tableì— ëŒ€í•´ì„œ Indexë¥¼ ì¬êµ¬ì„±í•œë‹¤.
+            // RestoreµÈ Table¿¡ ´ëÇØ¼­ Index¸¦ Àç±¸¼ºÇÑ´Ù.
             // PROJ-1629
             IDE_TEST( smnManager::createIndexes( 
                         NULL,
@@ -655,10 +649,10 @@ IDE_RC smiTableBackup::restore(void                  * aTrans,
 }
 
 /***********************************************************************
- * Description : BackupFileë¡œ ë¶€í„° ë°ì´íƒ€ë¥¼ ì½ì–´ì„œ Value Listë¥¼ êµ¬ì„±í•œë‹¤.
+ * Description : BackupFile·Î ºÎÅÍ µ¥ÀÌÅ¸¸¦ ÀĞ¾î¼­ Value List¸¦ ±¸¼ºÇÑ´Ù.
  *
- * aSrcColumnList   - [IN] Source Tableì˜ Column List
- * aDstColumnList   - [IN] Target Tableì˜ Column List
+ * aSrcColumnList   - [IN] Source TableÀÇ Column List
+ * aDstColumnList   - [IN] Target TableÀÇ Column List
  * aValue           - [IN] Value List
  * aCallBack        - [IN] Type Conversion CallBack
  ***********************************************************************/
@@ -692,8 +686,8 @@ IDE_RC smiTableBackup::readRowFromBackupFile(
             if ( aCallBack != NULL )
             {
                 // PROJ-1877
-                // src columnê³¼ dest columnì˜ schemaê°€ ë‹¬ë¦¬ì§ˆ ìˆ˜ ìˆìœ¼ë¯€ë¡œ
-                // ë³€í™˜ì´ í•„ìš”í•˜ë‹¤.
+                // src column°ú dest columnÀÇ schema°¡ ´Ş¸®Áú ¼ö ÀÖÀ¸¹Ç·Î
+                // º¯È¯ÀÌ ÇÊ¿äÇÏ´Ù.
                 IDE_TEST( aCallBack->convertValue( NULL, /* aStatistics */
                                                    sColumnInfo->mSrcColumn,
                                                    sColumnInfo->mDestColumn,
@@ -719,13 +713,13 @@ IDE_RC smiTableBackup::readRowFromBackupFile(
 }
 
 /***********************************************************************
- * Description : Backup fileë¡œ ë¶€í„° aColumnì´ ì§€ì •í•˜ëŠ” Columnì„ ì½ì–´ì„œ
- *               aValueì— ì €ì¥í•œë‹¤.
+ * Description : Backup file·Î ºÎÅÍ aColumnÀÌ ÁöÁ¤ÇÏ´Â ColumnÀ» ÀĞ¾î¼­
+ *               aValue¿¡ ÀúÀåÇÑ´Ù.
  *
  * aColumn        - [IN] Column Pointer
  * aValue         - [IN] Value Pointer
- * aColumnOffset  - [INOUT] 1. IN: mRestoreBufferì— ì´ë²ˆ Columnì´ ì €ì¥ë  ìœ„ì¹˜
- *                          2. OUT: mRestoreBufferì— ë‹¤ìŒ Columnì´ ì €ì •ë  ìœ„ì¹˜
+ * aColumnOffset  - [INOUT] 1. IN: mRestoreBuffer¿¡ ÀÌ¹ø ColumnÀÌ ÀúÀåµÉ À§Ä¡
+ *                          2. OUT: mRestoreBuffer¿¡ ´ÙÀ½ ColumnÀÌ ÀúÁ¤µÉ À§Ä¡
  ***********************************************************************/
 IDE_RC smiTableBackup::readColumnFromBackupFile(const smiColumn *aColumn,
                                                 smiValue        *aValue,
@@ -743,8 +737,8 @@ IDE_RC smiTableBackup::readColumnFromBackupFile(const smiColumn *aColumn,
         switch( sColumnType )
         {
             case SMI_COLUMN_TYPE_LOB:
-                /* LOB Cursorë¡œ ë³„ë„ë¡œ ì €ì¥í•˜ê¸° ë•Œë¬¸ì— Insertì‹œ
-                   Empty LOBì„ ë„£ëŠ”ë‹¤.*/
+                /* LOB Cursor·Î º°µµ·Î ÀúÀåÇÏ±â ¶§¹®¿¡ Insert½Ã
+                   Empty LOBÀ» ³Ö´Â´Ù.*/
                 aValue->length = 0;
                 aValue->value = NULL;
 
@@ -765,7 +759,7 @@ IDE_RC smiTableBackup::readColumnFromBackupFile(const smiColumn *aColumn,
                 else
                 {
                     //BUG-25640
-                    //Variable ë˜ëŠ” Lob ì¹¼ëŸ¼ë§Œ ì¡´ì¬í•˜ë©° ê°’ì´ Nullì¼ ê²½ìš°, Rowì˜ Valueë§Œ ì €ì¥í•˜ëŠ” mRestoreBuffer ë˜í•œ Nullì¼ ìˆ˜ ìˆë‹¤.
+                    //Variable ¶Ç´Â Lob Ä®·³¸¸ Á¸ÀçÇÏ¸ç °ªÀÌ NullÀÏ °æ¿ì, RowÀÇ Value¸¸ ÀúÀåÇÏ´Â mRestoreBuffer ¶ÇÇÑ NullÀÏ ¼ö ÀÖ´Ù.
                     IDE_DASSERT( mRestoreBuffer != NULL );
 
                     IDE_TEST(mFile.read(mOffset,
@@ -779,7 +773,7 @@ IDE_RC smiTableBackup::readColumnFromBackupFile(const smiColumn *aColumn,
 
             case SMI_COLUMN_TYPE_FIXED:
                 //BUG-25640
-                //Variable ë˜ëŠ” Lob ì¹¼ëŸ¼ë§Œ ì¡´ì¬í•˜ë©° ê°’ì´ Nullì¼ ê²½ìš°, Rowì˜ Valueë§Œ ì €ì¥í•˜ëŠ” mRestoreBuffer ë˜í•œ Nullì¼ ìˆ˜ ìˆë‹¤.
+                //Variable ¶Ç´Â Lob Ä®·³¸¸ Á¸ÀçÇÏ¸ç °ªÀÌ NullÀÏ °æ¿ì, RowÀÇ Value¸¸ ÀúÀåÇÏ´Â mRestoreBuffer ¶ÇÇÑ NullÀÏ ¼ö ÀÖ´Ù.
                 IDE_DASSERT( mRestoreBuffer != NULL );
 
                 aValue->length = aColumn->size;
@@ -814,11 +808,11 @@ IDE_RC smiTableBackup::readColumnFromBackupFile(const smiColumn *aColumn,
     }
 
     /*BUG-25121
-     *Restoreì‹œ ë°±ì—…íŒŒì¼ë¡œë¶€í„° Rowë¥¼ ì½ìŠµë‹ˆë‹¤. ì´ë•Œ ì¹¼ëŸ¼ë³„ë¡œ í•˜ë‚˜ì”© ì½ìŠµë‹ˆë‹¤.
-     *ê° ì¹¼ëŸ¼ì€ í–¥í›„ QPì—ê²Œ ì „ë‹¬ë  ê°€ëŠ¥ì„±ì´ ìˆê¸° ë•Œë¬¸ì— Alignì— ë§ì§€ ì•Šìœ¼ë©´ Sigbus errorê°€ ë‚©ë‹ˆë‹¤.
+     *Restore½Ã ¹é¾÷ÆÄÀÏ·ÎºÎÅÍ Row¸¦ ÀĞ½À´Ï´Ù. ÀÌ¶§ Ä®·³º°·Î ÇÏ³ª¾¿ ÀĞ½À´Ï´Ù.
+     *°¢ Ä®·³Àº ÇâÈÄ QP¿¡°Ô Àü´ŞµÉ °¡´É¼ºÀÌ ÀÖ±â ¶§¹®¿¡ Align¿¡ ¸ÂÁö ¾ÊÀ¸¸é Sigbus error°¡ ³³´Ï´Ù.
      *
-     *ë”°ë¼ì„œ ê° ì¹¼ëŸ¼ë³„ë¡œ 8byte Alignì„ ë§ì¶°ì¤ë‹ˆë‹¤. ì–´ì°¨í”¼ ì½ì–´ë“œë¦° í•˜ë‚˜ì˜ Rowê°€ ì ì‹œ ì €ì¥ë  ê³µê°„ì´ê¸° ë•Œë¬¸ì—
-     *ë„‰ë„‰í•˜ê²Œ 8Byte alignì„ ë§ì¶°ë„ ë‚­ë¹„ê°€ ì•„ë‹™ë‹ˆë‹¤. */
+     *µû¶ó¼­ °¢ Ä®·³º°·Î 8byte AlignÀ» ¸ÂÃçÁİ´Ï´Ù. ¾îÂ÷ÇÇ ÀĞ¾îµå¸° ÇÏ³ªÀÇ Row°¡ Àá½Ã ÀúÀåµÉ °ø°£ÀÌ±â ¶§¹®¿¡
+     *³Ë³ËÇÏ°Ô 8Byte alignÀ» ¸ÂÃçµµ ³¶ºñ°¡ ¾Æ´Õ´Ï´Ù. */
     *aColumnOffset += idlOS::align8( aValue->length );
 
     IDE_ASSERT( *aColumnOffset <= mRestoreBufferSize );
@@ -831,7 +825,7 @@ IDE_RC smiTableBackup::readColumnFromBackupFile(const smiColumn *aColumn,
 }
 
 /***********************************************************************
- * Description : Backup Fileì—ì„œ aColumnì´ ê°€ë¦¬í‚¤ëŠ” ë°ì´íƒ€ëŠ” Skipí•œë‹¤.
+ * Description : Backup File¿¡¼­ aColumnÀÌ °¡¸®Å°´Â µ¥ÀÌÅ¸´Â SkipÇÑ´Ù.
  *
  * aColumn - [IN] Column Pointer
  ***********************************************************************/
@@ -884,7 +878,7 @@ IDE_RC smiTableBackup::skipReadColumn(const smiColumn *aColumn)
 }
 
 /***********************************************************************
- * Description : Backup Fileì—ì„œ aColumnì´ ê°€ë¦¬í‚¤ëŠ” ë°ì´íƒ€ëŠ” Skipí•œë‹¤.
+ * Description : Backup File¿¡¼­ aColumnÀÌ °¡¸®Å°´Â µ¥ÀÌÅ¸´Â SkipÇÑ´Ù.
  *
  * aColumn - [IN] Column Pointer
  ***********************************************************************/
@@ -915,11 +909,11 @@ IDE_RC smiTableBackup::skipReadLobColumn(const smiColumn *aColumn)
 }
 
 /***********************************************************************
- * Description : aRowPtrì— ìˆëŠ” LOB Columnì„ aCursorê°€ ê°€ë¦¬í‚¤ëŠ”
- *               Tableì— ì‚½ì…í•œë‹¤.
+ * Description : aRowPtr¿¡ ÀÖ´Â LOB ColumnÀ» aCursor°¡ °¡¸®Å°´Â
+ *               Table¿¡ »ğÀÔÇÑ´Ù.
  *
- * aRowPtr           - Insertí•  Row Pointer.
- * aAddOIDFlag       - OID LISTì— ì¶”ê°€í• ì§€ ì—¬ë¶€
+ * aRowPtr           - InsertÇÒ Row Pointer.
+ * aAddOIDFlag       - OID LIST¿¡ Ãß°¡ÇÒÁö ¿©ºÎ
  ***********************************************************************/
 IDE_RC smiTableBackup::insertLobRow(
                             void                          * aTrans,
@@ -968,9 +962,9 @@ IDE_RC smiTableBackup::insertLobRow(
                 SM_VCDESC_NULL_LOB_TRUE )
             {
                 /* BUG-25640
-                 * Variable ë˜ëŠ” Lob ì¹¼ëŸ¼ë§Œ ì¡´ì¬í•˜ë©° ê°’ì´
-                 * Nullì¼ ê²½ìš°, Rowì˜ Valueë§Œ ì €ì¥í•˜ëŠ”
-                 * mRestoreBuffer ë˜í•œ Nullì¼ ìˆ˜ ìˆë‹¤.
+                 * Variable ¶Ç´Â Lob Ä®·³¸¸ Á¸ÀçÇÏ¸ç °ªÀÌ
+                 * NullÀÏ °æ¿ì, RowÀÇ Value¸¸ ÀúÀåÇÏ´Â
+                 * mRestoreBuffer ¶ÇÇÑ NullÀÏ ¼ö ÀÖ´Ù.
                  */
                 IDE_DASSERT( mRestoreBuffer != NULL );
                 
@@ -1039,8 +1033,8 @@ IDE_RC smiTableBackup::insertLobRow(
 }
 
 /***********************************************************************
- * Description : BackupFileì— File Headerë¥¼ mOffsetì´ ê°€ë¦¬í‚¤ëŠ” ìœ„ì¹˜ì—
- *               Writeí•œë‹¤.
+ * Description : BackupFile¿¡ File Header¸¦ mOffsetÀÌ °¡¸®Å°´Â À§Ä¡¿¡
+ *               WriteÇÑ´Ù.
  *
  ***********************************************************************/
 IDE_RC smiTableBackup::appendBackupFileHeader()
@@ -1049,15 +1043,15 @@ IDE_RC smiTableBackup::appendBackupFileHeader()
     smcBackupFileHeader    sFileHeader;
 
     /* BUG-16233: [Valgrind] Syscall param pwrite64(buf) points to
-       uninitialised byte(s) [smcTableBackupFile.cpp:142]: smcBackupFileHeaderì—
-       ëª¨ë“  Memberê°€ ì´ˆê¸°í™”ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤. */
+       uninitialised byte(s) [smcTableBackupFile.cpp:142]: smcBackupFileHeader¿¡
+       ¸ğµç Member°¡ ÃÊ±âÈ­µÇÁö ¾Ê½À´Ï´Ù. */
     idlOS::memset(&sFileHeader, 0, ID_SIZEOF(smcBackupFileHeader));
 
     sMemBase = smmDatabase::getDicMemBase();
 
     /*
-        ì£¼ì˜. Tablespaceë§ˆë‹¤ ë‹¬ë¼ì§ˆ ìˆ˜ ìˆëŠ” í•„ë“œë¥¼
-        ì´ í•¨ìˆ˜ì—ì„œ ì‚¬ìš©í•´ì„œëŠ” ì•ˆëœë‹¤.
+        ÁÖÀÇ. Tablespace¸¶´Ù ´Ş¶óÁú ¼ö ÀÖ´Â ÇÊµå¸¦
+        ÀÌ ÇÔ¼ö¿¡¼­ »ç¿ëÇØ¼­´Â ¾ÈµÈ´Ù.
      */
 
     // fix BUG-10824
@@ -1107,8 +1101,8 @@ IDE_RC smiTableBackup::appendBackupFileHeader()
 }
 
 /***********************************************************************
- * Description : BackupFileì— File Tailì„ mOffsetì´ ê°€ë¦¬í‚¤ëŠ” ìœ„ì¹˜ì—
- *               Writeí•œë‹¤.
+ * Description : BackupFile¿¡ File TailÀ» mOffsetÀÌ °¡¸®Å°´Â À§Ä¡¿¡
+ *               WriteÇÑ´Ù.
  *
  ***********************************************************************/
 IDE_RC smiTableBackup::appendBackupFileTail(smOID aTableOID,
@@ -1118,8 +1112,8 @@ IDE_RC smiTableBackup::appendBackupFileTail(smOID aTableOID,
     smcBackupFileTail sFileTail;
 
     /* BUG-16233: [Valgrind] Syscall param pwrite64(buf) points to
-       uninitialised byte(s) [smcTableBackupFile.cpp:142]: smcBackupFileTailì—
-       ëª¨ë“  Memberê°€ ì´ˆê¸°í™”ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤. */
+       uninitialised byte(s) [smcTableBackupFile.cpp:142]: smcBackupFileTail¿¡
+       ¸ğµç Member°¡ ÃÊ±âÈ­µÇÁö ¾Ê½À´Ï´Ù. */
     idlOS::memset(&sFileTail, 0, ID_SIZEOF(smcBackupFileTail));
 
     idlOS::memcpy(&(sFileTail.mTableOID), &aTableOID, ID_SIZEOF(smOID));
@@ -1137,15 +1131,15 @@ IDE_RC smiTableBackup::appendBackupFileTail(smOID aTableOID,
 }
 
 /***********************************************************************
- * Description : BackupFileì— mOffsetì´ ê°€ë¦¬í‚¤ëŠ” ìœ„ì¹˜ì— aRowPtrë¥¼ Writeí•œë‹¤.
+ * Description : BackupFile¿¡ mOffsetÀÌ °¡¸®Å°´Â À§Ä¡¿¡ aRowPtr¸¦ WriteÇÑ´Ù.
  *
  *     * Row Format
  *       Fixed Column: Data
  *       VAR, LOB    : Length(UInt) | Data
  *
- * aTableCursor - [IN]: Backupí•  tableì— ëŒ€í•´ openëœ table cursor
- * aRowPtr      - [IN]: Writeí•  row pointer
- * aRowSize     - [OUT]: Fileì— Writeí•œ í¬ê¸°
+ * aTableCursor - [IN]: BackupÇÒ table¿¡ ´ëÇØ openµÈ table cursor
+ * aRowPtr      - [IN]: WriteÇÒ row pointer
+ * aRowSize     - [OUT]: File¿¡ WriteÇÑ Å©±â
  ***********************************************************************/
 IDE_RC smiTableBackup::appendRow(smiTableCursor *aTableCursor,
                                  smiColumn     **aArrLobColumn,
@@ -1191,13 +1185,13 @@ IDE_RC smiTableBackup::appendRow(smiTableCursor *aTableCursor,
                 case SMI_COLUMN_TYPE_VARIABLE:
                 case SMI_COLUMN_TYPE_VARIABLE_LARGE:
 
-                    /* BUG-43284 Variable Columnì˜ ê²½ìš°
-                     * Column ë“¤ì˜ align ê°’ì„ ë§ì¶”ê¸°ìœ„í•´
-                     * ê° Column ì‚¬ì´ì— Padding ê°’ì´ ë“¤ì–´ ìˆì„ìˆ˜ ìˆê¸° ë•Œë¬¸ì—
-                     * Offsetìœ¼ë¡œ ê³„ì‚°í•œ Sizeê°€ Columnì— ì €ì¥ê°€ëŠ¥í•œ
-                     * ìµœëŒ€ê°’ë³´ë‹¤ í´ìˆ˜ ìˆë‹¤.
-                     * í•´ë‹¹ ê²½ìš° Sizeê°€ í° ë§Œí¼ì€ í•­ìƒ Paddingì´ê¸° ë•Œë¬¸ì—
-                     * ì œì™¸í•˜ê³  BackupFileì— ì €ì¥í•´ì¤€ë‹¤. */
+                    /* BUG-43284 Variable ColumnÀÇ °æ¿ì
+                     * Column µéÀÇ align °ªÀ» ¸ÂÃß±âÀ§ÇØ
+                     * °¢ Column »çÀÌ¿¡ Padding °ªÀÌ µé¾î ÀÖÀ»¼ö ÀÖ±â ¶§¹®¿¡
+                     * OffsetÀ¸·Î °è»êÇÑ Size°¡ Column¿¡ ÀúÀå°¡´ÉÇÑ
+                     * ÃÖ´ë°ªº¸´Ù Å¬¼ö ÀÖ´Ù.
+                     * ÇØ´ç °æ¿ì Size°¡ Å« ¸¸Å­Àº Ç×»ó PaddingÀÌ±â ¶§¹®¿¡
+                     * Á¦¿ÜÇÏ°í BackupFile¿¡ ÀúÀåÇØÁØ´Ù. */
                     if ( sColumnLen > sCurColumn->size )
                     {
                         sColumnLen = sCurColumn->size;
@@ -1208,11 +1202,11 @@ IDE_RC smiTableBackup::appendRow(smiTableCursor *aTableCursor,
                     }
 
                     /* BUG-25121
-                     * sRowSizeëŠ” ìˆœìˆ˜í•˜ê²Œ Row Valueì˜ ìµœëŒ€ í¬ê¸°ë¥¼ ì•Œì•„ë‚´ê¸° ìœ„í•´
-                     * ì‚¬ìš©ë©ë‹ˆë‹¤. Rowì˜ ìµœëŒ€ í¬ê¸°ë¥¼ íŒŒì¼ì— ì €ì¥í•˜ê³ ,
-                     * ì´í›„ Restoreí• ë•Œ Row ì„ì‹œ ë²„í¼ì˜ í¬ê¸°ë¡œ ì‚¬ìš©ë©ë‹ˆë‹¤. */
+                     * sRowSize´Â ¼ø¼öÇÏ°Ô Row ValueÀÇ ÃÖ´ë Å©±â¸¦ ¾Ë¾Æ³»±â À§ÇØ
+                     * »ç¿ëµË´Ï´Ù. RowÀÇ ÃÖ´ë Å©±â¸¦ ÆÄÀÏ¿¡ ÀúÀåÇÏ°í,
+                     * ÀÌÈÄ RestoreÇÒ¶§ Row ÀÓ½Ã ¹öÆÛÀÇ Å©±â·Î »ç¿ëµË´Ï´Ù. */
                     /* BUG-25711
-                     * lobì„ ì œì™¸í•œ ì»¬ëŸ¼ì˜ ê¸¸ì´ë§Œ ë”í•´ì•¼ í•œë‹¤. */
+                     * lobÀ» Á¦¿ÜÇÑ ÄÃ·³ÀÇ ±æÀÌ¸¸ ´õÇØ¾ß ÇÑ´Ù. */
                     sRowSize += idlOS::align8( sColumnLen );
 
                     /* Column Len : Data */
@@ -1238,11 +1232,11 @@ IDE_RC smiTableBackup::appendRow(smiTableCursor *aTableCursor,
                                                            (SChar*)sVarColumnData,
                                                            ID_FALSE );
 
-                        /* BUG-43284 getVarRowì—ì„œ ë‹¤ì‹œ Offsetì„ ì´ìš©í•œ Sizeë¥¼ ê°€ì ¸ì˜¤ë¯€ë¡œ
-                         * RemainReadSizeë³´ë‹¤ ë” í° ê°’ì„ ì½ì–´ì˜¬ ìˆ˜ ìˆë‹¤.
-                         * í•˜ì§€ë§Œ ì‹¤ì œ ì €ì¥ë˜ì•¼ í•˜ëŠ” sizeì˜ ì´ í¬ê¸°ëŠ”
-                         * ColumnLenì— ì €ì¥ëœ ê°’ê³¼ ê°™ì•„ì•¼ í•œë‹¤.
-                         * ColumnLenë³´ë‹¤ ë” ë§ì´ ì½ì€ ê°’ì€ Paddingì´ë¯€ë¡œ ë³´ì •í•œë‹¤.*/
+                        /* BUG-43284 getVarRow¿¡¼­ ´Ù½Ã OffsetÀ» ÀÌ¿ëÇÑ Size¸¦ °¡Á®¿À¹Ç·Î
+                         * RemainReadSizeº¸´Ù ´õ Å« °ªÀ» ÀĞ¾î¿Ã ¼ö ÀÖ´Ù.
+                         * ÇÏÁö¸¸ ½ÇÁ¦ ÀúÀåµÇ¾ß ÇÏ´Â sizeÀÇ ÃÑ Å©±â´Â
+                         * ColumnLen¿¡ ÀúÀåµÈ °ª°ú °°¾Æ¾ß ÇÑ´Ù.
+                         * ColumnLenº¸´Ù ´õ ¸¹ÀÌ ÀĞÀº °ªÀº PaddingÀÌ¹Ç·Î º¸Á¤ÇÑ´Ù.*/
                         if ( sReadSize > sRemainedReadSize )
                         {
                             sReadSize = sRemainedReadSize;
@@ -1265,11 +1259,11 @@ IDE_RC smiTableBackup::appendRow(smiTableCursor *aTableCursor,
 
                 case SMI_COLUMN_TYPE_FIXED:
                     /* BUG-25121
-                     * sRowSizeëŠ” ìˆœìˆ˜í•˜ê²Œ Row Valueì˜ ìµœëŒ€ í¬ê¸°ë¥¼ ì•Œì•„ë‚´ê¸° ìœ„í•´
-                     * ì‚¬ìš©ë©ë‹ˆë‹¤. Rowì˜ ìµœëŒ€ í¬ê¸°ë¥¼ íŒŒì¼ì— ì €ì¥í•˜ê³ ,
-                     * ì´í›„ Restoreí• ë•Œ Row ì„ì‹œ ë²„í¼ì˜ í¬ê¸°ë¡œ ì‚¬ìš©ë©ë‹ˆë‹¤. */
+                     * sRowSize´Â ¼ø¼öÇÏ°Ô Row ValueÀÇ ÃÖ´ë Å©±â¸¦ ¾Ë¾Æ³»±â À§ÇØ
+                     * »ç¿ëµË´Ï´Ù. RowÀÇ ÃÖ´ë Å©±â¸¦ ÆÄÀÏ¿¡ ÀúÀåÇÏ°í,
+                     * ÀÌÈÄ RestoreÇÒ¶§ Row ÀÓ½Ã ¹öÆÛÀÇ Å©±â·Î »ç¿ëµË´Ï´Ù. */
                     /* BUG-25711
-                     * lobì„ ì œì™¸í•œ ì»¬ëŸ¼ì˜ ê¸¸ì´ë§Œ ë”í•´ì•¼ í•œë‹¤. */
+                     * lobÀ» Á¦¿ÜÇÑ ÄÃ·³ÀÇ ±æÀÌ¸¸ ´õÇØ¾ß ÇÑ´Ù. */
                     sRowSize += idlOS::align8( sColumnLen );
 
                     /* Data */
@@ -1295,11 +1289,11 @@ IDE_RC smiTableBackup::appendRow(smiTableCursor *aTableCursor,
     if (aLobColumnCnt > 0)
     {
         /* BUG-25711
-         * lobì»¬ëŸ¼ì„ backupí•˜ê¸° ìœ„í•´ ë²„í¼ê°€ í•„ìš”í•˜ë‹¤.
-         * ë©”ëª¨ë¦¬ë¥¼ ìµœëŒ€í•œ íš¨ìœ¨ì ìœ¼ë¡œ í• ë‹¹í•˜ê¸° ìœ„í•´
-         * ëª¨ë“  lob columnë“¤ì˜ lengthë¥¼ ì–»ì–´ ê°€ì¥ í° ì»¬ëŸ¼ì— ë§ê²Œ í• ë‹¹í•œë‹¤.
-         * ë‹¨ lob columnì¤‘ SMI_MAX_LOB_BACKUP_BUFFER_SIZEë³´ë‹¤ í°ê²Œ ìˆìœ¼ë©´
-         * ë²„í¼ë¥¼ SMI_MAX_LOB_BACKUP_BUFFER_SIZE ë§Œí¼ í• ë‹¹í•œë‹¤. */
+         * lobÄÃ·³À» backupÇÏ±â À§ÇØ ¹öÆÛ°¡ ÇÊ¿äÇÏ´Ù.
+         * ¸Ş¸ğ¸®¸¦ ÃÖ´ëÇÑ È¿À²ÀûÀ¸·Î ÇÒ´çÇÏ±â À§ÇØ
+         * ¸ğµç lob columnµéÀÇ length¸¦ ¾ò¾î °¡Àå Å« ÄÃ·³¿¡ ¸Â°Ô ÇÒ´çÇÑ´Ù.
+         * ´Ü lob columnÁß SMI_MAX_LOB_BACKUP_BUFFER_SIZEº¸´Ù Å«°Ô ÀÖÀ¸¸é
+         * ¹öÆÛ¸¦ SMI_MAX_LOB_BACKUP_BUFFER_SIZE ¸¸Å­ ÇÒ´çÇÑ´Ù. */
 
         sLobBackupBufferSize = 0;
         for(i = 0; i < aLobColumnCnt; i++)
@@ -1319,20 +1313,20 @@ IDE_RC smiTableBackup::appendRow(smiTableCursor *aTableCursor,
             }
         }
 
-        /* lob ì»¬ëŸ¼ì˜ ê¸¸ì´ê°€ ì•ì—ì„œ ê³„ì‚°í•œ lobì„ ì œì™¸í•œ rowê¸¸ì´ë³´ë‹¤ ê¸¸ë‹¤.
-         * ì´ëŸ° ê²½ìš° restoreí•  ë•Œ lob restoreì‹œ ì¶©ë¶„í•œ ê³µê°„ í™•ë³´ë¥¼ ìœ„í•´
-         * sRowSizeë¥¼ ì¬ì„¤ì •í•œë‹¤.
-         * í˜¹ì€ lobì„ ì œì™¸í•œ ì»¬ëŸ¼ì´ í•˜ë‚˜ë„ ì—†ìœ¼ë©´ sRowSizeëŠ” 0ì´ë  ê²ƒì¸ë°,
-         * ê·¸ëŸ¬ë©´ lob ì»¬ëŸ¼ì„ restoreí•  ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•˜ì§€ ëª»í•˜ê¸° ë•Œë¬¸ì—
-         * sRowSizeë¥¼ ì¬ì„¤ì •í•´ì¤˜ì•¼ í•œë‹¤. */
+        /* lob ÄÃ·³ÀÇ ±æÀÌ°¡ ¾Õ¿¡¼­ °è»êÇÑ lobÀ» Á¦¿ÜÇÑ row±æÀÌº¸´Ù ±æ´Ù.
+         * ÀÌ·± °æ¿ì restoreÇÒ ¶§ lob restore½Ã ÃæºĞÇÑ °ø°£ È®º¸¸¦ À§ÇØ
+         * sRowSize¸¦ Àç¼³Á¤ÇÑ´Ù.
+         * È¤Àº lobÀ» Á¦¿ÜÇÑ ÄÃ·³ÀÌ ÇÏ³ªµµ ¾øÀ¸¸é sRowSize´Â 0ÀÌµÉ °ÍÀÎµ¥,
+         * ±×·¯¸é lob ÄÃ·³À» restoreÇÒ ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÏÁö ¸øÇÏ±â ¶§¹®¿¡
+         * sRowSize¸¦ Àç¼³Á¤ÇØÁà¾ß ÇÑ´Ù. */
         if (sLobBackupBufferSize > sRowSize)
         {
             sRowSize = sLobBackupBufferSize;
         }
 
-        /* lob column lengthê°€ 0ì¼ ìˆ˜ ìˆë‹¤.
-         * ì´ ê²½ìš°ì—” ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•˜ì§€ ì•ŠëŠ”ë‹¤.
-         * appendLobColumn() í•¨ìˆ˜ë‚´ì—ì„œëŠ” ì´ì— ëŒ€í•´ ê³ ë ¤ê°€ ë˜ì–´ ìˆë‹¤. */
+        /* lob column length°¡ 0ÀÏ ¼ö ÀÖ´Ù.
+         * ÀÌ °æ¿ì¿£ ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÏÁö ¾Ê´Â´Ù.
+         * appendLobColumn() ÇÔ¼ö³»¿¡¼­´Â ÀÌ¿¡ ´ëÇØ °í·Á°¡ µÇ¾î ÀÖ´Ù. */
         if (sLobBackupBufferSize > 0)
         {
             /* smiTableBackup_appendRow_malloc_LobBuffer.tc */
@@ -1351,9 +1345,9 @@ IDE_RC smiTableBackup::appendRow(smiTableCursor *aTableCursor,
             sColumnLen    = smcRecord::getColumnLen(sCurColumn, aRowPtr);
             sLOBDesc      = smcRecord::getLOBDesc(sCurColumn, aRowPtr);
 
-            /* LOB Columnì˜ Lengthë¬´ì§€í•˜ê²Œ í´ìˆ˜ ìˆë‹¤. ë•Œë¬¸ì—
-               íŠ¹ì •í¬ê¸°ë‹¨ìœ„ë¡œ ì—¬ëŸ¬ë²ˆ ë°ì´íƒ€ë¥¼ ì½ì–´ì„œ ì²˜ë¦¬í•´ì•¼
-               í•œë‹¤.*/
+            /* LOB ColumnÀÇ Length¹«ÁöÇÏ°Ô Å¬¼ö ÀÖ´Ù. ¶§¹®¿¡
+               Æ¯Á¤Å©±â´ÜÀ§·Î ¿©·¯¹ø µ¥ÀÌÅ¸¸¦ ÀĞ¾î¼­ Ã³¸®ÇØ¾ß
+               ÇÑ´Ù.*/
             if((sCurColumn->flag & SMI_COLUMN_TYPE_MASK) == SMI_COLUMN_TYPE_LOB)
             {
                 IDE_TEST(appendLobColumn(NULL, /* idvSQL* */
@@ -1391,14 +1385,14 @@ IDE_RC smiTableBackup::appendRow(smiTableCursor *aTableCursor,
 }
 
 /***********************************************************************
- * Description : Backup fileì— aRowì—ì„œ aLobColumnì´ ê°€ë¦¬í‚¤ëŠ” ë°ì´íƒ€ë¥¼
- *               ê¸°ë¡í•œë‹¤.
+ * Description : Backup file¿¡ aRow¿¡¼­ aLobColumnÀÌ °¡¸®Å°´Â µ¥ÀÌÅ¸¸¦
+ *               ±â·ÏÇÑ´Ù.
  *      Format: Length(UInt) | Data
  *
  * aTableCursor - [IN] Table Cursor
- * aLobColumn   - [IN] LOB Columnì •ë³´
- * aLobLen      - [IN] LOB Columnê¸¸ì´
- * aRow         - [IN] LOB Columnì„ ê°€ì§€ëŠ” Row
+ * aLobColumn   - [IN] LOB ColumnÁ¤º¸
+ * aLobLen      - [IN] LOB Column±æÀÌ
+ * aRow         - [IN] LOB ColumnÀ» °¡Áö´Â Row
  ***********************************************************************/
 IDE_RC smiTableBackup::appendLobColumn(idvSQL*             aStatistics,
                                        smiTableCursor     *aTableCursor,
@@ -1455,7 +1449,7 @@ IDE_RC smiTableBackup::appendLobColumn(idvSQL*             aStatistics,
         aLobLen -= sPieceSize;
     }
 
-    IDE_TEST(smiLob::closeLobCursor( sLOBLocator )
+    IDE_TEST(smiLob::closeLobCursor( aStatistics, sLOBLocator )
              != IDE_SUCCESS);
 
     return IDE_SUCCESS;
@@ -1466,9 +1460,9 @@ IDE_RC smiTableBackup::appendLobColumn(idvSQL*             aStatistics,
 }
 
 /***********************************************************************
- * Description : aNeedSpaceê³µê°„ì´ ìƒê¸¸ë•Œê¹Œì§€ ê¸°ë‹¤ë¦°ë‹¤.
+ * Description : aNeedSpace°ø°£ÀÌ »ı±æ¶§±îÁö ±â´Ù¸°´Ù.
  *
- * aNeedSpace - [IN] í•„ìš”í•œ ë””ìŠ¤í¬ ê³µê°„(Byte)
+ * aNeedSpace - [IN] ÇÊ¿äÇÑ µğ½ºÅ© °ø°£(Byte)
  ***********************************************************************/
 IDE_RC smiTableBackup::waitForSpace(UInt aNeedSpace)
 {
@@ -1504,7 +1498,7 @@ IDE_RC smiTableBackup::waitForSpace(UInt aNeedSpace)
 }
 
 /***********************************************************************
- * Description : aTableOID ì— í•´ë‹¹í•˜ëŠ” ë°±ì—… íŒŒì¼ì´ ì˜¬ë°”ë¥¸ì§€ Checkí•œë‹¤.
+ * Description : aTableOID ¿¡ ÇØ´çÇÏ´Â ¹é¾÷ ÆÄÀÏÀÌ ¿Ã¹Ù¸¥Áö CheckÇÑ´Ù.
  *
  * aTableOID - [IN] Table OID
  * aFileTail - [IN] File Tail
@@ -1567,9 +1561,9 @@ IDE_RC smiTableBackup::checkBackupFileIsValid(smOID              aTableOID,
 }
 
 /***********************************************************************
- * Description : ë°±ì—… íŒŒì¼ì˜ Tailì„ ê°€ì ¸ì˜¨ë‹¤.
+ * Description : ¹é¾÷ ÆÄÀÏÀÇ TailÀ» °¡Á®¿Â´Ù.
  *
- * aBackupFileTail - [OUT] ë°±ì—…íŒŒì¼ Tail
+ * aBackupFileTail - [OUT] ¹é¾÷ÆÄÀÏ Tail
  ***********************************************************************/
 IDE_RC smiTableBackup::getBackupFileTail(smcBackupFileTail *aBackupFileTail)
 {
@@ -1589,9 +1583,9 @@ IDE_RC smiTableBackup::getBackupFileTail(smcBackupFileTail *aBackupFileTail)
 }
 
 /***********************************************************************
- * Description : ë°±ì—… íŒŒì¼ì—ì„œ Null Rowë¥¼ ì½ì–´ì„œ aTableHeaderê°€
- *               ê°€ë¦¬í‚¤ëŠ” í…Œì´ë¸”ì— ì‚½ì…í•˜ê³  NULL Rowë¡œ Settingí•œë‹¤.
- *               ì£¼ì˜ : UNDOì‹œì—ë§Œ ì‚¬ìš©ë˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ * Description : ¹é¾÷ ÆÄÀÏ¿¡¼­ Null Row¸¦ ÀĞ¾î¼­ aTableHeader°¡
+ *               °¡¸®Å°´Â Å×ÀÌºí¿¡ »ğÀÔÇÏ°í NULL Row·Î SettingÇÑ´Ù.
+ *               ÁÖÀÇ : UNDO½Ã¿¡¸¸ »ç¿ëµÇ´Â ÇÔ¼öÀÌ´Ù.
  *
  * aTrans       - [IN] Transaction Pointer
  * aTableInfo   - [IN] Table Info
@@ -1642,7 +1636,7 @@ IDE_RC smiTableBackup::readNullRowAndSet(
                                       (void**)&sInsertedRowPtr )
                 == IDE_SUCCESS );
 
-    /* LOB Column ì‚½ì… */
+    /* LOB Column »ğÀÔ */
     IDE_TEST(insertLobRow(aTrans,
                           sTableHeader,
                           aArrLobColumnInfo,
@@ -1669,9 +1663,9 @@ IDE_RC smiTableBackup::readNullRowAndSet(
 }
 
 /***********************************************************************
- * Description : Backup Fileì—ì„œ NULLê°’ì„ ì½ì§€ ì•Šê³  Skipí•˜ê²Œ í•œë‹¤.
+ * Description : Backup File¿¡¼­ NULL°ªÀ» ÀĞÁö ¾Ê°í SkipÇÏ°Ô ÇÑ´Ù.
  *
- * aColumnList - [IN] Tableì˜ Column List
+ * aColumnList - [IN] TableÀÇ Column List
  ***********************************************************************/
 IDE_RC smiTableBackup::skipNullRow(smiColumnList * aColumnList)
 {
@@ -1740,10 +1734,10 @@ IDE_RC smiTableBackup::skipNullRow(smiColumnList * aColumnList)
             mOffset += ID_SIZEOF(UInt);
 
             mOffset += sColLen;
-            /* Caution!!: LOB Columnì˜ Nullê°’ì€ Lengthê°€ 0ì´ë‹¤. í•˜ì§€ë§Œ ê·¸ê²ƒì€
-               MTê°€ ì •í•˜ëŠ” ê²ƒì´ë¯€ë¡œ ë‚˜ì¤‘ì— ë°”ë€”ìˆ˜ ìˆë‹¤. ì¼ë‹¨ì€
-               ì •í™•ì„± Checkë¥¼ ìœ„í•´ì„œ ASSERTë¥¼ ê±´ë‹¤. Nullê°’ì´
-               ë°”ë€Œë©´ ì´ë¶€ë¶„ì„ ìˆ˜ì •í•´ì•¼ í•œë‹¤.*/
+            /* Caution!!: LOB ColumnÀÇ Null°ªÀº Length°¡ 0ÀÌ´Ù. ÇÏÁö¸¸ ±×°ÍÀº
+               MT°¡ Á¤ÇÏ´Â °ÍÀÌ¹Ç·Î ³ªÁß¿¡ ¹Ù²ğ¼ö ÀÖ´Ù. ÀÏ´ÜÀº
+               Á¤È®¼º Check¸¦ À§ÇØ¼­ ASSERT¸¦ °Ç´Ù. Null°ªÀÌ
+               ¹Ù²î¸é ÀÌºÎºĞÀ» ¼öÁ¤ÇØ¾ß ÇÑ´Ù.*/
             IDE_ASSERT(sColLen == 0);
         }
 
@@ -1758,14 +1752,14 @@ IDE_RC smiTableBackup::skipNullRow(smiColumnList * aColumnList)
 }
 
 /***********************************************************************
- * Description : Column Listì— í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¥¼ ë°˜ë‚©í•œë‹¤.
+ * Description : Column List¿¡ ÇÒ´çµÈ ¸Ş¸ğ¸®¸¦ ¹İ³³ÇÑ´Ù.
  *
  * aSrcColumnList    - [IN] Source Table Column List
- * aBothColumnList   - [IN] Source Tableê³¼ Destination Tableì— ê³µí†µëœ Source Table Column List
- * aArrColumnInfo    - [OUT] ë°±ì—…íŒŒì¼ì—ì„œ ì½ì–´ì•¼ í•  Columnì •ë³´
- * aColumnCnt        - [OUT] ì»¬ëŸ¼ ê°¯ìˆ˜
- * aArrLobColumnInfo - [OUT] ë°±ì—…íŒŒì¼ì—ì„œ ì½ì–´ì•¼ í•  Lob Columnì •ë³´
- * aLobColumnCnt     - [OUT] Lob ì»¬ëŸ¼ ê°¯ìˆ˜
+ * aBothColumnList   - [IN] Source Table°ú Destination Table¿¡ °øÅëµÈ Source Table Column List
+ * aArrColumnInfo    - [OUT] ¹é¾÷ÆÄÀÏ¿¡¼­ ÀĞ¾î¾ß ÇÒ ColumnÁ¤º¸
+ * aColumnCnt        - [OUT] ÄÃ·³ °¹¼ö
+ * aArrLobColumnInfo - [OUT] ¹é¾÷ÆÄÀÏ¿¡¼­ ÀĞ¾î¾ß ÇÒ Lob ColumnÁ¤º¸
+ * aLobColumnCnt     - [OUT] Lob ÄÃ·³ °¹¼ö
  ***********************************************************************/
 IDE_RC smiTableBackup::makeColumnList4Res(const void               *   aDstTable,
                                           smiColumnList            *   aSrcColumnList,
@@ -1907,7 +1901,7 @@ IDE_RC smiTableBackup::makeColumnList4Res(const void               *   aDstTable
 }
 
 /***********************************************************************
- * Description : Column Listì— í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¥¼ ë°˜ë‚©í•œë‹¤.
+ * Description : Column List¿¡ ÇÒ´çµÈ ¸Ş¸ğ¸®¸¦ ¹İ³³ÇÑ´Ù.
  *
  * aArrColumn - [IN] Column List
  * aArrLobColumn - [IN] Lob Column List
@@ -1931,7 +1925,7 @@ IDE_RC smiTableBackup::destColumnList4Res( void    *aArrColumn,
 }
 
 /***********************************************************************
- * Description : Column Listë¥¼ File Headerë‹¤ìŒì— ê¸°ë¡í•œë‹¤.
+ * Description : Column List¸¦ File Header´ÙÀ½¿¡ ±â·ÏÇÑ´Ù.
  ***********************************************************************/
 IDE_RC smiTableBackup::appendTableColumnInfo()
 {
@@ -1958,7 +1952,7 @@ IDE_RC smiTableBackup::appendTableColumnInfo()
 }
 
 /***********************************************************************
- * Description : Restoreì‹œ ê¸°ë¡ëœ Column Listë¥¼ skipí•œë‹¤.
+ * Description : Restore½Ã ±â·ÏµÈ Column List¸¦ skipÇÑ´Ù.
  ***********************************************************************/
 IDE_RC smiTableBackup::skipColumnInfo()
 {
@@ -1978,9 +1972,9 @@ IDE_RC smiTableBackup::skipColumnInfo()
 }
 
 /***********************************************************************
- * Description : Filenameì— í•´ë‹¹í•˜ëŠ” íŒŒì¼ì„ Dumpí•œë‹¤.
+ * Description : Filename¿¡ ÇØ´çÇÏ´Â ÆÄÀÏÀ» DumpÇÑ´Ù.
  *
- * aFilename : TableBackupFileì„ Dumpí•œë‹¤.
+ * aFilename : TableBackupFileÀ» DumpÇÑ´Ù.
  ***********************************************************************/
 IDE_RC smiTableBackup::dump(SChar *aFilename)
 {
@@ -2100,7 +2094,7 @@ IDE_RC smiTableBackup::dump(SChar *aFilename)
 }
 
 
-// íŒŒì¼ì˜ í—¤ë”ë¥¼ ì½ê³ , ì•Œí‹°ë² ì´ìŠ¤ ë°±ì—…íŒŒì¼ì´ ë§ëŠ”ì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
+// ÆÄÀÏÀÇ Çì´õ¸¦ ÀĞ°í, ¾ËÆ¼º£ÀÌ½º ¹é¾÷ÆÄÀÏÀÌ ¸Â´ÂÁö¸¦ °Ë»çÇÑ´Ù.
 IDE_RC smiTableBackup::isBackupFile(SChar *aFilename, idBool *aCheck)
 {
     smmMemBase*            sMemBase;

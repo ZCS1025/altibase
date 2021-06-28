@@ -26,7 +26,7 @@ ACI_RC ulnSFID_84(ulnFnContext *aContext);
 struct ulnDataSourceConnAttr;
 
 /*
- * ì§ì ‘ connection attribute ë¥¼ ì„¸íŒ…í•˜ëŠ” í•¨ìˆ˜
+ * Á÷Á¢ connection attribute ¸¦ ¼¼ÆÃÇÏ´Â ÇÔ¼ö
  */
 ACI_RC ulnSetConnAttrById(ulnFnContext  *aFnContext,
                           ulnConnAttrID  aConnAttr,
@@ -63,7 +63,7 @@ ACP_INLINE ACI_RC ulnSetDSNByConnString( ulnFnContext     *aContext,
 
 
 /*
- * Connection Attribute ë¥¼ ì„¸íŒ…í•˜ê¸° ìœ„í•œ exported í•¨ìˆ˜
+ * Connection Attribute ¸¦ ¼¼ÆÃÇÏ±â À§ÇÑ exported ÇÔ¼ö
  */
 
 ACI_RC ulnSetConnAttrByProfileFunc(ulnFnContext  *aContext,
@@ -105,5 +105,10 @@ ACI_RC ulnCallbackDBPropertySetResult(cmiProtocolContext *aProtocolContext,
 ACI_RC ulnSetConnectAttrOff(ulnFnContext *aFnContext,
                             ulnDbc *aDbc,
                             ulnPropertyId aPropertyID);
+
+ACI_RC ulnSetConnAttrConnType(ulnFnContext *aFnContext, ulnConnType aConnType);
+
+ACI_RC ulnSetConnAttributeToDbc( ulnFnContext * aFnContext,
+                                 ulnStmt      * aStmt );
 
 #endif /* _O_ULN_SETCONNECTATTR_H_ */

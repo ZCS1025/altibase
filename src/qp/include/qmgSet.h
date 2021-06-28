@@ -19,11 +19,11 @@
  * $Id: qmgSet.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     SET Graphë¥¼ ìœ„í•œ ì •ì˜
+ *     SET Graph¸¦ À§ÇÑ Á¤ÀÇ
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -35,14 +35,14 @@
 #include <qmsParseTree.h>
 
 //---------------------------------------------------
-// Set Graphì˜ Define ìƒìˆ˜
+// Set GraphÀÇ Define »ó¼ö
 //---------------------------------------------------
 
 //---------------------------------------------------
-// ìƒìœ„ Graphê°€ qmgSetì¸ì§€ ì•„ë‹Œì§€ì— ëŒ€í•œ ì •ë³´
-// Plan Node ìƒì„± ì‹œ ì‚¬ìš©
-//    - ìƒìœ„ Graphê°€ qmgSetì´ë©´ PROJ Nodeë¥¼ ìƒì„±
-//    - ìƒìœ„ Graphê°€ qmgSetì´ ì•„ë‹ˆë©´ PROJ Nodeë¥¼ ìƒì„±í•˜ì§€ ì•ŠìŒ
+// »óÀ§ Graph°¡ qmgSetÀÎÁö ¾Æ´ÑÁö¿¡ ´ëÇÑ Á¤º¸
+// Plan Node »ı¼º ½Ã »ç¿ë
+//    - »óÀ§ Graph°¡ qmgSetÀÌ¸é PROJ Node¸¦ »ı¼º
+//    - »óÀ§ Graph°¡ qmgSetÀÌ ¾Æ´Ï¸é PROJ Node¸¦ »ı¼ºÇÏÁö ¾ÊÀ½
 //---------------------------------------------------
 
 // qmgSET.graph.flag
@@ -51,12 +51,12 @@
 #define QMG_SET_PARENT_TYPE_SET_TRUE    (0x10000000)
 
 //---------------------------------------------------
-// SET Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+// SET Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
 //---------------------------------------------------
 
 typedef struct qmgSET
 {
-    qmgGraph      graph;          // ê³µí†µ Graph ì •ë³´
+    qmgGraph      graph;          // °øÅë Graph Á¤º¸
 
     qmsSetOpType  setOp;
     UInt          hashBucketCnt;    
@@ -64,23 +64,23 @@ typedef struct qmgSET
 } qmgSET;
 
 //---------------------------------------------------
-// SET Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+// SET Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
 //---------------------------------------------------
 
 class qmgSet
 {
 public:
-    // Graph ì˜ ì´ˆê¸°í™”
+    // Graph ÀÇ ÃÊ±âÈ­
     static IDE_RC  init( qcStatement * aStatement,
                          qmsQuerySet * aQuerySet,
                          qmgGraph    * aLeftGraph,
                          qmgGraph    * aRightGraph, 
                          qmgGraph   ** aGraph );
 
-    // Graphì˜ ìµœì í™” ìˆ˜í–‰
+    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
     static IDE_RC  optimize( qcStatement * aStatement, qmgGraph * aGraph );
 
-    // Graphì˜ Plan Tree ìƒì„±
+    // GraphÀÇ Plan Tree »ı¼º
     static IDE_RC  makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph * aGraph );
 
     static IDE_RC  makeUnion( qcStatement * aStatement,
@@ -93,7 +93,7 @@ public:
     static IDE_RC  makeMinus( qcStatement * aStatement,
                               qmgSET      * aMyGraph );
 
-    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
+    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
     static IDE_RC  printGraph( qcStatement  * aStatement,
                                qmgGraph     * aGraph,
                                ULong          aDepth,
@@ -104,16 +104,16 @@ private:
                               qmgSET      * aMyGraph );
 
     //--------------------------------------------------
-    // ìµœì í™”ë¥¼ ìœ„í•œ í•¨ìˆ˜
+    // ÃÖÀûÈ­¸¦ À§ÇÑ ÇÔ¼ö
     //--------------------------------------------------
 
     // PROJ-1486 Multiple Bag Union
 
-    // Multiple Bag Union ìµœì í™” ì ìš©
+    // Multiple Bag Union ÃÖÀûÈ­ Àû¿ë
     static IDE_RC optMultiBagUnion( qcStatement * aStatement,
                                     qmgSET      * aSETGraph );
 
-    // Multiple Children ë¥¼ êµ¬ì„±
+    // Multiple Children ¸¦ ±¸¼º
     static IDE_RC linkChildGraph( qcStatement  * aStatement,
                                   qmgGraph     * aChildGraph,
                                   qmgChildren ** aChildren );

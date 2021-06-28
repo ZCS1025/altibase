@@ -19,16 +19,10 @@
  * $Id: smaFT.cpp 37316 2009-12-13 14:47:02Z bskim $
  **********************************************************************/
 
-#include <idl.h>
-#include <ideErrorMgr.h>
-#include <idErrorCode.h>
-#include <idu.h>
 #include <smErrorCode.h>
 #include <smx.h>
-#include <smaDef.h>
 #include <smcLob.h>
-#include <smaLogicalAger.h>
-#include <smaDeleteThread.h>
+#include <sma.h>
 #include <svcRecord.h>
 #include <smi.h>
 #include <sgmManager.h>
@@ -41,6 +35,7 @@ IDE_RC  smaFT::buildRecordForDelThr(idvSQL              * /*aStatistics*/,
 {
     smaGCStatus sDelThrStatus;
     SChar       sGCName[SMA_GC_NAME_LEN];
+    UInt        i;
 
     idlOS::memset( &sDelThrStatus, 0x00, ID_SIZEOF(smaGCStatus) );
 
@@ -51,35 +46,43 @@ IDE_RC  smaFT::buildRecordForDelThr(idvSQL              * /*aStatistics*/,
     sDelThrStatus.mGCName = sGCName;
 
     smmDatabase::getViewSCN( &sDelThrStatus.mSystemViewSCN );
-    smxTransMgr::getMinMemViewSCNofAll( &sDelThrStatus.mMiMemSCNInTxs,
-                                        &sDelThrStatus.mOldestTx );
 
-    // ATLì¤‘ ìµœì†Œ memory viewê°€ ë¬´í•œëŒ€,
-    // ì¦‰ active transactionì´ ì—†ëŠ” ê²½ìš°ì´ë‹¤.
-    // ì´ëŸ´ë•ŒëŠ” system view SCNì„ settingí•˜ì—¬,
-    // ê´œí•œ GC alertê°€ ë°œìƒí•˜ì§€ ì•Šë„ë¡í•œë‹¤.
+    SMX_GET_MIN_MEM_VIEW( &sDelThrStatus.mMiMemSCNInTxs,
+                          &sDelThrStatus.mOldestTx );
+
+    // ATLÁß ÃÖ¼Ò memory view°¡ ¹«ÇÑ´ë,
+    // Áï active transactionÀÌ ¾ø´Â °æ¿ìÀÌ´Ù.
+    // ÀÌ·²¶§´Â system view SCNÀ» settingÇÏ¿©,
+    // ±¦ÇÑ GC alert°¡ ¹ß»ıÇÏÁö ¾Êµµ·ÏÇÑ´Ù.
     if( SM_SCN_IS_INFINITE( sDelThrStatus.mMiMemSCNInTxs ) )
     {
         SM_GET_SCN(&(sDelThrStatus.mMiMemSCNInTxs),
                    &(sDelThrStatus.mSystemViewSCN));
 
-        // ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” íŠ¸ëœì­ì…˜ ì•„ì´ë””(0)ë¥¼ ì„¤ì •í•œë‹¤.
+        // »ç¿ëµÇÁö ¾Ê´Â Æ®·£Àè¼Ç ¾ÆÀÌµğ(0)¸¦ ¼³Á¤ÇÑ´Ù.
         sDelThrStatus.mOldestTx = 0;
     }//if
 
-    if(smaLogicalAger::mTailDeleteThread  != NULL)
+    /* BUG-47367 OIDÀÇ ¿©ºÎ¿Í MinSCNÀº ¸ğµç List¸¦ Å½»öÇÏ¿©¾ß ¾Ë¼ö ÀÖ´Ù.
+     * ºñ±³¸¦ À§ÇØ ±âº»°ªÀ¸·Î SystemViewSCNÀ» ¼³Á¤ÇÑ´Ù. */
+    // Empty OIDList
+    sDelThrStatus.mIsEmpty = ID_TRUE;
+    // SCN GAPÀ» 0·Î ÇÏ±â À§ÇÏ¿© ÇöÀç ½Ã½ºÅÛViewSCN.
+    SM_GET_SCN( &(sDelThrStatus.mSCNOfTail),
+                &(sDelThrStatus.mSystemViewSCN) );
+
+    for( i = 0; i < smaLogicalAger::mListCnt ; i++ )
     {
-        sDelThrStatus.mIsEmpty = ID_FALSE;
-        SM_GET_SCN(&(sDelThrStatus.mSCNOfTail) ,
-                  &(smaLogicalAger::mTailDeleteThread->mSCN));
-    }
-    else
-    {
-        // Empty OIDList
-        sDelThrStatus.mIsEmpty = ID_TRUE;
-        // SCN GAPì„ 0ë¡œ í•˜ê¸° ìœ„í•˜ì—¬ í˜„ì¬ ì‹œìŠ¤í…œViewSCN.
-        SM_GET_SCN(&(sDelThrStatus.mSCNOfTail),
-                   &(sDelThrStatus.mSystemViewSCN));
+        if ( smaLogicalAger::mTailDeleteThread[i] != NULL )
+        {
+            sDelThrStatus.mIsEmpty = ID_FALSE;
+            if ( SM_SCN_IS_LE( &(smaLogicalAger::mTailDeleteThread[i]->mSCN),
+                               &(sDelThrStatus.mSCNOfTail) ) )
+            {
+                SM_SET_SCN( &(sDelThrStatus.mSCNOfTail), 
+                            &(smaLogicalAger::mTailDeleteThread[i]->mSCN) );
+            }
+        }
     }
 
     sDelThrStatus.mAddOIDCnt= smaLogicalAger::mHandledCount;
@@ -90,9 +93,8 @@ IDE_RC  smaFT::buildRecordForDelThr(idvSQL              * /*aStatistics*/,
     ID_SERIAL_END( sDelThrStatus.mAgingRequestOIDCnt =
                    smaLogicalAger::mAgingRequestOIDCnt );
     sDelThrStatus.mSleepCountOnAgingCondition = 
-        smaDeleteThread::mSleepCountOnAgingCondition;
-    sDelThrStatus.mThreadCount = 
-        smaDeleteThread::mThreadCnt;
+                               smaDeleteThread::mSleepCountOnAgingCondition;
+    sDelThrStatus.mThreadCount = smaDeleteThread::mThreadCnt;
 
     // 3. build record for fixed table.
 
@@ -121,7 +123,7 @@ static iduFixedTableColDesc  gMemDelThrTableColDesc[]=
         0, 0,NULL // for internal use
     },
 
-    // í˜„ì¬ systemViewSCN.
+    // ÇöÀç systemViewSCN.
     // smSCN  mSystemViewSCN;
     {
         (SChar*)"CurrSystemViewSCN",
@@ -142,18 +144,18 @@ static iduFixedTableColDesc  gMemDelThrTableColDesc[]=
         0, 0,NULL // for internal use
     },
 
-    // BUG-24821 V$TRANSACTIONì— LOBê´€ë ¨ MinSCNì´ ì¶œë ¥ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
+    // BUG-24821 V$TRANSACTION¿¡ LOB°ü·Ã MinSCNÀÌ Ãâ·ÂµÇ¾î¾ß ÇÕ´Ï´Ù.
     // smTID  mOldestTx;
     {
         (SChar*)"oldestTx",
         offsetof(smaGCStatus,mOldestTx),
         IDU_FT_SIZEOF(smaGCStatus,mOldestTx),
-        IDU_FT_TYPE_UINTEGER,
+        IDU_FT_TYPE_UBIGINT,  // BUG-47379 unsigned int -> big int
         NULL,
         0, 0,NULL // for internal use
     },
-    // LogicalAger, DeleteThredì˜ Tailì˜ commitSCN or
-    // old keyì‚­ì œ ì‹œì ì˜ SCN.
+    // LogicalAger, DeleteThredÀÇ TailÀÇ commitSCN or
+    // old key»èÁ¦ ½ÃÁ¡ÀÇ SCN.
     // smSCN  mSCNOfTail;
     {
         (SChar*)"SCNOfTail",
@@ -164,7 +166,7 @@ static iduFixedTableColDesc  gMemDelThrTableColDesc[]=
         0, 0,NULL // for internal use
     },
 
-    // OIDListê°€ ë¹„ì–´ ìˆëŠ”ì§€ boolean
+    // OIDList°¡ ºñ¾î ÀÖ´ÂÁö boolean
     // idBool mIsEmpty;
     {
         (SChar*)"IS_EMPTY_OIDLIST",
@@ -175,7 +177,7 @@ static iduFixedTableColDesc  gMemDelThrTableColDesc[]=
         0, 0,NULL // for internal use
     },
 
-    // addëœ OID ê°¯ìˆ˜.
+    // addµÈ OID °¹¼ö.
     // ULong  mAddOIDCnt;
     {
         (SChar*)"ADD_OID_CNT",
@@ -186,7 +188,7 @@ static iduFixedTableColDesc  gMemDelThrTableColDesc[]=
         0, 0,NULL // for internal use
     },
 
-    // GCì²˜ë¦¬ê°€ëœ OIDê°¯ìˆ˜.
+    // GCÃ³¸®°¡µÈ OID°¹¼ö.
     // ULong  mGcOIDCnt;
     {
         (SChar*)"GC_OID_CNT",
@@ -197,11 +199,11 @@ static iduFixedTableColDesc  gMemDelThrTableColDesc[]=
         0, 0,NULL // for internal use
     },
 
-    // Agingì„ ìˆ˜í–‰í•´ì•¼í•  OID ê°¯ìˆ˜.
+    // AgingÀ» ¼öÇàÇØ¾ßÇÒ OID °¹¼ö.
     // ULong  mAgingRequestOIDCnt;
-    // BUG-17371 [MMDB] Agingì´ ë°€ë¦´ê²½ìš° Systemì— ê³¼ë¶€í•˜ ë° Agingì´ ë°€ë¦¬ëŠ” í˜„ìƒì´
-    // ë” ì‹¬í™”ë¨.
-    // getMinSCN í–ˆì„ë•Œ, MinSCNë•Œë¬¸ì— ì‘ì—…í•˜ì§€ ëª»í•œ íšŸìˆ˜
+    // BUG-17371 [MMDB] AgingÀÌ ¹Ğ¸±°æ¿ì System¿¡ °úºÎÇÏ ¹× AgingÀÌ ¹Ğ¸®´Â Çö»óÀÌ
+    // ´õ ½ÉÈ­µÊ.
+    // getMinSCN ÇßÀ»¶§, MinSCN¶§¹®¿¡ ÀÛ¾÷ÇÏÁö ¸øÇÑ È½¼ö
     {
         (SChar*)"AGING_REQUEST_OID_CNT",
         offsetof( smaGCStatus, mAgingRequestOIDCnt ),
@@ -211,7 +213,7 @@ static iduFixedTableColDesc  gMemDelThrTableColDesc[]=
         0, 0,NULL // for internal use
     },
 
-    // GCê°€ Agingì„ ë§ˆì¹œ OID ê°¯ìˆ˜.
+    // GC°¡ AgingÀ» ¸¶Ä£ OID °¹¼ö.
     // ULong  mAgingProcessedOIDCnt;
     {
         (SChar*)"AGING_PROCESSED_OID_CNT",
@@ -231,7 +233,7 @@ static iduFixedTableColDesc  gMemDelThrTableColDesc[]=
         0, 0,NULL // for internal use
     },
 
-    //  í˜„ì¬ ìˆ˜í–‰ì¤‘ì¸ Delete Threadì˜ ê°¯ìˆ˜
+    //  ÇöÀç ¼öÇàÁßÀÎ Delete ThreadÀÇ °¹¼ö
     {
         (SChar*)"THREAD_COUNT",
         offsetof(smaGCStatus,mThreadCount),
@@ -271,6 +273,7 @@ IDE_RC  smaFT::buildRecordForLogicalAger(idvSQL      * /*aStatistics*/,
 {
     smaGCStatus  sLogicalAgerStatus;
     SChar        sGCName[SMA_GC_NAME_LEN];
+    UInt         i;
 
     idlOS::memset(&sLogicalAgerStatus,0x00, ID_SIZEOF(smaGCStatus));
 
@@ -281,35 +284,43 @@ IDE_RC  smaFT::buildRecordForLogicalAger(idvSQL      * /*aStatistics*/,
     sLogicalAgerStatus.mGCName = sGCName;
 
     smmDatabase::getViewSCN(&(sLogicalAgerStatus.mSystemViewSCN));
-    smxTransMgr::getMinMemViewSCNofAll( &(sLogicalAgerStatus.mMiMemSCNInTxs),
-                                        &(sLogicalAgerStatus.mOldestTx) );
 
-    // ATLì¤‘ ìµœì†Œ memory viewê°€ ë¬´í•œëŒ€,
-    // ì¦‰ active transactionì´ ì—†ëŠ” ê²½ìš°ì´ë‹¤.
-    // ì´ëŸ´ë•ŒëŠ” system view SCNì„ settingí•˜ì—¬,
-    // ê´œí•œ GC alertê°€ ë°œìƒí•˜ì§€ ì•Šë„ë¡í•œë‹¤.
+    SMX_GET_MIN_MEM_VIEW( &(sLogicalAgerStatus.mMiMemSCNInTxs),
+                          &(sLogicalAgerStatus.mOldestTx) );
+
+    // ATLÁß ÃÖ¼Ò memory view°¡ ¹«ÇÑ´ë,
+    // Áï active transactionÀÌ ¾ø´Â °æ¿ìÀÌ´Ù.
+    // ÀÌ·²¶§´Â system view SCNÀ» settingÇÏ¿©,
+    // ±¦ÇÑ GC alert°¡ ¹ß»ıÇÏÁö ¾Êµµ·ÏÇÑ´Ù.
     if( SM_SCN_IS_INFINITE(sLogicalAgerStatus.mMiMemSCNInTxs) )
     {
         SM_GET_SCN(&(sLogicalAgerStatus.mMiMemSCNInTxs),
                    &(sLogicalAgerStatus.mSystemViewSCN));
 
-        // ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” íŠ¸ëœì­ì…˜ ì•„ì´ë””(0)ë¥¼ ì„¤ì •í•œë‹¤.
+        // »ç¿ëµÇÁö ¾Ê´Â Æ®·£Àè¼Ç ¾ÆÀÌµğ(0)¸¦ ¼³Á¤ÇÑ´Ù.
         sLogicalAgerStatus.mOldestTx = 0;
     }//if
 
-    if( smaLogicalAger::mTailLogicalAger != NULL)
+    /* BUG-47367 OIDÀÇ ¿©ºÎ¿Í MinSCNÀº ¸ğµç List¸¦ Å½»öÇÏ¿©¾ß ¾Ë¼ö ÀÖ´Ù.
+     * ºñ±³¸¦ À§ÇØ ±âº»°ªÀ¸·Î SystemViewSCNÀ» ¼³Á¤ÇÑ´Ù. */
+    // Empty OIDList
+    sLogicalAgerStatus.mIsEmpty = ID_TRUE;
+    // SCN GAPÀ» 0·Î ÇÏ±â À§ÇÏ¿© ÇöÀç ½Ã½ºÅÛViewSCN.
+    SM_GET_SCN(&(sLogicalAgerStatus.mSCNOfTail),
+               &(sLogicalAgerStatus.mSystemViewSCN));
+
+    for( i = 0; i < smaLogicalAger::mListCnt ; i++ )
     {
-        sLogicalAgerStatus.mIsEmpty = ID_FALSE;
-        SM_GET_SCN(&(sLogicalAgerStatus.mSCNOfTail) ,
-                   &(smaLogicalAger::mTailLogicalAger->mSCN));
-    }
-    else
-    {
-        // Empty OIDList
-        sLogicalAgerStatus.mIsEmpty = ID_TRUE;
-        // SCN GAPì„ 0ë¡œ í•˜ê¸° ìœ„í•˜ì—¬ í˜„ì¬ ì‹œìŠ¤í…œViewSCN.
-        SM_GET_SCN(&(sLogicalAgerStatus.mSCNOfTail),
-                   &(sLogicalAgerStatus.mSystemViewSCN));
+        if ( smaLogicalAger::mTailLogicalAger[i] != NULL )
+        {
+            sLogicalAgerStatus.mIsEmpty = ID_FALSE;
+            if ( SM_SCN_IS_LE( &(smaLogicalAger::mTailLogicalAger[i]->mSCN),
+                               &(sLogicalAgerStatus.mSCNOfTail) ) )
+            {
+                SM_SET_SCN( &(sLogicalAgerStatus.mSCNOfTail), 
+                            &(smaLogicalAger::mTailLogicalAger[i]->mSCN) );
+            }
+        }
     }
 
     ID_SERIAL_BEGIN( sLogicalAgerStatus.mGcOIDCnt  = 
@@ -350,7 +361,7 @@ static iduFixedTableColDesc  gMemLogicalAgerTableColDesc[]=
         0, 0,NULL // for internal use
     },
 
-    // í˜„ì¬ systemViewSCN.
+    // ÇöÀç systemViewSCN.
     // smSCN  mSystemViewSCN;
     {
         (SChar*)"CurrSystemViewSCN",
@@ -371,19 +382,19 @@ static iduFixedTableColDesc  gMemLogicalAgerTableColDesc[]=
         0, 0,NULL // for internal use
     },
 
-    // BUG-24821 V$TRANSACTIONì— LOBê´€ë ¨ MinSCNì´ ì¶œë ¥ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
+    // BUG-24821 V$TRANSACTION¿¡ LOB°ü·Ã MinSCNÀÌ Ãâ·ÂµÇ¾î¾ß ÇÕ´Ï´Ù.
     // smTID  mOldestTx;
     {
         (SChar*)"oldestTx",
         offsetof(smaGCStatus,mOldestTx),
         IDU_FT_SIZEOF(smaGCStatus,mOldestTx),
-        IDU_FT_TYPE_UINTEGER,
+        IDU_FT_TYPE_UBIGINT,  // BUG-47379 unsigned int -> big int
         NULL,
         0, 0,NULL // for internal use
     },
 
-    // LogicalAger, DeleteThreadì˜ Tailì˜ commitSCN or
-    // old keyì‚­ì œ ì‹œì ì˜ SCN.
+    // LogicalAger, DeleteThreadÀÇ TailÀÇ commitSCN or
+    // old key»èÁ¦ ½ÃÁ¡ÀÇ SCN.
     // smSCN  mSCNOfTail;
     {
         (SChar*)"SCNOfTail",
@@ -394,7 +405,7 @@ static iduFixedTableColDesc  gMemLogicalAgerTableColDesc[]=
         0, 0,NULL // for internal use
     },
 
-    // OIDListê°€ ë¹„ì–´ ìˆëŠ”ì§€ boolean
+    // OIDList°¡ ºñ¾î ÀÖ´ÂÁö boolean
     // idBool mIsEmpty;
     {
         (SChar*)"IS_EMPTY_OIDLIST",
@@ -405,7 +416,7 @@ static iduFixedTableColDesc  gMemLogicalAgerTableColDesc[]=
         0, 0,NULL // for internal use
     },
 
-    // addëœ OID List ê°¯ìˆ˜.
+    // addµÈ OID List °¹¼ö.
     // ULong  mAddOIDCnt;
     {
         (SChar*)"ADD_OID_CNT",
@@ -416,7 +427,7 @@ static iduFixedTableColDesc  gMemLogicalAgerTableColDesc[]=
         0, 0,NULL // for internal use
     },
 
-    // GCì²˜ë¦¬ê°€ëœ OID List ê°¯ìˆ˜.
+    // GCÃ³¸®°¡µÈ OID List °¹¼ö.
     // ULong  mGcOIDCnt;
     {
         (SChar*)"GC_OID_CNT",
@@ -428,7 +439,7 @@ static iduFixedTableColDesc  gMemLogicalAgerTableColDesc[]=
     },
 
 
-    // Agingì„ ìˆ˜í–‰í•´ì•¼í•  OID ê°¯ìˆ˜.
+    // AgingÀ» ¼öÇàÇØ¾ßÇÒ OID °¹¼ö.
     // ULong  mAgingRequestOIDCnt;
     {
         (SChar*)"AGING_REQUEST_OID_CNT",
@@ -439,7 +450,7 @@ static iduFixedTableColDesc  gMemLogicalAgerTableColDesc[]=
         0, 0,NULL // for internal use
     },
 
-    // GCê°€ Agingì„ ë§ˆì¹œ OID ê°¯ìˆ˜.
+    // GC°¡ AgingÀ» ¸¶Ä£ OID °¹¼ö.
     // ULong  mAgingProcessedOIDCnt;
     {
         (SChar*)"AGING_PROCESSED_OID_CNT",
@@ -450,9 +461,9 @@ static iduFixedTableColDesc  gMemLogicalAgerTableColDesc[]=
         0, 0,NULL // for internal use
     },
 
-    // BUG-17371 [MMDB] Agingì´ ë°€ë¦´ê²½ìš° Systemì— ê³¼ë¶€í•˜ ë° Agingì´ ë°€ë¦¬ëŠ” í˜„ìƒì´
-    // ë” ì‹¬í™”ë¨.
-    // getMinSCN í–ˆì„ë•Œ, MinSCNë•Œë¬¸ì— ì‘ì—…í•˜ì§€ ëª»í•œ íšŸìˆ˜
+    // BUG-17371 [MMDB] AgingÀÌ ¹Ğ¸±°æ¿ì System¿¡ °úºÎÇÏ ¹× AgingÀÌ ¹Ğ¸®´Â Çö»óÀÌ
+    // ´õ ½ÉÈ­µÊ.
+    // getMinSCN ÇßÀ»¶§, MinSCN¶§¹®¿¡ ÀÛ¾÷ÇÏÁö ¸øÇÑ È½¼ö
     {
         (SChar*)"SLEEP_COUNT_ON_AGING_CONDITION",
         offsetof(smaGCStatus,mSleepCountOnAgingCondition),
@@ -462,11 +473,11 @@ static iduFixedTableColDesc  gMemLogicalAgerTableColDesc[]=
         0, 0,NULL // for internal use
     },
 
-    // BUG-17371 [MMDB] Agingì´ ë°€ë¦´ê²½ìš° Systemì— ê³¼ë¶€í•˜ ë°
-    //                  Agingì´ ë°€ë¦¬ëŠ” í˜„ìƒì´ ë” ì‹¬í™”ë¨.
+    // BUG-17371 [MMDB] AgingÀÌ ¹Ğ¸±°æ¿ì System¿¡ °úºÎÇÏ ¹×
+    //                  AgingÀÌ ¹Ğ¸®´Â Çö»óÀÌ ´õ ½ÉÈ­µÊ.
     //
-    // => Logical Agerë¥¼ ì—¬ëŸ¬ê°œ ë³‘ë ¬ë¡œ ìˆ˜í–‰í•˜ì—¬ ë¬¸ì œí•´ê²°
-    //     í˜„ì¬ ìˆ˜í–‰ì¤‘ì¸ Logical Ager Threadì˜ ê°¯ìˆ˜
+    // => Logical Ager¸¦ ¿©·¯°³ º´·Ä·Î ¼öÇàÇÏ¿© ¹®Á¦ÇØ°á
+    //     ÇöÀç ¼öÇàÁßÀÎ Logical Ager ThreadÀÇ °¹¼ö
     {
         (SChar*)"THREAD_COUNT",
         offsetof(smaGCStatus,mThreadCount),

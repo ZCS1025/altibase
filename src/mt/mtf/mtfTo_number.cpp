@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfTo_number.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfTo_number.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -67,7 +67,7 @@ IDE_RC normalNumberFormat( UChar       * aString,
 mtfModule mtfTo_number = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfTo_numberFunctionName,
     NULL,
     mtfTo_numberInitialize,
@@ -849,8 +849,8 @@ IDE_RC mtfTo_numberCalculateFor2Args( mtcNode*     aNode,
  * Implementation :
  *    TO_NUMBER( char1, [number_format] )
  *
- *    aStack[0] : number_formatì— ë§ê²Œ ì…ë ¥ëœ char1ì„  numeric typeìœ¼ë¡œ ë³€í™˜í•œë‹¤.
- *    aStack[1] : char1 ( ì…ë ¥ ë¬¸ìì—´ )
+ *    aStack[0] : number_format¿¡ ¸Â°Ô ÀÔ·ÂµÈ char1À»  numeric typeÀ¸·Î º¯È¯ÇÑ´Ù.
+ *    aStack[1] : char1 ( ÀÔ·Â ¹®ÀÚ¿­ )
  *    aStack[2] : number format
  *
  *    ex) select to_number ( '<$123.45>', '$999.99PR' ) from t1;
@@ -1015,8 +1015,8 @@ IDE_RC normalNumberFormat( UChar       * aString,
 {
 /***********************************************************************
  *
- * Description : string1ê³¼ ë¹„êµí•˜ê¸° ìœ„í•´ string2(number format)ë¥¼ ê·œì¹™ëŒ€ë¡œ ë³€í™˜í•œë‹¤.
- *               ê¸°ë³¸ì ì¸ ê·œì¹™ì€ sign + $ + number + . + numberì˜ í˜•íƒœì´ë‹¤.
+ * Description : string1°ú ºñ±³ÇÏ±â À§ÇØ string2(number format)¸¦ ±ÔÄ¢´ë·Î º¯È¯ÇÑ´Ù.
+ *               ±âº»ÀûÀÎ ±ÔÄ¢Àº sign + $ + number + . + numberÀÇ ÇüÅÂÀÌ´Ù.
  * 
  * #include <mtdTypes.h>
  * # define MTD_NUMBER_FORMAT_COMMA  (1)
@@ -1062,16 +1062,16 @@ IDE_RC normalNumberFormat( UChar       * aString,
     UShort sIntNineCnt  = aToken[MTD_COUNT_NINE];
     UShort sDCnt        = aToken[MTD_NUMBER_FORMAT_D];
     // To fix BUG-19751
-    // PR í¬ë©§ì„ í•´ì„í•˜ê¸° ìœ„í•œ <>ì˜ ì—´ë¦¼ ë‹«í˜ ì—¬ë¶€ë¥¼ íŒë³„í•˜ê¸° ìœ„í•œ ë³€ìˆ˜
+    // PR Æ÷¸äÀ» ÇØ¼®ÇÏ±â À§ÇÑ <>ÀÇ ¿­¸² ´İÈû ¿©ºÎ¸¦ ÆÇº°ÇÏ±â À§ÇÑ º¯¼ö
     SInt   sPRStage = 0;
     
-    // sTemp array ì´ˆê¸°í™”
+    // sTemp array ÃÊ±âÈ­
     idlOS::memset( sTemp, 0x0, MTD_NUMBER_FORMAT_BUFFER_LEN );
 
-    // format modelì„ ê¸°í˜¸ê°€ ë‚˜ì˜¤ëŠ” ìˆœì„œì— ë§ê²Œ ë‹¤ì‹œ ë³€í™˜í•œë‹¤.
-    // ê·œì¹™ì€ sign + $ + number or comma + . + number ë˜ëŠ”
-    //        sign + $ + number + . + number + eeee ì´ë‹¤.
-    // stringì˜ ì•ìª½ ê³µë°±ì€ ëª¨ë‘ ì œê±°í•œë‹¤.
+    // format modelÀ» ±âÈ£°¡ ³ª¿À´Â ¼ø¼­¿¡ ¸Â°Ô ´Ù½Ã º¯È¯ÇÑ´Ù.
+    // ±ÔÄ¢Àº sign + $ + number or comma + . + number ¶Ç´Â
+    //        sign + $ + number + . + number + eeee ÀÌ´Ù.
+    // stringÀÇ ¾ÕÂÊ °ø¹éÀº ¸ğµÎ Á¦°ÅÇÑ´Ù.
     for ( sIterator = 0; sIterator < sStringLen; sIterator++ )
     {
         if ( *(aString + sIterator) != ' ' )
@@ -1080,7 +1080,7 @@ IDE_RC normalNumberFormat( UChar       * aString,
         }
     }
     
-    // ì „ë¶€ ê³µë°±ë§Œ ìˆì„ ê²½ìš° error
+    // ÀüºÎ °ø¹é¸¸ ÀÖÀ» °æ¿ì error
     IDE_TEST_RAISE( ( sStringLen > 0 ) &&
                     ( sStringLen == sIterator ),
                     ERR_INVALID_LITERAL );
@@ -1096,7 +1096,7 @@ IDE_RC normalNumberFormat( UChar       * aString,
 
     while ( sFormatIndex < sFormatLen )
     {
-        // B ë˜ëŠ” $ê¸°í˜¸ëŠ” ì‚­ì œí•œë‹¤.
+        // B ¶Ç´Â $±âÈ£´Â »èÁ¦ÇÑ´Ù.
         if ( ( *( sFormat + sFormatIndex ) == 'B' ) ||
              ( *( sFormat + sFormatIndex ) == 'b' ) ||
              ( *( sFormat + sFormatIndex ) == '$' ) )
@@ -1117,7 +1117,7 @@ IDE_RC normalNumberFormat( UChar       * aString,
     }
 
     sIterator = 0;
-    // stringì—ì„œ ì •ìˆ˜ ë¶€ë¶„ì˜ ìˆ«ì ê°œìˆ˜ë¥¼ ì„¼ë‹¤.
+    // string¿¡¼­ Á¤¼ö ºÎºĞÀÇ ¼ıÀÚ °³¼ö¸¦ ¼¾´Ù.
     for ( sIterator = 0; sIterator < sStringLen; sIterator++ )
     {
         if ( *( sString + sIterator ) >= '0' &&
@@ -1153,8 +1153,8 @@ IDE_RC normalNumberFormat( UChar       * aString,
         }
     }
 
-    /* ì •ìˆ˜ ë¶€ë¶„ì„ ì“°ê¸° ì´ì „ì˜ ìˆ«ì ì¤‘, 0ì´ ë‚˜ì˜¤ê¸°
-     * ì „ê¹Œì§€ì˜ 9ì™€ ,ë¥¼ ë§¨ ì•ìœ¼ë¡œ ë³´ë‚¸ë‹¤.
+    /* Á¤¼ö ºÎºĞÀ» ¾²±â ÀÌÀüÀÇ ¼ıÀÚ Áß, 0ÀÌ ³ª¿À±â
+     * Àü±îÁöÀÇ 9¿Í ,¸¦ ¸Ç ¾ÕÀ¸·Î º¸³½´Ù.
      */
     sFormatIndex = 0;
     sCount = sIntNineCnt + sIntZeroCnt;
@@ -1217,8 +1217,8 @@ IDE_RC normalNumberFormat( UChar       * aString,
     sFormatIndex = 0;
     sIterator = 0;
 
-    // str1ì˜ ê¸°í˜¸ê°€ - ì´ê³ , str2ì— ë¶€í˜¸ ê¸°í˜¸ê°€ ì—†ì„ ê²½ìš°,
-    // str2ì˜ ë§¨ì•ì— ì„ì‹œë¡œ @ê¸°í˜¸ë¥¼ ì¶”ê°€í•œë‹¤.
+    // str1ÀÇ ±âÈ£°¡ - ÀÌ°í, str2¿¡ ºÎÈ£ ±âÈ£°¡ ¾øÀ» °æ¿ì,
+    // str2ÀÇ ¸Ç¾Õ¿¡ ÀÓ½Ã·Î @±âÈ£¸¦ Ãß°¡ÇÑ´Ù.
     if ( sStringLen > 0 )
     {
         if ( *sString == '-' && sSCnt == 0 && sPRCnt == 0 && sMICnt == 0 )
@@ -1248,9 +1248,9 @@ IDE_RC normalNumberFormat( UChar       * aString,
         // nothing to do
     }
 
-    // <123.45>ì™€ 999.99PRê³¼ ê°™ì€ í˜•íƒœë¥¼ ë¹„êµí•˜ê¸° ì‰½ê²Œ í•˜ê¸° ìœ„í•´
-    // PRì´ ìˆëŠ” ê²½ìš°, ë§¨ ì•ìœ¼ë¡œ Rì„ ê°€ì ¸ì˜¨ë‹¤.
-    // stringì— <ê°€ ì—†ëŠ” ê²½ìš°(ì–‘ìˆ˜)ì—ëŠ” ê·¸ëƒ¥ ë†”ë‘ 
+    // <123.45>¿Í 999.99PR°ú °°Àº ÇüÅÂ¸¦ ºñ±³ÇÏ±â ½±°Ô ÇÏ±â À§ÇØ
+    // PRÀÌ ÀÖ´Â °æ¿ì, ¸Ç ¾ÕÀ¸·Î RÀ» °¡Á®¿Â´Ù.
+    // string¿¡ <°¡ ¾ø´Â °æ¿ì(¾ç¼ö)¿¡´Â ±×³É ³öµÒ
     if ( sStringLen > 0 )
     {
         if ( sPRCnt == 1 && *sString == '<' )
@@ -1274,7 +1274,7 @@ IDE_RC normalNumberFormat( UChar       * aString,
                 //nothing to do
             }
         }
-        // MIê°€ ìˆëŠ” ê²½ìš° ë§¨ë’¤ì˜ Ië¥¼ ì‚­ì œí•œë‹¤. 
+        // MI°¡ ÀÖ´Â °æ¿ì ¸ÇµÚÀÇ I¸¦ »èÁ¦ÇÑ´Ù. 
         else if ( sMICnt == 1 )
         {
             sFormatLen--;
@@ -1289,7 +1289,7 @@ IDE_RC normalNumberFormat( UChar       * aString,
         // nothing to do
     }
         
-    // $ê¸°í˜¸ëŠ” ë¶€í˜¸ ê¸°í˜¸ ë°”ë¡œ ë‹¤ìŒìœ¼ë¡œ ë³´ë‚¸ë‹¤.
+    // $±âÈ£´Â ºÎÈ£ ±âÈ£ ¹Ù·Î ´ÙÀ½À¸·Î º¸³½´Ù.
     if ( sDollarCnt == 1 )
     {
         if ( idlOS::strCaselessMatch( sFormat, 1, "@", 1 ) == 0 ||
@@ -1596,8 +1596,8 @@ IDE_RC checkNumberFormat( UChar* aFmt, UInt aLength, UChar* aToken )
 {
 /***********************************************************************
  *
- * Description : number formatì„ ì²´í¬í•˜ëŠ” í•¨ìˆ˜
- *              ë‹¤ë¥¸ í•¨ìˆ˜ì—ì„œ í•„ìš”í•œ number formatì˜ ê° ê°œìˆ˜ëŠ” aTokenì— ì €ì¥ëœë‹¤.
+ * Description : number formatÀ» Ã¼Å©ÇÏ´Â ÇÔ¼ö
+ *              ´Ù¸¥ ÇÔ¼ö¿¡¼­ ÇÊ¿äÇÑ number formatÀÇ °¢ °³¼ö´Â aToken¿¡ ÀúÀåµÈ´Ù.
  *
  * #include <mtdTypes.h>
  * # define MTD_NUMBER_FORMAT_COMMA  (1)

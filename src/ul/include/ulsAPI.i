@@ -107,6 +107,11 @@ ACSRETURN ACSGetGeometrySizeFromWKB( ACSHENV       aHandle,
                                      SQLUINTEGER   aWKBLength,
                                      SQLLEN      * aGeometrySize );
 
+/* Get Geometry SRID */
+ACSRETURN ACSGetGeometrySRID( ACSHENV            aHandle,
+                              stdGeometryType  * aGeometry,
+                              SQLINTEGER       * aSRID );
+
 /*----------------------------------------------------------------*
  *  Geometry Infomation Search Function  
  *    : 2D & 3D MultiPoint, MultiLineString, MultiGeometryCollection

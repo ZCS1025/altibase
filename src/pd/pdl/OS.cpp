@@ -4214,8 +4214,8 @@ PDL_OS::pread (PDL_HANDLE handle,
 
       if( bytes_read != nReadSize )
       {
-          /* Readë¥¼ ìš”ì²­í•œ Byteìˆ˜ë§Œí¼ Readê°€ ë˜ì§€ì•Šì•˜ë‹¤. ë”ì´ìƒ Fileì˜
-             ëê¹Œì§€ ì½ê¸°ë¥¼ ìˆ˜í–‰í–ˆìŒ.*/
+          /* Read¸¦ ¿äÃ»ÇÑ Byte¼ö¸¸Å­ Read°¡ µÇÁö¾Ê¾Ò´Ù. ´õÀÌ»ó FileÀÇ
+             ³¡±îÁö ÀÐ±â¸¦ ¼öÇàÇßÀ½.*/
           break;
       }
   }
@@ -4306,8 +4306,8 @@ PDL_OS::pwrite (PDL_HANDLE handle,
 
   PDL_OS_GUARD
 
-  /* BUG-17269: [WIN] pread, pwriteì—ì„œ errorë°œìƒì‹œ errnoê°€
-   * 0ì´ë©ë‹ˆë‹¤.*/
+  /* BUG-17269: [WIN] pread, pwrite¿¡¼­ error¹ß»ý½Ã errno°¡
+   * 0ÀÌµË´Ï´Ù.*/
   // Remember the original file pointer position
   PDL_WIN32CALL( ::SetFilePointer (handle,
                                    0,
@@ -5165,11 +5165,11 @@ PDL_TRACE ("PDL_OS::cond_broadcast");
   PDL_OS::thread_mutex_unlock (&cv->waiters_lock_);
   int result = 0;
 
-  /* BUG-18710: [WIN] cond_signalí•¨ìˆ˜ê°€ ì˜¤ë™ìž‘ í•©ë‹ˆë‹¤.
+  /* BUG-18710: [WIN] cond_signalÇÔ¼ö°¡ ¿Àµ¿ÀÛ ÇÕ´Ï´Ù.
    *
-   * sema_postì˜ ë‘ë²ˆì§¸ ì¸ìžê°€ 0ì´ ë˜ëŠ” ê²½ìš°ê°€ ì¡´ìž¬í•©ë‹ˆë‹¤.
-   * ì´ ê²½ìš°ëŠ” cv->waiters_ê°’ì„ Mutexë¥¼ ìž¡ì§€ ì•Šì€ ìƒíƒœì—ì„œ ì½ê¸°ë•Œë¬¸ì—
-   * ë°œìƒí•©ë‹ˆë‹¤.
+   * sema_postÀÇ µÎ¹øÂ° ÀÎÀÚ°¡ 0ÀÌ µÇ´Â °æ¿ì°¡ Á¸ÀçÇÕ´Ï´Ù.
+   * ÀÌ °æ¿ì´Â cv->waiters_°ªÀ» Mutex¸¦ ÀâÁö ¾ÊÀº »óÅÂ¿¡¼­ ÀÐ±â¶§¹®¿¡
+   * ¹ß»ýÇÕ´Ï´Ù.
    */
   if (have_waiters > 0)
     {
@@ -6692,23 +6692,23 @@ PDL_OS::strptime (char       *buf,
 
 /*BUGBUG_NT*/
 #if defined(PDL_WIN32) || defined(PDL_HAS_WINCE)
-/* Aceë¼ì´ë¸ŒëŸ¬ë¦¬ë¥¼ ì´ìš©í•œ classê°€ globalë¡œ ì •ì˜ë˜ì–´ ìžˆìœ¼ë©´
-   PDLì´ˆê¸°í™”ë³´ë‹¤ ë¨¼ì € PDL APIê°€ ì‚¬ìš©ë˜ê²Œ ëœë‹¤.
-   ê·¸ëŸ¬ë¯€ë¡œ ë§ˆì°¬ê°€ì§€ë¡œ PDLì´ˆê¸°í™”ê°€ ë¨¼ì € ë˜ê²Œ í•˜ê¸° ìœ„í•´
-   OS.cppì— ì´ˆê¸°í™” í´ëž˜ìŠ¤ì˜ ì¸ìŠ¤í„´ìŠ¤ë¥¼ í•˜ë‚˜ ë§Œë“œëŠ” ë°©ì‹ì„ ì‚¬ìš©í•œë‹¤.
-   ìš°ì„  WIN32ì— ëŒ€í•´ì„œë§Œ ì´ë ‡ê²Œ ë§Œë“¤ì–´ë†“ì•˜ì§€ë§Œ,
-   ë‹¤ë¥¸ ëª¨ë“  í”Œëž«í¼ì— ëŒ€í•´ì„œë„ ì´ë ‡ê²Œ í•´ì£¼ì–´ì•¼ í•  ê²ƒì´ë‹¤.
+/* Ace¶óÀÌºê·¯¸®¸¦ ÀÌ¿ëÇÑ class°¡ global·Î Á¤ÀÇµÇ¾î ÀÖÀ¸¸é
+   PDLÃÊ±âÈ­º¸´Ù ¸ÕÀú PDL API°¡ »ç¿ëµÇ°Ô µÈ´Ù.
+   ±×·¯¹Ç·Î ¸¶Âù°¡Áö·Î PDLÃÊ±âÈ­°¡ ¸ÕÀú µÇ°Ô ÇÏ±â À§ÇØ
+   OS.cpp¿¡ ÃÊ±âÈ­ Å¬·¡½ºÀÇ ÀÎ½ºÅÏ½º¸¦ ÇÏ³ª ¸¸µå´Â ¹æ½ÄÀ» »ç¿ëÇÑ´Ù.
+   ¿ì¼± WIN32¿¡ ´ëÇØ¼­¸¸ ÀÌ·¸°Ô ¸¸µé¾î³õ¾ÒÁö¸¸,
+   ´Ù¸¥ ¸ðµç ÇÃ·§Æû¿¡ ´ëÇØ¼­µµ ÀÌ·¸°Ô ÇØÁÖ¾î¾ß ÇÒ °ÍÀÌ´Ù.
 */
 class AceInitializer {
 protected:
-	// ì´ë ‡ê²Œ í•´ì£¼ì–´ì•¼ PDL ì´ˆê¸°í™” ê°ì²´ë“¤ì´ íŒŒê´´ë˜ì§€ ì•ŠëŠ”ë‹¤..
+	// ÀÌ·¸°Ô ÇØÁÖ¾î¾ß PDL ÃÊ±âÈ­ °´Ã¼µéÀÌ ÆÄ±«µÇÁö ¾Ê´Â´Ù..
 	PDL_MAIN_OBJECT_MANAGER
 public :
 	AceInitializer();
 };
 AceInitializer::AceInitializer() {
-	// ì—¬ê¸°ì„œ PDLì´ˆê¸°í™” ê°ì²´ë“¤ì„ ë§Œë“¤ë©´ ì•ˆëœë‹¤.
-	// constructorë¥¼ ë¹ ì ¸ë‚˜ê°€ë©´ì„œ íŒŒê´´ë˜ê¸° ë•Œë¬¸ì´ë‹¤.
+	// ¿©±â¼­ PDLÃÊ±âÈ­ °´Ã¼µéÀ» ¸¸µé¸é ¾ÈµÈ´Ù.
+	// constructor¸¦ ºüÁ®³ª°¡¸é¼­ ÆÄ±«µÇ±â ¶§¹®ÀÌ´Ù.
 }
 
 AceInitializer initializer;

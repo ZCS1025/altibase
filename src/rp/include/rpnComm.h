@@ -27,9 +27,6 @@
 
 #include <cm.h>
 #include <smrDef.h>
-#include <smiLogRec.h>
-#include <smErrorCode.h>
-
 #include <qci.h>
 #include <rp.h>
 #include <rpdLogAnalyzer.h>
@@ -38,7 +35,7 @@
 #include <rpdQueue.h>
 #include <rpxReceiver.h>
 #include <rpuProperty.h>
-#include <smiReadLogByOrder.h>
+
 
 class rpnComm
 {
@@ -53,12 +50,553 @@ public:
     static void   finalize();
     static idBool isConnected( cmiLink * aCmiLink );
 
+    static void setLengthForEachXLogType();
+
+    static IDE_RC readCmBlock( void               * aHBTResource,
+                               cmiProtocolContext * aProtocolContext,
+                               idBool             * aExitFlag,
+                               idBool             * aIsTimeout,
+                               ULong                aTimeout );
+    
     /* PROJ-2677 */
     static IDE_RC recvOperationInfo( cmiProtocolContext * aProtocolContext,
                                      idBool             * aExitFlag,
                                      UChar              * aOpCode,
                                      ULong                aTimeoutSec );
 
+    static void   destroyProtocolContext( cmiProtocolContext * aProtocolContext );
+
+    static IDE_RC sendVersion( void                 * aHBTResource,
+                               cmiProtocolContext   * aProtocolContext,
+                               idBool               * aExitFlag,
+                               rpdVersion           * aReplVersion,
+                               UInt                   aTimeoutSec );
+    static IDE_RC recvVersion( cmiProtocolContext * aProtocolContext,
+                               idBool             * aExitFlag,
+                               rpdVersion *aReplVersion,
+                               ULong       aTimeOut);
+    static IDE_RC sendMetaRepl( void                    * aHBTResource,
+                                cmiProtocolContext      * aProtocolContext,
+                                idBool                  * aExitFlag,
+                                rpdReplications         * aRepl,
+                                UInt                      aTimeoutSec );
+    static IDE_RC recvMetaRepl( cmiProtocolContext * aProtocolContext,
+                                idBool             * aExitFlag,
+                                rpdReplications    * aRepl,
+                                ULong                aTimeOut);
+ 
+    static IDE_RC sendTempSyncMetaRepl( void                    * aHBTResource,
+                                        cmiProtocolContext      * aProtocolContext,
+                                        idBool                  * aExitFlag,
+                                        rpdReplications         * aRepl,
+                                        UInt                      aTimeoutSec );
+    static IDE_RC recvTempSyncMetaRepl( cmiProtocolContext * aProtocolContext,
+                                        idBool             * aExitFlag,
+                                        rpdReplications    * aRepl,
+                                        ULong                aTimeOut);
+   
+    static IDE_RC sendTempSyncReplItem( void                    * aHBTResource,
+                                        cmiProtocolContext      * aProtocolContext,
+                                        idBool                  * aExitFlag,
+                                        rpdReplSyncItem         * aTempSyncItem,
+                                        UInt                      aTimeoutSec );
+    static IDE_RC recvTempSyncReplItem( cmiProtocolContext * aProtocolContext,
+                                        idBool             * aExitFlag,
+                                        rpdReplSyncItem    * aTempSyncItem,
+                                        ULong                aTimeOut);
+
+    static IDE_RC sendMetaReplTbl( void               * aHBTResource,
+                                   cmiProtocolContext * aProtocolContext,
+                                   idBool             * aExitFlag,
+                                   rpdMetaItem        * aItem,
+                                   UInt                 aTimeoutSec );
+    static IDE_RC recvMetaReplTbl( cmiProtocolContext * aProtocolContext,
+                                   idBool             * aExitFlag,
+                                   rpdMetaItem        * aItem,
+                                   ULong                aTimeOut);
+    /* BUG-46120 */
+    static IDE_RC sendMetaPartitionCount( void               * aHBTResource,
+                                          cmiProtocolContext * aProtocolContext,
+                                          idBool             * aExitFlag,
+                                          UInt               * aCount,
+                                          UInt                 aTimeoutSec );
+    static IDE_RC sendMetaPartitionCountA7( void               * aHBTResource,
+                                            cmiProtocolContext * aProtocolContext,
+                                            idBool             * aExitFlag,
+                                            UInt               * aCount,
+                                            UInt                 aTimeoutSec );
+    static IDE_RC recvMetaPartitionCount( cmiProtocolContext * aProtocolContext,
+                                          idBool             * aExitFlag,
+                                          UInt               * aCount,
+                                          ULong                aTimeoutSec );
+    static IDE_RC recvMetaPartitionCountA7( cmiProtocolContext * aProtocolContext,
+                                            idBool             * aExitFlag,
+                                            UInt               * aCount,
+                                            ULong                aTimeoutSec );
+
+    static IDE_RC sendMetaReplCol( void                 * aHBTResource,
+                                   cmiProtocolContext   * aProtocolContext,
+                                   idBool               * aExitFlag,
+                                   rpdColumn            * aColumn,
+                                   rpdVersion             aRemoteVersion,
+                                   UInt                   aTimeoutSec );
+    static IDE_RC recvMetaReplCol( cmiProtocolContext * aProtocolContext,
+                                   idBool             * aExitFlag,
+                                   rpdColumn          * aColumn,
+                                   rpdVersion           aRemoteVersion,
+                                   ULong                aTimeOut );
+    static IDE_RC sendMetaReplIdx( void                 * aHBTResource,
+                                   cmiProtocolContext   * aProtocolContext,
+                                   idBool               * aExitFlag,
+                                   qcmIndex             * aIndex,
+                                   UInt                   aTimeoutSec );
+    static IDE_RC recvMetaReplIdx( cmiProtocolContext * aProtocolContext,
+                                   idBool             * aExitFlag,
+                                   qcmIndex     *aIndex,
+                                   ULong         aTimeOut);
+    static IDE_RC sendMetaReplIdxCol( void                  * aHBTResource,
+                                      cmiProtocolContext    * aProtocolContext,
+                                      idBool                * aExitFlag,
+                                      UInt                    aColumnID,
+                                      UInt                    aKeyColumnFlag,
+                                      UInt                    aTimeoutSec );
+    static IDE_RC recvMetaReplIdxCol( cmiProtocolContext * aProtocolContext,
+                                      idBool             * aExitFlag,
+                                      UInt               * aColumnID,
+                                      UInt               * aKeyColumnFlag,
+                                      ULong                aTimeOut);
+
+    /* BUG-34360 Check Constraint */
+    static IDE_RC sendMetaReplCheck( void                   * aHBTResource,
+                                     cmiProtocolContext     * aProtocolContext,
+                                     idBool                 * aExitFlag,
+                                     qcmCheck               * aCheck,
+                                     UInt                     aTimeoutSec );
+
+    /* BUG-34360 Check Constraint */
+    static IDE_RC recvMetaReplCheck( cmiProtocolContext   * aProtocolContext,
+                                     idBool               * aExitFlag,
+                                     qcmCheck             * aCheck,
+                                     const ULong            aTimeoutSec );
+
+    /* BUG-34360 Check Constraint */
+    static IDE_RC recvMetaReplCheckA7( cmiProtocolContext   * aProtocolContext,
+                                       idBool               * aExitFlag,
+                                       qcmCheck             * aCheck,
+                                       const ULong            aTimeoutSec );
+    /* BUG-38759 */
+    static IDE_RC sendMetaDictTableCount( void               * aHBTResource,
+                                          cmiProtocolContext * aProtocolContext,
+                                          idBool             * aExitFlag,
+                                          SInt               * aDictTableCount,
+                                          UInt                 aTimeoutSec );
+
+    static IDE_RC sendMetaDictTableCountA7( void               * aHBTResource,
+                                            cmiProtocolContext * aProtocolContext,
+                                            idBool             * aExitFlag,
+                                            SInt               * aDictTableCount,
+                                            UInt                 aTimeoutSec );
+    /* BUG-38759 */
+    static IDE_RC recvMetaDictTableCount( cmiProtocolContext * aProtocolContext,
+                                          idBool             * aExitFlag,
+                                          SInt               * aDictTableCount,
+                                          ULong                aTimeoutSec );
+    /* BUG-38759 */
+    static IDE_RC recvMetaDictTableCountA7( cmiProtocolContext * aProtocolContext,
+                                            idBool             * aExitFlag,
+                                            SInt               * aDictTableCount,
+                                            ULong                aTimeoutSec );
+
+    static IDE_RC sendHandshakeAck( cmiProtocolContext      * aProtocolContext,
+                                    idBool                  * aExitFlag,
+                                    UInt                      aResult,
+                                    SInt                      aFailbackStatus,
+                                    ULong                     aXSN,
+                                    const SChar             * aMsg,
+                                    UInt                      aTimeoutSec );
+    static IDE_RC recvHandshakeAck( void               * aHBTResource,
+                                    cmiProtocolContext * aProtocolContext,
+                                    idBool          *aExitFlag,
+                                    UInt            *aResult,
+                                    SInt            *aFailbackStatus,
+                                    ULong           *aXSN,
+                                    SChar           *aMsg,
+                                    UInt            *aMsgLen,
+                                    ULong            aTimeOut);
+
+    static IDE_RC sendTempSyncHandshakeAck( cmiProtocolContext    * aProtocolContext,
+                                            idBool                * aExitFlag,
+                                            UInt                    aResult,
+                                            SChar                 * aMsg,
+                                            UInt                    aTimeoutSec );
+    static IDE_RC recvTempSyncHandshakeAck( cmiProtocolContext * aProtocolContext,
+                                            idBool             * aExitFlag,
+                                            UInt               * aResult,
+                                            SChar              * aMsg,
+                                            UInt               * aMsgLen,
+                                            ULong                aTimeOut );
+
+    static IDE_RC recvXLog( iduMemAllocator   * aAllocator,
+                            rpxReceiverReadContext aReadContext,
+                            idBool             *aExitFlag,
+                            rpdMeta            *aMeta,  // BUG-20506
+                            rpdXLog            *aXLog,
+                            ULong               aTimeOutSec);
+    static IDE_RC sendTrBegin( void                 * aHBTResource,
+                               cmiProtocolContext   * aProtocolContext,
+                               idBool               * aExitFlag,
+                               smTID                  aTID,
+                               smSN                   aSN,
+                               smSN                   aSyncSN,
+                               UInt                   aTimeoutSec );
+    static IDE_RC sendTrCommit( void               * aHBTResource,
+                                cmiProtocolContext * aProtocolContext,
+                                idBool             * aExitFlag,
+                                smTID                aTID,
+                                smSN                 aSN,
+                                smSN                 aSyncSN,
+                                idBool               aForceFlush,
+                                UInt                 aTimeoutSec );
+    static IDE_RC sendTrAbort( void                 * aHBTResource,
+                               cmiProtocolContext   * aProtocolContext,
+                               idBool               * aExitFlag,
+                               smTID                  aTID,
+                               smSN                   aSN,
+                               smSN                   aSyncSN,
+                               UInt                   aTimeoutSec );
+    static IDE_RC sendSPSet( void               * aHBTResource,
+                             cmiProtocolContext * aProtocolContext,
+                             idBool             * aExitFlag,
+                             smTID                aTID,
+                             smSN                 aSN,
+                             smSN                 aSyncSN,
+                             UInt                 aSPNameLen,
+                             SChar              * aSPName,
+                             UInt                 aTimeoutSec );
+    static IDE_RC sendSPAbort( void                 * aHBTResource,
+                               cmiProtocolContext   * aProtocolContext,
+                               idBool               * aExitFlag,
+                               smTID                  aTID,
+                               smSN                   aSN,
+                               smSN                   aSyncSN,
+                               UInt                   aSPNameLen,
+                               SChar                * aSPName,
+                               UInt                   aTimeoutSec );
+    static IDE_RC sendStmtBegin( void               * aHBTResource,
+                                 cmiProtocolContext * aCmiProtocolContext,
+                                 idBool             * aExitFlag,
+                                 rpdLogAnalyzer     * aLA,
+                                 UInt                 aTimeoutSec );
+    static IDE_RC sendStmtEnd( void                 * aHBTResource,
+                               cmiProtocolContext   * aCmiProtocolContext,
+                               idBool               * aExitFlag,
+                               rpdLogAnalyzer       * aLA,
+                               UInt                   aTimeoutSec );
+    static IDE_RC sendCursorOpen( void                  * aHBTResource,
+                                  cmiProtocolContext    * aCmiProtocolContext,
+                                  idBool                * aExitFlag,
+                                  rpdLogAnalyzer        * aLA,
+                                  UInt                    aTimeoutSec );
+    static IDE_RC sendCursorClose( void                 * aHBTResource,
+                                   cmiProtocolContext   * aCmiProtocolContext,
+                                   idBool               * aExitFlag,
+                                   rpdLogAnalyzer       * aLA,
+                                   UInt                   aTimeoutSec );
+    static IDE_RC sendInsert( void               * aHBTResource,
+                              cmiProtocolContext * aProtocolContext,
+                              idBool             * aExitFlag,
+                              smTID                aTID,
+                              smSN                 aSN,
+                              smSN                 aSyncSN,
+                              UInt                 aImplSPDepth,
+                              ULong                aTableOID,
+                              UInt                 aColCnt,
+                              smiValue           * aACols,
+                              rpValueLen         * aAMtdValueLen,
+                              UInt                 aTimeoutSec );
+    static IDE_RC sendUpdate( void               * aHBTResource,
+                              cmiProtocolContext * aProtocolContext,
+                              idBool             * aExitFlag,
+                              smTID                aTID,
+                              smSN                 aSN,
+                              smSN                 aSyncSN,
+                              UInt                 aImplSPDepth,
+                              ULong                aTableOID,
+                              UInt                 aPKColCnt,
+                              UInt                 aUpdateColCnt,
+                              smiValue           * aPKCols,
+                              UInt               * aCIDs,
+                              smiValue           * aBCols,
+                              smiChainedValue    * aBChainedCols, // BUG-1705
+                              UInt               * aBChainedColsTotalLen, /* BUG-33722 */
+                              smiValue           * aACols,
+                              rpValueLen         * aPKMtdValueLen,
+                              rpValueLen         * aAMtdValueLen,
+                              rpValueLen         * aBMtdValueLen,
+                              UInt                 aTimeoutSec );
+    static IDE_RC sendDelete( void               * aHBTResource,
+                              cmiProtocolContext * aProtocolContext,
+                              idBool             * aExitFlag,
+                              smTID                aTID,
+                              smSN                 aSN,
+                              smSN                 aSyncSN,
+                              UInt                aImplSPDepth,
+                              ULong                aTableOID,
+                              UInt                 aPKColCnt,
+                              smiValue           * aPKCols,
+                              rpValueLen         * aPKMtdValueLen,
+                              UInt                 aColCnt,
+                              UInt               * aCIDs,
+                              smiValue           * aBCols,
+                              smiChainedValue    * aBChainedCols, // PROJ-1705
+                              rpValueLen         * aBLen,
+                              UInt               * aBChainedColsTotalLen,
+                              UInt                 aTimeoutSec ); /* BUG-33722 */
+
+    static IDE_RC sendChainedValueForA7( void               * aHBTResource,
+                                         cmiProtocolContext * aProtocolContext,
+                                         idBool             * aExitFlag,
+                                         smiChainedValue    * aChainedValue,
+                                         rpValueLen           aBMtdValueLen,
+                                         UInt                 aChainedValueLen,
+                                         UInt                 aTimeoutSec );
+    static IDE_RC sendStop( void                * aHBTResource,
+                            cmiProtocolContext  * aProtocolContext,
+                            idBool              * aExitFlag,
+                            smTID                 aTID,
+                            smSN                  aSN,
+                            smSN                  aSyncSN,
+                            smSN                  aRestartSN,
+                            UInt                  aTimeoutSec );         // BUG-17748
+    static IDE_RC sendKeepAlive( void               * aHBTResource,
+                                 cmiProtocolContext * aProtocolContext,
+                                 idBool             * aExitFlag,
+                                 smTID                aTID,
+                                 smSN                 aSN,
+                                 smSN                 aSyncSN,
+                                 smSN                 aRestartSN,
+                                 UInt                 aTimeoutSec );    // BUG-17748
+    static IDE_RC sendFlush( void                   * aHBTResource,
+                             cmiProtocolContext     * aProtocolContext,
+                             idBool                 * aExitFlag,
+                             smTID                    aTID,
+                             smSN                     aSN,
+                             smSN                     aSyncSN,
+                             UInt                     aFlushOption,
+                             UInt                     aTimeoutSec );
+
+    static IDE_RC sendAck(cmiProtocolContext * aProtocolContext,
+                          idBool             * aExitFlag,
+                          rpXLogAck          * aAck,
+                          UInt                 aTimeoutSec );
+
+    static IDE_RC recvAck(iduMemAllocator    * aAllocator,
+                          void               * aHBTResource,
+                          cmiProtocolContext * aProtocolContext,
+                          idBool         *aExitFlag,
+                          rpXLogAck      *aAck,
+                          ULong           aTimeOut,
+                          idBool         *aIsTimeOut);
+    static IDE_RC sendLobCursorOpen( void               * aHBTResource,
+                                     cmiProtocolContext * aProtocolContext,
+                                     idBool             * aExitFlag,
+                                     smTID                aTID,
+                                     smSN                 aSN,
+                                     smSN                 aSyncSN,
+                                     ULong                aTableOID,
+                                     ULong                aLobLocator,
+                                     UInt                 aLobColumnID,
+                                     UInt                 aPKColCnt,
+                                     smiValue           * aPKCols,
+                                     rpValueLen         * aPKMtdValueLen,
+                                     UInt                 aTimeoutSec );
+    static IDE_RC sendLobCursorClose( void                  * aHBTResource,
+                                      cmiProtocolContext    * aProtocolContext,
+                                      idBool                * aExitFlag,
+                                      smTID                   aTID,
+                                      smSN                    aSN,
+                                      smSN                    aSyncSN,
+                                      ULong                   aLobLocator,
+                                      UInt                    aTimeoutSec );
+    static IDE_RC sendLobPrepare4Write( void                * aHBTResource,
+                                        cmiProtocolContext  * aProtocolContext,
+                                        idBool              * aExitFlag,
+                                        smTID                 aTID,
+                                        smSN                  aSN,
+                                        smSN                  aSyncSN,
+                                        ULong                 aLobLocator,
+                                        UInt                  aLobOffset,
+                                        UInt                  aLobOldSize,
+                                        UInt                  aLobNewSize,
+                                        UInt                  aTimeoutSec );
+
+    static IDE_RC sendLobTrim( void                * aHBTResource,
+                               cmiProtocolContext  * aProtocolContext,
+                               idBool              * aExitFlag,
+                               smTID                 aTID,
+                               smSN                  aSN,
+                               smSN                  aSyncSN,
+                               ULong                 aLobLocator,
+                               UInt                  aLobOffset,
+                               UInt                  aTimeoutSec );
+
+    static IDE_RC recvLobTrim( iduMemAllocator     * /*aAllocator*/,
+                               idBool              * /* aExitFlag */,
+                               rpxReceiverReadContext aReadContext,
+                               rpdXLog             * aXLog,
+                               ULong                /*aTimeOutSec*/ );
+    
+    static IDE_RC sendLobPartialWrite( void                * aHBTResource,
+                                       cmiProtocolContext  * aProtocolContext,
+                                       idBool              * aExitFlag,
+                                       smTID                 aTID,
+                                       smSN                  aSN,
+                                       smSN                  aSyncSN,
+                                       ULong                 aLobLocator,
+                                       UInt                  aLobOffset,
+                                       UInt                  aLobPieceLen,
+                                       SChar               * aLobPiece,
+                                       UInt                  aTimeoutSec );
+    static IDE_RC sendLobFinish2Write( void                * aHBTResource,
+                                       cmiProtocolContext  * aProtocolContext,
+                                       idBool              * aExitFlag,
+                                       smTID                 aTID,
+                                       smSN                  aSN,
+                                       smSN                  aSyncSN,
+                                       ULong                 aLobLocator,
+                                       UInt                  aTimeoutSec );
+
+    static IDE_RC sendHandshake( void               * aHBTResource,
+                                 cmiProtocolContext * aProtocolContext,
+                                 idBool             * aExitFlag,
+                                 smTID                aTID,
+                                 smSN                 aSN,
+                                 smSN                 aSyncSN,
+                                 UInt                 aTimeoutSec );
+
+    static IDE_RC sendSyncPKBegin( void               * aHBTResource,
+                                   cmiProtocolContext * aProtocolContext,
+                                   idBool             * aExitFlag,
+                                   smTID                aTID,
+                                   smSN                 aSN,
+                                   smSN                 aSyncSN,
+                                   UInt                 aTimeoutSec );
+
+    static IDE_RC sendSyncPK( void               * aHBTResource,
+                              cmiProtocolContext * aProtocolContext,
+                              idBool             * aExitFlag,
+                              smTID                aTID,
+                              smSN                 aSN,
+                              smSN                 aSyncSN,
+                              ULong                aTableOID,
+                              UInt                 aPKColCnt,
+                              smiValue           * aPKCols,
+                              rpValueLen         * aPKMtdValueLen,
+                              UInt                 aTimeoutSec );
+
+    static IDE_RC sendSyncPKEnd( void               * aHBTResource,
+                                 cmiProtocolContext * aProtocolContext,
+                                 idBool             * aExitFlag,
+                                 smTID                aTID,
+                                 smSN                 aSN,
+                                 smSN                 aSyncSN,
+                                 UInt                 aTimeoutSec );
+
+    static IDE_RC sendFailbackEnd( void               * aHBTResource,
+                                   cmiProtocolContext * aProtocolContext,
+                                   idBool             * aExitFlag,
+                                   smTID                aTID,
+                                   smSN                 aSN,
+                                   smSN                 aSyncSN,
+                                   UInt                 aTimeoutSec );
+
+    /* PROJ-2184 RP Sync performance improvement */
+    static IDE_RC sendSyncStart( void               * aHBTResource,
+                                 cmiProtocolContext * aProtocolContext,
+                                 idBool             * aExitFlag,
+                                 UInt                 aTimeoutSec );
+
+    static IDE_RC recvSyncStart( iduMemAllocator     * /*aAllocator*/,
+                                 idBool              * /*aExitFlag*/,
+                                 cmiProtocolContext  * /*aProtocolContext*/,
+                                 rpdXLog             * aXLog,
+                                 ULong                /*aTimeOutSec*/ );
+
+    static IDE_RC sendSyncTableNumber( void               * aHBTResource,
+                                       cmiProtocolContext * aProtocolContext,
+                                       idBool             * aExitFlag,
+                                       UInt                 aSyncTableNumber,
+                                       UInt                 aTimeoutSec );
+    static IDE_RC recvSyncTableNumber( cmiProtocolContext * aProtocolContext,
+                                       UInt               * aSyncTableNumber,
+                                       ULong                aTimeOut );
+    static IDE_RC sendSyncInsert( void                  * aHBTResource,
+                                  cmiProtocolContext    * aProtocolContext,
+                                  idBool                * aExitFlag,
+                                  smTID                   aTID,
+                                  smSN                    aSN,
+                                  smSN                    aSyncSN,
+                                  UInt                    aImplSPDepth,
+                                  ULong                   aTableOID,
+                                  UInt                    aColCnt,
+                                  smiValue              * aACols,
+                                  rpValueLen            * aAMtdValueLen,
+                                  UInt                    aTimeoutSec );
+    static IDE_RC sendSyncEnd( void                * aHBTResource,
+                               cmiProtocolContext  * aProtocolContext,
+                               idBool              * aExitFlag,
+                               UInt                  aTimeoutSec );
+    static IDE_RC recvSyncEnd( iduMemAllocator     * /*aAllocator*/,
+                               idBool              * /*aExitFlag*/,
+                               cmiProtocolContext  * /*aProtocolContext*/,
+                               rpdXLog             * aXLog,
+                               ULong                 /*aTimeOutSec*/ );
+
+    static IDE_RC sendMetaInitFlag( void               * aHBTResource,
+                                    cmiProtocolContext * aProtocolContext,
+                                    idBool             * aExitFlag,
+                                    idBool               aMetaInitFlag,
+                                    UInt                 aTimeoutSec );
+    static IDE_RC recvMetaInitFlag( cmiProtocolContext * aProtocolContext,
+                                    idBool             * aExitFlag,
+                                    idBool             * aMetaInitFlag,
+                                    ULong                aTimeoutSec );
+
+    static IDE_RC sendConditionInfo( void                 * aHBTResource,
+                                     cmiProtocolContext   * aProtocolContext,
+                                     idBool               * aExitFlag,
+                                     rpdConditionItemInfo * aConditionInfo,
+                                     UInt                   aConditionCnt,
+                                     UInt                   aTimeoutSec );
+
+    static IDE_RC recvConditionInfo( cmiProtocolContext    * aProtocolContext,
+                                     idBool                * aExitFlag,
+                                     rpdConditionItemInfo  * aConditionInfo,
+                                     UInt                  * aConditionCnt,
+                                     UInt                    aTimeoutSec );
+
+    static IDE_RC sendConditionInfoResult( cmiProtocolContext * aProtocolContext,
+                                           idBool             * aExitFlag,
+                                         rpdConditionActInfo  * aConditionInfo,
+                                           UInt                 aConditionCnt,
+                                           UInt                 aTimeoutSec );
+
+    static IDE_RC recvConditionInfoResult( cmiProtocolContext * aProtocolContext,
+                                           idBool             * aExitFlag,
+                                         rpdConditionActInfo  * aConditionInfo,
+                                           UInt                 aTimeoutSec );
+
+    static IDE_RC sendTruncate( void               * aHBTResource,
+                                cmiProtocolContext * aProtocolContext,
+                                idBool             * aExitFlag,
+                                ULong                aTableOID,
+                                UInt                 aTimeoutSec );
+
+    static IDE_RC recvTruncate( cmiProtocolContext * aProtocolContext,
+                                idBool             * aExitFlag,
+                                rpdMeta            * aMeta,
+                                rpdXLog            * aXLog );
+         
     static IDE_RC sendDDLSyncInfo( void                * aHBTResource,
                                    cmiProtocolContext  * aProtocolContext,
                                    idBool              * aExitFlag,
@@ -223,466 +761,54 @@ public:
                                    SChar              ** aSql,
                                    ULong                 aRecvTimeout );
 
-    static void   destroyProtocolContext( cmiProtocolContext * aProtocolContext );
+    static IDE_RC sendXaStartReq( void               * aHBTResource,
+                                  cmiProtocolContext * aProtocolContext,
+                                  idBool             * aExitFlag,
+                                  ID_XID             * aXID,
+                                  smTID                aTID,
+                                  smSN                 aSN,
+                                  ULong                aSendTimeout );
 
-    static IDE_RC sendVersion( void                 * aHBTResource,
-                               cmiProtocolContext   * aProtocolContext,
-                               idBool               * aExitFlag,
-                               rpdVersion           * aReplVersion,
-                               UInt                   aTimeoutSec );
-    static IDE_RC recvVersion( cmiProtocolContext * aProtocolContext,
-                               idBool             * aExitFlag,
-                               rpdVersion *aReplVersion,
-                               ULong       aTimeOut);
-    static IDE_RC sendMetaRepl( void                    * aHBTResource,
-                                cmiProtocolContext      * aProtocolContext,
-                                idBool                  * aExitFlag,
-                                rpdReplications         * aRepl,
-                                UInt                      aTimeoutSec );
-    static IDE_RC recvMetaRepl( cmiProtocolContext * aProtocolContext,
-                                idBool             * aExitFlag,
-                                rpdReplications    * aRepl,
-                                ULong                aTimeOut);
-    static IDE_RC sendMetaReplTbl( void               * aHBTResource,
-                                   cmiProtocolContext * aProtocolContext,
-                                   idBool             * aExitFlag,
-                                   rpdMetaItem        * aItem,
-                                   UInt                 aTimeoutSec );
-    static IDE_RC recvMetaReplTbl( cmiProtocolContext * aProtocolContext,
-                                   idBool             * aExitFlag,
-                                   rpdMetaItem        * aItem,
-                                   ULong                aTimeOut);
-    /* BUG-46120 */
-    static IDE_RC sendMetaPartitionCount( void               * aHBTResource,
-                                          cmiProtocolContext * aProtocolContext,
-                                          idBool             * aExitFlag,
-                                          UInt               * aCount,
-                                          UInt                 aTimeoutSec );
-    static IDE_RC sendMetaPartitionCountA7( void               * aHBTResource,
-                                            cmiProtocolContext * aProtocolContext,
-                                            idBool             * aExitFlag,
-                                            UInt               * aCount,
-                                            UInt                 aTimeoutSec );
-    static IDE_RC recvMetaPartitionCount( cmiProtocolContext * aProtocolContext,
-                                          idBool             * aExitFlag,
-                                          UInt               * aCount,
-                                          ULong                aTimeoutSec );
-    static IDE_RC recvMetaPartitionCountA7( cmiProtocolContext * aProtocolContext,
-                                            idBool             * aExitFlag,
-                                            UInt               * aCount,
-                                            ULong                aTimeoutSec );
 
-    static IDE_RC sendMetaReplCol( void                 * aHBTResource,
-                                   cmiProtocolContext   * aProtocolContext,
-                                   idBool               * aExitFlag,
-                                   rpdColumn            * aColumn,
-                                   UInt                   aTimeoutSec );
-    static IDE_RC recvMetaReplCol( cmiProtocolContext * aProtocolContext,
-                                   idBool             * aExitFlag,
-                                   rpdColumn          * aColumn,
-                                   ULong                aTimeOut );
-    static IDE_RC sendMetaReplIdx( void                 * aHBTResource,
-                                   cmiProtocolContext   * aProtocolContext,
-                                   idBool               * aExitFlag,
-                                   qcmIndex             * aIndex,
-                                   UInt                   aTimeoutSec );
-    static IDE_RC recvMetaReplIdx( cmiProtocolContext * aProtocolContext,
-                                   idBool             * aExitFlag,
-                                   qcmIndex     *aIndex,
-                                   ULong         aTimeOut);
-    static IDE_RC sendMetaReplIdxCol( void                  * aHBTResource,
-                                      cmiProtocolContext    * aProtocolContext,
-                                      idBool                * aExitFlag,
-                                      UInt                    aColumnID,
-                                      UInt                    aKeyColumnFlag,
-                                      UInt                    aTimeoutSec );
-    static IDE_RC recvMetaReplIdxCol( cmiProtocolContext * aProtocolContext,
-                                      idBool             * aExitFlag,
-                                      UInt               * aColumnID,
-                                      UInt               * aKeyColumnFlag,
-                                      ULong                aTimeOut);
+    static IDE_RC sendXaPrepareReq( void               * aHBTResource,
+                                    cmiProtocolContext * aProtocolContext,
+                                    idBool             * aExitFlag,
+                                    ID_XID             * aXID,
+                                    smTID                aTID,
+                                    smSN                 aSN,
+                                    ULong                aSendTimeout );
 
-    /* BUG-34360 Check Constraint */
-    static IDE_RC sendMetaReplCheck( void                   * aHBTResource,
-                                     cmiProtocolContext     * aProtocolContext,
-                                     idBool                 * aExitFlag,
-                                     qcmCheck               * aCheck,
-                                     UInt                     aTimeoutSec );
+    static IDE_RC sendXaPrepare( void               * aHBTResource,
+                                 cmiProtocolContext * aProtocolContext,
+                                 idBool             * aExitFlag,
+                                 ID_XID             * aXID,
+                                 smTID                aTID,
+                                 smSN                 aSN,
+                                 ULong                aSendTimeout );
 
-    /* BUG-34360 Check Constraint */
-    static IDE_RC recvMetaReplCheck( cmiProtocolContext   * aProtocolContext,
-                                     idBool               * aExitFlag,
-                                     qcmCheck             * aCheck,
-                                     const ULong            aTimeoutSec );
-
-    /* BUG-34360 Check Constraint */
-    static IDE_RC recvMetaReplCheckA7( cmiProtocolContext   * aProtocolContext,
-                                       idBool               * aExitFlag,
-                                       qcmCheck             * aCheck,
-                                       const ULong            aTimeoutSec );
-    /* BUG-38759 */
-    static IDE_RC sendMetaDictTableCount( void               * aHBTResource,
-                                          cmiProtocolContext * aProtocolContext,
-                                          idBool             * aExitFlag,
-                                          SInt               * aDictTableCount,
-                                          UInt                 aTimeoutSec );
-
-    static IDE_RC sendMetaDictTableCountA7( void               * aHBTResource,
-                                            cmiProtocolContext * aProtocolContext,
-                                            idBool             * aExitFlag,
-                                            SInt               * aDictTableCount,
-                                            UInt                 aTimeoutSec );
-    /* BUG-38759 */
-    static IDE_RC recvMetaDictTableCount( cmiProtocolContext * aProtocolContext,
-                                          idBool             * aExitFlag,
-                                          SInt               * aDictTableCount,
-                                          ULong                aTimeoutSec );
-    /* BUG-38759 */
-    static IDE_RC recvMetaDictTableCountA7( cmiProtocolContext * aProtocolContext,
-                                            idBool             * aExitFlag,
-                                            SInt               * aDictTableCount,
-                                            ULong                aTimeoutSec );
-
-    static IDE_RC sendHandshakeAck( cmiProtocolContext      * aProtocolContext,
-                                    idBool                  * aExitFlag,
-                                    UInt                      aResult,
-                                    SInt                      aFailbackStatus,
-                                    ULong                     aXSN,
-                                    SChar                   * aMsg,
-                                    UInt                      aTimeoutSec );
-    static IDE_RC recvHandshakeAck( cmiProtocolContext * aProtocolContext,
-                                    idBool          *aExitFlag,
-                                    UInt            *aResult,
-                                    SInt            *aFailbackStatus,
-                                    ULong           *aXSN,
-                                    SChar           *aMsg,
-                                    UInt            *aMsgLen,
-                                    ULong            aTimeOut);
-    static IDE_RC recvXLog( iduMemAllocator   * aAllocator,
-                            cmiProtocolContext *aProtocolContext,
-                            idBool             *aExitFlag,
-                            rpdMeta            *aMeta,  // BUG-20506
-                            rpdXLog            *aXLog,
-                            ULong               aTimeOutSec);
-    static IDE_RC sendTrBegin( void                 * aHBTResource,
-                               cmiProtocolContext   * aProtocolContext,
-                               idBool               * aExitFlag,
-                               smTID                  aTID,
-                               smSN                   aSN,
-                               smSN                   aSyncSN,
-                               UInt                   aTimeoutSec );
-    static IDE_RC sendTrCommit( void               * aHBTResource,
+    static IDE_RC sendXaCommit( void               * aHBTResource,
                                 cmiProtocolContext * aProtocolContext,
                                 idBool             * aExitFlag,
                                 smTID                aTID,
                                 smSN                 aSN,
                                 smSN                 aSyncSN,
+                                smSCN                aGlobalCommitSCN,
                                 idBool               aForceFlush,
                                 UInt                 aTimeoutSec );
-    static IDE_RC sendTrAbort( void                 * aHBTResource,
-                               cmiProtocolContext   * aProtocolContext,
-                               idBool               * aExitFlag,
-                               smTID                  aTID,
-                               smSN                   aSN,
-                               smSN                   aSyncSN,
-                               UInt                   aTimeoutSec );
-    static IDE_RC sendSPSet( void               * aHBTResource,
+
+    static IDE_RC sendXaEnd( void               * aHBTResource,
                              cmiProtocolContext * aProtocolContext,
                              idBool             * aExitFlag,
                              smTID                aTID,
                              smSN                 aSN,
-                             smSN                 aSyncSN,
-                             UInt                 aSPNameLen,
-                             SChar              * aSPName,
-                             UInt                 aTimeoutSec );
-    static IDE_RC sendSPAbort( void                 * aHBTResource,
-                               cmiProtocolContext   * aProtocolContext,
-                               idBool               * aExitFlag,
-                               smTID                  aTID,
-                               smSN                   aSN,
-                               smSN                   aSyncSN,
-                               UInt                   aSPNameLen,
-                               SChar                * aSPName,
-                               UInt                   aTimeoutSec );
-    static IDE_RC sendStmtBegin( void               * aHBTResource,
-                                 cmiProtocolContext * aCmiProtocolContext,
-                                 idBool             * aExitFlag,
-                                 rpdLogAnalyzer     * aLA,
-                                 UInt                 aTimeoutSec );
-    static IDE_RC sendStmtEnd( void                 * aHBTResource,
-                               cmiProtocolContext   * aCmiProtocolContext,
-                               idBool               * aExitFlag,
-                               rpdLogAnalyzer       * aLA,
-                               UInt                   aTimeoutSec );
-    static IDE_RC sendCursorOpen( void                  * aHBTResource,
-                                  cmiProtocolContext    * aCmiProtocolContext,
-                                  idBool                * aExitFlag,
-                                  rpdLogAnalyzer        * aLA,
-                                  UInt                    aTimeoutSec );
-    static IDE_RC sendCursorClose( void                 * aHBTResource,
-                                   cmiProtocolContext   * aCmiProtocolContext,
-                                   idBool               * aExitFlag,
-                                   rpdLogAnalyzer       * aLA,
-                                   UInt                   aTimeoutSec );
-    static IDE_RC sendInsert( void               * aHBTResource,
-                              cmiProtocolContext * aProtocolContext,
+                             ULong                aSendTimeout );
+
+    static IDE_RC recvXLogA7( iduMemAllocator    * aAllocator,
+                              rpxReceiverReadContext aProtocolContext,
                               idBool             * aExitFlag,
-                              smTID                aTID,
-                              smSN                 aSN,
-                              smSN                 aSyncSN,
-                              UInt                 aImplSPDepth,
-                              ULong                aTableOID,
-                              UInt                 aColCnt,
-                              smiValue           * aACols,
-                              rpValueLen         * aAMtdValueLen,
-                              UInt                 aTimeoutSec );
-    static IDE_RC sendUpdate( void               * aHBTResource,
-                              cmiProtocolContext * aProtocolContext,
-                              idBool             * aExitFlag,
-                              smTID                aTID,
-                              smSN                 aSN,
-                              smSN                 aSyncSN,
-                              UInt                 aImplSPDepth,
-                              ULong                aTableOID,
-                              UInt                 aPKColCnt,
-                              UInt                 aUpdateColCnt,
-                              smiValue           * aPKCols,
-                              UInt               * aCIDs,
-                              smiValue           * aBCols,
-                              smiChainedValue    * aBChainedCols, // BUG-1705
-                              UInt               * aBChainedColsTotalLen, /* BUG-33722 */
-                              smiValue           * aACols,
-                              rpValueLen         * aPKMtdValueLen,
-                              rpValueLen         * aAMtdValueLen,
-                              rpValueLen         * aBMtdValueLen,
-                              UInt                 aTimeoutSec );
-    static IDE_RC sendDelete( void               * aHBTResource,
-                              cmiProtocolContext * aProtocolContext,
-                              idBool             * aExitFlag,
-                              smTID                aTID,
-                              smSN                 aSN,
-                              smSN                 aSyncSN,
-                              UInt                aImplSPDepth,
-                              ULong                aTableOID,
-                              UInt                 aPKColCnt,
-                              smiValue           * aPKCols,
-                              rpValueLen         * aPKMtdValueLen,
-                              UInt                 aColCnt,
-                              UInt               * aCIDs,
-                              smiValue           * aBCols,
-                              smiChainedValue    * aBChainedCols, // PROJ-1705
-                              rpValueLen         * aBLen,
-                              UInt               * aBChainedColsTotalLen,
-                              UInt                 aTimeoutSec ); /* BUG-33722 */
-
-    static IDE_RC sendChainedValueForA7( void               * aHBTResource,
-                                         cmiProtocolContext * aProtocolContext,
-                                         idBool             * aExitFlag,
-                                         smiChainedValue    * aChainedValue,
-                                         rpValueLen           aBMtdValueLen,
-                                         UInt                 aChainedValueLen,
-                                         UInt                 aTimeoutSec );
-    static IDE_RC sendStop( void                * aHBTResource,
-                            cmiProtocolContext  * aProtocolContext,
-                            idBool              * aExitFlag,
-                            smTID                 aTID,
-                            smSN                  aSN,
-                            smSN                  aSyncSN,
-                            smSN                  aRestartSN,
-                            UInt                  aTimeoutSec );         // BUG-17748
-    static IDE_RC sendKeepAlive( void               * aHBTResource,
-                                 cmiProtocolContext * aProtocolContext,
-                                 idBool             * aExitFlag,
-                                 smTID                aTID,
-                                 smSN                 aSN,
-                                 smSN                 aSyncSN,
-                                 smSN                 aRestartSN,
-                                 UInt                 aTimeoutSec );    // BUG-17748
-    static IDE_RC sendFlush( void                   * aHBTResource,
-                             cmiProtocolContext     * aProtocolContext,
-                             idBool                 * aExitFlag,
-                             smTID                    aTID,
-                             smSN                     aSN,
-                             smSN                     aSyncSN,
-                             UInt                     aFlushOption,
-                             UInt                     aTimeoutSec );
-
-    static IDE_RC sendAck(cmiProtocolContext * aProtocolContext,
-                          idBool             * aExitFlag,
-                          rpXLogAck          * aAck,
-                          UInt                 aTimeoutSec );
-
-    static IDE_RC recvAck(iduMemAllocator   * aAllocator,
-                          cmiProtocolContext * aProtocolContext,
-                          idBool         *aExitFlag,
-                          rpXLogAck      *aAck,
-                          ULong           aTimeOut,
-                          idBool         *aIsTimeOut);
-    static IDE_RC sendLobCursorOpen( void               * aHBTResource,
-                                     cmiProtocolContext * aProtocolContext,
-                                     idBool             * aExitFlag,
-                                     smTID                aTID,
-                                     smSN                 aSN,
-                                     smSN                 aSyncSN,
-                                     ULong                aTableOID,
-                                     ULong                aLobLocator,
-                                     UInt                 aLobColumnID,
-                                     UInt                 aPKColCnt,
-                                     smiValue           * aPKCols,
-                                     rpValueLen         * aPKMtdValueLen,
-                                     UInt                 aTimeoutSec );
-    static IDE_RC sendLobCursorClose( void                  * aHBTResource,
-                                      cmiProtocolContext    * aProtocolContext,
-                                      idBool                * aExitFlag,
-                                      smTID                   aTID,
-                                      smSN                    aSN,
-                                      smSN                    aSyncSN,
-                                      ULong                   aLobLocator,
-                                      UInt                    aTimeoutSec );
-    static IDE_RC sendLobPrepare4Write( void                * aHBTResource,
-                                        cmiProtocolContext  * aProtocolContext,
-                                        idBool              * aExitFlag,
-                                        smTID                 aTID,
-                                        smSN                  aSN,
-                                        smSN                  aSyncSN,
-                                        ULong                 aLobLocator,
-                                        UInt                  aLobOffset,
-                                        UInt                  aLobOldSize,
-                                        UInt                  aLobNewSize,
-                                        UInt                  aTimeoutSec );
-
-    static IDE_RC sendLobTrim( void                * aHBTResource,
-                               cmiProtocolContext  * aProtocolContext,
-                               idBool              * aExitFlag,
-                               smTID                 aTID,
-                               smSN                  aSN,
-                               smSN                  aSyncSN,
-                               ULong                 aLobLocator,
-                               UInt                  aLobOffset,
-                               UInt                  aTimeoutSec );
-
-    static IDE_RC recvLobTrim( iduMemAllocator     * /*aAllocator*/,
-                               idBool              * /* aExitFlag */,
-                               cmiProtocolContext  * aProtocolContext,
-                               rpdXLog             * aXLog,
-                               ULong                /*aTimeOutSec*/ );
-    
-    static IDE_RC sendLobPartialWrite( void                * aHBTResource,
-                                       cmiProtocolContext  * aProtocolContext,
-                                       idBool              * aExitFlag,
-                                       smTID                 aTID,
-                                       smSN                  aSN,
-                                       smSN                  aSyncSN,
-                                       ULong                 aLobLocator,
-                                       UInt                  aLobOffset,
-                                       UInt                  aLobPieceLen,
-                                       SChar               * aLobPiece,
-                                       UInt                  aTimeoutSec );
-    static IDE_RC sendLobFinish2Write( void                * aHBTResource,
-                                       cmiProtocolContext  * aProtocolContext,
-                                       idBool              * aExitFlag,
-                                       smTID                 aTID,
-                                       smSN                  aSN,
-                                       smSN                  aSyncSN,
-                                       ULong                 aLobLocator,
-                                       UInt                  aTimeoutSec );
-
-    static IDE_RC sendHandshake( void               * aHBTResource,
-                                 cmiProtocolContext * aProtocolContext,
-                                 idBool             * aExitFlag,
-                                 smTID                aTID,
-                                 smSN                 aSN,
-                                 smSN                 aSyncSN,
-                                 UInt                 aTimeoutSec );
-
-    static IDE_RC sendSyncPKBegin( void               * aHBTResource,
-                                   cmiProtocolContext * aProtocolContext,
-                                   idBool             * aExitFlag,
-                                   smTID                aTID,
-                                   smSN                 aSN,
-                                   smSN                 aSyncSN,
-                                   UInt                 aTimeoutSec );
-
-    static IDE_RC sendSyncPK( void               * aHBTResource,
-                              cmiProtocolContext * aProtocolContext,
-                              idBool             * aExitFlag,
-                              smTID                aTID,
-                              smSN                 aSN,
-                              smSN                 aSyncSN,
-                              ULong                aTableOID,
-                              UInt                 aPKColCnt,
-                              smiValue           * aPKCols,
-                              rpValueLen         * aPKMtdValueLen,
-                              UInt                 aTimeoutSec );
-
-    static IDE_RC sendSyncPKEnd( void               * aHBTResource,
-                                 cmiProtocolContext * aProtocolContext,
-                                 idBool             * aExitFlag,
-                                 smTID                aTID,
-                                 smSN                 aSN,
-                                 smSN                 aSyncSN,
-                                 UInt                 aTimeoutSec );
-
-    static IDE_RC sendFailbackEnd( void               * aHBTResource,
-                                   cmiProtocolContext * aProtocolContext,
-                                   idBool             * aExitFlag,
-                                   smTID                aTID,
-                                   smSN                 aSN,
-                                   smSN                 aSyncSN,
-                                   UInt                 aTimeoutSec );
-
-    /* PROJ-2184 RP Sync performance improvement */
-    static IDE_RC sendSyncStart( void               * aHBTResource,
-                                 cmiProtocolContext * aProtocolContext,
-                                 idBool             * aExitFlag,
-                                 UInt                 aTimeoutSec );
-
-    static IDE_RC recvSyncStart( iduMemAllocator     * /*aAllocator*/,
-                                 idBool              * /*aExitFlag*/,
-                                 cmiProtocolContext  * /*aProtocolContext*/,
-                                 rpdXLog             * aXLog,
-                                 ULong                /*aTimeOutSec*/ );
-
-    static IDE_RC sendSyncTableNumber( void               * aHBTResource,
-                                       cmiProtocolContext * aProtocolContext,
-                                       idBool             * aExitFlag,
-                                       UInt                 aSyncTableNumber,
-                                       UInt                 aTimeoutSec );
-    static IDE_RC recvSyncTableNumber( cmiProtocolContext * aProtocolContext,
-                                       UInt               * aSyncTableNumber,
-                                       ULong                aTimeOut );
-    static IDE_RC sendSyncInsert( void                  * aHBTResource,
-                                  cmiProtocolContext    * aProtocolContext,
-                                  idBool                * aExitFlag,
-                                  smTID                   aTID,
-                                  smSN                    aSN,
-                                  smSN                    aSyncSN,
-                                  UInt                    aImplSPDepth,
-                                  ULong                   aTableOID,
-                                  UInt                    aColCnt,
-                                  smiValue              * aACols,
-                                  rpValueLen            * aAMtdValueLen,
-                                  UInt                    aTimeoutSec );
-    static IDE_RC sendRebuildIndex( void                * aHBTResource,
-                                    cmiProtocolContext  * aProtocolContext,
-                                    idBool              * aExitFlag,
-                                    UInt                  aTimeoutSec );
-    static IDE_RC recvRebuildIndex( iduMemAllocator    * /*aAllocator*/,
-                                    idBool              * /*aExitFlag*/,
-                                    cmiProtocolContext  * /*aProtocolContext*/,
-                                    rpdXLog             * aXLog,
-                                    ULong                 /*aTimeOutSec*/ );
-    
-    static IDE_RC sendMetaInitFlag( void               * aHBTResource,
-                                    cmiProtocolContext * aProtocolContext,
-                                    idBool             * aExitFlag,
-                                    idBool               aMetaInitFlag,
-                                    UInt                 aTimeoutSec );
-    static IDE_RC recvMetaInitFlag( cmiProtocolContext * aProtocolContext,
-                                    idBool             * aExitFlag,
-                                    idBool             * aMetaInitFlag,
-                                    ULong                aTimeoutSec );
-
+                              rpdMeta            * aMeta,
+                              rpdXLog            * aXLog,
+                              ULong                aTimeoutSec );
 private:
     static IDE_RC allocNullValue(iduMemAllocator * aAllocator,
                                  iduMemory       * aMemory,
@@ -690,11 +816,6 @@ private:
                                  const mtcColumn * aColumn,
                                  const mtdModule * aModule);
 
-    static IDE_RC readCmBlock( cmiProtocolContext * aProtocolContext,
-                               idBool             * aExitFlag,
-                               idBool             * aIsTimeout,
-                               ULong                aTimeout );
-    
     static IDE_RC readCmProtocol( cmiProtocolContext * aProtocolContext,
                                   cmiProtocol        * aProtocol,
                                   idBool             * aExitFlag,
@@ -719,7 +840,7 @@ private:
                                       UInt                    aResult,
                                       SInt                    aFailbackStatus,
                                       ULong                   aXSN,
-                                      SChar                 * aMsg,
+                                      const SChar           * aMsg,
                                       UInt                    aTimeoutSec );
 
     static IDE_RC recvHandshakeAckA5( cmiProtocolContext * aProtocolContext,
@@ -736,10 +857,11 @@ private:
                                       UInt                    aResult,
                                       SInt                    aFailbackStatus,
                                       ULong                   aXSN,
-                                      SChar                 * aMsg,
+                                      const SChar           * aMsg,
                                       UInt                    aTimeoutSec );
 
-    static IDE_RC recvHandshakeAckA7( cmiProtocolContext * aProtocolContext,
+    static IDE_RC recvHandshakeAckA7( void               * aHBTResource,
+                                      cmiProtocolContext * aProtocolContext,
                                       idBool          *aExitFlag,
                                       UInt            *aResult,
                                       SInt            *aFailbackStatus,
@@ -747,6 +869,18 @@ private:
                                       SChar           *aMsg,
                                       UInt            *aMsgLen,
                                       ULong            aTimeOut);
+
+    static IDE_RC sendTempSyncHandshakeAckA7( cmiProtocolContext    * aProtocolContext,
+                                              idBool                * aExitFlag,
+                                              UInt                    aResult,
+                                              SChar                 * aMsg,
+                                              UInt                    aTimeoutSec );
+    static IDE_RC recvTempSyncHandshakeAckA7( cmiProtocolContext * aProtocolContext,
+                                              idBool             * aExitFlag,
+                                              UInt               * aResult,
+                                              SChar              * aMsg,
+                                              UInt               * aMsgLen,
+                                              ULong                aTimeOut );
 
     static IDE_RC recvMetaReplA5( cmiProtocolContext * aProtocolContext,
                                   idBool             * aExitFlag,
@@ -756,6 +890,17 @@ private:
                                   idBool             * aExitFlag,
                                   rpdReplications    * aRepl,
                                   ULong                aTimeoutSec );
+ 
+    static IDE_RC recvTempSyncMetaReplA7( cmiProtocolContext * aProtocolContext,
+                                          idBool             * aExitFlag,
+                                          rpdReplications    * aRepl,
+                                          ULong                aTimeoutSec );
+ 
+    static IDE_RC recvTempSyncReplItemA7( cmiProtocolContext * aProtocolContext,
+                                          idBool             * aExitFlag,
+                                          rpdReplSyncItem    * aTempSyncItem,
+                                          ULong                aTimeoutSec );
+
 
     static IDE_RC recvMetaReplTblA5( cmiProtocolContext * aProtocolContext,
                                      idBool             * aExitFlag,
@@ -773,6 +918,7 @@ private:
     static IDE_RC recvMetaReplColA7( cmiProtocolContext * aProtocolContext,
                                      idBool             * aExitFlag,
                                      rpdColumn          * aColumn,
+                                     rpdVersion           aRemoteVersion,                                
                                      ULong                aTimeoutSec );
 
     static IDE_RC recvMetaReplIdxA5( cmiProtocolContext * aProtocolContext,
@@ -801,40 +947,34 @@ private:
                               rpdMeta            * aMeta,
                               rpdXLog            * aXLog,
                               ULong                aTimeoutSec );
-    static IDE_RC recvXLogA7( iduMemAllocator    * aAllocator,
-                              cmiProtocolContext * aProtocolContext,
-                              idBool             * aExitFlag,
-                              rpdMeta            * aMeta,
-                              rpdXLog            * aXLog,
-                              ULong                aTimeoutSec );
 
     static IDE_RC recvTrBeginA5( cmiProtocol         * aProtocol,
                                  rpdXLog             * aXLog );
-    static IDE_RC recvTrBeginA7( cmiProtocolContext  * aProtocolContext,
+    static IDE_RC recvTrBeginA7( rpxReceiverReadContext aReadContext,
                                  idBool              * aExitFlag,
                                  rpdXLog             * aXLog );
 
     static IDE_RC recvTrCommitA5( cmiProtocol        * aProtocol,
                                   rpdXLog            * aXLog );
-    static IDE_RC recvTrCommitA7( cmiProtocolContext * aProtocolContext,
+    static IDE_RC recvTrCommitA7( rpxReceiverReadContext aReadContext,
                                   idBool             * aExitFlag,
                                   rpdXLog            * aXLog );
 
     static IDE_RC recvTrAbortA5( cmiProtocol         * aProtocol,
                                  rpdXLog             * aXLog );
-    static IDE_RC recvTrAbortA7( cmiProtocolContext  * aProtocolContext,
+    static IDE_RC recvTrAbortA7( rpxReceiverReadContext aReadContext,
                                  idBool              * aExitFlag,
                                  rpdXLog             * aXLog );
     
     static IDE_RC recvSPSetA5( cmiProtocol         * aProtocol,
                                rpdXLog             * aXLog );
-    static IDE_RC recvSPSetA7( cmiProtocolContext  * aProtocolContext,
+    static IDE_RC recvSPSetA7( rpxReceiverReadContext aReadContext,
                                idBool              * aExitFlag,
                                rpdXLog             * aXLog );
 
     static IDE_RC recvSPAbortA5( cmiProtocol         * aProtocol,
                                  rpdXLog             * aXLog );
-    static IDE_RC recvSPAbortA7( cmiProtocolContext  * aProtocolContext,
+    static IDE_RC recvSPAbortA7( rpxReceiverReadContext aReadContext,
                                  idBool              * aExitFlag,
                                  rpdXLog             * aXLog );
 
@@ -847,7 +987,7 @@ private:
                                 ULong                aTimeOutSec );
     static IDE_RC recvInsertA7( iduMemAllocator    * aAllocator,
                                 idBool             * aExitFlag,
-                                cmiProtocolContext * aProtocolContext,
+                                rpxReceiverReadContext aReadContext,
                                 rpdMeta            * aMeta,   // BUG-20506
                                 rpdXLog            * aXLog,
                                 ULong                aTimeOutSec );
@@ -861,7 +1001,7 @@ private:
                                 ULong                 aTimeOutSec );
     static IDE_RC recvUpdateA7( iduMemAllocator     * aAllocator,
                                 idBool              * aExitFlag,
-                                cmiProtocolContext  * aProtocolContext,
+                                rpxReceiverReadContext aReadContext,
                                 rpdMeta             * aMeta,   // BUG-20506
                                 rpdXLog             * aXLog,
                                 ULong                 aTimeOutSec );
@@ -874,26 +1014,26 @@ private:
                                 ULong                 aTimeOutSec );
     static IDE_RC recvDeleteA7( iduMemAllocator     * aAllocator,
                                 idBool              * aExitFlag,
-                                cmiProtocolContext  * aProtocolContext,
+                                rpxReceiverReadContext aReadContext,
                                 rpdMeta             * aMeta,   // BUG-20506
                                 rpdXLog             * aXLog,
                                 ULong                 aTimeOutSec );
 
     static IDE_RC recvStopA5( cmiProtocol        * aProtocol,
                               rpdXLog            * aXLog );
-    static IDE_RC recvStopA7( cmiProtocolContext * aProtocolContext,
+    static IDE_RC recvStopA7( rpxReceiverReadContext aReadContext,
                               idBool              * aExitFlag,
                               rpdXLog            * aXLog );
     
     static IDE_RC recvKeepAliveA5( cmiProtocol        * aProtocol,
                                    rpdXLog            * aXLog );
-    static IDE_RC recvKeepAliveA7( cmiProtocolContext * aProtocolContext,
+    static IDE_RC recvKeepAliveA7( rpxReceiverReadContext aReadContext,
                                    idBool             * aExitFlag,
                                    rpdXLog            * aXLog );
     
     static IDE_RC recvFlushA5( cmiProtocol         * aProtocol,
                                rpdXLog             * aXLog );
-    static IDE_RC recvFlushA7( cmiProtocolContext  * aProtocolContext,
+    static IDE_RC recvFlushA7( rpxReceiverReadContext aReadContext,
                                idBool              * aExitFlag,
                                rpdXLog             * aXLog );
 
@@ -906,20 +1046,20 @@ private:
                                        ULong                 aTimeOutSec );
     static IDE_RC recvLobCursorOpenA7( iduMemAllocator     * aAllocator,
                                        idBool              * aExitFlag,
-                                       cmiProtocolContext  * aProtocolContext,
+                                       rpxReceiverReadContext aReadContext,
                                        rpdMeta             * aMeta,    // BUG-20506
                                        rpdXLog             * aXLog,
                                        ULong                 aTimeOutSec );
         
     static IDE_RC recvLobCursorCloseA5( cmiProtocol         * aProtocol,
                                         rpdXLog             * aXLog );
-    static IDE_RC recvLobCursorCloseA7( cmiProtocolContext  * aProtocolContext,
+    static IDE_RC recvLobCursorCloseA7( rpxReceiverReadContext aReadContext,
                                         idBool              * aExitFlag,
                                         rpdXLog             * aXLog );
     
     static IDE_RC recvLobPrepare4WriteA5( cmiProtocol        * aProtocol,
                                           rpdXLog            * aXLog );
-    static IDE_RC recvLobPrepare4WriteA7( cmiProtocolContext * aProtocolContext,
+    static IDE_RC recvLobPrepare4WriteA7( rpxReceiverReadContext aReadContext,
                                           idBool             * aExitFlag,
                                           rpdXLog            * aXLog );
     
@@ -928,19 +1068,19 @@ private:
                                          rpdXLog            * aXLog );
     static IDE_RC recvLobPartialWriteA7( iduMemAllocator    * aAllocator,
                                          idBool             * aExitFlag,
-                                         cmiProtocolContext * aProtocolContext,
+                                         rpxReceiverReadContext aReadContext,
                                          rpdXLog            * aXLog,
                                          ULong                aTimeOutSec );
     
     static IDE_RC recvLobFinish2WriteA5( cmiProtocol        * aProtocol,
                                          rpdXLog            * aXLog );
-    static IDE_RC recvLobFinish2WriteA7( cmiProtocolContext * aProtocolContext,
+    static IDE_RC recvLobFinish2WriteA7( rpxReceiverReadContext aReadContext,
                                          idBool             * aExitFlag,
                                          rpdXLog            * aXLog );
 
     static IDE_RC recvHandshakeA5( cmiProtocol        * aProtocol,
                                    rpdXLog            * aXLog );
-    static IDE_RC recvHandshakeA7( cmiProtocolContext * aProtocolContext,
+    static IDE_RC recvHandshakeA7( rpxReceiverReadContext aReadContext,
                                    idBool             * aExitFlag,
                                    rpdXLog            * aXLog );
 
@@ -981,17 +1121,18 @@ private:
     // PROJ-1705
     static IDE_RC recvValueA7( iduMemAllocator    * aAllocator,
                                idBool             * aExitFlag,
-                               cmiProtocolContext * aProtocolContext,
+                               rpxReceiverReadContext aReadContext,
                                iduMemory          * aMemory,
                                smiValue           * aValue,
-                               ULong                aTimeOutSec );
+                               ULong                aTimeOutSec,
+                               mtcColumn          * aMtcColumn );
 
     static IDE_RC recvCIDA5( idBool             * aExitFlag,
                              cmiProtocolContext * aProtocolContext,
                              UInt               * aCID,
                              ULong                aTimeOutSec );
     static IDE_RC recvCIDA7( idBool             * aExitFlag,
-                             cmiProtocolContext * aProtocolContext,
+                             rpxReceiverReadContext aReadContext,
                              UInt               * aCID,
                              ULong                aTimeOutSec );
     
@@ -1011,7 +1152,8 @@ private:
                             ULong           aTimeOut,
                             idBool         *aIsTimeOut);
 
-    static IDE_RC recvAckA7(iduMemAllocator   * aAllocator,
+    static IDE_RC recvAckA7(iduMemAllocator    * aAllocator,
+                            void               * aHBTResource,
                             cmiProtocolContext * aProtocolContext,
                             idBool         *aExitFlag,
                             rpXLogAck      *aAck,
@@ -1040,6 +1182,11 @@ private:
                                  idBool             * aExitFlag,
                                  idBool               aIsEnd,
                                  UInt                 aTimeoutSec );
+
+    static IDE_RC flushPedningBlock( void                 * aHBTResource,
+                                     cmiProtocolContext   * aProtocolContext,
+                                     idBool               * aExitFlag,
+                                     UInt                   aTimeoutSec );
 
     static IDE_RC checkAndFlush( void                   * aHBTResource,
                                  cmiProtocolContext     * aProtocolContext,
@@ -1365,6 +1512,19 @@ private:
                                   rpdReplications    * aRepl,
                                   UInt                 aTimeoutSec );
 
+    static IDE_RC sendTempSyncMetaReplA7( void               * aHBTResource,
+                                          cmiProtocolContext * aProtocolContext,
+                                          idBool             * aExitFlag,
+                                          rpdReplications    * aRepl,
+                                          UInt                 aTimeoutSec );
+
+
+    static IDE_RC sendTempSyncReplItemA7( void               * aHBTResource,
+                                          cmiProtocolContext * aProtocolContext,
+                                          idBool             * aExitFlag,
+                                          rpdReplSyncItem    * aTempSyncItem,
+                                          UInt                 aTimeoutSec );
+
     static IDE_RC sendMetaReplTblA7( void               * aHBTResource,
                                      cmiProtocolContext * aProtocolContext,
                                      idBool             * aExitFlag,
@@ -1375,6 +1535,7 @@ private:
                                      cmiProtocolContext * aProtocolContext,
                                      idBool             * aExitFlag,
                                      rpdColumn          * aColumn,
+                                     rpdVersion           aRemoteVersion,
                                      UInt                 aTimeoutSec );
 
     static IDE_RC sendMetaReplIdxA7( void               * aHBTResource,
@@ -1726,7 +1887,7 @@ private:
                                             UInt               * aErrCode,
                                             SChar              * aErrMsg,
                                             ULong                aRecvTimeout );
-    
+                                       
     static  IDE_RC sendMetaInitFlagA7( void               * aHBTResource,
                                        cmiProtocolContext * aProtocolContext,
                                        idBool             * aExitFlag,
@@ -1738,9 +1899,107 @@ private:
                                       idBool             * aMetaInitFlag,
                                       ULong                aTimeoutSec );
 
+    static IDE_RC sendConditionInfoA7( void                 * aHBTResource,
+                                       cmiProtocolContext   * aProtocolContext,
+                                       idBool               * aExitFlag,
+                                       rpdConditionItemInfo * aConditionInfo,
+                                       UInt                   aConditionCnt,
+                                       UInt                   aTimeoutSec );
+
+    static IDE_RC recvConditionInfoA7( cmiProtocolContext   * aProtocolContext,
+                                       idBool               * aExitFlag,
+                                       rpdConditionItemInfo * aRecvConditionInfo,
+                                       UInt                 * aRecvConditionCnt,
+                                       ULong                   aTimeoutSec );
+
+    static IDE_RC sendConditionInfoResultA7( cmiProtocolContext   * aProtocolContext,
+                                             idBool               * aExitFlag,
+                                             rpdConditionActInfo  * aConditionInfo,
+                                             UInt                   aConditionCnt,
+                                             UInt                   aTimeoutSec );
+
+    static IDE_RC recvConditionInfoResultA7( cmiProtocolContext  * aProtocolContext,
+                                             idBool              * aExitFlag,
+                                             rpdConditionActInfo * aConditionInfo,
+                                             ULong                 aTimeoutSec );
+
+    static IDE_RC sendTruncateA7( void               * aHBTResource,
+                                  cmiProtocolContext * aProtocolContext,
+                                  idBool             * aExitFlag,
+                                  ULong                aTableOID,
+                                  UInt                 aTimeoutSec );
+
+    static IDE_RC recvTruncateA7( cmiProtocolContext * aProtocolContext,
+                                  idBool             * aExitFlag,
+                                  rpdMeta            * aMeta,
+                                  rpdXLog            * aXLog );
+
+    static IDE_RC sendXaStartReqA7( void               * aHBTResource,
+                                    cmiProtocolContext * aProtocolContext,
+                                    idBool             * aExitFlag,
+                                    ID_XID             * aXID,
+                                    smTID                aTID,
+                                    smSN                 aSN,
+                                    ULong                aSendTimeout );
+    static IDE_RC recvXaStartReqA7( rpxReceiverReadContext   aReadContext,
+                                    idBool                 * /*aExitFlag*/,
+                                    rpdXLog                * aXLog );
+
+
+    static IDE_RC sendXaPrepareReqA7( void               * aHBTResource,
+                                      cmiProtocolContext * aProtocolContext,
+                                      idBool             * aExitFlag,
+                                      ID_XID             * aXID,
+                                      smTID                aTID,
+                                      smSN                 aSN,
+                                      ULong                aSendTimeout );
+    static IDE_RC recvXaPrepareReqA7( rpxReceiverReadContext   aReadContext,
+                                      idBool                 * /*aExitFlag*/,
+                                      rpdXLog                * aXLog );
+
+
+    static IDE_RC sendXaPrepareA7( void               * aHBTResource,
+                                   cmiProtocolContext * aProtocolContext,
+                                   idBool             * aExitFlag,
+                                   ID_XID             * aXID,
+                                   smTID                aTID,
+                                   smSN                 aSN,
+                                   ULong                aSendTimeout );
+    static IDE_RC recvXaPrepareA7( rpxReceiverReadContext   aReadContext,
+                                   idBool                 * /*aExitFlag*/,
+                                   rpdXLog                * aXLog );
+
+    static IDE_RC sendXaCommitA7( void               * aHBTResource,
+                                  cmiProtocolContext * aProtocolContext,
+                                  idBool             * aExitFlag,
+                                  smTID                aTID,
+                                  smSN                 aSN,
+                                  smSN                 aSyncSN,
+                                  smSCN                aGlobalCommitSCN,
+                                  idBool               aForceFlush,
+                                  UInt                 aTimeoutSec );
+
+    static IDE_RC recvXaCommitA7( rpxReceiverReadContext aReadContext,
+                                  idBool             * aExitFlag,
+                                  rpdXLog            * aXLog );
+
+    static IDE_RC sendXaEndA7( void               * aHBTResource,
+                               cmiProtocolContext * aProtocolContext,
+                               idBool             * aExitFlag,
+                               smTID                aTID,
+                               smSN                 aSN,
+                               ULong                aSendTimeout );
+    static IDE_RC recvXaEndA7( rpxReceiverReadContext   aReadContext,
+                               idBool                 * /*aExitFlag*/,
+                               rpdXLog                * aXLog );
+
+    static IDE_RC readXLogfile( rpdXLogfileMgr * aXLogfileManager );
+
     // Attribute
 public:
     static PDL_Time_Value    mTV1Sec;
+
+    static UInt rpnXLogLengthForEachType[CMP_OP_RP_MAX_VER1 + 1];
     /* PROJ-2453 */
 public:
     static IDE_RC sendAckOnDML( void               *aHBTResource,

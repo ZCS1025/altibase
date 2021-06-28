@@ -39,7 +39,7 @@ extern mtfModule mtfEqualAny;
 extern mtfModule mtfNotEqualAll;
 extern mtfModule mtfList;
 
-// 12ê°œì˜ ì—°ì‚°ìë¥¼ ì§€ì›í•œë‹¤.
+// 12°³ÀÇ ¿¬»êÀÚ¸¦ Áö¿øÇÑ´Ù.
 const qmoTransOperatorModule qmoTransMgr::operatorModule[] = {
     { & mtfEqual       , 0           }, // 0
     { & mtfNotEqual    , 1           }, // 1
@@ -56,21 +56,21 @@ const qmoTransOperatorModule qmoTransMgr::operatorModule[] = {
     { NULL             , ID_UINT_MAX }  // 12
 };
 
-// ID_UINT_MAXë¥¼ ì‚¬ìš©í•˜ë©´ ì½ê¸°ê°€ ì–´ë ¤ì›Œ ì ì‹œ ì§§ì€ ë‹¨ì–´ë¡œ defineí•œë‹¤.
+// ID_UINT_MAX¸¦ »ç¿ëÇÏ¸é ÀĞ±â°¡ ¾î·Á¿ö Àá½Ã ÂªÀº ´Ü¾î·Î defineÇÑ´Ù.
 #define XX     ((UInt)0xFFFFFFFF)  // ID_UINT_MAX
 
 /*
  * DOC-31095 Transitive Predicate Generation.odt p52
  * <transitive operation matrix>
  *
- * BUG-29444: not equalê³¼ between ì—°ì‚°ìì— ì˜í•´ ìƒì„±ë˜ëŠ”
- *            transitive predicateì— ì˜¤ë¥˜
+ * BUG-29444: not equal°ú between ¿¬»êÀÚ¿¡ ÀÇÇØ »ı¼ºµÇ´Â
+ *            transitive predicate¿¡ ¿À·ù
  *
- * a <> b AND b BETWEEN x and y ì¸ ê²½ìš°
- * a NOT BETWEEN x and y ê°€ ì¶”ê°€ë˜ë„ë¡ ë˜ì–´ìˆì—ˆëŠ”ë° ì´ëŠ” ì˜ëª»ëœ predicate ì„
+ * a <> b AND b BETWEEN x and y ÀÎ °æ¿ì
+ * a NOT BETWEEN x and y °¡ Ãß°¡µÇµµ·Ï µÇ¾îÀÖ¾ú´Âµ¥ ÀÌ´Â Àß¸øµÈ predicate ÀÓ
  *
- * ì´ì™€ ë”ë¶ˆì–´ a <> b ì¸ ê²½ìš° between, like, in ë“±ë„ ëª¨ë‘ ì„±ë¦½í•˜ì§€ ì•ŠëŠ”ë‹¤
- * ë”°ë¼ì„œ matrix ë‘ë²ˆì§¸ í–‰ì„ ì²«ë²ˆì§¸ ì—´ë§Œ ë¹¼ê³  ëª¨ë‘ XX ë¡œ ë³€ê²½
+ * ÀÌ¿Í ´õºÒ¾î a <> b ÀÎ °æ¿ì between, like, in µîµµ ¸ğµÎ ¼º¸³ÇÏÁö ¾Ê´Â´Ù
+ * µû¶ó¼­ matrix µÎ¹øÂ° ÇàÀ» Ã¹¹øÂ° ¿­¸¸ »©°í ¸ğµÎ XX ·Î º¯°æ
  */
 const UInt qmoTransMgr::operationMatrix[QMO_OPERATION_MATRIX_SIZE][QMO_OPERATION_MATRIX_SIZE] = {
     {   0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11 },
@@ -99,7 +99,7 @@ qmoTransMgr::init( qcStatement        * aStatement,
  * Description : PROJ-1404 Transitive Predicate Generation
  *
  * Implementation :
- *     qmoTransPredicate êµ¬ì¡°ì²´ë¥¼ ìƒì„±í•˜ê³  ì´ˆê¸°í™”í•œë‹¤.
+ *     qmoTransPredicate ±¸Á¶Ã¼¸¦ »ı¼ºÇÏ°í ÃÊ±âÈ­ÇÑ´Ù.
  *
  ***********************************************************************/
     
@@ -108,14 +108,14 @@ qmoTransMgr::init( qcStatement        * aStatement,
     IDU_FIT_POINT_FATAL( "qmoTransMgr::init::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aTransPredicate != NULL );
 
     //------------------------------------------
-    // qmoTransPredicate ìƒì„± ë° ì´ˆê¸°í™”
+    // qmoTransPredicate »ı¼º ¹× ÃÊ±âÈ­
     //------------------------------------------
     
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmoTransPredicate),
@@ -150,15 +150,15 @@ qmoTransMgr::addBasePredicate( qcStatement       * aStatement,
  * Description : PROJ-1404 Transitive Predicate Generation
  *
  * Implementation :
- *     qtcNodeí˜•íƒœì˜ predicateìœ¼ë¡œ operator listì™€ operand listë¥¼
- *     êµ¬ì„±í•œë‹¤.
+ *     qtcNodeÇüÅÂÀÇ predicateÀ¸·Î operator list¿Í operand list¸¦
+ *     ±¸¼ºÇÑ´Ù.
  *
  ***********************************************************************/
 
     IDU_FIT_POINT_FATAL( "qmoTransMgr::addBasePredicate::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -167,7 +167,7 @@ qmoTransMgr::addBasePredicate( qcStatement       * aStatement,
     IDE_DASSERT( aNode != NULL );
     
     //------------------------------------------
-    // operator list, operand list ìƒì„±
+    // operator list, operand list »ı¼º
     //------------------------------------------
 
     IDE_TEST( createOperatorAndOperandList( aStatement,
@@ -195,8 +195,8 @@ qmoTransMgr::addBasePredicate( qcStatement       * aStatement,
  * Description : PROJ-1404 Transitive Predicate Generation
  *
  * Implementation :
- *     qmoPredicateí˜•íƒœì˜ predicateìœ¼ë¡œ operator listì™€ operand listë¥¼
- *     êµ¬ì„±í•œë‹¤.
+ *     qmoPredicateÇüÅÂÀÇ predicateÀ¸·Î operator list¿Í operand list¸¦
+ *     ±¸¼ºÇÑ´Ù.
  *
  ***********************************************************************/
     
@@ -206,7 +206,7 @@ qmoTransMgr::addBasePredicate( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmoTransMgr::addBasePredicate::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -215,14 +215,14 @@ qmoTransMgr::addBasePredicate( qcStatement       * aStatement,
     IDE_DASSERT( aPredicate != NULL );
     
     //------------------------------------------
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     //------------------------------------------
 
     sPredicate = aPredicate;
     sNode = aPredicate->node;
     
     //------------------------------------------
-    // operator listì™€ operand list ìƒì„±
+    // operator list¿Í operand list »ı¼º
     //------------------------------------------
 
     while ( sPredicate != NULL )
@@ -256,8 +256,8 @@ qmoTransMgr::processPredicate( qcStatement        * aStatement,
  * Description : PROJ-1404 Transitive Predicate Generation
  *
  * Implementation :
- *     operator listì™€ operand listë¡œ transitive predicate matrixë¥¼
- *     ìƒì„±í•˜ì—¬ ê³„ì‚°í•œë‹¤.
+ *     operator list¿Í operand list·Î transitive predicate matrix¸¦
+ *     »ı¼ºÇÏ¿© °è»êÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -269,7 +269,7 @@ qmoTransMgr::processPredicate( qcStatement        * aStatement,
     IDU_FIT_POINT_FATAL( "qmoTransMgr::processPredicate::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -279,13 +279,13 @@ qmoTransMgr::processPredicate( qcStatement        * aStatement,
     IDE_DASSERT( aIsApplicable != NULL );
 
     //------------------------------------------
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     //------------------------------------------
 
     sTransPredicate = aTransPredicate;
 
     //------------------------------------------
-    // operand set ìƒì„±
+    // operand set »ı¼º
     //------------------------------------------
 
     IDE_TEST( createOperandSet( aStatement,
@@ -296,7 +296,7 @@ qmoTransMgr::processPredicate( qcStatement        * aStatement,
     if ( sIsApplicable == ID_TRUE )
     {
         //------------------------------------------
-        // qmoTransMatrix ìƒì„± ë° ì´ˆê¸°í™”
+        // qmoTransMatrix »ı¼º ¹× ÃÊ±âÈ­
         //------------------------------------------
 
         IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmoTransMatrix),
@@ -306,7 +306,7 @@ qmoTransMgr::processPredicate( qcStatement        * aStatement,
         sTransMatrix->predicate = sTransPredicate;
 
         //------------------------------------------
-        // transitive predicate matrix ìƒì„±
+        // transitive predicate matrix »ı¼º
         //------------------------------------------
 
         IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmoTransMatrixInfo* ) * sTransPredicate->operandSetSize,
@@ -326,14 +326,14 @@ qmoTransMgr::processPredicate( qcStatement        * aStatement,
         sTransMatrix->size = sTransPredicate->operandSetSize;
 
         //------------------------------------------
-        // transitive predicate matrix ì´ˆê¸°í™”
+        // transitive predicate matrix ÃÊ±âÈ­
         //------------------------------------------
 
         IDE_TEST( initializeTransitiveMatrix( sTransMatrix )
                   != IDE_SUCCESS );
 
         //------------------------------------------
-        // transitive predicate matrix ê³„ì‚°
+        // transitive predicate matrix °è»ê
         //------------------------------------------
 
         IDE_TEST( calculateTransitiveMatrix( aStatement,
@@ -367,7 +367,7 @@ qmoTransMgr::generatePredicate( qcStatement     * aStatement,
  * Description : PROJ-1404 Transitive Predicate Generation
  *
  * Implementation :
- *     transitive predicate matrixë¡œ transitive predicateì„ ìƒì„±í•œë‹¤.
+ *     transitive predicate matrix·Î transitive predicateÀ» »ı¼ºÇÑ´Ù.
  *
  ***********************************************************************/
     
@@ -376,14 +376,14 @@ qmoTransMgr::generatePredicate( qcStatement     * aStatement,
     IDU_FIT_POINT_FATAL( "qmoTransMgr::generatePredicate::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aTransMatrix != NULL );
 
     //------------------------------------------
-    // transitive predicate ìƒì„±
+    // transitive predicate »ı¼º
     //------------------------------------------
 
     IDE_TEST( generateTransitivePredicate( aStatement,
@@ -410,7 +410,7 @@ qmoTransMgr::linkPredicate( qtcNode      * aTransitiveNode,
  * Description : PROJ-1404 Transitive Predicate Generation
  *
  * Implementation :
- *     qtcNodeí˜•íƒœì˜ predicateì„ qtcNodeí˜•íƒœë¡œ ì—°ê²°í•œë‹¤.
+ *     qtcNodeÇüÅÂÀÇ predicateÀ» qtcNodeÇüÅÂ·Î ¿¬°áÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -420,19 +420,19 @@ qmoTransMgr::linkPredicate( qtcNode      * aTransitiveNode,
     IDU_FIT_POINT_FATAL( "qmoTransMgr::linkPredicate::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aNode != NULL );
     
     //------------------------------------------
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     //------------------------------------------
 
     sNode = *aNode;
     
     //------------------------------------------
-    // ì—°ê²°
+    // ¿¬°á
     //------------------------------------------
 
     if ( aTransitiveNode != NULL )
@@ -479,7 +479,7 @@ qmoTransMgr::linkPredicate( qcStatement   * aStatement,
  * Description : PROJ-1404 Transitive Predicate Generation
  *
  * Implementation :
- *     qtcNodeí˜•íƒœì˜ predicateì„ qmoPredicateí˜•íƒœë¡œ ì—°ê²°í•œë‹¤.
+ *     qtcNodeÇüÅÂÀÇ predicateÀ» qmoPredicateÇüÅÂ·Î ¿¬°áÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -490,32 +490,32 @@ qmoTransMgr::linkPredicate( qcStatement   * aStatement,
     IDU_FIT_POINT_FATAL( "qmoTransMgr::linkPredicate::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aPredicate != NULL );
     
     //------------------------------------------
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     //------------------------------------------
 
     sTransPredicate = *aPredicate;
     sNode = aTransitiveNode;
 
     //------------------------------------------
-    // ì—°ê²°
+    // ¿¬°á
     //------------------------------------------
 
     while ( sNode != NULL )
     {
-        // qmoPredicateë¥¼ ìƒì„±í•œë‹¤.
+        // qmoPredicate¸¦ »ı¼ºÇÑ´Ù.
         IDE_TEST( qmoPred::createPredicate( QC_QMP_MEM(aStatement),
                                             sNode,
                                             & sNewPredicate )
                   != IDE_SUCCESS );
 
-        // qmoPredicateì„ ì—°ê²°í•œë‹¤.
+        // qmoPredicateÀ» ¿¬°áÇÑ´Ù.
         sNewPredicate->next = sTransPredicate;
         sTransPredicate = sNewPredicate;
 
@@ -540,7 +540,7 @@ qmoTransMgr::linkPredicate( qmoPredicate  * aTransitivePred,
  * Description : PROJ-1404 Transitive Predicate Generation
  *
  * Implementation :
- *     qmoPredicateí˜•íƒœì˜ predicateì„ qmoPredicateìœ¼ë¡œ ì—°ê²°í•œë‹¤.
+ *     qmoPredicateÇüÅÂÀÇ predicateÀ» qmoPredicateÀ¸·Î ¿¬°áÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -549,19 +549,19 @@ qmoTransMgr::linkPredicate( qmoPredicate  * aTransitivePred,
     IDU_FIT_POINT_FATAL( "qmoTransMgr::linkPredicate::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aPredicate != NULL );
     
     //------------------------------------------
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     //------------------------------------------
 
     sPredicate = *aPredicate;
     
     //------------------------------------------
-    // ì—°ê²°
+    // ¿¬°á
     //------------------------------------------
 
     if ( aTransitivePred != NULL )
@@ -608,7 +608,7 @@ qmoTransMgr::createOperatorAndOperandList( qcStatement       * aStatement,
  * Description : PROJ-1404 Transitive Predicate Generation
  *
  * Implementation :
- *     predicateë“¤ë¡œ operator listì™€ operand listë¥¼ ìƒì„±í•œë‹¤.
+ *     predicateµé·Î operator list¿Í operand list¸¦ »ı¼ºÇÑ´Ù.
  *
  ***********************************************************************/
     
@@ -620,7 +620,7 @@ qmoTransMgr::createOperatorAndOperandList( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmoTransMgr::createOperatorAndOperandList::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -628,13 +628,13 @@ qmoTransMgr::createOperatorAndOperandList( qcStatement       * aStatement,
     IDE_DASSERT( aTransPredicate != NULL );
 
     //------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //------------------------------------------
 
     sNode = aNode;
 
     //------------------------------------------
-    // Operator List, Operand List ìƒì„±
+    // Operator List, Operand List »ı¼º
     //------------------------------------------
     
     while ( sNode != NULL )
@@ -642,13 +642,13 @@ qmoTransMgr::createOperatorAndOperandList( qcStatement       * aStatement,
         if ( (sNode->node.lflag & MTC_NODE_LOGICAL_CONDITION_MASK)
              == MTC_NODE_LOGICAL_CONDITION_TRUE )
         {
-            // CNF í˜•íƒœì¸ ê²½ìš°
+            // CNF ÇüÅÂÀÎ °æ¿ì
             sCompareNode = (qtcNode*) sNode->node.arguments;
             sCheckNext = ID_TRUE;
         }
         else
         {
-            // DNF í˜•íƒœì¸ ê²½ìš°
+            // DNF ÇüÅÂÀÎ °æ¿ì
             sCompareNode = sNode;
             sCheckNext = ID_FALSE;
         }
@@ -662,7 +662,7 @@ qmoTransMgr::createOperatorAndOperandList( qcStatement       * aStatement,
 
         if ( sIsTransitiveForm == ID_TRUE )
         {
-            // qmoTransOperator ìƒì„±
+            // qmoTransOperator »ı¼º
             IDE_TEST( createOperatorAndOperand( aStatement,
                                                 aTransPredicate,
                                                 sCompareNode )
@@ -702,8 +702,8 @@ qmoTransMgr::createOperatorAndOperand( qcStatement       * aStatement,
  * Description : PROJ-1404 Transitive Predicate Generation
  *
  * Implementation :
- *     í•˜ë‚˜ì˜ predicateì„ í•˜ë‚˜ì˜ operator ë…¸ë“œì™€ ë‘ ê°œì˜ operand ë…¸ë“œë¡œ
- *     ë‚˜ëˆ„ì–´ ìƒì„±í•œë‹¤.
+ *     ÇÏ³ªÀÇ predicateÀ» ÇÏ³ªÀÇ operator ³ëµå¿Í µÎ °³ÀÇ operand ³ëµå·Î
+ *     ³ª´©¾î »ı¼ºÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -715,7 +715,7 @@ qmoTransMgr::createOperatorAndOperand( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmoTransMgr::createOperatorAndOperand::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -726,7 +726,7 @@ qmoTransMgr::createOperatorAndOperand( qcStatement       * aStatement,
         ( (aCompareNode->node.lflag & MTC_NODE_ARGUMENT_COUNT_MASK) <= 3 ) );
 
     //------------------------------------------
-    // qmoTransOperand ìƒì„±
+    // qmoTransOperand »ı¼º
     //------------------------------------------
 
     //----------------
@@ -738,7 +738,7 @@ qmoTransMgr::createOperatorAndOperand( qcStatement       * aStatement,
 
     sLeft->operandFirst = (qtcNode*) aCompareNode->node.arguments;
     sLeft->operandSecond = NULL;    
-    sLeft->id = ID_UINT_MAX;   // ì•„ì§ ê²°ì •ë˜ì§€ ì•Šì•˜ìŒ
+    sLeft->id = ID_UINT_MAX;   // ¾ÆÁ÷ °áÁ¤µÇÁö ¾Ê¾ÒÀ½
     sLeft->next = NULL;
     
     IDE_DASSERT( sLeft->operandFirst != NULL );
@@ -794,7 +794,7 @@ qmoTransMgr::createOperatorAndOperand( qcStatement       * aStatement,
     }
     
     //------------------------------------------
-    // qmoTransOperator ìƒì„±
+    // qmoTransOperator »ı¼º
     //------------------------------------------
 
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmoTransOperator),
@@ -822,15 +822,15 @@ qmoTransMgr::createOperatorAndOperand( qcStatement       * aStatement,
     IDE_DASSERT( sOperator->id != ID_UINT_MAX );
     
     //------------------------------------------
-    // qmoTransPredicateì— ì—°ê²°
+    // qmoTransPredicate¿¡ ¿¬°á
     //------------------------------------------
 
-    // operand listì— ì—°ê²°í•œë‹¤.
+    // operand list¿¡ ¿¬°áÇÑ´Ù.
     sRight->next = aTransPredicate->operandList;
     sLeft->next = sRight;
     aTransPredicate->operandList = sLeft;
     
-    // operator listì— ì—°ê²°í•œë‹¤.
+    // operator list¿¡ ¿¬°áÇÑ´Ù.
     sOperator->next = aTransPredicate->operatorList;
     aTransPredicate->operatorList = sOperator;
         
@@ -851,8 +851,8 @@ qmoTransMgr::isIndexColumn( qcStatement * aStatement,
  * Description : PROJ-1404 Transitive Predicate Generation
  *
  * Implementation :
- *     ë…¸ë“œê°€ indexë¥¼ ê°€ì§„ ì»¬ëŸ¼ë…¸ë“œì¸ì§€ ê²€ì‚¬í•œë‹¤.
- *     (composite indexì˜ ê²½ìš° ì²«ë²ˆì§¸ ì»¬ëŸ¼ë§Œ ê°€ëŠ¥í•˜ë‹¤.)
+ *     ³ëµå°¡ index¸¦ °¡Áø ÄÃ·³³ëµåÀÎÁö °Ë»çÇÑ´Ù.
+ *     (composite indexÀÇ °æ¿ì Ã¹¹øÂ° ÄÃ·³¸¸ °¡´ÉÇÏ´Ù.)
  *
  ***********************************************************************/
 
@@ -867,14 +867,14 @@ qmoTransMgr::isIndexColumn( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoTransMgr::isIndexColumn::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aNode != NULL );
         
     //------------------------------------------
-    // index column ì¸ì§€ ê²€ì‚¬
+    // index column ÀÎÁö °Ë»ç
     //------------------------------------------
 
     if ( QTC_IS_COLUMN( aStatement, aNode ) == ID_TRUE )
@@ -926,7 +926,7 @@ qmoTransMgr::isSameCharType( qcStatement * aStatement,
  * Description : PROJ-1404 Transitive Predicate Generation
  *
  * Implementation :
- *     ë¬¸ì typeì˜ ì»¬ëŸ¼ì´ ë™ì¼ typeì¸ì§€ ê²€ì‚¬í•œë‹¤.
+ *     ¹®ÀÚ typeÀÇ ÄÃ·³ÀÌ µ¿ÀÏ typeÀÎÁö °Ë»çÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -939,7 +939,7 @@ qmoTransMgr::isSameCharType( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoTransMgr::isSameCharType::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -948,7 +948,7 @@ qmoTransMgr::isSameCharType( qcStatement * aStatement,
     IDE_DASSERT( aIsSameType != NULL );
 
     //------------------------------------------
-    // ì»¬ëŸ¼ í˜¹ì€ ì»¬ëŸ¼ exprì´ ë™ì¼ typeì¸ì§€ ê²€ì‚¬
+    // ÄÃ·³ È¤Àº ÄÃ·³ exprÀÌ µ¿ÀÏ typeÀÎÁö °Ë»ç
     //------------------------------------------
 
     if ( ( qtc::dependencyEqual( & aLeftNode->depInfo,
@@ -956,17 +956,17 @@ qmoTransMgr::isSameCharType( qcStatement * aStatement,
          ( qtc::dependencyEqual( & aRightNode->depInfo,
                                  & qtc::zeroDependencies ) == ID_FALSE ) )
     {
-        // column operator column í˜•íƒœì¸ ê²½ìš°
+        // column operator column ÇüÅÂÀÎ °æ¿ì
 
-        // typeì´ ì •í•´ì§„ ê²½ìš°
+        // typeÀÌ Á¤ÇØÁø °æ¿ì
 
         if ( QTC_IS_LIST( aLeftNode ) != ID_TRUE )
         {
-            // leftê°€ column listê°€ ì•„ë‹Œ ê²½ìš°
+            // left°¡ column list°¡ ¾Æ´Ñ °æ¿ì
 
             if ( QTC_IS_LIST( aRightNode ) != ID_TRUE )
             {
-                // rightê°€ column listê°€ ì•„ë‹Œ ê²½ìš°
+                // right°¡ column list°¡ ¾Æ´Ñ °æ¿ì
 
                 sLeftColumn = QTC_STMT_COLUMN( aStatement, aLeftNode );
                 sRightColumn = QTC_STMT_COLUMN( aStatement, aRightNode );
@@ -988,7 +988,7 @@ qmoTransMgr::isSameCharType( qcStatement * aStatement,
                 else
                 {
                     // BUG-36457
-                    // ë¬¸ìì™€ ìˆ«ì typeìœ¼ë¡œ transitive predicateì„ ìƒì„±í•´ì„œëŠ” ì•ˆëœë‹¤.
+                    // ¹®ÀÚ¿Í ¼ıÀÚ typeÀ¸·Î transitive predicateÀ» »ı¼ºÇØ¼­´Â ¾ÈµÈ´Ù.
                     if ( ( ( (sLeftColumn->module->flag & MTD_GROUP_MASK)
                              == MTD_GROUP_NUMBER ) &&
                            ( (sRightColumn->module->flag & MTD_GROUP_MASK)
@@ -1009,7 +1009,7 @@ qmoTransMgr::isSameCharType( qcStatement * aStatement,
             }
             else
             {
-                // rightê°€ column listì¸ ê²½ìš°
+                // right°¡ column listÀÎ °æ¿ì
                 // ex) i1 in (i2,i3,1)
 
                 sRightNode = (qtcNode*) aRightNode->node.arguments;
@@ -1035,18 +1035,18 @@ qmoTransMgr::isSameCharType( qcStatement * aStatement,
         }
         else
         {
-            // leftê°€ column listì¸ ê²½ìš°
+            // left°¡ column listÀÎ °æ¿ì
 
             if ( QTC_IS_LIST( aRightNode ) != ID_TRUE )
             {
-                // rightê°€ column listê°€ ì•„ë‹Œ ê²½ìš°
+                // right°¡ column list°¡ ¾Æ´Ñ °æ¿ì
 
-                // estimateí•œ í›„ì´ë¯€ë¡œ ì´ëŸ° ê²½ìš°ëŠ” ì—†ë‹¤.
+                // estimateÇÑ ÈÄÀÌ¹Ç·Î ÀÌ·± °æ¿ì´Â ¾ø´Ù.
                 IDE_DASSERT( 0 );
             }
             else
             {
-                // rightê°€ column listì¸ ê²½ìš°
+                // right°¡ column listÀÎ °æ¿ì
 
                 sLeftNode = (qtcNode*) aLeftNode->node.arguments;
                 sRightNode = (qtcNode*) aRightNode->node.arguments;
@@ -1101,7 +1101,7 @@ qmoTransMgr::isSameCharType( qcStatement * aStatement,
     }
     else
     {
-        // columnê³¼ valueì˜ ë¹„êµì—ì„œëŠ” ë¬¸ìí˜• typeì´ ë‹¬ë¼ë„ ì¢‹ë‹¤.
+        // column°ú valueÀÇ ºñ±³¿¡¼­´Â ¹®ÀÚÇü typeÀÌ ´Ş¶óµµ ÁÁ´Ù.
 
         // Nothing to do.
     }
@@ -1126,32 +1126,32 @@ qmoTransMgr::isTransitiveForm( qcStatement * aStatement,
  *
  * Description :
  *     PROJ-1404 Transitive Predicate Generation
- *     transitive predicateì„ ìƒì„±í•  base predicateì„ ì°¾ëŠ”ë‹¤.
+ *     transitive predicateÀ» »ı¼ºÇÒ base predicateÀ» Ã£´Â´Ù.
  *
- *     12ê°œì˜ ì—°ì‚°ìë¥¼ ì§€ì›í•˜ë©°
+ *     12°³ÀÇ ¿¬»êÀÚ¸¦ Áö¿øÇÏ¸ç
  *         =, !=, <, <=, >, >=, (not) between, (not) like, (not) in
  *
- *     ë‹¤ìŒê³¼ ê°™ì€ formatì„ ì§€ì›í•œë‹¤.
+ *     ´ÙÀ½°ú °°Àº formatÀ» Áö¿øÇÑ´Ù.
  *         1. column operator value
  *         2. column operator column
  *         3. column between value
  *         4. column like value
  *         5. column in value
- *         6. 1~5ëŠ” OR ì—†ì´ ANDë¡œë§Œ ì—°ê²°ë˜ì–´ì•¼ í•œë‹¤.
+ *         6. 1~5´Â OR ¾øÀÌ AND·Î¸¸ ¿¬°áµÇ¾î¾ß ÇÑ´Ù.
  *
  * Implementation :
- *     (1) OR ì—†ì´ ANDë¡œë§Œ ì—°ê²°ë˜ì–´ì•¼ í•œë‹¤.
- *     (2) constant í˜¹ì€ outer column expressionì€ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
- *     (3) PSM functionì„ í¬í•¨í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
- *     (4) variable build-in functionì„ í¬í•¨í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
- *     (5) subqueryë¥¼ í¬í•¨í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
- *     (6) rownumì„ í¬í•¨í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
- *     (7) ì§€ì›í•˜ëŠ” 12ê°€ì§€ ì—°ì‚°ì ì¤‘ì— í•˜ë‚˜ì—¬ì•¼ í•œë‹¤.
- *     (8) between, like, inì˜ ì˜¤ë¥¸ìª½ì—ëŠ” ìƒìˆ˜ë§Œì´ ì™€ì•¼ í•œë‹¤.
- *     (9) ì˜ë¯¸ì—†ëŠ” predicateì€ ì¶”ê°€í•˜ì§€ ì•ŠëŠ”ë‹¤.
- *         (ì˜ˆ, i1 = i1)
- *     (10) ë¬¸ì typeì˜ ì»¬ëŸ¼ê°„ì˜ ë¹„êµëŠ” ë™ì¼ typeë§Œ ê°€ëŠ¥í•˜ë‹¤.
- *         (ì˜ˆ, 'char'i1 = 'varchar'i2 ì•ˆë¨)
+ *     (1) OR ¾øÀÌ AND·Î¸¸ ¿¬°áµÇ¾î¾ß ÇÑ´Ù.
+ *     (2) constant È¤Àº outer column expressionÀº Áö¿øÇÏÁö ¾Ê´Â´Ù.
+ *     (3) PSM functionÀ» Æ÷ÇÔÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
+ *     (4) variable build-in functionÀ» Æ÷ÇÔÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
+ *     (5) subquery¸¦ Æ÷ÇÔÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
+ *     (6) rownumÀ» Æ÷ÇÔÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
+ *     (7) Áö¿øÇÏ´Â 12°¡Áö ¿¬»êÀÚ Áß¿¡ ÇÏ³ª¿©¾ß ÇÑ´Ù.
+ *     (8) between, like, inÀÇ ¿À¸¥ÂÊ¿¡´Â »ó¼ö¸¸ÀÌ ¿Í¾ß ÇÑ´Ù.
+ *     (9) ÀÇ¹Ì¾ø´Â predicateÀº Ãß°¡ÇÏÁö ¾Ê´Â´Ù.
+ *         (¿¹, i1 = i1)
+ *     (10) ¹®ÀÚ typeÀÇ ÄÃ·³°£ÀÇ ºñ±³´Â µ¿ÀÏ type¸¸ °¡´ÉÇÏ´Ù.
+ *         (¿¹, 'char'i1 = 'varchar'i2 ¾ÈµÊ)
  *
  ***********************************************************************/
 
@@ -1169,7 +1169,7 @@ qmoTransMgr::isTransitiveForm( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoTransMgr::isTransitiveForm::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1178,11 +1178,11 @@ qmoTransMgr::isTransitiveForm( qcStatement * aStatement,
     IDE_DASSERT( aIsTransitiveForm != NULL );
 
     //------------------------------------------
-    // ì ìš©ê°€ëŠ¥í•œ predicate ì°¾ê¸°
+    // Àû¿ë°¡´ÉÇÑ predicate Ã£±â
     //------------------------------------------
 
     //------------------------------------------
-    // 1. CNFì¸ ê²½ìš° OR í•˜ìœ„ë¡œ í•˜ë‚˜ì˜ ì—°ì‚°ìë§Œ ìˆì–´ì•¼ í•œë‹¤.
+    // 1. CNFÀÎ °æ¿ì OR ÇÏÀ§·Î ÇÏ³ªÀÇ ¿¬»êÀÚ¸¸ ÀÖ¾î¾ß ÇÑ´Ù.
     //------------------------------------------
     
     if ( (sCheckNext == ID_TRUE) &&
@@ -1196,8 +1196,8 @@ qmoTransMgr::isTransitiveForm( qcStatement * aStatement,
     }
 
     //------------------------------------------
-    // 2. ìƒìˆ˜(value operator value)ì´ê±°ë‚˜ ì™¸ë¶€ ì»¬ëŸ¼ expressionì€
-    //    ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // 2. »ó¼ö(value operator value)ÀÌ°Å³ª ¿ÜºÎ ÄÃ·³ expressionÀº
+    //    Áö¿øÇÏÁö ¾Ê´Â´Ù.
     //------------------------------------------
 
     if ( sIsTransitiveForm == ID_TRUE )
@@ -1222,7 +1222,7 @@ qmoTransMgr::isTransitiveForm( qcStatement * aStatement,
     }
 
     //------------------------------------------
-    // 3. PSM functionì„ í¬í•¨í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
+    // 3. PSM functionÀ» Æ÷ÇÔÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
     //------------------------------------------
     
     if ( (sIsTransitiveForm == ID_TRUE) &&
@@ -1237,7 +1237,7 @@ qmoTransMgr::isTransitiveForm( qcStatement * aStatement,
     }
     
     //------------------------------------------
-    // 4. variable build-in functionì„ í¬í•¨í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
+    // 4. variable build-in functionÀ» Æ÷ÇÔÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
     //------------------------------------------
     
     if ( (sIsTransitiveForm == ID_TRUE) &&
@@ -1252,7 +1252,7 @@ qmoTransMgr::isTransitiveForm( qcStatement * aStatement,
     }
     
     //------------------------------------------
-    // 5. subqueryë¥¼ í¬í•¨í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
+    // 5. subquery¸¦ Æ÷ÇÔÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
     //------------------------------------------
     
     if ( (sIsTransitiveForm == ID_TRUE) &&
@@ -1267,7 +1267,7 @@ qmoTransMgr::isTransitiveForm( qcStatement * aStatement,
     }
     
     //------------------------------------------
-    // 6. rownumì„ í¬í•¨í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
+    // 6. rownumÀ» Æ÷ÇÔÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
     //------------------------------------------
     
     if ( (sIsTransitiveForm == ID_TRUE) &&
@@ -1282,7 +1282,7 @@ qmoTransMgr::isTransitiveForm( qcStatement * aStatement,
     }
     
     //------------------------------------------
-    // 7. ì§€ì›í•˜ëŠ” 12ê°€ì§€ ì—°ì‚°ì ì¤‘ì— í•˜ë‚˜ì—¬ì•¼ í•œë‹¤.
+    // 7. Áö¿øÇÏ´Â 12°¡Áö ¿¬»êÀÚ Áß¿¡ ÇÏ³ª¿©¾ß ÇÑ´Ù.
     //------------------------------------------
     
     if ( sIsTransitiveForm == ID_TRUE )
@@ -1295,9 +1295,9 @@ qmoTransMgr::isTransitiveForm( qcStatement * aStatement,
                      ( ( ( aCompareNode->lflag & QTC_NODE_JOIN_TYPE_MASK ) == QTC_NODE_JOIN_TYPE_SEMI ) &&
                        ( QCU_OPTIMIZER_SEMI_JOIN_TRANSITIVITY_DISABLE == 1 ) ) )
                 {
-                    // ë‹¤ìŒì˜ ê²½ìš°ì— transitive predicateì„ ìƒì„±í•˜ë©´ ì•ˆëœë‹¤.
-                    // 1) PROJ-1718 Anti joinì¸ ê²½ìš°
-                    // 2) BUG-43421 Semi joinì´ê³  Property __OPTIMIZER_SEMI_JOIN_TRANSITIVITY_DISABLEì´ 1ì¸ ê²½ìš°
+                    // ´ÙÀ½ÀÇ °æ¿ì¿¡ transitive predicateÀ» »ı¼ºÇÏ¸é ¾ÈµÈ´Ù.
+                    // 1) PROJ-1718 Anti joinÀÎ °æ¿ì
+                    // 2) BUG-43421 Semi joinÀÌ°í Property __OPTIMIZER_SEMI_JOIN_TRANSITIVITY_DISABLEÀÌ 1ÀÎ °æ¿ì
                 }
                 else
                 {
@@ -1318,15 +1318,15 @@ qmoTransMgr::isTransitiveForm( qcStatement * aStatement,
                 ( (aCompareNode->node.lflag & MTC_NODE_ARGUMENT_COUNT_MASK) >= 2 ) &&
                 ( (aCompareNode->node.lflag & MTC_NODE_ARGUMENT_COUNT_MASK) <= 3 ) );
             
-            // ë¹„êµì—°ì‚°ìì˜ ì™¼ìª½ ì¸ì
+            // ºñ±³¿¬»êÀÚÀÇ ¿ŞÂÊ ÀÎÀÚ
             sArgNode0 = (qtcNode*) aCompareNode->node.arguments;
     
-            // ì˜¤ë¥¸ìª½ ì²«ë²ˆì§¸ ì¸ìì™€ ë‘ë²ˆì§¸ ì¸ì
+            // ¿À¸¥ÂÊ Ã¹¹øÂ° ÀÎÀÚ¿Í µÎ¹øÂ° ÀÎÀÚ
             sArgNode1 = (qtcNode*) sArgNode0->node.next;
             sArgNode2 = (qtcNode*) sArgNode1->node.next;
             
             //------------------------------------------
-            // 8. between, like, inì˜ ì˜¤ë¥¸ìª½ì—ëŠ” ìƒìˆ˜ë§Œì´ ì™€ì•¼ í•œë‹¤.
+            // 8. between, like, inÀÇ ¿À¸¥ÂÊ¿¡´Â »ó¼ö¸¸ÀÌ ¿Í¾ß ÇÑ´Ù.
             //------------------------------------------
             
             if ( operatorModule[sModuleId].transposeModuleId == ID_UINT_MAX )
@@ -1368,7 +1368,7 @@ qmoTransMgr::isTransitiveForm( qcStatement * aStatement,
             if ( sArgNode2 == NULL )
             {
                 //------------------------------------------
-                // 9. ì˜ë¯¸ì—†ëŠ” predicateì€ ì¶”ê°€í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                // 9. ÀÇ¹Ì¾ø´Â predicateÀº Ãß°¡ÇÏÁö ¾Ê´Â´Ù.
                 //------------------------------------------
                 
                 IDE_TEST( qtc::isEquivalentExpression( aStatement,
@@ -1388,7 +1388,7 @@ qmoTransMgr::isTransitiveForm( qcStatement * aStatement,
                 }
                 
                 //------------------------------------------
-                // 10. ë¬¸ì typeì˜ ì»¬ëŸ¼ê°„ì˜ ë¹„êµëŠ” ë™ì¼ typeë§Œ ê°€ëŠ¥í•˜ë‹¤.
+                // 10. ¹®ÀÚ typeÀÇ ÄÃ·³°£ÀÇ ºñ±³´Â µ¿ÀÏ type¸¸ °¡´ÉÇÏ´Ù.
                 //------------------------------------------
 
                 IDE_TEST( isSameCharType( aStatement,
@@ -1441,17 +1441,17 @@ qmoTransMgr::createOperandSet( qcStatement       * aStatement,
  *
  * Description :
  *     PROJ-1404 Transitive Predicate Generation
- *     operand listë¡œ operand setì„ ìƒì„±í•œë‹¤.
- *     (operand setì„ ìƒì„±í•œí›„ operand listëŠ” ë”ì´ìƒ ì‚¬ìš©ë˜ì§€ ì•ŠëŠ”ë‹¤.)
+ *     operand list·Î operand setÀ» »ı¼ºÇÑ´Ù.
+ *     (operand setÀ» »ı¼ºÇÑÈÄ operand list´Â ´õÀÌ»ó »ç¿ëµÇÁö ¾Ê´Â´Ù.)
  *
  * Implementation :
- *     (1) operand listë¥¼ ëŒë©° ì¤‘ë³µì„ ê²€ì‚¬í•˜ê³  ì¤‘ë³µëœ ê²½ìš°
- *         (1.1) í˜„ì¬ ë…¸ë“œë¥¼ ì°¸ì¡°í•˜ê³  ìˆëŠ” operator listë¥¼ ë³€ê²½í•œë‹¤.
- *         (1.2) í˜„ì¬ ë…¸ë“œëŠ” operand setì„ êµ¬ì„±í•˜ì§€ ì•ŠëŠ”ë‹¤.
- *     (2) ì¤‘ë³µë˜ì§€ ì•ŠëŠ” ê²½ìš°
- *         (2.1) í˜„ì¬ ë…¸ë“œë¡œ operand setì„ êµ¬ì„±í•˜ê³  idë¥¼ í• ë‹¹í•œë‹¤.
- *     (3) ìƒì„±ëœ operand setì„ idë¡œ ì§ì ‘ ì°¸ì¡°í•  ìˆ˜ ìˆë„ë¡
- *         operand arrayë¥¼ êµ¬ì„±í•œë‹¤.
+ *     (1) operand list¸¦ µ¹¸ç Áßº¹À» °Ë»çÇÏ°í Áßº¹µÈ °æ¿ì
+ *         (1.1) ÇöÀç ³ëµå¸¦ ÂüÁ¶ÇÏ°í ÀÖ´Â operator list¸¦ º¯°æÇÑ´Ù.
+ *         (1.2) ÇöÀç ³ëµå´Â operand setÀ» ±¸¼ºÇÏÁö ¾Ê´Â´Ù.
+ *     (2) Áßº¹µÇÁö ¾Ê´Â °æ¿ì
+ *         (2.1) ÇöÀç ³ëµå·Î operand setÀ» ±¸¼ºÇÏ°í id¸¦ ÇÒ´çÇÑ´Ù.
+ *     (3) »ı¼ºµÈ operand setÀ» id·Î Á÷Á¢ ÂüÁ¶ÇÒ ¼ö ÀÖµµ·Ï
+ *         operand array¸¦ ±¸¼ºÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1467,7 +1467,7 @@ qmoTransMgr::createOperandSet( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmoTransMgr::createOperandSet::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1475,13 +1475,13 @@ qmoTransMgr::createOperandSet( qcStatement       * aStatement,
     IDE_DASSERT( aIsApplicable != NULL );
 
     //------------------------------------------
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     //------------------------------------------
 
     sFirst = aTransPredicate->operandList;
 
     //------------------------------------------
-    // Column Set ìƒì„±
+    // Column Set »ı¼º
     //------------------------------------------
 
     while ( sFirst != NULL )
@@ -1494,7 +1494,7 @@ qmoTransMgr::createOperandSet( qcStatement       * aStatement,
             if ( ( sFirst->operandSecond == NULL ) &&
                  ( sSecond->operandSecond == NULL ) )
             {
-                // ë‘ë²ˆì§¸ ì¸ìê°€ ì—†ëŠ” columnì´ë‚˜ valueë¥¼ ë¹„êµ
+                // µÎ¹øÂ° ÀÎÀÚ°¡ ¾ø´Â columnÀÌ³ª value¸¦ ºñ±³
                 IDE_TEST( qtc::isEquivalentExpression( aStatement,
                                                        sFirst->operandFirst,
                                                        sSecond->operandFirst,
@@ -1503,7 +1503,7 @@ qmoTransMgr::createOperandSet( qcStatement       * aStatement,
 
                 if ( sIsEquivalent == ID_TRUE )
                 {
-                    // í˜„ì¬ë…¸ë“œë¥¼ ì°¸ì¡°í•˜ëŠ” operatorì˜ ì¸ìë¥¼ ë³€ê²½
+                    // ÇöÀç³ëµå¸¦ ÂüÁ¶ÇÏ´Â operatorÀÇ ÀÎÀÚ¸¦ º¯°æ
                     IDE_TEST( changeOperand( aTransPredicate,
                                              sFirst,
                                              sSecond )
@@ -1522,7 +1522,7 @@ qmoTransMgr::createOperandSet( qcStatement       * aStatement,
                 if ( ( sFirst->operandSecond != NULL ) &&
                      ( sSecond->operandSecond != NULL ) )
                 {
-                    // ë‘ë²ˆì§¸ ì¸ìê°€ ìˆëŠ” valueë¥¼ ë¹„êµ
+                    // µÎ¹øÂ° ÀÎÀÚ°¡ ÀÖ´Â value¸¦ ºñ±³
                     // (between x and y, like w escape z)
                     IDE_TEST( qtc::isEquivalentExpression( aStatement,
                                                            sFirst->operandFirst,
@@ -1540,7 +1540,7 @@ qmoTransMgr::createOperandSet( qcStatement       * aStatement,
 
                         if ( sIsEquivalent == ID_TRUE )
                         {
-                            // í˜„ì¬ë…¸ë“œë¥¼ ì°¸ì¡°í•˜ëŠ” operatorì˜ ì¸ìë¥¼ ë³€ê²½
+                            // ÇöÀç³ëµå¸¦ ÂüÁ¶ÇÏ´Â operatorÀÇ ÀÎÀÚ¸¦ º¯°æ
                             IDE_TEST( changeOperand( aTransPredicate,
                                                      sFirst,
                                                      sSecond )
@@ -1570,29 +1570,29 @@ qmoTransMgr::createOperandSet( qcStatement       * aStatement,
 
         if ( sIsDuplicate == ID_TRUE )
         {
-            // operandê°€ ì¤‘ë³µëœ ê²½ìš°
+            // operand°¡ Áßº¹µÈ °æ¿ì
             sDupCount++;
         }
         else
         {
-            // operandê°€ ì¤‘ë³µë˜ì§€ ì•Šì€ ê²½ìš° operand setì„ êµ¬ì„±
+            // operand°¡ Áßº¹µÇÁö ¾ÊÀº °æ¿ì operand setÀ» ±¸¼º
             IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmoTransOperand),
                                                      (void **) & sOperand )
                       != IDE_SUCCESS );
 
             idlOS::memcpy( sOperand, sFirst, ID_SIZEOF(qmoTransOperand) );
 
-            // ìƒì„±í•œ operand setì„ ì°¸ì¡°í•˜ë„ë¡ operatorì˜ ì¸ìë¥¼ ë³€ê²½
+            // »ı¼ºÇÑ operand setÀ» ÂüÁ¶ÇÏµµ·Ï operatorÀÇ ÀÎÀÚ¸¦ º¯°æ
             IDE_TEST( changeOperand( aTransPredicate,
                                      sFirst,
                                      sOperand )
                       != IDE_SUCCESS );
 
-            // operand id í• ë‹¹
+            // operand id ÇÒ´ç
             sOperand->id = sOperandId;
             sOperandId++;
 
-            // operand set êµ¬ì„±
+            // operand set ±¸¼º
             sOperand->next = aTransPredicate->operandSet;
             aTransPredicate->operandSet = sOperand;
             aTransPredicate->operandSetSize = sOperandId;
@@ -1601,7 +1601,7 @@ qmoTransMgr::createOperandSet( qcStatement       * aStatement,
         sFirst = sFirst->next;
     }
 
-    // operand setì„ idë¡œ ì§ì ‘ ì°¸ì¡°í•  ìˆ˜ ìˆë„ë¡ operand array êµ¬ì„±
+    // operand setÀ» id·Î Á÷Á¢ ÂüÁ¶ÇÒ ¼ö ÀÖµµ·Ï operand array ±¸¼º
     if ( sOperandId > 0 )
     {
         IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmoTransOperand* ) * sOperandId,
@@ -1632,7 +1632,7 @@ qmoTransMgr::createOperandSet( qcStatement       * aStatement,
     }
     else
     {
-        // ì¤‘ë³µëœ operandê°€ ì—†ë‹¤ë©´ transitive predicateì´ ìƒì„±ë˜ì§€ ì•ŠëŠ”ë‹¤.
+        // Áßº¹µÈ operand°¡ ¾ø´Ù¸é transitive predicateÀÌ »ı¼ºµÇÁö ¾Ê´Â´Ù.
         *aIsApplicable = ID_FALSE;
     }
 
@@ -1653,7 +1653,7 @@ qmoTransMgr::changeOperand( qmoTransPredicate * aTransPredicate,
  * Description : PROJ-1404 Transitive Predicate Generation
  *
  * Implementation :
- *     aFromì„ ì°¸ì¡°í•˜ëŠ” operator listë¥¼ aToë¡œ ë°”ê¾¼ë‹¤.
+ *     aFromÀ» ÂüÁ¶ÇÏ´Â operator list¸¦ aTo·Î ¹Ù²Û´Ù.
  *
  ***********************************************************************/
 
@@ -1662,7 +1662,7 @@ qmoTransMgr::changeOperand( qmoTransPredicate * aTransPredicate,
     IDU_FIT_POINT_FATAL( "qmoTransMgr::changeOperand::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aTransPredicate != NULL );
@@ -1670,13 +1670,13 @@ qmoTransMgr::changeOperand( qmoTransPredicate * aTransPredicate,
     IDE_DASSERT( aTo != NULL );
 
     //------------------------------------------
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     //------------------------------------------
 
     sOperator = aTransPredicate->operatorList;
 
     //------------------------------------------
-    // operand ë³€ê²½
+    // operand º¯°æ
     //------------------------------------------
 
     while ( sOperator != NULL )
@@ -1713,7 +1713,7 @@ qmoTransMgr::initializeTransitiveMatrix( qmoTransMatrix * aTransMatrix )
  * Description : PROJ-1404 Transitive Predicate Generation
  *
  * Implementation :
- *     transitive predicate matrixë¥¼ ìƒì„±í•˜ê³  ì´ˆê¸°í™”í•œë‹¤.
+ *     transitive predicate matrix¸¦ »ı¼ºÇÏ°í ÃÊ±âÈ­ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1726,14 +1726,14 @@ qmoTransMgr::initializeTransitiveMatrix( qmoTransMatrix * aTransMatrix )
     IDU_FIT_POINT_FATAL( "qmoTransMgr::initializeTransitiveMatrix::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aTransMatrix != NULL );
     IDE_DASSERT( aTransMatrix->predicate != NULL );
 
     //------------------------------------------
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     //------------------------------------------
 
     sTransMatrix = aTransMatrix->matrix;
@@ -1742,7 +1742,7 @@ qmoTransMgr::initializeTransitiveMatrix( qmoTransMatrix * aTransMatrix )
     sOperator = aTransMatrix->predicate->operatorList;
 
     //------------------------------------------
-    // matrix ì´ˆê¸°í™”
+    // matrix ÃÊ±âÈ­
     //------------------------------------------
     
     for (i = 0; i < sSize; i++)
@@ -1755,7 +1755,7 @@ qmoTransMgr::initializeTransitiveMatrix( qmoTransMatrix * aTransMatrix )
     }
 
     //------------------------------------------
-    // predicate ì´ˆê¸°í™”
+    // predicate ÃÊ±âÈ­
     //------------------------------------------
 
     while ( sOperator != NULL )
@@ -1767,7 +1767,7 @@ qmoTransMgr::initializeTransitiveMatrix( qmoTransMatrix * aTransMatrix )
         
         sTransMatrix[i][j].mOperator = sOperator->id;
 
-        // ì¢Œìš°ë³€ì„ ë°”ê¾¸ì—ˆì„ë•Œì˜ ì—°ì‚°ì ì¶”ê°€
+        // ÁÂ¿ìº¯À» ¹Ù²Ù¾úÀ»¶§ÀÇ ¿¬»êÀÚ Ãß°¡
         if ( operatorModule[sOperator->id].transposeModuleId != ID_UINT_MAX )
         {
             sTransMatrix[j][i].mOperator = operatorModule[sOperator->id].transposeModuleId;
@@ -1793,7 +1793,7 @@ qmoTransMgr::calculateTransitiveMatrix( qcStatement    * aStatement,
  * Description : PROJ-1404 Transitive Predicate Generation
  *
  * Implementation :
- *     transitive predicate matrixë¥¼ ê³„ì‚°í•œë‹¤.
+ *     transitive predicate matrix¸¦ °è»êÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1809,7 +1809,7 @@ qmoTransMgr::calculateTransitiveMatrix( qcStatement    * aStatement,
     IDU_FIT_POINT_FATAL( "qmoTransMgr::calculateTransitiveMatrix::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1817,7 +1817,7 @@ qmoTransMgr::calculateTransitiveMatrix( qcStatement    * aStatement,
     IDE_DASSERT( aTransMatrix != NULL );
 
     //------------------------------------------
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     //------------------------------------------
 
     sTransPredicate = aTransMatrix->predicate;
@@ -1825,17 +1825,17 @@ qmoTransMgr::calculateTransitiveMatrix( qcStatement    * aStatement,
     sSize           = aTransMatrix->size;
 
     //------------------------------------------
-    // transitive predicate matrix ê³„ì‚°
+    // transitive predicate matrix °è»ê
     //------------------------------------------
 
     /*
-     * BUG-29646: transitive predicate ì„ ì™„ë²½í•˜ê²Œ êµ¬í•˜ì§€ ëª»í•©ë‹ˆë‹¤
+     * BUG-29646: transitive predicate À» ¿Ïº®ÇÏ°Ô ±¸ÇÏÁö ¸øÇÕ´Ï´Ù
      * 
-     * i -> j, j -> k ê´€ê³„ê°€ ìˆì„ ë•Œ, i -> k ê´€ê³„ë¥¼ ìƒì„±í•œë‹¤
-     * ì´ë•Œ, ì¤‘ê°„ ë§¤ê°œê°€ ë˜ëŠ” j ë¥¼ loop ìµœìƒìœ„ì— ë‘ë„ë¡ í•œë‹¤ (Floyd-Warshall)
+     * i -> j, j -> k °ü°è°¡ ÀÖÀ» ¶§, i -> k °ü°è¸¦ »ı¼ºÇÑ´Ù
+     * ÀÌ¶§, Áß°£ ¸Å°³°¡ µÇ´Â j ¸¦ loop ÃÖ»óÀ§¿¡ µÎµµ·Ï ÇÑ´Ù (Floyd-Warshall)
      *
-     * transitive closureë¥¼ êµ¬í•˜ê¸° ìœ„í•´ ì¤‘ê°„ì— bad ê°€ ë‚˜ì˜¤ë”ë¼ë„ ì¼ë‹¨ ì§„í–‰í•˜ê³ 
-     * ë‚˜ì¤‘ì— bad ê°€ ì•„ë‹Œê²ƒë“¤ì— ëŒ€í•´ì„œë§Œ trasitive predicateì„ ìƒì„±í•œë‹¤
+     * transitive closure¸¦ ±¸ÇÏ±â À§ÇØ Áß°£¿¡ bad °¡ ³ª¿À´õ¶óµµ ÀÏ´Ü ÁøÇàÇÏ°í
+     * ³ªÁß¿¡ bad °¡ ¾Æ´Ñ°Íµé¿¡ ´ëÇØ¼­¸¸ trasitive predicateÀ» »ı¼ºÇÑ´Ù
      */
 
     for (j = 0; j < sSize; j++)
@@ -1851,8 +1851,8 @@ qmoTransMgr::calculateTransitiveMatrix( qcStatement    * aStatement,
                         sNewOperator = operationMatrix[sTransMatrix[i][j].mOperator][sTransMatrix[j][k].mOperator];
 
                         /*
-                         * matrix ê°€ ì¼ë‹¨ ì–´ë–¤ ê°’ìœ¼ë¡œ ì±„ì›Œì§€ë©´
-                         * ë‹¤ì‹œ ì±„ìš°ì§€ ì•ŠëŠ”ë‹¤
+                         * matrix °¡ ÀÏ´Ü ¾î¶² °ªÀ¸·Î Ã¤¿öÁö¸é
+                         * ´Ù½Ã Ã¤¿ìÁö ¾Ê´Â´Ù
                          */
                         if ((sNewOperator != ID_UINT_MAX) &&
                             (sTransMatrix[i][k].mOperator == ID_UINT_MAX))
@@ -1938,13 +1938,13 @@ qmoTransMgr::isBadTransitivePredicate( qcStatement       * aStatement,
  *
  * Description :
  *     PROJ-1404 Transitive Predicate Generation
- *     ìƒì„±í•  transitive predicateì´ bad transitive predicateì¸ì§€
- *     íŒë‹¨í•œë‹¤. (badê°€ ì•„ë‹ˆë¼ê³  í•´ì„œ í•­ìƒ goodì€ ì•„ë‹ˆë‹¤.)
+ *     »ı¼ºÇÒ transitive predicateÀÌ bad transitive predicateÀÎÁö
+ *     ÆÇ´ÜÇÑ´Ù. (bad°¡ ¾Æ´Ï¶ó°í ÇØ¼­ Ç×»ó goodÀº ¾Æ´Ï´Ù.)
  *
  * Implementation :
  *
  *     DOC-31095 Transitive Predicate Generation.odt p54
- *     <Transitive Predicate ìƒì„± rule> (ë²ˆí˜¸ìˆœì„œë¥¼ ë°”ê¿¨ìŒ)
+ *     <Transitive Predicate »ı¼º rule> (¹øÈ£¼ø¼­¸¦ ¹Ù²åÀ½)
  *
  *        |  D1   D2   D3  |  D1   D3  |
  *    ----+----------------+-----------+---------------
@@ -1964,7 +1964,7 @@ qmoTransMgr::isBadTransitivePredicate( qcStatement       * aStatement,
  *     11 |  a    b    b   |   a    b  | (X)
  *     12 |  a    c    b   |   a    b  | (*)
  *
- *   (*) non-joinable join predë¡œ joinable join predë¥¼ ìƒì„±í•  ê²½ìš°
+ *   (*) non-joinable join pred·Î joinable join pred¸¦ »ı¼ºÇÒ °æ¿ì
  *
  ***********************************************************************/
 
@@ -1984,7 +1984,7 @@ qmoTransMgr::isBadTransitivePredicate( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmoTransMgr::isBadTransitivePredicate::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1993,7 +1993,7 @@ qmoTransMgr::isBadTransitivePredicate( qcStatement       * aStatement,
     IDE_DASSERT( aIsBad != NULL );
 
     //------------------------------------------
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     //------------------------------------------
 
     sOperand1 = aTransPredicate->operandSetArray[aOperandId1];
@@ -2011,7 +2011,7 @@ qmoTransMgr::isBadTransitivePredicate( qcStatement       * aStatement,
 
     /* BUG-42134 Created transitivity predicate of join predicate must be
      * reinforced.
-     * OLD Ruleì´ ì„ íƒë˜ì—ˆë‹¤ë©´ joinDepInfoë¥¼ clearí•´ ì´ì „ì²˜ëŸ¼ ë™ì‘í•˜ë„ë¡ í•œë‹¤.
+     * OLD RuleÀÌ ¼±ÅÃµÇ¾ú´Ù¸é joinDepInfo¸¦ clearÇØ ÀÌÀüÃ³·³ µ¿ÀÛÇÏµµ·Ï ÇÑ´Ù.
      */
     if ( QCG_GET_SESSION_OPTIMIZER_TRANSITIVITY_OLD_RULE( aStatement ) == 1 )
     {
@@ -2022,7 +2022,7 @@ qmoTransMgr::isBadTransitivePredicate( qcStatement       * aStatement,
         /* Nothing to do */
     }
     //------------------------------------------
-    // outer column expressionì€ ìƒì„±í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // outer column expressionÀº »ı¼ºÇÏÁö ¾Ê´Â´Ù.
     //------------------------------------------
     
     qtc::dependencyAnd( & sDepInfo,
@@ -2040,7 +2040,7 @@ qmoTransMgr::isBadTransitivePredicate( qcStatement       * aStatement,
     }
     
     //------------------------------------------
-    // bad transitive predicate ê²€ì‚¬
+    // bad transitive predicate °Ë»ç
     //------------------------------------------
 
     if ( qtc::getCountBitSet( & sDepInfo ) == 0 )
@@ -2092,8 +2092,8 @@ qmoTransMgr::isBadTransitivePredicate( qcStatement       * aStatement,
                     if ( sOperand3->isIndexColumn == ID_TRUE )
                     {
                         /* BUG-42134
-                         * Indexê°€ ìˆì„ ê²½ìš° Joinê³¼ ê´€ë ¨ë˜ì„œ dependencyê°€
-                         * ìˆë‹¤ë©´ bad ì²˜ë¦¬ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤
+                         * Index°¡ ÀÖÀ» °æ¿ì Join°ú °ü·ÃµÇ¼­ dependency°¡
+                         * ÀÖ´Ù¸é bad Ã³¸®¸¦ ÇÏÁö ¾Ê´Â´Ù
                          */
                         if ( aTransPredicate->joinDepInfo.depCount > 0 )
                         {
@@ -2145,8 +2145,8 @@ qmoTransMgr::isBadTransitivePredicate( qcStatement       * aStatement,
                     if ( sOperand1->isIndexColumn == ID_TRUE )
                     {
                         /* BUG-42134
-                         * Indexê°€ ìˆì„ ê²½ìš° Joinê³¼ ê´€ë ¨ë˜ì„œ dependencyê°€
-                         * ìˆë‹¤ë©´ bad ì²˜ë¦¬ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤
+                         * Index°¡ ÀÖÀ» °æ¿ì Join°ú °ü·ÃµÇ¼­ dependency°¡
+                         * ÀÖ´Ù¸é bad Ã³¸®¸¦ ÇÏÁö ¾Ê´Â´Ù
                          */
                         if ( aTransPredicate->joinDepInfo.depCount > 0 )
                         {
@@ -2232,7 +2232,7 @@ qmoTransMgr::isBadTransitivePredicate( qcStatement       * aStatement,
                         // case 12
                         // {a,c}, {c,b} non-joinable join predicate
                         // {a,b} joinable join predicate
-                        // non-joinable join predë¡œ joinable join predë¥¼ ìƒì„±í•œë‹¤.
+                        // non-joinable join pred·Î joinable join pred¸¦ »ı¼ºÇÑ´Ù.
                     }
                     else
                     {
@@ -2264,7 +2264,7 @@ qmoTransMgr::createNewOperator( qcStatement       * aStatement,
  * Description : PROJ-1404 Transitive Predicate Generation
  *
  * Implementation :
- *     qmoTransOperatorë¥¼ ìƒì„±í•˜ê³  aTransPredicateì— ì—°ê²°í•œë‹¤.
+ *     qmoTransOperator¸¦ »ı¼ºÇÏ°í aTransPredicate¿¡ ¿¬°áÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -2275,21 +2275,21 @@ qmoTransMgr::createNewOperator( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmoTransMgr::createNewOperator::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aTransPredicate != NULL );
 
     //------------------------------------------
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     //------------------------------------------
 
     sLeft = aTransPredicate->operandSetArray[aLeftId];
     sRight = aTransPredicate->operandSetArray[aRightId];
     
     //------------------------------------------
-    // qmoTransOperator ìƒì„±
+    // qmoTransOperator »ı¼º
     //------------------------------------------
     
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmoTransOperator),
@@ -2300,7 +2300,7 @@ qmoTransMgr::createNewOperator( qcStatement       * aStatement,
     sOperator->right = sRight;
     sOperator->id = aNewOperatorId;
 
-    // genOperatorListì— ì—°ê²°í•œë‹¤.
+    // genOperatorList¿¡ ¿¬°áÇÑ´Ù.
     sOperator->next = aTransPredicate->genOperatorList;
     aTransPredicate->genOperatorList = sOperator;
     
@@ -2322,7 +2322,7 @@ qmoTransMgr::generateTransitivePredicate( qcStatement     * aStatement,
  * Description : PROJ-1404 Transitive Predicate Generation
  *
  * Implementation :
- *     transitive predicateë¥¼ ìƒì„±í•œë‹¤.
+ *     transitive predicate¸¦ »ı¼ºÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -2334,7 +2334,7 @@ qmoTransMgr::generateTransitivePredicate( qcStatement     * aStatement,
     IDU_FIT_POINT_FATAL( "qmoTransMgr::generateTransitivePredicate::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2342,14 +2342,14 @@ qmoTransMgr::generateTransitivePredicate( qcStatement     * aStatement,
     IDE_DASSERT( aTransitiveNode != NULL );
 
     //------------------------------------------
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     //------------------------------------------
 
     sTransPredicate = aTransMatrix->predicate;
     sOperator = sTransPredicate->genOperatorList;
 
     //------------------------------------------
-    // transitive predicate ìƒì„±
+    // transitive predicate »ı¼º
     //------------------------------------------
 
     while ( sOperator != NULL )
@@ -2357,20 +2357,20 @@ qmoTransMgr::generateTransitivePredicate( qcStatement     * aStatement,
         if ( (sOperator->left->id < sOperator->right->id) ||
              (operatorModule[sOperator->id].transposeModuleId == ID_UINT_MAX) )
         {
-            // matrixì˜ Lìª½ê³¼ transposeí•˜ì§€ ì•Šì€ ì—°ì‚°ìì— ëŒ€í•´ì„œë§Œ ìƒì„±í•œë‹¤.
+            // matrixÀÇ LÂÊ°ú transposeÇÏÁö ¾ÊÀº ¿¬»êÀÚ¿¡ ´ëÇØ¼­¸¸ »ı¼ºÇÑ´Ù.
             IDE_TEST( createTransitivePredicate( aStatement,
                                                  aQuerySet,
                                                  sOperator,
                                                  & sTransitivePredicate )
                       != IDE_SUCCESS );
         
-            // ì—°ê²°í•œë‹¤.
+            // ¿¬°áÇÑ´Ù.
             sTransitivePredicate->node.next = (mtcNode*) sTransitiveNode;
             sTransitiveNode = sTransitivePredicate;
         }
         else
         {
-            // ë…¼ë¦¬ì ìœ¼ë¡œ ì¤‘ë³µëœ predicateì€ ìƒì„±í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // ³í¸®ÀûÀ¸·Î Áßº¹µÈ predicateÀº »ı¼ºÇÏÁö ¾Ê´Â´Ù.
             
             // Nothing to do.
         }
@@ -2398,7 +2398,7 @@ qmoTransMgr::createTransitivePredicate( qcStatement        * aStatement,
  * Description : PROJ-1404 Transitive Predicate Generation
  *
  * Implementation :
- *     í•˜ë‚˜ì˜ transitive predicateë¥¼ ìƒì„±í•œë‹¤.
+ *     ÇÏ³ªÀÇ transitive predicate¸¦ »ı¼ºÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -2414,7 +2414,7 @@ qmoTransMgr::createTransitivePredicate( qcStatement        * aStatement,
     IDU_FIT_POINT_FATAL( "qmoTransMgr::createTransitivePredicate::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2422,7 +2422,7 @@ qmoTransMgr::createTransitivePredicate( qcStatement        * aStatement,
     IDE_DASSERT( aTransitivePredicate != NULL );
 
     //------------------------------------------
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     //------------------------------------------
 
     sLeft = aOperator->left;
@@ -2431,7 +2431,7 @@ qmoTransMgr::createTransitivePredicate( qcStatement        * aStatement,
     SET_EMPTY_POSITION( sNullPosition );    
 
     //------------------------------------------
-    // left operand ë³µì‚¬ ìƒì„±
+    // left operand º¹»ç »ı¼º
     //------------------------------------------
 
     IDE_DASSERT( sLeft->operandSecond == NULL );
@@ -2439,14 +2439,14 @@ qmoTransMgr::createTransitivePredicate( qcStatement        * aStatement,
     IDE_TEST( qtc::cloneQTCNodeTree( QC_QMP_MEM(aStatement),
                                      sLeft->operandFirst,
                                      & sLeftArgNode1,
-                                     ID_FALSE, // rootì˜ nextëŠ” ë³µì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
-                                     ID_TRUE,  // conversionì„ ëŠëŠ”ë‹¤.
-                                     ID_TRUE,  // constant nodeê¹Œì§€ ë³µì‚¬í•œë‹¤.
-                                     ID_TRUE ) // constant nodeë¥¼ ì›ë³µí•œë‹¤.
+                                     ID_FALSE, // rootÀÇ next´Â º¹»çÇÏÁö ¾Ê´Â´Ù.
+                                     ID_TRUE,  // conversionÀ» ²÷´Â´Ù.
+                                     ID_TRUE,  // constant node±îÁö º¹»çÇÑ´Ù.
+                                     ID_TRUE ) // constant node¸¦ ¿øº¹ÇÑ´Ù.
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // right operand ë³µì‚¬ ìƒì„±
+    // right operand º¹»ç »ı¼º
     //------------------------------------------
     
     IDE_TEST( qtc::cloneQTCNodeTree( QC_QMP_MEM(aStatement),
@@ -2475,17 +2475,17 @@ qmoTransMgr::createTransitivePredicate( qcStatement        * aStatement,
     }
     
     //------------------------------------------
-    // transitive predicate ìƒì„±
+    // transitive predicate »ı¼º
     //------------------------------------------
 
-    // ìƒˆë¡œìš´ operation ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤.
+    // »õ·Î¿î operation ³ëµå¸¦ »ı¼ºÇÑ´Ù.
     IDE_TEST( qtc::makeNode( aStatement,
                              sCompareNode,
                              & sNullPosition,
                              operatorModule[aOperator->id].module )
               != IDE_SUCCESS );
 
-    // argumentë¥¼ ì—°ê²°í•œë‹¤.
+    // argument¸¦ ¿¬°áÇÑ´Ù.
     sRightArgNode1->node.next = (mtcNode*) sRightArgNode2;
     sLeftArgNode1->node.next = (mtcNode*) sRightArgNode1;
 
@@ -2500,11 +2500,11 @@ qmoTransMgr::createTransitivePredicate( qcStatement        * aStatement,
         sCompareNode[0]->node.lflag |= 3;
     }
 
-    // transitive predicate flagë¥¼ ì„¤ì •í•œë‹¤.
+    // transitive predicate flag¸¦ ¼³Á¤ÇÑ´Ù.
     sCompareNode[0]->lflag &= ~QTC_NODE_TRANS_PRED_MASK;
     sCompareNode[0]->lflag |= QTC_NODE_TRANS_PRED_EXIST;
 
-    // ìƒˆë¡œìš´ OR ë…¸ë“œë¥¼ í•˜ë‚˜ ìƒì„±í•œë‹¤.
+    // »õ·Î¿î OR ³ëµå¸¦ ÇÏ³ª »ı¼ºÇÑ´Ù.
     IDE_TEST( qtc::makeNode( aStatement,
                              sOrNode,
                              &sNullPosition,
@@ -2512,7 +2512,7 @@ qmoTransMgr::createTransitivePredicate( qcStatement        * aStatement,
                              2 )
               != IDE_SUCCESS );
     
-    // sCompareNodeë¥¼ ì—°ê²°í•œë‹¤.
+    // sCompareNode¸¦ ¿¬°áÇÑ´Ù.
     sOrNode[0]->node.arguments = (mtcNode*) sCompareNode[0];
     sOrNode[0]->node.lflag |= 1;
 
@@ -2586,15 +2586,15 @@ qmoTransMgr::processTransitivePredicate( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : PROJ-1404 Transitive Predicateì˜ ìƒì„±
+ * Description : PROJ-1404 Transitive PredicateÀÇ »ı¼º
  *
  * Implementation :
  *    (1) Predicate Formation
- *        ì§€ì›í•˜ëŠ” í˜•íƒœì˜ predicateì„ ë½‘ì•„ setì„ êµ¬ì„±í•œë‹¤.
+ *        Áö¿øÇÏ´Â ÇüÅÂÀÇ predicateÀ» »Ì¾Æ setÀ» ±¸¼ºÇÑ´Ù.
  *    (2) Transitive Predicate Matrix
- *        Transitive Closureë¥¼ Matrixë¥¼ ì´ìš©í•˜ì—¬ ê³„ì‚°í•œë‹¤.
+ *        Transitive Closure¸¦ Matrix¸¦ ÀÌ¿ëÇÏ¿© °è»êÇÑ´Ù.
  *    (3) Transitive Predicate Generation
- *        Transitive Predicate Ruleë¡œ Transitive Predicateë¥¼ ìƒì„±í•œë‹¤.
+ *        Transitive Predicate Rule·Î Transitive Predicate¸¦ »ı¼ºÇÑ´Ù.
  *
  ***********************************************************************/
     
@@ -2608,7 +2608,7 @@ qmoTransMgr::processTransitivePredicate( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoTransMgr::processTransitivePredicate::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2616,7 +2616,7 @@ qmoTransMgr::processTransitivePredicate( qcStatement  * aStatement,
     IDE_DASSERT( aTransitiveNode != NULL );
     
     //------------------------------------------
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     //------------------------------------------
 
     sNode = aNode;
@@ -2697,15 +2697,15 @@ qmoTransMgr::processTransitivePredicate( qcStatement   * aStatement,
 {
 /***********************************************************************
  *
- * Description : PROJ-1404 Transitive Predicateì˜ ìƒì„±
+ * Description : PROJ-1404 Transitive PredicateÀÇ »ı¼º
  *
  * Implementation :
  *    (1) Predicate Formation
- *        ì§€ì›í•˜ëŠ” í˜•íƒœì˜ predicateì„ ë½‘ì•„ setì„ êµ¬ì„±í•œë‹¤.
+ *        Áö¿øÇÏ´Â ÇüÅÂÀÇ predicateÀ» »Ì¾Æ setÀ» ±¸¼ºÇÑ´Ù.
  *    (2) Transitive Predicate Matrix
- *        Transitive Closureë¥¼ Matrixë¥¼ ì´ìš©í•˜ì—¬ ê³„ì‚°í•œë‹¤.
+ *        Transitive Closure¸¦ Matrix¸¦ ÀÌ¿ëÇÏ¿© °è»êÇÑ´Ù.
  *    (3) Transitive Predicate Generation
- *        Transitive Predicate Ruleë¡œ Transitive Predicateë¥¼ ìƒì„±í•œë‹¤.
+ *        Transitive Predicate Rule·Î Transitive Predicate¸¦ »ı¼ºÇÑ´Ù.
  *
  ***********************************************************************/
     
@@ -2718,14 +2718,14 @@ qmoTransMgr::processTransitivePredicate( qcStatement   * aStatement,
     IDU_FIT_POINT_FATAL( "qmoTransMgr::processTransitivePredicate::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aTransitiveNode != NULL );
     
     //------------------------------------------
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     //------------------------------------------
 
     sPredicate = aPredicate;
@@ -2802,7 +2802,7 @@ qmoTransMgr::isEquivalentPredicate( qcStatement  * aStatement,
  * Description : PROJ-1404 Transitive Predicate Generation
  *
  * Implementation :
- *     ë…¼ë¦¬ì ìœ¼ë¡œ ë™ì¼í•œ predicateì¸ì§€ ê²€ì‚¬í•œë‹¤.
+ *     ³í¸®ÀûÀ¸·Î µ¿ÀÏÇÑ predicateÀÎÁö °Ë»çÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -2818,7 +2818,7 @@ qmoTransMgr::isEquivalentPredicate( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoTransMgr::isEquivalentPredicate::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2827,7 +2827,7 @@ qmoTransMgr::isEquivalentPredicate( qcStatement  * aStatement,
     IDE_DASSERT( aIsEquivalent != NULL );
 
     //------------------------------------------
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     //------------------------------------------
 
     sCompareNode1 = aPredicate1->node;
@@ -2855,11 +2855,11 @@ qmoTransMgr::isEquivalentPredicate( qcStatement  * aStatement,
     }
 
     //------------------------------------------
-    // ë…¼ë¦¬ì ìœ¼ë¡œ ë™ì¼í•œ predicateì¸ì§€ ê²€ì‚¬
+    // ³í¸®ÀûÀ¸·Î µ¿ÀÏÇÑ predicateÀÎÁö °Ë»ç
     //------------------------------------------
 
-    // ORë…¸ë“œ í•˜ìœ„ë¡œ í•˜ë‚˜ì˜ ë¹„êµì—°ì‚°ìë§Œì´ ì™€ì•¼í•˜ë©°
-    // ë…¼ë¦¬ì ìœ¼ë¡œ ë™ì¼í•˜ë ¤ë©´ dependencyë„ ê°™ì„ ê²ƒì´ë‹¤.
+    // OR³ëµå ÇÏÀ§·Î ÇÏ³ªÀÇ ºñ±³¿¬»êÀÚ¸¸ÀÌ ¿Í¾ßÇÏ¸ç
+    // ³í¸®ÀûÀ¸·Î µ¿ÀÏÇÏ·Á¸é dependencyµµ °°À» °ÍÀÌ´Ù.
     if ( ( sCompareNode1->node.next == NULL ) &&
          ( sCompareNode2->node.next == NULL ) &&
          ( qtc::dependencyEqual( & sCompareNode1->depInfo,
@@ -2893,8 +2893,8 @@ qmoTransMgr::isEquivalentPredicate( qcStatement  * aStatement,
         {
             if ( sModuleId1 == sModuleId2 )
             {
-                // {i1<1}ê³¼ {i1<1}ì˜ ë¹„êµ
-                // {i1=1}ê³¼ {i1=1}ì˜ ë¹„êµ
+                // {i1<1}°ú {i1<1}ÀÇ ºñ±³
+                // {i1=1}°ú {i1=1}ÀÇ ºñ±³
 
                 IDE_TEST( qtc::isEquivalentExpression( aStatement,
                                                        (qtcNode*) sCompareNode1->node.arguments,
@@ -2910,7 +2910,7 @@ qmoTransMgr::isEquivalentPredicate( qcStatement  * aStatement,
                                                            & sIsEquivalent )
                               != IDE_SUCCESS );
 
-                    // ì¸ìê°€ 3ê°œì¸ ê²½ìš°ëŠ” ì¢Œìš°ë³€ì„ ë°”ê¿€ ìˆ˜ ì—†ë‹¤.
+                    // ÀÎÀÚ°¡ 3°³ÀÎ °æ¿ì´Â ÁÂ¿ìº¯À» ¹Ù²Ü ¼ö ¾ø´Ù.
                     if ( ( sCompareNode1->node.lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) == 3 )
                     {
                         if ( ( sCompareNode2->node.lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) == 3 )
@@ -2923,7 +2923,7 @@ qmoTransMgr::isEquivalentPredicate( qcStatement  * aStatement,
                         }
                         else
                         {
-                            // ì¸ìì˜ ê°œìˆ˜ê°€ ë‹¤ë¥´ë©´ ì„œë¡œ ë‹¤ë¥´ë‹¤.
+                            // ÀÎÀÚÀÇ °³¼ö°¡ ´Ù¸£¸é ¼­·Î ´Ù¸£´Ù.
 
                             sIsEquivalent = ID_FALSE;
                         }
@@ -2946,8 +2946,8 @@ qmoTransMgr::isEquivalentPredicate( qcStatement  * aStatement,
             if ( ( sIsEquivalent == ID_FALSE ) &&
                  ( operatorModule[sModuleId1].transposeModuleId == sModuleId2 ) )
             {
-                // {i1<1}ê³¼ {1>i1}ì˜ ë¹„êµ
-                // {i1=1}ê³¼ {1=i1}ì˜ ë¹„êµ
+                // {i1<1}°ú {1>i1}ÀÇ ºñ±³
+                // {i1=1}°ú {1=i1}ÀÇ ºñ±³
 
                 IDE_TEST( qtc::isEquivalentExpression( aStatement,
                                                        (qtcNode*) sCompareNode1->node.arguments,
@@ -2980,7 +2980,7 @@ qmoTransMgr::isEquivalentPredicate( qcStatement  * aStatement,
     }
     else
     {
-        // ë‹¨ì¼ OR ë…¸ë“œê°€ ì•„ë‹ˆë¼ë©´ ê°™ì§€ì•Šë‹¤.
+        // ´ÜÀÏ OR ³ëµå°¡ ¾Æ´Ï¶ó¸é °°Áö¾Ê´Ù.
         
         // Nothing to do.
     }
@@ -3005,7 +3005,7 @@ qmoTransMgr::isExistEquivalentPredicate( qcStatement  * aStatement,
  * Description : PROJ-1404 Transitive Predicate Generation
  *
  * Implementation :
- *     ë…¼ë¦¬ì ìœ¼ë¡œ ë™ì¼í•œ predicateì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+ *     ³í¸®ÀûÀ¸·Î µ¿ÀÏÇÑ predicateÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -3017,7 +3017,7 @@ qmoTransMgr::isExistEquivalentPredicate( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoTransMgr::isExistEquivalentPredicate::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -3025,13 +3025,13 @@ qmoTransMgr::isExistEquivalentPredicate( qcStatement  * aStatement,
     IDE_DASSERT( aIsExist != NULL );
 
     //------------------------------------------
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     //------------------------------------------
 
     sPredicate = aPredicateList;
 
     //------------------------------------------
-    // ë…¼ë¦¬ì ìœ¼ë¡œ ë™ì¼í•œ predicateì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
+    // ³í¸®ÀûÀ¸·Î µ¿ÀÏÇÑ predicateÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
     //------------------------------------------
 
     while ( sPredicate != NULL )

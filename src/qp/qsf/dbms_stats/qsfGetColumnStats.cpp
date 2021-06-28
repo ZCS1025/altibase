@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsfGetColumnStats.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qsfGetColumnStats.cpp 88191 2020-07-27 03:08:54Z mason.lee $
  *
  * Description :
  *
@@ -62,7 +62,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfGetColumnStatsModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -188,7 +188,6 @@ IDE_RC qsfCalculate_GetColumnStats( mtcNode*     aNode,
     smiStatement         * sDummyParentStmt;
     smiStatement           sDummyStmt;
     smiTrans               sSmiTrans;
-    smSCN                  sDummySCN;
     UInt                   sSmiStmtFlag;
     UInt                   sState = 0;
     mtdEncodeFunc          sEncodeFunc;
@@ -240,7 +239,7 @@ IDE_RC qsfCalculate_GetColumnStats( mtcNode*     aNode,
     IDE_TEST( sDummyStmt.begin( sStatement->mStatistics, sDummyParentStmt, sSmiStmtFlag ) != IDE_SUCCESS);
     sState = 4;
 
-    /* Tableì •ë³´ íšë“ */
+    /* TableÁ¤º¸ È¹µæ */
     IDE_TEST( qcmUser::getUserID( sStatement,
                                   (SChar*)sOwnerNameValue->value,
                                   sOwnerNameValue->length,
@@ -259,7 +258,7 @@ IDE_RC qsfCalculate_GetColumnStats( mtcNode*     aNode,
     IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT(sStatement))->getTrans(),
                                          sTableHandle,
                                          sTableSCN,
-                                         SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                         SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                          SMI_TABLE_LOCK_IS,
                                          ID_ULONG_MAX,
                                          ID_FALSE )         // BUG-28752 isExplicitLock
@@ -276,7 +275,7 @@ IDE_RC qsfCalculate_GetColumnStats( mtcNode*     aNode,
                 NULL )
             != IDE_SUCCESS );
 
-    /* Partition í•˜ë‚˜ì— ëŒ€í•´ì„œë§Œ í†µê³„ì •ë³´ íšë“ */
+    /* Partition ÇÏ³ª¿¡ ´ëÇØ¼­¸¸ Åë°èÁ¤º¸ È¹µæ */
     if( sPartitionNameValue != NULL )
     {
         IDE_TEST( qcmPartition::getPartitionInfo( 
@@ -292,7 +291,7 @@ IDE_RC qsfCalculate_GetColumnStats( mtcNode*     aNode,
         IDE_TEST( qcmPartition::validateAndLockOnePartition( sStatement,
                                                              sTableHandle,
                                                              sTableSCN,
-                                                             SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                             SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                              SMI_TABLE_LOCK_IS,
                                                              ID_ULONG_MAX )
                   != IDE_SUCCESS );
@@ -307,7 +306,7 @@ IDE_RC qsfCalculate_GetColumnStats( mtcNode*     aNode,
     sEncodeFunc = sColumnInfo->basicInfo->module->encode;
 
     //------------------------------------------------
-    // í†µê³„ì •ë³´ ìˆ˜ì§‘
+    // Åë°èÁ¤º¸ ¼öÁý
     //------------------------------------------------
 
     IDE_TEST( smiStatistics::getColumnStatNumDist(
@@ -328,7 +327,7 @@ IDE_RC qsfCalculate_GetColumnStats( mtcNode*     aNode,
                 sAvgCLenPtr )
               != IDE_SUCCESS );
 
-    // BUG-40290 GET_COLUMN_STATS min, max ì§€ì›
+    // BUG-40290 GET_COLUMN_STATS min, max Áö¿ø
     if ( ((sColumnInfo->basicInfo->module->flag & MTD_SELECTIVITY_MASK) == MTD_SELECTIVITY_ENABLE) &&
          (smiStatistics::isValidColumnStat( sTableHandle, sColumnIdx ) == ID_TRUE) )
     {
@@ -346,12 +345,12 @@ IDE_RC qsfCalculate_GetColumnStats( mtcNode*     aNode,
                     != IDE_SUCCESS );
 
         //---------------------------------------------------
-        // Min ê°’ Char íƒ€ìž…ìœ¼ë¡œ ì»¨ë²„ì ¼
+        // Min °ª Char Å¸ÀÔÀ¸·Î ÄÁ¹öÁ¯
         //---------------------------------------------------
         sValueLen = aStack[8].column->column.size;
 
-        // sRet ëŠ” ë²„í¼ì˜ ê¸¸ì´ê°€ ëª¨ìž˜ëž„ ë•Œ IDE_FAILURE ê°€ ì„¸íŒ…ëœë‹¤.
-        // MIN, MAX statì€ 40byte ë§Œí¼ ìžˆê¸°ë•Œë¬¸ì— ë¬¸ì œê°€ ë˜ì§€ ì•ŠëŠ”ë‹¤.
+        // sRet ´Â ¹öÆÛÀÇ ±æÀÌ°¡ ¸ðÀß¶ö ¶§ IDE_FAILURE °¡ ¼¼ÆÃµÈ´Ù.
+        // MIN, MAX statÀº 40byte ¸¸Å­ ÀÖ±â¶§¹®¿¡ ¹®Á¦°¡ µÇÁö ¾Ê´Â´Ù.
 
         IDE_TEST( sEncodeFunc( sColumnInfo->basicInfo,
                                sMinValue,
@@ -365,7 +364,7 @@ IDE_RC qsfCalculate_GetColumnStats( mtcNode*     aNode,
 
 
         //---------------------------------------------------
-        // Max ê°’ Char íƒ€ìž…ìœ¼ë¡œ ì»¨ë²„ì ¼
+        // Max °ª Char Å¸ÀÔÀ¸·Î ÄÁ¹öÁ¯
         //---------------------------------------------------
         sValueLen = aStack[9].column->column.size;
 
@@ -422,7 +421,7 @@ IDE_RC qsfCalculate_GetColumnStats( mtcNode*     aNode,
 
     // transaction commit
     sState = 1;
-    IDE_TEST( sSmiTrans.commit(&sDummySCN) != IDE_SUCCESS );
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
 
     // transaction destroy
     sState = 0;

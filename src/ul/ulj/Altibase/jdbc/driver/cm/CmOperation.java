@@ -39,6 +39,7 @@ import Altibase.jdbc.driver.ex.ShardFailoverIsNotAvailableException;
 import Altibase.jdbc.driver.logging.LoggingProxy;
 import Altibase.jdbc.driver.logging.TraceFlag;
 import Altibase.jdbc.driver.sharding.core.ShardVersion;
+import Altibase.jdbc.driver.sharding.core.GlobalTransactionLevel;
 import Altibase.jdbc.driver.util.AltibaseProperties;
 
 import static Altibase.jdbc.driver.sharding.util.ShardingTraceLogger.shard_log;
@@ -66,7 +67,7 @@ public class CmOperation extends CmOperationDef
         aChannel.writeByte(AltibaseVersion.CM_MAJOR_VERSION);
         aChannel.writeByte(AltibaseVersion.CM_MINOR_VERSION);
         aChannel.writeByte(AltibaseVersion.CM_PATCH_VERSION);
-        aChannel.writeByte(HANDSHAKE_FLAG);
+        aChannel.writeByte(DB_OP_COUNT); // TASK-7220 °í¼º´É ºĞ»ê°øÀ¯Æ®·£Àè¼Ç Á¤ÇÕ¼º 
     }
 
     static void writeShardHandshake(CmChannel aChannel) throws SQLException
@@ -85,13 +86,20 @@ public class CmOperation extends CmOperationDef
         
         if (sOp == DB_OP_HANDSHAKE_RESULT)
         {
-            // ì„œë²„ë¡œë¶€í„° ì˜¤ëŠ” base version, module id, module version ëª¨ë‘ íŠ¹ë³„íˆ ì‚¬ìš©í•  ë°ê°€ ì—†ë‹¤.
+            // ¼­¹ö·ÎºÎÅÍ ¿À´Â base version, module id, module version ¸ğµÎ Æ¯º°È÷ »ç¿ëÇÒ µ¥°¡ ¾ø´Ù.
             aResult.setResult(aChannel.readByte(), aChannel.readByte(), aChannel.readByte(), aChannel.readByte(), aChannel.readByte());
         }
-        else 
-        if (sOp == DB_OP_ERROR_RESULT)
+        else if (sOp == DB_OP_ERROR_RESULT || sOp == DB_OP_ERROR_V3_RESULT)
         {
-            aResult.setError(aChannel.readInt(), aChannel.readStringForErrorResult());
+            aChannel.readByte();     // skip ErrOpID
+            aChannel.readInt();      // skip ErrIndex
+            int sErrCode = aChannel.readInt();
+            String sErrMsg = aChannel.readStringForErrorResult();
+            if (sOp == DB_OP_ERROR_V3_RESULT)
+            {
+                aChannel.readLong(); // skip SCN
+            }
+            aResult.setError(sErrCode, sErrMsg);
         }
         else
         {
@@ -100,10 +108,10 @@ public class CmOperation extends CmOperationDef
     }
 
     /**
-     * í”„ë¡œí† ì½œì„ í†µí•´ DB ShardHandshake(93) ê²°ê³¼ë¥¼ ì €ì¥í•œë‹¤.
-     * @param aChannel CmChannelê°ì²´
-     * @param aShardHandshakeResult shard handshake ì»¨í…ìŠ¤íŠ¸ ê°ì²´
-     * @throws SQLException shard handshakeí”„ë¡œí† ì½œì„ ì „ì†¡ë°›ëŠ” ì¤‘ ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš°
+     * ÇÁ·ÎÅäÄİÀ» ÅëÇØ DB ShardHandshake(93) °á°ú¸¦ ÀúÀåÇÑ´Ù.
+     * @param aChannel CmChannel°´Ã¼
+     * @param aShardHandshakeResult shard handshake ÄÁÅØ½ºÆ® °´Ã¼
+     * @throws SQLException shard handshakeÇÁ·ÎÅäÄİÀ» Àü¼Û¹Ş´Â Áß ¿¡·¯°¡ ¹ß»ıÇÑ °æ¿ì
      */
     static void readShardHandshake(CmChannel aChannel,
                                    CmShardHandshakeResult aShardHandshakeResult) throws SQLException
@@ -116,22 +124,23 @@ public class CmOperation extends CmOperationDef
             byte sPatchVersion = aChannel.readByte();
             byte sFlag         = aChannel.readByte();
             /*
-                PROJ-2690 ì„œë²„ë¡œë¶€í„° shard handshakeì˜ ê²°ê³¼ë¡œ major version, minor version, patch version, flagê°€ ë„˜ì–´ì˜¤ì§€ë§Œ
-                íŠ¹ë³„íˆ ì‚¬ìš©í•˜ëŠ” ê³³ì€ ì—†ë‹¤.
+                PROJ-2690 ¼­¹ö·ÎºÎÅÍ shard handshakeÀÇ °á°ú·Î major version, minor version, patch version, flag°¡ ³Ñ¾î¿ÀÁö¸¸
+                Æ¯º°È÷ »ç¿ëÇÏ´Â °÷Àº ¾ø´Ù.
              */
             aShardHandshakeResult.setResult(sMajorVersion, sMinorVersion, sPatchVersion, sFlag);
         }
-        else if (sOp == DB_OP_ERROR_RESULT)
+        else if (sOp == DB_OP_ERROR_V3_RESULT)
         {
             aChannel.readByte();   // skip ErrOpID
             aChannel.readInt();    // skip ErrIndex
             int sErrCode = aChannel.readInt();
             String sErrMsg = aChannel.readStringForErrorResult();
+            aChannel.readLong();   // skip SCN
             aShardHandshakeResult.setError(sErrCode, sErrMsg);
         }
         else
         {
-            /* Invalid protocol seq error ì²˜ë¦¬ */
+            /* Invalid protocol seq error Ã³¸® */
             Error.throwInternalError(ErrorDef.INVALID_OPERATION_PROTOCOL, String.valueOf(DB_OP_SHARD_HANDSHAKE));
         }
     }
@@ -153,11 +162,12 @@ public class CmOperation extends CmOperationDef
                     printMessage(sChannel);
                     break;
                 case DB_OP_ERROR_RESULT:
-                    readErrorResult(sChannel, aContext);
+                case DB_OP_ERROR_V3_RESULT:
+                    readErrorV3Result(sChannel, aContext, sResultOp);
                     break;
-                case DB_OP_CONNECT_EX_RESULT:
+                case DB_OP_CONNECT_V3_RESULT:
                     // BUG-38496 Notify users when their password expiry date is approaching.
-                    readConnectExResult(sChannel, (CmConnectExResult)aContext.getCmResult(sResultOp), aContext);
+                    readConnectV3Result(sChannel, (CmConnectExResult)aContext.getCmResult(sResultOp), aContext);
                     break;
                 case DB_OP_DISCONNECT_RESULT:
                     // nothing to read
@@ -165,11 +175,18 @@ public class CmOperation extends CmOperationDef
                 case DB_OP_GET_PROPERTY_RESULT:
                     readGetPropertyResult(sChannel, (CmGetPropertyResult)aContext.getCmResult(sResultOp));
                     break;
-                case DB_OP_SET_PROPERTY_RESULT:
-                    // nothing to read
+                case DB_OP_SET_PROPERTY_V3_RESULT:
+                    // TASK-7220 °í¼º´É ºĞ»ê°øÀ¯Æ®·£Àè¼Ç Á¤ÇÕ¼º
+                    readSetPropertyV3Result(sChannel, (CmSetPropertyResult)aContext.getCmResult(sResultOp), aContext);
                     break;
-                case DB_OP_PREPARE_RESULT:
+                case DB_OP_PREPARE_V3_RESULT:
                     readPrepareResult(sChannel, (CmPrepareResult)aContext.getCmResult(sResultOp));
+                    // BUG-48431 prepare°¡ ¼º°øÇÑ ÈÄ deferred request ¸®½ºÆ®¸¦ clearÇÑ´Ù.
+                    CmProtocolContextDirExec aPrepContext = (CmProtocolContextDirExec)aContext;
+                    if (aPrepContext.getDeferredRequests().size() > 0)
+                    {
+                        aPrepContext.clearDeferredRequests();
+                    }
                     break;
                 case DB_OP_GET_PLAN_RESULT:
                     readGetPlanResult(sChannel, (CmGetPlanResult)aContext.getCmResult(sResultOp));
@@ -192,11 +209,11 @@ public class CmOperation extends CmOperationDef
                 case DB_OP_PARAM_DATA_OUT_LIST:
                     readBindParamDataOutListResult(sChannel, (CmBindParamDataOutResult)aContext.getCmResult(sResultOp));
                     break;
-                case DB_OP_PARAM_DATA_IN_LIST_V2_RESULT:
-                    readBindParamDataInListV2Result(sChannel, aContext);
+                case DB_OP_PARAM_DATA_IN_LIST_V3_RESULT:
+                    readBindParamDataInListV3Result(sChannel, aContext);
                     break;
-                case DB_OP_EXECUTE_V2_RESULT:
-                    readExecuteV2Result(sChannel, aContext);
+                case DB_OP_EXECUTE_V3_RESULT:
+                    readExecuteV3Result(sChannel, aContext);
                     break;
                 case DB_OP_FETCH_BEGIN_RESULT:
                     readFetchBeginResult(sChannel, (CmGetColumnInfoResult)aContext.getCmResult(CmGetColumnInfoResult.MY_OP), (CmFetchResult)aContext.getCmResult(CmFetchResult.MY_OP));
@@ -216,7 +233,10 @@ public class CmOperation extends CmOperationDef
                 case DB_OP_TRANSACTION_RESULT:
                     // nothing to read
                     break;
-                case DB_OP_LOB_GET_SIZE_RESULT:
+                case DB_OP_SHARD_TRANSACTION_V3_RESULT:
+                    readShardTransactionResult(sChannel, aContext);
+                    break;
+                case DB_OP_LOB_GET_SIZE_V3_RESULT:
                     readLobGetSizeResult(sChannel, (CmBlobGetResult)aContext.getCmResult(CmBlobGetResult.MY_OP));
                     break;
                 case DB_OP_LOB_GET_RESULT:
@@ -252,9 +272,9 @@ public class CmOperation extends CmOperationDef
                 case DB_OP_LOB_TRIM_RESULT:
                     break;
 
-                // #region ì•ˆì“°ëŠ” í”„ë¡œí† ì½œ
+                // #region ¾È¾²´Â ÇÁ·ÎÅäÄİ
 
-                // ì˜ˆì•½í•´ ë‘” ê²ƒì¼ ë¿, ì•„ì§ ì•ˆì“°ëŠ” í”„ë¡œí† ì½œ
+                // ¿¹¾àÇØ µĞ °ÍÀÏ »Ó, ¾ÆÁ÷ ¾È¾²´Â ÇÁ·ÎÅäÄİ
                 case DB_OP_FETCH_MOVE_RESULT:
 
                 default:
@@ -268,14 +288,15 @@ public class CmOperation extends CmOperationDef
 
     private static void printMessage(CmChannel aChannel) throws SQLException
     {
-        // BUG-45237 ì„œë²„ë©”ì‹œì§€ë¥¼ SQLWarningìœ¼ë¡œ ìƒì„±í•˜ëŠ” ëŒ€ì‹  CmChannelì— ë“±ë¡ëœ ì½œë°±ì— ìœ„ì„í•œë‹¤.
+        // BUG-45237 ¼­¹ö¸Ş½ÃÁö¸¦ SQLWarningÀ¸·Î »ı¼ºÇÏ´Â ´ë½Å CmChannel¿¡ µî·ÏµÈ Äİ¹é¿¡ À§ÀÓÇÑ´Ù.
         aChannel.readAndPrintServerMessage();
     }
 
-    public static void readErrorResult(CmChannel aChannel, CmProtocolContext aContext) throws SQLException
+    public static void readErrorV3Result(CmChannel aChannel, CmProtocolContext aContext, byte aResultOp) throws SQLException
     {
+        long sSCN;
         CmErrorResult sError = new CmErrorResult();
-        sError.readFrom(aChannel);
+        sError.readFrom(aChannel, aResultOp);
         if (aContext instanceof CmProtocolContextDirExec)
         {
             CmExecutionResult sExecResult = (CmExecutionResult)aContext.getCmResult(CmExecutionResult.MY_OP);
@@ -287,17 +308,24 @@ public class CmOperation extends CmOperationDef
 
             switch (sError.getErrorOp())
             {
-                case DB_OP_PREPARE_BY_CID:
-                    // prepare ì—ëŸ¬ëŠ” Error Indexê°€ ì„¤ì •ë˜ì§€ ì•Šìœ¼ë¯€ë¡œ(í•­ìƒ 0), í˜„ì¬ RowNumber ê°’ìœ¼ë¡œ ì´ˆê¸°
+                case DB_OP_PREPARE_BY_CID_V3:
+                    // prepare ¿¡·¯´Â Error Index°¡ ¼³Á¤µÇÁö ¾ÊÀ¸¹Ç·Î(Ç×»ó 0), ÇöÀç RowNumber °ªÀ¸·Î ÃÊ±â
                     sError.initErrorIndex(sExecResult.getUpdatedRowCountArraySize());
-                case DB_OP_PARAM_DATA_IN_LIST_V2:
-                case DB_OP_EXECUTE_V2:
+                case DB_OP_PARAM_DATA_IN_LIST_V3:
+                case DB_OP_EXECUTE_V3:
                     sExecResult.setUpdatedRowCount(Statement.EXECUTE_FAILED);
                     break;
                 default:
                     break;
             }
         }
+
+        sSCN = sError.getSCN();
+        if (sSCN > 0)
+        {
+            aContext.updateSCN(sSCN);
+        }
+
         aContext.addError(sError);
     }
 
@@ -307,7 +335,7 @@ public class CmOperation extends CmOperationDef
         ByteBuffer sBuf = prepareToWriteStringForConnect(aChannel, new String[] { aDBName, aUserName, aPassword }, sLimit);
 
         aChannel.checkWritable(9 + sBuf.remaining());
-        aChannel.writeOp(DB_OP_CONNECT_EX);
+        aChannel.writeOp(DB_OP_CONNECT_V3);
         for (int sSLimit : sLimit)
         {
             sBuf.limit(sSLimit);
@@ -340,17 +368,24 @@ public class CmOperation extends CmOperationDef
     }
 
     // BUG-38496 Notify users when their password expiration date is approaching.
-    private static void readConnectExResult(CmChannel aChannel, CmConnectExResult aResult, CmProtocolContext aContext) throws SQLException
+    private static void readConnectV3Result(CmChannel aChannel, CmConnectExResult aResult, CmProtocolContext aContext) throws SQLException
     {
+        long sSCN;  
+
         aResult.setSessionID(aChannel.readInt());
         aResult.setResultCode(aChannel.readInt());
         aResult.setResultInfo(aChannel.readInt());
-        aResult.setReserved(aChannel.readLong());
-
+        sSCN = aChannel.readLong();
+        aResult.setSCN(sSCN);  // TASK-7220 °í¼º´É ºĞ»ê°øÀ¯Æ®·£Àè¼Ç Á¤ÇÕ¼º 
         if (Error.toClientSideErrorCode(aResult.getResultCode()) != ErrorDef.IGNORE_NO_ERROR)
         {
             CmErrorResult sError = new CmErrorResult(aResult.getResultOp(), aResult.getResultInfo(), aResult.getResultCode(), null, false);
             aContext.addError(sError);
+        }
+        
+        if (sSCN > 0)
+        {
+            aContext.updateSCN(sSCN);
         }
     }
 
@@ -358,7 +393,7 @@ public class CmOperation extends CmOperationDef
     {
         aChannel.checkWritable(2);
         aChannel.writeOp(DB_OP_DISCONNECT);
-        aChannel.writeByte((byte)0); // optionì€ ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
+        aChannel.writeByte((byte)0); // optionÀº »ç¿ëÇÏÁö ¾ÊÀ½
     }
 
     static void writeCommit(CmChannel aChannel) throws SQLException
@@ -369,10 +404,10 @@ public class CmOperation extends CmOperationDef
     }
 
     /**
-     * ClientAutoCommitì´ Onì¸ ê²½ìš°ì—ë§Œ ë²„í¼ì— ì»¤ë°‹í”„ë¡œí† ì½œì„ ì €ì¥í•œë‹¤.
-     * @param aChannel Socketí†µì‹ ì„ ìœ„í•œ CmChannelê°ì²´
-     * @param aClientSideAutoCommit í´ë¼ì´ì–¸íŠ¸ì‚¬ì´ë“œì˜¤í† ì»¤ë°‹ì—¬ë¶€
-     * @throws SQLException ì»¤ë°‹í”„ë¡œí† ì½œ ì „ì†¡ì´ ì‹¤íŒ¨í•œ ê²½ìš°
+     * ClientAutoCommitÀÌ OnÀÎ °æ¿ì¿¡¸¸ ¹öÆÛ¿¡ Ä¿¹ÔÇÁ·ÎÅäÄİÀ» ÀúÀåÇÑ´Ù.
+     * @param aChannel SocketÅë½ÅÀ» À§ÇÑ CmChannel°´Ã¼
+     * @param aClientSideAutoCommit Å¬¶óÀÌ¾ğÆ®»çÀÌµå¿ÀÅäÄ¿¹Ô¿©ºÎ
+     * @throws SQLException Ä¿¹ÔÇÁ·ÎÅäÄİ Àü¼ÛÀÌ ½ÇÆĞÇÑ °æ¿ì
      */
     static void writeClientCommit(CmChannel aChannel, boolean aClientSideAutoCommit) throws SQLException
     {
@@ -389,16 +424,46 @@ public class CmOperation extends CmOperationDef
         aChannel.writeByte(TRANSACTION_OP_ROLLBACK);
     }
 
+    /* PROJ-2733 */
+    static void writeShardTransaction(CmChannel aChannel, boolean aIsCommit) throws SQLException
+    {
+        short sTouchedNodeCount = 0;
+        aChannel.checkWritable(2 + 2 + sTouchedNodeCount * 4);
+        aChannel.writeOp(CmOperation.DB_OP_SHARD_TRANSACTION_V3);
+        if (aIsCommit)
+        {
+            aChannel.writeByte((byte)1);  // commit
+        }
+        else
+        {
+            aChannel.writeByte((byte)2);  // rollback
+        }
+        aChannel.writeShort(sTouchedNodeCount);
+    }
+
+    private static void readShardTransactionResult(CmChannel aChannel, CmProtocolContext aContext) throws SQLException
+    {
+        long sSCN = aChannel.readLong();
+        if (sSCN > 0)
+        {
+            aContext.updateSCN(sSCN);
+        }
+    }
+
     static void writePrepare(CmChannel aChannel, int aCID, String aSql, byte aExecMode, byte aHoldMode, byte aKeySetDrivenMode, boolean aNliteralReplace) throws SQLException
     {
-        // BUG-45156 encodingì‹œ ì˜ˆì™¸ê°€ ë°œìƒí• ìˆ˜ë„ ìˆê¸° ë•Œë¬¸ì— ë²„í¼ì— writeí•˜ê¸° ì „ì— encoding ë¨¼ì € ìˆ˜í–‰í•œë‹¤.
+        // BUG-45156 encoding½Ã ¿¹¿Ü°¡ ¹ß»ıÇÒ¼öµµ ÀÖ±â ¶§¹®¿¡ ¹öÆÛ¿¡ writeÇÏ±â Àü¿¡ encoding ¸ÕÀú ¼öÇàÇÑ´Ù.
         int sWriteStringMode = aNliteralReplace ? WRITE_STRING_MODE_NLITERAL : WRITE_STRING_MODE_DB;
         int sBytesLen = aChannel.prepareToWriteString(aSql, sWriteStringMode);
 
-        aChannel.checkWritable(10);
-        aChannel.writeOp(DB_OP_PREPARE_BY_CID);
-        aChannel.writeInt(aCID); // clientì—ì„œ ë§Œë“  session statement id
+        aChannel.checkWritable(27);
+        aChannel.writeOp(DB_OP_PREPARE_BY_CID_V3);
+        aChannel.writeInt(aCID); // client¿¡¼­ ¸¸µç session statement id
         aChannel.writeByte((byte)(aExecMode | aHoldMode | aKeySetDrivenMode));
+        // BUG-48775 Reserved 17 bytes
+        aChannel.writeLong(0);  
+        aChannel.writeLong(0);
+        aChannel.writeByte((byte)0);
         aChannel.writeInt(sBytesLen);
         aChannel.writePreparedString();
     }
@@ -409,19 +474,28 @@ public class CmOperation extends CmOperationDef
         aResult.setStatementType(aChannel.readInt());
         aResult.setParameterCount(aChannel.readShort());
         aResult.setResultSetCount(aChannel.readShort());
-        aResult.setPrepared(true);    // BUG-42424 ì„œë²„ë¡œë¶€í„° ê°’ì„ ì „ë‹¬ë°›ì€ í›„ flagë¥¼ enableí•´ì¤€ë‹¤.
+        aChannel.readLong();        // BUG-48775 Reserved 8 bytes
+        aResult.setPrepared(true);  // BUG-42424 ¼­¹ö·ÎºÎÅÍ °ªÀ» Àü´Ş¹ŞÀº ÈÄ flag¸¦ enableÇØÁØ´Ù.
     }
 
-    static void writeExecuteV2(CmChannel aChannel, int aStatementId, int aRowNumber, byte aMode) throws SQLException
+    static void writeExecuteV3(CmChannel aChannel, int aStatementId, int aRowNumber, byte aMode, CmProtocolContext aContext) throws SQLException
     {
-        aChannel.checkWritable(10);
-        aChannel.writeOp(DB_OP_EXECUTE_V2);
+        aChannel.checkWritable(41);
+        aChannel.writeOp(DB_OP_EXECUTE_V3);
         aChannel.writeInt(aStatementId);
         aChannel.writeInt(aRowNumber);
         aChannel.writeByte(aMode);
+
+        // TASK-7220 °í¼º´É ºĞ»ê°øÀ¯Æ®·£Àè¼Ç Á¤ÇÕ¼º
+        aChannel.writeLong(aContext.getDistTxInfo().getSCN());
+        aChannel.writeLong(aContext.getDistTxInfo().getTxFirstStmtSCN());
+        aChannel.writeLong(aContext.getDistTxInfo().getTxFirstStmtTime());
+        aChannel.writeByte(aContext.getDistTxInfo().getDistLevel());
+        aChannel.writeInt(0);  /* TASK-7219 Non-shard DML */
+        aChannel.writeShort((short)0);  /* BUG-48315 FIXME */
     }
 
-    private static void readExecuteV2Result(CmChannel aChannel, CmProtocolContext aContext) throws SQLException
+    private static void readExecuteV3Result(CmChannel aChannel, CmProtocolContext aContext) throws SQLException
     {
         CmExecutionResult sExecResult = (CmExecutionResult)aContext.getCmResult(CmExecutionResult.MY_OP);
         sExecResult.setStatementId(aChannel.readInt());
@@ -429,10 +503,19 @@ public class CmOperation extends CmOperationDef
         int sResultSetCount = aChannel.readUnsignedShort();
         long sUpdatedRowCount = aChannel.readLong();
         aChannel.readLong(); // unused. fetched row count
+        long sSCN = aChannel.readLong();  
+        sExecResult.setSessionPropID(aChannel.readShort());   // For "alter session set global_transaction_level ~ " 
+        int sSessionPropValueLen = aChannel.readInt();  
+        // BUGBUG : alter session¹®ÀÌ ¾Æ´Ò¶§µµ 0 ÀÌ»óÀÇ °ªÀÌ ³Ñ¾î¿È. È®ÀÎ ÇÊ¿ä.
+        if (sSessionPropValueLen > 0)
+        {
+            sExecResult.setSessionPropValueStr(aChannel.readString(sSessionPropValueLen));
+        }
+        
         if (sExecResult.isBatchMode() && sResultSetCount > 0)
         {
-            // batch ì‘ì—…ì•ˆì— fetch êµ¬ë¬¸ì´ ìˆìœ¼ë©´ ì˜ˆì™¸ë¥¼ ì˜¬ë ¤ì•¼ í•œë‹¤.
-            CmErrorResult sError = new CmErrorResult(DB_OP_EXECUTE_V2,
+            // batch ÀÛ¾÷¾È¿¡ fetch ±¸¹®ÀÌ ÀÖÀ¸¸é ¿¹¿Ü¸¦ ¿Ã·Á¾ß ÇÑ´Ù.
+            CmErrorResult sError = new CmErrorResult(DB_OP_EXECUTE_V3,
                                                      sRowNumber,
                                                      Error.toServerSideErrorCode(ErrorDef.INVALID_BATCH_OPERATION_WITH_SELECT, 0),
                                                      ErrorDef.getErrorMessage(ErrorDef.INVALID_BATCH_OPERATION_WITH_SELECT),
@@ -443,19 +526,24 @@ public class CmOperation extends CmOperationDef
         sExecResult.setRowNumber(sRowNumber);
         sExecResult.setResultSetCount(sResultSetCount);
         sExecResult.setUpdatedRowCount(sUpdatedRowCount);
+        
+        if (sSCN > 0)
+        {
+            aContext.updateSCN(sSCN);
+        }
     }
 
     /* BUG-39463 Add new fetch protocol that can request over 65535 rows.*/
-    static void writeFetchV2(CmChannel aChannel, int aStatementId, short aResultSetId, int aFetchCount) throws SQLException
+    static void writeFetchV3(CmChannel aChannel, int aStatementId, short aResultSetId, int aFetchCount) throws SQLException
     {
         aChannel.checkWritable(23);
-        aChannel.writeOp(DB_OP_FETCH_V2);
+        aChannel.writeOp(DB_OP_FETCH_V3);
         aChannel.writeInt(aStatementId);
         aChannel.writeShort(aResultSetId);
         aChannel.writeInt(aFetchCount);
-        aChannel.writeShort((short) 1); // fetchí•  ì‹œì‘ ì»¬ëŸ¼ ìœ„ì¹˜
-        aChannel.writeShort((short) 0); // fetchí•  ë ì»¬ëŸ¼ ìœ„ì¹˜: 0ì´ë©´ ì»¬ëŸ¼ ê°œìˆ˜ë§Œí¼
-        aChannel.writeLong((long) 0);   // Reserved
+        aChannel.writeShort((short)1);  // fetchÇÒ ½ÃÀÛ ÄÃ·³ À§Ä¡
+        aChannel.writeShort((short)0);  // fetchÇÒ ³¡ ÄÃ·³ À§Ä¡: 0ÀÌ¸é ÄÃ·³ °³¼ö¸¸Å­
+        aChannel.writeLong(0);          // Reserved
     }
 
     private static void readFetchBeginResult(CmChannel aChannel, CmGetColumnInfoResult aGetColResult, CmFetchResult aFetchResult) throws SQLException
@@ -473,10 +561,14 @@ public class CmOperation extends CmOperationDef
             return;
         }
 
-        // Statementì˜ setMaxFieldSize()ë¥¼ ì§€ì›í•˜ê¸° ìœ„í•´ ì„¸íŒ…í•œë‹¤.
-        for (Column sColumn : sColumns)
+        // BUG-47460 maxfieldsize °ªÀÌ ÀÖÀ»¶§¸¸ setMaxBinayLength¸¦ È£ÃâÇÑ´Ù.
+        int sMaxFieldSize = aFetchResult.getMaxFieldSize();
+        if (sMaxFieldSize > 0)
         {
-            sColumn.setMaxBinaryLength(aFetchResult.getMaxFieldSize());
+            for (Column sColumn : sColumns)
+            {
+                sColumn.setMaxBinaryLength(sMaxFieldSize);
+            }
         }
         aFetchResult.fetchBegin(sColumns);
     }
@@ -485,12 +577,12 @@ public class CmOperation extends CmOperationDef
     {
         long sRowSize = aChannel.readUnsignedInt();
 
-        // BUG-43807 Rowhandleì— ì €ì¥í•˜ëŠ” ë¶€ë¶„ì„ ë”°ë¡œ í•˜ì§€ ì•Šê³  í•œêº¼ë²ˆì— ìˆ˜í–‰í•œë‹¤.
+        // BUG-43807 Rowhandle¿¡ ÀúÀåÇÏ´Â ºÎºĞÀ» µû·Î ÇÏÁö ¾Ê°í ÇÑ²¨¹ø¿¡ ¼öÇàÇÑ´Ù.
         aResult.increaseStoreCursor();
         List<Column> sColumns = aResult.getColumns();
-        for (int i = 0; i < sColumns.size(); i++)
+        for (Column sColumn : sColumns)
         {
-            sColumns.get(i).readFrom(aChannel, aResult);
+            sColumn.readFrom(aChannel, aResult);
         }
         aResult.updateFetchStat(sRowSize);
     }
@@ -501,8 +593,8 @@ public class CmOperation extends CmOperationDef
         aResult.setResultSetId(aChannel.readShort());
         if (!aResult.isBegun())
         {
-            // fetch ê²°ê³¼ê°€ ì—†ìœ¼ë©´ (no rowsì´ë©´) fetch beginì—†ì´ ë°”ë¡œ fetch endê°€ ì˜¨ë‹¤.
-            // ì´ë•Œ ì´ ì‘ì—…ì„ í•´ì¤˜ì•¼ í•œë‹¤.
+            // fetch °á°ú°¡ ¾øÀ¸¸é (no rowsÀÌ¸é) fetch begin¾øÀÌ ¹Ù·Î fetch end°¡ ¿Â´Ù.
+            // ÀÌ¶§ ÀÌ ÀÛ¾÷À» ÇØÁà¾ß ÇÑ´Ù.
             beginFetch(aGetColResult, aResult);
         }
         aResult.fetchEnd();
@@ -520,7 +612,7 @@ public class CmOperation extends CmOperationDef
     private static void readGetColumnInfoListResult(CmChannel aChannel, CmGetColumnInfoResult aResult, int aMaxBytesPerChar) throws SQLException
     {
         aResult.setStatementId(aChannel.readInt());
-        aChannel.readShort(); // ResultSet IDëŠ” ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
+        aChannel.readShort(); // ResultSet ID´Â »ç¿ëÇÏÁö ¾ÊÀ½
 
         short sColCount = aChannel.readShort();
         List<Column> sColumnsList = new ArrayList<Column>(sColCount);
@@ -562,7 +654,7 @@ public class CmOperation extends CmOperationDef
                                       sSchemaName,
                                       aMaxBytesPerChar);
             Column sColumn = aChannel.getColumnFactory().getInstance(sColumnInfo.getDataType());
-            sColumn.setColumnIndex(i); // BUG-43807 DynamicArrayë¥¼ ë°”ë¡œ ì°¾ê¸°ìœ„í•´ Columnê°ì²´ì— indexë¥¼ í• ë‹¹í•œë‹¤.
+            sColumn.setColumnIndex(i); // BUG-43807 DynamicArray¸¦ ¹Ù·Î Ã£±âÀ§ÇØ Column°´Ã¼¿¡ index¸¦ ÇÒ´çÇÑ´Ù.
             sColumnsList.add(sColumn);
             if (sColumnsList.get(i) == null)
             {
@@ -576,8 +668,8 @@ public class CmOperation extends CmOperationDef
     private static void readGetColumnInfoResult(CmChannel aChannel, CmGetColumnInfoResult aResult, int aMaxBytesPerChar) throws SQLException
     {
         aResult.setStatementId(aChannel.readInt());
-        aChannel.readShort(); // ResultSet IDëŠ” ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
-        aChannel.readShort(); // BUG-42987 column indexëŠ” ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
+        aChannel.readShort(); // ResultSet ID´Â »ç¿ëÇÏÁö ¾ÊÀ½
+        aChannel.readShort(); // BUG-42987 column index´Â »ç¿ëÇÏÁö ¾ÊÀ½
 
         int sDataType = aChannel.readInt();
         int sLanguage = aChannel.readInt();
@@ -625,19 +717,19 @@ public class CmOperation extends CmOperationDef
         aChannel.checkWritable(7);
         aChannel.writeOp(DB_OP_GET_PARAM_INFO);
         aChannel.writeInt(aStatementId);
-        aChannel.writeShort((short)0); // parameter index: í•­ìƒ ëª¨ë“  ì»¬ëŸ¼ ì •ë³´ë¥¼ ìš”ì²­í•˜ê¸° ë•Œë¬¸ì— 0ì„ ì¤€ë‹¤.
+        aChannel.writeShort((short)0); // parameter index: Ç×»ó ¸ğµç ÄÃ·³ Á¤º¸¸¦ ¿äÃ»ÇÏ±â ¶§¹®¿¡ 0À» ÁØ´Ù.
     }
 
     private static void readGetBindParamInfoResult(CmChannel aChannel, CmGetBindParamInfoResult aResult, int aMaxBytesPerChar) throws SQLException
     {
         aResult.setStatementId(aChannel.readInt());
-        int sParamIdx = aChannel.readShort();    // BUG-42424 parameter indexë¥¼ ë§µì˜ í‚¤ë¡œ ì‚¬ìš©í•œë‹¤.
+        int sParamIdx = aChannel.readShort();    // BUG-42424 parameter index¸¦ ¸ÊÀÇ Å°·Î »ç¿ëÇÑ´Ù.
         int sDataType = aChannel.readInt();
         int sLanguage = aChannel.readInt();
         byte sArguments = aChannel.readByte();
         int sPrecision = aChannel.readInt();
         int sScale = aChannel.readInt();
-        aChannel.readByte(); // ì„œë²„ì—ì„œ ì£¼ëŠ” in-out typeì€ ë²„ë¦°ë‹¤. ì˜ë¯¸ì—†ëŠ” ì •ë³´ì´ë‹¤.
+        aChannel.readByte(); // ¼­¹ö¿¡¼­ ÁÖ´Â in-out typeÀº ¹ö¸°´Ù. ÀÇ¹Ì¾ø´Â Á¤º¸ÀÌ´Ù.
         byte sInOutType = ColumnInfo.IN_OUT_TARGET_TYPE_NONE;
         byte sNullable = aChannel.readByte();
 
@@ -670,7 +762,7 @@ public class CmOperation extends CmOperationDef
         }
         else
         {
-            // BUG-38947 ë°”ì¸ë“œíŒŒë¼ë©”í„°ì •ë³´ì— ë³€í™”ê°€ ì—†ìœ¼ë©´ ë©”íƒ€ì •ë³´ë¥¼ ì„œë²„ë¡œ ì „ì†¡í•˜ì§€ ì•Šê³  ë°”ë¡œ ë¦¬í„´í•œë‹¤.
+            // BUG-38947 ¹ÙÀÎµåÆÄ¶ó¸ŞÅÍÁ¤º¸¿¡ º¯È­°¡ ¾øÀ¸¸é ¸ŞÅ¸Á¤º¸¸¦ ¼­¹ö·Î Àü¼ÛÇÏÁö ¾Ê°í ¹Ù·Î ¸®ÅÏÇÑ´Ù.
             return;
         }
 
@@ -685,16 +777,16 @@ public class CmOperation extends CmOperationDef
             aChannel.writeInt(sParamInfo.getDataType());
             aChannel.writeInt(sParamInfo.getLanguage());
             aChannel.writeByte(sParamInfo.getArguments());
-            aChannel.writeInt(sParamInfo.getPrecision()); // char, varcharë¥¼ ìœ„í•´ charsetì´ ê³ ë ¤ëœ precisionì„ ì„œë²„ë¡œ ë³´ë‚¸ë‹¤.
+            aChannel.writeInt(sParamInfo.getPrecision()); // char, varchar¸¦ À§ÇØ charsetÀÌ °í·ÁµÈ precisionÀ» ¼­¹ö·Î º¸³½´Ù.
             aChannel.writeInt(sParamInfo.getScale());
             aChannel.writeByte(sParamInfo.getInOutTargetType());
         }
     }
 
     /**
-     * íŒŒë¼ë©”í„°ì •ë³´ê°€ ë³€ê²½ë˜ì—ˆëŠ”ì§€ ì²´í¬í•œë‹¤..
-     * @param aColumns ë°”ì¸ë“œëœ íŒŒë¼ë©”í„°ì˜ ì»¬ëŸ¼ì •ë³´ ë°°ì—´
-     * @return ë³€ê²½ëœ íŒŒë¼ë©”í„°ê°€ ìˆì„ ê²½ìš° true, ì—†ì„ ê²½ìš°ì—” false
+     * ÆÄ¶ó¸ŞÅÍÁ¤º¸°¡ º¯°æµÇ¾ú´ÂÁö Ã¼Å©ÇÑ´Ù..
+     * @param aColumns ¹ÙÀÎµåµÈ ÆÄ¶ó¸ŞÅÍÀÇ ÄÃ·³Á¤º¸ ¹è¿­
+     * @return º¯°æµÈ ÆÄ¶ó¸ŞÅÍ°¡ ÀÖÀ» °æ¿ì true, ¾øÀ» °æ¿ì¿£ false
      */
     private static boolean isChangedBindInfo(List<Column> aColumns)
     {
@@ -709,8 +801,8 @@ public class CmOperation extends CmOperationDef
     }
 
     /**
-     * ë³€ê²½ëœ íŒŒë¼ë©”í„°ê°€ ìˆì„ ê²½ìš° íŒŒë¼ë©”í„°ì˜ ìƒíƒœë¥¼ unchangedë¡œ ë°”ê¿”ì¤€ë‹¤.
-     * @param aColumns ë°”ì¸ë“œëœ íŒŒë¼ë©”í„°ì˜ ì»¬ëŸ¼ì •ë³´ ë°°ì—´
+     * º¯°æµÈ ÆÄ¶ó¸ŞÅÍ°¡ ÀÖÀ» °æ¿ì ÆÄ¶ó¸ŞÅÍÀÇ »óÅÂ¸¦ unchanged·Î ¹Ù²ãÁØ´Ù.
+     * @param aColumns ¹ÙÀÎµåµÈ ÆÄ¶ó¸ŞÅÍÀÇ ÄÃ·³Á¤º¸ ¹è¿­
      */
     private static void unChangeBindInfo(List<Column> aColumns)
     {
@@ -719,9 +811,9 @@ public class CmOperation extends CmOperationDef
             ColumnInfo sColumnInfo = sColumn.getColumnInfo();
             if (sColumnInfo.isChanged())
             {
-                // BUG-38947 ì¤‘ë³µí•´ì„œ íŒŒë¼ë©”í„°ì •ë³´ë¥¼ ì„œë²„ë¡œ ë³´ë‚´ëŠ” ê²ƒì„ ë§‰ê¸°ìœ„í•´ ColumnInfo ê°ì²´ì˜ mChangeë³€ìˆ˜ë¥¼ falseë¡œ
-                // ë³€ê²½í•´ì¤€ë‹¤. mChangeë³€ìˆ˜ëŠ” Columnê°ì²´ê°€ ìƒì„±ë  ë•Œ ë˜ëŠ” setXXXë©”ì†Œë“œë¡œ íŒŒë¼ë©”í„° ë©”íƒ€ì •ë³´ê°€ ë³€ê²½ë  ë•Œ
-                // trueë¡œ ì…‹íŒ…ëœë‹¤.
+                // BUG-38947 Áßº¹ÇØ¼­ ÆÄ¶ó¸ŞÅÍÁ¤º¸¸¦ ¼­¹ö·Î º¸³»´Â °ÍÀ» ¸·±âÀ§ÇØ ColumnInfo °´Ã¼ÀÇ mChangeº¯¼ö¸¦ false·Î
+                // º¯°æÇØÁØ´Ù. mChangeº¯¼ö´Â Column°´Ã¼°¡ »ı¼ºµÉ ¶§ ¶Ç´Â setXXX¸Ş¼Òµå·Î ÆÄ¶ó¸ŞÅÍ ¸ŞÅ¸Á¤º¸°¡ º¯°æµÉ ¶§
+                // true·Î ¼ÂÆÃµÈ´Ù.
                 sColumnInfo.unchange();
             }
         }
@@ -751,28 +843,29 @@ public class CmOperation extends CmOperationDef
     }
 
     /**
-     * ListBufferHandle ì˜ Buffer ì— ë‹´ê¸´  Data ë¥¼ channelì— ì“´ë‹¤.
+     * ListBufferHandle ÀÇ Buffer ¿¡ ´ã±ä  Data ¸¦ channel¿¡ ¾´´Ù.
      *
-     * @param aChannel Dataë¥¼ ì“¸ channel
+     * @param aChannel Data¸¦ ¾µ channel
      * @param aStatementId Statement ID
-     * @param aBufferHandle  List protocol ì˜ data buffer ë¥¼ handle í•˜ëŠ” ê°ì²´
-     * @param aIsAtomic Atomic Operation ì‚¬ìš© ì—¬ë¶€
-     * @param aIsArray Array mode ì ìš© ì—¬ë¶€
-     * @throws SQLException channelì— ì“°ì§€ ëª»í•œ ê²½ìš°
+     * @param aBufferHandle  List protocol ÀÇ data buffer ¸¦ handle ÇÏ´Â °´Ã¼
+     * @param aIsAtomic Atomic Operation »ç¿ë ¿©ºÎ
+     * @param aIsArray Array mode Àû¿ë ¿©ºÎ
+     * @throws SQLException channel¿¡ ¾²Áö ¸øÇÑ °æ¿ì
      */
-    static void writeBindParamDataInListV2(CmChannel aChannel, int aStatementId,
+    static void writeBindParamDataInListV3(CmChannel aChannel, int aStatementId,
                                            ListBufferHandle aBufferHandle,
                                            boolean aIsAtomic,
-                                           boolean aIsArray) throws SQLException
+                                           boolean aIsArray,
+                                           CmProtocolContext aContext) throws SQLException
     {
-        aChannel.checkWritable(22);
-        aChannel.writeOp(DB_OP_PARAM_DATA_IN_LIST_V2);
+        aChannel.checkWritable(53);
+        aChannel.writeOp(DB_OP_PARAM_DATA_IN_LIST_V3);
         aChannel.writeInt(aStatementId);
-        // List Protocol ì—ì„œ FromRowNumber ëŠ” í•­ìƒ 1
+        // List Protocol ¿¡¼­ FromRowNumber ´Â Ç×»ó 1
         aChannel.writeInt(1);
         aChannel.writeInt(aBufferHandle.size());
 
-        // BUG-46443 batchëª¨ë“œì¼ë•Œë§Œ array ëª¨ë“œë¡œ ì‹¤í–‰í•œë‹¤.
+        // BUG-46443 batch¸ğµåÀÏ¶§¸¸ array ¸ğµå·Î ½ÇÇàÇÑ´Ù.
         if (aIsArray)
         {
             aChannel.writeByte(aIsAtomic ? CmOperation.EXECUTION_MODE_ATOMIC : CmOperation.EXECUTION_MODE_ARRAY);
@@ -782,32 +875,46 @@ public class CmOperation extends CmOperationDef
             aChannel.writeByte(CmOperation.EXECUTION_MODE_NORMAL);
         }
 
-        aChannel.writeLong(aBufferHandle.getBufferPosition());
+        // TASK-7220 °í¼º´É ºĞ»ê°øÀ¯Æ®·£Àè¼Ç Á¤ÇÕ¼º
+        aChannel.writeLong(aContext.getDistTxInfo().getSCN());
+        aChannel.writeLong(aContext.getDistTxInfo().getTxFirstStmtSCN());
+        aChannel.writeLong(aContext.getDistTxInfo().getTxFirstStmtTime());
+        aChannel.writeByte(aContext.getDistTxInfo().getDistLevel());
+        aChannel.writeInt(0);  /* TASK-7219 Non-shard DML */
+        aChannel.writeShort((short)0);  /* BUG-48489 FIXME */
 
+        aChannel.writeLong(aBufferHandle.getBufferPosition());
         aBufferHandle.flipBuffer();
         aChannel.writeBytes(aBufferHandle.getBuffer());
     }
 
-    private static void readBindParamDataInListV2Result(CmChannel aChannel, CmProtocolContext aContext) throws SQLException
+    private static void readBindParamDataInListV3Result(CmChannel aChannel, CmProtocolContext aContext) throws SQLException
     {
+        long sSCN;
         CmExecutionResult sExecResult = (CmExecutionResult)aContext.getCmResult(CmExecutionResult.MY_OP);
         sExecResult.setStatementId(aChannel.readInt());
         int sFromRowNumber  = aChannel.readInt();
         int sToRowNumber     = aChannel.readInt();
-        aChannel.readUnsignedShort(); // Select ì—ì„œë§Œ ìœ íš¨, resultset count
+        aChannel.readUnsignedShort(); // Select ¿¡¼­¸¸ À¯È¿, resultset count
         long sUpdatedRowCount = aChannel.readLong();
         aChannel.readLong(); // unused. fetched row count
+        sSCN = aChannel.readLong(); // SCN. TASK-7220 °í¼º´É ºĞ»ê°øÀ¯Æ®·£Àè¼Ç Á¤ÇÕ¼º 
 
         for (int i = sFromRowNumber; i <= sToRowNumber; i++)
         {
             sExecResult.setUpdatedRowCount(sUpdatedRowCount);
+        }
+        
+        if (sSCN > 0)
+        {
+            aContext.updateSCN(sSCN);
         }
     }
 
     private static void readBindParamDataOutListResult(CmChannel aChannel, CmBindParamDataOutResult aResult) throws SQLException
     {
         aResult.setStatementId(aChannel.readInt());
-        aChannel.readInt(); // BUG-43807 rownumberëŠ” ì‚¬ìš©ë˜ì§€ ì•Šê¸° ë•Œë¬¸ì— skipí•œë‹¤.
+        aChannel.readInt(); // BUG-43807 rownumber´Â »ç¿ëµÇÁö ¾Ê±â ¶§¹®¿¡ skipÇÑ´Ù.
         aChannel.readUnsignedInt(); // skip RowSize
         for (Column sColumn : aResult.getBindParams())
         {
@@ -838,12 +945,17 @@ public class CmOperation extends CmOperationDef
         switch (sPropertyKey)
         {
             case (AltibaseProperties.PROP_CODE_NLS):
+            case (AltibaseProperties.PROP_CODE_DATE_FORMAT):
+            case (AltibaseProperties.PROP_CODE_SERVER_PACKAGE_VERSION):
+            case (AltibaseProperties.PROP_CODE_NLS_CHARACTERSET):
+            case (AltibaseProperties.PROP_CODE_NLS_NCHAR_CHARACTERSET):
                 sLength = aChannel.readInt();
                 sStrValue = aChannel.readDecodedString(sLength, 0);
                 sValueContainer = aChannel.getColumnFactory().createVarcharColumn();
                 sValueContainer.setValue(sStrValue);
                 break;
             case (AltibaseProperties.PROP_CODE_AUTOCOMMIT):
+            case (AltibaseProperties.PROP_CODE_ENDIAN):
                 sByteValue = aChannel.readByte();
                 sValueContainer = ColumnFactory.createBooleanColumn();
                 sValueContainer.setValue((int)sByteValue);
@@ -854,93 +966,28 @@ public class CmOperation extends CmOperationDef
                 sValueContainer.setValue(sByteValue);
                 break;
             case (AltibaseProperties.PROP_CODE_ISOLATION_LEVEL): /* BUG-39817 */
-                sIntValue = aChannel.readInt();
-                sValueContainer = ColumnFactory.createIntegerColumn();
-                sValueContainer.setValue(sIntValue);
-                break;
             case (AltibaseProperties.PROP_CODE_OPTIMIZER_MODE):
-                sIntValue = aChannel.readInt();
-                sValueContainer = ColumnFactory.createIntegerColumn();
-                sValueContainer.setValue(sIntValue);
-                break;
             case (AltibaseProperties.PROP_CODE_HEADER_DISPLAY_MODE):
-                sIntValue = aChannel.readInt();
-                sValueContainer = ColumnFactory.createIntegerColumn();
-                sValueContainer.setValue(sIntValue);
-                break;
             case (AltibaseProperties.PROP_CODE_STACK_SIZE):
-                sIntValue = aChannel.readInt();
-                sValueContainer = ColumnFactory.createIntegerColumn();
-                sValueContainer.setValue(sIntValue);
-                break;
             case (AltibaseProperties.PROP_CODE_IDLE_TIMEOUT):
-                sIntValue = aChannel.readInt();
-                sValueContainer = ColumnFactory.createIntegerColumn();
-                sValueContainer.setValue(sIntValue);
-                break;
             case (AltibaseProperties.PROP_CODE_QUERY_TIMEOUT):
-                sIntValue = aChannel.readInt();
-                sValueContainer = ColumnFactory.createIntegerColumn();
-                sValueContainer.setValue(sIntValue);
-                break;
             case (AltibaseProperties.PROP_CODE_FETCH_TIMEOUT):
-                sIntValue = aChannel.readInt();
-                sValueContainer = ColumnFactory.createIntegerColumn();
-                sValueContainer.setValue(sIntValue);
-                break;
             case (AltibaseProperties.PROP_CODE_UTRANS_TIMEOUT):
-                sIntValue = aChannel.readInt();
-                sValueContainer = ColumnFactory.createIntegerColumn();
-                sValueContainer.setValue(sIntValue);
-                break;
-            case (AltibaseProperties.PROP_CODE_DATE_FORMAT):
-                sLength = aChannel.readInt();
-                sStrValue = aChannel.readDecodedString(sLength, 0);
-                sValueContainer = aChannel.getColumnFactory().createVarcharColumn();
-                sValueContainer.setValue(sStrValue);
-                break;
             case (AltibaseProperties.PROP_CODE_NORMALFORM_MAXIMUM):
-                sIntValue = aChannel.readInt();
-                sValueContainer = ColumnFactory.createIntegerColumn();
-                sValueContainer.setValue(sIntValue);
-                break;
-            case (AltibaseProperties.PROP_CODE_SERVER_PACKAGE_VERSION):
-                sLength = aChannel.readInt();
-                sStrValue = aChannel.readDecodedString(sLength, 0);
-                sValueContainer = aChannel.getColumnFactory().createVarcharColumn();
-                sValueContainer.setValue(sStrValue);
-                break;
             case (AltibaseProperties.PROP_CODE_NLS_NCHAR_LITERAL_REPLACE):
-                sIntValue = aChannel.readInt();
-                sValueContainer = ColumnFactory.createIntegerColumn();
-                sValueContainer.setValue(sIntValue);
-                break;
-            case (AltibaseProperties.PROP_CODE_NLS_CHARACTERSET):
-                sLength = aChannel.readInt();
-                sStrValue = aChannel.readDecodedString(sLength, 0);
-                sValueContainer = aChannel.getColumnFactory().createVarcharColumn();
-                sValueContainer.setValue(sStrValue);
-                break;
-            case (AltibaseProperties.PROP_CODE_NLS_NCHAR_CHARACTERSET):
-                sLength = aChannel.readInt();
-                sStrValue = aChannel.readDecodedString(sLength, 0);
-                sValueContainer = aChannel.getColumnFactory().createVarcharColumn();
-                sValueContainer.setValue(sStrValue);
-                break;
-            case (AltibaseProperties.PROP_CODE_ENDIAN):
-                sByteValue = aChannel.readByte();
-                sValueContainer = ColumnFactory.createBooleanColumn();
-                sValueContainer.setValue((int)sByteValue);
-                break;
             case (AltibaseProperties.PROP_CODE_DDL_TIMEOUT):
+            case (AltibaseProperties.PROP_CODE_LOB_CACHE_THRESHOLD):
+            case (AltibaseProperties.PROP_CODE_INDOUBT_FETCH_TIMEOUT):
                 sIntValue = aChannel.readInt();
                 sValueContainer = ColumnFactory.createIntegerColumn();
                 sValueContainer.setValue(sIntValue);
                 break;
-            case (AltibaseProperties.PROP_CODE_LOB_CACHE_THRESHOLD):
-                sIntValue = aChannel.readInt();
+            case (AltibaseProperties.PROP_CODE_GLOBAL_TRANSACTION_LEVEL):
+            case (AltibaseProperties.PROP_CODE_SHARD_STATEMENT_RETRY):
+            case (AltibaseProperties.PROP_CODE_INDOUBT_FETCH_METHOD):
+                sByteValue = aChannel.readByte();
                 sValueContainer = ColumnFactory.createIntegerColumn();
-                sValueContainer.setValue(sIntValue);
+                sValueContainer.setValue((int)sByteValue);
                 break;
             default:
                 Error.throwSQLException(ErrorDef.INVALID_PROPERTY_ID, String.valueOf(sPropertyKey));
@@ -950,7 +997,7 @@ public class CmOperation extends CmOperationDef
         aResult.addProperty(sPropertyKey, sValueContainer);
     }
 
-    static void writeSetPropertyV2(CmChannel aChannel, short aPropertyKey, Column aValue) throws SQLException
+    static void writeSetPropertyV3(CmChannel aChannel, short aPropertyKey, Column aValue) throws SQLException
     {
         // BUG-41793 Keep a compatibility among tags
         //
@@ -961,10 +1008,40 @@ public class CmOperation extends CmOperationDef
         int sValueLen = aValue.prepareToWrite(aChannel);
 
         aChannel.checkWritable(7 + sValueLen);
-        aChannel.writeOp(DB_OP_SET_PROPERTY_V2);
+        aChannel.writeOp(DB_OP_SET_PROPERTY_V3);
         aChannel.writeShort(aPropertyKey);
         aChannel.writeInt(sValueLen);
         aValue.writeTo(aChannel);
+    }
+
+    private static void readSetPropertyV3Result(CmChannel aChannel, CmSetPropertyResult aResult, CmProtocolContext aContext) throws SQLException
+    {
+        byte sGTxLevel;
+        long sSCN;
+        
+        int sPropertyID = aChannel.readShort();
+        aResult.setPropertyID(sPropertyID);
+        if (sPropertyID == AltibaseProperties.PROP_CODE_GLOBAL_TRANSACTION_LEVEL)
+        {
+            sGTxLevel = aChannel.readByte();
+            sSCN = aChannel.readLong();
+            aResult.setGTxLevel(sGTxLevel);
+            aResult.setSCN(sSCN);
+            if (sGTxLevel == GlobalTransactionLevel.GCTX.getValue())
+            {
+                if (sSCN > 0)
+                {
+                    aContext.updateSCN(sSCN);
+                }
+            }
+            else
+            {
+                aContext.initDistTxInfo();
+                // tc¿¡¼­ °ËÁõÀ» À§ÇØ initDistTxInfo È£Ãâ ÈÄ AltibaseConnection.setDistTxInfoForVerify()¸¦ È£ÃâÇØ¾ß ÇÏ´Âµ¥.. ¿©±â¼­´Â »ı·«ÇÏ±â·Î ÇÔ.
+                // ¿Ö³ÄÇÏ¸é ¿©±â¿¡¼­´Â ÇöÀç Ä¿³Ø¼Ç ÀÎ½ºÅÏ½º¸¦ ¾Ë ¼ö°¡ ¾øÀ½.
+                // ÇöÀç ±âÁØÀ¸·Î, º» ÇÔ¼ö´Â connection ½ÃÁ¡¿¡¸¸ È£ÃâµÇ°í tc¿¡¼­ connect ÈÄ¿¡ distTxInfo °Ë»ç¸¦ ÇÏÁö ¾ÊÀ¸¹Ç·Î »ı·«ÇØµµ ¹«¹æ..
+            }
+        }
     }
 
     static void writeCloseCursor(CmChannel aChannel, int aStmtID, short aResultSetID) throws SQLException
@@ -1030,7 +1107,7 @@ public class CmOperation extends CmOperationDef
     static void writeLobGetSize(CmChannel aChannel, long aLocatorId) throws SQLException
     {
         aChannel.checkWritable(9);
-        aChannel.writeOp(DB_OP_LOB_GET_SIZE);
+        aChannel.writeOp(DB_OP_LOB_GET_SIZE_V3);
         aChannel.writeLong(aLocatorId);
     }
 
@@ -1038,6 +1115,7 @@ public class CmOperation extends CmOperationDef
     {
         aResult.setLocatorId(aChannel.readLong());
         aResult.setLobLength(aChannel.readInt());
+        aChannel.readByte();  // IsNullLob.  TASK-7220 °í¼º´É ºĞ»ê°øÀ¯Æ®·£Àè¼Ç Á¤ÇÕ¼º 
     }
 
     static void writeLobPutBegin(CmChannel aChannel, long aLocatorId, long aOffset) throws SQLException
@@ -1050,13 +1128,13 @@ public class CmOperation extends CmOperationDef
     }
 
     /**
-     * LobPut í”„ë¡œí† ì½œì„ ì“´ë‹¤.
+     * LobPut ÇÁ·ÎÅäÄİÀ» ¾´´Ù.
      * 
-     * @param aContext í”„ë¡œí† ì½œ ì»¨í…ìŠ¤íŠ¸
-     * @param aSource í”„ë¡œí† ì½œë¡œ ì“¸ ë°ì´íƒ€
-     * @return í”„ë¡œí† ì½œì— ì“´ ë°ì´íƒ€ ì‚¬ì´ì¦ˆ(byte ë‹¨ìœ„)
-     * @throws SQLException í”„ë¡œí† ì½œì„ ì“°ëŠ”ë° ì‹¤íŒ¨í–ˆì„ ê²½ìš°
-     * @throws IOException ë°ì´íƒ€ë¥¼ ì½ëŠ”ë° ì‹¤íŒ¨í–ˆì„ ê²½ìš°
+     * @param aContext ÇÁ·ÎÅäÄİ ÄÁÅØ½ºÆ®
+     * @param aSource ÇÁ·ÎÅäÄİ·Î ¾µ µ¥ÀÌÅ¸
+     * @return ÇÁ·ÎÅäÄİ¿¡ ¾´ µ¥ÀÌÅ¸ »çÀÌÁî(byte ´ÜÀ§)
+     * @throws SQLException ÇÁ·ÎÅäÄİÀ» ¾²´Âµ¥ ½ÇÆĞÇßÀ» °æ¿ì
+     * @throws IOException µ¥ÀÌÅ¸¸¦ ÀĞ´Âµ¥ ½ÇÆĞÇßÀ» °æ¿ì
      */
     static long writeLobPut(CmProtocolContextLob aContext, ReadableCharChannel aSource) throws SQLException, IOException
     {
@@ -1222,7 +1300,7 @@ public class CmOperation extends CmOperationDef
         aChannel.writeLong(aBranchQualifier.length);
         aChannel.writeBytes(aGlobalTransactionId);
         aChannel.writeBytes(aBranchQualifier);
-        // Xid Dataê°€ 128Bê°€ ë˜ë„ë¡ padding
+        // Xid Data°¡ 128B°¡ µÇµµ·Ï padding
         int sPadLen = AltibaseXid.MAXDATASIZE - (aGlobalTransactionId.length + aBranchQualifier.length);
         for (int i = 0; i < sPadLen; i++)
         {
@@ -1239,7 +1317,7 @@ public class CmOperation extends CmOperationDef
         byte[] sBranchQualifier = new byte[sBranchQualifierLen];
         aChannel.readBytes(sGlobalTransId);
         aChannel.readBytes(sBranchQualifier);
-        // Xid DataëŠ” í•­ìƒ 128Bë¥¼ ì±„ì›Œì„œ ë³´ë‚´ê²Œ ë˜ì–´ìˆë‹¤. ê·¸ëŸ¬ë¯€ë¡œ, ë‚¨ì€ê±´ skip í•´ì•¼í•œë‹¤.
+        // Xid Data´Â Ç×»ó 128B¸¦ Ã¤¿ö¼­ º¸³»°Ô µÇ¾îÀÖ´Ù. ±×·¯¹Ç·Î, ³²Àº°Ç skip ÇØ¾ßÇÑ´Ù.
         aChannel.skip(AltibaseXid.MAXDATASIZE - (sGlobalTransIdLen + sBranchQualifierLen));
 
         aResult.addXid(new AltibaseXid(sFormatId, sGlobalTransId, sBranchQualifier));
@@ -1252,12 +1330,12 @@ public class CmOperation extends CmOperationDef
     }
 
     /**
-     * Get Plan operationì„ ì“´ë‹¤.
+     * Get Plan operationÀ» ¾´´Ù.
      *
-     * @param aChannel operationì„ ì“¸ channel 
+     * @param aChannel operationÀ» ¾µ channel 
      * @param aStmtID  Statement ID
      *
-     * @throws SQLException channelì— ì“°ì§€ ëª»í•œ ê²½ìš°
+     * @throws SQLException channel¿¡ ¾²Áö ¸øÇÑ °æ¿ì
      */
     static void writeGetPlan(CmChannel aChannel, int aStmtID) throws SQLException
     {
@@ -1267,12 +1345,12 @@ public class CmOperation extends CmOperationDef
     }
 
     /**
-     * Get Plan operation ê²°ê³¼ë¥¼ ì½ëŠ”ë‹¤. 
+     * Get Plan operation °á°ú¸¦ ÀĞ´Â´Ù. 
      *
-     * @param aChannel ê²°ê³¼ë¥¼ ì½ì„ channel
-     * @param aResult  ê²°ê³¼ë¥¼ ë‹´ì„ ê°ì²´
+     * @param aChannel °á°ú¸¦ ÀĞÀ» channel
+     * @param aResult  °á°ú¸¦ ´ãÀ» °´Ã¼
      *
-     * @throws SQLException ê²°ê³¼ë¥¼ ì½ì„ ìˆ˜ ì—†ëŠ” ê²½ìš°
+     * @throws SQLException °á°ú¸¦ ÀĞÀ» ¼ö ¾ø´Â °æ¿ì
      */
     private static void readGetPlanResult(CmChannel aChannel, CmGetPlanResult aResult) throws SQLException
     {
@@ -1281,12 +1359,16 @@ public class CmOperation extends CmOperationDef
         aResult.setPlanText(aChannel.readDecodedString(sPlanTextSize, 0));
     }
 
-    public static void throwShardFailoverIsNotAvailableException(String aNodeName) throws ShardFailoverIsNotAvailableException
+    public static void throwShardFailoverIsNotAvailableException(String aNodeName,
+                                                                 String aIpAddress,
+                                                                 int aPort) throws ShardFailoverIsNotAvailableException
     {
         int sErrorCode = ErrorDef.SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE;
         String sErrorMsg = ErrorDef.getErrorMessage(ErrorDef.SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE);
+        // BUG-46790 shard failover °ü·Ã exception Á¤º¸¿¡ ip, port Ãß°¡
         ShardFailoverIsNotAvailableException sFailoverException =
-                new ShardFailoverIsNotAvailableException(sErrorMsg, sErrorCode, aNodeName);
+                new ShardFailoverIsNotAvailableException(sErrorMsg, sErrorCode, aNodeName,
+                                                         aIpAddress, aPort);
         shard_log(Level.SEVERE, "(THROW SHARD FAILOVER EXCEPTION) ", sFailoverException);
 
         throw sFailoverException;

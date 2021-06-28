@@ -18,7 +18,7 @@ package Altibase.jdbc.driver.cm;
 
 /**
  * PROJ-2681
- * rsockets ì—ì„œ ì§€ì›í•˜ëŠ” socket domain, socket options ë“± ì •ì˜(Linux ê¸°ì¤€)
+ * rsockets ¿¡¼­ Áö¿øÇÏ´Â socket domain, socket options µî Á¤ÀÇ(Linux ±âÁØ)
  */
 public class RdmaSocketDef
 {
@@ -58,5 +58,5 @@ public class RdmaSocketDef
     public static final int RDMA_ROUTE          = 4;
     public static final int RDMA_LATENCY        = 1000;
     public static final int RDMA_CONCHKSPIN     = 1001;
-    public static final int RDMA_CONCHKSPIN_MAX = 2147483; // 1000 ë‹¨ìœ„
+    public static final int RDMA_CONCHKSPIN_MAX = 2147483; // 1000 ´ÜÀ§
 }

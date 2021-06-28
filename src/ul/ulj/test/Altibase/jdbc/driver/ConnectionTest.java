@@ -11,13 +11,13 @@ import java.sql.Statement;
 public class ConnectionTest extends AltibaseTestCase
 {
     /**
-     * ì ‘ì†ì— ì‹¤íŒ¨í•˜ë©´ ì˜ˆì™¸ê°€ ë–¨ì–´ì§€ëŠ”ê²ƒì„ í™•ì¸
+     * Á¢¼Ó¿¡ ½ÇÆĞÇÏ¸é ¿¹¿Ü°¡ ¶³¾îÁö´Â°ÍÀ» È®ÀÎ
      */
     public void testConnectionFail_Port()
     {
         try
         {
-            // ì ‘ì† ì‹¤íŒ¨í•˜ê²Œ URL ì„¤ì •. ..ì„¤ë§ˆ ì„œë²„ë¥¼ 80 portë¡œ ë„ìš°ì§„ ì•Šê² ì§€;
+            // Á¢¼Ó ½ÇÆĞÇÏ°Ô URL ¼³Á¤. ..¼³¸¶ ¼­¹ö¸¦ 80 port·Î ¶ç¿ìÁø ¾Ê°ÚÁö;
             AltibaseConnection sConn = (AltibaseConnection)getConnection("jdbc:Altibase://localhost:80/mydb");
             fail("Connection object created : " + sConn.getURL());
         }
@@ -28,7 +28,7 @@ public class ConnectionTest extends AltibaseTestCase
     }
 
     /**
-     * ì—‰ëš±í•œ DB Nameì„ ì“°ë©´ ì ‘ì† ì‹¤íŒ¨
+     * ¾û¶×ÇÑ DB NameÀ» ¾²¸é Á¢¼Ó ½ÇÆĞ
      */
     public void testConnectionFail_DbName()
     {
@@ -45,9 +45,9 @@ public class ConnectionTest extends AltibaseTestCase
     }
 
     /**
-     * connectí•˜ë©´ sessionì´ ëŠ˜ì–´ë‚˜ê³ , disconnectí•˜ë©´ sessionì´ ì¤„ì–´ë“œëŠ”ê²ƒì„ í™•ì¸ 
+     * connectÇÏ¸é sessionÀÌ ´Ã¾î³ª°í, disconnectÇÏ¸é sessionÀÌ ÁÙ¾îµå´Â°ÍÀ» È®ÀÎ 
      *
-     * @throws SQLException DB ì ‘ì†ì´ë‚˜ ì¿¼ë¦¬ ìˆ˜í–‰ì— ì‹¤íŒ¨í•œ ê²½ìš°
+     * @throws SQLException DB Á¢¼ÓÀÌ³ª Äõ¸® ¼öÇà¿¡ ½ÇÆĞÇÑ °æ¿ì
      */
     public void testDisconnect() throws SQLException
     {

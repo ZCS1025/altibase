@@ -34,22 +34,22 @@ class smriBackupInfoMgr
 {
 private:
 
-    /*BIíŒŒì¼ í—¤ë”*/
+    /*BIÆÄÀÏ Çì´õ*/
     static smriBIFileHdr      mBIFileHdr;
 
-    /*BI slotë©”ëª¨ë¦¬ ê³µê°„ì— ëŒ€í•œ í¬ì¸í„°*/
+    /*BI slot¸Ş¸ğ¸® °ø°£¿¡ ´ëÇÑ Æ÷ÀÎÅÍ*/
     static smriBISlot       * mBISlotArea;
 
     static idBool             mIsBISlotAreaLoaded;
 
-    /*BIíŒŒì¼*/
+    /*BIÆÄÀÏ*/
     static iduFile            mFile;
 
     static iduMutex           mMutex;
 
 private:
 
-    /*BIíŒŒì¼ í—¤ë” ì´ˆê¸°í™”*/
+    /*BIÆÄÀÏ Çì´õ ÃÊ±âÈ­*/
     static void initBIFileHdr();
 
     static IDE_RC checkBIFileHdrCheckSum();
@@ -84,17 +84,17 @@ public:
     static IDE_RC loadBISlotArea();
     static IDE_RC unloadBISlotArea();
 
-    /*backup fileì‚­ì œ*/
+    /*backup file»èÁ¦*/
     static IDE_RC removeBackupFile( SChar * aBackupFileName );
 
-    /*BIíŒŒì¼ flush*/
+    /*BIÆÄÀÏ flush*/
     static IDE_RC flushBIFile( UInt aValidSlotIdx, smLSN * aLastBackupLSN );
     
-    /*timeê¸°ë°˜ ë¶ˆì™„ì „ ë³µêµ¬ì¼ë•Œ í•´ë‹¹ ì‹œê°„ì— í•´ë‹¹í•˜ëŠ” BISlotIdxë¥¼ êµ¬í•œë‹¤.*/
+    /*time±â¹İ ºÒ¿ÏÀü º¹±¸ÀÏ¶§ ÇØ´ç ½Ã°£¿¡ ÇØ´çÇÏ´Â BISlotIdx¸¦ ±¸ÇÑ´Ù.*/
     static IDE_RC findBISlotIdxUsingTime( UInt    UntilaTime, 
                                           UInt  * aTargetBackupTagSlotIdx );
 
-    /*ë³µì›í•´ì•¼í•  BISlotIdxë¥¼ êµ¬í•œë‹¤.*/
+    /*º¹¿øÇØ¾ßÇÒ BISlotIdx¸¦ ±¸ÇÑ´Ù.*/
     static IDE_RC getRestoreTargetSlotIdx( SChar            * aUntilBackupTag,
                                            UInt               aStartScanBISlotIdx,
                                            idBool             aSearchUntilBackupTag,
@@ -102,7 +102,7 @@ public:
                                            scSpaceID          aSpaceID,
                                            UInt             * aRestoreSlotIdx );
 
-    /*Level1 backup file ë³µì›ì„ ìˆ˜í–‰í•  BISlotì˜ ë²”ìœ„ë¥¼ êµ¬í•œë‹¤.*/
+    /*Level1 backup file º¹¿øÀ» ¼öÇàÇÒ BISlotÀÇ ¹üÀ§¸¦ ±¸ÇÑ´Ù.*/
     static IDE_RC calcRestoreBISlotRange4Level1( 
                                          UInt            aScanStartSlotIdx,
                                          smiRestoreType  aRestoreType,
@@ -111,44 +111,44 @@ public:
                                          UInt          * aRestoreStartSlotIdx,
                                          UInt          * aRestoreEndSlotIdx );
 
-    /*BIíŒŒì¼ì„ ë°±ì—…í•œë‹¤.*/
+    /*BIÆÄÀÏÀ» ¹é¾÷ÇÑ´Ù.*/
     static IDE_RC backup( SChar * aBackupPath );
 
-    /*í•œ BIslotì„ BIíŒŒì¼ì— ì¶”ê°€í•œë‹¤.*/
+    /*ÇÑ BIslotÀ» BIÆÄÀÏ¿¡ Ãß°¡ÇÑ´Ù.*/
     static IDE_RC appendBISlot( smriBISlot * aBISlot );
 
-    /*ê¸°ê°„ì´ ì§€ë‚œ BIslotì„ ì‚­ì œ*/
+    /*±â°£ÀÌ Áö³­ BIslotÀ» »èÁ¦*/
     static IDE_RC removeObsoleteBISlots();
 
-    /*ê¸°ê°„ì´ ì§€ë‚˜ì§€ì•Šì€ ì²«ë²ˆì§¸ BISlotì˜ Idxë¥¼ ê°€ì ¸ì˜¨ë‹¤.*/
+    /*±â°£ÀÌ Áö³ªÁö¾ÊÀº Ã¹¹øÂ° BISlotÀÇ Idx¸¦ °¡Á®¿Â´Ù.*/
     static IDE_RC getValidBISlotIdx( UInt * aValidSlotIdx );
 
-    /* incremental backup íŒŒì¼ì„ ì§€ì •ëœ ìœ„ì¹˜ë¡œ ì´ë™ì‹œí‚¨ë‹¤. */
+    /* incremental backup ÆÄÀÏÀ» ÁöÁ¤µÈ À§Ä¡·Î ÀÌµ¿½ÃÅ²´Ù. */
     static IDE_RC moveIncrementalBackupFiles( SChar * aMovePath, 
                                               idBool  aWithFile );
 
-    /*BISlotIdxì— í•´ë‹¹í•˜ëŠ” BISlotì„ ê°€ì ¸ì˜¨ë‹¤.*/
+    /*BISlotIdx¿¡ ÇØ´çÇÏ´Â BISlotÀ» °¡Á®¿Â´Ù.*/
     static IDE_RC getBISlot( UInt aBISlotIdx, smriBISlot ** aBISlot );
 
-    /*BIë¥¼ backupíŒŒì¼ í—¤ë”ì— ì €ì¥í•œë‹¤.*/
+    /*BI¸¦ backupÆÄÀÏ Çì´õ¿¡ ÀúÀåÇÑ´Ù.*/
     static void setBI2BackupFileHdr( smriBISlot * aBackupFileHdrBISlot, 
                                      smriBISlot * aBISlot );
 
-    /*ë³µì›ëœ ë°ì´í„°íŒŒì¼ í—¤ë”ì— ì¡´ì¬í•˜ëŠ” BIì •ë³´ë¥¼ ì‚­ì œí•œë‹¤.*/
+    /*º¹¿øµÈ µ¥ÀÌÅÍÆÄÀÏ Çì´õ¿¡ Á¸ÀçÇÏ´Â BIÁ¤º¸¸¦ »èÁ¦ÇÑ´Ù.*/
     static void clearDataFileHdrBI( smriBISlot * aDataFileHdrBI );
 
-    /*BIíŒŒì¼ì˜ í—¤ë”ë¥¼ ê°€ì ¸ì˜¨ë‹¤.*/
+    /*BIÆÄÀÏÀÇ Çì´õ¸¦ °¡Á®¿Â´Ù.*/
     static IDE_RC getBIFileHdr( smriBIFileHdr ** aBIFileHdr );
 
-    /* pathNameì´ ìœ íš¨í•œ ì ˆëŒ€ê²½ë¡œì¸ì§€ í™•ì¸í•œë‹¤. */
+    /* pathNameÀÌ À¯È¿ÇÑ Àı´ë°æ·ÎÀÎÁö È®ÀÎÇÑ´Ù. */
     static IDE_RC isValidABSPath( idBool aCheckPerm, SChar  * aPathName );
 
-    /* incremental backupì´ ì‹¤íŒ¨í• ê²½ìš° backupinfo íŒŒì¼ì„ ë°±ì—…ì´ì „  ìƒíƒœë¡œ
-     * rollbackupí•œë‹¤. 
+    /* incremental backupÀÌ ½ÇÆĞÇÒ°æ¿ì backupinfo ÆÄÀÏÀ» ¹é¾÷ÀÌÀü  »óÅÂ·Î
+     * rollbackupÇÑ´Ù. 
      */ 
     static IDE_RC rollbackBIFile( UInt aBISlotCnt );
     
-    /* incremental backupì— ì‹¤íŒ¨í•œ backupDirì„ ì‚­ì œí•œë‹¤. */
+    /* incremental backup¿¡ ½ÇÆĞÇÑ backupDirÀ» »èÁ¦ÇÑ´Ù. */
     static IDE_RC removeBackupDir( SChar * aIncrementalBackupPath );
 
     static IDE_RC checkDBName( SChar * aDBName );

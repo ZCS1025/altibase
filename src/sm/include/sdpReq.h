@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdpReq.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdpReq.h 88717 2020-09-24 08:12:20Z et16 $
  **********************************************************************/
 
 
@@ -177,7 +177,12 @@ class sdpReqFunc
             return smlLockMgr::lockTableModeIS( aTrans,
                                                 aLockItem );
         };
-
+        static IDE_RC lockTableModeIS4FixedTable( void * aTrans,
+                                                  void * aLockItem )
+        {
+            return smlLockMgr::lockTableModeIS4FixedTable( aTrans,
+                                                           aLockItem );
+        };
         /* smn */
         static IDE_RC initIndexMetaPage( UChar    * aMetaPtr,
                                          UInt       aType,
@@ -260,6 +265,12 @@ class sdpReqFunc
         static idBool isRestartRecoveryPhase()
         {
             return smrRecoveryMgr::isRestartRecoveryPhase();
+        };
+        static idBool isLSNGT( const smLSN * aLsn1,
+                               const smLSN * aLsn2 )
+        {
+            return smrCompareLSN::isGT( aLsn1 ,
+                                        aLsn2 );
         };
 };
 

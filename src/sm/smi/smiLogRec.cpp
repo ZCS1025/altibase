@@ -20,7 +20,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: smiLogRec.cpp 84317 2018-11-12 00:39:24Z minku.kang $
+ * $Id: smiLogRec.cpp 90444 2021-04-02 10:15:58Z minku.kang $
  **********************************************************************/
 
 #include <smErrorCode.h>
@@ -69,7 +69,7 @@ extern smiGlobalCallBackList gSmiGlobalCallBackList;
 
 
 /***************************************************************
- * Full XLog : Primary Key ì˜ì—­ ë’¤ì— ì €ì¥
+ * Full XLog : Primary Key ¿µ¿ª µÚ¿¡ ÀúÀå
  * -----------------------------------------
  * | FXLog  | FXLog  |     Column DATA     |
  * | SIZE   | COUNT  |---------------------|
@@ -137,7 +137,7 @@ IDE_RC smiLogRec::analyzeFullXLogMemory( smiLogRec  * aLogRec,
 
 
 /***************************************************************
- * Primary Key ì˜ì—­ ë¡œê·¸
+ * Primary Key ¿µ¿ª ·Î±×
  * ----------------------------------
  * |  PK   |  PK    |               |
  * | Size  | Column |   Column Area |
@@ -217,11 +217,11 @@ IDE_RC smiLogRec::analyzePrimaryKey( smiLogRec  * aLogRec,
                                          &sAnalyzedColSize )
                  != IDE_SUCCESS );
 
-        /* BUG-43565 : ë¶„ì„í•œ ì»¬ëŸ¼ì˜ sizeê°€ ë³´ì • ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ ë³´ì •ë˜ê¸° ì „ í¬ê¸°ë¥¼ 
-         * ì´ìš©í•˜ì—¬ í¬ì¸í„°ë¥¼ PKì˜ ë‹¤ìŒ ì»¬ëŸ¼ìœ¼ë¡œ ì´ë™í•œë‹¤. */
+        /* BUG-43565 : ºĞ¼®ÇÑ ÄÃ·³ÀÇ size°¡ º¸Á¤ µÉ ¼ö ÀÖÀ¸¹Ç·Î º¸Á¤µÇ±â Àü Å©±â¸¦ 
+         * ÀÌ¿ëÇÏ¿© Æ÷ÀÎÅÍ¸¦ PKÀÇ ´ÙÀ½ ÄÃ·³À¸·Î ÀÌµ¿ÇÑ´Ù. */
         sPKColPtr += ( ID_SIZEOF(UInt)      /*Length*/ 
                        + ID_SIZEOF(UInt)    /*CID*/ 
-                       + sAnalyzedColSize   /*ë³´ì • ì „ Col. size*/ );
+                       + sAnalyzedColSize   /*º¸Á¤ Àü Col. size*/ );
 }
 
     return IDE_SUCCESS;
@@ -282,7 +282,7 @@ IDE_RC smiLogRec::analyzePrimaryKeyColumn(smiLogRec  *aLogRec,
         aPKCol->length = sDataSize;
     }
 
-    /* BUG-43565 : ë³´ì • ì „ Col. size ì „ë‹¬ */
+    /* BUG-43565 : º¸Á¤ Àü Col. size Àü´Ş */
     *aAnalyzedColSize = sDataSize;
 
     return IDE_SUCCESS;
@@ -308,9 +308,9 @@ IDE_RC smiLogRec::analyzePrimaryKeyColumn(smiLogRec  *aLogRec,
 }
 
 /***************************************************************
- * < PK ë¡œê·¸ êµ¬ì¡° >
+ * < PK ·Î±× ±¸Á¶ >
  *
- *       |<-- sAnalyzePtrëŠ” ì—¬ê¸°ë¶€í„° ì‹œì‘
+ *       |<-- sAnalyzePtr´Â ¿©±âºÎÅÍ ½ÃÀÛ
  *               |<------------- repeat ------------>|
  * ---------------------------------------------------
  * | sdr | PK    | PK     |        |        |        |
@@ -318,7 +318,7 @@ IDE_RC smiLogRec::analyzePrimaryKeyColumn(smiLogRec  *aLogRec,
  * | Hdr | size  | count  | id     | length | data   |
  * ---------------------------------------------------
  *
- * PK sizeëŠ” 4K ì´í•˜ë¡œ ì œí•œ ë˜ì–´ ìˆìœ¼ë©°, í•˜ë‚˜ì˜ ë¡œê·¸ì— ëª¨ë‘ ì“°ì—¬ì§„ë‹¤.
+ * PK size´Â 4K ÀÌÇÏ·Î Á¦ÇÑ µÇ¾î ÀÖÀ¸¸ç, ÇÏ³ªÀÇ ·Î±×¿¡ ¸ğµÎ ¾²¿©Áø´Ù.
  **************************************************************/
 IDE_RC smiLogRec::analyzePKDisk(smiLogRec  *aLogRec,
                                 UInt       *aPKColCnt,
@@ -397,15 +397,15 @@ IDE_RC smiLogRec::analyzePKDisk(smiLogRec  *aLogRec,
 /***************************************************************
  *  PROJ-1705
  *
- *  column length ë¶„ì„ :
+ *  column length ºĞ¼® :
  *
- *  column length ì •ë³´ëŠ” 1~3byteë¡œ ì €ì¥ë˜ì–´ ìˆë‹¤.
- *  ìš°ì„  1byteë¥¼ ì½ëŠ”ë‹¤. ê·¸ ê°’ì´,
- *  1. <0xFE>ì´ë©´, ì´ ì»¬ëŸ¼ì˜ ê¸¸ì´ëŠ” 250ì„ ì´ˆê³¼í•œ
- *     ê²ƒìœ¼ë¡œ ë‹¤ìŒì˜ 2byteë¥¼ ì½ì–´ ë¶„ì„í•œë‹¤.
- *  2. <0xFF>ì´ë©´, ì»¬ëŸ¼ì˜ valueê°€ NULLì¸ ê²ƒìœ¼ë¡œ íŒë‹¨í•œë‹¤.
- *  3. <0xFD>ì´ë©´, Out Mode LOB Descriptorì´ë‹¤.
- *  4. ê·¸ ì™¸ì˜ ê°’ì´ë©´, 250 ì´í•˜ì˜ ì»¬ëŸ¼ ê¸¸ì´ì´ë‹¤.
+ *  column length Á¤º¸´Â 1~3byte·Î ÀúÀåµÇ¾î ÀÖ´Ù.
+ *  ¿ì¼± 1byte¸¦ ÀĞ´Â´Ù. ±× °ªÀÌ,
+ *  1. <0xFE>ÀÌ¸é, ÀÌ ÄÃ·³ÀÇ ±æÀÌ´Â 250À» ÃÊ°úÇÑ
+ *     °ÍÀ¸·Î ´ÙÀ½ÀÇ 2byte¸¦ ÀĞ¾î ºĞ¼®ÇÑ´Ù.
+ *  2. <0xFF>ÀÌ¸é, ÄÃ·³ÀÇ value°¡ NULLÀÎ °ÍÀ¸·Î ÆÇ´ÜÇÑ´Ù.
+ *  3. <0xFD>ÀÌ¸é, Out Mode LOB DescriptorÀÌ´Ù.
+ *  4. ±× ¿ÜÀÇ °ªÀÌ¸é, 250 ÀÌÇÏÀÇ ÄÃ·³ ±æÀÌÀÌ´Ù.
  *
  **************************************************************/
 void smiLogRec::analyzeColumnAndMovePtr( SChar  ** aAnalyzePtr,
@@ -442,7 +442,7 @@ void smiLogRec::analyzeColumnAndMovePtr( SChar  ** aAnalyzePtr,
         if ( (*sLen & 0xFF) == SMI_OUT_MODE_LOB )
         {
             // PROJ-1862 In Mode Lob
-            // Column Prefixê°€ Out Mode LOBì¸ ê²½ìš°
+            // Column Prefix°¡ Out Mode LOBÀÎ °æ¿ì
             if ( aIsOutModeLob != NULL )
             {
                 *aIsOutModeLob = ID_TRUE;
@@ -504,13 +504,21 @@ IDE_RC smiLogRec::readFrom( void  * aLogHeadPtr,
 
     /* BUG-35392 */
     if ( smrLogHeadI::isDummyLog( sCommonHdr ) == ID_FALSE )
-    {   /* Dummy Log ê°€ ì•„ë‹Œ ì¼ë°˜ ë¡œê·¸ */
+    {   /* Dummy Log °¡ ¾Æ´Ñ ÀÏ¹İ ·Î±× */
 
         switch(smrLogHeadI::getType(sCommonHdr))
         {
             case SMR_LT_MEMTRANS_COMMIT:
             case SMR_LT_DSKTRANS_COMMIT:
                 mLogType = SMI_LT_TRANS_COMMIT;
+
+                idlOS::memcpy( (SChar*)&( mLogUnion.mCommitLog ) + ID_SIZEOF(smiLogHdr),
+                               mLogPtr + ID_SIZEOF(smiLogHdr), 
+                               ID_SIZEOF(smrTransCommitLog) );
+                break;
+
+            case SMR_LT_MEMTRANS_GROUPCOMMIT:
+                mLogType = SMI_LT_TRANS_GROUPCOMMIT;
                 break;
 
             case SMR_LT_MEMTRANS_ABORT:
@@ -571,13 +579,13 @@ IDE_RC smiLogRec::readFrom( void  * aLogHeadPtr,
 
                 break;
                 /*
-                 * PROJ-1705 : ë¡œê·¸ êµ¬ì¡° (Outline)
+                 * PROJ-1705 : ·Î±× ±¸Á¶ (Outline)
                  *------------------------------------------------------------
                  * |<-- mLogPtr
                  *              |<--->| mRefOffset
-                 *              (page alloc ë“±ì˜ RPì—ì„œ ì•ˆë³´ëŠ” ë¡œê·¸ë“¤ì„
-                 *               skipí•˜ê¸° ìœ„í•¨)
-                 *                    |<--RPì—ì„œ í•„ìš”ë¡œí•˜ëŠ” DMLë¡œê·¸ì˜ ì‹œì‘
+                 *              (page alloc µîÀÇ RP¿¡¼­ ¾Èº¸´Â ·Î±×µéÀ»
+                 *               skipÇÏ±â À§ÇÔ)
+                 *                    |<--RP¿¡¼­ ÇÊ¿ä·ÎÇÏ´Â DML·Î±×ÀÇ ½ÃÀÛ
                  * -------------------------------------------------
                  * | smrDiskLog |      Log Body      |   LogTail   |
                  * -------------------------------------------------
@@ -646,7 +654,7 @@ IDE_RC smiLogRec::readFrom( void  * aLogHeadPtr,
                 }
                 break;
 
-            case SMR_LT_DDL :           // DDL Transactionì„ì„ í‘œì‹œí•˜ëŠ” Log Record
+            case SMR_LT_DDL :           // DDL TransactionÀÓÀ» Ç¥½ÃÇÏ´Â Log Record
                 mLogType = SMI_LT_DDL;
                 break;
 
@@ -664,13 +672,39 @@ IDE_RC smiLogRec::readFrom( void  * aLogHeadPtr,
                 mLogType = SMI_LT_DDL_QUERY_STRING;
                 break;
 
+            /* PROJ-2747 Global Tx Consistency */
+            case SMR_LT_XA_START_REQ :
+                idlOS::memcpy( (SChar*)&( mLogUnion.mXaLog ),
+                               mLogPtr + ID_SIZEOF(smiLogHdr),
+                               ID_SIZEOF(smrXaLog) );
+                mLogType = SMI_LT_XA_START_REQ;
+                break;
+
+            case SMR_LT_XA_PREPARE_REQ :
+                idlOS::memcpy( (SChar*)&( mLogUnion.mXaLog ),
+                               mLogPtr + ID_SIZEOF(smiLogHdr),
+                               ID_SIZEOF(smrXaLog) );
+                mLogType = SMI_LT_XA_PREPARE_REQ;
+                break;
+
+            case SMR_LT_XA_PREPARE :
+                idlOS::memcpy( (SChar*)&( mLogUnion.mXaLog ),
+                               mLogPtr + ID_SIZEOF(smiLogHdr),
+                               ID_SIZEOF(smrXaLog) );
+                mLogType = SMI_LT_XA_PREPARE;
+                break;
+
+            case SMR_LT_XA_END :
+                mLogType = SMI_LT_XA_END;
+                break;
+
             default:
                 mLogType = SMI_LT_NULL;
                 break;
         }
     }
     else
-    {   /* Dummy Log ì¼ ë•Œ */
+    {   /* Dummy Log ÀÏ ¶§ */
         mLogType = SMI_LT_NULL;
     }
 
@@ -678,9 +712,9 @@ IDE_RC smiLogRec::readFrom( void  * aLogHeadPtr,
 }
 
 /***************************************************************************
- * PROJ-1705 [ë ˆì½”ë“œ êµ¬ì¡° ìµœì í™”]
- *  :  Disk Tableì˜ DML ë¡œê·¸ íƒ€ì…ì„ RPëª¨ë“ˆì—ì„œ ì‚¬ìš© í•  ìˆ˜ ìˆë„ë¡
- *     smi ë¡œê·¸ íƒ€ì…ìœ¼ë¡œ ë³€í™˜ì‹œí‚¨ë‹¤.
+ * PROJ-1705 [·¹ÄÚµå ±¸Á¶ ÃÖÀûÈ­]
+ *  :  Disk TableÀÇ DML ·Î±× Å¸ÀÔÀ» RP¸ğµâ¿¡¼­ »ç¿ë ÇÒ ¼ö ÀÖµµ·Ï
+ *     smi ·Î±× Å¸ÀÔÀ¸·Î º¯È¯½ÃÅ²´Ù.
  *
  *----------------------------------------------------------------------
  * [DML]    [sdrLogType]                         [smiChangeLogType]
@@ -710,13 +744,13 @@ IDE_RC smiLogRec::readFrom( void  * aLogHeadPtr,
  *
  ****************************************************************************
  *
- * REDOì™€ UNDOë¡œê·¸ì˜ log type ìœ„ì¹˜ê°€ ë‹¤ë¥´ë‹¤.
- * + REDOì˜ ê²½ìš° : sdrLogHdr.mTypeì— RPì—ì„œ ë¶„ë¥˜í•˜ëŠ” ë¡œê·¸ íƒ€ì…ì´ ì¡´ì¬í•œë‹¤.
- * + UNDOì˜ ê²½ìš° : sdrLogHdr.mTypeì— SDR_SDC_INSERT_UNDO_REC ë¡œê·¸ íƒ€ì…ìœ¼ë¡œ ë‚¨ìœ¼ë©°,
- *                  ì´ë•Œì—ëŠ” ë°”ë¡œ ë’¤ì— ì´ì–´ì§€ëŠ” sdcUndoRecHdrì˜ typeì„ ì½ì–´ ì´ë¡œì¨
- *                  êµ¬ë³„í•´ì•¼í•œë‹¤. ì²˜ìŒì„¤ê³„ì—ì„œëŠ” sdrLogHdrë’¤ì— ë°”ë¡œ RP info ê°€
- *                  ì™”ì§€ë§Œ, ë¡œê·¸íƒ€ì…ì„ ì—°ì†ì ìœ¼ë¡œ ì½ì–´ì•¼ í•˜ë¯€ë¡œ, RP info ë¥¼
- *                  ë§¨ ë’¤ë¡œ ë³´ë‚´ë²„ë ¸ë‹¤.
+ * REDO¿Í UNDO·Î±×ÀÇ log type À§Ä¡°¡ ´Ù¸£´Ù.
+ * + REDOÀÇ °æ¿ì : sdrLogHdr.mType¿¡ RP¿¡¼­ ºĞ·ùÇÏ´Â ·Î±× Å¸ÀÔÀÌ Á¸ÀçÇÑ´Ù.
+ * + UNDOÀÇ °æ¿ì : sdrLogHdr.mType¿¡ SDR_SDC_INSERT_UNDO_REC ·Î±× Å¸ÀÔÀ¸·Î ³²À¸¸ç,
+ *                  ÀÌ¶§¿¡´Â ¹Ù·Î µÚ¿¡ ÀÌ¾îÁö´Â sdcUndoRecHdrÀÇ typeÀ» ÀĞ¾î ÀÌ·Î½á
+ *                  ±¸º°ÇØ¾ßÇÑ´Ù. Ã³À½¼³°è¿¡¼­´Â sdrLogHdrµÚ¿¡ ¹Ù·Î RP info °¡
+ *                  ¿ÔÁö¸¸, ·Î±×Å¸ÀÔÀ» ¿¬¼ÓÀûÀ¸·Î ÀĞ¾î¾ß ÇÏ¹Ç·Î, RP info ¸¦
+ *                  ¸Ç µÚ·Î º¸³»¹ö·È´Ù.
  ****************************************************************************/
 
 void smiLogRec::setChangeLogType(void* aLogHdr)
@@ -731,8 +765,8 @@ void smiLogRec::setChangeLogType(void* aLogHdr)
 
     if ( sLogHdr.mType == SDR_SDC_INSERT_UNDO_REC )
     {
-        // undo log typeì„ ì½ê¸° ìœ„í•´ì„œëŠ” sdrLogHdrë¥¼ ê±´ë„ˆë›´ í›„, undo log ì˜ size(UShort)ë¥¼
-        // skipí•˜ê³  ì½ëŠ”ë‹¤.
+        // undo log typeÀ» ÀĞ±â À§ÇØ¼­´Â sdrLogHdr¸¦ °Ç³Ê¶Ú ÈÄ, undo log ÀÇ size(UShort)¸¦
+        // skipÇÏ°í ÀĞ´Â´Ù.
         idlOS::memcpy( &sUndoRecType,
                        (UChar*)aLogHdr + ID_SIZEOF(sdrLogHdr) + ID_SIZEOF(UShort),
                        ID_SIZEOF(UChar) );
@@ -860,14 +894,14 @@ IDE_RC smiLogRec::analyzeInsertLogMemory( smiLogRec  *aLogRec,
                                     &sTable)
                 == IDE_SUCCESS );
 
-    // ë©”ëª¨ë¦¬ ë¡œê·¸ëŠ” ì–¸ì œë‚˜ í•˜ë‚˜ì˜ ë¡œê·¸ë¡œ ì“°ì´ë¯€ë¡œ, *aDoWaitì´ ID_FALSEê°€ ëœë‹¤.
+    // ¸Ş¸ğ¸® ·Î±×´Â ¾ğÁ¦³ª ÇÏ³ªÀÇ ·Î±×·Î ¾²ÀÌ¹Ç·Î, *aDoWaitÀÌ ID_FALSE°¡ µÈ´Ù.
     *aDoWait = ID_FALSE;
 
     sAfterImagePtr = aLogRec->getLogPtr() + SMR_LOGREC_SIZE(smrUpdateLog);
 
     /* TASK-4690, BUG-32319 [sm-mem-collection] The number of MMDB update log
      *                      can be reduced to 1.
-     * ë¡œê·¸ ë§ˆì§€ë§‰ì— OldVersion RowOIDê°€ ìˆê¸° ë•Œë¬¸ì— Fenceì— ì´ë¥¼ ì œì™¸í•´ì¤€ë‹¤. */
+     * ·Î±× ¸¶Áö¸·¿¡ OldVersion RowOID°¡ ÀÖ±â ¶§¹®¿¡ Fence¿¡ ÀÌ¸¦ Á¦¿ÜÇØÁØ´Ù. */
     sAfterImagePtrFence = aLogRec->getLogPtr() +
                           + aLogRec->getLogSize()
                           - ID_SIZEOF(ULong)
@@ -917,23 +951,23 @@ IDE_RC smiLogRec::analyzeInsertLogAfterImageMemory( smiLogRec  *aLogRec,
     UShort                sNextVarOffset        = 0;
 
     /*
-      After Image : Fixed Rowì™€ Variable Columnì— ëŒ€í•œ Logë¥¼ ê¸°ë¡.
+      After Image : Fixed Row¿Í Variable Column¿¡ ´ëÇÑ Log¸¦ ±â·Ï.
       Fixed Row Size(UShort) + Fixed Row Data
       + VCLOG(1) + VCLOG(2) ... + VCLOG (n)
 
-      VCLOG : Variable Columnë‹¹ í•˜ë‚˜ì”© ìƒê¸´ë‹¤.
+      VCLOG : Variable Column´ç ÇÏ³ª¾¿ »ı±ä´Ù.
       1. SMC_VC_LOG_WRITE_TYPE_AFTERIMG & SM_VCDESC_MODE_OUT
       - Column ID(UInt) | Length(UInt) | Value | OID Cnt(UInt) | OID List |
 
       2. SMC_VC_LOG_WRITE_TYPE_AFTERIMG & SM_VCDESC_MODE_IN
-      - None (After Imageì¸ ê²½ìš°ëŠ” Fixed Rowì— In Modeë¡œ ì €ì¥ë˜ê³ 
-      ë˜í•œ Fixed Rowì— ëŒ€í•œ Loggingì„ ë³„ë„ë¡œ ìˆ˜í–‰í•˜ê¸° ë•Œë¬¸ì—
-      VCì— ëŒ€í•œ Loggingì´ ë¶ˆí•„ìš”.
+      - None (After ImageÀÎ °æ¿ì´Â Fixed Row¿¡ In Mode·Î ÀúÀåµÇ°í
+      ¶ÇÇÑ Fixed Row¿¡ ´ëÇÑ LoggingÀ» º°µµ·Î ¼öÇàÇÏ±â ¶§¹®¿¡
+      VC¿¡ ´ëÇÑ LoggingÀÌ ºÒÇÊ¿ä.
     */
 
     sFixedAreaPtr = aAfterImagePtr + SMI_LOGREC_MV_FIXED_ROW_DATA_OFFSET;
 
-    /* Fixed Rowì˜ ê¸¸ì´:UShort */
+    /* Fixed RowÀÇ ±æÀÌ:UShort */
     sFixedAreaSize = aLogRec->getUShortValue( aAfterImagePtr, SMI_LOGREC_MV_FIXED_ROW_SIZE_OFFSET );
     IDE_TEST_RAISE( sFixedAreaSize > SM_PAGE_SIZE,
                     err_too_big_fixed_area_size );
@@ -964,7 +998,7 @@ IDE_RC smiLogRec::analyzeInsertLogAfterImageMemory( smiLogRec  *aLogRec,
                 if ( (spCol->flag & SMI_COLUMN_TYPE_MASK) == SMI_COLUMN_TYPE_VARIABLE )
                 {
                     /* Nothing to do
-                     * united var ëŠ” fixed ì˜ì—­ì—ì„œ ì•„ë¬´ê²ƒë„ ê¸°ë¡í•˜ì§€ ì•Šì•˜ë‹¤ */
+                     * united var ´Â fixed ¿µ¿ª¿¡¼­ ¾Æ¹«°Íµµ ±â·ÏÇÏÁö ¾Ê¾Ò´Ù */
                 }
                 else
                 {
@@ -1018,10 +1052,10 @@ IDE_RC smiLogRec::analyzeInsertLogAfterImageMemory( smiLogRec  *aLogRec,
 
         if ( sVarColCount > 0 )
         {
-            /* next united var piece ë¥¼ ì°¾ì•„ì„œ ë°˜ë³µí•´ì•¼í•œë‹¤. */
+            /* next united var piece ¸¦ Ã£¾Æ¼­ ¹İº¹ÇØ¾ßÇÑ´Ù. */
             while ( (sVCPieceOID != SM_NULL_OID) )
             {
-                /* united var piece ë‹¹ í•œë²ˆë§Œ í•œë‹¤ */
+                /* united var piece ´ç ÇÑ¹ø¸¸ ÇÑ´Ù */
                 sVCPieceOID  = aLogRec->getvULongValue( sVarAreaPtr );
                 sVarAreaPtr += ID_SIZEOF(smOID);
 
@@ -1030,17 +1064,17 @@ IDE_RC smiLogRec::analyzeInsertLogAfterImageMemory( smiLogRec  *aLogRec,
 
                 IDE_DASSERT( sVarColCountInPiece < SMI_COLUMN_ID_MAXIMUM );
 
-                /* var piece ë‚´ì˜ columnì„ ì¶”ì¶œí•œë‹¤ */
+                /* var piece ³»ÀÇ columnÀ» ÃßÃâÇÑ´Ù */
                 for ( i = 0 ; i < sVarColCountInPiece ; i++ )
                 {
-                    /* Column ID ëŠ” ì•ì— ë”°ë¡œìˆìœ¼ë¯€ë¡œ ë³„ë„ì˜ offset ì„ ì ìš©í•œë‹¤ */
+                    /* Column ID ´Â ¾Õ¿¡ µû·ÎÀÖÀ¸¹Ç·Î º°µµÀÇ offset À» Àû¿ëÇÑ´Ù */
                     sCID = aLogRec->getUIntValue( sVarCIDPtr, SMI_LOGREC_MV_COLUMN_CID_OFFSET );
 
                     sVarCIDPtr += ID_SIZEOF(UInt);
 
                     if ( sCID == ID_UINT_MAX )
                     {
-                        /* United var ì¤‘ rp ì—ì„œëŠ” í•„ìš”ì—†ëŠ” ì»¬ëŸ¼ */
+                        /* United var Áß rp ¿¡¼­´Â ÇÊ¿ä¾ø´Â ÄÃ·³ */
                         sNextVarOffset = aLogRec->getUShortValue( sVarAreaPtr, 
                                                                   (UInt)( ID_SIZEOF(UShort) * ( i + 1 ) ) );
                     }
@@ -1056,7 +1090,7 @@ IDE_RC smiLogRec::analyzeInsertLogAfterImageMemory( smiLogRec  *aLogRec,
 
                         aCidArray[sCID] = sCID;
 
-                        /* value ì˜ ì•ë¶€ë¶„ì— ìˆëŠ” offset arrayì—ì„œ offsetì„ ì½ì–´ì˜¨ë‹¤ */
+                        /* value ÀÇ ¾ÕºÎºĞ¿¡ ÀÖ´Â offset array¿¡¼­ offsetÀ» ÀĞ¾î¿Â´Ù */
                         sCurrVarOffset = aLogRec->getUShortValue( sVarAreaPtr,
                                                                   (UInt)( ID_SIZEOF(UShort) * i ) );
                         sNextVarOffset = aLogRec->getUShortValue( sVarAreaPtr, 
@@ -1082,7 +1116,7 @@ IDE_RC smiLogRec::analyzeInsertLogAfterImageMemory( smiLogRec  *aLogRec,
                         
                     }
                 }
-                /* next piece ë¡œ offset ì´ë™í•œë‹¤ */
+                /* next piece ·Î offset ÀÌµ¿ÇÑ´Ù */
                 sVarAreaPtr += sNextVarOffset - ID_SIZEOF(smVCPieceHeader);
             }
         }
@@ -1122,9 +1156,9 @@ IDE_RC smiLogRec::analyzeInsertLogAfterImageMemory( smiLogRec  *aLogRec,
         }
         sVarColPtr += SMI_LOGREC_MV_COLUMN_DATA_OFFSET + sAfterColSize;
 
-        /* Variable/LOB Column Value ì¸ ê²½ìš°ì—ëŠ” OID Listë¥¼ ê±´ë„ˆë›°ì–´ì•¼ í•¨ */
-        /* ì—¬ê¸°ì—ëŠ” OID countê°€ ì €ì¥ë˜ì–´ ìˆìœ¼ë¯€ë¡œ, Countë¥¼ ì½ì€ í›„ ê·¸ ìˆ˜ ë§Œí¼ */
-        /* ê±´ë„ˆë›°ë„ë¡ í•œë‹¤. */
+        /* Variable/LOB Column Value ÀÎ °æ¿ì¿¡´Â OID List¸¦ °Ç³Ê¶Ù¾î¾ß ÇÔ */
+        /* ¿©±â¿¡´Â OID count°¡ ÀúÀåµÇ¾î ÀÖÀ¸¹Ç·Î, Count¸¦ ÀĞÀº ÈÄ ±× ¼ö ¸¸Å­ */
+        /* °Ç³Ê¶Ùµµ·Ï ÇÑ´Ù. */
         sOIDCnt = aLogRec->getUIntValue(sVarColPtr, 0);
         sVarColPtr += ID_SIZEOF(UInt) + (sOIDCnt * ID_SIZEOF(smOID));
     }
@@ -1238,14 +1272,14 @@ IDE_RC smiLogRec::analyzeUpdateLogMemory( smiLogRec  *aLogRec,
                                         &sTable)
                    == IDE_SUCCESS );
 
-    // ë©”ëª¨ë¦¬ ë¡œê·¸ëŠ” ì–¸ì œë‚˜ í•˜ë‚˜ì˜ ë¡œê·¸ë¡œ ì“°ì´ë¯€ë¡œ, *aDoWaitì´ ID_FALSEê°€ ëœë‹¤.
+    // ¸Ş¸ğ¸® ·Î±×´Â ¾ğÁ¦³ª ÇÏ³ªÀÇ ·Î±×·Î ¾²ÀÌ¹Ç·Î, *aDoWaitÀÌ ID_FALSE°¡ µÈ´Ù.
     *aDoWait = ID_FALSE;
 
     // fix PR-3409 PR-3556
     for(i=0 ; i < SMI_COLUMN_ID_MAXIMUM ; i++)
     {
-        // 0ìœ¼ë¡œ ì´ˆê¸°í™”í•˜ë©´ ì•ˆ ë ë“¯? 0ë„ CIDë¡œ ì‚¬ìš©ë˜ëŠ” ê°’ì„
-        // MAXë¡œ ì¶”ê¸°í™”í•˜ëŠ” ê²ƒì— ëŒ€í•´ì„œ ìƒê°í•´ë³´ì - by mycomman, review
+        // 0À¸·Î ÃÊ±âÈ­ÇÏ¸é ¾È µÉµí? 0µµ CID·Î »ç¿ëµÇ´Â °ªÀÓ
+        // MAX·Î Ãß±âÈ­ÇÏ´Â °Í¿¡ ´ëÇØ¼­ »ı°¢ÇØº¸ÀÚ - by mycomman, review
         sAfterCids[i] = 0;
     }
 
@@ -1259,6 +1293,13 @@ IDE_RC smiLogRec::analyzeUpdateLogMemory( smiLogRec  *aLogRec,
 
     if ( aLogRec->getLogUpdateType() == SMR_SMC_PERS_UPDATE_INPLACE_ROW )
     {
+        /* BUG-47366 UpdateInplace LogÀÇ Before Image ³¡¿¡ 
+         * BeforeImageÀÇ Size¸¦ ³ªÅ¸³»´Â UIntÀÇ Log°¡ Ãß°¡µÇ¾ú´Ù. */
+        sBeforeImagePtrFence -= ID_SIZEOF(UInt);
+
+        /* sModifyIdxBit BUG-47632,47615 */
+        sBeforeImagePtr += ID_SIZEOF(ULong);
+
         IDE_TEST(analyzeColumnUIImageMemory(aLogRec,
                                             sBeforeImagePtr,
                                             sBeforeImagePtrFence,
@@ -1279,9 +1320,9 @@ IDE_RC smiLogRec::analyzeUpdateLogMemory( smiLogRec  *aLogRec,
                                             ID_FALSE/* After Image */)
                  != IDE_SUCCESS );
 
-        /* Before imageì™€ After imageì— ìˆëŠ” Update column countê°€ í•­ìƒ
-           ê°™ì•„ì•¼ë§Œ í•œë‹¤. */
-        //BUG-43744 : trailing NULL ì„/ìœ¼ë¡œ ì—…ë°ì´íŠ¸ í•˜ë©´ ë‹¤ë¥¼ ìˆ˜ ìˆë‹¤.
+        /* Before image¿Í After image¿¡ ÀÖ´Â Update column count°¡ Ç×»ó
+           °°¾Æ¾ß¸¸ ÇÑ´Ù. */
+        //BUG-43744 : trailing NULL À»/À¸·Î ¾÷µ¥ÀÌÆ® ÇÏ¸é ´Ù¸¦ ¼ö ÀÖ´Ù.
     }
     else
     {
@@ -1291,9 +1332,9 @@ IDE_RC smiLogRec::analyzeUpdateLogMemory( smiLogRec  *aLogRec,
              * [sm-mem-collection] The number of MMDB update log can be
              * reduced to 1.
              *
-             * Before ì´ë¯¸ì§€ ë§ˆì§€ë§‰ì— OldVersion RowOIDì™€ lock row ì—¬ë¶€ê°€ ìˆê³ 
-             * After ì´ë¯¸ì§€ ë§ˆì§€ë§‰ì— OldVersion RowOIDê°€ ìˆìœ¼ë¯€ë¡œ
-             * Fenceì— ì´ë¥¼ ì œì™¸í•´ì¤€ë‹¤. */
+             * Before ÀÌ¹ÌÁö ¸¶Áö¸·¿¡ OldVersion RowOID¿Í lock row ¿©ºÎ°¡ ÀÖ°í
+             * After ÀÌ¹ÌÁö ¸¶Áö¸·¿¡ OldVersion RowOID°¡ ÀÖÀ¸¹Ç·Î
+             * Fence¿¡ ÀÌ¸¦ Á¦¿ÜÇØÁØ´Ù. */
             sBeforeImagePtrFence = sBeforeImagePtrFence - ID_SIZEOF(ULong) - ID_SIZEOF(idBool);
             sAfterImagePtrFence  = sAfterImagePtrFence - ID_SIZEOF(ULong);
 
@@ -1352,7 +1393,7 @@ IDE_RC smiLogRec::analyzeUpdateLogMemory( smiLogRec  *aLogRec,
 }
 
 /*
- *      Befor  Image: ê°ê°ì˜ Updateë˜ëŠ” Columnì— ëŒ€í•´ì„œ
+ *      Befor  Image: °¢°¢ÀÇ UpdateµÇ´Â Column¿¡ ´ëÇØ¼­
  *         Fixed Column : Flag(SChar) | Offset(UInt)  |
  *                        ColumnID(UInt) | SIZE(UInt) | Value
  *
@@ -1364,13 +1405,13 @@ IDE_RC smiLogRec::analyzeUpdateLogMemory( smiLogRec  *aLogRec,
  *         LOB   Column : Flag(SChar) | Offset(UInt) | ColumnID(UInt) | SIZE(UInt)
  *                        | Piece Count(UInt) | firstLPCH * | Value | OID
  *
- *      After  Image: ê°ê°ì˜ Updateë˜ëŠ” Columnì— ëŒ€í•´ì„œ
+ *      After  Image: °¢°¢ÀÇ UpdateµÇ´Â Column¿¡ ´ëÇØ¼­
  *         Fixed Column : Flag(SChar) | Offset(UInt) | ColumnID(UInt) | SIZE(UInt)
  *                        | Value
  *
  *         Var/LOB Column : Flag(SChar) | Offset(UInt) | ColumnID(UInt) | SIZE(UInt)
  *               SM_VCDESC_MODE_OUT, LOB:
- *                        | Value | OID Count | OID ë“¤...
+ *                        | Value | OID Count | OID µé...
  *               SM_VCDESC_MODE_IN:
  *                        | Value
  *
@@ -1421,27 +1462,27 @@ IDE_RC smiLogRec::analyzeColumnUIImageMemory( smiLogRec  * aLogRec,
 
         if ( sVarColCount > 0 )
         {
-            /* next united var piece ë¥¼ ì°¾ì•„ì„œ ë°˜ë³µí•´ì•¼í•œë‹¤. */
+            /* next united var piece ¸¦ Ã£¾Æ¼­ ¹İº¹ÇØ¾ßÇÑ´Ù. */
             while ( (sVCPieceOID != SM_NULL_OID) )
             {
-                /* united var piece ë‹¹ í•œë²ˆë§Œ í•œë‹¤ */
+                /* united var piece ´ç ÇÑ¹ø¸¸ ÇÑ´Ù */
                 sVCPieceOID = aLogRec->getvULongValue( sVarAreaPtr );
                 sVarAreaPtr += ID_SIZEOF(smOID);
 
                 sVarColCountInPiece = aLogRec->getUShortValue (sVarAreaPtr );
                 sVarAreaPtr         += ID_SIZEOF(UShort);
 
-                /* var piece ë‚´ì˜ columnì„ ì¶”ì¶œí•œë‹¤ */
+                /* var piece ³»ÀÇ columnÀ» ÃßÃâÇÑ´Ù */
                 for ( i = 0 ; i < sVarColCountInPiece ; i++ )
                 {
-                    /* Column ID ëŠ” ì•ì— ë”°ë¡œìˆìœ¼ë¯€ë¡œ ë³„ë„ì˜ offset ì„ ì ìš©í•œë‹¤ */
+                    /* Column ID ´Â ¾Õ¿¡ µû·ÎÀÖÀ¸¹Ç·Î º°µµÀÇ offset À» Àû¿ëÇÑ´Ù */
                     sCID = aLogRec->getUIntValue( sVarCIDPtr, SMI_LOGREC_MV_COLUMN_CID_OFFSET );
 
                     sVarCIDPtr += ID_SIZEOF(UInt);
 
                     if ( sCID == ID_UINT_MAX )
                     {
-                        /* United var ì¤‘ rp ì—ì„œëŠ” í•„ìš”ì—†ëŠ” ì»¬ëŸ¼ */
+                        /* United var Áß rp ¿¡¼­´Â ÇÊ¿ä¾ø´Â ÄÃ·³ */
                         sNextVarOffset = aLogRec->getUShortValue( sVarAreaPtr, 
                                                                   (UInt)( ID_SIZEOF(UShort) * (i+1) ) );
                     }
@@ -1458,7 +1499,7 @@ IDE_RC smiLogRec::analyzeColumnUIImageMemory( smiLogRec  * aLogRec,
 
                         aCidArray[sCidCount] = sCID;
 
-                        /* value ì˜ ì•ë¶€ë¶„ì— ìˆëŠ” offset arrayì—ì„œ offsetì„ ì½ì–´ì˜¨ë‹¤ */
+                        /* value ÀÇ ¾ÕºÎºĞ¿¡ ÀÖ´Â offset array¿¡¼­ offsetÀ» ÀĞ¾î¿Â´Ù */
                         sCurrVarOffset = aLogRec->getUShortValue( sVarAreaPtr,
                                                                   (UInt)( ID_SIZEOF(UShort) * i ) );
                         sNextVarOffset = aLogRec->getUShortValue( sVarAreaPtr, 
@@ -1487,14 +1528,14 @@ IDE_RC smiLogRec::analyzeColumnUIImageMemory( smiLogRec  * aLogRec,
                         sCidCount++;
                     }
                 }
-                /* next piece ë¡œ offset ì´ë™í•œë‹¤ */
+                /* next piece ·Î offset ÀÌµ¿ÇÑ´Ù */
                 sVarAreaPtr += sNextVarOffset - ID_SIZEOF(smVCPieceHeader);
             }
             
-            /* BUG-43744 : before img.ì¸ ê²½ìš°, íŠ¸ë ˆì¼ë§ ë„ì´ ì¡´ì¬í•  ë•Œ, ì—…ë°ì´íŠ¸
-             * í•  ì»¬ëŸ¼ì´ íŠ¸ë ˆì¼ë§ ë„ì— ì†í•œ ì»¬ëŸ¼ì´ë©´ ì´ ì»¬ëŸ¼ì€ ìœ„ì˜ while ë£¨í”„ì—ì„œ
-             * ì²˜ë¦¬í•˜ì§€ ëª»í•  ìˆ˜ ìˆë‹¤. ê° pieceì˜ ì»¬ëŸ¼ ê°œìˆ˜(sVarColCountInPiece)ëŠ”
-             * íŠ¸ë ˆì¼ë§ ë„ì„ í¬í•¨í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì´ë‹¤.
+            /* BUG-43744 : before img.ÀÎ °æ¿ì, Æ®·¹ÀÏ¸µ ³ÎÀÌ Á¸ÀçÇÒ ¶§, ¾÷µ¥ÀÌÆ®
+             * ÇÒ ÄÃ·³ÀÌ Æ®·¹ÀÏ¸µ ³Î¿¡ ¼ÓÇÑ ÄÃ·³ÀÌ¸é ÀÌ ÄÃ·³Àº À§ÀÇ while ·çÇÁ¿¡¼­
+             * Ã³¸®ÇÏÁö ¸øÇÒ ¼ö ÀÖ´Ù. °¢ pieceÀÇ ÄÃ·³ °³¼ö(sVarColCountInPiece)´Â
+             * Æ®·¹ÀÏ¸µ ³ÎÀ» Æ÷ÇÔÇÏÁö ¾Ê±â ¶§¹®ÀÌ´Ù.
              */
             while ( sVarCIDPtr < sVarCIDPence )
             {
@@ -1543,7 +1584,7 @@ IDE_RC smiLogRec::analyzeColumnUIImageMemory( smiLogRec  * aLogRec,
         sDataSize = aLogRec->getUIntValue(sColPtr, 0);
         sColPtr += ID_SIZEOF(UInt);
 
-        /* LOB Columnì˜ ê²½ìš°, Before imageì— Piece countì™€ firstLPCH ptrì´ ìˆìŒ */
+        /* LOB ColumnÀÇ °æ¿ì, Before image¿¡ Piece count¿Í firstLPCH ptrÀÌ ÀÖÀ½ */
         if ( aIsBefore == ID_TRUE )
         {
             if ( ( SMI_IS_LOB_COLUMN(sFlag) == ID_TRUE ) &&
@@ -1556,9 +1597,9 @@ IDE_RC smiLogRec::analyzeColumnUIImageMemory( smiLogRec  * aLogRec,
         }
         else
         {
-            /* BUG-29234 before image ë¶„ì„ì‹œì— aCidArrayì˜ ê°’ì„ ì„¤ì •í–ˆìœ¼ë¯€ë¡œ,
-             * after imageë¶„ì„ ì‹œì—ëŠ” ë˜ ë„£ì„ í•„ìš”ê°€ ì—†ë‹¤.
-             * ë‹¨, before imageì™€ after imageì˜ CIDê°€ ê°™ì€ì§€ëŠ” ê²€ì¦í•œë‹¤.
+            /* BUG-29234 before image ºĞ¼®½Ã¿¡ aCidArrayÀÇ °ªÀ» ¼³Á¤ÇßÀ¸¹Ç·Î,
+             * after imageºĞ¼® ½Ã¿¡´Â ¶Ç ³ÖÀ» ÇÊ¿ä°¡ ¾ø´Ù.
+             * ´Ü, before image¿Í after imageÀÇ CID°¡ °°ÀºÁö´Â °ËÁõÇÑ´Ù.
              */
             IDE_DASSERT( aCidArray[sCidCount] == sCID );
         }
@@ -1592,8 +1633,8 @@ IDE_RC smiLogRec::analyzeColumnUIImageMemory( smiLogRec  * aLogRec,
         }
 
         // BUG-37433, BUG-40282
-        // beforeë©´ì„œ OutModeì´ë©´ì„œ LOB ì¼ ë•ŒëŠ” Dataë¥¼ Logì— ë‚¨ê¸°ì§€ ì•ŠìŒ.
-        // smcRecordUpdate::undo_SMC_PERS_UPDATE_INPLACE_ROW() í•¨ìˆ˜ ì°¸ì¡°
+        // before¸é¼­ OutModeÀÌ¸é¼­ LOB ÀÏ ¶§´Â Data¸¦ Log¿¡ ³²±âÁö ¾ÊÀ½.
+        // smcRecordUpdate::undo_SMC_PERS_UPDATE_INPLACE_ROW() ÇÔ¼ö ÂüÁ¶
         if ( ( aIsBefore                == ID_TRUE ) &&
              ( SMI_IS_OUT_MODE(sFlag)   == ID_TRUE ) &&
              ( SMI_IS_LOB_COLUMN(sFlag) == ID_TRUE ))
@@ -1607,7 +1648,7 @@ IDE_RC smiLogRec::analyzeColumnUIImageMemory( smiLogRec  * aLogRec,
 
         if ( aIsBefore == ID_TRUE )
         {
-            /* Before imageì—ì„œ OUT mode valueì¼ë•ŒëŠ”, OIDê°€ ìˆìŒ */
+            /* Before image¿¡¼­ OUT mode valueÀÏ¶§´Â, OID°¡ ÀÖÀ½ */
             if ( (SMI_IS_VARIABLE_LARGE_COLUMN(sFlag) == ID_TRUE ) ||
                ( SMI_IS_LOB_COLUMN(sFlag) == ID_TRUE ) )
             {
@@ -1619,8 +1660,8 @@ IDE_RC smiLogRec::analyzeColumnUIImageMemory( smiLogRec  * aLogRec,
         }
         else
         {
-            /* After imageì—ì„œ OUT mode valueì¼ë•ŒëŠ”, OID Countì™€ OID listê°€ ìˆê³ ,
-             * In modeì¼ë•ŒëŠ” OID count, OID listê°€ ì—†ìŒ */
+            /* After image¿¡¼­ OUT mode valueÀÏ¶§´Â, OID Count¿Í OID list°¡ ÀÖ°í,
+             * In modeÀÏ¶§´Â OID count, OID list°¡ ¾øÀ½ */
             if ( ( SMI_IS_VARIABLE_LARGE_COLUMN(sFlag) == ID_TRUE ) ||
                  ( SMI_IS_LOB_COLUMN(sFlag) == ID_TRUE ) )
             {
@@ -1692,8 +1733,8 @@ IDE_RC smiLogRec::analyzeColumnUIImageMemory( smiLogRec  * aLogRec,
 
 /* For MVCC
  *
- *     Before Image : Senderê°€ ì½ì–´ì„œ ë³´ë‚´ëŠ” ë¡œê·¸ì— ëŒ€í•´ì„œë§Œ ê¸°ë¡ëœë‹¤.
- *                    ê°ê°ì˜ Updateë˜ëŠ” Columnì— ëŒ€í•´ì„œ
+ *     Before Image : Sender°¡ ÀĞ¾î¼­ º¸³»´Â ·Î±×¿¡ ´ëÇØ¼­¸¸ ±â·ÏµÈ´Ù.
+ *                    °¢°¢ÀÇ UpdateµÇ´Â Column¿¡ ´ëÇØ¼­
  *        Fixed Column : Column ID | SIZE | DATA
  *        Var   Column :
  *            1. SMC_VC_LOG_WRITE_TYPE_BEFORIMG & SM_VCDESC_MODE_OUT
@@ -1720,7 +1761,37 @@ IDE_RC smiLogRec::analyzeColumnMVImageMemory( smiLogRec  * aLogRec,
 
     const smiColumn * spCol  = NULL;
 
-    for ( sColPtr = aColImagePtr; sColPtr < aColImagePtrFence; )
+    /* BUG-47366 */
+    SChar * sBfrImgFence      = NULL;
+    smOID   sVCPieceOID       = SM_NULL_OID;
+    UShort  sVarColumnCnt     = 0;
+
+    /* BUG-47366 UpdateVersionLogÀÇ BeforeImageÀÇ ³¡¿¡
+     * OldVersionÀÇ UnitedVar OID Array°¡ Ãß°¡µÇ¾ú´Ù. */
+    sBfrImgFence = aColImagePtrFence;
+
+    sBfrImgFence -= ID_SIZEOF(smOID);
+    idlOS::memcpy(&sVCPieceOID, sBfrImgFence, ID_SIZEOF(smOID));
+
+    /* OID°¡ NULLÀÌ¸é º¼ ÇÊ¿ä ¾ø´Ù. */
+    if ( sVCPieceOID != SM_NULL_OID )
+    {
+        sBfrImgFence -= ID_SIZEOF(UShort);
+        idlOS::memcpy(&sVarColumnCnt, sBfrImgFence, ID_SIZEOF(UShort));
+
+        /* ¼öÁ¤µÈ VarColumn Cnt°¡ 0ÀÌ¸é Old VersionÀ» ±×³É »ç¿ëÇÏ´Â °ÍÀÌ¶ó º¯°æµÈ °ÍÀÌ ¾ø´Ù. */
+        if ( sVarColumnCnt > 0 )
+        {
+            while( sVCPieceOID != SM_NULL_OID )
+            {
+                /* get next piece oid */
+                sBfrImgFence -= ID_SIZEOF(smOID);
+                idlOS::memcpy( &sVCPieceOID, sBfrImgFence, ID_SIZEOF(smOID) );
+            }
+        }
+    }
+
+    for ( sColPtr = aColImagePtr; sColPtr < sBfrImgFence; )
     {
         /* Get Column ID */
         sCID = aLogRec->getUIntValue(sColPtr, 0) & SMI_COLUMN_ID_MASK ;
@@ -1820,7 +1891,7 @@ IDE_RC smiLogRec::analyzeDeleteLogMemory( smiLogRec  *aLogRec,
                                         &sTable)
                    == IDE_SUCCESS );
 
-    // ë©”ëª¨ë¦¬ ë¡œê·¸ëŠ” ì–¸ì œë‚˜ í•˜ë‚˜ì˜ ë¡œê·¸ë¡œ ì“°ì´ë¯€ë¡œ, *aDoWaitì´ ID_FALSEê°€ ëœë‹¤.
+    // ¸Ş¸ğ¸® ·Î±×´Â ¾ğÁ¦³ª ÇÏ³ªÀÇ ·Î±×·Î ¾²ÀÌ¹Ç·Î, *aDoWaitÀÌ ID_FALSE°¡ µÈ´Ù.
     *aDoWait = ID_FALSE;
 
     IDE_TEST_RAISE( aLogRec->getLogUpdateType()
@@ -1828,7 +1899,7 @@ IDE_RC smiLogRec::analyzeDeleteLogMemory( smiLogRec  *aLogRec,
 
     sPkImagePtr = aLogRec->getLogPtr() + SMR_LOGREC_SIZE(smrUpdateLog);
 
-    /* í˜„ì¬ Mainì—ëŠ” Before Next ì™€ After Next,ì´ 2ê°œê°€ í¬í•¨ë˜ì–´ìˆë‹¤.*/
+    /* ÇöÀç Main¿¡´Â Before Next ¿Í After Next,ÃÑ 2°³°¡ Æ÷ÇÔµÇ¾îÀÖ´Ù.*/
     sPkImagePtr += (ID_SIZEOF(ULong) * 2);
 
     IDE_TEST( analyzePKMem( aLogRec,
@@ -1876,7 +1947,7 @@ IDE_RC smiLogRec::analyzeDeleteLogMemory( smiLogRec  *aLogRec,
 }
 
 /***************************************************************
- * < sdrLogHdr êµ¬ì¡° >
+ * < sdrLogHdr ±¸Á¶ >
  *
  * typedef struct sdrLogHdr
  * {
@@ -1892,7 +1963,7 @@ IDE_RC smiLogRec::analyzeHeader( smiLogRec * aLogRec,
     IDE_DASSERT( aLogRec != NULL );
     IDE_DASSERT( aIsContinue != NULL );
 
-    // mContTypeì„ ë³´ê³  ë‹¤ìŒì— ë¡œê·¸ê°€ ì´ì–´ì§€ë¥¼ íŒë‹¨í•œë‹¤.
+    // mContTypeÀ» º¸°í ´ÙÀ½¿¡ ·Î±×°¡ ÀÌ¾îÁö¸¦ ÆÇ´ÜÇÑ´Ù.
     *aIsContinue = ( (smrContType)aLogRec->getContType() == SMR_CT_END) ?
                    ID_FALSE : ID_TRUE;
 
@@ -1904,7 +1975,7 @@ IDE_RC smiLogRec::analyzeHeader( smiLogRec * aLogRec,
 }
 
 /***************************************************************
- * < RP info  êµ¬ì¡° >
+ * < RP info  ±¸Á¶ >
  *
  *          |<------- repeat --------->|
  * -------------------------------------
@@ -1913,7 +1984,7 @@ IDE_RC smiLogRec::analyzeHeader( smiLogRec * aLogRec,
  * | count  | seq    | id     | length |
  * -------------------------------------
  *
- * UNDO LOG : total length ì •ë³´ê°€ ì—†ë‹¤.
+ * UNDO LOG : total length Á¤º¸°¡ ¾ø´Ù.
  **************************************************************/
 IDE_RC smiLogRec::analyzeRPInfo( smiLogRec * aLogRec, SInt aLogType )
 {
@@ -1929,7 +2000,7 @@ IDE_RC smiLogRec::analyzeRPInfo( smiLogRec * aLogRec, SInt aLogType )
     sAnalyzePtr = aLogRec->getAnalyzeStartPtr();
     sChangeLogType = aLogRec->getChangeType();
 
-    // RP info ê°€ ë§¨ ë’¤ì— ìˆìœ¼ë¯€ë¡œ, ê·¸ ìœ„ì¹˜ê¹Œì§€ ì´ë™.
+    // RP info °¡ ¸Ç µÚ¿¡ ÀÖÀ¸¹Ç·Î, ±× À§Ä¡±îÁö ÀÌµ¿.
     if ( aLogType == SMI_UNDO_LOG )
     {
         sAnalyzePtr = (SChar *) aLogRec->getRPLogStartPtr4Undo(
@@ -1957,29 +2028,29 @@ IDE_RC smiLogRec::analyzeRPInfo( smiLogRec * aLogRec, SInt aLogType )
         sColSeq = aLogRec->getUShortValue(sAnalyzePtr);
         if ( sColSeq == ID_USHORT_MAX )
         {
-            // trailing nullì„ ì—…ë°ì´íŠ¸ í•˜ëŠ” ê²½ìš°ì˜ before imageì´ë©°,
-            // overwrite updateì˜ ê²½ìš°ì—ë§Œ ë°œìƒí•˜ë©°, ê²¹ì¹˜ëŠ” ì¼ì´ ì—†ë„ë¡ ìˆœì°¨ì ì¸ seqë¥¼ ì£¼ë„ë¡í•œë‹¤.
+            // trailing nullÀ» ¾÷µ¥ÀÌÆ® ÇÏ´Â °æ¿ìÀÇ before imageÀÌ¸ç,
+            // overwrite updateÀÇ °æ¿ì¿¡¸¸ ¹ß»ıÇÏ¸ç, °ãÄ¡´Â ÀÏÀÌ ¾øµµ·Ï ¼øÂ÷ÀûÀÎ seq¸¦ ÁÖµµ·ÏÇÑ´Ù.
             // IDE_DASSERT(aLogRec->getChangeType() == SMI_UNDO_DRDB_UPDATE_OVERWRITE);
-            // BUGBUG - delete row piece for update ì—¬ê¸°ë¡œ ì˜¤ëŠ” ê²½ìš°ê°€ ìˆë‹¤. í™•ì¸í•„ìš”. ë™ì‘ì— ì´ìƒì€ ì—†ìŒ.
+            // BUGBUG - delete row piece for update ¿©±â·Î ¿À´Â °æ¿ì°¡ ÀÖ´Ù. È®ÀÎÇÊ¿ä. µ¿ÀÛ¿¡ ÀÌ»óÀº ¾øÀ½.
             sColSeq = sTrailingNullColSeq + 1;
         }
-        aLogRec->setColumnSequence(sColSeq, i);  // seqëŠ” ë°°ì—´ì— ìˆœì°¨ì ìœ¼ë¡œ ë“¤ì–´ê°„ë‹¤.
+        aLogRec->setColumnSequence(sColSeq, i);  // seq´Â ¹è¿­¿¡ ¼øÂ÷ÀûÀ¸·Î µé¾î°£´Ù.
         sAnalyzePtr += ID_SIZEOF(UShort);
 
         // 3. Get column id
         sColId = aLogRec->getUIntValue(sAnalyzePtr);
-        aLogRec->setColumnId(sColId, sColSeq);   // idëŠ” ë°°ì—´ì˜ seqìœ„ì¹˜ì— ë“¤ì–´ê°„ë‹¤.
+        aLogRec->setColumnId(sColId, sColSeq);   // id´Â ¹è¿­ÀÇ seqÀ§Ä¡¿¡ µé¾î°£´Ù.
         sAnalyzePtr += ID_SIZEOF(UInt);
 
         // 4. Get column total length
         if ( aLogType == SMI_REDO_LOG )
         {
             SMI_LOGREC_READ_AND_MOVE_PTR( sAnalyzePtr, &sColTotalLen, ID_SIZEOF(UInt) );
-            aLogRec->setColumnTotalLength((SInt)sColTotalLen, sColSeq); // totalLenì€ ë°°ì—´ì˜ seqìœ„ì¹˜ì— ë“¤ì–´ê°„ë‹¤.
+            aLogRec->setColumnTotalLength((SInt)sColTotalLen, sColSeq); // totalLenÀº ¹è¿­ÀÇ seqÀ§Ä¡¿¡ µé¾î°£´Ù.
         }
         else
         {
-            // undo logì˜ ê²½ìš°, total lengthëŠ” SMI_UNDO_LOG(-1)ì˜ ê°’ì„ ê°–ëŠ”ë‹¤.
+            // undo logÀÇ °æ¿ì, total length´Â SMI_UNDO_LOG(-1)ÀÇ °ªÀ» °®´Â´Ù.
             aLogRec->setColumnTotalLength(SMI_UNDO_LOG, sColSeq);
         }
     }
@@ -1988,7 +2059,7 @@ IDE_RC smiLogRec::analyzeRPInfo( smiLogRec * aLogRec, SInt aLogType )
 }
 
 /***************************************************************
- * < Undo info  êµ¬ì¡° >
+ * < Undo info  ±¸Á¶ >
  *
  * --------------------------------------
  * |                 |                  |
@@ -2015,11 +2086,11 @@ IDE_RC smiLogRec::analyzeUndoInfo(smiLogRec *  aLogRec)
 }
 
 /***************************************************************
- * < Update info  êµ¬ì¡° >
+ * < Update info  ±¸Á¶ >
  *
- * column desc set size : ë’¤ì— ë‚˜ì˜¤ëŠ” column desc setì˜ í¬ê¸°
- * column desc set : 1~128 byteê¹Œì§€ ê¸¸ì´ê°€ ê°€ë³€ì ì´ë‹¤. RPì—ì„œëŠ”
- *                   í•„ìš”ì—†ëŠ” ì •ë³´ì´ë¯€ë¡œ ëª¨ë‘ skipí•œë‹¤.
+ * column desc set size : µÚ¿¡ ³ª¿À´Â column desc setÀÇ Å©±â
+ * column desc set : 1~128 byte±îÁö ±æÀÌ°¡ °¡º¯ÀûÀÌ´Ù. RP¿¡¼­´Â
+ *                   ÇÊ¿ä¾ø´Â Á¤º¸ÀÌ¹Ç·Î ¸ğµÎ skipÇÑ´Ù.
  *
  * ----------------------------------------------
  * |        |      |        | column   | column |
@@ -2072,7 +2143,7 @@ IDE_RC smiLogRec::analyzeUpdateInfo(smiLogRec *  aLogRec)
 }
 
 /***************************************************************
- * < Row image info  êµ¬ì¡° >
+ * < Row image info  ±¸Á¶ >
  *
  *          |<- optional->|<--- repeat ---->|
  * ------------------------------------------
@@ -2111,12 +2182,12 @@ IDE_RC smiLogRec::analyzeRowImage( iduMemAllocator * aAllocator,
 
     // 1. Analyze RowHeader
 
-    // row pieceë‚´ì˜ ì»¬ëŸ¼ì˜ ê°œìˆ˜
+    // row piece³»ÀÇ ÄÃ·³ÀÇ °³¼ö
     sAnalyzePtr += SDC_ROWHDR_COLCOUNT_OFFSET;
     sColCntInRowPiece = aLogRec->getUShortValue(sAnalyzePtr);
     sAnalyzePtr += SDC_ROWHDR_COLCOUNT_SIZE;
 
-    // row headerì˜ mFlag
+    // row headerÀÇ mFlag
     idlOS::memcpy( &sRowHdrFlag,
                    sAnalyzePtr,
                    ID_SIZEOF(SChar) );
@@ -2145,7 +2216,7 @@ IDE_RC smiLogRec::analyzeRowImage( iduMemAllocator * aAllocator,
     // 5. Check trailing NULL
     if ( aLogRec->getChangeType() == SMI_REDO_DRDB_INSERT )
     {
-        if ( (sRowHdrFlag & SDC_ROWHDR_H_FLAG) == SDC_ROWHDR_H_FLAG ) //insertì˜ ë§ˆì§€ë§‰ log piece
+        if ( (sRowHdrFlag & SDC_ROWHDR_H_FLAG) == SDC_ROWHDR_H_FLAG ) //insertÀÇ ¸¶Áö¸· log piece
         {
             // Get Meta
             IDE_TEST_RAISE( aLogRec->mGetTable( aLogRec->mMeta,
@@ -2169,13 +2240,13 @@ IDE_RC smiLogRec::analyzeRowImage( iduMemAllocator * aAllocator,
                     {
                         if ( (sColumn->flag & SMI_COLUMN_TYPE_MASK) == SMI_COLUMN_TYPE_LOB )
                         {
-                            /* BUG-30118 : Lobì´ ì¤‘ê°„ ì»¬ëŸ¼ì´ë©´ì„œ trailing nullì´ ìˆëŠ” ê²½ìš° ì²˜ë¦¬.
+                            /* BUG-30118 : LobÀÌ Áß°£ ÄÃ·³ÀÌ¸é¼­ trailing nullÀÌ ÀÖ´Â °æ¿ì Ã³¸®.
                              *
-                             * inmode lobì˜ ê²½ìš°, lobë¡œê·¸ê°€ ë”°ë¡œ ì˜¤ì§€ ì•Šê³  INSERT ë¡œê·¸ë¡œ ëª¨ë‘ ì²˜ë¦¬í•©ë‹ˆë‹¤.
-                             * outmode lobì˜ ê²½ìš°, INSERTë¡œê·¸ ì´í›„ì— LOB_PIECE_WRITEë¡œê·¸ê°€ ì˜µë‹ˆë‹¤.
-                             * ì²˜ë¦¬ë°©ë²• : inmode lobì€ ì´ë¯¸ ë¶„ì„ì´ ëœ ìƒíƒœë¡œ CIDê°€ CIDArrayì— ë“¤ì–´ê°€
-                             * ìˆìŠµë‹ˆë‹¤. outmode lobì€ ì•„ì§ ë¡œê·¸ë„ ì•ˆì˜¨ ìƒíƒœì´ë¯€ë¡œ CIDê°€ CIDArrayì— ì—†ìŠµë‹ˆë‹¤.
-                             * ì»¬ëŸ¼ì˜ CIDê°€ CIDArrayì— ë“¤ì–´ê°€ ìˆìœ¼ë©´ ë¶„ì„ëœ inmode lobì»¬ëŸ¼ìœ¼ë¡œ ê°„ì£¼í•©ë‹ˆë‹¤.
+                             * inmode lobÀÇ °æ¿ì, lob·Î±×°¡ µû·Î ¿ÀÁö ¾Ê°í INSERT ·Î±×·Î ¸ğµÎ Ã³¸®ÇÕ´Ï´Ù.
+                             * outmode lobÀÇ °æ¿ì, INSERT·Î±× ÀÌÈÄ¿¡ LOB_PIECE_WRITE·Î±×°¡ ¿É´Ï´Ù.
+                             * Ã³¸®¹æ¹ı : inmode lobÀº ÀÌ¹Ì ºĞ¼®ÀÌ µÈ »óÅÂ·Î CID°¡ CIDArray¿¡ µé¾î°¡
+                             * ÀÖ½À´Ï´Ù. outmode lobÀº ¾ÆÁ÷ ·Î±×µµ ¾È¿Â »óÅÂÀÌ¹Ç·Î CID°¡ CIDArray¿¡ ¾ø½À´Ï´Ù.
+                             * ÄÃ·³ÀÇ CID°¡ CIDArray¿¡ µé¾î°¡ ÀÖÀ¸¸é ºĞ¼®µÈ inmode lobÄÃ·³À¸·Î °£ÁÖÇÕ´Ï´Ù.
                              */
                             if ( isCIDInArray(aCIDArray, sCID, *aAnalyzedColCnt)
                                  == ID_TRUE )
@@ -2235,30 +2306,30 @@ IDE_RC smiLogRec::analyzeRowImage( iduMemAllocator * aAllocator,
 }
 
 /***************************************************************
- * + Skip non-update column image ì— ëŒ€í•œ ì„¤ëª…
+ * + Skip non-update column image ¿¡ ´ëÇÑ ¼³¸í
  *
- * update dmlì˜ ê²½ìš°, ì‹¤ì œ ì—…ë°ì´íŠ¸ í•œ ì»¬ëŸ¼ì´ ì•„ë‹ˆì–´ë„,
- * ê·¸ ì»¬ëŸ¼ì˜ ë³€ê²½ìœ¼ë¡œ ì¸í•´ ë‹¤ë¥¸ ì»¬ëŸ¼ë“¤ì´ ì˜í–¥ì„ ë°›ì„ ìˆ˜ ìˆë‹¤.
- * RPì—ì„œ í•„ìš”í•œ ì •ë³´ëŠ” ì—…ë°ì´íŠ¸ í•œ ì»¬ëŸ¼ ë§Œì´ë¯€ë¡œ, ê·¸ ì™¸ì˜
- * ì»¬ëŸ¼ ì •ë³´ëŠ” skipí•œë‹¤.
+ * update dmlÀÇ °æ¿ì, ½ÇÁ¦ ¾÷µ¥ÀÌÆ® ÇÑ ÄÃ·³ÀÌ ¾Æ´Ï¾îµµ,
+ * ±× ÄÃ·³ÀÇ º¯°æÀ¸·Î ÀÎÇØ ´Ù¸¥ ÄÃ·³µéÀÌ ¿µÇâÀ» ¹ŞÀ» ¼ö ÀÖ´Ù.
+ * RP¿¡¼­ ÇÊ¿äÇÑ Á¤º¸´Â ¾÷µ¥ÀÌÆ® ÇÑ ÄÃ·³ ¸¸ÀÌ¹Ç·Î, ±× ¿ÜÀÇ
+ * ÄÃ·³ Á¤º¸´Â skipÇÑ´Ù.
  *
- * EX) RP  info   =>    C5ì˜ seq : 3,  C8ì˜ seq : 6
- *     Row image  =>    C3, C4, C5, C6, C7, C8 ì˜ value
+ * EX) RP  info   =>    C5ÀÇ seq : 3,  C8ÀÇ seq : 6
+ *     Row image  =>    C3, C4, C5, C6, C7, C8 ÀÇ value
  *
- * ìœ„ì˜ ê²½ìš°, í•´ë‹¹ row pieceë‚´ì— C3~C8ì˜ ì»¬ëŸ¼ì´ ë“¤ì–´ ìˆë‹¤.
- * ì‹¤ì œ ì—…ë°ì´íŠ¸ëŠ” C5ì™€ C8ì— ë°œìƒí•˜ì˜€ì§€ë§Œ, overwrite_row_piece
- * ê°€ ë°œìƒí•˜ì—¬, row image ì—ëŠ” C3~C8ì˜ imageê°€ ëª¨ë‘ ì“°ì—¬ì¡Œë‹¤.
- * RPì—ì„œ í•„ìš”í•œ ê²ƒì€ C5, C8ì˜ imageì´ë¯€ë¡œ, row image ì—ì„œ
- * C5ì˜ seqì— í•´ë‹¹í•˜ëŠ” ì„¸ë²ˆì§¸ imageì™€ C8ì˜ seqì— í•´ë‹¹í•˜ëŠ” 6ë²ˆì§¸
- * imageë¥¼ ì½ì–´ê°„ë‹¤.
+ * À§ÀÇ °æ¿ì, ÇØ´ç row piece³»¿¡ C3~C8ÀÇ ÄÃ·³ÀÌ µé¾î ÀÖ´Ù.
+ * ½ÇÁ¦ ¾÷µ¥ÀÌÆ®´Â C5¿Í C8¿¡ ¹ß»ıÇÏ¿´Áö¸¸, overwrite_row_piece
+ * °¡ ¹ß»ıÇÏ¿©, row image ¿¡´Â C3~C8ÀÇ image°¡ ¸ğµÎ ¾²¿©Á³´Ù.
+ * RP¿¡¼­ ÇÊ¿äÇÑ °ÍÀº C5, C8ÀÇ imageÀÌ¹Ç·Î, row image ¿¡¼­
+ * C5ÀÇ seq¿¡ ÇØ´çÇÏ´Â ¼¼¹øÂ° image¿Í C8ÀÇ seq¿¡ ÇØ´çÇÏ´Â 6¹øÂ°
+ * image¸¦ ÀĞ¾î°£´Ù.
  *
- * log typeì´ update_row_pieceì¸ ê²½ìš°ëŠ” ì¢€ ë‹¤ë¥´ë‹¤.
- * ì‹¤ì œë¡œ ì—…ë°ì´íŠ¸ ëœ ì»¬ëŸ¼ì˜ imageë§Œì´ row image ì— ë‚¨ê¸°
- * ë•Œë¬¸ì— seqì •ë³´ë¡œ ì°¾ì§€ ë§ê³ , RP Infoì— ê¸°ë¡ëœ ìˆœì„œì™€ ë™ì¼í•œ
- * row image ì—ì„œ ì½ì–´ê°„ë‹¤.
+ * log typeÀÌ update_row_pieceÀÎ °æ¿ì´Â Á» ´Ù¸£´Ù.
+ * ½ÇÁ¦·Î ¾÷µ¥ÀÌÆ® µÈ ÄÃ·³ÀÇ image¸¸ÀÌ row image ¿¡ ³²±â
+ * ¶§¹®¿¡ seqÁ¤º¸·Î Ã£Áö ¸»°í, RP Info¿¡ ±â·ÏµÈ ¼ø¼­¿Í µ¿ÀÏÇÑ
+ * row image ¿¡¼­ ÀĞ¾î°£´Ù.
  *
- * EX) RP  info   =>    C5ì˜ seq : 3,  C8ì˜ seq : 6
- *     Row image  =>    C5, C8 ì˜ value
+ * EX) RP  info   =>    C5ÀÇ seq : 3,  C8ÀÇ seq : 6
+ *     Row image  =>    C5, C8 ÀÇ value
  *
  **************************************************************/
 IDE_RC smiLogRec::analyzeColumnValue( iduMemAllocator * aAllocator,
@@ -2296,8 +2367,8 @@ IDE_RC smiLogRec::analyzeColumnValue( iduMemAllocator * aAllocator,
 
     for(i=0; i<aColumnCountInRowPiece; i++)
     {
-        // row pieceë‚´ì—ì„œ ë¶„ì„í•œ ì»¬ëŸ¼ì˜ ìˆ˜ì™€ rp info ì—ì„œì˜ ì»¬ëŸ¼ìˆ˜ê°€
-        // ì¼ì¹˜í•˜ë©´ column valueë¶„ì„ì„ ì¢…ë£Œí•œë‹¤.
+        // row piece³»¿¡¼­ ºĞ¼®ÇÑ ÄÃ·³ÀÇ ¼ö¿Í rp info ¿¡¼­ÀÇ ÄÃ·³¼ö°¡
+        // ÀÏÄ¡ÇÏ¸é column valueºĞ¼®À» Á¾·áÇÑ´Ù.
         if ( aLogRec->getUpdateColCntInRowPiece() <= sAnalyzeColCntInRowPiece )
         {
             break;
@@ -2309,14 +2380,14 @@ IDE_RC smiLogRec::analyzeColumnValue( iduMemAllocator * aAllocator,
         sColumn = aLogRec->mGetColumn(sTable, sCID);
 
         /*
-         * <TRAILING NULLì„ ì—…ë°ì´íŠ¸ í•˜ëŠ” ê²½ìš°>
-         * UPDATE_OVERWRITE ë¡œê·¸ê°€ ë‚¨ëŠ” ê²½ìš°ëŠ” splitì´ ë°œìƒí•œ ê²½ìš°ì™€,
-         * trailing nullì¸ ê²½ìš° ë‘ ê°€ì§€ì´ë‹¤.
-         * trailing nullì˜ ê²½ìš°, smì—ì„œëŠ” ë°ì´í„°ë¥¼ ì €ì¥í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ
-         * rowImageì—ë„ ì •ë³´ê°€ ë‚¨ì§€ ì•ŠëŠ”ë‹¤.
-         * RP info ì— seqì™€ idê°’ì„ ê°ê° ID_USHORT_MAXì™€ ID_UINT_MAXë¡œ
-         * ì €ì¥í•˜ì—¬, ì´ë¥¼ ì½ìœ¼ë©´ rowImageì˜ ì»¬ëŸ¼ì´ë¯¸ì§€ ë¶„ì„ë‹¨ê³„ë¥¼
-         * skipí•˜ê³ , ë°”ë¡œ nullë¡œ ì±„ìš°ë„ë¡ í•œë‹¤.
+         * <TRAILING NULLÀ» ¾÷µ¥ÀÌÆ® ÇÏ´Â °æ¿ì>
+         * UPDATE_OVERWRITE ·Î±×°¡ ³²´Â °æ¿ì´Â splitÀÌ ¹ß»ıÇÑ °æ¿ì¿Í,
+         * trailing nullÀÎ °æ¿ì µÎ °¡ÁöÀÌ´Ù.
+         * trailing nullÀÇ °æ¿ì, sm¿¡¼­´Â µ¥ÀÌÅÍ¸¦ ÀúÀåÇÏÁö ¾ÊÀ¸¹Ç·Î
+         * rowImage¿¡µµ Á¤º¸°¡ ³²Áö ¾Ê´Â´Ù.
+         * RP info ¿¡ seq¿Í id°ªÀ» °¢°¢ ID_USHORT_MAX¿Í ID_UINT_MAX·Î
+         * ÀúÀåÇÏ¿©, ÀÌ¸¦ ÀĞÀ¸¸é rowImageÀÇ ÄÃ·³ÀÌ¹ÌÁö ºĞ¼®´Ü°è¸¦
+         * skipÇÏ°í, ¹Ù·Î null·Î Ã¤¿ìµµ·Ï ÇÑ´Ù.
          */
         if ( (UInt)aLogRec->getColumnId(sColSeq) == ID_UINT_MAX )
         {
@@ -2337,7 +2408,7 @@ IDE_RC smiLogRec::analyzeColumnValue( iduMemAllocator * aAllocator,
                                  &sIsNull );
 
         // PROJ-1862 In Mode Lob
-        // ë§Œì•½ Out Mode LOB Descriptorì´ë©´ ì œì™¸í•œë‹¤.
+        // ¸¸¾à Out Mode LOB DescriptorÀÌ¸é Á¦¿ÜÇÑ´Ù.
         if ( sIsOutModeLob == ID_TRUE )
         {
             IDE_DASSERT( sColumnLen == ID_SIZEOF(sdcLobDesc) );
@@ -2346,20 +2417,20 @@ IDE_RC smiLogRec::analyzeColumnValue( iduMemAllocator * aAllocator,
 
         /*
          * Skip non-update column image.
-         * ì•„ë˜ì˜ ë‘ íƒ€ì…ì˜ ê²½ìš°ëŠ” ì—…ë°ì´íŠ¸ ëŒ€ìƒ ì»¬ëŸ¼ë§Œì´ row image ì— ë‚¨ëŠ”ë‹¤.
-         * ë”°ë¼ì„œ sColSeqì™€ iê°€ ì¼ì¹˜í•˜ì§€ ì•Šì„ ìˆ˜ ìˆë‹¤.
-         * í•˜ì§€ë§Œ ê·¸ ì™¸ì˜ íƒ€ì…ì€ sColSeqì— í•´ë‹¹í•˜ëŠ” ìœ„ì¹˜ì— ì¡´ì¬í•˜ëŠ” row image ì˜
-         * valueë§Œì„ ë³´ì•„ì•¼í•œë‹¤.
-         * DELETE ROW PIECE FOR UPDATEì˜ ê²½ìš°, ë§¨ ì²« ì»¬ëŸ¼ì— ëŒ€í•´ì„œë§Œ imageë¥¼ ë³´ê¸°ë•Œë¬¸ì—
-         * í•­ìƒ sColSeqê°€ iì™€ ê°™ë‹¤.
+         * ¾Æ·¡ÀÇ µÎ Å¸ÀÔÀÇ °æ¿ì´Â ¾÷µ¥ÀÌÆ® ´ë»ó ÄÃ·³¸¸ÀÌ row image ¿¡ ³²´Â´Ù.
+         * µû¶ó¼­ sColSeq¿Í i°¡ ÀÏÄ¡ÇÏÁö ¾ÊÀ» ¼ö ÀÖ´Ù.
+         * ÇÏÁö¸¸ ±× ¿ÜÀÇ Å¸ÀÔÀº sColSeq¿¡ ÇØ´çÇÏ´Â À§Ä¡¿¡ Á¸ÀçÇÏ´Â row image ÀÇ
+         * value¸¸À» º¸¾Æ¾ßÇÑ´Ù.
+         * DELETE ROW PIECE FOR UPDATEÀÇ °æ¿ì, ¸Ç Ã¹ ÄÃ·³¿¡ ´ëÇØ¼­¸¸ image¸¦ º¸±â¶§¹®¿¡
+         * Ç×»ó sColSeq°¡ i¿Í °°´Ù.
          */
         if ( ( aLogRec->getChangeType() != SMI_UNDO_DRDB_UPDATE ) &&
              ( aLogRec->getChangeType() != SMI_REDO_DRDB_UPDATE ) )
         {
             if ( sColSeq != i )
             {
-                /* INSERTì‹œì— ì¤‘ê°„ì— lobë°ì´í„°ê°€ ê»´ìˆëŠ” ê²½ìš°, sColSeq != iì¼ ìˆ˜ ìˆë‹¤.
-                   log descriptorë§Œí¼ ê±´ë„ˆ ë›´ë‹¤.
+                /* INSERT½Ã¿¡ Áß°£¿¡ lobµ¥ÀÌÅÍ°¡ ²¸ÀÖ´Â °æ¿ì, sColSeq != iÀÏ ¼ö ÀÖ´Ù.
+                   log descriptor¸¸Å­ °Ç³Ê ¶Ú´Ù.
                    if (aLogRec->getChangeType() == SMI_REDO_DRDB_INSERT)
                    {
                    IDE_DASSERT(sColumnLen == sdcLobDescriptorSize);
@@ -2430,10 +2501,10 @@ IDE_RC smiLogRec::analyzeColumnValue( iduMemAllocator * aAllocator,
         /*
          * Set analyzedValueLen
          *
-         * í• ë‹¹ëœ ê³µê°„ì—ì„œ valueë³µì‚¬ í•  ìœ„ì¹˜ë¥¼ ê³„ì‚°í•˜ê¸° ìœ„í•´ í˜„ì¬ê¹Œì§€
-         * ë¶„ì„ëœ ê¸¸ì´ë¥¼ ì„¤ì •í•œë‹¤.
-         * First chained valueì˜ ê²½ìš°, ë¶„ì„ì˜ ì‹œì‘ì´ë¯€ë¡œ,
-         * í˜„ì¬ê¹Œì§€ ë¶„ì„í•œ ê¸¸ì´ëŠ” 0ì´ë‹¤.
+         * ÇÒ´çµÈ °ø°£¿¡¼­ valueº¹»ç ÇÒ À§Ä¡¸¦ °è»êÇÏ±â À§ÇØ ÇöÀç±îÁö
+         * ºĞ¼®µÈ ±æÀÌ¸¦ ¼³Á¤ÇÑ´Ù.
+         * First chained valueÀÇ °æ¿ì, ºĞ¼®ÀÇ ½ÃÀÛÀÌ¹Ç·Î,
+         * ÇöÀç±îÁö ºĞ¼®ÇÑ ±æÀÌ´Â 0ÀÌ´Ù.
          */
         if ( ( sCheckChainedValue == SMI_FIRST_CHAINED_VALUE ) ||
              ( sCheckChainedValue == SMI_NON_CHAINED_VALUE ) )
@@ -2473,12 +2544,12 @@ IDE_RC smiLogRec::analyzeColumnValue( iduMemAllocator * aAllocator,
         }
 
         /*
-         * í˜„ì¬ê¹Œì§€ ë¶„ì„í•œ chained valueì˜ ê¸¸ì´ë¥¼ ë‹¤ìŒ log pieceë¶„ì„ì— ì „ë‹¬í•´ì•¼í•œë‹¤.
-         * ë¶„ì„ê¸¸ì´ ëˆ„ì ì„ í†µí•´, ë¯¸ë¦¬í• ë‹¹ ë°›ì€ ê³µê°„ì—ì„œ ë‹¤ìŒì— ë³µì‚¬í•  ìœ„ì¹˜ë¥¼ ì•Œ ìˆ˜ ìˆë‹¤.
-         * í•œ row piece ë‚´ì—ì„œ ì–‘ ìª½ì— chained valueê°€ ì¡´ì¬í•  ê²½ìš°, ë¨¼ì € ë‚˜ì˜¨ chained valueì˜ ê°’ì„
-         * ì €ì¥í•´ ë‘ëŠ” ìš©ë„ë¡œ ì‚¬ìš©í•œë‹¤.
-         * FIRST_CHAINE_VALUE ë˜ëŠ” MIDDLE_CHAINED_VALUE ì¼ë•Œ, ë‹¤ìŒ row pieceì˜ ë‚˜ë¨¸ì§€ valueì˜ ë³µì‚¬ë¥¼
-         * ìœ„í•´, í˜„ì¬ê¹Œì§€ ë¶„ì„ëœ ê¸¸ì´ë¥¼ ë„˜ê¸´ë‹¤.
+         * ÇöÀç±îÁö ºĞ¼®ÇÑ chained valueÀÇ ±æÀÌ¸¦ ´ÙÀ½ log pieceºĞ¼®¿¡ Àü´ŞÇØ¾ßÇÑ´Ù.
+         * ºĞ¼®±æÀÌ ´©ÀûÀ» ÅëÇØ, ¹Ì¸®ÇÒ´ç ¹ŞÀº °ø°£¿¡¼­ ´ÙÀ½¿¡ º¹»çÇÒ À§Ä¡¸¦ ¾Ë ¼ö ÀÖ´Ù.
+         * ÇÑ row piece ³»¿¡¼­ ¾ç ÂÊ¿¡ chained value°¡ Á¸ÀçÇÒ °æ¿ì, ¸ÕÀú ³ª¿Â chained valueÀÇ °ªÀ»
+         * ÀúÀåÇØ µÎ´Â ¿ëµµ·Î »ç¿ëÇÑ´Ù.
+         * FIRST_CHAINE_VALUE ¶Ç´Â MIDDLE_CHAINED_VALUE ÀÏ¶§, ´ÙÀ½ row pieceÀÇ ³ª¸ÓÁö valueÀÇ º¹»ç¸¦
+         * À§ÇØ, ÇöÀç±îÁö ºĞ¼®µÈ ±æÀÌ¸¦ ³Ñ±ä´Ù.
          */
         if ( ( sCheckChainedValue != SMI_LAST_CHAINED_VALUE ) &&
              ( sCheckChainedValue != SMI_NON_CHAINED_VALUE ) )
@@ -2486,12 +2557,12 @@ IDE_RC smiLogRec::analyzeColumnValue( iduMemAllocator * aAllocator,
             sSaveAnalyzeLen = sAnalyzedValueLen;
         }
 
-        // ì¤‘ë³µì¹´ìš´íŒ…ì„ ë§‰ê¸° ìœ„í•œ ì¡°ê±´. í•œ valueì— ëŒ€í•´ First, Middle, Last pieceì— ëŒ€í•´ ëª¨ë‘ ì¹´ìš´íŒ…
-        // í•´ì„œëŠ” ì•ˆë˜ë¯€ë¡œ, Last pieceí•˜ë‚˜ì— ëŒ€í•´ì„œë§Œ í•¨.
+        // Áßº¹Ä«¿îÆÃÀ» ¸·±â À§ÇÑ Á¶°Ç. ÇÑ value¿¡ ´ëÇØ First, Middle, Last piece¿¡ ´ëÇØ ¸ğµÎ Ä«¿îÆÃ
+        // ÇØ¼­´Â ¾ÈµÇ¹Ç·Î, Last pieceÇÏ³ª¿¡ ´ëÇØ¼­¸¸ ÇÔ.
         if ( (sCheckChainedValue == SMI_LAST_CHAINED_VALUE ) ||
              (sCheckChainedValue == SMI_NON_CHAINED_VALUE ))
         {
-            // í˜„ì¬ê¹Œì§€ ë¶„ì„í•œ ì»¬ëŸ¼ ìˆ˜ - ì´ ì •ë³´ëŠ” trailing null ì²´í¬ì—ë„ ì‚¬ìš©í•œë‹¤.
+            // ÇöÀç±îÁö ºĞ¼®ÇÑ ÄÃ·³ ¼ö - ÀÌ Á¤º¸´Â trailing null Ã¼Å©¿¡µµ »ç¿ëÇÑ´Ù.
             *aAnalyzedColCnt += 1;
         }
 
@@ -2523,32 +2594,32 @@ IDE_RC smiLogRec::analyzeColumnValue( iduMemAllocator * aAllocator,
 
 /***************************************************************
  *
- * Disk DML undo logì˜ valueë¶„ì„ í•¨ìˆ˜.
+ * Disk DML undo logÀÇ valueºĞ¼® ÇÔ¼ö.
  *
- * íŠ¹ì§• :
- *  1. ë¶„ì„í•˜ëŠ” column valueì˜ tatal lengthë¥¼ ì•Œì§€ ëª»í•œë‹¤.
- *  2. column valueì˜ ë¡œê¹… ìˆœì„œê°€ ì €ì¥ëœ ìˆœì„œì™€ ë™ì¼í•˜ë‹¤.
- *     chained valueì˜ ê²½ìš°, ì²˜ìŒì— ë³µì‚¬í•˜ëŠ” valueê°€ ì „ì²´ valueì˜ ì²«ë¶€ë¶„ì´ë©°,
- *     ë§ˆì§€ë§‰ì— ë³µì‚¬í•˜ëŠ” valueê°€ ì „ì²´ valueì˜ ë§ˆì§€ë§‰ ë¶€ë¶„ì´ë‹¤.
+ * Æ¯Â¡ :
+ *  1. ºĞ¼®ÇÏ´Â column valueÀÇ tatal length¸¦ ¾ËÁö ¸øÇÑ´Ù.
+ *  2. column valueÀÇ ·Î±ë ¼ø¼­°¡ ÀúÀåµÈ ¼ø¼­¿Í µ¿ÀÏÇÏ´Ù.
+ *     chained valueÀÇ °æ¿ì, Ã³À½¿¡ º¹»çÇÏ´Â value°¡ ÀüÃ¼ valueÀÇ Ã¹ºÎºĞÀÌ¸ç,
+ *     ¸¶Áö¸·¿¡ º¹»çÇÏ´Â value°¡ ÀüÃ¼ valueÀÇ ¸¶Áö¸· ºÎºĞÀÌ´Ù.
  *
- * undo log valueëŠ” ë‹¤ìŒì˜ ë‘ ê°€ì§€ë¡œ ë³µì‚¬ ë°©ì‹ì´ ë‚˜ë‰œë‹¤.
+ * undo log value´Â ´ÙÀ½ÀÇ µÎ °¡Áö·Î º¹»ç ¹æ½ÄÀÌ ³ª´¶´Ù.
  *
  * 1. non-chained value
- *    ì´ ê²½ìš°, log pieceë‚´ì˜ column valueì˜ lengthê°€ tatal lengthì™€ ë™ì¼í•˜ë‹¤.
- *    êµ³ì´ poolì—ì„œ í• ë‹¹ë°›ì€ ê³µê°„ì— copyë¥¼ í•  í•„ìš”ê°€ ì—†ìœ¼ë¯€ë¡œ,
- *    redo logì˜ valueì™€ ë§ˆì°¬ê°€ì§€ë¡œ, normal allocì„ ë°›ëŠ”ë‹¤.
+ *    ÀÌ °æ¿ì, log piece³»ÀÇ column valueÀÇ length°¡ tatal length¿Í µ¿ÀÏÇÏ´Ù.
+ *    ±»ÀÌ pool¿¡¼­ ÇÒ´ç¹ŞÀº °ø°£¿¡ copy¸¦ ÇÒ ÇÊ¿ä°¡ ¾øÀ¸¹Ç·Î,
+ *    redo logÀÇ value¿Í ¸¶Âù°¡Áö·Î, normal allocÀ» ¹Ş´Â´Ù.
  *
  * 2. chained value
- *    column valueì˜ ì´ ê¸¸ì´ë¥¼ ëª¨ë¥´ë¯€ë¡œ, ë§¤ë²ˆ ë¶„ì„ ì‹œë§ˆë‹¤ì˜ mallocì„ ì¤„ì´ê¸°
- *    ìœ„í•´ poolë¡œ ë¶€í„° pool_element_sizeë§Œí¼ í• ë‹¹ë°›ëŠ”ë‹¤.
+ *    column valueÀÇ ÃÑ ±æÀÌ¸¦ ¸ğ¸£¹Ç·Î, ¸Å¹ø ºĞ¼® ½Ã¸¶´ÙÀÇ mallocÀ» ÁÙÀÌ±â
+ *    À§ÇØ pool·Î ºÎÅÍ pool_element_size¸¸Å­ ÇÒ´ç¹Ş´Â´Ù.
  *
- *    2-1. ë‚¨ì€ pool_elementì˜ ê³µê°„ì´ ë³µì‚¬í•˜ë ¤ëŠ” valueì˜ ê¸¸ì´ë³´ë‹¤ í´ë•Œ.
- *         ê³µê°„ì— valueë¥¼ ë³µì‚¬í•˜ê³ , pool elementì˜ ì‚¬ìš©ê³µê°„ ìƒí™©ì„ ê°±ì‹ í•œë‹¤.
+ *    2-1. ³²Àº pool_elementÀÇ °ø°£ÀÌ º¹»çÇÏ·Á´Â valueÀÇ ±æÀÌº¸´Ù Å¬¶§.
+ *         °ø°£¿¡ value¸¦ º¹»çÇÏ°í, pool elementÀÇ »ç¿ë°ø°£ »óÈ²À» °»½ÅÇÑ´Ù.
  *
- *    2-2. ë‚¨ì€ pool_elementì˜ ê³µê°„ì´ ë³µì‚¬í•˜ë ¤ëŠ” valueì˜ ê¸¸ì´ë³´ë‹¤ ì‘ì„ë•Œ.
- *         ìš°ì„  ë‚¨ì€ ê³µê°„ì— valueë¥¼ ë³µì‚¬í•œë‹¤. pool elementì˜ ì‚¬ìš©ê³µê°„ ìƒí™©ì€ fullì´ë‹¤.
- *         ë‚¨ì€ valueì˜ ë³µì‚¬ë¥¼ ìœ„í•´, ìƒˆë¡œìš´ ê³µê°„ì„ í• ë‹¹ ë°›ëŠ”ë‹¤.
- *         valueì˜ ë³µì‚¬ê°€ ëª¨ë‘ ëë‚  ë•Œê¹Œì§€ ë°˜ë³µí•œë‹¤.
+ *    2-2. ³²Àº pool_elementÀÇ °ø°£ÀÌ º¹»çÇÏ·Á´Â valueÀÇ ±æÀÌº¸´Ù ÀÛÀ»¶§.
+ *         ¿ì¼± ³²Àº °ø°£¿¡ value¸¦ º¹»çÇÑ´Ù. pool elementÀÇ »ç¿ë°ø°£ »óÈ²Àº fullÀÌ´Ù.
+ *         ³²Àº valueÀÇ º¹»ç¸¦ À§ÇØ, »õ·Î¿î °ø°£À» ÇÒ´ç ¹Ş´Â´Ù.
+ *         valueÀÇ º¹»ç°¡ ¸ğµÎ ³¡³¯ ¶§±îÁö ¹İº¹ÇÑ´Ù.
  *
  **************************************************************/
 IDE_RC smiLogRec::copyBeforeImage( iduMemAllocator * aAllocator,
@@ -2603,7 +2674,7 @@ IDE_RC smiLogRec::copyBeforeImage( iduMemAllocator * aAllocator,
     }
 
     // non-chained value
-    // valueì˜ ì „ì²´ ê¸¸ì´ë¥¼ ì•Œê³  ìˆìœ¼ë¯€ë¡œ sizeë§Œí¼ normal allocí•˜ì—¬ ê³µê°„í• ë‹¹ í›„, ë³µì‚¬í•œë‹¤.
+    // valueÀÇ ÀüÃ¼ ±æÀÌ¸¦ ¾Ë°í ÀÖÀ¸¹Ç·Î size¸¸Å­ normal allocÇÏ¿© °ø°£ÇÒ´ç ÈÄ, º¹»çÇÑ´Ù.
     if ( aColStatus == SMI_NON_CHAINED_VALUE )
     {
 
@@ -2632,8 +2703,8 @@ IDE_RC smiLogRec::copyBeforeImage( iduMemAllocator * aAllocator,
     // chained value
     else
     {
-        // ì• log pieceë¥¼ ë¶„ì„í•˜ë©°, ì´ë¯¸ linkedlistê°€ ì–´ëŠì •ë„ ì°¨ ìˆì„ ìˆ˜ ìˆë‹¤.
-        // Linkedlistì˜ ë§ˆì§€ë§‰ ë…¸ë“œê¹Œì§€ ì´ë™í•œë‹¤.
+        // ¾Õ log piece¸¦ ºĞ¼®ÇÏ¸ç, ÀÌ¹Ì linkedlist°¡ ¾î´ÀÁ¤µµ Â÷ ÀÖÀ» ¼ö ÀÖ´Ù.
+        // LinkedlistÀÇ ¸¶Áö¸· ³ëµå±îÁö ÀÌµ¿ÇÑ´Ù.
         if ( aChainedValue->mAllocMethod != SMI_NON_ALLOCED )
         {
             while( sChainedValue->mLink != NULL )
@@ -2643,10 +2714,10 @@ IDE_RC smiLogRec::copyBeforeImage( iduMemAllocator * aAllocator,
         }
 
         /*
-         * undo logëŠ” ì €ì¥ëœ ì»¬ëŸ¼ ìˆœì„œëŒ€ë¡œ ì •ë°©í–¥ ë¡œê¹…ë˜ì–´ ìˆë‹¤.
-         * ë¡œê·¸ì˜ ì²˜ìŒì¸ first_chained ìƒíƒœëŠ”, ë¶„ì„ì˜ ì²˜ìŒì´ë¯€ë¡œ
-         * ê³µê°„ í• ë‹¹ì„ í•œë‹¤. ì´ ìƒíƒœì—ì„œì˜ valueëŠ” chained valueì˜
-         * ë§¨ ì•ë¶€ë¶„ valueì´ë‹¤.
+         * undo log´Â ÀúÀåµÈ ÄÃ·³ ¼ø¼­´ë·Î Á¤¹æÇâ ·Î±ëµÇ¾î ÀÖ´Ù.
+         * ·Î±×ÀÇ Ã³À½ÀÎ first_chained »óÅÂ´Â, ºĞ¼®ÀÇ Ã³À½ÀÌ¹Ç·Î
+         * °ø°£ ÇÒ´çÀ» ÇÑ´Ù. ÀÌ »óÅÂ¿¡¼­ÀÇ value´Â chained valueÀÇ
+         * ¸Ç ¾ÕºÎºĞ valueÀÌ´Ù.
          */
         if ( aColStatus == SMI_FIRST_CHAINED_VALUE )
         {
@@ -2656,53 +2727,53 @@ IDE_RC smiLogRec::copyBeforeImage( iduMemAllocator * aAllocator,
                       != IDE_SUCCESS );
         }
 
-        // í˜„ì¬ê¹Œì§€ ë³µì‚¬ëœ ì»¬ëŸ¼ ë°¸ë¥˜ì˜ ê¸¸ì´ë¥¼ ëˆ„ì ì‹œí‚¨ë‹¤.
+        // ÇöÀç±îÁö º¹»çµÈ ÄÃ·³ ¹ë·ùÀÇ ±æÀÌ¸¦ ´©Àû½ÃÅ²´Ù.
         *aAnalyzedValueLen     += sColumnLen;
         *aChainedValueTotalLen  = *aAnalyzedValueLen;
     }
 
-    // ê³µê°„ ê³„ì‚°ì„ ìœ„í•´, pool element sizeë¥¼ ë°›ì•„ì˜¨ë‹¤.
+    // °ø°£ °è»êÀ» À§ÇØ, pool element size¸¦ ¹Ş¾Æ¿Â´Ù.
     sChainedValuePoolSize = aLogRec->getChainedValuePoolSize();
 
     /*
-     * pool elementì— valueë¥¼ copyí•œ ì´í›„, ë‚¨ì€ ê³µê°„ì„ ê³„ì‚°í•œë‹¤.
-     * ê°ê°ì˜ smiChainedValue ë…¸ë“œëŠ” smiValueë¥¼ ë©¤ë²„ë¡œ ê°€ì§€ê³  ìˆë‹¤.
-     * ì´ smiValeì˜ valueì™€ lengthëŠ” ì´ ë…¸ë“œ ì•ˆì—ì„œì˜ valueì™€ lengthë¥¼ ì˜ë¯¸í•œë‹¤.
-     * pool element sizeì—ì„œ ì§€ê¸ˆê¹Œì§€ ê³µê°„ì— ë³µì‚¬ëœ valueì˜ ê¸¸ì´ë§Œí¼ì˜ ì°¨ë¡œ
-     * ë‚¨ì€ ê³µê°„ì„ êµ¬í•œë‹¤.
+     * pool element¿¡ value¸¦ copyÇÑ ÀÌÈÄ, ³²Àº °ø°£À» °è»êÇÑ´Ù.
+     * °¢°¢ÀÇ smiChainedValue ³ëµå´Â smiValue¸¦ ¸â¹ö·Î °¡Áö°í ÀÖ´Ù.
+     * ÀÌ smiValeÀÇ value¿Í length´Â ÀÌ ³ëµå ¾È¿¡¼­ÀÇ value¿Í length¸¦ ÀÇ¹ÌÇÑ´Ù.
+     * pool element size¿¡¼­ Áö±İ±îÁö °ø°£¿¡ º¹»çµÈ valueÀÇ ±æÀÌ¸¸Å­ÀÇ Â÷·Î
+     * ³²Àº °ø°£À» ±¸ÇÑ´Ù.
      */
     sRemainSpace = sChainedValuePoolSize - sChainedValue->mColumn.length;
 
-    // value sizeê°€ ë‚¨ì€ ê³µê°„ í¬ê¸°ë³´ë‹¤ í¬ë¯€ë¡œ, memory poolì—ì„œ ì¶”ê°€ í• ë‹¹ì„ ë°›ì•„ì•¼í•œë‹¤.
+    // value size°¡ ³²Àº °ø°£ Å©±âº¸´Ù Å©¹Ç·Î, memory pool¿¡¼­ Ãß°¡ ÇÒ´çÀ» ¹Ş¾Æ¾ßÇÑ´Ù.
     if ( sRemainSpace < sColumnLen )
     {
         if ( sRemainSpace > 0 )
         {
-            // ë‚¨ì•„ìˆëŠ” ê³µê°„ì— ìš°ì„  ë³µì‚¬ë¥¼ í•œë‹¤.
+            // ³²¾ÆÀÖ´Â °ø°£¿¡ ¿ì¼± º¹»ç¸¦ ÇÑ´Ù.
             idlOS::memcpy( (SChar *)sChainedValue->mColumn.value + sChainedValue->mColumn.length,
                            sAnalyzePtr, 
                            sRemainSpace );
         }
-        // copyLenëŠ” í˜„ì¬ê¹Œì§€ ë³µì‚¬í•œ valueì˜ í¬ê¸°ì´ë‹¤.
+        // copyLen´Â ÇöÀç±îÁö º¹»çÇÑ valueÀÇ Å©±âÀÌ´Ù.
         sCopyLen = sRemainSpace;
-        // pool element ë‚´ì— í˜„ì¬ê¹Œì§€ ë³µì‚¬í•œ Valueì˜ í¬ê¸°ì´ë‹¤.
+        // pool element ³»¿¡ ÇöÀç±îÁö º¹»çÇÑ ValueÀÇ Å©±âÀÌ´Ù.
         sChainedValue->mColumn.length += sRemainSpace;
         sAnalyzePtr += sRemainSpace;
 
-        // ë³µì‚¬í•œ valueì˜ í¬ê¸°ê°€ log pieceë‚´ column valueì˜ í¬ê¸°ì™€ ê°™ì•„ì§ˆ ë•Œê¹Œì§€ Loop.
+        // º¹»çÇÑ valueÀÇ Å©±â°¡ log piece³» column valueÀÇ Å©±â¿Í °°¾ÆÁú ¶§±îÁö Loop.
         while( sCopyLen < sColumnLen )
         {
-            // ê³µê°„ì„ ìƒˆë¡œ í• ë‹¹ë°›ëŠ”ë‹¤. old nodeë¥¼ ì¸ìë¡œ ë„˜ê²¨ì£¼ë©´, new nodeì˜ ì£¼ì†Œë¥¼
-            // ë„˜ì ¸ ë°›ëŠ”ë‹¤
+            // °ø°£À» »õ·Î ÇÒ´ç¹Ş´Â´Ù. old node¸¦ ÀÎÀÚ·Î ³Ñ°ÜÁÖ¸é, new nodeÀÇ ÁÖ¼Ò¸¦
+            // ³ÑÁ® ¹Ş´Â´Ù
             IDE_TEST( aLogRec->chainedValueAlloc( aAllocator, aLogRec, &sChainedValue )
                       != IDE_SUCCESS );
 
-            // log pieceë‚´ column valueì˜ í¬ê¸°ì—ì„œ ì§€ê¸ˆê¹Œì§€ ë³µì‚¬í•œ í¬ê¸°ì˜ ì°¨ë¡œ
-            // ì•ìœ¼ë¡œ ë‚¨ì€ ë³µì‚¬í•  ë¶„ëŸ‰ì„ ê³„ì‚°í•œë‹¤.
+            // log piece³» column valueÀÇ Å©±â¿¡¼­ Áö±İ±îÁö º¹»çÇÑ Å©±âÀÇ Â÷·Î
+            // ¾ÕÀ¸·Î ³²Àº º¹»çÇÒ ºĞ·®À» °è»êÇÑ´Ù.
             sRemainLen = sColumnLen - sCopyLen;
 
-            // ìƒˆë¡œ í• ë‹¹ë°›ì€ pool element sizeë³´ë‹¤, ë‚¨ì•„ìˆëŠ” ë³µì‚¬í¬ê¸°ê°€ ì‘ë‹¤ë©´,
-            // log pieceë‚´ value ë³µì‚¬ì˜ ëì´ë‹¤.
+            // »õ·Î ÇÒ´ç¹ŞÀº pool element sizeº¸´Ù, ³²¾ÆÀÖ´Â º¹»çÅ©±â°¡ ÀÛ´Ù¸é,
+            // log piece³» value º¹»çÀÇ ³¡ÀÌ´Ù.
             if ( sRemainLen < sChainedValuePoolSize )
             {
                 idlOS::memcpy( (void *)sChainedValue->mColumn.value,
@@ -2752,13 +2823,13 @@ IDE_RC smiLogRec::copyBeforeImage( iduMemAllocator * aAllocator,
 
 /***************************************************************
  *
- * Disk DML redo logì˜ valueë¶„ì„ í•¨ìˆ˜.
+ * Disk DML redo logÀÇ valueºĞ¼® ÇÔ¼ö.
  *
- * íŠ¹ì§• :
- *  1. ë¶„ì„í•˜ëŠ” column valueì˜ tatal lengthë¥¼ ì•Œê³  ìˆë‹¤.
- *  2. chained value pieceì˜ ë¡œê¹… ìˆœì„œê°€ ê±°ê¾¸ë¡œ ë˜ì–´ìˆë‹¤.
- *     chained valueì˜ ê²½ìš°, ì²˜ìŒì— ë³µì‚¬í•˜ëŠ” valueê°€ ì „ì²´ valueì˜ ì²«ë¶€ë¶„ì´ë©°,
- *     ë§ˆì§€ë§‰ì— ë³µì‚¬í•˜ëŠ” valueê°€ ì „ì²´ valueì˜ ì²« ë¶€ë¶„ì´ë‹¤.
+ * Æ¯Â¡ :
+ *  1. ºĞ¼®ÇÏ´Â column valueÀÇ tatal length¸¦ ¾Ë°í ÀÖ´Ù.
+ *  2. chained value pieceÀÇ ·Î±ë ¼ø¼­°¡ °Å²Ù·Î µÇ¾îÀÖ´Ù.
+ *     chained valueÀÇ °æ¿ì, Ã³À½¿¡ º¹»çÇÏ´Â value°¡ ÀüÃ¼ valueÀÇ Ã¹ºÎºĞÀÌ¸ç,
+ *     ¸¶Áö¸·¿¡ º¹»çÇÏ´Â value°¡ ÀüÃ¼ valueÀÇ Ã¹ ºÎºĞÀÌ´Ù.
  *
  ***************************************************************/
 IDE_RC smiLogRec::copyAfterImage(iduMemAllocator  * aAllocator,
@@ -2773,7 +2844,7 @@ IDE_RC smiLogRec::copyAfterImage(iduMemAllocator  * aAllocator,
     UInt    sOffset = 0;
     SInt    sColumnTotalLen;
 
-    IDE_DASSERT(aColumnTotalLen >= 0); // dataê°€ nullì¸ ê²½ìš° 0.
+    IDE_DASSERT(aColumnTotalLen >= 0); // data°¡ nullÀÎ °æ¿ì 0.
     IDE_DASSERT(aColumnTotalLen >= (SInt)aColumnLen);
 
     sColumnTotalLen = aColumnTotalLen;
@@ -2819,7 +2890,7 @@ IDE_RC smiLogRec::copyAfterImage(iduMemAllocator  * aAllocator,
     }
     else
     {
-        // chained value ë¶„ì„ì˜ ì‹œì‘ì´ë¯€ë¡œ, total lengthë§Œí¼ì˜ ê³µê°„ì„ í• ë‹¹í•œë‹¤.
+        // chained value ºĞ¼®ÀÇ ½ÃÀÛÀÌ¹Ç·Î, total length¸¸Å­ÀÇ °ø°£À» ÇÒ´çÇÑ´Ù.
         if ( aColStatus == SMI_FIRST_CHAINED_VALUE )
         {
             IDU_FIT_POINT( "smiLogRec::copyAfterImage::SMI_CHAINED_VALUE::malloc" );
@@ -2833,12 +2904,12 @@ IDE_RC smiLogRec::copyAfterImage(iduMemAllocator  * aAllocator,
 
             aColValue->length = sColumnTotalLen;
 
-            // redo logì—ì„œëŠ” chained valueì˜ ë’¤ ìª½ valueë¶€í„° ë¡œê¹…ë˜ë¯€ë¡œ,
-            // ë³µì‚¬ëŠ” ê³µê°„ì˜ ë’¤ë¶€í„° í•œë‹¤.
+            // redo log¿¡¼­´Â chained valueÀÇ µÚ ÂÊ valueºÎÅÍ ·Î±ëµÇ¹Ç·Î,
+            // º¹»ç´Â °ø°£ÀÇ µÚºÎÅÍ ÇÑ´Ù.
             sOffset = sColumnTotalLen - (SInt)aColumnLen;
         }
-        // chained valueì˜ ì¤‘ê°„ ë˜ëŠ” ë§ˆì§€ë§‰ pieceì¸ ê²½ìš°, í˜„ì¬ê¹Œì§€ ë¶„ì„ëœ ê¸¸ì´ë§Œí¼
-        // ë’¤ ìª½ ê³µê°„ì„ ë‚¨ê²¨ë‘ê³  ë³µì‚¬í•œë‹¤.
+        // chained valueÀÇ Áß°£ ¶Ç´Â ¸¶Áö¸· pieceÀÎ °æ¿ì, ÇöÀç±îÁö ºĞ¼®µÈ ±æÀÌ¸¸Å­
+        // µÚ ÂÊ °ø°£À» ³²°ÜµÎ°í º¹»çÇÑ´Ù.
         else
         {
             IDE_DASSERT( aColValue->length == (UInt)sColumnTotalLen );
@@ -2868,14 +2939,14 @@ IDE_RC smiLogRec::copyAfterImage(iduMemAllocator  * aAllocator,
 
 /***************************************************************
  *
- * Row image info ì—ì„œ, nextPID ì™€ nextSlotNumì„
- * skipí•´ì•¼í• ì§€ íŒë‹¨í•˜ì—¬  ì²˜ë¦¬í•œë‹¤.
+ * Row image info ¿¡¼­, nextPID ¿Í nextSlotNumÀ»
+ * skipÇØ¾ßÇÒÁö ÆÇ´ÜÇÏ¿©  Ã³¸®ÇÑ´Ù.
  *
- * flagì— <L>ì´ í¬í•¨ ë˜ì–´ ìˆëŠ” ê²½ìš°ì™€,
- * log typeì´  SDC_UNDO_UPDATE_ROW_PIECE
+ * flag¿¡ <L>ÀÌ Æ÷ÇÔ µÇ¾î ÀÖ´Â °æ¿ì¿Í,
+ * log typeÀÌ  SDC_UNDO_UPDATE_ROW_PIECE
  *             SDR_SDC_UPDATE_ROW_PIECE
  *             SDC_UNDO_DELETE_FIRST_COLUMN_PIECE
- * ì¸ ê²½ìš°, ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ * ÀÎ °æ¿ì, Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
  *
  **************************************************************/
 IDE_RC smiLogRec::skipOptionalInfo(smiLogRec  * aLogRec,
@@ -2885,7 +2956,7 @@ IDE_RC smiLogRec::skipOptionalInfo(smiLogRec  * aLogRec,
     UInt    sLogType;
     SChar * sAnalyzePtr = (SChar *)*aAnalyzePtr;
 
-    // Flagê°€ <L>ì¸ ê²½ìš°, ë¡œê¹…ë˜ì§€ ì•ŠëŠ” ì •ë³´ì´ë‹¤.
+    // Flag°¡ <L>ÀÎ °æ¿ì, ·Î±ëµÇÁö ¾Ê´Â Á¤º¸ÀÌ´Ù.
     if ( (aRowHdrFlag & SDC_ROWHDR_L_FLAG) == SDC_ROWHDR_L_FLAG )
     {
         // Nothing to do.
@@ -2912,24 +2983,24 @@ IDE_RC smiLogRec::skipOptionalInfo(smiLogRec  * aLogRec,
 
 /***************************************************************
  *
- * chainedValueì˜ ìƒíƒœë¥¼ í™•ì¸í•œë‹¤.
- * ìƒíƒœëŠ” chained value ë˜ëŠ” non-chained valueì´ë©°,
- * chained valueì˜ ê²½ìš°, ë¡œê·¸ ë¶„ì„ ìˆœì„œë¥¼ ê¸°ì¤€ìœ¼ë¡œ
- * valueì˜ ì‹œì‘, ì¤‘ê°„, ëìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+ * chainedValueÀÇ »óÅÂ¸¦ È®ÀÎÇÑ´Ù.
+ * »óÅÂ´Â chained value ¶Ç´Â non-chained valueÀÌ¸ç,
+ * chained valueÀÇ °æ¿ì, ·Î±× ºĞ¼® ¼ø¼­¸¦ ±âÁØÀ¸·Î
+ * valueÀÇ ½ÃÀÛ, Áß°£, ³¡À¸·Î ¼³Á¤ÇÑ´Ù.
  *
- * ìƒíƒœê°’ :
+ * »óÅÂ°ª :
  * A. chained value       1. SMI_FIRST_CHAINED_VALUE
  *                        2. SMI_MIDDLE_CHAINED_VALUE
  *                        3. SMI_LAST_CHAINED_VALUE
  * B. non-chained value   4. SMI_NON_CHAINED_VALUE
  *
- * ìœ„ì˜ ìƒíƒœê°’ì—ì„œ ì£¼ì˜í•  ì‚¬í•­ì€,
- * FIRST_CHAINED_VALUE ë¼ëŠ” ë§ì´,
- * logì— ë‚˜ì˜¤ëŠ” ìˆœì„œìƒì˜ chained valueì˜ ì²˜ìŒì´ë¼ëŠ” ë§ì´ì§€
- * ì‹¤ì œ valueì˜ ì²« ë¶€ë¶„ì´ ì•„ë‹ˆë¼ëŠ” ì ì´ë‹¤.
- * ë¶„ì„ì‹œì— ê³µê°„ ê³„ì‚°ì„ ìš©ì´í•˜ê²Œ í•˜ê¸° ìœ„í•˜ì—¬ ë¶™ì¸ ì´ë¦„ìœ¼ë¡œ,
- * REDO LOGì˜ ê²½ìš°ì—ëŠ” valueì˜ ë§¨ ëë¶€ë¶„ì´ FIRST_CHAINED_VALUEê°€ ëœë‹¤.
- * ë°˜ëŒ€ë¡œ UNDO LOGì˜ ê²½ìš°ì—ëŠ” ìƒíƒœê°’ê³¼ valueì˜ ìƒíƒœê°€ ë™ì¼í•˜ë‹¤.
+ * À§ÀÇ »óÅÂ°ª¿¡¼­ ÁÖÀÇÇÒ »çÇ×Àº,
+ * FIRST_CHAINED_VALUE ¶ó´Â ¸»ÀÌ,
+ * log¿¡ ³ª¿À´Â ¼ø¼­»óÀÇ chained valueÀÇ Ã³À½ÀÌ¶ó´Â ¸»ÀÌÁö
+ * ½ÇÁ¦ valueÀÇ Ã¹ ºÎºĞÀÌ ¾Æ´Ï¶ó´Â Á¡ÀÌ´Ù.
+ * ºĞ¼®½Ã¿¡ °ø°£ °è»êÀ» ¿ëÀÌÇÏ°Ô ÇÏ±â À§ÇÏ¿© ºÙÀÎ ÀÌ¸§À¸·Î,
+ * REDO LOGÀÇ °æ¿ì¿¡´Â valueÀÇ ¸Ç ³¡ºÎºĞÀÌ FIRST_CHAINED_VALUE°¡ µÈ´Ù.
+ * ¹İ´ë·Î UNDO LOGÀÇ °æ¿ì¿¡´Â »óÅÂ°ª°ú valueÀÇ »óÅÂ°¡ µ¿ÀÏÇÏ´Ù.
  *
  **************************************************************/
 UInt smiLogRec::checkChainedValue(SChar    aRowHdrFlag,
@@ -2939,12 +3010,12 @@ UInt smiLogRec::checkChainedValue(SChar    aRowHdrFlag,
 {
     UInt sCheckChainedValue;
 
-    // row pieceë‚´ì— ë°˜ë“œì‹œ í•˜ë‚˜ ì´ìƒì˜ ì»¬ëŸ¼ì´ ì¡´ì¬í•´ì•¼í•˜ë¯€ë¡œ
-    // -1ì„ í•˜ì—¬ë„ ìŒìˆ˜ê°€ ë  ì¼ì€ ì—†ë‹¤.
+    // row piece³»¿¡ ¹İµå½Ã ÇÏ³ª ÀÌ»óÀÇ ÄÃ·³ÀÌ Á¸ÀçÇØ¾ßÇÏ¹Ç·Î
+    // -1À» ÇÏ¿©µµ À½¼ö°¡ µÉ ÀÏÀº ¾ø´Ù.
     aColCntInRowPiece -= 1;
 
-    // Pì™€ N í”Œë˜ê·¸ê°€ ë™ì‹œì— ì¡´ì¬í•˜ë©°, row pieceë‚´ì˜ ì»¬ëŸ¼ì´ 1ê°œ ë¿ì´ë©´,
-    // chained valueì˜ ì¤‘ê°„ pieceì´ë‹¤.
+    // P¿Í N ÇÃ·¡±×°¡ µ¿½Ã¿¡ Á¸ÀçÇÏ¸ç, row piece³»ÀÇ ÄÃ·³ÀÌ 1°³ »ÓÀÌ¸é,
+    // chained valueÀÇ Áß°£ pieceÀÌ´Ù.
     if ( ( (aRowHdrFlag & SDC_ROWHDR_N_FLAG) == SDC_ROWHDR_N_FLAG ) &&
          ( (aRowHdrFlag & SDC_ROWHDR_P_FLAG) == SDC_ROWHDR_P_FLAG ) &&
          ( aColCntInRowPiece == 0 ) )
@@ -2953,17 +3024,17 @@ UInt smiLogRec::checkChainedValue(SChar    aRowHdrFlag,
     }
     else
     {
-        // REDO LOGëŠ” ë¡œê¹… ìˆœì„œê°€ ì €ì¥ë˜ëŠ” ì»¬ëŸ¼ ìˆœì„œì˜ ì—­ë°©í–¥ì´ë‹¤.
-        // ë”°ë¼ì„œ, ë°¸ë¥˜ì˜ ë’· ìª½ì´ ë¨¼ì € ë¡œê¹…ëœë‹¤.
+        // REDO LOG´Â ·Î±ë ¼ø¼­°¡ ÀúÀåµÇ´Â ÄÃ·³ ¼ø¼­ÀÇ ¿ª¹æÇâÀÌ´Ù.
+        // µû¶ó¼­, ¹ë·ùÀÇ µŞ ÂÊÀÌ ¸ÕÀú ·Î±ëµÈ´Ù.
         if ( aLogType == SMI_REDO_LOG )
         {
-            // row pieceë‚´ì—ì„œ ë§ˆì§€ë§‰ì— ìœ„ì¹˜í•˜ëŠ” chained value
+            // row piece³»¿¡¼­ ¸¶Áö¸·¿¡ À§Ä¡ÇÏ´Â chained value
             if ( ( (aRowHdrFlag & SDC_ROWHDR_N_FLAG) == SDC_ROWHDR_N_FLAG ) &&
                  ( aPosition == aColCntInRowPiece))
             {
                 sCheckChainedValue = SMI_LAST_CHAINED_VALUE;
             }
-            // row pieceë‚´ì—ì„œ ì²˜ìŒì— ìœ„ì¹˜í•˜ëŠ” chained value
+            // row piece³»¿¡¼­ Ã³À½¿¡ À§Ä¡ÇÏ´Â chained value
             else if ( ( (aRowHdrFlag & SDC_ROWHDR_P_FLAG) == SDC_ROWHDR_P_FLAG ) &&
                       ( aPosition == 0) )
             {
@@ -2974,16 +3045,16 @@ UInt smiLogRec::checkChainedValue(SChar    aRowHdrFlag,
                 sCheckChainedValue = SMI_NON_CHAINED_VALUE;
             }
         }
-        // UNDO LOGëŠ” ë¡œê¹… ìˆœì„œê°€ ì •ë°©í–¥ì´ë‹¤.
+        // UNDO LOG´Â ·Î±ë ¼ø¼­°¡ Á¤¹æÇâÀÌ´Ù.
         else
         {
-            // row pieceë‚´ì—ì„œ ì²˜ìŒì— ìœ„ì¹˜í•˜ëŠ” chained value
+            // row piece³»¿¡¼­ Ã³À½¿¡ À§Ä¡ÇÏ´Â chained value
             if ( ( (aRowHdrFlag & SDC_ROWHDR_P_FLAG) == SDC_ROWHDR_P_FLAG ) &&
                  ( aPosition == 0 ) )
             {
                 sCheckChainedValue = SMI_LAST_CHAINED_VALUE;
             }
-            // row pieceë‚´ì—ì„œ ë§ˆì§€ë§‰ì— ìœ„ì¹˜í•˜ëŠ” chained value
+            // row piece³»¿¡¼­ ¸¶Áö¸·¿¡ À§Ä¡ÇÏ´Â chained value
             else if ( ( (aRowHdrFlag & SDC_ROWHDR_N_FLAG) == SDC_ROWHDR_N_FLAG ) &&
                       ( aPosition == aColCntInRowPiece ) )
             {
@@ -3029,7 +3100,7 @@ IDE_RC smiLogRec::analyzeWriteLobPieceLogDisk( iduMemAllocator * aAllocator,
     IDE_DASSERT( aAnalyzedValueLen != NULL );
     IDE_DASSERT( aDoWait != NULL );
 
-    // ë””ìŠ¤í¬ ë¡œê·¸ì˜ mContTypeì„ ë³´ê³  ë‹¤ìŒì— ë¡œê·¸ê°€ ì´ì–´ì§€ëŠ” íŒë‹¨í•œë‹¤.
+    // µğ½ºÅ© ·Î±×ÀÇ mContTypeÀ» º¸°í ´ÙÀ½¿¡ ·Î±×°¡ ÀÌ¾îÁö´Â ÆÇ´ÜÇÑ´Ù.
     *aDoWait = ((smrContType)aLogRec->getContType() == SMR_CT_END) ?
                ID_FALSE : ID_TRUE;
 
@@ -3055,7 +3126,7 @@ IDE_RC smiLogRec::analyzeWriteLobPieceLogDisk( iduMemAllocator * aAllocator,
     sTotalLen = aLogRec->getUIntValue(sOffsetPtr) + SMI_LOB_DUMMY_HEADER_LEN;
     sOffsetPtr += ID_SIZEOF(UInt);
 
-    /* í•´ë‹¹ LOB column valueì˜ ì²˜ìŒ ì‹œì‘ */
+    /* ÇØ´ç LOB column valueÀÇ Ã³À½ ½ÃÀÛ */
     if ( aAColValueArray[sCID].value == NULL )
     {
         aAColValueArray[sCID].length = sTotalLen;
@@ -3063,25 +3134,25 @@ IDE_RC smiLogRec::analyzeWriteLobPieceLogDisk( iduMemAllocator * aAllocator,
         if ( aIsAfterInsert == ID_FALSE )
         {
             /* PROJ-1705
-             * CIDë¥¼ ìš°ì„  ë¶„ì„ëœ ì»¬ëŸ¼ë“¤ ìˆœì„œ ë’¤ì—ë‹¤ ë„£ì–´ë‘”ë‹¤.
-             * í•œ ë ˆì½”ë“œì— ëŒ€í•œ ëª¨ë“  ë¶„ì„ì´ ëë‚œ í›„, CIDì˜ ì •ë ¬ì‘ì—…ì„ í•˜ê¸°ë•Œë¬¸ì— ê´œì°®ë‹¤.
-             * ë‹¨, insertì˜ ê²½ìš°, lobì˜ null ë°ì´í„°ê°€ ì…ë ¥ë˜ëŠ” ê²½ìš°ë¥¼ ìœ„í•´ ì´ë¯¸ cidë¥¼ ëª¨ë‘
-             * ë„£ì—ˆìœ¼ë¯€ë¡œ ì œì™¸í•œë‹¤.
+             * CID¸¦ ¿ì¼± ºĞ¼®µÈ ÄÃ·³µé ¼ø¼­ µÚ¿¡´Ù ³Ö¾îµĞ´Ù.
+             * ÇÑ ·¹ÄÚµå¿¡ ´ëÇÑ ¸ğµç ºĞ¼®ÀÌ ³¡³­ ÈÄ, CIDÀÇ Á¤·ÄÀÛ¾÷À» ÇÏ±â¶§¹®¿¡ ±¦Âú´Ù.
+             * ´Ü, insertÀÇ °æ¿ì, lobÀÇ null µ¥ÀÌÅÍ°¡ ÀÔ·ÂµÇ´Â °æ¿ì¸¦ À§ÇØ ÀÌ¹Ì cid¸¦ ¸ğµÎ
+             * ³Ö¾úÀ¸¹Ç·Î Á¦¿ÜÇÑ´Ù.
              */
             aCIDArray[*aAnalyzedColCnt] = sCID;
 
             /* PROJ-1705
-             * insertì˜ ê²½ìš°, non-Lob ì»¬ëŸ¼ë“¤ì˜ insertì‘ì—…ì„ ë§ˆì¹œ í›„, ì•„ì§ ë¶„ì„ë˜ì§€ ì•Šì€
-             * lobì»¬ëŸ¼ê¹Œì§€ ì¹´ìš´íŒ…í•˜ì—¬ anlyzedColCntë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
-             * ì´ìœ ëŠ” lobì— nullë°ì´í„°ê°€ insertë  ê²½ìš°, ë¡œê·¸ê°€ ë”°ë¡œ ì˜¤ì§€ ì•Šê¸° ë•Œë¬¸ì—
-             * í˜„ì¬ê¹Œì§€ ë¶„ì„ëœ ìƒíƒœë§Œìœ¼ë¡œë„ (nullë°¸ë¥˜ë¡œ ì´ë¯¸ ì´ˆê¸°í™” ë˜ì–´ ìˆìœ¼ë¯€ë¡œ)
-             * ì´ì¤‘í™”ê°€ ê°€ëŠ¥í•˜ê²Œë” í•˜ê¸° ìœ„í•¨ì´ë‹¤. ì´ë¯¸ ì¦ê°€ë˜ì–´ ìˆê¸°ë•Œë¬¸ì— ì œì™¸í•œë‹¤.
+             * insertÀÇ °æ¿ì, non-Lob ÄÃ·³µéÀÇ insertÀÛ¾÷À» ¸¶Ä£ ÈÄ, ¾ÆÁ÷ ºĞ¼®µÇÁö ¾ÊÀº
+             * lobÄÃ·³±îÁö Ä«¿îÆÃÇÏ¿© anlyzedColCnt¸¦ Áõ°¡½ÃÅ²´Ù.
+             * ÀÌÀ¯´Â lob¿¡ nullµ¥ÀÌÅÍ°¡ insertµÉ °æ¿ì, ·Î±×°¡ µû·Î ¿ÀÁö ¾Ê±â ¶§¹®¿¡
+             * ÇöÀç±îÁö ºĞ¼®µÈ »óÅÂ¸¸À¸·Îµµ (null¹ë·ù·Î ÀÌ¹Ì ÃÊ±âÈ­ µÇ¾î ÀÖÀ¸¹Ç·Î)
+             * ÀÌÁßÈ­°¡ °¡´ÉÇÏ°Ô²û ÇÏ±â À§ÇÔÀÌ´Ù. ÀÌ¹Ì Áõ°¡µÇ¾î ÀÖ±â¶§¹®¿¡ Á¦¿ÜÇÑ´Ù.
              */
             *aAnalyzedColCnt += 1;
         }
 
-        /* -> NULL, EMPTY ë¡œ Update ë˜ëŠ” ê²½ìš°ì—ëŠ” ë³„ë‹¤ë¥´ê²Œ í• ì¼ì´ ì—†ìœ¼ë¯€ë¡œ
-           ì¢…ë£Œ ì¡°ê±´ìœ¼ë¡œ ê°„ë‹¤. */
+        /* -> NULL, EMPTY ·Î Update µÇ´Â °æ¿ì¿¡´Â º°´Ù¸£°Ô ÇÒÀÏÀÌ ¾øÀ¸¹Ç·Î
+           Á¾·á Á¶°ÇÀ¸·Î °£´Ù. */
         IDE_TEST_CONT(sTotalLen == SMI_LOB_DUMMY_HEADER_LEN, SKIP_UPDATE_TO_NULL);
 
         *aAnalyzedValueLen = SMI_LOB_DUMMY_HEADER_LEN;
@@ -3127,13 +3198,13 @@ IDE_RC smiLogRec::analyzeLobCursorOpenMem(smiLogRec  *aLogRec,
     UInt      sPKSize;
     smOID     sTableOID;
 
-    /* Argument ì£¼ì„
-       aLogRec : í˜„ì¬ Log Record
+    /* Argument ÁÖ¼®
+       aLogRec : ÇöÀç Log Record
        aPKColCnt : Primary Key column count
        aPKCIDArray : Primary Key Column ID array
        aPKColValueArray : Primary Key Column Value array
-       aTableOID : í˜„ì¬ LOB cursorë¥¼ opení•˜ëŠ” table OID
-       aCID : opení•  LOB Column ID
+       aTableOID : ÇöÀç LOB cursor¸¦ openÇÏ´Â table OID
+       aCID : openÇÒ LOB Column ID
     */
 
     // Simple argument check code
@@ -3152,9 +3223,9 @@ IDE_RC smiLogRec::analyzeLobCursorOpenMem(smiLogRec  *aLogRec,
 
     sOffset += ID_SIZEOF(UInt);
 
-    // PROJ-1705ë¡œ ì¸í•´ PKLogë¶„ì„ í•¨ìˆ˜ëª…ì´ PKMemê³¼ PKDiskë¡œ ë‚˜ë‰˜ì—ˆë‹¤.
-    // Lobë¡œê·¸ëŠ” PROJ-1705ì´ì „ì˜ PK Logêµ¬ì¡°ë¥¼ ê°€ì§€ë¯€ë¡œ,
-    // ì˜ˆì „ì˜ ë¡œê·¸ êµ¬ì¡° ë¶„ì„ í•¨ìˆ˜ì¸ PKMemìœ¼ë¡œ ë¶„ì„í•˜ë„ë¡ í•œë‹¤.
+    // PROJ-1705·Î ÀÎÇØ PKLogºĞ¼® ÇÔ¼ö¸íÀÌ PKMem°ú PKDisk·Î ³ª´µ¾ú´Ù.
+    // Lob·Î±×´Â PROJ-1705ÀÌÀüÀÇ PK Log±¸Á¶¸¦ °¡Áö¹Ç·Î,
+    // ¿¹ÀüÀÇ ·Î±× ±¸Á¶ ºĞ¼® ÇÔ¼öÀÎ PKMemÀ¸·Î ºĞ¼®ÇÏµµ·Ï ÇÑ´Ù.
     IDE_TEST( analyzePKMem( aLogRec,
                             sAnlzPtr + sOffset,
                             aPKColCnt,
@@ -3174,8 +3245,8 @@ IDE_RC smiLogRec::analyzeLobCursorOpenMem(smiLogRec  *aLogRec,
 
 /***************************************************************
  * PROJ-1705
- * analyzeLobCursorOpenMemê³¼ëŠ”
- * PKì •ë³´ì˜ êµ¬ì¡°ì™€ valueì˜ ì €ì¥í˜•íƒœê°€ ë‹¤ë¥´ë‹¤.
+ * analyzeLobCursorOpenMem°ú´Â
+ * PKÁ¤º¸ÀÇ ±¸Á¶¿Í valueÀÇ ÀúÀåÇüÅÂ°¡ ´Ù¸£´Ù.
  **************************************************************/
 IDE_RC smiLogRec::analyzeLobCursorOpenDisk(smiLogRec * aLogRec,
                                            UInt       * aPKColCnt,
@@ -3187,13 +3258,13 @@ IDE_RC smiLogRec::analyzeLobCursorOpenDisk(smiLogRec * aLogRec,
     SChar * sAnlzPtr;
     smOID   sTableOID;
 
-    /* Argument ì£¼ì„
-       aLogRec : í˜„ì¬ Log Record
+    /* Argument ÁÖ¼®
+       aLogRec : ÇöÀç Log Record
        aPKColCnt : Primary Key column count
        aPKCIDArray : Primary Key Column ID array
        aPKColValueArray : Primary Key Column Value array
-       aTableOID : í˜„ì¬ LOB cursorë¥¼ opení•˜ëŠ” table OID
-       aCID : opení•  LOB Column ID
+       aTableOID : ÇöÀç LOB cursor¸¦ openÇÏ´Â table OID
+       aCID : openÇÒ LOB Column ID
     */
 
     // Simple argument check code
@@ -3234,11 +3305,11 @@ IDE_RC smiLogRec::analyzeLobPrepare4Write( smiLogRec  *aLogRec,
     SChar    *sAnlzPtr = aLogRec->getAnalyzeStartPtr();
     UInt      sOffset = 0;
 
-    /* Argument ì£¼ì„
-       aLogRec : í˜„ì¬ Log Record
-       aLobOffset : LOB Pieceì˜ ì‹œì‘ offset
-       aOldSize : ë³€ê²½í•  LOB Pieceì˜ Old Size
-       aNewSize : ë³€ê²½í•  LOB Pieceì˜ New Size
+    /* Argument ÁÖ¼®
+       aLogRec : ÇöÀç Log Record
+       aLobOffset : LOB PieceÀÇ ½ÃÀÛ offset
+       aOldSize : º¯°æÇÒ LOB PieceÀÇ Old Size
+       aNewSize : º¯°æÇÒ LOB PieceÀÇ New Size
     */
 
     // Simple argument check code
@@ -3274,8 +3345,8 @@ IDE_RC smiLogRec::analyzeLobTrim( smiLogRec   * aLogRec,
     UInt    sOffset     = 0;
     ULong   sTemp       = 0;
 
-    /* Argument ì£¼ì„
-       aLogRec : í˜„ì¬ Log Record
+    /* Argument ÁÖ¼®
+       aLogRec : ÇöÀç Log Record
        aLobOffset : Trim offset
     */
 
@@ -3283,7 +3354,7 @@ IDE_RC smiLogRec::analyzeLobTrim( smiLogRec   * aLogRec,
     IDE_DASSERT( aLogRec     != NULL );
     IDE_DASSERT( aLobOffset  != NULL );
 
-    /* BUG-39648 ë¡œê·¸ì— 8ë°”ì´íŠ¸ë¡œ ë‚¨ì€ offsetì„ 4ë°”ì´íŠ¸ë¡œ ìºìŠ¤íŒ… í•œë‹¤. */
+    /* BUG-39648 ·Î±×¿¡ 8¹ÙÀÌÆ®·Î ³²Àº offsetÀ» 4¹ÙÀÌÆ®·Î Ä³½ºÆÃ ÇÑ´Ù. */
     sTemp = aLogRec->getULongValue(sAnlzPtr, sOffset);
     *aLobOffset = (UInt)sTemp;
 
@@ -3326,8 +3397,8 @@ IDE_RC smiLogRec::analyzeLobPartialWriteMemory( iduMemAllocator * aAllocator,
 
     IDU_FIT_POINT( "smiLogRec::analyzeLobPartialWriteMemory::malloc" );
 
-    /* LOB Pieceë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ í• ë‹¹. í˜¸ì¶œí•œ ìª½ì—ì„œ ì‚¬ìš©í›„ì— ì´ ë©”ëª¨ë¦¬ë¥¼
-       ë°˜ë“œì‹œ free ì‹œì¼œì£¼ì–´ì•¼ í•œë‹¤.
+    /* LOB Piece¸¦ À§ÇÑ ¸Ş¸ğ¸® ÇÒ´ç. È£ÃâÇÑ ÂÊ¿¡¼­ »ç¿ëÈÄ¿¡ ÀÌ ¸Ş¸ğ¸®¸¦
+       ¹İµå½Ã free ½ÃÄÑÁÖ¾î¾ß ÇÑ´Ù.
     */
     IDE_TEST(iduMemMgr::malloc( IDU_MEM_RP_RPS,
                                 *aLobPieceLen,
@@ -3384,8 +3455,8 @@ IDE_RC smiLogRec::analyzeLobPartialWriteDisk( iduMemAllocator * aAllocator,
 
     IDU_FIT_POINT( "smiLogRec::analyzeLobPartialWriteDisk::malloc" );
 
-    /* LOB Pieceë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ í• ë‹¹. í˜¸ì¶œí•œ ìª½ì—ì„œ ì‚¬ìš©í›„ì— ì´ ë©”ëª¨ë¦¬ë¥¼
-       ë°˜ë“œì‹œ free ì‹œì¼œì£¼ì–´ì•¼ í•œë‹¤.
+    /* LOB Piece¸¦ À§ÇÑ ¸Ş¸ğ¸® ÇÒ´ç. È£ÃâÇÑ ÂÊ¿¡¼­ »ç¿ëÈÄ¿¡ ÀÌ ¸Ş¸ğ¸®¸¦
+       ¹İµå½Ã free ½ÃÄÑÁÖ¾î¾ß ÇÑ´Ù.
     */
     IDE_TEST(iduMemMgr::malloc( IDU_MEM_RP_RPS,
                                 *aLobPieceLen,
@@ -3486,6 +3557,10 @@ idBool smiLogRec::needReplicationByType( void  * aLogHeadPtr,
         case SMR_LT_MEMTRANS_COMMIT:
         case SMR_LT_DSKTRANS_COMMIT:
             mLogType = SMI_LT_TRANS_COMMIT;
+            break;
+
+        case SMR_LT_MEMTRANS_GROUPCOMMIT:
+            mLogType = SMI_LT_TRANS_GROUPCOMMIT;
             break;
 
         case SMR_LT_MEMTRANS_ABORT:
@@ -3592,7 +3667,7 @@ idBool smiLogRec::needReplicationByType( void  * aLogHeadPtr,
             }
             break;
 
-        case SMR_LT_DDL :           // DDL Transactionì„ì„ í‘œì‹œí•˜ëŠ” Log Record
+        case SMR_LT_DDL :           // DDL TransactionÀÓÀ» Ç¥½ÃÇÏ´Â Log Record
             mLogType = SMI_LT_DDL;
             break;
 
@@ -3624,7 +3699,7 @@ idBool smiLogRec::needReplicationByType( void  * aLogHeadPtr,
 }
 
 /*******************************************************************************
- * Description : Table Meta Log Recordì˜ Body í¬ê¸°ë¥¼ ì–»ëŠ”ë‹¤.
+ * Description : Table Meta Log RecordÀÇ Body Å©±â¸¦ ¾ò´Â´Ù.
  ******************************************************************************/
 UInt smiLogRec::getTblMetaLogBodySize()
 {
@@ -3638,7 +3713,7 @@ UInt smiLogRec::getTblMetaLogBodySize()
 };
 
 /*******************************************************************************
- * Description : Table Meta Log Recordì˜ Bodyë¥¼ ì–»ëŠ”ë‹¤.
+ * Description : Table Meta Log RecordÀÇ Body¸¦ ¾ò´Â´Ù.
  ******************************************************************************/
 void * smiLogRec::getTblMetaLogBodyPtr()
 {
@@ -3646,7 +3721,7 @@ void * smiLogRec::getTblMetaLogBodyPtr()
 }
 
 /*******************************************************************************
- * Description : Table Meta Log Recordì˜ Headerë¥¼ ì–»ëŠ”ë‹¤.
+ * Description : Table Meta Log RecordÀÇ Header¸¦ ¾ò´Â´Ù.
  ******************************************************************************/
 smiTableMeta * smiLogRec::getTblMeta()
 {
@@ -3675,10 +3750,10 @@ smiDDLStmtMeta * smiLogRec::getDDLStmtMeta()
 }
 
 /*******************************************************************************
- * Description : memory poolë¡œ ë¶€í„° ê³µê°„ì„ í• ë‹¹ë°›ê³  listì— ì—°ê²°ì‹œí‚¨ë‹¤.
- *           new nodeë¥¼ ìƒì„±í•˜ì—¬ new nodeì˜ valueì— poolë¡œ ë¶€í„°ì˜ ê³µê°„ì„ í• ë‹¹í•˜ê³ ,
- *           ì¸ìë¡œ ë°›ì€ ë…¸ë“œì˜ ì£¼ì†ŒëŠ” old nodeë¡œì¨ old nodeì˜ linkì— new nodeë¥¼ ì—°ê²°í•œë‹¤.
- *           new nodeì˜ ì£¼ì†Œë¥¼ ë³´ë‚¸ë‹¤.
+ * Description : memory pool·Î ºÎÅÍ °ø°£À» ÇÒ´ç¹Ş°í list¿¡ ¿¬°á½ÃÅ²´Ù.
+ *           new node¸¦ »ı¼ºÇÏ¿© new nodeÀÇ value¿¡ pool·Î ºÎÅÍÀÇ °ø°£À» ÇÒ´çÇÏ°í,
+ *           ÀÎÀÚ·Î ¹ŞÀº ³ëµåÀÇ ÁÖ¼Ò´Â old node·Î½á old nodeÀÇ link¿¡ new node¸¦ ¿¬°áÇÑ´Ù.
+ *           new nodeÀÇ ÁÖ¼Ò¸¦ º¸³½´Ù.
  ******************************************************************************/
 IDE_RC smiLogRec::chainedValueAlloc( iduMemAllocator  * aAllocator,
                                      smiLogRec        * aLogRec,
@@ -3690,8 +3765,8 @@ IDE_RC smiLogRec::chainedValueAlloc( iduMemAllocator  * aAllocator,
 
     IDE_ASSERT( *aChainedValue != NULL );
 
-    // ì²« smiChainedValueë…¸ë“œëŠ” ì´ ìì²´ê°€ new nodeì´ë‹¤.
-    // ë°°ì—´ì´ë¯€ë¡œ ê³µê°„í• ë‹¹ì´ í•„ìš”ì—†ë‹¤.
+    // Ã¹ smiChainedValue³ëµå´Â ÀÌ ÀÚÃ¼°¡ new nodeÀÌ´Ù.
+    // ¹è¿­ÀÌ¹Ç·Î °ø°£ÇÒ´çÀÌ ÇÊ¿ä¾ø´Ù.
     if ( (*aChainedValue)->mAllocMethod == SMI_NON_ALLOCED )
     {
         sChainedValue = *aChainedValue;
@@ -3700,8 +3775,8 @@ IDE_RC smiLogRec::chainedValueAlloc( iduMemAllocator  * aAllocator,
     {
         IDU_FIT_POINT( "smiLogRec::chainedValueAlloc::valueFull:malloc" );
 
-        // ì´ ê²½ìš°ëŠ”, ì¸ìë¡œ ë°›ì€ smiChainedValueë…¸ë“œì˜ valueê°€ fullìƒíƒœì´ë‹¤.
-        // smiChainedValueë…¸ë“œë¥¼ ìƒˆë¡œ ìƒì„±í•œë‹¤.
+        // ÀÌ °æ¿ì´Â, ÀÎÀÚ·Î ¹ŞÀº smiChainedValue³ëµåÀÇ value°¡ full»óÅÂÀÌ´Ù.
+        // smiChainedValue³ëµå¸¦ »õ·Î »ı¼ºÇÑ´Ù.
         IDE_TEST(iduMemMgr::malloc(IDU_MEM_RP_RPS,
                                    ID_SIZEOF(smiChainedValue),
                                    (void **)&sChainedValue,
@@ -3713,7 +3788,7 @@ IDE_RC smiLogRec::chainedValueAlloc( iduMemAllocator  * aAllocator,
         // BUG-27329 CodeSonar::Uninitialized Variable (2)
         IDE_TEST( sChainedValue == NULL );
 
-        // old nodeë¥¼ linkì— ì—°ê²° ì‹œí‚¤ê³ , new nodeì„ ì´ˆê¸°í™”í•œë‹¤.
+        // old node¸¦ link¿¡ ¿¬°á ½ÃÅ°°í, new nodeÀ» ÃÊ±âÈ­ÇÑ´Ù.
         sOldChainedValue = (*aChainedValue)->mLink;
         (*aChainedValue)->mLink = sChainedValue;
     }
@@ -3721,12 +3796,12 @@ IDE_RC smiLogRec::chainedValueAlloc( iduMemAllocator  * aAllocator,
     sChainedValue->mLink = NULL;
     sChainedValue->mColumn.length = 0;
 
-    // smiChainedValueë…¸ë“œì˜ valueì— poolë¡œë¶€í„° ê³µê°„í• ë‹¹ì„ ë°›ëŠ”ë‹¤.
+    // smiChainedValue³ëµåÀÇ value¿¡ pool·ÎºÎÅÍ °ø°£ÇÒ´çÀ» ¹Ş´Â´Ù.
     IDE_TEST(aLogRec->mChainedValuePool->alloc((void **)&(sChainedValue->mColumn.value))
              != IDE_SUCCESS );
     sChainedValue->mAllocMethod = SMI_MEMPOOL_ALLOC;
 
-    // new nodeì˜ ì£¼ì†Œë¡œ êµì²´í•œë‹¤.
+    // new nodeÀÇ ÁÖ¼Ò·Î ±³Ã¼ÇÑ´Ù.
     *aChainedValue = sChainedValue;
 
     return IDE_SUCCESS;
@@ -3773,7 +3848,7 @@ void * smiLogRec::getRPLogStartPtr4Undo(void             * aLogPtr,
 
     sCurrLogPtr = (UChar *)aLogPtr;
 
-    sCurrLogPtr += ID_SIZEOF(UShort); // size(2) - undo info ì˜ ë§¨ ì•ì— ìœ„ì¹˜
+    sCurrLogPtr += ID_SIZEOF(UShort); // size(2) - undo info ÀÇ ¸Ç ¾Õ¿¡ À§Ä¡
     sCurrLogPtr += SDC_UNDOREC_HDR_SIZE;
 
     sCurrLogPtr += ID_SIZEOF(scGRID);
@@ -3918,7 +3993,7 @@ void * smiLogRec::getRPLogStartPtr4Redo(void             * aLogPtr,
 }
 
 /*******************************************************************************
- * Description : í•´ë‹¹ CIDê°€ CIDArrayì— ì¡´ì¬í•˜ëŠ” ì§€ í™•ì¸í•œë‹¤.
+ * Description : ÇØ´ç CID°¡ CIDArray¿¡ Á¸ÀçÇÏ´Â Áö È®ÀÎÇÑ´Ù.
  ******************************************************************************/
 idBool smiLogRec::isCIDInArray( UInt * aCIDArray, 
                                 UInt   aCID, 
@@ -3938,9 +4013,9 @@ idBool smiLogRec::isCIDInArray( UInt * aCIDArray,
 }
 
 /**********************************************
- *     Logì˜ Headë¥¼ ì¶œë ¥í•œë‹¤.
+ *     LogÀÇ Head¸¦ Ãâ·ÂÇÑ´Ù.
  *
- *     [IN] aLogHead - ì¶œë ¥í•  Logì˜ Head
+ *     [IN] aLogHead - Ãâ·ÂÇÒ LogÀÇ Head
  *     [IN] aChkFlag  
  *     [IN] aModule - log module
  *     [IN] aLevel  - log level
@@ -4022,14 +4097,14 @@ IDE_RC smiLogRec::analyzeInsertLogDictionary( smiLogRec  *aLogRec,
     IDE_DASSERT( aAColValueArray != NULL );
     IDE_DASSERT( aDoWait != NULL );
 
-    // ë©”ëª¨ë¦¬ ë¡œê·¸ëŠ” ì–¸ì œë‚˜ í•˜ë‚˜ì˜ ë¡œê·¸ë¡œ ì“°ì´ë¯€ë¡œ, *aDoWaitì´ ID_FALSEê°€ ëœë‹¤.
+    // ¸Ş¸ğ¸® ·Î±×´Â ¾ğÁ¦³ª ÇÏ³ªÀÇ ·Î±×·Î ¾²ÀÌ¹Ç·Î, *aDoWaitÀÌ ID_FALSE°¡ µÈ´Ù.
     *aDoWait = ID_FALSE;
 
     sAfterImagePtr = aLogRec->getLogPtr() + SMR_LOGREC_SIZE(smrUpdateLog);
 
     /* TASK-4690, BUG-32319 [sm-mem-collection] The number of MMDB update log
      *                      can be reduced to 1.
-     * ë¡œê·¸ ë§ˆì§€ë§‰ì— OldVersion RowOIDê°€ ìˆê¸° ë•Œë¬¸ì— Fenceì— ì´ë¥¼ ì œì™¸í•´ì¤€ë‹¤. */
+     * ·Î±× ¸¶Áö¸·¿¡ OldVersion RowOID°¡ ÀÖ±â ¶§¹®¿¡ Fence¿¡ ÀÌ¸¦ Á¦¿ÜÇØÁØ´Ù. */
     sAfterImagePtrFence = aLogRec->getLogPtr()
                           + aLogRec->getLogSize()
                           - ID_SIZEOF(ULong)
@@ -4076,7 +4151,7 @@ IDE_RC smiLogRec::analyzeInsertLogAfterImageDictionary( smiLogRec *aLogRec,
 
     sFixedAreaPtr = aAfterImagePtr + SMI_LOGREC_MV_FIXED_ROW_DATA_OFFSET;
 
-    /* Fixed Rowì˜ ê¸¸ì´:UShort */
+    /* Fixed RowÀÇ ±æÀÌ:UShort */
     sFixedAreaSize = aLogRec->getUShortValue( aAfterImagePtr, SMI_LOGREC_MV_FIXED_ROW_SIZE_OFFSET );
     IDE_TEST_RAISE( sFixedAreaSize > SM_PAGE_SIZE,
                     err_too_big_fixed_area_size );
@@ -4108,7 +4183,7 @@ IDE_RC smiLogRec::analyzeInsertLogAfterImageDictionary( smiLogRec *aLogRec,
         {
             if ( (spCol->flag & SMI_COLUMN_TYPE_MASK) == SMI_COLUMN_TYPE_VARIABLE ) 
             {
-                /* United var ëŠ” fixed ì˜ì—­ì— ê°€ì§„ ê°’ì´ ì—†ë‹¤ */
+                /* United var ´Â fixed ¿µ¿ª¿¡ °¡Áø °ªÀÌ ¾ø´Ù */
                 continue;
             }
             else
@@ -4146,23 +4221,23 @@ IDE_RC smiLogRec::analyzeInsertLogAfterImageDictionary( smiLogRec *aLogRec,
 
     if ( sVCPieceOID != SM_NULL_OID )
     {
-        /* sVarColCount = aLogRec->getUShortValue (sVarAreaPtr );           í•­ìƒ 1 */
+        /* sVarColCount = aLogRec->getUShortValue (sVarAreaPtr );           Ç×»ó 1 */
         sVarAreaPtr += ID_SIZEOF(UShort);
 
         sCID = aLogRec->getUIntValue( sVarAreaPtr, SMI_LOGREC_MV_COLUMN_CID_OFFSET ) & SMI_COLUMN_ID_MASK ;
         sVarAreaPtr += ID_SIZEOF(UInt);
 
-        /* sVCPieceOID  = aLogRec->getvULongValue( sVarAreaPtr );            í•­ìƒ null oid */
+        /* sVCPieceOID  = aLogRec->getvULongValue( sVarAreaPtr );            Ç×»ó null oid */
         sVarAreaPtr += ID_SIZEOF(smOID);
 
-        /* sVarColCountInPiece  = aLogRec->getUShortValue ( sVarAreaPtr );  í•­ìƒ 1 */
+        /* sVarColCountInPiece  = aLogRec->getUShortValue ( sVarAreaPtr );  Ç×»ó 1 */
         sVarAreaPtr += ID_SIZEOF(UShort);
 
         IDE_TEST_RAISE(sCID > SMI_COLUMN_ID_MAXIMUM, ERR_TOO_LARGE_CID);
 
         aCidArray[sCID] = sCID;
 
-        /* value ì˜ ì•ë¶€ë¶„ì— ìˆëŠ” offset arrayì—ì„œ offsetì„ ì½ì–´ì˜¨ë‹¤ */
+        /* value ÀÇ ¾ÕºÎºĞ¿¡ ÀÖ´Â offset array¿¡¼­ offsetÀ» ÀĞ¾î¿Â´Ù */
         sCurrVarOffset = aLogRec->getUShortValue( sVarAreaPtr, ID_SIZEOF(UShort) * 0 ); 
         sNextVarOffset = aLogRec->getUShortValue( sVarAreaPtr, ID_SIZEOF(UShort) * 1 ); 
 
@@ -4215,9 +4290,9 @@ IDE_RC smiLogRec::analyzeInsertLogAfterImageDictionary( smiLogRec *aLogRec,
         }
         sVarColPtr += SMI_LOGREC_MV_COLUMN_DATA_OFFSET + sAfterColSize;
 
-        /* Variable/LOB Column Value ì¸ ê²½ìš°ì—ëŠ” OID Listë¥¼ ê±´ë„ˆë›°ì–´ì•¼ í•¨ */
-        /* ì—¬ê¸°ì—ëŠ” OID countê°€ ì €ì¥ë˜ì–´ ìˆìœ¼ë¯€ë¡œ, Countë¥¼ ì½ì€ í›„ ê·¸ ìˆ˜ ë§Œí¼ */
-        /* ê±´ë„ˆë›°ë„ë¡ í•œë‹¤. */
+        /* Variable/LOB Column Value ÀÎ °æ¿ì¿¡´Â OID List¸¦ °Ç³Ê¶Ù¾î¾ß ÇÔ */
+        /* ¿©±â¿¡´Â OID count°¡ ÀúÀåµÇ¾î ÀÖÀ¸¹Ç·Î, Count¸¦ ÀĞÀº ÈÄ ±× ¼ö ¸¸Å­ */
+        /* °Ç³Ê¶Ùµµ·Ï ÇÑ´Ù. */
         sOIDCnt = aLogRec->getUIntValue(sVarColPtr, 0);
         sVarColPtr += ID_SIZEOF(UInt) + (sOIDCnt * ID_SIZEOF(smOID));
     }
@@ -4276,6 +4351,7 @@ IDE_RC smiLogRec::analyzeInsertLogAfterImageDictionary( smiLogRec *aLogRec,
 }
 
 
+/*  not used
 smiLogType smiLogRec::getLogTypeFromLogHdr( smiLogHdr    * aLogHead )
 {
     smiLogType      sLogType = SMI_LT_NULL;
@@ -4285,6 +4361,10 @@ smiLogType smiLogRec::getLogTypeFromLogHdr( smiLogHdr    * aLogHead )
         case SMR_LT_MEMTRANS_COMMIT:
         case SMR_LT_DSKTRANS_COMMIT:
             sLogType = SMI_LT_TRANS_COMMIT;
+            break;
+
+        case SMR_LT_MEMTRANS_GROUPCOMMIT:
+            sLogType = SMI_LT_TRANS_GROUPCOMMIT;
             break;
 
         case SMR_LT_MEMTRANS_ABORT:
@@ -4321,7 +4401,7 @@ smiLogType smiLogRec::getLogTypeFromLogHdr( smiLogHdr    * aLogHead )
             sLogType = SMI_LT_LOB_FOR_REPL;
             break;
 
-        case SMR_LT_DDL :           // DDL Transactionì„ì„ í‘œì‹œí•˜ëŠ” Log Record
+        case SMR_LT_DDL :           // DDL TransactionÀÓÀ» Ç¥½ÃÇÏ´Â Log Record
             sLogType = SMI_LT_DDL;
             break;
 
@@ -4340,5 +4420,5 @@ smiLogType smiLogRec::getLogTypeFromLogHdr( smiLogHdr    * aLogHead )
 
     return sLogType;
 }
-
+*/
 

@@ -16,13 +16,17 @@
 
 package Altibase.jdbc.driver;
 
+import Altibase.jdbc.driver.datatype.Column;
+import Altibase.jdbc.driver.datatype.ColumnFactory;
+import Altibase.jdbc.driver.datatype.ColumnInfo;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
 import Altibase.jdbc.driver.util.StringUtils;
 
 import java.sql.*;
+import java.util.*;
 
-public class AltibaseDatabaseMetaData implements DatabaseMetaData
+public class AltibaseDatabaseMetaData extends WrapperAdapter implements DatabaseMetaData
 {
     private static final int         QCM_NOTNULL             = 0;
     private static final int         QCM_UNIQUE              = 1;
@@ -41,17 +45,56 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
 
     private static final int         VERSION_MAJOR_IDX       = 0;
     private static final int         VERSION_MINOR_IDX       = 1;
+    private static List<String>      mSql92Keywords;
+
+    static
+    {
+        // BUG-47628 getSqlKeywords()ø°º≠ ¡¶ø‹Ω√ƒ—æﬂ «“ Sql92 ≈∞øˆµÂ ∏Ò∑œ
+        mSql92Keywords = Arrays.asList(
+                    "ABSOLUTE", "ACTION", "ADD", "ALL", "ALLOCATE", "ALTER", "AND", "ANY", "ARE", "AS",
+                    "ASC", "ASSERTION", "AT", "AUTHORIZATION", "AVG", "BEGIN", "BETWEEN", "BIT", "BIT_LENGTH",
+                    "BOTH", "BY", "CALL", "CASCADE", "CASCADED", "CASE", "CAST", "CATALOG", "CHAR", "CHARACTER",
+                    "CHARACTER_LENGTH", "CHAR_LENGTH", "CHECK", "CLOSE", "COALESCE", "COLLATE", "COLLATION",
+                    "COLUMN", "COMMIT", "CONDITION", "CONNECT", "CONNECTION", "CONSTRAINT", "CONSTRAINTS",
+                    "CONTAINS", "CONTINUE", "CONVERT", "CORRESPONDING", "COUNT", "CREATE", "CROSS", "CURRENT",
+                    "CURRENT_DATE", "CURRENT_PATH", "CURRENT_TIME", "CURRENT_TIMESTAMP", "CURRENT_USER", "CURSOR",
+                    "DATE", "DAY", "DEALLOCATE", "DEC", "DECIMAL", "DECLARE", "DEFAULT", "DEFERRABLE", "DEFERRED",
+                    "DELETE", "DESC", "DESCRIBE", "DESCRIPTOR", "DETERMINISTIC", "DIAGNOSTICS", "DISCONNECT",
+                    "DISTINCT", "DO", "DOMAIN", "DOUBLE", "DROP", "ELSE", "ELSEIF", "END", "ESCAPE", "EXCEPT",
+                    "EXCEPTION", "EXEC", "EXECUTE", "EXISTS", "EXIT", "EXTERNAL", "EXTRACT", "FALSE", "FETCH",
+                    "FIRST", "FLOAT", "FOR", "FOREIGN", "FOUND", "FROM", "FULL", "FUNCTION", "GET", "GLOBAL",
+                    "GO", "GOTO", "GRANT", "GROUP", "HANDLER", "HAVING", "HOUR", "IDENTITY", "IF", "IMMEDIATE",
+                    "IN", "INDICATOR", "INITIALLY", "INNER", "INOUT", "INPUT", "INSENSITIVE", "INSERT", "INT",
+                    "INTEGER", "INTERSECT", "INTERVAL", "INTO", "IS", "ISOLATION", "JOIN", "KEY", "LANGUAGE",
+                    "LAST", "LEADING", "LEAVE", "LEFT", "LEVEL", "LIKE", "LOCAL", "LOOP", "LOWER", "MATCH", "MAX",
+                    "MIN", "MINUTE", "MODULE", "MONTH", "NAMES", "NATIONAL", "NATURAL", "NCHAR", "NEXT", "NO",
+                    "NOT", "NULL", "NULLIF", "NUMERIC", "OCTET_LENGTH", "OF", "ON", "ONLY", "OPEN", "OPTION", "OR",
+                    "ORDER", "OUT", "OUTER", "OUTPUT", "OVERLAPS", "PAD", "PARAMETER", "PARTIAL", "PATH", "POSITION",
+                    "PRECISION", "PREPARE", "PRESERVE", "PRIMARY", "PRIOR", "PRIVILEGES", "PROCEDURE", "PUBLIC",
+                    "READ", "REAL", "REFERENCES", "RELATIVE", "REPEAT", "RESIGNAL", "RESTRICT", "RETURN", "RETURNS",
+                    "REVOKE", "RIGHT", "ROLLBACK", "ROUTINE", "ROWS", "SCHEMA", "SCROLL", "SECOND", "SECTION",
+                    "SELECT", "SESSION", "SESSION_USER", "SET", "SIGNAL", "SIZE", "SMALLINT", "SOME", "SPACE",
+                    "SPECIFIC", "SQL", "SQLCODE", "SQLERROR", "SQLEXCEPTION", "SQLSTATE", "SQLWARNING", "SUBSTRING",
+                    "SUM", "SYSTEM_USER", "TABLE", "TEMPORARY", "THEN", "TIME", "TIMESTAMP", "TIMEZONE_HOUR",
+                    "TIMEZONE_MINUTE", "TO", "TRAILING", "TRANSACTION", "TRANSLATE", "TRANSLATION", "TRIM", "TRUE",
+                    "UNDO", "UNION", "UNIQUE", "UNKNOWN", "UNTIL", "UPDATE", "UPPER", "USAGE", "USER", "USING",
+                    "VALUE", "VALUES", "VARCHAR", "VARYING", "VIEW", "WHEN", "WHENEVER", "WHERE", "WHILE", "WITH",
+                    "WORK", "WRITE", "YEAR", "ZONE"
+        );
+    }
 
     private final AltibaseConnection mConn;
     private StringBuffer             mSql;
     private int[]                    mDBVersion;
+    private static String            mSqlKeywords;
+    private static final Object      mLock = new Object();
 
     AltibaseDatabaseMetaData(AltibaseConnection aConnection) throws SQLException
     {
         mConn = aConnection;
         mSql = new StringBuffer(1024);
     }
-	
+
     public boolean allProceduresAreCallable() throws SQLException
     {
         return true;
@@ -88,10 +131,8 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
         mSql.append("SELECT '' TYPE_CAT,'' TYPE_SCHEM, '' TYPE_NAME,'' ATTR_NAME,0 DATA_TYPE, ''  ATTR_TYPE_NAME,0 ATTR_SIZE,0 DECIMAL_DIGITS,0 NUM_PREC_RADIX,");
         mSql.append("NULL NULLABLE,'' REMARKS,'' ATTR_DEF,NULL SQL_DATA_TYPE, NULL SQL_DATETIME_SUB,NULL CHAR_OCTET_LENGTH,NULL ORDINAL_POSITION,'YES' IS_NULLABLE,");
         mSql.append("'' SCOPE_CATALOG,'' SCOPE_SCHEMA,'' SCOPE_TABLE,'' SOURCE_DATA_TYPE from DUAL WHERE 1=0");
-        Statement stmt = mConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-        ResultSet rs = stmt.executeQuery(mSql.toString());
-        ((AltibaseResultSet)rs).registerTarget(stmt);
-        return rs;
+
+        return createResultSet(mSql.toString());
     }
 
     public synchronized ResultSet getBestRowIdentifier(String aCatalog, String aSchema, String aTable, int aScope, boolean aNullable) throws SQLException
@@ -131,10 +172,7 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
         mSql.append(" and c.data_type=t.data_type");
         mSql.append(" ORDER BY SCOPE");
 
-        Statement stmt = mConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-        ResultSet rs = stmt.executeQuery(mSql.toString());
-        ((AltibaseResultSet)rs).registerTarget(stmt);
-        return rs;
+        return createResultSet(mSql.toString());
     }
 
     public String getCatalogSeparator() throws SQLException
@@ -149,10 +187,7 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
 
     public synchronized ResultSet getCatalogs() throws SQLException
     {
-    	Statement stmt = mConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-        ResultSet rs = stmt.executeQuery("SELECT DB_NAME as TABLE_CAT FROM V$DATABASE");
-        ((AltibaseResultSet)rs).registerTarget(stmt);
-        return rs;
+        return createResultSet("SELECT DB_NAME as TABLE_CAT FROM V$DATABASE");
     }
 
     public ResultSet getColumnPrivileges(String aCatalog, String aSchema, String aTable, String aColumnNamePattern) throws SQLException    
@@ -164,7 +199,7 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
     public synchronized ResultSet getColumns(String aCatalog, String aSchemaPattern, String aTableNamePattern, String aColumnNamePattern) throws SQLException
     {
         mSql.setLength(0);
-        // BUG-44466 ORDINAL_POSITION ÏùÄ 1Î∂ÄÌÑ∞ ÏãúÏûëÌïòÍ∏∞ ÎïåÎ¨∏Ïóê ÏøºÎ¶¨Î•º Î≥¥Ï†ïÌïúÎã§.
+        // BUG-44466 ORDINAL_POSITION ¿∫ 1∫Œ≈Õ Ω√¿€«œ±‚ ∂ßπÆø° ƒı∏Æ∏¶ ∫∏¡§«—¥Ÿ.
         mSql.append("SELECT '' as TABLE_CAT, c.user_name as TABLE_SCHEM, b.table_name as TABLE_NAME, a.column_name as COLUMN_NAME, nvl2(d.column_id,3010,decode(a.data_type, 9, 93, a.data_type)) as DATA_TYPE, ");
         mSql.append("nvl2(d.column_id,'TIMESTAMP', decode(a.data_type, 60, CHAR'CHAR', 61, VARCHAR'VARCHAR', t.type_name)) as TYPE_NAME, ");
         mSql.append("decode(a.precision,0,decode(a.data_type, 1, a.precision, 12, a.precision, -8, a.precision, -9, a.precision, 60, a.precision, 61, a.precision, t.column_size),a.precision) as COLUMN_SIZE, decode(a.size, 4294967295, 2147483647, a.size ) as BUFFER_LENGTH,");
@@ -192,11 +227,8 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
         }
         
         mSql.append(")) a left outer join system_.sys_constraints_ e on a.table_id = e.table_id and e.constraint_type=5 left outer join system_.sys_constraint_columns_ d on e.constraint_id = d.constraint_id and a.column_id = d.column_id left outer join system_.sys_tables_ b on a.table_id = b.table_id left outer join system_.sys_users_ c on a.user_id = c.user_id left outer join X$DATATYPE t on a.data_type = t.data_type order by a.column_id");
-        
-        Statement stmt = mConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-        ResultSet rs = stmt.executeQuery(mSql.toString());
-        ((AltibaseResultSet)rs).registerTarget(stmt);
-        return rs;
+
+        return createResultSet(mSql.toString());
     }
 
     public Connection getConnection() throws SQLException
@@ -330,10 +362,7 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
         }
         mSql.append(" order by NON_UNIQUE,TYPE,INDEX_NAME,ORDINAL_POSITION");
 
-        Statement stmt = mConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-        ResultSet rs = stmt.executeQuery(mSql.toString());
-        ((AltibaseResultSet)rs).registerTarget(stmt);
-        return rs;
+        return createResultSet(mSql.toString());
     }
 
     public int getJDBCMajorVersion() throws SQLException
@@ -491,10 +520,7 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
         }
         mSql.append(" order by COLUMN_NAME");
 
-        Statement stmt = mConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-        ResultSet rs = stmt.executeQuery(mSql.toString());
-        ((AltibaseResultSet)rs).registerTarget(stmt);
-        return rs;
+        return createResultSet(mSql.toString());
     }
 
     public synchronized ResultSet getProcedureColumns(String aCatalog, String aSchemaPattern, String aProcedureNamePattern, String aColumnNamePattern) throws SQLException
@@ -533,35 +559,40 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
         {
             aColumnNamePattern = "";
         }
-        
-        mSql.append("SELECT db.PROCEDURE_CAT,");
-        mSql.append("d.user_name as PROCEDURE_SCHEM,");
-        mSql.append("b.PROC_NAME as PROCEDURE_NAME,");
-        mSql.append("'RETURN_VALUE' as COLUMN_NAME,");
-        mSql.append("5 as COLUMN_TYPE,");
-        mSql.append("b.RETURN_DATA_TYPE as DATA_TYPE,");
-        mSql.append("t.type_name as TYPE_NAME,");
-        mSql.append("decode(b.RETURN_PRECISION,0,decode(b.RETURN_DATA_TYPE, 1, b.RETURN_PRECISION, 12, b.RETURN_PRECISION, -8, b.RETURN_PRECISION, -9, b.RETURN_PRECISION, 60, b.RETURN_PRECISION, 61, b.RETURN_PRECISION, t.column_size),b.RETURN_PRECISION) as PRECISION,");
-        mSql.append("decode(b.RETURN_SIZE,0,b.RETURN_PRECISION,b.RETURN_SIZE) as LENGTH,");
-        mSql.append("b.RETURN_SCALE as SCALE,");
-        mSql.append("t.NUM_PREC_RADIX as RADIX,");
-        mSql.append("2 as NULLABLE,");
-        mSql.append("'RETURN VALUE' as REMARKS,");
-        mSql.append("'' as COLUMN_DEF,");
-        mSql.append("t.SQL_DATA_TYPE as SQL_DATA_TYPE,");
-        mSql.append("t.SQL_DATETIME_SUB as SQL_DATETIME_SUB,");
-        mSql.append("decode(b.RETURN_SIZE,0,b.RETURN_PRECISION, b.RETURN_SIZE) as CHAR_OCTET_LENGTH,");
-        mSql.append("0 as ORDINAL_POSITION,");
-        mSql.append("1 as IS_NULLABLE");
-        mSql.append(" FROM (SELECT DB_NAME as PROCEDURE_CAT FROM V$DATABASE) db,");
-        mSql.append("X$DATATYPE t,");
-        mSql.append("system_.sys_procedures_ b,");
-        mSql.append("system_.sys_users_ d");
-        mSql.append(" WHERE b.OBJECT_TYPE = 1 AND b.user_id=d.user_id AND t.data_type=b.RETURN_DATA_TYPE");
-        mSql.append(aCatalog);
-        mSql.append(aSchemaPattern);
-        mSql.append(aProcedureNamePattern);
-        mSql.append(" UNION ");
+
+        // BUG-48892 getprocedures_return_functions∞° true¿œ∂ß∏∏ return type ƒ√∑≥¡§∫∏ ª˝º∫ sql¿ª √ﬂ∞°«—¥Ÿ.
+        if (mConn.getProceduresReturnFunctions())
+        {
+            mSql.append("SELECT db.PROCEDURE_CAT,");
+            mSql.append("d.user_name as PROCEDURE_SCHEM,");
+            mSql.append("b.PROC_NAME as PROCEDURE_NAME,");
+            mSql.append("'RETURN_VALUE' as COLUMN_NAME,");
+            mSql.append("5 as COLUMN_TYPE,");
+            mSql.append("b.RETURN_DATA_TYPE as DATA_TYPE,");
+            mSql.append("t.type_name as TYPE_NAME,");
+            mSql.append("decode(b.RETURN_PRECISION,0,decode(b.RETURN_DATA_TYPE, 1, b.RETURN_PRECISION, 12, b.RETURN_PRECISION, -8, b.RETURN_PRECISION, -9, b.RETURN_PRECISION, 60, b.RETURN_PRECISION, 61, b.RETURN_PRECISION, t.column_size),b.RETURN_PRECISION) as PRECISION,");
+            mSql.append("decode(b.RETURN_SIZE,0,b.RETURN_PRECISION,b.RETURN_SIZE) as LENGTH,");
+            mSql.append("b.RETURN_SCALE as SCALE,");
+            mSql.append("t.NUM_PREC_RADIX as RADIX,");
+            mSql.append("2 as NULLABLE,");
+            mSql.append("'RETURN VALUE' as REMARKS,");
+            mSql.append("'' as COLUMN_DEF,");
+            mSql.append("t.SQL_DATA_TYPE as SQL_DATA_TYPE,");
+            mSql.append("t.SQL_DATETIME_SUB as SQL_DATETIME_SUB,");
+            mSql.append("decode(b.RETURN_SIZE,0,b.RETURN_PRECISION, b.RETURN_SIZE) as CHAR_OCTET_LENGTH,");
+            mSql.append("0 as ORDINAL_POSITION,");
+            mSql.append("1 as IS_NULLABLE, ");
+            mSql.append("b.proc_name||'_'||b.proc_oid as SPECIFIC_NAME");
+            mSql.append(" FROM (SELECT DB_NAME as PROCEDURE_CAT FROM V$DATABASE) db,");
+            mSql.append("X$DATATYPE t,");
+            mSql.append("system_.sys_procedures_ b,");
+            mSql.append("system_.sys_users_ d");
+            mSql.append(" WHERE b.OBJECT_TYPE = 1 AND b.user_id=d.user_id AND t.data_type=b.RETURN_DATA_TYPE ");
+            mSql.append(aCatalog);
+            mSql.append(aSchemaPattern);
+            mSql.append(aProcedureNamePattern);
+            mSql.append(" UNION ");
+        }
         mSql.append("SELECT db.PROCEDURE_CAT,");
         mSql.append("d.user_name as PROCEDURE_SCHEM,");
         mSql.append("b.proc_name as PROCEDURE_NAME,");
@@ -580,41 +611,42 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
         mSql.append("t.SQL_DATETIME_SUB as SQL_DATETIME_SUB,");
         mSql.append("NVL2(t.TYPE_NAME,decode(a.size,0,a.precision,a.size),NULL) as CHAR_OCTET_LENGTH,");
         mSql.append("a.para_order as ORDINAL_POSITION,");
-        mSql.append("'' as IS_NULLABLE");
+        mSql.append("'' as IS_NULLABLE,");
+        mSql.append("b.proc_name||'_'||a.proc_oid as SPECIFIC_NAME");
         mSql.append(" FROM (SELECT DB_NAME as PROCEDURE_CAT FROM V$DATABASE) db,");
         mSql.append("system_.sys_proc_paras_ a");
         mSql.append(" LEFT JOIN X$DATATYPE t ON t.data_type=a.data_type,");
         mSql.append("system_.sys_procedures_ b,");
         mSql.append("system_.sys_users_ d");
-        mSql.append(" WHERE a.proc_oid=b.proc_oid AND b.user_id=d.user_id");
+        mSql.append(" WHERE a.proc_oid=b.proc_oid AND b.user_id=d.user_id ");
+        mSql.append(getProceduresWhere("b"));
         mSql.append(aCatalog);
         mSql.append(aSchemaPattern);
         mSql.append(aProcedureNamePattern);
         mSql.append(aColumnNamePattern);
-        mSql.append(" ORDER BY PROCEDURE_SCHEM,PROCEDURE_NAME");
-        mSql.append(",ORDINAL_POSITION"); // ÏöîÍ±¥ specÏóê ÏûàÎäîÍ±¥ ÏïÑÎãåÎç∞, Ìé∏ÏùòÎ•º ÏúÑÌï¥ Ï∂îÍ∞Ä
+        mSql.append(" ORDER BY PROCEDURE_SCHEM,PROCEDURE_NAME, SPECIFIC_NAME");
+        mSql.append(",ORDINAL_POSITION"); // ø‰∞« specø° ¿÷¥¬∞« æ∆¥—µ•, ∆Ì¿«∏¶ ¿ß«ÿ √ﬂ∞°
 
-        Statement stmt = mConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-        ResultSet rs = stmt.executeQuery(mSql.toString());
-        ((AltibaseResultSet)rs).registerTarget(stmt);
-        return rs;
+        return createResultSet(mSql.toString());
     }
-    
+
     public String getProcedureTerm() throws SQLException
     {
     	return "stored procedure";
     }
 
-    public synchronized ResultSet getProcedures(String aCatalog, String aSchemaPattern, String aProcedureNamePattern) throws SQLException
+    public synchronized ResultSet getProcedures(String aCatalog, String aSchemaPattern,
+                                                String aProcedureNamePattern) throws SQLException
     {
         mSql.setLength(0);
         mSql.append("select db.PROCEDURE_CAT,d.user_name as PROCEDURE_SCHEM, a.proc_name as PROCEDURE_NAME,");
         mSql.append("(select count(*) from system_.sys_proc_paras_ p where ( p.INOUT_TYPE = 0 or p.INOUT_TYPE = 2) AND p.proc_oid = a.proc_oid ) as NUM_INPUT_PARAMS,");
         mSql.append("(select count(*)  from system_.sys_proc_paras_ p where ( p.INOUT_TYPE = 1 or p.INOUT_TYPE = 2) AND p.proc_oid = a.proc_oid ) as NUM_OUTPUT_PARAMS,");
         mSql.append("0  as NUM_RESULT_SETS,");
-        mSql.append("'' as REMARKS,decode(a.object_type,0,1,1,2,0) as PROCEDURE_TYPE");
+        mSql.append("'' as REMARKS, a.proc_name||'_'||a.proc_oid as SPECIFIC_NAME, decode(a.object_type,0,1,1,2,0) as PROCEDURE_TYPE");
         mSql.append(" from (SELECT DB_NAME as PROCEDURE_CAT FROM V$DATABASE) db,system_.sys_procedures_ a,system_.sys_users_ d");
-        mSql.append(" where a.user_id=d.user_id");
+        mSql.append(" where a.user_id=d.user_id ");
+        mSql.append(getProceduresWhere("a"));
         if (!StringUtils.isEmpty(aCatalog))
         {
             mSql.append(" AND db.PROCEDURE_CAT='");
@@ -633,13 +665,20 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
             mSql.append(aProcedureNamePattern);
             mSql.append("' escape '\\'");
         }
-        mSql.append(" ORDER BY PROCEDURE_SCHEM, PROCEDURE_NAME");
+        mSql.append(" ORDER BY PROCEDURE_SCHEM, PROCEDURE_NAME, SPECIFIC_NAME");
 
-        Statement stmt = mConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-        ResultSet rs = stmt.executeQuery(mSql.toString());
-        ((AltibaseResultSet)rs).registerTarget(stmt);
-        
-        return rs;
+        return createResultSet(mSql.toString());
+    }
+
+    private String getProceduresWhere(String aTableAlias)
+    {
+        String sResult = "";
+        if (!mConn.getProceduresReturnFunctions())
+        {
+            sResult = "AND " + aTableAlias + ".object_type = 0 ";
+        }
+
+        return sResult;
     }
 
     public int getResultSetHoldability() throws SQLException
@@ -649,7 +688,21 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
 
     public String getSQLKeywords() throws SQLException
     {
-    	return "ADD,ALTER,COLUMN,DATE,DROP,FOREGIN,RENAME,IDENTIFIED,INDEX,NUMBER,REPLECATION,BROWSE,BULK,CHECKPOINT,DATABASE,DISK,DUMMY,DUMP,IF,INDEX,LOAD,OFF,PLAN,PRINT,READ,RETURN,ROWCOUNT,RULE,SAVE,STATISTICS,TRIGGER,TRUNCATE";
+        if (mSqlKeywords != null)
+        {
+            return mSqlKeywords;
+        }
+
+        // BUG-48355 mSqlKeywords∞° null¿œ∂ß √÷√ ∑Œ «—π¯∏∏ v$reserved_words∏¶ ¡∂»∏«œµµ∑œ √≥∏Æ
+        synchronized (mLock)
+        {
+            if (mSqlKeywords == null)
+            {
+                initializeSqlKeywords();
+            }
+        }
+
+        return mSqlKeywords;
     }
 
     public int getSQLStateType() throws SQLException
@@ -664,16 +717,7 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
 
     public synchronized ResultSet getSchemas() throws SQLException
     {
-        mSql.setLength(0);
-        mSql.append("select user_name as TABLE_SCHEM, (SELECT DB_NAME FROM V$DATABASE LIMIT 1) as TABLE_CATALOG");
-        mSql.append(" from system_.sys_users_");
-        mSql.append(" where system_.sys_users_.user_type = 'U'");  // BUG-45071 usernameÎßå Ìè¨Ìï®ÏãúÌÇ®Îã§.
-        mSql.append(" order by TABLE_SCHEM");
-
-        Statement stmt = mConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-        ResultSet rs = stmt.executeQuery(mSql.toString());
-        ((AltibaseResultSet)rs).registerTarget(stmt);
-        return rs;
+        return getSchemas(null, null);
     }
 
     public String getSearchStringEscape() throws SQLException
@@ -688,18 +732,12 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
 
     public synchronized ResultSet getSuperTables(String aCatalog, String aSchemaPattern, String aTableNamePattern) throws SQLException
     {
-    	Statement stmt = mConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-        ResultSet rs = stmt.executeQuery("SELECT '' TABLE_CAT,'' TABLE_SCHEM,'' TABLE_NAME,'' SUPERTABLE_NAME from dual WHERE 0!=0");
-        ((AltibaseResultSet)rs).registerTarget(stmt);
-        return rs;
+        return createResultSet("SELECT '' TABLE_CAT,'' TABLE_SCHEM,'' TABLE_NAME,'' SUPERTABLE_NAME from dual WHERE 0!=0");
     }
 
     public synchronized ResultSet getSuperTypes(String aCatalog, String aSchemaPattern, String aTypeNamePattern) throws SQLException
     {
-    	Statement stmt = mConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-    	ResultSet rs = stmt.executeQuery("SELECT '' TYPE_CAT,'' TYPE_SCHEM,'' TYPE_NAME,'' SUPERTYPE_CAT,'' SUPERTYPE_SCHEM,'' SUPERTYPE_NAME from dual WHERE 0!=0");
-    	((AltibaseResultSet)rs).registerTarget(stmt);
-        return rs;
+        return createResultSet("SELECT '' TYPE_CAT,'' TYPE_SCHEM,'' TYPE_NAME,'' SUPERTYPE_CAT,'' SUPERTYPE_SCHEM,'' SUPERTYPE_NAME from dual WHERE 0!=0");
     }
 
     public String getSystemFunctions() throws SQLException
@@ -742,10 +780,7 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
         }
         mSql.append(" order by TABLE_SCHEM, TABLE_NAME, PRIVILEGE");
 
-        Statement stmt = mConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-        ResultSet rs = stmt.executeQuery(mSql.toString());
-        ((AltibaseResultSet)rs).registerTarget(stmt);
-        return rs;
+        return createResultSet(mSql.toString());
     }
 
     /* BUG-45255 SYNONYM */
@@ -776,21 +811,6 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
         TABLE_TYPES_STRING = sStrBuf.toString();
     }
 
-    private void checkTableTypes(String[] aTypes) throws SQLException
-    {
-        if ((aTypes == null) || (aTypes.length == 0))
-        {
-            return;
-        }
-        for (int i = 0; i < aTypes.length; i++)
-        {
-            if (!TABLE_TYPES_SET.contains(aTypes[i].toUpperCase()))
-            {
-                Error.throwSQLException(ErrorDef.INVALID_ARGUMENT, "Table type", TABLE_TYPES_STRING, aTypes[i]);
-            }
-        }
-    }
-
     public synchronized ResultSet getTableTypes() throws SQLException
     {
         mSql.setLength(0);
@@ -805,17 +825,13 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
             mSql.append("' as TABLE_TYPE from dual");
         }
         mSql.append(" order by TABLE_TYPE");
-    	Statement stmt = mConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-    	ResultSet rs = stmt.executeQuery(mSql.toString());
-        ((AltibaseResultSet)rs).registerTarget(stmt);
-        return rs;
+        return createResultSet(mSql.toString());
     }
 
-    public synchronized ResultSet getTables(String aCatalog, String aSchemaPattern, String aTableNamePattern, String[] aTypes) throws SQLException
+    public synchronized ResultSet getTables(String aCatalog, String aSchemaPattern,
+                                            String aTableNamePattern, String[] aTypes) throws SQLException
     {
         boolean sNeedGetSynonym = false;
-
-        checkTableTypes(aTypes);
 
         mSql.setLength(0);
         mSql.append("select db.TABLE_CAT");
@@ -851,19 +867,19 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
         }
         if ((aTypes == null) || (aTypes.length == 0))
         {
-            // Î™®Îëê Î≥¥Í∏∞Î°ú ÌñàÏùÑ Îïå, non-visibleÌïú Í∞ùÏ≤¥Î•º Í±∏Îü¨ÎÇ¥Ïïº ÌïúÎã§.
+            // ∏µŒ ∫∏±‚∑Œ «ﬂ¿ª ∂ß, non-visible«— ∞¥√º∏¶ ∞…∑Ø≥ªæﬂ «—¥Ÿ.
             mSql.append(" and (b.table_type IN ('T','V') OR (a.user_name<>'SYSTEM_' AND b.table_type IN ('S','M','Q')))");
             sNeedGetSynonym = true;
         }
         else
         {
             boolean sIsAdded = false;
-            for (int i = 0; i < aTypes.length; i++)
+            for (String sType : aTypes)
             {
                 int sTypeCmpStartIdx = 0;
                 String sCondSys = null;
                 String sCondType = null;
-                if (StringUtils.startsWithIgnoreCase(aTypes[i], "SYSTEM "))
+                if (StringUtils.startsWithIgnoreCase(sType, "SYSTEM "))
                 {
                     sCondSys = "a.user_name='SYSTEM_'";
                     sTypeCmpStartIdx = 7;
@@ -872,34 +888,35 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
                 {
                     sCondSys = "a.user_name<>'SYSTEM_'";
                 }
-                if (StringUtils.compareIgnoreCase(aTypes[i], sTypeCmpStartIdx, "TABLE") == 0)
+                if (StringUtils.compareIgnoreCase(sType, sTypeCmpStartIdx, "TABLE") == 0)
                 {
                     sCondType = "b.table_type='T'";
                 }
-                else if (StringUtils.compareIgnoreCase(aTypes[i], sTypeCmpStartIdx, "SEQUENCE") == 0)
+                else if (StringUtils.compareIgnoreCase(sType, sTypeCmpStartIdx, "SEQUENCE") == 0)
                 {
                     sCondType = "b.table_type='S'";
                 }
-                else if (StringUtils.compareIgnoreCase(aTypes[i], sTypeCmpStartIdx, "MATERIALIZED VIEW") == 0)
+                else if (StringUtils.compareIgnoreCase(sType, sTypeCmpStartIdx, "MATERIALIZED VIEW") == 0)
                 {
                     sCondType = "b.table_type='M'";
                 }
-                else if (StringUtils.compareIgnoreCase(aTypes[i], sTypeCmpStartIdx, "VIEW") == 0)
+                else if (StringUtils.compareIgnoreCase(sType, sTypeCmpStartIdx, "VIEW") == 0)
                 {
                     sCondType = "b.table_type='V'";
                 }
-                else if (StringUtils.compareIgnoreCase(aTypes[i], sTypeCmpStartIdx, "QUEUE") == 0)
+                else if (StringUtils.compareIgnoreCase(sType, sTypeCmpStartIdx, "QUEUE") == 0)
                 {
                     sCondType = "b.table_type='Q'";
                 }
-                else if (StringUtils.compareIgnoreCase(aTypes[i], sTypeCmpStartIdx, "SYNONYM") == 0)
+                else if (StringUtils.compareIgnoreCase(sType, sTypeCmpStartIdx, "SYNONYM") == 0)
                 {
-                    // SYS_TABLES_ ÎßêÍ≥† SYS_SYNONYMS_ÏóêÏÑú Ï°∞ÌöåÌï¥Ïïº ÌïòÎØÄÎ°ú flagÎßå ÏÑ§Ï†ïÌï¥ÎëîÎã§.
+                    // SYS_TABLES_ ∏ª∞Ì SYS_SYNONYMS_ø°º≠ ¡∂»∏«ÿæﬂ «œπ«∑Œ flag∏∏ º≥¡§«ÿµ–¥Ÿ.
                     sNeedGetSynonym = true;
                 }
                 else
                 {
-                    Error.throwInternalError(ErrorDef.INTERNAL_ASSERTION);
+                    // BUG-48747 ¡ˆø¯µ«¡ˆ æ ¥¬ type¿œ ∞ÊøÏ øπø‹∏¶ ø√∏Æ¡ˆ æ ∞Ì ¡∂∞«πÆø° «ÿ¥Á«œ¥¬ type∏∏ √ﬂ∞°«—¥Ÿ.
+                    sCondType = "b.table_type='" + sType + "'";
                 }
                 if (sCondType != null)
                 {
@@ -914,11 +931,8 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
                         mSql.append(" or (");
                         mSql.append(sCondType);
                     }
-                    if (sCondSys != null)
-                    {
-                        mSql.append(" and ");
-                        mSql.append(sCondSys);
-                    }
+                    mSql.append(" and ");
+                    mSql.append(sCondSys);
                     mSql.append(')');
                 }
             }
@@ -927,9 +941,9 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
                 mSql.append(')');
             }
         }
-        if (sNeedGetSynonym == true)
+        if (sNeedGetSynonym)
         {
-            // SYNONYMÎßå Ï°∞ÌöåÌï† Í≤ΩÏö∞
+            // SYNONYM∏∏ ¡∂»∏«“ ∞ÊøÏ
             if (aTypes != null && aTypes.length == 1)
             {
                 mSql.setLength(0);
@@ -972,10 +986,7 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
         }
         mSql.append(" order by TABLE_TYPE, TABLE_SCHEM, TABLE_NAME");
 
-        Statement stmt = mConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-        ResultSet rs = stmt.executeQuery(mSql.toString());
-        ((AltibaseResultSet)rs).registerTarget(stmt);
-        return rs;
+        return createResultSet(mSql.toString());
     }
 
     public String getTimeDateFunctions() throws SQLException
@@ -985,10 +996,7 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
 
     public synchronized ResultSet getTypeInfo() throws SQLException
     {
-    	Statement stmt = mConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-        ResultSet rs = stmt.executeQuery("select TYPE_NAME, decode(DATA_TYPE,-8,-15,9,93,30,2004,40,2005,DATA_TYPE) DATA_TYPE, FIXED_PREC_SCALE as PRECISION, LITERAL_PREFIX, LITERAL_SUFFIX, CREATE_PARAM as CREATE_PARAMS, NULLABLE, CASE_SENSITIVE, SEARCHABLE, UNSIGNED_ATTRIBUTE, FIXED_PREC_SCALE, 'F' as AUTO_INCREMENT, LOCAL_TYPE_NAME, MINIMUM_SCALE, MAXIMUM_SCALE, SQL_DATA_TYPE, SQL_DATETIME_SUB, NUM_PREC_RADIX from V$DATATYPE where DATA_TYPE != 60 and DATA_TYPE != 61 order by DATA_TYPE");
-        ((AltibaseResultSet)rs).registerTarget(stmt);
-        return rs;
+        return createResultSet("select TYPE_NAME, decode(DATA_TYPE,-8,-15,9,93,30,2004,40,2005,DATA_TYPE) DATA_TYPE, FIXED_PREC_SCALE as PRECISION, LITERAL_PREFIX, LITERAL_SUFFIX, CREATE_PARAM as CREATE_PARAMS, NULLABLE, CASE_SENSITIVE, SEARCHABLE, UNSIGNED_ATTRIBUTE, FIXED_PREC_SCALE, 'F' as AUTO_INCREMENT, LOCAL_TYPE_NAME, MINIMUM_SCALE, MAXIMUM_SCALE, SQL_DATA_TYPE, SQL_DATETIME_SUB, NUM_PREC_RADIX from V$DATATYPE where DATA_TYPE != 60 and DATA_TYPE != 61 order by DATA_TYPE");
     }
 
     public ResultSet getUDTs(String aCatalog, String aSchemaPattern, String aTypeNamePattern, int[] aTypes) throws SQLException
@@ -1010,9 +1018,7 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
 
     public ResultSet getVersionColumns(String catalog, String schema, String table) throws SQLException
     {
-    	AltibaseResultSet // !# Not yet support
-        rs = (AltibaseResultSet)getBestRowIdentifier(catalog, schema, table, 0, true);
-        return rs;
+        return getBestRowIdentifier(catalog, schema, table, 0, true);
     }
 
     public boolean insertsAreDetected(int type) throws SQLException
@@ -1617,9 +1623,341 @@ public class AltibaseDatabaseMetaData implements DatabaseMetaData
         mSql.append(" ON (P.CID=F.CID and P.IDXID=F.IDXID and P.KEY_SEQ=F.KEY_SEQ)");
         mSql.append(" ORDER BY ");
         mSql.append(aOrderByClause);
-    	Statement stmt = mConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-        ResultSet rs = stmt.executeQuery(mSql.toString());
-        ((AltibaseResultSet)rs).registerTarget(stmt);
-        return rs;
-    }    
+
+        return createResultSet(mSql.toString());
+    }
+
+    private void initializeSqlKeywords() throws SQLException
+    {
+        // BUG-47628 sql keyword∏¶ v$reserved_words∏¶ ¡∂»∏«ÿº≠ ∞°¡Æø¬ ¥Ÿ¿Ω ∏‚πˆ∫Øºˆø° ¿˙¿Â«ÿ µ–¥Ÿ.
+        mSql.setLength(0);
+        mSql.append("SELECT keyword FROM v$reserved_words ");
+        Statement sStmt = null;
+        ResultSet sRs = null;
+        List<String> sKeywordList = new ArrayList<String>();
+        try
+        {
+            sStmt = mConn.createStatement();
+            sRs = sStmt.executeQuery(mSql.toString());
+            while (sRs.next())
+            {
+                sKeywordList.add(sRs.getString(1));
+            }
+        }
+        finally
+        {
+            if (sRs   != null)  try  { sRs.close();    } catch (SQLException aEx)  { /* ignore */ };
+            if (sStmt != null)  try  { sStmt.close();  } catch (SQLException aEx)  { /* ignore */ };
+        }
+        // BUG-47628 v$reserved_words ø°º≠ ∞°¡Æø¬ ∞·∞˙ø°º≠ SQL92 keyword¥¬ ¡¶ø‹Ω√≈≤¥Ÿ.
+        sKeywordList.removeAll(mSql92Keywords);
+
+        String sResultStr = sKeywordList.toString();
+
+        // BUG-47628 ArrayList¿« √≥¿Ω∞˙ ∏∂¡ˆ∏∑ πÆ¿⁄∏¶ ¡¶∞≈«—¥Ÿ.
+        sResultStr = sResultStr.replace("[", "");
+        sResultStr = sResultStr.replace("]", "");
+
+        mSqlKeywords = sResultStr;
+    }
+
+    public static List<String> getSql92Keywords()
+    {
+        return mSql92Keywords;
+    }
+
+    @Override
+    public RowIdLifetime getRowIdLifetime() throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public ResultSet getSchemas(String aCatalog, String aSchemaPattern) throws SQLException
+    {
+        mSql.setLength(0);
+        mSql.append("select a.user_name as TABLE_SCHEM, db.TABLE_CATALOG");
+        mSql.append(" from system_.sys_users_ a, (SELECT DB_NAME as TABLE_CATALOG FROM V$DATABASE) db");
+        mSql.append(" where a.user_type = 'U'");  // BUG-45071 username∏∏ ∆˜«‘Ω√≈≤¥Ÿ.
+        if (!StringUtils.isEmpty(aCatalog))
+        {
+            mSql.append(" AND TABLE_CATALOG='");
+            mSql.append(aCatalog);
+            mSql.append('\'');
+        }
+        if (!StringUtils.isEmpty(aSchemaPattern))
+        {
+            mSql.append("and a.user_name LIKE '");
+            mSql.append(aSchemaPattern);
+            mSql.append("' escape '\\' ");
+        }
+        mSql.append(" order by TABLE_SCHEM");
+
+        return createResultSet(mSql.toString());
+    }
+
+    @Override
+    public boolean supportsStoredFunctionsUsingCallSyntax()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean autoCommitFailureClosesAllResultSets() throws SQLException
+    {
+        return false;
+    }
+
+    @Override
+    public ResultSet getClientInfoProperties() throws SQLException
+    {
+        List<Column> sColumns = new ArrayList<>();
+        ColumnFactory sColumnFactory = mConn.channel().getColumnFactory();
+        sColumns.add(createField(sColumnFactory, Types.VARCHAR, "NAME", "ApplicationName"));
+        sColumns.add(createField(sColumnFactory, Types.INTEGER, "MAX_LEN", 255));
+        sColumns.add(createField(sColumnFactory, Types.VARCHAR, "DEFAULT_VALUE", ""));
+        sColumns.add(createField(sColumnFactory, Types.VARCHAR, "DESCRIPTION", ""));
+
+        AltibaseStatement sStmt = (AltibaseStatement)mConn.createStatement();
+        AltibaseResultSet sRs = new AltibaseLightWeightResultSet(sStmt, sColumns, ResultSet.TYPE_FORWARD_ONLY);
+        sRs.registerTarget(sStmt);
+
+        return sRs;
+    }
+
+    private Column createField(ColumnFactory aColumnFactory, int aType, String aDisplayName,
+                               Object aValue) throws SQLException
+    {
+        Column sColumn = aColumnFactory.getInstance(aType);
+        ColumnInfo sColumnInfo = new ColumnInfo();
+        sColumnInfo.setColumnInfo(aType,                                    // dataType
+                                  0,                                        // language
+                                  (byte)0,                                  // arguments
+                                  0,                                        // precision
+                                  0,                                        // scale
+                                  ColumnInfo.IN_OUT_TARGET_TYPE_TARGET,     // in-out type
+                                  true,                                     // nullable
+                                  false,                                    // updatable
+                                  null,                                     // catalog name
+                                  null,                                     // table name
+                                  null,                                     // base table name
+                                  null,                                     // col name
+                                  aDisplayName ,                            // display name
+                                  null,                                     // base column name
+                                  null,                                     // schema name
+                                  2);                                       // bytes per char
+
+        sColumn.setColumnInfo(sColumnInfo);
+        sColumn.setValue(aValue);
+
+        return sColumn;
+    }
+
+    @Override
+    public synchronized ResultSet getFunctions(String aCatalog, String aSchemaPattern,
+                                               String aFunctionNamePattern) throws SQLException
+    {
+        mSql.setLength(0);
+        mSql.append(" SELECT db.FUNCTION_CAT,                                    ");
+        mSql.append("        d.user_name                      AS FUNCTION_SCHEM, ");
+        mSql.append("        a.proc_name                      AS FUNCTION_NAME,  ");
+        mSql.append("        ''                               AS REMARKS,        ");
+        mSql.append("        1                                AS FUNCTION_TYPE,  ");
+        mSql.append("        a.proc_name||'_'||a.proc_oid     AS SPECIFIC_NAME   ");
+        mSql.append(" FROM   (SELECT db_name AS FUNCTION_CAT                     ");
+        mSql.append("         FROM   v$database) db,                             ");
+        mSql.append(" system_.sys_procedures_ a,                                 ");
+        mSql.append(" system_.sys_users_ d                                       ");
+        mSql.append(" WHERE  a.user_id = d.user_id and a.object_type = 1         ");
+        if (!StringUtils.isEmpty(aCatalog))
+        {
+            mSql.append(" AND db.FUNCTION_CAT='");
+            mSql.append(aCatalog);
+            mSql.append('\'');
+        }
+        if (!StringUtils.isEmpty(aSchemaPattern))
+        {
+            mSql.append(" AND d.user_name LIKE '");
+            mSql.append(aSchemaPattern);
+            mSql.append("' escape '\\'");
+        }
+        if (!StringUtils.isEmpty(aFunctionNamePattern))
+        {
+            mSql.append(" AND a.proc_name LIKE '");
+            mSql.append(aFunctionNamePattern);
+            mSql.append("' escape '\\'");
+        }
+        mSql.append(" ORDER BY FUNCTION_SCHEM, FUNCTION_NAME, SPECIFIC_NAME");
+
+        return createResultSet(mSql.toString());
+    }
+
+    private ResultSet createResultSet(String aSql) throws SQLException
+    {
+        Statement sStmt = null;
+        ResultSet sRs = null;
+        try
+        {
+            sStmt = mConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY,
+                                          ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            sRs = sStmt.executeQuery(aSql);
+            ((AltibaseResultSet)sRs).registerTarget(sStmt);
+        }
+        catch (SQLException aEx)
+        {
+            if (sRs   != null) try  { sRs.close();     }  catch (SQLException sEx2) { /* ignore */ }
+            if (sStmt != null) try  { sStmt.close();   }  catch (SQLException sEx2) { /* ignore */ }
+            throw aEx;
+        }
+
+        return sRs;
+    }
+
+    @Override
+    public synchronized ResultSet getFunctionColumns(String aCatalog, String aSchemaPattern, String aFunctionNamePattern,
+                                        String aColumnNamePattern) throws SQLException
+    {
+        mSql.setLength(0);
+
+        if (!StringUtils.isEmpty(aCatalog))
+        {
+            aCatalog = " AND db.PROCEDURE_CAT='" + aCatalog + "'";
+        }
+        else
+        {
+            aCatalog = "";
+        }
+        if (!StringUtils.isEmpty(aSchemaPattern) && aSchemaPattern.compareTo("%") != 0)
+        {
+            aSchemaPattern = " AND d.user_name  LIKE '" + aSchemaPattern + "'  escape '\\'";
+        }
+        else
+        {
+            aSchemaPattern = "";
+        }
+        if (!StringUtils.isEmpty(aFunctionNamePattern) && aFunctionNamePattern.compareTo("%") != 0)
+        {
+            aFunctionNamePattern = " AND  b.proc_name LIKE '" + aFunctionNamePattern + "' escape '\\'";
+        }
+        else
+        {
+            aFunctionNamePattern = "";
+        }
+        if (!StringUtils.isEmpty(aColumnNamePattern))
+        {
+            aColumnNamePattern = " AND a.para_name LIKE '" + aColumnNamePattern + "' escape '\\'";
+        }
+        else
+        {
+            aColumnNamePattern = "";
+        }
+
+        mSql.append(" SELECT db.procedure_cat                               AS FUNCTION_CAT, ");
+        mSql.append("        d.user_name                                    AS FUNCTION_SCHEM, ");
+        mSql.append("        b.proc_name                                    AS FUNCTION_NAME, ");
+        mSql.append("        'RETURN_VALUE'                                 AS COLUMN_NAME, ");
+        mSql.append("        5                                              AS COLUMN_TYPE, ");
+        mSql.append("        b.return_data_type                             AS DATA_TYPE, ");
+        mSql.append("        t.type_name                                    AS TYPE_NAME, ");
+        mSql.append("        Decode(b.return_precision, 0, Decode(b.return_data_type, 1, ");
+        mSql.append("                                      b.return_precision, ");
+        mSql.append("                                                                 12, ");
+        mSql.append("                                      b.return_precision, ");
+        mSql.append("                                                                 -8, ");
+        mSql.append("                                      b.return_precision, ");
+        mSql.append("                                                                 -9, ");
+        mSql.append("                                      b.return_precision, ");
+        mSql.append("                                                                 60, ");
+        mSql.append("                                      b.return_precision, ");
+        mSql.append("                                                                 61, ");
+        mSql.append("                                      b.return_precision, ");
+        mSql.append("                                                                 t.column_size), ");
+        mSql.append("                                   b.return_precision) AS PRECISION, ");
+        mSql.append("        Decode(b.return_size, 0, b.return_precision, ");
+        mSql.append("                              b.return_size)           AS LENGTH, ");
+        mSql.append("        b.return_scale                                 AS SCALE, ");
+        mSql.append("        t.num_prec_radix                               AS RADIX, ");
+        mSql.append("        2                                              AS NULLABLE, ");
+        mSql.append("        'RETURN VALUE'                                 AS REMARKS, ");
+        mSql.append("        Decode(b.return_size, 0, b.return_precision, ");
+        mSql.append("                              b.return_size)           AS CHAR_OCTET_LENGTH, ");
+        mSql.append("        0                                              AS ORDINAL_POSITION, ");
+        mSql.append("        1                                              AS IS_NULLABLE,");
+        mSql.append("        b.proc_name||'_'||b.proc_oid                   AS SPECIFIC_NAME ");
+        mSql.append(" FROM   (SELECT db_name AS PROCEDURE_CAT ");
+        mSql.append("         FROM   v$database) db, ");
+        mSql.append("        x$datatype t, ");
+        mSql.append("        system_.sys_procedures_ b, ");
+        mSql.append("        system_.sys_users_ d ");
+        mSql.append(" WHERE  b.object_type = 1");
+        mSql.append("        AND b.user_id = d.user_id ");
+        mSql.append("        AND t.data_type = b.return_data_type ");
+        mSql.append(aCatalog);
+        mSql.append(aSchemaPattern);
+        mSql.append(aFunctionNamePattern);
+        mSql.append(" UNION ");
+        mSql.append(" SELECT db.procedure_cat                                AS FUNCTION_CAT, ");
+        mSql.append("        d.user_name                                     AS FUNCTION_SCHEM, ");
+        mSql.append("        b.proc_name                                     AS FUNCTION_NAME, ");
+        mSql.append("        a.para_name                                     AS COLUMN_NAME, ");
+        mSql.append("        Decode(a.data_type, 1000004, 3, ");
+        mSql.append("                            Decode(a.inout_type, 0, 1, ");
+        mSql.append("                                                 2, 2, ");
+        mSql.append("                                                 1, 4, ");
+        mSql.append("                                                 0))    AS COLUMN_TYPE, ");
+        mSql.append("        Nvl2(t.type_name, a.data_type, 1111)            AS DATA_TYPE, ");
+        mSql.append("        Nvl(t.type_name, Decode(a.data_type, 1000004, 'REF CURSOR', ");
+        mSql.append("                                             'OTHER'))  AS TYPE_NAME, ");
+        mSql.append("        Decode(a.PRECISION, 0, Decode(a.data_type, 1, a.PRECISION, ");
+        mSql.append("                                                   12, a.PRECISION, ");
+        mSql.append("                                                   -8, a.PRECISION, ");
+        mSql.append("                                                   -9, a.PRECISION, ");
+        mSql.append("                                                   60, a.PRECISION, ");
+        mSql.append("                                                   61, a.PRECISION, ");
+        mSql.append("                                                   t.column_size), ");
+        mSql.append("                            a.PRECISION)                AS PRECISION, ");
+        mSql.append("        Nvl2(t.type_name, Decode(a.size, 0, a.PRECISION, ");
+        mSql.append("                                         a.size), NULL) AS LENGTH, ");
+        mSql.append("        Nvl2(t.type_name, a.scale, NULL)                AS SCALE, ");
+        mSql.append("        t.num_prec_radix                                AS RADIX, ");
+        mSql.append("        Nvl2(t.type_name, 2, 1)                         AS NULLABLE, ");
+        mSql.append("        ''                                              AS REMARKS, ");
+        mSql.append("        Nvl2(t.type_name, Decode(a.size, 0, a.PRECISION, ");
+        mSql.append("                                         a.size), NULL) AS CHAR_OCTET_LENGTH, ");
+        mSql.append("        a.para_order                                    AS ORDINAL_POSITION, ");
+        mSql.append("        ''                                              AS IS_NULLABLE,");
+        mSql.append("        b.proc_name||'_'||a.proc_oid                    AS SPECIFIC_NAME ");
+        mSql.append(" FROM   (SELECT db_name AS PROCEDURE_CAT ");
+        mSql.append("         FROM   v$database) db, ");
+        mSql.append("        system_.sys_proc_paras_ a ");
+        mSql.append("        LEFT JOIN x$datatype t ");
+        mSql.append("               ON t.data_type = a.data_type, ");
+        mSql.append("        system_.sys_procedures_ b, ");
+        mSql.append("        system_.sys_users_ d ");
+        mSql.append(" WHERE  a.proc_oid = b.proc_oid ");
+        mSql.append("        AND b.user_id = d.user_id ");
+        mSql.append("        AND b.object_type = 1");
+        mSql.append(aCatalog);
+        mSql.append(aSchemaPattern);
+        mSql.append(aFunctionNamePattern);
+        mSql.append(aColumnNamePattern);
+        mSql.append(" ORDER  BY function_schem, ");
+        mSql.append("           function_name, specific_name, ");
+        mSql.append("           ordinal_position");
+
+        return createResultSet(mSql.toString());
+    }
+
+    @Override
+    public ResultSet getPseudoColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern)
+            throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public boolean generatedKeyAlwaysReturned() throws SQLException
+    {
+        return false;
+    }
 }

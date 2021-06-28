@@ -61,9 +61,15 @@ mtfModule mtfInlist = {
 IDE_RC mtfInlistTokenize( const mtdModule * aModule,
                           mtcColumn       * aValueColumn,
                           const void      * aValue,
+                          UInt              aCount,
+                          UInt              aMaxLength,
                           mtcInlistInfo   * aInlistInfo,
-                          mtcTemplate     * aTemplate,
                           mtkRangeInfo    * aInfo );
+
+/* BUG-47690 Inlist ∫π«’ Index fatal */
+IDE_RC mtfInlistGetCountAndMaxLength( const void * aValue,
+                                      UInt       * aCount,
+                                      UInt       * aMaxLength );
 
 IDE_RC mtfInlistEstimateRange( mtcNode*,
                                mtcTemplate*,
@@ -165,7 +171,7 @@ IDE_RC mtfInlistEstimate( mtcNode*     aNode,
                                 != ID_TRUE, ERR_CONVERSION_NOT_APPLICABLE );
             }
 
-            // column conversion ÏùÑ Î∂ôÏù∏Îã§.
+            // column conversion ¿ª ∫Ÿ¿Œ¥Ÿ.
             sModules[0] = sTarget;
             sModules[1] = &mtdChar;
 
@@ -198,7 +204,7 @@ IDE_RC mtfInlistEstimate( mtcNode*     aNode,
                                     != ID_TRUE, ERR_CONVERSION_NOT_APPLICABLE );
                 }
 
-                // column conversion ÏùÑ Î∂ôÏù∏Îã§.
+                // column conversion ¿ª ∫Ÿ¿Œ¥Ÿ.
                 sModules[0] = sTarget;
                 sModules[1] = &mtdVarchar;
 
@@ -212,7 +218,7 @@ IDE_RC mtfInlistEstimate( mtcNode*     aNode,
             }
             else
             {
-                /*char varchar Í∞Ä ÏïÑÎãå Í≤ΩÏö∞ Í∞ïÏ†úÎ°ú varchar Î°ú conversion */
+                /*char varchar ∞° æ∆¥— ∞ÊøÏ ∞≠¡¶∑Œ varchar ∑Œ conversion */
                 IDE_TEST( mtf::getComparisonModule( &sTarget,
                                                     aStack[1].column->module->no,
                                                     mtdVarchar.no )
@@ -230,7 +236,7 @@ IDE_RC mtfInlistEstimate( mtcNode*     aNode,
                                     != ID_TRUE, ERR_CONVERSION_NOT_APPLICABLE );
                 }
 
-                // column conversion ÏùÑ Î∂ôÏù∏Îã§.
+                // column conversion ¿ª ∫Ÿ¿Œ¥Ÿ.
                 sModules[0] = sTarget;
                 sModules[1] = &mtdVarchar;
 
@@ -269,8 +275,9 @@ IDE_RC mtfInlistEstimateRange( mtcNode*,
                                UInt*    aSize )
 {
     /* (smiRange + RangeCallback*2 )*1000 + ID_SIZEOF(mtcInlistInfo)  */
-    *aSize =  ( ID_SIZEOF(smiRange) + ID_SIZEOF(mtkRangeCallBack) * 2 )
-        * MTC_INLIST_KEYRANGE_COUNT_MAX + ID_SIZEOF(mtcInlistInfo) ;
+    /* BUG-47690 Inlist ∫π«’ Index fatal */
+    *aSize =  ( ( ( ID_SIZEOF(smiRange) + ID_SIZEOF(mtkRangeCallBack) * 2 ) )
+              * MTC_INLIST_KEYRANGE_COUNT_MAX )  + ID_SIZEOF(mtcInlistInfo) ;
 
     return IDE_SUCCESS;
 }
@@ -293,13 +300,10 @@ IDE_RC mtfInlistExtractRange( mtcNode*       aNode,
     smiRange        * sPrevRange = NULL;
     mtcInlistInfo   * sInlistInfo;
     UInt              i;
-
+    UInt              sCount = 0;
+    UInt              sMaxLength = 0;
     mtcColumn *       sSrcValueColumn;
     const void *      sSrcValue;
-
-    /* sInlistInfo address */
-    sInlistInfo = (mtcInlistInfo *) ( (UChar *)aRange +
-          (ID_SIZEOF(smiRange) + ID_SIZEOF(mtkRangeCallBack) * 2 ) * MTC_INLIST_KEYRANGE_COUNT_MAX );
 
     IDE_TEST_RAISE( aInfo->argument >= 2, ERR_INVALID_FUNCTION_ARGUMENT );
 
@@ -330,12 +334,28 @@ IDE_RC mtfInlistExtractRange( mtcNode*       aNode,
                                      MTD_OFFSET_USE,
                                      sSrcValueColumn->module->staticNull );
 
+    /* BUG-47690 Inlist ∫π«’ Index fatal */
+    IDE_TEST( mtfInlistGetCountAndMaxLength( sSrcValue,
+                                             &sCount,
+                                             &sMaxLength )
+              != IDE_SUCCESS );
+
+    /* BUG-47690 Inlist Ω«¡¶ ±∏«— ≈‰≈´ ∞πºˆ¿« Range µ⁄∑Œ Inlistinfo¿« address∏¶
+     * ¡ˆ¡§«œ∞Ì InlistInfo±Ó¡ˆ ∆˜«‘«— ∏ﬁ∏∏Æ ≈©±‚∏¶ useOffsetø° ¡ˆ¡§«—¥Ÿ
+     */
+    sInlistInfo = (mtcInlistInfo *) ( (UChar *)aRange +
+                  ( (ID_SIZEOF(smiRange) + ID_SIZEOF(mtkRangeCallBack) * 2 ) * sCount ) );
+
+    aInfo->useOffset = ((ID_SIZEOF(smiRange) + ID_SIZEOF(mtkRangeCallBack) * 2 ) * sCount ) + ID_SIZEOF(mtcInlistInfo);
+
     IDE_TEST( mtfInlistTokenize( sIndexColumn->module,
                                  sSrcValueColumn,
                                  sSrcValue,
+                                 sCount,
+                                 sMaxLength,
                                  sInlistInfo,
-                                 aTemplate,
-                                 aInfo ) );
+                                 aInfo )
+              != IDE_SUCCESS );
 
     sCurRange = aRange;
 
@@ -366,7 +386,7 @@ IDE_RC mtfInlistExtractRange( mtcNode*       aNode,
             if ( aInfo->compValueType == MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL ||
                  aInfo->compValueType == MTD_COMPARE_MTDVAL_MTDVAL )
             {
-                // mtd typeÏùò column valueÏóê ÎåÄÌïú range callback
+                // mtd type¿« column valueø° ¥Î«— range callback
                 sCurRange->minimum.callback     = mtk::rangeCallBackGT4Mtd;
                 sCurRange->maximum.callback     = mtk::rangeCallBackLT4Mtd;
             }
@@ -376,7 +396,7 @@ IDE_RC mtfInlistExtractRange( mtcNode*       aNode,
                      ( aInfo->compValueType == MTD_COMPARE_STOREDVAL_STOREDVAL ) )
                 {
                     /* MTD_COMPARE_STOREDVAL_MTDVAL
-                       stored typeÏùò column valueÏóê ÎåÄÌïú range callback */
+                       stored type¿« column valueø° ¥Î«— range callback */
                     sCurRange->minimum.callback     = mtk::rangeCallBackGT4Stored;
                     sCurRange->maximum.callback     = mtk::rangeCallBackLT4Stored;
                 }
@@ -403,13 +423,13 @@ IDE_RC mtfInlistExtractRange( mtcNode*       aNode,
         else
         {
             //---------------------------
-            // RangeCallBack ÏÑ§Ï†ï
+            // RangeCallBack º≥¡§
             //---------------------------
 
             if ( aInfo->compValueType == MTD_COMPARE_FIXED_MTDVAL_FIXED_MTDVAL ||
                  aInfo->compValueType == MTD_COMPARE_MTDVAL_MTDVAL )
             {
-                // mtd typeÏùò column valueÏóê ÎåÄÌïú range callback
+                // mtd type¿« column valueø° ¥Î«— range callback
                 sCurRange->minimum.callback     = mtk::rangeCallBackGE4Mtd;
                 sCurRange->maximum.callback     = mtk::rangeCallBackLE4Mtd;
             }
@@ -419,7 +439,7 @@ IDE_RC mtfInlistExtractRange( mtcNode*       aNode,
                      ( aInfo->compValueType == MTD_COMPARE_STOREDVAL_STOREDVAL ) )
                 {
                     /* MTD_COMPARE_STOREDVAL_MTDVAL
-                       stored typeÏùò column valueÏóê ÎåÄÌïú range callback */
+                       stored type¿« column valueø° ¥Î«— range callback */
                     sCurRange->minimum.callback     = mtk::rangeCallBackGE4Stored;
                     sCurRange->maximum.callback     = mtk::rangeCallBackLE4Stored;
                 }
@@ -432,7 +452,7 @@ IDE_RC mtfInlistExtractRange( mtcNode*       aNode,
             }
 
             //----------------------------------------------
-            // MinimumCallBack & MaximumCallBack Ï†ïÎ≥¥ ÏÑ§Ï†ï
+            // MinimumCallBack & MaximumCallBack ¡§∫∏ º≥¡§
             //----------------------------------------------
 
             sMinimumCallBack->columnIdx  = aInfo->columnIdx;
@@ -711,7 +731,7 @@ IDE_RC mtfInlistCalculate( mtcNode*     aNode,
         sIndex++;
     } /* while */
 
-    /* ÎßàÏßÄÎßâ , ÎòêÎäî ','Í∞Ä ÏóÜÎäî Í≤ΩÏö∞ */
+    /* ∏∂¡ˆ∏∑ , ∂«¥¬ ','∞° æ¯¥¬ ∞ÊøÏ */
     if ( ( sIndex == sSrcValue->length ) && ( sValue != MTD_BOOLEAN_TRUE ) )
     {
         if ( ( sModule == &mtdFloat ) || ( sModule == &mtdNumeric ) )
@@ -793,36 +813,19 @@ IDE_RC mtfInlistCalculate( mtcNode*     aNode,
     return IDE_FAILURE;
 }
 
-IDE_RC mtfInlistTokenize( const mtdModule * aModule,
-                          mtcColumn       * /* aValueColumn */,
-                          const void      * aValue,
-                          mtcInlistInfo   * aInlistInfo,
-                          mtcTemplate     * /* aTemplate */,
-                          mtkRangeInfo    * aInfo )
+/* BUG-47690 Inlist ∫π«’ Index fatal */
+IDE_RC mtfInlistGetCountAndMaxLength( const void * aValue,
+                                      UInt       * aCount,
+                                      UInt       * aMaxLength )
 {
     const mtdCharType * sSrcValue;
-    UInt                sIndex;
-    UInt                sCommaCount;
-    UInt                sOffset;
-    void              * sTokenValue;
-    UInt                sTokenLength;
-    UInt                sTokenIdx;
-    UInt                sTokenMaxLength;
-    UInt                sValueOffset;
-    mtdValueInfo        sValueInfo1;
-    mtdValueInfo        sValueInfo2;
-    idBool              sIsDuplicate;
-    SInt                sCompare;
-    UInt                i;
-    UInt                j;
+    UInt                sIndex = 0;
+    UInt                sCommaCount = 0;
+    UInt                sTokenLength = 0;
+    UInt                sTokenMaxLength = 0;
 
+    /* comma ∞≥ºˆ∏¶ ºº∞Ì ∞°¿Â ≈´ ≈‰≈´¿« ±Ê¿Ã∏¶ æÚ¥¬¥Ÿ.*/
     sSrcValue = (const mtdCharType *)aValue;
-
-    /* comma Í∞úÏàòÎ•º ÏÑ∏Í≥† Í∞ÄÏû• ÌÅ∞ ÌÜ†ÌÅ∞Ïùò Í∏∏Ïù¥Î•º ÏñªÎäîÎã§.*/
-    sIndex          = 0;
-    sCommaCount     = 0;
-    sTokenLength    = 0;
-    sTokenMaxLength = 0;
 
     while ( sIndex < sSrcValue->length )
     {
@@ -839,11 +842,57 @@ IDE_RC mtfInlistTokenize( const mtdModule * aModule,
 
         sIndex++;
     }
-    sTokenMaxLength = IDL_MAX( sTokenMaxLength, sTokenLength );
-    IDE_TEST_RAISE( sTokenLength > MTC_INLIST_ELEMRNT_LENGTH_MAX, ERR_INVALID_LENGTH );
 
-    aInlistInfo->count = sCommaCount + 1;
-    IDE_TEST_RAISE( aInlistInfo->count > MTC_INLIST_ELEMENT_COUNT_MAX, ERR_INVALID_VALUE );
+    sTokenMaxLength = IDL_MAX( sTokenMaxLength, sTokenLength );
+
+    IDE_TEST_RAISE( sTokenMaxLength > MTC_INLIST_ELEMRNT_LENGTH_MAX, ERR_INVALID_LENGTH );
+    *aMaxLength = sTokenMaxLength;
+
+    *aCount = sCommaCount + 1;
+    IDE_TEST_RAISE( *aCount > MTC_INLIST_ELEMENT_COUNT_MAX, ERR_INVALID_VALUE );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_INVALID_LENGTH );
+    {
+        IDE_SET( ideSetErrorCode( mtERR_ABORT_VALIDATE_INVALID_LENGTH ) );
+    }
+    IDE_EXCEPTION( ERR_INVALID_VALUE );
+    {
+        IDE_SET( ideSetErrorCode( mtERR_ABORT_VALIDATE_INVALID_VALUE ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC mtfInlistTokenize( const mtdModule * aModule,
+                          mtcColumn       * /* aValueColumn */,
+                          const void      * aValue,
+                          UInt              aCount,
+                          UInt              aMaxLength,
+                          mtcInlistInfo   * aInlistInfo,
+                          mtkRangeInfo    * aInfo )
+{
+    const mtdCharType * sSrcValue;
+    UInt                sIndex;
+    UInt                sOffset;
+    void              * sTokenValue;
+    UInt                sTokenLength;
+    UInt                sTokenIdx;
+    UInt                sTokenMaxLength;
+    UInt                sValueOffset;
+    mtdValueInfo        sValueInfo1;
+    mtdValueInfo        sValueInfo2;
+    idBool              sIsDuplicate;
+    SInt                sCompare;
+    UInt                i;
+    UInt                j;
+
+    sSrcValue = (const mtdCharType *)aValue;
+
+    aInlistInfo->count = aCount;
+    sTokenMaxLength = aMaxLength;
 
     /* clolumn init */
     if ( ( aModule == &mtdFloat ) || ( aModule == &mtdNumeric ) )
@@ -928,7 +977,7 @@ IDE_RC mtfInlistTokenize( const mtdModule * aModule,
             sOffset = sIndex + 1;
             sTokenLength = 0;
 
-            /* BUG-43803 Ï§ëÎ≥µÏ†úÍ±∞ÏôÄ Ï†ïÎ†¨ */
+            /* BUG-43803 ¡ﬂ∫π¡¶∞≈øÕ ¡§∑ƒ */
             sIsDuplicate = ID_FALSE;
             for ( i = 0; i < sTokenIdx; i++ )
             {
@@ -950,7 +999,7 @@ IDE_RC mtfInlistTokenize( const mtdModule * aModule,
                 }
                 else if ( sCompare > 0 )
                 {
-                    /* Ïó¨Í∏∞Ïóê ÏÇΩÏûÖ */
+                    /* ø©±‚ø° ª¿‘ */
                     break;
                 }
                 else
@@ -961,7 +1010,7 @@ IDE_RC mtfInlistTokenize( const mtdModule * aModule,
 
             if ( sIsDuplicate == ID_FALSE )
             {
-                /* iÎ≤àÏß∏Ïóê ÏÇΩÏûÖÌïúÎã§ */
+                /* iπ¯¬∞ø° ª¿‘«—¥Ÿ */
                 for ( j = sTokenIdx; j > i; j-- )
                 {
                     aInlistInfo->valueArray[j] = aInlistInfo->valueArray[j - 1];
@@ -977,7 +1026,7 @@ IDE_RC mtfInlistTokenize( const mtdModule * aModule,
                 }
                 else
                 {
-                    /* char, varchar alignÏùÄ Í∞ôÎã§ */
+                    /* char, varchar align¿∫ ∞∞¥Ÿ */
                     sValueOffset += idlOS::align(
                         ((mtdCharType*)sTokenValue)->length + mtdChar.headerSize(),
                         mtdChar.align );
@@ -992,7 +1041,7 @@ IDE_RC mtfInlistTokenize( const mtdModule * aModule,
         sIndex++;
     }
 
-    /* ÎßàÏßÄÎßâ , ÎòêÎäî ','Í∞Ä ÏóÜÎäî Í≤ΩÏö∞ */
+    /* ∏∂¡ˆ∏∑ , ∂«¥¬ ','∞° æ¯¥¬ ∞ÊøÏ */
     if ( ( aModule == &mtdFloat ) || ( aModule == &mtdNumeric ) )
     {
         sTokenValue = (mtdNumericType*)( (UChar *)aInlistInfo->valueBuf + sValueOffset );
@@ -1041,7 +1090,7 @@ IDE_RC mtfInlistTokenize( const mtdModule * aModule,
         }
         else if ( sCompare > 0 )
         {
-            /* Ïó¨Í∏∞Ïóê ÏÇΩÏûÖ */
+            /* ø©±‚ø° ª¿‘ */
             break;
         }
         else
@@ -1052,7 +1101,7 @@ IDE_RC mtfInlistTokenize( const mtdModule * aModule,
 
     if ( sIsDuplicate == ID_FALSE )
     {
-        /* iÎ≤àÏß∏Ïóê ÏÇΩÏûÖÌïúÎã§ */
+        /* iπ¯¬∞ø° ª¿‘«—¥Ÿ */
         for ( j = sTokenIdx; j > i; j-- )
         {
             aInlistInfo->valueArray[j] = aInlistInfo->valueArray[j - 1];
@@ -1072,15 +1121,6 @@ IDE_RC mtfInlistTokenize( const mtdModule * aModule,
     {
         IDE_SET( ideSetErrorCode( mtERR_ABORT_CONVERSION_NOT_APPLICABLE ) );
     }
-    IDE_EXCEPTION( ERR_INVALID_LENGTH );
-    {
-        IDE_SET( ideSetErrorCode( mtERR_ABORT_VALIDATE_INVALID_LENGTH ) );
-    }
-    IDE_EXCEPTION( ERR_INVALID_VALUE );
-    {
-        IDE_SET( ideSetErrorCode( mtERR_ABORT_VALIDATE_INVALID_VALUE ) );
-    }
-
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;

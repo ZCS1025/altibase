@@ -41,7 +41,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfConcFinalizeModule = {
     1 | MTC_NODE_OPERATOR_MISC | MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -134,10 +134,10 @@ IDE_RC qsfCalculate_SpConcFinalize( mtcNode*     aNode,
     sThrCnt  = sThrMgr->mThrCnt;
     sConcMgr = sStatement->session->mQPSpecific.mConcMgr;
 
-    // ì‹¤íŒ¨í•˜ë©´ FATAL ë°œìƒí•œë‹¤.
+    // ½ÇÆÐÇÏ¸é FATAL ¹ß»ýÇÑ´Ù.
     IDE_TEST( qmcThrObjFinal( sThrMgr ) != IDE_SUCCESS );
 
-    // ì‹¤íŒ¨í•˜ë©´ FATAL ë°œìƒí•œë‹¤.
+    // ½ÇÆÐÇÏ¸é FATAL ¹ß»ýÇÑ´Ù.
     IDE_TEST( qcg::releaseConcThr( sThrCnt ) != IDE_SUCCESS );
 
     // sThrMgr->mMemory  : iduMemory

@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qsxPkg.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsxPkg.cpp 86373 2019-11-19 23:12:16Z khkwak $
  **********************************************************************/
 
 #include <idl.h>
@@ -100,7 +100,7 @@ IDE_RC qsxPkg::destroyPkgObjectInfo(
 {
     IDE_DASSERT( *aPkgObjectInfo != NULL );
 
-    // iduLatch::destroyëŠ” ë°˜ë“œì‹œ ì„±ê³µí•¨. 
+    // iduLatch::destroy´Â ¹Ýµå½Ã ¼º°øÇÔ. 
     (void)(*aPkgObjectInfo)->latchForStatus.destroy();
 
     (void)(*aPkgObjectInfo)->latch.destroy();
@@ -476,9 +476,9 @@ IDE_RC qsxPkg::latchXForRecompile( qsOID          aPkgOID )
  *
  * Description :
  *   BUG-18854
- *   í”„ë¡œì‹œì € ì‹¤í–‰ ì¤‘ ë°œìƒí•œ recompileì— í•œí•´ì„œ
- *   X latch ë¥¼ ìž¡ì„ ë•Œ ì‹¤íŒ¨í•˜ë©´ rebuildì—ëŸ¬ë¥¼ ì˜¬ë ¤ì„œ
- *   abort resource busyì—ëŸ¬ì™€ êµ¬ë¶„í•œë‹¤.
+ *   ÇÁ·Î½ÃÀú ½ÇÇà Áß ¹ß»ýÇÑ recompile¿¡ ÇÑÇØ¼­
+ *   X latch ¸¦ ÀâÀ» ¶§ ½ÇÆÐÇÏ¸é rebuild¿¡·¯¸¦ ¿Ã·Á¼­
+ *   abort resource busy¿¡·¯¿Í ±¸ºÐÇÑ´Ù.
  *
  *
  * Implementation :
@@ -578,7 +578,7 @@ IDE_RC qsxPkg::makeStatusValid( qcStatement * aStatement,
               != IDE_SUCCESS);
     sState = 1;
 
-    // latchë¥¼ ìž¡ì•˜ë‹¤ë©´ pkgInfoê°€ ë°˜ë“œì‹œ ìžˆì–´ì•¼ í•œë‹¤.
+    // latch¸¦ Àâ¾Ò´Ù¸é pkgInfo°¡ ¹Ýµå½Ã ÀÖ¾î¾ß ÇÑ´Ù.
     IDE_ERROR( sObjInfo->pkgInfo != NULL );
 
     if( sObjInfo->pkgInfo->sessionID == QCG_GET_SESSION_ID( aStatement ) )
@@ -592,8 +592,8 @@ IDE_RC qsxPkg::makeStatusValid( qcStatement * aStatement,
     }
     else
     {
-        // ë‹¤ë¥¸ session ì—ì„œ PSMì„ invalid ì‹œí‚¨ ê²½ìš°
-        // valid ìƒíƒœë¡œ ë³€ê²½í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // ´Ù¸¥ session ¿¡¼­ PSMÀ» invalid ½ÃÅ² °æ¿ì
+        // valid »óÅÂ·Î º¯°æÇÏÁö ¾Ê´Â´Ù.
     }
 
     sState = 0;
@@ -627,7 +627,7 @@ IDE_RC qsxPkg::makeStatusValidTx( qcStatement * aStatement,
               != IDE_SUCCESS);
     sState = 1;
 
-    // latchë¥¼ ìž¡ì•˜ë‹¤ë©´ pkgInfoê°€ ë°˜ë“œì‹œ ìžˆì–´ì•¼ í•œë‹¤.
+    // latch¸¦ Àâ¾Ò´Ù¸é pkgInfo°¡ ¹Ýµå½Ã ÀÖ¾î¾ß ÇÑ´Ù.
     IDE_ERROR( sObjInfo->pkgInfo != NULL );
 
     if( sObjInfo->pkgInfo->sessionID == QCG_GET_SESSION_ID( aStatement ) )
@@ -641,8 +641,8 @@ IDE_RC qsxPkg::makeStatusValidTx( qcStatement * aStatement,
     }
     else
     {
-        // ë‹¤ë¥¸ session ì—ì„œ PSMì„ invalid ì‹œí‚¨ ê²½ìš°
-        // valid ìƒíƒœë¡œ ë³€ê²½í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // ´Ù¸¥ session ¿¡¼­ PSMÀ» invalid ½ÃÅ² °æ¿ì
+        // valid »óÅÂ·Î º¯°æÇÏÁö ¾Ê´Â´Ù.
     }
 
     sState = 0;
@@ -885,7 +885,8 @@ IDE_RC qsxPkg::findSubprogramPlanTree(
             if ( sSubprogram->subprogramID == aSubprogramID )
             {
                 if ( (sSubprogramPlanTree->block == NULL) &&
-                     ( sSubprogramPlanTree->procType != QS_EXTERNAL) )
+                     ( (sSubprogramPlanTree->procType != QS_EXTERNAL_C) &&
+                       (sSubprogramPlanTree->procType != QS_INTERNAL_C) ) )
                 {
                     // subprogram declaration
                     // Nothing to do.

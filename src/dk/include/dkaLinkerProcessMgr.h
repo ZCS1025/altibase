@@ -24,7 +24,6 @@
 
 #include <dka.h>
 #include <dkuProperty.h>
-#include <dkuSharedProperty.h>
 
 class dkaLinkerProcessMgr
 {
@@ -103,7 +102,8 @@ public:
 
 private:
     static IDE_RC checkAltilinkerRestartNumberAndReloadLinkerProperties( void );
-    static IDE_RC startLinkerProcessInternal( void );
+    static IDE_RC startLinkerProcessInternal( SInt aMinus1onlyRetry,
+                                              SInt *aPid );
     static IDE_RC shutdownLinkerProcessInternal( idBool  aFlag );
     static IDE_RC dumpStackTraceInternal( void );
     

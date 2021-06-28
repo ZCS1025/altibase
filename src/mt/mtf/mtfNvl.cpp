@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfNvl.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfNvl.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -52,7 +52,7 @@ static IDE_RC mtfNvlEstimate( mtcNode*     aNode,
 mtfModule mtfNvl = {
     1|MTC_NODE_OPERATOR_FUNCTION|MTC_NODE_EAT_NULL_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfNvlFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -101,10 +101,10 @@ IDE_RC mtfNvlEstimate( mtcNode*     aNode,
     }
 
     // To fix BUG-15093
-    // numeric moduleì´ ì„ íƒëœ ê²½ìš° floatìœ¼ë¡œ ë°”ê¾¸ì–´ì•¼ í•¨.
+    // numeric moduleÀÌ ¼±ÅÃµÈ °æ¿ì floatÀ¸·Î ¹Ù²Ù¾î¾ß ÇÔ.
 
     // PROJ-2002 Column Security
-    // ë³´ì•ˆ ì»¬ëŸ¼ì¸ ê²½ìš° ì›ë³¸ ì»¬ëŸ¼ìœ¼ë¡œ ë°”ê¾¼ë‹¤.
+    // º¸¾È ÄÃ·³ÀÎ °æ¿ì ¿øº» ÄÃ·³À¸·Î ¹Ù²Û´Ù.
     if( sModules[0] == &mtdNumeric )
     {
         sModules[0] = &mtdFloat;
@@ -152,7 +152,7 @@ IDE_RC mtfNvlEstimate( mtcNode*     aNode,
         }
         else
         {
-            /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
+            /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
             aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
         }
     }
@@ -167,7 +167,7 @@ IDE_RC mtfNvlEstimate( mtcNode*     aNode,
     }
 
     // BUG-23102
-    // mtcColumnìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
+    // mtcColumnÀ¸·Î ÃÊ±âÈ­ÇÑ´Ù.
     if( aStack[1].column->column.size > aStack[2].column->column.size )
     {
         mtc::initializeColumn( aStack[0].column, aStack[1].column );
@@ -237,7 +237,7 @@ IDE_RC mtfNvlCalculate( mtcNode*     aNode,
     }
 
     // PROJ-2002 Column Security
-    // aNode->argumentsì˜ conversion ë…¸ë“œë¥¼ ì—°ì‚°í•´ì•¼ í•œë‹¤.
+    // aNode->argumentsÀÇ conversion ³ëµå¸¦ ¿¬»êÇØ¾ß ÇÑ´Ù.
     if( sNode->conversion != NULL )
     {
         IDE_TEST( mtf::convertCalculate( sNode,

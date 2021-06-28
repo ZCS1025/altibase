@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLPrepareCommand.cpp 80544 2017-07-19 08:04:46Z daramix $
+ * $Id: iSQLPrepareCommand.cpp 86502 2020-01-07 05:24:08Z bethy $
  **********************************************************************/
 
 #include <utString.h>
@@ -33,7 +33,6 @@ extern iSQLCompiler                  *gSQLCompiler;
 extern iSQLHostVarMgr                 gHostVarMgr;
 extern iSQLProperty                   gProperty;
 extern iSQLProgOption                 gProgOption;
-extern ulnServerMessageCallbackStruct gMessageCallbackStruct;
 
 extern int SaveFileData(const char *file, UChar *data);
 
@@ -128,9 +127,9 @@ iSQLExecuteCommand::BindParam()
     {
         /**
          * PROJ-1584 DML Return Clause 
-         * iSQL ì—ì„œëŠ” input typeì´ í•­ìƒ INPUT
-         * ì´ì˜€ìœ¼ë‚˜ Return Clause ì¶”ê°€ë¡œ ì¸í•´
-         * OUTPUT ê°€ëŠ¥.
+         * iSQL ¿¡¼­´Â input typeÀÌ Ç×»ó INPUT
+         * ÀÌ¿´À¸³ª Return Clause Ãß°¡·Î ÀÎÇØ
+         * OUTPUT °¡´É.
          **/
         /* BUG-42521 Support the function for getting In,Out Type */
         if (t_node->element.inOutType == SQL_PARAM_TYPE_UNKNOWN)
@@ -184,8 +183,7 @@ iSQLExecuteCommand::BindParam()
             DisconnectDB();
             Exit(0);
         }
-        uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(), &gErrorMgr);
-        m_Spool->Print();
+        PrintMultiError();
     }
     IDE_EXCEPTION_END;
 
@@ -193,15 +191,11 @@ iSQLExecuteCommand::BindParam()
 }
 
 IDE_RC
-iSQLExecuteCommand::PrepareSelectOrDMLStmt(SChar           * aCmdStr,
-                                           SChar           * aQueryStr,
+iSQLExecuteCommand::PrepareSelectOrDMLStmt(SChar           * aQueryStr,
                                            iSQLCommandKind   aCmdKind)
 {
     SInt   sRowCnt;
     SQLLEN sTmpSQLLEN;
-
-    idlOS::snprintf(m_Spool->m_Buf, gProperty.GetCommandLen(), "%s", aCmdStr);
-    m_Spool->PrintCommand();
 
     m_ISPApi->SetQuery(aQueryStr);
 
@@ -269,8 +263,7 @@ iSQLExecuteCommand::PrepareSelectOrDMLStmt(SChar           * aCmdStr,
             m_Spool->Print();
             DisconnectDB();
         }
-        uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(), &gErrorMgr);
-        m_Spool->Print();
+        PrintMultiError();
     }
 
     IDE_EXCEPTION_END;
@@ -282,7 +275,7 @@ iSQLExecuteCommand::PrepareSelectOrDMLStmt(SChar           * aCmdStr,
 
 /**
  * PROJ-1584 DML Return Clause 
- * Execute ëœ ê²°ê³¼ë¥¼ HostVarNodeì— set.
+ * Execute µÈ °á°ú¸¦ HostVarNode¿¡ set.
  **/
 void iSQLExecuteCommand::returnBindParam()
 {
@@ -303,48 +296,45 @@ void iSQLExecuteCommand::returnBindParam()
 }
 
 /*
- * [select * from tab ì¿¼ë¦¬ì˜ ì‹¤í–‰]
- * í…Œì´ë¸” ë¦¬ìŠ¤íŠ¸ë¥¼ ë³´ì—¬ì£¼ê±°ë‚˜ TABí…Œì´ë¸”ì˜ ROWë¥¼ ë³´ì—¬ì¤€ë‹¤.
+ * [select * from tab Äõ¸®ÀÇ ½ÇÇà]
+ * Å×ÀÌºí ¸®½ºÆ®¸¦ º¸¿©ÁÖ°Å³ª TABÅ×ÀÌºíÀÇ ROW¸¦ º¸¿©ÁØ´Ù.
  *
- * To Fix BUG-14965 Tab í…Œì´ë¸” ì¡´ìž¬í• ë•Œ SELECT * FROM TABìœ¼ë¡œ ë‚´ìš©ì¡°íšŒ ë¶ˆê°€
+ * To Fix BUG-14965 Tab Å×ÀÌºí Á¸ÀçÇÒ¶§ SELECT * FROM TABÀ¸·Î ³»¿ëÁ¶È¸ ºÒ°¡
  *
- * aCmdStr      [IN] "prepare select * from tab;\n" ì»¤ë§¨ë“œ
- * aQueryStr    [IN] "select * from tab" ì¿¼ë¦¬
- * aQueryBufLen [IN] aQueryStrì´ ê°€ë¦¬í‚¤ëŠ” ë²„í¼ì˜ í¬ê¸°
+ * aCmdStr      [IN] "prepare select * from tab;\n" Ä¿¸Çµå
+ * aQueryStr    [IN] "select * from tab" Äõ¸®
+ * aQueryBufLen [IN] aQueryStrÀÌ °¡¸®Å°´Â ¹öÆÛÀÇ Å©±â
  *
  */
-IDE_RC iSQLExecuteCommand::DisplayTableListOrPrepare(SChar *aCmdStr,
-                                                     SChar *aQueryStr,
+IDE_RC iSQLExecuteCommand::DisplayTableListOrPrepare(SChar *aQueryStr,
                                                      SInt   aQueryBufLen)
 {
     idBool sIsTabExist;
 
-    /* TAB í…Œì´ë¸”ì´ ì¡´ìž¬í•˜ëŠ”ì§€ ì²´í¬(í…Œì´ë¸” ìˆ˜ ì¡°íšŒ) */
+    /* TAB Å×ÀÌºíÀÌ Á¸ÀçÇÏ´ÂÁö Ã¼Å©(Å×ÀÌºí ¼ö Á¶È¸) */
     IDE_TEST_RAISE(m_ISPApi->CheckTableExist(gProperty.GetUserName(),
                                              (SChar *)"TAB", &sIsTabExist)
                    != IDE_SUCCESS, TableExistCheckError);
 
-    if (sIsTabExist == ID_TRUE) /* TAB í…Œì´ë¸” ì¡´ìž¬ */
+    if (sIsTabExist == ID_TRUE) /* TAB Å×ÀÌºí Á¸Àç */
     {
-        /* TAB í…Œì´ë¸”ì˜ ëª¨ë“  rowë¥¼ fetch */
+        /* TAB Å×ÀÌºíÀÇ ¸ðµç row¸¦ fetch */
         IDE_TEST(gSQLCompiler->ParsingPrepareSQL(aQueryStr, aQueryBufLen)
                  != IDE_SUCCESS);
-        IDE_TEST(PrepareSelectOrDMLStmt(aCmdStr, aQueryStr, PREP_SELECT_COM)
+        IDE_TEST(PrepareSelectOrDMLStmt(aQueryStr, PREP_SELECT_COM)
                  != IDE_SUCCESS);
     }
-    else /* TAB ì´ë¼ëŠ” í…Œì´ë¸”ì´ ì—†ìŒ */
+    else /* TAB ÀÌ¶ó´Â Å×ÀÌºíÀÌ ¾øÀ½ */
     {
-        /* ì‹œìŠ¤í…œì— ì¡´ìž¬í•˜ëŠ” ëª¨ë“  í…Œì´ë¸” ë¦¬ìŠ¤íŠ¸ë¥¼ fetch */
-        IDE_TEST(DisplayTableList(aCmdStr) != IDE_SUCCESS);
+        /* ½Ã½ºÅÛ¿¡ Á¸ÀçÇÏ´Â ¸ðµç Å×ÀÌºí ¸®½ºÆ®¸¦ fetch */
+        IDE_TEST(DisplayTableList() != IDE_SUCCESS);
     }
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(TableExistCheckError);
     {
-        uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(),
-                            &gErrorMgr);
-        m_Spool->Print();
+        PrintMultiError();
 
         if (idlOS::strcmp(m_ISPApi->GetErrorState(), "08S01") == 0)
         {

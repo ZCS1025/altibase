@@ -18,8 +18,8 @@
 /***********************************************************************
  * $Id: sdnFT.h 19550 2007-02-07 03:09:40Z leekmo $
  *
- * Disk IndexÏùò DUMPÎ•º ÏúÑÌïú Ìï®Ïàò
- * BtreeÏôÄ RTree Í≥µÌÜµÏ†ÅÏù∏ Í≤ÉÎì§ÏùÑ DumpÌïúÎã§.
+ * Disk Index¿« DUMP∏¶ ¿ß«— «‘ºˆ
+ * BtreeøÕ RTree ∞¯≈Î¿˚¿Œ ∞ÕµÈ¿ª Dump«—¥Ÿ.
  *
  **********************************************************************/
 
@@ -31,7 +31,7 @@
 # include <sdnbDef.h>
 
 //-------------------------------
-// D$DISK_INDEX_CTS Ïùò Íµ¨Ï°∞
+// D$DISK_INDEX_CTS ¿« ±∏¡∂
 //-------------------------------
 
 typedef struct sdnDumpCTS            
@@ -40,18 +40,17 @@ typedef struct sdnDumpCTS
     ULong          mPageSeq;          // PAGE_SEQ
     SShort         mNthSlot;          // NTH_SLOT
     SChar         *mCommitSCN;        // COMMIT_SCN
-    SChar         *mNxtCommitSCN;     // NEXT_COMMIT_SCN
+    SChar         *mNxtCommitSCN;     // NEXT_COMMIT_SCN - unused
     UChar          mState;            // STATE
-    UChar          mChained;          // CHAINED
+    UChar          mChained;          // CHAINED - unused
     UInt           mTSSlotPID;        // TSS_PAGEID
     UShort         mTSSlotNum;        // TSS_SLOTNUM
-    UInt           mUndoPID;          // UNDO_PAGEID
-    UShort         mUndoSlotNum;      // UNDO_SLOTNUM
+    UInt           mUndoPID;          // UNDO_PAGEID  - unused
+    UShort         mUndoSlotNum;      // UNDO_SLOTNUM - unused
     UShort         mRefCnt;           // REF_CNT
     UShort         mRefKey1;          // REF_KEY1
     UShort         mRefKey2;          // REF_KEY2
     UShort         mRefKey3;          // REF_KEY3
-    UShort         mRefKey4;          // REF_KEY4
 } sdnDumpCTS;
 
 class sdnFT

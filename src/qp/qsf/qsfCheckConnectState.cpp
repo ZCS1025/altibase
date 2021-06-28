@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsfCheckConnectState.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qsfCheckConnectState.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <idl.h>
@@ -47,7 +47,7 @@ static IDE_RC qsfEstimate( mtcNode     * aNode,
 mtfModule qsfCheckConnectStateModule = {
     1 | MTC_NODE_OPERATOR_MISC | MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0, /* default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜) */
+    1.0, /* default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô) */
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -105,7 +105,7 @@ IDE_RC qsfEstimate( mtcNode     * aNode,
 
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
-    /* Returnê°’ì€ Integer */
+    /* Return°ªÀº Integer */
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      sModule,
                                      0,
@@ -182,8 +182,8 @@ IDE_RC qsfCalculate_CheckConnectState( mtcNode     * aNode,
 
         switch ( sCurrentState )
         {
-            /* PROJ-2657 UTL_SMTP ì§€ì›
-             * - SMTP ì„œë²„ ìƒì˜ ì˜ˆì™¸ì²˜ë¦¬ëŠ” ì œì™¸í•œë‹¤.
+            /* PROJ-2657 UTL_SMTP Áö¿ø
+             * - SMTP ¼­¹ö »óÀÇ ¿¹¿ÜÃ³¸®´Â Á¦¿ÜÇÑ´Ù.
              */
             case QC_CONNECTION_STATE_NOCONNECT:
                 IDE_RAISE( ERR_ARGUMENT_NOT_APPLICABLE );

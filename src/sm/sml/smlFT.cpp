@@ -23,16 +23,12 @@
  *  X$LOCK Fixed Table
  * ----------------------------------------------*/
 
-#include <idl.h>
-#include <idu.h>
-#include <ideErrorMgr.h>
 #include <smErrorCode.h>
-#include <smlDef.h>
 #include <smDef.h>
 #include <smr.h>
 #include <smc.h>
 #include <smp.h>
-#include <smlLockMgr.h>
+#include <sml.h>
 #include <smlReq.h>
 #include <smlFT.h>
 
@@ -40,14 +36,15 @@ class smlLockInfo
 {
 public:
     smiLockItemType  mLockItemType;
-    scSpaceID        mSpaceID;      // ìž ê¸ˆì„ íšë“í•œ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ID
-    ULong            mItemID;       // í…Œì´ë¸”íƒ€ìž…ì´ë¼ë©´ Table OID
-                                    // ë””ìŠ¤í¬ ë°ì´íƒ€íŒŒì¼ì¸ ê²½ìš° File ID
+    scSpaceID        mSpaceID;      // Àá±ÝÀ» È¹µæÇÑ Å×ÀÌºí½ºÆäÀÌ½º ID
+    ULong            mItemID;       // Å×ÀÌºíÅ¸ÀÔÀÌ¶ó¸é Table OID
+                                    // µð½ºÅ© µ¥ÀÌÅ¸ÆÄÀÏÀÎ °æ¿ì File ID
     smTID            mTransID;
-    SInt             mSlotID;      // lockì„ ìš”ì²­í•œ transactionì˜ slot id
+    SInt             mSlotID;      // lockÀ» ¿äÃ»ÇÑ transactionÀÇ slot id
     UInt             mLockCnt;
-    idBool           mBeGrant;   // grantë˜ì—ˆëŠ”ì§€ë¥¼ ë‚˜íƒ€ë‚´ëŠ” flag, BeGranted
+    idBool           mBeGrant;   // grantµÇ¾ú´ÂÁö¸¦ ³ªÅ¸³»´Â flag, BeGranted
     SInt             mLockMode;
+    idBool           mUseLockItem;
     
     void getInfo(const smlLockNode* aNode)
     {
@@ -58,11 +55,144 @@ public:
         mSlotID         = aNode->mSlotID;
         mLockCnt        = aNode->mLockCnt;
         mBeGrant        = aNode->mBeGrant;
-        mLockMode       = smlLockMgr::getLockMode(aNode);
+        mLockMode       = aNode->mLockMode;
     }
 };
 
-IDE_RC smlFT::buildRecordForLockTBL(idvSQL              * /*aStatistics*/,
+/* --------------------------------------------------------------------
+ * BUG-47388
+ * iddRPTree¿¡¼­ »ç¿ëÇÒ compare ÇÔ¼ö,
+ * void pointer ´ë½Å LockItemID¸¦ »ç¿ëÇÑ´Ù.
+ * ------------------------------------------------------------------*/
+SInt smlFT::compLockItemID( const void* aLeft, const void* aRight )
+{
+    ULong sLeft  = *(ULong*)aLeft;
+    ULong sRight = *(ULong*)aRight;
+
+    if ( sLeft == sRight ) return 0;
+    if ( sLeft >  sRight ) return 1;
+    return -1;
+}
+
+IDE_RC smlFT::getLockItemNodes( void                *aHeader,
+                                iduFixedTableMemory *aMemory,
+                                smlLockItem         *aLockItem )
+{
+    SInt                i;
+    smlLockNode*        sCurLockNode;
+    smlLockInfo         sLockInfo;
+
+    sLockInfo.mUseLockItem = ID_TRUE;
+
+    // Grant Lock Node list
+    sCurLockNode = aLockItem->mFstLockGrant;
+
+    for(i = 0; i < aLockItem->mGrantCnt; i++)
+    {
+        sLockInfo.getInfo(sCurLockNode);
+        IDE_TEST(iduFixedTable::buildRecord(aHeader,
+                                            aMemory,
+                                            (void *) &sLockInfo)
+             != IDE_SUCCESS);
+        sCurLockNode = sCurLockNode->mNxtLockNode;
+    }
+
+    sCurLockNode = aLockItem->mFstLockRequest;
+
+    // request lock node list
+    for(i = 0; i < aLockItem->mRequestCnt; i++)
+    {
+        sLockInfo.getInfo(sCurLockNode);
+        IDE_TEST(iduFixedTable::buildRecord(aHeader,
+                                            aMemory,
+                                            (void *) &sLockInfo)
+                 != IDE_SUCCESS);
+        // alloc new lock node for performance view.
+        sCurLockNode = sCurLockNode->mNxtLockNode;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/* --------------------------------------------------------------------
+ * BUG-47388 
+ * Transaction Lock Node Array¸¦ ¼øÈ¸ ÇÏ¸ç
+ * light mode·Î µ¿ÀÛÁßÀÎ lock node¸¦ Ãâ·ÂÇÑ´Ù.
+ * X$LOCK, X$LOCK_TABLESPACE ¿¡¼­ »ç¿ë
+ *   
+ * aLockTableType [IN] Ãâ·ÂÀ» ¿øÇÏ´Â Lock Item Type
+ * aLockItemTree  [IN] ÀÌ¹Ì Ãâ·ÂÇÑ LockItemÀÇ List, Áï Á¦¿Ü´ë»ó
+ * ------------------------------------------------------------------*/
+IDE_RC smlFT::getLockNodesFromTrans( idvSQL              *aStatistics,
+                                     void                *aHeader,
+                                     iduFixedTableMemory *aMemory,
+                                     smiLockItemType      aLockTableType,
+                                     iddRBTree           *aLockItemTree )
+{
+    SInt               i;
+    SInt               sCount;
+    SInt               sState = 0;
+    smlLockNode      * sCurLockNode;
+    smlLockInfo        sLockInfo;
+    smlTransLockList * sCurSlot;
+    smlLockNode      * sLockNodeHeader ;
+
+    sCount = smlLockMgr::getSlotCount();
+
+    sLockInfo.mUseLockItem = ID_FALSE;
+    
+    for(i = 0 ; i < sCount ; i++ )
+    {
+        sCurSlot = smlLockMgr::getTransLockList( i );
+
+        smlLockMgr::lockTransNodeList( aStatistics, i );
+        sState = 1;
+
+        if ( (void*)sCurSlot->mLockNodeHeader.mPrvTransLockNode != (void*)sCurSlot )
+        {
+            sLockNodeHeader = &(sCurSlot->mLockNodeHeader);
+            sCurLockNode    = sLockNodeHeader->mPrvTransLockNode;
+
+            while ( sCurLockNode != sLockNodeHeader )
+            {
+                if(( sCurLockNode->mBeGrant      == ID_TRUE ) &&
+                   ( sCurLockNode->mLockItemType == aLockTableType ))
+                {
+                    // ÀÌ¹Ì Ãâ·ÂÇÑ LockItemÀº Á¦¿Ü
+                    if ( aLockItemTree->search( &sCurLockNode->mItemID, NULL ) == ID_FALSE )
+                    {
+                        sLockInfo.getInfo(sCurLockNode);
+                        IDE_TEST(iduFixedTable::buildRecord(aHeader,
+                                                            aMemory,
+                                                            (void *) &sLockInfo)
+                                 != IDE_SUCCESS);
+                    }
+                }
+                sCurLockNode = sCurLockNode->mPrvTransLockNode;
+            }
+        }
+        sState = 0;
+        smlLockMgr::unlockTransNodeList( i );
+        
+    }
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    if ( sState == 1 )
+    {
+        smlLockMgr::unlockTransNodeList( i );
+    }
+
+    return IDE_FAILURE;
+}
+
+
+IDE_RC smlFT::buildRecordForLockTBL(idvSQL              *aStatistics,
                                     void                *aHeader,
                                     void                * /* aDumpObj */,
                                     iduFixedTableMemory *aMemory)
@@ -71,107 +201,99 @@ IDE_RC smlFT::buildRecordForLockTBL(idvSQL              * /*aStatistics*/,
     smcTableHeader *sCatTblHdr;
     smcTableHeader *sTableHeader;
     smpSlotHeader  *sPtr;
+    smlLockItem    *sLockItem;
     SChar          *sCurPtr;
     SChar          *sNxtPtr;
-    smlLockNode    *sLockNode;
-    smlLockNode    *sIterator;
-    smlLockInfo     sLockInfo;
-    SInt            i;
+    UInt            sState = 0;
+    iddRBTree       sLockItemTree;
 
     IDE_ERROR( aHeader != NULL );
     IDE_ERROR( aMemory != NULL );
 
-    switch(smuProperty::getLockMgrType())
+    sCatTblHdr = (smcTableHeader*)SMC_CAT_TABLE;
+    sCurPtr = NULL;
+
+    sLockItemTree.initialize( IDU_MEM_SM_SML,
+                              ID_SIZEOF(ULong),
+                              smlFT::compLockItemID );
+    sState = 1;
+
+    // [1] Å×ÀÌºí Çì´õ¸¦ ¼øÈ¸ÇÏ¸é¼­ ÇöÀç lock node list¸¦ ±¸ÇÑ´Ù.
+    while(1)
     {
-    case 0:
-        sCatTblHdr = (smcTableHeader*)SMC_CAT_TABLE;
-        sCurPtr = NULL;
+        IDE_TEST( smcRecord::nextOIDall( sCatTblHdr,
+                                         sCurPtr,
+                                         &sNxtPtr )
+                  != IDE_SUCCESS );
 
-        // [1] í…Œì´ë¸” í—¤ë”ë¥¼ ìˆœíšŒí•˜ë©´ì„œ í˜„ìž¬ lock node listë¥¼ êµ¬í•œë‹¤.
-        while(1)
+        if ( sNxtPtr == NULL )
         {
-            IDE_TEST( smcRecord::nextOIDall( sCatTblHdr,
-                        sCurPtr,
-                        &sNxtPtr )
-                    != IDE_SUCCESS );
+            break;
+        }
 
-            if ( sNxtPtr == NULL )
-            {
-                break;
-            }
+        sPtr = (smpSlotHeader *)sNxtPtr;
 
-            sPtr = (smpSlotHeader *)sNxtPtr;
-
-            // To fix BUG-14681
-            if ( SM_SCN_IS_INFINITE(sPtr->mCreateSCN) )
-            {
-                /* BUG-14974: ë¬´í•œ Loopë°œìƒ.*/
-                sCurPtr = sNxtPtr;
-                continue;
-            }
-
-            sTableHeader = (smcTableHeader *)( sPtr + 1 );
-
-            // 1. temp tableì€ skip ( PROJ-2201 TempTableì€ ì´ì œ ì—¬ê¸° ì—†ìŒ */
-            // 2. dropëœ tableì€ skip
-            // 3. meta  tableì€ skip
-
-            if( ( SMI_TABLE_TYPE_IS_META( sTableHeader ) == ID_TRUE ) ||
-                    ( smcTable::isDropedTable(sTableHeader) == ID_TRUE ) )
-            {
-                sCurPtr = sNxtPtr;
-                continue;
-            }
-
-            IDE_TEST( getLockItemNodes( aHeader,
-                        aMemory,
-                        (smlLockItem*)sTableHeader->mLock )
-                    != IDE_SUCCESS );
-
+        // To fix BUG-14681
+        if ( SM_SCN_IS_INFINITE(sPtr->mCreateSCN) )
+        {
+            /* BUG-14974: ¹«ÇÑ Loop¹ß»ý.*/
             sCurPtr = sNxtPtr;
+            continue;
         }
-        break;
 
-    case 1:
-        for( i = 0; i < smLayerCallback::getCurTransCnt(); i++ )
+        sTableHeader = (smcTableHeader *)( sPtr + 1 );
+
+        // 1. temp tableÀº skip ( PROJ-2201 TempTableÀº ÀÌÁ¦ ¿©±â ¾øÀ½ */
+        // 2. dropµÈ tableÀº skip
+        // 3. meta  tableÀº skip
+
+        if( ( SMI_TABLE_TYPE_IS_META( sTableHeader ) == ID_TRUE ) ||
+            ( smcTable::isDropedTable(sTableHeader) == ID_TRUE ) )
         {
-            sLockNode = &(smlLockMgr::mArrOfLockList[i].mLockNodeHeader);
-            sIterator = sLockNode->mNxtTransLockNode;
-
-            while(sIterator != sLockNode)
-            {
-                IDU_FIT_POINT( "BUG-46726@smlFT::buildRecordForLockTBL::lockNode" );
-
-                sLockInfo.getInfo(sIterator);
-                IDE_TEST(iduFixedTable::buildRecord(aHeader,
-                                                    aMemory,
-                                                    (void *) &sLockInfo)
-                        != IDE_SUCCESS);
-
-                sIterator = sIterator->mNxtTransLockNode;
-
-                if ( sIterator == NULL )
-                {
-                    /* BUG-46726 : SPIN LOCK
-                     * í˜„ìž¬ ë³´ê³ ìžˆëŠ” lock node ê°€ ì‚­ì œëœ ê²½ìš° nextê°€ NULL ì´ ë ìˆ˜ìžˆë‹¤.
-                     * ì´ê²½ìš° ë”ì´ìƒ lock nodeë¥¼ íƒìƒ‰í•˜ì§€ ë‹¤ìŒ txë¡œ ë„˜ì–´ê°„ë‹¤.
-                     * => ë”°ë¼ì„œ, x$lock ì¿¼ë¦¬ê²°ê³¼ì— ìœ ì‹¤ì´ ë°œìƒí• ìˆ˜ìžˆë‹¤. 
-                     */
-                    break;
-                }
-            }
+            sCurPtr = sNxtPtr;
+            continue;
         }
-        break;
+        sLockItem = (smlLockItem*)sTableHeader->mLock ;
 
-    default:
-        IDE_DASSERT(0);
-        break;
+        IDE_TEST( sLockItem->mMutex.lock( aStatistics ) != IDE_SUCCESS );
+        sState = 2;
+
+        if( sLockItem->mFlag != SML_FLAG_LIGHT_MODE )
+        {
+            IDE_TEST( getLockItemNodes( aHeader,
+                                        aMemory,
+                                        sLockItem )
+                      != IDE_SUCCESS );
+            sLockItemTree.insert( &sLockItem->mItemID, NULL );
+        }
+
+        sState = 1;
+        IDE_TEST( sLockItem->mMutex.unlock() != IDE_SUCCESS );
+
+        sCurPtr = sNxtPtr;
     }
+    IDE_TEST( getLockNodesFromTrans( aStatistics,
+                                     aHeader,
+                                     aMemory,
+                                     SMI_LOCK_ITEM_TABLE,
+                                     &sLockItemTree ) != IDE_SUCCESS );
+    sState = 0;
+    sLockItemTree.destroy();
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 
+    switch( sState )
+    {
+        case 2:
+            IDE_ASSERT( sLockItem->mMutex.unlock() == IDE_SUCCESS );
+        case 1:
+            sLockItemTree.destroy();
+            break;
+        default:
+            break;
+    }
     return IDE_FAILURE;
 }
 
@@ -242,6 +364,15 @@ static iduFixedTableColDesc gLockTBLColDesc[]=
     },
 
     {
+        (SChar*)"USE_LOCK_ITEM",
+        offsetof(smlLockInfo,mUseLockItem),
+        IDU_FT_SIZEOF(smlLockInfo,mUseLockItem),
+        IDU_FT_TYPE_UINTEGER,
+        NULL,
+        0, 0,NULL // for internal use
+    },
+
+    {
         NULL,
         0,
         0,
@@ -262,73 +393,6 @@ iduFixedTableDesc  gLockTBLDesc =
     IDU_FT_DESC_TRANS_NOT_USE,
     NULL
 };
-
-
-IDE_RC smlFT::getLockItemNodes( void                *aHeader,
-                                iduFixedTableMemory *aMemory,
-                                smlLockItem         *aLockItem )
-{
-    SInt                i;
-    smlLockNode*        sCurLockNode;
-    smlLockInfo         sLockInfo;
-    smlLockItemMutex*   sLockItem = (smlLockItemMutex*)aLockItem;
-    UInt                sState = 0;
-
-    IDE_TEST_RAISE(sLockItem->mMutex.lock(NULL /* idvSQL* */)
-                   != IDE_SUCCESS,
-                   err_mutex_lock);
-    sState = 1;
-
-    // Grant Lock Node list
-    sCurLockNode = sLockItem->mFstLockGrant;
-
-    for(i = 0; i < sLockItem->mGrantCnt; i++)
-    {
-        sLockInfo.getInfo(sCurLockNode);
-        IDE_TEST(iduFixedTable::buildRecord(aHeader,
-                                            aMemory,
-                                            (void *) &sLockInfo)
-             != IDE_SUCCESS);
-        sCurLockNode = sCurLockNode->mNxtLockNode;
-    }
-
-    sCurLockNode = sLockItem->mFstLockRequest;
-
-    // request lock node list
-    for(i = 0; i < sLockItem->mRequestCnt; i++)
-    {
-        sLockInfo.getInfo(sCurLockNode);
-        IDE_TEST(iduFixedTable::buildRecord(aHeader,
-                                            aMemory,
-                                            (void *) &sLockInfo)
-                 != IDE_SUCCESS);
-        // alloc new lock node for performance view.
-        sCurLockNode = sCurLockNode->mNxtLockNode;
-    }
-
-    sState = 0;
-    IDE_TEST_RAISE(sLockItem->mMutex.unlock() != IDE_SUCCESS,
-                   err_mutex_unlock);
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION(err_mutex_lock);
-    {
-        IDE_SET(ideSetErrorCode(smERR_FATAL_ThrMutexLock));
-    }
-    IDE_EXCEPTION(err_mutex_unlock);
-    {
-        IDE_SET(ideSetErrorCode(smERR_FATAL_ThrMutexUnlock));
-    }
-    IDE_EXCEPTION_END;
-
-    if(sState != 0)
-    {
-        IDE_ASSERT(sLockItem->mMutex.unlock() == IDE_SUCCESS);
-    }
-
-    return IDE_FAILURE;
-}
 
 /* ------------------------------------------------
  *   X$LOCK_MODE Fixed Table
@@ -441,67 +505,29 @@ IDE_RC smlFT::buildRecordForLockWait(idvSQL              * /*aStatistics*/,
     IDE_ERROR( aHeader != NULL );
     IDE_ERROR( aMemory != NULL );
 
-    switch(smuProperty::getLockMgrType())
+    for ( j = 0; j < smLayerCallback::getCurTransCnt(); j++ )
     {
-    case 0:
-        for ( j = 0; j < smLayerCallback::getCurTransCnt(); j++ )
+        if ( smLayerCallback::isActiveBySID(j) == ID_TRUE )
         {
-            if ( smLayerCallback::isActiveBySID(j) == ID_TRUE )
-            {
-                for ( k = 0, i = smlLockMgr::mArrOfLockList[j].mFstWaitTblTransItem;
-                      (i != SML_END_ITEM) && 
+            for ( k = 0, i = smlLockMgr::mArrOfLockList[j].mFstWaitTblTransItem;
+                  (i != SML_END_ITEM) && 
                       (i != ID_USHORT_MAX) &&
                       (k < smLayerCallback::getCurTransCnt()) ;
-                      i = smlLockMgr::mWaitForTable[j][i].mNxtWaitTransItem, k++)
+                  i = smlLockMgr::mWaitForTable[j][i].mNxtWaitTransItem, k++)
+            {
+                if (smlLockMgr::mWaitForTable[j][i].mIndex == 1)
                 {
-                    if (smlLockMgr::mWaitForTable[j][i].mIndex == 1)
-                    {
-                        sStat.mTID        = smLayerCallback::getTIDBySID( j );
-                        sStat.mWaitForTID = smLayerCallback::getTIDBySID( i );
+                    sStat.mTID        = smLayerCallback::getTIDBySID( j );
+                    sStat.mWaitForTID = smLayerCallback::getTIDBySID( i );
 
-                        IDE_TEST(iduFixedTable::buildRecord( aHeader,
-                                                             aMemory,
-                                                             (void *)& sStat)
-                                != IDE_SUCCESS);
-                    }
+                    IDE_TEST(iduFixedTable::buildRecord( aHeader,
+                                                         aMemory,
+                                                         (void *)& sStat)
+                             != IDE_SUCCESS);
                 }
             }
         }
-        break;
-
-    case 1:
-        for ( i = 0; i < smLayerCallback::getCurTransCnt(); i++ )
-        {
-            if ( smLayerCallback::isActiveBySID( i ) == ID_TRUE )
-            {
-                for(j = 0; j < smlLockMgr::mTransCnt ; j++)
-                {
-
-                    if ( smlLockMgr::mPendingMatrix[i][j] != -1 )
-                    {
-                        sStat.mTID        = smLayerCallback::getTIDBySID( i );
-                        sStat.mWaitForTID = smLayerCallback::getTIDBySID( j );
-
-                        IDE_TEST(iduFixedTable::buildRecord(aHeader,
-                                    aMemory,
-                                    (void *)& sStat)
-                                != IDE_SUCCESS);
-                    }
-
-                }
-            }
-            else
-            {
-                /* continue */
-            }
-        }
-        break;
-
-    default:
-        IDE_ASSERT(0);
-        break;
     }
-    
 
     return IDE_SUCCESS;
 
@@ -558,60 +584,82 @@ iduFixedTableDesc  gLockWaitTableDesc =
  *  X$LOCK_TABLESPACE Fixed Table
  * ----------------------------------------------*/
 
-IDE_RC smlFT::buildRecordForLockTBS(idvSQL              * /*aStatistics*/,
+IDE_RC smlFT::buildRecordForLockTBS(idvSQL              *aStatistics,
                                     void                *aHeader,
                                     void                * /* aDumpObj */,
                                     iduFixedTableMemory *aMemory)
 
 {
     UInt                sState = 0;
-    sctTableSpaceNode * sNextSpaceNode;
     sctTableSpaceNode * sCurrSpaceNode;
+    smlLockItem       * sLockItem;
+    iddRBTree           sLockItemTree;
 
     IDE_ERROR( aHeader != NULL );
     IDE_ERROR( aMemory != NULL );
 
-    if(smuProperty::getLockMgrType() == 1)
-        return IDE_SUCCESS;
-
-    IDE_TEST( sctTableSpaceMgr::lock(NULL /* idvSQL* */)
-              != IDE_SUCCESS );
+    sLockItemTree.initialize( IDU_MEM_SM_SML,
+                              ID_SIZEOF(ULong),
+                              smlFT::compLockItemID );
     sState = 1;
 
-    sctTableSpaceMgr::getFirstSpaceNode( (void**)&sCurrSpaceNode );
+    sCurrSpaceNode = sctTableSpaceMgr::getFirstSpaceNode();
 
     while( sCurrSpaceNode != NULL )
     {
-        sctTableSpaceMgr::getNextSpaceNode( (void*)sCurrSpaceNode,
-                                            (void**)&sNextSpaceNode );
+        sctTableSpaceMgr::lockSpaceNode( aStatistics,
+                                         sCurrSpaceNode );
+        sState = 2;
 
-        IDE_ASSERT( (sCurrSpaceNode->mState & SMI_TBS_DROPPED)
-                    != SMI_TBS_DROPPED );
+        if ( (sCurrSpaceNode->mState & SMI_TBS_DROPPED)
+             != SMI_TBS_DROPPED )
+        {
+            sLockItem = (smlLockItem*)sCurrSpaceNode->mLockItem4TBS;
+            IDE_TEST( sLockItem->mMutex.lock( aStatistics ) != IDE_SUCCESS );
+            sState = 3;
 
-        IDE_TEST( getLockItemNodes( aHeader,
-                                    aMemory,
-                                    (smlLockItem*)
-                                    sCurrSpaceNode->mLockItem4TBS )
-                  != IDE_SUCCESS );
+            if( sLockItem->mFlag != SML_FLAG_LIGHT_MODE )
+            {
+                IDE_TEST( getLockItemNodes( aHeader,
+                                            aMemory,
+                                            sLockItem )
+                          != IDE_SUCCESS );
+                sLockItemTree.insert( &sLockItem->mItemID, NULL );
+            }
+            
+            sState = 2;
+            IDE_TEST( sLockItem->mMutex.unlock() != IDE_SUCCESS );
+        }
+        sState = 1;
+        sctTableSpaceMgr::unlockSpaceNode( sCurrSpaceNode );
 
-        sCurrSpaceNode = sNextSpaceNode;
+        sCurrSpaceNode = sctTableSpaceMgr::getNextSpaceNode( sCurrSpaceNode->mID );
     }
 
+    IDE_TEST( getLockNodesFromTrans( aStatistics,
+                                     aHeader,
+                                     aMemory,
+                                     SMI_LOCK_ITEM_TABLESPACE,
+                                     &sLockItemTree ) != IDE_SUCCESS );
     sState = 0;
-    IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS );
+    sLockItemTree.destroy();
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 
-    IDE_PUSH();
+    switch ( sState )
     {
-        if ( sState != 0 )
-        {
-            IDE_ASSERT( sctTableSpaceMgr::unlock() == IDE_SUCCESS );
-        }
+        case 3:
+            IDE_ASSERT( sLockItem->mMutex.unlock() == IDE_SUCCESS );
+        case 2:
+            sctTableSpaceMgr::unlockSpaceNode( sCurrSpaceNode );
+        case 1:
+            sLockItemTree.destroy();
+            break;
+        default:
+            break;
     }
-    IDE_POP();
 
     return IDE_FAILURE;
 }
@@ -681,7 +729,14 @@ static iduFixedTableColDesc gLockTBSColDesc[]=
         NULL,
         0, 0,NULL // for internal use
     },
-
+    {
+        (SChar*)"USE_LOCK_ITEM",
+        offsetof(smlLockInfo,mUseLockItem),
+        IDU_FT_SIZEOF(smlLockInfo,mUseLockItem),
+        IDU_FT_TYPE_UINTEGER,
+        NULL,
+        0, 0,NULL // for internal use
+    },
     {
         NULL,
         0,
@@ -704,3 +759,186 @@ iduFixedTableDesc  gLockTBSDesc =
     IDU_FT_DESC_TRANS_NOT_USE,
     NULL
 };
+
+/* ------------------------------------------------
+ *  X$LOCK_RECORD Fixed Table
+ * ----------------------------------------------*/
+
+IDE_RC smlFT::buildRecordForLockRecord( idvSQL              * /*aStatistics*/,
+                                        void                * aHeader,
+                                        void                * /* aDumpObj */,
+                                        iduFixedTableMemory * aMemory )
+{
+    SInt            i;
+    SInt            j;
+    SInt            k; /* for preventing from infinite loop */
+    smlLockWaitStat sStat;
+
+    IDE_ERROR( aHeader != NULL );
+    IDE_ERROR( aMemory != NULL );
+
+    for ( j = 0; j < smLayerCallback::getCurTransCnt(); j++ )
+    {
+        if ( smLayerCallback::isActiveBySID(j) == ID_TRUE )
+        {
+            for ( k = 0, i = smlLockMgr::mArrOfLockList[j].mFstWaitRecTransItem;
+                  (i != SML_END_ITEM) && 
+                      (i != ID_USHORT_MAX) &&
+                      (k < smLayerCallback::getCurTransCnt()) ;
+                  i = smlLockMgr::mWaitForTable[i][j].mNxtWaitRecTransItem, k++)
+            {
+                if (smlLockMgr::mWaitForTable[i][j].mIndex == 1)
+                {
+                    sStat.mTID        = smLayerCallback::getTIDBySID( i );
+                    sStat.mWaitForTID = smLayerCallback::getTIDBySID( j );
+
+                    IDE_TEST(iduFixedTable::buildRecord( aHeader,
+                                                         aMemory,
+                                                         (void *)& sStat )
+                             != IDE_SUCCESS);
+                }
+            }
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+static iduFixedTableColDesc gLockRecordColDesc[]=
+{
+    {
+        (SChar*)"TRANS_ID",
+        offsetof(smlLockWaitStat,mTID),
+        IDU_FT_SIZEOF(smlLockWaitStat,mTID),
+        IDU_FT_TYPE_UBIGINT,
+        NULL,
+        0, 0,NULL // for internal use
+    },
+
+    {
+        (SChar*)"WAIT_FOR_TRANS_ID",
+        offsetof(smlLockWaitStat,mWaitForTID),
+        IDU_FT_SIZEOF(smlLockWaitStat,mWaitForTID),
+        IDU_FT_TYPE_UBIGINT,
+        NULL,
+        0, 0,NULL // for internal use
+    },
+
+    {
+        NULL,
+        0,
+        0,
+        IDU_FT_TYPE_CHAR,
+        NULL,
+        0, 0,NULL // for internal use
+    }
+};
+
+iduFixedTableDesc  gLockRecordDesc =
+{
+    (SChar *)"X$LOCK_RECORD",
+    smlFT::buildRecordForLockRecord,
+    gLockRecordColDesc,
+    IDU_STARTUP_CONTROL,
+    0,
+    0,
+    IDU_FT_DESC_TRANS_NOT_USE,
+    NULL
+};
+
+/* ------------------------------------------------
+ *  X$DIST_LOCK_WAIT Fixed Table
+ * ----------------------------------------------*/
+
+IDE_RC smlFT::buildRecordForDistLockWait( idvSQL              * /*aStatistics*/,
+                                          void                * aHeader,
+                                          void                * /* aDumpObj */,
+                                          iduFixedTableMemory * aMemory )
+{
+    SInt            i;
+    SInt            j;
+    smlLockWaitStat sStat;
+
+    smxTrans * sTrans = NULL;
+
+    IDE_ERROR( aHeader != NULL );
+    IDE_ERROR( aMemory != NULL );
+
+    for ( i = 0; i < smLayerCallback::getCurTransCnt(); i++ )
+    {
+        if ( smLayerCallback::isActiveBySID(i) == ID_TRUE )
+        {
+            sTrans = (smxTrans *)(smLayerCallback::getTransBySID( i ));
+
+            if ( sTrans->mDistDeadlock4FT.mDetection != SMX_DIST_DEADLOCK_DETECTION_NONE )
+            {
+                for ( j = 0; j < smLayerCallback::getCurTransCnt(); j++ )
+                {
+                    if ( smlLockMgr::mTxList4DistDeadlock[i][j].mDistTxType == SML_DIST_DEADLOCK_TX_FIRST_DIST_INFO )
+                    {
+                        sStat.mTID        = smLayerCallback::getTIDBySID( i );
+                        sStat.mWaitForTID = smLayerCallback::getTIDBySID( j );
+
+                        IDE_TEST( iduFixedTable::buildRecord( aHeader,
+                                                              aMemory,
+                                                              (void *)& sStat )
+                                != IDE_SUCCESS );
+                    }
+                }
+            }
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+static iduFixedTableColDesc gDistLockWaitColDesc[]=
+{
+    {
+        (SChar*)"TRANS_ID",
+        offsetof(smlLockWaitStat,mTID),
+        IDU_FT_SIZEOF(smlLockWaitStat,mTID),
+        IDU_FT_TYPE_UBIGINT,
+        NULL,
+        0, 0,NULL // for internal use
+    },
+
+    {
+        (SChar*)"WAIT_FOR_TRANS_ID",
+        offsetof(smlLockWaitStat,mWaitForTID),
+        IDU_FT_SIZEOF(smlLockWaitStat,mWaitForTID),
+        IDU_FT_TYPE_UBIGINT,
+        NULL,
+        0, 0,NULL // for internal use
+    },
+
+    {
+        NULL,
+        0,
+        0,
+        IDU_FT_TYPE_CHAR,
+        NULL,
+        0, 0,NULL // for internal use
+    }
+};
+
+iduFixedTableDesc  gDistLockWaitDesc =
+{
+    (SChar *)"X$DIST_LOCK_WAIT",
+    smlFT::buildRecordForDistLockWait,
+    gDistLockWaitColDesc,
+    IDU_STARTUP_CONTROL,
+    0,
+    0,
+    IDU_FT_DESC_TRANS_NOT_USE,
+    NULL
+};
+

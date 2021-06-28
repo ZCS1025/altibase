@@ -270,6 +270,7 @@ typedef struct ALA_Replication
     ALA_Table   *mTableArray;                   /* Table Array */
     SChar        mDBCharSet[ALA_NAME_LEN];      /* DB Charter Set */
     SChar        mDBNCharSet[ALA_NAME_LEN];     /* DB National Charter Set */
+    ULong        mSenderVersion;                /* Sender Version */    
 } ALA_Replication;
 
 

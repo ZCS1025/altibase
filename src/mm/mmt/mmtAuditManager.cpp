@@ -84,7 +84,7 @@ inline static qciAuditOperation *getCondition( qciAuditOperation *aSearch,
                                                UInt               aMetaInfoCount,
                                                PDL_COMPARE_FUNC   aCompareFunc )
 {
-    qciAuditOperation *sCondition = NULL;
+    qciAuditOperation *sCondition=NULL;
 
     if( aMetaInfoCount > 0 )
     {
@@ -94,6 +94,10 @@ inline static qciAuditOperation *getCondition( qciAuditOperation *aSearch,
                             aMetaInfoCount,
                             ID_SIZEOF(qciAuditOperation), 
                             aCompareFunc );
+    }
+    else
+    {
+        sCondition = NULL;
     }
 
     return sCondition;
@@ -162,7 +166,7 @@ IDE_RC mmtAuditManager::initialize()
     /* set callback functions */
     IDE_TEST(qci::setAuditManagerCallback( &sCallback ) != IDE_SUCCESS );
 
-    /* iduMemMgrë¡œ allocí–ˆë‹¤. */
+    /* iduMemMgr·Î allocÇß´Ù. */
     IDE_TEST( qciMisc::getAuditMetaInfo( &sIsStarted,
                                          &mMetaInfo.mObjectOperations, 
                                          &mMetaInfo.mObjectOperationCount,
@@ -656,7 +660,7 @@ void mmtAuditManager::auditBySession( mmcStatement *aStatement )
                                      sQueryLen );
     }
 
-    /* session ì •ë³´ë¥¼ resetí•œë‹¤. */
+    /* session Á¤º¸¸¦ resetÇÑ´Ù. */
     aStatement->resetStatistics();
 
     IDE_EXCEPTION_CONT( AUDIT_NOT_STARTED );

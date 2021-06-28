@@ -21,9 +21,9 @@
 #include <svmManager.h>
 
 /**********************************************************************
- * AllocPageListë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ * AllocPageList¸¦ ÃÊ±âÈ­ÇÑ´Ù.
  *
- * aAllocPageList : ì´ˆê¸°í™”í•˜ë ¤ëŠ” AllocPageList
+ * aAllocPageList : ÃÊ±âÈ­ÇÏ·Á´Â AllocPageList
  **********************************************************************/
 
 void svpAllocPageList::initializePageListEntry(
@@ -35,7 +35,7 @@ void svpAllocPageList::initializePageListEntry(
 
     for(sPageListID = 0; sPageListID < SMP_PAGE_LIST_COUNT; sPageListID++)
     {
-        // AllocPageList ì´ˆê¸°í™”
+        // AllocPageList ÃÊ±âÈ­
         aAllocPageList[sPageListID].mPageCount  = 0;
         aAllocPageList[sPageListID].mHeadPageID = SM_NULL_PID;
         aAllocPageList[sPageListID].mTailPageID = SM_NULL_PID;
@@ -45,8 +45,8 @@ void svpAllocPageList::initializePageListEntry(
     return;
 }
 
-/* Runtime Itemì„ NULLë¡œ ì„¤ì •í•œë‹¤.
-   DISCARD/OFFLINE Tablespaceì— ì†í•œ Tableë“¤ì— ëŒ€í•´ ìˆ˜í–‰ëœë‹¤.
+/* Runtime ItemÀ» NULL·Î ¼³Á¤ÇÑ´Ù.
+   DISCARD/OFFLINE Tablespace¿¡ ¼ÓÇÑ Tableµé¿¡ ´ëÇØ ¼öÇàµÈ´Ù.
  */
 IDE_RC svpAllocPageList::setRuntimeNull(
     UInt                   aAllocPageListCount,
@@ -68,12 +68,12 @@ IDE_RC svpAllocPageList::setRuntimeNull(
 }
 
 /**********************************************************************
- * AllocPageListEntryì˜ Runtime ì •ë³´(Mutex) ì´ˆê¸°í™”
+ * AllocPageListEntryÀÇ Runtime Á¤º¸(Mutex) ÃÊ±âÈ­
  *
- * aAllocPageList : êµ¬ì¶•í•˜ë ¤ëŠ” AllocPageList
- * aPageListID    : AllocPageListì˜ ID
- * aTableOID      : AllocPageListì˜ í…Œì´ë¸” OID
- * aPageType      : Listë¥¼ êµ¬ì„±í•˜ëŠ” Page ìœ í˜•
+ * aAllocPageList : ±¸ÃàÇÏ·Á´Â AllocPageList
+ * aPageListID    : AllocPageListÀÇ ID
+ * aTableOID      : AllocPageListÀÇ Å×ÀÌºí OID
+ * aPageType      : List¸¦ ±¸¼ºÇÏ´Â Page À¯Çü
  **********************************************************************/
 IDE_RC svpAllocPageList::initEntryAtRuntime(
     smpAllocPageListEntry* aAllocPageList,
@@ -96,8 +96,8 @@ IDE_RC svpAllocPageList::initEntryAtRuntime(
         /* BUG-32434 [sm-mem-resource] If the admin uses a volatile table
          * with the parallel free page list, the server hangs while server start
          * up.
-         * Parallel FreePageListë¥¼ ì‚¬ìš©í•  ìˆ˜ë„ ìˆê¸° ë•Œë¬¸ì—, ì´ˆê¸°í™”ì‹œ í•­ìƒ
-         * PageListIDë¥¼ Array ë³€ìˆ˜ë¡œ ì‚¬ìš©í•´ì•¼ í•œë‹¤. */
+         * Parallel FreePageList¸¦ »ç¿ëÇÒ ¼öµµ ÀÖ±â ¶§¹®¿¡, ÃÊ±âÈ­½Ã Ç×»ó
+         * PageListID¸¦ Array º¯¼ö·Î »ç¿ëÇØ¾ß ÇÑ´Ù. */
         sAllocPageList = & aAllocPageList[ sPageListID ];
         if(aPageType == SMP_PAGETYPE_FIX)
         {
@@ -131,12 +131,12 @@ IDE_RC svpAllocPageList::initEntryAtRuntime(
                      IDV_WAIT_INDEX_NULL )
                  != IDE_SUCCESS);
 
-        /* volatile tableì´ ì´ˆê¸°í™”ë˜ì–´ì•¼ í•˜ê¸° ë•Œë¬¸ì—
-           sAllocPageListì˜ head, tailì€ ëª¨ë‘ null pidì´ì–´ì•¼ í•œë‹¤. */
+        /* volatile tableÀÌ ÃÊ±âÈ­µÇ¾î¾ß ÇÏ±â ¶§¹®¿¡
+           sAllocPageListÀÇ head, tailÀº ¸ğµÎ null pidÀÌ¾î¾ß ÇÑ´Ù. */
         sAllocPageList->mHeadPageID = SM_NULL_PID;
         sAllocPageList->mTailPageID = SM_NULL_PID;
 
-        /* mPageCountë„ 0ìœ¼ë¡œ ì´ˆê¸°í™”í•´ì•¼ í•œë‹¤. */
+        /* mPageCountµµ 0À¸·Î ÃÊ±âÈ­ÇØ¾ß ÇÑ´Ù. */
         sAllocPageList->mPageCount = 0;
     }
 
@@ -162,9 +162,9 @@ IDE_RC svpAllocPageList::initEntryAtRuntime(
 }
 
 /**********************************************************************
- * AllocPageListì˜ Runtime ì •ë³´ í•´ì œ
+ * AllocPageListÀÇ Runtime Á¤º¸ ÇØÁ¦
  *
- * aAllocPageList : í•´ì œí•˜ë ¤ëŠ” AllocPageList
+ * aAllocPageList : ÇØÁ¦ÇÏ·Á´Â AllocPageList
  **********************************************************************/
 
 IDE_RC svpAllocPageList::finEntryAtRuntime(
@@ -187,18 +187,19 @@ IDE_RC svpAllocPageList::finEntryAtRuntime(
 }
 
 /**********************************************************************
- * aAllocPageHead~aAllocPageTailë¥¼ AllocPageListì— ì¶”ê°€
+ * aAllocPageHead~aAllocPageTail¸¦ AllocPageList¿¡ Ãß°¡
  *
- * aTrans         : ì‘ì—…í•˜ë ¤ëŠ” íŠ¸ì°ì­ì…˜ ê°ì²´
- * aAllocPageList : ì¶”ê°€í•˜ë ¤ëŠ” AllocPageList
- * aAllocPageHead : ì¶”ê°€í•˜ë ¤ëŠ” Pageì˜ Head
- * aAllocPageTail : ì¶”ê°€í•˜ë ¤ëŠ” Pageì˜ Tail
+ * aTrans         : ÀÛ¾÷ÇÏ·Á´Â Æ®ÀéÀè¼Ç °´Ã¼
+ * aAllocPageList : Ãß°¡ÇÏ·Á´Â AllocPageList
+ * aAllocPageHead : Ãß°¡ÇÏ·Á´Â PageÀÇ Head
+ * aAllocPageTail : Ãß°¡ÇÏ·Á´Â PageÀÇ Tail
  **********************************************************************/
 
 IDE_RC svpAllocPageList::addPageList( scSpaceID               aSpaceID,
                                       smpAllocPageListEntry * aAllocPageList,
                                       smpPersPage           * aAllocPageHead,
-                                      smpPersPage           * aAllocPageTail )
+                                      smpPersPage           * aAllocPageTail,
+                                      UInt                    aAllocPageCnt )
 {
     smpPersPage* sTailPagePtr = NULL;
 
@@ -215,13 +216,13 @@ IDE_RC svpAllocPageList::addPageList( scSpaceID               aSpaceID,
     IDE_DASSERT( isValidPageList( aSpaceID,
                                   aAllocPageHead->mHeader.mSelfPageID,
                                   aAllocPageTail->mHeader.mSelfPageID,
-                                  SMP_ALLOCPAGECOUNT_FROMDB )
+                                  aAllocPageCnt )
                  == ID_TRUE );
 
     if(aAllocPageList->mHeadPageID == SM_NULL_PID)
     {
-        // Headê°€ ë¹„ì—ˆìœ¼ë©´ ê·¸ëŒ€ë¡œ aAllocPageHead~aAllocPageTailê¹Œì§€
-        // AllocPageListì˜ Head~Tailë¡œ ëŒ€ì¹˜í•œë‹¤.
+        // Head°¡ ºñ¾úÀ¸¸é ±×´ë·Î aAllocPageHead~aAllocPageTail±îÁö
+        // AllocPageListÀÇ Head~Tail·Î ´ëÄ¡ÇÑ´Ù.
 
         IDE_DASSERT( aAllocPageList->mTailPageID == SM_NULL_PID );
 
@@ -230,25 +231,25 @@ IDE_RC svpAllocPageList::addPageList( scSpaceID               aSpaceID,
     }
     else
     {
-        // AllocPageListì˜ Tailë’¤ì— sAllocPageHead~sAllocPageTailì„ ë¶™ì¸ë‹¤.
-        IDE_ASSERT( svmManager::getPersPagePtr( aSpaceID,
+        // AllocPageListÀÇ TailµÚ¿¡ sAllocPageHead~sAllocPageTailÀ» ºÙÀÎ´Ù.
+        IDE_ASSERT( smmManager::getPersPagePtr( aSpaceID,
                                                 aAllocPageList->mTailPageID,
                                                 (void**)&sTailPagePtr )
                     == IDE_SUCCESS );
 
-        // Tailë’¤ì— sAllocPageHeadë¥¼ ë¶™ì´ê³ 
+        // TailµÚ¿¡ sAllocPageHead¸¦ ºÙÀÌ°í
 
         sTailPagePtr->mHeader.mNextPageID = aAllocPageHead->mHeader.mSelfPageID;
 
-        // sAllocPageHead ì•ì— Tailì„ ë¶™ì¸ë‹¤.
+        // sAllocPageHead ¾Õ¿¡ TailÀ» ºÙÀÎ´Ù.
 
         aAllocPageHead->mHeader.mPrevPageID = aAllocPageList->mTailPageID;
 
         aAllocPageList->mTailPageID = aAllocPageTail->mHeader.mSelfPageID;
     }
 
-    //  PageListEntry ì •ë³´ ê°±ì‹ 
-    aAllocPageList->mPageCount += SMP_ALLOCPAGECOUNT_FROMDB;
+    //  PageListEntry Á¤º¸ °»½Å
+    aAllocPageList->mPageCount += aAllocPageCnt;
 
     IDE_DASSERT( isValidPageList( aSpaceID,
                                   aAllocPageList->mHeadPageID,
@@ -260,13 +261,13 @@ IDE_RC svpAllocPageList::addPageList( scSpaceID               aSpaceID,
 }
 
 /**********************************************************************
- * AllocPageListì œê±° ë° DBë¡œ ë°˜ë‚©
+ * AllocPageListÁ¦°Å ¹× DB·Î ¹İ³³
  *
- * FreePageë¥¼ ì œê±°í•˜ê¸° ìœ„í•´ì„œëŠ” ë‹¤ë¥¸ Txê°€ ì ‘ê·¼í•´ì„œëŠ” ì•ˆëœë‹¤.
- * refineDBë•Œì™€ ê°™ì´ í•˜ë‚˜ì˜ Txë§Œ ì ‘ê·¼í•˜ë‹¤.
+ * FreePage¸¦ Á¦°ÅÇÏ±â À§ÇØ¼­´Â ´Ù¸¥ Tx°¡ Á¢±ÙÇØ¼­´Â ¾ÈµÈ´Ù.
+ * refineDB¶§¿Í °°ÀÌ ÇÏ³ªÀÇ Tx¸¸ Á¢±ÙÇÏ´Ù.
  *
- * aTrans         : ì‘ì—…í•˜ë ¤ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
- * aAllocPageList : ì œê±°í•˜ë ¤ëŠ” AllocPageList
+ * aTrans         : ÀÛ¾÷ÇÏ·Á´Â Æ®·£Àè¼Ç °´Ã¼
+ * aAllocPageList : Á¦°ÅÇÏ·Á´Â AllocPageList
  * aDropFlag      : DROP TABLE -> ID_TRUE
  *                  ALTER TABLE -> ID_FALSE
  **********************************************************************/
@@ -290,14 +291,14 @@ IDE_RC svpAllocPageList::freePageListToDB(
 
     if( aAllocPageList->mHeadPageID != SM_NULL_PID )
     {
-        // Headê°€ NULLì´ë¼ë©´ AllocPageListê°€ ë¹„ì—ˆë‹¤.
+        // Head°¡ NULLÀÌ¶ó¸é AllocPageList°¡ ºñ¾ú´Ù.
         IDE_DASSERT( aAllocPageList->mTailPageID != SM_NULL_PID );
 
-        IDE_ASSERT( svmManager::getPersPagePtr( aSpaceID, 
+        IDE_ASSERT( smmManager::getPersPagePtr( aSpaceID, 
                                                 aAllocPageList->mHeadPageID,
                                                 (void**)&sHead )
                     == IDE_SUCCESS );
-        IDE_ASSERT( svmManager::getPersPagePtr( aSpaceID, 
+        IDE_ASSERT( smmManager::getPersPagePtr( aSpaceID, 
                                                 aAllocPageList->mTailPageID,
                                                 (void**)&sTail )
                     == IDE_SUCCESS );
@@ -321,11 +322,11 @@ IDE_RC svpAllocPageList::freePageListToDB(
 }
 
 /**********************************************************************
- * AllocPageListì—ì„œ aPageID ì œê±°í•˜ì—¬ DBë¡œ ë°˜ë‚©
+ * AllocPageList¿¡¼­ aPageID Á¦°ÅÇÏ¿© DB·Î ¹İ³³
  *
- * aTrans         : ì‘ì—…í•˜ë ¤ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
- * aAllocPageList : ì œê±°í•˜ë ¤ëŠ” AllocPageList
- * aPageID        : ì œê±°í•˜ë ¤ëŠ” Page ID
+ * aTrans         : ÀÛ¾÷ÇÏ·Á´Â Æ®·£Àè¼Ç °´Ã¼
+ * aAllocPageList : Á¦°ÅÇÏ·Á´Â AllocPageList
+ * aPageID        : Á¦°ÅÇÏ·Á´Â Page ID
  **********************************************************************/
 
 IDE_RC svpAllocPageList::removePage( scSpaceID               aSpaceID,
@@ -346,7 +347,7 @@ IDE_RC svpAllocPageList::removePage( scSpaceID               aSpaceID,
     IDE_TEST( aAllocPageList->mMutex->lock( NULL ) != IDE_SUCCESS );
     sLocked = ID_TRUE;
 
-    IDE_ASSERT( svmManager::getPersPagePtr( aSpaceID, 
+    IDE_ASSERT( smmManager::getPersPagePtr( aSpaceID, 
                                             aPageID,
                                             (void**)&sCurPageHeader )
                 == IDE_SUCCESS );
@@ -357,15 +358,15 @@ IDE_RC svpAllocPageList::removePage( scSpaceID               aSpaceID,
 
     if(sPrevPageID == SM_NULL_PID)
     {
-        // PrevPageê°€ NULLì´ë¼ë©´ CurPageëŠ” PageListì˜ Headì´ë‹¤.
+        // PrevPage°¡ NULLÀÌ¶ó¸é CurPage´Â PageListÀÇ HeadÀÌ´Ù.
         IDE_DASSERT( aPageID == sListHeadPID );
 
         sListHeadPID = sNextPageID;
     }
     else
     {
-        // ì•ìª½ ë§í¬ë¥¼ ëŠì–´ì¤€ë‹¤.
-        IDE_ASSERT( svmManager::getPersPagePtr( aSpaceID, 
+        // ¾ÕÂÊ ¸µÅ©¸¦ ²÷¾îÁØ´Ù.
+        IDE_ASSERT( smmManager::getPersPagePtr( aSpaceID, 
                                                 sPrevPageID,
                                                 (void**)&sPrevPageHeader )
                     == IDE_SUCCESS );
@@ -375,15 +376,15 @@ IDE_RC svpAllocPageList::removePage( scSpaceID               aSpaceID,
 
     if(sNextPageID == SM_NULL_PID)
     {
-        // NextPageê°€ NULLì´ë¼ë©´ CurPageëŠ” PageListì˜ Tailì´ë‹¤.
+        // NextPage°¡ NULLÀÌ¶ó¸é CurPage´Â PageListÀÇ TailÀÌ´Ù.
         IDE_DASSERT( aPageID == sListTailPID );
 
         sListTailPID = sPrevPageID;
     }
     else
     {
-        // ë’¤ìª½ ë§í¬ë¥¼ ëŠì–´ì¤€ë‹¤.
-        IDE_ASSERT( svmManager::getPersPagePtr( aSpaceID, 
+        // µÚÂÊ ¸µÅ©¸¦ ²÷¾îÁØ´Ù.
+        IDE_ASSERT( smmManager::getPersPagePtr( aSpaceID, 
                                                 sNextPageID,
                                                 (void**)&sNextPageHeader )
                     == IDE_SUCCESS );
@@ -416,11 +417,11 @@ IDE_RC svpAllocPageList::removePage( scSpaceID               aSpaceID,
 }
 
 /**********************************************************************
- * aHeadPage~aTailPageê¹Œì§€ì˜ PageListì˜ ì—°ê²°ì´ ì˜¬ë°”ë¥¸ì§€ ê²€ì‚¬í•œë‹¤.
+ * aHeadPage~aTailPage±îÁöÀÇ PageListÀÇ ¿¬°áÀÌ ¿Ã¹Ù¸¥Áö °Ë»çÇÑ´Ù.
  *
- * aHeadPage  : ê²€ì‚¬í•˜ë ¤ëŠ” Listì˜ Head
- * aTailPage  : ê²€ì‚¬í•˜ë ¤ëŠ” Listì˜ Tail
- * aPageCount : ê²€ì‚¬í•˜ë ¤ëŠ” Listì˜ Pageì˜ ê°¯ìˆ˜
+ * aHeadPage  : °Ë»çÇÏ·Á´Â ListÀÇ Head
+ * aTailPage  : °Ë»çÇÏ·Á´Â ListÀÇ Tail
+ * aPageCount : °Ë»çÇÏ·Á´Â ListÀÇ PageÀÇ °¹¼ö
  **********************************************************************/
 
 idBool svpAllocPageList::isValidPageList( scSpaceID aSpaceID,
@@ -444,7 +445,7 @@ idBool svpAllocPageList::isValidPageList( scSpaceID aSpaceID,
 
         sPageCount++;
 
-        IDE_ASSERT( svmManager::getPersPagePtr( aSpaceID, 
+        IDE_ASSERT( smmManager::getPersPagePtr( aSpaceID, 
                                                 sCurPage,
                                                 (void**)&sPagePtr )
                     == IDE_SUCCESS );
@@ -463,11 +464,11 @@ idBool svpAllocPageList::isValidPageList( scSpaceID aSpaceID,
 }
 
 /**********************************************************************
- * aAllocPageListë‚´ì˜ ëª¨ë“  Rowë¥¼ ìˆœíšŒí•˜ë©´ì„œ ìœ íš¨í•œ Rowë¥¼ ì°¾ì•„ì¤€ë‹¤.
+ * aAllocPageList³»ÀÇ ¸ğµç Row¸¦ ¼øÈ¸ÇÏ¸é¼­ À¯È¿ÇÑ Row¸¦ Ã£¾ÆÁØ´Ù.
  *
- * aAllocPageList : ìˆœíšŒí•˜ë ¤ëŠ” PageListEntry
- * aCurRow        : ì°¾ê¸°ì‹œì‘í•˜ë ¤ëŠ” Row
- * aNxtRow        : ë‹¤ìŒ ìœ íš¨í•œ Rowë¥¼ ì°¾ì•„ì„œ ë°˜í™˜
+ * aAllocPageList : ¼øÈ¸ÇÏ·Á´Â PageListEntry
+ * aCurRow        : Ã£±â½ÃÀÛÇÏ·Á´Â Row
+ * aNxtRow        : ´ÙÀ½ À¯È¿ÇÑ Row¸¦ Ã£¾Æ¼­ ¹İÈ¯
  **********************************************************************/
 
 IDE_RC svpAllocPageList::nextOIDall( scSpaceID              aSpaceID,
@@ -502,8 +503,8 @@ IDE_RC svpAllocPageList::nextOIDall( scSpaceID              aSpaceID,
     {
 
 #if defined(DEBUG_SVP_NEXTOIDALL_PAGE_CHECK)
-        // nextOIDall ìŠ¤ìº” ëŒ€ìƒì´ ë˜ëŠ” í˜ì´ì§€ëŠ”
-        // í…Œì´ë¸”ì— í• ë‹¹ëœ Pageì´ë¯€ë¡œ Free Pageì¼ ìˆ˜ ì—†ë‹¤.
+        // nextOIDall ½ºÄµ ´ë»óÀÌ µÇ´Â ÆäÀÌÁö´Â
+        // Å×ÀÌºí¿¡ ÇÒ´çµÈ PageÀÌ¹Ç·Î Free PageÀÏ ¼ö ¾ø´Ù.
         sPageHdr = (smpPersPageHeader *)sPage;
         IDE_TEST( svmExpandChunk::isFreePageID( sPageHdr->mSelfPageID,
                                                 & sIsFreePage )
@@ -511,7 +512,7 @@ IDE_RC svpAllocPageList::nextOIDall( scSpaceID              aSpaceID,
         IDE_DASSERT( sIsFreePage == ID_FALSE );
 #endif // DEBUG_SVP_NEXTOIDALL_PAGE_CHECK
 
-        // í•´ë‹¹ Pageì— ëŒ€í•œ í¬ì¸í„° ê²½ê³„
+        // ÇØ´ç Page¿¡ ´ëÇÑ Æ÷ÀÎÅÍ °æ°è
         sFence = (SChar *)((smpPersPage *)sPage + 1);
 
         for( ;
@@ -535,11 +536,11 @@ IDE_RC svpAllocPageList::nextOIDall( scSpaceID              aSpaceID,
 
         if(sNxtPID == SM_NULL_PID)
         {
-            // NextPageê°€ NULLì´ë©´ ëì´ë‹¤.
+            // NextPage°¡ NULLÀÌ¸é ³¡ÀÌ´Ù.
             IDE_CONT(normal_case);
         }
 
-        IDE_ASSERT( svmManager::getPersPagePtr( aSpaceID, 
+        IDE_ASSERT( smmManager::getPersPagePtr( aSpaceID, 
                                                 sNxtPID,
                                                 (void**)&sPage )
                     == IDE_SUCCESS );
@@ -560,12 +561,12 @@ IDE_RC svpAllocPageList::nextOIDall( scSpaceID              aSpaceID,
 }
 
 /***********************************************************************
- * nextOIDallì„ ìœ„í•´ aRowì—ì„œ í•´ë‹¹ Pageë¥¼ ì°¾ì•„ì¤€ë‹¤.
+ * nextOIDallÀ» À§ÇØ aRow¿¡¼­ ÇØ´ç Page¸¦ Ã£¾ÆÁØ´Ù.
  *
- * aAllocPageList : ìˆœíšŒí•˜ë ¤ëŠ” PageListEntry
- * aRow           : í˜„ì¬ Row
- * aPage          : aRowê°€ ì†í•œ Pageë¥¼ ì°¾ì•„ì„œ ë°˜í™˜
- * aRowPtr        : aRow ë‹¤ìŒ Row í¬ì¸í„°
+ * aAllocPageList : ¼øÈ¸ÇÏ·Á´Â PageListEntry
+ * aRow           : ÇöÀç Row
+ * aPage          : aRow°¡ ¼ÓÇÑ Page¸¦ Ã£¾Æ¼­ ¹İÈ¯
+ * aRowPtr        : aRow ´ÙÀ½ Row Æ÷ÀÎÅÍ
  ***********************************************************************/
 
 inline void svpAllocPageList::initForScan(
@@ -588,7 +589,7 @@ inline void svpAllocPageList::initForScan(
     if(aRow != NULL)
     {
         sPageID = SMP_SLOT_GET_PID(aRow);
-        IDE_ASSERT( svmManager::getPersPagePtr( aSpaceID, 
+        IDE_ASSERT( smmManager::getPersPagePtr( aSpaceID, 
                                                 sPageID,
                                                 (void**)aPage )
                     == IDE_SUCCESS );
@@ -600,7 +601,7 @@ inline void svpAllocPageList::initForScan(
 
         if(sPageID != SM_NULL_PID)
         {
-            IDE_ASSERT( svmManager::getPersPagePtr( aSpaceID, 
+            IDE_ASSERT( smmManager::getPersPagePtr( aSpaceID, 
                                                     sPageID,
                                                     (void**)aPage )
                         == IDE_SUCCESS );
@@ -608,19 +609,19 @@ inline void svpAllocPageList::initForScan(
         }
         else
         {
-            /* Allcateëœ í˜ì´ì§€ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.*/
+            /* AllcateµÈ ÆäÀÌÁö°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.*/
         }
     }
 }
 
 /**********************************************************************
- * aAllocPageListì—ì„œ aPageID ë‹¤ìŒ PageID
+ * aAllocPageList¿¡¼­ aPageID ´ÙÀ½ PageID
  *
- * ë‹¤ì¤‘í™”ë˜ì–´ìˆëŠ” AllocPageListì—ì„œ aPageIDê°€ Tailì´ë¼ë©´
- * aPageIDì˜ ë‹¤ìŒ PageëŠ” ë‹¤ìŒ ë¦¬ìŠ¤íŠ¸ì˜ Headê°€ ëœë‹¤.
+ * ´ÙÁßÈ­µÇ¾îÀÖ´Â AllocPageList¿¡¼­ aPageID°¡ TailÀÌ¶ó¸é
+ * aPageIDÀÇ ´ÙÀ½ Page´Â ´ÙÀ½ ¸®½ºÆ®ÀÇ Head°¡ µÈ´Ù.
  *
- * aAllocPageList : íƒìƒ‰í•˜ë ¤ëŠ” PageListEntry
- * aPageID        : íƒìƒ‰í•˜ë ¤ëŠ” PageID
+ * aAllocPageList : Å½»öÇÏ·Á´Â PageListEntry
+ * aPageID        : Å½»öÇÏ·Á´Â PageID
  **********************************************************************/
 
 scPageID svpAllocPageList::getNextAllocPageID(
@@ -639,7 +640,7 @@ scPageID svpAllocPageList::getNextAllocPageID(
     }
     else
     {
-        IDE_ASSERT( svmManager::getPersPagePtr( aSpaceID, 
+        IDE_ASSERT( smmManager::getPersPagePtr( aSpaceID, 
                                                 aPageID,
                                                 (void**)&sCurPageHeader )
                     == IDE_SUCCESS );
@@ -652,13 +653,13 @@ scPageID svpAllocPageList::getNextAllocPageID(
 
 
 /**********************************************************************
- * aAllocPageListì—ì„œ aPageID ë‹¤ìŒ PageID
+ * aAllocPageList¿¡¼­ aPageID ´ÙÀ½ PageID
  *
- * ë‹¤ì¤‘í™”ë˜ì–´ìˆëŠ” AllocPageListì—ì„œ aPageIDê°€ Tailì´ë¼ë©´
- * aPageIDì˜ ë‹¤ìŒ PageëŠ” ë‹¤ìŒ ë¦¬ìŠ¤íŠ¸ì˜ Headê°€ ëœë‹¤.
+ * ´ÙÁßÈ­µÇ¾îÀÖ´Â AllocPageList¿¡¼­ aPageID°¡ TailÀÌ¶ó¸é
+ * aPageIDÀÇ ´ÙÀ½ Page´Â ´ÙÀ½ ¸®½ºÆ®ÀÇ Head°¡ µÈ´Ù.
  *
- * aAllocPageList : íƒìƒ‰í•˜ë ¤ëŠ” PageListEntry
- * aPagePtr       : íƒìƒ‰í•˜ë ¤ëŠ” Pageì˜ ì‹œì‘ í¬ì¸í„°
+ * aAllocPageList : Å½»öÇÏ·Á´Â PageListEntry
+ * aPagePtr       : Å½»öÇÏ·Á´Â PageÀÇ ½ÃÀÛ Æ÷ÀÎÅÍ
  **********************************************************************/
 scPageID svpAllocPageList::getNextAllocPageID(
     smpAllocPageListEntry * aAllocPageList,
@@ -700,13 +701,13 @@ scPageID svpAllocPageList::getNextAllocPageID(
 
 
 /**********************************************************************
- * aAllocPageListì—ì„œ aPageID ì´ì „ PageID
+ * aAllocPageList¿¡¼­ aPageID ÀÌÀü PageID
  *
- * ë‹¤ì¤‘í™”ë˜ì–´ìˆëŠ” AllocPageListì—ì„œ aPageIDê°€ Headë¼ë©´
- * aPageIDì˜ ì´ì „ PageëŠ” ì´ì „ ë¦¬ìŠ¤íŠ¸ì˜ Tailì´ ëœë‹¤.
+ * ´ÙÁßÈ­µÇ¾îÀÖ´Â AllocPageList¿¡¼­ aPageID°¡ Head¶ó¸é
+ * aPageIDÀÇ ÀÌÀü Page´Â ÀÌÀü ¸®½ºÆ®ÀÇ TailÀÌ µÈ´Ù.
  *
- * aAllocPageList : íƒìƒ‰í•˜ë ¤ëŠ” PageListEntry
- * aPageID        : íƒìƒ‰í•˜ë ¤ëŠ” PageID
+ * aAllocPageList : Å½»öÇÏ·Á´Â PageListEntry
+ * aPageID        : Å½»öÇÏ·Á´Â PageID
  **********************************************************************/
 
 scPageID svpAllocPageList::getPrevAllocPageID(
@@ -726,7 +727,7 @@ scPageID svpAllocPageList::getPrevAllocPageID(
     }
     else
     {
-        IDE_ASSERT( svmManager::getPersPagePtr( aSpaceID, 
+        IDE_ASSERT( smmManager::getPersPagePtr( aSpaceID, 
                                                 aPageID,
                                                 (void**)&sCurPageHeader )
                     == IDE_SUCCESS );
@@ -755,13 +756,13 @@ scPageID svpAllocPageList::getPrevAllocPageID(
 }
 
 /**********************************************************************
- * aAllocPageListì˜ ì²« PageIDë¥¼ ë°˜í™˜
+ * aAllocPageListÀÇ Ã¹ PageID¸¦ ¹İÈ¯
  *
- * AllocPageListê°€ ë‹¤ì¤‘í™”ë˜ì–´ ìˆê¸° ë•Œë¬¸ì—
- * 0ë²ˆì§¸ ë¦¬ìŠ¤íŠ¸ì˜ Headê°€ NULLì´ë”ë¼ë„ 1ë²ˆì§¸ ë¦¬ìŠ¤íŠ¸ì˜ Headê°€ NULLì´ ì•„ë‹ˆë¼ë©´
- * ì²« PageIDëŠ” 1ë²ˆì§¸ ë¦¬ìŠ¤íŠ¸ì˜ Headê°€ ëœë‹¤.
+ * AllocPageList°¡ ´ÙÁßÈ­µÇ¾î ÀÖ±â ¶§¹®¿¡
+ * 0¹øÂ° ¸®½ºÆ®ÀÇ Head°¡ NULLÀÌ´õ¶óµµ 1¹øÂ° ¸®½ºÆ®ÀÇ Head°¡ NULLÀÌ ¾Æ´Ï¶ó¸é
+ * Ã¹ PageID´Â 1¹øÂ° ¸®½ºÆ®ÀÇ Head°¡ µÈ´Ù.
  *
- * aAllocPageList : íƒìƒ‰í•˜ë ¤ëŠ” PageListEntry
+ * aAllocPageList : Å½»öÇÏ·Á´Â PageListEntry
  **********************************************************************/
 
 scPageID svpAllocPageList::getFirstAllocPageID(
@@ -788,12 +789,12 @@ scPageID svpAllocPageList::getFirstAllocPageID(
 }
 
 /**********************************************************************
- * aAllocPageListì˜ ë§ˆì§€ë§‰ PageIDë¥¼ ë°˜í™˜
+ * aAllocPageListÀÇ ¸¶Áö¸· PageID¸¦ ¹İÈ¯
  *
- * ë‹¤ì¤‘í™”ë˜ì–´ ìˆëŠ” AllocPageListì—ì„œ NULLì´ ì•„ë‹Œ ê°€ì¥ ë’¤ì— ìˆëŠ” Tailì´
- * aAllocPageListì˜ ë§ˆì§€ë§‰ PageIDê°€ ëœë‹¤.
+ * ´ÙÁßÈ­µÇ¾î ÀÖ´Â AllocPageList¿¡¼­ NULLÀÌ ¾Æ´Ñ °¡Àå µÚ¿¡ ÀÖ´Â TailÀÌ
+ * aAllocPageListÀÇ ¸¶Áö¸· PageID°¡ µÈ´Ù.
  *
- * aAllocPageList : íƒìƒ‰í•˜ë ¤ëŠ” PageListEntry
+ * aAllocPageList : Å½»öÇÏ·Á´Â PageListEntry
  **********************************************************************/
 
 scPageID svpAllocPageList::getLastAllocPageID(

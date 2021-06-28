@@ -61,7 +61,7 @@ public class DoubleColumn extends AbstractColumn
 
     public int getMaxDisplaySize()
     {
-        // BUGBUG ì˜ˆì „ JDBC ë“œë¼ì´ë²„ ì†ŒìŠ¤ë¡œë¶€í„°...
+        // BUGBUG ¿¹Àü JDBC µå¶óÀÌ¹ö ¼Ò½º·ÎºÎÅÍ...
         return 20;
     }
 
@@ -102,6 +102,11 @@ public class DoubleColumn extends AbstractColumn
         ((DoubleDynamicArray) aArray).put(mDoubleValue);
     }
 
+    public void storeTo()
+    {
+        mValues.add(mDoubleValue);
+    }
+
     protected void readFromSub(CmChannel aChannel) throws SQLException
     {
         mDoubleValue = aChannel.readDouble();
@@ -112,9 +117,19 @@ public class DoubleColumn extends AbstractColumn
         ((DoubleDynamicArray)aArray).put(aChannel.readDouble());
     }
 
+    protected void readAndStoreValue(CmChannel aChannel) throws SQLException
+    {
+        mValues.add(aChannel.readDouble());
+    }
+
     protected void loadFromSub(DynamicArray aArray)
     {
         mDoubleValue = ((DoubleDynamicArray) aArray).get();
+    }
+
+    protected void loadFromSub(int aLoadIndex)
+    {
+        mDoubleValue = (Double)mValues.get(aLoadIndex);
     }
 
     protected void setNullValue()

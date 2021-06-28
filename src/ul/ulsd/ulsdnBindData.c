@@ -28,7 +28,7 @@
 
 /*
  * PROJ-2638 shard native linker
- * SQL_C_DEFAULT ë¡œ ë°”ì¸ë”©ì‹œ ì–´ë–¤ íƒ€ìž…ì„ ê°€ì •í•´ì•¼ í•˜ëŠ”ì§€ ê²°ì •í•˜ëŠ” í•¨ìˆ˜.
+ * SQL_C_DEFAULT ·Î ¹ÙÀÎµù½Ã ¾î¶² Å¸ÀÔÀ» °¡Á¤ÇØ¾ß ÇÏ´ÂÁö °áÁ¤ÇÏ´Â ÇÔ¼ö.
  */
 ulnCTypeID ulsdTypeGetDefault_UserType( ulnMTypeID aMTYPE )
 {
@@ -75,8 +75,12 @@ ulnCTypeID ulsdTypeMap_MTYPE_CTYPE( acp_sint16_t aMTYPE )
         case ULN_MTYPE_BINARY:
         case ULN_MTYPE_REAL:
             return ULN_CTYPE_BINARY;
+        case ULN_MTYPE_BLOB:
         case ULN_MTYPE_BLOB_LOCATOR:
+            return ULN_CTYPE_BLOB_LOCATOR;
+        case ULN_MTYPE_CLOB:
         case ULN_MTYPE_CLOB_LOCATOR:
+            return ULN_CTYPE_CLOB_LOCATOR;
         default:
             return ULN_CTYPE_MAX;
     }
@@ -87,7 +91,7 @@ ulnCTypeID ulsdTypeMap_MTYPE_CTYPE( acp_sint16_t aMTYPE )
  * ulnParamMTDDataCopyToStmt
  *
  * Desc:
- *    mt íƒ€ìž…ì˜ ì‚¬ìš©ìž ë²„í¼ì˜ ë°ì´í„°ë¥¼ STMTì•ˆì˜ DataPtrë¡œ ë³µì‚¬í•˜ëŠ” í•¨ìˆ˜.
+ *    mt Å¸ÀÔÀÇ »ç¿ëÀÚ ¹öÆÛÀÇ µ¥ÀÌÅÍ¸¦ STMT¾ÈÀÇ DataPtr·Î º¹»çÇÏ´Â ÇÔ¼ö.
  *
  * Argument:
  *   aStmt  [IN] - ulnStmt
@@ -190,9 +194,9 @@ ACI_RC ulsdParamMTDDataCopyToStmt( ulnStmt     * aStmt,
             mtdBinaryType *sBinaryType = (mtdBinaryType *)aSrcPtr;
             acp_uint32_t   sPadding    = 0;
             ULN_CHUNK_WR4( aStmt, &sBinaryType->mLength );
+            ULN_CHUNK_WR4( aStmt, &sPadding ); // meaningless
             if ( sBinaryType->mLength > 0 )
             {
-                ULN_CHUNK_WR4( aStmt, &sPadding ); // meaningless
                 ULN_CHUNK_WCP( aStmt, sBinaryType->mValue, sBinaryType->mLength );
             }
             else
@@ -279,7 +283,7 @@ ACI_RC ulsdParamMTDDataCopyToStmt( ulnStmt     * aStmt,
  * ulsdParamProcess_DATAs_ShardCore
  *
  * Desc:
- *    mt íƒ€ìž…ì˜ ì‚¬ìš©ìž ë²„í¼ì˜ ë°ì´í„°ë¥¼ STMTì•ˆì˜ DataPtrë¡œ ë³µì‚¬í•˜ëŠ” í•¨ìˆ˜.
+ *    mt Å¸ÀÔÀÇ »ç¿ëÀÚ ¹öÆÛÀÇ µ¥ÀÌÅÍ¸¦ STMT¾ÈÀÇ DataPtr·Î º¹»çÇÏ´Â ÇÔ¼ö.
  *
  * Argument:
  *   aFnContext  [IN]  - ulnFnContext
@@ -324,16 +328,16 @@ ACI_RC ulsdParamProcess_DATAs_ShardCore( ulnFnContext * aFnContext,
 /**************************************************************
  * ulsdDataCopyFromMT
  *  - PROJ-2638
- *  - CM ë²„í¼ì˜ ë°ì´í„°ë¥¼ MT í˜•íƒœë¡œ ì‚¬ìš©ìž ì˜ì—­ìœ¼ë¡œ ë³µì‚¬í•œë‹¤.
- *  - ì„œë²„ì—ì„œ ë°˜í™˜ëœ ë°ì´í„°ë¥¼ MT íƒ€ìž… ê·¸ëŒ€ë¡œ SDLì— ë„˜ê¸°ê¸° ìœ„í•´ì„œ ì‚¬ìš© ëœë‹¤.
- *  - ulsdCacheRowCopyToUserBufferShardCoreì—ì„œ ì‚¬ìš©ëœë‹¤.
+ *  - CM ¹öÆÛÀÇ µ¥ÀÌÅÍ¸¦ MT ÇüÅÂ·Î »ç¿ëÀÚ ¿µ¿ªÀ¸·Î º¹»çÇÑ´Ù.
+ *  - ¼­¹ö¿¡¼­ ¹ÝÈ¯µÈ µ¥ÀÌÅÍ¸¦ MT Å¸ÀÔ ±×´ë·Î SDL¿¡ ³Ñ±â±â À§ÇØ¼­ »ç¿ë µÈ´Ù.
+ *  - ulsdCacheRowCopyToUserBufferShardCore¿¡¼­ »ç¿ëµÈ´Ù.
  *
  * aFnContext [IN] - ulnFnContext
- * aSrc       [IN] - CM ë²„í¼
- * aDes       [OUT]- ulnCache ì•ˆì˜ ë²„í¼
- * aDesLen    [IN] - ë²„í¼ì˜ í¬ê¸°
- * aColumn    [OUT]- ì»¬ëŸ¼ ì •ë³´
- * aMaxLen    [IN] - ë°ì´í„° ì»¬ëŸ¼ì˜ ìµœëŒ€ ê¸¸ì´
+ * aSrc       [IN] - CM ¹öÆÛ
+ * aDes       [OUT]- ulnCache ¾ÈÀÇ ¹öÆÛ
+ * aDesLen    [IN] - ¹öÆÛÀÇ Å©±â
+ * aColumn    [OUT]- ÄÃ·³ Á¤º¸
+ * aMaxLen    [IN] - µ¥ÀÌÅÍ ÄÃ·³ÀÇ ÃÖ´ë ±æÀÌ
  **************************************************************/
 ACI_RC ulsdDataCopyFromMT( ulnFnContext * aFnContext,
                            acp_uint8_t  * aSrc,
@@ -343,7 +347,13 @@ ACI_RC ulsdDataCopyFromMT( ulnFnContext * aFnContext,
                            acp_uint32_t   aMaxLen )
 {
     acp_uint32_t   sStructSize = 0;
-    ACP_UNUSED( aFnContext );
+
+    /* PROJ-2047 Strengthening LOB - LOBCACHE */
+    ulnLob        *sLob;
+    acp_uint64_t   sLobLocatorId;
+    acp_uint64_t   sLobSize;
+
+    ulnStmt       *sStmt = aFnContext->mHandle.mStmt;
 
     switch ( aColumn->mMtype )
     {
@@ -389,7 +399,8 @@ ACI_RC ulsdDataCopyFromMT( ulnFnContext * aFnContext,
                 ACI_TEST( aDesLen < aMaxLen );
                 sData = (mtdCharType *)aDes;
                 CM_ENDIAN_ASSIGN2( &sData->length, aSrc );
-                ACI_TEST( sData->length > aMaxLen );
+                sStructSize = MTD_CHAR_TYPE_STRUCT_SIZE( sData->length );
+                ACI_TEST( sStructSize > aMaxLen );
                 acpMemSet( sData->value, ' ', (aMaxLen - 2) );
                 acpMemCpy( &sData->value, aSrc+2, sData->length );
                 aColumn->mBuffer     = NULL;
@@ -501,8 +512,68 @@ ACI_RC ulsdDataCopyFromMT( ulnFnContext * aFnContext,
         case ULN_MTYPE_CLOB :
         case ULN_MTYPE_BLOB_LOCATOR :
         case ULN_MTYPE_CLOB_LOCATOR :
+
+            /* PROJ-2728 Sharding LOB */
+            /* 
+             * PROJ-2047 Strengthening LOB - LOBCACHE
+             *
+             * LOB_LOCATOR(8) + lobsize(8) + HasData(1) + LobData(?)
+             */
+            CM_ENDIAN_ASSIGN8(&sLobLocatorId, aSrc);
+            ACI_TEST( aDesLen < 8 );
+            *(mtdClobLocatorType *)aDes = sLobLocatorId;
+
+            CM_ENDIAN_ASSIGN8(&sLobSize, aSrc + 8);
+
+            sLob = (ulnLob *)aColumn->mBuffer;
+            ulnLobInitialize(sLob, (ulnMTypeID)aColumn->mMtype);
+
+            sLob->mOp->mSetLocator(aFnContext, sLob, sLobLocatorId);
+
+            /* PROJ-2728 Sharding LOB */
+            if ( sLobSize == ACP_ULONG_MAX )
             {
-                ACE_ASSERT(0);
+                sLob->mIsNull = ACP_TRUE;
+                sLob->mSize = 0;
+            }
+            else
+            {
+                sLob->mIsNull = ACP_FALSE;;
+                sLob->mSize = sLobSize;
+            }
+
+            aColumn->mDataLength = ACI_SIZEOF(ulnLob);
+            aColumn->mMTLength   = LOB_MT_SIZE;
+            aColumn->mPrecision  = 0;
+
+            if (sLobLocatorId == MTD_LOCATOR_NULL )
+            {
+                aColumn->mDataLength = SQL_NULL_DATA;
+            }
+            else
+            {
+                /* 
+                 * PROJ-2047 Strengthening LOB - LOBCACHE
+                 *
+                 * HasData°¡ TrueÀÌ¸é LOB CachingÀ» ÇÑ´Ù.
+                 */
+                if (aSrc[LOB_MT_HASDATA_OFFSET] == ACP_TRUE)
+                {
+                    sLob->mData = aSrc + LOB_MT_SIZE;
+                    aColumn->mMTLength += sLob->mSize;
+                }
+                else
+                {
+                    sLob->mData = NULL;
+                }
+
+                /* BUG-36966 */
+                ACI_TEST(ulnLobCacheAdd(sStmt->mLobCache,
+                                        sLobLocatorId,
+                                        sLob->mData,
+                                        sLob->mSize,
+                                        sLob->mIsNull)
+                         != ACI_SUCCESS);
             }
             break;
 
@@ -629,13 +700,13 @@ ACI_RC ulsdDataCopyFromMT( ulnFnContext * aFnContext,
 /**************************************************************
  * ulsdCacheRowCopyToUserBufferShardCore
  *  - PROJ-2638
- *  - ulsdCacheRowCopyToUserBufferì—ì„œ í˜¸ì¶œëœë‹¤.
+ *  - ulsdCacheRowCopyToUserBuffer¿¡¼­ È£ÃâµÈ´Ù.
  *
  * aFnContext [IN] - ulnFnContext
  * aStmt      [IN] - ulnStmt
- * aSrc       [IN] - CM ë²„í¼
+ * aSrc       [IN] - CM ¹öÆÛ
  * aColumn    [IN] - ulnColumn
- * aColNum    [IN] - ì»¬ëŸ¼ì˜ ë²ˆí˜¸
+ * aColNum    [IN] - ÄÃ·³ÀÇ ¹øÈ£
  **************************************************************/
 ACI_RC ulsdCacheRowCopyToUserBufferShardCore( ulnFnContext * aFnContext,
                                               ulnStmt      * aStmt,
@@ -644,17 +715,31 @@ ACI_RC ulsdCacheRowCopyToUserBufferShardCore( ulnFnContext * aFnContext,
                                               acp_uint32_t   aColNum)
 {
     acp_uint32_t      sColumnOffSet   = 0;
+    acp_uint8_t     * sDes;
 
     ACI_TEST( ( aColNum>aStmt->mShardStmtCxt.mColumnOffset.mColumnCnt ) || ( aColNum == 0 ) );
     sColumnOffSet = aStmt->mShardStmtCxt.mColumnOffset.mOffSet[ aColNum - 1 ];
     ACI_TEST( ( aStmt->mShardStmtCxt.mRowDataBufLen - sColumnOffSet) <= 0 );
+
+    sDes = aStmt->mShardStmtCxt.mRowDataBuffer + sColumnOffSet;
     ACI_TEST( ulsdDataCopyFromMT( aFnContext,
                                   aSrc,
-                                  ( aStmt->mShardStmtCxt.mRowDataBuffer + sColumnOffSet ),
+                                  sDes,
                                   aStmt->mShardStmtCxt.mRowDataBufLen - sColumnOffSet,
                                   aColumn,
                                   aStmt->mShardStmtCxt.mColumnOffset.mMaxByte[ aColNum - 1 ] )
               != ACI_SUCCESS );
+
+    /* BUG-32474 */
+    if ((aColumn->mMtype == ULN_MTYPE_BLOB)
+     || (aColumn->mMtype == ULN_MTYPE_CLOB)
+     || (aColumn->mMtype == ULN_MTYPE_BLOB_LOCATOR)
+     || (aColumn->mMtype == ULN_MTYPE_CLOB_LOCATOR))
+    {
+        ACI_TEST( ulnCacheAddReadLobLocator(aStmt->mCache,
+                                            (acp_uint64_t*)sDes)
+                  != ACI_SUCCESS );
+    }
     return ACI_SUCCESS;
 
     ACI_EXCEPTION_END;

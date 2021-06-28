@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcpManager.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qcpManager.cpp 89835 2021-01-22 10:10:02Z andrew.shin $
  **********************************************************************/
 
 #include <idl.h>
@@ -206,12 +206,54 @@ IDE_RC qcpManager::parsePartialForAnalyze( qcStatement * aStatement,
     IDE_TEST( parseInternal( aStatement, & s_qcplLexer )
               != IDE_SUCCESS );
 
+    /* TASK-7219 Shard Transformer Refactoring */
+    aStatement->myPlan->parseTree->stmtShard = QC_STMT_SHARD_NONE;
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_INVALID_ARGUMENT )
     {
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
                                   "qcpManager::parsePartialForAnalyze",
+                                  "Invalid argument" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/* TASK-7219 */
+IDE_RC qcpManager::parsePartialForWhere( qcStatement * aStatement,
+                                         SChar       * aText,
+                                         SInt          aStart,
+                                         SInt          aSize )
+{
+    SInt sTextLen = idlOS::strlen( aText );
+
+    qcplLexer s_qcplLexer( aText,
+                           sTextLen,
+                           aStart,
+                           aSize,
+                           TR_WHERE );
+
+    IDU_FIT_POINT_FATAL( "qcpManager::parsePartialForWhere::__FT__" );
+
+    IDE_TEST_RAISE( ( aStart < 0 ) ||
+                    ( aSize < 0 ) ||
+                    ( aStart >= sTextLen ) ||
+                    ( aSize > sTextLen ) ||
+                    ( aStart + aSize > sTextLen ),
+                    ERR_INVALID_ARGUMENT );
+
+    IDE_TEST( parseInternal( aStatement, & s_qcplLexer )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_INVALID_ARGUMENT )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qcpManager::parsePartialForWhere",
                                   "Invalid argument" ) );
     }
     IDE_EXCEPTION_END;
@@ -247,11 +289,11 @@ IDE_RC qcpManager::parseInternal( qcStatement * aStatement,
     if ( aStatement->myPlan->parseTree == NULL )
     {
         /* PROJ-2550 PSM Encryption
-           aStatement->myPlan->stmtTextê°€ encrypted textë¼ë©´,
-           ì²«ë²ˆì§¸ parsingì„ í†µí•´, plain textë¥¼ ì–»ì–´,
-           í•´ë‹¹ textë¡œ ë‹¤ì‹œ parsingí•˜ì—¬ parse treeë¥¼ ìƒì„±í•œë‹¤.
-           aStatement->myPlan->stmtTextëŠ”
-           ì²«ë²ˆì§¸ parsing ë‹¨ê³„ì—ì„œ plain textë¡œ êµì²´ëœë‹¤. */
+           aStatement->myPlan->stmtText°¡ encrypted text¶ó¸é,
+           Ã¹¹øÂ° parsingÀ» ÅëÇØ, plain text¸¦ ¾ò¾î,
+           ÇØ´ç text·Î ´Ù½Ã parsingÇÏ¿© parse tree¸¦ »ı¼ºÇÑ´Ù.
+           aStatement->myPlan->stmtText´Â
+           Ã¹¹øÂ° parsing ´Ü°è¿¡¼­ plain text·Î ±³Ã¼µÈ´Ù. */
         IDE_TEST( parseIt( aStatement ) != IDE_SUCCESS );
     }
     else
@@ -279,13 +321,13 @@ IDE_RC qcpManager::parseInternal( qcStatement * aStatement,
             {
                 // Nothing to do.
                 // To Fix BUG-12887
-                // insertë‚˜ updateì—ì„œ default valueê°€ ìˆëŠ” functionì„ í˜¸ì¶œí•˜ë©´
-                // default valueë¥¼ parsingí•˜ê¸° ë•Œë¬¸ì—, ì—¬ê¸°ì„œ ë˜ í• ë‹¹ë°›ì•„ì„œ
-                // ê¸°ì¡´ì˜ ê°’ë“¤ì€ ì „ë¶€ ë‚ ë¼ê°€ê²Œ ëœë‹¤.
+                // insert³ª update¿¡¼­ default value°¡ ÀÖ´Â functionÀ» È£ÃâÇÏ¸é
+                // default value¸¦ parsingÇÏ±â ¶§¹®¿¡, ¿©±â¼­ ¶Ç ÇÒ´ç¹Ş¾Æ¼­
+                // ±âÁ¸ÀÇ °ªµéÀº ÀüºÎ ³¯¶ó°¡°Ô µÈ´Ù.
                 // Ex) insert into t1 values( func1(1));
-                //     func1ì˜ argumentëŠ” v1 integer, v2 integer default 100
-                // ê¸°ì¡´ templateì˜ í• ë‹¹ë˜ì–´ ìˆëŠ” ê³µê°„ì„ ìœ ì§€í•˜ê¸° ìœ„í•´
-                // nullì´ ì•„ë‹ˆë¼ë©´ í• ë‹¹ë°›ë„ë¡ ìˆ˜ì •.
+                //     func1ÀÇ argument´Â v1 integer, v2 integer default 100
+                // ±âÁ¸ templateÀÇ ÇÒ´çµÇ¾î ÀÖ´Â °ø°£À» À¯ÁöÇÏ±â À§ÇØ
+                // nullÀÌ ¾Æ´Ï¶ó¸é ÇÒ´ç¹Şµµ·Ï ¼öÁ¤.
             }
         }
 

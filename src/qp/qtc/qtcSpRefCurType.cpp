@@ -131,7 +131,7 @@ IDE_RC mtdEstimate( UInt     * aColumnSize,
                     SInt     * /* aPrecision */,
                     SInt     * /* aScale */ )
 {
-    // sizeëŠ” structureì˜ í¬ê¸°ì™€ ê´€ê³„ê°€ ìˆë‹¤.
+    // size´Â structureÀÇ Å©±â¿Í °ü°è°¡ ÀÖ´Ù.
     
     *aColumnSize = QTC_REFCURTYPE_SIZE;
     
@@ -141,7 +141,7 @@ IDE_RC mtdEstimate( UInt     * aColumnSize,
 UInt mtdActualSize( const mtcColumn*,
                     const void* )
 {
-    // actual sizeëŠ” structureì˜ í¬ê¸°ì™€ ê´€ê³„ê°€ ìˆë‹¤.
+    // actual size´Â structureÀÇ Å©±â¿Í °ü°è°¡ ÀÖ´Ù.
     return QTC_REFCURTYPE_SIZE;
 }
 

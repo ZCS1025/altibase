@@ -16,11 +16,11 @@
  
 
 /***********************************************************************
- * $Id: sdrUpdate.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdrUpdate.cpp 90937 2021-06-02 06:03:12Z emlee $
  *
  * Description :
  *
- * Î≥∏ ÌååÏùºÏùÄ DRDBÏùò redo/undo function map ÎåÄÌïú Íµ¨ÌòÑÌååÏùºÏù¥Îã§.
+ * ∫ª ∆ƒ¿œ¿∫ DRDB¿« redo/undo function map ¥Î«— ±∏«ˆ∆ƒ¿œ¿Ã¥Ÿ.
  *
  **********************************************************************/
 
@@ -47,7 +47,7 @@ sdrDiskUndoFunction            gSdrDiskUndoFunction[SM_MAX_RECFUNCMAP_SIZE];
 sdrDiskRefNTAUndoFunction      gSdrDiskRefNTAUndoFunction[SM_MAX_RECFUNCMAP_SIZE];
 
 /* ------------------------------------------------
- * Description : DRDBÏùò redo/undo Ìï®Ïàò Vector Ï¥àÍ∏∞Ìôî
+ * Description : DRDB¿« redo/undo «‘ºˆ Vector √ ±‚»≠
  * ----------------------------------------------*/
 void sdrUpdate::initialize()
 {
@@ -174,11 +174,11 @@ void sdrUpdate::initialize()
     gSdrDiskRedoFunction[SDR_SDP_WRITE_PAGEIMG]
         = sdpUpdate::redo_SDR_SDP_WRITE_PAGEIMG;
 
-    // PROJ-1665 : Direct-Path Ins ÏàòÌñâÎêú Page Ï†ÑÏ≤¥Ïóê ÎåÄÌïú redo
+    // PROJ-1665 : Direct-Path Ins ºˆ«‡µ» Page ¿¸√ºø° ¥Î«— redo
     gSdrDiskRedoFunction[SDR_SDP_WRITE_DPATH_INS_PAGE]
         = sdpUpdate::redo_SDR_SDP_WRITE_PAGEIMG;
 
-    // PROJ-1665 : PageÏóê ÎåÄÌïú Consistent Ï†ïÎ≥¥ ÏÑ§Ï†ï
+    // PROJ-1665 : Pageø° ¥Î«— Consistent ¡§∫∏ º≥¡§
     gSdrDiskRedoFunction[SDR_SDP_PAGE_CONSISTENT]
         = sdpUpdate::redo_SDR_SDP_PAGE_CONSISTENT;
 
@@ -301,10 +301,6 @@ void sdrUpdate::initialize()
         = sdnUpdate::redo_SDR_SDN_FREE_KEYS;
     gSdrDiskRedoFunction[SDR_SDN_COMPACT_INDEX_PAGE]
         = sdnUpdate::redo_SDR_SDN_COMPACT_INDEX_PAGE;
-    gSdrDiskRedoFunction[SDR_SDN_MAKE_CHAINED_KEYS]
-        = sdnUpdate::redo_SDR_SDN_MAKE_CHAINED_KEYS;
-    gSdrDiskRedoFunction[SDR_SDN_MAKE_UNCHAINED_KEYS]
-        = sdnUpdate::redo_SDR_SDN_MAKE_UNCHAINED_KEYS;
     gSdrDiskRedoFunction[SDR_SDN_KEY_STAMPING]
         = sdnUpdate::redo_SDR_SDN_KEY_STAMPING;
     gSdrDiskRedoFunction[SDR_SDN_INIT_CTL]
@@ -346,14 +342,14 @@ void sdrUpdate::appendExternalRedoFunction( UInt                aRedoMapID,
 }
 
 void sdrUpdate::appendExternalRefNTAUndoFunction( 
-    UInt                           aRefNTAUndoMapID,
-    sdrDiskRefNTAUndoFunction      aDiskRefNTAUndoFunction )
+                            UInt                           aRefNTAUndoMapID,
+                            sdrDiskRefNTAUndoFunction      aDiskRefNTAUndoFunction )
 {
     gSdrDiskRefNTAUndoFunction[ aRefNTAUndoMapID ] = aDiskRefNTAUndoFunction;
 }
 
 /***********************************************************************
- * Description : DRDB Î°úÍ∑∏-based undo Ìï®Ïàò
+ * Description : DRDB ∑Œ±◊-based undo «‘ºˆ
  **********************************************************************/
 IDE_RC sdrUpdate::doUndoFunction( idvSQL * aStatistics,
                                   smTID    aTransID,
@@ -384,7 +380,7 @@ IDE_RC sdrUpdate::doUndoFunction( idvSQL * aStatistics,
 }
 
 /***********************************************************************
- * Description : DRDB Î°úÍ∑∏-based redo Ìï®Ïàò
+ * Description : DRDB ∑Œ±◊-based redo «‘ºˆ
  **********************************************************************/
 IDE_RC sdrUpdate::doRedoFunction( SChar       * aValue,
                                   UInt          aValueLen,
@@ -409,7 +405,7 @@ IDE_RC sdrUpdate::doRedoFunction( SChar       * aValue,
 
 
 /***********************************************************************
- * redo type:  DRDB NTAÎ°úÍ∑∏Ïùò logical undo ÏàòÌñâ
+ * redo type:  DRDB NTA∑Œ±◊¿« logical undo ºˆ«‡
  ***********************************************************************/
 IDE_RC sdrUpdate::doNTAUndoFunction( idvSQL   * aStatistics,
                                      void     * aTrans,
@@ -446,130 +442,219 @@ IDE_RC sdrUpdate::doNTAUndoFunction( idvSQL   * aStatistics,
                                                  SCT_SS_SKIP_UNDO )
                      == ID_TRUE )
                 {
-                    // Skip Ìï† Undo Î°úÍ∑∏ÎùºÎ©¥ Dummy CLRÎßå Î°úÍπÖÌïúÎã§.
+                    // Skip «“ Undo ∑Œ±◊∂Û∏È Dummy CLR∏∏ ∑Œ±Î«—¥Ÿ.
                 }
                 else
                 {
                     IDE_TEST( sdpSegment::freeSeg4OperUndo(
-                                  aStatistics,
-                                  aSpaceID,
-                                  aArrData[0],
-                                  (sdrOPType)aOPType,
-                                  &sMtx) != IDE_SUCCESS );
+                                              aStatistics,
+                                              aSpaceID,
+                                              aArrData[0],
+                                              (sdrOPType)aOPType,
+                                              &sMtx) 
+                              != IDE_SUCCESS );
                 }
                 break;
 
             case SDR_OP_SDPST_UPDATE_WMINFO_4DPATH:
-                IDE_TEST( sdpstUpdate::undo_SDPST_UPDATE_WM_4DPATH(
-                                       aStatistics,
-                                       &sMtx,
-                                       aSpaceID,
-                                       aArrData[0],  /* Seg PID */
-                                       aArrData[1],  /* Prev HWM Ext RID*/
-                                       aArrData[2]   /* Prev HWM PID*/ )
-                          != IDE_SUCCESS );
+                //BUG-48460: NTA∑Œ±◊( SDR_OP_SDPST_UPDATE_WMINFO_4DPATH ) ¡ﬂ 
+                //           discard TBS¡¢±Ÿ ∞°¥…«— ∑Œ±◊ø° TBS √º≈© √ﬂ∞° 
+                if ( sctTableSpaceMgr::hasState( aSpaceID,
+                                                 SCT_SS_SKIP_UNDO )
+                     == ID_TRUE )
+                {
+                    // Skip «“ Undo ∑Œ±◊∂Û∏È Dummy CLR∏∏ ∑Œ±Î«—¥Ÿ.
+                }
+                else
+                {
+                    IDE_TEST( sdpstUpdate::undo_SDPST_UPDATE_WM_4DPATH(
+                                                aStatistics,
+                                                &sMtx,
+                                                aSpaceID,
+                                                aArrData[0],  /* Seg PID */
+                                                aArrData[1],  /* Prev HWM Ext RID*/
+                                                aArrData[2]   /* Prev HWM PID*/ )
+                               != IDE_SUCCESS );
+                }
                 break;
 
             case SDR_OP_SDPST_UPDATE_BMP_4DPATH:
-                IDE_TEST( sdpstUpdate::undo_SDPST_UPDATE_BMP_4DPATH(
-                                       aStatistics,
-                                       &sMtx,
-                                       aSpaceID,
-                                       (scPageID)aArrData[0],  /* BMP */
-                                       (SShort)aArrData[1],    /* From SlotNo */
-                                       (SShort)aArrData[2],    /* To SlotNo */
-                                       (sdpstMFNL)aArrData[3], /* Prv MFNL */
-                                       (sdpstMFNL)aArrData[4]  /* Prv LstSlot MFNL */
-                              ) != IDE_SUCCESS );
+                //BUG-48460: NTA∑Œ±◊ ( SDR_OP_SDPST_UPDATE_BMP_4DPATH ) ¡ﬂ 
+                //           discard TBS¡¢±Ÿ ∞°¥…«— ∑Œ±◊ø° TBS √º≈© √ﬂ∞° 
+                if ( sctTableSpaceMgr::hasState( aSpaceID,
+                                                 SCT_SS_SKIP_UNDO )
+                     == ID_TRUE )
+                {
+                    // Skip «“ Undo ∑Œ±◊∂Û∏È Dummy CLR∏∏ ∑Œ±Î«—¥Ÿ.
+                }
+                else
+                {
+                    IDE_TEST( sdpstUpdate::undo_SDPST_UPDATE_BMP_4DPATH(
+                                        aStatistics,
+                                        &sMtx,
+                                        aSpaceID,
+                                        (scPageID)aArrData[0],  /* BMP */
+                                        (SShort)aArrData[1],    /* From SlotNo */
+                                        (SShort)aArrData[2],    /* To SlotNo */
+                                        (sdpstMFNL)aArrData[3], /* Prv MFNL */
+                                        (sdpstMFNL)aArrData[4] )/* Prv LstSlot MFNL */
+                              != IDE_SUCCESS );
+                }
                 break;
 
             case SDR_OP_SDPSF_MERGE_SEG_4DPATH:
-                IDE_TEST( sdpsfUpdate::undo_SDPSF_MERGE_SEG_4DPATH(
-                              aStatistics,
-                              &sMtx,
-                              aSpaceID,
-                              aArrData[0],   /* ToSeg PID */
-                              aArrData[1],   /* LstAllocExtRID Of ToSeg */
-                              aArrData[2],   /* FstPIDOfLstAllocExt Of ToSeg */
-                              aArrData[3],   /* FmtPageCnt Of ToSeg */
-                              aArrData[4] )  /* HWM Of ToSeg */
-                          != IDE_SUCCESS );
-
+                //BUG-48460: NTA∑Œ±◊ ( SDR_OP_SDPSF_MERGE_SEG_4DPATH ) ¡ﬂ 
+                //           discard TBS¡¢±Ÿ ∞°¥…«— ∑Œ±◊ø° TBS √º≈© √ﬂ∞°
+                //           ( ¿Ã ∑Œ±◊≈∏¿‘¿∫ write «“ ∂ß æ» æ∏? ) 
+                if ( sctTableSpaceMgr::hasState( aSpaceID,
+                                                 SCT_SS_SKIP_UNDO )
+                     == ID_TRUE )
+                {
+                    // Skip «“ Undo ∑Œ±◊∂Û∏È Dummy CLR∏∏ ∑Œ±Î«—¥Ÿ.
+                }
+                else
+                {
+                    IDE_TEST( sdpsfUpdate::undo_SDPSF_MERGE_SEG_4DPATH(
+                                            aStatistics,
+                                            &sMtx,
+                                            aSpaceID,
+                                            aArrData[0],   /* ToSeg PID */
+                                            aArrData[1],   /* LstAllocExtRID Of ToSeg */
+                                            aArrData[2],   /* FstPIDOfLstAllocExt Of ToSeg */
+                                            aArrData[3],   /* FmtPageCnt Of ToSeg */
+                                            aArrData[4] )  /* HWM Of ToSeg */
+                              != IDE_SUCCESS );
+                }
                 break;
 
             case SDR_OP_SDPSF_UPDATE_HWMINFO_4DPATH:
-                IDE_TEST( sdpsfUpdate::undo_UPDATE_HWM_4DPATH(
-                              aStatistics,
-                              &sMtx,
-                              aSpaceID,
-                              aArrData[0],  /* Seg PID */
-                              aArrData[1],  /* HWM */
-                              aArrData[2],  /* Alloc Extent RID */
-                              aArrData[3],  /* First PID Of Alloc Extent */
-                              aArrData[4] ) /* Alloc Page Cnt */
-                          != IDE_SUCCESS );
+                //BUG-48460: NTA∑Œ±◊ ¡ﬂ discard TBS¡¢±Ÿ ∞°¥…«— ∑Œ±◊ø° TBS √º≈© √ﬂ∞° 
+                if ( sctTableSpaceMgr::hasState( aSpaceID,
+                                                 SCT_SS_SKIP_UNDO )
+                     == ID_TRUE )
+                {
+                    // Skip «“ Undo ∑Œ±◊∂Û∏È Dummy CLR∏∏ ∑Œ±Î«—¥Ÿ.
+                }
+                else
+                {
+                    IDE_TEST( sdpsfUpdate::undo_UPDATE_HWM_4DPATH(
+                                            aStatistics,
+                                            &sMtx,
+                                            aSpaceID,
+                                            aArrData[0],  /* Seg PID */
+                                            aArrData[1],  /* HWM */
+                                            aArrData[2],  /* Alloc Extent RID */
+                                            aArrData[3],  /* First PID Of Alloc Extent */
+                                            aArrData[4] ) /* Alloc Page Cnt */
+                              != IDE_SUCCESS );
+                }
                 break;
 
             case SDR_OP_SDPSF_ADD_PIDLIST_PVTFREEPIDLIST_4DPATH:
-                IDE_TEST( sdpsfUpdate::undo_ADD_PIDLIST_PVTFREEPIDLIST_4DPATH(
-                              aStatistics,
-                              &sMtx,
-                              aSpaceID,
-                              aArrData[0],  /* Seg PID */
-                              aArrData[1],  /* First PageID */
-                              aArrData[2],  /* Last  PageID */
-                              aArrData[3] ) /* Page Count */
-                          != IDE_SUCCESS );
-                 break;
+                //BUG-48460: NTA∑Œ±◊ ¡ﬂ discard TBS¡¢±Ÿ ∞°¥…«— ∑Œ±◊ø° TBS √º≈© √ﬂ∞° 
+                //( ¿Ã ∑Œ±◊≈∏¿‘¿∫ write «“ ∂ß æ» æ∏? )
+                if ( sctTableSpaceMgr::hasState( aSpaceID,
+                                                 SCT_SS_SKIP_UNDO )
+                     == ID_TRUE )
+                {
+                    // Skip «“ Undo ∑Œ±◊∂Û∏È Dummy CLR∏∏ ∑Œ±Î«—¥Ÿ.
+                }
+                else
+                {
+                    IDE_TEST( sdpsfUpdate::undo_ADD_PIDLIST_PVTFREEPIDLIST_4DPATH(
+                                                        aStatistics,
+                                                        &sMtx,
+                                                        aSpaceID,
+                                                        aArrData[0],  /* Seg PID */
+                                                        aArrData[1],  /* First PageID */
+                                                        aArrData[2],  /* Last  PageID */
+                                                        aArrData[3] ) /* Page Count */
+                              != IDE_SUCCESS );
+                }
+                break;
 
             case SDR_OP_SDPTB_ALLOCATE_AN_EXTENT_FROM_TBS:
+                //BUG-48460: NTA∑Œ±◊ ¡ﬂ discard TBS¡¢±Ÿ ∞°¥…«— ∑Œ±◊ø° TBS √º≈© √ﬂ∞° 
+                if ( sctTableSpaceMgr::hasState( aSpaceID,
+                                                 SCT_SS_SKIP_UNDO )
+                     == ID_TRUE )
+                {
+                    // Skip «“ Undo ∑Œ±◊∂Û∏È Dummy CLR∏∏ ∑Œ±Î«—¥Ÿ.
+                }
+                else
+                {
+                    //«ÿ¡¶«“ extent¿« ∞πºˆ¥¬ 1∞≥~4∞≥ ¿œºˆ¿÷¥Ÿ.
+                    IDE_ERROR( aDataCount <= 4 );
 
-                //Ìï¥Ï†úÌï† extentÏùò Í∞ØÏàòÎäî 1Í∞ú~4Í∞ú ÏùºÏàòÏûàÎã§.
-                IDE_ERROR( aDataCount <= 4 );
-
-                IDE_TEST( sdptbExtent::freeExts( aStatistics,
-                                                 &sMtx,
-                                                 aSpaceID,
-                                                 &aArrData[0],
-                                                 aDataCount )
-                            != IDE_SUCCESS );
-
+                    IDE_TEST( sdptbExtent::freeExts( aStatistics,
+                                                     &sMtx,
+                                                     aSpaceID,
+                                                     &aArrData[0],
+                                                     aDataCount )
+                              != IDE_SUCCESS );
+                }
                 break;
 
             case SDR_OP_SDPTB_RESIZE_GG:
+                //BUG-48460: NTA∑Œ±◊ ¡ﬂ discard TBS¡¢±Ÿ ∞°¥…«— ∑Œ±◊ø° TBS √º≈© √ﬂ∞° 
+                if ( sctTableSpaceMgr::hasState( aSpaceID,
+                                                 SCT_SS_SKIP_UNDO )
+                     == ID_TRUE )
+                {
+                    // Skip «“ Undo ∑Œ±◊∂Û∏È Dummy CLR∏∏ ∑Œ±Î«—¥Ÿ.
+                }
+                else
+                {
+                    IDE_ERROR( aDataCount == 2 );
 
-                IDE_ERROR( aDataCount == 2 );
-
-                IDE_TEST( sdptbGroup::resizeGG( aStatistics,
-                                                &sMtx,
-                                                aSpaceID,
-                                                aArrData[0],   //GGID
-                                                aArrData[1])   //prv page cnt
-
-                            != IDE_SUCCESS );
+                    IDE_TEST( sdptbGroup::resizeGG( aStatistics,
+                                                    &sMtx,
+                                                    aSpaceID,
+                                                    aArrData[0],   //GGID
+                                                    aArrData[1])   //prv page cnt
+                              != IDE_SUCCESS );
+                }
                 break;
 
             case SDR_OP_SDPSF_ALLOC_PAGE:
-                IDE_TEST( sdpsfUpdate::undo_SDPSF_ALLOC_PAGE( aStatistics,
-                                                              &sMtx,
-                                                              aSpaceID,
-                                                              aArrData[0],  /* SegPID */
-                                                              aArrData[1] ) /* Alloc PID */
-                          != IDE_SUCCESS );
+                //BUG-48460: NTA∑Œ±◊ ¡ﬂ discard TBS¡¢±Ÿ ∞°¥…«— ∑Œ±◊ø° TBS √º≈© √ﬂ∞° 
+                if ( sctTableSpaceMgr::hasState( aSpaceID,
+                                                 SCT_SS_SKIP_UNDO )
+                     == ID_TRUE )
+                {
+                    // Skip «“ Undo ∑Œ±◊∂Û∏È Dummy CLR∏∏ ∑Œ±Î«—¥Ÿ.
+                }
+                else
+                {
+                    IDE_TEST( sdpsfUpdate::undo_SDPSF_ALLOC_PAGE( aStatistics,
+                                                                  &sMtx,
+                                                                  aSpaceID,
+                                                                  aArrData[0],  /* SegPID */
+                                                                  aArrData[1] ) /* Alloc PID */
+                              != IDE_SUCCESS );
+                }
                 break;
 
             case SDR_OP_SDPTB_ALLOCATE_AN_EXTDIR_FROM_LIST:
+                //BUG-48460: NTA∑Œ±◊ ¡ﬂ discard TBS¡¢±Ÿ ∞°¥…«— ∑Œ±◊ø° TBS √º≈© √ﬂ∞° 
+                if ( sctTableSpaceMgr::hasState( aSpaceID,
+                                                 SCT_SS_SKIP_UNDO )
+                     == ID_TRUE )
+                {
+                    // Skip «“ Undo ∑Œ±◊∂Û∏È Dummy CLR∏∏ ∑Œ±Î«—¥Ÿ.
+                }
+                else
+                {
+                    IDE_ERROR( (sdpFreeExtDirType)aArrData[0] < SDP_MAX_FREE_EXTDIR_LIST );
 
-                IDE_ERROR( (sdpFreeExtDirType)aArrData[0] <
-                            SDP_MAX_FREE_EXTDIR_LIST );
-
-                IDE_TEST( sdptbUpdate::undo_SDPTB_ALLOCATE_AN_EXTDIR_FROM_LIST(
+                    IDE_TEST( sdptbUpdate::undo_SDPTB_ALLOCATE_AN_EXTDIR_FROM_LIST(
                                             aStatistics,
                                             &sMtx,
                                             aSpaceID,
                                             (sdpFreeExtDirType)aArrData[0],  /* aFreeListIdx */
                                             (scPageID)aArrData[1] )          /* Alloc ExtDirPID */
-                          != IDE_SUCCESS );
+                        != IDE_SUCCESS );
+                }
                 break;
 
             case SDR_OP_SDP_DPATH_ADD_SEGINFO:
@@ -582,24 +667,45 @@ IDE_RC sdrUpdate::doNTAUndoFunction( idvSQL   * aStatistics,
                 break;
 
             case SDR_OP_SDPST_ALLOC_PAGE:
-                IDE_TEST( sdpstUpdate::undo_SDPST_ALLOC_PAGE(
-                              aStatistics,
-                              &sMtx,
-                              aSpaceID,
-                              aArrData[0],  /* Seg PID */
-                              aArrData[1] ) /* Alloc PID */
-                          != IDE_SUCCESS );
+                //BUG-48460: NTA∑Œ±◊ ¡ﬂ discard TBS¡¢±Ÿ ∞°¥…«— ∑Œ±◊ø° TBS √º≈© √ﬂ∞° 
+                if ( sctTableSpaceMgr::hasState( aSpaceID,
+                                                 SCT_SS_SKIP_UNDO )
+                     == ID_TRUE )
+                {
+                    // Skip «“ Undo ∑Œ±◊∂Û∏È Dummy CLR∏∏ ∑Œ±Î«—¥Ÿ.
+                }
+                else
+                {
+                    IDE_TEST( sdpstUpdate::undo_SDPST_ALLOC_PAGE(
+                                                    aStatistics,
+                                                    &sMtx,
+                                                    aSpaceID,
+                                                    aArrData[0],  /* Seg PID */
+                                                    aArrData[1] ) /* Alloc PID */
+                              != IDE_SUCCESS );
+                }
                 break;
 
             case SDR_OP_SDC_LOB_APPEND_LEAFNODE:
-                IDE_TEST( sdcLobUpdate::undo_SDR_SDC_LOB_APPEND_LEAFNODE(
-                              aStatistics,
-                              &sMtx,
-                              aSpaceID,
-                              aArrData[0],  /* RootNode PID */
-                              aArrData[1] ) /* LeafNode PID */
-                          != IDE_SUCCESS );
-                break;
+                //BUG-48460: NTA∑Œ±◊ ¡ﬂ discard TBS¡¢±Ÿ ∞°¥…«— ∑Œ±◊ø° TBS √º≈© √ﬂ∞° 
+                if ( sctTableSpaceMgr::hasState( aSpaceID,
+                                                 SCT_SS_SKIP_UNDO )
+                     == ID_TRUE )
+                {
+                    // Skip «“ Undo ∑Œ±◊∂Û∏È Dummy CLR∏∏ ∑Œ±Î«—¥Ÿ.
+                    ideLog::log(IDE_ERR_0, "undo SDR_OP_SDC_LOB_APPEND_LEAFNODE");
+                }
+                else
+                {
+                    IDE_TEST( sdcLobUpdate::undo_SDR_SDC_LOB_APPEND_LEAFNODE(
+                                                    aStatistics,
+                                                    &sMtx,
+                                                    aSpaceID,
+                                                    aArrData[0],  /* RootNode PID */
+                                                    aArrData[1] ) /* LeafNode PID */
+                              != IDE_SUCCESS );
+                } 
+               break;
 
             default:
                 break;
@@ -612,9 +718,9 @@ IDE_RC sdrUpdate::doNTAUndoFunction( idvSQL   * aStatistics,
 
         /* ------------------------------------------------
          * !! CHECK RECOVERY POINT
-         * case) nta logical undoÎ•º ÏàòÌñâÌïú Ïù¥ÌõÑÏóê crash Î∞úÏÉù
-         * Ìï¥Îãπ nta logical undoÏùò prev undo lsnÏùò Î°úÍ∑∏Î∂ÄÌÑ∞
-         * Ïù¥Ïñ¥ÏÑú undoÎ•º ÏßÑÌñâÌïúÎã§.
+         * case) nta logical undo∏¶ ºˆ«‡«— ¿Ã»ƒø° crash πﬂª˝
+         * «ÿ¥Á nta logical undo¿« prev undo lsn¿« ∑Œ±◊∫Œ≈Õ
+         * ¿ÃæÓº≠ undo∏¶ ¡¯«‡«—¥Ÿ.
          * ----------------------------------------------*/
     }
 
@@ -632,7 +738,7 @@ IDE_RC sdrUpdate::doNTAUndoFunction( idvSQL   * aStatistics,
 }
 
 /***********************************************************************
- * redo type:  DRDB Index/LOB/Ïô∏Î∂Ä NTAÎ°úÍ∑∏Ïùò logical undo ÏàòÌñâ
+ * redo type:  DRDB Index/LOB/ø‹∫Œ NTA∑Œ±◊¿« logical undo ºˆ«‡
  ***********************************************************************/
 IDE_RC sdrUpdate::doRefNTAUndoFunction( idvSQL   * aStatistics,
                                         void     * aTrans,
@@ -658,19 +764,28 @@ IDE_RC sdrUpdate::doRefNTAUndoFunction( idvSQL   * aStatistics,
                   != IDE_SUCCESS );
         sState = 1;
 
-        /* BUG-25279 Btree for spatialÍ≥º Disk BtreeÏùò ÏûêÎ£åÍµ¨Ï°∞ Î∞è Î°úÍπÖ Î∂ÑÎ¶¨
-         * NTA UndoÎèÑ Îã§Î•∏ undoÎÇò redoÏó∞ÏÇ∞Ï≤òÎüº MapÏúºÎ°ú ÏàòÌñâÌïúÎã§. */
+        /* BUG-25279 Btree for spatial∞˙ Disk Btree¿« ¿⁄∑·±∏¡∂ π◊ ∑Œ±Î ∫–∏Æ
+         * NTA Undoµµ ¥Ÿ∏• undo≥™ redoø¨ªÍ√≥∑≥ Map¿∏∑Œ ºˆ«‡«—¥Ÿ. */
         idlOS::memcpy(&sLogHdr, aRefData, ID_SIZEOF(sdrLogHdr));
-        IDE_ERROR( gSdrDiskRefNTAUndoFunction[sLogHdr.mType] != 0 );
-        IDE_TEST(  gSdrDiskRefNTAUndoFunction[sLogHdr.mType] (
-                      aStatistics,
-                      aTrans,
-                      &sMtx,
-                      sLogHdr.mGRID,
-                      aRefData + ID_SIZEOF(sdrLogHdr),
-                      sLogHdr.mLength )
-                  != IDE_SUCCESS );
-
+        
+        if ( sctTableSpaceMgr::hasState( sLogHdr.mGRID.mSpaceID,
+                                         SCT_SS_SKIP_UNDO )
+             == ID_TRUE )
+        {
+            // Skip «“ Undo ∑Œ±◊∂Û∏È Dummy CLR∏∏ ∑Œ±Î«—¥Ÿ.
+        }
+        else
+        {
+            IDE_ERROR( gSdrDiskRefNTAUndoFunction[sLogHdr.mType] != 0 );
+            IDE_TEST(  gSdrDiskRefNTAUndoFunction[sLogHdr.mType] (
+                                            aStatistics,
+                                            aTrans,
+                                            &sMtx,
+                                            sLogHdr.mGRID,
+                                            aRefData + ID_SIZEOF(sdrLogHdr),
+                                            sLogHdr.mLength )
+                       != IDE_SUCCESS );
+        }
         sdrMiniTrans::setCLR( &sMtx, aPrevLSN ); // dummy CLR
 
         sState = 0;
@@ -678,9 +793,9 @@ IDE_RC sdrUpdate::doRefNTAUndoFunction( idvSQL   * aStatistics,
 
         /* ------------------------------------------------
          * !! CHECK RECOVERY POINT
-         * case) nta logical undoÎ•º ÏàòÌñâÌïú Ïù¥ÌõÑÏóê crash Î∞úÏÉù
-         * Ìï¥Îãπ nta logical undoÏùò prev undo lsnÏùò Î°úÍ∑∏Î∂ÄÌÑ∞
-         * Ïù¥Ïñ¥ÏÑú undoÎ•º ÏßÑÌñâÌïúÎã§.
+         * case) nta logical undo∏¶ ºˆ«‡«— ¿Ã»ƒø° crash πﬂª˝
+         * «ÿ¥Á nta logical undo¿« prev undo lsn¿« ∑Œ±◊∫Œ≈Õ
+         * ¿ÃæÓº≠ undo∏¶ ¡¯«‡«—¥Ÿ.
          * ----------------------------------------------*/
     }
 

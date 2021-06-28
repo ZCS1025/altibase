@@ -272,12 +272,13 @@ IDE_RC qmxSimple::getSimpleCTimestamp( struct qciBindParam  * aParam,
     return IDE_FAILURE;
 }
 
-// ctype valueÎ•º aBufferÎ•º Ïù¥Ïö©Ìï¥ÏÑú mtdValueÎ°ú Î≥ÄÌôòÌïòÏó¨ Î∞òÌôòÌïúÎã§.
+// ctype value∏¶ aBuffer∏¶ ¿ÃøÎ«ÿº≠ mtdValue∑Œ ∫Ø»Ø«œø© π›»Ø«—¥Ÿ.
 IDE_RC qmxSimple::getSimpleCValue( qmnValueInfo             * aValueInfo,
                                    void                    ** aMtdValue,
                                    struct qciBindParamInfo  * aParamInfo,
                                    UChar                    * aBindBuffer,
                                    SChar                   ** aBuffer,
+                                   idBool                     aIsMakeRange,
                                    idBool                     aNeedCanonize )
 {
     struct qciBindParamInfo  * sParamInfo = aParamInfo;
@@ -294,7 +295,7 @@ IDE_RC qmxSimple::getSimpleCValue( qmnValueInfo             * aValueInfo,
     idBool                     sCanonized;
     UInt                       i;
 
-    // bindBufferÏóêÏÑú data offsetÏùÑ Ï∞æÎäîÎã§.
+    // bindBufferø°º≠ data offset¿ª √£¥¬¥Ÿ.
     sBindBuffer = (UChar*)idlOS::align8( (vULong)aBindBuffer );
 
     for ( i = 0; i < (UInt)aValueInfo->value.id; i++ )
@@ -316,7 +317,7 @@ IDE_RC qmxSimple::getSimpleCValue( qmnValueInfo             * aValueInfo,
                       ( sParamInfo->param.ctype == SQL_C_SSHORT )  ||
                       ( sParamInfo->param.ctype == SQL_C_DOUBLE ) )
             {
-                // Î™®Îì† typeÏóê 8byte align
+                // ∏µÁ typeø° 8byte align
                 sBindBuffer += 8;
             }
             else if ( sParamInfo->param.ctype == SQL_C_TYPE_TIMESTAMP )
@@ -342,7 +343,7 @@ IDE_RC qmxSimple::getSimpleCValue( qmnValueInfo             * aValueInfo,
 
     if ( sIndicator == SQL_NULL_DATA )
     {
-        // bindÌïòÏßÄ ÏïäÍ±∞ÎÇò nullÏù∏ Í≤ΩÏö∞
+        // bind«œ¡ˆ æ ∞≈≥™ null¿Œ ∞ÊøÏ
         *aMtdValue = aValueInfo->column.module->staticNull;
     }
     else
@@ -417,8 +418,15 @@ IDE_RC qmxSimple::getSimpleCValue( qmnValueInfo             * aValueInfo,
                     sCharValue->length = IDL_MIN( sIndicator, sParamCharValue->length );
                 }
 
-                IDE_TEST_RAISE( sCharValue->length > aValueInfo->column.precision,
-                                ERR_INVALID_LENGTH );
+                if ( aIsMakeRange == ID_FALSE )
+                {
+                    IDE_TEST_RAISE( sCharValue->length > aValueInfo->column.precision,
+                                    ERR_INVALID_LENGTH );
+                }
+                else
+                {
+                    // nothing to do
+                }
 
                 if ( sCharValue->length > 0 )
                 {
@@ -504,9 +512,16 @@ IDE_RC qmxSimple::getSimpleCValue( qmnValueInfo             * aValueInfo,
                         IDL_MIN( sIndicator, sParamCharValue->length );
                 }
 
-                IDE_TEST_RAISE( sCharValue->length > aValueInfo->column.precision,
-                                ERR_INVALID_LENGTH );
-
+                if ( aIsMakeRange == ID_FALSE )
+                {
+                    IDE_TEST_RAISE( sCharValue->length > aValueInfo->column.precision,
+                                    ERR_INVALID_LENGTH );
+                }
+                else
+                {
+                    // nothing to do
+                }
+                
                 if ( sCharValue->length > 0 )
                 {
                     idlOS::memcpy( sCharValue->value,
@@ -680,8 +695,8 @@ IDE_RC qmxSimple::getSimpleConstMtdValue( qcStatement * aStatement,
         {
             IDE_TEST_RAISE( aQueueMsgIDSeq == NULL, ERR_NOT_EXIST_QUEUE );
 
-            // queueÏùò messageIDÏπºÎüºÏùÄ bigint typeÏù¥Î©∞,
-            // Ìï¥Îãπ ÏπºÎüºÏóê ÎåÄÌïú Í∞íÏùÄ sequenceÎ•º ÏùΩÏñ¥ÏÑú ÏÑ§Ï†ïÌïúÎã§.
+            // queue¿« messageIDƒÆ∑≥¿∫ bigint type¿Ã∏Á,
+            // «ÿ¥Á ƒÆ∑≥ø° ¥Î«— ∞™¿∫ sequence∏¶ ¿–æÓº≠ º≥¡§«—¥Ÿ.
             IDE_TEST( aStatement->qmxMem->alloc(
                          ID_SIZEOF(mtdBigintType),
                          &sValue)
@@ -1020,6 +1035,7 @@ IDE_RC qmxSimple::getSimpleMtdValue( qmnValueInfo             * aValueInfo,
                                      void                    ** aMtdValue,
                                      struct qciBindParamInfo  * aParamInfo,
                                      SChar                   ** aBuffer,
+                                     idBool                     aIsMakeRange,
                                      idBool                     aNeedCanonize )
 {
     mtcColumn      * sColumn = & aValueInfo->column;
@@ -1084,9 +1100,17 @@ IDE_RC qmxSimple::getSimpleMtdValue( qmnValueInfo             * aValueInfo,
              ( sParam->type == MTD_VARCHAR_ID ) )
         {
             sCharValue = (mtdCharType*) sParam->data;
-            IDE_TEST_RAISE( sCharValue->length > sColumn->precision,
-                            ERR_INVALID_LENGTH );
 
+            if ( aIsMakeRange == ID_FALSE )
+            {                    
+                IDE_TEST_RAISE( sCharValue->length > sColumn->precision,
+                                ERR_INVALID_LENGTH );
+            }
+            else
+            {
+                // nothing to do
+            }
+            
             // space padding
             if ( ( aNeedCanonize == ID_TRUE ) &&
                  ( sCharValue->length < sColumn->precision ) )
@@ -1129,8 +1153,16 @@ IDE_RC qmxSimple::getSimpleMtdValue( qmnValueInfo             * aValueInfo,
         {
             sCharValue = (mtdCharType*) sParam->data;
 
-            IDE_TEST_RAISE( sCharValue->length > sColumn->precision,
-                            ERR_INVALID_LENGTH );
+            if ( aIsMakeRange == ID_FALSE )
+            {
+                IDE_TEST_RAISE( sCharValue->length > sColumn->precision,
+                                ERR_INVALID_LENGTH );
+            }
+            else
+            {
+                // nothing to do
+            }
+            
             *aMtdValue = sParam->data;
         }
         else
@@ -1383,7 +1415,8 @@ IDE_RC qmxSimple::makeSimpleRidRange( qcStatement          * aStatement,
                               aStatement->pBindParam,
                               aBindBuffer,
                               aBuffer,
-                              ID_FALSE )  // compareÎ•º ÏúÑÌï¥ canonizeÎäî Î∂àÌïÑÏöî
+                              ID_TRUE, // make key or rid range
+                              ID_FALSE )  // compare∏¶ ¿ß«ÿ canonize¥¬ ∫“« ø‰
                           != IDE_SUCCESS );
             }
             else
@@ -1393,7 +1426,8 @@ IDE_RC qmxSimple::makeSimpleRidRange( qcStatement          * aStatement,
                               & aMtdValue[i],
                               aStatement->pBindParam,
                               aBuffer,
-                              ID_FALSE )  // compareÎ•º ÏúÑÌï¥ canonizeÎäî Î∂àÌïÑÏöî
+                              ID_TRUE, // make key or rid range
+                              ID_FALSE )  // compare∏¶ ¿ß«ÿ canonize¥¬ ∫“« ø‰
                           != IDE_SUCCESS );
             }
             break;
@@ -1427,7 +1461,7 @@ IDE_RC qmxSimple::makeSimpleRidRange( qcStatement          * aStatement,
             break;
     }
 
-    // null valueÍ∞Ä ÏûàÎÇò?
+    // null value∞° ¿÷≥™?
     if ( sIsNull == ID_FALSE )
     {
         IDE_TEST( isSimpleNullValue( & sValueInfo->column,
@@ -1603,7 +1637,8 @@ IDE_RC qmxSimple::makeSimpleKeyRange( qcStatement          * aStatement,
                                       aStatement->pBindParam,
                                       aBindBuffer,
                                       aBuffer,
-                                      ID_FALSE )  // compareÎ•º ÏúÑÌï¥ canonizeÎäî Î∂àÌïÑÏöî
+                                      ID_TRUE, // make key or rid range
+                                      ID_FALSE )  // compare∏¶ ¿ß«ÿ canonize¥¬ ∫“« ø‰
                                   != IDE_SUCCESS );
                     }
                     else
@@ -1613,7 +1648,8 @@ IDE_RC qmxSimple::makeSimpleKeyRange( qcStatement          * aStatement,
                                       & aMtdValue[i],
                                       aStatement->pBindParam,
                                       aBuffer,
-                                      ID_FALSE )  // compareÎ•º ÏúÑÌï¥ canonizeÎäî Î∂àÌïÑÏöî
+                                      ID_TRUE, // make key or rid range
+                                      ID_FALSE )  // compare∏¶ ¿ß«ÿ canonize¥¬ ∫“« ø‰
                                   != IDE_SUCCESS );
                     }
                     break;
@@ -1647,7 +1683,7 @@ IDE_RC qmxSimple::makeSimpleKeyRange( qcStatement          * aStatement,
                     break;
             }
 
-            // null valueÍ∞Ä ÏûàÎÇò?
+            // null value∞° ¿÷≥™?
             if ( sIsNull == ID_FALSE )
             {
                 IDE_TEST( isSimpleNullValue( & sValueInfo->column,
@@ -1668,7 +1704,7 @@ IDE_RC qmxSimple::makeSimpleKeyRange( qcStatement          * aStatement,
                                          aIndex->keyColsFlag[i] &
                                          SMI_COLUMN_ORDER_MASK,
                                          i );
-
+    
                 // link range column
                 if ( i == 0 )
                 {
@@ -1682,7 +1718,7 @@ IDE_RC qmxSimple::makeSimpleKeyRange( qcStatement          * aStatement,
             }
             else
             {
-                // =ÏùÄ Ï†úÏûêÎ¶¨Ïóê, <,<=,>,>=ÏùÄ Ìï¥ÎãπÏûêÎ¶¨Ïóê ÏßÄÏ†ï
+                // =¿∫ ¡¶¿⁄∏Æø°, <,<=,>,>=¿∫ «ÿ¥Á¿⁄∏Æø° ¡ˆ¡§
                 if ( sValueInfo->op == QMN_VALUE_OP_EQUAL )
                 {
                     k = i;
@@ -1726,7 +1762,7 @@ IDE_RC qmxSimple::makeSimpleKeyRange( qcStatement          * aStatement,
                     // Nothing to do.
                 }
 
-                // <,<=Îßå ÏûàÎäî Í≤ΩÏö∞ minÏùÑ Ï∂îÍ∞ÄÏÑ§Ï†ïÌïúÎã§.
+                // <,<=∏∏ ¿÷¥¬ ∞ÊøÏ min¿ª √ﬂ∞°º≥¡§«—¥Ÿ.
                 if ( ( ( sValueInfo->op == QMN_VALUE_OP_LT ) ||
                        ( sValueInfo->op == QMN_VALUE_OP_LE ) )
                      &&
@@ -1740,7 +1776,7 @@ IDE_RC qmxSimple::makeSimpleKeyRange( qcStatement          * aStatement,
                     // Nothing to do.
                 }
 
-                // >,>=Îßå ÏûàÎäî Í≤ΩÏö∞ maxÎ•º Ï∂îÍ∞Ä ÏÑ§Ï†ïÌïúÎã§.
+                // >,>=∏∏ ¿÷¥¬ ∞ÊøÏ max∏¶ √ﬂ∞° º≥¡§«—¥Ÿ.
                 if ( ( ( sValueInfo->op == QMN_VALUE_OP_GT ) ||
                        ( sValueInfo->op == QMN_VALUE_OP_GE ) )
                      &&
@@ -1845,7 +1881,7 @@ IDE_RC qmxSimple::updateSimpleKeyRange( qmncSCAN            * aSCAN,
 
                     aMtdValue[i] = (void*) sValue;
 
-                    // null valueÍ∞Ä ÏûàÎÇò?
+                    // null value∞° ¿÷≥™?
                     if ( sIsNull == ID_FALSE )
                     {
                         IDE_TEST( isSimpleNullValue( & sValueInfo->column,
@@ -1952,7 +1988,8 @@ IDE_RC qmxSimple::calculateSimpleValues( qcStatement      * aStatement,
                                       aStatement->pBindParam,
                                       aBindBuffer,
                                       & sBuffer,
-                                      ID_FALSE )  // ÏùºÎã® Í∑∏ÎÉ• Í∞ÄÏ†∏Ïò¥
+                                      ID_FALSE, // make key or rid range
+                                      ID_FALSE )  // ¿œ¥‹ ±◊≥… ∞°¡Æø»
                                   != IDE_SUCCESS );
                     }
                     else
@@ -1962,7 +1999,8 @@ IDE_RC qmxSimple::calculateSimpleValues( qcStatement      * aStatement,
                                       & sValue,
                                       aStatement->pBindParam,
                                       & sBuffer,
-                                      ID_FALSE )  // ÏùºÎã® Í∑∏ÎÉ• Í∞ÄÏ†∏Ïò¥
+                                      ID_FALSE, // make key or rid range 
+                                      ID_FALSE )  // ¿œ¥‹ ±◊≥… ∞°¡Æø»
                                   != IDE_SUCCESS );
                     }
                     break;
@@ -2268,7 +2306,7 @@ IDE_RC qmxSimple::checkSimpleNullValue( mtcColumn  * aColumn,
 
     IDE_EXCEPTION( ERR_NOT_ALLOW_NULL )
     {
-        /* BUG-45680 insert ÏàòÌñâÏãú not null columnÏóê ÎåÄÌïú ÏóêÎü¨Î©îÏãúÏßÄ Ï†ïÎ≥¥Ïóê column Ï†ïÎ≥¥ Ï∂úÎ†•. */
+        /* BUG-45680 insert ºˆ«‡Ω√ not null columnø° ¥Î«— ø°∑Ø∏ﬁΩ√¡ˆ ¡§∫∏ø° column ¡§∫∏ √‚∑¬. */
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QMX_NOT_NULL_CONSTRAINT,
                                   "",
                                   "" ) );
@@ -2388,7 +2426,7 @@ IDE_RC qmxSimple::executeFastSelect( smiTrans     * aSmiTrans,
 {
 /***********************************************************************
  *
- *  Description : PROJ-2551 simple query ÏµúÏ†ÅÌôî
+ *  Description : PROJ-2551 simple query √÷¿˚»≠
  *
  *  Implementation :
  *
@@ -2448,11 +2486,11 @@ IDE_RC qmxSimple::executeFastSelect( smiTrans     * aSmiTrans,
     UShort              * sBindInfo;
     const void          * sOrgRow = NULL;
     const void          * sPreRow = NULL;
-    smiRecordLockWaitFlag sRecordLockWaitFlag; //PROJ-1677 DEQUEUE
+    idBool                sIsDequeue;  
 
     idBool                sFetchOnlyOneRow = ID_FALSE;
 
-    // Ï¥àÍ∏∞Ìôî
+    // √ ±‚»≠
     aStatement->simpleInfo.results = NULL;
 
     sPROJ = (qmncPROJ*)aStatement->myPlan->plan;
@@ -2504,7 +2542,12 @@ IDE_RC qmxSimple::executeFastSelect( smiTrans     * aSmiTrans,
     IDE_TEST( qci::checkShardPlanRebuild( aStatement )
               != IDE_SUCCESS );
 
-    // bind buffer Ìï†Îãπ
+    /* TASK-7307 DML Data Consistency in Shard */
+    IDE_TEST_CONT( ( QCG_CHECK_SHARD_DML_CONSISTENCY( aStatement ) == ID_TRUE ) &&
+                   ( sSCAN->tableRef->tableInfo->mIsUsable == ID_FALSE ),
+                   normal_exit );
+
+    // bind buffer «“¥Á
     if ( sSCAN->simpleValueBufSize > ID_SIZEOF(sCharBuffer) )
     {
         IDE_TEST( aStatement->qmxMem->alloc(
@@ -2533,7 +2576,7 @@ IDE_RC qmxSimple::executeFastSelect( smiTrans     * aSmiTrans,
                                       & sBuffer )
                   != IDE_SUCCESS );
 
-        // null rangeÎäî Í≤∞Í≥ºÍ∞Ä ÏóÜÎã§.
+        // null range¥¬ ∞·∞˙∞° æ¯¥Ÿ.
         IDE_TEST_CONT( sIsNullRange == ID_TRUE, normal_exit );
 
         sIndexHandle = NULL;
@@ -2561,7 +2604,7 @@ IDE_RC qmxSimple::executeFastSelect( smiTrans     * aSmiTrans,
                                           & sBuffer )
                       != IDE_SUCCESS );
 
-            // null rangeÎäî Í≤∞Í≥ºÍ∞Ä ÏóÜÎã§.
+            // null range¥¬ ∞·∞˙∞° æ¯¥Ÿ.
             IDE_TEST_CONT( sIsNullRange == ID_TRUE, normal_exit );
 
             sIndexHandle = sIndex->indexHandle;
@@ -2617,7 +2660,7 @@ IDE_RC qmxSimple::executeFastSelect( smiTrans     * aSmiTrans,
     sSmiStmtFlag &= ~SMI_STATEMENT_CURSOR_MASK;
     sSmiStmtFlag |= SMI_STATEMENT_MEMORY_CURSOR;
 
-    // Traverse Î∞©Ìñ•Ïùò Í≤∞Ï†ï
+    // Traverse πÊ«‚¿« ∞·¡§
     if ( ( sSCAN->flag & QMNC_SCAN_TRAVERSE_MASK )
          == QMNC_SCAN_TRAVERSE_FORWARD )
     {
@@ -2628,7 +2671,7 @@ IDE_RC qmxSimple::executeFastSelect( smiTrans     * aSmiTrans,
         sTraverse = SMI_TRAVERSE_BACKWARD;
     }
 
-    // Previous ÏÇ¨Ïö© Ïó¨Î∂Ä Í≤∞Ï†ï
+    // Previous ªÁøÎ ø©∫Œ ∞·¡§
     if ( ( sSCAN->flag & QMNC_SCAN_PREVIOUS_ENABLE_MASK )
          == QMNC_SCAN_PREVIOUS_ENABLE_TRUE )
     {
@@ -2641,11 +2684,11 @@ IDE_RC qmxSimple::executeFastSelect( smiTrans     * aSmiTrans,
 
     sCursorFlag = sSCAN->lockMode | sTraverse | sPrevious;
 
-    // BUG-45454 QUEUE ÏßÄÏõê
-    // QUEUEÎäî ÌïòÎÇòÏùò row Îßå FETCH.
+    // BUG-45454 QUEUE ¡ˆø¯
+    // QUEUE¥¬ «œ≥™¿« row ∏∏ FETCH.
     if ( ( sSCAN->flag & QMNC_SCAN_TABLE_QUEUE_MASK ) == QMNC_SCAN_TABLE_QUEUE_TRUE )
     {
-        // BUG-46026 SELECT FOR MOVE AND DELETEÎäî Ïó¨Îü¨ RowÎ•º FETCH
+        // BUG-46026 SELECT FOR MOVE AND DELETE¥¬ ø©∑Ø Row∏¶ FETCH
         if ( sParseTree->forUpdate != NULL )
         {
             if ( sParseTree->forUpdate->isMoveAndDelete == ID_TRUE )
@@ -2699,10 +2742,10 @@ IDE_RC qmxSimple::executeFastSelect( smiTrans     * aSmiTrans,
     // PROJ-1618
     sCursor.setDumpObject( sSCAN->dumpObject );
 
-    //PROJ-1677 DEQUEUE
-    sRecordLockWaitFlag = ( aStatement->myPlan->parseTree->stmtKind == QCI_STMT_DEQUEUE ) ?
-        SMI_RECORD_NO_LOCKWAIT: SMI_RECORD_LOCKWAIT;
-
+    //BUG-48230: DEQUEUE º∫¥… ∞≥º±
+    sIsDequeue = ( aStatement->myPlan->parseTree->stmtKind == QCI_STMT_DEQUEUE ) ?
+                 ID_TRUE : ID_FALSE;
+   
     IDE_TEST( sCursor.open( sSmiStmt,
                             sSCAN->table,
                             sIndexHandle,
@@ -2714,7 +2757,7 @@ IDE_RC qmxSimple::executeFastSelect( smiTrans     * aSmiTrans,
                             sCursorFlag,
                             SMI_SELECT_CURSOR,
                             & sProperty,
-                            sRecordLockWaitFlag )
+                            sIsDequeue )
               != IDE_SUCCESS );
     sOpened = ID_TRUE;
 
@@ -2722,9 +2765,7 @@ IDE_RC qmxSimple::executeFastSelect( smiTrans     * aSmiTrans,
 
     do
     {
-        // BUG-45454 QUEUE ÏßÄÏõê
-RETRY_DEQUEUE:
-
+        // BUG-45454 QUEUE ¡ˆø¯
         sOrgRow = sRow = sPreRow;
 
         IDE_TEST( sCursor.readRow( &sRow, &sRid, SMI_FIND_NEXT )
@@ -2733,30 +2774,19 @@ RETRY_DEQUEUE:
         sPreRow = ( sRow == NULL ) ? sOrgRow : sRow;
 
         // Proj 1360 Queue
-        // dequeueÎ¨∏ÏóêÏÑúÎäî Ìï¥Îãπ rowÎ•º ÏÇ≠Ï†úÌï¥Ïïº ÌïúÎã§.
+        // dequeueπÆø°º≠¥¬ «ÿ¥Á row∏¶ ªË¡¶«ÿæﬂ «—¥Ÿ.
         if (( sRow != NULL ) &&
             (( sSCAN->flag &  QMNC_SCAN_TABLE_QUEUE_MASK )
              == QMNC_SCAN_TABLE_QUEUE_TRUE ))
         {
             IDE_TEST( sCursor.deleteRow() != IDE_SUCCESS );
-
-            //PROJ-1677 DEQUEUE
-            if ( sCursor.getRecordLockWaitStatus() ==
-                 SMI_ESCAPE_RECORD_LOCKWAIT )
-            {
-                IDE_RAISE( RETRY_DEQUEUE );
-            }
-            else
-            {
-                // nothing to do
-            }
         }
         else
         {
             // nothing to do
         }
 
-        // BUG-45454 QUEUE ÏßÄÏõê
+        // BUG-45454 QUEUE ¡ˆø¯
         if ( sRow == NULL )
         {
             break;
@@ -2767,7 +2797,7 @@ RETRY_DEQUEUE:
         }
 
         //--------------------------------------
-        // limit Ï≤òÎ¶¨
+        // limit √≥∏Æ
         //--------------------------------------
 
         if ( sPROJ->limit != NULL )
@@ -2787,12 +2817,12 @@ RETRY_DEQUEUE:
         }
 
         //--------------------------------------
-        // fetch buffer Ìï†Îãπ
+        // fetch buffer «“¥Á
         //--------------------------------------
 
         if ( aShmResult != NULL )
         {
-            // mmÏóêÏÑú result bufferÎ•º Ï£ºÎäî Í≤ΩÏö∞
+            // mmø°º≠ result buffer∏¶ ¡÷¥¬ ∞ÊøÏ
             if ( sResult == NULL )
             {
                 sResult = (SChar*)aShmResult;
@@ -2804,7 +2834,7 @@ RETRY_DEQUEUE:
         }
         else
         {
-            // qpÏóêÏÑú result bufferÎ•º allocÌïòÎäî Í≤ΩÏö∞
+            // qpø°º≠ result buffer∏¶ alloc«œ¥¬ ∞ÊøÏ
 
             // alloc result chunk
             if ( sCurResult == NULL )
@@ -2864,14 +2894,14 @@ RETRY_DEQUEUE:
 
         if ( aShmResult != NULL )
         {
-            // record sizeÎ•º ÏúÑÌïú Í≥µÍ∞Ñ
+            // record size∏¶ ¿ß«— ∞¯∞£
             IDE_TEST_RAISE( sResultSize + 8 > aShmSize,
                             ERR_INSUFFICIENT_MEMORY );
 
             sResultTemp = sResult;
             sResultSizeTemp = sResultSize;
 
-            *(ULong*)sResult = 0;  // Ï¥àÍ∏∞Ìôî
+            *(ULong*)sResult = 0;  // √ ±‚»≠
             sResult += 8;
             sResultSize += 8;
         }
@@ -2949,10 +2979,10 @@ RETRY_DEQUEUE:
                     break;
             }
 
-            // column positionÏùÑ Í∏∞Î°ùÌïúÎã§.
+            // column position¿ª ±‚∑œ«—¥Ÿ.
             if ( aShmResult != NULL )
             {
-                *(ULong*)sResult = 0;  // Ï¥àÍ∏∞Ìôî
+                *(ULong*)sResult = 0;  // √ ±‚»≠
                 *(UShort*)sResult = (UShort)(j + 1);
                 sResult += 8;
                 sResultSize += 8;
@@ -2971,7 +3001,7 @@ RETRY_DEQUEUE:
             sResultSize += sPROJ->simpleValueSizes[j];
         }
 
-        // record sizeÎ•º Í∏∞Î°ùÌïúÎã§.
+        // record size∏¶ ±‚∑œ«—¥Ÿ.
         if ( aShmResult != NULL )
         {
             *(UInt*)sResultTemp = sResultSize - sResultSizeTemp;
@@ -3016,7 +3046,7 @@ RETRY_DEQUEUE:
         // Nothing to do.
     }
 
-    // Ï¥àÍ∏∞Ìôî
+    // √ ±‚»≠
     if ( sCount > 0 )
     {
         aStatement->mFlag &= ~QC_STMT_FAST_FIRST_RESULT_MASK;
@@ -3136,7 +3166,7 @@ IDE_RC qmxSimple::executeFastJoinSelect( smiTrans     * aSmiTrans,
 {
 /***********************************************************************
  *
- *  Description : PROJ-2551 simple query ÏµúÏ†ÅÌôî
+ *  Description : PROJ-2551 simple query √÷¿˚»≠
  *
  *  Implementation :
  *
@@ -3185,7 +3215,7 @@ IDE_RC qmxSimple::executeFastJoinSelect( smiTrans     * aSmiTrans,
     UShort              * sBindInfo;
     ULong                 sAllocSize = 0;
 
-    // Ï¥àÍ∏∞Ìôî
+    // √ ±‚»≠
     aStatement->simpleInfo.results = NULL;
 
     sPROJ = (qmncPROJ*)aStatement->myPlan->plan;
@@ -3212,12 +3242,12 @@ IDE_RC qmxSimple::executeFastJoinSelect( smiTrans     * aSmiTrans,
 
     while ( 1 )
     {
-        // Ïò§Î•∏Ï™ΩÏùÄ Ìï≠ÏÉÅ SCAN
+        // ø¿∏•¬ ¿∫ «◊ªÛ SCAN
         if ( sJOIN->plan.right->type == QMN_SCAN )
         {
             sScanCount++;
 
-            // ÏôºÏ™ΩÏùÄ JOINÏù¥Í±∞ÎÇò SCAN
+            // øﬁ¬ ¿∫ JOIN¿Ã∞≈≥™ SCAN
             if ( sJOIN->plan.left->type == QMN_JOIN )
             {
                 sJOIN = (qmncJOIN*)sJOIN->plan.left;
@@ -3244,20 +3274,20 @@ IDE_RC qmxSimple::executeFastJoinSelect( smiTrans     * aSmiTrans,
               != IDE_SUCCESS );
 
     // make scan array
-    // Îí§ÏóêÏÑú Î∂ÄÌÑ∞ Ï±ÑÏö¥Îã§.
+    // µ⁄ø°º≠ ∫Œ≈Õ √§øÓ¥Ÿ.
     k = sScanCount - 1;
 
     sJOIN = (qmncJOIN*)(sPROJ->plan.left);
 
     while ( 1 )
     {
-        // Ïò§Î•∏Ï™ΩÏùÄ Ìï≠ÏÉÅ SCAN
+        // ø¿∏•¬ ¿∫ «◊ªÛ SCAN
         if ( sJOIN->plan.right->type == QMN_SCAN )
         {
             sScanInfo[k].scan = (qmncSCAN*)sJOIN->plan.right;
             k--;
 
-            // ÏôºÏ™ΩÏùÄ JOINÏù¥Í±∞ÎÇò SCAN
+            // øﬁ¬ ¿∫ JOIN¿Ã∞≈≥™ SCAN
             if ( sJOIN->plan.left->type == QMN_JOIN )
             {
                 sJOIN = (qmncJOIN*)sJOIN->plan.left;
@@ -3303,6 +3333,17 @@ IDE_RC qmxSimple::executeFastJoinSelect( smiTrans     * aSmiTrans,
                       != IDE_SUCCESS );
         }
 
+        /* TASK-7307 DML Data Consistency in Shard */
+        if ( ( QCG_CHECK_SHARD_DML_CONSISTENCY( aStatement ) == ID_TRUE ) &&
+             ( sScanInfo[k].scan->tableRef->tableInfo->mIsUsable == ID_FALSE ) )
+        {
+            continue;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
         if ( sSimpleValueBufSize < sScanInfo[k].scan->simpleValueBufSize )
         {
             sSimpleValueBufSize = sScanInfo[k].scan->simpleValueBufSize;
@@ -3317,7 +3358,7 @@ IDE_RC qmxSimple::executeFastJoinSelect( smiTrans     * aSmiTrans,
     IDE_TEST( qci::checkShardPlanRebuild( aStatement )
               != IDE_SUCCESS );
 
-    // bind buffer Ìï†Îãπ
+    // bind buffer «“¥Á
     if ( sSimpleValueBufSize > ID_SIZEOF(sCharBuffer) )
     {
         IDE_TEST( aStatement->qmxMem->alloc(
@@ -3330,7 +3371,7 @@ IDE_RC qmxSimple::executeFastJoinSelect( smiTrans     * aSmiTrans,
         // Nothing to do.
     }
 
-    // target column index Ìï†Îãπ
+    // target column index «“¥Á
     if ( sPROJ->targetCount > QC_MAX_REF_TABLE_CNT )
     {
         IDE_TEST( aStatement->qmxMem->alloc(
@@ -3365,7 +3406,7 @@ IDE_RC qmxSimple::executeFastJoinSelect( smiTrans     * aSmiTrans,
 
   retry:
 
-    // Ï¥àÍ∏∞Ìôî
+    // √ ±‚»≠
     for ( k = 0; k < sScanCount; k++ )
     {
         sScanInfo[k].keyRange = NULL;
@@ -3474,7 +3515,7 @@ IDE_RC qmxSimple::executeFastJoinSelect( smiTrans     * aSmiTrans,
 
     if ( aShmResult != NULL )
     {
-        // mmÏóêÏÑú result bufferÎ•º Ï£ºÎäî Í≤ΩÏö∞
+        // mmø°º≠ result buffer∏¶ ¡÷¥¬ ∞ÊøÏ
         if ( sResult == NULL )
         {
             sResult = (SChar*)aShmResult;
@@ -3486,7 +3527,7 @@ IDE_RC qmxSimple::executeFastJoinSelect( smiTrans     * aSmiTrans,
     }
     else
     {
-        // qpÏóêÏÑú result bufferÎ•º allocÌïòÎäî Í≤ΩÏö∞
+        // qpø°º≠ result buffer∏¶ alloc«œ¥¬ ∞ÊøÏ
 
         // alloc result chunk
         if ( sLastScan->rowCount > 0 )
@@ -3608,14 +3649,14 @@ IDE_RC qmxSimple::executeFastJoinSelect( smiTrans     * aSmiTrans,
         // copy target
         if ( aShmResult != NULL )
         {
-            // record sizeÎ•º ÏúÑÌïú Í≥µÍ∞Ñ
+            // record size∏¶ ¿ß«— ∞¯∞£
             IDE_TEST_RAISE( sResultSize + 8 > aShmSize,
                             ERR_INSUFFICIENT_MEMORY );
 
             sResultTemp = sResult;
             sResultSizeTemp = sResultSize;
 
-            *(ULong*)sResult = 0;  // Ï¥àÍ∏∞Ìôî
+            *(ULong*)sResult = 0;  // √ ±‚»≠
             sResult += 8;
             sResultSize += 8;
         }
@@ -3693,10 +3734,10 @@ IDE_RC qmxSimple::executeFastJoinSelect( smiTrans     * aSmiTrans,
                     break;
             }
 
-            // column positionÏùÑ Í∏∞Î°ùÌïúÎã§.
+            // column position¿ª ±‚∑œ«—¥Ÿ.
             if ( aShmResult != NULL )
             {
-                *(ULong*)sResult = 0;  // Ï¥àÍ∏∞Ìôî
+                *(ULong*)sResult = 0;  // √ ±‚»≠
                 *(UShort*)sResult = (UShort)(m + 1);
                 sResult += 8;
                 sResultSize += 8;
@@ -3715,7 +3756,7 @@ IDE_RC qmxSimple::executeFastJoinSelect( smiTrans     * aSmiTrans,
             sResultSize += sPROJ->simpleValueSizes[m];
         }
 
-        // record sizeÎ•º Í∏∞Î°ùÌïúÎã§.
+        // record size∏¶ ±‚∑œ«—¥Ÿ.
         if ( aShmResult != NULL )
         {
             *(UInt*)sResultTemp = sResultSize - sResultSizeTemp;
@@ -3756,7 +3797,7 @@ IDE_RC qmxSimple::executeFastJoinSelect( smiTrans     * aSmiTrans,
         // Nothing to do.
     }
 
-    // Ï¥àÍ∏∞Ìôî
+    // √ ±‚»≠
     if ( sCount > 0 )
     {
         aStatement->mFlag &= ~QC_STMT_FAST_FIRST_RESULT_MASK;
@@ -3912,16 +3953,21 @@ IDE_RC qmxSimple::doFastScan( qcStatement      * aStatement,
     sScan = aScanInfo + aScanIndex;
     sCount = sScan->rowCount;
 
+    /* TASK-7307 DML Data Consistency in Shard */
+    IDE_TEST_CONT( ( QCG_CHECK_SHARD_DML_CONSISTENCY( aStatement ) == ID_TRUE ) &&
+                   ( sScan->scan->tableRef->tableInfo->mIsUsable == ID_FALSE ),
+                   normal_exit );
+
     if ( sScan->rowInfo == NULL )
     {
-        // row buffer Ìï†Îãπ
+        // row buffer «“¥Á
         IDE_TEST( aStatement->qmxMem->alloc(
                       ID_SIZEOF(qmxFastRowInfo) +
                       ID_SIZEOF(qmxFastRow) * RESULT_ROW_CHUNK_SIZE,
                       (void**)&(sScan->curRowInfo) )
                   != IDE_SUCCESS );
 
-        // Ï¥àÍ∏∞Ìôî
+        // √ ±‚»≠
         sScan->curRowInfo->rowBuf = (qmxFastRow*)
             (((SChar*)sScan->curRowInfo) + ID_SIZEOF(qmxFastRowInfo));
         sScan->curRowInfo->next = NULL;
@@ -3929,7 +3975,7 @@ IDE_RC qmxSimple::doFastScan( qcStatement      * aStatement,
         // link
         sScan->rowInfo = sScan->curRowInfo;
 
-        // ÏÑ§Ï†ï
+        // º≥¡§
         sScan->curRow = sScan->curRowInfo->rowBuf;
         sScan->curIdx = 0;
     }
@@ -3982,7 +4028,7 @@ IDE_RC qmxSimple::doFastScan( qcStatement      * aStatement,
                                       & sBuffer )
                   != IDE_SUCCESS );
 
-        // null rangeÎäî Í≤∞Í≥ºÍ∞Ä ÏóÜÎã§.
+        // null range¥¬ ∞·∞˙∞° æ¯¥Ÿ.
         IDE_TEST_CONT( sIsNullRange == ID_TRUE, normal_exit );
     }
     else
@@ -4017,7 +4063,7 @@ IDE_RC qmxSimple::doFastScan( qcStatement      * aStatement,
                           != IDE_SUCCESS );
             }
 
-            // null rangeÎäî Í≤∞Í≥ºÍ∞Ä ÏóÜÎã§.
+            // null range¥¬ ∞·∞˙∞° æ¯¥Ÿ.
             IDE_TEST_CONT( sIsNullRange == ID_TRUE, normal_exit );
         }
         else
@@ -4031,7 +4077,7 @@ IDE_RC qmxSimple::doFastScan( qcStatement      * aStatement,
 
     if ( sScan->opened == ID_FALSE )
     {
-        // Traverse Î∞©Ìñ•Ïùò Í≤∞Ï†ï
+        // Traverse πÊ«‚¿« ∞·¡§
         if ( ( sScan->scan->flag & QMNC_SCAN_TRAVERSE_MASK )
              == QMNC_SCAN_TRAVERSE_FORWARD )
         {
@@ -4042,7 +4088,7 @@ IDE_RC qmxSimple::doFastScan( qcStatement      * aStatement,
             sTraverse = SMI_TRAVERSE_BACKWARD;
         }
 
-        // Previous ÏÇ¨Ïö© Ïó¨Î∂Ä Í≤∞Ï†ï
+        // Previous ªÁøÎ ø©∫Œ ∞·¡§
         if ( ( sScan->scan->flag & QMNC_SCAN_PREVIOUS_ENABLE_MASK )
              == QMNC_SCAN_PREVIOUS_ENABLE_TRUE )
         {
@@ -4087,7 +4133,7 @@ IDE_RC qmxSimple::doFastScan( qcStatement      * aStatement,
 
     while ( sScan->curRow->row != NULL )
     {
-        // left rowÎ•º Í∏∞Î°ùÌïúÎã§.
+        // left row∏¶ ±‚∑œ«—¥Ÿ.
         if ( aScanIndex == 0 )
         {
             // first left scan
@@ -4104,7 +4150,7 @@ IDE_RC qmxSimple::doFastScan( qcStatement      * aStatement,
 
         if ( sScan->curIdx == RESULT_ROW_CHUNK_SIZE )
         {
-            // row buffer Ìï†Îãπ & link
+            // row buffer «“¥Á & link
             IDE_TEST( aStatement->qmxMem->alloc(
                           ID_SIZEOF(qmxFastRowInfo) +
                           ID_SIZEOF(qmxFastRow) * RESULT_ROW_CHUNK_SIZE,
@@ -4113,12 +4159,12 @@ IDE_RC qmxSimple::doFastScan( qcStatement      * aStatement,
 
             sScan->curRowInfo = sScan->curRowInfo->next;
 
-            // Ï¥àÍ∏∞Ìôî
+            // √ ±‚»≠
             sScan->curRowInfo->rowBuf = (qmxFastRow*)
                 (((SChar*)sScan->curRowInfo) + ID_SIZEOF(qmxFastRowInfo));
             sScan->curRowInfo->next = NULL;
 
-            // ÏÑ§Ï†ï
+            // º≥¡§
             sScan->curRow = sScan->curRowInfo->rowBuf;
             sScan->curIdx = 0;
         }
@@ -4158,7 +4204,7 @@ IDE_RC qmxSimple::fastMoveNextResult( qcStatement  * aStatement,
 {
     idBool  sExist = ID_FALSE;
 
-    /* BUG-45613 EXECUTOR_FAST_SIMPLE_QUERY=1 ÏÑ§Ï†ï ÌõÑ cursor fetch Ïãú diff Î∞úÏÉùÌï©ÎãàÎã§. */
+    /* BUG-45613 EXECUTOR_FAST_SIMPLE_QUERY=1 º≥¡§ »ƒ cursor fetch Ω√ diff πﬂª˝«’¥œ¥Ÿ. */
     IDE_TEST( iduCheckSessionEvent( QC_STATISTICS( aStatement ) )
               != IDE_SUCCESS );
 
@@ -4233,7 +4279,7 @@ IDE_RC qmxSimple::fastMoveNextResult( qcStatement  * aStatement,
 
     return IDE_SUCCESS;
 
-    /* BUG-45613 EXECUTOR_FAST_SIMPLE_QUERY=1 ÏÑ§Ï†ï ÌõÑ cursor fetch Ïãú diff Î∞úÏÉùÌï©ÎãàÎã§. */
+    /* BUG-45613 EXECUTOR_FAST_SIMPLE_QUERY=1 º≥¡§ »ƒ cursor fetch Ω√ diff πﬂª˝«’¥œ¥Ÿ. */
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -4246,7 +4292,7 @@ IDE_RC qmxSimple::executeFastInsert( smiTrans     * aSmiTrans,
 {
 /***********************************************************************
  *
- *  Description : PROJ-2551 simple query ÏµúÏ†ÅÌôî
+ *  Description : PROJ-2551 simple query √÷¿˚»≠
  *
  *  Implementation :
  *
@@ -4300,10 +4346,11 @@ IDE_RC qmxSimple::executeFastInsert( smiTrans     * aSmiTrans,
 
     /* PROJ-2359 Table/Partition Access Option */
     IDE_TEST( qmx::checkAccessOption( sINST->tableRef->tableInfo,
-                                      ID_TRUE /* aIsInsertion */ )
+                                      ID_TRUE, /* aIsInsertion */
+                                      QCG_CHECK_SHARD_DML_CONSISTENCY( aStatement ) )
               != IDE_SUCCESS );
 
-    // bind buffer, canonize buffer Ìï†Îãπ
+    // bind buffer, canonize buffer «“¥Á
     if ( sINST->simpleValueBufSize > ID_SIZEOF(sCharBuffer) )
     {
         IDE_TEST( aStatement->qmxMem->alloc(
@@ -4351,7 +4398,8 @@ IDE_RC qmxSimple::executeFastInsert( smiTrans     * aSmiTrans,
                                   aStatement->pBindParam,
                                   aBindBuffer,
                                   & sBuffer,
-                                  ID_TRUE )  // canonizeÍ∞Ä ÌïÑÏöîÌï®
+                                  ID_FALSE, // make key or rid range
+                                  ID_TRUE )  // canonize∞° « ø‰«‘
                               != IDE_SUCCESS );
                 }
                 else
@@ -4361,6 +4409,7 @@ IDE_RC qmxSimple::executeFastInsert( smiTrans     * aSmiTrans,
                                   & sValue,
                                   aStatement->pBindParam,
                                   & sBuffer,
+                                  ID_FALSE, // make key or rid range
                                   ID_TRUE )
                               != IDE_SUCCESS );
                 }
@@ -4479,13 +4528,13 @@ IDE_RC qmxSimple::executeFastInsert( smiTrans     * aSmiTrans,
                             & sProperty )
               != IDE_SUCCESS );
     sOpened = ID_TRUE;
-    
+
     IDE_TEST( sCursor.insertRow( sSmiValues, &sRow, &sRid ) != IDE_SUCCESS );
-    
+
     sOpened = ID_FALSE;
     IDE_TEST( sCursor.close() != IDE_SUCCESS );
-    
-    // BUG-43410 foreign key ÏßÄÏõê
+
+    // BUG-43410 foreign key ¡ˆø¯
     if ( sINST->parentConstraints != NULL )
     {
         IDE_TEST_RAISE( aStatement->qmxMem->getStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
@@ -4506,7 +4555,7 @@ IDE_RC qmxSimple::executeFastInsert( smiTrans     * aSmiTrans,
     {
         // Nothing to do.
     }
-    
+
     // statement close
     if ( sUseFastSmiStmt == ID_TRUE )
     {
@@ -4517,7 +4566,7 @@ IDE_RC qmxSimple::executeFastInsert( smiTrans     * aSmiTrans,
     {
         // Nothing to do.
     }
-    
+
     if ( aRowCount != NULL )
     {
         *aRowCount = 1;
@@ -4526,10 +4575,10 @@ IDE_RC qmxSimple::executeFastInsert( smiTrans     * aSmiTrans,
     {
         // Nothing to do.
     }
-    
+
     // BUG-38129
     qcg::setLastModifiedRowGRID( aStatement, sRid );
-    
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_MEM_OP )
@@ -4562,7 +4611,7 @@ IDE_RC qmxSimple::executeFastInsert( smiTrans     * aSmiTrans,
             /* Nothing to do */
         }
     }
-    /* BUG-45680 insert ÏàòÌñâÏãú not null columnÏóê ÎåÄÌïú ÏóêÎü¨Î©îÏãúÏßÄ Ï†ïÎ≥¥Ïóê column Ï†ïÎ≥¥ Ï∂úÎ†•. */
+    /* BUG-45680 insert ºˆ«‡Ω√ not null columnø° ¥Î«— ø°∑Ø∏ﬁΩ√¡ˆ ¡§∫∏ø° column ¡§∫∏ √‚∑¬. */
     else if ( ideGetErrorCode() == qpERR_ABORT_QMX_NOT_NULL_CONSTRAINT )
     {
         if ( ( sValueInfo != NULL ) &&
@@ -4601,7 +4650,7 @@ IDE_RC qmxSimple::executeFastInsert( smiTrans     * aSmiTrans,
     {
         // Nothing to do.
     }
-    
+
     return IDE_FAILURE;
 }
 
@@ -4612,7 +4661,7 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
 {
 /***********************************************************************
  *
- *  Description : PROJ-2551 simple query ÏµúÏ†ÅÌôî
+ *  Description : PROJ-2551 simple query √÷¿˚»≠
  *
  *  Implementation :
  *
@@ -4657,7 +4706,7 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
     UInt                  sInplaceUpdate;
     UInt                  sCursorFlag = 0;
     smiCursorProperties   sProperty;
-    
+
     const void          * sRow = NULL;
     scGRID                sRid;
     void                * sUptRow = NULL;
@@ -4665,19 +4714,19 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
     UInt                  sCount = 0;
     UInt                  sColumnOrder;
     iduMemoryStatus       sQmxMemStatus;
-    
+
     SC_MAKE_NULL_GRID( sUptRid );
-    
+
     sUPTE = (qmncUPTE*)aStatement->myPlan->plan;
     sSCAN = (qmncSCAN*)aStatement->myPlan->plan->left;
     sScanMethod = &sSCAN->method;
     sIndex = sScanMethod->index;
-    
+
     //fix BUG-17553
     IDV_SQL_SET( sStatistics, mMemoryTableAccessCount, 0 );
 
     sTableType = sUPTE->tableRef->tableFlag & SMI_TABLE_TYPE_MASK;
-    
+
     // table lock
     if ( ( QCU_UPDATE_IN_PLACE == 1 ) &&
          ( sUPTE->inplaceUpdate == ID_TRUE ) &&
@@ -4705,17 +4754,22 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
                                              ID_FALSE )
                   != IDE_SUCCESS );
     }
-    
+
     /* PROJ-2701 Sharding online data rebuild */
     IDE_TEST( qci::checkShardPlanRebuild( aStatement )
               != IDE_SUCCESS );
+
+    /* TASK-7307 DML Data Consistency in Shard */
+    IDE_TEST_CONT( ( QCG_CHECK_SHARD_DML_CONSISTENCY( aStatement ) == ID_TRUE ) &&
+                   ( sUPTE->tableRef->tableInfo->mIsUsable == ID_FALSE ),
+                   normal_exit );
 
     /* PROJ-2359 Table/Partition Access Option */
     IDE_TEST( qmx::checkAccessOption( sUPTE->tableRef->tableInfo,
                                       ID_FALSE /* aIsInsertion */ )
               != IDE_SUCCESS );
-    
-    // bind buffer, canonize buffer Ìï†Îãπ
+
+    // bind buffer, canonize buffer «“¥Á
     if ( sSCAN->simpleValueBufSize +
          sUPTE->simpleValueBufSize > ID_SIZEOF(sCharBuffer) )
     {
@@ -4748,7 +4802,7 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
                                   ID_TRUE,
                                   sValueInfo->isQueue,
                                   NULL )
-                              != IDE_SUCCESS ); 
+                              != IDE_SUCCESS );
                     break;
 
                 case QMN_VALUE_TYPE_HOST_VALUE:
@@ -4760,7 +4814,8 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
                                       aStatement->pBindParam,
                                       aBindBuffer,
                                       & sBuffer,
-                                      ID_TRUE )  // canonizeÍ∞Ä ÌïÑÏöîÌï®
+                                      ID_FALSE, // make key or rid range
+                                      ID_TRUE )  // canonize∞° « ø‰«‘
                                   != IDE_SUCCESS );
                     }
                     else
@@ -4770,6 +4825,7 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
                                       & sValue,
                                       aStatement->pBindParam,
                                       & sBuffer,
+                                      ID_FALSE, // make key or rid range 
                                       ID_TRUE )
                                   != IDE_SUCCESS );
                     }
@@ -4819,7 +4875,7 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
                     }
                     sValue = & sSysdate;
                     break;
-                
+
                 default:
                     IDE_RAISE( ERR_INVALID_TYPE );
                     break;
@@ -4829,7 +4885,7 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
             IDE_TEST( checkSimpleNullValue( & sValueInfo->column,
                                             sValue )
                       != IDE_SUCCESS );
-        
+
             // set smiValue
             IDE_TEST( setSimpleSmiValue( & sValueInfo->column,
                                          sValue,
@@ -4858,12 +4914,12 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
                                       & sIsNullRange,
                                       & sBuffer )
                   != IDE_SUCCESS );
-        
-        // null rangeÎäî Í≤∞Í≥ºÍ∞Ä ÏóÜÎã§.
+
+        // null range¥¬ ∞·∞˙∞° æ¯¥Ÿ.
         IDE_TEST_CONT( sIsNullRange == ID_TRUE, normal_exit );
-        
+
         sIndexHandle = NULL;
-        
+
         SMI_CURSOR_PROP_INIT_FOR_INDEX_SCAN( &sProperty,
                                              sStatistics,
                                              SMI_BUILTIN_GRID_INDEXTYPE_ID );
@@ -4886,12 +4942,12 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
                                           & sIsNullRange,
                                           & sBuffer )
                       != IDE_SUCCESS );
-        
-            // null rangeÎäî Í≤∞Í≥ºÍ∞Ä ÏóÜÎã§.
+
+            // null range¥¬ ∞·∞˙∞° æ¯¥Ÿ.
             IDE_TEST_CONT( sIsNullRange == ID_TRUE, normal_exit );
-       
+
             sIndexHandle = sIndex->indexHandle;
-        
+
             SMI_CURSOR_PROP_INIT_FOR_INDEX_SCAN( &sProperty,
                                                  sStatistics,
                                                  sIndex->indexTypeId );
@@ -4904,7 +4960,7 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
             SMI_CURSOR_PROP_INIT_FOR_FULL_SCAN( &sProperty, sStatistics );
         }
     }
-    
+
     if ( sSCAN->limit != NULL )
     {
         sProperty.mFirstReadRecordPos = sSCAN->limit->start.constant - 1;
@@ -4914,7 +4970,7 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
     {
         // Nothing to do.
     }
-    
+
     // use fast smiStmt
     if ( QC_SMI_STMT( aStatement ) != NULL )
     {
@@ -4933,7 +4989,7 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
     sSmiStmtFlag &= ~SMI_STATEMENT_CURSOR_MASK;
     sSmiStmtFlag |= SMI_STATEMENT_MEMORY_CURSOR;
 
-    // Traverse Î∞©Ìñ•Ïùò Í≤∞Ï†ï
+    // Traverse πÊ«‚¿« ∞·¡§
     if ( ( sSCAN->flag & QMNC_SCAN_TRAVERSE_MASK )
          == QMNC_SCAN_TRAVERSE_FORWARD )
     {
@@ -4944,7 +5000,7 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
         sTraverse = SMI_TRAVERSE_BACKWARD;
     }
 
-    // Previous ÏÇ¨Ïö© Ïó¨Î∂Ä Í≤∞Ï†ï
+    // Previous ªÁøÎ ø©∫Œ ∞·¡§
     if ( ( sSCAN->flag & QMNC_SCAN_PREVIOUS_ENABLE_MASK )
          == QMNC_SCAN_PREVIOUS_ENABLE_TRUE )
     {
@@ -4964,15 +5020,15 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
     {
         sInplaceUpdate = SMI_INPLACE_UPDATE_DISABLE;
     }
-    
+
     sCursorFlag = SMI_LOCK_WRITE | sTraverse | sPrevious | sInplaceUpdate;
-    
+
   retry:
-    
+
     sBegined = ID_FALSE;
     sOpened = ID_FALSE;
     sRetryErr = ID_FALSE;
-    
+
     // statement begin
     if ( sUseFastSmiStmt == ID_TRUE )
     {
@@ -5004,9 +5060,9 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
                             & sProperty )
               != IDE_SUCCESS );
     sOpened = ID_TRUE;
-    
+
     IDE_TEST( sCursor.beforeFirst() != IDE_SUCCESS );
-    
+
     IDE_TEST( sCursor.readRow( &sRow, &sRid, SMI_FIND_NEXT )
               != IDE_SUCCESS );
 
@@ -5028,13 +5084,13 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
             {
                 // Nothing to do.
             }
-            
+
             IDE_TEST( sCursor.updateRow( sSmiValues,
                                          NULL,
                                          & sUptRow,
                                          & sUptRid )
                       != IDE_SUCCESS );
-            
+
             sCount = 1;
         }
         else
@@ -5060,15 +5116,15 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
             {
                 // Nothing to do.
             }
-            
+
             IDE_TEST( sCursor.updateRow( sSmiValues,
                                          NULL,
                                          & sUptRow,
                                          & sUptRid )
                       != IDE_SUCCESS );
-            
+
             sCount++;
-        
+
             IDE_TEST( sCursor.readRow( &sRow, &sRid, SMI_FIND_NEXT )
                       != IDE_SUCCESS );
         }
@@ -5076,14 +5132,14 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
 
     sOpened = ID_FALSE;
     IDE_TEST( sCursor.close() != IDE_SUCCESS );
-    
-    // BUG-43410 foreign key ÏßÄÏõê
+
+    // BUG-43410 foreign key ¡ˆø¯
     if ( ( sUPTE->parentConstraints != NULL ) && ( sCount > 0 ) )
     {
         if ( ( sSCAN->simpleUnique == ID_TRUE ) && ( sUptRow != NULL ) )
         {
             IDE_TEST_RAISE( aStatement->qmxMem->getStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
-                
+
             IDE_TEST( qdnForeignKey::checkParentRef(
                           aStatement,
                           sUPTE->updateColumnIDs,
@@ -5092,7 +5148,7 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
                           sUptRow,
                           sUPTE->updateColumnCount )
                       != IDE_SUCCESS );
-                
+
             IDE_TEST_RAISE( aStatement->qmxMem->setStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
         }
         else
@@ -5106,7 +5162,7 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
             while ( sRow != NULL )
             {
                 IDE_TEST_RAISE( aStatement->qmxMem->getStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
-                
+
                 IDE_TEST( qdnForeignKey::checkParentRef(
                               aStatement,
                               sUPTE->updateColumnIDs,
@@ -5115,9 +5171,9 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
                               sRow,
                               sUPTE->updateColumnCount )
                           != IDE_SUCCESS );
-                
+
                 IDE_TEST_RAISE( aStatement->qmxMem->setStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
-                
+
                 IDE_TEST( sCursor.readNewRow( &sRow, &sRid )
                           != IDE_SUCCESS );
             }
@@ -5128,13 +5184,13 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
         // Nothing to do.
     }
 
-    // BUG-43410 foreign key ÏßÄÏõê
+    // BUG-43410 foreign key ¡ˆø¯
     if ( ( sUPTE->childConstraints != NULL ) && ( sCount > 0 ) )
     {
-        // BUG-17940 parent keyÎ•º Í∞±Ïã†ÌïòÍ≥† child keyÎ•º Ï∞æÏùÑÎïå
-        // parent rowÏóê lockÏùÑ Ïû°ÏùÄ Ïù¥ÌõÑ viewÎ•º Î≥¥Í∏∞ÏúÑÌï¥
-        // ÏÉàÎ°úÏö¥ smiStmtÎ•º Ïù¥Ïö©ÌïúÎã§.
-        // Update cascade ÏòµÏÖòÏóê ÎåÄÎπÑÌï¥ÏÑú normalÎ°ú ÌïúÎã§.
+        // BUG-17940 parent key∏¶ ∞ªΩ≈«œ∞Ì child key∏¶ √£¿ª∂ß
+        // parent rowø° lock¿ª ¿‚¿∫ ¿Ã»ƒ view∏¶ ∫∏±‚¿ß«ÿ
+        // ªı∑ŒøÓ smiStmt∏¶ ¿ÃøÎ«—¥Ÿ.
+        // Update cascade ø…º«ø° ¥Î∫Ò«ÿº≠ normal∑Œ «—¥Ÿ.
         sSmiStmtOrg = QC_SMI_STMT( aStatement );
         IDE_TEST( sSmiStmtNew.begin( sStatistics,
                                      aSmiTrans->getStatement(),
@@ -5148,7 +5204,7 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
         if ( ( sSCAN->simpleUnique == ID_TRUE ) && ( sRow != NULL ) )
         {
             IDE_TEST_RAISE( aStatement->qmxMem->getStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
-        
+
             IDE_TEST( qdnForeignKey::checkChildRefOnUpdate(
                           aStatement,
                           sUPTE->tableRef,
@@ -5167,14 +5223,14 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
         {
             IDE_TEST( sCursor.beforeFirstModified( SMI_FIND_MODIFIED_OLD )
                       != IDE_SUCCESS );
-            
+
             IDE_TEST( sCursor.readOldRow( &sRow, &sRid )
                       != IDE_SUCCESS );
 
             while ( sRow != NULL )
             {
                 IDE_TEST_RAISE( aStatement->qmxMem->getStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
-        
+
                 IDE_TEST( qdnForeignKey::checkChildRefOnUpdate(
                               aStatement,
                               sUPTE->tableRef,
@@ -5220,7 +5276,7 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
         IDV_SQL_ADD( sStatistics,
                      mMemoryTableAccessCount,
                      sCount );
-            
+
         IDV_SESS_ADD( sStatistics->mSess,
                       IDV_STAT_INDEX_MEMORY_TABLE_ACCESS_COUNT,
                       sCount );
@@ -5231,7 +5287,7 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
     }
 
     IDE_EXCEPTION_CONT( normal_exit );
-    
+
     if ( aRowCount != NULL )
     {
         *aRowCount = sCount;
@@ -5243,7 +5299,7 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
 
     // BUG-38129
     qcg::setLastModifiedRowGRID( aStatement, sUptRid );
-    
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_MEM_OP )
@@ -5276,7 +5332,7 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
             /* Nothing to do */
         }
     }
-    /* BUG-45680 insert ÏàòÌñâÏãú not null columnÏóê ÎåÄÌïú ÏóêÎü¨Î©îÏãúÏßÄ Ï†ïÎ≥¥Ïóê column Ï†ïÎ≥¥ Ï∂úÎ†•. */
+    /* BUG-45680 insert ºˆ«‡Ω√ not null columnø° ¥Î«— ø°∑Ø∏ﬁΩ√¡ˆ ¡§∫∏ø° column ¡§∫∏ √‚∑¬. */
     else if ( ideGetErrorCode() == qpERR_ABORT_QMX_NOT_NULL_CONSTRAINT )
     {
         if ( ( sValueInfo != NULL ) &&
@@ -5308,7 +5364,7 @@ IDE_RC qmxSimple::executeFastUpdate( smiTrans     * aSmiTrans,
         {
             // Nothing to do.
         }
-    
+
         (void) sCursor.close();
     }
     else
@@ -5362,7 +5418,7 @@ IDE_RC qmxSimple::executeFastDelete( smiTrans     * aSmiTrans,
 {
 /***********************************************************************
  *
- *  Description : PROJ-2551 simple query ÏµúÏ†ÅÌôî
+ *  Description : PROJ-2551 simple query √÷¿˚»≠
  *
  *  Implementation :
  *
@@ -5404,7 +5460,7 @@ IDE_RC qmxSimple::executeFastDelete( smiTrans     * aSmiTrans,
     UInt                  sCount = 0;
 
     iduMemoryStatus       sQmxMemStatus;
-    
+
     sDETE = (qmncDETE*)aStatement->myPlan->plan;
     sSCAN = (qmncSCAN*)aStatement->myPlan->plan->left;
     sScanMethod = &sSCAN->method;
@@ -5422,17 +5478,22 @@ IDE_RC qmxSimple::executeFastDelete( smiTrans     * aSmiTrans,
                                          ID_ULONG_MAX,
                                          ID_FALSE )
               != IDE_SUCCESS );
-    
+
     /* PROJ-2701 Sharding online data rebuild */
     IDE_TEST( qci::checkShardPlanRebuild( aStatement )
               != IDE_SUCCESS );
+
+    /* TASK-7307 DML Data Consistency in Shard */
+    IDE_TEST_CONT( ( QCG_CHECK_SHARD_DML_CONSISTENCY( aStatement ) == ID_TRUE ) &&
+                   ( sDETE->tableRef->tableInfo->mIsUsable == ID_FALSE ),
+                   normal_exit );
 
     /* PROJ-2359 Table/Partition Access Option */
     IDE_TEST( qmx::checkAccessOption( sDETE->tableRef->tableInfo,
                                       ID_FALSE /* aIsInsertion */ )
               != IDE_SUCCESS );
-    
-    // bind buffer Ìï†Îãπ
+
+    // bind buffer «“¥Á
     if ( sSCAN->simpleValueBufSize > ID_SIZEOF(sCharBuffer) )
     {
         IDE_TEST( aStatement->qmxMem->alloc(
@@ -5462,7 +5523,7 @@ IDE_RC qmxSimple::executeFastDelete( smiTrans     * aSmiTrans,
                                       & sBuffer )
                   != IDE_SUCCESS );
 
-        // null rangeÎäî Í≤∞Í≥ºÍ∞Ä ÏóÜÎã§.
+        // null range¥¬ ∞·∞˙∞° æ¯¥Ÿ.
         IDE_TEST_CONT( sIsNullRange == ID_TRUE, normal_exit );
 
         sIndexHandle = NULL;
@@ -5489,12 +5550,12 @@ IDE_RC qmxSimple::executeFastDelete( smiTrans     * aSmiTrans,
                                           & sIsNullRange,
                                           & sBuffer )
                       != IDE_SUCCESS );
-        
-            // null rangeÎäî Í≤∞Í≥ºÍ∞Ä ÏóÜÎã§.
+
+            // null range¥¬ ∞·∞˙∞° æ¯¥Ÿ.
             IDE_TEST_CONT( sIsNullRange == ID_TRUE, normal_exit );
-        
+
             sIndexHandle = sIndex->indexHandle;
-        
+
             SMI_CURSOR_PROP_INIT_FOR_INDEX_SCAN( &sProperty,
                                                  sStatistics,
                                                  sIndex->indexTypeId );
@@ -5536,7 +5597,7 @@ IDE_RC qmxSimple::executeFastDelete( smiTrans     * aSmiTrans,
     sSmiStmtFlag &= ~SMI_STATEMENT_CURSOR_MASK;
     sSmiStmtFlag |= SMI_STATEMENT_MEMORY_CURSOR;
 
-    // Traverse Î∞©Ìñ•Ïùò Í≤∞Ï†ï
+    // Traverse πÊ«‚¿« ∞·¡§
     if ( ( sSCAN->flag & QMNC_SCAN_TRAVERSE_MASK )
          == QMNC_SCAN_TRAVERSE_FORWARD )
     {
@@ -5547,7 +5608,7 @@ IDE_RC qmxSimple::executeFastDelete( smiTrans     * aSmiTrans,
         sTraverse = SMI_TRAVERSE_BACKWARD;
     }
 
-    // Previous ÏÇ¨Ïö© Ïó¨Î∂Ä Í≤∞Ï†ï
+    // Previous ªÁøÎ ø©∫Œ ∞·¡§
     if ( ( sSCAN->flag & QMNC_SCAN_PREVIOUS_ENABLE_MASK )
          == QMNC_SCAN_PREVIOUS_ENABLE_TRUE )
     {
@@ -5557,15 +5618,15 @@ IDE_RC qmxSimple::executeFastDelete( smiTrans     * aSmiTrans,
     {
         sPrevious = SMI_PREVIOUS_DISABLE;
     }
-    
+
     sCursorFlag = SMI_LOCK_WRITE | sTraverse | sPrevious;
-    
+
   retry:
-    
+
     sBegined = ID_FALSE;
     sOpened = ID_FALSE;
     sRetryErr = ID_FALSE;
-    
+
     // statement begin
     if ( sUseFastSmiStmt == ID_TRUE )
     {
@@ -5608,7 +5669,7 @@ IDE_RC qmxSimple::executeFastDelete( smiTrans     * aSmiTrans,
         if ( sRow != NULL )
         {
             IDE_TEST( sCursor.deleteRow() != IDE_SUCCESS );
-            
+
             sCount = 1;
         }
         else
@@ -5621,9 +5682,9 @@ IDE_RC qmxSimple::executeFastDelete( smiTrans     * aSmiTrans,
         while ( sRow != NULL )
         {
             IDE_TEST( sCursor.deleteRow() != IDE_SUCCESS );
-            
+
             sCount++;
-        
+
             IDE_TEST( sCursor.readRow( &sRow, &sRid, SMI_FIND_NEXT )
                       != IDE_SUCCESS );
         }
@@ -5631,14 +5692,14 @@ IDE_RC qmxSimple::executeFastDelete( smiTrans     * aSmiTrans,
 
     sOpened = ID_FALSE;
     IDE_TEST( sCursor.close() != IDE_SUCCESS );
-    
-    // BUG-43410 foreign key ÏßÄÏõê
+
+    // BUG-43410 foreign key ¡ˆø¯
     if ( ( sDETE->childConstraints != NULL ) && ( sCount > 0 ) )
     {
-        // BUG-17940 parent keyÎ•º Í∞±Ïã†ÌïòÍ≥† child keyÎ•º Ï∞æÏùÑÎïå
-        // parent rowÏóê lockÏùÑ Ïû°ÏùÄ Ïù¥ÌõÑ viewÎ•º Î≥¥Í∏∞ÏúÑÌï¥
-        // ÏÉàÎ°úÏö¥ smiStmtÎ•º Ïù¥Ïö©ÌïúÎã§.
-        // Update cascade ÏòµÏÖòÏóê ÎåÄÎπÑÌï¥ÏÑú normalÎ°ú ÌïúÎã§.
+        // BUG-17940 parent key∏¶ ∞ªΩ≈«œ∞Ì child key∏¶ √£¿ª∂ß
+        // parent rowø° lock¿ª ¿‚¿∫ ¿Ã»ƒ view∏¶ ∫∏±‚¿ß«ÿ
+        // ªı∑ŒøÓ smiStmt∏¶ ¿ÃøÎ«—¥Ÿ.
+        // Update cascade ø…º«ø° ¥Î∫Ò«ÿº≠ normal∑Œ «—¥Ÿ.
         sSmiStmtOrg = QC_SMI_STMT( aStatement );
         IDE_TEST( sSmiStmtNew.begin( sStatistics,
                                      aSmiTrans->getStatement(),
@@ -5652,7 +5713,7 @@ IDE_RC qmxSimple::executeFastDelete( smiTrans     * aSmiTrans,
         if ( ( sSCAN->simpleUnique == ID_TRUE ) && ( sRow != NULL ) )
         {
             IDE_TEST_RAISE( aStatement->qmxMem->getStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
-        
+
             IDE_TEST( qdnForeignKey::checkChildRefOnDelete(
                           aStatement,
                           sDETE->childConstraints,
@@ -5675,7 +5736,7 @@ IDE_RC qmxSimple::executeFastDelete( smiTrans     * aSmiTrans,
             while ( sRow != NULL )
             {
                 IDE_TEST_RAISE( aStatement->qmxMem->getStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
-        
+
                 IDE_TEST( qdnForeignKey::checkChildRefOnDelete(
                               aStatement,
                               sDETE->childConstraints,
@@ -5686,7 +5747,7 @@ IDE_RC qmxSimple::executeFastDelete( smiTrans     * aSmiTrans,
                           != IDE_SUCCESS );
 
                 IDE_TEST_RAISE( aStatement->qmxMem->setStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
-                
+
                 IDE_TEST( sCursor.readOldRow( &sRow, &sRid )
                           != IDE_SUCCESS );
             }
@@ -5738,7 +5799,7 @@ IDE_RC qmxSimple::executeFastDelete( smiTrans     * aSmiTrans,
     {
         // Nothing to do.
     }
-    
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_MEM_OP )
@@ -5823,8 +5884,8 @@ IDE_RC qmxSimple::fastExecute( smiTrans     * aSmiTrans,
     qmncUPTE   * sUPTE = NULL;
     qmncDETE   * sDETE = NULL;
 
-    // PROJ-2551 simple query ÏµúÏ†ÅÌôî
-    // simple queryÏù¥Ïñ¥Ïïº ÌïúÎã§.
+    // PROJ-2551 simple query √÷¿˚»≠
+    // simple query¿ÃæÓæﬂ «—¥Ÿ.
     IDE_TEST_RAISE( ( aStatement->mFlag & QC_STMT_FAST_EXEC_MASK )
                     == QC_STMT_FAST_EXEC_FALSE,
                     ERR_INVALID_FAST_CALL );
@@ -5884,7 +5945,7 @@ IDE_RC qmxSimple::fastExecute( smiTrans     * aSmiTrans,
         case QCI_STMT_INSERT:
         case QCI_STMT_ENQUEUE:
             sINST = (qmncINST *)sPlan;
- 
+
             if ( ( sINST->flag & QMNC_INST_PARTITIONED_MASK )
                  == QMNC_INST_PARTITIONED_FALSE )
             {
@@ -5902,6 +5963,7 @@ IDE_RC qmxSimple::fastExecute( smiTrans     * aSmiTrans,
                                                       aRowCount )
                           != IDE_SUCCESS );
             }
+
             aStatement->simpleInfo.numRows = *aRowCount;
             break;
 
@@ -5925,6 +5987,7 @@ IDE_RC qmxSimple::fastExecute( smiTrans     * aSmiTrans,
                                                       aRowCount )
                           != IDE_SUCCESS );
             }
+
             aStatement->simpleInfo.numRows = *aRowCount;
             break;
 
@@ -6043,7 +6106,7 @@ IDE_RC qmxSimple::executeFastPartitionSelect( smiTrans     * aSmiTrans,
     mtkRangeCallBack      sMaximumCallBack;
     void                * sMtdValue[2];
 
-    // Ï¥àÍ∏∞Ìôî
+    // √ ±‚»≠
     aStatement->simpleInfo.results = NULL;
 
     sPROJ = (qmncPROJ*)aStatement->myPlan->plan;
@@ -6070,6 +6133,15 @@ IDE_RC qmxSimple::executeFastPartitionSelect( smiTrans     * aSmiTrans,
 
     sScanCount = sPCRD->selectedPartitionCount;
 
+    // BUG-48800
+    if ( ( sScanCount == 0 ) &&
+         ( sPCRD->mPrePruningPartHandle != NULL ) )
+    {
+        IDE_TEST( smiValidateObjects( sPCRD->mPrePruningPartHandle,
+                                      sPCRD->mPrePruningPartSCN )
+                  != IDE_SUCCESS );
+    }
+
     IDE_TEST_RAISE( sScanCount <= 0 , normal_exit );
 
     IDV_SQL_SET( sStatistics, mMemoryTableAccessCount, 0 );
@@ -6083,6 +6155,20 @@ IDE_RC qmxSimple::executeFastPartitionSelect( smiTrans     * aSmiTrans,
                                          ID_FALSE )
                != IDE_SUCCESS );
 
+    /* TASK-7307 DML Data Consistency in Shard */
+    IDE_TEST_CONT( ( QCG_CHECK_SHARD_DML_CONSISTENCY( aStatement ) == ID_TRUE ) &&
+                   ( sPCRD->tableRef->tableInfo->mIsUsable == ID_FALSE ),
+                   normal_exit );
+
+    // BUG-47599
+    // emptyPartitonø° lock¿ª ∞…∏È add partition opøÕ lock √Êµπ¿Ã πﬂª˝«’¥œ¥Ÿ.
+    if ( sPCRD->tableRef->mEmptyPartRef != NULL )
+    {
+        IDE_TEST( smiValidateObjects( sPCRD->tableRef->mEmptyPartRef->partitionHandle,
+                                      sPCRD->tableRef->mEmptyPartRef->partitionSCN )
+                  != IDE_SUCCESS);
+    }
+
     if ( ( sPCRD->partitionFilter != NULL ) &&
          ( sScanCount > 1 ) )
     {
@@ -6091,7 +6177,8 @@ IDE_RC qmxSimple::executeFastPartitionSelect( smiTrans     * aSmiTrans,
                     (void **)&sChildrenArea )
                   != IDE_SUCCESS );
 
-        IDE_TEST( aStatement->qmxMem->alloc(
+        /* BUG-47095 */
+        IDE_TEST( aStatement->qmxMem->cralloc(
                     sScanCount * ID_SIZEOF( UInt ),
                     (void **)&sRangeIntersectCountArray )
                   != IDE_SUCCESS );
@@ -6208,7 +6295,7 @@ IDE_RC qmxSimple::executeFastPartitionSelect( smiTrans     * aSmiTrans,
     IDE_TEST( qci::checkShardPlanRebuild( aStatement )
               != IDE_SUCCESS );
 
-    // bind buffer Ìï†Îãπ
+    // bind buffer «“¥Á
     if ( sSimpleValueBufSize > ID_SIZEOF(sCharBuffer) )
     {
         IDU_FIT_POINT( "qmxSimple::executeFastPartitionSelect::alloc::sBuffer",
@@ -6242,7 +6329,7 @@ IDE_RC qmxSimple::executeFastPartitionSelect( smiTrans     * aSmiTrans,
 
 retry:
 
-    // Ï¥àÍ∏∞Ìôî
+    // √ ±‚»≠
     for ( i = 0; i < sScanCount; i++ )
     {
         sScanInfo[i].keyRange = NULL;
@@ -6384,6 +6471,7 @@ retry:
         {
             /* Nothing to do */
         }
+
         sScanInfo[i].cursor.setDumpObject( sScanInfo[i].scan->dumpObject );
     }
 
@@ -6391,7 +6479,7 @@ retry:
 
     for ( i = 0; i < sScanCount; i++ )
     {
-        /* Null Range Check Ïö©ÏúºÎ°ú ÏÇ¨Ïö© */
+        /* Null Range Check øÎ¿∏∑Œ ªÁøÎ */
         if ( sScanInfo[i].curIdx == 1 )
         {
             continue;
@@ -6440,7 +6528,6 @@ retry:
 
         do
         {
-RETRY_DEQUEUE:
             sOrgRow = sRow = sPreRow;
 
             IDE_TEST( sScanInfo[i].cursor.readRow( &sRow,
@@ -6459,7 +6546,7 @@ RETRY_DEQUEUE:
             }
 
             //--------------------------------------
-            // limit Ï≤òÎ¶¨
+            // limit √≥∏Æ
             //--------------------------------------
             if ( sPROJ->limit != NULL )
             {
@@ -6483,26 +6570,16 @@ RETRY_DEQUEUE:
                  == QMNC_SCAN_TABLE_QUEUE_TRUE ) )
             {
                 IDE_TEST( sScanInfo[i].cursor.deleteRow() != IDE_SUCCESS );
-
-                if ( sScanInfo[i].cursor.getRecordLockWaitStatus() ==
-                     SMI_ESCAPE_RECORD_LOCKWAIT )
-                {
-                    IDE_RAISE( RETRY_DEQUEUE );
-                }
-                else
-                {
-                    // nothing to do
-                }
             }
             else
             {
                 /* Nothing to do */
             }
 
-            /* fetch buffer Ìï†Îãπ */
+            /* fetch buffer «“¥Á */
             if ( aShmResult != NULL )
             {
-                // mmÏóêÏÑú result bufferÎ•º Ï£ºÎäî Í≤ΩÏö∞
+                // mmø°º≠ result buffer∏¶ ¡÷¥¬ ∞ÊøÏ
                 if ( sResult == NULL )
                 {
                     sResult = (SChar*)aShmResult;
@@ -6568,14 +6645,14 @@ RETRY_DEQUEUE:
             /* fetch */
             if ( aShmResult != NULL )
             {
-                // record sizeÎ•º ÏúÑÌïú Í≥µÍ∞Ñ
+                // record size∏¶ ¿ß«— ∞¯∞£
                 IDE_TEST_RAISE( sResultSize + 8 > aShmSize,
                                 ERR_INSUFFICIENT_MEMORY );
 
                 sResultTemp = sResult;
                 sResultSizeTemp = sResultSize;
 
-                *(ULong*)sResult = 0;  // Ï¥àÍ∏∞Ìôî
+                *(ULong*)sResult = 0;  // √ ±‚»≠
                 sResult += 8;
                 sResultSize += 8;
             }
@@ -6653,10 +6730,10 @@ RETRY_DEQUEUE:
                         break;
                 }
 
-                // column positionÏùÑ Í∏∞Î°ùÌïúÎã§.
+                // column position¿ª ±‚∑œ«—¥Ÿ.
                 if ( aShmResult != NULL )
                 {
-                    *(ULong*)sResult = 0;  // Ï¥àÍ∏∞Ìôî
+                    *(ULong*)sResult = 0;  // √ ±‚»≠
                     *(UShort*)sResult = (UShort)(j + 1);
                     sResult += 8;
                     sResultSize += 8;
@@ -6675,7 +6752,7 @@ RETRY_DEQUEUE:
                 sResultSize += sPROJ->simpleValueSizes[j];
             }
 
-            // record sizeÎ•º Í∏∞Î°ùÌïúÎã§.
+            // record size∏¶ ±‚∑œ«—¥Ÿ.
             if ( aShmResult != NULL )
             {
                 *(UInt*)sResultTemp = sResultSize - sResultSizeTemp;
@@ -6731,7 +6808,7 @@ RETRY_DEQUEUE:
         // Nothing to do.
     }
 
-    // Ï¥àÍ∏∞Ìôî
+    // √ ±‚»≠
     if ( sCount > 0 )
     {
         aStatement->mFlag &= ~QC_STMT_FAST_FIRST_RESULT_MASK;
@@ -6897,12 +6974,22 @@ IDE_RC qmxSimple::executeFastPartitionInsert( smiTrans     * aSmiTrans,
                                          ID_FALSE )
                != IDE_SUCCESS );
 
+    // BUG-47599
+    // emptyPartitonø° lock¿ª ∞…∏È add partition opøÕ lock √Êµπ¿Ã πﬂª˝«’¥œ¥Ÿ.
+    if ( sINST->tableRef->mEmptyPartRef != NULL )
+    {
+        IDE_TEST( smiValidateObjects( sINST->tableRef->mEmptyPartRef->partitionHandle,
+                                      sINST->tableRef->mEmptyPartRef->partitionSCN )
+                  != IDE_SUCCESS);
+    }
+
     /* PROJ-2359 Table/Partition Access Option */
     IDE_TEST( qmx::checkAccessOption( sINST->tableRef->tableInfo,
-                                      ID_TRUE /* aIsInsertion */ )
+                                      ID_TRUE, /* aIsInsertion */
+                                      QCG_CHECK_SHARD_DML_CONSISTENCY( aStatement ) )
               != IDE_SUCCESS );
 
-    // bind buffer, canonize buffer Ìï†Îãπ
+    // bind buffer, canonize buffer «“¥Á
     if ( sINST->simpleValueBufSize > ID_SIZEOF(sCharBuffer) )
     {
         IDU_FIT_POINT( "qmxSimple::executeFastPartitionInsert::alloc::sBuffer",
@@ -6948,7 +7035,8 @@ IDE_RC qmxSimple::executeFastPartitionInsert( smiTrans     * aSmiTrans,
                                                aStatement->pBindParam,
                                                aBindBuffer,
                                                &sBuffer,
-                                               ID_TRUE )  // canonizeÍ∞Ä ÌïÑÏöîÌï®
+                                               ID_FALSE, // make key or rid range
+                                               ID_TRUE )  // canonize∞° « ø‰«‘
                               != IDE_SUCCESS );
                 }
                 else
@@ -6957,6 +7045,7 @@ IDE_RC qmxSimple::executeFastPartitionInsert( smiTrans     * aSmiTrans,
                                                  &sValue,
                                                  aStatement->pBindParam,
                                                  &sBuffer,
+                                                 ID_FALSE, // make key or rid range
                                                  ID_TRUE )
                               != IDE_SUCCESS );
                 }
@@ -7065,7 +7154,8 @@ IDE_RC qmxSimple::executeFastPartitionInsert( smiTrans     * aSmiTrans,
               != IDE_SUCCESS );
 
     IDE_TEST( qmx::checkAccessOption( sCurrRef->partitionInfo,
-                                      ID_TRUE /* aIsInsertion */ )
+                                      ID_TRUE, /* aIsInsertion */
+                                      QCG_CHECK_SHARD_DML_CONSISTENCY( aStatement ) )
               != IDE_SUCCESS );
 
     sSmiStmtFlag &= ~SMI_STATEMENT_MASK;
@@ -7116,7 +7206,7 @@ IDE_RC qmxSimple::executeFastPartitionInsert( smiTrans     * aSmiTrans,
     sOpened = ID_FALSE;
     IDE_TEST( sCursor.close() != IDE_SUCCESS );
 
-    // BUG-43410 foreign key ÏßÄÏõê
+    // BUG-43410 foreign key ¡ˆø¯
     if ( sINST->parentConstraints != NULL )
     {
         IDE_TEST_RAISE( aStatement->qmxMem->getStatus( &sQmxMemStatus ) != IDE_SUCCESS, ERR_MEM_OP );
@@ -7198,7 +7288,7 @@ IDE_RC qmxSimple::executeFastPartitionInsert( smiTrans     * aSmiTrans,
             /* Nothing to do */
         }
     }
-    /* BUG-45680 insert ÏàòÌñâÏãú not null columnÏóê ÎåÄÌïú ÏóêÎü¨Î©îÏãúÏßÄ Ï†ïÎ≥¥Ïóê column Ï†ïÎ≥¥ Ï∂úÎ†•. */
+    /* BUG-45680 insert ºˆ«‡Ω√ not null columnø° ¥Î«— ø°∑Ø∏ﬁΩ√¡ˆ ¡§∫∏ø° column ¡§∫∏ √‚∑¬. */
     else if ( ideGetErrorCode() == qpERR_ABORT_QMX_NOT_NULL_CONSTRAINT )
     {
         if ( ( sValueInfo != NULL ) &&
@@ -7343,6 +7433,20 @@ IDE_RC qmxSimple::executeFastPartitionUpdate( smiTrans     * aSmiTrans,
                   != IDE_SUCCESS );
     }
 
+    /* TASK-7307 DML Data Consistency in Shard */
+    IDE_TEST_CONT( ( QCG_CHECK_SHARD_DML_CONSISTENCY( aStatement ) == ID_TRUE ) &&
+                   ( sUPTE->tableRef->tableInfo->mIsUsable == ID_FALSE ),
+                   normal_exit );
+
+    // BUG-47599
+    // emptyPartitonø° lock¿ª ∞…∏È add partition opøÕ lock √Êµπ¿Ã πﬂª˝«’¥œ¥Ÿ.
+    if ( sUPTE->tableRef->mEmptyPartRef != NULL )
+    {
+        IDE_TEST( smiValidateObjects( sUPTE->tableRef->mEmptyPartRef->partitionHandle,
+                                      sUPTE->tableRef->mEmptyPartRef->partitionSCN )
+                  != IDE_SUCCESS);
+    }
+
     /* PROJ-2359 Table/Partition Access Option */
     IDE_TEST( qmx::checkAccessOption( sUPTE->tableRef->tableInfo,
                                       ID_FALSE /* aIsInsertion */ )
@@ -7350,7 +7454,7 @@ IDE_RC qmxSimple::executeFastPartitionUpdate( smiTrans     * aSmiTrans,
 
     sSCAN = (qmncSCAN*)sPCRD->plan.children->childPlan;
 
-    // bind buffer, canonize buffer Ìï†Îãπ
+    // bind buffer, canonize buffer «“¥Á
     if ( sSCAN->simpleValueBufSize +
          sUPTE->simpleValueBufSize > ID_SIZEOF(sCharBuffer) )
     {
@@ -7395,7 +7499,8 @@ IDE_RC qmxSimple::executeFastPartitionUpdate( smiTrans     * aSmiTrans,
                                                    aStatement->pBindParam,
                                                    aBindBuffer,
                                                    &sBuffer,
-                                                   ID_TRUE )  // canonizeÍ∞Ä ÌïÑÏöîÌï®
+                                                   ID_FALSE, // make key or rid range
+                                                   ID_TRUE )  // canonize∞° « ø‰«‘
                                   != IDE_SUCCESS );
                     }
                     else
@@ -7404,6 +7509,7 @@ IDE_RC qmxSimple::executeFastPartitionUpdate( smiTrans     * aSmiTrans,
                                                      & sValue,
                                                      aStatement->pBindParam,
                                                      & sBuffer,
+                                                     ID_FALSE, // make key or rid range
                                                      ID_TRUE )
                                   != IDE_SUCCESS );
                     }
@@ -7484,7 +7590,8 @@ IDE_RC qmxSimple::executeFastPartitionUpdate( smiTrans     * aSmiTrans,
                     (void **)&sChildrenArea )
                   != IDE_SUCCESS );
 
-        IDE_TEST( aStatement->qmxMem->alloc(
+        /* BUG-47095 */
+        IDE_TEST( aStatement->qmxMem->cralloc(
                     sScanCount * ID_SIZEOF( UInt ),
                     (void **)&sRangeIntersectCountArray )
                   != IDE_SUCCESS );
@@ -7592,7 +7699,7 @@ IDE_RC qmxSimple::executeFastPartitionUpdate( smiTrans     * aSmiTrans,
     IDE_TEST( qci::checkShardPlanRebuild( aStatement )
               != IDE_SUCCESS );
 
-    // Ï¥àÍ∏∞Ìôî
+    // √ ±‚»≠
     for ( i = 0; i < sScanCount; i++ )
     {
         sScanInfo[i].keyRange = NULL;
@@ -7658,7 +7765,7 @@ IDE_RC qmxSimple::executeFastPartitionUpdate( smiTrans     * aSmiTrans,
                                               &sBuffer )
                           != IDE_SUCCESS );
 
-                // null rangeÎäî Í≤∞Í≥ºÍ∞Ä ÏóÜÎã§.
+                // null range¥¬ ∞·∞˙∞° æ¯¥Ÿ.
                 if ( sIsNullRange == ID_TRUE )
                 {
                     sScanInfo[i].curIdx = 1;
@@ -7735,7 +7842,7 @@ retry:
 
     for ( i = 0; i < sScanCount; i++ )
     {
-        /* Null Range Check Ïö©ÏúºÎ°ú ÏÇ¨Ïö© */
+        /* Null Range Check øÎ¿∏∑Œ ªÁøÎ */
         if ( sScanInfo[i].curIdx == 1 )
         {
             continue;
@@ -7744,7 +7851,7 @@ retry:
         {
             /* Nothing to do */
         }
-        // Traverse Î∞©Ìñ•Ïùò Í≤∞Ï†ï
+        // Traverse πÊ«‚¿« ∞·¡§
         if ( ( sScanInfo[i].scan->flag & QMNC_SCAN_TRAVERSE_MASK )
              == QMNC_SCAN_TRAVERSE_FORWARD )
         {
@@ -7755,7 +7862,7 @@ retry:
             sTraverse = SMI_TRAVERSE_BACKWARD;
         }
 
-        // Previous ÏÇ¨Ïö© Ïó¨Î∂Ä Í≤∞Ï†ï
+        // Previous ªÁøÎ ø©∫Œ ∞·¡§
         if ( ( sScanInfo[i].scan->flag & QMNC_SCAN_PREVIOUS_ENABLE_MASK )
              == QMNC_SCAN_PREVIOUS_ENABLE_TRUE )
         {
@@ -7959,7 +8066,7 @@ retry:
         }
     }
 
-    // BUG-43410 foreign key ÏßÄÏõê
+    // BUG-43410 foreign key ¡ˆø¯
     if ( ( sUPTE->parentConstraints != NULL ) && ( sCount > 0 ) )
     {
         for ( i = 0; i < sScanCount; i++ )
@@ -8013,13 +8120,13 @@ retry:
         // Nothing to do.
     }
 
-    // BUG-43410 foreign key ÏßÄÏõê
+    // BUG-43410 foreign key ¡ˆø¯
     if ( ( sUPTE->childConstraints != NULL ) && ( sCount > 0 ) )
     {
-        // BUG-17940 parent keyÎ•º Í∞±Ïã†ÌïòÍ≥† child keyÎ•º Ï∞æÏùÑÎïå
-        // parent rowÏóê lockÏùÑ Ïû°ÏùÄ Ïù¥ÌõÑ viewÎ•º Î≥¥Í∏∞ÏúÑÌï¥
-        // ÏÉàÎ°úÏö¥ smiStmtÎ•º Ïù¥Ïö©ÌïúÎã§.
-        // Update cascade ÏòµÏÖòÏóê ÎåÄÎπÑÌï¥ÏÑú normalÎ°ú ÌïúÎã§.
+        // BUG-17940 parent key∏¶ ∞ªΩ≈«œ∞Ì child key∏¶ √£¿ª∂ß
+        // parent rowø° lock¿ª ¿‚¿∫ ¿Ã»ƒ view∏¶ ∫∏±‚¿ß«ÿ
+        // ªı∑ŒøÓ smiStmt∏¶ ¿ÃøÎ«—¥Ÿ.
+        // Update cascade ø…º«ø° ¥Î∫Ò«ÿº≠ normal∑Œ «—¥Ÿ.
         sSmiStmtOrg = QC_SMI_STMT( aStatement );
         IDE_TEST( sSmiStmtNew.begin( sStatistics,
                                      aSmiTrans->getStatement(),
@@ -8168,7 +8275,7 @@ retry:
             /* Nothing to do */
         }
     }
-    /* BUG-45680 insert ÏàòÌñâÏãú not null columnÏóê ÎåÄÌïú ÏóêÎü¨Î©îÏãúÏßÄ Ï†ïÎ≥¥Ïóê column Ï†ïÎ≥¥ Ï∂úÎ†•. */
+    /* BUG-45680 insert ºˆ«‡Ω√ not null columnø° ¥Î«— ø°∑Ø∏ﬁΩ√¡ˆ ¡§∫∏ø° column ¡§∫∏ √‚∑¬. */
     else if ( ideGetErrorCode() == qpERR_ABORT_QMX_NOT_NULL_CONSTRAINT )
     {
         if ( ( sValueInfo != NULL ) &&
@@ -8324,6 +8431,20 @@ IDE_RC qmxSimple::executeFastPartitionDelete( smiTrans     * aSmiTrans,
                                          ID_FALSE )
               != IDE_SUCCESS );
 
+    /* TASK-7307 DML Data Consistency in Shard */
+    IDE_TEST_CONT( ( QCG_CHECK_SHARD_DML_CONSISTENCY( aStatement ) == ID_TRUE ) &&
+                   ( sDETE->tableRef->tableInfo->mIsUsable == ID_FALSE ),
+                   normal_exit );
+
+    // BUG-47599
+    // emptyPartitonø° lock¿ª ∞…∏È add partition opøÕ lock √Êµπ¿Ã πﬂª˝«’¥œ¥Ÿ.
+    if ( sDETE->tableRef->mEmptyPartRef != NULL )
+    {
+        IDE_TEST( smiValidateObjects( sDETE->tableRef->mEmptyPartRef->partitionHandle,
+                                      sDETE->tableRef->mEmptyPartRef->partitionSCN )
+                  != IDE_SUCCESS);
+    }
+
     /* PROJ-2359 Table/Partition Access Option */
     IDE_TEST( qmx::checkAccessOption( sDETE->tableRef->tableInfo,
                                       ID_FALSE /* aIsInsertion */ )
@@ -8337,7 +8458,8 @@ IDE_RC qmxSimple::executeFastPartitionDelete( smiTrans     * aSmiTrans,
                     (void **)&sChildrenArea )
                   != IDE_SUCCESS );
 
-        IDE_TEST( aStatement->qmxMem->alloc(
+        /* BUG-47095 */
+        IDE_TEST( aStatement->qmxMem->cralloc(
                     sScanCount * ID_SIZEOF( UInt ),
                     (void **)&sRangeIntersectCountArray )
                   != IDE_SUCCESS );
@@ -8454,7 +8576,7 @@ IDE_RC qmxSimple::executeFastPartitionDelete( smiTrans     * aSmiTrans,
     IDE_TEST( qci::checkShardPlanRebuild( aStatement )
               != IDE_SUCCESS );
 
-    // bind buffer Ìï†Îãπ
+    // bind buffer «“¥Á
     if ( sSimpleValueBufSize > ID_SIZEOF(sCharBuffer) )
     {
         IDU_FIT_POINT( "qmxSimple::executeFastPartitionDelete::alloc::sBuffer",
@@ -8543,7 +8665,7 @@ IDE_RC qmxSimple::executeFastPartitionDelete( smiTrans     * aSmiTrans,
                                               &sBuffer )
                           != IDE_SUCCESS );
 
-                // null rangeÎäî Í≤∞Í≥ºÍ∞Ä ÏóÜÎã§.
+                // null range¥¬ ∞·∞˙∞° æ¯¥Ÿ.
                 if ( sIsNullRange == ID_TRUE )
                 {
                     sScanInfo[i].curIdx = 1;
@@ -8620,7 +8742,7 @@ retry:
 
     for ( i = 0; i < sScanCount; i++ )
     {
-        /* Null Range Check Ïö© ÏúºÎ°ú ÏÇ¨Ïö© */
+        /* Null Range Check øÎ ¿∏∑Œ ªÁøÎ */
         if ( sScanInfo[i].curIdx == 1 )
         {
             continue;
@@ -8629,7 +8751,7 @@ retry:
         {
             /* Nothing to do */
         }
-        // Traverse Î∞©Ìñ•Ïùò Í≤∞Ï†ï
+        // Traverse πÊ«‚¿« ∞·¡§
         if ( ( sScanInfo[i].scan->flag & QMNC_SCAN_TRAVERSE_MASK )
              == QMNC_SCAN_TRAVERSE_FORWARD )
         {
@@ -8640,7 +8762,7 @@ retry:
             sTraverse = SMI_TRAVERSE_BACKWARD;
         }
 
-        // Previous ÏÇ¨Ïö© Ïó¨Î∂Ä Í≤∞Ï†ï
+        // Previous ªÁøÎ ø©∫Œ ∞·¡§
         if ( ( sScanInfo[i].scan->flag & QMNC_SCAN_PREVIOUS_ENABLE_MASK )
              == QMNC_SCAN_PREVIOUS_ENABLE_TRUE )
         {
@@ -8752,13 +8874,13 @@ retry:
         }
     }
 
-    // BUG-43410 foreign key ÏßÄÏõê
+    // BUG-43410 foreign key ¡ˆø¯
     if ( ( sDETE->childConstraints != NULL ) && ( sCount > 0 ) )
     {
-        // BUG-17940 parent keyÎ•º Í∞±Ïã†ÌïòÍ≥† child keyÎ•º Ï∞æÏùÑÎïå
-        // parent rowÏóê lockÏùÑ Ïû°ÏùÄ Ïù¥ÌõÑ viewÎ•º Î≥¥Í∏∞ÏúÑÌï¥
-        // ÏÉàÎ°úÏö¥ smiStmtÎ•º Ïù¥Ïö©ÌïúÎã§.
-        // Update cascade ÏòµÏÖòÏóê ÎåÄÎπÑÌï¥ÏÑú normalÎ°ú ÌïúÎã§.
+        // BUG-17940 parent key∏¶ ∞ªΩ≈«œ∞Ì child key∏¶ √£¿ª∂ß
+        // parent rowø° lock¿ª ¿‚¿∫ ¿Ã»ƒ view∏¶ ∫∏±‚¿ß«ÿ
+        // ªı∑ŒøÓ smiStmt∏¶ ¿ÃøÎ«—¥Ÿ.
+        // Update cascade ø…º«ø° ¥Î∫Ò«ÿº≠ normal∑Œ «—¥Ÿ.
         sSmiStmtOrg = QC_SMI_STMT( aStatement );
         IDE_TEST( sSmiStmtNew.begin( sStatistics,
                                      aSmiTrans->getStatement(),
@@ -9041,7 +9163,8 @@ IDE_RC qmxSimple::makeSimplePartKeyRange( qcStatement          * aStatement,
                         aStatement->pBindParam,
                         aBindBuffer,
                         aBuffer,
-                        ID_FALSE )  // compareÎ•º ÏúÑÌï¥ canonizeÎäî Î∂àÌïÑÏöî
+                        ID_TRUE, // make key or rid range
+                        ID_FALSE )  // compare∏¶ ¿ß«ÿ canonize¥¬ ∫“« ø‰
                     != IDE_SUCCESS );
         }
         else
@@ -9051,7 +9174,8 @@ IDE_RC qmxSimple::makeSimplePartKeyRange( qcStatement          * aStatement,
                         & aMtdValue[0],
                         aStatement->pBindParam,
                         aBuffer,
-                        ID_FALSE )  // compareÎ•º ÏúÑÌï¥ canonizeÎäî Î∂àÌïÑÏöî
+                        ID_TRUE, // make key or rid range
+                        ID_FALSE )  // compare∏¶ ¿ß«ÿ canonize¥¬ ∫“« ø‰
                     != IDE_SUCCESS );
         }
     }
@@ -9196,7 +9320,7 @@ IDE_RC qmxSimple::makeSimplePartKeyRange( qcStatement          * aStatement,
             /* Nothing to do */
         }
 
-        // <,<=Îßå ÏûàÎäî Í≤ΩÏö∞ minÏùÑ Ï∂îÍ∞ÄÏÑ§Ï†ïÌïúÎã§.
+        // <,<=∏∏ ¿÷¥¬ ∞ÊøÏ min¿ª √ﬂ∞°º≥¡§«—¥Ÿ.
         if ( ( ( sValueInfo->op == QMN_VALUE_OP_LT ) ||
                ( sValueInfo->op == QMN_VALUE_OP_LE ) ) )
         {
@@ -9208,7 +9332,7 @@ IDE_RC qmxSimple::makeSimplePartKeyRange( qcStatement          * aStatement,
             // Nothing to do.
         }
 
-        // >,>=Îßå ÏûàÎäî Í≤ΩÏö∞ maxÎ•º Ï∂îÍ∞Ä ÏÑ§Ï†ïÌïúÎã§.
+        // >,>=∏∏ ¿÷¥¬ ∞ÊøÏ max∏¶ √ﬂ∞° º≥¡§«—¥Ÿ.
         if ( ( ( sValueInfo->op == QMN_VALUE_OP_GT ) ||
                ( sValueInfo->op == QMN_VALUE_OP_GE ) ) )
         {

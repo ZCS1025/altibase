@@ -59,7 +59,8 @@ typedef struct oaJNIInterfaceHandle
     jobject             mConnectionObject;  
     jobject             mStatement;
     
-    jthrowable          mThrowable; 
+    acp_bool_t          mIsSkipList;
+
 } oaJNIInterfaceHandle;
 
 typedef enum oaJNIMethodType
@@ -173,6 +174,6 @@ ace_rc_t oaJNIStmtExecute( oaContext            * aContext,
                            oaJNIInterfaceHandle * aHandle,
                            acp_str_t            * aQueryStr );  
 
-acp_bool_t oaJNIIsSkipList( oaJNIInterfaceHandle * aHandle );
+void oaJNICheckSkipList( oaJNIInterfaceHandle * aHandle, jthrowable aThrowable );
 
 #endif /* OAJNIINTERFACE_H_ */

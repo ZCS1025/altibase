@@ -19,8 +19,8 @@
  *
  * $Id$
  *
- * ë³¸ íŒŒì¼ì€ Treelist Managed Segment ëª¨ë“ˆì˜ ê³µí†µ ìë£Œêµ¬ì¡°ë¥¼ ì •ì˜í•œ
- * í—¤ë”íŒŒì¼ì´ë‹¤.
+ * º» ÆÄÀÏÀº Treelist Managed Segment ¸ğµâÀÇ °øÅë ÀÚ·á±¸Á¶¸¦ Á¤ÀÇÇÑ
+ * Çì´õÆÄÀÏÀÌ´Ù.
  *
  ***********************************************************************/
 
@@ -32,15 +32,15 @@
 
 /*
  * BMP Type & Stack Depth
- * BMP ë“¤ì˜ typeê³¼ stack depthë¥¼ ì •ì˜í•œë‹¤.
+ * BMP µéÀÇ type°ú stack depth¸¦ Á¤ÀÇÇÑ´Ù.
  *
- * EMPTY, VIRTBMP íƒ€ì…ì˜ BMP ëŠ” ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤. ì´ë“¤ì€ ë‹¨ì§€ sdpstStackMgr
- * ê³¼ ê³µìœ í•˜ê¸° ìœ„í•´ ì¡´ì¬í•˜ëŠ” íƒ€ì…ì´ë‹¤.
+ * EMPTY, VIRTBMP Å¸ÀÔÀÇ BMP ´Â Á¸ÀçÇÏÁö ¾Ê´Â´Ù. ÀÌµéÀº ´ÜÁö sdpstStackMgr
+ * °ú °øÀ¯ÇÏ±â À§ÇØ Á¸ÀçÇÏ´Â Å¸ÀÔÀÌ´Ù.
  *
- * ë˜í•œ sdpstBfrAllocExtInfo, sdpstAftAllocExtInfo ì—ì„œ ì‚¬ìš©ì‹œ
- * VIRTBMPëŠ” EXTDIRë¡œ ì‚¬ìš©ëœë‹¤.
+ * ¶ÇÇÑ sdpstBfrAllocExtInfo, sdpstAftAllocExtInfo ¿¡¼­ »ç¿ë½Ã
+ * VIRTBMP´Â EXTDIR·Î »ç¿ëµÈ´Ù.
  *
- * Treelistì˜ DepthëŠ” 4ì´ë‹¤.
+ * TreelistÀÇ Depth´Â 4ÀÌ´Ù.
  */
 typedef enum sdpstBMPType
 {
@@ -52,11 +52,11 @@ typedef enum sdpstBMPType
     SDPST_BMP_TYPE_MAX
 } sdpstBMPType;
 
-/* sdpstBfrAllocExtInfo, sdpstAftAllocExtInfo ë¥¼ ìœ„í•´ì„œ ì •ì˜í•¨. */
+/* sdpstBfrAllocExtInfo, sdpstAftAllocExtInfo ¸¦ À§ÇØ¼­ Á¤ÀÇÇÔ. */
 #define SDPST_EXTDIR    (SDPST_VIRTBMP)
 
 /*
- * íŠ¹ì • ë…¸ë“œì˜ íŠ¹ì • Slotì˜ ìˆœë²ˆì„ ë‚˜íƒ€ë‚¸ë‹¤.
+ * Æ¯Á¤ ³ëµåÀÇ Æ¯Á¤ SlotÀÇ ¼ø¹øÀ» ³ªÅ¸³½´Ù.
  */
 typedef struct sdpstPosItem
 {
@@ -66,11 +66,11 @@ typedef struct sdpstPosItem
 } sdpstPosItem;
 
 /*
- * Treelistì—ì„œì˜ ìœ„ì¹˜ë¥¼ í‘œí˜„í•˜ëŠ” ìë£Œêµ¬ì¡°ë¥¼ Stackì„ ì •ì˜í•œë‹¤.
+ * Treelist¿¡¼­ÀÇ À§Ä¡¸¦ Ç¥ÇöÇÏ´Â ÀÚ·á±¸Á¶¸¦ StackÀ» Á¤ÀÇÇÑ´Ù.
  *
- * ê¸°ë³¸ì ìœ¼ë¡œ Treelistë¥¼ traverseí•˜ëŠ”ë° ì‚¬ìš©ë˜ë©°,  HWMì™€
- * Hint It BMP í˜ì´ì§€ì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•˜ê³  ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œêµ¬ì¡°ì´ë©°,
- * Treelistë‚´ì—ì„œì˜ ì„ í›„ìœ„ì¹˜ ê´€ê³„ë¥¼ ë¹„êµí•˜ëŠ”ë° í•„ìˆ˜ì ì¸ ìë£Œêµ¬ì¡°ì´ë‹¤.
+ * ±âº»ÀûÀ¸·Î Treelist¸¦ traverseÇÏ´Âµ¥ »ç¿ëµÇ¸ç,  HWM¿Í
+ * Hint It BMP ÆäÀÌÁöÀÇ À§Ä¡¸¦ ÀúÀåÇÏ°í °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á±¸Á¶ÀÌ¸ç,
+ * Treelist³»¿¡¼­ÀÇ ¼±ÈÄÀ§Ä¡ °ü°è¸¦ ºñ±³ÇÏ´Âµ¥ ÇÊ¼öÀûÀÎ ÀÚ·á±¸Á¶ÀÌ´Ù.
  */
 typedef struct sdpstStack
 {
@@ -79,7 +79,7 @@ typedef struct sdpstStack
     UChar           mAlign[4];
 } sdpstStack;
 
-/* ìƒìœ„ bmpë“¤ì— ëŒ€í•œ ê°€ìš©ë„ ìƒíƒœ ë³€ê²½ ì‹œì‘ ìœ„ì¹˜ ì •ì˜ */
+/* »óÀ§ bmpµé¿¡ ´ëÇÑ °¡¿ëµµ »óÅÂ º¯°æ ½ÃÀÛ À§Ä¡ Á¤ÀÇ */
 typedef enum sdpstChangeMFNLPhase
 {
     SDPST_CHANGEMFNL_RTBMP_PHASE = 0,
@@ -88,40 +88,40 @@ typedef enum sdpstChangeMFNLPhase
     SDPST_CHANGEMFNL_MAX_PHASE
 } sdpstChangeMFNLPhase;
 
-/* Pageì˜ High/Low Water Mark ì •ì˜ */
+/* PageÀÇ High/Low Water Mark Á¤ÀÇ */
 typedef struct sdpstWM
 {
     scPageID        mWMPID;          /* WM PID */
-    scPageID        mExtDirPID;      /* ExtDir í˜ì´ì§€ì˜ PID */
+    scPageID        mExtDirPID;      /* ExtDir ÆäÀÌÁöÀÇ PID */
     sdpstStack      mStack;          /* WM stack */
-    SShort          mSlotNoInExtDir; /* ExtDir í˜ì´ì§€ë‚´ì—ì„œì˜ ExtDesc ìˆœë²ˆ */
+    SShort          mSlotNoInExtDir; /* ExtDir ÆäÀÌÁö³»¿¡¼­ÀÇ ExtDesc ¼ø¹ø */
     UChar           mAlign[6]; 
 } sdpstWM;
 
-/* Bitmap í˜ì´ì§€ì—ì„œì˜ ìœ íš¨í•˜ì§€ ì•Šì€ Slot ìˆœë²ˆ
- * ( Slot ê²€ìƒ‰ì‹œ ìœ íš¨í•˜ì§€ ì•ŠëŠ” ê²½ìš°ì— ë°˜í™˜ê°’ìœ¼ë¡œ ì‚¬ìš©í•œë‹¤) */
+/* Bitmap ÆäÀÌÁö¿¡¼­ÀÇ À¯È¿ÇÏÁö ¾ÊÀº Slot ¼ø¹ø
+ * ( Slot °Ë»ö½Ã À¯È¿ÇÏÁö ¾Ê´Â °æ¿ì¿¡ ¹İÈ¯°ªÀ¸·Î »ç¿ëÇÑ´Ù) */
 # define SDPST_INVALID_SLOTNO         (-1)
 
-// leaf bitmap í˜ì´ì§€ì—ì„œì˜ ìœ íš¨í•˜ì§€ ì•Šì€ Page ìˆœë²ˆ (PBS = PageBitSet)
+// leaf bitmap ÆäÀÌÁö¿¡¼­ÀÇ À¯È¿ÇÏÁö ¾ÊÀº Page ¼ø¹ø (PBS = PageBitSet)
 # define SDPST_INVALID_PBSNO         (-1)
 
-// ë™ì¼í•œ Bitmap í˜ì´ì§€ ë‚´ì— ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+// µ¿ÀÏÇÑ Bitmap ÆäÀÌÁö ³»¿¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
 # define SDPST_FAR_AWAY_OFF            (ID_SSHORT_MAX)
 
-// leaf bitmap pageì˜ ìµœëŒ€ ê°€ìš©ê³µê°„ ë ˆë²¨ ì •ì˜ 6ì¢…ë¥˜
+// leaf bitmap pageÀÇ ÃÖ´ë °¡¿ë°ø°£ ·¹º§ Á¤ÀÇ 6Á¾·ù
 typedef enum sdpstMFNL
 {
     SDPST_MFNL_FUL = 0, /* FULL      */
     SDPST_MFNL_INS,      /* INSERTABLE */
     SDPST_MFNL_FMT,      /* FORMAT    */
     SDPST_MFNL_UNF,      /* UNFORMAT  */
-    SDPST_MFNL_MAX       /* ìµœëŒ€ê°œìˆ˜  */
+    SDPST_MFNL_MAX       /* ÃÖ´ë°³¼ö  */
 } sdpstMFNL;
 
 
 /*
- * Segment í¬ê¸°ì˜ ê¸°ì¤€ìœ¼ë¡œ ê²°ì •ë˜ëŠ” leaf bitmap pageì˜
- * rangeë¥¼ ì •ì˜í•œë‹¤.
+ * Segment Å©±âÀÇ ±âÁØÀ¸·Î °áÁ¤µÇ´Â leaf bitmap pageÀÇ
+ * range¸¦ Á¤ÀÇÇÑ´Ù.
  */
 typedef enum
 {
@@ -132,43 +132,43 @@ typedef enum
     SDPST_PAGE_RANGE_1024 = 1024   /*  1G <= Segment Size       */
 } sdpstPageRange;
 
-/* íƒìƒ‰ ì‹œì‘ Internal BMP Hint */
+/* Å½»ö ½ÃÀÛ Internal BMP Hint */
 typedef struct sdpstSearchHint
 {
-    /* Hint ì¬ì„¤ì • ì—¬ë¶€ */
+    /* Hint Àç¼³Á¤ ¿©ºÎ */
     idBool           mUpdateHintItBMP;
 
-    /* Hint Stack ê°±ì‹  ë™ì‹œì„±ì„ ìœ„í•œ Latch */
+    /* Hint Stack °»½Å µ¿½Ã¼ºÀ» À§ÇÑ Latch */
     iduLatch      mLatch4Hint;
 
-    /* ìœ„ì¹˜ì´ë ¥ */
+    /* À§Ä¡ÀÌ·Â */
     sdpstStack       mHintItStack;
 } sdpstSearchHint;
 
 /*
- * Segment Cache ìë£Œêµ¬ì¡° (Runtime ì •ë³´)
+ * Segment Cache ÀÚ·á±¸Á¶ (Runtime Á¤º¸)
  */
 typedef struct sdpstSegCache
 {
     sdpSegCCache     mCommon;
 
-    iduLatch         mLatch4WM;          /* WM ê°±ì‹  ë™ì‹œì„±ì„ ìœ„í•œ Mutex */
-    iduMutex         mExtendExt;         /* Segment ê³µê°„ í™•ì¥ì„ ìœ„í•œ Mutex */
-    idBool           mOnExtend;          /* Segment í™•ì¥ ì§„í–‰ ì—¬ë¶€ */
+    iduLatch         mLatch4WM;          /* WM °»½Å µ¿½Ã¼ºÀ» À§ÇÑ Mutex */
+    iduMutex         mExtendExt;         /* Segment °ø°£ È®ÀåÀ» À§ÇÑ Mutex */
+    idBool           mOnExtend;          /* Segment È®Àå ÁøÇà ¿©ºÎ */
     iduCond          mCondVar;           /* Condition Variable */
     UInt             mWaitThrCnt4Extend; /* Waiter */
 
     sdpSegType       mSegType;
 
-    /* Slot í• ë‹¹ì„ ìœ„í•œ ê°€ìš©ê³µê°„íƒìƒ‰ ì‹œì‘
-     * internal bitmap pageì˜ Hint*/
+    /* Slot ÇÒ´çÀ» À§ÇÑ °¡¿ë°ø°£Å½»ö ½ÃÀÛ
+     * internal bitmap pageÀÇ Hint*/
     sdpstSearchHint  mHint4Slot;
 
-    /* Page í• ë‹¹ì„ ìœ„í•œ ê°€ìš©ê³µê°„íƒìƒ‰ ì‹œì‘
-     * internal bitmap pageì˜ Hint*/
+    /* Page ÇÒ´çÀ» À§ÇÑ °¡¿ë°ø°£Å½»ö ½ÃÀÛ
+     * internal bitmap pageÀÇ Hint*/
     sdpstSearchHint  mHint4Page;
 
-    /* Candidate Child Setì„ ë§Œë“¤ê¸° ìœ„í•œ Hint */
+    /* Candidate Child SetÀ» ¸¸µé±â À§ÇÑ Hint */
     UShort           mHint4CandidateChild;
 
     /* Format Page count */
@@ -178,36 +178,36 @@ typedef struct sdpstSegCache
     sdpstWM          mHWM;
 
     /* PRJ-1671 Bitmap Tablespace, Load HWM
-     * BUG-29005 Fullscan ì„±ëŠ¥ ë¬¸ì œ
-     * ë§ˆì§€ë§‰ìœ¼ë¡œ í• ë‹¹ëœ í˜ì´ì§€ê¹Œì§€ë§Œ Fullscaní•œë‹¤. */
+     * BUG-29005 Fullscan ¼º´É ¹®Á¦
+     * ¸¶Áö¸·À¸·Î ÇÒ´çµÈ ÆäÀÌÁö±îÁö¸¸ FullscanÇÑ´Ù. */
     iduMutex         mMutex4LstAllocPage;
 
-    /* FullScan Hint ì‚¬ìš© ì—¬ë¶€ */
+    /* FullScan Hint »ç¿ë ¿©ºÎ */
     idBool           mUseLstAllocPageHint;
 
-    /* ë§ˆì§€ë§‰ìœ¼ë¡œ í• ë‹¹ëœ í˜ì´ì§€ ì •ë³´ */
+    /* ¸¶Áö¸·À¸·Î ÇÒ´çµÈ ÆäÀÌÁö Á¤º¸ */
     scPageID         mLstAllocPID;
     ULong            mLstAllocSeqNo;
 
     /* hint insertable page hint array
-     * BUG-28935ì—ì„œ ì²˜ìŒ ì‚¬ìš© ì‹œ allocë°›ë„ë¡ ìˆ˜ì •*/
+     * BUG-28935¿¡¼­ Ã³À½ »ç¿ë ½Ã alloc¹Şµµ·Ï ¼öÁ¤*/
     scPageID       * mHint4DataPage;
 } sdpstSegCache;
 
-// Segmentì— Extent í• ë‹¹ì—°ì‚° ì¤‘ì—  ì°¸ê³ í•´ì•¼í• 
-// Bitmap pageë“¤ì— ëŒ€í•œ ì •ë³´ë¥¼ ì •ì˜í•œ ìë£Œêµ¬ì¡°
+// Segment¿¡ Extent ÇÒ´ç¿¬»ê Áß¿¡  Âü°íÇØ¾ßÇÒ
+// Bitmap pageµé¿¡ ´ëÇÑ Á¤º¸¸¦ Á¤ÀÇÇÑ ÀÚ·á±¸Á¶
 typedef struct sdpstBfrAllocExtInfo
 {
-    /* ë§ˆì§€ë§‰ rt, it, lf-bmp, ExtDirì˜ PID */
+    /* ¸¶Áö¸· rt, it, lf-bmp, ExtDirÀÇ PID */
     scPageID        mLstPID[SDPST_BMP_TYPE_MAX];
 
     UShort          mFreeSlotCnt[SDPST_BMP_TYPE_MAX];
     UShort          mMaxSlotCnt[SDPST_BMP_TYPE_MAX];
 
-    /* Segmentì˜ ì´ í˜ì´ì§€ ê°œìˆ˜  */
+    /* SegmentÀÇ ÃÑ ÆäÀÌÁö °³¼ö  */
     ULong           mTotPageCnt;
 
-    /* í˜„ì¬ Page Range */
+    /* ÇöÀç Page Range */
     sdpstPageRange  mPageRange;
     UShort          mFreePageRangeCnt;
 
@@ -220,96 +220,96 @@ typedef struct sdpstBfrAllocExtInfo
 
 typedef struct sdpstAftAllocExtInfo
 {
-    /* í™•ì¥ì´í›„ ìƒˆë¡œìš´ ì²«ë²ˆì§¸ bmp, ExtDir í˜ì´ì§€ì˜ PID */
+    /* È®ÀåÀÌÈÄ »õ·Î¿î Ã¹¹øÂ° bmp, ExtDir ÆäÀÌÁöÀÇ PID */
     scPageID        mFstPID[SDPST_BMP_TYPE_MAX];
-    /* í™•ì¥ì´í›„ ìƒˆë¡œìš´ ë§ˆì§€ë§‰ bmp, ExtDir í˜ì´ì§€ì˜ PID */
+    /* È®ÀåÀÌÈÄ »õ·Î¿î ¸¶Áö¸· bmp, ExtDir ÆäÀÌÁöÀÇ PID */
     scPageID        mLstPID[SDPST_BMP_TYPE_MAX];
 
 
-    /* ì´ë²ˆì— ìƒˆë¡­ê²Œ ìƒì„±í•  Meta í˜ì´ì§€ì˜ ê°œìˆ˜ ë°
-     * ìƒì„±í•  í˜ì´ì§€ì˜ ìµœëŒ€ slot ê°œìˆ˜ */
+    /* ÀÌ¹ø¿¡ »õ·Ó°Ô »ı¼ºÇÒ Meta ÆäÀÌÁöÀÇ °³¼ö ¹×
+     * »ı¼ºÇÒ ÆäÀÌÁöÀÇ ÃÖ´ë slot °³¼ö */
     UShort          mPageCnt[SDPST_BMP_TYPE_MAX];
     UShort          mFullBMPCnt[SDPST_BMP_TYPE_MAX];
 //    UShort          mMaxSlotCnt[SDPST_BMP_TYPE_MAX];
 
-    /* ìƒˆë¡œìš´ Segmentì˜ ì´ í˜ì´ì§€ ê°œìˆ˜  */
+    /* »õ·Î¿î SegmentÀÇ ÃÑ ÆäÀÌÁö °³¼ö  */
     ULong           mTotPageCnt;
 
-    /* ExtDirì„ ìƒì„±í•´ì•¼í•  Leaf BMP í˜ì´ì§€ */
+    /* ExtDirÀ» »ı¼ºÇØ¾ßÇÒ Leaf BMP ÆäÀÌÁö */
     scPageID        mLfBMP4ExtDir;
 
-    /* í˜„ì¬ Page Range */
+    /* ÇöÀç Page Range */
     sdpstPageRange  mPageRange;
 
-    /* ì´ë²ˆì— ìƒˆë¡­ê²Œ ìƒì„±í•  Segment Meta Header í˜ì´ì§€ì˜ ê°œìˆ˜
-     * ì¤‘ìš”: 0 ë˜ëŠ” 1 ê°’ë§Œ ê°–ëŠ”ë‹¤. */
+    /* ÀÌ¹ø¿¡ »õ·Ó°Ô »ı¼ºÇÒ Segment Meta Header ÆäÀÌÁöÀÇ °³¼ö
+     * Áß¿ä: 0 ¶Ç´Â 1 °ª¸¸ °®´Â´Ù. */
     UShort          mSegHdrCnt;
 
     SShort          mSlotNoInExtDir;
 } sdpstAftAllocExtInfo;
 
 
-/* Extent Slot ì •ì˜ */
+/* Extent Slot Á¤ÀÇ */
 typedef struct sdpstExtDesc
 {
-    scPageID       mExtFstPID;     /* Extent ì²«ë²ˆì§¸ í˜ì´ì§€ì˜ PID */
-    UInt           mLength;        /* Extentì˜ í˜ì´ì§€ ê°œìˆ˜ */
-    scPageID       mExtMgmtLfBMP;  /* ExtDir í˜ì´ì§€ë¥¼ ê´€ë¦¬í•˜ëŠ” lf-bmp
-                                      í˜ì´ì§€ì˜ PID */
-    scPageID       mExtFstDataPID; /* Extentì˜ ì²«ë²ˆì§¸ Data í˜ì´ì§€ì˜ PID */
+    scPageID       mExtFstPID;     /* Extent Ã¹¹øÂ° ÆäÀÌÁöÀÇ PID */
+    UInt           mLength;        /* ExtentÀÇ ÆäÀÌÁö °³¼ö */
+    scPageID       mExtMgmtLfBMP;  /* ExtDir ÆäÀÌÁö¸¦ °ü¸®ÇÏ´Â lf-bmp
+                                      ÆäÀÌÁöÀÇ PID */
+    scPageID       mExtFstDataPID; /* ExtentÀÇ Ã¹¹øÂ° Data ÆäÀÌÁöÀÇ PID */
 } sdpstExtDesc;
 
-// ExtDir Control Header ì •ì˜
+// ExtDir Control Header Á¤ÀÇ
 typedef struct sdpstExtDirHdr
 {
-    UShort       mExtCnt;          // í˜ì´ì§€ë‚´ì˜ Extent ê°œìˆ˜
-    UShort       mMaxExtCnt;       // í˜ì´ì§€ë‚´ì˜ ìµœëŒ€ ExtDesc ê°œìˆ˜
-    scOffset     mBodyOffset;       // í˜ì´ì§€ ë‚´ì˜ ExtDirì˜ Offset
+    UShort       mExtCnt;          // ÆäÀÌÁö³»ÀÇ Extent °³¼ö
+    UShort       mMaxExtCnt;       // ÆäÀÌÁö³»ÀÇ ÃÖ´ë ExtDesc °³¼ö
+    scOffset     mBodyOffset;       // ÆäÀÌÁö ³»ÀÇ ExtDirÀÇ Offset
     UChar        mAlign[2];
 } sdpstExtDirHdr;
 
 
-/* BMP Slot ì •ì˜ */
+/* BMP Slot Á¤ÀÇ */
 typedef struct sdpstBMPSlot
 {
-    scPageID      mBMP;   // rt/it-BMP í˜ì´ì§€ì˜ PID
-    sdpstMFNL     mMFNL;  // rt/it-BMP í˜ì´ì§€ì˜ Maximum Freeness Level
+    scPageID      mBMP;   // rt/it-BMP ÆäÀÌÁöÀÇ PID
+    sdpstMFNL     mMFNL;  // rt/it-BMP ÆäÀÌÁöÀÇ Maximum Freeness Level
 } sdpstBMPSlot;
 
-/* Leaf Bitmap í˜ì´ì§€ì˜ Page RaOBnge Slot ê°œìˆ˜ */
+/* Leaf Bitmap ÆäÀÌÁöÀÇ Page RaOBnge Slot °³¼ö */
 # define SDPST_MAX_RANGE_SLOT_COUNT   (16)
 
-/* íƒìƒ‰ê³¼ì •ì—ì„œ Unformat í˜ì´ì§€ë¥¼ ë§Œë‚¬ì„ ê²½ìš° */
+/* Å½»ö°úÁ¤¿¡¼­ Unformat ÆäÀÌÁö¸¦ ¸¸³µÀ» °æ¿ì */
 # define SDPST_MAX_FORMAT_PAGES_AT_ONCE (16)
 
-/* í•˜ë‚˜ì˜ Pageë¥¼ í‘œí˜„í•˜ëŠ” bitsetì˜ ê¸¸ì´ */
+/* ÇÏ³ªÀÇ Page¸¦ Ç¥ÇöÇÏ´Â bitsetÀÇ ±æÀÌ */
 # define SDPST_PAGE_BITSET_SIZE  (8)
 
 /*
- * lf-BMPì˜ Page Bitset Table í¬ê¸°
- * SDPST_PAGE_BITSET_TABLE_SIZE / SDPST_PAGE_BITSET_SIZE = 1024 í˜ì´ì§€ í‘œí˜„
+ * lf-BMPÀÇ Page Bitset Table Å©±â
+ * SDPST_PAGE_BITSET_TABLE_SIZE / SDPST_PAGE_BITSET_SIZE = 1024 ÆäÀÌÁö Ç¥Çö
  */
 # define SDPST_PAGE_BITSET_TABLE_SIZE ( 1024 )
 
 /*
- * lf-bmpì—ì„œ ê´€ë¦¬í•  Data Pageë¥¼ rangeë¥¼ ë‚˜ëˆ„ì–´ ê´€ë¦¬í•˜ê¸° ìœ„í•œ range slot
+ * lf-bmp¿¡¼­ °ü¸®ÇÒ Data Page¸¦ range¸¦ ³ª´©¾î °ü¸®ÇÏ±â À§ÇÑ range slot
  */
 typedef struct sdpstRangeSlot
 {
-    scPageID    mFstPID;            // Range slotì˜ ì²«ë²ˆì§¸ í˜ì´ì§€ì˜ PID
-    UShort      mLength;            // Range slotì˜ í˜ì´ì§€ ê°œìˆ˜
-    SShort      mFstPBSNo;          // Rangeë‚´ì—ì„œì˜ Range slotì˜ ì²«ë²ˆì§¸
-                                    // í˜ì´ì§€ì˜ ìˆœë²ˆ
-    scPageID    mExtDirPID;         // ExtDir Pageì˜ PID
-    SShort      mSlotNoInExtDir;    // ExtDirì—ì„œ Extent Slot No
+    scPageID    mFstPID;            // Range slotÀÇ Ã¹¹øÂ° ÆäÀÌÁöÀÇ PID
+    UShort      mLength;            // Range slotÀÇ ÆäÀÌÁö °³¼ö
+    SShort      mFstPBSNo;          // Range³»¿¡¼­ÀÇ Range slotÀÇ Ã¹¹øÂ°
+                                    // ÆäÀÌÁöÀÇ ¼ø¹ø
+    scPageID    mExtDirPID;         // ExtDir PageÀÇ PID
+    SShort      mSlotNoInExtDir;    // ExtDir¿¡¼­ Extent Slot No
     UChar       mAlign[2];
 } sdpstRangeSlot;
 
-/* Page BitSetì„ 1ë°”ì´íŠ¸ë¡œ ì •ì˜í•œë‹¤. */
+/* Page BitSetÀ» 1¹ÙÀÌÆ®·Î Á¤ÀÇÇÑ´Ù. */
 typedef UChar sdpstPBS;
 
 /*
- * lf-BMP ì—ì„œ Page rangeë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ map
+ * lf-BMP ¿¡¼­ Page range¸¦ °ü¸®ÇÏ±â À§ÇÑ map
  */
 typedef struct sdpstRangeMap
 {
@@ -318,118 +318,118 @@ typedef struct sdpstRangeMap
 }sdpstRangeMap;
 
 /*
- * Bitmap í˜ì´ì§€ì˜ Header
+ * Bitmap ÆäÀÌÁöÀÇ Header
  */
 typedef struct sdpstBMPHdr
 {
     sdpstBMPType    mType;
-    sdpstMFNL       mMFNL;              /* í˜ì´ì§€ì˜ MFNL */
-    UShort          mMFNLTbl[SDPST_MFNL_MAX];   /* slotì˜ MFNLë³„ ê°œìˆ˜ */
-    UShort          mSlotCnt;           /* í˜ì´ì§€ë‚´ì˜ BMP í˜ì´ì§€ì˜ ê°œìˆ˜ */
-    UShort          mFreeSlotCnt;       /* í˜ì´ì§€ ë‚´ì˜ free slot ê°œìˆ˜ */
-    UShort          mMaxSlotCnt;        /* í˜ì´ì§€ ë‚´ì˜ ìµœëŒ€ BMP ê°œìˆ˜ */
-    SShort          mFstFreeSlotNo;     /* ì²«ë²ˆì§¸ free slot ìˆœë²ˆ */
-    sdpParentInfo   mParentInfo;        /* ìƒìœ„ BMP í˜ì´ì§€ PID, slot no */
-    scPageID        mNxtRtBMP;          /* ë‹¤ìŒ RtBMP PID. RtBMPë§Œ ì‚¬ìš© */
-    scOffset        mBodyOffset;        /* í˜ì´ì§€ë‚´ì˜ BMP mapì˜  Offset */
+    sdpstMFNL       mMFNL;              /* ÆäÀÌÁöÀÇ MFNL */
+    UShort          mMFNLTbl[SDPST_MFNL_MAX];   /* slotÀÇ MFNLº° °³¼ö */
+    UShort          mSlotCnt;           /* ÆäÀÌÁö³»ÀÇ BMP ÆäÀÌÁöÀÇ °³¼ö */
+    UShort          mFreeSlotCnt;       /* ÆäÀÌÁö ³»ÀÇ free slot °³¼ö */
+    UShort          mMaxSlotCnt;        /* ÆäÀÌÁö ³»ÀÇ ÃÖ´ë BMP °³¼ö */
+    SShort          mFstFreeSlotNo;     /* Ã¹¹øÂ° free slot ¼ø¹ø */
+    sdpParentInfo   mParentInfo;        /* »óÀ§ BMP ÆäÀÌÁö PID, slot no */
+    scPageID        mNxtRtBMP;          /* ´ÙÀ½ RtBMP PID. RtBMP¸¸ »ç¿ë */
+    scOffset        mBodyOffset;        /* ÆäÀÌÁö³»ÀÇ BMP mapÀÇ  Offset */
     UChar           mAlign[2];
 } sdpstBMPHdr;
 
 /*
- * Leaf Bitmap í˜ì´ì§€ì˜ Header
+ * Leaf Bitmap ÆäÀÌÁöÀÇ Header
  */
 typedef struct sdpstLfBMPHdr
 {
     sdpstBMPHdr     mBMPHdr;
 
-    sdpstPageRange  mPageRange;       // Leaf BMPì˜ ê²°ì •ëœ Page Range
+    sdpstPageRange  mPageRange;       // Leaf BMPÀÇ °áÁ¤µÈ Page Range
     UShort          mTotPageCnt;
 
-    // ìµœì´ˆ ì‚¬ìš©ê°€ëŠ¥í–ˆë˜ Data í˜ì´ì§€ì˜ ìˆœë²ˆ
-    SShort          mFstDataPagePBSNo;  // Leaf BMPì—ì„œ ì²«ë²ˆì§¸ Data í˜ì´ì§€ Index
+    // ÃÖÃÊ »ç¿ë°¡´ÉÇß´ø Data ÆäÀÌÁöÀÇ ¼ø¹ø
+    SShort          mFstDataPagePBSNo;  // Leaf BMP¿¡¼­ Ã¹¹øÂ° Data ÆäÀÌÁö Index
 } sdpstLfBMPHdr;
 
-/* Segment Sizeë¥¼ Page ê°œìˆ˜ë¡œ ë‚˜íƒ€ëƒ„ */
+/* Segment Size¸¦ Page °³¼ö·Î ³ªÅ¸³¿ */
 # define SDPST_PAGE_CNT_1M     (    1 * 1024 * 1024 / SD_PAGE_SIZE )
 # define SDPST_PAGE_CNT_64M    (   64 * 1024 * 1024 / SD_PAGE_SIZE )
 # define SDPST_PAGE_CNT_1024M  ( 1024 * 1024 * 1024 / SD_PAGE_SIZE )
 
-/* leaf bitmap í˜ì´ì§€ Page BitSetì˜ í˜ì´ì§€ ì¢…ë¥˜(TyPe)ë¥¼ ì •ì˜í•œë‹¤. */
+/* leaf bitmap ÆäÀÌÁö Page BitSetÀÇ ÆäÀÌÁö Á¾·ù(TyPe)¸¦ Á¤ÀÇÇÑ´Ù. */
 # define SDPST_BITSET_PAGETP_MASK   (0x80)
 # define SDPST_BITSET_PAGETP_META   (0x80)  /* Meta Page */
-# define SDPST_BITSET_PAGETP_DATA   (0x00)  /* Data Page (Metaë¥¼ ì œì™¸í•œ ë‚˜ë¨¸ì§€) */
+# define SDPST_BITSET_PAGETP_DATA   (0x00)  /* Data Page (Meta¸¦ Á¦¿ÜÇÑ ³ª¸ÓÁö) */
 
-/* leaf bitmap í˜ì´ì§€ Page BitSetì˜ í˜ì´ì§€ ê°€ìš©ë„(FreeNess)ë¥¼ ì •ì˜í•œë‹¤. */
+/* leaf bitmap ÆäÀÌÁö Page BitSetÀÇ ÆäÀÌÁö °¡¿ëµµ(FreeNess)¸¦ Á¤ÀÇÇÑ´Ù. */
 # define SDPST_BITSET_PAGEFN_MASK   (0x7F)
 # define SDPST_BITSET_PAGEFN_UNF    (0x00)  /* Unformat */
 # define SDPST_BITSET_PAGEFN_FMT    (0x01)  /* Format */
 # define SDPST_BITSET_PAGEFN_INS    (0x02)  /* Insertable */
 # define SDPST_BITSET_PAGEFN_FUL    (0x04)  /* Full */
 
-/* Free Data í˜ì´ì§€ í›„ë³´ ì‘ì„± ë¹„íŠ¸ì…‹ */
+/* Free Data ÆäÀÌÁö ÈÄº¸ ÀÛ¼º ºñÆ®¼Â */
 # define SDPST_BITSET_CANDIDATE_ALLOCPAGE ( SDPST_BITSET_PAGEFN_UNF  | \
                                             SDPST_BITSET_PAGEFN_FMT  )
 
-/* Insertable Data í˜ì´ì§€ í›„ë³´ ì‘ì„± ë¹„íŠ¸ì…‹ ì •ì˜ */
+/* Insertable Data ÆäÀÌÁö ÈÄº¸ ÀÛ¼º ºñÆ®¼Â Á¤ÀÇ */
 # define SDPST_BITSET_CANDIDATE_ALLOCSLOT ( SDPST_BITSET_PAGEFN_INS  | \
                                             SDPST_BITSET_PAGEFN_UNF  | \
                                             SDPST_BITSET_PAGEFN_FMT  )
 
-/* formateëœ í˜ì´ì§€ì¤‘ Insertableí•œ í˜ì´ì§€ ë¹„íŠ¸ì…‹  ì •ì˜ */
+/* formateµÈ ÆäÀÌÁöÁß InsertableÇÑ ÆäÀÌÁö ºñÆ®¼Â  Á¤ÀÇ */
 # define SDPST_BITSET_CHECK_ALLOCSLOT ( SDPST_BITSET_PAGEFN_INS  | \
                                         SDPST_BITSET_PAGEFN_FMT  )
 
 /*
- * Segment Header í˜ì´ì§€ ì •ì˜
- * Segmentì˜ Treelistì™€ Extent ì •ë³´ BMP ì •ë³´ë“±ì„ ê´€ë¦¬í•œë‹¤.
+ * Segment Header ÆäÀÌÁö Á¤ÀÇ
+ * SegmentÀÇ Treelist¿Í Extent Á¤º¸ BMP Á¤º¸µîÀ» °ü¸®ÇÑ´Ù.
  */
 typedef struct sdpstSegHdr
 {
-    /* Segment Typeê³¼ State */
+    /* Segment Type°ú State */
     sdpSegType          mSegType;
     sdpSegState         mSegState;
 
-    /* Segment Headerê°€ ì¡´ì¬í•˜ëŠ” PID */
+    /* Segment Header°¡ Á¸ÀçÇÏ´Â PID */
     scPageID            mSegHdrPID;
 
-    /* ë§ˆì§€ë§‰ BMPì˜ PID & Page SeqNo */
+    /* ¸¶Áö¸· BMPÀÇ PID & Page SeqNo */
     scPageID            mLstLfBMP;
     scPageID            mLstItBMP;
     scPageID            mLstRtBMP;
     ULong               mLstSeqNo;
 
-    /* Segmentì— í• ë‹¹ëœ ì´ í˜ì´ì§€ ê°œìˆ˜ */
+    /* Segment¿¡ ÇÒ´çµÈ ÃÑ ÆäÀÌÁö °³¼ö */
     ULong               mTotPageCnt;
-    /* Segmentì— í• ë‹¹ëœ ì´ RtBMP í˜ì´ì§€ ê°œìˆ˜ */
+    /* Segment¿¡ ÇÒ´çµÈ ÃÑ RtBMP ÆäÀÌÁö °³¼ö */
     ULong               mTotRtBMPCnt;
-    /* Free í˜ì´ì§€ ê°œìˆ˜ */
+    /* Free ÆäÀÌÁö °³¼ö */
     ULong               mFreeIndexPageCnt;
-    /* Segmentì— í• ë‹¹ëœ Extent ì´ ê°œìˆ˜ */
+    /* Segment¿¡ ÇÒ´çµÈ Extent ÃÑ °³¼ö */
     ULong               mTotExtCnt;
-    /* Extentë‹¹ í˜ì´ì§€ ê°œìˆ˜ */
+    /* Extent´ç ÆäÀÌÁö °³¼ö */
     UInt                mPageCntInExt;
     UChar               mAlign[4];
-    /* ë§ˆì§€ë§‰ìœ¼ë¡œ í• ë‹¹ëœ Extent ì˜ RID */
+    /* ¸¶Áö¸·À¸·Î ÇÒ´çµÈ Extent ÀÇ RID */
     sdRID               mLstExtRID;
 
     /* HWM */
     sdpstWM             mHWM;
 
-    /* Meta Page ID Array: Index SegëŠ” ì´ PageID Arrayì— Root Node PIDë¥¼
-     * ê¸°ë¡í•œë‹¤. */
+    /* Meta Page ID Array: Index Seg´Â ÀÌ PageID Array¿¡ Root Node PID¸¦
+     * ±â·ÏÇÑ´Ù. */
     scPageID            mArrMetaPID[ SDP_MAX_SEG_PID_CNT ];
 
     /* ExtDir PID List */
     sdpDblPIDListBase   mExtDirBase;
 
-    /* Segment Headerì˜ ë‚¨ëŠ” ê³µê°„ì„ RtBMPì™€ ExtDirë¡œ ì‚¬ìš©í•œë‹¤. */
+    /* Segment HeaderÀÇ ³²´Â °ø°£À» RtBMP¿Í ExtDir·Î »ç¿ëÇÑ´Ù. */
     sdpstExtDirHdr      mExtDirHdr;
     sdpstBMPHdr         mRtBMPHdr;
 } sdpstSegHdr;
 
 
 /*
- * ê°€ìš©ê³µê°„ íƒìƒ‰ ëŒ€ìƒ
+ * °¡¿ë°ø°£ Å½»ö ´ë»ó
  */
 typedef enum sdpstSearchType
 {
@@ -438,7 +438,7 @@ typedef enum sdpstSearchType
 } sdpstSearchType;
 
 /*
- * íƒìƒ‰ì‹œ ì„ì‹œë¡œ í•„ìš”í•œ í›„ë³´ Data í˜ì´ì§€ ì •ë³´ë¥¼ ì •ì˜í•œë‹¤.
+ * Å½»ö½Ã ÀÓ½Ã·Î ÇÊ¿äÇÑ ÈÄº¸ Data ÆäÀÌÁö Á¤º¸¸¦ Á¤ÀÇÇÑ´Ù.
  */
 typedef struct sdpstCandidatePage
 {
@@ -449,7 +449,7 @@ typedef struct sdpstCandidatePage
 } sdpstCandidatePage;
 
 /*
- * BMPë³„ Fix and GetPage í•¨ìˆ˜ ì •ì˜
+ * BMPº° Fix and GetPage ÇÔ¼ö Á¤ÀÇ
  */
 typedef IDE_RC (*sdpstFixAndGetHdr4UpdateFunc)( idvSQL       * aStatistics,
                                                 sdrMtx       * aMtx,
@@ -468,42 +468,42 @@ typedef IDE_RC (*sdpstFixAndGetHdrFunc)( idvSQL       * aStatistics,
                                          scPageID       aPageID,
                                          sdpstBMPHdr ** aBMPHdr );
 
-/* BMP í—¤ë”ë¥¼ ê°€ì ¸ì˜¨ë‹¤. */
+/* BMP Çì´õ¸¦ °¡Á®¿Â´Ù. */
 typedef sdpstBMPHdr * (*sdpstGetBMPHdrFunc)( UChar * aPagePtr );
 
-/* SlotCnt ë˜ëŠ” PageCntë¥¼ ê°€ì ¸ì˜¨ë‹¤. */
+/* SlotCnt ¶Ç´Â PageCnt¸¦ °¡Á®¿Â´Ù. */
 typedef UShort (*sdpstGetSlotOrPageCntFunc)( UChar * aPagePtr );
 
-/* depthë³„ë¡œ stackê°„ì˜ ê±°ë¦¬ì°¨ë¥¼ êµ¬í•œë‹¤. */
+/* depthº°·Î stack°£ÀÇ °Å¸®Â÷¸¦ ±¸ÇÑ´Ù. */
 typedef SShort (*sdpstGetDistInDepthFunc)( sdpstPosItem * aLHS,
                                            sdpstPosItem * aRHS );
 
 /*
  * for makeCandidateChild
  */
-/* Candidate Child ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤. */
+/* Candidate Child ¿©ºÎ¸¦ È®ÀÎÇÑ´Ù. */
 typedef idBool (*sdpstIsCandidateChildFunc)( UChar     * aPagePtr,
                                              SShort      aSlotNo,
                                              sdpstMFNL   aTargetMFNL );
 
-/* Candidate Child ì„ ì •ì‹œ íƒìƒ‰ ì‹œì‘ ìœ„ì¹˜ë¥¼ ì°¾ëŠ”ë‹¤. */
+/* Candidate Child ¼±Á¤½Ã Å½»ö ½ÃÀÛ À§Ä¡¸¦ Ã£´Â´Ù. */
 typedef UShort (*sdpstGetStartSlotOrPBSNoFunc)( UChar  * aPagePtr,
                                                 SShort   aTransID );
 
-/* Candidate Child ì„ ì •ì‹œ íƒìƒ‰ ëŒ€ìƒ ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤. */
+/* Candidate Child ¼±Á¤½Ã Å½»ö ´ë»ó °³¼ö¸¦ ±¸ÇÑ´Ù. */
 typedef SShort (*sdpstGetChildCountFunc)( UChar         * aPagePtr,
                                           sdpstWM       * aHWM );
 
-/* í›„ë³´ë¥¼ ì €ì¥í•˜ëŠ” ë°°ì—´ì— í›„ë³´ë¥¼ ì €ì¥í•œë‹¤. */
+/* ÈÄº¸¸¦ ÀúÀåÇÏ´Â ¹è¿­¿¡ ÈÄº¸¸¦ ÀúÀåÇÑ´Ù. */
 typedef void (*sdpstSetCandidateArrayFunc)( UChar     * aPagePtr,
                                             UShort      aSlotNo,
                                             UShort      aArrIdx,
                                             void      * aCandidateArray );
 
-/* ì²«ë²ˆì§¸ free slot ë˜ëŠ” free PBS */
+/* Ã¹¹øÂ° free slot ¶Ç´Â free PBS */
 typedef SShort (*sdpstGetFstFreeSlotOrPBSNoFunc)( UChar     * aPagePtr );
 
-/* ìµœëŒ€ í›„ë³´ ì„ íƒ ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤. */
+/* ÃÖ´ë ÈÄº¸ ¼±ÅÃ °³¼ö¸¦ ±¸ÇÑ´Ù. */
 typedef UInt (*sdpstGetMaxCandidateCntFunc)();
 
 /*
@@ -521,15 +521,15 @@ typedef IDE_RC (*sdpstUpdateBMPUntilHWMFunc)( idvSQL            * aStatistics,
                                               idBool            * aIsFinish,
                                               sdpstMFNL         * aNewMFNL );
 
-/* MFNLì´ ë™ì¼í•œì§€ í™•ì¸í•œë‹¤. */
+/* MFNLÀÌ µ¿ÀÏÇÑÁö È®ÀÎÇÑ´Ù. */
 typedef IDE_RC (*sdpstIsEqUnfFunc)( sdpstBMPHdr * aBMPHdr,
                                     UShort        aSlotNo );
 
-/* ìƒìœ„ BMPë¡œ ì´ë™í•œë‹¤. */
+/* »óÀ§ BMP·Î ÀÌµ¿ÇÑ´Ù. */
 typedef void (*sdpstGoParentBMPFunc)( sdpstBMPHdr   * aBMPHdr,
                                       sdpstStack    * aStack );
 
-/* í•˜ìœ„ BMPë¡œ ì´ë™í•œë‹¤. */
+/* ÇÏÀ§ BMP·Î ÀÌµ¿ÇÑ´Ù. */
 typedef void (*sdpstGoChildBMPFunc)( sdpstStack    * aStack,
                                      sdpstBMPHdr   * aBMPHdr,
                                      UShort          aSlotNo );
@@ -543,7 +543,7 @@ typedef struct sdpstBMPOps
     sdpstGetSlotOrPageCntFunc          mGetSlotOrPageCnt;
     sdpstGetDistInDepthFunc            mGetDistInDepth;
 
-    /* í›„ë³´ íƒìƒ‰ ê´€ë ¨ í•¨ìˆ˜ */
+    /* ÈÄº¸ Å½»ö °ü·Ã ÇÔ¼ö */
     sdpstIsCandidateChildFunc          mIsCandidateChild;
     sdpstGetStartSlotOrPBSNoFunc       mGetStartSlotOrPBSNo;
     sdpstGetChildCountFunc             mGetChildCount;
@@ -560,11 +560,11 @@ typedef struct sdpstBMPOps
 # define SDPST_MAX_CANDIDATE_LFBMP_CNT      (1024)
 # define SDPST_MAX_CANDIDATE_PAGE_CNT       (1024)
 
-/* Search íƒ€ì…ì— ë”°ë¥¸ ìµœì†Œ ë§Œì¡±í•´ì•¼í•˜ëŠ” MFNL ì •ì˜ */
+/* Search Å¸ÀÔ¿¡ µû¸¥ ÃÖ¼Ò ¸¸Á·ÇØ¾ßÇÏ´Â MFNL Á¤ÀÇ */
 # define SDPST_SEARCH_TARGET_MIN_MFNL( aSearchType ) \
     (aSearchType == SDPST_SEARCH_NEWPAGE ? SDPST_MFNL_FMT : SDPST_MFNL_INS )
 
-/* TMSì—ì„œ ì‚¬ìš©í•˜ëŠ” í”„ë¡œí¼í‹° */
+/* TMS¿¡¼­ »ç¿ëÇÏ´Â ÇÁ·ÎÆÛÆ¼ */
 # define SDPST_SEARCH_WITHOUT_HASHING()     \
     ( smuProperty::getTmsSearchWithoutHashing() )
 # define SDPST_CANDIDATE_LFBMP_CNT()        \

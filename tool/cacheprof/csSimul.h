@@ -52,8 +52,8 @@ class csSimul
      *  Profiling Action Attribute
      * ----------------------------------------------*/
     
-    idBool   mStarted;  // profilingì„ ì‹œì‘í–ˆë‚˜?
-    ThreadId mTargetId; // profiling ëŒ€ìƒ ì“°ë ˆë“œ
+    idBool   mStarted;  // profilingÀ» ½ÃÀÛÇß³ª?
+    ThreadId mTargetId; // profiling ´ë»ó ¾²·¹µå
 
     static   ThreadMutex mMutex;
 
@@ -62,7 +62,7 @@ public:
     int initialize(Address aCapacity, Address aLineSize, Address aWay);
     int destroy();
 
-    int doRefer(Address aAddr); // missê°€ ë°œìƒí•˜ë©´ 1ì„ ë¦¬í„´
+    int doRefer(Address aAddr); // miss°¡ ¹ß»ıÇÏ¸é 1À» ¸®ÅÏ
     void refer(ThreadId      aThreadId, 
                Address       aAddr,
                int           aWriteFlag,

@@ -40,8 +40,10 @@ public:
 
     static IDE_RC releaseFreeNodeMem( const smnIndexModule* aModule );
 
-    static IDE_RC freeAllNodeList(smnIndexHeader* aIndex);
-    
+    static IDE_RC freeAllNodeList( idvSQL*         aStatistics,
+                                   smnIndexHeader* aIndex,
+                                   void*           aTrans ); 
+
     static IDE_RC freeNode( void* aNodes );
         
     static IDE_RC create( idvSQL*              aStatistics,
@@ -68,52 +70,54 @@ public:
 
     static IDE_RC drop( smnIndexHeader * aIndex );
 
-    static IDE_RC init( idvSQL*               /* aStatistics */,
-                        stnmrIterator*        aIterator,
-                        void*                 aTrans,
-                        smcTableHeader*       aTable,
-                        smnIndexHeader*       aIndex,
+    static IDE_RC init( stnmrIterator       * aIterator,
+                        void                * aTrans,
+                        smcTableHeader      * aTable,
+                        smnIndexHeader      * aIndex,
                         void*                 aDumpObject,
-                        const smiRange*       aKeyRange,
-                        const smiRange*       aKeyFilter,
-                        const smiCallBack*    aRowFilter,
+                        const smiRange      * aKeyRange,
+                        const smiRange      * aKeyFilter,
+                        const smiCallBack   * aRowFilter,
                         UInt                  aFlag,
                         smSCN                 aSCN,
                         smSCN                 aInfinite,
                         idBool                aUntouchable,
-                        smiCursorProperties*  aProperties,
-                        const smSeekFunc**   aSeekFunc );
+                        smiCursorProperties * aProperties,
+                        const smSeekFunc   ** aSeekFunc,
+                        smiStatement        * aStatement );
 
     static IDE_RC dest( stnmrIterator* aIterator );
     
-    static IDE_RC insertRowUnique( idvSQL*    aStatistics,
-                                   void*      aTrans,
-                                   void*      aTable,
-                                   void*      aIndex,
+    static IDE_RC insertRowUnique( idvSQL   * aStatistics,
+                                   void     * aTrans,
+                                   void     * aTable,
+                                   void     * aIndex,
                                    smSCN      aInfiniteSCN,
-                                   SChar*     aRow,
-                                   SChar*     aNull,
+                                   SChar    * aRow,
+                                   SChar    * aNull,
                                    idBool     aUniqueCheck,
-                                   smSCN      aStmtSCN,
-                                   void*      aRowSID,
-                                   SChar**    aExistUniqueRow,
-                                   ULong      aInsertWaitTime );
+                                   smSCN      aStmtViewSCN,
+                                   void     * aRowSID,
+                                   SChar   ** aExistUniqueRow,
+                                   ULong      aInsertWaitTime,
+                                   idBool     aForbiddenToRetry );
 
     static UInt getSlots( stnmrNode* aNode,
                           smmSlot*   aSlots );    
     
-    static IDE_RC insertRow( idvSQL*          aStatistics,
-                             void*            aTrans,
-                             void*            aTable,
-                             void*            aIndex,
+    static IDE_RC insertRow( idvSQL         * aStatistics,
+                             void           * aTrans,
+                             void           * aTable,
+                             void           * aIndex,
                              smSCN            aInfiniteSCN,
-                             SChar*           aRow,
-                             SChar*           aNull,
+                             SChar          * aRow,
+                             SChar          * aNull,
                              idBool           aUniqueCheck,
-                             smSCN            aStmtSCN,
-                             void*            aRowSID,
-                             SChar**          aExistUniqueRow,
-                             ULong            aInsertWaitTime );
+                             smSCN            aStmtViewSCN,
+                             void           * aRowSID,
+                             SChar         ** aExistUniqueRow,
+                             ULong            aInsertWaitTime,
+                             idBool           aForbiddenToRetry );
 
     static IDE_RC isRowUnique( void*     aTrans,
                                void*     aRow,
@@ -195,7 +199,7 @@ public:
                               stnmrStack*         aStack,
                               SInt*               aDepth);
 
-    static void beforeFirstInternal( stnmrIterator* aIterator );
+    static IDE_RC beforeFirstInternal( stnmrIterator* aIterator );
 
     static SInt compareRows( const stnmrColumn* aColumns,
                              const stnmrColumn* aFence,

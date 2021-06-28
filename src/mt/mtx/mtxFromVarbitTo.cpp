@@ -15,7 +15,7 @@
  */
 
 /***********************************************************************
- * $Id: mtxFromVarbitTo.cpp 85045 2019-03-20 01:40:10Z andrew.shin $
+ * $Id: mtxFromVarbitTo.cpp 84916 2019-02-22 04:21:01Z andrew.shin $
  **********************************************************************/
 
 #include <mtx.h>
@@ -106,7 +106,7 @@ static IDE_RC mtxFromVarbitToVarchar( mtxEntry ** aEntry )
                 sChr = ( ( sArg1Val->value[ sByteIndex ] << sIterator ) >> 7 ) & 0x1;
 
                 /*
-                * 00001111ì˜ ê²½ìš° ì•ì˜ 0000ë„ ê°™ì´ ë³€í™˜ì´ ë˜ì–´ì•¼ í•œë‹¤.
+                * 00001111ÀÇ °æ¿ì ¾ÕÀÇ 0000µµ °°ÀÌ º¯È¯ÀÌ µÇ¾î¾ß ÇÑ´Ù.
                 *
                 * insert into tab_bit values ( bit'11111111' );
                 * insert into tab_bit values ( bit'00001111' );

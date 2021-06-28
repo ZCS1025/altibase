@@ -53,7 +53,7 @@ abstract class CommonBinaryColumn extends AbstractBinaryColumn
 
     public int getMaxDisplaySize()
     {
-        // í•œë°”ì´íŠ¸ë‹¹ ë‘ê°œì˜ ë¬¸ìë¡œ ì¶œë ¥ëœë‹¤. ex) F02A23D
+        // ÇÑ¹ÙÀÌÆ®´ç µÎ°³ÀÇ ¹®ÀÚ·Î Ãâ·ÂµÈ´Ù. ex) F02A23D
         return getColumnInfo().getPrecision() * 2;
     }
 
@@ -68,8 +68,8 @@ abstract class CommonBinaryColumn extends AbstractBinaryColumn
     }
 
     /**
-     * @return byte ê°’
-     * @exception binary streamì´ 1ë°”ì´íŠ¸ë¥¼ ë„˜ì„ ê²½ìš°
+     * @return byte °ª
+     * @exception binary streamÀÌ 1¹ÙÀÌÆ®¸¦ ³ÑÀ» °æ¿ì
      */
     protected byte getByteSub() throws SQLException
     {
@@ -93,9 +93,9 @@ abstract class CommonBinaryColumn extends AbstractBinaryColumn
 
     protected byte[] getBytesSub() throws SQLException
     {
-        // ì´ ë©”ì†Œë“œëŠ” mByteBuffer.array()ë¥¼ í˜¸ì¶œí•´ì„œëŠ” ì•ˆëœë‹¤.
-        // mByteBufferëŠ” precisionë§Œí¼ capacityê°€ ì¡í˜€ìˆê¸° ë•Œë¬¸ì—
-        // array()ë¥¼ í˜¸ì¶œí•˜ë©´ limitì„ ì´ˆê³¼í•œ ë¶ˆí•„ìš”í•œ ë°ì´í„°ê¹Œì§€ ë°˜í™˜í•œë‹¤.
+        // ÀÌ ¸Ş¼Òµå´Â mByteBuffer.array()¸¦ È£ÃâÇØ¼­´Â ¾ÈµÈ´Ù.
+        // mByteBuffer´Â precision¸¸Å­ capacity°¡ ÀâÇôÀÖ±â ¶§¹®¿¡
+        // array()¸¦ È£ÃâÇÏ¸é limitÀ» ÃÊ°úÇÑ ºÒÇÊ¿äÇÑ µ¥ÀÌÅÍ±îÁö ¹İÈ¯ÇÑ´Ù.
         mByteBuffer.rewind();
         byte[] sResult = new byte[getReturnLength()];
         mByteBuffer.get(sResult);

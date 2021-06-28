@@ -20,8 +20,8 @@
  *
  * Description
  *
- * Vol DBì—ì„œ íŽ˜ì´ì§€ ê´€ë ¨ ì •ë³´ë¥¼ Dumpí•˜ê¸° ìœ„í•œ FixedTableì„ ìƒì„±í•¨.
- * D$VOL_DB_PAGE : Volatile Pageë¥¼ Hexaí˜•ì‹ì˜ Binaryê°’ìœ¼ë¡œ ì¶œë ¥í•´ì¤Œ.
+ * Vol DB¿¡¼­ ÆäÀÌÁö °ü·Ã Á¤º¸¸¦ DumpÇÏ±â À§ÇÑ FixedTableÀ» »ý¼ºÇÔ.
+ * D$VOL_DB_PAGE : Volatile Page¸¦ HexaÇü½ÄÀÇ Binary°ªÀ¸·Î Ãâ·ÂÇØÁÜ.
  *
  **********************************************************************/
 
@@ -97,7 +97,7 @@ static iduFixedTableColDesc gDumpVolDBPageColDesc[] =
 };
 
 // D$VOL_DB_PAGE
-// VOL PCHë¡œë¶€í„° íŽ˜ì´ì§€ë¥¼ Dumpí•œë‹¤.
+// VOL PCH·ÎºÎÅÍ ÆäÀÌÁö¸¦ DumpÇÑ´Ù.
 IDE_RC svpFT::buildRecordVolDBPageDump(idvSQL              * /*aStatistics*/,
                                        void                *aHeader,
                                        void                *aDumpObj,
@@ -109,7 +109,6 @@ IDE_RC svpFT::buildRecordVolDBPageDump(idvSQL              * /*aStatistics*/,
     UChar                 * sPagePtr;
     UInt                    sLocked = ID_FALSE;
     svpVolDBPageDump        sVolDBPageDump;
-    svmPCH                * sPCH;
 
     IDE_ERROR( aHeader != NULL );
     IDE_ERROR( aMemory != NULL );
@@ -120,22 +119,17 @@ IDE_RC svpFT::buildRecordVolDBPageDump(idvSQL              * /*aStatistics*/,
     sSpaceID   = SC_MAKE_SPACE(*sGRID);
     sPageID    = SC_MAKE_PID(*sGRID);
 
-    // VOL_TABLESPACEê°€ ë§žëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+    // VOL_TABLESPACE°¡ ¸Â´ÂÁö °Ë»çÇÑ´Ù.
     IDE_ASSERT( sctTableSpaceMgr::isVolatileTableSpace( sSpaceID ) == ID_TRUE );
 
-    IDE_TEST_RAISE( ( svmManager::isValidSpaceID( sSpaceID ) != ID_TRUE ) ||
-                    ( svmManager::isValidPageID( sSpaceID, sPageID ) != ID_TRUE ),
-                    ERR_EMPTY_OBJECT );
-
-    sPCH = svmManager::getPCH( sSpaceID, sPageID );
-    IDE_TEST_RAISE( (sPCH == NULL ) || (sPCH->m_page == NULL ),
+    IDE_TEST_RAISE( smmManager::isPageExist( sSpaceID, sPageID ) != ID_TRUE,
                     ERR_EMPTY_OBJECT );
 
     IDE_TEST( svmManager::holdPageSLatch( sSpaceID, sPageID )
               != IDE_SUCCESS );
     sLocked = ID_TRUE;
 
-    IDE_ASSERT( svmManager::getPersPagePtr( sSpaceID, 
+    IDE_ASSERT( smmManager::getPersPagePtr( sSpaceID, 
                                             sPageID,
                                             (void**)&sPagePtr )
                 == IDE_SUCCESS );

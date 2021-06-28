@@ -26,8 +26,8 @@
 #include <qtc.h>
 
 // BUG-19180
-// printExpressionInPlan, printNodeFormatì˜ flag
-// í•˜ìœ„ ë…¸ë“œì—ì„œ ì´ìš©í•  ìƒìœ„ ë…¸ë“œì˜ ì •ë³´
+// printExpressionInPlan, printNodeFormatÀÇ flag
+// ÇÏÀ§ ³ëµå¿¡¼­ ÀÌ¿ëÇÒ »óÀ§ ³ëµåÀÇ Á¤º¸
 #define QMO_PRINT_UPPER_NODE_MASK         (0x00000007)
 #define QMO_PRINT_UPPER_NODE_NORMAL       (0x00000000)
 #define QMO_PRINT_UPPER_NODE_COMPARE      (0x00000001)
@@ -38,8 +38,8 @@
 #define QMO_PRINT_UPPER_NODE_MINUS        (0x00000006)
 
 // BUG-19180
-// printExpressionInPlan, printNodeFormatì˜ flag
-// í•˜ìœ„ ë…¸ë“œê°€ ìƒìœ„ ë…¸ë“œì˜ ì˜¤ë¥¸ìª½ì— ìœ„ì¹˜í•¨ì„ ë‚˜íƒ€ëƒ„
+// printExpressionInPlan, printNodeFormatÀÇ flag
+// ÇÏÀ§ ³ëµå°¡ »óÀ§ ³ëµåÀÇ ¿À¸¥ÂÊ¿¡ À§Ä¡ÇÔÀ» ³ªÅ¸³¿
 #define QMO_PRINT_RIGHT_NODE_MASK         (0x00000008)
 #define QMO_PRINT_RIGHT_NODE_FALSE        (0x00000000)
 #define QMO_PRINT_RIGHT_NODE_TRUE         (0x00000008)

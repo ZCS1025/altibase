@@ -117,7 +117,7 @@ public abstract class TaskTestCase extends TestCase
         
         sOperation.mRemoteStatementId  = RemoteStatementId;
         sOperation.mBindVariableIndex  = aBindIndex;
-        sOperation.mBindVariableType   = SQLType.SQL_VARCHAR;
+        sOperation.mBindVariableType   = AltibaseSQLType.SQL_VARCHAR;
         sOperation.mBindVariableString = aBindVariable;
         
         BindRemoteVariableTask sTask = new BindRemoteVariableTask();

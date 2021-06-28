@@ -40,7 +40,7 @@ public class SmallIntColumn extends AbstractColumn
 
     SmallIntColumn()
     {
-        // AltibaseëŠ” TINYINTë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤. SMALLINT íƒ€ì…ìœ¼ë¡œ ë°›ì•„ë“¤ì¸ë‹¤.
+        // Altibase´Â TINYINT¸¦ Áö¿øÇÏÁö ¾Ê´Â´Ù. SMALLINT Å¸ÀÔÀ¸·Î ¹Ş¾ÆµéÀÎ´Ù.
         addMappedJdbcTypeSet(AltibaseTypes.SMALLINT);
         addMappedJdbcTypeSet(AltibaseTypes.TINYINT);
     }
@@ -102,6 +102,11 @@ public class SmallIntColumn extends AbstractColumn
         ((ShortDynamicArray) aArray).put(mShortValue);
     }
 
+    public void storeTo()
+    {
+        mValues.add(mShortValue);
+    }
+
     protected void readFromSub(CmChannel aChannel) throws SQLException
     {
         mShortValue = aChannel.readShort();
@@ -112,9 +117,19 @@ public class SmallIntColumn extends AbstractColumn
         ((ShortDynamicArray)aArray).put(aChannel.readShort());
     }
 
+    protected void readAndStoreValue(CmChannel aChannel) throws SQLException
+    {
+        mValues.add(aChannel.readShort());
+    }
+
     protected void loadFromSub(DynamicArray aArray)
     {
         mShortValue = ((ShortDynamicArray) aArray).get();
+    }
+
+    protected void loadFromSub(int aLoadIndex)
+    {
+        mShortValue = (Short)mValues.get(aLoadIndex);
     }
 
     protected void setNullValue()

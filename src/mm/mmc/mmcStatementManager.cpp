@@ -40,7 +40,7 @@ IDE_RC mmcStatementManager::initialize()
     UInt   sNumPreAlloc;
 
     /*
-     * Pool Ï¥àÍ∏∞Ìôî
+     * Pool √ ±‚»≠
      */
 
     IDE_TEST(mPlanBufferPool.initialize(IDU_MEM_MMC,
@@ -86,11 +86,11 @@ IDE_RC mmcStatementManager::initialize()
              != IDE_SUCCESS);			
 
     /*
-     * PageTableArr Ìï†Îãπ
+     * PageTableArr «“¥Á
      */
     /* +1 for sysdba mode */
     /* Sysdba mode session always can be created. */
-    /* BUG-39700 ÏÉùÏÑ±Îê†Ïàò ÏûàÎäî stmtÏùò ÏàòÎäî max_client + job_thread + 1Ïù¥Îã§. */
+    /* BUG-39700 ª˝º∫µ…ºˆ ¿÷¥¬ stmt¿« ºˆ¥¬ max_client + job_thread + 1¿Ã¥Ÿ. */
     /* PROJ-2451 Concurrent Execute Package
      * add qciMisc::getConcExecDegreeMax */
     mStmtPageTableArrSize = mmuProperty::getJobThreadCount() +
@@ -108,7 +108,7 @@ IDE_RC mmcStatementManager::initialize()
     idlOS::memset( mStmtPageTableArr, 0, ID_SIZEOF(mmcStmtPageTable*) * mStmtPageTableArrSize);
 
     /*
-     * StmtPageTableÏùÑ STMTPAGETABLE_PREALLOC_RATIOÎßåÌÅº ÎØ∏Î¶¨ Ìï†Îãπ.
+     * StmtPageTable¿ª STMTPAGETABLE_PREALLOC_RATIO∏∏≈≠ πÃ∏Æ «“¥Á.
      */
     sNumPreAlloc = (UInt) ( mStmtPageTableArrSize *
             mmuProperty::getStmtpagetablePreallocRatio() / 100 );
@@ -122,7 +122,7 @@ IDE_RC mmcStatementManager::initialize()
     }
 
     /*
-     * StatementID = 0 ÏóêÎäî StatementÎ•º Ìï†ÎãπÌï† Ïàò ÏóÜÏùå
+     * StatementID = 0 ø°¥¬ Statement∏¶ «“¥Á«“ ºˆ æ¯¿Ω
      */
 
     mStmtPageTableArr[0]->mPage[0].mSlotUseCount    = 1;
@@ -156,7 +156,7 @@ IDE_RC mmcStatementManager::finalize()
     mmcStmtPage *sPage = NULL;
 
     /*
-     * Í∞Å StmtPageTableÍ≥º Í∑∏ ÏïàÏùò PageÎì§Ïóê Îß§Îã¨Î¶∞ SlotÎì§Ïóê ÎåÄÌïú Î©îÎ™®Î¶¨Î•º Ìï¥Ï†ú
+     * ∞¢ StmtPageTable∞˙ ±◊ æ»¿« PageµÈø° ∏≈¥ﬁ∏∞ SlotµÈø° ¥Î«— ∏ﬁ∏∏Æ∏¶ «ÿ¡¶
      */
 
     /* PROJ-2109 : Remove the bottleneck of alloc/free stmts. */
@@ -177,7 +177,7 @@ IDE_RC mmcStatementManager::finalize()
                                == IDE_SUCCESS);
                     sPage->mSlot = NULL;
                 }
-                /* fix BUG-28669 statement slotÍ≤ÄÏÉâÏùÑ latch-freeÌïòÍ≤åÌï†Ïàò ÏûàÏñ¥Ïïº ÌïúÎã§. */
+                /* fix BUG-28669 statement slot∞Àªˆ¿ª latch-free«œ∞‘«“ºˆ ¿÷æÓæﬂ «—¥Ÿ. */
                 // PROJ-2408
                 IDE_ASSERT( sPage->mPageLatch.destroy() == IDE_SUCCESS );
             }
@@ -187,7 +187,7 @@ IDE_RC mmcStatementManager::finalize()
     }
 
     /*
-     * Pool Ìï¥Ï†ú
+     * Pool «ÿ¡¶
      */
 
     IDE_TEST(mStmtPool.destroy() != IDE_SUCCESS);
@@ -219,8 +219,8 @@ IDE_RC mmcStatementManager::allocStatement(mmcStatement ** aStatement,
     UInt          sNumberOfStatementsInSession;
     UInt          sMaxStatementsPerSession;
 
-    /* fix BUG-28669 statement slotÍ≤ÄÏÉâÏùÑ latch-freeÌïòÍ≤åÌï†Ïàò ÏûàÏñ¥Ïïº ÌïúÎã§.
-       freeStmtSlotÏùò latch durationÏùÑ Ï°∞Í∏àÏù¥ÎÇò Ï§ÑÏù¥Ïûê.
+    /* fix BUG-28669 statement slot∞Àªˆ¿ª latch-free«œ∞‘«“ºˆ ¿÷æÓæﬂ «—¥Ÿ.
+       freeStmtSlot¿« latch duration¿ª ¡∂±›¿Ã≥™ ¡Ÿ¿Ã¿⁄.
      */
     UShort        sPageID;
     UShort        sSlotID;
@@ -272,8 +272,8 @@ IDE_RC mmcStatementManager::allocStatement(mmcStatement ** aStatement,
         }
         if (sSlot != NULL)
         {
-            /* fix BUG-28669 statement slotÍ≤ÄÏÉâÏùÑ latch-freeÌïòÍ≤åÌï†Ïàò ÏûàÏñ¥Ïïº ÌïúÎã§.
-             * freeStmtSlotÏùò latch durationÏùÑ Ï°∞Í∏àÏù¥ÎÇò Ï§ÑÏù¥Ïûê.
+            /* fix BUG-28669 statement slot∞Àªˆ¿ª latch-free«œ∞‘«“ºˆ ¿÷æÓæﬂ «—¥Ÿ.
+             * freeStmtSlot¿« latch duration¿ª ¡∂±›¿Ã≥™ ¡Ÿ¿Ã¿⁄.
              */
              sPageID = MMC_STMT_ID_PAGE(sStmtID);
              sSlotID = MMC_STMT_ID_SLOT(sStmtID);
@@ -330,28 +330,28 @@ IDE_RC mmcStatementManager::findStatement(mmcStatement **aStatement,
     UShort       sSlotID = MMC_STMT_ID_SLOT(aStatementID);
 
     /*
-     * Page Î∞è Slot Í≤ÄÏÉâ
+     * Page π◊ Slot ∞Àªˆ
      */
 
     IDE_TEST(findStmtSlot(&sPage, &sSlot, sSessionID, sPageID, sSlotID) != IDE_SUCCESS);
 
     /*
-     * SlotÏóê StatementÍ∞Ä Ï°¥Ïû¨ÌïòÎäîÏßÄ Í≤ÄÏÇ¨
+     * Slotø° Statement∞° ¡∏¿Á«œ¥¬¡ˆ ∞ÀªÁ
      */
 
     IDE_TEST(sSlot->mStatement == NULL);
 
     /*
-     * Session ÏÜåÏÜçÏù¥ ÎßûÎäîÏßÄ Í≤ÄÏÇ¨
+     * Session º“º”¿Ã ∏¬¥¬¡ˆ ∞ÀªÁ
      */
-    /* PROJ-2177: Cancel Î™ÖÎ†πÏùÄ Îã§Î•∏ SessionÏúºÎ°ú Î∞õÏúºÎØÄÎ°ú NULLÏùÑ ÌóàÏö©ÌïúÎã§. */
+    /* PROJ-2177: Cancel ∏Ì∑…¿∫ ¥Ÿ∏• Session¿∏∑Œ πﬁ¿∏π«∑Œ NULL¿ª «„øÎ«—¥Ÿ. */
     if (aSession != NULL)
     {
         IDE_TEST(sSlot->mStatement->getSession() != aSession);
     }
 
     /*
-     * SlotÏùò StatementÎ•º ÎèåÎ†§Ï§å
+     * Slot¿« Statement∏¶ µπ∑¡¡‹
      */
 
     *aStatement = sSlot->mStatement;
@@ -369,7 +369,7 @@ IDE_RC mmcStatementManager::findStatement(mmcStatement **aStatement,
 IDE_RC mmcStatementManager::allocStmtPage(mmcStmtPage *aPage)
 {
     /*
-     * PageÏóê Slot ArrayÍ∞Ä Ìï†ÎãπÎêòÏñ¥ ÏûàÏßÄ ÏïäÏúºÎ©¥ Ìï†ÎãπÌïòÍ≥† Ï¥àÍ∏∞Ìôî
+     * Pageø° Slot Array∞° «“¥Áµ«æÓ ¿÷¡ˆ æ ¿∏∏È «“¥Á«œ∞Ì √ ±‚»≠
      */
 
     if (aPage->mSlot == NULL)
@@ -377,7 +377,7 @@ IDE_RC mmcStatementManager::allocStmtPage(mmcStmtPage *aPage)
         UShort sSlotID;
         
         /*
-         * Slot Array Ìï†Îãπ
+         * Slot Array «“¥Á
          */
 
         IDU_FIT_POINT_RAISE( "mmcStatementManager::allocStmtPage::malloc::Slot", 
@@ -389,7 +389,7 @@ IDE_RC mmcStatementManager::allocStmtPage(mmcStmtPage *aPage)
                                          IDU_MEM_IMMEDIATE) != IDE_SUCCESS, InsufficientMemory );
 
         /*
-         * Í∞Å Slot Ï¥àÍ∏∞Ìôî
+         * ∞¢ Slot √ ±‚»≠
          */
 
         for (sSlotID = 0; sSlotID < MMC_STMT_ID_SLOT_MAX; sSlotID++)
@@ -400,7 +400,7 @@ IDE_RC mmcStatementManager::allocStmtPage(mmcStmtPage *aPage)
         }
 
         /*
-         * PageÏùò Slot ÏÜçÏÑ±Í∞í Ï¥àÍ∏∞Ìôî
+         * Page¿« Slot º”º∫∞™ √ ±‚»≠
          */
 
         aPage->mSlotUseCount    = 0;
@@ -429,7 +429,7 @@ IDE_RC mmcStatementManager::freeStmtPage(mmcStmtPage *aPage)
     sStmtSlot = aPage->mSlot;
 
     /*
-     * PageÏóê SlotÏù¥ ÌïòÎÇòÎèÑ ÏÇ¨Ïö©ÎêòÍ≥† ÏûàÏßÄ ÏïäÏúºÎ©¥ Slot ArrayÎ•º Ìï¥Ï†ú
+     * Pageø° Slot¿Ã «œ≥™µµ ªÁøÎµ«∞Ì ¿÷¡ˆ æ ¿∏∏È Slot Array∏¶ «ÿ¡¶
      */
     if ( (sStmtSlot != NULL) && (aPage->mSlotUseCount == 0) )
     {
@@ -467,39 +467,39 @@ IDE_RC mmcStatementManager::allocStmtSlot(mmcStmtPage **aPage,
     sStmtPageTable = mStmtPageTableArr[*aSessionID - 1];
 
     /*
-     * Ìï†ÎãπÍ∞ÄÎä•Ìïú PageÍ∞Ä ÏóÜÏúºÎ©¥ Ïã§Ìå®
+     * «“¥Á∞°¥…«— Page∞° æ¯¿∏∏È Ω«∆–
      */
 
     IDE_TEST_RAISE(sStmtPageTable->mFirstFreePageID == MMC_STMT_ID_PAGE_MAX, TooManyStatement);
 
     /*
-     * Ìï†ÎãπÍ∞ÄÎä•Ìïú Page Í≤ÄÏÉâ
+     * «“¥Á∞°¥…«— Page ∞Àªˆ
      */
 
     sPageID = sStmtPageTable->mFirstFreePageID;
     sPage   = &(sStmtPageTable->mPage[sPageID]);
 
     /*
-     * Page Î©îÎ™®Î¶¨ Ìï†Îãπ
+     * Page ∏ﬁ∏∏Æ «“¥Á
      */
 
     IDE_TEST(allocStmtPage(sPage) != IDE_SUCCESS);
 
     /*
-     * PageÎÇ¥Ïùò Îπà Slot Í≤ÄÏÉâ
+     * Page≥ª¿« ∫Û Slot ∞Àªˆ
      */
 
     sSlotID = sPage->mFirstFreeSlotID;
     sSlot   = &(sPage->mSlot[sSlotID]);
 
     /*
-     * SlotÏù¥ ÎπÑÏñ¥ÏûàÎäîÏßÄ ÌôïÏù∏
+     * Slot¿Ã ∫ÒæÓ¿÷¥¬¡ˆ »Æ¿Œ
      */
 
     IDE_ASSERT(sSlot->mStatement == NULL);
 
     /*
-     * Ìï†ÎãπÎêú PageÏôÄ Slot, Statement ID Î∞òÌôò
+     * «“¥Áµ» PageøÕ Slot, Statement ID π›»Ø
      */
 
     *aPage   = sPage;
@@ -508,20 +508,20 @@ IDE_RC mmcStatementManager::allocStmtSlot(mmcStmtPage **aPage,
     *aStmtID = MMC_STMT_ID(*aSessionID, sPageID, sSlotID);
 
     /*
-     * UsedSlotCount Ï¶ùÍ∞Ä
+     * UsedSlotCount ¡ı∞°
      */
 
     sPage->mSlotUseCount++;
 
     /*
-     * FreeSlot List Í∞±Ïã†
+     * FreeSlot List ∞ªΩ≈
      */
 
     sPage->mFirstFreeSlotID = sSlot->mNextFreeSlotID;
     sSlot->mNextFreeSlotID  = MMC_STMT_ID_SLOT_MAX;
 
     /*
-     * PageÍ∞Ä fullÏù¥Î©¥ FreePage List Í∞±Ïã†
+     * Page∞° full¿Ã∏È FreePage List ∞ªΩ≈
      */
 
     if (sPage->mFirstFreeSlotID == MMC_STMT_ID_SLOT_MAX)
@@ -553,13 +553,13 @@ IDE_RC mmcStatementManager::freeStmtSlot(mmcStmtPage *aPage,
                                    NULL /* idvWeArgs* */ ) == IDE_SUCCESS);
 
     /*
-     * Statement ÏÇ≠Ï†ú
+     * Statement ªË¡¶
      */
 
     aSlot->mStatement = NULL;
 
     /*
-     * UsedSlotCount Í∞êÏÜå
+     * UsedSlotCount ∞®º“
      */
 
     aPage->mSlotUseCount--;
@@ -568,14 +568,14 @@ IDE_RC mmcStatementManager::freeStmtSlot(mmcStmtPage *aPage,
     IDE_ASSERT( aPage->mPageLatch.unlock() == IDE_SUCCESS);
 
     /*
-     * FreeSlot List Í∞±Ïã†
+     * FreeSlot List ∞ªΩ≈
      */
 
     aSlot->mNextFreeSlotID  = aPage->mFirstFreeSlotID;
     aPage->mFirstFreeSlotID = aSlotID;
 
     /*
-     * PageÍ∞Ä fullÏù¥ÏóàÏúºÎ©¥ FreePage List Í∞±Ïã†
+     * Page∞° full¿Ãæ˙¿∏∏È FreePage List ∞ªΩ≈
      */
 
     if (aPage->mSlotUseCount == (MMC_STMT_ID_SLOT_MAX - 1))
@@ -601,19 +601,19 @@ IDE_RC mmcStatementManager::freeStmtSlot(mmcStatement *aStatement)
     UShort       sSlotID = MMC_STMT_ID_SLOT(sStatementID);
 
     /*
-     * Page Î∞è Slot Í≤ÄÏÉâ
+     * Page π◊ Slot ∞Àªˆ
      */
 
     IDE_TEST_RAISE(findStmtSlot(&sPage, &sSlot, sSessionID, sPageID, sSlotID) != IDE_SUCCESS, StatementNotFound);
 
     /*
-     * SlotÏóê Ï†ÄÏû•Îêú StatementÍ∞Ä ÏùºÏπòÌïòÎäîÏßÄ Í≤ÄÏÇ¨
+     * Slotø° ¿˙¿Âµ» Statement∞° ¿œƒ°«œ¥¬¡ˆ ∞ÀªÁ
      */
 
     IDE_TEST(sSlot->mStatement != aStatement);
 
     /*
-     * Slot Ìï†Îãπ Ìï¥Ï†ú
+     * Slot «“¥Á «ÿ¡¶
      */
     /* PROJ-2109 : Remove the bottleneck of alloc/free stmts. */
     IDE_TEST(freeStmtSlot(sPage, sSlot, sSessionID, sPageID, sSlotID) != IDE_SUCCESS);
@@ -637,7 +637,7 @@ IDE_RC mmcStatementManager::findStmtSlot(mmcStmtPage **aPage,
                                          UShort aSlotID)
 {
     /*
-     * Page Í≤ÄÏÉâ
+     * Page ∞Àªˆ
      */
     /* PROJ-2109 : Remove the bottleneck of alloc/free stmts. */
     /*SessionID must bigger than 0*/
@@ -650,13 +650,13 @@ IDE_RC mmcStatementManager::findStmtSlot(mmcStmtPage **aPage,
     *aPage = &(mStmtPageTableArr[aSessionID-1]->mPage[aPageID]);
 
     /*
-     * PageÏóê Slot ArrayÍ∞Ä Ìï†ÎãπÎêòÏñ¥ ÏûàÎäîÏßÄ Í≤ÄÏÇ¨
+     * Pageø° Slot Array∞° «“¥Áµ«æÓ ¿÷¥¬¡ˆ ∞ÀªÁ
      */
 
     IDE_TEST((*aPage)->mSlot == NULL);
 
     /*
-     * Slot Í≤ÄÏÉâ
+     * Slot ∞Àªˆ
      */
 
     *aSlot = &((*aPage)->mSlot[aSlotID]);
@@ -785,7 +785,7 @@ static UInt callbackForTotalTime(void *aBaseObj, void */*aMember*/, UChar *aBuf,
 static UInt callbackForConvertTime(void *aBaseObj, void *aMember, UChar *aBuf, UInt /*aBufSize*/)
 {
     /*
-     * native ÌÉÄÏûÖÏúºÎ°ú Ï†ÄÏû•Îêú Îç∞Ïù¥ÌÉÄÎ•º usec ÌòïÌÉúÎ°ú Î≥ÄÌôòÌïúÎã§.
+     * native ≈∏¿‘¿∏∑Œ ¿˙¿Âµ» µ•¿Ã≈∏∏¶ usec «¸≈¬∑Œ ∫Ø»Ø«—¥Ÿ.
      */
     mmcStatementInfo *sStmtInfo = (mmcStatementInfo *)aBaseObj;
     idvSQL           *sStat     = &sStmtInfo->mStatistics;
@@ -1043,9 +1043,9 @@ static UInt callbackForConvertTime(void *aBaseObj, void *aMember, UChar *aBuf, U
         IDE_CALLBACK_FATAL("not support type");
     }
 
-    // BUG-21093 : V$STATEMENTÏùò ÏãúÍ∞Ñ Îã®ÏúÑÎ•º Micro sec Îã®ÏúÑÎ°ú ÏõêÎ≥µ
-    // milli-second Îã®ÏúÑÎ•º Î∞îÍæ∏Î†§Î©¥ mmuFixedTable::buildConvertTime() ÎåÄÏã†
-    // mmuFixedTable::buildConvertTimeMSEC()ÏùÑ ÏÇ¨Ïö©ÌïòÎ©¥ Îê®
+    // BUG-21093 : V$STATEMENT¿« Ω√∞£ ¥‹¿ß∏¶ Micro sec ¥‹¿ß∑Œ ø¯∫π
+    // milli-second ¥‹¿ß∏¶ πŸ≤Ÿ∑¡∏È mmuFixedTable::buildConvertTime() ¥ÎΩ≈
+    // mmuFixedTable::buildConvertTimeMSEC()¿ª ªÁøÎ«œ∏È µ 
     return mmuFixedTable::buildConvertTime(&sBegin, &sEnd, aBuf);   
 }
 
@@ -1058,7 +1058,7 @@ static UInt callbackForGetParentStmtId(void *aBaseObj,
  *
  *  Description : PROJ-1386 Dynamic-SQL
  *
- *  Implementation : parent statement idÎ•º Íµ¨ÌïòÎäî FT callback
+ *  Implementation : parent statement id∏¶ ±∏«œ¥¬ FT callback
  *
  ***********************************************************************/
     mmcStatementInfo* sStmtInfo;
@@ -1069,7 +1069,7 @@ static UInt callbackForGetParentStmtId(void *aBaseObj,
     if( sStmtInfo->mParentStmt == NULL )
     {
         // PROJ-1386 Dynamic-SQL
-        // rootÏù∏ Í≤ΩÏö∞ parentÎäî ÏûêÍ∏∞ ÏûêÏã†
+        // root¿Œ ∞ÊøÏ parent¥¬ ¿⁄±‚ ¿⁄Ω≈
         *((UInt*)aBuf) = (UInt)sStmtInfo->mStatementID;
     }
     else
@@ -1683,6 +1683,54 @@ static iduFixedTableColDesc gSTATEMENTColDesc[] =
         0, 0, NULL
     },
     {
+        (SChar *)"GCTX_REQUEST_SCN",
+        offsetof( mmcStatementInfo, mGCTxStmtInfo.mRequestSCN ),
+        IDU_FT_SIZEOF( mmcStatementInfo, mGCTxStmtInfo.mRequestSCN ),
+        IDU_FT_TYPE_UBIGINT,
+        NULL,
+        0, 0, NULL
+    },
+    {
+        (SChar *)"DISTRIBUTION_FIRST_STMT_SCN",
+        offsetof( mmcStatementInfo, mGCTxStmtInfo.mShareBuffer.mTxFirstStmtSCN ),
+        IDU_FT_SIZEOF( mmcStatementInfo, mGCTxStmtInfo.mShareBuffer.mTxFirstStmtSCN ),
+        IDU_FT_TYPE_UBIGINT,
+        NULL,
+        0, 0, NULL
+    },
+    {
+        (SChar *)"DISTRIBUTION_FIRST_STMT_TIME",
+        offsetof( mmcStatementInfo, mGCTxStmtInfo.mShareBuffer.mTxFirstStmtTime ),
+        IDU_FT_SIZEOF( mmcStatementInfo, mGCTxStmtInfo.mShareBuffer.mTxFirstStmtTime ),
+        IDU_FT_TYPE_UBIGINT,
+        NULL,
+        0, 0, NULL
+    },
+    {
+        (SChar *)"DISTRIBUTION_LEVEL",
+        offsetof( mmcStatementInfo, mGCTxStmtInfo.mShareBuffer.mDistLevel ),
+        IDU_FT_SIZEOF( mmcStatementInfo, mGCTxStmtInfo.mShareBuffer.mDistLevel ),
+        IDU_FT_TYPE_UINTEGER,
+        NULL,
+        0, 0, NULL
+    },
+    {
+        (SChar *)"REBUILD_COUNT",
+        offsetof( mmcStatementInfo, mRebuildCount ),
+        IDU_FT_SIZEOF( mmcStatementInfo, mRebuildCount ),
+        IDU_FT_TYPE_INTEGER,
+        NULL,
+        0, 0, NULL
+    },
+    {
+        (SChar *)"SHARD_PARTIAL_EXEC_TYPE",
+        offsetof( mmcStatementInfo, mShardPartialExecType ),
+        IDU_FT_SIZEOF( mmcStatementInfo, mShardPartialExecType ),
+        IDU_FT_TYPE_UINTEGER,
+        NULL,
+        0, 0, NULL
+    },
+    {
         NULL,
         0,
         0,
@@ -1742,12 +1790,12 @@ IDE_RC mmcStatementManager::buildRecordForSTATEMENT(idvSQL              * /*aSta
                             sInfo = sStmt->getInfo();
 
                             /* BUG-43006 FixedTable Indexing Filter
-                             * Column Index Î•º ÏÇ¨Ïö©Ìï¥ÏÑú Ï†ÑÏ≤¥ RecordÎ•º ÏÉùÏÑ±ÌïòÏßÄÏïäÍ≥†
-                             * Î∂ÄÎ∂ÑÎßå ÏÉùÏÑ±Ìï¥ Filtering ÌïúÎã§.
-                             * 1. void * Î∞∞Ïó¥Ïóê IDU_FT_COLUMN_INDEX Î°ú ÏßÄÏ†ïÎêú Ïª¨ÎüºÏóê
-                             * Ìï¥ÎãπÌïòÎäî Í∞íÏùÑ ÏàúÏÑúÎåÄÎ°ú ÎÑ£Ïñ¥Ï£ºÏñ¥Ïïº ÌïúÎã§.
-                             * 2. IDU_FT_COLUMN_INDEXÏùò Ïª¨ÎüºÏóê Ìï¥ÎãπÌïòÎäî Í∞íÏùÑ Î™®Îëê ÎÑ£
-                             * Ïñ¥ Ï£ºÏñ¥ÏïºÌïúÎã§.
+                             * Column Index ∏¶ ªÁøÎ«ÿº≠ ¿¸√º Record∏¶ ª˝º∫«œ¡ˆæ ∞Ì
+                             * ∫Œ∫–∏∏ ª˝º∫«ÿ Filtering «—¥Ÿ.
+                             * 1. void * πËø≠ø° IDU_FT_COLUMN_INDEX ∑Œ ¡ˆ¡§µ» ƒ√∑≥ø°
+                             * «ÿ¥Á«œ¥¬ ∞™¿ª º¯º≠¥Î∑Œ ≥÷æÓ¡÷æÓæﬂ «—¥Ÿ.
+                             * 2. IDU_FT_COLUMN_INDEX¿« ƒ√∑≥ø° «ÿ¥Á«œ¥¬ ∞™¿ª ∏µŒ ≥÷
+                             * æÓ ¡÷æÓæﬂ«—¥Ÿ.
                              */
                             sIndexValues[0] = &sInfo->mSessionID;
                             sIndexValues[1] = &sInfo->mExecuteFlag;
@@ -1940,8 +1988,8 @@ IDE_RC mmcStatementManager::buildRecordForSQLTEXT(idvSQL              * /*aStati
 
                                     if (( sSqlTextString + sSqlLen ) <= sIndex )
                                     {
-                                        // ÎÅùÍπåÏßÄ Í∞Ñ Í≤ΩÏö∞.
-                                        // Í∏∞Î°ùÏùÑ Ìïú ÌõÑ break.
+                                        // ≥°±Ó¡ˆ ∞£ ∞ÊøÏ.
+                                        // ±‚∑œ¿ª «— »ƒ break.
                                         sSeqNo++;
 
                                         sCurrPos = sStartIndex - sSqlTextString;
@@ -1964,19 +2012,19 @@ IDE_RC mmcStatementManager::buildRecordForSQLTEXT(idvSQL              * /*aStati
                                     {
                                         if( sIndex - sStartIndex >= MMC_STMT_SQL_TEXT_LEN )
                                         {
-                                            // ÏïÑÏßÅ ÎÅùÍ∞ÄÏßÄ Ïïà Í∞îÍ≥†, ÏùΩÎã§Î≥¥Îãà 64Î∞îÏù¥Ìä∏ ÎòêÎäî Ï¥àÍ≥ºÌïú Í∞íÏù¥
-                                            // ÎêòÏóàÏùÑ Îïå ÏûòÎùºÏÑú Í∏∞Î°ù
+                                            // æ∆¡˜ ≥°∞°¡ˆ æ» ∞¨∞Ì, ¿–¥Ÿ∫∏¥œ 64πŸ¿Ã∆Æ ∂«¥¬ √ ∞˙«— ∞™¿Ã
+                                            // µ«æ˙¿ª ∂ß ¿ﬂ∂Ûº≠ ±‚∑œ
                                             sCurrPos = sStartIndex - sSqlTextString;
                 
                                             if( sIndex - sStartIndex == MMC_STMT_SQL_TEXT_LEN )
                                             {
-                                                // Îî± Îñ®Ïñ¥ÏßÄÎäî Í≤ΩÏö∞
+                                                // µ¸ ∂≥æÓ¡ˆ¥¬ ∞ÊøÏ
                                                 sCurrLen = MMC_STMT_SQL_TEXT_LEN;
                                                 sStartIndex = sIndex;
                                             }
                                             else
                                             {
-                                                // ÏÇêÏ†∏ÎÇòÍ∞Ñ Í≤ΩÏö∞ Í∑∏ Ïù¥Ï†Ñ Ï∫êÎ¶≠ÌÑ∞ ÏúÑÏπòÍπåÏßÄ Í∏∞Î°ù
+                                                // ªﬂ¡Æ≥™∞£ ∞ÊøÏ ±◊ ¿Ã¿¸ ƒ≥∏Ø≈Õ ¿ßƒ°±Ó¡ˆ ±‚∑œ
                                                 sCurrLen = sPrevIndex - sStartIndex;
                                                 sStartIndex = sPrevIndex;
                                             }
@@ -2165,7 +2213,8 @@ IDE_RC mmcStatementManager::buildRecordForPLANTEXT(idvSQL              * /*aStat
                             {
                                 IDE_TEST(iduVarStringTruncate(&sPlanString, ID_TRUE) != IDE_SUCCESS);
 
-                                if (qci::getPlanTreeText(sStmt->getQciStmt(), &sPlanString, ID_TRUE) == IDE_SUCCESS)
+                                /* BUG-48224 */
+                                if (qci::getPlanTreeTextForFixedTable(sStmt->getQciStmt(), &sPlanString, ID_TRUE) == IDE_SUCCESS)
                                 {
                                     if ( sPlanString.mLength != 0 )
                                     {
@@ -2325,7 +2374,7 @@ IDE_RC mmcStatementManager::freeAllStmtSlotExceptFirstOne( mmcSessID aSessionID 
 
     if ( (sStmtPageTable = mStmtPageTableArr[ aSessionID - 1 ]) != NULL )
     {
-        /* StmtPage ÎÇ¥Ïùò Ï≤´Î≤àÏß∏Î•º Ï†úÏô∏Ìïú ÎÇòÎ®∏ÏßÄ iÎ≤àÏß∏ StmtSlotÎì§Ïóê ÎåÄÌï¥ÏÑú freeÌï® */
+        /* StmtPage ≥ª¿« √ππ¯¬∞∏¶ ¡¶ø‹«— ≥™∏”¡ˆ iπ¯¬∞ StmtSlotµÈø° ¥Î«ÿº≠ free«‘ */
         for( i = 1 ; (sStmtPageTable->mPage[i].mSlot != NULL) && (i < MMC_STMT_ID_PAGE_MAX) ; i++ )
         {
             IDE_TEST( freeStmtPage( &(sStmtPageTable->mPage[i]) ) != IDE_SUCCESS );

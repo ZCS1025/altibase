@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfFirstValue.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfFirstValue.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -48,7 +48,7 @@ mtfModule mtfFirstValue = {
         MTC_NODE_FUNCTION_ANALYTIC_TRUE |
         MTC_NODE_FUNCTION_WINDOWING_TRUE,
     ~( MTC_NODE_INDEX_MASK ),
-    1.0, /* default selectivity ( ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜ ) */
+    1.0, /* default selectivity ( ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô ) */
     mtfFirstValueName,
     NULL,
     mtf::initializeDefault,
@@ -117,7 +117,7 @@ IDE_RC mtfFirstValueEstimate( mtcNode     * aNode,
 
     mtc::initializeColumn( aStack[0].column, aStack[1].column );
 
-    /* First Value ë¥¼ íšë“ í–ˆëŠ”ì§€ ì•Ší–ˆëŠ”ì§€ë¥¼ ì €ì¥ */
+    /* First Value ¸¦ È¹µæ Çß´ÂÁö ¾ÊÇß´ÂÁö¸¦ ÀúÀå */
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                      & mtdBoolean,
                                      0,

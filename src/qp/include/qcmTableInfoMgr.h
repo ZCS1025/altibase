@@ -30,26 +30,26 @@ class qcmTableInfoMgr
 {
 public:
 
-    // tableInfoë¥¼ ìƒˆë¡œ ìƒì„±í•œë‹¤.
+    // tableInfo¸¦ »õ·Î »ı¼ºÇÑ´Ù.
     static IDE_RC makeTableInfoFirst( qcStatement   * aStatement,
                                       UInt            aTableID,
                                       smOID           aTableOID,
                                       qcmTableInfo ** aNewTableInfo );
 
-    // ê¸°ì¡´ì˜ tableInfoê°€ ìˆìœ¼ë©° ìƒˆë¡œìš´ tableInfoë¡œ ë³€ê²½í•œë‹¤.
+    // ±âÁ¸ÀÇ tableInfo°¡ ÀÖÀ¸¸ç »õ·Î¿î tableInfo·Î º¯°æÇÑ´Ù.
     static IDE_RC makeTableInfo( qcStatement   * aStatement,
                                  qcmTableInfo  * aOldTableInfo,
                                  qcmTableInfo ** aNewTableInfo );
 
-    // tableInfoë¥¼ ì‚­ì œí•œë‹¤.
-    // ìƒˆë¡œìš´ tableInfoê°€ ìƒì„±ë˜ì–´ìˆë‹¤ë©´, ìƒˆë¡œìš´ tableInfoë¥¼ ì‚­ì œí•œë‹¤.
+    // tableInfo¸¦ »èÁ¦ÇÑ´Ù.
+    // »õ·Î¿î tableInfo°¡ »ı¼ºµÇ¾îÀÖ´Ù¸é, »õ·Î¿î tableInfo¸¦ »èÁ¦ÇÑ´Ù.
     static IDE_RC destroyTableInfo( qcStatement  * aStatement,
                                     qcmTableInfo * aTableInfo );
 
-    // executeì¤‘ ìƒì„±ëœ old tableInfoë¥¼ ì‚­ì œí•œë‹¤.
+    // executeÁß »ı¼ºµÈ old tableInfo¸¦ »èÁ¦ÇÑ´Ù.
     static void   destroyAllOldTableInfo( qcStatement  * aStatement );
 
-    // executeì¤‘ ìƒì„±ëœ new tableInfoë¥¼ ì‚­ì œí•˜ê³  ì›ë³µí•œë‹¤.
+    // executeÁß »ı¼ºµÈ new tableInfo¸¦ »èÁ¦ÇÏ°í ¿øº¹ÇÑ´Ù.
     static void   revokeAllNewTableInfo( qcStatement  * aStatement );
 };
 

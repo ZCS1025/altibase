@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfNot.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfNot.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -46,7 +46,7 @@ mtfModule mtfNot = {
     1|MTC_NODE_OPERATOR_NOT|MTC_NODE_LOGICAL_CONDITION_TRUE|
         MTC_NODE_PRINT_FMT_PREFIX_SP,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞ÏûêÍ∞Ä ÏïÑÎãò)
+    1.0,  // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄∞° æ∆¥‘)
     mtfNotFunctionName,
     NULL,
     mtf::initializeDefault,

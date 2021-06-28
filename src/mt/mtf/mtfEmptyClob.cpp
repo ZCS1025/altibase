@@ -44,7 +44,7 @@ static IDE_RC mtfEmptyClobEstimate( mtcNode*     aNode,
 mtfModule mtfEmptyClob = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfEmptyClobFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -87,7 +87,7 @@ IDE_RC mtfEmptyClobEstimate( mtcNode*     aNode,
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
 
-    // aStack[0].columnì˜ ì´ˆê¸°í™”
+    // aStack[0].columnÀÇ ÃÊ±âÈ­
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      & mtdClob,
                                      1,

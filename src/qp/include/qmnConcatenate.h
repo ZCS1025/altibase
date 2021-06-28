@@ -21,18 +21,18 @@
  * Description :
  *     CONC(CONCaternation) Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ Concatenationì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     °ü°èÇü ¸ğµ¨¿¡¼­ ConcatenationÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
  *
- *     ë‹¤ìŒê³¼ ê°™ì€ ê¸°ëŠ¥ì„ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
- *        - DNFì˜ ì²˜ë¦¬
- *        - Full Outer Joinì˜ Anti-Outer ìµœì í™”
+ *     ´ÙÀ½°ú °°Àº ±â´ÉÀ» À§ÇØ »ç¿ëµÈ´Ù.
+ *        - DNFÀÇ Ã³¸®
+ *        - Full Outer JoinÀÇ Anti-Outer ÃÖÀûÈ­
  *
- *     Left Childì— ëŒ€í•œ Dataì™€ Right Childì— ëŒ€í•œ Dataë¥¼
- *     ëª¨ë‘ ë¦¬í„´í•œë‹¤.
+ *     Left Child¿¡ ´ëÇÑ Data¿Í Right Child¿¡ ´ëÇÑ Data¸¦
+ *     ¸ğµÎ ¸®ÅÏÇÑ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -60,7 +60,7 @@
 typedef struct qmncCONC
 {
     //---------------------------------
-    // Code ì˜ì—­ ê³µí†µ ì •ë³´
+    // Code ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmnPlan        plan;
@@ -72,7 +72,7 @@ typedef struct qmncCONC
 typedef struct qmndCONC
 {
     //---------------------------------
-    // Data ì˜ì—­ ê³µí†µ ì •ë³´
+    // Data ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
     qmndPlan            plan;
     doItFunc            doIt;
@@ -88,11 +88,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ìˆ˜í–‰ í•¨ìˆ˜
+    // ¼öÇà ÇÔ¼ö
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -101,7 +101,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan ì •ë³´ ì¶œë ¥
+    // Plan Á¤º¸ Ãâ·Â
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -112,24 +112,24 @@ public:
     // mapping by doIt() function pointer
     //------------------------
 
-    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨
+    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // Left Childì— ëŒ€í•œ ì²˜ë¦¬
+    // Left Child¿¡ ´ëÇÑ Ã³¸®
     static IDE_RC doItLeft( qcTemplate * aTemplate,
                             qmnPlan    * aPlan,
                             qmcRowFlag * aFlag );
 
-    // Right Childì— ëŒ€í•œ ì²˜ë¦¬
+    // Right Child¿¡ ´ëÇÑ Ã³¸®
     static IDE_RC doItRight( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              qmcRowFlag * aFlag );
 
 private:
 
-    // ìµœì´ˆ ì´ˆê¸°í™”
+    // ÃÖÃÊ ÃÊ±âÈ­
     static IDE_RC firstInit( qmndCONC   * aDataPlan );
 
 };

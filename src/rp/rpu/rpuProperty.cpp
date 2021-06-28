@@ -16,12 +16,13 @@
  
 
 /***********************************************************************
- * $Id: rpuProperty.cpp 84487 2018-11-30 13:31:47Z yoonhee.kim $
+ * $Id: rpuProperty.cpp 90491 2021-04-07 07:02:29Z lswhh $
  **********************************************************************/
 
 #include <idl.h> // to remove win32 compile warning
 #include <rp.h>
 #include <rpuProperty.h>
+#include <sdi.h>
 
 SChar *rpuProperty::mSID;
 SChar *rpuProperty::mDbName;
@@ -74,6 +75,7 @@ SInt   rpuProperty::mEagerMaxYieldCount;
 UInt   rpuProperty::mEagerReceiverMaxErrorCount;
 UInt   rpuProperty::mBeforeImageLogEnable;  // BUG-36555
 SInt   rpuProperty::mSenderCompressXLog;
+UInt   rpuProperty::mSenderCompressXLogLevel;
 UInt   rpuProperty::mMaxReplicationCount;   /* BUG-37482 */
 UInt   rpuProperty::mAllowDuplicateHosts;
 SInt   rpuProperty::mSenderEncryptXLog;     /* BUG-38102 */
@@ -105,11 +107,46 @@ UInt   rpuProperty::mIBLatency;
 
 ULong  rpuProperty::mGapUnit;
 
+UInt   rpuProperty::mCheckSRIDInGeometryEnable;
+UInt   rpuProperty::mXLogfilePrepareCount;
+ULong  rpuProperty::mXLogfileSize;
+UInt   rpuProperty::mXLogfileRemoveInterval;
+UInt   rpuProperty::mXLogfileRemoveIntervalByFileCreate;
+SChar *rpuProperty::mXLogDirPath;
+
+IDE_RC rpuProperty::initProperty()
+{
+    IDE_TEST( load() != IDE_SUCCESS );
+    if (RPU_REPLICATION_PORT_NO != 0)
+    {
+        /*******************************************************************
+         * ÇÁ¶óÆÛÆ¼ »çÀÌÀÇ Ãæµ¹À» °Ë»çÇÑ´Ù.
+         *******************************************************************/
+        IDE_TEST(checkConflict() != IDE_SUCCESS);
+    }
+
+    /* ÇÏÀ§ ¸ðµâ¿¡°Ô ÀÌÁßÈ­ °ü·Ã Á¤º¸¸¦ »ç¿ëÇÒ ¶§ Âü°íÇÏ±â À§ÇÑ ÀÌÁßÈ­ ¼Ó¼ºÀ» ¼³Á¤ÇØ ÁØ´Ù. */
+    setLowerModuleStaticProperty();
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpuProperty::finalProperty()
+{
+    return IDE_SUCCESS;
+}
+
+UInt   rpuProperty::mMetaItemCountDiffEnable;
+
 IDE_RC
 rpuProperty::load()
 {
     /*******************************************************************
-     * í”„ë¼í¼í‹°ë¥¼ ì½ëŠ”ë‹¤.
+     * ÇÁ¶óÆÛÆ¼¸¦ ÀÐ´Â´Ù.
      *******************************************************************/
     IDE_ASSERT(idp::readPtr((SChar *)"SID",
                             (void **)&mSID)
@@ -305,6 +342,10 @@ rpuProperty::load()
                          &mSenderCompressXLog)
                == IDE_SUCCESS);
 
+    IDE_ASSERT(idp::read((SChar *)"REPLICATION_SENDER_COMPRESS_XLOG_LEVEL",
+                         &mSenderCompressXLogLevel)
+               == IDE_SUCCESS);
+
     IDE_ASSERT( idp::read( (SChar *)"REPLICATION_MAX_COUNT",
                          &mMaxReplicationCount )
                == IDE_SUCCESS );
@@ -394,12 +435,12 @@ rpuProperty::load()
                            &mAllowQueue )
                 == IDE_SUCCESS);
 
-    IDE_ASSERT( idp::read( (SChar *)"REPLICATION_DDL_SYNC",
-                           &mReplicationDDLSync )
+    IDE_ASSERT( idp::read( (SChar *)"REPLICATION_DDL_SYNC", 
+                           &mReplicationDDLSync ) 
                 == IDE_SUCCESS );
 
     IDE_ASSERT( idp::read( (SChar *)"REPLICATION_DDL_SYNC_TIMEOUT",
-                           &mReplicationDDLSyncTimeout )
+                           &mReplicationDDLSyncTimeout ) 
                 == IDE_SUCCESS );
 
     IDE_ASSERT( idp::read( (SChar *)"REPLICATION_RECEIVER_APPLIER_YIELD_COUNT",
@@ -423,9 +464,32 @@ rpuProperty::load()
                           &mGapUnit )
                == IDE_SUCCESS);
 
+    IDE_ASSERT(idp::read( (SChar *)"REPLICATION_CHECK_SRID_IN_GEOMETRY_ENABLE",
+                          &mCheckSRIDInGeometryEnable )
+               == IDE_SUCCESS);
+               
+    IDE_ASSERT(idp::read( (SChar *)"REPLICATION_META_ITEM_COUNT_DIFF_ENABLE",
+                          &mMetaItemCountDiffEnable )
+               == IDE_SUCCESS);    
+    
+    IDE_ASSERT(idp::read( (SChar *)"XLOGFILE_PREPARE_COUNT",
+                          &mXLogfilePrepareCount )
+               == IDE_SUCCESS);
+ 
+    IDE_ASSERT(idp::read( (SChar *)"XLOGFILE_SIZE",
+                          &mXLogfileSize )
+               == IDE_SUCCESS);
+ 
+    IDE_ASSERT(idp::read( (SChar *)"XLOGFILE_REMOVE_INTERVAL",
+                          &mXLogfileRemoveInterval )
+               == IDE_SUCCESS);
 
+    IDE_ASSERT(idp::read( (SChar *)"XLOGFILE_REMOVE_INTERVAL_BY_FILE_CREATE",
+                          &mXLogfileRemoveIntervalByFileCreate )
+               == IDE_SUCCESS);
+    IDE_TEST( idp::readPtr( "XLOGFILE_DIR", (void**)&mXLogDirPath ) != IDE_SUCCESS );
     /*******************************************************************
-     * Update Callbackì„ ì„¤ì •í•œë‹¤.
+     * Update CallbackÀ» ¼³Á¤ÇÑ´Ù.
      *******************************************************************/
     IDE_TEST(idp::setupAfterUpdateCallback(
                   (const SChar*)"REPLICATION_SYNC_LOCK_TIMEOUT",
@@ -562,6 +626,11 @@ rpuProperty::load()
               != IDE_SUCCESS );
 
     IDE_TEST( idp::setupAfterUpdateCallback(
+                  (const SChar*)"REPLICATION_SENDER_COMPRESS_XLOG_LEVEL",
+                  rpuProperty::notifyREPLICATION_SENDER_COMPRESS_XLOG_LEVEL)
+              != IDE_SUCCESS );
+
+    IDE_TEST( idp::setupAfterUpdateCallback(
                   (const SChar*)"REPLICATION_ALLOW_DUPLICATE_HOSTS",
                   rpuProperty::notifyREPLICATION_ALLOW_DUPLICATE_HOSTS)
               != IDE_SUCCESS );
@@ -669,11 +738,21 @@ rpuProperty::load()
                   rpuProperty::notifyREPLICATION_GAP_UNIT )
               != IDE_SUCCESS ); 
 
-    /*******************************************************************
-     * í”„ë¼í¼í‹° ì‚¬ì´ì˜ ì¶©ëŒì„ ê²€ì‚¬í•œë‹¤.
-     *******************************************************************/
-    IDE_TEST(checkConflict() != IDE_SUCCESS);
+    IDE_TEST( idp::setupAfterUpdateCallback(
+                  (const SChar*)"REPLICATION_CHECK_SRID_IN_GEOMETRY_ENABLE",
+                  rpuProperty::notifyREPLICATION_CHECK_SRID_IN_GEOMETRY_ENABLE )
+              != IDE_SUCCESS ); 
 
+    IDE_TEST( idp::setupAfterUpdateCallback(
+                  (const SChar*)"REPLICATION_META_ITEM_COUNT_DIFF_ENABLE",
+                  rpuProperty::notifyREPLICATION_META_ITEM_COUNT_DIFF_ENABLE )
+              != IDE_SUCCESS );
+
+    IDE_TEST( idp::setupAfterUpdateCallback(
+                  (const SChar*)"XLOGFILE_REMOVE_INTERVAL_BY_FILE_CREATE",
+                  rpuProperty::notifyXLOGFILE_REMOVE_INTERVAL_BY_FILE_CREATE )
+              != IDE_SUCCESS ); 
+    
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -682,12 +761,12 @@ rpuProperty::load()
 }
 
 /***********************************************************************
- * Description : í”„ë¼í¼í‹° ì‚¬ì´ì˜ ì¶©ëŒì„ ê²€ì‚¬í•œë‹¤.
+ * Description : ÇÁ¶óÆÛÆ¼ »çÀÌÀÇ Ãæµ¹À» °Ë»çÇÑ´Ù.
  *
  ***********************************************************************/
 IDE_RC rpuProperty::checkConflict()
 {
-    /* BUG-30694 RP Log Bufferì—ì„œ LSNì„ ì–»ì„ ìˆ˜ ì—†ìœ¼ë¯€ë¡œ, ê´€ë ¨ í”„ë¼í¼í‹° ë§‰ìŒ */
+    /* BUG-30694 RP Log Buffer¿¡¼­ LSNÀ» ¾òÀ» ¼ö ¾øÀ¸¹Ç·Î, °ü·Ã ÇÁ¶óÆÛÆ¼ ¸·À½ */
     IDE_TEST_RAISE((mRPLogBufferSize > 0) && (mSyncLog == 1),
                    ERR_RP_LOG_BUFFER_PROPERTY_CONFLICT);
 
@@ -700,6 +779,12 @@ IDE_RC rpuProperty::checkConflict()
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
+}
+
+void rpuProperty::setLowerModuleStaticProperty()
+{
+    /* ÇÏÀ§ ¸ðµâ¿¡¼­ »ç¿ëÇÏ´Â ÀÌÁßÈ­ °ü·Ã ¼Ó¼º ¼³Á¤ */
+    sdi::setReplicationMaxParallelCount(RP_PARALLEL_APPLIER_MAX_COUNT);
 }
 
 IDE_RC
@@ -1082,6 +1167,20 @@ rpuProperty::notifyREPLICATION_SENDER_COMPRESS_XLOG( idvSQL* /* aStatistics */,
     return IDE_SUCCESS;
 }
 
+IDE_RC
+rpuProperty::notifyREPLICATION_SENDER_COMPRESS_XLOG_LEVEL( idvSQL* /* aStatistics */,
+                                                           SChar * /* Name */,
+                                                           void  * /* aOldValue */,
+                                                           void  * aNewValue,
+                                                           void  * /* aArg */ )
+{
+    idlOS::memcpy( &mSenderCompressXLogLevel,
+                   aNewValue,
+                   ID_SIZEOF( UInt ) );
+
+    return IDE_SUCCESS;
+}
+
 IDE_RC rpuProperty::notifyREPLICATION_ALLOW_DUPLICATE_HOSTS( idvSQL* /* aStatistics */,
                                                              SChar * /* Name */,
                                                              void  * /* aOldValue */,
@@ -1377,6 +1476,48 @@ rpuProperty::notifyREPLICATION_GAP_UNIT( idvSQL* /* aStatistics */,
     idlOS::memcpy( &mGapUnit,
                    aNewValue,
                    ID_SIZEOF( ULong ) );
+
+    return IDE_SUCCESS;
+}
+
+IDE_RC
+rpuProperty::notifyREPLICATION_CHECK_SRID_IN_GEOMETRY_ENABLE( idvSQL* /* aStatistics */,
+                                                              SChar * /* aName */,
+                                                              void  * /* aOldValue */,
+                                                              void  * aNewValue,
+                                                              void  * /* aArg */ )
+{
+    idlOS::memcpy( &mCheckSRIDInGeometryEnable,
+                   aNewValue,
+                   ID_SIZEOF( UInt ) );
+
+    return IDE_SUCCESS;
+}
+
+IDE_RC
+rpuProperty::notifyREPLICATION_META_ITEM_COUNT_DIFF_ENABLE( idvSQL* /* aStatistics */,
+                                                            SChar * /* aName */,
+                                                            void  * /* aOldValue */,
+                                                            void  * aNewValue,
+                                                            void  * /* aArg */ )
+{
+    idlOS::memcpy( &mMetaItemCountDiffEnable,
+                   aNewValue,
+                   ID_SIZEOF( UInt ) );
+
+    return IDE_SUCCESS;
+}
+
+IDE_RC
+rpuProperty::notifyXLOGFILE_REMOVE_INTERVAL_BY_FILE_CREATE( idvSQL* /* aStatistics */,
+                                                            SChar * /* aName */,
+                                                            void  * /* aOldValue */,
+                                                            void  * aNewValue,
+                                                            void  * /* aArg */ )
+{
+    idlOS::memcpy( &mXLogfileRemoveIntervalByFileCreate,
+                   aNewValue,
+                   ID_SIZEOF( UInt ) );
 
     return IDE_SUCCESS;
 }

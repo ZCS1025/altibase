@@ -28,13 +28,21 @@
 #include <mtdTypes.h>
 #include <stdTypes.h>
 #include <stfWKT.h>
+#include <stfEWKT.h>
 #include <qc.h>
 
 extern mtfModule stfPolyFromText;
+extern mtfModule stfPolygonFromText;
+
+extern mtdModule mtdInteger;
 
 static mtcName stfPolyFromTextFunctionName[2] = {
     { stfPolyFromTextFunctionName+1, 15, (void*)"ST_POLYFROMTEXT" },
     { NULL, 12, (void*)"POLYFROMTEXT" }
+};
+
+static mtcName stfPolygonFromTextFunctionName[1] = {
+    { NULL, 18, (void*)"ST_POLYGONFROMTEXT" }
 };
 
 static IDE_RC stfPolyFromTextEstimate(
@@ -47,7 +55,7 @@ static IDE_RC stfPolyFromTextEstimate(
 mtfModule stfPolyFromText = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     stfPolyFromTextFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -55,6 +63,16 @@ mtfModule stfPolyFromText = {
     stfPolyFromTextEstimate
 };
 
+mtfModule stfPolygonFromText = {
+    1|MTC_NODE_OPERATOR_FUNCTION,
+    ~(MTC_NODE_INDEX_MASK),
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
+    stfPolygonFromTextFunctionName,
+    NULL,
+    mtf::initializeDefault,
+    mtf::finalizeDefault,
+    stfPolyFromTextEstimate
+};
 IDE_RC stfPolyFromTextCalculate(
                         mtcNode*     aNode,
                         mtcStack*    aStack,
@@ -81,12 +99,9 @@ IDE_RC stfPolyFromTextEstimate(
                         SInt      /* aRemain */,
                         mtcCallBack* aCallBack )
 {
-    mtcNode* sNode;
-    ULong    sLflag;
-
     extern mtdModule stdGeometry;
 
-    const mtdModule* sModules[1];
+    const mtdModule* sModules[2];
 
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
@@ -94,27 +109,22 @@ IDE_RC stfPolyFromTextEstimate(
                     MTC_NODE_QUANTIFIER_TRUE,
                     ERR_NOT_AGGREGATION );
 
-    IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) != 1,
+    IDE_TEST_RAISE( ( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) < 1 ) ||
+                    ( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) > 2 ),
                     ERR_INVALID_FUNCTION_ARGUMENT );
-
-    for( sNode  = aNode->arguments, sLflag = MTC_NODE_INDEX_UNUSABLE;
-         sNode != NULL;
-         sNode  = sNode->next )
-    {
-        if( ( sNode->lflag & MTC_NODE_COMPARISON_MASK ) ==
-            MTC_NODE_COMPARISON_TRUE )
-        {
-            sNode->lflag &= ~(MTC_NODE_INDEX_MASK);
-        }
-        sLflag |= sNode->lflag & MTC_NODE_INDEX_MASK;
-    }
-
-    aNode->lflag &= ~(MTC_NODE_INDEX_MASK);
-    aNode->lflag |= sLflag;
 
     IDE_TEST( mtf::getCharFuncResultModule( &sModules[0],
                                             aStack[1].column->module )
               != IDE_SUCCESS );
+
+    if ( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) == 2 )
+    {
+        sModules[1] = &mtdInteger;
+    }
+    else
+    {
+        // Nothing to do.
+    }
 
     IDE_TEST( mtf::makeConversionNodes( aNode,
                                         aNode->arguments,
@@ -157,7 +167,10 @@ IDE_RC stfPolyFromTextCalculate(
     qcTemplate      * sQcTmplate;
     iduMemory       * sQmxMem;
     iduMemoryStatus   sQmxMemStatus;
+    idBool            sSRIDOption = ID_FALSE;
+    SInt              sSRID = ST_SRID_INIT;
     UInt              sStage = 0;    
+    idBool            sIsReturnNULL = ID_FALSE;
 
     IDE_TEST( mtf::postfixCalculate( aNode,
                                      aStack,
@@ -178,30 +191,79 @@ IDE_RC stfPolyFromTextCalculate(
 
         sQcTmplate = (qcTemplate*) aTemplate;
         sQmxMem    = QC_QMX_MEM( sQcTmplate->stmt );
-        // Memory ìž¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ìž¬ ìœ„ì¹˜ ê¸°ë¡
+        // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
         IDE_TEST( sQmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS);
         sStage = 1;
-    
         
-        IDE_TEST( stfWKT::polyFromText(
-                      sQmxMem,
-                      aStack[1].value,
-                      aStack[0].value,
-                      (SChar*)(aStack[0].value) +aStack[0].column->column.size,
-                      &rc,
-                      STU_VALIDATION_ENABLE ) != IDE_SUCCESS);
+        // PROJ-2422 srid Áö¿ø
+        if ( (aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK) == 2 )
+        {
+            if ( aStack[2].column->module->isNull( aStack[2].column,
+                                                   aStack[2].value ) == ID_FALSE )
+            {
+                sSRIDOption = ID_TRUE;
+                sSRID = *(mtdIntegerType*)aStack[2].value;
+            }
+            else
+            {
+                // BUG-47966 SRID ÀÎÀÚ°¡ NULLÀÎ °æ¿ì NULLÀ» ¸®ÅÏÇÕ´Ï´Ù.
+                sIsReturnNULL = ID_TRUE;
+                aStack[0].column->module->null( aStack[0].column,
+                                                aStack[0].value );
+            }
+        }
+        else
+        {
+            // Nothing To Do
+        }
 
-        IDE_TEST_RAISE( rc != IDE_SUCCESS, ERR_INVALID_LITERAL );
+        if ( sIsReturnNULL == ID_FALSE )
+        { 
+            if ( aNode->module != &stfPolygonFromText )
+            {
+                IDE_TEST( stfWKT::polyFromText( sQmxMem,
+                                                aStack[1].value,
+                                                aStack[0].value,
+                                                (SChar*)(aStack[0].value) +aStack[0].column->column.size,
+                                                &rc,
+                                                STU_VALIDATION_ENABLE,
+                                                sSRIDOption,
+                                                sSRID )
+                          != IDE_SUCCESS );
 
-        // Memory ìž¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
+                IDE_TEST_RAISE( rc != IDE_SUCCESS, ERR_INVALID_LITERAL );
+            }
+            else
+            {
+                // BUG-47966 WKT¶Ç´Â EWKT¸¦ ¹Þ¾Æ¼­ Polygon GEOMETRY¸¦ ¸¸µì´Ï´Ù.
+                IDE_TEST( stfEWKT::polyFromEWKT( sQmxMem,
+                                                 aStack[1].value,
+                                                 aStack[0].value,
+                                                 (SChar*)(aStack[0].value) +aStack[0].column->column.size,
+                                                 &rc,
+                                                 STU_VALIDATION_ENABLE,
+                                                 sSRID )
+                          != IDE_SUCCESS );
+
+                IDE_TEST_RAISE( rc != IDE_SUCCESS, ERR_INVALID_LITERAL );
+            }
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
+        // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
         sStage = 0;
         IDE_TEST( sQmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS);
     }
     
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION( ERR_INVALID_LITERAL );
-    IDE_SET(ideSetErrorCode(mtERR_ABORT_INVALID_LITERAL));
+    IDE_EXCEPTION( ERR_INVALID_LITERAL )
+    {
+        IDE_SET(ideSetErrorCode(mtERR_ABORT_INVALID_LITERAL));
+    }
     IDE_EXCEPTION_END;
     
     if (sStage == 1)

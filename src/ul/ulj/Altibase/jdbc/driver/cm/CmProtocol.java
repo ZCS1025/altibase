@@ -21,9 +21,8 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,13 +34,14 @@ import Altibase.jdbc.driver.LobConst;
 import Altibase.jdbc.driver.datatype.Column;
 import Altibase.jdbc.driver.datatype.ColumnTypes;
 import Altibase.jdbc.driver.datatype.ListBufferHandle;
-import Altibase.jdbc.driver.datatype.RowHandle;
+import Altibase.jdbc.driver.datatype.DynamicArrayRowHandle;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
 import Altibase.jdbc.driver.logging.LoggingProxy;
 import Altibase.jdbc.driver.logging.TraceFlag;
 import Altibase.jdbc.driver.util.AltiSqlProcessor;
 import Altibase.jdbc.driver.util.AltibaseProperties;
+import Altibase.jdbc.driver.sharding.core.ShardConnType;
 
 public class CmProtocol
 {
@@ -68,9 +68,9 @@ public class CmProtocol
     }
 
     /**
-     * Meta ì„œë²„ì™€ Data ë…¸ë“œì— shard handshake í”„ë¡œí† ì½œì„ ë³´ë‚¸ë‹¤.
-     * @param aContext ContextConnect ê°ì²´
-     * @throws SQLException shardHandshake ë„ì¤‘ ì—ëŸ¬ê°€ ë°œìƒí–ˆì„ ë•Œ
+     * Meta ¼­¹ö¿Í Data ³ëµå¿¡ shard handshake ÇÁ·ÎÅäÄİÀ» º¸³½´Ù.
+     * @param aContext ContextConnect °´Ã¼
+     * @throws SQLException shardHandshake µµÁß ¿¡·¯°¡ ¹ß»ıÇßÀ» ¶§
      */
     public static void shardHandshake(CmProtocolContextConnect aContext) throws SQLException
     {
@@ -83,8 +83,12 @@ public class CmProtocol
         }
     }
 
-        // Logical Connection
-    public static void connect(CmProtocolContextConnect aContext, String aDBName, String aUser, String aPassword, short aConnectMode) throws SQLException
+    // Logical Connection
+    public static void connect(CmProtocolContextConnect aContext, String aDBName,
+                               String aUser,
+                               String aPassword,
+                               short aConnectMode,
+                               ShardConnType aShardConnType) throws SQLException
     {
         aContext.clearError();
         synchronized (aContext.channel())
@@ -96,7 +100,7 @@ public class CmProtocol
             {
                 for (int i = 0; i < aContext.getPropertyCount(); i++)
                 {
-                    CmOperation.writeSetPropertyV2(aContext.channel(), aContext.getPropertyKey(i), aContext.getPropertyValue(i));
+                    CmOperation.writeSetPropertyV3(aContext.channel(), aContext.getPropertyKey(i), aContext.getPropertyValue(i));
                 }
                 CmOperation.writeGetProperty(aContext.channel(), AltibaseProperties.PROP_CODE_NLS_CHARACTERSET);
                 CmOperation.writeGetProperty(aContext.channel(), AltibaseProperties.PROP_CODE_NLS_NCHAR_CHARACTERSET);
@@ -106,6 +110,23 @@ public class CmProtocol
                 if (!aContext.isSetProperty(AltibaseProperties.PROP_CODE_ISOLATION_LEVEL))
                 {
                     CmOperation.writeGetProperty(aContext.channel(), AltibaseProperties.PROP_CODE_ISOLATION_LEVEL);
+                }
+                // shardjdbc°¡ ¾Æ´Ï¾îµµ Àü¼ÛÇØ¾ß ÇÑ´Ù.
+                if (!aContext.isSetProperty(AltibaseProperties.PROP_CODE_GLOBAL_TRANSACTION_LEVEL))
+                {
+                    CmOperation.writeGetProperty(aContext.channel(), AltibaseProperties.PROP_CODE_GLOBAL_TRANSACTION_LEVEL);
+                }
+                if (!aContext.isSetProperty(AltibaseProperties.PROP_CODE_SHARD_STATEMENT_RETRY))
+                {
+                    CmOperation.writeGetProperty(aContext.channel(), AltibaseProperties.PROP_CODE_SHARD_STATEMENT_RETRY);
+                }
+                if (!aContext.isSetProperty(AltibaseProperties.PROP_CODE_INDOUBT_FETCH_TIMEOUT))
+                {
+                    CmOperation.writeGetProperty(aContext.channel(), AltibaseProperties.PROP_CODE_INDOUBT_FETCH_TIMEOUT);
+                }
+                if (!aContext.isSetProperty(AltibaseProperties.PROP_CODE_INDOUBT_FETCH_METHOD))
+                {
+                    CmOperation.writeGetProperty(aContext.channel(), AltibaseProperties.PROP_CODE_INDOUBT_FETCH_METHOD);
                 }
                 aContext.channel().sendAndReceive();
                 readProtocolResult(aContext);
@@ -131,7 +152,7 @@ public class CmProtocol
         {
             for (int i=0; i<aContext.getPropertyCount(); i++)
             {
-                CmOperation.writeSetPropertyV2(aContext.channel(), aContext.getPropertyKey(i), aContext.getPropertyValue(i));
+                CmOperation.writeSetPropertyV3(aContext.channel(), aContext.getPropertyKey(i), aContext.getPropertyValue(i));
             }
             aContext.channel().sendAndReceive();
             readProtocolResult(aContext);
@@ -170,7 +191,7 @@ public class CmProtocol
             readProtocolResult(aContext);
         }
     }
-    
+
     public static void directExecute(CmProtocolContextDirExec aContext, int aCID, String aSql, boolean aHoldable, 
                                      boolean aForKeySetDriven, boolean aNliteralReplace, boolean aClientSideAutoCommit, 
                                      boolean aShouldCloseCursor) throws SQLException
@@ -182,7 +203,7 @@ public class CmProtocol
         synchronized (aContext.channel())
         {
             aContext.getFetchResult().init();
-            // PROJ-2427 ì„±ëŠ¥ì„ ìœ„í•´ clearAllResultsì—ì„œ closeCursorë¥¼ í•˜ì§€ ì•Šê³  ì´ê³³ì—ì„œ ê°™ì´ ë³´ë‚¸ë‹¤.
+            // PROJ-2427 ¼º´ÉÀ» À§ÇØ clearAllResults¿¡¼­ closeCursor¸¦ ÇÏÁö ¾Ê°í ÀÌ°÷¿¡¼­ °°ÀÌ º¸³½´Ù.
             if (aShouldCloseCursor)
             {
                 CmOperation.writeCloseCursor(aContext.channel(), aContext.getStatementId(), CmOperation.FREE_ALL_RESULTSET);                
@@ -190,10 +211,10 @@ public class CmProtocol
             CmOperation.writePrepare(aContext.channel(), aCID, aSql, CmOperation.PREPARE_MODE_EXEC_DIRECT, sHoldability, sForKeySetDriven, aNliteralReplace);
             CmOperation.writeGetColumn(aContext.channel(), aContext.getStatementId(), aContext.getResultSetId());
             // The zero value (0) can be used for statement id during direct Execute
-            CmOperation.writeExecuteV2(aContext.channel(), aContext.getStatementId(), CmOperation.EXECUTION_ARRAY_INDEX_NONE, CmOperation.EXECUTION_MODE_NORMAL);
-            if (!AltiSqlProcessor.isSelectQuery(aSql)) // BUG-38462 select ë¬¸ì¥ì´ ì•„ë‹ë•Œë§Œ commití”„ë¡œí† ì½œì„ ë°”ë¡œ writeí•œë‹¤.
+            CmOperation.writeExecuteV3(aContext.channel(), aContext.getStatementId(), CmOperation.EXECUTION_ARRAY_INDEX_NONE, CmOperation.EXECUTION_MODE_NORMAL, aContext);
+            if (!AltiSqlProcessor.isSelectQuery(aSql)) // BUG-38462 select ¹®ÀåÀÌ ¾Æ´Ò¶§¸¸ commitÇÁ·ÎÅäÄİÀ» ¹Ù·Î writeÇÑ´Ù.
             {
-                CmOperation.writeClientCommit(aContext.channel(), aClientSideAutoCommit); // PROJ-2190 ì»¤ë°‹í”„ë¡œí† ì½œì„ ë²„í¼ì— writeí•œë‹¤.
+                CmOperation.writeClientCommit(aContext.channel(), aClientSideAutoCommit); // PROJ-2190 Ä¿¹ÔÇÁ·ÎÅäÄİÀ» ¹öÆÛ¿¡ writeÇÑ´Ù.
             }
             aContext.channel().sendAndReceive();
             readProtocolResult(aContext);
@@ -201,9 +222,9 @@ public class CmProtocol
     }
 
     /**
-     * ClientSideAutoCommitì´ onì¸ ê²½ìš°ì—ë§Œ ì„œë²„ë¡œ commit ë©”ì„¸ì§€ë¥¼ ì „ì†¡í•œë‹¤.
-     * @param aContext CmProtocolContext ê°ì²´
-     * @throws SQLException commitì‹œ ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš°
+     * ClientSideAutoCommitÀÌ onÀÎ °æ¿ì¿¡¸¸ ¼­¹ö·Î commit ¸Ş¼¼Áö¸¦ Àü¼ÛÇÑ´Ù.
+     * @param aContext CmProtocolContext °´Ã¼
+     * @throws SQLException commit½Ã ¿¡·¯°¡ ¹ß»ıÇÑ °æ¿ì
      */
     public static void clientCommit(CmProtocolContext aContext, boolean aClientSideAutoCommit) throws SQLException
     {
@@ -216,10 +237,10 @@ public class CmProtocol
     /*
      * BUG-39463 Add new fetch protocol that can request over 65535 rows.
      *
-     * 1. writeFetch -> writeFetchV2ë¡œ ë³€ê²½
-     * 2. aFetchCountì˜ typeì„ short -> intë¡œ ë³€ê²½
+     * 1. writeFetch -> writeFetchV2·Î º¯°æ
+     * 2. aFetchCountÀÇ typeÀ» short -> int·Î º¯°æ
      */
-    public static void fetch(CmProtocolContextDirExec aContext, int aFetchCount, int aMaxRows, int aMaxFieldSize) throws SQLException
+    public static void fetch(CmProtocolContextDirExec aContext, int aFetchCount, long aMaxRows, int aMaxFieldSize) throws SQLException
     {
         aContext.clearError();
 
@@ -236,11 +257,11 @@ public class CmProtocol
                 CmOperation.writeGetColumn(aContext.channel(), aContext.getStatementId(), aContext.getResultSetId());                
                 aContext.channel().sendAndReceive();
                 readProtocolResult(aContext);
-                // ì´ì „ ResultSetì˜ ColInfo ë¥¼ ê°€ì ¸ì˜´
+                // ÀÌÀü ResultSetÀÇ ColInfo ¸¦ °¡Á®¿È
             }
             if (aContext.getError() == null)
             {
-                CmOperation.writeFetchV2(aContext.channel(), aContext.getStatementId(), aContext.getResultSetId(), aFetchCount);
+                CmOperation.writeFetchV3(aContext.channel(), aContext.getStatementId(), aContext.getResultSetId(), aFetchCount);
                 aContext.channel().sendAndReceive();
                 readProtocolResult(aContext);
             }
@@ -256,24 +277,24 @@ public class CmProtocol
 
         synchronized (aContext.channel())
         {
-            CmOperation.writeFetchV2(aContext.channel(), aContext.getStatementId(), aContext.getResultSetId(), aFetchCount);
+            CmOperation.writeFetchV3(aContext.channel(), aContext.getStatementId(), aContext.getResultSetId(), aFetchCount);
             aContext.channel().sendAndReceive();
             readProtocolResult(aContext);
         }
     }
 
     /**
-     * ë¹„ë™ê¸°ì ìœ¼ë¡œ fetch í”„ë¡œí† ì½œì„ ì†¡ì‹ í•œë‹¤.
+     * ºñµ¿±âÀûÀ¸·Î fetch ÇÁ·ÎÅäÄİÀ» ¼Û½ÅÇÑ´Ù.
      * 
      * @param aContext Protocol context
-     * @param aFetchCount fetch ë¥¼ ìš”ì²­í•  row ìˆ˜
-     * @throws SQLException ì†¡ìˆ˜ì‹  ê³¼ì •ì—ì„œ ì—ëŸ¬ê°€ ë°œìƒí•˜ì˜€ì„ ê²½ìš°
+     * @param aFetchCount fetch ¸¦ ¿äÃ»ÇÒ row ¼ö
+     * @throws SQLException ¼Û¼ö½Å °úÁ¤¿¡¼­ ¿¡·¯°¡ ¹ß»ıÇÏ¿´À» °æ¿ì
      */
     public static void sendFetchNextAsync(CmProtocolContextDirExec aContext, int aFetchCount) throws SQLException
     {
         synchronized (aContext.channel())
         {
-            CmOperation.writeFetchV2(aContext.channel(), aContext.getStatementId(), aContext.getResultSetId(), aFetchCount);
+            CmOperation.writeFetchV3(aContext.channel(), aContext.getStatementId(), aContext.getResultSetId(), aFetchCount);
             aContext.channel().send();
 
             aContext.channel().setAsyncContext(aContext);
@@ -281,10 +302,10 @@ public class CmProtocol
     }
 
     /**
-     * ë¹„ë™ê¸°ì ìœ¼ë¡œ ì†¡ì‹ í•œ fetch í”„ë¡œí† ì½œì„ ìˆ˜ì‹ í•œë‹¤.
+     * ºñµ¿±âÀûÀ¸·Î ¼Û½ÅÇÑ fetch ÇÁ·ÎÅäÄİÀ» ¼ö½ÅÇÑ´Ù.
      * 
      * @param aContext Protocol context
-     * @throws SQLException ì†¡ìˆ˜ì‹  ê³¼ì •ì—ì„œ ì—ëŸ¬ê°€ ë°œìƒí•˜ì˜€ì„ ê²½ìš°
+     * @throws SQLException ¼Û¼ö½Å °úÁ¤¿¡¼­ ¿¡·¯°¡ ¹ß»ıÇÏ¿´À» °æ¿ì
      */
     public static void receivefetchNextAsync(CmProtocolContextDirExec aContext) throws SQLException
     {
@@ -311,16 +332,16 @@ public class CmProtocol
             aContext.getFetchResult().init();
             for (int i = 0; i < aSql.length; i++)
             {
-                // batch executionì—ì„œëŠ” select êµ¬ë¬¸ì´ ì—†ë‹¤ê³  ê°€ì •í•˜ë¯€ë¡œ PREPARE_MODE_HOLD_ONìœ¼ë¡œ ì¤„ í•„ìš”ê°€ ì—†ë‹¤.
+                // batch execution¿¡¼­´Â select ±¸¹®ÀÌ ¾ø´Ù°í °¡Á¤ÇÏ¹Ç·Î PREPARE_MODE_HOLD_ONÀ¸·Î ÁÙ ÇÊ¿ä°¡ ¾ø´Ù.
                 CmOperation.writePrepare(aContext.channel(), aCID, aSql[i], CmOperation.PREPARE_MODE_EXEC_DIRECT, CmOperation.PREPARE_MODE_HOLD_OFF, CmOperation.PREPARE_MODE_KEYSET_OFF, aNliteralReplace);
-                CmOperation.writeExecuteV2(aContext.channel(), aContext.getStatementId(), i + 1, CmOperation.EXECUTION_MODE_NORMAL);
+                CmOperation.writeExecuteV3(aContext.channel(), aContext.getStatementId(), i + 1, CmOperation.EXECUTION_MODE_NORMAL, aContext);
 
-                // select êµ¬ë¬¸ì´ ìˆì–´ë„ ë‹¤ìŒ update êµ¬ë¬¸ì„ ì œëŒ€ë¡œ ìˆ˜í–‰í•˜ê¸° ìœ„í•´ cursorë¥¼ ë‹«ëŠ”ë‹¤.
-                // ì´ë ‡ê²Œ í•˜ëŠ” ì´ìœ ëŠ”, 'í”„ë¡œí† ì½œì„ í•œë²ˆì— ë³´ë‚´ëŠ” ë°©ì‹'ìœ¼ë¡œëŠ” SELECTê°€ ìˆëŠ”ê±¸ ì•Œì•˜ì„ ë•Œ ë°”ë¡œ ë©ˆì¶œ ìˆ˜ ì—†ê¸° ë•Œë¬¸ì´ë‹¤.
-                // SELECTë¥¼ ë°œê²¬í–ˆì„ ë•Œ ì—ëŸ¬ë¥¼ ë‚´ê³  ë°”ë¡œ ë©ˆì¶”ë ¤ë©´ í•˜ë‚˜ì”© ìˆ˜í–‰í•˜ê±°ë‚˜(old-JDBC ë°©ì‹), executeBatchë¥¼ ìœ„í•œ ìƒˆë¡œìš´ í”„ë¡œí† ì½œì„ ì¶”ê°€í•´ì•¼í•œë‹¤.
+                // select ±¸¹®ÀÌ ÀÖ¾îµµ ´ÙÀ½ update ±¸¹®À» Á¦´ë·Î ¼öÇàÇÏ±â À§ÇØ cursor¸¦ ´İ´Â´Ù.
+                // ÀÌ·¸°Ô ÇÏ´Â ÀÌÀ¯´Â, 'ÇÁ·ÎÅäÄİÀ» ÇÑ¹ø¿¡ º¸³»´Â ¹æ½Ä'À¸·Î´Â SELECT°¡ ÀÖ´Â°É ¾Ë¾ÒÀ» ¶§ ¹Ù·Î ¸ØÃâ ¼ö ¾ø±â ¶§¹®ÀÌ´Ù.
+                // SELECT¸¦ ¹ß°ßÇßÀ» ¶§ ¿¡·¯¸¦ ³»°í ¹Ù·Î ¸ØÃß·Á¸é ÇÏ³ª¾¿ ¼öÇàÇÏ°Å³ª(old-JDBC ¹æ½Ä), executeBatch¸¦ À§ÇÑ »õ·Î¿î ÇÁ·ÎÅäÄİÀ» Ãß°¡ÇØ¾ßÇÑ´Ù.
                 CmOperation.writeCloseCursor(aContext.channel(), aContext.getStatementId(), CmOperation.FREE_ALL_RESULTSET);
             }
-            CmOperation.writeClientCommit(aContext.channel(), aClientSideAutoCommit); // PROJ-2190 clientAutoCommitì´ í™œì„±í™” ë˜ì–´ ìˆëŠ” ê²½ìš° ë²„í¼ì— writeí•œë‹¤.
+            CmOperation.writeClientCommit(aContext.channel(), aClientSideAutoCommit); // PROJ-2190 clientAutoCommitÀÌ È°¼ºÈ­ µÇ¾î ÀÖ´Â °æ¿ì ¹öÆÛ¿¡ writeÇÑ´Ù.
             aContext.channel().sendAndReceive();
             readProtocolResult(aContext);
         }
@@ -329,7 +350,7 @@ public class CmProtocol
     }
     
     public static void directExecuteAndFetch(CmProtocolContextDirExec aContext, int aCID, String aSql,
-                                             int aFetchCount, int aMaxRows, int aMaxFieldSize, boolean aHoldable,
+                                             int aFetchCount, long aMaxRows, int aMaxFieldSize, boolean aHoldable,
                                              boolean aForKeySetDriven, boolean aNliteralReplace,
                                              boolean aShouldCloseCursor) throws SQLException
     {
@@ -346,15 +367,15 @@ public class CmProtocol
         synchronized (aContext.channel())
         {
             aContext.getFetchResult().init();
-            // PROJ-2427 ì„±ëŠ¥ì„ ìœ„í•´ clearAllResultsì—ì„œ closeCursorë¥¼ í•˜ì§€ ì•Šê³  ì´ê³³ì—ì„œ ê°™ì´ ë³´ë‚¸ë‹¤.
+            // PROJ-2427 ¼º´ÉÀ» À§ÇØ clearAllResults¿¡¼­ closeCursor¸¦ ÇÏÁö ¾Ê°í ÀÌ°÷¿¡¼­ °°ÀÌ º¸³½´Ù.
             if (aShouldCloseCursor)
             {
                 CmOperation.writeCloseCursor(aContext.channel(), aContext.getStatementId(), CmOperation.FREE_ALL_RESULTSET);                
             }
             CmOperation.writePrepare(aContext.channel(), aCID, aSql, CmOperation.PREPARE_MODE_EXEC_DIRECT, sHoldability, sForKeySetDriven, aNliteralReplace);
             CmOperation.writeGetColumn(aContext.channel(), aContext.getStatementId(), aContext.getResultSetId());
-            CmOperation.writeExecuteV2(aContext.channel(), aContext.getStatementId(), CmOperation.EXECUTION_ARRAY_INDEX_NONE, CmOperation.EXECUTION_MODE_NORMAL);
-            CmOperation.writeFetchV2(aContext.channel(), aContext.getStatementId(), aContext.getResultSetId(), aFetchCount);
+            CmOperation.writeExecuteV3(aContext.channel(), aContext.getStatementId(), CmOperation.EXECUTION_ARRAY_INDEX_NONE, CmOperation.EXECUTION_MODE_NORMAL, aContext);
+            CmOperation.writeFetchV3(aContext.channel(), aContext.getStatementId(), aContext.getResultSetId(), aFetchCount);
             aContext.channel().sendAndReceive();
             readProtocolResult(aContext);
         }
@@ -372,8 +393,7 @@ public class CmProtocol
         {
             CmOperation.writePrepare(aContext.channel(), aCID, aSql, CmOperation.PREPARE_MODE_EXEC_PREPARE, sHoldability, sForKeySetDriven, aNliteralReplace);
             CmOperation.writeGetColumn(aContext.channel(), aContext.getStatementId(), aContext.getResultSetId());
-            CmOperation.writeGetBindParamInfo(aContext.channel(), aContext.getStatementId());
-            // BUG-42424 deferredì¼ ê²½ìš°ì—ëŠ” prepareìš”ì²­ì„ ë³´ë‚´ì§€ ì•Šê³  ë¡œê·¸ë§Œ ë‚¨ê¸´ í›„ ë©”ì†Œë“œë¥¼ ê·¸ëƒ¥ ë¹ ì ¸ë‚˜ê°„ë‹¤.
+            // BUG-42424 deferredÀÏ °æ¿ì¿¡´Â prepare¿äÃ»À» º¸³»Áö ¾Ê°í ·Î±×¸¸ ³²±ä ÈÄ ¸Ş¼Òµå¸¦ ±×³É ºüÁ®³ª°£´Ù.
             if (aIsDeferred) 
             {
                 if (TraceFlag.TRACE_COMPILE && TraceFlag.TRACE_ENABLED)
@@ -383,6 +403,8 @@ public class CmProtocol
             }
             else
             {
+                // BUG-48431 deferred prepare »óÅÂ°¡ ¾Æ´Ò¶§¸¸ ÆÄ¶ó¸ŞÅÍ ¸ŞÅ¸ Á¤º¸¸¦ ¿äÃ»ÇÑ´Ù.
+                writeGetBindParamInfo(aContext);
                 aContext.channel().sendAndReceive();
                 readProtocolResult(aContext);
             }
@@ -392,43 +414,38 @@ public class CmProtocol
         totaltime = totaltime + (aftertime - beforetime);
     }
 
+    public static void writeGetBindParamInfo(CmProtocolContextDirExec aContext) throws SQLException
+    {
+        CmOperation.writeGetBindParamInfo(aContext.channel(), aContext.getStatementId());
+    }
+
     public static void preparedExecute(CmProtocolContextPrepExec aContext, List<Column> aParams, boolean aClientSideAutoCommit,
-                                       boolean aShouldCloseCursor, List aDeferredRequests) throws SQLException
+                                       boolean aShouldCloseCursor) throws SQLException
     {
         aContext.clearError();
         aContext.getBindParamDataOutResult().setBindParams(aParams);
         
         synchronized (aContext.channel())
         {
-            if (aDeferredRequests.size() > 0)
-            {
-                invokeDeferredRequests(aDeferredRequests);
-            }
-            aContext.getFetchResult().init();
-            // PROJ-2427 ì„±ëŠ¥ì„ ìœ„í•´ clearAllResultsì—ì„œ closeCursorë¥¼ í•˜ì§€ ì•Šê³  ì´ê³³ì—ì„œ ê°™ì´ ë³´ë‚¸ë‹¤.
-            if (aShouldCloseCursor)
-            {
-                CmOperation.writeCloseCursor(aContext.channel(), aContext.getStatementId(), CmOperation.FREE_ALL_RESULTSET);                
-            }
-            CmOperation.writeSetBindParamInfoList(aContext.channel(), aContext.getStatementId(), aParams);
+            initializeBeforeExecute(aContext, aParams, aShouldCloseCursor);
 
-            // BUG-46443 List protocol ì „ì†¡ì„ ìœ„í•´ ì±„ë„ì— ìˆëŠ” ë²„í¼ì— ë°”ì¸ë“œ íŒŒë¼ë©”í„°ë¥¼ writeí•œë‹¤.
+            // BUG-46443 List protocol Àü¼ÛÀ» À§ÇØ Ã¤³Î¿¡ ÀÖ´Â ¹öÆÛ¿¡ ¹ÙÀÎµå ÆÄ¶ó¸ŞÅÍ¸¦ writeÇÑ´Ù.
             ListBufferHandle sListBufferHandle = aContext.channel().getTempListBufferHandle();
             sListBufferHandle.setColumns(aParams);
             sListBufferHandle.initToStore();
             sListBufferHandle.store();
             aContext.setListBufferHandle(sListBufferHandle);
 
-            // BUG-46443 DB_OP_PARAM_DATA_IN_LIST_V2ì€ ë”°ë¡œ executeë¥¼ ë³´ë‚´ì§€ ì•Šì•„ë„ ëœë‹¤.
-            CmOperation.writeBindParamDataInListV2(aContext.channel(), aContext.getStatementId(),
-                                                   aContext.getListBufferHandle(), false, false);  // normal execute mode
+            // BUG-46443 DB_OP_PARAM_DATA_IN_LIST_V2Àº µû·Î execute¸¦ º¸³»Áö ¾Ê¾Æµµ µÈ´Ù.
+            CmOperation.writeBindParamDataInListV3(aContext.channel(), aContext.getStatementId(),
+                                                   aContext.getListBufferHandle(), false, false, aContext);  // normal execute mode
 
             // To distinguish CallableStatement and PreparedStatement
             if (aContext.getGetColumnInfoResult().getColumns()==null && hasResultSet(aContext))
             {
                 CmOperation.writeGetColumn(aContext.channel(), aContext.getStatementId(), aContext.getResultSetId());
             }
-            // PROJ-2190, BUG-38462 lobíŒŒë¼ë©”í„°ì™€ resultsetì´ ì—†ì„ ë•Œë§Œ commití”„ë¡œí† ì½œì„ writeí•œë‹¤.  
+            // PROJ-2190, BUG-38462 lobÆÄ¶ó¸ŞÅÍ¿Í resultsetÀÌ ¾øÀ» ¶§¸¸ commitÇÁ·ÎÅäÄİÀ» writeÇÑ´Ù.  
             if (aClientSideAutoCommit)
             {
                 if (!lobColumnExists(aParams) && !hasResultSet(aContext)) 
@@ -441,15 +458,40 @@ public class CmProtocol
         }
     }
 
+    /**
+     * execute ÇÏ±â Àü deferred request¿Í close cursor¸¦ Ã³¸®ÇÑ´Ù.
+     * @param aContext CmProtocolContextPrepExec °´Ã¼
+     * @param aParams ÆÄ¶ó¸ŞÅÍ ¸®½ºÆ®
+     * @param aShouldCloseCursor Ä¿¼­¸¦ ´İ¾Æ¾ß ÇÏ´ÂÁö ¿©ºÎ
+     * @throws SQLException ÇÁ·ÎÅäÄİ ¼Û/¼ö½Å Áß ¿¡·¯°¡ ¹ß»ıÇÑ °æ¿ì
+     */
+    private static void initializeBeforeExecute(CmProtocolContextPrepExec aContext,
+                                                List<Column> aParams,
+                                                boolean aShouldCloseCursor) throws SQLException
+    {
+        List<Map<String, Object>> sDeferredRequests = aContext.getDeferredRequests();
+        if (sDeferredRequests.size() > 0)
+        {
+            invokeDeferredRequests(sDeferredRequests);
+        }
+        aContext.getFetchResult().init();
+        // PROJ-2427 ¼º´ÉÀ» À§ÇØ clearAllResults¿¡¼­ closeCursor¸¦ ÇÏÁö ¾Ê°í ÀÌ°÷¿¡¼­ °°ÀÌ º¸³½´Ù.
+        if (aShouldCloseCursor)
+        {
+            CmOperation.writeCloseCursor(aContext.channel(), aContext.getStatementId(), CmOperation.FREE_ALL_RESULTSET);
+        }
+        CmOperation.writeSetBindParamInfoList(aContext.channel(), aContext.getStatementId(), aParams);
+    }
+
     private static boolean hasResultSet(CmProtocolContextPrepExec aContext)
     {
         return aContext.getPrepareResult().getResultSetCount() > 0;
     }
     
     /**
-     * lob ì»¬ëŸ¼ì´ ì¡´ì¬í•˜ëŠ”ì§€ ì—¬ë¶€ë¥¼ ë°˜í™˜í•œë‹¤.
-     * @param aColumns ì»¬ëŸ¼ ë¦¬ìŠ¤íŠ¸
-     * @return lobì»¬ëŸ¼ì´ ì¡´ì¬í•˜ë©´ true ì•„ë‹ˆë©´ false
+     * lob ÄÃ·³ÀÌ Á¸ÀçÇÏ´ÂÁö ¿©ºÎ¸¦ ¹İÈ¯ÇÑ´Ù.
+     * @param aColumns ÄÃ·³ ¸®½ºÆ®
+     * @return lobÄÃ·³ÀÌ Á¸ÀçÇÏ¸é true ¾Æ´Ï¸é false
      */
     private static boolean lobColumnExists(List<Column> aColumns)
     {
@@ -470,7 +512,7 @@ public class CmProtocol
     }
 
     public static void preparedExecuteBatch(CmProtocolContextPrepExec aContext, List<Column> aParams,
-                                            RowHandle aRowHandle, int aRowCount, List aDeferredRequests) throws SQLException
+                                            DynamicArrayRowHandle aRowHandle, int aRowCount) throws SQLException
     {
         aContext.clearError();
         aContext.getBindParamDataOutResult().setBindParams(aParams);
@@ -480,24 +522,26 @@ public class CmProtocol
         
         synchronized (aContext.channel())
         {
-            if (aDeferredRequests.size() > 0)
+            List<Map<String, Object>> sDeferredRequests = aContext.getDeferredRequests();
+            if (sDeferredRequests.size() > 0)
             {
-                invokeDeferredRequests(aDeferredRequests);
+                invokeDeferredRequests(sDeferredRequests);
             }
             aContext.getFetchResult().init();
             CmOperation.writeSetBindParamInfoList(aContext.channel(), aContext.getStatementId(), aParams);
-            CmOperation.writeExecuteV2(aContext.channel(), aContext.getStatementId(),
+            CmOperation.writeExecuteV3(aContext.channel(), aContext.getStatementId(),
                                      CmOperation.EXECUTION_ARRAY_INDEX_NONE,
-                                     CmOperation.EXECUTION_MODE_BEGIN_ARRAY);
+                                     CmOperation.EXECUTION_MODE_BEGIN_ARRAY,
+                                     aContext);
             for (int i = 0; i < aRowCount; i++)
             {
                 aRowHandle.next();
                 CmOperation.writeBindParamDataIn(aContext.channel(), aContext.getStatementId(), aParams);
-                CmOperation.writeExecuteV2(aContext.channel(), aContext.getStatementId(), i + 1,
-                                         CmOperation.EXECUTION_MODE_ARRAY);
+                CmOperation.writeExecuteV3(aContext.channel(), aContext.getStatementId(), i + 1,
+                                         CmOperation.EXECUTION_MODE_ARRAY, aContext);
             }
-            CmOperation.writeExecuteV2(aContext.channel(), aContext.getStatementId(),
-                                     CmOperation.EXECUTION_ARRAY_INDEX_NONE, CmOperation.EXECUTION_MODE_END_ARRAY);
+            CmOperation.writeExecuteV3(aContext.channel(), aContext.getStatementId(),
+                                     CmOperation.EXECUTION_ARRAY_INDEX_NONE, CmOperation.EXECUTION_MODE_END_ARRAY, aContext);
             aContext.channel().sendAndReceive();
             aRowHandle.initToStore();
             aRowHandle.beforeFirst();
@@ -507,11 +551,10 @@ public class CmProtocol
         ((CmExecutionResult)aContext.getCmResult(CmExecutionResult.MY_OP)).setBatchMode(false);
     }
     
-    // List Protocol ë¡œ Server ì— Data ë¥¼ ì „ì†¡í•œë‹¤.
+    // List Protocol ·Î Server ¿¡ Data ¸¦ Àü¼ÛÇÑ´Ù.
     public static void preparedExecuteBatchUsingList(CmProtocolContextPrepExec aContext, List<Column> aParams,
                                                      ListBufferHandle aBufferHandle, int aRowCount,
-                                                     boolean aIsAtomic,
-                                                     List aDeferredRequests) throws SQLException
+                                                     boolean aIsAtomic) throws SQLException
     {
         aContext.clearError();
         aContext.getExecutionResult().clearBatchUpdateCount();
@@ -519,22 +562,23 @@ public class CmProtocol
         
         synchronized (aContext.channel())
         {
-            if (aDeferredRequests.size() > 0)
+            List<Map<String, Object>> sDeferredRequests = aContext.getDeferredRequests();
+            if (sDeferredRequests.size() > 0)
             {
-                invokeDeferredRequests(aDeferredRequests);
+                invokeDeferredRequests(sDeferredRequests);
             }
-            CmOperation.writeExecuteV2(aContext.channel(),
+            CmOperation.writeExecuteV3(aContext.channel(),
                                      aContext.getStatementId(),
                                      CmOperation.EXECUTION_ARRAY_INDEX_NONE,
-                                     (aIsAtomic)? CmOperation.EXECUTION_MODE_BEGIN_ATOMIC : CmOperation.EXECUTION_MODE_BEGIN_ARRAY);
+                                     (aIsAtomic)? CmOperation.EXECUTION_MODE_BEGIN_ATOMIC : CmOperation.EXECUTION_MODE_BEGIN_ARRAY, aContext);
 
             CmOperation.writeSetBindParamInfoList(aContext.channel(), aContext.getStatementId(), aParams);
-            CmOperation.writeBindParamDataInListV2(aContext.channel(), aContext.getStatementId(),
-                                                   aBufferHandle, aIsAtomic, true); // array execute mode
-            CmOperation.writeExecuteV2(aContext.channel(),
+            CmOperation.writeBindParamDataInListV3(aContext.channel(), aContext.getStatementId(),
+                                                   aBufferHandle, aIsAtomic, true, aContext); // array execute mode
+            CmOperation.writeExecuteV3(aContext.channel(),
                                      aContext.getStatementId(),
                                      CmOperation.EXECUTION_ARRAY_INDEX_NONE,
-                                     (aIsAtomic)? CmOperation.EXECUTION_MODE_END_ATOMIC : CmOperation.EXECUTION_MODE_END_ARRAY);
+                                     (aIsAtomic)? CmOperation.EXECUTION_MODE_END_ATOMIC : CmOperation.EXECUTION_MODE_END_ARRAY, aContext);
 
             aContext.channel().sendAndReceive();
             readProtocolResult(aContext);
@@ -544,8 +588,7 @@ public class CmProtocol
     }
     
     public static void preparedExecuteAndFetch(CmProtocolContextPrepExec aContext, List<Column> aParams, int aFetchCount,
-                                               int aMaxRows, int aMaxFieldSize, boolean aShouldCloseCursor,
-                                               List aDeferredRequests) throws SQLException
+                                               long aMaxRows, int aMaxFieldSize, boolean aShouldCloseCursor) throws SQLException
     {
         aContext.clearError();
 
@@ -556,24 +599,26 @@ public class CmProtocol
 
         synchronized (aContext.channel())
         {
-            if (aDeferredRequests.size() > 0)
-            {
-                invokeDeferredRequests(aDeferredRequests);
-            }
-            aContext.getFetchResult().init();
-            // PROJ-2427 ì„±ëŠ¥ì„ ìœ„í•´ clearAllResultsì—ì„œ closeCursorë¥¼ í•˜ì§€ ì•Šê³  ì´ê³³ì—ì„œ ê°™ì´ ë³´ë‚¸ë‹¤.
-            if (aShouldCloseCursor)
-            {
-                CmOperation.writeCloseCursor(aContext.channel(), aContext.getStatementId(), CmOperation.FREE_ALL_RESULTSET);                
-            }
-            CmOperation.writeSetBindParamInfoList(aContext.channel(), aContext.getStatementId(), aParams);
+            initializeBeforeExecute(aContext, aParams, aShouldCloseCursor);
+
             CmOperation.writeBindParamDataIn(aContext.channel(), aContext.getStatementId(), aParams);            
-            CmOperation.writeExecuteV2(aContext.channel(), aContext.getStatementId(), CmOperation.EXECUTION_ARRAY_INDEX_NONE, CmOperation.EXECUTION_MODE_NORMAL);
+            CmOperation.writeExecuteV3(aContext.channel(), aContext.getStatementId(), CmOperation.EXECUTION_ARRAY_INDEX_NONE, CmOperation.EXECUTION_MODE_NORMAL, aContext);
             if (aContext.getGetColumnInfoResult().getColumns()==null && aContext.getPrepareResult().getResultSetCount() > 0)
             {
                 CmOperation.writeGetColumn(aContext.channel(), aContext.getStatementId(), aContext.getResultSetId());
             }
-            CmOperation.writeFetchV2(aContext.channel(), aContext.getStatementId(), aContext.getResultSetId(), aFetchCount);
+            CmOperation.writeFetchV3(aContext.channel(), aContext.getStatementId(), aContext.getResultSetId(), aFetchCount);
+            aContext.channel().sendAndReceive();
+            readProtocolResult(aContext);
+        }
+    }
+
+    public static void closeCursorInternal(CmProtocolContextDirExec aContext) throws SQLException
+    {
+        aContext.clearError();
+        synchronized (aContext.channel())
+        {
+            CmOperation.writeCloseCursor(aContext.channel(), aContext.getStatementId(), CmOperation.FREE_ALL_RESULTSET);
             aContext.channel().sendAndReceive();
             readProtocolResult(aContext);
         }
@@ -585,7 +630,7 @@ public class CmProtocol
         synchronized (aContext.channel())
         {
             CmOperation.writeCloseCursor(aContext.channel(), aStmtID, aResultSetID);
-            CmOperation.writeClientCommit(aContext.channel(), aClientSideAutoCommit); // PROJ-2190 cursorë¥¼ closeí•œ í›„ commit í”„ë¡œí† ì½œì„ writeí•œë‹¤. 
+            CmOperation.writeClientCommit(aContext.channel(), aClientSideAutoCommit); // PROJ-2190 cursor¸¦ closeÇÑ ÈÄ commit ÇÁ·ÎÅäÄİÀ» writeÇÑ´Ù. 
             aContext.channel().sendAndReceive();
             readProtocolResult(aContext);
         }
@@ -685,7 +730,7 @@ public class CmProtocol
                     sLengthPerOp = aSource.read(sTmpBuf, 0, sLengthPerOp);
                     if (sLengthPerOp == -1)
                     {
-                        // BUGBUG (2013-08-30) ì§€ì •í•œ ê¸¸ì´ë³´ë‹¤ Streamì´ ì§§ë‹¤ë©´ ì—ëŸ¬ì¸ê°€?
+                        // BUGBUG (2013-08-30) ÁöÁ¤ÇÑ ±æÀÌº¸´Ù StreamÀÌ Âª´Ù¸é ¿¡·¯ÀÎ°¡?
                         break;
                     }
                     CmOperation.writeLobPut(aContext.channel(), aContext.locatorId(), sTmpBuf, 0, sLengthPerOp);
@@ -782,14 +827,14 @@ public class CmProtocol
     }
 
     /**
-     * CLob ë°ì´íƒ€ë¥¼ ì„œë²„ë¡œ ë³´ë‚¸ë‹¤.
+     * CLob µ¥ÀÌÅ¸¸¦ ¼­¹ö·Î º¸³½´Ù.
      * 
-     * @param aContext í”„ë¡œí† ì½œ ì»¨í…ìŠ¤íŠ¸
-     * @param aServerOffset ë°ì´íƒ€ë¥¼ ë°˜ì˜í•  ì„œë²„ ë°ì´íƒ€ì˜ ê¸°ì¤€ ìœ„ì¹˜(byte ë‹¨ìœ„)
-     * @param aSrc ë³´ë‚¼ ë°ì´íƒ€
-     * @return ë³´ë‚¸ ë°ì´íƒ€ ì‚¬ì´ì¦ˆ(byte ë‹¨ìœ„)
-     * @throws SQLException í”„ë¡œí† ì½œì„ ì“°ëŠ”ë° ì‹¤íŒ¨í–ˆì„ ê²½ìš°
-     * @throws IOException ë°ì´íƒ€ë¥¼ ì½ëŠ”ë° ì‹¤íŒ¨í–ˆì„ ê²½ìš°
+     * @param aContext ÇÁ·ÎÅäÄİ ÄÁÅØ½ºÆ®
+     * @param aServerOffset µ¥ÀÌÅ¸¸¦ ¹İ¿µÇÒ ¼­¹ö µ¥ÀÌÅ¸ÀÇ ±âÁØ À§Ä¡(byte ´ÜÀ§)
+     * @param aSrc º¸³¾ µ¥ÀÌÅ¸
+     * @return º¸³½ µ¥ÀÌÅ¸ »çÀÌÁî(byte ´ÜÀ§)
+     * @throws SQLException ÇÁ·ÎÅäÄİÀ» ¾²´Âµ¥ ½ÇÆĞÇßÀ» °æ¿ì
+     * @throws IOException µ¥ÀÌÅ¸¸¦ ÀĞ´Âµ¥ ½ÇÆĞÇßÀ» °æ¿ì
      */
     public static long putClob(CmProtocolContextLob aContext, long aServerOffset, char[] aSrc) throws SQLException, IOException
     {
@@ -797,16 +842,16 @@ public class CmProtocol
     }
 
     /**
-     * CLob ë°ì´íƒ€ë¥¼ ì„œë²„ë¡œ ë³´ë‚¸ë‹¤.
+     * CLob µ¥ÀÌÅ¸¸¦ ¼­¹ö·Î º¸³½´Ù.
      * 
-     * @param aContext í”„ë¡œí† ì½œ ì»¨í…ìŠ¤íŠ¸
-     * @param aServerOffset ë°ì´íƒ€ë¥¼ ë°˜ì˜í•  ì„œë²„ ë°ì´íƒ€ì˜ ê¸°ì¤€ ìœ„ì¹˜(byte ë‹¨ìœ„)
-     * @param aSrc ë³´ë‚¼ ë°ì´íƒ€
-     * @param aSrcOffset ë³´ë‚´ê¸° ì‹œì‘í•  ìœ„ì¹˜
-     * @param aSrcLength ë³´ë‚¼ ê¸¸ì´
-     * @return ë³´ë‚¸ ë°ì´íƒ€ ì‚¬ì´ì¦ˆ(byte ë‹¨ìœ„)
-     * @throws SQLException í”„ë¡œí† ì½œì„ ì“°ëŠ”ë° ì‹¤íŒ¨í–ˆì„ ê²½ìš°
-     * @throws IOException ë°ì´íƒ€ë¥¼ ì½ëŠ”ë° ì‹¤íŒ¨í–ˆì„ ê²½ìš°
+     * @param aContext ÇÁ·ÎÅäÄİ ÄÁÅØ½ºÆ®
+     * @param aServerOffset µ¥ÀÌÅ¸¸¦ ¹İ¿µÇÒ ¼­¹ö µ¥ÀÌÅ¸ÀÇ ±âÁØ À§Ä¡(byte ´ÜÀ§)
+     * @param aSrc º¸³¾ µ¥ÀÌÅ¸
+     * @param aSrcOffset º¸³»±â ½ÃÀÛÇÒ À§Ä¡
+     * @param aSrcLength º¸³¾ ±æÀÌ
+     * @return º¸³½ µ¥ÀÌÅ¸ »çÀÌÁî(byte ´ÜÀ§)
+     * @throws SQLException ÇÁ·ÎÅäÄİÀ» ¾²´Âµ¥ ½ÇÆĞÇßÀ» °æ¿ì
+     * @throws IOException µ¥ÀÌÅ¸¸¦ ÀĞ´Âµ¥ ½ÇÆĞÇßÀ» °æ¿ì
      */
     public static long putClob(CmProtocolContextLob aContext, long aServerOffset, char[] aSrc, int aSrcOffset, int aSrcLength) throws SQLException, IOException
     {
@@ -839,15 +884,15 @@ public class CmProtocol
     }
 
     /**
-     * CLob ë°ì´íƒ€ë¥¼ ì„œë²„ë¡œ ë³´ë‚¸ë‹¤.
+     * CLob µ¥ÀÌÅ¸¸¦ ¼­¹ö·Î º¸³½´Ù.
      * 
-     * @param aContext í”„ë¡œí† ì½œ ì»¨í…ìŠ¤íŠ¸
-     * @param aServerOffset ë°ì´íƒ€ë¥¼ ë°˜ì˜í•  ì„œë²„ ë°ì´íƒ€ì˜ ê¸°ì¤€ ìœ„ì¹˜(byte ë‹¨ìœ„)
-     * @param aSource ë³´ë‚¼ ë°ì´íƒ€
-     * @param aSourceLength ë³´ë‚¼ ë°ì´íƒ€ ê¸¸ì´
-     * @return ë³´ë‚¸ ë°ì´íƒ€ ì‚¬ì´ì¦ˆ(byte ë‹¨ìœ„)
-     * @throws SQLException í”„ë¡œí† ì½œì„ ì“°ëŠ”ë° ì‹¤íŒ¨í–ˆì„ ê²½ìš°
-     * @throws IOException ë°ì´íƒ€ë¥¼ ì½ëŠ”ë° ì‹¤íŒ¨í–ˆì„ ê²½ìš°
+     * @param aContext ÇÁ·ÎÅäÄİ ÄÁÅØ½ºÆ®
+     * @param aServerOffset µ¥ÀÌÅ¸¸¦ ¹İ¿µÇÒ ¼­¹ö µ¥ÀÌÅ¸ÀÇ ±âÁØ À§Ä¡(byte ´ÜÀ§)
+     * @param aSource º¸³¾ µ¥ÀÌÅ¸
+     * @param aSourceLength º¸³¾ µ¥ÀÌÅ¸ ±æÀÌ
+     * @return º¸³½ µ¥ÀÌÅ¸ »çÀÌÁî(byte ´ÜÀ§)
+     * @throws SQLException ÇÁ·ÎÅäÄİÀ» ¾²´Âµ¥ ½ÇÆĞÇßÀ» °æ¿ì
+     * @throws IOException µ¥ÀÌÅ¸¸¦ ÀĞ´Âµ¥ ½ÇÆĞÇßÀ» °æ¿ì
      */
     public static long putClob(CmProtocolContextLob aContext, long aServerOffset, Reader aSource, int aSourceLength) throws SQLException, IOException
     {
@@ -989,12 +1034,12 @@ public class CmProtocol
     }
 
     /**
-     * Statement IDì— í•´ë‹¹í•˜ëŠ” Plan textë¥¼ ì–»ëŠ”ë‹¤.
+     * Statement ID¿¡ ÇØ´çÇÏ´Â Plan text¸¦ ¾ò´Â´Ù.
      *
      * @param aContext Protocol context
-     * @param aStmtID Plan textë¥¼ ì–»ì„ Statementì˜ ID
-     * @param aDeferredRequests deferredëœ prepareìš”ì²­
-     * @throws SQLException ìš”ì²­ì„ ë³´ë‚´ì§€ ëª»í–ˆê±°ë‚˜, ë˜ëŠ” Plan textë¥¼ ì–»ì„ ìˆ˜ ì—†ëŠ” ê²½ìš°
+     * @param aStmtID Plan text¸¦ ¾òÀ» StatementÀÇ ID
+     * @param aDeferredRequests deferredµÈ prepare¿äÃ»
+     * @throws SQLException ¿äÃ»À» º¸³»Áö ¸øÇß°Å³ª, ¶Ç´Â Plan text¸¦ ¾òÀ» ¼ö ¾ø´Â °æ¿ì
      */
     public static void getPlan(CmProtocolContext aContext, int aStmtID, List aDeferredRequests) throws SQLException
     {
@@ -1012,10 +1057,10 @@ public class CmProtocol
     }
 
     /**
-     * í”„ë¡œí† ì½œì„ í•´ì„í•œë‹¤. ë§Œì•½, ë¹„ë™ê¸°ì ìœ¼ë¡œ ìš”ì²­í•œ í”„ë¡œí† ì½œì´ ìˆë‹¤ë©´ ë¨¼ì € í•´ì„í•œë‹¤.
+     * ÇÁ·ÎÅäÄİÀ» ÇØ¼®ÇÑ´Ù. ¸¸¾à, ºñµ¿±âÀûÀ¸·Î ¿äÃ»ÇÑ ÇÁ·ÎÅäÄİÀÌ ÀÖ´Ù¸é ¸ÕÀú ÇØ¼®ÇÑ´Ù.
      * 
      * @param aContext Protocol context
-     * @throws SQLException ìˆ˜ì‹  ë„ì¤‘ ì—ëŸ¬ê°€ ë°œìƒí•˜ì˜€ì„ ê²½ìš°
+     * @throws SQLException ¼ö½Å µµÁß ¿¡·¯°¡ ¹ß»ıÇÏ¿´À» °æ¿ì
      */
     protected static void readProtocolResult(CmProtocolContext aContext) throws SQLException
     {
@@ -1029,10 +1074,10 @@ public class CmProtocol
     }
 
     /**
-     * ë¹„ë™ê¸°ì ìœ¼ë¡œ ì†¡ì‹ í•œ í”„ë¡œí† ì½œì„ ìˆ˜ì‹ í•œë‹¤.
+     * ºñµ¿±âÀûÀ¸·Î ¼Û½ÅÇÑ ÇÁ·ÎÅäÄİÀ» ¼ö½ÅÇÑ´Ù.
      * 
-     * @param aChannel ìˆ˜ì‹ í•˜ê³ ì í•˜ëŠ” communication channel
-     * @throws SQLException ìˆ˜ì‹  ë„ì¤‘ ì—ëŸ¬ê°€ ë°œìƒí•˜ì˜€ì„ ê²½ìš°
+     * @param aChannel ¼ö½ÅÇÏ°íÀÚ ÇÏ´Â communication channel
+     * @throws SQLException ¼ö½Å µµÁß ¿¡·¯°¡ ¹ß»ıÇÏ¿´À» °æ¿ì
      */
     private static void readProtocolResultAsync(CmChannel aChannel) throws SQLException
     {
@@ -1044,20 +1089,19 @@ public class CmProtocol
         }
     }
 
-    // BUG-42712 deferred ëœ ë™ì‘ë“¤ì„ CmBufferì— writeí•œë‹¤.
-    public static void invokeDeferredRequests(List aDeferredRequests)
+    // BUG-42712 deferred µÈ µ¿ÀÛµéÀ» CmBuffer¿¡ writeÇÑ´Ù.
+    public static void invokeDeferredRequests(List<Map<String, Object>> aDeferredRequests)
     {
-        for (Iterator sItr = aDeferredRequests.iterator(); sItr.hasNext();)
+        for (Map<String, Object> aDeferredRequest : aDeferredRequests)
         {
-            HashMap sMethodInfo = (HashMap)sItr.next();
-            String sMethodName = (String)sMethodInfo.get("methodname");
-            Object[] sArgs = (Object[])sMethodInfo.get("args");
+            String sMethodName = (String)aDeferredRequest.get("methodname");
+            Object[] sArgs = (Object[])aDeferredRequest.get("args");
             try
             {
                 Method sMethod = getMethod(Class.forName("Altibase.jdbc.driver.cm.CmProtocol"), sMethodName);
                 if (sMethod != null)
                 {
-                    sMethod.invoke(null, sArgs); // BUG-42712 CmProtocolì´ static í´ë˜ìŠ¤ì´ê¸°ë•Œë¬¸ì— ì²«ë²ˆì§¸ ë§¤ê°œë³€ìˆ˜ë¥¼ nullë¡œ ì¤€ë‹¤.
+                    sMethod.invoke(null, sArgs); // BUG-42712 CmProtocolÀÌ static Å¬·¡½ºÀÌ±â¶§¹®¿¡ Ã¹¹øÂ° ¸Å°³º¯¼ö¸¦ null·Î ÁØ´Ù.
                 }
             }
             catch (Exception sEx)
@@ -1065,19 +1109,18 @@ public class CmProtocol
                 Error.throwInternalError(ErrorDef.INTERNAL_ASSERTION, sEx);
             }
         }
-        aDeferredRequests.clear();
     }
 
-    // BUG-42712 reflectionì„ ì´ìš©í•´ í•´ë‹¹í•˜ëŠ” nameì˜ Methodê°ì²´ë¥¼ ë°˜í™˜í•œë‹¤.
-    private static Method getMethod(Class aClass, String sMethodName)
+    // BUG-42712 reflectionÀ» ÀÌ¿ëÇØ ÇØ´çÇÏ´Â nameÀÇ Method°´Ã¼¸¦ ¹İÈ¯ÇÑ´Ù.
+    private static Method getMethod(Class<?> aClass, String aMethodName)
     {
         Method[] sMethods = aClass.getDeclaredMethods();
         Method sMethod = null;
-        for (int i = 0; i < sMethods.length; i++)
+        for (Method sEach : sMethods)
         {
-            if (sMethods[i].getName().equals(sMethodName))
+            if (sEach.getName().equals(aMethodName))
             {
-                sMethod = sMethods[i];
+                sMethod = sEach;
                 break;
             }
         }

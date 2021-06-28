@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcuSqlSourceInfo.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qcuSqlSourceInfo.cpp 89096 2020-10-29 23:09:57Z bethy $
  **********************************************************************/
 
 #include <idl.h>
@@ -26,6 +26,7 @@
 #include <qc.h>
 #include <qsParseTree.h>
 #include <qsvEnv.h>
+#include <sdi.h>
 
 qcuSqlSourceInfo::qcuSqlSourceInfo()
 {
@@ -52,7 +53,7 @@ qcuSqlSourceInfo::initWithBeforeMessage( iduMemory * mem )
 #define IDE_FN ""
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
-    return init( mem, ideGetErrorMsg( ideGetErrorCode() ) );
+    return init( mem, sdi::getMultiErrorMsg() );
 
 #undef IDE_FN
 }
@@ -63,7 +64,7 @@ qcuSqlSourceInfo::initWithBeforeMessage( iduVarMemList * mem )
 #define IDE_FN ""
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
-    return init( mem, ideGetErrorMsg( ideGetErrorCode() ) );
+    return init( mem, sdi::getMultiErrorMsg() );
 
 #undef IDE_FN
 }

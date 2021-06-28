@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: utAtbRow.cpp 82706 2018-04-05 01:32:59Z bethy $
+ * $Id: utAtbRow.cpp 82705 2018-04-05 01:31:36Z bethy $
  ******************************************************************************/
 
 #include <utAtb.h>
@@ -54,7 +54,7 @@ IDE_RC utAtbRow::initialize()
 
     return IDE_SUCCESS;
 
-    // BUG-25229 [CodeSonar] Auditì˜ ë©”ëª¨ë¦¬ Leak
+    // BUG-25229 [CodeSonar] AuditÀÇ ¸Ş¸ğ¸® Leak
     IDE_EXCEPTION(init_error);
     {
         delete sField;
@@ -79,13 +79,13 @@ IDE_RC utAtbRow::reset()
     return Row::reset();
 }
 
-/* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
+/* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
 IDE_RC utAtbRow::setStmtAttr4Array(void)
 {
 /***********************************************************************
  *
  * Description :
- *    CSV FILE_MODE ì‹œ array fetch ë¥¼ í•˜ê¸°ìœ„í•œ array size setting.
+ *    CSV FILE_MODE ½Ã array fetch ¸¦ ÇÏ±âÀ§ÇÑ array size setting.
  *
  ***********************************************************************/
     SQLRETURN sSqlRes;

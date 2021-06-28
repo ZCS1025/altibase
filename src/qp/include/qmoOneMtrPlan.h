@@ -16,24 +16,24 @@
  
 
 /***********************************************************************
- * $Id: qmoOneMtrPlan.h 82490 2018-03-16 00:17:55Z donovan.seo $
+ * $Id: qmoOneMtrPlan.h 82330 2018-02-23 00:32:59Z donovan.seo $
  *
  * Description :
  *     Plan Generator
  *
- *     One-child Materialized Planì„ ìƒì„±í•˜ê¸° ìœ„í•œ ê´€ë¦¬ìì´ë‹¤.
+ *     One-child Materialized PlanÀ» »ı¼ºÇÏ±â À§ÇÑ °ü¸®ÀÚÀÌ´Ù.
  *
- *     ë‹¤ìŒê³¼ ê°™ì€ Plan Nodeì˜ ìƒì„±ì„ ê´€ë¦¬í•œë‹¤.
- *         - SORT ë…¸ë“œ
- *         - HASH ë…¸ë“œ
- *         - GRAG ë…¸ë“œ
- *         - HSDS ë…¸ë“œ
- *         - LMST ë…¸ë“œ
- *         - VMTR ë…¸ë“œ
+ *     ´ÙÀ½°ú °°Àº Plan NodeÀÇ »ı¼ºÀ» °ü¸®ÇÑ´Ù.
+ *         - SORT ³ëµå
+ *         - HASH ³ëµå
+ *         - GRAG ³ëµå
+ *         - HSDS ³ëµå
+ *         - LMST ³ëµå
+ *         - VMTR ³ëµå
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -50,11 +50,11 @@
 #include <qmoSubquery.h>
 #include <qmoOneNonPlan.h>
 //---------------------------------------------------
-// One-Child Meterialized Planì„ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+// One-Child Meterialized PlanÀ» °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
 //---------------------------------------------------
 
 //----------------------------------------
-//SORT ë…¸ë“œì˜ dependency í˜¸ì¶œì„ ìœ„í•œ flag
+//SORT ³ëµåÀÇ dependency È£ÃâÀ» À§ÇÑ flag
 //----------------------------------------
 #define QMO_SORT_DEPENDENCY ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_TRUE       |   \
                               QMO_DEPENDENCY_STEP2_BASE_TABLE_FALSE         |   \
@@ -64,7 +64,7 @@
                               QMO_DEPENDENCY_STEP6_DEPENDENCIES_REFINE_TRUE   )
 
 //----------------------------------------
-//HASH ë…¸ë“œì˜ dependency í˜¸ì¶œì„ ìœ„í•œ flag
+//HASH ³ëµåÀÇ dependency È£ÃâÀ» À§ÇÑ flag
 //----------------------------------------
 #define QMO_HASH_DEPENDENCY ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_TRUE       |   \
                               QMO_DEPENDENCY_STEP2_BASE_TABLE_FALSE         |   \
@@ -74,7 +74,7 @@
                               QMO_DEPENDENCY_STEP6_DEPENDENCIES_REFINE_TRUE   )
 
 //----------------------------------------
-//GRAG ë…¸ë“œì˜ dependency í˜¸ì¶œì„ ìœ„í•œ flag
+//GRAG ³ëµåÀÇ dependency È£ÃâÀ» À§ÇÑ flag
 //----------------------------------------
 #define QMO_GRAG_DEPENDENCY ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_TRUE       |   \
                               QMO_DEPENDENCY_STEP2_BASE_TABLE_FALSE         |   \
@@ -83,7 +83,7 @@
                               QMO_DEPENDENCY_STEP3_TABLEMAP_REFINE_TRUE     |   \
                               QMO_DEPENDENCY_STEP6_DEPENDENCIES_REFINE_FALSE  )
 //----------------------------------------
-//HSDS ë…¸ë“œì˜ dependency í˜¸ì¶œì„ ìœ„í•œ flag
+//HSDS ³ëµåÀÇ dependency È£ÃâÀ» À§ÇÑ flag
 //----------------------------------------
 #define QMO_HSDS_DEPENDENCY ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_TRUE       |   \
                               QMO_DEPENDENCY_STEP2_BASE_TABLE_FALSE         |   \
@@ -93,7 +93,7 @@
                               QMO_DEPENDENCY_STEP6_DEPENDENCIES_REFINE_FALSE  )
 
 //----------------------------------------
-//VMTR ë…¸ë“œì˜ dependency í˜¸ì¶œì„ ìœ„í•œ flag
+//VMTR ³ëµåÀÇ dependency È£ÃâÀ» À§ÇÑ flag
 //----------------------------------------
 #define QMO_LMST_DEPENDENCY ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_TRUE       |   \
                               QMO_DEPENDENCY_STEP2_BASE_TABLE_FALSE         |   \
@@ -103,7 +103,7 @@
                               QMO_DEPENDENCY_STEP6_DEPENDENCIES_REFINE_FALSE  )
 
 //----------------------------------------
-//VMTR ë…¸ë“œì˜ dependency í˜¸ì¶œì„ ìœ„í•œ flag
+//VMTR ³ëµåÀÇ dependency È£ÃâÀ» À§ÇÑ flag
 //----------------------------------------
 #define QMO_VMTR_DEPENDENCY ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_TRUE       |   \
                               QMO_DEPENDENCY_STEP2_BASE_TABLE_FALSE         |   \
@@ -113,7 +113,7 @@
                               QMO_DEPENDENCY_STEP6_DEPENDENCIES_REFINE_FALSE  )
 
 //----------------------------------------
-//WNST ë…¸ë“œì˜ dependency í˜¸ì¶œì„ ìœ„í•œ flag
+//WNST ³ëµåÀÇ dependency È£ÃâÀ» À§ÇÑ flag
 //----------------------------------------
 #define QMO_WNST_DEPENDENCY ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_TRUE       |   \
                               QMO_DEPENDENCY_STEP2_BASE_TABLE_FALSE         |   \
@@ -122,7 +122,7 @@
                               QMO_DEPENDENCY_STEP3_TABLEMAP_REFINE_TRUE     |   \
                               QMO_DEPENDENCY_STEP6_DEPENDENCIES_REFINE_FALSE  )
 
-/* Proj-1715 CNBYë…¸ë“œì˜ dependency flag */
+/* Proj-1715 CNBY³ëµåÀÇ dependency flag */
 #define QMO_CNBY_DEPENDENCY ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_TRUE     |  \
                               QMO_DEPENDENCY_STEP2_BASE_TABLE_TRUE        |  \
                               QMO_DEPENDENCY_STEP2_DEP_WITH_PREDICATE     |  \
@@ -130,7 +130,7 @@
                               QMO_DEPENDENCY_STEP3_TABLEMAP_REFINE_FALSE  |  \
                               QMO_DEPENDENCY_STEP6_DEPENDENCIES_REFINE_FALSE )
 
-/* PROJ-1715 CMTRë…¸ë“œì˜ dependency flag */
+/* PROJ-1715 CMTR³ëµåÀÇ dependency flag */
 #define QMO_CMTR_DEPENDENCY ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_TRUE       |   \
                               QMO_DEPENDENCY_STEP2_BASE_TABLE_FALSE         |   \
                               QMO_DEPENDENCY_STEP2_DEP_WITH_MATERIALIZATION |   \
@@ -138,7 +138,7 @@
                               QMO_DEPENDENCY_STEP3_TABLEMAP_REFINE_TRUE     |   \
                               QMO_DEPENDENCY_STEP6_DEPENDENCIES_REFINE_FALSE  )
 
-/* PROJ-2509 CNBY JOIN ë…¸ë“œì˜ dependency flag */
+/* PROJ-2509 CNBY JOIN ³ëµåÀÇ dependency flag */
 #define QMO_CNBY_DEPENDENCY_FOR_JOIN ( QMO_DEPENDENCY_STEP1_SET_TABLE_MAP_TRUE | \
                                        QMO_DEPENDENCY_STEP2_BASE_TABLE_FALSE | \
                                        QMO_DEPENDENCY_STEP2_DEP_WITH_PREDICATE | \
@@ -163,17 +163,17 @@
                               QMO_DEPENDENCY_STEP6_DEPENDENCIES_REFINE_TRUE  )
 
 //------------------------------
-// makeWNST()í•¨ìˆ˜ì— í•„ìš”í•œ flag
+// makeWNST()ÇÔ¼ö¿¡ ÇÊ¿äÇÑ flag
 //------------------------------
 
-// WNST ë…¸ë“œ ìƒì„±ì‹œ BaseTable ì €ì¥í•˜ëŠ” ë°©ë²•
+// WNST ³ëµå »ı¼º½Ã BaseTable ÀúÀåÇÏ´Â ¹æ¹ı
 #define QMO_MAKEWNST_BASETABLE_MASK              (0x0000000F)
 #define QMO_MAKEWNST_BASETABLE_DEPENDENCY        (0x00000000)
 #define QMO_MAKEWNST_BASETABLE_TARGET            (0x00000001)
 #define QMO_MAKEWNST_BASETABLE_GRAG              (0x00000002)
 #define QMO_MAKEWNST_BASETABLE_HSDS              (0x00000003)
 
-//Temp Tableì˜ ìƒì„± ì¢…ë¥˜
+//Temp TableÀÇ »ı¼º Á¾·ù
 #define QMO_MAKEWNST_TEMP_TABLE_MASK             (0x00000010)
 #define QMO_MAKEWNST_MEMORY_TEMP_TABLE           (0x00000000)
 #define QMO_MAKEWNST_DISK_TEMP_TABLE             (0x00000010)
@@ -184,22 +184,22 @@
 #define QMO_MAKEWNST_PRESERVED_ORDER_FALSE       (0x00000020)
 
 // BUG-37277
-// ìƒìœ„ì— order byê°€ ìˆê³  í•˜ìœ„ì— group byê°€ ìˆëŠ” windowì ˆ
+// »óÀ§¿¡ order by°¡ ÀÖ°í ÇÏÀ§¿¡ group by°¡ ÀÖ´Â windowÀı
 #define QMO_MAKEWNST_ORDERBY_GROUPBY_MASK        (0x00000040)
 #define QMO_MAKEWNST_ORDERBY_GROUPBY_FALSE       (0x00000000)
 #define QMO_MAKEWNST_ORDERBY_GROUPBY_TRUE        (0x00000040)
 
 /* BUG-40354 pushed rank */
-/* pushed rank í•¨ìˆ˜ê°€ ì ìš©ë˜ì—ˆìŒì„ í‘œì‹œ */
+/* pushed rank ÇÔ¼ö°¡ Àû¿ëµÇ¾úÀ½À» Ç¥½Ã */
 #define QMO_MAKEWNST_PUSHED_RANK_MASK            (0x00000080)
 #define QMO_MAKEWNST_PUSHED_RANK_FALSE           (0x00000000)
 #define QMO_MAKEWNST_PUSHED_RANK_TRUE            (0x00000080)
 
 //------------------------------
-//makeSORT()í•¨ìˆ˜ì— í•„ìš”í•œ flag
+//makeSORT()ÇÔ¼ö¿¡ ÇÊ¿äÇÑ flag
 //------------------------------
 
-//SORTë…¸ë“œì˜ ìš©ë„ êµ¬ë¶„
+//SORT³ëµåÀÇ ¿ëµµ ±¸ºĞ
 #define QMO_MAKESORT_METHOD_MASK                 (0x0000000F)
 #define QMO_MAKESORT_ORDERBY                     (0x00000000)
 #define QMO_MAKESORT_SORT_BASED_GROUPING         (0x00000001)
@@ -209,27 +209,27 @@
 #define QMO_MAKESORT_STORE_AND_SEARCH            (0x00000005)
 #define QMO_MAKESORT_STORE                       (0x00000006)
 
-//JOINì•„ë˜ì˜ ìƒì„± ìœ„ì¹˜ êµ¬ë¶„
+//JOIN¾Æ·¡ÀÇ »ı¼º À§Ä¡ ±¸ºĞ
 #define QMO_MAKESORT_POSITION_MASK               (0x00000010)
 #define QMO_MAKESORT_POSITION_LEFT               (0x00000000)
 #define QMO_MAKESORT_POSITION_RIGHT              (0x00000010)
 
-//Temp Tableì˜ ìƒì„± ì¢…ë¥˜
+//Temp TableÀÇ »ı¼º Á¾·ù
 #define QMO_MAKESORT_TEMP_TABLE_MASK             (0x00000020)
 #define QMO_MAKESORT_MEMORY_TEMP_TABLE           (0x00000000)
 #define QMO_MAKESORT_DISK_TEMP_TABLE             (0x00000020)
 
-//Preserverd Orderì˜ ì¡´ì¬ ìœ ë¬´
+//Preserverd OrderÀÇ Á¸Àç À¯¹«
 #define QMO_MAKESORT_PRESERVED_ORDER_MASK        (0x00000040)
 #define QMO_MAKESORT_PRESERVED_FALSE             (0x00000000)
 #define QMO_MAKESORT_PRESERVED_TRUE              (0x00000040)
 
-// PROJ-1353 Tempì— valueë¥¼ ìŒ“ëŠ” Storeìš© Sort
+// PROJ-1353 Temp¿¡ value¸¦ ½×´Â Store¿ë Sort
 #define QMO_MAKESORT_VALUE_TEMP_MASK             (0x00000080)
 #define QMO_MAKESORT_VALUE_TEMP_FALSE            (0x00000000)
 #define QMO_MAKESORT_VALUE_TEMP_TRUE             (0x00000080)
 
-//SORTë…¸ë“œ ìƒì„±ì‹œ BaseTable ì €ì¥í•˜ëŠ” ë°©ë²•
+//SORT³ëµå »ı¼º½Ã BaseTable ÀúÀåÇÏ´Â ¹æ¹ı
 #define QMO_MAKESORT_BASETABLE_MASK              (0x00000F00)
 #define QMO_MAKESORT_BASETABLE_DEPENDENCY        (0x00000000)
 #define QMO_MAKESORT_BASETABLE_TARGET            (0x00000100)
@@ -243,32 +243,32 @@
 #define QMO_MAKESORT_GROUP_EXT_VALUE_TRUE        (0x00001000)
 
 //------------------------------
-//makeHASH()í•¨ìˆ˜ì— í•„ìš”í•œ flag
+//makeHASH()ÇÔ¼ö¿¡ ÇÊ¿äÇÑ flag
 //------------------------------
 
-//HASHë…¸ë“œì˜ ìš©ë„ êµ¬ë¶„
+//HASH³ëµåÀÇ ¿ëµµ ±¸ºĞ
 #define QMO_MAKEHASH_METHOD_MASK                 (0x00000001)
 #define QMO_MAKEHASH_HASH_BASED_JOIN             (0x00000000)
 #define QMO_MAKEHASH_STORE_AND_SEARCH            (0x00000001)
 
-//JOINì•„ë˜ì˜ ìƒì„± ìœ„ì¹˜ êµ¬ë¶„
+//JOIN¾Æ·¡ÀÇ »ı¼º À§Ä¡ ±¸ºĞ
 #define QMO_MAKEHASH_POSITION_MASK               (0x00000002)
 #define QMO_MAKEHASH_POSITION_LEFT               (0x00000000)
 #define QMO_MAKEHASH_POSITION_RIGHT              (0x00000002)
 
-//Temp Tableì˜ ìƒì„± ì¢…ë¥˜
+//Temp TableÀÇ »ı¼º Á¾·ù
 #define QMO_MAKEHASH_TEMP_TABLE_MASK             (0x00000004)
 #define QMO_MAKEHASH_MEMORY_TEMP_TABLE           (0x00000000)
 #define QMO_MAKEHASH_DISK_TEMP_TABLE             (0x00000004)
 
-//Store and Searchë¡œ ì‚¬ìš©ë  ê²½ìš° not null ê²€ì‚¬ì—¬ë¶€
+//Store and Search·Î »ç¿ëµÉ °æ¿ì not null °Ë»ç¿©ºÎ
 #define QMO_MAKEHASH_NOTNULLCHECK_MASK           (0x00000008)
 #define QMO_MAKEHASH_NOTNULLCHECK_FALSE          (0x00000000)
 #define QMO_MAKEHASH_NOTNULLCHECK_TRUE           (0x00000008)
 
 
 //------------------------------
-//makeGRAG()í•¨ìˆ˜ì— í•„ìš”í•œ flag
+//makeGRAG()ÇÔ¼ö¿¡ ÇÊ¿äÇÑ flag
 //------------------------------
 
 #define QMO_MAKEGRAG_TEMP_TABLE_MASK             (0x00000001)
@@ -282,31 +282,31 @@
 #define QMO_MAKEGRAG_PARALLEL_STEP_MERGE         (0x00000020)
 
 //------------------------------
-//makeHSDS()í•¨ìˆ˜ì— í•„ìš”í•œ flag
+//makeHSDS()ÇÔ¼ö¿¡ ÇÊ¿äÇÑ flag
 //------------------------------
 
-//HSDSë…¸ë“œì˜ ìš©ë„ êµ¬ë¶„
+//HSDS³ëµåÀÇ ¿ëµµ ±¸ºĞ
 #define QMO_MAKEHSDS_METHOD_MASK                 (0x0000000F)
 #define QMO_MAKEHSDS_HASH_BASED_DISTINCTION      (0x00000000)
 #define QMO_MAKEHSDS_SET_UNION                   (0x00000001)
 #define QMO_MAKEHSDS_IN_SUBQUERY_KEYRANGE        (0x00000002)
 
-//Temp Tableì˜ ìƒì„± ì¢…ë¥˜
+//Temp TableÀÇ »ı¼º Á¾·ù
 #define QMO_MAKEHSDS_TEMP_TABLE_MASK             (0x00000010)
 #define QMO_MAKEHSDS_MEMORY_TEMP_TABLE           (0x00000000)
 #define QMO_MAKEHSDS_DISK_TEMP_TABLE             (0x00000010)
 
 
 //------------------------------
-//makeLMST()í•¨ìˆ˜ì— í•„ìš”í•œ flag
+//makeLMST()ÇÔ¼ö¿¡ ÇÊ¿äÇÑ flag
 //------------------------------
 
-//LMSTë…¸ë“œì˜ ìš©ë„ êµ¬ë¶„
+//LMST³ëµåÀÇ ¿ëµµ ±¸ºĞ
 #define QMO_MAKELMST_METHOD_MASK                 (0x00000001)
 #define QMO_MAKELMST_LIMIT_ORDERBY               (0x00000000)
 #define QMO_MAKELMST_STORE_AND_SEARCH            (0x00000001)
 
-//SORTë…¸ë“œ ìƒì„±ì‹œ BaseTable ì €ì¥í•˜ëŠ” ë°©ë²•
+//SORT³ëµå »ı¼º½Ã BaseTable ÀúÀåÇÏ´Â ¹æ¹ı
 #define QMO_MAKELMST_BASETABLE_MASK          QMO_MAKESORT_BASETABLE_MASK
 #define QMO_MAKELMST_BASETABLE_DEPENDENCY    QMO_MAKESORT_BASETABLE_DEPENDENCY
 #define QMO_MAKELMST_BASETABLE_TARGET        QMO_MAKESORT_BASETABLE_TARGET
@@ -315,10 +315,10 @@
 #define QMO_MAKELMST_BASETABLE_WNST          QMO_MAKESORT_BASETABLE_WNST
 
 //------------------------------
-//makeVMTR()í•¨ìˆ˜ì— í•„ìš”í•œ flag
+//makeVMTR()ÇÔ¼ö¿¡ ÇÊ¿äÇÑ flag
 //------------------------------
 
-//Temp Tableì˜ ìƒì„± ì¢…ë¥˜
+//Temp TableÀÇ »ı¼º Á¾·ù
 #define QMO_MAKEVMTR_TEMP_TABLE_MASK             (0x00000010)
 #define QMO_MAKEVMTR_MEMORY_TEMP_TABLE           (0x00000000)
 #define QMO_MAKEVMTR_DISK_TEMP_TABLE             (0x00000010)
@@ -333,13 +333,13 @@
 #define QMO_MAX_CUBE_COLUMN_COUNT                (60)
 
 //---------------------------------------------------
-// One-Child Materialized Planì„ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+// One-Child Materialized PlanÀ» °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
 //---------------------------------------------------
 
 class qmoOneMtrPlan
 {
 public:
-    // SORT ë…¸ë“œì˜ ìƒì„±
+    // SORT ³ëµåÀÇ »ı¼º
     static IDE_RC    initSORT( qcStatement     * aStatement ,
                                qmsQuerySet     * aQuerySet ,
                                UInt              aFlag ,
@@ -368,7 +368,7 @@ public:
                                SDouble             aStoreRowCount,
                                qmnPlan           * aPlan );
 
-    // HASH ë…¸ë“œì˜ ìƒì„±
+    // HASH ³ëµåÀÇ »ı¼º
     static IDE_RC    initHASH( qcStatement  * aStatement ,
                                qmsQuerySet  * aQuerySet ,
                                qtcNode      * aHashFilter,
@@ -383,7 +383,7 @@ public:
                                qmnPlan     ** aPlan );
 
     // PROJ-2385
-    // aAllAttrToKey : Filteringì´ ëë‚œ ëª¨ë“  Attrë¥¼ HashKeyë¡œ ë§Œë“¤ì§€ ì—¬ë¶€
+    // aAllAttrToKey : FilteringÀÌ ³¡³­ ¸ğµç Attr¸¦ HashKey·Î ¸¸µéÁö ¿©ºÎ
     static IDE_RC    makeHASH( qcStatement  * aStatement ,
                                qmsQuerySet  * aQuerySet ,
                                UInt           aFlag ,
@@ -394,7 +394,7 @@ public:
                                qmnPlan      * aPlan,
                                idBool         aAllAttrToKey );
 
-    // GRAG ë…¸ë“œì˜ ìƒì„±
+    // GRAG ³ëµåÀÇ »ı¼º
     static IDE_RC    initGRAG( qcStatement       * aStatement ,
                                qmsQuerySet       * aQuerySet ,
                                qmsAggNode        * aAggrNode ,
@@ -410,7 +410,7 @@ public:
                                qmnPlan          * aChildPlan ,
                                qmnPlan          * aPlan );
 
-    // HSDS ë…¸ë“œì˜ ìƒì„±
+    // HSDS ³ëµåÀÇ »ı¼º
     static IDE_RC    initHSDS( qcStatement  * aStatement ,
                                qmsQuerySet  * aQuerySet ,
                                idBool         aExplicitDistinct,
@@ -424,7 +424,7 @@ public:
                                qmnPlan      * aChildPlan ,
                                qmnPlan      * aPlan );
 
-    // LMST ë…¸ë“œì˜ ìƒì„±
+    // LMST ³ëµåÀÇ »ı¼º
     static IDE_RC    initLMST( qcStatement    * aStatement ,
                                qmsQuerySet    * aQuerySet ,
                                UInt             aFlag ,
@@ -443,7 +443,7 @@ public:
                                qmnPlan        * aChildPlan ,
                                qmnPlan        * aPlan );
 
-    // VMTR ë…¸ë“œì˜ ìƒì„±
+    // VMTR ³ëµåÀÇ »ı¼º
     static IDE_RC    initVMTR( qcStatement  * aStatement ,
                                qmsQuerySet  * aQuerySet ,
                                qmnPlan      * aParent ,
@@ -455,7 +455,7 @@ public:
                                qmnPlan      * aChildPlan ,
                                qmnPlan      * aPlan );
 
-    // WNST ë…¸ë“œì˜ ìƒì„±
+    // WNST ³ëµåÀÇ »ı¼º
     static IDE_RC    initWNST( qcStatement        * aStatement,
                                qmsQuerySet        * aQuerySet,
                                UInt                 aSortKeyCount,
@@ -475,7 +475,7 @@ public:
                                SDouble                aStoreRowCount,
                                qmnPlan              * aPlan );
 
-    /* Proj-1715 Hierarchy Node ìƒì„± */
+    /* Proj-1715 Hierarchy Node »ı¼º */
     static IDE_RC    initCNBY( qcStatement    * aStatement,
                                qmsQuerySet    * aQuerySet,
                                qmoLeafInfo    * aLeafInfo,
@@ -508,7 +508,7 @@ public:
                                    qmnPlan        * aChildPlan,
                                    qmnPlan        * aPlan );
 
-    /* Proj-1715 Hierarchy ì¿¼ë¦¬ì—ì„œ ì‚¬ìš©ë˜ëŠ” Materialize ë…¸ë“œ */
+    /* Proj-1715 Hierarchy Äõ¸®¿¡¼­ »ç¿ëµÇ´Â Materialize ³ëµå */
     static IDE_RC    initCMTR( qcStatement  * aStatement,
                                qmsQuerySet  * aQuerySet,
                                qmnPlan     ** aPlan );
@@ -558,29 +558,29 @@ private:
 
 
     //-----------------------------------------
-    // SORT ë…¸ë“œ ìƒì„±ì„ ìœ„í•œ í•¨ìˆ˜
+    // SORT ³ëµå »ı¼ºÀ» À§ÇÑ ÇÔ¼ö
     //-----------------------------------------
 
     //-----------------------------------------
-    // HASH ë…¸ë“œ ìƒì„±ì„ ìœ„í•œ í•¨ìˆ˜
+    // HASH ³ëµå »ı¼ºÀ» À§ÇÑ ÇÔ¼ö
     //-----------------------------------------
 
-    //HASHê°€ IN subqueryë¡œ ì“°ì´ëŠ” ê²½ìš° Filterë¥¼ ìƒˆë¡­ê²Œ ìƒì„±í•œë‹¤.
+    //HASH°¡ IN subquery·Î ¾²ÀÌ´Â °æ¿ì Filter¸¦ »õ·Ó°Ô »ı¼ºÇÑ´Ù.
     static IDE_RC    makeFilterINSubquery( qcStatement  * aStatement ,
                                            qmsQuerySet  * aQuerySet ,
                                            UShort         aTupleID,
                                            qtcNode      * aInFilter ,
                                            qtcNode     ** aChangedFilter );
 
-    // ì£¼ì–´ì§„ filterë¡œ ë¶€í„° filterConstë¥¼ êµ¬ì„±í•œë‹¤.
+    // ÁÖ¾îÁø filter·Î ºÎÅÍ filterConst¸¦ ±¸¼ºÇÑ´Ù.
     static IDE_RC    makeFilterConstFromPred(  qcStatement  * aStatement ,
                                                qmsQuerySet  * aQuerySet,
                                                UShort         aTupleID,
                                                qtcNode      * aFilter ,
                                                qtcNode     ** aFilterConst );
 
-    // ì£¼ì–´ì§„ Operator ë…¸ë“œë¡œ ë¶€í„° ì»¬ëŸ¼ì„ ì°¾ì•„
-    // filterConstê°€ ë  ë…¸ë“œë¥¼ ë³µì‚¬í•´ì„œ ì¤€ë‹¤
+    // ÁÖ¾îÁø Operator ³ëµå·Î ºÎÅÍ ÄÃ·³À» Ã£¾Æ
+    // filterConst°¡ µÉ ³ëµå¸¦ º¹»çÇØ¼­ ÁØ´Ù
     static IDE_RC makeFilterConstFromNode( qcStatement  * aStatement ,
                                            qmsQuerySet  * aQuerySet,
                                            UShort         aTupleID,
@@ -588,17 +588,17 @@ private:
                                            qtcNode     ** aNewNode );
 
     //-----------------------------------------
-    // WNST ë…¸ë“œ ìƒì„±ì„ ìœ„í•œ í•¨ìˆ˜ ( PROJ-1762 ) 
+    // WNST ³ëµå »ı¼ºÀ» À§ÇÑ ÇÔ¼ö ( PROJ-1762 ) 
     //-----------------------------------------
     
-    // ë™ì¼ partition byë¥¼ ê°€ì§„ wndNode ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬ 
+    // µ¿ÀÏ partition by¸¦ °¡Áø wndNode Á¸ÀçÇÏ´ÂÁö °Ë»ç 
     static IDE_RC existSameWndNode( qcStatement       * aStatement,
                                     UShort              aTupleID,
                                     qmcWndNode        * aWndNode,
                                     qtcNode           * aAnalticFuncNode,
                                     qmcWndNode       ** aSameWndNode );
 
-    // wndNodeì— aggrNodeë¥¼ ìƒì„±í•˜ì—¬ add 
+    // wndNode¿¡ aggrNode¸¦ »ı¼ºÇÏ¿© add 
     static IDE_RC addAggrNodeToWndNode( qcStatement     * aStatement,
                                         qmsQuerySet     * aQuerySet,
                                         qmsAnalyticFunc * aAnalyticFunc,
@@ -607,13 +607,13 @@ private:
                                         qmcWndNode      * aWndNode,
                                         qmcMtrNode     ** aNewAggrNode );
 
-    // wndNodeì— aggrResultNodeë¥¼ ìƒì„±í•˜ì—¬ add
+    // wndNode¿¡ aggrResultNode¸¦ »ı¼ºÇÏ¿© add
     static IDE_RC
     addAggrResultNodeToWndNode( qcStatement * aStatement,
                                 qmcMtrNode  * aAnalResultFuncMtrNode,
                                 qmcWndNode  * aWndNode );
 
-    // WndNodeë¥¼ ìƒì„±í•¨ 
+    // WndNode¸¦ »ı¼ºÇÔ 
     static IDE_RC makeWndNode( qcStatement       * aStatement,
                                UShort              aTupleID,
                                qmcMtrNode        * aMtrNode,
@@ -621,7 +621,7 @@ private:
                                UInt              * aOverColumnNodeCount,
                                qmcWndNode       ** aNewWndNode );
 
-    // WNSTì˜ myNodeë¥¼ ìƒì„± 
+    // WNSTÀÇ myNode¸¦ »ı¼º 
     static IDE_RC makeMyNodeOfWNST( qcStatement      * aStatement,
                                     qmsQuerySet      * aQuerySet,
                                     qmnPlan          * aPlan,
@@ -632,16 +632,16 @@ private:
                                     UShort           * aColumnCountOfMyNode,
                                     qmcMtrNode      ** aFirstAnalResultFuncMtrNode);
     
-    /* PROJ-1715 Hierarcy Pseudo ì»¬ëŸ¼ RowID Set */
+    /* PROJ-1715 Hierarcy Pseudo ÄÃ·³ RowID Set */
     static IDE_RC setPseudoColumnRowID( qtcNode * aNode, UShort * aRowID );
 
-    /* PROJ-1715 Start with Predicate ì²˜ë¦¬ */
+    /* PROJ-1715 Start with Predicate Ã³¸® */
     static IDE_RC processStartWithPredicate( qcStatement * aStatement,
                                              qmsQuerySet * aQuerySet,
                                              qmncCNBY    * aCNBY,
                                              qmoLeafInfo * aStartWith );
 
-    /* PROJ-1715 Connect By Predicate ì²˜ë¦¬ */
+    /* PROJ-1715 Connect By Predicate Ã³¸® */
     static IDE_RC processConnectByPredicate( qcStatement    * aStatement,
                                              qmsQuerySet    * aQuerySet,
                                              qmsFrom        * aFrom,
@@ -653,7 +653,7 @@ private:
                                     qtcNode     * aNode,
                                     qtcNode     * aFirst );
 
-    /* PROJ-1715 Prior ë…¸ë“œì™€ ì´ì™€ ì—°ê²°ëœ Sort Node ì°¾ê¸° */
+    /* PROJ-1715 Prior ³ëµå¿Í ÀÌ¿Í ¿¬°áµÈ Sort Node Ã£±â */
     static IDE_RC findPriorPredAndSortNode( qcStatement  * aStatement,
                                             qtcNode      * aNode,
                                             qtcNode     ** aSortNode,
@@ -666,7 +666,7 @@ private:
                                       qmncCNBY    * aCNBY,
                                       qtcNode     * aSortNode );
 
-    /* PROJ-2179 Non-key attributeë“¤ì— ëŒ€í•˜ì—¬ mtr nodeë“¤ì„ ìƒì„± */
+    /* PROJ-2179 Non-key attributeµé¿¡ ´ëÇÏ¿© mtr nodeµéÀ» »ı¼º */
     static IDE_RC makeNonKeyAttrsMtrNodes( qcStatement  * aStatement,
                                            qmsQuerySet  * aQuerySet,
                                            qmcAttrDesc  * aResultDesc,
@@ -675,7 +675,7 @@ private:
                                            qmcMtrNode  ** aLastMtrNode,
                                            UShort       * aMtrNodeCount );
 
-    /* PROJ-2179 Join predicateìœ¼ë¡œë¶€í„° mtr nodeë“¤ì„ ìƒì„± */
+    /* PROJ-2179 Join predicateÀ¸·ÎºÎÅÍ mtr nodeµéÀ» »ı¼º */
     static IDE_RC appendJoinPredicate( qcStatement  * aStatement,
                                        qmsQuerySet  * aQuerySet,
                                        qtcNode      * aJoinPredicate,
@@ -683,7 +683,7 @@ private:
                                        idBool         aAllowDup,
                                        qmcAttrDesc ** aResultDesc );
 
-    /* PROJ-1353 Temp í…Œì´ë¸”ì— Valueë¥¼ ìŒ“ê¸°ìœ„í•œ Storeìš© Sort ìƒì„±*/
+    /* PROJ-1353 Temp Å×ÀÌºí¿¡ Value¸¦ ½×±âÀ§ÇÑ Store¿ë Sort »ı¼º*/
     static IDE_RC makeValueTempMtrNode( qcStatement * aStatement,
                                         qmsQuerySet * aQuerySet,
                                         UInt          aFlag,
@@ -691,7 +691,7 @@ private:
                                         qmcMtrNode ** aFirstNode,
                                         UShort      * aColumnCount );
 
-    /* PROJ-1353 Aggregationì˜ ì¸ìì— ì‚¬ìš©ë˜ëŠ” MTR Node ìƒì„± */
+    /* PROJ-1353 AggregationÀÇ ÀÎÀÚ¿¡ »ç¿ëµÇ´Â MTR Node »ı¼º */
     static IDE_RC makeAggrArgumentsMtrNode( qcStatement * aStatement,
                                             qmsQuerySet * aQuerySet,
                                             UShort        aTupleID,
@@ -706,7 +706,7 @@ private:
                                     UInt           aAppendOption,
                                     qmcAttrDesc ** aResultDesc );
 
-    /* PROJ-2509 Connect By Predicate ì²˜ë¦¬ */
+    /* PROJ-2509 Connect By Predicate Ã³¸® */
     static IDE_RC processConnectByPredicateForJoin( qcStatement    * aStatement,
                                                     qmsQuerySet    * aQuerySet,
                                                     qmncCNBY       * aCNBY,

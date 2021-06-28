@@ -16,13 +16,13 @@
  
 
 /***********************************************************************
- * $Id: mtfSys_guid.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfSys_guid.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 /***********************************************************************
  * SYS_GUID() :
- * GUID( Globally Unique IDentifier )ë¥¼ ìƒì„±í•˜ê³ ,
- * 16 BYTE í˜•íƒœë¡œ ë°˜í™˜í•œë‹¤.
+ * GUID( Globally Unique IDentifier )¸¦ »ı¼ºÇÏ°í,
+ * 16 BYTE ÇüÅÂ·Î ¹İÈ¯ÇÑ´Ù.
  *
  * ex)
  * SELECT SYS_GUID() FROM DUAL;
@@ -58,7 +58,7 @@ static IDE_RC mtfSysGuidEstimate( mtcNode     * aNode,
 mtfModule mtfSysGuid = {
     1 | MTC_NODE_OPERATOR_FUNCTION | MTC_NODE_VARIABLE_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0, // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
+    1.0, // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfSysGuidFunctionName,
     NULL,
     mtf::initializeDefault,

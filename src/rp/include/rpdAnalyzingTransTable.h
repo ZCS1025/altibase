@@ -85,7 +85,8 @@ public:
     IDE_RC          addItemMetaEntry( smTID          aTID,
                                       smiTableMeta * aItemMeta,
                                       const void   * aItemMetaLogBody,
-                                      UInt           aItemMetaLogBodySize );
+                                      UInt           aItemMetaLogBodySize,
+                                      smSN           aLogSN );
     void            getFirstItemMetaEntry( smTID               aTID,
                                            rpdItemMetaEntry ** aItemMetaEntry );
     void            removeFirstItemMetaEntry( smTID aTID );

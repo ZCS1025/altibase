@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduMemMgr.cpp 84587 2018-12-12 03:47:17Z kclee $
+ * $Id: iduMemMgr.cpp 84564 2018-12-10 05:40:03Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -22,7 +22,7 @@
 #define IDU_INVALID_CLIENT_INDEX ID_UINT_MAX
 
 /*
- * mem pool mgrë¥¼ ë§Œë“¤ì–´ì•¼í•˜ëŠ”ê°€?
+ * mem pool mgr¸¦ ¸¸µé¾î¾ßÇÏ´Â°¡?
  */
 #define IDU_MAKE_MEMPOOL_MGR ( (IDU_USE_MEMORY_POOL == 1)                 &&\
                               (iduMemMgr::isServerMemType() == ID_TRUE) )
@@ -165,8 +165,8 @@ IDE_RC iduMemAlloc::destroy(void)
     return IDE_FAILURE;
 }
 
-// iduMemMgrë¥¼ ì´ˆê¸°í™”.
-// IDU_SERVER_TYPEì¼ ê²½ìš° mutexë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+// iduMemMgr¸¦ ÃÊ±âÈ­.
+// IDU_SERVER_TYPEÀÏ °æ¿ì mutex¸¦ ÃÊ±âÈ­ÇÑ´Ù.
 IDE_RC iduMemMgr::initializeStatic(iduPeerType aType)
 {
 #define IDE_FN "iduMemMgr::initializeStatic()"
@@ -314,8 +314,8 @@ IDE_RC iduMemMgr::initializeStatic(iduPeerType aType)
 #undef IDE_FN
 }
 
-// iduMemMgrë¥¼ ì¢…ë£Œ.
-// IDU_SERVER_TYPEì¼ ê²½ìš° mutexë¥¼ í•´ì œí•˜ê³  IDU_SINGLE_TYPEìœ¼ë¡œ ì „í™˜í•œë‹¤.
+// iduMemMgr¸¦ Á¾·á.
+// IDU_SERVER_TYPEÀÏ °æ¿ì mutex¸¦ ÇØÁ¦ÇÏ°í IDU_SINGLE_TYPEÀ¸·Î ÀüÈ¯ÇÑ´Ù.
 IDE_RC iduMemMgr::destroyStatic()
 {
     idBool sState = ID_FALSE; //if lock is held.

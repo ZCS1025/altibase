@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxPJChild.h 83321 2018-06-21 07:03:04Z yoonhee.kim $
+ * $Id: rpxPJChild.h 83319 2018-06-21 06:51:10Z yoonhee.kim $
  **********************************************************************/
 
 #ifndef _O_RPX_PJ_CHILD_H_    // Parallel Job Child
@@ -36,7 +36,7 @@
 
 // signal section
 #define RPX_PJ_SIGNAL_NONE     0x00000001 // not Running : Just destroyed
-#define RPX_PJ_SIGNAL_EXIT     0x00000002 // Normal ì¢…ë£Œ : to be join..
+#define RPX_PJ_SIGNAL_EXIT     0x00000002 // Normal Á¾·á : to be join..
 #define RPX_PJ_SIGNAL_ERROR    0x00000004 // Error
 #define RPX_PJ_SIGNAL_RUNNING  0x00000008 // Running : Now Running
 #define RPX_PJ_SIGNAL_SLEEP    0x00000010 // sleep

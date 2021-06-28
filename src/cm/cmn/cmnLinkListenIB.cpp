@@ -269,17 +269,17 @@ IDE_RC cmnLinkListenAcceptIB(cmnLinkListen *aLink, cmnLinkPeer **aLinkPeer)
 
     /* allocate IB link data structure */
     /* BUG-29957
-     * cmnLinkAlloc ì‹¤íŒ¨ì‹œ Connectë¥¼ ìš”ì²­í•œ Socketì„ ìž„ì‹œë¡œ accept í•´ì¤˜ì•¼ í•œë‹¤.
+     * cmnLinkAlloc ½ÇÆÐ½Ã Connect¸¦ ¿äÃ»ÇÑ SocketÀ» ÀÓ½Ã·Î accept ÇØÁà¾ß ÇÑ´Ù.
      */
     IDE_TEST_RAISE(cmnLinkAlloc((cmnLink **)&sLinkPeer, CMN_LINK_TYPE_PEER_SERVER, CMN_LINK_IMPL_IB)
                    != IDE_SUCCESS, LinkError);
 
-    /* Desc íšë“ */
+    /* Desc È¹µæ */
     IDE_TEST_RAISE(sLinkPeer->mPeerOp->mGetDesc(sLinkPeer, &sDesc) != IDE_SUCCESS, LinkError);
 
     /* TASK-3873 5.3.3 Release Static Analysis Code-sonar */
-    /* Code-Sonarê°€ Function  Pointerë¥¼ followí•˜ì§€ ëª»í•´ì„œ..
-       assertë¥¼ ë„£ì—ˆìŠµë‹ˆë‹¤ */
+    /* Code-Sonar°¡ Function  Pointer¸¦ followÇÏÁö ¸øÇØ¼­..
+       assert¸¦ ³Ö¾ú½À´Ï´Ù */
     IDE_ASSERT(sDesc != NULL);
     
     /* accept */
@@ -294,8 +294,8 @@ IDE_RC cmnLinkListenAcceptIB(cmnLinkListen *aLink, cmnLinkPeer **aLinkPeer)
     /**
      * [CAUTION]
      *
-     * Berkeley socket ê³¼ ë‹¤ë¥´ê²Œ blocking mode ì´ë”ë¼ë„
-     * raccept() í•¨ìˆ˜ëŠ” 'accpeting' ìƒíƒœë¡œ ë°˜í™˜ë  ìˆ˜ ìžˆìŒ.
+     * Berkeley socket °ú ´Ù¸£°Ô blocking mode ÀÌ´õ¶óµµ
+     * raccept() ÇÔ¼ö´Â 'accpeting' »óÅÂ·Î ¹ÝÈ¯µÉ ¼ö ÀÖÀ½.
      */
 
     /* for rsocket option */
@@ -312,7 +312,7 @@ IDE_RC cmnLinkListenAcceptIB(cmnLinkListen *aLink, cmnLinkPeer **aLinkPeer)
     IDE_EXCEPTION(LinkError);
     {
         /* BUG-29957 */
-        // bug-33934: codesonar: 3ë²ˆì§¸ì¸ìž NULL ëŒ€ì‹  ê¸¸ì´ ë„˜ê¸°ë„ë¡ ìˆ˜ì •
+        // bug-33934: codesonar: 3¹øÂ°ÀÎÀÚ NULL ´ë½Å ±æÀÌ ³Ñ±âµµ·Ï ¼öÁ¤
         sTmpDesc.mAddrLen = ID_SIZEOF(sTmpDesc.mAddr);
 
         sTmpDesc.mHandle = gIB.mFuncs.raccept(sLink->mHandle,

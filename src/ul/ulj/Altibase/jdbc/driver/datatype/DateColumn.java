@@ -49,11 +49,11 @@ public class DateColumn extends CommonDateTimeColumn
     }
 
     /*
-     * ì´ ë©”ì†Œë“œì˜ ìŠ¤í™ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
+     * ÀÌ ¸Ş¼ÒµåÀÇ ½ºÆåÀº ´ÙÀ½°ú °°´Ù.
      * 
-     * [0]~[1]: ì—°ë„
-     * [2]    : ì›”
-     * [3]    : ì¼
+     * [0]~[1]: ¿¬µµ
+     * [2]    : ¿ù
+     * [3]    : ÀÏ
      */
     protected byte[] getBytesSub() throws SQLException
     {
@@ -93,7 +93,7 @@ public class DateColumn extends CommonDateTimeColumn
         }
         else if (aValue instanceof Date)
         {
-            // Oracleì€ Date íƒ€ì…ìœ¼ë¡œ ê°’ì„ ì„¤ì •í•  ë•Œ yyyy-mm-ddë§Œ ë°›ì•„ë“¤ì¸ë‹¤.
+            // OracleÀº Date Å¸ÀÔÀ¸·Î °ªÀ» ¼³Á¤ÇÒ ¶§ yyyy-mm-dd¸¸ ¹Ş¾ÆµéÀÎ´Ù.
             mCalendar.setTime((Date)aValue);
             int sYY = mCalendar.get(Calendar.YEAR);
             int sMM = mCalendar.get(Calendar.MONTH);
@@ -102,7 +102,7 @@ public class DateColumn extends CommonDateTimeColumn
             mCalendar.set(sYY, sMM, sDD);
             sTimeInMillis = mCalendar.getTimeInMillis();
         }
-        // Oracleì€ Timestampì— Timeì„ ë„£ì„ ìˆ˜ ì—†ë‹¤.
+        // OracleÀº Timestamp¿¡ TimeÀ» ³ÖÀ» ¼ö ¾ø´Ù.
 /*
         else if (aValue instanceof Time)
         {

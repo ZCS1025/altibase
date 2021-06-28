@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
-* $Id: smmManager.cpp 84887 2019-02-14 10:13:01Z emlee $
+* $Id: smmManager.cpp 90522 2021-04-09 01:29:20Z emlee $
 **********************************************************************/
 
 
@@ -25,8 +25,8 @@
 
    Initialize
 
-   êµ¬ì„±ìš”ì†Œ
-   mDBDir - DB_DIR_COUNTê°œìˆ˜ì˜ array
+   ±¸¼º¿ä¼Ò
+   mDBDir - DB_DIR_COUNT°³¼öÀÇ array
 
     -----------
    | dbs0      |
@@ -47,8 +47,8 @@
     -----------
 
     mDBFile
-    í™”ì¼ì´ ìƒê¸¸ìˆ˜ ìˆëŠ” ìµœëŒ€ ê°œìˆ˜ë§Œí¼ ë¯¸ë¦¬ databaseFileì„ allocí•œë‹¤.
-    ì²˜ìŒì—ëŠ” ì „ë¶€ ë‹¤ ì‚¬ìš©ë˜ì§€ ì•Šì„ ìˆ˜ ìˆë‹¤.
+    È­ÀÏÀÌ »ı±æ¼ö ÀÖ´Â ÃÖ´ë °³¼ö¸¸Å­ ¹Ì¸® databaseFileÀ» allocÇÑ´Ù.
+    Ã³À½¿¡´Â ÀüºÎ ´Ù »ç¿ëµÇÁö ¾ÊÀ» ¼ö ÀÖ´Ù.
 
     --------------
    | mDBFile ptr  |
@@ -73,25 +73,17 @@
 
  * ----------------------------------------------*/
 
-
-
-#include <idl.h>
-#include <idm.h>
-#include <idu.h>
-#include <ideErrorMgr.h>
 #include <smiFixedTable.h>
 #include <sctTableSpaceMgr.h>
-#include <smm.h>
 #include <smErrorCode.h>
 #include <smc.h>
 #include <smDef.h>
 #include <smu.h>
-#include <smuUtility.h>
+#include <smm.h>
 #include <smmReq.h>
-#include <smmDef.h>
-#include <smmFPLManager.h>
-#include <smmExpandChunk.h>
 #include <smpVarPageList.h>
+#include <smiMain.h>
+#include <svmExpandChunk.h>
 
 /* ------------------------------------------------
  * [] global variable
@@ -99,31 +91,33 @@
 
 void                   *smmManager::m_catTableHeader = NULL;
 void                   *smmManager::m_catTempTableHeader = NULL;
-smmPCH                **smmManager::mPCHArray[SC_MAX_SPACE_COUNT];
+smPCArr                 smmManager::mPCArray[SC_MAX_SPACE_ARRAY_SIZE]; // BUG-48513
 smmGetPersPagePtrFunc   smmManager::mGetPersPagePtrFunc = NULL;
 
 smmManager::smmManager()
 {
 }
 
-/* smmManagerë¥¼ ì´ˆê¸°í™” í•œë‹¤.
+/* smmManager¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
  *
- * ë°ì´í„°ë² ì´ìŠ¤ê°€ ì´ë¯¸ ì¡´ì¬í•˜ëŠ” ê²½ìš°, ë°ì´í„°ë² ì´ìŠ¤ì˜ MemBaseë¡œë¶€í„°
- * ë°ì´í„°ë² ì´ìŠ¤ ì •ë³´ë¥¼ ì½ì–´ì™€ì„œ ê·¸ ì •ë³´ë¥¼ í† ëŒ€ë¡œ smmManagerë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ * µ¥ÀÌÅÍº£ÀÌ½º°¡ ÀÌ¹Ì Á¸ÀçÇÏ´Â °æ¿ì, µ¥ÀÌÅÍº£ÀÌ½ºÀÇ MemBase·ÎºÎÅÍ
+ * µ¥ÀÌÅÍº£ÀÌ½º Á¤º¸¸¦ ÀĞ¾î¿Í¼­ ±× Á¤º¸¸¦ Åä´ë·Î smmManager¸¦ ÃÊ±âÈ­ÇÑ´Ù.
  *
- * ì•„ì§ ë°ì´í„°ë² ì´ìŠ¤ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°, smmManagerì˜ ì´ˆê¸°í™”ëŠ”
- * ì¼ë¶€ë§Œ ë˜ë©°, ë‚˜ë¨¸ì§€ëŠ” createDBì‹œì— initializeWithDBInfoë¥¼ í˜¸ì¶œí•˜ì—¬
- * ì´ˆê¸°í™”ëœë‹¤.
+ * ¾ÆÁ÷ µ¥ÀÌÅÍº£ÀÌ½º°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì, smmManagerÀÇ ÃÊ±âÈ­´Â
+ * ÀÏºÎ¸¸ µÇ¸ç, ³ª¸ÓÁö´Â createDB½Ã¿¡ initializeWithDBInfo¸¦ È£ÃâÇÏ¿©
+ * ÃÊ±âÈ­µÈ´Ù.
  *
- * aOp [IN] ë°ì´í„°ë² ì´ìŠ¤ ìƒì„±ì¤‘ì¸ì§€, ì¼ë°˜ Startupëœ ê²½ìš°ì¸ì§€ ì—¬ë¶€
+ * aOp [IN] µ¥ÀÌÅÍº£ÀÌ½º »ı¼ºÁßÀÎÁö, ÀÏ¹İ StartupµÈ °æ¿ìÀÎÁö ¿©ºÎ
  *
  */
 IDE_RC smmManager::initializeStatic()
 {
+    idlOS::memset( mPCArray, 0, ID_SIZEOF(mPCArray) );
+
     IDE_TEST( smmFixedMemoryMgr::initializeStatic() != IDE_SUCCESS );
 
     // To Fix BUG-14185
-     // Free Page List ê´€ë¦¬ì ì´ˆê¸°í™”
+     // Free Page List °ü¸®ÀÚ ÃÊ±âÈ­
     IDE_TEST( smmFPLManager::initializeStatic( ) != IDE_SUCCESS );
 
     IDE_TEST( smmDatabase::initialize() != IDE_SUCCESS );
@@ -144,7 +138,7 @@ IDE_RC smmManager::initializeStatic()
     return IDE_FAILURE;
 
 }
-/* DBíŒŒì¼ í¬ê¸°ê°€ OSì˜ íŒŒì¼í¬ê¸° ì œí•œì— ê±¸ë¦¬ì§€ëŠ” ì•ŠëŠ”ì§€ ì²´í¬í•œë‹¤.
+/* DBÆÄÀÏ Å©±â°¡ OSÀÇ ÆÄÀÏÅ©±â Á¦ÇÑ¿¡ °É¸®Áö´Â ¾Ê´ÂÁö Ã¼Å©ÇÑ´Ù.
  *
  */
 IDE_RC smmManager::checkOSFileSize( vULong aDBFileSize )
@@ -152,7 +146,7 @@ IDE_RC smmManager::checkOSFileSize( vULong aDBFileSize )
 #if !defined(WRS_VXWORKS)
     struct rlimit  limit;
     /* ------------------------------------------------------------------
-     *  [4] Log(DB) File Size ê²€ì‚¬
+     *  [4] Log(DB) File Size °Ë»ç
      * -----------------------------------------------------------------*/
     IDE_TEST_RAISE(idlOS::getrlimit(RLIMIT_FSIZE, &limit) != 0,
                    getrlimit_error);
@@ -202,15 +196,15 @@ smmManager::getNxtStableDB( smmTBSNode * aTBSNode )
 
 
 
-/* ì‚¬ìš©ìê°€ ìƒì„±í•˜ë ¤ëŠ” ë°ì´í„°ë² ì´ìŠ¤ í¬ê¸°ì— ê·¼ì ‘í•˜ëŠ”
- * ë°ì´í„°ë² ì´ìŠ¤ ìƒì„±ì„ ìœ„í•´ ìƒì„±í•  Page ìˆ˜ë¥¼ ê³„ì‚°í•œë‹¤.
+/* »ç¿ëÀÚ°¡ »ı¼ºÇÏ·Á´Â µ¥ÀÌÅÍº£ÀÌ½º Å©±â¿¡ ±ÙÁ¢ÇÏ´Â
+ * µ¥ÀÌÅÍº£ÀÌ½º »ı¼ºÀ» À§ÇØ »ı¼ºÇÒ Page ¼ö¸¦ °è»êÇÑ´Ù.
  *
- * ì‚¬ìš©ìê°€ ì§€ì •í•œ í¬ê¸°ì™€ ì •í™•íˆ ì¼ì¹˜í•˜ëŠ” ë°ì´í„°ë² ì´ìŠ¤ë¥¼ ìƒì„±í•  ìˆ˜ ì—†ëŠ”
- * ì´ìœ ëŠ”, í•˜ë‚˜ì˜ ë°ì´í„°ë² ì´ìŠ¤ëŠ” í•­ìƒ Expand Chunkí¬ê¸°ì˜ ë°°ìˆ˜ë¡œ
- * ìƒì„±ë˜ê¸° ë•Œë¬¸ì´ë‹¤.
+ * »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Å©±â¿Í Á¤È®È÷ ÀÏÄ¡ÇÏ´Â µ¥ÀÌÅÍº£ÀÌ½º¸¦ »ı¼ºÇÒ ¼ö ¾ø´Â
+ * ÀÌÀ¯´Â, ÇÏ³ªÀÇ µ¥ÀÌÅÍº£ÀÌ½º´Â Ç×»ó Expand ChunkÅ©±âÀÇ ¹è¼ö·Î
+ * »ı¼ºµÇ±â ¶§¹®ÀÌ´Ù.
  *
- * aDbSize         [IN] ìƒì„±í•˜ë ¤ëŠ” ë°ì´í„°ë² ì´ìŠ¤ í¬ê¸°
- * aChunkPageCount [IN] í•˜ë‚˜ì˜ Expand Chunkê°€ ì§€ë‹ˆëŠ” Pageì˜ ìˆ˜
+ * aDbSize         [IN] »ı¼ºÇÏ·Á´Â µ¥ÀÌÅÍº£ÀÌ½º Å©±â
+ * aChunkPageCount [IN] ÇÏ³ªÀÇ Expand Chunk°¡ Áö´Ï´Â PageÀÇ ¼ö
  *
  */
 ULong smmManager::calculateDbPageCount( ULong aDbSize, ULong aChunkPageCount )
@@ -218,45 +212,43 @@ ULong smmManager::calculateDbPageCount( ULong aDbSize, ULong aChunkPageCount )
     vULong sCalculPageCount;
     vULong sRequestedPageCount;
 
-    // aDbSize ê°€ 0ìœ¼ë¡œ ë“¤ì–´ì™€ë„ ì£½ì–´ì„œëŠ” ì•ˆëœë‹¤.
-    // MMë‹¨ì—ì„œ ì´ í•¨ìˆ˜ í˜¸ì¶œí›„ì— ì—ëŸ¬ì²˜ë¦¬í•˜ê³ ìˆê¸° ë•Œë¬¸
+    // aDbSize °¡ 0À¸·Î µé¾î¿Íµµ Á×¾î¼­´Â ¾ÈµÈ´Ù.
+    // MM´Ü¿¡¼­ ÀÌ ÇÔ¼ö È£ÃâÈÄ¿¡ ¿¡·¯Ã³¸®ÇÏ°íÀÖ±â ¶§¹®
     IDE_DASSERT( aChunkPageCount > 0  );
 
     sRequestedPageCount = aDbSize  / SM_PAGE_SIZE;
 
-    // Expand Chunk Pageìˆ˜ì˜ ë°°ìˆ˜ê°€ ë˜ë„ë¡ ì„¤ì •.
-    // BUG-15288 ë‹¨ Max DB SIZEë¥¼ ë„˜ì„ ìˆ˜ ì—†ë‹¤.
+    // Expand Chunk Page¼öÀÇ ¹è¼ö°¡ µÇµµ·Ï ¼³Á¤.
+    // BUG-15288 ´Ü Max DB SIZE¸¦ ³ÑÀ» ¼ö ¾ø´Ù.
     sCalculPageCount =
         aChunkPageCount * (sRequestedPageCount / aChunkPageCount);
 
-    // 0ë²ˆ í˜ì´ì§€ë¥¼ ì €ì¥í•˜ëŠ” META PAGEìˆ˜ë¥¼ ë”í•˜ì§€ ì•ŠëŠ”ë‹¤.
-    // smmTBSCreate::createTBSì—ì„œ aInitSizeê°€ Meta Pageë¥¼ í¬í•¨í•˜ì§€ ì•Šì€
-    // í¬ê¸°ë¥¼ ë°›ì•„ì„œ ì—¬ê¸°ì— META PAGEìˆ˜ë¥¼ ë”í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+    // 0¹ø ÆäÀÌÁö¸¦ ÀúÀåÇÏ´Â META PAGE¼ö¸¦ ´õÇÏÁö ¾Ê´Â´Ù.
+    // smmTBSCreate::createTBS¿¡¼­ aInitSize°¡ Meta Page¸¦ Æ÷ÇÔÇÏÁö ¾ÊÀº
+    // Å©±â¸¦ ¹Ş¾Æ¼­ ¿©±â¿¡ META PAGE¼ö¸¦ ´õÇÏ±â ¶§¹®ÀÌ´Ù.
 
 
     return sCalculPageCount ;
 }
 
-/*  DB File ê°ì²´ë“¤ê³¼ ê´€ë ¨ ë°ì´í„° êµ¬ì¡°ë“¤ì„ ì´ˆê¸°í™”í•œë‹¤.
+/*  DB File °´Ã¼µé°ú °ü·Ã µ¥ÀÌÅÍ ±¸Á¶µéÀ» ÃÊ±âÈ­ÇÑ´Ù.
  *
- *  [IN] aTBSNode - Tablespaceì˜  Node
- * aChunkPageCount  [IN] í•˜ë‚˜ì˜ Expand Chunkê°€ ì§€ë‹ˆëŠ” Pageì˜ ìˆ˜
+ *  [IN] aTBSNode - TablespaceÀÇ  Node
+ * aChunkPageCount  [IN] ÇÏ³ªÀÇ Expand Chunk°¡ Áö´Ï´Â PageÀÇ ¼ö
  */
 IDE_RC smmManager::initDBFileObjects(smmTBSNode *       aTBSNode,
-                                     scPageID           aDBFilePageCount)
+                                     UInt               aDBFilePageCount)
 {
-    UInt    i;
-    UInt    j;
-    ULong   sRemain;
-    scPageID     sChunkPageCount =
-        (scPageID)smuProperty::getExpandChunkPageCount();
+    UInt       i;
+    UInt       j;
+    ULong      sRemain;
+    UInt       sChunkPageCount = smuProperty::getExpandChunkPageCount();
     scPageID   sFstPageID = 0;
     scPageID   sLstPageID = 0;
     scPageID   sPageCountPerFile;
 
     aTBSNode->mDBMaxPageCount =
-        calculateDbPageCount( smuProperty::getMaxDBSize(),
-                              sChunkPageCount);
+        calculateDbPageCount( smuProperty::getMaxDBSize(), sChunkPageCount);
 
     sRemain = aTBSNode->mDBMaxPageCount % aDBFilePageCount;
 
@@ -278,8 +270,8 @@ IDE_RC smmManager::initDBFileObjects(smmTBSNode *       aTBSNode,
                  != IDE_SUCCESS);
     }
 
-    // fix BUG-17343 loganchorì— Stable/Unstable Chkpt Imageì—
-    // ëŒ€í•œ ìƒì„± ì •ë³´ë¥¼ ì €ì¥
+    // fix BUG-17343 loganchor¿¡ Stable/Unstable Chkpt Image¿¡
+    // ´ëÇÑ »ı¼º Á¤º¸¸¦ ÀúÀå
     /* smmManager_initDBFileObjects_calloc_CrtDBFileInfo.tc */
     IDU_FIT_POINT("smmManager::initDBFileObjects::calloc::CrtDBFileInfo");
     IDE_TEST( iduMemMgr::calloc(IDU_MEM_SM_SMM,
@@ -290,7 +282,7 @@ IDE_RC smmManager::initDBFileObjects(smmTBSNode *       aTBSNode,
 
     initCrtDBFileInfo( aTBSNode );
 
-    // ìµœëŒ€ ìƒê¸¸ìˆ˜ ìˆëŠ” í™”ì¼ê¹Œì§€ databaseFileê°ì²´ë¥¼ ìƒì„±í•´ë‘ 
+    // ÃÖ´ë »ı±æ¼ö ÀÖ´Â È­ÀÏ±îÁö databaseFile°´Ã¼¸¦ »ı¼ºÇØµÒ
     for (i = 0; i< aTBSNode->mHighLimitFile; i++)
     {
         for (j = 0; j < SMM_PINGPONG_COUNT; j++)
@@ -311,20 +303,20 @@ IDE_RC smmManager::initDBFileObjects(smmTBSNode *       aTBSNode,
             sLstPageID = sFstPageID + sPageCountPerFile - 1;
 
             IDE_TEST( createDBFileObject( aTBSNode,
-                                          j,   // PINGPONG ë²ˆí˜¸
-                                          i,   // ë°ì´íƒ€ë² ì´ìŠ¤íŒŒì¼ë²ˆí˜¸
+                                          j,   // PINGPONG ¹øÈ£
+                                          i,   // µ¥ÀÌÅ¸º£ÀÌ½ºÆÄÀÏ¹øÈ£
                                           sFstPageID,
                                           sLstPageID,
                                           (smmDatabaseFile*) aTBSNode->mDBFile[ j ][ i ] )
                       != IDE_SUCCESS );
         }
 
-        // ì²«ë²ˆì§¸ PageIDë¥¼ ê³„ì‚°í•œë‹¤.
+        // Ã¹¹øÂ° PageID¸¦ °è»êÇÑ´Ù.
         sFstPageID += sPageCountPerFile;
     }
 
 
-    // BUGBUG-1548 Lockì •ë³´ ì´ˆê¸°í™”ëŠ” ì–´ë””ì—ì„œ ìˆ˜í–‰?
+    // BUGBUG-1548 LockÁ¤º¸ ÃÊ±âÈ­´Â ¾îµğ¿¡¼­ ¼öÇà?
 
     return IDE_SUCCESS;
 
@@ -339,15 +331,15 @@ IDE_RC smmManager::initDBFileObjects(smmTBSNode *       aTBSNode,
 }
 
 /**
-    DB File ê°ì²´ë¥¼ ìƒì„±í•œë‹¤.
+    DB File °´Ã¼¸¦ »ı¼ºÇÑ´Ù.
 
-    [IN] aTBSNode     - DB Fileê°ì²´ë¥¼ ìƒì„±í•  Tablespace Node
-    [IN] aPingPongNum - DB Fileì˜ í•‘í ë²ˆí˜¸
-    [IN] aFileNum     - DB Fileì˜ íŒŒì¼ ë²ˆí˜¸
-    [IN] aFstPageID   - DB Fileì´ ì €ì¥í•  Page ë²”ìœ„ (ì‹œì‘)
-    [IN] aLstPageID   - DB Fileì´ ì €ì¥í•  Page ë²”ìœ„ (ë)
-    [IN/OUT] aDBFileMemory - DB File ê°ì²´ì˜ ë©”ëª¨ë¦¬ë¥¼ ë„˜ê²¨ë°›ì•„
-                             í•´ë‹¹ ë©”ëª¨ë¦¬ì— DB File ê°ì²´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+    [IN] aTBSNode     - DB File°´Ã¼¸¦ »ı¼ºÇÒ Tablespace Node
+    [IN] aPingPongNum - DB FileÀÇ ÇÎÆş ¹øÈ£
+    [IN] aFileNum     - DB FileÀÇ ÆÄÀÏ ¹øÈ£
+    [IN] aFstPageID   - DB FileÀÌ ÀúÀåÇÒ Page ¹üÀ§ (½ÃÀÛ)
+    [IN] aLstPageID   - DB FileÀÌ ÀúÀåÇÒ Page ¹üÀ§ (³¡)
+    [IN/OUT] aDBFileMemory - DB File °´Ã¼ÀÇ ¸Ş¸ğ¸®¸¦ ³Ñ°Ü¹Ş¾Æ
+                             ÇØ´ç ¸Ş¸ğ¸®¿¡ DB File °´Ã¼¸¦ ÃÊ±âÈ­ÇÑ´Ù.
  */
 IDE_RC smmManager::createDBFileObject( smmTBSNode       * aTBSNode,
                                        UInt               aPingPongNum,
@@ -378,16 +370,16 @@ IDE_RC smmManager::createDBFileObject( smmTBSNode       * aTBSNode,
                                           &sDBFileDir);
     if ( sFound == ID_TRUE )
     {
-        // To Fix BUG-17997 [ë©”ëª¨ë¦¬TBS] DISCARDëœ Tablespaceë¥¼
-        //                  DROPì‹œì— Checkpoint Image ì§€ì›Œì§€ì§€ ì•ŠìŒ
+        // To Fix BUG-17997 [¸Ş¸ğ¸®TBS] DISCARDµÈ Tablespace¸¦
+        //                  DROP½Ã¿¡ Checkpoint Image Áö¿öÁöÁö ¾ÊÀ½
         //
-        // MEDIAë‹¨ê³„ ì´ˆê¸°í™”ì‹œì— DB Fileëª…ê³¼ íŒ¨ìŠ¤ë¥¼ ì„¸íŒ…í•œë‹¤.
+        // MEDIA´Ü°è ÃÊ±âÈ­½Ã¿¡ DB File¸í°ú ÆĞ½º¸¦ ¼¼ÆÃÇÑ´Ù.
         aDBFileObj->setFileName(sDBFileName);
         aDBFileObj->setDir(sDBFileDir);
     }
     else
     {
-        // Discardëœ Tablespaceì˜ ê²½ìš° DB Fileì´ ì¡´ì¬í•˜ì§€ ì•Šì„ ìˆ˜ë„ ìˆë‹¤.
+        // DiscardµÈ TablespaceÀÇ °æ¿ì DB FileÀÌ Á¸ÀçÇÏÁö ¾ÊÀ» ¼öµµ ÀÖ´Ù.
     }
 
     return IDE_SUCCESS;
@@ -399,11 +391,11 @@ IDE_RC smmManager::createDBFileObject( smmTBSNode       * aTBSNode,
 
 
 
-/* DB Fileê°ì²´ì™€ ê´€ë ¨ ìë£Œêµ¬ì¡°ë¥¼ í•´ì œí•œë‹¤.
+/* DB File°´Ã¼¿Í °ü·Ã ÀÚ·á±¸Á¶¸¦ ÇØÁ¦ÇÑ´Ù.
 
-   aTBSNode [IN] Tablespaceì˜ Node
+   aTBSNode [IN] TablespaceÀÇ Node
 
-   ì°¸ê³  : ì´ í•¨ìˆ˜ëŠ” initDBFileObjectsì—ì„œ ì´ˆê¸°í™”í•œ ë‚´ìš©ì„ íŒŒê´´í•œë‹¤.
+   Âü°í : ÀÌ ÇÔ¼ö´Â initDBFileObjects¿¡¼­ ÃÊ±âÈ­ÇÑ ³»¿ëÀ» ÆÄ±«ÇÑ´Ù.
  */
 IDE_RC smmManager::finiDBFileObjects( smmTBSNode * aTBSNode )
 {
@@ -412,8 +404,8 @@ IDE_RC smmManager::finiDBFileObjects( smmTBSNode * aTBSNode )
 
     IDE_DASSERT( aTBSNode != NULL );
 
-    // initDBFileObjectsê°€ í˜¸ì¶œëœ ìƒíƒœì¸ì§€ ê²€ì‚¬.
-    // ë‹¤ìŒ Fieldë“¤ì´ 0ì´ ì•„ë‹Œ ê°’ì´ì–´ì•¼ í•œë‹¤.
+    // initDBFileObjects°¡ È£ÃâµÈ »óÅÂÀÎÁö °Ë»ç.
+    // ´ÙÀ½ FieldµéÀÌ 0ÀÌ ¾Æ´Ñ °ªÀÌ¾î¾ß ÇÑ´Ù.
     IDE_ASSERT( aTBSNode->mHighLimitFile != 0);
     IDE_ASSERT( aTBSNode->mDBMaxPageCount != 0);
 
@@ -458,7 +450,7 @@ IDE_RC smmManager::finiDBFileObjects( smmTBSNode * aTBSNode )
 
     aTBSNode->mCrtDBFileInfo= NULL;
 
-    // initDBFileObjectsì—ì„œ ì´ˆê¸°í™”í–ˆë˜ Fieldë“¤ì„ 0ìœ¼ë¡œ ì„¸íŒ…
+    // initDBFileObjects¿¡¼­ ÃÊ±âÈ­Çß´ø FieldµéÀ» 0À¸·Î ¼¼ÆÃ
     aTBSNode->mHighLimitFile = 0;
     aTBSNode->mDBMaxPageCount = 0;
 
@@ -493,9 +485,9 @@ IDE_RC smmManager::destroyStatic()
 }
 
 /*
-    Tablespaceë¥¼ ìœ„í•œ Pageê´€ë¦¬ ì‹œìŠ¤í…œ í•´ì œ
+    Tablespace¸¦ À§ÇÑ Page°ü¸® ½Ã½ºÅÛ ÇØÁ¦
 
-    aTBSNode [IN] í•´ì œí•˜ë ¤ëŠ” Tablespaceì˜ Node
+    aTBSNode [IN] ÇØÁ¦ÇÏ·Á´Â TablespaceÀÇ Node
 
  */
 IDE_RC smmManager::finiPageSystem(smmTBSNode * aTBSNode)
@@ -503,47 +495,44 @@ IDE_RC smmManager::finiPageSystem(smmTBSNode * aTBSNode)
     IDE_DASSERT( aTBSNode != NULL );
 
     // To Fix BUG-14185
-    // Free Page List ê´€ë¦¬ì í•´ì œ
+    // Free Page List °ü¸®ÀÚ ÇØÁ¦
     IDE_TEST( smmFPLManager::destroy( aTBSNode ) != IDE_SUCCESS );
 
 
-    // Expand Chunk ê´€ë¦¬ì í•´ì œ
+    // Expand Chunk °ü¸®ÀÚ ÇØÁ¦
     IDE_TEST( smmExpandChunk::destroy( aTBSNode ) != IDE_SUCCESS );
 
     // BUGBUG-1548
-    // Index Memory Poolì„ TBSë§ˆë‹¤ ë”°ë¡œ ë‘ê³  Indexë©”ëª¨ë¦¬ë¥¼ í•´ì œí•´ì•¼í•¨
+    // Index Memory PoolÀ» TBS¸¶´Ù µû·Î µÎ°í Index¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇØ¾ßÇÔ
 
-    // í•´ë‹¹ Tablespaceë¥¼ ìœ„í•œ Dirty Pageê´€ë¦¬ìë¥¼ ì œê±°
+    // ÇØ´ç Tablespace¸¦ À§ÇÑ Dirty Page°ü¸®ÀÚ¸¦ Á¦°Å
     IDE_TEST( smmDirtyPageMgr::removeDPMgr( aTBSNode )
                 != IDE_SUCCESS );
 
-    // Tablespaceì˜ Page ë©”ëª¨ë¦¬ ë°˜ë‚©
+    // TablespaceÀÇ Page ¸Ş¸ğ¸® ¹İ³³
     IDE_TEST( freeAllPageMemAndPCH( aTBSNode ) != IDE_SUCCESS );
 
-    // Page Memory Pool ì œê±°
+    // Page Memory Pool Á¦°Å
     IDE_TEST(destroyPagePool( aTBSNode ) != IDE_SUCCESS );
 
-    // PCH Memory Pool ì œê±°
+    // PCH Memory Pool Á¦°Å
     IDE_TEST(aTBSNode->mPCHMemPool.destroy() != IDE_SUCCESS);
 
-    // PCH Arrayì œê±°
-    IDE_TEST(iduMemMgr::free(mPCHArray[aTBSNode->mHeader.mID])
-               != IDE_SUCCESS);
-
-    mPCHArray[aTBSNode->mHeader.mID] = NULL;
-
-    // BUG-19384 : table space offlineê³¼ ë™ì‹œì— V$TABLESPACESê°€
-    // ì¡°íšŒë  ë•Œ mem baseê°€ nullë¡œ ì„¤ì •ë˜ì§€ ì•Šì•„ì„œ ë¹„ì •ìƒ ì¢…ë£Œë¨
+    // PCH ArrayÁ¦°Å
+    IDE_TEST( freePCHArray( aTBSNode->mHeader.mID ) != IDE_SUCCESS );
+    
+    // BUG-19384 : table space offline°ú µ¿½Ã¿¡ V$TABLESPACES°¡
+    // Á¶È¸µÉ ¶§ mem base°¡ null·Î ¼³Á¤µÇÁö ¾Ê¾Æ¼­ ºñÁ¤»ó Á¾·áµÊ
     IDU_FIT_POINT( "1.BUG-19384@smmManager::finiPageSystem" );
 
-    // BUG-19299 : tablespaceì˜ mem baseë¥¼ nullë¡œ ì„¤ì •
+    // BUG-19299 : tablespaceÀÇ mem base¸¦ null·Î ¼³Á¤
     aTBSNode->mMemBase = NULL;
 
-    // ì•„ì§ Restoreë˜ì§€ ì•Šì€ ìƒíƒœë¡œ ì„¤ì •í•œë‹¤
+    // ¾ÆÁ÷ RestoreµÇÁö ¾ÊÀº »óÅÂ·Î ¼³Á¤ÇÑ´Ù
     aTBSNode->mRestoreType = SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET;
 
-    // TBSê°€ DROPë˜ì–´ë„ Lock Itemì€ ê·¸ëŒ€ë¡œ ë‘”ë‹¤
-    // í˜„ì¬ TBSì˜ Lockì„ ê¸°ë‹¤ë¦¬ê³  ìˆëŠ” Txë“¤ì´ ìˆì„ ìˆ˜ ìˆê¸° ë•Œë¬¸
+    // TBS°¡ DROPµÇ¾îµµ Lock ItemÀº ±×´ë·Î µĞ´Ù
+    // ÇöÀç TBSÀÇ LockÀ» ±â´Ù¸®°í ÀÖ´Â TxµéÀÌ ÀÖÀ» ¼ö ÀÖ±â ¶§¹®
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -553,9 +542,9 @@ IDE_RC smmManager::finiPageSystem(smmTBSNode * aTBSNode)
 
 
 /*
-    Tablespaceì•ˆì˜ ëª¨ë“  Page Memory/PCH Entryë¥¼ í•´ì œí•œë‹¤.
+    Tablespace¾ÈÀÇ ¸ğµç Page Memory/PCH Entry¸¦ ÇØÁ¦ÇÑ´Ù.
 
-    [IN] aTBSNode - Tablespaceì˜ Node
+    [IN] aTBSNode - TablespaceÀÇ Node
  */
 IDE_RC smmManager::freeAllPageMemAndPCH(smmTBSNode * aTBSNode )
 {
@@ -566,35 +555,35 @@ IDE_RC smmManager::freeAllPageMemAndPCH(smmTBSNode * aTBSNode )
     switch( aTBSNode->mRestoreType )
     {
         case SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET :
-            // Media Recoveryë¥¼ ìœ„í•´ PAGEë‹¨ê³„ê¹Œì§€ ì´ˆê¸°í™” í•˜ì˜€ìœ¼ë‚˜,
-            // prepare/restoreë˜ì§€ ì•Šì€ tablespace.
+            // Media Recovery¸¦ À§ÇØ PAGE´Ü°è±îÁö ÃÊ±âÈ­ ÇÏ¿´À¸³ª,
+            // prepare/restoreµÇÁö ¾ÊÀº tablespace.
             //
-            // ì•„ì§ prepare/restoreë˜ì´ ì•Šì•˜ìœ¼ë¯€ë¡œ
-            // í•´ì œí•  page memoryê°€ ì—†ë‹¤.
+            // ¾ÆÁ÷ prepare/restoreµÇÀÌ ¾Ê¾ÒÀ¸¹Ç·Î
+            // ÇØÁ¦ÇÒ page memory°¡ ¾ø´Ù.
             sFreePageMemory = ID_FALSE;
             break;
 
         case SMM_DB_RESTORE_TYPE_SHM_CREATE :
         case SMM_DB_RESTORE_TYPE_SHM_ATTACH :
-            // Drop/Offlineì˜ Pendingìœ¼ë¡œ í˜¸ì¶œëœ ê²½ìš°
-            // í˜¸ì¶œëœ ê²½ìš° ê³µìœ ë©”ëª¨ë¦¬ ìì²´ë¥¼ ì œê±°í•œë‹¤
+            // Drop/OfflineÀÇ PendingÀ¸·Î È£ÃâµÈ °æ¿ì
+            // È£ÃâµÈ °æ¿ì °øÀ¯¸Ş¸ğ¸® ÀÚÃ¼¸¦ Á¦°ÅÇÑ´Ù
             if ( sctTableSpaceMgr::hasState(
                      & aTBSNode->mHeader,
                      SCT_SS_FREE_SHM_PAGE_ON_DESTROY )
                  == ID_TRUE )
             {
-                // Tablespaceì˜ Page Memoryë¥¼ í•´ì œí•œë‹¤.
+                // TablespaceÀÇ Page Memory¸¦ ÇØÁ¦ÇÑ´Ù.
                 sFreePageMemory = ID_TRUE;
             }
             else
             {
-                // Shutdownì‹œ ONLINE Tablespaceì˜ ê²½ìš°
+                // Shutdown½Ã ONLINE TablespaceÀÇ °æ¿ì
                 sFreePageMemory = ID_FALSE;
             }
             break;
 
         case SMM_DB_RESTORE_TYPE_DYNAMIC :
-            // ì¼ë°˜ ë©”ëª¨ë¦¬ì˜ ê²½ìš° ë¬´ì¡°ê±´ Page memoryë¥¼ í•´ì œ
+            // ÀÏ¹İ ¸Ş¸ğ¸®ÀÇ °æ¿ì ¹«Á¶°Ç Page memory¸¦ ÇØÁ¦
             sFreePageMemory = ID_TRUE;
             break;
         default :
@@ -614,16 +603,16 @@ IDE_RC smmManager::freeAllPageMemAndPCH(smmTBSNode * aTBSNode )
 
 
 /*
-    Tablespaceë¥¼ ìœ„í•œ ë§¤ì²´(DB File) ê´€ë¦¬ ì‹œìŠ¤í…œ í•´ì œ
+    Tablespace¸¦ À§ÇÑ ¸ÅÃ¼(DB File) °ü¸® ½Ã½ºÅÛ ÇØÁ¦
 
-    aTBSNode [IN] í•´ì œí•˜ë ¤ëŠ” Tablespaceì˜ Node
+    aTBSNode [IN] ÇØÁ¦ÇÏ·Á´Â TablespaceÀÇ Node
 
  */
 IDE_RC smmManager::finiMediaSystem(smmTBSNode * aTBSNode)
 {
     IDE_DASSERT( aTBSNode != NULL );
 
-    // TablespaceëŠ” ì•„ì§ prepare/restoreë˜ì§€ ì•Šì€ ìƒíƒœì—¬ì•¼í•œë‹¤.
+    // Tablespace´Â ¾ÆÁ÷ prepare/restoreµÇÁö ¾ÊÀº »óÅÂ¿©¾ßÇÑ´Ù.
     IDE_ASSERT( aTBSNode->mRestoreType
                 == SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET );
 
@@ -640,20 +629,20 @@ IDE_RC smmManager::finiMediaSystem(smmTBSNode * aTBSNode)
 
 
 /*
-    Tablespace Nodeë¥¼ íŒŒê´´í•œë‹¤.
+    Tablespace Node¸¦ ÆÄ±«ÇÑ´Ù.
 
-    aTBSNode [IN] í•´ì œí•  Tablespace
+    aTBSNode [IN] ÇØÁ¦ÇÒ Tablespace
  */
 IDE_RC smmManager::finiMemTBSNode(smmTBSNode * aTBSNode)
 {
     IDE_DASSERT(aTBSNode != NULL );
 
-    // TablespaceëŠ” ì•„ì§ prepare/restoreë˜ì§€ ì•Šì€ ìƒíƒœì—¬ì•¼í•œë‹¤.
+    // Tablespace´Â ¾ÆÁ÷ prepare/restoreµÇÁö ¾ÊÀº »óÅÂ¿©¾ßÇÑ´Ù.
     IDE_ASSERT( aTBSNode->mRestoreType
                 == SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET );
 
-    // Disk, Memory Tablespace ê³µí†µ íŒŒê´´ì í˜¸ì¶œ
-    // - Lockì •ë³´ë¥¼ í¬í•¨í•œ TBSNodeì˜ ëª¨ë“  ì •ë³´ë¥¼ íŒŒê´´
+    // Disk, Memory Tablespace °øÅë ÆÄ±«ÀÚ È£Ãâ
+    // - LockÁ¤º¸¸¦ Æ÷ÇÔÇÑ TBSNodeÀÇ ¸ğµç Á¤º¸¸¦ ÆÄ±«
     IDE_TEST( sctTableSpaceMgr::destroyTBSNode( & aTBSNode->mHeader )
               != IDE_SUCCESS );
 
@@ -667,12 +656,12 @@ IDE_RC smmManager::finiMemTBSNode(smmTBSNode * aTBSNode)
 
 
 /*
-    Tablespaceì˜ ëª¨ë“  Checkpoint Image Fileë“¤ì„ ì§€ì›Œì¤€ë‹¤.
+    TablespaceÀÇ ¸ğµç Checkpoint Image FileµéÀ» Áö¿öÁØ´Ù.
 
-    ë§Œì•½ íŒŒì¼ì´ ì¡´ì¬í•˜ì§€ ì•Šì„ ê²½ìš° ë¬´ì‹œí•˜ê³  ë„˜ì–´ê°„ë‹¤.
+    ¸¸¾à ÆÄÀÏÀÌ Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì ¹«½ÃÇÏ°í ³Ñ¾î°£´Ù.
 
     [IN] aTBSNode           - Tablespace Node
-    [IN] aRemoveImageFiles  - Checkpoint Image Fileë“¤ì„ ì§€ì›Œì•¼ í•  ì§€ ì—¬ë¶€
+    [IN] aRemoveImageFiles  - Checkpoint Image FileµéÀ» Áö¿ö¾ß ÇÒ Áö ¿©ºÎ
  */
 
 
@@ -723,14 +712,14 @@ IDE_RC smmManager::closeAndRemoveChkptImages(smmTBSNode * aTBSNode,
 
 
 /*
-    Membaseê°€ ë“¤ì–´ìˆëŠ” Meta Page(0ë²ˆ)ì„ Flushí•œë‹¤.
+    Membase°¡ µé¾îÀÖ´Â Meta Page(0¹ø)À» FlushÇÑ´Ù.
 
-    Create Tablespaceì¤‘ì— í˜¸ì¶œëœë‹¤.
-    Meta Pageì •ë³´ê°€ Diskì— ë‚´ë ¤ê°€ ìˆì–´ì•¼ Restore DBê°€ ê°€ëŠ¥í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
-    ìì„¸í•œ ì´ìœ ëŠ” smmTableSpace::createTableSpaceì˜ (ì£¼5)ë¥¼ ì°¸ê³ 
+    Create TablespaceÁß¿¡ È£ÃâµÈ´Ù.
+    Meta PageÁ¤º¸°¡ Disk¿¡ ³»·Á°¡ ÀÖ¾î¾ß Restore DB°¡ °¡´ÉÇÏ±â ¶§¹®ÀÌ´Ù.
+    ÀÚ¼¼ÇÑ ÀÌÀ¯´Â smmTableSpace::createTableSpaceÀÇ (ÁÖ5)¸¦ Âü°í
 
-    [IN] aTBSNode - 0ë²ˆ Pageë¥¼ Flushí•  Tablespace Node
-    [IN] aWhichDB - 0ë²ˆ, 1ë²ˆ Checkpoint Imageì¤‘ ì–´ë””ì— Flushí• ì§€?
+    [IN] aTBSNode - 0¹ø Page¸¦ FlushÇÒ Tablespace Node
+    [IN] aWhichDB - 0¹ø, 1¹ø Checkpoint ImageÁß ¾îµğ¿¡ FlushÇÒÁö?
  */
 IDE_RC smmManager::flushTBSMetaPage(smmTBSNode *   aTBSNode,
                                     UInt           aWhichDB)
@@ -747,10 +736,10 @@ IDE_RC smmManager::flushTBSMetaPage(smmTBSNode *   aTBSNode,
                               &sFirstDBFilePtr )
               != IDE_SUCCESS );
 
-    // ì´ë¯¸ 0ë²ˆì§¸ DBíŒŒì¼ì´ ì´ë¯¸ Createë˜ê³  Openëœ ìƒíƒœì—¬ì•¼ í•œë‹¤.
+    // ÀÌ¹Ì 0¹øÂ° DBÆÄÀÏÀÌ ÀÌ¹Ì CreateµÇ°í OpenµÈ »óÅÂ¿©¾ß ÇÑ´Ù.
     IDE_ASSERT( sFirstDBFilePtr->isOpen() == ID_TRUE );
 
-    IDE_TEST( sFirstDBFilePtr->writePage( aTBSNode, 0 )
+    IDE_TEST( sFirstDBFilePtr->writePage( aTBSNode, SMM_MEMBASE_PAGEID )
               != IDE_SUCCESS );
 
     IDE_TEST( sFirstDBFilePtr->syncUntilSuccess() != IDE_SUCCESS );
@@ -765,15 +754,15 @@ IDE_RC smmManager::flushTBSMetaPage(smmTBSNode *   aTBSNode,
 
 
 
-/* 0ë²ˆ Pageë¥¼ ë””ìŠ¤í¬ë¡œë¶€í„° ì½ì–´ì„œ MemBaseë¡œë¶€í„°
- * ë‹¤ìŒê³¼ ê°™ì€ ì •ë³´ë“¤ì„ ì½ì–´ì˜¨ë‹¤.
+/* 0¹ø Page¸¦ µğ½ºÅ©·ÎºÎÅÍ ÀĞ¾î¼­ MemBase·ÎºÎÅÍ
+ * ´ÙÀ½°ú °°Àº Á¤º¸µéÀ» ÀĞ¾î¿Â´Ù.
  *
- * aDbFilePageCount [OUT] í•˜ë‚˜ì˜ ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ì´ ì§€ë‹ˆëŠ” Pageì˜ ìˆ˜
- * aChunkPageCount  [OUT] í•˜ë‚˜ì˜ Expand Chunkê°€ ì§€ë‹ˆëŠ” Pageì˜ ìˆ˜
+ * aDbFilePageCount [OUT] ÇÏ³ªÀÇ µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏÀÌ Áö´Ï´Â PageÀÇ ¼ö
+ * aChunkPageCount  [OUT] ÇÏ³ªÀÇ Expand Chunk°¡ Áö´Ï´Â PageÀÇ ¼ö
  */
-IDE_RC smmManager::readMemBaseInfo(smmTBSNode *   aTBSNode,
-                                   scPageID *     aDbFilePageCount,
-                                   scPageID *     aChunkPageCount )
+IDE_RC smmManager::readMemBaseInfo(smmTBSNode * aTBSNode,
+                                   UInt       * aDbFilePageCount,
+                                   UInt       * aChunkPageCount )
 {
     IDE_ASSERT( aTBSNode != NULL );
     IDE_ASSERT( aDbFilePageCount != NULL );
@@ -797,10 +786,10 @@ IDE_RC smmManager::readMemBaseInfo(smmTBSNode *   aTBSNode,
     return IDE_FAILURE;
 }
 
-/* 0ë²ˆ Pageë¥¼ ë””ìŠ¤í¬ë¡œë¶€í„° ì½ì–´ì„œ MemBaseë¥¼ ë³µì‚¬í•œë‹¤.
+/* 0¹ø Page¸¦ µğ½ºÅ©·ÎºÎÅÍ ÀĞ¾î¼­ MemBase¸¦ º¹»çÇÑ´Ù.
  *
- * [IN] aTBSNode - Membaseë¥¼ ì½ì–´ì˜¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ë…¸ë“œ
- * [OUT] aMemBase - Diskë¡œë¶€í„° ì½ì€ Membaseê°€ ë³µì‚¬ë  ë©”ëª¨ë¦¬ê³µê°„
+ * [IN] aTBSNode - Membase¸¦ ÀĞ¾î¿Ã Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ³ëµå
+ * [OUT] aMemBase - Disk·ÎºÎÅÍ ÀĞÀº Membase°¡ º¹»çµÉ ¸Ş¸ğ¸®°ø°£
  *
  */
 IDE_RC smmManager::readMemBaseFromFile(smmTBSNode *   aTBSNode,
@@ -817,8 +806,8 @@ IDE_RC smmManager::readMemBaseFromFile(smmTBSNode *   aTBSNode,
     idBool            sFound ;
     UInt              sStage = 0;
 
-    /* BUG-22188: DataFileì—ì„œ IOìˆ˜í–‰ì‹œ Disk Sectorë‚˜ Page Sizeì— Alignëœ
-     *            ì‹œì‘ì£¼ì†Œ Bufferë¥¼ í• ë‹¹í•´ì•¼ í•©ë‹ˆë‹¤. */
+    /* BUG-22188: DataFile¿¡¼­ IO¼öÇà½Ã Disk Sector³ª Page Size¿¡ AlignµÈ
+     *            ½ÃÀÛÁÖ¼Ò Buffer¸¦ ÇÒ´çÇØ¾ß ÇÕ´Ï´Ù. */
     IDE_TEST( iduFile::allocBuff4DirectIO( IDU_MEM_SM_SMM,
                                            SM_PAGE_SIZE,
                                            (void**)&sBasePagePtr,
@@ -848,7 +837,7 @@ IDE_RC smmManager::readMemBaseFromFile(smmTBSNode *   aTBSNode,
     sStage = 3;
 
 
-    IDE_TEST(sDBFile0.readPage( aTBSNode, (scPageID)0, (UChar*)sBasePage )
+    IDE_TEST(sDBFile0.readPage( aTBSNode, SMM_MEMBASE_PAGEID, (UChar*)sBasePage )
              != IDE_SUCCESS);
 
     idlOS::memcpy( aMemBase,
@@ -903,11 +892,11 @@ IDE_RC smmManager::readMemBaseFromFile(smmTBSNode *   aTBSNode,
 
 
 /*
- * ë°ì´í„° ë² ì´ìŠ¤ì˜ Base Page (Page#0)ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°ë“¤ì„ ì„¸íŒ…í•œë‹¤.
- * ì´ í•¨ìˆ˜ëŠ” createdbì‹œì—ë„ ë¶ˆë¦´ ìˆ˜ ìˆìœ¼ë©°,
- * aBasePageì— ë°ì´í„°ê°€ ì´ˆê¸°í™”ë˜ì–´ ìˆì§€ ì•Šì„ ìˆ˜ë„ ìˆë‹¤.
+ * µ¥ÀÌÅÍ º£ÀÌ½ºÀÇ Base Page (Page#0)¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍµéÀ» ¼¼ÆÃÇÑ´Ù.
+ * ÀÌ ÇÔ¼ö´Â createdb½Ã¿¡µµ ºÒ¸± ¼ö ÀÖÀ¸¸ç,
+ * aBasePage¿¡ µ¥ÀÌÅÍ°¡ ÃÊ±âÈ­µÇ¾î ÀÖÁö ¾ÊÀ» ¼öµµ ÀÖ´Ù.
  *
- * aBasePage     [IN] Base Pageì˜ ì£¼ì†Œ
+ * aBasePage     [IN] Base PageÀÇ ÁÖ¼Ò
  *
  */
 IDE_RC smmManager::setupCatalogPointers( smmTBSNode * aTBSNode,
@@ -919,13 +908,13 @@ IDE_RC smmManager::setupCatalogPointers( smmTBSNode * aTBSNode,
 
     smmDatabase::setDicMemBase((smmMemBase *)(aBasePage + SMM_MEMBASE_OFFSET));
 
-    // tableì„ ìœ„í•œ ì§€ì • catalog table header
+    // tableÀ» À§ÇÑ ÁöÁ¤ catalog table header
     m_catTableHeader = (void *)
                        ( aBasePage +
                          SMM_CAT_TABLE_OFFSET +
                          smLayerCallback::getSlotSize() );
 
-    // temp tableì„ ìœ„í•œ ì§€ì • catalog table header
+    // temp tableÀ» À§ÇÑ ÁöÁ¤ catalog table header
     m_catTempTableHeader = (void *)
                            ( aBasePage +
                              smLayerCallback::getCatTempTableOffset() +
@@ -937,29 +926,29 @@ IDE_RC smmManager::setupCatalogPointers( smmTBSNode * aTBSNode,
 
 /*     
  * BUG-34530 
- * SYS_TBS_MEM_DICí…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë©”ëª¨ë¦¬ê°€ í•´ì œë˜ë”ë¼ë„
- * DicMemBaseí¬ì¸í„°ê°€ NULLë¡œ ì´ˆê¸°í™” ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+ * SYS_TBS_MEM_DICÅ×ÀÌºí½ºÆäÀÌ½º ¸Ş¸ğ¸®°¡ ÇØÁ¦µÇ´õ¶óµµ
+ * DicMemBaseÆ÷ÀÎÅÍ°¡ NULL·Î ÃÊ±âÈ­ µÇÁö ¾Ê½À´Ï´Ù.
  *
- * Media recoveryì‹œ ë³µêµ¬ ì™„ë£Œëœ memory tablespaceí•´ì œì‹œ
- * DicMemBaseì™€ catalog table headerë¥¼ NULLë¡œ ì´ˆê¸°í™”í•¨ 
+ * Media recovery½Ã º¹±¸ ¿Ï·áµÈ memory tablespaceÇØÁ¦½Ã
+ * DicMemBase¿Í catalog table header¸¦ NULL·Î ÃÊ±âÈ­ÇÔ 
  */
 void smmManager::clearCatalogPointers()
 {
     smmDatabase::setDicMemBase((smmMemBase *)NULL);
 
-    // tableì„ ìœ„í•œ catalog table header
+    // tableÀ» À§ÇÑ catalog table header
     m_catTableHeader = (void *)NULL;
 
-    // temp tableì„ ìœ„í•œ catalog table header
+    // temp tableÀ» À§ÇÑ catalog table header
     m_catTempTableHeader = (void *)NULL;
 }
 
 /*
- * ë°ì´í„° ë² ì´ìŠ¤ì˜ Base Page (Page#0)ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°ë“¤ì„ ì„¸íŒ…í•œë‹¤.
- * ì´ í•¨ìˆ˜ëŠ” createdbì‹œì—ë„ ë¶ˆë¦´ ìˆ˜ ìˆìœ¼ë©°,
- * aBasePageì— ë°ì´í„°ê°€ ì´ˆê¸°í™”ë˜ì–´ ìˆì§€ ì•Šì„ ìˆ˜ë„ ìˆë‹¤.
+ * µ¥ÀÌÅÍ º£ÀÌ½ºÀÇ Base Page (Page#0)¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍµéÀ» ¼¼ÆÃÇÑ´Ù.
+ * ÀÌ ÇÔ¼ö´Â createdb½Ã¿¡µµ ºÒ¸± ¼ö ÀÖÀ¸¸ç,
+ * aBasePage¿¡ µ¥ÀÌÅÍ°¡ ÃÊ±âÈ­µÇ¾î ÀÖÁö ¾ÊÀ» ¼öµµ ÀÖ´Ù.
  *
- * aBasePage     [IN] Base Pageì˜ ì£¼ì†Œ
+ * aBasePage     [IN] Base PageÀÇ ÁÖ¼Ò
  *
  */
 IDE_RC smmManager::setupMemBasePointer( smmTBSNode * aTBSNode,
@@ -974,10 +963,10 @@ IDE_RC smmManager::setupMemBasePointer( smmTBSNode * aTBSNode,
 
 
 /*
- * ë°ì´í„° ë² ì´ìŠ¤ì˜ Base Page (Page#0) ì™€ ê´€ë ¨í•œ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
- * ì´ì™€ ê´€ë ¨ëœ ì •ë³´ë¡œëŠ”  MemBaseì™€ Catalog Tableì •ë³´ê°€ ìˆë‹¤.
+ * µ¥ÀÌÅÍ º£ÀÌ½ºÀÇ Base Page (Page#0) ¿Í °ü·ÃÇÑ Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
+ * ÀÌ¿Í °ü·ÃµÈ Á¤º¸·Î´Â  MemBase¿Í Catalog TableÁ¤º¸°¡ ÀÖ´Ù.
  *
- * aBasePage     [IN] Base Pageì˜ ì£¼ì†Œ
+ * aBasePage     [IN] Base PageÀÇ ÁÖ¼Ò
  *
  */
 IDE_RC smmManager::setupBasePageInfo( smmTBSNode * aTBSNode,
@@ -998,12 +987,12 @@ IDE_RC smmManager::setupBasePageInfo( smmTBSNode * aTBSNode,
                    page_size_overflow_error);
 
 
-    // Expand Chunk ê´€ë¦¬ì ì´ˆê¸°í™”
+    // Expand Chunk °ü¸®ÀÚ ÃÊ±âÈ­
     IDE_TEST( smmExpandChunk::setChunkPageCnt(aTBSNode,
                   smmDatabase::getExpandChunkPageCnt( aTBSNode->mMemBase ) )
               != IDE_SUCCESS );
 
-    // Expand Chunkì™€ ê´€ë ¨ëœ Property ê°’ ì²´í¬
+    // Expand Chunk¿Í °ü·ÃµÈ Property °ª Ã¼Å©
     IDE_TEST( smmDatabase::checkExpandChunkProps(aTBSNode->mMemBase)
               != IDE_SUCCESS );
 
@@ -1025,26 +1014,26 @@ IDE_RC smmManager::setupBasePageInfo( smmTBSNode * aTBSNode,
 }
 
 /***********************************************************************
- * Description : Tablespaceì˜ ì´ˆê¸° í˜ì´ì§€ ê°¯ìˆ˜ì— í•´ë‹¹í•˜ëŠ”
- *               Database Fileë“¤ì„ ìƒì„±í•œë‹¤.
+ * Description : TablespaceÀÇ ÃÊ±â ÆäÀÌÁö °¹¼ö¿¡ ÇØ´çÇÏ´Â
+ *               Database FileµéÀ» »ı¼ºÇÑ´Ù.
  *
- *               Create Tablespaceì‹œì—ë§Œ í˜¸ì¶œëœë‹¤.
+ *               Create Tablespace½Ã¿¡¸¸ È£ÃâµÈ´Ù.
  *
- *               ê° Data Fileìƒì„± ì§ì „ì— Loggingí•˜ì—¬
- *               Create Tablespaceì˜ Undoì‹œ í•´ë‹¹ Fileì„ ì§€ìš°ë„ë¡ í•œë‹¤.
+ *               °¢ Data File»ı¼º Á÷Àü¿¡ LoggingÇÏ¿©
+ *               Create TablespaceÀÇ Undo½Ã ÇØ´ç FileÀ» Áö¿ìµµ·Ï ÇÑ´Ù.
  *
- *               0ë²ˆ DB Fileì€ DB File Header + Membase Page + Database Page.
- *               0ë²ˆì´ì™¸ DB Fileì€ DB File Header + Database Page.
- *               ë”°ë¼ì„œ ìƒì„±ë˜ëŠ” DB Fileì˜ ìµœëŒ€ í¬ê¸°ëŠ”
- *               0ë²ˆ DB File: aDBPageCnt+2 Page
- *               0ë²ˆì´ì™¸ DB File: aDBPageCnt+1 Page ì´ë‹¤.
+ *               0¹ø DB FileÀº DB File Header + Membase Page + Database Page.
+ *               0¹øÀÌ¿Ü DB FileÀº DB File Header + Database Page.
+ *               µû¶ó¼­ »ı¼ºµÇ´Â DB FileÀÇ ÃÖ´ë Å©±â´Â
+ *               0¹ø DB File: aDBPageCnt+2 Page
+ *               0¹øÀÌ¿Ü DB File: aDBPageCnt+1 Page ÀÌ´Ù.
  *
- * [IN] aTrans - Create Tablespaceë¥¼ ìˆ˜í–‰í•˜ëŠ” Transaction
- * [IN] aTBSNode - ìƒì„±ì¤‘ì¸ Tablespaceì˜ Node
- * [IN] aTBSName - ìƒì„±ë  Tablespaceì˜ ì´ë¦„ìœ¼ë¡œì„œ
- *                  DB Fileìƒì„±ì‹œ DB File Nameìœ¼ë¡œ ì‚¬ìš©í•œë‹¤.
- * [IN] aDBPageCnt - Tablespaceì˜ ì´ˆê¸° í˜ì´ì§€ ê°¯ìˆ˜.
- *                   Membaseê°€ ê¸°ë¡ë˜ëŠ” Meta Page ìˆ˜ë„ í¬í•¨í•œë‹¤.
+ * [IN] aTrans - Create Tablespace¸¦ ¼öÇàÇÏ´Â Transaction
+ * [IN] aTBSNode - »ı¼ºÁßÀÎ TablespaceÀÇ Node
+ * [IN] aTBSName - »ı¼ºµÉ TablespaceÀÇ ÀÌ¸§À¸·Î¼­
+ *                  DB File»ı¼º½Ã DB File NameÀ¸·Î »ç¿ëÇÑ´Ù.
+ * [IN] aDBPageCnt - TablespaceÀÇ ÃÊ±â ÆäÀÌÁö °¹¼ö.
+ *                   Membase°¡ ±â·ÏµÇ´Â Meta Page ¼öµµ Æ÷ÇÔÇÑ´Ù.
  **********************************************************************/
 IDE_RC smmManager::createDBFile( void       * aTrans,
                                  smmTBSNode * aTBSNode,
@@ -1069,8 +1058,8 @@ IDE_RC smmManager::createDBFile( void       * aTrans,
                                                    (SChar*)sCreateDBDir )
               != IDE_SUCCESS );
 
-    // BUG-29607 Create Tablespaceì—ì„œ, ë™ì¼ ì´ë¦„ì˜ Fileë“¤ì´ CP Pathê²½ë¡œì—
-    //           ì¡´ì¬í•˜ëŠ”ì§€ë¥¼ ì•ìœ¼ë¡œ ìƒì„±í•  Fileì˜ Nameê¹Œì§€ ê°ì•ˆí•´ì„œ ê²€ì‚¬í•œë‹¤.
+    // BUG-29607 Create Tablespace¿¡¼­, µ¿ÀÏ ÀÌ¸§ÀÇ FileµéÀÌ CP Path°æ·Î¿¡
+    //           Á¸ÀçÇÏ´ÂÁö¸¦ ¾ÕÀ¸·Î »ı¼ºÇÒ FileÀÇ Name±îÁö °¨¾ÈÇØ¼­ °Ë»çÇÑ´Ù.
     IDE_TEST( smmDatabaseFile::chkExistDBFileByNode( aTBSNode )
               != IDE_SUCCESS );
 
@@ -1090,34 +1079,33 @@ IDE_RC smmManager::createDBFile( void       * aTrans,
 
             IDE_TEST_RAISE( sDBFile->exist() == ID_TRUE,  exist_file_error );
 
-            // ì´ íŒŒì¼ì— ê¸°ë¡í•  ìˆ˜ ìˆëŠ” Pageì˜ ìˆ˜
-            // 0ë²ˆ íŒŒì¼ì˜ ê²½ìš° membaseê°€ ê¸°ë¡ë˜ëŠ” Metapageìˆ˜ê¹Œì§€ í¬í•¨ëœ Pageìˆ˜
-            sPageCountPerFile =
-                smmManager::getPageCountPerFile( aTBSNode,
-                                                 sDBFileNo );
+            // ÀÌ ÆÄÀÏ¿¡ ±â·ÏÇÒ ¼ö ÀÖ´Â PageÀÇ ¼ö
+            // 0¹ø ÆÄÀÏÀÇ °æ¿ì membase°¡ ±â·ÏµÇ´Â Metapage¼ö±îÁö Æ÷ÇÔµÈ Page¼ö
+            sPageCountPerFile = smmManager::getPageCountPerFile( aTBSNode,
+                                                                 sDBFileNo );
 
 
-            // ë§ˆì§€ë§‰ íŒŒì¼ì´ ì•„ë‹Œ ê²½ìš°
-            if(sPageCnt > sPageCountPerFile)
+            // ¸¶Áö¸· ÆÄÀÏÀÌ ¾Æ´Ñ °æ¿ì
+            if( sPageCnt > sPageCountPerFile )
             {
                 sDBFileSize = sPageCountPerFile * SM_PAGE_SIZE;
-                sPageCnt -= sPageCountPerFile;
+                sPageCnt   -= sPageCountPerFile;
             }
             else
             {
-                /* ë§ˆì§€ë§‰ DBíŒŒì¼ ìƒì„± */
+                /* ¸¶Áö¸· DBÆÄÀÏ »ı¼º */
                 sDBFileSize = sPageCnt * SM_PAGE_SIZE;
-                sPageCnt = 0;
+                sPageCnt    = 0;
             }
 
-            /* DB File Headerì˜ í¬ê¸°ë§Œí¼ ë”í•´ì¤€ë‹¤*/
+            /* DB File HeaderÀÇ Å©±â¸¸Å­ ´õÇØÁØ´Ù*/
             sDBFileSize += SM_DBFILE_METAHDR_PAGE_SIZE;
 
             if( aIsNeedLogging == ID_TRUE )
             {
-                // Create DB Fileì— ëŒ€í•œ ë¡œê·¸ê¸°ë¡
-                // - redoì‹œ : do nothing
-                // - undoì‹œ : DB File Close & remove
+                // Create DB File¿¡ ´ëÇÑ ·Î±×±â·Ï
+                // - redo½Ã : do nothing
+                // - undo½Ã : DB File Close & remove
                 IDE_TEST( smLayerCallback::writeMemoryDBFileCreate( NULL, /* idvSQL* */
                                                                     aTrans,
                                                                     aTBSNode->mHeader.mID,
@@ -1135,8 +1123,8 @@ IDE_RC smmManager::createDBFile( void       * aTrans,
                                              sDBFileNo,
                                              sDBFileSize) != IDE_SUCCESS);
 
-            // create tablespace ì— ì˜í•´ íŒŒì¼ì´ ìƒì„±ë˜ëŠ” ê²½ìš°ì—ë„
-            // mLstCreatedDBFileì„ ê³„ì‚°í•´ì¤€ë‹¤.
+            // create tablespace ¿¡ ÀÇÇØ ÆÄÀÏÀÌ »ı¼ºµÇ´Â °æ¿ì¿¡µµ
+            // mLstCreatedDBFileÀ» °è»êÇØÁØ´Ù.
             if ( sDBFileNo > aTBSNode->mLstCreatedDBFile )
             {
                 aTBSNode->mLstCreatedDBFile = sDBFileNo;
@@ -1164,9 +1152,9 @@ IDE_RC smmManager::createDBFile( void       * aTrans,
  *   SECTION : Create & Load DB
  * -------------------------------------------------------------------------*/
 /*
- * ê³µìœ ë©”ëª¨ë¦¬ í’€ì„ ì´ˆê¸°í™”í•œë‹¤.
+ * °øÀ¯¸Ş¸ğ¸® Ç®À» ÃÊ±âÈ­ÇÑ´Ù.
  *
- * aTBSNode [IN] ê³µìœ ë©”ëª¨ë¦¬ í’€ì„ ì´ˆê¸°í™”í•  í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œ
+ * aTBSNode [IN] °øÀ¯¸Ş¸ğ¸® Ç®À» ÃÊ±âÈ­ÇÒ Å×ÀÌºí ½ºÆäÀÌ½º ³ëµå
  */
 IDE_RC smmManager::initializeShmMemPool( smmTBSNode *  aTBSNode )
 {
@@ -1189,16 +1177,15 @@ IDE_RC smmManager::initializeShmMemPool( smmTBSNode *  aTBSNode )
 IDE_RC smmManager::createTBSPages4Redo( smmTBSNode   * aTBSNode,
                                         void         * aTrans,
                                         SChar        * aDBName,
-                                        scPageID       aDBFilePageCount,
-                                        scPageID       aCreatePageCount,
+                                        UInt           aDBFilePageCount,
+                                        UInt           aCreatePageCount,
                                         SChar        * aDBCharSet,
                                         SChar        * aNationalCharSet )
 {
     UInt        sState          = 0;
     scPageID    sTotalPageCount;
     vULong      sNewChunks;
-    scPageID    sChunkPageCount =
-                     (scPageID)smuProperty::getExpandChunkPageCount();
+    UInt        sChunkPageCount = smuProperty::getExpandChunkPageCount();
 
     IDE_DASSERT( aTBSNode   != NULL );
     IDE_DASSERT( aTrans     != NULL );
@@ -1210,14 +1197,14 @@ IDE_RC smmManager::createTBSPages4Redo( smmTBSNode   * aTBSNode,
     IDE_DASSERT( aDBCharSet         != NULL );
     IDE_DASSERT( aNationalCharSet   != NULL );
 
-    // ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ì˜ í¬ê¸°ê°€ expand chunkí¬ê¸°ì˜ ë°°ìˆ˜ì¸ì§€ í™•ì¸.
+    // µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏÀÇ Å©±â°¡ expand chunkÅ©±âÀÇ ¹è¼öÀÎÁö È®ÀÎ.
     IDE_ASSERT( aDBFilePageCount % sChunkPageCount == 0 );
 
-    (void)invalidate(aTBSNode); // dbë¥¼ inconsistency ìƒíƒœë¡œ ì„¤ì •
+    (void)invalidate(aTBSNode); // db¸¦ inconsistency »óÅÂ·Î ¼³Á¤
     {
         ////////////////////////////////////////////////////////////////
-        // (010) 0ë²ˆ Meta Page (Membase ì¡´ì¬)ë¥¼ ì´ˆê¸°í™”
-        // 0ë²ˆ Pageí• ë‹¹
+        // (010) 0¹ø Meta Page (Membase Á¸Àç)¸¦ ÃÊ±âÈ­
+        // 0¹ø PageÇÒ´ç
         IDE_TEST( createTBSMetaPage( aTBSNode,
                                      aTrans,
                                      aDBName,
@@ -1228,28 +1215,28 @@ IDE_RC smmManager::createTBSPages4Redo( smmTBSNode   * aTBSNode,
                   != IDE_SUCCESS );
 
         ///////////////////////////////////////////////////////////////
-        // (020) Expand Chunkê´€ë¦¬ì ì´ˆê¸°í™”
+        // (020) Expand Chunk°ü¸®ÀÚ ÃÊ±âÈ­
         IDE_TEST( smmExpandChunk::setChunkPageCnt( aTBSNode,
                                                    sChunkPageCount )
                   != IDE_SUCCESS );
 
-        // Expand Chunkì™€ ê´€ë ¨ëœ Property ê°’ ì²´í¬
+        // Expand Chunk¿Í °ü·ÃµÈ Property °ª Ã¼Å©
         IDE_TEST( smmDatabase::checkExpandChunkProps(aTBSNode->mMemBase)
                   != IDE_SUCCESS );
 
         //////////////////////////////////////////////////////////////////////
-        // (030) ì´ˆê¸° Tablespaceí¬ê¸°ë§Œí¼ Tablespace í™•ì¥(Expand Chunk í• ë‹¹)
+        // (030) ÃÊ±â TablespaceÅ©±â¸¸Å­ Tablespace È®Àå(Expand Chunk ÇÒ´ç)
 
-        // ìƒì„±í•  ë°ì´í„°ë² ì´ìŠ¤ Pageìˆ˜ë¥¼ í† ëŒ€ë¡œ ìƒˆë¡œ í• ë‹¹í•  Expand Chunk ì˜ ìˆ˜ë¥¼ ê²°ì •
+        // »ı¼ºÇÒ µ¥ÀÌÅÍº£ÀÌ½º Page¼ö¸¦ Åä´ë·Î »õ·Î ÇÒ´çÇÒ Expand Chunk ÀÇ ¼ö¸¦ °áÁ¤
         sNewChunks = smmExpandChunk::getExpandChunkCount(
-            aTBSNode,
-            aCreatePageCount - SMM_DATABASE_META_PAGE_CNT );
+                                    aTBSNode,
+                                    aCreatePageCount - SMM_DATABASE_META_PAGE_CNT );
 
-        // ì‹œìŠ¤í…œì—ì„œ ì˜¤ì§ í•˜ë‚˜ì˜ Tablespaceë§Œì´
-        // Chunkí™•ì¥ì„ í•˜ë„ë¡ í•˜ëŠ” Mutex
-        // => ë‘ ê°œì˜ Tablespaceê°€ ë™ì‹œì— Chunkí™•ì¥í•˜ëŠ” ìƒí™©ì—ì„œëŠ”
-        //    ëª¨ë“  Tablespaceì˜ í• ë‹¹í•œ Page í¬ê¸°ê°€ MEM_MAX_DB_SIZEë³´ë‹¤
-        //    ì‘ì€ ì§€ ê²€ì‚¬í•  ìˆ˜ ì—†ê¸° ë•Œë¬¸
+        // ½Ã½ºÅÛ¿¡¼­ ¿ÀÁ÷ ÇÏ³ªÀÇ Tablespace¸¸ÀÌ
+        // ChunkÈ®ÀåÀ» ÇÏµµ·Ï ÇÏ´Â Mutex
+        // => µÎ °³ÀÇ Tablespace°¡ µ¿½Ã¿¡ ChunkÈ®ÀåÇÏ´Â »óÈ²¿¡¼­´Â
+        //    ¸ğµç TablespaceÀÇ ÇÒ´çÇÑ Page Å©±â°¡ MEM_MAX_DB_SIZEº¸´Ù
+        //    ÀÛÀº Áö °Ë»çÇÒ ¼ö ¾ø±â ¶§¹®
         IDE_TEST( smmFPLManager::lockGlobalPageCountCheckMutex()
                   != IDE_SUCCESS );
         sState = 1;
@@ -1277,11 +1264,10 @@ IDE_RC smmManager::createTBSPages4Redo( smmTBSNode   * aTBSNode,
                       != IDE_SUCCESS );
         }
 
-        // Tablespaceë¥¼ í™•ì¥í›„ Databaseì˜ ëª¨ë“  Tablespaceì— ëŒ€í•´
-        // í• ë‹¹ëœ Pageìˆ˜ì˜ ì´í•©ì´ MEM_MAX_DB_SIZE í”„ë¡œí¼í‹°ì— í—ˆìš©ëœ
-        // í¬ê¸°ë³´ë‹¤ ë” í¬ë©´ ì—ëŸ¬
-        IDE_TEST_RAISE( ( sTotalPageCount +
-                          ( sNewChunks * sChunkPageCount ) ) >
+        // Tablespace¸¦ È®ÀåÈÄ DatabaseÀÇ ¸ğµç Tablespace¿¡ ´ëÇØ
+        // ÇÒ´çµÈ Page¼öÀÇ ÃÑÇÕÀÌ MEM_MAX_DB_SIZE ÇÁ·ÎÆÛÆ¼¿¡ Çã¿ëµÈ
+        // Å©±âº¸´Ù ´õ Å©¸é ¿¡·¯
+        IDE_TEST_RAISE( ( sTotalPageCount + ( sNewChunks * sChunkPageCount ) ) >
                         ( smuProperty::getMaxDBSize() / SM_PAGE_SIZE ),
                         error_unable_to_create_cuz_mem_max_db_size );
 
@@ -1294,12 +1280,12 @@ IDE_RC smmManager::createTBSPages4Redo( smmTBSNode   * aTBSNode,
 
         if( aTBSNode->mHeader.mID == SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC )
         {
-            // Service ìƒíƒœë¡œ ìƒíƒœ ì „ì´
+            // Service »óÅÂ·Î »óÅÂ ÀüÀÌ
             smmDatabase::makeMembaseBackup();
         }
 
-    } // ê´„í˜¸ ì•ˆì—ì„œëŠ” aTBSNodeê°€ invalid
-    (void)validate(aTBSNode); // dbë¥¼ consistency ìƒíƒœë¡œ ë˜ëŒë¦¼.
+    } // °ıÈ£ ¾È¿¡¼­´Â aTBSNode°¡ invalid
+    (void)validate(aTBSNode); // db¸¦ consistency »óÅÂ·Î µÇµ¹¸².
 
     return IDE_SUCCESS;
 
@@ -1335,32 +1321,32 @@ IDE_RC smmManager::createTBSPages4Redo( smmTBSNode   * aTBSNode,
 }
 
 /*
-   Tablespaceì˜ Meta Pageë¥¼ ì´ˆê¸°í™”í•˜ê³  Free Pageë“¤ì„ ìƒì„±í•œë‹¤.
+   TablespaceÀÇ Meta Page¸¦ ÃÊ±âÈ­ÇÏ°í Free PageµéÀ» »ı¼ºÇÑ´Ù.
 
-   Chunkí™•ì¥ì— ëŒ€í•œ ë¡œê¹…ì„ ì‹¤ì‹œí•œë‹¤.
+   ChunkÈ®Àå¿¡ ´ëÇÑ ·Î±ëÀ» ½Ç½ÃÇÑ´Ù.
 
    aTrans           [IN]
-   aDBName          [IN] ë°ì´í„°ë² ì´ìŠ¤ ì´ë¦„
-   aCreatePageCount [IN] ìƒì„±í•  ë°ì´í„°ë² ì´ìŠ¤ê°€ ê°€ì§ˆ Pageì˜ ìˆ˜
-                         Membaseê°€ ê¸°ë¡ë˜ëŠ” ë°ì´í„°ë² ì´ìŠ¤
-                         Meta Page ìˆ˜ë„ í¬í•¨í•œë‹¤.
-                         ì´ ê°’ì€ smiMain::smiCalculateDBSize()ë¥¼ í†µí•´ì„œ
-                         êµ¬í•´ì§„ ê°’ì´ì–´ì•¼ í•˜ê³  smiGetMaxDBPageCount()ë³´ë‹¤
-                         ì‘ì€ ê°’ì„ì„ í™•ì¸í•œ í›„ì˜ ê°’ì´ì–´ì•¼ í•œë‹¤.
-   aDbFilePageCount [IN] í•˜ë‚˜ì˜ ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ì´ ê°€ì§ˆ Pageì˜ ìˆ˜
-   aChunkPageCount  [IN] í•˜ë‚˜ì˜ Expand Chunkê°€ ê°€ì§ˆ Pageì˜ ìˆ˜
+   aDBName          [IN] µ¥ÀÌÅÍº£ÀÌ½º ÀÌ¸§
+   aCreatePageCount [IN] »ı¼ºÇÒ µ¥ÀÌÅÍº£ÀÌ½º°¡ °¡Áú PageÀÇ ¼ö
+                         Membase°¡ ±â·ÏµÇ´Â µ¥ÀÌÅÍº£ÀÌ½º
+                         Meta Page ¼öµµ Æ÷ÇÔÇÑ´Ù.
+                         ÀÌ °ªÀº smiMain::smiCalculateDBSize()¸¦ ÅëÇØ¼­
+                         ±¸ÇØÁø °ªÀÌ¾î¾ß ÇÏ°í smiGetMaxDBPageCount()º¸´Ù
+                         ÀÛÀº °ªÀÓÀ» È®ÀÎÇÑ ÈÄÀÇ °ªÀÌ¾î¾ß ÇÑ´Ù.
+   aDbFilePageCount [IN] ÇÏ³ªÀÇ µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏÀÌ °¡Áú PageÀÇ ¼ö
+   aChunkPageCount  [IN] ÇÏ³ªÀÇ Expand Chunk°¡ °¡Áú PageÀÇ ¼ö
 
 
-   [ ì•Œê³ ë¦¬ì¦˜ ]
-   - (010) 0ë²ˆ Meta Page (Membase ì¡´ì¬)ë¥¼ ì´ˆê¸°í™”
-   - (020) Expand Chunkê´€ë¦¬ì ì´ˆê¸°í™”
-   - (030) ì´ˆê¸° Tablespaceí¬ê¸°ë§Œí¼ Tablespace í™•ì¥(Expand Chunk í• ë‹¹)
+   [ ¾Ë°í¸®Áò ]
+   - (010) 0¹ø Meta Page (Membase Á¸Àç)¸¦ ÃÊ±âÈ­
+   - (020) Expand Chunk°ü¸®ÀÚ ÃÊ±âÈ­
+   - (030) ÃÊ±â TablespaceÅ©±â¸¸Å­ Tablespace È®Àå(Expand Chunk ÇÒ´ç)
  */
 IDE_RC smmManager::createTBSPages( smmTBSNode   * aTBSNode,
                                    void         * aTrans,
                                    SChar        * aDBName,
-                                   scPageID       aDBFilePageCount,
-                                   scPageID       aCreatePageCount,
+                                   UInt           aDBFilePageCount,
+                                   UInt           aCreatePageCount,
                                    SChar        * aDBCharSet,
                                    SChar        * aNationalCharSet )
 
@@ -1368,8 +1354,7 @@ IDE_RC smmManager::createTBSPages( smmTBSNode   * aTBSNode,
     UInt        sState          = 0;
     scPageID    sTotalPageCount;
     vULong      sNewChunks;
-    scPageID    sChunkPageCount =
-                     (scPageID)smuProperty::getExpandChunkPageCount();
+    UInt        sChunkPageCount = smuProperty::getExpandChunkPageCount();
 
     IDE_DASSERT( aTBSNode   != NULL );
     IDE_DASSERT( aTrans     != NULL );
@@ -1382,15 +1367,15 @@ IDE_RC smmManager::createTBSPages( smmTBSNode   * aTBSNode,
     IDE_DASSERT( aNationalCharSet != NULL );
 
 
-    // ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ì˜ í¬ê¸°ê°€ expand chunkí¬ê¸°ì˜ ë°°ìˆ˜ì¸ì§€ í™•ì¸.
+    // µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏÀÇ Å©±â°¡ expand chunkÅ©±âÀÇ ¹è¼öÀÎÁö È®ÀÎ.
     IDE_ASSERT( aDBFilePageCount % sChunkPageCount == 0 );
 
-    (void)invalidate(aTBSNode); // dbë¥¼ inconsistency ìƒíƒœë¡œ ì„¤ì •
+    (void)invalidate(aTBSNode); // db¸¦ inconsistency »óÅÂ·Î ¼³Á¤
     {
 
         ////////////////////////////////////////////////////////////////
-        // (010) 0ë²ˆ Meta Page (Membase ì¡´ì¬)ë¥¼ ì´ˆê¸°í™”
-        // 0ë²ˆ Pageí• ë‹¹
+        // (010) 0¹ø Meta Page (Membase Á¸Àç)¸¦ ÃÊ±âÈ­
+        // 0¹ø PageÇÒ´ç
         IDE_TEST( createTBSMetaPage( aTBSNode,
                                      aTrans,
                                      aDBName,
@@ -1402,30 +1387,30 @@ IDE_RC smmManager::createTBSPages( smmTBSNode   * aTBSNode,
 
 
         ///////////////////////////////////////////////////////////////
-        // (020) Expand Chunkê´€ë¦¬ì ì´ˆê¸°í™”
+        // (020) Expand Chunk°ü¸®ÀÚ ÃÊ±âÈ­
         IDE_TEST( smmExpandChunk::setChunkPageCnt( aTBSNode,
                                                    sChunkPageCount )
                   != IDE_SUCCESS );
 
-        // Expand Chunkì™€ ê´€ë ¨ëœ Property ê°’ ì²´í¬
+        // Expand Chunk¿Í °ü·ÃµÈ Property °ª Ã¼Å©
         IDE_TEST( smmDatabase::checkExpandChunkProps(aTBSNode->mMemBase)
                   != IDE_SUCCESS );
 
 
         //////////////////////////////////////////////////////////////////////
-        // (030) ì´ˆê¸° Tablespaceí¬ê¸°ë§Œí¼ Tablespace í™•ì¥(Expand Chunk í• ë‹¹)
+        // (030) ÃÊ±â TablespaceÅ©±â¸¸Å­ Tablespace È®Àå(Expand Chunk ÇÒ´ç)
 
-        // ìƒì„±í•  ë°ì´í„°ë² ì´ìŠ¤ Pageìˆ˜ë¥¼ í† ëŒ€ë¡œ ìƒˆë¡œ í• ë‹¹í•  Expand Chunk ì˜ ìˆ˜ë¥¼ ê²°ì •
+        // »ı¼ºÇÒ µ¥ÀÌÅÍº£ÀÌ½º Page¼ö¸¦ Åä´ë·Î »õ·Î ÇÒ´çÇÒ Expand Chunk ÀÇ ¼ö¸¦ °áÁ¤
         sNewChunks = smmExpandChunk::getExpandChunkCount(
-            aTBSNode,
-            aCreatePageCount - SMM_DATABASE_META_PAGE_CNT );
+                                        aTBSNode,
+                                        aCreatePageCount - SMM_DATABASE_META_PAGE_CNT );
 
 
-        // ì‹œìŠ¤í…œì—ì„œ ì˜¤ì§ í•˜ë‚˜ì˜ Tablespaceë§Œì´
-        // Chunkí™•ì¥ì„ í•˜ë„ë¡ í•˜ëŠ” Mutex
-        // => ë‘ ê°œì˜ Tablespaceê°€ ë™ì‹œì— Chunkí™•ì¥í•˜ëŠ” ìƒí™©ì—ì„œëŠ”
-        //    ëª¨ë“  Tablespaceì˜ í• ë‹¹í•œ Page í¬ê¸°ê°€ MEM_MAX_DB_SIZEë³´ë‹¤
-        //    ì‘ì€ ì§€ ê²€ì‚¬í•  ìˆ˜ ì—†ê¸° ë•Œë¬¸
+        // ½Ã½ºÅÛ¿¡¼­ ¿ÀÁ÷ ÇÏ³ªÀÇ Tablespace¸¸ÀÌ
+        // ChunkÈ®ÀåÀ» ÇÏµµ·Ï ÇÏ´Â Mutex
+        // => µÎ °³ÀÇ Tablespace°¡ µ¿½Ã¿¡ ChunkÈ®ÀåÇÏ´Â »óÈ²¿¡¼­´Â
+        //    ¸ğµç TablespaceÀÇ ÇÒ´çÇÑ Page Å©±â°¡ MEM_MAX_DB_SIZEº¸´Ù
+        //    ÀÛÀº Áö °Ë»çÇÒ ¼ö ¾ø±â ¶§¹®
         IDE_TEST( smmFPLManager::lockGlobalPageCountCheckMutex()
                   != IDE_SUCCESS );
         sState = 1;
@@ -1455,18 +1440,17 @@ IDE_RC smmManager::createTBSPages( smmTBSNode   * aTBSNode,
                       != IDE_SUCCESS );
         }
 
-        // Tablespaceë¥¼ í™•ì¥í›„ Databaseì˜ ëª¨ë“  Tablespaceì— ëŒ€í•´
-        // í• ë‹¹ëœ Pageìˆ˜ì˜ ì´í•©ì´ MEM_MAX_DB_SIZE í”„ë¡œí¼í‹°ì— í—ˆìš©ëœ
-        // í¬ê¸°ë³´ë‹¤ ë” í¬ë©´ ì—ëŸ¬
-        IDE_TEST_RAISE( ( sTotalPageCount +
-                          ( sNewChunks * sChunkPageCount ) ) >
+        // Tablespace¸¦ È®ÀåÈÄ DatabaseÀÇ ¸ğµç Tablespace¿¡ ´ëÇØ
+        // ÇÒ´çµÈ Page¼öÀÇ ÃÑÇÕÀÌ MEM_MAX_DB_SIZE ÇÁ·ÎÆÛÆ¼¿¡ Çã¿ëµÈ
+        // Å©±âº¸´Ù ´õ Å©¸é ¿¡·¯
+        IDE_TEST_RAISE( ( sTotalPageCount + ( sNewChunks * sChunkPageCount ) ) >
                         ( smuProperty::getMaxDBSize() / SM_PAGE_SIZE ),
                         error_unable_to_create_cuz_mem_max_db_size );
 
-        // íŠ¸ëœì­ì…˜ì„ NULLë¡œ ë„˜ê²¨ì„œ ë¡œê¹…ì„ í•˜ì§€ ì•Šë„ë¡ í•œë‹¤.
-        // ìµœëŒ€ Pageìˆ˜ë¥¼ ë„˜ì–´ì„œëŠ”ì§€ ì´ ì†ì—ì„œ ì²´í¬í•œë‹¤.
+        // Æ®·£Àè¼ÇÀ» NULL·Î ³Ñ°Ü¼­ ·Î±ëÀ» ÇÏÁö ¾Êµµ·Ï ÇÑ´Ù.
+        // ÃÖ´ë Page¼ö¸¦ ³Ñ¾î¼­´ÂÁö ÀÌ ¼Ó¿¡¼­ Ã¼Å©ÇÑ´Ù.
         IDE_TEST( allocNewExpandChunks( aTBSNode,
-                                        aTrans, // ë¡œê¹…í•œë‹¤.
+                                        aTrans, // ·Î±ëÇÑ´Ù.
                                         sNewChunks )
                   != IDE_SUCCESS );
 
@@ -1480,12 +1464,12 @@ IDE_RC smmManager::createTBSPages( smmTBSNode   * aTBSNode,
 
         if( aTBSNode->mHeader.mID == SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC )
         {
-            // Service ìƒíƒœë¡œ ìƒíƒœ ì „ì´
+            // Service »óÅÂ·Î »óÅÂ ÀüÀÌ
             smmDatabase::makeMembaseBackup();
         }
 
     }
-    (void)validate(aTBSNode); // dbë¥¼ consistency ìƒíƒœë¡œ ë˜ëŒë¦¼.
+    (void)validate(aTBSNode); // db¸¦ consistency »óÅÂ·Î µÇµ¹¸².
 
 
 
@@ -1523,26 +1507,26 @@ IDE_RC smmManager::createTBSPages( smmTBSNode   * aTBSNode,
 }
 
 /*
-   Tablespaceì˜ Meta Page ( 0ë²ˆ Page)ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+   TablespaceÀÇ Meta Page ( 0¹ø Page)¸¦ ÃÊ±âÈ­ÇÑ´Ù.
 
-   ì´ í•¨ìˆ˜ëŠ” Create Tablespaceë„ì¤‘ Tablespaceì˜ Meta ì •ë³´ë¥¼ ì§€ë‹ˆëŠ”
-   0ë²ˆ Pageë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+   ÀÌ ÇÔ¼ö´Â Create TablespaceµµÁß TablespaceÀÇ Meta Á¤º¸¸¦ Áö´Ï´Â
+   0¹ø Page¸¦ ÃÊ±âÈ­ÇÑ´Ù.
 
-   aDBName          [IN] ë°ì´í„°ë² ì´ìŠ¤ ì´ë¦„
-   aCreatePageCount [IN] ìƒì„±í•  ë°ì´í„°ë² ì´ìŠ¤ê°€ ê°€ì§ˆ Pageì˜ ìˆ˜
-                         Membaseê°€ ê¸°ë¡ë˜ëŠ” ë°ì´í„°ë² ì´ìŠ¤ Meta Page ìˆ˜ë„
-                         í¬í•¨í•œë‹¤.
-   aDbFilePageCount [IN] í•˜ë‚˜ì˜ ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ì´ ê°€ì§ˆ Pageì˜ ìˆ˜
-   aChunkPageCount  [IN] í•˜ë‚˜ì˜ Expand Chunkê°€ ê°€ì§ˆ Pageì˜ ìˆ˜
+   aDBName          [IN] µ¥ÀÌÅÍº£ÀÌ½º ÀÌ¸§
+   aCreatePageCount [IN] »ı¼ºÇÒ µ¥ÀÌÅÍº£ÀÌ½º°¡ °¡Áú PageÀÇ ¼ö
+                         Membase°¡ ±â·ÏµÇ´Â µ¥ÀÌÅÍº£ÀÌ½º Meta Page ¼öµµ
+                         Æ÷ÇÔÇÑ´Ù.
+   aDbFilePageCount [IN] ÇÏ³ªÀÇ µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏÀÌ °¡Áú PageÀÇ ¼ö
+   aChunkPageCount  [IN] ÇÏ³ªÀÇ Expand Chunk°¡ °¡Áú PageÀÇ ¼ö
     IDE_DASSERT( aTBSAttr->mAttrType == SMI_TBS_ATTR );
 
-   [ ì•Œê³ ë¦¬ì¦˜ ]
-   (010) 0ë²ˆ Pageì˜ ì£¼ì†Œ íšë“
-   (020) 0ë²ˆ Page ì˜ PIDë° Page Typeì„¤ì •
-   (030) Membaseë° Catalog Tableì˜ ë©”ëª¨ë¦¬ ì˜ì—­ì„ ì„¤ì •í•œë‹¤.
-   (040) Membaseì˜ ë‚´ìš©ì„ ì´ˆê¸°í™”í•œë‹¤.
-   (050) MemBase ì „ì²´ë¥¼ ë¡œê¹…í•œë‹¤.
-   (060) 0ë²ˆ Pageë¥¼ DirtyPageë¡œ ë“±ë¡
+   [ ¾Ë°í¸®Áò ]
+   (010) 0¹ø PageÀÇ ÁÖ¼Ò È¹µæ
+   (020) 0¹ø Page ÀÇ PID¹× Page Type¼³Á¤
+   (030) Membase¹× Catalog TableÀÇ ¸Ş¸ğ¸® ¿µ¿ªÀ» ¼³Á¤ÇÑ´Ù.
+   (040) MembaseÀÇ ³»¿ëÀ» ÃÊ±âÈ­ÇÑ´Ù.
+   (050) MemBase ÀüÃ¼¸¦ ·Î±ëÇÑ´Ù.
+   (060) 0¹ø Page¸¦ DirtyPage·Î µî·Ï
  */
 IDE_RC smmManager::createTBSMetaPage( smmTBSNode  * aTBSNode,
                                       void        * aTrans,
@@ -1553,8 +1537,7 @@ IDE_RC smmManager::createTBSMetaPage( smmTBSNode  * aTBSNode,
                                       idBool        aIsNeedLogging /* PROJ-1923 */ )
 {
     void      * sBasePage ;
-    scPageID    sChunkPageCount =
-                        (scPageID)smuProperty::getExpandChunkPageCount();
+    UInt        sChunkPageCount = smuProperty::getExpandChunkPageCount();
 
     scSpaceID   sSpaceID = aTBSNode->mHeader.mID;
 
@@ -1567,31 +1550,31 @@ IDE_RC smmManager::createTBSMetaPage( smmTBSNode  * aTBSNode,
     IDE_DASSERT( aDBCharSet         != NULL );
     IDE_DASSERT( aNationalCharSet   != NULL );
 
-    IDE_TEST(fillPCHEntry( aTBSNode, 0 ) != IDE_SUCCESS );
+    IDE_TEST(fillPCHEntry( aTBSNode, SMM_MEMBASE_PAGEID ) != IDE_SUCCESS );
 
     ///////////////////////////////////////////////////////////////////////
-    // (010) 0ë²ˆ Pageì˜ ì£¼ì†Œ íšë“
-    sBasePage = mPCHArray[ sSpaceID ][0]->m_page;
+    // (010) 0¹ø PageÀÇ ÁÖ¼Ò È¹µæ
+    sBasePage = mPCArray[ sSpaceID ].mPC[SMM_MEMBASE_PAGEID].mPagePtr;
 
-    // Meta Pageë¥¼ Diskë¡œ ë‚´ë¦´ë•Œ UMR(Uninitialized Memory Read) ë°œìƒí•˜ì§€ ì•Šë„ë¡ memsetì‹¤ì‹œ
+    // Meta Page¸¦ Disk·Î ³»¸±¶§ UMR(Uninitialized Memory Read) ¹ß»ıÇÏÁö ¾Êµµ·Ï memset½Ç½Ã
     idlOS::memset( sBasePage, 0x0, SM_PAGE_SIZE );
 
-    // ë””ë²„ê¹… ëª¨ë“œë¼ë©´ ì¼ë¶€ëŸ¬ Garbageë¡œ ì´ˆê¸°í™” í•´ì„œ ì—ëŸ¬ë¥¼ ì´ˆê¸°ì— ê²€ì¶œ
+    // µğ¹ö±ë ¸ğµå¶ó¸é ÀÏºÎ·¯ Garbage·Î ÃÊ±âÈ­ ÇØ¼­ ¿¡·¯¸¦ ÃÊ±â¿¡ °ËÃâ
 #ifdef DEBUG_SMM_FILL_GARBAGE_PAGE
     idlOS::memset( sBasePage, 0x43, SM_PAGE_SIZE );
 #endif
 
 
     ///////////////////////////////////////////////////////////////////////
-    // (020) 0ë²ˆ Page ì˜ PIDë° Page Typeì„¤ì •
+    // (020) 0¹ø Page ÀÇ PID¹× Page Type¼³Á¤
     //
-    // (020)-1 ë¡œê¹…ì‹¤ì‹œ
+    // (020)-1 ·Î±ë½Ç½Ã
     if( aIsNeedLogging == ID_TRUE )
     {
         IDE_TEST( smLayerCallback::updateLinkAtPersPage( NULL, /* idvSQL* */
                                                          aTrans,
                                                          sSpaceID,
-                                                         0,             // Page ID
+                                                         SMM_MEMBASE_PAGEID,// Page ID
                                                          SM_NULL_PID,   // Before PREV_PID
                                                          SM_NULL_PID,   // Before NEXT_PID
                                                          SM_NULL_PID,   // After PREV_PID
@@ -1604,15 +1587,15 @@ IDE_RC smmManager::createTBSMetaPage( smmTBSNode  * aTBSNode,
     }
 
 
-    // (020)-2 Pageì— PIDë° Page Typeë³€ê²½ ì‹¤ì‹œ
+    // (020)-2 Page¿¡ PID¹× Page Typeº¯°æ ½Ç½Ã
     smLayerCallback::linkPersPage( sBasePage,
-                                   0,
+                                   SMM_MEMBASE_PAGEID,
                                    SM_NULL_PID,
                                    SM_NULL_PID );
 
 
     ///////////////////////////////////////////////////////////////////////
-    // (030) Membaseë° Catalog Tableì˜ ë©”ëª¨ë¦¬ ì˜ì—­ì„ ì„¤ì •í•œë‹¤.
+    // (030) Membase¹× Catalog TableÀÇ ¸Ş¸ğ¸® ¿µ¿ªÀ» ¼³Á¤ÇÑ´Ù.
     if( aTBSNode->mHeader.mID == SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC )
     {
         setupCatalogPointers( aTBSNode, (UChar*)sBasePage );
@@ -1621,25 +1604,25 @@ IDE_RC smmManager::createTBSMetaPage( smmTBSNode  * aTBSNode,
 
     IDE_TEST( setupMemBasePointer( aTBSNode,
                                    (UChar*) sBasePage )
-              // version check ê¸ˆì§€!
+              // version check ±İÁö!
               != IDE_SUCCESS);
 
 
 
     ///////////////////////////////////////////////////////////////////////
-    // (040) Membaseì˜ ë‚´ìš©ì„ ì´ˆê¸°í™”í•œë‹¤.
+    // (040) MembaseÀÇ ³»¿ëÀ» ÃÊ±âÈ­ÇÑ´Ù.
     IDE_TEST( smmDatabase::initializeMembase(
-                  aTBSNode,
-                  aDBName,
-                  aDBFilePageCount,
-                  sChunkPageCount,
-                  aDBCharSet,
-                  aNationalCharSet )
+                                      aTBSNode,
+                                      aDBName,
+                                      aDBFilePageCount,
+                                      sChunkPageCount,
+                                      aDBCharSet,
+                                      aNationalCharSet )
               != IDE_SUCCESS );
 
 
     ///////////////////////////////////////////////////////////////////////
-    // (050) MemBase ì „ì²´ë¥¼ ë¡œê¹…í•œë‹¤.
+    // (050) MemBase ÀüÃ¼¸¦ ·Î±ëÇÑ´Ù.
     if( aIsNeedLogging == ID_TRUE )
     {
         IDE_TEST( smLayerCallback::setMemBaseInfo( NULL, /* idvSQL* */
@@ -1655,8 +1638,8 @@ IDE_RC smmManager::createTBSMetaPage( smmTBSNode  * aTBSNode,
 
 
     ///////////////////////////////////////////////////////////////////////
-    // (060) 0ë²ˆ Pageë¥¼ DirtyPageë¡œ ë“±ë¡
-    IDE_TEST( smmDirtyPageMgr::insDirtyPage( sSpaceID, (scPageID)0 )
+    // (060) 0¹ø Page¸¦ DirtyPage·Î µî·Ï
+    IDE_TEST( smmDirtyPageMgr::insDirtyPage( sSpaceID, SMM_MEMBASE_PAGEID )
               != IDE_SUCCESS);
 
 
@@ -1668,10 +1651,10 @@ IDE_RC smmManager::createTBSMetaPage( smmTBSNode  * aTBSNode,
 }
 
 /*
-   Memory Tablespace Nodeì˜ í•„ë“œë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+   Memory Tablespace NodeÀÇ ÇÊµå¸¦ ÃÊ±âÈ­ÇÑ´Ù.
 
-   [IN] aTBSNode - Tablespaceì˜  Node
-   [IN] aTBSAttr - Tablespaceì˜  Attribute
+   [IN] aTBSNode - TablespaceÀÇ  Node
+   [IN] aTBSAttr - TablespaceÀÇ  Attribute
  */
 IDE_RC smmManager::initMemTBSNode( smmTBSNode         * aTBSNode,
                                    smiTableSpaceAttr  * aTBSAttr )
@@ -1679,33 +1662,30 @@ IDE_RC smmManager::initMemTBSNode( smmTBSNode         * aTBSNode,
     IDE_DASSERT( aTBSNode != NULL );
     IDE_DASSERT( aTBSAttr != NULL );
 
-    // (10) Memory / Disk Tablespace ê³µí†µ ì´ˆê¸°í™”
+    // (10) Memory / Disk Tablespace °øÅë ÃÊ±âÈ­
     IDE_TEST( sctTableSpaceMgr::initializeTBSNode( & aTBSNode->mHeader,
                                                    aTBSAttr )
               != IDE_SUCCESS );
 
-    // (20) Tablespace Attributeë³µì‚¬
+    // (20) Tablespace Attributeº¹»ç
     idlOS::memcpy( &(aTBSNode->mTBSAttr),
                    aTBSAttr,
                    ID_SIZEOF(smiTableSpaceAttr) );
 
-    // (30) Checkpoint Path List ì´ˆê¸°í™”
+    // (30) Checkpoint Path List ÃÊ±âÈ­
     SMU_LIST_INIT_BASE( & aTBSNode->mChkptPathBase );
 
-    // (40) Offline SCNì´ˆê¸°í™”
-    SM_INIT_SCN( & aTBSNode->mHeader.mOfflineSCN );
-
-    // (50) Anchor Offsetì´ˆê¸°í™”
+    // (50) Anchor OffsetÃÊ±âÈ­
     aTBSNode->mAnchorOffset = SCT_UNSAVED_ATTRIBUTE_OFFSET;
 
-    // (60) mRestoreTypeì´ˆê¸°í™” := ì•„ì§ Restoreë˜ì§€ ì•Šì€ìƒíƒœ.
+    // (60) mRestoreTypeÃÊ±âÈ­ := ¾ÆÁ÷ RestoreµÇÁö ¾ÊÀº»óÅÂ.
     aTBSNode->mRestoreType = SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET;
 
-    // (70) Page/File ì œí•œì„ 0ìœ¼ë¡œ ì„¤ì • (MEDIAë‹¨ê³„ì—ì„œ ì´ˆê¸°í™”ë¨)
+    // (70) Page/File Á¦ÇÑÀ» 0À¸·Î ¼³Á¤ (MEDIA´Ü°è¿¡¼­ ÃÊ±âÈ­µÊ)
     aTBSNode->mDBMaxPageCount = 0;
     aTBSNode->mHighLimitFile = 0;
 
-    // Dirty Page ê´€ë¦¬ìë¥¼ NULLë¡œ ì´ˆê¸°í™” ( PAGEë‹¨ê³„ì—ì„œ ì´ˆê¸°í™”ë¨ )
+    // Dirty Page °ü¸®ÀÚ¸¦ NULL·Î ÃÊ±âÈ­ ( PAGE´Ü°è¿¡¼­ ÃÊ±âÈ­µÊ )
     aTBSNode->mDirtyPageMgr = NULL;
 
     return IDE_SUCCESS;
@@ -1716,23 +1696,23 @@ IDE_RC smmManager::initMemTBSNode( smmTBSNode         * aTBSNode,
 }
 
 
-/*  Tablespaceë¥¼ ìœ„í•œ ë§¤ì²´(DB File) ê´€ë¦¬ ì‹œìŠ¤í…œ ì´ˆê¸°í™”
+/*  Tablespace¸¦ À§ÇÑ ¸ÅÃ¼(DB File) °ü¸® ½Ã½ºÅÛ ÃÊ±âÈ­
 
-   [IN] aTBSNode - Tablespaceì˜  Node
+   [IN] aTBSNode - TablespaceÀÇ  Node
 */
 IDE_RC smmManager::initMediaSystem( smmTBSNode * aTBSNode )
 {
     IDE_DASSERT( aTBSNode != NULL );
 
-    // ì•„ì§ prepare/restoreê°€ ëœ ìƒíƒœê°€ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
+    // ¾ÆÁ÷ prepare/restore°¡ µÈ »óÅÂ°¡ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
     IDE_ASSERT( aTBSNode->mRestoreType ==
                 SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET );
 
 
     scPageID     sDbFilePageCount;
 
-    // Tablespace Attributeì— ê¸°ë¡ëœ DB Fileì˜ PAGEìˆ˜ë¥¼ í† ëŒ€ë¡œ
-    // í•˜ë‚˜ì˜ DB Fileí¬ê¸°ê°€ OSì˜ íŒŒì¼ í¬ê¸° ì œí•œì— ê±¸ë¦¬ëŠ”ì§€ ë¹„êµí•œë‹¤.
+    // Tablespace Attribute¿¡ ±â·ÏµÈ DB FileÀÇ PAGE¼ö¸¦ Åä´ë·Î
+    // ÇÏ³ªÀÇ DB FileÅ©±â°¡ OSÀÇ ÆÄÀÏ Å©±â Á¦ÇÑ¿¡ °É¸®´ÂÁö ºñ±³ÇÑ´Ù.
     sDbFilePageCount = aTBSNode->mTBSAttr.mMemAttr.mSplitFilePageCount;
 
     IDE_TEST( checkOSFileSize( sDbFilePageCount * SM_PAGE_SIZE )
@@ -1748,56 +1728,90 @@ IDE_RC smmManager::initMediaSystem( smmTBSNode * aTBSNode )
     return IDE_FAILURE;
 }
 
+/********************************************************************************
+ * memory, volatile ¿ë PCH Array ¸¦ ÇÒ´çÇÑ´Ù.
+ * 
+ ********************************************************************************/
+IDE_RC smmManager::allocPCHArray( scSpaceID aSpaceID,
+                                  UInt      aMaxPageCount )
+{
+    // PCH ArrayÃÊ±âÈ­
+    IDE_TEST(iduMemMgr::calloc(IDU_MEM_SM_SMM,
+                               aMaxPageCount,
+                               ID_SIZEOF(smPCSlot),
+                               (void**)&mPCArray[aSpaceID].mPC)
+             != IDE_SUCCESS);
 
-/*  Tablespaceë¥¼ ìœ„í•œ Pageê´€ë¦¬ ì‹œìŠ¤í…œ ì´ˆê¸°í™”
+    mPCArray[ aSpaceID ].mMaxPageCount = aMaxPageCount;
 
-    [IN] aTBSNode    - ì´ˆê¸°í™”í•  Tablespace Node
+    return IDE_SUCCESS;
 
-    ì°¸ê³  - initMediaSystemì´ í˜¸ì¶œëœ ìƒíƒœì—ì„œë§Œ ì´ í•¨ìˆ˜ê°€ ì •ìƒë™ì‘í•œë‹¤.
+    IDE_EXCEPTION_END;
 
-    ì°¸ê³  - initPageSystemì€ prepare/restoreë¥¼ ìœ„í•œ ìë£Œêµ¬ì¡°ë¥¼ ì¤€ë¹„í•œë‹¤.
-            page memory poolê´€ë¦¬ìëŠ” prepare/restoreì‹œì— ê²°ì •ëœë‹¤.
-            ì´ í•¨ìˆ˜ì—ì„œëŠ” page memory poolê´€ë¦¬ìë¥¼ ì´ˆê¸°í™”í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    return IDE_FAILURE;
+}
+
+/********************************************************************************
+ * memory, volatile ¿ë PCH Array ¸¦ ÇØÁ¦ÇÑ´Ù.
+ * 
+ ********************************************************************************/
+IDE_RC smmManager::freePCHArray( scSpaceID aSpaceID )
+{
+    IDE_TEST( iduMemMgr::free( mPCArray[ aSpaceID ].mPC ) != IDE_SUCCESS );
+    mPCArray[ aSpaceID ].mMaxPageCount = 0;
+    mPCArray[ aSpaceID ].mPC           = NULL;
+   
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+/*  Tablespace¸¦ À§ÇÑ Page°ü¸® ½Ã½ºÅÛ ÃÊ±âÈ­
+
+    [IN] aTBSNode    - ÃÊ±âÈ­ÇÒ Tablespace Node
+
+    Âü°í - initMediaSystemÀÌ È£ÃâµÈ »óÅÂ¿¡¼­¸¸ ÀÌ ÇÔ¼ö°¡ Á¤»óµ¿ÀÛÇÑ´Ù.
+
+    Âü°í - initPageSystemÀº prepare/restore¸¦ À§ÇÑ ÀÚ·á±¸Á¶¸¦ ÁØºñÇÑ´Ù.
+            page memory pool°ü¸®ÀÚ´Â prepare/restore½Ã¿¡ °áÁ¤µÈ´Ù.
+            ÀÌ ÇÔ¼ö¿¡¼­´Â page memory pool°ü¸®ÀÚ¸¦ ÃÊ±âÈ­ÇÏÁö ¾Ê´Â´Ù.
  */
 IDE_RC smmManager::initPageSystem( smmTBSNode        * aTBSNode )
 {
     IDE_DASSERT( aTBSNode != NULL );
 
-    // ì•„ì§ prepare/restoreê°€ ëœ ìƒíƒœê°€ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
+    // ¾ÆÁ÷ prepare/restore°¡ µÈ »óÅÂ°¡ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
     IDE_ASSERT( aTBSNode->mRestoreType ==
                 SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET );
 
-    // initMediaSystemì— í˜¸ì¶œë˜ì—ˆëŠ”ì§€ ê²€ì‚¬.
-    // initMediaSystemì˜ initDBFileObjectsì—ì„œ ì´ë¥¼ ì„¸íŒ…í•œë‹¤.
+    // initMediaSystem¿¡ È£ÃâµÇ¾ú´ÂÁö °Ë»ç.
+    // initMediaSystemÀÇ initDBFileObjects¿¡¼­ ÀÌ¸¦ ¼¼ÆÃÇÑ´Ù.
     IDE_ASSERT( aTBSNode->mDBMaxPageCount != 0 );
     IDE_ASSERT( aTBSNode->mHighLimitFile != 0 );
 
-    // Dirty Pageê´€ë¦¬ìë¥¼ ì´ˆê¸°í™”
+    // Dirty Page°ü¸®ÀÚ¸¦ ÃÊ±âÈ­
     IDE_TEST( smmDirtyPageMgr::createDPMgr( aTBSNode )
               != IDE_SUCCESS );
 
-    // Free Page Listê´€ë¦¬ì ì´ˆê¸°í™”
+    // Free Page List°ü¸®ÀÚ ÃÊ±âÈ­
     IDE_TEST( smmFPLManager::initialize( aTBSNode ) != IDE_SUCCESS );
 
-    // Tablespaceí™•ì¥ ChunKê´€ë¦¬ì ì´ˆê¸°í™”
+    // TablespaceÈ®Àå ChunK°ü¸®ÀÚ ÃÊ±âÈ­
     IDE_TEST( smmExpandChunk::initialize( aTBSNode ) != IDE_SUCCESS );
 
-    // PCH Arrayì´ˆê¸°í™”
     /* smmManager_initPageSystem_calloc_PCHArray.tc */
     IDU_FIT_POINT("smmManager::initPageSystem::calloc::PCHArray");
-    IDE_TEST(iduMemMgr::calloc(IDU_MEM_SM_SMM,
-                               aTBSNode->mDBMaxPageCount,
-                               ID_SIZEOF(smmPCH *),
-                               (void**)&mPCHArray[aTBSNode->mHeader.mID])
-             != IDE_SUCCESS);
+    IDE_TEST( allocPCHArray( aTBSNode->mHeader.mID,
+                             aTBSNode->mDBMaxPageCount ) != IDE_SUCCESS );
 
-    // PCH Memory Poolì´ˆê¸°í™”
+    // PCH Memory PoolÃÊ±âÈ­
     IDE_TEST(aTBSNode->mPCHMemPool.initialize(
                  IDU_MEM_SM_SMM,
                  (SChar*)"PCH_MEM_POOL",
-                 1,    // ë‹¤ì¤‘í™” í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                 1,    // ´ÙÁßÈ­ ÇÏÁö ¾Ê´Â´Ù.
                  ID_SIZEOF(smmPCH),
-                 1024, // í•œë²ˆì— 1024ê°œì˜ PCHì €ì¥í•  ìˆ˜ ìˆëŠ” í¬ê¸°ë¡œ ë©”ëª¨ë¦¬ë¥¼ í™•ì¥í•œë‹¤.
+                 1024, // ÇÑ¹ø¿¡ 1024°³ÀÇ PCHÀúÀåÇÒ ¼ö ÀÖ´Â Å©±â·Î ¸Ş¸ğ¸®¸¦ È®ÀåÇÑ´Ù.
                  IDU_AUTOFREE_CHUNK_LIMIT,			/* ChunkLimit */
                  ID_TRUE,							/* UseMutex */
                  IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignByte */
@@ -1818,13 +1832,13 @@ IDE_RC smmManager::initPageSystem( smmTBSNode        * aTBSNode )
 
 
 
-/* ì—¬ëŸ¬ê°œì˜ Expand Chunkë¥¼ ì¶”ê°€í•˜ì—¬ ë°ì´í„°ë² ì´ìŠ¤ë¥¼ í™•ì¥í•œë‹¤.
+/* ¿©·¯°³ÀÇ Expand Chunk¸¦ Ãß°¡ÇÏ¿© µ¥ÀÌÅÍº£ÀÌ½º¸¦ È®ÀåÇÑ´Ù.
  *
  *
  *
- * aTrans            [IN] ë°ì´í„°ë² ì´ìŠ¤ë¥¼ í™•ì¥í•˜ê³ ì í•˜ëŠ” íŠ¸ëœì­ì…˜
- *                        CreateDB í˜¹ì€ logical redoì¤‘ì¸ê²½ìš° NULLë¡œ ë“¤ì–´ì˜¨ë‹¤.
- * aExpandChunkCount [IN] í™•ì¥í•˜ê³ ì í•˜ëŠ” Expand Chunkì˜ ìˆ˜
+ * aTrans            [IN] µ¥ÀÌÅÍº£ÀÌ½º¸¦ È®ÀåÇÏ°íÀÚ ÇÏ´Â Æ®·£Àè¼Ç
+ *                        CreateDB È¤Àº logical redoÁßÀÎ°æ¿ì NULL·Î µé¾î¿Â´Ù.
+ * aExpandChunkCount [IN] È®ÀåÇÏ°íÀÚ ÇÏ´Â Expand ChunkÀÇ ¼ö
  */
 IDE_RC smmManager::allocNewExpandChunks( smmTBSNode   * aTBSNode,
                                          void         * aTrans,
@@ -1834,39 +1848,38 @@ IDE_RC smmManager::allocNewExpandChunks( smmTBSNode   * aTBSNode,
     scPageID    sChunkFirstPID;
     scPageID    sChunkLastPID;
 
-    // ì´ í•¨ìˆ˜ëŠ” Normal Processingë•Œì—ë§Œ ë¶ˆë¦¬ìš°ë¯€ë¡œ
-    // Expand Chunkí™•ì¥ í›„ ë°ì´í„°ë² ì´ìŠ¤ Pageìˆ˜ê°€
-    // ìµœëŒ€ Pageê°¯ìˆ˜ë¥¼ ë„˜ì–´ì„œëŠ”ì§€ ì²´í¬í•œë‹¤.
+    // ÀÌ ÇÔ¼ö´Â Normal Processing¶§¿¡¸¸ ºÒ¸®¿ì¹Ç·Î
+    // Expand ChunkÈ®Àå ÈÄ µ¥ÀÌÅÍº£ÀÌ½º Page¼ö°¡
+    // ÃÖ´ë Page°¹¼ö¸¦ ³Ñ¾î¼­´ÂÁö Ã¼Å©ÇÑ´Ù.
     //
-    // mDBMaxPageCountëŠ” MAXSIZEì— í•´ë‹¹í•˜ëŠ” Page Countë¥¼ ì§€ë‹Œë‹¤.
-    // ê·¸ëŸ°ë°, ë‹¤ìŒê³¼ ê°™ì´ ì‚¬ìš©ìê°€ MAXSIZEì™€ INITSIZEë¥¼
-    // ê°™ê²Œ ì§€ì •í•˜ëŠ” ê²½ìš° MAXSIZEì œí•œì— ê±¸ë ¤ì„œ
-    // Tablespaceìƒì„±ì„ í•˜ì§€ ëª»í•˜ëŠ” ë¬¸ì œê°€ ë°œìƒí•œë‹¤.
+    // mDBMaxPageCount´Â MAXSIZE¿¡ ÇØ´çÇÏ´Â Page Count¸¦ Áö´Ñ´Ù.
+    // ±×·±µ¥, ´ÙÀ½°ú °°ÀÌ »ç¿ëÀÚ°¡ MAXSIZE¿Í INITSIZE¸¦
+    // °°°Ô ÁöÁ¤ÇÏ´Â °æ¿ì MAXSIZEÁ¦ÇÑ¿¡ °É·Á¼­
+    // Tablespace»ı¼ºÀ» ÇÏÁö ¸øÇÏ´Â ¹®Á¦°¡ ¹ß»ıÇÑ´Ù.
     //
     // CREATE MEMORY TABLESPACE MEM_TBS SIZE 16M
     // AUTOEXTEND ON NEXT 8M MAXSIZE 16M;
     //
-    // ìœ„ì˜ ê²½ìš° ì´ˆê¸°í¬ê¸° 16M, í™•ì¥í¬ê¸° 16Mì´ì§€ë§Œ,
-    // 32K(META PAGEí¬ê¸°) + 16M > 16M ì—¬ì„œ í™•ì¥ì´ ë˜ì§€ ì•Šê²Œ ëœë‹¤.
-    // í• ë‹¹ëœ Pageìˆ˜ì—ì„œ METAPAGEìˆ˜ë¥¼ ë¹¼ê³  MAXSIZEì²´í¬ë¥¼ í•´ì•¼
-    // MAXSIZEì™€
+    // À§ÀÇ °æ¿ì ÃÊ±âÅ©±â 16M, È®ÀåÅ©±â 16MÀÌÁö¸¸,
+    // 32K(META PAGEÅ©±â) + 16M > 16M ¿©¼­ È®ÀåÀÌ µÇÁö ¾Ê°Ô µÈ´Ù.
+    // ÇÒ´çµÈ Page¼ö¿¡¼­ METAPAGE¼ö¸¦ »©°í MAXSIZEÃ¼Å©¸¦ ÇØ¾ß
+    // MAXSIZE¿Í
     IDE_TEST_RAISE( aTBSNode->mMemBase->mAllocPersPageCount
                     - SMM_DATABASE_META_PAGE_CNT
                     + aExpandChunkCount * aTBSNode->mMemBase->mExpandChunkPageCnt
                     > aTBSNode->mDBMaxPageCount ,
                     max_page_error);
 
-    // Expand Chunkë¥¼ ë°ì´í„°ë² ì´ìŠ¤ì— ì¶”ê°€í•˜ì—¬ ë°ì´í„°ë² ì´ìŠ¤ë¥¼ í™•ì¥í•œë‹¤.
+    // Expand Chunk¸¦ µ¥ÀÌÅÍº£ÀÌ½º¿¡ Ãß°¡ÇÏ¿© µ¥ÀÌÅÍº£ÀÌ½º¸¦ È®ÀåÇÑ´Ù.
     for( i = 0 ; i < aExpandChunkCount ; i++ )
     {
-        // ìƒˆë¡œ ì¶”ê°€í•  Chunkì˜ ì²«ë²ˆì§¸ Page IDë¥¼ ê³„ì‚°í•œë‹¤.
-        // ì§€ê¸ˆê¹Œì§€ í• ë‹¹í•œ ëª¨ë“  Chunkì˜ ì´ Pageìˆ˜ê°€ ìƒˆ Chunkì˜ ì²«ë²ˆì§¸ Page IDê°€ ëœë‹¤.
+        // »õ·Î Ãß°¡ÇÒ ChunkÀÇ Ã¹¹øÂ° Page ID¸¦ °è»êÇÑ´Ù.
+        // Áö±İ±îÁö ÇÒ´çÇÑ ¸ğµç ChunkÀÇ ÃÑ Page¼ö°¡ »õ ChunkÀÇ Ã¹¹øÂ° Page ID°¡ µÈ´Ù.
         sChunkFirstPID = aTBSNode->mMemBase->mCurrentExpandChunkCnt *
                          aTBSNode->mMemBase->mExpandChunkPageCnt +
                          SMM_DATABASE_META_PAGE_CNT ;
-        // ìƒˆë¡œ ì¶”ê°€í•  Chunkì˜ ë§ˆì§€ë§‰ Page IDë¥¼ ê³„ì‚°í•œë‹¤.
-        sChunkLastPID  = sChunkFirstPID +
-            aTBSNode->mMemBase->mExpandChunkPageCnt - 1;
+        // »õ·Î Ãß°¡ÇÒ ChunkÀÇ ¸¶Áö¸· Page ID¸¦ °è»êÇÑ´Ù.
+        sChunkLastPID  = sChunkFirstPID + aTBSNode->mMemBase->mExpandChunkPageCnt - 1;
 
         IDE_TEST( allocNewExpandChunk( aTBSNode,
                                        aTrans,
@@ -1889,14 +1902,14 @@ IDE_RC smmManager::allocNewExpandChunks( smmTBSNode   * aTBSNode,
     return IDE_FAILURE;
 }
 
-/* ìƒˆë¡œ í• ë‹¹ëœ Expand Chunkì•ˆì— ì†í•˜ëŠ” Pageë“¤ì˜ PCH Entryë¥¼ í• ë‹¹í•œë‹¤.
- * Chunkì•ˆì˜ Free List Info Pageì˜ Page Memoryë„ í• ë‹¹í•œë‹¤.
+/* »õ·Î ÇÒ´çµÈ Expand Chunk¾È¿¡ ¼ÓÇÏ´Â PageµéÀÇ PCH Entry¸¦ ÇÒ´çÇÑ´Ù.
+ * Chunk¾ÈÀÇ Free List Info PageÀÇ Page Memoryµµ ÇÒ´çÇÑ´Ù.
  *
- * ì£¼ì˜! 1. Alloc ChunkëŠ” Logical RedoëŒ€ìƒì´ë¯€ë¡œ, Physical ë¡œê¹…í•˜ì§€ ì•ŠëŠ”ë‹¤.
- *          Chunkë‚´ì˜ Free Pageë“¤ì— ëŒ€í•´ì„œëŠ” Page Memoryë¥¼ í• ë‹¹í•˜ì§€ ì•ŠìŒ
+ * ÁÖÀÇ! 1. Alloc Chunk´Â Logical Redo´ë»óÀÌ¹Ç·Î, Physical ·Î±ëÇÏÁö ¾Ê´Â´Ù.
+ *          Chunk³»ÀÇ Free Pageµé¿¡ ´ëÇØ¼­´Â Page Memory¸¦ ÇÒ´çÇÏÁö ¾ÊÀ½
  *
- * aNewChunkFirstPID [IN] Chunkì•ˆì˜ ì²«ë²ˆì§¸ Page
- * aNewChunkLastPID  [IN] Chunkì•ˆì˜ ë§ˆì§€ë§‰ Page
+ * aNewChunkFirstPID [IN] Chunk¾ÈÀÇ Ã¹¹øÂ° Page
+ * aNewChunkLastPID  [IN] Chunk¾ÈÀÇ ¸¶Áö¸· Page
  */
 IDE_RC smmManager::fillPCHEntry4AllocChunk(smmTBSNode * aTBSNode,
                                            scPageID     aNewChunkFirstPID,
@@ -1917,28 +1930,29 @@ IDE_RC smmManager::fillPCHEntry4AllocChunk(smmTBSNode * aTBSNode,
           sPID <= aNewChunkLastPID ;
           sPID ++ )
     {
-        // Restart Recovery ì‹œì— ë“¤ì–´ì™”ë‹¤ë©´,
-        // DBê°€ ì´ë¯¸ ë¡œë”©ëœ ìƒíƒœì´ë¯€ë¡œ, PCHê°€ ì´ë¯¸ í• ë‹¹ë˜ì–´ ìˆì„ ìˆ˜ ìˆë‹¤.
+        // Restart Recovery ½Ã¿¡ µé¾î¿Ô´Ù¸é,
+        // DB°¡ ÀÌ¹Ì ·ÎµùµÈ »óÅÂÀÌ¹Ç·Î, PCH°¡ ÀÌ¹Ì ÇÒ´çµÇ¾î ÀÖÀ» ¼ö ÀÖ´Ù.
 
-        if ( mPCHArray[sSpaceID][sPID] == NULL )
+        if ( mPCArray[sSpaceID].mPC[sPID].mPCH == NULL )
         {
-            // PCH Entryë¥¼ í• ë‹¹í•œë‹¤.
+            // PCH Entry¸¦ ÇÒ´çÇÑ´Ù.
             IDE_TEST( allocPCHEntry( aTBSNode, sPID ) != IDE_SUCCESS );
         }
 
-        // Free List Info Pageì˜ Page ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•œë‹¤.
+        // BUG-47487: FLI ÆäÀÌÁö ÇÒ´ç À§Ä¡  
+        // Free List Info PageÀÇ Page ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÑ´Ù.
         if ( sFLIPageCnt < smmExpandChunk::getChunkFLIPageCnt(aTBSNode) )
         {
             sFLIPageCnt ++ ;
 
-            // Restart Recoveryì¤‘ì—ëŠ” í•´ë‹¹ Pageë©”ëª¨ë¦¬ê°€ ì´ë¯¸ í• ë‹¹ë˜ì–´
-            // ìˆì„ ìˆ˜ ìˆë‹¤.
+            // Restart RecoveryÁß¿¡´Â ÇØ´ç Page¸Ş¸ğ¸®°¡ ÀÌ¹Ì ÇÒ´çµÇ¾î
+            // ÀÖÀ» ¼ö ÀÖ´Ù.
             //
-            // allocAndLinkPageMemory ì—ì„œ ì´ë¥¼ ê³ ë ¤í•œë‹¤.
-            // ìì„¸í•œ ë‚´ìš©ì€ allocPageMemoryì˜ ì£¼ì„ì„ ì°¸ê³ 
+            // allocAndLinkPageMemory ¿¡¼­ ÀÌ¸¦ °í·ÁÇÑ´Ù.
+            // ÀÚ¼¼ÇÑ ³»¿ëÀº allocPageMemoryÀÇ ÁÖ¼®À» Âü°í
 
             IDE_TEST( allocAndLinkPageMemory( aTBSNode,
-                                              NULL, // ë¡œê¹…í•˜ì§€ ì•ŠìŒ
+                                              NULL, // ·Î±ëÇÏÁö ¾ÊÀ½
                                               sPID,          // PID
                                               SM_NULL_PID,   // prev PID
                                               SM_NULL_PID )  // next PID
@@ -1957,20 +1971,20 @@ IDE_RC smmManager::fillPCHEntry4AllocChunk(smmTBSNode * aTBSNode,
 
 
 
-/* íŠ¹ì • í˜ì´ì§€ ë²”ìœ„ë§Œí¼ ë°ì´í„°ë² ì´ìŠ¤ë¥¼ í™•ì¥í•œë‹¤.
+/* Æ¯Á¤ ÆäÀÌÁö ¹üÀ§¸¸Å­ µ¥ÀÌÅÍº£ÀÌ½º¸¦ È®ÀåÇÑ´Ù.
  *
- * aTrans ê°€ NULLë¡œ ë“¤ì–´ì˜¤ë©´, ì´ ë•ŒëŠ” Restart Redoì—ì„œ ë¶ˆë¦¬ìš´ ê²ƒìœ¼ë¡œ
- * Normal Processingë•Œì™€ ë¹„êµí–ˆì„ ë•Œ ë‹¤ìŒê³¼ ê°™ì€ ì ì—ì„œ ë‹¤ë¥´ê²Œ ì‘ë™í•œë‹¤.
- *    1. Logging í•  í•„ìš”ê°€ ì—†ìŒ
- *    2. í• ë‹¹í•  Page Countì˜ ì˜ì—­ì„ ê²€ì‚¬í•  í•„ìš”ê°€ ì—†ìŒ
+ * aTrans °¡ NULL·Î µé¾î¿À¸é, ÀÌ ¶§´Â Restart Redo¿¡¼­ ºÒ¸®¿î °ÍÀ¸·Î
+ * Normal Processing¶§¿Í ºñ±³ÇßÀ» ¶§ ´ÙÀ½°ú °°Àº Á¡¿¡¼­ ´Ù¸£°Ô ÀÛµ¿ÇÑ´Ù.
+ *    1. Logging ÇÒ ÇÊ¿ä°¡ ¾øÀ½
+ *    2. ÇÒ´çÇÒ Page CountÀÇ ¿µ¿ªÀ» °Ë»çÇÒ ÇÊ¿ä°¡ ¾øÀ½
  *       by gamestar 2001/05/24
  *
- * ëª¨ë“  Free Page Listì— ëŒ€í•´ Latchê°€ ì¡íˆì§€ ì•Šì€ ì±„ë¡œ ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œëœë‹¤.
+ * ¸ğµç Free Page List¿¡ ´ëÇØ Latch°¡ ÀâÈ÷Áö ¾ÊÀº Ã¤·Î ÀÌ ÇÔ¼ö°¡ È£ÃâµÈ´Ù.
  *
- * aTrans            [IN] ë°ì´í„°ë² ì´ìŠ¤ë¥¼ í™•ì¥í•˜ë ¤ëŠ” íŠ¸ëœì­ì…˜
- *                        CreateDB í˜¹ì€ logical redoì¤‘ì¸ê²½ìš° NULLë¡œ ë“¤ì–´ì˜¨ë‹¤.
- * aNewChunkFirstPID [IN] í™•ì¥í•  ë°ì´í„°ë² ì´ìŠ¤ Expand Chunkì˜ ì²«ë²ˆì§¸ Page ID
- * aNewChunkFirstPID [IN] í™•ì¥í•  ë°ì´í„°ë² ì´ìŠ¤ Expand Chunkì˜ ë§ˆì§€ë§‰ Page ID
+ * aTrans            [IN] µ¥ÀÌÅÍº£ÀÌ½º¸¦ È®ÀåÇÏ·Á´Â Æ®·£Àè¼Ç
+ *                        CreateDB È¤Àº logical redoÁßÀÎ°æ¿ì NULL·Î µé¾î¿Â´Ù.
+ * aNewChunkFirstPID [IN] È®ÀåÇÒ µ¥ÀÌÅÍº£ÀÌ½º Expand ChunkÀÇ Ã¹¹øÂ° Page ID
+ * aNewChunkFirstPID [IN] È®ÀåÇÒ µ¥ÀÌÅÍº£ÀÌ½º Expand ChunkÀÇ ¸¶Áö¸· Page ID
  */
 IDE_RC smmManager::allocNewExpandChunk(smmTBSNode * aTBSNode,
                                        void       * aTrans,
@@ -1986,66 +2000,66 @@ IDE_RC smmManager::allocNewExpandChunk(smmTBSNode * aTBSNode,
 
     IDE_DASSERT( aTBSNode != NULL );
 
-    // BUGBUG kmkim ì—ëŸ¬ì²˜ë¦¬ë¡œ ë³€ê²½. ì‚¬ìš©ìê°€ í”„ë¡œí¼í‹° ì˜ëª» ë°”ê¾¸ì—ˆì„ë•Œ
-    // ë°”ë¡œ ì•Œë ¤ì¤„ ìˆ˜ ìˆë„ë¡.
-    // ì§€ê¸ˆì€ ì‚¬ìš©ìê°€ PAGEìˆ˜ ì œí•œì„ ì¤„ì¸í›„ Restart Recoveryí•˜ë©´ ì—¬ê¸°ì„œ ì£½ê²Œëœë‹¤.
+    // BUGBUG kmkim ¿¡·¯Ã³¸®·Î º¯°æ. »ç¿ëÀÚ°¡ ÇÁ·ÎÆÛÆ¼ Àß¸ø ¹Ù²Ù¾úÀ»¶§
+    // ¹Ù·Î ¾Ë·ÁÁÙ ¼ö ÀÖµµ·Ï.
+    // Áö±İÀº »ç¿ëÀÚ°¡ PAGE¼ö Á¦ÇÑÀ» ÁÙÀÎÈÄ Restart RecoveryÇÏ¸é ¿©±â¼­ Á×°ÔµÈ´Ù.
     IDE_ASSERT( aNewChunkFirstPID < aTBSNode->mDBMaxPageCount );
     IDE_ASSERT( aNewChunkLastPID  < aTBSNode->mDBMaxPageCount );
 
-    // ëª¨ë“  Free Page Listì˜ Latchíšë“
+    // ¸ğµç Free Page ListÀÇ LatchÈ¹µæ
     IDE_TEST( smmFPLManager::lockAllFPLs(aTBSNode) != IDE_SUCCESS );
     sStage = 1;
 
 
     if ( aTrans != NULL )
     {
-        // RunTime ì‹œ
+        // RunTime ½Ã
         IDE_TEST( smLayerCallback::allocExpandChunkAtMembase(
                       NULL, /* idvSQL* */
                       aTrans,
                       aTBSNode->mTBSAttr.mID,
-                      // BEFORE : Logical Redo í•˜ê¸° ì „ì˜ ì´ë¯¸ì§€ë¡œ í™œìš©.
+                      // BEFORE : Logical Redo ÇÏ±â ÀüÀÇ ÀÌ¹ÌÁö·Î È°¿ë.
                       aTBSNode->mMemBase,
-                      ID_UINT_MAX, /* ID_UINT_MAXë¡œ ì„¤ì •í•˜ì—¬ ì—¬ëŸ¬ Page Listì— ê³¨ê³ ë£¨ ë¶„ë°°ë˜ë„ë¡í•¨ */
-                      aNewChunkFirstPID, // ìƒˆ Chunkì‹œì‘ PID
-                      aNewChunkLastPID,  // ìƒˆ Chunkë PID
+                      ID_UINT_MAX, /* ID_UINT_MAX·Î ¼³Á¤ÇÏ¿© ¿©·¯ Page List¿¡ °ñ°í·ç ºĞ¹èµÇµµ·ÏÇÔ */
+                      aNewChunkFirstPID, // »õ Chunk½ÃÀÛ PID
+                      aNewChunkLastPID,  // »õ Chunk³¡ PID
                       &sCreateLSN )      // CreateLSN
                   != IDE_SUCCESS );
 
 
-        // íŒŒì¼ì´ ìƒì„±ë˜ì–´ì•¼ í•˜ëŠ” ê²½ìš°
-        // Last LSNì„ ì–»ëŠ”ë‹¤.
-        (void)smLayerCallback::getLstLSN( &sMemCreateLSN );
+        // ÆÄÀÏÀÌ »ı¼ºµÇ¾î¾ß ÇÏ´Â °æ¿ì
+        // Last LSNÀ» ¾ò´Â´Ù.
+        smLayerCallback::getLstLSN( &sMemCreateLSN );
 
-        // Create LSN ì„¤ì • í˜„ì¬ êµ¬í•˜ê²Œ ë˜ëŠ” ArrCreateLSN ì€
-        // ë³´ì •ë¨ì„ ë³´ì¥í•˜ì§€ ì•ŠëŠ”ë‹¤.
-        // íŒŒì¼ì´ ìƒì„±ë˜ëŠ” (Checkpoint)ì‹œ ë³´ì •í•˜ì—¬ íŒŒì¼ì—
-        // ìµœì¢…ì ìœ¼ë¡œ ê¸°ë¡ëœë‹¤.
+        // Create LSN ¼³Á¤ ÇöÀç ±¸ÇÏ°Ô µÇ´Â ArrCreateLSN Àº
+        // º¸Á¤µÊÀ» º¸ÀåÇÏÁö ¾Ê´Â´Ù.
+        // ÆÄÀÏÀÌ »ı¼ºµÇ´Â (Checkpoint)½Ã º¸Á¤ÇÏ¿© ÆÄÀÏ¿¡
+        // ÃÖÁ¾ÀûÀ¸·Î ±â·ÏµÈ´Ù.
         SM_GET_LSN( sMemCreateLSN, sCreateLSN );
     }
     else
     {
         // Restart Recovery
-        // ìš´ì˜ì¤‘ì— íŒŒì¼ì„ ìƒì„±í•˜ì§€ ëª»í•˜ì—¬ ë©”ëª¨ë¦¬ ìƒìœ¼ë¡œ íŒŒì¼ì´
-        // ëŠ˜ì–´ë‚œ ê²½ìš° redoí•˜ë©´ì„œ CreateLSN Setì„ êµ¬ì„±í•´ì£¼ì–´ì•¼ í•œë‹¤.
+        // ¿î¿µÁß¿¡ ÆÄÀÏÀ» »ı¼ºÇÏÁö ¸øÇÏ¿© ¸Ş¸ğ¸® »óÀ¸·Î ÆÄÀÏÀÌ
+        // ´Ã¾î³­ °æ¿ì redoÇÏ¸é¼­ CreateLSN SetÀ» ±¸¼ºÇØÁÖ¾î¾ß ÇÑ´Ù.
 
-        /* íŒŒì¼ì´ ìƒì„±ë˜ì–´ì•¼ í•˜ëŠ” ê²½ìš° LstCheckLSNì„ ì–»ëŠ”ë‹¤.
+        /* ÆÄÀÏÀÌ »ı¼ºµÇ¾î¾ß ÇÏ´Â °æ¿ì LstCheckLSNÀ» ¾ò´Â´Ù.
          *
-         * RedoLSNMgrë¡œë¶€í„° ì–»ëŠ” CreateLSN ì€
-         * Next LSN(read í•´ì•¼í• )ì´ê±°ë‚˜, invalidí•œ LSNì¼ ìˆ˜ ìˆë‹¤.
-         * RedoLSNMgr ë¥¼í†µí•´ì„œëŠ” ë°˜ë“œì‹œ ë³´ì •ë˜ì–´ì•¼ í• í•„ìš”ê°€ ì—†ëŠ”ë°
-         * ì´ìœ ëŠ” ë‹¤ìŒ ìˆœì„œëŒ€ë¡œ Scaní•˜ë©´ì„œ ì–»ëŠ” ë¡œê·¸ì´ê¸° ë•Œë¬¸ì´ë‹¤.
+         * RedoLSNMgr·ÎºÎÅÍ ¾ò´Â CreateLSN Àº
+         * Next LSN(read ÇØ¾ßÇÒ)ÀÌ°Å³ª, invalidÇÑ LSNÀÏ ¼ö ÀÖ´Ù.
+         * RedoLSNMgr ¸¦ÅëÇØ¼­´Â ¹İµå½Ã º¸Á¤µÇ¾î¾ß ÇÒÇÊ¿ä°¡ ¾ø´Âµ¥
+         * ÀÌÀ¯´Â ´ÙÀ½ ¼ø¼­´ë·Î ScanÇÏ¸é¼­ ¾ò´Â ·Î±×ÀÌ±â ¶§¹®ÀÌ´Ù.
          *
-         * ì´ë ‡ê²Œ êµ¬í•´ì§„ CreateLSNì„ ê¸°ì¤€ìœ¼ë¡œ ë¯¸ë””ì–´ ë³µêµ¬ì— ì´ìš©í•œë‹¤.
+         * ÀÌ·¸°Ô ±¸ÇØÁø CreateLSNÀ» ±âÁØÀ¸·Î ¹Ìµğ¾î º¹±¸¿¡ ÀÌ¿ëÇÑ´Ù.
          */
-        // í•´ë‹¹ ë¡œê·¸ë¥¼ ì½ì„ ë•ŒëŠ” ì•„ì§ RedoInfo ì˜
-        // ë¡œê·¸ offsetì„ ì¦ê°€ì‹œí‚¤ê¸° ì „ìœ¼ë¡œ í•´ë‹¹ ALLOC_EXPAND_CHUNK
-        // ë¡œê·¸ì— í•´ë‹¹í•˜ëŠ” LSNì„ ë°˜í™˜í•œë‹¤.
+        // ÇØ´ç ·Î±×¸¦ ÀĞÀ» ¶§´Â ¾ÆÁ÷ RedoInfo ÀÇ
+        // ·Î±× offsetÀ» Áõ°¡½ÃÅ°±â ÀüÀ¸·Î ÇØ´ç ALLOC_EXPAND_CHUNK
+        // ·Î±×¿¡ ÇØ´çÇÏ´Â LSNÀ» ¹İÈ¯ÇÑ´Ù.
         SM_GET_LSN( sMemCreateLSN ,
                     smLayerCallback::getLstCheckLogLSN() );
     }
 
-    // Chunkê°€ ìƒˆë¡œ í• ë‹¹ëœ í›„ DB Fileì´ ëª‡ê°œê°€ ë” ìƒê²¨ì•¼ í•˜ëŠ”ì§€ ê³„ì‚°
+    // Chunk°¡ »õ·Î ÇÒ´çµÈ ÈÄ DB FileÀÌ ¸î°³°¡ ´õ »ı°Ü¾ß ÇÏ´ÂÁö °è»ê
     IDE_TEST( calcNewDBFileCount( aTBSNode,
                                   aNewChunkFirstPID,
                                   aNewChunkLastPID,
@@ -2054,24 +2068,24 @@ IDE_RC smmManager::allocNewExpandChunk(smmTBSNode * aTBSNode,
 
     if ( sNewDBFileCount > 0 )
     {
-        // íŒŒì¼ì´ ìƒì„±ë˜ì–´ì•¼ í•˜ëŠ” ê²½ìš°
-        // í•˜ë‚˜ì˜ ChunkëŠ” í•˜ë‚˜ì˜ íŒŒì¼ë‚´ì— í¬í•¨ë˜ë¯€ë¡œ
-        // íŒŒì¼ì´ ìƒì„±ë˜ì–´ì•¼ í•˜ëŠ” ê²½ìš°ì—ëŠ” ì˜¤ì§ 1ê°œë§Œ ìƒì„±ê°€ëŠ¥í•˜ë‹¤.
+        // ÆÄÀÏÀÌ »ı¼ºµÇ¾î¾ß ÇÏ´Â °æ¿ì
+        // ÇÏ³ªÀÇ Chunk´Â ÇÏ³ªÀÇ ÆÄÀÏ³»¿¡ Æ÷ÇÔµÇ¹Ç·Î
+        // ÆÄÀÏÀÌ »ı¼ºµÇ¾î¾ß ÇÏ´Â °æ¿ì¿¡´Â ¿ÀÁ÷ 1°³¸¸ »ı¼º°¡´ÉÇÏ´Ù.
         IDE_ASSERT( sNewDBFileCount == 1 );
 
         // PRJ-1548 User Memory TableSpace
-        // ë¯¸ë””ì–´ë³µêµ¬ë¥¼ ìœ„í•œ CreateLSNì„ ë°ì´íƒ€íŒŒì¼ì˜ ëŸ°íƒ€ì„í—¤ë”ì— ì„¤ì •
+        // ¹Ìµğ¾îº¹±¸¸¦ À§ÇÑ CreateLSNÀ» µ¥ÀÌÅ¸ÆÄÀÏÀÇ ·±Å¸ÀÓÇì´õ¿¡ ¼³Á¤
         IDE_TEST( smmTBSMediaRecovery::setCreateLSN4NewDBFiles(
                                  aTBSNode,
                                  &sMemCreateLSN ) != IDE_SUCCESS );
     }
     else
     {
-        // íŒŒì¼ì´ ìƒì„±ë˜ì§€ ì•Šê³ , CHUNKë§Œ í™•ì¥ëœ ê²½ìš°
+        // ÆÄÀÏÀÌ »ı¼ºµÇÁö ¾Ê°í, CHUNK¸¸ È®ÀåµÈ °æ¿ì
     }
 
 
-    // í•˜ë‚˜ì˜ Expand Chunkì— ì†í•˜ëŠ” Pageë“¤ì˜ PCH Entryë“¤ì„ êµ¬ì„±í•œë‹¤.
+    // ÇÏ³ªÀÇ Expand Chunk¿¡ ¼ÓÇÏ´Â PageµéÀÇ PCH EntryµéÀ» ±¸¼ºÇÑ´Ù.
     IDE_TEST( fillPCHEntry4AllocChunk( aTBSNode,
                                        aNewChunkFirstPID,
                                        aNewChunkLastPID )
@@ -2082,16 +2096,16 @@ IDE_RC smmManager::allocNewExpandChunk(smmTBSNode * aTBSNode,
 
     sArrFreeListCount = aTBSNode->mMemBase->mFreePageListCount;
 
-    // Logical Redo ë  ê²ƒì´ë¯€ë¡œ Physical Update( Next Free Page ID ì„¸íŒ…)
-    // ì— ëŒ€í•œ ë¡œê¹…ì„ í•˜ì§€ ì•ŠìŒ.
+    // Logical Redo µÉ °ÍÀÌ¹Ç·Î Physical Update( Next Free Page ID ¼¼ÆÃ)
+    // ¿¡ ´ëÇÑ ·Î±ëÀ» ÇÏÁö ¾ÊÀ½.
     IDE_TEST( smmFPLManager::distributeFreePages(
                   aTBSNode,
-                  // Chunkë‚´ì˜ ì²«ë²ˆì§¸ Free Page
-                  // Chunkì˜ ì•ë¶€ë¶„ì€ Free List Info Pageë“¤ì´ ì¡´ì¬í•˜ë¯€ë¡œ,
-                  // Free List Info Pageë§Œí¼ ê±´ë„ˆë›°ì–´ì•¼ Free Pageê°€ ë‚˜ì˜¨ë‹¤.
+                  // Chunk³»ÀÇ Ã¹¹øÂ° Free Page
+                  // ChunkÀÇ ¾ÕºÎºĞÀº Free List Info PageµéÀÌ Á¸ÀçÇÏ¹Ç·Î,
+                  // Free List Info Page¸¸Å­ °Ç³Ê¶Ù¾î¾ß Free Page°¡ ³ª¿Â´Ù.
                   aNewChunkFirstPID +
                   smmExpandChunk::getChunkFLIPageCnt(aTBSNode),
-                  // Chunkë‚´ì˜ ë§ˆì§€ë§‰ Free Page
+                  // Chunk³»ÀÇ ¸¶Áö¸· Free Page
                   aNewChunkLastPID,
                   ID_TRUE, // set next free page, PRJ-1548
                   sArrFreeListCount,
@@ -2100,31 +2114,31 @@ IDE_RC smmManager::allocNewExpandChunk(smmTBSNode * aTBSNode,
     sStage = 2;
 
 
-    // ì£¼ì˜! smmUpdate::redo_SMMMEMBASE_ALLOC_EXPANDCHUNK ì—ì„œ
-    // membase ë©¤ë²„ë“¤ì„ Logical Redoí•˜ê¸° ì „ì˜ ê°’ìœ¼ë¡œ ì„¸íŒ…í•´ë†“ê³  ì´ ë£¨í‹´ìœ¼ë¡œ
-    // ë“¤ì–´ì™€ì•¼ í•œë‹¤.
+    // ÁÖÀÇ! smmUpdate::redo_SMMMEMBASE_ALLOC_EXPANDCHUNK ¿¡¼­
+    // membase ¸â¹öµéÀ» Logical RedoÇÏ±â ÀüÀÇ °ªÀ¸·Î ¼¼ÆÃÇØ³õ°í ÀÌ ·çÆ¾À¸·Î
+    // µé¾î¿Í¾ß ÇÑ´Ù.
 
-    // ì§€ê¸ˆê¹Œì§€ ë°ì´í„°ë² ì´ìŠ¤ì— í• ë‹¹ëœ ì´ í˜ì´ì§€ìˆ˜ ë³€ê²½
+    // Áö±İ±îÁö µ¥ÀÌÅÍº£ÀÌ½º¿¡ ÇÒ´çµÈ ÃÑ ÆäÀÌÁö¼ö º¯°æ
     aTBSNode->mMemBase->mAllocPersPageCount = aNewChunkLastPID + 1;
     aTBSNode->mMemBase->mCurrentExpandChunkCnt ++ ;
 
 
-    // DB File ìˆ˜ ë³€ê²½
+    // DB File ¼ö º¯°æ
     aTBSNode->mMemBase->mDBFileCount[0]    += sNewDBFileCount;
     aTBSNode->mMemBase->mDBFileCount[1]    += sNewDBFileCount;
 
-    // Logical Redoí•  ê²ƒì´ë¯€ë¡œ Phyical Updateì— ëŒ€í•´ ë¡œê¹…í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // Logical RedoÇÒ °ÍÀÌ¹Ç·Î Phyical Update¿¡ ´ëÇØ ·Î±ëÇÏÁö ¾Ê´Â´Ù.
     IDE_TEST( smmFPLManager::appendPageLists2FPLs(
-                  aTBSNode,
-                  sArrFreeList,
-                  ID_TRUE, // aSetFreeListOfMembase
-                  ID_TRUE )// aSetNextFreePageOfFPL
+                                          aTBSNode,
+                                          sArrFreeList,
+                                          ID_TRUE, // aSetFreeListOfMembase
+                                          ID_TRUE )// aSetNextFreePageOfFPL
               != IDE_SUCCESS );
 
 
     sStage = 1;
     IDE_TEST( smmDirtyPageMgr::insDirtyPage(aTBSNode->mTBSAttr.mID,
-                                            (scPageID)0) != IDE_SUCCESS);
+                                            SMM_MEMBASE_PAGEID) != IDE_SUCCESS);
 
 
 
@@ -2141,17 +2155,17 @@ IDE_RC smmManager::allocNewExpandChunk(smmTBSNode * aTBSNode,
     {
         case 2:
         IDE_ASSERT( smmDirtyPageMgr::insDirtyPage(aTBSNode->mTBSAttr.mID,
-                    (scPageID)0) == IDE_SUCCESS);
+                                                  SMM_MEMBASE_PAGEID) == IDE_SUCCESS);
         case 1:
         IDE_ASSERT( smmFPLManager::unlockAllFPLs(aTBSNode) == IDE_SUCCESS );
 
         default:
             break;
     } 
-    //BUG-15508 TASK-2000 mmdb module êµìœ¡ì¤‘ ë°œê²¬í•œ ë²„ê·¸ ë¦¬ìŠ¤íŠ¸
-    //ê·¸ì¤‘ SBUG-1, smmManager::allocNewExpandChunkì‹¤íŒ¨ì‹œ FATALë¡œ ì²˜ë¦¬
-    //ì´í•¨ìˆ˜ëŠ” Logical redoë¥¼ í•˜ëŠ” ë¶€ë¶„ìœ¼ë¡œ undoë¥¼ í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì— abortê°€ ë˜ë©´ ì•ˆëœë‹¤.
-    //ì°¨ë¼ë¦¬ ì£½ì´ê³ , ë‹¤ì‹œ recoveryí•˜ëŠ” ê²ƒì´ ì¢‹ë‹¤.
+    //BUG-15508 TASK-2000 mmdb module ±³À°Áß ¹ß°ßÇÑ ¹ö±× ¸®½ºÆ®
+    //±×Áß SBUG-1, smmManager::allocNewExpandChunk½ÇÆĞ½Ã FATAL·Î Ã³¸®
+    //ÀÌÇÔ¼ö´Â Logical redo¸¦ ÇÏ´Â ºÎºĞÀ¸·Î undo¸¦ ÇÏÁö ¾Ê±â ¶§¹®¿¡ abort°¡ µÇ¸é ¾ÈµÈ´Ù.
+    //Â÷¶ó¸® Á×ÀÌ°í, ´Ù½Ã recoveryÇÏ´Â °ÍÀÌ ÁÁ´Ù.
     IDE_SET( ideSetErrorCode(
                  smERR_FATAL_ALLOC_NEW_EXPAND_CHUNK));
 
@@ -2161,11 +2175,11 @@ IDE_RC smmManager::allocNewExpandChunk(smmTBSNode * aTBSNode,
 
 
 /*
- * ë°ì´í„°ë² ì´ìŠ¤ í™•ì¥ì— ë”°ë¼ ìƒˆë¡œìš´ Expand Chunkê°€ í• ë‹¹ë¨ì— ë”°ë¼
- * ìƒˆë¡œ ìƒê²¨ë‚˜ê²Œ ë˜ëŠ” DBíŒŒì¼ì˜ ìˆ˜ë¥¼ ê³„ì‚°í•œë‹¤.
+ * µ¥ÀÌÅÍº£ÀÌ½º È®Àå¿¡ µû¶ó »õ·Î¿î Expand Chunk°¡ ÇÒ´çµÊ¿¡ µû¶ó
+ * »õ·Î »ı°Ü³ª°Ô µÇ´Â DBÆÄÀÏÀÇ ¼ö¸¦ °è»êÇÑ´Ù.
  *
- * aChunkFirstPID [IN] Expand Chunkì˜ ì²«ë²ˆì§¸ Page ID
- * aChunkLastPID  [IN] Expand Chunkì˜ ë§ˆì§€ë§‰ Page ID
+ * aChunkFirstPID [IN] Expand ChunkÀÇ Ã¹¹øÂ° Page ID
+ * aChunkLastPID  [IN] Expand ChunkÀÇ ¸¶Áö¸· Page ID
  */
 IDE_RC smmManager::calcNewDBFileCount( smmTBSNode * aTBSNode,
                                        scPageID     aChunkFirstPID,
@@ -2180,20 +2194,20 @@ IDE_RC smmManager::calcNewDBFileCount( smmTBSNode * aTBSNode,
     IDE_DASSERT( isValidPageID( aTBSNode->mTBSAttr.mID, aChunkLastPID )
                  == ID_TRUE );
 
-    // í• ë‹¹ë°›ì€ í˜ì´ì§€ë“¤ì´ ì†í•  ë°ì´íƒ€ í™”ì¼ì˜ ìƒì„±
-    // membase ë³€ê²½ ë° ë¡œê¹…ë§Œ ìˆ˜í–‰: ì‹¤ì œ í™”ì¼ì˜ ìƒì„±ì€ checkpointì‹œ ìˆ˜í–‰ë¨
+    // ÇÒ´ç¹ŞÀº ÆäÀÌÁöµéÀÌ ¼ÓÇÒ µ¥ÀÌÅ¸ È­ÀÏÀÇ »ı¼º
+    // membase º¯°æ ¹× ·Î±ë¸¸ ¼öÇà: ½ÇÁ¦ È­ÀÏÀÇ »ı¼ºÀº checkpoint½Ã ¼öÇàµÊ
     sFirstFileNo = getDbFileNo( aTBSNode, aChunkFirstPID );
     sLastFileNo  = getDbFileNo( aTBSNode, aChunkLastPID );
 
-    // sFirstFileNoê°€ ì§€ê¸ˆì˜ ë§ˆì§€ë§‰ DBíŒŒì¼ì´ë¼ë©´
+    // sFirstFileNo°¡ Áö±İÀÇ ¸¶Áö¸· DBÆÄÀÏÀÌ¶ó¸é
     if(aTBSNode->mMemBase->mDBFileCount[aTBSNode->mTBSAttr.mMemAttr.mCurrentDB]
        == ( sFirstFileNo + 1))
     {
-        // ìƒˆë¡œ ìƒì„±í•  DBíŒŒì¼ì€ ë°”ë¡œ ê·¸ ë‹¤ìŒ íŒŒì¼
+        // »õ·Î »ı¼ºÇÒ DBÆÄÀÏÀº ¹Ù·Î ±× ´ÙÀ½ ÆÄÀÏ
         sFirstFileNo ++;
     }
 
-    // ìƒˆë¡œ ìƒì„±í•  DBíŒŒì¼ ìˆ˜
+    // »õ·Î »ı¼ºÇÒ DBÆÄÀÏ ¼ö
     *aNewDBFileCount = sLastFileNo - sFirstFileNo + 1;
 
 
@@ -2201,23 +2215,23 @@ IDE_RC smmManager::calcNewDBFileCount( smmTBSNode * aTBSNode,
 }
 
 /*
- * Pageë“¤ì˜ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•œë‹¤.
+ * PageµéÀÇ ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÑ´Ù.
  *
- * FLI Pageì— Next Free Page IDë¡œ ë§í¬ëœ í˜ì´ì§€ë“¤ì— ëŒ€í•´
- * PCHì•ˆì˜ Page ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•˜ê³  Page Headerì˜ Prev/Nextí¬ì¸í„°ë¥¼ ì—°ê²°í•œë‹¤.
+ * FLI Page¿¡ Next Free Page ID·Î ¸µÅ©µÈ ÆäÀÌÁöµé¿¡ ´ëÇØ
+ * PCH¾ÈÀÇ Page ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÏ°í Page HeaderÀÇ Prev/NextÆ÷ÀÎÅÍ¸¦ ¿¬°áÇÑ´Ù.
  *
- * Free List Info Pageì•ˆì˜ Next Free Page IDë¥¼ ê¸°ë°˜ìœ¼ë¡œ
- * PCHì˜ Pageë“¤ì„ Page Headerì˜ Prev/Nextë§í¬ë¡œ ì—°ê²°í•œë‹¤.
+ * Free List Info Page¾ÈÀÇ Next Free Page ID¸¦ ±â¹İÀ¸·Î
+ * PCHÀÇ PageµéÀ» Page HeaderÀÇ Prev/Next¸µÅ©·Î ¿¬°áÇÑ´Ù.
  *
- * Free List Info Pageì— íŠ¹ë³„í•œ ê°’ì„ ì„¤ì •í•˜ì—¬ í• ë‹¹ëœ í˜ì´ì§€ì„ì„ í‘œì‹œí•œë‹¤.
+ * Free List Info Page¿¡ Æ¯º°ÇÑ °ªÀ» ¼³Á¤ÇÏ¿© ÇÒ´çµÈ ÆäÀÌÁöÀÓÀ» Ç¥½ÃÇÑ´Ù.
  *
- * Free Pageê°€ ìƒˆë¡œ í• ë‹¹ë˜ê¸° ì „ì— ë¶ˆë¦¬ìš°ëŠ” ë£¨í‹´ìœ¼ë¡œ, ê¸°ì¡´ Free Pageë“¤ì˜
- * PCHë° Page ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•œë‹¤.
+ * Free Page°¡ »õ·Î ÇÒ´çµÇ±â Àü¿¡ ºÒ¸®¿ì´Â ·çÆ¾À¸·Î, ±âÁ¸ Free PageµéÀÇ
+ * PCH¹× Page ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÑ´Ù.
  *
- * aTrans     [IN] Pageë¥¼ í• ë‹¹ë°›ê³ ì í•˜ëŠ” íŠ¸ëœì­ì…˜
- * aHeadPID   [IN] ì—°ê²°í•˜ê³ ì í•˜ëŠ” ì²«ë²ˆì§¸ Free Page
- * aTailPID   [IN] ì—°ê²°í•˜ê³ ì í•˜ëŠ” ë§ˆì§€ë§‰ Free Page
- * aPageCount [OUT] ì—°ê²°ëœ ì´ í˜ì´ì§€ ìˆ˜
+ * aTrans     [IN] Page¸¦ ÇÒ´ç¹Ş°íÀÚ ÇÏ´Â Æ®·£Àè¼Ç
+ * aHeadPID   [IN] ¿¬°áÇÏ°íÀÚ ÇÏ´Â Ã¹¹øÂ° Free Page
+ * aTailPID   [IN] ¿¬°áÇÏ°íÀÚ ÇÏ´Â ¸¶Áö¸· Free Page
+ * aPageCount [OUT] ¿¬°áµÈ ÃÑ ÆäÀÌÁö ¼ö
  */
 IDE_RC smmManager::allocFreePageMemoryList( smmTBSNode * aTBSNode,
                                             void       * aTrans,
@@ -2238,51 +2252,51 @@ IDE_RC smmManager::allocFreePageMemoryList( smmTBSNode * aTBSNode,
 
     vULong   sProcessedPageCnt = 0;
 
-    // BUGBUG kmkim ê° Pageì— Latchë¥¼ ê±¸ì–´ì•¼ í•˜ëŠ”ì§€ ê³ ë¯¼ í•„ìš”.
-    // ì‚´ì§ì¿µ ìƒê°í•´ë³¸ ê²°ê³¼ë¡œëŠ” Latchì¡ì„ í•„ìš” ì—†ìŒ..
+    // BUGBUG kmkim °¢ Page¿¡ Latch¸¦ °É¾î¾ß ÇÏ´ÂÁö °í¹Î ÇÊ¿ä.
+    // »ìÂ¦Äô »ı°¢ÇØº» °á°ú·Î´Â LatchÀâÀ» ÇÊ¿ä ¾øÀ½..
 
-    // sHeadPageë¶€í„° sTailPageì‚¬ì´ì˜ ëª¨ë“  Pageì— ëŒ€í•´
+    // sHeadPageºÎÅÍ sTailPage»çÀÌÀÇ ¸ğµç Page¿¡ ´ëÇØ
     sPID = aHeadPID;
     while ( sPID != SM_NULL_PID )
     {
-        // Next Page ID ê²°ì •
+        // Next Page ID °áÁ¤
         if ( sPID == aTailPID )
         {
-            // ë§ˆì§€ë§‰ìœ¼ë¡œ linkë  Pageë¼ë©´ ë‹¤ìŒ PageëŠ” NULL
+            // ¸¶Áö¸·À¸·Î linkµÉ Page¶ó¸é ´ÙÀ½ Page´Â NULL
             sNextPID = SM_NULL_PID ;
         }
         else
         {
-            // ë§ˆì§€ë§‰ì´ ì•„ë‹ˆë¼ë©´ ë‹¤ìŒ Page Free Page IDë¥¼ ì–»ì–´ì˜¨ë‹¤.
+            // ¸¶Áö¸·ÀÌ ¾Æ´Ï¶ó¸é ´ÙÀ½ Page Free Page ID¸¦ ¾ò¾î¿Â´Ù.
             IDE_TEST( smmExpandChunk::getNextFreePage( aTBSNode,
                                                        sPID,
                                                        & sNextPID )
                       != IDE_SUCCESS );
         }
 
-        // Free Pageì´ë”ë¼ë„ PCHëŠ” í• ë‹¹ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
-        IDE_ASSERT( mPCHArray[aTBSNode->mTBSAttr.mID][sPID] != NULL );
+        // Free PageÀÌ´õ¶óµµ PCH´Â ÇÒ´çµÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
+        IDE_ASSERT( mPCArray[aTBSNode->mTBSAttr.mID].mPC[sPID].mPCH != NULL );
 
-        // To Fix BUG-15107 Checkpointì‹œ Dirty Pageì²˜ë¦¬ë„ì¤‘
-        //                  ì“°ë ˆê¸° í˜ì´ì§€ ë§Œë‚¨
-        // => Pageë©”ëª¨ë¦¬ í• ë‹¹ê³¼ ì´ˆê¸°í™”ë¥¼ mMutexë¡œ ë¬¶ì–´ì„œ
-        //    Checkpointì‹œì— í• ë‹¹ë§Œ ë˜ê³  ì´ˆê¸°í™”ë˜ì§€ ì•Šì€ ë©”ëª¨ë¦¬ë¥¼
-        //    ë³´ëŠ” ì¼ì´ ì—†ë„ë¡ í•œë‹¤.
+        // To Fix BUG-15107 Checkpoint½Ã Dirty PageÃ³¸®µµÁß
+        //                  ¾²·¹±â ÆäÀÌÁö ¸¸³²
+        // => Page¸Ş¸ğ¸® ÇÒ´ç°ú ÃÊ±âÈ­¸¦ mMutex·Î ¹­¾î¼­
+        //    Checkpoint½Ã¿¡ ÇÒ´ç¸¸ µÇ°í ÃÊ±âÈ­µÇÁö ¾ÊÀº ¸Ş¸ğ¸®¸¦
+        //    º¸´Â ÀÏÀÌ ¾øµµ·Ï ÇÑ´Ù.
         //
-        // í˜ì´ì§€ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•˜ê³  ì´ˆê¸°í™”
+        // ÆäÀÌÁö ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÏ°í ÃÊ±âÈ­
         IDE_TEST( allocAndLinkPageMemory( aTBSNode,
-                                          aTrans, // ë¡œê¹…ì‹¤ì‹œ
+                                          aTrans, // ·Î±ë½Ç½Ã
                                           sPID,
                                           sPrevPID,
                                           sNextPID ) != IDE_SUCCESS );
 
-        // í…Œì´ë¸”ì— í• ë‹¹ë˜ì—ˆë‹¤ëŠ” ì˜ë¯¸ë¡œ
-        // Pageì˜ Next Free Pageë¡œ íŠ¹ë³„í•œ ê°’ì„ ê¸°ë¡í•´ë‘”ë‹¤.
-        // ì„œë²„ ê¸°ë™ì‹œ Pageê°€ í…Œì´ë¸”ì— í• ë‹¹ëœ Pageì¸ì§€,
-        // Free Pageì¸ì§€ ì—¬ë¶€ë¥¼ ê²°ì •í•˜ê¸° ìœ„í•´ ì‚¬ìš©ëœë‹¤.
+        // Å×ÀÌºí¿¡ ÇÒ´çµÇ¾ú´Ù´Â ÀÇ¹Ì·Î
+        // PageÀÇ Next Free Page·Î Æ¯º°ÇÑ °ªÀ» ±â·ÏÇØµĞ´Ù.
+        // ¼­¹ö ±âµ¿½Ã Page°¡ Å×ÀÌºí¿¡ ÇÒ´çµÈ PageÀÎÁö,
+        // Free PageÀÎÁö ¿©ºÎ¸¦ °áÁ¤ÇÏ±â À§ÇØ »ç¿ëµÈ´Ù.
         IDE_TEST( smmExpandChunk::logAndSetNextFreePage(
                       aTBSNode,
-                      aTrans, // ë¡œê¹…ì‹¤ì‹œ
+                      aTrans, // ·Î±ë½Ç½Ã
                       sPID,
                       SMM_FLI_ALLOCATED_PID )
                   != IDE_SUCCESS );
@@ -2292,8 +2306,8 @@ IDE_RC smmManager::allocFreePageMemoryList( smmTBSNode * aTBSNode,
 
         sPrevPID = sPID ;
 
-        // sPID ê°€ aTailPIDì¼ ë•Œ,
-        // ì—¬ê¸°ì—ì„œ sPIDê°€ SM_NULL_PID ë¡œ ì„¤ì •ë˜ì–´ loop ì¢…ë£Œ
+        // sPID °¡ aTailPIDÀÏ ¶§,
+        // ¿©±â¿¡¼­ sPID°¡ SM_NULL_PID ·Î ¼³Á¤µÇ¾î loop Á¾·á
         sPID = sNextPID ;
     }
 
@@ -2309,16 +2323,16 @@ IDE_RC smmManager::allocFreePageMemoryList( smmTBSNode * aTBSNode,
     return IDE_FAILURE;
 }
 
-/* PCHì˜ Pageì†ì˜ Page Headerì˜ Prev/Nextí¬ì¸í„°ë¥¼ ê¸°ë°˜ìœ¼ë¡œ
- * FLI Pageì— Next Free Page IDë¥¼ ì„¤ì •í•œë‹¤.
+/* PCHÀÇ Page¼ÓÀÇ Page HeaderÀÇ Prev/NextÆ÷ÀÎÅÍ¸¦ ±â¹İÀ¸·Î
+ * FLI Page¿¡ Next Free Page ID¸¦ ¼³Á¤ÇÑ´Ù.
  *
- * í…Œì´ë¸”ì— í• ë‹¹ë˜ì—ˆë˜ Pageê°€ Free Pageë¡œ ë°˜ë‚©ë˜ê¸° ì „ì— ì „ì—
- * ë¶ˆë¦¬ìš°ëŠ” ë£¨í‹´ì´ë‹¤.
+ * Å×ÀÌºí¿¡ ÇÒ´çµÇ¾ú´ø Page°¡ Free Page·Î ¹İ³³µÇ±â Àü¿¡ Àü¿¡
+ * ºÒ¸®¿ì´Â ·çÆ¾ÀÌ´Ù.
  *
- * aTrans     [IN] ì—°ê²°í•˜ê³ ì í•˜ëŠ” íŠ¸ëœì­ì…˜
- * aHeadPage  [IN] ì—°ê²°í•˜ê³ ì í•˜ëŠ” ì²«ë²ˆì§¸ Free Page
- * aTailPage  [IN] ì—°ê²°í•˜ê³ ì í•˜ëŠ” ë§ˆì§€ë§‰ Free Page
- * aPageCount [OUT] ì—°ê²°ëœ ì´ í˜ì´ì§€ ìˆ˜
+ * aTrans     [IN] ¿¬°áÇÏ°íÀÚ ÇÏ´Â Æ®·£Àè¼Ç
+ * aHeadPage  [IN] ¿¬°áÇÏ°íÀÚ ÇÏ´Â Ã¹¹øÂ° Free Page
+ * aTailPage  [IN] ¿¬°áÇÏ°íÀÚ ÇÏ´Â ¸¶Áö¸· Free Page
+ * aPageCount [OUT] ¿¬°áµÈ ÃÑ ÆäÀÌÁö ¼ö
  */
 IDE_RC smmManager::linkFreePageList( smmTBSNode * aTBSNode,
                                      void       * aTrans,
@@ -2337,17 +2351,17 @@ IDE_RC smmManager::linkFreePageList( smmTBSNode * aTBSNode,
 
     sPID = smLayerCallback::getPersPageID( aHeadPage );
     sTailPID = smLayerCallback::getPersPageID( aTailPage );
-    // sHeadPageë¶€í„° sTailPageì‚¬ì´ì˜ ëª¨ë“  Pageì— ëŒ€í•´
+    // sHeadPageºÎÅÍ sTailPage»çÀÌÀÇ ¸ğµç Page¿¡ ´ëÇØ
 
     do
     {
-        if ( sPID == sTailPID ) // ë§ˆì§€ë§‰ í˜ì´ì§€ì¸ ê²½ìš°
+        if ( sPID == sTailPID ) // ¸¶Áö¸· ÆäÀÌÁöÀÎ °æ¿ì
         {
             sNextPID = SM_NULL_PID ;
         }
-        else  // ë§ˆì§€ë§‰ í˜ì´ì§€ê°€ ì•„ë‹Œ ê²½ìš°
+        else  // ¸¶Áö¸· ÆäÀÌÁö°¡ ¾Æ´Ñ °æ¿ì
         {
-            // Free List Info Pageì— Next Free Page IDë¥¼ ê¸°ë¡í•œë‹¤.
+            // Free List Info Page¿¡ Next Free Page ID¸¦ ±â·ÏÇÑ´Ù.
             IDE_ASSERT( smmManager::getPersPagePtr( aTBSNode->mTBSAttr.mID, 
                                                     sPID,
                                                     &sPagePtr )
@@ -2355,9 +2369,9 @@ IDE_RC smmManager::linkFreePageList( smmTBSNode * aTBSNode,
             sNextPID = smLayerCallback::getNextPersPageID( sPagePtr );
         }
 
-        // Free List Info Pageì— Next Free Page ID ì„¸íŒ…
+        // Free List Info Page¿¡ Next Free Page ID ¼¼ÆÃ
         IDE_TEST( smmExpandChunk::logAndSetNextFreePage( aTBSNode,
-                                                         aTrans,  // ë¡œê¹…ì‹¤ì‹œ
+                                                         aTrans,  // ·Î±ë½Ç½Ã
                                                          sPID,
                                                          sNextPID )
                   != IDE_SUCCESS );
@@ -2379,15 +2393,15 @@ IDE_RC smmManager::linkFreePageList( smmTBSNode * aTBSNode,
 }
 
 
-/* PCHì˜ Pageì†ì˜ Page Headerì˜ Prev/Nextí¬ì¸í„°ë¥¼ ê¸°ë°˜ìœ¼ë¡œ
- * PCH ì˜ Page ë©”ëª¨ë¦¬ë¥¼ ë°˜ë‚©í•œë‹¤.
+/* PCHÀÇ Page¼ÓÀÇ Page HeaderÀÇ Prev/NextÆ÷ÀÎÅÍ¸¦ ±â¹İÀ¸·Î
+ * PCH ÀÇ Page ¸Ş¸ğ¸®¸¦ ¹İ³³ÇÑ´Ù.
  *
- * í…Œì´ë¸”ì— í• ë‹¹ë˜ì—ˆë˜ Pageê°€ Free Pageë¡œ ë°˜ë‚©ëœ í›„ì—
- * ë¶ˆë¦¬ìš°ëŠ” ë£¨í‹´ìœ¼ë¡œ, Pageë“¤ì˜ PCHë° Page ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤.
+ * Å×ÀÌºí¿¡ ÇÒ´çµÇ¾ú´ø Page°¡ Free Page·Î ¹İ³³µÈ ÈÄ¿¡
+ * ºÒ¸®¿ì´Â ·çÆ¾À¸·Î, PageµéÀÇ PCH¹× Page ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÑ´Ù.
  *
- * aHeadPage  [IN] ì—°ê²°í•˜ê³ ì í•˜ëŠ” ì²«ë²ˆì§¸ Free Page
- * aTailPage  [IN] ì—°ê²°í•˜ê³ ì í•˜ëŠ” ë§ˆì§€ë§‰ Free Page
- * aPageCount [OUT] ì—°ê²°ëœ ì´ í˜ì´ì§€ ìˆ˜
+ * aHeadPage  [IN] ¿¬°áÇÏ°íÀÚ ÇÏ´Â Ã¹¹øÂ° Free Page
+ * aTailPage  [IN] ¿¬°áÇÏ°íÀÚ ÇÏ´Â ¸¶Áö¸· Free Page
+ * aPageCount [OUT] ¿¬°áµÈ ÃÑ ÆäÀÌÁö ¼ö
  */
 IDE_RC smmManager::freeFreePageMemoryList( smmTBSNode * aTBSNode,
                                            void       * aHeadPage,
@@ -2404,17 +2418,17 @@ IDE_RC smmManager::freeFreePageMemoryList( smmTBSNode * aTBSNode,
 
     sPID = smLayerCallback::getPersPageID( aHeadPage );
     sTailPID = smLayerCallback::getPersPageID( aTailPage );
-    // sHeadPageë¶€í„° sTailPageì‚¬ì´ì˜ ëª¨ë“  Pageì— ëŒ€í•´
+    // sHeadPageºÎÅÍ sTailPage»çÀÌÀÇ ¸ğµç Page¿¡ ´ëÇØ
 
     do
     {
-        if ( sPID == sTailPID ) // ë§ˆì§€ë§‰ í˜ì´ì§€ì¸ ê²½ìš°
+        if ( sPID == sTailPID ) // ¸¶Áö¸· ÆäÀÌÁöÀÎ °æ¿ì
         {
             sNextPID = SM_NULL_PID ;
         }
-        else  // ë§ˆì§€ë§‰ í˜ì´ì§€ê°€ ì•„ë‹Œ ê²½ìš°
+        else  // ¸¶Áö¸· ÆäÀÌÁö°¡ ¾Æ´Ñ °æ¿ì
         {
-            // Free List Info Pageì— Next Free Page IDë¥¼ ê¸°ë¡í•œë‹¤.
+            // Free List Info Page¿¡ Next Free Page ID¸¦ ±â·ÏÇÑ´Ù.
             IDE_ASSERT( smmManager::getPersPagePtr( aTBSNode->mTBSAttr.mID, 
                                                     sPID,
                                                     &sPagePtr )
@@ -2443,28 +2457,29 @@ IDE_RC smmManager::freeFreePageMemoryList( smmTBSNode * aTBSNode,
 
 
 
-/** DBë¡œë¶€í„° Pageë¥¼ ì—¬ëŸ¬ê°œ í• ë‹¹ë°›ëŠ”ë‹¤.
+/** DB·ÎºÎÅÍ Page¸¦ ¿©·¯°³ ÇÒ´ç¹Ş´Â´Ù.
  *
- * ì—¬ëŸ¬ê°œì˜ Pageë¥¼ ë™ì‹œì— í• ë‹¹ë°›ìœ¼ë©´ DB Pageí• ë‹¹ íšŸìˆ˜ë¥¼ ì¤„ì¼ ìˆ˜ ìˆìœ¼ë©°,
- * ì´ë¥¼ í†µí•´ DB Free Page List ë¡œì˜ ë™ì‹œì„±ì„ í–¥ìƒì‹œí‚¬ ìˆ˜ ìˆë‹¤.
+ * ¿©·¯°³ÀÇ Page¸¦ µ¿½Ã¿¡ ÇÒ´ç¹ŞÀ¸¸é DB PageÇÒ´ç È½¼ö¸¦ ÁÙÀÏ ¼ö ÀÖÀ¸¸ç,
+ * ÀÌ¸¦ ÅëÇØ DB Free Page List ·ÎÀÇ µ¿½Ã¼ºÀ» Çâ»ó½ÃÅ³ ¼ö ÀÖ´Ù.
  *
- * ì—¬ëŸ¬ Pageë“¤ì„ ì„œë¡œ ì—°ê²°í•˜ê¸° ìœ„í•´ aHeadPageë¶€í„° aTailPageê¹Œì§€
- * Page Headerì˜ Prev/Nextí¬ì¸í„°ë¡œ ì—°ê²°í•´ì¤€ë‹¤.
+ * ¿©·¯ PageµéÀ» ¼­·Î ¿¬°áÇÏ±â À§ÇØ aHeadPageºÎÅÍ aTailPage±îÁö
+ * Page HeaderÀÇ Prev/NextÆ÷ÀÎÅÍ·Î ¿¬°áÇØÁØ´Ù.
  *
- * ì£¼ì˜ ! ì´ í•¨ìˆ˜ì—ì„œ NTAë¡œê·¸ ì°ì€ í›„ ì‹¤íŒ¨í•˜ë©´, Logical Undoë˜ì–´
- * freePersPageListê°€ í˜¸ì¶œëœë‹¤. ê·¸ëŸ¬ë¯€ë¡œ aHeadPageë¶€í„° aTailPageê¹Œì§€
- * Page ë©”ëª¨ë¦¬ì•ˆì˜ Next ë§í¬ê°€ ê¹¨ì ¸ì„œëŠ” ì•ˆëœë‹¤.
+ * ÁÖÀÇ ! ÀÌ ÇÔ¼ö¿¡¼­ NTA·Î±× ÂïÀº ÈÄ ½ÇÆĞÇÏ¸é, Logical UndoµÇ¾î
+ * freePersPageList°¡ È£ÃâµÈ´Ù. ±×·¯¹Ç·Î aHeadPageºÎÅÍ aTailPage±îÁö
+ * Page ¸Ş¸ğ¸®¾ÈÀÇ Next ¸µÅ©°¡ ±úÁ®¼­´Â ¾ÈµÈ´Ù.
  *
- * aTrans     [IN] í˜ì´ì§€ë¥¼ í• ë‹¹ë°›ì„ íŠ¸ëœì­ì…˜ ê°ì²´
- * aPageCount [IN] í• ë‹¹ë°›ì„ í˜ì´ì§€ì˜ ìˆ˜
- * aHeadPage  [OUT] í• ë‹¹ë°›ì€ í˜ì´ì§€ ì¤‘ ì²«ë²ˆì§¸ í˜ì´ì§€
- * aTailPage  [OUT] í• ë‹¹ë°›ì€ í˜ì´ì§€ ì¤‘ ë§ˆì§€ë§‰ í˜ì´ì§€
+ * aTrans     [IN] ÆäÀÌÁö¸¦ ÇÒ´ç¹ŞÀ» Æ®·£Àè¼Ç °´Ã¼
+ * aPageCount [IN] ÇÒ´ç¹ŞÀ» ÆäÀÌÁöÀÇ ¼ö
+ * aHeadPage  [OUT] ÇÒ´ç¹ŞÀº ÆäÀÌÁö Áß Ã¹¹øÂ° ÆäÀÌÁö
+ * aTailPage  [OUT] ÇÒ´ç¹ŞÀº ÆäÀÌÁö Áß ¸¶Áö¸· ÆäÀÌÁö
  */
 IDE_RC smmManager::allocatePersPageList (void      *  aTrans,
                                          scSpaceID    aSpaceID,
                                          UInt         aPageCount,
                                          void     **  aHeadPage,
-                                         void     **  aTailPage)
+                                         void     **  aTailPage,
+                                         UInt      *  aAllocPageCnt )
 {
 
     scPageID  sHeadPID = SM_NULL_PID;
@@ -2473,7 +2488,10 @@ IDE_RC smmManager::allocatePersPageList (void      *  aTrans,
     smLSN     sNTALSN ;
     UInt      sPageListID;
     UInt      sStage = 0;
+    UInt      sState = 0;
     smmTBSNode * sTBSNode;
+    UInt      sPageCount = 0;
+    UInt      sTotalPageCount = 0;
 
     IDE_DASSERT( aTrans != NULL );
     IDE_DASSERT( aPageCount != 0 );
@@ -2486,37 +2504,70 @@ IDE_RC smmManager::allocatePersPageList (void      *  aTrans,
 
     sNTALSN = smLayerCallback::getLstUndoNxtLSN( aTrans );
 
-    // ì—¬ëŸ¬ê°œì˜ Free Page Listì¤‘ í•˜ë‚˜ë¥¼ ì„ íƒí•œë‹¤.
+    // ¿©·¯°³ÀÇ Free Page ListÁß ÇÏ³ª¸¦ ¼±ÅÃÇÑ´Ù.
     smLayerCallback::allocRSGroupID( aTrans, &sPageListID );
 
-    // sPageListIDì— í•´ë‹¹í•˜ëŠ” Free Page Listì— ìµœì†Œí•œ aPageCountê°œì˜
-    // Free Pageê°€ ì¡´ì¬í•¨ì„ ë³´ì¥í•˜ë©´ì„œ latchë¥¼ íšë“í•œë‹¤.
+    if( aPageCount != 1 )
+    {
+        /* BUG-46861 TABLE_ALLOC_PAGE_COUNT ÇÁ·ÎÆÛÆ¼¸¦ »ç¿ëÇØ ´Ù¼öÀÇ ÆäÀÌÁö¸¦ ÇÒ´çÇÒ °æ¿ì ´Ù¼öÀÇ ÆäÀÌÁö ÇÒ´çÀ¸·Î
+           ÇÒ´çµÈ ÆäÀÌÁö°¡ MEM_MAX_DB_SIZE¸¦ ³Ñ¾î¼­Áö ¾Êµµ·Ï ÁÖÀÇÇØ¾ß ÇÑ´Ù.
+           ¶ÇÇÑ, TBS lockÀ» ÀâÁö ¾Ê°í ÇöÀç »ç¿ëÁßÀÎ DBÀÇ Å©±â¸¦ Ã¼Å©ÇÏ±â ¶§¹®¿¡
+           ÇöÀç »ç¿ëÁßÀÎ °ø°£+»õ·Î ÇÒ´çÇÑ °ø°£ÀÌ ÃÖ´ë »ç¿ë °¡´É °ø°£¿¡ µµ´ŞÇÏÁö ¾Ê¾Æµµ
+           ±×¿¡ ±ÙÁ¢ÇÒ °æ¿ì(1°³ ChunkÀÌÇÏÀÇ °ø°£ÀÌ Â÷ÀÌ³¯ °æ¿ì)¿¡´Â ±âÁ¸Ã³·³ 1°³¾¿ ÇÒ´çÇÑ´Ù. */
+
+        IDE_TEST( smmFPLManager::lockGlobalPageCountCheckMutex() != IDE_SUCCESS );
+        sState = 1;
+
+        IDE_TEST( smmFPLManager::getTotalPageCount4AllTBS( & sTotalPageCount ) != IDE_SUCCESS );
+
+        sState = 0;
+        IDE_TEST( smmFPLManager::unlockGlobalPageCountCheckMutex() != IDE_SUCCESS );
+
+        if( ( smiGetStartupPhase() == SMI_STARTUP_SERVICE ) &&
+                ( ( sTotalPageCount + aPageCount ) < 
+                  ( ( smuProperty::getMaxDBSize() / SM_PAGE_SIZE ) - sTBSNode->mMemBase->mExpandChunkPageCnt ) ) )
+        {
+            sPageCount = aPageCount;
+        }
+        else
+        {
+            /* ÇÒ´çÇÑ °ø°£+ÇÒ´çÇÒ °ø°£ÀÌ MEM_MAX_DB_SIZE¿¡ ±ÙÁ¢ÇÏ°Å³ª ¼­¹ö ½ÃÀÛ Áß¿¡´Â ±âÁ¸Ã³·³ ÇÏ³ª¸¸ ÇÒ´çÇÑ´Ù. */
+            sPageCount = 1;
+        }
+    }
+    else
+    {
+        sPageCount = 1;
+    }
+
+    // sPageListID¿¡ ÇØ´çÇÏ´Â Free Page List¿¡ ÃÖ¼ÒÇÑ aPageCount°³ÀÇ
+    // Free Page°¡ Á¸ÀçÇÔÀ» º¸ÀåÇÏ¸é¼­ latch¸¦ È¹µæÇÑ´Ù.
     //
-    // aPageCountë§Œí¼ Free Page Listì— ìˆìŒì„ ë³´ì¥í•˜ê¸° ìœ„í•´ì„œ
+    // aPageCount¸¸Å­ Free Page List¿¡ ÀÖÀ½À» º¸ÀåÇÏ±â À§ÇØ¼­
     //
-    // 1. Free Page Listê°„ì— Free Pageë“¤ì„ ì´ë™ì‹œí‚¬ ìˆ˜ ìˆë‹¤. => Physical ë¡œê¹…
-    // 2. Expand Chunkë¥¼ í• ë‹¹í•  ìˆ˜ ìˆë‹¤.
-    //     => Chunkí• ë‹¹ì„ Logical ë¡œê¹….
-    //       -> Recoveryì‹œ smmManager::allocNewExpandChunkí˜¸ì¶œí•˜ì—¬ Logical Redo
+    // 1. Free Page List°£¿¡ Free PageµéÀ» ÀÌµ¿½ÃÅ³ ¼ö ÀÖ´Ù. => Physical ·Î±ë
+    // 2. Expand Chunk¸¦ ÇÒ´çÇÒ ¼ö ÀÖ´Ù.
+    //     => ChunkÇÒ´çÀ» Logical ·Î±ë.
+    //       -> Recovery½Ã smmManager::allocNewExpandChunkÈ£ÃâÇÏ¿© Logical Redo
     IDE_TEST( smmFPLManager::lockListAndPreparePages( sTBSNode,
                                                       aTrans,
                                                       (smmFPLNo)sPageListID,
-                                                      aPageCount )
+                                                      sPageCount )
               != IDE_SUCCESS );
     sStage = 1;
 
-    // íŠ¸ëœì­ì…˜ì´ ì‚¬ìš©í•˜ëŠ” Free Page Listì—ì„œ Free Pageë“¤ì„ ë–¼ì–´ë‚¸ë‹¤.
-    // DB Free Page Listì— ëŒ€í•œ ë¡œê¹…ì´ ì—¬ê¸°ì—ì„œ ì´ë£¨ì–´ì§„ë‹¤.
+    // Æ®·£Àè¼ÇÀÌ »ç¿ëÇÏ´Â Free Page List¿¡¼­ Free PageµéÀ» ¶¼¾î³½´Ù.
+    // DB Free Page List¿¡ ´ëÇÑ ·Î±ëÀÌ ¿©±â¿¡¼­ ÀÌ·ç¾îÁø´Ù.
     IDE_TEST( smmFPLManager::removeFreePagesFromList( sTBSNode,
                                                       aTrans,
                                                       (smmFPLNo)sPageListID,
-                                                      aPageCount,
+                                                      sPageCount,
                                                       & sHeadPID,
                                                       & sTailPID )
               != IDE_SUCCESS );
 
-    // Headë¶€í„° Tailê¹Œì§€ ëª¨ë“  Pageì— ëŒ€í•´
-    // Page Headerì˜ Prev/Next ë§í¬ë¥¼ ì„œë¡œ ì—°ê²°ì‹œí‚¨ë‹¤.
+    // HeadºÎÅÍ Tail±îÁö ¸ğµç Page¿¡ ´ëÇØ
+    // Page HeaderÀÇ Prev/Next ¸µÅ©¸¦ ¼­·Î ¿¬°á½ÃÅ²´Ù.
     IDE_TEST( allocFreePageMemoryList ( sTBSNode,
                                         aTrans,
                                         sHeadPID,
@@ -2524,7 +2575,7 @@ IDE_RC smmManager::allocatePersPageList (void      *  aTrans,
                                         & sLinkedPageCount )
               != IDE_SUCCESS );
 
-    IDE_ASSERT( sLinkedPageCount == aPageCount );
+    IDE_ASSERT( sLinkedPageCount == sPageCount );
 
     IDE_ASSERT( smmManager::getPersPagePtr( sTBSNode->mTBSAttr.mID, 
                                             sHeadPID,
@@ -2546,13 +2597,13 @@ IDE_RC smmManager::allocatePersPageList (void      *  aTrans,
 
 
 
-    // í˜ì´ì§€ë¥¼ í• ë‹¹ë°›ì€ Free Page Listì˜ Latchë¥¼ í’€ì–´ì¤€ë‹¤.
+    // ÆäÀÌÁö¸¦ ÇÒ´ç¹ŞÀº Free Page ListÀÇ Latch¸¦ Ç®¾îÁØ´Ù.
     sStage = 0;
     IDE_TEST( smmFPLManager::unlockFreePageList( sTBSNode,
                                                  (smmFPLNo)sPageListID )
               != IDE_SUCCESS );
 
-
+    *aAllocPageCnt = sPageCount;
 
     return IDE_SUCCESS;
 
@@ -2563,7 +2614,7 @@ IDE_RC smmManager::allocatePersPageList (void      *  aTrans,
     switch( sStage )
     {
         case 1:
-            // Fatal ì˜¤ë¥˜ê°€ ì•„ë‹ˆë¼ë©´, NTA ë¡ë°±
+            // Fatal ¿À·ù°¡ ¾Æ´Ï¶ó¸é, NTA ·Ï¹é
             IDE_ASSERT( smLayerCallback::undoTrans( NULL, /* idvSQL* */
                                                     aTrans,
                                                     &sNTALSN )
@@ -2577,6 +2628,17 @@ IDE_RC smmManager::allocatePersPageList (void      *  aTrans,
             break;
     }
 
+    switch( sState )
+    {
+        case 1:
+            IDE_ASSERT( smmFPLManager::unlockGlobalPageCountCheckMutex()
+                        == IDE_SUCCESS );
+            break;
+
+        default:
+            break;
+    }
+
     IDE_POP();
 
 
@@ -2585,17 +2647,17 @@ IDE_RC smmManager::allocatePersPageList (void      *  aTrans,
 
 
 /*
- * ì—¬ëŸ¬ê°œì˜ Pageë¥¼ í•œêº¼ë²ˆì— ë°ì´í„°ë² ì´ìŠ¤ë¡œ ë°˜ë‚©í•œë‹¤.
+ * ¿©·¯°³ÀÇ Page¸¦ ÇÑ²¨¹ø¿¡ µ¥ÀÌÅÍº£ÀÌ½º·Î ¹İ³³ÇÑ´Ù.
  *
- * aHeadPageë¶€í„° aTailPageê¹Œì§€
- * Page Headerì˜ Prev/Nextí¬ì¸í„°ë¡œ ì—°ê²°ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
+ * aHeadPageºÎÅÍ aTailPage±îÁö
+ * Page HeaderÀÇ Prev/NextÆ÷ÀÎÅÍ·Î ¿¬°áµÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
  *
- * í˜„ì¬ Free Pageìˆ˜ê°€ ê°€ì¥ ì‘ì€ Free Page List ì— Pageë¥¼ Free í•œë‹¤.
+ * ÇöÀç Free Page¼ö°¡ °¡Àå ÀÛÀº Free Page List ¿¡ Page¸¦ Free ÇÑ´Ù.
  *
- * aTrans    [IN] Pageë¥¼ ë°˜ë‚©í•˜ë ¤ëŠ” íŠ¸ëœì­ì…˜
- * aHeadPage [IN] ë°˜ë‚©í•  ì²«ë²ˆì§¸ Page
- * aHeadPage [IN] ë°˜ë‚©í•  ë§ˆì§€ë§‰ Page
- * aNTALSN   [IN] NTAë¡œê·¸ë¥¼ ì°ì„ ë•Œ ê¸°ë¡í•  NTAì‹œì‘ LSN
+ * aTrans    [IN] Page¸¦ ¹İ³³ÇÏ·Á´Â Æ®·£Àè¼Ç
+ * aHeadPage [IN] ¹İ³³ÇÒ Ã¹¹øÂ° Page
+ * aHeadPage [IN] ¹İ³³ÇÒ ¸¶Áö¸· Page
+ * aNTALSN   [IN] NTA·Î±×¸¦ ÂïÀ» ¶§ ±â·ÏÇÒ NTA½ÃÀÛ LSN
  *
  */
 IDE_RC smmManager::freePersPageList (void       * aTrans,
@@ -2625,7 +2687,7 @@ IDE_RC smmManager::freePersPageList (void       * aTrans,
     sHeadPID = smLayerCallback::getPersPageID( aHeadPage );
     sTailPID = smLayerCallback::getPersPageID( aTailPage );
 
-    // Free List Info Pageì•ˆì— Free Pageë“¤ì˜ Linkë¥¼ ê¸°ë¡í•œë‹¤.
+    // Free List Info Page¾È¿¡ Free PageµéÀÇ Link¸¦ ±â·ÏÇÑ´Ù.
     IDE_TEST( linkFreePageList( sTBSNode,
                                 aTrans,
                                 aHeadPage,
@@ -2633,20 +2695,20 @@ IDE_RC smmManager::freePersPageList (void       * aTrans,
                                 & sLinkedPageCount )
               != IDE_SUCCESS );
 
-    // Free Pageë¥¼ ë°˜ë‚©í•œë‹¤.
-    // ì´ë ‡ê²Œ í•´ë„ allocFreePageì—ì„œ Pageê°€ì¥ ë§ì€ Free Page Listì—ì„œ
-    // ì ˆë°˜ì„ ë–¼ì–´ì˜¤ëŠ” ë£¨í‹´ë•Œë¬¸ì— Free Page Listê°„ì˜ ë°¸ëŸ°ì‹±ì´ ëœë‹¤.
+    // Free Page¸¦ ¹İ³³ÇÑ´Ù.
+    // ÀÌ·¸°Ô ÇØµµ allocFreePage¿¡¼­ Page°¡Àå ¸¹Àº Free Page List¿¡¼­
+    // Àı¹İÀ» ¶¼¾î¿À´Â ·çÆ¾¶§¹®¿¡ Free Page List°£ÀÇ ¹ë·±½ÌÀÌ µÈ´Ù.
 
-    // ì—¬ëŸ¬ê°œì˜ Free Page Listì¤‘ í•˜ë‚˜ë¥¼ ì„ íƒí•œë‹¤.
+    // ¿©·¯°³ÀÇ Free Page ListÁß ÇÏ³ª¸¦ ¼±ÅÃÇÑ´Ù.
     smLayerCallback::allocRSGroupID( aTrans, &sPageListID );
 
-    // Pageë¥¼ ë°˜ë‚©í•  Free Page Listì— Latchíšë“
+    // Page¸¦ ¹İ³³ÇÒ Free Page List¿¡ LatchÈ¹µæ
     IDE_TEST( smmFPLManager::lockFreePageList(sTBSNode, (smmFPLNo)sPageListID)
               != IDE_SUCCESS );
     sStage = 1;
 
-    // Free Page List ì— Pageë¥¼ ë°˜ë‚©í•œë‹¤.
-    // DB Free Page Listì— ëŒ€í•œ ë¡œê¹…ì´ ë°œìƒí•œë‹¤.
+    // Free Page List ¿¡ Page¸¦ ¹İ³³ÇÑ´Ù.
+    // DB Free Page List¿¡ ´ëÇÑ ·Î±ëÀÌ ¹ß»ıÇÑ´Ù.
     IDE_TEST( smmFPLManager::appendFreePagesToList(
                                    sTBSNode,
                                    aTrans,
@@ -2667,16 +2729,16 @@ IDE_RC smmManager::freePersPageList (void       * aTrans,
 
     sIsInNTA = ID_FALSE;
 
-    // Page Memory Freeë¥¼ NTA ì¢…ë£Œë˜ê³  ì²˜ë¦¬í•˜ë„ë¡ í•œë‹¤
+    // Page Memory Free¸¦ NTA Á¾·áµÇ°í Ã³¸®ÇÏµµ·Ï ÇÑ´Ù
     //
-    // ì™œëƒí•˜ë©´, Page Memory Freeí•´ë²„ë¦¬ê³  ë‚˜ì„œ NTAì‹¤íŒ¨í•˜ë©´
-    // Pageë©”ëª¨ë¦¬ ë‹¤ì‹œ í• ë‹¹ë°›ì•„ DBíŒŒì¼ì—ì„œ ë¡œë”©í•´ì•¼ í•˜ëŠ”ë°,
-    // ê·¸ ì‘ì—…ì´ ë§Œë§Œì¹˜ ì•Šê¸° ë•Œë¬¸ì´ë‹¤.
+    // ¿Ö³ÄÇÏ¸é, Page Memory FreeÇØ¹ö¸®°í ³ª¼­ NTA½ÇÆĞÇÏ¸é
+    // Page¸Ş¸ğ¸® ´Ù½Ã ÇÒ´ç¹Ş¾Æ DBÆÄÀÏ¿¡¼­ ·ÎµùÇØ¾ß ÇÏ´Âµ¥,
+    // ±× ÀÛ¾÷ÀÌ ¸¸¸¸Ä¡ ¾Ê±â ¶§¹®ÀÌ´Ù.
     if ( smLayerCallback::isRestartRecoveryPhase() == ID_FALSE )
     {
-        // Restart Recoveryì¤‘ì´ ì•„ë‹ë•Œì—ë§Œ í˜ì´ì§€ ë©”ëª¨ë¦¬ë¥¼ freeí•œë‹¤.
-        // Restart Recoveryì¤‘ì—ëŠ” freeëœ í˜ì´ì§€ ë©”ëª¨ë¦¬ì— ëŒ€í•œ
-        // Redo/Undoë¥¼ í•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤.
+        // Restart RecoveryÁßÀÌ ¾Æ´Ò¶§¿¡¸¸ ÆäÀÌÁö ¸Ş¸ğ¸®¸¦ freeÇÑ´Ù.
+        // Restart RecoveryÁß¿¡´Â freeµÈ ÆäÀÌÁö ¸Ş¸ğ¸®¿¡ ´ëÇÑ
+        // Redo/Undo¸¦ ÇÒ ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù.
 
         IDE_TEST( freeFreePageMemoryList( sTBSNode,
                                           aHeadPage,
@@ -2687,11 +2749,11 @@ IDE_RC smmManager::freePersPageList (void       * aTrans,
         IDE_ASSERT( sFreePageCount == sLinkedPageCount );
     }
 
-    // ì£¼ì˜! Page ë°˜ë‚© ì—°ì‚° Loggingì„ í•˜ê³ 
-    // Page Freeë¥¼ í•˜ê¸° ë•Œë¬¸ì— Flushë¥¼ í•  í•„ìš”ê°€ ì—†ë‹¤.
+    // ÁÖÀÇ! Page ¹İ³³ ¿¬»ê LoggingÀ» ÇÏ°í
+    // Page Free¸¦ ÇÏ±â ¶§¹®¿¡ Flush¸¦ ÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
 
     sStage = 0;
-    // Free Page Listì—ì„œ Latchí‘¼ë‹¤
+    // Free Page List¿¡¼­ LatchÇ¬´Ù
     IDE_TEST( smmFPLManager::unlockFreePageList( sTBSNode,
                                                  (smmFPLNo)sPageListID )
               != IDE_SUCCESS );
@@ -2706,7 +2768,7 @@ IDE_RC smmManager::freePersPageList (void       * aTrans,
     if ( sIsInNTA == ID_TRUE )
     {
         sIsInNTA = ID_FALSE;
-        // NTAì•ˆì—ì„œ ì—ëŸ¬ê°€ ë°œìƒí–ˆë‹¤ë©´ ì´ìœ  ë¶ˆë¬¸í•˜ê³ , NTA ë¡¤ë°±
+        // NTA¾È¿¡¼­ ¿¡·¯°¡ ¹ß»ıÇß´Ù¸é ÀÌÀ¯ ºÒ¹®ÇÏ°í, NTA ·Ñ¹é
         IDE_ASSERT( smLayerCallback::undoTrans( NULL, /* idvSQL* */
                                                 aTrans,
                                                 aNTALSN )
@@ -2739,7 +2801,7 @@ IDE_RC smmManager::freePersPageList (void       * aTrans,
  * -------------------------------------------------------------------------*/
 
 /*
- * íŠ¹ì • Pageì— Së˜ì¹˜ë¥¼ íšë“í•œë‹¤. ( í˜„ì¬ëŠ” Xë˜ì¹˜ë¡œ êµ¬í˜„ë˜ì–´ ìˆë‹¤ )
+ * Æ¯Á¤ Page¿¡ S·¡Ä¡¸¦ È¹µæÇÑ´Ù. ( ÇöÀç´Â X·¡Ä¡·Î ±¸ÇöµÇ¾î ÀÖ´Ù )
  */
 IDE_RC
 smmManager::holdPageSLatch(scSpaceID aSpaceID,
@@ -2748,7 +2810,6 @@ smmManager::holdPageSLatch(scSpaceID aSpaceID,
     smmPCH            * sPCH ;
     smpPersPageHeader * sMemPagePtr;
 
-    IDE_DASSERT( isValidSpaceID( aSpaceID ) == ID_TRUE );
     IDE_DASSERT( isValidPageID( aSpaceID, aPageID ) == ID_TRUE );
 
     IDE_TEST( smmManager::getPersPagePtr( aSpaceID,
@@ -2786,7 +2847,7 @@ smmManager::holdPageSLatch(scSpaceID aSpaceID,
 }
 
 /*
- * íŠ¹ì • Pageì— Xë˜ì¹˜ë¥¼ íšë“í•œë‹¤.
+ * Æ¯Á¤ Page¿¡ X·¡Ä¡¸¦ È¹µæÇÑ´Ù.
  */
 IDE_RC
 smmManager::holdPageXLatch(scSpaceID aSpaceID,
@@ -2794,7 +2855,6 @@ smmManager::holdPageXLatch(scSpaceID aSpaceID,
 {
     smmPCH * sPCH;
 
-    IDE_DASSERT( isValidSpaceID( aSpaceID ) == ID_TRUE );
     IDE_DASSERT( isValidPageID( aSpaceID, aPageID ) == ID_TRUE );
 
     sPCH = getPCH( aSpaceID, aPageID );
@@ -2804,7 +2864,7 @@ smmManager::holdPageXLatch(scSpaceID aSpaceID,
     /* BUG-31569 [sm-mem-page] When executing full scan, hold page X Latch
      * in MMDB */
     IDE_TEST( sPCH->mPageMemLatch.lockWrite( NULL,/* idvSQL* */
-                                   NULL ) /* sWeArgs*/
+                                             NULL ) /* sWeArgs*/
               != IDE_SUCCESS );
 
 
@@ -2817,7 +2877,7 @@ smmManager::holdPageXLatch(scSpaceID aSpaceID,
 }
 
 /*
- * íŠ¹ì • Pageì—ì„œ ë˜ì¹˜ë¥¼ í’€ì–´ì¤€ë‹¤.
+ * Æ¯Á¤ Page¿¡¼­ ·¡Ä¡¸¦ Ç®¾îÁØ´Ù.
  */
 IDE_RC
 smmManager::releasePageLatch(scSpaceID aSpaceID,
@@ -2825,7 +2885,6 @@ smmManager::releasePageLatch(scSpaceID aSpaceID,
 {
     smmPCH * sPCH;
 
-    IDE_DASSERT( isValidSpaceID( aSpaceID ) == ID_TRUE );
     IDE_DASSERT( isValidPageID( aSpaceID, aPageID ) == ID_TRUE );
 
     sPCH = getPCH( aSpaceID, aPageID );
@@ -2845,20 +2904,31 @@ smmManager::releasePageLatch(scSpaceID aSpaceID,
 }
 
 /*
-    ì¼ë°˜ ë©”ëª¨ë¦¬ Page Poolì„ ì´ˆê¸°í™”í•œë‹¤.
+    ÀÏ¹İ ¸Ş¸ğ¸® Page PoolÀ» ÃÊ±âÈ­ÇÑ´Ù.
 
-    [IN] aTBSNode - Page Poolì„ ì´ˆê¸°í™”í•  í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤
+    [IN] aTBSNode - Page PoolÀ» ÃÊ±âÈ­ÇÒ Å×ÀÌºí ½ºÆäÀÌ½º
 */
 IDE_RC smmManager::initializeDynMemPool(smmTBSNode * aTBSNode)
 {
-    /* BUG-16885: Stroage_Memory_Managerì˜ì—­ì˜ ë©”ëª¨ë¦¬ê°€ ë¹„ì •ìƒì ìœ¼ë¡œ
-     * ì»¤ì§€ëŠ” ê²½ìš°ê°€ ë°œìƒ
-     * Free Page Listê°€ ì—¬ëŸ¬ê°œì´ë‹¤ ë³´ë‹ˆ ë‹¤ë¥¸ ë¦¬ìŠ¤íŠ¸ì— 100Mì˜ Free Page
-     * ê°€ ìˆë”ë¼ë„ ìì‹ ì´ ì ‘ê·¼í•˜ëŠ” ë¦¬ìŠ¤íŠ¸ì— Memoryê°€ ì—†ìœ¼ë©´ ìƒˆë¡œ ë©”ëª¨ë¦¬
-     * ë¥¼ í• ë‹¹í•˜ì—¬ ë¹„ì •ìƒì ìœ¼ë¡œ ë©”ëª¨ë¦¬ê°€ ì»¤ì§. ê·¸ëŸ°ë° mDynamicMemPagePool
-     * ì— ë³‘ë ¬ë¡œ í• ë‹¹í•˜ëŠ” ê²½ìš°ëŠ” ì—†ê¸°ë•Œë¬¸ì— ë¦¬ìŠ¤íŠ¸ ê°¯ìˆ˜ë¥¼ 1ë¡œ ìˆ˜ì •í•¨.
+    // BUG-47487: FLI ÆäÀÌÁö MemPool ÃÊ±âÈ­
+    IDE_TEST(aTBSNode->mFLIMemPagePool.initialize(
+                IDU_MEM_SM_SMM,
+                (SChar*)"TEMP_MEMORY_POOL",
+                1, /* MemList Count */
+                SM_PAGE_SIZE,
+                smuProperty::getTempPageChunkCount(),
+                0, /* Cache Size */
+                iduProperty::getDirectIOPageSize() /* Align Size */)
+        != IDE_SUCCESS);
+
+    /* BUG-16885: Stroage_Memory_Manager¿µ¿ªÀÇ ¸Ş¸ğ¸®°¡ ºñÁ¤»óÀûÀ¸·Î
+     * Ä¿Áö´Â °æ¿ì°¡ ¹ß»ı
+     * Free Page List°¡ ¿©·¯°³ÀÌ´Ù º¸´Ï ´Ù¸¥ ¸®½ºÆ®¿¡ 100MÀÇ Free Page
+     * °¡ ÀÖ´õ¶óµµ ÀÚ½ÅÀÌ Á¢±ÙÇÏ´Â ¸®½ºÆ®¿¡ Memory°¡ ¾øÀ¸¸é »õ·Î ¸Ş¸ğ¸®
+     * ¸¦ ÇÒ´çÇÏ¿© ºñÁ¤»óÀûÀ¸·Î ¸Ş¸ğ¸®°¡ Ä¿Áü. ±×·±µ¥ mDynamicMemPagePool
+     * ¿¡ º´·Ä·Î ÇÒ´çÇÏ´Â °æ¿ì´Â ¾ø±â¶§¹®¿¡ ¸®½ºÆ® °¹¼ö¸¦ 1·Î ¼öÁ¤ÇÔ.
      *
-     * ì•„ë˜ mIndexMemPoolë„ ë§ˆì°¬ê°€ì§€ ì´ìœ ë¡œ ë¦¬ìŠ¤íŠ¸ ê°¯ìˆ˜ë¥¼ 1ë¡œ ìˆ˜ì •í•¨.
+     * ¾Æ·¡ mIndexMemPoolµµ ¸¶Âù°¡Áö ÀÌÀ¯·Î ¸®½ºÆ® °¹¼ö¸¦ 1·Î ¼öÁ¤ÇÔ.
      */
     IDE_TEST(aTBSNode->mDynamicMemPagePool.initialize(
                  IDU_MEM_SM_SMM,
@@ -2879,22 +2949,22 @@ IDE_RC smmManager::initializeDynMemPool(smmTBSNode * aTBSNode)
 }
 
 /*
-    Tablespaceì—ì„œ ì‚¬ìš©í•  Page ë©”ëª¨ë¦¬ í’€ì„ ì´ˆê¸°í™”í•œë‹¤.
+    Tablespace¿¡¼­ »ç¿ëÇÒ Page ¸Ş¸ğ¸® Ç®À» ÃÊ±âÈ­ÇÑ´Ù.
 
-    ê³µìœ ë©”ëª¨ë¦¬ Keyê°’ ì¡´ì¬ ì—¬ë¶€ì— ë”°ë¼
-    ê³µìœ ë©”ëª¨ë¦¬ í˜¹ì€ ì¼ë°˜ë©”ëª¨ë¦¬ë¥¼ ì‚¬ìš©í•˜ë„ë¡ Page Poolì„ ì´ˆê¸°í™” í•œë‹¤.
+    °øÀ¯¸Ş¸ğ¸® Key°ª Á¸Àç ¿©ºÎ¿¡ µû¶ó
+    °øÀ¯¸Ş¸ğ¸® È¤Àº ÀÏ¹İ¸Ş¸ğ¸®¸¦ »ç¿ëÇÏµµ·Ï Page PoolÀ» ÃÊ±âÈ­ ÇÑ´Ù.
  */
 IDE_RC smmManager::initializePagePool( smmTBSNode * aTBSNode )
 {
 
-    if ( smuProperty::getShmDBKey() != 0) // ê³µìœ ë©”ëª¨ë¦¬ ì‚¬ìš©ì‹œ
+    if ( smuProperty::getShmDBKey() != 0) // °øÀ¯¸Ş¸ğ¸® »ç¿ë½Ã
     {
-        // ê³µìœ ë©”ëª¨ë¦¬ Page Pool ì´ˆê¸°í™”
+        // °øÀ¯¸Ş¸ğ¸® Page Pool ÃÊ±âÈ­
         IDE_TEST( initializeShmMemPool( aTBSNode ) != IDE_SUCCESS );
 
-        // ì²«ë²ˆì§¸ ê³µìœ  ë©”ëª¨ë¦¬ Chunk ìƒì„±
-        // í¬ê¸° : SHM_PAGE_COUNT_PER_KEY í”„ë¡œí¼í‹°ì— ì§€ì •ëœ Pageìˆ˜ë§Œí¼
-        // TBSNodeì— ë§¨ ì²«ë²ˆì§¸ ê³µìœ ë©”ëª¨ë¦¬ Keyê°€ ì„¤ì •ëœë‹¤.
+        // Ã¹¹øÂ° °øÀ¯ ¸Ş¸ğ¸® Chunk »ı¼º
+        // Å©±â : SHM_PAGE_COUNT_PER_KEY ÇÁ·ÎÆÛÆ¼¿¡ ÁöÁ¤µÈ Page¼ö¸¸Å­
+        // TBSNode¿¡ ¸Ç Ã¹¹øÂ° °øÀ¯¸Ş¸ğ¸® Key°¡ ¼³Á¤µÈ´Ù.
         IDE_TEST(smmFixedMemoryMgr::createFirstChunk(
                      aTBSNode,
                      smuProperty::getShmPageCountPerKey() )
@@ -2902,7 +2972,7 @@ IDE_RC smmManager::initializePagePool( smmTBSNode * aTBSNode )
 
         aTBSNode->mRestoreType = SMM_DB_RESTORE_TYPE_SHM_CREATE;
     }
-    else // ì¼ë°˜ë©”ëª¨ë¦¬ ì‚¬ìš©ì‹œ
+    else // ÀÏ¹İ¸Ş¸ğ¸® »ç¿ë½Ã
     {
         IDE_TEST( initializeDynMemPool( aTBSNode ) != IDE_SUCCESS );
 
@@ -2917,74 +2987,76 @@ IDE_RC smmManager::initializePagePool( smmTBSNode * aTBSNode )
 }
 
 /*
-    Tablespaceì— í• ë‹¹ëœ Page Poolì„ íŒŒê´´í•œë‹¤.
+    Tablespace¿¡ ÇÒ´çµÈ Page PoolÀ» ÆÄ±«ÇÑ´Ù.
 
-    [ ì•Œê³ ë¦¬ì¦˜ ]
+    [ ¾Ë°í¸®Áò ]
 
-    if ( ê³µìœ ë©”ëª¨ë¦¬ ì‚¬ìš© )
-       if ( Drop/Offlineëœ Tablespace )
-          (010) ê³µìœ ë©”ëª¨ë¦¬ remove ( ì‹œìŠ¤í…œì—ì„œ ì œê±° )
-       else // Shutdowní•˜ëŠ” ê²½ìš°
-          (020) ê³µìœ ë©”ëª¨ë¦¬ detach
+    if ( °øÀ¯¸Ş¸ğ¸® »ç¿ë )
+       if ( Drop/OfflineµÈ Tablespace )
+          (010) °øÀ¯¸Ş¸ğ¸® remove ( ½Ã½ºÅÛ¿¡¼­ Á¦°Å )
+       else // ShutdownÇÏ´Â °æ¿ì
+          (020) °øÀ¯¸Ş¸ğ¸® detach
        fi
-       (030) ê³µìœ ë©”ëª¨ë¦¬ Page ê´€ë¦¬ì íŒŒê´´
-    else // ì¼ë°˜ ë©”ëª¨ë¦¬ ì‚¬ìš©
-       (040) ì¼ë°˜ë©”ëª¨ë¦¬ Page ê´€ë¦¬ì íŒŒê´´
+       (030) °øÀ¯¸Ş¸ğ¸® Page °ü¸®ÀÚ ÆÄ±«
+    else // ÀÏ¹İ ¸Ş¸ğ¸® »ç¿ë
+       (040) ÀÏ¹İ¸Ş¸ğ¸® Page °ü¸®ÀÚ ÆÄ±«
     fi
 
-    aTBSNode [IN] Page Poolì„ íŒŒê´´í•  í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤
+    aTBSNode [IN] Page PoolÀ» ÆÄ±«ÇÒ Å×ÀÌºí ½ºÆäÀÌ½º
  */
 IDE_RC smmManager::destroyPagePool( smmTBSNode * aTBSNode )
 {
     switch( aTBSNode->mRestoreType )
     {
         case SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET :
-            // PAGEë‹¨ê³„ê¹Œì§€ ì´ˆê¸°í™” í•˜ì˜€ìœ¼ë‚˜,
-            // prepare/restoreë˜ì§€ ì•Šì€ tablespace.
+            // PAGE´Ü°è±îÁö ÃÊ±âÈ­ ÇÏ¿´À¸³ª,
+            // prepare/restoreµÇÁö ¾ÊÀº tablespace.
             //
-            // ì•„ì§ page memory poolì´ ì´ˆê¸°í™”ë˜ì§€ ì•Šì€ ìƒíƒœ.
-            // ì•„ë¬´ê²ƒë„ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // ¾ÆÁ÷ page memory poolÀÌ ÃÊ±âÈ­µÇÁö ¾ÊÀº »óÅÂ.
+            // ¾Æ¹«°Íµµ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
             break;
 
         case SMM_DB_RESTORE_TYPE_SHM_CREATE :
         case SMM_DB_RESTORE_TYPE_SHM_ATTACH :
-            // Drop/Offlineì˜ Pendingìœ¼ë¡œ í˜¸ì¶œëœ ê²½ìš°
-            // í˜¸ì¶œëœ ê²½ìš° ê³µìœ ë©”ëª¨ë¦¬ ìì²´ë¥¼ ì œê±°í•œë‹¤
+            // Drop/OfflineÀÇ PendingÀ¸·Î È£ÃâµÈ °æ¿ì
+            // È£ÃâµÈ °æ¿ì °øÀ¯¸Ş¸ğ¸® ÀÚÃ¼¸¦ Á¦°ÅÇÑ´Ù
             if ( sctTableSpaceMgr::hasState(
                      & aTBSNode->mHeader,
                      SCT_SS_FREE_SHM_PAGE_ON_DESTROY )
                  == ID_TRUE )
             {
                 /////////////////////////////////////////////////
-                // (010) ê³µìœ ë©”ëª¨ë¦¬ remove ( ì‹œìŠ¤í…œì—ì„œ ì œê±° )
+                // (010) °øÀ¯¸Ş¸ğ¸® remove ( ½Ã½ºÅÛ¿¡¼­ Á¦°Å )
                 //
-                // ê³µìœ  ë©”ëª¨ë¦¬ ëª¨ë“œì¸ ê²½ìš° ê³µìœ ë©”ëª¨ë¦¬ì˜ì—­ì„ ì œê±°í•˜ê³ 
-                // ê³µìœ ë©”ëª¨ë¦¬ Keyë¥¼ ì¬ì‚¬ìš© Keyë¡œ ë“±ë¡
+                // °øÀ¯ ¸Ş¸ğ¸® ¸ğµåÀÎ °æ¿ì °øÀ¯¸Ş¸ğ¸®¿µ¿ªÀ» Á¦°ÅÇÏ°í
+                // °øÀ¯¸Ş¸ğ¸® Key¸¦ Àç»ç¿ë Key·Î µî·Ï
                 IDE_TEST( smmFixedMemoryMgr::remove( aTBSNode )
                           != IDE_SUCCESS );
             }
             else
             {
                 /////////////////////////////////////////////////
-                // (020) ê³µìœ ë©”ëª¨ë¦¬ detach
+                // (020) °øÀ¯¸Ş¸ğ¸® detach
                 //
-                // ê³µìœ ë©”ëª¨ë¦¬ Detachì‹¤ì‹œ
+                // °øÀ¯¸Ş¸ğ¸® Detach½Ç½Ã
                 IDE_TEST( smmFixedMemoryMgr::detach( aTBSNode )
                           != IDE_SUCCESS );
             }
 
             /////////////////////////////////////////////////////
-            // (030) ê³µìœ ë©”ëª¨ë¦¬ Page ê´€ë¦¬ì íŒŒê´´
+            // (030) °øÀ¯¸Ş¸ğ¸® Page °ü¸®ÀÚ ÆÄ±«
             //
-            // TBSNodeì—ì„œ ê³µìœ ë©”ëª¨ë¦¬ ê´€ë ¨ ì •ë³´ í•´ì œ
+            // TBSNode¿¡¼­ °øÀ¯¸Ş¸ğ¸® °ü·Ã Á¤º¸ ÇØÁ¦
             IDE_TEST( smmFixedMemoryMgr::destroy( aTBSNode ) != IDE_SUCCESS );
 
             break;
 
         case SMM_DB_RESTORE_TYPE_DYNAMIC :
             ////////////////////////////////////////////////////
-            // (040) ì¼ë°˜ë©”ëª¨ë¦¬ Page ê´€ë¦¬ì íŒŒê´´
+            // (040) ÀÏ¹İ¸Ş¸ğ¸® Page °ü¸®ÀÚ ÆÄ±«
             IDE_TEST(aTBSNode->mDynamicMemPagePool.destroy() != IDE_SUCCESS);
+            // BUG-47487: FLI ÆäÀÌÁö memPool ÆÄ±«
+            IDE_TEST(aTBSNode->mFLIMemPagePool.destroy() != IDE_SUCCESS);
 
             break;
         default :
@@ -3000,7 +3072,7 @@ IDE_RC smmManager::destroyPagePool( smmTBSNode * aTBSNode )
 }
 
 /*
- * smmManager::prepareDBë¥¼ ìœ„í•œ Actioní•¨ìˆ˜
+ * smmManager::prepareDB¸¦ À§ÇÑ ActionÇÔ¼ö
  */
 IDE_RC smmManager::prepareTBSAction( idvSQL            * /*aStatistics*/,
                                      sctTableSpaceNode * aTBSNode,
@@ -3010,22 +3082,22 @@ IDE_RC smmManager::prepareTBSAction( idvSQL            * /*aStatistics*/,
 
     IDE_DASSERT( aTBSNode != NULL );
 
-    // CONTROLë‹¨ê³„ì—ì„œ DROPPEDì¸ TBSëŠ” loganchorë¡œë¶€í„°
-    // ì½ì–´ë“¤ì´ì§€ ì•Šê¸° ë•Œë¬¸ì—
-    // PREPARE/RESTOREì¤‘ì— DROPPEDìƒíƒœì¸ TBSëŠ” ìˆì„ ìˆ˜ ì—†ë‹¤.
+    // CONTROL´Ü°è¿¡¼­ DROPPEDÀÎ TBS´Â loganchor·ÎºÎÅÍ
+    // ÀĞ¾îµéÀÌÁö ¾Ê±â ¶§¹®¿¡
+    // PREPARE/RESTOREÁß¿¡ DROPPED»óÅÂÀÎ TBS´Â ÀÖÀ» ¼ö ¾ø´Ù.
     IDE_ASSERT( ( aTBSNode->mState & SMI_TBS_DROPPED ) != SMI_TBS_DROPPED );
 
-    // Memory Tablespaceì¤‘ DISCARD,OFFLINE Tablespaceë¥¼ ì œì™¸í•˜ê³ 
-    // PREPARE/RESTOREë¥¼ ìˆ˜í–‰í•œë‹¤.
+    // Memory TablespaceÁß DISCARD,OFFLINE Tablespace¸¦ Á¦¿ÜÇÏ°í
+    // PREPARE/RESTORE¸¦ ¼öÇàÇÑ´Ù.
     if(( sctTableSpaceMgr::isMemTableSpace(aTBSNode->mID) == ID_TRUE ) &&
        ( sctTableSpaceMgr::hasState(aTBSNode->mID, SCT_SS_SKIP_PREPARE )
          == ID_FALSE) )
     {
         IDE_DASSERT( ID_SIZEOF(void*) >= ID_SIZEOF(smmPrepareOption) );
 
-        // ë¯¸ë””ì–´ë³µêµ¬ë¥¼ ì§€ì›í•˜ê¸° ìœ„í•´ Startup Control ë‹¨ê³„ì—ì„œ
-        // Memory TableSpace ë…¸ë“œ ì´ˆê¸°í™”ëŠ” Startup Controlë‹¨ê³„ì—ì„œ
-        // LogAnchor ì´ˆê¸°í™” ê³¼ì •ì—ì„œ ì²˜ë¦¬ëœë‹¤.
+        // ¹Ìµğ¾îº¹±¸¸¦ Áö¿øÇÏ±â À§ÇØ Startup Control ´Ü°è¿¡¼­
+        // Memory TableSpace ³ëµå ÃÊ±âÈ­´Â Startup Control´Ü°è¿¡¼­
+        // LogAnchor ÃÊ±âÈ­ °úÁ¤¿¡¼­ Ã³¸®µÈ´Ù.
 
         switch ( (smmPrepareOption)(vULong)aActionArg )
         {
@@ -3037,22 +3109,22 @@ IDE_RC smmManager::prepareTBSAction( idvSQL            * /*aStatistics*/,
                 if ( (isMediaFailureTBS( (smmTBSNode*)aTBSNode ) == ID_TRUE) ||
                      (aTBSNode->mID == SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC) )
                 {
-                    // ë¯¸ë””ì–´ë³µêµ¬ í”Œë˜ê·¸ê°€ ID_TRUEë¡œ ì„¤ì •ëœ ë°ì´íƒ€íŒŒì¼ì´
-                    // ìˆì„ ê²½ìš° Prepareë¥¼ ì§„í–‰í•œë‹¤.
-                    // ë˜í•œ, 0ë²ˆ TBSì˜ ê²½ìš° DicMemBase ë¡œë”©ì„ ìœ„í•´
-                    // ë¬´ì¡°ê±´ í•œë‹¤.
+                    // ¹Ìµğ¾îº¹±¸ ÇÃ·¡±×°¡ ID_TRUE·Î ¼³Á¤µÈ µ¥ÀÌÅ¸ÆÄÀÏÀÌ
+                    // ÀÖÀ» °æ¿ì Prepare¸¦ ÁøÇàÇÑ´Ù.
+                    // ¶ÇÇÑ, 0¹ø TBSÀÇ °æ¿ì DicMemBase ·ÎµùÀ» À§ÇØ
+                    // ¹«Á¶°Ç ÇÑ´Ù.
                     sDoIt = ID_TRUE;
                 }
                 else
                 {
-                   // prepare í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                   // prepare ÇÏÁö ¾Ê´Â´Ù.
                    sDoIt = ID_FALSE;
                 }
                 break;
             }
             default:
             {
-                 // ì„œë²„êµ¬ë™ì‹œ
+                 // ¼­¹ö±¸µ¿½Ã
                 sDoIt = ID_TRUE;
                 break;
             }
@@ -3079,9 +3151,9 @@ IDE_RC smmManager::prepareTBSAction( idvSQL            * /*aStatistics*/,
 
 
 /*
- * ë°ì´í„°ë² ì´ìŠ¤ restore(Disk -> ë©”ëª¨ë¦¬ë¡œ ë¡œë“œ )ë¥¼ ìœ„í•´ ì¤€ë¹„í•œë‹¤.
+ * µ¥ÀÌÅÍº£ÀÌ½º restore(Disk -> ¸Ş¸ğ¸®·Î ·Îµå )¸¦ À§ÇØ ÁØºñÇÑ´Ù.
  *
- * aOp          [IN] Prepare ì˜µì…˜/ì •ë³´
+ * aOp          [IN] Prepare ¿É¼Ç/Á¤º¸
  */
 
 IDE_RC smmManager::prepareDB ( smmPrepareOption aOp )
@@ -3089,7 +3161,7 @@ IDE_RC smmManager::prepareDB ( smmPrepareOption aOp )
 
     IDE_DASSERT( ID_SIZEOF(void*) >= ID_SIZEOF(smmPrepareOption) );
 
-    // ì„œë²„ êµ¬ë™ì‹œ ë˜ëŠ” ë¯¸ë””ì–´ ë³µêµ¬ì‹œ
+    // ¼­¹ö ±¸µ¿½Ã ¶Ç´Â ¹Ìµğ¾î º¹±¸½Ã
     IDE_TEST( sctTableSpaceMgr::doAction4EachTBS( NULL, /* idvSQL* */
                                                   prepareTBSAction,
                                                   (void*) aOp,
@@ -3106,89 +3178,89 @@ IDE_RC smmManager::prepareDB ( smmPrepareOption aOp )
 
 
 /*
-   Tablespace restore(Disk=>Memory)ë¥¼ ìœ„í•œ ì¤€ë¹„ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+   Tablespace restore(Disk=>Memory)¸¦ À§ÇÑ ÁØºñÀÛ¾÷À» ¼öÇàÇÑ´Ù.
 
-   aTBSNode     [IN] ì¤€ë¹„ì‘ì—…ì„ ìˆ˜í–‰í•  Tablespace
-   aTempMemBase [IN] 0ë²ˆ Pageë¥¼ ì½ì–´ë“¤ì¼ Buffer
-                     ì´ í•¨ìˆ˜ê°€ ì¢…ë£Œëœ í›„ì—ë„ ì´ Bufferì•ˆì˜ Membaseë¥¼
-                     í¬ì¸íŒ… í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì— ì´ í•¨ìˆ˜ì•ˆì˜ stackë³€ìˆ˜ë¡œ
-                     ì¡ì„ ìˆ˜ ì—†ì–´ì„œ ì¸ìë¡œ ë°›ëŠ”ë‹¤.
+   aTBSNode     [IN] ÁØºñÀÛ¾÷À» ¼öÇàÇÒ Tablespace
+   aTempMemBase [IN] 0¹ø Page¸¦ ÀĞ¾îµéÀÏ Buffer
+                     ÀÌ ÇÔ¼ö°¡ Á¾·áµÈ ÈÄ¿¡µµ ÀÌ Buffer¾ÈÀÇ Membase¸¦
+                     Æ÷ÀÎÆÃ ÇØ¾ß ÇÏ±â ¶§¹®¿¡ ÀÌ ÇÔ¼ö¾ÈÀÇ stackº¯¼ö·Î
+                     ÀâÀ» ¼ö ¾ø¾î¼­ ÀÎÀÚ·Î ¹Ş´Â´Ù.
    aOp          [IN] prepare option
 
 
-   ë°°ê²½ì§€ì‹ -----------------------------------------------------------------
-   - Restore ë°©ì‹ì˜ ì¢…ë¥˜
-     - ì¼ë°˜ë©”ëª¨ë¦¬ ì‚¬ìš© ( SMM_DB_RESTORE_TYPE_DYNAMIC )
-       - ì¼ë°˜ ë©”ëª¨ë¦¬ì— Disk=>Memoryë¡œ Pageë¡œë”©í•˜ëŠ” I/Oë¥¼ ìˆ˜í–‰
-     - ê³µìœ ë©”ëª¨ë¦¬ ì‚¬ìš©
-       - ê³µìœ ë©”ëª¨ë¦¬ Attach ( SMM_DB_RESTORE_TYPE_SHM_ATTACH )
-         - í˜„ì¬ ê³µìœ ë©”ëª¨ë¦¬ì— Disk Imageê°€ ì˜¬ë¼ì™€ ìˆëŠ” ìƒí™©
-         - ê³µìœ ë©”ëª¨ë¦¬ Attachë§Œ ìˆ˜í–‰í•˜ë©°,
-           Disk=> Memoryë¡œì˜ Pageë¥¼ ë¡œë“œí•˜ëŠ” I/Oê°€ í•„ìš”ì—†ë‹¤
-       - ê³µìœ ë©”ëª¨ë¦¬ Create ( SMM_DB_RESTORE_TYPE_SHM_CREATE )
-         - ê³µìœ ë©”ëª¨ë¦¬ë¥¼ ìƒˆë¡œ ìƒì„±í•˜ê³  Disk=>Memoryë¡œì˜
-           Pageë¥¼ ë¡œë“œí•˜ëŠ” I/Oë¥¼ ìˆ˜í–‰
+   ¹è°æÁö½Ä -----------------------------------------------------------------
+   - Restore ¹æ½ÄÀÇ Á¾·ù
+     - ÀÏ¹İ¸Ş¸ğ¸® »ç¿ë ( SMM_DB_RESTORE_TYPE_DYNAMIC )
+       - ÀÏ¹İ ¸Ş¸ğ¸®¿¡ Disk=>Memory·Î Page·ÎµùÇÏ´Â I/O¸¦ ¼öÇà
+     - °øÀ¯¸Ş¸ğ¸® »ç¿ë
+       - °øÀ¯¸Ş¸ğ¸® Attach ( SMM_DB_RESTORE_TYPE_SHM_ATTACH )
+         - ÇöÀç °øÀ¯¸Ş¸ğ¸®¿¡ Disk Image°¡ ¿Ã¶ó¿Í ÀÖ´Â »óÈ²
+         - °øÀ¯¸Ş¸ğ¸® Attach¸¸ ¼öÇàÇÏ¸ç,
+           Disk=> Memory·ÎÀÇ Page¸¦ ·ÎµåÇÏ´Â I/O°¡ ÇÊ¿ä¾ø´Ù
+       - °øÀ¯¸Ş¸ğ¸® Create ( SMM_DB_RESTORE_TYPE_SHM_CREATE )
+         - °øÀ¯¸Ş¸ğ¸®¸¦ »õ·Î »ı¼ºÇÏ°í Disk=>Memory·ÎÀÇ
+           Page¸¦ ·ÎµåÇÏ´Â I/O¸¦ ¼öÇà
 
    PROJ-1548 User Memory Tablespace ------------------------------------------
 
-   [ ê³µìœ ë©”ëª¨ë¦¬ ê´€ë ¨ Design ]
+   [ °øÀ¯¸Ş¸ğ¸® °ü·Ã Design ]
 
-   ê¸°ì¡´ì—ëŠ” Tablespaceê°€ í•œê°œì˜€ê¸° ë•Œë¬¸ì— SHM_DB_KEYë¼ëŠ” í”„ë¡œí¼í‹°ì—
-   ê¸°ìˆ ëœ ê³µìœ ë©”ëª¨ë¦¬ í‚¤ë¡œë¶€í„° ì‹œì‘í•˜ì—¬ ê³µìœ ë©”ëª¨ë¦¬ ì˜ì—­ë“¤ì„
-   ì•Œí‹°ë² ì´ìŠ¤ì— Attachí•˜ì˜€ë‹¤.
+   ±âÁ¸¿¡´Â Tablespace°¡ ÇÑ°³¿´±â ¶§¹®¿¡ SHM_DB_KEY¶ó´Â ÇÁ·ÎÆÛÆ¼¿¡
+   ±â¼úµÈ °øÀ¯¸Ş¸ğ¸® Å°·ÎºÎÅÍ ½ÃÀÛÇÏ¿© °øÀ¯¸Ş¸ğ¸® ¿µ¿ªµéÀ»
+   ¾ËÆ¼º£ÀÌ½º¿¡ AttachÇÏ¿´´Ù.
 
-   Memory Tablespaceê°€ ì—¬ëŸ¬ê°œê°€ ë¨ì— ë”°ë¼, ê°ê°ì˜ Tablespaceë§ˆë‹¤
-   ì´ì™€ ê°™ì€ ì‹œì‘ ê³µìœ ë©”ëª¨ë¦¬ Keyê°€ í•„ìš”í•˜ë‹¤.
+   Memory Tablespace°¡ ¿©·¯°³°¡ µÊ¿¡ µû¶ó, °¢°¢ÀÇ Tablespace¸¶´Ù
+   ÀÌ¿Í °°Àº ½ÃÀÛ °øÀ¯¸Ş¸ğ¸® Key°¡ ÇÊ¿äÇÏ´Ù.
 
-   Tablespaceì˜ ì‹œì‘ ê³µìœ ë©”ëª¨ë¦¬ KeyëŠ” ì„œë²„ë¥¼ ë‚´ë ¸ë‹¤ê°€ ì˜¬ë ¸ì„ ë•Œ
-   í•´ë‹¹ Tablespace ì²«ë²ˆì§¸ ê³µìœ ë©”ëª¨ë¦¬ ì˜ì—­ì„ Attachí•˜ê¸° ìœ„í•´
-   ê¼­ í•„ìš”í•˜ë‹¤.
+   TablespaceÀÇ ½ÃÀÛ °øÀ¯¸Ş¸ğ¸® Key´Â ¼­¹ö¸¦ ³»·È´Ù°¡ ¿Ã·ÈÀ» ¶§
+   ÇØ´ç Tablespace Ã¹¹øÂ° °øÀ¯¸Ş¸ğ¸® ¿µ¿ªÀ» AttachÇÏ±â À§ÇØ
+   ²À ÇÊ¿äÇÏ´Ù.
 
-   ê·¸ë˜ì„œ ê° Tablespace ë³„ë¡œ ì‹œì‘ ê³µìœ ë©”ëª¨ë¦¬ Keyë¥¼ Durableí•˜ê²Œ
-   ì €ì¥í•  í•„ìš”ê°€ ìˆë‹¤.
+   ±×·¡¼­ °¢ Tablespace º°·Î ½ÃÀÛ °øÀ¯¸Ş¸ğ¸® Key¸¦ DurableÇÏ°Ô
+   ÀúÀåÇÒ ÇÊ¿ä°¡ ÀÖ´Ù.
 
-   Log Anchorì˜ Tablespaceì •ë³´ì— ê° Tablespaceë³„ë¡œ ì‹œì‘ ê³µìœ ë©”ëª¨ë¦¬ Keyë¥¼
-   ì €ì¥í•˜ë„ë¡ í•œë‹¤.
+   Log AnchorÀÇ TablespaceÁ¤º¸¿¡ °¢ Tablespaceº°·Î ½ÃÀÛ °øÀ¯¸Ş¸ğ¸® Key¸¦
+   ÀúÀåÇÏµµ·Ï ÇÑ´Ù.
 
-   ì œì•½ì¡°ê±´
-     - ì¼ë¶€ Tablespaceë§Œì„ ê³µìœ ë©”ëª¨ë¦¬ ëª¨ë“œë¡œ ë„ìš¸ ìˆ˜ ì—†ë‹¤
-       ( ë³µì¡ë„ë¥¼ ë‚®ì¶”ê¸° ìœ„í•œ ì œì•½ì´ë©° ì¶”í›„ ì¶”ê°€êµ¬í˜„ ê°€ëŠ¥ )
-       - ëª¨ë“  Tablespaceë¥¼ ê³µìœ  ë©”ëª¨ë¦¬ë¡œ ë„ìš°ê±°ë‚˜,
-         ëª¨ë“  Tablespaceë¥¼ ì¼ë°˜ ë©”ëª¨ë¦¬ë¡œ ë„ìš¸ ìˆ˜ ìˆë‹¤.
-     - ì¼ë¶€ Tablespaceë§Œì„ Attachí•˜ê³  ë‚˜ë¨¸ì§€ë¥¼ Createí•  ìˆ˜ ì—†ë‹¤
-       - ëª¨ë“  Tablespaceë¥¼ ê³µìœ ë©”ëª¨ë¦¬ë¡œë¶€í„° Attachí•˜ê±°ë‚˜,
-         ëª¨ë“  Tablespaceì˜ ê³µìœ ë©”ëª¨ë¦¬ë¥¼ ìƒˆë¡œ ìƒì„±í•´ì•¼ í•œë‹¤.
+   Á¦¾àÁ¶°Ç
+     - ÀÏºÎ Tablespace¸¸À» °øÀ¯¸Ş¸ğ¸® ¸ğµå·Î ¶ç¿ï ¼ö ¾ø´Ù
+       ( º¹Àâµµ¸¦ ³·Ãß±â À§ÇÑ Á¦¾àÀÌ¸ç ÃßÈÄ Ãß°¡±¸Çö °¡´É )
+       - ¸ğµç Tablespace¸¦ °øÀ¯ ¸Ş¸ğ¸®·Î ¶ç¿ì°Å³ª,
+         ¸ğµç Tablespace¸¦ ÀÏ¹İ ¸Ş¸ğ¸®·Î ¶ç¿ï ¼ö ÀÖ´Ù.
+     - ÀÏºÎ Tablespace¸¸À» AttachÇÏ°í ³ª¸ÓÁö¸¦ CreateÇÒ ¼ö ¾ø´Ù
+       - ¸ğµç Tablespace¸¦ °øÀ¯¸Ş¸ğ¸®·ÎºÎÅÍ AttachÇÏ°Å³ª,
+         ¸ğµç TablespaceÀÇ °øÀ¯¸Ş¸ğ¸®¸¦ »õ·Î »ı¼ºÇØ¾ß ÇÑ´Ù.
 
-   ìë£Œêµ¬ì¡°
+   ÀÚ·á±¸Á¶
      - LogAnchor
        - TBSNode
          - TBSAttr
-           - ShmKey : í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ì˜ ì‹œì‘ ê³µìœ ë©”ëª¨ë¦¬ Key
-                      Log Anchorì— Durableí•˜ê²Œ ì €ì¥ëœë‹¤.
+           - ShmKey : Å×ÀÌºí ½ºÆäÀÌ½ºÀÇ ½ÃÀÛ °øÀ¯¸Ş¸ğ¸® Key
+                      Log Anchor¿¡ DurableÇÏ°Ô ÀúÀåµÈ´Ù.
 
-   ë™ì‘
-     - ê³µìœ ë©”ëª¨ë¦¬ ì‚¬ìš©ì„ ìœ„í•´ì„œëŠ” ì‚¬ìš©ìê°€ SHM_DB_KEYí”„ë¡œí¼í‹°ë¥¼
-       ì›í•˜ëŠ” ê³µìœ ë©”ëª¨ë¦¬ Keyê°’ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+   µ¿ÀÛ
+     - °øÀ¯¸Ş¸ğ¸® »ç¿ëÀ» À§ÇØ¼­´Â »ç¿ëÀÚ°¡ SHM_DB_KEYÇÁ·ÎÆÛÆ¼¸¦
+       ¿øÇÏ´Â °øÀ¯¸Ş¸ğ¸® Key°ªÀ¸·Î ¼³Á¤ÇÑ´Ù.
 
-     - ê° Tablespaceë³„ ê³µìœ ë©”ëª¨ë¦¬ KeyëŠ” ì‹œìŠ¤í…œì´ ìë™ìœ¼ë¡œ ê²°ì •í•œë‹¤
+     - °¢ Tablespaceº° °øÀ¯¸Ş¸ğ¸® Key´Â ½Ã½ºÅÛÀÌ ÀÚµ¿À¸·Î °áÁ¤ÇÑ´Ù
 
-   ì•Œê³ ë¦¬ì¦˜ ( restoreë°©ì‹ì„ ê²°ì • )
-     - 1. SHM_DB_KEY == 0 ì´ë©´ ì¼ë°˜ ë©”ëª¨ë¦¬ë¥¼ ì‚¬ìš©í•œë‹¤.
-       - LogAnchorì˜ ShmKey := 0 ì„¤ì • ( ì¶”í›„ ëª¨ë“  TBSì— ëŒ€í•´ ì¼ê´„ Flush )
-     - 2. SHM_DB_KEY != 0 ì´ë©´
-        - 2.1 TBSNode.ShmKey ì— í•´ë‹¹í•˜ëŠ” ê³µìœ ë©”ëª¨ë¦¬ ì˜ì—­ì´ ì¡´ì¬?
-             Attachì‹¤ì‹œ
-        - 2.2 ê³µìœ ë©”ëª¨ë¦¬ ì˜ì—­ì´ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´
-          - SHM_DB_KEYë¡œë¶€í„° 1ì”© ê°ì†Œí•´ê°€ë©° ê³µìœ ë©”ëª¨ë¦¬ ì˜ì—­ ì‹ ê·œ ìƒì„±
+   ¾Ë°í¸®Áò ( restore¹æ½ÄÀ» °áÁ¤ )
+     - 1. SHM_DB_KEY == 0 ÀÌ¸é ÀÏ¹İ ¸Ş¸ğ¸®¸¦ »ç¿ëÇÑ´Ù.
+       - LogAnchorÀÇ ShmKey := 0 ¼³Á¤ ( ÃßÈÄ ¸ğµç TBS¿¡ ´ëÇØ ÀÏ°ı Flush )
+     - 2. SHM_DB_KEY != 0 ÀÌ¸é
+        - 2.1 TBSNode.ShmKey ¿¡ ÇØ´çÇÏ´Â °øÀ¯¸Ş¸ğ¸® ¿µ¿ªÀÌ Á¸Àç?
+             Attach½Ç½Ã
+        - 2.2 °øÀ¯¸Ş¸ğ¸® ¿µ¿ªÀÌ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é
+          - SHM_DB_KEY·ÎºÎÅÍ 1¾¿ °¨¼ÒÇØ°¡¸ç °øÀ¯¸Ş¸ğ¸® ¿µ¿ª ½Å±Ô »ı¼º
  */
 
 IDE_RC smmManager::prepareTBS (smmTBSNode *      aTBSNode,
                                smmPrepareOption  aOp )
 {
-    // ì²«ë²ˆì§¸ prepareëœ TBSì˜ restore mode
-    // ëª¨ë“  tablespaceì˜ restore modeê°€ ì´ì™€ ê°™ì•„ì•¼ í•œë‹¤.
+    // Ã¹¹øÂ° prepareµÈ TBSÀÇ restore mode
+    // ¸ğµç tablespaceÀÇ restore mode°¡ ÀÌ¿Í °°¾Æ¾ß ÇÑ´Ù.
     //
-    // ( í•¨ìˆ˜ ì‹œì‘ë¶€ë¶„ ì£¼ì„ì— ê¸°ìˆ ëœ ì œì•½ì‚¬í•­ ì²´í¬ë¥¼ ìœ„í•´ ì‚¬ìš©ëœë‹¤. )
+    // ( ÇÔ¼ö ½ÃÀÛºÎºĞ ÁÖ¼®¿¡ ±â¼úµÈ Á¦¾à»çÇ× Ã¼Å©¸¦ À§ÇØ »ç¿ëµÈ´Ù. )
     static smmDBRestoreType sFirstRestoreType = SMM_DB_RESTORE_TYPE_NONE;
 
     key_t             sTbsShmKey;
@@ -3198,19 +3270,19 @@ IDE_RC smmManager::prepareTBS (smmTBSNode *      aTBSNode,
     IDE_DASSERT( aTBSNode != NULL );
 
     /* -------------------------------
-     * [3] Recovery ì´ì „ callback ì„¤ì •
+     * [3] Recovery ÀÌÀü callback ¼³Á¤
      * ----------------------------- */
     if (smuProperty::getShmDBKey() == 0)
     {
         aTBSNode->mRestoreType = SMM_DB_RESTORE_TYPE_DYNAMIC ;
         aTBSNode->mTBSAttr.mMemAttr.mShmKey = 0 ;
 
-        // Restoreë§ˆì¹œ ì´í›„ Restart Redo/Undoë‹¤ ëë‚´ê³ 
-        // Log Anchorì— ëª¨ë“  TBSì˜ ShmKeyê°€ Flushëœë‹¤.
+        // Restore¸¶Ä£ ÀÌÈÄ Restart Redo/Undo´Ù ³¡³»°í
+        // Log Anchor¿¡ ¸ğµç TBSÀÇ ShmKey°¡ FlushµÈ´Ù.
 
-        // BUGBUG-1548 ì •ë§ Flushí•˜ëŠ”ì§€ ì²´í¬í•  ê²ƒ
+        // BUGBUG-1548 Á¤¸» FlushÇÏ´ÂÁö Ã¼Å©ÇÒ °Í
 
-        // ì¼ë°˜ ë©”ëª¨ë¦¬ Page Pool ì´ˆê¸°í™”
+        // ÀÏ¹İ ¸Ş¸ğ¸® Page Pool ÃÊ±âÈ­
         IDE_TEST( initializeDynMemPool(aTBSNode) != IDE_SUCCESS);
     }
     else
@@ -3226,7 +3298,7 @@ IDE_RC smmManager::prepareTBS (smmTBSNode *      aTBSNode,
          * ----------------------------------------------*/
         sTbsShmKey = aTBSNode->mTBSAttr.mMemAttr.mShmKey;
 
-        // ê¸°ì¡´ì— TBSë¥¼ Dynamic Memoryë¡œ Restoreí•œ ê²½ìš° TBSNodeì˜ ShmKey=0
+        // ±âÁ¸¿¡ TBS¸¦ Dynamic Memory·Î RestoreÇÑ °æ¿ì TBSNodeÀÇ ShmKey=0
         if ( sTbsShmKey == 0 )
         {
             sShmExist = ID_FALSE;
@@ -3253,39 +3325,39 @@ IDE_RC smmManager::prepareTBS (smmTBSNode *      aTBSNode,
     if ( (aOp & SMM_PREPARE_OP_DONT_CHECK_RESTORE_TYPE) ==
          SMM_PREPARE_OP_DONT_CHECK_RESTORE_TYPE )
     {
-        // ëª¨ë“  Tablespaceê°€ ê°™ì€ Restore Typeìœ¼ë¡œ Restoreë˜ëŠ”ì§€
-        // ì—ëŸ¬ì²´í¬ë¥¼ í•˜ì§€ ì•ŠìŒ
+        // ¸ğµç Tablespace°¡ °°Àº Restore TypeÀ¸·Î RestoreµÇ´ÂÁö
+        // ¿¡·¯Ã¼Å©¸¦ ÇÏÁö ¾ÊÀ½
 
-        // ALTER TABLESPACE ONLINEì‹œì— ì—¬ê¸°ë¡œ ë“¤ì–´ì˜¨ë‹¤.
-        // Startupì‹œì—ëŠ” Shared Memory Attachë˜ì—ˆë˜ Tablespaceê°€
-        // Alter Tablespace Offlineì‹œ Shared Memoryë¥¼ ì™„ì „íˆ ì œê±°í•˜ê³ 
-        // Alter Tablespace Onlineì‹œ Shared Memory Createë¡œ Restoreë  ìˆ˜ ìˆê¸° ë•Œë¬¸
+        // ALTER TABLESPACE ONLINE½Ã¿¡ ¿©±â·Î µé¾î¿Â´Ù.
+        // Startup½Ã¿¡´Â Shared Memory AttachµÇ¾ú´ø Tablespace°¡
+        // Alter Tablespace Offline½Ã Shared Memory¸¦ ¿ÏÀüÈ÷ Á¦°ÅÇÏ°í
+        // Alter Tablespace Online½Ã Shared Memory Create·Î RestoreµÉ ¼ö ÀÖ±â ¶§¹®
 
         // Do Nothing.
     }
     else
     {
-        // ì œì•½ì¡°ê±´ ì²´í¬
-        if ( sFirstRestoreType == SMM_DB_RESTORE_TYPE_NONE ) // ë§¨ ì²˜ìŒ prepare?
+        // Á¦¾àÁ¶°Ç Ã¼Å©
+        if ( sFirstRestoreType == SMM_DB_RESTORE_TYPE_NONE ) // ¸Ç Ã³À½ prepare?
         {
             sFirstRestoreType = aTBSNode->mRestoreType;
 
-            // To Fix BUG-17293 Server Startupì‹œ Tablespaceê°¯ìˆ˜ë§Œí¼
-            //                  Loadingë©”ì‹œì§€ê°€ ë‚˜ì˜´
-            // => ê° Tablespace Loadingì‹œë§ˆë‹¤ Messageë¥¼ ì¶œë ¥í•˜ì§€ ì•Šê³ ,
-            //    ê°ê°ì˜ Server startì‹œ ë”± í•œë²ˆë§Œ Loading Messageì¶œë ¥.
+            // To Fix BUG-17293 Server Startup½Ã Tablespace°¹¼ö¸¸Å­
+            //                  Loading¸Ş½ÃÁö°¡ ³ª¿È
+            // => °¢ Tablespace Loading½Ã¸¶´Ù Message¸¦ Ãâ·ÂÇÏÁö ¾Ê°í,
+            //    °¢°¢ÀÇ Server start½Ã µü ÇÑ¹ø¸¸ Loading MessageÃâ·Â.
             printLoadingMessage( sFirstRestoreType );
         }
-        else // ë‘ë²ˆ ì§¸ ì´í›„ prepare ?
+        else // µÎ¹ø Â° ÀÌÈÄ prepare ?
         {
-            // ë§¨ ì²˜ìŒê³¼ í•­ìƒ ê°™ì€ Restoreëª¨ë“œì—¬ì•¼ í•¨
+            // ¸Ç Ã³À½°ú Ç×»ó °°Àº Restore¸ğµå¿©¾ß ÇÔ
             IDE_TEST_RAISE( aTBSNode->mRestoreType != sFirstRestoreType,
                             error_invalid_shm_region );
         }
     }
 
-    // ê³µìœ ë©”ëª¨ë¦¬ Attachì˜ ê²½ìš° restoreí•  í•„ìš”ì—†ì´
-    // prepareë‹¨ê³„ì—ì„œ attachë¥¼ ìˆ˜í–‰í•œë‹¤.
+    // °øÀ¯¸Ş¸ğ¸® AttachÀÇ °æ¿ì restoreÇÒ ÇÊ¿ä¾øÀÌ
+    // prepare´Ü°è¿¡¼­ attach¸¦ ¼öÇàÇÑ´Ù.
     if ( aTBSNode->mRestoreType == SMM_DB_RESTORE_TYPE_SHM_ATTACH )
     {
         IDE_TEST(restoreAttachSharedDB(aTBSNode,
@@ -3295,10 +3367,10 @@ IDE_RC smmManager::prepareTBS (smmTBSNode *      aTBSNode,
     }
     else
     {
-        // ê³µìœ ë©”ëª¨ë¦¬ Createë‚˜, ì¼ë°˜ ë©”ëª¨ë¦¬ëª¨ë“œì¸ ê²½ìš°
+        // °øÀ¯¸Ş¸ğ¸® Create³ª, ÀÏ¹İ ¸Ş¸ğ¸®¸ğµåÀÎ °æ¿ì
         //
-        // Restoreì‹œì— ì‹¤ì œ Page Memoryê°€ í• ë‹¹/ë¡œë“œë˜ë©°,
-        // Prepareì‹œì—ëŠ” ì•„ë¬´ëŸ° ì²˜ë¦¬ë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // Restore½Ã¿¡ ½ÇÁ¦ Page Memory°¡ ÇÒ´ç/·ÎµåµÇ¸ç,
+        // Prepare½Ã¿¡´Â ¾Æ¹«·± Ã³¸®µµ ÇÏÁö ¾Ê´Â´Ù.
     }
 
 
@@ -3313,7 +3385,7 @@ IDE_RC smmManager::prepareTBS (smmTBSNode *      aTBSNode,
     return IDE_FAILURE;
 }
 /*
-    DB File Loading Messageì¶œë ¥
+    DB File Loading MessageÃâ·Â
 
     [IN] aRestoreType - DB File Restore Type
  */
@@ -3339,8 +3411,8 @@ void smmManager::printLoadingMessage( smmDBRestoreType aRestoreType )
 
     switch ( aRestoreType )
     {
-        // Restoreë¥¼ í•˜ëŠ” ê²½ìš° Parallel Loadingì¸ì§€,
-        // Serial Loadingì¸ì§€ ì¶œë ¥
+        // Restore¸¦ ÇÏ´Â °æ¿ì Parallel LoadingÀÎÁö,
+        // Serial LoadingÀÎÁö Ãâ·Â
         case SMM_DB_RESTORE_TYPE_SHM_CREATE :
         case SMM_DB_RESTORE_TYPE_DYNAMIC :
             switch(smuProperty::getRestoreMethod())
@@ -3362,31 +3434,31 @@ void smmManager::printLoadingMessage( smmDBRestoreType aRestoreType )
 }
 
 /*
-    Alter TBS Onlineì„ ìœ„í•´ Tablespaceë¥¼ Prepare / Restore í•œë‹¤.
+    Alter TBS OnlineÀ» À§ÇØ Tablespace¸¦ Prepare / Restore ÇÑ´Ù.
 
-    [IN] aTBSNode - Restoreí•  Tablespaceì˜ Node
+    [IN] aTBSNode - RestoreÇÒ TablespaceÀÇ Node
 
-    [ ì—ëŸ¬ì²˜ë¦¬ íŠ¹ì´ì‚¬í•­ ]
-      - ëª¨ë“  Tablespaceê°€ ê°™ì€ Restore Typeìœ¼ë¡œ Restoreë˜ëŠ”ì§€
-        ì—ëŸ¬ì²´í¬ë¥¼ í•˜ì§€ ì•ŠìŒ
+    [ ¿¡·¯Ã³¸® Æ¯ÀÌ»çÇ× ]
+      - ¸ğµç Tablespace°¡ °°Àº Restore TypeÀ¸·Î RestoreµÇ´ÂÁö
+        ¿¡·¯Ã¼Å©¸¦ ÇÏÁö ¾ÊÀ½
 
-      - ì´ìœ  :  Startupì‹œì—ëŠ” Shared Memory Attachë˜ì—ˆë˜ Tablespaceê°€
-                Alter Tablespace Offlineì‹œ Shared Memoryë¥¼
-                ì™„ì „íˆ ì œê±°í•˜ê³  Alter Tablespace Onlineì‹œ
-                Shared Memory Createë¡œ Restoreë  ìˆ˜ ìˆê¸° ë•Œë¬¸
+      - ÀÌÀ¯ :  Startup½Ã¿¡´Â Shared Memory AttachµÇ¾ú´ø Tablespace°¡
+                Alter Tablespace Offline½Ã Shared Memory¸¦
+                ¿ÏÀüÈ÷ Á¦°ÅÇÏ°í Alter Tablespace Online½Ã
+                Shared Memory Create·Î RestoreµÉ ¼ö ÀÖ±â ¶§¹®
  */
 IDE_RC smmManager::prepareAndRestore( smmTBSNode * aTBSNode )
 {
     IDE_DASSERT( aTBSNode != NULL );
 
-    // ëª¨ë“  Tablespaceê°€ ê°™ì€ Restore Typeìœ¼ë¡œ Restoreë˜ëŠ”ì§€
-    // ì—ëŸ¬ì²´í¬ë¥¼ í•˜ì§€ ì•ŠìŒ
+    // ¸ğµç Tablespace°¡ °°Àº Restore TypeÀ¸·Î RestoreµÇ´ÂÁö
+    // ¿¡·¯Ã¼Å©¸¦ ÇÏÁö ¾ÊÀ½
     IDE_TEST( prepareTBS( aTBSNode,
                           SMM_PREPARE_OP_DONT_CHECK_RESTORE_TYPE )
                   != IDE_SUCCESS );
 
-    // Alter TBS Offlineì‹œ ê²½ìš° ê³µìœ ë©”ëª¨ë¦¬ ìì²´ë¥¼ ë‚ ë¦¬ê¸° ë•Œë¬¸ì—
-    // Alter TBS Onlineì‹œì—ëŠ” ê³µìœ ë©”ëª¨ë¦¬ Attachë¡œ ë“¤ì–´ì˜¬ ìˆ˜ê°€ ì—†ë‹¤.
+    // Alter TBS Offline½Ã °æ¿ì °øÀ¯¸Ş¸ğ¸® ÀÚÃ¼¸¦ ³¯¸®±â ¶§¹®¿¡
+    // Alter TBS Online½Ã¿¡´Â °øÀ¯¸Ş¸ğ¸® Attach·Î µé¾î¿Ã ¼ö°¡ ¾ø´Ù.
     IDE_ASSERT( aTBSNode->mRestoreType != SMM_DB_RESTORE_TYPE_SHM_ATTACH );
 
     IDE_TEST( restoreTBS( aTBSNode, SMM_RESTORE_OP_NONE )
@@ -3401,10 +3473,10 @@ IDE_RC smmManager::prepareAndRestore( smmTBSNode * aTBSNode )
 
 
 
-/* loganchorì˜ checkpoint image attributeìˆ˜ë¥¼ í† ëŒ€ë¡œ ê³„ì‚°ëœ
-   dbfile ê°¯ìˆ˜ ë°˜í™˜ => restore dbì‹œì— ì‚¬ìš©ë¨
+/* loganchorÀÇ checkpoint image attribute¼ö¸¦ Åä´ë·Î °è»êµÈ
+   dbfile °¹¼ö ¹İÈ¯ => restore db½Ã¿¡ »ç¿ëµÊ
 
- [IN] aTBSNode - Tablespaceì˜ Node
+ [IN] aTBSNode - TablespaceÀÇ Node
  */
 UInt smmManager::getRestoreDBFileCount( smmTBSNode      * aTBSNode )
 {
@@ -3412,8 +3484,8 @@ UInt smmManager::getRestoreDBFileCount( smmTBSNode      * aTBSNode )
 
     IDE_DASSERT( aTBSNode != NULL );
 
-    // loganchor(TBSNode)ê¸°ì¤€ìœ¼ë¡œ loadingì„ ìˆ˜í–‰í•œë‹¤.
-    // +1ì„ í•˜ëŠ” ê²ƒì€ mLstCreateDBFileì´ íŒŒì¼ ë²ˆí˜¸ì´ê¸° ë•Œë¬¸ì´ë‹¤.
+    // loganchor(TBSNode)±âÁØÀ¸·Î loadingÀ» ¼öÇàÇÑ´Ù.
+    // +1À» ÇÏ´Â °ÍÀº mLstCreateDBFileÀÌ ÆÄÀÏ ¹øÈ£ÀÌ±â ¶§¹®ÀÌ´Ù.
     sDBFileCount = aTBSNode->mLstCreatedDBFile + 1;
 
     return sDBFileCount;
@@ -3421,7 +3493,7 @@ UInt smmManager::getRestoreDBFileCount( smmTBSNode      * aTBSNode )
 
 
 /*
- * smmManager::restoreDBë¥¼ ìœ„í•œ Actioní•¨ìˆ˜
+ * smmManager::restoreDB¸¦ À§ÇÑ ActionÇÔ¼ö
  */
 IDE_RC smmManager::restoreTBSAction( idvSQL*             /*aStatistics*/,
                                      sctTableSpaceNode * aTBSNode,
@@ -3444,13 +3516,13 @@ IDE_RC smmManager::restoreTBSAction( idvSQL*             /*aStatistics*/,
              != IDE_SUCCESS);
     sState = 1;
 
-    // CONTROLë‹¨ê³„ì—ì„œ DROPPEDì¸ TBSëŠ” loganchorë¡œë¶€í„°
-    // ì½ì–´ë“¤ì´ì§€ ì•Šê¸° ë•Œë¬¸ì—
-    // PREPARE/RESTOREì¤‘ì— DROPPEDìƒíƒœì¸ TBSëŠ” ìˆì„ ìˆ˜ ì—†ë‹¤.
+    // CONTROL´Ü°è¿¡¼­ DROPPEDÀÎ TBS´Â loganchor·ÎºÎÅÍ
+    // ÀĞ¾îµéÀÌÁö ¾Ê±â ¶§¹®¿¡
+    // PREPARE/RESTOREÁß¿¡ DROPPED»óÅÂÀÎ TBS´Â ÀÖÀ» ¼ö ¾ø´Ù.
     IDE_ASSERT( ( aTBSNode->mState & SMI_TBS_DROPPED ) != SMI_TBS_DROPPED );
 
-    // Memory Tablespaceì¤‘ DISCARD,OFFLINE Tablespaceë¥¼ ì œì™¸í•˜ê³ 
-    // PREPARE/RESTOREë¥¼ ìˆ˜í–‰í•œë‹¤.
+    // Memory TablespaceÁß DISCARD,OFFLINE Tablespace¸¦ Á¦¿ÜÇÏ°í
+    // PREPARE/RESTORE¸¦ ¼öÇàÇÑ´Ù.
     if(( sctTableSpaceMgr::isMemTableSpace(aTBSNode->mID) == ID_TRUE ) &&
        ( sctTableSpaceMgr::hasState(aTBSNode->mID, SCT_SS_SKIP_RESTORE )
          == ID_FALSE) )
@@ -3462,7 +3534,7 @@ IDE_RC smmManager::restoreTBSAction( idvSQL*             /*aStatistics*/,
             case SMM_RESTORE_OP_NONE:
             case SMM_RESTORE_OP_DBIMAGE_NEED_RECOVERY:
             {
-                // ì •ìƒêµ¬ë™ì‹œ
+                // Á¤»ó±¸µ¿½Ã
                 sDoIt = ID_TRUE;
                 break;
             }
@@ -3470,42 +3542,40 @@ IDE_RC smmManager::restoreTBSAction( idvSQL*             /*aStatistics*/,
             {
                 if ( isMediaFailureTBS( (smmTBSNode*)aTBSNode ) == ID_TRUE )
                 {
-                    // ë¯¸ë””ì–´ë³µêµ¬ í”Œë˜ê·¸ê°€ ID_TRUEë¡œ ì„¤ì •ëœ ë°ì´íƒ€íŒŒì¼ì´
-                    // ìˆì„ ê²½ìš° Restoreë¥¼ ì§„í–‰í•œë‹¤.
+                    // ¹Ìµğ¾îº¹±¸ ÇÃ·¡±×°¡ ID_TRUE·Î ¼³Á¤µÈ µ¥ÀÌÅ¸ÆÄÀÏÀÌ
+                    // ÀÖÀ» °æ¿ì Restore¸¦ ÁøÇàÇÑ´Ù.
                     sDoIt = ID_TRUE;
                 }
                 else
                 {
-                    if( aTBSNode->mID ==
-                             SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC )
+                    if( aTBSNode->mID == SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC )
                     {
 
-                        // sys_mem_dic_tbsì— ëŒ€í•´ì„œ membaseëŠ” ë¯¸ë””ì–´ë³µêµ¬ì‹œ
-                        // ì„¤ì •í•œë‹¤. dirty page writeì‹œì— check membaseë¥¼
-                        // ìˆ˜í–‰í•˜ëŠ” ê²ƒì„ í†µê³¼í•´ì•¼í•œë‹¤.
+                        // sys_mem_dic_tbs¿¡ ´ëÇØ¼­ membase´Â ¹Ìµğ¾îº¹±¸½Ã
+                        // ¼³Á¤ÇÑ´Ù. dirty page write½Ã¿¡ check membase¸¦
+                        // ¼öÇàÇÏ´Â °ÍÀ» Åë°úÇØ¾ßÇÑ´Ù.
                         IDE_TEST( openFstDBFilesAndSetupMembase(
-                                    (smmTBSNode*)aTBSNode,
-                                    (smmRestoreOption)(vULong)aActionArg,
-                                    (UChar*)sAlignedPageBuffer)
+                                                (smmTBSNode*)aTBSNode,
+                                                (smmRestoreOption)(vULong)aActionArg,
+                                                (UChar*)sAlignedPageBuffer)
                                   != IDE_SUCCESS );
 
-                        // PCH ì—”íŠ¸ë¦¬ë° Page ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•˜ê³  Pageë‚´ìš© ë³µì‚¬
-                        IDE_TEST( fillPCHEntry(
-                                      (smmTBSNode*)aTBSNode,
-                                      (scPageID)0, // sPID
-                                      SMM_FILL_PCH_OP_COPY_PAGE,
-                                      (void*)((UChar*)sAlignedPageBuffer))
+                        // PCH ¿£Æ®¸®¹× Page ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÏ°í Page³»¿ë º¹»ç
+                        IDE_TEST( fillPCHEntry( (smmTBSNode*)aTBSNode,
+                                                 SMM_MEMBASE_PAGEID, // sPID
+                                                 SMM_FILL_PCH_OP_COPY_PAGE,
+                                                 (void*)((UChar*)sAlignedPageBuffer))
                                   != IDE_SUCCESS);
 
                         IDE_TEST(setupBasePageInfo(
-                          (smmTBSNode*)aTBSNode,
-                          (UChar*)mPCHArray[((smmTBSNode*)aTBSNode)->mTBSAttr.mID][0]->m_page )
-                          != IDE_SUCCESS);
+                                  (smmTBSNode*)aTBSNode,
+                                  (UChar*)mPCArray[((smmTBSNode*)aTBSNode)->mTBSAttr.mID].mPC[SMM_MEMBASE_PAGEID].mPagePtr )
+                                  != IDE_SUCCESS);
 
                         smmDatabase::makeMembaseBackup();
                     }
 
-                   // retore ëŠ” í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                   // retore ´Â ÇÏÁö ¾Ê´Â´Ù.
                    sDoIt = ID_FALSE;
                 }
                 break;
@@ -3543,9 +3613,9 @@ IDE_RC smmManager::restoreTBSAction( idvSQL*             /*aStatistics*/,
 }
 
 /*
- * ë””ìŠ¤í¬ ì´ë¯¸ì§€ë¡œë¶€í„° ë°ì´í„°ë² ì´ìŠ¤ í˜ì´ì§€ë¥¼ ë¡œë“œí•œë‹¤.
+ * µğ½ºÅ© ÀÌ¹ÌÁö·ÎºÎÅÍ µ¥ÀÌÅÍº£ÀÌ½º ÆäÀÌÁö¸¦ ·ÎµåÇÑ´Ù.
  *
- * aOp [IN] Restore ì˜µì…˜/ì •ë³´
+ * aOp [IN] Restore ¿É¼Ç/Á¤º¸
  */
 
 IDE_RC smmManager::restoreDB ( smmRestoreOption aOp )
@@ -3567,11 +3637,11 @@ IDE_RC smmManager::restoreDB ( smmRestoreOption aOp )
 }
 
 /*
- * í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ì²«ë²ˆì§¸ DB íŒŒì¼ì„ ëª¨ë‘ ì˜¤í”ˆí•˜ê³ ,
- * Membase ë¥¼ ì„¤ì •í•œë‹¤.
+ * Å×ÀÌºí½ºÆäÀÌ½ºÀÇ Ã¹¹øÂ° DB ÆÄÀÏÀ» ¸ğµÎ ¿ÀÇÂÇÏ°í,
+ * Membase ¸¦ ¼³Á¤ÇÑ´Ù.
  *
  * aTBSNode [IN] TableSpace Node
- * aOp      [IN] Restore ì˜µì…˜/ì •ë³´
+ * aOp      [IN] Restore ¿É¼Ç/Á¤º¸
  */
 
 IDE_RC smmManager::openFstDBFilesAndSetupMembase( smmTBSNode * aTBSNode,
@@ -3585,13 +3655,13 @@ IDE_RC smmManager::openFstDBFilesAndSetupMembase( smmTBSNode * aTBSNode,
 
     if ( aOp == SMM_RESTORE_OP_DBIMAGE_NEED_MEDIA_RECOVERY )
     {
-        // Media Recoveryì‹œì—ëŠ” Stable ë²„ì „ë§Œ Opení•˜ë©´ ëœë‹¤.
+        // Media Recovery½Ã¿¡´Â Stable ¹öÀü¸¸ OpenÇÏ¸é µÈ´Ù.
         i = (UInt)aTBSNode->mTBSAttr.mMemAttr.mCurrentDB; // stable
         sOpenLoop = i+1;
     }
     else
     {
-        // Restartì‹œì—ëŠ” Stable/Unstable ëª¨ë‘ Opení•œë‹¤.
+        // Restart½Ã¿¡´Â Stable/Unstable ¸ğµÎ OpenÇÑ´Ù.
         i =  0;
         sOpenLoop = SMM_PINGPONG_COUNT;
     }
@@ -3613,8 +3683,8 @@ IDE_RC smmManager::openFstDBFilesAndSetupMembase( smmTBSNode * aTBSNode,
             sFirstDBFile = sDBFile;
         }
         
-        // LogAnchorì—ì„œ ì´ˆê¸°í™”ë ë•ŒëŠ” íŒŒì¼ì„ ì˜¤í”ˆí•˜ì§€ ì•Šìœ¼ë¯€ë¡œ,
-        // ìµœì´ˆë¡œ Opení•˜ëŠ” ê³³ì´ë‹¤.
+        // LogAnchor¿¡¼­ ÃÊ±âÈ­µÉ¶§´Â ÆÄÀÏÀ» ¿ÀÇÂÇÏÁö ¾ÊÀ¸¹Ç·Î,
+        // ÃÖÃÊ·Î OpenÇÏ´Â °÷ÀÌ´Ù.
         if (sDBFile->isOpen() != ID_TRUE )
         {
             IDE_TEST(sDBFile->open() != IDE_SUCCESS);
@@ -3631,22 +3701,22 @@ IDE_RC smmManager::openFstDBFilesAndSetupMembase( smmTBSNode * aTBSNode,
     if ( aTBSNode->mRestoreType == SMM_DB_RESTORE_TYPE_SHM_ATTACH )
     {
         // Do nothing
-        // prepareTBSì—ì„œ attachí•˜ë©´ì„œ ëª¨ë‘ ì²˜ë¦¬í•˜ì˜€ë‹¤.
+        // prepareTBS¿¡¼­ attachÇÏ¸é¼­ ¸ğµÎ Ã³¸®ÇÏ¿´´Ù.
     }
     else
     {
-        // ê³µìœ ë©”ëª¨ë¦¬ Create ë˜ëŠ” ì¼ë°˜ ë©”ëª¨ë¦¬ëª¨ë“œì¸ ê²½ìš°
+        // °øÀ¯¸Ş¸ğ¸® Create ¶Ç´Â ÀÏ¹İ ¸Ş¸ğ¸®¸ğµåÀÎ °æ¿ì
         //
-        // 0ë²ˆ Pageë¥¼ ìŠ¤íƒ ë©”ëª¨ë¦¬ì— ì„ì‹œì ìœ¼ë¡œ ë¡œë“œí•˜ì—¬
-        // restoreí•˜ëŠ” ë™ì•ˆì—ë§Œ ì‚¬ìš©í• 
-        // Membaseì™€ catalog table headerë¥¼ ì„¤ì •.
+        // 0¹ø Page¸¦ ½ºÅÃ ¸Ş¸ğ¸®¿¡ ÀÓ½ÃÀûÀ¸·Î ·ÎµåÇÏ¿©
+        // restoreÇÏ´Â µ¿¾È¿¡¸¸ »ç¿ëÇÒ
+        // Membase¿Í catalog table header¸¦ ¼³Á¤.
 
-        // restoreê°€ ì™„ë£Œëœ í›„ì— setBasePageInfoë¥¼ ë‹¤ì‹œ í˜¸ì¶œí•˜ì—¬
-        // ì‹¤ì œ 0ë²ˆ Pageì˜ ì£¼ì†Œë¥¼ ì´ìš©í•˜ì—¬
-        // Membaseì™€ catalog table headerë¥¼ ì¬ì„¤ì • í•´ì•¼í•œë‹¤.
+        // restore°¡ ¿Ï·áµÈ ÈÄ¿¡ setBasePageInfo¸¦ ´Ù½Ã È£ÃâÇÏ¿©
+        // ½ÇÁ¦ 0¹ø PageÀÇ ÁÖ¼Ò¸¦ ÀÌ¿ëÇÏ¿©
+        // Membase¿Í catalog table header¸¦ Àç¼³Á¤ ÇØ¾ßÇÑ´Ù.
         IDE_TEST(sFirstDBFile->readPage(
                                    aTBSNode,
-                                   (scPageID)0,
+                                   SMM_MEMBASE_PAGEID,
                                    aPageBuffer )
                  != IDE_SUCCESS);
 
@@ -3675,9 +3745,9 @@ IDE_RC smmManager::openFstDBFilesAndSetupMembase( smmTBSNode * aTBSNode,
 }
 
 /*
- * ë””ìŠ¤í¬ ì´ë¯¸ì§€ë¡œë¶€í„° ë°ì´í„°ë² ì´ìŠ¤ í˜ì´ì§€ë¥¼ ë¡œë“œí•œë‹¤.
+ * µğ½ºÅ© ÀÌ¹ÌÁö·ÎºÎÅÍ µ¥ÀÌÅÍº£ÀÌ½º ÆäÀÌÁö¸¦ ·ÎµåÇÑ´Ù.
  *
- * aOp [IN] Restore ì˜µì…˜/ì •ë³´
+ * aOp [IN] Restore ¿É¼Ç/Á¤º¸
  */
 
 IDE_RC smmManager::restoreTBS ( smmTBSNode * aTBSNode, smmRestoreOption aOp )
@@ -3699,8 +3769,8 @@ IDE_RC smmManager::restoreTBS ( smmTBSNode * aTBSNode, smmRestoreOption aOp )
     sAlignedPageBuffer = NULL;
 
     /*
-     * BUG-18828 memory tbsì˜ restoreTBS ì—ì„œ align ë˜ì§€ ì•Šì€
-     * i/o buffer ë¥¼ ì‚¬ìš©í•˜ì—¬ ì„œë²„ êµ¬ë™ì‹¤íŒ¨
+     * BUG-18828 memory tbsÀÇ restoreTBS ¿¡¼­ align µÇÁö ¾ÊÀº
+     * i/o buffer ¸¦ »ç¿ëÇÏ¿© ¼­¹ö ±¸µ¿½ÇÆĞ
      */
     IDE_TEST( iduFile::allocBuff4DirectIO( IDU_MEM_SM_SMM,
                                            SM_PAGE_SIZE,
@@ -3733,7 +3803,7 @@ IDE_RC smmManager::restoreTBS ( smmTBSNode * aTBSNode, smmRestoreOption aOp )
     {
         sDBFileCount = getRestoreDBFileCount( aTBSNode );
 
-        // íŒŒì¼ì´ ìˆì„ ê²½ìš°ì—ë§Œ Opení•œë‹¤.
+        // ÆÄÀÏÀÌ ÀÖÀ» °æ¿ì¿¡¸¸ OpenÇÑ´Ù.
         for ( sFileIdx = 1; sFileIdx < sDBFileCount; sFileIdx++ )
         {
             IDE_ASSERT( sFileIdx < aTBSNode->mHighLimitFile );
@@ -3759,24 +3829,24 @@ IDE_RC smmManager::restoreTBS ( smmTBSNode * aTBSNode, smmRestoreOption aOp )
             }
             else
             {
-                /*  ë””ìŠ¤í¬ì— ìƒì„±ëœ ê¸°ë¡ì´ ì—†ìœ¼ë©´ í™•ì¸í•  í•„ìš”ë„ ì—†ìŒ. */  
+                /*  µğ½ºÅ©¿¡ »ı¼ºµÈ ±â·ÏÀÌ ¾øÀ¸¸é È®ÀÎÇÒ ÇÊ¿äµµ ¾øÀ½. */  
             }
-        } // for
-    } // for
+        } //for
+    } //for
 
     /* ------------------------------------------------
-     * [2] ì‹¤ì œ DB ë¡œë”©
+     * [2] ½ÇÁ¦ DB ·Îµù
      * ----------------------------------------------*/
     if ( smuProperty::getLogBufferType() == SMU_LOG_BUFFER_TYPE_MEMORY )
     {
-        // log buffer typeì´ memory ì¸ ê²½ìš°ì—ëŠ”
-        // SMM_DB_RESTORE_TYPE_DYNAMIC ë§Œ ê°€ëŠ¥
+        // log buffer typeÀÌ memory ÀÎ °æ¿ì¿¡´Â
+        // SMM_DB_RESTORE_TYPE_DYNAMIC ¸¸ °¡´É
         IDE_TEST_RAISE( ( aTBSNode->mRestoreType == SMM_DB_RESTORE_TYPE_SHM_CREATE) ||
                         ( aTBSNode->mRestoreType == SMM_DB_RESTORE_TYPE_SHM_ATTACH),
                         err_invalid_database_type );
     }
 
-    (void)invalidate(aTBSNode); // dbë¥¼ inconsistency ìƒíƒœë¡œ ì„¤ì •
+    (void)invalidate(aTBSNode); // db¸¦ inconsistency »óÅÂ·Î ¼³Á¤
     {
         ideLog::log(IDE_SERVER_0,
                     "     BEGIN TABLESPACE[%"ID_UINT32_FMT"] RESTORATION\n",
@@ -3792,7 +3862,7 @@ IDE_RC smmManager::restoreTBS ( smmTBSNode * aTBSNode, smmRestoreOption aOp )
             IDE_TEST( restoreCreateSharedDB(aTBSNode, aOp ) != IDE_SUCCESS);
             break;
         case SMM_DB_RESTORE_TYPE_SHM_ATTACH:
-            // do nothing : prepareì‹œì— ì´ë¯¸ Attachì™„ë£Œí•˜ì˜€ìŒ
+            // do nothing : prepare½Ã¿¡ ÀÌ¹Ì Attach¿Ï·áÇÏ¿´À½
             break;
         default:
             IDE_CALLBACK_FATAL("error");
@@ -3803,7 +3873,7 @@ IDE_RC smmManager::restoreTBS ( smmTBSNode * aTBSNode, smmRestoreOption aOp )
                     "     END TABLESPACE[%"ID_UINT32_FMT"] RESTORATION\n",
                     aTBSNode->mHeader.mID);
     }
-    (void)validate(aTBSNode); // dbë¥¼ consistency ìƒíƒœë¡œ ë˜ëŒë¦¼.
+    (void)validate(aTBSNode); // db¸¦ consistency »óÅÂ·Î µÇµ¹¸².
 
     // copy membase to backup
     if( aTBSNode->mHeader.mID == SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC )
@@ -3812,10 +3882,10 @@ IDE_RC smmManager::restoreTBS ( smmTBSNode * aTBSNode, smmRestoreOption aOp )
     }
 
 #ifdef DEBUG
-    // Recoveryê°€ í•„ìš”í•˜ì§€ ì•Šì€ ì •ìƒ Startupì¼ ê²½ìš°
+    // Recovery°¡ ÇÊ¿äÇÏÁö ¾ÊÀº Á¤»ó StartupÀÏ °æ¿ì
     if ( (aOp & SMM_RESTORE_OP_DBIMAGE_NEED_RECOVERY) == 0 )
     {
-        // DBê°€ ë‹¤ ë¡œë”©ëœ ìƒíƒœì´ë¯€ë¡œ, Assertionìˆ˜í–‰
+        // DB°¡ ´Ù ·ÎµùµÈ »óÅÂÀÌ¹Ç·Î, Assertion¼öÇà
         IDE_DASSERT( smmFPLManager::isAllFPLsValid(aTBSNode) == ID_TRUE );
     }
 #endif
@@ -3844,15 +3914,15 @@ IDE_RC smmManager::restoreTBS ( smmTBSNode * aTBSNode, smmRestoreOption aOp )
 }
 
 /*
-  PRJ-1548 User Memory Tablespace ê°œë…ë„ì…
+  PRJ-1548 User Memory Tablespace °³³äµµÀÔ
 
-  ë¯¸ë””ì–´ë³µêµ¬ í”Œë˜ê·¸ê°€ ID_TRUEë¡œ ì„¤ì •ëœ ë°ì´íƒ€íŒŒì¼ì´ ìˆì„ ê²½ìš°
-  Media Failure í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì´ë¯€ë¡œ ID_TRUEë¥¼ ë°˜í™˜í•œë‹¤.
+  ¹Ìµğ¾îº¹±¸ ÇÃ·¡±×°¡ ID_TRUE·Î ¼³Á¤µÈ µ¥ÀÌÅ¸ÆÄÀÏÀÌ ÀÖÀ» °æ¿ì
+  Media Failure Å×ÀÌºí½ºÆäÀÌ½ºÀÌ¹Ç·Î ID_TRUE¸¦ ¹İÈ¯ÇÑ´Ù.
 
-  [IN] aTBSNode - checkí•  Tablespaceì˜ Node
+  [IN] aTBSNode - checkÇÒ TablespaceÀÇ Node
 
-  [RETURN] ID_TRUE  - media failure ìƒíƒœ
-           ID_FALSE - ì •ìƒ
+  [RETURN] ID_TRUE  - media failure »óÅÂ
+           ID_FALSE - Á¤»ó
 
 */
 idBool smmManager::isMediaFailureTBS( smmTBSNode * aTBSNode )
@@ -3878,13 +3948,13 @@ idBool smmManager::isMediaFailureTBS( smmTBSNode * aTBSNode )
 
         if ( sDatabaseFile->getIsMediaFailure() == ID_TRUE )
         {
-            // Media Failure ìƒíƒœ
+            // Media Failure »óÅÂ
             sResult = ID_TRUE;
             break;
         }
         else
         {
-            // ì •ìƒìƒíƒœ
+            // Á¤»ó»óÅÂ
         }
     }
 
@@ -3893,9 +3963,9 @@ idBool smmManager::isMediaFailureTBS( smmTBSNode * aTBSNode )
 
 
 /*
- * ì¼ë°˜ ë©”ëª¨ë¦¬ë¡œ ë°ì´í„°ë² ì´ìŠ¤ ì´ë¯¸ì§€ì˜ ë‚´ìš©ì„ ì½ì–´ë“¤ì¸ë‹¤.
+ * ÀÏ¹İ ¸Ş¸ğ¸®·Î µ¥ÀÌÅÍº£ÀÌ½º ÀÌ¹ÌÁöÀÇ ³»¿ëÀ» ÀĞ¾îµéÀÎ´Ù.
  *
- * aOp [IN] Restore ì˜µì…˜/ì •ë³´
+ * aOp [IN] Restore ¿É¼Ç/Á¤º¸
  */
 IDE_RC smmManager::restoreDynamicDB( smmTBSNode     * aTBSNode)
 {
@@ -3916,7 +3986,7 @@ IDE_RC smmManager::restoreDynamicDB( smmTBSNode     * aTBSNode)
 
     IDE_TEST(setupBasePageInfo(
                  aTBSNode,
-                 (UChar*)mPCHArray[aTBSNode->mTBSAttr.mID][0]->m_page )
+                 (UChar*)mPCArray[aTBSNode->mTBSAttr.mID].mPC[SMM_MEMBASE_PAGEID].mPagePtr )
              != IDE_SUCCESS);
 
 
@@ -3928,7 +3998,7 @@ IDE_RC smmManager::restoreDynamicDB( smmTBSNode     * aTBSNode)
 }
 
 /*
- * ê³µìœ  ë©”ëª¨ë¦¬ë¡œ ë°ì´í„°ë² ì´ìŠ¤ ì´ë¯¸ì§€ì˜ ë‚´ìš©ì„ ì½ì–´ë“¤ì¸ë‹¤.
+ * °øÀ¯ ¸Ş¸ğ¸®·Î µ¥ÀÌÅÍº£ÀÌ½º ÀÌ¹ÌÁöÀÇ ³»¿ëÀ» ÀĞ¾îµéÀÎ´Ù.
  *
  */
 IDE_RC smmManager::restoreCreateSharedDB( smmTBSNode     * aTBSNode,
@@ -3938,35 +4008,35 @@ IDE_RC smmManager::restoreCreateSharedDB( smmTBSNode     * aTBSNode,
     scPageID            sShmPageChunkCount;
     ULong               sShmChunkSize;
 
-    // ë¯¸ë””ì–´ ë³µêµ¬ëŠ” Shared Memory Versionì„ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
-    // ì´ë¯¸ prepare ê³¼ì •ì—ì„œ Error checkingì„ í•˜ì˜€ê¸° ë•Œë¬¸ì—
+    // ¹Ìµğ¾î º¹±¸´Â Shared Memory VersionÀ» Áö¿øÇÏÁö ¾Ê´Â´Ù.
+    // ÀÌ¹Ì prepare °úÁ¤¿¡¼­ Error checkingÀ» ÇÏ¿´±â ¶§¹®¿¡
     IDE_ASSERT( aOp != SMM_RESTORE_OP_DBIMAGE_NEED_MEDIA_RECOVERY );
     sShmChunkSize = smuProperty::getShmChunkSize();
 
     /* ----------------------------------------------------------------------
-     * [Section - 1] DBì— ì‚¬ìš©ë  Page ê°¯ìˆ˜ë¥¼ ì–»ëŠ”ë‹¤.
+     * [Section - 1] DB¿¡ »ç¿ëµÉ Page °¹¼ö¸¦ ¾ò´Â´Ù.
      * --------------------------------------------------------------------*/
 
     /* --------------------------
-     * [1-3] í•„ìš”í•œ page ê°¯ìˆ˜ êµ¬í•˜ê¸°
+     * [1-3] ÇÊ¿äÇÑ page °¹¼ö ±¸ÇÏ±â
      *       free page list count + echo table page count
      * ------------------------ */
     sNeedPage = aTBSNode->mMemBase->mAllocPersPageCount;
 
     /* -------------------------------------------------------------------
-     * [Section - 2] Page ê°¯ìˆ˜ë¥¼ ê¸°ë°˜ìœ¼ë¡œ ê³µìœ ë©”ëª¨ë¦¬ ìƒì„± ë°  ë¡œë”©
+     * [Section - 2] Page °¹¼ö¸¦ ±â¹İÀ¸·Î °øÀ¯¸Ş¸ğ¸® »ı¼º ¹×  ·Îµù
      * -----------------------------------------------------------------*/
 
     /* --------------------------
-     * [2-1] Shared Memory ìƒì„±
+     * [2-1] Shared Memory »ı¼º
      *
-     * PR-1561 : [ëŒ€ì‹ ì¦ê¶Œ] shared memoryì‚¬ìš©ì‹œ 2GBì´ìƒ createí•  ìˆ˜ ì—†ìŒ
+     * PR-1561 : [´ë½ÅÁõ±Ç] shared memory»ç¿ë½Ã 2GBÀÌ»ó createÇÒ ¼ö ¾øÀ½
      *
-     *  = ê³µìœ  ë©”ëª¨ë¦¬ ë²„ì ¼ì˜ DB Startupì‹œì— 2Gì´ìƒì˜ DBê°€ ì¡´ì¬í•  ê²½ìš°
-     *    AIXì—ì„œ í•œêº¼ë²ˆì— 2Gì˜ ê³µìœ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹ë°›ì„ ìˆ˜ ì—†ë‹¤.
-     *    ë”°ë¼ì„œ, Startupì‹œ ì§€ì •ëœ í”„ë¡œí¼í‹°(ìµœëŒ€ 2G)ì˜ ìš©ëŸ‰ë‹¨ìœ„ë¡œ
-     *    í• ë‹¹ë°›ë„ë¡ í•œë‹¤.
-     *    í”„ë¡œí¼í‹°ëª… : SMU_STARTUP_SHM_CHUNK_SIZE
+     *  = °øÀ¯ ¸Ş¸ğ¸® ¹öÁ¯ÀÇ DB Startup½Ã¿¡ 2GÀÌ»óÀÇ DB°¡ Á¸ÀçÇÒ °æ¿ì
+     *    AIX¿¡¼­ ÇÑ²¨¹ø¿¡ 2GÀÇ °øÀ¯¸Ş¸ğ¸®¸¦ ÇÒ´ç¹ŞÀ» ¼ö ¾ø´Ù.
+     *    µû¶ó¼­, Startup½Ã ÁöÁ¤µÈ ÇÁ·ÎÆÛÆ¼(ÃÖ´ë 2G)ÀÇ ¿ë·®´ÜÀ§·Î
+     *    ÇÒ´ç¹Şµµ·Ï ÇÑ´Ù.
+     *    ÇÁ·ÎÆÛÆ¼¸í : SMU_STARTUP_SHM_CHUNK_SIZE
      * ------------------------ */
 
     sShmPageChunkCount = (sShmChunkSize / SM_PAGE_SIZE);
@@ -3974,24 +4044,24 @@ IDE_RC smmManager::restoreCreateSharedDB( smmTBSNode     * aTBSNode,
     if (sNeedPage <= sShmPageChunkCount)
     {
         /* ------------------------------------------------
-         *  case 1 : ë¡œë“œí•  DBì˜ í¬ê¸°ê°€ í”„ë¡œí¼í‹°ë³´ë‹¤ ì‘ê±°ë‚˜ ê°™ìŒ.
+         *  case 1 : ·ÎµåÇÒ DBÀÇ Å©±â°¡ ÇÁ·ÎÆÛÆ¼º¸´Ù ÀÛ°Å³ª °°À½.
          * ----------------------------------------------*/
-        // ì²«ë²ˆì§¸ Chunkìƒì„±í•˜ê³  ê³µìœ ë©”ëª¨ë¦¬ Keyë¥¼ TBSNodeì— ì„¤ì •
+        // Ã¹¹øÂ° Chunk»ı¼ºÇÏ°í °øÀ¯¸Ş¸ğ¸® Key¸¦ TBSNode¿¡ ¼³Á¤
         IDE_TEST(smmFixedMemoryMgr::createFirstChunk(
                      aTBSNode,
                      sNeedPage) != IDE_SUCCESS);
 
-        // Restoreë§ˆì¹œ ì´í›„
-        // Log Anchorì— ëª¨ë“  TBSì˜ ShmKeyë¥¼ Flushí•´ì•¼í•œë‹¤.
-        // BUGBUG-1548 ì •ë§ Flushí•˜ëŠ”ì§€ ì²´í¬í•  ê²ƒ
+        // Restore¸¶Ä£ ÀÌÈÄ
+        // Log Anchor¿¡ ¸ğµç TBSÀÇ ShmKey¸¦ FlushÇØ¾ßÇÑ´Ù.
+        // BUGBUG-1548 Á¤¸» FlushÇÏ´ÂÁö Ã¼Å©ÇÒ °Í
     }
     else
     {
         /* ------------------------------------------------
-         *  case 2 : ë¡œë“œí•  DBì˜ í¬ê¸°ê°€ í”„ë¡œí¼í‹°ë³´ë‹¤ í¼.
+         *  case 2 : ·ÎµåÇÒ DBÀÇ Å©±â°¡ ÇÁ·ÎÆÛÆ¼º¸´Ù Å­.
          *           so, split DB to shm chunk.
          * ----------------------------------------------*/
-        // ì²«ë²ˆì§¸ Chunkìƒì„±í•˜ê³  ê³µìœ ë©”ëª¨ë¦¬ Keyë¥¼ Log Anchorì— Flush
+        // Ã¹¹øÂ° Chunk»ı¼ºÇÏ°í °øÀ¯¸Ş¸ğ¸® Key¸¦ Log Anchor¿¡ Flush
         IDE_TEST(smmFixedMemoryMgr::createFirstChunk(
                      aTBSNode,
                      sShmPageChunkCount) != IDE_SUCCESS);
@@ -4030,10 +4100,10 @@ IDE_RC smmManager::restoreCreateSharedDB( smmTBSNode     * aTBSNode,
 
         IDE_TEST(setupBasePageInfo(
                      aTBSNode,
-                     (UChar*)mPCHArray[aTBSNode->mTBSAttr.mID][0]->m_page)
+                     (UChar*)mPCArray[aTBSNode->mTBSAttr.mID].mPC[SMM_MEMBASE_PAGEID].mPagePtr)
                  != IDE_SUCCESS);
     }
-    (void)validate(aTBSNode); // dbë¥¼ consistency ìƒíƒœë¡œ ë˜ëŒë¦¼.
+    (void)validate(aTBSNode); // db¸¦ consistency »óÅÂ·Î µÇµ¹¸².
 
 
     return IDE_SUCCESS;
@@ -4044,42 +4114,42 @@ IDE_RC smmManager::restoreCreateSharedDB( smmTBSNode     * aTBSNode,
 }
 
 
-/* DB Fileë¡œë¶€í„° í…Œì´ë¸”ì— í• ë‹¹ëœ Pageë“¤ì„ ë©”ëª¨ë¦¬ë¡œ ë¡œë“œí•œë‹¤.
+/* DB File·ÎºÎÅÍ Å×ÀÌºí¿¡ ÇÒ´çµÈ PageµéÀ» ¸Ş¸ğ¸®·Î ·ÎµåÇÑ´Ù.
  *
- * ì´ í•¨ìˆ˜ëŠ” ì„œë²„ ê¸°ë™ì‹œì— ë””ìŠ¤í¬ ì´ë¯¸ì§€ íŒŒì¼ë¡œë¶€í„° Pageë¥¼ ë©”ëª¨ë¦¬ë¡œ ì ì¬í•  ë•Œ
- * ì‚¬ìš©ëœë‹¤.
+ * ÀÌ ÇÔ¼ö´Â ¼­¹ö ±âµ¿½Ã¿¡ µğ½ºÅ© ÀÌ¹ÌÁö ÆÄÀÏ·ÎºÎÅÍ Page¸¦ ¸Ş¸ğ¸®·Î ÀûÀçÇÒ ¶§
+ * »ç¿ëµÈ´Ù.
  *
- * ê·¸ë¦¬ê³  DB Fileì´ ì €ì¥í•´ì•¼ í•  Pageì˜ ë²”ìœ„ë¥¼ ë°›ì•„ì„œ
- * PCH ì—”íŠ¸ë¦¬ë¥¼ í• ë‹¹í•˜ê³  ì´ˆê¸°í™”í•œë‹¤.
- * ë˜í•œ, DB Fileë¡œë¶€í„° ë©”ëª¨ë¦¬ë¡œ ë¡œë“œí•  Pageì˜ ìˆ˜ë¥¼ ë°›ì•„ì„œ Pageë¥¼ Diskë¡œë¶€í„°
- * ì½ì–´ë“¤ì¸ë‹¤.
+ * ±×¸®°í DB FileÀÌ ÀúÀåÇØ¾ß ÇÒ PageÀÇ ¹üÀ§¸¦ ¹Ş¾Æ¼­
+ * PCH ¿£Æ®¸®¸¦ ÇÒ´çÇÏ°í ÃÊ±âÈ­ÇÑ´Ù.
+ * ¶ÇÇÑ, DB File·ÎºÎÅÍ ¸Ş¸ğ¸®·Î ·ÎµåÇÒ PageÀÇ ¼ö¸¦ ¹Ş¾Æ¼­ Page¸¦ Disk·ÎºÎÅÍ
+ * ÀĞ¾îµéÀÎ´Ù.
  *
- * í…Œì´ë¸”ì— í• ë‹¹ëœ Pageì˜ ê²½ìš°ëŠ” DB Fileì— ê¸°ë¡ë˜ì§€ë§Œ,
- * í•œë²ˆë„ í…Œì´ë¸”ì— í• ë‹¹ëœ ì ì´ ì—†ëŠ” Free Pageì˜ ê²½ìš°ëŠ”
- * ì•„ì˜ˆ DB Fileì— ê¸°ë¡ì¡°ì°¨ ë˜ì§€ ì•Šê¸° ë•Œë¬¸ì—,
- * DB Fileì˜ í¬ê¸°ëŠ” ì‹¤ì œ ì €ì¥í•´ì•¼ í•˜ëŠ” Pageìˆ˜ë¥¼ ì»¤ë²„í•˜ì§€ ëª»í•  ìˆ˜ë„ ìˆë‹¤.
+ * Å×ÀÌºí¿¡ ÇÒ´çµÈ PageÀÇ °æ¿ì´Â DB File¿¡ ±â·ÏµÇÁö¸¸,
+ * ÇÑ¹øµµ Å×ÀÌºí¿¡ ÇÒ´çµÈ ÀûÀÌ ¾ø´Â Free PageÀÇ °æ¿ì´Â
+ * ¾Æ¿¹ DB File¿¡ ±â·ÏÁ¶Â÷ µÇÁö ¾Ê±â ¶§¹®¿¡,
+ * DB FileÀÇ Å©±â´Â ½ÇÁ¦ ÀúÀåÇØ¾ß ÇÏ´Â Page¼ö¸¦ Ä¿¹öÇÏÁö ¸øÇÒ ¼öµµ ÀÖ´Ù.
  *
- * ì˜ˆë¥¼ë“¤ì–´, í•˜ë‚˜ì˜ DBíŒŒì¼ì— 1ë²ˆë¶€í„° 20ë²ˆê¹Œì§€ 20ê°œì˜ Pageê°€ ê¸°ë¡ ê°€ëŠ¥í•œë°,
- * ì´ ì¤‘ 1ë²ˆë¶€í„° 10ë²ˆê¹Œì§€ê°€ í…Œì´ë¸”ì— í• ë‹¹ë˜ì—ˆê³ , 11ë²ˆë¶€í„° 20ë²ˆê¹Œì§€ëŠ”
- * í•œë²ˆë„ ì‚¬ìš©ëœì ì´ ì—†ëŠ” Free Pageë¼ê³  ê°€ì •í•´ë³´ì.
+ * ¿¹¸¦µé¾î, ÇÏ³ªÀÇ DBÆÄÀÏ¿¡ 1¹øºÎÅÍ 20¹ø±îÁö 20°³ÀÇ Page°¡ ±â·Ï °¡´ÉÇÑµ¥,
+ * ÀÌ Áß 1¹øºÎÅÍ 10¹ø±îÁö°¡ Å×ÀÌºí¿¡ ÇÒ´çµÇ¾ú°í, 11¹øºÎÅÍ 20¹ø±îÁö´Â
+ * ÇÑ¹øµµ »ç¿ëµÈÀûÀÌ ¾ø´Â Free Page¶ó°í °¡Á¤ÇØº¸ÀÚ.
  *
- * 1ë²ˆë¶€í„° 10ë²ˆê¹Œì§€ëŠ” ( í˜¹ì€ 10ë²ˆ Pageí•˜ë‚˜ë¼ë„ ) Disk ì´ë¯¸ì§€ì— ê¸°ë¡ëœ ì ì´
- * ìˆì–´ì„œ DB Fileì€ 10ê°œì˜ Pageë¥¼ ê¸°ë¡í•  ìˆ˜ ìˆëŠ” í¬ê¸°ì¸ 320KBê¹Œì§€ í¬ê¸°ê°€
- * ì¡íˆê²Œ ëœë‹¤. ( í•˜ë‚˜ì˜ PageëŠ” 32KBë¼ê³  ê°€ì • )
- * ì´ í•¨ìˆ˜ëŠ” 1ë²ˆë¶€í„° 10ë²ˆê¹Œì§€ì˜ Pageì— ëŒ€í•´ì„œëŠ” PCHì—”íŠ¸ë¦¬ë¥¼ í• ë‹¹í•˜ê³ ,
- * Page ë©”ëª¨ë¦¬ ë˜í•œ í• ë‹¹í•œ í›„, Diskë¡œë¶€í„° ì½ì€ Pageì˜ ë‚´ìš©ì„ ë³µì‚¬í•œë‹¤.
+ * 1¹øºÎÅÍ 10¹ø±îÁö´Â ( È¤Àº 10¹ø PageÇÏ³ª¶óµµ ) Disk ÀÌ¹ÌÁö¿¡ ±â·ÏµÈ ÀûÀÌ
+ * ÀÖ¾î¼­ DB FileÀº 10°³ÀÇ Page¸¦ ±â·ÏÇÒ ¼ö ÀÖ´Â Å©±âÀÎ 320KB±îÁö Å©±â°¡
+ * ÀâÈ÷°Ô µÈ´Ù. ( ÇÏ³ªÀÇ Page´Â 32KB¶ó°í °¡Á¤ )
+ * ÀÌ ÇÔ¼ö´Â 1¹øºÎÅÍ 10¹ø±îÁöÀÇ Page¿¡ ´ëÇØ¼­´Â PCH¿£Æ®¸®¸¦ ÇÒ´çÇÏ°í,
+ * Page ¸Ş¸ğ¸® ¶ÇÇÑ ÇÒ´çÇÑ ÈÄ, Disk·ÎºÎÅÍ ÀĞÀº PageÀÇ ³»¿ëÀ» º¹»çÇÑ´Ù.
  *
- * 11ë²ˆë¶€í„° 20ë²ˆê¹Œì§€ëŠ” í•œë²ˆë„ ì“°ì¸ì ì´ ì—†ëŠ” Free Pageë¼ì„œ Diskì´ë¯¸ì§€ì—
- * ê¸°ë¡ì¡°ì°¨ ë˜ì§€ ì•Šìœ¼ë©°, Free Pageë¼ë„ PCH ì—”íŠ¸ë¦¬ëŠ” ìœ ì§€í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì—,
- * ì´ í•¨ìˆ˜ëŠ” 11ë²ˆë¶€í„° 20ë²ˆê¹Œì§€ëŠ” PCH ì—”íŠ¸ë¦¬ë¥¼ í• ë‹¹í•˜ê³  ì´ˆê¸°í™”ë§Œ í•œë‹¤.
+ * 11¹øºÎÅÍ 20¹ø±îÁö´Â ÇÑ¹øµµ ¾²ÀÎÀûÀÌ ¾ø´Â Free Page¶ó¼­ DiskÀÌ¹ÌÁö¿¡
+ * ±â·ÏÁ¶Â÷ µÇÁö ¾ÊÀ¸¸ç, Free Page¶óµµ PCH ¿£Æ®¸®´Â À¯ÁöÇØ¾ß ÇÏ±â ¶§¹®¿¡,
+ * ÀÌ ÇÔ¼ö´Â 11¹øºÎÅÍ 20¹ø±îÁö´Â PCH ¿£Æ®¸®¸¦ ÇÒ´çÇÏ°í ÃÊ±âÈ­¸¸ ÇÑ´Ù.
  *
- * ì´ ì˜ˆì—ì„œ loadDbFileì˜ ì¸ìëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.
+ * ÀÌ ¿¹¿¡¼­ loadDbFileÀÇ ÀÎÀÚ´Â ´ÙÀ½°ú °°´Ù.
  * ( aFileMinPID = 1, aFileMaxPID = 20, aLoadPageCount = 10 )
  *
- * aFileNumber    [IN] DB File ë²ˆí˜¸ - 0ë¶€í„° ì‹œì‘í•œë‹¤.
- * aFileMinPID    [IN] DB Fileì— ê¸°ë¡ë˜ì–´ì•¼ í•˜ëŠ” Page ë²”ìœ„ - ì²«ë²ˆì§¸ Page ID
- * aFileMaxPID    [IN] DB Fileì— ê¸°ë¡ë˜ì–´ì•¼ í•˜ëŠ” Page ë²”ìœ„ - ë§ˆì§€ë§‰ Page ID
- * aLoadPageCount [IN] ì²«ë²ˆì§¸ Pageë¶€í„° ì‹œì‘í•˜ì—¬ ë©”ëª¨ë¦¬ë¡œ ì½ì–´ë“¤ì¼ Pageì˜ ìˆ˜
+ * aFileNumber    [IN] DB File ¹øÈ£ - 0ºÎÅÍ ½ÃÀÛÇÑ´Ù.
+ * aFileMinPID    [IN] DB File¿¡ ±â·ÏµÇ¾î¾ß ÇÏ´Â Page ¹üÀ§ - Ã¹¹øÂ° Page ID
+ * aFileMaxPID    [IN] DB File¿¡ ±â·ÏµÇ¾î¾ß ÇÏ´Â Page ¹üÀ§ - ¸¶Áö¸· Page ID
+ * aLoadPageCount [IN] Ã¹¹øÂ° PageºÎÅÍ ½ÃÀÛÇÏ¿© ¸Ş¸ğ¸®·Î ÀĞ¾îµéÀÏ PageÀÇ ¼ö
  */
 
 
@@ -4087,7 +4157,7 @@ IDE_RC smmManager::loadDbFile( smmTBSNode *     aTBSNode,
                                UInt             aFileNumber,
                                scPageID         aFileMinPID,
                                scPageID         aFileMaxPID,
-                               scPageID         aLoadPageCount )
+                               UInt             aLoadPageCount )
 {
 #ifdef DEBUG
     scSpaceID        sSpaceID;
@@ -4101,8 +4171,8 @@ IDE_RC smmManager::loadDbFile( smmTBSNode *     aTBSNode,
 
     IDE_DASSERT( isValidPageID( sSpaceID, aFileMinPID )
                  == ID_TRUE );
-    /* Max PIDëŠ” Fileì´ ê°€ì§ˆ ìˆ˜ ìˆëŠ” ìµœëŒ€í¬ê¸° ì´ê¸°ë•Œë¬¸ì— Valid Pageê°€
-     * ì‹¤íŒ¨í•  ìˆ˜ ìˆë‹¤.
+    /* Max PID´Â FileÀÌ °¡Áú ¼ö ÀÖ´Â ÃÖ´ëÅ©±â ÀÌ±â¶§¹®¿¡ Valid Page°¡
+     * ½ÇÆĞÇÒ ¼ö ÀÖ´Ù.
     IDE_DASSERT( isValidPageID( sSpaceID, aFileMaxPID )
                  == ID_TRUE );
     */
@@ -4112,21 +4182,21 @@ IDE_RC smmManager::loadDbFile( smmTBSNode *     aTBSNode,
                                    aFileMinPID,
                                    aLoadPageCount ) != IDE_SUCCESS );
 
-    // DB ì´ë¯¸ì§€ë¡œë¶€í„° Loadí•œ Page ì¤‘ PIDê°’ ê°€ì¥ í°ê²ƒ
+    // DB ÀÌ¹ÌÁö·ÎºÎÅÍ LoadÇÑ Page Áß PID°ª °¡Àå Å«°Í
     sLastLoadedPID = aFileMinPID + aLoadPageCount - 1;
 
-    // DISK ì´ë¯¸ì§€ì— í•œë²ˆë„ ê¸°ë¡ì¡°ì°¨ ë˜ì§€ ì•Šì€ ëª¨ë“  Pageì— ëŒ€í•´ì„œ
-    // PCH Entryí• ë‹¹
+    // DISK ÀÌ¹ÌÁö¿¡ ÇÑ¹øµµ ±â·ÏÁ¶Â÷ µÇÁö ¾ÊÀº ¸ğµç Page¿¡ ´ëÇØ¼­
+    // PCH EntryÇÒ´ç
     for (sPID = sLastLoadedPID + 1; sPID <= aFileMaxPID; sPID++)
     {
         if ( sPID >= aTBSNode->mDBMaxPageCount )
         {
-            // ìµœëŒ€ í˜ì´ì§€ ë²”ìœ„ë¥¼ ë²—ì–´ë‚¬ë‹¤ë©´ PCH Entryí• ë‹¹ì¤‘ì§€
+            // ÃÖ´ë ÆäÀÌÁö ¹üÀ§¸¦ ¹ş¾î³µ´Ù¸é PCH EntryÇÒ´çÁßÁö
             break;
         }
         else
         {
-            // PCHë§Œ í• ë‹¹í•˜ê³  Pageë©”ëª¨ë¦¬ëŠ” í• ë‹¹í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // PCH¸¸ ÇÒ´çÇÏ°í Page¸Ş¸ğ¸®´Â ÇÒ´çÇÏÁö ¾Ê´Â´Ù.
             IDE_TEST( allocPCHEntry( aTBSNode, sPID ) != IDE_SUCCESS );
         }
     }
@@ -4141,18 +4211,18 @@ IDE_RC smmManager::loadDbFile( smmTBSNode *     aTBSNode,
 }
 
 /*
- * í•˜ë‚˜ì˜ DBíŒŒì¼ì— ì†í•œ ëª¨ë“  Pageë¥¼ ë©”ëª¨ë¦¬ Pageë¡œ ë¡œë“œí•œë‹¤.
+ * ÇÏ³ªÀÇ DBÆÄÀÏ¿¡ ¼ÓÇÑ ¸ğµç Page¸¦ ¸Ş¸ğ¸® Page·Î ·ÎµåÇÑ´Ù.
  *
- * - í•˜ë‚˜ì˜ ë°ì´í„° íŒŒì¼ì„ ì—¬ëŸ¬ ê°œì˜ ì¡°ê°(Chunk)ë¡œ ë‚˜ëˆ„ì–´ ë¡œë“œí•œë‹¤.
- * - ì´ëŸ¬í•œ ë¡œë“œí•  ì¡°ê°ì˜ í¬ê¸°ëŠ” RESTORE_CHUNK_PAGE_COUNTë¡œ ì¡°ì • ê°€ëŠ¥í•˜ë‹¤.
- * - RESTORE_CHUNK_PAGE_COUNTê°€ ë„ˆë¬´ í¬ë©´ ë©”ëª¨ë¦¬ ë¶€ì¡±ìœ¼ë¡œ ì¸í•´ Startupì´
- *   ì‹¤íŒ¨í•  ìˆ˜ë„ ìˆë‹¤. ( BUG-15020 ì°¸ê³  )
- * - RESTORE_CHUNK_PAGE_COUNTê°€ ë„ˆë¬´ ì‘ìœ¼ë©´ ë¹ˆë²ˆí•œ I/Oìˆ˜í–‰ìœ¼ë¡œ ì¸í•´
- *   Startupì‹œ ì„±ëŠ¥ì´ ì €í•˜ë  ìˆ˜ ìˆë‹¤.
+ * - ÇÏ³ªÀÇ µ¥ÀÌÅÍ ÆÄÀÏÀ» ¿©·¯ °³ÀÇ Á¶°¢(Chunk)·Î ³ª´©¾î ·ÎµåÇÑ´Ù.
+ * - ÀÌ·¯ÇÑ ·ÎµåÇÒ Á¶°¢ÀÇ Å©±â´Â RESTORE_CHUNK_PAGE_COUNT·Î Á¶Á¤ °¡´ÉÇÏ´Ù.
+ * - RESTORE_CHUNK_PAGE_COUNT°¡ ³Ê¹« Å©¸é ¸Ş¸ğ¸® ºÎÁ·À¸·Î ÀÎÇØ StartupÀÌ
+ *   ½ÇÆĞÇÒ ¼öµµ ÀÖ´Ù. ( BUG-15020 Âü°í )
+ * - RESTORE_CHUNK_PAGE_COUNT°¡ ³Ê¹« ÀÛÀ¸¸é ºó¹øÇÑ I/O¼öÇàÀ¸·Î ÀÎÇØ
+ *   Startup½Ã ¼º´ÉÀÌ ÀúÇÏµÉ ¼ö ÀÖ´Ù.
  *
- * aFileNumber    [IN] DB File ë²ˆí˜¸ - 0ë¶€í„° ì‹œì‘í•œë‹¤.
- * aFileMinPID    [IN] DB Fileì— ê¸°ë¡ë˜ì–´ì•¼ í•˜ëŠ” Page ë²”ìœ„ - ì²«ë²ˆì§¸ Page ID
- * aLoadPageCount [IN] ì²«ë²ˆì§¸ Pageë¶€í„° ì‹œì‘í•˜ì—¬ ë©”ëª¨ë¦¬ë¡œ ì½ì–´ë“¤ì¼ Pageì˜ ìˆ˜
+ * aFileNumber    [IN] DB File ¹øÈ£ - 0ºÎÅÍ ½ÃÀÛÇÑ´Ù.
+ * aFileMinPID    [IN] DB File¿¡ ±â·ÏµÇ¾î¾ß ÇÏ´Â Page ¹üÀ§ - Ã¹¹øÂ° Page ID
+ * aLoadPageCount [IN] Ã¹¹øÂ° PageºÎÅÍ ½ÃÀÛÇÏ¿© ¸Ş¸ğ¸®·Î ÀĞ¾îµéÀÏ PageÀÇ ¼ö
  */
 
 IDE_RC smmManager::loadDbPagesFromFile(smmTBSNode *     aTBSNode,
@@ -4161,11 +4231,11 @@ IDE_RC smmManager::loadDbPagesFromFile(smmTBSNode *     aTBSNode,
                                        ULong            aLoadPageCount )
 {
     UInt        sStage = 0;
-    void      * sRealBuffer    = NULL; /* í• ë‹¹ë°›ì€ ì²­í¬ ë©”ëª¨ë¦¬ ì£¼ì†Œ */
-    void      * sAlignedBuffer = NULL; /* AIOë¥¼ ìœ„í•´ Aligní•œ ë©”ëª¨ë¦¬ ì£¼ì†Œ */
-    SLong       sRemainPageCount;      /* ì•ìœ¼ë¡œ ë” ë¡œë“œí•  (ë‚¨ì€)Page ìˆ˜ */
-    scPageID    sChunkStartPID;        /* ë¡œë“œí•  ì¡°ê°ì˜ ì²«ë²ˆì§¸ Page ID */
-    scPageID    sChunkPageCount;       /* ë¡œë“œí•  ì¡°ê°ì— ì†í•œ Pageì˜ ìˆ˜ */
+    void      * sRealBuffer    = NULL; /* ÇÒ´ç¹ŞÀº Ã»Å© ¸Ş¸ğ¸® ÁÖ¼Ò */
+    void      * sAlignedBuffer = NULL; /* AIO¸¦ À§ÇØ AlignÇÑ ¸Ş¸ğ¸® ÁÖ¼Ò */
+    SLong       sRemainPageCount;      /* ¾ÕÀ¸·Î ´õ ·ÎµåÇÒ (³²Àº)Page ¼ö */
+    scPageID    sChunkStartPID;        /* ·ÎµåÇÒ Á¶°¢ÀÇ Ã¹¹øÂ° Page ID */
+    UInt        sChunkPageCount;       /* ·ÎµåÇÒ Á¶°¢¿¡ ¼ÓÇÑ PageÀÇ ¼ö */
 
     IDE_DASSERT( isValidPageID( aTBSNode->mTBSAttr.mID, aFileMinPID )
                  == ID_TRUE );
@@ -4178,7 +4248,7 @@ IDE_RC smmManager::loadDbPagesFromFile(smmTBSNode *     aTBSNode,
                                 &sDbFile )
               != IDE_SUCCESS );
 
-    // Pageë“¤ì„ ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ì—ì„œ ì½ì–´ì˜¤ëŠ” I/Oë¥¼ ìˆ˜í–‰í•œë‹¤.
+    // PageµéÀ» µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏ¿¡¼­ ÀĞ¾î¿À´Â I/O¸¦ ¼öÇàÇÑ´Ù.
     IDE_TEST(iduFile::allocBuff4DirectIO(
                  IDU_MEM_SM_SMM,
                  smuProperty::getRestoreBufferPageCount()
@@ -4194,8 +4264,8 @@ IDE_RC smmManager::loadDbPagesFromFile(smmTBSNode *     aTBSNode,
 
     do
     {
-        /* smuProperty::getRestoreBufferPageCount() ë‚˜ sRemainPageCountì¤‘
-           ì‘ì€ í˜ì´ì§€ ìˆ˜ë§Œí¼ ë¡œë“œ */
+        /* smuProperty::getRestoreBufferPageCount() ³ª sRemainPageCountÁß
+           ÀÛÀº ÆäÀÌÁö ¼ö¸¸Å­ ·Îµå */
         sChunkPageCount =
             ( sRemainPageCount < smuProperty::getRestoreBufferPageCount() ) ?
             sRemainPageCount : smuProperty::getRestoreBufferPageCount();
@@ -4236,44 +4306,44 @@ IDE_RC smmManager::loadDbPagesFromFile(smmTBSNode *     aTBSNode,
 
 }
 
-/* ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ì˜ ì¼ë¶€ ì¡°ê°(Chunk) í•˜ë‚˜ë¥¼ ë©”ëª¨ë¦¬ í˜ì´ì§€ë¡œ ë¡œë“œí•œë‹¤.
+/* µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏÀÇ ÀÏºÎ Á¶°¢(Chunk) ÇÏ³ª¸¦ ¸Ş¸ğ¸® ÆäÀÌÁö·Î ·ÎµåÇÑ´Ù.
  *
  *
- * ë°ì´í„°ë² ì´ìŠ¤ í˜ì´ì§€ë¥¼ ë””ìŠ¤í¬ë¡œë¶€í„° ë©”ëª¨ë¦¬ë¡œ ì˜¬ë¦¬ëŠ” ì‘ì—…ì€
- * Restart Recoveryì´ì „ì— ì´ë£¨ì–´ì§„ë‹¤.
- * íŠ¹ì • Pageê°€ Free Page ì¸ì§€ ì—¬ë¶€ë¥¼ ê°€ë ¤ì„œ í…Œì´ë¸”ì— í• ë‹¹ëœ Pageë§Œì„
- * ë¡œë”©í•˜ê²Œ ë˜ë©´, Restart Recoveryì´ì „ì— íŠ¹ì • Pageê°€ Free Pageì¸ì§€
- * ì—¬ë¶€ë¥¼ ì•Œê¸° ìœ„í•´ Free List Info Pageì— ì ‘ê·¼í•˜ê²Œ ëœë‹¤.
+ * µ¥ÀÌÅÍº£ÀÌ½º ÆäÀÌÁö¸¦ µğ½ºÅ©·ÎºÎÅÍ ¸Ş¸ğ¸®·Î ¿Ã¸®´Â ÀÛ¾÷Àº
+ * Restart RecoveryÀÌÀü¿¡ ÀÌ·ç¾îÁø´Ù.
+ * Æ¯Á¤ Page°¡ Free Page ÀÎÁö ¿©ºÎ¸¦ °¡·Á¼­ Å×ÀÌºí¿¡ ÇÒ´çµÈ Page¸¸À»
+ * ·ÎµùÇÏ°Ô µÇ¸é, Restart RecoveryÀÌÀü¿¡ Æ¯Á¤ Page°¡ Free PageÀÎÁö
+ * ¿©ºÎ¸¦ ¾Ë±â À§ÇØ Free List Info Page¿¡ Á¢±ÙÇÏ°Ô µÈ´Ù.
  *
- * ì´ë•Œ, Recoveryê°€ ë˜ì§€ ì•Šì€ ìƒíƒœì—ì„œ Free List Info Pageì— ì ‘ê·¼í•˜ê²Œ
- * ë˜ì–´, Free List Info Pageì— ì—‰ëš±í•œ ë‚´ìš©ì´ ê¸°ë¡ë˜ì–´ ìˆì„ ìˆ˜ ìˆë‹¤,
- * ì´ë¡œ ì¸í•´ Free Pageê°€ ì•„ë‹Œë°ë„ Free Pageë¡œ íŒë‹¨í•˜ê±°ë‚˜,
- * í…Œì´ë¸”ì— í• ë‹¹ëœ Pageê°€  ì•„ë‹Œë°ë„ í…Œì´ë¸”ì— í• ë‹¹ëœ Pageë¡œ íŒë‹¨í•˜ì—¬
- * ë¡œë“œí•´ì•¼ í•  Pageë¥¼ ë¡œë“œí•˜ì§€ ì•Šê±°ë‚˜, ë¶ˆí•„ìš”í•œ Pageë¥¼ ë¡œë“œí•˜ê²Œ ë˜ëŠ”
- * ë¬¸ì œì ì´ ë°œìƒí•œë‹¤.
+ * ÀÌ¶§, Recovery°¡ µÇÁö ¾ÊÀº »óÅÂ¿¡¼­ Free List Info Page¿¡ Á¢±ÙÇÏ°Ô
+ * µÇ¾î, Free List Info Page¿¡ ¾û¶×ÇÑ ³»¿ëÀÌ ±â·ÏµÇ¾î ÀÖÀ» ¼ö ÀÖ´Ù,
+ * ÀÌ·Î ÀÎÇØ Free Page°¡ ¾Æ´Ñµ¥µµ Free Page·Î ÆÇ´ÜÇÏ°Å³ª,
+ * Å×ÀÌºí¿¡ ÇÒ´çµÈ Page°¡  ¾Æ´Ñµ¥µµ Å×ÀÌºí¿¡ ÇÒ´çµÈ Page·Î ÆÇ´ÜÇÏ¿©
+ * ·ÎµåÇØ¾ß ÇÒ Page¸¦ ·ÎµåÇÏÁö ¾Ê°Å³ª, ºÒÇÊ¿äÇÑ Page¸¦ ·ÎµåÇÏ°Ô µÇ´Â
+ * ¹®Á¦Á¡ÀÌ ¹ß»ıÇÑ´Ù.
  *
- * í•´ê²°ì±… : Restart Recoveryì´ì „ì— Page ë¡œë”©ì‹œì—ëŠ” Free Pageì¸ì§€
- *           ì—¬ë¶€ë¥¼ ì•Œ ìˆ˜ê°€ ì—†ë‹¤.
+ * ÇØ°áÃ¥ : Restart RecoveryÀÌÀü¿¡ Page ·Îµù½Ã¿¡´Â Free PageÀÎÁö
+ *           ¿©ºÎ¸¦ ¾Ë ¼ö°¡ ¾ø´Ù.
  *
- *           ìš°ì„  Free Pageì •ë³´ê°€ ë§ì„ ê²ƒì´ë¼ê³  ê°€ì •í•˜ê³ 
- *           DB Fileì„ ë¡œë“œí•œë‹¤.
+ *           ¿ì¼± Free PageÁ¤º¸°¡ ¸ÂÀ» °ÍÀÌ¶ó°í °¡Á¤ÇÏ°í
+ *           DB FileÀ» ·ÎµåÇÑ´Ù.
  *
- *           Free Pageì •ë³´ê°€ ë§ì§€ ì•Šì„ ê²½ìš°, ì¦‰, Restart Recovery
- *           ì¤‘ì— Redo/Undoë¥¼ ìœ„í•œ Pageê°€ ë©”ëª¨ë¦¬ì— ì—†ì„ ê²½ìš°,
- *           í•´ë‹¹ Pageë¥¼ DB Fileì—ì„œ ë³„ë„ë¡œ ë¡œë“œí•œë‹¤.
+ *           Free PageÁ¤º¸°¡ ¸ÂÁö ¾ÊÀ» °æ¿ì, Áï, Restart Recovery
+ *           Áß¿¡ Redo/Undo¸¦ À§ÇÑ Page°¡ ¸Ş¸ğ¸®¿¡ ¾øÀ» °æ¿ì,
+ *           ÇØ´ç Page¸¦ DB File¿¡¼­ º°µµ·Î ·ÎµåÇÑ´Ù.
  *
- *           Restart Recoveryí›„ì— Free Pageë“¤ì— ëŒ€í•´ì„œ
- *           Page ë©”ëª¨ë¦¬ë¥¼ ë°˜ë‚©í•œë‹¤.
+ *           Restart RecoveryÈÄ¿¡ Free Pageµé¿¡ ´ëÇØ¼­
+ *           Page ¸Ş¸ğ¸®¸¦ ¹İ³³ÇÑ´Ù.
  *
- * aDbFile         [IN] ë¡œë“œí•  ë°ì´í„° í˜ì´ì§€ê°€ ìˆëŠ” ë°ì´í„° íŒŒì¼
- * aAlignedBuffer  [IN] ë°ì´í„°ê°€ ë¡œë“œë  ë©”ëª¨ë¦¬ ìœ„ì¹˜.
- *                      ì‹œì‘ì£¼ì†Œê°€ AIOë¥¼ ìœ„í•œ ê²½ê³„ë¡œ Alignë˜ì–´ ìˆë‹¤.
- * aFileMinPID     [IN] DB Fileì— ê¸°ë¡ë˜ì–´ì•¼ í•˜ëŠ” Page ë²”ìœ„ - ì²«ë²ˆì§¸ Page ID
- * aChunkStartPID  [IN] ë¡œë“œí•  ì¡°ê°(Chunk)ì˜ ì‹œì‘ PID
- * aChunkPageCount [IN] ë¡œë“œí•  ì¡°ê°(Chunk)ì˜ í˜ì´ì§€ ìˆ˜
+ * aDbFile         [IN] ·ÎµåÇÒ µ¥ÀÌÅÍ ÆäÀÌÁö°¡ ÀÖ´Â µ¥ÀÌÅÍ ÆÄÀÏ
+ * aAlignedBuffer  [IN] µ¥ÀÌÅÍ°¡ ·ÎµåµÉ ¸Ş¸ğ¸® À§Ä¡.
+ *                      ½ÃÀÛÁÖ¼Ò°¡ AIO¸¦ À§ÇÑ °æ°è·Î AlignµÇ¾î ÀÖ´Ù.
+ * aFileMinPID     [IN] DB File¿¡ ±â·ÏµÇ¾î¾ß ÇÏ´Â Page ¹üÀ§ - Ã¹¹øÂ° Page ID
+ * aChunkStartPID  [IN] ·ÎµåÇÒ Á¶°¢(Chunk)ÀÇ ½ÃÀÛ PID
+ * aChunkPageCount [IN] ·ÎµåÇÒ Á¶°¢(Chunk)ÀÇ ÆäÀÌÁö ¼ö
  *
- * ì£¼ì˜! ì´ í•¨ìˆ˜ì—ì„œì˜ ChunkëŠ” DBíŒŒì¼ì„ ë¡œë“œí•  ë‹¨ìœ„ë¡œ,
- *        Expand Chunkì™€ ì•„ë¬´ëŸ° ê´€ë ¨ì´ ì—†ë‹¤.
+ * ÁÖÀÇ! ÀÌ ÇÔ¼ö¿¡¼­ÀÇ Chunk´Â DBÆÄÀÏÀ» ·ÎµåÇÒ ´ÜÀ§·Î,
+ *        Expand Chunk¿Í ¾Æ¹«·± °ü·ÃÀÌ ¾ø´Ù.
  */
 
 IDE_RC smmManager::loadDbFileChunk(smmTBSNode      * aTBSNode,
@@ -4287,10 +4357,10 @@ IDE_RC smmManager::loadDbFileChunk(smmTBSNode      * aTBSNode,
     scSpaceID        sSpaceID;
 #endif
     scPageID         sPID ;
-    size_t           sReadSize;    /* Data Fileì—ì„œ ì‹¤ì œ ì½ì€ Page ìˆ˜ */
-    idBool           sIsFreePage ; /* í•˜ë‚˜ì˜ Pageê°€ Free Pageì¸ì§€ ì—¬ë¶€ */
-    UInt             sPageOffset ; /* aAlignedBufferì•ˆì—ì„œì˜ Pageì˜ Offset */
-    scPageID         sChunkEndPID; /* í•˜ë‚˜ì˜ ì¡°ê°(Chunk)ì˜ ë§ˆì§€ë§‰ PID */
+    size_t           sReadSize;    /* Data File¿¡¼­ ½ÇÁ¦ ÀĞÀº Page ¼ö */
+    idBool           sIsFreePage ; /* ÇÏ³ªÀÇ Page°¡ Free PageÀÎÁö ¿©ºÎ */
+    UInt             sPageOffset ; /* aAlignedBuffer¾È¿¡¼­ÀÇ PageÀÇ Offset */
+    scPageID         sChunkEndPID; /* ÇÏ³ªÀÇ Á¶°¢(Chunk)ÀÇ ¸¶Áö¸· PID */
 
 #ifdef DEBUG
     sSpaceID = aTBSNode->mTBSAttr.mID;
@@ -4342,35 +4412,35 @@ IDE_RC smmManager::loadDbFileChunk(smmTBSNode      * aTBSNode,
 
     sChunkEndPID = aChunkStartPID + aChunkPageCount - 1;
 
-    // ë¡œë“œí•œ ëª¨ë“  Pageì— ëŒ€í•´
+    // ·ÎµåÇÑ ¸ğµç Page¿¡ ´ëÇØ
     for ( sPID = aChunkStartPID;
           sPID <= sChunkEndPID;
           sPID ++ )
     {
         sIsFreePage = ID_FALSE ;
 
-        // Pageë¥¼ Loadí•´ì•¼ í• ì§€ ê²€ì‚¬
+        // Page¸¦ LoadÇØ¾ß ÇÒÁö °Ë»ç
         IDE_TEST( smmExpandChunk::isFreePageID ( aTBSNode,
                                                  sPID,
                                                  & sIsFreePage )
                   != IDE_SUCCESS );
 
-        // í…Œì´ë¸”ì— í• ë‹¹ë˜ì§€ ì•Šì€ ë°ì´í„°ë² ì´ìŠ¤ Free Pageì¸ ê²½ìš°
+        // Å×ÀÌºí¿¡ ÇÒ´çµÇÁö ¾ÊÀº µ¥ÀÌÅÍº£ÀÌ½º Free PageÀÎ °æ¿ì
         if ( sIsFreePage == ID_TRUE )
         {
-            // PCHë§Œ í• ë‹¹í•˜ê³  Pageë©”ëª¨ë¦¬ëŠ” í• ë‹¹í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // PCH¸¸ ÇÒ´çÇÏ°í Page¸Ş¸ğ¸®´Â ÇÒ´çÇÏÁö ¾Ê´Â´Ù.
             IDE_TEST( allocPCHEntry( aTBSNode, sPID ) != IDE_SUCCESS );
         }
-        else // í…Œì´ë¸”ì— í• ë‹¹ëœ Pageì¸ ê²½ìš°
+        else // Å×ÀÌºí¿¡ ÇÒ´çµÈ PageÀÎ °æ¿ì
         {
 
-            // DB File ì•ˆì—ì„œ Pageì˜ Offset
+            // DB File ¾È¿¡¼­ PageÀÇ Offset
             sPageOffset = ( sPID - aChunkStartPID ) * SM_PAGE_SIZE ;
 
-            // Page Offset ìœ¼ë¡œë¶€í„° Page í¬ê¸°ë§Œí¼ ë°ì´í„° ë³µì‚¬í•´ë„ ë˜ëŠ”ì§€ ì²´í¬
+            // Page Offset À¸·ÎºÎÅÍ Page Å©±â¸¸Å­ µ¥ÀÌÅÍ º¹»çÇØµµ µÇ´ÂÁö Ã¼Å©
             IDE_ASSERT( sPageOffset + SM_PAGE_SIZE - 1 < sReadSize );
 
-            // PCH ì—”íŠ¸ë¦¬ë° Page ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•˜ê³  Pageë‚´ìš© ë³µì‚¬
+            // PCH ¿£Æ®¸®¹× Page ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÏ°í Page³»¿ë º¹»ç
             IDE_TEST( fillPCHEntry(aTBSNode,
                                    sPID,
                                    SMM_FILL_PCH_OP_COPY_PAGE,
@@ -4396,9 +4466,9 @@ IDE_RC smmManager::loadDbFileChunk(smmTBSNode      * aTBSNode,
 }
 
 /*
-    [ë™ì‹œì„± ì œì–´]
-       Restart Recoveryëë‚˜ê³  ì¦‰ì‹œ ë¶ˆë¦¬ìš°ë¯€ë¡œ
-       ì—¬ëŸ¬ Transactionê°„ì˜ ë™ì‹œì„± ì œì–´ë¥¼ ê³ ë ¤í•  í•„ìš”ê°€ ì—†ë‹¤.
+    [µ¿½Ã¼º Á¦¾î]
+       Restart Recovery³¡³ª°í Áï½Ã ºÒ¸®¿ì¹Ç·Î
+       ¿©·¯ Transaction°£ÀÇ µ¿½Ã¼º Á¦¾î¸¦ °í·ÁÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
  */
 void smmManager::setLstCreatedDBFileToAllTBS ( )
 {
@@ -4406,8 +4476,7 @@ void smmManager::setLstCreatedDBFileToAllTBS ( )
     smmTBSNode * sCurTBS;
     UInt         sDBFileCount;
 
-
-    sctTableSpaceMgr::getFirstSpaceNode( (void**)&sCurTBS );
+    sCurTBS = (smmTBSNode*)sctTableSpaceMgr::getFirstSpaceNode();
 
     while( sCurTBS != NULL )
     {
@@ -4418,11 +4487,11 @@ void smmManager::setLstCreatedDBFileToAllTBS ( )
 
             if (sCurTBS->mRestoreType == SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET )
             {
-                // To Fix BUG-17997 [ë©”ëª¨ë¦¬TBS] DISCARDëœ Tablespaceë¥¼
-                //                  DROPì‹œì— Checkpoint Image ì§€ì›Œì§€ì§€ ì•ŠìŒ
+                // To Fix BUG-17997 [¸Ş¸ğ¸®TBS] DISCARDµÈ Tablespace¸¦
+                //                  DROP½Ã¿¡ Checkpoint Image Áö¿öÁöÁö ¾ÊÀ½
                 //
-                // Restoreë˜ì§€ ì•Šì€ Tablespaceë¼ë„ DBë¡œë¶€í„° Membaseë¥¼ ì½ì–´ì„œ
-                // DB Fileê°¯ìˆ˜ë¥¼ ì„¤ì •í•œë‹¤.
+                // RestoreµÇÁö ¾ÊÀº Tablespace¶óµµ DB·ÎºÎÅÍ Membase¸¦ ÀĞ¾î¼­
+                // DB File°¹¼ö¸¦ ¼³Á¤ÇÑ´Ù.
                 if ( smmManager::readMemBaseFromFile( sCurTBS,
                                                       &sMemBase )
                      == IDE_SUCCESS )
@@ -4434,10 +4503,10 @@ void smmManager::setLstCreatedDBFileToAllTBS ( )
                 }
                 else
                 {
-                    // Discardëœ Tablespaceì˜ ê²½ìš°
-                    // ì•„ì˜ˆ DBíŒŒì¼ì´ ì—†ì„ ìˆ˜ë„ ìˆë‹¤.
+                    // DiscardµÈ TablespaceÀÇ °æ¿ì
+                    // ¾Æ¿¹ DBÆÄÀÏÀÌ ¾øÀ» ¼öµµ ÀÖ´Ù.
 
-                    // ì´ ê²½ìš° SKIPí•œë‹¤.
+                    // ÀÌ °æ¿ì SKIPÇÑ´Ù.
                 }
             }
             else
@@ -4450,12 +4519,12 @@ void smmManager::setLstCreatedDBFileToAllTBS ( )
 
             if ( sDBFileCount > 0 )
             {
-                // ë§ˆì§€ë§‰ ìƒì„±ëœ DBíŒŒì¼ ë²ˆí˜¸ì´ë¯€ë¡œ, DBíŒŒì¼ ê°¯ìˆ˜ì—ì„œ 1ê°ì†Œ
+                // ¸¶Áö¸· »ı¼ºµÈ DBÆÄÀÏ ¹øÈ£ÀÌ¹Ç·Î, DBÆÄÀÏ °¹¼ö¿¡¼­ 1°¨¼Ò
                 sCurTBS->mLstCreatedDBFile = sDBFileCount - 1;
             }
         } // isMemTableSpace
 
-        sctTableSpaceMgr::getNextSpaceNode(sCurTBS, (void**)&sCurTBS );
+        sCurTBS = (smmTBSNode*)sctTableSpaceMgr::getNextSpaceNode( sCurTBS->mHeader.mID );
     }
 }
 
@@ -4465,31 +4534,31 @@ void smmManager::setLstCreatedDBFileToAllTBS ( )
 
 
 /*
-   ë°ì´í„°ë² ì´ìŠ¤ ì•ˆì˜ Pageì¤‘ Free Pageì— í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤
+   µ¥ÀÌÅÍº£ÀÌ½º ¾ÈÀÇ PageÁß Free Page¿¡ ÇÒ´çµÈ ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÑ´Ù
 
-   [ë™ì‹œì„± ì œì–´]
-      Restart Recoveryëë‚˜ê³  ì¦‰ì‹œ ë¶ˆë¦¬ìš°ë¯€ë¡œ
-      ì—¬ëŸ¬ Transactionê°„ì˜ ë™ì‹œì„± ì œì–´ë¥¼ ê³ ë ¤í•  í•„ìš”ê°€ ì—†ë‹¤.
+   [µ¿½Ã¼º Á¦¾î]
+      Restart Recovery³¡³ª°í Áï½Ã ºÒ¸®¿ì¹Ç·Î
+      ¿©·¯ Transaction°£ÀÇ µ¿½Ã¼º Á¦¾î¸¦ °í·ÁÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
  */
 IDE_RC smmManager::freeAllFreePageMemory()
 {
     smmTBSNode * sCurTBS;
 
-    sctTableSpaceMgr::getFirstSpaceNode( (void**)&sCurTBS );
+    sCurTBS = (smmTBSNode*)sctTableSpaceMgr::getFirstSpaceNode();
 
     while( sCurTBS != NULL )
     {
         if ( ( sctTableSpaceMgr::isMemTableSpace(sCurTBS->mHeader.mID) != ID_TRUE ) ||
              ( sCurTBS->mRestoreType == SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET ) )
         {
-            sctTableSpaceMgr::getNextSpaceNode(sCurTBS, (void**)&sCurTBS );
+            sCurTBS = (smmTBSNode*)sctTableSpaceMgr::getNextSpaceNode( sCurTBS->mHeader.mID );
             continue;
         }
 
         IDE_TEST( freeTBSFreePageMemory( sCurTBS )
                   != IDE_SUCCESS );
 
-        sctTableSpaceMgr::getNextSpaceNode(sCurTBS, (void**)&sCurTBS );
+        sCurTBS = (smmTBSNode*)sctTableSpaceMgr::getNextSpaceNode( sCurTBS->mHeader.mID );
     }
 
     return IDE_SUCCESS;
@@ -4501,16 +4570,16 @@ IDE_RC smmManager::freeAllFreePageMemory()
 
 
 /*
- * ë°ì´í„°ë² ì´ìŠ¤ ì•ˆì˜ Pageì¤‘ Free Pageì— í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤
+ * µ¥ÀÌÅÍº£ÀÌ½º ¾ÈÀÇ PageÁß Free Page¿¡ ÇÒ´çµÈ ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÑ´Ù
  *
- * ë°ì´í„°ë² ì´ìŠ¤ Pageê°€ Free Pageì¸ì§€ Allocated Pageì¸ì§€ë¥¼ Free List Info Pageë¥¼
- * ë³´ê³  ì•Œ ìˆ˜ ìˆëŠ”ë°, ì´ ì˜ì—­ì´ Restart Recoveryê°€ ëë‚˜ì•¼ ë³µêµ¬ê°€ ì™„ë£Œë˜ë¯€ë¡œ,
- * Restart Recoveryê°€ ì™„ë£Œëœ í›„ì— Free Pageì¸ì§€ ì—¬ë¶€ë¥¼ ë¶„ê°„í•  ìˆ˜ê°€ ìˆë‹¤.
+ * µ¥ÀÌÅÍº£ÀÌ½º Page°¡ Free PageÀÎÁö Allocated PageÀÎÁö¸¦ Free List Info Page¸¦
+ * º¸°í ¾Ë ¼ö ÀÖ´Âµ¥, ÀÌ ¿µ¿ªÀÌ Restart Recovery°¡ ³¡³ª¾ß º¹±¸°¡ ¿Ï·áµÇ¹Ç·Î,
+ * Restart Recovery°¡ ¿Ï·áµÈ ÈÄ¿¡ Free PageÀÎÁö ¿©ºÎ¸¦ ºĞ°£ÇÒ ¼ö°¡ ÀÖ´Ù.
  *
- * Restart Recoveryì „ì—ëŠ” Free Pageì¸ì§€, Allocated Pageì¸ì§€ êµ¬ë¶„í•˜ì§€ ì•Šê³ 
- * ë¬´ì¡°ê±´ í˜ì´ì§€ë¥¼ ë””ìŠ¤í¬ë¡œë¶€í„° ë©”ëª¨ë¦¬ë¡œ ë¡œë“œí•œë‹¤.
- * ê·¸ë¦¬ê³  Restart Recoveryê°€ ì™„ë£Œë˜ê³  ë‚˜ë©´, ë¶ˆí•„ìš”í•˜ê²Œ ë¡œë“œëœ Free Pageë“¤ì˜
- * Page ë©”ëª¨ë¦¬ë¥¼ ë©”ëª¨ë¦¬ë¥¼ ë°˜ë‚©í•œë‹¤.
+ * Restart RecoveryÀü¿¡´Â Free PageÀÎÁö, Allocated PageÀÎÁö ±¸ºĞÇÏÁö ¾Ê°í
+ * ¹«Á¶°Ç ÆäÀÌÁö¸¦ µğ½ºÅ©·ÎºÎÅÍ ¸Ş¸ğ¸®·Î ·ÎµåÇÑ´Ù.
+ * ±×¸®°í Restart Recovery°¡ ¿Ï·áµÇ°í ³ª¸é, ºÒÇÊ¿äÇÏ°Ô ·ÎµåµÈ Free PageµéÀÇ
+ * Page ¸Ş¸ğ¸®¸¦ ¸Ş¸ğ¸®¸¦ ¹İ³³ÇÑ´Ù.
  */
 IDE_RC smmManager::freeTBSFreePageMemory(smmTBSNode * aTBSNode)
 {
@@ -4522,64 +4591,64 @@ IDE_RC smmManager::freeTBSFreePageMemory(smmTBSNode * aTBSNode)
 
     sSpaceID = aTBSNode->mTBSAttr.mID;
 
-    // BUGBUG kmkim Restart Recoveryì‹œì ì— ë¶ˆë¦° ê²ƒì¸ì§€ ASSERTê±¸ê²ƒ.
+    // BUGBUG kmkim Restart Recovery½ÃÁ¡¿¡ ºÒ¸° °ÍÀÎÁö ASSERT°É°Í.
     for ( sPID = SMM_DATABASE_META_PAGE_CNT;
           sPID < aTBSNode->mMemBase->mAllocPersPageCount;
           sPID ++ )
     {
-        IDE_DASSERT( mPCHArray[sSpaceID][ sPID ] != NULL );
+        IDE_DASSERT( mPCArray[sSpaceID].mPC[ sPID ].mPCH != NULL );
 
-        if ( mPCHArray[sSpaceID][sPID] != NULL )
+        if ( mPCArray[sSpaceID].mPC[sPID].mPCH != NULL )
         {
-            // BUG-31191 Pageê°€ Allocë˜ì–´ ìˆëŠ” ê²½ìš°ì—ë§Œ í•´ì œí•œë‹¤.
-            if ( mPCHArray[sSpaceID][sPID]->m_page != NULL )
+            // BUG-31191 Page°¡ AllocµÇ¾î ÀÖ´Â °æ¿ì¿¡¸¸ ÇØÁ¦ÇÑ´Ù.
+            if ( mPCArray[sSpaceID].mPC[sPID].mPagePtr != NULL )
             {
                 IDE_TEST( smmExpandChunk::isFreePageID ( aTBSNode,
                                                          sPID,
                                                          & sIsFreePage )
                           != IDE_SUCCESS );
 
-                // í…Œì´ë¸”ì— í• ë‹¹ë˜ì§€ ì•Šì€ ë°ì´í„°ë² ì´ìŠ¤ Free Pageì¸ ê²½ìš°
+                // Å×ÀÌºí¿¡ ÇÒ´çµÇÁö ¾ÊÀº µ¥ÀÌÅÍº£ÀÌ½º Free PageÀÎ °æ¿ì
                 if ( sIsFreePage == ID_TRUE )
                 {
-                    // í˜ì´ì§€ ë©”ëª¨ë¦¬ë¥¼ ë°˜ë‚©í•œë‹¤.
+                    // ÆäÀÌÁö ¸Ş¸ğ¸®¸¦ ¹İ³³ÇÑ´Ù.
                     IDE_TEST( freePageMemory( aTBSNode, sPID ) != IDE_SUCCESS );
                 }
             }
         }
     }
 
-    // í˜„ì¬ í• ë‹¹ëœ Pageë¡œë¶€í„° DBê°€ ìµœëŒ€ ê°€ì§ˆ ìˆ˜ ìˆëŠ” Pageìˆ˜ê¹Œì§€
-    // Loopì„ ëŒë©° í˜¹ì‹œ Page Memoryê°€ í• ë‹¹ëœ Pageê°€ ìˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+    // ÇöÀç ÇÒ´çµÈ Page·ÎºÎÅÍ DB°¡ ÃÖ´ë °¡Áú ¼ö ÀÖ´Â Page¼ö±îÁö
+    // LoopÀ» µ¹¸ç È¤½Ã Page Memory°¡ ÇÒ´çµÈ Page°¡ ÀÖ´ÂÁö °Ë»çÇÑ´Ù.
     for ( sPID = aTBSNode->mMemBase->mAllocPersPageCount;
-          sPID < aTBSNode->mDBMaxPageCount ;// BUG-15066 MEM_MAX_DB_SIZE ë²—ì–´ë‚˜ì§€ ì•Šë„ë¡
+          sPID < aTBSNode->mDBMaxPageCount ;// BUG-15066 MEM_MAX_DB_SIZE ¹ş¾î³ªÁö ¾Êµµ·Ï
           sPID ++ )
     {
-        if ( mPCHArray[sSpaceID][sPID] != NULL )
+        if ( mPCArray[sSpaceID].mPC[sPID].mPCH != NULL )
         {
-            if ( mPCHArray[sSpaceID][sPID]->m_page != NULL )
+            if ( mPCArray[sSpaceID].mPC[sPID].mPagePtr != NULL )
             {
-                // Media Recoveryë¥¼ Until Cancelë¡œ ìˆ˜í–‰í•œ í›„
-                // Restart Recoveryì™„ë£Œí•˜ë©´
+                // Media Recovery¸¦ Until Cancel·Î ¼öÇàÇÑ ÈÄ
+                // Restart Recovery¿Ï·áÇÏ¸é
                 //
-                // mAllocPersPageCountì˜ ìœ„ì¹˜ê°€ Media Recoveryìˆ˜í–‰ ì´ì „ë³´ë‹¤
-                // ë” ì‘ì•„ì§ˆ ìˆ˜ ìˆë‹¤.
+                // mAllocPersPageCountÀÇ À§Ä¡°¡ Media Recovery¼öÇà ÀÌÀüº¸´Ù
+                // ´õ ÀÛ¾ÆÁú ¼ö ÀÖ´Ù.
                 //
-                // ì´ ê²½ìš° mAllocPersPageCount ~ mDBMaxPageCountì‚¬ì´ì—
-                // Pageë©”ëª¨ë¦¬ê°€ í• ë‹¹ë˜ì–´ ìˆì„ ìˆ˜ ìˆë‹¤.
-                // ì´ëŸ¬í•œ ê²½ìš° Page Memoryë¥¼ ë°˜ë‚©í•´ ì£¼ì–´ì•¼ í•œë‹¤.
+                // ÀÌ °æ¿ì mAllocPersPageCount ~ mDBMaxPageCount»çÀÌ¿¡
+                // Page¸Ş¸ğ¸®°¡ ÇÒ´çµÇ¾î ÀÖÀ» ¼ö ÀÖ´Ù.
+                // ÀÌ·¯ÇÑ °æ¿ì Page Memory¸¦ ¹İ³³ÇØ ÁÖ¾î¾ß ÇÑ´Ù.
 
-                // í˜ì´ì§€ ë©”ëª¨ë¦¬ë¥¼ ë°˜ë‚©í•œë‹¤.
+                // ÆäÀÌÁö ¸Ş¸ğ¸®¸¦ ¹İ³³ÇÑ´Ù.
                 IDE_TEST( freePageMemory( aTBSNode, sPID ) != IDE_SUCCESS );
             }
         }
     }
 
-    // í…Œì´ë¸”ì— í• ë‹¹ëœ í˜ì´ì§€ì´ë©´ì„œ ë©”ëª¨ë¦¬ê°€ ì—†ëŠ” ê²½ìš° ìˆëŠ”ì§€ ì²´í¬
-    // Free Pageì´ë©´ì„œ í˜ì´ì§€ ë©”ëª¨ë¦¬ ì„¤ì •ëœ ê²½ìš° ìˆëŠ”ì§€ ì²´í¬
+    // Å×ÀÌºí¿¡ ÇÒ´çµÈ ÆäÀÌÁöÀÌ¸é¼­ ¸Ş¸ğ¸®°¡ ¾ø´Â °æ¿ì ÀÖ´ÂÁö Ã¼Å©
+    // Free PageÀÌ¸é¼­ ÆäÀÌÁö ¸Ş¸ğ¸® ¼³Á¤µÈ °æ¿ì ÀÖ´ÂÁö Ã¼Å©
     IDE_DASSERT( isAllPageMemoryValid(aTBSNode) == ID_TRUE );
 
-    // Restart Recoveryê°€ ì™„ë£Œëœ ìƒíƒœì´ë¯€ë¡œ, Free Page Listì— ëŒ€í•œ Assertionìˆ˜í–‰
+    // Restart Recovery°¡ ¿Ï·áµÈ »óÅÂÀÌ¹Ç·Î, Free Page List¿¡ ´ëÇÑ Assertion¼öÇà
     IDE_DASSERT( smmFPLManager::isAllFPLsValid(aTBSNode) == ID_TRUE );
 
 
@@ -4594,12 +4663,12 @@ IDE_RC smmManager::freeTBSFreePageMemory(smmTBSNode * aTBSNode)
 
 
 /*
- * í…Œì´ë¸”ì— í• ë‹¹ëœ í˜ì´ì§€ì´ë©´ì„œ ë©”ëª¨ë¦¬ê°€ ì—†ëŠ” ê²½ìš° ìˆëŠ”ì§€ ì²´í¬
- * Free Pageì´ë©´ì„œ í˜ì´ì§€ ë©”ëª¨ë¦¬ ì„¤ì •ëœ ê²½ìš° ìˆëŠ”ì§€ ì²´í¬
+ * Å×ÀÌºí¿¡ ÇÒ´çµÈ ÆäÀÌÁöÀÌ¸é¼­ ¸Ş¸ğ¸®°¡ ¾ø´Â °æ¿ì ÀÖ´ÂÁö Ã¼Å©
+ * Free PageÀÌ¸é¼­ ÆäÀÌÁö ¸Ş¸ğ¸® ¼³Á¤µÈ °æ¿ì ÀÖ´ÂÁö Ã¼Å©
  */
 idBool smmManager::isAllPageMemoryValid(smmTBSNode * aTBSNode)
 {
-    smmPCH *  sPCH;
+    void   * sPagePtr;
     idBool    sIsValid = ID_TRUE;
     scSpaceID sSpaceID;
     scPageID  sPID;
@@ -4609,15 +4678,15 @@ idBool smmManager::isAllPageMemoryValid(smmTBSNode * aTBSNode)
 
     sSpaceID = aTBSNode->mTBSAttr.mID;
 
-    // í…Œì´ë¸”ì— í• ë‹¹ëœ í˜ì´ì§€ì´ë©´ì„œ ë©”ëª¨ë¦¬ê°€ ì—†ëŠ” ê²½ìš° ìˆëŠ”ì§€ ì²´í¬
-    // í…Œì´ë¸”ì— í• ë‹¹ëœ í˜ì´ì§€ì¸ì§€ ì—¬ë¶€ë¥¼ Restart Recoveryê°€ ëë‚œí›„
-    // í™•ì¸ì´ ê°€ëŠ¥í•˜ë©°, ì´ í•¨ìˆ˜ê°€ Restart Recoveryí›„ì—
-    // í˜¸ì¶œë˜ë¯€ë¡œ, ì—¬ê¸°ì—ì„œ ì²´í¬ë¥¼ ì‹¤ì‹œí•œë‹¤.
+    // Å×ÀÌºí¿¡ ÇÒ´çµÈ ÆäÀÌÁöÀÌ¸é¼­ ¸Ş¸ğ¸®°¡ ¾ø´Â °æ¿ì ÀÖ´ÂÁö Ã¼Å©
+    // Å×ÀÌºí¿¡ ÇÒ´çµÈ ÆäÀÌÁöÀÎÁö ¿©ºÎ¸¦ Restart Recovery°¡ ³¡³­ÈÄ
+    // È®ÀÎÀÌ °¡´ÉÇÏ¸ç, ÀÌ ÇÔ¼ö°¡ Restart RecoveryÈÄ¿¡
+    // È£ÃâµÇ¹Ç·Î, ¿©±â¿¡¼­ Ã¼Å©¸¦ ½Ç½ÃÇÑ´Ù.
     for (sPID = 0; sPID < aTBSNode->mDBMaxPageCount; sPID++)
     {
-        sPCH = mPCHArray[sSpaceID][sPID];
+        sPagePtr = mPCArray[sSpaceID].mPC[sPID].mPagePtr;
 
-        if (sPCH != NULL)
+        if ( mPCArray[sSpaceID].mPC[sPID].mPCH != NULL)
         {
             if ( sPID < aTBSNode->mMemBase->mAllocPersPageCount )
             {
@@ -4628,8 +4697,8 @@ idBool smmManager::isAllPageMemoryValid(smmTBSNode * aTBSNode)
 
                 if ( sIsFreePage == ID_TRUE )
                 {
-                    // Free Pageì¸ë° í˜ì´ì§€ ë©”ëª¨ë¦¬ê°€ ìˆìœ¼ë©´ ì—ëŸ¬
-                    if ( sPCH->m_page != NULL )
+                    // Free PageÀÎµ¥ ÆäÀÌÁö ¸Ş¸ğ¸®°¡ ÀÖÀ¸¸é ¿¡·¯
+                    if ( sPagePtr != NULL )
                     {
                         sIsValid = ID_FALSE;
                         break;
@@ -4637,8 +4706,8 @@ idBool smmManager::isAllPageMemoryValid(smmTBSNode * aTBSNode)
                 }
                 else
                 {
-                    // Tableì— í• ë‹¹ëœ í˜ì´ì§€ì¸ì œ í˜ì´ì§€ ë©”ëª¨ë¦¬ê°€ ì—†ìœ¼ë©´ ì—ëŸ¬
-                    if ( sPCH->m_page == NULL )
+                    // Table¿¡ ÇÒ´çµÈ ÆäÀÌÁöÀÎÁ¦ ÆäÀÌÁö ¸Ş¸ğ¸®°¡ ¾øÀ¸¸é ¿¡·¯
+                    if ( sPagePtr == NULL )
                     {
                         sIsValid = ID_FALSE;
                         break;
@@ -4647,9 +4716,9 @@ idBool smmManager::isAllPageMemoryValid(smmTBSNode * aTBSNode)
             }
             else
             {
-                // ì•„ì§ DBì— í• ë‹¹ëœ PAGEê°€ ì•„ë‹Œë°
-                // í˜ì´ì§€ ë©”ëª¨ë¦¬ê°€ ìˆìœ¼ë©´ ì—ëŸ¬
-                if ( sPCH->m_page != NULL )
+                // ¾ÆÁ÷ DB¿¡ ÇÒ´çµÈ PAGE°¡ ¾Æ´Ñµ¥
+                // ÆäÀÌÁö ¸Ş¸ğ¸®°¡ ÀÖÀ¸¸é ¿¡·¯
+                if ( sPagePtr != NULL )
                 {
                     sIsValid = ID_FALSE;
                     break;
@@ -4663,10 +4732,10 @@ idBool smmManager::isAllPageMemoryValid(smmTBSNode * aTBSNode)
 
 
 /*
- * ë””ìŠ¤í¬ìƒì˜ ë°ì´í„°ë² ì´ìŠ¤ ì´ë¯¸ì§€ë¥¼ ë©”ëª¨ë¦¬ë¡œ ë¡œë“œí•œë‹¤ ( 1ê°œì˜ Threadë§Œ ì‚¬ìš© )
+ * µğ½ºÅ©»óÀÇ µ¥ÀÌÅÍº£ÀÌ½º ÀÌ¹ÌÁö¸¦ ¸Ş¸ğ¸®·Î ·ÎµåÇÑ´Ù ( 1°³ÀÇ Thread¸¸ »ç¿ë )
  *
- * aCurrentDB [IN] ë¡œë“œ í•˜ë ¤ëŠ” Ping-Pong ë°ì´í„°ë² ì´ìŠ¤ ( 0 í˜¹ì€ 1 )
- * aOp [IN] Restore ì˜µì…˜/ì •ë³´
+ * aCurrentDB [IN] ·Îµå ÇÏ·Á´Â Ping-Pong µ¥ÀÌÅÍº£ÀÌ½º ( 0 È¤Àº 1 )
+ * aOp [IN] Restore ¿É¼Ç/Á¤º¸
  */
 IDE_RC smmManager::loadSerial2( smmTBSNode     * aTBSNode)
 {
@@ -4685,14 +4754,14 @@ IDE_RC smmManager::loadSerial2( smmTBSNode     * aTBSNode)
     sDBFileCount = getRestoreDBFileCount( aTBSNode );
 
     /* ------------------------------------------------
-     *  - ì„ íƒëœ DBì— ëŒ€í•œ ê° í™”ì¼ì„ ì„ íƒ
+     *  - ¼±ÅÃµÈ DB¿¡ ´ëÇÑ °¢ È­ÀÏÀ» ¼±ÅÃ
      * ----------------------------------------------*/
     for (i = 0; i < sDBFileCount; i++)
     {
-        // ì´ íŒŒì¼ì— ê¸°ë¡í•  ìˆ˜ ìˆëŠ” Pageì˜ ìˆ˜
+        // ÀÌ ÆÄÀÏ¿¡ ±â·ÏÇÒ ¼ö ÀÖ´Â PageÀÇ ¼ö
         sPageCountPerFile = smmManager::getPageCountPerFile( aTBSNode, i );
 
-        // DB íŒŒì¼ì´ Diskì— ì¡´ì¬í•œë‹¤ë©´?
+        // DB ÆÄÀÏÀÌ Disk¿¡ Á¸ÀçÇÑ´Ù¸é?
         if ( smmDatabaseFile::isDBFileOnDisk( aTBSNode, sCurrentDB, i )
              == ID_TRUE )
         {
@@ -4702,7 +4771,7 @@ IDE_RC smmManager::loadSerial2( smmTBSNode     * aTBSNode)
                                         &s_DbFile )
                       != IDE_SUCCESS );
 
-            // ì‹¤ì œ íŒŒì¼ì— ê¸°ë¡ëœ Pageì˜ ìˆ˜ë¥¼ ê³„ì‚°
+            // ½ÇÁ¦ ÆÄÀÏ¿¡ ±â·ÏµÈ PageÀÇ ¼ö¸¦ °è»ê
             IDE_TEST(s_DbFile->getFileSize(&s_nFileSize) != IDE_SUCCESS);
 
             if ( s_nFileSize > SM_DBFILE_METAHDR_PAGE_SIZE )
@@ -4711,10 +4780,10 @@ IDE_RC smmManager::loadSerial2( smmTBSNode     * aTBSNode)
                     (s_nFileSize - SM_DBFILE_METAHDR_PAGE_SIZE)
                     / SM_PAGE_SIZE;
 
-                // DBíŒŒì¼ë¡œë¶€í„° Pageë¥¼ ë¡œë“œí•œë‹¤.
-                // ì•„ì§ ê¸°ë¡ë˜ì§€ëŠ” ì•Šì•˜ìœ¼ë‚˜ ì´ íŒŒì¼ì— ê¸°ë¡ë  ìˆ˜ ìˆëŠ” Pageë“¤ì—
-                // ëŒ€í•´ì„œëŠ” PCH ì—”íŠ¸ë¦¬ë§Œì„ í• ë‹¹í•˜ê³  ì´ˆê¸°í™”í•œë‹¤.
-                // ì´ì— ëŒ€í•œ ìì„¸í•œ ë‚´ìš©ì€ loadDbFileì˜ ì£¼ì„ì„ ì°¸ê³ í•œë‹¤.
+                // DBÆÄÀÏ·ÎºÎÅÍ Page¸¦ ·ÎµåÇÑ´Ù.
+                // ¾ÆÁ÷ ±â·ÏµÇÁö´Â ¾Ê¾ÒÀ¸³ª ÀÌ ÆÄÀÏ¿¡ ±â·ÏµÉ ¼ö ÀÖ´Â Pageµé¿¡
+                // ´ëÇØ¼­´Â PCH ¿£Æ®¸®¸¸À» ÇÒ´çÇÏ°í ÃÊ±âÈ­ÇÑ´Ù.
+                // ÀÌ¿¡ ´ëÇÑ ÀÚ¼¼ÇÑ ³»¿ëÀº loadDbFileÀÇ ÁÖ¼®À» Âü°íÇÑ´Ù.
                 IDE_TEST(loadDbFile(aTBSNode,
                                     i,
                                     sPageID,
@@ -4724,63 +4793,63 @@ IDE_RC smmManager::loadSerial2( smmTBSNode     * aTBSNode)
             else
             {
                 // To FIX BUG-18630
-                // SM_DBFILE_METAHDR_PAGE_SIZE(8K)ë³´ë‹¤
-                // ì‘ì€ DBíŒŒì¼ì´ ì¡´ì¬í•  ê²½ìš° Restart Recoveryì‹¤íŒ¨í•¨
+                // SM_DBFILE_METAHDR_PAGE_SIZE(8K)º¸´Ù
+                // ÀÛÀº DBÆÄÀÏÀÌ Á¸ÀçÇÒ °æ¿ì Restart Recovery½ÇÆĞÇÔ
                 //
-                // 8Kë³´ë‹¤ ì‘ì€ í¬ê¸°ì˜ DBíŒŒì¼ì—ëŠ”
-                // ë°ì´í„° í˜ì´ì§€ê°€ ê¸°ë¡ë˜ì§€ ì•Šì€ ê²ƒì´ë¯€ë¡œ
-                // DBíŒŒì¼ Restoreë¥¼ SKIPí•œë‹¤.
+                // 8Kº¸´Ù ÀÛÀº Å©±âÀÇ DBÆÄÀÏ¿¡´Â
+                // µ¥ÀÌÅÍ ÆäÀÌÁö°¡ ±â·ÏµÇÁö ¾ÊÀº °ÍÀÌ¹Ç·Î
+                // DBÆÄÀÏ Restore¸¦ SKIPÇÑ´Ù.
             }
 
         }
-        else // DB Fileì´ Diskì— ì—†ëŠ” ê²½ìš°
+        else // DB FileÀÌ Disk¿¡ ¾ø´Â °æ¿ì
         {
             if ( SMI_TBS_IS_DROPPED(aTBSNode->mHeader.mState) )
             {
-                // Tablespaceë¥¼ Dropí•œ Transactionì´ Commitëœ ê²½ìš° ======
+                // Tablespace¸¦ DropÇÑ TransactionÀÌ CommitµÈ °æ¿ì ======
                 // => nothing to do
                 //
-                // Drop Tablespaceì— ëŒ€í•œ Pendingì‘ì—… ìˆ˜í–‰ë„ì¤‘
-                // Serverê°€ ì‚¬ë§í•œ ê²½ìš°ì´ë‹¤.
+                // Drop Tablespace¿¡ ´ëÇÑ PendingÀÛ¾÷ ¼öÇàµµÁß
+                // Server°¡ »ç¸ÁÇÑ °æ¿ìÀÌ´Ù.
                 //
-                // Tablespaceì˜ ìƒíƒœëŠ” ( ONLINE | DROP_PENDING ) ì´ë‹¤.
+                // TablespaceÀÇ »óÅÂ´Â ( ONLINE | DROP_PENDING ) ÀÌ´Ù.
                 //
-                // ì´ ê²½ìš°ì—ëŠ” Drop Tablespaceê°€ Pendingì‘ì—…ì„ ìˆ˜í–‰í•˜ë©´ì„œ
-                // Checkpoint Image Fileì˜ ì¼ë¶€, í˜¹ì€ ì „ë¶€ë¥¼ ì‚­ì œí•˜ì˜€ì„
-                // ìˆ˜ë„ ìˆë‹¤.
+                // ÀÌ °æ¿ì¿¡´Â Drop Tablespace°¡ PendingÀÛ¾÷À» ¼öÇàÇÏ¸é¼­
+                // Checkpoint Image FileÀÇ ÀÏºÎ, È¤Àº ÀüºÎ¸¦ »èÁ¦ÇÏ¿´À»
+                // ¼öµµ ÀÖ´Ù.
                 //
-                // ê·¸ëŸ¬ë¯€ë¡œ Fileì´ ì—†ëŠ” ê²½ìš° Loadë¥¼ í•˜ì§€ ì•Šê³  SKIPí•œë‹¤.
+                // ±×·¯¹Ç·Î FileÀÌ ¾ø´Â °æ¿ì Load¸¦ ÇÏÁö ¾Ê°í SKIPÇÑ´Ù.
                 //
-                // ì°¸ê³ > í•´ë‹¹ Fileì— ì†í•œ Pageì— ëŒ€í•´ Redoê°€ ë°œìƒí•  ê²½ìš°
+                // Âü°í> ÇØ´ç File¿¡ ¼ÓÇÑ Page¿¡ ´ëÇØ Redo°¡ ¹ß»ıÇÒ °æ¿ì
                 //
-                //   ì´ í•¨ìˆ˜ì—ì„œ DB File Loadë¥¼ í•˜ì§€ ì•Šì•˜ìœ¼ë¯€ë¡œ
-                //   Page Memoryê°€ NULLì´ë‹¤. í•˜ì§€ë§Œ Redoì‹œì—
-                //   Page Memoryê°€ NULLì´ë©´ Pageë¥¼ í• ë‹¹í•˜ê³  Pageë¥¼ ì´ˆê¸°í™”
-                //   í•˜ê¸° ë•Œë¬¸ì— RedoëŠ” ë¬¸ì œì—†ì´ ìˆ˜í–‰ëœë‹¤.
+                //   ÀÌ ÇÔ¼ö¿¡¼­ DB File Load¸¦ ÇÏÁö ¾Ê¾ÒÀ¸¹Ç·Î
+                //   Page Memory°¡ NULLÀÌ´Ù. ÇÏÁö¸¸ Redo½Ã¿¡
+                //   Page Memory°¡ NULLÀÌ¸é Page¸¦ ÇÒ´çÇÏ°í Page¸¦ ÃÊ±âÈ­
+                //   ÇÏ±â ¶§¹®¿¡ Redo´Â ¹®Á¦¾øÀÌ ¼öÇàµÈ´Ù.
                 //
-                //   ì´í›„ DROP TABLESPACEë¡œê·¸ë¥¼ ë§Œë‚˜ë©´ Tablespaceì˜
-                //   PAGEë‹¨ê³„ë¥¼ í•´ì œí•˜ê¸° ë•Œë¬¸ì— í•´ë‹¹ PageëŠ”
-                //   ë©”ëª¨ë¦¬ í•´ì œëœë‹¤.
+                //   ÀÌÈÄ DROP TABLESPACE·Î±×¸¦ ¸¸³ª¸é TablespaceÀÇ
+                //   PAGE´Ü°è¸¦ ÇØÁ¦ÇÏ±â ¶§¹®¿¡ ÇØ´ç Page´Â
+                //   ¸Ş¸ğ¸® ÇØÁ¦µÈ´Ù.
             }
             else
             {
-                // ì¼ë°˜ì ì¸ ê²½ìš° =========================================
+                // ÀÏ¹İÀûÀÎ °æ¿ì =========================================
                 //
-                // getRestoreDBFileCountëŠ” í™•ì‹¤í•˜ê²Œ ìƒì„±ëœ DB Fileì˜
-                // ê°¯ìˆ˜ ë§Œì„ ë¦¬í„´í•œë‹¤.
-                // => DB Fileì´ ì—†ëŠ” ìƒí™©ì´ ìˆì„ ìˆ˜ ì—†ìŒ.
+                // getRestoreDBFileCount´Â È®½ÇÇÏ°Ô »ı¼ºµÈ DB FileÀÇ
+                // °¹¼ö ¸¸À» ¸®ÅÏÇÑ´Ù.
+                // => DB FileÀÌ ¾ø´Â »óÈ²ÀÌ ÀÖÀ» ¼ö ¾øÀ½.
                 IDE_ASSERT(0);
             }
         }
 
         // PROJ-1490
-        // DBíŒŒì¼ì•ˆì˜ Free PageëŠ” Diskë¡œ ë‚´ë ¤ê°€ì§€ë„ ì•Šê³ 
-        // ë©”ëª¨ë¦¬ë¡œ ì˜¬ë¼ê°€ì§€ë„ ì•ŠëŠ”ë‹¤.
-        // ê·¸ëŸ¬ë¯€ë¡œ, DBíŒŒì¼ì˜ í¬ê¸°ì™€ DBíŒŒì¼ì— ì €ì¥ë˜ì–´ì•¼ í•  Pageìˆ˜ì™€ëŠ”
-        // ì•„ë¬´ëŸ° ê´€ê³„ê°€ ì—†ë‹¤.
+        // DBÆÄÀÏ¾ÈÀÇ Free Page´Â Disk·Î ³»·Á°¡Áöµµ ¾Ê°í
+        // ¸Ş¸ğ¸®·Î ¿Ã¶ó°¡Áöµµ ¾Ê´Â´Ù.
+        // ±×·¯¹Ç·Î, DBÆÄÀÏÀÇ Å©±â¿Í DBÆÄÀÏ¿¡ ÀúÀåµÇ¾î¾ß ÇÒ Page¼ö¿Í´Â
+        // ¾Æ¹«·± °ü°è°¡ ¾ø´Ù.
         //
-        // ê° DBíŒŒì¼ì´ ê¸°ë¡í•´ì•¼í•  Pageì˜ ìˆ˜ë¥¼ ê³„ì‚°í•˜ì—¬
-        // ê° DBíŒŒì¼ì˜ ë¡œë“œ ì‹œì‘ Page IDë¥¼ ê³„ì‚°í•œë‹¤.
+        // °¢ DBÆÄÀÏÀÌ ±â·ÏÇØ¾ßÇÒ PageÀÇ ¼ö¸¦ °è»êÇÏ¿©
+        // °¢ DBÆÄÀÏÀÇ ·Îµå ½ÃÀÛ Page ID¸¦ °è»êÇÑ´Ù.
         sPageID += sPageCountPerFile;
     }
 
@@ -4796,11 +4865,11 @@ IDE_RC smmManager::loadSerial2( smmTBSNode     * aTBSNode)
 }
 
 /*
- * ì‹œìŠ¤í…œì˜ ê³µìœ ë©”ëª¨ë¦¬ì— ì¡´ì¬í•˜ëŠ” ë°ì´í„°ë² ì´ìŠ¤ í˜ì´ì§€ë“¤ì„ ATTACHí•œë‹¤.
+ * ½Ã½ºÅÛÀÇ °øÀ¯¸Ş¸ğ¸®¿¡ Á¸ÀçÇÏ´Â µ¥ÀÌÅÍº£ÀÌ½º ÆäÀÌÁöµéÀ» ATTACHÇÑ´Ù.
  *
- * aTBSNode   [IN] Pageê°€ Attachë  Tablespace
- * aShmHeader [IN] ê³µìœ ë©”ëª¨ë¦¬ í—¤ë”
- * aOp        [IN] Prepare ì˜µì…˜/ì •ë³´
+ * aTBSNode   [IN] Page°¡ AttachµÉ Tablespace
+ * aShmHeader [IN] °øÀ¯¸Ş¸ğ¸® Çì´õ
+ * aOp        [IN] Prepare ¿É¼Ç/Á¤º¸
  */
 IDE_RC smmManager::restoreAttachSharedDB(smmTBSNode       * aTBSNode,
                                          smmShmHeader     * aShmHeader,
@@ -4820,14 +4889,14 @@ IDE_RC smmManager::restoreAttachSharedDB(smmTBSNode       * aTBSNode,
     sSpaceID = aTBSNode->mTBSAttr.mID;
 
     /* ------------------------------------------------
-     * [1] Base Shared Memoryì— ëŒ€í•œ ì„¤ì •
+     * [1] Base Shared Memory¿¡ ´ëÇÑ ¼³Á¤
      * ----------------------------------------------*/
     IDE_TEST(smmFixedMemoryMgr::attach(aTBSNode, aShmHeader) != IDE_SUCCESS);
 
-    // SHM Pageë¥¼ ë”°ë¼ê°€ë©´ì„œ [ Reverse Mapping ]
+    // SHM Page¸¦ µû¶ó°¡¸é¼­ [ Reverse Mapping ]
     //
-    // Allocated Pageë§Œ í˜ì´ì§€ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•˜ì˜€ìœ¼ë¯€ë¡œ,
-    // Free Pageì— ëŒ€í•´ì„œëŠ” fillPCHEntryê°€ í˜¸ì¶œë˜ì§€ ì•ŠëŠ”ë‹¤.
+    // Allocated Page¸¸ ÆäÀÌÁö ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÏ¿´À¸¹Ç·Î,
+    // Free Page¿¡ ´ëÇØ¼­´Â fillPCHEntry°¡ È£ÃâµÇÁö ¾Ê´Â´Ù.
     sSCH = aTBSNode->mBaseSCH.m_next;
     while(sSCH != NULL)
     {
@@ -4840,18 +4909,18 @@ IDE_RC smmManager::restoreAttachSharedDB(smmTBSNode       * aTBSNode,
 
             if ( sPageSelf == (smmTempPage *)SMM_SHM_LOCATION_FREE )
             {
-                /* BUG-19583: shmutilì´ Shared Memory DBì˜ì—­ì„ ì½ê¸°ë§Œ í•´ì•¼í•˜ëŠ”ë°
-                 * Page Linkë¥¼ ê°±ì‹ í•˜ëŠ” ê²½ìš°ê°€ ìˆìŠµë‹ˆë‹¤.
+                /* BUG-19583: shmutilÀÌ Shared Memory DB¿µ¿ªÀ» ÀĞ±â¸¸ ÇØ¾ßÇÏ´Âµ¥
+                 * Page Link¸¦ °»½ÅÇÏ´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù.
                  *
-                 * Pageê°€ Freeì¼ê²½ìš° Free Listì— í˜ì´ì§€ë¥¼ ì—°ê²°í•˜ëŠ” ì‘ì—…ì„ í•˜ëŠ”ë°
-                 * Shmutilì¼ ê²½ìš°ì—ëŠ” ì´ ì‘ì—…ì„ í•˜ë©´ ì•ˆëœë‹¤. ë‹¨ì§€ Readë§Œ í•´ì•¼
-                 * í•œë‹¤.
+                 * Page°¡ FreeÀÏ°æ¿ì Free List¿¡ ÆäÀÌÁö¸¦ ¿¬°áÇÏ´Â ÀÛ¾÷À» ÇÏ´Âµ¥
+                 * ShmutilÀÏ °æ¿ì¿¡´Â ÀÌ ÀÛ¾÷À» ÇÏ¸é ¾ÈµÈ´Ù. ´ÜÁö Read¸¸ ÇØ¾ß
+                 * ÇÑ´Ù.
                  * */
                 if( aOp != SMM_PREPARE_OP_DONT_CHECK_DB_SIGNATURE_4SHMUTIL )
                 {
                     IDE_TEST(smmFixedMemoryMgr::freeShmPage(
-                                 aTBSNode,
-                                 (smmTempPage *)sCurPage)
+                                                     aTBSNode,
+                                                     (smmTempPage *)sCurPage)
                              != IDE_SUCCESS);
                 }
             }
@@ -4868,14 +4937,14 @@ IDE_RC smmManager::restoreAttachSharedDB(smmTBSNode       * aTBSNode,
     }
     IDE_TEST(setupBasePageInfo(
                  aTBSNode,
-                 (UChar *)mPCHArray[sSpaceID][0]->m_page)
+                 (UChar *)mPCArray[sSpaceID].mPC[SMM_MEMBASE_PAGEID].mPagePtr)
             != IDE_SUCCESS);
 
     if ( aOp ==  SMM_PREPARE_OP_DONT_CHECK_DB_SIGNATURE_4SHMUTIL )
     {
-        // shmutilì´ í˜¸ì¶œí•œ ê²½ìš°ì´ë‹¤.
-        // Diskìƒì— DBíŒŒì¼ì´ ì¡´ì¬í•˜ì§€ ì•Šì„ ìˆ˜ë„ ìˆëŠ” ìƒí™©ì´ë¯€ë¡œ
-        // DB Signatureë¥¼ Checkí•˜ì§€ ì•ŠëŠ”ë‹¤
+        // shmutilÀÌ È£ÃâÇÑ °æ¿ìÀÌ´Ù.
+        // Disk»ó¿¡ DBÆÄÀÏÀÌ Á¸ÀçÇÏÁö ¾ÊÀ» ¼öµµ ÀÖ´Â »óÈ²ÀÌ¹Ç·Î
+        // DB Signature¸¦ CheckÇÏÁö ¾Ê´Â´Ù
     }
     else
     {
@@ -4886,10 +4955,10 @@ IDE_RC smmManager::restoreAttachSharedDB(smmTBSNode       * aTBSNode,
 
 
     /////////////////////////////////////////////////////////////////////
-    // Free Pageì— ëŒ€í•´ì„œëŠ” PCH Entryì¡°ì°¨ ë§Œë“¤ì§€ ì•Šì•˜ë‹¤.
-    // Free Pageë“¤ì˜ PCH Entryë¥¼ ìƒì„±í•œë‹¤.
+    // Free Page¿¡ ´ëÇØ¼­´Â PCH EntryÁ¶Â÷ ¸¸µéÁö ¾Ê¾Ò´Ù.
+    // Free PageµéÀÇ PCH Entry¸¦ »ı¼ºÇÑ´Ù.
     //
-    // PCHì—”íŠ¸ë¦¬ê°€ êµ¬ì„±ë˜ì§€ ì•Šì€ ëª¨ë“  Pageë“¤ì— ëŒ€í•´ PCH ì—”íŠ¸ë¦¬ë¥¼ êµ¬ì„±í•´ì¤€ë‹¤.
+    // PCH¿£Æ®¸®°¡ ±¸¼ºµÇÁö ¾ÊÀº ¸ğµç Pageµé¿¡ ´ëÇØ PCH ¿£Æ®¸®¸¦ ±¸¼ºÇØÁØ´Ù.
     /////////////////////////////////////////////////////////////////////
 /*
     mStartupPID = 0;
@@ -4899,26 +4968,26 @@ IDE_RC smmManager::restoreAttachSharedDB(smmTBSNode       * aTBSNode,
         mStartupPID += smmManager::getPageCountPerFile( i );
     }
 */
-    // Checkpointê°€ ë°œìƒí•˜ì§€ ì•Šìœ¼ë©´, í• ë‹¹ëœ PAGEì„ì—ë„ ë¶ˆêµ¬í•˜ê³  DISK
-    // ì—ì¡°ì°¨ ë‚´ë ¤ê°€ì§€ ì•Šê¸° ë•Œë¬¸ì— Diskìƒì˜ íŒŒì¼ì„ í† ëŒ€ë¡œ mStartupPIDë¥¼
-    // ê³„ì‚°í•´ë‚´ë©´ ì•ˆëœë‹¤.
+    // Checkpoint°¡ ¹ß»ıÇÏÁö ¾ÊÀ¸¸é, ÇÒ´çµÈ PAGEÀÓ¿¡µµ ºÒ±¸ÇÏ°í DISK
+    // ¿¡Á¶Â÷ ³»·Á°¡Áö ¾Ê±â ¶§¹®¿¡ Disk»óÀÇ ÆÄÀÏÀ» Åä´ë·Î mStartupPID¸¦
+    // °è»êÇØ³»¸é ¾ÈµÈ´Ù.
     aTBSNode->mStartupPID = aTBSNode->mMemBase->mAllocPersPageCount;
 
-    // ëª¨ë“  ë°ì´í„°ë² ì´ìŠ¤ Pageì— ëŒ€í•´ PCH ì—”íŠ¸ë¦¬ê°€ êµ¬ì„±ë˜ë„ë¡ í•œë‹¤.
+    // ¸ğµç µ¥ÀÌÅÍº£ÀÌ½º Page¿¡ ´ëÇØ PCH ¿£Æ®¸®°¡ ±¸¼ºµÇµµ·Ï ÇÑ´Ù.
     for ( i = 0;
           i < aTBSNode->mStartupPID ;
           i ++ )
     {
-        if ( mPCHArray[sSpaceID][i] == NULL )
+        if ( mPCArray[sSpaceID].mPC[i].mPCH == NULL )
         {
             IDE_TEST( allocPCHEntry( aTBSNode, i ) != IDE_SUCCESS );
         }
     }
 
     // To Fix BUG-15112
-    // Restart Recoveryì¤‘ì— Page Memoryê°€ NULLì¸ Pageì— ëŒ€í•œ Redoì‹œ
-    // í•´ë‹¹ í˜ì´ì§€ë¥¼ ê·¸ë•Œ ê·¸ë•Œ í•„ìš”í•  ë•Œë§ˆë‹¤ í• ë‹¹í•œë‹¤.
-    // ì—¬ê¸°ì—ì„œ í˜ì´ì§€ ë©”ëª¨ë¦¬ë¥¼ ë¯¸ë¦¬ í• ë‹¹í•´ë‘˜ í•„ìš”ê°€ ì—†ë‹¤
+    // Restart RecoveryÁß¿¡ Page Memory°¡ NULLÀÎ Page¿¡ ´ëÇÑ Redo½Ã
+    // ÇØ´ç ÆäÀÌÁö¸¦ ±×¶§ ±×¶§ ÇÊ¿äÇÒ ¶§¸¶´Ù ÇÒ´çÇÑ´Ù.
+    // ¿©±â¿¡¼­ ÆäÀÌÁö ¸Ş¸ğ¸®¸¦ ¹Ì¸® ÇÒ´çÇØµÑ ÇÊ¿ä°¡ ¾ø´Ù
 
 
     return IDE_SUCCESS;
@@ -4931,14 +5000,14 @@ IDE_RC smmManager::restoreAttachSharedDB(smmTBSNode       * aTBSNode,
 
 
 // SyncDB
-// 1. ìš´ì˜ì¤‘(CheckPoint)ì¼ ê²½ìš°ì—ëŠ” ëª¨ë“  Online Tablespaceì— ëŒ€í•´ì„œ
-// Syncë¥¼ ìˆ˜í–‰í•œë‹¤.
-// 2. ë¯¸ë””ì–´ë³µêµ¬ì¤‘ì—ëŠ” ëª¨ë“  Online/Offline TableSpace ì¤‘ ë¯¸ë””ì–´ ë³µêµ¬
-// ëŒ€ìƒì¸ ê²ƒë§Œ Syncë¥¼ ìˆ˜í–‰í•œë‹¤.
+// 1. ¿î¿µÁß(CheckPoint)ÀÏ °æ¿ì¿¡´Â ¸ğµç Online Tablespace¿¡ ´ëÇØ¼­
+// Sync¸¦ ¼öÇàÇÑ´Ù.
+// 2. ¹Ìµğ¾îº¹±¸Áß¿¡´Â ¸ğµç Online/Offline TableSpace Áß ¹Ìµğ¾î º¹±¸
+// ´ë»óÀÎ °Í¸¸ Sync¸¦ ¼öÇàÇÑ´Ù.
 //
-// [ ì¸ì ]
-// [IN] aSkipStateSet - Syncí•˜ì§€ ì•Šì„ TBS ìƒíƒœ ì§‘í•©
-// [IN] aSyncLatch    - SyncLatch íšë“ì´ í•„ìš”í•œê²½ìš°
+// [ ÀÎÀÚ ]
+// [IN] aSkipStateSet - SyncÇÏÁö ¾ÊÀ» TBS »óÅÂ ÁıÇÕ
+// [IN] aSyncLatch    - SyncLatch È¹µæÀÌ ÇÊ¿äÇÑ°æ¿ì
 IDE_RC smmManager::syncDB( sctStateSet aSkipStateSet,
                            idBool aSyncLatch )
 {
@@ -4946,15 +5015,15 @@ IDE_RC smmManager::syncDB( sctStateSet aSkipStateSet,
 
     sctTableSpaceNode * sSpaceNode;
 
-    sctTableSpaceMgr::getFirstSpaceNode( (void**)&sSpaceNode );
+    sSpaceNode = sctTableSpaceMgr::getFirstSpaceNode();
 
     while( sSpaceNode != NULL )
     {
-        if ( sctTableSpaceMgr::isMemTableSpace( sSpaceNode->mID) == ID_TRUE )
+        if ( sctTableSpaceMgr::isMemTableSpace( sSpaceNode ) == ID_TRUE )
         {
             if ( aSyncLatch == ID_TRUE )
             {
-                // TBSìƒíƒœê°€ DROPì´ë‚˜ OFFLINEìœ¼ë¡œ ì „ì´ë˜ì§€ ì•Šë„ë¡ ë³´ì¥
+                // TBS»óÅÂ°¡ DROPÀÌ³ª OFFLINEÀ¸·Î ÀüÀÌµÇÁö ¾Êµµ·Ï º¸Àå
                 IDE_TEST( sctTableSpaceMgr::latchSyncMutex( sSpaceNode )
                           != IDE_SUCCESS );
                 sStage = 1;
@@ -4963,26 +5032,26 @@ IDE_RC smmManager::syncDB( sctStateSet aSkipStateSet,
             if ( ((smmTBSNode*)sSpaceNode)->mRestoreType
                  != SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET )
             {
-                // TBSê°€ Memoryì— Loading ëœ ìƒíƒœ
+                // TBS°¡ Memory¿¡ Loading µÈ »óÅÂ
 
                 if ( sctTableSpaceMgr::hasState(
                             sSpaceNode->mID,
                             aSkipStateSet ) == ID_TRUE )
                 {
-                    // TBSê°€ syncí•  ìˆ˜ ì—†ëŠ” ìƒíƒœ
-                    // 1. Checkpoint ì‹œ -> DISCARD/DROPPED/OFFLINE
-                    // 2. Media Recovery ì‹œ -> DISCARD/DROPPED
+                    // TBS°¡ syncÇÒ ¼ö ¾ø´Â »óÅÂ
+                    // 1. Checkpoint ½Ã -> DISCARD/DROPPED/OFFLINE
+                    // 2. Media Recovery ½Ã -> DISCARD/DROPPED
                 }
                 else
                 {
-                    // TBSê°€ syncí•  ìˆ˜ ìˆëŠ” ìƒíƒœ
+                    // TBS°¡ syncÇÒ ¼ö ÀÖ´Â »óÅÂ
                     IDE_TEST( syncTBS( (smmTBSNode*) sSpaceNode )
                               != IDE_SUCCESS );
                 }
             }
             else
             {
-                // TBSê°€ Memoryì— Restore ë˜ì§€ ì•Šì€ ìƒíƒœ
+                // TBS°¡ Memory¿¡ Restore µÇÁö ¾ÊÀº »óÅÂ
             }
 
             if ( aSyncLatch == ID_TRUE )
@@ -4992,7 +5061,7 @@ IDE_RC smmManager::syncDB( sctStateSet aSkipStateSet,
                           != IDE_SUCCESS );
             }
         }
-        sctTableSpaceMgr::getNextSpaceNode(sSpaceNode, (void**)&sSpaceNode );
+        sSpaceNode = sctTableSpaceMgr::getNextSpaceNode( sSpaceNode->mID );
     }
 
     return IDE_SUCCESS;
@@ -5049,23 +5118,23 @@ IDE_RC smmManager::allocPCHEntry(smmTBSNode *  aTBSNode,
                                  scPageID      aPageID)
 {
 
-    SChar     sMutexName[128];
-    smmPCH  * sCurPCH;
-    scSpaceID    sSpaceID = aTBSNode->mTBSAttr.mID;
+    SChar         sMutexName[128];
+    smmPCH      * sCurPCH;
+    scSpaceID     sSpaceID = aTBSNode->mTBSAttr.mID;
 
     IDE_ASSERT( sSpaceID < SC_MAX_SPACE_COUNT );
 
     IDE_DASSERT( isValidPageID( sSpaceID, aPageID ) == ID_TRUE );
 
-    IDE_ASSERT(mPCHArray[sSpaceID][aPageID] == NULL);
+    IDE_ASSERT(mPCArray[sSpaceID].mPC[aPageID].mPCH == NULL);
 
     /* smmManager_allocPCHEntry_alloc_CurPCH.tc */
     IDU_FIT_POINT("smmManager::allocPCHEntry::alloc::CurPCH");
     IDE_TEST( aTBSNode->mPCHMemPool.alloc((void **)&sCurPCH) != IDE_SUCCESS);
-    mPCHArray[sSpaceID][aPageID] = sCurPCH;
+    mPCArray[sSpaceID].mPC[aPageID].mPCH = sCurPCH;
 
     /* ------------------------------------------------
-     * [] mutex ì´ˆê¸°í™”
+     * [] mutex ÃÊ±âÈ­
      * ----------------------------------------------*/
 
     idlOS::snprintf( sMutexName,
@@ -5100,10 +5169,10 @@ IDE_RC smmManager::allocPCHEntry(smmTBSNode *  aTBSNode,
     sCurPCH->mNxtScanPID       = SM_NULL_PID;
     sCurPCH->mPrvScanPID       = SM_NULL_PID;
     sCurPCH->mModifySeqForScan = 0;
-    sCurPCH->m_page            = NULL;
     sCurPCH->mSpaceID          = sSpaceID;
+    mPCArray[sSpaceID].mPC[aPageID].mPagePtr = NULL;
 
-    // smmPCH.mFreePageHeader ì´ˆê¸°í™”
+    // smmPCH.mFreePageHeader ÃÊ±âÈ­
     IDE_TEST( smLayerCallback::initializeFreePageHeader( sSpaceID, aPageID )
               != IDE_SUCCESS );
 
@@ -5115,35 +5184,35 @@ IDE_RC smmManager::allocPCHEntry(smmTBSNode *  aTBSNode,
 
     return IDE_FAILURE;
 }
-/* PCH í•´ì œ
+/* PCH ÇØÁ¦
  *
- * aPID      [IN] PCHë¥¼ í•´ì œí•˜ê³ ì í•˜ëŠ” Page ID
- * aPageFree [IN] PCHë¿ë§Œ ì•„ë‹ˆë¼ ê·¸ ì•ˆì˜ Page ë©”ëª¨ë¦¬ë„ í•´ì œí•  ê²ƒì¸ì§€ ì—¬ë¶€
+ * aPID      [IN] PCH¸¦ ÇØÁ¦ÇÏ°íÀÚ ÇÏ´Â Page ID
+ * aPageFree [IN] PCH»Ó¸¸ ¾Æ´Ï¶ó ±× ¾ÈÀÇ Page ¸Ş¸ğ¸®µµ ÇØÁ¦ÇÒ °ÍÀÎÁö ¿©ºÎ
  */
 
 IDE_RC smmManager::freePCHEntry(smmTBSNode * aTBSNode,
                                 scPageID     aPID,
                                 idBool       aPageFree )
 {
-    smmPCH  *sCurPCH;
+    smmPCH    *sCurPCH;
     scSpaceID  sSpaceID = aTBSNode->mTBSAttr.mID;
 
     IDE_DASSERT( isValidPageID( sSpaceID, aPID ) == ID_TRUE );
 
-    sCurPCH = mPCHArray[sSpaceID][aPID];
+    sCurPCH = (smmPCH*)mPCArray[sSpaceID].mPC[aPID].mPCH;
 
     IDE_ASSERT(sCurPCH != NULL);
 
-    // smmPCH.mFreePageHeader í•´ì œ
+    // smmPCH.mFreePageHeader ÇØÁ¦
     IDE_TEST( smLayerCallback::destroyFreePageHeader( sSpaceID, aPID )
               != IDE_SUCCESS );
 
     if (aPageFree == ID_TRUE )
     {
-        // Free Pageë¼ë©´ Pageë©”ëª¨ë¦¬ê°€ ì´ë¯¸ ë°˜ë‚©ë˜ì–´
-        // ë©”ëª¨ë¦¬ë¥¼ Freeí•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
-        // Page ë©”ëª¨ë¦¬ê°€ ìˆëŠ” ê²½ìš°ì—ë§Œ ë©”ëª¨ë¦¬ë¥¼ ë°˜ë‚©í•œë‹¤.
-        if ( sCurPCH->m_page != NULL )
+        // Free Page¶ó¸é Page¸Ş¸ğ¸®°¡ ÀÌ¹Ì ¹İ³³µÇ¾î
+        // ¸Ş¸ğ¸®¸¦ FreeÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
+        // Page ¸Ş¸ğ¸®°¡ ÀÖ´Â °æ¿ì¿¡¸¸ ¸Ş¸ğ¸®¸¦ ¹İ³³ÇÑ´Ù.
+        if ( mPCArray[sSpaceID].mPC[aPID].mPagePtr != NULL )
         {
             IDE_TEST( freePageMemory( aTBSNode, aPID ) != IDE_SUCCESS );
         }
@@ -5156,8 +5225,8 @@ IDE_RC smmManager::freePCHEntry(smmTBSNode * aTBSNode,
 
     IDE_TEST( sCurPCH->mMutex.destroy() != IDE_SUCCESS );
 
-    // í˜„ì¬ ì‹œìŠ¤í…œì— ì¡´ì¬í•˜ëŠ” Tablespaceë¼ë©´
-    // ì œê±°í•˜ë ¤ëŠ” PCHê°€ Dirty Pageê°€ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
+    // ÇöÀç ½Ã½ºÅÛ¿¡ Á¸ÀçÇÏ´Â Tablespace¶ó¸é
+    // Á¦°ÅÇÏ·Á´Â PCH°¡ Dirty Page°¡ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
     IDE_ASSERT(sCurPCH->m_dirty == ID_FALSE);
     IDE_ASSERT((sCurPCH->m_dirtyStat & SMM_PCH_DIRTY_STAT_MASK)
                == SMM_PCH_DIRTY_STAT_INIT);
@@ -5170,7 +5239,8 @@ IDE_RC smmManager::freePCHEntry(smmTBSNode * aTBSNode,
 
     IDE_TEST( aTBSNode->mPCHMemPool.memfree(sCurPCH) != IDE_SUCCESS);
 
-    mPCHArray[ sSpaceID ][aPID] = NULL;
+    mPCArray[ sSpaceID ].mPC[aPID].mPCH = NULL;
+    mPCArray[ sSpaceID ].mPC[aPID].mPagePtr   = NULL;
 
 
     return IDE_SUCCESS;
@@ -5182,14 +5252,14 @@ IDE_RC smmManager::freePCHEntry(smmTBSNode * aTBSNode,
 }
 
 /*
-     Dirty Pageì˜ PCHì— ê¸°ë¡ëœ Dirty Flagë¥¼ ëª¨ë‘ ì´ˆê¸°í™”í•œë‹¤.
+     Dirty PageÀÇ PCH¿¡ ±â·ÏµÈ Dirty Flag¸¦ ¸ğµÎ ÃÊ±âÈ­ÇÑ´Ù.
 
-     [IN] aTBSNode - Dirty Page Flagë¥¼ ëª¨ë‘ í•´ì œí•  Tablespace Node
+     [IN] aTBSNode - Dirty Page Flag¸¦ ¸ğµÎ ÇØÁ¦ÇÒ Tablespace Node
  */
 IDE_RC smmManager::clearDirtyFlag4AllPages(smmTBSNode * aTBSNode )
 {
     UInt i;
-    smmPCH *sPCH;
+    smmPCH   *sPCH;
 
     IDE_DASSERT( aTBSNode != NULL );
 
@@ -5208,9 +5278,9 @@ IDE_RC smmManager::clearDirtyFlag4AllPages(smmTBSNode * aTBSNode )
 }
 
 /*
- * ë°ì´í„°ë² ì´ìŠ¤ì˜ PCH, Page Memoryë¥¼ ëª¨ë‘ Freeí•œë‹¤.
+ * µ¥ÀÌÅÍº£ÀÌ½ºÀÇ PCH, Page Memory¸¦ ¸ğµÎ FreeÇÑ´Ù.
  *
- * aPageFree [IN] Page Memoryë¥¼ Freeí•  ì§€ì˜ ì—¬ë¶€.
+ * aPageFree [IN] Page Memory¸¦ FreeÇÒ ÁöÀÇ ¿©ºÎ.
  */
 IDE_RC smmManager::freeAll(smmTBSNode * aTBSNode, idBool aPageFree)
 {
@@ -5236,13 +5306,14 @@ IDE_RC smmManager::freeAll(smmTBSNode * aTBSNode, idBool aPageFree)
 
 
 
-/* ë°ì´í„°ë² ì´ìŠ¤ íƒ€ì…ì— ë”°ë¼ ê³µìœ ë©”ëª¨ë¦¬ë‚˜ ì¼ë°˜ ë©”ëª¨ë¦¬ë¥¼ í˜ì´ì§€ ë©”ëª¨ë¦¬ë¡œ í• ë‹¹í•œë‹¤
+/* µ¥ÀÌÅÍº£ÀÌ½º Å¸ÀÔ¿¡ µû¶ó °øÀ¯¸Ş¸ğ¸®³ª ÀÏ¹İ ¸Ş¸ğ¸®¸¦ ÆäÀÌÁö ¸Ş¸ğ¸®·Î ÇÒ´çÇÑ´Ù
  *
- * aPage [OUT] í• ë‹¹ëœ Page ë©”ëª¨ë¦¬
+ * aPage [OUT] ÇÒ´çµÈ Page ¸Ş¸ğ¸®
  */
 IDE_RC smmManager::allocDynOrShm( smmTBSNode   * aTBSNode,
                                   void        ** aPageMemHandle,
-                                  smmTempPage ** aPage )
+                                  smmTempPage ** aPage,
+                                  idBool         aIsDataPage )
 {
     IDE_DASSERT( aPage != NULL );
 
@@ -5251,23 +5322,34 @@ IDE_RC smmManager::allocDynOrShm( smmTBSNode   * aTBSNode,
 
     switch( aTBSNode->mRestoreType )
     {
-        // ì¼ë°˜ ë©”ëª¨ë¦¬ë¡œë¶€í„° Page ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹
+        // ÀÏ¹İ ¸Ş¸ğ¸®·ÎºÎÅÍ Page ¸Ş¸ğ¸®¸¦ ÇÒ´ç
         case SMM_DB_RESTORE_TYPE_DYNAMIC :
             /* smmManager_allocDynOrShm_alloc_Page.tc */
             IDU_FIT_POINT("smmManager::allocDynOrShm::alloc::Page");
-            IDE_TEST( aTBSNode->mDynamicMemPagePool.alloc( aPageMemHandle,
-                                                           (void **)aPage )
-                      != IDE_SUCCESS);
+            
+            // BUG-47487: DATA / FLI ÆäÀÌÁö ¸Ş¸ğ¸® alloc ºĞ¸®
+            if ( aIsDataPage == ID_TRUE )
+            {
+                IDE_TEST( aTBSNode->mDynamicMemPagePool.alloc( aPageMemHandle,
+                                                               (void **)aPage )
+                          != IDE_SUCCESS);
+            }
+            else 
+            {
+                IDE_TEST( aTBSNode->mFLIMemPagePool.alloc( aPageMemHandle,
+                                                               (void **)aPage )
+                          != IDE_SUCCESS);
+            }
             break;
 
-        // ê³µìœ  ë©”ëª¨ë¦¬ë¡œë¶€í„° Page ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹
+        // °øÀ¯ ¸Ş¸ğ¸®·ÎºÎÅÍ Page ¸Ş¸ğ¸®¸¦ ÇÒ´ç
         case SMM_DB_RESTORE_TYPE_SHM_CREATE :
         case SMM_DB_RESTORE_TYPE_SHM_ATTACH :
             IDE_TEST( smmFixedMemoryMgr::allocShmPage( aTBSNode, aPage )
                       != IDE_SUCCESS );
             break;
 
-        // ì–´ë– í•œ ë©”ëª¨ë¦¬ë¥¼ ì‚¬ìš©í•´ì•¼ í•  ì§€ ì•Œ ìˆ˜ ì—†ë‹¤.
+        // ¾î¶°ÇÑ ¸Ş¸ğ¸®¸¦ »ç¿ëÇØ¾ß ÇÒ Áö ¾Ë ¼ö ¾ø´Ù.
         case SMM_DB_RESTORE_TYPE_NONE :
         default :
             IDE_ASSERT( 0 );
@@ -5283,32 +5365,42 @@ IDE_RC smmManager::allocDynOrShm( smmTBSNode   * aTBSNode,
 }
 
 
-/* ë°ì´í„°ë² ì´ìŠ¤íƒ€ì…ì—ë”°ë¼ Pageë©”ëª¨ë¦¬ë¥¼ ê³µìœ ë©”ëª¨ë¦¬ë‚˜ ì¼ë°˜ë©”ëª¨ë¦¬ë¡œ í•´ì œí•œë‹¤.
+/* µ¥ÀÌÅÍº£ÀÌ½ºÅ¸ÀÔ¿¡µû¶ó Page¸Ş¸ğ¸®¸¦ °øÀ¯¸Ş¸ğ¸®³ª ÀÏ¹İ¸Ş¸ğ¸®·Î ÇØÁ¦ÇÑ´Ù.
  *
- * aPage [IN] í•´ì œí•  Page ë©”ëª¨ë¦¬
+ * aPage [IN] ÇØÁ¦ÇÒ Page ¸Ş¸ğ¸®
  */
 IDE_RC smmManager::freeDynOrShm( smmTBSNode  * aTBSNode,
                                  void        * aPageMemHandle,
-                                 smmTempPage * aPage )
+                                 smmTempPage * aPage,
+                                 idBool        aIsDataPage )
 {
     IDE_DASSERT( aPage != NULL );
 
     switch( aTBSNode->mRestoreType )
     {
-        // ì¼ë°˜ ë©”ëª¨ë¦¬ì— Page ë©”ëª¨ë¦¬ë¥¼ í•´ì œ
+        // ÀÏ¹İ ¸Ş¸ğ¸®¿¡ Page ¸Ş¸ğ¸®¸¦ ÇØÁ¦
         case SMM_DB_RESTORE_TYPE_DYNAMIC :
-            IDE_TEST( aTBSNode->mDynamicMemPagePool.memFree( aPageMemHandle )
-                      != IDE_SUCCESS);
+            // BUG-47487: DATA / FLI ÆäÀÌÁö ¸Ş¸ğ¸® ÇØÁ¦ ºĞ¸® 
+            if ( aIsDataPage == ID_TRUE )
+            {
+                IDE_TEST( aTBSNode->mDynamicMemPagePool.memFree( aPageMemHandle )
+                          != IDE_SUCCESS);
+            }
+            else
+            {
+                IDE_TEST( aTBSNode->mFLIMemPagePool.memFree( aPageMemHandle )
+                          != IDE_SUCCESS);
+            }
             break;
 
-        // ê³µë°˜ ë©”ëª¨ë¦¬ì— Page ë©”ëª¨ë¦¬ë¥¼ í•´ì œ
+        // °ø¹İ ¸Ş¸ğ¸®¿¡ Page ¸Ş¸ğ¸®¸¦ ÇØÁ¦
         case SMM_DB_RESTORE_TYPE_SHM_CREATE :
         case SMM_DB_RESTORE_TYPE_SHM_ATTACH :
             IDE_TEST( smmFixedMemoryMgr::freeShmPage( aTBSNode, aPage )
                       != IDE_SUCCESS );
             break;
 
-        // ì–´ë– í•œ ë©”ëª¨ë¦¬ë¥¼ ì‚¬ìš©í•´ì•¼ í•  ì§€ ì•Œ ìˆ˜ ì—†ë‹¤.
+        // ¾î¶°ÇÑ ¸Ş¸ğ¸®¸¦ »ç¿ëÇØ¾ß ÇÒ Áö ¾Ë ¼ö ¾ø´Ù.
         case SMM_DB_RESTORE_TYPE_NONE :
         default :
             IDE_ASSERT( 0 );
@@ -5323,55 +5415,65 @@ IDE_RC smmManager::freeDynOrShm( smmTBSNode  * aTBSNode,
     return IDE_FAILURE;
 }
 
-/* íŠ¹ì • Pageì˜ PCHì•ˆì˜ Page Memoryë¥¼ í• ë‹¹í•œë‹¤.
+/* Æ¯Á¤ PageÀÇ PCH¾ÈÀÇ Page Memory¸¦ ÇÒ´çÇÑ´Ù.
  *
- * aPID [IN] Page Memoryë¥¼ í• ë‹¹í•  Pageì˜ ID
+ * aPID [IN] Page Memory¸¦ ÇÒ´çÇÒ PageÀÇ ID
  */
 IDE_RC smmManager::allocPageMemory( smmTBSNode * aTBSNode, scPageID aPID )
 {
-    smmPCH * sPCH;
     scSpaceID sSpaceID = aTBSNode->mTBSAttr.mID;
 
     IDE_DASSERT( isValidPageID( sSpaceID, aPID ) == ID_TRUE );
+    IDE_ASSERT( mPCArray[sSpaceID].mPC[aPID].mPCH != NULL );
 
-    sPCH = mPCHArray[sSpaceID][aPID];
-
-    IDE_ASSERT( sPCH != NULL );
-
-    // Recoveryì¤‘ì—ëŠ” Redo/Undoì¤‘ í˜ì´ì§€ ë©”ëª¨ë¦¬ê°€ NULLì´ë©´
-    // í•­ìƒ Pageë©”ëª¨ë¦¬ë¥¼ ìƒˆë¡œ í• ë‹¹í•˜ë„ë¡ ë˜ì–´ìˆë‹¤.
+    // RecoveryÁß¿¡´Â Redo/UndoÁß ÆäÀÌÁö ¸Ş¸ğ¸®°¡ NULLÀÌ¸é
+    // Ç×»ó Page¸Ş¸ğ¸®¸¦ »õ·Î ÇÒ´çÇÏµµ·Ï µÇ¾îÀÖ´Ù.
     //
-    // ex1> smrRecoveryMgr::redoì˜ SMR_LT_DIRTY_PAGE ì²˜ë¦¬ë¶€ë¶„ì—ì„œ
-    //     SMM_PID_PTR(sArrPageID[i]) => ì—¬ê¸°ì—ì„œ ë©”ëª¨ë¦¬ í• ë‹¹
+    // ex1> smrRecoveryMgr::redoÀÇ SMR_LT_DIRTY_PAGE Ã³¸®ºÎºĞ¿¡¼­
+    //     SMM_PID_PTR(sArrPageID[i]) => ¿©±â¿¡¼­ ¸Ş¸ğ¸® ÇÒ´ç
 
-    // ex2> REDOê°€ ë‹¤ ëë‚˜ê³  ALTER TABLEì˜ Undoì‹œì—
-    //      Page ë©”ëª¨ë¦¬ í• ë‹¹ì„ ì‹œë„í•˜ëŠ”ë°
-    //      ì´ ë•Œ free pageë¼ë„ ë©”ëª¨ë¦¬ê°€ í• ë‹¹ë˜ì–´ ìˆì„ ìˆ˜ ìˆë‹¤.
+    // ex2> REDO°¡ ´Ù ³¡³ª°í ALTER TABLEÀÇ Undo½Ã¿¡
+    //      Page ¸Ş¸ğ¸® ÇÒ´çÀ» ½ÃµµÇÏ´Âµ¥
+    //      ÀÌ ¶§ free page¶óµµ ¸Ş¸ğ¸®°¡ ÇÒ´çµÇ¾î ÀÖÀ» ¼ö ÀÖ´Ù.
     //
-    // Recoveryê°€ ì•„ë‹Œ ê²½ìš°ì—ë§Œ í™•ì¸í•œë‹¤.
+    // Recovery°¡ ¾Æ´Ñ °æ¿ì¿¡¸¸ È®ÀÎÇÑ´Ù.
 
-    // BUG-23146 TC/Recovery/OnlineBackupRec/onlineBackupServerStop.sql ì—ì„œ
-    // ì„œë²„ê°€ ë¹„ì •ìƒ ì¢…ë£Œí•©ë‹ˆë‹¤.
-    // Media Recoveryì—ì„œë„ pageê°€ í• ë‹¹ë˜ì–´ ìˆëŠ” ê²½ìš°ê°€ ìˆìŠµë‹ˆë‹¤.
-    // Restart Recoveryì¸ ê²½ìš°ì—ë§Œ í™•ì¸í•˜ì§€ ì•Šë„ë¡ ë˜ì–´ìˆëŠ” ì½”ë“œë¥¼
-    // Media Recoveryì¸ ê²½ìš°ì—ë„ í™•ì¸í•˜ì§€ ì•Šë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤.
+    // BUG-23146 TC/Recovery/OnlineBackupRec/onlineBackupServerStop.sql ¿¡¼­
+    // ¼­¹ö°¡ ºñÁ¤»ó Á¾·áÇÕ´Ï´Ù.
+    // Media Recovery¿¡¼­µµ page°¡ ÇÒ´çµÇ¾î ÀÖ´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù.
+    // Restart RecoveryÀÎ °æ¿ì¿¡¸¸ È®ÀÎÇÏÁö ¾Êµµ·Ï µÇ¾îÀÖ´Â ÄÚµå¸¦
+    // Media RecoveryÀÎ °æ¿ì¿¡µµ È®ÀÎÇÏÁö ¾Êµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù.
     if ( ( smLayerCallback::isRestartRecoveryPhase() == ID_FALSE ) &&
          ( smLayerCallback::isMediaRecoveryPhase() == ID_FALSE ) )
     {
-        // Page Memoryê°€ í• ë‹¹ë˜ì–´ ìˆì§€ ì•Šì•„ì•¼ í•œë‹¤.
-        IDE_ASSERT( sPCH->m_page == NULL );
+        // Page Memory°¡ ÇÒ´çµÇ¾î ÀÖÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
+        IDE_ASSERT( mPCArray[sSpaceID].mPC[aPID].mPagePtr == NULL );
     }
 
-    if ( sPCH->m_page == NULL )
+    if ( mPCArray[sSpaceID].mPC[aPID].mPagePtr == NULL )
     {
-        IDE_TEST( allocDynOrShm( aTBSNode,
-                                 &sPCH->mPageMemHandle,
-                                 (smmTempPage **) & sPCH->m_page )
-                  != IDE_SUCCESS );
+        // BUG-47487: DATA / FLI ÆäÀÌÁö °æ¿ì ³ª´©±â alloc 
+        if ( smmExpandChunk::isFLIPageID( aTBSNode, aPID ) == ID_TRUE )
+        {
+            // FLI
+            IDE_TEST( allocDynOrShm( aTBSNode,
+                                     &((smmPCH*)mPCArray[sSpaceID].mPC[aPID].mPCH)->mPageMemHandle,
+                                     (smmTempPage **) & mPCArray[sSpaceID].mPC[aPID].mPagePtr,
+                                     ID_FALSE )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            // DATA
+            IDE_TEST( allocDynOrShm( aTBSNode,
+                                     &((smmPCH*)mPCArray[sSpaceID].mPC[aPID].mPCH)->mPageMemHandle,
+                                     (smmTempPage **) & mPCArray[sSpaceID].mPC[aPID].mPagePtr )
+                      != IDE_SUCCESS );
+        }
     }
 
 #ifdef DEBUG_SMM_FILL_GARBAGE_PAGE
-    idlOS::memset( sPCH->m_page, 0x43, SM_PAGE_SIZE );
+    idlOS::memset( sPCH->mPagePtr, 0x43, SM_PAGE_SIZE );
 #endif // DEBUG
 
 
@@ -5385,18 +5487,18 @@ IDE_RC smmManager::allocPageMemory( smmTBSNode * aTBSNode, scPageID aPID )
 
 
 /*
- * í˜ì´ì§€ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•˜ê³ , í•´ë‹¹ Pageë¥¼ ì´ˆê¸°í™”í•œë‹¤.
- * í•„ìš”í•œ ê²½ìš°, í˜ì´ì§€ ì´ˆê¸°í™”ì— ëŒ€í•œ ë¡œê¹…ì„ ì‹¤ì‹œí•œë‹¤
+ * ÆäÀÌÁö ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÏ°í, ÇØ´ç Page¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ * ÇÊ¿äÇÑ °æ¿ì, ÆäÀÌÁö ÃÊ±âÈ­¿¡ ´ëÇÑ ·Î±ëÀ» ½Ç½ÃÇÑ´Ù
  *
- * To Fix BUG-15107 Checkpointì‹œ Dirty Pageì²˜ë¦¬ë„ì¤‘ ì“°ë ˆê¸° í˜ì´ì§€ ë§Œë‚¨
- * => í˜ì´ì§€ ë©”ëª¨ë¦¬í• ë‹¹ê³¼ ì´ˆê¸°í™”ë¥¼ ë¬¶ì–´ì„œ ì²˜ë¦¬,
- * => smmPCHEntryì˜ mPageMemMutexë¡œ checkpointì™€ pageí• ë‹¹txê°„ì˜ ë™ì‹œì„± ì œì–´
+ * To Fix BUG-15107 Checkpoint½Ã Dirty PageÃ³¸®µµÁß ¾²·¹±â ÆäÀÌÁö ¸¸³²
+ * => ÆäÀÌÁö ¸Ş¸ğ¸®ÇÒ´ç°ú ÃÊ±âÈ­¸¦ ¹­¾î¼­ Ã³¸®,
+ * => smmPCHEntryÀÇ mPageMemMutex·Î checkpoint¿Í pageÇÒ´çtx°£ÀÇ µ¿½Ã¼º Á¦¾î
  *
- * aTrans   [IN] í˜ì´ì§€ ì´ˆê¸°í™” ë¡œê·¸ë¥¼ ê¸°ë¡í•  íŠ¸ëœì­ì…˜
- *               aTrans == NULLì´ë©´ ë¡œê¹…í•˜ì§€ ì•ŠëŠ”ë‹¤.
- * aPID     [IN] í˜ì´ì§€ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•˜ê³  ì´ˆê¸°í™”í•  í˜ì´ì§€ ID
- * aPrevPID [IN] í• ë‹¹í•  í˜ì´ì§€ì˜ ì´ì „ Page ID
- * aNextPID [IN] í• ë‹¹í•  í˜ì´ì§€ì˜ ë‹¤ìŒ Page ID
+ * aTrans   [IN] ÆäÀÌÁö ÃÊ±âÈ­ ·Î±×¸¦ ±â·ÏÇÒ Æ®·£Àè¼Ç
+ *               aTrans == NULLÀÌ¸é ·Î±ëÇÏÁö ¾Ê´Â´Ù.
+ * aPID     [IN] ÆäÀÌÁö ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÏ°í ÃÊ±âÈ­ÇÒ ÆäÀÌÁö ID
+ * aPrevPID [IN] ÇÒ´çÇÒ ÆäÀÌÁöÀÇ ÀÌÀü Page ID
+ * aNextPID [IN] ÇÒ´çÇÒ ÆäÀÌÁöÀÇ ´ÙÀ½ Page ID
  */
 IDE_RC smmManager::allocAndLinkPageMemory( smmTBSNode * aTBSNode,
                                            void     *   aTrans,
@@ -5404,12 +5506,12 @@ IDE_RC smmManager::allocAndLinkPageMemory( smmTBSNode * aTBSNode,
                                            scPageID     aPrevPID,
                                            scPageID     aNextPID )
 {
-    UInt     sStage = 0;
-    idBool   sPageIsDirty=ID_FALSE;
-    smmPCH * sPCH   = NULL;
-    scSpaceID  sSpaceID = aTBSNode->mTBSAttr.mID;
+    UInt         sStage = 0;
+    idBool       sPageIsDirty=ID_FALSE;
+    smmPCH     * sPCH   = NULL;
+    scSpaceID    sSpaceID = aTBSNode->mTBSAttr.mID;
 
-    // ì¸ì ì í•©ì„± ê²€ì‚¬ ( aTransëŠ” NULLì¼ ìˆ˜ë„ ìˆë‹¤. )
+    // ÀÎÀÚ ÀûÇÕ¼º °Ë»ç ( aTrans´Â NULLÀÏ ¼öµµ ÀÖ´Ù. )
     IDE_DASSERT( aPID != SM_NULL_PID );
     IDE_DASSERT( isValidPageID( sSpaceID, aPID ) == ID_TRUE );
 
@@ -5425,17 +5527,16 @@ IDE_RC smmManager::allocAndLinkPageMemory( smmTBSNode * aTBSNode,
     }
 #endif
 
-    sPCH = mPCHArray[sSpaceID][aPID];
+    sPCH = (smmPCH*)mPCArray[sSpaceID].mPC[aPID].mPCH;
 
     IDE_ASSERT( sPCH != NULL );
 
-    // smrRecoveryMgr::chkptFlushMemDirtyPages ì—ì„œ smrDirtyPageListì—
-    // addí•˜ëŠ” ì½”ë“œì™€ ê²½ìŸí•˜ëŠ” í˜ì´ì§€ ë©”ëª¨ë¦¬ ë®¤í…ìŠ¤
-    IDE_TEST( sPCH->mMutex.lock( NULL )
-              != IDE_SUCCESS );
+    // smrRecoveryMgr::chkptFlushMemDirtyPages ¿¡¼­ smrDirtyPageList¿¡
+    // addÇÏ´Â ÄÚµå¿Í °æÀïÇÏ´Â ÆäÀÌÁö ¸Ş¸ğ¸® ¹ÂÅØ½º
+    IDE_TEST( sPCH->mMutex.lock( NULL ) != IDE_SUCCESS );
     sStage = 1;
 
-    // Page Memoryë¥¼ í• ë‹¹í•œë‹¤.
+    // Page Memory¸¦ ÇÒ´çÇÑ´Ù.
     IDE_TEST( allocPageMemory( aTBSNode, aPID ) != IDE_SUCCESS );
 
     if ( aTrans != NULL )
@@ -5454,19 +5555,19 @@ IDE_RC smmManager::allocAndLinkPageMemory( smmTBSNode * aTBSNode,
 
 
     sPageIsDirty = ID_TRUE;
-    smLayerCallback::linkPersPage( sPCH->m_page,
+    smLayerCallback::linkPersPage( mPCArray[sSpaceID].mPC[aPID].mPagePtr,
                                    aPID,
                                    aPrevPID,
                                    aNextPID );
 
-    // ì£¼ì˜! smrRecoveryMgr::chkptFlushMemDirtyPages ì—ì„œ
-    // smmDirtyPageMgrì´ ì§€ë‹ˆëŠ” Mutexë¥¼ ë¨¼ì € ì¡ê³  PageMemMutexë¥¼ ì¡ê³  ìˆë‹¤.
-    // ë§Œì•½ PageMemMutexë¥¼ ë¨¼ì €ì¡ê³  smmDirtyPageMgrì˜ Mutexë¥¼ ì¡ìœ¼ë©´
-    // Dead Lockì´ ë°œìƒí•œë‹¤.
+    // ÁÖÀÇ! smrRecoveryMgr::chkptFlushMemDirtyPages ¿¡¼­
+    // smmDirtyPageMgrÀÌ Áö´Ï´Â Mutex¸¦ ¸ÕÀú Àâ°í PageMemMutex¸¦ Àâ°í ÀÖ´Ù.
+    // ¸¸¾à PageMemMutex¸¦ ¸ÕÀúÀâ°í smmDirtyPageMgrÀÇ Mutex¸¦ ÀâÀ¸¸é
+    // Dead LockÀÌ ¹ß»ıÇÑ´Ù.
     //
-    // Page Memory í• ë‹¹ê³¼ ì´ˆê¸°í™”ë¥¼ í•˜ëŠ” ë™ì•ˆ Checkpointê°€ ì´ Pageë¥¼
-    // ëª»ë³´ê²Œ í•˜ëŠ” ê²ƒì´ mMutexì˜ ìš©ë„ì´ë¯€ë¡œ,
-    // insDirtyPageì „ì— mMutexë¥¼ í’€ì–´ë„ ê´€ê³„ì—†ë‹¤.
+    // Page Memory ÇÒ´ç°ú ÃÊ±âÈ­¸¦ ÇÏ´Â µ¿¾È Checkpoint°¡ ÀÌ Page¸¦
+    // ¸øº¸°Ô ÇÏ´Â °ÍÀÌ mMutexÀÇ ¿ëµµÀÌ¹Ç·Î,
+    // insDirtyPageÀü¿¡ mMutex¸¦ Ç®¾îµµ °ü°è¾ø´Ù.
     sStage = 0;
     IDE_TEST( sPCH->mMutex.unlock() != IDE_SUCCESS );
 
@@ -5500,67 +5601,81 @@ IDE_RC smmManager::allocAndLinkPageMemory( smmTBSNode * aTBSNode,
     return IDE_FAILURE;
 }
 
-/* íŠ¹ì • Pageì˜ PCHì•ˆì˜ Page Memoryë¥¼ í•´ì œí•œë‹¤.
+/* Æ¯Á¤ PageÀÇ PCH¾ÈÀÇ Page Memory¸¦ ÇØÁ¦ÇÑ´Ù.
  *
- * aPID [IN] Page Memoryë¥¼ ë°˜ë‚©í•  Pageì˜ ID
+ * aPID [IN] Page Memory¸¦ ¹İ³³ÇÒ PageÀÇ ID
  */
 IDE_RC smmManager::freePageMemory( smmTBSNode * aTBSNode, scPageID aPID )
 {
-    smmPCH * sPCH;
-    UInt     sStage = 0;
-    scSpaceID sSpaceID = aTBSNode->mTBSAttr.mID;
+    smmPCH     * sPCH;
+    UInt         sStage = 0;
+    scSpaceID    sSpaceID = aTBSNode->mTBSAttr.mID;
 
     IDE_DASSERT( isValidPageID( sSpaceID, aPID ) == ID_TRUE );
 
-    sPCH = mPCHArray[sSpaceID][aPID];
+    sPCH = (smmPCH*)mPCArray[sSpaceID].mPC[aPID].mPCH;
 
     IDE_ASSERT( sPCH != NULL );
 
-    // Freeë  Pageì´ë¯€ë¡œ Dirty Pageë¼ê³  í•˜ë”ë¼ë„ Diskì— ë‚´ë¦´ í•„ìš”ëŠ” ì—†ì§€ë§Œ,
-    // í˜„ì¬ dirty page managerë° checkpoint ë£¨í‹´ì´
-    // í•œë²ˆ ì¶”ê°€ëœ Dirty Pageë¥¼ dirty page listì—ì„œ ì œê±°í•˜ê¸° í˜ë“  êµ¬ì¡°ì´ë‹¤.
+    // FreeµÉ PageÀÌ¹Ç·Î Dirty Page¶ó°í ÇÏ´õ¶óµµ Disk¿¡ ³»¸± ÇÊ¿ä´Â ¾øÁö¸¸,
+    // ÇöÀç dirty page manager¹× checkpoint ·çÆ¾ÀÌ
+    // ÇÑ¹ø Ãß°¡µÈ Dirty Page¸¦ dirty page list¿¡¼­ Á¦°ÅÇÏ±â Èûµç ±¸Á¶ÀÌ´Ù.
     //
-    // Free Pageì˜ Page ë©”ëª¨ë¦¬ëŠ” ë°˜ë‚©í•˜ì—¬ NULLë¡œ ì„¸íŒ…í•´ë‘ê³ 
-    // Dirty Page Listì—ëŠ” ê·¸ëŒ€ë¡œ dirtyì¸ ìƒíƒœë¡œ ë‘”ë‹¤.
+    // Free PageÀÇ Page ¸Ş¸ğ¸®´Â ¹İ³³ÇÏ¿© NULL·Î ¼¼ÆÃÇØµÎ°í
+    // Dirty Page List¿¡´Â ±×´ë·Î dirtyÀÎ »óÅÂ·Î µĞ´Ù.
     //
-    // ê·¸ëŸ¬ë©´ checkpointì‹œì— Dirty Pageì˜ Page ë©”ëª¨ë¦¬ê°€ NULLì´ë©´,
-    // Dirty Pageë¡œ ë“±ë¡ë˜ì—ˆë‹¤ê°€ Free Pageë¡œ ë°˜ë‚©ëœ Pageì´ë¯€ë¡œ ë¬´ì‹œí•œë‹¤.
-    // ë‚˜ì¤‘ì— restart recoveryì‹œì— í•´ë‹¹ PageëŠ” Free Pageì´ë¯€ë¡œ,
-    // Diskì—ì„œ ì½ì–´ì˜¤ì§€ë„ ì•Šê¸° ë•Œë¬¸ì—,
-    // ì´ì™€ê°™ì´ Dirty Pageë¥¼ Flushí•˜ì§€ ì•Šê³  ë¬´ì‹œí•˜ëŠ” ê²ƒì´ ê°€ëŠ¥í•˜ë‹¤.
+    // ±×·¯¸é checkpoint½Ã¿¡ Dirty PageÀÇ Page ¸Ş¸ğ¸®°¡ NULLÀÌ¸é,
+    // Dirty Page·Î µî·ÏµÇ¾ú´Ù°¡ Free Page·Î ¹İ³³µÈ PageÀÌ¹Ç·Î ¹«½ÃÇÑ´Ù.
+    // ³ªÁß¿¡ restart recovery½Ã¿¡ ÇØ´ç Page´Â Free PageÀÌ¹Ç·Î,
+    // Disk¿¡¼­ ÀĞ¾î¿ÀÁöµµ ¾Ê±â ¶§¹®¿¡,
+    // ÀÌ¿Í°°ÀÌ Dirty Page¸¦ FlushÇÏÁö ¾Ê°í ¹«½ÃÇÏ´Â °ÍÀÌ °¡´ÉÇÏ´Ù.
     //
-    // ì£¼ì˜í•  ì ì€, freePageMemoryí•˜ë ¤ëŠ” ìˆœê°„ì—
-    // checkpointê°€ ì§„í–‰ì¤‘ì¼ ìˆ˜ ìˆëŠ” ì‚¬ì‹¤ì´ë‹¤.
-    // sPIDê°€ Dirty Pageì´ì–´ì„œ Dirty Pageì˜ Pageë©”ëª¨ë¦¬ë¥¼ Flushí•˜ê³  ìˆë‹¤ë©´
-    // Page ë©”ëª¨ë¦¬ë¥¼ ë°”ë¡œ í•´ì œí•˜ë©´ ì•ˆëœë‹¤.
+    // ÁÖÀÇÇÒ Á¡Àº, freePageMemoryÇÏ·Á´Â ¼ø°£¿¡
+    // checkpoint°¡ ÁøÇàÁßÀÏ ¼ö ÀÖ´Â »ç½ÇÀÌ´Ù.
+    // sPID°¡ Dirty PageÀÌ¾î¼­ Dirty PageÀÇ Page¸Ş¸ğ¸®¸¦ FlushÇÏ°í ÀÖ´Ù¸é
+    // Page ¸Ş¸ğ¸®¸¦ ¹Ù·Î ÇØÁ¦ÇÏ¸é ¾ÈµÈ´Ù.
 
     IDE_TEST( sPCH->mMutex.lock( NULL /* idvSQL* */ )
               != IDE_SUCCESS );
     sStage = 1;
 
-    // Page Memoryê°€ í• ë‹¹ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
-    IDE_ASSERT( sPCH->m_page != NULL );
+    // Page Memory°¡ ÇÒ´çµÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
+    IDE_ASSERT( mPCArray[sSpaceID].mPC[aPID].mPagePtr != NULL );
 
-    IDE_TEST( freeDynOrShm( aTBSNode,
-                            sPCH->mPageMemHandle,
-                            (smmTempPage*) sPCH->m_page )
-            != IDE_SUCCESS );
+    // BUG-47487: DATA / FLI ÆäÀÌÁö °æ¿ì ³ª´©±â free 
+    if ( smmExpandChunk::isFLIPageID( aTBSNode, aPID ) == ID_TRUE )
+    {
+        //FLI
+        IDE_TEST( freeDynOrShm( aTBSNode,
+                                sPCH->mPageMemHandle,
+                                (smmTempPage*)mPCArray[sSpaceID].mPC[aPID].mPagePtr,
+                                ID_FALSE )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        //DATA
+        IDE_TEST( freeDynOrShm( aTBSNode,
+                                sPCH->mPageMemHandle,
+                                (smmTempPage*)mPCArray[sSpaceID].mPC[aPID].mPagePtr )
+                  != IDE_SUCCESS );
+    }
 
-    sPCH->m_page = NULL;
+    mPCArray[sSpaceID].mPC[aPID].mPagePtr = NULL;
 
-    // checkpointì‹œì— smmDirtyPageList -> smrDirtyPageList ë¡œ Dirty Pageë¥¼
-    // ì´ë™ì‹œí‚¤ëŠ”ë°, ë§Œì•½ ì´ë•Œ m_page == NULLì´ë©´, ì´ë™ì´ ë˜ì§€ ì•ŠëŠ”ë‹¤.
-    // ê·¸ëŸ´ ê²½ìš°, smmDirtyPageListì— ì¶”ê°€ëœ Pageì´ë¯€ë¡œ,
-    // m_dirty == ID_TRUEì´ì§€ë§Œ, smrDirtyPageListì—ëŠ” ì¶”ê°€ë˜ì§€ ì•Šì€ ì±„ë¡œ
-    // ë°©ì¹˜ëœë‹¤.
+    // checkpoint½Ã¿¡ smmDirtyPageList -> smrDirtyPageList ·Î Dirty Page¸¦
+    // ÀÌµ¿½ÃÅ°´Âµ¥, ¸¸¾à ÀÌ¶§ mPagePtr == NULLÀÌ¸é, ÀÌµ¿ÀÌ µÇÁö ¾Ê´Â´Ù.
+    // ±×·² °æ¿ì, smmDirtyPageList¿¡ Ãß°¡µÈ PageÀÌ¹Ç·Î,
+    // m_dirty == ID_TRUEÀÌÁö¸¸, smrDirtyPageList¿¡´Â Ãß°¡µÇÁö ¾ÊÀº Ã¤·Î
+    // ¹æÄ¡µÈ´Ù.
     //
-    // ê·¸ë¦¬ê³  í•´ë‹¹ Pageê°€ ì‚¬ìš©ë˜ì–´ì„œ m_page != NULLì¸ ì±„ë¡œ smmDirtyPageListì—
-    // ë„£ìœ¼ë ¤ê³  í•´ë„, m_dirty ê°€ ID_TRUEì—¬ì„œ Dirty Pageë¡œ ì¶”ê°€ê°€ ë˜ì§€ ì•ŠëŠ”ë‹¤.
+    // ±×¸®°í ÇØ´ç Page°¡ »ç¿ëµÇ¾î¼­ mPagePtr != NULLÀÎ Ã¤·Î smmDirtyPageList¿¡
+    // ³ÖÀ¸·Á°í ÇØµµ, m_dirty °¡ ID_TRUE¿©¼­ Dirty Page·Î Ãß°¡°¡ µÇÁö ¾Ê´Â´Ù.
     //
-    // í˜ì´ì§€ì— ë©”ëª¨ë¦¬ê°€ í•´ì œë˜ì–´ m_pageê°€ NULLë¡œ ë˜ëŠ” ì‹œì ì—ì„œ
-    // m_dirty í”Œë˜ê·¸ë¥¼ ID_FALSEë¡œ ì„¸íŒ…í•˜ì—¬ ì¶”í›„ í˜ì´ì§€ì— ë©”ëª¨ë¦¬ê°€ í• ë‹¹ë˜ê³ ,
-    // smmDirtyPageListì— í˜ì´ì§€ë¥¼ ì¶”ê°€í•˜ê³ ì í•  ë•Œ, m_dirty ê°€ ID_TRUEì—¬ì„œ
-    // ì¶”ê°€ë˜ì§€ ì•ŠëŠ” ë¬¸ì œì ì„ ë¯¸ì—°ì— ë°©ì§€í•œë‹¤.
+    // ÆäÀÌÁö¿¡ ¸Ş¸ğ¸®°¡ ÇØÁ¦µÇ¾î mPagePtr°¡ NULL·Î µÇ´Â ½ÃÁ¡¿¡¼­
+    // m_dirty ÇÃ·¡±×¸¦ ID_FALSE·Î ¼¼ÆÃÇÏ¿© ÃßÈÄ ÆäÀÌÁö¿¡ ¸Ş¸ğ¸®°¡ ÇÒ´çµÇ°í,
+    // smmDirtyPageList¿¡ ÆäÀÌÁö¸¦ Ãß°¡ÇÏ°íÀÚ ÇÒ ¶§, m_dirty °¡ ID_TRUE¿©¼­
+    // Ãß°¡µÇÁö ¾Ê´Â ¹®Á¦Á¡À» ¹Ì¿¬¿¡ ¹æÁöÇÑ´Ù.
     sPCH->m_dirty = ID_FALSE;
 
     sStage = 0;
@@ -5589,11 +5704,11 @@ IDE_RC smmManager::freePageMemory( smmTBSNode * aTBSNode, scPageID aPID )
 
 
 /*
- * Pageì˜ PCH(Page Control Header)ì •ë³´ë¥¼ êµ¬ì„±í•œë‹¤.
+ * PageÀÇ PCH(Page Control Header)Á¤º¸¸¦ ±¸¼ºÇÑ´Ù.
  *
- * aPID  [IN] PCH Entryë¥¼ êµ¬ì„±í•˜ë ¤ê³  í•˜ëŠ” Page ID
- * aOP   [IN] í˜ì´ì§€ ë°ì´í„°ë¥¼ ë³µì‚¬í• ì§€ ì•„ë‹ˆë©´ ë©”ëª¨ë¦¬ í¬ì¸í„°ë¥¼ ì„¸íŒ…í• ì§€ ì—¬ë¶€
- * aPage [IN] ë””ìŠ¤í¬ë¡œë¶€í„° ì½ì–´ë“¤ì¸ í˜ì´ì§€ ë°ì´í„°
+ * aPID  [IN] PCH Entry¸¦ ±¸¼ºÇÏ·Á°í ÇÏ´Â Page ID
+ * aOP   [IN] ÆäÀÌÁö µ¥ÀÌÅÍ¸¦ º¹»çÇÒÁö ¾Æ´Ï¸é ¸Ş¸ğ¸® Æ÷ÀÎÅÍ¸¦ ¼¼ÆÃÇÒÁö ¿©ºÎ
+ * aPage [IN] µğ½ºÅ©·ÎºÎÅÍ ÀĞ¾îµéÀÎ ÆäÀÌÁö µ¥ÀÌÅÍ
  */
 IDE_RC smmManager::fillPCHEntry( smmTBSNode *       aTBSNode,
                                  scPageID           aPID,
@@ -5601,8 +5716,7 @@ IDE_RC smmManager::fillPCHEntry( smmTBSNode *       aTBSNode,
                                                    /* =SMM_FILL_PCH_OP_NONE*/
                                  void             * aPage /* =NULL */ )
 {
-
-    smmPCH * sPCH;
+    smmPCH     * sPCH;
 #ifdef DEBUG
     idBool   sIsFreePage;
 #endif
@@ -5610,22 +5724,21 @@ IDE_RC smmManager::fillPCHEntry( smmTBSNode *       aTBSNode,
 
     IDE_DASSERT( isValidPageID( sSpaceID, aPID ) == ID_TRUE );
 
-    sPCH = mPCHArray[sSpaceID][aPID];
+    sPCH = (smmPCH*)mPCArray[sSpaceID].mPC[aPID].mPCH;
 
     if ( sPCH == NULL )
     {
         IDE_TEST( allocPCHEntry( aTBSNode, aPID ) != IDE_SUCCESS );
-        sPCH = mPCHArray[sSpaceID][aPID];
+        sPCH = (smmPCH*)mPCArray[sSpaceID].mPC[aPID].mPCH;
 
         IDE_ASSERT( sPCH != NULL );
 
-        // í˜ì´ì§€ ë°ì´í„°ê°€ NULLì´ ì•„ë‹ˆë¼ë©´ Restoreì¤‘ì„ì„ ëœ»í•œë‹¤.
-        // RestoreëŠ” ë””í¬ìŠ¤ë¡œë¶€í„° ë©”ëª¨ë¦¬ë¡œ Pageë¥¼ ì½ì–´ë“¤ì´ëŠ” ê³¼ì •ì„ ë§í•œë‹¤.
+        // ÆäÀÌÁö µ¥ÀÌÅÍ°¡ NULLÀÌ ¾Æ´Ï¶ó¸é RestoreÁßÀÓÀ» ¶æÇÑ´Ù.
+        // Restore´Â µğÅ©½º·ÎºÎÅÍ ¸Ş¸ğ¸®·Î Page¸¦ ÀĞ¾îµéÀÌ´Â °úÁ¤À» ¸»ÇÑ´Ù.
         if ( aPage != NULL )
         {
-
-            /* BUG-43789 Restoreì‹œ FPLIPì— Allocated ë˜ì—ˆë‹¤ê³  ë˜ì–´ ìˆìœ¼ë‚˜
-             * í•´ë‹¹í•˜ëŠ” Pageê°€ Flush ë˜ì§€ ì•Šì€ ê²½ìš° ì½ì€ í˜ì´ì§€ê°€ ë¹ˆ Pageì¼ ìˆ˜ ìˆë‹¤.
+            /* BUG-43789 Restore½Ã FPLIP¿¡ Allocated µÇ¾ú´Ù°í µÇ¾î ÀÖÀ¸³ª
+             * ÇØ´çÇÏ´Â Page°¡ Flush µÇÁö ¾ÊÀº °æ¿ì ÀĞÀº ÆäÀÌÁö°¡ ºó PageÀÏ ¼ö ÀÖ´Ù.
              */
             if ( ((smpPersPageHeader*)aPage)->mSelfPageID == aPID )
             {
@@ -5634,15 +5747,14 @@ IDE_RC smmManager::fillPCHEntry( smmTBSNode *       aTBSNode,
                     case SMM_FILL_PCH_OP_COPY_PAGE :
 
                         IDE_TEST( allocPageMemory(aTBSNode, aPID ) != IDE_SUCCESS );
-
-                        idlOS::memcpy( sPCH->m_page, aPage, SM_PAGE_SIZE );
+                        idlOS::memcpy( mPCArray[sSpaceID].mPC[aPID].mPagePtr, aPage, SM_PAGE_SIZE );
                         break;
                     case SMM_FILL_PCH_OP_SET_PAGE :
-                        sPCH->m_page = aPage;
+                        mPCArray[sSpaceID].mPC[aPID].mPagePtr = aPage;
                         break;
-                        // í˜ì´ì§€ ë°ì´í„°ê°€ NULLì´ ì•„ë‹Œ ê²½ìš°ì—ëŠ”
-                        // aFillOptionì´ í•­ìƒ COPY_PAGEë‚˜ SET_PAGEì¤‘
-                        // í•˜ë‚˜ì˜ ê²½ìš°ì—¬ì•¼ í•œë‹¤.
+                        // ÆäÀÌÁö µ¥ÀÌÅÍ°¡ NULLÀÌ ¾Æ´Ñ °æ¿ì¿¡´Â
+                        // aFillOptionÀÌ Ç×»ó COPY_PAGE³ª SET_PAGEÁß
+                        // ÇÏ³ªÀÇ °æ¿ì¿©¾ß ÇÑ´Ù.
                     case SMM_FILL_PCH_OP_NONE :
                     default:
                         IDE_ASSERT(0);
@@ -5650,24 +5762,24 @@ IDE_RC smmManager::fillPCHEntry( smmTBSNode *       aTBSNode,
             }
             else
             {
-                /* BUG-43789 Page Headerì˜ IDì™€ ìš”ì²­í•œ PageIDê°€ ë‹¤ë¥¼ê²½ìš°
-                 * í•´ë‹¹ Pageë¥¼ ê·¸ëŒ€ë¡œ ì½ì–´ì„œëŠ” ì•ˆëœë‹¤.
-                 * Page Memoryë¥¼ ìƒˆë¡œ í• ë‹¹í•˜ì—¬ Page Headerì˜ SelfIDë§Œì„ ì´ˆê¸°í™” í•˜ì—¬ì£¼ë©´
-                 * Recovery ë‹¨ê³„ì—ì„œ ì •ìƒì ì¸ Pageë¡œ ë³µì›ë  ê²ƒì´ë‹¤. */
+                /* BUG-43789 Page HeaderÀÇ ID¿Í ¿äÃ»ÇÑ PageID°¡ ´Ù¸¦°æ¿ì
+                 * ÇØ´ç Page¸¦ ±×´ë·Î ÀĞ¾î¼­´Â ¾ÈµÈ´Ù.
+                 * Page Memory¸¦ »õ·Î ÇÒ´çÇÏ¿© Page HeaderÀÇ SelfID¸¸À» ÃÊ±âÈ­ ÇÏ¿©ÁÖ¸é
+                 * Recovery ´Ü°è¿¡¼­ Á¤»óÀûÀÎ Page·Î º¹¿øµÉ °ÍÀÌ´Ù. */
                 IDE_TEST( allocPageMemory( aTBSNode, aPID ) != IDE_SUCCESS );
 
-                /* BUG-44136 Memory Page loading ì‹œ flushë˜ì§€ ì•Šì€ FLI Pageë¥¼
-                 *           ìƒˆë¡œ í• ë‹¹ í–ˆë‹¤ë©´ ì´ˆê¸°í™” í•´ì•¼ í•©ë‹ˆë‹¤.
-                 * Meta, FLI PageëŠ” recoveryì „ì— ì°¸ê³ í•˜ëŠ” ê²½ìš°ê°€ ìˆë‹¤.
-                 * allocPageMemoryëŠ” mempoolì—ì„œ ê°€ì ¸ì˜¤ë¯€ë¡œ ì“°ë ˆê¸° ê°’ì´ ë“¤ì–´ìˆë‹¤.
-                 * ìµœì†Œí•œ ê·¸ ì“°ë ˆê¸° ê°’ë“¤ì€ ì§€ì›Œ ë‘ì–´ì•¼ í•œë‹¤.
+                /* BUG-44136 Memory Page loading ½Ã flushµÇÁö ¾ÊÀº FLI Page¸¦
+                 *           »õ·Î ÇÒ´ç Çß´Ù¸é ÃÊ±âÈ­ ÇØ¾ß ÇÕ´Ï´Ù.
+                 * Meta, FLI Page´Â recoveryÀü¿¡ Âü°íÇÏ´Â °æ¿ì°¡ ÀÖ´Ù.
+                 * allocPageMemory´Â mempool¿¡¼­ °¡Á®¿À¹Ç·Î ¾²·¹±â °ªÀÌ µé¾îÀÖ´Ù.
+                 * ÃÖ¼ÒÇÑ ±× ¾²·¹±â °ªµéÀº Áö¿ö µÎ¾î¾ß ÇÑ´Ù.
                  */
                 if( smmExpandChunk::isDataPageID( aTBSNode, aPID ) != ID_TRUE )
                 {
-                    idlOS::memset( sPCH->m_page, 0x0, SM_PAGE_SIZE );
+                    idlOS::memset(  mPCArray[sSpaceID].mPC[aPID].mPagePtr , 0x0, SM_PAGE_SIZE );
                 }
 
-                smLayerCallback::linkPersPage( sPCH->m_page,
+                smLayerCallback::linkPersPage(  mPCArray[sSpaceID].mPC[aPID].mPagePtr ,
                                                aPID,
                                                SM_NULL_PID,
                                                SM_NULL_PID );
@@ -5680,8 +5792,8 @@ IDE_RC smmManager::fillPCHEntry( smmTBSNode *       aTBSNode,
     }
     else // sPCH != NULL
     {
-        // PCHê°€ ì°¨ ìˆëŠ” ê²½ìš° Page ë°ì´í„°ë¥¼ ì²˜ë¦¬í•  ìˆ˜ ì—†ë‹¤.
-        // Page ë°ì´í„°ë¥¼ ì„¤ì •í•˜ë ¤ëŠ” ê²½ìš°ì—ëŠ” í•­ìƒ PCHê°€ NULLì´ì–´ì•¼ í•¨
+        // PCH°¡ Â÷ ÀÖ´Â °æ¿ì Page µ¥ÀÌÅÍ¸¦ Ã³¸®ÇÒ ¼ö ¾ø´Ù.
+        // Page µ¥ÀÌÅÍ¸¦ ¼³Á¤ÇÏ·Á´Â °æ¿ì¿¡´Â Ç×»ó PCH°¡ NULLÀÌ¾î¾ß ÇÔ
         IDE_ASSERT( aPage == NULL );
 
 #ifdef DEBUG
@@ -5692,8 +5804,8 @@ IDE_RC smmManager::fillPCHEntry( smmTBSNode *       aTBSNode,
 
         if ( sIsFreePage == ID_FALSE )
         {
-            // PCHê°€ NULLì´ ì•„ë‹ˆë©´ì„œ PCHì˜ Pageê°€ NULLì´ë¼ë©´ ì„œë²„ë¥¼ ì£½ì¸ë‹¤.
-            IDE_ASSERT( sPCH->m_page != NULL );
+            // PCH°¡ NULLÀÌ ¾Æ´Ï¸é¼­ PCHÀÇ Page°¡ NULLÀÌ¶ó¸é ¼­¹ö¸¦ Á×ÀÎ´Ù.
+            IDE_ASSERT( mPCArray[sSpaceID].mPC[aPID].mPagePtr != NULL );
         }
 #endif
     }
@@ -5710,56 +5822,54 @@ IDE_RC smmManager::fillPCHEntry( smmTBSNode *       aTBSNode,
 
 
 /*
- * í•˜ë‚˜ì˜ Pageì˜ ë°ì´í„°ê°€ ì €ì¥ë˜ëŠ” ë©”ëª¨ë¦¬ ê³µê°„ì„ PCH Entryì—ì„œ ê°€ì ¸ì˜¨ë‹¤.
+ * ÇÏ³ªÀÇ PageÀÇ µ¥ÀÌÅÍ°¡ ÀúÀåµÇ´Â ¸Ş¸ğ¸® °ø°£À» PCH Entry¿¡¼­ °¡Á®¿Â´Ù.
  *
- * aPID [IN] í˜ì´ì§€ì˜ ID
- * return Pageì˜ ë°ì´í„°ê°€ ì €ì¥ë˜ëŠ” ë©”ëª¨ë¦¬ ê³µê°„
+ * aPID [IN] ÆäÀÌÁöÀÇ ID
+ * return PageÀÇ µ¥ÀÌÅÍ°¡ ÀúÀåµÇ´Â ¸Ş¸ğ¸® °ø°£
  */
 /* BUG-32479 [sm-mem-resource] refactoring for handling exceptional case about
  * the SMM_OID_PTR and SMM_PID_PTR macro. */
-IDE_RC smmManager::getPersPagePtr(scSpaceID    aSpaceID, 
-                                  scPageID     aPID,
-                                  void      ** aPersPagePtr )
+IDE_RC smmManager::getPersPagePtrErr( scSpaceID    aSpaceID, 
+                                      scPageID     aPID,
+                                      void      ** aPersPagePtr )
 {
     idBool       sIsFreePage ;
     smmTBSNode * sTBSNode = NULL;
     smmPCH     * sPCH;
-
-    IDE_ERROR( aPersPagePtr != NULL );
-
-    (*aPersPagePtr) = NULL;
+    svmTBSNode * sVolTBSNode;
+    IDE_RC       rc;
 
     // BUG-14343
-    // DB í¬ê¸°ë¥¼ ì¤„ì´ê¸° ìœ„í•´ì„œ free pageëŠ” loading í•˜ì§€ ì•Šì•˜ë‹¤.
-    // ë•Œë¬¸ì— recovery phaseì—ì„œëŠ” free page ì ‘ê·¼ì‹œ page ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•´ ì£¼ì–´ì•¼ í•œë‹¤.
+    // DB Å©±â¸¦ ÁÙÀÌ±â À§ÇØ¼­ free page´Â loading ÇÏÁö ¾Ê¾Ò´Ù.
+    // ¶§¹®¿¡ recovery phase¿¡¼­´Â free page Á¢±Ù½Ã page ¸Ş¸ğ¸®¸¦ ÇÒ´çÇØ ÁÖ¾î¾ß ÇÑ´Ù.
     /*
-        Free List Info Pageì— Free Pageë¡œ ì§€ì •ë˜ì–´ ìˆì–´ì„œ
-        Restart Recoveryì´ì „ì— Pageê°€ Loadë˜ì§€ ì•Šì•˜ìœ¼ë‚˜,
-        Redoë„ì¤‘ í•´ë‹¹ Pageë¥¼ ë§Œë‚˜ëŠ” ê²½ìš° Diskë¡œë¶€í„° Pageë¥¼ Loadí•  í•„ìš”ê°€ ì—†ë‹¤.
+        Free List Info Page¿¡ Free Page·Î ÁöÁ¤µÇ¾î ÀÖ¾î¼­
+        Restart RecoveryÀÌÀü¿¡ Page°¡ LoadµÇÁö ¾Ê¾ÒÀ¸³ª,
+        RedoµµÁß ÇØ´ç Page¸¦ ¸¸³ª´Â °æ¿ì Disk·ÎºÎÅÍ Page¸¦ LoadÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
 
-        Redoì´ì „ Load DBì‹œì— Pageê°€ Free Pageì—¬ì„œ Loadë˜ì§€ ì•Šì€ ê²½ìš° :
+        RedoÀÌÀü Load DB½Ã¿¡ Page°¡ Free Page¿©¼­ LoadµÇÁö ¾ÊÀº °æ¿ì :
 
-        1. í•´ë‹¹ Pageê°€ Redoì™„ë£Œ í›„ì—ë„ Free Pageë¼ë©´
-            Redoì™„ë£Œí›„ í•´ë‹¹ Pageì•ˆì˜ ë‚´ìš©ì€ ì“°ë ˆê¸° ê°’ì´ ë“¤ì–´ìˆì–´ë„ ìƒê´€ì—†ìœ¼ë©°
-           í•´ë‹¹ Pageì˜ Headerë§Œ ì˜¨ì „í•œ ê°’ìœ¼ë¡œ ì„¤ì •ë˜ì–´ ìˆìœ¼ë©´ ëœë‹¤.
+        1. ÇØ´ç Page°¡ Redo¿Ï·á ÈÄ¿¡µµ Free Page¶ó¸é
+            Redo¿Ï·áÈÄ ÇØ´ç Page¾ÈÀÇ ³»¿ëÀº ¾²·¹±â °ªÀÌ µé¾îÀÖ¾îµµ »ó°ü¾øÀ¸¸ç
+           ÇØ´ç PageÀÇ Header¸¸ ¿ÂÀüÇÑ °ªÀ¸·Î ¼³Á¤µÇ¾î ÀÖÀ¸¸é µÈ´Ù.
 
-        2. í•´ë‹¹ Pageê°€ Redoì™„ë£Œ í›„ì— Alloced Pageë¼ë©´
-           Checkpointì‹œ í•´ë‹¹ Pageë¥¼ alloced pageë¼ëŠ” ë‚´ìš©ì„ ì§€ë‹Œ
-           Dirty Pageê°€ Diskì— ë‚´ë ¤ê°€ì§€ ì•Šì€ ìƒíƒœì´ë¯€ë¡œ
-           Free => alloced pageë¡œ ë³€ê²½ë˜ëŠ” ë¡œê·¸ê°€ redoëŒ€ìƒì— í¬í•¨ëœë‹¤.
-           Diskë¡œë¶€í„° Pageë¥¼ ë¡œë“œí•˜ì§€ ì•Šì•„ë„ redoì— ì˜í•´
-           Page Imageë¥¼ ë§Œë“¤ì–´ ë‚´ê²Œ ëœë‹¤.
+        2. ÇØ´ç Page°¡ Redo¿Ï·á ÈÄ¿¡ Alloced Page¶ó¸é
+           Checkpoint½Ã ÇØ´ç Page¸¦ alloced page¶ó´Â ³»¿ëÀ» Áö´Ñ
+           Dirty Page°¡ Disk¿¡ ³»·Á°¡Áö ¾ÊÀº »óÅÂÀÌ¹Ç·Î
+           Free => alloced page·Î º¯°æµÇ´Â ·Î±×°¡ redo´ë»ó¿¡ Æ÷ÇÔµÈ´Ù.
+           Disk·ÎºÎÅÍ Page¸¦ ·ÎµåÇÏÁö ¾Ê¾Æµµ redo¿¡ ÀÇÇØ
+           Page Image¸¦ ¸¸µé¾î ³»°Ô µÈ´Ù.
 
-           ìœ„ ë‘ ê°€ì§€ ìƒí™© ëª¨ë‘ Pageë¥¼ Diskë¡œë¶€í„° ë¡œë“œí•  í•„ìš”ê°€ ì—†ë‹¤.
-           í•˜ì§€ë§Œ, Page MemoryëŠ” í• ë‹¹ë˜ì–´ì•¼ í•˜ë©°, Page Headerë„
-           ì˜¨ì „í•œ ê°’ìœ¼ë¡œ ë°ì´í„°ê°€ ì„¤ì •ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
+           À§ µÎ °¡Áö »óÈ² ¸ğµÎ Page¸¦ Disk·ÎºÎÅÍ ·ÎµåÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+           ÇÏÁö¸¸, Page Memory´Â ÇÒ´çµÇ¾î¾ß ÇÏ¸ç, Page Headerµµ
+           ¿ÂÀüÇÑ °ªÀ¸·Î µ¥ÀÌÅÍ°¡ ¼³Á¤µÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
 
-           (ex> Page Headerì˜ mSelfê°€ ì„¤ì •ë˜ì–´ ìˆì–´ì•¼ í•´ë‹¹ Pageì— ëŒ€í•œ
-                Redoê°€ ì •ìƒ ë™ì‘í•¨ì„ ë³´ì¥í•  ìˆ˜ ìˆìŒ
-                => Redoë£¨í‹´ì—ì„œ Page Headerì˜ mSelfë¥¼ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ )
+           (ex> Page HeaderÀÇ mSelf°¡ ¼³Á¤µÇ¾î ÀÖ¾î¾ß ÇØ´ç Page¿¡ ´ëÇÑ
+                Redo°¡ Á¤»ó µ¿ÀÛÇÔÀ» º¸ÀåÇÒ ¼ö ÀÖÀ½
+                => Redo·çÆ¾¿¡¼­ Page HeaderÀÇ mSelf¸¦ »ç¿ëÇÏ±â ¶§¹® )
     */
 
-    // BUG-31191 isRestart()->isRestartRecoveryPhase()ë¡œ ë³€ê²½
+    // BUG-31191 isRestart()->isRestartRecoveryPhase()·Î º¯°æ
     if ( (smLayerCallback::isRestartRecoveryPhase() == ID_TRUE ) ||
          (smLayerCallback::isMediaRecoveryPhase() == ID_TRUE) )
     {
@@ -5767,19 +5877,19 @@ IDE_RC smmManager::getPersPagePtr(scSpaceID    aSpaceID,
                                                             (void**)&sTBSNode ) 
                   != IDE_SUCCESS );
         IDE_ERROR( sTBSNode != NULL );
-        IDE_ERROR_MSG( mPCHArray[aSpaceID] != NULL,
+        IDE_ERROR_MSG( mPCArray[aSpaceID].mPC != NULL,
                        "aSpaceID : %"ID_UINT32_FMT,
                        aSpaceID );
-        IDE_ERROR_MSG( mPCHArray[aSpaceID][aPID] != NULL,
+        IDE_ERROR_MSG( mPCArray[aSpaceID].mPC[aPID].mPCH != NULL,
                        "aSpaceID : %"ID_UINT32_FMT"\n"
                        "aPID     : %"ID_UINT32_FMT"\n",
                        aSpaceID,
                        aPID );
 
-        if ( mPCHArray[aSpaceID][aPID]->m_page == NULL )
+        if ( mPCArray[aSpaceID].mPC[aPID].mPagePtr == NULL )
         {
             IDE_TEST( allocAndLinkPageMemory( sTBSNode,
-                                              NULL, // ë¡œê¹…í•˜ì§€ ì•ŠìŒ
+                                              NULL, // ·Î±ëÇÏÁö ¾ÊÀ½
                                               aPID,          // PID
                                               SM_NULL_PID,   // prev PID
                                               SM_NULL_PID )  // next PID
@@ -5789,22 +5899,20 @@ IDE_RC smmManager::getPersPagePtr(scSpaceID    aSpaceID,
 
     if( isValidPageID( aSpaceID, aPID ) == ID_FALSE )
     {
-        sTBSNode = (smmTBSNode*)sctTableSpaceMgr::getSpaceNodeBySpaceID( aSpaceID );
-
         ideLog::log( IDE_SERVER_0,
                      SM_TRC_PAGE_PID_INVALID,
                      aSpaceID,
                      aPID,
-                     sTBSNode->mDBMaxPageCount );
+                     mPCArray[aSpaceID].mMaxPageCount );
         IDE_ERROR( 0 );
     }
 
-    sPCH = mPCHArray[aSpaceID][aPID];
+    sPCH = (smmPCH*)mPCArray[aSpaceID].mPC[aPID].mPCH;
 
     if ( sPCH == NULL )
     {
-        /* PCHê°€ ì•„ì§ í• ë‹¹ë˜ì§€ ëª»í–ˆë‹¤ë©´, Utilityì—ì„œ ì‚¬ìš©í•˜ëŠ” ê²ƒì¼ í™•ìœ¨
-         * ì´ ìˆìŒ. ë”°ë¼ì„œ Callbackì´ ìˆìœ¼ë©´, callbackìœ¼ë¡œ í˜¸ì¶œ ì‹œë„í•´ë´„*/
+        /* PCH°¡ ¾ÆÁ÷ ÇÒ´çµÇÁö ¸øÇß´Ù¸é, Utility¿¡¼­ »ç¿ëÇÏ´Â °ÍÀÏ È®À²
+         * ÀÌ ÀÖÀ½. µû¶ó¼­ CallbackÀÌ ÀÖÀ¸¸é, callbackÀ¸·Î È£Ãâ ½ÃµµÇØº½*/
         if( mGetPersPagePtrFunc != NULL )
         {
             IDE_TEST( mGetPersPagePtrFunc ( aSpaceID,
@@ -5836,17 +5944,31 @@ IDE_RC smmManager::getPersPagePtr(scSpaceID    aSpaceID,
 
         ideLog::log(SM_TRC_LOG_LEVEL_MEMORY,
                     SM_TRC_MEMORY_PCH_ARRAY_NULL2,
-                    (ULong)sTBSNode->mDBMaxPageCount);
+                    (ULong)mPCArray[aSpaceID].mMaxPageCount );
 
-        if ( sTBSNode->mMemBase != NULL )
+        if ( sctTableSpaceMgr::isMemTableSpace( sTBSNode ) == ID_TRUE )
         {
+            if ( sTBSNode->mMemBase != NULL )
+            {
+                ideLog::log(SM_TRC_LOG_LEVEL_MEMORY,
+                            SM_TRC_MEMORY_PCH_ARRAY_NULL3,
+                            (ULong)sTBSNode->mMemBase->mAllocPersPageCount);
+            }
+
+            rc = smmExpandChunk::isFreePageID(sTBSNode, aPID, &sIsFreePage);
+        }
+        else
+        {
+            sVolTBSNode = (svmTBSNode*)sTBSNode;
+
             ideLog::log(SM_TRC_LOG_LEVEL_MEMORY,
                         SM_TRC_MEMORY_PCH_ARRAY_NULL3,
-                        (ULong)sTBSNode->mMemBase->mAllocPersPageCount);
+                        (ULong)sVolTBSNode->mMemBase.mAllocPersPageCount);
+
+            rc = svmExpandChunk::isFreePageID(sVolTBSNode, aPID, &sIsFreePage);
         }
 
-        if ( smmExpandChunk::isFreePageID( sTBSNode, aPID, & sIsFreePage )
-             == IDE_SUCCESS )
+        if ( rc == IDE_SUCCESS )
         {
             if (sIsFreePage == ID_TRUE)
             {
@@ -5872,7 +5994,7 @@ IDE_RC smmManager::getPersPagePtr(scSpaceID    aSpaceID,
     
     /* BUGBUG: by newdaily
      * To Trace BUG-15969 */
-    (*aPersPagePtr) = sPCH->m_page;
+    (*aPersPagePtr) = mPCArray[aSpaceID].mPC[aPID].mPagePtr;
 
     IDE_ERROR_MSG( (*aPersPagePtr) != NULL,
                    "aSpaceID : %"ID_UINT32_FMT"\n"
@@ -5887,18 +6009,18 @@ IDE_RC smmManager::getPersPagePtr(scSpaceID    aSpaceID,
     IDE_EXCEPTION_END;
 
     // BUG-41149
-    // ASSERTë¥¼ ì œê±° í•˜ê³ , trc ë¡œê·¸ë¥¼ ì¶”ê°€í•œë‹¤.
+    // ASSERT¸¦ Á¦°Å ÇÏ°í, trc ·Î±×¸¦ Ãß°¡ÇÑ´Ù.
     ideLog::logCallStack( IDE_ERR_0 );
 
     return IDE_FAILURE;
 }
 
 /*
- * ë°ì´í„°ë² ì´ìŠ¤ Fileì„ Opení•˜ê³ , ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ ê°ì²´ë¥¼ ë¦¬í„´í•œë‹¤
+ * µ¥ÀÌÅÍº£ÀÌ½º FileÀ» OpenÇÏ°í, µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏ °´Ã¼¸¦ ¸®ÅÏÇÑ´Ù
  *
- * aStableDB [IN] Ping/Pong DB ì§€ì • ( 0ì´ë‚˜ 1 )
- * aDBFileNo [IN] ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ ë²ˆí˜¸ ( 0 ë¶€í„° ì‹œì‘ )
- * aDBFile   [OUT] ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ ê°ì²´
+ * aStableDB [IN] Ping/Pong DB ÁöÁ¤ ( 0ÀÌ³ª 1 )
+ * aDBFileNo [IN] µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏ ¹øÈ£ ( 0 ºÎÅÍ ½ÃÀÛ )
+ * aDBFile   [OUT] µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏ °´Ã¼
  */
 IDE_RC smmManager::openAndGetDBFile( smmTBSNode *      aTBSNode,
                                      SInt              aStableDB,
@@ -5934,13 +6056,13 @@ IDE_RC smmManager::openAndGetDBFile( smmTBSNode *      aTBSNode,
 }
 
 /*
- * ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ ê°ì²´ë¥¼ ë¦¬í„´í•œë‹¤.
- * ( í•„ìš”í•˜ë‹¤ë©´ ëª¨ë“  DB ë””ë ‰í† ë¦¬ì—ì„œ DBíŒŒì¼ì„ ì°¾ëŠ”ë‹¤ )
+ * µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏ °´Ã¼¸¦ ¸®ÅÏÇÑ´Ù.
+ * ( ÇÊ¿äÇÏ´Ù¸é ¸ğµç DB µğ·ºÅä¸®¿¡¼­ DBÆÄÀÏÀ» Ã£´Â´Ù )
  *
- * aPingPongDBNum [IN] Ping/Pong DB ì§€ì • ( 0ì´ë‚˜ 1 )
- * aDBFileNo      [IN] ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ ë²ˆí˜¸
- * aOp            [IN] getDBFile ì˜µì…˜
- * aDBFile        [OUT] ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ ê°ì²´
+ * aPingPongDBNum [IN] Ping/Pong DB ÁöÁ¤ ( 0ÀÌ³ª 1 )
+ * aDBFileNo      [IN] µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏ ¹øÈ£
+ * aOp            [IN] getDBFile ¿É¼Ç
+ * aDBFile        [OUT] µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏ °´Ã¼
  */
 IDE_RC smmManager::getDBFile( smmTBSNode *       aTBSNode,
                               UInt               aPingPongDBNum,
@@ -5957,7 +6079,7 @@ IDE_RC smmManager::getDBFile( smmTBSNode *       aTBSNode,
     IDE_ASSERT(  aPingPongDBNum <  SM_DB_DIR_MAX_COUNT );
     IDE_DASSERT( aDBFile != NULL );
 
-    // ëª¨ë“  MEM_DB_DIRì—ì„œ ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ì„ ì°¾ì•„ì•¼ í•˜ëŠ”ì§€ ì—¬ë¶€
+    // ¸ğµç MEM_DB_DIR¿¡¼­ µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏÀ» Ã£¾Æ¾ß ÇÏ´ÂÁö ¿©ºÎ
     if( aOp == SMM_GETDBFILEOP_SEARCH_FILE )
     {
         sFound =  smmDatabaseFile::findDBFile( aTBSNode,
@@ -5975,7 +6097,7 @@ IDE_RC smmManager::getDBFile( smmTBSNode *       aTBSNode,
 
     /* BUG-32214 [sm] when server start to check the db file size.
      * cause of buffer overflow 
-     * Tableì˜ File ê°œìˆ˜ê°€ ìµœëŒ€ì¹˜ë¥¼ ë„˜ì–´ê°”ìŒ. MEM_MAX_DB_SIZEê°€ ì‘ê¸° ë•Œë¬¸. */
+     * TableÀÇ File °³¼ö°¡ ÃÖ´ëÄ¡¸¦ ³Ñ¾î°¬À½. MEM_MAX_DB_SIZE°¡ ÀÛ±â ¶§¹®. */
     IDE_TEST_RAISE( aDBFileNo >= aTBSNode->mHighLimitFile ,
                     error_invalid_mem_max_db_size );
 
@@ -6020,47 +6142,33 @@ IDE_RC smmManager::openOrCreateDBFileinRecovery( smmTBSNode * aTBSNode,
 {
     SInt             sCurrentDB;
     smmDatabaseFile *sDBFile;
-    idBool           sNeedToCreate = ID_TRUE ;
+    IDE_RC           sSuccess;
 
     IDE_ASSERT( aIsCreated != NULL );
 
     for ( sCurrentDB=0 ; sCurrentDB<SMM_PINGPONG_COUNT; sCurrentDB++ )
     {
-        if( smmManager::getCreateDBFileOnDisk( aTBSNode,
-                                               sCurrentDB ,
-                                               aDBFileNo ) == ID_TRUE )
-        {
-            if ( getDBFile( aTBSNode,
-                            sCurrentDB,
-                            aDBFileNo,
-                            SMM_GETDBFILEOP_SEARCH_FILE,
-                            &sDBFile ) == IDE_SUCCESS )
-            {
-                sNeedToCreate = ID_FALSE; 
-                *aIsCreated   = ID_FALSE;
+        sSuccess = getDBFile( aTBSNode,
+                              sCurrentDB,
+                              aDBFileNo,
+                              SMM_GETDBFILEOP_SEARCH_FILE,
+                              &sDBFile );
 
-                if( sDBFile->isOpen() != ID_TRUE )
-                {
-                    IDE_TEST( sDBFile->open() != IDE_SUCCESS );
-                }
-            }
-        }
-
-        if( sNeedToCreate == ID_TRUE )
+        if( sSuccess != IDE_SUCCESS )
         {
-            IDE_TEST( ((smmDatabaseFile*)aTBSNode->mDBFile[sCurrentDB][aDBFileNo])->createDbFile(
-                                                                         aTBSNode,
-                                                                         sCurrentDB,
-                                                                         aDBFileNo,
-                                                                         0/* DB File Headerë§Œ ê¸°ë¡*/)
-                      != IDE_SUCCESS );
+            IDE_TEST(((smmDatabaseFile*)aTBSNode->mDBFile[sCurrentDB][aDBFileNo])->createDbFile(
+                         aTBSNode,
+                         sCurrentDB,
+                         aDBFileNo,
+                         0/* DB File Header¸¸ ±â·Ï*/)
+                     != IDE_SUCCESS);
 
             // fix BUG-17513
-            // restart recoveryì™„ë£Œì´í›„ loganchor resortingê³¼ì •ì—ì„œ
-            // ìƒˆë¡œ ìƒì„±ëœ Memory DBFì— ëŒ€í•œ ì •ë³´ê°€ ì €ì¥ë˜ì§€ì•ŠëŠ” ê²½ìš° ë°œìƒ
+            // restart recovery¿Ï·áÀÌÈÄ loganchor resorting°úÁ¤¿¡¼­
+            // »õ·Î »ı¼ºµÈ Memory DBF¿¡ ´ëÇÑ Á¤º¸°¡ ÀúÀåµÇÁö¾Ê´Â °æ¿ì ¹ß»ı
 
-            // create tablespace ì— ì˜í•´ íŒŒì¼ì´ ìƒì„±ë˜ëŠ” ê²½ìš°ì—ë„
-            // mLstCreatedDBFileì„ ê³„ì‚°í•´ì¤€ë‹¤.
+            // create tablespace ¿¡ ÀÇÇØ ÆÄÀÏÀÌ »ı¼ºµÇ´Â °æ¿ì¿¡µµ
+            // mLstCreatedDBFileÀ» °è»êÇØÁØ´Ù.
             if ( (UInt)aDBFileNo > aTBSNode->mLstCreatedDBFile )
             {
                 aTBSNode->mLstCreatedDBFile = (UInt)aDBFileNo;
@@ -6069,7 +6177,11 @@ IDE_RC smmManager::openOrCreateDBFileinRecovery( smmTBSNode * aTBSNode,
         }
         else
         {
-            /* nothing to do */
+            if (sDBFile->isOpen() != ID_TRUE)
+            {
+                IDE_TEST(sDBFile->open() != IDE_SUCCESS);
+            }
+            *aIsCreated = ID_FALSE;
         }
     } // for
 
@@ -6081,11 +6193,11 @@ IDE_RC smmManager::openOrCreateDBFileinRecovery( smmTBSNode * aTBSNode,
 }
 
 /*
- * Diskì— ì¡´ì¬í•˜ëŠ” ë°ì´í„°ë² ì´ìŠ¤ Pageì˜ ìˆ˜ë¥¼ ê³„ì‚°í•œë‹¤
- * Performance Viewì— í†µê³„ê°’ìœ¼ë¡œ Reportingí•  ìš©ë„ë¡œ ì‚¬ìš©ë˜ë¯€ë¡œ
- * ì •í™•í•  í•„ìš”ëŠ” ì—†ë‹¤.
+ * Disk¿¡ Á¸ÀçÇÏ´Â µ¥ÀÌÅÍº£ÀÌ½º PageÀÇ ¼ö¸¦ °è»êÇÑ´Ù
+ * Performance View¿¡ Åë°è°ªÀ¸·Î ReportingÇÒ ¿ëµµ·Î »ç¿ëµÇ¹Ç·Î
+ * Á¤È®ÇÒ ÇÊ¿ä´Â ¾ø´Ù.
  *
- * aCurrentDB [IN] í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ Ping/Pongë°ì´í„°ë² ì´ìŠ¤ ì¤‘ í•˜ë‚˜ ( 0 or 1 )
+ * aCurrentDB [IN] ÇöÀç »ç¿ëÁßÀÎ Ping/Pongµ¥ÀÌÅÍº£ÀÌ½º Áß ÇÏ³ª ( 0 or 1 )
  */
 IDE_RC smmManager::calculatePageCountInDisk( smmTBSNode * aTBSNode )
 {
@@ -6104,7 +6216,7 @@ IDE_RC smmManager::calculatePageCountInDisk( smmTBSNode * aTBSNode )
 }
 
 /*
-   ë©”ëª¨ë¦¬ ë°ì´íƒ€íŒŒì¼ ìƒì„± Runtime ì •ë³´ êµ¬ì¡°ì²´ ì´ˆê¸°í™”
+   ¸Ş¸ğ¸® µ¥ÀÌÅ¸ÆÄÀÏ »ı¼º Runtime Á¤º¸ ±¸Á¶Ã¼ ÃÊ±âÈ­
 */
 void smmManager::initCrtDBFileInfo( smmTBSNode * aTBSNode )
 {
@@ -6129,11 +6241,11 @@ void smmManager::initCrtDBFileInfo( smmTBSNode * aTBSNode )
 }
 
 /*
-   ì£¼ì–´ì§„ íŒŒì¼ë²ˆí˜¸ì— í•´ë‹¹í•˜ëŠ” DBFê°€ í•˜ë‚˜ë¼ë„ ìƒì„±ì´ ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€ë°˜í™˜
+   ÁÖ¾îÁø ÆÄÀÏ¹øÈ£¿¡ ÇØ´çÇÏ´Â DBF°¡ ÇÏ³ª¶óµµ »ı¼ºÀÌ µÇ¾ú´ÂÁö ¿©ºÎ¹İÈ¯
 
-   [ ê´€ë ¨ë²„ê·¸ ]
+   [ °ü·Ã¹ö±× ]
    fix BUG-17343
-   loganchorì— Stable/Unstable Chkpt Imageì— ëŒ€í•œ ìƒì„± ì •ë³´ë¥¼ ì €ì¥
+   loganchor¿¡ Stable/Unstable Chkpt Image¿¡ ´ëÇÑ »ı¼º Á¤º¸¸¦ ÀúÀå
 */
 idBool smmManager::isCreateDBFileAtLeastOne(
                      idBool    * aCreateDBFileOnDisk )
@@ -6173,12 +6285,10 @@ IDE_RC smmManager::initSCN()
     IDE_TEST( smLayerCallback::setSystemSCN( sTBSNode->mMemBase->mSystemSCN )
               != IDE_SUCCESS );
 
+    IDE_TEST( smmDirtyPageMgr::insDirtyPage( SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
+                                             SMM_MEMBASE_PAGEID ) 
+              != IDE_SUCCESS );
 
-    IDE_TEST( smmDirtyPageMgr::insDirtyPage(
-                  SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
-                  (scPageID)0 ) != IDE_SUCCESS );
-
-    SM_SET_SCN(&smmDatabase::mInitSystemSCN, &sTBSNode->mMemBase->mSystemSCN);
     SM_SET_SCN(&smmDatabase::mLstSystemSCN, &sTBSNode->mMemBase->mSystemSCN);
 
     smmDatabase::makeMembaseBackup();
@@ -6223,10 +6333,10 @@ IDE_RC smmManager::loadParallel(smmTBSNode     * aTBSNode)
 
     IDE_TEST(sLoadMgr->destroy() != IDE_SUCCESS);
 
-    /* BUG-40933 thread í•œê³„ìƒí™©ì—ì„œ FATALì—ëŸ¬ ë‚´ì§€ ì•Šë„ë¡ ìˆ˜ì •
-     * threadë¥¼ í•˜ë‚˜ë„ ìƒì„±í•˜ì§€ ëª»í•˜ì—¬ ABORTëœ ê²½ìš°ì—
-     * smmPLoadMgr thread join í›„ ê·¸ ê²°ê³¼ë¥¼ í™•ì¸í•˜ì—¬
-     * ABORTì—ëŸ¬ë¥¼ ë‚¼ ìˆ˜ ìˆë„ë¡ í•œë‹¤. */
+    /* BUG-40933 thread ÇÑ°è»óÈ²¿¡¼­ FATAL¿¡·¯ ³»Áö ¾Êµµ·Ï ¼öÁ¤
+     * thread¸¦ ÇÏ³ªµµ »ı¼ºÇÏÁö ¸øÇÏ¿© ABORTµÈ °æ¿ì¿¡
+     * smmPLoadMgr thread join ÈÄ ±× °á°ú¸¦ È®ÀÎÇÏ¿©
+     * ABORT¿¡·¯¸¦ ³¾ ¼ö ÀÖµµ·Ï ÇÑ´Ù. */
     IDE_TEST(sLoadMgr->getResult() == ID_FALSE);
 
     IDE_TEST(iduMemMgr::free(sLoadMgr) != IDE_SUCCESS);
@@ -6252,8 +6362,8 @@ IDE_RC smmManager::loadParallel(smmTBSNode     * aTBSNode)
 }
 
 
-// Base Page ( 0ë²ˆ Page ) ì— Latchë¥¼ ê±´ë‹¤
-// 0ë²ˆ Pageë¥¼ ë³€ê²½í•˜ëŠ” Transactionë“¤ì´ ì—†ìŒì„ ë³´ì¥í•œë‹¤.
+// Base Page ( 0¹ø Page ) ¿¡ Latch¸¦ °Ç´Ù
+// 0¹ø Page¸¦ º¯°æÇÏ´Â TransactionµéÀÌ ¾øÀ½À» º¸ÀåÇÑ´Ù.
 IDE_RC smmManager::lockBasePage(smmTBSNode * aTBSNode)
 {
     IDE_TEST( smmFPLManager::lockAllocChunkMutex(aTBSNode) != IDE_SUCCESS );
@@ -6269,8 +6379,8 @@ IDE_RC smmManager::lockBasePage(smmTBSNode * aTBSNode)
     return IDE_FAILURE;
 }
 
-// Base Page ( 0ë²ˆ Page ) ì—ì„œ Latchë¥¼ í‘¼ë‹¤.
-// lockBasePageë¡œ ì¡ì€ Latchë¥¼ ëª¨ë‘ í•´ì œí•œë‹¤
+// Base Page ( 0¹ø Page ) ¿¡¼­ Latch¸¦ Ç¬´Ù.
+// lockBasePage·Î ÀâÀº Latch¸¦ ¸ğµÎ ÇØÁ¦ÇÑ´Ù
 IDE_RC smmManager::unlockBasePage(smmTBSNode * aTBSNode)
 {
     IDE_TEST( smmFPLManager::unlockAllFPLs(aTBSNode) != IDE_SUCCESS);
@@ -6288,20 +6398,20 @@ IDE_RC smmManager::unlockBasePage(smmTBSNode * aTBSNode)
 
 
 
-/* íŠ¹ì • í˜ì´ì§€ ë²”ìœ„ë§Œí¼ ë°ì´í„°ë² ì´ìŠ¤ë¥¼ í™•ì¥í•œë‹¤.
+/* Æ¯Á¤ ÆäÀÌÁö ¹üÀ§¸¸Å­ µ¥ÀÌÅÍº£ÀÌ½º¸¦ È®ÀåÇÑ´Ù.
  *
- * aTrans ê°€ NULLë¡œ ë“¤ì–´ì˜¤ë©´, ì´ ë•ŒëŠ” Restart Redoì—ì„œ ë¶ˆë¦¬ìš´ ê²ƒìœ¼ë¡œ
- * Normal Processingë•Œì™€ ë¹„êµí–ˆì„ ë•Œ ë‹¤ìŒê³¼ ê°™ì€ ì ì—ì„œ ë‹¤ë¥´ê²Œ ì‘ë™í•œë‹¤.
- *    1. Logging í•  í•„ìš”ê°€ ì—†ìŒ
- *    2. í• ë‹¹í•  Page Countì˜ ì˜ì—­ì„ ê²€ì‚¬í•  í•„ìš”ê°€ ì—†ìŒ
+ * aTrans °¡ NULL·Î µé¾î¿À¸é, ÀÌ ¶§´Â Restart Redo¿¡¼­ ºÒ¸®¿î °ÍÀ¸·Î
+ * Normal Processing¶§¿Í ºñ±³ÇßÀ» ¶§ ´ÙÀ½°ú °°Àº Á¡¿¡¼­ ´Ù¸£°Ô ÀÛµ¿ÇÑ´Ù.
+ *    1. Logging ÇÒ ÇÊ¿ä°¡ ¾øÀ½
+ *    2. ÇÒ´çÇÒ Page CountÀÇ ¿µ¿ªÀ» °Ë»çÇÒ ÇÊ¿ä°¡ ¾øÀ½
  *       by gamestar 2001/05/24
  *
- * ëª¨ë“  Free Page Listì— ëŒ€í•´ Latchê°€ ì¡íˆì§€ ì•Šì€ ì±„ë¡œ ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œëœë‹¤.
+ * ¸ğµç Free Page List¿¡ ´ëÇØ Latch°¡ ÀâÈ÷Áö ¾ÊÀº Ã¤·Î ÀÌ ÇÔ¼ö°¡ È£ÃâµÈ´Ù.
  *
- * aTrans            [IN] ë°ì´í„°ë² ì´ìŠ¤ë¥¼ í™•ì¥í•˜ë ¤ëŠ” íŠ¸ëœì­ì…˜
- *                        CreateDB í˜¹ì€ logical redoì¤‘ì¸ê²½ìš° NULLë¡œ ë“¤ì–´ì˜¨ë‹¤.
- * aNewChunkFirstPID [IN] í™•ì¥í•  ë°ì´í„°ë² ì´ìŠ¤ Expand Chunkì˜ ì²«ë²ˆì§¸ Page ID
- * aNewChunkFirstPID [IN] í™•ì¥í•  ë°ì´í„°ë² ì´ìŠ¤ Expand Chunkì˜ ë§ˆì§€ë§‰ Page ID
+ * aTrans            [IN] µ¥ÀÌÅÍº£ÀÌ½º¸¦ È®ÀåÇÏ·Á´Â Æ®·£Àè¼Ç
+ *                        CreateDB È¤Àº logical redoÁßÀÎ°æ¿ì NULL·Î µé¾î¿Â´Ù.
+ * aNewChunkFirstPID [IN] È®ÀåÇÒ µ¥ÀÌÅÍº£ÀÌ½º Expand ChunkÀÇ Ã¹¹øÂ° Page ID
+ * aNewChunkFirstPID [IN] È®ÀåÇÒ µ¥ÀÌÅÍº£ÀÌ½º Expand ChunkÀÇ ¸¶Áö¸· Page ID
  */
 IDE_RC smmManager::allocNewExpandChunk4MR( smmTBSNode * aTBSNode,
                                            scPageID     aNewChunkFirstPID,
@@ -6318,20 +6428,20 @@ IDE_RC smmManager::allocNewExpandChunk4MR( smmTBSNode * aTBSNode,
 
     sStage = 0;
 
-    // BUGBUG kmkim ì—ëŸ¬ì²˜ë¦¬ë¡œ ë³€ê²½. ì‚¬ìš©ìê°€ í”„ë¡œí¼í‹° ì˜ëª» ë°”ê¾¸ì—ˆì„ë•Œ
-    // ë°”ë¡œ ì•Œë ¤ì¤„ ìˆ˜ ìˆë„ë¡.
-    // ì§€ê¸ˆì€ ì‚¬ìš©ìê°€ PAGEìˆ˜ ì œí•œì„ ì¤„ì¸í›„ Restart Recoveryí•˜ë©´
-    // ì—¬ê¸°ì„œ ì£½ê²Œëœë‹¤.
+    // BUGBUG kmkim ¿¡·¯Ã³¸®·Î º¯°æ. »ç¿ëÀÚ°¡ ÇÁ·ÎÆÛÆ¼ Àß¸ø ¹Ù²Ù¾úÀ»¶§
+    // ¹Ù·Î ¾Ë·ÁÁÙ ¼ö ÀÖµµ·Ï.
+    // Áö±İÀº »ç¿ëÀÚ°¡ PAGE¼ö Á¦ÇÑÀ» ÁÙÀÎÈÄ Restart RecoveryÇÏ¸é
+    // ¿©±â¼­ Á×°ÔµÈ´Ù.
     IDE_ASSERT( aNewChunkFirstPID < aTBSNode->mDBMaxPageCount );
     IDE_ASSERT( aNewChunkLastPID < aTBSNode->mDBMaxPageCount );
 
-    // ëª¨ë“  Free Page Listì˜ Latchíšë“
+    // ¸ğµç Free Page ListÀÇ LatchÈ¹µæ
     IDE_TEST( smmFPLManager::lockAllFPLs( aTBSNode ) != IDE_SUCCESS );
     sStage = 1;
 
     if ( aSetNextFreePageOfFPL == ID_TRUE )
     {
-        // í•˜ë‚˜ì˜ Expand Chunkì— ì†í•˜ëŠ” Pageë“¤ì˜ PCH Entryë“¤ì„ êµ¬ì„±í•œë‹¤.
+        // ÇÏ³ªÀÇ Expand Chunk¿¡ ¼ÓÇÏ´Â PageµéÀÇ PCH EntryµéÀ» ±¸¼ºÇÑ´Ù.
         IDE_TEST( fillPCHEntry4AllocChunk( aTBSNode,
                                            aNewChunkFirstPID,
                                            aNewChunkLastPID )
@@ -6339,16 +6449,16 @@ IDE_RC smmManager::allocNewExpandChunk4MR( smmTBSNode * aTBSNode,
     }
     else
     {
-        // Chunk ë³µêµ¬ê°€ í•„ìš”ì—†ëŠ” ê²½ìš° PCHEntryì— pageë¥¼ í• ë‹¹í• 
-        // í•„ìš”ê°€ ì—†ë‹¤.
+        // Chunk º¹±¸°¡ ÇÊ¿ä¾ø´Â °æ¿ì PCHEntry¿¡ page¸¦ ÇÒ´çÇÒ
+        // ÇÊ¿ä°¡ ¾ø´Ù.
     }
 
     IDE_ASSERT( aTBSNode->mMemBase != NULL );
 
     sArrFreeListCount = aTBSNode->mMemBase->mFreePageListCount;
 
-    // Logical Redo ë  ê²ƒì´ë¯€ë¡œ Physical Update( Next Free Page ID ì„¸íŒ…)
-    // ì— ëŒ€í•œ ë¡œê¹…ì„ í•˜ì§€ ì•ŠìŒ.
+    // Logical Redo µÉ °ÍÀÌ¹Ç·Î Physical Update( Next Free Page ID ¼¼ÆÃ)
+    // ¿¡ ´ëÇÑ ·Î±ëÀ» ÇÏÁö ¾ÊÀ½.
     IDE_TEST( smmFPLManager::distributeFreePages(
                     aTBSNode,
                     aNewChunkFirstPID +
@@ -6360,45 +6470,44 @@ IDE_RC smmManager::allocNewExpandChunk4MR( smmTBSNode * aTBSNode,
                 != IDE_SUCCESS );
     sStage = 2;
 
-    // ì£¼ì˜! smmUpdate::redo_SMMMEMBASE_ALLOC_EXPANDCHUNK ì—ì„œ
-    // membase ë©¤ë²„ë“¤ì„ Logical Redoí•˜ê¸° ì „ì˜ ê°’ìœ¼ë¡œ ì„¸íŒ…í•´ë†“ê³  ì´ ë£¨í‹´ìœ¼ë¡œ
-    // ë“¤ì–´ì™€ì•¼ í•œë‹¤.
+    // ÁÖÀÇ! smmUpdate::redo_SMMMEMBASE_ALLOC_EXPANDCHUNK ¿¡¼­
+    // membase ¸â¹öµéÀ» Logical RedoÇÏ±â ÀüÀÇ °ªÀ¸·Î ¼¼ÆÃÇØ³õ°í ÀÌ ·çÆ¾À¸·Î
+    // µé¾î¿Í¾ß ÇÑ´Ù.
 
-    // ì§€ê¸ˆê¹Œì§€ ë°ì´í„°ë² ì´ìŠ¤ì— í• ë‹¹ëœ ì´ í˜ì´ì§€ìˆ˜ ë³€ê²½
+    // Áö±İ±îÁö µ¥ÀÌÅÍº£ÀÌ½º¿¡ ÇÒ´çµÈ ÃÑ ÆäÀÌÁö¼ö º¯°æ
     aTBSNode->mMemBase->mAllocPersPageCount = aNewChunkLastPID + 1;
     aTBSNode->mMemBase->mCurrentExpandChunkCnt ++ ;
 
-    // Chunkê°€ ìƒˆë¡œ í• ë‹¹ëœ í›„ DB Fileì´ ëª‡ê°œê°€ ë” ìƒê²¨ì•¼ í•˜ëŠ”ì§€ ê³„ì‚°
+    // Chunk°¡ »õ·Î ÇÒ´çµÈ ÈÄ DB FileÀÌ ¸î°³°¡ ´õ »ı°Ü¾ß ÇÏ´ÂÁö °è»ê
     IDE_TEST( calcNewDBFileCount( aTBSNode,
                                   aNewChunkFirstPID,
                                   aNewChunkLastPID,
                                   & sNewDBFileCount )
             != IDE_SUCCESS );
 
-    // DB File ìˆ˜ ë³€ê²½
+    // DB File ¼ö º¯°æ
     aTBSNode->mMemBase->mDBFileCount[0]    += sNewDBFileCount;
     aTBSNode->mMemBase->mDBFileCount[1]    += sNewDBFileCount;
 
 
-    // Logical Redoí•  ê²ƒì´ë¯€ë¡œ Phyical Updateì— ëŒ€í•´ ë¡œê¹…í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // Logical RedoÇÒ °ÍÀÌ¹Ç·Î Phyical Update¿¡ ´ëÇØ ·Î±ëÇÏÁö ¾Ê´Â´Ù.
     IDE_TEST( smmFPLManager::appendPageLists2FPLs(
-                  aTBSNode,
-                  sArrFreeList,
-                  aSetFreeListOfMembase,
-                  aSetNextFreePageOfFPL )
+                                      aTBSNode,
+                                      sArrFreeList,
+                                      aSetFreeListOfMembase,
+                                      aSetNextFreePageOfFPL )
               != IDE_SUCCESS );
 
     if ( aSetFreeListOfMembase == ID_TRUE )
     {
         sStage = 1;
-        IDE_TEST( smmDirtyPageMgr::insDirtyPage(
-                                      aTBSNode->mTBSAttr.mID,
-                                      (scPageID)0)
+        IDE_TEST( smmDirtyPageMgr::insDirtyPage( aTBSNode->mTBSAttr.mID,
+                                                 SMM_MEMBASE_PAGEID)
                   != IDE_SUCCESS);
     }
     else
     {
-        // Membase ë³µêµ¬ê°€ í•„ìš”ì—†ëŠ” ê²½ìš°
+        // Membase º¹±¸°¡ ÇÊ¿ä¾ø´Â °æ¿ì
     }
 
     sStage = 0;
@@ -6414,9 +6523,8 @@ IDE_RC smmManager::allocNewExpandChunk4MR( smmTBSNode * aTBSNode,
         case 2 :
             if ( aSetFreeListOfMembase == ID_TRUE )
             {
-                IDE_ASSERT( smmDirtyPageMgr::insDirtyPage(
-                                    aTBSNode->mTBSAttr.mID,
-                                    (scPageID)0)
+                IDE_ASSERT( smmDirtyPageMgr::insDirtyPage( aTBSNode->mTBSAttr.mID,
+                                                           SMM_MEMBASE_PAGEID)
                             == IDE_SUCCESS);
             }
 
@@ -6448,8 +6556,8 @@ IDE_RC smmManager::setSystemStatToMemBase( smiSystemStat * aSystemStat )
     sMemBase->mSystemStat.mCompareTime         =   aSystemStat->mCompareTime;
     sMemBase->mSystemStat.mStoreTime           =   aSystemStat->mStoreTime;
 
-    IDE_TEST( smmDirtyPageMgr::insDirtyPage(
-                                        SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC, (scPageID)0)
+    IDE_TEST( smmDirtyPageMgr::insDirtyPage( SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC, 
+                                             SMM_MEMBASE_PAGEID )
                               != IDE_SUCCESS);
     
     return IDE_SUCCESS;

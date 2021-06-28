@@ -30,120 +30,120 @@
 #include <smu.h>
 
 /*
-  [ì°¸ê³ ] SMMì•ˆì—ì„œì˜ Fileê°„ì˜ Layerë° ì—­í• ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
-         í•˜ìœ„ Layerì˜ ì½”ë“œì—ì„œëŠ” ìƒìœ„ Layerì˜ ì½”ë“œë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+  [Âü°í] SMM¾È¿¡¼­ÀÇ File°£ÀÇ Layer¹× ¿ªÇÒÀº ´ÙÀ½°ú °°´Ù.
+         ÇÏÀ§ LayerÀÇ ÄÚµå¿¡¼­´Â »óÀ§ LayerÀÇ ÄÚµå¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù.
 
   ----------------------------------------------------------------------------
-  smmTBSCreate          ; Create Tablespace êµ¬í˜„
-  smmTBSDrop            ; Drop Tablespace êµ¬í˜„
-  smmTBSAlterAutoExtend ; Alter Tablespace Auto Extend êµ¬í˜„
-  smmTBSAlterChkptPath  ; Alter Tablespace Add/Rename/Drop Checkpoint Pathêµ¬í˜„
-  smmTBSAlterDiscard    ; Alter Tablespace Discard êµ¬í˜„
-  smmTBSStartupShutdown ; Startup, Shutdownì‹œì˜ Tablespaceê´€ë ¨ ì²˜ë¦¬ë¥¼ êµ¬í˜„
+  smmTBSCreate          ; Create Tablespace ±¸Çö
+  smmTBSDrop            ; Drop Tablespace ±¸Çö
+  smmTBSAlterAutoExtend ; Alter Tablespace Auto Extend ±¸Çö
+  smmTBSAlterChkptPath  ; Alter Tablespace Add/Rename/Drop Checkpoint Path±¸Çö
+  smmTBSAlterDiscard    ; Alter Tablespace Discard ±¸Çö
+  smmTBSStartupShutdown ; Startup, Shutdown½ÃÀÇ Tablespace°ü·Ã Ã³¸®¸¦ ±¸Çö
   ----------------------------------------------------------------------------
-  smmTBSChkptPath  ; Tablespaceì˜ Checkpoint Path ê´€ë¦¬
-  smmTBSMultiPhase ; Tablespaceì˜ ë‹¤ë‹¨ê³„ ì´ˆê¸°í™”
+  smmTBSChkptPath  ; TablespaceÀÇ Checkpoint Path °ü¸®
+  smmTBSMultiPhase ; TablespaceÀÇ ´Ù´Ü°è ÃÊ±âÈ­
   ----------------------------------------------------------------------------
-  smmManager       ; Tablespaceì˜ ë‚´ë¶€ êµ¬í˜„ 
-  smmFPLManager    ; Tablespace Free Page Listì˜ ë‚´ë¶€ êµ¬í˜„
-  smmExpandChunk   ; Chunkì˜ ë‚´ë¶€êµ¬ì¡° êµ¬í˜„
+  smmManager       ; TablespaceÀÇ ³»ºÎ ±¸Çö 
+  smmFPLManager    ; Tablespace Free Page ListÀÇ ³»ºÎ ±¸Çö
+  smmExpandChunk   ; ChunkÀÇ ³»ºÎ±¸Á¶ ±¸Çö
   ----------------------------------------------------------------------------
   
-  c.f> Memory Tablespaceì˜ Alter Online/Offlineì€ smp layerì— êµ¬í˜„ë˜ì–´ ìˆë‹¤.
+  c.f> Memory TablespaceÀÇ Alter Online/OfflineÀº smp layer¿¡ ±¸ÇöµÇ¾î ÀÖ´Ù.
 */
 
 /*
-   Memory Tablespaceì˜ Checkpoint Pathì˜ ì¶”ê°€,ë³€ê²½,ì‚­ì œë¥¼ êµ¬í˜„í•œë‹¤.
+   Memory TablespaceÀÇ Checkpoint PathÀÇ Ãß°¡,º¯°æ,»èÁ¦¸¦ ±¸ÇöÇÑ´Ù.
 
-   smmTBSAlterChkptPathì—ì„œ ì´ Classë¥¼ ì‚¬ìš©í•˜ì—¬ Alter Checkpoint Pathê¸°ëŠ¥ì„ êµ¬í˜„í•œë‹¤.
+   smmTBSAlterChkptPath¿¡¼­ ÀÌ Class¸¦ »ç¿ëÇÏ¿© Alter Checkpoint Path±â´ÉÀ» ±¸ÇöÇÑ´Ù.
    
  */
 class smmTBSChkptPath
 {
 public :
-    // ìƒì„±ì (ì•„ë¬´ê²ƒë„ ì•ˆí•¨)
+    // »ı¼ºÀÚ (¾Æ¹«°Íµµ ¾ÈÇÔ)
     smmTBSChkptPath();
     
-    // Loganchorë¡œë¶€í„° ì½ì–´ë“¤ì¸ Checkpoint Path Attributeë¡œ Nodeë¥¼ ìƒì„±í•œë‹¤.
+    // Loganchor·ÎºÎÅÍ ÀĞ¾îµéÀÎ Checkpoint Path Attribute·Î Node¸¦ »ı¼ºÇÑ´Ù.
     static IDE_RC createChkptPathNode( smiChkptPathAttr  * aChkptPathAttr,
                                        UInt                aAnchorOffset );
 
-    // Checkpoint Path Attributeì— Checkpoint Pathë¥¼ ì„¤ì •í•œë‹¤.
+    // Checkpoint Path Attribute¿¡ Checkpoint Path¸¦ ¼³Á¤ÇÑ´Ù.
     static IDE_RC setChkptPath( smiChkptPathAttr * aCPathAttr,
                                 SChar            * aChkptPath );
     
 
-    // Checkpoint Path Nodeì˜ ìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.
+    // Checkpoint Path NodeÀÇ ¼ö¸¦ ¸®ÅÏÇÑ´Ù.
     static IDE_RC getChkptPathNodeCount( smmTBSNode * aTBSNode,
                                          UInt       * aChkptPathCount );
 
-    // Në²ˆì§¸ Checkpoint Path Nodeë¥¼ ë¦¬í„´í•œë‹¤.
+    // N¹øÂ° Checkpoint Path Node¸¦ ¸®ÅÏÇÑ´Ù.
     static IDE_RC getChkptPathNodeByIndex(
                       smmTBSNode        * aTBSNode,
                       UInt                aIndex,
                       smmChkptPathNode ** aCPathNode );
 
 
-    // Checkpoint Path Nodeë¥¼ íŠ¹ì • Tablespaceì— ì¶”ê°€í•œë‹¤. 
+    // Checkpoint Path Node¸¦ Æ¯Á¤ Tablespace¿¡ Ãß°¡ÇÑ´Ù. 
     static IDE_RC addChkptPathNode(  smmTBSNode      * aTBSNode,
                                     smmChkptPathNode * aChkptPathNode );
 
-    // íŠ¹ì • Tablespaceì—ì„œ íŠ¹ì • Checkpoint Path Nodeë¥¼ ì°¾ëŠ”ë‹¤.
+    // Æ¯Á¤ Tablespace¿¡¼­ Æ¯Á¤ Checkpoint Path Node¸¦ Ã£´Â´Ù.
     static IDE_RC findChkptPathNode(
                       smmTBSNode        * aTBSNode,
                       SChar             * aChkptPath,
                       smmChkptPathNode ** aChkptPathNode );
 
-    // Checkpoint Pathì˜ ì ‘ê·¼ ê°€ëŠ¥ì—¬ë¶€ ì²´í¬ 
+    // Checkpoint PathÀÇ Á¢±Ù °¡´É¿©ºÎ Ã¼Å© 
     static IDE_RC checkAccess2ChkptPath( SChar * aChkptPath );
 
-    // Checkpoint Path Nodeë¥¼ í• ë‹¹í•˜ê³  ì´ˆê¸°í™”í•œë‹¤.
+    // Checkpoint Path Node¸¦ ÇÒ´çÇÏ°í ÃÊ±âÈ­ÇÑ´Ù.
     static IDE_RC makeChkptPathNode( scSpaceID           aSpaceID,
                                      SChar             * aChkptPath,
                                      smmChkptPathNode ** aCPathNode );
 
 
-    // Checkpoint Path Nodeì˜ Checkpoint Pathë¥¼ ë³€ê²½í•œë‹¤.
+    // Checkpoint Path NodeÀÇ Checkpoint Path¸¦ º¯°æÇÑ´Ù.
     static IDE_RC renameChkptPathNode(
                       smmChkptPathNode * aChkptPathNode,
                       SChar            * aChkptPath );
 
 
-    // Checkpoint Path Nodeë¥¼ íŠ¹ì • Tablespaceì—ì„œ ì œê±°í•œë‹¤.
+    // Checkpoint Path Node¸¦ Æ¯Á¤ Tablespace¿¡¼­ Á¦°ÅÇÑ´Ù.
     static IDE_RC removeChkptPathNode(
                       smmTBSNode       * aTBSNode,
                       smmChkptPathNode * aChkptPathNode );
     
 
-    // í•˜ë‚˜ í˜¹ì€ ê·¸ ì´ìƒì˜ Checkpoint Pathë¥¼ TBSNodeì—ì„œ ì œê±°í•œë‹¤.
+    // ÇÏ³ª È¤Àº ±× ÀÌ»óÀÇ Checkpoint Path¸¦ TBSNode¿¡¼­ Á¦°ÅÇÑ´Ù.
     static IDE_RC removeChkptPathNodesIfExist(
                       smmTBSNode           * aTBSNode,
                       smiChkptPathAttrList * aChkptPathList );
 
 
-    // Tablespaceì˜ ë‹¤ë‹¨ê³„ í•´ì œì¤‘ Media Phaseë¥¼ ë‚´ë¦´ë•Œ í˜¸ì¶œëœë‹¤
+    // TablespaceÀÇ ´Ù´Ü°è ÇØÁ¦Áß Media Phase¸¦ ³»¸±¶§ È£ÃâµÈ´Ù
     static IDE_RC freeAllChkptPathNode( smmTBSNode * aTBSNode );
     
 private :
 
 
-    // Checkpoint Path Attributeë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+    // Checkpoint Path Attribute¸¦ ÃÊ±âÈ­ÇÑ´Ù.
     static IDE_RC initializeChkptPathAttr(
                       smiChkptPathAttr * aCPathAttr,
                       scSpaceID          aSpaceID,
                       SChar            * aChkptPath );
 
-    // Checkpoint Path Attributeë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+    // Checkpoint Path Attribute¸¦ ÃÊ±âÈ­ÇÑ´Ù.
     static IDE_RC initializeChkptPathNode(
                       smmChkptPathNode * aCPathNode,
                       scSpaceID          aSpaceID,
                       SChar            * aChkptPath );
 
-    // Checkpoint Path Nodeë¥¼ íŒŒê´´í•œë‹¤.
+    // Checkpoint Path Node¸¦ ÆÄ±«ÇÑ´Ù.
     static IDE_RC destroyChkptPathNode(smmChkptPathNode * aCPathNode );
     
-    // Checkpoint Path Nodeì™€ Checkpoint Path ë¬¸ìì—´ì„ ë¹„êµí•˜ì—¬
-    // ê°™ì€ Checkpoint Pathì¸ì§€ ì²´í¬í•œë‹¤.
+    // Checkpoint Path Node¿Í Checkpoint Path ¹®ÀÚ¿­À» ºñ±³ÇÏ¿©
+    // °°Àº Checkpoint PathÀÎÁö Ã¼Å©ÇÑ´Ù.
     static idBool isSameChkptPath(smmChkptPathNode * aCPathNode,
                                   SChar            * aChkptPath);
     

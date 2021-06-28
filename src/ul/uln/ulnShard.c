@@ -17,7 +17,7 @@
 #include <ulnPrivate.h>
 #include <ulsdDef.h>
 
-void ulnShardDbcContextInitialize(ulnDbc *aDbc)
+ACI_RC ulnShardDbcContextInitialize(ulnFnContext *aFnContext, ulnDbc *aDbc)
 {
     /* PROJ-2598 altibase sharding */
     aDbc->mShardDbcCxt.mShardDbc                    = NULL;
@@ -25,7 +25,6 @@ void ulnShardDbcContextInitialize(ulnDbc *aDbc)
     aDbc->mShardDbcCxt.mNodeInfo                    = NULL;
 
     aDbc->mShardDbcCxt.mShardIsNodeTransactionBegin = ACP_FALSE;
-    aDbc->mShardDbcCxt.mShardTransactionLevel       = ULN_SHARD_TX_MULTI_NODE;
 
     /* PROJ-2638 shard native linker */
     aDbc->mShardDbcCxt.mShardTargetDataNodeName[0]  = '\0';
@@ -34,14 +33,12 @@ void ulnShardDbcContextInitialize(ulnDbc *aDbc)
     /* PROJ-2660 hybrid sharding */
     aDbc->mShardDbcCxt.mShardPin                    = ULSD_SHARD_PIN_INVALID;
 
-    /* BUG-46090 Meta Node SMN ì „íŒŒ */
+    /* BUG-46090 Meta Node SMN ÀüÆÄ */
     aDbc->mShardDbcCxt.mShardMetaNumber             = 0;
 
-    /* BUG-45967 Data Nodeì˜ Shard Session ì •ë¦¬ */
-    aDbc->mShardDbcCxt.mSMNOfDataNode               = 0;
-
-    /* BUG-46100 Session SMN Update */
-    aDbc->mShardDbcCxt.mNeedToDisconnect            = ACP_FALSE;
+    aDbc->mShardDbcCxt.mSentShardMetaNumber         = 0UL;
+    aDbc->mShardDbcCxt.mSentRebuildShardMetaNumber  = 0UL;
+    aDbc->mShardDbcCxt.mTargetShardMetaNumber       = 0UL;
 
     /* BUG-45509 nested commit */
     aDbc->mShardDbcCxt.mCallback                    = NULL;
@@ -53,26 +50,62 @@ void ulnShardDbcContextInitialize(ulnDbc *aDbc)
 
     /* BUG-45707 */
     aDbc->mShardDbcCxt.mShardClient                 = ULSD_SHARD_CLIENT_FALSE;
-    aDbc->mShardDbcCxt.mShardSessionType            = ULSD_SESSION_TYPE_EXTERNAL;
+    aDbc->mShardDbcCxt.mShardSessionType            = ULSD_SESSION_TYPE_USER;
 
-    /* BUG-46257 shardcliì—ì„œ Node ì¶”ê°€/ì œê±° ì§€ì› */
-    aDbc->mShardDbcCxt.mNodeBaseConnString          = NULL;
+    /* BUG-46257 shardcli¿¡¼­ Node Ãß°¡/Á¦°Å Áö¿ø */
+    aDbc->mShardDbcCxt.mOrgConnString               = NULL;
     acpListInit( & aDbc->mShardDbcCxt.mConnectAttrList );
 
 #ifdef COMPILE_SHARDCLI /* BUG-46092 */
     ulsdAlignInfoInitialize( aDbc );
+
+    /* PROJ-2739 Client-side Sharding LOB */
+    acpThrMutexCreate( & aDbc->mShardDbcCxt.mLock4LocatorList, ACP_THR_MUTEX_DEFAULT);
+    acpListInit( & aDbc->mShardDbcCxt.mLobLocatorList );
+
 #endif /* COMPILE_SHARDCLI */
+
+    aDbc->mShardDbcCxt.m2PhaseCommitState           = ULSD_2PC_NORMAL;
 
     aDbc->mShardModule                              = NULL;
+
+    /* PROJ-2733-DistTxInfo */
+    aDbc->mShardDbcCxt.mBeforeExecutedNodeDbcIndex  = ACP_UINT16_MAX;
+
+    /* BUG-46814 ¾ÈÁ¤¼ºÀ» À§ÇØ ¸Þ¸ð¸®¸¦ ÇÒ´çÇÏÀÚ. */
+    ACI_TEST_RAISE(acpMemAlloc((void**)&aDbc->mShardDbcCxt.mFuncCallback,
+                               ACI_SIZEOF(ulsdFuncCallback)) != ACP_RC_SUCCESS,
+                   LABEL_NOT_ENOUGH_MEM);
+    aDbc->mShardDbcCxt.mFuncCallback->mInUse = ACP_FALSE;
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION(LABEL_NOT_ENOUGH_MEM)
+    {
+        ulnError(aFnContext, ulERR_FATAL_MEMORY_ALLOC_ERROR, "ulnShardDbcContextInitialize");
+    }
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
 }
 
-#ifdef COMPILE_SHARDCLI
 void ulnShardDbcContextFinalize( ulnDbc *aDbc )
 {
+#ifdef COMPILE_SHARDCLI
     /* BUG-46092 */
     ulsdAlignInfoFinalize( aDbc );
-}
+
+    /* PROJ-2738 Client-side Sharding LOB */
+    acpThrMutexDestroy( & aDbc->mShardDbcCxt.mLock4LocatorList);
 #endif /* COMPILE_SHARDCLI */
+
+    /* BUG-46814 */
+    if ( aDbc->mShardDbcCxt.mFuncCallback != NULL )
+    {
+        acpMemFree( aDbc->mShardDbcCxt.mFuncCallback );
+        aDbc->mShardDbcCxt.mFuncCallback = NULL;
+    }
+}
 
 void ulnShardStmtContextInitialize(ulnStmt *aStmt)
 {
@@ -89,13 +122,13 @@ void ulnShardStmtContextInitialize(ulnStmt *aStmt)
 
     /* PROJ-2646 New shard analyzer */
     aStmt->mShardStmtCxt.mShardValueCnt          = 0;
-    aStmt->mShardStmtCxt.mShardValueInfo         = NULL;
-    aStmt->mShardStmtCxt.mShardIsCanMerge        = ACP_FALSE;
+    aStmt->mShardStmtCxt.mShardValueInfoPtrArray = NULL;
+    aStmt->mShardStmtCxt.mShardIsShardQuery      = ACP_FALSE;
 
     /* PROJ-2655 Composite shard key */
     aStmt->mShardStmtCxt.mShardIsSubKeyExists    = ACP_FALSE;
     aStmt->mShardStmtCxt.mShardSubValueCnt       = 0;
-    aStmt->mShardStmtCxt.mShardSubValueInfo      = NULL;
+    aStmt->mShardStmtCxt.mShardSubValueInfoPtrArray = NULL;
 
     /* PROJ-2670 nested execution */
     aStmt->mShardStmtCxt.mCallback               = NULL;
@@ -115,9 +148,57 @@ void ulnShardStmtContextInitialize(ulnStmt *aStmt)
     aStmt->mShardStmtCxt.mOrgPrepareTextBufMaxLen = 0;
     aStmt->mShardStmtCxt.mOrgPrepareTextBufLen    = 0;
 
-    /* BUG-46257 shardcliì—ì„œ Node ì¶”ê°€/ì œê±° ì§€ì› */
+    /* BUG-46257 shardcli¿¡¼­ Node Ãß°¡/Á¦°Å Áö¿ø */
     acpListInit( & aStmt->mShardStmtCxt.mStmtAttrList );
     acpListInit( & aStmt->mShardStmtCxt.mBindParameterList );
     acpListInit( & aStmt->mShardStmtCxt.mBindColList );
     aStmt->mShardStmtCxt.mRowCount               = 0;
+
+    /* PROJ-2739 Client-side Sharding LOB */
+    aStmt->mShardStmtCxt.mHasLocatorInBoundParam = ACP_FALSE;
+    aStmt->mShardStmtCxt.mHasLocatorParamToCopy  = ACP_FALSE;
+
+    /* TASK-7219 Non-shard DML */
+    aStmt->mShardStmtCxt.mPartialExecType = ULN_SHARD_PARTIAL_EXEC_TYPE_NONE;
 }
+
+void ulnShardStmtFreeAllShardValueInfo( ulnStmt * aStmt )
+{
+    acp_uint32_t        i = 0;
+    ulsdStmtContext   * sShardStmtCxt = NULL;
+
+    sShardStmtCxt = &(aStmt->mShardStmtCxt);
+
+    if ( sShardStmtCxt->mShardValueInfoPtrArray != NULL )
+    {
+        for ( i = 0; i < sShardStmtCxt->mShardValueCnt; i++ )
+        {
+            if ( sShardStmtCxt->mShardValueInfoPtrArray[i] != NULL )
+            {
+                acpMemFree( sShardStmtCxt->mShardValueInfoPtrArray[i] );
+                sShardStmtCxt->mShardValueInfoPtrArray[i] = NULL;
+            }
+        }
+
+        acpMemFree( sShardStmtCxt->mShardValueInfoPtrArray );
+        sShardStmtCxt->mShardValueInfoPtrArray = NULL;
+        sShardStmtCxt->mShardValueCnt = 0;
+    }
+
+    if ( sShardStmtCxt->mShardSubValueInfoPtrArray != NULL )
+    {
+        for ( i = 0; i < sShardStmtCxt->mShardSubValueCnt; i++ )
+        {
+            if ( sShardStmtCxt->mShardSubValueInfoPtrArray[i] != NULL )
+            {
+                acpMemFree( sShardStmtCxt->mShardSubValueInfoPtrArray[i] );
+                sShardStmtCxt->mShardSubValueInfoPtrArray[i] = NULL;
+            }
+        }
+
+        acpMemFree( sShardStmtCxt->mShardSubValueInfoPtrArray );
+        sShardStmtCxt->mShardSubValueInfoPtrArray = NULL;
+        sShardStmtCxt->mShardSubValueCnt = 0;
+    }
+}
+

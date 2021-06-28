@@ -21,17 +21,17 @@
  * Description :
  *     LMST(LiMit SorT) Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ sorting ì—°ì‚°ì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     °ü°èÇü ¸ğµ¨¿¡¼­ sorting ¿¬»êÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
  *
- *     ë‹¤ìŒê³¼ ê°™ì€ ê¸°ëŠ¥ì„ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
+ *     ´ÙÀ½°ú °°Àº ±â´ÉÀ» À§ÇØ »ç¿ëµÈ´Ù.
  *         - Limit Order By
  *             : SELECT * FROM T1 ORDER BY I1 LIMIT 10;
  *         - Store And Search
- *             : MIN, MAX ê°’ë§Œì„ ì €ì¥ ê´€ë¦¬
+ *             : MIN, MAX °ª¸¸À» ÀúÀå °ü¸®
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -43,7 +43,7 @@
 #include <qmcSortTempTable.h>
 #include <qmnDef.h>
 
-// Limit Sortë¥¼ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” ìµœëŒ€ Limit ê°œìˆ˜
+// Limit Sort¸¦ »ç¿ëÇÒ ¼ö ÀÖ´Â ÃÖ´ë Limit °³¼ö
 #define QMN_LMST_MAXIMUM_LIMIT_CNT              (65536)
 
 //-----------------
@@ -51,9 +51,9 @@
 //-----------------
 
 // qmncLMST.flag
-// LMST ë…¸ë“œì˜ ìš©ë„
-// - ORDERBY     : Limit Order Byë¥¼ ìœ„í•œ ì‚¬ìš©
-// - STORESEARCH : Store And Searchë¥¼ ìœ„í•œ ì‚¬ìš©
+// LMST ³ëµåÀÇ ¿ëµµ
+// - ORDERBY     : Limit Order By¸¦ À§ÇÑ »ç¿ë
+// - STORESEARCH : Store And Search¸¦ À§ÇÑ »ç¿ë
 
 #define QMNC_LMST_USE_MASK                 (0x00000001)
 #define QMNC_LMST_USE_ORDERBY              (0x00000000)
@@ -72,7 +72,7 @@
 typedef struct qmncLMST
 {
     //---------------------------------
-    // Code ì˜ì—­ ê³µí†µ ì •ë³´
+    // Code ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmnPlan        plan;
@@ -80,21 +80,21 @@ typedef struct qmncLMST
     UInt           planID;
 
     //---------------------------------
-    // LMST ê³ ìœ  ì •ë³´
+    // LMST °íÀ¯ Á¤º¸
     //---------------------------------
 
-    UShort         baseTableCount;     // Base Tableì˜ ê°œìˆ˜
-    qmcMtrNode   * myNode;           // ì €ì¥ Column ì •ë³´
+    UShort         baseTableCount;     // Base TableÀÇ °³¼ö
+    qmcMtrNode   * myNode;           // ÀúÀå Column Á¤º¸
 
     UShort         depTupleRowID;    // Dependent Tuple ID
-    ULong          limitCnt;         // ì €ì¥í•  Rowì˜ ìˆ˜
+    ULong          limitCnt;         // ÀúÀåÇÒ RowÀÇ ¼ö
 
     qcComponentInfo * componentInfo; // PROJ-2462 Result Cache
     //---------------------------------
-    // Data ì˜ì—­ ì •ë³´
+    // Data ¿µ¿ª Á¤º¸
     //---------------------------------
     
-    UInt           mtrNodeOffset;    // ì €ì¥ Columnì˜ ìœ„ì¹˜
+    UInt           mtrNodeOffset;    // ÀúÀå ColumnÀÇ À§Ä¡
     
     
 } qmncLMST;
@@ -102,7 +102,7 @@ typedef struct qmncLMST
 typedef struct qmndLMST
 {
     //---------------------------------
-    // Data ì˜ì—­ ê³µí†µ ì •ë³´
+    // Data ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmndPlan            plan;
@@ -110,19 +110,19 @@ typedef struct qmndLMST
     UInt              * flag;        
 
     //---------------------------------
-    // LMST ê³ ìœ  ì •ë³´
+    // LMST °íÀ¯ Á¤º¸
     //---------------------------------
 
-    UInt                mtrRowSize;   // ì €ì¥ Rowì˜ í¬ê¸°
+    UInt                mtrRowSize;   // ÀúÀå RowÀÇ Å©±â
 
-    qmdMtrNode        * mtrNode;      // ì €ì¥ Column ì •ë³´
-    qmdMtrNode        * sortNode;     // ì •ë ¬ Columnì˜ ìœ„ì¹˜
+    qmdMtrNode        * mtrNode;      // ÀúÀå Column Á¤º¸
+    qmdMtrNode        * sortNode;     // Á¤·Ä ColumnÀÇ À§Ä¡
 
-    mtcTuple          * depTuple;     // Dependent Tuple ìœ„ì¹˜
+    mtcTuple          * depTuple;     // Dependent Tuple À§Ä¡
     UInt                depValue;     // Dependent Value 
 
     qmcdSortTemp      * sortMgr;      // Sort Temp Table
-    ULong               mtrTotalCnt;  // ì €ì¥ ëŒ€ìƒ Rowì˜ ê°œìˆ˜
+    ULong               mtrTotalCnt;  // ÀúÀå ´ë»ó RowÀÇ °³¼ö
     idBool              isNullStore; 
     /* PROJ-2462 Result Cache */
     qmndResultCache     resultData;
@@ -135,11 +135,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ìˆ˜í–‰ í•¨ìˆ˜
+    // ¼öÇà ÇÔ¼ö
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -148,7 +148,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan ì •ë³´ ì¶œë ¥
+    // Plan Á¤º¸ Ãâ·Â
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -158,29 +158,29 @@ public:
 private:
 
     //-----------------------------
-    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
+    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
     //-----------------------------
 
-    // ìµœì´ˆ ì´ˆê¸°í™” í•¨ìˆ˜
+    // ÃÖÃÊ ÃÊ±âÈ­ ÇÔ¼ö
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncLMST   * aCodePlan,
                              qmndLMST   * aDataPlan );
 
-    // ì €ì¥ Columnì˜ ì´ˆê¸°í™”
+    // ÀúÀå ColumnÀÇ ÃÊ±âÈ­
     static IDE_RC initMtrNode( qcTemplate * aTemplate,
                                qmncLMST   * aCodePlan,
                                qmndLMST   * aDataPlan );
 
-    // ì •ë ¬ Columnì˜ ìœ„ì¹˜ ê²€ìƒ‰
+    // Á¤·Ä ColumnÀÇ À§Ä¡ °Ë»ö
     static IDE_RC initSortNode( qmncLMST   * aCodePlan,
                                 qmndLMST   * aDataPlan );
 
-    // Temp Table ì´ˆê¸°í™”
+    // Temp Table ÃÊ±âÈ­
     static IDE_RC initTempTable( qcTemplate * aTemplate,
                                  qmncLMST   * aCodePlan,
                                  qmndLMST   * aDataPlan );
 
-    // Dependent Tupleì˜ ë³€ê²½ ì—¬ë¶€ ê²€ì‚¬
+    // Dependent TupleÀÇ º¯°æ ¿©ºÎ °Ë»ç
     static IDE_RC checkDependency( qcTemplate * aTemplate,
                                    qmncLMST   * aCodePlan,
                                    qmndLMST   * aDataPlan,
@@ -190,68 +190,68 @@ private:
     // mapping by doIt() function pointer
     //------------------------
 
-    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨.
+    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ.
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // LIMIT ORDER BYë¥¼ ìœ„í•œ ìµœì´ˆ ìˆ˜í–‰
+    // LIMIT ORDER BY¸¦ À§ÇÑ ÃÖÃÊ ¼öÇà
     static IDE_RC doItFirstOrderBy( qcTemplate * aTemplate,
                                     qmnPlan    * aPlan,
                                     qmcRowFlag * aFlag );
 
-    // LIMIT ORDER BYë¥¼ ìœ„í•œ ë‹¤ìŒ ìˆ˜í–‰
+    // LIMIT ORDER BY¸¦ À§ÇÑ ´ÙÀ½ ¼öÇà
     static IDE_RC doItNextOrderBy( qcTemplate * aTemplate,
                                    qmnPlan    * aPlan,
                                    qmcRowFlag * aFlag );
 
-    // Store And Searchë¥¼ ìœ„í•œ ìµœì´ˆ ìˆ˜í–‰
+    // Store And Search¸¦ À§ÇÑ ÃÖÃÊ ¼öÇà
     static IDE_RC doItFirstStoreSearch( qcTemplate * aTemplate,
                                         qmnPlan    * aPlan,
                                         qmcRowFlag * aFlag );
 
-    // Store And Searchë¥¼ ìœ„í•œ ë‹¤ìŒ ìˆ˜í–‰
+    // Store And Search¸¦ À§ÇÑ ´ÙÀ½ ¼öÇà
     static IDE_RC doItNextStoreSearch( qcTemplate * aTemplate,
                                        qmnPlan    * aPlan,
                                        qmcRowFlag * aFlag );
 
-    // Store And Searchë¥¼ ìœ„í•œ ë§ˆì§€ë§‰ ìˆ˜í–‰
+    // Store And Search¸¦ À§ÇÑ ¸¶Áö¸· ¼öÇà
     static IDE_RC doItLastStoreSearch( qcTemplate * aTemplate,
                                        qmnPlan    * aPlan,
                                        qmcRowFlag * aFlag );
 
-    // BUG-37681 limitCnt 0 ì¼ë•Œ ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜
+    // BUG-37681 limitCnt 0 ÀÏ¶§ ¼öÇàÇÏ´Â ÇÔ¼ö
     static IDE_RC doItAllFalse( qcTemplate * aTemplate,
                                 qmnPlan    * aPlan,
                                 qmcRowFlag * aFlag );
 
     //-----------------------------
-    // ì €ì¥ ê´€ë ¨ í•¨ìˆ˜
+    // ÀúÀå °ü·Ã ÇÔ¼ö
     //-----------------------------
 
-    // ORDER BYë¥¼ ìœ„í•œ ì €ì¥
+    // ORDER BY¸¦ À§ÇÑ ÀúÀå
     static IDE_RC store4OrderBy( qcTemplate * aTemplate,
                                  qmncLMST   * aCodePlan,
                                  qmndLMST   * aDataPlan );
 
-    // Store And Searchë¥¼ ìœ„í•œ ì €ì¥
+    // Store And Search¸¦ À§ÇÑ ÀúÀå
     static IDE_RC store4StoreSearch( qcTemplate * aTemplate,
                                      qmncLMST   * aCodePlan,
                                      qmndLMST   * aDataPlan );
 
-    // í•˜ë‚˜ì˜ Rowë¥¼ ì‚½ì…
+    // ÇÏ³ªÀÇ Row¸¦ »ğÀÔ
     static IDE_RC addOneRow( qcTemplate * aTemplate,
                              qmndLMST   * aDataPlan );
     
-    // ì €ì¥ Rowì˜ êµ¬ì„±
+    // ÀúÀå RowÀÇ ±¸¼º
     static IDE_RC setMtrRow( qcTemplate * aTemplate,
                              qmndLMST   * aDataPlan );
 
     //-----------------------------
-    // ìˆ˜í–‰ ê´€ë ¨ í•¨ìˆ˜
+    // ¼öÇà °ü·Ã ÇÔ¼ö
     //-----------------------------
 
-    // ê²€ìƒ‰ëœ ì €ì¥ Rowë¥¼ ê¸°ì¤€ìœ¼ë¡œ Tuple Setì„ ë³µì›í•œë‹¤.
+    // °Ë»öµÈ ÀúÀå Row¸¦ ±âÁØÀ¸·Î Tuple SetÀ» º¹¿øÇÑ´Ù.
     static IDE_RC setTupleSet( qcTemplate * aTemplate,
                                qmndLMST   * aDataPlan );
     

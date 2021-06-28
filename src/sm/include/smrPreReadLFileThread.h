@@ -27,29 +27,29 @@
 #include <smrLogFile.h>
 #include <iduMemListOld.h>
 
-/* PreReadInfoì˜ mFlagê°’ */
+/* PreReadInfoÀÇ mFlag°ª */
 #define SMR_PRE_READ_FILE_MASK  (0x00000003)
-/* ì´ˆê¸°ê°’ */
+/* ÃÊ±â°ª */
 #define SMR_PRE_READ_FILE_NON   (0x00000000)
-/* Fileì˜ openì´ ì™„ë£Œë˜ì—ˆì„ ë•Œ */
+/* FileÀÇ openÀÌ ¿Ï·áµÇ¾úÀ» ¶§ */
 #define SMR_PRE_READ_FILE_OPEN  (0x00000001)
-/* Fileì˜ Closeê°€ ìš”ì²­ë˜ì—ˆì„ ë•Œ */
+/* FileÀÇ Close°¡ ¿äÃ»µÇ¾úÀ» ¶§ */
 #define SMR_PRE_READ_FILE_CLOSE (0x00000002)
 
 /*
-  Pre Read Threadê°€ ìì‹ ì—ê²Œ ë“¤ì–´ì˜¤ëŠ” Open Request
-  ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•´ì„œ Requestê°€ ë“¤ì–´ì˜¬ë•Œ ë§ˆë‹¤ í•˜ë‚˜ì‹
-  ë§Œë“¤ì–´ì§„ë‹¤.
+  Pre Read Thread°¡ ÀÚ½Å¿¡°Ô µé¾î¿À´Â Open Request
+  ¸¦ °ü¸®ÇÏ±â À§ÇØ¼­ Request°¡ µé¾î¿Ã¶§ ¸¶´Ù ÇÏ³ª½Ä
+  ¸¸µé¾îÁø´Ù.
 */
 typedef struct smrPreReadLFInfo
 {
-    // ì½ê¸°ë¥¼ ìš”ì²­í•œ FileNo
+    // ÀĞ±â¸¦ ¿äÃ»ÇÑ FileNo
     UInt        mFileNo;
-    // Openëœ LogFile
+    // OpenµÈ LogFile
     smrLogFile *mLogFilePtr;
     
-    // í˜„ì¬ Fileì´ Openë˜ì—ˆìœ¼ë©´ SMR_PRE_READ_FILE_OPEN,
-    // ì•„ë‹ˆë©´ SMR_PRE_READ_FILE_CLOSE
+    // ÇöÀç FileÀÌ OpenµÇ¾úÀ¸¸é SMR_PRE_READ_FILE_OPEN,
+    // ¾Æ´Ï¸é SMR_PRE_READ_FILE_CLOSE
     UInt        mFlag;
 
     struct smrPreReadLFInfo *mNext;
@@ -57,32 +57,32 @@ typedef struct smrPreReadLFInfo
 } smrPreReadLFInfo;
 
 /*
-  smrPreReadLFileThreadëŠ” Replication ì˜ Senderë¥¼
-  ìœ„í•´ì„œ ë§Œë“¤ì–´ì§„ ê²ƒìœ¼ë¡œ Senderê°€ ì½ì–´ì•¼ í•  íŒŒì¼ì— ëŒ€í•´ì„œ
-  ë¯¸ë¦¬ Readë¥¼ ìˆ˜í–‰í•˜ì—¬ Senderê°€ Disk/IOë•Œë¬¸ì— waitingì´
-  ë°œìƒí•˜ëŠ”ê²ƒì„ ë°©ì§€í•˜ê¸°ìœ„í•´ ë§Œë“¤ì–´ì¡Œë‹¤.
+  smrPreReadLFileThread´Â Replication ÀÇ Sender¸¦
+  À§ÇØ¼­ ¸¸µé¾îÁø °ÍÀ¸·Î Sender°¡ ÀĞ¾î¾ß ÇÒ ÆÄÀÏ¿¡ ´ëÇØ¼­
+  ¹Ì¸® Read¸¦ ¼öÇàÇÏ¿© Sender°¡ Disk/IO¶§¹®¿¡ waitingÀÌ
+  ¹ß»ıÇÏ´Â°ÍÀ» ¹æÁöÇÏ±âÀ§ÇØ ¸¸µé¾îÁ³´Ù.
 */
 class smrPreReadLFileThread : public idtBaseThread
 {
 //Member Function
 public:
-    /* ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.*/
+    /* ÃÊ±âÈ­¸¦ ¼öÇàÇÑ´Ù.*/
     IDE_RC initialize();
-    /* openëœ Logfileì„ closeí•˜ê³  í• ë‹¹ëœ Resourceë¥¼ ë°˜í™˜í•œë‹¤.*/
+    /* openµÈ LogfileÀ» closeÇÏ°í ÇÒ´çµÈ Resource¸¦ ¹İÈ¯ÇÑ´Ù.*/
     IDE_RC destroy();
 
-    /* PreReadThreadì—ê²Œ aFileNoì— í•´ë‹¹í•˜ëŠ” íŒŒì¼ì—
-       ëŒ€í•´ì„œ openì„ ìš”ì²­í•œë‹¤.*/
+    /* PreReadThread¿¡°Ô aFileNo¿¡ ÇØ´çÇÏ´Â ÆÄÀÏ¿¡
+       ´ëÇØ¼­ openÀ» ¿äÃ»ÇÑ´Ù.*/
     IDE_RC addOpenLFRequest( UInt aFileNo );
-    /* aFileNoì— í•´ë‹¹í•˜ëŠ” Fileì˜ Closeë¥¼ ìš”ì²­í•œë‹¤.*/
+    /* aFileNo¿¡ ÇØ´çÇÏ´Â FileÀÇ Close¸¦ ¿äÃ»ÇÑ´Ù.*/
     IDE_RC closeLogFile( UInt aFileNo );
 
-    /* Threadë¥¼ ì¢…ë£Œì‹œí‚¨ë‹¤.*/
+    /* Thread¸¦ Á¾·á½ÃÅ²´Ù.*/
     IDE_RC shutdown();
     
     virtual void run();
 
-    /* PreRead Threadê°€ Sleepì¤‘ì´ë©´ ê¹¨ìš´ë‹¤.*/
+    /* PreRead Thread°¡ SleepÁßÀÌ¸é ±ú¿î´Ù.*/
     IDE_RC resume();
 
     smrPreReadLFileThread();
@@ -90,33 +90,33 @@ public:
     
 //Member Function
 private:
-    /* Request List, Open Log File Listì—ëŒ€ì„œ ì ‘ê·¼ì‹œ mMutex.lockìˆ˜í–‰*/
+    /* Request List, Open Log File List¿¡´ë¼­ Á¢±Ù½Ã mMutex.lock¼öÇà*/
     inline IDE_RC lock();
-    /* mMutex.unlockìˆ˜í–‰*/
+    /* mMutex.unlock¼öÇà*/
     inline IDE_RC unlock();
     
     inline IDE_RC lockCond() { return mCondMutex.lock( NULL /* idvSQL* */ ); }
     inline IDE_RC unlockCond() { return mCondMutex.unlock(); }
     
-    /* aInfoë¥¼ Request Listì— ì¶”ê°€*/
+    /* aInfo¸¦ Request List¿¡ Ãß°¡*/
     inline void addToLFRequestList(smrPreReadLFInfo *aInfo);
-    /* aInfoë¥¼ Request Listì—ì„œ ì œê±°*/
+    /* aInfo¸¦ Request List¿¡¼­ Á¦°Å*/
     inline void removeFromLFRequestList(smrPreReadLFInfo *aInfo);
-    /* aInfoë¥¼ Open Log File Listì— ì¶”ê°€*/
+    /* aInfo¸¦ Open Log File List¿¡ Ãß°¡*/
     inline void addToLFList(smrPreReadLFInfo *aInfo);
-    /* aInfoë¥¼ Open Log File Listì—ì„œ ì œê±°*/
+    /* aInfo¸¦ Open Log File List¿¡¼­ Á¦°Å*/
     inline void removeFromLFList(smrPreReadLFInfo *aInfo);
-    /* Request Listê°€ ë¹„ì–´ìˆëŠ”ì§€ check */
+    /* Request List°¡ ºñ¾îÀÖ´ÂÁö check */
     inline idBool isEmptyOpenLFRequestList() 
         { return mOpenLFRequestList.mNext == &mOpenLFRequestList ? ID_TRUE : ID_FALSE; }
-    /* smrPreReadLFInfoë¥¼ ì´ˆê¸°í™”*/
+    /* smrPreReadLFInfo¸¦ ÃÊ±âÈ­*/
     inline void initPreReadInfo(smrPreReadLFInfo *aInfo);
 
-    /* aFileNoì— í•´ë‹¹í•˜ëŠ” PreRequestInfoë¥¼ Request Listì—ì„œ ì°¾ëŠ”ë‹¤.*/
+    /* aFileNo¿¡ ÇØ´çÇÏ´Â PreRequestInfo¸¦ Request List¿¡¼­ Ã£´Â´Ù.*/
     smrPreReadLFInfo* findInOpenLFRequestList( UInt aFileNo );
-    /* aFileNoì— í•´ë‹¹í•˜ëŠ” PreRequestInfoë¥¼ Open Logfile Listì—ì„œ ì°¾ëŠ”ë‹¤.*/
+    /* aFileNo¿¡ ÇØ´çÇÏ´Â PreRequestInfo¸¦ Open Logfile List¿¡¼­ Ã£´Â´Ù.*/
     smrPreReadLFInfo* findInOpenLFList( UInt aFileNo );
-    /* logfileì„ Openì„ ìˆ˜í–‰í•  smrPreReadInfoë¥¼ ì°¾ëŠ”ë‹¤.*/
+    /* logfileÀ» OpenÀ» ¼öÇàÇÒ smrPreReadInfo¸¦ Ã£´Â´Ù.*/
     IDE_RC getJobOfPreReadInfo(smrPreReadLFInfo **aPreReadInfo);
 
 //Member Variable    
@@ -125,11 +125,11 @@ private:
     smrPreReadLFInfo mOpenLFRequestList;
     /* Open LogFile List*/
     smrPreReadLFInfo mOpenLFList;
-    /* Listê´€ë¦¬ Mutex*/
+    /* List°ü¸® Mutex*/
     iduMutex         mMutex;
     /* Pre Read Info Memory Pool */
     iduMemListOld    mPreReadLFInfoPool;
-    /* Thread ì¢…ë£Œ Check */
+    /* Thread Á¾·á Check */
     idBool           mFinish;
 
     /* Condition Variable */
@@ -137,11 +137,11 @@ private:
     /* Time Value */
     PDL_Time_Value   mTV;
 
-    /* Waitingê´€ë ¨ Mutexë¡œì„œ Threadê°€ sleepí•  ê²½ìš°
-     ì´ Mutexë¥¼ í’€ê³  waitingí•œë‹¤.*/
+    /* Waiting°ü·Ã Mutex·Î¼­ Thread°¡ sleepÇÒ °æ¿ì
+     ÀÌ Mutex¸¦ Ç®°í waitingÇÑ´Ù.*/
     iduMutex         mCondMutex;
 
-    /* Threadë¥¼ Wake upí•  ê²½ìš° ì´ê°’ì„ ID_TRUEë¡œ í•œë‹¤. */
+    /* Thread¸¦ Wake upÇÒ °æ¿ì ÀÌ°ªÀ» ID_TRUE·Î ÇÑ´Ù. */
     idBool           mResume;
 };
 

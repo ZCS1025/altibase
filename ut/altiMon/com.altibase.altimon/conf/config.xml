@@ -14,5 +14,6 @@
         <DbName>mydb</DbName>
         <NLS>KSC5601</NLS>
         <IPv6>FALSE</IPv6>
+        <ConnectionProperties>login_timeout=3</ConnectionProperties>
     </Target>
 </configuration>

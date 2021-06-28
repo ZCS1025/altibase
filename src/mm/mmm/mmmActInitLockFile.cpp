@@ -28,7 +28,7 @@ static IDE_RC mmmPhaseActionInitLockFile(mmmPhase         /*aPhase*/,
                                          mmmPhaseAction * /*aAction*/)
 {
     /* ------------------------
-     * ë©”ì‹œì§€ ë¡œê¹… ëª¨ë“ˆ ì´ˆê¸°í™”
+     * ¸Þ½ÃÁö ·Î±ë ¸ðµâ ÃÊ±âÈ­
      * ---------------------- */
 #if !defined(WRS_VXWORKS)
     idBool sRetry;

@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: idl.cpp 84438 2018-11-27 01:50:06Z kclee $
+ * $Id: idl.cpp 89585 2020-12-18 01:46:27Z jina.kim $
  **********************************************************************/
 
 #include <idl.h>
@@ -145,7 +145,7 @@ SInt idlVA::getSystemMemory(ULong *PageSize,
                             ULong *MaxMem, ULong *AvailMem, ULong *FreeMem,
                             ULong *SwapMaxMem, ULong *SwapFreeMem)
 {
-    /* Ï¥àÍ∏∞Ìôî */
+    /* √ ±‚»≠ */
     *PageSize    = 0;
     *MaxMem      = 0;
     *AvailMem    = 0;
@@ -155,11 +155,11 @@ SInt idlVA::getSystemMemory(ULong *PageSize,
 
 #if defined(SPARC_SOLARIS) || defined(X86_SOLARIS)
     /* ------------------------------
-     * Î©îÏù∏ Î©îÎ™®Î¶¨ ÌÅ¨Í∏∞Î•º Íµ¨ÌïúÎã§.
+     * ∏ﬁ¿Œ ∏ﬁ∏∏Æ ≈©±‚∏¶ ±∏«—¥Ÿ.
      * -----------------------------*/
 
     /* ----------------
-     * [1] Î≥ÄÏàò ÏÑ†Ïñ∏
+     * [1] ∫Øºˆ º±æ
      * ---------------*/
 
     kstat_t       *ks = NULL;
@@ -167,7 +167,7 @@ SInt idlVA::getSystemMemory(ULong *PageSize,
     kstat_named_t *kn = NULL;
 
     /* ----------------
-     * [2] PAGESIZE ÏñªÍ∏∞
+     * [2] PAGESIZE æÚ±‚
      * ---------------*/
     *PageSize = (ULong)idlOS::sysconf(_SC_PAGESIZE);
 
@@ -204,11 +204,11 @@ SInt idlVA::getSystemMemory(ULong *PageSize,
 
 
     /* ------------------------------
-     * SWAP ÌÅ¨Í∏∞Î•º Íµ¨ÌïúÎã§.
+     * SWAP ≈©±‚∏¶ ±∏«—¥Ÿ.
      * -----------------------------*/
 
     /* ----------------
-     * [1] Î≥ÄÏàò ÏÑ†Ïñ∏
+     * [1] ∫Øºˆ º±æ
      * ---------------*/
     struct anoninfo anon;
     SInt swtotal = 0;
@@ -217,7 +217,7 @@ SInt idlVA::getSystemMemory(ULong *PageSize,
     idlOS::memset(&anon, 0, sizeof(anoninfo));
 
     /* ----------------
-     * [2] SWAP Ï†ïÎ≥¥ ÏñªÍ∏∞
+     * [2] SWAP ¡§∫∏ æÚ±‚
      * ---------------*/
     if (swapctl(SC_AINFO, &anon) != -1)
     {
@@ -248,7 +248,7 @@ SInt idlVA::getSystemMemory(ULong *PageSize,
 #endif
 }
 
-// ÏãúÏä§ÌÖúÏóê ÏÑ§ÏπòÎêú CPU Í∞ØÏàòÎ•º Íµ¨ÌïúÎã§.
+// Ω√Ω∫≈€ø° º≥ƒ°µ» CPU ∞πºˆ∏¶ ±∏«—¥Ÿ.
 SInt idlVA::getProcessorCount()
 {
     SInt cntCPU = 0;
@@ -263,15 +263,15 @@ SInt idlVA::getProcessorCount()
     GetSystemInfo(&systemInfo);
     cntCPU = systemInfo.dwNumberOfProcessors;
 #elif defined(HP_HPUX) || defined(IA64_HP_HPUX)
-    // BUGBUG : by gamestar : ÎÇòÏ§ëÏóê Ï†ÅÏö© Í≥†Î†§
+    // BUGBUG : by gamestar : ≥™¡ﬂø° ¿˚øÎ ∞Ì∑¡
     // source from st library : server.c
     //#include <sys/mpctl.h>
     //n = mpctl(MPC_GETNUMSPUS, 0, 0);
     struct pst_dynamic store_pst_dynamic;
 
     pstat_getdynamic( &store_pst_dynamic, sizeof(store_pst_dynamic), 1, 0 );
-    /* BUG-21067: HPUXÏóêÏÑú CPUÍ∞ØÏàòÎ•º Í∞ÄÏ†∏Ïò¨ Í≤ΩÏö∞Ïóê Active ProcessorÍ∞úÏàòÎ•º Í∞ÄÏ†∏ÏôÄÏïº
-     *            Ìï©ÎãàÎã§. */
+    /* BUG-21067: HPUXø°º≠ CPU∞πºˆ∏¶ ∞°¡Æø√ ∞ÊøÏø° Active Processor∞≥ºˆ∏¶ ∞°¡ÆøÕæﬂ
+     *            «’¥œ¥Ÿ. */
     cntCPU = (SInt)store_pst_dynamic.psd_proc_cnt;
 #elif defined(ITRON)
     /* empty */
@@ -281,7 +281,7 @@ SInt idlVA::getProcessorCount()
     //idlOS::printf("oops!! warning...did you check this?(%s:%d) \n",
     //              __FILE__, __LINE__);
 #  endif
-    cntCPU = 1; // defaultÎäî 1Î°ú Ìï®.
+    cntCPU = 1; // default¥¬ 1∑Œ «‘.
 #endif
     return ( cntCPU > 1 ? cntCPU : (SInt)1 );
 }
@@ -289,16 +289,16 @@ SInt idlVA::getProcessorCount()
 /*
  * BUG-44958  Physical core count is needed 
  *
- * ÏãúÏä§ÌÖúÏóê ÏÑ§ÏπòÎêú physical core Í∞ØÏàòÎ•º Íµ¨ÌïúÎã§.
+ * Ω√Ω∫≈€ø° º≥ƒ°µ» physical core ∞πºˆ∏¶ ±∏«—¥Ÿ.
  * 
- * Supported System based on "Ï†úÌíàÎ≥Ñ ÏßÄÏõê OS ÌòÑÌô©(2017.6.8)"
+ * Supported System based on "¡¶«∞∫∞ ¡ˆø¯ OS «ˆ»≤(2017.6.8)"
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  * AIX   / PowerPC
  * Linux / X86
  * Linux / PowerPC
  * HP    / IA64(itanium)
  * 
- * ÏßÄÏõêÌïòÏßÄ ÏïäÎäî ÏãúÏä§ÌÖúÏù¥Í±∞ÎÇò Ï†ïÎ≥¥Î•º ÏñªÏßÄ Î™ªÌïòÍ≤å ÎêòÎ©¥ Í∏∞Ï°¥Ïùò ÎÖºÎ¶¨ÏΩîÏñ¥Í∞ØÏàòÎ•º Î¶¨ÌÑ¥ÌïòÎèÑÎ°ù ÌïúÎã§.
+ * ¡ˆø¯«œ¡ˆ æ ¥¬ Ω√Ω∫≈€¿Ã∞≈≥™ ¡§∫∏∏¶ æÚ¡ˆ ∏¯«œ∞‘ µ«∏È ±‚¡∏¿« ≥Ì∏Æƒ⁄æÓ∞πºˆ∏¶ ∏Æ≈œ«œµµ∑œ «—¥Ÿ.
  */
 SInt idlVA::getPhysicalCoreCount()
 {
@@ -366,7 +366,7 @@ SInt idlVA::getPhysicalCoreCount()
 IDL_EXTERN_C int statvfs(const char *, struct statvfs *);
 #endif // DEC_TRU64
 
-// pathÎ°ú ÏßÄÏ†ïÎêú ÌååÏùºÏãúÏä§ÌÖúÏùò Í∞ÄÏö© ÎîîÏä§ÌÅ¨ Í≥µÍ∞ÑÏùÑ Íµ¨ÌïúÎã§
+// path∑Œ ¡ˆ¡§µ» ∆ƒ¿œΩ√Ω∫≈€¿« ∞°øÎ µΩ∫≈© ∞¯∞£¿ª ±∏«—¥Ÿ
 // RETURN : free space (byte)
 SLong idlVA::getDiskFreeSpace (const SChar *path)
 {
@@ -380,7 +380,7 @@ SLong idlVA::getDiskFreeSpace (const SChar *path)
 
     return (((SLong)buf.f_bavail * buf.f_frsize));
 #elif defined( VC_WIN32 )
-    // pathÍ∞Ä ÌååÏùºÏù∏ÏßÄ ÎîîÎ†âÌÜ†Î¶¨Ïù∏ÏßÄ ÏïåÏïÑÎ≥∏Îã§.
+    // path∞° ∆ƒ¿œ¿Œ¡ˆ µ∑∫≈‰∏Æ¿Œ¡ˆ æÀæ∆∫ª¥Ÿ.
     BOOL bFileIsDirectory = FALSE;
 #if defined (VC_WINCE)
     wchar_t *sPath;
@@ -420,7 +420,7 @@ SLong idlVA::getDiskFreeSpace (const SChar *path)
         }
     }
 
-    // local copy ÏÉùÏÑ±
+    // local copy ª˝º∫
     SChar *dirPath = new SChar[ strlen(path) + 1 ];
     if ( dirPath == NULL )
     {
@@ -430,7 +430,7 @@ SLong idlVA::getDiskFreeSpace (const SChar *path)
 
     if ( !bFileIsDirectory )
     {
-        // pathÎ•º directoryÎ°ú ÎßåÎì§Ïñ¥Ï§ÄÎã§.
+        // path∏¶ directory∑Œ ∏∏µÈæÓ¡ÿ¥Ÿ.
         // c:\altibase_home\logs\log0  -> c:\altibase_home\logs
         for (SInt i=strlen(dirPath); i>0; i--) {
             if ( dirPath[i-1] == IDL_FILE_SEPARATOR ) {
@@ -485,7 +485,7 @@ SLong idlVA::getDiskFreeSpace (const SChar *path)
 #if defined(DEC_TRU64) && (OS_MAJORVER <= 4)
 //===================================================================
 // To Fix PR-17754
-// ÏùºÎ∂Ä ÌîåÎû´ÌèºÏóê ÏóÜÎäî vsnprintf() Íµ¨ÌòÑÏùÑ ÏúÑÌïú ÎÇ¥Î∂Ä Ìï®Ïàò
+// ¿œ∫Œ «√∑ß∆˚ø° æ¯¥¬ vsnprintf() ±∏«ˆ¿ª ¿ß«— ≥ª∫Œ «‘ºˆ
 //===================================================================
 
 /*
@@ -626,7 +626,7 @@ idlOS::vsnprintf(char *buf, size_t size, const char *format, va_list ap)
 #if defined(DEC_TRU64) && (OS_MAJORVER <= 4)
 //===================================================================
 // To Fix PR-17754
-// ÏùºÎ∂Ä ÌîåÎû´ÌèºÏóê ÏóÜÎäî vsnprintf()Ïùò Íµ¨ÌòÑ
+// ¿œ∫Œ «√∑ß∆˚ø° æ¯¥¬ vsnprintf()¿« ±∏«ˆ
 //===================================================================
 
 /* This implementation relies on a working vasprintf.  */
@@ -677,14 +677,14 @@ idlOS::vsnprintf(char *buf, size_t size, const char *format, va_list ap)
     return result;
 
 #else
-    /* BUG-25100: HP s[v]nprintf Ï¢ÖÎ•òÏùò Ìï®ÏàòÏóêÏÑú Î≤ÑÌçºÎ≥¥Îã§ ÏûëÏùÄ ÏÇ¨Ïù¥Ï¶àÍ∞Ä Î≥µÏÇ¨ÎêòÎäî
-     * Í≤ΩÏö∞Îäî Î¶¨ÌÑ¥ Í∞íÏù¥ -1ÏûÖÎãàÎã§.
+    /* BUG-25100: HP s[v]nprintf ¡æ∑˘¿« «‘ºˆø°º≠ πˆ∆€∫∏¥Ÿ ¿€¿∫ ªÁ¿Ã¡Ó∞° ∫πªÁµ«¥¬
+     * ∞ÊøÏ¥¬ ∏Æ≈œ ∞™¿Ã -1¿‘¥œ¥Ÿ.
      *
-     * snprintf, svnprintfÎäî formatÏùò Í∏∏Ïù¥Í∞Ä sizeÎ≥¥Îã§ ÌÅ¨Í±∞ÎÇò Í∞ôÏùÄÍ≤ΩÏö∞ formatÏùò
-     * Í∏∏Ïù¥Î•º returnÌïòÍ≥† HPÎäî -1ÏùÑ returnÌïúÎã§. ÌïòÏßÄÎßå ÏÉÅÏúÑÏóêÏÑú formatÏùò Í∏∏Ïù¥Í∞Ä
-     * Í∞ôÍ±∞ÎÇò Í∏¥Í≤ΩÏö∞ Ïã§Ï†ú bufÏóê Î≥µÏÇ¨Îêú dataÏùò Í∏∏Ïù¥Î•º returnÌïòÎäî Í≤ÉÏúºÎ°ú ÏïåÍ≥† ÏûàÎã§.
-     * ÌïòÏó¨ sizeÎ≥¥Îã§ formatÏùò Í∏∏Ïù¥Í∞Ä ÌÅ¨Í±∞ÎÇò Í∞ôÏùÄ Í≤ΩÏö∞ size - 1Í∞íÏùÑ Î¶¨ÌÑ¥ÌïúÎã§.
-     * -1ÏùÑ ÌïòÎäî Ïù¥Ïú†Îäî bufÏùò ÎßàÏßÄÎßâÏùÄ Ìï≠ÏÉÅ nullÎ°ú ÎÅùÎÇòÍ∏∞ÎïåÎ¨∏Ïù¥Îã§. */
+     * snprintf, svnprintf¥¬ format¿« ±Ê¿Ã∞° size∫∏¥Ÿ ≈©∞≈≥™ ∞∞¿∫∞ÊøÏ format¿«
+     * ±Ê¿Ã∏¶ return«œ∞Ì HP¥¬ -1¿ª return«—¥Ÿ. «œ¡ˆ∏∏ ªÛ¿ßø°º≠ format¿« ±Ê¿Ã∞°
+     * ∞∞∞≈≥™ ±‰∞ÊøÏ Ω«¡¶ bufø° ∫πªÁµ» data¿« ±Ê¿Ã∏¶ return«œ¥¬ ∞Õ¿∏∑Œ æÀ∞Ì ¿÷¥Ÿ.
+     * «œø© size∫∏¥Ÿ format¿« ±Ê¿Ã∞° ≈©∞≈≥™ ∞∞¿∫ ∞ÊøÏ size - 1∞™¿ª ∏Æ≈œ«—¥Ÿ.
+     * -1¿ª «œ¥¬ ¿Ã¿Ø¥¬ buf¿« ∏∂¡ˆ∏∑¿∫ «◊ªÛ null∑Œ ≥°≥™±‚∂ßπÆ¿Ã¥Ÿ. */
     SInt result = ::vsnprintf (buf, size, format, ap);
 
     if( ( ( result == -1 ) || ( result >= (SInt)size ) ) && (size > 0) )
@@ -816,309 +816,53 @@ idlOS::strcasestr(const SChar *s, const SChar *w)
   M0: return (SChar*)r;
 #undef TO_LOWER
 }
+SInt idlOS::strToInt( UChar* aValue,
+                      UInt   aLength )
+{
+    UInt         sTmpValue;
+    SInt         sValue;
+    acp_rc_t     sRC;
+    acp_sint32_t sSign;
+    acp_char_t  *sEnd;
+
+    sRC = acpCStrToInt32((acp_char_t *)aValue,
+                         aLength,
+                         &sSign,
+                         &sTmpValue,
+                         10, /* only decimal */
+                         &sEnd);
+    assert(ACP_RC_IS_SUCCESS(sRC));
+
+    sValue = (SInt)sTmpValue * sSign;
+
+    return sValue;
+}
+
+SInt idlOS::uIntToStr( UInt aNumber,
+                       SChar * aStr,
+                       UInt   aLength )
+{
+    acp_rc_t     sRC;
+
+    sRC = acpCStrUInt32ToCStr10(aNumber, (acp_char_t*)aStr, aLength);
+    assert(ACP_RC_IS_SUCCESS(sRC));
+
+    return sRC;
+}
 
 time_t
 idlOS::mktime( struct tm *t )
 {
-    // mktimeÏùÑ ÏÇ¨Ïö©Ìï† Ïàò ÏûàÎäî Î≤îÏúÑÍ∞Ä
-    // ÏãúÏä§ÌÖúÎßàÎã§ Ï°∞Í∏àÏî© Îã§Î¶Ñ.
-    // idÏóêÏÑú Í≥µÌÜµ Î≤îÏúÑÎ°ú Ï†úÏïΩÌï®
-    // 1970-01-01 ~ 2037-12-31ÍπåÏßÄÎßå Ïú†Ìö®Ìï®
+    // mktime¿ª ªÁøÎ«“ ºˆ ¿÷¥¬ π¸¿ß∞°
+    // Ω√Ω∫≈€∏∂¥Ÿ ¡∂±›æø ¥Ÿ∏ß.
+    // idø°º≠ ∞¯≈Î π¸¿ß∑Œ ¡¶æ‡«‘
+    // 1970-01-01 ~ 2037-12-31±Ó¡ˆ∏∏ ¿Ø»ø«‘
     if( t->tm_year < 70 || t->tm_year >= 138 )
     {
         return -1;
     }
     return PDL_OS::mktime( t );
 }
-
-SInt
-idlVA::getMacAddress(ID_HOST_ID *mac, UInt *aNoValues)
-{
-#if defined(WRS_VXWORKS) 
-    struct ifnet * ifPtr  = NULL; 
-    char         * ifName = NULL; 
-
-    if( (ifName = idlOS::getenv("IF_NAME")) == NULL ) 
-    { 
-        return -1; 
-    } 
-
-    if( (ifPtr = ifunit(ifName)) == NULL ) 
-    { 
-        return -1; 
-    } 
-
-    mac[0].mHostID = idlOS::malloc(6);
-    mac[0].mSize = 6;
-
-    bcopy( (char *)((struct arpcom *)ifPtr)->ac_enaddr, 
-           (char *)mac[0].mHostID, 
-           6 ); 
-
-    *aNoValues = 1;
-
-    return 0; 
-#elif defined(VC_WIN32)
-#  if defined(VC_WINCE)
-    IP_ADAPTER_INFO  * pAdapterInfo;
-    ULONG              ulOutBufLen;
-    DWORD              dwRetVal;
-
-    pAdapterInfo = (IP_ADAPTER_INFO *)malloc(sizeof(IP_ADAPTER_INFO));
-    ulOutBufLen = sizeof(IP_ADAPTER_INFO);
-
-    if(GetAdaptersInfo(pAdapterInfo, &ulOutBufLen) != ERROR_SUCCESS) 
-    {
-        free(pAdapterInfo);
-        pAdapterInfo = (IP_ADAPTER_INFO *)malloc(ulOutBufLen);
-    }
-
-    dwRetVal = GetAdaptersInfo(pAdapterInfo, &ulOutBufLen);
-
-    if(dwRetVal != ERROR_SUCCESS) 
-    {
-        free(pAdapterInfo);
-        return -1;
-    }
-
-    mac[0].mHostID = (UChar *)malloc(6);
-    mac[0].mSize = 6;
-
-    memcpy(&((SChar*)mac[0].mHostID)[0], (const SChar*)&pAdapterInfo->Address[0], 1);
-    memcpy(&((SChar*)mac[0].mHostID)[1], (const SChar*)&pAdapterInfo->Address[1], 1);
-    memcpy(&((SChar*)mac[0].mHostID)[2], (const SChar*)&pAdapterInfo->Address[2], 1);
-    memcpy(&((SChar*)mac[0].mHostID)[3], (const SChar*)&pAdapterInfo->Address[3], 1);
-    memcpy(&((SChar*)mac[0].mHostID)[4], (const SChar*)&pAdapterInfo->Address[4], 1);
-    memcpy(&((SChar*)mac[0].mHostID)[5], (const SChar*)&pAdapterInfo->Address[5], 1);
-
-    *aNoValues = 1;
-
-    free(pAdapterInfo);
-#  else /* VC_WINCE */
-    PIP_ADAPTER_INFO   sAdapterInfo;
-    PIP_ADAPTER_INFO   sAdapter;
-    ULONG              sBufferSize;
-    DWORD              sRet;
-    DWORD              sNumIfs;
-
-    *aNoValues = 0;
-
-    sBufferSize = sizeof(IP_ADAPTER_INFO);
-
-    sRet = GetNumberOfInterfaces(&sNumIfs);
-
-    if (sRet != ERROR_SUCCESS)
-    {
-        return -1;
-    }
-    else
-    {
-        sBufferSize *= sNumIfs;
-        sAdapterInfo = (PIP_ADAPTER_INFO)malloc(sBufferSize);
-
-        sRet = GetAdaptersInfo(sAdapterInfo, &sBufferSize);
-
-        if (sRet != ERROR_SUCCESS)
-        {
-            return -1;
-        }
-        else
-        {
-            for (sAdapter = sAdapterInfo; sAdapter != NULL; sAdapter = sAdapter->Next)
-            {
-                mac[*aNoValues].mSize = sAdapter->AddressLength;
-                mac[*aNoValues].mHostID = (UChar *)malloc(sAdapter->AddressLength);
-                memcpy(mac[*aNoValues].mHostID, &(sAdapter->Address), sAdapter->AddressLength);
-                (*aNoValues)++;
-            }
-        }
-    }
-
-    free(sAdapterInfo);
-
-#  endif /* VC_WINCE */
-    return 0;
-
-#else
-#ifdef NTO_QNX
-    int                 s;
-    int                 i;
-    char                buf[4096];
-    char               *cplim;
-    struct ifconf       ifc;
-    struct ifreq       *ifr;
-    struct sockaddr_dl *sdl;
-    unsigned char      *a;
-
-    *aNoValues = 0;
-
-    if ((s = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
-    {
-        return -1;
-    }
-
-    ifc.ifc_len = sizeof (buf);
-    ifc.ifc_buf = buf;
-
-    if (ioctl(s, SIOCGIFCONF, (char *)&ifc) < 0)
-    {
-        close(s);
-        return -1;
-    }
-    ifr = ifc.ifc_req;
-
-    cplim = (char *)ifr + ifc.ifc_len;
-
-    for(;
-        (char *)ifr < cplim;
-        ifr = (struct ifreq*)((char *)ifr + ifr->ifr_addr.sa_len + IFNAMSIZ))
-    {
-        if(ifr->ifr_addr.sa_family != AF_LINK)
-        {
-            continue;
-        }
-
-        sdl = (struct sockaddr_dl *)&ifr->ifr_addr;
-
-        if(sdl->sdl_type != IFT_ETHER)
-        {
-            continue;
-        }
-
-        if( sdl->sdl_alen != 6 )
-        {
-            close(s);
-            return -1;
-        }
-
-        a = (unsigned char *) &(sdl->sdl_data[sdl->sdl_nlen]);
-
-        if (!a[0] && !a[1] && !a[2] && !a[3] && !a[4] && !a[5])
-        {
-            continue;
-        }
-
-        mac[0].mHostID = idlOS::memalloc(sdl->sdl_alen)
-        mac[0].mSize = sdl->sdl_alen;
-        if (mac[0].mHostID)
-        {
-            idlOS::memcpy(mac[0].mHostID, &(sdl->sdl_data[sdl->sdl_nlen]), sdl->sdl_alen);
-            *aNoValues = 1;
-            close(s);
-            return 0;
-        }
-    }
-
-    close(s);
-    return 0;
-#elif defined(ITRON)
-    /* empty */
-    return 0;
-#else /* NTO_QNX */
-
-    int             sd;
-    struct ifreq    ifr;
-    struct ifreq    *ifrp;
-# ifdef SIOCRPHYSADDR
-    struct ifdevea  dev;
-# endif /* SIOCRPHYSADDR */
-    struct ifconf   ifc;
-    char            buf[1024];
-    int             n;
-    int             i;
-    unsigned char   *a;
-
-    *aNoValues = 0;
-
-/*
- * BSD 4.4 defines the size of an ifreq to be
- * max(sizeof(ifreq), sizeof(ifreq.ifr_name)+ifreq.ifr_addr.sa_len
- * However, under earlier systems, sa_len isn't present, so the size is
- * just sizeof(struct ifreq)
- */
-# ifdef HAVE_SA_LEN
-#  ifndef max
-#    define max(a,b) ((a) > (b) ? (a) : (b))
-#  endif
-#  define ifreq_size(i) max(sizeof(struct ifreq),                       \
-                            sizeof((i).ifr_name)+(i).ifr_addr.sa_len)
-# else
-#  define ifreq_size(i) sizeof(struct ifreq)
-# endif /* HAVE_SA_LEN */
-
-    sd = idlOS::socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
-    if (sd < 0)
-    {
-        return -1;
-    }
-    idlOS::memset(buf, 0, sizeof(buf));
-    ifc.ifc_len = sizeof(buf);
-    ifc.ifc_buf = buf;
-    if (idlOS::ioctl (sd, SIOCGIFCONF, (char *)&ifc) < 0)
-    {
-        idlOS::closesocket(sd);
-        return -1;
-    }
-    n = ifc.ifc_len;
-    for (i = 0; i < n; i+= ifreq_size(*ifr) )
-    {
-        ifrp = (struct ifreq *)((caddr_t) ifc.ifc_buf+i);
-
-# ifdef SIOCGIFHWADDR
-        idlOS::strncpy(ifr.ifr_name, ifrp->ifr_name, IFNAMSIZ);
-        if (idlOS::ioctl(sd, SIOCGIFHWADDR, &ifr) < 0)
-        {
-            continue;
-        }
-        a = (unsigned char *) &ifr.ifr_hwaddr.sa_data;
-# else
-#  ifdef SIOCGENADDR
-        idlOS::strncpy(ifr.ifr_name, ifrp->ifr_name, IFNAMSIZ);
-        if (idlOS::ioctl(sd, SIOCGENADDR, &ifr) < 0)
-        {
-            continue;
-        }
-        a = (unsigned char *) ifr.ifr_enaddr;
-#  else
-#   ifdef SIOCRPHYSADDR
-        idlOS::strncpy(dev.ifr_name, ifrp->ifr_name, IFNAMSIZ);
-        if (idlOS::ioctl(sd, SIOCRPHYSADDR, &dev) < 0)
-        {
-            continue;
-        }
-        a = (unsigned char *) dev.default_pa;
-#   else
-        /*
-         * XXX we don't have a way of getting the hardware
-         * address
-         */
-        idlOS::closesocket(sd);
-        return 0;
-#   endif /* SIOCRPHYSADDR */
-#  endif /* SIOCGENADDR */
-# endif /* SIOCGIFHWADDR */
-        if (!a[0] && !a[1] && !a[2] && !a[3] && !a[4] && !a[5])
-        {
-            continue;
-        }
-        mac[0].mHostID = (UChar *)idlOS::malloc(6);
-        mac[0].mSize = 6;
-        if (mac[0].mHostID)
-        {
-            idlOS::memcpy(mac[0].mHostID, a, 6);
-            *aNoValues = 1;
-            idlOS::closesocket(sd);
-            return 0;
-        }
-    }
-    idlOS::closesocket(sd);
-
-    return 0;
-
-#endif /* NTO_QNX */
-#endif /* VC_WIN32 */
-}
-
 
 SLong idlVA::fstrToLong(SChar *str, idBool *aValidity)
 {
@@ -1591,13 +1335,13 @@ idlVA::recv_nn (PDL_SOCKET handle,
                              timeout);
 }
 
-// To Fix BUG-15181 [A3/A4] recv_nn_iÍ∞Ä timeoutÏùÑ Î¨¥ÏãúÌï©ÎãàÎã§.
-// recv_nn ÏùÄ Ï°∞Í∏àÏù¥ÎùºÎèÑ Î∞õÏùÄ Îç∞Ïù¥ÌÑ∞Í∞Ä ÏûàÏúºÎ©¥ timeoutÏùÑ Î¨¥ÏãúÌïúÎã§.
-// ( replicationÏóêÏÑú Ïù¥Îü¨Ìïú ÏãúÎß®Ìã±ÏúºÎ°ú recv_nnÏùÑ ÏÇ¨Ïö©ÌïòÍ≥† ÏûàÏñ¥ÏÑú
-//   recv_nnÏùÑ ÏßÅÏ†ë ÏàòÏ†ïÌï† Ïàò ÏóÜÏùå.)
+// To Fix BUG-15181 [A3/A4] recv_nn_i∞° timeout¿ª π´Ω√«’¥œ¥Ÿ.
+// recv_nn ¿∫ ¡∂±›¿Ã∂Ûµµ πﬁ¿∫ µ•¿Ã≈Õ∞° ¿÷¿∏∏È timeout¿ª π´Ω√«—¥Ÿ.
+// ( replicationø°º≠ ¿Ã∑Ø«— Ω√∏«∆Ω¿∏∑Œ recv_nn¿ª ªÁøÎ«œ∞Ì ¿÷æÓº≠
+//   recv_nn¿ª ¡˜¡¢ ºˆ¡§«“ ºˆ æ¯¿Ω.)
 //
-// recv_nn_toÎäî Ï°∞Í∏àÏù¥ÎùºÎèÑ Î∞õÏùÄ Îç∞Ïù¥ÌÑ∞Í∞Ä ÏûàÏñ¥ÎèÑ
-// timeoutÍ±∏Î¶¨Î©¥ ÏóêÎü¨Î•º Î¶¨ÌÑ¥ÌïúÎã§.
+// recv_nn_to¥¬ ¡∂±›¿Ã∂Ûµµ πﬁ¿∫ µ•¿Ã≈Õ∞° ¿÷æÓµµ
+// timeout∞…∏Æ∏È ø°∑Ø∏¶ ∏Æ≈œ«—¥Ÿ.
 
 ssize_t
 idlVA::recv_nn_to (PDL_SOCKET handle,
@@ -1711,7 +1455,7 @@ clock_t idlOS::times(struct tms *buffer) {
     memcpy(&liKernelTime, &kernelTime, sizeof(liKernelTime));
     memcpy(&liUserTime, &userTime, sizeof(liUserTime));
 
-    // BUG - Ï∞®ÏùºÎìú processÎ•º ÏïåÏïÑÎÇ¥Îäî WIN32 APIÏôÄ Îß§ÌïëÎêòÏßÄ ÏïäÏïòÏùå.
+    // BUG - ¬˜¿œµÂ process∏¶ æÀæ∆≥ª¥¬ WIN32 APIøÕ ∏≈«Œµ«¡ˆ æ æ“¿Ω.
     buffer->tms_stime = buffer->tms_cstime =
         (clock_t) ((liKernelTime.QuadPart / 10000000.0) * CLOCKS_PER_SEC);
 
@@ -2270,12 +2014,12 @@ SInt idlVA::appendFormat(char *aBuffer, size_t aBufferSize, const char *aFormat,
     va_list ap;
 
     sLen = idlOS::strlen(aBuffer);
-    // BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ÎÇ¥ÏóêÏÑú local ArrayÏùò
-    // ptrÎ•º Î∞òÌôòÌïòÍ≥† ÏûàÏäµÎãàÎã§.
+    // BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ≥ªø°º≠ local Array¿«
+    // ptr∏¶ π›»Ø«œ∞Ì ¿÷Ω¿¥œ¥Ÿ.
     //
-    // aBufferSizeÍ∞Ä sLenÎ≥¥Îã§ Ïª§ÏïºÌï©ÎãàÎã§. Í∑∏Î†áÏßÄ ÏïäÏúºÎ©¥ Ïù¥ÌõÑ vsnprintfÌï®Ïàò Ìò∏Ï∂úÏãú
-    // ÏùåÏàòÍ∞íÏù¥ ÎÑòÏñ¥Í∞ÄÍ≥†, Í∑∏ ÏùåÏàòÍ∞íÏù¥ unsignedÎ°ú Ìï¥ÏÑùÎêòÎ©¥ÏÑú Î©îÎ™®Î¶¨Î•º Í∏ÅÏùÑ Ïàò 
-    // ÏûàÏäµÎãàÎã§.
+    // aBufferSize∞° sLen∫∏¥Ÿ ƒøæﬂ«’¥œ¥Ÿ. ±◊∑∏¡ˆ æ ¿∏∏È ¿Ã»ƒ vsnprintf«‘ºˆ »£√‚Ω√
+    // ¿Ωºˆ∞™¿Ã ≥—æÓ∞°∞Ì, ±◊ ¿Ωºˆ∞™¿Ã unsigned∑Œ «ÿºÆµ«∏Èº≠ ∏ﬁ∏∏Æ∏¶ ±‹¿ª ºˆ 
+    // ¿÷Ω¿¥œ¥Ÿ.
     assert( aBufferSize > sLen );
 
     va_start(ap, aFormat);
@@ -2310,7 +2054,7 @@ SInt idlVA::appendString(char *aBuffer, size_t aBufferSize, char *aString, UInt 
 
 //===================================================================
 // To Fix PR-13963
-// ÏöîÍµ¨Ìïú ÌÅ¨Í∏∞Í∞Ä large heapÏùÑ ÏöîÍµ¨ÌïúÍ≤ÉÏù∏ÏßÄÎ•º ÌåêÎã®
+// ø‰±∏«— ≈©±‚∞° large heap¿ª ø‰±∏«—∞Õ¿Œ¡ˆ∏¶ ∆«¥‹
 //===================================================================
 
 void idlOS::checkLargeHeapUse (
@@ -2322,7 +2066,7 @@ void idlOS::checkLargeHeapUse (
     )
 {
 #ifndef BUILD_FOR_UTIL
-    // ÏöîÍµ¨Ìïú ÌÅ¨Í∏∞Í∞Ä Ï†ïÌï¥ÏßÑ ÌÅ¨Í∏∞Î•º ÎÑòÎäîÎã§Î©¥ Î°úÍ∑∏Ïóê Ï∂úÎ†•
+    // ø‰±∏«— ≈©±‚∞° ¡§«ÿ¡¯ ≈©±‚∏¶ ≥—¥¬¥Ÿ∏È ∑Œ±◊ø° √‚∑¬
     if( ( INSPECTION_LARGE_HEAP_THRESHOLD_INITIALIZED == ID_TRUE ) &&
         ( INSPECTION_LARGE_HEAP_THRESHOLD > 0 ) &&
         ( nbytes >= INSPECTION_LARGE_HEAP_THRESHOLD ) )
@@ -2337,7 +2081,7 @@ void idlOS::checkLargeHeapUse (
 
 void *idlOS::malloc ( size_t nbytes )
 {
-    // ÏöîÍµ¨Ìïú ÌÅ¨Í∏∞Í∞Ä Ï†ïÌï¥ÏßÑ ÌÅ¨Í∏∞Î•º ÎÑòÎäîÎã§Î©¥ Î°úÍ∑∏Ïóê Ï∂úÎ†•
+    // ø‰±∏«— ≈©±‚∞° ¡§«ÿ¡¯ ≈©±‚∏¶ ≥—¥¬¥Ÿ∏È ∑Œ±◊ø° √‚∑¬
     checkLargeHeapUse( nbytes );
 
     return PDL_OS::malloc( nbytes );
@@ -2345,14 +2089,14 @@ void *idlOS::malloc ( size_t nbytes )
 
 void *idlOS::calloc ( size_t elements, size_t sizeof_elements )
 {
-    // ÏöîÍµ¨Ìïú ÌÅ¨Í∏∞Í∞Ä Ï†ïÌï¥ÏßÑ ÌÅ¨Í∏∞Î•º ÎÑòÎäîÎã§Î©¥ Î°úÍ∑∏Ïóê Ï∂úÎ†•
+    // ø‰±∏«— ≈©±‚∞° ¡§«ÿ¡¯ ≈©±‚∏¶ ≥—¥¬¥Ÿ∏È ∑Œ±◊ø° √‚∑¬
     checkLargeHeapUse( elements * sizeof_elements );
     return PDL_OS::calloc( elements, sizeof_elements );
 }
 
 void *idlOS::realloc ( void *ptr, size_t nbytes )
 {
-    // ÏöîÍµ¨Ìïú ÌÅ¨Í∏∞Í∞Ä Ï†ïÌï¥ÏßÑ ÌÅ¨Í∏∞Î•º ÎÑòÎäîÎã§Î©¥ Î°úÍ∑∏Ïóê Ï∂úÎ†•
+    // ø‰±∏«— ≈©±‚∞° ¡§«ÿ¡¯ ≈©±‚∏¶ ≥—¥¬¥Ÿ∏È ∑Œ±◊ø° √‚∑¬
     checkLargeHeapUse( nbytes );
     return PDL_OS::realloc( ptr, nbytes );
 }
@@ -2372,8 +2116,8 @@ SChar idlOS::tolower(SChar c)
     return (c >= 'A' && c <= 'Z' ) ? c + ('a' - 'A') : c;
 }
 
-/* paddingÏù¥ Î∂ôÏùÄ ÏûêÎ£å Íµ¨Ï°∞Î•º Ïù¥ Ìï®ÏàòÎ°ú Ï¥àÍ∏∞ÌôîÌïúÎã§.
-   Ïù¥ Ìï®ÏàòÎäî memory checkÏãúÏóêÎßå Ï¥àÍ∏∞ÌôîÌïúÎã§. */
+/* padding¿Ã ∫Ÿ¿∫ ¿⁄∑· ±∏¡∂∏¶ ¿Ã «‘ºˆ∑Œ √ ±‚»≠«—¥Ÿ.
+   ¿Ã «‘ºˆ¥¬ memory checkΩ√ø°∏∏ √ ±‚»≠«—¥Ÿ. */
 void *idlOS::memsetOnMemCheck(void *s, int c, size_t len)
 {
 #if defined(ALTIBASE_MEMORY_CHECK)

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpdQueue.h 82773 2018-04-11 02:16:47Z returns $
+ * $Id: rpdQueue.h 90491 2021-04-07 07:02:29Z lswhh $
  **********************************************************************/
 
 #ifndef _O_RPD_QUEUE_H_
@@ -50,34 +50,34 @@ typedef struct rpdLob
 
 typedef struct rpdXLog
 {
-    /* í˜„ìž¬ ë¶„ì„ì¤‘ì¸ XLogì˜ íƒ€ìž… */
+    /* ÇöÀç ºÐ¼®ÁßÀÎ XLogÀÇ Å¸ÀÔ */
     rpXLogType  mType;
-    /* í˜„ìž¬ ë¶„ì„ì¤‘ì¸ Logì˜ íŠ¸ëžœìž­ì…˜ ID */
+    /* ÇöÀç ºÐ¼®ÁßÀÎ LogÀÇ Æ®·£Àè¼Ç ID */
     smTID       mTID;
-    /* í˜„ìž¬ ë¡œê·¸ì˜ SN */
+    /* ÇöÀç ·Î±×ÀÇ SN */
     smSN        mSN;
     /* SyncSN */
     smSN        mSyncSN;
-    /* í˜„ìž¬ ë¶„ì„ì¤‘ì¸ Logì˜ í…Œì´ë¸” OID */
+    /* ÇöÀç ºÐ¼®ÁßÀÎ LogÀÇ Å×ÀÌºí OID */
     ULong       mTableOID;
 
     /* Column ID Array */
     UInt       *mCIDs;
-    /* í˜„ìž¬ ë¶„ì„ì¤‘ì¸ ë¡œê·¸ì˜ Before Image Column Value Array */
+    /* ÇöÀç ºÐ¼®ÁßÀÎ ·Î±×ÀÇ Before Image Column Value Array */
     smiValue   *mBCols;
-    /* í˜„ìž¬ ë¶„ì„ì¤‘ì¸ ë¡œê·¸ì˜ After Image Column Value Array */
+    /* ÇöÀç ºÐ¼®ÁßÀÎ ·Î±×ÀÇ After Image Column Value Array */
     smiValue   *mACols;
-    /* í˜„ìž¬ ë¶„ì„ì¤‘ì¸ ë¡œê·¸ì˜ Primary Key Column Count */
+    /* ÇöÀç ºÐ¼®ÁßÀÎ ·Î±×ÀÇ Primary Key Column Count */
     UInt        mPKColCnt;
-    /* í˜„ìž¬ ë¶„ì„ì¤‘ì¸ ë¡œê·¸ì˜ Priamry Key Column Valueì˜ Array */
+    /* ÇöÀç ºÐ¼®ÁßÀÎ ·Î±×ÀÇ Priamry Key Column ValueÀÇ Array */
     smiValue   *mPKCols;
 
-    /* Columnì˜ ê°œìˆ˜ */
+    /* ColumnÀÇ °³¼ö */
     UInt        mColCnt;
 
-    /* Savepoint ì´ë¦„ì˜ ê¸¸ì´ */
+    /* Savepoint ÀÌ¸§ÀÇ ±æÀÌ */
     UInt        mSPNameLen;
-    /* Savepoint ì´ë¦„ */
+    /* Savepoint ÀÌ¸§ */
     SChar      *mSPName;
 
     /* Flush Option */
@@ -91,7 +91,7 @@ typedef struct rpdXLog
     /* Restart SN */
     smSN        mRestartSN;     // BUG-17748
 
-    /* smiValue->value ë©”ëª¨ë¦¬ë¥¼ ê´€ë¦¬ */
+    /* smiValue->value ¸Þ¸ð¸®¸¦ °ü¸® */
     iduMemory   mMemory;
 
     /* Next XLog Pointer */
@@ -99,6 +99,9 @@ typedef struct rpdXLog
 
     smSN        mWaitSNFromOtherApplier;
     UInt        mWaitApplierIndex;
+
+    ID_XID      mXID;
+    smSCN       mGlobalCommitSCN;
 } rpdXLog;
 
 class rpdQueue
@@ -122,6 +125,7 @@ public:
                                   ULong             aBufferSize,
                                   idBool            aIsAllocLob,
                                   iduMemAllocator * aAllocator );
+    static IDE_RC printXLog(FILE * aFP, rpdXLog *aXLogPtr);
     static void   destroyXLog( rpdXLog * aXLogPtr, iduMemAllocator * aAllocator );
     static void   recycleXLog( rpdXLog * aXLogPtr, iduMemAllocator * aAllocator );
 

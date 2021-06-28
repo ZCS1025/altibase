@@ -30,6 +30,7 @@ typedef struct rpdDelayedLogQueueNode rpdDelayedLogQueueNode;
 typedef struct rpdDelayedLogQueueNode
 {
     void        * mLogPtr;
+    smLSN         mReadLSN;
     rpdDelayedLogQueueNode  * mNext;
 } rpdDelayedLogQueueNode;
 
@@ -49,16 +50,21 @@ private:
 
     IDE_RC          initailizeNode( rpdDelayedLogQueueNode     ** aNode );
     void            setObject( rpdDelayedLogQueueNode  * aNode,
-                               void                    * aLogPtr );
+                               void                    * aLogPtr,
+                               smLSN                   * aReadLSN );
 
 public:
     IDE_RC          initialize( SChar   * aRepName );
     void            finalize( void );
 
-    IDE_RC          enqueue( void   * aLogPtr );
+    IDE_RC          enqueue( void   * aLogPtr, 
+                             smLSN  * aReadLSN );
 
     IDE_RC          dequeue( void       ** aLogPtr,
+                             smLSN       * aReadLSN,
                              idBool      * aIsEmpty );
+
+    IDE_RC          dequeueALL();
 
     idBool          isEmpty( void );
 

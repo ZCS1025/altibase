@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: altiWrapll.l 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: altiWrapll.l 86395 2019-11-29 00:39:15Z ahra.cho $
  **********************************************************************/
 
 %option c++
@@ -108,7 +108,8 @@ BODY        { return TR_BODY;        }
 "."[0-9]+([Ee][+-]?[0-9]+)?            { return TL_NUMERIC;      }
 
 "/*+"[^*/]*"*/"   {}
-
+"/*"[^*^+/]*"*/"   { /* BUG-47571 multi comment */ }
+("--"|"//")[^\n]+\n { /* BUG-47571 single comment */ }
 
 
 "||"  { return TS_CONCATENATION_SIGN;    }
@@ -300,7 +301,7 @@ void altiWraplLexer::setInitState( void )
         {
             if( ( idlOS::strncmp( sNlsUse, (SChar*)"SHIFTJIS", 8 ) == 0 ) ||
                 ( idlOS::strncmp( sNlsUse, (SChar*)"JAPANESE", 8 ) == 0 ) ||
-                /* PROJ-2590 [Í∏∞Îä•ÏÑ±] CP932 database character set ÏßÄÏõê */
+                /* PROJ-2590 [±‚¥…º∫] CP932 database character set ¡ˆø¯ */
                 ( idlOS::strncmp( sNlsUse, (SChar*)"MS932", 5 ) == 0 ) ||
                 ( idlOS::strncmp( sNlsUse, (SChar*)"CP932", 5 ) == 0 ) ||
                 ( idlOS::strncmp( sNlsUse, (SChar*)"WINDOWS932", 10 ) == 0 ) )

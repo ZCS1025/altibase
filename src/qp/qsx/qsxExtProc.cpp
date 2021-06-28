@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsxExtProc.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsxExtProc.cpp 86373 2019-11-19 23:12:16Z khkwak $
  **********************************************************************/
 
 #include <qsxExtProc.h>
@@ -27,6 +27,9 @@ extern mtdModule mtdChar;
 extern mtdModule mtdVarchar;
 extern mtdModule mtdNchar;
 extern mtdModule mtdNvarchar;
+// PROJ-2717 Internal Procedure
+extern mtdModule mtdByte;
+extern mtdModule mtdVarbyte;
 
 void   
 qsxExtProc::returnCharLength( void       * aValue,
@@ -160,30 +163,6 @@ qsxExtProc::convertTimestamp2Date( idxTimestamp   * aTimestamp,
     return IDE_FAILURE;
 }
 
-void
-qsxExtProc::initializeMsg( idxExtProcMsg * aMsg )
-{
-    aMsg->mErrorCode  = 0;
-    aMsg->mParamCount = 0;
-}
-
-void
-qsxExtProc::initializeParamInfo( idxParamInfo * aParamInfo )
-{
-    aParamInfo->mSize       = 0;
-    aParamInfo->mColumn     = 0;
-    aParamInfo->mTable      = 0;
-    aParamInfo->mOrder      = 0;
-    aParamInfo->mType       = IDX_TYPE_NONE;
-    aParamInfo->mPropType   = IDX_TYPE_PROP_NONE;
-    aParamInfo->mMode       = IDX_MODE_NONE;
-    aParamInfo->mIsPtr      = ID_FALSE;
-
-    aParamInfo->mIndicator  = ID_TRUE;
-    aParamInfo->mLength     = 0;
-    aParamInfo->mMaxLength  = 0;
-}
-
 IDE_RC
 qsxExtProc::fillTimestampParamValue( UInt             aDataTypeId,
                                      SChar          * aValue,
@@ -260,6 +239,11 @@ qsxExtProc::getParamType( UInt aTypeId )
             // BUG-39814 IN mode LOB Parameter in Extproc
             sType = IDX_TYPE_LOB;
             break;
+        case MTD_BYTE_ID:
+        case MTD_VARBYTE_ID:
+            // PROJ-2717 Internal Procedure
+            sType = IDX_TYPE_BYTE;
+            break;
         default:
             break;
     }
@@ -272,7 +256,8 @@ qsxExtProc::fillParamAndPropValue( iduMemory    * aQxeMem,
                                    mtcColumn    * aColumn,
                                    SChar        * aRow,
                                    qcTemplate   * aTmplate,
-                                   idxParamInfo * aParamInfo )
+                                   idxParamInfo * aParamInfo,
+                                   qsProcType     aProcType )
 {
     UInt      sPtrDataSize = 0;
     mtcColumn sColumn;          /* for IDX_TYPE_NUMERIC */
@@ -282,6 +267,7 @@ qsxExtProc::fillParamAndPropValue( iduMemory    * aQxeMem,
     switch ( aParamInfo->mType )
     {
         case IDX_TYPE_CHAR:
+        case IDX_TYPE_BYTE:  // PROJ-2717 Internal procedure
             aParamInfo->mIndicator  = aColumn->module->isNull( aColumn, aRow );
             aParamInfo->mLength     = aColumn->module->actualSize( aColumn, aRow ) - aColumn->module->headerSize();
             aParamInfo->mMaxLength  = aColumn->column.size - aColumn->module->headerSize();
@@ -312,7 +298,7 @@ qsxExtProc::fillParamAndPropValue( iduMemory    * aQxeMem,
     }
 
     /*** 2. Real Value */
-    if( aParamInfo->mPropType == 0 )
+    if( aParamInfo->mPropType == IDX_TYPE_PROP_NONE )
     {
         switch( aParamInfo->mType )
         {
@@ -332,7 +318,19 @@ qsxExtProc::fillParamAndPropValue( iduMemory    * aQxeMem,
                         {
                             // 1 byte for padding
                             sPtrDataSize = 1;
-                            aParamInfo->mD.mPointer = NULL;
+
+                            if ( aProcType == QS_EXTERNAL_C )
+                            {
+                                aParamInfo->mD.mPointer = NULL;
+                            }
+                            else if ( aProcType == QS_INTERNAL_C )
+                            {
+                                aParamInfo->mD.mPointer = &(aParamInfo->mD.mPointer);
+                            }
+                            else
+                            {
+                                IDE_ERROR(0);
+                            }
                         }
 
                         break;
@@ -370,6 +368,52 @@ qsxExtProc::fillParamAndPropValue( iduMemory    * aQxeMem,
 
                 break;
             }
+            case IDX_TYPE_BYTE:
+            {
+                // PROJ-2717 Internal Procedure
+                sPtrDataSize = aParamInfo->mMaxLength;
+
+                switch ( aParamInfo->mMode )
+                {
+                    case IDX_MODE_IN:
+                        // use the original value, or set NULL
+                        if( aParamInfo->mIndicator == ID_FALSE )
+                        {
+                            aParamInfo->mD.mPointer = ((mtdByteType*)aRow)->value;
+                        }
+                        else
+                        {
+                            // 1 byte for padding
+                            sPtrDataSize = 1;
+                        
+                            if ( aProcType == QS_EXTERNAL_C )
+                            {
+                                aParamInfo->mD.mPointer = NULL;
+                            }
+                            else if ( aProcType == QS_INTERNAL_C )
+                            {
+                                aParamInfo->mD.mPointer = &(aParamInfo->mD.mPointer);
+                            }
+                            else
+                            {
+                                IDE_ERROR(0);
+                            }
+                        }
+
+                        break;
+                    case IDX_MODE_INOUT:
+                    case IDX_MODE_OUT:
+                        // If you want to add INOUT/OUT Mode BYTE Parameter,
+                        // please consider IDX_TYPE_CHAR code above
+                        IDE_DASSERT(0);
+                        break;
+                    default:
+                        IDE_DASSERT(0);
+                        break;
+                }
+
+                break;
+            }
             case IDX_TYPE_LOB:
             {
                 // BUG-39814 IN mode LOB Parameter in Extproc
@@ -388,7 +432,19 @@ qsxExtProc::fillParamAndPropValue( iduMemory    * aQxeMem,
                         {
                             // 1 byte for padding
                             sPtrDataSize = 1;
-                            aParamInfo->mD.mPointer = NULL;
+
+                            if ( aProcType == QS_EXTERNAL_C )
+                            {
+                                aParamInfo->mD.mPointer = NULL;
+                            }
+                            else if ( aProcType == QS_INTERNAL_C )
+                            {
+                                aParamInfo->mD.mPointer = &(aParamInfo->mD.mPointer);
+                            }
+                            else
+                            {
+                                IDE_ERROR(0);
+                            }
                         }
 
                         break;
@@ -480,7 +536,8 @@ qsxExtProc::fillParamInfo( iduMemory        * aQxeMem,
                            qsCallSpecParam  * aParam,
                            qcTemplate       * aTmplate,
                            idxParamInfo     * aParamInfo,
-                           UInt               aOrder )
+                           UInt               aOrder,
+                           qsProcType         aProcType )
 {
     SChar               sPropertyName[IDX_PROPERTY_NAME_MAXLEN]; 
     mtcTuple          * sTuple;
@@ -488,7 +545,7 @@ qsxExtProc::fillParamInfo( iduMemory        * aQxeMem,
     SChar             * sRow;
 
     /* 0. Initialize */
-    initializeParamInfo( aParamInfo );
+    QSX_EXTPROC_INIT_PARAM_INFO( aParamInfo );
 
     /*** 1. Column + Table index */
     aParamInfo->mColumn = aParam->column;
@@ -516,7 +573,7 @@ qsxExtProc::fillParamInfo( iduMemory        * aQxeMem,
             break;
     }
 
-    /*** 3. Type ID (Property Parameter ë„ ë§ˆì°¬ê°€ì§€ë¡œ ì†Œìœ ) */
+    /*** 3. Type ID (Property Parameter µµ ¸¶Âù°¡Áö·Î ¼ÒÀ¯) */
     aParamInfo->mType = getParamType( sColumn->type.dataTypeId );
 
     /*** 4. Property Type */
@@ -557,10 +614,11 @@ qsxExtProc::fillParamInfo( iduMemory        * aQxeMem,
         /* Nothing to do. */
     }
 
-    /*** 5. í¬ì¸í„° ì—¬ë¶€ */
+    /*** 5. Æ÷ÀÎÅÍ ¿©ºÎ */
     if ( ( aParamInfo->mMode == IDX_MODE_OUT )   ||
          ( aParamInfo->mMode == IDX_MODE_INOUT ) ||
          ( aParamInfo->mType == IDX_TYPE_CHAR )  ||
+         ( aParamInfo->mType == IDX_TYPE_BYTE )  || // PROJ-2717 Internal Procedure
          ( aParamInfo->mType == IDX_TYPE_LOB ) )    // BUG-39814 IN mode LOB Parameter in EXTPROC
     {
         aParamInfo->mIsPtr = ID_TRUE;
@@ -570,12 +628,13 @@ qsxExtProc::fillParamInfo( iduMemory        * aQxeMem,
         aParamInfo->mIsPtr = ID_FALSE;
     }
 
-    /*** 6. Property Value (ì¼ë°˜ Parameter ë„ ë§ˆì°¬ê°€ì§€ë¡œ ì†Œìœ ) */
+    /*** 6. Property Value (ÀÏ¹Ý Parameter µµ ¸¶Âù°¡Áö·Î ¼ÒÀ¯) */
     IDE_TEST( fillParamAndPropValue( aQxeMem,
                                      sColumn,
                                      sRow,
                                      aTmplate,
-                                     aParamInfo ) != IDE_SUCCESS );
+                                     aParamInfo,
+                                     aProcType ) != IDE_SUCCESS );
 
     /*** 7. Align its size ***/
     aParamInfo->mSize = idlOS::align8( aParamInfo->mSize );
@@ -591,7 +650,8 @@ IDE_RC
 qsxExtProc::fillReturnInfo( iduMemory        * aQxeMem,
                             qsVariableItems    aRetItem,
                             qcTemplate       * aTmplate,
-                            idxParamInfo     * aParamInfo )
+                            idxParamInfo     * aParamInfo,
+                            qsProcType         aProcType )
 {
     /* NOTE : RETURN argument doesn't have its property value. */
 
@@ -623,7 +683,8 @@ qsxExtProc::fillReturnInfo( iduMemory        * aQxeMem,
                                      sColumn,
                                      sRow,
                                      aTmplate,
-                                     aParamInfo ) != IDE_SUCCESS );
+                                     aParamInfo,
+                                     aProcType ) != IDE_SUCCESS );
 
     /*** 7. Shorten its size. We only need actual size. */
     aParamInfo->mSize -= idlOS::align8( ID_SIZEOF(idxParamInfo) );
@@ -659,12 +720,12 @@ qsxExtProc::returnParamValue( iduMemory        * aQxeMem,
     sTuple  = &aTmplate->tmplate.rows[aParamInfo->mTable];
     sColumn = &sTuple->columns[aParamInfo->mColumn];
     sRow    = (SChar*)sTuple->row + sColumn->column.offset;
-    /* BUG-41818 ë³€ìˆ˜ ì´ˆê¸°í™” ( valgrind ) */
+    /* BUG-41818 º¯¼ö ÃÊ±âÈ­ ( valgrind ) */
     IDX_INIT_TIMESTAMP( sTime );
     sDate = mtdDateNull;
     sInterval = mtdIntervalNull;
 
-    if( aParamInfo->mPropType == 0 )
+    if( aParamInfo->mPropType == IDX_TYPE_PROP_NONE )
     {
         switch( sColumn->type.dataTypeId )
         {
@@ -847,27 +908,27 @@ qsxExtProc::returnParamProperty( idxParamInfo     * aParamInfo,
     sColumn = &sTuple->columns[aParamInfo->mColumn];
     sRow    = (SChar*)sTuple->row + sColumn->column.offset;
 
-    /* Propertyë¥¼ ë‚˜ì¤‘ì— ì ìš©í•œë‹¤. */
+    /* Property¸¦ ³ªÁß¿¡ Àû¿ëÇÑ´Ù. */
     switch( aParamInfo->mPropType )
     {
         case IDX_TYPE_PROP_IND:
         {
             if( aParamInfo->mIndicator == ID_TRUE )
             {
-                /* ì•„ê¹Œ ë„£ì—ˆê±´ ë„£ì§€ ì•Šì•˜ê±´ ê°„ì— null ë¡œ ë§Œë“ ë‹¤. */
+                /* ¾Æ±î ³Ö¾ú°Ç ³ÖÁö ¾Ê¾Ò°Ç °£¿¡ null ·Î ¸¸µç´Ù. */
                 sColumn->module->null( sColumn, sRow );
             }
             else
             {
                 /* Nothing to do.
-                 * IN ëª¨ë“œì—ì„œ indicator ì¡°ìž‘ìœ¼ë¡œ ì¸í•œ ì˜ˆì™¸ì²˜ë¦¬ëŠ” agentì—ì„œ ì´ë¯¸ í–ˆë‹¤. */
+                 * IN ¸ðµå¿¡¼­ indicator Á¶ÀÛÀ¸·Î ÀÎÇÑ ¿¹¿ÜÃ³¸®´Â agent¿¡¼­ ÀÌ¹Ì Çß´Ù. */
             }
             break;
         }
         case IDX_TYPE_PROP_LEN:
         {
-            /* CHAR typeì—ì„œë§Œ ë³€ë™ */
-            if( aParamInfo->mType == IDX_TYPE_CHAR )
+            /* CHAR type¿¡¼­¸¸ º¯µ¿ */
+            if(  aParamInfo->mType == IDX_TYPE_CHAR )
             {
                 sCharData = (mtdCharType*)sRow;
                 sCharData->length = aParamInfo->mLength;
@@ -875,16 +936,16 @@ qsxExtProc::returnParamProperty( idxParamInfo     * aParamInfo,
             else
             {
                 /* Nothing to do.
-                 * CHAR Typeì´ ì•„ë‹Œ ê²½ìš° length ë¹„ì •ìƒ ì¡°ìž‘ìœ¼ë¡œ ì¸í•œ ì˜ˆì™¸ì²˜ë¦¬ëŠ” agentì—ì„œ ì´ë¯¸ í–ˆë‹¤. */
+                 * CHAR TypeÀÌ ¾Æ´Ñ °æ¿ì length ºñÁ¤»ó Á¶ÀÛÀ¸·Î ÀÎÇÑ ¿¹¿ÜÃ³¸®´Â agent¿¡¼­ ÀÌ¹Ì Çß´Ù. */
             }
             break;
         }
         case IDX_TYPE_PROP_MAX:
-            /* assertion. OUT ëª¨ë“œì¸ MAXLEN parameterëŠ” ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+            /* assertion. OUT ¸ðµåÀÎ MAXLEN parameter´Â Á¸ÀçÇÏÁö ¾Ê´Â´Ù. */
             IDE_DASSERT( ID_FALSE );
             break;
         default:
-            /* property parameterê°€ ì•„ë‹ˆë‹¤. */
+            /* property parameter°¡ ¾Æ´Ï´Ù. */
             break;
     }
 }
@@ -928,6 +989,60 @@ qsxExtProc::returnAllParams( iduMemory     * aQxeMem,
     {
         if( aMsg->mParamInfos[i].mMode != IDX_MODE_IN 
             && aMsg->mParamInfos[i].mPropType != 0 )
+        {
+            returnParamProperty( &aMsg->mParamInfos[i], aTmplate );
+        }
+        else
+        {
+            /* Nothing to do. */
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+IDE_RC
+qsxExtProc::returnAllParams4IntProc( iduMemory     * aQxeMem,
+                                     idxIntProcMsg * aMsg,
+                                     qcTemplate    * aTmplate )
+{
+    UInt i = 0;
+
+    /* Value */
+    for( i = 0; i < aMsg->mParamCount; i++ )
+    {
+        if( aMsg->mParamInfos[i].mMode != IDX_MODE_IN )
+        {
+            IDE_TEST( returnParamValue( aQxeMem,
+                                        &aMsg->mParamInfos[i],
+                                        aTmplate ) != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing to do. */
+        }
+    }
+
+    /* Return Value */
+    if( aMsg->mReturnInfo.mSize > 0 )
+    {
+        IDE_TEST( returnParamValue( aQxeMem,
+                                    &aMsg->mReturnInfo,
+                                    aTmplate ) != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
+
+    /* Property (including return's property) */
+    for( i = 0; i < aMsg->mParamCount; i++ )
+    {
+        if( ((aMsg->mParamInfos[i].mMode) != IDX_MODE_IN) &&
+            ((aMsg->mParamInfos[i].mPropType) != 0) )
         {
             returnParamProperty( &aMsg->mParamInfos[i], aTmplate );
         }

@@ -16,6 +16,7 @@
 
 #include <idsCrypt.h>
 #include <qci.h>
+#include <sdiZookeeper.h>
 #include <mmm.h>
 #include <mmErrorCode.h>
 #include <mmcSession.h>
@@ -55,13 +56,15 @@ IDE_RC mmcStatement::beginDDL(mmcStatement *aStmt)
     UInt         sTxTransactionMode;
     idBool       sIsReadOnly = ID_FALSE;
     idBool       sTxBegin = ID_TRUE;
-
+    idBool       sIsDummyBegin = ID_FALSE;
+    idBool       sIsSetProperty = ID_FALSE;
+    
 #ifdef DEBUG
     qciStmtType  sStmtType = aStmt->getStmtType();
 
     IDE_DASSERT(qciMisc::isStmtDDL(sStmtType) == ID_TRUE);
 #endif
-
+    
     if( ( sSession->getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT ) ||
          ( aStmt->isRootStmt() == ID_FALSE ) )
     {
@@ -69,9 +72,9 @@ IDE_RC mmcStatement::beginDDL(mmcStatement *aStmt)
 
         IDE_TEST_RAISE(sSession->isAllStmtEnd() != ID_TRUE, StmtRemainError);
 
-        // í˜„ìž¬ transaction ë° transactionì˜ ì†ì„±ì„ ì–»ìŒ
-        // autocommitì¸ë° child statementì¸ ê²½ìš° ë¶€ëª¨ statement
-        // ë¡œë¶€í„° transactionì„ ë°›ëŠ”ë‹¤.
+        // ÇöÀç transaction ¹× transactionÀÇ ¼Ó¼ºÀ» ¾òÀ½
+        // autocommitÀÎµ¥ child statementÀÎ °æ¿ì ºÎ¸ð statement
+        // ·ÎºÎÅÍ transactionÀ» ¹Þ´Â´Ù.
         if( ( sSession->getCommitMode() == MMC_COMMITMODE_AUTOCOMMIT ) &&
             ( aStmt->isRootStmt() == ID_FALSE ) )
         {
@@ -80,80 +83,166 @@ IDE_RC mmcStatement::beginDDL(mmcStatement *aStmt)
         }
         else
         {
-            // BUG-17497
-            // non auto commit modeì¸ ê²½ìš°,
-            // transactionì´ begin í•œ í›„ì´ë¯€ë¡œ íŠ¸ëžœìž­ì…˜ì´ read only ì¸ì§€ ê²€ì‚¬
-            IDE_TEST_RAISE(sSession->isReadOnlyTransaction() == ID_TRUE,
-                           TransactionModeError);
-
             sTrans = sSession->getTransPtr();
+
             sTxBegin = sSession->getTransBegin();
-        }
-        
-        /* BUG-42853 LOCK TABLEì— UNTIL NEXT DDL ê¸°ëŠ¥ ì¶”ê°€ */
-        if ( sSession->getLockTableUntilNextDDL() == ID_TRUE )
-        {
             if ( sTxBegin == ID_TRUE )
             {
-                /*
-                 * PROJ-2701 Sharding online data rebuild
-                 * Shard meta ì˜ ë³€ê²½ê³¼ partition swapì„ one transactionìœ¼ë¡œ ìˆ˜í–‰ í•  ìˆ˜ ìžˆì–´ì•¼ í•œë‹¤.
-                 * DDLì˜ ì‹¤íŒ¨ì‹œ ì´ì „ì— ìˆ˜í–‰í•œ DMLê¹Œì§€ rollbackë¨ì„ ìœ ë…í•´ì•¼ í•œë‹¤.
-                 */ 
-                if ( SDU_SHARD_REBUILD_LOCK_TABLE_WITH_DML_ENABLE == 0 )
-                {
-                    /* ë°ì´í„°ë¥¼ ë³€ê²½í•˜ëŠ” DMLê³¼ í•¨ê»˜ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤. */
-                    IDE_TEST( mmcTrans::isReadOnly( sTrans, &sIsReadOnly ) != IDE_SUCCESS );
-
-                    IDE_TEST_RAISE( sIsReadOnly != ID_TRUE,
-                                    ERR_CANNOT_LOCK_TABLE_UNTIL_NEXT_DDL_WITH_DML );
-                }
-                else
-                {
-                    /* Nothing to do. */
-                }
+                // BUG-17497
+                // non auto commit modeÀÎ °æ¿ì, Æ®·£Àè¼ÇÀÌ read only ÀÎÁö °Ë»ç
+                IDE_TEST_RAISE(sSession->isReadOnlyTransaction() == ID_TRUE,
+                               TransactionModeError);
             }
             else
             {
-                /* Nothing to do */
+                // BUG-47024
+                IDE_TEST_RAISE(sSession->isReadOnlySession() == ID_TRUE,
+                               TransactionModeError);
+            }
+        }
+        
+        /* BUG-42853 LOCK TABLE¿¡ UNTIL NEXT DDL ±â´É Ãß°¡ */
+        if ( ( sSession->getLockTableUntilNextDDL() == ID_TRUE ) ||
+             ( sSession->isDDLAutoCommit() != ID_TRUE ) )
+        {
+            if ( ( aStmt->isRootStmt() == ID_TRUE ) &&
+                 ( sSession->getTransBegin() != ID_TRUE ) )
+            {
+                mmcTrans::begin( sTrans,
+                                 sSession->getStatSQL(),
+                                 sSession->getSessionInfoFlagForTx(),
+                                 sSession,
+                                 &sIsDummyBegin );
             }
 
-            /* Transaction Commit & Beginì„ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+            if ( ( sSession->isShardUserSession() == ID_TRUE )  &&
+                 ( sSession->isDDLAutoCommit() != ID_TRUE ) )
+            {
+                IDE_TEST_RAISE( qciMisc::getTransactionalDDLAvailable( aStmt->getQciStmt() ) != ID_TRUE,
+                                ERR_NOT_SUPPORT_DDL_TRANSACTION );
+
+                IDE_TEST( mmcTrans::savepoint( sTrans,
+                                               sSession,
+                                               MMC_DDL_BEGIN_SAVEPOINT )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* nothing to do */
+            }
+               
+            if ( sSession->getLockTableUntilNextDDL() == ID_TRUE ) 
+            {
+                if ( sTxBegin == ID_TRUE )
+                {
+                    /*
+                     * PROJ-2701 Sharding online data rebuild
+                     * Shard meta ÀÇ º¯°æ°ú partition swapÀ» one transactionÀ¸·Î ¼öÇà ÇÒ ¼ö ÀÖ¾î¾ß ÇÑ´Ù.
+                     * DDLÀÇ ½ÇÆÐ½Ã ÀÌÀü¿¡ ¼öÇàÇÑ DML±îÁö rollbackµÊÀ» À¯³äÇØ¾ß ÇÑ´Ù.
+                     */ 
+                    if ( SDU_SHARD_REBUILD_LOCK_TABLE_WITH_DML_ENABLE == 0 )
+                    {
+                        /* µ¥ÀÌÅÍ¸¦ º¯°æÇÏ´Â DML°ú ÇÔ²² »ç¿ëÇÒ ¼ö ¾ø´Ù. */
+                        IDE_TEST( mmcTrans::isReadOnly( sTrans, &sIsReadOnly ) != IDE_SUCCESS );
+
+                        IDE_TEST_RAISE( sIsReadOnly != ID_TRUE,
+                                        ERR_CANNOT_LOCK_TABLE_UNTIL_NEXT_DDL_WITH_DML );
+                    }
+                    else
+                    {
+                        /* Nothing to do. */
+                    }
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+                /* Transaction Commit & BeginÀ» ¼öÇàÇÏÁö ¾Ê´Â´Ù. */
+            }
         }
         else
         {
-            sTxIsolationLevel  = sSession->getTxIsolationLevel(sTrans);
-            sTxTransactionMode = sSession->getTxTransactionMode(sTrans);
+            if ( sTxBegin == ID_TRUE )
+            {
+                sTxIsolationLevel  = sSession->getTxIsolationLevel(sTrans);
+                sTxTransactionMode = sSession->getTxTransactionMode(sTrans);
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
 
-            // í˜„ìž¬ transactionì„ commit í•œ í›„,
-            // ë™ì¼í•œ ì†ì„±ìœ¼ë¡œ transactionì„ begin í•¨
+            // ÇöÀç transactionÀ» commit ÇÑ ÈÄ,
+            // µ¿ÀÏÇÑ ¼Ó¼ºÀ¸·Î transactionÀ» begin ÇÔ
             IDE_TEST(mmcTrans::commit(sTrans, sSession) != IDE_SUCCESS);
 
-            // session ì†ì„± ì¤‘ isolation levelê³¼ transaction modeëŠ”
-            // transaction ì†ì„±ìœ¼ë¡œ transaction ë§ˆë‹¤ ë‹¤ë¥¼ ìˆ˜ ìžˆê³ ,
-            // sessionì˜ transaction ì†ì„±ê³¼ë„ ë‹¤ë¥¼ ìˆ˜ ìžˆë‹¤.
-            // ë”°ë¼ì„œ transactionì„ ìœ„í•œ session info flagì—ì„œ
-            // transaction isolation levelê³¼ transaction modeëŠ”
-            // commit ì „ì— ì†ì„±ì„ ê°€ì§€ê³  ìžˆë‹¤ê°€ begin í• ë•Œ
-            // ê·¸ ì†ì„±ì„ ê·¸ëŒ€ë¡œ ë”°ë¥´ë„ë¡ ì„¤ì •í•´ì•¼ í•œë‹¤.
+            // ÇØ´ç shard ddl·Î ÀÏ¹Ý Tx°¡ shard Tx·Î ÀüÈ¯µÇ´Â °æ¿ì 
+            // reallocÀ» ¼öÇàÇÏ¿© shard tx·Î ÀçÇÒ´ç ¹Þ¿À·Ï ÇÑ´Ù. 
+            if( ( sdiZookeeper::mRunningJobType == ZK_JOB_ADD ) ||
+                ( sdiZookeeper::mRunningJobType == ZK_JOB_JOIN ) ||
+                ( sdiZookeeper::mRunningJobType == ZK_JOB_FAILBACK ) )
+            {
+                sSession->reallocTrans();
+
+                // reallocÀ» ¼öÇàÇßÀ» °æ¿ì tx°¡ º¯°æµÇ¹Ç·Î tx¸¦ ´Ù½Ã ¹Þ´Â´Ù.
+                if( ( sSession->getCommitMode() == MMC_COMMITMODE_AUTOCOMMIT ) &&
+                    ( aStmt->isRootStmt() == ID_FALSE ) )
+                {
+                    sTrans = aStmt->getParentStmt()->getTransPtr();
+                    aStmt->setTrans(sTrans);
+                }
+                else
+                {
+                    sTrans = sSession->getTransPtr();
+                }
+            }
+
+            // session ¼Ó¼º Áß isolation level°ú transaction mode´Â
+            // transaction ¼Ó¼ºÀ¸·Î transaction ¸¶´Ù ´Ù¸¦ ¼ö ÀÖ°í,
+            // sessionÀÇ transaction ¼Ó¼º°úµµ ´Ù¸¦ ¼ö ÀÖ´Ù.
+            // µû¶ó¼­ transactionÀ» À§ÇÑ session info flag¿¡¼­
+            // transaction isolation level°ú transaction mode´Â
+            // commit Àü¿¡ ¼Ó¼ºÀ» °¡Áö°í ÀÖ´Ù°¡ begin ÇÒ¶§
+            // ±× ¼Ó¼ºÀ» ±×´ë·Î µû¸£µµ·Ï ¼³Á¤ÇØ¾ß ÇÑ´Ù.
             sFlag = sSession->getSessionInfoFlagForTx();
 
-            sFlag &= ~SMI_TRANSACTION_MASK;
-            sFlag |= sTxTransactionMode;
+            if ( sTxBegin == ID_TRUE )
+            {
+                sFlag &= ~SMI_TRANSACTION_MASK;
+                sFlag |= sTxTransactionMode;
 
-            sFlag &= ~SMI_ISOLATION_MASK;
-            sFlag |= sTxIsolationLevel;
+                sFlag &= ~SMI_ISOLATION_MASK;
+                sFlag |= sTxIsolationLevel;
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
 
-            mmcTrans::begin(sTrans, sSession->getStatSQL(), sFlag, sSession );
+            mmcTrans::begin( sTrans, 
+                             sSession->getStatSQL(), 
+                             sFlag, 
+                             sSession,
+                             &sIsDummyBegin );
         }
 
-        sSession->setActivated(ID_FALSE);
+        if ( sSession->isDDLAutoCommit() == ID_TRUE )
+        {
+            sSession->setActivated(ID_FALSE);
+        }
+
+        if ( aStmt->getStmtType() == QCI_STMT_SHARD_DDL )
+        {
+            IDE_TEST( qci::setPropertyForShardMeta( aStmt->getQciStmt() )
+                      != IDE_SUCCESS );
+            sIsSetProperty = ID_TRUE;
+        }
     }
     else
     {
         // BUG-17497
-        // auto commit modeì¸ ê²½ìš°,
-        // transactionì´ begin ì „ì´ë¯€ë¡œ ì„¸ì…˜ì´ read only ì¸ì§€ ê²€ì‚¬
+        // auto commit modeÀÎ °æ¿ì,
+        // transactionÀÌ begin ÀüÀÌ¹Ç·Î ¼¼¼ÇÀÌ read only ÀÎÁö °Ë»ç
         IDE_TEST_RAISE(sSession->isReadOnlySession() == ID_TRUE,
                        TransactionModeError);
 
@@ -163,10 +252,11 @@ IDE_RC mmcStatement::beginDDL(mmcStatement *aStmt)
 
         sTrans = aStmt->allocTrans();
 
-        mmcTrans::begin(sTrans,
-                        sSession->getStatSQL(),
-                        sSession->getSessionInfoFlagForTx(),
-                        sSession);
+        mmcTrans::begin( sTrans,
+                         sSession->getStatSQL(),
+                         sSession->getSessionInfoFlagForTx(),
+                         sSession,
+                         &sIsDummyBegin );
     }
 
     IDE_TEST_RAISE(aStmt->beginSmiStmt(sTrans,
@@ -179,6 +269,11 @@ IDE_RC mmcStatement::beginDDL(mmcStatement *aStmt)
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_NOT_SUPPORT_DDL_TRANSACTION );
+    {
+        IDE_SET( ideSetErrorCode( mmERR_ABORT_INTERNAL_SERVER_ERROR_ARG,
+                                  "This DDL does not support DDL transaction." ) );
+    }
     IDE_EXCEPTION(TransactionModeError);
     {
         IDE_SET(ideSetErrorCode(mmERR_ABORT_MMC_ACCESS_MODE));
@@ -189,11 +284,14 @@ IDE_RC mmcStatement::beginDDL(mmcStatement *aStmt)
     }
     IDE_EXCEPTION(BeginError);
     {
-        // BUG-27953 : Rollback ì‹¤íŒ¨ì‹œ ì—ëŸ¬ ë‚¨ê¸°ê³  Assert ì²˜ë¦¬
-        /* PROJ-1832 New database link */
-        IDE_ASSERT( mmcTrans::rollbackForceDatabaseLink(
-                        sTrans, sSession )
-                    == IDE_SUCCESS );
+        if ( sSession->isDDLAutoCommit() == ID_TRUE )
+        {
+            // BUG-27953 : Rollback ½ÇÆÐ½Ã ¿¡·¯ ³²±â°í Assert Ã³¸®
+            /* PROJ-1832 New database link */
+            IDE_ASSERT( mmcTrans::rollbackForceDatabaseLink(
+                    sTrans, sSession )
+                == IDE_SUCCESS );
+        }
     }
     IDE_EXCEPTION( ERR_CANNOT_LOCK_TABLE_UNTIL_NEXT_DDL_WITH_DML )
     {
@@ -201,6 +299,11 @@ IDE_RC mmcStatement::beginDDL(mmcStatement *aStmt)
     }
     IDE_EXCEPTION_END;
 
+    if ( sIsSetProperty == ID_TRUE )
+    {
+        (void) qci::revertPropertyForShardMeta( aStmt->getQciStmt() );
+    }
+    
     return IDE_FAILURE;
 }
 
@@ -213,6 +316,7 @@ IDE_RC mmcStatement::beginDML(mmcStatement *aStmt)
     UInt           sFlag     = 0;
     mmcCommitMode  sSessionCommitMode = sSession->getCommitMode();
     smSCN          sSCN = SM_SCN_INIT;
+    idBool         sIsDummyBegin = ID_FALSE;
 
     IDE_DASSERT(qciMisc::isStmtDML(sStmtType) == ID_TRUE);
     
@@ -221,26 +325,28 @@ IDE_RC mmcStatement::beginDML(mmcStatement *aStmt)
         sTrans = sSession->getTransPtr();
         if ( sSession->getTransBegin() == ID_FALSE )
         {
-            mmcTrans::begin(sTrans,
-                            sSession->getStatSQL(),
-                            sSession->getSessionInfoFlagForTx(),
-                            sSession);
+            mmcTrans::begin( sTrans,
+                             sSession->getStatSQL(),
+                             sSession->getSessionInfoFlagForTx(),
+                             sSession,
+                             &sIsDummyBegin );
         }
         else
         {
             /* Nothing to do */
+            IDE_DASSERT( sTrans->mSmiTrans.isBegin() == ID_TRUE );
         }
 
         // BUG-17497
-        // non auto commit modeì¸ ê²½ìš°ì´ë©°,
-        // root statementì¼ìˆ˜ë„ ìžˆê³ , child statementì¼ìˆ˜ ìžˆë‹¤.
-        // transactionì´ begin í•œ í›„ì´ë¯€ë¡œ íŠ¸ëžœìž­ì…˜ì´ read only ì¸ì§€ ê²€ì‚¬
+        // non auto commit modeÀÎ °æ¿ìÀÌ¸ç,
+        // root statementÀÏ¼öµµ ÀÖ°í, child statementÀÏ¼ö ÀÖ´Ù.
+        // transactionÀÌ begin ÇÑ ÈÄÀÌ¹Ç·Î Æ®·£Àè¼ÇÀÌ read only ÀÎÁö °Ë»ç
         IDE_TEST_RAISE((sStmtType != QCI_STMT_SELECT) &&
                        (sSession->isReadOnlyTransaction() == ID_TRUE),
                        TransactionModeError);
 
-        //fix BUG-24041 none-auto commit modeì—ì„œ select statement beginí• ë•Œ
-        //mActivatedë¥¼ onì‹œí‚¤ë©´ì•ˆë¨
+        //fix BUG-24041 none-auto commit mode¿¡¼­ select statement beginÇÒ¶§
+        //mActivated¸¦ on½ÃÅ°¸é¾ÈµÊ
         if(sStmtType == QCI_STMT_SELECT)
         {
             //nothing to do
@@ -263,57 +369,58 @@ IDE_RC mmcStatement::beginDML(mmcStatement *aStmt)
         {
             //AUTO-COMMIT-MODE,Root statement. 
             // BUG-17497
-            // auto commit modeì¸ ê²½ìš°,
-            // transactionì´ begin ì „ì´ë¯€ë¡œ ì„¸ì…˜ì´ read only ì¸ì§€ ê²€ì‚¬
+            // auto commit modeÀÎ °æ¿ì,
+            // transactionÀÌ begin ÀüÀÌ¹Ç·Î ¼¼¼ÇÀÌ read only ÀÎÁö °Ë»ç
             IDE_TEST_RAISE((sStmtType != QCI_STMT_SELECT) &&
                            (sSession->isReadOnlySession() == ID_TRUE),
                            TransactionModeError);
 
             sTrans = aStmt->allocTrans();
-            mmcTrans::begin(sTrans,
-                            sSession->getStatSQL(),
-                            sSession->getSessionInfoFlagForTx(),
-                            sSession);
+            mmcTrans::begin( sTrans,
+                             sSession->getStatSQL(),
+                             sSession->getSessionInfoFlagForTx(),
+                             sSession,
+                             &sIsDummyBegin );
         }//else
         sSession->setActivated(ID_TRUE);
 
     }//else
 
-    if ((sStmtType == QCI_STMT_SELECT) &&
-        (sSession->getTxIsolationLevel(sTrans) != SMI_ISOLATION_REPEATABLE))
-    {
-        sFlag = SMI_STATEMENT_UNTOUCHABLE;
-    }
-    else
-    {
-        // PROJ-2199 SELECT func() FOR UPDATE ì§€ì›
-        // SMI_STATEMENT_FORUPDATE ì¶”ê°€
-        if( sStmtType == QCI_STMT_SELECT_FOR_UPDATE )
-        {
-            sFlag = SMI_STATEMENT_FORUPDATE;
-        }
-        else
-        {
-            sFlag = SMI_STATEMENT_NORMAL;
-        }
-    }
+    IDU_FIT_POINT("mmcStatement::beginDML::beginTrans");
+
+    /* BUG-47029 */
+    sFlag = aStmt->getSmiStatementFlag(sSession, aStmt, sTrans);
 
     /*
      * PROJ-2701 Sharding online data rebuild
      * 
-     * Shard coordinatorë¡œ ì¸í•´ í•˜ë‚˜ì˜ transactionì´ ë‘ ê°œì˜ DML statementë¥¼ ì—°ì†ìœ¼ë¡œ beginí•˜ì§€ë§Œ,
-     * ê·¸ ì¤‘ í•˜ë‚˜ì˜ DML statement(hasShardCoordPlan() == true)ëŠ” DML resultì— ëŒ€í•œ ì „ë‹¬ë§Œì„ ìˆ˜í–‰ í•˜ê¸° ë•Œë¬¸ì—
-     * SMI_STATEMENT_SELF_TRUEë¡œ smiStmtë¥¼ beginí•œë‹¤.
+     * Shard coordinator·Î ÀÎÇØ ÇÏ³ªÀÇ transactionÀÌ µÎ °³ÀÇ DML statement¸¦ ¿¬¼ÓÀ¸·Î beginÇÏÁö¸¸,
+     * ±× Áß ÇÏ³ªÀÇ DML statement(hasShardCoordPlan() == true)´Â DML result¿¡ ´ëÇÑ Àü´Þ¸¸À» ¼öÇà ÇÏ±â ¶§¹®¿¡
+     * SMI_STATEMENT_SELF_TRUE·Î smiStmt¸¦ beginÇÑ´Ù.
      */
     if ( sdi::hasShardCoordPlan( &((aStmt->getQciStmt())->statement) ) == ID_TRUE )
     {
-        sFlag |= SMI_STATEMENT_SELF_TRUE;
+        /*
+         * TASK-7219 Non-shard DML
+         * Partial execution DML(non-shard DML) ÀÇ °æ¿ì data nodes¿¡¼­ DML ÀÌ ½ÇÁ¦ ¼öÇàµÇ±â ¶§¹®¿¡
+         * Update cursor¸¦ »ç¿ëÇÏ°Ô µÇ¹Ç·Î, SMI_STATEMENT_SELF_TRUE ¸¦ ¼³Á¤ÇÏÁö ¾Ê´Â´Ù.
+         */
+        if ( sdi::isPartialCoordinator( &((aStmt->getQciStmt())->statement) ) == ID_FALSE )
+        {
+            sFlag |= SMI_STATEMENT_SELF_TRUE;
+        }
+        else
+        {
+            /* Nothing to do. */
+        }
+
+        aStmt->mInfo.mFlag |= MMC_STMT_NEED_UNLOCK_TRUE;
     }
     sSmiTrans = mmcTrans::getSmiTrans(sTrans);
     IDE_TEST_RAISE(aStmt->beginSmiStmt(sTrans, sFlag) != IDE_SUCCESS, BeginError);
     sSession->changeOpenStmt(1);
 
-    /* PROJ-1381 FAC : Holdable Fetchë¡œ ì—´ë¦° Stmt ê°œìˆ˜ ì¡°ì ˆ */
+    /* PROJ-1381 FAC : Holdable Fetch·Î ¿­¸° Stmt °³¼ö Á¶Àý */
     if ((aStmt->getStmtType() == QCI_STMT_SELECT)
      && (aStmt->getCursorHold() == MMC_STMT_CURSOR_HOLD_ON))
     {
@@ -322,27 +429,29 @@ IDE_RC mmcStatement::beginDML(mmcStatement *aStmt)
         sSession->changeHoldFetch(1);
     }
 
+    aStmt->setStmtBegin(ID_TRUE);  /* PROJ-2733 */
+
     /* PROJ-2626 Snapshot Export
-     * iLoader ì„¸ì…˜ì´ê³  begin Snapshot ì´ ì‹¤í–‰ì¤‘ì´ê³  ë˜ Select êµ¬ë¬¸ì´ë©´
-     * begin Snapshotì‹œì—ì„œ ì„¤ì •í•œ SCNì„ ì–»ì–´ì™€ì„œ ìžì‹ ì˜ smiStatement
-     * ì˜ SCNì— ì„¤ì •í•œë‹¤. */
+     * iLoader ¼¼¼ÇÀÌ°í begin Snapshot ÀÌ ½ÇÇàÁßÀÌ°í ¶Ç Select ±¸¹®ÀÌ¸é
+     * begin Snapshot½Ã¿¡¼­ ¼³Á¤ÇÑ SCNÀ» ¾ò¾î¿Í¼­ ÀÚ½ÅÀÇ smiStatement
+     * ÀÇ SCN¿¡ ¼³Á¤ÇÑ´Ù. */
     if ( sSession->getClientAppInfoType() == MMC_CLIENT_APP_INFO_TYPE_ILOADER )
     {
         if ( ( aStmt->getStmtType() == QCI_STMT_SELECT ) &&
              ( mmtSnapshotExportManager::isBeginSnapshot() == ID_TRUE ))
         {
-            /* REBUILD ì—ëŸ¬ê°€ ë°œìƒí–ˆë‹¤ëŠ” ê²ƒì€ begin Snapshotì—ì„œ ì„¤ì •í•œ SCNìœ¼ë¡œ
-             * select í• ë•Œ SCNì´ ë‹¬ë¼ì¡Œë‹¤ëŠ” ì˜ë¯¸ì´ë‹¤. SCNì´ ë‹¬ë¼ì¡Œë‹¤ëŠ” ê²ƒì€
-             * ê·¸ Tableì— DDLì¼ ë°œìƒí–ˆë‹¤ëŠ” ê²ƒì´ê³  ì´ëŸ´ê²½ìš° Errorë¥¼ ë°œìƒì‹œí‚¨ë‹¤.  */
+            /* REBUILD ¿¡·¯°¡ ¹ß»ýÇß´Ù´Â °ÍÀº begin Snapshot¿¡¼­ ¼³Á¤ÇÑ SCNÀ¸·Î
+             * select ÇÒ¶§ SCNÀÌ ´Þ¶óÁ³´Ù´Â ÀÇ¹ÌÀÌ´Ù. SCNÀÌ ´Þ¶óÁ³´Ù´Â °ÍÀº
+             * ±× Table¿¡ DDLÀÏ ¹ß»ýÇß´Ù´Â °ÍÀÌ°í ÀÌ·²°æ¿ì Error¸¦ ¹ß»ý½ÃÅ²´Ù.  */
             IDE_TEST_RAISE( ( ideGetErrorCode() & E_ACTION_MASK ) == E_ACTION_REBUILD,
                             INVALID_SNAPSHOT_SCN );
 
-            /* Begin ì‹œì˜ SCN ì„ ê°€ì ¸ì˜¨ë‹¤ */
+            /* Begin ½ÃÀÇ SCN À» °¡Á®¿Â´Ù */
             IDE_TEST( mmtSnapshotExportManager::getSnapshotSCN( &sSCN )
                       != IDE_SUCCESS );
 
-            /* í˜„ìž¬ Statementì— SCNì„ ì„¤ì •í•œë‹¤ */
-            aStmt->mSmiStmt.setScnForSnapshot( &sSCN );
+            /* ÇöÀç Statement¿¡ SCNÀ» ¼³Á¤ÇÑ´Ù */
+            aStmt->mSmiStmt.setSCNForSnapshot( &sSCN );
         }
         else
         {
@@ -353,8 +462,6 @@ IDE_RC mmcStatement::beginDML(mmcStatement *aStmt)
     {
         /* Nothing to do */
     }
-
-    aStmt->setStmtBegin(ID_TRUE);
 
     return IDE_SUCCESS;
 
@@ -367,7 +474,7 @@ IDE_RC mmcStatement::beginDML(mmcStatement *aStmt)
         if ( ( sSession->getCommitMode() != MMC_COMMITMODE_NONAUTOCOMMIT ) &&
              ( aStmt->isRootStmt() == ID_TRUE ) )
         {
-            // BUG-27953 : Rollback ì‹¤íŒ¨ì‹œ ì—ëŸ¬ ë‚¨ê¸°ê³  Assert ì²˜ë¦¬
+            // BUG-27953 : Rollback ½ÇÆÐ½Ã ¿¡·¯ ³²±â°í Assert Ã³¸®
             /* PROJ-1832 New database link */
             IDE_ASSERT( mmcTrans::rollbackForceDatabaseLink(
                             sTrans, sSession )
@@ -385,7 +492,14 @@ IDE_RC mmcStatement::beginDML(mmcStatement *aStmt)
 
 IDE_RC mmcStatement::beginDCL(mmcStatement *aStmt)
 {
+    mmcSession    *sSession = aStmt->getSession();
+
     IDE_DASSERT(qciMisc::isStmtDCL(aStmt->getStmtType()) == ID_TRUE);
+
+    if ( sSession != NULL )
+    {
+        sSession->transBeginForGTxEndTran();
+    }
 
     aStmt->setStmtBegin(ID_TRUE);
 
@@ -394,9 +508,12 @@ IDE_RC mmcStatement::beginDCL(mmcStatement *aStmt)
 
 IDE_RC mmcStatement::beginSP(mmcStatement *aStmt)
 {
-    mmcSession  *sSession  = aStmt->getSession();
-    mmcTransObj *sTrans;
-
+    mmcSession    * sSession  = aStmt->getSession();
+    mmcTransObj   * sTrans    = NULL;
+    smiDistTxInfo   sDistTxInfo;
+    idBool          sIsDummyBegin = ID_FALSE;
+    idBool          sIsSetProperty = ID_FALSE;
+    
 #ifdef DEBUG
     qciStmtType  sStmtType = aStmt->getStmtType();
 
@@ -406,9 +523,16 @@ IDE_RC mmcStatement::beginSP(mmcStatement *aStmt)
     if ( ( sSession->getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT ) ||
          ( aStmt->isRootStmt() == ID_FALSE ) )
     {
+        if ( qci::isShardDbmsPkg( aStmt->getQciStmt() ) == ID_TRUE )
+        {
+            IDE_TEST( qci::setPropertyForShardMeta( aStmt->getQciStmt() )
+                      != IDE_SUCCESS );
+            sIsSetProperty = ID_TRUE;
+        }
+         
         sSession->setActivated(ID_TRUE);
 
-        // autocommitëª¨ë“œì´ë‚˜ child statementì¸ ê²½ìš°.
+        // autocommit¸ðµåÀÌ³ª child statementÀÎ °æ¿ì.
         if( ( sSession->getCommitMode() == MMC_COMMITMODE_AUTOCOMMIT ) &&
             ( aStmt->isRootStmt() == ID_FALSE ) )
         {
@@ -420,10 +544,11 @@ IDE_RC mmcStatement::beginSP(mmcStatement *aStmt)
             sTrans = sSession->getTransPtr();
             if ( sSession->getTransBegin() == ID_FALSE )
             {
-                mmcTrans::begin(sTrans,
-                                sSession->getStatSQL(),
-                                sSession->getSessionInfoFlagForTx(),
-                                sSession);
+                mmcTrans::begin( sTrans,
+                                 sSession->getStatSQL(),
+                                 sSession->getSessionInfoFlagForTx(),
+                                 sSession,
+                                 &sIsDummyBegin );
             }
             else
             {
@@ -431,19 +556,51 @@ IDE_RC mmcStatement::beginSP(mmcStatement *aStmt)
             }
 
             // BUG-17497
-            // non auto commit modeì¸ ê²½ìš°,
-            // transactionì´ begin í•œ í›„ì´ë¯€ë¡œ íŠ¸ëžœìž­ì…˜ì´ read only ì¸ì§€ ê²€ì‚¬
+            // non auto commit modeÀÎ °æ¿ì,
+            // transactionÀÌ begin ÇÑ ÈÄÀÌ¹Ç·Î Æ®·£Àè¼ÇÀÌ read only ÀÎÁö °Ë»ç
             IDE_TEST_RAISE(sSession->isReadOnlyTransaction() == ID_TRUE,
                            TransactionModeError);
         }
 
-        mmcTrans::reservePsmSvp(sTrans);
+        // TASK-7244 PSM Partial rollback
+        if ( SDU_SHARD_ENABLE == 1 )
+        {
+            switch ( sSession->getShardSessionType() )
+            {
+                case SDI_SESSION_TYPE_USER:
+                {
+                    qciMisc::setBeginSP( &(aStmt->getQciStmt()->statement) );
+                    /* fall through */
+                }
+                case SDI_SESSION_TYPE_LIB:
+                {
+                    mmcTrans::reservePsmSvp(sTrans, ID_TRUE);
+                    break;
+                }
+                case SDI_SESSION_TYPE_COORD:
+                {
+                    IDE_TEST( mmcTrans::savepoint( sTrans,
+                                                   sSession,
+                                                   SAVEPOINT_FOR_SHARD_SHARD_PROC_PARTIAL_ROLLBACK )
+                              != IDE_SUCCESS );
+                    break;
+                }
+                default:
+                {
+                    IDE_DASSERT(0);
+                }
+            }
+        }
+        else
+        {
+            mmcTrans::reservePsmSvp(sTrans, ID_TRUE);
+        }
     }
     else
     {
         // BUG-17497
-        // auto commit modeì¸ ê²½ìš°,
-        // transactionì´ begin ì „ì´ë¯€ë¡œ ì„¸ì…˜ì´ read only ì¸ì§€ ê²€ì‚¬
+        // auto commit modeÀÎ °æ¿ì,
+        // transactionÀÌ begin ÀüÀÌ¹Ç·Î ¼¼¼ÇÀÌ read only ÀÎÁö °Ë»ç
         IDE_TEST_RAISE(sSession->isReadOnlySession() == ID_TRUE,
                        TransactionModeError);
 
@@ -451,15 +608,36 @@ IDE_RC mmcStatement::beginSP(mmcStatement *aStmt)
 
         sTrans = aStmt->allocTrans();
 
-        mmcTrans::begin(sTrans,
-                        sSession->getStatSQL(),
-                        sSession->getSessionInfoFlagForTx(),
-                        aStmt->getSession());
+        mmcTrans::begin( sTrans,
+                         sSession->getStatSQL(),
+                         sSession->getSessionInfoFlagForTx(),
+                         aStmt->getSession(),
+                         &sIsDummyBegin );
+    }
+
+    /* BUG-47459 */
+    if ( ( sSession->getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT ) &&
+         ( sSession->getShardSessionType() != SDI_SESSION_TYPE_USER ) &&
+         ( aStmt->isRootStmt() == ID_TRUE ) )
+    {
+        IDE_TEST( mmcTrans::savepoint( sTrans,
+                                       sSession,
+                                       sdi::getShardSavepointName( aStmt->getStmtType() ) )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
     }
 
     aStmt->setTransID(mmcTrans::getTransID(sTrans));
     
     aStmt->setSmiStmt(mmcTrans::getSmiStatement(sTrans));
+
+    /* BUG-48115 */
+    /* ºÐ»êÁ¤º¸¸¦ smxTrans¿¡ ¼¼ÆÃÇÑ´Ù. */
+    aStmt->buildSmiDistTxInfo( &sDistTxInfo );
+    sTrans->mSmiTrans.setDistTxInfo( &sDistTxInfo );
 
     aStmt->setStmtBegin(ID_TRUE);
 
@@ -470,6 +648,11 @@ IDE_RC mmcStatement::beginSP(mmcStatement *aStmt)
         IDE_SET(ideSetErrorCode(mmERR_ABORT_MMC_ACCESS_MODE));
     }
     IDE_EXCEPTION_END;
+
+    if ( sIsSetProperty == ID_TRUE )
+    {
+        (void) qci::revertPropertyForShardMeta( aStmt->getQciStmt() );
+    }
 
     return IDE_FAILURE;
 }
@@ -492,23 +675,35 @@ IDE_RC mmcStatement::beginDB(mmcStatement */*aStmt*/)
 
 IDE_RC mmcStatement::endDDL(mmcStatement *aStmt, idBool aSuccess)
 {
-    mmcSession  *sSession = aStmt->getSession();
-    mmcTransObj *sTrans;
-    IDE_RC      sRc      = IDE_SUCCESS;
-    UInt        sFlag    = 0;
-    UInt        sTxIsolationLevel;
-    UInt        sTxTransactionMode;
-    
+    mmcSession   * sSession = aStmt->getSession();
+    mmcTransObj  * sTrans;
+    IDE_RC         sRc = IDE_SUCCESS;
+    UInt           sFlag = 0;
+    UInt           sTxIsolationLevel;
+    UInt           sTxTransactionMode;
+    mmcStatement * sRootStatement = NULL;
+    idBool         sIsDummyBegin  = ID_FALSE;
+    UInt           i = 0;
+    UInt           sDestTableOIDCount = 0;
+    smOID        * sDestTableOIDArray = qciMisc::getDDLDestTableOIDArray( aStmt->getQciStmt(), 
+                                                                          &sDestTableOIDCount );
+    UInt           sDestPartOIDCount  = 0;
+    smOID        * sDestPartOIDArray  = qciMisc::getDDLDestPartTableOIDArray( aStmt->getQciStmt(),
+                                                                              &sDestPartOIDCount );
+   
     IDE_DASSERT(qciMisc::isStmtDDL(aStmt->getStmtType()) == ID_TRUE);
 
-    IDE_TEST(aStmt->endSmiStmt((aSuccess == ID_TRUE) ?
-                               SMI_STATEMENT_RESULT_SUCCESS : SMI_STATEMENT_RESULT_FAILURE)
-             != IDE_SUCCESS);
+    IDE_TEST( aStmt->endSmiStmt( ( aSuccess == ID_TRUE ) ?
+                                 SMI_STATEMENT_RESULT_SUCCESS : SMI_STATEMENT_RESULT_FAILURE )
+              != IDE_SUCCESS);
+
+    sSession->changeOpenStmt(-1);
+    aStmt->setStmtBegin(ID_FALSE);
 
     if ( ( sSession->getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT ) ||
          ( aStmt->isRootStmt() == ID_FALSE ) )
     {
-        // autocommitëª¨ë“œì´ë‚˜ child statementì¸ ê²½ìš°.
+        // autocommit¸ðµåÀÌ³ª child statementÀÎ °æ¿ì.
         if( ( sSession->getCommitMode() == MMC_COMMITMODE_AUTOCOMMIT ) &&
             ( aStmt->isRootStmt() == ID_FALSE ) )
         {
@@ -520,19 +715,19 @@ IDE_RC mmcStatement::endDDL(mmcStatement *aStmt, idBool aSuccess)
         }
 
         // BUG-17495
-        // non auto commit ì¸ ê²½ìš°, í˜„ìž¬ transaction ì†ì„±ì„ ê¸°ì–µí•´ë’€ë‹¤ê°€
-        // ë™ì¼í•œ ì†ì„±ìœ¼ë¡œ transactionì„ begin í•´ì•¼ í•¨
+        // non auto commit ÀÎ °æ¿ì, ÇöÀç transaction ¼Ó¼ºÀ» ±â¾ïÇØµ×´Ù°¡
+        // µ¿ÀÏÇÑ ¼Ó¼ºÀ¸·Î transactionÀ» begin ÇØ¾ß ÇÔ
         sTxIsolationLevel  = sSession->getTxIsolationLevel(sTrans);
         sTxTransactionMode = sSession->getTxTransactionMode(sTrans);
 
         // BUG-17878
-        // session ì†ì„± ì¤‘ isolation levelê³¼ transaction modeëŠ”
-        // transaction ì†ì„±ìœ¼ë¡œ transaction ë§ˆë‹¤ ë‹¤ë¥¼ ìˆ˜ ìžˆê³ ,
-        // sessionì˜ transaction ì†ì„±ê³¼ë„ ë‹¤ë¥¼ ìˆ˜ ìžˆë‹¤.
-        // ë”°ë¼ì„œ transactionì„ ìœ„í•œ session info flagì—ì„œ
-        // transaction isolation levelê³¼ transaction modeëŠ”
-        // commit ì „ì— ì†ì„±ì„ ê°€ì§€ê³  ìžˆë‹¤ê°€ begin í• ë•Œ
-        // ê·¸ ì†ì„±ì„ ê·¸ëŒ€ë¡œ ë”°ë¥´ë„ë¡ ì„¤ì •í•´ì•¼ í•œë‹¤.
+        // session ¼Ó¼º Áß isolation level°ú transaction mode´Â
+        // transaction ¼Ó¼ºÀ¸·Î transaction ¸¶´Ù ´Ù¸¦ ¼ö ÀÖ°í,
+        // sessionÀÇ transaction ¼Ó¼º°úµµ ´Ù¸¦ ¼ö ÀÖ´Ù.
+        // µû¶ó¼­ transactionÀ» À§ÇÑ session info flag¿¡¼­
+        // transaction isolation level°ú transaction mode´Â
+        // commit Àü¿¡ ¼Ó¼ºÀ» °¡Áö°í ÀÖ´Ù°¡ begin ÇÒ¶§
+        // ±× ¼Ó¼ºÀ» ±×´ë·Î µû¸£µµ·Ï ¼³Á¤ÇØ¾ß ÇÑ´Ù.
         sFlag = sSession->getSessionInfoFlagForTx();
         sFlag &= ~SMI_TRANSACTION_MASK;
         sFlag |= sTxTransactionMode;
@@ -545,49 +740,101 @@ IDE_RC mmcStatement::endDDL(mmcStatement *aStmt, idBool aSuccess)
         sTrans = aStmt->getTransPtr();
     }
 
-    if (aSuccess == ID_TRUE)
+    if ( sSession->isDDLAutoCommit() == ID_TRUE )
     {
-        sRc = mmcTrans::commit(sTrans, sSession);
-
-        if (sRc == IDE_SUCCESS)
+        if (aSuccess == ID_TRUE)
         {
-            if (sSession->getQueueInfo() != NULL)
+            sRc = mmcTrans::commit(sTrans, sSession);
+            if (sRc == IDE_SUCCESS)
             {
-                mmqManager::freeQueue(sSession->getQueueInfo());
+                // ÇØ´ç shard ddl·Î ÀÏ¹Ý Tx°¡ shard Tx·Î ÀüÈ¯µÇ´Â °æ¿ì 
+                // reallocÀ» ¼öÇàÇÏ¿© shard tx·Î ÀçÇÒ´ç ¹Þ¿À·Ï ÇÑ´Ù. 
+                if( ( sdiZookeeper::mRunningJobType == ZK_JOB_ADD ) ||
+                    ( sdiZookeeper::mRunningJobType == ZK_JOB_JOIN ) ||
+                    ( sdiZookeeper::mRunningJobType == ZK_JOB_FAILBACK ) )
+                {
+                    sSession->reallocTrans();
+
+                    // reallocÀ» ¼öÇàÇßÀ» °æ¿ì tx°¡ º¯°æµÇ¾úÀ» ¼ö ÀÖÀ¸¹Ç·Î tx¸¦ ´Ù½Ã ¹Þ´Â´Ù.
+                    if( ( sSession->getCommitMode() == MMC_COMMITMODE_AUTOCOMMIT ) &&
+                        ( aStmt->isRootStmt() == ID_FALSE ) )
+                    {
+                        sTrans = aStmt->getTransPtr();
+                    }
+                    else
+                    {
+                        sTrans = sSession->getTransPtr();
+                    }
+                }
+
+
+                if (sSession->getQueueInfo() != NULL)
+                {
+                    mmqManager::freeQueue(sSession->getQueueInfo());
+                }
+            }
+            else
+            {
+                /* PROJ-1832 New database link */
+                IDE_ASSERT( mmcTrans::rollbackForceDatabaseLink(
+                        sTrans, sSession )
+                    == IDE_SUCCESS );
             }
         }
         else
         {
-            /* PROJ-1832 New database link */
-            IDE_ASSERT( mmcTrans::rollbackForceDatabaseLink(
-                            sTrans, sSession )
-                        == IDE_SUCCESS );     
+            IDE_TEST( mmcTrans::rollbackForceDatabaseLink(
+                    sTrans, sSession )
+                != IDE_SUCCESS );
         }
     }
     else
     {
-        /* PROJ-1832 New database link */
-        IDE_TEST( mmcTrans::rollbackForceDatabaseLink(
-                      sTrans, sSession )
-                  != IDE_SUCCESS );
+        if ( aSuccess == ID_TRUE )
+        {
+            for ( i = 0; i < sDestTableOIDCount; i++ )
+            {
+                IDE_TEST( sTrans->mSmiTrans.setExpSvpForBackupDDLTargetTableInfo( SM_OID_NULL,
+                                                                                  0,
+                                                                                  NULL,
+                                                                                  sDestTableOIDArray[i],
+                                                                                  sDestPartOIDCount,
+                                                                                  sDestPartOIDArray +
+                                                                                  (i * sDestPartOIDCount) )
+                          != IDE_SUCCESS );
+            }
+        }
+        else
+        {
+            if ( sSession->getShardSessionType() == SDI_SESSION_TYPE_USER )
+            {
+                IDE_TEST( mmcTrans::rollback( sTrans,
+                                              sSession,
+                                              MMC_DDL_BEGIN_SAVEPOINT,
+                                              SMI_DO_NOT_RELEASE_TRANSACTION )
+                          != IDE_SUCCESS );
+            }
+        }
+        IDE_RAISE( NORMAL_EXIT );
     }
 
     if ( ( ( sSession->getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT ) &&
-           ( sSession->getTransLazyBegin() == ID_FALSE ) ) || // BUG-45772 TRANSACTION_START_MODE ì§€ì›
+           ( sSession->getTransLazyBegin() == ID_FALSE ) ) || // BUG-45772 TRANSACTION_START_MODE Áö¿ø
          ( aStmt->isRootStmt() == ID_FALSE ) )
     {
         // BUG-17497
-        // non auto commit modeì¸ ê²½ìš°,
-        // commit ì „ ì €ìž¥í•´ë‘” transaction ì†ì„±ìœ¼ë¡œ trasactionì„ begin í•œë‹¤.
+        // non auto commit modeÀÎ °æ¿ì,
+        // commit Àü ÀúÀåÇØµÐ transaction ¼Ó¼ºÀ¸·Î transactionÀ» begin ÇÑ´Ù.
         mmcTrans::begin( sTrans,
                          sSession->getStatSQL(),
                          sFlag,
-                         aStmt->getSession() );
+                         aStmt->getSession(),
+                         &sIsDummyBegin );
 
         // BUG-20673 : PSM Dynamic SQL
         if ( aStmt->isRootStmt() == ID_FALSE )
         {
-            mmcTrans::reservePsmSvp(sTrans);
+            mmcTrans::reservePsmSvp(sTrans, ID_FALSE);
         }
     }
     else
@@ -595,17 +842,42 @@ IDE_RC mmcStatement::endDDL(mmcStatement *aStmt, idBool aSuccess)
         /* Nothing to do */
     }
 
-    sSession->setQueueInfo(NULL);
+    /* BUG-47459 */
+    if ( ( sSession->getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT ) &&
+         ( sSession->getShardSessionType() != SDI_SESSION_TYPE_USER ) &&
+         ( aStmt->isRootStmt() == ID_FALSE ) )
+    {
+        sRootStatement = aStmt->getRootStmt();
 
-    sSession->setActivated(ID_FALSE);
+        IDE_TEST( mmcTrans::savepoint( sTrans,
+                                       sSession,
+                                       sdi::getShardSavepointName( sRootStatement->getStmtType() ) )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    sSession->setQueueInfo(NULL);    
+
+    IDE_EXCEPTION_CONT( NORMAL_EXIT );
     
-    /* BUG-29224
-     * Change a Statement Member variable after end of method.
-     */
-    sSession->changeOpenStmt(-1);
+    if ( sSession->isDDLAutoCommit() == ID_TRUE )
+    {
+        sSession->setActivated(ID_FALSE);
+    }    
 
-    aStmt->setStmtBegin(ID_FALSE);
-
+    if( ( sSession->getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT ) ||
+        ( aStmt->isRootStmt() == ID_FALSE ) )
+    {            
+        if ( aStmt->getStmtType() == QCI_STMT_SHARD_DDL )
+        {
+            IDE_TEST( qci::revertPropertyForShardMeta( aStmt->getQciStmt() )
+                      != IDE_SUCCESS );
+        }                
+    }
+        
     IDE_TEST(sRc != IDE_SUCCESS);
 
     return IDE_SUCCESS;
@@ -614,7 +886,21 @@ IDE_RC mmcStatement::endDDL(mmcStatement *aStmt, idBool aSuccess)
     {
         sSession->setQueueInfo(NULL);
     }
+    if( aStmt->isStmtBegin() == ID_TRUE )
+    {
+        sSession->changeOpenStmt(-1);
+        aStmt->setStmtBegin(ID_FALSE);
+    }
+    if ( sSession->isDDLAutoCommit() == ID_TRUE )
+    {
+        sSession->setActivated(ID_FALSE);
+    }
 
+    if ( aStmt->getStmtType() == QCI_STMT_SHARD_DDL )
+    {
+        (void)qci::revertPropertyForShardMeta( aStmt->getQciStmt() );
+    }
+    
     return IDE_FAILURE;
 }
 
@@ -634,7 +920,7 @@ IDE_RC mmcStatement::endDML(mmcStatement *aStmt, idBool aSuccess)
      */
     sSession->changeOpenStmt(-1);
 
-    /* PROJ-1381 FAC : Holdable Fetchë¡œ ì—´ë¦° Stmt ê°œìˆ˜ ì¡°ì ˆ */
+    /* PROJ-1381 FAC : Holdable Fetch·Î ¿­¸° Stmt °³¼ö Á¶Àý */
     if ( ( aStmt->getStmtType() == QCI_STMT_SELECT ) &&
          ( aStmt->getCursorHold() == MMC_STMT_CURSOR_HOLD_ON ) )
     {
@@ -651,8 +937,8 @@ IDE_RC mmcStatement::endDML(mmcStatement *aStmt, idBool aSuccess)
         if (sTrans == NULL)
         {
             /*  PROJ-1381 Fetch AcrossCommit
-             * Holdable StmtëŠ” Txë³´ë‹¤ ë‚˜ì¤‘ì— ëë‚  ìˆ˜ ìžˆë‹¤.
-             * ì—ëŸ¬ê°€ ì•„ë‹ˆë‹ˆ ì¡°ìš©ížˆ ë„˜ì–´ê°„ë‹¤. */
+             * Holdable Stmt´Â Txº¸´Ù ³ªÁß¿¡ ³¡³¯ ¼ö ÀÖ´Ù.
+             * ¿¡·¯°¡ ¾Æ´Ï´Ï Á¶¿ëÈ÷ ³Ñ¾î°£´Ù. */
             IDE_ASSERT(aStmt->getCursorHold() == MMC_STMT_CURSOR_HOLD_ON);
         }
         else
@@ -728,16 +1014,88 @@ IDE_RC mmcStatement::endSP(mmcStatement *aStmt, idBool aSuccess)
         {
             if (aSuccess == ID_TRUE)
             {
-                mmcTrans::clearPsmSvp(sTrans);
+                // TASK-7244 PSM Partial rollback
+                if ( SDU_SHARD_ENABLE == 1 )
+                {
+                    switch ( sSession->getShardSessionType() )
+                    {
+                        case SDI_SESSION_TYPE_USER:
+                        {
+                            IDE_TEST( sdi::clearPsmSvp( sSession->getQciSession()->mQPSpecific.mClientInfo )
+                                      != IDE_SUCCESS );
+                            /* fall through */
+                        }
+                        case SDI_SESSION_TYPE_LIB:
+                        {
+                            mmcTrans::clearPsmSvp(sTrans);
+                            break;
+                        }
+                        case SDI_SESSION_TYPE_COORD:
+                        {
+                            // Coord session¿¡¼­´Â ÇÒ °ÍÀÌ ¾ø´Ù.
+                            break;
+                        }
+                        default:
+                        {
+                            IDE_DASSERT(0);
+                        }
+                    }
+                }
+                else
+                {
+                    mmcTrans::clearPsmSvp(sTrans);
+                }
             }
             else
             {
-                IDE_TEST(mmcTrans::abortToPsmSvp(sTrans) != IDE_SUCCESS);
+                // TASK-7244 PSM Partial rollback
+                if ( SDU_SHARD_ENABLE == 1 )
+                {
+                    switch ( sSession->getShardSessionType() )
+                    {
+                        case SDI_SESSION_TYPE_USER:
+                        {
+                            IDE_TEST( sdi::rollbackForPSM( &(aStmt->getQciStmt()->statement),
+                                                           sSession->getQciSession()->mQPSpecific.mClientInfo )
+                                      != IDE_SUCCESS );
+                            IDE_TEST( sdi::clearPsmSvp( sSession->getQciSession()->mQPSpecific.mClientInfo )
+                                      != IDE_SUCCESS );
+                            /* fall through */
+                        }
+                        case SDI_SESSION_TYPE_LIB:
+                        {
+                            IDE_TEST(mmcTrans::abortToPsmSvp(sTrans) != IDE_SUCCESS);
+                            break;
+                        }
+                        case SDI_SESSION_TYPE_COORD:
+                        {
+                            IDE_TEST( mmcTrans::rollback( sTrans,
+                                                          sSession,
+                                                          SAVEPOINT_FOR_SHARD_SHARD_PROC_PARTIAL_ROLLBACK,
+                                                          SMI_DO_NOT_RELEASE_TRANSACTION )
+                                      != IDE_SUCCESS );
+                            break;
+                        }
+                        default:
+                        {
+                            IDE_DASSERT(0);
+                        }
+                    }
+                }
+                else
+                {
+                    IDE_TEST(mmcTrans::abortToPsmSvp(sTrans) != IDE_SUCCESS);
+                }
             }
         }
         else
         {
             /* Nothing to do */
+        }
+
+        if ( SDU_SHARD_ENABLE == 1 )
+        {
+            qciMisc::unsetBeginSP( &(aStmt->getQciStmt()->statement) );
         }
     }
     else
@@ -766,11 +1124,21 @@ IDE_RC mmcStatement::endSP(mmcStatement *aStmt, idBool aSuccess)
         sSession->setActivated(ID_FALSE);
     }
 
+    if ( ( sSession->getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT ) ||
+         ( aStmt->isRootStmt() == ID_FALSE ) )
+    {        
+        if ( qci::isShardDbmsPkg( aStmt->getQciStmt() ) == ID_TRUE )
+        {
+            IDE_TEST( qci::revertPropertyForShardMeta( aStmt->getQciStmt() )
+                      != IDE_SUCCESS );
+        }
+    }
+    
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(CommitError);
     {
-        // BUG-27953 : Rollback ì‹¤íŒ¨ì‹œ ì—ëŸ¬ ë‚¨ê¸°ê³  Assert ì²˜ë¦¬
+        // BUG-27953 : Rollback ½ÇÆÐ½Ã ¿¡·¯ ³²±â°í Assert Ã³¸®
         /* PROJ-1832 New database link */
         IDE_ASSERT ( mmcTrans::rollbackForceDatabaseLink(
                          sTrans, sSession )
@@ -779,6 +1147,11 @@ IDE_RC mmcStatement::endSP(mmcStatement *aStmt, idBool aSuccess)
     }
     IDE_EXCEPTION_END;
 
+    if ( qci::isShardDbmsPkg( aStmt->getQciStmt() ) == ID_TRUE )
+    {
+        (void)qci::revertPropertyForShardMeta( aStmt->getQciStmt() );
+    }
+    
     return IDE_FAILURE;
 }
 

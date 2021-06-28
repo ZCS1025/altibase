@@ -2312,13 +2312,13 @@ SInt convertWcToMb4Gbkextinv( void    * aSrc,
 /***********************************************************************
  *
  * Description :
- *     PROJ-2414 [ê¸°ëŠ¥ì„±] GBK, GBKEXTINV character set ì¶”ê°€
+ *     PROJ-2414 [±â´É¼º] GBK, GBKEXTINV character set Ãß°¡
  *     UTF16BE                 == > GBKEXTINV
  *
  * Implementation :
- *     1) ë¹„íŠ¸ë§µ ì¸í…ìŠ¤ ì„ íƒ
- *     2) í•´ë‹¹ ìœ ë‹ˆì½”ë“œ ê°’ì„ ìƒ‰ì¸í•˜ì˜€ëŠ” ì§€ ê²€ì‚¬
- *     3) ì¸ë±ìŠ¤ ê°’ìœ¼ë¡œ í•´ë‹¹ ì½”ë“œíŽ˜ì´ì§€ì˜ ê°’ì„ ê²€ìƒ‰
+ *     1) ºñÆ®¸Ê ÀÎÅØ½º ¼±ÅÃ
+ *     2) ÇØ´ç À¯´ÏÄÚµå °ªÀ» »öÀÎÇÏ¿´´Â Áö °Ë»ç
+ *     3) ÀÎµ¦½º °ªÀ¸·Î ÇØ´ç ÄÚµåÆäÀÌÁöÀÇ °ªÀ» °Ë»ö
  *
  ***********************************************************************/
 
@@ -2340,7 +2340,7 @@ SInt convertWcToMb4Gbkextinv( void    * aSrc,
     }
     else
     {
-        /* 1) ë¹„íŠ¸ë§µ ì¸í…ìŠ¤ ì„ íƒ */
+        /* 1) ºñÆ®¸Ê ÀÎÅØ½º ¼±ÅÃ */
         if ( ( sWc >= 0x0200 ) && ( sWc < 0x02e0 ) )
         {
             sSummary = &gGbkExtInvIdxPage02[(sWc>>4)-0x020];
@@ -2389,7 +2389,7 @@ SInt convertWcToMb4Gbkextinv( void    * aSrc,
 
         if ( sSummary != NULL )
         {
-            /*  2) í•´ë‹¹ ìœ ë‹ˆì½”ë“œ ê°’ì„ ìƒ‰ì¸í•˜ì˜€ëŠ” ì§€ ê²€ì‚¬ */
+            /*  2) ÇØ´ç À¯´ÏÄÚµå °ªÀ» »öÀÎÇÏ¿´´Â Áö °Ë»ç */
             sUsed = sSummary->used;
             sNum = sWc & 0x0f;
 
@@ -2401,7 +2401,7 @@ SInt convertWcToMb4Gbkextinv( void    * aSrc,
                 sUsed = ( sUsed & 0x0f0f ) + ( ( sUsed & 0xf0f0 ) >> 4 );
                 sUsed = ( sUsed & 0x00ff ) + ( sUsed >> 8 );
 
-                /* 3) ì¸ë±ìŠ¤ ê°’ìœ¼ë¡œ í•´ë‹¹ ì½”ë“œíŽ˜ì´ì§€ì˜ ê°’ì„ ê²€ìƒ‰ */
+                /* 3) ÀÎµ¦½º °ªÀ¸·Î ÇØ´ç ÄÚµåÆäÀÌÁöÀÇ °ªÀ» °Ë»ö */
                 sVal = gGbkExtInv2CharSet[sSummary->indx + sUsed]
                     ^ IDN_GBKEXTINV_XOR_VALUE;
 

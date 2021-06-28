@@ -35,9 +35,8 @@ SQLRETURN getTBSQueryVolatile( SChar *a_file_query,
 SQLRETURN getTBSFileQuery2( SChar *a_file_query,
                             SInt   a_tbs_id);
 
-/* BUG-40469 user modeì—ì„œ ì‚¬ìš©ìë¥¼ ìœ„í•œ tablespace ìƒì„±ë¬¸ í•„ìš” */
-SQLRETURN getTBSInfo4UserMode( FILE *aTbsFp,
-                               SInt  aTbsId,
-                               SInt  aTbsType );
+/* BUG-40469 user mode¿¡¼­ »ç¿ëÀÚ¸¦ À§ÇÑ tablespace »ı¼º¹® ÇÊ¿ä */
+SQLRETURN getTBSInfo4UserMode( FILE  *aTbsFp,
+                               SChar *aUserName);
 
 #endif /* _O_UTM_TBS_H_ */

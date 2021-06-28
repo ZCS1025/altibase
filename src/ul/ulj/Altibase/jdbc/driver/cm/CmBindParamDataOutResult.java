@@ -20,14 +20,14 @@ import java.sql.BatchUpdateException;
 import java.util.List;
 
 import Altibase.jdbc.driver.datatype.Column;
-import Altibase.jdbc.driver.datatype.RowHandle;
+import Altibase.jdbc.driver.datatype.DynamicArrayRowHandle;
 
 public class CmBindParamDataOutResult extends CmStatementIdResult
 {
     static final byte MY_OP = CmOperation.DB_OP_PARAM_DATA_OUT_LIST;
 
-    private List<Column> mBindParams;
-    private RowHandle    mRowHandle4Blob;
+    private List<Column>          mBindParams;
+    private DynamicArrayRowHandle mRowHandle4Blob;
 
     public CmBindParamDataOutResult()
     {
@@ -38,7 +38,7 @@ public class CmBindParamDataOutResult extends CmStatementIdResult
         mBindParams = aColumns;
     }
 
-    public void setRowHandle(RowHandle aRowHandle)
+    public void setRowHandle(DynamicArrayRowHandle aRowHandle)
     {
         mRowHandle4Blob = aRowHandle;
     }

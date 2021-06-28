@@ -18,7 +18,7 @@ package Altibase.jdbc.driver;
 
 import Altibase.jdbc.driver.util.AltibaseProperties;
 
-class AltibaseFailoverContext
+public class AltibaseFailoverContext
 {
     private AltibaseConnection             mConnection;
     private AltibaseProperties             mConnectionProp;
@@ -29,7 +29,7 @@ class AltibaseFailoverContext
     private AltibaseFailoverServerInfoList mFailoverServerList;
     private AltibaseXAResource             mRelatedXAResource;
 
-    AltibaseFailoverContext(AltibaseConnection aConn, AltibaseProperties aConnProp, AltibaseFailoverServerInfoList aFailoverServerList)
+    public AltibaseFailoverContext(AltibaseConnection aConn, AltibaseProperties aConnProp, AltibaseFailoverServerInfoList aFailoverServerList)
     {
         mConnection = aConn;
         mConnectionProp = (AltibaseProperties) aConnProp.clone();
@@ -107,9 +107,9 @@ class AltibaseFailoverContext
     }
 
     /**
-     * STFë¥¼ ì‚¬ìš©í•˜ë„ë¡ ì„¤ì •í–ˆëŠ”ì§€ ì–»ëŠ”ë‹¤.
+     * STF¸¦ »ç¿ëÇÏµµ·Ï ¼³Á¤Çß´ÂÁö ¾ò´Â´Ù.
      *
-     * @return STFë¥¼ ì‚¬ìš©í• ì§€ ì—¬ë¶€
+     * @return STF¸¦ »ç¿ëÇÒÁö ¿©ºÎ
      */
     public boolean useSessionFailover()
     {
@@ -117,11 +117,11 @@ class AltibaseFailoverContext
     }
 
     /**
-     * Failoverë¥¼ ìˆ˜í–‰í•  ë•Œ, ì„œë²„ì— ì „í•´ì¤„ Failover sourceë¥¼ ì„¤ì •í•œë‹¤.
+     * Failover¸¦ ¼öÇàÇÒ ¶§, ¼­¹ö¿¡ ÀüÇØÁÙ Failover source¸¦ ¼³Á¤ÇÑ´Ù.
      * <p>
-     * ì´ ì •ë³´ëŠ” V$SESSION.FAILOVER_SOURCEë¡œ ì¶œë ¥ëœë‹¤. 
+     * ÀÌ Á¤º¸´Â V$SESSION.FAILOVER_SOURCE·Î Ãâ·ÂµÈ´Ù. 
      *
-     * @param aFailoverSource ì„¤ì •í•  Failover source ë¬¸ìì—´
+     * @param aFailoverSource ¼³Á¤ÇÒ Failover source ¹®ÀÚ¿­
      */
     public void setFailoverSource(String aFailoverSource)
     {

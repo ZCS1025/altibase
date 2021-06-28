@@ -41,7 +41,6 @@ lib:
 	$(MAKE) acslib
 	$(MAKE) alalib
 	$(MAKE) shardcli
-	$(MAKE) shardloadercli
 
 #BUG-22936
 ifeq ($(compile64),1)
@@ -60,9 +59,6 @@ shardcli:
 	$(MAKE) shardcli_static
 	$(MAKE) shardcli_shared
 
-shardloadercli:
-	$(MAKE) shardloadercli_static
-
 acslib:
 	$(MAKE) acslib_static
 #	make acslib_shared    # BUG-15883
@@ -72,7 +68,7 @@ alalib:
 	$(MAKE) alalib_shared
 
 #################
-# static CLI ë¹Œë“œ
+# static CLI ºôµå
 #################
 odbccli_static:
 	$(Q) -$(RM) $(ALTIBASE_HOME)/lib/$(LIBPRE)odbccli.$(LIBEXT)
@@ -96,7 +92,7 @@ endif
 $(ODBCCLI_LIB_PATH): $(ODBCCLI_OBJS)
 
 #################
-# shared CLI ë¹Œë“œ
+# shared CLI ºôµå
 #################
 odbccli_shared:
 ifeq "$(NEED_SHARED_LIBRARY)" "no" # defined in pd/makefiles2/*.mk : only aix 4.x no
@@ -120,7 +116,7 @@ else
 endif # IBM_AIX
 
 #################
-# static CLI for Shard ë¹Œë“œ
+# static CLI for Shard ºôµå
 #################
 shardcli_static:
 	$(Q) -$(RM) $(ALTIBASE_HOME)/lib/$(LIBPRE)shardcli.$(LIBEXT)
@@ -143,29 +139,7 @@ endif
 $(SHARDCLI_LIB_PATH): $(SHARDCLI_OBJS)
 
 #################
-# static CLI for ShardLoader ë¹Œë“œ
-#################
-shardloadercli_static:
-	$(Q) -$(RM) $(ALTIBASE_HOME)/lib/$(LIBPRE)shardloadercli.$(LIBEXT)
-	$(MAKE) shardloadercli_static_build
-
-shardloadercli_static_build: $(SHARDLOADERCLI_LIB_PATH)
-ifeq "$(OS_TARGET)" "IBM_AIX"
-  ifeq ($(compile64),1)
-	$(Q) $(AR) -x -X64 $(ALTICORE_LIBDIR)/$(LIBPRE)alticore.$(LIBEXT)
-  else
-	$(Q) $(AR) -x -X32 $(ALTICORE_LIBDIR)/$(LIBPRE)alticore.$(LIBEXT)
-  endif
-else # ifneq "$(OS_TARGET)" "IBM_AIX"
-	$(Q) $(AR) -x $(ALTICORE_LIBDIR)/$(LIBPRE)alticore.$(LIBEXT)
-endif
-	$(Q) $(AR) $(ARFLAGS) $(ALTIBASE_HOME)/lib/$(LIBPRE)shardloadercli.$(LIBEXT) *.$(OBJEXT) > /dev/null
-	$(Q) -$(RM) *.$(OBJEXT)
-
-$(SHARDLOADERCLI_LIB_PATH): $(SHARDLOADERCLI_OBJS)
-
-#################
-# shared CLI for Shard ë¹Œë“œ
+# shared CLI for Shard ºôµå
 #################
 shardcli_shared: $(SHARDCLI_SHOBJS)
 	$(Q) -$(RM) $(SHARDCLI_SHLIB_PATH)
@@ -182,11 +156,11 @@ else
 endif # IBM_AIX
 
 ############################################
-# ACS LIB ë¹Œë“œ
+# ACS LIB ºôµå
 ############################################
 
 #################
-# static acslib ë¹Œë“œ
+# static acslib ºôµå
 #################
 
 acslib_static: $(ACS_LIB_PATH)
@@ -194,7 +168,7 @@ acslib_static: $(ACS_LIB_PATH)
 $(ACS_LIB_PATH): $(ACS_OBJS)
 
 #################
-# shared acslib ë¹Œë“œ
+# shared acslib ºôµå
 #################
 
 acslib_shared:
@@ -210,11 +184,11 @@ acs_shared_build: $(ACS_SHOBJS)
 	$(SOLINK.c) $(SOOUT)$(ACS_SHLIB_PATH) $(ACS_SHOBJS) $(LDROPT)$(ALTICORE_LIBDIR) $(ALTICORE_LIBDIR)/$(LIBPRE)alticore_pic.$(LIBEXT) $(CLFLAGS)
 
 ############################################
-# ALA LIB ë¹Œë“œ
+# ALA LIB ºôµå
 ############################################
 
 #################
-# static alalib ë¹Œë“œ
+# static alalib ºôµå
 #################
 
 ifeq "$(OS_TARGET)" "IBM_AIX"
@@ -237,7 +211,7 @@ $(ALA_LIB_PATH): $(ALA_OBJS)
 endif
 
 #################
-# shared alalib ë¹Œë“œ
+# shared alalib ºôµå
 #################
 
 alalib_shared:
@@ -262,7 +236,7 @@ ala_shared_build: $(ALA_SHOBJS)
 	$(Q) $(SOLINK.c) $(SOOUT)$(ALA_SHLIB_PATH) $(ALA_SHOBJS) $(CLFLAGS) $(LDROPT)$(ALTICORE_LIBDIR) $(ALTICORE_LIBDIR)/$(LIBPRE)alticore_pic.$(LIBEXT)
 
 ################
-# Unix ODBC ë¹Œë“œ
+# Unix ODBC ºôµå
 ################
 unix_odbc: $(UNIX_ODBC_OBJS)
 	$(Q) -$(RM) $(UNIX_ODBC_SHLIB_PATH)
@@ -346,32 +320,6 @@ $(TARGET_DIR)/%_sd_aoc.$(OBJEXT): $(DEV_DIR)/%.c
 
 $(TARGET_DIR)/%_sd_aoc.$(OBJEXT): $(DEV_DIR)/%.cpp
 	$(COMPILE_IT_CC_SD_AOC)
-
-# ------------------------------------------------
-#  static shardloadercli
-# ----------------------------------------------*/
-
-quiet_cmd_cc_o_c_sdld_aoc = CC $@
-      cmd_cc_o_c_sdld_aoc = mkdir -p $(dir $@); $(COMPILE.cc) $(DEFOPT)ACP_CFG_DL_STATIC $(DEFOPT)LIB_BUILD $(DEFOPT)COMPILE_SHARDCLI $(DEFOPT)COMPILE_SHARDLOADERCLI $(INCLUDES) $(CCOUT)$@ $<
-
-quiet_cmd_c_o_c_sdld_aoc = CC $@
-      cmd_c_o_c_sdld_aoc = mkdir -p $(dir $@); $(COMPILE.c) $(DEFOPT)ACP_CFG_DL_STATIC $(DEFOPT)LIB_BUILD $(DEFOPT)COMPILE_SHARDCLI $(DEFOPT)COMPILE_SHARDLOADERCLI $(INCLUDES) $(CCOUT)$@ $<
-
-define COMPILE_IT_CC_SDLD_AOC
-  $(Q) $(if $(quiet),echo ' $($(quiet)cmd_cc_o_c_sdld_aoc)')
-  $(Q) $(cmd_cc_o_c_sdld_aoc)
-endef
-
-define COMPILE_IT_C_SDLD_AOC
-  $(Q) $(if $(quiet),echo ' $($(quiet)cmd_c_o_c_sdld_aoc)')
-  $(Q) $(cmd_c_o_c_sdld_aoc)
-endef
-
-$(TARGET_DIR)/%_sdld_aoc.$(OBJEXT): $(DEV_DIR)/%.c
-	$(COMPILE_IT_C_SDLD_AOC)
-
-$(TARGET_DIR)/%_sdld_aoc.$(OBJEXT): $(DEV_DIR)/%.cpp
-	$(COMPILE_IT_CC_SDLD_AOC)
 
 # ------------------------------------------------
 #  dynamic odbccli
@@ -506,7 +454,6 @@ clean:
 -include $(ALA_SHOBJS:.$(OBJEXT)=.d)
 
 -include $(SHARDCLI_OBJS:.$(OBJEXT)=.d)
--include $(SHARDLOADERCLI_OBJS:.$(OBJEXT)=.d)
 -include $(SHARDCLI_SHOBJS:.$(OBJEXT)=.d)
 
 ifeq ($(compile64),1)

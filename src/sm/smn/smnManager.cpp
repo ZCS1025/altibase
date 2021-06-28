@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smnManager.cpp 84923 2019-02-25 04:54:35Z djin $
+ * $Id: smnManager.cpp 90259 2021-03-19 01:22:22Z emlee $
  **********************************************************************/
 
 #include <ide.h>
@@ -42,13 +42,15 @@
 
 smnFreeNodeList smnManager::mBaseFreeNodeList;
 iduMemPool      smnManager::mDiskTempPagePool;
+idBool          smnManager::mIsInvalidUniqueness; // BUG-47736
+
 
 IDE_RC smnManager::initialize( void )
 {
     mBaseFreeNodeList.mNext = &mBaseFreeNodeList;
     mBaseFreeNodeList.mPrev = &mBaseFreeNodeList;
 
-    // Global Index Ï¥àÍ∏∞Ìôî
+    // Global Index √ ±‚»≠
     idlOS::memset( gSmnAllIndex,
                    0x00,
                    ID_SIZEOF(smnIndexType*) * SMI_INDEXTYPE_COUNT );
@@ -68,12 +70,14 @@ IDE_RC smnManager::initialize( void )
               != IDE_SUCCESS );
 
     //-------------------------------
-    // Built In Index Type Ï∂îÍ∞Ä
+    // Built In Index Type √ﬂ∞°
     //-------------------------------
 
     IDE_TEST( appendIndexType( & gSmnSequentialScan ) != IDE_SUCCESS );
     IDE_TEST( appendIndexType( & gSmnBTreeIndex ) != IDE_SUCCESS );
     IDE_TEST( appendIndexType( & gSmnGRIDScan ) != IDE_SUCCESS );
+
+    mIsInvalidUniqueness = ID_FALSE; // BUG-47736
 
     return IDE_SUCCESS;
 
@@ -120,8 +124,7 @@ IDE_RC smnManager::destroy( void )
 
 }
 
-IDE_RC
-smnManager::appendIndexType( smnIndexType * aIndexType )
+IDE_RC smnManager::appendIndexType( smnIndexType * aIndexType )
 {
     SInt i;
     smnIndexModule * sIndexModule;
@@ -138,10 +141,10 @@ smnManager::appendIndexType( smnIndexType * aIndexType )
         if ( sIndexModule != NULL )
         {
             // To Fix PR-15202
-            // Free Node Î©îÎ™®Î¶¨Ïùò Ï§ÄÎπÑ Î∞è Ìï¥Ï†úÎäî
-            // Startup Ïãú Îã§ÏñëÌïú Îã®Í≥ÑÏóêÏÑú Ìò∏Ï∂úÎê† Ïàò ÏûàÎã§.
-            // Iterator Memory ÏôÄ Free Node Memory Ï§ÄÎπÑ Îã®Í≥ÑÎäî
-            // ÌÜµÌï©Ìï¥ÏÑúÎäî ÏïàÎêúÎã§.
+            // Free Node ∏ﬁ∏∏Æ¿« ¡ÿ∫Ò π◊ «ÿ¡¶¥¬
+            // Startup Ω√ ¥ŸæÁ«— ¥‹∞Ëø°º≠ »£√‚µ… ºˆ ¿÷¥Ÿ.
+            // Iterator Memory øÕ Free Node Memory ¡ÿ∫Ò ¥‹∞Ë¥¬
+            // ≈Î«’«ÿº≠¥¬ æ»µ»¥Ÿ.
             IDE_TEST( sIndexModule->mPrepareIteratorMem( sIndexModule )
                         != IDE_SUCCESS );
         }
@@ -158,8 +161,7 @@ smnManager::appendIndexType( smnIndexType * aIndexType )
     return IDE_FAILURE;
 }
 
-IDE_RC
-smnManager::updateIndexModule(smnIndexModule *aIndexModule)
+IDE_RC smnManager::updateIndexModule(smnIndexModule *aIndexModule)
 {
     UInt sType;
     UInt sIndexTypeID;
@@ -187,11 +189,11 @@ smnManager::updateIndexModule(smnIndexModule *aIndexModule)
 }
 
 // added for A4
-// smaPhysical agerÍ∞Ä Ï†úÍ±∞Îê®Ïóê Îî∞Îùº
-// Ï∂îÍ∞ÄÎêú Ìï®ÏàòÏù¥Î©∞, free node listÎ•º Ìï†ÎãπÌïúÎã§.
-// Ïù∏Îç±Ïä§ Ïú†Ìòï(memory b+ tree,R tree)Ïóê Îî∞Îùº
-// free node listÎ•º Í∞ÅÍ∞Å Í∞ÄÏßÄÍ≤å ÎêúÎã§.
-// Ïù¥ ÏûêÎ£åÎäî logical agerÏóê ÏùòÌï¥ ÏÇ¨Ïö©ÎêúÎã§.
+// smaPhysical ager∞° ¡¶∞≈µ ø° µ˚∂Û
+// √ﬂ∞°µ» «‘ºˆ¿Ã∏Á, free node list∏¶ «“¥Á«—¥Ÿ.
+// ¿Œµ¶Ω∫ ¿Ø«¸(memory b+ tree,R tree)ø° µ˚∂Û
+// free node list∏¶ ∞¢∞¢ ∞°¡ˆ∞‘ µ»¥Ÿ.
+// ¿Ã ¿⁄∑·¥¬ logical agerø° ¿««ÿ ªÁøÎµ»¥Ÿ.
 IDE_RC smnManager::allocFreeNodeList( smnFreeNodeFunc   aFreeNodeFunc,
                                       void**            aFreeNodeList)
 {
@@ -256,7 +258,7 @@ void smnManager::destroyFreeNodeList(void*  aFreeNodeList)
 IDE_RC smnManager::prepareIdxFreePages( )
 {
     // To Fix PR-15202
-    // ÏòõÎÇ† ÏΩîÎìú ÌòïÌÉúÎ°ú ÏõêÎ≥µ
+    // øæ≥Ø ƒ⁄µÂ «¸≈¬∑Œ ø¯∫π
 
     smnIndexModule * sIndexModule;
     SInt i;
@@ -277,9 +279,9 @@ IDE_RC smnManager::prepareIdxFreePages( )
                     IDE_TEST( sIndexModule->mPrepareFreeNodeMem(sIndexModule)
                               != IDE_SUCCESS );
 
-                    /* Volatile table index Î™®ÎìàÏóê ÎåÄÌï¥ÏÑúÎäî
-                       mPrepareFreeNodeMemÏùÑ Ìò∏Ï∂úÌï† ÌïÑÏöîÍ∞Ä ÏóÜÎã§.
-                       memoryÏôÄ ÏûêÏõêÏùÑ Í≥µÏú†Ìï¥ÏÑú ÏÇ¨Ïö©ÌïòÍ∏∞ ÎïåÎ¨∏Ïù¥Îã§. */
+                    /* Volatile table index ∏µ‚ø° ¥Î«ÿº≠¥¬
+                       mPrepareFreeNodeMem¿ª »£√‚«“ « ø‰∞° æ¯¥Ÿ.
+                       memoryøÕ ¿⁄ø¯¿ª ∞¯¿Ø«ÿº≠ ªÁøÎ«œ±‚ ∂ßπÆ¿Ã¥Ÿ. */
                 }
                 else
                 {
@@ -305,10 +307,10 @@ IDE_RC smnManager::prepareIdxFreePages( )
 }
 
 
-// smmManagerÍ∞Ä smnManagerÎ≥¥Îã§ Î®ºÏ†Ä destroyÎêòÎØÄÎ°ú Í∞Å indexÏùò
-// Free node listÍ∞Ä Ìï¥Ï†úÎêòÏßÄ ÏïäÏïÑ Î¨∏Ï†úÍ∞Ä Î∞úÏÉùÌïúÎã§. BUG-11148
-// smmManager::destroy() ÏóêÏÑú Î≥∏ Ìï®ÏàòÎ•º Ìò∏Ï∂úÌïòÏó¨ Î™®Îì† indexÏùò
-// Free node listÎ•º Ìï¥Ï†úÏãúÌÇ®Îã§.
+// smmManager∞° smnManager∫∏¥Ÿ ∏’¿˙ destroyµ«π«∑Œ ∞¢ index¿«
+// Free node list∞° «ÿ¡¶µ«¡ˆ æ æ∆ πÆ¡¶∞° πﬂª˝«—¥Ÿ. BUG-11148
+// smmManager::destroy() ø°º≠ ∫ª «‘ºˆ∏¶ »£√‚«œø© ∏µÁ index¿«
+// Free node list∏¶ «ÿ¡¶Ω√≈≤¥Ÿ.
 IDE_RC smnManager::releaseIdxFreePages( )
 {
 
@@ -331,9 +333,9 @@ IDE_RC smnManager::releaseIdxFreePages( )
                     IDE_TEST( sIndexModule->mReleaseFreeNodeMem( sIndexModule )
                             != IDE_SUCCESS );
 
-                    /* Volatile table index Î™®ÎìàÏóê ÎåÄÌï¥ÏÑúÎäî
-                       mReleaseFreeNodeMemÏùÑ Ìò∏Ï∂úÌï† ÌïÑÏöîÍ∞Ä ÏóÜÎã§.
-                       memoryÏôÄ ÏûêÏõêÏùÑ Í≥µÏú†Ìï¥ÏÑú ÏÇ¨Ïö©ÌïòÍ∏∞ ÎïåÎ¨∏Ïù¥Îã§. */
+                    /* Volatile table index ∏µ‚ø° ¥Î«ÿº≠¥¬
+                       mReleaseFreeNodeMem¿ª »£√‚«“ « ø‰∞° æ¯¥Ÿ.
+                       memoryøÕ ¿⁄ø¯¿ª ∞¯¿Ø«ÿº≠ ªÁøÎ«œ±‚ ∂ßπÆ¿Ã¥Ÿ. */
                 }
                 else
                 {
@@ -589,11 +591,11 @@ IDE_RC smnManager::createIndex( idvSQL             * aStatistics,
     smnRebuildMode          sRebuildMode;
     smnRebuildIndexInfo   * sRebuildIndexInfo;
 
-    /* Î≥∏ Ìï®ÏàòÏùò ÏàòÌñâÎ∞©ÏãùÏùÄ REBUILD_INDEX_PARALLEL_MODE ÌîÑÎ°úÌçºÌã∞Ïóê Îî∞Îùº Ï∞®Ïù¥Í∞Ä ÏûàÎã§.
-     * Ìï¥Îãπ ÌîÑÎ°úÌçºÌã∞Í∞Ä TABLE MODEÏùº Í≤ΩÏö∞
-     * ÏßÅÏ†ë Ïù∏Îç±Ïä§ Ìó§ÎçîÎ•º ÏÉùÏÑ± Ìïú ÌõÑ Ïù∏Îç±Ïä§Î•º ÏÉùÏÑ±ÌïúÎã§.
-     * Ìï¥Îãπ ÌîÑÎ°úÌçºÌã∞Í∞Ä INDEX MODEÏùº Í≤ΩÏö∞
-     * ÏßÅÏ†ë Ïù∏Îç±Ïä§ Ìó§ÎçîÎ•º ÏÉùÏÑ± ÌõÑ Ïù∏Îç±Ïä§ ÏÉùÏÑ±ÏùÄ thread ÌÜµÌï¥ ÏàòÌñâÌïúÎã§. */
+    /* ∫ª «‘ºˆ¿« ºˆ«‡πÊΩƒ¿∫ REBUILD_INDEX_PARALLEL_MODE «¡∑Œ∆€∆ºø° µ˚∂Û ¬˜¿Ã∞° ¿÷¥Ÿ.
+     * «ÿ¥Á «¡∑Œ∆€∆º∞° TABLE MODE¿œ ∞ÊøÏ
+     * ¡˜¡¢ ¿Œµ¶Ω∫ «Ï¥ı∏¶ ª˝º∫ «— »ƒ ¿Œµ¶Ω∫∏¶ ª˝º∫«—¥Ÿ.
+     * «ÿ¥Á «¡∑Œ∆€∆º∞° INDEX MODE¿œ ∞ÊøÏ
+     * ¡˜¡¢ ¿Œµ¶Ω∫ «Ï¥ı∏¶ ª˝º∫ »ƒ ¿Œµ¶Ω∫ ª˝º∫¿∫ thread ≈Î«ÿ ºˆ«‡«—¥Ÿ. */
     sRebuildMode = smuProperty::getRebuildIndexParallelMode() == 0 
         ? SMN_INDEX_REBUILD_TABLE_MODE : SMN_INDEX_REBUILD_INDEX_MODE;
     if ( aThreadMgr != NULL )
@@ -614,14 +616,14 @@ IDE_RC smnManager::createIndex( idvSQL             * aStatistics,
                        0) /* SmoNo */
              != IDE_SUCCESS);
 
-    // unpinÎêú ÌÖåÏù¥Î∏îÏù¥ÎÇò ÎîîÏä§ÌÅ¨ ÌÖåÏù¥Î∏îÏùò Í≤ΩÏö∞Îäî
-    // rebuild indexÎ•º ÌïòÏßÄ ÏïäÎäîÎã§.
+    // unpinµ» ≈◊¿Ã∫Ì¿Ã≥™ µΩ∫≈© ≈◊¿Ã∫Ì¿« ∞ÊøÏ¥¬
+    // rebuild index∏¶ «œ¡ˆ æ ¥¬¥Ÿ.
 
     /* BUG-14053
-       System Î©îÎ™®Î¶¨ Î∂ÄÏ°±Ïãú Server StartÏãú Meta TableÏùò IndexÎßåÏùÑ
-       CreateÌïòÍ≥† StartÌïòÎäî ÌîÑÎ°úÌçºÌã∞ Ï∂îÍ∞Ä.
-       INDEX_REBUILD_AT_STARTUP = 1: StartÏãú Î™®Îì† Index Rebuild
-       INDEX_REBUILD_AT_STARTUP = 0: StartÏãú Meta TableÏùò IndexÎßå
+       System ∏ﬁ∏∏Æ ∫Œ¡∑Ω√ Server StartΩ√ Meta Table¿« Index∏∏¿ª
+       Create«œ∞Ì Start«œ¥¬ «¡∑Œ∆€∆º √ﬂ∞°.
+       INDEX_REBUILD_AT_STARTUP = 1: StartΩ√ ∏µÁ Index Rebuild
+       INDEX_REBUILD_AT_STARTUP = 0: StartΩ√ Meta Table¿« Index∏∏
        Rebuild
     */
     sTableType  = SMI_GET_TABLE_TYPE( aTable );
@@ -641,13 +643,13 @@ IDE_RC smnManager::createIndex( idvSQL             * aStatistics,
             sBuildIndex = ID_TRUE;
         }
 
-        /* BUG-24034: [SN: Volatile] Server StartÏãú Volatile TableÏùò IndexÏùò HeaderÎßå
-         * ÎßåÎì§Í≥† Build IndexÎ•º Ìò∏Ï∂úÌïòÎ©¥ ÏïàÎêúÎã§.
+        /* BUG-24034: [SN: Volatile] Server StartΩ√ Volatile Table¿« Index¿« Header∏∏
+         * ∏∏µÈ∞Ì Build Index∏¶ »£√‚«œ∏È æ»µ»¥Ÿ.
          *
-         * buildIndexÌï®ÏàòÏïàÏóêÏÑú Volatile TableÏùò NullRowÎ•º Ï∞∏Ï°∞ÌïòÎäîÎç∞ Ïù¥ NullRowÎäî
-         * serviceÎã®Í≥ÑÏóêÏÑú ÎßåÎì§Ïñ¥ÏßÄÍ∏∞ ÎïåÎ¨∏Ïóê Ï∞∏Ï°∞ÌïòÎ©¥ ÏïàÎêúÎã§. Í∑∏Î¶¨Í≥† VolatileÏùÄ Ser
-         * ver startÏãú TableÎßå ÏûàÍ≥† Îç∞Ïù¥ÌÉÄÎäî ÏóÜÍ∏∞ÎïåÎ¨∏Ïóê buildIndexÎ•º Ìò∏Ï∂úÌï† ÌïÑÏöîÍ∞Ä
-         * ÏóÜÎã§. */
+         * buildIndex«‘ºˆæ»ø°º≠ Volatile Table¿« NullRow∏¶ ¬¸¡∂«œ¥¬µ• ¿Ã NullRow¥¬
+         * service¥‹∞Ëø°º≠ ∏∏µÈæÓ¡ˆ±‚ ∂ßπÆø° ¬¸¡∂«œ∏È æ»µ»¥Ÿ. ±◊∏Æ∞Ì Volatile¿∫ Ser
+         * ver startΩ√ Table∏∏ ¿÷∞Ì µ•¿Ã≈∏¥¬ æ¯±‚∂ßπÆø° buildIndex∏¶ »£√‚«“ « ø‰∞°
+         * æ¯¥Ÿ. */
         if ( ( sTableType == SMI_TABLE_VOLATILE ) && ( aIsRestartBuild == ID_FALSE ) )
         {
             sBuildIndex = ID_TRUE;
@@ -669,8 +671,8 @@ IDE_RC smnManager::createIndex( idvSQL             * aStatistics,
     {
         if ( ( aThreadMgr != NULL ) && (sRebuildMode == SMN_INDEX_REBUILD_INDEX_MODE ) )
         {
-            /* Ïù∏Îç±Ïä§ ÏÉùÏÑ± Ï†ïÎ≥¥Î•º threadÎ°ú ÎÑòÍ∏∞Í∏∞ ÏúÑÌïú Ï†ïÎ≥¥Í∞Ä Ï†ÄÏû•ÎêòÎäî Í≥µÍ∞ÑÏùÑ ÏÉùÏÑ±ÌïúÎã§.
-             * Ïù¥ Í≥µÍ∞ÑÏùÄ threadÍ∞Ä ÏûëÏóÖÏùÑ ÎÅùÎÇ¥Î©¥ threadÏóê ÏùòÌï¥ Ï†úÍ±∞ÎêúÎã§. */
+            /* ¿Œµ¶Ω∫ ª˝º∫ ¡§∫∏∏¶ thread∑Œ ≥—±‚±‚ ¿ß«— ¡§∫∏∞° ¿˙¿Âµ«¥¬ ∞¯∞£¿ª ª˝º∫«—¥Ÿ.
+             * ¿Ã ∞¯∞£¿∫ thread∞° ¿€æ˜¿ª ≥°≥ª∏È threadø° ¿««ÿ ¡¶∞≈µ»¥Ÿ. */
             /* smnManager_createIndex_malloc_RebuildIndexInfo.tc */
             IDU_FIT_POINT("smnManager::createIndex::malloc::RebuildIndexInfo");
             IDE_TEST( iduMemMgr::malloc( IDU_MEM_SM_SMN,
@@ -686,9 +688,9 @@ IDE_RC smnManager::createIndex( idvSQL             * aStatistics,
                       != IDE_SUCCESS );
 
             /* BUG-37667
-             * cpptest ÌÜµÍ≥ºÎ•º ÏúÑÌï¥ sState Ï∂îÍ∞Ä ÌïòÏó¨ ÏòàÏô∏Ï≤òÎ¶¨ ÌïòÏòÄÏùå.
-             * ÌïòÏßÄÎßå addJob Ìï®ÏàòÎäî Ìï≠ÏÉÅ IDE_SUCCESSÎ•º Î∞òÌôòÌïòÎØÄÎ°ú Ïã§Ï†úÎ°úÎäî ÏùòÎØ∏ ÏóÜÏùå
-             * Í∑∏Î¶¨Í≥† workerThread Í∞Ä freeÎ•º Ìè¨Ìï®Ìïú buildIndexParallel()Î•º ÏàòÌñâ */
+             * cpptest ≈Î∞˙∏¶ ¿ß«ÿ sState √ﬂ∞° «œø© øπø‹√≥∏Æ «œø¥¿Ω.
+             * «œ¡ˆ∏∏ addJob «‘ºˆ¥¬ «◊ªÛ IDE_SUCCESS∏¶ π›»Ø«œπ«∑Œ Ω«¡¶∑Œ¥¬ ¿«πÃ æ¯¿Ω
+             * ±◊∏Æ∞Ì workerThread ∞° free∏¶ ∆˜«‘«— buildIndexParallel()∏¶ ºˆ«‡ */
             sState  = 0;
         }
         else
@@ -754,7 +756,7 @@ IDE_RC smnManager::initIndex( idvSQL             * aStatistics,
     sIndex->mModule = sIndexModule;
 
     return IDE_SUCCESS;
-    /* Ìï¥Îãπ typeÏùò Ïù∏Îç±Ïä§Î•º Ï∞æÏùÑ Ïàò ÏóÜÏäµÎãàÎã§. */
+    /* «ÿ¥Á type¿« ¿Œµ¶Ω∫∏¶ √£¿ª ºˆ æ¯Ω¿¥œ¥Ÿ. */
     IDE_EXCEPTION( ERR_NOT_FOUND );
     IDE_SET( ideSetErrorCode( smERR_FATAL_smnNotSupportedIndex ) );
     IDE_EXCEPTION_END;
@@ -809,7 +811,7 @@ IDE_RC smnManager::getNextPageForMemTable( smcTableHeader  * aTable,
     }
     else
     {
-        // ÌòÑÏû¨ pageÏóê SÎûòÏπò Ìï¥Ï†ú
+        // «ˆ¿Á pageø° S∑°ƒ° «ÿ¡¶
         (*aLocked) = ID_FALSE;
         IDE_TEST( smmManager::releasePageLatch( aTable->mSpaceID,
                                                 sPageID )
@@ -823,7 +825,7 @@ IDE_RC smnManager::getNextPageForMemTable( smcTableHeader  * aTable,
 
     if ( sPageID != SM_NULL_PID )
     {
-        // Îã§Ïùå pageÏóê SÎûòÏπò ÌöçÎìù
+        // ¥Ÿ¿Ω pageø° S∑°ƒ° »πµÊ
         IDE_TEST( smmManager::holdPageSLatch( aTable->mSpaceID,
                                               sPageID )
                   != IDE_SUCCESS );
@@ -858,7 +860,7 @@ IDE_RC smnManager::getNextPageForVolTable( smcTableHeader  * aTable,
     }
     else
     {
-        // ÌòÑÏû¨ pageÏóê SÎûòÏπò Ìï¥Ï†ú
+        // «ˆ¿Á pageø° S∑°ƒ° «ÿ¡¶
         (*aLocked) = ID_FALSE;
         IDE_TEST( svmManager::releasePageLatch( aTable->mSpaceID,
                                                 sPageID )
@@ -872,7 +874,7 @@ IDE_RC smnManager::getNextPageForVolTable( smcTableHeader  * aTable,
 
     if ( sPageID != SM_NULL_PID )
     {
-        // Îã§Ïùå pageÏóê SÎûòÏπò ÌöçÎìù
+        // ¥Ÿ¿Ω pageø° S∑°ƒ° »πµÊ
         IDE_TEST( svmManager::holdPageSLatch( aTable->mSpaceID,
                                               sPageID )
                   != IDE_SUCCESS );
@@ -902,16 +904,16 @@ IDE_RC smnManager::getNextRowForMemTable( smcTableHeader   * aTable,
 {
     smOID               sOID;
     smSCN               sSCN;
-    smTID               sTID;
+    smTID               sDummyTID;
     smpSlotHeader     * sRow = (smpSlotHeader*)*aRow;
     vULong              sSize;
     vULong              sLast;
 
     sSize   = aTable->mFixed.mMRDB.mSlotSize;
 
-    if ( sRow == NULL ) // Ï≤´Î≤àÏß∏ row
+    if ( sRow == NULL ) // √ππ¯¬∞ row
     {
-        // Ï≤´Î≤àÏß∏ row ÌöçÎìù
+        // √ππ¯¬∞ row »πµÊ
         sOID = SM_MAKE_OID( aPageID, SMP_PERS_PAGE_BODY_OFFSET );
         IDE_ASSERT( smmManager::getOIDPtr( aTable->mSpaceID,
                                            sOID,
@@ -922,7 +924,7 @@ IDE_RC smnManager::getNextRowForMemTable( smcTableHeader   * aTable,
     }
     else
     {
-        // accessÎêú rowÏùò Îã§Ïùå rowÎ•º ÌöçÎìù
+        // accessµ» row¿« ¥Ÿ¿Ω row∏¶ »πµÊ
         sRow = (smpSlotHeader*)( (SChar*)sRow + sSize );
     }
 
@@ -933,7 +935,7 @@ IDE_RC smnManager::getNextRowForMemTable( smcTableHeader   * aTable,
     {
         if ( SM_SCN_IS_FREE_ROW( sRow->mLimitSCN ) )
         {
-            SMX_GET_SCN_AND_TID( sRow->mCreateSCN, sSCN, sTID );
+            SMX_GET_SCN_AND_TID( sRow->mCreateSCN, sSCN, sDummyTID );
 
             IDE_TEST_RAISE( ( aIsNeedValidation == ID_TRUE &&
                               SM_SCN_IS_INFINITE( sSCN ) ) &&
@@ -951,13 +953,13 @@ IDE_RC smnManager::getNextRowForMemTable( smcTableHeader   * aTable,
         {
             /* BUG-32926 [SM] when server restart, Prepared row in the rebuilding
              *           memory index process should be read.
-             * XAÎäî 2 phase commitÏúºÎ°ú transactionÏù¥ preparedÎ°ú ÎêòÎ©¥,
-             * Infinite SCNÏùÑ Í∞ÄÏßÑ Row ÎòêÎäî Next versionÏùÑ Í∞ÄÏßÄÎäî Row Í∞Ä
-             * Ï°¥Ïû¨Ìï† Ïàò ÏûàÎã§.
-             * Îî∞ÎùºÏÑú server startupÏãú NextÍ∞Ä NULL OIDÍ∞Ä ÏïÑÎãàÎçîÎùºÎèÑ ÏùΩÏñ¥Ïïº ÌïòÎ©∞
-             * Infinite SCNÏùÑ Í∞ÄÏßÄÎäî Row ÎòêÌïú ÏùΩÏñ¥Ïïº ÌïúÎã§.
-             * Í∑∏Î¶¨Í≥† server startupÏãúÏóêÎßå aIsNeedValidationÏù¥ ID_FALSEÎ°ú
-             * ÎÇ¥Î†§ Ïò®Îã§. */
+             * XA¥¬ 2 phase commit¿∏∑Œ transaction¿Ã prepared∑Œ µ«∏È,
+             * Infinite SCN¿ª ∞°¡¯ Row ∂«¥¬ Next version¿ª ∞°¡ˆ¥¬ Row ∞°
+             * ¡∏¿Á«“ ºˆ ¿÷¥Ÿ.
+             * µ˚∂Ûº≠ server startupΩ√ Next∞° NULL OID∞° æ∆¥œ¥ı∂Ûµµ ¿–æÓæﬂ «œ∏Á
+             * Infinite SCN¿ª ∞°¡ˆ¥¬ Row ∂««— ¿–æÓæﬂ «—¥Ÿ.
+             * ±◊∏Æ∞Ì server startupΩ√ø°∏∏ aIsNeedValidation¿Ã ID_FALSE∑Œ
+             * ≥ª∑¡ ø¬¥Ÿ. */
             if ( aIsNeedValidation == ID_FALSE )
             {
                 if ( SM_SCN_IS_NOT_DELETED(sRow->mCreateSCN) )
@@ -972,7 +974,9 @@ IDE_RC smnManager::getNextRowForMemTable( smcTableHeader   * aTable,
             }
             else
             {
-                /* nothing */
+                /* create table ¿€æ˜¿∫ ≈◊¿Ã∫Ì lock(x)∏¶ ¿‚∞Ì ºˆ«‡µ«π«∑Œ uncommit ¿Ã ¿÷¿ªºˆ æ¯¥Ÿ. */
+                IDE_TEST_RAISE( SM_SCN_IS_INFINITE( sRow->mLimitSCN ), 
+                                ERR_UNCOMMITED_ROW );
             }
         }
     }
@@ -996,18 +1000,18 @@ IDE_RC smnManager::getNextRowForVolTable( smcTableHeader   * aTable,
 {
     smOID               sOID;
     smSCN               sSCN;
-    smTID               sTID;
+    smTID               sDummyTID;
     smpSlotHeader     * sRow = (smpSlotHeader*)*aRow;
     vULong              sSize;
     vULong              sLast;
 
     sSize   = aTable->mFixed.mVRDB.mSlotSize;
 
-    if ( sRow == NULL ) // Ï≤´Î≤àÏß∏ row
+    if ( sRow == NULL ) // √ππ¯¬∞ row
     {
-        // Ï≤´Î≤àÏß∏ row ÌöçÎìù
+        // √ππ¯¬∞ row »πµÊ
         sOID    = SM_MAKE_OID( aPageID, SMP_PERS_PAGE_BODY_OFFSET );
-        IDE_ASSERT( svmManager::getOIDPtr( aTable->mSpaceID,
+        IDE_ASSERT( smmManager::getOIDPtr( aTable->mSpaceID,
                                            sOID,
                                            (void**)&sRow )
                     == IDE_SUCCESS );
@@ -1016,7 +1020,7 @@ IDE_RC smnManager::getNextRowForVolTable( smcTableHeader   * aTable,
     }
     else
     {
-        // Îã§Ïùå rowÎ•º ÌöçÎìù
+        // ¥Ÿ¿Ω row∏¶ »πµÊ
         sRow = (smpSlotHeader*)( (SChar*)sRow + sSize );
     }
 
@@ -1027,7 +1031,7 @@ IDE_RC smnManager::getNextRowForVolTable( smcTableHeader   * aTable,
     {
         if ( SM_SCN_IS_FREE_ROW( sRow->mLimitSCN ) )
         {
-            SMX_GET_SCN_AND_TID( sRow->mCreateSCN, sSCN, sTID );
+            SMX_GET_SCN_AND_TID( sRow->mCreateSCN, sSCN, sDummyTID );
 
             IDE_TEST_RAISE( ( aIsNeedValidation == ID_TRUE &&
                               SM_SCN_IS_INFINITE( sSCN )) &&
@@ -1040,7 +1044,17 @@ IDE_RC smnManager::getNextRowForVolTable( smcTableHeader   * aTable,
                 *aRow = (SChar*)sRow;
                 break;
             }
+        }            
+        else
+        {
+            if ( aIsNeedValidation != ID_FALSE )
+            {
+                /* create table ¿€æ˜¿∫ ≈◊¿Ã∫Ì lock(x)∏¶ ¿‚∞Ì ºˆ«‡µ«π«∑Œ uncommit ¿Ã ¿÷¿ªºˆ æ¯¥Ÿ. */
+                IDE_TEST_RAISE( SM_SCN_IS_INFINITE( sRow->mLimitSCN ), 
+                                ERR_UNCOMMITED_ROW );
+            }
         }
+
     }
 
     return IDE_SUCCESS;
@@ -1056,20 +1070,20 @@ IDE_RC smnManager::getNextRowForVolTable( smcTableHeader   * aTable,
 
 
 /*******************************************************************************
- * Description: Index Íµ¨Ï°∞ Í∞úÏÑ†ÏùÑ ÏúÑÌï¥ Build IndexÎ•º ÌïòÎÇòÎ°ú ÌÜµÌï©Ìï©ÎãàÎã§.
+ * Description: Index ±∏¡∂ ∞≥º±¿ª ¿ß«ÿ Build Index∏¶ «œ≥™∑Œ ≈Î«’«’¥œ¥Ÿ.
  *
  * Related Issues:
- *      BUG-25279 Btree For SpatialÍ≥º Disk BtreeÏùò ÏûêÎ£åÍµ¨Ï°∞ Î∞è Î°úÍπÖ Î∂ÑÎ¶¨
+ *      BUG-25279 Btree For Spatial∞˙ Disk Btree¿« ¿⁄∑·±∏¡∂ π◊ ∑Œ±Î ∫–∏Æ
  *
  * aStatistics          - [IN] idvSQL
  * aTrans               - [IN] smxTrans
- * aTable               - [IN] ÎåÄÏÉÅ indexÍ∞Ä ÏÜçÌïú ÌÖåÏù¥Î∏îÏùò table header
- * aIndex               - [IN] ÎåÄÏÉÅ index header
- * aIsNeedValidation    - [IN] Uncommitted row validation Ïó¨Î∂Ä, MRVR Only
+ * aTable               - [IN] ¥ÎªÛ index∞° º”«— ≈◊¿Ã∫Ì¿« table header
+ * aIndex               - [IN] ¥ÎªÛ index header
+ * aIsNeedValidation    - [IN] Uncommitted row validation ø©∫Œ, MRVR Only
  * aIsPersistent        - [IN] MRVR Only
  * aParallelDegree      - [IN] index parallel build degree
- * aBuildFlag           - [IN] Index build ÏòµÏÖò, Disk Only
- * aTotalRecCnt         - [IN] ÎåÄÏÉÅ tableÏùò record count, Disk Only
+ * aBuildFlag           - [IN] Index build ø…º«, Disk Only
+ * aTotalRecCnt         - [IN] ¥ÎªÛ table¿« record count, Disk Only
  ******************************************************************************/
 IDE_RC smnManager::buildIndex( idvSQL              * aStatistics,
                                void                * aTrans,
@@ -1112,7 +1126,7 @@ IDE_RC smnManager::buildIndex( idvSQL              * aStatistics,
         case SMI_TABLE_VOLATILE:
             sGetPageFunc = smnManager::getNextPageForVolTable;
             sGetRowFunc  = smnManager::getNextRowForVolTable;
-            IDE_ERROR( svmManager::getOIDPtr( aTable->mSpaceID,
+            IDE_ERROR( smmManager::getOIDPtr( aTable->mSpaceID,
                                               aTable->mNullOID,
                                               (void**)&sNullPtr )
                        == IDE_SUCCESS );
@@ -1202,7 +1216,7 @@ IDE_RC smnManager::dropIndex( smcTableHeader * aTable,
 
     return IDE_SUCCESS;
 
-    /* Ìï¥Îãπ typeÏùò Ïù∏Îç±Ïä§Î•º Ï∞æÏùÑ Ïàò ÏóÜÏäµÎãàÎã§. */
+    /* «ÿ¥Á type¿« ¿Œµ¶Ω∫∏¶ √£¿ª ºˆ æ¯Ω¿¥œ¥Ÿ. */
     IDE_EXCEPTION( ERR_NOT_FOUND );
     IDE_SET( ideSetErrorCode( smERR_FATAL_smnNotSupportedIndex ) );
 
@@ -1214,14 +1228,14 @@ IDE_RC smnManager::dropIndex( smcTableHeader * aTable,
 
 /***********************************************************************
  *
- * Description : ÎîîÏä§ÌÅ¨ Ïù∏Îç±Ïä§Ïùò Î¨¥Í≤∞ÏÑ± Í≤ÄÏÇ¨Î•º ÏàòÌñâÏó¨Î∂Ä ÌåêÎã®
+ * Description : µΩ∫≈© ¿Œµ¶Ω∫¿« π´∞·º∫ ∞ÀªÁ∏¶ ºˆ«‡ø©∫Œ ∆«¥‹
  *
  * (1) __SM_CHECK_DISK_INDEX_INTEGRITY = 1
- *    ÎîîÏä§ÌÅ¨ BTREEÎßå ID_TRUE
+ *    µΩ∫≈© BTREE∏∏ ID_TRUE
  *
- * (2) __SM_CHECK_DISK_INDEX_INTEGRITY = 3 Î™®ÎìúÏóêÏÑú
- *     __SM_VERIFY_DISK_INDEX_COUNT ÎßåÌÅº
- *     __SM_VERIFY_DISK_INDEX_NAME Ïóê Ìï¥ÎãπÌïòÎäî IndexÎßå ID_TRUE Î∞òÌôò
+ * (2) __SM_CHECK_DISK_INDEX_INTEGRITY = 3 ∏µÂø°º≠
+ *     __SM_VERIFY_DISK_INDEX_COUNT ∏∏≈≠
+ *     __SM_VERIFY_DISK_INDEX_NAME ø° «ÿ¥Á«œ¥¬ Index∏∏ ID_TRUE π›»Ø
  *
  *  aIndexHeader - [IN] Index Header Ptr
  *
@@ -1236,13 +1250,13 @@ idBool smnManager::isIndexToVerifyIntegrity( const void * aIndexHeader )
 
     sResult = ID_FALSE;
 
-    /* BUG-27774 __SM_CHECK_DISK_INDEX_INTEGRITY ÌîÑÎ°úÌçºÌã∞ ÌôúÏÑ±ÌôîÏãú B-TreeÏóê
-     * ÎåÄÌï¥ÏÑúÎßå Î¨¥Í≤∞ÏÑ± Í≤ÄÏ¶ùÏùÑ ÏàòÌñâÌï¥ÏïºÌï® */
+    /* BUG-27774 __SM_CHECK_DISK_INDEX_INTEGRITY «¡∑Œ∆€∆º »∞º∫»≠Ω√ B-Treeø°
+     * ¥Î«ÿº≠∏∏ π´∞·º∫ ∞À¡ı¿ª ºˆ«‡«ÿæﬂ«‘ */
     IDE_TEST_RAISE( sIndexHeader->mType != SMI_BUILTIN_B_TREE_INDEXTYPE_ID,
                     cont_finish );
 
-    /* Level 1Ïù¥ÎÇò Level 3Ïù¥ Îì§Ïñ¥Ïò¨ Ïàò ÏûàÎäîÎç∞ Level 1Ïù∏ Í≤ΩÏö∞ÏóêÎäî
-     * Î¨¥Ï°∞Í±¥ Î™®Îì† ÎîîÏä§ÌÅ¨ B-TREE Ïù∏Îç±Ïä§Ïóê ÎåÄÌï¥ Î¨¥Í≤∞ÏÑ±Í≤ÄÏÇ¨Î•º ÏàòÌñâÌïúÎã§. */
+    /* Level 1¿Ã≥™ Level 3¿Ã µÈæÓø√ ºˆ ¿÷¥¬µ• Level 1¿Œ ∞ÊøÏø°¥¬
+     * π´¡∂∞« ∏µÁ µΩ∫≈© B-TREE ¿Œµ¶Ω∫ø° ¥Î«ÿ π´∞·º∫∞ÀªÁ∏¶ ºˆ«‡«—¥Ÿ. */
     sResult = ID_TRUE;
 
     IDE_TEST_RAISE( smuProperty::getCheckDiskIndexIntegrity()
@@ -1263,8 +1277,8 @@ idBool smnManager::isIndexToVerifyIntegrity( const void * aIndexHeader )
         }
     }
 
-    /* BUG-40385 sResult Í∞íÏóê Îî∞Îùº Failure Î¶¨ÌÑ¥Ïùº Ïàò ÏûàÏúºÎØÄÎ°ú,
-     * ÏúÑÏóê IDE_TEST_RAISE -> IDE_TEST_CONT Î°ú Î≥ÄÌôòÌïòÏßÄ ÏïäÎäîÎã§. */
+    /* BUG-40385 sResult ∞™ø° µ˚∂Û Failure ∏Æ≈œ¿œ ºˆ ¿÷¿∏π«∑Œ,
+     * ¿ßø° IDE_TEST_RAISE -> IDE_TEST_CONT ∑Œ ∫Ø»Ø«œ¡ˆ æ ¥¬¥Ÿ. */
     IDE_EXCEPTION_CONT( cont_finish );
 
     return sResult;
@@ -1273,8 +1287,8 @@ idBool smnManager::isIndexToVerifyIntegrity( const void * aIndexHeader )
 
 /***********************************************************************
  *
- * Description : ÏÑúÎ≤ÑÍµ¨ÎèôÏãúÏóê Ïù∏Îç±Ïä§ Î¨¥Í≤∞ÏÑ±ÏùÑ __SM_CHECK_DISK_INDEX_INTEGRITY
- *               ÌîÑÎ°úÌçºÌã∞Ïóê Îî∞ÎùºÏÑú Í≤ÄÏ¶ùÌïúÎã§.
+ * Description : º≠πˆ±∏µøΩ√ø° ¿Œµ¶Ω∫ π´∞·º∫¿ª __SM_CHECK_DISK_INDEX_INTEGRITY
+ *               «¡∑Œ∆€∆ºø° µ˚∂Ûº≠ ∞À¡ı«—¥Ÿ.
  *
  **********************************************************************/
 IDE_RC smnManager::verifyIndexIntegrityAtStartUp()
@@ -1347,8 +1361,8 @@ void smnManager::createIndexesParallel( void * aParam )
 
 /* ------------------------------------------------
  * Description:
- * Index Level Parallel Index RebuildingÏãú ÏãúÏö©ÎêòÎäî Ìï®Ïàò.
- * Ïù¥ Ìï®ÏàòÎäî Îã§Ï§ë threadÎ°ú Ìò∏Ï∂úÎêòÏñ¥, Ïó¨Îü¨ IndexÎ•º ÎèôÏãúÏóê build ÌïúÎã§.
+ * Index Level Parallel Index RebuildingΩ√ Ω√øÎµ«¥¬ «‘ºˆ.
+ * ¿Ã «‘ºˆ¥¬ ¥Ÿ¡ﬂ thread∑Œ »£√‚µ«æÓ, ø©∑Ø Index∏¶ µøΩ√ø° build «—¥Ÿ.
  * ----------------------------------------------*/
 void smnManager::buildIndexParallel( void * aParam )
 {
@@ -1379,13 +1393,13 @@ void smnManager::buildIndexParallel( void * aParam )
                                 sTable,
                                 sIndex,
                                 ID_FALSE, /* aIsNeedValidation */
-                                ID_TRUE, /* aIsPersistent */
+                                ID_TRUE,  /* aIsPersistent */
                                 0, /* aParallelDegree */
                                 0, /* aBuildFlag */
-                                0 /* aTotalRecCnt */ )
+                                0  /* aTotalRecCnt */ )
                     != IDE_SUCCESS, ERR_BUILD_INDEX ); 
     
-    /* createIndexÏóêÏÑú ÏÉùÏÑ±Ìïú Ïù∏Îç±Ïä§ ÏÉùÏÑ± Ï†ïÎ≥¥Í∞Ä Ï†ÄÏû•Îêú Í≥µÍ∞ÑÏùÑ freeÌïúÎã§. */
+    /* createIndexø°º≠ ª˝º∫«— ¿Œµ¶Ω∫ ª˝º∫ ¡§∫∏∞° ¿˙¿Âµ» ∞¯∞£¿ª free«—¥Ÿ. */
     ( void )iduMemMgr::free( sRebuildInfo );
 
 #ifdef DEBUG
@@ -1406,25 +1420,42 @@ void smnManager::buildIndexParallel( void * aParam )
     return;
 
     IDE_EXCEPTION( ERR_BUILD_INDEX )
-    {    
-        /* BUG-42169 rebuild indexÏãú uniquenessÍ∞Ä Íπ®ÏßÑ Ïù∏Îç±Ïä§Í∞Ä Î∞úÍ≤¨Îê† Í≤ΩÏö∞
-         * Ìï¥Îãπ Ïù∏Îç±Ïä§Ïóê ÎåÄÌïú trcÎ°úÍ∑∏Î•º ÎÇ®Í∏∞Í≥† Í∑∏Ïô∏ Ïù∏Îç±Ïä§Ïóê ÎåÄÌï¥ÏÑúÎäî ÏûëÏóÖÏùÑ Í≥ÑÏÜç ÏßÑÌñâÌïúÎã§.*/
+    {
+        // BUG-47581 build memory index ø°º≠ øπø‹ πﬂª˝ ªÛ»≤ø° ¥Î«— ¡§∫∏ ∫∏∞≠.
+        // Ω«∆–«— Indexø° ¥Î«— ¡§∫∏ √‚∑¬
+        ideLog::log( IDE_ERR_0,
+                     "ERR-%05"ID_xPOINTER_FMT"(errno=%"ID_UINT32_FMT"): %s\n",
+                     E_ERROR_CODE(ideGetErrorCode()),
+                     ideGetSystemErrno(),
+                     ideGetErrorMsg(ideGetErrorCode()) );
+
+        ideLog::log( IDE_ERR_0,
+                     "Index creation failed [smnManager::buildIndexParallel()]\n"
+                     "IndexID: %"ID_UINT32_FMT", NAME: %s, "
+                     "TableOID: %"ID_vULONG_FMT"\n",
+                     sIndex->mId,
+                     sIndex->mName,
+                     sTable->mSelfOID );
+
+        /* BUG-42169 rebuild indexΩ√ uniqueness∞° ±˙¡¯ ¿Œµ¶Ω∫∞° πﬂ∞ﬂµ… ∞ÊøÏ
+         * «ÿ¥Á ¿Œµ¶Ω∫ø° ¥Î«— trc∑Œ±◊∏¶ ≥≤±‚∞Ì ±◊ø‹ ¿Œµ¶Ω∫ø° ¥Î«ÿº≠¥¬ ¿€æ˜¿ª ∞Ëº” ¡¯«‡«—¥Ÿ.*/
         if ( ideGetErrorCode() == smERR_ABORT_smnUniqueViolation )
         {    
-            /* Ïù∏Îç±Ïä§ ÏÉùÏÑ± Ïã§Ìå® ÏõêÏù∏Ïù¥ uniqueness Ï§ëÎ≥µÏùº Í≤ΩÏö∞
-             * Îã§Î•∏ Ïù∏Îç±Ïä§Ïóê ÎåÄÌï¥ÏÑúÎäî ÏûëÏóÖÏùÑ Í≥ÑÏÜç ÏßÑÌñâÌïúÎã§.*/
+            /* ¿Œµ¶Ω∫ ª˝º∫ Ω«∆– ø¯¿Œ¿Ã uniqueness ¡ﬂ∫π¿œ ∞ÊøÏ
+             * ¥Ÿ∏• ¿Œµ¶Ω∫ø° ¥Î«ÿº≠¥¬ ¿€æ˜¿ª ∞Ëº” ¡¯«‡«—¥Ÿ.*/
+            mIsInvalidUniqueness = ID_TRUE;  // BUG-47736
         }    
         else 
-        {    
-            /* uniquenessÏô∏Ïóê Îã§Î•∏ Ïù¥Ïú†Î°ú Ïù∏Îç±Ïä§ ÏÉùÏÑ±Ïù¥ Ïã§Ìå®Ìï† Í≤ΩÏö∞
-             * Í∏¥Í∏â Î≥µÍµ¨ Î™®ÎìúÍ∞Ä ÏïÑÎãàÎùºÎ©¥ ÏÑúÎ≤ÑÎ•º Ï†ïÏßÄÌïúÎã§. */
+        {
+            /* uniquenessø‹ø° ¥Ÿ∏• ¿Ã¿Ø∑Œ ¿Œµ¶Ω∫ ª˝º∫¿Ã Ω«∆–«“ ∞ÊøÏ
+             * ±‰±ﬁ ∫π±∏ ∏µÂ∞° æ∆¥œ∂Û∏È º≠πˆ∏¶ ¡§¡ˆ«—¥Ÿ. */
             IDE_ASSERT( smuProperty::getEmergencyStartupPolicy() 
                         != SMR_RECOVERY_NORMAL );
         }    
     }    
     IDE_EXCEPTION_END;
 
-    /* createIndexÏóêÏÑú ÏÉùÏÑ±Ìïú Ïù∏Îç±Ïä§ ÏÉùÏÑ± Ï†ïÎ≥¥ Ï†ÄÏû• Í≥µÍ∞ÑÏùÑ free ÌïúÎã§. */
+    /* createIndexø°º≠ ª˝º∫«— ¿Œµ¶Ω∫ ª˝º∫ ¡§∫∏ ¿˙¿Â ∞¯∞£¿ª free «—¥Ÿ. */
     ( void )iduMemMgr::free( sRebuildInfo );
 
     return; 
@@ -1436,14 +1467,14 @@ IDE_RC smnManager::rebuildIndexes()
     smpSlotHeader     * sSlotHeader;
     SChar             * sNxtRowPtr;
     SChar             * sCurRowPtr;
-    smSCN               sScn;
+    smSCN               sSCN;
     SChar               strBuffer[256];
     smuJobThreadMgr     sThreadMgr;
     smnRebuildMode      sRebuildMode;
 
-    /* TASK-6006 : REBUILD_INDEX_PARALLEL_MODE ÌîÑÎ°úÌçºÌã∞ Í∞íÏù¥
-     * TRUEÏùº Í≤ΩÏö∞ INDEX Îã®ÏúÑÎ°ú PARALLEL REBUILDÎ•º ÏàòÌñâÌïòÍ≥†
-     * FALSEÏùº Í≤ΩÏö∞ TABLE Îã®ÏúÑÎ°ú PARALLEL REBUILDÎ•º ÏàòÌñâÌïúÎã§. */
+    /* TASK-6006 : REBUILD_INDEX_PARALLEL_MODE «¡∑Œ∆€∆º ∞™¿Ã
+     * TRUE¿œ ∞ÊøÏ INDEX ¥‹¿ß∑Œ PARALLEL REBUILD∏¶ ºˆ«‡«œ∞Ì
+     * FALSE¿œ ∞ÊøÏ TABLE ¥‹¿ß∑Œ PARALLEL REBUILD∏¶ ºˆ«‡«—¥Ÿ. */
     sRebuildMode = smuProperty::getRebuildIndexParallelMode() == 0 
         ? SMN_INDEX_REBUILD_TABLE_MODE : SMN_INDEX_REBUILD_INDEX_MODE;
     if ( sRebuildMode == SMN_INDEX_REBUILD_INDEX_MODE )
@@ -1473,7 +1504,7 @@ IDE_RC smnManager::rebuildIndexes()
     IDE_CALLBACK_SEND_SYM(strBuffer);
 
     /* ------------------------------------------------
-     * [1] Catalog TableÏùò Index Rebuild
+     * [1] Catalog Table¿« Index Rebuild
      * ----------------------------------------------*/
     IDE_TEST( smnManager::createIndexes(
                                 NULL, /* aStatistics */
@@ -1488,7 +1519,7 @@ IDE_RC smnManager::rebuildIndexes()
               != IDE_SUCCESS );
 
     /* ------------------------------------------------
-     * [2] Meta & Normal TableÏùò Index Rebuild
+     * [2] Meta & Normal Table¿« Index Rebuild
      * ----------------------------------------------*/
     IDE_TEST( smcRecord::nextOIDall((smcTableHeader *)smmManager::m_catTableHeader,
                                     NULL, &sNxtRowPtr )
@@ -1498,22 +1529,22 @@ IDE_RC smnManager::rebuildIndexes()
     {
         sSlotHeader = (smpSlotHeader *)sNxtRowPtr;
         sTable      = (smcTableHeader *)(sSlotHeader + 1);
-        SM_GET_SCN( (smSCN*)&sScn, &(sSlotHeader->mCreateSCN) );
+        SM_GET_SCN( (smSCN*)&sSCN, &(sSlotHeader->mCreateSCN) );
 
-        // disk tableÏóê index rebuildÎäî skip
-        // --> disk GCÍ∞Ä Ìï®.
+        // disk tableø° index rebuild¥¬ skip
+        // --> disk GC∞° «‘.
         if ( SMI_TABLE_TYPE_IS_DISK( sTable ) == ID_FALSE )
         {
             // Do Selective Loaded Table Index Creation
-            // Index BuildÎ•º Ìï¥ÏïºÌïòÎäî Í≤ΩÏö∞Î•º Ï∂îÎ†§ÎÉÑ
-            // => DROP/DISCARD/OFFLINE TablespaceÏóê ÏÜçÌïú
-            //    TableÏù¥ ÏïÑÎãàÏñ¥Ïïº ÌïúÎã§
+            // Index Build∏¶ «ÿæﬂ«œ¥¬ ∞ÊøÏ∏¶ √ﬂ∑¡≥ø
+            // => DROP/DISCARD/OFFLINE Tablespaceø° º”«—
+            //    Table¿Ã æ∆¥œæÓæﬂ «—¥Ÿ
             if ( sctTableSpaceMgr::hasState( sTable->mSpaceID,
                                              SCT_SS_SKIP_INDEXBUILD )
                  == ID_FALSE )
             {
                 IDE_ASSERT( SMP_SLOT_IS_NOT_DROP( sSlotHeader ) );
-                IDE_ASSERT( !SM_SCN_IS_DELETED( sScn ) );
+                IDE_ASSERT( !SM_SCN_IS_DELETED( sSCN ) );
 
                 if ( sRebuildMode == SMN_INDEX_REBUILD_INDEX_MODE )
                 {
@@ -1547,6 +1578,14 @@ IDE_RC smnManager::rebuildIndexes()
 
     IDE_TEST( smuJobThread::finalize( &sThreadMgr ) != IDE_SUCCESS );
 
+    /* BUG-47736 Uniqueness ø° πÆ¡¶∞° ¿÷¿∏∏È º≠πˆ∏¶ ∂ÁøÏ∏È æ»µ»¥Ÿ.
+     * INDEX_REBUILD_AT_STARTUP == 0 ø°º≠¥¬ πÆ¡¶∞° ¿÷æÓµµ ∂Áøˆæﬂ «—¥Ÿ.
+     * 1. ¿œπ›¿˚¿Œ memory index : Property 0 ø°º≠ index build æ¯¿∏π«∑Œ uniqueness ∫Ø∞Ê æ¯¿Ω
+     * 2. meta table index : Property 0 ø°º≠µµ build index «œπ«∑Œ uniqueness ∫Ø∞Ê ¿÷¿Ω
+     *                       uniquenessøÕ property µ— ¥Ÿ »Æ¿Œ«ÿæﬂ «—¥Ÿ. */
+    IDE_TEST(( smuProperty::getIndexRebuildAtStartup() == 1 ) &&
+             ( mIsInvalidUniqueness == ID_TRUE ));
+
     IDE_CALLBACK_SEND_MSG(" [SUCCESS]");
 
     /* Remove Index File */
@@ -1557,6 +1596,13 @@ IDE_RC smnManager::rebuildIndexes()
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    if ( mIsInvalidUniqueness == ID_TRUE )
+    {
+        // BUG-47736
+        IDE_CALLBACK_SEND_MSG(" [FAILURE]");
+        IDE_CALLBACK_SEND_MSG("                           : Unique Violation Error Occurs");
+    }
 
     return IDE_FAILURE;
 }
@@ -1570,7 +1616,7 @@ IDE_RC smnManager::destroyIndexes()
     SChar          *sCurRowPtr;
 
     /* ------------------------------------------------
-     * [2] Meta & Normal TableÏùò Index Drop
+     * [2] Meta & Normal Table¿« Index Drop
      * ----------------------------------------------*/
     IDE_TEST( smcRecord::nextOIDall((smcTableHeader *)smmManager::m_catTableHeader,
                                     NULL, &sNxtRowPtr )
@@ -1584,9 +1630,9 @@ IDE_RC smnManager::destroyIndexes()
         // Do Selective Loaded Table Index Creation
         if ( SMP_SLOT_IS_NOT_DROP( sSlotHeader ) ||
             // fix BUG7959
-            // disk GCÎäî shutdownÏãú drop table pending Ïó∞ÏÇ∞ÏùÑ
-            // Î™ªÌï†Ïàò ÏûàÍ∏∞ ÎïåÎ¨∏Ïóê Ïó¨Í∏∞ÏÑú index runtime header
-            // memoryÎ•º Ìï¥Ï†úÌï¥Ïïº ÌïúÎã§.
+            // disk GC¥¬ shutdownΩ√ drop table pending ø¨ªÍ¿ª
+            // ∏¯«“ºˆ ¿÷±‚ ∂ßπÆø° ø©±‚º≠ index runtime header
+            // memory∏¶ «ÿ¡¶«ÿæﬂ «—¥Ÿ.
             ( SMP_SLOT_IS_DROP( sSlotHeader ) &&
               SMI_TABLE_TYPE_IS_DISK( sTable ) == ID_TRUE ) )
         {
@@ -1601,7 +1647,7 @@ IDE_RC smnManager::destroyIndexes()
     }
 
     /* ------------------------------------------------
-     * [1] Catalog TableÏùò Index Drop
+     * [1] Catalog Table¿« Index Drop
      * ----------------------------------------------*/
     IDE_TEST( dropIndexes( (smcTableHeader *)smmManager::m_catTableHeader )
               != IDE_SUCCESS );
@@ -1662,13 +1708,13 @@ IDE_RC smnManager::createIndexes(idvSQL*             aStatistics,
         sIndexHeader = (smnIndexHeader*)smcTable::getTableIndex(aTable,i);
         
         /* BUG-37062 
-         * disableÎêú indexÎ•º restartÌõÑ dropÏãú Ïì∞Î†àÍ∏∞ mHeaderÏóê Ï†ëÍ∑ºÌï¥ ÏÇ¨Îßù
-         * IndexRuntimeHeaderÏôÄ Module Ï†ïÎ≥¥Î•º Ï¥àÍ∏∞Ìôî Ìï¥Ï§ÄÎã§ */
+         * disableµ» index∏¶ restart»ƒ dropΩ√ æ≤∑π±‚ mHeaderø° ¡¢±Ÿ«ÿ ªÁ∏¡
+         * IndexRuntimeHeaderøÕ Module ¡§∫∏∏¶ √ ±‚»≠ «ÿ¡ÿ¥Ÿ */
         sIndexHeader->mModule = NULL;
         /* PROJ-2162 RestartRiskReduction
-         * CreateIndex Î∞è initIndexÏã§Ìå®Ìï† Í≤ΩÏö∞ IndexRuntimeHeaderÍ∞Ä
-         * ÏÉùÏÑ±ÎêòÏßÄ ÏïäÎäîÎã§. Ïù¥Îïå mHeaderÍ∞Ä Ïì∞Î†àÍ∏∞Í∞íÏùº Ïàò ÏûàÍ∏∞ ÎïåÎ¨∏Ïóê
-         * Ï¥àÍ∏∞ÌôîÌï¥Ï§ÄÎã§. */
+         * CreateIndex π◊ initIndexΩ«∆–«“ ∞ÊøÏ IndexRuntimeHeader∞°
+         * ª˝º∫µ«¡ˆ æ ¥¬¥Ÿ. ¿Ã∂ß mHeader∞° æ≤∑π±‚∞™¿œ ºˆ ¿÷±‚ ∂ßπÆø°
+         * √ ±‚»≠«ÿ¡ÿ¥Ÿ. */
         sIndexHeader->mHeader = NULL;
 
         if ( (sIndexHeader->mFlag & SMI_INDEX_USE_MASK) == SMI_INDEX_USE_DISABLE)
@@ -1688,8 +1734,8 @@ IDE_RC smnManager::createIndexes(idvSQL*             aStatistics,
                                       aSegStoAttr )
              != IDE_SUCCESS )
         {
-            /* RestartRecoveryÏãúÏùò BuildÍ∞Ä ÏïÑÎãàÍ±∞ÎÇò,
-             * Í∏¥Í∏âÎ≥µÍµ¨Î™®ÎìúÍ∞Ä ÏïÑÎãàÎ©¥ ÏÑúÎ≤Ñ Ï¢ÖÎ£åÏãúÌÇ¥. */
+            /* RestartRecoveryΩ√¿« Build∞° æ∆¥œ∞≈≥™,
+             * ±‰±ﬁ∫π±∏∏µÂ∞° æ∆¥œ∏È º≠πˆ ¡æ∑·Ω√≈¥. */
             IDE_TEST( ( aIsRestartBuild == ID_FALSE ) ||
                       ( smuProperty::getEmergencyStartupPolicy() 
                         == SMR_RECOVERY_NORMAL ) );
@@ -1744,14 +1790,14 @@ IDE_RC smnManager::dropIndexes( smcTableHeader * aTable )
 }
 
 /**********************************************************************
- * Description: Ï£ºÏñ¥ÏßÑ table headerÏóê Ìè¨Ìï®Îêú Î™®Îì† indexÎ•º ÎπÑÌôúÏÑ±Ìôî ÌïúÎã§.
+ * Description: ¡÷æÓ¡¯ table headerø° ∆˜«‘µ» ∏µÁ index∏¶ ∫Ò»∞º∫»≠ «—¥Ÿ.
  *
  * Related Issues:
- *      PROJ-2184 RP Sync ÏÑ±Îä• Ìñ•ÏÉÅ
+ *      PROJ-2184 RP Sync º∫¥… «‚ªÛ
  *
  * aStatistics  - [IN] idvSQL
  * aTrans       - [IN] smxTrans
- * aTableHeader - [IN] Î™®Îì† indexÎ•º ÎπÑÌôúÏÑ±Ìôî Ìï† ÎåÄÏÉÅ table header
+ * aTableHeader - [IN] ∏µÁ index∏¶ ∫Ò»∞º∫»≠ «“ ¥ÎªÛ table header
  *********************************************************************/
 IDE_RC smnManager::disableAllIndex( idvSQL          * aStatistics,
                                     void            * aTrans,
@@ -1773,7 +1819,7 @@ IDE_RC smnManager::disableAllIndex( idvSQL          * aStatistics,
         {
             sIndexSegGRID = getIndexSegGRIDPtr(sIndexHeader);
 
-            if ( SC_GRID_IS_NULL(*sIndexSegGRID) == ID_FALSE )
+            if ( SC_GRID_IS_NOT_NULL(*sIndexSegGRID) )
             {
                 IDE_TEST( sdpSegment::freeIndexSeg4Entry(
                                             aStatistics,
@@ -1808,48 +1854,39 @@ IDE_RC smnManager::disableAllIndex( idvSQL          * aStatistics,
 }
 
 /*******************************************************************************
- * Description: ÎåÄÏÉÅ ÌÖåÏù¥Î∏îÏùò Î™®Îì† indexÎ•º ÌôúÏÑ±Ìôî ÌïúÎã§.
+ * Description: ¥ÎªÛ ≈◊¿Ã∫Ì¿« ∏µÁ index∏¶ »∞º∫»≠ «—¥Ÿ.
  *
  * Related Issues:
- *      PROJ-2184 RP Sync ÏÑ±Îä• Ìñ•ÏÉÅ
+ *      PROJ-2184 RP Sync º∫¥… «‚ªÛ
  *
  *
  * aStatistics      - [IN] idvSQL
  * aTrans           - [IN] smxTrans
- * aTableHeader     - [IN] Î™®Îì† indexÎ•º ÌôúÏÑ±ÌôîÌï† ÎåÄÏÉÅ tableÏùò header
+ * aTableHeader     - [IN] ∏µÁ index∏¶ »∞º∫»≠«“ ¥ÎªÛ table¿« header
  ******************************************************************************/
 IDE_RC smnManager::enableAllIndex( idvSQL          * aStatistics,
                                    void            * aTrans,
                                    smcTableHeader  * aTableHeader )
 {
     smnIndexHeader    * sIndexHeader;
-    smSCN             * sCommitSCN;
     ULong               sTotalRecCount = 0;
     UInt                sBuildFlag = SMI_INDEX_BUILD_DEFAULT;
     UInt                sIndexIdx;
     UInt                sIndexCnt = smcTable::getIndexCount(aTableHeader);
     UInt                sTableType = aTableHeader->mFlag & SMI_TABLE_TYPE_MASK;
 
-
-    IDE_TEST( smmDatabase::getCommitSCN( NULL,     /* aTrans */
-                                         ID_FALSE, /* aIsLegacyTrans */
-                                         NULL )    /* aStatus */
-              != IDE_SUCCESS );
-    sCommitSCN = smmDatabase::getLstSystemSCN();
-
     for ( sIndexIdx = 0 ; sIndexIdx < sIndexCnt; sIndexIdx++ )
     {
         sIndexHeader = (smnIndexHeader*)smcTable::getTableIndex( aTableHeader,
                                                                  sIndexIdx );
 
-        IDE_ERROR( SC_GRID_IS_NULL(sIndexHeader->mIndexSegDesc) == ID_TRUE );
+        IDE_ERROR( SC_GRID_IS_NULL(sIndexHeader->mIndexSegDesc) );
 
         /* PROJ-2162 RestartRiskReduction
-         * CreateIndex Î∞è initIndexÏã§Ìå®Ìï† Í≤ΩÏö∞ IndexRuntimeHeaderÍ∞Ä
-         * ÏÉùÏÑ±ÎêòÏßÄ ÏïäÎäîÎã§. Ïù¥Îïå mHeaderÍ∞Ä Ïì∞Î†àÍ∏∞Í∞íÏùº Ïàò ÏûàÍ∏∞ ÎïåÎ¨∏Ïóê
-         * Ï¥àÍ∏∞ÌôîÌï¥Ï§ÄÎã§. */
+         * CreateIndex π◊ initIndexΩ«∆–«“ ∞ÊøÏ IndexRuntimeHeader∞°
+         * ª˝º∫µ«¡ˆ æ ¥¬¥Ÿ. ¿Ã∂ß mHeader∞° æ≤∑π±‚∞™¿œ ºˆ ¿÷±‚ ∂ßπÆø°
+         * √ ±‚»≠«ÿ¡ÿ¥Ÿ. */
         sIndexHeader->mHeader = NULL;
-        SM_GET_SCN( &sIndexHeader->mCreateSCN, sCommitSCN );
 
         if ( sTableType == SMI_TABLE_DISK )
         {
@@ -1887,8 +1924,8 @@ IDE_RC smnManager::enableAllIndex( idvSQL          * aStatistics,
                              0)     /* SmoNo */
                   != IDE_SUCCESS);
 
-        /* all index enable ÎèÑÏ§ë abort Î∞úÏÉù Ïãú, Ïù¥ÎØ∏ create ÎÅùÎÇú indexÎì§ÏùÑ
-         * Îã§Ïãú drop Ìï¥Ï£ºÎèÑÎ°ù NTA log Í∏∞Î°ù */
+        /* all index enable µµ¡ﬂ abort πﬂª˝ Ω√, ¿ÃπÃ create ≥°≥≠ indexµÈ¿ª
+         * ¥ŸΩ√ drop «ÿ¡÷µµ∑œ NTA log ±‚∑œ */
         IDE_TEST( smrLogMgr::writeNTALogRec(
                               aStatistics,
                               aTrans,
@@ -1924,15 +1961,13 @@ IDE_RC smnManager::enableAllIndex( idvSQL          * aStatistics,
 
 
 IDE_RC smnManager::indexOperation( idvSQL*, void*, void*, void*, smSCN,
-                                   SChar*, SChar*, idBool, smSCN, void*, SChar**, ULong )
+                                   SChar*, SChar*, idBool, smSCN, void*, SChar**, ULong, idBool )
 {
     // PR-14912
-    // initTempIndexHeaderÏôÄ initIndexHeaderÏóêÏÑú
-    // Í∏∞Î≥∏ÏúºÎ°ú Ìï¥Îãπ Ìï®ÏàòÎ•º mInsert
-    // Ïóê assign ÌïòÍ∏∞ ÎïåÎ¨∏Ïù¥Îã§.
-    // Í∑∏ Ïù¥ÌõÑÏóê index runtime headerÍ∞Ä Ï†úÎåÄÎ°ú
-    // Ï¥àÍ∏∞ÌôîÎêòÏßÄ ÏïäÎäîÎã§Î©¥ cursor closeÏãúÏóê Ìï¥Îãπ
-    // Ìï®ÏàòÎ°ú ÏßÑÏûÖÌïòÍ≤å ÎêúÎã§. assert Ï≤òÎ¶¨!!
+    // initIndexHeaderø°º≠ ±‚∫ª¿∏∑Œ ¿Ã «‘ºˆ∏¶ mInsert ø° assign.
+    // ±◊ ¿Ã»ƒø° index runtime header∞° ¡¶¥Î∑Œ
+    // √ ±‚»≠µ«¡ˆ æ ¥¬¥Ÿ∏È cursor closeΩ√ø° «ÿ¥Á
+    // «‘ºˆ∑Œ ¡¯¿‘«œ∞‘ µ»¥Ÿ. assert √≥∏Æ!!
     IDE_ASSERT( 0 );
 
     return IDE_SUCCESS;
@@ -1944,8 +1979,8 @@ IDE_RC smnManager::lockVolRow( smiIterator* aIterator)
 {
     smpSlotHeader* sVolRow;
 
-    smSCN sSCN;
-    smTID sTID;
+    smSCN  sSCN;
+    smTID  sTID;
 
     updatedVolRow( aIterator );
 
@@ -1961,7 +1996,8 @@ IDE_RC smnManager::lockVolRow( smiIterator* aIterator)
                                       aIterator->SCN,
                                       (smcTableHeader*)aIterator->table,
                                       aIterator->curRecPtr,
-                                      aIterator->properties->mLockWaitMicroSec )
+                                      aIterator->properties->mLockWaitMicroSec,
+                                      aIterator->mStatement->isForbiddenToRetry() )
                   != IDE_SUCCESS );
     }
     else
@@ -2007,7 +2043,8 @@ IDE_RC smnManager::lockMemRow( smiIterator* aIterator)
                                           aIterator->SCN,
                                           (smcTableHeader*)aIterator->table,
                                           aIterator->curRecPtr,
-                                          aIterator->properties->mLockWaitMicroSec )
+                                          aIterator->properties->mLockWaitMicroSec,
+                                          aIterator->mStatement->isForbiddenToRetry() )
                       != IDE_SUCCESS );
         }
         else
@@ -2023,8 +2060,8 @@ IDE_RC smnManager::lockMemRow( smiIterator* aIterator)
     return IDE_FAILURE;
 }
 
-/*Lock rowÏó∞ÏÇ∞ÏùÑ ÏàòÌñâÌïòÍ∏∞Ï†ÑÏóê Ìò∏Ï∂úÌïòÎäî Ìï®Ïàò. lockÏùÑ Í±∏Í≥†Ïûê ÌïòÎäî rowÏùò ÎßàÏßÄÎßâ Î≤ÑÏ†ÑÏùÑ Ï∞æÏïÑÏÑú
- * IteraterÏóê ÏÑ∏ÌåÖÌïúÎã§. lock rowÏó∞ÏÇ∞ÏùÄ Í∞ÄÏû• ÎßàÏßÄÎßâ Î≤ÑÏ†ÑÏùò mNextÏóê ÏÑ∏ÌåÖÎêúÎã§.
+/*Lock rowø¨ªÍ¿ª ºˆ«‡«œ±‚¿¸ø° »£√‚«œ¥¬ «‘ºˆ. lock¿ª ∞…∞Ì¿⁄ «œ¥¬ row¿« ∏∂¡ˆ∏∑ πˆ¿¸¿ª √£æ∆º≠
+ * Iteraterø° ºº∆√«—¥Ÿ. lock rowø¨ªÍ¿∫ ∞°¿Â ∏∂¡ˆ∏∑ πˆ¿¸¿« mNextø° ºº∆√µ»¥Ÿ.
  */
 void smnManager::updatedMemRow( smiIterator* aIterator )
 {
@@ -2036,8 +2073,8 @@ void smnManager::updatedMemRow( smiIterator* aIterator )
 
     sRow = (smpSlotHeader*)(aIterator->curRecPtr);
 
-    /*ÌòÑÏû¨ rowÍ∞Ä ÎßàÏßÄÎßâ versionÏù¥ ÏïÑÎãê Ï°∞Í±¥ÏùÄ mNextÍ∞Ä LockÎòêÎäî DeleteSCNÏù¥ ÏÑ§Ï†ïÎêòÏßÄ ÏïäÏïòÍ≥†,
-     * mNextÏóê OIDÍ∞Ä ÏÑ§Ï†ïÎêòÏñ¥ÏûàÎäîÎç∞, Ïù¥Í≤ÉÏù¥ NULLÏù¥ ÏïÑÎãêÎïåÏù¥Îã§.*/
+    /*«ˆ¿Á row∞° ∏∂¡ˆ∏∑ version¿Ã æ∆¥“ ¡∂∞«¿∫ mNext∞° Lock∂«¥¬ DeleteSCN¿Ã º≥¡§µ«¡ˆ æ æ“∞Ì,
+     * mNextø° OID∞° º≥¡§µ«æÓ¿÷¥¬µ•, ¿Ã∞Õ¿Ã NULL¿Ã æ∆¥“∂ß¿Ã¥Ÿ.*/
     sNextOID = SMP_SLOT_GET_NEXT_OID( sRow );
     if ( SM_IS_VALID_OID( sNextOID ) )
     {
@@ -2048,9 +2085,9 @@ void smnManager::updatedMemRow( smiIterator* aIterator )
 
         SMX_GET_SCN_AND_TID( sRow->mCreateSCN, sRowSCN, sRowTID );
 
-        /*Îã§Î•∏ Ìä∏ÎûúÏû≠ÏÖòÏóê ÏùòÌï¥ÏÑú Îã§Ïùå Î≤ÑÏ†ÑÏù¥ ÏÉùÍ≤ºÎã§Î©¥ ÎçîÏù¥ÏÉÅ ÏÇ¥Ìé¥Î≥¥ÏßÄ ÏïäÎäîÎã§. ÏôúÎÉêÌïòÎ©¥,
-         * ÏûêÏã†Ïù¥ Ïó∞ÏÇ∞ÏùÑ ÌïòÍ∏∞Ïóê ÏïûÏÑú Î®ºÏ†Ä Ïó∞ÏÇ∞ÏùÑ Ìïú Ìä∏ÎûúÏû≠ÏÖòÏù¥ ÏûàÏúºÎØÄÎ°ú, ÌòÑÏû¨ Ïó∞ÏÇ∞ÏùÄ
-         * ÎçîÏù¥ÏÉÅ ÏßÑÌñâÎêòÏßÄ ÏïäÏùÑÍ≤ÉÏù¥Îã§.*/
+        /*¥Ÿ∏• ∆Æ∑£¿Ëº«ø° ¿««ÿº≠ ¥Ÿ¿Ω πˆ¿¸¿Ã ª˝∞Â¥Ÿ∏È ¥ı¿ÃªÛ ªÏ∆Ï∫∏¡ˆ æ ¥¬¥Ÿ. ø÷≥ƒ«œ∏È,
+         * ¿⁄Ω≈¿Ã ø¨ªÍ¿ª «œ±‚ø° æ’º≠ ∏’¿˙ ø¨ªÍ¿ª «— ∆Æ∑£¿Ëº«¿Ã ¿÷¿∏π«∑Œ, «ˆ¿Á ø¨ªÍ¿∫
+         * ¥ı¿ÃªÛ ¡¯«‡µ«¡ˆ æ ¿ª∞Õ¿Ã¥Ÿ.*/
         if ( ( sRowTID == aIterator->tid ) && ( SM_SCN_IS_INFINITE(sRowSCN) ) ) 
         {
             aIterator->curRecPtr = (SChar*)sRow;
@@ -2079,8 +2116,8 @@ void smnManager::updatedMemRow( smiIterator* aIterator )
     }
 }
 
-/*Lock rowÏó∞ÏÇ∞ÏùÑ ÏàòÌñâÌïòÍ∏∞Ï†ÑÏóê Ìò∏Ï∂úÌïòÎäî Ìï®Ïàò. lockÏùÑ Í±∏Í≥†Ïûê ÌïòÎäî rowÏùò ÎßàÏßÄÎßâ Î≤ÑÏ†ÑÏùÑ Ï∞æÏïÑÏÑú
- * IteraterÏóê ÏÑ∏ÌåÖÌïúÎã§. lock rowÏó∞ÏÇ∞ÏùÄ Í∞ÄÏû• ÎßàÏßÄÎßâ Î≤ÑÏ†ÑÏùò mNextÏóê ÏÑ∏ÌåÖÎêúÎã§.
+/*Lock rowø¨ªÍ¿ª ºˆ«‡«œ±‚¿¸ø° »£√‚«œ¥¬ «‘ºˆ. lock¿ª ∞…∞Ì¿⁄ «œ¥¬ row¿« ∏∂¡ˆ∏∑ πˆ¿¸¿ª √£æ∆º≠
+ * Iteraterø° ºº∆√«—¥Ÿ. lock rowø¨ªÍ¿∫ ∞°¿Â ∏∂¡ˆ∏∑ πˆ¿¸¿« mNextø° ºº∆√µ»¥Ÿ.
  */
 void smnManager::updatedVolRow( smiIterator* aIterator )
 {
@@ -2092,21 +2129,21 @@ void smnManager::updatedVolRow( smiIterator* aIterator )
 
     sRow = (smpSlotHeader*)(aIterator->curRecPtr);
 
-    /*ÌòÑÏû¨ rowÍ∞Ä ÎßàÏßÄÎßâ versionÏù¥ ÏïÑÎãê Ï°∞Í±¥ÏùÄ mNextÍ∞Ä LockÎòêÎäî DeleteSCNÏù¥ ÏÑ§Ï†ïÎêòÏßÄ ÏïäÏïòÍ≥†,
-     * mNextÏóê OIDÍ∞Ä ÏÑ§Ï†ïÎêòÏñ¥ÏûàÎäîÎç∞, Ïù¥Í≤ÉÏù¥ NULLÏù¥ ÏïÑÎãêÎïåÏù¥Îã§.*/
+    /*«ˆ¿Á row∞° ∏∂¡ˆ∏∑ version¿Ã æ∆¥“ ¡∂∞«¿∫ mNext∞° Lock∂«¥¬ DeleteSCN¿Ã º≥¡§µ«¡ˆ æ æ“∞Ì,
+     * mNextø° OID∞° º≥¡§µ«æÓ¿÷¥¬µ•, ¿Ã∞Õ¿Ã NULL¿Ã æ∆¥“∂ß¿Ã¥Ÿ.*/
     sNextOID = SMP_SLOT_GET_NEXT_OID( sRow );
     if ( SM_IS_VALID_OID( sNextOID ) )
     {
-        IDE_ASSERT( svmManager::getOIDPtr( sSpaceID,
+        IDE_ASSERT( smmManager::getOIDPtr( sSpaceID,
                                            sNextOID,
                                            (void**)&sRow )
                     == IDE_SUCCESS );
 
         SMX_GET_SCN_AND_TID( sRow->mCreateSCN, sRowSCN, sRowTID );
 
-        /*Îã§Î•∏ Ìä∏ÎûúÏû≠ÏÖòÏóê ÏùòÌï¥ÏÑú Îã§Ïùå Î≤ÑÏ†ÑÏù¥ ÏÉùÍ≤ºÎã§Î©¥ ÎçîÏù¥ÏÉÅ ÏÇ¥Ìé¥Î≥¥ÏßÄ ÏïäÎäîÎã§. ÏôúÎÉêÌïòÎ©¥,
-         * ÏûêÏã†Ïù¥ Ïó∞ÏÇ∞ÏùÑ ÌïòÍ∏∞Ïóê ÏïûÏÑú Î®ºÏ†Ä Ïó∞ÏÇ∞ÏùÑ Ìïú Ìä∏ÎûúÏû≠ÏÖòÏù¥ ÏûàÏúºÎØÄÎ°ú, ÌòÑÏû¨ Ïó∞ÏÇ∞ÏùÄ
-         * ÎçîÏù¥ÏÉÅ ÏßÑÌñâÎêòÏßÄ ÏïäÏùÑÍ≤ÉÏù¥Îã§.*/
+        /*¥Ÿ∏• ∆Æ∑£¿Ëº«ø° ¿««ÿº≠ ¥Ÿ¿Ω πˆ¿¸¿Ã ª˝∞Â¥Ÿ∏È ¥ı¿ÃªÛ ªÏ∆Ï∫∏¡ˆ æ ¥¬¥Ÿ. ø÷≥ƒ«œ∏È,
+         * ¿⁄Ω≈¿Ã ø¨ªÍ¿ª «œ±‚ø° æ’º≠ ∏’¿˙ ø¨ªÍ¿ª «— ∆Æ∑£¿Ëº«¿Ã ¿÷¿∏π«∑Œ, «ˆ¿Á ø¨ªÍ¿∫
+         * ¥ı¿ÃªÛ ¡¯«‡µ«¡ˆ æ ¿ª∞Õ¿Ã¥Ÿ.*/
         if ( ( sRowTID == aIterator->tid ) && ( SM_SCN_IS_INFINITE(sRowSCN) ) )
         {
             aIterator->curRecPtr = (SChar*)sRow;
@@ -2115,7 +2152,7 @@ void smnManager::updatedVolRow( smiIterator* aIterator )
 
             while ( SM_IS_VALID_OID( sNextOID ) )
             {
-                IDE_ASSERT( svmManager::getOIDPtr( sSpaceID,
+                IDE_ASSERT( smmManager::getOIDPtr( sSpaceID,
                                                    sNextOID,
                                                    (void**)&aIterator->curRecPtr )
                             == IDE_SUCCESS );
@@ -2260,34 +2297,30 @@ UInt smnManager::getIndexIDOfIndexHeader( void * a_pIndexHeader )
 
 }
 
-IDE_RC smnManager::indexInsertFunc( idvSQL*  aStatistics,
-                                    void   * a_pTrans,
-                                    void   * aTable,
-                                    void   * a_pIndexHeader,
-                                    smSCN    aInfiniteSCN,
-                                    SChar  * a_pRow,
-                                    SChar  * a_pNull,
-                                    idBool   a_uniqueCheck,
-                                    smSCN    aStmtSCN )
+IDE_RC smnManager::indexInsertWithoutUniqueCheck( void   * a_pTrans,
+                                                  void   * aTable,
+                                                  void   * a_pIndexHeader,
+                                                  SChar  * a_pRow,
+                                                  SChar  * a_pNull )
 {
-
-    return (((smnIndexHeader*)a_pIndexHeader)->mInsert(aStatistics,
-                                                       a_pTrans,
-                                                       aTable,
-                                                       a_pIndexHeader,
-                                                       aInfiniteSCN,
-                                                       a_pRow,
-                                                       a_pNull,
-                                                       a_uniqueCheck,
-                                                       aStmtSCN,
-                                                       NULL,
-                                                       NULL,
-                                                       ID_ULONG_MAX /* aInsertWaitTime */ ) );
+    return (((smnIndexHeader*)a_pIndexHeader)->mInsert( NULL,         /* idvSQL* */
+                                                        a_pTrans,
+                                                        aTable,
+                                                        a_pIndexHeader,
+                                                        SM_SCN_INIT,  /* aInfiniteSCN = No Use */ 
+                                                        a_pRow,
+                                                        a_pNull,
+                                                        ID_FALSE,      /* aUniqueCheck = ID_FALSE */
+                                                        SM_SCN_INIT,   /* statement SCN = No Use */
+                                                        NULL,          /* aRowSID */
+                                                        NULL,          /* aExistUniqueRow */
+                                                        ID_ULONG_MAX,  /* aInsertWaitTime */ 
+                                                        ID_FALSE ));   /* aForbiddenToRetry */
 }
 
 /*
- * smcRecordUpdate.cpp ÏóêÏÑúÎßå Ìò∏Ï∂ú
- * Memory IndexÏóê ÎåÄÌïú Function
+ * smcRecordUpdate.cpp ø°º≠∏∏ »£√‚
+ * Memory Indexø° ¥Î«— Function
  */
 IDE_RC smnManager::indexDeleteFunc( void   * a_pIndexHeader,
                                     SChar  * a_pRow,
@@ -2308,7 +2341,6 @@ IDE_RC smnManager::indexDeleteFunc( void   * a_pIndexHeader,
 
 void smnManager::initIndexHeader( void                * aIndexHeader,
                                   smOID                 aTableSelfOID,
-                                  smSCN                 aCommitSCN,
                                   SChar               * aName,
                                   UInt                  aID,
                                   UInt                  aType,
@@ -2326,11 +2358,8 @@ void smnManager::initIndexHeader( void                * aIndexHeader,
     sIndexHeader = (smnIndexHeader*)aIndexHeader;
 
     sIndexHeader->mTableOID     = aTableSelfOID;
-    // smpVarPageList::allocSlot Ïù¥ÌõÑÏóê ÏÑ§Ï†ïÌï¥Ïïº Ìï®.
+    // smpVarPageList::allocSlot ¿Ã»ƒø° º≥¡§«ÿæﬂ «‘.
     sIndexHeader->mSelfOID      = SM_NULL_OID;
-    // AGINGÏãú Ìï¥Îãπ Ïù∏Îç±Ïä§ ÏÉùÏÑ± Ïù¥Ï†ÑÏóê ÏÇ≠Ï†úÎêú ÌÇ§Îì§ÏùÑ Î¨¥ÏãúÌïòÍ∏∞ ÏúÑÌïòÏó¨
-    // ÏÇ≠Ï†úÎêú Î†àÏΩîÎìúÍ∞Ä Í∞ñÎäî SCNÎ≥¥Îã§ ÌÅ∞ SCNÏùÑ Ïù∏Îç±Ïä§Ïóê ÏÑ§Ï†ïÌïúÎã§.
-    SM_SET_SCN( &sIndexHeader->mCreateSCN, &aCommitSCN);
     sIndexHeader->mModule           = NULL;
     sIndexHeader->mColumnCount      = 0;
     idlOS::strncpy( sIndexHeader->mName, aName, SMN_MAX_INDEX_NAME_SIZE );
@@ -2347,14 +2376,18 @@ void smnManager::initIndexHeader( void                * aIndexHeader,
     SC_MAKE_NULL_GRID( sIndexHeader->mIndexSegDesc );
     idlOS::memset( &sIndexHeader->mStat, 0, ID_SIZEOF( smiIndexStat ) );
 
+    //BUG-47885: qpø°º≠ index º¯º≠∏¶ ø√πŸ∑Œ ∫º ºˆ ¿÷µµ∑œ ID º≥¡§
+    sIndexHeader->mStat.mId         = aID;
+    sIndexHeader->mStat.mDummy      = 0;
+
     sColumns = (smiColumnList *)aColumns;
 
     while ( sColumns != NULL )
     {
-        /* BUGBUG : column Í∞ØÏàòÏùò validationÏù¥ ÌïÑÏöîÌï® */
+        /* BUGBUG : column ∞πºˆ¿« validation¿Ã « ø‰«‘ */
         /* BUG-27516 [5.3.3 release] Klocwork SM (5)
-         * Column CountÎäî 0 ~ SMI_MAX_IDX_COLUMNS-1ÏÇ¨Ïù¥Ïùò Í∞íÎßå
-         * ÏÜåÏú†Ìï¥Ïïº Ìï©ÎãàÎã§.
+         * Column Count¥¬ 0 ~ SMI_MAX_IDX_COLUMNS-1ªÁ¿Ã¿« ∞™∏∏
+         * º“¿Ø«ÿæﬂ «’¥œ¥Ÿ.
          */
         IDE_ASSERT( sIndexHeader->mColumnCount < SMI_MAX_IDX_COLUMNS );
 
@@ -2396,7 +2429,7 @@ void smnManager::initIndexHeader( void                * aIndexHeader,
     sIndexHeader->mSegStorageAttr = *aSegStoAttr;
 
     /* PROJ-2433
-     * aDirectKEyMaxSizeÍ∞Ä 0Ïù¥Î©¥, property __MEM_BTREE_DEFAULT_MAX_KEY_SIZE ÏúºÎ°ú Ï¥àÍ∏∞Ìôî */
+     * aDirectKEyMaxSize∞° 0¿Ã∏È, property __MEM_BTREE_DEFAULT_MAX_KEY_SIZE ¿∏∑Œ √ ±‚»≠ */
     if ( ( aFlag & SMI_INDEX_DIRECTKEY_MASK ) == SMI_INDEX_DIRECTKEY_TRUE )
     {
         if ( aDirectKeyMaxSize == 0 )
@@ -2412,49 +2445,6 @@ void smnManager::initIndexHeader( void                * aIndexHeader,
     {
         sIndexHeader->mMaxKeySize = 0;
     }
-}
-
-void   smnManager::initTempIndexHeader( void                * aIndexHeader,
-                                        smOID                 aTableSelfOID,
-                                        smSCN                 aStmtSCN,
-                                        UInt                  aID,
-                                        UInt                  aType,
-                                        UInt                  aFlag,
-                                        const smiColumnList * aColumns,
-                                        smiSegAttr          * aSegAttr,
-                                        smiSegStorageAttr   * aSegStoAttr )
-{
-
-    smiColumn       * sColumn;
-    smiColumnList   * sColumns;
-    smnIndexHeader  * sIndexHeader;
-
-    sIndexHeader = (smnIndexHeader*)aIndexHeader;
-
-    sIndexHeader->mTableOID         = aTableSelfOID;
-    SM_SET_SCN( &sIndexHeader->mCreateSCN, &aStmtSCN);
-    sIndexHeader->mModule           = NULL;
-    sIndexHeader->mColumnCount      = 0;
-    sIndexHeader->mId               = aID;
-    sIndexHeader->mType             = aType;
-    sIndexHeader->mFlag             = aFlag;
-    sIndexHeader->mHeader           = NULL;
-    sIndexHeader->mInsert           = 
-                      (smnInsertFunc)smnManager::indexOperation;
-    sIndexHeader->mColumnLst        =  (smiColumnList*)aColumns;
-    sColumns = (smiColumnList *)aColumns;
-    sColumn = (smiColumn*)sColumns->column;
-
-    IDE_ASSERT( sColumn != NULL);
-
-    while ( sColumns != NULL )
-    {
-        sColumns = sColumns->next;
-        sIndexHeader->mColumnCount++;
-    }
-
-    sIndexHeader->mSegAttr = *aSegAttr;
-    sIndexHeader->mSegStorageAttr = *aSegStoAttr;
 }
 
 IDE_RC smnManager::initIndexMetaPage( UChar            * aMetaPtr,
@@ -2521,16 +2511,16 @@ idBool smnManager::getIsConsistentOfIndexHeader ( void *aIndexHeader )
     sHeader        = (smnIndexHeader*)aIndexHeader;
     sRuntimeHeader = (smnRuntimeHeader*)sHeader->mHeader;
 
-    /* Redo ÏãúÏ†êÏóêÏÑúÎäî Index ConsistentÏ†ïÎ≥¥Î•º Ïïå Ïàò ÏóÜÎã§. Î¨¥Ï°∞Í±¥ ValidÌïòÎã§Í≥†
-     * ÌåêÎã®ÌïúÎã§. */
+    /* Redo Ω√¡°ø°º≠¥¬ Index Consistent¡§∫∏∏¶ æÀ ºˆ æ¯¥Ÿ. π´¡∂∞« Valid«œ¥Ÿ∞Ì
+     * ∆«¥‹«—¥Ÿ. */
     if ( smrRecoveryMgr::isRestart() == ID_TRUE )
     {
         sRet = ID_TRUE;
     }
     else
     {
-        /* BuildIndexÍ∞Ä Ïã§Ìå®ÌïòÎ©¥, runtimeHeaderÍ∞Ä ÏóÜÎã§. Ïù¥ ÏÉÅÌÉúÎäî
-         * inconsistentÌïòÎã§Í≥† Í∞ÑÏ£ºÌïúÎã§. */
+        /* BuildIndex∞° Ω«∆–«œ∏È, runtimeHeader∞° æ¯¥Ÿ. ¿Ã ªÛ≈¬¥¬
+         * inconsistent«œ¥Ÿ∞Ì ∞£¡÷«—¥Ÿ. */
         if ( sRuntimeHeader != NULL )
         {
             sRuntimeHeader =
@@ -2571,7 +2561,7 @@ void  smnManager::setIsConsistentOfIndexHeader ( void   * aIndexHeader,
     sIndexTypeID = sHeader->mType;
     sTableTypeID = SMN_GET_BASE_TABLE_TYPE_ID(sTableHeader->mFlag);
 
-    /* InconsistentÌï¥ÏßÄÎäî Index Ï†ïÎ≥¥ dump */
+    /* Inconsistent«ÿ¡ˆ¥¬ Index ¡§∫∏ dump */
     if ( iduMemMgr::calloc( IDU_MEM_SM_SMN, 
                             1,
                             ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
@@ -2598,12 +2588,12 @@ void  smnManager::setIsConsistentOfIndexHeader ( void   * aIndexHeader,
 
     IDE_DASSERT( sTableHeader->mSelfOID == sHeader->mTableOID );
 
-    /* DRDBIndex RefineÏ†ÑÏóêÎäî IndexÏóê Inconsistent ÏÑ§Ï†ïÏùÑ ÌïòÏßÄ ÏïäÎäîÎã§. */
+    /* DRDBIndex Refine¿¸ø°¥¬ Indexø° Inconsistent º≥¡§¿ª «œ¡ˆ æ ¥¬¥Ÿ. */
     if ( ( smrRecoveryMgr::isRestart() == ID_FALSE ) ||
          ( smrRecoveryMgr::isRefineDRDBIdx() == ID_TRUE ) )
     {
-        /* BuildIndexÍ∞Ä Ïã§Ìå®ÌïòÎ©¥, runtimeHeaderÍ∞Ä ÏóÜÎã§. Ïù¥ ÏÉÅÌÉúÎäî
-         * inconsistentÌïòÎã§Í≥† Í∞ÑÏ£ºÌïúÎã§. */
+        /* BuildIndex∞° Ω«∆–«œ∏È, runtimeHeader∞° æ¯¥Ÿ. ¿Ã ªÛ≈¬¥¬
+         * inconsistent«œ¥Ÿ∞Ì ∞£¡÷«—¥Ÿ. */
         if ( sRuntimeHeader != NULL )
         {
             sModule = gSmnAllIndex[sIndexTypeID]->mModule[sTableTypeID];
@@ -2632,17 +2622,17 @@ void  smnManager::setIsConsistentOfIndexHeader ( void   * aIndexHeader,
 
 IDE_RC smnManager::deleteRowFromIndexForSVC( SChar          * aRow,
                                              smcTableHeader * aHeader,
-                                             ULong          * aModifyIdxBit )
+                                             ULong            aModifyIdxBit )
 {
     return deleteRowFromIndex( aRow,
                                aHeader,
                                aModifyIdxBit );
 }
 
-// smcTable::updateInplaceÏóêÏÑú Ìò∏Ï∂ú. memory tableÏóêÏÑúÎßå ÏÇ¨Ïö©...
+// smcTable::updateInplaceø°º≠ »£√‚. memory tableø°º≠∏∏ ªÁøÎ...
 IDE_RC smnManager::deleteRowFromIndex( SChar          * a_pRow,
                                        smcTableHeader * a_header,
-                                       ULong          * aModifyIdxBit )
+                                       ULong            aModifyIdxBit )
 {
 
     smnIndexHeader        * sIndexCursor;
@@ -2650,7 +2640,6 @@ IDE_RC smnManager::deleteRowFromIndex( SChar          * a_pRow,
     smnIndexHeader        * sDropFence = NULL;
     UInt                    i;
     UInt                    sIndexCnt;
-    ULong                 * sBytePtr;
     ULong                   sBitMask;
     smSCN                   sUnUseSCN;
     idBool                  sIsExistFreeKey;
@@ -2659,26 +2648,27 @@ IDE_RC smnManager::deleteRowFromIndex( SChar          * a_pRow,
 
     SM_INIT_SCN(&sUnUseSCN);
 
-    sBytePtr   = aModifyIdxBit;
     sBitMask   = ((ULong)1 << 63);
     sDropBegin = (smnIndexHeader*)(a_header->mDropIndexLst);
     sDropFence = sDropBegin + sizeof(smnIndexHeader)*a_header->mDropIndex;
 
     for ( i = 0 ; i < sIndexCnt ; i++ )
     {
-        sIndexCursor = (smnIndexHeader*)smcTable::getTableIndex(a_header,i);
-
-        if ( ( (sIndexCursor->mFlag & SMI_INDEX_USE_MASK) == SMI_INDEX_USE_ENABLE ) &&
-             ( ((*sBytePtr) & sBitMask) != 0 ) )
+        if (( aModifyIdxBit & sBitMask ) != 0 )
         {
-            IDE_TEST( sIndexCursor->mModule->mFreeSlot(
-                                                    sIndexCursor,
-                                                    a_pRow,
-                                                    ID_FALSE, /*aIgnoreNotFoundKey*/
-                                                    &sIsExistFreeKey )
-                      != IDE_SUCCESS );
+            sIndexCursor = (smnIndexHeader*)smcTable::getTableIndex(a_header,i);
 
-            IDE_ERROR_RAISE( sIsExistFreeKey == ID_TRUE, ERR_CORRUPTED_INDEX );
+            if ( (sIndexCursor->mFlag & SMI_INDEX_USE_MASK) == SMI_INDEX_USE_ENABLE )
+            {
+                IDE_TEST( sIndexCursor->mModule->mFreeSlot(
+                              sIndexCursor,
+                              a_pRow,
+                              ID_FALSE, /*aIgnoreNotFoundKey*/
+                              &sIsExistFreeKey )
+                          != IDE_SUCCESS );
+
+                IDE_ERROR_RAISE( sIsExistFreeKey == ID_TRUE, ERR_CORRUPTED_INDEX );
+            }
         }
         sBitMask = sBitMask >> 1;
     }//for i
@@ -2929,16 +2919,16 @@ idBool smnManager::isPrimaryIndex( void* aIndexHeader )
 
 /*
  * PROJ-1671 Bitmap-based Tablespace And Segment Space Management
- * Disk Index Segment Ïó∞ÏÇ∞ Ïù∏ÌÑ∞ÌéòÏù¥Ïä§ Î™®Îìà Î∞òÌôò
+ * Disk Index Segment ø¨ªÍ ¿Œ≈Õ∆‰¿ÃΩ∫ ∏µ‚ π›»Ø
  */
 void * smnManager::getSegDescByIdxPtr( void * aIndex )
 {
     smnIndexHeader   * sIndex;
     sIndex = (smnIndexHeader*)aIndex;
 
-    // BUG-25279 Btree For SpatialÍ≥º Disk BtreeÏùò ÏûêÎ£åÍµ¨Ï°∞ Î∞è Î°úÍπÖ Î∂ÑÎ¶¨
-    // Disk TableSpaceÏùò Î≥ÄÌôòÏãúÏóêÎßå Ìò∏Ï∂úÎêòÍ∏∞ ÎïåÎ¨∏Ïóê, Disk IndexÏóê ÏÜçÌïòÎäî
-    // BtreeÏôÄ RtreeÏùº Í≤ΩÏö∞ÏóêÎßå ÏùòÎØ∏Í∞Ä ÏûàÎã§.
+    // BUG-25279 Btree For Spatial∞˙ Disk Btree¿« ¿⁄∑·±∏¡∂ π◊ ∑Œ±Î ∫–∏Æ
+    // Disk TableSpace¿« ∫Ø»ØΩ√ø°∏∏ »£√‚µ«±‚ ∂ßπÆø°, Disk Indexø° º”«œ¥¬
+    // BtreeøÕ Rtree¿œ ∞ÊøÏø°∏∏ ¿«πÃ∞° ¿÷¥Ÿ.
     IDE_TEST( ( sIndex->mType != SMI_BUILTIN_B_TREE_INDEXTYPE_ID ) &&
               ( sIndex->mType != SMI_ADDITIONAL_RTREE_INDEXTYPE_ID ) );
 
@@ -2963,7 +2953,7 @@ IDE_RC smnManager::dumpCommonHeader( smnIndexHeader * aHeader,
     idlOS::snprintf( aOutBuf,
                      aOutSize,
                      "Index Common Header :\n"
-                     "mCreateSCN               : 0x%"ID_xINT64_FMT"\n"
+                     "Pointer                  : 0x%"ID_xPOINTER_FMT"\n"
                      "mIndexSegDesc.mSpaceID   : %"ID_UINT32_FMT"\n"
                      "mIndexSegDesc.mOffset    : %"ID_UINT32_FMT"\n"
                      "mIndexSegDesc.mPageID    : %"ID_UINT32_FMT"\n"
@@ -2976,7 +2966,7 @@ IDE_RC smnManager::dumpCommonHeader( smnIndexHeader * aHeader,
                      "mDropFlag                : %"ID_UINT32_FMT"\n"
                      "mMaxKeySize              : %"ID_UINT32_FMT"\n"
                      "mColumnCount             : %"ID_UINT32_FMT"\n",
-                     SM_SCN_TO_LONG( aHeader->mCreateSCN ),
+                     aHeader,
                      aHeader->mIndexSegDesc.mSpaceID,
                      aHeader->mIndexSegDesc.mOffset,
                      aHeader->mIndexSegDesc.mPageID,
@@ -3010,29 +3000,38 @@ void smnManager::logCommonHeader( smnIndexHeader * aHeader )
 {
     SChar      * sOutBuffer4Dump;
 
-    if ( iduMemMgr::calloc( IDU_MEM_SM_SMN, 1,
-                            ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
-                            (void**)&sOutBuffer4Dump )
-        == IDE_SUCCESS )
+    if ( aHeader != NULL )
     {
-        if ( smnManager::dumpCommonHeader( (smnIndexHeader*)aHeader,
-                                           sOutBuffer4Dump,
-                                           IDE_DUMP_DEST_LIMIT )
-            == IDE_SUCCESS )
+        if ( iduMemMgr::calloc( IDU_MEM_SM_SMN, 1,
+                                ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
+                                (void**)&sOutBuffer4Dump )
+             == IDE_SUCCESS )
         {
-            ideLog::log( IDE_SM_0, "%s\n", sOutBuffer4Dump );
+            if ( smnManager::dumpCommonHeader( (smnIndexHeader*)aHeader,
+                                               sOutBuffer4Dump,
+                                               IDE_DUMP_DEST_LIMIT )
+                 == IDE_SUCCESS )
+            {
+                ideLog::log( IDE_ERR_0, "%s\n", sOutBuffer4Dump );
+            }
+            else
+            {
+                /* dump fail */
+            }
+
+            (void) iduMemMgr::free( sOutBuffer4Dump );
         }
         else
         {
-            /* dump fail */
+            /* alloc fail */
         }
-
-        (void) iduMemMgr::free( sOutBuffer4Dump );
     }
     else
     {
-        /* alloc fail */
+        ideLog::log( IDE_ERR_0,
+                     "smnIndexHeader* is NULL(smnManager::logCommonHeader())\n" );
     }
+
 }
 
 IDE_RC smnManager::initIndexStatistics( smnIndexHeader   * aHeader,
@@ -3054,6 +3053,7 @@ IDE_RC smnManager::initIndexStatistics( smnIndexHeader   * aHeader,
                                                  IDV_WAIT_INDEX_NULL )
              != IDE_SUCCESS );
 
+    aHeader->mStat.mId      = aIndexID;  // BUG-47946
     aRunHeader->mAtomicA    = 0;
     aRunHeader->mAtomicB    = 0;
 

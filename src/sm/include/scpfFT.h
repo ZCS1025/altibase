@@ -21,7 +21,7 @@
  *
  * Description :
  *
- * ë³¸ íŒŒì¼ì€ Common-DataPort-File layerì˜ Fixed Table í—¤ë”íŒŒì¼ ì…ë‹ˆë‹¤.
+ * º» ÆÄÀÏÀº Common-DataPort-File layerÀÇ Fixed Table Çì´õÆÄÀÏ ÀÔ´Ï´Ù.
  *
  **********************************************************************/
 

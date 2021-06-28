@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfPercentileDisc.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfPercentileDisc.cpp 85458 2019-05-16 07:13:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -59,19 +59,23 @@ typedef struct mtfPercentileDiscFuncData
     UChar                            * totalData;  // all data
 } mtfPercentileDiscFuncData;
 
-static IDE_RC makePercentileDiscFuncData( mtfFuncDataBasicInfo       * aFuncDataInfo,
+static IDE_RC makePercentileDiscFuncData( mtcTemplate                * aTemplate,
+                                          mtfFuncDataBasicInfo       * aFuncDataInfo,
                                           mtcNode                    * aNode,
                                           mtfPercentileDiscFuncData ** aPercentileDiscFuncData );
 
-static IDE_RC allocPercentileDiscFuncDataBuffer( mtfFuncDataBasicInfo      * aFuncDataInfo,
+static IDE_RC allocPercentileDiscFuncDataBuffer( mtcTemplate               * aTemplate,
+                                                 mtfFuncDataBasicInfo      * aFuncDataInfo,
                                                  mtcStack                  * aStack,
                                                  mtfPercentileDiscFuncData * aPercentileDiscFuncData );
 
-static IDE_RC copyToPercentileDiscFuncDataBuffer( mtfFuncDataBasicInfo      * aFuncDataInfo,
+static IDE_RC copyToPercentileDiscFuncDataBuffer( mtcTemplate               * aTemplate,
+                                                  mtfFuncDataBasicInfo      * aFuncDataInfo,
                                                   mtcStack                  * aStack,
                                                   mtfPercentileDiscFuncData * aPercentileDiscFuncData );
 
-static IDE_RC makeTotalDataPercentileDiscFuncData( mtfFuncDataBasicInfo      * aFuncDataInfo,
+static IDE_RC makeTotalDataPercentileDiscFuncData( mtcTemplate               * aTemplate,
+                                                   mtfFuncDataBasicInfo      * aFuncDataInfo,
                                                    mtfPercentileDiscFuncData * aPercentileDiscFuncData );
 
 static IDE_RC sortPercentileDiscFuncDataFloat( mtfFuncDataBasicInfo      * aFuncDataInfo,
@@ -104,7 +108,7 @@ static IDE_RC mtfPercentileDiscEstimate( mtcNode*     aNode,
 mtfModule mtfPercentileDisc = {
     3 | MTC_NODE_OPERATOR_AGGREGATION | MTC_NODE_FUNCTION_WINDOWING_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfPercentileDiscFunctionName,
     NULL,
     mtfPercentileDiscInitialize,
@@ -173,7 +177,7 @@ static mtfSubModule mtfPercentileDiscEstimates[4] = {
 };
 
 // BUG-41994
-// high performanceìš© group table
+// high performance¿ë group table
 static mtfSubModule mtfPercentileDiscEstimatesHighPerformance[3] = {
     { mtfPercentileDiscEstimatesHighPerformance+1, mtfPercentileDiscEstimateDouble },
     { mtfPercentileDiscEstimatesHighPerformance+2, mtfPercentileDiscEstimateBigint },
@@ -226,15 +230,15 @@ IDE_RC mtfPercentileDiscEstimate( mtcNode*     aNode,
     const mtfSubModule  * sSubModule;
     mtfSubModule       ** sTable;
 
-    // within group byê°€ ìžˆì–´ì•¼ í•¨
+    // within group by°¡ ÀÖ¾î¾ß ÇÔ
     IDE_TEST_RAISE( aNode->funcArguments == NULL,
                     ERR_WITHIN_GROUP_MISSING_WITHIN_GROUP );
     
-    // within group byì— í•˜ë‚˜ë§Œ ê°€ëŠ¥
+    // within group by¿¡ ÇÏ³ª¸¸ °¡´É
     IDE_TEST_RAISE( aNode->funcArguments->next != NULL,
                     ERR_INVALID_FUNCTION_ARGUMENT );
     
-    // stack[2]ê°€ ë°˜ë“œì‹œ í•„ìš”í•˜ë‹¤.
+    // stack[2]°¡ ¹Ýµå½Ã ÇÊ¿äÇÏ´Ù.
     IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) !=2,
                     ERR_INVALID_FUNCTION_ARGUMENT );
     
@@ -295,7 +299,7 @@ IDE_RC mtfPercentileDiscInitialize( mtcNode*     aNode,
     sRow    = (UChar *)aTemplate->rows[aNode->table].row;
     sBinary = (mtdBinaryType*)(sRow + sColumn[1].column.offset);
 
-    // ìµœì´ˆ ë“±ë¡
+    // ÃÖÃÊ µî·Ï
     if ( aTemplate->funcData[aNode->info] == NULL )
     {
         IDE_TEST( mtf::allocFuncDataMemory( &sMemoryMgr )
@@ -313,16 +317,29 @@ IDE_RC mtfPercentileDiscInitialize( mtcNode*     aNode,
                                                     sMemoryMgr )
                   != IDE_SUCCESS );
 
-        // ë“±ë¡
+        // µî·Ï
         aTemplate->funcData[aNode->info] = sFuncDataInfo;
+
+        /* BUG-46922 */
+        sMemoryMgr = sFuncDataInfo->memoryMgr;
+
+        IDE_TEST( sMemoryMgr->getStatus( &( sFuncDataInfo->mMemStatus ) )
+                  != IDE_SUCCESS );
     }
     else
     {
         sFuncDataInfo = aTemplate->funcData[aNode->info];
+
+        /* BUG-46922 */
+        sMemoryMgr = sFuncDataInfo->memoryMgr;
+
+        IDE_TEST( sMemoryMgr->setStatus( &( sFuncDataInfo->mMemStatus ) )
+                  != IDE_SUCCESS );
     }
 
     // make percentileDisc function data
-    IDE_TEST( makePercentileDiscFuncData( sFuncDataInfo,
+    IDE_TEST( makePercentileDiscFuncData( aTemplate,
+                                          sFuncDataInfo,
                                           aNode,
                                           & sPercentileDiscFuncData )
               != IDE_SUCCESS );
@@ -406,7 +423,8 @@ IDE_RC mtfPercentileDiscAggregate( mtcNode*     aNode,
         }
 
         // copy function data
-        IDE_TEST( copyToPercentileDiscFuncDataBuffer( sFuncDataInfo,
+        IDE_TEST( copyToPercentileDiscFuncDataBuffer( aTemplate,
+                                                      sFuncDataInfo,
                                                       aStack,
                                                       sPercentileDiscFuncData )
                   != IDE_SUCCESS );
@@ -533,14 +551,14 @@ IDE_RC mtfPercentileDiscEstimateFloat( mtcNode*     aNode,
     
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
-    // submodule ì´ˆê¸°í™”ì‹œ
+    // submodule ÃÊ±âÈ­½Ã
     if ( ( aCallBack->flag & MTC_ESTIMATE_INITIALIZE_MASK )
          == MTC_ESTIMATE_INITIALIZE_TRUE )
     {
         mtc::makeFloatConversionModule( aStack + 1, sModules + 1 );
         
-        // initializeTemplateì‹œì—ëŠ” ì¸ìžê°€ 1ê°œë¡œ estimateë˜ê³ 
-        // percentile_disc í•¨ìˆ˜ë¡œ ë³´ë©´ 2ë²ˆì§¸ ì¸ìžì´ë‹¤.
+        // initializeTemplate½Ã¿¡´Â ÀÎÀÚ°¡ 1°³·Î estimateµÇ°í
+        // percentile_disc ÇÔ¼ö·Î º¸¸é 2¹øÂ° ÀÎÀÚÀÌ´Ù.
         IDE_TEST( mtf::makeConversionNodes( aNode,
                                             aNode->arguments,
                                             aTemplate,
@@ -591,7 +609,7 @@ IDE_RC mtfPercentileDiscEstimateFloat( mtcNode*     aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // funcData ì‚¬ìš©
+    // funcData »ç¿ë
     aNode->info = aTemplate->funcDataCnt;
     aTemplate->funcDataCnt++;
 
@@ -637,8 +655,9 @@ IDE_RC mtfPercentileDiscFinalizeFloat( mtcNode      * aNode,
     // sort
     //------------------------------------------
     
-    // chunkë¥¼ í•˜ë‚˜ë¡œ í•©ì³ total dataë¥¼ ìƒì„±í•œë‹¤.
-    IDE_TEST( makeTotalDataPercentileDiscFuncData( sFuncDataBasicInfo,
+    // chunk¸¦ ÇÏ³ª·Î ÇÕÃÄ total data¸¦ »ý¼ºÇÑ´Ù.
+    IDE_TEST( makeTotalDataPercentileDiscFuncData( aTemplate,
+                                                   sFuncDataBasicInfo,
                                                    sPercentileDiscFuncData )
               != IDE_SUCCESS );
 
@@ -648,7 +667,7 @@ IDE_RC mtfPercentileDiscFinalizeFloat( mtcNode      * aNode,
               != IDE_SUCCESS );
     
     //------------------------------------------
-    // ì—°ì‚° ìˆ˜í–‰    
+    // ¿¬»ê ¼öÇà    
     //------------------------------------------
 
     if ( sPercentileDiscFuncData->totalCount > 0 )
@@ -656,7 +675,7 @@ IDE_RC mtfPercentileDiscFinalizeFloat( mtcNode      * aNode,
         // percentile option
         sFirstValue = *((mtdDoubleType*)(sRow + sColumn[2].column.offset));
 
-        // RN( ì¤‘ê°„ rowìœ„ì¹˜) ì„ êµ¬í•œë‹¤.
+        // RN( Áß°£ rowÀ§Ä¡) À» ±¸ÇÑ´Ù.
         sRowNum = sFirstValue * sPercentileDiscFuncData->totalCount;
 
         sFloorRowNum  = idlOS::floor( sRowNum );
@@ -726,12 +745,12 @@ IDE_RC mtfPercentileDiscEstimateDouble( mtcNode*     aNode,
 
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
     
-    // submodule ì´ˆê¸°í™”ì‹œ
+    // submodule ÃÊ±âÈ­½Ã
     if ( ( aCallBack->flag & MTC_ESTIMATE_INITIALIZE_MASK )
          == MTC_ESTIMATE_INITIALIZE_TRUE )
     {
-        // initializeTemplateì‹œì—ëŠ” ì¸ìžê°€ 1ê°œë¡œ estimateë˜ê³ 
-        // percentile_disc í•¨ìˆ˜ë¡œ ë³´ë©´ 2ë²ˆì§¸ ì¸ìžì´ë‹¤.
+        // initializeTemplate½Ã¿¡´Â ÀÎÀÚ°¡ 1°³·Î estimateµÇ°í
+        // percentile_disc ÇÔ¼ö·Î º¸¸é 2¹øÂ° ÀÎÀÚÀÌ´Ù.
         IDE_TEST( mtf::makeConversionNodes( aNode,
                                             aNode->arguments,
                                             aTemplate,
@@ -780,7 +799,7 @@ IDE_RC mtfPercentileDiscEstimateDouble( mtcNode*     aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // funcData ì‚¬ìš©
+    // funcData »ç¿ë
     aNode->info = aTemplate->funcDataCnt;
     aTemplate->funcDataCnt++;
         
@@ -825,8 +844,9 @@ IDE_RC mtfPercentileDiscFinalizeDouble( mtcNode     * aNode,
     // sort
     //------------------------------------------
     
-    // chunkë¥¼ í•˜ë‚˜ë¡œ í•©ì³ total dataë¥¼ ìƒì„±í•œë‹¤.
-    IDE_TEST( makeTotalDataPercentileDiscFuncData( sFuncDataBasicInfo,
+    // chunk¸¦ ÇÏ³ª·Î ÇÕÃÄ total data¸¦ »ý¼ºÇÑ´Ù.
+    IDE_TEST( makeTotalDataPercentileDiscFuncData( aTemplate,
+                                                   sFuncDataBasicInfo,
                                                    sPercentileDiscFuncData )
               != IDE_SUCCESS );
 
@@ -836,7 +856,7 @@ IDE_RC mtfPercentileDiscFinalizeDouble( mtcNode     * aNode,
               != IDE_SUCCESS );
     
     //------------------------------------------
-    // ì—°ì‚° ìˆ˜í–‰
+    // ¿¬»ê ¼öÇà
     //------------------------------------------
     
     if ( sPercentileDiscFuncData->totalCount > 0 )
@@ -844,7 +864,7 @@ IDE_RC mtfPercentileDiscFinalizeDouble( mtcNode     * aNode,
         // percentile option
         sFirstValue = *((mtdDoubleType*)(sRow + sColumn[2].column.offset));        
 
-        // RN( ì¤‘ê°„ rowìœ„ì¹˜) ì„ êµ¬í•œë‹¤.
+        // RN( Áß°£ rowÀ§Ä¡) À» ±¸ÇÑ´Ù.
         sRowNum = sFirstValue * sPercentileDiscFuncData->totalCount;
 
         sFloorRowNum  = idlOS::floor( sRowNum );
@@ -910,12 +930,12 @@ IDE_RC mtfPercentileDiscEstimateBigint( mtcNode*     aNode,
     
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
     
-    // submodule ì´ˆê¸°í™”ì‹œ
+    // submodule ÃÊ±âÈ­½Ã
     if ( ( aCallBack->flag & MTC_ESTIMATE_INITIALIZE_MASK )
          == MTC_ESTIMATE_INITIALIZE_TRUE )
     {
-        // initializeTemplateì‹œì—ëŠ” ì¸ìžê°€ 1ê°œë¡œ estimateë˜ê³ 
-        // percentile_disc í•¨ìˆ˜ë¡œ ë³´ë©´ 2ë²ˆì§¸ ì¸ìžì´ë‹¤.
+        // initializeTemplate½Ã¿¡´Â ÀÎÀÚ°¡ 1°³·Î estimateµÇ°í
+        // percentile_disc ÇÔ¼ö·Î º¸¸é 2¹øÂ° ÀÎÀÚÀÌ´Ù.
         IDE_TEST( mtf::makeConversionNodes( aNode,
                                             aNode->arguments,
                                             aTemplate,
@@ -964,7 +984,7 @@ IDE_RC mtfPercentileDiscEstimateBigint( mtcNode*     aNode,
                                      0 )
               != IDE_SUCCESS );
     
-    // funcData ì‚¬ìš©
+    // funcData »ç¿ë
     aNode->info = aTemplate->funcDataCnt;
     aTemplate->funcDataCnt++;
     
@@ -1009,8 +1029,9 @@ IDE_RC mtfPercentileDiscFinalizeBigint( mtcNode     * aNode,
     // sort
     //------------------------------------------
     
-    // chunkë¥¼ í•˜ë‚˜ë¡œ í•©ì³ total dataë¥¼ ìƒì„±í•œë‹¤.
-    IDE_TEST( makeTotalDataPercentileDiscFuncData( sFuncDataBasicInfo,
+    // chunk¸¦ ÇÏ³ª·Î ÇÕÃÄ total data¸¦ »ý¼ºÇÑ´Ù.
+    IDE_TEST( makeTotalDataPercentileDiscFuncData( aTemplate,
+                                                   sFuncDataBasicInfo,
                                                    sPercentileDiscFuncData )
               != IDE_SUCCESS );
 
@@ -1020,7 +1041,7 @@ IDE_RC mtfPercentileDiscFinalizeBigint( mtcNode     * aNode,
               != IDE_SUCCESS );
     
     //------------------------------------------
-    // ì—°ì‚° ìˆ˜í–‰
+    // ¿¬»ê ¼öÇà
     //------------------------------------------
     
     if ( sPercentileDiscFuncData->totalCount > 0 )
@@ -1028,7 +1049,7 @@ IDE_RC mtfPercentileDiscFinalizeBigint( mtcNode     * aNode,
         // percentile option
         sFirstValue = *((mtdDoubleType*)(sRow + sColumn[2].column.offset));
         
-        // RN( ì¤‘ê°„ rowìœ„ì¹˜) ì„ êµ¬í•œë‹¤.
+        // RN( Áß°£ rowÀ§Ä¡) À» ±¸ÇÑ´Ù.
         sRowNum = sFirstValue * sPercentileDiscFuncData->totalCount;
 
         sFloorRowNum  = idlOS::floor( sRowNum );
@@ -1096,12 +1117,12 @@ IDE_RC mtfPercentileDiscEstimateDate( mtcNode     * aNode,
 
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
-    // submodule ì´ˆê¸°í™”ì‹œ
+    // submodule ÃÊ±âÈ­½Ã
     if ( ( aCallBack->flag & MTC_ESTIMATE_INITIALIZE_MASK )
                           == MTC_ESTIMATE_INITIALIZE_TRUE )
     {
-        // initializeTemplateì‹œì—ëŠ” ì¸ìžê°€ 1ê°œë¡œ estimateë˜ê³ 
-        // percentile_disc í•¨ìˆ˜ë¡œ ë³´ë©´ 2ë²ˆì§¸ ì¸ìžì´ë‹¤.
+        // initializeTemplate½Ã¿¡´Â ÀÎÀÚ°¡ 1°³·Î estimateµÇ°í
+        // percentile_disc ÇÔ¼ö·Î º¸¸é 2¹øÂ° ÀÎÀÚÀÌ´Ù.
         IDE_TEST( mtf::makeConversionNodes( aNode,
                                             aNode->arguments,
                                             aTemplate,
@@ -1150,7 +1171,7 @@ IDE_RC mtfPercentileDiscEstimateDate( mtcNode     * aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // funcData ì‚¬ìš©
+    // funcData »ç¿ë
     aNode->info = aTemplate->funcDataCnt;
     aTemplate->funcDataCnt++;
 
@@ -1196,8 +1217,9 @@ IDE_RC mtfPercentileDiscFinalizeDate( mtcNode      * aNode,
     // sort
     //------------------------------------------
 
-    // chunkë¥¼ í•˜ë‚˜ë¡œ í•©ì³ total dataë¥¼ ìƒì„±í•œë‹¤.
-    IDE_TEST( makeTotalDataPercentileDiscFuncData( sFuncDataBasicInfo,
+    // chunk¸¦ ÇÏ³ª·Î ÇÕÃÄ total data¸¦ »ý¼ºÇÑ´Ù.
+    IDE_TEST( makeTotalDataPercentileDiscFuncData( aTemplate,
+                                                   sFuncDataBasicInfo,
                                                    sPercentileDiscFuncData )
               != IDE_SUCCESS );
 
@@ -1207,7 +1229,7 @@ IDE_RC mtfPercentileDiscFinalizeDate( mtcNode      * aNode,
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // ì—°ì‚° ìˆ˜í–‰
+    // ¿¬»ê ¼öÇà
     //------------------------------------------
 
     if ( sPercentileDiscFuncData->totalCount > 0 )
@@ -1215,7 +1237,7 @@ IDE_RC mtfPercentileDiscFinalizeDate( mtcNode      * aNode,
         // percentile option
         sFirstValue = *((mtdDoubleType *)(sRow + sColumn[2].column.offset));
 
-        // RN( ì¤‘ê°„ rowìœ„ì¹˜) ì„ êµ¬í•œë‹¤.
+        // RN( Áß°£ rowÀ§Ä¡) À» ±¸ÇÑ´Ù.
         sRowNum = sFirstValue * sPercentileDiscFuncData->totalCount;
 
         sFloorRowNum = idlOS::floor( sRowNum );
@@ -1249,13 +1271,20 @@ IDE_RC mtfPercentileDiscFinalizeDate( mtcNode      * aNode,
     return IDE_FAILURE;
 }
 
-IDE_RC makePercentileDiscFuncData( mtfFuncDataBasicInfo       * aFuncDataInfo,
+IDE_RC makePercentileDiscFuncData( mtcTemplate                * aTemplate,
+                                   mtfFuncDataBasicInfo       * aFuncDataInfo,
                                    mtcNode                    * aNode,
                                    mtfPercentileDiscFuncData ** aPercentileDiscFuncData )
 {
     mtfPercentileDiscFuncData  * sPercentileDiscFuncData;
 
     IDE_TEST_RAISE( aNode->funcArguments == NULL, ERR_INVALID_FUNCTION_ARGUMENT );
+
+    /* BUG-46922 */
+    IDE_TEST( mtf::checkFuncDataMemoryMaximum( aTemplate,
+                                               aFuncDataInfo->memoryMgr,
+                                               ID_SIZEOF( mtfPercentileDiscFuncData ) )
+              != IDE_SUCCESS );
 
     // function data
     IDU_FIT_POINT_RAISE( "makePercentileDiscFuncData::cralloc::sPercentileDiscFuncData",
@@ -1293,7 +1322,8 @@ IDE_RC makePercentileDiscFuncData( mtfFuncDataBasicInfo       * aFuncDataInfo,
     return IDE_FAILURE;
 }
 
-IDE_RC allocPercentileDiscFuncDataBuffer( mtfFuncDataBasicInfo      * aFuncDataInfo,
+IDE_RC allocPercentileDiscFuncDataBuffer( mtcTemplate               * aTemplate,
+                                          mtfFuncDataBasicInfo      * aFuncDataInfo,
                                           mtcStack                  * aStack,
                                           mtfPercentileDiscFuncData * aPercentileDiscFuncData )
 {
@@ -1332,6 +1362,14 @@ IDE_RC allocPercentileDiscFuncDataBuffer( mtfFuncDataBasicInfo      * aFuncDataI
         // Nothing to do.
     }
 
+    /* BUG-46922 */
+    IDE_TEST( mtf::checkFuncDataMemoryMaximum( aTemplate,
+                                               aFuncDataInfo->memoryMgr,
+                                               ID_SIZEOF( mtfPercentileDiscFuncDataBuffer ) +
+                                               aPercentileDiscFuncData->rowSize *
+                                               MTF_PERCENTILE_DISC_BUFFER_MAX )
+              != IDE_SUCCESS );
+
     IDU_FIT_POINT_RAISE( "allocPercentileDiscFuncDataBuffer::alloc::sBuffer",
                          ERR_MEMORY_ALLOCATION );
     IDE_TEST_RAISE( aFuncDataInfo->memoryMgr->alloc(
@@ -1365,7 +1403,8 @@ IDE_RC allocPercentileDiscFuncDataBuffer( mtfFuncDataBasicInfo      * aFuncDataI
     return IDE_FAILURE;
 }
 
-IDE_RC copyToPercentileDiscFuncDataBuffer( mtfFuncDataBasicInfo      * aFuncDataInfo,
+IDE_RC copyToPercentileDiscFuncDataBuffer( mtcTemplate               * aTemplate,
+                                           mtfFuncDataBasicInfo      * aFuncDataInfo,
                                            mtcStack                  * aStack,
                                            mtfPercentileDiscFuncData * aPercentileDiscFuncData )
 {
@@ -1390,7 +1429,8 @@ IDE_RC copyToPercentileDiscFuncDataBuffer( mtfFuncDataBasicInfo      * aFuncData
 
     if ( sAlloc == ID_TRUE )
     {
-        IDE_TEST( allocPercentileDiscFuncDataBuffer( aFuncDataInfo,
+        IDE_TEST( allocPercentileDiscFuncDataBuffer( aTemplate,
+                                                     aFuncDataInfo,
                                                      aStack,
                                                      aPercentileDiscFuncData )
                   != IDE_SUCCESS );
@@ -1437,7 +1477,8 @@ IDE_RC copyToPercentileDiscFuncDataBuffer( mtfFuncDataBasicInfo      * aFuncData
     return IDE_FAILURE;
 }
 
-IDE_RC makeTotalDataPercentileDiscFuncData( mtfFuncDataBasicInfo      * aFuncDataInfo,
+IDE_RC makeTotalDataPercentileDiscFuncData( mtcTemplate               * aTemplate,
+                                            mtfFuncDataBasicInfo      * aFuncDataInfo,
                                             mtfPercentileDiscFuncData * aPercentileDiscFuncData )
 {
     mtfPercentileDiscFuncDataBuffer  * sList;
@@ -1449,6 +1490,13 @@ IDE_RC makeTotalDataPercentileDiscFuncData( mtfFuncDataBasicInfo      * aFuncDat
 
         if ( aPercentileDiscFuncData->list->next != NULL )
         {
+            /* BUG-46922 */
+            IDE_TEST( mtf::checkFuncDataMemoryMaximum( aTemplate,
+                                                       aFuncDataInfo->memoryMgr,
+                                                       aPercentileDiscFuncData->rowSize *
+                                                       aPercentileDiscFuncData->totalCount )
+                      != IDE_SUCCESS );
+
             IDU_FIT_POINT_RAISE( "makeTotalDataPercentileDiscFuncData::alloc::totalData",
                                  ERR_MEMORY_ALLOCATION );
             IDE_TEST_RAISE( aFuncDataInfo->memoryMgr->alloc(
@@ -1472,7 +1520,7 @@ IDE_RC makeTotalDataPercentileDiscFuncData( mtfFuncDataBasicInfo      * aFuncDat
         }
         else
         {
-            // chunkê°€ 1ê°œì¸ ê²½ìš°
+            // chunk°¡ 1°³ÀÎ °æ¿ì
             aPercentileDiscFuncData->totalData = aPercentileDiscFuncData->list->data;
         }
     }

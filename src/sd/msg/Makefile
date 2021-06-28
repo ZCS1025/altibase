@@ -4,7 +4,7 @@
 
 include ../sdEnv.mk
 
-# NLS ì¤‘ ì˜ì–´ ì—ëŸ¬ ë©”ì‹œì§€ í™”ì¼ ì •ì˜ 
+# NLS Áß ¿µ¾î ¿¡·¯ ¸Þ½ÃÁö È­ÀÏ Á¤ÀÇ 
 E_SD_US_MSG    = E_SD_US7ASCII.msg
 ALLMSG         = $(E_SD_US_MSG)
 
@@ -26,6 +26,7 @@ compile:  $(ALLMSB)
 $(E_SD_US_MSB) : $(E_SD_US_MSG) $(GENERRMSG)
 	$(GENERRMSG) -i $(E_SD_US_MSG) -o $(E_SD_HEADER)
 	cp -f SD_TRC_CODE.ih SD_TRC_CODE.ic $(E_SD_HEADER) ../include
+	sync
 
 $(ALLMSB): $(E_SD_US_MSB)
 	$(COPY) $^ $@

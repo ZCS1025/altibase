@@ -202,6 +202,9 @@ IDE_RC sdlStatementManager::allocRemoteStatement( sdiStatement   * aSdStmt,
     sStmt->mFreeFlag &= ~SDL_STMT_FREE_FLAG_IN_USE_MASK;
     sStmt->mFreeFlag |= SDL_STMT_FREE_FLAG_IN_USE_TRUE;
 
+    sStmt->mRemoteStmtId = sNode->mCurRemoteStmtId;
+    sNode->mCurRemoteStmtId++;
+
     *aRemoteStmt = sStmt;
 
     return IDE_SUCCESS;
@@ -310,3 +313,47 @@ void sdlStatementManager::finalizeStatement( sdiStatement * aSdStmt )
     IDU_LIST_INIT( &aSdStmt->mNodeListHead );
 }
 
+static inline void findRemoteStatementInNode(
+                      const sdlRemoteNode     * aRemoteNode,
+                      const UInt                aRemoteStmtId,
+                      sdlRemoteStmt          ** aRemoteStmt )
+{
+    iduListNode    * sIterStmt     = NULL;
+    sdlRemoteStmt  * sRemoteStmt   = NULL;
+
+    IDU_LIST_ITERATE( &aRemoteNode->mStmtListHead, sIterStmt )
+    {
+        sRemoteStmt = (sdlRemoteStmt *)sIterStmt->mObj;
+
+        if ( sRemoteStmt->mRemoteStmtId == aRemoteStmtId )
+        {
+            *aRemoteStmt = sRemoteStmt;
+            break;
+        }
+    }
+}
+
+void sdlStatementManager::findRemoteStatement(
+                                       sdiStatement   * aSdStmt,
+                                       UInt             aNodeId,
+                                       UInt             aRemoteStmtId,
+                                       sdlRemoteStmt ** aRemoteStmt )
+{
+    iduListNode    * sIterNode     = NULL;
+    sdlRemoteNode  * sRemoteNode   = NULL;
+
+    *aRemoteStmt = NULL;
+
+    IDU_LIST_ITERATE( &aSdStmt->mNodeListHead, sIterNode )
+    {
+        sRemoteNode = (sdlRemoteNode *)sIterNode->mObj;
+
+        if ( aNodeId == sRemoteNode->mNodeId )
+        {
+            findRemoteStatementInNode( sRemoteNode,
+                                       aRemoteStmtId,
+                                       aRemoteStmt );
+            break;
+        }
+    }
+}

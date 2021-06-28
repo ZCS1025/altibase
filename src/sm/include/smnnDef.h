@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smnnDef.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smnnDef.h 88191 2020-07-27 03:08:54Z mason.lee $
  **********************************************************************/
 
 #ifndef _O_SMNN_DEF_H_
@@ -43,7 +43,8 @@ typedef struct smnnIterator
     UInt                flag;
 
     smiCursorProperties  * mProperties;
-    /* smiIterator ê³µí†µ ë³€ìˆ˜ ë */
+    smiStatement         * mStatement;
+    /* smiIterator °øÅë º¯¼ö ³¡ */
 
     idBool             least;
     idBool             highest;
@@ -52,7 +53,7 @@ typedef struct smnnIterator
     scPageID           page;
 
     /*
-     * BUG-25179 [SMM] Full Scanì„ ìœ„í•œ í˜ì´ì§€ê°„ Scan Listê°€ í•„ìš”í•©ë‹ˆë‹¤.
+     * BUG-25179 [SMM] Full ScanÀ» À§ÇÑ ÆäÀÌÁö°£ Scan List°¡ ÇÊ¿äÇÕ´Ï´Ù.
      */
     scPageID           mScanBackPID;
     ULong              mScanBackModifySeq;

@@ -26,10 +26,25 @@
 
 SQLRETURN ulsdDisconnect(ulnDbc *aDbc)
 {
+    ulnFnContext sFnContext;
+
+    ULN_INIT_FUNCTION_CONTEXT( sFnContext, ULN_FID_DISCONNECT, aDbc, ULN_OBJ_TYPE_DBC );
+
+    // BUG-47312
+    ACI_TEST_RAISE( aDbc == NULL, LABEL_INVALID_HANDLE);
+    ACI_TEST_RAISE( aDbc->mObj.mType != ULN_OBJ_TYPE_DBC, LABEL_INVALID_HANDLE );
+
+    /* PROJ-2739 Client-side Sharding LOB */
+    (void) ulsdLobLocatorFreeAll( aDbc );
+
     ACI_TEST(!SQL_SUCCEEDED(ulsdNodeDisconnect(aDbc->mShardDbcCxt.mShardDbc)));
  
     return ulnDisconnect(aDbc);
 
+    ACI_EXCEPTION( LABEL_INVALID_HANDLE )
+    {
+        ULN_FNCONTEXT_SET_RC( &sFnContext, SQL_INVALID_HANDLE );
+    }
     ACI_EXCEPTION_END;
 
     return SQL_ERROR;
@@ -37,20 +52,25 @@ SQLRETURN ulsdDisconnect(ulnDbc *aDbc)
 
 void ulsdSilentDisconnect(ulnDbc *aDbc)
 {
-    SQLRETURN sRet;
+    SQLRETURN    sRet;
 
-    ulsdNodeSilentDisconnect(aDbc->mShardDbcCxt.mShardDbc);
- 
-    if ( ulnDbcIsConnected( aDbc ) == ACP_TRUE )
+    // BUG-47312
+    if ( aDbc != NULL )
     {
-        sRet = ulnDisconnect( aDbc );
-    }
-    else
-    {
-        /* Nothing to do */
+        if ( aDbc->mObj.mType == ULN_OBJ_TYPE_DBC )
+        {
+            ulsdNodeSilentDisconnect(aDbc->mShardDbcCxt.mShardDbc);
+     
+            if ( ulnDbcIsConnected( aDbc ) == ACP_TRUE )
+            {
+                sRet = ulnDisconnect( aDbc );
+            }
+
+            ACP_UNUSED(sRet);
+        }
     }
 
-    ACP_UNUSED(sRet);
+    return;
 }
 
 SQLRETURN ulsdNodeDisconnect(ulsdDbc *aShard)

@@ -30,6 +30,17 @@ typedef SQLRETURN (*ulsdModuleNodeDriverConnectFunc)(ulnDbc       *aDbc,
                                                      ulnFnContext *aFnContext,
                                                      acp_char_t   *aConnString,
                                                      acp_sint16_t  aConnStringLength);
+
+/* BUG-47327 */
+typedef SQLRETURN (*ulsdModuleNodeConnectFunc)( ulnDbc       * aDbc,
+                                                ulnFnContext * aFnContext,
+                                                acp_char_t   * aServerName,
+                                                acp_sint16_t   aServerNameLength,
+                                                acp_char_t   * aUserName,
+                                                acp_sint16_t   aUserNameLength,
+                                                acp_char_t   * aPassword,
+                                                acp_sint16_t   aPasswordLength );
+
 typedef ACI_RC (*ulsdModuleEnvRemoveDbcFunc)(ulnEnv *aEnv, ulnDbc *aDbc);
 typedef void (*ulsdModuleStmtDestroyFunc)(ulnStmt *aStmt);
 typedef SQLRETURN (*ulsdModulePrepareFunc)(ulnFnContext *aFnContext,
@@ -62,10 +73,51 @@ typedef void (*ulsdModuleAlignDataNodeConnectionFunc)( ulnFnContext * aFnContext
 
 typedef void (*ulsdModuleErrorCheckAndAlignDataNodeFunc)( ulnFnContext * aFnContext );
 
+/*
+ * PROJ-2739 Client-side Sharding LOB
+ */
+typedef SQLRETURN (*ulsdModuleGetLobLengthFunc)( ulnFnContext *aFnContext,
+                                                 ulnStmt      *aStmt,
+                                                 acp_uint64_t  aLocator,
+                                                 acp_sint16_t  aLocatorType,
+                                                 acp_uint32_t *aLengthPtr );
+
+typedef SQLRETURN (*ulsdModuleGetLobFunc)( ulnFnContext *aFnContext,
+                                           ulnStmt      *aStmt,
+                                           acp_sint16_t  aLocatorCType,
+                                           acp_uint64_t  aSrcLocator,
+                                           acp_uint32_t  aFromPosition,
+                                           acp_uint32_t  aForLength,
+                                           acp_sint16_t  aTargetCType,
+                                           void         *aBuffer,
+                                           acp_uint32_t  aBufferSize,
+                                           acp_uint32_t *aLengthWritten );
+
+typedef SQLRETURN (*ulsdModulePutLobFunc)( ulnFnContext *aFnContext,
+                                           ulnStmt      *aStmt,
+                                           acp_sint16_t  aLocatorCType,
+                                           acp_uint64_t  aLocator,
+                                           acp_uint32_t  aFromPosition,
+                                           acp_uint32_t  aForLength,
+                                           acp_sint16_t  aSourceCType,
+                                           void         *aBuffer,
+                                           acp_uint32_t  aBufferSize );
+
+typedef SQLRETURN (*ulsdModuleFreeLobFunc)( ulnFnContext *aFnContext,
+                                            ulnStmt      *aStmt,
+                                            acp_uint64_t  aLocator );
+
+typedef SQLRETURN (*ulsdModuleTrimLobFunc)( ulnFnContext *aFnContext,
+                                            ulnStmt       *aStmt,
+                                            acp_sint16_t   aLocatorCType,
+                                            acp_uint64_t   aLocator,
+                                            acp_uint32_t   aStartOffset );
+
 struct ulsdModule
 {
     ulsdModuleHandshakeFunc                     ulsdModuleHandshake;
     ulsdModuleNodeDriverConnectFunc             ulsdModuleNodeDriverConnect;
+    ulsdModuleNodeConnectFunc                   ulsdModuleNodeConnect;
     ulsdModuleEnvRemoveDbcFunc                  ulsdModuleEnvRemoveDbc;
     ulsdModuleStmtDestroyFunc                   ulsdModuleStmtDestroy;
     ulsdModulePrepareFunc                       ulsdModulePrepare;
@@ -81,6 +133,13 @@ struct ulsdModule
     ulsdModuleAlignDataNodeConnectionFunc       ulsdModuleAlignDataNodeConnection;
     ulsdModuleErrorCheckAndAlignDataNodeFunc    ulsdModuleErrorCheckAndAlignDataNode;
     ulsdModuleHasNoDataFunc                     ulsdModuleHasNoData;
+
+    /* PROJ-2739 Client-side Sharding LOB */
+    ulsdModuleGetLobLengthFunc                  ulsdModuleGetLobLength;
+    ulsdModuleGetLobFunc                        ulsdModuleGetLob;
+    ulsdModulePutLobFunc                        ulsdModulePutLob;
+    ulsdModuleFreeLobFunc                       ulsdModuleFreeLob;
+    ulsdModuleTrimLobFunc                       ulsdModuleTrimLob;
 };
 
 /* Module */
@@ -94,6 +153,17 @@ SQLRETURN ulsdModuleNodeDriverConnect(ulnDbc       *aDbc,
                                       ulnFnContext *aFnContext,
                                       acp_char_t   *aConnString,
                                       acp_sint16_t  aConnStringLength);
+
+/* BUG-47327 */
+SQLRETURN ulsdModuleNodeConnect( ulnDbc       * aDbc,
+                                 ulnFnContext * aFnContext,
+                                 acp_char_t   * aServerName,
+                                 acp_sint16_t   aServerNameLength,
+                                 acp_char_t   * aUserName,
+                                 acp_sint16_t   aUserNameLength,
+                                 acp_char_t   * aPassword,
+                                 acp_sint16_t   aPasswordLength );
+
 ACI_RC ulsdModuleEnvRemoveDbc(ulnEnv *aEnv, ulnDbc *aDbc);
 void ulsdModuleStmtDestroy(ulnStmt *aStmt);
 SQLRETURN ulsdModulePrepare(ulnFnContext *aFnContext,
@@ -126,6 +196,46 @@ void ulsdModuleAlignDataNodeConnection( ulnFnContext * aFnContext,
                                         ulnDbc       * aNodeDbc );
 
 void ulsdModuleErrorCheckAndAlignDataNode( ulnFnContext * aFnContext );
+
+/*
+ * PROJ-2739 Client-side Sharding LOB
+ */
+SQLRETURN ulsdModuleGetLobLength( ulnFnContext * aFnContext,
+                                  ulnStmt      * aStmt,
+                                  acp_uint64_t   aLocator,
+                                  acp_sint16_t   aLocatorType,
+                                  acp_uint32_t * aLengthPtr );
+
+SQLRETURN ulsdModuleGetLob( ulnFnContext * aFnContext,
+                            ulnStmt      * aStmt,
+                            acp_sint16_t   aLocatorCType,
+                            acp_uint64_t   aSrcLocator,
+                            acp_uint32_t   aFromPosition,
+                            acp_uint32_t   aForLength,
+                            acp_sint16_t   aTargetCType,
+                            void         * aBuffer,
+                            acp_uint32_t   aBufferSize,
+                            acp_uint32_t * aLengthWritten );
+
+SQLRETURN ulsdModulePutLob( ulnFnContext * aFnContext,
+                            ulnStmt      * aStmt,
+                            acp_sint16_t   aLocatorCType,
+                            acp_uint64_t   aLocator,
+                            acp_uint32_t   aFromPosition,
+                            acp_uint32_t   aForLength,
+                            acp_sint16_t   aSourceCType,
+                            void         * aBuffer,
+                            acp_uint32_t   aBufferSize );
+
+SQLRETURN ulsdModuleFreeLob( ulnFnContext * aFnContext,
+                             ulnStmt      * aStmt,
+                             acp_uint64_t   aLocator );
+
+SQLRETURN ulsdModuleTrimLob( ulnFnContext  * aFnContext,
+                             ulnStmt       * aStmt,
+                             acp_sint16_t    aLocatorCType,
+                             acp_uint64_t    aLocator,
+                             acp_uint32_t    aStartOffset );
 
 ACP_INLINE void ulsdSetEnvShardModule(ulnEnv *aEnv, ulsdModule *aModule)
 {

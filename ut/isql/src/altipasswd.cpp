@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: altipasswd.cpp 80544 2017-07-19 08:04:46Z daramix $
+ * $Id: altipasswd.cpp 88351 2020-08-14 05:02:49Z chkim $
  **********************************************************************/
 #include <idl.h>
 #include <idp.h>
@@ -28,6 +28,9 @@
 SChar * getpass(const SChar *prompt);
 SChar * altipasswd_toupper(SChar *aPasswd);
 IDE_RC checkPrevPassword(SChar *aPasswordFile, SChar *aPassword);
+/* BUG-48000 Need to print ideGetErrorMsg first */
+/* BUG-47889 Case sensitive password */
+IDE_RC GetIsCaseSensitivePasswd ( idBool* aIsCaseSensitivePasswd );
 
 int main(int /*__ argc __*/ , char* /*__ argv __*/ [])
 {
@@ -40,15 +43,25 @@ int main(int /*__ argc __*/ , char* /*__ argv __*/ [])
     FILE       *fp;
     SChar       sCryptStr[IDS_MAX_PASSWORD_BUFFER_LEN + 1];
     UInt        sUserPassLen;
-
+    
+    /* BUG-48000 Need to print ideGetErrorMsg first */
+    idBool sIsCaseSensitivePasswd = ID_FALSE;
+    
     sHomeDir = idlOS::getenv(IDP_HOME_ENV);
     IDE_TEST_RAISE( sHomeDir == NULL, ERR_HOME_DIR );
+   
+    /* BUG-48000 Need to print ideGetErrorMsg first */
+    /* BUG-47889 Case sensitive password */
+    IDE_TEST( GetIsCaseSensitivePasswd( &sIsCaseSensitivePasswd ) != IDE_SUCCESS );
 
     idlOS::printf("Previous Password : ");
     idlOS::fflush(stdout);
     strcpy(sPrevPasswd, getpass(""));
 
-    altipasswd_toupper(sPrevPasswd);
+    if (sIsCaseSensitivePasswd == ID_FALSE) 
+    {
+        altipasswd_toupper(sPrevPasswd);
+    }
 
     idlOS::sprintf(sPasswordFile,
                    "%s%cconf%csyspassword",
@@ -63,13 +76,19 @@ int main(int /*__ argc __*/ , char* /*__ argv __*/ [])
     idlOS::fflush(stdout);
     strcpy(sNewPasswd1, getpass(""));
 
-    altipasswd_toupper(sNewPasswd1);
+    if (sIsCaseSensitivePasswd == ID_FALSE) 
+    {
+        altipasswd_toupper(sNewPasswd1);
+    }
 
     idlOS::printf("Retype New Password : ");
     idlOS::fflush(stdout);
     strcpy(sNewPasswd2, getpass(""));
 
-    altipasswd_toupper(sNewPasswd2);
+    if (sIsCaseSensitivePasswd == ID_FALSE) 
+    {
+        altipasswd_toupper(sNewPasswd2);
+    }
 
     IDE_TEST_RAISE(idlOS::strncmp(sNewPasswd1,
                                   sNewPasswd2,
@@ -86,7 +105,7 @@ int main(int /*__ argc __*/ , char* /*__ argv __*/ [])
     fp = idlOS::fopen(sPasswordFile, "w+");
     IDE_TEST_RAISE( fp == NULL, ERR_PASSWD_FILE );
 
-    // BUG-38565 password ì•”í˜¸í™” ì•Œê³ ë¦¬ë“¬ ë³€ê²½
+    // BUG-38565 password ¾ÏÈ£È­ ¾Ë°í¸®µë º¯°æ
     idsPassword::crypt( sCryptStr, sUserPasswd, sUserPassLen, NULL );
     
     idlOS::fwrite(sCryptStr, 1, idlOS::strlen(sCryptStr), fp);
@@ -111,7 +130,7 @@ int main(int /*__ argc __*/ , char* /*__ argv __*/ [])
         idlOS::fprintf(stderr, "Incorrect Password\n");
     }
     IDE_EXCEPTION_END;
-
+    
     exit(1);
 }
 
@@ -166,7 +185,7 @@ IDE_RC checkPrevPassword(SChar *aPasswordFile, SChar *aPassword)
     IDE_TEST_RAISE( (sUserPassLen == 0) || (sUserPassLen > IDS_MAX_PASSWORD_LEN),
                     invalid_passwd_error );
 
-    // BUG-38565 password ì•”í˜¸í™” ì•Œê³ ë¦¬ë“¬ ë³€ê²½
+    // BUG-38565 password ¾ÏÈ£È­ ¾Ë°í¸®µë º¯°æ
     idsPassword::crypt( sCryptStr, aPassword, sUserPassLen, sUserPass );
     
     IDE_TEST_RAISE( idlOS::strcmp( sCryptStr, sUserPass ) != 0,
@@ -187,3 +206,39 @@ IDE_RC checkPrevPassword(SChar *aPasswordFile, SChar *aPassword)
     return IDE_FAILURE;
 }
 
+/* BUG-48000 Need to print ideGetErrorMsg first */
+/* BUG-47889 Case sensitive password */
+IDE_RC GetIsCaseSensitivePasswd( idBool *aIsCaseSensitivePasswd )
+{
+    IDE_RC  sPropRead;
+    UInt    sPropIntValue;
+
+    IDE_TEST_RAISE( idp::initialize() != IDE_SUCCESS, AltiPropIdeError );
+    
+    // Read CASE_SENSITIVE_PASSWORD from altibase.properteis
+    sPropRead = idp::read("CASE_SENSITIVE_PASSWORD", (void *)&sPropIntValue, 0);
+
+    if ( (sPropRead == IDE_SUCCESS) && (sPropIntValue == 1) )
+    {
+        *aIsCaseSensitivePasswd = ID_TRUE;
+    }
+    else
+    {
+        *aIsCaseSensitivePasswd = ID_FALSE;
+    }
+    
+    (void) idp::destroy();
+
+    return IDE_SUCCESS;
+    
+    /* TODO: merge ut error message */
+    IDE_EXCEPTION(AltiPropIdeError) ;
+    {
+        // print error msg from ide directly
+        idlOS::fprintf(stderr, "%s\n", ideGetErrorMsg() );
+    }
+
+    IDE_EXCEPTION_END;
+    
+    return IDE_FAILURE;
+}

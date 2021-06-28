@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qds.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qds.cpp 90270 2021-03-21 23:20:18Z bethy $
  **********************************************************************/
 
 #include <idl.h>
@@ -48,18 +48,18 @@ IDE_RC qds::validateCreate(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    CREATE SEQUENCE ... Ïùò validation  ÏàòÌñâ
+ *    CREATE SEQUENCE ... ¿« validation  ºˆ«‡
  *
  * Implementation :
- *    1. ParseTree Ïùò cacheValue < 0 Ïù¥Î©¥ ÏóêÎü¨ ( create Î¨∏Ïû•ÏóêÏÑú Î™ÖÏãúÌïòÏßÄ
- *       ÏïäÏïòÏúºÎ©¥ ÌååÏã±Ìï† Îïå ÎîîÌè¥Ìä∏ Í∞íÏúºÎ°ú 20 ÏùÑ Î∂ÄÏó¨ÌïòÍ≤å Îê® )
- *    2. IncrementValue Í∞Ä 0 Ïù¥Î©¥ ÏóêÎü¨
- *    3. MinValue >= MaxValue Ïù¥Î©¥ ÏóêÎü¨
- *    4. IncrementValue Í∞Ä MinValue, MaxValue Ïùò Ï∞®Ïù¥Î≥¥Îã§ ÌÅ¨Î©¥ ÏóêÎü¨
- *    5. startValue < MinValue Ïù¥Î©¥ ÏóêÎü¨
- *    6. startValue > MaxValue Ïù¥Î©¥ ÏóêÎü¨
- *    7. Í∞ôÏùÄ Ïù¥Î¶ÑÏùò ÏãúÌÄÄÏä§Í∞Ä Ï°¥Ïû¨ÌïòÎäîÏßÄ Ï≤¥ÌÅ¨
- *    8. CreateSequence Í∂åÌïúÏù¥ ÏûàÎäîÏßÄ Ï≤¥ÌÅ¨
+ *    1. ParseTree ¿« cacheValue < 0 ¿Ã∏È ø°∑Ø ( create πÆ¿Âø°º≠ ∏ÌΩ√«œ¡ˆ
+ *       æ æ“¿∏∏È ∆ƒΩÃ«“ ∂ß µ∆˙∆Æ ∞™¿∏∑Œ 20 ¿ª ∫Œø©«œ∞‘ µ  )
+ *    2. IncrementValue ∞° 0 ¿Ã∏È ø°∑Ø
+ *    3. MinValue >= MaxValue ¿Ã∏È ø°∑Ø
+ *    4. IncrementValue ∞° MinValue, MaxValue ¿« ¬˜¿Ã∫∏¥Ÿ ≈©∏È ø°∑Ø
+ *    5. startValue < MinValue ¿Ã∏È ø°∑Ø
+ *    6. startValue > MaxValue ¿Ã∏È ø°∑Ø
+ *    7. ∞∞¿∫ ¿Ã∏ß¿« Ω√ƒˆΩ∫∞° ¡∏¿Á«œ¥¬¡ˆ √º≈©
+ *    8. CreateSequence ±««—¿Ã ¿÷¥¬¡ˆ √º≈©
  *
  ***********************************************************************/
 
@@ -78,8 +78,13 @@ IDE_RC qds::validateCreate(qcStatement * aStatement)
     qsOID                     sProcID;
     SChar                     sSeqTableNameStr[ QC_MAX_OBJECT_NAME_LEN + 1 ];
     qcNamePosition            sSeqTableName;
-    UInt                      sUserID;
     qcuSqlSourceInfo          sqlInfo;
+    UInt                      sUserID;
+
+    /* TASK-7217 Sharded sequence */
+    UInt                      sScale;
+    SLong                     sABSofMax;
+    SLong                     sMultiplier;
 
     sParseTree = (qdSequenceParseTree *)aStatement->myPlan->parseTree;
 
@@ -94,8 +99,8 @@ IDE_RC qds::validateCreate(qcStatement * aStatement)
     }
 
     // check table exist.
-    // To fix BUG-11086 duplicate sequence name Ï≤¥ÌÅ¨Ïãú
-    // tableMetaÏóêÏÑú Ï∞æÏùå
+    // To fix BUG-11086 duplicate sequence name √º≈©Ω√
+    // tableMetaø°º≠ √£¿Ω
     if (gQcmSynonyms == NULL)
     {
         // in createdb phase -> there are no synonym meta table.
@@ -192,19 +197,60 @@ IDE_RC qds::validateCreate(qcStatement * aStatement)
 
     // BUG-26361
     IDE_TEST_RAISE(sMinValue >= sMaxValue, ERR_MIN_VALUE);
-    IDE_TEST_RAISE(sMinValue < QDS_SEQUENCE_MIN_VALUE,
-                   ERR_OVERFLOW_MINVALUE);
-    IDE_TEST_RAISE(sMaxValue > QDS_SEQUENCE_MAX_VALUE,
-                   ERR_OVERFLOW_MAXVALUE);
-    
-    if ( ( sMinValue == QDS_SEQUENCE_MIN_VALUE ) ||
-         ( sMaxValue == QDS_SEQUENCE_MAX_VALUE ) )
+
+    /* TASK-7217 Sharded sequence */
+    if ( (sParseTree->sequenceOptions->flag & QDS_SEQ_OPT_LOCALITY_MASK) == QDS_SEQ_OPT_LOCALITY_SHARD )
     {
-        sDiffMinMaxValue = QDS_SEQUENCE_MAX_VALUE;
+        IDE_TEST_RAISE(sMinValue < QDS_SHARD_SEQUENCE_MIN_VALUE,
+                       ERR_OVERFLOW_SHARD_MINVALUE);
+        IDE_TEST_RAISE(sMaxValue > QDS_SHARD_SEQUENCE_MAX_VALUE,
+                       ERR_OVERFLOW_SHARD_MAXVALUE);
+
+        if ( (sParseTree->sequenceOptions->flag & QDS_SEQ_OPT_SCALE_FIXED_MASK) == QDS_SEQ_OPT_SCALE_FIXED_FALSE )
+        {
+            // SHARD VARIABLE¿Œ ∞ÊøÏ SCALE¿ª ∞ËªÍ«ÿº≠ º≥¡§«—¥Ÿ.
+            //   sABSofMaxø° ¿˝¥Î∞™¿Ã ¥ı ≈´ ºˆ∏¶ ±∏«—¥Ÿ.
+            //     1. Max, Min ∏µŒ æÁºˆ => Max∞° π´¡∂∞« ¥ı ≈©¥Ÿ.
+            //     2. Max æÁºˆ, Min ¿Ωºˆ => Max, Min * -1 ¡ﬂ ≈´ ºˆ∞° ¥ı ≈´ º˝¿⁄¿Ã¥Ÿ.
+            //     3. Max, Min ∏µŒ ¿Ωºˆ => Max∫∏¥Ÿ Min * -1¿Ã ¥ı ≈©¥Ÿ.
+            //     4. Max∞° 0            => Min¿∫ π´¡∂∞« ¿Ωºˆ¿Ã∞Ì, Min * -1¿Ã ¥ı ≈©¥Ÿ.
+            //     5. Min¿Ã 0            => Max¥¬ π´¡∂∞« æÁºˆ¿Ã∞Ì, Max∞° ¥ı ≈©¥Ÿ.
+            sABSofMax = (sMaxValue > (sMinValue*-1)) ? sMaxValue:(sMinValue*-1);
+
+            // sABSofMax∫∏¥Ÿ ≈´ ∞°¿Â ¿€¿∫ 10¿« πËºˆ∏¶ ±∏«—¥Ÿ.
+            for ( sScale = 1, sMultiplier = 10; sScale <= SMI_SEQUENCE_SCALE_MASK && (sABSofMax >= sMultiplier) ; sScale++ )
+
+            {
+                sMultiplier = sMultiplier * 10;
+            }
+
+            *sParseTree->sequenceOptions->cycleOption &= ~SMI_SEQUENCE_SCALE_FIXED_MASK;
+            *sParseTree->sequenceOptions->cycleOption |= SMI_SEQUENCE_SCALE_FIXED_FALSE;
+        }
+        else
+        {
+            // SHARD FIXED(default)¿Œ ∞ÊøÏ SCALE MAXIMUM¿ª º≥¡§«—¥Ÿ.
+            sScale = SMI_SEQUENCE_SCALE_MASK;
+
+            *sParseTree->sequenceOptions->cycleOption &= ~SMI_SEQUENCE_SCALE_FIXED_MASK;
+            *sParseTree->sequenceOptions->cycleOption |= SMI_SEQUENCE_SCALE_FIXED_TRUE;
+        }
+
+        *sParseTree->sequenceOptions->cycleOption &= ~SMI_SEQUENCE_SCALE_MASK;
+        *sParseTree->sequenceOptions->cycleOption |= (sScale & SMI_SEQUENCE_SCALE_MASK);
+
+        *sParseTree->sequenceOptions->cycleOption &= ~SMI_SEQUENCE_LOCALITY_MASK;
+        *sParseTree->sequenceOptions->cycleOption |= SMI_SEQUENCE_LOCALITY_SHARD;
     }
     else
     {
-        sDiffMinMaxValue = sMaxValue - sMinValue;
+        IDE_TEST_RAISE(sMinValue < QDS_SEQUENCE_MIN_VALUE,
+                       ERR_OVERFLOW_MINVALUE);
+        IDE_TEST_RAISE(sMaxValue > QDS_SEQUENCE_MAX_VALUE,
+                       ERR_OVERFLOW_MAXVALUE);
+
+        *sParseTree->sequenceOptions->cycleOption &= ~SMI_SEQUENCE_LOCALITY_MASK;
+        *sParseTree->sequenceOptions->cycleOption |= SMI_SEQUENCE_LOCALITY_LOCAL;
     }
 
     sDiffMinMaxValue = sMaxValue - sMinValue;
@@ -269,6 +315,16 @@ IDE_RC qds::validateCreate(qcStatement * aStatement)
         IDE_SET(ideSetErrorCode(qpERR_ABORT_QDS_OVERFLOW_MINVALUE,
                                 QDS_SEQUENCE_MIN_VALUE_STR));
     }
+    IDE_EXCEPTION( ERR_OVERFLOW_SHARD_MAXVALUE );
+    {
+        IDE_SET(ideSetErrorCode(qpERR_ABORT_QDS_OVERFLOW_MAXVALUE,
+                                QDS_SHARD_SEQUENCE_MAX_VALUE_STR));
+    }
+    IDE_EXCEPTION( ERR_OVERFLOW_SHARD_MINVALUE );
+    {
+        IDE_SET(ideSetErrorCode(qpERR_ABORT_QDS_OVERFLOW_MINVALUE,
+                                QDS_SHARD_SEQUENCE_MIN_VALUE_STR));
+    }
     IDE_EXCEPTION( ERR_SEQUENCE_NAME_LEN )
     {
         (void)sqlInfo.init(aStatement->qmeMem);
@@ -289,20 +345,20 @@ IDE_RC qds::validateAlterOptions(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER SEQUENCE ... Ïùò validation  ÏàòÌñâ
+ *    ALTER SEQUENCE ... ¿« validation  ºˆ«‡
  *
  * Implementation :
- *    1. ÏãúÌÄÄÏä§Í∞Ä Ï°¥Ïû¨ÌïòÎäîÏßÄ Ï≤¥ÌÅ¨
- *    2. Î≥ÄÍ≤ΩÌïòÎ†§Îäî ÏãúÌÄÄÏä§Í∞Ä Î©îÌÉÄ ÏãúÌÄÄÏä§Ïù¥Î©¥ ÏóêÎü¨
- *    3. AlterSequence Í∂åÌïúÏù¥ ÏûàÎäîÏßÄ Ï≤¥ÌÅ¨
- *    4. ÏÉùÏÑ±ÎêòÏñ¥ ÏûàÎäî ÏãúÌÄÄÏä§Ïùò ÏòµÏÖò Íµ¨ÌïòÍ∏∞ => smiTable::getSequence
- *    5. ÏãúÌÄÄÏä§Ïùò ÌòÑÏû¨Í∞í Íµ¨ÌïòÍ∏∞ => smiTable::readSequence
- *    6. IncrementValue Í∞Ä Î™ÖÏãúÎêòÍ≥† 0 Ïù¥Î©¥ ÏóêÎü¨
- *    7. cacheValue Í∞Ä Î™ÖÏãúÎêòÍ≥† 0 Î≥¥Îã§ ÏûëÏúºÎ©¥ ÏóêÎü¨
- *    8. cycleOption Î∂ÄÏó¨
- *    3. MinValue Í∞Ä Î™ÖÏãúÎêòÍ≥† ÏãúÌÄÄÏä§Ïùò ÌòÑÏû¨ Í∞íÎ≥¥Îã§ ÌÅ¨Î©¥ ÏóêÎü¨
- *    3. MaxValue Í∞Ä Î™ÖÏãúÎêòÍ≥† ÏãúÌÄÄÏä§Ïùò ÌòÑÏû¨ Í∞íÎ≥¥Îã§ ÏûëÏúºÎ©¥ ÏóêÎü¨
- *    4. IncrementValue Í∞Ä MinValue, MaxValue Ïùò Ï∞®Ïù¥Î≥¥Îã§ ÌÅ¨Î©¥ ÏóêÎü¨
+ *    1. Ω√ƒˆΩ∫∞° ¡∏¿Á«œ¥¬¡ˆ √º≈©
+ *    2. ∫Ø∞Ê«œ∑¡¥¬ Ω√ƒˆΩ∫∞° ∏ﬁ≈∏ Ω√ƒˆΩ∫¿Ã∏È ø°∑Ø
+ *    3. AlterSequence ±««—¿Ã ¿÷¥¬¡ˆ √º≈©
+ *    4. ª˝º∫µ«æÓ ¿÷¥¬ Ω√ƒˆΩ∫¿« ø…º« ±∏«œ±‚ => smiTable::getSequence
+ *    5. Ω√ƒˆΩ∫¿« «ˆ¿Á∞™ ±∏«œ±‚ => smiTable::readSequence
+ *    6. IncrementValue ∞° ∏ÌΩ√µ«∞Ì 0 ¿Ã∏È ø°∑Ø
+ *    7. cacheValue ∞° ∏ÌΩ√µ«∞Ì 0 ∫∏¥Ÿ ¿€¿∏∏È ø°∑Ø
+ *    8. cycleOption ∫Œø©
+ *    3. MinValue ∞° ∏ÌΩ√µ«∞Ì Ω√ƒˆΩ∫¿« «ˆ¿Á ∞™∫∏¥Ÿ ≈©∏È ø°∑Ø
+ *    3. MaxValue ∞° ∏ÌΩ√µ«∞Ì Ω√ƒˆΩ∫¿« «ˆ¿Á ∞™∫∏¥Ÿ ¿€¿∏∏È ø°∑Ø
+ *    4. IncrementValue ∞° MinValue, MaxValue ¿« ¬˜¿Ã∫∏¥Ÿ ≈©∏È ø°∑Ø
  *
  ***********************************************************************/
 
@@ -326,6 +382,13 @@ IDE_RC qds::validateAlterOptions(qcStatement * aStatement)
     SLong                     sDiffMinMaxValue;
     IDE_RC                    sRC;
     UInt                      sErrorCode;
+
+    /* TASK-7217 Sharded sequence */
+    qcuSqlSourceInfo          sqlInfo;
+    SLong                     sABSofMax;
+    SLong                     sMultiplier;
+    UInt                      sScale;
+    idBool                    sIsShardSequence = ID_FALSE;
 
     sParseTree = (qdSequenceParseTree *)aStatement->myPlan->parseTree;
 
@@ -394,11 +457,11 @@ IDE_RC qds::validateAlterOptions(qcStatement * aStatement)
     }
 
     // PROJ-2365 sequence table
-    // sequence tableÏù¥ ÎßåÎì§Ïñ¥ÏßÑ Í≤ΩÏö∞ option Î≥ÄÍ≤ΩÏùÄ column name Î≥ÄÍ≤ΩÏù¥ ÌïÑÏöîÌïòÎã§.
-    // replicationÏù¥ Í±∏Î¶∞ Í≤ΩÏö∞ column nameÏùÑ Î≥ÄÍ≤ΩÌï† Ïàò ÏóÜÎã§.
+    // sequence table¿Ã ∏∏µÈæÓ¡¯ ∞ÊøÏ option ∫Ø∞Ê¿∫ column name ∫Ø∞Ê¿Ã « ø‰«œ¥Ÿ.
+    // replication¿Ã ∞…∏∞ ∞ÊøÏ column name¿ª ∫Ø∞Ê«“ ºˆ æ¯¥Ÿ.
     IDE_TEST_RAISE( ( sOption & SMI_SEQUENCE_TABLE_MASK ) == SMI_SEQUENCE_TABLE_TRUE,
                     ERR_CANNOT_ALTER_SEQ_TABLE );
-    
+
     if (sParseTree->sequenceOptions->incrementValue == NULL)
     {
         IDU_LIMITPOINT("qds::validateAlter::malloc1");
@@ -457,35 +520,22 @@ IDE_RC qds::validateAlterOptions(qcStatement * aStatement)
         IDE_TEST(STRUCT_ALLOC(QC_QMP_MEM(aStatement), SLong, &(sParseTree->sequenceOptions->minValue))
                  != IDE_SUCCESS);
 
-        if (sParseTree->sequenceOptions->flag != NULL)
+        if ( (sParseTree->sequenceOptions->flag & QDS_SEQ_OPT_NOMIN_MASK)
+             == QDS_SEQ_OPT_NOMIN_TRUE )
         {
-            if ( ( *sParseTree->sequenceOptions->flag & QDS_SEQ_OPT_NOMIN_MASK)
-                 == QDS_SEQ_OPT_NOMIN_TRUE )
+            if (sIncrementValue > 0) // ascending sequence
             {
-                if (sIncrementValue > 0) // ascending sequence
-                {
-                    *(sParseTree->sequenceOptions->minValue) = 1;
-                }
-                else // descending sequence
-                {
-                    *(sParseTree->sequenceOptions->minValue) =
-                        QDS_SEQUENCE_MIN_VALUE;
-                }
+                *(sParseTree->sequenceOptions->minValue) = 1;
             }
-            else
+            else // descending sequence
             {
-                *(sParseTree->sequenceOptions->minValue) = sCurrMinValue;
+                *(sParseTree->sequenceOptions->minValue) = QDS_SEQUENCE_MIN_VALUE;
             }
         }
         else
         {
             *(sParseTree->sequenceOptions->minValue) = sCurrMinValue;
         }
-    }
-    else
-    {
-        IDE_TEST_RAISE(sCurrValue < *(sParseTree->sequenceOptions->minValue),
-                       ERR_CURR_LESS_MIN);
     }
 
     if (sParseTree->sequenceOptions->maxValue == NULL)
@@ -494,24 +544,16 @@ IDE_RC qds::validateAlterOptions(qcStatement * aStatement)
         IDE_TEST(STRUCT_ALLOC(QC_QMP_MEM(aStatement), SLong, &(sParseTree->sequenceOptions->maxValue))
                  != IDE_SUCCESS);
 
-        if (sParseTree->sequenceOptions->flag != NULL)
+        if ( (sParseTree->sequenceOptions->flag & QDS_SEQ_OPT_NOMAX_MASK)
+             == QDS_SEQ_OPT_NOMAX_TRUE )
         {
-            if ( ( *sParseTree->sequenceOptions->flag & QDS_SEQ_OPT_NOMAX_MASK)
-                 == QDS_SEQ_OPT_NOMAX_TRUE )
+            if (sIncrementValue > 0) // ascending sequence
             {
-                if (sIncrementValue > 0) // ascending sequence
-                {
-                    *(sParseTree->sequenceOptions->maxValue) =
-                        QDS_SEQUENCE_MAX_VALUE;
-                }
-                else // descending sequence
-                {
-                    *(sParseTree->sequenceOptions->maxValue) = -1;
-                }
+                *(sParseTree->sequenceOptions->maxValue) = QDS_SEQUENCE_MAX_VALUE;
             }
-            else
+            else // descending sequence
             {
-                *(sParseTree->sequenceOptions->maxValue) = sCurrMaxValue;
+                *(sParseTree->sequenceOptions->maxValue) = -1;
             }
         }
         else
@@ -519,21 +561,52 @@ IDE_RC qds::validateAlterOptions(qcStatement * aStatement)
             *(sParseTree->sequenceOptions->maxValue) = sCurrMaxValue;
         }
     }
-    else
-    {
-        IDE_TEST_RAISE(sCurrValue > *(sParseTree->sequenceOptions->maxValue),
-                       ERR_CURR_MORE_MAX);
-    }
 
     sMinValue = *(sParseTree->sequenceOptions->minValue);
     sMaxValue = *(sParseTree->sequenceOptions->maxValue);
 
+    /* TASK-7217 Sharded sequence
+       1. RESTART only
+       2. Without RESTART option (RESTART (X) AND START WITH (X))
+       3. RESTART (START) WITH N
+       4. START WITH N only => PARSER ERROR */
+    if ( sParseTree->sequenceOptions->startValue == NULL )
+    {
+        IDE_TEST(STRUCT_ALLOC(QC_QMP_MEM(aStatement), SLong, &(sParseTree->sequenceOptions->startValue))
+                 != IDE_SUCCESS);
+
+        if ( (sParseTree->sequenceOptions->flag & QDS_SEQ_OPT_RESTART_MASK) == QDS_SEQ_OPT_RESTART_TRUE )
+        {
+            // 1. RESTART(0) AND START WITH(X)
+            if ( sIncrementValue > 0 )
+            {
+                sCurrValue = sMinValue;
+            }
+            else
+            {
+                sCurrValue = sMaxValue;
+            }
+            *sParseTree->sequenceOptions->startValue = sCurrValue;
+        }
+        else
+        {
+            // 2. Without RESTART option (RESTART (X) AND START WITH (X))
+        }
+    }
+    else
+    {
+        // 3. RESTART (START) WITH (0)
+        // 4. RESTART (X) AND START WITH (0) => PARSER ERROR
+        sCurrValue  = *sParseTree->sequenceOptions->startValue;
+    }
+
+    IDE_TEST_RAISE(sCurrValue < *(sParseTree->sequenceOptions->minValue),
+                   ERR_CURR_LESS_MIN);
+    IDE_TEST_RAISE(sCurrValue > *(sParseTree->sequenceOptions->maxValue),
+                   ERR_CURR_MORE_MAX);
+
     // BUG-26361
     IDE_TEST_RAISE(sMinValue >= sMaxValue, ERR_MIN_VALUE);
-    IDE_TEST_RAISE(sMinValue < QDS_SEQUENCE_MIN_VALUE,
-                   ERR_OVERFLOW_MINVALUE);
-    IDE_TEST_RAISE(sMaxValue > QDS_SEQUENCE_MAX_VALUE,
-                   ERR_OVERFLOW_MAXVALUE);
     
     if ( ( sMinValue == QDS_SEQUENCE_MIN_VALUE ) ||
          ( sMaxValue == QDS_SEQUENCE_MAX_VALUE ) )
@@ -552,6 +625,108 @@ IDE_RC qds::validateAlterOptions(qcStatement * aStatement)
 
     IDE_TEST_RAISE(sABSofIncrementValue > sDiffMinMaxValue,
                    ERR_INVALID_INCREMENT_VALUE);
+
+    /* TASK-7217 Sharded sequence
+     * Sequence¿« Scale¿ª ±∏«—¥Ÿ.
+     * 1. SCALE VARIABLE
+     * 2. SCALE FIXED => default(15) */
+    if ( (sParseTree->sequenceOptions->flag & QDS_SEQ_OPT_SCALE_FIXED_MASK) == QDS_SEQ_OPT_SCALE_FIXED_FALSE )
+    {
+        sABSofMax = (sMaxValue > (sMinValue*-1)) ? sMaxValue:(sMinValue*-1);
+
+        // sABSofMax∫∏¥Ÿ ≈´ ∞°¿Â ¿€¿∫ 10¿« πËºˆ∏¶ ±∏«—¥Ÿ.
+        for ( sScale = 1, sMultiplier = 10; sScale <= SMI_SEQUENCE_SCALE_MASK && (sABSofMax >= sMultiplier) ; sScale++ )
+        {
+            sMultiplier = sMultiplier * 10;
+        }
+    }
+    else
+    {
+        sScale = SMI_SEQUENCE_SCALE_MASK;
+    }
+
+    /* TASK-7217 Sharded sequence */
+    if ( (sParseTree->sequenceOptions->flag & QDS_SEQ_OPT_LOCALITY_MASK) != 0 )
+    {
+        // Locality∏¶ ∫Ø∞Ê«œ¥¬ ∞ÊøÏ
+        *(sParseTree->sequenceOptions->cycleOption) &= ~QDS_SEQ_OPT_LOCALITY_MASK;
+        *(sParseTree->sequenceOptions->cycleOption) |= (sParseTree->sequenceOptions->flag & QDS_SEQ_OPT_LOCALITY_MASK);
+
+        *(sParseTree->sequenceOptions->cycleOption) &= ~QDS_SEQ_OPT_SCALE_FIXED_MASK;
+        *(sParseTree->sequenceOptions->cycleOption) |= (sParseTree->sequenceOptions->flag & QDS_SEQ_OPT_SCALE_FIXED_MASK);
+
+        if ( (sParseTree->sequenceOptions->flag & QDS_SEQ_OPT_LOCALITY_MASK) != QDS_SEQ_OPT_LOCALITY_SHARD )
+        {
+            sIsShardSequence = ID_FALSE;
+            // LOCAL∑Œ ∫Ø∞Êµ«¥¬ ∞ÊøÏ scale¿ª ¡¶∞≈«—¥Ÿ.
+            // 1. LOCAL           -> LOCAL
+            // 2. SHARD FIXED     -> LOCAL
+            // 3. SHARD VARIAABLE -> LOCAL
+            *(sParseTree->sequenceOptions->cycleOption) &= ~SMI_SEQUENCE_SCALE_MASK;
+        }
+        else //if ( (sParseTree->sequenceOptions->flag & QDS_SEQ_OPT_LOCALITY_MASK) == QDS_SEQ_OPT_LOCALITY_SHARD )
+        {
+            sIsShardSequence = ID_TRUE;
+
+            if ( (sOption & QDS_SEQ_OPT_LOCALITY_MASK) == QDS_SEQ_OPT_LOCALITY_SHARD )
+            {
+                // SHARD <-> SHARD ¿¸»Øµ«∏È sScale¿Ã ∞∞æ∆æﬂ «—¥Ÿ.
+                // 1. FIXED    -> FIXED
+                // 2. FIXED    -> VARIABLE
+                // 3. VARIABLE -> FIXED
+                // 4. VARIABLE -> VARIABLE
+                IDE_TEST_RAISE ( sScale != (sOption & SMI_SEQUENCE_SCALE_MASK), ERR_CANNOT_ALTER_SHARDED_SEQUENCE );
+            }
+            else
+            {
+                // LOCALø°º≠ SHARD∑Œ ∫Ø∞Ê«œ¥¬ ∞ÊøÏ ªı∑Œ ∞ËªÍ«— scale¿ª º≥¡§«—¥Ÿ.
+                *sParseTree->sequenceOptions->cycleOption &= ~SMI_SEQUENCE_SCALE_MASK;
+                *sParseTree->sequenceOptions->cycleOption |= (sScale & SMI_SEQUENCE_SCALE_MASK);
+            }
+        }
+    }
+    else
+    {
+        // Locality ∫Ø∞Ê¿Ã æ¯¥¬ ∞ÊøÏ
+        // 1. «ˆ¿Á SHARD VARIABLE¿Œ ∞ÊøÏ
+        // 2. «ˆ¿Á SHARD FIXED¿Œ ∞ÊøÏ
+        // 3. «ˆ¿Á SHARD∞° æ∆¥—∞ÊøÏ
+        if ( (sOption & QDS_SEQ_OPT_LOCALITY_MASK) == QDS_SEQ_OPT_LOCALITY_SHARD )
+        {
+            sIsShardSequence = ID_TRUE;
+            if ( (sOption & QDS_SEQ_OPT_SCALE_FIXED_MASK) == QDS_SEQ_OPT_SCALE_FIXED_FALSE )
+            {
+                // 1. «ˆ¿Á SHARD VARIABLE¿Œ ∞ÊøÏ
+                IDE_TEST_RAISE ( sScale != (sOption & SMI_SEQUENCE_SCALE_MASK), ERR_CANNOT_ALTER_SHARDED_SEQUENCE );
+            }
+            else
+            {
+                // 2. «ˆ¿Á SHARD FIXED¿Œ ∞ÊøÏ
+            }
+        }
+        else
+        {
+            // 3. «ˆ¿Á SHARD∞° æ∆¥— ∞ÊøÏ
+            sIsShardSequence = ID_FALSE;
+        }
+    }
+
+    if ( sIsShardSequence == ID_FALSE )
+    {
+        // check local min/maxvalue
+        IDE_TEST_RAISE(sMinValue < QDS_SEQUENCE_MIN_VALUE,
+                       ERR_OVERFLOW_MINVALUE);
+        IDE_TEST_RAISE(sMaxValue > QDS_SEQUENCE_MAX_VALUE,
+                       ERR_OVERFLOW_MAXVALUE);
+    }
+    else
+    {
+        // check shard min/maxvalue
+        IDE_TEST_RAISE(sMinValue < QDS_SHARD_SEQUENCE_MIN_VALUE,
+                       ERR_OVERFLOW_SHARD_MINVALUE);
+        IDE_TEST_RAISE(sMaxValue > QDS_SHARD_SEQUENCE_MAX_VALUE,
+                       ERR_OVERFLOW_SHARD_MAXVALUE);
+    }
 
     return IDE_SUCCESS;
     
@@ -597,6 +772,20 @@ IDE_RC qds::validateAlterOptions(qcStatement * aStatement)
         IDE_SET(ideSetErrorCode(qpERR_ABORT_QDS_OVERFLOW_MINVALUE,
                                 QDS_SEQUENCE_MIN_VALUE_STR));
     }
+    IDE_EXCEPTION( ERR_OVERFLOW_SHARD_MAXVALUE );
+    {
+        IDE_SET(ideSetErrorCode(qpERR_ABORT_QDS_OVERFLOW_MAXVALUE,
+                                QDS_SHARD_SEQUENCE_MAX_VALUE_STR));
+    }
+    IDE_EXCEPTION( ERR_OVERFLOW_SHARD_MINVALUE );
+    {
+        IDE_SET(ideSetErrorCode(qpERR_ABORT_QDS_OVERFLOW_MINVALUE,
+                                QDS_SHARD_SEQUENCE_MIN_VALUE_STR));
+    }
+    IDE_EXCEPTION( ERR_CANNOT_ALTER_SHARDED_SEQUENCE );
+    {
+        IDE_SET(ideSetErrorCode(qpERR_ABORT_QDS_CANNOT_ALTER_SHARDED_SEQUENCE));
+    }
     IDE_EXCEPTION(ERR_SM);
     
     IDE_EXCEPTION_END;
@@ -612,12 +801,12 @@ IDE_RC qds::validateAlterSeqTable(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER SEQUENCE ... Ïùò validation  ÏàòÌñâ
+ *    ALTER SEQUENCE ... ¿« validation  ºˆ«‡
  *
  * Implementation :
- *    1. ÏãúÌÄÄÏä§Í∞Ä Ï°¥Ïû¨ÌïòÎäîÏßÄ Ï≤¥ÌÅ¨
- *    2. Î≥ÄÍ≤ΩÌïòÎ†§Îäî ÏãúÌÄÄÏä§Í∞Ä Î©îÌÉÄ ÏãúÌÄÄÏä§Ïù¥Î©¥ ÏóêÎü¨
- *    3. AlterSequence Í∂åÌïúÏù¥ ÏûàÎäîÏßÄ Ï≤¥ÌÅ¨
+ *    1. Ω√ƒˆΩ∫∞° ¡∏¿Á«œ¥¬¡ˆ √º≈©
+ *    2. ∫Ø∞Ê«œ∑¡¥¬ Ω√ƒˆΩ∫∞° ∏ﬁ≈∏ Ω√ƒˆΩ∫¿Ã∏È ø°∑Ø
+ *    3. AlterSequence ±««—¿Ã ¿÷¥¬¡ˆ √º≈©
  *
  ***********************************************************************/
 
@@ -743,12 +932,12 @@ IDE_RC qds::validateAlterFlushCache(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER SEQUENCE ... Ïùò validation  ÏàòÌñâ
+ *    ALTER SEQUENCE ... ¿« validation  ºˆ«‡
  *
  * Implementation :
- *    1. ÏãúÌÄÄÏä§Í∞Ä Ï°¥Ïû¨ÌïòÎäîÏßÄ Ï≤¥ÌÅ¨
- *    2. Î≥ÄÍ≤ΩÌïòÎ†§Îäî ÏãúÌÄÄÏä§Í∞Ä Î©îÌÉÄ ÏãúÌÄÄÏä§Ïù¥Î©¥ ÏóêÎü¨
- *    3. AlterSequence Í∂åÌïúÏù¥ ÏûàÎäîÏßÄ Ï≤¥ÌÅ¨
+ *    1. Ω√ƒˆΩ∫∞° ¡∏¿Á«œ¥¬¡ˆ √º≈©
+ *    2. ∫Ø∞Ê«œ∑¡¥¬ Ω√ƒˆΩ∫∞° ∏ﬁ≈∏ Ω√ƒˆΩ∫¿Ã∏È ø°∑Ø
+ *    3. AlterSequence ±««—¿Ã ¿÷¥¬¡ˆ √º≈©
  *
  ***********************************************************************/
 
@@ -860,14 +1049,14 @@ IDE_RC qds::executeCreate(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    CREATE SEQUENCE ... Ïùò execution  ÏàòÌñâ
+ *    CREATE SEQUENCE ... ¿« execution  ºˆ«‡
  *
  * Implementation :
- *    1. ÏãúÌÄÄÏä§ ID Î∂ÄÏó¨
- *    2. ÏãúÌÄÄÏä§ Ïù¥Î¶Ñ Î∂ÄÏó¨
+ *    1. Ω√ƒˆΩ∫ ID ∫Œø©
+ *    2. Ω√ƒˆΩ∫ ¿Ã∏ß ∫Œø©
  *    3. smiTable::createSequence
- *    4. SYS_TABLES_ Ïóê ÏãúÌÄÄÏä§ ÏûÖÎ†•
- *    5. Î©îÌÉÄ Ï∫êÏâ¨ ÏÉùÏÑ±
+ *    4. SYS_TABLES_ ø° Ω√ƒˆΩ∫ ¿‘∑¬
+ *    5. ∏ﬁ≈∏ ƒ≥Ω¨ ª˝º∫
  *
  ***********************************************************************/
 
@@ -945,8 +1134,8 @@ IDE_RC qds::executeCreate(qcStatement * aStatement)
         // Nothing to do.
     }
     
-    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin Í∞úÎ∞ú
-       DDL Statement TextÏùò Î°úÍπÖ
+    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ∞≥πﬂ
+       DDL Statement Text¿« ∑Œ±Î
     */
     if (QCU_DDL_SUPPLEMENTAL_LOG == 1)
     {
@@ -957,9 +1146,9 @@ IDE_RC qds::executeCreate(qcStatement * aStatement)
     }
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // sequenceÎäî partitionÎê† Ïàò ÏóÜÏùå.
+    // sequence¥¬ partitionµ… ºˆ æ¯¿Ω.
     // PROJ-1407 Temporary Table
-    // sequenceÎäî temporaryÎ°ú ÏÉùÏÑ±Îê† Ïàò ÏóÜÏùå
+    // sequence¥¬ temporary∑Œ ª˝º∫µ… ºˆ æ¯¿Ω
     IDE_TEST( qcmTablespace::getTBSAttrByID( SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
                                              & sTBSAttr )
               != IDE_SUCCESS );
@@ -992,6 +1181,8 @@ IDE_RC qds::executeCreate(qcStatement * aStatement)
                     "CHAR'N',"
                     "CHAR'W',"
                     "INTEGER'1'," // Parallel degree
+                    "CHAR'Y',"    // USABLE
+                    "INTEGER'0'," // SHARD_FLAG
                     "SYSDATE, SYSDATE )",
                     sParseTree->userID,
                     sSeqTblID,
@@ -1047,10 +1238,10 @@ IDE_RC qds::executeAlterOptions(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER SEQUENCE ... Ïùò execution  ÏàòÌñâ
+ *    ALTER SEQUENCE ... ¿« execution  ºˆ«‡
  *
  * Implementation :
- *    1. Î©îÌÉÄÏóêÏÑú ÏãúÌÄÄÏä§ Ìï∏Îì§ Íµ¨ÌïòÍ∏∞
+ *    1. ∏ﬁ≈∏ø°º≠ Ω√ƒˆΩ∫ «⁄µÈ ±∏«œ±‚
  *    2. smiTable::alterSequence
  *
  ***********************************************************************/
@@ -1065,7 +1256,7 @@ IDE_RC qds::executeAlterOptions(qcStatement * aStatement)
     SChar                     sSeqTableNameStr[ QC_MAX_OBJECT_NAME_LEN + 1 ];
     qcNamePosition            sSeqTableName;
 
-    // PROJ-2365 sequence table Ï†ïÎ≥¥
+    // PROJ-2365 sequence table ¡§∫∏
     qcmTableInfo            * sSeqTableInfo;
     void                    * sSeqTableHandle = NULL;
     smSCN                     sSeqTableSCN;
@@ -1073,8 +1264,21 @@ IDE_RC qds::executeAlterOptions(qcStatement * aStatement)
 
     SChar                   * sSqlStr;
     vSLong                    sRowCnt;
+
+    /* TASK-7217 Sharded sequence */
+    idBool                    sIsRestart;
     
     sParseTree = (qdSequenceParseTree *)aStatement->myPlan->parseTree;
+
+    /* TASK-7217 Sharded sequence */
+    if ( (sParseTree->sequenceOptions->flag & QDS_SEQ_OPT_RESTART_MASK) == QDS_SEQ_OPT_RESTART_TRUE )
+    {
+        sIsRestart = ID_TRUE;
+    }
+    else
+    {
+        sIsRestart = ID_FALSE;
+    }
 
     // PROJ-2365 sequence table
     if ( ( *sParseTree->sequenceOptions->cycleOption & SMI_SEQUENCE_TABLE_MASK )
@@ -1107,8 +1311,8 @@ IDE_RC qds::executeAlterOptions(qcStatement * aStatement)
                                        (void**)&sSeqTableInfo )
                   != IDE_SUCCESS );
         
-        // sequence tableÏóê DDL lock
-        // updateÎßå ÌïòÏßÄÎßå ÎÖºÎ¶¨Ï†ÅÏúºÎ°ú sequenceÎ•º Î≥ÄÍ≤ΩÌïòÎäî Í≤ÉÏúºÎØÄÎ°ú DDL lockÏùÑ ÌöçÎìùÌïúÎã§.
+        // sequence tableø° DDL lock
+        // update∏∏ «œ¡ˆ∏∏ ≥Ì∏Æ¿˚¿∏∑Œ sequence∏¶ ∫Ø∞Ê«œ¥¬ ∞Õ¿∏π«∑Œ DDL lock¿ª »πµÊ«—¥Ÿ.
         IDE_TEST( qcm::validateAndLockTable( aStatement,
                                              sSeqTableHandle,
                                              sSeqTableSCN,
@@ -1119,7 +1323,7 @@ IDE_RC qds::executeAlterOptions(qcStatement * aStatement)
         IDE_TEST_RAISE( sSeqTableInfo->replicationCount > 0,
                         ERR_DDL_WITH_REPLICATED_TABLE );
 
-        //proj-1608:replicationCountÍ∞Ä 0Ïùº Îïå recovery countÎäî Ìï≠ÏÉÅ 0Ïù¥Ïñ¥Ïïº Ìï®
+        //proj-1608:replicationCount∞° 0¿œ ∂ß recovery count¥¬ «◊ªÛ 0¿ÃæÓæﬂ «‘
         IDE_DASSERT( sSeqTableInfo->replicationRecoveryCount == 0 );
     }
     else
@@ -1135,11 +1339,13 @@ IDE_RC qds::executeAlterOptions(qcStatement * aStatement)
                  *sParseTree->sequenceOptions->maxValue,
                  *sParseTree->sequenceOptions->minValue,
                  *sParseTree->sequenceOptions->cycleOption,
+                 sIsRestart,
+                 *sParseTree->sequenceOptions->startValue,
                  &sLastSyncSeq)
              != IDE_SUCCESS);
     
     // PROJ-2365 sequence table
-    // last sync seqÎ°ú updateÌïúÎã§.
+    // last sync seq∑Œ update«—¥Ÿ.
     if ( ( *sParseTree->sequenceOptions->cycleOption & SMI_SEQUENCE_TABLE_MASK )
          == SMI_SEQUENCE_TABLE_TRUE )
     {
@@ -1173,8 +1379,8 @@ IDE_RC qds::executeAlterOptions(qcStatement * aStatement)
         // Nothing to do.
     }
 
-    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin Í∞úÎ∞ú
-       DDL Statement TextÏùò Î°úÍπÖ
+    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ∞≥πﬂ
+       DDL Statement Text¿« ∑Œ±Î
     */
     if (QCU_DDL_SUPPLEMENTAL_LOG == 1)
     {
@@ -1234,10 +1440,10 @@ IDE_RC qds::executeAlterSeqTable(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER SEQUENCE ... Ïùò execution  ÏàòÌñâ
+ *    ALTER SEQUENCE ... ¿« execution  ºˆ«‡
  *
  * Implementation :
- *    1. Î©îÌÉÄÏóêÏÑú ÏãúÌÄÄÏä§ Ìï∏Îì§ Íµ¨ÌïòÍ∏∞
+ *    1. ∏ﬁ≈∏ø°º≠ Ω√ƒˆΩ∫ «⁄µÈ ±∏«œ±‚
  *    2. smiTable::alterSequence
  *
  ***********************************************************************/
@@ -1260,7 +1466,7 @@ IDE_RC qds::executeAlterSeqTable(qcStatement * aStatement)
     idBool                    sExist = ID_FALSE;
     UInt                      sUserID;
     
-    // PROJ-2365 sequence table Ï†ïÎ≥¥
+    // PROJ-2365 sequence table ¡§∫∏
     qcmTableInfo            * sOldSeqTableInfo = NULL;
     qcmTableInfo            * sNewSeqTableInfo = NULL;
     void                    * sSeqTableHandle  = NULL;
@@ -1293,10 +1499,10 @@ IDE_RC qds::executeAlterSeqTable(qcStatement * aStatement)
     sSeqTableName.size     = sParseTree->sequenceName.size + QDS_SEQ_TABLE_SUFFIX_LEN;
         
     // PROJ-2365 sequence table
-    // Ïù¥ÎØ∏ ÏÉùÏÑ±Îêú sequence tableÏóê ÎåÄÌïú ÏóêÎü¨ÏôÄ alterÏóê ÎåÄÌïú ÏóêÎü¨
+    // ¿ÃπÃ ª˝º∫µ» sequence tableø° ¥Î«— ø°∑ØøÕ alterø° ¥Î«— ø°∑Ø
     if ( ( sOption & SMI_SEQUENCE_TABLE_MASK ) == SMI_SEQUENCE_TABLE_TRUE )
     {
-        // sequence tableÏù¥ Ï°¥Ïû¨Ìï¥ÏïºÌïúÎã§.
+        // sequence table¿Ã ¡∏¿Á«ÿæﬂ«—¥Ÿ.
         IDE_TEST_RAISE( qcm::getTableHandleByName(
                             QC_SMI_STMT(aStatement),
                             sParseTree->userID,
@@ -1310,10 +1516,10 @@ IDE_RC qds::executeAlterSeqTable(qcStatement * aStatement)
                                        (void**)&sOldSeqTableInfo )
                   != IDE_SUCCESS );
         
-        // Ïù¥ÎØ∏ enableÎêòÏñ¥ ÏûàÎã§.
+        // ¿ÃπÃ enableµ«æÓ ¿÷¥Ÿ.
         IDE_TEST_RAISE( sParseTree->enableSeqTable == ID_TRUE, ERR_EXIST_TABLE );
         
-        // sequence tableÏóê DDL lock
+        // sequence tableø° DDL lock
         IDE_TEST( qcm::validateAndLockTable( aStatement,
                                              sSeqTableHandle,
                                              sSeqTableSCN,
@@ -1324,7 +1530,7 @@ IDE_RC qds::executeAlterSeqTable(qcStatement * aStatement)
         IDE_TEST_RAISE( sOldSeqTableInfo->replicationCount > 0,
                         ERR_DDL_WITH_REPLICATED_TABLE );
 
-        //proj-1608:replicationCountÍ∞Ä 0Ïùº Îïå recovery countÎäî Ìï≠ÏÉÅ 0Ïù¥Ïñ¥Ïïº Ìï®
+        //proj-1608:replicationCount∞° 0¿œ ∂ß recovery count¥¬ «◊ªÛ 0¿ÃæÓæﬂ «‘
         IDE_DASSERT( sOldSeqTableInfo->replicationRecoveryCount == 0 );
 
         // drop sequence table
@@ -1347,10 +1553,10 @@ IDE_RC qds::executeAlterSeqTable(qcStatement * aStatement)
                                     &sExist )
                   != IDE_SUCCESS );
 
-        // sequence table nameÏù¥ ÏÇ¨Ïö©Ï§ëÏù¥Î©¥ ÏóêÎü¨.
+        // sequence table name¿Ã ªÁøÎ¡ﬂ¿Ã∏È ø°∑Ø.
         IDE_TEST_RAISE( sExist == ID_TRUE, ERR_EXIST_TABLE );
         
-        // Ïù¥ÎØ∏ disableÎêòÏñ¥ ÏûàÎã§.
+        // ¿ÃπÃ disableµ«æÓ ¿÷¥Ÿ.
         IDE_TEST_RAISE( sParseTree->enableSeqTable == ID_FALSE, ERR_NOT_EXIST_TABLE );
         
         sOption &= ~SMI_SEQUENCE_TABLE_MASK;
@@ -1366,6 +1572,8 @@ IDE_RC qds::executeAlterSeqTable(qcStatement * aStatement)
                  sCurrMaxValue,
                  sCurrMinValue,
                  sOption,
+                 ID_FALSE,  // RESTART
+                 0,         // RESTART∞° FALSE¿Ã∏È ªÁøÎ«œ¡ˆ æ ¿Ω.
                  &sLastSyncSeq)
              != IDE_SUCCESS);
     
@@ -1373,7 +1581,7 @@ IDE_RC qds::executeAlterSeqTable(qcStatement * aStatement)
     if ( ( sOption & SMI_SEQUENCE_TABLE_MASK ) == SMI_SEQUENCE_TABLE_TRUE )
     {
         // create sequence table
-        // last sync seqÎ°ú start valueÎ•º ÏÑ§Ï†ïÌïúÎã§.
+        // last sync seq∑Œ start value∏¶ º≥¡§«—¥Ÿ.
         IDE_TEST( createSequenceTable( aStatement,
                                        sSeqTableName,
                                        sStartValue,
@@ -1391,8 +1599,8 @@ IDE_RC qds::executeAlterSeqTable(qcStatement * aStatement)
         // Nothing to do.
     }
     
-    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin Í∞úÎ∞ú
-       DDL Statement TextÏùò Î°úÍπÖ
+    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ∞≥πﬂ
+       DDL Statement Text¿« ∑Œ±Î
     */
     if (QCU_DDL_SUPPLEMENTAL_LOG == 1)
     {
@@ -1474,10 +1682,10 @@ IDE_RC qds::executeAlterFlushCache(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER SEQUENCE ... Ïùò execution  ÏàòÌñâ
+ *    ALTER SEQUENCE ... ¿« execution  ºˆ«‡
  *
  * Implementation :
- *    1. Î©îÌÉÄÏóêÏÑú ÏãúÌÄÄÏä§ Ìï∏Îì§ Íµ¨ÌïòÍ∏∞
+ *    1. ∏ﬁ≈∏ø°º≠ Ω√ƒˆΩ∫ «⁄µÈ ±∏«œ±‚
  *    2. smiTable::refineSequence
  *
  ***********************************************************************/
@@ -1497,8 +1705,8 @@ IDE_RC qds::executeAlterFlushCache(qcStatement * aStatement)
                  sParseTree->sequenceHandle)
              != IDE_SUCCESS);
     
-    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin Í∞úÎ∞ú
-       DDL Statement TextÏùò Î°úÍπÖ
+    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ∞≥πﬂ
+       DDL Statement Text¿« ∑Œ±Î
     */
     if (QCU_DDL_SUPPLEMENTAL_LOG == 1)
     {
@@ -1548,10 +1756,10 @@ IDE_RC qds::checkSequence(
  *
  * Description :
  *    BUG-17455
- *    1. ÏãúÌÄÄÏä§ Ï°¥Ïû¨ Ïó¨Î∂Ä ÌôïÏù∏
+ *    1. Ω√ƒˆΩ∫ ¡∏¿Á ø©∫Œ »Æ¿Œ
  *    PROJ-2365
- *    2. sequence tableÏù¥ Î≥ÄÍ≤ΩÎêòÏóàÎäîÏßÄ ÌôïÏù∏
- *    3. sequence tableÏóê lock
+ *    2. sequence table¿Ã ∫Ø∞Êµ«æ˙¥¬¡ˆ »Æ¿Œ
+ *    3. sequence tableø° lock
  *
  * Implementation :
  *
@@ -1567,7 +1775,7 @@ IDE_RC qds::checkSequence(
     SLong       sMinValue;
     UInt        sOption;
 
-    // sequenceÍ∞Ä dropÎêòÏóàÎã§Î©¥ rebuild
+    // sequence∞° dropµ«æ˙¥Ÿ∏È rebuild
     IDE_TEST_RAISE( smiTable::getSequence( aSequence->sequenceHandle,
                                            & sStartValue,
                                            & sIncrementValue,
@@ -1577,7 +1785,7 @@ IDE_RC qds::checkSequence(
                                            & sOption ) != IDE_SUCCESS,
                     ERR_REBUILD_QCI_EXEC );
 
-    // sequence tableÏù¥ Î≥ÄÍ≤ΩÎêòÏóàÎã§Î©¥ rebuild
+    // sequence table¿Ã ∫Ø∞Êµ«æ˙¥Ÿ∏È rebuild
     if ( ( sOption & SMI_SEQUENCE_TABLE_MASK ) == SMI_SEQUENCE_TABLE_TRUE )
     {
         IDE_TEST_RAISE( aSequence->sequenceTable == ID_FALSE,
@@ -1589,7 +1797,7 @@ IDE_RC qds::checkSequence(
                         ERR_REBUILD_QCI_EXEC );
     }
 
-    // sequence tableÏóê update lock (currvalÏù∏ Í≤ΩÏö∞Îäî ÌïÑÏöîÏóÜÏùå)
+    // sequence tableø° update lock (currval¿Œ ∞ÊøÏ¥¬ « ø‰æ¯¿Ω)
     if ( ( ( aReadFlag & SMI_SEQUENCE_MASK ) == SMI_SEQUENCE_NEXT ) &&
          ( aSequence->sequenceTable == ID_TRUE ) )
     {
@@ -1628,12 +1836,12 @@ IDE_RC qds::checkSequenceExist(
 /***********************************************************************
  *
  * Description :
- *    Ïú†Ï†ÄÎ™ÖÍ≥º ÏãúÌÄÄÏä§ Ïù¥Î¶ÑÏúºÎ°ú user ID, ÏãúÌÄÄÏä§ Ìï∏Îì§ Íµ¨ÌïòÍ∏∞
+ *    ¿Ø¿˙∏Ì∞˙ Ω√ƒˆΩ∫ ¿Ã∏ß¿∏∑Œ user ID, Ω√ƒˆΩ∫ «⁄µÈ ±∏«œ±‚
  *
  * Implementation :
- *    1. Ïú†Ï†ÄÎ™ÖÏù¥ Î™ÖÏãúÎêòÏßÄ ÏïäÏïòÏúºÎ©¥ ÏÑ∏ÏÖòÏùò Ïú†Ï†Ä ID Î∞òÌôò,
- *       Í∑∏Î†áÏßÄ ÏïäÏúºÎ©¥ Î™ÖÏãúÎêú Ïú†Ï†ÄÏùò user ID Íµ¨ÌïòÍ∏∞
- *    2. user ID ÏôÄ ÏãúÌÄÄÏä§ Ïù¥Î¶ÑÏúºÎ°ú Ìï∏Îì§ Íµ¨ÌïòÍ∏∞
+ *    1. ¿Ø¿˙∏Ì¿Ã ∏ÌΩ√µ«¡ˆ æ æ“¿∏∏È ººº«¿« ¿Ø¿˙ ID π›»Ø,
+ *       ±◊∑∏¡ˆ æ ¿∏∏È ∏ÌΩ√µ» ¿Ø¿˙¿« user ID ±∏«œ±‚
+ *    2. user ID øÕ Ω√ƒˆΩ∫ ¿Ã∏ß¿∏∑Œ «⁄µÈ ±∏«œ±‚
  *
  ***********************************************************************/
 
@@ -1692,10 +1900,10 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
 /***********************************************************************
  *
  * Description :
- *    PROJ-2362 sequence tableÏùÑ ÏÉùÏÑ±ÌïúÎã§.
+ *    PROJ-2362 sequence table¿ª ª˝º∫«—¥Ÿ.
  *
  * Implementation :
- *    sequence optionÏùÑ handshakeÌïòÍ∏∞ ÏúÑÌïòÏó¨ column nameÏóê optionÏùÑ ÎÑ£ÎäîÎã§.(!)
+ *    sequence option¿ª handshake«œ±‚ ¿ß«œø© column nameø° option¿ª ≥÷¥¬¥Ÿ.(!)
  *
  *    create table seq1$seq( id             smallint primary key,
  *                           last_sync_seq  bigint   not null,
@@ -1752,7 +1960,7 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
     sParseTree = (qdSequenceParseTree *)aStatement->myPlan->parseTree;
 
     //------------------------------------
-    // Ï¥àÍ∏∞Ìôî
+    // √ ±‚»≠
     //------------------------------------
 
     QD_SEGMENT_OPTION_INIT( &sSegAttr, &sSegStorageAttr );
@@ -1829,7 +2037,7 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
                   0 )
               != IDE_SUCCESS );
 
-    // handshakeÏö© not null
+    // handshakeøÎ not null
     sMtcColumns[i].flag &= ~MTC_COLUMN_NOTNULL_MASK;
     sMtcColumns[i].flag |= MTC_COLUMN_NOTNULL_TRUE;
     
@@ -1844,7 +2052,7 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
                   0 )
               != IDE_SUCCESS );
 
-    // handshakeÏö© not null
+    // handshakeøÎ not null
     sMtcColumns[i].flag &= ~MTC_COLUMN_NOTNULL_MASK;
     sMtcColumns[i].flag |= MTC_COLUMN_NOTNULL_TRUE;
     
@@ -1859,7 +2067,7 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
                   0 )
               != IDE_SUCCESS );
 
-    // handshakeÏö© not null
+    // handshakeøÎ not null
     sMtcColumns[i].flag &= ~MTC_COLUMN_NOTNULL_MASK;
     sMtcColumns[i].flag |= MTC_COLUMN_NOTNULL_TRUE;
     
@@ -1874,7 +2082,7 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
                   0 )
               != IDE_SUCCESS );
 
-    // handshakeÏö© not null
+    // handshakeøÎ not null
     sMtcColumns[i].flag &= ~MTC_COLUMN_NOTNULL_MASK;
     sMtcColumns[i].flag |= MTC_COLUMN_NOTNULL_TRUE;
     
@@ -1889,7 +2097,7 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
                   0 )
               != IDE_SUCCESS );
 
-    // handshakeÏö© not null
+    // handshakeøÎ not null
     sMtcColumns[i].flag &= ~MTC_COLUMN_NOTNULL_MASK;
     sMtcColumns[i].flag |= MTC_COLUMN_NOTNULL_TRUE;
     
@@ -1904,7 +2112,7 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
                   0 )
               != IDE_SUCCESS );
 
-    // handshakeÏö© not null
+    // handshakeøÎ not null
     sMtcColumns[i].flag &= ~MTC_COLUMN_NOTNULL_MASK;
     sMtcColumns[i].flag |= MTC_COLUMN_NOTNULL_TRUE;
     
@@ -1926,7 +2134,7 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
                   0 )
               != IDE_SUCCESS );
 
-    // conflict resolutionÏö© Ïª¨Îüº
+    // conflict resolutionøÎ ƒ√∑≥
     sMtcColumns[i].flag &= ~MTC_COLUMN_TIMESTAMP_MASK;
     sMtcColumns[i].flag |= MTC_COLUMN_TIMESTAMP_TRUE;
     
@@ -1981,7 +2189,8 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
                                                   sSegAttr,
                                                   sSegStorageAttr,
                                                   QCM_TEMPORARY_ON_COMMIT_NONE,
-                                                  1 )
+                                                  1,
+                                                  QCM_SHARD_FLAG_TABLE_NONE )
               != IDE_SUCCESS );
     
     IDE_TEST( qdbCommon::insertColumnSpecIntoMeta( aStatement,
@@ -2044,7 +2253,7 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
                                      sBuildFlag,
                                      sSegAttr,
                                      sSegStorageAttr,
-                                     0, /* PROJ-2433 : sequence tableÏùÄ direct key indexÎ•º Ïù¥Ïö©ÏïàÌï® */
+                                     0, /* PROJ-2433 : sequence table¿∫ direct key index∏¶ ¿ÃøÎæ»«‘ */
                                      &sIndexHandle )
               != IDE_SUCCESS );
 
@@ -2110,8 +2319,8 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
                   0,
                   0,
                   0,
-                  (SChar*)"", /* PROJ-1107 Check Constraint ÏßÄÏõê */
-                  ID_TRUE ) // ConstraintStateÏùò Validate
+                  (SChar*)"", /* PROJ-1107 Check Constraint ¡ˆø¯ */
+                  ID_TRUE ) // ConstraintState¿« Validate
               != IDE_SUCCESS );
     
     IDE_TEST( qdn::insertConstraintColumnIntoMeta(
@@ -2148,8 +2357,8 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
                       0,
                       0,
                       0,
-                      (SChar*)"", /* PROJ-1107 Check Constraint ÏßÄÏõê */
-                      ID_TRUE ) // ConstraintStateÏùò Validate
+                      (SChar*)"", /* PROJ-1107 Check Constraint ¡ˆø¯ */
+                      ID_TRUE ) // ConstraintState¿« Validate
                   != IDE_SUCCESS );
 
         IDE_TEST( qdn::insertConstraintColumnIntoMeta(
@@ -2185,8 +2394,8 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
                   0,
                   0,
                   0,
-                  (SChar*)"", /* PROJ-1107 Check Constraint ÏßÄÏõê */
-                  ID_TRUE ) // ConstraintStateÏùò Validate
+                  (SChar*)"", /* PROJ-1107 Check Constraint ¡ˆø¯ */
+                  ID_TRUE ) // ConstraintState¿« Validate
               != IDE_SUCCESS );
 
     IDE_TEST( qdn::insertConstraintColumnIntoMeta(
@@ -2284,7 +2493,7 @@ IDE_RC qds::createSequenceTable( qcStatement     * aStatement,
     IDE_TEST( sCursor.close() != IDE_SUCCESS );
     
     //------------------------------------
-    // ÏôÑÎ£å
+    // øœ∑·
     //------------------------------------
     
     *aSeqTableInfo = sTableInfo;
@@ -2320,7 +2529,7 @@ IDE_RC qds::dropSequenceTable( qcStatement   * aStatement,
 /***********************************************************************
  *
  * Description :
- *    PROJ-2362 sequence tableÏùÑ dropÌïúÎã§.
+ *    PROJ-2362 sequence table¿ª drop«—¥Ÿ.
  *
  * Implementation :
  *
@@ -2368,7 +2577,7 @@ IDE_RC qds::dropSequenceTable( qcStatement   * aStatement,
                   sTableInfo->name )
               != IDE_SUCCESS );
 
-    // sequence tableÏùÄ Ìï≠ÏÉÅ sys_mem_tbsÏóê ÏÉùÏÑ±ÎêúÎã§.
+    // sequence table¿∫ «◊ªÛ sys_mem_tbsø° ª˝º∫µ»¥Ÿ.
     IDE_TEST( smiTable::dropTable( QC_SMI_STMT( aStatement ),
                                    sTableInfo->tableHandle,
                                    SMI_TBSLV_DDL_DML )
@@ -2388,8 +2597,8 @@ IDE_RC qds::selectCurrValTx( SLong  * aCurrVal,
  *
  * Description :
  *    PROJ-2362 sequence table
- *    readSequenceÏóêÏÑú sequence tableÏùò last_sync_seqÎ•º selectÌïúÎã§.
- *    Ìï≠ÏÉÅ selectCurrValTxÏôÄ updateLastValTxÍ∞Ä ÏàúÏÑúÎåÄÎ°ú Ìò∏Ï∂úÎêòÏñ¥Ïïº ÌïúÎã§.
+ *    readSequenceø°º≠ sequence table¿« last_sync_seq∏¶ select«—¥Ÿ.
+ *    «◊ªÛ selectCurrValTxøÕ updateLastValTx∞° º¯º≠¥Î∑Œ »£√‚µ«æÓæﬂ «—¥Ÿ.
  *
  * Implementation :
  *
@@ -2410,7 +2619,7 @@ IDE_RC qds::selectCurrValTx( SLong  * aCurrVal,
     sState = 1;
 
     /* PROJ-2446 ONE SOURCE
-     * sequenceTable= trueÏù∏ Í≤ΩÏö∞ callback Ïùò mstatisticsÏÑ§Ï†ï ÎêòÏñ¥ ÏûàÎã§. */
+     * sequenceTable= true¿Œ ∞ÊøÏ callback ¿« mstatisticsº≥¡§ µ«æÓ ¿÷¥Ÿ. */
     // transaction begin
     IDE_TEST( sCallBack->mSmiTrans.begin( & sDummySmiStmt, sCallBack->mStatistics )
               != IDE_SUCCESS );
@@ -2502,15 +2711,14 @@ IDE_RC qds::updateLastValTx( SLong    aLastVal,
  *
  * Description :
  *    PROJ-2362 sequence table
- *    readSequenceÏóêÏÑú sequence tableÏùò last_sync_seqÎ•º updateÌïúÎã§.
- *    Ìï≠ÏÉÅ selectCurrValTxÏôÄ updateLastValTxÍ∞Ä ÏàúÏÑúÎåÄÎ°ú Ìò∏Ï∂úÎêòÏñ¥Ïïº ÌïúÎã§.
+ *    readSequenceø°º≠ sequence table¿« last_sync_seq∏¶ update«—¥Ÿ.
+ *    «◊ªÛ selectCurrValTxøÕ updateLastValTx∞° º¯º≠¥Î∑Œ »£√‚µ«æÓæﬂ «—¥Ÿ.
  *
  * Implementation :
  *
  ***********************************************************************/
     
     qdsCallBackInfo  * sCallBack = (qdsCallBackInfo*) aInfo;
-    smSCN              sDummySCN;
     mtdBigintType      sLastSyncSeqValue;
     ULong              sBuffer[2];
     mtdByteType      * sLastTimeValue = (mtdByteType*) sBuffer;
@@ -2547,7 +2755,7 @@ IDE_RC qds::updateLastValTx( SLong    aLastVal,
 
     // transaction commit
     sState = 1;
-    IDE_TEST( sCallBack->mSmiTrans.commit( & sDummySCN )
+    IDE_TEST( sCallBack->mSmiTrans.commit()
               != IDE_SUCCESS );
 
     // transaction destroy

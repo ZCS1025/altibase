@@ -13,9 +13,9 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 /***********************************************************************
- * $Id: sdtAPI.h 55043 2012-08-16 02:23:24Z elcarim $
+ * $Id: $
  **********************************************************************/
 #ifndef _O_SDT_API_H_
 #define _O_SDT_API_H_  1

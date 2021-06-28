@@ -16,14 +16,14 @@
  
 
 /***********************************************************************
- * $Id: qtcSubqueryWrapper.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qtcSubqueryWrapper.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  *
  * Description :
  *
  *     Subquery Wrapper Node
- *        IN Subqueryì˜ Key Range ìƒì„±ì„ ìœ„í•œ Nodeë¡œ Node Transformì—
- *        ì˜í•œ Key Range ìƒì„±ì‹œì—ë§Œ ì‚¬ìš©ë˜ë©°, Subqueryì˜ ì œì–´ë¥¼ ë‹´ë‹¹í•˜ë©°
- *        Subquery Targetì˜ ì²«ë²ˆì§¸ Columnì„ ìœ„í•´ì„œë§Œ ìƒì„±ëœë‹¤..
+ *        IN SubqueryÀÇ Key Range »ı¼ºÀ» À§ÇÑ Node·Î Node Transform¿¡
+ *        ÀÇÇÑ Key Range »ı¼º½Ã¿¡¸¸ »ç¿ëµÇ¸ç, SubqueryÀÇ Á¦¾î¸¦ ´ã´çÇÏ¸ç
+ *        Subquery TargetÀÇ Ã¹¹øÂ° ColumnÀ» À§ÇØ¼­¸¸ »ı¼ºµÈ´Ù..
  * 
  *        - Ex) i1 IN ( SELECT a1 FROM T1 );
  *
@@ -38,12 +38,12 @@
  *                              V
  *                             [a1]
  *
- *     ìœ„ì˜ ê·¸ë¦¼ì—ì„œì™€ ê°™ì´ INì€ Key Rangeë¥¼ ìœ„í•´ [=] ì—°ì‚°ìë¡œ ëŒ€ì²´ë˜ë©°,
- *     [Subquery Wrapper] ëŠ” [Subquery]ë¥¼ ì œì–´í•œë‹¤.
+ *     À§ÀÇ ±×¸²¿¡¼­¿Í °°ÀÌ INÀº Key Range¸¦ À§ÇØ [=] ¿¬»êÀÚ·Î ´ëÃ¼µÇ¸ç,
+ *     [Subquery Wrapper] ´Â [Subquery]¸¦ Á¦¾îÇÑ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -55,7 +55,7 @@
 extern mtdModule mtdList;
 
 //-----------------------------------------
-// Subquery Wrapper ì—°ì‚°ìì˜ ì´ë¦„ì— ëŒ€í•œ ì •ë³´
+// Subquery Wrapper ¿¬»êÀÚÀÇ ÀÌ¸§¿¡ ´ëÇÑ Á¤º¸
 //-----------------------------------------
 
 static mtcName qtcNames[1] = {
@@ -63,7 +63,7 @@ static mtcName qtcNames[1] = {
 };
 
 //-----------------------------------------
-// Subquery Wrapper ì—°ì‚°ìì˜ Module ì— ëŒ€í•œ ì •ë³´
+// Subquery Wrapper ¿¬»êÀÚÀÇ Module ¿¡ ´ëÇÑ Á¤º¸
 //-----------------------------------------
 
 static IDE_RC qtcEstimate( mtcNode*     aNode,
@@ -73,20 +73,20 @@ static IDE_RC qtcEstimate( mtcNode*     aNode,
                            mtcCallBack* aCallBack );
 
 mtfModule qtc::subqueryWrapperModule = {
-    1|                      // í•˜ë‚˜ì˜ Column ê³µê°„
-    MTC_NODE_OPERATOR_MISC| // ê¸°íƒ€ ì—°ì‚°ì
-    MTC_NODE_INDIRECT_TRUE, // Indirectionë¨
-    ~0,                     // Indexable Mask : ì˜ë¯¸ ì—†ìŒ
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
-    qtcNames,               // ì´ë¦„ ì •ë³´
-    NULL,                   // Counter ì—°ì‚°ì ì—†ìŒ 
-    mtf::initializeDefault, // ì„œë²„ êµ¬ë™ì‹œ ì´ˆê¸°í™” í•¨ìˆ˜, ì—†ìŒ
-    mtf::finalizeDefault,   // ì„œë²„ ì¢…ë£Œì‹œ ì¢…ë£Œ í•¨ìˆ˜, ì—†ìŒ 
-    qtcEstimate             // Estimate í•  í•¨ìˆ˜
+    1|                      // ÇÏ³ªÀÇ Column °ø°£
+    MTC_NODE_OPERATOR_MISC| // ±âÅ¸ ¿¬»êÀÚ
+    MTC_NODE_INDIRECT_TRUE, // IndirectionµÊ
+    ~0,                     // Indexable Mask : ÀÇ¹Ì ¾øÀ½
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    qtcNames,               // ÀÌ¸§ Á¤º¸
+    NULL,                   // Counter ¿¬»êÀÚ ¾øÀ½ 
+    mtf::initializeDefault, // ¼­¹ö ±¸µ¿½Ã ÃÊ±âÈ­ ÇÔ¼ö, ¾øÀ½
+    mtf::finalizeDefault,   // ¼­¹ö Á¾·á½Ã Á¾·á ÇÔ¼ö, ¾øÀ½ 
+    qtcEstimate             // Estimate ÇÒ ÇÔ¼ö
 };
 
 //-----------------------------------------
-// Subquery Wrapper ì—°ì‚°ìì˜ ìˆ˜í–‰ í•¨ìˆ˜ì˜ ì •ì˜
+// Subquery Wrapper ¿¬»êÀÚÀÇ ¼öÇà ÇÔ¼öÀÇ Á¤ÀÇ
 //-----------------------------------------
 
 IDE_RC qtcCalculate_SubqueryWrapper( mtcNode*     aNode,
@@ -96,15 +96,15 @@ IDE_RC qtcCalculate_SubqueryWrapper( mtcNode*     aNode,
                                      mtcTemplate* aTemplate );
 
 static const mtcExecute qtcExecute = {
-    mtf::calculateNA,             // Aggregation ì´ˆê¸°í™” í•¨ìˆ˜, ì—†ìŒ
-    mtf::calculateNA,             // Aggregation ìˆ˜í–‰ í•¨ìˆ˜, ì—†ìŒ
+    mtf::calculateNA,             // Aggregation ÃÊ±âÈ­ ÇÔ¼ö, ¾øÀ½
+    mtf::calculateNA,             // Aggregation ¼öÇà ÇÔ¼ö, ¾øÀ½
     mtf::calculateNA, 
-    mtf::calculateNA,             // Aggregation ì¢…ë£Œ í•¨ìˆ˜, ì—†ìŒ
-    qtcCalculate_SubqueryWrapper, // SUBQUERY WRAPPER ì—°ì‚° í•¨ìˆ˜
-    NULL,                         // ì—°ì‚°ì„ ìœ„í•œ ë¶€ê°€ ì •ë³´, ì—†ìŒ
+    mtf::calculateNA,             // Aggregation Á¾·á ÇÔ¼ö, ¾øÀ½
+    qtcCalculate_SubqueryWrapper, // SUBQUERY WRAPPER ¿¬»ê ÇÔ¼ö
+    NULL,                         // ¿¬»êÀ» À§ÇÑ ºÎ°¡ Á¤º¸, ¾øÀ½
     mtx::calculateNA,
-    mtk::estimateRangeNA,         // Key Range í¬ê¸° ì¶”ì¶œ í•¨ìˆ˜, ì—†ìŒ 
-    mtk::extractRangeNA           // Key Range ìƒì„± í•¨ìˆ˜, ì—†ìŒ
+    mtk::estimateRangeNA,         // Key Range Å©±â ÃßÃâ ÇÔ¼ö, ¾øÀ½ 
+    mtk::extractRangeNA           // Key Range »ı¼º ÇÔ¼ö, ¾øÀ½
 };
 
 
@@ -117,14 +117,14 @@ IDE_RC qtcEstimate( mtcNode * aNode,
 /***********************************************************************
  *
  * Description :
- *    Subquery Wrapper ì—°ì‚°ìì— ëŒ€í•˜ì—¬ Estimate ë¥¼ ìˆ˜í–‰í•¨.
- *    Nodeì— ëŒ€í•œ Column ì •ë³´ ë° Execute ì •ë³´ë¥¼ Settingí•œë‹¤.
+ *    Subquery Wrapper ¿¬»êÀÚ¿¡ ´ëÇÏ¿© Estimate ¸¦ ¼öÇàÇÔ.
+ *    Node¿¡ ´ëÇÑ Column Á¤º¸ ¹× Execute Á¤º¸¸¦ SettingÇÑ´Ù.
  *
  * Implementation :
  *
- *    Subquery Wrapper ë…¸ë“œëŠ” ë³„ë„ì˜ Column ì •ë³´ê°€ í•„ìš”ì—†ìœ¼ë¯€ë¡œ,
- *    Skip Moduleë¡œ estimationì„ í•˜ë©°, ìƒìœ„ Nodeì—ì„œì˜ estimate ë¥¼
- *    ìœ„í•˜ì—¬ í•˜ìœ„ Nodeì˜ ì •ë³´ë¥¼ Stackì— ì„¤ì •í•˜ì—¬ ì¤€ë‹¤.
+ *    Subquery Wrapper ³ëµå´Â º°µµÀÇ Column Á¤º¸°¡ ÇÊ¿ä¾øÀ¸¹Ç·Î,
+ *    Skip Module·Î estimationÀ» ÇÏ¸ç, »óÀ§ Node¿¡¼­ÀÇ estimate ¸¦
+ *    À§ÇÏ¿© ÇÏÀ§ NodeÀÇ Á¤º¸¸¦ Stack¿¡ ¼³Á¤ÇÏ¿© ÁØ´Ù.
  *
  ***********************************************************************/
 
@@ -137,19 +137,19 @@ IDE_RC qtcEstimate( mtcNode * aNode,
     qtcCallBackInfo * sCallBackInfo;
 
     //------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------
 
     IDE_DASSERT( aNode->arguments->module == & qtc::subqueryModule );
 
     //------------------------------------
-    // ë…¸ë“œì˜ Estimate
+    // ³ëµåÀÇ Estimate
     //------------------------------------
 
     sCallBackInfo = (qtcCallBackInfo *) aCallBack->info;
     sTemplate = & sCallBackInfo->tmplate->tmplate;
 
-    // Column ì •ë³´ë¥¼ skipModuleë¡œ ì„¤ì •í•˜ê³ , Execute í•¨ìˆ˜ë¥¼ ì§€ì •í•œë‹¤.
+    // Column Á¤º¸¸¦ skipModule·Î ¼³Á¤ÇÏ°í, Execute ÇÔ¼ö¸¦ ÁöÁ¤ÇÑ´Ù.
     sColumn = aTemplate->rows[aNode->table].columns + aNode->column;
     aTemplate->rows[aNode->table].execute[aNode->column] = qtcExecute;
 
@@ -165,9 +165,9 @@ IDE_RC qtcEstimate( mtcNode * aNode,
               != IDE_SUCCESS );
 
     // To Fix PR-8259
-    // Subquery Node í•˜ìœ„ì˜ Argumentë¥¼ ì–»ì–´
-    // ì´ ì •ë³´ë¥¼ ìƒìœ„ Nodeì—ì„œ ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡
-    // Stackì— ì„¤ì •í•œë‹¤.
+    // Subquery Node ÇÏÀ§ÀÇ Argument¸¦ ¾ò¾î
+    // ÀÌ Á¤º¸¸¦ »óÀ§ Node¿¡¼­ »ç¿ëÇÒ ¼ö ÀÖµµ·Ï
+    // Stack¿¡ ¼³Á¤ÇÑ´Ù.
     sNode = aNode->arguments->arguments;
     sNode = mtf::convertedNode( sNode, sTemplate );
     aStack[0].column = aTemplate->rows[sNode->table].columns + sNode->column;
@@ -190,14 +190,14 @@ IDE_RC qtcCalculate_SubqueryWrapper( mtcNode*     aNode,
 /***********************************************************************
  *
  * Description :
- *    Subquery Wrapperì˜ ì—°ì‚°ì„ ìˆ˜í–‰í•¨.
- *    í•˜ìœ„ Subquery Nodeë¥¼ í•œ ê±´ì”© ìˆ˜í–‰í•œë‹¤.
+ *    Subquery WrapperÀÇ ¿¬»êÀ» ¼öÇàÇÔ.
+ *    ÇÏÀ§ Subquery Node¸¦ ÇÑ °Ç¾¿ ¼öÇàÇÑ´Ù.
  *
  * Implementation :
  *
- *    Subqueryì˜ Plan Treeë¥¼ íšë“í•œ í›„,
- *    Plan Treeì˜ ì´ˆê¸°í™” ì—¬ë¶€ì— ë”°ë¼, plan treeì— ëŒ€í•œ ìˆ˜í–‰ì„ í•˜ë©°,
- *    ê²°ê³¼ê°€ ì—†ì„ ê²½ìš°ì—ëŠ” NULLì„ Settingí•œë‹¤.
+ *    SubqueryÀÇ Plan Tree¸¦ È¹µæÇÑ ÈÄ,
+ *    Plan TreeÀÇ ÃÊ±âÈ­ ¿©ºÎ¿¡ µû¶ó, plan tree¿¡ ´ëÇÑ ¼öÇàÀ» ÇÏ¸ç,
+ *    °á°ú°¡ ¾øÀ» °æ¿ì¿¡´Â NULLÀ» SettingÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -216,11 +216,11 @@ IDE_RC qtcCalculate_SubqueryWrapper( mtcNode*     aNode,
     sStack     = aTemplate->stack;
     sRemain    = aTemplate->stackRemain;
 
-    // Nodeì˜ Stackê³¼ Subqueryì˜ Stackì´ í•„ìš”í•¨.
-    // Listí˜• Subqueryì˜ ê²½ìš° Stack ê²€ì‚¬ë¥¼ Plan Treeì—ì„œ ìˆ˜í–‰í•¨.
+    // NodeÀÇ Stack°ú SubqueryÀÇ StackÀÌ ÇÊ¿äÇÔ.
+    // ListÇü SubqueryÀÇ °æ¿ì Stack °Ë»ç¸¦ Plan Tree¿¡¼­ ¼öÇàÇÔ.
     IDE_TEST_RAISE( aRemain < 2, ERR_STACK_OVERFLOW );
     
-    // Subqueryì˜ Plan Tree íšë“.
+    // SubqueryÀÇ Plan Tree È¹µæ.
     sNode = aNode->arguments;
     sPlan = ((qtcNode*)sNode)->subquery->myPlan->plan;
 
@@ -230,53 +230,53 @@ IDE_RC qtcCalculate_SubqueryWrapper( mtcNode*     aNode,
     if ( aTemplate->execInfo[aNode->info] == QTC_WRAPPER_NODE_EXECUTE_FALSE )
     {
         //---------------------------------
-        // ì´ˆê¸°í™”ê°€ ë˜ì§€ ì•Šì€ ê²½ìš°
+        // ÃÊ±âÈ­°¡ µÇÁö ¾ÊÀº °æ¿ì
         //---------------------------------
 
-        // Planì„ ì´ˆê¸°í™”í•œë‹¤.
+        // PlanÀ» ÃÊ±âÈ­ÇÑ´Ù.
         IDE_TEST( sPlan->init( (qcTemplate*)aTemplate, sPlan )
                   != IDE_SUCCESS );
 
-        // ìˆ˜í–‰ë˜ì—ˆìŒì„ í‘œì‹œí•¨.
+        // ¼öÇàµÇ¾úÀ½À» Ç¥½ÃÇÔ.
         aTemplate->execInfo[aNode->info] = QTC_WRAPPER_NODE_EXECUTE_TRUE;
     }
     else
     {
         //---------------------------------
-        // ì´ˆê¸°í™”ê°€ ëœ ê²½ìš°
+        // ÃÊ±âÈ­°¡ µÈ °æ¿ì
         //---------------------------------
 
         // Nothing To Do
     }
 
-    // Plan ì„ ìˆ˜í–‰
+    // Plan À» ¼öÇà
     IDE_TEST( sPlan->doIt( (qcTemplate*)aTemplate, sPlan, &sFlag )
               != IDE_SUCCESS );
 
     if ( (sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_NONE )
     {
         //--------------------------------
-        // ì§ˆì˜ ê²°ê³¼ê°€ ì—†ëŠ” ê²½ìš°
+        // ÁúÀÇ °á°ú°¡ ¾ø´Â °æ¿ì
         //--------------------------------
 
         aStack[0] = aStack[1];
-        aStack[0].value = NULL;  // ê²°ê³¼ê°€ ì—†ìŒì„ í‘œì‹œ
+        aStack[0].value = NULL;  // °á°ú°¡ ¾øÀ½À» Ç¥½Ã
 
-        // Plan Tree ì¢…ë£Œ
+        // Plan Tree Á¾·á
         aTemplate->execInfo[aNode->info] = QTC_WRAPPER_NODE_EXECUTE_FALSE;
     }
     else
     {
         //--------------------------------
-        // ì§ˆì˜ ê²°ê³¼ê°€ ìˆëŠ” ê²½ìš°
+        // ÁúÀÇ °á°ú°¡ ÀÖ´Â °æ¿ì
         //--------------------------------
 
         // To Fix PR-8259
-        // í•˜ìœ„ Subqueryê°€ Listí˜•ì¸ì§€ One Columní˜•ì¸ì§€ íŒë‹¨í•˜ì—¬ ì²˜ë¦¬í•´ì•¼ í•¨.
-        // List í˜•      : ( SELECT i1, i2 FROM .. )
-        // One Columní˜• : ( SELECT i1 FROM .. )
+        // ÇÏÀ§ Subquery°¡ ListÇüÀÎÁö One ColumnÇüÀÎÁö ÆÇ´ÜÇÏ¿© Ã³¸®ÇØ¾ß ÇÔ.
+        // List Çü      : ( SELECT i1, i2 FROM .. )
+        // One ColumnÇü : ( SELECT i1 FROM .. )
 
-        // Subqueryì˜ Columníšë“
+        // SubqueryÀÇ ColumnÈ¹µæ
         sColumn = aTemplate->rows[sNode->table].columns + sNode->column;
         sValue = (void*)
             ( (SChar*) aTemplate->rows[sNode->table].row
@@ -284,24 +284,24 @@ IDE_RC qtcCalculate_SubqueryWrapper( mtcNode*     aNode,
         
         if ( sColumn->module == & mtdList )
         {
-            // Listí˜• Subqueryì¸ ê²½ìš°
-            // Subquery Nodeì˜ Valueì •ë³´ êµ¬ì„±
+            // ListÇü SubqueryÀÎ °æ¿ì
+            // Subquery NodeÀÇ ValueÁ¤º¸ ±¸¼º
             //
-            // Subqueryì˜ Target ì •ë³´ê°€ ìƒì„±ëœ Stackì„
-            // í†µì§¸ë¡œ ì§€ì •í•œ ì˜ì—­ì— ë³µì‚¬í•œë‹¤.
+            // SubqueryÀÇ Target Á¤º¸°¡ »ı¼ºµÈ StackÀ»
+            // ÅëÂ°·Î ÁöÁ¤ÇÑ ¿µ¿ª¿¡ º¹»çÇÑ´Ù.
             idlOS::memcpy( sValue,
                            & aStack[1],
                            sColumn->column.size );
 
-            // List Subquery Nodeì˜ Columnì •ë³´ ë° Valueì •ë³´ë¥¼
-            // Wrapper Nodeì˜ Stack ì •ë³´ë¡œ ì„¤ì •
+            // List Subquery NodeÀÇ ColumnÁ¤º¸ ¹× ValueÁ¤º¸¸¦
+            // Wrapper NodeÀÇ Stack Á¤º¸·Î ¼³Á¤
             aStack[0].column = sColumn;
             aStack[0].value = sValue;
         }
         else
         {
-            // One Columní˜• Subqueryì¸ ê²½ìš°
-            // Subqueryì˜ ê²°ê³¼ë¥¼ ë³µì‚¬.
+            // One ColumnÇü SubqueryÀÎ °æ¿ì
+            // SubqueryÀÇ °á°ú¸¦ º¹»ç.
             aStack[0] = aStack[1];
         }
     }

@@ -19,11 +19,11 @@
  * $Id: qmoPartition.h 14871 2006-01-13 01:39:23Z mhjeong $
  *
  * Description :
- *     íŒŒí‹°ì…˜ë“œ í…Œì´ë¸” ê´€ë ¨ ìµœì í™” ì²˜ë¦¬.
+ *     ÆÄÆ¼¼Çµå Å×ÀÌºí °ü·Ã ÃÖÀûÈ­ Ã³¸®.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -44,6 +44,11 @@ public:
     static IDE_RC optimizeInto(
         qcStatement  * aStatement,
         qmsTableRef  * aTableRef );
+
+    /* BUG-47614 partition table insert½Ã optimize ¼º´É °³¼± */
+    static IDE_RC optimizeIntoForInsert( qcStatement  * aStatement,
+                                         qmsTableRef  * aTableRef,
+                                         idBool         aIsConst );
 
     static SInt compareRangePartition(
         qcmColumn          * aKeyColumns,
@@ -124,7 +129,7 @@ public:
         qcmColumn * aUptColumns,
         idBool    * aIsIntersect );
 
-    // partitionìš© update column listë¥¼ ìƒì„±
+    // partition¿ë update column list¸¦ »ı¼º
     static IDE_RC makePartUpdateColumnList(
         qcStatement      * aStatement,
         qmsPartitionRef  * aPartitionRef,

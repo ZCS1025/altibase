@@ -186,3 +186,10 @@ SECTION LOG;
     KEY = OAM_ERR_INVALID_SKIP_LIST;
     MSG_EN = "Invalid Error Codes exist in %1$s file";
 }
+
+
+{
+    KEY = OAM_MSG_LAST_SN;
+    MSG_EN = "Last SN : %1$lu";
+}
+

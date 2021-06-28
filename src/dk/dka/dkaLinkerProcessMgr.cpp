@@ -19,8 +19,6 @@
  * $id$
  **********************************************************************/
 
-#include <dkuSharedProperty.h>
-
 #include <dkaLinkerProcessMgr.h>
 
 idBool              dkaLinkerProcessMgr::mIsPropertiesLoaded;
@@ -33,7 +31,7 @@ dkcDblinkConf *     dkaLinkerProcessMgr::mConf;
 UInt                dkaLinkerProcessMgr::mAltilinkerRestartNumber;
 
 /************************************************************************
- * Description : AltiLinker process manager component Î•º Ï¥àÍ∏∞ÌôîÌï¥Ï§ÄÎã§. 
+ * Description : AltiLinker process manager component ∏¶ √ ±‚»≠«ÿ¡ÿ¥Ÿ. 
  *              
  ************************************************************************/
 IDE_RC  dkaLinkerProcessMgr::initializeStatic()
@@ -132,25 +130,24 @@ IDE_RC  dkaLinkerProcessMgr::initializeStatic()
 }
 
 /************************************************************************
- * Description : AltiLinker process manager component Î•º Ï†ïÎ¶¨Ìï¥Ï§ÄÎã§. 
+ * Description : AltiLinker process manager component ∏¶ ¡§∏Æ«ÿ¡ÿ¥Ÿ. 
  *
  ************************************************************************/
 IDE_RC  dkaLinkerProcessMgr::finalizeStatic()
 {
-    if ( mIsPropertiesLoaded == ID_TRUE )
+    IDE_ASSERT( mConfMutex.lock( NULL /* idvSQL* */ ) == IDE_SUCCESS );
+    
+    if ( mConf != NULL )
     {
-        IDE_ASSERT( mConfMutex.lock( NULL /* idvSQL* */ ) == IDE_SUCCESS );
-
         IDE_TEST( dkcFreeDblinkConf( mConf ) != IDE_SUCCESS );
-
         mConf = NULL;
-
-        IDE_ASSERT( mConfMutex.unlock() == IDE_SUCCESS );
     }
     else
     {
         /* do nothing, just finalize linker process manager */
     }
+        
+    IDE_ASSERT( mConfMutex.unlock() == IDE_SUCCESS );
     
     (void)mConfMutex.destroy();
     
@@ -164,26 +161,31 @@ IDE_RC  dkaLinkerProcessMgr::finalizeStatic()
 }
 
 /************************************************************************
- * Description : AltiLinker ÌîÑÎ°úÏÑ∏Ïä§Î•º start ÏãúÌÇ®Îã§. 
- *               Ïó¨Í∏∞ÏÑúÎäî AltiLinker ÌîÑÎ°úÏÑ∏Ïä§ÏôÄ Í¥ÄÎ†®Îêú ÌîÑÎ°úÌçºÌã∞Î•º load
- *               ÌïòÍ≥† AltiLinker ÌîÑÎ°úÏÑ∏Ïä§Î•º ÎùÑÏõåÏ£ºÎäî Í≤ÉÍπåÏßÄ ÏàòÌñâÌïúÎã§.
+ * Description : AltiLinker «¡∑ŒººΩ∫∏¶ start Ω√≈≤¥Ÿ. 
+ *               ø©±‚º≠¥¬ AltiLinker «¡∑ŒººΩ∫øÕ ∞¸∑√µ» «¡∑Œ∆€∆º∏¶ load
+ *               «œ∞Ì AltiLinker «¡∑ŒººΩ∫∏¶ ∂Áøˆ¡÷¥¬ ∞Õ±Ó¡ˆ ºˆ«‡«—¥Ÿ.
  *
- * Notice      : ÏµúÏ¥à Ï¥àÍ∏∞ÌôîÎ•º ÏàòÌñâÌïú ÌõÑ AltiLinker ÌîÑÎ°úÏÑ∏Ïä§Î•º Ïö¥ÏòÅÏ§ëÏóê 
- *               AltiLinker ÌîÑÎ°úÏÑ∏Ïä§Í∞Ä Ï£ΩÍ±∞ÎÇò ÏÇ¨Ïö©ÏûêÏóê ÏùòÌï¥ shutdown 
- *               ÎêòÎäî Í≤ΩÏö∞ Ïª¥Ìè¨ÎÑåÌä∏Î•º Îã§Ïãú Ï¥àÍ∏∞Ìôî ÌïòÏßÄ ÏïäÍ≥† AltiLinker
- *               ÌîÑÎ°úÏÑ∏Ïä§Î•º Í∏∞Îèô(startLinkerProcess) ÏãúÌÇ¨ Ïàò ÏûàÏñ¥Ïïº ÌïúÎã§. 
- *               Îî∞ÎùºÏÑú Ïù¥ Ìï®Ïàò ÏàòÌñâÏ§ëÏóê AltiLinker process property Îì§ÏùÑ
- *               (dblink.conf) Îã§Ïãú load Ìï† ÌïÑÏöîÍ∞Ä ÏûàÎã§. 
+ * Notice      : √÷√  √ ±‚»≠∏¶ ºˆ«‡«— »ƒ AltiLinker «¡∑ŒººΩ∫∏¶ øÓøµ¡ﬂø° 
+ *               AltiLinker «¡∑ŒººΩ∫∞° ¡◊∞≈≥™ ªÁøÎ¿⁄ø° ¿««ÿ shutdown 
+ *               µ«¥¬ ∞ÊøÏ ƒƒ∆˜≥Õ∆Æ∏¶ ¥ŸΩ√ √ ±‚»≠ «œ¡ˆ æ ∞Ì AltiLinker
+ *               «¡∑ŒººΩ∫∏¶ ±‚µø(startLinkerProcess) Ω√≈≥ ºˆ ¿÷æÓæﬂ «—¥Ÿ. 
+ *               µ˚∂Ûº≠ ¿Ã «‘ºˆ ºˆ«‡¡ﬂø° AltiLinker process property µÈ¿ª
+ *               (dblink.conf) ¥ŸΩ√ load «“ « ø‰∞° ¿÷¥Ÿ.
+ *
+ * Parameter   : aMinus1OnlyRetry [0,1] ¿ÁΩ√µµ ø©∫Œ∏¶ ∆«¥‹
+ *                                ¿ÁΩ√µµ∂Û∏È sArgv ¿Œ¿⁄∏¶ «—ƒ≠æø ∂Ø±‰¥Ÿ.
+ *               aPid (out) fork∞° ¡¶¥Î∑Œ µ∆¥¬¡ˆ »Æ¿Œ«œ±‚ ¿ß«ÿ pid∏¶ ∏Æ≈œ«—¥Ÿ.
  *
  ************************************************************************/
-IDE_RC  dkaLinkerProcessMgr::startLinkerProcessInternal()
+IDE_RC  dkaLinkerProcessMgr::startLinkerProcessInternal( SInt aMinus1onlyRetry , SInt *aPid )
 {
 #if !defined(VC_WINCE)
  #ifdef DEBUG
-    SChar       *sArgv[13];
+    UInt         sArgc = 13 - aMinus1onlyRetry;
  #else
-    SChar       *sArgv[10];
+    UInt         sArgc = 10 - aMinus1onlyRetry;
  #endif
+    SChar     ** sArgv = NULL;
     SChar        sAEFPCmd[DK_PATH_LEN]; /* AEFP : AltiLinker Execution File Path */
     SChar        sAEFCmd[DK_PATH_LEN];  /* AEF: AltiLinker Execution File */
     SChar        sAEFPath[DK_PATH_LEN]; /* altilinker.jar file path */
@@ -194,10 +196,11 @@ IDE_RC  dkaLinkerProcessMgr::startLinkerProcessInternal()
     SChar        sJvmBitDataModel[DK_NAME_LEN]; /* jvm [32-bit|64-bit] data model option */
 #else /* VC_WINCE */
  #ifdef DEBUG
-    ASYS_TCHAR  *sArgv[13];
+    UInt         sArgc = 13 - aMinus1onlyRetry;
  #else
-    ASYS_TCHAR  *sArgv[10];
+    UInt         sArgc = 10 - aMinus1onlyRetry;
  #endif
+    ASYS_TCHAR **sArgv = NULL;
     ASYS_TCHAR   sAEFPCmd[DK_PATH_LEN];
     ASYS_TCHAR   sAEFCmd[DK_PATH_LEN];
     ASYS_TCHAR   sAEFPath[DK_PATH_LEN];
@@ -230,8 +233,6 @@ IDE_RC  dkaLinkerProcessMgr::startLinkerProcessInternal()
 
     IDE_ASSERT( mDkaMutex.lock( NULL /* idvSQL* */ ) == IDE_SUCCESS );
     sIsLocked = ID_TRUE;
-
-    IDE_TEST( mLinkerProcessInfo.mStatus != DKA_LINKER_STATUS_NON );
 
     /* 1. Load linker properties */
     IDE_TEST( loadLinkerProperties() != IDE_SUCCESS );
@@ -440,6 +441,10 @@ IDE_RC  dkaLinkerProcessMgr::startLinkerProcessInternal()
                          ID_SIZEOF( sJvmBitDataModel ),
                          PDL_TEXT( DKA_CMD_STR_64BIT ) );
     }
+    
+    sArgv = (SChar**)idlOS::malloc( ID_SIZEOF(SChar*) * sArgc );
+    IDE_TEST_RAISE( sArgv == NULL, ERR_MALLOC_ARGV );
+
     sArgv[0] = sAEFCmd;
 #if !defined(VC_WINCE)
  #ifdef DEBUG
@@ -449,20 +454,20 @@ IDE_RC  dkaLinkerProcessMgr::startLinkerProcessInternal()
     sArgv[4] = (SChar *)PDL_TEXT( sXmsOpt );
     sArgv[5] = (SChar *)PDL_TEXT( sXmxOpt );
     sArgv[6] = (SChar *)PDL_TEXT( sJvmBitDataModel );
-    sArgv[7] = (SChar *)PDL_TEXT( DKA_CMD_STR_JAR );
-    sArgv[8] = (SChar *)PDL_TEXT( sAEFPath );
-    sArgv[9] = (SChar *)PDL_TEXT( sListenPortOpt );
-    sArgv[10] = (SChar *)PDL_TEXT( sTrcDirOpt );
-    sArgv[11] = (SChar *)PDL_TEXT( DKA_CMD_STR_TRC_FILE_NAME );
+    sArgv[7-aMinus1onlyRetry] = (SChar *)PDL_TEXT( DKA_CMD_STR_JAR );
+    sArgv[8-aMinus1onlyRetry] = (SChar *)PDL_TEXT( sAEFPath );
+    sArgv[9-aMinus1onlyRetry] = (SChar *)PDL_TEXT( sListenPortOpt );
+    sArgv[10-aMinus1onlyRetry] = (SChar *)PDL_TEXT( sTrcDirOpt );
+    sArgv[11-aMinus1onlyRetry] = (SChar *)PDL_TEXT( DKA_CMD_STR_TRC_FILE_NAME );
  #else
     sArgv[1] = (SChar *)PDL_TEXT( sXmsOpt );
     sArgv[2] = (SChar *)PDL_TEXT( sXmxOpt );
     sArgv[3] = (SChar *)PDL_TEXT( sJvmBitDataModel );        
-    sArgv[4] = (SChar *)PDL_TEXT( DKA_CMD_STR_JAR );
-    sArgv[5] = (SChar *)PDL_TEXT( sAEFPath );
-    sArgv[6] = (SChar *)PDL_TEXT( sListenPortOpt );
-    sArgv[7] = (SChar *)PDL_TEXT( sTrcDirOpt );
-    sArgv[8] = (SChar *)PDL_TEXT( DKA_CMD_STR_TRC_FILE_NAME );
+    sArgv[4-aMinus1onlyRetry] = (SChar *)PDL_TEXT( DKA_CMD_STR_JAR );
+    sArgv[5-aMinus1onlyRetry] = (SChar *)PDL_TEXT( sAEFPath );
+    sArgv[6-aMinus1onlyRetry] = (SChar *)PDL_TEXT( sListenPortOpt );
+    sArgv[7-aMinus1onlyRetry] = (SChar *)PDL_TEXT( sTrcDirOpt );
+    sArgv[8-aMinus1onlyRetry] = (SChar *)PDL_TEXT( DKA_CMD_STR_TRC_FILE_NAME );
  #endif
 #else /* VC_WINCE */
  #ifdef DEBUG
@@ -472,28 +477,25 @@ IDE_RC  dkaLinkerProcessMgr::startLinkerProcessInternal()
     sArgv[4] = (ASYS_TCHAR *)PDL_TEXT( sXmsOpt );
     sArgv[5] = (ASYS_TCHAR *)PDL_TEXT( sXmxOpt );
     sArgv[6] = (ASYS_TCHAR *)PDL_TEXT( sJvmBitDataModel );        
-    sArgv[7] = (ASYS_TCHAR *)PDL_TEXT( DKA_CMD_STR_JAR );
-    sArgv[8] = (ASYS_TCHAR *)PDL_TEXT( sAEFPath );
-    sArgv[9] = (ASYS_TCHAR *)PDL_TEXT( sListenPortOpt );
-    sArgv[10] = (ASYS_TCHAR *)PDL_TEXT( sTrcDirOpt );
-    sArgv[11] = (ASYS_TCHAR *)PDL_TEXT( DKA_CMD_STR_TRC_FILE_NAME );
+    sArgv[7-aMinus1onlyRetry] = (ASYS_TCHAR *)PDL_TEXT( DKA_CMD_STR_JAR );
+    sArgv[8-aMinus1onlyRetry] = (ASYS_TCHAR *)PDL_TEXT( sAEFPath );
+    sArgv[9-aMinus1onlyRetry] = (ASYS_TCHAR *)PDL_TEXT( sListenPortOpt );
+    sArgv[10-aMinus1onlyRetry] = (ASYS_TCHAR *)PDL_TEXT( sTrcDirOpt );
+    sArgv[11-aMinus1onlyRetry] = (ASYS_TCHAR *)PDL_TEXT( DKA_CMD_STR_TRC_FILE_NAME );
  #else
     sArgv[1] = (ASYS_TCHAR *)PDL_TEXT( sXmsOpt );
     sArgv[2] = (ASYS_TCHAR *)PDL_TEXT( sXmxOpt );
     sArgv[3] = (ASYS_TCHAR *)PDL_TEXT( sJvmBitDataModel );        
-    sArgv[4] = (ASYS_TCHAR *)PDL_TEXT( DKA_CMD_STR_JAR ); 
-    sArgv[5] = (ASYS_TCHAR *)PDL_TEXT( sAEFPath );
-    sArgv[6] = (ASYS_TCHAR *)PDL_TEXT( sListenPortOpt );
-    sArgv[7] = (ASYS_TCHAR *)PDL_TEXT( sTrcDirOpt );
-    sArgv[8] = (ASYS_TCHAR *)PDL_TEXT( DKA_CMD_STR_TRC_FILE_NAME );
+    sArgv[4-aMinus1onlyRetry] = (ASYS_TCHAR *)PDL_TEXT( DKA_CMD_STR_JAR ); 
+    sArgv[5-aMinus1onlyRetry] = (ASYS_TCHAR *)PDL_TEXT( sAEFPath );
+    sArgv[6-aMinus1onlyRetry] = (ASYS_TCHAR *)PDL_TEXT( sListenPortOpt );
+    sArgv[7-aMinus1onlyRetry] = (ASYS_TCHAR *)PDL_TEXT( sTrcDirOpt );
+    sArgv[8-aMinus1onlyRetry] = (ASYS_TCHAR *)PDL_TEXT( DKA_CMD_STR_TRC_FILE_NAME );
  #endif
 #endif /* VC_WINCE */
 
-#ifdef DEBUG
-    sArgv[12] = NULL;
-#else
-    sArgv[9] = NULL;
-#endif
+    sArgv[sArgc-1] = NULL;
+    
     sLog.appendFormat( "Altilinker execute command: " );
     for( i = 0; sArgv[i] != NULL; i++ )
     {
@@ -507,12 +509,14 @@ IDE_RC  dkaLinkerProcessMgr::startLinkerProcessInternal()
     IDE_TEST_RAISE( sChildPid == -1, ERR_FORK_EXEC_LINKER_PROCESS );
 
     setJvmMemMaxSize( sJvmMemMaxSize );
-    setLinkerStartTime();
-    setLinkerStatus( DKA_LINKER_STATUS_ACTIVATED );
-
+    
     IDE_ASSERT( mDkaMutex.unlock() == IDE_SUCCESS );
     sIsLocked = ID_FALSE;
 
+    idlOS::free( sArgv );
+   
+    * aPid = sChildPid;
+    
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_ACCESS_LINKER_EXEC_FILE );
@@ -530,6 +534,10 @@ IDE_RC  dkaLinkerProcessMgr::startLinkerProcessInternal()
     IDE_EXCEPTION( JAVA_HOME_ERR );
     {
         IDE_SET( ideSetErrorCode( dkERR_ABORT_DKA_JAVA_HOME_ERR ) );
+    }
+    IDE_EXCEPTION( ERR_MALLOC_ARGV );
+    {
+        IDE_SET( ideSetErrorCode( dkERR_ABORT_MEMORY_ALLOCATION ) );
     }
 
     IDE_EXCEPTION_END;
@@ -554,6 +562,11 @@ IDE_RC  dkaLinkerProcessMgr::startLinkerProcessInternal()
         /* do nothing */
     }
 
+    if ( sArgv != NULL )
+    {
+        idlOS::free( sArgv );
+    }
+
     IDE_POP();
 
     return IDE_FAILURE;
@@ -564,46 +577,62 @@ IDE_RC  dkaLinkerProcessMgr::startLinkerProcessInternal()
  */
 IDE_RC dkaLinkerProcessMgr::startLinkerProcess( void )
 {
-#ifdef ALTIBASE_PRODUCT_XDB
-    switch ( idwPMMgr::getProcType() )
+    SInt sPid;
+    SInt sAlive;
+
+    IDE_TEST_RAISE( mLinkerProcessInfo.mStatus != DKA_LINKER_STATUS_NON,
+                    ERR_LINKER_ALREADY_RUNNING );
+
+    IDE_TEST( startLinkerProcessInternal( 0, &sPid ) != IDE_SUCCESS );
+  
+    idlOS::sleep( 2 );
+    sAlive = PDL::process_active( sPid ) ;
+    
+    if ( sAlive <= 0 )
     {
-        case IDU_PROC_TYPE_DAEMON:
-            IDE_TEST( startLinkerProcessInternal() != IDE_SUCCESS );
+        IDE_TEST( startLinkerProcessInternal( 1, &sPid ) != IDE_SUCCESS );
 
-            mAltilinkerRestartNumber++;
-            dkuSharedProperty::setAltilinkerRestartNumber( mAltilinkerRestartNumber );
-            break;
+        idlOS::sleep( 2 );
+        sAlive = PDL::process_active( sPid ) ;
 
-        default:
-            /* just change status */
-            setLinkerStatus( DKA_LINKER_STATUS_ACTIVATED );
-            break;
+        IDE_TEST_RAISE( sAlive != 1, ERR_FORK_EXEC_LINKER_PROCESS );
     }
-#else
-    
-    IDE_TEST( startLinkerProcessInternal() != IDE_SUCCESS );
-    
-#endif /* ALTIBASE_PRODUCT_XDB */
+
+    setLinkerStartTime();
+    setLinkerStatus( DKA_LINKER_STATUS_ACTIVATED );
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_LINKER_ALREADY_RUNNING );
+    {
+        IDE_SET( ideSetErrorCode( dkERR_ABORT_DKM_ALTILINKER_ALREAY_RUNNING ) );
+    }
+    IDE_EXCEPTION( ERR_FORK_EXEC_LINKER_PROCESS );
+    {
+        IDE_SET( ideSetErrorCode( dkERR_ABORT_DKA_FORK_EXEC_LINKER_PROCESS ) );
+    }
     IDE_EXCEPTION_END;
+
+    if ( mLinkerProcessInfo.mStatus == DKA_LINKER_STATUS_NON ) 
+    {
+        mIsPropertiesLoaded = ID_FALSE;
+    }
 
     return IDE_FAILURE;
 }
 
 /************************************************************************
- * Description : AltiLinker ÌîÑÎ°úÏÑ∏Ïä§Î•º shutdown ÏãúÌÇ®Îã§. 
- *               Ïù¥ Ìï®ÏàòÎäî ÎÇ¥Î∂ÄÏ†ÅÏúºÎ°ú flag Ïóê Îî∞Îùº AltiLinker ÌîÑÎ°úÏÑ∏Ïä§Î°ú 
- *               ÌïòÏó¨Í∏à Ï¢ÖÎ£åÎã®Í≥ÑÎ•º Î∞üÎäî operation ÏùÑ Ï†ÑÏÜ°ÌïúÎã§.
+ * Description : AltiLinker «¡∑ŒººΩ∫∏¶ shutdown Ω√≈≤¥Ÿ. 
+ *               ¿Ã «‘ºˆ¥¬ ≥ª∫Œ¿˚¿∏∑Œ flag ø° µ˚∂Û AltiLinker «¡∑ŒººΩ∫∑Œ 
+ *               «œø©±› ¡æ∑·¥‹∞Ë∏¶ π‚¥¬ operation ¿ª ¿¸º€«—¥Ÿ.
  *
  * aFlag    - [IN] FORCE or not
- *                 Ïù¥ flag Í∞Ä ID_TRUE Î°ú ÏÑ§Ï†ïÎêú Í≤ΩÏö∞, ÌòÑÏû¨ operation ÏùÑ 
- *                 ÏàòÌñâÏ§ëÏù∏ session Ïù¥ ÏûàÎã§ Ìï†ÏßÄÎùºÎèÑ Í∞ïÏ†úÎ°ú session ÏùÑ 
- *                 close ÌïòÍ≥† AltiLinker ÌîÑÎ°úÏÑ∏Ïä§Î•º Ï¢ÖÎ£åÌïúÎã§. 
- *                 Ïù¥ flag Í∞Ä ID_FALSE Î°ú ÏÑ§Ï†ïÎêú Í≤ΩÏö∞, Î™®Îì† session Ïóê 
- *                 ÏàòÌñâÏ§ëÏù∏ operation Ïù¥ Ï°¥Ïû¨ÌïòÏßÄ ÏïäÎäî Í≤ΩÏö∞ÏóêÎßå
- *                 AltiLinker ÌîÑÎ°úÏÑ∏Ïä§Î•º Ï¢ÖÎ£åÌïúÎã§. 
+ *                 ¿Ã flag ∞° ID_TRUE ∑Œ º≥¡§µ» ∞ÊøÏ, «ˆ¿Á operation ¿ª 
+ *                 ºˆ«‡¡ﬂ¿Œ session ¿Ã ¿÷¥Ÿ «“¡ˆ∂Ûµµ ∞≠¡¶∑Œ session ¿ª 
+ *                 close «œ∞Ì AltiLinker «¡∑ŒººΩ∫∏¶ ¡æ∑·«—¥Ÿ. 
+ *                 ¿Ã flag ∞° ID_FALSE ∑Œ º≥¡§µ» ∞ÊøÏ, ∏µÁ session ø° 
+ *                 ºˆ«‡¡ﬂ¿Œ operation ¿Ã ¡∏¿Á«œ¡ˆ æ ¥¬ ∞ÊøÏø°∏∏
+ *                 AltiLinker «¡∑ŒººΩ∫∏¶ ¡æ∑·«—¥Ÿ. 
  *
  ************************************************************************/
 IDE_RC  dkaLinkerProcessMgr::shutdownLinkerProcessInternal( idBool  aFlag )
@@ -782,8 +811,8 @@ IDE_RC dkaLinkerProcessMgr::dumpStackTrace()
 }
 
 /************************************************************************
- * Description : AltiLinker ÌîÑÎ°úÏÑ∏Ïä§Î•º ÏúÑÌïú ÏÑ§Ï†ïÌååÏùºÏù∏ dblink.conf ÌååÏùºÎ°ú
- *               Î∂ÄÌÑ∞ ÌîÑÎ°úÌçºÌã∞ Í∞íÏùÑ ÏùΩÏñ¥Ïò®Îã§.
+ * Description : AltiLinker «¡∑ŒººΩ∫∏¶ ¿ß«— º≥¡§∆ƒ¿œ¿Œ dblink.conf ∆ƒ¿œ∑Œ
+ *               ∫Œ≈Õ «¡∑Œ∆€∆º ∞™¿ª ¿–æÓø¬¥Ÿ.
  *
  ************************************************************************/
 IDE_RC  dkaLinkerProcessMgr::loadLinkerProperties() 
@@ -834,9 +863,9 @@ IDE_RC  dkaLinkerProcessMgr::loadLinkerProperties()
 }
 
 /************************************************************************
- * Description : AltiLinker ÌîÑÎ°úÏÑ∏Ïä§Ïùò Ï†ïÎ≥¥Î•º ÏñªÏñ¥Ïò®Îã§.
+ * Description : AltiLinker «¡∑ŒººΩ∫¿« ¡§∫∏∏¶ æÚæÓø¬¥Ÿ.
  *
- *  aInfo       - [OUT] AltiLinker ÌîÑÎ°úÏÑ∏Ïä§Ïùò Ï†ïÎ≥¥Í∞Ä Îã¥Í≤®Ïßà Íµ¨Ï°∞Ï≤¥
+ *  aInfo       - [OUT] AltiLinker «¡∑ŒººΩ∫¿« ¡§∫∏∞° ¥„∞‹¡˙ ±∏¡∂√º
  *
  ************************************************************************/
 IDE_RC  dkaLinkerProcessMgr::getLinkerProcessInfo( dkaLinkerProcInfo **aInfo )
@@ -918,12 +947,12 @@ IDE_RC  dkaLinkerProcessMgr::getLinkerProcessInfo( dkaLinkerProcInfo **aInfo )
 }
 
 /************************************************************************
- * Description : Target Ïù¥Î¶ÑÏùÑ ÏûÖÎ†•Î∞õÏïÑ Ìï¥ÎãπÌïòÎäî target Ï†ïÎ≥¥Î•º ÏñªÏñ¥Ïò®Îã§.
- *               Ìï¥ÎãπÌïòÎäî target Ïù¥ Ï°¥Ïû¨ÌïòÏßÄ ÏïäÎäî Í≤ΩÏö∞ IDE_FAILURE Î•º 
- *               Î∞òÌôòÌïúÎã§.
+ * Description : Target ¿Ã∏ß¿ª ¿‘∑¬πﬁæ∆ «ÿ¥Á«œ¥¬ target ¡§∫∏∏¶ æÚæÓø¬¥Ÿ.
+ *               «ÿ¥Á«œ¥¬ target ¿Ã ¡∏¿Á«œ¡ˆ æ ¥¬ ∞ÊøÏ IDE_FAILURE ∏¶ 
+ *               π›»Ø«—¥Ÿ.
  *
  *  aTargetName - [IN] Target name
- *  aInfo       - [OUT] Target Ï†ïÎ≥¥Í∞Ä Îã¥Í≤®Ïßà Íµ¨Ï°∞Ï≤¥Î•º Í∞ÄÎ¶¨ÌÇ§Îäî Ìè¨Ïù∏ÌÑ∞ 
+ *  aInfo       - [OUT] Target ¡§∫∏∞° ¥„∞‹¡˙ ±∏¡∂√º∏¶ ∞°∏Æ≈∞¥¬ ∆˜¿Œ≈Õ 
  *
  ************************************************************************/
 IDE_RC  dkaLinkerProcessMgr::getTargetInfo( SChar            *aTargetName,
@@ -1060,11 +1089,11 @@ IDE_RC  dkaLinkerProcessMgr::getTargetInfo( SChar            *aTargetName,
 }
 
 /************************************************************************
- * Description : Target Ïù¥Î¶ÑÏùÑ ÏûÖÎ†•Î∞õÏïÑ Ìï¥ÎãπÌïòÎäî valid Ìïú target Ï†ïÎ≥¥Í∞Ä 
- *               Ï°¥Ïû¨ÌïòÎäî Í≤ΩÏö∞ aIsValid Ïóê ID_TRUE Î•º Î∞òÌôòÌïúÎã§.
+ * Description : Target ¿Ã∏ß¿ª ¿‘∑¬πﬁæ∆ «ÿ¥Á«œ¥¬ valid «— target ¡§∫∏∞° 
+ *               ¡∏¿Á«œ¥¬ ∞ÊøÏ aIsValid ø° ID_TRUE ∏¶ π›»Ø«—¥Ÿ.
  *
- * Return      : aTargetName Ïóê Ìï¥ÎãπÌïòÎäî valid Ìïú target Ïù¥ Ï°¥Ïû¨ÌïòÎäî Í≤ΩÏö∞
- *               ID_TRUE, ÏïÑÎãàÎ©¥ ID_FALSE.
+ * Return      : aTargetName ø° «ÿ¥Á«œ¥¬ valid «— target ¿Ã ¡∏¿Á«œ¥¬ ∞ÊøÏ
+ *               ID_TRUE, æ∆¥œ∏È ID_FALSE.
  *
  *  aTargetName - [IN] Target name
  *
@@ -1112,9 +1141,9 @@ idBool  dkaLinkerProcessMgr::validateTargetInfo( SChar  *aTargetName )
 }
 
 /************************************************************************
- * Description : Target list Ïùò Í∏∏Ïù¥Î•º Î∞òÌôòÌïúÎã§.
+ * Description : Target list ¿« ±Ê¿Ã∏¶ π›»Ø«—¥Ÿ.
  *
- * Return      : Target list Ïùò Í∏∏Ïù¥
+ * Return      : Target list ¿« ±Ê¿Ã
  *
  ************************************************************************/
 UInt dkaLinkerProcessMgr::getTargetsLength( dkcDblinkConfTarget *aTargetItem )
@@ -1133,11 +1162,11 @@ UInt dkaLinkerProcessMgr::getTargetsLength( dkcDblinkConfTarget *aTargetItem )
 }
 
 /************************************************************************
- * Description : ÏûÖÎ†•Î∞õÏùÄ target item Ïùò Í∏∏Ïù¥Î•º Î∞òÌôòÌïúÎã§.
+ * Description : ¿‘∑¬πﬁ¿∫ target item ¿« ±Ê¿Ã∏¶ π›»Ø«—¥Ÿ.
  *
- * Return      : Target item Ïùò Í∏∏Ïù¥
+ * Return      : Target item ¿« ±Ê¿Ã
  *
- *  aTargetItem - [IN] Í∏∏Ïù¥Î•º Íµ¨Ìï† target item
+ *  aTargetItem - [IN] ±Ê¿Ã∏¶ ±∏«“ target item
  *
  ************************************************************************/
 UInt dkaLinkerProcessMgr::getTargetItemLength( dkcDblinkConfTarget *aTargetItem )
@@ -1220,9 +1249,9 @@ UInt dkaLinkerProcessMgr::getTargetItemLength( dkcDblinkConfTarget *aTargetItem 
 }
 
 /************************************************************************
- * Description : Target list Ïóê Í∞ñÍ≥† ÏûàÎäî target Ïùò Í∞ØÏàòÎ•º Î∞òÌôòÌïúÎã§.
+ * Description : Target list ø° ∞Æ∞Ì ¿÷¥¬ target ¿« ∞πºˆ∏¶ π›»Ø«—¥Ÿ.
  *
- * Return      : Target Ïùò Í∞ØÏàò
+ * Return      : Target ¿« ∞πºˆ
  *
  ************************************************************************/
 UInt dkaLinkerProcessMgr::getTargetItemCount( dkcDblinkConfTarget *aTargetItem )

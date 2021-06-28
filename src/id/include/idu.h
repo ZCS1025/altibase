@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: idu.h 76584 2016-08-09 05:46:08Z ksjall $
+ * $Id: idu.h 87881 2020-06-29 08:04:01Z kclee $
  **********************************************************************/
 
 #ifndef _O_IDU_H_
@@ -39,17 +39,6 @@
 # include <iduGrowingMemoryHandle.h>
 # include <iduFXStack.h>
 # include <iduFatalCallback.h>
-# include <iduShmDef.h>
-# include <iduShmChunkMgr.h>
-# include <iduShmKeyMgr.h>
-# include <iduShmMgr.h>
-# include <iduShmLatch.h>
-# include <iduShmMemList.h>
-# include <iduShmMemPool.h>
-# include <iduShmSXLatch.h>
-# include <iduShmList.h>
-# include <idrLogMgr.h>
-# include <iduShmHash.h>
 # include <iduCompression.h>
 
 

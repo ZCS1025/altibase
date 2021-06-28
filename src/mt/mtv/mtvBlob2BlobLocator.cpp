@@ -104,15 +104,15 @@ IDE_RC mtvCalculate_Blob2BlobLocator( mtcNode*     aNode,
     UShort               sOrgTableID;
     mtcColumn          * sOrgLobColumn;
     
-    // convert4ServerëŠ” valueí˜•ë§Œì„ ì²˜ë¦¬í•  ìˆ˜ ìˆì–´ aNodeê°€ NULLì´ë‹¤.
+    // convert4Server´Â valueÇü¸¸À» Ã³¸®ÇÒ ¼ö ÀÖ¾î aNode°¡ NULLÀÌ´Ù.
     IDE_TEST_RAISE( aNode == NULL, ERR_CONVERSION_NOT_APPLICABLE );
     
-    // LOB Columnì¸ì§€ í™•ì¸í•œë‹¤.
+    // LOB ColumnÀÎÁö È®ÀÎÇÑ´Ù.
     IDE_TEST_RAISE( aTemplate->isBaseTable( aTemplate, aNode->baseTable ) != ID_TRUE,
                     ERR_CONVERSION_NOT_APPLICABLE );
 
     // PROJ-1362
-    // Lob Locatorë¥¼ ì–»ëŠ”ë° í•„ìš”í•œ ì»¤ì„œì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+    // Lob Locator¸¦ ¾ò´Âµ¥ ÇÊ¿äÇÑ Ä¿¼­Á¤º¸¸¦ °¡Á®¿Â´Ù.
     IDE_TEST( aTemplate->getOpenedCursor( aTemplate,
                                           aNode->baseTable,
                                           & sCursor,

@@ -16,20 +16,20 @@
  
 
 /***********************************************************************
- * $Id: qmvPivotTransform.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmvPivotTransform.cpp 90008 2021-02-17 06:03:16Z andrew.shin $
  *
- * Pivot Transform ì€ í¬ê²Œ 2ê°€ì§€ ë¶€ë¶„ìœ¼ë¡œ ë‚˜ë‰œë‹¤.
- * 1. validateQmsTableRef ë‹¨ê³„ì—ì„œ Pivot êµ¬ë¬¸ì„ í•´ì„í•´ì„œ ê¸°ì¡´ TableRef->viewì—
- *    pivotìš© parse treeë¥¼ ìƒì„±í•´ì„œ ì—°ê²°í•˜ëŠ” ë¶€ë¶„ì´ë‹¤.
- *    ì´ë•Œ ìƒˆë¡œ ìƒì„±ëœ parse treeì˜ Targetì—ëŠ” Dummy targetê³¼
- *    ì—¬ëŸ¬ DECODE_XXX targetë¡œ êµ¬ì„±ë˜ì–´ ìˆë‹¤.
+ * Pivot Transform Àº Å©°Ô 2°¡Áö ºÎºĞÀ¸·Î ³ª´¶´Ù.
+ * 1. validateQmsTableRef ´Ü°è¿¡¼­ Pivot ±¸¹®À» ÇØ¼®ÇØ¼­ ±âÁ¸ TableRef->view¿¡
+ *    pivot¿ë parse tree¸¦ »ı¼ºÇØ¼­ ¿¬°áÇÏ´Â ºÎºĞÀÌ´Ù.
+ *    ÀÌ¶§ »õ·Î »ı¼ºµÈ parse treeÀÇ Target¿¡´Â Dummy target°ú
+ *    ¿©·¯ DECODE_XXX target·Î ±¸¼ºµÇ¾î ÀÖ´Ù.
  *
- * 2. Targetì„ validationí•˜ê¸° ì „ ì¦‰ qmsValidateTarget í•¨ìˆ˜ê°€ í˜¸ì¶œëœê¸°
- *    ì „ì— Dummy targetì„ Expandí•˜ëŠ” ë¶€ë¶„ì´ë‹¤.
- *    ì´ë•Œ ì „ì²´ Tableì˜ Columnì¤‘ Pivot êµ¬ë¬¸ì— ì“°ì´ì§€ ì•Šì€ Columnì€
- *    Targetê³¼ Group byì˜ Nodeì— ì¶”ê°€ëœë‹¤.
+ * 2. TargetÀ» validationÇÏ±â Àü Áï qmsValidateTarget ÇÔ¼ö°¡ È£ÃâµÈ±â
+ *    Àü¿¡ Dummy targetÀ» ExpandÇÏ´Â ºÎºĞÀÌ´Ù.
+ *    ÀÌ¶§ ÀüÃ¼ TableÀÇ ColumnÁß Pivot ±¸¹®¿¡ ¾²ÀÌÁö ¾ÊÀº ColumnÀº
+ *    Target°ú Group byÀÇ Node¿¡ Ãß°¡µÈ´Ù.
  *
- *  Pivot êµ¬ë¬¸ì€ ì˜ˆë¥¼ ë“¤ë©´ ë‹¤ìŒê³¼ ê°™ì´ ë³€í™˜ëœë‹¤.
+ *  Pivot ±¸¹®Àº ¿¹¸¦ µé¸é ´ÙÀ½°ú °°ÀÌ º¯È¯µÈ´Ù.
  *  create table emp(
  *     empno     number(4) constraint pk_emp primary key,
  *     ename     varchar(10),
@@ -353,7 +353,7 @@ IDE_RC qmvPivotTransform::checkPivotSyntax( qcStatement * aStatement,
               sValueNode != NULL;
               sValueNode = (qtcNode*)sValueNode->node.next )
         {
-            // aliasNameì„ userNameì— ê¸°ë¡í–ˆë‹¤.
+            // aliasNameÀ» userName¿¡ ±â·ÏÇß´Ù.
             sName = sValueNode->userName;
             
             if ( QC_IS_NULL_NAME( sName ) == ID_FALSE )
@@ -460,8 +460,8 @@ IDE_RC qmvPivotTransform::createPivotParseTree( qcStatement * aStatement,
     QCP_SET_INIT_QMS_SFWGH( sSFWGH );
 
     /* PIVOT flag setting */
-    sSFWGH->flag &= ~QMV_SFWGH_PIVOT_MASK;
-    sSFWGH->flag |= QMV_SFWGH_PIVOT_TRUE;
+    sSFWGH->lflag &= ~QMV_SFWGH_PIVOT_MASK;
+    sSFWGH->lflag |= QMV_SFWGH_PIVOT_TRUE;
 
     IDE_TEST(STRUCT_ALLOC(QC_QMP_MEM(aStatement),
                           qmsFrom,
@@ -482,7 +482,16 @@ IDE_RC qmvPivotTransform::createPivotParseTree( qcStatement * aStatement,
 
     /* Set alias */
     SET_POSITION(aTableRef->aliasName, sTableRef->aliasName);
-    SET_EMPTY_POSITION(sTableRef->aliasName);
+
+    /* BUG-48544 Pivot ±¸¹® Áı°è ÇÔ¼ö¿¡ Inline View Alias, With Alias ÀÎ Coulmn ¶Ç´Â Subquery ¸¦ »ç¿ëÇÏ´Â °æ¿ì ¿À·ù°¡ ¹ß»ıÇÕ´Ï´Ù. */
+    if ( sTableRef->view == NULL )
+    {
+        SET_EMPTY_POSITION( sTableRef->aliasName );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
     // PROJ-2415 Grouping Sets Clause
     aTableRef->noMergeHint = sNoMergeHint;
@@ -686,13 +695,13 @@ IDE_RC qmvPivotTransform::createDummyTarget( qcStatement * aStatement,
  * Add Transformed Pivot Target.
  *  Pivot Clause transform DECODE Aggregation Clause.
  *
- * Pivot TransformëŠ” Pivot Aggrê³¼ Pivot Inì˜ ì¡°í•© ë§Œí¼ DECODE_XXX Target
- * ì„ ìƒì„±í•´ì„œ Targetì— ì¶”ê°€í•œë‹¤.
- *  1. Pivot Aggrêµ¬ë¬¸ì—ì„œ DECODE_XXX í•¨ìˆ˜ë¥¼ êµ¬í•œë‹¤.
- *  2. Pivot in ê³¼ Pivot aggrì˜ ì¡°í•©ì— ì˜í•œ aliasë¥¼ ìƒì„±í•œë‹¤.
- *  3. Targetì„ ìƒì„±í•´ì„œ ì¶”ê°€í•´ì¤€ë‹¤.
- *  í•˜ë‚˜ì˜ (Pivot_In) í•­ëª© ëŒ€í•´ (Pivot_Aggr)ì´ ëª¨ë‘ ë‚˜ì˜¤ê³ 
- *  ê·¸ ë‹¤ìŒ (Pivot_In)ê°’ì´ ë‚˜ì˜¤ê²Œ ëœë‹¤.
+ * Pivot Transform´Â Pivot Aggr°ú Pivot InÀÇ Á¶ÇÕ ¸¸Å­ DECODE_XXX Target
+ * À» »ı¼ºÇØ¼­ Target¿¡ Ãß°¡ÇÑ´Ù.
+ *  1. Pivot Aggr±¸¹®¿¡¼­ DECODE_XXX ÇÔ¼ö¸¦ ±¸ÇÑ´Ù.
+ *  2. Pivot in °ú Pivot aggrÀÇ Á¶ÇÕ¿¡ ÀÇÇÑ alias¸¦ »ı¼ºÇÑ´Ù.
+ *  3. TargetÀ» »ı¼ºÇØ¼­ Ãß°¡ÇØÁØ´Ù.
+ *  ÇÏ³ªÀÇ (Pivot_In) Ç×¸ñ ´ëÇØ (Pivot_Aggr)ÀÌ ¸ğµÎ ³ª¿À°í
+ *  ±× ´ÙÀ½ (Pivot_In)°ªÀÌ ³ª¿À°Ô µÈ´Ù.
  *
  * @param aStatement A pointer of statement
  * @param aSFWGH     A pointer of aSFWGH
@@ -775,7 +784,7 @@ IDE_RC qmvPivotTransform::createPivotFirstTarget( qcStatement * aStatement,
         sTarget->targetColumn->node.module  = sModule;
 
         /* Make first argument of DECODE_XXX_LIST function */
-        /* sPivotAggrNode->nodeë¥¼ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•œë‹¤. */
+        /* sPivotAggrNode->node¸¦ ±×´ë·Î »ç¿ëÇÑ´Ù. */
 
         /* Make second argument of DECODE_XXX_LIST function */
         IDE_TEST(STRUCT_ALLOC( QC_QMP_MEM( aStatement ),
@@ -829,10 +838,10 @@ IDE_RC qmvPivotTransform::createPivotFirstTarget( qcStatement * aStatement,
 }
 
 /**
- * ë‘ë²ˆì§¸ view targetì„ ìƒì„±í•œë‹¤.
+ * µÎ¹øÂ° view targetÀ» »ı¼ºÇÑ´Ù.
  *
- * Pivot TransformëŠ” Pivot Aggrê³¼ Pivot Inì˜ ì¡°í•© ë§Œí¼ NTH_ELEMENT Targetì„
- * ìƒì„±í•´ì„œ Targetì— ì¶”ê°€í•œë‹¤.
+ * Pivot Transform´Â Pivot Aggr°ú Pivot InÀÇ Á¶ÇÕ ¸¸Å­ NTH_ELEMENT TargetÀ»
+ * »ı¼ºÇØ¼­ Target¿¡ Ãß°¡ÇÑ´Ù.
  *
  * @param aStatement A pointer of statement
  * @param aSFWGH     A pointer of aSFWGH
@@ -1023,13 +1032,13 @@ IDE_RC qmvPivotTransform::checkPivotTarget( qmsSFWGH * aSFWGH )
 /**
  * Expand Dummy Target.
  *
- * Parse treeë‚´ì— Pivotê³¼ ê´€ë ¨ëœ Dummy Target ì´ ìˆë‹¤ë©´ ì´ë¥¼ í’€ì–´ë†“ëŠ”ë‹¤.
- * ì´ í•¨ìˆ˜ëŠ” validateQmsTarget ì „ì— í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
- * Dummy targetì—ëŠ” Pivotê³¼ ì—°ê´€ëœ Column ë“¤ì´ qtc Node list í˜•íƒœë¡œ ë‹¬ë ¤ìˆë‹¤.
- * Dummy targetì„ expandí•œë‹¤ëŠ” ì˜ë¯¸ëŠ” ì „ì²´ Tableì˜ ì»¬ëŸ¼ì¤‘ Pivotê³¼ ì—°ê´€ë˜ì§€ ì•ŠëŠ”
- * ì»¬ëŸ¼ì—ëŒ€í•´ì„œëŠ” Groupingì„ ìˆ˜í–‰í•œë‹¤ëŠ” ì˜ë¯¸ì´ë‹¤.
- * ì „ì²´ Tableì˜ ì»¬ëŸ¼ì„ í•˜ë‚˜ì”© ë¹„êµí•˜ë©´ì„œ Dummy Targetì— ìˆëŠ” Columnê³¼ ê´€ë ¨ì´ ì—†ë‹¤ë©´,
- * qmsTargetê³¼ Groupingì— ë…¸ë“œë¥¼ ì¶”ê°€í•œë‹¤.
+ * Parse tree³»¿¡ Pivot°ú °ü·ÃµÈ Dummy Target ÀÌ ÀÖ´Ù¸é ÀÌ¸¦ Ç®¾î³õ´Â´Ù.
+ * ÀÌ ÇÔ¼ö´Â validateQmsTarget Àü¿¡ È£ÃâµÇ´Â ÇÔ¼öÀÌ´Ù.
+ * Dummy target¿¡´Â Pivot°ú ¿¬°üµÈ Column µéÀÌ qtc Node list ÇüÅÂ·Î ´Ş·ÁÀÖ´Ù.
+ * Dummy targetÀ» expandÇÑ´Ù´Â ÀÇ¹Ì´Â ÀüÃ¼ TableÀÇ ÄÃ·³Áß Pivot°ú ¿¬°üµÇÁö ¾Ê´Â
+ * ÄÃ·³¿¡´ëÇØ¼­´Â GroupingÀ» ¼öÇàÇÑ´Ù´Â ÀÇ¹ÌÀÌ´Ù.
+ * ÀüÃ¼ TableÀÇ ÄÃ·³À» ÇÏ³ª¾¿ ºñ±³ÇÏ¸é¼­ Dummy Target¿¡ ÀÖ´Â Column°ú °ü·ÃÀÌ ¾ø´Ù¸é,
+ * qmsTarget°ú Grouping¿¡ ³ëµå¸¦ Ãß°¡ÇÑ´Ù.
  *
  * @param aStatement A pointer of statement
  * @param aTarget    A pointer of Dummy target
@@ -1074,7 +1083,7 @@ IDE_RC qmvPivotTransform::expandPivotDummy( qcStatement * aStatement,
           sIndex < sTableRef->tableInfo->columnCount;
           sIndex++, sColumn = sColumn->next )
     {
-        // pivot functionì€ ì œì™¸í•œë‹¤.
+        // pivot functionÀº Á¦¿ÜÇÑ´Ù.
         if ( ( idlOS::strlen( sTableRef->columnsName[sIndex] ) >= 7 ) &&
              ( idlOS::strMatch( sTableRef->columnsName[sIndex],
                                 7,
@@ -1162,7 +1171,7 @@ IDE_RC qmvPivotTransform::expandPivotDummy( qcStatement * aStatement,
         sPrevTarget = sTarget;
 
         /* create group by element and add group by element */
-        if ( ( aSFWGH->flag & QMV_SFWGH_PIVOT_FIRST_VIEW_MASK )
+        if ( ( aSFWGH->lflag & QMV_SFWGH_PIVOT_FIRST_VIEW_MASK )
              == QMV_SFWGH_PIVOT_FIRST_VIEW_TRUE )
         {
             IDE_TEST(STRUCT_ALLOC( QC_QMP_MEM(aStatement),
@@ -1219,8 +1228,8 @@ IDE_RC qmvPivotTransform::expandPivotDummy( qcStatement * aStatement,
 /**
  * Do Pivot Transform
  *
- *  í•˜ë‚˜ì˜ Tableì— ê´€ë ¨ëœ Pivot êµ¬ë¬¸ì— ëŒ€ Transform ì„ ìˆ˜í–‰í•œë‹¤.
- *  ì‹¤ì œ Validatation ë‹¨ê³„ì˜ validateQmsTableRef ì—ì„œ í˜¸ì¶œëœë‹¤.
+ *  ÇÏ³ªÀÇ Table¿¡ °ü·ÃµÈ Pivot ±¸¹®¿¡ ´ë Transform À» ¼öÇàÇÑ´Ù.
+ *  ½ÇÁ¦ Validatation ´Ü°èÀÇ validateQmsTableRef ¿¡¼­ È£ÃâµÈ´Ù.
  *
  *  1. check pivot syntax.
  *  2. create pivot parse tree.
@@ -1234,6 +1243,7 @@ IDE_RC qmvPivotTransform::expandPivotDummy( qcStatement * aStatement,
  * @return IDE_SUCCESS or IDE_FAILURE
  */
 IDE_RC qmvPivotTransform::doTransform( qcStatement * aStatement,
+                                       qmsSFWGH    * aSFWGH,
                                        qmsTableRef * aTableRef )
 {
     qmsParseTree * sFirstParseTree;
@@ -1279,9 +1289,10 @@ IDE_RC qmvPivotTransform::doTransform( qcStatement * aStatement,
                                       aTableRef )
               != IDE_SUCCESS);
     
-    // ì²«ë²ˆì§¸ viewì„ì„ í‘œì‹œ
-    sFirstParseTree->querySet->SFWGH->flag &= ~QMV_SFWGH_PIVOT_FIRST_VIEW_MASK;
-    sFirstParseTree->querySet->SFWGH->flag |= QMV_SFWGH_PIVOT_FIRST_VIEW_TRUE;
+    // Ã¹¹øÂ° viewÀÓÀ» Ç¥½Ã
+    sFirstParseTree->querySet->SFWGH->lflag &= ~QMV_SFWGH_PIVOT_FIRST_VIEW_MASK;
+    sFirstParseTree->querySet->SFWGH->lflag |= QMV_SFWGH_PIVOT_FIRST_VIEW_TRUE;
+    sFirstParseTree->querySet->SFWGH->hints = aSFWGH->hints;
 
     //--------------------------------
     // make second view target

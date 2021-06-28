@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smxTouchPageList.h 84178 2018-10-16 06:45:10Z justin.kwon $
+ * $Id: smxTouchPageList.h 84177 2018-10-16 06:44:58Z justin.kwon $
  **********************************************************************/
 
 # ifndef _O_SMX_TOUCH_PAGE_LIST_H_
@@ -67,8 +67,8 @@ public:
     smxTrans          * mTrans;
     idvSQL            * mStatistics;
     ULong               mItemCnt;
-    smxTouchNode      * mNodeList; /* TASK-6950 : Touch Page Nodeë“¤ì€ circular linked list í˜•íƒœë¡œ ì—°ê²°ë˜ì–´ìˆê³ ,
-                                                  ì´ mNodeListëŠ” ê·¸ì¤‘ í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ Touch Page Node í•˜ë‚˜ë¥¼ ê°€ë¥´í‚¨ë‹¤. */
+    smxTouchNode      * mNodeList; /* TASK-6950 : Touch Page NodeµéÀº circular linked list ÇüÅÂ·Î ¿¬°áµÇ¾îÀÖ°í,
+                                                  ÀÌ mNodeList´Â ±×Áß ÇöÀç »ç¿ëÁßÀÎ Touch Page Node ÇÏ³ª¸¦ °¡¸£Å²´Ù. */
     ULong               mMaxCachePageCnt;
     static iduMemPool   mMemPool;
     static UInt         mTouchNodeSize;
@@ -85,8 +85,8 @@ inline void smxTouchPageList::init( idvSQL * aStatistics )
     ULong sNeedChunkCnt;
 
     /*
-     * ë²„í¼ Resize ì—°ì‚°ì´ë‚˜ TRANSACTION_TOUCH_PAGE_CACHE_RATIOê°€ ìš´ì˜ì¤‘ì—
-     * ë³€ê²½ë  ìˆ˜ ìˆê¸°ë•Œë¬¸ì— ë™ì ìœ¼ë¡œ ë³€ê²½ë  ìˆ˜ ìˆë‹¤.
+     * ¹öÆÛ Resize ¿¬»êÀÌ³ª TRANSACTION_TOUCH_PAGE_CACHE_RATIO°¡ ¿î¿µÁß¿¡
+     * º¯°æµÉ ¼ö ÀÖ±â¶§¹®¿¡ µ¿ÀûÀ¸·Î º¯°æµÉ ¼ö ÀÖ´Ù.
      */
     mMaxCachePageCnt = (ULong)
         ( (smuProperty::getBufferAreaSize() / SD_PAGE_SIZE)
@@ -95,23 +95,23 @@ inline void smxTouchPageList::init( idvSQL * aStatistics )
     if ( mMaxCachePageCnt != 0 )
     {
         /* (TASK-6950)
-           í• ë‹¹ëœ mempool chunkì˜ ëª¨ë“  elementë¥¼ ì‚¬ìš©í•˜ë„ë¡
-           mMaxCachePageCntë¥¼ ì¡°ì •í•œë‹¤.*/
+           ÇÒ´çµÈ mempool chunkÀÇ ¸ğµç element¸¦ »ç¿ëÇÏµµ·Ï
+           mMaxCachePageCnt¸¦ Á¶Á¤ÇÑ´Ù.*/
 
-        /* chunkë‹¹ pageì •ë³´ ê°¯ìˆ˜ */
+        /* chunk´ç pageÁ¤º¸ °¹¼ö */
         sPageCntPerChunk = mMemPool.mElemCnt * mTouchPageCntByNode;
 
-        /* mMaxCachePageCntê°€ ë“¤ì–´ê°ˆìˆ˜ ìˆëŠ” chunk ê°¯ìˆ˜ */
+        /* mMaxCachePageCnt°¡ µé¾î°¥¼ö ÀÖ´Â chunk °¹¼ö */
         sNeedChunkCnt    = ( ( mMaxCachePageCnt - 1 ) / ( sPageCntPerChunk ) ) + 1 ;
 
-        /* chunkì— ìµœëŒ€ ë“¤ì–´ê°ˆìˆ˜ìˆëŠ” pageê°¯ìˆ˜ë¡œ ë³´ì •í•œë‹¤. */
+        /* chunk¿¡ ÃÖ´ë µé¾î°¥¼öÀÖ´Â page°¹¼ö·Î º¸Á¤ÇÑ´Ù. */
         mMaxCachePageCnt = sNeedChunkCnt * sPageCntPerChunk;
     }
     else
     {
         /* (TASK-6950)
-           í”„ë¡œí¼í‹° TRANSACTION_TOUCH_PAGE_CACHE_RATIO_ = 0 ìœ¼ë¡œ ì„¸íŒ…ë˜ì–´ ë“¤ì–´ì˜¤ë©´,
-           Touch Page Listë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤ëŠ” ì˜ë¯¸ì´ë‹¤. (í…ŒìŠ¤íŠ¸ìš©) */
+           ÇÁ·ÎÆÛÆ¼ TRANSACTION_TOUCH_PAGE_CACHE_RATIO_ = 0 À¸·Î ¼¼ÆÃµÇ¾î µé¾î¿À¸é,
+           Touch Page List¸¦ »ç¿ëÇÏÁö ¾Ê´Â´Ù´Â ÀÇ¹ÌÀÌ´Ù. (Å×½ºÆ®¿ë) */
     }
 
     return;

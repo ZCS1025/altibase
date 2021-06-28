@@ -17,10 +17,10 @@
 /***********************************************************************
  * SGM Layer
  *
- *    SGM(Storage Global Memory)ëŠ” SMMê³¼ SVMì˜ ìƒìœ„ ëª¨ë“ˆë¡œì„œ,
- *    SMMê³¼ SVMì„ í†µí•©í•˜ëŠ” ì—­í• ì„ í•œë‹¤.
- *    SC ê³„ì—´ì€ SM, SVì˜ í•˜ìœ„ ëª¨ë“ˆì´ê³ ,
- *    SG ê³„ì—´ì€ SM, SVë¥¼ í†µí•©í•˜ëŠ” ìƒìœ„ ëª¨ë“ˆì´ë‹¤.
+ *    SGM(Storage Global Memory)´Â SMM°ú SVMÀÇ »óÀ§ ¸ðµâ·Î¼­,
+ *    SMM°ú SVMÀ» ÅëÇÕÇÏ´Â ¿ªÇÒÀ» ÇÑ´Ù.
+ *    SC °è¿­Àº SM, SVÀÇ ÇÏÀ§ ¸ðµâÀÌ°í,
+ *    SG °è¿­Àº SM, SV¸¦ ÅëÇÕÇÏ´Â »óÀ§ ¸ðµâÀÌ´Ù.
  *
  *    +-----------------------------------------------+
  *    |               SGM, SGP(?), SGC(?)             |
@@ -30,7 +30,7 @@
  *    |                 SCR, SCM, SCT                 |
  *    +-----------------------------------------------+
  *
- *    ** SGP, SGCëŠ” í˜„ìž¬ ì—†ìŒ
+ *    ** SGP, SGC´Â ÇöÀç ¾øÀ½
  ***********************************************************************/
 //fix BUG-18251.
 #include <idl.h>
@@ -158,16 +158,16 @@ SChar* sgmManager::getCompressionVarColumn( SChar           * aRow,
             if ( ( sVCDesc->flag & SM_VCDESC_MODE_MASK )
                    == SM_VCDESC_MODE_OUT )
             {
-                /* Out Modeë¡œ ì €ìž¥ëœ Rowë¥¼ ì½ì—ˆê³  ë°ì´íƒ€ê°€ ë²„í¼ì— ë³µì‚¬ë  ê²½ìš°
-                 * ì²« 8byteì—ëŠ” í˜„ìž¬ ë²„í¼ì— ìžˆëŠ” ë°ì´íƒ€ê°€ DBì— ìœ„ì¹˜í•œ Rowì˜
-                 * ì‹œìž‘ Pointerê°€ ìžˆë‹¤.*/
+                /* Out Mode·Î ÀúÀåµÈ Row¸¦ ÀÐ¾ú°í µ¥ÀÌÅ¸°¡ ¹öÆÛ¿¡ º¹»çµÉ °æ¿ì
+                 * Ã¹ 8byte¿¡´Â ÇöÀç ¹öÆÛ¿¡ ÀÖ´Â µ¥ÀÌÅ¸°¡ DB¿¡ À§Ä¡ÇÑ RowÀÇ
+                 * ½ÃÀÛ Pointer°¡ ÀÖ´Ù.*/
                 IDE_ASSERT( sVCDesc->length != 0 );
-                IDE_ASSERT( getOIDPtr( sSpaceID,
-                                       sVCDesc->fstPieceOID,
-                                       (void**)&sFstVarPiecePtr )
-                        == IDE_SUCCESS );
+                IDE_ASSERT( smmManager::getOIDPtr( sSpaceID,
+                                                   sVCDesc->fstPieceOID,
+                                                   (void**)&sFstVarPiecePtr )
+                            == IDE_SUCCESS );
 
-                /* ë²„í¼ì—ëŠ” ì´ì „ì— ì½ì€ ë°ì´íƒ€ê°€ ì €ìž¥ë˜ì–´ ìžˆë‹¤. */
+                /* ¹öÆÛ¿¡´Â ÀÌÀü¿¡ ÀÐÀº µ¥ÀÌÅ¸°¡ ÀúÀåµÇ¾î ÀÖ´Ù. */
                 if ( *((void**)( aColumn->value )) == sFstVarPiecePtr )
                 {
                     sIsSameColumn = ID_TRUE;
@@ -214,7 +214,7 @@ SChar* sgmManager::getCompressionVarColumn( SChar           * aRow,
             sCompColumn.flag     = aColumn->flag;
             sCompColumn.size     = aColumn->size;
             sCompColumn.colSpace = aColumn->colSpace;
-            sCompColumn.varOrder = 0; /* dictionary table ì—ëŠ” í•˜ë‚˜ì˜ columnë§Œ ìžˆë‹¤ */
+            sCompColumn.varOrder = 0; /* dictionary table ¿¡´Â ÇÏ³ªÀÇ column¸¸ ÀÖ´Ù */
             sCompColumn.value    = NULL;
 
             sRet = getVarColumn( aRow,
@@ -223,7 +223,7 @@ SChar* sgmManager::getCompressionVarColumn( SChar           * aRow,
         }
         else
         {
-            // ì•„ì§ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // ¾ÆÁ÷ Áö¿øÇÏÁö ¾Ê´Â´Ù.
             IDE_ASSERT(0);
         }
 
@@ -234,4 +234,98 @@ SChar* sgmManager::getCompressionVarColumn( SChar           * aRow,
     }
 
     return sRet;
+}
+
+/***********************************************************************
+ * Description : smiGetVarColumn()¿ë, Disk Column Type ¿¡¼­ »ç¿ë
+ *               È£Ãâ ºóµµ·Î ÀÎÇÏ¿© º°µµ ÇÔ¼ö·Î ºÐ¸®
+ ***********************************************************************/
+SChar* sgmManager::getVarColumnDisk( SChar            * aRow,
+                                     const smiColumn  * aColumn,
+                                     UInt             * aLength )
+{
+    SChar  * sRow = (SChar*)aRow + aColumn->offset;
+    
+    if ( (aColumn->flag & SMI_COLUMN_USAGE_MASK)
+         == SMI_COLUMN_USAGE_INDEX )
+    {
+        *aLength = ((sdcVarColHdr*)sRow)->length;
+        if ( *aLength == 0 ) // var value ÀüÃ¼ ±æÀÌ°¡ 0ÀÌ¸é
+        {
+            return NULL;
+        }
+        else
+        {
+            IDE_DASSERT(aColumn->value == NULL);
+
+            // index¿¡¼­´Â variable header¿¡ key·ÎºÎÅÍÀÇ offset¸¸ ÀúÀåÇÔ.
+            // °°Àº ÆäÀÌÁö¿¡ Á¸ÀçÇÔ(index key¿¡ ´ëÇÑ Á¢±Ù)
+            return (SChar*)aRow + ((sdcVarColHdr*)sRow)->offset;
+        }
+    }
+    else
+    {
+        // BUG-39077 add debug code for PBI-1683
+        ideLog::log( IDE_SERVER_0,
+                     "COLUMN Info\n"
+                     "    id            : %"ID_UINT32_FMT"\n"
+                     "    flag          : %"ID_XPOINTER_FMT"\n"
+                     "    offset        : %"ID_UINT32_FMT"\n"
+                     "    InOutBaseSize : %"ID_UINT32_FMT"\n"
+                     "    size          : %"ID_UINT32_FMT"\n"
+                     "    colSpace      : %"ID_UINT32_FMT"\n"
+                     "SpaceID(%"ID_UINT32_FMT"), "
+                     "Offset(%"ID_UINT32_FMT"), "
+                     "PageID(%"ID_UINT32_FMT")\n"
+                     "aLength : %"ID_UINT32_FMT"\n",
+                     aColumn->id,
+                     aColumn->flag,
+                     aColumn->offset,
+                     aColumn->vcInOutBaseSize,
+                     aColumn->size,
+                     aColumn->colSpace,
+                     aColumn->colSeg.mSpaceID,
+                     aColumn->colSeg.mOffset,
+                     aColumn->colSeg.mPageID,
+                     *aLength );
+
+        sdpPhyPage::tracePage( IDE_SERVER_0, (UChar*)aRow ,"[Dump Page]");
+
+        IDE_ASSERT(0);
+    }
+
+    return NULL;
+}
+
+/***********************************************************************
+ * Description : µÎ¹øÂ° ÀÌÈÄÀÇ Variable slot header ¸¦ °¡Á®¿Â´Ù.
+ *               È£Ãâ ºóµµ·Î ÀÎÇÏ¿© º°µµ ÇÔ¼ö·Î ºÐ¸®
+ ***********************************************************************/
+smVCPieceHeader* sgmManager::getNxtVCPieceHeader( smVCPieceHeader *  aVCPieceHeader,
+                                                  const smiColumn *  aColumn,
+                                                  UShort          *  aOffsetIdx )
+{
+    UShort            sOffsetIdx;
+    smVCPieceHeader * sVCPieceHeader = aVCPieceHeader;
+
+    sOffsetIdx = aColumn->varOrder;
+
+    do {
+        if ( sVCPieceHeader->nxtPieceOID == SM_NULL_OID )
+        {
+            sVCPieceHeader  = NULL;
+            sOffsetIdx      = ID_USHORT_MAX;
+            break;
+        }
+
+        sOffsetIdx -= sVCPieceHeader->colCount;
+
+        sVCPieceHeader = (smVCPieceHeader*)getOIDPtr( aColumn->colSpace,
+                                                      sVCPieceHeader->nxtPieceOID );
+        IDE_ASSERT( sVCPieceHeader != NULL );
+
+    }while ( sOffsetIdx >= sVCPieceHeader->colCount );
+
+    *aOffsetIdx     = sOffsetIdx;
+    return sVCPieceHeader;
 }

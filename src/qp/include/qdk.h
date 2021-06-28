@@ -45,6 +45,7 @@ void   qdkCloseShardConnection( sdiConnectInfo * aDataNode );
 
 IDE_RC qdkAddShardTransaction( idvSQL         * aStatistics,
                                smTID            aTransID,
+                               sdiClientInfo  * aClientInfo,
                                sdiConnectInfo * aDataNode );
 
 void   qdkDelShardTransaction( sdiConnectInfo * aDataNode );
@@ -52,4 +53,14 @@ void   qdkDelShardTransaction( sdiConnectInfo * aDataNode );
 IDE_RC qdkSetTransactionBrokenOnGlobalCoordinator( void * aDkiSession,
                                                    smTID  aTransID );
 
+IDE_RC qdkAddDtxBranchTx( void   * aDtxInfo,
+                          UChar    aCoordinatorType,
+                          SChar  * aNodeName,
+                          SChar  * aUserName,
+                          SChar  * aUserPassword,
+                          SChar  * aDataServerIP,
+                          UShort   aDataPortNo,
+                          UShort   aConnectType );
+
+IDE_RC qdkCheckGlobalTransactionStatus( void * aDataNode );
 #endif /* _O_QDK_H_ */

@@ -28,6 +28,7 @@
 #include <rpnComm.h>
 
 PDL_Time_Value rpnComm::mTV1Sec;
+UInt rpnComm::rpnXLogLengthForEachType[CMP_OP_RP_MAX_VER1 + 1] = {0, };
 
 //===================================================================
 //
@@ -109,23 +110,110 @@ void rpnComm::finalize()
 {
 }
 
+/* PROJ-2725
+ * ∞¢ xlog type∫∞ op code∏¶ ¡¶ø‹«— payload length ∏¶ ±‚∑œ«—¥Ÿ.
+ * ¥‹, paylaod ∞°  ∞°∫Ø¿˚¿Œ ∞ÊøÏ -1∑Œ º≥¡§«—¥Ÿ.
+ */
+void rpnComm::setLengthForEachXLogType()
+{
+
+    rpnXLogLengthForEachType[CMP_OP_RP_Version] = 8;
+    rpnXLogLengthForEachType[CMP_OP_RP_MetaRepl] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_MetaReplTbl] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_MetaReplCol] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_MetaReplIdx] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_MetaReplIdxCol] = 8;
+    rpnXLogLengthForEachType[CMP_OP_RP_HandshakeAck] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_TrBegin] = 24;
+    rpnXLogLengthForEachType[CMP_OP_RP_TrCommit] = 24;
+    rpnXLogLengthForEachType[CMP_OP_RP_TrAbort] = 24;
+    rpnXLogLengthForEachType[CMP_OP_RP_SPSet] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_SPAbort] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_StmtBegin] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_StmtEnd] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_CursorOpen] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_CursorClose] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_Insert] = 40;
+    rpnXLogLengthForEachType[CMP_OP_RP_Update] = 44;
+    rpnXLogLengthForEachType[CMP_OP_RP_Delete] = 44;
+    rpnXLogLengthForEachType[CMP_OP_RP_UIntID] = 4;
+    rpnXLogLengthForEachType[CMP_OP_RP_Value] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_Stop] = 32;
+    rpnXLogLengthForEachType[CMP_OP_RP_KeepAlive] = 32;
+    rpnXLogLengthForEachType[CMP_OP_RP_Flush] = 28;
+    rpnXLogLengthForEachType[CMP_OP_RP_FlushAck] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_Ack] = 52;
+    rpnXLogLengthForEachType[CMP_OP_RP_LobCursorOpen] = 48;
+    rpnXLogLengthForEachType[CMP_OP_RP_LobCursorClose] = 32;
+    rpnXLogLengthForEachType[CMP_OP_RP_LobPrepare4Write] = 44;
+    rpnXLogLengthForEachType[CMP_OP_RP_LobPartialWrite] = 40;
+    rpnXLogLengthForEachType[CMP_OP_RP_LobFinish2Write] = 32;
+    rpnXLogLengthForEachType[CMP_OP_RP_TxAck] = 4;
+    rpnXLogLengthForEachType[CMP_OP_RP_RequestAck] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_Handshake] = 24;
+    rpnXLogLengthForEachType[CMP_OP_RP_SyncPKBegin] = 24;
+    rpnXLogLengthForEachType[CMP_OP_RP_SyncPK] = 36;
+    rpnXLogLengthForEachType[CMP_OP_RP_SyncPKEnd] = 24;
+    rpnXLogLengthForEachType[CMP_OP_RP_FailbackEnd] = 24;
+    rpnXLogLengthForEachType[CMP_OP_RP_SyncTableNumber] = 4;
+    rpnXLogLengthForEachType[CMP_OP_RP_SyncStart] = 4;
+    rpnXLogLengthForEachType[CMP_OP_RP_SyncEnd] = 4;
+    rpnXLogLengthForEachType[CMP_OP_RP_LobTrim] = 36;
+    rpnXLogLengthForEachType[CMP_OP_RP_MetaReplCheck] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_MetaDictTableCount] = 4;
+    rpnXLogLengthForEachType[CMP_OP_RP_AckOnDML] = 4;
+    rpnXLogLengthForEachType[CMP_OP_RP_AckEager] = 52 +4; //RP_Ack + 4
+    rpnXLogLengthForEachType[CMP_OP_RP_DDLSyncInfo] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_DDLSyncMsg] = 4;
+    rpnXLogLengthForEachType[CMP_OP_RP_DDLSyncMsgAck] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_DDLSyncCancel] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_DDLReplicateHandshake] = 4;
+    rpnXLogLengthForEachType[CMP_OP_RP_DDLReplicateQueryStatement] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_DDLReplicateExecute] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_DDLReplicateAck] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_MetaPartitionCount] = 4;
+    rpnXLogLengthForEachType[CMP_OP_RP_MetaInitialize] = 4;
+    rpnXLogLengthForEachType[CMP_OP_RP_TemporarySyncInfo] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_TemporarySyncItem] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_TemporarySyncHandshakeAck] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_MetaReplTblCondition] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_MetaReplTblConditionResult] = -1;
+    rpnXLogLengthForEachType[CMP_OP_RP_Truncate] = 12;
+    rpnXLogLengthForEachType[CMP_OP_RP_TruncateAck] = 12;
+    rpnXLogLengthForEachType[CMP_OP_RP_XA_START_REQ] = 4 + 4 + 8 + 8 + 8 + 8 + 4 + ID_XIDDATASIZE, /* PROJ-2747 */
+    rpnXLogLengthForEachType[CMP_OP_RP_XA_PREPARE_REQ] =  4 + 4 + 8 + 8 + 8 + 8 + 4 + ID_XIDDATASIZE,
+    rpnXLogLengthForEachType[CMP_OP_RP_XA_PREPARE] = 4 + 4 + 8 + 8 + 8 + 8 + 4 + ID_XIDDATASIZE,
+    rpnXLogLengthForEachType[CMP_OP_RP_XA_COMMIT] = 24 + 8;
+    rpnXLogLengthForEachType[CMP_OP_RP_XA_END] = 4 + 4 + 8,
+    rpnXLogLengthForEachType[CMP_OP_RP_MAX_VER1] = -1;
+
+    /* ªı∑ŒøÓ protocol¿Ã √ﬂ∞° µ«æ˙¿ª ∞ÊøÏ, ∞≥πﬂ¿⁄∞° ¡˜¡¢ length∏¶ ∞ËªÍ«ÿº≠ ±‚¿‘«ÿ¡‡æﬂ «—¥Ÿ. ∞≥πﬂ¿⁄¿« Ω«ºˆ∏¶ ¡Ÿ¿Ã±‚ ¿ß«œø© DASSERT∏¶ ≈Î«ÿ √º≈©«—¥Ÿ. */
+    UInt i = 0;
+    for( i = 0; i < CMP_OP_RP_MAX_VER1; i++)
+    {
+        IDE_ASSERT( rpnXLogLengthForEachType[i] != 0 );
+    }
+
+    return;
+}
+
 //===================================================================
 //
 // Name:          isConnected
 //
 // Return Value:
-//   - ID_TRUE  : ÏÑ∏ÏÖòÏù¥ Alive ÏÉÅÌÉúÏûÑ
-//   - ID_FALSE : ÏÑ∏ÏÖòÏù¥ Alive ÏÉÅÌÉúÍ∞Ä ÏïÑÎãò
+//   - ID_TRUE  : ººº«¿Ã Alive ªÛ≈¬¿”
+//   - ID_FALSE : ººº«¿Ã Alive ªÛ≈¬∞° æ∆¥‘
 //
 // Argument:
-//   [IN]  aLink   : ÌåêÎã®Ìï† Link
+//   [IN]  aLink   : ∆«¥‹«“ Link
 //
 // Called By:
 //
 // Description:
-//   linkÍ∞Ä ÌòÑÏû¨ Ïó∞Í≤∞ ÏÉÅÌÉúÏù∏ÏßÄÎ•º ÌåêÎã®. Ïó¨Í∏∞ÏÑú AliveÎûÄ linkÍ∞Ä
-//   ÏõêÍ≤©ÏúºÎ°ú Connect ÎêòÏñ¥ ÏûàÍ≥†, Ïñ∏Ï†úÎì† ÌÜµÏã†Ïù¥ Í∞ÄÎä•Ìïú ÏÉÅÌÉúÎ•º ÏùòÎØ∏Ìï®
-//   Îî∞ÎùºÏÑú, Connect Ïù¥Ï†ÑÏù¥ÎÇò, Disconnect ÏÉÅÌÉúÎÇò Î™®Îëê Not AliveÍ∞Ä Îê®
+//   link∞° «ˆ¿Á ø¨∞· ªÛ≈¬¿Œ¡ˆ∏¶ ∆«¥‹. ø©±‚º≠ Alive∂ı link∞°
+//   ø¯∞›¿∏∑Œ Connect µ«æÓ ¿÷∞Ì, æ¡¶µÁ ≈ÎΩ≈¿Ã ∞°¥…«— ªÛ≈¬∏¶ ¿«πÃ«‘
+//   µ˚∂Ûº≠, Connect ¿Ã¿¸¿Ã≥™, Disconnect ªÛ≈¬≥™ ∏µŒ Not Alive∞° µ 
 //
 //===================================================================
 idBool rpnComm::isConnected( cmiLink * aLink )
@@ -180,7 +268,7 @@ IDE_RC rpnComm::sendVersion( void               * aHBTResource,
             break;
 
         case CMP_PACKET_TYPE_A7:
-        case CMP_PACKET_TYPE_UNKNOWN: /* ÏùΩÍ∏∞ Ï†Ñ */
+        case CMP_PACKET_TYPE_UNKNOWN: /* ¿–±‚ ¿¸ */
             IDE_TEST( sendVersionA7( aHBTResource,
                                      aProtocolContext,
                                      aExitFlag,
@@ -206,15 +294,15 @@ IDE_RC rpnComm::sendVersion( void               * aHBTResource,
 }
 
 /*
- * Ïù¥Ï§ëÌôî ÌîÑÎ°úÌÜ†ÏΩú Î≤ÑÏ†Ñ Ï†ïÎ≥¥Î•º Ï†úÏùº Î®ºÏ†Ä Ï£ºÍ≥† Î∞õÎäîÎã§.
+ * ¿Ã¡ﬂ»≠ «¡∑Œ≈‰ƒ› πˆ¿¸ ¡§∫∏∏¶ ¡¶¿œ ∏’¿˙ ¡÷∞Ì πﬁ¥¬¥Ÿ.
  *
- * Í∑∏Îü¨ÎÇò HDB V6Ïùò Í≤ΩÏö∞ÏóêÎäî Ïù¥Ï§ëÌôî ÌîÑÎ°úÌÜ†ÏΩú Ïù¥Ï†ÑÏóê CMÏùò Base
- * ProtocolÏùò handshake Í≥ºÏ†ïÏùÑ Í±∞ÏπúÎã§. readCmBlock()ÏóêÏÑú ÏÇ¨Ïö©ÌïòÎäî
- * cmiRecv() Ìï®ÏàòÏóêÏÑú Ïù¥ Í≥ºÏ†ïÏùÑ Ï≤òÎ¶¨ ÌõÑ, cmiReadProtocol()ÏùÑ ÏÇ¨Ïö©Ìï† Ïàò
- * ÏûàÍ≤å Ï§ÄÎπÑÍ∞Ä ÎêúÎã§.
+ * ±◊∑Ø≥™ HDB V6¿« ∞ÊøÏø°¥¬ ¿Ã¡ﬂ»≠ «¡∑Œ≈‰ƒ› ¿Ã¿¸ø° CM¿« Base
+ * Protocol¿« handshake ∞˙¡§¿ª ∞≈ƒ£¥Ÿ. readCmBlock()ø°º≠ ªÁøÎ«œ¥¬
+ * cmiRecv() «‘ºˆø°º≠ ¿Ã ∞˙¡§¿ª √≥∏Æ »ƒ, cmiReadProtocol()¿ª ªÁøÎ«“ ºˆ
+ * ¿÷∞‘ ¡ÿ∫Ò∞° µ»¥Ÿ.
  *
- * Ïù¥ ÌõÑÏóêÎäî Ìå®ÌÇ∑ ÌÉÄÏûÖÏóê Îî∞ÎùºÏÑú cmiRecv(), cmiReadProtocol()ÏùÑ ÏÇ¨Ïö©Ìï¥Ïïº
- * ÌïúÎã§.
+ * ¿Ã »ƒø°¥¬ ∆–≈∂ ≈∏¿‘ø° µ˚∂Ûº≠ cmiRecv(), cmiReadProtocol()¿ª ªÁøÎ«ÿæﬂ
+ * «—¥Ÿ.
  */
 IDE_RC rpnComm::recvVersion( cmiProtocolContext * aProtocolContext,
                              idBool             * aExitFlag,
@@ -232,8 +320,9 @@ IDE_RC rpnComm::recvVersion( cmiProtocolContext * aProtocolContext,
             break;
             
         case CMP_PACKET_TYPE_A7:
-        case CMP_PACKET_TYPE_UNKNOWN: /* ÏùΩÍ∏∞ Ï†Ñ */
-            IDE_TEST( readCmBlock( aProtocolContext,
+        case CMP_PACKET_TYPE_UNKNOWN: /* ¿–±‚ ¿¸ */
+            IDE_TEST( readCmBlock( NULL,
+                                   aProtocolContext,
                                    aExitFlag,
                                    NULL /* TimeoutFlag */,
                                    aTimeoutSec )
@@ -445,6 +534,158 @@ IDE_RC rpnComm::recvMetaRepl( cmiProtocolContext * aProtocolContext,
     return IDE_FAILURE;
 }
 
+IDE_RC rpnComm::sendTempSyncMetaRepl( void               * aHBTResource,
+                                      cmiProtocolContext * aProtocolContext,
+                                      idBool             * aExitFlag,
+                                      rpdReplications    * aRepl,
+                                      UInt                 aTimeoutSec )
+{
+    cmpPacketType sPacketType;
+
+    sPacketType = cmiGetPacketType( aProtocolContext );
+
+    switch ( sPacketType )
+    {
+        case CMP_PACKET_TYPE_A7:
+            IDE_TEST( sendTempSyncMetaReplA7( aHBTResource,
+                                              aProtocolContext,
+                                              aExitFlag,
+                                              aRepl,
+                                              aTimeoutSec )
+                      != IDE_SUCCESS );
+            break;
+
+        case CMP_PACKET_TYPE_A5:
+        case CMP_PACKET_TYPE_UNKNOWN:
+        default:
+            IDE_RAISE( UNKNOWN_PACKET_TYPE );
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( UNKNOWN_PACKET_TYPE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_INVALID_PACKET_TYPE ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnComm::recvTempSyncMetaRepl( cmiProtocolContext * aProtocolContext,
+                                      idBool             * aExitFlag,
+                                      rpdReplications    * aRepl,
+                                      ULong                aTimeoutSec )
+{
+    cmpPacketType sPacketType;
+    
+    sPacketType = cmiGetPacketType( aProtocolContext );
+
+    switch ( sPacketType )
+    {
+        case CMP_PACKET_TYPE_A7:
+            IDE_TEST( recvTempSyncMetaReplA7( aProtocolContext,
+                                              aExitFlag,
+                                              aRepl,
+                                              aTimeoutSec )
+                      != IDE_SUCCESS );
+            break;
+            
+        case CMP_PACKET_TYPE_A5:
+        case CMP_PACKET_TYPE_UNKNOWN:
+
+            IDE_RAISE( UNKNOWN_PACKET_TYPE );
+            break;
+    }
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( UNKNOWN_PACKET_TYPE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_INVALID_PACKET_TYPE ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnComm::sendTempSyncReplItem( void               * aHBTResource,
+                                      cmiProtocolContext * aProtocolContext,
+                                      idBool             * aExitFlag,
+                                      rpdReplSyncItem    * aTempSyncItem,
+                                      UInt                 aTimeoutSec )
+{
+    cmpPacketType sPacketType;
+
+    sPacketType = cmiGetPacketType( aProtocolContext );
+
+    switch ( sPacketType )
+    {
+        case CMP_PACKET_TYPE_A7:
+            IDE_TEST( sendTempSyncReplItemA7( aHBTResource,
+                                              aProtocolContext,
+                                              aExitFlag,
+                                              aTempSyncItem,
+                                              aTimeoutSec )
+                      != IDE_SUCCESS );
+            break;
+
+        case CMP_PACKET_TYPE_A5:
+        case CMP_PACKET_TYPE_UNKNOWN:
+        default:
+            IDE_RAISE( UNKNOWN_PACKET_TYPE );
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( UNKNOWN_PACKET_TYPE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_INVALID_PACKET_TYPE ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnComm::recvTempSyncReplItem( cmiProtocolContext * aProtocolContext,
+                                      idBool             * aExitFlag,
+                                      rpdReplSyncItem    * aTempSyncItem,
+                                      ULong                aTimeoutSec )
+{
+    cmpPacketType sPacketType;
+    
+    sPacketType = cmiGetPacketType( aProtocolContext );
+
+    switch ( sPacketType )
+    {
+        case CMP_PACKET_TYPE_A7:
+            IDE_TEST( recvTempSyncReplItemA7( aProtocolContext,
+                                              aExitFlag,
+                                              aTempSyncItem,
+                                              aTimeoutSec )
+                      != IDE_SUCCESS );
+            break;
+            
+        case CMP_PACKET_TYPE_A5:
+        case CMP_PACKET_TYPE_UNKNOWN:
+
+            IDE_RAISE( UNKNOWN_PACKET_TYPE );
+            break;
+    }
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( UNKNOWN_PACKET_TYPE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_INVALID_PACKET_TYPE ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 IDE_RC rpnComm::sendMetaReplTbl( void               * aHBTResource,
                                  cmiProtocolContext * aProtocolContext,
                                  idBool             * aExitFlag,
@@ -539,6 +780,7 @@ IDE_RC rpnComm::sendMetaReplCol( void               * aHBTResource,
                                  cmiProtocolContext * aProtocolContext,
                                  idBool             * aExitFlag,
                                  rpdColumn          * aColumn,
+                                 rpdVersion           aRemoteVersion ,
                                  UInt                 aTimeoutSec )
 {
     cmpPacketType sPacketType;
@@ -561,6 +803,7 @@ IDE_RC rpnComm::sendMetaReplCol( void               * aHBTResource,
                                          aProtocolContext,
                                          aExitFlag,
                                          aColumn,
+                                         aRemoteVersion,
                                          aTimeoutSec )
                       != IDE_SUCCESS );
             break;
@@ -585,6 +828,7 @@ IDE_RC rpnComm::sendMetaReplCol( void               * aHBTResource,
 IDE_RC rpnComm::recvMetaReplCol( cmiProtocolContext * aProtocolContext,
                                  idBool             * aExitFlag,
                                  rpdColumn          * aColumn,
+                                 rpdVersion           aRemoteVersion,
                                  ULong                aTimeoutSec )
 {
     cmpPacketType sPacketType;
@@ -605,6 +849,7 @@ IDE_RC rpnComm::recvMetaReplCol( cmiProtocolContext * aProtocolContext,
             IDE_TEST( recvMetaReplColA7( aProtocolContext,
                                          aExitFlag,
                                          aColumn,
+                                         aRemoteVersion,
                                          aTimeoutSec )
                       != IDE_SUCCESS );
             break;
@@ -934,7 +1179,7 @@ IDE_RC rpnComm::sendHandshakeAck( cmiProtocolContext    * aProtocolContext,
                                   UInt                    aResult,
                                   SInt                    aFailbackStatus,
                                   ULong                   aXSN,
-                                  SChar                 * aMsg,
+                                  const SChar           * aMsg,
                                   UInt                    aTimeoutSec )
 {
     cmpPacketType sPacketType;
@@ -981,7 +1226,8 @@ IDE_RC rpnComm::sendHandshakeAck( cmiProtocolContext    * aProtocolContext,
     return IDE_FAILURE;            
 }
 
-IDE_RC rpnComm::recvHandshakeAck( cmiProtocolContext * aProtocolContext,
+IDE_RC rpnComm::recvHandshakeAck( void               * aHBTResource,
+                                  cmiProtocolContext * aProtocolContext,
                                   idBool             * aExitFlag,
                                   UInt               * aResult,
                                   SInt               * aFailbackStatus,
@@ -1010,7 +1256,8 @@ IDE_RC rpnComm::recvHandshakeAck( cmiProtocolContext * aProtocolContext,
 
         case CMP_PACKET_TYPE_A7:
         case CMP_PACKET_TYPE_UNKNOWN:
-            IDE_TEST( recvHandshakeAckA7( aProtocolContext,
+            IDE_TEST( recvHandshakeAckA7( aHBTResource,
+                                          aProtocolContext,
                                           aExitFlag,
                                           aResult,
                                           aFailbackStatus,
@@ -1026,7 +1273,93 @@ IDE_RC rpnComm::recvHandshakeAck( cmiProtocolContext * aProtocolContext,
             break;
     }
 
-    /* A7 ÏùÄ HandshakeAck Î•º Î∞õÏùÄ Îí§ ÏÉÅÎåÄÏùò Packet Type ÏùÑ Ïïå Ïàò ÏûàÎã§. */
+    /* A7 ¿∫ HandshakeAck ∏¶ πﬁ¿∫ µ⁄ ªÛ¥Î¿« Packet Type ¿ª æÀ ºˆ ¿÷¥Ÿ. */
+    sPacketType = cmiGetPacketType( aProtocolContext );
+    IDE_TEST_RAISE( sPacketType == CMP_PACKET_TYPE_UNKNOWN, UNKNOWN_PACKET_TYPE );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( UNKNOWN_PACKET_TYPE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_INVALID_PACKET_TYPE ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnComm::sendTempSyncHandshakeAck( cmiProtocolContext    * aProtocolContext,
+                                          idBool                * aExitFlag,
+                                          UInt                    aResult,
+                                          SChar                 * aMsg,
+                                          UInt                    aTimeoutSec )
+{
+    cmpPacketType sPacketType;
+
+    sPacketType = cmiGetPacketType( aProtocolContext );
+
+    switch ( sPacketType )
+    {
+        case CMP_PACKET_TYPE_A7:
+            IDE_TEST( sendTempSyncHandshakeAckA7( aProtocolContext,
+                                                  aExitFlag,
+                                                  aResult,
+                                                  aMsg,
+                                                  aTimeoutSec )
+                      != IDE_SUCCESS );
+            break;
+            
+        case CMP_PACKET_TYPE_A5:
+        case CMP_PACKET_TYPE_UNKNOWN:
+            IDE_RAISE( UNKNOWN_PACKET_TYPE );
+            break;
+    }
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( UNKNOWN_PACKET_TYPE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_INVALID_PACKET_TYPE ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;            
+}
+
+IDE_RC rpnComm::recvTempSyncHandshakeAck( cmiProtocolContext * aProtocolContext,
+                                          idBool             * aExitFlag,
+                                          UInt               * aResult,
+                                          SChar              * aMsg,
+                                          UInt               * aMsgLen,
+                                          ULong                aTimeOut )
+{
+    cmpPacketType sPacketType;
+
+    sPacketType = cmiGetPacketType( aProtocolContext );
+
+    switch ( sPacketType )
+    {
+        case CMP_PACKET_TYPE_A5:
+            IDE_RAISE( UNKNOWN_PACKET_TYPE );
+            break;
+
+        case CMP_PACKET_TYPE_A7:
+        case CMP_PACKET_TYPE_UNKNOWN:
+            IDE_TEST( recvTempSyncHandshakeAckA7( aProtocolContext,
+                                                  aExitFlag,
+                                                  aResult,
+                                                  aMsg,
+                                                  aMsgLen,
+                                                  aTimeOut )
+                      != IDE_SUCCESS );
+            break;
+
+        default:
+            IDE_RAISE( UNKNOWN_PACKET_TYPE );
+            break;
+    }
+
+    /* A7 ¿∫ HandshakeAck ∏¶ πﬁ¿∫ µ⁄ ªÛ¥Î¿« Packet Type ¿ª æÀ ºˆ ¿÷¥Ÿ. */
     sPacketType = cmiGetPacketType( aProtocolContext );
     IDE_TEST_RAISE( sPacketType == CMP_PACKET_TYPE_UNKNOWN, UNKNOWN_PACKET_TYPE );
 
@@ -1042,7 +1375,7 @@ IDE_RC rpnComm::recvHandshakeAck( cmiProtocolContext * aProtocolContext,
 }
 
 IDE_RC rpnComm::recvXLog( iduMemAllocator    * aAllocator,
-                          cmiProtocolContext * aProtocolContext,
+                          rpxReceiverReadContext aReadContext,
                           idBool             * aExitFlag,
                           rpdMeta            * aMeta,     // BUG-20506
                           rpdXLog            * aXLog,
@@ -1051,33 +1384,50 @@ IDE_RC rpnComm::recvXLog( iduMemAllocator    * aAllocator,
 {
     cmpPacketType sPacketType;
     
-    sPacketType = cmiGetPacketType( aProtocolContext );
-
-    switch ( sPacketType )
+    if( aReadContext.mCurrentMode == RPX_RECEIVER_READ_NETWORK )
     {
-        case CMP_PACKET_TYPE_A5:
-            IDE_TEST( recvXLogA5( aAllocator,
-                                  aProtocolContext,
-                                  aExitFlag,
-                                  aMeta,
-                                  aXLog,
-                                  aTimeOutSec )
-                      != IDE_SUCCESS );
-            break;
-            
-        case CMP_PACKET_TYPE_A7:
-            IDE_TEST( recvXLogA7( aAllocator,
-                                  aProtocolContext,
-                                  aExitFlag,
-                                  aMeta,
-                                  aXLog,
-                                  aTimeOutSec )
-                      != IDE_SUCCESS );
-            break;
-            
-        case CMP_PACKET_TYPE_UNKNOWN:
-            IDE_RAISE( UNKNOWN_PACKET_TYPE );
-            break;
+        sPacketType = cmiGetPacketType( aReadContext.mCMContext );
+
+        switch ( sPacketType )
+        {
+            case CMP_PACKET_TYPE_A5:
+                IDE_TEST( recvXLogA5( aAllocator,
+                                      aReadContext.mCMContext,
+                                      aExitFlag,
+                                      aMeta,
+                                      aXLog,
+                                      aTimeOutSec )
+                          != IDE_SUCCESS );
+                break;
+
+            case CMP_PACKET_TYPE_A7:
+                IDE_TEST( recvXLogA7( aAllocator,
+                                      aReadContext,
+                                      aExitFlag,
+                                      aMeta,
+                                      aXLog,
+                                      aTimeOutSec )
+                          != IDE_SUCCESS );
+                break;
+
+            case CMP_PACKET_TYPE_UNKNOWN:
+                IDE_RAISE( UNKNOWN_PACKET_TYPE );
+                break;
+        }
+    }
+    else if ( aReadContext.mCurrentMode == RPX_RECEIVER_READ_XLOGFILE )
+    {
+        IDE_TEST( recvXLogA7( aAllocator,
+                              aReadContext,
+                              aExitFlag,
+                              aMeta,
+                              aXLog,
+                              aTimeOutSec )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        IDE_RAISE( ERR_INTERNAL );
     }
     
     return IDE_SUCCESS;
@@ -1085,6 +1435,10 @@ IDE_RC rpnComm::recvXLog( iduMemAllocator    * aAllocator,
     IDE_EXCEPTION( UNKNOWN_PACKET_TYPE )
     {
         IDE_SET( ideSetErrorCode( rpERR_ABORT_INVALID_PACKET_TYPE ) );
+    }
+    IDE_EXCEPTION( ERR_INTERNAL )
+    {
+    	IDE_SET( ideSetErrorCode( rpERR_ABORT_RPN_UNABLE_READ_CONTEXT) );
     }
     IDE_EXCEPTION_END;
 
@@ -1183,6 +1537,53 @@ IDE_RC rpnComm::sendTrCommit( void               * aHBTResource,
                       != IDE_SUCCESS );
             break;
 
+        case CMP_PACKET_TYPE_UNKNOWN:
+        default:
+            IDE_RAISE( UNKNOWN_PACKET_TYPE );
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( UNKNOWN_PACKET_TYPE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_INVALID_PACKET_TYPE ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnComm::sendXaCommit( void               * aHBTResource,
+                              cmiProtocolContext * aProtocolContext,
+                              idBool             * aExitFlag,
+                              smTID                aTID,
+                              smSN                 aSN,
+                              smSN                 aSyncSN,
+                              smSCN                aGlobalCommitSCN,
+                              idBool               aForceFlush,
+                              UInt                 aTimeoutSec )
+{
+    cmpPacketType sPacketType;
+
+    sPacketType = cmiGetPacketType( aProtocolContext );
+
+    switch ( sPacketType )
+    {
+        case CMP_PACKET_TYPE_A7:
+            IDE_TEST( sendXaCommitA7( aHBTResource,
+                                      aProtocolContext,
+                                      aExitFlag,
+                                      aTID,
+                                      aSN,
+                                      aSyncSN,
+                                      aGlobalCommitSCN,
+                                      aForceFlush,
+                                      aTimeoutSec )
+                      != IDE_SUCCESS );
+            break;
+
+        case CMP_PACKET_TYPE_A5:
         case CMP_PACKET_TYPE_UNKNOWN:
         default:
             IDE_RAISE( UNKNOWN_PACKET_TYPE );
@@ -2007,8 +2408,9 @@ IDE_RC rpnComm::sendAck( cmiProtocolContext * aProtocolContext,
     return IDE_FAILURE;
 }
 
-/* recvAckÎäî readBlockÎ•º ÏÇ¨Ïö©ÌïòÎØÄÎ°ú senderÏùò writeBlockÍ≥º Í≤πÏπòÏπò ÏïäÎäîÎã§. ÎèôÏãúÏÑ± Î¨∏Ï†ú ÏóÜÏùå */
+/* recvAck¥¬ readBlock∏¶ ªÁøÎ«œπ«∑Œ sender¿« writeBlock∞˙ ∞„ƒ°ƒ° æ ¥¬¥Ÿ. µøΩ√º∫ πÆ¡¶ æ¯¿Ω */
 IDE_RC rpnComm::recvAck( iduMemAllocator    * /*aAllocator*/,
+                         void               * aHBTResource,
                          cmiProtocolContext * aProtocolContext,
                          idBool             * aExitFlag,
                          rpXLogAck          * aAck,
@@ -2031,6 +2433,7 @@ IDE_RC rpnComm::recvAck( iduMemAllocator    * /*aAllocator*/,
 
         case CMP_PACKET_TYPE_A7:
             IDE_TEST( recvAckA7( NULL, /*aAllocator*/
+                                 aHBTResource,
                                  aProtocolContext,
                                  aExitFlag,
                                  aAck,
@@ -2311,25 +2714,45 @@ IDE_RC rpnComm::sendLobTrim( void               * aHBTResource,
 
 IDE_RC rpnComm::recvLobTrim( iduMemAllocator     * /*aAllocator*/,
                              idBool              * /* aExitFlag */,
-                             cmiProtocolContext  * aProtocolContext,
+                             rpxReceiverReadContext aReadContext,
                              rpdXLog             * aXLog,
                              ULong                /*aTimeOutSec*/ )
 {
     UInt * sType = (UInt*)&(aXLog->mType);
 
-    IDE_TEST( validateA7Protocol( aProtocolContext ) != IDE_SUCCESS );
-    
-    /* Get Argument XLog Hdr */
-    CMI_RD4( aProtocolContext, sType );
-    CMI_RD4( aProtocolContext, &(aXLog->mTID) );
-    CMI_RD8( aProtocolContext, &(aXLog->mSN) );
-    CMI_RD8( aProtocolContext, &(aXLog->mSyncSN) );
-    /* Get Lob Information */
-    CMI_RD8( aProtocolContext, &(aXLog->mLobPtr->mLobLocator) );
-    CMI_RD4( aProtocolContext, &(aXLog->mLobPtr->mLobOffset) );
+    if ( aReadContext.mCurrentMode == RPX_RECEIVER_READ_NETWORK )
+    {
+        IDE_TEST( validateA7Protocol( aReadContext.mCMContext ) != IDE_SUCCESS );
+
+        /* Get Argument XLog Hdr */
+        CMI_RD4( aReadContext.mCMContext, sType );
+        CMI_RD4( aReadContext.mCMContext, &(aXLog->mTID) );
+        CMI_RD8( aReadContext.mCMContext, &(aXLog->mSN) );
+        CMI_RD8( aReadContext.mCMContext, &(aXLog->mSyncSN) );
+        /* Get Lob Information */
+        CMI_RD8( aReadContext.mCMContext, &(aXLog->mLobPtr->mLobLocator) );
+        CMI_RD4( aReadContext.mCMContext, &(aXLog->mLobPtr->mLobOffset) );
+    }
+    else if ( aReadContext.mCurrentMode == RPX_RECEIVER_READ_XLOGFILE )
+    {
+        aReadContext.mXLogfileContext->readXLog( &(aXLog->mType),         4 );
+        aReadContext.mXLogfileContext->readXLog( &(aXLog->mTID),          4 );
+        aReadContext.mXLogfileContext->readXLog( &(aXLog->mSN),           8 );
+        aReadContext.mXLogfileContext->readXLog( &(aXLog->mSyncSN),       8 );
+        aReadContext.mXLogfileContext->readXLog( &(aXLog->mLobPtr->mLobLocator), 8 );
+        aReadContext.mXLogfileContext->readXLog( &(aXLog->mLobPtr->mLobOffset), 4 );
+    }
+    else
+    {
+        IDE_RAISE( ERR_INTERNAL );
+    }
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_INTERNAL )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RPN_UNABLE_READ_CONTEXT ) );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -2779,7 +3202,8 @@ IDE_RC rpnComm::sendFailbackEnd( void               * aHBTResource,
     return IDE_FAILURE;
 }
 
-IDE_RC rpnComm::readCmBlock( cmiProtocolContext * aProtocolContext,
+IDE_RC rpnComm::readCmBlock( void               * aHBTResource,
+                             cmiProtocolContext * aProtocolContext,
                              idBool             * aExitFlag,
                              idBool             * aIsTimeOut,
                              ULong                aTimeoutSec )
@@ -2807,6 +3231,19 @@ IDE_RC rpnComm::readCmBlock( cmiProtocolContext * aProtocolContext,
                         ERR_READ );
         IDE_CLEAR();
 
+        /* Check HBT Status */
+        if ( aHBTResource != NULL )
+        {
+            IDU_FIT_POINT_RAISE( "rpnComm::readCmBlock::checkFault::ERR_HBT",
+                                  ERR_HBT );
+            IDE_TEST_RAISE( rpcHBT::checkFault( aHBTResource ) == ID_TRUE,
+                            ERR_HBT );
+        }
+        else
+        {
+            /* do nothing */
+        }
+
         if ( aExitFlag != NULL )
         {
             IDE_TEST_RAISE( *aExitFlag == ID_TRUE, ERR_EXIT );
@@ -2833,6 +3270,10 @@ IDE_RC rpnComm::readCmBlock( cmiProtocolContext * aProtocolContext,
     IDE_EXCEPTION( ERR_READ );
     {
         /* Nothing to do */
+    }
+    IDE_EXCEPTION( ERR_HBT )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_HBT_DETECT_PEER_SERVER_ERROR ) );
     }
     IDE_EXCEPTION( ERR_EXIT );
     {
@@ -2893,7 +3334,8 @@ IDE_RC rpnComm::recvSyncTableNumber( cmiProtocolContext * aProtocolContext,
 
     IDE_TEST( validateA7Protocol( aProtocolContext ) != IDE_SUCCESS );
     
-    IDE_TEST( readCmBlock( aProtocolContext,
+    IDE_TEST( readCmBlock( NULL,
+                           aProtocolContext,
                            NULL /* ExitFlag */,
                            NULL /* TimeoutFlag */,
                            aTimeoutSec )
@@ -2977,17 +3419,17 @@ IDE_RC rpnComm::recvSyncStart( iduMemAllocator     * /*aAllocator*/,
     return IDE_FAILURE;
 }
 
-IDE_RC rpnComm::sendRebuildIndex( void               * aHBTResource,
-                                  cmiProtocolContext * aProtocolContext,
-                                  idBool             * aExitFlag,
-                                  UInt                 aTimeoutSec )
+IDE_RC rpnComm::sendSyncEnd( void               * aHBTResource,
+                             cmiProtocolContext * aProtocolContext,
+                             idBool             * aExitFlag,
+                             UInt                 aTimeoutSec )
 {
     UChar sOpCode;
     UInt sType;
 
     IDE_TEST( validateA7Protocol( aProtocolContext ) != IDE_SUCCESS );
     
-    sType = RP_X_REBUILD_INDEX;
+    sType = RP_X_SYNC_END;
 
     IDE_TEST( checkAndFlush( aHBTResource,
                              aProtocolContext,
@@ -2997,11 +3439,11 @@ IDE_RC rpnComm::sendRebuildIndex( void               * aHBTResource,
                              aTimeoutSec )
               != IDE_SUCCESS );
 
-    sOpCode = CMI_PROTOCOL_OPERATION( RP, SyncRebuildIndex );
+    sOpCode = CMI_PROTOCOL_OPERATION( RP, SyncEnd );
     CMI_WR1( aProtocolContext, sOpCode );
     CMI_WR4( aProtocolContext, &(sType) );
 
-    IDU_FIT_POINT( "rpnComm::sendRebuildIndex::cmiSend::ERR_SEND" );
+    IDU_FIT_POINT( "rpnComm::sendSyncEnd::cmiSend::ERR_SEND" );
     IDE_TEST( sendCmBlock( aHBTResource,
                            aProtocolContext, 
                            aExitFlag,
@@ -3016,11 +3458,11 @@ IDE_RC rpnComm::sendRebuildIndex( void               * aHBTResource,
     return IDE_FAILURE;
 }
 
-IDE_RC rpnComm::recvRebuildIndex( iduMemAllocator     * /*aAllocator*/,
-                                  idBool              * /*aExitFlag*/,
-                                  cmiProtocolContext  * aProtocolContext,
-                                  rpdXLog             * aXLog,
-                                  ULong                /*aTimeOutSec*/ )
+IDE_RC rpnComm::recvSyncEnd( iduMemAllocator     * /*aAllocator*/,
+                             idBool              * /*aExitFlag*/,
+                             cmiProtocolContext  * aProtocolContext,
+                             rpdXLog             * aXLog,
+                             ULong                /*aTimeOutSec*/ )
 {
     UInt * sType = (UInt*)&(aXLog->mType);
 
@@ -3150,89 +3592,58 @@ IDE_RC rpnComm::writeProtocol( void                 * /*aHBTResource*/,
     return IDE_FAILURE;
 }
 
-IDE_RC rpnComm::flushProtocol( void               * aHBTResource,
-                               cmiProtocolContext * aProtocolContext,
-                               idBool             * aExitFlag,
-                               idBool               aIsEnd,
-                               UInt                 aTimeoutSec )
+IDE_RC rpnComm::flushPedningBlock( void                 * aHBTResource,
+                                   cmiProtocolContext   * aProtocolContext,
+                                   idBool               * aExitFlag,
+                                   UInt                   aTimeoutSec )
 {
-    UInt i = 0;
-    cmiLink *sLink = NULL;
+    UInt        i = 0;
+    idBool      sIsSendSuccess = ID_TRUE;
+    cmiLink   * sLink = NULL;
 
-    IDE_TEST( cmiGetLinkForProtocolContext( aProtocolContext,
-                                            &sLink )
-              != IDE_SUCCESS );
-
-    if ( cmiIsLinkBlockingMode( sLink ) == ID_TRUE )
+    for ( i = 0; i < aTimeoutSec ; i++ )
     {
-        /*blocking socket*/
-        IDE_TEST_RAISE( cmiFlushProtocol( aProtocolContext,
-                                          aIsEnd,
-                                          NULL )
-                        != IDE_SUCCESS, ERR_FLUSH );
-    }
-    else
-    {
-        /*non-blocking socket*/
-        for ( i = 0; i < aTimeoutSec ; i++ )
+        if ( cmiFlushPendingBlock( aProtocolContext, &mTV1Sec ) == IDE_SUCCESS )
         {
-            /* Flush Writed Block */
-            if ( cmiFlushProtocol( aProtocolContext, aIsEnd, &mTV1Sec ) == IDE_SUCCESS )
+            sIsSendSuccess = ID_TRUE;
+            break;
+        }
+        else
+        {
+            sIsSendSuccess = ID_FALSE;
+
+            if( ideGetErrorCode() != cmERR_ABORT_TIMED_OUT )
             {
-                break;
+                idlOS::sleep( mTV1Sec );
             }
-            else
+
+            IDE_CLEAR();
+
+            IDE_TEST( cmiGetLinkForProtocolContext( aProtocolContext,
+                                                    &sLink )
+                      != IDE_SUCCESS );
+
+            /* check Link Status */
+            IDE_TEST_RAISE( isConnected( sLink ) != ID_TRUE, ERR_NETWORK );
+
+            /* check HBT Status */
+            if ( aHBTResource != NULL )
             {
-                /* check cmiFlushProtocol error ( which is adding pending list ) */
-                IDE_TEST_RAISE( cmiIsResendBlock( aProtocolContext )
-                                != ID_TRUE, ERR_NETWORK );
-
-                if( ideGetErrorCode() != cmERR_ABORT_TIMED_OUT )
-                {
-                    idlOS::sleep( mTV1Sec );
-                }
-                else
-                {
-                    /* do nothing */
-                }
-
-                IDE_CLEAR();
-
-                /* check Link Status */
-                IDE_TEST_RAISE( isConnected( sLink ) != ID_TRUE, ERR_NETWORK );
-
-                /* check HBT Status */
-                if ( aHBTResource != NULL )
-                {
-                    IDE_TEST_RAISE( rpcHBT::checkFault( aHBTResource ) == ID_TRUE,
-                                    ERR_HBT );
-                }
-                else
-                {
-                    /*do nothing*/
-                }
-
-                if ( aExitFlag != NULL )
-                {
-                    IDE_TEST_RAISE( *aExitFlag == ID_TRUE, ERR_EXIT );
-                }
-                else
-                {
-                    /* do nothing */
-                }
+                IDE_TEST_RAISE( rpcHBT::checkFault( aHBTResource ) == ID_TRUE,
+                                ERR_HBT );
             }
-        }   /* end for */
 
-        IDE_TEST_RAISE( i >= RPU_REPLICATION_SENDER_SEND_TIMEOUT, ERR_TIMEOUT );
-    }
+            if ( aExitFlag != NULL )
+            {
+                IDE_TEST_RAISE( *aExitFlag == ID_TRUE, ERR_EXIT );
+            }
+        }
+    }   /* end for */
+
+    IDE_TEST_RAISE( sIsSendSuccess != ID_TRUE, ERR_TIMEOUT );
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION( ERR_FLUSH );
-    {
-        IDE_ERRLOG( IDE_RP_0 );
-        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_SENDER_SEND_ERROR ) );
-    }
     IDE_EXCEPTION( ERR_TIMEOUT )
     {
         IDE_SET( ideSetErrorCode( rpERR_ABORT_SEND_TIMEOUT_EXCEED ) );
@@ -3254,6 +3665,71 @@ IDE_RC rpnComm::flushProtocol( void               * aHBTResource,
     return IDE_FAILURE;
 }
 
+IDE_RC rpnComm::flushProtocol( void               * aHBTResource,
+                               cmiProtocolContext * aProtocolContext,
+                               idBool             * aExitFlag,
+                               idBool               aIsEnd,
+                               UInt                 aTimeoutSec )
+{
+    cmiLink *sLink = NULL;
+
+    IDE_TEST( cmiGetLinkForProtocolContext( aProtocolContext,
+                                            &sLink )
+              != IDE_SUCCESS );
+
+    if ( cmiIsLinkBlockingMode( sLink ) == ID_TRUE )
+    {
+        /*blocking socket*/
+        IDE_TEST_RAISE( cmiFlushProtocol( aProtocolContext,
+                                          aIsEnd,
+                                          NULL )
+                        != IDE_SUCCESS, ERR_FLUSH );
+    }
+    else
+    {
+        /*non-blocking socket*/
+
+        /* Flush Writed Block */
+        if ( cmiFlushProtocol( aProtocolContext, aIsEnd, &mTV1Sec ) == IDE_SUCCESS )
+        {
+            /* do nothing */
+        }
+        else
+        {
+            /* check cmiFlushProtocol error ( which is adding pending list ) */
+            IDE_TEST_RAISE( cmiIsResendBlock( aProtocolContext )
+                            != ID_TRUE, ERR_NETWORK );
+        }
+
+        /*
+         *  Protocol ¿« ≥°¿Ã∏È ∏¯ ∫∏≥Ω ∆–≈∂µÈ¿ª ∏µŒ¥Ÿ ¿¸º€
+         */
+        if ( aIsEnd == ID_TRUE )
+        {
+            IDE_TEST( flushPedningBlock( aHBTResource,
+                                         aProtocolContext,
+                                         aExitFlag,
+                                         aTimeoutSec )
+                      != IDE_SUCCESS );
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_FLUSH );
+    {
+        IDE_ERRLOG( IDE_RP_0 );
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_SENDER_SEND_ERROR ) );
+    }
+    IDE_EXCEPTION( ERR_NETWORK )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_SENDER_SEND_ERROR ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 IDE_RC rpnComm::sendCmBlock( void                * aHBTResource,
                              cmiProtocolContext  * aContext,
                              idBool              * aExitFlag,
@@ -3262,7 +3738,6 @@ IDE_RC rpnComm::sendCmBlock( void                * aHBTResource,
 {
     cmiLink         * sLink = NULL;
     idBool            sIsBlockingMode = ID_TRUE;
-    UInt              sCount = 0;
 
     /*
      *  Check Blocking and nonBlocking Socket
@@ -3291,55 +3766,16 @@ IDE_RC rpnComm::sendCmBlock( void                * aHBTResource,
         }
 
         /*
-         *  Protocol Ïùò ÎÅùÏù¥Î©¥ Î™ª Î≥¥ÎÇ∏ Ìå®ÌÇ∑Îì§ÏùÑ Î™®ÎëêÎã§ Ï†ÑÏÜ°
+         *  Protocol ¿« ≥°¿Ã∏È ∏¯ ∫∏≥Ω ∆–≈∂µÈ¿ª ∏µŒ¥Ÿ ¿¸º€
          */
         if ( aIsEnd == ID_TRUE )
         {
-            for ( sCount = 0; sCount < aTimeoutSec; sCount++ )
-            {
-                if ( cmiFlushPendingBlock( aContext, &mTV1Sec ) == IDE_SUCCESS )
-                {
-                    break;
-                }
-                else
-                {
-                    if( ideGetErrorCode() != cmERR_ABORT_TIMED_OUT )
-                    {
-                        idlOS::sleep( mTV1Sec );
-                    }
-                    else
-                    {
-                        /* do nothing */
-                    }
+            IDE_TEST( flushPedningBlock( aHBTResource,
+                                         aContext,
+                                         aExitFlag,
+                                         aTimeoutSec )
+                      != IDE_SUCCESS );
 
-                    IDE_CLEAR();
-
-                    /* check Link status */
-                    IDE_TEST_RAISE( isConnected( sLink ) != ID_TRUE, ERR_NETWORK );
-
-                    /* Check HBT Status */
-                    if ( aHBTResource != NULL )
-                    {
-                        IDE_TEST_RAISE( rpcHBT::checkFault( aHBTResource ) == ID_TRUE,
-                                        ERR_HBT );
-                    }
-                    else
-                    {
-                        /* do nothing */
-                    }
-
-                    if ( aExitFlag != NULL )
-                    {
-                        IDE_TEST_RAISE( *aExitFlag == ID_TRUE, ERR_EXIT );
-                    }
-                    else
-                    {
-                        /* do nothing */
-                    }
-                }
-            } /* end for */
-
-            IDE_TEST_RAISE( sCount >= RPU_REPLICATION_SENDER_SEND_TIMEOUT, ERR_TIMEOUT );
         }
         else
         {
@@ -3354,21 +3790,9 @@ IDE_RC rpnComm::sendCmBlock( void                * aHBTResource,
         IDE_ERRLOG (IDE_RP_0 );
         IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_SENDER_SEND_ERROR ) );
     }
-    IDE_EXCEPTION( ERR_TIMEOUT )
-    {
-        IDE_SET( ideSetErrorCode( rpERR_ABORT_SEND_TIMEOUT_EXCEED ) );
-    }
-    IDE_EXCEPTION( ERR_HBT )
-    {
-        IDE_SET( ideSetErrorCode( rpERR_ABORT_HBT_DETECT_PEER_SERVER_ERROR ) );
-    }
     IDE_EXCEPTION( ERR_NETWORK )
     {
         IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_SENDER_SEND_ERROR ) );
-    }
-    IDE_EXCEPTION( ERR_EXIT )
-    {
-        IDE_SET( ideSetErrorCode( rpERR_IGNORE_EXIT_FLAG_SET ) );
     }
     IDE_EXCEPTION_END;
 
@@ -3639,7 +4063,11 @@ IDE_RC rpnComm::recvDDLSyncInfo( cmiProtocolContext  * aProtocolContext,
 
     if ( CMI_IS_READ_ALL( aProtocolContext ) == ID_TRUE )
     {
-        IDE_TEST( readCmBlock( aProtocolContext, aExitFlag, NULL /* TimeoutFlag */, aRecvTimeout )
+        IDE_TEST( readCmBlock( NULL,
+                               aProtocolContext,
+                               aExitFlag,
+                               NULL /* TimeoutFlag */,
+                               aRecvTimeout )
                   != IDE_SUCCESS );
     }
     else
@@ -3808,7 +4236,11 @@ IDE_RC rpnComm::recvDDLSyncSQL( cmiProtocolContext  * aProtocolContext,
 
     if ( CMI_IS_READ_ALL( aProtocolContext ) == ID_TRUE )
     {
-        IDE_TEST( readCmBlock( aProtocolContext, aExitFlag, NULL /* TimeoutFlag */, aRecvTimeout )
+        IDE_TEST( readCmBlock( NULL,
+                               aProtocolContext,
+                               aExitFlag,
+                               NULL /* TimeoutFlag */,
+                               aRecvTimeout )
                   != IDE_SUCCESS );
     }
     else
@@ -3959,7 +4391,11 @@ IDE_RC rpnComm::recvDDLSyncInfoAck( cmiProtocolContext * aProtocolContext,
 
     if ( CMI_IS_READ_ALL( aProtocolContext ) == ID_TRUE )
     {
-        IDE_TEST( readCmBlock( aProtocolContext, aExitFlag, NULL /* TimeoutFlag */, aRecvTimeout )
+        IDE_TEST( readCmBlock( NULL,
+                               aProtocolContext,
+                               aExitFlag,
+                               NULL /* TimeoutFlag */,
+                               aRecvTimeout )
                   != IDE_SUCCESS );
     }
     else
@@ -3977,8 +4413,8 @@ IDE_RC rpnComm::recvDDLSyncInfoAck( cmiProtocolContext * aProtocolContext,
     CMI_RD4( aProtocolContext, &( sErrMsgRecvLen ) );
     if ( sErrMsgRecvLen > 0 )
     {
-        /* ÏÑúÎ°ú Îã§Î•∏ Î≤ÑÏ†ÑÏùº Í≤ΩÏö∞ MSG_LENGTH Í∞Ä Îã§Î•º Ïàò ÏûàÏñ¥ Ï£ΩÏùÑ Ïàò ÏûàÍ∏∞ ÎïåÎ¨∏Ïóê
-         * Î∞õÍ≥†ÎÇòÏÑúÎèÑ ÌïúÎ≤à Îçî ÌôïÏù∏ÌïúÎã§. */
+        /* º≠∑Œ ¥Ÿ∏• πˆ¿¸¿œ ∞ÊøÏ MSG_LENGTH ∞° ¥Ÿ∏¶ ºˆ ¿÷æÓ ¡◊¿ª ºˆ ¿÷±‚ ∂ßπÆø°
+         * πﬁ∞Ì≥™º≠µµ «—π¯ ¥ı »Æ¿Œ«—¥Ÿ. */
         if ( sErrMsgRecvLen > RP_MAX_MSG_LEN )
         {
             sErrMsgLen = RP_MAX_MSG_LEN;
@@ -3993,7 +4429,7 @@ IDE_RC rpnComm::recvDDLSyncInfoAck( cmiProtocolContext * aProtocolContext,
 
         if ( sErrMsgRecvLen > sErrMsgLen )
         {
-            /* ÎÇòÎ®∏ÏßÄÎäî Skip */
+            /* ≥™∏”¡ˆ¥¬ Skip */
             CMI_SKIP_READ_BLOCK( aProtocolContext, sErrMsgRecvLen - sErrMsgLen );
         }
         else
@@ -4074,7 +4510,11 @@ IDE_RC rpnComm::recvDDLSyncMsg( cmiProtocolContext * aProtocolContext,
 
     if ( CMI_IS_READ_ALL( aProtocolContext ) == ID_TRUE )
     {
-        IDE_TEST( readCmBlock( aProtocolContext, aExitFlag, NULL /* TimeoutFlag */, aRecvTimeout )
+        IDE_TEST( readCmBlock( NULL,
+                               aProtocolContext,
+                               aExitFlag,
+                               NULL /* TimeoutFlag */,
+                               aRecvTimeout )
                   != IDE_SUCCESS );
     }
     else
@@ -4195,7 +4635,11 @@ IDE_RC rpnComm::recvDDLSyncMsgAck( cmiProtocolContext * aProtocolContext,
 
     if ( CMI_IS_READ_ALL( aProtocolContext ) == ID_TRUE )
     {
-        IDE_TEST( readCmBlock( aProtocolContext, aExitFlag, NULL /* TimeoutFlag */, aRecvTimeout )
+        IDE_TEST( readCmBlock( NULL,
+                               aProtocolContext,
+                               aExitFlag,
+                               NULL /* TimeoutFlag */,
+                               aRecvTimeout )
                   != IDE_SUCCESS );
     }
     else
@@ -4214,8 +4658,8 @@ IDE_RC rpnComm::recvDDLSyncMsgAck( cmiProtocolContext * aProtocolContext,
     CMI_RD4( aProtocolContext, &( sErrMsgRecvLen ) );
     if ( sErrMsgRecvLen > 0 )
     {
-        /* ÏÑúÎ°ú Îã§Î•∏ Î≤ÑÏ†ÑÏùº Í≤ΩÏö∞ MSG_LENGTH Í∞Ä Îã§Î•º Ïàò ÏûàÏñ¥ Ï£ΩÏùÑ Ïàò ÏûàÍ∏∞ ÎïåÎ¨∏Ïóê
-         * Î∞õÍ≥†ÎÇòÏÑúÎèÑ ÌïúÎ≤à Îçî ÌôïÏù∏ÌïúÎã§. */
+        /* º≠∑Œ ¥Ÿ∏• πˆ¿¸¿œ ∞ÊøÏ MSG_LENGTH ∞° ¥Ÿ∏¶ ºˆ ¿÷æÓ ¡◊¿ª ºˆ ¿÷±‚ ∂ßπÆø°
+         * πﬁ∞Ì≥™º≠µµ «—π¯ ¥ı »Æ¿Œ«—¥Ÿ. */
         if ( sErrMsgRecvLen > RP_MAX_MSG_LEN )
         {
             sErrMsgLen = RP_MAX_MSG_LEN;
@@ -4230,7 +4674,7 @@ IDE_RC rpnComm::recvDDLSyncMsgAck( cmiProtocolContext * aProtocolContext,
 
         if ( sErrMsgRecvLen > sErrMsgLen )
         {
-            /* ÎÇòÎ®∏ÏßÄÎäî Skip */
+            /* ≥™∏”¡ˆ¥¬ Skip */
             CMI_SKIP_READ_BLOCK( aProtocolContext, sErrMsgRecvLen - sErrMsgLen );
         }
         else
@@ -4315,7 +4759,11 @@ IDE_RC rpnComm::recvDDLSyncCancel( cmiProtocolContext * aProtocolContext,
 
     if ( CMI_IS_READ_ALL( aProtocolContext ) == ID_TRUE )
     {
-        IDE_TEST( readCmBlock( aProtocolContext, aExitFlag, NULL /* TimeoutFlag */, aRecvTimeout )
+        IDE_TEST( readCmBlock( NULL,
+                               aProtocolContext,
+                               aExitFlag,
+                               NULL /* TimeoutFlag */,
+                               aRecvTimeout )
                   != IDE_SUCCESS );
     }
     else
@@ -4558,6 +5006,7 @@ IDE_RC rpnComm::recvDDLASyncExecuteAck( cmiProtocolContext * aProtocolContext,
 
     sPacketType = cmiGetPacketType( aProtocolContext );
 
+    IDU_FIT_POINT_RAISE( "rpnComm::recvDDLASyncExecuteAck::ERR_NOT_SUPPORT", ERR_NOT_SUPPORT );
     IDE_TEST_RAISE( sPacketType != CMP_PACKET_TYPE_A7, ERR_NOT_SUPPORT );
 
     IDE_TEST( recvDDLASyncExecuteAckA7( aProtocolContext,
@@ -4754,3 +5203,413 @@ IDE_RC rpnComm::recvMetaInitFlag( cmiProtocolContext * aProtocolContext,
 
     return IDE_FAILURE;
 }
+
+IDE_RC rpnComm::sendConditionInfo( void                 * aHBTResource,
+                                   cmiProtocolContext   * aProtocolContext,
+                                   idBool               * aExitFlag,
+                                   rpdConditionItemInfo * aConditionInfo,
+                                   UInt                   aConditionCnt,
+                                   UInt                   aTimeoutSec )
+{
+    cmpPacketType sPacketType;
+
+    sPacketType = cmiGetPacketType( aProtocolContext );
+
+    switch ( sPacketType )
+    {
+        case CMP_PACKET_TYPE_A5:
+            IDE_RAISE( UNKNOWN_PACKET_TYPE );
+            break;
+
+        case CMP_PACKET_TYPE_A7:
+            IDE_TEST( sendConditionInfoA7( aHBTResource,
+                                           aProtocolContext,
+                                           aExitFlag,
+                                           aConditionInfo,
+                                           aConditionCnt,
+                                           aTimeoutSec )
+                      != IDE_SUCCESS );
+            break;
+        case CMP_PACKET_TYPE_UNKNOWN:
+            IDE_RAISE( UNKNOWN_PACKET_TYPE );
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( UNKNOWN_PACKET_TYPE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_INVALID_PACKET_TYPE ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnComm::recvConditionInfo( cmiProtocolContext    * aProtocolContext,
+                                   idBool                * aExitFlag,
+                                   rpdConditionItemInfo  * aConditionInfo,
+                                   UInt                  * aConditionCnt,
+                                   UInt                    aTimeoutSec )
+{
+    cmpPacketType sPacketType;
+
+    sPacketType = cmiGetPacketType( aProtocolContext );
+
+    switch ( sPacketType )
+    {
+        case CMP_PACKET_TYPE_A5:
+            IDE_RAISE( UNKNOWN_PACKET_TYPE );
+            break;
+
+        case CMP_PACKET_TYPE_A7:
+            IDE_TEST( recvConditionInfoA7( aProtocolContext,
+                                           aExitFlag,
+                                           aConditionInfo,
+                                           aConditionCnt,
+                                           aTimeoutSec )
+                      != IDE_SUCCESS );
+            break;
+        case CMP_PACKET_TYPE_UNKNOWN:
+            IDE_RAISE( UNKNOWN_PACKET_TYPE );
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( UNKNOWN_PACKET_TYPE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_INVALID_PACKET_TYPE ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnComm::sendConditionInfoResult( cmiProtocolContext  * aProtocolContext,
+                                         idBool              * aExitFlag,
+                                         rpdConditionActInfo * aConditionInfo,
+                                         UInt                  aConditionCnt,
+                                         UInt                  aTimeoutSec )
+{
+    cmpPacketType sPacketType;
+
+    sPacketType = cmiGetPacketType( aProtocolContext );
+
+    switch ( sPacketType )
+    {
+        case CMP_PACKET_TYPE_A5:
+            IDE_RAISE( UNKNOWN_PACKET_TYPE );
+            break;
+
+        case CMP_PACKET_TYPE_A7:
+            IDE_TEST( sendConditionInfoResultA7( aProtocolContext,
+                                                 aExitFlag,
+                                                 aConditionInfo,
+                                                 aConditionCnt,
+                                                 aTimeoutSec )
+                      != IDE_SUCCESS );
+            break;
+        case CMP_PACKET_TYPE_UNKNOWN:
+            IDE_RAISE( UNKNOWN_PACKET_TYPE );
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( UNKNOWN_PACKET_TYPE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_INVALID_PACKET_TYPE ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnComm::recvConditionInfoResult( cmiProtocolContext   * aProtocolContext,
+                                         idBool               * aExitFlag,
+                                         rpdConditionActInfo  * aConditionInfo,
+                                         UInt                   aTimeoutSec )
+{
+    cmpPacketType sPacketType;
+
+    sPacketType = cmiGetPacketType( aProtocolContext );
+
+    switch ( sPacketType )
+    {
+        case CMP_PACKET_TYPE_A5:
+            IDE_RAISE( UNKNOWN_PACKET_TYPE );
+            break;
+
+        case CMP_PACKET_TYPE_A7:
+            IDE_TEST( recvConditionInfoResultA7( aProtocolContext,
+                                                 aExitFlag,
+                                                 aConditionInfo,
+                                                 aTimeoutSec )
+                      != IDE_SUCCESS );
+            break;
+        case CMP_PACKET_TYPE_UNKNOWN:
+            IDE_RAISE( UNKNOWN_PACKET_TYPE );
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( UNKNOWN_PACKET_TYPE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_INVALID_PACKET_TYPE ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnComm::sendTruncate( void               * aHBTResource,
+                              cmiProtocolContext * aProtocolContext,
+                              idBool             * aExitFlag,
+                              ULong                aTableOID,
+                              UInt                 aTimeoutSec )
+{
+    cmpPacketType sPacketType;
+
+    sPacketType = cmiGetPacketType( aProtocolContext );
+
+    switch ( sPacketType )
+    {
+        case CMP_PACKET_TYPE_A5:
+            IDE_RAISE( UNKNOWN_PACKET_TYPE );
+            break;
+
+        case CMP_PACKET_TYPE_A7:
+            IDE_TEST( sendTruncateA7( aHBTResource,
+                                      aProtocolContext,
+                                      aExitFlag,
+                                      aTableOID,
+                                      aTimeoutSec )
+                      != IDE_SUCCESS );
+            break;
+        case CMP_PACKET_TYPE_UNKNOWN:
+            IDE_RAISE( UNKNOWN_PACKET_TYPE );
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( UNKNOWN_PACKET_TYPE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_INVALID_PACKET_TYPE ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnComm::recvTruncate( cmiProtocolContext * aProtocolContext,
+                              idBool             * aExitFlag,
+                              rpdMeta            * aMeta, 
+                              rpdXLog            * aXLog )
+{
+    cmpPacketType sPacketType;
+
+    sPacketType = cmiGetPacketType( aProtocolContext );
+
+    switch ( sPacketType )
+    {
+        case CMP_PACKET_TYPE_A5:
+            IDE_RAISE( UNKNOWN_PACKET_TYPE );
+            break;
+
+        case CMP_PACKET_TYPE_A7:
+            IDE_TEST( recvTruncateA7( aProtocolContext,
+                                      aExitFlag,
+                                      aMeta,
+                                      aXLog)
+                      != IDE_SUCCESS );
+            break;
+        case CMP_PACKET_TYPE_UNKNOWN:
+            IDE_RAISE( UNKNOWN_PACKET_TYPE );
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( UNKNOWN_PACKET_TYPE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_INVALID_PACKET_TYPE ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnComm::sendXaStartReq( void               * aHBTResource,
+                                cmiProtocolContext * aProtocolContext,
+                                idBool             * aExitFlag,
+                                ID_XID             * aXID,
+                                smTID                aTID,
+                                smSN                 aSN,
+                                ULong                aSendTimeout )
+{
+    cmpPacketType sPacketType;
+
+    sPacketType = cmiGetPacketType( aProtocolContext );
+
+    switch ( sPacketType )
+    {
+        case CMP_PACKET_TYPE_A7:
+            IDE_TEST( sendXaStartReqA7( aHBTResource,
+                                        aProtocolContext,
+                                        aExitFlag,
+                                        aXID,
+                                        aTID,
+                                        aSN,
+                                        aSendTimeout )
+                      != IDE_SUCCESS );
+            break;
+
+        case CMP_PACKET_TYPE_A5:
+        case CMP_PACKET_TYPE_UNKNOWN:
+        default :
+            IDE_RAISE( UNKNOWN_PACKET_TYPE );
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( UNKNOWN_PACKET_TYPE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_INVALID_PACKET_TYPE ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnComm::sendXaPrepareReq( void               * aHBTResource,
+                                  cmiProtocolContext * aProtocolContext,
+                                  idBool             * aExitFlag,
+                                  ID_XID             * aXID,
+                                  smTID                aTID,
+                                  smSN                 aSN,
+                                  ULong                aSendTimeout )
+{
+    cmpPacketType sPacketType;
+
+    sPacketType = cmiGetPacketType( aProtocolContext );
+
+    switch ( sPacketType )
+    {
+        case CMP_PACKET_TYPE_A7:
+            IDE_TEST( sendXaPrepareReqA7( aHBTResource,
+                                          aProtocolContext,
+                                          aExitFlag,
+                                          aXID,
+                                          aTID,
+                                          aSN,
+                                          aSendTimeout )
+                      != IDE_SUCCESS );
+            break;
+
+        case CMP_PACKET_TYPE_A5:
+        case CMP_PACKET_TYPE_UNKNOWN:
+        default :
+            IDE_RAISE( UNKNOWN_PACKET_TYPE );
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( UNKNOWN_PACKET_TYPE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_INVALID_PACKET_TYPE ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+
+IDE_RC rpnComm::sendXaPrepare( void               * aHBTResource,
+                               cmiProtocolContext * aProtocolContext,
+                               idBool             * aExitFlag,
+                               ID_XID             * aXID,
+                               smTID                aTID,
+                               smSN                 aSN,
+                               ULong                aSendTimeout )
+{
+    cmpPacketType sPacketType;
+
+    sPacketType = cmiGetPacketType( aProtocolContext );
+
+    switch ( sPacketType )
+    {
+        case CMP_PACKET_TYPE_A7:
+            IDE_TEST( sendXaPrepareA7( aHBTResource,
+                                       aProtocolContext,
+                                       aExitFlag,
+                                       aXID,
+                                       aTID,
+                                       aSN,
+                                       aSendTimeout )
+                      != IDE_SUCCESS );
+            break;
+
+        case CMP_PACKET_TYPE_A5:
+        case CMP_PACKET_TYPE_UNKNOWN:
+        default :
+            IDE_RAISE( UNKNOWN_PACKET_TYPE );
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( UNKNOWN_PACKET_TYPE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_INVALID_PACKET_TYPE ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpnComm::sendXaEnd( void               * aHBTResource,
+                           cmiProtocolContext * aProtocolContext,
+                           idBool             * aExitFlag,
+                           smTID                aTID,
+                           smSN                 aSN,
+                           ULong                aSendTimeout )
+{
+    cmpPacketType sPacketType;
+
+    sPacketType = cmiGetPacketType( aProtocolContext );
+
+    switch ( sPacketType )
+    {
+        case CMP_PACKET_TYPE_A7:
+            IDE_TEST( sendXaEndA7( aHBTResource,
+                                   aProtocolContext,
+                                   aExitFlag,
+                                   aTID,
+                                   aSN,
+                                   aSendTimeout )
+                      != IDE_SUCCESS );
+            break;
+
+        case CMP_PACKET_TYPE_A5:
+        case CMP_PACKET_TYPE_UNKNOWN:
+        default :
+            IDE_RAISE( UNKNOWN_PACKET_TYPE );
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( UNKNOWN_PACKET_TYPE )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_INVALID_PACKET_TYPE ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+

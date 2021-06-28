@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsvEnv.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsvEnv.h 87967 2020-07-07 05:02:47Z khkwak $
  **********************************************************************/
 
 #ifndef _O_QSV_ENV_H_
@@ -44,10 +44,17 @@
 
 // qsvEnvInfo.flag
 // To Fix PR-10735
-// TRIGGERë¥¼ ìœ„í•œ Procedureì¸ì§€ë¥¼ íŒë‹¨í•¨.
+// TRIGGER¸¦ À§ÇÑ ProcedureÀÎÁö¸¦ ÆÇ´ÜÇÔ.
 #define QSV_ENV_TRIGGER_MASK                  (0x00000008)
 #define QSV_ENV_TRIGGER_FALSE                 (0x00000000)
 #define QSV_ENV_TRIGGER_TRUE                  (0x00000008)
+
+// qsvEnvInfo.flag
+// BUG-47971 Package global variableÀÇ ºĞ»ê ½ÇÇàÀ» Á¦ÇÑÇÕ´Ï´Ù.
+// Package global variable ÂüÁ¶ ¿©ºÎ
+#define QSV_ENV_PKG_VAR_EXIST_MASK            (0x00000010)
+#define QSV_ENV_PKG_VAR_EXIST_FALSE           (0x00000000)
+#define QSV_ENV_PKG_VAR_EXIST_TRUE            (0x00000010)
 
 #define QSV_ENV_SET_SQL( a, b ) { \
           a->spvEnv->sql = a->myPlan->stmtText; \
@@ -78,11 +85,11 @@ typedef struct qsvEnvInfo
     SInt                        sqlSize;
 
     // PROJ-1535
-    // procPlanListì˜ latchìƒíƒœë¥¼ ê´€ë¦¬í•¨
+    // procPlanListÀÇ latch»óÅÂ¸¦ °ü¸®ÇÔ
     idBool                      latched;
 
     // PROJ-1359 Trigger
-    // Triggerì˜ Cycle Detectionì„ ìœ„í•´ ê´€ë¦¬í•¨
+    // TriggerÀÇ Cycle DetectionÀ» À§ÇØ °ü¸®ÇÔ
     struct qsModifiedTable    * modifiedTableList;
 
     // To fix BUG-14129
@@ -93,17 +100,18 @@ typedef struct qsvEnvInfo
 
     // BUG-36203 PSM Optimize
     qsxStmtList               * mStmtList;
+    qsxStmtList2              * mStmtList2;
 
     // PROJ-1073 Package
     qsPkgParseTree            * createPkg;
-    // create package body ì‹œ í•´ë‹¹ package bodyì— ëŒ€í•œ
-    // package specì˜ parse treeë¥¼ ì…‹íŒ…
+    // create package body ½Ã ÇØ´ç package body¿¡ ´ëÇÑ
+    // package specÀÇ parse tree¸¦ ¼ÂÆÃ
     qsPkgParseTree            * pkgPlanTree;
     qsPkgStmts                * currSubprogram;
 
     /* BUG-39004
-       package intialize sectionì— ëŒ€í•´ì„œ
-       validation ì§„í–‰ ì—¬ë¶€ í‘œì‹œ */
+       package intialize section¿¡ ´ëÇØ¼­
+       validation ÁøÇà ¿©ºÎ Ç¥½Ã */
     idBool                      isPkgInitializeSection;
 } qsvEnvInfo;
 

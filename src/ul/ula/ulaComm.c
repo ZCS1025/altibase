@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: ulaComm.c 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: ulaComm.c 88197 2020-07-27 04:41:35Z donghyun1 $
  **********************************************************************/
 
 #include <acp.h>
@@ -339,11 +339,11 @@ ACI_RC ulaCommRecvMetaReplTbl( cmiProtocolContext * aProtocolContext,
     CMI_RD8( aProtocolContext, &(aOutTable->mTableOID) );
     CMI_RD4( aProtocolContext, &(aOutTable->mPKIndexID) );
     CMI_RD4( aProtocolContext, &(aOutTable->mPKColumnCount) );
-    aOutTable->mPKColumnCount = 0; /* ÏúÑÏóêÏÑú Î∞õÏïòÏúºÎÇò mPKIndexIDÎ•º Ï°∞ÏÇ¨Ìï¥ÏÑú ÏÑ§Ï†ï */
+    aOutTable->mPKColumnCount = 0; /* ¿ßø°º≠ πﬁæ“¿∏≥™ mPKIndexID∏¶ ¡∂ªÁ«ÿº≠ º≥¡§ */
     CMI_RD4( aProtocolContext, &(aOutTable->mColumnCount) );
     CMI_RD4( aProtocolContext, &(aOutTable->mIndexCount) );
     
-    /* PROJ-1915 Invalid Max SNÏùÑ Ï†ÑÏÜ° ÌïúÎã§. */
+    /* PROJ-1915 Invalid Max SN¿ª ¿¸º€ «—¥Ÿ. */
     CMI_SKIP_READ_BLOCK( aProtocolContext, 8 );
     /* CMI_RD8( aProtocolContext, &(aItem->mItem.mInvalidMaxSN) ); */
 
@@ -677,8 +677,18 @@ ACI_RC ulaCommSendHandshakeAck( cmiProtocolContext * aProtocolContext,
     acp_uint32_t sMsgLen;
     acp_sint32_t sFailbackStatus = 0; /* dummy : RP_FAILBACK_NONE = 0 */
     acp_uint64_t sXSN = ULA_SN_NULL;
+    acp_uint64_t sVersion = RP_CURRENT_VERSION;
 
-    sMsgLen = acpCStrLen( aMsg, ULA_ACK_MSG_LEN );
+    if ( aResult == ULA_MSG_OK )
+    {
+        // copy protocol version.
+        sMsgLen = ACI_SIZEOF( acp_uint64_t );
+    }
+    else
+    {
+        sMsgLen = acpCStrLen( aMsg, ULA_ACK_MSG_LEN );
+    }
+
     cmiCheckAndFlush( aProtocolContext, 1 + 12 + sMsgLen, ACP_TRUE );
 
     /* Replication Item Information Set */
@@ -687,7 +697,15 @@ ACI_RC ulaCommSendHandshakeAck( cmiProtocolContext * aProtocolContext,
     CMI_WR4( aProtocolContext, (acp_uint32_t*)&sFailbackStatus ); /* dummy */
     CMI_WR8( aProtocolContext, (acp_uint64_t*)&sXSN ); /* dummy */
     CMI_WR4( aProtocolContext, &sMsgLen );
-    CMI_WCP( aProtocolContext, (acp_uint8_t *)aMsg, sMsgLen );
+
+    if ( aResult == ULA_MSG_OK )
+    {
+        CMI_WR8( aProtocolContext, (acp_uint64_t*)&sVersion );
+    }
+    else
+    {
+        CMI_WCP( aProtocolContext, (acp_uint8_t *)aMsg, sMsgLen );
+    }
 
     ACI_TEST_RAISE( cmiSend( aProtocolContext, ACP_TRUE )
                     != ACI_SUCCESS, ERR_SEND );
@@ -729,7 +747,7 @@ ACI_RC ulaCommRecvXLog( cmiProtocolContext * aProtocolContext,
     {
         case CMI_PROTOCOL_OPERATION( RP, TrBegin ):
         {
-            // PROJ-1663 : BEGIN Ìå®ÌÇ∑ ÎØ∏ÏÇ¨Ïö©
+            // PROJ-1663 : BEGIN ∆–≈∂ πÃªÁøÎ
             ACI_TEST( ulaCommRecvTrBegin( aExitFlag,
                                           aProtocolContext,
                                           aOutXLog,
@@ -1182,7 +1200,7 @@ ACI_RC ulaCommRecvInsert( acp_bool_t         * aExitFlag,
     }
 
     ACI_EXCEPTION_END;
-    // Ïù¥ÎØ∏ ulaSetErrorCode() ÏàòÌñâ
+    // ¿ÃπÃ ulaSetErrorCode() ºˆ«‡
 
     if ( aOutXLog->mColumn.mCIDArray != NULL )
     {
@@ -1330,7 +1348,7 @@ ACI_RC ulaCommRecvUpdate( acp_bool_t         * aExitFlag,
         ulaSetErrorCode(aOutErrorMgr, ulaERR_ABORT_MEMORY_ALLOC);
     }
     ACI_EXCEPTION_END;
-    // Ïù¥ÎØ∏ ulaSetErrorCode() ÏàòÌñâ
+    // ¿ÃπÃ ulaSetErrorCode() ºˆ«‡
 
     if ( aOutXLog->mPrimaryKey.mPKColArray != NULL )
     {
@@ -1473,7 +1491,7 @@ ACI_RC ulaCommRecvDelete( acp_bool_t         * aExitFlag,
         ulaSetErrorCode( aOutErrorMgr, ulaERR_ABORT_MEMORY_ALLOC );
     }
     ACI_EXCEPTION_END;
-    // Ïù¥ÎØ∏ ulaSetErrorCode() ÏàòÌñâ
+    // ¿ÃπÃ ulaSetErrorCode() ºˆ«‡
 
     if (aOutXLog->mPrimaryKey.mPKColArray != NULL)
     {
@@ -1562,9 +1580,9 @@ ACI_RC ulaCommRecvValue( acp_bool_t         * aExitFlag,
     CMI_RD4( aProtocolContext, &(aOutValue->length) );
 
     /* NOTICE!!!!!
-     * Ïã§Ï†ú ValueÏóê ÎåÄÌïú Í∞íÏùÑ Ï†ÄÏû•ÌïòÎäî Î©îÎ™®Î¶¨ Í≥µÍ∞ÑÏùÑ Ïó¨Í∏∞ÏÑú Ìï†ÎãπÎ∞õÎäîÎã§.
-     * Îî∞ÎùºÏÑú, Ïù¥ XLogÎ•º ÏÇ¨Ïö©Ìïú Ï™ΩÏóêÏÑú Ïó¨Í∏∞ÏÑú Ìï†ÎãπÌï¥Ï§Ä Î©îÎ™®Î¶¨ Í≥µÍ∞ÑÏùÑ
-     * Ìï¥Ï†úÌï¥ Ï£ºÏñ¥Ïïº ÌïúÎã§.
+     * Ω«¡¶ Valueø° ¥Î«— ∞™¿ª ¿˙¿Â«œ¥¬ ∏ﬁ∏∏Æ ∞¯∞£¿ª ø©±‚º≠ «“¥Áπﬁ¥¬¥Ÿ.
+     * µ˚∂Ûº≠, ¿Ã XLog∏¶ ªÁøÎ«— ¬ ø°º≠ ø©±‚º≠ «“¥Á«ÿ¡ÿ ∏ﬁ∏∏Æ ∞¯∞£¿ª
+     * «ÿ¡¶«ÿ ¡÷æÓæﬂ «—¥Ÿ.
      */
     if ( aOutValue->length > 0 )
     {
@@ -1609,8 +1627,8 @@ ACI_RC ulaCommRecvValue( acp_bool_t         * aExitFlag,
     }
     else
     {
-        /* NULL valueÍ∞Ä Ï†ÑÏÜ°ÎêòÎäî Í≤ΩÏö∞ÏóêÎäî lengthÍ∞Ä 0ÏúºÎ°ú ÎÑòÏñ¥Ïò§Í≤å
-         * ÎêòÎØÄÎ°ú, Ïù¥ Í≤ΩÏö∞ÏóêÎäî Î©îÎ™®Î¶¨ Ìï†ÎãπÏùÑ ÌïòÏßÄ ÏïäÎèÑÎ°ù ÌïúÎã§. */
+        /* NULL value∞° ¿¸º€µ«¥¬ ∞ÊøÏø°¥¬ length∞° 0¿∏∑Œ ≥—æÓø¿∞‘
+         * µ«π«∑Œ, ¿Ã ∞ÊøÏø°¥¬ ∏ﬁ∏∏Æ «“¥Á¿ª «œ¡ˆ æ µµ∑œ «—¥Ÿ. */
     }
 
     return ACI_SUCCESS;
@@ -1728,7 +1746,7 @@ ACI_RC ulaCommRecvLobCursorOpen( acp_bool_t         * aExitFlag,
         ulaSetErrorCode( aOutErrorMgr, ulaERR_ABORT_MEMORY_ALLOC );
     }
     ACI_EXCEPTION_END;
-    // Ïù¥ÎØ∏ ulaSetErrorCode() ÏàòÌñâ
+    // ¿ÃπÃ ulaSetErrorCode() ºˆ«‡
 
     if (aOutXLog->mPrimaryKey.mPKColArray != NULL)
     {
@@ -1886,7 +1904,7 @@ ACI_RC ulaCommSendAck( cmiProtocolContext * aProtocolContext,
                        ulaErrorMgr        * aOutErrorMgr )
 {
     acp_uint8_t  sOpID;
-    acp_uint64_t sFlushSN = ULA_SN_NULL;  //proj-1608 alaÏóêÏÑúÎäî ÏÇ¨Ïö©ÌïòÏßÄ ÏïäÏùå
+    acp_uint64_t sFlushSN = ULA_SN_NULL;  //proj-1608 alaø°º≠¥¬ ªÁøÎ«œ¡ˆ æ ¿Ω
 
     ACI_TEST( cmiCheckAndFlush( aProtocolContext, 1 + 52,
                                 ACP_TRUE )
@@ -1974,6 +1992,171 @@ ACI_RC ulaCommReadCmBlock( cmiProtocolContext * aProtocolContext,
     {
         ulaSetErrorCode(aOutErrorMgr, ulaERR_ABORT_NET_TIMEOUT,
                         "read communication block");
+    }
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
+}
+
+ACI_RC ulaCommRecvMetaPartitionCount( cmiProtocolContext * aProtocolContext,
+                                      acp_bool_t         * aExitFlag,
+                                      acp_uint32_t         aTimeoutSec,
+                                      ulaErrorMgr        * aOutErrorMgr )
+{
+    acp_char_t      sOpCode;
+    acp_uint32_t    sDummyCount = 0;
+
+    ACI_TEST( ulaCommReadCmBlock( aProtocolContext,
+                                  aExitFlag,
+                                  NULL /* TimeoutFlag */,
+                                  aTimeoutSec,
+                                  aOutErrorMgr )
+              != ACI_SUCCESS );
+
+    /* Check Operation Type */
+    CMI_RD1( aProtocolContext, sOpCode );
+    ACI_TEST_RAISE( sOpCode != CMI_PROTOCOL_OPERATION( RP, MetaPartitionCount ),
+                    ERR_CHECK_OPERATION_TYPE );
+
+    /* Get Replication Information */
+    CMI_RD4( aProtocolContext, &sDummyCount );
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION( ERR_CHECK_OPERATION_TYPE );
+    {
+        ulaSetErrorCode(aOutErrorMgr, ulaERR_ABORT_NET_UNEXPECTED_PROTOCOL,
+                        "Meta Partition Count");
+    }
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
+}
+
+ACI_RC ulaCommSendMetaDictTableCount( cmiProtocolContext * aProtocolContext,
+                                      ulaErrorMgr        * aOutErrorMgr )
+{
+    acp_char_t    sOpCode;
+    acp_uint32_t  sDummyCount = 0;
+
+    ACI_TEST( cmiCheckAndFlush( aProtocolContext, 1 + 4,
+                                ACP_TRUE )
+              != ACI_SUCCESS );
+
+    /* Replication Information Set */
+    sOpCode = CMI_PROTOCOL_OPERATION( RP, MetaDictTableCount );
+    CMI_WR1( aProtocolContext, sOpCode );
+    CMI_WR4( aProtocolContext, &sDummyCount );
+
+    ACI_TEST_RAISE( cmiSend( aProtocolContext, ACP_TRUE )
+                    != ACI_SUCCESS, ERR_SEND );
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION( ERR_SEND )
+    {
+        ulaSetErrorCode( aOutErrorMgr, ulaERR_ABORT_NET_FLUSH,
+                         "SendMetaDictTableCount", aciGetErrorCode() );
+    }
+
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
+}
+
+ACI_RC ulaCommRecvMetaDictTableCount( cmiProtocolContext * aProtocolContext,
+                                      acp_bool_t         * aExitFlag,
+                                      acp_uint32_t         aTimeoutSec,
+                                      ulaErrorMgr        * aOutErrorMgr )
+{
+    acp_char_t      sOpCode;
+    acp_uint32_t    sDummyCount = 0;
+
+    ACI_TEST( ulaCommReadCmBlock( aProtocolContext,
+                                  aExitFlag,
+                                  NULL /* TimeoutFlag */,
+                                  aTimeoutSec,
+                                  aOutErrorMgr )
+              != ACI_SUCCESS );
+
+    /* Check Operation Type */
+    CMI_RD1( aProtocolContext, sOpCode );
+    ACI_TEST_RAISE( sOpCode != CMI_PROTOCOL_OPERATION( RP, MetaDictTableCount ),
+                    ERR_CHECK_OPERATION_TYPE );
+
+    CMI_RD4( aProtocolContext, &sDummyCount );
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION( ERR_CHECK_OPERATION_TYPE );
+    {
+        ulaSetErrorCode(aOutErrorMgr, ulaERR_ABORT_NET_UNEXPECTED_PROTOCOL,
+                        "Meta Dictionary Table Count");
+    }
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
+}
+
+ACI_RC ulaCommSendMetaInitFlag( cmiProtocolContext * aProtocolContext,
+                                ulaErrorMgr        * aOutErrorMgr )
+{
+    acp_char_t    sOpCode;
+    acp_uint32_t  sDummyFlag = 0;
+
+    ACI_TEST( cmiCheckAndFlush( aProtocolContext, 1 + 4,
+                                ACP_TRUE )
+              != ACI_SUCCESS );
+
+    /* Replication Information Set */
+    sOpCode = CMI_PROTOCOL_OPERATION( RP, MetaInitialize );
+    CMI_WR1( aProtocolContext, sOpCode );
+    CMI_WR4( aProtocolContext, &sDummyFlag );
+
+    ACI_TEST_RAISE( cmiSend( aProtocolContext, ACP_TRUE )
+                    != ACI_SUCCESS, ERR_SEND );
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION( ERR_SEND )
+    {
+        ulaSetErrorCode( aOutErrorMgr, ulaERR_ABORT_NET_FLUSH,
+                         "SendMetaDictTableCount", aciGetErrorCode() );
+    }
+
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
+}
+
+ACI_RC ulaCommRecvMetaInitFlag( cmiProtocolContext * aProtocolContext,
+                                acp_bool_t         * aExitFlag,
+                                acp_uint32_t         aTimeoutSec,
+                                ulaErrorMgr        * aOutErrorMgr )
+{
+    acp_char_t   sOpCode;
+    acp_uint32_t sDummyFlag = 0;
+
+    ACI_TEST( ulaCommReadCmBlock( aProtocolContext,
+                                  aExitFlag,
+                                  NULL /* TimeoutFlag */,
+                                  aTimeoutSec,
+                                  aOutErrorMgr )
+              != ACI_SUCCESS );
+
+    /* Check Operation Type */
+    CMI_RD1( aProtocolContext, sOpCode );
+    ACI_TEST_RAISE( sOpCode != CMI_PROTOCOL_OPERATION( RP, MetaInitialize ),
+                    ERR_CHECK_OPERATION_TYPE );
+
+    CMI_RD4( aProtocolContext, &sDummyFlag );
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION( ERR_CHECK_OPERATION_TYPE );
+    {
+        ulaSetErrorCode(aOutErrorMgr, ulaERR_ABORT_NET_UNEXPECTED_PROTOCOL,
+                        "Meta Initialize Flag");
     }
     ACI_EXCEPTION_END;
 

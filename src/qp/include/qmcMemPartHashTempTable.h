@@ -19,12 +19,12 @@
  * $Id: qmcMemPartHashTempTable.h 69506 2015-03-09 12:19:36Z interp $
  *
  * Description :
- *     Memory Hash Temp Tableì„ ìœ„í•œ ì •ì˜
- *   - Partitioned Hash Algorithmì„ ì‚¬ìš©í•œë‹¤.
+ *     Memory Hash Temp TableÀ» À§ÇÑ Á¤ÀÇ
+ *   - Partitioned Hash AlgorithmÀ» »ç¿ëÇÑ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -35,22 +35,22 @@
 #include <qtcDef.h>
 #include <qcuProperty.h>
 
-// Partition ê°œìˆ˜ì˜ ìµœì†Œê°’ : pow(2,10)
+// Partition °³¼öÀÇ ÃÖ¼Ò°ª : pow(2,10)
 #define QMC_MEM_PART_HASH_MIN_PART_COUNT        ( 1024 )
 
-// Partition ê°œìˆ˜ì˜ ìµœëŒ€ê°’ : pow(2,24)
+// Partition °³¼öÀÇ ÃÖ´ë°ª : pow(2,24)
 #define QMC_MEM_PART_HASH_MAX_PART_COUNT        ( 16777216 )
 
-// Page í¬ê¸° : 4KBë¡œ ê³ ì •í•´ì„œ ê°„ì£¼
+// Page Å©±â : 4KB·Î °íÁ¤ÇØ¼­ °£ÁÖ
 #define QMC_MEM_PART_HASH_PAGE_SIZE             ( 4096 )
 
-// TLB Entry í™•ì¥ ìƒìˆ˜.
-// TLB Entry ê°œìˆ˜ì— ì´ ê°’ì„ ê³±í•œ ê°’ê¹Œì§€ í˜ì´ì§€ë¥¼ ìƒì„±í•´ë„
-// TLB Missê°€ ì‹¬í•˜ê²Œ ì¼ì–´ë‚˜ì§€ ì•Šìœ¼ë¯€ë¡œ ë²„í¼ ì—†ì´ Fanout í•˜ëŠ” ê²ƒì´ ìœ ë¦¬í•˜ë‹¤.
+// TLB Entry È®Àå »ó¼ö.
+// TLB Entry °³¼ö¿¡ ÀÌ °ªÀ» °öÇÑ °ª±îÁö ÆäÀÌÁö¸¦ »ı¼ºÇØµµ
+// TLB Miss°¡ ½ÉÇÏ°Ô ÀÏ¾î³ªÁö ¾ÊÀ¸¹Ç·Î ¹öÆÛ ¾øÀÌ Fanout ÇÏ´Â °ÍÀÌ À¯¸®ÇÏ´Ù.
 #define QMC_MEM_PART_HASH_TLB_ENTRY_MULTIPLIER  ( 4 )
 
-// Optimal Partition Countë¥¼ ê³„ì‚°í•  ë•Œ ì‚¬ìš©í• 
-// Partition ë‹¹ í‰ê·  Element ê°œìˆ˜ (ê³ ì • ê°’)
+// Optimal Partition Count¸¦ °è»êÇÒ ¶§ »ç¿ëÇÒ
+// Partition ´ç Æò±Õ Element °³¼ö (°íÁ¤ °ª)
 #define QMC_MEM_PART_HASH_AVG_RECORD_COUNT      ( 10 )
 
 /*************************************************************************
@@ -59,14 +59,14 @@
 
 #define QMC_MEM_PART_HASH_INITIALIZE            (0x00000000)
 
-// ì²« range search ì „ ì¤€ë¹„ ì—¬ë¶€
+// Ã¹ range search Àü ÁØºñ ¿©ºÎ
 #define QMC_MEM_PART_HASH_SEARCH_READY_MASK     (0x00000001)
 #define QMC_MEM_PART_HASH_SEARCH_READY_FALSE    (0x00000000)
 #define QMC_MEM_PART_HASH_SEARCH_READY_TRUE     (0x00000001)
 
 //----------------------------------
-// ê²€ìƒ‰ ì•„ì´í…œ (qmcMemHashItem)
-// ë°°ì—´ì˜ ì›ì†Œë¡œ êµ¬ì„±ë˜ë©°, Hash Keyì™€ ì‹¤ì œ Elementë¥¼ ê°€ë¦¬í‚¨ë‹¤.
+// °Ë»ö ¾ÆÀÌÅÛ (qmcMemHashItem)
+// ¹è¿­ÀÇ ¿ø¼Ò·Î ±¸¼ºµÇ¸ç, Hash Key¿Í ½ÇÁ¦ Element¸¦ °¡¸®Å²´Ù.
 //----------------------------------
 typedef struct qmcMemHashItem
 {
@@ -76,30 +76,30 @@ typedef struct qmcMemHashItem
 } qmcMemHashItem;
 
 //------------------------------------------------------------------------
-// [Memory Hash Temp Table (Partitioned Hashing) ì˜ ìë£Œ êµ¬ì¡° (PROJ-2553)]
+// [Memory Hash Temp Table (Partitioned Hashing) ÀÇ ÀÚ·á ±¸Á¶ (PROJ-2553)]
 //
-//  DISTINCT Hashingì—ì„œëŠ” ì‚¬ìš©í•˜ì§€ ì•Šìœ¼ë©°, JOINì„ ìœ„í•œ Hashing ì—ì„œë§Œ ì‚¬ìš©í•œë‹¤.
+//  DISTINCT Hashing¿¡¼­´Â »ç¿ëÇÏÁö ¾ÊÀ¸¸ç, JOINÀ» À§ÇÑ Hashing ¿¡¼­¸¸ »ç¿ëÇÑ´Ù.
 //
-//  ì²˜ìŒì—ëŠ” ì•„ë˜ì™€ ê°™ì´ ë‹¨ì¼ Listë¡œ ë°›ëŠ”ë‹¤.
+//  Ã³À½¿¡´Â ¾Æ·¡¿Í °°ÀÌ ´ÜÀÏ List·Î ¹Ş´Â´Ù.
 //
 //      ---------   --------   --------   --------   ------- 
 //      | mHead |-->| elem |-->| elem |-->| elem |-->| ... |
 //      ---------   --------   --------   --------   -------
 //
-//  ëª¨ë‘ ì‚½ì…ë˜ë©´, Element ê°œìˆ˜ (= Record ê°œìˆ˜)ì— ë”°ë¼ Radix Bitë¥¼ ê²°ì •í•œë‹¤.
-//  Radix BitëŠ” Hash Keyì— Masking í•  ë•Œ ì‚¬ìš©ë˜ë©°, Radix Bitê°€ í´ìˆ˜ë¡ Partition ê°œìˆ˜ê°€ ë§ë‹¤.
+//  ¸ğµÎ »ğÀÔµÇ¸é, Element °³¼ö (= Record °³¼ö)¿¡ µû¶ó Radix Bit¸¦ °áÁ¤ÇÑ´Ù.
+//  Radix Bit´Â Hash Key¿¡ Masking ÇÒ ¶§ »ç¿ëµÇ¸ç, Radix Bit°¡ Å¬¼ö·Ï Partition °³¼ö°¡ ¸¹´Ù.
 //
-//  ë‹¤ìŒìœ¼ë¡œ Radix Bitë¥¼ 2ì˜ ì§€ìˆ˜ë¡œ ë‘¬, Partition ê°œìˆ˜ë¥¼ ê³„ì‚°í•œë‹¤.
-//  ê·¸ ë‹¤ìŒ, ì•„ë˜ì˜ êµ¬ì¡°ë¥¼ ì¤€ë¹„í•œë‹¤.
+//  ´ÙÀ½À¸·Î Radix Bit¸¦ 2ÀÇ Áö¼ö·Î µÖ, Partition °³¼ö¸¦ °è»êÇÑ´Ù.
+//  ±× ´ÙÀ½, ¾Æ·¡ÀÇ ±¸Á¶¸¦ ÁØºñÇÑ´Ù.
 //
-//   - ê²€ìƒ‰ ë°°ì—´ (Search Array)
-//      ì‹¤ì œ ê²€ìƒ‰ì— ì‚¬ìš©í•˜ëŠ” ë°°ì—´ë¡œ,
-//      ì‚½ì…ëœ Elementì˜ Hash Keyì™€ í¬ì¸í„°ë¥¼ ê°€ì§€ê³  ìˆëŠ” Itemì˜ ë°°ì—´ë¡œ ì´ë£¨ì–´ì ¸ ìˆë‹¤.
-//      ë°°ì—´ì˜ í¬ê¸°ëŠ” (Itemì˜ í¬ê¸°) * (Element ê°œìˆ˜)ì´ë‹¤.
+//   - °Ë»ö ¹è¿­ (Search Array)
+//      ½ÇÁ¦ °Ë»ö¿¡ »ç¿ëÇÏ´Â ¹è¿­·Î,
+//      »ğÀÔµÈ ElementÀÇ Hash Key¿Í Æ÷ÀÎÅÍ¸¦ °¡Áö°í ÀÖ´Â ItemÀÇ ¹è¿­·Î ÀÌ·ç¾îÁ® ÀÖ´Ù.
+//      ¹è¿­ÀÇ Å©±â´Â (ItemÀÇ Å©±â) * (Element °³¼ö)ÀÌ´Ù.
 //
-//   - íˆìŠ¤í† ê·¸ë¨ (Histogram)
-//      ê²€ìƒ‰ ë°°ì—´ì—ì„œ ê° Partitionì˜ 'ì‹œì‘ ìœ„ì¹˜'ë¥¼ ì €ì¥í•œ ë°°ì—´ì´ë‹¤.
-//      ë°°ì—´ì˜ í¬ê¸°ëŠ” (unsigned long) * (Partition ê°œìˆ˜)ê°€ ëœë‹¤.
+//   - È÷½ºÅä±×·¥ (Histogram)
+//      °Ë»ö ¹è¿­¿¡¼­ °¢ PartitionÀÇ '½ÃÀÛ À§Ä¡'¸¦ ÀúÀåÇÑ ¹è¿­ÀÌ´Ù.
+//      ¹è¿­ÀÇ Å©±â´Â (unsigned long) * (Partition °³¼ö)°¡ µÈ´Ù.
 //
 //                            SearchA.
 //                            --------
@@ -120,8 +120,8 @@ typedef struct qmcMemHashItem
 //                        X   | item | --
 //                            --------    
 //
-//   Partition êµ¬ë¶„ì€ Radix Bit Masking ìœ¼ë¡œ ì´ë£¨ì–´ì§€ë©°,
-//   Masking ê²°ê³¼ ê°’ì´ Partition ì¸ë±ìŠ¤ê°€ ëœë‹¤.
+//   Partition ±¸ºĞÀº Radix Bit Masking À¸·Î ÀÌ·ç¾îÁö¸ç,
+//   Masking °á°ú °ªÀÌ Partition ÀÎµ¦½º°¡ µÈ´Ù.
 //
 //      -------- 
 //      | elem | -> Key = 17, RadixBit = 3 -> Partition 1
@@ -132,42 +132,42 @@ typedef struct qmcMemHashItem
 typedef struct qmcdMemPartHashTemp
 {
     //----------------------------------------------------
-    // ê¸°ë³¸ ì •ë³´
+    // ±âº» Á¤º¸
     //----------------------------------------------------
 
-    UInt                     mFlag;          // ê²€ìƒ‰ ì¤€ë¹„ ì—¬ë¶€
+    UInt                     mFlag;          // °Ë»ö ÁØºñ ¿©ºÎ
     qcTemplate             * mTemplate;      // Template
     iduMemory              * mMemory;
-    qmdMtrNode             * mRecordNode;    // Record êµ¬ì„± ì •ë³´
-    qmdMtrNode             * mHashNode;      // Hashing í•  Column ì •ë³´
-    UInt                     mBucketCnt;     // ì…ë ¥ë°›ì€ Bucketì˜ ê°œìˆ˜
+    qmdMtrNode             * mRecordNode;    // Record ±¸¼º Á¤º¸
+    qmdMtrNode             * mHashNode;      // Hashing ÇÒ Column Á¤º¸
+    UInt                     mBucketCnt;     // ÀÔ·Â¹ŞÀº BucketÀÇ °³¼ö
 
     //----------------------------------------------------
-    // Partitioned Hashing ì— ì“°ì¼ ì •ë³´
+    // Partitioned Hashing ¿¡ ¾²ÀÏ Á¤º¸
     //----------------------------------------------------
 
-    UInt                     mRadixBit;      // Partitionì„ ì •í•  RBit
-    UInt                     mPartitionCnt;  // Partitionì˜ ê°œìˆ˜
+    UInt                     mRadixBit;      // PartitionÀ» Á¤ÇÒ RBit
+    UInt                     mPartitionCnt;  // PartitionÀÇ °³¼ö
     ULong                  * mHistogram;     // Histogram 
-    qmcMemHashItem         * mSearchArray;   // ê²€ìƒ‰ ë°°ì—´
+    qmcMemHashItem         * mSearchArray;   // °Ë»ö ¹è¿­
 
     //----------------------------------------------------
-    // ì‚½ì…ì„ ìœ„í•œ ì •ë³´
+    // »ğÀÔÀ» À§ÇÑ Á¤º¸
     //----------------------------------------------------
     
-    qmcMemHashElement      * mHead;          // ì‚½ì…ëœ Elementì˜ ì²˜ìŒ
-    qmcMemHashElement      * mTail;          // ì‚½ì…ëœ Elementì˜ ë§ˆì§€ë§‰
-    SLong                    mRecordCnt;     // ì´ ì €ì¥ Record ê°œìˆ˜
+    qmcMemHashElement      * mHead;          // »ğÀÔµÈ ElementÀÇ Ã³À½
+    qmcMemHashElement      * mTail;          // »ğÀÔµÈ ElementÀÇ ¸¶Áö¸·
+    SLong                    mRecordCnt;     // ÃÑ ÀúÀå Record °³¼ö
 
     //----------------------------------------------------
-    // ê²€ìƒ‰ì„ ìœ„í•œ ì •ë³´
+    // °Ë»öÀ» À§ÇÑ Á¤º¸
     //----------------------------------------------------
 
-    qmcMemHashElement      * mNextElem;      // ìˆœì°¨ íƒìƒ‰ì„ ìœ„í•œ ë‹¤ìŒ Element
-    UInt                     mKey;           // ë²”ìœ„ ê²€ìƒ‰ì„ ìœ„í•œ Hash Key ê°’
-    qtcNode                * mFilter;        // ë²”ìœ„ ê²€ìƒ‰ì„ ìœ„í•œ Filter
-    ULong                    mNextIdx;       // Search Arrayì—ì„œ ê²€ìƒ‰ë  Index
-    ULong                    mBoundaryIdx;   // Search Arrayì—ì„œ ë‹¤ìŒ íŒŒí‹°ì…˜ì˜ Index
+    qmcMemHashElement      * mNextElem;      // ¼øÂ÷ Å½»öÀ» À§ÇÑ ´ÙÀ½ Element
+    UInt                     mKey;           // ¹üÀ§ °Ë»öÀ» À§ÇÑ Hash Key °ª
+    qtcNode                * mFilter;        // ¹üÀ§ °Ë»öÀ» À§ÇÑ Filter
+    ULong                    mNextIdx;       // Search Array¿¡¼­ °Ë»öµÉ Index
+    ULong                    mBoundaryIdx;   // Search Array¿¡¼­ ´ÙÀ½ ÆÄÆ¼¼ÇÀÇ Index
 
 } qmcdMemPartHashTemp;
 
@@ -176,10 +176,10 @@ class qmcMemPartHash
 public:
 
     //------------------------------------------------
-    // Memory Partitioned Hash Temp Tableì˜ ê´€ë¦¬
+    // Memory Partitioned Hash Temp TableÀÇ °ü¸®
     //------------------------------------------------
     
-    // ì´ˆê¸°í™”ë¥¼ í•œë‹¤.
+    // ÃÊ±âÈ­¸¦ ÇÑ´Ù.
     static IDE_RC init( qmcdMemPartHashTemp * aTempTable,
                         qcTemplate          * aTemplate,
                         iduMemory           * aMemory,
@@ -187,28 +187,28 @@ public:
                         qmdMtrNode          * aHashNode,
                         UInt                  aBucketCnt );
     
-    // Temp Tableë‚´ì˜ Bucketì„ ì´ˆê¸°í™”í•œë‹¤.
+    // Temp Table³»ÀÇ BucketÀ» ÃÊ±âÈ­ÇÑ´Ù.
     static IDE_RC clear( qmcdMemPartHashTemp * aTempTable );
 
-    // ëª¨ë“  Recordì˜ Hit Flagì„ Reset
+    // ¸ğµç RecordÀÇ Hit FlagÀ» Reset
     static IDE_RC clearHitFlag( qmcdMemPartHashTemp * aTempTable );
 
     //------------------------------------------------
-    // Memory Partitioned Hash Tableì˜ ì‚½ì…
+    // Memory Partitioned Hash TableÀÇ »ğÀÔ
     //------------------------------------------------
 
-    // ë¬´ì¡°ê±´ Recordë¥¼ ì‚½ì…í•œë‹¤.
+    // ¹«Á¶°Ç Record¸¦ »ğÀÔÇÑ´Ù.
     static IDE_RC insertAny( qmcdMemPartHashTemp * aTempTable,
                              UInt                  aHash, 
                              void                * aElement,
                              void               ** aOutElement );
 
     //------------------------------------------------
-    // Memory Partitioned Hash Temp Tableì˜ ê²€ìƒ‰
+    // Memory Partitioned Hash Temp TableÀÇ °Ë»ö
     //------------------------------------------------
 
     //----------------------------
-    // ìˆœì°¨ ê²€ìƒ‰
+    // ¼øÂ÷ °Ë»ö
     //----------------------------
 
     static IDE_RC getFirstSequence( qmcdMemPartHashTemp  * aTempTable,
@@ -218,7 +218,7 @@ public:
                                    void                ** aElement);
 
     //----------------------------
-    // Range ê²€ìƒ‰
+    // Range °Ë»ö
     //----------------------------
 
     static IDE_RC getFirstRange( qmcdMemPartHashTemp  * aTempTable,
@@ -230,12 +230,12 @@ public:
                                 void                ** aElement );
 
     //----------------------------
-    // Same Row & NonHit ê²€ìƒ‰
-    // - Set Operation ì—ì„œ ì‚¬ìš©í•˜ë¯€ë¡œ, ì—¬ê¸°ì—ì„œëŠ” ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // Same Row & NonHit °Ë»ö
+    // - Set Operation ¿¡¼­ »ç¿ëÇÏ¹Ç·Î, ¿©±â¿¡¼­´Â Áö¿øÇÏÁö ¾Ê´Â´Ù.
     //----------------------------
 
     //----------------------------
-    // Hit ê²€ìƒ‰
+    // Hit °Ë»ö
     //----------------------------
 
     static IDE_RC getFirstHit( qmcdMemPartHashTemp  * aTempTable,
@@ -245,7 +245,7 @@ public:
                               void                ** aElement );
     
     //----------------------------
-    // NonHit ê²€ìƒ‰
+    // NonHit °Ë»ö
     //----------------------------
 
     static IDE_RC getFirstNonHit( qmcdMemPartHashTemp  * aTempTable,
@@ -255,31 +255,31 @@ public:
                                  void                ** aElement );
     
     //----------------------------
-    // ê¸°íƒ€ í•¨ìˆ˜
+    // ±âÅ¸ ÇÔ¼ö
     //----------------------------
 
-    // ìˆ˜í–‰ ë¹„ìš© ì •ë³´ íšë“
+    // ¼öÇà ºñ¿ë Á¤º¸ È¹µæ
     static IDE_RC getDisplayInfo( qmcdMemPartHashTemp * aTempTable,
                                   SLong               * aRecordCnt,
                                   UInt                * aBucketCnt );
 
 private:
 
-    // Range ê²€ìƒ‰ì‹œ ì¡°ê±´ ê²€ì‚¬
+    // Range °Ë»ö½Ã Á¶°Ç °Ë»ç
     static IDE_RC judgeFilter( qmcdMemPartHashTemp * aTempTable,
                                void                * aElem,
                                idBool              * aResult );
 
-    // ê²€ìƒ‰ ì¤€ë¹„
+    // °Ë»ö ÁØºñ
     static IDE_RC readyForSearch( qmcdMemPartHashTemp * aTempTable );
 
-    // RBit ê³„ì‚°
+    // RBit °è»ê
     static UInt calcRadixBit( qmcdMemPartHashTemp * aTempTable );
 
-    // í•œ ë²ˆì— ê²€ìƒ‰ í•¨ìˆ˜ êµ¬ì„±
+    // ÇÑ ¹ø¿¡ °Ë»ö ÇÔ¼ö ±¸¼º
     static IDE_RC fanoutSingle( qmcdMemPartHashTemp * aTempTable );
 
-    // ë‘ ë²ˆì— ê±¸ì³ ê²€ìƒ‰ í•¨ìˆ˜ êµ¬ì„±
+    // µÎ ¹ø¿¡ °ÉÃÄ °Ë»ö ÇÔ¼ö ±¸¼º
     static IDE_RC fanoutDouble( qmcdMemPartHashTemp * aTempTable );
 
     // ceil(log2()) 

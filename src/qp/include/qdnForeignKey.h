@@ -20,11 +20,11 @@
  *
  * Description :
  *
- *     Foreign Key Reference Constraint ì²˜ë¦¬ë¥¼ ìœ„í•œ ëª¨ë“ˆ
+ *     Foreign Key Reference Constraint Ã³¸®¸¦ À§ÇÑ ¸ğµâ
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -37,18 +37,18 @@
 // PROJ-1624 non-partitioned index
 typedef enum qdnFKScanMethod
 {
-    QDN_FK_TABLE_FULL_SCAN = 0,   // table full scanì¸ ê²½ìš°
-    QDN_FK_TABLE_INDEX_SCAN,      // table index scanì¸ ê²½ìš°
-    QDN_FK_PARTITION_FULL_SCAN,   // table partition full scanì¸ ê²½ìš°
-    QDN_FK_PARTITION_INDEX_SCAN,  // table partition local index scanì¸ ê²½ìš°
-    QDN_FK_PARTITION_ONLY_INDEX_TABLE_SCAN,  // index table scanì¸ ê²½ìš°
-    QDN_FK_PARTITION_INDEX_TABLE_SCAN        // index table scan + partition scanì¸ ê²½ìš°
+    QDN_FK_TABLE_FULL_SCAN = 0,   // table full scanÀÎ °æ¿ì
+    QDN_FK_TABLE_INDEX_SCAN,      // table index scanÀÎ °æ¿ì
+    QDN_FK_PARTITION_FULL_SCAN,   // table partition full scanÀÎ °æ¿ì
+    QDN_FK_PARTITION_INDEX_SCAN,  // table partition local index scanÀÎ °æ¿ì
+    QDN_FK_PARTITION_ONLY_INDEX_TABLE_SCAN,  // index table scanÀÎ °æ¿ì
+    QDN_FK_PARTITION_INDEX_TABLE_SCAN        // index table scan + partition scanÀÎ °æ¿ì
 } qdnFKScanMethod;
 
 // PROJ-1624 non-partitioned index
-#define QDN_PART_CURSOR_ALLOCED      ((UChar)'A')  // allocëœ ìƒíƒœ
-#define QDN_PART_CURSOR_INITIALIZED  ((UChar)'I')  // initëœ ìƒíƒœ, openë˜ì—ˆë‹¤ closedëœ ìƒíƒœ
-#define QDN_PART_CURSOR_OPENED       ((UChar)'O')  // openëœ ìƒíƒœ
+#define QDN_PART_CURSOR_ALLOCED      ((UChar)'A')  // allocµÈ »óÅÂ
+#define QDN_PART_CURSOR_INITIALIZED  ((UChar)'I')  // initµÈ »óÅÂ, openµÇ¾ú´Ù closedµÈ »óÅÂ
+#define QDN_PART_CURSOR_OPENED       ((UChar)'O')  // openµÈ »óÅÂ
 
 class qdnForeignKey
 {
@@ -58,30 +58,30 @@ public:
     // Validation for Add Foreign Key Reference
     //----------------------------------------------------------
 
-    // Foreign Keyì— ëŒ€í•œ Vaildation
+    // Foreign Key¿¡ ´ëÇÑ Vaildation
     static IDE_RC validateForeignKeySpec( qcStatement      * aStatement,
                                           UInt               aTableOwnerID,
                                           qcmTableInfo     * aTableInfo,
                                           qdConstraintSpec * aConstr );
 
     // To Fix PR-10385
-    // Foreign Key Constraint ì¶”ê°€ì‹œ Dataì— ëŒ€í•œ Reference ê²€ì‚¬
+    // Foreign Key Constraint Ãß°¡½Ã Data¿¡ ´ëÇÑ Reference °Ë»ç
     static IDE_RC checkRef4AddConst( qcStatement      * aStatement,
                                      qcmTableInfo     * aTableInfo,
                                      qdConstraintSpec * aForeignSpec );
 
-    // Foreign Key Constraint ìƒíƒœ ë³€ê²½ì‹œ Dataì— ëŒ€í•œ Reference ê²€ì‚¬
+    // Foreign Key Constraint »óÅÂ º¯°æ½Ã Data¿¡ ´ëÇÑ Reference °Ë»ç
     static IDE_RC checkRef4ModConst( qcStatement      * aStatement,
                                      qcmTableInfo     * aTableInfo,
                                      qcmForeignKey    * aForeignKey );
 
     //----------------------------------------------------------
-    // DML ë°œìƒ ì‹œ Foreign Key Referenceë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+    // DML ¹ß»ı ½Ã Foreign Key Reference¸¦ Ã³¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
     //----------------------------------------------------------
 
-    // BUG-28049ì—ì„œ FK íƒìƒ‰ ë°©ë²• ë³€ê²½
+    // BUG-28049¿¡¼­ FK Å½»ö ¹æ¹ı º¯°æ
 
-    // Parent Tableì— í•´ë‹¹ Referenceê°’ì´ ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬.
+    // Parent Table¿¡ ÇØ´ç Reference°ªÀÌ Á¸ÀçÇÏ´Â Áö °Ë»ç.
     static IDE_RC checkParentRef( qcStatement   * aStatement,
                                   UInt          * aChangedColumns,
                                   qcmParentInfo * aParentInfo,
@@ -89,7 +89,7 @@ public:
                                   const void    * aCheckedRow,
                                   UInt            aUpdatedColCount );
 
-    // Parent Tableì— í•´ë‹¹ Referenceê°’ì´ ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬.
+    // Parent Table¿¡ ÇØ´ç Reference°ªÀÌ Á¸ÀçÇÏ´Â Áö °Ë»ç.
     static IDE_RC checkParentRef4Const( qcStatement   * aStatement,
                                         UInt          * aChangedColumns,
                                         qcmParentInfo * aParentInfo,
@@ -97,7 +97,7 @@ public:
                                         qcmColumn     * aColumnsForCheckedRow,
                                         UInt            aUpdatedColCount );
 
-    // Delete ì‹œ Child Tableì— ëŒ€í•œ Foreign Key Reference ê²€ì‚¬
+    // Delete ½Ã Child Table¿¡ ´ëÇÑ Foreign Key Reference °Ë»ç
     static IDE_RC checkChildRefOnDelete( qcStatement      * aStatement,
                                          qcmRefChildInfo  * aChildConstraints,
                                          UInt               aParentTableID,
@@ -105,7 +105,7 @@ public:
                                          const void       * aCheckedRow,
                                          idBool             aIsOnDelete );
 
-    // Updateì‹œ Child Tableì— ëŒ€í•œ Foreign Key Reference ê²€ì‚¬
+    // Update½Ã Child Table¿¡ ´ëÇÑ Foreign Key Reference °Ë»ç
     static IDE_RC checkChildRefOnUpdate( qcStatement      * aStatement,
                                          qmsTableRef      * aTableRef,
                                          qcmTableInfo     * aTableInfo,
@@ -116,12 +116,12 @@ public:
                                          const void       * aCheckedRow,
                                          UInt               aChangedColCount);
 
-    // Delete ìˆ˜í–‰ ì‹œ Foreign Key Reference ê²€ì‚¬ë¥¼ ìœ„í•œ Cursor Open ì—¬ë¶€ì˜ íŒë‹¨
+    // Delete ¼öÇà ½Ã Foreign Key Reference °Ë»ç¸¦ À§ÇÑ Cursor Open ¿©ºÎÀÇ ÆÇ´Ü
     static idBool haveToOpenBeforeCursor( qcmRefChildInfo  * aChildInfo,
                                           UInt             * aChangedColumns,
                                           UInt               aChangedColCount );
     
-    // Parentì— ëŒ€í•œ Foreign Key ê²€ì‚¬ê°€ í•„ìš”í•œ ì§€ì˜ ì—¬ë¶€
+    // Parent¿¡ ´ëÇÑ Foreign Key °Ë»ç°¡ ÇÊ¿äÇÑ ÁöÀÇ ¿©ºÎ
     static idBool haveToCheckParent( qcmTableInfo * aTableInfo,
                                      UInt         * aChangedColumns,
                                      UInt           aChangedColCount );
@@ -132,26 +132,26 @@ private:
     // Validation for Add Foreign Key Reference
     //----------------------------------------------------------
 
-    // Foreign Keyì˜ ì°¸ì¡° ìˆœì„œë¥¼, Unique Keyì˜ ìˆœì„œì— ë§ë„ë¡ ì¬ì •ë ¬
+    // Foreign KeyÀÇ ÂüÁ¶ ¼ø¼­¸¦, Unique KeyÀÇ ¼ø¼­¿¡ ¸Âµµ·Ï ÀçÁ¤·Ä
     static IDE_RC reorderForeignKeySpec( qdConstraintSpec * aUniqueKeyConstr,
                                          qdConstraintSpec * aForeignKeyConstr );
 
     static IDE_RC reorderForeignKeySpec( qcmIndex         * aUniqueIndex,
                                          qdConstraintSpec * aForeignKeyConstr );
 
-    // Primary Key ì •ë³´ ì¶”ì¶œ
+    // Primary Key Á¤º¸ ÃßÃâ
     static IDE_RC getPrimaryKeyFromDefinition(
         qdTableParseTree * aParseTree,
         qdReferenceSpec  * aReferenceSpec );
 
-    // Foreign Key Validationì„ ìœ„í•œ Primary Key íšë“
+    // Foreign Key ValidationÀ» À§ÇÑ Primary Key È¹µæ
     static IDE_RC getPrimaryKeyFromCache( iduVarMemList * aMem, //fix PROJ-1596
                                           qcmTableInfo  * aTableInfo,
                                           qcmColumn    ** aColumns,
                                           UInt          * aColCount);
 
     // To Fix PR-10385
-    // Parent Tableê³¼ Index ì˜ Meta Cache ì •ë³´ ì¶”ì¶œ
+    // Parent Table°ú Index ÀÇ Meta Cache Á¤º¸ ÃßÃâ
     static IDE_RC getParentTableAndIndex( qcStatement     * aStatement,
                                           qdReferenceSpec * aRefSpec,
                                           qcmTableInfo    * aChildTableInfo,
@@ -159,10 +159,10 @@ private:
                                           qcmIndex       ** aParentIndexInfo );
 
     //----------------------------------------------------------
-    // Parent Tableì— ëŒ€í•œ Foreign Key Reference ê²€ì‚¬ í•¨ìˆ˜
+    // Parent Table¿¡ ´ëÇÑ Foreign Key Reference °Ë»ç ÇÔ¼ö
     //----------------------------------------------------------
 
-    // Parent Tableì— í•´ë‹¹ Keyê°€ ì¡´ì¬í•˜ëŠ” ì§€ ê²€ì‚¬
+    // Parent Table¿¡ ÇØ´ç Key°¡ Á¸ÀçÇÏ´Â Áö °Ë»ç
     static IDE_RC searchParentKey( qcStatement   * aStatement,
                                    qcmParentInfo * aParentInfo,
                                    mtcTuple      * aCheckedTuple,
@@ -170,12 +170,12 @@ private:
                                    qcmColumn     * aColumnsForCheckedRow );
 
     //----------------------------------------------------------
-    // Child Tableì— ëŒ€í•œ Foreign Key Reference ê²€ì‚¬ í•¨ìˆ˜
+    // Child Table¿¡ ´ëÇÑ Foreign Key Reference °Ë»ç ÇÔ¼ö
     //----------------------------------------------------------
 
-    // BUG-28049ì—ì„œ FK íƒìƒ‰ ë°©ë²• ë³€ê²½
+    // BUG-28049¿¡¼­ FK Å½»ö ¹æ¹ı º¯°æ
 
-    // NULLì—¬ë¶€ì™€ Childì—ì„œ ì‚¬ìš©í•˜ê³  ìˆë˜ ê°’ì¸ì§€ ê²€ì‚¬
+    // NULL¿©ºÎ¿Í Child¿¡¼­ »ç¿ëÇÏ°í ÀÖ´ø °ªÀÎÁö °Ë»ç
     static IDE_RC searchForeignKey(qcStatement       * aStatement,
                                    qcmRefChildInfo   * aChildConstraints,
                                    qcmRefChildInfo   * aRefChildInfo,
@@ -183,7 +183,7 @@ private:
                                    const void        * aCheckedRow,
                                    idBool              aIsOnDelete );
 
-    // Self Foreign Key Referenceì— ëŒ€í•œ ê²€ì‚¬
+    // Self Foreign Key Reference¿¡ ´ëÇÑ °Ë»ç
     static IDE_RC searchSelf( qcStatement  * aStatement,
                               qmsTableRef  * aTableRef,
                               qcmTableInfo * aTableInfo,
@@ -191,13 +191,13 @@ private:
                               mtcTuple     * aCheckedTuple,
                               const void   * aCheckedRow );
 
-    // Childì—ì„œ ì‚¬ìš©í•˜ê³  ìˆë˜ ê°’ì¸ì§€ ê²€ì‚¬
+    // Child¿¡¼­ »ç¿ëÇÏ°í ÀÖ´ø °ªÀÎÁö °Ë»ç
     static IDE_RC getChildRowWithRow( qcStatement      * aStatement,
                                       qcmRefChildInfo  * aRefChildInfo,
                                       mtcTuple         * aCheckedTuple,
                                       const void       * aCheckedRow );
 
-    // Childì—ì„œ ì‚¬ìš©í•˜ê³  ìˆë˜ ê°’ì¸ì§€ ì‚­ì œ ( on delete cascadeì—ì„œ ì‚¬ìš© )
+    // Child¿¡¼­ »ç¿ëÇÏ°í ÀÖ´ø °ªÀÎÁö »èÁ¦ ( on delete cascade¿¡¼­ »ç¿ë )
     static IDE_RC deleteChildRowWithRow(
         qcStatement       * aStatement,
         qcmRefChildInfo   * aChildConstraints,
@@ -214,7 +214,7 @@ private:
         const void        * aCheckedRow );
 
     // To Fix PR-10592
-    // Child Tableì— ëŒ€í•œ ê²€ì‚¬ë¥¼ ìœ„í•˜ì—¬ Key Rangeêµ¬ì„±ì„ ìœ„í•œ ì •ë³´ë¥¼ íšë“
+    // Child Table¿¡ ´ëÇÑ °Ë»ç¸¦ À§ÇÏ¿© Key Range±¸¼ºÀ» À§ÇÑ Á¤º¸¸¦ È¹µæ
     static IDE_RC getChildKeyRangeInfo( qcmTableInfo  * aChildTableInfo,
                                         qcmForeignKey * aForeignKey,
                                         qcmIndex     ** aSelectedIndex,

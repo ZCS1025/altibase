@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfSubtract2.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfSubtract2.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -50,7 +50,7 @@ mtfModule mtfSubtract2 = {
     1|MTC_NODE_OPERATOR_FUNCTION|
         MTC_NODE_PRINT_FMT_MISC,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfSubtract2FunctionName,
     NULL,
     mtfSubtract2Initialize,
@@ -130,7 +130,7 @@ static mtfSubModule mtfXX[1] = {
 //};
 
 // To Fix PR-8722
-// [Overflow(Underflow)-PRONE ì—°ì‚°ì˜ ì œê±°]
+// [Overflow(Underflow)-PRONE ¿¬»êÀÇ Á¦°Å]
 
 static mtfSubModule mtfNN[5] = {
     { mtfNN+1, mtfSubtract2EstimateInteger  },
@@ -163,7 +163,7 @@ static mtfSubModule* mtfGroupTable[MTD_GROUP_MAXIMUM][MTD_GROUP_MAXIMUM] = {
 };
 
 // BUG-41994
-// high precisionìš© group table
+// high precision¿ë group table
 static mtfSubModule mtfNP[3] = {
     { mtfNP+1, mtfSubtract2EstimateInteger  },
     { mtfNP+2, mtfSubtract2EstimateBigint   },
@@ -691,7 +691,7 @@ IDE_RC mtfSubtract2EstimateFloat( mtcNode*     aNode,
  *
  * Description :
  *    Subtract Float : aStack[0] = aStack[1] - aStack[2] 
- *    ì‹¤ì œì ì¸ ê³„ì‚°ì€ idaSubtract ì´ë£¨ì–´ì§„ë‹¤.
+ *    ½ÇÁ¦ÀûÀÎ °è»êÀº idaSubtract ÀÌ·ç¾îÁø´Ù.
  * ---------------------------------------------------------------------------*/
 
 IDE_RC mtfSubtract2CalculateFloat( mtcNode*     aNode,
@@ -1035,9 +1035,9 @@ IDE_RC mtfSubtract2CalculateDate( mtcNode*     aNode,
             sInterval1.microsecond - sInterval2.microsecond;
 
         //BUG -28092
-        //secondì™€ microsecondëŠ” dateì™€ ë‹¬ë¦¬ ë¶€í˜¸ë¥¼ ê°€ì§ˆ ìˆ˜ ìˆë‹¤.
-        //ì´ë¡œ ì¸í•´ ì„œë¡œ ë‹¤ë¥¸ ë¶€í˜¸ë¥¼ ê°€ì§ˆ ìˆ˜ê°€ ìˆì—ˆë‹¤.
-        //ë˜í•œ ì˜¤ë²„í”Œë¡œìš°ì— ëŒ€í•œ ì²˜ë¦¬ê°€ ì—†ì—ˆë‹¤.
+        //second¿Í microsecond´Â date¿Í ´Ş¸® ºÎÈ£¸¦ °¡Áú ¼ö ÀÖ´Ù.
+        //ÀÌ·Î ÀÎÇØ ¼­·Î ´Ù¸¥ ºÎÈ£¸¦ °¡Áú ¼ö°¡ ÀÖ¾ú´Ù.
+        //¶ÇÇÑ ¿À¹öÇÃ·Î¿ì¿¡ ´ëÇÑ Ã³¸®°¡ ¾ø¾ú´Ù.
         
         sValue->second      += (sValue->microsecond / 1000000);
         sValue->microsecond %= 1000000;
@@ -1164,9 +1164,9 @@ IDE_RC mtfSubtract2CalculateIntervalInterval( mtcNode*     aNode,
         sValue->microsecond = sArgument1->microsecond - sArgument2->microsecond;
        
         //BUG -28092
-        //secondì™€ microsecondëŠ” dateì™€ ë‹¬ë¦¬ ë¶€í˜¸ë¥¼ ê°€ì§ˆ ìˆ˜ ìˆë‹¤.
-        //ì´ë¡œ ì¸í•´ ì„œë¡œ ë‹¤ë¥¸ ë¶€í˜¸ë¥¼ ê°€ì§ˆ ìˆ˜ê°€ ìˆì—ˆë‹¤.
-        //ë˜í•œ ì˜¤ë²„í”Œë¡œìš°ì— ëŒ€í•œ ì²˜ë¦¬ê°€ ì—†ì—ˆë‹¤.
+        //second¿Í microsecond´Â date¿Í ´Ş¸® ºÎÈ£¸¦ °¡Áú ¼ö ÀÖ´Ù.
+        //ÀÌ·Î ÀÎÇØ ¼­·Î ´Ù¸¥ ºÎÈ£¸¦ °¡Áú ¼ö°¡ ÀÖ¾ú´Ù.
+        //¶ÇÇÑ ¿À¹öÇÃ·Î¿ì¿¡ ´ëÇÑ Ã³¸®°¡ ¾ø¾ú´Ù.
 
         sValue->second      += (sValue->microsecond / 1000000);
         sValue->microsecond %= 1000000;
@@ -1312,9 +1312,9 @@ IDE_RC mtfSubtract2CalculateDateInterval( mtcNode*     aNode,
         sInterval.microsecond -= sArgument2->microsecond;
 
         //BUG -28092
-        //secondì™€ microsecondëŠ” dateì™€ ë‹¬ë¦¬ ë¶€í˜¸ë¥¼ ê°€ì§ˆ ìˆ˜ ìˆë‹¤.
-        //ì´ë¡œ ì¸í•´ ì„œë¡œ ë‹¤ë¥¸ ë¶€í˜¸ë¥¼ ê°€ì§ˆ ìˆ˜ê°€ ìˆì—ˆë‹¤.
-        //ë˜í•œ ì˜¤ë²„í”Œë¡œìš°ì— ëŒ€í•œ ì²˜ë¦¬ê°€ ì—†ì—ˆë‹¤.
+        //second¿Í microsecond´Â date¿Í ´Ş¸® ºÎÈ£¸¦ °¡Áú ¼ö ÀÖ´Ù.
+        //ÀÌ·Î ÀÎÇØ ¼­·Î ´Ù¸¥ ºÎÈ£¸¦ °¡Áú ¼ö°¡ ÀÖ¾ú´Ù.
+        //¶ÇÇÑ ¿À¹öÇÃ·Î¿ì¿¡ ´ëÇÑ Ã³¸®°¡ ¾ø¾ú´Ù.
 
         sInterval.second      += (sInterval.microsecond / 1000000);
         sInterval.microsecond %= 1000000;

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtdNibble.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtdNibble.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -170,37 +170,37 @@ mtdModule mtdNibble = {
     {
         // Key Comparison
         {
-            // mt valueë“¤ ê°„ì˜ compare
+            // mt valueµé °£ÀÇ compare
             mtdNibbleFixedMtdFixedMtdKeyAscComp, // Ascending Key Comparison
             mtdNibbleFixedMtdFixedMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt valueë“¤ ê°„ì˜ compare
+            // mt valueµé °£ÀÇ compare
             mtdNibbleMtdMtdKeyAscComp, // Ascending Key Comparison
             mtdNibbleMtdMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt valueì™€ stored valueê°„ì˜ compare
+            // mt value¿Í stored value°£ÀÇ compare
             mtdNibbleStoredMtdKeyAscComp, // Ascending Key Comparison
             mtdNibbleStoredMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // stored valueë“¤ ê°„ì˜ compare
+            // stored valueµé °£ÀÇ compare
             mtdNibbleStoredStoredKeyAscComp, // Ascending Key Comparison
             mtdNibbleStoredStoredKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            /* PROJ-2433 : index Direct keyì™€ fixed mt valueë“¤ ê°„ì˜ compare */
+            /* PROJ-2433 : index Direct key¿Í fixed mt valueµé °£ÀÇ compare */
             mtdNibbleFixedMtdFixedMtdKeyAscComp,
             mtdNibbleFixedMtdFixedMtdKeyDescComp
         }
         ,
         {
-            /* PROJ-2433 : index Direct keyì™€ mt valueë“¤ ê°„ì˜ compare */
+            /* PROJ-2433 : index Direct key¿Í mt valueµé °£ÀÇ compare */
             mtdNibbleMtdMtdKeyAscComp,
             mtdNibbleMtdMtdKeyDescComp
         }
@@ -236,7 +236,7 @@ IDE_RC mtdInitialize( UInt aNo )
 {
     IDE_TEST( mtd::initializeModule( &mtdNibble, aNo ) != IDE_SUCCESS );
     
-    // mtdColumnì˜ ì´ˆê¸°í™”
+    // mtdColumnÀÇ ÃÊ±âÈ­
     IDE_TEST( mtc::initializeColumn( & mtdColumn,
                                      & mtdNibble,
                                      0,   // arguments
@@ -307,7 +307,7 @@ IDE_RC mtdValue( mtcTemplate* /* aTemplate */,
         {
             sValue->length     = MTD_NIBBLE_NULL_LENGTH;
 
-            // precision, scale ì¬ ì„¤ì • í›„, estimateë¡œ semantic ê²€ì‚¬
+            // precision, scale Àç ¼³Á¤ ÈÄ, estimate·Î semantic °Ë»ç
             aColumn->flag      = 1;
             aColumn->precision = MTD_NIBBLE_PRECISION_DEFAULT;
             aColumn->scale     = 0;
@@ -319,7 +319,7 @@ IDE_RC mtdValue( mtcTemplate* /* aTemplate */,
                                        aTokenLength )
                       != IDE_SUCCESS );
 
-            // precision, scale ì¬ ì„¤ì • í›„, estimateë¡œ semantic ê²€ì‚¬
+            // precision, scale Àç ¼³Á¤ ÈÄ, estimate·Î semantic °Ë»ç
             aColumn->flag      = 1;
             aColumn->precision = sValue->length != 0
                                  ? sValue->length
@@ -413,7 +413,7 @@ SInt mtdNibbleLogicalAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -520,7 +520,7 @@ SInt mtdNibbleLogicalDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
+ * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
  *
  * Implementation :
  *
@@ -627,7 +627,7 @@ SInt mtdNibbleFixedMtdFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -734,7 +734,7 @@ SInt mtdNibbleFixedMtdFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
+ * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
  *
  * Implementation :
  *
@@ -841,7 +841,7 @@ SInt mtdNibbleMtdMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -957,7 +957,7 @@ SInt mtdNibbleMtdMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
+ * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
  *
  * Implementation :
  *
@@ -1073,7 +1073,7 @@ SInt mtdNibbleStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -1092,8 +1092,8 @@ SInt mtdNibbleStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
     // value1
     //---------    
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // Dictionary compression columnì¸ ê²½ìš° store typeì„mt typeìœ¼ë¡œ
-    // ë³€í™˜í•´ì„œ ì‹¤ì œ ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+    // Dictionary compression columnÀÎ °æ¿ì store typeÀ»mt typeÀ¸·Î
+    // º¯È¯ÇØ¼­ ½ÇÁ¦ µ¥ÀÌÅÍ¸¦ °¡Á®¿Â´Ù.
     if ( (((smiColumn*)aValueInfo1->column)->flag & SMI_COLUMN_COMPRESSION_MASK) !=
          SMI_COLUMN_COMPRESSION_TRUE )
     {
@@ -1211,7 +1211,7 @@ SInt mtdNibbleStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ descending compare
+ * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ descending compare
  *
  * Implementation :
  *
@@ -1230,8 +1230,8 @@ SInt mtdNibbleStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
     // value1
     //---------    
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // Dictionary compression columnì¸ ê²½ìš° store typeì„mt typeìœ¼ë¡œ
-    // ë³€í™˜í•´ì„œ ì‹¤ì œ ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+    // Dictionary compression columnÀÎ °æ¿ì store typeÀ»mt typeÀ¸·Î
+    // º¯È¯ÇØ¼­ ½ÇÁ¦ µ¥ÀÌÅÍ¸¦ °¡Á®¿Â´Ù.
     if ( (((smiColumn*)aValueInfo1->column)->flag & SMI_COLUMN_COMPRESSION_MASK) !=
          SMI_COLUMN_COMPRESSION_TRUE )
     {
@@ -1349,7 +1349,7 @@ SInt mtdNibbleStoredStoredKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyë“¤ ê°„ì˜ ascending compare
+ * Description : Stored Keyµé °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -1368,8 +1368,8 @@ SInt mtdNibbleStoredStoredKeyAscComp( mtdValueInfo * aValueInfo1,
     // value1
     //---------    
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // Dictionary compression columnì¸ ê²½ìš° store typeì„mt typeìœ¼ë¡œ
-    // ë³€í™˜í•´ì„œ ì‹¤ì œ ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+    // Dictionary compression columnÀÎ °æ¿ì store typeÀ»mt typeÀ¸·Î
+    // º¯È¯ÇØ¼­ ½ÇÁ¦ µ¥ÀÌÅÍ¸¦ °¡Á®¿Â´Ù.
     if ( (((smiColumn*)aValueInfo1->column)->flag & SMI_COLUMN_COMPRESSION_MASK) !=
          SMI_COLUMN_COMPRESSION_TRUE )
     {
@@ -1502,7 +1502,7 @@ SInt mtdNibbleStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyë“¤ ê°„ì˜ descending compare
+ * Description : Stored Keyµé °£ÀÇ descending compare
  *
  * Implementation :
  *
@@ -1521,8 +1521,8 @@ SInt mtdNibbleStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
     // value1
     //---------    
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // Dictionary compression columnì¸ ê²½ìš° store typeì„mt typeìœ¼ë¡œ
-    // ë³€í™˜í•´ì„œ ì‹¤ì œ ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+    // Dictionary compression columnÀÎ °æ¿ì store typeÀ»mt typeÀ¸·Î
+    // º¯È¯ÇØ¼­ ½ÇÁ¦ µ¥ÀÌÅÍ¸¦ °¡Á®¿Â´Ù.
     if ( (((smiColumn*)aValueInfo1->column)->flag & SMI_COLUMN_COMPRESSION_MASK) !=
          SMI_COLUMN_COMPRESSION_TRUE )
     {
@@ -1689,7 +1689,7 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
 {
 /***********************************************************************
  *
- * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColum ì´ˆê¸°í™”
+ * Description : valueÀÇ semantic °Ë»ç ¹× mtcColum ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -1703,9 +1703,9 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
     IDE_TEST_RAISE( sVal->length + ID_SIZEOF(UChar) != aValueSize,
                     ERR_INVALID_LENGTH );
 
-    // ì´ˆê¸°í™”ëœ aColumnì€ cannonize() ì‹œì— ì‚¬ìš©
-    // ì´ë•Œ, data type moduleì˜ precision ì •ë³´ë§Œì„ ì‚¬ìš©í•˜ë¯€ë¡œ,
-    // language ì •ë³´ ì„¤ì •í•  í•„ìš”ì—†ìŒ
+    // ÃÊ±âÈ­µÈ aColumnÀº cannonize() ½Ã¿¡ »ç¿ë
+    // ÀÌ¶§, data type moduleÀÇ precision Á¤º¸¸¸À» »ç¿ëÇÏ¹Ç·Î,
+    // language Á¤º¸ ¼³Á¤ÇÒ ÇÊ¿ä¾øÀ½
     IDE_TEST( mtc::initializeColumn( aColumn,
                                      & mtdNibble,
                                      1,              // arguments
@@ -1736,26 +1736,26 @@ static IDE_RC mtdStoredValue2MtdValue( UInt              aColumnSize,
 {
 /*******************************************************************
  * PROJ-1705
- * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
- * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
+ * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
+ * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
  *******************************************************************/
 
     mtdNibbleType* sNibbleValue;
 
-    // í•˜ë‚˜ì˜ ì»¬ëŸ¼ ë°ì´íƒ€ê°€ ì—¬ëŸ¬í˜ì´ì§€ì— ë‚˜ëˆ„ì–´ ì €ì¥ë˜ëŠ” ê²½ìš°ëŠ” ì—†ë‹¤.
+    // ÇÏ³ªÀÇ ÄÃ·³ µ¥ÀÌÅ¸°¡ ¿©·¯ÆäÀÌÁö¿¡ ³ª´©¾î ÀúÀåµÇ´Â °æ¿ì´Â ¾ø´Ù.
 
     sNibbleValue = (mtdNibbleType*)aDestValue;
     
     if( aLength == 0 )
     {
-        // NULL ë°ì´íƒ€
+        // NULL µ¥ÀÌÅ¸
         sNibbleValue->length = MTD_NIBBLE_NULL_LENGTH;
     }
     else
     {
-        // bit typeì€ mtdDataTypeí˜•íƒœë¡œ ì €ì¥ë˜ë¯€ë¡œ
-        // length ì— header sizeê°€ í¬í•¨ë˜ì–´ ìˆì–´
-        // ì—¬ê¸°ì„œ ë³„ë„ì˜ ê³„ì‚°ì„ í•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
+        // bit typeÀº mtdDataTypeÇüÅÂ·Î ÀúÀåµÇ¹Ç·Î
+        // length ¿¡ header size°¡ Æ÷ÇÔµÇ¾î ÀÖ¾î
+        // ¿©±â¼­ º°µµÀÇ °è»êÀ» ÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
         IDE_TEST_RAISE( (aDestValueOffset + aLength) > aColumnSize, ERR_INVALID_STORED_VALUE );
 
         idlOS::memcpy( sNibbleValue, aValue, aLength );
@@ -1778,9 +1778,9 @@ UInt mtdNullValueSize()
 {
 /*******************************************************************
  * PROJ-1705
- * ê° ë°ì´íƒ€íƒ€ì…ì˜ null Valueì˜ í¬ê¸° ë°˜í™˜
- * ì˜ˆ ) mtdNibbleType( UChar length; UChar value[1] ) ì—ì„œ
- *      length íƒ€ì…ì¸ UCharì˜ í¬ê¸°ë¥¼ ë°˜í™˜
+ * °¢ µ¥ÀÌÅ¸Å¸ÀÔÀÇ null ValueÀÇ Å©±â ¹İÈ¯
+ * ¿¹ ) mtdNibbleType( UChar length; UChar value[1] ) ¿¡¼­
+ *      length Å¸ÀÔÀÎ UCharÀÇ Å©±â¸¦ ¹İÈ¯
  *******************************************************************/
     return mtdActualSize( NULL, &mtdNibbleNull );
 }
@@ -1789,10 +1789,10 @@ static UInt mtdHeaderSize()
 {
 /***********************************************************************
  * PROJ-1705
- * lengthë¥¼ ê°€ì§€ëŠ” ë°ì´íƒ€íƒ€ì…ì˜ length ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ë³€ìˆ˜ì˜ í¬ê¸° ë°˜í™˜
- * ì˜ˆ ) mtdNibbleType( UChar length; UChar value[1] ) ì—ì„œ
- *      length íƒ€ì…ì¸ UCharì˜ í¬ê¸°ë¥¼ ë°˜í™˜
- *  integerì™€ ê°™ì€ ê³ ì •ê¸¸ì´ ë°ì´íƒ€íƒ€ì…ì€ 0 ë°˜í™˜
+ * length¸¦ °¡Áö´Â µ¥ÀÌÅ¸Å¸ÀÔÀÇ length Á¤º¸¸¦ ÀúÀåÇÏ´Â º¯¼öÀÇ Å©±â ¹İÈ¯
+ * ¿¹ ) mtdNibbleType( UChar length; UChar value[1] ) ¿¡¼­
+ *      length Å¸ÀÔÀÎ UCharÀÇ Å©±â¸¦ ¹İÈ¯
+ *  integer¿Í °°Àº °íÁ¤±æÀÌ µ¥ÀÌÅ¸Å¸ÀÔÀº 0 ¹İÈ¯
  **********************************************************************/
 
     return ID_SIZEOF(UChar);
@@ -1802,9 +1802,9 @@ static UInt mtdStoreSize( const smiColumn * /*aColumn*/ )
 {
 /***********************************************************************
 * PROJ-2399 row tmaplate
-* smì— ì €ì¥ë˜ëŠ” ë°ì´í„°ì˜ í¬ê¸°ë¥¼ ë°˜í™˜í•œë‹¤.
-* variable íƒ€ì…ì˜ ë°ì´í„° íƒ€ì…ì€ ID_UINT_MAXë¥¼ ë°˜í™˜
-* mtheaderê°€ smì— ì €ì¥ëœê²½ìš°ê°€ ì•„ë‹ˆë©´ mtheaderí¬ê¸°ë¥¼ ë¹¼ì„œ ë°˜í™˜
+* sm¿¡ ÀúÀåµÇ´Â µ¥ÀÌÅÍÀÇ Å©±â¸¦ ¹İÈ¯ÇÑ´Ù.
+* variable Å¸ÀÔÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀº ID_UINT_MAX¸¦ ¹İÈ¯
+* mtheader°¡ sm¿¡ ÀúÀåµÈ°æ¿ì°¡ ¾Æ´Ï¸é mtheaderÅ©±â¸¦ »©¼­ ¹İÈ¯
  **********************************************************************/
 
     return ID_UINT_MAX;

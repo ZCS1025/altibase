@@ -25,9 +25,155 @@
 #include <ulsd.h>
 #include <sdErrorCodeClient.h>
 
+/* TASK-7218 Multi-Error Handling 2nd */
+static void ulsdMultiErrorCreate( ulnDiagHeader  *aHeader,
+                                  ulnDiagRec    **aDiagRec )
+{
+    ulnDiagRec *sDiagRec = NULL;
+
+    ulnDiagRecCreate( aHeader, &sDiagRec );
+
+    sDiagRec->mMessageText = aHeader->mMultiErrorMessage;
+
+    /* NodeId ∞™¿ª ACP_UINT32_MAX∑Œ º¬∆√«œø© Multiø°∑Ø¿”¿ª «•Ω√«—¥Ÿ */
+    ulnDiagRecSetNodeId( sDiagRec, ACP_UINT32_MAX );
+
+    *aDiagRec = sDiagRec;
+}
+
+/*
+ * TASK-7218 Multi-Error Handling 2nd
+ *   1. Multiø°∑ØøÎ DiagRec ª˝º∫
+ *     Multiø°∑Ø∞° « ø‰«œ∏È(ø°∑Ø ∞≥ºˆ∞° 2 ¿ÃªÛ¿Ã∏È),
+ *     aObject¿« DiagRecList¿« ∏« æ’ DiagRec¿Ã Multiø°∑Ø¿Œ¡ˆ √º≈©«—¥Ÿ.
+ *     Multiø°∑Ø∞° æ∆¥œ∏È, DiagRec¿ª ª˝º∫«— »ƒ List ∏« æ’ø° ≥¢øˆ≥÷¥¬¥Ÿ.
+ *
+ *   2. Multiø°∑Øƒ⁄µÂ µÓ º≥¡§
+ *     ∏µÁ ø°∑Ø ƒ⁄µÂ∞° µø¿œ«œ∏È, ±◊ ƒ⁄µÂ∑Œ º¬∆√«—¥Ÿ.
+ *     ±◊∑∏¡ˆ æ ¿∏∏È, sdERR_ABORT_SHARD_MULTIPLE_ERRORS∏¶ º¬∆√«—¥Ÿ.
+ */
+static void ulsdMultiErrorSetDiagRec( ulnObject    * aObject )
+{
+    ulnDiagRec   *sDiagRec4MultiError = NULL;
+    ulnDiagRec   *sDiagRec            = NULL;
+    acp_char_t   *sSQLSTATE;
+    acp_uint32_t  sNativeErrorCode;
+
+    ACI_TEST_CONT( aObject->mDiagHeader.mNumber <= 1,
+                   NO_NEED_MULTIERROR );
+
+    ulnGetDiagRecFromObject( aObject,
+                             &sDiagRec,
+                             1 );
+
+    // 1.
+    if ( ulsdIsMultipleError(sDiagRec) == ACP_FALSE )
+    {
+        ulsdMultiErrorCreate( &(aObject->mDiagHeader), &sDiagRec4MultiError );
+
+        /* ulnDiagHeaderAddDiagRecø°º≠ list¿« ∏« æ’ø° ≥¢øˆ≥÷±‚ ¿ß«— ¿”Ω√ º¬∆√ */
+        ulnDiagRecSetNativeErrorCode(
+                sDiagRec4MultiError,
+                sdERR_ABORT_SHARD_MULTIPLE_ERRORS );
+
+        ulnDiagHeaderAddDiagRec( sDiagRec->mHeader, sDiagRec4MultiError );
+    }
+    else
+    {
+        /* Nothing to do */
+        sDiagRec4MultiError = sDiagRec;
+    }
+
+    // 2.
+    if ( aObject->mDiagHeader.mIsAllTheSame == ACP_TRUE )
+    {
+        sNativeErrorCode = sDiagRec->mNativeErrorCode;
+        sSQLSTATE = sDiagRec->mSQLSTATE;
+    }
+    else
+    {
+        sNativeErrorCode = ulsdMultiErrorGetErrorCode();
+        sSQLSTATE = ulsdMultiErrorGetSQLSTATE(); // instead of ulnErrorMgrGetSQLSTATE_Server
+    }
+
+    ulnDiagRecSetNativeErrorCode( sDiagRec4MultiError, sNativeErrorCode );
+    ulnDiagRecSetSqlState( sDiagRec4MultiError, sSQLSTATE );
+
+    ulnDiagRecSetRowNumber( sDiagRec4MultiError, SQL_NO_ROW_NUMBER );
+    ulnDiagRecSetColumnNumber( sDiagRec4MultiError, SQL_NO_COLUMN_NUMBER );
+
+    ACI_EXCEPTION_CONT( NO_NEED_MULTIERROR );
+
+    return;
+}
+
+/*
+ * TASK-7218 Multi-Error Handling 2nd
+ *   1. mIsAllTheSame º≥¡§
+ *   2. Multi-ErrorøÎ ø°∑Ø ∏ﬁΩ√¡ˆ ¥©¿˚
+ */
+static void ulsdMultiErrorAppendMessage( ulnObject    * aObject,
+                                         acp_uint32_t   aNativeErrorCode,
+                                         acp_char_t   * aErrorMessage )
+{
+    ulnDiagRec      *sDiagRec;
+    acp_sint32_t     sBufferSize;
+    acp_size_t       sWrittenLen = 0;
+
+    // 1.
+    if ( aObject->mDiagHeader.mNumber == 1 ) // first input
+    {
+        aObject->mDiagHeader.mMultiErrorMessageLen = 0;
+        aObject->mDiagHeader.mIsAllTheSame = ACP_TRUE;
+    }
+    else
+    {
+        /* ¥©¿˚µ» ø°∑Ø ƒ⁄µÂ∞° ∏µŒ µø¿œ«— ∞ÊøÏø°∏∏ ∞ÀªÁ«œ∏È µ»¥Ÿ.
+         * ∏« æ’ ø°∑Ø ƒ⁄µÂ∏¶ ∞°¡ÆøÕº≠ ∫Ò±≥«—¥Ÿ. */
+        if ( aObject->mDiagHeader.mIsAllTheSame == ACP_TRUE )
+        {
+            ulnGetDiagRecFromObject( aObject,
+                                     &sDiagRec,
+                                     1 );
+
+            if ( aNativeErrorCode != ulnDiagRecGetNativeErrorCode(sDiagRec) )
+            {
+                aObject->mDiagHeader.mIsAllTheSame = ACP_FALSE;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    // 2.
+    sBufferSize = ULSD_MAX_MULTI_ERROR_MSG_LEN -
+                      aObject->mDiagHeader.mMultiErrorMessageLen;
+    if ( sBufferSize > 1 )
+    {
+        acpSnprintfSize(aObject->mDiagHeader.mMultiErrorMessage +
+                            aObject->mDiagHeader.mMultiErrorMessageLen,
+                        sBufferSize,
+                        &sWrittenLen,
+                        (aObject->mDiagHeader.mNumber == 1)? "%s" : "\n%s",
+                        aErrorMessage);
+        aObject->mDiagHeader.mMultiErrorMessageLen += sWrittenLen;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+}
+
 void ulsdMoveNodeDiagRec( ulnFnContext * aFnContext,
                           ulnObject    * aObjectTo,
                           ulnObject    * aObjectFrom,
+                          acp_uint32_t   aNodeId,
                           acp_char_t   * aNodeString,
                           acp_char_t   * aOperation )
 {
@@ -53,6 +199,7 @@ void ulsdMoveNodeDiagRec( ulnFnContext * aFnContext,
         ulnDiagRecSetMessageText( sDiagRecTo, sErrorMessage );
         ulnDiagRecSetSqlState( sDiagRecTo, sDiagRecFrom->mSQLSTATE );
         ulnDiagRecSetNativeErrorCode( sDiagRecTo, sDiagRecFrom->mNativeErrorCode );
+        ulnDiagRecSetNodeId( sDiagRecTo, aNodeId ); // TASK-7218
         ulnDiagRecSetRowNumber( sDiagRecTo, sDiagRecFrom->mRowNumber );
         ulnDiagRecSetColumnNumber( sDiagRecTo, sDiagRecFrom->mColumnNumber );
 
@@ -60,9 +207,17 @@ void ulsdMoveNodeDiagRec( ulnFnContext * aFnContext,
         ULN_FNCONTEXT_SET_RC( aFnContext,
                               ulnErrorDecideSqlReturnCode( sDiagRecTo->mSQLSTATE ) );
 
+        /* TASK-7218 */
+        ulsdMultiErrorAppendMessage( aObjectTo,
+                                     sDiagRecFrom->mNativeErrorCode,
+                                     sErrorMessage );
+
         ulnDiagHeaderRemoveDiagRec( sDiagRecFrom->mHeader, sDiagRecFrom );
         (void)ulnDiagRecDestroy( sDiagRecFrom );
     }
+
+    /* TASK-7218 */
+    ulsdMultiErrorSetDiagRec( aObjectTo );
 
     (void)ulnClearDiagnosticInfoFromObject( aObjectFrom );
 }
@@ -134,6 +289,7 @@ void ulsdNativeErrorToUlnError( ulnFnContext       * aFnContext,
     ulsdMoveNodeDiagRec( aFnContext,
                          aFnContext->mHandle.mObj,
                          sObject,
+                         aNodeInfo->mNodeId,
                          sNodeString,
                          aOperation );
 
@@ -347,8 +503,8 @@ static acp_bool_t ulsdProcessShardingError( ulnFnContext * aFnContext,
     ACI_EXCEPTION( NOT_SURPPORT );
     {
         /* Internal error.
-         * ulnCallbackErrorResult Ìï®ÏàòÏóêÏÑú Ïù¥ÎØ∏ Ï∂îÍ∞ÄÎêú diag record Í∞Ä ÏûàÏúºÎØÄÎ°ú
-         * Ïó¨Í∏∞ÏÑú diag record Î•º Ï∂îÍ∞ÄÌïòÏßÄ ÏïäÏïÑÎèÑ Î¨¥Í¥ÄÌïòÎã§.
+         * ulnCallbackErrorResult «‘ºˆø°º≠ ¿ÃπÃ √ﬂ∞°µ» diag record ∞° ¿÷¿∏π«∑Œ
+         * ø©±‚º≠ diag record ∏¶ √ﬂ∞°«œ¡ˆ æ æ∆µµ π´∞¸«œ¥Ÿ.
          */
     }
     ACI_EXCEPTION( NOT_SUPPORTED_DATA_NODE_ALIGN );
@@ -360,28 +516,12 @@ static acp_bool_t ulsdProcessShardingError( ulnFnContext * aFnContext,
     return ACP_FALSE;
 }
 
-void ulsdErrorHandleShardingError( ulnFnContext * aFnContext )
+void ulsdErrorHandleShardingError( ulnFnContext * aFnContext,
+                                   acp_uint32_t   aNodeId )
 {
     ulnDbc              * sMetaDbc       = NULL;
-    acp_char_t          * sErrPos        = NULL;
-    acp_char_t          * sErrNextPos    = NULL;
-    acp_char_t          * sEndMarkPos    = NULL;
-    acp_char_t          * sBlankPos      = NULL;
-    acp_sint32_t          sFoundIdx      = 0;
-    acp_sint32_t          sFromIdx       = 0;
-    acp_sint32_t          sSign          = 0;
-    acp_char_t          * sEnd           = NULL;
-    const acp_char_t    * sStartMark     = "[<<";
-    const acp_char_t    * sEndMark       = ">>]";
-    const acp_char_t    * sNodeIdMark    = "NODE-ID:";
-    const acp_sint32_t    sErrMarkLen    = 4; /* "ERC-" */
-    const acp_sint32_t    sUnitMarkLen   = 3;
-    const acp_sint32_t    sNodeIdMarkLen = 8; /* "NODE-ID:" */
-
     ulnDiagRec          * sDiagRec         = NULL;
     acp_uint32_t          sNativeErrorCode = 0;
-    acp_uint32_t          sNodeId          = 0;
-    
 
     ACI_TEST( aFnContext->mHandle.mObj == NULL );
 
@@ -391,95 +531,24 @@ void ulsdErrorHandleShardingError( ulnFnContext * aFnContext )
 
     ACI_TEST( sMetaDbc->mShardDbcCxt.mParentDbc != NULL ); /* Meta dbc has not mParentDbc */
 
+    /* ∏∂¡ˆ∏∑ø° √ﬂ∞°µ» DiagRec¿ª ∞°¡Æø» */
     ACI_TEST( ulnGetDiagRecFromObject( aFnContext->mHandle.mObj,
                                        &sDiagRec,
-                                       1 )
+                                       aFnContext->mHandle.mObj->mDiagHeader.mNumber )
               != ACI_SUCCESS );
 
-    sErrPos = sDiagRec->mMessageText;
+    ulnDiagRecSetNodeId(sDiagRec, aNodeId);
 
-    while ( acpCStrFindCStr( sErrPos,
-                             sStartMark,
-                             &sFoundIdx,
-                             sFromIdx,
-                             0 )
-            == ACP_RC_SUCCESS )
+    ACI_TEST( ULSD_IS_MULTIPLE_ERROR(aNodeId) == ACP_TRUE );
+
+    sNativeErrorCode = ulnDiagRecGetNativeErrorCode(sDiagRec);
+
+    if ( ulsdIsFailoverErrorCode( sNativeErrorCode ) == ACP_TRUE )
     {
-        sErrPos = &sErrPos[sFoundIdx + sUnitMarkLen];
-
-        ACI_TEST ( acpCStrFindCStr( sErrPos,
-                                    sEndMark,
-                                    &sFoundIdx,
-                                    sFromIdx,
-                                    0 )
-                   != ACP_RC_SUCCESS );
-
-        sEndMarkPos = &sErrPos[sFoundIdx];
-        sErrNextPos = &sErrPos[sFoundIdx + sUnitMarkLen];
-        
-        ACI_TEST( acpCStrCmp( sErrPos,
-                              "ERC-",
-                              sErrMarkLen )
-                  != 0 );
-
-        sErrPos += sErrMarkLen;
-        /* [<<ERC-NNNNN NODE-ID:NNN>>]
-         *        ^
-         */
-
-        ACI_TEST( acpCStrFindCStr( sErrPos,
-                                   " ",
-                                   &sFoundIdx,
-                                   sFromIdx,
-                                   0 )
-                  != ACP_RC_SUCCESS );
-
-        sBlankPos = &sErrPos[sFoundIdx];
-
-        ACI_TEST( acpCStrToInt32( sErrPos, 
-                                  sBlankPos - sErrPos,
-                                  &sSign,
-                                  &sNativeErrorCode,
-                                  16,
-                                  &sEnd ) 
-                  != ACP_RC_SUCCESS );
-        
-        ACI_TEST( sEnd != sBlankPos );
-
-        sErrPos = sBlankPos + 1;
-        /* [<<ERC-NNNNN NODE-ID:NNN>>]
-         *              ^
-         */
-
-        ACI_TEST( acpCStrCmp( sErrPos,
-                              sNodeIdMark,
-                              sNodeIdMarkLen )
-                  != 0 );
-
-        sErrPos += sNodeIdMarkLen;
-        /* [<<ERC-NNNNN NODE-ID:NNN>>]
-         *                      ^
-         */
-
-        ACI_TEST( acpCStrToInt32( sErrPos, 
-                                  sEndMarkPos - sErrPos,
-                                  &sSign,
-                                  &sNodeId,
-                                  10,
-                                  &sEnd ) 
-                  != ACP_RC_SUCCESS );
-        
-        ACI_TEST( sEnd != sEndMarkPos );
-
-        sErrPos = sErrNextPos;
-
-        if ( ulsdIsFailoverErrorCode( sNativeErrorCode ) == ACP_TRUE )
-        {
-            (void)ulsdProcessShardingError( aFnContext,
-                                            sDiagRec,
-                                            sNativeErrorCode,
-                                            sNodeId );
-        }
+        (void)ulsdProcessShardingError( aFnContext,
+                                        sDiagRec,
+                                        sNativeErrorCode,
+                                        aNodeId );
     }
 
     return;
@@ -516,4 +585,27 @@ void ulsdErrorCheckAndAlignDataNode( ulnFnContext * aFnContext )
             ulsdModuleAlignDataNodeConnection( aFnContext, sNodeDbc );
         }
     }
+}
+
+/* TASK-7218 Multi-Error Handling 2nd */
+ACI_RC ulsdMultiErrorAdd( ulnFnContext *aFnContext,
+                          ulnDiagRec   *aDiagRec )
+{
+    ulnDbc     *sDbc      = NULL;
+
+    ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
+
+    ACI_TEST_CONT( sDbc == NULL, SKIP_MULTIERROR );
+    ACI_TEST_CONT( ULSD_IS_SHARD_LIB_SESSION(sDbc) == ACP_TRUE,
+                   SKIP_MULTIERROR );
+
+    ulsdMultiErrorAppendMessage( aFnContext->mHandle.mObj,
+                                 aDiagRec->mNativeErrorCode,
+                                 aDiagRec->mMessageText );
+
+    ulsdMultiErrorSetDiagRec( aFnContext->mHandle.mObj );
+
+    ACI_EXCEPTION_CONT( SKIP_MULTIERROR );
+
+    return ACI_SUCCESS;
 }

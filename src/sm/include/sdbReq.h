@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdbReq.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdbReq.h 90522 2021-04-09 01:29:20Z emlee $
  **********************************************************************/
 
 #ifndef _O_SDB_REQ_H_
@@ -85,11 +85,15 @@ class sdbReqFunc
         {
             return sdpPhyPage::getPageStartPtr( aPagePtr );
         };
-        static idBool isPageCorrupted( scSpaceID  aSpaceID,
-                                       UChar    * aPagePtr )
+        static idBool isPageCorrupted( UChar    * aPagePtr )
         {
-            return sdpPhyPage::isPageCorrupted( aSpaceID,
-                                                aPagePtr );
+            return sdpPhyPage::isPageCorrupted( aPagePtr );
+        };
+        static idBool checkAndSetPageCorrupted( scSpaceID  aSpaceID,
+                                                UChar    * aPagePtr )
+        {
+            return sdpPhyPage::checkAndSetPageCorrupted( aSpaceID,
+                                                         aPagePtr );
         };
 #if 0 // not used
         static idBool isPageTempType( UChar * aStartPtr )
@@ -117,11 +121,9 @@ class sdbReqFunc
         {
             return sdpPhyPage::getSpaceID( aPagePtr );
         };
-        static void setIndexSMONo( UChar  * aPagePtr,
-                                   ULong    aSMONo )
+        static ULong getIndexSMONo( UChar  * aPagePtr )
         {
-            sdpPhyPage::setIndexSMONo( aPagePtr,
-                                       aSMONo );
+            return sdpPhyPage::getIndexSMONo( (sdpPhyPageHdr*)aPagePtr );
         };
         static smLSN getPageLSN( UChar * aStartPtr )
         {
@@ -240,13 +242,13 @@ class sdbReqFunc
         {
             return smrCompareLSN::isZero( aLSN );
         };
-        static smLSN getIdxSMOLSN()
+        static void resetIndexSMONo( void       * aPageHdr,
+                                     scSpaceID    aSpaceID,
+                                     idBool       aChkOnlineTBS )
         {
-            return smrRecoveryMgr::getIdxSMOLSN();
-        };
-        static IDE_RC wakeupChkptThr4DRDB()
-        {
-            return smrRecoveryMgr::wakeupChkptThr4DRDB();
+            sdpPhyPage::resetIndexSMONo( (sdpPhyPageHdr*)aPageHdr,
+                                         aSpaceID,
+                                         aChkOnlineTBS );
         };
         static idBool isCheckpointFlushNeeded( smLSN aLastWrittenLSN )
         {
@@ -274,9 +276,9 @@ class sdbReqFunc
             return smrLogMgr::sync4BufferFlush( aLSN ,
                                                 aSyncedLFCnt );
         };
-        static IDE_RC getLstLSN( smLSN * aLSN )
+        static void getLstLSN( smLSN * aLSN )
         {
-            return smrLogMgr::getLstLSN( aLSN );
+            smrLogMgr::getLstLSN( aLSN );
         };
         static IDE_RC writeDPathPageLogRec( idvSQL * aStatistics,
                                             UChar  * aBuffer,

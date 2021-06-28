@@ -16,34 +16,36 @@
 
 package Altibase.jdbc.driver.sharding.core;
 
-import Altibase.jdbc.driver.AltibaseConnection;
-import Altibase.jdbc.driver.AltibaseFailover;
+import Altibase.jdbc.driver.*;
 import Altibase.jdbc.driver.cm.*;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
+import Altibase.jdbc.driver.ex.ShardError;
 import Altibase.jdbc.driver.ex.ShardJdbcException;
-import Altibase.jdbc.driver.sharding.executor.ConnectionParallelProcessCallback;
+import Altibase.jdbc.driver.sharding.executor.ParallelProcessCallback;
 import Altibase.jdbc.driver.sharding.executor.ExecutorEngine;
 import Altibase.jdbc.driver.sharding.executor.ExecutorExceptionHandler;
 import Altibase.jdbc.driver.sharding.executor.MultiThreadExecutorEngine;
 import Altibase.jdbc.driver.util.AltiSqlProcessor;
 import Altibase.jdbc.driver.util.AltibaseProperties;
+import Altibase.jdbc.driver.util.StringUtils;
 
 import javax.sql.DataSource;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 
-import static Altibase.jdbc.driver.sharding.core.ShardTransactionLevel.*;
 import static Altibase.jdbc.driver.sharding.util.ShardingTraceLogger.shard_log;
 import static Altibase.jdbc.driver.util.AltibaseProperties.*;
 
 /**
- * java.sql.Connection ì„ êµ¬í˜„í•˜ë©° ë©”íƒ€ì„œë²„ì™€ ì»¤ë„¥ì…˜ì„ ìƒì„±í•œ í›„ ë°ì´í„°ë…¸ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ì „ë‹¬ë°›ëŠ”ë‹¤.
+ * java.sql.Connection À» ±¸ÇöÇÏ¸ç ¸ŞÅ¸¼­¹ö¿Í Ä¿³Ø¼ÇÀ» »ı¼ºÇÑ ÈÄ µ¥ÀÌÅÍ³ëµå ¸®½ºÆ®¸¦ Àü´Ş¹Ş´Â´Ù.
  */
-public class AltibaseShardingConnection extends JdbcMethodInvoker implements Connection
+public class AltibaseShardingConnection extends AbstractConnection
 {
-    public static final byte                DEFAULT_SHARD_CLIENT_TYPE    = (byte)1;
+    public static final byte                DEFAULT_SHARD_CLIENT         = (byte)1;
+    public static final byte                DEFAULT_SHARD_SESSION_TYPE   = (byte)0;
     private AltibaseConnection              mMetaConnection;
     private CmProtocolContextShardConnect   mShardContextConnect;
     private CmShardProtocol                 mCmShardProtocol;
@@ -57,49 +59,64 @@ public class AltibaseShardingConnection extends JdbcMethodInvoker implements Con
     private int                             mDefaultResultSetConcurrency = ResultSet.CONCUR_READ_ONLY;
     private int                             mDefaultResultSetHoldability = ResultSet.CLOSE_CURSORS_AT_COMMIT;
     private boolean                         mAutoCommit                  = true;
-    private ShardTransactionLevel           mShardTransactionLevel;
-    private LinkedList<Statement>           mOpenStatements;
+    private GlobalTransactionLevel          mGlobalTransactionLevel;
+    private final LinkedList<Statement>     mOpenStatements;
     private boolean                         mIsLazyNodeConnect;
+    private boolean                         mIsReshardEnabled;        // BUG-47460 resharding »ç¿ë¿©ºÎ
+    private AltibaseShardingFailover        mShardFailover;
+    private JdbcMethodInvoker               mJdbcMethodInvoker           = new JdbcMethodInvoker();
+    private Shard2PhaseCommitState          mShard2PhaseCommitState;
+    private short                           mShardStatementRetry;
+    private int                             mIndoubtFetchTimeout;
+    private short                           mIndoubtFetchMethod;
+
 
     public AltibaseShardingConnection(AltibaseProperties aProp) throws SQLException
     {
         mShardContextConnect = new CmProtocolContextShardConnect(this);
+        // connstr¿¡ autocommit ¼³Á¤ÇÑ °æ¿ì, AltibaseShardingConnection.mAutoCommitµµ ¼³Á¤ÇØ¾ß ÇÔ.
+        mAutoCommit = aProp.isAutoCommit();
         mMetaConnection = new AltibaseConnection(aProp, null, this);
         mProps = mMetaConnection.getProp();
         mCmShardProtocol = new CmShardProtocol(mShardContextConnect);
         mOpenStatements = new LinkedList<Statement>();
+        // mMetaConnection.mDistTxInfo¸¦ mShardContextConnect.mDistTxInfo¿¡ ÁÖÀÔÇÑ´Ù.
+        // mShardContextConnect »ı¼º ½ÃÁ¡¿¡ ¾ÆÁ÷ mMetaConnectionÀÌ »ı¼ºµÇÁö ¾Ê¾Æ¼­ ÀÌÈÄ¿¡ setDistTxInfo¸¦ º°µµ·Î ¼öÇàÇØÁØ´Ù.
+        mShardContextConnect.setDistTxInfo(mMetaConnection.getDistTxInfo());
+        // TCP, SSL, IB
         mShardContextConnect.setShardConnType(mProps.isSet(PROP_SHARD_CONNTYPE) ?
                                               CmConnType.toConnType(mProps.getShardConnType()) :
                                               CmConnType.toConnType(mProps.getConnType()));
         mCachedConnections = new ConcurrentHashMap<DataNode, Connection>();
         mIsLazyNodeConnect = mProps.isShardLazyConnectEnabled();
+        mIsReshardEnabled = mProps.isReshardEnabled();
+        mShardFailover = new AltibaseShardingFailover(this);
+        mShard2PhaseCommitState = Shard2PhaseCommitState.SHARD_2PC_NORMAL;
 
         try
         {
             mCmShardProtocol.getNodeList();
-            // BUG-46513 getNodeListë¥¼ í˜¸ì¶œí–ˆì„ë•Œ ì„œë²„ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš° ì²˜ë¦¬í•´ ì¤€ë‹¤.
+            // BUG-46513 getNodeList¸¦ È£ÃâÇßÀ»¶§ ¼­¹ö¿¡·¯°¡ ¹ß»ıÇÑ °æ¿ì Ã³¸®ÇØ ÁØ´Ù.
             if (mShardContextConnect.getError() != null)
             {
                 mWarning = Error.processServerError(mWarning, mShardContextConnect.getError());
             }
             mShardContextConnect.createDataSources(mProps);
-            // PROJ-2690 shard_lazy_connectê°€ falseì¼ë•ŒëŠ” Metaì ‘ì† í›„ ë°”ë¡œ ë…¸ë“œì»¤ë„¥ì…˜ì„ í™•ë³´í•œë‹¤.
+            // PROJ-2690 shard_lazy_connect°¡ falseÀÏ¶§´Â MetaÁ¢¼Ó ÈÄ ¹Ù·Î ³ëµåÄ¿³Ø¼ÇÀ» È®º¸ÇÑ´Ù.
             if (!mIsLazyNodeConnect)
             {
                 for (DataNode sEach : mShardContextConnect.getShardNodeConfig().getDataNodes())
                 {
                     try
                     {
-                        getNodeConnection(sEach);
+                        getNodeConnection(sEach, false);
                     }
                     catch (SQLException aEx)
                     {
-                        // BUG-46513 lazy_connect falseì¼ ê²½ìš°ì—ëŠ” node connectì‹œ ì—ëŸ¬ê°€ ë°œìƒí–ˆì„ë•Œ node nameì„ ì¶”ê°€í•´ ì¤˜ì•¼ í•œë‹¤.
-                        StringBuilder sSb = new StringBuilder();
-                        sSb.append("[").append(sEach.getNodeName()).append("] ").append(aEx.getMessage());
+                        // BUG-46513 lazy_connect falseÀÏ °æ¿ì¿¡´Â node connect½Ã ¿¡·¯°¡ ¹ß»ıÇßÀ»¶§ node nameÀ» Ãß°¡ÇØ Áà¾ß ÇÑ´Ù.
                         String sSqlState = aEx.getSQLState();
                         int sErrorCode = aEx.getErrorCode();
-                        throw new SQLException(sSb.toString(), sSqlState, sErrorCode);
+                        throw new SQLException("[" + sEach.getNodeName() + "] " + aEx.getMessage(), sSqlState, sErrorCode);
                     }
                 }
             }
@@ -109,9 +126,7 @@ public class AltibaseShardingConnection extends JdbcMethodInvoker implements Con
             AltibaseFailover.trySTF(mMetaConnection.failoverContext(), aException);
         }
         mShardContextConnect.setAutoCommit(mAutoCommit);
-        mExecutorEngine = new MultiThreadExecutorEngine(this);
-        mShardTransactionLevel = mProps.getShardTransactionLevel();
-        mShardContextConnect.setShardTransactionLevel(mShardTransactionLevel);
+        mExecutorEngine = new MultiThreadExecutorEngine();
         mShardContextConnect.setServerCharSet(mMetaConnection.getServerCharacterSet());
     }
 
@@ -124,28 +139,108 @@ public class AltibaseShardingConnection extends JdbcMethodInvoker implements Con
     {
         mAutoCommit = aAutoCommit;
         mShardContextConnect.setAutoCommit(aAutoCommit);
-        recordMethodInvocation(Connection.class, "setAutoCommit", new Class[] {boolean.class},  new
-                Object[] {aAutoCommit});
+        mJdbcMethodInvoker.recordMethodInvocation(Connection.class, "setAutoCommit",
+                                                  new Class[] {boolean.class},
+                                                  new Object[] {aAutoCommit});
         for (Connection sEach : mCachedConnections.values())
         {
             sEach.setAutoCommit(aAutoCommit);
         }
         mMetaConnection.setAutoCommit(mAutoCommit);
-        sendShardTransactionLevel();
     }
 
-    private void sendShardTransactionLevel() throws SQLException
+    public void sendGlobalTransactionLevel(GlobalTransactionLevel aGlobalTransactionLevel) throws SQLException
     {
-        if (mShardTransactionLevel != ONE_NODE)
+        AltibaseConnection sNodeConn;
+        CmProtocolContextConnect sContext; 
+        
+        setGlobalTransactionLevel(aGlobalTransactionLevel);
+
+        // alter session setÀ» ¼­¹ö·Î Àü¼ÛÇßÀ¸¹Ç·Î metaConnÀº sendProperties ºÒÇÊ¿ä. nodeConn¿¡ ´ëÇØ¼­¸¸ Ã³¸®.
+        for (Connection sEach : mCachedConnections.values())
         {
-            mShardContextConnect.clearProperties();
-            mShardContextConnect.addProperty(PROP_CODE_SHARD_TRANSACTION_LEVEL,
-                                             mShardTransactionLevel.getValue());
-            CmProtocol.sendProperties(mShardContextConnect);
-            if (mShardContextConnect.getError() != null)
+            sNodeConn = (AltibaseConnection)sEach;
+            sContext = sNodeConn.getContext();
+            sContext.clearProperties();
+            sContext.addProperty(PROP_CODE_GLOBAL_TRANSACTION_LEVEL, aGlobalTransactionLevel.getValue());
+            CmProtocol.sendProperties(sContext);
+            if (sContext.getError() != null) 
             {
-                mWarning = Error.processServerError(mWarning, mShardContextConnect.getError());
+                mWarning = Error.processServerError(mWarning, sContext.getError());
             }
+            sNodeConn.getProp().setProperty(AltibaseProperties.PROP_GLOBAL_TRANSACTION_LEVEL, aGlobalTransactionLevel.getValue());
+        }
+        
+        getMetaConnection().getDistTxInfo().initDistTxInfo();
+        getMetaConnection().setDistTxInfoForVerify();
+    }
+
+    public void sendShardStatementRetry(short aShardStatementRetry) throws SQLException
+    {
+        AltibaseConnection sNodeConn;
+        CmProtocolContextConnect sContext; 
+        
+        setShardStatementRetry(aShardStatementRetry);
+
+        // alter session setÀ» ¼­¹ö·Î Àü¼ÛÇßÀ¸¹Ç·Î metaConnÀº sendProperties ºÒÇÊ¿ä. nodeConn¿¡ ´ëÇØ¼­¸¸ Ã³¸®.
+        for (Connection sEach : mCachedConnections.values())
+        {
+            sNodeConn = (AltibaseConnection)sEach;
+            sContext = sNodeConn.getContext();
+            sContext.clearProperties();
+            sContext.addProperty(PROP_CODE_SHARD_STATEMENT_RETRY, (byte)aShardStatementRetry);
+            CmProtocol.sendProperties(sContext);
+            if (sContext.getError() != null) 
+            {
+                mWarning = Error.processServerError(mWarning, sContext.getError());
+            }
+            sNodeConn.getProp().setProperty(AltibaseProperties.PROP_SHARD_STATEMENT_RETRY, aShardStatementRetry);
+        }
+    }
+
+    public void sendIndoubtFetchTimeout(int aIndoubtFetchTimeout) throws SQLException
+    {
+        AltibaseConnection sNodeConn;
+        CmProtocolContextConnect sContext; 
+        
+        setIndoubtFetchTimeout(aIndoubtFetchTimeout);
+
+        // alter session setÀ» ¼­¹ö·Î Àü¼ÛÇßÀ¸¹Ç·Î metaConnÀº sendProperties ºÒÇÊ¿ä. nodeConn¿¡ ´ëÇØ¼­¸¸ Ã³¸®.
+        for (Connection sEach : mCachedConnections.values())
+        {
+            sNodeConn = (AltibaseConnection)sEach;
+            sContext = sNodeConn.getContext();
+            sContext.clearProperties();
+            sContext.addProperty(PROP_CODE_INDOUBT_FETCH_TIMEOUT, aIndoubtFetchTimeout);
+            CmProtocol.sendProperties(sContext);
+            if (sContext.getError() != null) 
+            {
+                mWarning = Error.processServerError(mWarning, sContext.getError());
+            }
+            sNodeConn.getProp().setProperty(AltibaseProperties.PROP_INDOUBT_FETCH_TIMEOUT, aIndoubtFetchTimeout);
+        }
+    }
+
+    public void sendIndoubtFetchMethod(short aIndoubtFetchMethod) throws SQLException
+    {
+        AltibaseConnection sNodeConn;
+        CmProtocolContextConnect sContext; 
+        
+        setIndoubtFetchMethod(aIndoubtFetchMethod);
+
+        // alter session setÀ» ¼­¹ö·Î Àü¼ÛÇßÀ¸¹Ç·Î metaConnÀº sendProperties ºÒÇÊ¿ä. nodeConn¿¡ ´ëÇØ¼­¸¸ Ã³¸®.
+        for (Connection sEach : mCachedConnections.values())
+        {
+            sNodeConn = (AltibaseConnection)sEach;
+            sContext = sNodeConn.getContext();
+            sContext.clearProperties();
+            sContext.addProperty(PROP_CODE_INDOUBT_FETCH_METHOD, (byte)aIndoubtFetchMethod);
+            CmProtocol.sendProperties(sContext);
+            if (sContext.getError() != null) 
+            {
+                mWarning = Error.processServerError(mWarning, sContext.getError());
+            }
+            sNodeConn.getProp().setProperty(AltibaseProperties.PROP_INDOUBT_FETCH_METHOD, aIndoubtFetchMethod);
         }
     }
 
@@ -156,33 +251,66 @@ public class AltibaseShardingConnection extends JdbcMethodInvoker implements Con
 
     public void commit() throws SQLException
     {
-        doTransaction(new TransactionCallback()
+        try
         {
-            public void doTransaction(Connection aConn) throws SQLException
+            doTransaction(new TransactionCallback()
             {
-                shard_log("(NODE CONNECTION COMMIT)");
-                aConn.commit();
+                public void doTransaction(Connection aConn) throws SQLException
+                {
+                    shard_log("(NODE CONNECTION COMMIT)");
+                    aConn.commit();
+                }
+            }, true);
+        }
+        catch (SQLException aEx)
+        {
+            // BUG-46790 ¿¡¿Ü »óÈ²¿¡¼­´Â Disconnect ¿©ºÎ¿¡ »ó°ü¾øÀÌ SMN °ü·Ã SQLWarningÀ» Ã³¸®ÇØ¾ß ÇÑ´Ù.
+            getNodeSqlWarnings(true, true);
+            throw aEx;
+        }
+        finally
+        {
+            // BUG-46790 SMN ¾÷µ¥ÀÌÆ®´Â ¿¹¿Ü°¡ ¹ß»ıÇÑ »óÅÂ¿¡¼­µµ ¼öÇàµÇ¾î¾ß ÇÑ´Ù.
+            if (shouldUpdateShardMetaNumber())
+            {
+                updateShardMetaNumber();
             }
-        }, true);
+        }
     }
 
     public void rollback() throws SQLException
     {
-        doTransaction(new TransactionCallback()
+        try
         {
-            public void doTransaction(Connection aConn) throws SQLException
+            doTransaction(new TransactionCallback()
             {
-                shard_log("(NODE CONNECTION ROLLBACK)");
-                aConn.rollback();
+                public void doTransaction(Connection aConn) throws SQLException
+                {
+                    shard_log("(NODE CONNECTION ROLLBACK)");
+                    aConn.rollback();
+                }
+            }, false);
+        }
+        catch (SQLException aEx)
+        {
+            getNodeSqlWarnings(false, true);
+            throw aEx;
+        }
+        finally
+        {
+            // BUG-46790 SMN ¾÷µ¥ÀÌÆ®´Â ¿¹¿Ü°¡ ¹ß»ıÇÑ »óÅÂ¿¡¼­µµ ¼öÇàµÇ¾î¾ß ÇÑ´Ù.
+            if (shouldUpdateShardMetaNumber())
+            {
+                updateShardMetaNumber();
             }
-        }, false);
+        }
     }
 
     private void doTransaction(final TransactionCallback aTransactionCallback,
                                boolean aIsCommit) throws SQLException
     {
         ShardNodeConfig sShardNodeConfig = mShardContextConnect.getShardNodeConfig();
-        if (mShardTransactionLevel == ONE_NODE)
+        if (mGlobalTransactionLevel == GlobalTransactionLevel.ONE_NODE)
         {
             shard_log("(ONE NODE TRANSACTION)");
             DataNode sNode;
@@ -195,7 +323,7 @@ public class AltibaseShardingConnection extends JdbcMethodInvoker implements Con
             mShardContextConnect.setShardOnTransactionNode(null);
             mShardContextConnect.setNodeTransactionStarted(false);
         }
-        else if (mShardTransactionLevel == MULTI_NODE)
+        else if (mGlobalTransactionLevel == GlobalTransactionLevel.MULTI_NODE)
         {
             shard_log("(MULTI NODE TRANSACTION)");
             doMultiNodeTransaction(aTransactionCallback);
@@ -203,91 +331,170 @@ public class AltibaseShardingConnection extends JdbcMethodInvoker implements Con
         else
         {
             shard_log("(GLOBAL TRANSACTION)");
-            List<Connection> sTouchedConnections = getTouchedNodeConnections();
-            /* 2ë…¸ë“œ ì´ìƒì´ê³  Commitì¸ ê²½ìš°ë§Œ global transactionì„ ì‚¬ìš©í•œë‹¤. */
-            if (sTouchedConnections.size() >= 2 && aIsCommit)
+            doGlobalTransaction(aIsCommit, sShardNodeConfig);
+
+            // PROJ-2733
+            // commit ¼º°ø ½Ã, ¸ŞÅ¸³ëµåÀÇ DistTxInfo¸¦ ÃÊ±âÈ­ ÇØÁØ´Ù. µ¥ÀÌÅÍ³ëµåÀÇ DistTxInfo´Â ¸Å »ç¿ëÀü¸¶´Ù PropagateDistTxInfoToNode¿¡ ÀÇÇØ overwrite µÇ±â ¶§¹®¿¡ ÃÊ±âÈ­ ºÒÇÊ¿ä.
+            mMetaConnection.getDistTxInfo().initDistTxInfo();
+            mMetaConnection.setDistTxInfoForVerify();
+        }
+
+        getNodeSqlWarnings(aIsCommit, mShardContextConnect.needToDisconnect());
+    }
+
+    public void sendNodeTransactionBrokenReport() throws SQLException
+    {
+        if (mMetaConnection.isClosed())
+        {
+            Error.throwSQLException(ErrorDef.CLOSED_CONNECTION);
+        }
+
+        // transaction brokenÀÏ °æ¿ì´Â meta connectionÇÑÅ×¸¸ node report º¸³»¸é µÊ.
+        NodeConnectionReport sReport = new NodeConnectionReport();
+        sReport.setNodeReportType(NodeConnectionReport.NodeReportType.SHARD_NODE_REPORT_TYPE_TRANSACTION_BROKEN);
+        getShardContextConnect().setTouched(true);
+            
+        try
+        {
+            mCmShardProtocol.shardNodeReport(sReport);
+        }
+        catch (SQLException aEx)
+        {
+            AltibaseFailover.trySTF(mMetaConnection.failoverContext(), aEx);
+        }
+        if (mShardContextConnect.getError() != null)
+        {
+            try
             {
-                sendShardTransactionCommitRequest(sShardNodeConfig.getTouchedNodeList());
+                mWarning = Error.processServerError(mWarning, mShardContextConnect.getError());
             }
-            else
+            finally
             {
-                doMultiNodeTransaction(aTransactionCallback);
+                // BUG-46790 ExceptionÀÌ ¹ß»ıÇÏ´õ¶óµµ shard alignÀÛ¾÷À» ¼öÇàÇØ¾ß ÇÑ´Ù.
+                ShardError.processShardError(this, mShardContextConnect.getError());
             }
         }
-
-        for (DataNode sEach : sShardNodeConfig.getDataNodes())
+    }
+    
+    private void doGlobalTransaction(final boolean aIsCommit,
+                                     ShardNodeConfig aShardNodeConfig) throws SQLException
+    {
+        int sTouchedNodeCnt = 0;
+        for (DataNode sEach : aShardNodeConfig.getDataNodes())
         {
-            sEach.setTouched(false);
+            if (sEach.isTouched())
+            {
+                sTouchedNodeCnt++;
+            }
         }
-
-        if (mShardContextConnect.isTouched())  // meta node touch
+        if (mShardContextConnect.isTouched()) // BUG-46790 touchµÈ ³ëµå¸¦ Ä«¿îÆ®ÇÒ¶§ ¸ŞÅ¸³ëµåµµ Ãß°¡ÇØ¾ß ÇÑ´Ù.
         {
-            mShardContextConnect.setTouched(false);
+            sTouchedNodeCnt++;
         }
-
-        getNodeSqlWarnings(aIsCommit);
-
-        // BUG-46513 smnê°’ì´ ì‘ë‹¤ë©´ ê°±ì‹ í•´ì•¼ í•œë‹¤.
-        if (shouldUpdateShardMetaNumber())
+        
+        try
         {
-            updateShardMetaNumber();
+            /* 2³ëµå ÀÌ»óÀÌ°í CommitÀÎ °æ¿ì¸¸ global transactionÀ» »ç¿ëÇÑ´Ù. */
+            if (sTouchedNodeCnt >= 2 && aIsCommit) 
+            {
+                sendShardTransactionCommitRequest(aShardNodeConfig.getTouchedNodeList());
+            } 
+            else 
+            {
+                doMultiNodeTransaction(new TransactionCallback() 
+                {
+                    public void doTransaction(Connection aConn) throws SQLException 
+                    {
+                        shard_log("(NODE CONNECTION shardTransaction)");
+                        ((AltibaseConnection) aConn).shardTransaction(aIsCommit);
+                    }
+                });
+            }
+            setShard2PhaseCommitState(Shard2PhaseCommitState.SHARD_2PC_NORMAL);
+        }
+        catch (SQLException aEx)
+        {
+            setShard2PhaseCommitState(Shard2PhaseCommitState.SHARD_2PC_COMMIT_FAIL);
+            throw aEx;
         }
     }
 
     /**
-     * ë°ì´í„°ë…¸ë“œë¡œë¶€í„° SQLWarningì´ ìƒì„±ë˜ì—ˆë‹¤ë©´ ì¡°í•©í•˜ì—¬ mSqlWarningì— ì €ì¥í•œë‹¤.<br>
-     * ì´ë•Œ warning ë©”ì„¸ì§€ì— ë…¸ë“œë„¤ì„ì„ í¬í•¨ì‹œí‚¨ë‹¤.
-     * @throws SQLException ë…¸ë“œë¡œë¶€í„° SQLWarningì„ ë°›ëŠ” ë„ì¤‘ ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš°.
+     * µ¥ÀÌÅÍ³ëµå·ÎºÎÅÍ SQLWarningÀÌ »ı¼ºµÇ¾ú´Ù¸é Á¶ÇÕÇÏ¿© mSqlWarning¿¡ ÀúÀåÇÑ´Ù.<br>
+     * ÀÌ¶§ warning ¸Ş¼¼Áö¿¡ ³ëµå³×ÀÓÀ» Æ÷ÇÔ½ÃÅ²´Ù.
+     * @throws SQLException ³ëµå·ÎºÎÅÍ SQLWarningÀ» ¹Ş´Â µµÁß ¿¡·¯°¡ ¹ß»ıÇÑ °æ¿ì.
      */
-    private void getNodeSqlWarnings(boolean aIsCommit) throws SQLException
+    private void getNodeSqlWarnings(boolean aIsCommit, boolean aNeedToDisconnect) throws SQLException
     {
-        // node name ìˆœìœ¼ë¡œ ì •ë ¬í•˜ì—¬ SQLWarningì„ ì €ì¥í•˜ê¸° ìœ„í•´ TreeMap ì‚¬ìš©
+        // node name ¼øÀ¸·Î Á¤·ÄÇÏ¿© SQLWarningÀ» ÀúÀåÇÏ±â À§ÇØ TreeMap »ç¿ë
         Map<DataNode, Connection> sSortedMap = new TreeMap<DataNode, Connection>(mCachedConnections);
         for (Connection sEach : sSortedMap.values())
         {
             SQLWarning sSqlWarning = sEach.getWarnings();
-            if (sSqlWarning != null)
+            if (sSqlWarning == null) continue;
+            if (sSqlWarning.getErrorCode() == ErrorDef.SHARD_META_NUMBER_INVALID)
             {
-                if (sSqlWarning.getErrorCode() == ErrorDef.SHARD_META_NUMBER_INVALID)
+                if (aNeedToDisconnect)
                 {
-                    StringBuilder sSb = new StringBuilder();
-                    sSb.append("[").append(((AltibaseConnection)sEach).getNodeName()).append("] The ")
-                       .append((aIsCommit) ? "Commit" : "Rollback");
                     mWarning = Error.createWarning(mWarning,
-                                                   ErrorDef.SHARD_OPERATION_FAILED,
-                                                   sSb.toString(), sSqlWarning.getMessage());
+                                                   ErrorDef.SHARD_SMN_OPERATION_FAILED,
+                                                   "[" + ((AltibaseConnection)sEach).getNodeName() + "] The " +
+                                                   ((aIsCommit) ? "Commit" : "Rollback"), sSqlWarning.getMessage());
                 }
-                else
-                {
-                    getSQLWarningFromDataNode(sEach);
-                }
+            }
+            else
+            {
+                getSQLWarningFromDataNode(sEach);
             }
         }
     }
 
     private void doMultiNodeTransaction(final TransactionCallback aTransactionCallback) throws SQLException
     {
-        mExecutorEngine.doTransaction(getTouchedNodeConnections(),
-                new ConnectionParallelProcessCallback()
-                    {
-                        public Void processInParallel(Connection aConn) throws SQLException
-                        {
-                            try
-                            {
-                                aTransactionCallback.doTransaction(aConn);
-                            }
-                            catch (ShardJdbcException aShardJdbcEx)
-                            {
-                                throw aShardJdbcEx;
-                            }
-                            catch (SQLException aException)
-                            {
-                                String sNodeName = ((AltibaseConnection)aConn).getNodeName();
-                                ExecutorExceptionHandler.handleException(aException, sNodeName);
-                            }
-                            return null;
-                        }
-                    });
+        try
+        {
+            /* BUG-46790 meta node´Â º´·Ä·Î Ã³¸®ÇÏÁö ¾Ê°í º°µµ·Î Ã³¸®ÇÑ´Ù. 
+             * ¶ÇÇÑ node Æ®·£Àè¼Ç Ã³¸®½Ã ¿¹¿Ü°¡ ¹ß»ıÇÏ´õ¶óµµ ¼öÇàµÇ¾î¾ß ÇÑ´Ù.  
+             */
+            if (mShardContextConnect.isTouched())
+            {
+                aTransactionCallback.doTransaction(mMetaConnection);
+                mShardContextConnect.setTouched(false);
+            }
+        }
+        finally
+        {
+            mExecutorEngine.doTransaction(getTouchedNodeConnections(),
+                  new ParallelProcessCallback<Connection>()
+                  {
+                      public Void processInParallel(Connection aConn) throws SQLException
+                      {
+                          try
+                          {
+                              aTransactionCallback.doTransaction(aConn);
+                              // BUG-46790 node touch clear´Â ³ëµåº°·Î Æ®·£Àè¼ÇÀÌ ¼º°øÇßÀ»¶§ µû·Î ¼öÇàÇØ¾ß ÇÑ´Ù.
+                              clearNodeTouch((AltibaseConnection)aConn);
+                          }
+                          catch (ShardJdbcException aShardJdbcEx)
+                          {
+                              throw aShardJdbcEx;
+                          }
+                          catch (SQLException aException)
+                          {
+                              String sNodeName = ((AltibaseConnection)aConn).getNodeName();
+                              ExecutorExceptionHandler.handleException(aException, sNodeName);
+                          }
+                          return null;
+                      }
+                  });
+        }
+    }
+
+    private void clearNodeTouch(AltibaseConnection aNodeConn)
+    {
+        String sNodeName = aNodeConn.getNodeName();
+        DataNode sNode = getShardNodeConfig().getNodeByName(sNodeName);
+        sNode.setTouched(false);
     }
 
     private void sendShardTransactionCommitRequest(List<DataNode> aTouchedNodeList) throws SQLException
@@ -302,6 +509,12 @@ public class AltibaseShardingConnection extends JdbcMethodInvoker implements Con
             try
             {
                 shard_log("(SEND SHARD TRANSACTION COMMIT REQUEST) {0}", aTouchedNodeList);
+                
+                /* sendShardTransactionCommitRequestÀÌ  ½ÇÆĞ ÇÑ °æ¿ì
+                   rollbackÀ» ¼öÇàÇÒ ¶§ meta connectionÀ¸·Îµµ rollbackÀ» º¸³»±â À§ÇØ
+                 */   
+                mShardContextConnect.setTouched(true);  
+
                 mCmShardProtocol.sendShardTransactionCommitRequest(aTouchedNodeList);
             }
             catch (SQLException aEx)
@@ -310,27 +523,37 @@ public class AltibaseShardingConnection extends JdbcMethodInvoker implements Con
             }
             if (mShardContextConnect.getError() != null)
             {
-                mWarning = Error.processServerError(mWarning, mShardContextConnect.getError());
+                try
+                {
+                    mWarning = Error.processServerError(mWarning, mShardContextConnect.getError());
+                }
+                finally
+                {
+                    // BUG-46790 ExceptionÀÌ ¹ß»ıÇÏ´õ¶óµµ shard alignÀÛ¾÷À» ¼öÇàÇØ¾ß ÇÑ´Ù.
+                    ShardError.processShardError(this, mShardContextConnect.getError());
+                }
             }
+
+            // BUG-46790 global transaction ÇÁ·ÎÅäÄİ Àü¼ÛÀÌ ¼º°øÀûÀ¸·Î ³¡³ª¸é ³ëµåÅÍÄ¡¸¦ clear ÇØÁØ´Ù.
+            for (DataNode sEach : getShardNodeConfig().getDataNodes())
+            {
+                sEach.setTouched(false);
+            }
+            mShardContextConnect.setTouched(false);
         }
     }
 
     private List<Connection> getTouchedNodeConnections()
     {
+        List<DataNode> sTouchedNodeList = getShardNodeConfig().getTouchedNodeList();
         List<Connection> sResult = new ArrayList<Connection>();
-        for (Map.Entry<DataNode, Connection> sEntry : mCachedConnections.entrySet())
+        for (DataNode sEach : sTouchedNodeList)
         {
-            DataNode sNode = sEntry.getKey();
-            if (sNode.isTouched() && sNode.hasNoErrorOnExecute())
+            Connection sTouchedNodeConn = mCachedConnections.get(sEach);
+            if (sTouchedNodeConn != null)
             {
-                sResult.add(sEntry.getValue());
-                shard_log("(GET TOUCHED NODE CONNECTIONS) {0}", sNode);
+                sResult.add(sTouchedNodeConn);
             }
-        }
-        if (mShardContextConnect.isTouched()) // PROJ-2690 meta connection ì´ touch ëœ ê²½ìš°
-        {
-            shard_log("(GET TOUCHED META CONNECTIONS)");
-            sResult.add(mMetaConnection);
         }
 
         return sResult;
@@ -356,13 +579,13 @@ public class AltibaseShardingConnection extends JdbcMethodInvoker implements Con
                 shard_log("(NODE CONNECTION CLOSE) {0}", sEntry);
                 sCon.close();
             }
-            catch (SQLException sEx)
+            catch (SQLException aEx)
             {
-                sExceptions.add(sEx);
+                sExceptions.add(aEx);
             }
             mCachedConnections.remove(sEntry.getKey());
         }
-        throwSQLExceptionIfNecessary(sExceptions);
+        mJdbcMethodInvoker.throwSQLExceptionIfNecessary(sExceptions);
         shard_log("(META CONNECTION CLOSE) {0}", mMetaConnection);
         mMetaConnection.close();
         mIsClosed = true;
@@ -383,12 +606,12 @@ public class AltibaseShardingConnection extends JdbcMethodInvoker implements Con
                 }
                 catch (SQLException aException)
                 {
-                    // BUG-46513 close ë„ì¤‘ error ê°€ ë°œìƒí•´ë„ ì¼ë‹¨ ë‹¤ ë‹«ê³  ë‚˜ì¤‘ì— ì²´ì¸ìœ¼ë¡œ ë¬¶ëŠ”ë‹¤.
+                    // BUG-46513 close µµÁß error °¡ ¹ß»ıÇØµµ ÀÏ´Ü ´Ù ´İ°í ³ªÁß¿¡ Ã¼ÀÎÀ¸·Î ¹­´Â´Ù.
                     sExceptions.add(aException);
                 }
             }
         }
-        throwSQLExceptionIfNecessary(sExceptions);
+        mJdbcMethodInvoker.throwSQLExceptionIfNecessary(sExceptions);
     }
 
     void registerStatement(AltibaseShardingStatement aStatement)
@@ -414,7 +637,7 @@ public class AltibaseShardingConnection extends JdbcMethodInvoker implements Con
 
     public DatabaseMetaData getMetaData() throws SQLException
     {
-        // BUG-46513 êµ³ì´ node connectionì—ì„œ meta dataê°’ì„ ê°€ì ¸ì˜¤ì§€ ì•Šê³  ë°”ë¡œ meta connectionì—ì„œ ê°€ì ¸ì˜¨ë‹¤.
+        // BUG-46513 ±»ÀÌ node connection¿¡¼­ meta data°ªÀ» °¡Á®¿ÀÁö ¾Ê°í ¹Ù·Î meta connection¿¡¼­ °¡Á®¿Â´Ù.
         return mMetaConnection.getMetaData();
     }
 
@@ -431,7 +654,7 @@ public class AltibaseShardingConnection extends JdbcMethodInvoker implements Con
 
     public void setCatalog(String catalog)
     {
-        // ì•„ë¬´ëŸ° ë™ì‘ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤. dbnameì„ ë°”ê¿€ ìˆ˜ ì—†ë‹¤.
+        // ¾Æ¹«·± µ¿ÀÛÀ» ÇÏÁö ¾Ê´Â´Ù. dbnameÀ» ¹Ù²Ü ¼ö ¾ø´Ù.
         mWarning = Error.createWarning(mWarning, ErrorDef.CANNOT_RENAME_DB_NAME);
     }
 
@@ -443,7 +666,9 @@ public class AltibaseShardingConnection extends JdbcMethodInvoker implements Con
     public void setTransactionIsolation(int aLevel) throws SQLException
     {
         mTransactionIsolation = aLevel;
-        recordMethodInvocation(Connection.class, "setTransactionIsolation", new Class[] {int.class}, new Object[] {aLevel});
+        mJdbcMethodInvoker.recordMethodInvocation(Connection.class, "setTransactionIsolation",
+                                                  new Class[] {int.class},
+                                                  new Object[] {aLevel});
         for (Connection sEach : mCachedConnections.values())
         {
             sEach.setTransactionIsolation(aLevel);
@@ -509,20 +734,45 @@ public class AltibaseShardingConnection extends JdbcMethodInvoker implements Con
 
     public PreparedStatement prepareStatement(String aSql, int aAutoGeneratedKeys) throws SQLException
     {
-        Error.throwSQLException(ErrorDef.UNSUPPORTED_FEATURE, "autoGeneratedKeys is not supported in sharding.");
-        return null;
+        AltibaseStatement.checkAutoGeneratedKeys(aAutoGeneratedKeys);
+
+        AltibaseShardingPreparedStatement sShardStmt =
+                new AltibaseShardingPreparedStatement(this, aSql, mDefaultResultSetType,
+                                                      mDefaultResultSetConcurrency,
+                                                      mDefaultResultSetHoldability);
+        if (aAutoGeneratedKeys == Statement.RETURN_GENERATED_KEYS)
+        {
+            // BUG-47168 AutoGeneratedKey °ªÀ» °¡Á®¿À´Â Äõ¸®¸¦ »ı¼ºÇÑ´Ù.
+            sShardStmt.makeQstrForGeneratedKeys(aSql, null, null);
+        }
+        else
+        {
+            sShardStmt.clearForGeneratedKeys();
+        }
+
+        return sShardStmt;
     }
 
     public PreparedStatement prepareStatement(String aSql, int[] aColumnIndexes) throws SQLException
     {
-        Error.throwSQLException(ErrorDef.UNSUPPORTED_FEATURE, "autoGeneratedKeys is not supported in sharding.");
-        return null;
+        AltibaseShardingPreparedStatement sShardStmt =
+                new AltibaseShardingPreparedStatement(this, aSql, mDefaultResultSetType,
+                                                      mDefaultResultSetConcurrency,
+                                                      mDefaultResultSetHoldability);
+        sShardStmt.makeQstrForGeneratedKeys(aSql, aColumnIndexes, null);
+
+        return sShardStmt;
     }
 
     public PreparedStatement prepareStatement(String aSql, String[] aColumnNames) throws SQLException
     {
-        Error.throwSQLException(ErrorDef.UNSUPPORTED_FEATURE, "autoGeneratedKeys is not supported in sharding.");
-        return null;
+        AltibaseShardingPreparedStatement sShardStmt =
+                new AltibaseShardingPreparedStatement(this, aSql, mDefaultResultSetType,
+                                                      mDefaultResultSetConcurrency,
+                                                      mDefaultResultSetHoldability);
+        sShardStmt.makeQstrForGeneratedKeys(aSql, null, aColumnNames);
+
+        return sShardStmt;
     }
 
 
@@ -588,11 +838,11 @@ public class AltibaseShardingConnection extends JdbcMethodInvoker implements Con
     public void setChannel(CmChannel aChannel)
     {
         mShardContextConnect.setChannel(aChannel);
-    }
-
-    CmProtocolContextShardConnect getShardContext()
-    {
-        return mShardContextConnect;
+        // BUG-46790 CmShardProtocol °´Ã¼¿¡µµ channel°´Ã¼°¡ ÂüÁ¶µÇ±â ¶§¹®¿¡ setChannel·Î ÃÊ±âÈ­ ÇØÁØ´Ù.
+        if (mCmShardProtocol != null)
+        {
+            mCmShardProtocol.setChannel(aChannel);
+        }
     }
 
     public CmShardProtocol getShardProtocol()
@@ -600,67 +850,109 @@ public class AltibaseShardingConnection extends JdbcMethodInvoker implements Con
         return mCmShardProtocol;
     }
 
-    /**
-     * ë°ì´í„°ë…¸ë“œì˜ Connectionì„ ê°€ì ¸ì˜¨ë‹¤. ë§Œì•½ í•´ë‹¹í•˜ëŠ” ë…¸ë“œì˜ Connectionì´ ìºì‹œì— ì¡´ì¬í•˜ë©´ ë°”ë¡œ ë¦¬í„´í•˜ê³  <br>
-     * ì•„ë‹Œê²½ìš° ìƒˆë¡œ ìƒì„±í•œë‹¤.
-     * @param aNode ë°ì´í„°ë…¸ë“œ ê°ì²´
-     * @return ë°ì´í„°ë…¸ë“œ ì»¤ë„¥ì…˜
-     * @throws SQLException ì»¤ë„¥ì…˜ ìƒì„± ë„ì¤‘ ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš°
-     */
     Connection getNodeConnection(DataNode aNode) throws SQLException
+    {
+        return getNodeConnection(aNode, false);
+    }
+
+    /**
+     * µ¥ÀÌÅÍ³ëµåÀÇ ConnectionÀ» °¡Á®¿Â´Ù. ¸¸¾à ÇØ´çÇÏ´Â ³ëµåÀÇ ConnectionÀÌ Ä³½Ã¿¡ Á¸ÀçÇÏ¸é ¹Ù·Î ¸®ÅÏÇÏ°í <br>
+     * ¾Æ´Ñ°æ¿ì »õ·Î »ı¼ºÇÑ´Ù.
+     * @param aNode µ¥ÀÌÅÍ³ëµå °´Ã¼
+     * @param aIsToAlternate alternate·ÎÀÇ Á¢¼Ó ¿©ºÎ
+     * @return µ¥ÀÌÅÍ³ëµå Ä¿³Ø¼Ç
+     * @throws SQLException Ä¿³Ø¼Ç »ı¼º µµÁß ¿¡·¯°¡ ¹ß»ıÇÑ °æ¿ì
+     */
+    public Connection getNodeConnection(DataNode aNode, boolean aIsToAlternate) throws SQLException
     {
         if (mCachedConnections.containsKey(aNode))
         {
             shard_log("(CACHED NODE CONNECTION EXISTS) {0}", aNode);
             return mCachedConnections.get(aNode);
         }
-        Connection sResult = makeNodeConnection(aNode);
-        // BUG-46513 ë…¸ë“œì»¤ë„¥ì…˜ì„ ìƒì„±í•œ í›„ ë©”íƒ€ì»¤ë„¥ì…˜ê°ì²´ë¥¼ ì£¼ì…í•œë‹¤.
-        ((AltibaseConnection)sResult).setMetaConnection(this);
+        Connection sResult = makeNodeConnection(aNode, aIsToAlternate);
         mCachedConnections.put(aNode, sResult);
-        replayMethodsInvocation(sResult);
+        mJdbcMethodInvoker.replayMethodsInvocation(sResult);
         return sResult;
     }
 
-    private Connection makeNodeConnection(DataNode aNode) throws SQLException
+    private Connection makeNodeConnection(DataNode aNode, boolean aIsToAlternate) throws SQLException
     {
         Map<DataNode, DataSource> sDataSourceMap = mShardContextConnect.getDataSourceMap();
         Connection sResult;
         try
         {
-            sResult = sDataSourceMap.get(aNode).getConnection();
-            if (sResult.getWarnings() != null)
+            AltibaseDataSource sDataSource = (AltibaseDataSource)sDataSourceMap.get(aNode);
+            // BUG-46790 failover align½Ã data node ¿¬°á ¼ö¸³ ÀüÀÌ¶ó¸é alternate·Î ¼³Á¤ÇÑ´Ù.
+            if (aIsToAlternate)
             {
-                getSQLWarningFromDataNode(sResult);
+                String sAlternateIp = aNode.getAlternativeServerIp();
+                int sAlternatePort = aNode.getAlternativePortNo();
+                if (!StringUtils.isEmpty(sAlternateIp) && sAlternatePort > 0)
+                {
+                    sDataSource.setServerName(sAlternateIp);
+                    sDataSource.setPortNumber(sAlternatePort);
+                }
+            }
+            sResult = sDataSource.getConnection(this);
+            SQLWarning sWarning = sResult.getWarnings();
+            if (sWarning != null)
+            {
+                if (sWarning.getErrorCode() == ErrorDef.SHARD_META_NUMBER_INVALID)
+                {
+                    if (mShardContextConnect.needToDisconnect())
+                    {
+                        getSQLWarningFromDataNode(sResult);
+                    }
+                }
+                else
+                {
+                    getSQLWarningFromDataNode(sResult);
+                }
+            }
+            if (aIsToAlternate) // BUG-46790 alternate¿ÍÀÇ ¿¬°áÀ» ¼ö¸³ÇÑ ÈÄ¿¡´Â primary server¸¦ ´Ù½Ã ¸ÂÃçÁØ´Ù.
+            {
+                setPrimaryServerInfo((AltibaseConnection)sResult, aNode);
             }
         }
         catch (SQLException aException)
         {
-            // BUG-45967 ë…¸ë“œì»¤ë„¥ì…˜ ë„ì¤‘ SMN Invalid ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš°ì—ëŠ” SQLExceptionì„ ë˜ì§„ë‹¤.
+            // BUG-45967 ³ëµåÄ¿³Ø¼Ç µµÁß SMN Invalid ¿¡·¯°¡ ¹ß»ıÇÑ °æ¿ì¿¡´Â SQLExceptionÀ» ´øÁø´Ù.
             if (aException.getErrorCode() == ErrorDef.SHARD_META_NUMBER_INVALID)
             {
-                Error.throwSQLException(ErrorDef.SHARD_OPERATION_FAILED,
+                Error.throwSQLException(ErrorDef.SHARD_SMN_OPERATION_FAILED,
                                         "The Node Connection", aException.getMessage());
             }
             throw aException;
         }
 
         shard_log("(DATASOURCE GETCONNECTION) {0}", aNode);
-        // DBCPì™€ ê°™ì´ connection poolë¡œ ë¶€í„° ê°€ì ¸ì˜¨ connectionì´ë¼ë©´ shardpinì„ ì¬ì„¤ì •í•´ì¤€ë‹¤.
-        if (!(sResult instanceof AltibaseConnection))
-        {
-            setShardPinToDataNode(sResult, mShardContextConnect.getShardPin());
-        }
+
         return sResult;
+    }
+
+    /**
+     * alternate server·Î ¹Ù·Î Á¢¼ÓÇß±â ¶§¹®¿¡ failover server list°¡ { alternate ip, alternate ip } ¿Í °°ÀÌ ±¸¼ºµÈ´Ù.
+     * primary Á¤º¸¸¦ °»½ÅÇØ { primary ip, alternate ip}¿Í °°ÀÌ ¹Ù²ã¾ß ÇÑ´Ù.
+     * @param aNodeConn ³ëµå Ä¿³Ø¼Ç
+     * @param aNode µ¥ÀÌÅÍ ³ëµå °´Ã¼
+     */
+    private void setPrimaryServerInfo(AltibaseConnection aNodeConn, DataNode aNode)
+    {
+        AltibaseFailoverContext sFailoverContext = aNodeConn.failoverContext();
+        AltibaseFailoverServerInfoList sFailoverServerInfoList = sFailoverContext.getFailoverServerList();
+        AltibaseProperties sProps = sFailoverContext.connectionProperties();
+        AltibaseFailoverServerInfo sPrimaryServerInfo = new AltibaseFailoverServerInfo(aNode.getServerIp(), aNode.getPortNo(),
+                                                                                       sProps.getDatabase());
+        sFailoverServerInfoList.set(0, sPrimaryServerInfo);
     }
 
     private void getSQLWarningFromDataNode(Connection aNodeConn) throws SQLException
     {
         SQLWarning sWarning = aNodeConn.getWarnings();
         String sNodeName = ((AltibaseConnection)aNodeConn).getNodeName();
-        StringBuilder sSb = new StringBuilder();
-        sSb.append("[").append(sNodeName).append("] ").append(sWarning.getMessage());
-        SQLWarning sNewWarning = new SQLWarning(sSb.toString(), sWarning.getSQLState(),
+        SQLWarning sNewWarning = new SQLWarning("[" + sNodeName + "] " + sWarning.getMessage(),
+                                                sWarning.getSQLState(),
                                                 sWarning.getErrorCode());
         if (mWarning == null)
         {
@@ -674,7 +966,7 @@ public class AltibaseShardingConnection extends JdbcMethodInvoker implements Con
 
     private void setShardPinToDataNode(Connection aConnection, long aShardPin) throws SQLException
     {
-        /* ê´€ë ¨ëœ ì¸í„°í˜ì´ìŠ¤ê°€ ì—†ê¸° ë•Œë¬¸ì— setCatalogë¥¼ ì´ìš©í•œë‹¤.
+        /* °ü·ÃµÈ ÀÎÅÍÆäÀÌ½º°¡ ¾ø±â ¶§¹®¿¡ setCatalog¸¦ ÀÌ¿ëÇÑ´Ù.
            ex : conn.setCatalog("shardpin:213213123123123");
          */
         aConnection.setCatalog("shardpin:" + aShardPin);
@@ -685,7 +977,7 @@ public class AltibaseShardingConnection extends JdbcMethodInvoker implements Con
         return mExecutorEngine;
     }
 
-    AltibaseConnection getMetaConnection()
+    public AltibaseConnection getMetaConnection()
     {
         return mMetaConnection;
     }
@@ -706,8 +998,8 @@ public class AltibaseShardingConnection extends JdbcMethodInvoker implements Con
     }
 
     /**
-     * DataNodeì˜ SMNì´ í´ë¼ì´ì–¸íŠ¸ì˜ SMNë³´ë‹¤ í´ ê²½ìš°ì—ëŠ” DataNodeì˜ SMNì„ ë³µì‚¬í•œë‹¤.
-     * @param aSMN error messageì—ì„œ íŒŒì‹±í•œ SMNê°’
+     * DataNodeÀÇ SMNÀÌ Å¬¶óÀÌ¾ğÆ®ÀÇ SMNº¸´Ù Å¬ °æ¿ì¿¡´Â DataNodeÀÇ SMNÀ» º¹»çÇÑ´Ù.
+     * @param aSMN error message¿¡¼­ ÆÄ½ÌÇÑ SMN°ª
      */
     public void setShardMetaNumberOfDataNode(long aSMN)
     {
@@ -724,10 +1016,15 @@ public class AltibaseShardingConnection extends JdbcMethodInvoker implements Con
         return mIsLazyNodeConnect;
     }
 
+    boolean isReshardEnabled()
+    {
+        return mIsReshardEnabled;
+    }
+
     /**
-     * Metaê°€ ê°€ì§€ê³  ìˆëŠ” ShardMetaNumerì™€ DataNodeì˜ SMNê°’ì„ ë¹„êµí•˜ì—¬ ShardMetaNumberê°€ DataNode SMNë³´ë‹¤
-     * ì‘ì„ ê²½ìš° trueë¥¼ ë¦¬í„´í•œë‹¤.
-     * @return DataNode SMNì´ ë” ìµœì‹ ì¸ì§€ ì—¬ë¶€
+     * Meta°¡ °¡Áö°í ÀÖ´Â ShardMetaNumer¿Í DataNodeÀÇ SMN°ªÀ» ºñ±³ÇÏ¿© ShardMetaNumber°¡ DataNode SMNº¸´Ù
+     * ÀÛÀ» °æ¿ì true¸¦ ¸®ÅÏÇÑ´Ù.
+     * @return DataNode SMNÀÌ ´õ ÃÖ½ÅÀÎÁö ¿©ºÎ
      */
     public boolean shouldUpdateShardMetaNumber()
     {
@@ -764,7 +1061,7 @@ public class AltibaseShardingConnection extends JdbcMethodInvoker implements Con
     }
 
     /**
-     * ë©”íƒ€ì„œë²„ì— getNodeListí”„ë¡œí† ì½œì„ ë‹¤ì‹œ ìš”ì²­í•´ SMNê°’ì„ ê°±ì‹ í•œë‹¤.
+     * ¸ŞÅ¸¼­¹ö¿¡ getNodeListÇÁ·ÎÅäÄİÀ» ´Ù½Ã ¿äÃ»ÇØ SMN°ªÀ» °»½ÅÇÑ´Ù.
      */
     public void updateShardMetaNumber() throws SQLException
     {
@@ -794,7 +1091,7 @@ public class AltibaseShardingConnection extends JdbcMethodInvoker implements Con
         }
     }
 
-    public long getShardMetaNumber()
+    long getShardMetaNumber()
     {
         return mShardContextConnect.getShardMetaNumber();
     }
@@ -814,8 +1111,8 @@ public class AltibaseShardingConnection extends JdbcMethodInvoker implements Con
             shard_log("(CLOSE NODE CONNECTION) Error occurred : {0} {1} ",
                       new Object[] { aNode, aEx.getMessage() });
         }
-        /* BUG-46513 node connectionì„ closeí•˜ë”ë¼ë„ í•´ë‹¹í•˜ëŠ” connectionì˜ í•˜ìœ„ statementê°€ statement route map
-           ì— ì¡´ì¬í•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì— clearí•´ì¤€ë‹¤. */
+        /* BUG-46513 node connectionÀ» closeÇÏ´õ¶óµµ ÇØ´çÇÏ´Â connectionÀÇ ÇÏÀ§ statement°¡ statement route map
+           ¿¡ Á¸ÀçÇÒ ¼ö ÀÖ±â ¶§¹®¿¡ clearÇØÁØ´Ù. */
         synchronized (mOpenStatements)
         {
             for (Statement sEach : mOpenStatements)
@@ -833,5 +1130,148 @@ public class AltibaseShardingConnection extends JdbcMethodInvoker implements Con
     public CmProtocolContextShardConnect getShardContextConnect()
     {
         return mShardContextConnect;
+    }
+
+    public AltibaseShardingFailover getShardFailover()
+    {
+        return mShardFailover;
+    }
+
+    public void setWarning(SQLWarning aWarning)
+    {
+        mWarning = aWarning;
+    }
+
+    public void registerFailoverCallback(AltibaseFailoverCallback aFailoverCallback,
+                                         Object aAppContext) throws SQLException
+    {
+        // BUG-46790 meta connection stf¸¦ À§ÇØ registerFailoverCallbackÀ» µî·ÏÇÑ´Ù.
+        mMetaConnection.registerFailoverCallback(aFailoverCallback, aAppContext);
+    }
+
+    public void deregisterFailoverCallback() throws SQLException
+    {
+        mMetaConnection.deregisterFailoverCallback();
+    }
+
+    public void setClosed(boolean aIsClosed)
+    {
+        mIsClosed = aIsClosed;
+    }
+
+    void setCachedConnections(Map<DataNode, Connection> aCachedConnections)
+    {
+        mCachedConnections = aCachedConnections;
+    }
+
+    boolean isSessionFailoverOn()
+    {
+        return mProps.getBooleanProperty(AltibaseProperties.PROP_FAILOVER_USE_STF);
+    }
+
+    public GlobalTransactionLevel getGlobalTransactionLevel()
+    {
+        return mGlobalTransactionLevel;
+    }
+
+    public void setGlobalTransactionLevel(GlobalTransactionLevel aGlobalTransactionLevel)
+    {
+        mGlobalTransactionLevel = aGlobalTransactionLevel;
+    }
+
+    public short getShardStatementRetry()
+    {
+        return mShardStatementRetry;
+    }
+
+    public void setShardStatementRetry(short aShardStatementRetry)
+    {
+        mShardStatementRetry = aShardStatementRetry;
+    }
+
+    public int getIndoubtFetchTimeout()
+    {
+        return mIndoubtFetchTimeout;
+    }
+
+    public void setIndoubtFetchTimeout(int aIndoubtFetchTimeout)
+    {
+        mIndoubtFetchTimeout = aIndoubtFetchTimeout;
+    }
+
+    public short getIndoubtFetchMethod()
+    {
+        return mIndoubtFetchMethod;
+    }
+
+    public void setIndoubtFetchMethod(short aIndoubtFetchMethod)
+    {
+        mIndoubtFetchMethod = aIndoubtFetchMethod;
+    }
+
+    public void setShard2PhaseCommitState(Shard2PhaseCommitState aShard2PhaseCommitState)
+    {
+        mShard2PhaseCommitState = aShard2PhaseCommitState;
+    }
+
+    public Shard2PhaseCommitState getShard2PhaseCommitState()
+    {
+        return mShard2PhaseCommitState;
+    }
+
+    public void checkCommitState() throws SQLException
+    {
+        if (getShard2PhaseCommitState() == Shard2PhaseCommitState.SHARD_2PC_COMMIT_FAIL)
+        {   
+            Error.throwSQLException(ErrorDef.SHARD_NEED_ROLLBACK);
+        }  
+    }
+
+    @Override
+    public boolean isValid(int aTimeout) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setClientInfo(String aName, String aValue) throws SQLClientInfoException
+    {
+        throw new SQLClientInfoException("setClientInfo is not supported in sharding", null);
+    }
+
+    @Override
+    public void setClientInfo(Properties aProperties) throws SQLClientInfoException
+    {
+        throw new SQLClientInfoException("setClientInfo is not supported in sharding", null);
+    }
+
+    @Override
+    public String getClientInfo(String aName) throws SQLException
+    {
+        throw new SQLClientInfoException("getClientInfo is not supported in sharding", null);
+    }
+
+    @Override
+    public Properties getClientInfo() throws SQLException
+    {
+        throw new SQLClientInfoException("getClientInfo is not supported in sharding", null);
+    }
+
+    @Override
+    public void abort(Executor aExecutor) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setNetworkTimeout(Executor aExecutor, int aMillisecs) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public int getNetworkTimeout() throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
     }
 }

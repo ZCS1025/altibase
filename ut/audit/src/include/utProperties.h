@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: utProperties.h 80540 2017-07-19 08:00:50Z daramix $
+ * $Id: utProperties.h 89731 2021-01-11 00:37:00Z chkim $
  ******************************************************************************/
 #ifndef _UTO_PROPERTIES_H_
 #define _UTO_PROPERTIES_H_ 1
@@ -82,12 +82,20 @@ public:  /* Global configs */
     SInt        mCountToCommit; // Count of oops before commit
     SInt        mTimeInterval; // Check properties time interval
 
-    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
+    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
     // write to CSV file.
     SInt        mMaxArrayFetch; // array fetch size
 
     /* Processing police */
     bool        mDML[DML_MAX];
+   
+    /* BUG-48134 Print Equal MOSO record to log file optionallay */
+    static bool mIsLogEqMOSO;
+
+    /* BUG-48425 Turn on/off diff for MOSX and MXSO */
+    static bool mIsLogMOSX;
+    static bool mIsLogMXSO;
+    static bool mIsLogDfMOSO;
 
     utProperties();
     ~utProperties();
@@ -101,7 +109,7 @@ public:  /* Global configs */
     /* 
      * BUG-32566
      *
-     * iloaderì™€ ê°™ì´ Version ì¶œë ¥ë˜ë„ë¡ ìˆ˜ì •
+     * iloader¿Í °°ÀÌ Version Ãâ·ÂµÇµµ·Ï ¼öÁ¤
      */
     void printVersion();
 

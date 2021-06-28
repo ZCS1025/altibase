@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcphy.y 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qcphy.y 89925 2021-02-03 04:40:48Z ahra.cho $
  **********************************************************************/
 
 %pure_parser
@@ -75,7 +75,7 @@ void * alloca(unsigned int);
 %token TR_FULL
 %token TR_NO
 
-%token TR_PARALLEL // PROJ-1665 Parallel Hint Ï∂îÍ∞Ä 
+%token TR_PARALLEL // PROJ-1665 Parallel Hint √ﬂ∞° 
 %token TR_NOPARALLEL /* PROJ-1071 */
 %token TR_NO_PARALLEL
 
@@ -97,6 +97,13 @@ void * alloca(unsigned int);
 %token TA_COUNT
 %token TA_PARTIAL /* BUG-39306 */
 
+%token TA_ALTI_PARTIAL_FULL_SCAN /* BUG-48288 */
+%token TA_ALTI_INDEX
+%token TA_ALTI_INDEX_ASC
+%token TA_ALTI_INDEX_DESC
+%token TA_ALTI_NO_INDEX
+%token TA_ALTI_PARALLEL
+
 %{
 #include <idl.h>
 #include <ideErrorMgr.h>
@@ -109,7 +116,7 @@ void * alloca(unsigned int);
 
 extern int      qcphlex(YYSTYPE * lvalp, void * param );
 
-static void     qcpherror(char *);
+static void     qcpherror(const char *);
 %}
 
 
@@ -220,7 +227,7 @@ all_hints
                 if ($<hints>2->joinMethod != NULL)
                 {
                     // To Fix PR-10496
-                    // ÏÇ¨Ïö©ÏûêÍ∞Ä Í∏∞Ïà†Ìïú ÏàúÏÑúÎåÄÎ°ú HintÎ•º Î∞∞ÏπòÌïòÏó¨Ïïº Ìï®.
+                    // ªÁøÎ¿⁄∞° ±‚º˙«— º¯º≠¥Î∑Œ Hint∏¶ πËƒ°«œø©æﬂ «‘.
                     // $<hints>2->joinMethod->next = $<hints>$->joinMethod;
                     // $<hints>$->joinMethod = $<hints>2->joinMethod;
 
@@ -241,7 +248,7 @@ all_hints
                 if ($<hints>2->tableAccess != NULL)
                 {
                     // To Fix PR-10496
-                    // ÏÇ¨Ïö©ÏûêÍ∞Ä Í∏∞Ïà†Ìïú ÏàúÏÑúÎåÄÎ°ú HintÎ•º Î∞∞ÏπòÌïòÏó¨Ïïº Ìï®.
+                    // ªÁøÎ¿⁄∞° ±‚º˙«— º¯º≠¥Î∑Œ Hint∏¶ πËƒ°«œø©æﬂ «‘.
                     // $<hints>2->tableAccess->next = $<hints>$->tableAccess;
                     // $<hints>$->tableAccess = $<hints>2->tableAccess;
 
@@ -430,6 +437,12 @@ all_hints
             {
                 $<hints>$->mSerialFilter = $<hints>2->mSerialFilter;
             }
+
+            /* BUG-48348 */
+            if ( $<hints>$->partialCSE == ID_FALSE )
+            {
+                $<hints>$->partialCSE = $<hints>2->partialCSE;
+            }
         }
     }
     | hint
@@ -545,6 +558,22 @@ hint_method
             IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_SYNTAX, ""));
             YYABORT;
         }
+    }
+    | TA_ALTI_PARTIAL_FULL_SCAN
+        TS_OPENING_PARENTHESIS table_reference comma_integer_reference comma_integer_reference TS_CLOSING_PARENTHESIS
+        /* BUG-48288 */
+    {
+        /* ALTI_PARTIAL_FULL_SCAN ( table, count, id ) */
+        QCP_STRUCT_ALLOC($<hints>$, qmsHints);
+        QCP_SET_INIT_HINTS($<hints>$);
+
+        QCP_STRUCT_ALLOC($<hints>$->tableAccess, qmsTableAccessHints);
+        $<hints>$->tableAccess->accessType = QMO_ACCESS_METHOD_TYPE_FULLACCESS_SCAN;
+        $<hints>$->tableAccess->table      = $<hintTables>3;
+        $<hints>$->tableAccess->indices    = NULL;
+        $<hints>$->tableAccess->count      = $<uIntVal>4;
+        $<hints>$->tableAccess->id         = $<uIntVal>5;
+        $<hints>$->tableAccess->next       = NULL;
     }
     | TR_NO TO_INDEX
         TS_OPENING_PARENTHESIS table_reference comma_indices_reference
@@ -784,6 +813,135 @@ hint_method
         $<hints>$->tableAccess->id         = 1;
         $<hints>$->tableAccess->next       = NULL;
     }
+    /* BUG-48288 */
+    | TA_ALTI_INDEX 
+        TS_OPENING_PARENTHESIS table_reference TS_CLOSING_PARENTHESIS
+    {
+        /* ALTI_INDEX ( table ) */
+        QCP_STRUCT_ALLOC($<hints>$, qmsHints);
+        QCP_SET_INIT_HINTS($<hints>$);
+
+        QCP_STRUCT_ALLOC($<hints>$->tableAccess, qmsTableAccessHints);
+        $<hints>$->tableAccess->accessType =
+                    QMO_ACCESS_METHOD_TYPE_INDEXACCESS_SCAN;
+        $<hints>$->tableAccess->table      = $<hintTables>3;
+        $<hints>$->tableAccess->indices    = NULL;
+        $<hints>$->tableAccess->count      = 1;
+        $<hints>$->tableAccess->id         = 1;
+        $<hints>$->tableAccess->next       = NULL;
+    }
+    | TA_ALTI_INDEX 
+        TS_OPENING_PARENTHESIS table_reference comma_indices_reference TS_CLOSING_PARENTHESIS
+    {
+        /* ALTI_INDEX ( table, index, index, ... ) */
+        /* ALTI_INDEX ( table  index  index  ... ) */
+        QCP_STRUCT_ALLOC($<hints>$, qmsHints);
+        QCP_SET_INIT_HINTS($<hints>$);
+
+        QCP_STRUCT_ALLOC($<hints>$->tableAccess, qmsTableAccessHints);
+        $<hints>$->tableAccess->accessType = QMO_ACCESS_METHOD_TYPE_INDEXACCESS_SCAN;
+        $<hints>$->tableAccess->table      = $<hintTables>3;
+        $<hints>$->tableAccess->indices    = $<hintIndices>4;
+        $<hints>$->tableAccess->count      = 1;
+        $<hints>$->tableAccess->id         = 1;
+        $<hints>$->tableAccess->next       = NULL;
+    }
+    | TA_ALTI_NO_INDEX 
+        TS_OPENING_PARENTHESIS table_reference TS_CLOSING_PARENTHESIS
+    {
+        /* ALTI_NO_INDEX ( table ) */
+        QCP_STRUCT_ALLOC($<hints>$, qmsHints);
+        QCP_SET_INIT_HINTS($<hints>$);
+
+        QCP_STRUCT_ALLOC($<hints>$->tableAccess, qmsTableAccessHints);
+        $<hints>$->tableAccess->accessType =
+                    QMO_ACCESS_METHOD_TYPE_NO_INDEX_SCAN;
+        $<hints>$->tableAccess->table      = $<hintTables>3;
+        $<hints>$->tableAccess->indices    = NULL;
+        $<hints>$->tableAccess->count      = 1;
+        $<hints>$->tableAccess->id         = 1;
+        $<hints>$->tableAccess->next       = NULL;
+    }
+    | TA_ALTI_NO_INDEX 
+        TS_OPENING_PARENTHESIS table_reference comma_indices_reference TS_CLOSING_PARENTHESIS
+    {
+        /* ALTI_NO_INDEX ( table, index, index, ... ) */
+        /* ALTI_NO_INDEX ( table  index  index  ... ) */
+        QCP_STRUCT_ALLOC($<hints>$, qmsHints);
+        QCP_SET_INIT_HINTS($<hints>$);
+
+        QCP_STRUCT_ALLOC($<hints>$->tableAccess, qmsTableAccessHints);
+        $<hints>$->tableAccess->accessType = QMO_ACCESS_METHOD_TYPE_NO_INDEX_SCAN;
+        $<hints>$->tableAccess->table      = $<hintTables>3;
+        $<hints>$->tableAccess->indices    = $<hintIndices>4;
+        $<hints>$->tableAccess->count      = 1;
+        $<hints>$->tableAccess->id         = 1;
+        $<hints>$->tableAccess->next       = NULL;
+    }
+    | TA_ALTI_INDEX_ASC 
+        TS_OPENING_PARENTHESIS table_reference TS_CLOSING_PARENTHESIS
+    {
+        /* ALTI_INDEX_ASC ( table ) */
+        QCP_STRUCT_ALLOC($<hints>$, qmsHints);
+        QCP_SET_INIT_HINTS($<hints>$);
+
+        QCP_STRUCT_ALLOC($<hints>$->tableAccess, qmsTableAccessHints);
+        $<hints>$->tableAccess->accessType =
+                    QMO_ACCESS_METHOD_TYPE_INDEX_ASC_SCAN;
+        $<hints>$->tableAccess->table      = $<hintTables>3;
+        $<hints>$->tableAccess->indices    = NULL;
+        $<hints>$->tableAccess->count      = 1;
+        $<hints>$->tableAccess->id         = 1;
+        $<hints>$->tableAccess->next       = NULL;
+    }
+    | TA_ALTI_INDEX_ASC 
+        TS_OPENING_PARENTHESIS table_reference comma_indices_reference TS_CLOSING_PARENTHESIS
+    {
+        /* ALTI_INDEX_ASC ( table, index, index, ... ) */
+        /* ALTI_INDEX_ASC ( table  index  index  ... ) */
+        QCP_STRUCT_ALLOC($<hints>$, qmsHints);
+        QCP_SET_INIT_HINTS($<hints>$);
+
+        QCP_STRUCT_ALLOC($<hints>$->tableAccess, qmsTableAccessHints);
+        $<hints>$->tableAccess->accessType = QMO_ACCESS_METHOD_TYPE_INDEX_ASC_SCAN;
+        $<hints>$->tableAccess->table      = $<hintTables>3;
+        $<hints>$->tableAccess->indices    = $<hintIndices>4;
+        $<hints>$->tableAccess->count      = 1;
+        $<hints>$->tableAccess->id         = 1;
+        $<hints>$->tableAccess->next       = NULL;
+    }
+    | TA_ALTI_INDEX_DESC
+        TS_OPENING_PARENTHESIS table_reference TS_CLOSING_PARENTHESIS
+    {
+        /* ALTI_INDEX_DESC ( table ) */
+        QCP_STRUCT_ALLOC($<hints>$, qmsHints);
+        QCP_SET_INIT_HINTS($<hints>$);
+
+        QCP_STRUCT_ALLOC($<hints>$->tableAccess, qmsTableAccessHints);
+        $<hints>$->tableAccess->accessType =
+                    QMO_ACCESS_METHOD_TYPE_INDEX_DESC_SCAN;
+        $<hints>$->tableAccess->table      = $<hintTables>3;
+        $<hints>$->tableAccess->indices    = NULL;
+        $<hints>$->tableAccess->count      = 1;
+        $<hints>$->tableAccess->id         = 1;
+        $<hints>$->tableAccess->next       = NULL;
+    }
+    | TA_ALTI_INDEX_DESC
+        TS_OPENING_PARENTHESIS table_reference comma_indices_reference TS_CLOSING_PARENTHESIS
+    {
+        /* ALTI_INDEX_DESC ( table, index, index, ... ) */
+        /* ALTI_INDEX_DESC ( table  index  index  ... ) */
+        QCP_STRUCT_ALLOC($<hints>$, qmsHints);
+        QCP_SET_INIT_HINTS($<hints>$);
+
+        QCP_STRUCT_ALLOC($<hints>$->tableAccess, qmsTableAccessHints);
+        $<hints>$->tableAccess->accessType = QMO_ACCESS_METHOD_TYPE_INDEX_DESC_SCAN;
+        $<hints>$->tableAccess->table      = $<hintTables>3;
+        $<hints>$->tableAccess->indices    = $<hintIndices>4;
+        $<hints>$->tableAccess->count      = 1;
+        $<hints>$->tableAccess->id         = 1;
+        $<hints>$->tableAccess->next       = NULL;
+    }
 
     /*
      * PROJ-1071 Parallel Query
@@ -813,6 +971,46 @@ hint_method
         /* PROJ-1071 Parallel Query */
         /* PARALLEL( parallel_degree ) */
 
+        SLong sParallelDegree;
+
+        if (qtc::getBigint(QTEXT,
+                           &sParallelDegree,
+                           &$<position>3)
+            != IDE_SUCCESS)
+        {
+            SET_POSITION_IN_HINTS(PARAM->mPosition, $<position>3);
+
+            YYABORT;
+        }
+
+        QCP_STRUCT_ALLOC($<hints>$, qmsHints);
+        QCP_SET_INIT_HINTS($<hints>$);
+        QCP_STRUCT_ALLOC($<hints>$->parallelHint, qmsParallelHints);
+
+        $<hints>$->parallelHint->table          = NULL;
+        $<hints>$->parallelHint->next           = NULL;
+        $<hints>$->parallelHint->parallelDegree = (UInt)sParallelDegree;
+    }
+    /* BUG-48288 */
+    | TA_ALTI_PARALLEL
+      TS_OPENING_PARENTHESIS
+          table_reference comma_integer_reference
+      TS_CLOSING_PARENTHESIS
+    {
+        /* ALTI_PARALLEL ( table_name, parallel_degree ) */
+        QCP_STRUCT_ALLOC($<hints>$, qmsHints);
+        QCP_SET_INIT_HINTS($<hints>$);
+        
+        QCP_STRUCT_ALLOC($<hints>$->parallelHint, qmsParallelHints);
+
+        $<hints>$->parallelHint->table          = $<hintTables>3;
+        $<hints>$->parallelHint->next           = NULL;
+        $<hints>$->parallelHint->parallelDegree = $<uIntVal>4;
+    }
+    /* BUG-48288 */
+    | TA_ALTI_PARALLEL TS_OPENING_PARENTHESIS TL_INTEGER TS_CLOSING_PARENTHESIS
+    {
+        /* ALTI_PARALLEL( parallel_degree ) */
         SLong sParallelDegree;
 
         if (qtc::getBigint(QTEXT,
@@ -890,29 +1088,33 @@ hint_method
           table_reference_commalist
           opt_temp_table_count
       TS_CLOSING_PARENTHESIS
-      /* USE_NL ( table[,] table ) */
-      /* USE_FULL_NL ( table[,] table ) */
-      /* USE_FULL_STORE_NL ( table[,] table ) */
-      /* USE_INDEX_NL ( table[,] table ) */
-      /* USE_ANTI ( table[,] table ) */
-      /* USE_HASH ( table[,] table ) */
-      /* USE_ONE_PASS_HASH ( table[,] table ) */
-      /* USE_TWO_PASS_HASH ( table[,] table [[,]temp_table_count] ) */
-      /* USE_INVERSE_HASH ( table[,] table ) */
-      /* USE_SORT ( table[,] table ) */
-      /* USE_ONE_PASS_SORT ( table[,] table ) */
-      /* USE_TWO_PASS_SORT ( table[,] table ) */
-      /* USE_MERGE ( table[,] table ) */
-      /* NO_USE_NL ( table[,] table ) */
-      /* NO_USE_HASH ( table[,] table ) */
-      /* NO_USE_SORT ( table[,] table ) */
-      /* NO_USE_MERGE ( table[,] table ) */
-          /* or */
-      /* NO_PUSH_SELECT_VIEW ( table ) */
-      /* PUSH_SELECT_VIEW ( table ) */
-      /* PUSH_PRED( view_name ) */       // PROJ-1495
-      /* NO_MERGE( view ) */             // PROJ-1413
-      /* LEADING( table[,] table ) */ // BUG-42447
+      /* [ALTI_]USE_NL ( table[,] table )                                  */
+      /* [ALTI_]USE_FULL_NL ( table[,] table )                             */
+      /* [ALTI_]USE_FULL_STORE_NL ( table[,] table )                       */
+      /* [ALTI_]USE_INDEX_NL ( table[,] table )                            */
+      /* [ALTI_]USE_ANTI ( table[,] table )                                */
+      /* [ALTI_]USE_HASH ( table[,] table )                                */
+      /* [ALTI_]USE_ONE_PASS_HASH ( table[,] table )                       */
+      /* [ALTI_]USE_TWO_PASS_HASH ( table [,]table [[,]temp_table_count] ) */
+      /* [ALTI_]USE_INVERSE_HASH ( table[,] table )                        */
+      /* [ALTI_]USE_SORT ( table[,] table )                                */
+      /* [ALTI_]USE_ONE_PASS_SORT ( table[,] table )                       */
+      /* [ALTI_]USE_TWO_PASS_SORT ( table[,] table )                       */
+      /* [ALTI_]USE_MERGE ( table[,] table )                               */
+      /* [ALTI_]NO_USE_NL ( table[,] table )                               */
+      /* [ALTI_]NO_USE_HASH ( table[,] table )                             */
+      /* [ALTI_]NO_USE_SORT ( table[,] table )                             */
+      /* [ALTI_]NO_USE_MERGE ( table[,] table )                            */
+      /* [ALTI_]NO_PUSH_SELECT_VIEW ( view )                               */
+      /* [ALTI_]PUSH_SELECT_VIEW ( view )                                  */
+      /* [ALTI_]PUSH_PRED( view )                                          */ // PROJ-1495
+      /* [ALTI_]NO_MERGE( view )                                           */ // PROJ-1413
+      /* [ALTI_]KEY_PRESERVED_TABLE( table[,] table ... )                  */
+      /* [ALTI_]LEADING( table[,] table ... )                              */ // BUG-42447
+      /* ALTI_FULL ( table )                                               */
+      /* ALTI_FULL_SCAN ( table )                                          */
+      /* ALTI_NO_PARALLEL ( table )                                        */
+      /* ALTI_NOPARALLEL  ( table )                                        */
     {
         qmsHintTables * sHintTable;
         SInt            sHintTableCnt = 0;
@@ -924,9 +1126,8 @@ hint_method
             sHintTableCnt++;
         }
 
-        if (idlOS::strMatch(
-              "NO_PUSH_SELECT_VIEW", 19,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        if ( ( idlOS::strMatch( "ALTI_NO_PUSH_SELECT_VIEW", 24, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+             ( idlOS::strMatch(      "NO_PUSH_SELECT_VIEW", 19, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             if ( sHintTableCnt != 1 ||
                  $<uIntVal>4 != QMS_NOT_DEFINED_TEMP_TABLE_CNT )
@@ -944,9 +1145,8 @@ hint_method
             $<hints>$->viewOptHint->table       = $<hintTables>3;
             $<hints>$->viewOptHint->next        = NULL;
         }
-        else if (idlOS::strMatch(
-              "PUSH_SELECT_VIEW", 16,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_PUSH_SELECT_VIEW", 21, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "PUSH_SELECT_VIEW", 16, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             if ( sHintTableCnt != 1 ||
                  $<uIntVal>4 != QMS_NOT_DEFINED_TEMP_TABLE_CNT )
@@ -964,9 +1164,8 @@ hint_method
             $<hints>$->viewOptHint->table       = $<hintTables>3;
             $<hints>$->viewOptHint->next        = NULL;
         }
-        else if (idlOS::strMatch(
-              "PUSH_PRED", 9,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_PUSH_PRED", 14, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "PUSH_PRED",  9, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             if ( sHintTableCnt != 1 ||
                  $<uIntVal>4 != QMS_NOT_DEFINED_TEMP_TABLE_CNT )
@@ -983,9 +1182,8 @@ hint_method
             $<hints>$->pushPredHint->table       = $<hintTables>3;
             $<hints>$->pushPredHint->next        = NULL;
         }
-        else if (idlOS::strMatch(
-              "USE_NL", 6,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_USE_NL", 11, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "USE_NL",  6, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
@@ -996,9 +1194,8 @@ hint_method
             $<hints>$->joinMethod->flag |= QMO_JOIN_METHOD_NL;
             $<hints>$->joinMethod->joinTables = $<hintTables>3;
         }
-        else if (idlOS::strMatch(
-              "USE_FULL_NL", 11,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_USE_FULL_NL", 16, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "USE_FULL_NL", 11, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
@@ -1009,9 +1206,8 @@ hint_method
             $<hints>$->joinMethod->flag |= QMO_JOIN_METHOD_FULL_NL;
             $<hints>$->joinMethod->joinTables = $<hintTables>3;
         }
-        else if (idlOS::strMatch(
-              "USE_FULL_STORE_NL", 17,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_USE_FULL_STORE_NL", 22, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "USE_FULL_STORE_NL", 17, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
@@ -1022,9 +1218,8 @@ hint_method
             $<hints>$->joinMethod->flag |= QMO_JOIN_METHOD_FULL_STORE_NL;
             $<hints>$->joinMethod->joinTables = $<hintTables>3;
         }
-        else if (idlOS::strMatch(
-              "USE_INDEX_NL", 12,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_USE_INDEX_NL", 17, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "USE_INDEX_NL", 12, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
@@ -1035,9 +1230,8 @@ hint_method
             $<hints>$->joinMethod->flag |= QMO_JOIN_METHOD_INDEX;
             $<hints>$->joinMethod->joinTables = $<hintTables>3;
         }
-        else if (idlOS::strMatch(
-              "USE_ANTI", 8,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_USE_ANTI", 13, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "USE_ANTI",  8, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
@@ -1048,9 +1242,8 @@ hint_method
             $<hints>$->joinMethod->flag |= QMO_JOIN_METHOD_ANTI;
             $<hints>$->joinMethod->joinTables = $<hintTables>3;
         }
-        else if (idlOS::strMatch(
-              "USE_HASH", 8,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_USE_HASH", 13, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "USE_HASH",  8, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
@@ -1061,9 +1254,8 @@ hint_method
             $<hints>$->joinMethod->flag |= QMO_JOIN_METHOD_HASH;
             $<hints>$->joinMethod->joinTables = $<hintTables>3;
         }
-        else if (idlOS::strMatch(
-              "USE_ONE_PASS_HASH", 17,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_USE_ONE_PASS_HASH", 22, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "USE_ONE_PASS_HASH", 17, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
@@ -1074,9 +1266,8 @@ hint_method
             $<hints>$->joinMethod->flag |= QMO_JOIN_METHOD_ONE_PASS_HASH;
             $<hints>$->joinMethod->joinTables = $<hintTables>3;
         }
-        else if (idlOS::strMatch(
-              "USE_TWO_PASS_HASH", 17,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_USE_TWO_PASS_HASH", 22, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "USE_TWO_PASS_HASH", 17, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
@@ -1088,9 +1279,8 @@ hint_method
             $<hints>$->joinMethod->joinTables = $<hintTables>3;
             $<hints>$->joinMethod->tempTableCnt = $<uIntVal>4;
         }
-        else if (idlOS::strMatch(
-              "USE_INVERSE_HASH", 16,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_USE_INVERSE_HASH", 21, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "USE_INVERSE_HASH", 16, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
@@ -1101,9 +1291,8 @@ hint_method
             $<hints>$->joinMethod->flag |= QMO_JOIN_METHOD_INVERSE_HASH;
             $<hints>$->joinMethod->joinTables = $<hintTables>3;
         }
-        else if (idlOS::strMatch(
-              "USE_SORT", 8,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_USE_SORT", 13, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "USE_SORT",  8, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
@@ -1114,9 +1303,8 @@ hint_method
             $<hints>$->joinMethod->flag |= QMO_JOIN_METHOD_SORT;
             $<hints>$->joinMethod->joinTables = $<hintTables>3;
         }
-        else if (idlOS::strMatch(
-              "USE_ONE_PASS_SORT", 17,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_USE_ONE_PASS_SORT", 22, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "USE_ONE_PASS_SORT", 17, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
@@ -1127,9 +1315,8 @@ hint_method
             $<hints>$->joinMethod->flag |= QMO_JOIN_METHOD_ONE_PASS_SORT;
             $<hints>$->joinMethod->joinTables = $<hintTables>3;
         }
-        else if (idlOS::strMatch(
-              "USE_TWO_PASS_SORT", 17,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_USE_TWO_PASS_SORT", 22, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "USE_TWO_PASS_SORT", 17, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
@@ -1140,9 +1327,8 @@ hint_method
             $<hints>$->joinMethod->flag |= QMO_JOIN_METHOD_TWO_PASS_SORT;
             $<hints>$->joinMethod->joinTables = $<hintTables>3;
         }
-        else if (idlOS::strMatch(
-              "USE_MERGE", 9,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_USE_MERGE", 14, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "USE_MERGE",  9, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
@@ -1153,9 +1339,8 @@ hint_method
             $<hints>$->joinMethod->flag |= QMO_JOIN_METHOD_MERGE;
             $<hints>$->joinMethod->joinTables = $<hintTables>3;
         }
-        else if (idlOS::strMatch(
-              "NO_USE_NL", 9,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_NO_USE_NL", 14, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "NO_USE_NL",  9, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
@@ -1167,9 +1352,8 @@ hint_method
             $<hints>$->joinMethod->joinTables = $<hintTables>3;
             $<hints>$->joinMethod->isNoUse    = ID_TRUE;
         }
-        else if (idlOS::strMatch(
-              "NO_USE_HASH", 11,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_NO_USE_HASH", 16, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "NO_USE_HASH", 11, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
@@ -1181,9 +1365,8 @@ hint_method
             $<hints>$->joinMethod->joinTables = $<hintTables>3;
             $<hints>$->joinMethod->isNoUse    = ID_TRUE;
         }
-        else if (idlOS::strMatch(
-              "NO_USE_SORT", 11,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_NO_USE_SORT", 16, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "NO_USE_SORT", 11, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
@@ -1195,9 +1378,8 @@ hint_method
             $<hints>$->joinMethod->joinTables = $<hintTables>3;
             $<hints>$->joinMethod->isNoUse    = ID_TRUE;
         }
-        else if (idlOS::strMatch(
-              "NO_USE_MERGE", 12,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_NO_USE_MERGE", 17, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "NO_USE_MERGE", 12, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
@@ -1209,9 +1391,8 @@ hint_method
             $<hints>$->joinMethod->joinTables = $<hintTables>3;
             $<hints>$->joinMethod->isNoUse    = ID_TRUE;
         }
-        else if (idlOS::strMatch(
-              "NO_MERGE", 8,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_NO_MERGE", 13, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "NO_MERGE",  8, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             if ( sHintTableCnt != 1 ||
                  $<uIntVal>4 != QMS_NOT_DEFINED_TEMP_TABLE_CNT )
@@ -1229,9 +1410,8 @@ hint_method
             $<hints>$->noMergeHint->next  = NULL;
         }
         /* BUG-39399 remove search key preserved table */
-        else if ( idlOS::strMatch(
-                      "KEY_PRESERVED_TABLE", 19,
-                      QTEXT+$<position>1.offset, $<position>1.size) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_KEY_PRESERVED_TABLE", 24, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "KEY_PRESERVED_TABLE", 19, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             if ( sHintTableCnt < 1 )
             { // syntax error
@@ -1249,7 +1429,8 @@ hint_method
             $<hints>$->keyPreservedHint->next  = NULL;
         }
         // BUG-42447 leading hint support
-        else if (idlOS::strMatch( "LEADING", 7, QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_LEADING", 12, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "LEADING",  7, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             if ( sHintTableCnt < 1 )
             {
@@ -1266,8 +1447,51 @@ hint_method
             QCP_SET_INIT_LEADING_HINTS($<hints>$->leading);
             $<hints>$->leading->mLeadingTables = $<hintTables>3;
 
-            // ORDERED ÌûåÌä∏Î•º Í∞ôÏù¥ Ï†ÅÏö©ÌïúÎã§.
+            // ORDERED »˘∆Æ∏¶ ∞∞¿Ã ¿˚øÎ«—¥Ÿ.
             $<hints>$->joinOrderType = QMO_JOIN_ORDER_TYPE_ORDERED;
+        }
+        /* BUG-48288 */
+        /* ALTI_FULL ( table ) */
+        /* ALTI_FULL_SCAN ( table ) */
+        else if ( ( idlOS::strMatch( "ALTI_FULL",       9, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch( "ALTI_FULL_SCAN", 14, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
+        {
+            if ( ( sHintTableCnt != 1 ) || ( $<uIntVal>4 != QMS_NOT_DEFINED_TEMP_TABLE_CNT ) )
+            {
+                SET_POSITION_IN_HINTS(PARAM->mPosition, $<position>1);
+                IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_SYNTAX, ""));
+                YYABORT;
+            }
+            QCP_STRUCT_ALLOC($<hints>$, qmsHints);
+            QCP_SET_INIT_HINTS($<hints>$);
+
+            QCP_STRUCT_ALLOC($<hints>$->tableAccess, qmsTableAccessHints);
+            $<hints>$->tableAccess->accessType = QMO_ACCESS_METHOD_TYPE_FULLACCESS_SCAN;
+            $<hints>$->tableAccess->table      = $<hintTables>3;
+            $<hints>$->tableAccess->indices    = NULL;
+            $<hints>$->tableAccess->count      = 1;
+            $<hints>$->tableAccess->id         = 1;
+            $<hints>$->tableAccess->next       = NULL;
+        }
+        /* ALTI_NO_PARALLEL ( table ) */
+        /* ALTI_NOPARALLEL  ( table ) */
+        else if ( ( idlOS::strMatch( "ALTI_NO_PARALLEL", 16, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch( "ALTI_NOPARALLEL",  15, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
+        {
+            if ( ( sHintTableCnt != 1 ) || ( $<uIntVal>4 != QMS_NOT_DEFINED_TEMP_TABLE_CNT ) )
+            {
+                SET_POSITION_IN_HINTS(PARAM->mPosition, $<position>1);
+                IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_SYNTAX, ""));
+                YYABORT;
+            }
+            QCP_STRUCT_ALLOC($<hints>$, qmsHints);
+            QCP_SET_INIT_HINTS($<hints>$);
+
+            QCP_STRUCT_ALLOC($<hints>$->parallelHint, qmsParallelHints);
+
+            $<hints>$->parallelHint->table          = $<hintTables>3;
+            $<hints>$->parallelHint->next           = NULL;
+            $<hints>$->parallelHint->parallelDegree = 1;
         }
         else
         { // syntax error
@@ -1408,156 +1632,172 @@ opt_temp_table_count
 
 hint_no_parameter
     : TI_NONQUOTED_IDENTIFIER
-      /* COST */
-      /* RULE */
-      /* PUSH_PROJECTION */
-      /* NO_PUSH_PROJECTION */
-      /* CNF */
-      /* DNF */
-      /* NO_EXPAND */
-      /* USE_CONCAT */
-      /* ORDERED */
-      /* TEMP_TBS_MEMORY */
-      /* TEMP_TBS_DISK */
-      /* GROUP_HASH */
-      /* GROUP_SORT */
-      /* DISTINCT_HASH */
-      /* DISTINCT_SORT */
-      /* APPEND */
-      /* NO_TRANSITIVE_PRED */
-      /* NO_PLAN_CACHE */
-      /* KEEP_PLAN */
-      /* REFRESH_MVIEW */
-      /* WITHOUT_RETRY */
-      /* INVERSE_JOIN */
-      /* NO_INVERSE_JOIN */
-      /* EXEC_FAST */
-      /* NO_EXEC_FAST */
-      /* HIGH_PRECISION */
-      /* HIGH_PERFORMANCE */
-      /* DELAY */
-      /* NO_DELAY */
-      /* SERIAL_FILTER */
-      /* NO_SERIAL_FILTER */
+      /* [ALTI_]COST                       */
+      /* [ALTI_]RULE                       */
+      /* [ALTI_]PUSH_PROJECTION            */
+      /* [ALTI_]NO_PUSH_PROJECTION         */
+      /* [ALTI_]CNF                        */
+      /* [ALTI_]NO_EXPAND                  */
+      /* [ALTI_]DNF                        */
+      /* [ALTI_]USE_CONCAT                 */
+      /* [ALTI_]ORDERED                    */
+      /* [ALTI_]TEMP_TBS_MEMORY            */
+      /* [ALTI_]TEMP_TBS_DISK              */
+      /* [ALTI_]GROUP_HASH                 */
+      /* [ALTI_]GROUP_SORT                 */
+      /* [ALTI_]DISTINCT_HASH              */
+      /* [ALTI_]DISTINCT_SORT              */
+      /* [ALTI_]APPEND                     */
+      /* [ALTI_]NO_TRANSITIVE_PRED         */
+      /* [ALTI_]NO_PLAN_CACHE              */
+      /* [ALTI_]KEEP_PLAN                  */
+      /* [ALTI_]MATERIALIZE                */
+      /* [ALTI_]NO_MATERIALIZE             */
+      /* [ALTI_]REFRESH_MVIEW              */
+      /* [ALTI_]GROUPING_SETS_MATERIALIZE  */
+      /* [ALTI_]WITHOUT_RETRY              */
+      /* [ALTI_]UNNEST                     */
+      /* [ALTI_]NO_UNNEST                  */
+      /* [ALTI_]NL_SJ                      */
+      /* [ALTI_]HASH_SJ                    */
+      /* [ALTI_]MERGE_SJ                   */
+      /* [ALTI_]SORT_SJ                    */
+      /* [ALTI_]NL_AJ                      */
+      /* [ALTI_]HASH_AJ                    */
+      /* [ALTI_]MERGE_AJ                   */
+      /* [ALTI_]SORT_AJ                    */
+      /* [ALTI_]INVERSE_JOIN               */
+      /* [ALTI_]NO_INVERSE_JOIN            */
+      /* [ALTI_]EXEC_FAST                  */
+      /* [ALTI_]NO_EXEC_FAST               */
+      /* [ALTI_]HIGH_PRECISION             */
+      /* [ALTI_]HIGH_PERFORMANCE           */
+      /* [ALTI_]HIGH_PERFORMANCE_LEVEL1    */
+      /* [ALTI_]HIGH_PERFORMANCE_LEVEL2    */
+      /* [ALTI_]RESULT_CACHE               */
+      /* [ALTI_]NO_RESULT_CACHE            */
+      /* [ALTI_]TOP_RESULT_CACHE           */
+      /* [ALTI_]DELAY                      */
+      /* [ALTI_]NO_DELAY                   */
+      /* [ALTI_]NO_MERGE                   */
+      /* [ALTI_]DISABLE_INSERT_TRIGGER     */
+      /* [ALTI_]PLAN_CACHE_KEEP            */
+      /* [ALTI_]SERIAL_FILTER              */
+      /* [ALTI_]NO_SERIAL_FILTER           */
+      /* ALTI_NO_PARALLEL                  */
+      /* ALTI_NOPARALLEL                   */
+      /* [ALTI_]PARTIAL_CSE */
     {
-        if (idlOS::strMatch(
-              "COST", 4,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        if ( ( idlOS::strMatch( "ALTI_COST", 9, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+             ( idlOS::strMatch(      "COST", 4, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
 
             $<hints>$->optGoalType = QMO_OPT_GOAL_TYPE_ALL_ROWS;
         }
-        else if (idlOS::strMatch(
-              "RULE", 4,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_RULE", 9, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "RULE", 4, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
 
             $<hints>$->optGoalType = QMO_OPT_GOAL_TYPE_RULE;
         }
-        else if (idlOS::strMatch(
-              "PUSH_PROJECTION", 15,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_PUSH_PROJECTION", 20, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "PUSH_PROJECTION", 15, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
 
             $<hints>$->materializeType = QMO_MATERIALIZE_TYPE_VALUE;
         }
-        else if (idlOS::strMatch(
-              "NO_PUSH_PROJECTION", 18,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_NO_PUSH_PROJECTION", 23, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "NO_PUSH_PROJECTION", 18, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
 
             $<hints>$->materializeType = QMO_MATERIALIZE_TYPE_RID;
         }
-        else if ( (idlOS::strMatch( "CNF", 3, QTEXT+$<position>1.offset, $<position>1.size) == 0) ||
-                  (idlOS::strMatch( "NO_EXPAND", 9, QTEXT+$<position>1.offset, $<position>1.size) == 0) )
+        else if ( ( idlOS::strMatch( "ALTI_CNF", 8, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "CNF", 3, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch( "ALTI_NO_EXPAND", 14, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "NO_EXPAND",  9, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
 
             $<hints>$->normalType = QMO_NORMAL_TYPE_CNF;
         }
-        else if ( (idlOS::strMatch( "DNF", 3, QTEXT+$<position>1.offset, $<position>1.size) == 0) ||
-                  (idlOS::strMatch( "USE_CONCAT", 10, QTEXT+$<position>1.offset, $<position>1.size) == 0) )
+        else if ( ( idlOS::strMatch( "ALTI_DNF", 8, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "DNF", 3, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch( "ALTI_USE_CONCAT", 15, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "USE_CONCAT", 10, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
 
             $<hints>$->normalType = QMO_NORMAL_TYPE_DNF;
         }
-        else if (idlOS::strMatch(
-              "ORDERED", 7,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_ORDERED", 12, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "ORDERED",  7, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
 
             $<hints>$->joinOrderType = QMO_JOIN_ORDER_TYPE_ORDERED;
         }
-        else if (idlOS::strMatch(
-              "TEMP_TBS_MEMORY", 15,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_TEMP_TBS_MEMORY", 20, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "TEMP_TBS_MEMORY", 15, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
 
             $<hints>$->interResultType = QMO_INTER_RESULT_TYPE_MEMORY;
         }
-        else if (idlOS::strMatch(
-              "TEMP_TBS_DISK", 13,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_TEMP_TBS_DISK", 18, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "TEMP_TBS_DISK", 13, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
 
             $<hints>$->interResultType = QMO_INTER_RESULT_TYPE_DISK;
         }
-        else if (idlOS::strMatch(
-              "GROUP_HASH", 10,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_GROUP_HASH", 15, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "GROUP_HASH", 10, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
 
             $<hints>$->groupMethodType = QMO_GROUP_METHOD_TYPE_HASH;
         }
-        else if (idlOS::strMatch(
-              "GROUP_SORT", 10,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_GROUP_SORT", 15, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "GROUP_SORT", 10, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
 
             $<hints>$->groupMethodType = QMO_GROUP_METHOD_TYPE_SORT;
         }
-        else if (idlOS::strMatch(
-              "DISTINCT_HASH", 13,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_DISTINCT_HASH", 18, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "DISTINCT_HASH", 13, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
 
             $<hints>$->distinctMethodType = QMO_DISTINCT_METHOD_TYPE_HASH;
         }
-        else if (idlOS::strMatch(
-              "DISTINCT_SORT", 13,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_DISTINCT_SORT", 18, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "DISTINCT_SORT", 13, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
 
             $<hints>$->distinctMethodType = QMO_DISTINCT_METHOD_TYPE_SORT;
         }
-        else if (idlOS::strMatch(
-                     "APPEND", 6,
-                     QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_APPEND", 11, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "APPEND",  6, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
@@ -1566,9 +1806,8 @@ hint_no_parameter
             $<hints>$->directPathInsHintFlag |= SMI_INSERT_METHOD_APPEND;
         }
         // PROJ-1404
-        else if (idlOS::strMatch(
-                     "NO_TRANSITIVE_PRED", 18,
-                     QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_NO_TRANSITIVE_PRED", 23, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "NO_TRANSITIVE_PRED", 18, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
@@ -1576,9 +1815,8 @@ hint_no_parameter
             $<hints>$->transitivePredType = QMO_TRANSITIVE_PRED_TYPE_DISABLE;
         }
         // PROJ-1436
-        else if (idlOS::strMatch(
-                     "NO_PLAN_CACHE", 13,
-                     QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_NO_PLAN_CACHE", 18, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "NO_PLAN_CACHE", 13, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
@@ -1586,27 +1824,24 @@ hint_no_parameter
             $<hints>$->noPlanCache = ID_TRUE;
         }
         // PROJ-1436
-        else if (idlOS::strMatch(
-                     "KEEP_PLAN", 9,
-                     QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_KEEP_PLAN", 14, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "KEEP_PLAN",  9, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
 
             $<hints>$->keepPlan = ID_TRUE;
         }
-        else if (idlOS::strMatch(
-                     "MATERIALIZE", 11,
-                     QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_MATERIALIZE", 16, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "MATERIALIZE", 11, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
 
             $<hints>$->viewOptMtrType = QMO_VIEW_OPT_MATERIALIZE;
         }
-        else if (idlOS::strMatch(
-                     "NO_MATERIALIZE", 14,
-                     QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_NO_MATERIALIZE", 19, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "NO_MATERIALIZE", 14, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
@@ -1614,9 +1849,8 @@ hint_no_parameter
             $<hints>$->viewOptMtrType = QMO_VIEW_OPT_NO_MATERIALIZE;
         }
         /* PROJ-2211 Materialized View */
-        else if ( idlOS::strMatch(
-                     "REFRESH_MVIEW", 13,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_REFRESH_MVIEW", 18, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "REFRESH_MVIEW", 13, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
@@ -1624,9 +1858,8 @@ hint_no_parameter
             $<hints>$->refreshMView = ID_TRUE;
         }
         /* BUG-39600 Grouping Sets View Materialization Hint */
-        else if ( idlOS::strMatch(
-                     "GROUPING_SETS_MATERIALIZE", 25,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_GROUPING_SETS_MATERIALIZE", 30, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "GROUPING_SETS_MATERIALIZE", 25, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
@@ -1634,160 +1867,142 @@ hint_no_parameter
             $<hints>$->GBGSOptViewMtr = ID_TRUE;
         }        
         // PROJ-1784 DML Without Retry
-        else if ( idlOS::strMatch(
-                     "WITHOUT_RETRY", 13,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_WITHOUT_RETRY", 18, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "WITHOUT_RETRY", 13, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
 
             $<hints>$->withoutRetry = ID_TRUE;
         }
-        else if ( idlOS::strMatch(
-                     "UNNEST", 6,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_UNNEST", 11, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "UNNEST",  6, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
 
             $<hints>$->subqueryUnnestType = QMO_SUBQUERY_UNNEST_TYPE_UNNEST;
         }
-        else if ( idlOS::strMatch(
-                     "NO_UNNEST", 9,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_NO_UNNEST", 14, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "NO_UNNEST",  9, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
 
             $<hints>$->subqueryUnnestType = QMO_SUBQUERY_UNNEST_TYPE_NO_UNNEST;
         }
-        else if ( idlOS::strMatch(
-                     "NL_SJ", 5,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_NL_SJ", 10, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "NL_SJ",  5, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
 
             $<hints>$->semiJoinMethod = QMO_SEMI_JOIN_METHOD_NL;
         }
-        else if ( idlOS::strMatch(
-                     "HASH_SJ", 7,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_HASH_SJ", 12, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "HASH_SJ",  7, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
 
             $<hints>$->semiJoinMethod = QMO_SEMI_JOIN_METHOD_HASH;
         }
-        else if ( idlOS::strMatch(
-                     "MERGE_SJ", 8,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_MERGE_SJ", 13, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "MERGE_SJ",  8, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
 
             $<hints>$->semiJoinMethod = QMO_SEMI_JOIN_METHOD_MERGE;
         }
-        else if ( idlOS::strMatch(
-                     "SORT_SJ", 7,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_SORT_SJ", 12, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "SORT_SJ",  7, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
 
             $<hints>$->semiJoinMethod = QMO_SEMI_JOIN_METHOD_SORT;
         }
-        else if ( idlOS::strMatch(
-                     "NL_AJ", 5,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_NL_AJ", 10, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "NL_AJ",  5, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
 
             $<hints>$->antiJoinMethod = QMO_ANTI_JOIN_METHOD_NL;
         }
-        else if ( idlOS::strMatch(
-                     "HASH_AJ", 7,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_HASH_AJ", 12, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "HASH_AJ",  7, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
 
             $<hints>$->antiJoinMethod = QMO_ANTI_JOIN_METHOD_HASH;
         }
-        else if ( idlOS::strMatch(
-                     "MERGE_AJ", 8,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_MERGE_AJ", 13, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "MERGE_AJ",  8, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
 
             $<hints>$->antiJoinMethod = QMO_ANTI_JOIN_METHOD_MERGE;
         }
-        else if ( idlOS::strMatch(
-                     "SORT_AJ", 7,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_SORT_AJ", 12, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "SORT_AJ",  7, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
 
             $<hints>$->antiJoinMethod = QMO_ANTI_JOIN_METHOD_SORT;
         }
-        else if ( idlOS::strMatch(
-                     "INVERSE_JOIN", 12,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_INVERSE_JOIN", 17, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "INVERSE_JOIN", 12, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
 
             $<hints>$->inverseJoinOption = QMO_INVERSE_JOIN_METHOD_ONLY;
         }
-        else if ( idlOS::strMatch(
-                     "NO_INVERSE_JOIN", 15,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_NO_INVERSE_JOIN", 20, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "NO_INVERSE_JOIN", 15, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
 
             $<hints>$->inverseJoinOption = QMO_INVERSE_JOIN_METHOD_DENIED;
         }
-        else if ( idlOS::strMatch(
-                     "EXEC_FAST", 9,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_EXEC_FAST", 14, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "EXEC_FAST",  9, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
 
             $<hints>$->execFastHint = QMS_EXEC_FAST_TRUE;
         }
-        else if ( idlOS::strMatch(
-                     "NO_EXEC_FAST", 12,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_NO_EXEC_FAST", 17, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "NO_EXEC_FAST", 12, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
 
             $<hints>$->execFastHint = QMS_EXEC_FAST_FALSE;
         }
-        else if ( idlOS::strMatch(
-                     "HIGH_PRECISION", 14,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_HIGH_PRECISION", 19, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "HIGH_PRECISION", 14, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
             
             // BUG-41944
-            // high precision hintÎäî parsing Ï¶âÏãú ÎèôÏûëÌï¥Ïïº ÌïòÎäî hintÎ°ú
-            // templateÏóê ÏßÅÏ†ë Îì±Î°ùÌïúÎã§.
+            // high precision hint¥¬ parsing ¡ÔΩ√ µø¿€«ÿæﬂ «œ¥¬ hint∑Œ
+            // templateø° ¡˜¡¢ µÓ∑œ«—¥Ÿ.
             QC_SHARED_TMPLATE(STATEMENT)->tmplate.arithmeticOpMode =
                 MTC_ARITHMETIC_OPERATION_PRECISION;
         }
-        else if ( ( idlOS::strMatch(
-                        "HIGH_PERFORMANCE", 16,
-                        QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
-                  ( idlOS::strMatch(
-                      "HIGH_PERFORMANCE_LEVEL1", 23,
-                      QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
+        else if ( ( idlOS::strMatch( "ALTI_HIGH_PERFORMANCE", 21, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "HIGH_PERFORMANCE", 16, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch( "ALTI_HIGH_PERFORMANCE_LEVEL1", 28, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "HIGH_PERFORMANCE_LEVEL1", 23, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
@@ -1796,9 +2011,8 @@ hint_no_parameter
             QC_SHARED_TMPLATE(STATEMENT)->tmplate.arithmeticOpMode =
                 MTC_ARITHMETIC_OPERATION_PERFORMANCE_LEVEL1;
         }
-        else if ( idlOS::strMatch(
-                     "HIGH_PERFORMANCE_LEVEL2", 23,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_HIGH_PERFORMANCE_LEVEL2", 28, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "HIGH_PERFORMANCE_LEVEL2", 23, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
@@ -1807,54 +2021,48 @@ hint_no_parameter
             QC_SHARED_TMPLATE(STATEMENT)->tmplate.arithmeticOpMode =
                 MTC_ARITHMETIC_OPERATION_PERFORMANCE_LEVEL2;
         }
-        else if ( idlOS::strMatch(
-                     "RESULT_CACHE", 12,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_RESULT_CACHE", 17, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "RESULT_CACHE", 12, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
 
             $<hints>$->resultCacheType = QMO_RESULT_CACHE;
         }
-        else if ( idlOS::strMatch(
-                     "NO_RESULT_CACHE", 15,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_NO_RESULT_CACHE", 20, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "NO_RESULT_CACHE", 15, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
 
             $<hints>$->resultCacheType = QMO_RESULT_CACHE_NO;
         }
-        else if ( idlOS::strMatch(
-                     "TOP_RESULT_CACHE", 16,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_TOP_RESULT_CACHE", 21, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "TOP_RESULT_CACHE", 16, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
 
             $<hints>$->topResultCache = ID_TRUE;
         }
-        else if ( idlOS::strMatch(
-                     "DELAY", 5,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_DELAY", 10, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "DELAY",  5, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
 
             $<hints>$->delayedExec = QMS_DELAY_TRUE;
         }
-        else if ( idlOS::strMatch(
-                     "NO_DELAY", 8,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_NO_DELAY", 13, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "NO_DELAY",  8, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
 
             $<hints>$->delayedExec = QMS_DELAY_FALSE;
         }
-        else if ( idlOS::strMatch(
-                     "NO_MERGE", 8,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_NO_MERGE", 13, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "NO_MERGE",  8, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
@@ -1863,9 +2071,8 @@ hint_no_parameter
             $<hints>$->noMergeHint->table = NULL;
             $<hints>$->noMergeHint->next  = NULL;
         }
-        else if ( idlOS::strMatch(
-                     "DISABLE_INSERT_TRIGGER", 22,
-                     QTEXT + $<position>1.offset, $<position>1.size ) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_DISABLE_INSERT_TRIGGER", 27, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "DISABLE_INSERT_TRIGGER", 22, QTEXT + $<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
@@ -1873,9 +2080,8 @@ hint_no_parameter
             $<hints>$->disableInsTrigger = ID_TRUE;
         }
         // BUG-46137
-        else if ( idlOS::strMatch(
-                      "PLAN_CACHE_KEEP", 15,
-                      QTEXT+$<position>1.offset, $<position>1.size) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_PLAN_CACHE_KEEP", 20, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "PLAN_CACHE_KEEP", 15, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
@@ -1883,23 +2089,45 @@ hint_no_parameter
             $<hints>$->planCacheKeep = ID_TRUE;
         }
         /* PROJ-2632 */
-        else if ( idlOS::strMatch(
-                      "SERIAL_FILTER", 13,
-                      QTEXT+$<position>1.offset, $<position>1.size) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_SERIAL_FILTER", 18, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "SERIAL_FILTER", 13, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
 
             $<hints>$->mSerialFilter = QMS_SERIAL_FILTER_TRUE;
         }
-        else if ( idlOS::strMatch(
-                      "NO_SERIAL_FILTER", 16,
-                      QTEXT+$<position>1.offset, $<position>1.size) == 0 )
+        else if ( ( idlOS::strMatch( "ALTI_NO_SERIAL_FILTER", 21, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "NO_SERIAL_FILTER", 16, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
             QCP_SET_INIT_HINTS( $<hints>$ );
 
             $<hints>$->mSerialFilter = QMS_SERIAL_FILTER_FALSE;
+        }
+        /* BUG-48348 */
+        else if ( ( idlOS::strMatch( "ALTI_PARTIAL_CSE", 16, QTEXT+$<position>1.offset, $<position>1.size) == 0 ) ||
+                  ( idlOS::strMatch(      "PARTIAL_CSE", 11, QTEXT+$<position>1.offset, $<position>1.size) == 0 ) )
+        {
+            QCP_STRUCT_ALLOC( $<hints>$, qmsHints );
+            QCP_SET_INIT_HINTS( $<hints>$ );
+
+            $<hints>$->partialCSE = ID_TRUE;
+        }
+        /* BUG-48288 */
+        /* ALTI_NO_PARALLEL */
+        /* ALTI_NOPARALLEL  */
+        else if ( ( idlOS::strMatch( "ALTI_NO_PARALLEL", 16, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch( "ALTI_NOPARALLEL",  15, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
+        {
+            QCP_STRUCT_ALLOC($<hints>$, qmsHints);
+            QCP_SET_INIT_HINTS($<hints>$);
+
+            QCP_STRUCT_ALLOC($<hints>$->parallelHint, qmsParallelHints);
+
+            $<hints>$->parallelHint->table          = NULL;
+            $<hints>$->parallelHint->next           = NULL;
+            $<hints>$->parallelHint->parallelDegree = 1;
         }
         else
         { // syntax error
@@ -1976,10 +2204,15 @@ hint_bucket_count
 hint_with_parameter
     : TI_NONQUOTED_IDENTIFIER
         TS_OPENING_PARENTHESIS TL_INTEGER TS_CLOSING_PARENTHESIS
+        /* [ALTI_]ST_OBJECT_BUFFER_SIZE   ( n ) */
+        /* [ALTI_]ST_ALLOW_INVALID_OBJECT ( n ) */
+        /* [ALTI_]FIRST_ROWS ( n )              */
+        /* ALTI_HASH_BUCKET_COUNT  ( n )        */
+        /* ALTI_GROUP_BUCKET_COUNT ( n )        */
+        /* ALTI_SET_BUCKET_COUNT   ( n )        */
     {
-        if (idlOS::strMatch(
-              "ST_OBJECT_BUFFER_SIZE", 21,
-              QTEXT+$<position>1.offset, $<position>1.size) == 0)
+        if ( ( idlOS::strMatch( "ALTI_ST_OBJECT_BUFFER_SIZE", 26, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+             ( idlOS::strMatch(      "ST_OBJECT_BUFFER_SIZE", 21, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             SLong sObjBufSize;
 
@@ -1991,8 +2224,8 @@ hint_with_parameter
                 YYABORT;
             }
 
-            if ( (sObjBufSize < QMS_MIN_ST_OBJECT_BUFFER_SIZE) || 
-                 (sObjBufSize > QMS_MAX_ST_OBJECT_BUFFER_SIZE) )
+            if ( (sObjBufSize < QMS_MIN_ST_OBJECT_BUFFER_SIZE ) || 
+                 (sObjBufSize > QMS_MAX_ST_OBJECT_BUFFER_SIZE ) )
             {
                 SET_POSITION_IN_HINTS(PARAM->mPosition, $<position>3);
 
@@ -2007,21 +2240,15 @@ hint_with_parameter
         }
 
         //BUG-24361 ST_ALLOW_HINT
-        else if (idlOS::strMatch(
-                     "ST_ALLOW_INVALID_OBJECT",
-                     23,
-                     QTEXT+$<position>1.offset,
-                     $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_ST_ALLOW_INVALID_OBJECT", 28, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "ST_ALLOW_INVALID_OBJECT", 23, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
-            // Ìò∏ÌôòÏÑ±ÏùÑ ÏúÑÌï¥ ÎÇ®Í≤®ÎëîÎã§.
+            // »£»Øº∫¿ª ¿ß«ÿ ≥≤∞‹µ–¥Ÿ.
             QCP_STRUCT_ALLOC($<hints>$, qmsHints);
             QCP_SET_INIT_HINTS($<hints>$);
         }
-        else if (idlOS::strMatch(
-                     "FIRST_ROWS",
-                     10,
-                     QTEXT+$<position>1.offset,
-                     $<position>1.size) == 0)
+        else if ( ( idlOS::strMatch( "ALTI_FIRST_ROWS", 15, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "FIRST_ROWS", 10, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
         {
             SLong       sFirstRowsN;
 
@@ -2046,6 +2273,73 @@ hint_with_parameter
             $<hints>$->optGoalType = QMO_OPT_GOAL_TYPE_FIRST_ROWS_N;
             $<hints>$->firstRowsN  = sFirstRowsN;
         }
+        /* BUG-48288 */
+        /* ALTI_HASH_BUCKET_COUNT ( n ) */
+        else if ( idlOS::strMatch( "ALTI_HASH_BUCKET_COUNT", 22, QTEXT+$<position>1.offset, $<position>1.size ) == 0 )
+        {
+            SLong       sBucketCnt;
+
+            if ( qtc::getBigint( QTEXT, &sBucketCnt, &$<position>3 ) != IDE_SUCCESS )
+            {
+                SET_POSITION_IN_HINTS(PARAM->mPosition, $<position>3);
+                YYABORT;
+            }
+
+            if ( sBucketCnt <= 0 || sBucketCnt > QMS_MAX_BUCKET_CNT )
+            {
+                SET_POSITION_IN_HINTS(PARAM->mPosition, $<position>3);
+                YYABORT;
+            }
+
+            QCP_STRUCT_ALLOC($<hints>$, qmsHints);
+            QCP_SET_INIT_HINTS($<hints>$);
+
+            $<hints>$->hashBucketCnt = sBucketCnt;
+        }
+        /* ALTI_GROUP_BUCKET_COUNT ( n ) */
+        else if ( idlOS::strMatch( "ALTI_GROUP_BUCKET_COUNT", 23, QTEXT+$<position>1.offset, $<position>1.size ) == 0 )
+        {
+            SLong       sBucketCnt;
+
+            if ( qtc::getBigint( QTEXT, &sBucketCnt, &$<position>3 ) != IDE_SUCCESS )
+            {
+                SET_POSITION_IN_HINTS(PARAM->mPosition, $<position>3);
+                YYABORT;
+            }
+
+            if ( sBucketCnt <= 0 || sBucketCnt > QMS_MAX_BUCKET_CNT )
+            {
+                SET_POSITION_IN_HINTS(PARAM->mPosition, $<position>3);
+                YYABORT;
+            }
+
+            QCP_STRUCT_ALLOC($<hints>$, qmsHints);
+            QCP_SET_INIT_HINTS($<hints>$);
+
+            $<hints>$->groupBucketCnt = sBucketCnt;
+        }
+        /* ALTI_SET_BUCKET_COUNT ( n ) */
+        else if ( idlOS::strMatch( "ALTI_SET_BUCKET_COUNT", 21, QTEXT+$<position>1.offset, $<position>1.size ) == 0 )
+        {
+            SLong       sBucketCnt;
+
+            if ( qtc::getBigint( QTEXT, &sBucketCnt, &$<position>3 ) != IDE_SUCCESS )
+            {
+                SET_POSITION_IN_HINTS(PARAM->mPosition, $<position>3);
+                YYABORT;
+            }
+
+            if ( sBucketCnt <= 0 || sBucketCnt > QMS_MAX_BUCKET_CNT )
+            {
+                SET_POSITION_IN_HINTS(PARAM->mPosition, $<position>3);
+                YYABORT;
+            }
+
+            QCP_STRUCT_ALLOC($<hints>$, qmsHints);
+            QCP_SET_INIT_HINTS($<hints>$);
+
+            $<hints>$->setBucketCnt = sBucketCnt;
+        }
         else
         {
             SET_POSITION_IN_HINTS(PARAM->mPosition, $<position>1);
@@ -2064,7 +2358,7 @@ hint_with_parameter
 
 #include "qcphl.h"
 
-void qcpherror(char* /*msg*/)
+void qcpherror(const char* /*msg*/)
 {
     IDE_SET(ideSetErrorCode(qpERR_ABORT_QCP_SYNTAX, "hints syntax error"));
 }

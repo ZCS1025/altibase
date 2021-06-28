@@ -16,7 +16,7 @@
  
 
 /*******************************************************************************
- * $Id: sdcDPathInsertMgr.cpp 84032 2018-09-19 05:32:05Z kclee $
+ * $Id: sdcDPathInsertMgr.cpp 83870 2018-09-03 04:32:39Z kclee $
  ******************************************************************************/
 
 #include <sdcReq.h>
@@ -31,7 +31,7 @@ sdcDPathStat    sdcDPathInsertMgr::mDPathStat;
 iduMutex        sdcDPathInsertMgr::mStatMtx;
 
 /*******************************************************************************
- * Description : static ë³€ìˆ˜ë“¤ì„ ì´ˆê¸°í™” í•œë‹¤.
+ * Description : static º¯¼öµéÀ» ÃÊ±âÈ­ ÇÑ´Ù.
  ******************************************************************************/
 IDE_RC sdcDPathInsertMgr::initializeStatic()
 {
@@ -47,7 +47,7 @@ IDE_RC sdcDPathInsertMgr::initializeStatic()
                             (SChar*)"DIRECT_PATH_ENTRY_MEMPOOL",
                             1, /* List Count */
                             ID_SIZEOF( sdcDPathEntry ),
-                            16, /* ìƒì„±ì‹œ ê°€ì§€ê³  ìˆëŠ” Itemê°¯ìˆ˜ */
+                            16, /* »ı¼º½Ã °¡Áö°í ÀÖ´Â Item°¹¼ö */
                             IDU_AUTOFREE_CHUNK_LIMIT,			/* ChunkLimit */
                             ID_TRUE,							/* UseMutex */
                             IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,	/* AlignSize */
@@ -58,14 +58,14 @@ IDE_RC sdcDPathInsertMgr::initializeStatic()
               != IDE_SUCCESS);			
     sState = 3;
 
-    // í†µê³„ ê°’ì— ì ‘ê·¼ ì‹œ, ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•œ Mutex ì´ˆê¸°í™”
+    // Åë°è °ª¿¡ Á¢±Ù ½Ã, µ¿½Ã¼º Á¦¾î¸¦ À§ÇÑ Mutex ÃÊ±âÈ­
     IDE_TEST( mStatMtx.initialize( (SChar*)"DIRECT_PATH_INSERT_STAT_MUTEX",
                                     IDU_MUTEX_KIND_NATIVE,
                                     IDV_WAIT_INDEX_NULL )
               != IDE_SUCCESS );
     sState = 4;
 
-    // í†µê³„ ì •ë³´ ìë£Œêµ¬ì¡° mDPathStat ì´ˆê¸°í™”
+    // Åë°è Á¤º¸ ÀÚ·á±¸Á¶ mDPathStat ÃÊ±âÈ­
     mDPathStat.mCommitTXCnt    = 0;
     mDPathStat.mAbortTXCnt     = 0;
     mDPathStat.mInsRowCnt      = 0;
@@ -97,7 +97,7 @@ IDE_RC sdcDPathInsertMgr::initializeStatic()
 }
 
 /*******************************************************************************
- * Description : static ë³€ìˆ˜ë“¤ì„ íŒŒê´´í•œë‹¤.
+ * Description : static º¯¼öµéÀ» ÆÄ±«ÇÑ´Ù.
  ******************************************************************************/
 IDE_RC sdcDPathInsertMgr::destroyStatic()
 {
@@ -114,18 +114,18 @@ IDE_RC sdcDPathInsertMgr::destroyStatic()
 }
 
 /*******************************************************************************
- * Description : Transactionë‹¹ Direct-Path INSERT ê´€ë¦¬ìš© ìë£Œêµ¬ì¡°ì¸ DPathEntryë¥¼
- *          ìƒì„±í•œë‹¤.
+ * Description : Transaction´ç Direct-Path INSERT °ü¸®¿ë ÀÚ·á±¸Á¶ÀÎ DPathEntry¸¦
+ *          »ı¼ºÇÑ´Ù.
  *
  * Implementation :
- *          1. sdcDPathEntry í•˜ë‚˜ ë©”ëª¨ë¦¬ í• ë‹¹
- *          2. ë©¤ë²„ ë³€ìˆ˜ ì´ˆê¸°í™”
- *          3. DPathBuffInfo ìƒì„±
- *          4. DPathInfo ìƒì„±
- *          5. aDPathEntry ë§¤ê°œë³€ìˆ˜ì— í• ë‹¹í•˜ì—¬ OUT
+ *          1. sdcDPathEntry ÇÏ³ª ¸Ş¸ğ¸® ÇÒ´ç
+ *          2. ¸â¹ö º¯¼ö ÃÊ±âÈ­
+ *          3. DPathBuffInfo »ı¼º
+ *          4. DPathInfo »ı¼º
+ *          5. aDPathEntry ¸Å°³º¯¼ö¿¡ ÇÒ´çÇÏ¿© OUT
  *
  * Parameters :
- *      aDPathEntry - [OUT] ìƒì„±í•œ DPathEntryë¥¼ í• ë‹¹í•˜ì—¬ ë°˜í™˜í•  OUT ë§¤ê°œë³€ìˆ˜
+ *      aDPathEntry - [OUT] »ı¼ºÇÑ DPathEntry¸¦ ÇÒ´çÇÏ¿© ¹İÈ¯ÇÒ OUT ¸Å°³º¯¼ö
  ******************************************************************************/
 IDE_RC sdcDPathInsertMgr::allocDPathEntry( void **aDPathEntry )
 {
@@ -134,7 +134,7 @@ IDE_RC sdcDPathInsertMgr::allocDPathEntry( void **aDPathEntry )
 
     IDE_DASSERT( aDPathEntry != NULL );
 
-    // DPathEntry í•˜ë‚˜ë¥¼ ë©”ëª¨ë¦¬ í• ë‹¹í•˜ê³  ì´ˆê¸°í™” í•œë‹¤.
+    // DPathEntry ÇÏ³ª¸¦ ¸Ş¸ğ¸® ÇÒ´çÇÏ°í ÃÊ±âÈ­ ÇÑ´Ù.
     /* sdcDPathInsertMgr_allocDPathEntry_alloc_DPathEntry.tc */
     IDU_FIT_POINT("sdcDPathInsertMgr::allocDPathEntry::alloc::DPathEntry");
     IDE_TEST( mDPathEntryPool.alloc( (void**)&sDPathEntry ) != IDE_SUCCESS );
@@ -142,12 +142,12 @@ IDE_RC sdcDPathInsertMgr::allocDPathEntry( void **aDPathEntry )
 
     sDPathEntry = new ( sDPathEntry ) sdcDPathEntry();
 
-    // DPathBuffInfoë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+    // DPathBuffInfo¸¦ ÃÊ±âÈ­ÇÑ´Ù.
     IDE_TEST( sdbDPathBufferMgr::initDPathBuffInfo(&sDPathEntry->mDPathBuffInfo)
               != IDE_SUCCESS );
     sState = 2;
 
-    // DPathInfoë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+    // DPathInfo¸¦ ÃÊ±âÈ­ÇÑ´Ù.
     IDE_TEST( sdpDPathInfoMgr::initDPathInfo(&sDPathEntry->mDPathInfo)
               != IDE_SUCCESS );
     sState = 3;
@@ -155,7 +155,7 @@ IDE_RC sdcDPathInsertMgr::allocDPathEntry( void **aDPathEntry )
     /* FIT/ART/sm/Projects/PROJ-2068/PROJ-2068.ts  */
     IDU_FIT_POINT( "1.PROJ-2068@sdcDPathInsertMgr::allocDPathEntry" );
 
-    // OUT ë§¤ê°œë³€ìˆ˜ì— ë‹¬ì•„ì¤€ë‹¤.
+    // OUT ¸Å°³º¯¼ö¿¡ ´Ş¾ÆÁØ´Ù.
     *aDPathEntry = (void*)sDPathEntry;
 
     return IDE_SUCCESS;
@@ -183,16 +183,16 @@ IDE_RC sdcDPathInsertMgr::allocDPathEntry( void **aDPathEntry )
 }
 
 /*******************************************************************************
- * Description : Transactionë‹¹ Direct-Path INSERT ê´€ë¦¬ìš© ìë£Œêµ¬ì¡°ì¸ DPathEntryë¥¼
- *          íŒŒê´´í•œë‹¤.
+ * Description : Transaction´ç Direct-Path INSERT °ü¸®¿ë ÀÚ·á±¸Á¶ÀÎ DPathEntry¸¦
+ *          ÆÄ±«ÇÑ´Ù.
  *
  * Implementation :
- *          1. mDPathBuffInfo íŒŒê´´
- *          2. mDPathInfo íŒŒê´´
- *          3. DPathEntry ë©”ëª¨ë¦¬ í• ë‹¹ í•´ì œ
+ *          1. mDPathBuffInfo ÆÄ±«
+ *          2. mDPathInfo ÆÄ±«
+ *          3. DPathEntry ¸Ş¸ğ¸® ÇÒ´ç ÇØÁ¦
  *
  * Parameters :
- *      aDPathEntry - [IN] íŒŒê´´í•  DPathEntry
+ *      aDPathEntry - [IN] ÆÄ±«ÇÒ DPathEntry
  ******************************************************************************/
 IDE_RC sdcDPathInsertMgr::destDPathEntry( void *aDPathEntry )
 {
@@ -202,12 +202,12 @@ IDE_RC sdcDPathInsertMgr::destDPathEntry( void *aDPathEntry )
 
     sDPathEntry = (sdcDPathEntry*)aDPathEntry;
 
-    // mDPathBuffInfo íŒŒê´´
+    // mDPathBuffInfo ÆÄ±«
     IDE_TEST( sdbDPathBufferMgr::destDPathBuffInfo(
                                                 &sDPathEntry->mDPathBuffInfo)
               != IDE_SUCCESS );
 
-    // mDPathInfo íŒŒê´´
+    // mDPathInfo ÆÄ±«
     IDE_TEST( sdpDPathInfoMgr::destDPathInfo(&sDPathEntry->mDPathInfo)
               != IDE_SUCCESS );
 
@@ -221,21 +221,21 @@ IDE_RC sdcDPathInsertMgr::destDPathEntry( void *aDPathEntry )
 }
 
 /*******************************************************************************
- * Description : DPathSegInfoë¥¼ ì–»ì–´ì˜¨ë‹¤.
- *          ì—¬ê¸°ì„œ í• ë‹¹ ë° ìƒì„±í•œ DPathSegInfoëŠ” Commitì‹œì— mergeì´í›„, ê·¸ ë•Œ
- *          ê¹Œì§€ ìƒì„±í•œ ëª¨ë“  DPathSegInfoë¥¼ í•œë²ˆì— íŒŒê´´í•´ ì¤€ë‹¤.
+ * Description : DPathSegInfo¸¦ ¾ò¾î¿Â´Ù.
+ *          ¿©±â¼­ ÇÒ´ç ¹× »ı¼ºÇÑ DPathSegInfo´Â Commit½Ã¿¡ mergeÀÌÈÄ, ±× ¶§
+ *          ±îÁö »ı¼ºÇÑ ¸ğµç DPathSegInfo¸¦ ÇÑ¹ø¿¡ ÆÄ±«ÇØ ÁØ´Ù.
  *
  * Implementation :
- *      1. aTransì— ë‹¬ë ¤ìˆëŠ” DPathEntryë¥¼ ì–»ì–´ì˜¨ë‹¤.
- *      2. aTableOIDì— ëŒ€ì‘í•˜ëŠ” DPathSegInfoë¥¼ ë§Œë“¤ì–´ì„œ DPathEntry->DPathInfoì—
- *         ë§¤ë‹¬ê³ , ë°˜í™˜í•´ ì¤€ë‹¤.
+ *      1. aTrans¿¡ ´Ş·ÁÀÖ´Â DPathEntry¸¦ ¾ò¾î¿Â´Ù.
+ *      2. aTableOID¿¡ ´ëÀÀÇÏ´Â DPathSegInfo¸¦ ¸¸µé¾î¼­ DPathEntry->DPathInfo¿¡
+ *         ¸Å´Ş°í, ¹İÈ¯ÇØ ÁØ´Ù.
  *
  * Parameters :
- *      aStatistics     - [IN] í†µê³„
- *      aTrans          - [IN] DPath INSERTë¥¼ ìˆ˜í–‰í•˜ëŠ” Transactionì˜ í¬ì¸í„°
- *      aTableOID       - [IN] DPath INSERTë¥¼ ìˆ˜í–‰í•  ëŒ€ìƒ Tableì˜ OID
- *                             ëŒ€ì‘í•˜ëŠ” DPathSegInfoë¥¼ ì–»ì–´ì˜¤ê¸° ìœ„í•œ ê°’
- *      aDPathSegInfo   - [OUT] ì–»ì–´ì˜¨ DPathSegInfoë¥¼ í• ë‹¹í•˜ì—¬ ë°˜í™˜
+ *      aStatistics     - [IN] Åë°è
+ *      aTrans          - [IN] DPath INSERT¸¦ ¼öÇàÇÏ´Â TransactionÀÇ Æ÷ÀÎÅÍ
+ *      aTableOID       - [IN] DPath INSERT¸¦ ¼öÇàÇÒ ´ë»ó TableÀÇ OID
+ *                             ´ëÀÀÇÏ´Â DPathSegInfo¸¦ ¾ò¾î¿À±â À§ÇÑ °ª
+ *      aDPathSegInfo   - [OUT] ¾ò¾î¿Â DPathSegInfo¸¦ ÇÒ´çÇÏ¿© ¹İÈ¯
  ******************************************************************************/
 IDE_RC sdcDPathInsertMgr::allocDPathSegInfo(
                                         idvSQL             * aStatistics,
@@ -255,14 +255,14 @@ IDE_RC sdcDPathInsertMgr::allocDPathSegInfo(
 
     sDPathSegInfo = (sdpDPathSegInfo*)*aDPathSegInfo;
     
-    // DPathEntryë¥¼ ì–»ì–´ì˜¨ë‹¤.
+    // DPathEntry¸¦ ¾ò¾î¿Â´Ù.
     sDPathEntry = (sdcDPathEntry*)smLayerCallback::getDPathEntry( aTrans );
     if( sDPathEntry == NULL )
     {
-        // aTransì— ëŒ€í•˜ì—¬ allocDPathEntryë¥¼ ë¨¼ì € ìˆ˜í–‰í•˜ì§€ ì•Šì€ ìƒíƒœì—ì„œ
-        // allocDPathSegInfoê°€ í˜¸ì¶œëœ ìƒí™©.
+        // aTrans¿¡ ´ëÇÏ¿© allocDPathEntry¸¦ ¸ÕÀú ¼öÇàÇÏÁö ¾ÊÀº »óÅÂ¿¡¼­
+        // allocDPathSegInfo°¡ È£ÃâµÈ »óÈ².
         //
-        // allocDPathEntryë¥¼ ë¨¼ì € í˜¸ì¶œí•´ ì£¼ì–´ì•¼ í•œë‹¤.
+        // allocDPathEntry¸¦ ¸ÕÀú È£ÃâÇØ ÁÖ¾î¾ß ÇÑ´Ù.
         sTID = smLayerCallback::getTransID( aTrans );
         ideLog::log( IDE_SERVER_0,
                      "Trans ID  : %u",
@@ -270,7 +270,7 @@ IDE_RC sdcDPathInsertMgr::allocDPathSegInfo(
         IDE_ASSERT( 0 );
     }
 
-    // DPathSegInfoë¥¼ ì–»ì–´ì˜¨ë‹¤.
+    // DPathSegInfo¸¦ ¾ò¾î¿Â´Ù.
     sDPathInfo = &sDPathEntry->mDPathInfo;
 
     IDE_TEST( sdpDPathInfoMgr::createDPathSegInfo(aStatistics,
@@ -290,16 +290,16 @@ IDE_RC sdcDPathInsertMgr::allocDPathSegInfo(
 }
 
 /*******************************************************************************
- * Description : BUG-30109 Direct-Path Bufferì— APPEND PAGE LISTì— ë‹¬ë ¤ìˆëŠ”
- *          í˜ì´ì§€ ë“¤ì€ ìƒˆë¡œìš´ í˜ì´ì§€ í• ë‹¹ ì‹œë„ê°€ ìˆì„ ë•Œ, ì´ì „ì— í• ë‹¹ëœ í˜ì´ì§€
- *          ê°€ Update Only ìƒíƒœì¸ì§€ í™•ì¸í•˜ì—¬ setDirtyPageë¥¼ ìˆ˜í–‰í•œë‹¤.
- *           ê° ì»¤ì„œ ë‹¨ìœ„ì—ì„œ ë§ˆì§€ë§‰ìœ¼ë¡œ í• ë‹¹ëœ í˜ì´ì§€ëŠ”, ê·¸ í›„ ì¶”ê°€ì ì¸ í˜ì´ì§€
- *          í• ë‹¹ì´ ì´ë£¨ì–´ ì§€ì§€ ì•Šê¸° ë•Œë¬¸ì— setDirtyPageë  ê¸°íšŒë¥¼ ì–»ì„ ìˆ˜ ì—†ë‹¤.
- *          ë”°ë¼ì„œ Cursorë¥¼ close í•  ë•Œ, aDPathSegInfoì—ì„œ ë§ˆì§€ë§‰ìœ¼ë¡œ í• ë‹¹ëœ
- *          í˜ì´ì§€ëŠ” ë³„ë„ë¡œ setDirtyPage()ë¥¼ ìˆ˜í–‰í•´ ì£¼ì–´ì•¼ í•œë‹¤.
+ * Description : BUG-30109 Direct-Path Buffer¿¡ APPEND PAGE LIST¿¡ ´Ş·ÁÀÖ´Â
+ *          ÆäÀÌÁö µéÀº »õ·Î¿î ÆäÀÌÁö ÇÒ´ç ½Ãµµ°¡ ÀÖÀ» ¶§, ÀÌÀü¿¡ ÇÒ´çµÈ ÆäÀÌÁö
+ *          °¡ Update Only »óÅÂÀÎÁö È®ÀÎÇÏ¿© setDirtyPage¸¦ ¼öÇàÇÑ´Ù.
+ *           °¢ Ä¿¼­ ´ÜÀ§¿¡¼­ ¸¶Áö¸·À¸·Î ÇÒ´çµÈ ÆäÀÌÁö´Â, ±× ÈÄ Ãß°¡ÀûÀÎ ÆäÀÌÁö
+ *          ÇÒ´çÀÌ ÀÌ·ç¾î ÁöÁö ¾Ê±â ¶§¹®¿¡ setDirtyPageµÉ ±âÈ¸¸¦ ¾òÀ» ¼ö ¾ø´Ù.
+ *          µû¶ó¼­ Cursor¸¦ close ÇÒ ¶§, aDPathSegInfo¿¡¼­ ¸¶Áö¸·À¸·Î ÇÒ´çµÈ
+ *          ÆäÀÌÁö´Â º°µµ·Î setDirtyPage()¸¦ ¼öÇàÇØ ÁÖ¾î¾ß ÇÑ´Ù.
  * 
  * Parameters :
- *      aDPathSegInfo   - [IN] sdpDPathSegInfoì˜ í¬ì¸í„°
+ *      aDPathSegInfo   - [IN] sdpDPathSegInfoÀÇ Æ÷ÀÎÅÍ
  ******************************************************************************/
 IDE_RC sdcDPathInsertMgr::setDirtyLastAllocPage( void *aDPathSegInfo )
 {
@@ -324,17 +324,17 @@ IDE_RC sdcDPathInsertMgr::setDirtyLastAllocPage( void *aDPathSegInfo )
 }
 
 /*******************************************************************************
- * Description : aTIDì— í•´ë‹¹í•˜ëŠ” Transactionì˜ DPath INSERTì˜ commit ì‘ì—…ì„
- *          ìˆ˜í–‰í•´ ì¤€ë‹¤.
+ * Description : aTID¿¡ ÇØ´çÇÏ´Â TransactionÀÇ DPath INSERTÀÇ commit ÀÛ¾÷À»
+ *          ¼öÇàÇØ ÁØ´Ù.
  *
  * Implementation :
- *          1. aTIDì— í•´ë‹¹í•˜ëŠ” DPathEntry ì–»ê¸°
- *          2. Flush ìˆ˜í–‰
- *          3. Merge ìˆ˜í–‰
+ *          1. aTID¿¡ ÇØ´çÇÏ´Â DPathEntry ¾ò±â
+ *          2. Flush ¼öÇà
+ *          3. Merge ¼öÇà
  *
  * Parameters :
- *      aStatistics     - [IN] í†µê³„
- *      aDathEntry      - [IN] Commit ì‘ì—…ì„ ìˆ˜í–‰í•  DPathEntry
+ *      aStatistics     - [IN] Åë°è
+ *      aDathEntry      - [IN] Commit ÀÛ¾÷À» ¼öÇàÇÒ DPathEntry
  ******************************************************************************/
 IDE_RC sdcDPathInsertMgr::commit( idvSQL  * aStatistics,
                                   void    * aTrans,
@@ -346,16 +346,16 @@ IDE_RC sdcDPathInsertMgr::commit( idvSQL  * aStatistics,
     IDE_DASSERT( aStatistics != NULL );
     IDE_DASSERT( aDPathEntry != NULL );
 
-    // DPathEntryë¥¼ ì–»ì–´ì˜¨ë‹¤.
+    // DPathEntry¸¦ ¾ò¾î¿Â´Ù.
     sDPathEntry = (sdcDPathEntry*)aDPathEntry;
 
-    // ëª¨ë“  Pageë¥¼ Flush í•œë‹¤.
+    // ¸ğµç Page¸¦ Flush ÇÑ´Ù.
     IDE_TEST_RAISE( sdbDPathBufferMgr::flushAllPage(
                                         aStatistics,
                                         &sDPathEntry->mDPathBuffInfo)
                     != IDE_SUCCESS, commit_failed );
 
-    // DPath INSERTë¥¼ ìˆ˜í–‰í•œ ëª¨ë“  Segmentì˜ ë³€í™”ë¥¼ mergeí•´ ì¤€ë‹¤.
+    // DPath INSERT¸¦ ¼öÇàÇÑ ¸ğµç SegmentÀÇ º¯È­¸¦ mergeÇØ ÁØ´Ù.
     IDE_TEST_RAISE( sdpDPathInfoMgr::mergeAllSegOfDPathInfo(
                                                  aStatistics,
                                                  aTrans,
@@ -400,15 +400,15 @@ IDE_RC sdcDPathInsertMgr::commit( idvSQL  * aStatistics,
 }
 
 /*******************************************************************************
- * Description : aTIDì— í•´ë‹¹í•˜ëŠ” Transactionì˜ DPath INSERTì˜ abort ì‘ì—…ì„
- *          ìˆ˜í–‰í•´ ì¤€ë‹¤.
+ * Description : aTID¿¡ ÇØ´çÇÏ´Â TransactionÀÇ DPath INSERTÀÇ abort ÀÛ¾÷À»
+ *          ¼öÇàÇØ ÁØ´Ù.
  *
  * Implementation :
- *          1. DPathBuffInfoì— í˜ì´ì§€ ì •ë³´ë¥¼ ëª¨ë‘ ë‚ ë¦¼
+ *          1. DPathBuffInfo¿¡ ÆäÀÌÁö Á¤º¸¸¦ ¸ğµÎ ³¯¸²
  *
  * Parameters :
- *      aStatistics     - [IN] í†µê³„
- *      aDPathEntry     - [IN] Abort ì‘ì—…ì„ ìˆ˜í–‰í•  ëŒ€ìƒ DPathEntry
+ *      aStatistics     - [IN] Åë°è
+ *      aDPathEntry     - [IN] Abort ÀÛ¾÷À» ¼öÇàÇÒ ´ë»ó DPathEntry
  ******************************************************************************/
 IDE_RC sdcDPathInsertMgr::abort( void * aDPathEntry )
 {
@@ -417,7 +417,7 @@ IDE_RC sdcDPathInsertMgr::abort( void * aDPathEntry )
 
     IDE_DASSERT( aDPathEntry != NULL );
 
-    // DPathEntryë¥¼ ì–»ì–´ì˜¨ë‹¤.
+    // DPathEntry¸¦ ¾ò¾î¿Â´Ù.
     sDPathEntry = (sdcDPathEntry*)aDPathEntry;
 
     IDE_TEST( sdbDPathBufferMgr::cancelAll(&sDPathEntry->mDPathBuffInfo)
@@ -455,16 +455,16 @@ IDE_RC sdcDPathInsertMgr::abort( void * aDPathEntry )
 }
 
 /*******************************************************************************
- * Description : aTransì— í•´ë‹¹í•˜ëŠ” Transactionì˜ DPathBuffInfoë¥¼ ë°˜í™˜í•œë‹¤.
+ * Description : aTrans¿¡ ÇØ´çÇÏ´Â TransactionÀÇ DPathBuffInfo¸¦ ¹İÈ¯ÇÑ´Ù.
  * 
  * Implementation :
- *          1. aTransì— í•´ë‹¹í•˜ëŠ” DPathEntry ì–»ê¸°
- *          2. DPathBuffInfo í™•ë³´ í›„ ë°˜í™˜
+ *          1. aTrans¿¡ ÇØ´çÇÏ´Â DPathEntry ¾ò±â
+ *          2. DPathBuffInfo È®º¸ ÈÄ ¹İÈ¯
  *
  * Parameters :
- *      aTrans  - [IN] ì°¾ì„ ëŒ€ìƒ DPathEntryì˜ Transaction
+ *      aTrans  - [IN] Ã£À» ´ë»ó DPathEntryÀÇ Transaction
  *
- * Return : ì¡´ì¬í•˜ë©´ DPathBuffInfoì˜ í¬ì¸í„°, ì—†ìœ¼ë©´ NULL
+ * Return : Á¸ÀçÇÏ¸é DPathBuffInfoÀÇ Æ÷ÀÎÅÍ, ¾øÀ¸¸é NULL
  ******************************************************************************/
 void* sdcDPathInsertMgr::getDPathBuffInfo( void *aTrans )
 {
@@ -484,12 +484,12 @@ void* sdcDPathInsertMgr::getDPathBuffInfo( void *aTrans )
 }
 
 /*******************************************************************************
- * Description : aTransì— í•´ë‹¹í•˜ëŠ” DPathInfoë¥¼ ì°¾ì•„ì¤€ë‹¤.
+ * Description : aTrans¿¡ ÇØ´çÇÏ´Â DPathInfo¸¦ Ã£¾ÆÁØ´Ù.
  *
  * Parameters :
- *      aTrans    - [IN] ì°¾ì„ DPathInfoì˜ Transaction
+ *      aTrans    - [IN] Ã£À» DPathInfoÀÇ Transaction
  *
- * Return : ì¡´ì¬í•˜ë©´ DPathInfoì˜ í¬ì¸í„°, ì—†ìœ¼ë©´ NULL
+ * Return : Á¸ÀçÇÏ¸é DPathInfoÀÇ Æ÷ÀÎÅÍ, ¾øÀ¸¸é NULL
  ******************************************************************************/
 void* sdcDPathInsertMgr::getDPathInfo( void *aTrans )
 {
@@ -509,13 +509,13 @@ void* sdcDPathInsertMgr::getDPathInfo( void *aTrans )
 }
 
 /*******************************************************************************
- * Description : aTIDì— í•´ë‹¹í•˜ëŠ” DPathInfoë¥¼ ì°¾ì•„ì¤€ë‹¤.
+ * Description : aTID¿¡ ÇØ´çÇÏ´Â DPathInfo¸¦ Ã£¾ÆÁØ´Ù.
  *
  * Parameters :
- *      aTrans      - [IN] ì°¾ì„ DPathInfoì˜ Transaction
- *      aTableOID   - [IN] ì°¾ì„ DPathSegInfoì˜ ëŒ€ìƒ Tableì˜ OID
+ *      aTrans      - [IN] Ã£À» DPathInfoÀÇ Transaction
+ *      aTableOID   - [IN] Ã£À» DPathSegInfoÀÇ ´ë»ó TableÀÇ OID
  *
- * Return : ì¡´ì¬í•˜ë©´ DPathSegInfoì˜ í¬ì¸í„°, ì—†ìœ¼ë©´ NULL
+ * Return : Á¸ÀçÇÏ¸é DPathSegInfoÀÇ Æ÷ÀÎÅÍ, ¾øÀ¸¸é NULL
  ******************************************************************************/
 void* sdcDPathInsertMgr::getDPathSegInfo( void    * aTrans,
                                           smOID     aTableOID )
@@ -540,10 +540,10 @@ void* sdcDPathInsertMgr::getDPathSegInfo( void    * aTrans,
 }
 
 /*******************************************************************************
- * Description : X$DIRECT_PATH_INSERTë¥¼ ìœ„í•œ í†µê³„ ê°’ì„ ë°˜í™˜í•œë‹¤.
+ * Description : X$DIRECT_PATH_INSERT¸¦ À§ÇÑ Åë°è °ªÀ» ¹İÈ¯ÇÑ´Ù.
  *
  * Parameters :
- *      aDPathStat  - [OUT] DPath í†µê³„ ê°’ì„ í• ë‹¹í•˜ì—¬ ë°˜í™˜í•´ì¤„ OUT íŒŒë¼ë¯¸í„°
+ *      aDPathStat  - [OUT] DPath Åë°è °ªÀ» ÇÒ´çÇÏ¿© ¹İÈ¯ÇØÁÙ OUT ÆÄ¶ó¹ÌÅÍ
  ******************************************************************************/
 IDE_RC sdcDPathInsertMgr::getDPathStat( sdcDPathStat *aDPathStat )
 {
@@ -570,10 +570,10 @@ IDE_RC sdcDPathInsertMgr::getDPathStat( sdcDPathStat *aDPathStat )
 }
 
 /*******************************************************************************
- * Description : DPathEntry ê°’ì„ dump í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+ * Description : DPathEntry °ªÀ» dump ÇÏ±â À§ÇÑ ÇÔ¼ö
  *
  * Parameters :
- *      aDPathEntry - [IN] dumpí•  DPathEntry
+ *      aDPathEntry - [IN] dumpÇÒ DPathEntry
  ******************************************************************************/
 IDE_RC sdcDPathInsertMgr::dumpDPathEntry( sdcDPathEntry *aDPathEntry )
 {
@@ -605,10 +605,10 @@ IDE_RC sdcDPathInsertMgr::dumpDPathEntry( sdcDPathEntry *aDPathEntry )
 }
 
 /*******************************************************************************
- * Description : aTransì— ë‹¬ë¦° DPathEntry ê°’ì„ dump í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+ * Description : aTrans¿¡ ´Ş¸° DPathEntry °ªÀ» dump ÇÏ±â À§ÇÑ ÇÔ¼ö
  *
  * Parameters :
- *      aTrans  - [IN] ë§¤ë‹¬ë¦° DPathEntryë¥¼ dumpí•  Transaction
+ *      aTrans  - [IN] ¸Å´Ş¸° DPathEntry¸¦ dumpÇÒ Transaction
  ******************************************************************************/
 IDE_RC sdcDPathInsertMgr::dumpDPathEntry( void *aTrans )
 {

@@ -21,11 +21,11 @@
  * Description :
  *     UPTE(UPdaTE) Node
  *
- *     Í¥ÄÍ≥ÑÌòï Î™®Îç∏ÏóêÏÑú deleteÎ•º ÏàòÌñâÌïòÎäî Plan Node Ïù¥Îã§.
+ *     ∞¸∞Ë«¸ ∏µ®ø°º≠ delete∏¶ ºˆ«‡«œ¥¬ Plan Node ¿Ã¥Ÿ.
  *
- * Ïö©Ïñ¥ ÏÑ§Î™Ö :
+ * øÎæÓ º≥∏Ì :
  *
- * ÏïΩÏñ¥ :
+ * æ‡æÓ :
  *
  **********************************************************************/
 
@@ -47,17 +47,17 @@
 //-----------------
 
 // qmncUPTE.flag
-// LimitÏùÑ Í∞ÄÏßÄÎäîÏßÄÏóê ÎåÄÌïú Ïó¨Î∂Ä
+// Limit¿ª ∞°¡ˆ¥¬¡ˆø° ¥Î«— ø©∫Œ
 # define QMNC_UPTE_LIMIT_MASK               (0x00000002)
 # define QMNC_UPTE_LIMIT_FALSE              (0x00000000)
 # define QMNC_UPTE_LIMIT_TRUE               (0x00000002)
 
-// VIEWÏóê ÎåÄÌïú updateÏù∏ÏßÄ Ïó¨Î∂Ä
+// VIEWø° ¥Î«— update¿Œ¡ˆ ø©∫Œ
 # define QMNC_UPTE_VIEW_MASK                (0x00000004)
 # define QMNC_UPTE_VIEW_FALSE               (0x00000000)
 # define QMNC_UPTE_VIEW_TRUE                (0x00000004)
 
-// VIEWÏóê ÎåÄÌïú update key preserved property
+// VIEWø° ¥Î«— update key preserved property
 # define QMNC_UPTE_VIEW_KEY_PRESERVED_MASK  (0x00000008)
 # define QMNC_UPTE_VIEW_KEY_PRESERVED_FALSE (0x00000000)
 # define QMNC_UPTE_VIEW_KEY_PRESERVED_TRUE  (0x00000008)
@@ -65,6 +65,10 @@
 # define QMNC_UPTE_PARTITIONED_MASK         (0x00000010)
 # define QMNC_UPTE_PARTITIONED_FALSE        (0x00000000)
 # define QMNC_UPTE_PARTITIONED_TRUE         (0x00000010)
+
+# define QMNC_UPTE_MULTIPLE_TABLE_MASK      (0x00000020)
+# define QMNC_UPTE_MULTIPLE_TABLE_FALSE     (0x00000000)
+# define QMNC_UPTE_MULTIPLE_TABLE_TRUE      (0x00000020)
 
 //-----------------
 // Data Node Flags
@@ -91,7 +95,7 @@
 # define QMND_UPTE_INDEX_CURSOR_INITED      (0x00000008)
 
 // qmndUPTE.flag
-// selected index table cursorÎ•º updateÌï¥ÏïºÌïòÎäîÏßÄ Ïó¨Î∂Ä
+// selected index table cursor∏¶ update«ÿæﬂ«œ¥¬¡ˆ ø©∫Œ
 # define QMND_UPTE_SELECTED_INDEX_CURSOR_MASK  (0x00000010)
 # define QMND_UPTE_SELECTED_INDEX_CURSOR_NONE  (0x00000000)
 # define QMND_UPTE_SELECTED_INDEX_CURSOR_TRUE  (0x00000010)
@@ -99,7 +103,7 @@
 typedef struct qmncUPTE  
 {
     //---------------------------------
-    // Code ÏòÅÏó≠ Í≥µÌÜµ Ï†ïÎ≥¥
+    // Code øµø™ ∞¯≈Î ¡§∫∏
     //---------------------------------
 
     qmnPlan               plan;
@@ -107,13 +111,13 @@ typedef struct qmncUPTE
     UInt                  planID;
 
     //---------------------------------
-    // querySet Í¥ÄÎ†® Ï†ïÎ≥¥
+    // querySet ∞¸∑√ ¡§∫∏
     //---------------------------------
     
     qmsTableRef         * tableRef;
 
     //---------------------------------
-    // update Í¥ÄÎ†® Ï†ïÎ≥¥
+    // update ∞¸∑√ ¡§∫∏
     //---------------------------------
     
     // update columns
@@ -131,29 +135,29 @@ typedef struct qmncUPTE
     UInt                  compressedTuple;
     mtdIsNullFunc       * isNull;
     
-    // sequence Ï†ïÎ≥¥
+    // sequence ¡§∫∏
     qcParseSeqCaches    * nextValSeqs;
     
-    // instead of triggerÏù∏ Í≤ΩÏö∞
+    // instead of trigger¿Œ ∞ÊøÏ
     idBool                insteadOfTrigger;
 
-    // PROJ-2551 simple query ÏµúÏ†ÅÌôî
+    // PROJ-2551 simple query √÷¿˚»≠
     idBool                isSimple;    // simple update
     qmnValueInfo        * simpleValues;
-    UInt                  simpleValueBufSize;  // c-type valueÎ•º mt-type valueÎ°ú Î≥ÄÌôò
+    UInt                  simpleValueBufSize;  // c-type value∏¶ mt-type value∑Œ ∫Ø»Ø
     
     //---------------------------------
-    // partition Í¥ÄÎ†® Ï†ïÎ≥¥
+    // partition ∞¸∑√ ¡§∫∏
     //---------------------------------
 
-    // row movement updateÏù∏ Í≤ΩÏö∞
+    // row movement update¿Œ ∞ÊøÏ
     qmsTableRef         * insertTableRef;
     smiColumnList      ** updatePartColumnList;
     idBool                isRowMovementUpdate;
     qmoUpdateType         updateType;
 
     //---------------------------------
-    // cursor Í¥ÄÎ†® Ï†ïÎ≥¥
+    // cursor ∞¸∑√ ¡§∫∏
     //---------------------------------
     
     // update only and insert/update/delete
@@ -161,13 +165,13 @@ typedef struct qmncUPTE
     idBool                inplaceUpdate;
     
     //---------------------------------
-    // Limitation Í¥ÄÎ†® Ï†ïÎ≥¥
+    // Limitation ∞¸∑√ ¡§∫∏
     //---------------------------------
     
     qmsLimit            * limit;
 
     //---------------------------------
-    // constraint Ï≤òÎ¶¨Î•º ÏúÑÌïú Ï†ïÎ≥¥
+    // constraint √≥∏Æ∏¶ ¿ß«— ¡§∫∏
     //---------------------------------
     
     qcmParentInfo       * parentConstraints;
@@ -175,14 +179,14 @@ typedef struct qmncUPTE
     qdConstraintSpec    * checkConstrList;
 
     //---------------------------------
-    // return into Ï≤òÎ¶¨Î•º ÏúÑÌïú Ï†ïÎ≥¥
+    // return into √≥∏Æ∏¶ ¿ß«— ¡§∫∏
     //---------------------------------
     
     /* PROJ-1584 DML Return Clause */
     qmmReturnInto       * returnInto;
     
     //---------------------------------
-    // Display Í¥ÄÎ†® Ï†ïÎ≥¥
+    // Display ∞¸∑√ ¡§∫∏
     //---------------------------------
 
     qmsNamePosition       tableOwnerName;     // Table Owner Name
@@ -206,13 +210,35 @@ typedef struct qmncUPTE
     smiColumnList       * setColumnList;
     smiColumnList      ** setPartColumnList;
     idBool                withoutRetry;
-    
+
+    /* PROJ-2714 Multiple Update Delete support */
+    UInt                  mMultiTableCount;
+    qmmMultiTables      * mTableList;
 } qmncUPTE;
+
+typedef struct qmndMultiTables
+{
+    UInt                   mFlag;
+    UInt                   mIndexUpdateCount;
+    qmsIndexTableCursors   mIndexTableCursorInfo;
+    smiColumnList          mIndexUpdateColumnList[QC_MAX_KEY_COLUMN_COUNT + 2];
+    struct qmxLobInfo    * mLobInfo;
+    struct qmxLobInfo    * mInsertLobInfo;
+    qmcInsertCursor        mInsertCursorMgr;   // row movementøÎ insert cursor
+    smiValue             * mInsertValues;      // row movementøÎ insert smiValues
+    smiValue             * mCheckValues;       // check row movementøÎ check smiValues
+    void                 * mDefaultExprRowBuffer;
+    qcmColumn            * mColumnsForRow;
+    void                 * mOldRow;    // OLD ROW Reference∏¶ ¿ß«— ∞¯∞£
+    void                 * mNewRow;    // NEW ROW Reference∏¶ ¿ß«— ∞¯∞£
+    idBool                 mNeedTriggerRow;
+    idBool                 mExistTrigger;
+} qmndMultiTables;
 
 typedef struct qmndUPTE
 {
     //---------------------------------
-    // Data ÏòÅÏó≠ Í≥µÌÜµ Ï†ïÎ≥¥
+    // Data øµø™ ∞¯≈Î ¡§∫∏
     //---------------------------------
 
     qmndPlan              plan;
@@ -220,71 +246,71 @@ typedef struct qmndUPTE
     UInt                * flag;        
 
     //---------------------------------
-    // UPTE Í≥†Ïú† Ï†ïÎ≥¥
+    // UPTE ∞Ì¿Ø ¡§∫∏
     //---------------------------------
 
     mtcTuple            * updateTuple;
     UShort                updateTupleID;
     smiTableCursor      * updateCursor;
     
-    /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
     qcmTableInfo        * updatePartInfo;
 
     // BUG-38129
     scGRID                rowGRID;
    
     //---------------------------------
-    // partition Í¥ÄÎ†® Ï†ïÎ≥¥
+    // partition ∞¸∑√ ¡§∫∏
     //---------------------------------
     
-    qmcInsertCursor       insertCursorMgr;   // row movementÏö© insert cursor
-    smiValue            * insertValues;      // row movementÏö© insert smiValues
-    smiValue            * checkValues;       // check row movementÏö© check smiValues
+    qmcInsertCursor       insertCursorMgr;   // row movementøÎ insert cursor
+    smiValue            * insertValues;      // row movementøÎ insert smiValues
+    smiValue            * checkValues;       // check row movementøÎ check smiValues
 
     //---------------------------------
-    // lob Ï≤òÎ¶¨Î•º ÏúÑÌïú Ï†ïÎ≥¥
+    // lob √≥∏Æ∏¶ ¿ß«— ¡§∫∏
     //---------------------------------
     
     struct qmxLobInfo   * lobInfo;
     struct qmxLobInfo   * insertLobInfo;
     
     //---------------------------------
-    // Limitation Í¥ÄÎ†® Ï†ïÎ≥¥
+    // Limitation ∞¸∑√ ¡§∫∏
     //---------------------------------
     
-    ULong                 limitCurrent;    // ÌòÑÏû¨ Limit Í∞í
-    ULong                 limitStart;      // ÏãúÏûë Limit Í∞í
-    ULong                 limitEnd;        // ÏµúÏ¢Ö Limit Í∞í
+    ULong                 limitCurrent;    // «ˆ¿Á Limit ∞™
+    ULong                 limitStart;      // Ω√¿€ Limit ∞™
+    ULong                 limitEnd;        // √÷¡æ Limit ∞™
 
     //---------------------------------
-    // Trigger Ï≤òÎ¶¨Î•º ÏúÑÌïú Ï†ïÎ≥¥
+    // Trigger √≥∏Æ∏¶ ¿ß«— ¡§∫∏
     //---------------------------------
 
     qcmColumn           * columnsForRow;
-    void                * oldRow;    // OLD ROW ReferenceÎ•º ÏúÑÌïú Í≥µÍ∞Ñ
-    void                * newRow;    // NEW ROW ReferenceÎ•º ÏúÑÌïú Í≥µÍ∞Ñ
+    void                * oldRow;    // OLD ROW Reference∏¶ ¿ß«— ∞¯∞£
+    void                * newRow;    // NEW ROW Reference∏¶ ¿ß«— ∞¯∞£
 
     // PROJ-1705
-    // trigger rowÍ∞Ä ÌïÑÏöîÏó¨Î∂Ä Ï†ïÎ≥¥
+    // trigger row∞° « ø‰ø©∫Œ ¡§∫∏
     idBool                needTriggerRow;
     idBool                existTrigger;
     
     //---------------------------------
-    // return into Ï≤òÎ¶¨Î•º ÏúÑÌïú Ï†ïÎ≥¥
+    // return into √≥∏Æ∏¶ ¿ß«— ¡§∫∏
     //---------------------------------
 
-    // instead of triggerÏùò newRowÎäî smiValueÏù¥ÎØÄÎ°ú
-    // return intoÎ•º ÏúÑÌïú tableRowÍ∞Ä ÌïÑÏöîÌïòÎã§.
+    // instead of trigger¿« newRow¥¬ smiValue¿Ãπ«∑Œ
+    // return into∏¶ ¿ß«— tableRow∞° « ø‰«œ¥Ÿ.
     void                * returnRow;
     
     //---------------------------------
-    // index table Ï≤òÎ¶¨Î•º ÏúÑÌïú Ï†ïÎ≥¥
+    // index table √≥∏Æ∏¶ ¿ß«— ¡§∫∏
     //---------------------------------
 
     qmsIndexTableCursors  indexTableCursorInfo;
 
-    // selectionÏóê ÏÇ¨Ïö©Îêú index table cursorÏùò Ïù∏Ïûê
-    // rowMovementÎ°ú oid,ridÍπåÏßÄ updateÎê† Ïàò ÏûàÎã§.
+    // selectionø° ªÁøÎµ» index table cursor¿« ¿Œ¿⁄
+    // rowMovement∑Œ oid,rid±Ó¡ˆ updateµ… ºˆ ¿÷¥Ÿ.
     smiColumnList         indexUpdateColumnList[QC_MAX_KEY_COLUMN_COUNT + 2];
     smiValue              indexUpdateValue[QC_MAX_KEY_COLUMN_COUNT + 2];
     smiTableCursor      * indexUpdateCursor;
@@ -307,8 +333,25 @@ typedef struct qmndUPTE
     //---------------------------------
 
     qcmAccessOption       accessOption;
-    
+
+    qmndMultiTables     * mTableArray;
 } qmndUPTE;
+
+#define QMND_UPDATE_MULTI_TABLES( _dst_ )       \
+{                                               \
+    (_dst_)->mFlag                  = 0;        \
+    (_dst_)->mIndexUpdateCount      = 0;        \
+    (_dst_)->mLobInfo               = NULL;     \
+    (_dst_)->mInsertLobInfo         = NULL;     \
+    (_dst_)->mInsertValues          = NULL;     \
+    (_dst_)->mCheckValues           = NULL;     \
+    (_dst_)->mDefaultExprRowBuffer  = NULL;     \
+    (_dst_)->mColumnsForRow         = NULL;     \
+    (_dst_)->mOldRow                = NULL;     \
+    (_dst_)->mNewRow                = NULL;     \
+    (_dst_)->mNeedTriggerRow        = ID_FALSE; \
+    (_dst_)->mExistTrigger          = ID_FALSE; \
+}
 
 class qmnUPTE
 {
@@ -318,11 +361,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // Ï¥àÍ∏∞Ìôî
+    // √ ±‚»≠
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ÏàòÌñâ Ìï®Ïàò
+    // ºˆ«‡ «‘ºˆ
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -331,7 +374,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
     
-    // Plan Ï†ïÎ≥¥ Ï∂úÎ†•
+    // Plan ¡§∫∏ √‚∑¬
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -346,7 +389,7 @@ public:
     static IDE_RC checkUpdateChildRef( qcTemplate * aTemplate,
                                        qmnPlan    * aPlan );
 
-    // CursorÏùò Close
+    // Cursor¿« Close
     static IDE_RC closeCursor( qcTemplate * aTemplate,
                                qmnPlan    * aPlan );    
     // BUG-38129
@@ -358,13 +401,25 @@ public:
     static IDE_RC checkDuplicateUpdate( qmncUPTE   * aCodePlan,
                                         qmndUPTE   * aDataPlan );
     
+    // Cursor¿« Close
+    static IDE_RC closeCursorMultiTable( qcTemplate * aTemplate,
+                                         qmnPlan    * aPlan );
+
+    static IDE_RC checkUpdateParentRefMultiTable( qcTemplate     * aTemplate,
+                                                  qmnPlan        * aPlan,
+                                                  qmmMultiTables * aTable,
+                                                  UInt             aIndex );
+
+    static IDE_RC checkUpdateChildRefMultiTable( qcTemplate     * aTemplate,
+                                                 qmnPlan        * aPlan,
+                                                 qmmMultiTables * aTable );
 private:    
 
     //------------------------
-    // Ï¥àÍ∏∞Ìôî Í¥ÄÎ†® Ìï®Ïàò
+    // √ ±‚»≠ ∞¸∑√ «‘ºˆ
     //------------------------
 
-    // ÏµúÏ¥à Ï¥àÍ∏∞Ìôî
+    // √÷√  √ ±‚»≠
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncUPTE   * aCodePlan,
                              qmndUPTE   * aDataPlan );
@@ -389,17 +444,17 @@ private:
                                          qmncUPTE   * aCodePlan,
                                          qmndUPTE   * aDataPlan );
     
-    // Ìò∏Ï∂úÎêòÏñ¥ÏÑúÎäî ÏïàÎê®.
+    // »£√‚µ«æÓº≠¥¬ æ»µ .
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // ÏµúÏ¥à UPTEÏùÑ ÏàòÌñâ
+    // √÷√  UPTE¿ª ºˆ«‡
     static IDE_RC doItFirst( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              qmcRowFlag * aFlag );
 
-    // Îã§Ïùå UPTEÏùÑ ÏàòÌñâ
+    // ¥Ÿ¿Ω UPTE¿ª ºˆ«‡
     static IDE_RC doItNext( qcTemplate * aTemplate,
                             qmnPlan    * aPlan,
                             qmcRowFlag * aFlag );
@@ -408,12 +463,12 @@ private:
     static IDE_RC checkTrigger( qcTemplate * aTemplate,
                                 qmnPlan    * aPlan );
     
-    // CursorÏùò Get
+    // Cursor¿« Get
     static IDE_RC getCursor( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              idBool     * aIsTableCursorChanged );
 
-    // CursorÏùò Open
+    // Cursor¿« Open
     static IDE_RC openInsertCursor( qcTemplate * aTemplate,
                                     qmnPlan    * aPlan );
 
@@ -457,6 +512,96 @@ private:
                                                         smOID            aPartOID,
                                                         scGRID           aRowGRID,
                                                         smiValue       * aUpdateValue );
+    // √÷√  √ ±‚»≠
+    static IDE_RC firstInitMultiTable( qcTemplate * aTemplate,
+                                       qmncUPTE   * aCodePlan,
+                                       qmndUPTE   * aDataPlan );
+
+    static IDE_RC allocIndexTableCursorMultiTable( qcTemplate * aTemplate,
+                                                   qmncUPTE   * aCodePlan,
+                                                   qmndUPTE   * aDataPlan );
+    // √÷√  UPTE¿ª ºˆ«‡
+    static IDE_RC doItFirstMultiTable( qcTemplate * aTemplate,
+                                       qmnPlan    * aPlan,
+                                       qmcRowFlag * aFlag );
+
+    // ¥Ÿ¿Ω UPTE¿ª ºˆ«‡
+    static IDE_RC doItNextMultiTable( qcTemplate * aTemplate,
+                                      qmnPlan    * aPlan,
+                                      qmcRowFlag * aFlag );
+    // Cursor¿« Get
+    static IDE_RC getCursorMultiTable( qcTemplate     * aTemplate,
+                                       qmncUPTE       * aCodePlan,
+                                       qmndUPTE       * aDataPlan,
+                                       qmmMultiTables * aTable,
+                                       idBool         * aIsSkip );
+    // Update One Record
+    static IDE_RC updateOneRowMultiTable( qcTemplate     * aTemplate,
+                                          qmncUPTE       * aCodePlan,
+                                          qmndUPTE       * aDataPlan,
+                                          qmmMultiTables * aTable,
+                                          UInt             aIndex );
+
+    static IDE_RC checkSkipMultiTable( qcTemplate     * aTemplate,
+                                       qmndUPTE       * aDataPlan,
+                                       qmmMultiTables * aTable,
+                                       idBool         * aIsSkip );
+
+    // update index table
+    static IDE_RC updateIndexTableCursorMultiTable( qcTemplate      * aTemplate,
+                                                    qmndUPTE        * aDataPlan,
+                                                    qmmMultiTables  * aTable,
+                                                    UInt              aIndex,
+                                                    smiValue        * aUpdateValue );
+
+    static IDE_RC allocTriggerRowMultiTable( qcTemplate * aTemplate,
+                                             qmncUPTE   * aCodePlan,
+                                             qmndUPTE   * aDataPlan );
+
+    static IDE_RC checkTriggerMultiUpdate( qcTemplate     * aTemplate,
+                                           qmndUPTE       * aDataPlan,
+                                           qmmMultiTables * aTable,
+                                           UInt             aIndex );
+
+    static IDE_RC fireInsteadOfTriggerMultiUpdate( qcTemplate     * aTemplate,
+                                                   qmncUPTE       * aCodePlan,
+                                                   qmndUPTE       * aDataPlan,
+                                                   qmmMultiTables * aTable,
+                                                   UInt             aIndex );
+
+    static IDE_RC updateOneRowForCheckRowmovementMultiTable( qcTemplate     * aTemplate,
+                                                             qmncUPTE       * aCodePlan,
+                                                             qmndUPTE       * aDataPlan,
+                                                             qmmMultiTables * aTable,
+                                                             UInt             aIndex );
+    // Cursor¿« Open
+    static IDE_RC openInsertCursorMultiTable( qcTemplate     * aTemplate,
+                                              qmndUPTE       * aDataPlan,
+                                              qmmMultiTables * aTable,
+                                              UInt             aIndex );
+    // Update One Record
+    static IDE_RC updateOneRowForRowmovementMultiTable( qcTemplate     * aTemplate,
+                                                        qmncUPTE       * aCodePlan,
+                                                        qmndUPTE       * aDataPlan,
+                                                        qmmMultiTables * aTable,
+                                                        UInt             aIndex );
+
+    static IDE_RC updateIndexTableCursorRowMoveMultiTable( qcTemplate      * aTemplate,
+                                                           qmndUPTE        * aDataPlan,
+                                                           qmmMultiTables  * aTable,
+                                                           UInt              aIndex,
+                                                           smOID             aPartOID,
+                                                           scGRID            aRowGRID,
+                                                           smiValue        * aUpdateValue );
+
+    static IDE_RC checkUpdateParentRefOnScanMultiTable( qcTemplate     * aTemplate,
+                                                        qmmMultiTables * aTable,
+                                                        mtcTuple       * aUpdateTuple );
+
+    static IDE_RC checkUpdateChildRefOnScanMultiTable( qcTemplate     * aTemplate,
+                                                       qmmMultiTables * aTable,
+                                                       qcmTableInfo   * aTableInfo,
+                                                       mtcTuple       * aUpdateTuple );
 };
 
 #endif /* _O_QMN_UPTE_H_ */

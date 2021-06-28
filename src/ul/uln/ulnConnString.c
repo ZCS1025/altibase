@@ -363,7 +363,7 @@ ACI_RC ulnConnStrBuildOutConnString(ulnFnContext *aContext,
     }
     /*
      * TXN_ISOLATION
-     * BUGBUG : ì§€ê¸ˆ ë§¤ë‰´ì–¼ì—ëŠ” ì—†ëŠ” ê²ƒ. êµ¬í˜„ ì•ˆë¨.
+     * BUGBUG : Áö±Ý ¸Å´º¾ó¿¡´Â ¾ø´Â °Í. ±¸Çö ¾ÈµÊ.
      */
     if ( (acp_uint32_t)gUlnConnAttrTable[ ULN_CONN_ATTR_TXN_ISOLATION ].mDefValue != sDbc->mAttrTxnIsolation)
     {
@@ -646,6 +646,32 @@ ACI_RC ulnConnStrBuildOutConnString(ulnFnContext *aContext,
         {
             sLen = acpCStrLen(gUlnConnAttrTable[ULN_CONN_ATTR_SSL_VERIFY].mKey, ACP_SINT16_MAX)
                  + acpCStrLen(gULN_BOOL[sDbc->mAttrSslVerify].mKey, ACP_SINT16_MAX) + 2;
+        }
+        else
+        {
+            sLen = acpCStrLen(aOut + sTotLen, sLenLeft);
+        }
+        sTotLen  += sLen;
+        sLenLeft -= sLen;
+    }  
+
+    if ( sDbc->mTransactionalDDL != SQL_UNDEF )
+    {   
+        if (sLenLeft > 0)
+        {
+            sRet = acpSnprintf(aOut + sTotLen, sLenLeft, "%s=%"ACI_UINT32_FMT";",
+                               gUlnConnAttrTable[ULN_CONN_ATTR_TRANSACTIONAL_DDL].mKey,
+                               (acp_uint32_t)sDbc->mTransactionalDDL);
+        }
+        else
+        {
+            /* do nothing */
+        }
+
+        if (sLenLeft <= 0 || ACP_RC_IS_ETRUNC(sRet))
+        {
+            sLen = acpCStrLen(gUlnConnAttrTable[ULN_CONN_ATTR_TRANSACTIONAL_DDL].mKey, ACP_SINT16_MAX)
+                + ulnCStrLenOfInt(sDbc->mTransactionalDDL) + 2;
         }
         else
         {

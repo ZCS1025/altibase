@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpi.cpp 84983 2019-03-08 11:08:24Z yoonhee.kim $
+ * $Id: rpi.cpp 90266 2021-03-19 05:23:09Z returns $
  **********************************************************************/
 
 #include <idl.h>
@@ -28,6 +28,11 @@
 #include <rpcValidate.h>
 #include <rpcExecute.h>
 #include <rpdCatalog.h>
+
+IDE_RC rpi::initRPProperty()
+{
+    return rpuProperty::initProperty();
+}
 
 IDE_RC
 rpi::initREPLICATION()
@@ -53,10 +58,30 @@ rpi::alterReplicationFlush( smiStatement  * aSmiStmt,
                             rpFlushOption * aFlushOption,
                             idvSQL        * aStatistics )
 {
-    return rpcManager::alterReplicationFlush( aSmiStmt,
-                                              aReplName,
-                                              aFlushOption,
-                                              aStatistics );
+    if ( aFlushOption->flushType == RP_FLUSH_XLOGFILE )
+    {
+        /* ALTER REPLICATION rep_name FLUSH FROM XLOGFILE */
+        IDE_TEST( rpcManager::alterReplicationFlushWithXLogfiles( aSmiStmt,
+                                                                  aReplName,
+                                                                  aStatistics )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* ALTER REPLICATION rep_name FLUSH WAIT sec | ALL */
+         IDE_TEST( rpcManager::alterReplicationFlushWithXLogs( aSmiStmt,
+                                                               aReplName,
+                                                               aFlushOption,
+                                                               aStatistics )
+                   != IDE_SUCCESS );
+
+
+    }
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
 IDE_RC
@@ -136,30 +161,47 @@ rpi::dropReplication( void * aQcStatement )
 }
 
 IDE_RC
-rpi::startSenderThread(smiStatement  * aSmiStmt,
-                       SChar         * aReplName,
-                       RP_SENDER_TYPE  aStartType,
-                       idBool          aTryHandshakeOnce,
-                       smSN            aStartSN,
-                       qciSyncItems  * aSyncItemList,
-                       SInt            aParallelFactor,
-                       idvSQL        * aStatistics)
+rpi::startSenderThread( idvSQL                  * aStatistics,
+                        iduVarMemList           * aMemory,
+                        smiStatement            * aSmiStmt,
+                        SChar                   * aReplName,
+                        RP_SENDER_TYPE            aStartType,
+                        idBool                    aTryHandshakeOnce,
+                        smSN                      aStartSN,
+                        qciSyncItems            * aSyncItemList,
+                        SInt                      aParallelFactor,
+                        void                    * aLockTable )
 {
-    IDE_TEST(rpcManager::startSenderThread(aSmiStmt,
-                                          aReplName,
-                                          aStartType,
-                                          aTryHandshakeOnce,
-                                          aStartSN,
-                                          aSyncItemList,
-                                          aParallelFactor,
-                                          ID_FALSE,
-                                          aStatistics) != IDE_SUCCESS);
+    IDE_TEST( rpcManager::startSenderThread( aStatistics,
+                                             aMemory,
+                                             aSmiStmt,
+                                             aReplName,
+                                             aStartType,
+                                             aTryHandshakeOnce,
+                                             aStartSN,
+                                             aSyncItemList,
+                                             aParallelFactor,
+                                             aLockTable )
+              != IDE_SUCCESS);
 
     /* BUG-34316 Replication giveup_time must be updated
      * when replication pair were synchronized.*/
-    IDE_TEST(rpcManager::resetGiveupInfo(aStartType,
+    IDE_TEST( rpcManager::resetGiveupInfo(aStartType,
                                           aSmiStmt,
                                           aReplName) != IDE_SUCCESS);
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC
+rpi::startTempSync( void * aQcStatement )
+{
+    IDE_TEST( rpcManager::startTempSync( aQcStatement )
+              != IDE_SUCCESS );
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -175,7 +217,6 @@ rpi::stopSenderThread(smiStatement * aSmiStmt,
 {
     return rpcManager::stopSenderThread( aSmiStmt,
                                          aReplName,
-                                         ID_FALSE,
                                          aStatistics,
                                          aIsImmediate );
 }
@@ -199,6 +240,7 @@ extern iduFixedTableDesc gReplSyncTableDesc;
 extern iduFixedTableDesc gReplSenderTransTblTableDesc;
 extern iduFixedTableDesc gReplReceiverTransTblTableDesc;
 extern iduFixedTableDesc gReplReceiverColumnTableDesc;
+extern iduFixedTableDesc gReplSenderColumnTableDesc;
 extern iduFixedTableDesc gReplRecoveryTableDesc;
 extern iduFixedTableDesc gReplLogBufferTableDesc;
 extern iduFixedTableDesc gReplOfflineStatusTableDesc;
@@ -206,6 +248,8 @@ extern iduFixedTableDesc gReplSenderSentLogCountTableDesc;
 extern iduFixedTableDesc gReplicatedTransGroupInfoTableDesc;
 extern iduFixedTableDesc gReplicatedTransSlotInfoTableDesc;
 extern iduFixedTableDesc gAheadAnalyzerInfoTableDesc;
+extern iduFixedTableDesc gXLogTransferTableDesc;
+extern iduFixedTableDesc gXLogfileManagerInfoDesc;
 
 IDE_RC rpi::initSystemTables()
 {
@@ -221,6 +265,7 @@ IDE_RC rpi::initSystemTables()
     IDU_FIXED_TABLE_DEFINE_RUNTIME(gReplSenderTransTblTableDesc);
     IDU_FIXED_TABLE_DEFINE_RUNTIME(gReplReceiverTransTblTableDesc);
     IDU_FIXED_TABLE_DEFINE_RUNTIME(gReplReceiverColumnTableDesc);
+    IDU_FIXED_TABLE_DEFINE_RUNTIME(gReplSenderColumnTableDesc);
     IDU_FIXED_TABLE_DEFINE_RUNTIME(gReplRecoveryTableDesc);
     IDU_FIXED_TABLE_DEFINE_RUNTIME(gReplLogBufferTableDesc);
     IDU_FIXED_TABLE_DEFINE_RUNTIME(gReplOfflineStatusTableDesc);
@@ -228,6 +273,8 @@ IDE_RC rpi::initSystemTables()
     IDU_FIXED_TABLE_DEFINE_RUNTIME(gReplicatedTransGroupInfoTableDesc);
     IDU_FIXED_TABLE_DEFINE_RUNTIME(gReplicatedTransSlotInfoTableDesc);
     IDU_FIXED_TABLE_DEFINE_RUNTIME(gAheadAnalyzerInfoTableDesc);
+    IDU_FIXED_TABLE_DEFINE_RUNTIME(gXLogTransferTableDesc);
+    IDU_FIXED_TABLE_DEFINE_RUNTIME(gXLogfileManagerInfoDesc);
 
     // initialize performance view for RP
     SChar * sPerfViewTable[] = { RP_PERFORMANCE_VIEWS, NULL };
@@ -246,7 +293,7 @@ void rpi::applyStatisticsForSystem()
 {
     if(smiGetStartupPhase() == SMI_STARTUP_SERVICE)
     {
-        /* ëª¨ë“  senderì™€ receiver ì“°ë ˆë“œë“¤ì˜ ì„¸ì…˜ì— ìžˆëŠ” í†µê³„ì •ë³´ë¥¼ ì‹œìŠ¤í…œì— ë°˜ì˜ */
+        /* ¸ðµç sender¿Í receiver ¾²·¹µåµéÀÇ ¼¼¼Ç¿¡ ÀÖ´Â Åë°èÁ¤º¸¸¦ ½Ã½ºÅÛ¿¡ ¹Ý¿µ */
         rpcManager::applyStatisticsForSystem();
     }
 }
@@ -282,13 +329,18 @@ IDE_RC rpi::ddlSyncBegin( qciStatement  * aQciStatement,
 
     IDE_TEST_CONT( qciMisc::isDDLSync( aQciStatement ) != ID_TRUE, NORMAL_EXIT );
     IDE_TEST_CONT( qciMisc::isReplicableDDL( aQciStatement ) != ID_TRUE, NORMAL_EXIT );
+    IDE_TEST_RAISE( qciMisc::isLockTableUntillNextDDL( aQciStatement ) == ID_TRUE,
+                    ERR_DDL_SYNC_WITH_LOCK_UNTIL_NEXT_DDL );
+
+    sDDLTrans    = aSmiStatement->getTrans();
+    sStmtFlag    = aSmiStatement->mFlag;
+
+    IDE_TEST_RAISE( qciMisc::getTransactionalDDL( (void*)&(aQciStatement->statement) ) == ID_TRUE, 
+                    ERR_NOT_SUPPORT_TRANSACTIONAL_DDL );
 
     qciMisc::getSmiStmt( aQciStatement, &sSmiStatementOrig );
     qciMisc::setSmiStmt( aQciStatement, aSmiStatement );
     sSwapSmiStmt = ID_TRUE;
-
-    sDDLTrans    = aSmiStatement->getTrans();
-    sStmtFlag    = aSmiStatement->mFlag;
 
     IDE_TEST( aSmiStatement->end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
     sIsStmtBegin = ID_FALSE;
@@ -308,6 +360,15 @@ IDE_RC rpi::ddlSyncBegin( qciStatement  * aQciStatement,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_NOT_SUPPORT_TRANSACTIONAL_DDL );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG,
+                                  "Transactional DDL not supported DDL synchronization." ) )
+    }
+    IDE_EXCEPTION( ERR_DDL_SYNC_WITH_LOCK_UNTIL_NEXT_DDL )
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_DDL_SYNC_WITH_LOCK_UNTIL_NEXT_DDL ) );
+    } 
     IDE_EXCEPTION_END;
 
     IDE_PUSH();
@@ -351,13 +412,17 @@ IDE_RC rpi::ddlSyncEnd( qciStatement * aQciStatement,
 
     IDE_TEST_CONT( qciMisc::isDDLSync( aQciStatement ) != ID_TRUE, NORMAL_EXIT );
     IDE_TEST_CONT( qciMisc::isReplicableDDL( aQciStatement ) != ID_TRUE, NORMAL_EXIT );
+    IDE_DASSERT( qciMisc::isLockTableUntillNextDDL( aQciStatement ) != ID_TRUE );
+
+    sDDLTrans    = aSmiStatement->getTrans();
+    sStmtFlag    = aSmiStatement->mFlag;
+
+    IDE_TEST_RAISE( qciMisc::getTransactionalDDL( (void*)&(aQciStatement->statement) ) == ID_TRUE, 
+                    ERR_NOT_SUPPORT_TRANSACTIONAL_DDL );
 
     qciMisc::getSmiStmt( aQciStatement, &sSmiStatementOrig );
     qciMisc::setSmiStmt( aQciStatement, aSmiStatement );
     sSwapSmiStmt = ID_TRUE;
-
-    sDDLTrans    = aSmiStatement->getTrans();
-    sStmtFlag    = aSmiStatement->mFlag;
 
     IDE_TEST( aSmiStatement->end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
     sIsStmtBegin = ID_FALSE;
@@ -377,6 +442,11 @@ IDE_RC rpi::ddlSyncEnd( qciStatement * aQciStatement,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_NOT_SUPPORT_TRANSACTIONAL_DDL );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG,
+                                  "Transactional DDL not supported DDL synchronization." ) )
+    }
     IDE_EXCEPTION_END;
 
     IDE_PUSH();
@@ -449,5 +519,4 @@ void rpi::ddlSyncException( qciStatement * aQciStatement,
 
     RP_LABEL( NORMAL_EXIT );
 }
-
 

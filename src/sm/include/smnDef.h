@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smnDef.h 85340 2019-04-30 00:15:02Z justin.kwon $
+ * $Id: smnDef.h 89495 2020-12-14 05:19:22Z emlee $
  **********************************************************************/
 
 #ifndef _O_SMN_DEF_H_
@@ -44,7 +44,7 @@
 # define SMN_DIMENSION_DISABLE        (0x00000002)
 
 /* smiIndexModule.flag                          */
-/* Default Indexë¡œ ì§€ì •ê°€ëŠ¥í•œê°€?                */
+/* Default Index·Î ÁöÁ¤°¡´ÉÇÑ°¡?                */
 # define SMN_DEFAULT_MASK             (0x00000004)
 # define SMN_DEFAULT_ENABLE           (0x00000000)
 # define SMN_DEFAULT_DISABLE          (0x00000004)
@@ -70,29 +70,26 @@
 /* disk table sequential iterator */
 # define SDN_SEQUENTIAL_ITERATOR      (sdnnModule)
 # define SDN_GRID_ITERATOR            (sdnpModule)
-# define SDN_TEMP_SEQUENTIAL_ITERATOR (sdnnTempModule)
 
-// PROJ-1362  LOBì—ì„œ ì¸ë±ìŠ¤ ê°œìˆ˜ ì œì•½ í’€ê¸°.
-// parallel index building, refine ë“±  smtPJMgrì—ì„œ
-// indexí—¤ë” pointer ëŒ€ì‹ , ì²¨ìë¥¼ ê¸°ì–µí•˜ë„ë¡ ìˆ˜ì •.
+// PROJ-1362  LOB¿¡¼­ ÀÎµ¦½º °³¼ö Á¦¾à Ç®±â.
+// parallel index building, refine µî  smtPJMgr¿¡¼­
+// indexÇì´õ pointer ´ë½Å, Ã·ÀÚ¸¦ ±â¾ïÇÏµµ·Ï ¼öÁ¤.
 # define SMN_NULL_POS     (-2)
 
-// PROJ-1617 ì¸ë±ìŠ¤ ì„±ëŠ¥ ë¶„ì„ ë°©ë²•ë¡ 
+// PROJ-1617 ÀÎµ¦½º ¼º´É ºĞ¼® ¹æ¹ı·Ğ
 #define SMN_DUMP_VALUE_LENGTH                          (24)
-#define SMN_DUMP_VALUE_BUFFER_SIZE                   (8192)
-#define SMN_DUMP_VALUE_DATE_FMT     ("YYYY-MM-DD HH:MI:SS")
 
 
 /* ----------------------------------------------------------------------------
  *    for index 
  * --------------------------------------------------------------------------*/
 // #define SMN_MAX_IDX_COLUMNS       (80) -- in A3
-// #define SMN_MAX_IDX_COLUMNS       (32) -- in A4 --> SMI LAYERë¡œ...
+// #define SMN_MAX_IDX_COLUMNS       (32) -- in A4 --> SMI LAYER·Î...
 
 typedef struct smcTableHeader smcTableHeader;
 typedef struct smnIndexHeader smnIndexHeader;
 
-// physical agerì‚­ì œ 
+// physical ager»èÁ¦ 
 typedef IDE_RC (*smnFreeNodeFunc)( void* aNodes);
                 
 typedef struct smnNode
@@ -151,15 +148,16 @@ typedef IDE_RC (*smnInsertFunc)( idvSQL*           aStatistics,
                                  // this parameter used as UndoRID
                                  SChar*            aNull, 
                                  idBool            aUniqueCheck,
-                                 smSCN             aStmtSCN,
+                                 smSCN             aStmtViewSCN,
                                  void             *aRowSID,
                                  SChar**           aExistUniqueRow,
-                                 ULong             aInsertWaitTime );
+                                 ULong             aInsertWaitTime,
+                                 idBool            aForbiddenToRetry );
 
 // modified for A4,
-// disk temp tableì— ëŒ€í•œ cluster indexì— ëŒ€í•˜ì—¬ rowë¥¼ ì§€ìš°ê¸°
-// ì „ì— indexë¥¼ ë°”ë¡œ ì‚­ì œí•˜ê¸° ìœ„í•˜ì—¬ function signatureë¥¼ ë³€ê²½.
-// disk btreeëŠ” ì•„ë˜ì˜ í•¨ìˆ˜ë¡œ old keyë“¤ì— limit SCNì„ ì„¸íŒ…í•œë‹¤.
+// disk temp table¿¡ ´ëÇÑ cluster index¿¡ ´ëÇÏ¿© row¸¦ Áö¿ì±â
+// Àü¿¡ index¸¦ ¹Ù·Î »èÁ¦ÇÏ±â À§ÇÏ¿© function signature¸¦ º¯°æ.
+// disk btree´Â ¾Æ·¡ÀÇ ÇÔ¼ö·Î old keyµé¿¡ limit SCNÀ» ¼¼ÆÃÇÑ´Ù.
 typedef IDE_RC (*smnDeleteFunc)( idvSQL*        aStatistics,
                                  void *         aTrans,
                                  void *         aIndex,
@@ -168,18 +166,11 @@ typedef IDE_RC (*smnDeleteFunc)( idvSQL*        aStatistics,
                                  sdRID          aRowRID);
 
 // added for A4,
-// ì‹¤ì œ keyì˜ freeëŠ” GCê°€ ì•„ë˜ì˜ í•¨ìˆ˜ë¥¼ í†µí•´ ìˆ˜í–‰í•œë‹¤.
+// ½ÇÁ¦ keyÀÇ free´Â GC°¡ ¾Æ·¡ÀÇ ÇÔ¼ö¸¦ ÅëÇØ ¼öÇàÇÑ´Ù.
 typedef IDE_RC (*smnFreeFunc)( void *         aIndex,
                                SChar *        aRow,
                                idBool         aIgnoreNotFoundKey,
                                idBool       * aExistKey );
-
-// added for A4,
-// Keyê°€ Freeë˜ì—ˆëŠ”ì§€ í™•ì¸í•˜ê¸° ìœ„í•´, í•´ë‹¹ Keyë¥¼ ì°¾ëŠ”ë‹¤.
-typedef IDE_RC (*smnExistKeyFunc)( void         * aIndex,
-                                   SChar        * aRow,
-                                   idBool       * aExistKey );
-
 
 typedef IDE_RC (*smnInsertRollbackFunc)( idvSQL * aStatistics,
                                          void   * aMtx,
@@ -202,7 +193,7 @@ typedef IDE_RC (*smnAgingFunc)( idvSQL         * aStatistics,
                                 smnIndexHeader * aIndex );
 
 // added for A4
-// disk temp tableì—ëŒ€í•œ clusterì§€ì›ì„ ìœ„í•˜ì—¬ ì¶”ê°€ë¨.
+// disk temp table¿¡´ëÇÑ clusterÁö¿øÀ» À§ÇÏ¿© Ãß°¡µÊ.
 typedef IDE_RC (*smnInitMetaFunc)( UChar   * aMetaPage, 
                                    UInt      aBuildFlag,
                                    void    * aMtx );
@@ -223,28 +214,28 @@ typedef IDE_RC (*smnBuildIndexFunc) ( idvSQL*               aStatistics,
                                       UInt                  aBuildFlag,
                                       UInt                  aTotalRecCnt );
 
-// BUG-24403 : Disk Tablespace onlineì´í›„ update ë°œìƒì‹œ index ë¬´í•œë£¨í”„
+// BUG-24403 : Disk Tablespace onlineÀÌÈÄ update ¹ß»ı½Ã index ¹«ÇÑ·çÇÁ
 typedef void (*smnGetSmoNoFunc)(void  * aIndex,
                                 ULong * aSmoNo );
 
-// BUG-25351 : í‚¤ìƒì„± ë° ì¸ë±ìŠ¤ Buildì— ê´€í•œ ëª¨ë“ˆí™” ë¦¬íŒ©í† ë§ì´ í•„ìš”í•©ë‹ˆë‹¤. 
+// BUG-25351 : Å°»ı¼º ¹× ÀÎµ¦½º Build¿¡ °üÇÑ ¸ğµâÈ­ ¸®ÆÑÅä¸µÀÌ ÇÊ¿äÇÕ´Ï´Ù. 
 typedef IDE_RC (*smnMakeKeyFromRow)(
-                           idvSQL                 *aStatistics,
-                           sdrMtx                 *aMtx,
-                           sdrSavePoint           *aSP,
-                           void                   *aTrans,
-                           void                   *aTableHeader,
-                           const smnIndexHeader   *aIndex,
-                           const UChar            *aRow,
+                           idvSQL                * aStatistics,
+                           sdrMtx                * aMtx,
+                           sdrSavePoint          * aSP,
+                           void                  * aTrans,
+                           void                  * aTableHeader,
+                           const smnIndexHeader  * aIndex,
+                           const UChar           * aRow,
                            sdbPageReadMode         aPageReadMode,
                            scSpaceID               aTableSpaceID,
                            smFetchVersion          aFetchVersion,
                            sdRID                   aTssRID,
-                           const smSCN            *aSCN,
-                           const smSCN            *aInfiniteSCN,
-                           UChar                  *aDestBuf,
-                           idBool                 *aIsDeletedRow,
-                           idBool                 *aIsPageLatchReleased);
+                           const smSCN           * aSCN,
+                           const smSCN           * aInfiniteSCN,
+                           UChar                 * aDestBuf,
+                           idBool                * aIsDeletedRow,
+                           idBool                * aIsPageLatchReleased );
 
 typedef IDE_RC (*smnMakeKeyFromSmiValue)(
                            const smnIndexHeader   *aIndex,
@@ -257,14 +248,14 @@ typedef IDE_RC (*smnFreeNodeListFunc)(idvSQL* aStatistics,
                                       smnIndexHeader* aIndex,
                                       void* aTrans);
 
-// Proj-1911 ì‹¤ì‹œê°„ Complete DDl - Alter table êµ¬ë¬¸
-// ì‹¤ì‹œê°„ Alter DDLì„ ìœ„í•œ ì¸ë±ìŠ¤ ì¹¼ëŸ¼ ì¬ì„¤ì • í•¨ìˆ˜
+// Proj-1911 ½Ç½Ã°£ Complete DDl - Alter table ±¸¹®
+// ½Ç½Ã°£ Alter DDLÀ» À§ÇÑ ÀÎµ¦½º Ä®·³ Àç¼³Á¤ ÇÔ¼ö
 typedef IDE_RC (*smnRebuildIndexColumn)(smnIndexHeader * aIndex,
                                         smcTableHeader * aTable, 
                                         void           * aIndexHeader );
 
 /* PROJ-2162 RestartRiskReduction
- * Indexì— Inconsistent Flag ì„¤ì •í•¨ */
+ * Index¿¡ Inconsistent Flag ¼³Á¤ÇÔ */
 typedef IDE_RC (*smnSetIndexConsistency)(smnIndexHeader * aIndex,
                                          idBool           aIsConsistent );
 
@@ -307,7 +298,7 @@ typedef IDE_RC (*smnReInitFunc)(idvSQL* aStatistics, smnIndexHeader* aIndex );
 
 typedef struct smnIndexModule
 {
-    /* FOR A4 : smnBuiltInIndicesë¡œ ì´ë™
+    /* FOR A4 : smnBuiltInIndices·Î ÀÌµ¿
       SChar*                name;
     */
     UInt                  mType;
@@ -320,15 +311,14 @@ typedef struct smnIndexModule
     smnCreateFunc         mCreate;
     smnDropFunc           mDrop;
 
-    // FOR A4 : smiTableCursorì—ì„œ ì‚¬ìš©
+    // FOR A4 : smiTableCursor¿¡¼­ »ç¿ë
     smTableCursorLockRowFunc mLockRow;
 
-    smnDeleteFunc          mDelete;            //Disk Indexì—ì„œëŠ” ë‹¨ì§€ delete marking
-    smnFreeFunc            mFreeSlot;          // ì‹¤ì œ slotì„ free -> GC, rollbackê³¼ì •
-    smnExistKeyFunc        mExistKey;          // slotì´ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸.
-    smnInsertRollbackFunc  mInsertKeyRollback; // ì‚½ì…ëœ í‚¤ë¥¼ ë¡¤ë°±
-    smnDeleteRollbackFunc  mDeleteKeyRollback; // ì‚­ì œëœ í‚¤ë¥¼ ì›ë³µ
-    smnAgingFunc           mAging;             // Node Agingë° Delayed CTS Stamping ìˆ˜í–‰
+    smnDeleteFunc          mDelete;            //Disk Index¿¡¼­´Â ´ÜÁö delete marking
+    smnFreeFunc            mFreeSlot;          // ½ÇÁ¦ slotÀ» free -> GC, rollback°úÁ¤
+    smnInsertRollbackFunc  mInsertKeyRollback; // »ğÀÔµÈ Å°¸¦ ·Ñ¹é
+    smnDeleteRollbackFunc  mDeleteKeyRollback; // »èÁ¦µÈ Å°¸¦ ¿øº¹
+    smnAgingFunc           mAging;             // Node Aging¹× Delayed CTS Stamping ¼öÇà
     
     smInitFunc             mInitIterator;
     smDestFunc             mDestIterator;
@@ -340,19 +330,19 @@ typedef struct smnIndexModule
     smnFreeIteratorFunc    mFreeIterator;
     smnReInitFunc          mReInit;
     // added for A4
-    // disk temp tableì—ëŒ€í•œ clusterì§€ì›ì„ ìœ„í•˜ì—¬ ì¶”ê°€ë¨.
+    // disk temp table¿¡´ëÇÑ clusterÁö¿øÀ» À§ÇÏ¿© Ãß°¡µÊ.
     smnInitMetaFunc        mInitMeta;
     
-    // FOR A4 : ì•„ë˜ì˜ í•¨ìˆ˜í¬ì¸í„°ë“¤ì€ DRDBì—ì„œ ì‚¬ìš© ì•ˆí•¨
+    // FOR A4 : ¾Æ·¡ÀÇ ÇÔ¼öÆ÷ÀÎÅÍµéÀº DRDB¿¡¼­ »ç¿ë ¾ÈÇÔ
     smnMakeDiskImageFunc   mMakeDiskImage;
 
     smnBuildIndexFunc      mBuild;           // index build
-    // BUG-24403 : Disk Tablespace onlineì´í›„ update ë°œìƒì‹œ index ë¬´í•œë£¨í”„
+    // BUG-24403 : Disk Tablespace onlineÀÌÈÄ update ¹ß»ı½Ã index ¹«ÇÑ·çÇÁ
     smnGetSmoNoFunc        mGetSmoNo;
-    // BUG-25351 : í‚¤ìƒì„± ë° ì¸ë±ìŠ¤ Buildì— ê´€í•œ ëª¨ë“ˆí™” ë¦¬íŒ©í† ë§ì´ í•„ìš”í•©ë‹ˆë‹¤. 
+    // BUG-25351 : Å°»ı¼º ¹× ÀÎµ¦½º Build¿¡ °üÇÑ ¸ğµâÈ­ ¸®ÆÑÅä¸µÀÌ ÇÊ¿äÇÕ´Ï´Ù. 
     smnMakeKeyFromRow        mMakeKeyFromRow;
     smnMakeKeyFromSmiValue   mMakeKeyFromSmiValue;
-    // Proj-1911 ì‹¤ì‹œê°„ Alter DDL : ì‹¤ì‹œê°„ DDLì‹œ ì¸ë±ìŠ¤ Column ì¬êµ¬ì„±ì´ í•„ìš”í•©ë‹ˆë‹¤.
+    // Proj-1911 ½Ç½Ã°£ Alter DDL : ½Ç½Ã°£ DDL½Ã ÀÎµ¦½º Column Àç±¸¼ºÀÌ ÇÊ¿äÇÕ´Ï´Ù.
     smnRebuildIndexColumn    mRebuildIndexColumn;
     smnSetIndexConsistency   mSetIndexConsistency;
     smnGatherStat            mGatherStat;
@@ -360,11 +350,11 @@ typedef struct smnIndexModule
 
 
 /*
- * SMI_MAX_INDEXTYPE_IDì™€ SMI_INDEXIBLE_TABLE_TYPESë¡œ ë¶€í„° ê³„ì‚°ë˜ëŠ” ê°’ë“¤
- * smiIndexTypesì™€ SMI_TABLE_****ì„ ì‚¬ìš©í•¨.
+ * SMI_MAX_INDEXTYPE_ID¿Í SMI_INDEXIBLE_TABLE_TYPES·Î ºÎÅÍ °è»êµÇ´Â °ªµé
+ * smiIndexTypes¿Í SMI_TABLE_****À» »ç¿ëÇÔ.
  * 
- * [BUG-27049] [SM-MEMORY] ë©”ëª¨ë¦¬ ì¸ë±ìŠ¤ì—ì„œ í…Œì´ë¸” íƒ€ì…ì„ ì–»ì–´ì˜¤ëŠ”
- *             ë§¤í¬ë¡œ(SMN_GET_BASE_TABLE_TYPE)ì— ë¬¸ì œê°€ ìˆìŠµë‹ˆë‹¤.
+ * [BUG-27049] [SM-MEMORY] ¸Ş¸ğ¸® ÀÎµ¦½º¿¡¼­ Å×ÀÌºí Å¸ÀÔÀ» ¾ò¾î¿À´Â
+ *             ¸ÅÅ©·Î(SMN_GET_BASE_TABLE_TYPE)¿¡ ¹®Á¦°¡ ÀÖ½À´Ï´Ù.
  */
 #define SMN_GET_BASE_TABLE_TYPE(aTableType)      \
     (((aTableType) & SMI_TABLE_TYPE_MASK))
@@ -380,32 +370,32 @@ typedef struct smnIndexModule
      ( (aIdxModuleID) % SMI_MAX_INDEXTYPE_ID )
 
 /* FOR A4 : smnBuiltInIndices
-     ê¸°ì¡´ì— smnIndexModuleì˜ ì¼ì°¨ì› ë°°ì—´ì´ë˜ ì¸ë±ìŠ¤ ëª¨ë“ˆ ì •ë³´ë¥¼
-     ì¸ë±ìŠ¤ íƒ€ì…ê³¼ í…Œì´ë¸” íƒ€ì…ì— ë”°ë¥¸ 2ì°¨ì› ë°°ì—´ë¡œ ë³€ê²½í•¨
-     ì´ë¥¼ ìœ„í•´ ì¸ë±ìŠ¤ ì´ë¦„ì„ ë”°ë¡œ ë¶„ë¦¬í•¨
+     ±âÁ¸¿¡ smnIndexModuleÀÇ ÀÏÂ÷¿ø ¹è¿­ÀÌ´ø ÀÎµ¦½º ¸ğµâ Á¤º¸¸¦
+     ÀÎµ¦½º Å¸ÀÔ°ú Å×ÀÌºí Å¸ÀÔ¿¡ µû¸¥ 2Â÷¿ø ¹è¿­·Î º¯°æÇÔ
+     ÀÌ¸¦ À§ÇØ ÀÎµ¦½º ÀÌ¸§À» µû·Î ºĞ¸®ÇÔ
 */
 
 // smnIndexType.mFlag
-// ì¸ë±ìŠ¤ì˜ Unique ê°€ëŠ¥ ì—¬ë¶€
+// ÀÎµ¦½ºÀÇ Unique °¡´É ¿©ºÎ
 # define SMN_INDEX_UNIQUE_MASK             (0x00000001)
 # define SMN_INDEX_UNIQUE_ENABLE           (0x00000001)
 # define SMN_INDEX_UNIQUE_DISABLE          (0x00000000)
 
 // smnIndexType.mFlag
 // To Fix BUG-16218
-// ì¸ë±ìŠ¤ì˜ Composite Index ê°€ëŠ¥ ì—¬ë¶€
+// ÀÎµ¦½ºÀÇ Composite Index °¡´É ¿©ºÎ
 # define SMN_INDEX_COMPOSITE_MASK          (0x00000002)
 # define SMN_INDEX_COMPOSITE_ENABLE        (0x00000002)
 # define SMN_INDEX_COMPOSITE_DISABLE       (0x00000000)
 
 // smnIndexType.mFlag
-// ì¸ë±ìŠ¤ì˜ ì‚°ìˆ ì  Comparision ê°€ëŠ¥ ì—¬ë¶€
+// ÀÎµ¦½ºÀÇ »ê¼úÀû Comparision °¡´É ¿©ºÎ
 # define SMN_INDEX_NUMERIC_COMPARE_MASK    (0x00000004)
 # define SMN_INDEX_NUMERIC_COMPARE_ENABLE  (0x00000004)
 # define SMN_INDEX_NUMERIC_COMPARE_DISABLE (0x00000000)
 
 // smnIndexType.mFlag
-// ì¸ë±ìŠ¤ì˜ ì‚°ìˆ ì  Comparision ê°€ëŠ¥ ì—¬ë¶€
+// ÀÎµ¦½ºÀÇ »ê¼úÀû Comparision °¡´É ¿©ºÎ
 # define SMN_INDEX_AGING_MASK              (0x00000008)
 # define SMN_INDEX_AGING_ENABLE            (0x00000008)
 # define SMN_INDEX_AGING_DISABLE           (0x00000000)
@@ -413,7 +403,7 @@ typedef struct smnIndexModule
 # define SMN_INDEX_DROP_FALSE              (0x0000)
 # define SMN_INDEX_DROP_TRUE               (0x0001)
 
-// bottom-up ë°©ì‹ì˜ index buildì‹œ ê° phase
+// bottom-up ¹æ½ÄÀÇ index build½Ã °¢ phase
 typedef enum smnBottomUpBuildPhase
 {
     SMN_EXTRACT_AND_SORT = 0,
@@ -440,7 +430,7 @@ typedef struct smnIndexType
 
 #define SMN_MAX_IDX_COUNT         IDL_MIN(((SMP_VC_PIECE_MAX_SIZE * SMC_MAX_INDEX_OID_CNT )/sizeof(smnIndexHeader)), 64)
 
-// updateì‹œì— ê´€ë ¨ ìˆëŠ” indexë¥¼ í‘œì‹œí•˜ëŠ” bit ë°°ì—´ì˜ byte size
+// update½Ã¿¡ °ü·Ã ÀÖ´Â index¸¦ Ç¥½ÃÇÏ´Â bit ¹è¿­ÀÇ byte size
 #define SMN_MAX_IDX_UPTBIT_BYTES  ((SMN_MAX_IDX_COUNT/8) + 1)
 
 #define MAX_MINMAX_VALUE_SIZE    (SMI_MAX_MINMAX_VALUE_SIZE)
@@ -460,17 +450,16 @@ typedef struct smnRuntimeHeader
 
 /* BUG-31845 [sm-disk-index] Debugging information is needed for 
  * PBT when fail to check visibility using DRDB Index.
- * ì´ ìë£Œêµ¬ì¡°ê°€ ë³€ê²½ë ê²½ìš°, smnManager::dumpCommonHeader
- * ì—­ì‹œ ìˆ˜ì •ë˜ì–´ì•¼ í•©ë‹ˆë‹¤. */
+ * ÀÌ ÀÚ·á±¸Á¶°¡ º¯°æµÉ°æ¿ì, smnManager::dumpCommonHeader
+ * ¿ª½Ã ¼öÁ¤µÇ¾î¾ß ÇÕ´Ï´Ù. */
 typedef struct smnIndexHeader
 {
-    smSCN                mCreateSCN;
     scGRID               mIndexSegDesc;
     // PRJ-1497, reserve area.
     ULong                mReserv;
     
     smOID                mTableOID;
-    smOID                mSelfOID;  /* index headerë¥¼ ì§ì ‘ ê°€ë¦¬í‚¨ë‹¤. */
+    smOID                mSelfOID;  /* index header¸¦ Á÷Á¢ °¡¸®Å²´Ù. */
     smnRuntimeHeader   * mHeader;   /* related in smcTempPage... */
     smnIndexModule     * mModule;
     smnInsertFunc        mInsert;
@@ -479,14 +468,14 @@ typedef struct smnIndexHeader
     UInt                 mId;
     UInt                 mType;
     UInt                 mFlag;
-    UShort               mDropFlag; /* PROJ-2433 mMaxKeySize ì¶”ê°€ìœ„í•´ UInt -> UShortë¡œ ë³€ê²½ */
+    UShort               mDropFlag; /* PROJ-2433 mMaxKeySize Ãß°¡À§ÇØ UInt -> UShort·Î º¯°æ */
 
     /* PROJ-2433
-       mMaxKeySize : SQLì—ì„œ ì„¤ì •í•œ Direct Key Indexì˜ ìµœëŒ€ê¸¸ì´ (xx)
+       mMaxKeySize : SQL¿¡¼­ ¼³Á¤ÇÑ Direct Key IndexÀÇ ÃÖ´ë±æÀÌ (xx)
                      ex) CREATE INDEX index_name On table_name ( column ) DIRECTKEY MAXSIZE xx 
 
-                    - MAXSIZE ê°€ ì„¤ì •ë˜ì–´ ìˆì§€ ì•Šìœ¼ë©´, 
-                      property __MEM_BTREE_DEFAULT_MAX_KEY_SIZE ê°’ìœ¼ë¡œ ì„¸íŒ…ë¨ (default:8) */
+                    - MAXSIZE °¡ ¼³Á¤µÇ¾î ÀÖÁö ¾ÊÀ¸¸é, 
+                      property __MEM_BTREE_DEFAULT_MAX_KEY_SIZE °ªÀ¸·Î ¼¼ÆÃµÊ (default:8) */
     UShort               mMaxKeySize;
 
     UInt                 mColumnCount;
@@ -502,7 +491,7 @@ typedef struct smnIndexHeader
 
     /* TASK-4990 changing the method of collecting index statistics */
     smiIndexStat         mStat;
-    /* BUG-42095 : ì‚¬ìš© ì•ˆ í•¨ */
+    /* BUG-42095 : »ç¿ë ¾È ÇÔ */
     smiCachedPageStat  * mLatestStat;
 }smnIndexHeader;
 

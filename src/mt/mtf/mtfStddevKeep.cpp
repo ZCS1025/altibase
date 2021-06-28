@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfStddevKeep.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfStddevKeep.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -49,7 +49,7 @@ static IDE_RC mtfStddevKeepEstimate( mtcNode     * aNode,
 mtfModule mtfStddevKeep = {
     5 | MTC_NODE_OPERATOR_AGGREGATION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfStddevKeepFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -161,7 +161,7 @@ IDE_RC mtfStddevKeepEstimate( mtcNode     * aNode,
                     ( aStack[1].column->module == &mtdBoolean ),
                     ERR_CONVERSION_NOT_APPLICABLE );
 
-    // funcData ì‚¬ìš©
+    // funcData »ç¿ë
     aNode->info = aTemplate->funcDataCnt;
     aTemplate->funcDataCnt++;
 
@@ -221,7 +221,7 @@ IDE_RC mtfStddevKeepInitialize( mtcNode     * aNode,
         IDE_TEST( mtf::initializeFuncDataBasicInfo( sFuncData,
                                                     sMemoryMgr )
                   != IDE_SUCCESS );
-        // ë“±ë¡
+        // µî·Ï
         aTemplate->funcData[aNode->info] = sFuncData;
     }
     else

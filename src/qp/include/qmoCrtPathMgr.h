@@ -16,18 +16,18 @@
  
 
 /***********************************************************************
- * $Id: qmoCrtPathMgr.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmoCrtPathMgr.h 86122 2019-09-04 07:20:21Z donovan.seo $
  *
  * Description :
  *     Critical Path Manager
  *
- *     FROM, WHEREë¡œ êµ¬ì„±ë˜ëŠ” Critical Pathì— ëŒ€í•œ ìµœì í™”ë¥¼ ìˆ˜í–‰í•˜ê³ 
- *     ì´ì— ëŒ€í•œ Graphë¥¼ ìƒì„±í•œë‹¤.
+ *     FROM, WHERE·Î ±¸¼ºµÇ´Â Critical Path¿¡ ´ëÇÑ ÃÖÀûÈ­¸¦ ¼öÇàÇÏ°í
+ *     ÀÌ¿¡ ´ëÇÑ Graph¸¦ »ı¼ºÇÑ´Ù.
  *
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -40,32 +40,32 @@
 #include <qmoDnfMgr.h>
 
 //---------------------------------------------------
-// Critical Pathë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+// Critical Path¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
 //---------------------------------------------------
 
 typedef struct qmoCrtPath
 {
-    qmoNormalType   normalType;    // CNF ë˜ëŠ” DNF
+    qmoNormalType   normalType;    // CNF ¶Ç´Â DNF
 
     qmoDNF        * crtDNF;
     qmoCNF        * crtCNF;
 
-    qmoCNF        * currentCNF;    // í˜„ì¬ CNF( Plan Tree ìƒì„± ì‹œ ì‚¬ìš© )
+    qmoCNF        * currentCNF;    // ÇöÀç CNF( Plan Tree »ı¼º ½Ã »ç¿ë )
 
-    qmgGraph      * myGraph;       // critical pathê°€ ê²°ì •ëœ ê²°ê³¼ graph
+    qmgGraph      * myGraph;       // critical path°¡ °áÁ¤µÈ °á°ú graph
 
     //-------------------------------------------------------------------
-    // PROJ-1405 ROWNUM ê´€ë ¨ ìë£Œ êµ¬ì¡°
+    // PROJ-1405 ROWNUM °ü·Ã ÀÚ·á ±¸Á¶
     //
-    // currentNormalType   : í˜„ì¬ critical pathê°€ predicateì„ ì²˜ë¦¬í•˜ëŠ”
-    //                       Normalization Type ì •ë³´
-    // rownumPredicate4CNF : critical pathê°€ CNF,NNFë¡œ predicateì„ ì²˜ë¦¬í• ë•Œì˜
-    //                       rownumPredicate ì •ë³´
-    // rownumPredicate4CNF : critical pathê°€ DNFë¡œ predicateì„ ì²˜ë¦¬í• ë•Œì˜
-    //                       rownumPredicate ì •ë³´
-    // rownumPredicate     : critical pathê°€ ê²°ì •í•œ ì •ê·œí™”í˜•íƒœë¡œ
-    //                       rownumPredicate ì—°ê²°
-    // myQuerySet          : ROWNUM ë…¸ë“œ ì •ë³´
+    // currentNormalType   : ÇöÀç critical path°¡ predicateÀ» Ã³¸®ÇÏ´Â
+    //                       Normalization Type Á¤º¸
+    // rownumPredicate4CNF : critical path°¡ CNF,NNF·Î predicateÀ» Ã³¸®ÇÒ¶§ÀÇ
+    //                       rownumPredicate Á¤º¸
+    // rownumPredicate4CNF : critical path°¡ DNF·Î predicateÀ» Ã³¸®ÇÒ¶§ÀÇ
+    //                       rownumPredicate Á¤º¸
+    // rownumPredicate     : critical path°¡ °áÁ¤ÇÑ Á¤±ÔÈ­ÇüÅÂ·Î
+    //                       rownumPredicate ¿¬°á
+    // myQuerySet          : ROWNUM ³ëµå Á¤º¸
     //-------------------------------------------------------------------
 
     qmoNormalType   currentNormalType;
@@ -75,27 +75,27 @@ typedef struct qmoCrtPath
     qmoPredicate  * rownumPredicate;
     
     qmsQuerySet   * myQuerySet;
-    
+    idBool          mIsOnlyNL;
 } qmoCrtPath;
 
 //---------------------------------------------------
-// Critical Pathë¥¼ ê´€ë¦¬ í•¨ìˆ˜
+// Critical Path¸¦ °ü¸® ÇÔ¼ö
 //---------------------------------------------------
 
 class qmoCrtPathMgr
 {
 public:
 
-    // Critical Path ìƒì„± ë° ì´ˆê¸°í™”
+    // Critical Path »ı¼º ¹× ÃÊ±âÈ­
     static IDE_RC    init( qcStatement * aStatement,
                            qmsQuerySet * aQuerySet,
                            qmoCrtPath ** aCrtPath );
 
-    // Critical Pathì— ëŒ€í•œ ìµœì í™” ë° Graph ìƒì„±
+    // Critical Path¿¡ ´ëÇÑ ÃÖÀûÈ­ ¹× Graph »ı¼º
     static IDE_RC    optimize( qcStatement * aStatement,
                                qmoCrtPath  * aCrtPath );
 
-    // Normalization Type ê²°ì •
+    // Normalization Type °áÁ¤
     static IDE_RC    decideNormalType( qcStatement   * aStatement,
                                        qmsFrom       * aFrom,
                                        qtcNode       * aWhere,
@@ -104,12 +104,12 @@ public:
                                        qmoNormalType * aNormalType);
 
     // PROJ-1405
-    // Rownum Predicateì„ rownumPredicateì— ì—°ê²°
+    // Rownum PredicateÀ» rownumPredicate¿¡ ¿¬°á
     static IDE_RC    addRownumPredicate( qmsQuerySet  * aQuerySet,
                                          qmoPredicate * aPredicate );
     
     // PROJ-1405
-    // Rownum Predicateì„ rownumPredicateì— ì—°ê²°
+    // Rownum PredicateÀ» rownumPredicate¿¡ ¿¬°á
     static IDE_RC    addRownumPredicateForNode( qcStatement  * aStatement,
                                                 qmsQuerySet  * aQuerySet,
                                                 qtcNode      * aNode,
@@ -125,7 +125,7 @@ public:
 
 private:
 
-    // fromì ˆì— viewê°€ ìˆëŠ”ì§€ ê²€ì‚¬
+    // fromÀı¿¡ view°¡ ÀÖ´ÂÁö °Ë»ç
     static IDE_RC    existsViewinFrom( qmsFrom * aFrom,
                                        idBool  * aIsExistView );
 };

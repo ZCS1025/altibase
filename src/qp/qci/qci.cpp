@@ -50,6 +50,7 @@
 #include <qmxResultCache.h>
 #include <qsxArray.h>
 #include <sdi.h>
+#include <sdiZookeeper.h>
 
 qciStartupPhase                 qci::mStartupPhase = QCI_STARTUP_INIT;
 qciSessionCallback              qci::mSessionCallback;
@@ -86,39 +87,82 @@ qci::initializeStmtInfo( qciStmtInfo * aStmtInfo,
 IDE_RC qci::initializeStmtListInfo( qcStmtListInfo * aStmtListInfo )
 {
     UInt sStage = 0;
+    UInt sPoolSize = 0;
     UInt i;
     UInt j;
 
     aStmtListInfo->mStmtListCount      = QCU_PSM_STMT_LIST_COUNT;
     aStmtListInfo->mStmtListCursor     = 0;
     aStmtListInfo->mStmtListFreedCount = 0;
-
     aStmtListInfo->mStmtPoolCount      = QCU_PSM_STMT_POOL_COUNT;
+    aStmtListInfo->mStmtList           = NULL;
+    aStmtListInfo->mStmtList2          = NULL;
+    aStmtListInfo->mUsePtr             = ID_FALSE;
 
-    IDE_TEST( iduMemMgr::malloc( IDU_MEM_QCI,
-                                 ID_SIZEOF( qsxStmtList ) * aStmtListInfo->mStmtListCount,
-                                 (void**)&aStmtListInfo->mStmtList )
-              != IDE_SUCCESS );
-    sStage = 1;
-
-    for ( i = 0; i < aStmtListInfo->mStmtListCount; i++ )
+    if ( aStmtListInfo->mStmtListCount > 0 )
     {
-        aStmtListInfo->mStmtList[i].mParseTree = NULL;
-        aStmtListInfo->mStmtList[i].mNext      = NULL;
+        if ( aStmtListInfo->mStmtPoolCount > QC_PSM_POOL_DEFAULT )
+        {
+            IDE_TEST( iduMemMgr::malloc( IDU_MEM_QCI,
+                                         ID_SIZEOF( qsxStmtList ) * aStmtListInfo->mStmtListCount,
+                                         (void**)&aStmtListInfo->mStmtList )
+                      != IDE_SUCCESS );
+            sStage = 2;
+            sPoolSize = idlOS::align8( ID_SIZEOF( void * ) * aStmtListInfo->mStmtPoolCount );
+            aStmtListInfo->mUsePtr = ID_TRUE;
 
-        aStmtListInfo->mStmtList[i].mStmtPool       = NULL;
-        aStmtListInfo->mStmtList[i].mStmtPoolStatus = NULL;
+            /* PoolCountÀÇ ÃÖ¼Ò°ªÀÌ 32ÀÌ´Ù */
+            aStmtListInfo->mStmtPoolStatusSize = 
+                idlOS::align8( ( ID_SIZEOF( UChar ) * aStmtListInfo->mStmtPoolCount ) / QC_UCHAR_BIT );
 
-        IDE_TEST( iduMemMgr::malloc( IDU_MEM_QCI,
-                                     ID_SIZEOF(void *) * aStmtListInfo->mStmtPoolCount,
-                                     (void**)&aStmtListInfo->mStmtList[i].mStmtPool )
-                  != IDE_SUCCESS );
+            for ( i = 0; i < aStmtListInfo->mStmtListCount; i++ )
+            {
+                aStmtListInfo->mStmtList[i].mParseTree      = NULL;
+                aStmtListInfo->mStmtList[i].mStmtPool       = NULL;
+                aStmtListInfo->mStmtList[i].mStmtPoolStatus = NULL;
+                aStmtListInfo->mStmtList[i].mNext           = NULL;
 
-        IDE_TEST( iduMemMgr::calloc( IDU_MEM_QCI,
-                                     1,
-                                     aStmtListInfo->mStmtPoolCount / 8,
-                                     (void**)&aStmtListInfo->mStmtList[i].mStmtPoolStatus )
-                  != IDE_SUCCESS );
+                IDE_TEST( iduMemMgr::malloc( IDU_MEM_QCI,
+                                             sPoolSize,
+                                             (void**)&aStmtListInfo->mStmtList[i].mStmtPool )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( iduMemMgr::malloc( IDU_MEM_QCI,
+                                             aStmtListInfo->mStmtPoolStatusSize,
+                                             (void**)&aStmtListInfo->mStmtList[i].mStmtPoolStatus )
+                          != IDE_SUCCESS );
+
+                idlOS::memset( aStmtListInfo->mStmtList[i].mStmtPoolStatus,
+                               0,
+                               aStmtListInfo->mStmtPoolStatusSize );
+            }
+        }
+        else
+        {
+            IDE_TEST( iduMemMgr::malloc( IDU_MEM_QCI,
+                                         ID_SIZEOF( qsxStmtList2 ) * aStmtListInfo->mStmtListCount,
+                                         (void**)&aStmtListInfo->mStmtList2 )
+                      != IDE_SUCCESS );
+            sStage = 1;
+
+            /* PoolCountÀÇ ÃÖ¼Ò°ªÀÌ 32ÀÌ´Ù */
+            aStmtListInfo->mStmtPoolStatusSize = 
+                idlOS::align8( ( ID_SIZEOF( UChar ) * aStmtListInfo->mStmtPoolCount ) / QC_UCHAR_BIT );
+
+            for ( i = 0; i < aStmtListInfo->mStmtListCount; i++ )
+            {
+                aStmtListInfo->mStmtList2[i].mParseTree      = NULL;
+                aStmtListInfo->mStmtList2[i].mNext           = NULL;
+
+                idlOS::memset( aStmtListInfo->mStmtList2[i].mStmtPoolStatus,
+                               0,
+                               aStmtListInfo->mStmtPoolStatusSize );
+            }
+        }
+    }
+    else
+    {
+        /* Nothing to do */
     }
 
     return IDE_SUCCESS;
@@ -127,7 +171,7 @@ IDE_RC qci::initializeStmtListInfo( qcStmtListInfo * aStmtListInfo )
 
     switch ( sStage )
     {
-        case 1:
+        case 2:
             {
                 for ( j = 0; j <= i; j++ )
                 {
@@ -146,8 +190,14 @@ IDE_RC qci::initializeStmtListInfo( qcStmtListInfo * aStmtListInfo )
 
                 (void)iduMemMgr::free( aStmtListInfo->mStmtList );
                 aStmtListInfo->mStmtList = NULL;
+                break;
             }
-            /* fall through */
+        case 1:
+            {
+                (void)iduMemMgr::free( aStmtListInfo->mStmtList2 );
+                aStmtListInfo->mStmtList2 = NULL;
+                break;
+            }
         case 0:
             // Nothing to do.
             break;
@@ -166,79 +216,98 @@ IDE_RC qci::finalizeStmtListInfo( qcStmtListInfo * aStmtListInfo )
     UInt    sErrorCode;
     SChar * sErrorMsg;
 
-    for ( i = 0; i < aStmtListInfo->mStmtListCount; i++ )
+    IDE_TEST_CONT( aStmtListInfo->mStmtListCount <= 0, normal_exit );
+
+    if ( aStmtListInfo->mStmtList != NULL )
     {
-        if ( aStmtListInfo->mStmtList[i].mStmtPool != NULL )
+        for ( i = 0; i < aStmtListInfo->mStmtListCount; i++ )
         {
-            sRet = iduMemMgr::free( aStmtListInfo->mStmtList[i].mStmtPool );
-            aStmtListInfo->mStmtList[i].mStmtPool = NULL;
-
-            if ( sRet != IDE_SUCCESS )
+            if ( aStmtListInfo->mStmtList[i].mStmtPool != NULL )
             {
-                sErrorCode = ideGetErrorCode();
-                sErrorMsg  = ideGetErrorMsg(sErrorCode);
+                sRet = iduMemMgr::free( aStmtListInfo->mStmtList[i].mStmtPool );
+                aStmtListInfo->mStmtList[i].mStmtPool = NULL;
 
-                if ( sErrorMsg != NULL )
+                if ( sRet != IDE_SUCCESS )
                 {
-                    ideLog::log( IDE_QP_0, "Finalize Session Warning [ERR-%u] : %s",
-                                 E_ERROR_CODE(sErrorCode), sErrorMsg );
+                    sErrorCode = ideGetErrorCode();
+                    sErrorMsg  = ideGetErrorMsg(sErrorCode);
 
-                    IDE_DASSERT(0);
+                    if ( sErrorMsg != NULL )
+                    {
+                        ideLog::log( IDE_QP_0, "Finalize Session Warning [ERR-%u] : %s",
+                                     E_ERROR_CODE(sErrorCode), sErrorMsg );
+
+                        IDE_DASSERT(0);
+                    }
+                    else
+                    {
+                        // Nothing to do.
+                    }
+
+                    IDE_CLEAR();
                 }
                 else
                 {
                     // Nothing to do.
                 }
+            }
+            else
+            {
+                // Nothing to do.
+            }
 
-                IDE_CLEAR();
+            if ( aStmtListInfo->mStmtList[i].mStmtPoolStatus != NULL )
+            {
+                sRet = iduMemMgr::free( aStmtListInfo->mStmtList[i].mStmtPoolStatus );
+                aStmtListInfo->mStmtList[i].mStmtPoolStatus = NULL;
+
+                if ( sRet != IDE_SUCCESS )
+                {
+                    sErrorCode = ideGetErrorCode();
+                    sErrorMsg  = ideGetErrorMsg(sErrorCode);
+
+                    if ( sErrorMsg != NULL )
+                    {
+                        ideLog::log( IDE_QP_0, "Finalize Session Warning [ERR-%u] : %s",
+                                     E_ERROR_CODE(sErrorCode), sErrorMsg );
+
+                        IDE_DASSERT(0);
+                    }
+                    else
+                    {
+                        // Nothing to do.
+                    }
+
+                    IDE_CLEAR();
+                }
+                else
+                {
+                    // Nothing to do.
+                }
             }
             else
             {
                 // Nothing to do.
             }
         }
-        else
-        {
-            // Nothing to do.
-        }
 
-        if ( aStmtListInfo->mStmtList[i].mStmtPoolStatus != NULL )
-        {
-            sRet = iduMemMgr::free( aStmtListInfo->mStmtList[i].mStmtPoolStatus );
-            aStmtListInfo->mStmtList[i].mStmtPoolStatus = NULL;
-
-            if ( sRet != IDE_SUCCESS )
-            {
-                sErrorCode = ideGetErrorCode();
-                sErrorMsg  = ideGetErrorMsg(sErrorCode);
-
-                if ( sErrorMsg != NULL )
-                {
-                    ideLog::log( IDE_QP_0, "Finalize Session Warning [ERR-%u] : %s",
-                                 E_ERROR_CODE(sErrorCode), sErrorMsg );
-
-                    IDE_DASSERT(0);
-                }
-                else
-                {
-                    // Nothing to do.
-                }
-
-                IDE_CLEAR();
-            }
-            else
-            {
-                // Nothing to do.
-            }
-        }
-        else
-        {
-            // Nothing to do.
-        }
+        sRet = iduMemMgr::free( aStmtListInfo->mStmtList );
+        aStmtListInfo->mStmtList = NULL;
+    }
+    else
+    {
+        /* Nothing to do */
     }
 
-    sRet = iduMemMgr::free( aStmtListInfo->mStmtList );
-    aStmtListInfo->mStmtList = NULL;
+    if ( aStmtListInfo->mStmtList2 != NULL )
+    {
+        sRet = iduMemMgr::free( aStmtListInfo->mStmtList2 );
+        aStmtListInfo->mStmtList2 = NULL;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
     if ( sRet != IDE_SUCCESS )
     {
@@ -264,6 +333,8 @@ IDE_RC qci::finalizeStmtListInfo( qcStmtListInfo * aStmtListInfo )
         // Nothing to do.
     }
 
+    IDE_EXCEPTION_CONT( normal_exit );
+
     return IDE_SUCCESS;
 }
 
@@ -273,16 +344,16 @@ IDE_RC qci::initializeSession( qciSession * aSession,
 {
 /***********************************************************************
  *
- * Description : qciSession ê°ì²´ë¥¼ ë°›ì•„ì„œ QPì— í•„ìš”í•œ ì •ë³´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ * Description : qciSession °´Ã¼¸¦ ¹Ş¾Æ¼­ QP¿¡ ÇÊ¿äÇÑ Á¤º¸¸¦ ÃÊ±âÈ­ÇÑ´Ù.
  *
- *      MMì—ì„œ ì„¸ì…˜ì´ ì‹œì‘ë  ë•Œ ì´ í•¨ìˆ˜ë¥¼ ë¶ˆëŸ¬ì•¼ í•œë‹¤.
+ *      MM¿¡¼­ ¼¼¼ÇÀÌ ½ÃÀÛµÉ ¶§ ÀÌ ÇÔ¼ö¸¦ ºÒ·¯¾ß ÇÑ´Ù.
  *
  * Implementation :
  *
- *   QPì—ì„œ í•„ìš”í•œ ê° ì •ë³´ì— ëŒ€í•œ ë©”ëª¨ë¦¬ í• ë‹¹ ë° ì´ˆê¸°í™” ìˆ˜í–‰.
+ *   QP¿¡¼­ ÇÊ¿äÇÑ °¢ Á¤º¸¿¡ ´ëÇÑ ¸Ş¸ğ¸® ÇÒ´ç ¹× ÃÊ±âÈ­ ¼öÇà.
  *
- *   1. session ì¢…ì†ì ì¸ object ì´ˆê¸°í™”
- *   2. sequence ì´ˆê¸°í™”
+ *   1. session Á¾¼ÓÀûÀÎ object ÃÊ±âÈ­
+ *   2. sequence ÃÊ±âÈ­
  *
  ***********************************************************************/
 
@@ -296,10 +367,15 @@ IDE_RC qci::initializeSession( qciSession * aSession,
 
     sQPSpecific->mFlag = 0;
 
+    sQPSpecific->mPropertyFlag = 0;
+    
     aSession->mMmSession = aMmSession;
 
     // PROJ-2638
     sQPSpecific->mClientInfo = NULL;
+
+    sQPSpecific->mIsGTx  = ID_FALSE;
+    sQPSpecific->mIsGCTx = ID_FALSE;
 
     IDE_TEST( qcg::initSessionObjInfo( &(sQPSpecific->mSessionObj) )
               != IDE_SUCCESS );
@@ -308,7 +384,7 @@ IDE_RC qci::initializeSession( qciSession * aSession,
     sQPSpecific->mCache.mSequences_ = NULL;
 
     // PROJ-1407 Temporary Table
-    // session temporary table object ì´ˆê¸°í™”
+    // session temporary table object ÃÊ±âÈ­
     qcuTemporaryObj::initTemporaryObj( &(sQPSpecific->mTemporaryObj) );
 
     // PROJ-1073 Package
@@ -369,7 +445,7 @@ IDE_RC qci::initializeSession( qciSession * aSession,
     // BUG-44856
     sQPSpecific->mLastCursorId = ID_UINT_MAX;
 
-    /* BUG-43605 [mt] randomí•¨ìˆ˜ì˜ seed ì„¤ì •ì„ session ë‹¨ìœ„ë¡œ ë³€ê²½í•´ì•¼ í•©ë‹ˆë‹¤. */
+    /* BUG-43605 [mt] randomÇÔ¼öÀÇ seed ¼³Á¤À» session ´ÜÀ§·Î º¯°æÇØ¾ß ÇÕ´Ï´Ù. */
     qciMisc::initRandomInfo( & sQPSpecific->mRandomInfo );
 
     IDE_TEST( initializeStmtListInfo( &sQPSpecific->mStmtListInfo )
@@ -428,17 +504,17 @@ IDE_RC qci::finalizeSession( qciSession * aSession,
 {
 /***********************************************************************
  *
- * Description : qciSession ê°ì²´ë¥¼ ë°›ì•„ì„œ QPì—ì„œ ì‚¬ìš©í•œ ì •ë³´ë¥¼
- *               í•´ì œí•œë‹¤.
+ * Description : qciSession °´Ã¼¸¦ ¹Ş¾Æ¼­ QP¿¡¼­ »ç¿ëÇÑ Á¤º¸¸¦
+ *               ÇØÁ¦ÇÑ´Ù.
  *
- *      MMì—ì„œ ì„¸ì…˜ì´ ì¢…ë£Œë  ë•Œ ì´ í•¨ìˆ˜ë¥¼ ë¶ˆëŸ¬ì•¼ í•œë‹¤.
+ *      MM¿¡¼­ ¼¼¼ÇÀÌ Á¾·áµÉ ¶§ ÀÌ ÇÔ¼ö¸¦ ºÒ·¯¾ß ÇÑ´Ù.
  *
  * Implementation :
  *
- *   QPì—ì„œ í•„ìš”í•œ ê° ì •ë³´ì— ëŒ€í•œ ë©”ëª¨ë¦¬ í•´ì œ ë° ì •ë¦¬
+ *   QP¿¡¼­ ÇÊ¿äÇÑ °¢ Á¤º¸¿¡ ´ëÇÑ ¸Ş¸ğ¸® ÇØÁ¦ ¹× Á¤¸®
  *
- *   1. session ì¢…ì†ì ì¸ objectì— ëŒ€í•œ ë©”ëª¨ë¦¬ í•´ì œ
- *   2. sequence ë©”ëª¨ë¦¬ í•´ì œ
+ *   1. session Á¾¼ÓÀûÀÎ object¿¡ ´ëÇÑ ¸Ş¸ğ¸® ÇØÁ¦
+ *   2. sequence ¸Ş¸ğ¸® ÇØÁ¦
  *
  ***********************************************************************/
 
@@ -459,10 +535,13 @@ IDE_RC qci::finalizeSession( qciSession * aSession,
 
     aSession->mMmSession = NULL;
 
-    // sequence ì •ë³´ì— ëŒ€í•œ ë©”ëª¨ë¦¬ í•´ì œ.
+    sQPSpecific->mIsGTx  = ID_FALSE;
+    sQPSpecific->mIsGCTx = ID_FALSE;
+
+    // sequence Á¤º¸¿¡ ´ëÇÑ ¸Ş¸ğ¸® ÇØÁ¦.
     sQPSpecific->mCache.clearSequence();
 
-    // sessionì¢…ì†ì ì¸ PSM file object ì‚­ì œ
+    // sessionÁ¾¼ÓÀûÀÎ PSM file object »èÁ¦
     (void)qcg::finalizeSessionObjInfo( &(sQPSpecific->mSessionObj) );
 
     // PROJ-1073 Package
@@ -471,7 +550,7 @@ IDE_RC qci::finalizeSession( qciSession * aSession,
     sQPSpecific->mSessionPkg = NULL;
 
     // PROJ-1407 Temporary Table
-    // session temporary table object ì‚­ì œ
+    // session temporary table object »èÁ¦
     qcuTemporaryObj::finalizeTemporaryObj( sStatistics,
                                            & sQPSpecific->mTemporaryObj );
 
@@ -495,7 +574,7 @@ IDE_RC qci::finalizeSession( qciSession * aSession,
             {
                 ideLog::log( IDE_QP_0, "Finalize Session Warning [ERR-%u] : %s",
                              E_ERROR_CODE(sErrorCode), sErrorMsg );
-                IDE_DASSERT(0);
+                //IDE_DASSERT(0);
             }
             else
             {
@@ -590,27 +669,117 @@ IDE_RC qci::finalizeSession( qciSession * aSession,
 
     (void)finalizeStmtListInfo( &sQPSpecific->mStmtListInfo );
 
+    // BUG-47765
+    sdi::unSetSessionPropertyFlag( aSession );
+    
     // PROJ-2638
     sdi::finalizeSession( aSession );
 
     return IDE_SUCCESS;
 }
 
-void qci::endTransForSession( qciSession * aSession )
+void qci::endTransForSession( qciSession * aSession,
+                              idBool       aCommit,
+                              smSCN      * aCommitSCN,
+                              ULong        aNewSMN,
+                              sdiZKPendingJobFunc * aOutPendingJobFunc )
 {
     idvSQL            * sStatistics;
+    ULong               sBeforeSMN;
+
+    ACP_UNUSED(aCommitSCN);
 
     sStatistics = qci::mSessionCallback.mGetStatistics( aSession->mMmSession );
+    sBeforeSMN  = qci::mSessionCallback.mGetShardMetaNumber( aSession->mMmSession );
 
     // PROJ-1407 Temporary Table
-    // sessionì—ì„œ end-transactionì‹œ ìˆ˜í–‰í•  ì‘ì—…
-    // transaction temporary table ì‚­ì œ
+    // session¿¡¼­ end-transaction½Ã ¼öÇàÇÒ ÀÛ¾÷
+    // transaction temporary table »èÁ¦
     qcuTemporaryObj::dropAllTempTables( sStatistics,
                                         & aSession->mQPSpecific.mTemporaryObj,
                                         QCM_TEMPORARY_ON_COMMIT_DELETE_ROWS );
 
-    // BUG-46884
-    sdi::unsetShardMetaTouched( aSession );
+    if ( ( aSession->mQPSpecific.mFlag & QC_SESSION_SHARD_META_TOUCH_MASK ) ==
+         QC_SESSION_SHARD_META_TOUCH_TRUE ) // shard ddl, and shard meta procedure
+    {
+        if ( ( aSession->mQPSpecific.mFlag & QC_SESSION_SHARD_DDL_MASK ) ==
+             QC_SESSION_SHARD_DDL_TRUE ) //shard ddl, include shard meta procedure
+        {
+            IDE_DASSERT( ( aSession->mQPSpecific.mFlag & QC_SESSION_HANDOVER_SHARD_DDL_MASK ) ==
+                         QC_SESSION_HANDOVER_SHARD_DDL_FALSE );
+
+            if ( aCommit == ID_TRUE )
+            {
+                if (sdiZookeeper::isExistPendingJob() == ID_TRUE)
+                {
+                    *aOutPendingJobFunc = sdiZookeeper::callAfterCommitFunc;
+                }
+                else
+                {
+                    sdiZookeeper::callAfterCommitFunc( aNewSMN, sBeforeSMN );
+                }
+
+                ideLog::log( IDE_SD_17, "[SHARD_META] COMMIT" );
+            }
+            else
+            {
+                if (sdiZookeeper::isExistPendingJob() == ID_TRUE)
+                {
+                    *aOutPendingJobFunc = sdiZookeeper::callAfterRollbackFunc;
+                }
+                else
+                {
+                    sdiZookeeper::callAfterRollbackFunc();
+                }
+
+                ideLog::log( IDE_SD_17, "[SHARD_META] ROLLBACK" );
+            }
+        }
+        else //shard meta procedure only
+        {
+            if ( aCommit == ID_TRUE )
+            {
+                if( aNewSMN != SDI_NULL_SMN )
+                {
+                    IDE_DASSERT( ( aSession->mQPSpecific.mFlag & QC_SESSION_SHARD_META_TOUCH_MASK ) 
+                                 == QC_SESSION_SHARD_META_TOUCH_TRUE );
+                    if ( (*aCommitSCN) != SM_SCN_INIT )
+                    {
+                        /* shard meta update procedure of user session */
+                        if( sdiZookeeper::updateSMN(aNewSMN) != IDE_SUCCESS )
+                        {
+                            ideLog::log( IDE_SD_4, "[ZOOKEEPER_ERROR] fail. shard procedure after commit for smn: SMN(%"ID_UINT64_FMT")", aNewSMN );
+                        }
+                        ideLog::log( IDE_SD_20, "[ZOOKEEPER] success. shard procedure zookeeper after commit for smn: SMN(%"ID_UINT64_FMT")", aNewSMN );
+                    }
+                }
+                else
+                {
+                    /* self coordinator session of shard meta update procedure : do nothing, already update smn by user session */
+                }
+
+                ideLog::log( IDE_SD_17, "[SHARD_META] COMMIT" );
+            }
+            else
+            {
+                ideLog::log( IDE_SD_17, "[SHARD_META] ROLLBACK" );
+            }
+            //shard meta touch release shard meta lock
+            sdiZookeeper::releaseShardMetaLock();
+        }
+
+        sdi::unsetInternalTableSwap( aSession );
+        // BUG-46884
+        sdi::unsetShardMetaTouched( aSession );
+        /* initialize session flag shard ddl */
+        aSession->mQPSpecific.mFlag &= ~QC_SESSION_SHARD_DDL_MASK;
+        aSession->mQPSpecific.mFlag |= QC_SESSION_SHARD_DDL_FALSE;
+        aSession->mQPSpecific.mFlag &= ~QC_SESSION_HANDOVER_SHARD_DDL_MASK;
+        aSession->mQPSpecific.mFlag |= QC_SESSION_HANDOVER_SHARD_DDL_FALSE;
+        // BUG-48616
+        aSession->mQPSpecific.mFlag &= ~QC_SESSION_SAHRD_ADD_CLONE_MASK;
+        aSession->mQPSpecific.mFlag |= QC_SESSION_SAHRD_ADD_CLONE_FALSE;
+    }
 }
 
 void qci::endSession( qciSession * aSession )
@@ -620,8 +789,8 @@ void qci::endSession( qciSession * aSession )
     sStatistics = qci::mSessionCallback.mGetStatistics( aSession->mMmSession );
 
     // PROJ-1407 Temporary Table
-    // sessionì—ì„œ end-sessionì‹œ ìˆ˜í–‰í•  ì‘ì—…
-    // transaction temporary table ì‚­ì œ
+    // session¿¡¼­ end-session½Ã ¼öÇàÇÒ ÀÛ¾÷
+    // transaction temporary table »èÁ¦
     qcuTemporaryObj::dropAllTempTables( sStatistics,
                                         & aSession->mQPSpecific.mTemporaryObj,
                                         QCM_TEMPORARY_ON_COMMIT_PRESERVE_ROWS);
@@ -694,19 +863,43 @@ void qci::clearShardDataInfo( qciStatement * aStatement )
     return;
 }
 
+void qci::clearShardDataInfoForRebuild( qciStatement * aStatement )
+{
+    qcStatement * sStatement = & aStatement->statement;
+
+    if ( sStatement->allocFlag == ID_TRUE )
+    {
+        if ( QC_PRIVATE_TMPLATE( sStatement ) != NULL )
+        {
+            sdi::clearShardDataInfoForRebuild( sStatement,
+                                               & ( QC_PRIVATE_TMPLATE( sStatement )->shardExecData ) );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return;
+}
+
 IDE_RC qci::checkExecuteFuncAndSetEnv( qciStatement * aStatement,
                                        qciExecFunc    aExecFunc )
 {   
     //----------------------------------------
-    // aExecFuncì´
-    // í˜„ì¬ statementì˜ stateë¡œ
-    // í˜¸ì¶œí•  ìˆ˜ ìˆëŠ” í•¨ìˆ˜ì¸ì§€ì— ëŒ€í•´ íŒë‹¨í•˜ê³ ,
-    // í˜¸ì¶œí•  ìˆ˜ ìˆëŠ” í•¨ìˆ˜ë¡œ íŒë‹¨ë˜ë©´,
-    // í•¨ìˆ˜ìˆ˜í–‰ì— ë§ë„ë¡ psmì˜ ìƒíƒœì™€ qcStatementì˜ ìƒíƒœë¥¼ ì •ë¦¬í•œë‹¤.
+    // aExecFuncÀÌ
+    // ÇöÀç statementÀÇ state·Î
+    // È£ÃâÇÒ ¼ö ÀÖ´Â ÇÔ¼öÀÎÁö¿¡ ´ëÇØ ÆÇ´ÜÇÏ°í,
+    // È£ÃâÇÒ ¼ö ÀÖ´Â ÇÔ¼ö·Î ÆÇ´ÜµÇ¸é,
+    // ÇÔ¼ö¼öÇà¿¡ ¸Âµµ·Ï psmÀÇ »óÅÂ¿Í qcStatementÀÇ »óÅÂ¸¦ Á¤¸®ÇÑ´Ù.
     //
     // PROJ-2163
-    // í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì˜ íƒ€ì… ë°”ì¸ë”©ì´ hard prepare ë¡œ ì´ë™í•˜ë©´ì„œ
-    // QCI_STMT_STATE_PREPAREDì™€ QCI_STMT_STATE_PARAM_INFO_BOUND ìˆœì„œ ë³€ê²½
+    // È£½ºÆ® º¯¼öÀÇ Å¸ÀÔ ¹ÙÀÎµùÀÌ hard prepare ·Î ÀÌµ¿ÇÏ¸é¼­
+    // QCI_STMT_STATE_PREPARED¿Í QCI_STMT_STATE_PARAM_INFO_BOUND ¼ø¼­ º¯°æ
     //---------------------------------------
 
     static qciStateInfo
@@ -832,13 +1025,13 @@ IDE_RC qci::checkExecuteFuncAndSetEnv( qciStatement * aStatement,
                 /* EXEC_BIND_PARAM_INFO */
                 { STATE_ERR },
                 /* EXEC_PREPARE         */
-                /* mmì—ì„œ í•˜ë‚˜ì˜ sqlë¬¸ì¥ì´ ëë‚˜ê³  ë‚˜ë©´,
-                   ë‹¤ìŒ sql ìˆ˜í–‰ì„ ëŒ€ê¸°í•˜ê±°ë‚˜, statement ì¢…ë£Œë¥¼ ìœ„í•´
-                   QCI_STMT_STATE_PARAM_DATA_BOUNDë¡œ ìƒíƒœë¥¼ ëŒë ¤ ë†“ëŠ”ë‹¤.
-                   prepareëœ sqlë¬¸ì´ ì´í›„ì˜ ì²˜ë¦¬ë¥¼ ìœ„í•´ì„œ ëŒ€ê¸°í•˜ëŠ” ê²½ìš°,
-                   bindParamInfoì˜ ì •ë³´ê°€ ë³€ê²½ë ë•Œ
-                   ì´ë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ prepared ìƒíƒœë¡œ ë˜ëŒë¦´ìˆ˜ ìˆì–´ì•¼ í•œë‹¤.
-                   ì˜ˆ) insert into t1 values ( ?, ? )  */
+                /* mm¿¡¼­ ÇÏ³ªÀÇ sql¹®ÀåÀÌ ³¡³ª°í ³ª¸é,
+                   ´ÙÀ½ sql ¼öÇàÀ» ´ë±âÇÏ°Å³ª, statement Á¾·á¸¦ À§ÇØ
+                   QCI_STMT_STATE_PARAM_DATA_BOUND·Î »óÅÂ¸¦ µ¹·Á ³õ´Â´Ù.
+                   prepareµÈ sql¹®ÀÌ ÀÌÈÄÀÇ Ã³¸®¸¦ À§ÇØ¼­ ´ë±âÇÏ´Â °æ¿ì,
+                   bindParamInfoÀÇ Á¤º¸°¡ º¯°æµÉ¶§
+                   ÀÌ¸¦ Ã³¸®ÇÏ±â À§ÇØ prepared »óÅÂ·Î µÇµ¹¸±¼ö ÀÖ¾î¾ß ÇÑ´Ù.
+                   ¿¹) insert into t1 values ( ?, ? )  */
                 { STATE_OK | STATE_PARAM_DATA_CLEAR },
                 /* EXEC_BIND_PARAM_DATA */
                 { STATE_ERR },
@@ -861,8 +1054,8 @@ IDE_RC qci::checkExecuteFuncAndSetEnv( qciStatement * aStatement,
                 /* EXEC_BIND_PARAM_INFO */
                 { STATE_ERR },
                 /* EXEC_PREPARE         */
-                /* execute ìƒíƒœì—ì„œ prepare protocolì´ ë“¤ì–´ì˜¤ëŠ” ê²½ìš°ëŠ”,
-                   MMì—ì„œ ì—ëŸ¬ ì²˜ë¦¬ë¨.  */
+                /* execute »óÅÂ¿¡¼­ prepare protocolÀÌ µé¾î¿À´Â °æ¿ì´Â,
+                   MM¿¡¼­ ¿¡·¯ Ã³¸®µÊ.  */
                 { STATE_OK | STATE_CLOSE | STATE_PSM_UNLATCH | STATE_PARAM_DATA_CLEAR },
                 /* EXEC_BIND_PARAM_DATA */
                 { STATE_OK | STATE_CLOSE | STATE_PSM_UNLATCH },
@@ -909,7 +1102,7 @@ IDE_RC qci::checkExecuteFuncAndSetEnv( qciStatement * aStatement,
         }
         else
         {
-            // parameterê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°.
+            // parameter°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì.
             // Nothing To Do
         }
     }
@@ -920,10 +1113,10 @@ IDE_RC qci::checkExecuteFuncAndSetEnv( qciStatement * aStatement,
 
     if ( ( sStateInfo->StateBit & STATE_CLOSE ) == STATE_CLOSE )
     {
-        // ë§Œì¼ executeì¤‘ì— rebuildê°€ ë°œìƒí–ˆë‹¤ë©´, ê·¸ë¦¬ê³  rebuildê°€
-        // ì‹¤íŒ¨í–ˆë‹¤ë©´ closeStatementë¥¼ í˜¸ì¶œí•´ì„œëŠ” ì•ˆëœë‹¤.
-        // rebuildì „ì— ì‚¬ìš©í–ˆë˜ cursorë‚˜ temp tableë“±ì€ rebuildì „
-        // clearStatementë¡œ ëª¨ë‘ ì •ë¦¬ë˜ì—ˆë‹¤.
+        // ¸¸ÀÏ executeÁß¿¡ rebuild°¡ ¹ß»ıÇß´Ù¸é, ±×¸®°í rebuild°¡
+        // ½ÇÆĞÇß´Ù¸é closeStatement¸¦ È£ÃâÇØ¼­´Â ¾ÈµÈ´Ù.
+        // rebuildÀü¿¡ »ç¿ëÇß´ø cursor³ª temp tableµîÀº rebuildÀü
+        // clearStatement·Î ¸ğµÎ Á¤¸®µÇ¾ú´Ù.
         if ( (aStatement->flag & QCI_STMT_REBUILD_EXEC_MASK)
              != QCI_STMT_REBUILD_EXEC_FAILURE )
         {
@@ -1049,7 +1242,7 @@ IDE_RC qci::changeStmtState( qciStatement * aStatement,
                 break;
             }
         // PROJ-2163 
-        // ìˆœì„œë³€ê²½
+        // ¼ø¼­º¯°æ
         // BIND_PARAM_INFO <-> PREPARE
         case EXEC_BIND_PARAM_INFO :
             {
@@ -1106,17 +1299,17 @@ IDE_RC qci::clearStatement( qciStatement *aStatement,
 {
 /***********************************************************************
  *
- * Description : í•œë²ˆ ì‚¬ìš©í•œ statementë¥¼
- *               initialized, prepared ìƒíƒœë¡œ ì „í™˜.
- *               ( mmì—ì„œ ì‚¬ìš© )
+ * Description : ÇÑ¹ø »ç¿ëÇÑ statement¸¦
+ *               initialized, prepared »óÅÂ·Î ÀüÈ¯.
+ *               ( mm¿¡¼­ »ç¿ë )
  *
  * Implementation :
  *
- *     aTargetStateë¡œ ì•„ë˜ì˜ ìƒíƒœë§Œ ì˜¬ ìˆ˜ ìˆìœ¼ë©°,
- *     ìƒíƒœì „ì´ë§Œ ìˆ˜í–‰í•œë‹¤.
+ *     aTargetState·Î ¾Æ·¡ÀÇ »óÅÂ¸¸ ¿Ã ¼ö ÀÖÀ¸¸ç,
+ *     »óÅÂÀüÀÌ¸¸ ¼öÇàÇÑ´Ù.
  *     1. QCI_STMT_STATE_INITIALIZED
  *     2. QCI_STMT_STATE_PREPARED
- *        ( clientì—ì„œ cursor closeë¥¼ í˜¸ì¶œí•˜ëŠ” ê²½ìš° )
+ *        ( client¿¡¼­ cursor close¸¦ È£ÃâÇÏ´Â °æ¿ì )
  *
  ***********************************************************************/
 
@@ -1143,7 +1336,7 @@ IDE_RC qci::clearStatement( qciStatement *aStatement,
                 break;
             }
         // PROJ-2163 
-        // ìˆœì„œ ë³€ê²½
+        // ¼ø¼­ º¯°æ
         case QCI_STMT_STATE_PARAM_INFO_BOUND :
             {
                 qcg::setPlanTreeState( sStatement, ID_FALSE );
@@ -1228,7 +1421,7 @@ IDE_RC qci::parse( qciStatement *aStatement,
         aStatement->statement.mStatistics,
         IDV_OPTM_INDEX_QUERY_PARSE );
 
-    // BUG-41944 ì´ˆê¸°í™”
+    // BUG-41944 ÃÊ±âÈ­
     QC_SHARED_TMPLATE(&aStatement->statement)->tmplate.arithmeticOpMode =
         QCG_GET_SESSION_ARITHMETIC_OP_MODE( &aStatement->statement );
 
@@ -1237,7 +1430,7 @@ IDE_RC qci::parse( qciStatement *aStatement,
                     err_parse );
 
     // BUG-35471
-    // ì‚¬ìš©ìê°€ ì§ì ‘ ì‹¤í–‰í•˜ëŠ” êµ¬ë¬¸ë§Œ DDL disable ì—¬ë¶€ë¥¼ ê²€ì‚¬í•œë‹¤.
+    // »ç¿ëÀÚ°¡ Á÷Á¢ ½ÇÇàÇÏ´Â ±¸¹®¸¸ DDL disable ¿©ºÎ¸¦ °Ë»çÇÑ´Ù.
     if ( ( aStatement->statement.myPlan->parseTree->stmtKind & QCI_STMT_MASK_MASK )
          == QCI_STMT_MASK_DDL )
     {
@@ -1277,7 +1470,8 @@ IDE_RC qci::parse( qciStatement *aStatement,
 //PROJ-1436 SQL-Plan Cache.
 IDE_RC qci::hardPrepare( qciStatement           * aStatement,
                          smiStatement           * aParentSmiStmt,
-                         qciSQLPlanCacheContext * aPlanCacheContext )
+                         qciSQLPlanCacheContext * aPlanCacheContext,
+                         smiDistTxInfo          * aDistTxInfo) /* Default : NULL */
 {
     smiStatement   sBuildSmiStmt;
     smiStatement * sSmiStmtOrg;
@@ -1288,14 +1482,14 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
     volatile SInt  sTestState;
 
     //---------------------------------------------
-    // QCI_STMT_STATE_PARSED ìƒíƒœì—ì„œë§Œ
-    // ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•  ìˆ˜ ìˆë‹¤.
-    // ì´ë¯¸ ìˆ˜í–‰ì¤‘ì¸ statementë¥¼ QCI_STMT_STATE_PREPARE ìƒíƒœë¡œ
-    // ë˜ëŒë¦¬ê³ ì í• ë•ŒëŠ”  qci::clearStatement()ë¥¼ í˜¸ì¶œí•œë‹¤.
+    // QCI_STMT_STATE_PARSED »óÅÂ¿¡¼­¸¸
+    // ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÒ ¼ö ÀÖ´Ù.
+    // ÀÌ¹Ì ¼öÇàÁßÀÎ statement¸¦ QCI_STMT_STATE_PREPARE »óÅÂ·Î
+    // µÇµ¹¸®°íÀÚ ÇÒ¶§´Â  qci::clearStatement()¸¦ È£ÃâÇÑ´Ù.
     //---------------------------------------------
 
     sStatement = &aStatement->statement;
-    sStage     = 0; /* BUG-45994 - ì»´íŒŒì¼ëŸ¬ ìµœì í™” íšŒí”¼ */
+    sStage     = 0; /* BUG-45994 - ÄÄÆÄÀÏ·¯ ÃÖÀûÈ­ È¸ÇÇ */
     sOpState   = 0; /* BUG-45994 */
     sTestState = 0; /* BUG-45994 */
 
@@ -1305,8 +1499,10 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
 
     IDE_TEST( getStmtType( aStatement, &sStmtType ) != IDE_SUCCESS );
 
+    IDU_FIT_POINT( "qci::hardPrepare::validate" );
+        
     // BUG-36657
-    // DML, SP ë¥¼ ì œì™¸í•œ ëª¨ë“  êµ¬ë¬¸ì—ì„œ host ë³€ìˆ˜ëŠ” ì¡´ì¬í•  ìˆ˜ ì—†ë‹¤.
+    // DML, SP ¸¦ Á¦¿ÜÇÑ ¸ğµç ±¸¹®¿¡¼­ host º¯¼ö´Â Á¸ÀçÇÒ ¼ö ¾ø´Ù.
     if( ( qciMisc::isStmtDML( sStmtType ) == ID_FALSE ) &&
         ( qciMisc::isStmtSP( sStmtType )  == ID_FALSE ) &&
         ( sStatement->pBindParamCount > 0 ) )
@@ -1318,13 +1514,14 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
         // Nothing to do.
     }
 
-    /* PROJ-2386 DR */
     if( qciMisc::isStmtDCL( sStmtType ) != ID_TRUE )
     {
         IDE_TEST( sBuildSmiStmt.begin( aParentSmiStmt->mStatistics,
                                        aParentSmiStmt,
                                        SMI_STATEMENT_UNTOUCHABLE |
-                                       SMI_STATEMENT_ALL_CURSOR )
+                                       SMI_STATEMENT_ALL_CURSOR,
+                                       SM_SCN_INIT,
+                                       aDistTxInfo )
                   != IDE_SUCCESS );
 
         qcg::getSmiStmt( sStatement, &sSmiStmtOrg );
@@ -1351,7 +1548,7 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
         else
         {
             // Nothing to do.
-            /* release ë˜ëŠ” test ìƒí™©ì´ ì•„ë‹ ê²½ìš° í•„ìš” ì—†ë‹¤. */
+            /* release ¶Ç´Â test »óÈ²ÀÌ ¾Æ´Ò °æ¿ì ÇÊ¿ä ¾ø´Ù. */
         }
 
         /* PROJ-2701 Sharding online data rebuild */
@@ -1360,7 +1557,24 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
         qcgPlan::registerPlanProperty( sStatement,
                                        PLAN_PROPERTY_SHARD_META_NUMBER_FOR_SESSION );
         qcgPlan::registerPlanProperty( sStatement,
-                                       PLAN_PROPERTY_SHARD_IS_DATA_SESSION );
+                                       PLAN_PROPERTY_SHARD_IS_USER_SESSION );
+        /* TASK-7219 Analyzer/Transformer/Executor ¼º´É°³¼± */
+        qcgPlan::registerPlanProperty( sStatement,
+                                       PLAN_PROPERTY_CALL_BY_SHARD_ANALYZE_PROTOCOL );
+
+        qcgPlan::registerPlanProperty( sStatement,
+                                       PLAN_PROPERTY_SHARD_IN_PSM_ENABLE);
+
+        qcgPlan::registerPlanProperty( sStatement,
+                                       PLAN_PROPERTY_SHARD_STATUS);
+
+        /* TASK-7219 Non-shard DML */
+        qcgPlan::registerPlanProperty( sStatement,
+                                       PLAN_PROPERTY_SHARD_PARTIAL_EXEC_TYPE );
+
+        /* TASK-7307 */
+        qcgPlan::registerPlanProperty( sStatement,
+                                       PLAN_PROPERTY_SHARD_INTERNAL_LOCAL_OPERATION);
 
         //-----------------------------------------
         // VALIDATE
@@ -1391,7 +1605,7 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
 
         IDE_TEST( sStatement->myPlan->parseTree->validate( sStatement )
                   != IDE_SUCCESS );
-
+            
         IDE_FT_END();
 
         IDE_FT_ROOT_END();
@@ -1400,7 +1614,7 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
             ( sStmtType == QCI_STMT_SELECT_FOR_UPDATE ) ||
             ( sStmtType == QCI_STMT_DEQUEUE ) )
         {
-            // base table infoë¥¼ ìƒì„±í•œë‹¤.
+            // base table info¸¦ »ı¼ºÇÑ´Ù.
             qcg::setBaseTableInfo( sStatement );
         }
         else
@@ -1428,6 +1642,16 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
 
         IDE_FT_BEGIN();
 
+        /* PROJ-2750 */
+        qcgPlan::registerPlanProperty( sStatement,
+                                       PLAN_PROPERTY_LEFT_OUTER_SKIP_RIGHT_ENABLE );
+
+        if ( QCU_LEFT_OUTER_SKIP_RIGHT_ENABLE == 1 )
+        {
+            QC_SHARED_TMPLATE( sStatement )->flag &= ~QC_TMP_LEFT_OUTER_SKIP_RIGHT_MASK;
+            QC_SHARED_TMPLATE( sStatement )->flag |=  QC_TMP_LEFT_OUTER_SKIP_RIGHT_TRUE;
+        }
+
         IDE_TEST( sStatement->myPlan->parseTree->optimize( sStatement )
                   != IDE_SUCCESS );
 
@@ -1436,6 +1660,16 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
         IDE_FT_ROOT_END();
 
         IDE_TEST( qcg::fixAfterOptimization( sStatement ) != IDE_SUCCESS );
+
+        // BUG-47971
+        // Package global variableÀÇ ºĞ»ê ½ÇÇàÀ» Á¦ÇÑÇÕ´Ï´Ù.
+        if ( (SDU_SHARD_ENABLE == 1) &&
+             (QCG_GET_SESSION_SHARD_SESSION_TYPE( sStatement ) != SDI_SESSION_TYPE_USER) )
+        {
+            IDE_TEST_RAISE ( (sStatement->spvEnv->flag & QSV_ENV_PKG_VAR_EXIST_MASK)
+                             == QSV_ENV_PKG_VAR_EXIST_TRUE,
+                             ERR_PKG_VAR_EXIST );
+        }
 
         /* TASK-6744 */
         if ( (QCU_PLAN_RANDOM_SEED != 0) &&
@@ -1449,7 +1683,7 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
         else
         {
             // Nothing to do.
-            /* release ë˜ëŠ” test ìƒí™©ì´ ì•„ë‹ ê²½ìš° í•„ìš” ì—†ë‹¤. */
+            /* release ¶Ç´Â test »óÈ²ÀÌ ¾Æ´Ò °æ¿ì ÇÊ¿ä ¾ø´Ù. */
         }
 
         /* BUG-42639 Monitoring query */
@@ -1476,15 +1710,15 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
                       &(aPlanCacheContext->mSmiStmtCursorFlag) )
                   != IDE_SUCCESS );
 
-        // PROJ-2551 simple query ìµœì í™”
-        // simple queryì¸ ê²½ìš° fast executeë¥¼ ìˆ˜í–‰í•œë‹¤.
+        // PROJ-2551 simple query ÃÖÀûÈ­
+        // simple queryÀÎ °æ¿ì fast execute¸¦ ¼öÇàÇÑ´Ù.
         qciMisc::setSimpleFlag( sStatement );
 
         if( ( sStmtType == QCI_STMT_SELECT ) ||
             ( sStmtType == QCI_STMT_SELECT_FOR_UPDATE ) ||
             ( sStmtType == QCI_STMT_DEQUEUE ) )
         {
-            // bindColumnë¥¼ êµ¬ì¶•í•œë‹¤.
+            // bindColumn¸¦ ±¸ÃàÇÑ´Ù.
             IDE_TEST( makeBindColumnArray( aStatement )
                       != IDE_SUCCESS );
         }
@@ -1493,7 +1727,7 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
             // Nothing To Do
         }
 
-        // environmentì˜ ê¸°ë¡
+        // environmentÀÇ ±â·Ï
         if ( QC_SHARED_TMPLATE(sStatement)->tmplate.dateFormatRef == ID_TRUE )
         {
             qcgPlan::registerPlanProperty( sStatement,
@@ -1539,7 +1773,7 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
         qcgPlan::registerPlanProperty( sStatement,
                                        PLAN_PROPERTY_SERIAL_EXECUTE_MODE );
 
-        // ì‚¬ìš©ë¹ˆë„ê°€ ë‚®ê±°ë‚˜ í•­ìƒ ì°¸ì¡°í•˜ì—¬ ë¬´ì¡°ê±´ ê¸°ë¡í•œë‹¤.
+        // »ç¿ëºóµµ°¡ ³·°Å³ª Ç×»ó ÂüÁ¶ÇÏ¿© ¹«Á¶°Ç ±â·ÏÇÑ´Ù.
         qcgPlan::registerPlanProperty( sStatement,
                                        PLAN_PROPERTY_STACK_SIZE );
         qcgPlan::registerPlanProperty( sStatement,
@@ -1565,15 +1799,34 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
 
         // PROJ-2687
         qcgPlan::registerPlanProperty( sStatement,
-                                       PLAN_PROPERTY_SHARD_AGGREGATION_TRANSFORM_DISABLE );
+                                       PLAN_PROPERTY_SHARD_AGGREGATION_TRANSFORM_ENABLE );
 
-        // environmentì˜ ê¸°ë¡
+        /* TASK-7219 */
+        qcgPlan::registerPlanProperty( sStatement,
+                                       PLAN_PROPERTY_SHARD_TRANSFORM_MODE );
+        /* BUG-47986 */
+        qcgPlan::registerPlanProperty( sStatement,
+                                       PLAN_PROPERTY_OPTIMIZER_OR_VALUE_INDEX );
+
+        /* BUG-48135 NL Join Penalty °ªÀ» Á¶ÀıÇÒ¼ö ÀÖ´Â property Ãß°¡ */
+        qcgPlan::registerPlanProperty( sStatement,
+                                       PLAN_PROPERTY_OPTIMIZER_INDEX_NL_JOIN_PENALTY );
+
+        /* BUG-48120 */
+        qcgPlan::registerPlanProperty( sStatement,
+                                       PLAN_PROPERTY_OPTIMIZER_INDEX_COST_MODE);
+
+        /* BUG-48161 */
+        qcgPlan::registerPlanProperty( sStatement,
+                                       PLAN_PROPERTY_OPTIMIZER_BUCKET_COUNT_MAX );
+
+        // environmentÀÇ ±â·Ï
         IDE_TEST( qcgPlan::registerPlanProc(
                       sStatement,
                       sStatement->spvEnv->procPlanList )
                   != IDE_SUCCESS );
 
-        // environmentì˜ ê¸°ë¡
+        // environmentÀÇ ±â·Ï
         IDE_TEST( qcgPlan::registerPlanProcSynonym(
                       sStatement,
                       sStatement->spvEnv->objectSynonymList )
@@ -1587,8 +1840,8 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
 
         if ( aPlanCacheContext->mPlanCacheInMode == QCI_SQL_PLAN_CACHE_IN_OFF )
         {
-            // plan cache ë¹„ëŒ€ìƒì¸ ê²½ìš° ì›ë³¸ templateì„
-            // private templateìœ¼ë¡œ ì‚¬ìš©í•œë‹¤.
+            // plan cache ºñ´ë»óÀÎ °æ¿ì ¿øº» templateÀ»
+            // private templateÀ¸·Î »ç¿ëÇÑ´Ù.
             IDE_TEST( setPrivateTemplate( aStatement,
                                           NULL,
                                           QCI_SQL_PLAN_CACHE_IN_NORMAL )
@@ -1609,7 +1862,7 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
         //-----------------------------------------
 
         // PROJ-2223 audit
-        // auditingìœ„í•˜ì—¬ sqlì—ì„œ ì°¸ì¡°í•˜ê³  ìˆëŠ” objectsë¥¼ ê¸°ë¡í•œë‹¤.
+        // auditingÀ§ÇÏ¿© sql¿¡¼­ ÂüÁ¶ÇÏ°í ÀÖ´Â objects¸¦ ±â·ÏÇÑ´Ù.
         if ( ( aStatement->flag & QCI_STMT_AUDIT_MASK ) == QCI_STMT_AUDIT_TRUE )
         {
             if ( ( qciMisc::isStmtDML( sStmtType ) == ID_TRUE ) ||
@@ -1631,8 +1884,8 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
         }
 
         /* PROJ-2701 Sharding online data rebuild
-         * Rebuild coordinatorê°€ bindì •ë³´ ì—†ì´ ìƒì„±í•œ planì€
-         * Plan cacheì— ë“±ë¡í•˜ì§€ ì•ŠëŠ”ë‹¤.
+         * Rebuild coordinator°¡ bindÁ¤º¸ ¾øÀÌ »ı¼ºÇÑ planÀº
+         * Plan cache¿¡ µî·ÏÇÏÁö ¾Ê´Â´Ù.
          */
         if ( ( sStatement->mFlag & QC_STMT_SHARD_REBUILD_FORCE_MASK ) ==
              QC_STMT_SHARD_REBUILD_FORCE_TRUE )
@@ -1652,21 +1905,22 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
                QC_SESSION_PLAN_CACHE_ENABLE ) )
         {
             // PROJ-2163
-            // reprepare ë¥¼ í†µí•œ í˜¸ì¶œì¸ì§€ë¥¼ ê²€ì‚¬
-            // reprepare ì¼ ë•ŒëŠ” pBindParam ì€ NULL ì´ ì•„ë‹˜
+            // reprepare ¸¦ ÅëÇÑ È£ÃâÀÎÁö¸¦ °Ë»ç
+            // reprepare ÀÏ ¶§´Â pBindParam Àº NULL ÀÌ ¾Æ´Ô
             if( ( qcg::getBindCount( sStatement ) > 0 ) &&
-                ( sStatement->pBindParam == NULL ) )
+                ( sStatement->pBindParam == NULL ) &&
+                ( QCG_GET_CALL_BY_SHARD_ANALYZE_PROTOCOL(sStatement) == ID_FALSE ) )
             {
                 aPlanCacheContext->mPlanCacheInMode = QCI_SQL_PLAN_CACHE_IN_OFF;
             }
             else
             {
-                // plan cacheì˜ ëŒ€ìƒì´ê³  cacheê°€ ê°€ëŠ¥í•œ ì¿¼ë¦¬ë¼ê³  íŒë‹¨ë˜ëŠ” ê²½ìš°
+                // plan cacheÀÇ ´ë»óÀÌ°í cache°¡ °¡´ÉÇÑ Äõ¸®¶ó°í ÆÇ´ÜµÇ´Â °æ¿ì
 
-                // DDLì€ plan cacheì˜ ëŒ€ìƒì´ ì•„ë‹ˆë‹¤.
+                // DDLÀº plan cacheÀÇ ´ë»óÀÌ ¾Æ´Ï´Ù.
                 IDE_DASSERT( qciMisc::isStmtDDL( sStmtType ) != ID_TRUE );
 
-                // plan cache ì •ë³´ë¥¼ ìƒì„±í•œë‹¤.
+                // plan cache Á¤º¸¸¦ »ı¼ºÇÑ´Ù.
                 IDE_TEST( makePlanCacheInfo( aStatement,
                                              aPlanCacheContext )
                           != IDE_SUCCESS );
@@ -1674,7 +1928,7 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
         }
         else
         {
-            // plan cache ëŒ€ìƒì´ ì•„ë‹ˆê±°ë‚˜ cacheê°€ ë¶ˆê°€ëŠ¥í•œ ì¿¼ë¦¬ì¸ ê²½ìš°
+            // plan cache ´ë»óÀÌ ¾Æ´Ï°Å³ª cache°¡ ºÒ°¡´ÉÇÑ Äõ¸®ÀÎ °æ¿ì
 
             aPlanCacheContext->mPlanCacheInMode = QCI_SQL_PLAN_CACHE_IN_OFF;
         }
@@ -1702,7 +1956,7 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
     else
     {
         // PROJ-2223 audit
-        // auditingìœ„í•˜ì—¬ sqlì˜ ì¢…ë¥˜ë¥¼ ê¸°ë¡í•œë‹¤.
+        // auditingÀ§ÇÏ¿© sqlÀÇ Á¾·ù¸¦ ±â·ÏÇÑ´Ù.
         if ( ( aStatement->flag & QCI_STMT_AUDIT_MASK ) == QCI_STMT_AUDIT_TRUE )
         {
             qdcAudit::setOperation( sStatement );
@@ -1712,7 +1966,7 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
             // Nothing to do.
         }
 
-        // DCL, DBëŠ” í•­ìƒ plan cache ë¹„ëŒ€ìƒì´ë‹¤.
+        // DCL, DB´Â Ç×»ó plan cache ºñ´ë»óÀÌ´Ù.
         IDE_DASSERT( aPlanCacheContext->mPlanCacheInMode ==
                      QCI_SQL_PLAN_CACHE_IN_OFF );
 
@@ -1732,6 +1986,13 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
     IDE_EXCEPTION(ERR_NOT_ALLOWED_HOST_VAR);
     {
         IDE_SET(ideSetErrorCode(qpERR_ABORT_QCV_NOT_ALLOWED_HOSTVAR));
+    }
+    IDE_EXCEPTION( ERR_PKG_VAR_EXIST )
+    {
+        /* TASK-7219 Shard Transformer Refactoring */
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
+                                  "Package global variable exists.",
+                                  "" ) );
     }
     IDE_EXCEPTION_SIGNAL()
     {
@@ -1783,12 +2044,12 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
     else
     {
         // Nothing to do.
-        /* test ìƒí™©ì—ì„œë§Œ sTestStateê°€ ë³€ê²½ëœë‹¤.
-           release ë˜ëŠ” test ìƒí™©ì´ ì•„ë‹ ê²½ìš° í•„ìš” ì—†ë‹¤. */
+        /* test »óÈ²¿¡¼­¸¸ sTestState°¡ º¯°æµÈ´Ù.
+           release ¶Ç´Â test »óÈ²ÀÌ ¾Æ´Ò °æ¿ì ÇÊ¿ä ¾ø´Ù. */
     }
 
-    /* BUG-44853 Plan Cache ì˜ˆì™¸ ì²˜ë¦¬ê°€ ë¶€ì¡±í•˜ì—¬, ë¹„ì •ìƒ ì¢…ë£Œê°€ ë°œìƒí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
-     *  qci::makePlanCacheInfo()ì—ì„œ ë§Œë“  QMP Memoryì™€ Shared Templateì„ ì œê±°í•œë‹¤.
+    /* BUG-44853 Plan Cache ¿¹¿Ü Ã³¸®°¡ ºÎÁ·ÇÏ¿©, ºñÁ¤»ó Á¾·á°¡ ¹ß»ıÇÒ ¼ö ÀÖ½À´Ï´Ù.
+     *  qci::makePlanCacheInfo()¿¡¼­ ¸¸µç QMP Memory¿Í Shared TemplateÀ» Á¦°ÅÇÑ´Ù.
      */
     if ( aPlanCacheContext->mPlanCacheInMode == QCI_SQL_PLAN_CACHE_IN_ON )
     {
@@ -1845,11 +2106,11 @@ IDE_RC qci::bindParamInfo( qciStatement           * aStatement,
 {
     //------------------------------------
     // QCI_STMT_STATE_PREPARED, QCI_STATE_PREPARED_DIRECT
-    //   : parse->prepare->bindParamInfo ìˆœìœ¼ë¡œ ìˆœì°¨ì ìœ¼ë¡œ ì§„í–‰ë˜ëŠ” ê²½ìš°,
+    //   : parse->prepare->bindParamInfo ¼øÀ¸·Î ¼øÂ÷ÀûÀ¸·Î ÁøÇàµÇ´Â °æ¿ì,
     // QCI_STMT_STATE_EXECUTED
-    //   : prepareì´ìƒì˜ ìƒíƒœì—ì„œ bindParamInfoë¥¼ í˜¸ì¶œí•˜ëŠ” ê²½ìš°.
-    //     ì˜ˆ) execute í›„,
-    //         fetch ì§„í–‰ ì¤‘ì— bind param info ì •ë³´ê°€ ë°”ë€ŒëŠ” ê²½ìš° ë“±..
+    //   : prepareÀÌ»óÀÇ »óÅÂ¿¡¼­ bindParamInfo¸¦ È£ÃâÇÏ´Â °æ¿ì.
+    //     ¿¹) execute ÈÄ,
+    //         fetch ÁøÇà Áß¿¡ bind param info Á¤º¸°¡ ¹Ù²î´Â °æ¿ì µî..
     //-------------------------------------
 
     IDE_TEST( checkExecuteFuncAndSetEnv(
@@ -1858,16 +2119,16 @@ IDE_RC qci::bindParamInfo( qciStatement           * aStatement,
 
     //-------------------------------------------------------------------------
     // PROJ-2163
-    //     Plan cache ì— í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì˜ type ì •ë³´ê°€ ì¶”ê°€ë˜ë©´ì„œ
-    //     plan environment ì—ë„ type ì •ë³´ë¥¼ ì¶”ê°€í•´ì•¼ í•œë‹¤.
-    //     í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì˜ type ì •ë³´ë¥¼ ë‹¤ë£¨ëŠ” qci::bindParamInfo ê°€
-    //     hard prepare ì „ ë‹¨ê³„ë¡œ ì´ë™ë˜ì–´ì„œ plan environment ì˜
-    //     ì´ˆê¸°í™” í•¨ìˆ˜ë„ qci::bindParamInfo ì—ì„œ ìˆ˜í–‰í•œë‹¤.
+    //     Plan cache ¿¡ È£½ºÆ® º¯¼öÀÇ type Á¤º¸°¡ Ãß°¡µÇ¸é¼­
+    //     plan environment ¿¡µµ type Á¤º¸¸¦ Ãß°¡ÇØ¾ß ÇÑ´Ù.
+    //     È£½ºÆ® º¯¼öÀÇ type Á¤º¸¸¦ ´Ù·ç´Â qci::bindParamInfo °¡
+    //     hard prepare Àü ´Ü°è·Î ÀÌµ¿µÇ¾î¼­ plan environment ÀÇ
+    //     ÃÊ±âÈ­ ÇÔ¼öµµ qci::bindParamInfo ¿¡¼­ ¼öÇàÇÑ´Ù.
     //-------------------------------------------------------------------------
     if ( ( aPlanCacheContext->mPlanCacheInMode == QCI_SQL_PLAN_CACHE_IN_ON ) ||
          ( ( aStatement->flag & QCI_STMT_AUDIT_MASK ) == QCI_STMT_AUDIT_TRUE ) )
     {
-        // plan cache ëŒ€ìƒì¸ ê²½ìš° plan environmentë¥¼ ìƒì„±í•œë‹¤.
+        // plan cache ´ë»óÀÎ °æ¿ì plan environment¸¦ »ı¼ºÇÑ´Ù.
         IDE_TEST( qcgPlan::allocAndInitPlanEnv( & aStatement->statement )
                   != IDE_SUCCESS );
     }
@@ -1877,11 +2138,11 @@ IDE_RC qci::bindParamInfo( qciStatement           * aStatement,
     }
 
     // PROJ-2163
-    // bindParamInfo ì˜ í˜¸ì¶œìœ„ì¹˜ ë³€ê²½ìœ¼ë¡œ sBindParam ì‚¬ìš©ì´ ë¶ˆê°€ëŠ¥í•´ì¡Œë‹¤.
-    // ëŒ€ì²´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ë„ë¡ ë³€ê²½í•œë‹¤.
+    // bindParamInfo ÀÇ È£ÃâÀ§Ä¡ º¯°æÀ¸·Î sBindParam »ç¿ëÀÌ ºÒ°¡´ÉÇØÁ³´Ù.
+    // ´ëÃ¼ ÇÔ¼ö¸¦ È£ÃâÇÏµµ·Ï º¯°æÇÑ´Ù.
     if ( qcg::getBindCount( & aStatement->statement ) > 0 )
     {
-        // Type binding ì „ì— ë°”ì¸ë“œ ì •ë³´ë¥¼ ë‹´ëŠ” sBindParam ì„ ìƒì„±í•œë‹¤.
+        // Type binding Àü¿¡ ¹ÙÀÎµå Á¤º¸¸¦ ´ã´Â sBindParam À» »ı¼ºÇÑ´Ù.
         IDE_TEST( makeBindParamArray( aStatement ) != IDE_SUCCESS );
 
         IDE_TEST( buildBindParamInfo( aStatement ) != IDE_SUCCESS );
@@ -1905,13 +2166,13 @@ IDE_RC qci::setParamDataState( qciStatement * aStatement )
 {
     //------------------------------------
     // QCI_STMT_STATE_PARAM_INFO_BOUND
-    //   : parse->prepare->bindParamInfo->bindParamData ë˜ëŠ”
-    //     execute->bindParamInfo->bindParamData ìˆœìœ¼ë¡œ
-    //     ìˆœì°¨ì ìœ¼ë¡œ ì§„í–‰ë˜ëŠ” ê²½ìš°ì´ê±°ë‚˜,
+    //   : parse->prepare->bindParamInfo->bindParamData ¶Ç´Â
+    //     execute->bindParamInfo->bindParamData ¼øÀ¸·Î
+    //     ¼øÂ÷ÀûÀ¸·Î ÁøÇàµÇ´Â °æ¿ìÀÌ°Å³ª,
     // QCI_STMT_STATE_EXECUTED
-    //   : execute ìƒíƒœì—ì„œ bindParamDataë¥¼ í˜¸ì¶œí•˜ëŠ” ê²½ìš°.
-    //     ì˜ˆ) execute í›„,
-    //         fetch ì§„í–‰ ì¤‘ì— bind param Data ì •ë³´ê°€ ë°”ë€ŒëŠ” ê²½ìš° ë“±..
+    //   : execute »óÅÂ¿¡¼­ bindParamData¸¦ È£ÃâÇÏ´Â °æ¿ì.
+    //     ¿¹) execute ÈÄ,
+    //         fetch ÁøÇà Áß¿¡ bind param Data Á¤º¸°¡ ¹Ù²î´Â °æ¿ì µî..
     //-------------------------------------
 
     UShort         i;
@@ -1928,7 +2189,7 @@ IDE_RC qci::setParamDataState( qciStatement * aStatement )
         IDE_TEST_RAISE( sStatement->pBindParam[i].isParamInfoBound == ID_FALSE,
                         err_bind_column_count_mismatch );
 
-        // in, inout íƒ€ì… data.
+        // in, inout Å¸ÀÔ data.
         if ( (sBindParam->inoutType == CMP_DB_PARAM_INPUT) ||
              (sBindParam->inoutType == CMP_DB_PARAM_INPUT_OUTPUT) )
         {
@@ -1973,6 +2234,10 @@ IDE_RC qci::execute( qciStatement * aStatement,
     UInt              sRowCount;
     idBool            sOrgPSMFlag;
 
+    /* TASK-7219 Non-shard DML */
+    idBool            sStmtExecSeqIncreased  = ID_FALSE;
+    UInt              sStmtExecSeqForShardTx = 0;
+
     IDE_FT_ROOT_BEGIN();
 
     IDE_NOFT_BEGIN();
@@ -2002,13 +2267,41 @@ IDE_RC qci::execute( qciStatement * aStatement,
                   EXEC_EXECUTE ) != IDE_SUCCESS );
 
     /* PROJ-2626 Snapshot Export
-     * begin snapshot ì‹œì—ëŠ” inplace updateë¥¼ ê¸ˆì§€í•˜ë„ë¡ í•œë‹¤.
+     * begin snapshot ½Ã¿¡´Â inplace update¸¦ ±İÁöÇÏµµ·Ï ÇÑ´Ù.
      */
     sStatement->mInplaceUpdateDisableFlag = getInplaceUpdateDisable();
 
-    // PROJ-2551 simple query ìµœì í™”
-    // simple queryì¸ ê²½ìš° fast executeë¥¼ ìˆ˜í–‰í•œë‹¤.
+    // PROJ-2551 simple query ÃÖÀûÈ­
+    // simple queryÀÎ °æ¿ì fast execute¸¦ ¼öÇàÇÑ´Ù.
     qciMisc::setSimpleBindFlag( sStatement );
+
+    /* TASK-7219 Non-shard DML */
+    if ( QCG_GET_SESSION_IS_AUTOCOMMIT( sStatement ) == ID_FALSE )
+    {
+        if ( sdi::isShardCoordinator( sStatement ) == ID_TRUE )
+        {
+            QCG_INCREASE_SESSION_STMT_EXEC_SEQ_FOR_SHARD_TX( sStatement, &sStmtExecSeqIncreased );
+
+            if ( sStmtExecSeqIncreased == ID_TRUE )
+            {
+                sStmtExecSeqForShardTx = QCG_GET_SESSION_STMT_EXEC_SEQ_FOR_SHARD_TX( sStatement );
+
+                IDE_TEST_RAISE( sStmtExecSeqForShardTx > SDI_STMT_EXEC_SEQ_MAX, ERR_SHARD_STMT_EXEC_SEQ_OVERFLOW );
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
+        }
+        else
+        {
+            /* Nothing to do. */
+        }
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
 
     if ( ( ( sStatement->mFlag & QC_STMT_FAST_EXEC_MASK )
            == QC_STMT_FAST_EXEC_TRUE ) &&
@@ -2025,7 +2318,7 @@ IDE_RC qci::execute( qciStatement * aStatement,
 
         /* PROJ-2701 Sharding online data rebuild */
         IDE_TEST( checkShardPlanRebuild( (qcStatement*)aStatement )
-                  != IDE_SUCCESS );
+                != IDE_SUCCESS );
 
         /* PROJ-2462 Result Cache */
         if ( ( sStmtType == QCI_STMT_SELECT ) ||
@@ -2047,13 +2340,13 @@ IDE_RC qci::execute( qciStatement * aStatement,
         sArgDequeue.mTableID = sParseTree->queue->tableID;;
         sArgDequeue.mViewSCN = aSmiStmt->getSCN();
                             
-        // execute í•˜ê¸°ì „ì— timestampë¥¼ ì €ì¥í•œë‹¤.
+        // execute ÇÏ±âÀü¿¡ timestamp¸¦ ÀúÀåÇÑ´Ù.
         IDE_TEST( qcg::mSetQueueStampFuncPtr( (void *)&sArgDequeue)
                   != IDE_SUCCESS );
     }
 
-    // PROJ-2551 simple query ìµœì í™”
-    // simple queryì¸ ê²½ìš° fast executeë¥¼ ìˆ˜í–‰í•œë‹¤.
+    // PROJ-2551 simple query ÃÖÀûÈ­
+    // simple queryÀÎ °æ¿ì fast execute¸¦ ¼öÇàÇÑ´Ù.
     if ( ( ( sStatement->mFlag & QC_STMT_FAST_EXEC_MASK )
            == QC_STMT_FAST_EXEC_TRUE ) &&
          ( ( sStatement->mFlag & QC_STMT_FAST_BIND_MASK )
@@ -2102,6 +2395,12 @@ IDE_RC qci::execute( qciStatement * aStatement,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_SHARD_STMT_EXEC_SEQ_OVERFLOW )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "qci::execute",
+                                  "The statement execution sequence for shard transaction overflow" ) );
+    }
     IDE_EXCEPTION_END;
 
     IDE_NOFT_EXCEPTION_BEGIN();
@@ -2123,6 +2422,17 @@ IDE_RC qci::execute( qciStatement * aStatement,
         // Nothing to do.
     }
 
+    /* TASK-7219 Non-shard DML */
+    if ( sStmtExecSeqIncreased == ID_TRUE )
+    {
+        /* Statement ¼öÇà ¿¡·¯ ¹İº¹ ½Ã sequenceÀÇ ¼ÒÁøÀ» ¹æÁöÇÏ±â À§ÇØ sequence¸¦ ´Ù½Ã °¨¼Ò½ÃÅ²´Ù. */
+        QCG_DECREASE_SESSION_STMT_EXEC_SEQ_FOR_SHARD_TX( sStatement );
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
+
     changeStmtState( aStatement, EXEC_EXECUTE );
     qcg::setSmiStmt( sStatement, sSmiStmtOrg );
 
@@ -2140,7 +2450,7 @@ IDE_RC qci::setBindColumnInfo( qciStatement  * /* aStatement */,
                                qciBindColumn * /* aBindColumn */ )
 {
     // BUG-20652
-    // serverì—ì„œ setBindColumnInfoëŠ” í—ˆìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // server¿¡¼­ setBindColumnInfo´Â Çã¿ëÇÏÁö ¾Ê´Â´Ù.
     IDE_RAISE( err_invalid_binding );
     
     return IDE_SUCCESS;
@@ -2229,7 +2539,7 @@ IDE_RC qci::fetchColumn( qciStatement           * aStatement,
 
     IDE_TEST( getCurrentState( aStatement, & sState ) != IDE_SUCCESS );
 
-    // execute ì „ì´ë©´ ì—ëŸ¬
+    // execute ÀüÀÌ¸é ¿¡·¯
     IDE_TEST_RAISE( sState < QCI_STMT_STATE_EXECUTED, err_invalid_binding );
 
     IDE_TEST_RAISE( aBindId >= sStatement->myPlan->sBindColumnCount,
@@ -2237,8 +2547,8 @@ IDE_RC qci::fetchColumn( qciStatement           * aStatement,
 
     sBindColumn = & sStatement->myPlan->sBindColumn[aBindId].column;
     
-    // PROJ-2551 simple query ìµœì í™”
-    // simple queryì¸ ê²½ìš° fast executeë¥¼ ìˆ˜í–‰í•œë‹¤.
+    // PROJ-2551 simple query ÃÖÀûÈ­
+    // simple queryÀÎ °æ¿ì fast execute¸¦ ¼öÇàÇÑ´Ù.
     if ( ( ( sStatement->mFlag & QC_STMT_FAST_EXEC_MASK )
            == QC_STMT_FAST_EXEC_TRUE ) &&
          ( ( sStatement->mFlag & QC_STMT_FAST_BIND_MASK )
@@ -2254,7 +2564,7 @@ IDE_RC qci::fetchColumn( qciStatement           * aStatement,
     }
     else
     {
-        // DBì— ì €ì¥ëœ datatypeê³¼ value
+        // DB¿¡ ÀúÀåµÈ datatype°ú value
         sTargetColumn = sTemplate->tmplate.stack[aBindId].column;
         sTargetValue = sTemplate->tmplate.stack[aBindId].value;
     }
@@ -2262,7 +2572,7 @@ IDE_RC qci::fetchColumn( qciStatement           * aStatement,
     IDE_DASSERT( sTargetColumn->type.dataTypeId == sBindColumn->mType );
 
     // BUG-40427
-    // ë” ì´ìƒ ë‚´ë¶€ì ìœ¼ë¡œ ì‚¬ìš©í•˜ëŠ” LOB Cursorê°€ ì•„ë‹˜ì„ í‘œì‹œí•œë‹¤.
+    // ´õ ÀÌ»ó ³»ºÎÀûÀ¸·Î »ç¿ëÇÏ´Â LOB Cursor°¡ ¾Æ´ÔÀ» Ç¥½ÃÇÑ´Ù.
     if( ( sTargetColumn->type.dataTypeId == MTD_BLOB_LOCATOR_ID ) ||
         ( sTargetColumn->type.dataTypeId == MTD_CLOB_LOCATOR_ID ) )
     {
@@ -2323,14 +2633,14 @@ IDE_RC qci::fetchColumn( iduMemory     * aMemory,
 
     IDE_TEST( getCurrentState( aStatement, & sState ) != IDE_SUCCESS );
 
-    // execute ì „ì´ë©´ ì—ëŸ¬
+    // execute ÀüÀÌ¸é ¿¡·¯
     IDE_TEST_RAISE( sState < QCI_STMT_STATE_EXECUTED, err_invalid_binding );
 
     IDE_TEST_RAISE( aBindId >= sStatement->myPlan->sBindColumnCount,
                     err_invalid_binding );
 
-    // PROJ-2551 simple query ìµœì í™”
-    // simple queryì¸ ê²½ìš° fast executeë¥¼ ìˆ˜í–‰í•œë‹¤.
+    // PROJ-2551 simple query ÃÖÀûÈ­
+    // simple queryÀÎ °æ¿ì fast execute¸¦ ¼öÇàÇÑ´Ù.
     if ( ( ( sStatement->mFlag & QC_STMT_FAST_EXEC_MASK )
            == QC_STMT_FAST_EXEC_TRUE ) &&
          ( ( sStatement->mFlag & QC_STMT_FAST_BIND_MASK )
@@ -2346,13 +2656,13 @@ IDE_RC qci::fetchColumn( iduMemory     * aMemory,
     }
     else
     {
-        // DBì— ì €ì¥ëœ datatypeê³¼ value
+        // DB¿¡ ÀúÀåµÈ datatype°ú value
         sTargetColumn = sTemplate->tmplate.stack[aBindId].column;
         sTargetValue = sTemplate->tmplate.stack[aBindId].value;
     }
 
     // BUG-40427
-    // ë” ì´ìƒ ë‚´ë¶€ì ìœ¼ë¡œ ì‚¬ìš©í•˜ëŠ” LOB Cursorê°€ ì•„ë‹˜ì„ í‘œì‹œí•œë‹¤.
+    // ´õ ÀÌ»ó ³»ºÎÀûÀ¸·Î »ç¿ëÇÏ´Â LOB Cursor°¡ ¾Æ´ÔÀ» Ç¥½ÃÇÑ´Ù.
     if( ( sTargetColumn->type.dataTypeId == MTD_BLOB_LOCATOR_ID ) ||
         ( sTargetColumn->type.dataTypeId == MTD_CLOB_LOCATOR_ID ) )
     {
@@ -2380,8 +2690,8 @@ IDE_RC qci::fetchColumn( iduMemory     * aMemory,
                                              sTargetValue,
                                              aColumn,
                                              aData,
-                                             & sTemplate->tmplate )  // dest templateì´ ì™€ì•¼í•˜ë‚˜
-                                                                     // sessionì´ ê°™ìœ¼ë¯€ë¡œ ìƒê´€ì—†ë‹¤.
+                                             & sTemplate->tmplate )  // dest templateÀÌ ¿Í¾ßÇÏ³ª
+                                                                     // sessionÀÌ °°À¸¹Ç·Î »ó°ü¾ø´Ù.
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -2433,8 +2743,8 @@ IDE_RC qci::makeBindColumnArray( qciStatement * aStatement )
 
     if( sBindColumnCount > 0 )
     {
-        // bindColumnInfoë¥¼ ë§Œë“ ë‹¤.
-        // qmpMemì„ ì‚¬ìš©í•œë‹¤.
+        // bindColumnInfo¸¦ ¸¸µç´Ù.
+        // qmpMemÀ» »ç¿ëÇÑ´Ù.
         IDE_TEST( QC_QMP_MEM(sStatement)->alloc(
                       sBindColumnCount * ID_SIZEOF(qciBindColumnInfo),
                       (void**) & sBindColumnInfo )
@@ -2450,7 +2760,7 @@ IDE_RC qci::makeBindColumnArray( qciStatement * aStatement )
 
             sColumn = QTC_TMPL_COLUMN(sTemplate, (qtcNode*)sNode);
             
-            // PROJ-2616 alignì„ ê³ ë ¤í•œ ì»¬ëŸ¼í¬ê¸°
+            // PROJ-2616 alignÀ» °í·ÁÇÑ ÄÃ·³Å©±â
             if ( ( sStatement->mFlag & QC_STMT_FAST_EXEC_MASK )
                  == QC_STMT_FAST_EXEC_TRUE )
             {
@@ -2462,7 +2772,7 @@ IDE_RC qci::makeBindColumnArray( qciStatement * aStatement )
                 sMaxByteSize = sColumn->column.size; // PROJ-2256
             }
             
-            // target column ì •ë³´ ì €ì¥
+            // target column Á¤º¸ ÀúÀå
             sBindColumn = & sBindColumnInfo[i].column;
 
             sBindColumn->mId                 = i;
@@ -2537,7 +2847,7 @@ IDE_RC qci::makeBindColumnArray( qciStatement * aStatement )
             sBindColumn->mCatalogName        = NULL;
             sBindColumn->mCatalogNameSize    = 0;
 
-            // target ì •ë³´ ì €ì¥
+            // target Á¤º¸ ÀúÀå
             sBindColumnInfo[i].target = sTarget;
         }
     }
@@ -2546,7 +2856,7 @@ IDE_RC qci::makeBindColumnArray( qciStatement * aStatement )
         // Nothing to do.
     }
 
-    // ì €ì¥í•œë‹¤.
+    // ÀúÀåÇÑ´Ù.
     sStatement->myPlan->sBindColumn      = sBindColumnInfo;
     sStatement->myPlan->sBindColumnCount = sBindColumnCount;
 
@@ -2571,7 +2881,7 @@ IDE_RC qci::makeBindParamArray( qciStatement  * aStatement )
 
     if( sBindParamCount > 0 )
     {
-        // bindParamInfoë¥¼ ë§Œë“ ë‹¤.
+        // bindParamInfo¸¦ ¸¸µç´Ù.
         IDE_TEST( QC_QMP_MEM(sStatement)->alloc(
                       sBindParamCount * ID_SIZEOF(qciBindParamInfo),
                       (void**) & sBindParamInfo )
@@ -2592,14 +2902,14 @@ IDE_RC qci::makeBindParamArray( qciStatement  * aStatement )
             sBindParam->data          = NULL;
             sBindParam->dataSize      = 0; // PROJ-2163
 
-            // ì•„ì§ bindë˜ì§€ ì•Šì•˜ìŒ.
+            // ¾ÆÁ÷ bindµÇÁö ¾Ê¾ÒÀ½.
             sBindParamInfo[i].isParamInfoBound = ID_FALSE;
             sBindParamInfo[i].isParamDataBound = ID_FALSE; // fix BUG-16482
 
-            // convert ì •ë³´ ì´ˆê¸°í™”
+            // convert Á¤º¸ ÃÊ±âÈ­
             sBindParamInfo[i].convert = NULL;
 
-            // canonize buffer ì´ˆê¸°í™”
+            // canonize buffer ÃÊ±âÈ­
             sBindParamInfo[i].canonBuf = NULL;
         }
     }
@@ -2608,7 +2918,7 @@ IDE_RC qci::makeBindParamArray( qciStatement  * aStatement )
         // Nothing to do.
     }
 
-    // ì €ì¥í•œë‹¤.
+    // ÀúÀåÇÑ´Ù.
     sStatement->myPlan->sBindParam      = sBindParamInfo;
     sStatement->myPlan->sBindParamCount = sBindParamCount;
 
@@ -2624,7 +2934,6 @@ IDE_RC qci::setBindParamInfo( qciStatement  * aStatement,
                               qciBindParam  * aBindParam )
 {
     qcStatement    * sStatement;
-    qciStmtState     sState;
     qciBindParam     sBindParam;
 
     UShort           sParamCount;
@@ -2634,19 +2943,16 @@ IDE_RC qci::setBindParamInfo( qciStatement  * aStatement,
 
     sParamCount = getParameterCount(aStatement);
 
-    IDE_TEST( getCurrentState( aStatement, & sState )
-              != IDE_SUCCESS );
-
     IDE_TEST_RAISE( aBindParam->id >= sStatement->pBindParamCount,
                     err_invalid_binding );
 
     // PROJ-2002 Column Security
-    // ì•”í˜¸ íƒ€ì…ìœ¼ë¡œëŠ” ë°”ì¸ë“œí•  ìˆ˜ ì—†ìŒ
+    // ¾ÏÈ£ Å¸ÀÔÀ¸·Î´Â ¹ÙÀÎµåÇÒ ¼ö ¾øÀ½
     IDE_TEST_RAISE( ( (aBindParam->type == MTD_ECHAR_ID) ||
                       (aBindParam->type == MTD_EVARCHAR_ID) ),
                     err_invalid_binding );
 
-    // INPUT or INPUT_OUTPUT typeì˜ ë§ˆì§€ë§‰ ParamInfoì˜ Idë¥¼ ê¸°ë¡
+    // INPUT or INPUT_OUTPUT typeÀÇ ¸¶Áö¸· ParamInfoÀÇ Id¸¦ ±â·Ï
     switch (aBindParam->inoutType)
     {
         case CMP_DB_PARAM_INPUT_OUTPUT:
@@ -2659,7 +2965,7 @@ IDE_RC qci::setBindParamInfo( qciStatement  * aStatement,
             }
             else
             {
-                // lob value, lob locator ëª¨ë‘ ë¶ˆê°€ëŠ¥
+                // lob value, lob locator ¸ğµÎ ºÒ°¡´É
                 IDE_TEST_RAISE( ( (aBindParam->type == MTD_BLOB_ID) ||
                                   (aBindParam->type == MTD_CLOB_ID) ||
                                   (aBindParam->type == MTD_BLOB_LOCATOR_ID) ||
@@ -2685,7 +2991,7 @@ IDE_RC qci::setBindParamInfo( qciStatement  * aStatement,
 
     }
 
-    // bind param ì •ë³´ë¥¼ ë³€ê²½í•œë‹¤.
+    // bind param Á¤º¸¸¦ º¯°æÇÑ´Ù.
 
     sBindParam.id            = aBindParam->id;
     sBindParam.type          = aBindParam->type;
@@ -2694,8 +3000,8 @@ IDE_RC qci::setBindParamInfo( qciStatement  * aStatement,
     sBindParam.precision     = aBindParam->precision;
     sBindParam.scale         = aBindParam->scale;
     sBindParam.inoutType     = aBindParam->inoutType;
-    // BUG-43636 qcg::initBindParamDataì—ì„œ í•´ë‹¹ ë©”ëª¨ë¦¬ë¥¼ free í•  ìˆ˜ ìˆë„ë¡
-    // NULLì´ ì•„ë‹Œ ì´ì „ ë©”ëª¨ë¦¬ë¥¼ ì €ì¥í•©ë‹ˆë‹¤.
+    // BUG-43636 qcg::initBindParamData¿¡¼­ ÇØ´ç ¸Ş¸ğ¸®¸¦ free ÇÒ ¼ö ÀÖµµ·Ï
+    // NULLÀÌ ¾Æ´Ñ ÀÌÀü ¸Ş¸ğ¸®¸¦ ÀúÀåÇÕ´Ï´Ù.
     sBindParam.data          = sStatement->pBindParam[aBindParam->id].param.data;
     sBindParam.dataSize      = 0; // PROJ-2163
     sBindParam.ctype         = aBindParam->ctype; // PROJ-2616
@@ -2703,19 +3009,19 @@ IDE_RC qci::setBindParamInfo( qciStatement  * aStatement,
 
     sStatement->pBindParam[aBindParam->id].param = sBindParam;
 
-    // ë°”ì¸ë“œ ë˜ì—ˆìŒ.
+    // ¹ÙÀÎµå µÇ¾úÀ½.
     sStatement->pBindParam[aBindParam->id].isParamInfoBound = ID_TRUE;
 
-    // convert ì •ë³´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
-    // memory ë‚­ë¹„ê°€ ìˆì§€ë§Œ ë§ì§€ ì•Šë‹¤.
+    // convert Á¤º¸¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // memory ³¶ºñ°¡ ÀÖÁö¸¸ ¸¹Áö ¾Ê´Ù.
     sStatement->pBindParam[aBindParam->id].convert = NULL;
 
-    // canonize bufferë¥¼ ì´ˆê¸°í™”í•œë‹¤.
-    // memory ë‚­ë¹„ê°€ ìˆì§€ë§Œ ë§ì§€ ì•Šë‹¤.
+    // canonize buffer¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // memory ³¶ºñ°¡ ÀÖÁö¸¸ ¸¹Áö ¾Ê´Ù.
     sStatement->pBindParam[aBindParam->id].canonBuf = NULL;
 
     // PROJ-2163
-    // pBindParam ì˜ ê°’ì´ ë°”ë€Œì—ˆë‹¤.
+    // pBindParam ÀÇ °ªÀÌ ¹Ù²î¾ú´Ù.
     sStatement->pBindParamChangedFlag = ID_TRUE;
 
     // PROJ-2163
@@ -2728,8 +3034,8 @@ IDE_RC qci::setBindParamInfo( qciStatement  * aStatement,
                             err_bind_column_count_mismatch );
         }
 
-        // í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì˜ ê°’ì„ ì €ì¥í•  ë°ì´í„° ì˜ì—­ì„ ì´ˆê¸°í™” í•œë‹¤.
-        // ì´ ì˜ì—­ì€ variable tuple ì˜ row ë¡œë„ ì‚¬ìš©ëœë‹¤.
+        // È£½ºÆ® º¯¼öÀÇ °ªÀ» ÀúÀåÇÒ µ¥ÀÌÅÍ ¿µ¿ªÀ» ÃÊ±âÈ­ ÇÑ´Ù.
+        // ÀÌ ¿µ¿ªÀº variable tuple ÀÇ row ·Îµµ »ç¿ëµÈ´Ù.
         IDE_TEST_RAISE( qcg::initBindParamData( sStatement ) != IDE_SUCCESS,
                         err_invalid_binding_init_data );
     }
@@ -2782,18 +3088,18 @@ IDE_RC qci::setBindParamInfoSet( qciStatement               * aStatement,
 
     for( sBindId = 0; sBindId < sParamCount; sBindId++ )
     {
-        // bind param ì •ë³´ë¥¼ ë³€ê²½í•œë‹¤.
+        // bind param Á¤º¸¸¦ º¯°æÇÑ´Ù.
 
         IDE_TEST_RAISE( aReadBindParamInfoCallback( aBindContext,
                                                     &sBindParam )
                         != IDE_SUCCESS, err_bind_column_count_mismatch );
 
 
-        // INPUT or INPUT_OUTPUT typeì˜ ë§ˆì§€ë§‰ ParamInfoì˜ Idë¥¼ ê¸°ë¡
+        // INPUT or INPUT_OUTPUT typeÀÇ ¸¶Áö¸· ParamInfoÀÇ Id¸¦ ±â·Ï
         switch (sBindParam.inoutType)
         {
             case CMP_DB_PARAM_INPUT_OUTPUT:
-                // lob value, lob locator ëª¨ë‘ ë¶ˆê°€ëŠ¥
+                // lob value, lob locator ¸ğµÎ ºÒ°¡´É
                 IDE_TEST_RAISE( ( (sBindParam.type == MTD_BLOB_ID) ||
                                   (sBindParam.type == MTD_CLOB_ID) ||
                                   (sBindParam.type == MTD_BLOB_LOCATOR_ID) ||
@@ -2815,24 +3121,24 @@ IDE_RC qci::setBindParamInfoSet( qciStatement               * aStatement,
 
         IDE_ASSERT( sStatement->pBindParam != NULL);
 
-        // BUG-44492 qcg::initBindParamDataì—ì„œ í•´ë‹¹ ë©”ëª¨ë¦¬ë¥¼ free í•  ìˆ˜ ìˆë„ë¡
-        // NULLì´ ì•„ë‹Œ ì´ì „ ë©”ëª¨ë¦¬ë¥¼ ì €ì¥í•©ë‹ˆë‹¤.
+        // BUG-44492 qcg::initBindParamData¿¡¼­ ÇØ´ç ¸Ş¸ğ¸®¸¦ free ÇÒ ¼ö ÀÖµµ·Ï
+        // NULLÀÌ ¾Æ´Ñ ÀÌÀü ¸Ş¸ğ¸®¸¦ ÀúÀåÇÕ´Ï´Ù.
         sBindParam.data = sStatement->pBindParam[sBindId].param.data;
         sStatement->pBindParam[sBindId].param = sBindParam;
 
-        // ë°”ì¸ë“œ ë˜ì—ˆìŒ.
+        // ¹ÙÀÎµå µÇ¾úÀ½.
         sStatement->pBindParam[sBindId].isParamInfoBound = ID_TRUE;
 
-        // convert ì •ë³´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
-        // memory ë‚­ë¹„ê°€ ìˆì§€ë§Œ ë§ì§€ ì•Šë‹¤.
+        // convert Á¤º¸¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+        // memory ³¶ºñ°¡ ÀÖÁö¸¸ ¸¹Áö ¾Ê´Ù.
         sStatement->pBindParam[sBindId].convert = NULL;
 
-        // canonize bufferë¥¼ ì´ˆê¸°í™”í•œë‹¤.
-        // memory ë‚­ë¹„ê°€ ìˆì§€ë§Œ ë§ì§€ ì•Šë‹¤.
+        // canonize buffer¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+        // memory ³¶ºñ°¡ ÀÖÁö¸¸ ¸¹Áö ¾Ê´Ù.
         sStatement->pBindParam[sBindId].canonBuf = NULL;
 
         // PROJ-2163
-        // pBindParam ì˜ ê°’ì´ ë°”ë€Œì—ˆë‹¤.
+        // pBindParam ÀÇ °ªÀÌ ¹Ù²î¾ú´Ù.
         sStatement->pBindParamChangedFlag = ID_TRUE;
     }
 
@@ -2844,8 +3150,8 @@ IDE_RC qci::setBindParamInfoSet( qciStatement               * aStatement,
                         err_bind_column_count_mismatch );
     }
 
-    // í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì˜ ê°’ì„ ì €ì¥í•  ë°ì´í„° ì˜ì—­ì„ ì´ˆê¸°í™” í•œë‹¤.
-    // ì´ ì˜ì—­ì€ variable tuple ì˜ row ë¡œë„ ì‚¬ìš©ëœë‹¤.
+    // È£½ºÆ® º¯¼öÀÇ °ªÀ» ÀúÀåÇÒ µ¥ÀÌÅÍ ¿µ¿ªÀ» ÃÊ±âÈ­ ÇÑ´Ù.
+    // ÀÌ ¿µ¿ªÀº variable tuple ÀÇ row ·Îµµ »ç¿ëµÈ´Ù.
     IDE_TEST( qcg::initBindParamData( sStatement ) );
 
     return IDE_SUCCESS;
@@ -2881,7 +3187,7 @@ IDE_RC qci::getBindParamInfo( qciStatement  * aStatement,
     IDE_TEST( getCurrentState( aStatement, & sState )
               != IDE_SUCCESS );
 
-    // prepare ì „ì´ë©´ ì—ëŸ¬
+    // prepare ÀüÀÌ¸é ¿¡·¯
     IDE_TEST_RAISE( sState < QCI_STMT_STATE_PREPARED,
                     err_invalid_binding );
 
@@ -2932,7 +3238,7 @@ IDE_RC qci::setBindParamDataSet( qciStatement                 *aStatement,
 
     for( sBindId = 0; sBindId < sParamCount; sBindId++ )
     {
-        // ë°”ì¸ë“œë˜ì§€ ì•Šì•˜ë‹¤ë©´ ì—ëŸ¬
+        // ¹ÙÀÎµåµÇÁö ¾Ê¾Ò´Ù¸é ¿¡·¯
         IDE_TEST_RAISE( sStatement->pBindParam[sBindId].isParamInfoBound == ID_FALSE,
                 err_invalid_binding );
 
@@ -2940,7 +3246,7 @@ IDE_RC qci::setBindParamDataSet( qciStatement                 *aStatement,
 
         sSource = aParamData + sOffset;
 
-        // in, inout íƒ€ì… data.
+        // in, inout Å¸ÀÔ data.
         if( sBindParam->inoutType != CMP_DB_PARAM_OUTPUT )
         {
             IDE_TEST(aCopyBindParamDataCallback(sBindParam, sSource, &sStructSize) != IDE_SUCCESS);
@@ -2956,7 +3262,7 @@ IDE_RC qci::setBindParamDataSet( qciStatement                 *aStatement,
     }
 
     // BUG-34995
-    // QCI_STMT_STATE ë¥¼ DATA_BOUND ë¡œ ë³€ê²½í•œë‹¤.
+    // QCI_STMT_STATE ¸¦ DATA_BOUND ·Î º¯°æÇÑ´Ù.
     IDE_TEST( qci::setParamDataState( aStatement ) != IDE_SUCCESS);
 
     *aOffset += sOffset;
@@ -2980,7 +3286,6 @@ IDE_RC qci::setBindParamDataSetOld( qciStatement                * aStatement,
                                     qciReadBindParamDataCallback  aReadBindParamDataCallback )
 {
     qcStatement      * sStatement;
-    qciStmtState       sState;
     qciBindParam     * sBindParam;
     UInt               sParamState = 0;
     UShort             sParamCount = 0;
@@ -2989,9 +3294,6 @@ IDE_RC qci::setBindParamDataSetOld( qciStatement                * aStatement,
     sStatement = & aStatement->statement;
 
     sParamCount = getParameterCount(aStatement);
-
-    IDE_TEST( getCurrentState( aStatement, & sState )
-              != IDE_SUCCESS );
 
     IDE_TEST( checkExecuteFuncAndSetEnv( aStatement,
                                          EXEC_BIND_PARAM_DATA )
@@ -3003,13 +3305,13 @@ IDE_RC qci::setBindParamDataSetOld( qciStatement                * aStatement,
 
         IDE_ASSERT( sStatement->pBindParam != NULL );
 
-        // ë°”ì¸ë“œë˜ì§€ ì•Šì•˜ë‹¤ë©´ ì—ëŸ¬
+        // ¹ÙÀÎµåµÇÁö ¾Ê¾Ò´Ù¸é ¿¡·¯
         IDE_TEST_RAISE( sStatement->pBindParam[sBindId].isParamInfoBound == ID_FALSE,
                 err_invalid_binding );
 
         sBindParam = & sStatement->pBindParam[sBindId].param;
 
-        // in, inout íƒ€ì… data.
+        // in, inout Å¸ÀÔ data.
         if( ( sBindParam->inoutType == CMP_DB_PARAM_INPUT ) ||
             ( sBindParam->inoutType == CMP_DB_PARAM_INPUT_OUTPUT ) )
         {
@@ -3038,7 +3340,7 @@ IDE_RC qci::setBindParamDataSetOld( qciStatement                * aStatement,
     }
 
     // BUG-34995
-    // QCI_STMT_STATE ë¥¼ DATA_BOUND ë¡œ ë³€ê²½í•œë‹¤.
+    // QCI_STMT_STATE ¸¦ DATA_BOUND ·Î º¯°æÇÑ´Ù.
     IDE_TEST( qci::setParamDataState( aStatement ) != IDE_SUCCESS);
 
     return IDE_SUCCESS;
@@ -3049,7 +3351,7 @@ IDE_RC qci::setBindParamDataSetOld( qciStatement                * aStatement,
     }
     IDE_EXCEPTION_END;
 
-    /* í†µì‹  ë²„í¼ë¥¼ ë¹„ìš´ë‹¤ */
+    /* Åë½Å ¹öÆÛ¸¦ ºñ¿î´Ù */
     for( sBindId += sParamState; sBindId < sParamCount; sBindId++ )
     {
         sBindParam = & sStatement->pBindParam[sBindId].param;
@@ -3092,14 +3394,14 @@ IDE_RC qci::setBindParamData( qciStatement                 *aStatement,
     IDE_TEST_RAISE( aBindId >= sStatement->pBindParamCount,
                     err_invalid_binding );
 
-    // ë°”ì¸ë“œë˜ì§€ ì•Šì•˜ë‹¤ë©´ ì—ëŸ¬
+    // ¹ÙÀÎµåµÇÁö ¾Ê¾Ò´Ù¸é ¿¡·¯
     IDE_TEST_RAISE( sStatement->pBindParam[sBindId].isParamInfoBound == ID_FALSE,
             err_invalid_binding );
 
     sBindParam  = &(sStatement->pBindParam[sBindId].param);
     sSource     = aParamData;
 
-    // in, inout íƒ€ì…ë§Œ ê°€ëŠ¥í•˜ë‹¤.
+    // in, inout Å¸ÀÔ¸¸ °¡´ÉÇÏ´Ù.
     IDE_TEST_RAISE( sBindParam->inoutType == CMP_DB_PARAM_OUTPUT,
                     err_invalid_binding );
 
@@ -3111,7 +3413,7 @@ IDE_RC qci::setBindParamData( qciStatement                 *aStatement,
     if( isLastParamData( aStatement, sBindParam->id ) )
     {
         // BUG-34995
-        // QCI_STMT_STATE ë¥¼ DATA_BOUND ë¡œ ë³€ê²½í•œë‹¤.
+        // QCI_STMT_STATE ¸¦ DATA_BOUND ·Î º¯°æÇÑ´Ù.
         IDE_TEST( qci::setParamDataState( aStatement ) != IDE_SUCCESS);
 
     }
@@ -3157,13 +3459,13 @@ IDE_RC qci::setBindParamDataOld(
     IDE_TEST_RAISE( aBindId >= sStatement->pBindParamCount,
                     err_invalid_binding );
 
-    // ë°”ì¸ë“œë˜ì§€ ì•Šì•˜ë‹¤ë©´ ì—ëŸ¬
+    // ¹ÙÀÎµåµÇÁö ¾Ê¾Ò´Ù¸é ¿¡·¯
     IDE_TEST_RAISE( sStatement->pBindParam[aBindId].isParamInfoBound == ID_FALSE,
             err_invalid_binding );
 
     sBindParam = & sStatement->pBindParam[aBindId].param;
 
-    // in, inout íƒ€ì…ë§Œ ê°€ëŠ¥í•˜ë‹¤.
+    // in, inout Å¸ÀÔ¸¸ °¡´ÉÇÏ´Ù.
     IDE_TEST_RAISE( sBindParam->inoutType == CMP_DB_PARAM_OUTPUT,
                     err_invalid_binding );
 
@@ -3183,7 +3485,7 @@ IDE_RC qci::setBindParamDataOld(
     if( isLastParamData( aStatement, sBindParam->id ) == ID_TRUE )
     {
         // BUG-34995
-        // QCI_STMT_STATE ë¥¼ DATA_BOUND ë¡œ ë³€ê²½í•œë‹¤.
+        // QCI_STMT_STATE ¸¦ DATA_BOUND ·Î º¯°æÇÑ´Ù.
         IDE_TEST( qci::setParamDataState( aStatement ) != IDE_SUCCESS);
     }
     else
@@ -3226,32 +3528,31 @@ IDE_RC qci::setBindParamData( qciStatement  * aStatement,
     IDE_TEST_RAISE( aBindId >= sStatement->pBindParamCount,
                     err_invalid_binding );
 
-    // ë°”ì¸ë“œë˜ì§€ ì•Šì•˜ë‹¤ë©´ ì—ëŸ¬
+    // ¹ÙÀÎµåµÇÁö ¾Ê¾Ò´Ù¸é ¿¡·¯
     IDE_TEST_RAISE( sStatement->pBindParam[aBindId].isParamInfoBound == ID_FALSE,
                     err_invalid_binding );
 
     sBindParam = & sStatement->pBindParam[aBindId].param;
 
-    // in, inout íƒ€ì…ë§Œ ê°€ëŠ¥í•˜ë‹¤.
-    IDE_TEST_RAISE( sBindParam->inoutType == CMP_DB_PARAM_OUTPUT,
-                    err_invalid_binding );
-
     // PROJ-2163 
     // copy data to pBindParam->param.data (variableTuple's row)
-    IDE_TEST( qcg::setBindData( sStatement,
-                                aBindId,
-                                sBindParam->inoutType,
-                                aDataSize,
-                                aData )
-              != IDE_SUCCESS );
+    if ( sBindParam->inoutType != CMP_DB_PARAM_OUTPUT )
+    {
+        IDE_TEST( qcg::setBindData( sStatement,
+                                    aBindId,
+                                    sBindParam->inoutType,
+                                    aDataSize,
+                                    aData )
+                  != IDE_SUCCESS );
 
-    // fix BUG-16482
-    sStatement->pBindParam[aBindId].isParamDataBound = ID_TRUE;
+        // fix BUG-16482
+        sStatement->pBindParam[aBindId].isParamDataBound = ID_TRUE;
+    }
 
     if( isLastParamData ( aStatement, aBindId ) == ID_TRUE )
     {
         // BUG-34995
-        // QCI_STMT_STATE ë¥¼ DATA_BOUND ë¡œ ë³€ê²½í•œë‹¤.
+        // QCI_STMT_STATE ¸¦ DATA_BOUND ·Î º¯°æÇÑ´Ù.
         IDE_TEST( qci::setParamDataState( aStatement ) != IDE_SUCCESS);
 
     }
@@ -3292,7 +3593,7 @@ IDE_RC qci::getBindParamData( qciStatement                * aStatement,
     IDE_TEST( getCurrentState( aStatement, & sState )
               != IDE_SUCCESS );
 
-    // execute ì „ì´ë©´ ì—ëŸ¬
+    // execute ÀüÀÌ¸é ¿¡·¯
     IDE_TEST_RAISE( sState < QCI_STMT_STATE_PARAM_DATA_BOUND,
                     err_invalid_binding );
 
@@ -3301,11 +3602,11 @@ IDE_RC qci::getBindParamData( qciStatement                * aStatement,
 
     sBindParam = & sStatement->pBindParam[aBindId].param;
 
-    // out, inout íƒ€ì…ë§Œ ê°€ëŠ¥í•˜ë‹¤.
+    // out, inout Å¸ÀÔ¸¸ °¡´ÉÇÏ´Ù.
     IDE_TEST_RAISE( sBindParam->inoutType == CMP_DB_PARAM_INPUT,
                     err_invalid_binding );
 
-    // DBì— ì €ì¥ëœ datatypeê³¼ value
+    // DB¿¡ ÀúÀåµÈ datatype°ú value
     sBindTuple = sTemplate->tmplate.variableRow;
 
     IDE_TEST_RAISE( sBindTuple == ID_USHORT_MAX, err_invalid_binding );
@@ -3314,7 +3615,7 @@ IDE_RC qci::getBindParamData( qciStatement                * aStatement,
     sSrcValue = (SChar*) sTemplate->tmplate.rows[sBindTuple].row
         + sTemplate->tmplate.rows[sBindTuple].columns[aBindId].column.offset;
 
-    // ì‚¬ìš©ìê°€ ë°”ì¸ë“œí•œ datatype
+    // »ç¿ëÀÚ°¡ ¹ÙÀÎµåÇÑ datatype
     IDE_TEST( mtc::initializeColumn( & sDestColumn,
                                      sBindParam->type,
                                      sBindParam->arguments,
@@ -3323,7 +3624,7 @@ IDE_RC qci::getBindParamData( qciStatement                * aStatement,
               != IDE_SUCCESS );
 
     // BUG-35195
-    // bind dataëŠ” í•­ìƒ ì‚¬ìš©ìê°€ bindí•œ type,precisionìœ¼ë¡œ templateì— ì €ì¥ë˜ì–´ìˆë‹¤.
+    // bind data´Â Ç×»ó »ç¿ëÀÚ°¡ bindÇÑ type,precisionÀ¸·Î template¿¡ ÀúÀåµÇ¾îÀÖ´Ù.
     IDE_TEST_RAISE( sSrcColumn->type.dataTypeId != sBindParam->type,
                     ERR_ABORT_INVALID_COLUMN_TYPE );
     IDE_TEST_RAISE( sSrcColumn->column.size != sDestColumn.column.size,
@@ -3379,7 +3680,7 @@ IDE_RC qci::getBindParamData( qciStatement  * aStatement,
     IDE_TEST( getCurrentState( aStatement, & sState )
               != IDE_SUCCESS );
 
-    // execute ì „ì´ë©´ ì—ëŸ¬
+    // execute ÀüÀÌ¸é ¿¡·¯
     IDE_TEST_RAISE( sState < QCI_STMT_STATE_PARAM_DATA_BOUND,
                     err_invalid_binding );
 
@@ -3388,11 +3689,11 @@ IDE_RC qci::getBindParamData( qciStatement  * aStatement,
 
     sBindParam = & sStatement->pBindParam[aBindId].param;
 
-    // out, inout íƒ€ì…ë§Œ ê°€ëŠ¥í•˜ë‹¤.
+    // out, inout Å¸ÀÔ¸¸ °¡´ÉÇÏ´Ù.
     IDE_TEST_RAISE( sBindParam->inoutType == CMP_DB_PARAM_INPUT,
                     err_invalid_binding );
 
-    // DBì— ì €ì¥ëœ datatypeê³¼ value
+    // DB¿¡ ÀúÀåµÈ datatype°ú value
     sBindTuple = sTemplate->tmplate.variableRow;
 
     IDE_TEST_RAISE( sBindTuple == ID_USHORT_MAX, err_invalid_binding );
@@ -3401,7 +3702,7 @@ IDE_RC qci::getBindParamData( qciStatement  * aStatement,
     sSrcValue = (SChar*) sTemplate->tmplate.rows[sBindTuple].row
         + sTemplate->tmplate.rows[sBindTuple].columns[aBindId].column.offset;
 
-    // ì‚¬ìš©ìê°€ ë°”ì¸ë“œí•œ datatype
+    // »ç¿ëÀÚ°¡ ¹ÙÀÎµåÇÑ datatype
     IDE_TEST( mtc::initializeColumn( & sDestColumn,
                                      sBindParam->type,
                                      sBindParam->arguments,
@@ -3410,7 +3711,7 @@ IDE_RC qci::getBindParamData( qciStatement  * aStatement,
               != IDE_SUCCESS );
 
     // BUG-35195
-    // bind dataëŠ” í•­ìƒ ì‚¬ìš©ìê°€ bindí•œ type,precisionìœ¼ë¡œ templateì— ì €ì¥ë˜ì–´ìˆë‹¤.
+    // bind data´Â Ç×»ó »ç¿ëÀÚ°¡ bindÇÑ type,precisionÀ¸·Î template¿¡ ÀúÀåµÇ¾îÀÖ´Ù.
     IDE_TEST_RAISE( sSrcColumn->type.dataTypeId != sBindParam->type,
                     ERR_ABORT_INVALID_COLUMN_TYPE );
     IDE_TEST_RAISE( sSrcColumn->column.size != sDestColumn.column.size,
@@ -3459,7 +3760,7 @@ IDE_RC qci::buildBindParamInfo( qciStatement  * aStatement )
     // PROJ-2163
     if( sStatement->pBindParam == NULL )
     {
-        // undef íƒ€ì… parameter ì´ˆê¸°í™”
+        // undef Å¸ÀÔ parameter ÃÊ±âÈ­
         sUndefBindParam.type      = MTD_UNDEF_ID;
         sUndefBindParam.language  = MTL_DEFAULT;
         sUndefBindParam.arguments = 0;
@@ -3473,7 +3774,7 @@ IDE_RC qci::buildBindParamInfo( qciStatement  * aStatement )
 
         sBindParam = & sUndefBindParam;
 
-        // undef íƒ€ì… binding
+        // undef Å¸ÀÔ binding
         sBindParamCount = qcg::getBindCount( sStatement );
 
         for( i = 0; i < sBindParamCount ; i++ )
@@ -3516,7 +3817,7 @@ IDE_RC qci::buildBindParamInfo( qciStatement  * aStatement )
     IDE_TEST( qtc::setVariableTupleRowSize( QC_SHARED_TMPLATE(sStatement) )
               != IDE_SUCCESS );
 
-    // pBindParam ìœ¼ë¡œ type binding í•´ì„œ ë°”ì¸ë“œ íƒ€ì…ì´ ë°˜ì˜ë˜ì—ˆë‹¤.
+    // pBindParam À¸·Î type binding ÇØ¼­ ¹ÙÀÎµå Å¸ÀÔÀÌ ¹İ¿µµÇ¾ú´Ù.
     sStatement->pBindParamChangedFlag = ID_FALSE;
 
     return IDE_SUCCESS;
@@ -3548,8 +3849,8 @@ IDE_RC qci::moveNextRecord( qciStatement * aStatement,
     qcg::getSmiStmt( sStatement, &sSmiStmtOrg );
     qcg::setSmiStmt( sStatement, aSmiStmt );
 
-    // PROJ-2551 simple query ìµœì í™”
-    // simple queryì¸ ê²½ìš° fast executeë¥¼ ìˆ˜í–‰í•œë‹¤.
+    // PROJ-2551 simple query ÃÖÀûÈ­
+    // simple queryÀÎ °æ¿ì fast execute¸¦ ¼öÇàÇÑ´Ù.
     if ( ( ( sStatement->mFlag & QC_STMT_FAST_EXEC_MASK )
            == QC_STMT_FAST_EXEC_TRUE ) &&
          ( ( sStatement->mFlag & QC_STMT_FAST_BIND_MASK )
@@ -3618,14 +3919,15 @@ IDE_RC qci::hardRebuild( qciStatement            * aStatement,
                          smiStatement            * aParentSmiStmt,
                          qciSQLPlanCacheContext  * aPlanCacheContext,
                          SChar                   * aQueryString,
-                         UInt                      aQueryLen )
+                         UInt                      aQueryLen,
+                         smiDistTxInfo           * aDistTxInfo ) /* Default : NULL */
 {
     qcStatement  * sStatement;
     smiStatement * sSmiStmtOrg;
 
-    // PROJ-2617 PVOì•ˆì •ì„±
-    // ì•„ë˜ì˜ í•¨ìˆ˜ì— ì´ë¯¸ FT / NOFT ì ìš© ë˜ì–´ ìˆì–´ í˜„ì¬ì˜ í•¨ìˆ˜ì—ì„œ
-    // ì¶”ê°€ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // PROJ-2617 PVO¾ÈÁ¤¼º
+    // ¾Æ·¡ÀÇ ÇÔ¼ö¿¡ ÀÌ¹Ì FT / NOFT Àû¿ë µÇ¾î ÀÖ¾î ÇöÀçÀÇ ÇÔ¼ö¿¡¼­
+    // Ãß°¡ ÇÏÁö ¾Ê´Â´Ù.
     sStatement = & aStatement->statement;
 
     qcg::getSmiStmt( sStatement, &sSmiStmtOrg );
@@ -3638,20 +3940,21 @@ IDE_RC qci::hardRebuild( qciStatement            * aStatement,
 
     //-------------------------------------------------------------------------
     // PROJ-2163
-    // Type Binding ì¶”ê°€
-    // QP ìª½ í•¸ë“¤ë§ìœ¼ë¡œ type binding ì´í›„ MM ì˜ statement ìƒíƒœëŠ” ë³€ê²½ë˜ì§€ ì•ŠëŠ”ë‹¤
-    // hardRebuild ì™„ë£Œ í›„ data ì •ë³´ë¥¼ ë³µêµ¬í•˜ê³  setBindState(MMC_STMT_BIND_DATA)ê°€
-    //  ìˆ˜í–‰ëœë‹¤. ë”°ë¼ì„œ MMC_STMT_BIND_INFO ìƒíƒœë¥¼ skip í•˜ëŠ” ì…ˆì´ë‹¤.
-    // ê²°ê³¼ì ìœ¼ë¡œ qci::hardRebuild ì´í›„ì˜ ì§„ì…ì— ë¬¸ì œëŠ” ì—†ìœ¼ë‚˜ ìƒíƒœì˜ íë¦„ì„
-    // ì¼ê´€ì„± ìˆê²Œ ì ìš©í•˜ë ¤ë©´ MM ì—ì„œ parse, bindparamInfo, hardPrepare ë¥¼
-    // ê°ê° í˜¸ì¶œí•˜ëŠ” êµ¬ì¡°ë¡œ ë°”ê¿”ì•¼ í•œë‹¤.
+    // Type Binding Ãß°¡
+    // QP ÂÊ ÇÚµé¸µÀ¸·Î type binding ÀÌÈÄ MM ÀÇ statement »óÅÂ´Â º¯°æµÇÁö ¾Ê´Â´Ù
+    // hardRebuild ¿Ï·á ÈÄ data Á¤º¸¸¦ º¹±¸ÇÏ°í setBindState(MMC_STMT_BIND_DATA)°¡
+    //  ¼öÇàµÈ´Ù. µû¶ó¼­ MMC_STMT_BIND_INFO »óÅÂ¸¦ skip ÇÏ´Â ¼ÀÀÌ´Ù.
+    // °á°úÀûÀ¸·Î qci::hardRebuild ÀÌÈÄÀÇ ÁøÀÔ¿¡ ¹®Á¦´Â ¾øÀ¸³ª »óÅÂÀÇ Èå¸§À»
+    // ÀÏ°ü¼º ÀÖ°Ô Àû¿ëÇÏ·Á¸é MM ¿¡¼­ parse, bindparamInfo, hardPrepare ¸¦
+    // °¢°¢ È£ÃâÇÏ´Â ±¸Á¶·Î ¹Ù²ã¾ß ÇÑ´Ù.
     //-------------------------------------------------------------------------
     IDE_TEST( bindParamInfo( aStatement,
                              aPlanCacheContext ) != IDE_SUCCESS );
 
     IDE_TEST( hardPrepare( aStatement,
                            aParentSmiStmt,
-                           aPlanCacheContext )
+                           aPlanCacheContext,
+                           aDistTxInfo )
               != IDE_SUCCESS );
 
     qcg::setSmiStmt( sStatement, sSmiStmtOrg );
@@ -3662,8 +3965,8 @@ IDE_RC qci::hardRebuild( qciStatement            * aStatement,
 
     if( ideIsRebuild() == IDE_SUCCESS )
     {
-        // rebuildì¤‘ ë‹¤ì‹œ rebuildê°€ ë°œìƒí•œ ê²½ìš°ëŠ” statementë§Œ
-        // clearí•˜ê³  ë‹¤ì‹œ rebuildë¥¼ ì‹œë„í•  ìˆ˜ ìˆë„ë¡ í•œë‹¤.
+        // rebuildÁß ´Ù½Ã rebuild°¡ ¹ß»ıÇÑ °æ¿ì´Â statement¸¸
+        // clearÇÏ°í ´Ù½Ã rebuild¸¦ ½ÃµµÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
         (void) qcg::clearStatement( &(aStatement->statement),
                              ID_TRUE ); // rebuild = TRUE
 
@@ -3671,8 +3974,8 @@ IDE_RC qci::hardRebuild( qciStatement            * aStatement,
     }
     else
     {
-        // parse, hard prepareê°€ ì‹¤íŒ¨í•˜ëŠ” ê²½ìš° private templateì„
-        // ì§€ì •í•˜ì—¬ bind parameter ì •ë³´ë¥¼ ê¸°ë¡í•œë‹¤.
+        // parse, hard prepare°¡ ½ÇÆĞÇÏ´Â °æ¿ì private templateÀ»
+        // ÁöÁ¤ÇÏ¿© bind parameter Á¤º¸¸¦ ±â·ÏÇÑ´Ù.
         if( QC_PRIVATE_TMPLATE(sStatement) == NULL )
         {
             (void) qcg::setPrivateArea( sStatement );
@@ -3777,10 +4080,10 @@ IDE_RC qci::checkInternalProcCall( qciStatement * aStatement )
 /***********************************************************************
  *
  *  Description : PROJ-1386
- *                result-set procedureëŠ” dynamic sqlë¡œ í˜¸ì¶œë¶ˆê°€
+ *                result-set procedure´Â dynamic sql·Î È£ÃâºÒ°¡
  *
- *  Implementation : preparedìƒíƒœì—ì„œë§Œ í˜¸ì¶œê°€ëŠ¥
- *                   proc callì´ê³  resultset ìˆëŠ”ê²½ìš° ì—ëŸ¬
+ *  Implementation : prepared»óÅÂ¿¡¼­¸¸ È£Ãâ°¡´É
+ *                   proc callÀÌ°í resultset ÀÖ´Â°æ¿ì ¿¡·¯
  *
  ***********************************************************************/
 
@@ -3840,6 +4143,10 @@ IDE_RC qci::executeDCL( qciStatement * aStatement,
     smiStatement  * sSmiStmtOrg;
     qcParseTree   * sParseTree;
 
+    sdiClientInfo  * sClientInfo  = NULL;
+    sdiConnectInfo * sConnectInfo = NULL;
+    UInt             i = 0;
+    
     IDE_FT_ROOT_BEGIN();
 
     IDE_NOFT_BEGIN();
@@ -3858,6 +4165,9 @@ IDE_RC qci::executeDCL( qciStatement * aStatement,
 
     IDE_TEST( getStmtType( aStatement, &sType ) != IDE_SUCCESS );
 
+    // PROJ-2727
+    IDE_TEST( sdi::checkDCLStmt( sStatement ) != IDE_SUCCESS );
+                        
     switch( sType )
     {
         case QCI_STMT_COMMIT:
@@ -3870,6 +4180,7 @@ IDE_RC qci::executeDCL( qciStatement * aStatement,
                 break;
             }
         case QCI_STMT_ROLLBACK:
+        case QCI_STMT_ROLLBACK_TO_SAVEPOINT:  /* BUG-48216 */
             {
                 qdTransParseTree * sTree = (qdTransParseTree *) sParseTree;
                 IDE_TEST_RAISE(sTree->savepointName.size > QC_MAX_OBJECT_NAME_LEN,
@@ -3975,13 +4286,97 @@ IDE_RC qci::executeDCL( qciStatement * aStatement,
                 break;
             }
         case QCI_STMT_SET_SYSTEM_PROPERTY:
-            {
-                qcuPropertyArgument sArgSet;
+        {
+            qdSystemSetParseTree * sSystemParseTree =
+                (qdSystemSetParseTree *)(sStatement->myPlan->parseTree);
+            qcuPropertyArgument sArgSet;
+            sdiLocalMetaInfo    sLocalMetaInfo;
+            SChar               sPropName[IDP_MAX_VALUE_LEN + 1];
+            UInt                sPropertyAttribute = 0;
 
+            // system property ÀüÆÄ ¿©ºÎ ¼³Á¤
+            idlOS::memcpy( sPropName,
+                           sSystemParseTree->name.stmtText +
+                           sSystemParseTree->name.offset,
+                           sSystemParseTree->name.size );
+            sPropName[sSystemParseTree->name.size] = '\0';
+                
+            IDE_TEST( idp::getPropertyAttribute( sPropName, &sPropertyAttribute )
+                      != IDE_SUCCESS );
+
+            QCG_SET_SESSION_PROPERTY_ATTRIBUTE( sStatement, sPropertyAttribute );
+
+            // PROJ-2727 
+            if (( QCG_GET_SESSION_PROPERTY_ATTRIBUTE( sStatement ) == IDP_ATTR_SHARD_ALL ) &&
+                ( sStatement->myPlan->parseTree->stmtShard != QC_STMT_SHARD_META ))
+            {
+                if (( QCG_GET_SESSION_IS_SHARD_INTERNAL_LOCAL_OPERATION( sStatement ) != ID_TRUE  ) &&
+                    ( sdi::isShardCoordinator( sStatement ) == ID_TRUE ))
+                {
+                    IDE_TEST( sdi::getLocalMetaInfo( &sLocalMetaInfo ) != IDE_SUCCESS );
+                            
+                    // shard linker °Ë»ç & ÃÊ±âÈ­
+                    IDE_TEST( sdi::checkShardLinker( sStatement ) != IDE_SUCCESS );
+
+                    sClientInfo = sStatement->session->mQPSpecific.mClientInfo;
+
+                    // current node set system property
+                    IDE_TEST( sdi::systemPropertyForShard( sStatement,
+                                                           sLocalMetaInfo.mNodeName,
+                                                           (SChar*)sStatement->myPlan->stmtText )
+                              != IDE_SUCCESS );
+                            
+                    // remote node set system property
+                    if ( sClientInfo != NULL )
+                    {
+                        sConnectInfo = sClientInfo->mConnectInfo;
+            
+                        for ( i = 0; i < sClientInfo->mCount; i++, sConnectInfo++ )
+                        {
+                            if ( idlOS::strMatch( sLocalMetaInfo.mNodeName,
+                                                  idlOS::strlen( sLocalMetaInfo.mNodeName ),
+                                                  sConnectInfo->mNodeName,
+                                                  idlOS::strlen( sConnectInfo->mNodeName )) != 0 )
+                            {
+                                IDE_TEST( sdi::systemPropertyForShard( sStatement,
+                                                                       sConnectInfo->mNodeName,
+                                                                       (SChar*)sStatement->myPlan->stmtText )
+                                          != IDE_SUCCESS );
+                            }
+                            else
+                            {
+                                //nothing to do
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // Àü³ëµå¿¡ ÀüÆÄµÇ´Â ÇÁ·ÎÆÛÆ¼
+                    // new session, trans »ı¼ºÇÏ¿© ¼öÇàÇÏ´Â °æ¿ì
+                    // non sharding °æ¿ì 
+                    IDE_ASSERT( (void *)&sArgSet == (void *)&(sArgSet.mArg));
+
+                    sArgSet.mArg.getArgValue = (void*(*)(idvSQL *,idpArgument*,idpArgumentID))
+                        (qcuProperty::callbackForGettingArgument);
+                    sArgSet.mUserID = QCG_GET_SESSION_USER_ID(sStatement);
+                    sArgSet.mTrans  = aSmiTrans;
+
+                    IDE_TEST( qdc::setSystemProperty(
+                                  sStatement,
+                                  (idpArgument *)&sArgSet ) != IDE_SUCCESS );
+                }
+
+            }
+            else
+            {
                 /* ------------------------------------------------
                  *  setup Argument Sets
                  * ----------------------------------------------*/
 
+                // Àü³ëµå ÀüÆÄ ÇÏÁö ¾Ê´Â ÇÁ·ÎÆÛÆ¼
+                // new session ,transactionÀ¸·Î ¼öÇà ÇÏÁö ¾ÊÀ½
+                // noh sharding °æ¿ì
                 IDE_ASSERT( (void *)&sArgSet == (void *)&(sArgSet.mArg));
 
                 sArgSet.mArg.getArgValue = (void*(*)(idvSQL *,idpArgument*,idpArgumentID))
@@ -3992,8 +4387,10 @@ IDE_RC qci::executeDCL( qciStatement * aStatement,
                 IDE_TEST( qdc::setSystemProperty(
                               sStatement,
                               (idpArgument *)&sArgSet ) != IDE_SUCCESS );
-                break;
             }
+            
+            break;
+        }
         case QCI_STMT_SET_SESSION_PROPERTY:
             {
                 qdSystemSetParseTree * sSessionParseTree =
@@ -4011,8 +4408,8 @@ IDE_RC qci::executeDCL( qciStatement * aStatement,
                                 ERR_TOO_LONG_NAME );
 
                 // BUG-19498
-                // property name ë’¤ì— ìˆëŠ” í•„ìš”ì—†ëŠ” ê°’ì´ ì“°ì´ì§€ ì•Šë„ë¡
-                // í•´ì¤Œ
+                // property name µÚ¿¡ ÀÖ´Â ÇÊ¿ä¾ø´Â °ªÀÌ ¾²ÀÌÁö ¾Êµµ·Ï
+                // ÇØÁÜ
                 idlOS::memcpy( sPropName,
                                sSessionParseTree->name.stmtText +
                                sSessionParseTree->name.offset,
@@ -4021,14 +4418,25 @@ IDE_RC qci::executeDCL( qciStatement * aStatement,
                 sPropNameSize = sSessionParseTree->name.size;
 
                 // BUG-19498
-                // property value ë’¤ì— ìˆëŠ” í•„ìš”ì—†ëŠ” ê°’ì´ ì“°ì´ì§€ ì•Šë„ë¡
-                // í•´ì¤Œ
+                // property value µÚ¿¡ ÀÖ´Â ÇÊ¿ä¾ø´Â °ªÀÌ ¾²ÀÌÁö ¾Êµµ·Ï
+                // ÇØÁÜ
                 idlOS::memcpy( sPropValueStr,
                                sSessionParseTree->value.stmtText +
                                sSessionParseTree->value.offset,
                                sSessionParseTree->value.size );
                 sPropValueStr[sSessionParseTree->value.size] = '\0';
                 sPropValueSize = sSessionParseTree->value.size;
+
+                // PROJ-2727
+                if ( sStatement->myPlan->parseTree->stmtShard == QC_STMT_SHARD_META )
+                {
+                    sStatement->session->mQPSpecific.mFlag &= ~QC_SESSION_ATTR_SHARD_META_MASK;
+                    sStatement->session->mQPSpecific.mFlag |= QC_SESSION_ATTR_SHARD_META_TRUE;
+                }
+                else
+                {
+                    // nothing to do
+                }                
 
                 IDE_TEST( qci::mSessionCallback.mSetProperty(
                               sMmSession,
@@ -4221,14 +4629,54 @@ IDE_RC qci::executeDCL( qciStatement * aStatement,
                           != IDE_SUCCESS );
                 break;
             }
-        case QCI_STMT_ALT_REPLICATION_STOP : /* BUG-42852 STOPê³¼ FLUSHë¥¼ DCLë¡œ ë³€í™˜í•©ë‹ˆë‹¤. */
+        case QCI_STMT_ALT_REPLICATION_STOP : /* BUG-42852 STOP°ú FLUSH¸¦ DCL·Î º¯È¯ÇÕ´Ï´Ù. */
             {
                 IDE_TEST( qrc::executeStop( sStatement ) != IDE_SUCCESS );
                 break;
             }
-        case QCI_STMT_ALT_REPLICATION_FLUSH : /* BUG-42852 STOPê³¼ FLUSHë¥¼ DCLë¡œ ë³€í™˜í•©ë‹ˆë‹¤. */
+        case QCI_STMT_ALT_REPLICATION_FLUSH : /* BUG-42852 STOP°ú FLUSH¸¦ DCL·Î º¯È¯ÇÕ´Ï´Ù. */
             {
                 IDE_TEST( qrc::executeFlush( sStatement ) != IDE_SUCCESS );
+                break;
+            }
+        case QCI_STMT_ALT_REPLICATION_START:
+            {
+                IDE_TEST( qrc::executeStart( sStatement ) != IDE_SUCCESS );
+                break;
+            }
+        case QCI_STMT_ALT_REPLICATION_QUICKSTART:
+            {
+                IDE_TEST( qrc::executeQuickStart( sStatement ) != IDE_SUCCESS );
+                break;
+            }
+        case QCI_STMT_ALT_REPLICATION_SYNC:
+            {
+                IDE_TEST( qrc::executeSync( sStatement ) != IDE_SUCCESS );
+                break;
+            }
+        case QCI_STMT_ALT_REPLICATION_SYNC_CONDITION:
+            {
+                IDE_TEST( qrc::executeSyncCondition( sStatement ) != IDE_SUCCESS );
+                break;
+            }
+        case QCI_STMT_ALT_REPLICATION_TEMP_SYNC:
+            {
+                IDE_TEST( qrc::executeTempSync( sStatement ) != IDE_SUCCESS );
+                break;
+            }
+        case QCI_STMT_ALT_REPLICATION_FAILBACK:
+            {
+                IDE_TEST( qrc::executeFailback( sStatement ) != IDE_SUCCESS );
+                break;
+            }
+        case QCI_STMT_ALT_REPLICATION_DELETE_ITEM_REPLACE_HISTORY:
+            {
+                IDE_TEST( qrc::executeDeleteItemReplaceHistory( sStatement ) != IDE_SUCCESS );
+                break;
+            }
+        case QCI_STMT_ALT_REPLICATION_FAILOVER:
+            {
+                IDE_TEST( qrc::executeFailover( sStatement ) != IDE_SUCCESS );
                 break;
             }
         case QCI_STMT_COMMIT_FORCE:
@@ -4328,7 +4776,7 @@ IDE_RC qci::executeDCL( qciStatement * aStatement,
                           != IDE_SUCCESS );
                 break;
             }
-        /* PROJ-2624 [ê¸°ëŠ¥ì„±] MM - ìœ ì—°í•œ access_list ê´€ë¦¬ë°©ë²• ì œê³µ */
+        /* PROJ-2624 [±â´É¼º] MM - À¯¿¬ÇÑ access_list °ü¸®¹æ¹ı Á¦°ø */
         case QCI_STMT_RELOAD_ACCESS_LIST:
             {
                 IDE_TEST( qdc::reloadAccessList( sStatement )
@@ -4396,14 +4844,14 @@ IDE_RC qci::getUserInfo( qciStatement  *aStatement,
 {
 /***********************************************************************
  *
- * Description : userInfo ì •ë³´ êµ¬ì„±
+ * Description : userInfo Á¤º¸ ±¸¼º
  *
  * Implementation :
  *
- *     connect protocolë¡œ ì²˜ë¦¬ë˜ëŠ” ê³³ì—ì„œ í˜¸ì¶œë¨.
- *     ( isqlìƒì—ì„œì˜ connectë¬¸ ì²˜ë¦¬ì‹œ. )
- *     mmì—ì„œ loginID, loginPassword, mIsSysdbaë¥¼
- *     qciUserInfoì— ì„¸íŒ…í•´ì„œ ë„˜ê¹€.
+ *     connect protocol·Î Ã³¸®µÇ´Â °÷¿¡¼­ È£ÃâµÊ.
+ *     ( isql»ó¿¡¼­ÀÇ connect¹® Ã³¸®½Ã. )
+ *     mm¿¡¼­ loginID, loginPassword, mIsSysdba¸¦
+ *     qciUserInfo¿¡ ¼¼ÆÃÇØ¼­ ³Ñ±è.
  *
  ***********************************************************************/
 
@@ -4420,8 +4868,8 @@ IDE_RC qci::getUserInfo( qciStatement  *aStatement,
     qcg::setSmiStmt( sStatement, aSmiStmt );
 
     /*
-     * ë³´ì•ˆDBì¼ ê²½ìš°, ì¦‰, OwnerDNì´ NULLì´ ì•„ë‹ê²½ìš°,
-     * ë°˜ë“œì‹œ, SYS_DN_USERS_ í…Œì´ë¸”ì„ í†µí•´ ê¶Œí•œì„ í™•ì¸í•œë‹¤.
+     * º¸¾ÈDBÀÏ °æ¿ì, Áï, OwnerDNÀÌ NULLÀÌ ¾Æ´Ò°æ¿ì,
+     * ¹İµå½Ã, SYS_DN_USERS_ Å×ÀÌºíÀ» ÅëÇØ ±ÇÇÑÀ» È®ÀÎÇÑ´Ù.
      */
     sOwnerDN[0] = '\0';
 
@@ -4444,11 +4892,11 @@ IDE_RC qci::getUserInfo( qciStatement  *aStatement,
         else
         {
             /*
-             * ë³´ì•ˆ DBì—,
-             * ì¸ì¦ì„œë¥¼ ì œì¶œí•˜ì—¬ ì ‘ì†í•  ê²½ìš°,
-             * mUsrDNì´ OwnerDNê³¼ ë™ì¼í•˜ë©´ "SYS"ë¡œ,
-             * ê·¸ ì™¸ì˜ ê²½ìš°ëŠ” SYS_DN_USERS_ í…Œì´ë¸”ì— ë“±ë¡ëœ
-             * database userë¡œ ì§€ì •ëœë‹¤.
+             * º¸¾È DB¿¡,
+             * ÀÎÁõ¼­¸¦ Á¦ÃâÇÏ¿© Á¢¼ÓÇÒ °æ¿ì,
+             * mUsrDNÀÌ OwnerDN°ú µ¿ÀÏÇÏ¸é "SYS"·Î,
+             * ±× ¿ÜÀÇ °æ¿ì´Â SYS_DN_USERS_ Å×ÀÌºí¿¡ µî·ÏµÈ
+             * database user·Î ÁöÁ¤µÈ´Ù.
              */
             if( idlOS::memcmp(aResult->mUsrDN,
                               sOwnerDN,
@@ -4663,15 +5111,15 @@ IDE_RC qci::startup( idvSQL          * aStatistics,
     switch (aStartupPhase)
     {
         case QCI_STARTUP_PRE_PROCESS:
-            // fixed table ë“±ë¡
+            // fixed table µî·Ï
             IDE_TEST(qcg::startupPreProcess( aStatistics ) != IDE_SUCCESS);
             break;
         case QCI_STARTUP_PROCESS:
-            // fixed table ë“±ë¡
+            // fixed table µî·Ï
             IDE_TEST(qcg::startupProcess() != IDE_SUCCESS);
             break;
         case QCI_STARTUP_CONTROL:
-            // query ìˆ˜í–‰ ê¶Œí•œ ì„¤ì •, DDL,DML ê¸ˆì§€
+            // query ¼öÇà ±ÇÇÑ ¼³Á¤, DDL,DML ±İÁö
             IDE_TEST(qcg::startupControl() != IDE_SUCCESS);
             break;
         case QCI_STARTUP_META:
@@ -4680,7 +5128,7 @@ IDE_RC qci::startup( idvSQL          * aStatistics,
             break;
         case QCI_STARTUP_SERVICE:
             // cache meta
-            // PSM, NSP ì´ˆê¸°í™”
+            // PSM, NSP ÃÊ±âÈ­
             IDE_TEST(qcg::startupService( aStatistics ) != IDE_SUCCESS);
             if ( SDU_SHARD_ENABLE == 1 )
             {
@@ -4703,7 +5151,7 @@ IDE_RC qci::startup( idvSQL          * aStatistics,
                 // Nothing to do.
             }
             // cache meta
-            // PSM, NSP ì´ˆê¸°í™”
+            // PSM, NSP ÃÊ±âÈ­
             IDE_TEST(qcg::startupShutdown( aStatistics ) != IDE_SUCCESS);
             break;
         case QCI_META_DOWNGRADE:
@@ -4735,7 +5183,7 @@ qci::isSysdba( qciStatement * aStatement )
     return qcg::getSessionIsSysdbaUser( & aStatement->statement );
 }
 
-// BUG-43566 hint êµ¬ë¬¸ì´ ì˜¤ë¥˜ê°€ ë‚¬ì„ë•Œ ìœ„ì¹˜ë¥¼ ì•Œìˆ˜ ìˆìœ¼ë©´ ì¢‹ê² ìŠµë‹ˆë‹¤.
+// BUG-43566 hint ±¸¹®ÀÌ ¿À·ù°¡ ³µÀ»¶§ À§Ä¡¸¦ ¾Ë¼ö ÀÖÀ¸¸é ÁÁ°Ú½À´Ï´Ù.
 SInt qci::getLineNo( SChar * aStmtText, SInt aOffset )
 {
     SInt i = 0;
@@ -4760,15 +5208,16 @@ SInt qci::getLineNo( SChar * aStmtText, SInt aOffset )
 IDE_RC
 qci::makePlanTreeText( qciStatement * aStatement,
                        iduVarString * aString,
-                       idBool         aIsCodeOnly )
+                       idBool         aIsCodeOnly,
+                       idBool         aIsNoGraph )
 {
     //------------------------------------------------
-    // aPlanBuffer : ë²„í¼í¬ì¸í„°
-    // aBufLen     : ë²„í¼í¬ì¸í„°ì˜ ê¸¸ì´
-    // mmì—ì„œ ë²„í¼ë„ memsetìœ¼ë¡œ ì´ˆê¸°í™”í•˜ê³ ,
-    // ì´ í•¨ìˆ˜ ìˆ˜í–‰ í›„,
-    // strlenë¥¼ êµ¬í•´ì„œ ê¸¸ì´ê°€ 0 ì¸ì§€ì•„ë‹Œì§€ ì²´í¬í•˜ê³  ìˆìœ¼ë¯€ë¡œ,
-    // qpì—ì„œëŠ” ì´ì— ëŒ€í•´ ì‹ ê²½ì“°ì§€ ì•Šì•„ë„ ëœë‹¤.
+    // aPlanBuffer : ¹öÆÛÆ÷ÀÎÅÍ
+    // aBufLen     : ¹öÆÛÆ÷ÀÎÅÍÀÇ ±æÀÌ
+    // mm¿¡¼­ ¹öÆÛµµ memsetÀ¸·Î ÃÊ±âÈ­ÇÏ°í,
+    // ÀÌ ÇÔ¼ö ¼öÇà ÈÄ,
+    // strlen¸¦ ±¸ÇØ¼­ ±æÀÌ°¡ 0 ÀÎÁö¾Æ´ÑÁö Ã¼Å©ÇÏ°í ÀÖÀ¸¹Ç·Î,
+    // qp¿¡¼­´Â ÀÌ¿¡ ´ëÇØ ½Å°æ¾²Áö ¾Ê¾Æµµ µÈ´Ù.
     //------------------------------------------------
 
     qcStatement       * sStatement;
@@ -4819,7 +5268,8 @@ qci::makePlanTreeText( qciStatement * aStatement,
                                          sStatement->myPlan->graph,
                                          sStatement->myPlan->plan,
                                          sDisplay,
-                                         aString )
+                                         aString,
+                                         aIsNoGraph )
                       != IDE_SUCCESS );
             break;
 
@@ -4842,14 +5292,22 @@ qci::printPlanTreeText( qcStatement  * aStatement,
                         qmgGraph     * aGraph,
                         qmnPlan      * aPlan,
                         qmnDisplay     aDisplay,
-                        iduVarString * aString )
+                        iduVarString * aString,
+                        idBool         aIsNoGraph )
 {
     SChar       * sHintText;
     SChar       * sTemp;
     qcOffset    * sOffset;
     SInt          sLine;
 
-    if( QCU_TRCLOG_EXPLAIN_GRAPH == 1 )
+    /**
+     * BUG-48224
+     * v$plantext ¿¡¼­ plan Ãâ·Â½Ã graph Á¤º¸´Â Ãâ·ÂÇÏ¸é ¾ÊµÈ´Ù.
+     * graph´Â optimize°úÁ¤À» °ÅÁ®¾ßÇÏÁö¸¸ v$plantext  Àº plan
+     * ÀÇ text¸¸ Ãâ·ÂÇØ¾ßÇÏ´Â µ¥ ÀÇµµÄ¡ ¾Ê°Ô graph°¡ °°ÀÌ Ãâ·ÂµÊ.
+     */
+    if ( ( QCU_TRCLOG_EXPLAIN_GRAPH == 1 ) &&
+         ( aIsNoGraph == ID_FALSE ) )
     {
         IDE_TEST( aGraph->printGraph( aStatement,
                                       aGraph,
@@ -4862,7 +5320,7 @@ qci::printPlanTreeText( qcStatement  * aStatement,
         // Nothing To Do
     }
 
-    // ì‹œì‘ line ì¶œë ¥
+    // ½ÃÀÛ line Ãâ·Â
     iduVarStringAppend( aString,
                         "------------------------------------------------------------\n" );
 
@@ -4873,11 +5331,11 @@ qci::printPlanTreeText( qcStatement  * aStatement,
                                 aDisplay )
               != IDE_SUCCESS );
 
-    // ì¢…ë£Œ line ì¶œë ¥
+    // Á¾·á line Ãâ·Â
     iduVarStringAppend( aString,
                         "------------------------------------------------------------\n" );
 
-    // PROJ-2551 simple query ìµœì í™”
+    // PROJ-2551 simple query ÃÖÀûÈ­
     if ( ( aStatement->mFlag & QC_STMT_FAST_EXEC_MASK )
          == QC_STMT_FAST_EXEC_TRUE )
     {
@@ -4899,7 +5357,7 @@ qci::printPlanTreeText( qcStatement  * aStatement,
     }
 
     // PROJ-2492 Dynamic sample selection
-    // PLAN ì •ë³´ì— ì¶œë ¥ì„ í•´ì¤€ë‹¤.
+    // PLAN Á¤º¸¿¡ Ãâ·ÂÀ» ÇØÁØ´Ù.
     if ( (QCU_DISPLAY_PLAN_FOR_NATC == 0) &&
          (aStatement->myPlan->planEnv != NULL) )
     {
@@ -4921,11 +5379,11 @@ qci::printPlanTreeText( qcStatement  * aStatement,
 
     if ( QCU_DISPLAY_PLAN_FOR_NATC == 1 )
     {
-        // BUG-43524 hint êµ¬ë¬¸ì´ ì˜¤ë¥˜ê°€ ë‚¬ì„ë•Œ ì•Œìˆ˜ ìˆìœ¼ë©´ ì¢‹ê² ìŠµë‹ˆë‹¤.
+        // BUG-43524 hint ±¸¹®ÀÌ ¿À·ù°¡ ³µÀ»¶§ ¾Ë¼ö ÀÖÀ¸¸é ÁÁ°Ú½À´Ï´Ù.
         if ( ( aStatement->myPlan->mPlanFlag & QC_PLAN_HINT_PARSE_MASK )
             == QC_PLAN_HINT_PARSE_FAIL )
         {
-            // BUG-43566 hint êµ¬ë¬¸ì´ ì˜¤ë¥˜ê°€ ë‚¬ì„ë•Œ ìœ„ì¹˜ë¥¼ ì•Œìˆ˜ ìˆìœ¼ë©´ ì¢‹ê² ìŠµë‹ˆë‹¤.
+            // BUG-43566 hint ±¸¹®ÀÌ ¿À·ù°¡ ³µÀ»¶§ À§Ä¡¸¦ ¾Ë¼ö ÀÖÀ¸¸é ÁÁ°Ú½À´Ï´Ù.
             iduVarStringAppend( aString, "* WARNING : Failed to parse hints.\n" );
 
 
@@ -4949,7 +5407,7 @@ qci::printPlanTreeText( qcStatement  * aStatement,
                 }
                 else
                 {
-                    // êµ¬ë¬¸ì˜¤ë¥˜ê°€ ìˆëŠ” ê²½ìš°ì—ëŠ” ëª¨ë“  hintë¥¼ ì¶œë ¥í•œë‹¤.
+                    // ±¸¹®¿À·ù°¡ ÀÖ´Â °æ¿ì¿¡´Â ¸ğµç hint¸¦ Ãâ·ÂÇÑ´Ù.
                     // ex : ( SELECT /*+ full */ * FROM T1 )
                     sTemp = idlOS::strstr( sHintText, "*/" );
 
@@ -4978,6 +5436,8 @@ qci::printPlanTreeText( qcStatement  * aStatement,
         // Nothing to do.
     }
 
+    sdi::printGCTxPlan( aTemplate, aString );
+
     /* BUG-45899 */
     sdi::printAnalysisInfo( aStatement, aString );
 
@@ -5004,7 +5464,8 @@ qci::getPlanTreeText( qciStatement * aStatement,
     {
         IDE_TEST( qci::makePlanTreeText( aStatement,
                                          aString,
-                                         aIsCodeOnly )
+                                         aIsCodeOnly,
+                                         ID_FALSE )
                   != IDE_SUCCESS );
     }
     else
@@ -5038,8 +5499,8 @@ qci::isLastParamData( qciStatement * aStatement,
              ? ID_TRUE : ID_FALSE;
 }
 
-/* PROJ-2160 CM íƒ€ì…ì œê±°
-   íŒŒë¼ë¯¸í„°ì˜ íƒ€ì…ì„ ë¦¬í„´í•œë‹¤. */
+/* PROJ-2160 CM Å¸ÀÔÁ¦°Å
+   ÆÄ¶ó¹ÌÅÍÀÇ Å¸ÀÔÀ» ¸®ÅÏÇÑ´Ù. */
 UInt qci::getBindParamType( qciStatement * aStatement,
                             UInt           aBindID )
 {
@@ -5066,8 +5527,8 @@ qci::closeCursor( qciStatement * aStatement,
     qcg::getSmiStmt( sStatement, &sSmiStmtOrg );
     qcg::setSmiStmt( sStatement, aSmiStmt );
 
-    // PROJ-2551 simple query ìµœì í™”
-    // simple queryì¸ ê²½ìš° fast executeë¥¼ ìˆ˜í–‰í•œë‹¤.
+    // PROJ-2551 simple query ÃÖÀûÈ­
+    // simple queryÀÎ °æ¿ì fast execute¸¦ ¼öÇàÇÑ´Ù.
     if ( ( ( sStatement->mFlag & QC_STMT_FAST_EXEC_MASK )
            == QC_STMT_FAST_EXEC_TRUE ) &&
          ( ( sStatement->mFlag & QC_STMT_FAST_BIND_MASK )
@@ -5161,14 +5622,14 @@ IDE_RC
 qci::checkRebuild( qciStatement * aStatement )
 {
     //---------------------------------------------
-    // executeí•˜ë ¤ëŠ” statementê°€ ì´ì „ì—
-    // rebuild ìˆ˜í–‰ì¤‘ ì—ëŸ¬ë‚œ statementì¸ì§€ ì²´í¬.
-    // ì˜ˆ) prepare : insert into t1 values ( ? )
+    // executeÇÏ·Á´Â statement°¡ ÀÌÀü¿¡
+    // rebuild ¼öÇàÁß ¿¡·¯³­ statementÀÎÁö Ã¼Å©.
+    // ¿¹) prepare : insert into t1 values ( ? )
     //     drop table t1;
     //     execute : insert into t1 values ( ? )
-    //               <== rebuildì‹œ ì—ëŸ¬
+    //               <== rebuild½Ã ¿¡·¯
     //     execute : insert into t1 values ( ? )
-    //               <== rebuildê°€ ìˆ˜í–‰ë˜ì–´ì•¼ í•¨.
+    //               <== rebuild°¡ ¼öÇàµÇ¾î¾ß ÇÔ.
     //---------------------------------------------
 
     if( ( aStatement->flag & QCI_STMT_REBUILD_EXEC_MASK )
@@ -5199,7 +5660,7 @@ qci::getResultSetCount( qciStatement * aStatement )
     if( (aStatement->statement.myPlan->parseTree->stmtKind == QCI_STMT_EXEC_PROC) ||
         (aStatement->statement.myPlan->parseTree->stmtKind == QCI_STMT_EXEC_FUNC) )
     {
-        // ì „ì²´ Result setì˜ ê°œìˆ˜ë¥¼ ì–»ì–´ì˜¨ë‹¤.
+        // ÀüÃ¼ Result setÀÇ °³¼ö¸¦ ¾ò¾î¿Â´Ù.
         if( aStatement->state == QCI_STMT_STATE_PREPARED )
         {
             return qsv::getResultSetCount( &aStatement->statement );
@@ -5211,7 +5672,7 @@ qci::getResultSetCount( qciStatement * aStatement )
     }
     else
     {
-        //  select, dequeue ì´ë©´ ë¬´ì¡°ê±´ 1ì´ë‹¤.
+        //  select, dequeue ÀÌ¸é ¹«Á¶°Ç 1ÀÌ´Ù.
         if( (aStatement->statement.myPlan->parseTree->stmtKind == QCI_STMT_SELECT) ||
             (aStatement->statement.myPlan->parseTree->stmtKind == QCI_STMT_SELECT_FOR_FIXED_TABLE) ||
             (aStatement->statement.myPlan->parseTree->stmtKind == QCI_STMT_SELECT_FOR_UPDATE) ||
@@ -5255,7 +5716,7 @@ qci::getResultSet( qciStatement * aStatement,
         }
         else
         {
-            // ì—¬ê¸°ë¡œ ë“¤ì–´ì˜¤ë©´ ì ˆëŒ€ë¡œ ì•ˆë¨.
+            // ¿©±â·Î µé¾î¿À¸é Àı´ë·Î ¾ÈµÊ.
             IDE_ASSERT(0);
             *aResultSetStmt = NULL;
             *aInterResultSet = ID_FALSE;
@@ -5270,8 +5731,8 @@ qci::getResultSet( qciStatement * aStatement,
     return IDE_FAILURE;
 }
 
-/* PROJ-2160 CM íƒ€ì…ì œê±°
-   row ì˜ ì‹¤ì œ ì‚¬ì´ì¦ˆë¥¼ êµ¬í•œë‹¤. */
+/* PROJ-2160 CM Å¸ÀÔÁ¦°Å
+   row ÀÇ ½ÇÁ¦ »çÀÌÁî¸¦ ±¸ÇÑ´Ù. */
 ULong qci::getRowActualSize( qciStatement * aStatement )
 {
     qcStatement     * sStatement = NULL;
@@ -5284,8 +5745,8 @@ ULong qci::getRowActualSize( qciStatement * aStatement )
 
     sStatement = &(aStatement->statement);
 
-    // PROJ-2551 simple query ìµœì í™”
-    // simple queryì¸ ê²½ìš° fast executeë¥¼ ìˆ˜í–‰í•œë‹¤.
+    // PROJ-2551 simple query ÃÖÀûÈ­
+    // simple queryÀÎ °æ¿ì fast execute¸¦ ¼öÇàÇÑ´Ù.
     if ( ( ( sStatement->mFlag & QC_STMT_FAST_EXEC_MASK )
            == QC_STMT_FAST_EXEC_TRUE ) &&
          ( ( sStatement->mFlag & QC_STMT_FAST_BIND_MASK )
@@ -5457,8 +5918,8 @@ qci::getOutBindParamSize( qciStatement *aStatement,
             (sBindParam->inoutType == CMP_DB_PARAM_INPUT_OUTPUT) )
         {
             // proj_2160 cm_type removal
-            // lob paramì¸ ê²½ìš° SQL_NO_TOTAL(-4)ê°€ ë“¤ì–´ì˜¨ë‹¤
-            // ê·¸ëŸ¬ë©´, cm lob locator sizeë¥¼ ì„¸íŒ…í•œë‹¤.
+            // lob paramÀÎ °æ¿ì SQL_NO_TOTAL(-4)°¡ µé¾î¿Â´Ù
+            // ±×·¯¸é, cm lob locator size¸¦ ¼¼ÆÃÇÑ´Ù.
             if( ( sBindParam->type == MTD_CLOB_LOCATOR_ID ) ||
                 ( sBindParam->type == MTD_BLOB_LOCATOR_ID ) )
             {
@@ -5476,8 +5937,8 @@ qci::getOutBindParamSize( qciStatement *aStatement,
             else
             {
                 // BUG-34230
-                // NCHAR, NVARCHAR ëŠ” í•œê¸€ìë‹¹ 3byte ê¹Œì§€ ì°¨ì§€í•˜ê¸° ë•Œë¬¸ì—
-                // precision ì˜ 3ë°°ë¡œ size ë¥¼ ê³„ì‚°í•´ì•¼ í•œë‹¤.
+                // NCHAR, NVARCHAR ´Â ÇÑ±ÛÀÚ´ç 3byte ±îÁö Â÷ÁöÇÏ±â ¶§¹®¿¡
+                // precision ÀÇ 3¹è·Î size ¸¦ °è»êÇØ¾ß ÇÑ´Ù.
                 if( ( sBindParam->type == MTD_NCHAR_ID ) ||
                     ( sBindParam->type == MTD_NVARCHAR_ID ) )
                 {
@@ -5509,13 +5970,13 @@ IDE_RC qci::isMatchedEnvironment( qciStatement    * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-2163
- *   Plan ì´ ê²€ìƒ‰ ì¡°ê±´ì— ë§ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+ *   Plan ÀÌ °Ë»ö Á¶°Ç¿¡ ¸Â´ÂÁö °Ë»çÇÑ´Ù.
  *
  * Implementation :
- *   ë‹¤ìŒ 2ê°€ì§€ ì¡°ê±´ì„ ê²€ì‚¬í•œ í›„ ê²°ê³¼ ë°˜í™˜
+ *   ´ÙÀ½ 2°¡Áö Á¶°ÇÀ» °Ë»çÇÑ ÈÄ °á°ú ¹İÈ¯
  *
- *   1. Plan property ë“¤ì˜ ì¼ì¹˜ ì—¬ë¶€
- *   2. Plan ì— ì“°ì¸ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì˜ ìˆ˜, íƒ€ì…, precision ë“±ì˜ bind info
+ *   1. Plan property µéÀÇ ÀÏÄ¡ ¿©ºÎ
+ *   2. Plan ¿¡ ¾²ÀÎ È£½ºÆ® º¯¼öÀÇ ¼ö, Å¸ÀÔ, precision µîÀÇ bind info
  *
  ***********************************************************************/
 
@@ -5524,16 +5985,16 @@ IDE_RC qci::isMatchedEnvironment( qciStatement    * aStatement,
 
     sStatement = & aStatement->statement;
 
-    // aStatement->statement->stmtEnv ì™€ PCO(Plan Cache Object)ì˜
-    // environment ì˜ plan property ê°€ match ë˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+    // aStatement->statement->stmtEnv ¿Í PCO(Plan Cache Object)ÀÇ
+    // environment ÀÇ plan property °¡ match µÇ´ÂÁö °Ë»çÇÑ´Ù.
     IDE_TEST( qcgPlan::isMatchedPlanProperty( sStatement,
                                               aPlanProperty,
                                               & sIsMatched )
               != IDE_SUCCESS );
 
-    // aStatement->statement->pBindParam ê³¼ PCO(Plan Cache Object)ì˜ environment ì˜
-    // ë°”ì¸ë“œ ì •ë³´ê°€ match ë˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
-    // (ë‹¨, pBindParam ì´ NULL ì´ë©´ ê²€ì‚¬í•˜ì§€ ì•Šê³  ì¼ì¹˜í•œë‹¤ê³  ë°˜í™˜ëœë‹¤.)
+    // aStatement->statement->pBindParam °ú PCO(Plan Cache Object)ÀÇ environment ÀÇ
+    // ¹ÙÀÎµå Á¤º¸°¡ match µÇ´ÂÁö °Ë»çÇÑ´Ù.
+    // (´Ü, pBindParam ÀÌ NULL ÀÌ¸é °Ë»çÇÏÁö ¾Ê°í ÀÏÄ¡ÇÑ´Ù°í ¹İÈ¯µÈ´Ù.)
     if( sIsMatched == ID_TRUE )
     {
         IDE_TEST( qcgPlan::isMatchedPlanBindInfo( sStatement,
@@ -5546,7 +6007,7 @@ IDE_RC qci::isMatchedEnvironment( qciStatement    * aStatement,
         // Nothing to do
     }
 
-    // ê²€ì‚¬ ê²°ê³¼ë¥¼ ë°˜í™˜
+    // °Ë»ç °á°ú¸¦ ¹İÈ¯
     *aIsMatched = sIsMatched;
 
     return IDE_SUCCESS;
@@ -5575,10 +6036,10 @@ IDE_RC qci::rebuildEnvironment( qciStatement    * aStatement,
 }
 
 //PROJ-1436 SQL Plan Cache
-// soft-prepareê³¼ì •ì—ì„œ planì´ validí•œì§€ë¥¼ ê²€ì‚¬í•œë‹¤.
-// aEnv        -- PCOì— ì´ëŠ” planìƒì„±ì‹œì°¸ì¡°í•˜ì˜€ë˜ environment
+// soft-prepare°úÁ¤¿¡¼­ planÀÌ validÇÑÁö¸¦ °Ë»çÇÑ´Ù.
+// aEnv        -- PCO¿¡ ÀÌ´Â plan»ı¼º½ÃÂüÁ¶ÇÏ¿´´ø environment
 // aSharedPlan -- qcSharedPlan
-IDE_RC qci::validatePlan(
+IDE_RC qci::validatePlanOrg(
     qciGetSmiStatement4PrepareCallback   aGetSmiStmt4PrepareCallback,
     void                               * aGetSmiStmt4PrepareContext,
     qciStatement                       * aStatement,
@@ -5600,19 +6061,11 @@ IDE_RC qci::validatePlan(
     /* BUG-45893 */
     UInt             sUserID = QCG_GET_SESSION_USER_ID( sStatement );
 
-    // BUG-46085
-    IDE_TEST( sStatement->myPlan->qmpMem->getStatus( &sPosition ) != IDE_SUCCESS );
-    sStage2 = 2;
-
-    sObject = & ((qcSharedPlan*) aSharedPlan)->planEnv->planObject;
+    sObject     = & ((qcSharedPlan*) aSharedPlan)->planEnv->planObject;
 
     *aIsValidPlan = ID_TRUE;
 
     qcg::getSmiStmt( sStatement, &sSmiStmtOrg );
-    sStage2 = 3;
-
-    idlOS::memcpy( &sOriEnvInfo, sStatement->spvEnv, ID_SIZEOF(qsvEnvInfo) );
-    sStage2 = 4;
 
     if( sObject->tableList != NULL )
     {
@@ -5682,7 +6135,7 @@ IDE_RC qci::validatePlan(
             // Nothing to do.
         }
 
-        // planì´ ì°¸ì¡°í•˜ëŠ” procì— latchê°€ íšë“ëœ ìƒíƒœì´ë‹¤.
+        // planÀÌ ÂüÁ¶ÇÏ´Â proc¿¡ latch°¡ È¹µæµÈ »óÅÂÀÌ´Ù.
         sStage = 1;
     }
     else
@@ -5714,7 +6167,7 @@ IDE_RC qci::validatePlan(
             // Nothing to do.
         }
 
-        // planì´ ì°¸ì¡°í•˜ëŠ” pkgì— latchê°€ íšë“ëœ ìƒíƒœì´ë‹¤.
+        // planÀÌ ÂüÁ¶ÇÏ´Â pkg¿¡ latch°¡ È¹µæµÈ »óÅÂÀÌ´Ù.
         sStage = 2;
     }
     else
@@ -5724,8 +6177,15 @@ IDE_RC qci::validatePlan(
 
     if( sObject->synonymList != NULL )
     {
-        // synonym ê°ì²´ì˜ ê²€ì‚¬ëŠ” meta tableì„ ì‚¬ìš©í•˜ë¯€ë¡œ
-        // smiStmtê°€ í•„ìš”í•˜ë‹¤.
+        // BUG-46085
+        IDE_TEST( sStatement->myPlan->qmpMem->getStatus( &sPosition ) != IDE_SUCCESS );
+        sStage2 = 2;
+
+        idlOS::memcpy( &sOriEnvInfo, sStatement->spvEnv, ID_SIZEOF(qsvEnvInfo) );
+        sStage2 = 3;
+
+        // synonym °´Ã¼ÀÇ °Ë»ç´Â meta tableÀ» »ç¿ëÇÏ¹Ç·Î
+        // smiStmt°¡ ÇÊ¿äÇÏ´Ù.
         IDE_TEST( qcgPlan::setSmiStmtCallback( sStatement,
                                                aGetSmiStmt4PrepareCallback,
                                                aGetSmiStmt4PrepareContext )
@@ -5735,6 +6195,14 @@ IDE_RC qci::validatePlan(
                                                 sObject->synonymList,
                                                 & sIsValid )
                   != IDE_SUCCESS );
+
+        // BUG-46085
+        sStage2 = 2;
+        idlOS::memcpy( sStatement->spvEnv, &sOriEnvInfo, ID_SIZEOF(qsvEnvInfo) );
+        sStage2 = 1;
+        IDE_TEST( sStatement->myPlan->qmpMem->setStatus( &sPosition ) != IDE_SUCCESS );
+        sStage2 = 0;
+        IDE_TEST( sStatement->myPlan->qmpMem->free( sPosition.mCursor ) != IDE_SUCCESS );
 
         if( sIsValid == ID_FALSE )
         {
@@ -5751,8 +6219,8 @@ IDE_RC qci::validatePlan(
     IDE_EXCEPTION_CONT( INVALID_PLAN );
 
     // BUG-24206
-    // INVALID_PLANìœ¼ë¡œ ì í”„í•œ ê²½ìš° IDE_FAILUREë¡œ ë¦¬í„´í•˜ëŠ” ê²ƒê³¼
-    // ë™ì¼í•˜ê²Œ ì—ëŸ¬ë¥¼ ì²˜ë¦¬í•´ì•¼ í•œë‹¤.
+    // INVALID_PLANÀ¸·Î Á¡ÇÁÇÑ °æ¿ì IDE_FAILURE·Î ¸®ÅÏÇÏ´Â °Í°ú
+    // µ¿ÀÏÇÏ°Ô ¿¡·¯¸¦ Ã³¸®ÇØ¾ß ÇÑ´Ù.
     if( *aIsValidPlan == ID_FALSE )
     {
         switch ( sStage )
@@ -5798,17 +6266,7 @@ IDE_RC qci::validatePlan(
         // Nothing to do.
     }
 
-    // BUG-46085
-    sStage2 = 3;
-    idlOS::memcpy( sStatement->spvEnv, &sOriEnvInfo, ID_SIZEOF(qsvEnvInfo) );
-
-    sStage2 = 2;
     qcg::setSmiStmt( sStatement, sSmiStmtOrg );
-
-    sStage2 = 1;
-    IDE_TEST( sStatement->myPlan->qmpMem->setStatus( &sPosition ) != IDE_SUCCESS );
-    sStage2 = 0;
-    IDE_TEST( sStatement->myPlan->qmpMem->free( sPosition.mCursor ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -5855,10 +6313,8 @@ IDE_RC qci::validatePlan(
     // BUG-46085
     switch( sStage2 )
     {
-        case 4:
-            idlOS::memcpy( sStatement->spvEnv, &sOriEnvInfo, ID_SIZEOF(qsvEnvInfo) );
         case 3:
-            qcg::setSmiStmt( sStatement, sSmiStmtOrg );
+            idlOS::memcpy( sStatement->spvEnv, &sOriEnvInfo, ID_SIZEOF(qsvEnvInfo) );
         case 2:
             (void)sStatement->myPlan->qmpMem->setStatus( &sPosition );
         case 1:
@@ -5868,12 +6324,315 @@ IDE_RC qci::validatePlan(
             break;
     }
 
+    qcg::setSmiStmt( sStatement, sSmiStmtOrg );
+    *aIsValidPlan = ID_FALSE;
+
     return IDE_FAILURE;
 }
 
+IDE_RC qci::validatePlanMode( qciGetSmiStatement4PrepareCallback   aGetSmiStmt4PrepareCallback,
+                              void                               * aGetSmiStmt4PrepareContext,
+                              qciStatement                       * aStatement,
+                              void                               * aSharedPlan,
+                              idBool                             * aIsValidPlan )
+{
+    qcStatement       * sStatement = & aStatement->statement;
+    smiStatement      * sSmiStmtOrg;
+    qcgPlanObject     * sObject;
+    qcgEnvProcList    * sProc;
+    qcgEnvPkgList     * sPkg;
+    idBool              sIsValid;
+    UInt                sStage = 0;
+    ULong               sMemSize1 = 0;
+    ULong               sMemSize2 = 0;
+
+    /* BUG-45893 */
+    UInt             sUserID = QCG_GET_SESSION_USER_ID( sStatement );
+
+    sMemSize1 = sStatement->myPlan->qmpMem->getAllocSize();
+
+    sObject = & ((qcSharedPlan*) aSharedPlan)->planEnv->planObject;
+
+    *aIsValidPlan = ID_TRUE;
+
+    qcg::getSmiStmt( sStatement, &sSmiStmtOrg );
+
+    if ( sObject->tableList != NULL )
+    {
+        IDE_TEST( qcgPlan::validatePlanTable( sObject->tableList,
+                                              sUserID,            /* BUG-45893 */
+                                              & sIsValid )
+                  != IDE_SUCCESS );
+
+        if ( sIsValid == ID_FALSE )
+        {
+            *aIsValidPlan = ID_FALSE;
+
+            IDE_CONT( INVALID_PLAN );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    if ( sObject->sequenceList != NULL )
+    {
+        IDE_TEST( qcgPlan::validatePlanSequence( sObject->sequenceList,
+                                                 & sIsValid )
+                  != IDE_SUCCESS );
+
+        if ( sIsValid == ID_FALSE )
+        {
+            *aIsValidPlan = ID_FALSE;
+
+            IDE_CONT( INVALID_PLAN );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    if ( sObject->procList != NULL )
+    {
+        // PROJ-2446
+        IDE_TEST( qcgPlan::setSmiStmtCallback( sStatement,
+                                               aGetSmiStmt4PrepareCallback,
+                                               aGetSmiStmt4PrepareContext )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( qcgPlan::validatePlanProc( sObject->procList,
+                                             & sIsValid )
+                  != IDE_SUCCESS );
+
+        if ( sIsValid == ID_FALSE )
+        {
+            *aIsValidPlan = ID_FALSE;
+
+            IDE_CONT( INVALID_PLAN );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
+        // planÀÌ ÂüÁ¶ÇÏ´Â proc¿¡ latch°¡ È¹µæµÈ »óÅÂÀÌ´Ù.
+        sStage = 1;
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    // PROJ-1073 Package
+    if ( sObject->pkgList != NULL )
+    {
+        // PROJ-2446
+        IDE_TEST( qcgPlan::setSmiStmtCallback( sStatement,
+                                               aGetSmiStmt4PrepareCallback,
+                                               aGetSmiStmt4PrepareContext )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( qcgPlan::validatePlanPkg( sObject->pkgList,
+                                            & sIsValid )
+                  != IDE_SUCCESS );
+
+        if ( sIsValid == ID_FALSE )
+        {
+            *aIsValidPlan = ID_FALSE;
+
+            IDE_CONT( INVALID_PLAN );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
+        // planÀÌ ÂüÁ¶ÇÏ´Â pkg¿¡ latch°¡ È¹µæµÈ »óÅÂÀÌ´Ù.
+        sStage = 2;
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    if ( sObject->synonymList != NULL )
+    {
+        // synonym °´Ã¼ÀÇ °Ë»ç´Â meta tableÀ» »ç¿ëÇÏ¹Ç·Î
+        // smiStmt°¡ ÇÊ¿äÇÏ´Ù.
+        IDE_TEST( qcgPlan::setSmiStmtCallback( sStatement,
+                                               aGetSmiStmt4PrepareCallback,
+                                               aGetSmiStmt4PrepareContext )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( qcgPlan::validatePlanSynonym( sStatement,
+                                                sObject->synonymList,
+                                                & sIsValid )
+                  != IDE_SUCCESS );
+
+        if ( sIsValid == ID_FALSE )
+        {
+            *aIsValidPlan = ID_FALSE;
+
+            IDE_CONT( INVALID_PLAN );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+    }
+
+    IDE_EXCEPTION_CONT( INVALID_PLAN );
+
+    // BUG-24206
+    // INVALID_PLANÀ¸·Î Á¡ÇÁÇÑ °æ¿ì IDE_FAILURE·Î ¸®ÅÏÇÏ´Â °Í°ú
+    // µ¿ÀÏÇÏ°Ô ¿¡·¯¸¦ Ã³¸®ÇØ¾ß ÇÑ´Ù.
+    if ( *aIsValidPlan == ID_FALSE )
+    {
+        switch ( sStage )
+        {
+            case 2:
+                if ( sObject->pkgList != NULL )
+                {
+                    // unlatch pkg
+                    for ( sPkg = sObject->pkgList;
+                          sPkg != NULL;
+                          sPkg = sPkg->next )
+                    {
+                        (void) qsxPkg::unlatch( sPkg->pkgID );
+                    }
+                }
+                else
+                {
+                    // Nothing to do.
+                }
+            case 1:
+                if ( sObject->procList != NULL )
+                {
+                    // unlatch proc
+                    for ( sProc = sObject->procList;
+                          sProc != NULL;
+                          sProc = sProc->next )
+                    {
+                        (void) qsxProc::unlatch( sProc->procID );
+                    }
+                }
+                else
+                {
+                    // Nothing to do.
+                }
+                break;
+            default:
+                // Nothing to do.
+                break;
+        }
+    }
+    else
+    {
+        /* BUG-48594 È¤½Ã prepare Memory¸¦ ÇÒ´çÇÑ °æ¿ì rebuild¸¦ ½ÃÅ²´Ù.*/
+        sMemSize2 = sStatement->myPlan->qmpMem->getAllocSize();
+        if ( sMemSize1 != sMemSize2 )
+        {
+            *aIsValidPlan = ID_FALSE;
+            ideLog::log( IDE_QP_0, "PLAN CACHE VALIDATE PREPARE MEMORY ERROR[%lu]- [%lu]", sMemSize1, sMemSize2 );
+        }
+    }
+
+    qcg::setSmiStmt( sStatement, sSmiStmtOrg );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    switch ( sStage )
+    {
+        case 2:
+            if ( sObject->pkgList != NULL )
+            {
+                // unlatch pkg
+                for ( sPkg = sObject->pkgList;
+                      sPkg != NULL;
+                      sPkg = sPkg->next )
+                {
+                    (void) qsxPkg::unlatch( sPkg->pkgID );
+                }
+            }
+            else
+            {
+                // Nothing to do.
+            }
+        case 1:
+            if ( sObject->procList != NULL )
+            {
+                // unlatch proc
+                for ( sProc = sObject->procList;
+                      sProc != NULL;
+                      sProc = sProc->next )
+                {
+                    (void) qsxProc::unlatch( sProc->procID );
+                }
+            }
+            else
+            {
+                // Nothing to do.
+            }
+            break;
+        default:
+            // Nothing to do.
+            break;
+    }
+
+    *aIsValidPlan = ID_FALSE;
+    qcg::setSmiStmt( sStatement, sSmiStmtOrg );
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qci::validatePlan(
+    qciGetSmiStatement4PrepareCallback   aGetSmiStmt4PrepareCallback,
+    void                               * aGetSmiStmt4PrepareContext,
+    qciStatement                       * aStatement,
+    void                               * aSharedPlan,
+    idBool                             * aIsValidPlan )
+{
+
+    if ( QCU_SQL_PLAN_CACHE_VALID_MODE == 1 )
+    {
+        IDE_TEST( qci::validatePlanMode( aGetSmiStmt4PrepareCallback,
+                                         aGetSmiStmt4PrepareContext,
+                                         aStatement,
+                                         aSharedPlan,
+                                         aIsValidPlan )
+                  != IDE_SUCCESS )
+    }
+    else
+    {
+        IDE_TEST( qci::validatePlanOrg( aGetSmiStmt4PrepareCallback,
+                                        aGetSmiStmt4PrepareContext,
+                                        aStatement,
+                                        aSharedPlan,
+                                        aIsValidPlan )
+                  != IDE_SUCCESS )
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
 //PROJ-1436 SQL Plan Cache
-// meta ê²€ìƒ‰ë•Œë¬¸ì— smiStatementê°€ í•„ìš”í•˜ë‹¤.
-// aEnv -> PCOì˜ environment
+// meta °Ë»ö¶§¹®¿¡ smiStatement°¡ ÇÊ¿äÇÏ´Ù.
+// aEnv -> PCOÀÇ environment
 IDE_RC qci::checkPrivilege(
     qciGetSmiStatement4PrepareCallback   aGetSmiStmt4PrepareCallback,
     void                               * aGetSmiStmt4PrepareContext,
@@ -5899,7 +6658,7 @@ IDE_RC qci::checkPrivilege(
     qcg::getSmiStmt( sStatement, &sSmiStmtOrg );
 
     if( sPrivilege->tableList != NULL )
-    {
+    {                                              
         IDE_TEST( qcgPlan::checkPlanPrivTable( sStatement,
                                                sPrivilege->tableList,
                                                aGetSmiStmt4PrepareCallback,
@@ -5932,7 +6691,7 @@ IDE_RC qci::checkPrivilege(
                                                aGetSmiStmt4PrepareContext )
                   != IDE_SUCCESS );
 
-        // ì´ë¯¸ latchê°€ íšë“ëœ ìƒíƒœì´ë‹¤.
+        // ÀÌ¹Ì latch°¡ È¹µæµÈ »óÅÂÀÌ´Ù.
 
         IDE_TEST( qcgPlan::checkPlanPrivProc( sStatement,
                                               sObject->procList,
@@ -5963,7 +6722,7 @@ IDE_RC qci::checkPrivilege(
                                                aGetSmiStmt4PrepareContext )
                   != IDE_SUCCESS );
 
-        // ì´ë¯¸ latchê°€ íšë“ëœ ìƒíƒœì.
+        // ÀÌ¹Ì latch°¡ È¹µæµÈ »óÅÂÀÙ.
 
         IDE_TEST( qcgPlan::checkPlanPrivPkg( sStatement,
                                              sObject->pkgList,
@@ -6045,7 +6804,7 @@ IDE_RC qci::checkPrivilege(
 }
 
 //PROJ-1436 SQL Plan Cache
-// aSharedPlan->PCOì˜ sharedplan.
+// aSharedPlan->PCOÀÇ sharedplan.
 IDE_RC qci::clonePrivateTemplate( qciStatement            * aStatement,
                                   void                    * aSharedPlan,
                                   void                    * aPrepPrivateTemplate,
@@ -6056,21 +6815,21 @@ IDE_RC qci::clonePrivateTemplate( qciStatement            * aStatement,
  * Description : PROJ-1436 SQL Plan Cache
  *
  * Implementation :
- *     qcStatementëŠ” plan cache ì…ì¥ì—ì„œ í¬ê²Œ ì„¸ê°€ì§€ í˜•íƒœë¡œ êµ¬ë¶„ëœë‹¤.
+ *     qcStatement´Â plan cache ÀÔÀå¿¡¼­ Å©°Ô ¼¼°¡Áö ÇüÅÂ·Î ±¸ºĞµÈ´Ù.
  *
- *     1. cache ë¹„ëŒ€ìƒì´ê³  ìì‹ ì´ ìƒì„±í•œ planì„ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
- *        - prepareì™€ execute ì‹œì  ëª¨ë‘ myPlan = &privatePlan
- *        - ì›ë³¸ templateì„ ê·¸ëŒ€ë¡œ private templateìœ¼ë¡œ ì‚¬ìš©í•œë‹¤.
- *     2. cache ëŒ€ìƒì´ê³  ìì‹ ì´ ìƒì„±í•œ planì„ ê³µìœ í•˜ì—¬ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
- *        - prepare ì‹œì—ëŠ” myPlan = &privatePlan
- *        - execute ì‹œì—ëŠ” myPlan = &sharedPlan
- *        - ì›ë³¸ templateì„ ë³µì‚¬í•˜ì—¬ private templateì„ ì‚¬ìš©í•œë‹¤.
- *     3. cache ëŒ€ìƒì´ê³  ë‹¤ë¥¸ stmtì— ì˜í•´ ìƒì„±ëœ planì„ ê³µìœ í•˜ì—¬ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
- *        - prepareê°€ ì—†ë‹¤.
- *        - execute ì‹œì—ëŠ” myPlan = &sharedPlan
- *        - ì›ë³¸ templateì„ ë³µì‚¬í•˜ì—¬ private templateì„ ì‚¬ìš©í•œë‹¤.
+ *     1. cache ºñ´ë»óÀÌ°í ÀÚ½ÅÀÌ »ı¼ºÇÑ planÀ» ±×´ë·Î »ç¿ëÇÏ´Â °æ¿ì
+ *        - prepare¿Í execute ½ÃÁ¡ ¸ğµÎ myPlan = &privatePlan
+ *        - ¿øº» templateÀ» ±×´ë·Î private templateÀ¸·Î »ç¿ëÇÑ´Ù.
+ *     2. cache ´ë»óÀÌ°í ÀÚ½ÅÀÌ »ı¼ºÇÑ planÀ» °øÀ¯ÇÏ¿© »ç¿ëÇÏ´Â °æ¿ì
+ *        - prepare ½Ã¿¡´Â myPlan = &privatePlan
+ *        - execute ½Ã¿¡´Â myPlan = &sharedPlan
+ *        - ¿øº» templateÀ» º¹»çÇÏ¿© private templateÀ» »ç¿ëÇÑ´Ù.
+ *     3. cache ´ë»óÀÌ°í ´Ù¸¥ stmt¿¡ ÀÇÇØ »ı¼ºµÈ planÀ» °øÀ¯ÇÏ¿© »ç¿ëÇÏ´Â °æ¿ì
+ *        - prepare°¡ ¾ø´Ù.
+ *        - execute ½Ã¿¡´Â myPlan = &sharedPlan
+ *        - ¿øº» templateÀ» º¹»çÇÏ¿© private templateÀ» »ç¿ëÇÑ´Ù.
  *
- *     2, 3ë²ˆì¸ ê²½ìš°, ì—¬ê¸°ë¡œ ë“¤ì–´ì˜¨ë‹¤.
+ *     2, 3¹øÀÎ °æ¿ì, ¿©±â·Î µé¾î¿Â´Ù.
  *
  ***********************************************************************/
 
@@ -6086,11 +6845,11 @@ IDE_RC qci::clonePrivateTemplate( qciStatement            * aStatement,
     sPrepTemplateHeader = (qcPrepTemplateHeader*) aPrepPrivateTemplate;
 
     //------------------------------------------
-    // shared planì˜ assign
+    // shared planÀÇ assign
     //------------------------------------------
 
-    // shared planì„ statementì˜ planìœ¼ë¡œ ë³µì‚¬í•œë‹¤. PSMì˜ ìˆ˜í–‰ì—ì„œ
-    // statement changeë¥¼ ìˆ˜í–‰í•˜ë¯€ë¡œ shared planì„ ë³µì‚¬í•´ì„œ ì‚¬ìš©í•œë‹¤.
+    // shared planÀ» statementÀÇ planÀ¸·Î º¹»çÇÑ´Ù. PSMÀÇ ¼öÇà¿¡¼­
+    // statement change¸¦ ¼öÇàÇÏ¹Ç·Î shared planÀ» º¹»çÇØ¼­ »ç¿ëÇÑ´Ù.
     idlOS::memcpy( (void*) & sStatement->sharedPlan,
                    (void*) sSharedPlan,
                    ID_SIZEOF(qcSharedPlan) );
@@ -6108,35 +6867,35 @@ IDE_RC qci::clonePrivateTemplate( qciStatement            * aStatement,
     aPlanCacheContext->mStmtType = (qciStmtType) sSharedPlan->parseTree->stmtKind;
 
     //------------------------------------------
-    // procPlanList ìƒì„±
+    // procPlanList »ı¼º
     //------------------------------------------
 
-    // executeì¤‘ ë³€ê²½ë˜ì§€ ì•Šìœ¼ë¯€ë¡œ assignìœ¼ë¡œ ëŒ€ì‹ í•œë‹¤.
+    // executeÁß º¯°æµÇÁö ¾ÊÀ¸¹Ç·Î assignÀ¸·Î ´ë½ÅÇÑ´Ù.
     sStatement->spvEnv->procPlanList = sSharedPlan->procPlanList;
 
     sStatement->spvEnv->latched = ID_FALSE;
 
     //------------------------------------------
-    // prepared private template ì‚¬ìš© í˜¹ì€ private template ìƒì„±
+    // prepared private template »ç¿ë È¤Àº private template »ı¼º
     //------------------------------------------
 
     if( sPrepTemplateHeader != NULL )
     {
         IDE_ASSERT( sPrepTemplateHeader->prepMutex.lock(NULL /* idvSQL* */)
                     == IDE_SUCCESS );
-        /* fix BUG-29965 SQL Plan Cacheì—ì„œ plan execution template ê´€ë¦¬ê°€
-           Dynamic SQL í™˜ê²½ì—ì„œëŠ” ê°œì„ ì´ í•„ìš”í•˜ë‹¤.
-           template í• ë‹¹ì‹œ  ë‹¤ìŒê³¼ ê°™ì´  free listì—ì„œ í• ë‹¹í•œë‹¤.
+        /* fix BUG-29965 SQL Plan Cache¿¡¼­ plan execution template °ü¸®°¡
+           Dynamic SQL È¯°æ¿¡¼­´Â °³¼±ÀÌ ÇÊ¿äÇÏ´Ù.
+           template ÇÒ´ç½Ã  ´ÙÀ½°ú °°ÀÌ  free list¿¡¼­ ÇÒ´çÇÑ´Ù.
         */
         if(IDU_LIST_IS_EMPTY(&(sPrepTemplateHeader->freeList)))
         {
-            /* ë¹„ì–´ ìˆëŠ” ê²½ìš°ì´ì–´ì„œ, ìƒˆë¡œ í• ë‹¹ë°›ì•„ì•¼ í•œë‹¤ */
+            /* ºñ¾î ÀÖ´Â °æ¿ìÀÌ¾î¼­, »õ·Î ÇÒ´ç¹Ş¾Æ¾ß ÇÑ´Ù */
             sUsePrepTemplate = ID_FALSE;
         }
         else
         {
-            /* free listì—ì„œ í•˜ë‚˜ë¥¼ ë„ì–´ë‚´ì–´ í• ë‹¹ë°›ê³ ,
-             used listìœ¼ë¡œ move í•œë‹¤.*/
+            /* free list¿¡¼­ ÇÏ³ª¸¦ ¶ç¾î³»¾î ÇÒ´ç¹Ş°í,
+             used listÀ¸·Î move ÇÑ´Ù.*/
             sPrepListNode = IDU_LIST_GET_FIRST(&(sPrepTemplateHeader->freeList));
             IDU_LIST_REMOVE(sPrepListNode);
             IDU_LIST_ADD_LAST(&(sPrepTemplateHeader->usedList),sPrepListNode);
@@ -6150,8 +6909,8 @@ IDE_RC qci::clonePrivateTemplate( qciStatement            * aStatement,
 
         if( sUsePrepTemplate == ID_FALSE )
         {
-            // prepared private templateì„ ëª¨ë‘ ì‚¬ìš©ì¤‘ì´ì–´ì„œ
-            // ì¶”ê°€ ìƒì„±ì´ í•„ìš”í•œ ê²½ìš°
+            // prepared private templateÀ» ¸ğµÎ »ç¿ëÁßÀÌ¾î¼­
+            // Ãß°¡ »ı¼ºÀÌ ÇÊ¿äÇÑ °æ¿ì
 
             IDE_TEST( allocPrepTemplate( sStatement,
                                          & sPrepTemplate )
@@ -6160,7 +6919,7 @@ IDE_RC qci::clonePrivateTemplate( qciStatement            * aStatement,
             IDE_ASSERT( sPrepTemplateHeader->prepMutex.lock(NULL /* idvSQL* */)
                         == IDE_SUCCESS );
 
-            // ì—°ê²°í•œë‹¤.
+            // ¿¬°áÇÑ´Ù.
             IDU_LIST_ADD_LAST(&(sPrepTemplateHeader->usedList),&(sPrepTemplate->prepListNode));
             IDE_ASSERT( sPrepTemplateHeader->prepMutex.unlock()
                         == IDE_SUCCESS );
@@ -6174,14 +6933,14 @@ IDE_RC qci::clonePrivateTemplate( qciStatement            * aStatement,
     }
     else
     {
-        //fix BUG-30081 qci::clonePrivateTemplateì—ì„œ UMR
+        //fix BUG-30081 qci::clonePrivateTemplate¿¡¼­ UMR
         sUsePrepTemplate = ID_FALSE;
     }
 
     // PROJ-2163
     if( sUsePrepTemplate == ID_TRUE )
     {
-        // private template í• ë‹¹
+        // private template ÇÒ´ç
         QC_PRIVATE_TMPLATE(sStatement) = sPrepTemplate->tmplate;
 
         // BUG-44710
@@ -6199,7 +6958,7 @@ IDE_RC qci::clonePrivateTemplate( qciStatement            * aStatement,
             // Nothing to do.
         }
 
-        // bind parameter í• ë‹¹
+        // bind parameter ÇÒ´ç
         if( sSharedPlan->sBindParamCount > 0 )
         {
             if( sStatement->pBindParam == NULL )
@@ -6217,12 +6976,12 @@ IDE_RC qci::clonePrivateTemplate( qciStatement            * aStatement,
 
                 sStatement->pBindParamCount = sSharedPlan->sBindParamCount;
 
-                // pBindParam ì˜ ê°’ì´ ë°”ë€Œì—ˆë‹¤.
+                // pBindParam ÀÇ °ªÀÌ ¹Ù²î¾ú´Ù.
                 sStatement->pBindParamChangedFlag = ID_TRUE;
             }
             else
             {
-                // ì‚¬ìš©ìê°€ ë°”ì¸ë“œí•œ ì •ë³´ëŠ” ë®ì–´ì“°ì§€ ì•ŠëŠ”ë‹¤.
+                // »ç¿ëÀÚ°¡ ¹ÙÀÎµåÇÑ Á¤º¸´Â µ¤¾î¾²Áö ¾Ê´Â´Ù.
                 // Nothing to do.
             }
         }
@@ -6231,13 +6990,13 @@ IDE_RC qci::clonePrivateTemplate( qciStatement            * aStatement,
             // Nothing to do.
         }
 
-        // prepared private template ì„¤ì •
+        // prepared private template ¼³Á¤
         sStatement->prepTemplateHeader = sPrepTemplateHeader;
         sStatement->prepTemplate = sPrepTemplate;
     }
     else
     {
-        // private template ìƒì„±
+        // private template »ı¼º
         IDE_TEST( qcg::allocPrivateTemplate( sStatement,
                                              QC_QME_MEM(sStatement) )
                   != IDE_SUCCESS );
@@ -6266,7 +7025,7 @@ IDE_RC qci::clonePrivateTemplate( qciStatement            * aStatement,
             // Nothing to do.
         }
 
-        // bind parameter ìƒì„±
+        // bind parameter »ı¼º
         if( sSharedPlan->sBindParamCount > 0 )
         {
             if( sStatement->pBindParam == NULL )
@@ -6284,12 +7043,12 @@ IDE_RC qci::clonePrivateTemplate( qciStatement            * aStatement,
 
                 sStatement->pBindParamCount = sSharedPlan->sBindParamCount;
 
-                // pBindParam ì˜ ê°’ì´ ë°”ë€Œì—ˆë‹¤.
+                // pBindParam ÀÇ °ªÀÌ ¹Ù²î¾ú´Ù.
                 sStatement->pBindParamChangedFlag = ID_TRUE;
             }
             else
             {
-                // ì‚¬ìš©ìê°€ ë°”ì¸ë“œí•œ ì •ë³´ëŠ” ë®ì–´ì“°ì§€ ì•ŠëŠ”ë‹¤.
+                // »ç¿ëÀÚ°¡ ¹ÙÀÎµåÇÑ Á¤º¸´Â µ¤¾î¾²Áö ¾Ê´Â´Ù.
                 // Nothing to do.
             }
         }
@@ -6298,44 +7057,44 @@ IDE_RC qci::clonePrivateTemplate( qciStatement            * aStatement,
             // Nothing to do.
         }
 
-        // prepared private template ì„¤ì •
+        // prepared private template ¼³Á¤
         sStatement->prepTemplateHeader = NULL;
         sStatement->prepTemplate = NULL;
     }
 
     //------------------------------------------
-    // executionì„ ìœ„í•œ ì´ˆê¸°í™”
+    // executionÀ» À§ÇÑ ÃÊ±âÈ­
     //------------------------------------------
 
     IDU_FIT_POINT( "qci::clonePrivateTemplate::BEFORE::qcg::stepAfterPVO" );
     IDE_TEST( qcg::stepAfterPVO( sStatement ) != IDE_SUCCESS );
 
-    // PROJ-2551 simple query ìµœì í™”
-    // simple queryì¸ ê²½ìš° fast executeë¥¼ ìˆ˜í–‰í•œë‹¤.
+    // PROJ-2551 simple query ÃÖÀûÈ­
+    // simple queryÀÎ °æ¿ì fast execute¸¦ ¼öÇàÇÑ´Ù.
     qciMisc::setSimpleFlag( sStatement );
     
     /* BUG-31570
-     * DDLì´ ë¹ˆë²ˆí•œ í™˜ê²½ì—ì„œ plan textë¥¼ ì•ˆì „í•˜ê²Œ ë³´ì—¬ì£¼ëŠ” ë°©ë²•ì´ í•„ìš”í•˜ë‹¤.
+     * DDLÀÌ ºó¹øÇÑ È¯°æ¿¡¼­ plan text¸¦ ¾ÈÀüÇÏ°Ô º¸¿©ÁÖ´Â ¹æ¹ıÀÌ ÇÊ¿äÇÏ´Ù.
      */
     qcg::setPlanTreeState( sStatement, ID_TRUE );
 
-    // BUG-42512 plan ì˜ bind ì •ë³´ì™€ statement ì˜ bind ì •ë³´ë¥¼ ê²€ì¦í•©ë‹ˆë‹¤.
+    // BUG-42512 plan ÀÇ bind Á¤º¸¿Í statement ÀÇ bind Á¤º¸¸¦ °ËÁõÇÕ´Ï´Ù.
     IDU_FIT_POINT( "qci::clonePrivateTemplate::BEFORE::qci::checkBindInfo" );
     IDE_TEST( checkBindInfo( aStatement ) != IDE_SUCCESS );
 
-    // ê³µìœ ëœ planì„ ì‚¬ìš©í•˜ê³  ìˆìŒì„ í‘œì‹œí•œë‹¤.
+    // °øÀ¯µÈ planÀ» »ç¿ëÇÏ°í ÀÖÀ½À» Ç¥½ÃÇÑ´Ù.
     sStatement->sharedFlag = ID_TRUE;
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 
-    /* sStatement->sharedPlanì€ Plan Cacheë¥¼ ë³µì œí•œ ê²ƒì´ë¯€ë¡œ, ì‚¬ìš©í•˜ë©´ ì•ˆ ëœë‹¤. */
+    /* sStatement->sharedPlanÀº Plan Cache¸¦ º¹Á¦ÇÑ °ÍÀÌ¹Ç·Î, »ç¿ëÇÏ¸é ¾È µÈ´Ù. */
     sStatement->myPlan = & sStatement->privatePlan;
 
-    /* BUG-44853 Plan Cache ì˜ˆì™¸ ì²˜ë¦¬ê°€ ë¶€ì¡±í•˜ì—¬, ë¹„ì •ìƒ ì¢…ë£Œê°€ ë°œìƒí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
-     *  Plan Cacheì—ì„œ Planì´ ì œê±°ë˜ë©´, Private Templateë„ ê°™ì´ í•´ì œëœë‹¤.
-     *  ë”°ë¼ì„œ, Private Templateì„ ë¯¸ë¦¬ ë°˜ë‚©í•˜ì—¬, Plan Cacheì—ì„œ í•´ì œí•œ ë©”ëª¨ë¦¬ë¥¼ ì‚¬ìš©í•˜ëŠ” ë¬¸ì œë¥¼ ë°©ì§€í•œë‹¤.
+    /* BUG-44853 Plan Cache ¿¹¿Ü Ã³¸®°¡ ºÎÁ·ÇÏ¿©, ºñÁ¤»ó Á¾·á°¡ ¹ß»ıÇÒ ¼ö ÀÖ½À´Ï´Ù.
+     *  Plan Cache¿¡¼­ PlanÀÌ Á¦°ÅµÇ¸é, Private Templateµµ °°ÀÌ ÇØÁ¦µÈ´Ù.
+     *  µû¶ó¼­, Private TemplateÀ» ¹Ì¸® ¹İ³³ÇÏ¿©, Plan Cache¿¡¼­ ÇØÁ¦ÇÑ ¸Ş¸ğ¸®¸¦ »ç¿ëÇÏ´Â ¹®Á¦¸¦ ¹æÁöÇÑ´Ù.
      */
     if ( sPrepTemplate != NULL )
     {
@@ -6360,12 +7119,12 @@ IDE_RC qci::setPrivateTemplate( qciStatement            * aStatement,
 
     if( aInResult == QCI_SQL_PLAN_CACHE_IN_FAILURE )
     {
-        // check-inì´ ì‹¤íŒ¨í•˜ì—¬ í˜¸ì¶œëœ ê²½ìš°
+        // check-inÀÌ ½ÇÆĞÇÏ¿© È£ÃâµÈ °æ¿ì
         IDE_DASSERT( aSharedPlan != NULL );
         sSharedPlan = (qcSharedPlan *)aSharedPlan;
 
-        /* BUG-44853 Plan Cache ì˜ˆì™¸ ì²˜ë¦¬ê°€ ë¶€ì¡±í•˜ì—¬, ë¹„ì •ìƒ ì¢…ë£Œê°€ ë°œìƒí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
-         *  qci::makePlanCacheInfo()ì—ì„œ ë§Œë“  QMP Memoryì™€ QMU Memoryë¥¼ ì œê±°í•œë‹¤.
+        /* BUG-44853 Plan Cache ¿¹¿Ü Ã³¸®°¡ ºÎÁ·ÇÏ¿©, ºñÁ¤»ó Á¾·á°¡ ¹ß»ıÇÒ ¼ö ÀÖ½À´Ï´Ù.
+         *  qci::makePlanCacheInfo()¿¡¼­ ¸¸µç QMP Memory¿Í QMU Memory¸¦ Á¦°ÅÇÑ´Ù.
          */
         sQmpMem             = sSharedPlan->qmpMem;
         sSharedPlan->qmpMem = QC_QMP_MEM(sStatement);
@@ -6379,7 +7138,7 @@ IDE_RC qci::setPrivateTemplate( qciStatement            * aStatement,
 
         sStatement->qmpStackPosition = sStatement->mQmpStackPositionForCheckInFailure;
 
-        // ì‚­ì œí–ˆë˜ ì›ë³¸ templateì˜ tuple rowë¥¼ ì¬ìƒì„±í•œë‹¤.
+        // »èÁ¦Çß´ø ¿øº» templateÀÇ tuple row¸¦ Àç»ı¼ºÇÑ´Ù.
         IDE_TEST( qcgPlan::allocUnusedTupleRow( sStatement->myPlan )
                   != IDE_SUCCESS );
     }
@@ -6450,15 +7209,15 @@ qci::makePlanCacheInfo( qciStatement           * aStatement,
     IDE_DASSERT( sStatement->myPlan->planEnv != NULL );
 
     //------------------------------------------
-    // plan environment ì„¤ì •
+    // plan environment ¼³Á¤
     //------------------------------------------
 
-    // planì„ ìƒì„±í•œ user idë¥¼ ì„¤ì •í•œë‹¤.
+    // planÀ» »ı¼ºÇÑ user id¸¦ ¼³Á¤ÇÑ´Ù.
     sStatement->myPlan->planEnv->planUserID =
         QCG_GET_SESSION_USER_ID( sStatement );
 
     //------------------------------------------
-    // myPlan ë³µì‚¬
+    // myPlan º¹»ç
     //------------------------------------------
 
     IDE_TEST( QC_QMP_MEM(sStatement)->alloc( ID_SIZEOF(qcSharedPlan),
@@ -6469,15 +7228,15 @@ qci::makePlanCacheInfo( qciStatement           * aStatement,
                    (void*)sStatement->myPlan,
                    ID_SIZEOF(qcSharedPlan) );
 
-    /* Plan Cacheë¥¼ ë§Œë“¤ê¸° ìœ„í•´, Shared Planì„ ì ì‹œ ì‚¬ìš©í•œë‹¤. */
+    /* Plan Cache¸¦ ¸¸µé±â À§ÇØ, Shared PlanÀ» Àá½Ã »ç¿ëÇÑ´Ù. */
     sStatement->myPlan = sSharedPlan;
 
-    // statementì™€ì˜ ì—°ê²°ì„ ëŠëŠ”ë‹¤.
+    // statement¿ÍÀÇ ¿¬°áÀ» ²÷´Â´Ù.
     IDE_ERROR(QC_SHARED_TMPLATE(sStatement)->stmt == sStatement);
     QC_SHARED_TMPLATE(sStatement)->stmt = NULL;
 
     //------------------------------------------
-    // procPlanList ë³µì‚¬
+    // procPlanList º¹»ç
     //------------------------------------------
 
     for( sProcPlan = sStatement->spvEnv->procPlanList;
@@ -6494,22 +7253,22 @@ qci::makePlanCacheInfo( qciStatement           * aStatement,
 
         sProc->next = sSharedPlan->procPlanList;
 
-        // ì—°ê²°í•œë‹¤.
+        // ¿¬°áÇÑ´Ù.
         sSharedPlan->procPlanList = sProc;
     }
 
     //------------------------------------------
-    // shared plan í¬ê¸° ì¤„ì´ê¸° tip
+    // shared plan Å©±â ÁÙÀÌ±â tip
     //------------------------------------------
 
-    // variable/intermediate/table tupleì˜ rowëŠ” ì›ë³¸ templateìœ¼ë¡œì¨
-    // rowMaxinum ì •ë³´ë§Œì´ í•„ìš”í• ë¿ row ìì²´ëŠ” ì‚¬ìš©ë˜ì§€ ì•Šìœ¼ë¯€ë¡œ
-    // freeê°€ ê°€ëŠ¥í•˜ë‹¤.
+    // variable/intermediate/table tupleÀÇ row´Â ¿øº» templateÀ¸·Î½á
+    // rowMaxinum Á¤º¸¸¸ÀÌ ÇÊ¿äÇÒ»Ó row ÀÚÃ¼´Â »ç¿ëµÇÁö ¾ÊÀ¸¹Ç·Î
+    // free°¡ °¡´ÉÇÏ´Ù.
     IDE_TEST( qcgPlan::freeUnusedTupleRow( sSharedPlan )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // plan memory ë°±ì—…
+    // plan memory ¹é¾÷
     //------------------------------------------
 
     if ( QCU_EXECUTION_PLAN_MEMORY_CHECK == 1 )
@@ -6519,11 +7278,11 @@ qci::makePlanCacheInfo( qciStatement           * aStatement,
         
         sSharedPlan->qmuMem = new (sAllocPtr) iduVarMemList;
         
-        /* BUG-33688 iduVarMemListì˜ init ì´ ì‹¤íŒ¨í• ìˆ˜ ìˆìŠµë‹ˆë‹¤. */
+        /* BUG-33688 iduVarMemListÀÇ init ÀÌ ½ÇÆĞÇÒ¼ö ÀÖ½À´Ï´Ù. */
         IDE_TEST( sSharedPlan->qmuMem->init(IDU_MEM_QMP) != IDE_SUCCESS);
         sIsQmuInited = ID_TRUE;
 
-        // qmpMemì„ qmuMemìœ¼ë¡œ ë³µì œí•œë‹¤.
+        // qmpMemÀ» qmuMemÀ¸·Î º¹Á¦ÇÑ´Ù.
         IDE_TEST( sSharedPlan->qmpMem->clone( sSharedPlan->qmuMem )
                   != IDE_SUCCESS );
         
@@ -6540,14 +7299,14 @@ qci::makePlanCacheInfo( qciStatement           * aStatement,
     }
 
     //------------------------------------------
-    // prepared private templateì„ ìƒì„±í•œë‹¤.
+    // prepared private templateÀ» »ı¼ºÇÑ´Ù.
     //------------------------------------------
 
     sPrepContextCnt = QCU_SQL_PLAN_CACHE_PREPARED_EXECUTION_CONTEXT_CNT;
 
     if( sPrepContextCnt > 0 )
     {
-        // pmhMemì„ ìƒì„±í•œë‹¤.
+        // pmhMemÀ» »ı¼ºÇÑ´Ù.
         /* PROJ-2109 : Remove the bottleneck of alloc/free stmts. */
         IDE_TEST( qcg::allocIduVarMemList(&sAllocPtr)
                   != IDE_SUCCESS);
@@ -6556,15 +7315,15 @@ qci::makePlanCacheInfo( qciStatement           * aStatement,
         IDE_TEST( sPmhMem->init(IDU_MEM_QMP) != IDE_SUCCESS);
         sIsPmhInited = ID_TRUE;
 
-        // pmhMemìœ¼ë¡œ sPrepTemplateHeaderì„ ìƒì„±í•œë‹¤.
+        // pmhMemÀ¸·Î sPrepTemplateHeaderÀ» »ı¼ºÇÑ´Ù.
         IDE_TEST( sPmhMem->alloc( ID_SIZEOF(qcPrepTemplateHeader),
                                   (void**)&sPrepTemplateHeader )
                   != IDE_SUCCESS );
 
-        // sPrepTemplateHeaderë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+        // sPrepTemplateHeader¸¦ ÃÊ±âÈ­ÇÑ´Ù.
         sPrepTemplateHeader->pmhMem       = sPmhMem;
-        /* fix BUG-29965 SQL Plan Cacheì—ì„œ plan execution template ê´€ë¦¬ê°€
-           Dynamic SQL í™˜ê²½ì—ì„œëŠ” ê°œì„ ì´ í•„ìš”í•˜ë‹¤.
+        /* fix BUG-29965 SQL Plan Cache¿¡¼­ plan execution template °ü¸®°¡
+           Dynamic SQL È¯°æ¿¡¼­´Â °³¼±ÀÌ ÇÊ¿äÇÏ´Ù.
         */
         sPrepTemplateHeader->freeCount    = 0;
         IDU_LIST_INIT(&(sPrepTemplateHeader->freeList));
@@ -6582,10 +7341,10 @@ qci::makePlanCacheInfo( qciStatement           * aStatement,
             IDE_TEST( allocPrepTemplate( sStatement,
                                          & sPrepTemplate )
                       != IDE_SUCCESS );
-            // ì—°ê²°í•œë‹¤.
-            /* fix BUG-29965 SQL Plan Cacheì—ì„œ plan execution template ê´€ë¦¬ê°€
-               Dynamic SQL í™˜ê²½ì—ì„œëŠ” ê°œì„ ì´ í•„ìš”í•˜ë‹¤.
-               free listì—  prepared execution templateë¥¼  ì¶”ê°€í•œë‹¤.
+            // ¿¬°áÇÑ´Ù.
+            /* fix BUG-29965 SQL Plan Cache¿¡¼­ plan execution template °ü¸®°¡
+               Dynamic SQL È¯°æ¿¡¼­´Â °³¼±ÀÌ ÇÊ¿äÇÏ´Ù.
+               free list¿¡  prepared execution template¸¦  Ãß°¡ÇÑ´Ù.
             */
             IDU_LIST_ADD_LAST(&(sPrepTemplateHeader->freeList), &(sPrepTemplate->prepListNode));
             sPrepTemplateHeader->freeCount++;
@@ -6598,7 +7357,7 @@ qci::makePlanCacheInfo( qciStatement           * aStatement,
     }
 
     //------------------------------------------
-    // aPlanCacheContextë¥¼ ì±„ìš´ë‹¤.
+    // aPlanCacheContext¸¦ Ã¤¿î´Ù.
     //------------------------------------------
 
     // shared plan
@@ -6613,8 +7372,8 @@ qci::makePlanCacheInfo( qciStatement           * aStatement,
         aPlanCacheContext->mPrepPrivateTemplateSize +=
             (UInt) sPrepTemplateHeader->pmhMem->getAllocSize();
 
-        /* fix BUG-29965 SQL Plan Cacheì—ì„œ plan execution template ê´€ë¦¬ê°€
-           Dynamic SQL í™˜ê²½ì—ì„œëŠ” ê°œì„ ì´ í•„ìš”í•˜ë‹¤.
+        /* fix BUG-29965 SQL Plan Cache¿¡¼­ plan execution template °ü¸®°¡
+           Dynamic SQL È¯°æ¿¡¼­´Â °³¼±ÀÌ ÇÊ¿äÇÏ´Ù.
         */
         IDU_LIST_ITERATE(&(sPrepTemplateHeader->freeList),sIterator)
         {
@@ -6636,10 +7395,10 @@ qci::makePlanCacheInfo( qciStatement           * aStatement,
     aPlanCacheContext->mPlanBindInfo = sSharedPlan->planEnv->planBindInfo;
 
     //------------------------------------------
-    // BUG-44853 qcStatementì˜ ì¬ì‚¬ìš©ì‹œ ì‚¬ìš©í•  QMP Memoryì™€ Shared Templateì„ ìƒì„±í•œë‹¤.
+    // BUG-44853 qcStatementÀÇ Àç»ç¿ë½Ã »ç¿ëÇÒ QMP Memory¿Í Shared TemplateÀ» »ı¼ºÇÑ´Ù.
     //------------------------------------------
 
-    /* Plan Cacheë¥¼ ë§Œë“¤ì—ˆìœ¼ë¯€ë¡œ, Private Planì„ ì‚¬ìš©í•œë‹¤. */
+    /* Plan Cache¸¦ ¸¸µé¾úÀ¸¹Ç·Î, Private PlanÀ» »ç¿ëÇÑ´Ù. */
     sStatement->myPlan = & sStatement->privatePlan;
 
     /* PROJ-2109 : Remove the bottleneck of alloc/free stmts. */
@@ -6697,10 +7456,10 @@ qci::makePlanCacheInfo( qciStatement           * aStatement,
         if( sPrepTemplateHeader != NULL )
         {
 
-        /* fix BUG-29965 SQL Plan Cacheì—ì„œ plan execution template ê´€ë¦¬ê°€
-           Dynamic SQL í™˜ê²½ì—ì„œëŠ” ê°œì„ ì´ í•„ìš”í•˜ë‹¤.
-           used listë¥¼  free listì— jointì‹œì¼œ í•˜ë‚˜ì˜ listìœ¼ë¡œ ë§Œë“¤ê³ ë‚˜ì„œ
-           prepared execution templateë“¤ì„ í•´ì œí•œë‹¤.
+        /* fix BUG-29965 SQL Plan Cache¿¡¼­ plan execution template °ü¸®°¡
+           Dynamic SQL È¯°æ¿¡¼­´Â °³¼±ÀÌ ÇÊ¿äÇÏ´Ù.
+           used list¸¦  free list¿¡ joint½ÃÄÑ ÇÏ³ªÀÇ listÀ¸·Î ¸¸µé°í³ª¼­
+           prepared execution templateµéÀ» ÇØÁ¦ÇÑ´Ù.
           */       
             IDU_LIST_JOIN_LIST(&(sPrepTemplateHeader->freeList),&(sPrepTemplateHeader->usedList));
             IDU_LIST_ITERATE_SAFE(&(sPrepTemplateHeader->freeList),sIterator,sNodeNext)
@@ -6733,7 +7492,7 @@ qci::makePlanCacheInfo( qciStatement           * aStatement,
         }
     }
 
-    /* sSharedPlanì€ sStatement->privatePlanì„ ë³µì œí•œ ê²ƒì´ë¯€ë¡œ, ì‚¬ìš©í•˜ë©´ ì•ˆ ëœë‹¤. */
+    /* sSharedPlanÀº sStatement->privatePlanÀ» º¹Á¦ÇÑ °ÍÀÌ¹Ç·Î, »ç¿ëÇÏ¸é ¾È µÈ´Ù. */
     sStatement->myPlan = & sStatement->privatePlan;
 
     // BUG-35828
@@ -6777,22 +7536,22 @@ IDE_RC qci::allocPrepTemplate( qcStatement     * aStatement,
     iduVarMemList    * sPmtMem = NULL;
     idBool             sIsInited = ID_FALSE;
 
-    // pmhMemì„ ìƒì„±í•œë‹¤.
+    // pmhMemÀ» »ı¼ºÇÑ´Ù.
     /* PROJ-2109 : Remove the bottleneck of alloc/free stmts. */
     IDE_TEST( qcg::allocIduVarMemList((void**)&sAllocPtr) != IDE_SUCCESS);
     
     sPmtMem = new (sAllocPtr) iduVarMemList;
 
-    /* BUG-33688 iduVarMemListì˜ init ì´ ì‹¤íŒ¨í• ìˆ˜ ìˆìŠµë‹ˆë‹¤. */
+    /* BUG-33688 iduVarMemListÀÇ init ÀÌ ½ÇÆĞÇÒ¼ö ÀÖ½À´Ï´Ù. */
     IDE_TEST( sPmtMem->init(IDU_MEM_QMP) != IDE_SUCCESS);
     sIsInited = ID_TRUE;
 
     // 1681 MERGE
-    // allocPrivateTemplateì—ì„œ session languageë¥¼ í•„ìš”ë¡œ í•˜ë¯€ë¡œ
-    // dummy statementì— sessionì„ ì—°ê²°í•´ ì¤€ë‹¤.
+    // allocPrivateTemplate¿¡¼­ session language¸¦ ÇÊ¿ä·Î ÇÏ¹Ç·Î
+    // dummy statement¿¡ sessionÀ» ¿¬°áÇØ ÁØ´Ù.
     sDummyStatement.session = aStatement->session;
 
-    // private templateì„ ìƒì„±í•œë‹¤.
+    // private templateÀ» »ı¼ºÇÑ´Ù.
     IDE_TEST( qcg::allocPrivateTemplate( &sDummyStatement,
                                          sPmtMem )
               != IDE_SUCCESS );
@@ -6802,7 +7561,7 @@ IDE_RC qci::allocPrepTemplate( qcStatement     * aStatement,
                                   QC_PRIVATE_TMPLATE(&sDummyStatement) )
               != IDE_SUCCESS );
 
-    // bind param infoë¥¼ ìƒì„±í•œë‹¤.
+    // bind param info¸¦ »ı¼ºÇÑ´Ù.
     if( aStatement->myPlan->sBindParamCount > 0 )
     {
         IDE_TEST( sPmtMem->alloc( ID_SIZEOF(qciBindParamInfo) *
@@ -6815,7 +7574,7 @@ IDE_RC qci::allocPrepTemplate( qcStatement     * aStatement,
         // Nothing to do.
     }
 
-    // prepared templateì„ ìƒì„±í•œë‹¤.
+    // prepared templateÀ» »ı¼ºÇÑ´Ù.
     IDE_TEST( sPmtMem->alloc( ID_SIZEOF(qcPrepTemplate),
                               (void**)& sPrepTemplate )
               != IDE_SUCCESS );
@@ -6824,10 +7583,10 @@ IDE_RC qci::allocPrepTemplate( qcStatement     * aStatement,
     qmxResultCache::allocResultCacheData( QC_PRIVATE_TMPLATE( &sDummyStatement ),
                                           sPmtMem );
 
-    // aTemplateListë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+    // aTemplateList¸¦ ÃÊ±âÈ­ÇÑ´Ù.
     sPrepTemplate->pmtMem    = sPmtMem;
-    /* fix BUG-29965 SQL Plan Cacheì—ì„œ plan execution template ê´€ë¦¬ê°€
-       Dynamic SQL í™˜ê²½ì—ì„œëŠ” ê°œì„ ì´ í•„ìš”í•˜ë‹¤.
+    /* fix BUG-29965 SQL Plan Cache¿¡¼­ plan execution template °ü¸®°¡
+       Dynamic SQL È¯°æ¿¡¼­´Â °³¼±ÀÌ ÇÊ¿äÇÏ´Ù.
     */
     IDU_LIST_INIT_OBJ(&(sPrepTemplate->prepListNode),sPrepTemplate);
     sPrepTemplate->tmplate   = QC_PRIVATE_TMPLATE(&sDummyStatement);
@@ -6895,8 +7654,8 @@ IDE_RC qci::freeSharedPlan( void * aSharedPlan )
     
     sSharedPlan = (qcSharedPlan *) aSharedPlan;
 
-    // sSharedPlanì€ qmpMemìœ¼ë¡œ ìƒì„±ë˜ì—ˆìœ¼ë¯€ë¡œ
-    // qmpMem í•´ì œì™€ í•¨ê»˜ íŒŒê´´ë˜ë¯€ë¡œ ë¯¸ë¦¬ ê¸°ì–µí•´ë‘”ë‹¤.
+    // sSharedPlanÀº qmpMemÀ¸·Î »ı¼ºµÇ¾úÀ¸¹Ç·Î
+    // qmpMem ÇØÁ¦¿Í ÇÔ²² ÆÄ±«µÇ¹Ç·Î ¹Ì¸® ±â¾ïÇØµĞ´Ù.
     sQmpMem = sSharedPlan->qmpMem;
     sQmuMem = sSharedPlan->qmuMem;
     
@@ -6946,14 +7705,14 @@ IDE_RC qci::freePrepPrivateTemplate( void * aPrepPrivateTemplate )
     iduListNode           * sIterator;
     iduListNode           * sNodeNext;
 
-    // aPrepTemplateHeaderëŠ” propertyì— ì˜í•´ NULLì´ ë  ìˆ˜ ìˆë‹¤.
+    // aPrepTemplateHeader´Â property¿¡ ÀÇÇØ NULLÀÌ µÉ ¼ö ÀÖ´Ù.
     if( aPrepPrivateTemplate != NULL )
     {
         sPrepTemplateHeader = (qcPrepTemplateHeader *) aPrepPrivateTemplate;
-        /* fix BUG-29965 SQL Plan Cacheì—ì„œ plan execution template ê´€ë¦¬ê°€
-           Dynamic SQL í™˜ê²½ì—ì„œëŠ” ê°œì„ ì´ í•„ìš”í•˜ë‹¤.
-           used listë¥¼  free listì— jointì‹œì¼œ í•˜ë‚˜ì˜ listìœ¼ë¡œ ë§Œë“¤ê³ ë‚˜ì„œ
-           prepared execution templateë“¤ì„ í•´ì œí•œë‹¤.
+        /* fix BUG-29965 SQL Plan Cache¿¡¼­ plan execution template °ü¸®°¡
+           Dynamic SQL È¯°æ¿¡¼­´Â °³¼±ÀÌ ÇÊ¿äÇÏ´Ù.
+           used list¸¦  free list¿¡ joint½ÃÄÑ ÇÏ³ªÀÇ listÀ¸·Î ¸¸µé°í³ª¼­
+           prepared execution templateµéÀ» ÇØÁ¦ÇÑ´Ù.
         */
         IDU_LIST_JOIN_LIST(&(sPrepTemplateHeader->freeList),&(sPrepTemplateHeader->usedList));
         IDU_LIST_ITERATE_SAFE(&(sPrepTemplateHeader->freeList),sIterator,sNodeNext)
@@ -6963,11 +7722,11 @@ IDE_RC qci::freePrepPrivateTemplate( void * aPrepPrivateTemplate )
                       != IDE_SUCCESS );
         }
          
-        // mutexë¥¼ ì‚­ì œí•œë‹¤.
+        // mutex¸¦ »èÁ¦ÇÑ´Ù.
         IDE_TEST( sPrepTemplateHeader->prepMutex.destroy() != IDE_SUCCESS );
     
-        // sPrepTemplateHeaderì€ pmhMemìœ¼ë¡œ ìƒì„±ë˜ì—ˆìœ¼ë¯€ë¡œ
-        // pmhMem í•´ì œì™€ í•¨ê»˜ íŒŒê´´ë˜ë¯€ë¡œ ë¯¸ë¦¬ ê¸°ì–µí•´ë‘”ë‹¤.
+        // sPrepTemplateHeaderÀº pmhMemÀ¸·Î »ı¼ºµÇ¾úÀ¸¹Ç·Î
+        // pmhMem ÇØÁ¦¿Í ÇÔ²² ÆÄ±«µÇ¹Ç·Î ¹Ì¸® ±â¾ïÇØµĞ´Ù.
         sPmhMem = sPrepTemplateHeader->pmhMem;
         
         if( sPmhMem != NULL )
@@ -7092,19 +7851,19 @@ IDE_RC qci::atomicSetPrepareState( qciStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *      Atomic insert ì˜ ë°˜ë³µ ìˆ˜í–‰ì„ ìœ„í•œ ìƒíƒœ ë³€ê²½ í•¨ìˆ˜
- *      ê¸°ì¡´ checkExecFuncAndSetEnv ì—ì„œëŠ” ë‹¤ìŒê³¼ ê°™ì€ ì²˜ë¦¬ë¥¼ í•œë‹¤.
+ *      Atomic insert ÀÇ ¹İº¹ ¼öÇàÀ» À§ÇÑ »óÅÂ º¯°æ ÇÔ¼ö
+ *      ±âÁ¸ checkExecFuncAndSetEnv ¿¡¼­´Â ´ÙÀ½°ú °°Àº Ã³¸®¸¦ ÇÑ´Ù.
  *      STATE_OK | STATE_CLOSE | STATE_PSM_UNLATCH | STATE_PARAM_DATA_CLEAR
- *      STATE_CLOSE ëŠ” ì´ê³³ì—ì„œ í•˜ë©´ ë¬¸ì œê°€ ë°œìƒí•œë‹¤.
- *      STATE_PSM_UNLATCHëŠ” ê³„ì† ìˆ˜í–‰ì„ í•´ì•¼ í•˜ë¯€ë¡œ í•„ìš”ì„±ì´ ì—†ë‹¤.
- *      ë”°ë¼ì„œ ì´ í•¨ìˆ˜ì—ì„œëŠ” STATE_PARAM_DATA_CLEAR ë§Œ ì²˜ë¦¬í•œë‹¤.
+ *      STATE_CLOSE ´Â ÀÌ°÷¿¡¼­ ÇÏ¸é ¹®Á¦°¡ ¹ß»ıÇÑ´Ù.
+ *      STATE_PSM_UNLATCH´Â °è¼Ó ¼öÇàÀ» ÇØ¾ß ÇÏ¹Ç·Î ÇÊ¿ä¼ºÀÌ ¾ø´Ù.
+ *      µû¶ó¼­ ÀÌ ÇÔ¼ö¿¡¼­´Â STATE_PARAM_DATA_CLEAR ¸¸ Ã³¸®ÇÑ´Ù.
  *
  *      PROJ-2163
- *      EXEC_EXECUTE -> EXEC_PREPARE ë¡œ ìƒíƒœì „í™˜
+ *      EXEC_EXECUTE -> EXEC_PREPARE ·Î »óÅÂÀüÈ¯
  *
  * Implementation :
- *      1. STATE_PARAM_DATA_CLEAR ë¥¼ ìœ„í•´ data bound flag ë¥¼ flase ë¡œ ì„¸íŒ…
- *      2. QCI statement state ë¥¼ PREPARED ë¡œ ë³€ê²½
+ *      1. STATE_PARAM_DATA_CLEAR ¸¦ À§ÇØ data bound flag ¸¦ flase ·Î ¼¼ÆÃ
+ *      2. QCI statement state ¸¦ PREPARED ·Î º¯°æ
  *
  ***********************************************************************/
 
@@ -7123,7 +7882,7 @@ IDE_RC qci::atomicSetPrepareState( qciStatement * aStatement)
     }
     else
     {
-        // parameterê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°.
+        // parameter°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì.
         // Nothing To Do
     }
 
@@ -7162,8 +7921,8 @@ IDE_RC qci::atomicEnd( qciStatement  * aStatement )
     return IDE_FAILURE;
 }
 
-// atomicFinalize í•¨ìˆ˜ëŠ” Finalize ìƒíƒœì—ì„œ í˜¸ì¶œë˜ëŠ”ê²ƒì´ ì•„ë‹ˆë‹¤
-// MMì—ì„œ clearStmt ë“± Stmtê°€ ëë‚¬ì„ë•Œ Atomic ê´€ë ¨ ìì›ì„ ì •ë¦¬ìš©
+// atomicFinalize ÇÔ¼ö´Â Finalize »óÅÂ¿¡¼­ È£ÃâµÇ´Â°ÍÀÌ ¾Æ´Ï´Ù
+// MM¿¡¼­ clearStmt µî Stmt°¡ ³¡³µÀ»¶§ Atomic °ü·Ã ÀÚ¿øÀ» Á¤¸®¿ë
 void qci::atomicFinalize( qciStatement    * aStatement,
                           idBool          * aIsCursorOpen,
                           smiStatement    * aSmiStmt )
@@ -7173,7 +7932,7 @@ void qci::atomicFinalize( qciStatement    * aStatement,
     qcg::setSmiStmt( sStatement, aSmiStmt );
 
     // PROJ-1518
-    // sessionì´ ê°‘ìê¸° ì¢…ë£Œë˜ì—ˆì„ë•Œ ì»¤ì„œë¥¼ close í•´ì•¼ í•œë‹¤.
+    // sessionÀÌ °©ÀÚ±â Á¾·áµÇ¾úÀ»¶§ Ä¿¼­¸¦ close ÇØ¾ß ÇÑ´Ù.
     if((*aIsCursorOpen) == ID_TRUE)
     {
         (*aIsCursorOpen) = ID_FALSE;
@@ -7181,8 +7940,8 @@ void qci::atomicFinalize( qciStatement    * aStatement,
         (void) qmx::atomicExecuteFinalize( sStatement );
     }
 
-    // Atomic Execute ì¤‘ session ì´ ì¢…ë£Œë˜ì—ˆì„ë•Œ
-    // ìƒíƒœê°€ EXEC_BIND_PARAM_INFO, EXEC_BIND_PARAM_DATA ì¼ ìˆ˜ ìˆë‹¤.
+    // Atomic Execute Áß session ÀÌ Á¾·áµÇ¾úÀ»¶§
+    // »óÅÂ°¡ EXEC_BIND_PARAM_INFO, EXEC_BIND_PARAM_DATA ÀÏ ¼ö ÀÖ´Ù.
     if( sStatement->spvEnv->latched == ID_TRUE )
     {
         if ( qsxRelatedProc::unlatchObjects( sStatement->spvEnv->procPlanList )
@@ -7206,11 +7965,11 @@ IDE_RC qci::setBindTuple( qciStatement * aStatement )
 /***********************************************************************
  *
  * Description : PROJ-2163
- *      Variable tuple ì˜ row ê°€ pBindParam ì˜ data ë¥¼ ì°¸ì¡°í•˜ë„ë¡ ì„¸íŒ…í•œë‹¤.
+ *      Variable tuple ÀÇ row °¡ pBindParam ÀÇ data ¸¦ ÂüÁ¶ÇÏµµ·Ï ¼¼ÆÃÇÑ´Ù.
  *
  * Implementation :
- *      1. Variable tuple ì˜ row ì— pBindParam->data ì£¼ì†Œë¥¼ ì„¸íŒ…
- *      2. QCI statement state ë¥¼ DATA_BOUND ë¡œ ë³€ê²½
+ *      1. Variable tuple ÀÇ row ¿¡ pBindParam->data ÁÖ¼Ò¸¦ ¼¼ÆÃ
+ *      2. QCI statement state ¸¦ DATA_BOUND ·Î º¯°æ
  *
  ***********************************************************************/
 
@@ -7227,7 +7986,7 @@ IDE_RC qci::setBindTuple( qciStatement * aStatement )
         sTemplate  = QC_PRIVATE_TMPLATE(sStatement);
         sBindTuple = sTemplate->tmplate.variableRow;
 
-        // variableTuple ì˜ row ê°€ pBindParam->data ë¥¼ ì°¸ì¡° (pointer set)
+        // variableTuple ÀÇ row °¡ pBindParam->data ¸¦ ÂüÁ¶ (pointer set)
         sTemplate->tmplate.rows[sBindTuple].row = sStatement->pBindParam->param.data;
     }
 
@@ -7245,16 +8004,16 @@ idBool qci::isBindChanged( qciStatement * aStatement )
 /***********************************************************************
  *
  * Description : PROJ-2163
- *      Plan ì˜ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ íƒ€ì… ì •ë³´ì™€ ì‚¬ìš©ìê°€ ë°”ì¸ë“œí•œ íƒ€ì… ì •ë³´ë¥¼
- *      ë¹„êµí•˜ì—¬ ì„œë¡œ ë‹¤ë¥¸ì§€ ê²€ì‚¬í•˜ëŠ” í•¨ìˆ˜.
+ *      Plan ÀÇ È£½ºÆ® º¯¼ö Å¸ÀÔ Á¤º¸¿Í »ç¿ëÀÚ°¡ ¹ÙÀÎµåÇÑ Å¸ÀÔ Á¤º¸¸¦
+ *      ºñ±³ÇÏ¿© ¼­·Î ´Ù¸¥Áö °Ë»çÇÏ´Â ÇÔ¼ö.
  *
- *      Plan ì˜ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ íƒ€ì… : Private template ì˜ variable tuple ì •ë³´
- *      ì‚¬ìš©ìê°€ ë°”ì¸ë“œí•œ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ íƒ€ì… : pBindParam ì •ë³´
+ *      Plan ÀÇ È£½ºÆ® º¯¼ö Å¸ÀÔ : Private template ÀÇ variable tuple Á¤º¸
+ *      »ç¿ëÀÚ°¡ ¹ÙÀÎµåÇÑ È£½ºÆ® º¯¼ö Å¸ÀÔ : pBindParam Á¤º¸
  *
  * Implementation :
- *      1. Plan ìƒì„± í˜¹ì€ plan cache hit ì´í›„ì— pBindParam ì´ ë°”ë€ì  ìˆëŠ”ì§€ ê²€ì‚¬
- *      2. ì¿¼ë¦¬ì— í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ê°€ ì‚¬ìš©ë˜ì—ˆëŠ”ì§€ ê²€ì‚¬
- *      3. type ì •ë³´ ë¹„êµ
+ *      1. Plan »ı¼º È¤Àº plan cache hit ÀÌÈÄ¿¡ pBindParam ÀÌ ¹Ù²ïÀû ÀÖ´ÂÁö °Ë»ç
+ *      2. Äõ¸®¿¡ È£½ºÆ® º¯¼ö°¡ »ç¿ëµÇ¾ú´ÂÁö °Ë»ç
+ *      3. type Á¤º¸ ºñ±³
  *
  ***********************************************************************/
 
@@ -7269,7 +8028,7 @@ idBool qci::isBindChanged( qciStatement * aStatement )
 
     if( aStatement->statement.pBindParamChangedFlag == ID_FALSE )
     {
-        // pBindParam ì´ ë°”ë€Œì§€ ì•Šì•˜ë‹¤ë©´ ë¹„êµí•  í•„ìš”ë„ ì—†ë‹¤.
+        // pBindParam ÀÌ ¹Ù²îÁö ¾Ê¾Ò´Ù¸é ºñ±³ÇÒ ÇÊ¿äµµ ¾ø´Ù.
         sChanged = ID_FALSE;
     }
     else
@@ -7279,14 +8038,14 @@ idBool qci::isBindChanged( qciStatement * aStatement )
 
         if( sRow == ID_USHORT_MAX )
         {
-            // ì¿¼ë¦¬ì— í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šì•˜ë‹¤ë©´ ë¹„êµí•  í•„ìš”ë„ ì—†ë‹¤.
+            // Äõ¸®¿¡ È£½ºÆ® º¯¼ö¸¦ »ç¿ëÇÏÁö ¾Ê¾Ò´Ù¸é ºñ±³ÇÒ ÇÊ¿äµµ ¾ø´Ù.
             sChanged = ID_FALSE;
         }
         else
         {
             if( sTemplate->tmplate.rows[sRow].columnCount == 0 )
             {
-                // ì¿¼ë¦¬ì— í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šì•˜ë‹¤ë©´ ë¹„êµí•  í•„ìš”ë„ ì—†ë‹¤.
+                // Äõ¸®¿¡ È£½ºÆ® º¯¼ö¸¦ »ç¿ëÇÏÁö ¾Ê¾Ò´Ù¸é ºñ±³ÇÒ ÇÊ¿äµµ ¾ø´Ù.
                 sChanged = ID_FALSE;
             }
             else
@@ -7297,7 +8056,7 @@ idBool qci::isBindChanged( qciStatement * aStatement )
                 sBindParam      = aStatement->statement.pBindParam;
                 sBindParamCount = aStatement->statement.pBindParamCount;
 
-                // í”Œëœì˜ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ íƒ€ì… ì •ë³´ì™€ í˜„ì¬ ë°”ì¸ë“œëœ íƒ€ì… ì •ë³´ë¥¼ ë¹„êµí•œë‹¤.
+                // ÇÃ·£ÀÇ È£½ºÆ® º¯¼ö Å¸ÀÔ Á¤º¸¿Í ÇöÀç ¹ÙÀÎµåµÈ Å¸ÀÔ Á¤º¸¸¦ ºñ±³ÇÑ´Ù.
                 if( sPlanParamCount == sBindParamCount )
                 {
                     sChanged = ID_FALSE;
@@ -7305,7 +8064,7 @@ idBool qci::isBindChanged( qciStatement * aStatement )
                     // PROJ-2163 BUGBUG
                     for( i = 0; i < sBindParamCount; i++ )
                     {
-                        // memcmp í˜¹ì€ bitmap ë“±ìœ¼ë¡œ ë¹„êµí•œë‹¤.
+                        // memcmp È¤Àº bitmap µîÀ¸·Î ºñ±³ÇÑ´Ù.
                         if( ( sPlanParam[i].type.dataTypeId != sBindParam[i].param.type      ) ||
                             ( sPlanParam[i].precision       != sBindParam[i].param.precision ) ||
                             ( sPlanParam[i].scale           != sBindParam[i].param.scale     ) )
@@ -7322,7 +8081,7 @@ idBool qci::isBindChanged( qciStatement * aStatement )
             }
         }
 
-        // íƒ€ì…ì´ ë™ì¼í•˜ë‹¤ë©´ flag ë¥¼ ì œê±°í•œë‹¤.
+        // Å¸ÀÔÀÌ µ¿ÀÏÇÏ´Ù¸é flag ¸¦ Á¦°ÅÇÑ´Ù.
         if( sChanged == ID_FALSE )
         {
             aStatement->statement.pBindParamChangedFlag = ID_FALSE;
@@ -7337,13 +8096,13 @@ idBool qci::isCacheAbleStatement( qciStatement * aStatement )
 /***********************************************************************
  *
  * Description : PROJ-2163
- *     D$ í…Œì´ë¸” ì‚¬ìš© ì—¬ë¶€ì™€ NO_PLAN_CACHE íŒíŠ¸ ì‚¬ìš© ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
+ *     D$ Å×ÀÌºí »ç¿ë ¿©ºÎ¿Í NO_PLAN_CACHE ÈùÆ® »ç¿ë ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
  *
  * Implementation :
- *     Template ì˜ flag ë¥¼ masking í•œ ê²°ê³¼ë¥¼ ë°˜í™˜í•œë‹¤.
+ *     Template ÀÇ flag ¸¦ masking ÇÑ °á°ú¸¦ ¹İÈ¯ÇÑ´Ù.
  *
- *     QC_TMP_PLAN_CACHE_IN_ON flag ëŠ” NO_PLAN_CACHE íŒíŠ¸ê°€ ì‚¬ìš©ëê±°ë‚˜
- *     plan ì´ ì°¸ì¡°í•˜ëŠ” í…Œì´ë¸” ì¤‘ D$ í…Œì´ë¸”ì´ ì¡´ì¬í•  ê²½ìš° ì„¸íŒ…ëœë‹¤.
+ *     QC_TMP_PLAN_CACHE_IN_ON flag ´Â NO_PLAN_CACHE ÈùÆ®°¡ »ç¿ëµÆ°Å³ª
+ *     plan ÀÌ ÂüÁ¶ÇÏ´Â Å×ÀÌºí Áß D$ Å×ÀÌºíÀÌ Á¸ÀçÇÒ °æ¿ì ¼¼ÆÃµÈ´Ù.
  *
  ***********************************************************************/
 
@@ -7360,15 +8119,7 @@ idBool qci::isCacheAbleStatement( qciStatement * aStatement )
     if( ( sTemplate->flag & QC_TMP_PLAN_CACHE_IN_MASK ) ==
           QC_TMP_PLAN_CACHE_IN_ON )
     {
-        // BUG-46902 Shard rebuild coordinating ì¤‘ì— ìˆ˜í–‰ë˜ëŠ” statementëŠ” cachable statementê°€ ì•„ë‹ˆë‹¤.
-        if ( sdi::isRebuildCoordinator( &aStatement->statement ) == ID_FALSE )
-        {
-            sIsCacheAble = ID_TRUE;
-        }
-        else
-        {
-            sIsCacheAble = ID_FALSE;
-        }
+        sIsCacheAble = ID_TRUE;
     }
     else
     {
@@ -7384,15 +8135,15 @@ IDE_RC qci::clearStatement4Reprepare( qciStatement  * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-2163
- *      ë°”ì¸ë“œ ë©”ëª¨ë¦¬ë¥¼ ìœ ì§€í•˜ê³  statement ë¥¼ clear í•˜ëŠ” í•¨ìˆ˜
+ *      ¹ÙÀÎµå ¸Ş¸ğ¸®¸¦ À¯ÁöÇÏ°í statement ¸¦ clear ÇÏ´Â ÇÔ¼ö
  *
- *      reprepare ë‚˜ rebuild ì‹œ ì‚¬ìš©ìê°€ ë°”ì¸ë“œí•œ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ ì •ë³´ëŠ” ë‚¨ê¸´ì±„ë¡œ
- *      statement ë¥¼ ì´ˆê¸°í™” í•´ì•¼ í•œë‹¤.
+ *      reprepare ³ª rebuild ½Ã »ç¿ëÀÚ°¡ ¹ÙÀÎµåÇÑ È£½ºÆ® º¯¼ö Á¤º¸´Â ³²±äÃ¤·Î
+ *      statement ¸¦ ÃÊ±âÈ­ ÇØ¾ß ÇÑ´Ù.
  *
  * Implementation :
- *      1. EXEC_REBUILD ë¡œ ìƒíƒœ ì „ì´ ì²´í¬ ë° í™˜ê²½ ì„¤ì •
- *      2. rebuild true ë¡œ qcg::clearStatement ì‹¤í–‰ (QMB ìœ ì§€)
- *      3. QCI statement state ë¥¼ INITIALIZED ë¡œ ë³€ê²½
+ *      1. EXEC_REBUILD ·Î »óÅÂ ÀüÀÌ Ã¼Å© ¹× È¯°æ ¼³Á¤
+ *      2. rebuild true ·Î qcg::clearStatement ½ÇÇà (QMB À¯Áö)
+ *      3. QCI statement state ¸¦ INITIALIZED ·Î º¯°æ
  *
  ***********************************************************************/
 
@@ -7431,19 +8182,19 @@ IDE_RC qci::setPrivateArea( qciStatement * aStatement )
 /***********************************************************************
  *
  * Description : PROJ-2163
- *      qcg::setPrivateArea í•¨ìˆ˜ì˜ wrapper
+ *      qcg::setPrivateArea ÇÔ¼öÀÇ wrapper
  *
- *      mmcStatement::reprepare ì—ì„œ reprepare ì‹¤íŒ¨ ì‹œ ë‹¤ë¥¸ í”„ë¡œí† ì½œ
- *      (type bind, data bind) ì²˜ë¦¬ ì‹œ ì˜í–¥ì´ ì—†ë„ë¡ private plan ì˜
- *      template ì„ private template ìœ¼ë¡œ ì§€ì •í•´ì•¼ í•  í•„ìš”ê°€ ìˆë‹¤.
- *      ì´ë•Œ qcg::setPrivateArea í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê¸° ìœ„í•œ wrapper ì—­í•  í•¨ìˆ˜ì´ë‹¤.
+ *      mmcStatement::reprepare ¿¡¼­ reprepare ½ÇÆĞ ½Ã ´Ù¸¥ ÇÁ·ÎÅäÄİ
+ *      (type bind, data bind) Ã³¸® ½Ã ¿µÇâÀÌ ¾øµµ·Ï private plan ÀÇ
+ *      template À» private template À¸·Î ÁöÁ¤ÇØ¾ß ÇÒ ÇÊ¿ä°¡ ÀÖ´Ù.
+ *      ÀÌ¶§ qcg::setPrivateArea ÇÔ¼ö¸¦ È£ÃâÇÏ±â À§ÇÑ wrapper ¿ªÇÒ ÇÔ¼öÀÌ´Ù.
  *
  * Implementation :
- *      qcg::setPrivateArea í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
+ *      qcg::setPrivateArea ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
  *
  ***********************************************************************/
 
-    // BUG-37297 PRIVATE_TMPLATE ì´ ì¡´ì¬í• ë•ŒëŠ” í•´ì„œëŠ” ì•ˆëœë‹¤.
+    // BUG-37297 PRIVATE_TMPLATE ÀÌ Á¸ÀçÇÒ¶§´Â ÇØ¼­´Â ¾ÈµÈ´Ù.
     if( QC_PRIVATE_TMPLATE( &(aStatement->statement) ) == NULL )
     {
         IDE_TEST( qcg::setPrivateArea( &(aStatement->statement) )
@@ -7488,7 +8239,7 @@ IDE_RC qci::passwPolicyCheck( idvSQL *aStatistics, qciUserInfo *aUserInfo )
     sPasswExpiryDate = aUserInfo->mAccLimitOpts.mPasswExpiryDate;
 
     /* GET PASSWORD_LOCK_TIME
-     * ACCOUNT_LOCK_DATE ì¼ìˆ˜ + PASSWORD_LOCK_TIME */
+     * ACCOUNT_LOCK_DATE ÀÏ¼ö + PASSWORD_LOCK_TIME */
     if( ( aUserInfo->mAccLimitOpts.mPasswLockTime != 0 ) &&
         ( aUserInfo->mAccLimitOpts.mLockDate != 0 ) )
     {
@@ -7528,7 +8279,7 @@ IDE_RC qci::passwPolicyCheck( idvSQL *aStatistics, qciUserInfo *aUserInfo )
         if( aUserInfo->mAccLimitOpts.mAccLockStatus !=
             QCI_ACCOUNT_LOCKED_TO_OPEN )
         {
-            /* FAILED_LOGIN_ATTEMPTS ì„¤ì • íšŸìˆ˜ ì´ìƒì´ ë˜ì–´ LOCKED ìƒíƒœì¸ ê²½ìš° ERROR */
+            /* FAILED_LOGIN_ATTEMPTS ¼³Á¤ È½¼ö ÀÌ»óÀÌ µÇ¾î LOCKED »óÅÂÀÎ °æ¿ì ERROR */
             IDE_TEST_RAISE( aUserInfo->mAccLimitOpts.mAccountLock == QD_ACCOUNT_LOCK,
                             AccountStatusLocked );
         }
@@ -7560,8 +8311,8 @@ IDE_RC qci::passwPolicyCheck( idvSQL *aStatistics, qciUserInfo *aUserInfo )
         IDE_TEST( updatePasswPolicy( aStatistics, aUserInfo )
                   != IDE_SUCCESS);
 
-        /* ì„¤ì •ëœ FAILED_LOGIN_COUNT ë§Œí¼ connect ì‹¤íŒ¨ í•œ ê²½ìš°
-         * OPEN ìƒíƒœì—ì„œ LOCKED ìƒíƒœë¡œ ë³€ê²½ ë˜ë©° ERROR */
+        /* ¼³Á¤µÈ FAILED_LOGIN_COUNT ¸¸Å­ connect ½ÇÆĞ ÇÑ °æ¿ì
+         * OPEN »óÅÂ¿¡¼­ LOCKED »óÅÂ·Î º¯°æ µÇ¸ç ERROR */
         IDE_TEST_RAISE( aUserInfo->mAccLimitOpts.mAccLockStatus ==
                         QCI_ACCOUNT_OPEN_TO_LOCKED,
                         AccountStatusLocked );
@@ -7571,8 +8322,8 @@ IDE_RC qci::passwPolicyCheck( idvSQL *aStatistics, qciUserInfo *aUserInfo )
                         IncorrectPassword);
         
         /* PASSWORD_LIFE_TIME
-         * BUG-37443 PASSWORD_GRACE_TIME ë§Œ ì„¤ì • í•˜ì˜€ì„ ê²½ìš°ëŠ” ì„¤ì •ê³¼
-         * ìƒê´€ ë¬´ì‹œí•˜ë©° ë™ì‘ */
+         * BUG-37443 PASSWORD_GRACE_TIME ¸¸ ¼³Á¤ ÇÏ¿´À» °æ¿ì´Â ¼³Á¤°ú
+         * »ó°ü ¹«½ÃÇÏ¸ç µ¿ÀÛ */
         if ( ( sPasswExpiryDate != 0 ) &&
              ( ( aUserInfo->mAccLimitOpts.mPasswLifeTime != 0 ) ||
                ( aUserInfo->mAccLimitOpts.mPasswGraceTime != 0 ) ) )
@@ -7589,7 +8340,7 @@ IDE_RC qci::passwPolicyCheck( idvSQL *aStatistics, qciUserInfo *aUserInfo )
     }
     else
     {
-        /* ëª…ì‹œì  LOCK ì¸ ìƒíƒœ */
+        /* ¸í½ÃÀû LOCK ÀÎ »óÅÂ */
         IDE_TEST_RAISE( aUserInfo->mAccLimitOpts.mLockDate != 0,
                         AccountStatusLocked );
         
@@ -7624,7 +8375,6 @@ IDE_RC qci::updatePasswPolicy( idvSQL * aStatistics,  qciUserInfo  * aUserInfo )
     smiTrans      sTrans;
     smiStatement  sSmiStmt;
     smiStatement *sDummySmiStmt;
-    smSCN         sDummySCN;
     UInt          sSmiStmtFlag = 0;
         
     UInt          sStage = 0;
@@ -7657,7 +8407,7 @@ IDE_RC qci::updatePasswPolicy( idvSQL * aStatistics,  qciUserInfo  * aUserInfo )
     IDE_TEST(sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
     sStage--; // 1
 
-    IDE_TEST(sTrans.commit(&sDummySCN) != IDE_SUCCESS);
+    IDE_TEST(sTrans.commit() != IDE_SUCCESS);
     sStage--; // 0
 
     IDE_TEST(sTrans.destroy( aStatistics ) != IDE_SUCCESS);
@@ -7671,7 +8421,7 @@ IDE_RC qci::updatePasswPolicy( idvSQL * aStatistics,  qciUserInfo  * aUserInfo )
             case 3:
                 IDE_ASSERT(sSmiStmt.end(SMI_STATEMENT_RESULT_FAILURE) == IDE_SUCCESS);
             case 2:
-                IDE_ASSERT(sTrans.commit(&sDummySCN) == IDE_SUCCESS);
+                IDE_ASSERT(sTrans.commit() == IDE_SUCCESS);
             case 1:
                 IDE_ASSERT(sTrans.destroy( aStatistics ) == IDE_SUCCESS);
             default:
@@ -7682,8 +8432,8 @@ IDE_RC qci::updatePasswPolicy( idvSQL * aStatistics,  qciUserInfo  * aUserInfo )
     return IDE_FAILURE;
 }
 
-/* PROJ-2160 CM íƒ€ì…ì œê±°
-   fetchì‹œì— í•„ìš”í•œ ì •ë³´ë¥¼ ëª¨ì•„ì„œ ì¤€ë‹¤. */
+/* PROJ-2160 CM Å¸ÀÔÁ¦°Å
+   fetch½Ã¿¡ ÇÊ¿äÇÑ Á¤º¸¸¦ ¸ğ¾Æ¼­ ÁØ´Ù. */
 void qci::getFetchColumnInfo( qciStatement       * aStatement,
                               UShort               aBindId,
                               qciFetchColumnInfo * aFetchColumnInfo)
@@ -7699,8 +8449,8 @@ void qci::getFetchColumnInfo( qciStatement       * aStatement,
     sTemplate    = QC_PRIVATE_TMPLATE(sStatement);
     sTargetStack = &(sTemplate->tmplate.stack[aBindId]);
 
-    // PROJ-2551 simple query ìµœì í™”
-    // simple queryì¸ ê²½ìš° fast executeë¥¼ ìˆ˜í–‰í•œë‹¤.
+    // PROJ-2551 simple query ÃÖÀûÈ­
+    // simple queryÀÎ °æ¿ì fast execute¸¦ ¼öÇàÇÑ´Ù.
     if ( ( ( sStatement->mFlag & QC_STMT_FAST_EXEC_MASK )
            == QC_STMT_FAST_EXEC_TRUE ) &&
          ( ( sStatement->mFlag & QC_STMT_FAST_BIND_MASK )
@@ -7722,15 +8472,15 @@ void qci::getFetchColumnInfo( qciStatement       * aStatement,
     }
 
     // BUG-40427
-    // ë” ì´ìƒ ë‚´ë¶€ì ìœ¼ë¡œ ì‚¬ìš©í•˜ëŠ” LOB Cursorê°€ ì•„ë‹˜ì„ í‘œì‹œí•œë‹¤.
+    // ´õ ÀÌ»ó ³»ºÎÀûÀ¸·Î »ç¿ëÇÏ´Â LOB Cursor°¡ ¾Æ´ÔÀ» Ç¥½ÃÇÑ´Ù.
     if ( (aFetchColumnInfo->dataTypeId == MTD_BLOB_LOCATOR_ID) ||
          (aFetchColumnInfo->dataTypeId == MTD_CLOB_LOCATOR_ID) )
     {
         if ( *(smLobLocator *)(sTargetStack->value) != MTD_LOCATOR_NULL )
         {
             // BUG-40427
-            // ë‚´ë¶€ì ìœ¼ë¡œ ì‚¬ìš©í•˜ëŠ” LOB Cursorê°€ ì•„ë‹˜ì„ í‘œì‹œí•œë‹¤.
-            // BUG-40840 left outer join ì—ì„œ null row ê³ ë ¤
+            // ³»ºÎÀûÀ¸·Î »ç¿ëÇÏ´Â LOB Cursor°¡ ¾Æ´ÔÀ» Ç¥½ÃÇÑ´Ù.
+            // BUG-40840 left outer join ¿¡¼­ null row °í·Á
             if (smiLob::getInfoPtr( *(smLobLocator*)sTargetStack->value,
                                     &sLocatorInfo )
                 == IDE_SUCCESS)
@@ -7874,8 +8624,8 @@ UInt qci::getRemainingGracePeriod( qciUserInfo * aUserInfo )
  * BUG-39441
  * need a interface which returns whether DML on replication table or not
  *
- * INSERT/UPDATE/DELETE/MOVE/MERGE stmt ì— ëŒ€í•´ì„œ
- * replication ì´ ê±¸ë ¤ìˆëŠ” table ì— ìˆ˜í–‰ëœ ê²½ìš° true ì•„ë‹ˆë©´ false
+ * INSERT/UPDATE/DELETE/MOVE/MERGE stmt ¿¡ ´ëÇØ¼­
+ * replication ÀÌ °É·ÁÀÖ´Â table ¿¡ ¼öÇàµÈ °æ¿ì true ¾Æ´Ï¸é false
  * ********************************************************************* */
 idBool qci::hasReplicationTable(qciStatement* aStatement)
 {
@@ -7919,16 +8669,16 @@ idBool qci::hasReplicationTable(qciStatement* aStatement)
  *                | TCP          |   Optional( O or X )
  * ---------------------------------------------------------
  *
- * ìœ„ í‘œì—ì„œì™€ ê°™ì´ Userì˜ DISABLE_TCP ì˜µì…˜ì—
- * ë”°ë¼ ì ‘ì†ì˜ ì œí•œí•œë‹¤.
+ * À§ Ç¥¿¡¼­¿Í °°ÀÌ UserÀÇ DISABLE_TCP ¿É¼Ç¿¡
+ * µû¶ó Á¢¼ÓÀÇ Á¦ÇÑÇÑ´Ù.
  *
  */
 IDE_RC qci::checkDisableTCPOption( qciUserInfo *aUserInfo )
 {
     if ( aUserInfo->mConnectType == QCI_CONNECT_TCP )
     {
-        /* Userì˜ connectTypeì´ TCPì´ê³  DisableTCP Optionì´ ì¼œì ¸ìˆë‹¤ë©´
-         * ì ‘ì†ì„ ì œí•œí•œë‹¤.
+        /* UserÀÇ connectTypeÀÌ TCPÀÌ°í DisableTCP OptionÀÌ ÄÑÁ®ÀÖ´Ù¸é
+         * Á¢¼ÓÀ» Á¦ÇÑÇÑ´Ù.
          */
         IDE_TEST_RAISE( ( aUserInfo->mDisableTCP == QCI_DISABLE_TCP_TRUE ) ||
                         ( aUserInfo->mDisableTCP == QCI_DISABLE_TCP_NULL ),
@@ -7956,7 +8706,7 @@ idBool qci::isSimpleQuery( qciStatement * aStatement )
 
     sStatement = &aStatement->statement;
 
-    // PROJ-2551 simple query ìµœì í™”
+    // PROJ-2551 simple query ÃÖÀûÈ­
     if ( ( sStatement->mFlag & QC_STMT_FAST_EXEC_MASK )
          == QC_STMT_FAST_EXEC_TRUE )
     {
@@ -7987,7 +8737,7 @@ IDE_RC qci::fastExecute( smiTrans      * aSmiTrans,
     qcg::getSmiStmt( sStatement, &sSmiStmtOrg );
     qcg::setSmiStmt( sStatement, NULL );
 
-    // qmxMemì„ ê¸°ë¡í•˜ê³  ì¬ì‚¬ìš©í•œë‹¤.
+    // qmxMemÀ» ±â·ÏÇÏ°í Àç»ç¿ëÇÑ´Ù.
     if ( sStatement->simpleInfo.status.mSavedCurr == NULL )
     {
         IDE_TEST_RAISE( sStatement->qmxMem->getStatus(
@@ -8005,10 +8755,10 @@ IDE_RC qci::fastExecute( smiTrans      * aSmiTrans,
     
     if ( aShmResult != NULL )
     {
-        // 8ë³´ë‹¤ ì»¤ì•¼í•¨
+        // 8º¸´Ù Ä¿¾ßÇÔ
         IDE_TEST_RAISE( aShmSize < ID_SIZEOF(ULong),
                         ERR_INVALID_SHM_SIZE );
-        // 8byte alignì´ì–´ì•¼ í•¨
+        // 8byte alignÀÌ¾î¾ß ÇÔ
         IDE_TEST_RAISE( idlOS::align8( (ULong)(vULong)aShmResult )
                         != (ULong)(vULong)aShmResult,
                         ERR_INVALID_SHM_ADDRESS );
@@ -8031,7 +8781,7 @@ IDE_RC qci::fastExecute( smiTrans      * aSmiTrans,
                                       aRowCount )
               != IDE_SUCCESS );
     
-    // result sizeë¥¼ ì²« 8byteì— ê¸°ë¡í•œë‹¤.
+    // result size¸¦ Ã¹ 8byte¿¡ ±â·ÏÇÑ´Ù.
     if ( aShmResult != NULL )
     {
         *(ULong*)aShmResult = (ULong)sResultSize;
@@ -8175,7 +8925,6 @@ IDE_RC qci::setBindParamInfoByNameInternal( qciStatement  * aStatement,
                                             qciBindParam  * aBindParam )
 {
     qcStatement    * sStatement;
-    qciStmtState     sState;
     qciBindParam     sBindParam;
 
     UInt             i;
@@ -8183,19 +8932,16 @@ IDE_RC qci::setBindParamInfoByNameInternal( qciStatement  * aStatement,
 
     sStatement = & aStatement->statement;
 
-    IDE_TEST( getCurrentState( aStatement, & sState )
-              != IDE_SUCCESS );
-
     IDE_TEST_RAISE( aBindParam->id >= sStatement->pBindParamCount,
                     err_invalid_binding );
 
     // PROJ-2002 Column Security
-    // ì•”í˜¸ íƒ€ì…ìœ¼ë¡œëŠ” ë°”ì¸ë“œí•  ìˆ˜ ì—†ìŒ
+    // ¾ÏÈ£ Å¸ÀÔÀ¸·Î´Â ¹ÙÀÎµåÇÒ ¼ö ¾øÀ½
     IDE_TEST_RAISE( ( (aBindParam->type == MTD_ECHAR_ID) ||
                       (aBindParam->type == MTD_EVARCHAR_ID) ),
                     err_invalid_binding );
 
-    // INPUT or INPUT_OUTPUT typeì˜ ë§ˆì§€ë§‰ ParamInfoì˜ Idë¥¼ ê¸°ë¡
+    // INPUT or INPUT_OUTPUT typeÀÇ ¸¶Áö¸· ParamInfoÀÇ Id¸¦ ±â·Ï
     switch (aBindParam->inoutType)
     {
         case CMP_DB_PARAM_INPUT_OUTPUT:
@@ -8208,7 +8954,7 @@ IDE_RC qci::setBindParamInfoByNameInternal( qciStatement  * aStatement,
             }
             else
             {
-                // lob value, lob locator ëª¨ë‘ ë¶ˆê°€ëŠ¥
+                // lob value, lob locator ¸ğµÎ ºÒ°¡´É
                 IDE_TEST_RAISE( ( (aBindParam->type == MTD_BLOB_ID) ||
                                   (aBindParam->type == MTD_CLOB_ID) ||
                                   (aBindParam->type == MTD_BLOB_LOCATOR_ID) ||
@@ -8233,7 +8979,7 @@ IDE_RC qci::setBindParamInfoByNameInternal( qciStatement  * aStatement,
         }
     }
 
-    // bind param ì •ë³´ë¥¼ ë³€ê²½í•œë‹¤.
+    // bind param Á¤º¸¸¦ º¯°æÇÑ´Ù.
 
     sBindParam.id            = aBindParam->id;
     sBindParam.type          = aBindParam->type;
@@ -8249,19 +8995,19 @@ IDE_RC qci::setBindParamInfoByNameInternal( qciStatement  * aStatement,
 
     sStatement->pBindParam[aBindParam->id].param = sBindParam;
 
-    // ë°”ì¸ë“œ ë˜ì—ˆìŒ.
+    // ¹ÙÀÎµå µÇ¾úÀ½.
     sStatement->pBindParam[aBindParam->id].isParamInfoBound = ID_TRUE;
 
-    // convert ì •ë³´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
-    // memory ë‚­ë¹„ê°€ ìˆì§€ë§Œ ë§ì§€ ì•Šë‹¤.
+    // convert Á¤º¸¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // memory ³¶ºñ°¡ ÀÖÁö¸¸ ¸¹Áö ¾Ê´Ù.
     sStatement->pBindParam[aBindParam->id].convert = NULL;
 
-    // canonize bufferë¥¼ ì´ˆê¸°í™”í•œë‹¤.
-    // memory ë‚­ë¹„ê°€ ìˆì§€ë§Œ ë§ì§€ ì•Šë‹¤.
+    // canonize buffer¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // memory ³¶ºñ°¡ ÀÖÁö¸¸ ¸¹Áö ¾Ê´Ù.
     sStatement->pBindParam[aBindParam->id].canonBuf = NULL;
 
     // PROJ-2163
-    // pBindParam ì˜ ê°’ì´ ë°”ë€Œì—ˆë‹¤.
+    // pBindParam ÀÇ °ªÀÌ ¹Ù²î¾ú´Ù.
     sStatement->pBindParamChangedFlag = ID_TRUE;
 
     // PROJ-2163
@@ -8281,8 +9027,8 @@ IDE_RC qci::setBindParamInfoByNameInternal( qciStatement  * aStatement,
 
     if ( sBindEnd == ID_TRUE )
     {
-        // í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì˜ ê°’ì„ ì €ì¥í•  ë°ì´í„° ì˜ì—­ì„ ì´ˆê¸°í™” í•œë‹¤.
-        // ì´ ì˜ì—­ì€ variable tuple ì˜ row ë¡œë„ ì‚¬ìš©ëœë‹¤.
+        // È£½ºÆ® º¯¼öÀÇ °ªÀ» ÀúÀåÇÒ µ¥ÀÌÅÍ ¿µ¿ªÀ» ÃÊ±âÈ­ ÇÑ´Ù.
+        // ÀÌ ¿µ¿ªÀº variable tuple ÀÇ row ·Îµµ »ç¿ëµÈ´Ù.
         IDE_TEST_RAISE( qcg::initBindParamData( sStatement ) != IDE_SUCCESS,
                         err_invalid_binding_init_data );
     }
@@ -8391,13 +9137,13 @@ IDE_RC qci::setBindParamDataByNameInternal( qciStatement  * aStatement,
     IDE_TEST_RAISE( aBindId >= sStatement->pBindParamCount,
                     err_invalid_binding );
 
-    // ë°”ì¸ë“œë˜ì§€ ì•Šì•˜ë‹¤ë©´ ì—ëŸ¬
+    // ¹ÙÀÎµåµÇÁö ¾Ê¾Ò´Ù¸é ¿¡·¯
     IDE_TEST_RAISE( sStatement->pBindParam[aBindId].isParamInfoBound == ID_FALSE,
                     err_invalid_binding );
 
     sBindParam = & sStatement->pBindParam[aBindId].param;
 
-    // in, inout íƒ€ì…ë§Œ ê°€ëŠ¥í•˜ë‹¤.
+    // in, inout Å¸ÀÔ¸¸ °¡´ÉÇÏ´Ù.
     IDE_TEST_RAISE( sBindParam->inoutType == CMP_DB_PARAM_OUTPUT,
                     err_invalid_binding );
 
@@ -8430,7 +9176,7 @@ IDE_RC qci::setBindParamDataByNameInternal( qciStatement  * aStatement,
     if ( sBindEnd == ID_TRUE )
     {
         // BUG-34995
-        // QCI_STMT_STATE ë¥¼ DATA_BOUND ë¡œ ë³€ê²½í•œë‹¤.
+        // QCI_STMT_STATE ¸¦ DATA_BOUND ·Î º¯°æÇÑ´Ù.
         IDE_TEST( qci::setParamDataState( aStatement ) != IDE_SUCCESS);
 
     }
@@ -8498,9 +9244,9 @@ IDE_RC qci::checkBindInfo( qciStatement *aStatement )
 {
 /***********************************************************************
  *
- * Description : BUG-42512 plan ì˜ bind ì •ë³´ì™€ statement ì˜ bind ì •ë³´ë¥¼ ê²€ì¦
+ * Description : BUG-42512 plan ÀÇ bind Á¤º¸¿Í statement ÀÇ bind Á¤º¸¸¦ °ËÁõ
  *
- * Implementation : plan cache hit ëœ í›„ private template ì´ ìƒì„±ëœ ì§í›„ í˜¸ì¶œ
+ * Implementation : plan cache hit µÈ ÈÄ private template ÀÌ »ı¼ºµÈ Á÷ÈÄ È£Ãâ
  *                  - clonePrivateTemplate
  *                  - mmcStatement::reprepare()
  *
@@ -8576,226 +9322,6 @@ idBool qci::getInplaceUpdateDisable( void )
     return mInplaceUpdateDisable;
 }
 
-IDE_RC qci::shardAnalyze( qciStatement  * aStatement )
-{
-    smiTrans       sTrans;
-    smiStatement   sSmiStmt;
-    smiStatement * sSmiStmtOrg;
-    smiStatement * sDummySmiStmt;
-    volatile smSCN sDummySCN;
-    qcStatement  * sStatement;
-    volatile SInt  sStage;
-
-    IDE_FT_ROOT_BEGIN();
-
-    IDE_FT_ROOT_BEGIN();
-
-    IDE_DASSERT( aStatement != NULL );
-
-    //---------------------------------------------
-    // QCI_STMT_STATE_PARSED ìƒíƒœì—ì„œë§Œ
-    // ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•  ìˆ˜ ìˆê³ ,
-    // í˜¸ì¶œí•œ ì´í›„ì—ë„ ìƒíƒœë¥¼ ë³€ê²½ì‹œí‚¤ì§€ ì•ŠëŠ”ë‹¤.
-    //---------------------------------------------
-
-    sStatement = &aStatement->statement;
-
-    IDE_DASSERT( sStatement != NULL );
-
-    sStage = 0; /* BUG-45994 - ì»´íŒŒì¼ëŸ¬ ìµœì í™” íšŒí”¼ */
-
-    IDE_TEST_RAISE( aStatement->state != QCI_STMT_STATE_PARSED,
-                    ERR_INVALID_STATE );
-
-    // shardPrepareProtocolë¡œ ë“¤ì–´ì˜¨ statementì— ëŒ€í•´ì„œë§Œ ìˆ˜í–‰í•œë‹¤.
-    IDE_TEST( sdi::checkStmt( sStatement ) != IDE_SUCCESS );
-
-    //-----------------------------------------
-    // ì¤€ë¹„
-    //-----------------------------------------
-
-    IDE_TEST( sTrans.initialize() != IDE_SUCCESS );
-    sStage = 1;
-
-    IDE_TEST( sTrans.begin( &sDummySmiStmt, sStatement->mStatistics )
-              != IDE_SUCCESS );
-    sStage = 2;
-
-    IDE_TEST( sSmiStmt.begin( sStatement->mStatistics,
-                              sDummySmiStmt,
-                              SMI_STATEMENT_UNTOUCHABLE |
-                              SMI_STATEMENT_ALL_CURSOR )
-              != IDE_SUCCESS );
-
-    qcg::getSmiStmt( sStatement, &sSmiStmtOrg );
-    qcg::setSmiStmt( sStatement, &sSmiStmt );
-    sStage = 3;
-
-    //-----------------------------------------
-    // BIND (undef type)
-    //-----------------------------------------
-
-    if ( qcg::getBindCount( sStatement ) > 0 )
-    {
-        IDE_TEST( buildBindParamInfo( aStatement ) != IDE_SUCCESS );
-    }
-    else
-    {
-        // Nothing to do.
-    }
-
-    //-----------------------------------------
-    // VALIDATE
-    //-----------------------------------------
-
-    QC_SHARED_TMPLATE(sStatement)->flag &= ~QC_TMP_SHARD_TRANSFORM_MASK;
-    QC_SHARED_TMPLATE(sStatement)->flag |= QC_TMP_SHARD_TRANSFORM_DISABLE;
-
-    IDE_FT_BEGIN();
-
-    IDE_TEST( sStatement->myPlan->parseTree->parse( sStatement )
-              != IDE_SUCCESS );
-    sStage = 4;
-
-    IDE_DASSERT( sStatement->spvEnv != NULL );
-    IDE_FT_END();
-
-    IDE_TEST( qcg::fixAfterParsing( sStatement ) != IDE_SUCCESS);
-
-    IDE_FT_BEGIN();
-
-    IDE_TEST( sStatement->myPlan->parseTree->validate( sStatement )
-              != IDE_SUCCESS );
-
-    IDE_FT_END();
-
-    IDE_TEST( qcg::fixAfterValidation( sStatement ) != IDE_SUCCESS );
-
-    QC_SHARED_TMPLATE(sStatement)->flag &= ~QC_TMP_SHARD_TRANSFORM_MASK;
-    QC_SHARED_TMPLATE(sStatement)->flag |= QC_TMP_SHARD_TRANSFORM_ENABLE;
-
-    //-----------------------------------------
-    // ANALYZE
-    //-----------------------------------------
-    IDE_FT_BEGIN();
-
-    /*
-     * PROJ-2701 Sharding online data rebuild
-     * Shardcliì˜ ê²½ìš° sessionSMNìœ¼ë¡œ shard analysisë¥¼ ìˆ˜í–‰í•œë‹¤.
-     */
-    IDE_TEST( sdi::analyze( sStatement,
-                            QCG_GET_SESSION_SHARD_META_NUMBER(sStatement) ) != IDE_SUCCESS );
-
-    IDE_TEST( sdi::setAnalysisResult( sStatement ) != IDE_SUCCESS );
-
-    /* BUG-45899 */
-    IDE_DASSERT( sStatement->myPlan->mShardAnalysis != NULL );
-    sdi::setPrintInfoFromAnalyzeInfo( &(sStatement->mShardPrintInfo),
-                                      sStatement->myPlan->mShardAnalysis );
-    IDE_FT_END();
-
-    //-----------------------------------------
-    // MISC
-    //-----------------------------------------
-
-    sStatement->pBindParamCount = qcg::getBindCount( sStatement );
-
-    //-----------------------------------------
-    // ë§ˆë¬´ë¦¬
-    //-----------------------------------------
-
-    if ( sStatement->spvEnv->latched == ID_TRUE )
-    {
-        IDE_TEST( qsxRelatedProc::unlatchObjects( sStatement->spvEnv->procPlanList )
-                  != IDE_SUCCESS );
-        sStatement->spvEnv->latched = ID_FALSE;
-    }
-    else
-    {
-        // Nothing to do.
-    }
-
-    sStage = 2;
-    qcg::setSmiStmt( sStatement, sSmiStmtOrg );
-
-    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS )
-              != IDE_SUCCESS );
-
-    sStage = 1;
-    IDE_TEST( sTrans.commit( (smSCN *)&sDummySCN ) != IDE_SUCCESS );
-
-    sStage = 0;
-    IDE_TEST( sTrans.destroy( sStatement->mStatistics ) != IDE_SUCCESS );
-
-    IDE_FT_ROOT_END();
-
-    IDE_FT_ROOT_END();
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION( ERR_INVALID_STATE )
-    {
-        IDE_SET(ideSetErrorCode(qpERR_ABORT_INVALID_STATEMENT_STATE_ERROR));
-    }
-    IDE_EXCEPTION_SIGNAL()
-    {
-        IDE_SET( ideSetErrorCode( qpERR_ABORT_FAULT_TOLERATED ) );
-    }
-    IDE_EXCEPTION_END;
-
-    IDE_FT_EXCEPTION_BEGIN();
-
-    switch ( sStage )
-    {
-        case 4:
-            if ( qsxRelatedProc::unlatchObjects( sStatement->spvEnv->procPlanList )
-                 == IDE_SUCCESS )
-            {
-                sStatement->spvEnv->latched = ID_FALSE;
-            }
-            else
-            {
-                IDE_ERRLOG( IDE_QP_1 );
-            }
-        case 3:
-            qcg::setSmiStmt( sStatement, sSmiStmtOrg );
-            if ( sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE ) != IDE_SUCCESS )
-            {
-                IDE_ERRLOG( IDE_QP_1 );
-            }
-            else
-            {
-                /* Nothing to do */
-            }
-        case 2:
-            if ( sTrans.commit( (smSCN *)&sDummySCN ) != IDE_SUCCESS )
-            {
-                IDE_ERRLOG( IDE_QP_1 );
-            }
-            else
-            {
-                /* Nothing to do */
-            }
-        case 1:
-            if ( sTrans.destroy( sStatement->mStatistics ) == IDE_SUCCESS )
-            {
-                IDE_ERRLOG( IDE_QP_1 );
-            }
-            else
-            {
-                /* Nothing to do */
-            }
-        default:
-            break;
-    }
-
-    IDE_FT_EXCEPTION_END();
-
-    IDE_FT_ROOT_END();
-
-    return IDE_FAILURE;
-}
-
 IDE_RC qci::getShardAnalyzeInfo( qciStatement         * aStatement,
                                  qciShardAnalyzeInfo ** aAnalyzeInfo )
 {
@@ -8826,36 +9352,49 @@ IDE_RC qci::getShardAnalyzeInfo( qciStatement         * aStatement,
 IDE_RC qci::checkShardPlanRebuild( qcStatement * aStatement )
 {
     qcPlanProperty * sPlanProperty = NULL;
+    qciStmtType      sStmtType;
 
-    //------------------------------------------
-    // SMNì´ ë³€ê²½ ë˜ì—ˆë‹¤ë©´ rebuildë¥¼ í†µí•´ planì„ ì¬ìƒì„± í•œë‹¤.
-    //------------------------------------------
-    if ( aStatement->myPlan->planEnv != NULL )
+    sStmtType = aStatement->myPlan->parseTree->stmtKind;
+
+    /* SELECT FROM (Fixed table) °ú °°Àº DCL ÀÌ Rebuild µÇ´Â °æ¿ì¿¡
+     * doRebuild ¿¡¼­ Æ®·£Àè¼ÇÀÌ begin µÇ¾î ÀÖÁö ¾Ê¾Æ fault ¹ß»ıÇÏ´Â°ÍÀ»
+     * ÀÓ½Ã·Î!!! ¿¹¿ÜÃ³¸® ÇÑ´Ù */
+    if( qciMisc::isStmtDCL( sStmtType ) == ID_FALSE )
     {
-        sPlanProperty = &(aStatement->myPlan->planEnv->planProperty);
+        if ( ( aStatement->myPlan->parseTree->stmtKind & QCI_STMT_MASK_MASK )
+             != QCI_STMT_SHARD_DDL )
+        {
+            //------------------------------------------
+            // SMNÀÌ º¯°æ µÇ¾ú´Ù¸é rebuild¸¦ ÅëÇØ planÀ» Àç»ı¼º ÇÑ´Ù.
+            //------------------------------------------
+            if ( aStatement->myPlan->planEnv != NULL )
+            {
+                sPlanProperty = &(aStatement->myPlan->planEnv->planProperty);
 
-        IDE_TEST_RAISE( ( sPlanProperty->mSMNForDataNodeRef == ID_TRUE ) &&
-                        ( sPlanProperty->mSMNForDataNode !=
-                          sdi::getSMNForDataNode() ),
-                        ERR_REBUILD_QCI_EXEC );
+                IDE_TEST_RAISE( ( sPlanProperty->mSMNForDataNodeRef == ID_TRUE ) &&
+                                ( sPlanProperty->mSMNForDataNode !=
+                                  sdi::getSMNForDataNode() ),
+                                ERR_REBUILD_QCI_EXEC );
 
-        IDE_TEST_RAISE( ( sPlanProperty->mSMNForSessionRef == ID_TRUE ) &&
-                        ( sPlanProperty->mSMNForSession !=
-                          QCG_GET_SESSION_SHARD_META_NUMBER(aStatement) ),
-                        ERR_REBUILD_QCI_EXEC );
+                IDE_TEST_RAISE( ( sPlanProperty->mSMNForSessionRef == ID_TRUE ) &&
+                                ( sPlanProperty->mSMNForSession !=
+                                  QCG_GET_SESSION_SHARD_META_NUMBER(aStatement) ),
+                                ERR_REBUILD_QCI_EXEC );
+            }
+            else
+            {
+                // Nothing to do.
+            }
+
+            //------------------------------------------
+            // Rebuild transformation¿¡ ÀÇÇÑ dummy planÀÏ °æ¿ì
+            // rebuild¸¦ ÅëÇØ planÀ» Àç»ı¼ºÇÑ´Ù.
+            //------------------------------------------
+            IDE_TEST_RAISE( ( aStatement->mFlag & QC_STMT_SHARD_REBUILD_FORCE_MASK ) ==
+                            QC_STMT_SHARD_REBUILD_FORCE_TRUE,
+                            ERR_REBUILD_QCI_EXEC );
+        }
     }
-    else
-    {
-        // Nothing to do.
-    }
-
-    //------------------------------------------
-    // Rebuild transformationì— ì˜í•œ dummy planì¼ ê²½ìš°
-    // rebuildë¥¼ í†µí•´ planì„ ì¬ìƒì„±í•œë‹¤.
-    //------------------------------------------
-    IDE_TEST_RAISE( ( aStatement->mFlag & QC_STMT_SHARD_REBUILD_FORCE_MASK ) ==
-                    QC_STMT_SHARD_REBUILD_FORCE_TRUE,
-                    ERR_REBUILD_QCI_EXEC );
 
     return IDE_SUCCESS;
 
@@ -8866,4 +9405,209 @@ IDE_RC qci::checkShardPlanRebuild( qcStatement * aStatement )
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
+}
+
+qcStatement * qci::getSelectStmtOfDDL( qcStatement * aStatement )
+{
+    qdTableParseTree * sParseTree = NULL;
+    qcStatement      * sSelect = NULL;
+
+    if ( ( getStartupPhase() == QCI_STARTUP_SERVICE ) &&
+         ( aStatement->myPlan->parseTree->stmtKind == QCI_STMT_SCHEMA_DDL ) )
+    {
+        sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;
+        if ( sParseTree->common.parse == qdbCreate::parseCreateTableAsSelect )
+        {
+            if ( sParseTree->select->myPlan->parseTree->stmtKind == QCI_STMT_SELECT )
+            {
+                sSelect = sParseTree->select;
+            }
+        }
+    }
+
+    return sSelect;
+}
+
+// BUG-47790
+IDE_RC qci::reloadShardMetaNumber( qciStatement * aStatement,
+                                   void         * aSession )
+{
+    qcStatement * sStatement = &aStatement->statement;
+
+    if (( sStatement->session->mQPSpecific.mFlag & QC_SESSION_SHARD_DDL_MASK ) ==
+        QC_SESSION_SHARD_DDL_TRUE )
+    {
+        if ( sStatement->session->mQPSpecific.mClientInfo != NULL )
+        {
+            IDE_TEST( qci::mSessionCallback.mReloadShardMetaNumber(
+                          aSession,
+                          ID_FALSE )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            IDE_TEST( qci::mSessionCallback.mReloadShardMetaNumber(
+                          aSession,
+                          ID_TRUE )
+                      != IDE_SUCCESS );
+        }
+    }
+    else
+    {
+        // nothing to do
+    }
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qci::setPropertyForShardMeta( qciStatement *aStatement )
+{
+    qcStatement * sStatement = &aStatement->statement;
+    SChar         sSqlStr[QD_MAX_SQL_LENGTH + 1];
+
+    if ( QCG_GET_SESSION_TRANSACTIONAL_DDL( sStatement) == ID_TRUE )
+    {
+        sStatement->session->mBakSessionProperty.mTransactionalDDL = 1;
+    }
+    else
+    {
+        sStatement->session->mBakSessionProperty.mTransactionalDDL = 0;
+    }
+    
+    if ( QCG_GET_SESSION_TRANSACTIONAL_DDL( sStatement) != ID_TRUE )
+    {   
+        idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
+                         "ALTER SESSION SET TRANSACTIONAL_DDL = 1 " );
+
+        IDE_TEST( qciMisc::runDCLforInternal( sStatement,
+                                              sSqlStr,
+                                              sStatement->session->mMmSession )
+                  != IDE_SUCCESS );
+    }
+
+    sStatement->session->mBakSessionProperty.mGlobalTransactionLevel = QCG_GET_SESSION_GTX_LEVEL( sStatement );    
+    
+    if ( QCG_GET_SESSION_GTX_LEVEL( sStatement ) < 2 )
+    {        
+        idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
+                         "ALTER SESSION SET  GLOBAL_TRANSACTION_LEVEL = 2 " );
+
+        IDE_TEST( qciMisc::runDCLforInternal( sStatement,
+                                              sSqlStr,
+                                              sStatement->session->mMmSession )
+                  != IDE_SUCCESS );
+    }
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+    
+    return IDE_FAILURE;
+}
+
+IDE_RC qci::revertPropertyForShardMeta( qciStatement *aStatement )
+{
+    qcStatement * sStatement = &aStatement->statement;
+    SChar         sSqlStr[QD_MAX_SQL_LENGTH + 1];
+
+    idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
+                     "ALTER SESSION SET TRANSACTIONAL_DDL = %"ID_INT32_FMT" ",
+                     sStatement->session->mBakSessionProperty.mTransactionalDDL );
+
+    IDE_TEST( qciMisc::runDCLforInternal( sStatement,
+                                          sSqlStr,
+                                          sStatement->session->mMmSession )
+              != IDE_SUCCESS );
+
+    idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
+                     "ALTER SESSION SET  GLOBAL_TRANSACTION_LEVEL = %"ID_INT32_FMT" ",
+                     sStatement->session->mBakSessionProperty.mGlobalTransactionLevel );
+
+    IDE_TEST( qciMisc::runDCLforInternal( sStatement,
+                                          sSqlStr,
+                                          sStatement->session->mMmSession )
+              != IDE_SUCCESS );
+    
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/**
+ * BUG-48224
+ * v$plantext ¿¡¼­ plan Ãâ·Â½Ã graph Á¤º¸´Â Ãâ·ÂÇÏ¸é ¾ÊµÈ´Ù.
+ * graph´Â optimize°úÁ¤À» °ÅÁ®¾ßÇÏÁö¸¸ v$plantext  Àº plan
+ * ÀÇ text¸¸ Ãâ·ÂÇØ¾ßÇÏ´Â µ¥ ÀÇµµÄ¡ ¾Ê°Ô graph°¡ °°ÀÌ Ãâ·ÂµÊ.
+ */
+IDE_RC qci::getPlanTreeTextForFixedTable( qciStatement * aStatement,
+                                          iduVarString * aString,
+                                          idBool         aIsCodeOnly )
+{
+    UInt           sStage = 0;
+    qcStatement  * sStatement = &(aStatement->statement);
+
+    qcg::lock( sStatement );
+
+    sStage = 1;
+
+    if ( qcg::getPlanTreeState( sStatement ) == ID_TRUE )
+    {
+        IDE_TEST( qci::makePlanTreeText( aStatement,
+                                         aString,
+                                         aIsCodeOnly,
+                                         ID_TRUE )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        // Nothing To Do
+    }
+
+    sStage = 0;
+
+    qcg::unlock( sStatement );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    if ( sStage == 1 )
+    {
+        qcg::unlock( sStatement );
+    }
+
+    return IDE_FAILURE;
+}
+
+idBool qci::isShardDbmsPkg( qciStatement * aStatement )
+{
+    qcStatement * sStatement = &aStatement->statement;
+    idBool        sResult = ID_FALSE;
+    
+    if (( sStatement->mFlag & QC_STMT_SHARD_DBMS_PKG_MASK )
+        == QC_STMT_SHARD_DBMS_PKG_TRUE )
+    {
+        sResult = ID_TRUE;
+    }
+    else
+    {
+        sResult = ID_FALSE;
+    }
+
+    return sResult;
+}
+
+/* TASK-7219 Non-shard DML */
+IDE_RC qci::setShardPartialExecType( qciStatement            * aStatement,
+                                     sdiShardPartialExecType   aShardPartialExecType )
+{
+    aStatement->statement.mShardPartialExecType = aShardPartialExecType;
+    
+    return IDE_SUCCESS;
 }

@@ -16,18 +16,18 @@
  
 
 /***********************************************************************
- * $Id: qcmPerformanceView.h 83512 2018-07-18 00:47:26Z hykim $
+ * $Id: qcmPerformanceView.h 83394 2018-07-02 03:28:18Z hykim $
  *
  * Description :
  *
- *     FT í…Œì´ë¸”ë“¤ì— ëŒ€í•˜ì—¬
+ *     FT Å×ÀÌºíµé¿¡ ´ëÇÏ¿©
  *     CREATE VIEW V$VIEW AS SELECT * FROM X$TABLE;
- *     ê³¼ ê°™ì´ viewë¥¼ ì •ì˜í•˜ì—¬ ì¼ë°˜ ì‚¬ìš©ìì—ê²ŒëŠ”  ì´ viewì— ëŒ€í•œ ì—°ì‚°ë§Œì„
- *     ê°œë°©í•˜ë„ë¡ í•œë‹¤.
+ *     °ú °°ÀÌ view¸¦ Á¤ÀÇÇÏ¿© ÀÏ¹İ »ç¿ëÀÚ¿¡°Ô´Â  ÀÌ view¿¡ ´ëÇÑ ¿¬»ê¸¸À»
+ *     °³¹æÇÏµµ·Ï ÇÑ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -46,26 +46,26 @@ extern SChar * gQcmPerformanceViews[];
 
 // PROJ-1726
 // qcmPerformanceViewManager
-// ìš©ë„ : ë™ì ëª¨ë“ˆí™”ê°€ ì§„í–‰ë˜ë©´ì„œ ê¸°ì¡´ì˜ ì •ì  ëª¨ë“ˆì´ ì •ì ìœ¼ë¡œ
-// performance viewë¥¼ ë“±ë¡í•˜ëŠ” ë°©ì‹(qcm/qcmPerformanceView.cpp
-// ì˜ gQcmPerformanceViews ë°°ì—´ì— ì¶”ê°€) ì™¸ì— ë™ì  ëª¨ë“ˆ ë‚´ì—ì„œ
-// ëŸ°íƒ€ì„ ì¤‘ ì¶”ê°€ë˜ëŠ” performance view ê°€ ì¡´ì¬í•œë‹¤.
-// ì´ ë‘ê°€ì§€ ë°©ì‹ì˜ performance view ë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ,
-// ê¸°ì¡´ì˜ gQcmPerformanceViews ë°°ì—´ì— ëŒ€í•œ ì¼ì¢…ì˜ wrapper class.
+// ¿ëµµ : µ¿Àû¸ğµâÈ­°¡ ÁøÇàµÇ¸é¼­ ±âÁ¸ÀÇ Á¤Àû ¸ğµâÀÌ Á¤ÀûÀ¸·Î
+// performance view¸¦ µî·ÏÇÏ´Â ¹æ½Ä(qcm/qcmPerformanceView.cpp
+// ÀÇ gQcmPerformanceViews ¹è¿­¿¡ Ãß°¡) ¿Ü¿¡ µ¿Àû ¸ğµâ ³»¿¡¼­
+// ·±Å¸ÀÓ Áß Ãß°¡µÇ´Â performance view °¡ Á¸ÀçÇÑ´Ù.
+// ÀÌ µÎ°¡Áö ¹æ½ÄÀÇ performance view ¸¦ Ã³¸®ÇÏ±â À§ÇÑ,
+// ±âÁ¸ÀÇ gQcmPerformanceViews ¹è¿­¿¡ ´ëÇÑ ÀÏÁ¾ÀÇ wrapper class.
 
-// ë™ì ëª¨ë“ˆí™”ê°€ ë˜ì§€ ì•Šì€ ëª¨ë“ˆì˜ ê²½ìš° performance viewëŠ”
-// ê¸°ì¡´ë°©ì‹ëŒ€ë¡œ gQcmPerformanceViews ì— ì¶”ê°€í•˜ë©°,
-// ë™ì ëª¨ë“ˆí™”ê°€ ì§„í–‰ëœ ëª¨ë“ˆì˜ ê²½ìš° <ëª¨ë“ˆ>i.h ì— ë§¤í¬ë¡œë¡œ ì •ì˜ ë’¤
-// <ëª¨ë“ˆ>im.h :: initSystemTables ì—ì„œ 
-// qciMisc::addPerformanceViews(aQueryStr) ë¥¼ ì´ìš©, ë“±ë¡í•œë‹¤.
-// ì‚¬ìš© ì˜ˆëŠ” rpi.h, rpim.cpp ë“±ì„ ì°¸ì¡°í•œë‹¤.
+// µ¿Àû¸ğµâÈ­°¡ µÇÁö ¾ÊÀº ¸ğµâÀÇ °æ¿ì performance view´Â
+// ±âÁ¸¹æ½Ä´ë·Î gQcmPerformanceViews ¿¡ Ãß°¡ÇÏ¸ç,
+// µ¿Àû¸ğµâÈ­°¡ ÁøÇàµÈ ¸ğµâÀÇ °æ¿ì <¸ğµâ>i.h ¿¡ ¸ÅÅ©·Î·Î Á¤ÀÇ µÚ
+// <¸ğµâ>im.h :: initSystemTables ¿¡¼­ 
+// qciMisc::addPerformanceViews(aQueryStr) ¸¦ ÀÌ¿ë, µî·ÏÇÑ´Ù.
+// »ç¿ë ¿¹´Â rpi.h, rpim.cpp µîÀ» ÂüÁ¶ÇÑ´Ù.
 class qcmPerformanceViewManager
 {
 public:
     static IDE_RC   initialize();
     static IDE_RC   finalize();
 
-    // ì´ performance view ì˜ ìˆ˜ë¥¼ ì–»ëŠ”ë‹¤.
+    // ÃÑ performance view ÀÇ ¼ö¸¦ ¾ò´Â´Ù.
     static SInt     getTotalViewCount( qcmPVType aType )
     {
         SInt sCount = 0;
@@ -86,11 +86,11 @@ public:
         return sCount;
     }
 
-    // ë™ì ìœ¼ë¡œ performance view ë¥¼ ì¶”ê°€
+    // µ¿ÀûÀ¸·Î performance view ¸¦ Ãß°¡
     static IDE_RC   add(SChar* aViewStr);
 
-    // performance view ë¥¼ ë¦¬í„´. ê¸°ì¡´ì˜ gQcmPerformanceViewsì˜
-    // ë°°ì—´ ì ‘ê·¼ ë°©ì‹ê³¼ ê°™ì€ ì¸í„°í˜ì´ìŠ¤ ì œê³µ.
+    // performance view ¸¦ ¸®ÅÏ. ±âÁ¸ÀÇ gQcmPerformanceViewsÀÇ
+    // ¹è¿­ Á¢±Ù ¹æ½Ä°ú °°Àº ÀÎÅÍÆäÀÌ½º Á¦°ø.
     static SChar *  get( int aIdx, qcmPVType aType );
 
 private:

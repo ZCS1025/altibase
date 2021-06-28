@@ -20,24 +20,24 @@
  **********************************************************************/
 
 /* << SM Common DataPort File Module >>
- *  < Proj-2059 DB Upgrade ê¸°ëŠ¥ >
+ *  < Proj-2059 DB Upgrade ±â´É >
  *
  *
  *
  *
- *  - ê°œìš”
- *   ë³¸ Moduleì€ Tableì— ìˆëŠ” ë°ì´í„°ë¥¼ ì¶”ì¶œí•˜ê³  ë„£ëŠ” DataPort ê¸°ëŠ¥ ì¤‘
- *  ë§¤ê°œì²´ë¥¼ Fileë¡œ ì‚¬ìš©í•˜ëŠ” Moduleì…ë‹ˆë‹¤.
- *   ë³¸ Moduleì€ scpModuleì—ì„œ ì •ì˜ëœ Interfaceë¥¼ êµ¬í˜„í•©ë‹ˆë‹¤. ì‚¬ìš©í•˜ëŠ” 
- * ìª½ì—ì„œëŠ” smiDataPort ì¸í„°í˜ì´ìŠ¤ë¥¼ í†µí•´ scpModuleì„ ì„ íƒí•˜ì—¬ ì‚¬ìš©í•˜ë©´
- * ë©ë‹ˆë‹¤.
+ *  - °³¿ä
+ *   º» ModuleÀº Table¿¡ ÀÖ´Â µ¥ÀÌÅÍ¸¦ ÃßÃâÇÏ°í ³Ö´Â DataPort ±â´É Áß
+ *  ¸Å°³Ã¼¸¦ File·Î »ç¿ëÇÏ´Â ModuleÀÔ´Ï´Ù.
+ *   º» ModuleÀº scpModule¿¡¼­ Á¤ÀÇµÈ Interface¸¦ ±¸ÇöÇÕ´Ï´Ù. »ç¿ëÇÏ´Â 
+ * ÂÊ¿¡¼­´Â smiDataPort ÀÎÅÍÆäÀÌ½º¸¦ ÅëÇØ scpModuleÀ» ¼±ÅÃÇÏ¿© »ç¿ëÇÏ¸é
+ * µË´Ï´Ù.
  *
  *
  *
  *
  *
  *
- *  - Fileêµ¬ì¡°
+ *  - File±¸Á¶
  *      Header
  *          Version(4Byte)
  *          CommonHeader( gSmiDataPortHeaderDesc )
@@ -54,24 +54,24 @@
  *
  *
  *
- *  - Block Bodyì˜ êµ¬ì¡°
+ *  - Block BodyÀÇ ±¸Á¶
  *      - BasicColumn
- *          - ê¸°ë³¸
+ *          - ±âº»
  *              <Slot_Len(1~4Byte)><SlotVal(..Byte)>
  *
- *          - Blockì— ê±¸ì¹  ê²½ìš° (Chained)
+ *          - Block¿¡ °ÉÄ¥ °æ¿ì (Chained)
  *              <Slot_Len(1~4Byte)><SlotVal(..)> |  <VarLen(1~4Byte)><SlotVal(....)> 
- *              ì˜ˆ) <Slot_Len:20><....20Byte>
+ *              ¿¹) <Slot_Len:20><....20Byte>
  *                      =>  <Slot_Len:15><....15Byte> | <VarLen:5><..5Byte)
  *
  *      - LobColumn
- *          - ê¸°ë³¸
+ *          - ±âº»
  *              <LobLen(4Byte)><VarInt(1~4Byte)><SlotVal(..Byte)>
  *
- *          - Blockì— ê±¸ì¹  ê²½ìš° (Chained)
+ *          - Block¿¡ °ÉÄ¥ °æ¿ì (Chained)
  *              <LobLen(4Byte)><Slot_Len(1~4Byte)><SlotVal(..Byte)>
  *                      |  <Slot_Len(1~4Byte)><SlotVal(..Byte)> 
- *              ì˜ˆ) <LobLen:20><Slot_Len:20><....20Byte>
+ *              ¿¹) <LobLen:20><Slot_Len:20><....20Byte>
  *                      =>  <LobLen:20><Slot_Len:15><....15Byte>
  *                              | <Slot_Len:5><..5Byte)
  *
@@ -79,53 +79,53 @@
  *
  *
  *
- * - ìš©ì–´
- *  Block        : 1~Nê°œì˜ Blockì´ ëª¨ì—¬ Fileì„ êµ¬ì„±í•œë‹¤. 
- *                 Blockì€ 0~Nê°œì˜ Rowë¡œ êµ¬ì„±ëœë‹¤.
- *  Row          : RowëŠ” 1~Nê°œì˜ Columnìœ¼ë¡œ êµ¬ì„±ëœë‹¤.
- *  Column       : Columnì€ BasicColumnê³¼ LobColumnì´ ìˆë‹¤.
- *  BasicColumn  : 1~Nê°œì˜ Slotì´ ëª¨ì—¬ í•˜ë‚˜ì˜ BasicColumnì´ ëœë‹¤.
- *  LobColumn    : LobLení•˜ë‚˜ì™€ 1~Nê°œì˜ Slotì´ ëª¨ì—¬ í•˜ë‚˜ì˜ BasicColumnì´ ëœë‹¤.
+ * - ¿ë¾î
+ *  Block        : 1~N°³ÀÇ BlockÀÌ ¸ğ¿© FileÀ» ±¸¼ºÇÑ´Ù. 
+ *                 BlockÀº 0~N°³ÀÇ Row·Î ±¸¼ºµÈ´Ù.
+ *  Row          : Row´Â 1~N°³ÀÇ ColumnÀ¸·Î ±¸¼ºµÈ´Ù.
+ *  Column       : ColumnÀº BasicColumn°ú LobColumnÀÌ ÀÖ´Ù.
+ *  BasicColumn  : 1~N°³ÀÇ SlotÀÌ ¸ğ¿© ÇÏ³ªÀÇ BasicColumnÀÌ µÈ´Ù.
+ *  LobColumn    : LobLenÇÏ³ª¿Í 1~N°³ÀÇ SlotÀÌ ¸ğ¿© ÇÏ³ªÀÇ BasicColumnÀÌ µÈ´Ù.
  *
- *  isLobColmnInfo : ê° Columnë“¤ì´ Lobì´ëƒ ì•„ë‹ˆëƒì— ëŒ€í•œ ì •ë³´. 
- *                      ì´ë²ˆì— ì½ì„ Columnì´ Lobì¸ì§€ ê¸°ë¡ë˜ì–´ ìˆë‹¤.
+ *  isLobColmnInfo : °¢ ColumnµéÀÌ LobÀÌ³Ä ¾Æ´Ï³Ä¿¡ ´ëÇÑ Á¤º¸. 
+ *                      ÀÌ¹ø¿¡ ÀĞÀ» ColumnÀÌ LobÀÎÁö ±â·ÏµÇ¾î ÀÖ´Ù.
  *
- *  ColumnMap    : BasicColumnê³¼ LobColumnì„ ì •ë¦¬í•œ Map.
- *                 ex) Columnì´ NLNNL ìˆœì„œì¼ ê²½ìš°, NNNLLë¡œ ë°°ì¹˜ë˜ì–´ì•¼ í•¨.
+ *  ColumnMap    : BasicColumn°ú LobColumnÀ» Á¤¸®ÇÑ Map.
+ *                 ex) ColumnÀÌ NLNNL ¼ø¼­ÀÏ °æ¿ì, NNNLL·Î ¹èÄ¡µÇ¾î¾ß ÇÔ.
  *                     ColumnMap -> 0,2,3,1,4
  *
- *  SlotValLen   : Slotì˜ Length. í¬ê¸°ì— ë”°ë¼ Variableí•˜ê²Œ 1~4Byte ì‚¬ì´ë¡œ
- *                 ë³€ê²½ë˜ì–´ ê¸°ë¡ëœë‹¤.
+ *  SlotValLen   : SlotÀÇ Length. Å©±â¿¡ µû¶ó VariableÇÏ°Ô 1~4Byte »çÀÌ·Î
+ *                 º¯°æµÇ¾î ±â·ÏµÈ´Ù.
  *      0~63        [0 | len ]
  *     64~16383     [1 | len>>8  & 63][len ]
  *  16384~4194303   [2 | len>>16 & 63][len>>8 & 255][len & 255]
  *4194304~1073741824[3 | len>>24 & 63][len>>16 & 255][len>>8 & 255][len & 255]
  *
- *  LobLen       : Lob Columní•˜ë‚˜ì˜ ì „ì²´ ê¸¸ì´. 4Byte UIntë¡œ ê¸°ë¡ëœë‹¤.
+ *  LobLen       : Lob ColumnÇÏ³ªÀÇ ÀüÃ¼ ±æÀÌ. 4Byte UInt·Î ±â·ÏµÈ´Ù.
  *
- *  Overflow     : Rowê°€ Blockì— ê±¸ì³ ê¸°ë¡ë ë•Œ, ì†Œì†ëœ Slotì€ ì´ì „ Blockì— ê¸°ë¡
- *                 ë˜ì–´ì•¼ í•˜ëŠ”ë° ë„˜ì–´ê°”ìœ¼ë¯€ë¡œ, OverflowBlockì´ë‹¤
+ *  Overflow     : Row°¡ Block¿¡ °ÉÃÄ ±â·ÏµÉ¶§, ¼Ò¼ÓµÈ SlotÀº ÀÌÀü Block¿¡ ±â·Ï
+ *                 µÇ¾î¾ß ÇÏ´Âµ¥ ³Ñ¾î°¬À¸¹Ç·Î, OverflowBlockÀÌ´Ù
  *
- *  Chaining     : Rowë¥¼ êµ¬ì„±í•˜ëŠ” Columnì´ Blockì— ê±¸ì³ ê¸°ë¡ë ë•Œ,
- *                 Chainingë˜ì—ˆë‹¤ê³  í•œë‹¤.
+ *  Chaining     : Row¸¦ ±¸¼ºÇÏ´Â ColumnÀÌ Block¿¡ °ÉÃÄ ±â·ÏµÉ¶§,
+ *                 ChainingµÇ¾ú´Ù°í ÇÑ´Ù.
  *
- *  Overflowì™€Chainingì˜ ì°¨ì´ : Chainingì€ Columnì˜ Slotì´ ìª¼ê°œì§„ ê²ƒì´ê³ 
- *                              OverFlowëŠ” Rowë¥¼ êµ¬ì„±í•˜ëŠ” Columnì´
- *                              ë‚˜ë‰˜ì–´ ê¸°ë¡ëœ ê²ƒì´ë‹¤.
+ *  Overflow¿ÍChainingÀÇ Â÷ÀÌ : ChainingÀº ColumnÀÇ SlotÀÌ ÂÉ°³Áø °ÍÀÌ°í
+ *                              OverFlow´Â Row¸¦ ±¸¼ºÇÏ´Â ColumnÀÌ
+ *                              ³ª´µ¾î ±â·ÏµÈ °ÍÀÌ´Ù.
  *      ex) Table( Integer, Char(10) )
  *           Overflow N Chaining N : <Integer><Char(10)>
  *           Overflow Y Chaining N : <Integer> | <Char(10)>
- *           Overflow N Chaining Y :  - ìˆì„ìˆ˜ ì—†ë‹¤ -
+ *           Overflow N Chaining Y :  - ÀÖÀ»¼ö ¾ø´Ù -
  *           Overflow Y Chaining Y : <Integer><Char | (10)>
  *           
- *  BuildRow     : Blockì„ í•´ì„í•˜ì—¬ Valueì— Pointerë¡œ ì—°ê²°í•˜ëŠ” ì¼ì´ë‹¤.
- *                 ë”°ë¼ì„œ Importì‹œ, memcpyì—†ì´ Blockì— ìˆëŠ” ê²ƒìœ¼ë¡œ
- *                 ë°”ë¡œ insertí•˜ëŠ”ë° ì‚¬ìš©í•  ìˆ˜ ìˆë‹¤.
+ *  BuildRow     : BlockÀ» ÇØ¼®ÇÏ¿© Value¿¡ Pointer·Î ¿¬°áÇÏ´Â ÀÏÀÌ´Ù.
+ *                 µû¶ó¼­ Import½Ã, memcpy¾øÀÌ Block¿¡ ÀÖ´Â °ÍÀ¸·Î
+ *                 ¹Ù·Î insertÇÏ´Âµ¥ »ç¿ëÇÒ ¼ö ÀÖ´Ù.
  *
  *
  *
  *
- * - í•¨ìˆ˜ ë¶„ë¥˜
+ * - ÇÔ¼ö ºĞ·ù
  *    - interface
  *    scpfBeginExport
  *    scpfWrite
@@ -141,16 +141,16 @@
  * 
  *
  *
- * - Exportìš©
+ * - Export¿ë
  *    - Handle Alloc/Dealloc
  *    scpfInit4Export
  *    scpfDestroy4Export
  * 
- *    - íŒŒì¼ Open/Close
+ *    - ÆÄÀÏ Open/Close
  *    scpfPrepareFile
  *    scpfCloseFile4Export
  * 
- *    - íŒŒì¼ ì½ê³  ì“°ê¸°
+ *    - ÆÄÀÏ ÀĞ°í ¾²±â
  *    scpfWriteHeader
  *    scpfAllocSlot
  *    scpfWriteBasicColumn
@@ -161,18 +161,18 @@
  * 
  * 
  * 
- * - Importìš©
- *    - Handle ì œì–´
+ * - Import¿ë
+ *    - Handle Á¦¾î
  *    scpfInit4Import
  *    scpfReleaseHeader
  *    scpfDestroy4Import
  * 
- *    - íŒŒì¼ Open/Close
+ *    - ÆÄÀÏ Open/Close
  *    scpfOpenFile
  *    scpfFindFile
  *    scpfCloseFile4Import
  * 
- *    - íŒŒì¼ ì½ê³  ì“°ê¸°
+ *    - ÆÄÀÏ ÀĞ°í ¾²±â
  *    scpfFindFirstBlock
  *    scpfShiftBlock
  *    scpfPreFetchBlock
@@ -202,7 +202,7 @@ extern smiGlobalCallBackList gSmiGlobalCallBackList;
  * Interface
  **********************************************************************/
 
-//exportë¥¼ ì‹œì‘í•œë‹¤.
+//export¸¦ ½ÃÀÛÇÑ´Ù.
 static IDE_RC scpfBeginExport( idvSQL               * aStatistics,
                                void                ** aHandle,
                                smiDataPortHeader    * aCommonHeader,
@@ -210,33 +210,33 @@ static IDE_RC scpfBeginExport( idvSQL               * aStatistics,
                                SChar                * aDirectory,
                                SLong                  aSplit );
 
-//Rowë¥¼ í•˜ë‚˜ Writeí•œë‹¤.
+//Row¸¦ ÇÏ³ª WriteÇÑ´Ù.
 static IDE_RC scpfWrite( idvSQL         * aStatistics,
                          void           * aHandle,
                          smiValue       * aValueList );
 
-// Lobì„ ì“¸ ì¤€ë¹„ë¥¼ í•œë‹¤.
+// LobÀ» ¾µ ÁØºñ¸¦ ÇÑ´Ù.
 static IDE_RC scpfPrepareLob( idvSQL         * aStatistics,
                               void           * aHandle,
                               UInt             aLobLength );
 
 
-// Lobì„ ê¸°ë¡í•œë‹¤.
+// LobÀ» ±â·ÏÇÑ´Ù.
 static IDE_RC scpfWriteLob( idvSQL         * aStatistics,
                             void           * aHandle,
                             UInt             aLobPieceLength,
                             UChar          * aLobPieceValue );
 
-// Lobì„ ê¸°ë¡ì„ ì™„ë£Œí•œë‹¤.
+// LobÀ» ±â·ÏÀ» ¿Ï·áÇÑ´Ù.
 static IDE_RC scpfFinishLobWriting( idvSQL         * aStatistics,
                                     void           * aHandle );
 
-// Exportë¥¼ ì¢…ë£Œí•œë‹¤.
+// Export¸¦ Á¾·áÇÑ´Ù.
 static IDE_RC scpfEndExport( idvSQL         * aStatistics,
                              void          ** aHandle );
 
 
-//importë¥¼ ì‹œì‘í•œë‹¤. í—¤ë”ë¥¼ ì½ëŠ”ë‹¤.
+//import¸¦ ½ÃÀÛÇÑ´Ù. Çì´õ¸¦ ÀĞ´Â´Ù.
 static IDE_RC scpfBeginImport( idvSQL              * aStatistics,
                                void               ** aHandle,
                                smiDataPortHeader   * aCommonHeader,
@@ -245,27 +245,27 @@ static IDE_RC scpfBeginImport( idvSQL              * aStatistics,
                                SChar               * aObjName,
                                SChar               * aDirectory );
 
-//rowë“¤ì„ ì½ëŠ”ë‹¤.
+//rowµéÀ» ÀĞ´Â´Ù.
 static IDE_RC scpfRead( idvSQL         * aStatistics,
                         void           * aHandle,
                         smiRow4DP     ** aRows,
                         UInt           * aRowCount );
 
-//Lobì˜ ì´ ê¸¸ì´ë¥¼ ë°˜í™˜í•œë‹¤.
+//LobÀÇ ÃÑ ±æÀÌ¸¦ ¹İÈ¯ÇÑ´Ù.
 static IDE_RC scpfReadLobLength( idvSQL         * aStatistics,
                                  void           * aHandle,
                                  UInt           * aLength );
 
-//Lobì„ ì½ëŠ”ë‹¤.
+//LobÀ» ÀĞ´Â´Ù.
 static IDE_RC scpfReadLob( idvSQL         * aStatistics,
                            void           * aHandle,
                            UInt           * aLobPieceLength,
                            UChar         ** aLobPieceValue );
 
-// Lobì„ ì½ê¸°ë¥¼ ì™„ë£Œí•œë‹¤.
+// LobÀ» ÀĞ±â¸¦ ¿Ï·áÇÑ´Ù.
 static IDE_RC scpfFinishLobReading( idvSQL         * aStatistics,
                                     void           * aHandle );
-//importë¥¼ ì¢…ë£Œí•œë‹¤.
+//import¸¦ Á¾·áÇÑ´Ù.
 static IDE_RC scpfEndImport( idvSQL         * aStatistics,
                              void          ** aHandle );
 
@@ -291,7 +291,7 @@ scpModule scpfModule = {
  * Internal Functions for Exporting
  **********************************************************************/
 
-// Exportí•˜ê¸° ìœ„í•´ Handleì„ ê¸°ë³¸ ì„¤ì • í•œë‹¤.
+// ExportÇÏ±â À§ÇØ HandleÀ» ±âº» ¼³Á¤ ÇÑ´Ù.
 static IDE_RC scpfInit4Export( idvSQL                * aStatistics,
                                scpfHandle           ** aHandle,
                                smiDataPortHeader     * aCommonHeader,
@@ -299,19 +299,19 @@ static IDE_RC scpfInit4Export( idvSQL                * aStatistics,
                                SChar                 * aDirectory,
                                SLong                   aSplit );
 
-// Handleì„ ì œê±°í•œë‹¤.
+// HandleÀ» Á¦°ÅÇÑ´Ù.
 static IDE_RC scpfDestroy4Export( idvSQL         * aStatistics,
                                   scpfHandle    ** aHandle );
 
-// ê¸°ë¡í•  íŒŒì¼ì„ ì¤€ë¹„í•œë‹¤.
+// ±â·ÏÇÒ ÆÄÀÏÀ» ÁØºñÇÑ´Ù.
 static IDE_RC scpfPrepareFile( idvSQL         * aStatistics,
                                scpfHandle     * aHandle );
 
-// Fileì„ ë‹«ëŠ”ë‹¤.
+// FileÀ» ´İ´Â´Ù.
 static IDE_RC scpfCloseFile4Export( idvSQL         * aStatistics,
                                     scpfHandle     * aHandle );
 
-// ê¸°ë¡ í• Slotì„ í™•ë³´í•œë‹¤
+// ±â·Ï ÇÒSlotÀ» È®º¸ÇÑ´Ù
 static IDE_RC scpfAllocSlot( 
                 idvSQL                  * aStatistics,
                 iduFile                 * aFile,
@@ -327,7 +327,7 @@ static IDE_RC scpfAllocSlot(
                 scpfFilePosition        * aFilePosition,
                 UInt                    * aAllocatedSlotValLen );
 
-// BasicColumnì„ writeí•œë‹¤.
+// BasicColumnÀ» writeÇÑ´Ù.
 static IDE_RC scpfWriteBasicColumn( 
             idvSQL                  * aStatistics,
             iduFile                 * aFile,
@@ -341,7 +341,7 @@ static IDE_RC scpfWriteBasicColumn(
             scpfBlockBufferPosition * aBlockBufferPosition,
             scpfFilePosition        * aFilePosition );
 
-// LobColumn( LobLen + slot...)ë¥¼ Writeí•œë‹¤.
+// LobColumn( LobLen + slot...)¸¦ WriteÇÑ´Ù.
 static IDE_RC scpfWriteLobColumn( idvSQL         * aStatistics,
                                   scpfHandle     * aHandle,
                                   UInt             aLobPieceLength,
@@ -349,14 +349,14 @@ static IDE_RC scpfWriteLobColumn( idvSQL         * aStatistics,
                                   UInt           * aRemainLobLength,
                                   UInt           * aAllocatedLobSlotSize );
 
-// ë‹¤ìŒ Blockì„ ì¤€ë¹„í•œë‹¤.
+// ´ÙÀ½ BlockÀ» ÁØºñÇÑ´Ù.
 static IDE_RC scpfPrepareBlock( idvSQL                  * aStatistics,
                                 scpfHeader              * aFileHeader,
                                 SLong                     aRowSeq,
                                 scpfBlockInfo           * aBlockInfo,
                                 scpfBlockBufferPosition * aBlockBufferPosition );
 
-// í˜„ì¬ ê¸°ë¡ì¤‘ì¸ Blockì„ íŒŒì¼ì— ê¸°ë¡í•œë‹¤.
+// ÇöÀç ±â·ÏÁßÀÎ BlockÀ» ÆÄÀÏ¿¡ ±â·ÏÇÑ´Ù.
 static IDE_RC scpfWriteBlock( idvSQL                  * aStatistics, 
                               iduFile                 * aFile,
                               smiDataPortHeader       * aCommonHeader,
@@ -366,7 +366,7 @@ static IDE_RC scpfWriteBlock( idvSQL                  * aStatistics,
                               scpfBlockBufferPosition * aBlockBufferPosition,
                               scpfFilePosition        * aFilePosition );
 
-// Headerë¥¼ Fileì— ì“´ë‹¤.
+// Header¸¦ File¿¡ ¾´´Ù.
 static IDE_RC scpfWriteHeader( idvSQL                     * aStatistics,
                                iduFile                    * aFile,
                                smiDataPortHeader          * aCommonHeader,
@@ -378,7 +378,7 @@ static IDE_RC scpfWriteHeader( idvSQL                     * aStatistics,
  * Internal Functions for Importing
  **********************************************************************/
 
-// importí•˜ê¸° ìœ„í•´ Handleì„ ì¤€ë¹„í•œë‹¤.
+// importÇÏ±â À§ÇØ HandleÀ» ÁØºñÇÑ´Ù.
 static IDE_RC scpfInit4Import( idvSQL                * aStatistics,
                                scpfHandle           ** aHandle,
                                smiDataPortHeader     * aCommonHeader,
@@ -387,10 +387,10 @@ static IDE_RC scpfInit4Import( idvSQL                * aStatistics,
                                SChar                 * aObjName,
                                SChar                 * aDirectory );
 
-// Handleì„ ì œê±°í•œë‹¤.
+// HandleÀ» Á¦°ÅÇÑ´Ù.
 static IDE_RC scpfDestroy4Import( idvSQL         * aStatistics,
                                   scpfHandle    ** aHandle );
-// í•´ë‹¹ Fileì„ ì—°ë‹¤.
+// ÇØ´ç FileÀ» ¿¬´Ù.
 static IDE_RC scpfOpenFile( idBool         * aOpenFile,
                             iduFile        * aFile,
                             SChar          * aObjName, 
@@ -398,17 +398,17 @@ static IDE_RC scpfOpenFile( idBool         * aOpenFile,
                             UInt             aIdx,
                             SChar          * aFileName );
 
-// ëª©í‘œ Fileì„ ì°¾ëŠ”ë‹¤
+// ¸ñÇ¥ FileÀ» Ã£´Â´Ù
 static IDE_RC scpfFindFile( SChar            * aObjName,
                             SChar            * aDirectory,
                             UInt               aFileIdx,
                             SChar            * aFileName );
 
-// Fileì„ ë‹«ëŠ”ë‹¤.
+// FileÀ» ´İ´Â´Ù.
 static IDE_RC scpfCloseFile4Import( idvSQL         * aStatistics,
                                     scpfHandle     * aHandle );
 
-// Headerë¥¼ ì½ëŠ”ë‹¤.
+// Header¸¦ ÀĞ´Â´Ù.
 static IDE_RC scpfReadHeader( idvSQL                    * aStatistics,
                               iduFile                   * aFile,
                               smiDataPortHeader         * aCommonHeader,
@@ -416,11 +416,11 @@ static IDE_RC scpfReadHeader( idvSQL                    * aStatistics,
                               scpfBlockBufferPosition   * aBlockBufferPosition,
                               scpfFilePosition          * aFilePosition );
 
-// Headerë¥¼ ì½ëŠ”ë° ì‚¬ìš©í–ˆë˜ ë©”ëª¨ë¦¬ë¥¼ ì‚­ì œ
+// Header¸¦ ÀĞ´Âµ¥ »ç¿ëÇß´ø ¸Ş¸ğ¸®¸¦ »èÁ¦
 static IDE_RC scpfReleaseHeader( idvSQL         * aStatistics,
                                  scpfHandle     * aHandle );
 
-// Fileë¡œë¶€í„° Blockì„ ì½ëŠ”ë‹¤.
+// File·ÎºÎÅÍ BlockÀ» ÀĞ´Â´Ù.
 static IDE_RC scpfReadBlock( idvSQL             * aStatistics,
                              iduFile            * aFile,
                              smiDataPortHeader  * aCommonHeader,
@@ -431,7 +431,7 @@ static IDE_RC scpfReadBlock( idvSQL             * aStatistics,
                              ULong              * aFileOffset,
                              scpfBlockInfo      * aBlockInfo );
 
-// BinarySearchë¡œ FirstRowë¥¼ ê°€ì§„ Blockì„ ì°¾ëŠ”ë‹¤.
+// BinarySearch·Î FirstRow¸¦ °¡Áø BlockÀ» Ã£´Â´Ù.
 static IDE_RC scpfFindFirstBlock( idvSQL                   * aStatistics,
                                   iduFile                  * aFile,
                                   smiDataPortHeader        * aCommonHeader,
@@ -444,13 +444,13 @@ static IDE_RC scpfFindFirstBlock( idvSQL                   * aStatistics,
                                   scpfBlockInfo           ** aBlockMap,
                                   scpfBlockBufferPosition  * aBlockBufferPosition );
 
-// BlockMapì„ Shiftì‹œì¼œì„œ ì•„ì§ ì½ì§€ ì•Šì€ Blockì„ BlockMapì˜ ì•ìª½ì—
-// ì˜¤ë„ë¡ ì´ë™ì‹œí‚¨ë‹¤
+// BlockMapÀ» Shift½ÃÄÑ¼­ ¾ÆÁ÷ ÀĞÁö ¾ÊÀº BlockÀ» BlockMapÀÇ ¾ÕÂÊ¿¡
+// ¿Àµµ·Ï ÀÌµ¿½ÃÅ²´Ù
 static void scpfShiftBlock( UInt                aShiftBlockCount,
                             UInt                aBlockInfoCount,
                             scpfBlockInfo    ** aBlockMap );
 
-// ë‹¤ìŒë²ˆ Blockì„ ì½ì–´ì„œ Handleì— ì˜¬ë¦°ë‹¤.
+// ´ÙÀ½¹ø BlockÀ» ÀĞ¾î¼­ Handle¿¡ ¿Ã¸°´Ù.
 static IDE_RC scpfPreFetchBlock( idvSQL             * aStatistics,
                                  iduFile            * aFile,
                                  smiDataPortHeader  * aCommonHeader,
@@ -466,7 +466,7 @@ static IDE_RC scpfPreFetchBlock( idvSQL             * aStatistics,
                                  UInt                 aReadBlockCount,
                                  scpfBlockInfo     ** aBlockMap );
 
-// Blockì„ Parsingí•˜ì—¬ Rowë¥¼ ë§Œë“ ë‹¤
+// BlockÀ» ParsingÇÏ¿© Row¸¦ ¸¸µç´Ù
 static IDE_RC scpfBuildRow( idvSQL                    * aStatistics,
                             scpfHandle                * aHandle,
                             smiDataPortHeader         * aCommonHeader,
@@ -479,7 +479,7 @@ static IDE_RC scpfBuildRow( idvSQL                    * aStatistics,
                             idBool                    * aHasSupplementLob,
                             smiRow4DP                 * aRowList );
 
-// BasicColumnì„ ì½ëŠ”ë‹¤
+// BasicColumnÀ» ÀĞ´Â´Ù
 static IDE_RC scpfReadBasicColumn( 
                     scpfBlockBufferPosition * aBlockBufferPosition,
                     scpfBlockInfo          ** aBlockMap,
@@ -488,13 +488,13 @@ static IDE_RC scpfReadBasicColumn(
                     UInt                    * aUsedChainedSlotBufferSize,
                     smiValue                * aValue );
 
-// LobColumnì„ ì½ëŠ”ë‹¤.
+// LobColumnÀ» ÀĞ´Â´Ù.
 static IDE_RC scpfReadLobColumn( scpfBlockBufferPosition  * aBlockBufferPosition,
                                  scpfBlockInfo           ** aBlockMap,
                                  UInt                       aBlockHeaderSize,
                                  smiValue                 * aValue );
 
-// Slotí•˜ë‚˜ë¥¼ ì½ëŠ”ë‹¤.
+// SlotÇÏ³ª¸¦ ÀĞ´Â´Ù.
 static IDE_RC scpfReadSlot( scpfBlockBufferPosition * aBlockBufferPosition,
                             scpfBlockInfo          ** aBlockMap,
                             UInt                      aBlockHeaderSize,
@@ -603,8 +603,8 @@ IDE_RC gScpfBlockHeaderValidation( void * aDesc,
 
     IDE_EXCEPTION( ERR_ABORT_DATA_PORT_INTERNAL_ERROR );
     {
-        // Memory í• ë‹¹ í›„, í•´ë‹¹ ë©”ëª¨ë¦¬ì— ë³¸ Headerë¥¼ Dumpí•´ë‘¡ë‹ˆë‹¤
-        // ê·¸ë¦¬ê³  Dumpëœ Headerë¥¼ TRCë¡œê·¸ì— ì¶œë ¥í•©ë‹ˆë‹¤.
+        // Memory ÇÒ´ç ÈÄ, ÇØ´ç ¸Ş¸ğ¸®¿¡ º» Header¸¦ DumpÇØµÓ´Ï´Ù
+        // ±×¸®°í DumpµÈ Header¸¦ TRC·Î±×¿¡ Ãâ·ÂÇÕ´Ï´Ù.
         if( iduMemMgr::calloc( IDU_MEM_SM_SCP, 
                                1, 
                                IDE_DUMP_DEST_LIMIT, 
@@ -753,8 +753,8 @@ IDE_RC gScpfFileHeaderValidation( void * aDesc,
 
     IDE_EXCEPTION( ERR_ABORT_DATA_PORT_INTERNAL_ERROR );
     {
-        // Memory í• ë‹¹ í›„, í•´ë‹¹ ë©”ëª¨ë¦¬ì— ë³¸ Headerë¥¼ Dumpí•´ë‘¡ë‹ˆë‹¤
-        // ê·¸ë¦¬ê³  Dumpëœ Headerë¥¼ TRCë¡œê·¸ì— ì¶œë ¥í•©ë‹ˆë‹¤.
+        // Memory ÇÒ´ç ÈÄ, ÇØ´ç ¸Ş¸ğ¸®¿¡ º» Header¸¦ DumpÇØµÓ´Ï´Ù
+        // ±×¸®°í DumpµÈ Header¸¦ TRC·Î±×¿¡ Ãâ·ÂÇÕ´Ï´Ù.
         if( iduMemMgr::calloc( IDU_MEM_SM_SCP, 
                                1, 
                                IDE_DUMP_DEST_LIMIT, 
@@ -812,17 +812,17 @@ smiDataPortHeaderDesc  gScpfFileHeaderDesc[ SMI_DATAPORT_VERSION_COUNT ]=
 /***********************************************************************
  *
  * Description :
- *  Exportë¥¼ ìœ„í•œ ì¤€ë¹„ë¥¼ í•œë‹¤.
+ *  Export¸¦ À§ÇÑ ÁØºñ¸¦ ÇÑ´Ù.
  *
- *  1) Object Handleì„ ì´ˆê¸°í™”í•œë‹¤.
- *  2) íŒŒì¼ì„ ìƒì„±í•©ë‹ˆë‹¤.
- *  3) Headerë¥¼ ê¸°ë¡í•œë‹¤.
+ *  1) Object HandleÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ *  2) ÆÄÀÏÀ» »ı¼ºÇÕ´Ï´Ù.
+ *  3) Header¸¦ ±â·ÏÇÑ´Ù.
  *
- *  aStatistics         - [IN] í†µê³„ì •ë³´
+ *  aStatistics         - [IN] Åë°èÁ¤º¸
  *  aHandle             - [IN/OUT] Object Handle
- *  aCommonHeader       - [IN] Fileì— ë‚´ë¦´ ê³µí†µ Header(Column,Tableë“± í¬í•¨)
- *  aObjName            - [IN] Object ì´ë¦„
- *  aSplit              - [IN] Splitë˜ëŠ” ê¸°ì  Row ê°œìˆ˜
+ *  aCommonHeader       - [IN] File¿¡ ³»¸± °øÅë Header(Column,Tableµî Æ÷ÇÔ)
+ *  aObjName            - [IN] Object ÀÌ¸§
+ *  aSplit              - [IN] SplitµÇ´Â ±âÁ¡ Row °³¼ö
  *
  **********************************************************************/
 
@@ -841,7 +841,7 @@ static IDE_RC scpfBeginExport( idvSQL               * aStatistics,
 
     sHandle = (scpfHandle**)aHandle;
 
-    // Handleì„ ì´ˆê¸°í™”í•œë‹¤
+    // HandleÀ» ÃÊ±âÈ­ÇÑ´Ù
     IDE_TEST( scpfInit4Export( aStatistics, 
                                sHandle, 
                                aCommonHeader,
@@ -850,7 +850,7 @@ static IDE_RC scpfBeginExport( idvSQL               * aStatistics,
                                aSplit )
               != IDE_SUCCESS);
 
-    // Fileì„ ìƒì„±í•œë‹¤.
+    // FileÀ» »ı¼ºÇÑ´Ù.
     IDE_TEST( scpfPrepareFile( aStatistics, 
                                *sHandle )
               != IDE_SUCCESS);
@@ -864,7 +864,7 @@ static IDE_RC scpfBeginExport( idvSQL               * aStatistics,
     return IDE_FAILURE;
 }
 
-//rowë¥¼ í•˜ë‚˜ writeí•œë‹¤.
+//row¸¦ ÇÏ³ª writeÇÑ´Ù.
 static IDE_RC scpfWrite( idvSQL         * aStatistics,
                          void           * aHandle,
                          smiValue       * aValueList )
@@ -883,10 +883,10 @@ static IDE_RC scpfWrite( idvSQL         * aStatistics,
     sHandle             = (scpfHandle*)aHandle;
     sCommonHeader       = sHandle->mCommonHandle.mHeader;
     sColumnMap          = sHandle->mColumnMap;
-    sBlockInfo          = sHandle->mBlockMap[ 0 ]; // Exportì‹œì—ëŠ” 0ë²ˆë§Œ ì´ìš©
+    sBlockInfo          = sHandle->mBlockMap[ 0 ]; // Export½Ã¿¡´Â 0¹ø¸¸ ÀÌ¿ë
     sBlockBufferPosition= &(sHandle->mBlockBufferPosition);
 
-    // File Split ì—¬ë¶€ ì²´í¬
+    // File Split ¿©ºÎ Ã¼Å©
     if( sHandle->mSplit != 0 )
     {
         if( sHandle->mSplit == sHandle->mFileHeader.mRowCount  )
@@ -901,14 +901,14 @@ static IDE_RC scpfWrite( idvSQL         * aStatistics,
     sBeginBlockID = sBlockBufferPosition->mID;
     sHandle->mIsFirstSlotInRow = ID_TRUE;
 
-    // BasicColumnì´ ì—†ì—ˆì„ ê²½ìš°, Skip
+    // BasicColumnÀÌ ¾ø¾úÀ» °æ¿ì, Skip
     IDE_TEST_CONT( sCommonHeader->mBasicColumnCount == 0,
                     SKIP_WRITE_BASICCOLUMN );
 
     for( i=0; i < sCommonHeader->mBasicColumnCount; i++)
     {
-        // N L N N L ì¼ ê²½ìš°, ColumnMap(0,2,3,1,4)ì— ì˜í•´ 
-        // 0,  2,3  ë²ˆì§¸ì— ìˆëŠ” BasicColumnì„ ì°¾ì•„ Writeí•œë‹¤.
+        // N L N N L ÀÏ °æ¿ì, ColumnMap(0,2,3,1,4)¿¡ ÀÇÇØ 
+        // 0,  2,3  ¹øÂ°¿¡ ÀÖ´Â BasicColumnÀ» Ã£¾Æ WriteÇÑ´Ù.
         IDE_TEST( scpfWriteBasicColumn( aStatistics,
                                          &sHandle->mFile,
                                          sHandle->mCommonHandle.mHeader,
@@ -923,18 +923,18 @@ static IDE_RC scpfWrite( idvSQL         * aStatistics,
                   != IDE_SUCCESS );
     }
 
-    // Rowê°€ Blockì— ê±¸ì³ ê¸°ë¡ë˜ë©´, 
+    // Row°¡ Block¿¡ °ÉÃÄ ±â·ÏµÇ¸é, 
     if( sBeginBlockID != sBlockBufferPosition->mID )
     {
-        // firstBlockë¶€í„° LastBlockê¹Œì§€ Rowê°€ ê±¸ì³ ê¸°ë¡ë˜ê¸° ë•Œë¬¸ì—, 
-        // importì‹œ ê±¸ì³ ê¸°ë¡ëœ ë§Œí¼ì˜ BlockInfoê°€ í•„ìš”í•˜ë‹¤.
+        // firstBlockºÎÅÍ LastBlock±îÁö Row°¡ °ÉÃÄ ±â·ÏµÇ±â ¶§¹®¿¡, 
+        // import½Ã °ÉÃÄ ±â·ÏµÈ ¸¸Å­ÀÇ BlockInfo°¡ ÇÊ¿äÇÏ´Ù.
         sHandle->mFileHeader.mBlockInfoCount = 
             IDL_MAX( sHandle->mFileHeader.mBlockInfoCount,
                      sBlockBufferPosition->mID - sBeginBlockID + 1 );
     }
 
-    // LobColumnì´ ì—†ë‹¤ë©´, BasicColumnì— ëŒ€í•œ ê¸°ë¡ë§Œìœ¼ë¡œë„ Rowì— ëŒ€í•œ
-    // ê¸°ë¡ì€ ì™„ë£Œëœ ê²ƒì´ë‹¤.
+    // LobColumnÀÌ ¾ø´Ù¸é, BasicColumn¿¡ ´ëÇÑ ±â·Ï¸¸À¸·Îµµ Row¿¡ ´ëÇÑ
+    // ±â·ÏÀº ¿Ï·áµÈ °ÍÀÌ´Ù.
     if( sCommonHeader->mLobColumnCount == 0 )
     {
         sHandle->mFileHeader.mRowCount ++;
@@ -958,19 +958,19 @@ static IDE_RC scpfWrite( idvSQL         * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  Lobì„ ê¸°ë¡í•˜ê¸° ì „, ëª‡ Lengthì§œë¦¬ Lobì´ ê¸°ë¡ë˜ëŠ”ì§€ ë¨¼ì € ì•Œë¦¬ëŠ”
- * í•¨ìˆ˜ì´ë‹¤.
- *  Blockì— LobLengthì™€ SlotValLenë¥¼ ê¸°ë¡í•œë‹¤.
+ *  LobÀ» ±â·ÏÇÏ±â Àü, ¸î LengthÂ¥¸® LobÀÌ ±â·ÏµÇ´ÂÁö ¸ÕÀú ¾Ë¸®´Â
+ * ÇÔ¼öÀÌ´Ù.
+ *  Block¿¡ LobLength¿Í SlotValLen¸¦ ±â·ÏÇÑ´Ù.
  *
- *  aStatistics         - [IN] í†µê³„ì •ë³´
+ *  aStatistics         - [IN] Åë°èÁ¤º¸
  *  aHandle             - [IN] Object Handle
- *  aLength             - [IN] ê¸°ë¡í•  Lobì˜ ê¸¸ì´
+ *  aLength             - [IN] ±â·ÏÇÒ LobÀÇ ±æÀÌ
  *
  * - Lob Column
  *   [LobLen (4byte)][SlotValLen(1~4Byte)][SlotVal]
- *   Slot_LenëŠ” ì—­ì‹œ ìˆœìˆ˜ SlotValì˜ í¬ê¸°. ì¦‰ LobLenì˜ 4ByteëŠ” í¬í•¨ë˜ì§€ ì•ŠëŠ”ë‹¤.
- *   ì—¬ê¸°ì„œ LobLenëŠ” Slotì´ Chainingëœ ê²ƒê³¼ ìƒê´€ ì—†ì´, í•˜ë‚˜ì˜ LobColumn
- * ì „ì²´ì˜ ê¸¸ì´ì´ë‹¤. ë§Œì•½ Lobì´ Chainingë˜ë©´, ì²«ë²ˆì§¸ Slotì—ë§Œ ê¸°ë¡í•œë‹¤.
+ *   Slot_Len´Â ¿ª½Ã ¼ø¼ö SlotValÀÇ Å©±â. Áï LobLenÀÇ 4Byte´Â Æ÷ÇÔµÇÁö ¾Ê´Â´Ù.
+ *   ¿©±â¼­ LobLen´Â SlotÀÌ ChainingµÈ °Í°ú »ó°ü ¾øÀÌ, ÇÏ³ªÀÇ LobColumn
+ * ÀüÃ¼ÀÇ ±æÀÌÀÌ´Ù. ¸¸¾à LobÀÌ ChainingµÇ¸é, Ã¹¹øÂ° Slot¿¡¸¸ ±â·ÏÇÑ´Ù.
  *
  **********************************************************************/
 static IDE_RC scpfPrepareLob( idvSQL         * aStatistics,
@@ -984,7 +984,7 @@ static IDE_RC scpfPrepareLob( idvSQL         * aStatistics,
 
     sHandle               = (scpfHandle*) aHandle;
 
-    // Slot í™•ë³´
+    // Slot È®º¸
     IDE_TEST( scpfAllocSlot( aStatistics, 
                              &sHandle->mFile,
                              sHandle->mCommonHandle.mHeader,
@@ -1013,12 +1013,12 @@ static IDE_RC scpfPrepareLob( idvSQL         * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  prepareLob í›„, lobì— ëŒ€í•œ writeë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *  prepareLob ÈÄ, lob¿¡ ´ëÇÑ write¸¦ ¼öÇàÇÑ´Ù.
  *
- *  aStatistics         - [IN] í†µê³„ì •ë³´
+ *  aStatistics         - [IN] Åë°èÁ¤º¸
  *  aHandle             - [IN] Object Handle
- *  aLobPieceLength     - [IN] ê¸°ë¡í•  Lob ì¡°ê°ì˜ ê¸¸ì´
- *  aLobPieceValue      - [IN] ê¸°ë¡í•  Lob ì¡°ê° ê°’
+ *  aLobPieceLength     - [IN] ±â·ÏÇÒ Lob Á¶°¢ÀÇ ±æÀÌ
+ *  aLobPieceValue      - [IN] ±â·ÏÇÒ Lob Á¶°¢ °ª
  *
  **********************************************************************/
 static IDE_RC scpfWriteLob( idvSQL         * aStatistics,
@@ -1033,8 +1033,8 @@ static IDE_RC scpfWriteLob( idvSQL         * aStatistics,
 
     sHandle = (scpfHandle*)aHandle;
 
-    // ë‚¨ì€ Lobì˜ ê¸¸ì´ë¼ ìƒê°í–ˆë˜ ê²ƒ ë³´ë‹¤ ë” ë§ì€ LobPieceì´ ë“¤ì–´ì˜¬ ìˆ˜ ì—†ë‹¤.
-    // ì´ëŠ” ì´ ëª¨ë“ˆì„ ì˜ëª» ì‚¬ìš©í–ˆì„ë•Œ ë‚˜íƒ€ë‚˜ëŠ” ê²°ê³¼ì´ë‹¤.
+    // ³²Àº LobÀÇ ±æÀÌ¶ó »ı°¢Çß´ø °Í º¸´Ù ´õ ¸¹Àº LobPieceÀÌ µé¾î¿Ã ¼ö ¾ø´Ù.
+    // ÀÌ´Â ÀÌ ¸ğµâÀ» Àß¸ø »ç¿ëÇßÀ»¶§ ³ªÅ¸³ª´Â °á°úÀÌ´Ù.
     IDE_TEST_RAISE( sHandle->mRemainLobLength < aLobPieceLength,
                     ERR_ABORT_PREPARE_WRITE_PROCOTOL );
 
@@ -1061,12 +1061,12 @@ static IDE_RC scpfWriteLob( idvSQL         * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  prepareLob, Writelob í›„ ë§ˆì§€ë§‰ìœ¼ë¡œ Writingì„ ì™„ë£Œí•œë‹¤.
+ *  prepareLob, Writelob ÈÄ ¸¶Áö¸·À¸·Î WritingÀ» ¿Ï·áÇÑ´Ù.
  *
- *  aStatistics         - [IN] í†µê³„ì •ë³´
+ *  aStatistics         - [IN] Åë°èÁ¤º¸
  *  aHandle             - [IN] Object Handle
- *  aLobPieceLength     - [IN] ê¸°ë¡í•  Lob ì¡°ê°ì˜ ê¸¸ì´
- *  aLobPieceValue      - [IN] ê¸°ë¡í•  Lob ì¡°ê° ê°’
+ *  aLobPieceLength     - [IN] ±â·ÏÇÒ Lob Á¶°¢ÀÇ ±æÀÌ
+ *  aLobPieceValue      - [IN] ±â·ÏÇÒ Lob Á¶°¢ °ª
  *
  **********************************************************************/
 static IDE_RC scpfFinishLobWriting( idvSQL         * /*aStatistics*/,
@@ -1078,13 +1078,13 @@ static IDE_RC scpfFinishLobWriting( idvSQL         * /*aStatistics*/,
 
     sHandle = (scpfHandle*)aHandle;
 
-    // Lobê¸°ë¡ì´ ì™„ë£Œë˜ì–´ì•¼í•¨. ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ëª¨ë“ˆì„ ì˜ëª» ì‚¬ìš©í•œ ê²½ìš°.
+    // Lob±â·ÏÀÌ ¿Ï·áµÇ¾î¾ßÇÔ. ±×·¸Áö ¾ÊÀ¸¸é ¸ğµâÀ» Àß¸ø »ç¿ëÇÑ °æ¿ì.
     IDE_TEST_RAISE( sHandle->mRemainLobLength > 0,
                     ERR_ABORT_FINISH_WRITE_PROCOTOL );
 
     sHandle->mRemainLobColumnCount --;
 
-    // Row ê¸°ë¡ ì™„ë£Œ
+    // Row ±â·Ï ¿Ï·á
     if( sHandle->mRemainLobColumnCount == 0 )
     {
         sHandle->mFileHeader.mRowCount ++;
@@ -1107,9 +1107,9 @@ static IDE_RC scpfFinishLobWriting( idvSQL         * /*aStatistics*/,
 /***********************************************************************
  *
  * Description :
- *  exportë¥¼ ì¢…ë£Œí•œë‹¤.
+ *  export¸¦ Á¾·áÇÑ´Ù.
  *
- *  aStatistics         - [IN] í†µê³„ì •ë³´
+ *  aStatistics         - [IN] Åë°èÁ¤º¸
  *  aHandle             - [IN] Object Handle
  *
  **********************************************************************/
@@ -1142,14 +1142,14 @@ static IDE_RC scpfEndExport( idvSQL         * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  importë¥¼ ì‹œì‘í•œë‹¤.
+ *  import¸¦ ½ÃÀÛÇÑ´Ù.
  *
- *  aStatistics         - [IN]  í†µê³„ì •ë³´
+ *  aStatistics         - [IN]  Åë°èÁ¤º¸
  *  aHandle             - [IN]  Object Handle
- *  aCommonHeader       - [IN/OUT] Fileë¡œë¶€í„° ì½ì€ Header ì •ë³´
- *  aFirstRowSeq        - [IN]  Importí•  ì²«ë²ˆì§¸ Row
- *  aFirstRowSeq        - [IN]  Exportí•  ì²«ë²ˆì§¸ Row
- *  aObjName            - [IN]  Object ì´ë¦„
+ *  aCommonHeader       - [IN/OUT] File·ÎºÎÅÍ ÀĞÀº Header Á¤º¸
+ *  aFirstRowSeq        - [IN]  ImportÇÒ Ã¹¹øÂ° Row
+ *  aFirstRowSeq        - [IN]  ExportÇÒ Ã¹¹øÂ° Row
+ *  aObjName            - [IN]  Object ÀÌ¸§
  *
  **********************************************************************/
 static IDE_RC scpfBeginImport( idvSQL              * aStatistics,
@@ -1166,7 +1166,7 @@ static IDE_RC scpfBeginImport( idvSQL              * aStatistics,
     IDE_DASSERT( aCommonHeader             != NULL );
     IDE_DASSERT( aObjName                  != NULL );
 
-    // Handleì„ ì´ˆê¸°í™”í•˜ê³  íŒŒì¼ì˜ Headerë¥¼ ì½ëŠ”ë‹¤.
+    // HandleÀ» ÃÊ±âÈ­ÇÏ°í ÆÄÀÏÀÇ Header¸¦ ÀĞ´Â´Ù.
     IDE_TEST( scpfInit4Import( aStatistics, 
                                (scpfHandle**)aHandle, 
                                aCommonHeader,
@@ -1191,7 +1191,7 @@ static IDE_RC scpfBeginImport( idvSQL              * aStatistics,
                                   &sHandle->mBlockBufferPosition )
               != IDE_SUCCESS );
 
-    // Blockì„ ì „ë¶€ ì½ëŠ”ë‹¤
+    // BlockÀ» ÀüºÎ ÀĞ´Â´Ù
     IDE_TEST( scpfPreFetchBlock( aStatistics,
                                  &sHandle->mFile,
                                  sHandle->mCommonHandle.mHeader,
@@ -1221,18 +1221,18 @@ static IDE_RC scpfBeginImport( idvSQL              * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  rowë“¤ì„ ì½ëŠ”ë‹¤.
+ *  rowµéÀ» ÀĞ´Â´Ù.
  *
- *  1) Blockì„ ì½ëŠ”ë‹¤.
- *  1-1) ë§Œì•½ Buildëœ Rowê°€ ì—†ë‹¤ë©´, ì²˜ìŒ íŒŒì¼ì„ ì½ëŠ”ê²ƒì´ë¯€ë¡œ ì²«ë²ˆì§¸
- *       Rowë¥¼ ê°€ì§„ Blockì„ BinarySearchë¡œ ì°¾ì•„ ê±°ê¸°ì„œë¶€í„° ì‹œì‘í•œë‹¤.
- *  1-2) ì²˜ìŒì´ ì•„ë‹ˆë¼ë©´, ë‹¤ìŒ Blockì„ ì½ëŠ”ë‹¤.
- *  2) Buildëœ Blockë“¤ì„ ë„˜ê²¨ì¤€ë‹¤.
+ *  1) BlockÀ» ÀĞ´Â´Ù.
+ *  1-1) ¸¸¾à BuildµÈ Row°¡ ¾ø´Ù¸é, Ã³À½ ÆÄÀÏÀ» ÀĞ´Â°ÍÀÌ¹Ç·Î Ã¹¹øÂ°
+ *       Row¸¦ °¡Áø BlockÀ» BinarySearch·Î Ã£¾Æ °Å±â¼­ºÎÅÍ ½ÃÀÛÇÑ´Ù.
+ *  1-2) Ã³À½ÀÌ ¾Æ´Ï¶ó¸é, ´ÙÀ½ BlockÀ» ÀĞ´Â´Ù.
+ *  2) BuildµÈ BlockµéÀ» ³Ñ°ÜÁØ´Ù.
  *
- *  aStatistics         - [IN]  í†µê³„ì •ë³´
+ *  aStatistics         - [IN]  Åë°èÁ¤º¸
  *  aHandle             - [IN]  Object Handle
- *  aRows               - [OUT] ì½ì€ Row
- *  aRowCount           - [OUT] ì½ì€ Rowì˜ ê°œìˆ˜
+ *  aRows               - [OUT] ÀĞÀº Row
+ *  aRowCount           - [OUT] ÀĞÀº RowÀÇ °³¼ö
  *
  **********************************************************************/
 static IDE_RC scpfRead( idvSQL         * aStatistics,
@@ -1261,7 +1261,7 @@ static IDE_RC scpfRead( idvSQL         * aStatistics,
     sHandle->mRemainLobColumnCount = 0;
     sHasSupplementLob              = ID_FALSE;
 
-    // Rowê°œìˆ˜ê°€ Limitì„ ë„˜ì–´ê°ˆ ê²½ìš°
+    // Row°³¼ö°¡ LimitÀ» ³Ñ¾î°¥ °æ¿ì
     IDE_TEST_CONT( sHandle->mRowSeq >= sHandle->mLimitRowSeq,
                     NO_MORE_ROW);
 
@@ -1287,30 +1287,30 @@ static IDE_RC scpfRead( idvSQL         * aStatistics,
 
     sHandle->mBlockBufferPosition.mSeq = 0;
 
-    // mRowSeqOfFirstSlot => Blockë‚´ ì²«ë²ˆì§¸ Slotì´ ì–´ë–¤ RowSeqì— ì†í•˜ëŠ”ê°€
-    // sFirstRowSeqInBlock => ì´ Blockì—ì„œë¶€í„° ì‹œì‘ë˜ëŠ” Rowì˜ Seq
+    // mRowSeqOfFirstSlot => Block³» Ã¹¹øÂ° SlotÀÌ ¾î¶² RowSeq¿¡ ¼ÓÇÏ´Â°¡
+    // sFirstRowSeqInBlock => ÀÌ Block¿¡¼­ºÎÅÍ ½ÃÀÛµÇ´Â RowÀÇ Seq
     //
     // ex)
     //    Block 0{ <Row0><Row1><Row2| }
     //    Blcok 1{ |Row2><Row3><Row4> }
-    //      ìœ„ ì˜ˆì œì—ì„œ Row2ê°€ Block 0~1 ì‚¬ì´ì— ê±¸ì³ ê¸°ë¡(Overflow)ë˜ì–´ ìˆë‹¤.
+    //      À§ ¿¹Á¦¿¡¼­ Row2°¡ Block 0~1 »çÀÌ¿¡ °ÉÃÄ ±â·Ï(Overflow)µÇ¾î ÀÖ´Ù.
     //
-    //      Block1ì˜ mRowSeqOfFirstSlotëŠ” 2ì´ë‹¤.
-    //          ì™œëƒí•˜ë©´, Block1ì˜ ì²« ë¶€ë¶„ì´ Row2ì˜ Slotì´ê¸° ë•Œë¬¸ì´ë‹¤.
-    //      Block1ì˜ sFirstRowSeqInBlockëŠ” 3ì´ë‹¤.
-    //          ì™œëƒí•˜ë©´, Block1ì—ì„œ ì˜¨ì „íˆ ì‹œì‘í•˜ëŠ” RowëŠ” Row3ì´ê¸° ë•Œë¬¸ì´ë‹¤.
+    //      Block1ÀÇ mRowSeqOfFirstSlot´Â 2ÀÌ´Ù.
+    //          ¿Ö³ÄÇÏ¸é, Block1ÀÇ Ã¹ ºÎºĞÀÌ Row2ÀÇ SlotÀÌ±â ¶§¹®ÀÌ´Ù.
+    //      Block1ÀÇ sFirstRowSeqInBlock´Â 3ÀÌ´Ù.
+    //          ¿Ö³ÄÇÏ¸é, Block1¿¡¼­ ¿ÂÀüÈ÷ ½ÃÀÛÇÏ´Â Row´Â Row3ÀÌ±â ¶§¹®ÀÌ´Ù.
     //
     sBlockInfo              = sHandle->mBlockMap[0];
 
-    // Readì‹œ í˜„ Blockì˜ FirstValueë¶€í„° ì½ì–´ì•¼ í•˜ê¸° ë•Œë¬¸ì—
-    // Overflowedëœ Slotë§Œí¼ ê±´ë„ˆë›´ë‹¤.
+    // Read½Ã Çö BlockÀÇ FirstValueºÎÅÍ ÀĞ¾î¾ß ÇÏ±â ¶§¹®¿¡
+    // OverflowedµÈ Slot¸¸Å­ °Ç³Ê¶Ú´Ù.
     sHandle->mBlockBufferPosition.mSlotSeq  = sBlockInfo->mFirstRowSlotSeq;
     sHandle->mBlockBufferPosition.mOffset   = sBlockInfo->mFirstRowOffset;
 
     if( 0 < sBlockInfo->mFirstRowSlotSeq )
     {
-        // ì´ì „ Blockì—ì„œ Overflowëœ Slotê°€ ìˆìœ¼ë©´, 
-        // FirstRowëŠ” ê·¸ ë‹¤ìŒ Rowì´ë‹¤.
+        // ÀÌÀü Block¿¡¼­ OverflowµÈ Slot°¡ ÀÖÀ¸¸é, 
+        // FirstRow´Â ±× ´ÙÀ½ RowÀÌ´Ù.
         sFirstRowSeqInBlock = sBlockInfo->mRowSeqOfFirstSlot + 1;
     }
     else
@@ -1318,10 +1318,10 @@ static IDE_RC scpfRead( idvSQL         * aStatistics,
         sFirstRowSeqInBlock = sBlockInfo->mRowSeqOfFirstSlot ;
     }
 
-    // Block ì¤‘ê°„ì˜ Rowë¶€í„° ì›í•˜ê³  ìˆë‹¤ë©´
+    // Block Áß°£ÀÇ RowºÎÅÍ ¿øÇÏ°í ÀÖ´Ù¸é
     if( sFirstRowSeqInBlock < sHandle->mRowSeq )
     {
-        //Skipí•´ì•¼ í•˜ëŠ” Rowì˜ ê°œìˆ˜ë¥¼ ê³„ì‚°í•œë‹¤.
+        //SkipÇØ¾ß ÇÏ´Â RowÀÇ °³¼ö¸¦ °è»êÇÑ´Ù.
         sSkipRowCount = sHandle->mRowSeq - sFirstRowSeqInBlock;
     }
     else
@@ -1329,7 +1329,7 @@ static IDE_RC scpfRead( idvSQL         * aStatistics,
         sSkipRowCount = 0;
     }
 
-    // Blockì˜ Rowë¥¼ Buildí•œë‹¤.
+    // BlockÀÇ Row¸¦ BuildÇÑ´Ù.
     IDE_TEST( scpfBuildRow( aStatistics, 
                             sHandle,
                             sCommonHeader,
@@ -1344,48 +1344,48 @@ static IDE_RC scpfRead( idvSQL         * aStatistics,
               !=IDE_SUCCESS );
 
 
-    //Builtëœ rowì˜ ê°œìˆ˜ëŠ”, Block í•˜ë‚˜ê°€ ê°€ì§„ ìµœëŒ€ Rowê°œìˆ˜ë³´ë‹¤ í´ ìˆ˜ ì—†ë‹¤.
+    //BuiltµÈ rowÀÇ °³¼ö´Â, Block ÇÏ³ª°¡ °¡Áø ÃÖ´ë Row°³¼öº¸´Ù Å¬ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( sBuiltRowCount > sFileHeader->mMaxRowCountInBlock,
                     ERR_ABORT_CORRUPTED_BLOCK );
 
-    // BuiltRowCountëŠ” ë°˜ë“œì‹œ SkipRowCountì™€ ê°™ê±°ë‚˜ ì»¤ì•¼ í•œë‹¤.
-    // SkipRowCountëŠ” <Blockë‚´ Rowë²ˆí˜¸> - <Blockë‚´ ì²«Rowë²ˆí˜¸>ë¡œ
-    // <Blockë‚´ Rowë²ˆí˜¸>ì¸ mRowSeqê°€ Blockë‚´ì˜ Rowë§Œ ì œëŒ€ë¡œ ê°€
-    // ê°€ë¥´í‚¤ë©´, <Blockì˜ ì´ Rowê°œìˆ˜>ì¸ mBuiltRowCountë³´ë‹¤ ë§ì„
-    // ìˆ˜ ì—†ê¸° ë•Œë¬¸ì´ë‹¤.
+    // BuiltRowCount´Â ¹İµå½Ã SkipRowCount¿Í °°°Å³ª Ä¿¾ß ÇÑ´Ù.
+    // SkipRowCount´Â <Block³» Row¹øÈ£> - <Block³» Ã¹Row¹øÈ£>·Î
+    // <Block³» Row¹øÈ£>ÀÎ mRowSeq°¡ Block³»ÀÇ Row¸¸ Á¦´ë·Î °¡
+    // °¡¸£Å°¸é, <BlockÀÇ ÃÑ Row°³¼ö>ÀÎ mBuiltRowCountº¸´Ù ¸¹À»
+    // ¼ö ¾ø±â ¶§¹®ÀÌ´Ù.
     IDE_TEST_RAISE( sBuiltRowCount < sSkipRowCount,
                     ERR_ABORT_CORRUPTED_BLOCK );
 
-    // BuildRowë¥¼ í•˜ë©´, Blockë‚´ì˜ ëª¨ë“  Rowë¥¼ ê°€ì ¸ë‹¤ì¤€ë‹¤.
-    // ê·¸ì¤‘ í•„ìš”í•œ ë¶€ë¶„ë§Œ ë‚¨ê¸°ê³  ì•ìª½ì€ Skipí•œë‹¤.
+    // BuildRow¸¦ ÇÏ¸é, Block³»ÀÇ ¸ğµç Row¸¦ °¡Á®´ÙÁØ´Ù.
+    // ±×Áß ÇÊ¿äÇÑ ºÎºĞ¸¸ ³²±â°í ¾ÕÂÊÀº SkipÇÑ´Ù.
     *aRows            = &(sHandle->mRowList[ sSkipRowCount ]);
     *aRowCount        = sBuiltRowCount - sSkipRowCount;
 
-    // Block ì¤‘ê°„ì˜ Rowê¹Œì§€ë§Œ ì›í•˜ê³  ìˆë‹¤ë©´,
-    // RowCountë¥¼ ì¤„ì—¬ì„œ ì˜¬ë ¤ë³´ë‚´ëŠ” Rowì˜ ê°œìˆ˜ë¥¼ ì¤„ì¸ë‹¤.
+    // Block Áß°£ÀÇ Row±îÁö¸¸ ¿øÇÏ°í ÀÖ´Ù¸é,
+    // RowCount¸¦ ÁÙ¿©¼­ ¿Ã·Áº¸³»´Â RowÀÇ °³¼ö¸¦ ÁÙÀÎ´Ù.
     if( (sHandle->mRowSeq + *aRowCount) > sHandle->mLimitRowSeq )
     {
-        // Firstì™€ Lastê°€ ì—­ì „ë˜ì§€ ì•ŠëŠ” ì´ìƒ, ë‹¤ìŒê³¼ ê°™ì€ ì˜¤ë¥˜ëŠ” ìˆì„ ìˆ˜ ì—†ë‹¤.
+        // First¿Í Last°¡ ¿ªÀüµÇÁö ¾Ê´Â ÀÌ»ó, ´ÙÀ½°ú °°Àº ¿À·ù´Â ÀÖÀ» ¼ö ¾ø´Ù.
         IDE_TEST_RAISE( sHandle->mLimitRowSeq < sHandle->mRowSeq,
                         ERR_ABORT_CORRUPTED_BLOCK );
 
         *aRowCount = sHandle->mLimitRowSeq - sHandle->mRowSeq;
     }
 
-    // ì²˜ë¦¬ëœ Rowê°œìˆ˜ë¥¼ ë°˜ì˜í•œë‹¤. 
+    // Ã³¸®µÈ Row°³¼ö¸¦ ¹İ¿µÇÑ´Ù. 
     sHandle->mRowSeq += sBuiltRowCount - sSkipRowCount;
 
-    // ì¶”ê°€ Lobì²˜ë¦¬ë¥¼ í•´ì¤˜ì•¼ í•œë‹¤ë©´
+    // Ãß°¡ LobÃ³¸®¸¦ ÇØÁà¾ß ÇÑ´Ù¸é
     if( sHasSupplementLob == ID_TRUE )
     {
-        // ì•„ì§ Row í•˜ë‚˜ê°€ ì²˜ë¦¬ ì™„ë£Œ ì•ˆë˜ì—ˆë‹¤.
+        // ¾ÆÁ÷ Row ÇÏ³ª°¡ Ã³¸® ¿Ï·á ¾ÈµÇ¾ú´Ù.
         sHandle->mRowSeq --;
 
         sHandle->mRemainLobColumnCount = sCommonHeader->mLobColumnCount;
         sHandle->mRemainLobLength      = 0;
     }
 
-    // Rowê°€ ì—†ëŠ” ê²½ìš°
+    // Row°¡ ¾ø´Â °æ¿ì
     IDE_EXCEPTION_CONT( NO_MORE_ROW );
 
     sHandle->mRemainLobLength = 0;
@@ -1409,11 +1409,11 @@ static IDE_RC scpfRead( idvSQL         * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  Lobì˜ ì´ ê¸¸ì´ë¥¼ ë°˜í™˜í•œë‹¤.
+ *  LobÀÇ ÃÑ ±æÀÌ¸¦ ¹İÈ¯ÇÑ´Ù.
  *
- *  aStatistics         - [IN]  í†µê³„ì •ë³´
+ *  aStatistics         - [IN]  Åë°èÁ¤º¸
  *  aHandle             - [IN]  Object Handle
- *  aLength             - [OUT] Lobì˜ ì´ ê¸¸ì´
+ *  aLength             - [OUT] LobÀÇ ÃÑ ±æÀÌ
  *
  **********************************************************************/
 static IDE_RC scpfReadLobLength( idvSQL         * aStatistics,
@@ -1432,8 +1432,8 @@ static IDE_RC scpfReadLobLength( idvSQL         * aStatistics,
     sBlockBufferPosition = &(sHandle->mBlockBufferPosition);
     sFileHeader          = &(sHandle->mFileHeader);
 
-    // ìƒˆë¡­ê²Œ LobColumnì„ ì½ì„ ì¤€ë¹„ê°€ ë˜ì—ˆì–´ì•¼ í•¨.
-    // ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ëª¨ë“ˆì„ ì˜ëª» ì‚¬ìš©í•œ ê²½ìš°.
+    // »õ·Ó°Ô LobColumnÀ» ÀĞÀ» ÁØºñ°¡ µÇ¾ú¾î¾ß ÇÔ.
+    // ±×·¸Áö ¾ÊÀ¸¸é ¸ğµâÀ» Àß¸ø »ç¿ëÇÑ °æ¿ì.
     IDE_TEST_RAISE( ( sHandle->mRemainLobLength != 0 ) ||
                     ( sHandle->mRemainLobColumnCount == 0),
                     ERR_ABORT_PREPARE_WRITE_PROCOTOL );
@@ -1462,7 +1462,7 @@ static IDE_RC scpfReadLobLength( idvSQL         * aStatistics,
 
     sBlockInfo = sHandle->mBlockMap[ sBlockBufferPosition->mSeq ];
 
-    // LobLenì„ ì½ìŒ
+    // LobLenÀ» ÀĞÀ½
     SCPF_READ_UINT( sBlockInfo->mBlockPtr + sBlockBufferPosition->mOffset, 
                     &(sHandle->mRemainLobLength) );
     sBlockBufferPosition->mOffset += ID_SIZEOF(UInt);
@@ -1485,12 +1485,12 @@ static IDE_RC scpfReadLobLength( idvSQL         * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  LobPieceë¥¼ ì½ëŠ”ë‹¤.
+ *  LobPiece¸¦ ÀĞ´Â´Ù.
  *
- *  aStatistics         - [IN]  í†µê³„ì •ë³´
+ *  aStatistics         - [IN]  Åë°èÁ¤º¸
  *  aHandle             - [IN]  Object Handle
- *  aLobPieceLength     - [OUT] ì½ì€ Lob ì¡°ê°ì˜ ê¸¸ì´
- *  aLobPieceValue      - [OUT] ì½ì€ Lob ì¡°ê°ì˜ Value
+ *  aLobPieceLength     - [OUT] ÀĞÀº Lob Á¶°¢ÀÇ ±æÀÌ
+ *  aLobPieceValue      - [OUT] ÀĞÀº Lob Á¶°¢ÀÇ Value
  *
  **********************************************************************/
 static IDE_RC scpfReadLob( idvSQL         * aStatistics,
@@ -1510,7 +1510,7 @@ static IDE_RC scpfReadLob( idvSQL         * aStatistics,
     sFileHeader          = &(sHandle->mFileHeader);
     sBlockBufferPosition = &(sHandle->mBlockBufferPosition);
 
-    //RemainLobLengthê°€ 0ì¸ ê²ƒì€ ë³¸ Moduleì„ ì˜ëª» ì‚¬ìš©í–ˆì„ë•Œì´ë‹¤.
+    //RemainLobLength°¡ 0ÀÎ °ÍÀº º» ModuleÀ» Àß¸ø »ç¿ëÇßÀ»¶§ÀÌ´Ù.
     IDE_TEST_RAISE( (sHandle->mRemainLobLength == 0) ||
                     (sHandle->mRemainLobColumnCount == 0),
                     ERR_ABORT_FINISH_WRITE_PROCOTOL );
@@ -1537,7 +1537,7 @@ static IDE_RC scpfReadLob( idvSQL         * aStatistics,
 
     sHandle->mBlockBufferPosition.mSeq = 0;
 
-    //Slotí•˜ë‚˜ ì½ëŠ”ë‹¤.
+    //SlotÇÏ³ª ÀĞ´Â´Ù.
     IDE_TEST( scpfReadSlot( &sHandle->mBlockBufferPosition,
                             sHandle->mBlockMap,
                             sFileHeader->mBlockHeaderSize, 
@@ -1572,12 +1572,12 @@ static IDE_RC scpfReadLob( idvSQL         * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  readLob í›„ ë§ˆì§€ë§‰ìœ¼ë¡œ Readingì„ ì™„ë£Œí•œë‹¤.
+ *  readLob ÈÄ ¸¶Áö¸·À¸·Î ReadingÀ» ¿Ï·áÇÑ´Ù.
  *
- *  aStatistics         - [IN] í†µê³„ì •ë³´
+ *  aStatistics         - [IN] Åë°èÁ¤º¸
  *  aHandle             - [IN] Object Handle
- *  aLobPieceLength     - [IN] ê¸°ë¡í•  Lob ì¡°ê°ì˜ ê¸¸ì´
- *  aLobPieceValue      - [IN] ê¸°ë¡í•  Lob ì¡°ê° ê°’
+ *  aLobPieceLength     - [IN] ±â·ÏÇÒ Lob Á¶°¢ÀÇ ±æÀÌ
+ *  aLobPieceValue      - [IN] ±â·ÏÇÒ Lob Á¶°¢ °ª
  *
  **********************************************************************/
 static IDE_RC scpfFinishLobReading( idvSQL         * /*aStatistics*/,
@@ -1589,14 +1589,14 @@ static IDE_RC scpfFinishLobReading( idvSQL         * /*aStatistics*/,
 
     sHandle = (scpfHandle*)aHandle;
 
-    // Lob Readingì´ ì™„ë£Œë˜ì–´ì•¼í•¨. ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ëª¨ë“ˆì„ ì˜ëª» ì‚¬ìš©í•œ ê²½ìš°.
+    // Lob ReadingÀÌ ¿Ï·áµÇ¾î¾ßÇÔ. ±×·¸Áö ¾ÊÀ¸¸é ¸ğµâÀ» Àß¸ø »ç¿ëÇÑ °æ¿ì.
     IDE_TEST_RAISE( (sHandle->mRemainLobLength > 0) ||
                     (sHandle->mRemainLobColumnCount == 0),
                     ERR_ABORT_FINISH_WRITE_PROCOTOL );
 
     sHandle->mRemainLobColumnCount --;
 
-    // í•œ Rowì— ëŒ€í•œ ì½ê¸°ê°€ ì™„ë£Œë˜ë©´
+    // ÇÑ Row¿¡ ´ëÇÑ ÀĞ±â°¡ ¿Ï·áµÇ¸é
     if( sHandle->mRemainLobColumnCount == 0 )
     {
         sHandle->mRowSeq ++;
@@ -1618,9 +1618,9 @@ static IDE_RC scpfFinishLobReading( idvSQL         * /*aStatistics*/,
 /***********************************************************************
  *
  * Description :
- *  Importë¥¼ ì¢…ë£Œí•œë‹¤.
+ *  Import¸¦ Á¾·áÇÑ´Ù.
  *
- *  aStatistics         - [IN] í†µê³„ì •ë³´
+ *  aStatistics         - [IN] Åë°èÁ¤º¸
  *  aHandle             - [IN] Object Handle
  *
  **********************************************************************/
@@ -1662,13 +1662,13 @@ static IDE_RC scpfEndImport( idvSQL         * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  Object Handleì„ ì´ˆê¸°í™”í•œë‹¤.
+ *  Object HandleÀ» ÃÊ±âÈ­ÇÑ´Ù.
  *
- *  aStatistics         - [IN] í†µê³„ì •ë³´
+ *  aStatistics         - [IN] Åë°èÁ¤º¸
  *  aHandle             - [IN/OUT] Object Handle
- *  aCommonHeader       - [IN] Fileì— ë‚´ë¦´ Headerì •ë³´(Column,Tableë“± í¬í•¨)
- *  aObjName            - [IN] Object ì´ë¦„
- *  aSplit              - [IN] Splitë˜ëŠ” ê¸°ì  Row ê°œìˆ˜
+ *  aCommonHeader       - [IN] File¿¡ ³»¸± HeaderÁ¤º¸(Column,Tableµî Æ÷ÇÔ)
+ *  aObjName            - [IN] Object ÀÌ¸§
+ *  aSplit              - [IN] SplitµÇ´Â ±âÁ¡ Row °³¼ö
  *
  **********************************************************************/
 static IDE_RC scpfInit4Export( idvSQL                * /*aStatistics*/,
@@ -1691,7 +1691,7 @@ static IDE_RC scpfInit4Export( idvSQL                * /*aStatistics*/,
     IDE_DASSERT( aObjName      != NULL );
 
 
-    // Writable property ì´ê¸°ì— ë¯¸ë¦¬ Snapshotì„ ëœ¬ë‹¤
+    // Writable property ÀÌ±â¿¡ ¹Ì¸® SnapshotÀ» ¶á´Ù
     sBlockSize               = smuProperty::getDataPortFileBlockSize(); 
 
     // -----------------------------------------
@@ -1734,7 +1734,7 @@ static IDE_RC scpfInit4Export( idvSQL                * /*aStatistics*/,
               != IDE_SUCCESS );
     sState = 5;
 
-    // DirectIOë¥¼ ìœ„í•´ Alignì„ ë§ì¶°ì¤˜ì•¼ í•©ë‹ˆë‹¤.
+    // DirectIO¸¦ À§ÇØ AlignÀ» ¸ÂÃçÁà¾ß ÇÕ´Ï´Ù.
     sAlignedBlockPtr = (UChar*)idlOS::align( sHandle->mAllocatedBlock,
                                              ID_MAX_DIO_PAGE_SIZE );
 
@@ -1751,7 +1751,7 @@ static IDE_RC scpfInit4Export( idvSQL                * /*aStatistics*/,
             gScpfBlockHeaderDesc,
             aCommonHeader->mVersion );
     sFileHeader->mBlockSize          = sBlockSize;
-    sFileHeader->mMaxRowCountInBlock = 1; //Blockì—ëŠ” ìµœì†Œ 1ê°œì˜ Rowê°€ ë“¤ì–´ê°„ë‹¤
+    sFileHeader->mMaxRowCountInBlock = 1; //Block¿¡´Â ÃÖ¼Ò 1°³ÀÇ Row°¡ µé¾î°£´Ù
     sFileHeader->mBlockInfoCount     = SCPF_MIN_BLOCKINFO_COUNT;
 
     // runtime
@@ -1767,7 +1767,7 @@ static IDE_RC scpfInit4Export( idvSQL                * /*aStatistics*/,
                     (SChar*)aObjName,
                     SM_MAX_FILE_NAME );
 
-    // Exportì‹œì—ëŠ” Block 1ê°œë§Œ ì‚¬ìš©í•¨
+    // Export½Ã¿¡´Â Block 1°³¸¸ »ç¿ëÇÔ
     sBlockInfo            = &sHandle->mBlockBuffer[ 0 ];
     sBlockInfo->mBlockPtr = sAlignedBlockPtr;
     sHandle->mBlockMap[0] = sBlockInfo;
@@ -1809,9 +1809,9 @@ static IDE_RC scpfInit4Export( idvSQL                * /*aStatistics*/,
 /***********************************************************************
  *
  * Description :
- *  ì‚¬ìš©í•œ ObjectHandleì„ ì œê±°í•œë‹¤.
+ *  »ç¿ëÇÑ ObjectHandleÀ» Á¦°ÅÇÑ´Ù.
  *
- *  aStatistics         - [IN] í†µê³„ì •ë³´
+ *  aStatistics         - [IN] Åë°èÁ¤º¸
  *  aHandle             - [IN] Object Handle
  *
  **********************************************************************/
@@ -1869,12 +1869,12 @@ static IDE_RC scpfDestroy4Export( idvSQL         * /*aStatistics*/,
 /***********************************************************************
  *
  * Description :
- *  ê¸°ë¡í•  íŒŒì¼ì„ ì¤€ë¹„í•œë‹¤ (Split)
+ *  ±â·ÏÇÒ ÆÄÀÏÀ» ÁØºñÇÑ´Ù (Split)
  *
- * 1) ìƒˆ íŒŒì¼ì— ë§ê²Œ Headerë¥¼ ì •ë¦¬í•œë‹¤.
- * 2) ìƒˆ íŒŒì¼ì—createFile, writeHeaderë¥¼ ìˆ˜í–‰í•œë‹¤.
+ * 1) »õ ÆÄÀÏ¿¡ ¸Â°Ô Header¸¦ Á¤¸®ÇÑ´Ù.
+ * 2) »õ ÆÄÀÏ¿¡createFile, writeHeader¸¦ ¼öÇàÇÑ´Ù.
  *
- *  aStatistics         - [IN] í†µê³„ì •ë³´
+ *  aStatistics         - [IN] Åë°èÁ¤º¸
  *  aHandle             - [IN] Object Handle
  *
  **********************************************************************/
@@ -1895,7 +1895,7 @@ static IDE_RC scpfPrepareFile( idvSQL         * aStatistics,
                     (aHandle->mRemainLobColumnCount > 0),
                     ERR_ABORT_FINISH_WRITE_PROCOTOL );
 
-    // Exportì‹œì—ëŠ” 0ë²ˆ Blockë§Œ ì‚¬ìš©í•œë‹¤
+    // Export½Ã¿¡´Â 0¹ø Block¸¸ »ç¿ëÇÑ´Ù
     sFileHeader          = &aHandle->mFileHeader;
     sBlockInfo           = aHandle->mBlockMap[0];
     sFile                = &(aHandle->mFile);
@@ -1919,7 +1919,7 @@ static IDE_RC scpfPrepareFile( idvSQL         * aStatistics,
     sBlockBufferPosition->mOffset     = 0;
     sBlockBufferPosition->mSlotSeq    = 0;
 
-    // ìƒˆ Blockì— ëŒ€í•œ ì´ˆê¸°í™”
+    // »õ Block¿¡ ´ëÇÑ ÃÊ±âÈ­
     sBlockInfo->mRowSeqOfFirstSlot   = aHandle->mRowSeq;
     sBlockInfo->mRowSeqOfLastSlot    = aHandle->mRowSeq;
     sBlockInfo->mFirstRowSlotSeq     = 0;
@@ -1932,7 +1932,7 @@ static IDE_RC scpfPrepareFile( idvSQL         * aStatistics,
     // --------------------------------------
     // Create file 
     // ------------------------------------- 
-    // Directoryì— ë°ì´í„°ê°€ ìˆëŠ”ë°, /ë¡œ ëë‚˜ì§€ ì•Šì„ ê²½ìš° ë¶™ì—¬ì¤Œ
+    // Directory¿¡ µ¥ÀÌÅÍ°¡ ÀÖ´Âµ¥, /·Î ³¡³ªÁö ¾ÊÀ» °æ¿ì ºÙ¿©ÁÜ
     sLen = idlOS::strnlen( aHandle->mDirectory, SM_MAX_FILE_NAME );
     if( 0 < sLen )
     {
@@ -1978,7 +1978,7 @@ static IDE_RC scpfPrepareFile( idvSQL         * aStatistics,
     sFileState = 2;
     aHandle->mOpenFile = ID_TRUE;
 
-    // Headerë¥¼ ê¸°ë¡í•œë‹¤.
+    // Header¸¦ ±â·ÏÇÑ´Ù.
     IDE_TEST( scpfWriteHeader( aStatistics,
                                &aHandle->mFile,
                                aHandle->mCommonHandle.mHeader,
@@ -2020,9 +2020,9 @@ static IDE_RC scpfPrepareFile( idvSQL         * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  ì§€ê¸ˆê¹Œì§€ ê¸°ë¡í•œ íŒŒì¼ì„ ë‹«ëŠ”ë‹¤.
+ *  Áö±İ±îÁö ±â·ÏÇÑ ÆÄÀÏÀ» ´İ´Â´Ù.
  *
- *  aStatistics         - [IN] í†µê³„ì •ë³´
+ *  aStatistics         - [IN] Åë°èÁ¤º¸
  *  aHandle             - [IN] Object Handle
  *
  **********************************************************************/
@@ -2035,7 +2035,7 @@ static IDE_RC scpfCloseFile4Export( idvSQL         * aStatistics,
 
     IDE_DASSERT( aHandle                        != NULL );
 
-    // Exportì‹œì—ëŠ” 0ë²ˆ Blockë§Œ ì‚¬ìš©í•œë‹¤
+    // Export½Ã¿¡´Â 0¹ø Block¸¸ »ç¿ëÇÑ´Ù
     sFileHeader  = &aHandle->mFileHeader;
     sBlockInfo   = aHandle->mBlockMap[0];
 
@@ -2093,21 +2093,21 @@ static IDE_RC scpfCloseFile4Export( idvSQL         * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  Slotì„ ì“¸ ê³µê°„ì„ í™•ë³´í•œë‹¤.
+ *  SlotÀ» ¾µ °ø°£À» È®º¸ÇÑ´Ù.
  *
- *  aStatistics              - [IN] í†µê³„ì •ë³´
- *  aFile                    - [IN] ê¸°ë¡í•  file
- *  aFileHeader              - [IN] ê¸°ë¡í•  Fileì— ê´€í•œ ì •ë³´ í—¤ë”
- *  aRowSeq                  - [IN] í˜„ì¬ ê¸°ë¡ì¤‘ì¸ Row ë²ˆí˜¸
- *  aColumnChainingThreshold - [IN] Columnì„ ìë¥´ëŠ” ê¸°ì¤€ í¬ê¸°
- *  aIsFirstSlotInRow        - [IN/OUT] Blockë‚´ ì²«ë²ˆì§¸ Slotì„ ê¸°ë¡í•˜ëŠ” ì¤‘ì¸ê°€?
- *  aBlockInfo               - [IN] ì‚¬ìš©í•˜ê³  ìˆëŠ” BlockInfo
- *  aWriteLobLen             - [IN] LobLengthì„ ê¸°ë¡í•  ê²ƒì¸ê°€?
- *  aNeedSize                - [IN] í™•ë³´í•˜ë ¤ëŠ” ì¹¼ëŸ¼ì˜ í¬ê¸°
- *  aBlockBufferPosition     - [OUT]    ë‹¤ìŒë²ˆ Blockìœ¼ë¡œ ì»¤ì„œ ì˜®ê¹€
- *  aFilePosition            - [IN/OUT] ê¸°ë¡í•  í˜„ì¬ Blockì˜ ìœ„ì¹˜ë¥¼ ê°€ì ¸ì˜¤ê³ 
- *                                      ê¸°ë¡í•œ Blockí¬ê¸°ë§Œí¼ Offsetì„ ì˜®ê¹€
- *  aAllocatedSlotValLen     - [OUT]    í™•ë³´ëœ SlotVal ê¸°ë¡ìš© ê³µê°„ì˜ í¬ê¸°
+ *  aStatistics              - [IN] Åë°èÁ¤º¸
+ *  aFile                    - [IN] ±â·ÏÇÒ file
+ *  aFileHeader              - [IN] ±â·ÏÇÒ File¿¡ °üÇÑ Á¤º¸ Çì´õ
+ *  aRowSeq                  - [IN] ÇöÀç ±â·ÏÁßÀÎ Row ¹øÈ£
+ *  aColumnChainingThreshold - [IN] ColumnÀ» ÀÚ¸£´Â ±âÁØ Å©±â
+ *  aIsFirstSlotInRow        - [IN/OUT] Block³» Ã¹¹øÂ° SlotÀ» ±â·ÏÇÏ´Â ÁßÀÎ°¡?
+ *  aBlockInfo               - [IN] »ç¿ëÇÏ°í ÀÖ´Â BlockInfo
+ *  aWriteLobLen             - [IN] LobLengthÀ» ±â·ÏÇÒ °ÍÀÎ°¡?
+ *  aNeedSize                - [IN] È®º¸ÇÏ·Á´Â Ä®·³ÀÇ Å©±â
+ *  aBlockBufferPosition     - [OUT]    ´ÙÀ½¹ø BlockÀ¸·Î Ä¿¼­ ¿Å±è
+ *  aFilePosition            - [IN/OUT] ±â·ÏÇÒ ÇöÀç BlockÀÇ À§Ä¡¸¦ °¡Á®¿À°í
+ *                                      ±â·ÏÇÑ BlockÅ©±â¸¸Å­ OffsetÀ» ¿Å±è
+ *  aAllocatedSlotValLen     - [OUT]    È®º¸µÈ SlotVal ±â·Ï¿ë °ø°£ÀÇ Å©±â
  *
  **********************************************************************/
 static IDE_RC scpfAllocSlot( 
@@ -2143,9 +2143,9 @@ static IDE_RC scpfAllocSlot(
         sNeedSize += SCPF_LOB_LEN_SIZE;
     }
 
-    // ê¸°ë¡í•  ê³µê°„ì´ ë¶€ì¡±í•˜ë©°,
-    // ë‚¨ì€ ê³µê°„ì´ Thresholdì´í•˜ì¼ ê²½ìš°,
-    // ê¸°ì¡´ Blockì„ ì“°ê³  ìƒˆ Blockì„ ì¤€ë¹„í•˜ì—¬ Thresholdì´ìƒì˜ ê³µê°„ì„ í™•ë³´í•œë‹¤.
+    // ±â·ÏÇÒ °ø°£ÀÌ ºÎÁ·ÇÏ¸ç,
+    // ³²Àº °ø°£ÀÌ ThresholdÀÌÇÏÀÏ °æ¿ì,
+    // ±âÁ¸ BlockÀ» ¾²°í »õ BlockÀ» ÁØºñÇÏ¿© ThresholdÀÌ»óÀÇ °ø°£À» È®º¸ÇÑ´Ù.
     if( (sNeedSize > sBlockRemainSize) &&
         (aColumnChainingThreshold > sBlockRemainSize ) )
     {
@@ -2169,17 +2169,17 @@ static IDE_RC scpfAllocSlot(
         sBlockRemainSize = 
             aFileHeader->mBlockSize - aBlockBufferPosition->mOffset;
 
-        //ìƒˆ Blockì„ ë§ˆë ¨í–ˆìœ¼ë©´ ìµœì†Œí•œì˜ ê³µê°„ì´ í™•ë³´ë˜ì–´ì•¼ í•¨
+        //»õ BlockÀ» ¸¶·ÃÇßÀ¸¸é ÃÖ¼ÒÇÑÀÇ °ø°£ÀÌ È®º¸µÇ¾î¾ß ÇÔ
         IDE_TEST_RAISE( aColumnChainingThreshold > sBlockRemainSize,
                         ERR_ABORT_CORRUPTED_BLOCK  );
     }
 
-    // ì´ë²ˆì´ Rowì— ëŒ€í•œ ì²« ê¸°ë¡ì´ë©´
+    // ÀÌ¹øÀÌ Row¿¡ ´ëÇÑ Ã¹ ±â·ÏÀÌ¸é
     if( *aIsFirstSlotInRow == ID_TRUE )
     {
         *aIsFirstSlotInRow = ID_FALSE;
 
-        // í˜„ Blockì—ì„œì˜ ì²«ë²ˆì§¸ Rowì´ê¸°ë„ í•˜ë‹¤ë©´
+        // Çö Block¿¡¼­ÀÇ Ã¹¹øÂ° RowÀÌ±âµµ ÇÏ´Ù¸é
         if( aBlockInfo->mFirstRowOffset == SCPF_OFFSET_NULL )
         {
             aBlockInfo->mFirstRowOffset  = aBlockBufferPosition->mOffset;
@@ -2187,13 +2187,13 @@ static IDE_RC scpfAllocSlot(
         }
     }
 
-    // Slot í•˜ë‚˜ê°€ í™•ë³´ë¨
+    // Slot ÇÏ³ª°¡ È®º¸µÊ
     aBlockInfo->mSlotCount ++;
     aBlockBufferPosition->mSlotSeq ++;
 
 
 
-    // LobLen ê¸°ë¡
+    // LobLen ±â·Ï
     if( aWriteLobLen == ID_TRUE )
     {
         SCPF_WRITE_UINT( &aNeedSlotValLen, 
@@ -2209,15 +2209,15 @@ static IDE_RC scpfAllocSlot(
 
 
 
-    //SlotValLen ê¸°ë¡
-    // ê³µê°„ì´ ë¶€ì¡±í•  ê²½ìš°
+    //SlotValLen ±â·Ï
+    // °ø°£ÀÌ ºÎÁ·ÇÒ °æ¿ì
     if( sBlockRemainSize < sNeedSize )
     {
         *aAllocatedSlotValLen = SCPF_GET_SLOT_VAL_LEN( &sBlockRemainSize );
     }
     else
     {
-        //ë„‰ë„‰í•  ê²½ìš°
+        //³Ë³ËÇÒ °æ¿ì
         *aAllocatedSlotValLen = aNeedSlotValLen;
     }
 
@@ -2243,23 +2243,23 @@ static IDE_RC scpfAllocSlot(
 /***********************************************************************
  *
  * Description :
- *  Slot í•˜ë‚˜ë¥¼ Blockì— ê¸°ë¡í•œë‹¤.
- *  Chaining, overflow, Blockì˜ ì‹¤ì œ Fileì— ëŒ€í•œ ê¸°ë¡ë„ ìˆ˜í–‰í•œë‹¤.
+ *  Slot ÇÏ³ª¸¦ Block¿¡ ±â·ÏÇÑ´Ù.
+ *  Chaining, overflow, BlockÀÇ ½ÇÁ¦ File¿¡ ´ëÇÑ ±â·Ïµµ ¼öÇàÇÑ´Ù.
  *
- *  aStatistics             - [IN]  í†µê³„ì •ë³´
- *  aFile                   - [IN]  ê¸°ë¡í•  íŒŒì¼
- *  aFileHeader             - [IN]  íŒŒì¼ í—¤ë” ì •ë³´
- *  aBlockInfo              - [IN]  ê¸°ë¡í•  Blockì„ ë‹´ì€ Info
- *  aBlockSize              - [IN]  ë¸”ë¥µ í•˜ë‚˜ì˜ í¬ê¸°
- *  aColumnChainingThreshold- [IN]  Slot Chainingì„ ê²°ì •í•˜ëŠ” Threshold
- *  aRowSeq                 - [IN]  í˜„ì¬ ê¸°ë¡í•˜ëŠ” Rowì˜ ë²ˆí˜¸
- *  aValue                  - [IN]  ê¸°ë¡í•  Slot 
- *  aIsFirstSlotInRow       - [IN/OUT] Rowë‚´ ì²«ë²ˆì§¸ Slot ë¥¼ ê¸°ë¡í•˜ëŠ” ê²ƒì¸ê°€?
- *  aBlockBufferPosition    - [IN/OUT] ê¸°ë¡í•˜ê³  Positionë¥¼ ì˜®ê¸´ë‹¤.
- *  aFilePosition           - [IN/OUT] ê¸°ë¡í•˜ê³  Positionë¥¼ ì˜®ê¸´ë‹¤.
+ *  aStatistics             - [IN]  Åë°èÁ¤º¸
+ *  aFile                   - [IN]  ±â·ÏÇÒ ÆÄÀÏ
+ *  aFileHeader             - [IN]  ÆÄÀÏ Çì´õ Á¤º¸
+ *  aBlockInfo              - [IN]  ±â·ÏÇÒ BlockÀ» ´ãÀº Info
+ *  aBlockSize              - [IN]  ºí¸¤ ÇÏ³ªÀÇ Å©±â
+ *  aColumnChainingThreshold- [IN]  Slot ChainingÀ» °áÁ¤ÇÏ´Â Threshold
+ *  aRowSeq                 - [IN]  ÇöÀç ±â·ÏÇÏ´Â RowÀÇ ¹øÈ£
+ *  aValue                  - [IN]  ±â·ÏÇÒ Slot 
+ *  aIsFirstSlotInRow       - [IN/OUT] Row³» Ã¹¹øÂ° Slot ¸¦ ±â·ÏÇÏ´Â °ÍÀÎ°¡?
+ *  aBlockBufferPosition    - [IN/OUT] ±â·ÏÇÏ°í Position¸¦ ¿Å±ä´Ù.
+ *  aFilePosition           - [IN/OUT] ±â·ÏÇÏ°í Position¸¦ ¿Å±ä´Ù.
  * 
- * Slot ì˜ êµ¬ì¡°
- * - VarInt (Length ê¸°ë¡ì— ì´ìš©ë¨)
+ * Slot ÀÇ ±¸Á¶
+ * - VarInt (Length ±â·Ï¿¡ ÀÌ¿ëµÊ)
  *      0~63        [0 | len ]
  *     64~16383     [1 | len>>8  & 63][len ]
  *  16384~4194303   [2 | len>>16 & 63][len>>8 & 255][len & 255]
@@ -2268,9 +2268,9 @@ static IDE_RC scpfAllocSlot(
  * - BasicColumn
  *   [Slot_Len:VarInt(1~4Byte)][Body]
  * 
- *   Slot_LenëŠ” Lengthë¡œ, ìˆœìˆ˜ Bodyì˜ í¬ê¸°ì´ë‹¤. ë˜í•œ Chainingë¼ì—ˆì„ ê²½ìš°, 
- * í˜„ Blockì— ê¸°ë¡ëœ Lengthë§Œ ê¸°ë¡ëœë‹¤.
- *   BasicColumnì€ LobLengthê°€ 0ìœ¼ë¡œ ì˜¤ë©°, ê¸°ë¡ë˜ì§€ ì•ŠëŠ”ë‹¤.
+ *   Slot_Len´Â Length·Î, ¼ø¼ö BodyÀÇ Å©±âÀÌ´Ù. ¶ÇÇÑ ChainingµÅ¾úÀ» °æ¿ì, 
+ * Çö Block¿¡ ±â·ÏµÈ Length¸¸ ±â·ÏµÈ´Ù.
+ *   BasicColumnÀº LobLength°¡ 0À¸·Î ¿À¸ç, ±â·ÏµÇÁö ¾Ê´Â´Ù.
  **********************************************************************/
 
 static IDE_RC scpfWriteBasicColumn( 
@@ -2299,13 +2299,13 @@ static IDE_RC scpfWriteBasicColumn(
     IDE_DASSERT( aBlockBufferPosition     != NULL );
     IDE_DASSERT( aFilePosition            != NULL );
 
-    // Exportì‹œì—ëŠ” 0ë²ˆ Blockë§Œ ì‚¬ìš©í•œë‹¤
+    // Export½Ã¿¡´Â 0¹ø Block¸¸ »ç¿ëÇÑ´Ù
     sRemainLength = aValue->length;
     sRemainValue  = (UChar*)aValue->value;
 
     while( sDone == ID_FALSE )
     {
-        // Slot í™•ë³´
+        // Slot È®º¸
         IDE_TEST( scpfAllocSlot( aStatistics, 
                                  aFile,
                                  aCommonHeader,
@@ -2329,10 +2329,10 @@ static IDE_RC scpfWriteBasicColumn(
         sRemainValue                    += sAllocatedSlotValLen;
         sRemainLength                   -= sAllocatedSlotValLen;
 
-        // ì•„ì§ ê¸°ë¡í•  ë°ì´í„°ê°€ ë‚¨ì•˜ë‹¤ë©´ Chaining
+        // ¾ÆÁ÷ ±â·ÏÇÒ µ¥ÀÌÅÍ°¡ ³²¾Ò´Ù¸é Chaining
         if( 0 < sRemainLength )
         {
-            // Blockì˜ ì—¬ìœ  ê³µê°„ì´ ì—†ëŠ” ìƒíƒœì—¬ì•¼ í•œë‹¤.
+            // BlockÀÇ ¿©À¯ °ø°£ÀÌ ¾ø´Â »óÅÂ¿©¾ß ÇÑ´Ù.
             IDE_TEST_RAISE( aFileHeader->mBlockSize 
                                 - aBlockBufferPosition->mOffset 
                                 >= SCPF_GET_VARINT_MAXSIZE,
@@ -2361,20 +2361,20 @@ static IDE_RC scpfWriteBasicColumn(
 /***********************************************************************
  *
  * Description :
- *  LobValueë¥¼ Blockì— ê¸°ë¡í•œë‹¤.
+ *  LobValue¸¦ Block¿¡ ±â·ÏÇÑ´Ù.
  *
- *  aStatistics          - [IN]     í†µê³„ì •ë³´
+ *  aStatistics          - [IN]     Åë°èÁ¤º¸
  *  aHandle              - [IN]     Object Handle
- *  aLobPieceLength      - [IN]     ê¸°ë¡í•  Lobì¡°ê° ê¸¸ì´
- *  aLobPieceValue       - [IN]     ê¸°ë¡í•  Lobì¡°ê°
- *  aRemainLobLength     - [IN/OUT] ë‚¨ì€ Lob ì „ì²´ì˜ í¬ê¸°
- *  aAllocatedLobSlotSize- [IN/OUT] í˜„ Blockì—ì„œ ì˜ˆì•½ëœ Lob ê¸°ë¡ ê³µê°„ì˜ í¬ê¸°
+ *  aLobPieceLength      - [IN]     ±â·ÏÇÒ LobÁ¶°¢ ±æÀÌ
+ *  aLobPieceValue       - [IN]     ±â·ÏÇÒ LobÁ¶°¢
+ *  aRemainLobLength     - [IN/OUT] ³²Àº Lob ÀüÃ¼ÀÇ Å©±â
+ *  aAllocatedLobSlotSize- [IN/OUT] Çö Block¿¡¼­ ¿¹¾àµÈ Lob ±â·Ï °ø°£ÀÇ Å©±â
  *
  * - Lob Column
  *   [LobLen (4byte)][Slot_Len(1~4Byte)][Body]
- *   Slot_LenëŠ” ì—­ì‹œ ìˆœìˆ˜ Bodyì˜ í¬ê¸°. ì¦‰ LobLenì˜ 4ByteëŠ” í¬í•¨ë˜ì§€ ì•ŠëŠ”ë‹¤.
- *   ì—¬ê¸°ì„œ LobLenëŠ” Slot ê°€ Chainingëœ ê²ƒê³¼ ìƒê´€ ì—†ì´, í•˜ë‚˜ì˜ LobColumn
- * ì „ì²´ì˜ ê¸¸ì´ì´ë‹¤. ë§Œì•½ Lobì´ Chainingë˜ë©´, ì²«ë²ˆì§¸ Slot ì—ë§Œ ê¸°ë¡í•œë‹¤.
+ *   Slot_Len´Â ¿ª½Ã ¼ø¼ö BodyÀÇ Å©±â. Áï LobLenÀÇ 4Byte´Â Æ÷ÇÔµÇÁö ¾Ê´Â´Ù.
+ *   ¿©±â¼­ LobLen´Â Slot °¡ ChainingµÈ °Í°ú »ó°ü ¾øÀÌ, ÇÏ³ªÀÇ LobColumn
+ * ÀüÃ¼ÀÇ ±æÀÌÀÌ´Ù. ¸¸¾à LobÀÌ ChainingµÇ¸é, Ã¹¹øÂ° Slot ¿¡¸¸ ±â·ÏÇÑ´Ù.
  *
  ************************************************************************/
 
@@ -2393,14 +2393,14 @@ static IDE_RC scpfWriteLobColumn( idvSQL         * aStatistics,
 
     IDE_DASSERT( aHandle         != NULL );
 
-    // Exportì‹œì—ëŠ” 0ë²ˆ Blockë§Œ ì‚¬ìš©í•œë‹¤
+    // Export½Ã¿¡´Â 0¹ø Block¸¸ »ç¿ëÇÑ´Ù
     sBlockInfo              = aHandle->mBlockMap[0];
     sBlockBufferPosition    = &(aHandle->mBlockBufferPosition);
 
     sRemainLobPieceLength = aLobPieceLength;
     sRemainLobPieceValue  = aLobPieceValue;
 
-    // í˜„ LobPieceë¥¼ ëª¨ë‘ ê¸°ë¡í• ë•Œê¹Œì§€ ë°˜ë³µí•œë‹¤.
+    // Çö LobPiece¸¦ ¸ğµÎ ±â·ÏÇÒ¶§±îÁö ¹İº¹ÇÑ´Ù.
     while( 0 < sRemainLobPieceLength )
     {
         //Write Lob piece
@@ -2414,14 +2414,14 @@ static IDE_RC scpfWriteLobColumn( idvSQL         * aStatistics,
         *aRemainLobLength               -= sBodySize;
         *aAllocatedLobSlotValLen        -= sBodySize;
 
-        // Slotí•˜ë‚˜ ë‹¤ì¼ëŠ”ë°, ì•„ì§ ê¸°ë¡í•  Lobì´ ìˆìœ¼ë©´
-        // ìƒˆ Slot í™•ë³´
+        // SlotÇÏ³ª ´Ù½è´Âµ¥, ¾ÆÁ÷ ±â·ÏÇÒ LobÀÌ ÀÖÀ¸¸é
+        // »õ Slot È®º¸
         if( ( 0 == *aAllocatedLobSlotValLen ) &&
             ( 0 <  *aRemainLobLength  ) )
         {
             sBlockInfo->mHasLastChainedSlot = ID_TRUE;
 
-            // Slot í™•ë³´
+            // Slot È®º¸
             IDE_TEST( scpfAllocSlot( 
                     aStatistics, 
                     &aHandle->mFile,
@@ -2451,17 +2451,17 @@ static IDE_RC scpfWriteLobColumn( idvSQL         * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  Blockì„ Fileì— Writeí•œë‹¤.
+ *  BlockÀ» File¿¡ WriteÇÑ´Ù.
  *
- *  aStatistics         - [IN] í†µê³„ì •ë³´
- *  aFile               - [IN] ê¸°ë¡í•  file
- *  aCommonHeader       - [IN] ê³µí†µí—¤ë”
- *  aFileHeader         - [IN] ê¸°ë¡í•  Fileì— ê´€í•œ ì •ë³´ í—¤ë”
- *  aRowSeq             - [IN] í˜„ì¬ ê¸°ë¡ì¤‘ì¸ Row ë²ˆí˜¸
- *  aBlockInfo          - [IN] ê¸°ë¡í•  Block
- *  aBlockBufferPosition- [OUT]    ë‹¤ìŒë²ˆ Blockìœ¼ë¡œ ì»¤ì„œ ì˜®ê¹€
- *  aFilePosition       - [IN/OUT] ê¸°ë¡í•  í˜„ì¬ Blockì˜ ìœ„ì¹˜ë¥¼ ê°€ì ¸ì˜¤ê³ 
- *                                 ê¸°ë¡í•œ Blockí¬ê¸°ë§Œí¼ Offsetì„ ì˜®ê¹€
+ *  aStatistics         - [IN] Åë°èÁ¤º¸
+ *  aFile               - [IN] ±â·ÏÇÒ file
+ *  aCommonHeader       - [IN] °øÅëÇì´õ
+ *  aFileHeader         - [IN] ±â·ÏÇÒ File¿¡ °üÇÑ Á¤º¸ Çì´õ
+ *  aRowSeq             - [IN] ÇöÀç ±â·ÏÁßÀÎ Row ¹øÈ£
+ *  aBlockInfo          - [IN] ±â·ÏÇÒ Block
+ *  aBlockBufferPosition- [OUT]    ´ÙÀ½¹ø BlockÀ¸·Î Ä¿¼­ ¿Å±è
+ *  aFilePosition       - [IN/OUT] ±â·ÏÇÒ ÇöÀç BlockÀÇ À§Ä¡¸¦ °¡Á®¿À°í
+ *                                 ±â·ÏÇÑ BlockÅ©±â¸¸Å­ OffsetÀ» ¿Å±è
  *
  **********************************************************************/
 static IDE_RC scpfWriteBlock( idvSQL                  * aStatistics,
@@ -2484,11 +2484,11 @@ static IDE_RC scpfWriteBlock( idvSQL                  * aStatistics,
     IDE_DASSERT( aFilePosition != NULL );
     IDE_DASSERT( aBlockInfo    != NULL );
 
-    // í˜„ Blockì—ì„œë¶€í„° ì‹œì‘ëœ Rowê°€ ì—†ëŠ” ê²½ìš°, 
-    // FirstRowOffsetì´ ì„¤ì •ë˜ì§€ ì•Šì•„ NULLì´ë‹¤.
+    // Çö Block¿¡¼­ºÎÅÍ ½ÃÀÛµÈ Row°¡ ¾ø´Â °æ¿ì, 
+    // FirstRowOffsetÀÌ ¼³Á¤µÇÁö ¾Ê¾Æ NULLÀÌ´Ù.
     if( aBlockInfo->mFirstRowOffset == SCPF_OFFSET_NULL )
     {
-        // ì´ì „ Blockìœ¼ë¡œ ë¶€í„° ë„˜ì–´ì˜¨ Slot ë§Œ ìˆë‹¤
+        // ÀÌÀü BlockÀ¸·Î ºÎÅÍ ³Ñ¾î¿Â Slot ¸¸ ÀÖ´Ù
         aBlockInfo->mFirstRowSlotSeq = aBlockInfo->mSlotCount ;
     }
 
@@ -2502,8 +2502,8 @@ static IDE_RC scpfWriteBlock( idvSQL                  * aStatistics,
 #if defined(DEBUG)
     for( i=0; i< aFileHeader->mBlockHeaderSize; i++)
     {
-        // Blockë‚´ Header ë¶€ë¶„ì€ ì—¬ê¸°ì„œ ê¸°ë¡í•˜ê¸° ë•Œë¬¸ì— 0ìœ¼ë¡œ ì´ˆê¸°í™” ë˜ì–´
-        // ìˆì–´ì•¼ í•œë‹¤.
+        // Block³» Header ºÎºĞÀº ¿©±â¼­ ±â·ÏÇÏ±â ¶§¹®¿¡ 0À¸·Î ÃÊ±âÈ­ µÇ¾î
+        // ÀÖ¾î¾ß ÇÑ´Ù.
 
         if( aBlockInfo->mBlockPtr[i] != 0 )
         {
@@ -2545,13 +2545,13 @@ static IDE_RC scpfWriteBlock( idvSQL                  * aStatistics,
     }
 #endif
 
-    // Bodyì— ëŒ€í•œ Checksum ê³„ì‚°
+    // Body¿¡ ´ëÇÑ Checksum °è»ê
     aBlockInfo->mCheckSum = smuUtility::foldBinary( 
         aBlockInfo->mBlockPtr + aFileHeader->mBlockHeaderSize,
         aFileHeader->mBlockSize - aFileHeader->mBlockHeaderSize );
 
-    // Headerë¥¼ Blockì— ì“´ë‹¤.
-    sBlockOffset = 0; // Block ë‚´ Offset
+    // Header¸¦ Block¿¡ ¾´´Ù.
+    sBlockOffset = 0; // Block ³» Offset
     IDE_TEST( smiDataPort::writeHeader(
             gScpfBlockHeaderDesc,
             aCommonHeader->mVersion,
@@ -2581,13 +2581,13 @@ static IDE_RC scpfWriteBlock( idvSQL                  * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  ë‹¤ìŒ Blockì„ ì¤€ë¹„í•œë‹¤.
+ *  ´ÙÀ½ BlockÀ» ÁØºñÇÑ´Ù.
  *
- *  aStatistics         - [IN] í†µê³„ì •ë³´
- *  aFileHeader         - [IN] Fileì •ë³´ë¥¼ ë‹´ì€ Header
- *  aRowSeq             - [IN] í˜„ì¬ ê¸°ë¡ì¤‘ì¸ Row ë²ˆí˜¸
- *  aBlockInfo          - [IN] ì‚¬ìš©í•˜ëŠ” BlockBuffer 
- *  aBlockBufferPosition- [IN/OUT] Blockë‚´ ì²« Slot ìœ„ì¹˜ë¡œ ì»¤ì„œ ì´ë™
+ *  aStatistics         - [IN] Åë°èÁ¤º¸
+ *  aFileHeader         - [IN] FileÁ¤º¸¸¦ ´ãÀº Header
+ *  aRowSeq             - [IN] ÇöÀç ±â·ÏÁßÀÎ Row ¹øÈ£
+ *  aBlockInfo          - [IN] »ç¿ëÇÏ´Â BlockBuffer 
+ *  aBlockBufferPosition- [IN/OUT] Block³» Ã¹ Slot À§Ä¡·Î Ä¿¼­ ÀÌµ¿
  *
  **********************************************************************/
 static IDE_RC scpfPrepareBlock( idvSQL                  * /*aStatistics*/,
@@ -2603,11 +2603,11 @@ static IDE_RC scpfPrepareBlock( idvSQL                  * /*aStatistics*/,
     IDE_TEST_RAISE( aBlockInfo->mSlotCount != aBlockBufferPosition->mSlotSeq ,
                     ERR_ABORT_CORRUPTED_BLOCK  );
 
-    // ì»¤ì„œ ì´ë™
+    // Ä¿¼­ ÀÌµ¿
     aBlockBufferPosition->mOffset   = aFileHeader->mBlockHeaderSize;
     aBlockBufferPosition->mSlotSeq  = 0;
 
-    // ìƒˆ Blockì— ëŒ€í•œ ì´ˆê¸°í™”
+    // »õ Block¿¡ ´ëÇÑ ÃÊ±âÈ­
     aBlockInfo->mRowSeqOfFirstSlot   = aRowSeq;
     aBlockInfo->mRowSeqOfLastSlot    = aRowSeq;
     aBlockInfo->mFirstRowSlotSeq     = 0;
@@ -2617,7 +2617,7 @@ static IDE_RC scpfPrepareBlock( idvSQL                  * /*aStatistics*/,
     aBlockInfo->mCheckSum            = 0;
     aBlockInfo->mBlockID             = aBlockBufferPosition->mID;
 
-    // PBTë¥¼ ì‰½ê²Œ í•˜ê¸° ìœ„í•´ ì´ˆê¸°í™” 
+    // PBT¸¦ ½±°Ô ÇÏ±â À§ÇØ ÃÊ±âÈ­ 
     idlOS::memset( aBlockInfo->mBlockPtr, 0, aFileHeader->mBlockSize );
 
     return IDE_SUCCESS;
@@ -2636,19 +2636,19 @@ static IDE_RC scpfPrepareBlock( idvSQL                  * /*aStatistics*/,
 /***********************************************************************
  *
  * Description :
- *  Headerë¥¼ Fileì— Writeí•œë‹¤.(BigEndianìœ¼ë¡œ)
+ *  Header¸¦ File¿¡ WriteÇÑ´Ù.(BigEndianÀ¸·Î)
  *
- *  1) Versionì„ ë°”íƒ•ìœ¼ë¡œ DATA_PORT_HEADERì„ íƒ
+ *  1) VersionÀ» ¹ÙÅÁÀ¸·Î DATA_PORT_HEADER¼±ÅÃ
  *  2) Size Estimation
- *  3) Bufferì— ê¸°ë¡
- *  4) Fileì— ê¸°ë¡
+ *  3) Buffer¿¡ ±â·Ï
+ *  4) File¿¡ ±â·Ï
  *
- *  aStatistics         - [IN] í†µê³„ì •ë³´
- *  aFile               - [IN] ê¸°ë¡í•  íŒŒì¼
- *  aCommonHeader       - [IN] ê³µí†µ í—¤ë”
- *  aFileHeader         - [IN] íŒŒì¼ í—¤ë”
- *  aBlockBufferPosition- [OUT] ì»¤ì„œë¥¼ Header ë°”ë¡œ ë‹¤ìŒìœ¼ë¡œ ì˜®ê¹€
- *  aFilePosition       - [OUT] ì»¤ì„œë¥¼ Header ë°”ë¡œ ë‹¤ìŒìœ¼ë¡œ ì˜®ê¹€
+ *  aStatistics         - [IN] Åë°èÁ¤º¸
+ *  aFile               - [IN] ±â·ÏÇÒ ÆÄÀÏ
+ *  aCommonHeader       - [IN] °øÅë Çì´õ
+ *  aFileHeader         - [IN] ÆÄÀÏ Çì´õ
+ *  aBlockBufferPosition- [OUT] Ä¿¼­¸¦ Header ¹Ù·Î ´ÙÀ½À¸·Î ¿Å±è
+ *  aFilePosition       - [OUT] Ä¿¼­¸¦ Header ¹Ù·Î ´ÙÀ½À¸·Î ¿Å±è
  *
  **********************************************************************/
 static IDE_RC scpfWriteHeader( idvSQL                     * aStatistics,
@@ -2692,7 +2692,7 @@ static IDE_RC scpfWriteHeader( idvSQL                     * aStatistics,
     /********************************************************************
      * Select DATA_PORT_HEADER Desc
      *
-     * Versionì„ ë°”íƒ•ìœ¼ë¡œ DATA_PORT_HEADER Desc ì„ íƒ
+     * VersionÀ» ¹ÙÅÁÀ¸·Î DATA_PORT_HEADER Desc ¼±ÅÃ
      ********************************************************************/
     sCommonHeaderDesc    = gSmiDataPortHeaderDesc;
     sObjectHeaderDesc    = gScpfFileHeaderDesc;
@@ -2714,14 +2714,14 @@ static IDE_RC scpfWriteHeader( idvSQL                     * aStatistics,
     /*********************************************************************
      * Size Estimation
      *
-     * HeaderëŠ” Version +
+     * Header´Â Version +
      *          CommonHeader +
      *          scpfHeader +
      *          qsfTableInfo +
      *          qsfColumnInfo*ColCount + 
      *          qsfPartitionInfo*PartitionCount +
-     * ì˜ í˜•íƒœë¡œ êµ¬ì„±ë˜ë©°, ë”°ë¼ì„œ Headerë¥¼ ì €ì¥í•  ë²„í¼ì˜ í¬ê¸°ë„ ì´ì™€
-     * ê°™ë‹¤.
+     * ÀÇ ÇüÅÂ·Î ±¸¼ºµÇ¸ç, µû¶ó¼­ Header¸¦ ÀúÀåÇÒ ¹öÆÛÀÇ Å©±âµµ ÀÌ¿Í
+     * °°´Ù.
      **********************************************************************/
     sBufferSize = 
         ID_SIZEOF(UInt) +
@@ -2731,7 +2731,7 @@ static IDE_RC scpfWriteHeader( idvSQL                     * aStatistics,
         smiDataPort::getEncodedHeaderSize( sColumnHeaderDesc, sVersion ) * sColumnCount +
         smiDataPort::getEncodedHeaderSize( sPartitionHeaderDesc, sVersion ) * sPartitionCount;
 
-    // DirectIOë¥¼ ìœ„í•´ Alignì„ ë§ì¶°ì¤˜ì•¼ í•©ë‹ˆë‹¤.
+    // DirectIO¸¦ À§ÇØ AlignÀ» ¸ÂÃçÁà¾ß ÇÕ´Ï´Ù.
     sBufferSize = idlOS::align( sBufferSize, ID_MAX_DIO_PAGE_SIZE );
 
     aFileHeader->mFileHeaderSize = sBufferSize;
@@ -2857,13 +2857,13 @@ static IDE_RC scpfWriteHeader( idvSQL                     * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  Object Handleì„ ì´ˆê¸°í™”í•œë‹¤.
+ *  Object HandleÀ» ÃÊ±âÈ­ÇÑ´Ù.
  *
- *  aStatistics         - [IN] í†µê³„ì •ë³´
- *  aCommonHeader       - [IN/OUT] Fileë¡œë¶€í„° ì½ì€ Header ì •ë³´
- *  aFirstRowSeq        - [IN]  Importí•  ì²«ë²ˆì§¸ Row
- *  aLastRowSeq         - [IN]  Importí•  ë§ˆì§€ë§‰ Row
- *  aObjName            - [IN]  Object ì´ë¦„
+ *  aStatistics         - [IN] Åë°èÁ¤º¸
+ *  aCommonHeader       - [IN/OUT] File·ÎºÎÅÍ ÀĞÀº Header Á¤º¸
+ *  aFirstRowSeq        - [IN]  ImportÇÒ Ã¹¹øÂ° Row
+ *  aLastRowSeq         - [IN]  ImportÇÒ ¸¶Áö¸· Row
+ *  aObjName            - [IN]  Object ÀÌ¸§
  *
  **********************************************************************/
 static IDE_RC scpfInit4Import( idvSQL                * aStatistics,
@@ -2908,8 +2908,8 @@ static IDE_RC scpfInit4Import( idvSQL                * aStatistics,
     sHandle->mFilePosition.mIdx              = 0;
     sHandle->mFilePosition.mOffset           = 0;
 
-    sHandle->mSplit                    = 0;  // Importì‹œ ì‚¬ìš© ì•ˆí•¨
-    sHandle->mColumnChainingThreshold  = 0;  // Importì‹œ ì‚¬ìš© ì•ˆí•¨
+    sHandle->mSplit                    = 0;  // Import½Ã »ç¿ë ¾ÈÇÔ
+    sHandle->mColumnChainingThreshold  = 0;  // Import½Ã »ç¿ë ¾ÈÇÔ
     sHandle->mRemainLobLength          = 0; 
     sHandle->mRemainLobColumnCount     = 0;
 
@@ -2926,7 +2926,7 @@ static IDE_RC scpfInit4Import( idvSQL                * aStatistics,
     // --------------------------------------
     // Open file and Load header
     // ------------------------------------- 
-    // Fileì„ ì—°ë‹¤.
+    // FileÀ» ¿¬´Ù.
     IDE_TEST( scpfOpenFile( &(sHandle->mOpenFile),
                             &(sHandle->mFile),
                             sHandle->mObjName, 
@@ -2936,7 +2936,7 @@ static IDE_RC scpfInit4Import( idvSQL                * aStatistics,
               != IDE_SUCCESS);
 
 
-    // Headerë¥¼ ë¶ˆëŸ¬ì˜¨ë‹¤
+    // Header¸¦ ºÒ·¯¿Â´Ù
     IDE_TEST( scpfReadHeader( aStatistics, 
                               &(sHandle->mFile),
                               sHandle->mCommonHandle.mHeader,
@@ -2945,7 +2945,7 @@ static IDE_RC scpfInit4Import( idvSQL                * aStatistics,
                               &sHandle->mFilePosition )
               != IDE_SUCCESS);
 
-    // Rowë²”ìœ„ë¥¼ ì¡°ì •í•¨
+    // Row¹üÀ§¸¦ Á¶Á¤ÇÔ
     if( sHandle->mFileHeader.mLastRowSeqInFile < aLastRowSeq)
     {
         sHandle->mLimitRowSeq = sHandle->mFileHeader.mLastRowSeqInFile;
@@ -2955,7 +2955,7 @@ static IDE_RC scpfInit4Import( idvSQL                * aStatistics,
         sHandle->mLimitRowSeq = aLastRowSeq;
     }
 
-    // FirstRowSeqëŠ” í•œê³„ë³´ë‹¤ í¬ë©´ ì•ˆëœë‹¤.
+    // FirstRowSeq´Â ÇÑ°èº¸´Ù Å©¸é ¾ÈµÈ´Ù.
     if( sHandle->mLimitRowSeq < aFirstRowSeq )
     {
         aFirstRowSeq = sHandle->mLimitRowSeq;
@@ -3019,7 +3019,7 @@ static IDE_RC scpfInit4Import( idvSQL                * aStatistics,
               != IDE_SUCCESS );
     sState = 7;
 
-    // DirectIOë¥¼ ìœ„í•´ Alignì„ ë§ì¶°ì¤˜ì•¼ í•©ë‹ˆë‹¤.
+    // DirectIO¸¦ À§ÇØ AlignÀ» ¸ÂÃçÁà¾ß ÇÕ´Ï´Ù.
     sAlignedBlockPtr = (UChar*)idlOS::align( sHandle->mAllocatedBlock,
                                              ID_MAX_DIO_PAGE_SIZE );
 
@@ -3099,9 +3099,9 @@ static IDE_RC scpfInit4Import( idvSQL                * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  ì‚¬ìš©í•œ ObjectHandleì„ ì œê±°í•œë‹¤.
+ *  »ç¿ëÇÑ ObjectHandleÀ» Á¦°ÅÇÑ´Ù.
  *
- *  aStatistics         - [IN] í†µê³„ì •ë³´
+ *  aStatistics         - [IN] Åë°èÁ¤º¸
  *  aHandle             - [IN] Object Handle
  *
  **********************************************************************/
@@ -3188,13 +3188,13 @@ static IDE_RC scpfDestroy4Import( idvSQL         * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  í•´ë‹¹ Fileì„ ì—°ë‹¤.
+ *  ÇØ´ç FileÀ» ¿¬´Ù.
  *
- *  aOpenFile           - [IN]  Fileì´ Openë˜ì–´ ìˆëŠ”ê°€
- *  aFile               - [IN]  Opení•  File í•¸ë“¤
- *  aObjName            - [IN]  Fileì´ë¦„ì„ ê²°ì •í•˜ê¸° ìœ„í•œ Objì´ë¦„
- *  aIdx                - [IN]  Fileì˜ ë²ˆí˜¸
- *  aFileName           - [OUT] ê²°ì •ëœ íŒŒì¼ ì´ë¦„
+ *  aOpenFile           - [IN]  FileÀÌ OpenµÇ¾î ÀÖ´Â°¡
+ *  aFile               - [IN]  OpenÇÒ File ÇÚµé
+ *  aObjName            - [IN]  FileÀÌ¸§À» °áÁ¤ÇÏ±â À§ÇÑ ObjÀÌ¸§
+ *  aIdx                - [IN]  FileÀÇ ¹øÈ£
+ *  aFileName           - [OUT] °áÁ¤µÈ ÆÄÀÏ ÀÌ¸§
  *
  **********************************************************************/
 static IDE_RC scpfOpenFile( idBool         * aOpenFile,
@@ -3257,13 +3257,13 @@ static IDE_RC scpfOpenFile( idBool         * aOpenFile,
 /***********************************************************************
  *
  * Description :
- *  ObjectNameì— ë§ëŠ” Fileì„ ì°¾ëŠ”ë‹¤ 
+ *  ObjectName¿¡ ¸Â´Â FileÀ» Ã£´Â´Ù 
  *  <Directory><DirectorySperator><FileName>_<Idx>.<EXT>  
  *
- *  aObjName            - [IN]  Object ì´ë¦„
- *  aDirectory          - [IN]  íŒŒì¼ì´ ìˆëŠ” directory
- *  aFileIdx            - [IN]  File ë²ˆí˜¸
- *  aFileName           - [OUT] ìƒì„±ëœ íŒŒì¼ ì´ë¦„
+ *  aObjName            - [IN]  Object ÀÌ¸§
+ *  aDirectory          - [IN]  ÆÄÀÏÀÌ ÀÖ´Â directory
+ *  aFileIdx            - [IN]  File ¹øÈ£
+ *  aFileName           - [OUT] »ı¼ºµÈ ÆÄÀÏ ÀÌ¸§
  *
  **********************************************************************/
 
@@ -3279,7 +3279,7 @@ static IDE_RC scpfFindFile( SChar            * aObjName,
     IDE_DASSERT( aFileName  != NULL );
 
 
-    // Directoryì— ë°ì´í„°ê°€ ìˆëŠ”ë°, /ë¡œ ëë‚˜ì§€ ì•Šì„ ê²½ìš° ë¶™ì—¬ì¤Œ
+    // Directory¿¡ µ¥ÀÌÅÍ°¡ ÀÖ´Âµ¥, /·Î ³¡³ªÁö ¾ÊÀ» °æ¿ì ºÙ¿©ÁÜ
     sLen = idlOS::strnlen( aDirectory, SM_MAX_FILE_NAME );
     if( 0 < sLen )
     {
@@ -3302,7 +3302,7 @@ static IDE_RC scpfFindFile( SChar            * aObjName,
 
 
     // 2. Extension
-    // í™•ì¥ìë¥¼ ë¶™ì„
+    // È®ÀåÀÚ¸¦ ºÙÀÓ
     idlOS::snprintf( aFileName, 
                      SM_MAX_FILE_NAME,
                      "%s%s%s",
@@ -3313,7 +3313,7 @@ static IDE_RC scpfFindFile( SChar            * aObjName,
 
 
     // 3. FileIdx
-    // FileIndexì™€ í™•ì¥ìë¥¼ ë¶™ì„
+    // FileIndex¿Í È®ÀåÀÚ¸¦ ºÙÀÓ
     idlOS::snprintf( aFileName, 
                      SM_MAX_FILE_NAME,
                      "%s%s%c%"ID_UINT32_FMT"%s",
@@ -3324,7 +3324,7 @@ static IDE_RC scpfFindFile( SChar            * aObjName,
                      SCPF_DPFILE_EXT);
     IDE_TEST_CONT( idf::access(aFileName, F_OK) == 0, DONE );
 
-    // íƒìƒ‰ ì‹¤íŒ¨
+    // Å½»ö ½ÇÆĞ
     IDE_RAISE( ERR_ABORT_CANT_OPEN_FILE );
 
     IDE_EXCEPTION_CONT( DONE );
@@ -3346,20 +3346,20 @@ static IDE_RC scpfFindFile( SChar            * aObjName,
 /***********************************************************************
  *
  * Description :
- *  íŒŒì¼ì„ ì—´ì–´ Headerë¥¼ ì½ê³  ì´ë¥¼ ë°”íƒ•ìœ¼ë¡œ Handleì„ ì´ˆê¸°í™” í•œë‹¤.
+ *  ÆÄÀÏÀ» ¿­¾î Header¸¦ ÀĞ°í ÀÌ¸¦ ¹ÙÅÁÀ¸·Î HandleÀ» ÃÊ±âÈ­ ÇÑ´Ù.
  *
- * 1) Headerë¥¼ ì½ëŠ”ë‹¤.
- * 2) Headerì˜ Versionì„ ë°”íƒ•ìœ¼ë¡œ DATA_PORT_HEADERDescì„ ì„ íƒí•œë‹¤.
+ * 1) Header¸¦ ÀĞ´Â´Ù.
+ * 2) HeaderÀÇ VersionÀ» ¹ÙÅÁÀ¸·Î DATA_PORT_HEADERDescÀ» ¼±ÅÃÇÑ´Ù.
  * 3) Size Estimation
- * 4) ì„ íƒí•œ DATA_PORT_HEADERë¥¼ ë°”íƒ•ìœ¼ë¡œ Headerì˜ ì„¸ë¶€ ë°ì´í„°ë¥¼ ì½ìŒ
- * 5) Sizeë¥¼ ë°”íƒ•ìœ¼ë¡œ Validation
+ * 4) ¼±ÅÃÇÑ DATA_PORT_HEADER¸¦ ¹ÙÅÁÀ¸·Î HeaderÀÇ ¼¼ºÎ µ¥ÀÌÅÍ¸¦ ÀĞÀ½
+ * 5) Size¸¦ ¹ÙÅÁÀ¸·Î Validation
  *
- *  aStatistics         - [IN] í†µê³„ì •ë³´
- *  aFile               - [IN] ê¸°ë¡í•  íŒŒì¼
- *  aCommonHeader       - [IN] ê³µí†µ í—¤ë”
- *  aFileHeader         - [IN] íŒŒì¼ í—¤ë”
- *  aBlockBufferPosition- [OUT] ì»¤ì„œë¥¼ Header ë°”ë¡œ ë‹¤ìŒìœ¼ë¡œ ì˜®ê¹€
- *  aFilePosition       - [OUT] ì»¤ì„œë¥¼ Header ë°”ë¡œ ë‹¤ìŒìœ¼ë¡œ ì˜®ê¹€
+ *  aStatistics         - [IN] Åë°èÁ¤º¸
+ *  aFile               - [IN] ±â·ÏÇÒ ÆÄÀÏ
+ *  aCommonHeader       - [IN] °øÅë Çì´õ
+ *  aFileHeader         - [IN] ÆÄÀÏ Çì´õ
+ *  aBlockBufferPosition- [OUT] Ä¿¼­¸¦ Header ¹Ù·Î ´ÙÀ½À¸·Î ¿Å±è
+ *  aFilePosition       - [OUT] Ä¿¼­¸¦ Header ¹Ù·Î ´ÙÀ½À¸·Î ¿Å±è
  *
  **********************************************************************/
 
@@ -3400,11 +3400,11 @@ static IDE_RC scpfReadHeader( idvSQL                    * aStatistics,
 
     /********************************************************************
      * Read Version
-     * Versionì„ ì½ì–´ì•¼ ê³µí†µí—¤ë”ì˜ í˜•íƒœë¥¼ ì•Œ ìˆ˜ ìˆë‹¤.
+     * VersionÀ» ÀĞ¾î¾ß °øÅëÇì´õÀÇ ÇüÅÂ¸¦ ¾Ë ¼ö ÀÖ´Ù.
      ********************************************************************/
 
-    // Version ë˜í•œ Endian ìƒê´€ì—†ì´ ì½ì–´ì•¼ í•˜ê¸° ë•Œë¬¸ì—, ë²„í¼ì— ì €ì¥ í›„
-    // ë‹¤ì‹œ ì½ëŠ”ë‹¤.
+    // Version ¶ÇÇÑ Endian »ó°ü¾øÀÌ ÀĞ¾î¾ß ÇÏ±â ¶§¹®¿¡, ¹öÆÛ¿¡ ÀúÀå ÈÄ
+    // ´Ù½Ã ÀĞ´Â´Ù.
     IDE_TEST( aFile->read( aStatistics,
                            0, // header offset
                            &sVersionBuffer,
@@ -3456,7 +3456,7 @@ static IDE_RC scpfReadHeader( idvSQL                    * aStatistics,
     /********************************************************************
      * Select DATA_PORT_HEADER Desc
      *
-     * Versionì„ ë°”íƒ•ìœ¼ë¡œ DATA_PORT_HEADER Desc ì„ íƒ
+     * VersionÀ» ¹ÙÅÁÀ¸·Î DATA_PORT_HEADER Desc ¼±ÅÃ
      ********************************************************************/
     sObjectHeaderDesc     = gScpfFileHeaderDesc;
     sTableHeaderDesc      = (smiDataPortHeaderDesc*)
@@ -3472,13 +3472,13 @@ static IDE_RC scpfReadHeader( idvSQL                    * aStatistics,
     /********************************************************************
      * Size Estimation
      *
-     * HeaderëŠ” Version +
+     * Header´Â Version +
      *          commonHeader + 
      *          scpfHeader +
      *          qsfTableInfo +
      *          qsfColumnInfo*ColCount + 
      *          qsfPartitionInfo*PartitionCount +
-     * ì˜ í˜•íƒœë¡œ êµ¬ì„±ëœë‹¤. ì´ì¤‘ ìœ„ì˜ ë‘˜ì€ ì´ë¯¸ ì½ì—ˆìœ¼ë¯€ë¡œ ì œì™¸í•œë‹¤.
+     * ÀÇ ÇüÅÂ·Î ±¸¼ºµÈ´Ù. ÀÌÁß À§ÀÇ µÑÀº ÀÌ¹Ì ÀĞ¾úÀ¸¹Ç·Î Á¦¿ÜÇÑ´Ù.
      ********************************************************************/
     sBufferSize = 
         smiDataPort::getEncodedHeaderSize( sObjectHeaderDesc, sVersion ) +
@@ -3495,9 +3495,9 @@ static IDE_RC scpfReadHeader( idvSQL                    * aStatistics,
               != IDE_SUCCESS );
     sBufferState = 1;
 
-    // Sizeë¥¼ ë°”íƒ•ìœ¼ë¡œ Structureë¥¼ ì €ì¥í•  ë²„í¼ í• ë‹¹
+    // Size¸¦ ¹ÙÅÁÀ¸·Î Structure¸¦ ÀúÀåÇÒ ¹öÆÛ ÇÒ´ç
 
-    // ObjectHeader(fileHeader)ëŠ” ì´ë¯¸ ì„ ì–¸ë˜ì–´ ìˆê¸°ì— ê·¸ê²ƒì„ ì´ìš©í•œë‹¤.
+    // ObjectHeader(fileHeader)´Â ÀÌ¹Ì ¼±¾ğµÇ¾î ÀÖ±â¿¡ ±×°ÍÀ» ÀÌ¿ëÇÑ´Ù.
     sObjectHeader                = aFileHeader;
     aCommonHeader->mObjectHeader = aFileHeader;
 
@@ -3611,7 +3611,7 @@ static IDE_RC scpfReadHeader( idvSQL                    * aStatistics,
         IDE_RAISE( ERR_ABORT_DATA_PORT_INTERNAL_ERROR );
     }
 
-    // ì €ì¥ëœ Headerí¬ê¸°ì™€ ì‹¤ì œ Header í¬ê¸°ê°€ ë™ì¼í•´ì•¼ í•œë‹¤.
+    // ÀúÀåµÈ HeaderÅ©±â¿Í ½ÇÁ¦ Header Å©±â°¡ µ¿ÀÏÇØ¾ß ÇÑ´Ù.
     sTotalHeaderSize = 
         ID_SIZEOF(UInt) +
         smiDataPort::getEncodedHeaderSize( sCommonHeaderDesc, sVersion ) +
@@ -3622,7 +3622,7 @@ static IDE_RC scpfReadHeader( idvSQL                    * aStatistics,
         smiDataPort::getEncodedHeaderSize( sPartitionHeaderDesc, sVersion ) 
             * sPartitionCount;
 
-    // DirectIOë¥¼ ìœ„í•´ Alignì„ ë§ì¶°ì¤˜ì•¼ í•©ë‹ˆë‹¤.
+    // DirectIO¸¦ À§ÇØ AlignÀ» ¸ÂÃçÁà¾ß ÇÕ´Ï´Ù.
     sTotalHeaderSize = 
         idlOS::align( sTotalHeaderSize, ID_MAX_DIO_PAGE_SIZE );
 
@@ -3692,7 +3692,7 @@ static IDE_RC scpfReadHeader( idvSQL                    * aStatistics,
 
 }
 
-// Headerë¥¼ ë‚ ë¦°ë‹¤.
+// Header¸¦ ³¯¸°´Ù.
 static IDE_RC scpfReleaseHeader( idvSQL         * /*aStatistics*/,
                                  scpfHandle     * aHandle )
 {
@@ -3738,18 +3738,18 @@ static IDE_RC scpfReleaseHeader( idvSQL         * /*aStatistics*/,
 /***********************************************************************
  *
  * Description :
- *  Blockì„ Fileë¡œ ë¶€í„° ì½ëŠ”ë‹¤.
- *  ìˆœìˆ˜í•˜ê²Œ Block ìì²´ì™€ BlockHeader Parsingë§Œ ìˆ˜í–‰í•œë‹¤.
+ *  BlockÀ» File·Î ºÎÅÍ ÀĞ´Â´Ù.
+ *  ¼ø¼öÇÏ°Ô Block ÀÚÃ¼¿Í BlockHeader Parsing¸¸ ¼öÇàÇÑ´Ù.
  *
- *  aStatistics         - [IN] í†µê³„ì •ë³´
+ *  aStatistics         - [IN] Åë°èÁ¤º¸
  *  aFile               - [IN] FileHandle
- *  aCommonHeader       - [IN] ê³µí†µí—¤ë”
- *  aFileHeaderSize     - [IN] Fileì˜ Header í¬ê¸°
- *  aBlockHeaderSize    - [IN] Blockì˜ Header í¬ê¸°
- *  aBlockSize          - [IN] Blockì˜ í¬ê¸°
- *  aBlockID            - [IN] ì½ì„ Block ID
- *  aFileOffset         - [OUT] ì½ì€ Blockì˜ File ìœ„ì¹˜
- *  aBlockInfo          - [OUT] ì½ì€ Block
+ *  aCommonHeader       - [IN] °øÅëÇì´õ
+ *  aFileHeaderSize     - [IN] FileÀÇ Header Å©±â
+ *  aBlockHeaderSize    - [IN] BlockÀÇ Header Å©±â
+ *  aBlockSize          - [IN] BlockÀÇ Å©±â
+ *  aBlockID            - [IN] ÀĞÀ» Block ID
+ *  aFileOffset         - [OUT] ÀĞÀº BlockÀÇ File À§Ä¡
+ *  aBlockInfo          - [OUT] ÀĞÀº Block
  *
  **********************************************************************/
 static IDE_RC scpfReadBlock( idvSQL             * aStatistics,
@@ -3792,11 +3792,11 @@ static IDE_RC scpfReadBlock( idvSQL             * aStatistics,
             aBlockInfo )
         != IDE_SUCCESS );
 
-    // ìš”êµ¬í•œ Blockì„ ì½ì—ˆì–´ì•¼í•¨
+    // ¿ä±¸ÇÑ BlockÀ» ÀĞ¾ú¾î¾ßÇÔ
     IDE_TEST_RAISE( aBlockInfo->mBlockID != aBlockID,
                     ERR_ABORT_CORRUPTED_BLOCK );
 
-    // Bodyì— ëŒ€í•œ Checksum í™•ì¸ (Checksumì€ BlockHeader ì´í›„)
+    // Body¿¡ ´ëÇÑ Checksum È®ÀÎ (ChecksumÀº BlockHeader ÀÌÈÄ)
     sCheckSum = smuUtility::foldBinary( 
         aBlockInfo->mBlockPtr + aBlockHeaderSize,
         aBlockSize- aBlockHeaderSize );
@@ -3818,18 +3818,18 @@ static IDE_RC scpfReadBlock( idvSQL             * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  BinarySearchë¡œ FirstRowë¥¼ ê°€ì§„ Blockì„ ì°¾ì•„ì„œ Handleì— ì˜¬ë¦°ë‹¤.
+ *  BinarySearch·Î FirstRow¸¦ °¡Áø BlockÀ» Ã£¾Æ¼­ Handle¿¡ ¿Ã¸°´Ù.
  *
- *  aStatistics         - [IN] í†µê³„ì •ë³´
- *  aFile               - [IN] ì½ì„ File
- *  aCommonHeader       - [IN] ê³µí†µí—¤ë”
- *  aFirstRowSeqInFile  - [IN] íŒŒì¼ ë‚´ ì²«ë²ˆì§¸ rowì˜ ë²ˆí˜¸
- *  aTargetRow          - [IN] ì°¾ìœ¼ë ¤ í•˜ëŠ” FirstRow
- *  aBlockCount         - [IN] Blockì˜ ê°œìˆ˜
- *  aFileHeaderSize     - [IN] FileHeaderì˜ í¬ê¸°
- *  aBlockHeaderSize    - [IN] BlockHeaderì˜ í¬ê¸°
- *  aBlockSize          - [IN] Blockì˜ í¬ê¸°
- *  aBlockMap           - [OUT] ì½ì€ Blockì„ ì €ì¥í•  BlockInfo
+ *  aStatistics         - [IN] Åë°èÁ¤º¸
+ *  aFile               - [IN] ÀĞÀ» File
+ *  aCommonHeader       - [IN] °øÅëÇì´õ
+ *  aFirstRowSeqInFile  - [IN] ÆÄÀÏ ³» Ã¹¹øÂ° rowÀÇ ¹øÈ£
+ *  aTargetRow          - [IN] Ã£À¸·Á ÇÏ´Â FirstRow
+ *  aBlockCount         - [IN] BlockÀÇ °³¼ö
+ *  aFileHeaderSize     - [IN] FileHeaderÀÇ Å©±â
+ *  aBlockHeaderSize    - [IN] BlockHeaderÀÇ Å©±â
+ *  aBlockSize          - [IN] BlockÀÇ Å©±â
+ *  aBlockMap           - [OUT] ÀĞÀº BlockÀ» ÀúÀåÇÒ BlockInfo
  *  aBlockCorsur        - [IN/OUT] BlockBufferPosition
  *
  **********************************************************************/
@@ -3857,13 +3857,13 @@ static IDE_RC scpfFindFirstBlock( idvSQL                  * aStatistics,
     IDE_DASSERT( aBlockMap     != NULL );
 
     sBlockID = 0;
-    // íŒŒì¼ ë‚´ ì²«ë²ˆì§¸ Rowë¥¼ ê°€ì ¸ì˜¤ë¼ëŠ” ì˜ë¯¸ì˜€ìœ¼ë©´, 
-    // Binary searchë¥¼ Skipí•˜ê³  ì²«ë²ˆì§¸ Blockë¶€í„° ì‹œì‘
+    // ÆÄÀÏ ³» Ã¹¹øÂ° Row¸¦ °¡Á®¿À¶ó´Â ÀÇ¹Ì¿´À¸¸é, 
+    // Binary search¸¦ SkipÇÏ°í Ã¹¹øÂ° BlockºÎÅÍ ½ÃÀÛ
     IDE_TEST_CONT( (aTargetRow == aFirstRowSeqInFile), SKIP_FIND_ROW );
 
     sMin       = 0;
     sMax       = aBlockCount - 1;
-    sBlockInfo = aBlockMap[ 0 ]; // 0ë²ˆ Infoë¥¼ Bufferë¡œ ì‚¬ìš©í•œë‹¤.
+    sBlockInfo = aBlockMap[ 0 ]; // 0¹ø Info¸¦ Buffer·Î »ç¿ëÇÑ´Ù.
 
     while( sMin <= sMax )
     {
@@ -3882,8 +3882,8 @@ static IDE_RC scpfFindFirstBlock( idvSQL                  * aStatistics,
 
         if( 0 < sBlockInfo->mFirstRowSlotSeq )
         {
-            // ì´ì „ Blockì—ì„œ Overflowëœ Slot ê°€ ìˆìœ¼ë©´, 
-            // FirstRowëŠ” ê·¸ ë‹¤ìŒ Rowì´ë‹¤.
+            // ÀÌÀü Block¿¡¼­ OverflowµÈ Slot °¡ ÀÖÀ¸¸é, 
+            // FirstRow´Â ±× ´ÙÀ½ RowÀÌ´Ù.
             sFirstRowSeq = sBlockInfo->mRowSeqOfFirstSlot + 1;
         }
         else
@@ -3917,21 +3917,21 @@ static IDE_RC scpfFindFirstBlock( idvSQL                  * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  BlockMapì„ Shiftì‹œì¼œì„œ ì•„ì§ ì½ì§€ ì•Šì€ Blockì„ BlockMapì˜
- *  ì•ìª½ì— ì˜¤ë„ë¡ ì´ë™ì‹œí‚¨ë‹¤
+ *  BlockMapÀ» Shift½ÃÄÑ¼­ ¾ÆÁ÷ ÀĞÁö ¾ÊÀº BlockÀ» BlockMapÀÇ
+ *  ¾ÕÂÊ¿¡ ¿Àµµ·Ï ÀÌµ¿½ÃÅ²´Ù
  * 
- *  ì˜ˆ) BlockMap 0,1,2,3
- *     => 0,1ë²ˆ Blockì˜ RowëŠ” ëª¨ë‘ ì²˜ë¦¬í•˜ì˜€ìŒ
- *        (BlockBufferPosition.mSeqê°€ 2ë¥¼ ê°€ë¦¬í‚´)
- *     => 2ê°œ ë§Œí¼ Shiftì‹œí‚´
+ *  ¿¹) BlockMap 0,1,2,3
+ *     => 0,1¹ø BlockÀÇ Row´Â ¸ğµÎ Ã³¸®ÇÏ¿´À½
+ *        (BlockBufferPosition.mSeq°¡ 2¸¦ °¡¸®Å´)
+ *     => 2°³ ¸¸Å­ Shift½ÃÅ´
  *        BlockMap  2,3,0,1
- *     => ì´í›„ 0,1ë²ˆì— 4,5ë²ˆ Blockì„ ì˜¬ë¦¼
+ *     => ÀÌÈÄ 0,1¹ø¿¡ 4,5¹ø BlockÀ» ¿Ã¸²
  *        BlockMap  2,3,4,5
  *     
  *
- *  aShiftBlockCount    - [IN] Shiftí•  Block ê°œìˆ˜
- *  aBlockInfoCount     - [IN] í•œë²ˆì— ì½ì„ ìˆ˜ ìˆëŠ” BlockInfo ê°œìˆ˜
- *  aBlockMap           - [IN/OUT] ì½ì€ Blockì„ ì €ì¥í•  BlockInfo 
+ *  aShiftBlockCount    - [IN] ShiftÇÒ Block °³¼ö
+ *  aBlockInfoCount     - [IN] ÇÑ¹ø¿¡ ÀĞÀ» ¼ö ÀÖ´Â BlockInfo °³¼ö
+ *  aBlockMap           - [IN/OUT] ÀĞÀº BlockÀ» ÀúÀåÇÒ BlockInfo 
  *
  **********************************************************************/
 static void scpfShiftBlock( UInt                aShiftBlockCount,
@@ -3944,7 +3944,7 @@ static void scpfShiftBlock( UInt                aShiftBlockCount,
 
     IDE_DASSERT( aBlockMap    != NULL );
 
-    // ì½ì€ Blockë§Œí¼ Shift
+    // ÀĞÀº Block¸¸Å­ Shift
     for( j=0; j<aShiftBlockCount; j++ )
     {
         sBlockInfoPtr = aBlockMap[ 0 ];
@@ -3959,22 +3959,22 @@ static void scpfShiftBlock( UInt                aShiftBlockCount,
 /***********************************************************************
  *
  * Description :
- *  ë‹¤ìŒë²ˆ Blockì„ ì½ì–´ì„œ Handleì— ì˜¬ë¦°ë‹¤.
+ *  ´ÙÀ½¹ø BlockÀ» ÀĞ¾î¼­ Handle¿¡ ¿Ã¸°´Ù.
  *
- *  aStatistics         - [IN] í†µê³„ì •ë³´
- *  aFile               - [IN] ì½ì„ File
- *  aCommonHeader       - [IN]  ê³µí†µí—¤ë”
- *  aFileName           - [IN] ì½ì„ Fileì´ë¦„
- *  aTargetRow          - [IN] Blockì„ ì½ìœ¼ë©´, ì´ Rowê°€ ìˆì–´ì•¼ í•œë‹¤.
- *  aBlockCount         - [IN] ì´ Blockì˜ ê°œìˆ˜
- *  aFileHeaderSize     - [IN] FileHeaderì˜ í¬ê¸°
- *  aBlockHeaderSize    - [IN] BlockHeaderì˜ í¬ê¸°
- *  aBlockSize          - [IN] Blockì˜ í¬ê¸°
- *  aNextBlockID        - [IN] ì´ë²ˆì— ì¤€ë¹„ë˜ëŠ” Blockì˜ ì²«ë²ˆì§¸ Block
- *  aFilePosition       - [OUT] ì½ì€ë§Œí¼ FilePositionì´ë™
- *  aBlockInfoCount     - [IN] ë©”ëª¨ë¦¬ìƒì˜ BlockInfoì˜ ê°œìˆ˜
- *  aReadBlockCount     - [IN] ì´ë²ˆì— ì½ì„ Block ê°œìˆ˜
- *  aBlockMap           - [OUT] ì½ì€ Blockì„ ì €ì¥í•  BlockInfo 
+ *  aStatistics         - [IN] Åë°èÁ¤º¸
+ *  aFile               - [IN] ÀĞÀ» File
+ *  aCommonHeader       - [IN]  °øÅëÇì´õ
+ *  aFileName           - [IN] ÀĞÀ» FileÀÌ¸§
+ *  aTargetRow          - [IN] BlockÀ» ÀĞÀ¸¸é, ÀÌ Row°¡ ÀÖ¾î¾ß ÇÑ´Ù.
+ *  aBlockCount         - [IN] ÃÑ BlockÀÇ °³¼ö
+ *  aFileHeaderSize     - [IN] FileHeaderÀÇ Å©±â
+ *  aBlockHeaderSize    - [IN] BlockHeaderÀÇ Å©±â
+ *  aBlockSize          - [IN] BlockÀÇ Å©±â
+ *  aNextBlockID        - [IN] ÀÌ¹ø¿¡ ÁØºñµÇ´Â BlockÀÇ Ã¹¹øÂ° Block
+ *  aFilePosition       - [OUT] ÀĞÀº¸¸Å­ FilePositionÀÌµ¿
+ *  aBlockInfoCount     - [IN] ¸Ş¸ğ¸®»óÀÇ BlockInfoÀÇ °³¼ö
+ *  aReadBlockCount     - [IN] ÀÌ¹ø¿¡ ÀĞÀ» Block °³¼ö
+ *  aBlockMap           - [OUT] ÀĞÀº BlockÀ» ÀúÀåÇÒ BlockInfo 
  *
  **********************************************************************/
 static IDE_RC scpfPreFetchBlock( idvSQL             * aStatistics,
@@ -4001,7 +4001,7 @@ static IDE_RC scpfPreFetchBlock( idvSQL             * aStatistics,
     IDE_DASSERT( aFilePosition!= NULL );
     IDE_DASSERT( aBlockMap    != NULL );
 
-    // Blockì„ ì „ë¶€ ì½ì—ˆê±°ë‚˜, ì½ì„ Blockì´ ì—†ëŠ”ê°€
+    // BlockÀ» ÀüºÎ ÀĞ¾ú°Å³ª, ÀĞÀ» BlockÀÌ ¾ø´Â°¡
     IDE_TEST_CONT( ( aNextBlockID >= aBlockCount ) ||
                     ( aReadBlockCount == 0) ,
                     SKIP_READBLOCK );
@@ -4030,8 +4030,8 @@ static IDE_RC scpfPreFetchBlock( idvSQL             * aStatistics,
     }
 
 
-    // ë°”ë¥´ê²Œ Shiftë¼ì—ˆìœ¼ë©´, BlockMapì˜ ì²«ë²ˆì§¸ Blockì€
-    // NextBlockIDë²ˆì§¸ Blockì´ë©°, TargetRowë¥¼ ê°€ì§„ë‹¤.
+    // ¹Ù¸£°Ô ShiftµÅ¾úÀ¸¸é, BlockMapÀÇ Ã¹¹øÂ° BlockÀº
+    // NextBlockID¹øÂ° BlockÀÌ¸ç, TargetRow¸¦ °¡Áø´Ù.
     sFirstBlock   = aBlockMap[ 0 ];
     if( ( aNextBlockID !=  sFirstBlock->mBlockID ) ||
         ( aTargetRow < sFirstBlock->mRowSeqOfFirstSlot ) ||
@@ -4077,22 +4077,22 @@ static IDE_RC scpfPreFetchBlock( idvSQL             * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  Blockì„ Parsingí•˜ì—¬ Rowë³„ë¡œ Buildí•œë‹¤.
- *  Blockì€ ë³µìˆ˜ê°œì˜ Slot ì˜ ì§‘í•©ì´ë‹¤. ê°ê°ì˜ Slot ëŠ” 1ê°œ ë˜ëŠ” Nê°œê°€ ëª¨ì—¬
- * í•˜ë‚˜ì˜ Column, ê° Columnì´ ëª¨ì—¬ í•˜ë‚˜ì˜ Rowê°€ ëœë‹¤.
- *  ë”°ë¼ì„œ ë³¸ í•¨ìˆ˜ì—ì„œëŠ”, Blockì„ arsingí•˜ì—¬ Handleì˜ smiRow4DPì—
- * ê° Slot ë“¤ì„ Rowë¡œ ë§Œë“ ë‹¤.
+ *  BlockÀ» ParsingÇÏ¿© Rowº°·Î BuildÇÑ´Ù.
+ *  BlockÀº º¹¼ö°³ÀÇ Slot ÀÇ ÁıÇÕÀÌ´Ù. °¢°¢ÀÇ Slot ´Â 1°³ ¶Ç´Â N°³°¡ ¸ğ¿©
+ * ÇÏ³ªÀÇ Column, °¢ ColumnÀÌ ¸ğ¿© ÇÏ³ªÀÇ Row°¡ µÈ´Ù.
+ *  µû¶ó¼­ º» ÇÔ¼ö¿¡¼­´Â, BlockÀ» arsingÇÏ¿© HandleÀÇ smiRow4DP¿¡
+ * °¢ Slot µéÀ» Row·Î ¸¸µç´Ù.
  *
- *  aStatistics            - [IN]  í†µê³„ì •ë³´
- *  aCommonHeader          - [IN]  ê³µí†µí—¤ë”
- *  aFileHeader            - [IN]  íŒŒì¼í—¤ë”
+ *  aStatistics            - [IN]  Åë°èÁ¤º¸
+ *  aCommonHeader          - [IN]  °øÅëÇì´õ
+ *  aFileHeader            - [IN]  ÆÄÀÏÇì´õ
  *  aBlockBufferPosition   - [IN]  BlockBufferPosition
- *  aBlockMap              - [IN]  Rowë¥¼ ì½ì„ BlockInfoì˜ map
- *  aChainedSlotBuffer     - [OUT] ChainedRowë¥¼ ì €ì¥í•˜ëŠ” ì„ì‹œ ë²„í¼
- *  aUsedChainedSlotBufSize- [OUT] ì„ì‹œ ë²„í¼ì˜ ì‚¬ìš©ëŸ‰
- *  aBuiltRowCount         - [OUT] Buildëœ Rowì˜ ê°œìˆ˜
- *  aHasSupplementLob      - [OUT] ì¶”ê°€ë¡œ í•´ì•¼í•  Lobì²˜ë¦¬ê°€ ìˆëŠ”ê°€?
- *  aRowList               - [OUT] Rowëª©ë¡
+ *  aBlockMap              - [IN]  Row¸¦ ÀĞÀ» BlockInfoÀÇ map
+ *  aChainedSlotBuffer     - [OUT] ChainedRow¸¦ ÀúÀåÇÏ´Â ÀÓ½Ã ¹öÆÛ
+ *  aUsedChainedSlotBufSize- [OUT] ÀÓ½Ã ¹öÆÛÀÇ »ç¿ë·®
+ *  aBuiltRowCount         - [OUT] BuildµÈ RowÀÇ °³¼ö
+ *  aHasSupplementLob      - [OUT] Ãß°¡·Î ÇØ¾ßÇÒ LobÃ³¸®°¡ ÀÖ´Â°¡?
+ *  aRowList               - [OUT] Row¸ñ·Ï
  *
  **********************************************************************/
 
@@ -4147,11 +4147,11 @@ static IDE_RC scpfBuildRow( idvSQL                    * /*aStatistics*/,
 
     while( sDone == ID_FALSE )
     {
-        // BuildRowCountëŠ” ì´ë¯¸ êµ¬ì¶•ëœ Rowì˜ ê°œìˆ˜ì´ë‹¤.
-        // MaxRowCountInBlockì€ Blockë‚´ì— ìµœëŒ€ Rowê°œìˆ˜ì´ë©°, 
-        // ì´ë¥¼ ê¸°ì¤€ìœ¼ë¡œ row4DPë¥¼ í• ë‹¹í•œë‹¤.
-        // ë”°ë¼ì„œ ì´ ë‘˜ì´ ê°™ë‹¤ëŠ” ê²ƒì€, ì´ë¯¸ ì¤€ë¹„í•œ row4DPë¥¼ ì „ë¶€
-        // ì‚¬ìš©í–ˆë‹¤ëŠ” ëœ»ì´ë‹¤.
+        // BuildRowCount´Â ÀÌ¹Ì ±¸ÃàµÈ RowÀÇ °³¼öÀÌ´Ù.
+        // MaxRowCountInBlockÀº Block³»¿¡ ÃÖ´ë Row°³¼öÀÌ¸ç, 
+        // ÀÌ¸¦ ±âÁØÀ¸·Î row4DP¸¦ ÇÒ´çÇÑ´Ù.
+        // µû¶ó¼­ ÀÌ µÑÀÌ °°´Ù´Â °ÍÀº, ÀÌ¹Ì ÁØºñÇÑ row4DP¸¦ ÀüºÎ
+        // »ç¿ëÇß´Ù´Â ¶æÀÌ´Ù.
         IDE_TEST_RAISE( (*aBuiltRowCount) >= sMaxRowCountInBlock,
                         ERR_ABORT_CORRUPTED_BLOCK );
 
@@ -4167,13 +4167,13 @@ static IDE_RC scpfBuildRow( idvSQL                    * /*aStatistics*/,
                 != IDE_SUCCESS );
         }
 
-        // Lobì´ ìˆì„ ê²½ìš°
+        // LobÀÌ ÀÖÀ» °æ¿ì
         if( sLobColumnCount > 0)
         {
-            // í˜„ì¬ Rowì˜ Lobì´ Blockì„ ë„˜ì–´ê°€ëŠ”ì§€ í™•ì¸í•œë‹¤.
+            // ÇöÀç RowÀÇ LobÀÌ BlockÀ» ³Ñ¾î°¡´ÂÁö È®ÀÎÇÑ´Ù.
             sBlockInfo = aBlockMap[ aBlockBufferPosition->mSeq ];
 
-            // Chainedë˜ì§€ ì•Šì€ Slot ì˜ ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤
+            // ChainedµÇÁö ¾ÊÀº Slot ÀÇ °³¼ö¸¦ ±¸ÇÑ´Ù
             sUnchainedSlotCount = sBlockInfo->mSlotCount ;
             if( sBlockInfo->mHasLastChainedSlot == ID_TRUE )
             {
@@ -4183,7 +4183,7 @@ static IDE_RC scpfBuildRow( idvSQL                    * /*aStatistics*/,
             if( sUnchainedSlotCount
                 < ( aBlockBufferPosition->mSlotSeq  + sLobColumnCount ) )
             {
-                // í˜„ì¬ Rowì˜ Lobì´ Blockì„ ë„˜ì–´ê°€ëŠ” ê²½ìš°
+                // ÇöÀç RowÀÇ LobÀÌ BlockÀ» ³Ñ¾î°¡´Â °æ¿ì
                 sRow->mHasSupplementLob = ID_TRUE;
                 *aHasSupplementLob      = ID_TRUE;
 
@@ -4191,7 +4191,7 @@ static IDE_RC scpfBuildRow( idvSQL                    * /*aStatistics*/,
                      i < (sLobColumnCount + sBasicColumnCount);
                      i ++)
                 {
-                    // ì¼ë‹¨ Nullë¡œ ì‚½ì…ëœ í›„, ë‚˜ì¤‘ì— Appendëœë‹¤.
+                    // ÀÏ´Ü Null·Î »ğÀÔµÈ ÈÄ, ³ªÁß¿¡ AppendµÈ´Ù.
                     sRow->mValueList[ sColumnMap[ i ] ].length = 0;
                     sRow->mValueList[ sColumnMap[ i ] ].value  = 0;
                 }
@@ -4200,7 +4200,7 @@ static IDE_RC scpfBuildRow( idvSQL                    * /*aStatistics*/,
             }
             else
             {
-                // ì¼ë°˜ Columnê³¼ ë™ì¼í•œ ë°©ì‹ìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤.
+                // ÀÏ¹İ Column°ú µ¿ÀÏÇÑ ¹æ½ÄÀ¸·Î Ã³¸®ÇÑ´Ù.
                 sRow->mHasSupplementLob = ID_FALSE;
 
                 for( i = sBasicColumnCount; 
@@ -4217,10 +4217,10 @@ static IDE_RC scpfBuildRow( idvSQL                    * /*aStatistics*/,
             }
         }
 
-        // BeginBlockIDëŠ” BuildRow ì‹œì‘ ì§€ì ì— ë”°ë†“ì€ IDë‹¤.
-        // ë”°ë¼ì„œ ì´ê²ƒì´ ë‹¤ë¥´ë‹¤ëŠ” ì˜ë‹ˆëŠ ReadColumní•œìˆ˜ë“¤ì— ì˜í•´
-        // ë‹¤ìŒ Blockìœ¼ë¡œ Positionì´ ë„˜ì–´ê°”ë‹¤ëŠ” ëœ»ì´ë‹¤.
-        // ì¦‰, í•œ Blockì„ ì²˜ë¦¬í•˜ì˜€ê¸° ë•Œë¬¸ì— Buildì‘ì—…ì€ ì™„ë£Œëœë‹¤.
+        // BeginBlockID´Â BuildRow ½ÃÀÛ ÁöÁ¡¿¡ µû³õÀº ID´Ù.
+        // µû¶ó¼­ ÀÌ°ÍÀÌ ´Ù¸£´Ù´Â ÀÇ´Ï´À ReadColumnÇÑ¼öµé¿¡ ÀÇÇØ
+        // ´ÙÀ½ BlockÀ¸·Î PositionÀÌ ³Ñ¾î°¬´Ù´Â ¶æÀÌ´Ù.
+        // Áï, ÇÑ BlockÀ» Ã³¸®ÇÏ¿´±â ¶§¹®¿¡ BuildÀÛ¾÷Àº ¿Ï·áµÈ´Ù.
         if( sBeginBlockID  != aBlockBufferPosition->mID )
         {
             sDone = ID_TRUE;
@@ -4247,20 +4247,20 @@ static IDE_RC scpfBuildRow( idvSQL                    * /*aStatistics*/,
 /***********************************************************************
  *
  * Description :
- *  Blockìœ¼ë¡œë¶€í„° BasicColumnì„ ì½ëŠ”ë‹¤.
- *  ë§Œì•½ Columnì´ Chaineë˜ë©´, ChainedSlotBufferë¥¼ ì´ìš©í•œë‹¤.
+ *  BlockÀ¸·ÎºÎÅÍ BasicColumnÀ» ÀĞ´Â´Ù.
+ *  ¸¸¾à ColumnÀÌ ChaineµÇ¸é, ChainedSlotBuffer¸¦ ÀÌ¿ëÇÑ´Ù.
  *
- *  aStatistics                - [IN]  í†µê³„ì •ë³´
+ *  aStatistics                - [IN]  Åë°èÁ¤º¸
  *  aBlockBufferPosition       - [IN]  BlockBufferPosition
- *  aBlockInfoCount            - [IN]  Rowë¥¼ ì½ì–´ë“œë¦´ Blockì˜ ì´ ê°œìˆ˜
- *  aBlockInfo                 - [IN]  Rowë¥¼ ì½ì–´ë“œë¦´ Block
- *  aBlockHeaderSize           - [IN]  BlockHeaderì˜ í¬ê¸°
- *  aChainedSlotBuffer         - [IN]  Chainedëœ Rowë¥¼ ì €ì¥í•´ë‘˜ ì„ì‹œ ë²„í¼
- *  aUsedChainedSlotBufferSize - [OUT] ì‚¬ìš©í•œ ì„ì‹œ ë²„í¼ì˜ í¬ê¸°
- *  aValue                     - [OUT] ì½ì€ Value
+ *  aBlockInfoCount            - [IN]  Row¸¦ ÀĞ¾îµå¸± BlockÀÇ ÃÑ °³¼ö
+ *  aBlockInfo                 - [IN]  Row¸¦ ÀĞ¾îµå¸± Block
+ *  aBlockHeaderSize           - [IN]  BlockHeaderÀÇ Å©±â
+ *  aChainedSlotBuffer         - [IN]  ChainedµÈ Row¸¦ ÀúÀåÇØµÑ ÀÓ½Ã ¹öÆÛ
+ *  aUsedChainedSlotBufferSize - [OUT] »ç¿ëÇÑ ÀÓ½Ã ¹öÆÛÀÇ Å©±â
+ *  aValue                     - [OUT] ÀĞÀº Value
  *
- * Slot ì˜ êµ¬ì¡°
- * - VarInt (Length ê¸°ë¡ì— ì´ìš©ë¨)
+ * Slot ÀÇ ±¸Á¶
+ * - VarInt (Length ±â·Ï¿¡ ÀÌ¿ëµÊ)
  *      0~63        [0|len ]
  *     64~16383     [1|len>>8  & 63][len ]
  *  16384~4194303   [2|len>>16 & 63][len>>8 & 255][len & 255]
@@ -4292,7 +4292,7 @@ static IDE_RC scpfReadBasicColumn(
     sSlotValLen = 0;
     sBlockInfo  = aBlockMap[ aBlockBufferPosition->mSeq ];
 
-    // ë³µìˆ˜ì˜ Slotìœ¼ë¡œ ì´ë£¨ì–´ì§„ ê²½ìš°
+    // º¹¼öÀÇ SlotÀ¸·Î ÀÌ·ç¾îÁø °æ¿ì
     if( (aBlockBufferPosition->mSlotSeq  == sBlockInfo->mSlotCount - 1) &&
         (sBlockInfo->mHasLastChainedSlot == ID_TRUE) )
     {
@@ -4305,7 +4305,7 @@ static IDE_RC scpfReadBasicColumn(
             sBlockInfo = aBlockMap[ aBlockBufferPosition->mSeq ];
 
             sReadNext      = ID_FALSE;
-            // í˜„ì¬ ì½ëŠ” Slot ê°€ ChainedSlot ì¸ê°€
+            // ÇöÀç ÀĞ´Â Slot °¡ ChainedSlot ÀÎ°¡
             if( (aBlockBufferPosition->mSlotSeq + 1 
                     == sBlockInfo->mSlotCount ) &&
                 (sBlockInfo->mHasLastChainedSlot 
@@ -4314,7 +4314,7 @@ static IDE_RC scpfReadBasicColumn(
                 sReadNext      = ID_TRUE;
             }
 
-            // Slotì„ í•˜ë‚˜ ì½ì–´ì„œ
+            // SlotÀ» ÇÏ³ª ÀĞ¾î¼­
             IDE_TEST( scpfReadSlot( aBlockBufferPosition,
                                     aBlockMap,
                                     aBlockHeaderSize,
@@ -4322,7 +4322,7 @@ static IDE_RC scpfReadBasicColumn(
                                     &sSlotVal )
                       != IDE_SUCCESS);
 
-            // ChainedBufferì— ë³µì œí•œë‹¤.
+            // ChainedBuffer¿¡ º¹Á¦ÇÑ´Ù.
             aValue->length += sSlotValLen;
             idlOS::memcpy( aChainedSlotBuffer + *aUsedChainedSlotBufSize,
                            sSlotVal,
@@ -4332,7 +4332,7 @@ static IDE_RC scpfReadBasicColumn(
     }
     else
     {
-        // Chaining ì•ˆë  ê²½ìš°
+        // Chaining ¾ÈµÉ °æ¿ì
         IDE_TEST( scpfReadSlot( aBlockBufferPosition,
                                 aBlockMap,
                                 aBlockHeaderSize,
@@ -4352,13 +4352,13 @@ static IDE_RC scpfReadBasicColumn(
 /***********************************************************************
  *
  * Description :
- *  Blockìœ¼ë¡œë¶€í„° Lob Columnì„ ì½ëŠ”ë‹¤.
- *  Slotì´ í•˜ë‚˜ ìˆëŠ” ê²½ìš°ë§Œ ì´ìª½ìœ¼ë¡œ ì˜¨ë‹¤.
+ *  BlockÀ¸·ÎºÎÅÍ Lob ColumnÀ» ÀĞ´Â´Ù.
+ *  SlotÀÌ ÇÏ³ª ÀÖ´Â °æ¿ì¸¸ ÀÌÂÊÀ¸·Î ¿Â´Ù.
  *
- *  aStatistics                - [IN]  í†µê³„ì •ë³´
- *  aBlockMap                  - [IN]  Slotì„ ì½ì„ Block
- *  aBlockHeaderSize           - [IN]  BlockHeaderì˜ í¬ê¸°
- *  aValue                     - [OUT] ì½ì€ Value
+ *  aStatistics                - [IN]  Åë°èÁ¤º¸
+ *  aBlockMap                  - [IN]  SlotÀ» ÀĞÀ» Block
+ *  aBlockHeaderSize           - [IN]  BlockHeaderÀÇ Å©±â
+ *  aValue                     - [OUT] ÀĞÀº Value
  *
  * - Lob Column
  *   [LobLen (4byte)][Slot_Len(1~4Byte)][Body]
@@ -4378,7 +4378,7 @@ static IDE_RC scpfReadLobColumn( scpfBlockBufferPosition * aBlockBufferPosition,
 
     sBlockInfo = aBlockMap[ aBlockBufferPosition->mSeq ];
 
-    // Blockì—ëŠ” Chained ì•ˆëœ Slotì´ ìˆì–´ì•¼ í•œë‹¤
+    // Block¿¡´Â Chained ¾ÈµÈ SlotÀÌ ÀÖ¾î¾ß ÇÑ´Ù
     IDE_TEST_RAISE( 
         (aBlockBufferPosition->mSlotSeq  == sBlockInfo->mSlotCount - 1) &&
         (sBlockInfo->mHasLastChainedSlot == ID_TRUE),
@@ -4414,13 +4414,13 @@ static IDE_RC scpfReadLobColumn( scpfBlockBufferPosition * aBlockBufferPosition,
 /***********************************************************************
  *
  * Description :
- *  Blockìœ¼ë¡œë¶€í„° Slotì„ í•˜ë‚˜ ì½ëŠ”ë‹¤.
+ *  BlockÀ¸·ÎºÎÅÍ SlotÀ» ÇÏ³ª ÀĞ´Â´Ù.
  *
  *  aBlockBufferPosition       - [IN]  BlockBufferPosition
- *  aBlockMap                  - [IN]  Slotì„ ì½ì„ Block
- *  aBlockHeaderSize           - [IN]  BlockHeaderì˜ í¬ê¸°
- *  aSlotValLen                - [OUT] ì½ì€ SlotValì˜ length
- *  aSlotVal                   - [OUT] ì½ì€ Slotvalue
+ *  aBlockMap                  - [IN]  SlotÀ» ÀĞÀ» Block
+ *  aBlockHeaderSize           - [IN]  BlockHeaderÀÇ Å©±â
+ *  aSlotValLen                - [OUT] ÀĞÀº SlotValÀÇ length
+ *  aSlotVal                   - [OUT] ÀĞÀº Slotvalue
  *
  **********************************************************************/
 
@@ -4439,13 +4439,13 @@ static IDE_RC scpfReadSlot( scpfBlockBufferPosition * aBlockBufferPosition,
 
     sBlockInfo = aBlockMap[ aBlockBufferPosition->mSeq ];
 
-    // SlotValLen ì½ìŒ
+    // SlotValLen ÀĞÀ½
     SCPF_READ_VARINT( sBlockInfo->mBlockPtr + aBlockBufferPosition->mOffset,
                       aSlotValLen );
     aBlockBufferPosition->mOffset += SCPF_GET_VARINT_SIZE( aSlotValLen );
     aBlockBufferPosition->mSlotSeq  ++;
 
-    // SlotVal ì—°ê²°
+    // SlotVal ¿¬°á
     if( *aSlotValLen == 0 )
     {
         *aSlotVal = NULL;
@@ -4456,7 +4456,7 @@ static IDE_RC scpfReadSlot( scpfBlockBufferPosition * aBlockBufferPosition,
         aBlockBufferPosition->mOffset += *aSlotValLen;
     }
 
-    // Blockë‚´ì˜ ëª¨ë“  Slot ë¥¼ ì½ì—ˆì„ ê²½ìš°
+    // Block³»ÀÇ ¸ğµç Slot ¸¦ ÀĞ¾úÀ» °æ¿ì
     if( aBlockBufferPosition->mSlotSeq  == sBlockInfo->mSlotCount )
     {
         aBlockBufferPosition->mSeq        ++;
@@ -4473,9 +4473,9 @@ static IDE_RC scpfReadSlot( scpfBlockBufferPosition * aBlockBufferPosition,
 /***********************************************************************
  *
  * Description :
- *  ì§€ê¸ˆê¹Œì§€ ì½ì€ íŒŒì¼ì„ ë‹«ëŠ”ë‹¤.
+ *  Áö±İ±îÁö ÀĞÀº ÆÄÀÏÀ» ´İ´Â´Ù.
  *
- *  aStatistics         - [IN] í†µê³„ì •ë³´
+ *  aStatistics         - [IN] Åë°èÁ¤º¸
  *  aHandle             - [IN] Object Handle
  *
  **********************************************************************/
@@ -4512,19 +4512,19 @@ static IDE_RC scpfCloseFile4Import( idvSQL         * /*aStatistics*/,
 }
 
 /***********************************************************************
- * Dump - mm/main/dumpteë¥¼ ìœ„í•œ í•¨ìˆ˜ë“¤
+ * Dump - mm/main/dumpte¸¦ À§ÇÑ ÇÔ¼öµé
  **********************************************************************/
 
 /***********************************************************************
  *
  * Description :
- *  Blockì„ Dumpí•œë‹¤
+ *  BlockÀ» DumpÇÑ´Ù
  *
- *  aStatistics         - [IN] í†µê³„ì •ë³´
+ *  aStatistics         - [IN] Åë°èÁ¤º¸
  *  aHandle             - [IN] Handle 
- *  aFirstBlock         - [IN] Dumpí•  Blockì˜ ì‹œì‘ ë²ˆí˜¸
- *  aLastBlock          - [IN] Dumpí•  Blockì˜ ë ë²ˆí˜¸
- *  aDetail             - [IN] Bodyê¹Œì§€ ìì„¸íˆ ì¶œë ¥í•  ê²ƒì¸ê°€?
+ *  aFirstBlock         - [IN] DumpÇÒ BlockÀÇ ½ÃÀÛ ¹øÈ£
+ *  aLastBlock          - [IN] DumpÇÒ BlockÀÇ ³¡ ¹øÈ£
+ *  aDetail             - [IN] Body±îÁö ÀÚ¼¼È÷ Ãâ·ÂÇÒ °ÍÀÎ°¡?
  *
  **********************************************************************/
 IDE_RC scpfDumpBlocks( idvSQL         * aStatistics,
@@ -4557,7 +4557,7 @@ IDE_RC scpfDumpBlocks( idvSQL         * aStatistics,
 
 
 
-    /* Block ë‚´ë¶€ë¥¼ Dumpí•œ ê²°ê³¼ê°’ì„ ì €ì¥í•  ë²„í¼ë¥¼ í™•ë³´í•©ë‹ˆë‹¤. */
+    /* Block ³»ºÎ¸¦ DumpÇÑ °á°ú°ªÀ» ÀúÀåÇÒ ¹öÆÛ¸¦ È®º¸ÇÕ´Ï´Ù. */
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SCP, 1,
                                  ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                  (void**)&sTempBuf )
@@ -4649,9 +4649,9 @@ IDE_RC scpfDumpBlocks( idvSQL         * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  Headerë¥¼ Dumpí•œë‹¤.
+ *  Header¸¦ DumpÇÑ´Ù.
  *
- *  sHandle         - [IN] Dumpí•  ëŒ€ìƒ
+ *  sHandle         - [IN] DumpÇÒ ´ë»ó
  *
  **********************************************************************/
 IDE_RC scpfDumpHeader( scpfHandle     * aHandle,
@@ -4671,7 +4671,7 @@ IDE_RC scpfDumpHeader( scpfHandle     * aHandle,
 
     IDE_DASSERT( aHandle != NULL     );
 
-    /* Dumpí•  Buffer í™•ë³´ */
+    /* DumpÇÒ Buffer È®º¸ */
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SCP, 1,
                                  ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                  (void**)&sTempBuf )
@@ -4784,13 +4784,13 @@ IDE_RC scpfDumpHeader( scpfHandle     * aHandle,
 /***********************************************************************
  *
  * Description :
- *  Blockì˜ Bodyë¥¼ Dumpí•œë‹¤.
+ *  BlockÀÇ Body¸¦ DumpÇÑ´Ù.
  *
- *  aBlockInfo      - [IN]  Dumpí•  Block
- *  aBeginOffset    - [IN]  Blockë‚´ Dumpí•  ì‹œì‘ ì§€ì 
- *  aEndOffset      - [IN]  Blockë‚´ Dumpì¢…ë£Œí•  ì§€ì 
- *  aOutBuf         - [OUT] ê²°ê³¼ê°’ì„ ì €ì¥í•  ë²„í¼
- *  aOutSize        - [OUT] ê²°ê³¼ ë²„í¼ì˜ í¬ê¸°
+ *  aBlockInfo      - [IN]  DumpÇÒ Block
+ *  aBeginOffset    - [IN]  Block³» DumpÇÒ ½ÃÀÛ ÁöÁ¡
+ *  aEndOffset      - [IN]  Block³» DumpÁ¾·áÇÒ ÁöÁ¡
+ *  aOutBuf         - [OUT] °á°ú°ªÀ» ÀúÀåÇÒ ¹öÆÛ
+ *  aOutSize        - [OUT] °á°ú ¹öÆÛÀÇ Å©±â
  *
  **********************************************************************/
 IDE_RC scpfDumpBlockBody( scpfBlockInfo  * aBlockInfo,
@@ -4805,7 +4805,7 @@ IDE_RC scpfDumpBlockBody( scpfBlockInfo  * aBlockInfo,
     IDE_DASSERT( aBlockInfo != NULL );
     IDE_DASSERT( aOutBuf    != NULL );
 
-    /* Block ë‚´ë¶€ë¥¼ Dumpí•œ ê²°ê³¼ê°’ì„ ì €ì¥í•  ë²„í¼ë¥¼ í™•ë³´í•©ë‹ˆë‹¤. */
+    /* Block ³»ºÎ¸¦ DumpÇÑ °á°ú°ªÀ» ÀúÀåÇÒ ¹öÆÛ¸¦ È®º¸ÇÕ´Ï´Ù. */
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SCP, 1,
                                  ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                  (void**)&sTempBuf )
@@ -4845,9 +4845,9 @@ IDE_RC scpfDumpBlockBody( scpfBlockInfo  * aBlockInfo,
 /***********************************************************************
  *
  * Description :
- *  Rowì˜ Slot ë“¤ì„ ì¶œë ¥í•œë‹¤.
+ *  RowÀÇ Slot µéÀ» Ãâ·ÂÇÑ´Ù.
  *
- *  aStatistics         - [IN] í†µê³„ì •ë³´
+ *  aStatistics         - [IN] Åë°èÁ¤º¸
  *  aHandle             - [IN] Handle 
  *
  **********************************************************************/
@@ -4876,7 +4876,7 @@ IDE_RC scpfDumpRows( idvSQL         * aStatistics,
     sBasicColumnCount  = aHandle->mCommonHandle.mHeader->mBasicColumnCount;
     sLobColumnCount    = aHandle->mCommonHandle.mHeader->mLobColumnCount;
 
-    /* Rowë¥¼ Dumpí•  Buffer í™•ë³´ */
+    /* Row¸¦ DumpÇÒ Buffer È®º¸ */
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SCP, 1,
                                  ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                  (void**)&sTempBuf )
@@ -4933,7 +4933,7 @@ IDE_RC scpfDumpRows( idvSQL         * aStatistics,
                         // [ <RowSeq ][ <ValueLength> | <Value>
                         idlOS::printf( "%s", sTempBuf );
 
-                        //ì´í›„ ë” ì¶œë ¥í•  ê²ƒì´ ìˆìœ¼ë©´, ê°œí–‰ í›„ ì¶”ê°€ ì¶œë ¥
+                        //ÀÌÈÄ ´õ Ãâ·ÂÇÒ °ÍÀÌ ÀÖÀ¸¸é, °³Çà ÈÄ Ãß°¡ Ãâ·Â
                         if( ( sDumpOffset + IDE_DUMP_SRC_LIMIT ) 
                             < sRows[i].mValueList[j].length )
                         {
@@ -4988,7 +4988,7 @@ IDE_RC scpfDumpRows( idvSQL         * aStatistics,
                             // [ <RowSeq ][ <ValueLength> | <Value>
                             idlOS::printf( "%s", sTempBuf );
 
-                            //ì´í›„ ë” ì¶œë ¥í•  ê²ƒì´ ìˆìœ¼ë©´, ê°œí–‰ í›„ ì¶”ê°€ ì¶œë ¥
+                            //ÀÌÈÄ ´õ Ãâ·ÂÇÒ °ÍÀÌ ÀÖÀ¸¸é, °³Çà ÈÄ Ãß°¡ Ãâ·Â
                             if( ( sDumpOffset + IDE_DUMP_SRC_LIMIT ) 
                                 < sRows[i].mValueList[j].length )
                             {

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfStuff.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfStuff.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -43,7 +43,7 @@ static IDE_RC mtfStuffEstimate( mtcNode*     aNode,
 mtfModule mtfStuff = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfStuffFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -158,11 +158,11 @@ IDE_RC mtfStuffCalculate( mtcNode*     aNode,
  * Implementation : 
  *    STUFF ( char1, start, length, char2 )
  *
- *    aStack[0] : char1ì„ startë¶€í„° lengthë§Œí¼ ì§€ìš°ê³  ê·¸ ì‚¬ì´ì— char2ë¥¼ ì‚½ì…í•œ ë¬¸ìì—´
- *    aStack[1] : char1 ( ë¬¸ìê°’ )
- *    aStack[2] : start ( ìˆ«ìê°’ )
- *    aStack[3] : length ( ìˆ«ìê°’ )
- *    aStack[4] : char2 ( ë¬¸ìê°’ )
+ *    aStack[0] : char1À» startºÎÅÍ length¸¸Å­ Áö¿ì°í ±× »çÀÌ¿¡ char2¸¦ »ğÀÔÇÑ ¹®ÀÚ¿­
+ *    aStack[1] : char1 ( ¹®ÀÚ°ª )
+ *    aStack[2] : start ( ¼ıÀÚ°ª )
+ *    aStack[3] : length ( ¼ıÀÚ°ª )
+ *    aStack[4] : char2 ( ¹®ÀÚ°ª )
  * 
  *    Ex) STUFF ('ABCDE', 3, 2, 'FGHK') ==> ABFGHKE
  *
@@ -218,7 +218,7 @@ IDE_RC mtfStuffCalculate( mtcNode*     aNode,
         sIndex            = sString1->value;
         sFence            = sIndex + sString1->length;
 
-        // string1ì˜ ë¬¸ìì—´ì˜ ê¸¸ì´( = ë¬¸ìê°œìˆ˜ )ë¥¼ êµ¬í•¨
+        // string1ÀÇ ¹®ÀÚ¿­ÀÇ ±æÀÌ( = ¹®ÀÚ°³¼ö )¸¦ ±¸ÇÔ
         while ( sIndex < sFence )
         {
             (void)sLanguage->nextCharPtr( & sIndex, sFence );
@@ -232,32 +232,32 @@ IDE_RC mtfStuffCalculate( mtcNode*     aNode,
                         ERR_ARGUMENT2_VALUE_OUT_OF_RANGE );
 
         // BUG-25914
-        // stuff ìˆ˜í–‰ ê²°ê³¼ê°€ ê²°ê³¼ë…¸ë“œì˜ precisionì„ ë„˜ì„ ìˆ˜ ì—†ë‹¤.
+        // stuff ¼öÇà °á°ú°¡ °á°ú³ëµåÀÇ precisionÀ» ³ÑÀ» ¼ö ¾ø´Ù.
         if( (aStack[1].column->module->id == MTD_NCHAR_ID) ||
             (aStack[1].column->module->id == MTD_NVARCHAR_ID) )
         {
             //---------------------------------------------------------------------
             // case 1. nchar / nvarchar
             // 
-            // start/lengthì™€ nchar/nvarcharì˜ precisionê³¼ ì˜ë¯¸ê°€ ê°™ê¸° ë•Œë¬¸ì—
-            // stuffê²°ê³¼ì˜ ê¸€ììˆ˜ë¡œ ìµœëŒ€ precisionì„ í‰ê°€í•œë‹¤.
+            // start/length¿Í nchar/nvarcharÀÇ precision°ú ÀÇ¹Ì°¡ °°±â ¶§¹®¿¡
+            // stuff°á°úÀÇ ±ÛÀÚ¼ö·Î ÃÖ´ë precisionÀ» Æò°¡ÇÑ´Ù.
             //                                                    
-            // ì˜ˆì œ)                                  ê²°ê³¼     / precision
+            // ¿¹Á¦)                                  °á°ú     / precision
             //       stuff('abcde', 1, 3, 'xx')     => xxde     |     4      
             //       stuff('abcde', 1, 5, 'xx')     => xx       |     2   
             //       stuff('abcde', 3, 5, 'xx')     => abcxx    |     5   
             //       stuff('abcde', 6, 3, 'xx')     => abcdexx  |     7  
             //       stuff('abcde', 1, 5, '')       => abcdexx  |     7     
-            //       stuff('ê°€abë‚˜', 1, 2, 'ë‹¤ë¼') => bë‹¤ë¼ë‚˜ |     4
-            //       stuff('ê°€abë‚˜', 2, 3, 'ë‹¤ë¼') => ê°€ë‹¤ë¼  |     3
-            //       stuff('ê°€abë‚˜', 2, 8, 'ë‹¤ë¼') => ê°€ë‹¤ë¼  |     3
+            //       stuff('°¡ab³ª', 1, 2, '´Ù¶ó') => b´Ù¶ó³ª |     4
+            //       stuff('°¡ab³ª', 2, 3, '´Ù¶ó') => °¡´Ù¶ó  |     3
+            //       stuff('°¡ab³ª', 2, 8, '´Ù¶ó') => °¡´Ù¶ó  |     3
             //---------------------------------------------------------------------
             
             sString2CharCount = 0;
             sIndex            = sString2->value;
             sFence            = sIndex + sString2->length;
 
-            // string2ì˜ ë¬¸ìì—´ì˜ ê¸¸ì´( = ë¬¸ìê°œìˆ˜ )ë¥¼ êµ¬í•¨.
+            // string2ÀÇ ¹®ÀÚ¿­ÀÇ ±æÀÌ( = ¹®ÀÚ°³¼ö )¸¦ ±¸ÇÔ.
             while ( sIndex < sFence )
             {
                 (void)sLanguage->nextCharPtr( & sIndex, sFence );
@@ -276,18 +276,18 @@ IDE_RC mtfStuffCalculate( mtcNode*     aNode,
             //---------------------------------------------------------------------
             // case 2. char / varchar
             // 
-            // char/varcharì˜ precisionì€ byteë¥¼ ì˜ë¯¸í•˜ê¸° ë•Œë¬¸ì—
-            // stuffê²°ê³¼ì˜ byteìˆ˜ë¡œ ìµœëŒ€ precisionì„ í‰ê°€í•œë‹¤.
+            // char/varcharÀÇ precisionÀº byte¸¦ ÀÇ¹ÌÇÏ±â ¶§¹®¿¡
+            // stuff°á°úÀÇ byte¼ö·Î ÃÖ´ë precisionÀ» Æò°¡ÇÑ´Ù.
             //                                                    
-            // ì˜ˆì œ)                                  ê²°ê³¼     / precision
+            // ¿¹Á¦)                                  °á°ú     / precision
             //       stuff('abcde', 1, 3, 'xx')     => xxde     |     4      
             //       stuff('abcde', 1, 5, 'xx')     => xx       |     2   
             //       stuff('abcde', 3, 5, 'xx')     => abcxx    |     5   
             //       stuff('abcde', 6, 3, 'xx')     => abcdexx  |     7  
             //       stuff('abcde', 1, 5, '')       => abcdexx  |     7     
-            //       stuff('ê°€abë‚˜', 1, 2, 'ë‹¤ë¼') => bë‹¤ë¼ë‚˜ |     7 
-            //       stuff('ê°€abë‚˜', 2, 3, 'ë‹¤ë¼') => ê°€ë‹¤ë¼  |     6
-            //       stuff('ê°€abë‚˜', 2, 8, 'ë‹¤ë¼') => ê°€ë‹¤ë¼  |     6 
+            //       stuff('°¡ab³ª', 1, 2, '´Ù¶ó') => b´Ù¶ó³ª |     7 
+            //       stuff('°¡ab³ª', 2, 3, '´Ù¶ó') => °¡´Ù¶ó  |     6
+            //       stuff('°¡ab³ª', 2, 8, '´Ù¶ó') => °¡´Ù¶ó  |     6 
             //---------------------------------------------------------------------
 
             sIndex        = sString1->value;
@@ -296,7 +296,7 @@ IDE_RC mtfStuffCalculate( mtcNode*     aNode,
             sStartIndex   = sString1->value;
             sEndIndex     = sString1->value;
             
-            // char1ì—ì„œ ì§€ìš¸ ë¬¸ìì˜ byteê¸¸ì´ë¥¼ êµ¬í•¨.
+            // char1¿¡¼­ Áö¿ï ¹®ÀÚÀÇ byte±æÀÌ¸¦ ±¸ÇÔ.
             for( i = 1; sIndex < sFence ; i++ )
             {
                 (void)sLanguage->nextCharPtr( & sIndex, sFence );
@@ -328,8 +328,8 @@ IDE_RC mtfStuffCalculate( mtcNode*     aNode,
                             ERR_INVALID_LENGTH );
         }
          
-        // 1. char1ì˜ ë’¤ì— char2ë¥¼ ì‚½ì¼í•  ê²½ìš° 
-        // (sStart == sString1->length + 1, sLengthëŠ” ìƒê´€ì—†ìŒ)
+        // 1. char1ÀÇ µÚ¿¡ char2¸¦ »ğÀÏÇÒ °æ¿ì 
+        // (sStart == sString1->length + 1, sLength´Â »ó°ü¾øÀ½)
         if ( sStart == sString1CharCount + 1 )
         {
             sIndex = 0;
@@ -347,53 +347,53 @@ IDE_RC mtfStuffCalculate( mtcNode*     aNode,
 
             sResult->length = sString1->length + sString2->length; 
         }
-        // 2. char1ì—ì„œ start ì™¼ìª½ì— char2ë¥¼ ì‚½ì…í•  ê²½ìš° (sStart > 0)
+        // 2. char1¿¡¼­ start ¿ŞÂÊ¿¡ char2¸¦ »ğÀÔÇÒ °æ¿ì (sStart > 0)
         else if ( sStart > 0 )
         {
             sIndex = sString1->value;
             sFence = sIndex + sString1->length;
             sResultIndex = 0;
 
-            // char1ì—ì„œ start-1ë§Œí¼ í¬ì¸í„° ì „ì§„ í›„, start-1ê¹Œì§€ì˜ ë¬¸ìë¥¼ memcpyí•œë‹¤.
+            // char1¿¡¼­ start-1¸¸Å­ Æ÷ÀÎÅÍ ÀüÁø ÈÄ, start-1±îÁöÀÇ ¹®ÀÚ¸¦ memcpyÇÑ´Ù.
             for ( i = 0; i < sStart - 1; i++ )
             {
                 (void)sLanguage->nextCharPtr( & sIndex, sFence );
             }
 
-            // char1ì—ì„œ 1 ~ start-1ê¹Œì§€ ë³µì‚¬
+            // char1¿¡¼­ 1 ~ start-1±îÁö º¹»ç
             idlOS::memcpy ( sResult->value + sResultIndex,
                             sString1->value,
                             sIndex - sString1->value );
             
             sResultIndex += sIndex - sString1->value;
             
-            // ì‚­ì œí•  lengthê°€ char1ì„ ì´ˆê³¼í•˜ë©´
-            // startë¶€í„° char1ì˜ ë§ˆì§€ë§‰ ë¬¸ìê¹Œì§€ì˜ ë¬¸ì ê°œìˆ˜ë¡œ ì¬ì„¤ì •
+            // »èÁ¦ÇÒ length°¡ char1À» ÃÊ°úÇÏ¸é
+            // startºÎÅÍ char1ÀÇ ¸¶Áö¸· ¹®ÀÚ±îÁöÀÇ ¹®ÀÚ °³¼ö·Î Àç¼³Á¤
             if ( sLength > sString1CharCount - sStart + 1)
             {
                 sLength = sString1CharCount - sStart + 1;
             }
             
-            // length ë§Œí¼ ê±´ë„ˆë›´ë‹¤.
+            // length ¸¸Å­ °Ç³Ê¶Ú´Ù.
             for ( i = 0; i < sLength; i++ )
             {
                 (void)sLanguage->nextCharPtr( & sIndex, sFence );
                 
-                // char1ì„ ëê¹Œì§€ ì‚­ì œí•˜ë©´ sIsAllRemove flag ì„¤ì •
+                // char1À» ³¡±îÁö »èÁ¦ÇÏ¸é sIsAllRemove flag ¼³Á¤
                 if ( sIndex >= sFence )
                 {
                     sIsAllRemove = ID_TRUE;
                 }
             }
             
-            // char2 ë¬¸ì ì‚½ì…
+            // char2 ¹®ÀÚ »ğÀÔ
             idlOS::memcpy (sResult->value + sResultIndex,
                            sString2->value,
                            sString2->length);
             
             sResultIndex = sResultIndex + sString2->length;
             
-            // char1 ë‚¨ì•„ìˆëŠ” ë¬¸ìê°€ ìˆëŠ” ê²½ìš°
+            // char1 ³²¾ÆÀÖ´Â ¹®ÀÚ°¡ ÀÖ´Â °æ¿ì
             if ( sIsAllRemove == ID_FALSE )
             {
                 idlOS::memcpy (sResult->value + sResultIndex,

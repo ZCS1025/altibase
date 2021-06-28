@@ -19,16 +19,16 @@
  *
  * $Id: sdpscVerifyAndDump.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
- * ë³¸ íŒŒì¼ì€ Circular-List Managed Segmentì˜ ìë£Œêµ¬ì¡° í™•ì¸ ë° ì¶œë ¥ê³¼ ê´€ë ¨ëœ
- * STATIC  ì¸í„°í˜ì´ìŠ¤ë¥¼ ê´€ë¦¬í•œë‹¤.
+ * º» ÆÄÀÏÀº Circular-List Managed SegmentÀÇ ÀÚ·á±¸Á¶ È®ÀÎ ¹× Ãâ·Â°ú °ü·ÃµÈ
+ * STATIC  ÀÎÅÍÆäÀÌ½º¸¦ °ü¸®ÇÑ´Ù.
  *
  ***********************************************************************/
 
 # include <sdpscVerifyAndDump.h>
 
 /*
- * [ INTERFACE ] Circular-List Managed Segmentì˜ ìë£Œêµ¬ì¡°ë¥¼
- * í‘œì¤€ì¶œë ¥ìœ¼ë¡œ ì¶œë ¥í•œë‹¤
+ * [ INTERFACE ] Circular-List Managed SegmentÀÇ ÀÚ·á±¸Á¶¸¦
+ * Ç¥ÁØÃâ·ÂÀ¸·Î Ãâ·ÂÇÑ´Ù
  */
 void sdpscVerifyAndDump::dump( scSpaceID    /*aSpaceID*/,
                                void        */*aSegDesc*/,
@@ -38,7 +38,7 @@ void sdpscVerifyAndDump::dump( scSpaceID    /*aSpaceID*/,
 }
 
 /*
- * [ INTERFACE ] Segment ì˜ ëª¨ë“  ìë£Œêµ¬ì¡°ë¥¼ í™•ì¸í•œë‹¤.
+ * [ INTERFACE ] Segment ÀÇ ¸ğµç ÀÚ·á±¸Á¶¸¦ È®ÀÎÇÑ´Ù.
  */
 IDE_RC sdpscVerifyAndDump::verify( idvSQL     */*aStatistics*/,
                                    scSpaceID   /*aSpaceID*/,

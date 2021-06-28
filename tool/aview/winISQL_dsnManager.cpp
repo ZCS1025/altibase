@@ -41,7 +41,7 @@ __fastcall TForm11::TForm11(TComponent* Owner)
 	stmt = NULL;
 }
 //---------------------------------------------------------------------------
-// DSN LISTë¥¼ ê°€ì ¸ì˜¤ëŠ” í•¨ìˆ˜
+// DSN LIST¸¦ °¡Á®¿À´Â ÇÔ¼ö
 void __fastcall TForm11::GetDsnList_winISQL(TListBox * DSNLIST)
 {
     HKEY hKey, hKey2;
@@ -52,7 +52,7 @@ void __fastcall TForm11::GetDsnList_winISQL(TListBox * DSNLIST)
 	FILETIME file_time;
 	AnsiString x;
 
-	// MainRootKeyë¥¼ ì—°ë‹¤.
+	// MainRootKey¸¦ ¿¬´Ù.
 	wsprintf(sBuf , "Software\\ODBC\\ODBC.INI");
 	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
 				  sBuf,
@@ -67,12 +67,12 @@ void __fastcall TForm11::GetDsnList_winISQL(TListBox * DSNLIST)
 	key_num = 0;
 	DSNLIST->Clear();
 	
-	// Enumì´ ì—ëŸ¬ê°€ ë‚ ë•Œê¹Œì§€ ODBC.INIë¥¼ ë’¤ì§„ë‹¤.
+	// EnumÀÌ ¿¡·¯°¡ ³¯¶§±îÁö ODBC.INI¸¦ µÚÁø´Ù.
 	while (1)
 	{
 		subkey_length = 1024;
 		memset(subkey_name , 0x00, sizeof(subkey_name));
-		// ì´ í•¨ìˆ˜ë¥¼ í†µí•˜ë©´ DSNLISTê°€ ë‚˜ì˜¨ë‹¤.
+		// ÀÌ ÇÔ¼ö¸¦ ÅëÇÏ¸é DSNLIST°¡ ³ª¿Â´Ù.
 		if (RegEnumKeyEx( hKey,
 						  key_num,
 						  subkey_name,
@@ -86,7 +86,7 @@ void __fastcall TForm11::GetDsnList_winISQL(TListBox * DSNLIST)
 			break;
 		}
 
-		// DSNëª…ì„ ê°€ì§€ê³  ë‹¤ì‹œ Keyë¥¼ ì—°ë‹¤.
+		// DSN¸íÀ» °¡Áö°í ´Ù½Ã Key¸¦ ¿¬´Ù.
 		wsprintf(sBuf, "Software\\ODBC\\ODBC.INI\\%s", subkey_name);
 		if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
 						 sBuf,
@@ -98,7 +98,7 @@ void __fastcall TForm11::GetDsnList_winISQL(TListBox * DSNLIST)
 			break;
 		}
 
-		// ì—´ë¦° Keyì—ì„œ Dirverê°€ Altibaseìš©ì¸ì§€ í™•ì¸í•œë‹¤.
+		// ¿­¸° Key¿¡¼­ Dirver°¡ Altibase¿ëÀÎÁö È®ÀÎÇÑ´Ù.
 		length = 1024;
 		value_type = NULL;
 		memset(ByVal1 , 0x00, sizeof(ByVal1));
@@ -110,37 +110,37 @@ void __fastcall TForm11::GetDsnList_winISQL(TListBox * DSNLIST)
 							ByVal1,
 							&length) == 0)
 		{
-			// AltibaseDLLì„ ì“°ëŠ”ë†ˆì´ëƒ?
+			// AltibaseDLLÀ» ¾²´Â³ðÀÌ³Ä?
 		   AnsiString x = ByVal1;
 		   int c;
 
-		   // a4_CM451.dll ì´ë‹¤.
+		   // a4_CM451.dll ÀÌ´Ù.
 		   c = x.Pos("a4_");
 		   if (c != 0)
 		   {
-			  // ListBoxì— ë“±ë¡í•œë‹¤.
+			  // ListBox¿¡ µî·ÏÇÑ´Ù.
 			  DSNLIST->Items->Add(subkey_name) ;
 		   }
 		}
 
-		// ì•ˆìª½ì— ì—´ì€ê²ƒë§Œ ë‹«ëŠ”ë‹¤.
+		// ¾ÈÂÊ¿¡ ¿­Àº°Í¸¸ ´Ý´Â´Ù.
 		RegCloseKey(hKey2);
 		key_num++;
 
 	}
 
-	// ìµœì¢… Keyë‹«ëŠ”ë‹¤.
+	// ÃÖÁ¾ Key´Ý´Â´Ù.
 	RegCloseKey(hKey);
     
 }
 //---------------------------------------------------------------------------
-// Formì´ ì—´ë¦´ë•Œ Listë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+// FormÀÌ ¿­¸±¶§ List¸¦ °¡Á®¿Â´Ù.
 void __fastcall TForm11::FormShow(TObject *Sender)
 {
 	GetDsnList_winISQL(this->DSNLIST);
 }
 //---------------------------------------------------------------------------
-// DSNLIST ì—ì„œ DSN ì„ í´ë¦­í• ë•Œ ì²˜ë¦¬í•œë‹¤. ì •ë³´ë¥¼ ë³´ì—¬ì¤˜ì•¼ í•˜ë‹ˆê¹Œ!!
+// DSNLIST ¿¡¼­ DSN À» Å¬¸¯ÇÒ¶§ Ã³¸®ÇÑ´Ù. Á¤º¸¸¦ º¸¿©Áà¾ß ÇÏ´Ï±î!!
 void __fastcall TForm11::DSNLISTClick(TObject *Sender)
 {
 	HKEY hKey2;
@@ -149,10 +149,10 @@ void __fastcall TForm11::DSNLISTClick(TObject *Sender)
 	AnsiString x;
 
 
-	// DSN alias name ì…‹íŒ…
+	// DSN alias name ¼ÂÆÃ
 	DSN->Text = DSNLIST->Items->Strings[DSNLIST->ItemIndex] ;
 
-	// DSN Nameì„ í‚¤ë¡œ í•˜ì—¬ ì „ì²´ ì˜µì…˜ê°’ì´ ë¬´ì–¸ì§€ ì°¾ëŠ”ë‹¤.
+	// DSN NameÀ» Å°·Î ÇÏ¿© ÀüÃ¼ ¿É¼Ç°ªÀÌ ¹«¾ðÁö Ã£´Â´Ù.
 	wsprintf(sBuf, "Software\\ODBC\\ODBC.INI\\%s", DSN->Text.c_str() );
 	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
 					 sBuf,
@@ -272,7 +272,7 @@ void __fastcall TForm11::DSNLISTClick(TObject *Sender)
 	RegCloseKey(hKey2);	
 }
 //---------------------------------------------------------------------------
-// DSN ì •ë³´ë¥¼ ì¶”ê°€ / ë³€ê²½ í• ë•Œ ì²˜ë¦¬ í•œë‹¤.
+// DSN Á¤º¸¸¦ Ãß°¡ / º¯°æ ÇÒ¶§ Ã³¸® ÇÑ´Ù.
 void __fastcall TForm11::Button1Click(TObject *Sender)
 {
    HKEY sRootKey;
@@ -320,7 +320,7 @@ void __fastcall TForm11::Button1Click(TObject *Sender)
    }
    sRootKey = HKEY_LOCAL_MACHINE;
 
-   // ì„ íƒëœ DSNìœ¼ë¡œ KEYë¥¼ ì—°ë‹¤.
+   // ¼±ÅÃµÈ DSNÀ¸·Î KEY¸¦ ¿¬´Ù.
    wsprintf( sBuf, "Software\\ODBC\\ODBC.INI\\%s", DSN->Text.c_str());
    if( 0 != RegCreateKeyEx(sRootKey,
                            sBuf,
@@ -403,7 +403,7 @@ void __fastcall TForm11::Button1Click(TObject *Sender)
 
    RegCloseKey(sKey);
 
-   // DATASOURCEì—ë„ ë“±ë¡í•´ì•¼ í•œë‹¤.
+   // DATASOURCE¿¡µµ µî·ÏÇØ¾ß ÇÑ´Ù.
    memset( sBuf, 0x00, MAX_PATH);
    wsprintf( sBuf, "Software\\ODBC\\ODBC.INI\\ODBC Data Sources");
    if( 0 != RegOpenKeyEx( sRootKey,
@@ -416,7 +416,7 @@ void __fastcall TForm11::Button1Click(TObject *Sender)
 	  return;
    }
 
-   // DLLì„ ë“±ë¡í•œë‹¤.
+   // DLLÀ» µî·ÏÇÑ´Ù.
    memset( sBuf, 0x00, MAX_PATH);
    wsprintf( sBuf, "Altibase_ODBC_cm451");
    if( 0 != RegSetValueEx(sKey, DSN->Text.c_str(), 0, REG_SZ, (LPBYTE) sBuf,
@@ -429,15 +429,15 @@ void __fastcall TForm11::Button1Click(TObject *Sender)
 
    RegCloseKey(sKey);
 
-   // ì²˜ë¦¬ ê²°ê³¼ ë³´ì—¬ì£¼ê¸°
+   // Ã³¸® °á°ú º¸¿©ÁÖ±â
    ShowMessage("Save Success!!");
 
-   // DSN LIST ê°±ì‹ 
+   // DSN LIST °»½Å
    GetDsnList_winISQL(this->DSNLIST);
 
-   // mainFormì˜ íŠ¸ë¦¬êµ¬ì¡°ë¥¼ ê°±ì‹ í•´ì¤˜ì•¼ í•œë‹¤.
-   // ì•„ ê·€ì°®ë‹¤..
-   // ì£„ë‹¤ ëŒë©´ì„œ ë“±ë¡ëœ ë„˜ì¸ì§€ ì²´í¬í•œë‹¤. ì¢‹ì€ ë°©ë²•ì„ ëª°ë¼ì„œë¦¬..
+   // mainFormÀÇ Æ®¸®±¸Á¶¸¦ °»½ÅÇØÁà¾ß ÇÑ´Ù.
+   // ¾Æ ±ÍÂú´Ù..
+   // ÁË´Ù µ¹¸é¼­ µî·ÏµÈ ³ÑÀÎÁö Ã¼Å©ÇÑ´Ù. ÁÁÀº ¹æ¹ýÀ» ¸ô¶ó¼­¸®..
    TTreeNode *tNode = Form5->DBNODE->Items->GetFirstNode();
    already_exist = false;
    while (tNode)
@@ -451,7 +451,7 @@ void __fastcall TForm11::Button1Click(TObject *Sender)
 	   }
 	   tNode = tNode->GetNext();
    }
-   // ì—†ëŠ”ë†ˆì´ë¼ê³  íŒë‹¨ë˜ë©´ rootì— ë“±ë¡í•œë‹¤.
+   // ¾ø´Â³ðÀÌ¶ó°í ÆÇ´ÜµÇ¸é root¿¡ µî·ÏÇÑ´Ù.
    if (!already_exist)
    {
 	   tNode = Form5->DBNODE->Items->GetFirstNode();
@@ -461,7 +461,7 @@ void __fastcall TForm11::Button1Click(TObject *Sender)
    return;
 }
 //---------------------------------------------------------------------------
-// DSNì„ ì‚­ì œí• ë•Œ ì²˜ë¦¬í•œë‹¤.
+// DSNÀ» »èÁ¦ÇÒ¶§ Ã³¸®ÇÑ´Ù.
 void __fastcall TForm11::Button2Click(TObject *Sender)
 {
    HKEY sRootKey;
@@ -475,7 +475,7 @@ void __fastcall TForm11::Button2Click(TObject *Sender)
    }
    sRootKey = HKEY_LOCAL_MACHINE;
 
-   // ODBC.INIì—ì„œ ì‚­ì œ
+   // ODBC.INI¿¡¼­ »èÁ¦
    wsprintf( sBuf, "Software\\ODBC\\ODBC.INI\\%s", DSN->Text.c_str());
    if( 0 != RegDeleteKey(sRootKey, sBuf))
    {
@@ -484,7 +484,7 @@ void __fastcall TForm11::Button2Click(TObject *Sender)
    }
 
 
-   // DATASOURCE ì—ì„œ ì‚­ì œ
+   // DATASOURCE ¿¡¼­ »èÁ¦
    memset( sBuf, 0x00, MAX_PATH);
    wsprintf( sBuf, "Software\\ODBC\\ODBC.INI\\ODBC Data Sources");
    if( 0 != RegOpenKeyEx( sRootKey,
@@ -506,7 +506,7 @@ void __fastcall TForm11::Button2Click(TObject *Sender)
    RegCloseKey(sKey);
    ShowMessage("Delete Success!!");
    
-   // Form5ê°€ ê°–ëŠ” DBNODE treeNodeì—ì„œ ì°¾ì•„ì„œ ì‚­ì œí•œë‹¤.
+   // Form5°¡ °®´Â DBNODE treeNode¿¡¼­ Ã£¾Æ¼­ »èÁ¦ÇÑ´Ù.
    TTreeNode *tNode = Form5->DBNODE->Items->GetFirstNode();
    while (tNode != NULL)
    {
@@ -520,7 +520,7 @@ void __fastcall TForm11::Button2Click(TObject *Sender)
 	   tNode = tNode->GetNext();
    }
 
-   // DSN LISTë¥¼ ê°±ì‹ í•˜ê³  ì •ë³´í™”ë©´ì„ Clearí•œë‹¤.
+   // DSN LIST¸¦ °»½ÅÇÏ°í Á¤º¸È­¸éÀ» ClearÇÑ´Ù.
    GetDsnList_winISQL(this->DSNLIST);
    DSN->Text      = "";
    SERVER->Text   = "";
@@ -534,8 +534,8 @@ void __fastcall TForm11::Button2Click(TObject *Sender)
    return ;
 }
 //---------------------------------------------------------------------------
-// ì‚¬ìš©ìžê°€ í•„ìš”í•œ ë¶€ë¶„ì— ëŒ€í•´ì„œ
-// DSNë“±ë¡ì •ë³´ë¥¼ ìš”ì²­í•˜ë©´ ë¦¬í„´í•´ì¤€ë‹¤.
+// »ç¿ëÀÚ°¡ ÇÊ¿äÇÑ ºÎºÐ¿¡ ´ëÇØ¼­
+// DSNµî·ÏÁ¤º¸¸¦ ¿äÃ»ÇÏ¸é ¸®ÅÏÇØÁØ´Ù.
 int _fastcall TForm11::getDsnInfo(AnsiString DSN, char *type, char *ret)
 {
 	HKEY hKey2;
@@ -544,7 +544,7 @@ int _fastcall TForm11::getDsnInfo(AnsiString DSN, char *type, char *ret)
 	AnsiString x;
 
 
-	// DSN Nameì„ í‚¤ë¡œ í•˜ì—¬ ì „ì²´ ì˜µì…˜ê°’ì´ ë¬´ì–¸ì§€ ì°¾ëŠ”ë‹¤.
+	// DSN NameÀ» Å°·Î ÇÏ¿© ÀüÃ¼ ¿É¼Ç°ªÀÌ ¹«¾ðÁö Ã£´Â´Ù.
 	wsprintf(sBuf, "Software\\ODBC\\ODBC.INI\\%s", DSN.c_str() );
 	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
 					 sBuf,
@@ -586,7 +586,7 @@ int __fastcall TForm11::ISQLConnect(TObject *Sender)
 	SQLCHAR USER[41];
 	SQLCHAR PASSWD[41];
 
-	// ì—°ê²°ì„ ìœ„í•œ ë©”ëª¨ë¦¬ í• ë‹¹.
+	// ¿¬°áÀ» À§ÇÑ ¸Þ¸ð¸® ÇÒ´ç.
 	if (SQLAllocEnv(&env) != SQL_SUCCESS)
 	{
 		ShowMessage("SQLAllocEnv Fail");
@@ -600,7 +600,7 @@ int __fastcall TForm11::ISQLConnect(TObject *Sender)
 		return 0;
 	}
 
-	// ì ‘ì†ì •ë³´ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¹..
+	// Á¢¼ÓÁ¤º¸¸¦ °¡Á®¿É´Ï´ç..
 	if (!Form11->getDsnInfo(DSN, "User",     USER))
 	{
 		ShowMessage("Can't Get User");
@@ -612,7 +612,7 @@ int __fastcall TForm11::ISQLConnect(TObject *Sender)
 		return 0;
 	}
 
-	// ì§„ì§œ ì—°ê²°í•´ë´…ë‹ˆë‹¤.
+	// ÁøÂ¥ ¿¬°áÇØº¾´Ï´Ù.
 	if (SQLConnect(dbc, DSN.c_str(), SQL_NTS, USER, SQL_NTS, PASSWD, SQL_NTS) != SQL_SUCCESS)
 	{
 		//dbErrMsg(env, dbc, SQL_NULL_HSTMT);

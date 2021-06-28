@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qrc.h 84317 2018-11-12 00:39:24Z minku.kang $
+ * $Id: qrc.h 90824 2021-05-13 05:35:21Z minku.kang $
  **********************************************************************/
 
 #ifndef  _O_QRC_H_
@@ -49,7 +49,9 @@ public:
     static IDE_RC validateQuickStart(qcStatement * aStatement);
     static IDE_RC validateSync(qcStatement * aStatement);
     static IDE_RC validateSyncTbl(qcStatement * aStatement);
+    static IDE_RC validateTempSync(qcStatement * aStatement);
     static IDE_RC validateReset(qcStatement * aStatement);
+    static IDE_RC validateFailover( qcStatement * aStatement );
     static IDE_RC validateAlterSetRecovery(qcStatement * aStatement);
     static IDE_RC validateAlterSetOffline(qcStatement * aStatement);
     
@@ -62,6 +64,9 @@ public:
 
     /* BUG-46252 Partition Merge / Split / Replace DDL asynchronization support */
     static IDE_RC validateAlterSetDDLReplicate( qcStatement * aStatement );
+    
+    static IDE_RC validateDeleteItemReplaceHistory(qcStatement * aStatement);
+    static IDE_RC validateFailback(qcStatement * aStatement);
 
     static IDE_RC executeCreate(qcStatement * aStatement);
     static IDE_RC executeAlterAddTbl(qcStatement * aStatement);
@@ -74,6 +79,9 @@ public:
     static IDE_RC executeStart(qcStatement * aStatement);
     static IDE_RC executeQuickStart(qcStatement * aStatement);
     static IDE_RC executeSync(qcStatement * aStatement);
+    static IDE_RC executeSyncCondition(qcStatement * aStatement);
+    static IDE_RC executeTempSync(qcStatement * aStatement);
+    static IDE_RC executeFailover( qcStatement * aStatement );
     static IDE_RC executeStop(qcStatement * aStatement);
     static IDE_RC executeReset(qcStatement * aStatement);
     static IDE_RC executeFlush(qcStatement * aStatement);
@@ -92,16 +100,32 @@ public:
 
     /* BUG-46252 Partition Merge / Split / Replace DDL asynchronization support */
     static IDE_RC executeAlterSetDDLReplicate( qcStatement * aStatement );
+    
+    static IDE_RC executeDeleteItemReplaceHistory(qcStatement * aStatement);
+    static IDE_RC executeFailback(qcStatement * aStatement);
 
     static idBool isValidIPFormat(SChar * aIP);
     
     /* PROJ-2677 DDL synchronization */
-    static void   setDDLReplInfo( qcStatement * aQcStatement,
-                                  smOID         aTableOID,
-                                  smOID         aSrcPartOID1,
-                                  smOID         aSrcPartOID2 );
-    
+    static void   setDDLSrcInfo( qcStatement * aQcStatement,
+                                 idBool        aTransactionalDDLAvailable,
+                                 UInt          aSrcTableOIDCount,
+                                 smOID       * aSrcTableOIDArray,
+                                 UInt          aSrcPartOIDCountPerTable,
+                                 smOID       * aSrcPartOIDArray );
+
+    /* PROJ-2735 DDL Transaction */
+    static void   setDDLDestInfo( qcStatement * aQcStatement, 
+                                  UInt          aDestTableOIDCount,
+                                  smOID       * aDestTableOIDArray,
+                                  UInt          aDestPartOIDCountPerTable,
+                                  smOID       * aDestPartOIDArray );
+
     static idBool isDDLSync( qcStatement * aQcStatement );
+    
+    static idBool isInternalDDL( qcStatement * aQcStatement );
+
+    static idBool isLockTableUntillNextDDL( qcStatement * aQcStatement );
 };
 
 #endif  // _O_QRC_H_

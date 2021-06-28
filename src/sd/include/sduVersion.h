@@ -22,13 +22,14 @@
 #ifndef _O_SDU_VERSION_H_
 #define _O_SDU_VERSION_H_ 1
 
-/* shard meta, shard protocol í†µí•© ë²„ì ¼ */
-#define SHARD_MAJOR_VERSION 2
-#define SHARD_MINOR_VERSION 2
+/* shard meta, shard protocol ÅëÇÕ ¹öÁ¯ */
+/* BUG-48254 2.2.1 -> 3.1.1·Î º¯°æ */
+#define SHARD_MAJOR_VERSION 3
+#define SHARD_MINOR_VERSION 1
 #define SHARD_PATCH_VERSION 1
 
-#define SHARD_MAJOR_VERSION_STR "2"
-#define SHARD_MINOR_VERSION_STR "2"
+#define SHARD_MAJOR_VERSION_STR "3"
+#define SHARD_MINOR_VERSION_STR "1"
 #define SHARD_PATCH_VERSION_STR "1"
 
 #endif /* _O_SDU_VERSION_H_ */

@@ -19,8 +19,8 @@
  *
  * $Id: sdpstFreePage.cpp 27229 2008-07-23 17:37:19Z newdaily $
  *
- * ë³¸ íŒŒì¼ì€ Treelist Managed Segmentì—ì„œ ê°€ìš©ê³µê°„ í•´ì œ ì—°ì‚° ê´€ë ¨ STATIC
- * ì¸í„°í˜ì´ìŠ¤ë¥¼ ê´€ë¦¬í•œë‹¤.
+ * º» ÆÄÀÏÀº Treelist Managed Segment¿¡¼­ °¡¿ë°ø°£ ÇØÁ¦ ¿¬»ê °ü·Ã STATIC
+ * ÀÎÅÍÆäÀÌ½º¸¦ °ü¸®ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -37,7 +37,7 @@
 
 
 /***********************************************************************
- * Description : [ INTERFACE ] Segmentì— í˜ì´ì§€ë¥¼ í•´ì œí•œë‹¤
+ * Description : [ INTERFACE ] Segment¿¡ ÆäÀÌÁö¸¦ ÇØÁ¦ÇÑ´Ù
  ***********************************************************************/
 IDE_RC sdpstFreePage::freePage( idvSQL       * aStatistics,
                                 sdrMtx       * aMtx,
@@ -71,8 +71,8 @@ IDE_RC sdpstFreePage::freePage( idvSQL       * aStatistics,
                   ( SDPST_BITSET_PAGETP_DATA | SDPST_BITSET_PAGEFN_FMT );
 
     /*
-     * Pageë¥¼ Free í•˜ê²Œ ë˜ë©´ ì™„ì „íˆ ë¹ˆ format í˜ì´ì§€ê°€ ëœë‹¤.
-     * ë”°ë¼ì„œ ì—¬ê¸°ì„œ ì´ˆê¸°í™”ë¥¼ í•´ì¤€ë‹¤.
+     * Page¸¦ Free ÇÏ°Ô µÇ¸é ¿ÏÀüÈ÷ ºó format ÆäÀÌÁö°¡ µÈ´Ù.
+     * µû¶ó¼­ ¿©±â¼­ ÃÊ±âÈ­¸¦ ÇØÁØ´Ù.
      */
     IDE_TEST( sdpstAllocPage::formatPageHdr( aMtx,
                                              aSegHandle,
@@ -84,7 +84,7 @@ IDE_RC sdpstFreePage::freePage( idvSQL       * aStatistics,
                                              sParentInfo.mIdxInParent,
                                              sPBS ) != IDE_SUCCESS );
 
-    /* reverse stackì€ it->bottomê¹Œì§€ì˜ stackë§Œ ìˆ˜ì§‘í•œë‹¤. */
+    /* reverse stackÀº it->bottom±îÁöÀÇ stack¸¸ ¼öÁıÇÑ´Ù. */
     sdpstStackMgr::initialize( &sRevStack );
     IDE_TEST( sdpstAllocPage::tryToChangeMFNLAndItHint(
                                  aStatistics,
@@ -99,17 +99,17 @@ IDE_RC sdpstFreePage::freePage( idvSQL       * aStatistics,
                                  SDPST_INVALID_SLOTNO,
                                  &sRevStack ) != IDE_SUCCESS );
 
-    // Format Index Page Countë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
+    // Format Index Page Count¸¦ Áõ°¡½ÃÅ²´Ù.
     if ( sSegCache->mSegType == SDP_SEG_TYPE_INDEX )
     {
-        // prepareNewPages ì§€ì›ì„ ìœ„í•´ì„œ index segment ì— ëŒ€í•´ì„œë§Œ íŠ¹ë³„íˆ
-        // format í˜ì´ì§€ ê°œìˆ˜ë¥¼ ê´€ë¦¬í•œë‹¤.
+        // prepareNewPages Áö¿øÀ» À§ÇØ¼­ index segment ¿¡ ´ëÇØ¼­¸¸ Æ¯º°È÷
+        // format ÆäÀÌÁö °³¼ö¸¦ °ü¸®ÇÑ´Ù.
         IDE_ASSERT( sdpstLfBMP::isEqFN( sPBS, 
                                         SDPST_BITSET_PAGEFN_FMT )
                     == ID_TRUE );
 
-        // internal slotì˜ MFNLì´ ë³€ê²½ë˜ì–´ì„œ Internal Hintë¥¼ ë³€ê²½í•´ì•¼ í•˜ê±°ë‚˜,
-        // Index Segmentì¸ ê²½ìš°ì—ëŠ” Segment Headerë¥¼ fixí•œë‹¤.
+        // internal slotÀÇ MFNLÀÌ º¯°æµÇ¾î¼­ Internal Hint¸¦ º¯°æÇØ¾ß ÇÏ°Å³ª,
+        // Index SegmentÀÎ °æ¿ì¿¡´Â Segment Header¸¦ fixÇÑ´Ù.
         IDE_TEST( sdbBufferMgr::getPageByPID( aStatistics,
                                               aSpaceID,
                                               aSegHandle->mSegPID,            
@@ -135,9 +135,9 @@ IDE_RC sdpstFreePage::freePage( idvSQL       * aStatistics,
          (sdpstStackMgr::getDepth( &sRevStack ) 
           == SDPST_RTBMP) )
     {
-        /* ì‘ì€ ê²ƒì„ ì„ íƒí•˜ëŠ” ì´ìœ ëŠ” free pageê°€ ë°œìƒí•˜ë©´, 
-         * slot hintì™€ page hintì—
-         * ëª¨ë‘ ì˜í–¥ì„ ë¯¸ì¹˜ê¸° ë•Œë¬¸ì´ë‹¤ */
+        /* ÀÛÀº °ÍÀ» ¼±ÅÃÇÏ´Â ÀÌÀ¯´Â free page°¡ ¹ß»ıÇÏ¸é, 
+         * slot hint¿Í page hint¿¡
+         * ¸ğµÎ ¿µÇâÀ» ¹ÌÄ¡±â ¶§¹®ÀÌ´Ù */
         sItHintStack = sdpstCache::getMinimumItHint( aStatistics, sSegCache );
 
         IDE_TEST( checkAndUpdateHintItBMP( aStatistics,
@@ -160,7 +160,7 @@ IDE_RC sdpstFreePage::freePage( idvSQL       * aStatistics,
 }
 
 /***********************************************************************
- * Description : í•´ë‹¹ í˜ì´ì§€ì˜ Free í˜ì´ì§€ ì—¬ë¶€ë¥¼ ë°˜í™˜í•œë‹¤.
+ * Description : ÇØ´ç ÆäÀÌÁöÀÇ Free ÆäÀÌÁö ¿©ºÎ¸¦ ¹İÈ¯ÇÑ´Ù.
  * 
  * BUG-32942 When executing rebuild Index stat, abnormally shutdown
  ***********************************************************************/
@@ -180,8 +180,8 @@ idBool sdpstFreePage::isFreePage( UChar * aPagePtr )
 }
 
 /***********************************************************************
- * Description : ë¹ˆ í˜ì´ì§€ íƒìƒ‰ì„ ìœ„í•œ Hintì˜ ì¬ì„¤ì •ì´ í•„ìš”í•œì§€ë¥¼ íŒë‹¨í•˜ê³ 
- *               Update Hint Flagë¥¼ ì¬ì„¤ì •í•œë‹¤.
+ * Description : ºó ÆäÀÌÁö Å½»öÀ» À§ÇÑ HintÀÇ Àç¼³Á¤ÀÌ ÇÊ¿äÇÑÁö¸¦ ÆÇ´ÜÇÏ°í
+ *               Update Hint Flag¸¦ Àç¼³Á¤ÇÑ´Ù.
  ***********************************************************************/
 IDE_RC sdpstFreePage::checkAndUpdateHintItBMP( idvSQL         * aStatistics,
                                                scSpaceID        aSpaceID,
@@ -203,16 +203,16 @@ IDE_RC sdpstFreePage::checkAndUpdateHintItBMP( idvSQL         * aStatistics,
 
     sIsTurnOn = ID_FALSE;
 
-    /* root bmpê¹Œì§€ MFNLì´ ë³€ê²½ëœ ê²½ìš°ì—ë§Œ Stackì„ ìˆ˜ì§‘í•˜ì—¬ Segment Cacheì˜
-     * it hint stackê³¼ ë¹„êµí•˜ì—¬ Update Hint Flagë¥¼ on ì‹œí‚¨ë‹¤.
-     * stackì€ íŠ¹ë³„í•˜ê²Œ it->root ë°©í–¥ìœ¼ë¡œ pushê°€ ë˜ì–´ ìˆì–´ reverse stack
-     * ì´ë¯€ë¡œ ë‹¤ìŒê³¼ ê°™ì´ ê±°ê¾¸ë¡œ ì²´í¬í•œë‹¤. */
+    /* root bmp±îÁö MFNLÀÌ º¯°æµÈ °æ¿ì¿¡¸¸ StackÀ» ¼öÁıÇÏ¿© Segment CacheÀÇ
+     * it hint stack°ú ºñ±³ÇÏ¿© Update Hint Flag¸¦ on ½ÃÅ²´Ù.
+     * stackÀº Æ¯º°ÇÏ°Ô it->root ¹æÇâÀ¸·Î push°¡ µÇ¾î ÀÖ¾î reverse stack
+     * ÀÌ¹Ç·Î ´ÙÀ½°ú °°ÀÌ °Å²Ù·Î Ã¼Å©ÇÑ´Ù. */
     if ( sdpstStackMgr::getDepth( aRevStack ) == SDPST_RTBMP )
     {
-        /* ê°™ì€ root bmpê°€ ì•„ë‹Œê²½ìš°ëŠ” ì‹¤ì œë¡œ stackì˜ ì„ í›„ê´€ê³„ë¥¼ 
-         * ì •í™•íˆ íŒë‹¨í•´ë³¸ë‹¤
-         * ë§Œì•½ It Hintê°€ ë” í¬ë‹¤ë©´, It Hintë¥¼ ë•¡ê²¨ì•¼í•˜ê³ , 
-         * ê·¸ë ‡ì§€ ì•Šë‹¤ë©´, ê·¸ëƒ¥ ë‘”ë‹¤. */
+        /* °°Àº root bmp°¡ ¾Æ´Ñ°æ¿ì´Â ½ÇÁ¦·Î stackÀÇ ¼±ÈÄ°ü°è¸¦ 
+         * Á¤È®È÷ ÆÇ´ÜÇØº»´Ù
+         * ¸¸¾à It Hint°¡ ´õ Å©´Ù¸é, It Hint¸¦ ¶¯°Ü¾ßÇÏ°í, 
+         * ±×·¸Áö ¾Ê´Ù¸é, ±×³É µĞ´Ù. */
         sRtPos1 = sdpstStackMgr::getSeekPos( aRevStack, SDPST_RTBMP);
         sRtPos2 = sdpstStackMgr::getSeekPos( aItHintStack, SDPST_RTBMP);
 
@@ -221,8 +221,8 @@ IDE_RC sdpstFreePage::checkAndUpdateHintItBMP( idvSQL         * aStatistics,
         if ( sDist == SDPST_FAR_AWAY_OFF )
         {
             sdpstStackMgr::initialize( &sStack );
-            // ì •í™•í•œ ì„ í›„ê´€ê³„ë¥¼ íŒë‹¨í•  ìˆ˜ ì—†ê¸°ë•Œë¬¸ì— RevStackì„ ì •ë ¬í•˜ê³ ,
-            // ë¹„êµí•œë‹¤.
+            // Á¤È®ÇÑ ¼±ÈÄ°ü°è¸¦ ÆÇ´ÜÇÒ ¼ö ¾ø±â¶§¹®¿¡ RevStackÀ» Á¤·ÄÇÏ°í,
+            // ºñ±³ÇÑ´Ù.
             IDE_TEST( makeOrderedStackFromRevStack( aStatistics,
                                           aSpaceID,
                                           aSegPID,
@@ -240,7 +240,7 @@ IDE_RC sdpstFreePage::checkAndUpdateHintItBMP( idvSQL         * aStatistics,
         }
         else
         {
-            // ë™ì¼í•œ rootì—ì„œ ì„ í›„ê´€ê³„ë¥¼ íŒŒì•…í•œë‹¤.
+            // µ¿ÀÏÇÑ root¿¡¼­ ¼±ÈÄ°ü°è¸¦ ÆÄ¾ÇÇÑ´Ù.
             if ( sDist < 0 )
             {
                 sIsTurnOn = ID_TRUE;
@@ -253,7 +253,7 @@ IDE_RC sdpstFreePage::checkAndUpdateHintItBMP( idvSQL         * aStatistics,
     }
     else
     {
-        // rootê¹Œì§€ mfnlì´ ê°±ì‹ ë˜ì§€ ì•Šì•˜ìœ¼ë¯€ë¡œ, rescan ì—¬ë¶€ì™€ ìƒê´€ì´ ì—†ë‹¤.
+        // root±îÁö mfnlÀÌ °»½ÅµÇÁö ¾Ê¾ÒÀ¸¹Ç·Î, rescan ¿©ºÎ¿Í »ó°üÀÌ ¾ø´Ù.
     }
 
     *aIsTurnOn = sIsTurnOn;
@@ -264,7 +264,7 @@ IDE_RC sdpstFreePage::checkAndUpdateHintItBMP( idvSQL         * aStatistics,
 }
 
 /***********************************************************************
- * Description : ì—­ stackìœ¼ë¡œ ìˆœì„œì— ë§ëŠ” stackì„ ë§Œë“¤ì–´ë‚¸ë‹¤.
+ * Description : ¿ª stackÀ¸·Î ¼ø¼­¿¡ ¸Â´Â stackÀ» ¸¸µé¾î³½´Ù.
  ***********************************************************************/
 IDE_RC sdpstFreePage::makeOrderedStackFromRevStack( idvSQL      * aStatistics,
                                           scSpaceID     aSpaceID,
@@ -286,7 +286,7 @@ IDE_RC sdpstFreePage::makeOrderedStackFromRevStack( idvSQL      * aStatistics,
     IDE_DASSERT( aRevStack != NULL );
     IDE_DASSERT( aOrderedStack != NULL );
 
-    /* reverse stackì—ëŠ” (it,lfslotno)->(rt,itslotno) ë§Œ ë“¤ì–´ê°€ ìˆë‹¤. */
+    /* reverse stack¿¡´Â (it,lfslotno)->(rt,itslotno) ¸¸ µé¾î°¡ ÀÖ´Ù. */
     if ( sdpstStackMgr::getDepth( aRevStack ) != SDPST_RTBMP )
     {
         sdpstStackMgr::dump( aRevStack );
@@ -325,7 +325,7 @@ IDE_RC sdpstFreePage::makeOrderedStackFromRevStack( idvSQL      * aStatistics,
     }
 
     sdpstStackMgr::push( aOrderedStack,
-                         SD_NULL_PID, // root bmp ìƒìœ„ ë…¸ë“œì˜ PID
+                         SD_NULL_PID, // root bmp »óÀ§ ³ëµåÀÇ PID
                          sRtBMPIdx );
 
     for( sLoop = 0; sLoop < (UInt)SDPST_ITBMP; sLoop++ )

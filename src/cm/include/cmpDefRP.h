@@ -19,21 +19,21 @@
 
 
 /*
- * í”„ë¡œí† ì½œ ë²„ì „ì—…ìœ¼ë¡œ ìƒìˆ˜ë¥¼ ì¶”ê°€í•  ë•ŒëŠ” ë‹¤ìŒì²˜ëŸ¼ ì¶”ê°€í•œë‹¤.
+ * ÇÁ·ÎÅäÄÝ ¹öÀü¾÷À¸·Î »ó¼ö¸¦ Ãß°¡ÇÒ ¶§´Â ´ÙÀ½Ã³·³ Ãß°¡ÇÑ´Ù.
  *
  *    enum {
  *        CM_ID_NONE = 0,
  *        ...
  *        CM_ID_MAX_VER1
- *    };  <-- í”„ë¡œí† ì½œ ë²„ì „1ì˜ ê¸°ì¡´ ì •ì˜
+ *    };  <-- ÇÁ·ÎÅäÄÝ ¹öÀü1ÀÇ ±âÁ¸ Á¤ÀÇ
  *
  *    enum {
  *        CM_ID_NEW = CM_ID_MAX_VER1,
  *        ...
  *        CM_ID_MAX_VER2
- *    };  <-- í”„ë¡œí† ì½œ ë²„ì „2ì˜ ìƒˆë¡œìš´ ìƒìˆ˜ ì •ì˜
+ *    };  <-- ÇÁ·ÎÅäÄÝ ¹öÀü2ÀÇ »õ·Î¿î »ó¼ö Á¤ÀÇ
  *
- *    #define CM_ID_MAX CM_ID_MAX_VER2  <-- ë§ˆì§€ë§‰ í”„ë¡œí† ì½œ ë²„ì „ì˜ MAXë¡œ ì •ì˜
+ *    #define CM_ID_MAX CM_ID_MAX_VER2  <-- ¸¶Áö¸· ÇÁ·ÎÅäÄÝ ¹öÀüÀÇ MAX·Î Á¤ÀÇ
  */
 
 
@@ -65,7 +65,7 @@ enum
     CMP_OP_RP_TrBegin,
     CMP_OP_RP_TrCommit,
     CMP_OP_RP_TrAbort,
-    CMP_OP_RP_SPSet,
+    CMP_OP_RP_SPSet = 10,
     CMP_OP_RP_SPAbort,
     CMP_OP_RP_StmtBegin,
     CMP_OP_RP_StmtEnd,
@@ -75,7 +75,7 @@ enum
     CMP_OP_RP_Update,
     CMP_OP_RP_Delete,
     CMP_OP_RP_UIntID,
-    CMP_OP_RP_Value,
+    CMP_OP_RP_Value = 20,
     CMP_OP_RP_Stop,
     CMP_OP_RP_KeepAlive,
     CMP_OP_RP_Flush,
@@ -85,7 +85,7 @@ enum
     CMP_OP_RP_LobCursorClose,
     CMP_OP_RP_LobPrepare4Write,
     CMP_OP_RP_LobPartialWrite,
-    CMP_OP_RP_LobFinish2Write,
+    CMP_OP_RP_LobFinish2Write = 30,
     CMP_OP_RP_TxAck,
     CMP_OP_RP_RequestAck,
     CMP_OP_RP_Handshake,
@@ -95,7 +95,7 @@ enum
     CMP_OP_RP_FailbackEnd,
     CMP_OP_RP_SyncTableNumber,
     CMP_OP_RP_SyncStart,
-    CMP_OP_RP_SyncRebuildIndex,
+    CMP_OP_RP_SyncEnd = 40,
     CMP_OP_RP_LobTrim,
     CMP_OP_RP_MetaReplCheck, /* BUG-34360 */
     CMP_OP_RP_MetaDictTableCount, /* BUG-38759 */
@@ -105,12 +105,24 @@ enum
     CMP_OP_RP_DDLSyncMsg,
     CMP_OP_RP_DDLSyncMsgAck,
     CMP_OP_RP_DDLSyncCancel,
-    CMP_OP_RP_DDLReplicateHandshake, /* BUG-46252 Partition Merge / Split / Replace DDL asynchronization support */
+    CMP_OP_RP_DDLReplicateHandshake = 50, /* BUG-46252 Partition Merge / Split / Replace DDL asynchronization support */
     CMP_OP_RP_DDLReplicateQueryStatement,
     CMP_OP_RP_DDLReplicateExecute,
     CMP_OP_RP_DDLReplicateAck,
     CMP_OP_RP_MetaPartitionCount, /* BUG-46120 */
     CMP_OP_RP_MetaInitialize,
+    CMP_OP_RP_TemporarySyncInfo,
+    CMP_OP_RP_TemporarySyncItem,
+    CMP_OP_RP_TemporarySyncHandshakeAck,
+    CMP_OP_RP_MetaReplTblCondition,
+    CMP_OP_RP_MetaReplTblConditionResult = 60,
+    CMP_OP_RP_Truncate,
+    CMP_OP_RP_TruncateAck,
+    CMP_OP_RP_XA_START_REQ,  /* PROJ-2747 Global Tx Consistent */
+    CMP_OP_RP_XA_PREPARE_REQ,
+    CMP_OP_RP_XA_PREPARE,
+    CMP_OP_RP_XA_COMMIT,
+    CMP_OP_RP_XA_END,
     CMP_OP_RP_MAX_VER1
 };
 

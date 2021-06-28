@@ -37,34 +37,34 @@ struct ulnProperties {
 /**
  *  ulnPropertiesCreate
  *
- *  @aProperties : ulnPropertiesì˜ ê°ì²´
+ *  @aProperties : ulnPropertiesÀÇ °´Ã¼
  *
- *  ì„œë²„ í™˜ê²½íŒŒì¼ì„ ì½ì–´ aPropertiesì— ì €ì¥í•œë‹¤.
+ *  ¼­¹ö È¯°æÆÄÀÏÀ» ÀĞ¾î aProperties¿¡ ÀúÀåÇÑ´Ù.
  *
- *  ìš°ì„ ìˆœìœ„
- *  ALTIBASE í™˜ê²½ë³€ìˆ˜ > altibase.properties > ì½”ë“œì— ì„¤ì •ëœ ê°’
+ *  ¿ì¼±¼øÀ§
+ *  ALTIBASE È¯°æº¯¼ö > altibase.properties > ÄÚµå¿¡ ¼³Á¤µÈ °ª
  */
 void ulnPropertiesCreate(ulnProperties *aProperties);
 
 /**
  *  ulnPropertiesDestroy
  *
- *  @aProperties : ulnPropertiesì˜ ê°ì²´
+ *  @aProperties : ulnPropertiesÀÇ °´Ã¼
  *
- *  aPropertiesì˜ ë©”ëª¨ë¦¬ë¥¼ ë°˜í™˜í•œë‹¤.
+ *  aPropertiesÀÇ ¸Ş¸ğ¸®¸¦ ¹İÈ¯ÇÑ´Ù.
  */
 void ulnPropertiesDestroy(ulnProperties *aProperties);
 
 /**
  *  ulnPropertiesExpandValues
  *
- *  @aProperties : ulnPropertiesì˜ ê°ì²´
- *  @aDest       : íƒ€ê²Ÿ ë²„í¼
- *  @aDestSize   : íƒ€ì¼“ ë²„í¼ ì‚¬ì´ì¦ˆ
- *  @aSrc        : ì†ŒìŠ¤ ë²„í¼
- *  @aSrcLen     : ì†ŒìŠ¤ ë¬¸ìì—´ ê¸¸ì´
+ *  @aProperties : ulnPropertiesÀÇ °´Ã¼
+ *  @aDest       : Å¸°Ù ¹öÆÛ
+ *  @aDestSize   : Å¸ÄÏ ¹öÆÛ »çÀÌÁî
+ *  @aSrc        : ¼Ò½º ¹öÆÛ
+ *  @aSrcLen     : ¼Ò½º ¹®ÀÚ¿­ ±æÀÌ
  *
- *  ?ë¥¼ $ALTIBASE_HOMEìœ¼ë¡œ í™•ì¥í•œë‹¤.
+ *  ?¸¦ $ALTIBASE_HOMEÀ¸·Î È®ÀåÇÑ´Ù.
  */
 ACI_RC ulnPropertiesExpandValues( ulnProperties *aProperties,
                                   acp_char_t    *aDest,

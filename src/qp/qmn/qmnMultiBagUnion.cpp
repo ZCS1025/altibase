@@ -21,16 +21,16 @@
  * Description :
  *     Multiple BUNI(Multiple Bag Union) Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ Bag Unionì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     °ü°èÇü ¸ğµ¨¿¡¼­ Bag UnionÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
  *  
- *     ë‹¤ìŒê³¼ ê°™ì€ ê¸°ëŠ¥ì„ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
+ *     ´ÙÀ½°ú °°Àº ±â´ÉÀ» À§ÇØ »ç¿ëµÈ´Ù.
  *         - Multiple Bag Union
  *
- *     Multi Children ì— ëŒ€í•œ Dataë¥¼ ëª¨ë‘ ë¦¬í„´í•œë‹¤.
+ *     Multi Children ¿¡ ´ëÇÑ Data¸¦ ¸ğµÎ ¸®ÅÏÇÑ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -44,7 +44,7 @@ qmnMultiBUNI::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    MultiBUNI ë…¸ë“œì˜ ì´ˆê¸°í™”
+ *    MultiBUNI ³ëµåÀÇ ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -60,7 +60,7 @@ qmnMultiBUNI::init( qcTemplate * aTemplate,
     qmnPlan * sChildPlan;
     
     //---------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------
 
     IDE_DASSERT( aPlan->left     == NULL );
@@ -68,7 +68,7 @@ qmnMultiBUNI::init( qcTemplate * aTemplate,
     IDE_DASSERT( aPlan->children != NULL );
 
     //---------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //---------------------------------
     
     sDataPlan->flag = & aTemplate->planFlag[sCodePlan->planID];
@@ -87,7 +87,7 @@ qmnMultiBUNI::init( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // Child Planì˜ ì´ˆê¸°í™”
+    // Child PlanÀÇ ÃÊ±âÈ­
     //------------------------------------------------
 
     sDataPlan->curChild = sCodePlan->plan.children;
@@ -97,7 +97,7 @@ qmnMultiBUNI::init( qcTemplate * aTemplate,
               != IDE_SUCCESS);
 
     //------------------------------------------------
-    // ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
+    // ¼öÇà ÇÔ¼ö °áÁ¤
     //------------------------------------------------
 
     sDataPlan->doIt = qmnMultiBUNI::doIt;
@@ -120,10 +120,10 @@ qmnMultiBUNI::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    MultiBUNIì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
+ *    MultiBUNIÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *    í˜„ì¬ Child Plan ë¥¼ ìˆ˜í–‰í•˜ê³ , ì—†ì„ ê²½ìš° ë‹¤ìŒ child planì„ ìˆ˜í–‰
+ *    ÇöÀç Child Plan ¸¦ ¼öÇàÇÏ°í, ¾øÀ» °æ¿ì ´ÙÀ½ child planÀ» ¼öÇà
  *
  ***********************************************************************/
 
@@ -136,13 +136,13 @@ qmnMultiBUNI::doIt( qcTemplate * aTemplate,
     qmnPlan       * sChildPlan;
     
     //--------------------------------------------------
-    // Dataê°€ ì¡´ì¬í•  ë•Œê¹Œì§€ ëª¨ë“  Childë¥¼ ìˆ˜í–‰í•œë‹¤.
+    // Data°¡ Á¸ÀçÇÒ ¶§±îÁö ¸ğµç Child¸¦ ¼öÇàÇÑ´Ù.
     //--------------------------------------------------
 
     while ( 1 )
     {
         //----------------------------
-        // í˜„ì¬ Childë¥¼ ìˆ˜í–‰
+        // ÇöÀç Child¸¦ ¼öÇà
         //----------------------------
         
         sChildPlan = sDataPlan->curChild->childPlan;
@@ -151,32 +151,32 @@ qmnMultiBUNI::doIt( qcTemplate * aTemplate,
                   != IDE_SUCCESS );
 
         //----------------------------
-        // Data ì¡´ì¬ ì—¬ë¶€ì— ë”°ë¥¸ ì²˜ë¦¬
+        // Data Á¸Àç ¿©ºÎ¿¡ µû¸¥ Ã³¸®
         //----------------------------
         
         if ( (*aFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
         {
             //----------------------------
-            // í˜„ì¬ Childì— Dataê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+            // ÇöÀç Child¿¡ Data°¡ Á¸ÀçÇÏ´Â °æ¿ì
             //----------------------------
             break;
         }
         else
         {
             //----------------------------
-            // í˜„ì¬ Childì— Dataê°€ ì—†ëŠ” ê²½ìš°
+            // ÇöÀç Child¿¡ Data°¡ ¾ø´Â °æ¿ì
             //----------------------------
             
             sDataPlan->curChild = sDataPlan->curChild->next;
 
             if ( sDataPlan->curChild == NULL )
             {
-                // ëª¨ë“  Childë¥¼ ìˆ˜í–‰í•œ ê²½ìš°
+                // ¸ğµç Child¸¦ ¼öÇàÇÑ °æ¿ì
                 break;
             }
             else
             {
-                // ë‹¤ìŒ Child Plan ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
+                // ´ÙÀ½ Child Plan ¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇàÇÑ´Ù.
                 sChildPlan = sDataPlan->curChild->childPlan;
                 IDE_TEST( sChildPlan->init( aTemplate, sChildPlan )
                           != IDE_SUCCESS);
@@ -200,9 +200,9 @@ qmnMultiBUNI::padNull( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨.
- *    ìƒìœ„ NodeëŠ” ë°˜ë“œì‹œ VIEWë…¸ë“œì´ë©°,
- *    ViewëŠ” ìì‹ ì˜ Null Rowë§Œì„ ì„¤ì •í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+ *    È£ÃâµÇ¾î¼­´Â ¾ÈµÊ.
+ *    »óÀ§ Node´Â ¹İµå½Ã VIEW³ëµåÀÌ¸ç,
+ *    View´Â ÀÚ½ÅÀÇ Null Row¸¸À» ¼³Á¤ÇÏ±â ¶§¹®ÀÌ´Ù.
  *    
  * Implementation :
  *
@@ -228,7 +228,7 @@ qmnMultiBUNI::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *    ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  * Implementation :
  *
@@ -247,7 +247,7 @@ qmnMultiBUNI::printPlan( qcTemplate   * aTemplate,
     qmnChildren * sChildren;
 
     //----------------------------
-    // Display ìœ„ì¹˜ ê²°ì •
+    // Display À§Ä¡ °áÁ¤
     //----------------------------
     
     for ( i = 0; i < aDepth; i++ )
@@ -257,14 +257,14 @@ qmnMultiBUNI::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // MultiBUNI ë…¸ë“œ í‘œì‹œ
+    // MultiBUNI ³ëµå Ç¥½Ã
     //----------------------------
     
     iduVarStringAppend( aString,
                         "BAG-UNION\n" );
 
     //----------------------------
-    // Child Planì˜ ì •ë³´ ì¶œë ¥
+    // Child PlanÀÇ Á¤º¸ Ãâ·Â
     //----------------------------
 
     for ( sChildren = sCodePlan->plan.children;
@@ -296,7 +296,7 @@ qmnMultiBUNI::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨
+ *    È£ÃâµÇ¾î¼­´Â ¾ÈµÊ
  *
  * Implementation :
  *
@@ -318,7 +318,7 @@ qmnMultiBUNI::firstInit( qmndMultiBUNI   * aDataPlan )
 /***********************************************************************
  *
  * Description :
- *    Data ì˜ì—­ì— ëŒ€í•œ ì´ˆê¸°í™”
+ *    Data ¿µ¿ª¿¡ ´ëÇÑ ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -328,7 +328,7 @@ qmnMultiBUNI::firstInit( qmndMultiBUNI   * aDataPlan )
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
     //---------------------------------
-    // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
+    // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
     //---------------------------------
 
     *aDataPlan->flag &= ~QMND_MULTI_BUNI_INIT_DONE_MASK;

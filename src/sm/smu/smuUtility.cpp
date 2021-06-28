@@ -16,19 +16,14 @@
  
 
 /***********************************************************************
- * $Id: smuUtility.cpp 82551 2018-03-21 23:56:10Z emlee $
+ * $Id: smuUtility.cpp 85333 2019-04-26 02:34:41Z et16 $
  **********************************************************************/
 
-#include <idl.h>
-#include <idu.h>
-#include <ideErrorMgr.h>
-#include <iduVersion.h>
 #include <smDef.h>
 #include <smErrorCode.h>
 #include <smuUtility.h>
-#include <smuProperty.h>
 #include <sdpDef.h>
-#include <sdtTempDef.h>
+#include <sdtSortDef.h>
 
 smuWriteErrFunc smuUtility::mWriteError = &ideLog::log;
 
@@ -38,10 +33,10 @@ SInt smuUtility::outputMsg(const SChar *aFmt, ...)
     va_list ap;
     va_start(ap, aFmt);
     /* ------------------------------------------------
-     *  vfprintfê°€ ë¹„ë¡ idlOS::ì— ì—†ì§€ë§Œ,
-     *  PDLëŠ” fprintfë¥¼ vfprintfë¥¼ ì´ìš©í•´ì„œ
-     *  êµ¬í˜„í•œë‹¤. ë”°ë¼ì„œ, PDLê°€ ì»´íŒŒì¼ ë˜ëŠ” í•œ,
-     *  ::vfprintfë¥¼ ì‚¬ìš©í•´ë„ ë¬´ë°©í•˜ë‹¤ê³  íŒë‹¨í•œë‹¤.
+     *  vfprintf°¡ ºñ·Ï idlOS::¿¡ ¾øÁö¸¸,
+     *  PDL´Â fprintf¸¦ vfprintf¸¦ ÀÌ¿ëÇØ¼­
+     *  ±¸ÇöÇÑ´Ù. µû¶ó¼­, PDL°¡ ÄÄÆÄÀÏ µÇ´Â ÇÑ,
+     *  ::vfprintf¸¦ »ç¿ëÇØµµ ¹«¹æÇÏ´Ù°í ÆÇ´ÜÇÑ´Ù.
      *  2001/05/09  by gamestar
      * ----------------------------------------------*/
     rc = ::vfprintf(stdout, aFmt, ap); 
@@ -57,10 +52,10 @@ SInt smuUtility::outputErr(const SChar *aFmt, ...)
     va_list ap;
     va_start(ap, aFmt);
     /* ------------------------------------------------
-     *  vfprintfê°€ ë¹„ë¡ idlOS::ì— ì—†ì§€ë§Œ,
-     *  PDLëŠ” fprintfë¥¼ vfprintfë¥¼ ì´ìš©í•´ì„œ
-     *  êµ¬í˜„í•œë‹¤. ë”°ë¼ì„œ, PDLê°€ ì»´íŒŒì¼ ë˜ëŠ” í•œ,
-     *  ::vfprintfë¥¼ ì‚¬ìš©í•´ë„ ë¬´ë°©í•˜ë‹¤ê³  íŒë‹¨í•œë‹¤.
+     *  vfprintf°¡ ºñ·Ï idlOS::¿¡ ¾øÁö¸¸,
+     *  PDL´Â fprintf¸¦ vfprintf¸¦ ÀÌ¿ëÇØ¼­
+     *  ±¸ÇöÇÑ´Ù. µû¶ó¼­, PDL°¡ ÄÄÆÄÀÏ µÇ´Â ÇÑ,
+     *  ::vfprintf¸¦ »ç¿ëÇØµµ ¹«¹æÇÏ´Ù°í ÆÇ´ÜÇÑ´Ù.
      *  2001/05/09  by gamestar
      * ----------------------------------------------*/
     rc = ::vfprintf(stderr, aFmt, ap); 
@@ -113,11 +108,11 @@ IDE_RC smuUtility::loadErrorMsb( SChar *aRootDir, SChar *aIDN )
 
 /******************************************************************
  * DESCRIPTION : 
- *    TimeValueë¡œë¶€í„° ë‚ ì§œ/ì‹œê°„ ë¬¸ìì—´ì„ íšë“í•¨
+ *    TimeValue·ÎºÎÅÍ ³¯Â¥/½Ã°£ ¹®ÀÚ¿­À» È¹µæÇÔ
  *
- *  aTimeValue           - [IN]  ì…ë ¥ë˜ëŠ” ì‹œê°„ê°’
- *  aBufferLength        - [OUT] ê²°ê³¼ê°’ì„ ì €ì¥í•  ë²„í¼ì˜ í¬ê¸°
- *  aBuffer              - [OUT] ê²°ê³¼ê°’ì„ ì €ì¥í•  ë²„í¼
+ *  aTimeValue           - [IN]  ÀÔ·ÂµÇ´Â ½Ã°£°ª
+ *  aBufferLength        - [OUT] °á°ú°ªÀ» ÀúÀåÇÒ ¹öÆÛÀÇ Å©±â
+ *  aBuffer              - [OUT] °á°ú°ªÀ» ÀúÀåÇÒ ¹öÆÛ
  ******************************************************************/
 void smuUtility::getTimeString( UInt    aTimeValue, 
                                 UInt    aBufferLength,
@@ -146,11 +141,11 @@ void smuUtility::getTimeString( UInt    aTimeValue,
 
 /******************************************************************
  * DESCRIPTION : 
- *    íŠ¹ì •í•¨ìˆ˜ ë° ë³€ìˆ˜ë¥¼ ë°›ì•„ í•´ë‹¹ ë‚´ìš©ì„ ë¤í”„í•œë‹¤. 
+ *    Æ¯Á¤ÇÔ¼ö ¹× º¯¼ö¸¦ ¹Ş¾Æ ÇØ´ç ³»¿ëÀ» ´ıÇÁÇÑ´Ù. 
  *
- * 1.ë””ìŠ¤í¬í…œí”„ í…Œì´ë¸”ì—ì„œë§Œ ì‚¬ìš©í•˜ê³  ìˆì–´ì„œ  __TEMPDUMP_ENABLEì—
- *     ë”°ë¼ ì½œìŠ¤íƒ Dumpì—¬ë¶€ë¥¼ ê²°ì •í•œë‹¤.
- * 2.Callstack ì¶œë ¥ì€ ì§€ê¸ˆ error.log ë¡œ ê³ ì •ë˜ì–´ ìˆë‹¤. 
+ * 1.µğ½ºÅ©ÅÛÇÁ Å×ÀÌºí¿¡¼­¸¸ »ç¿ëÇÏ°í ÀÖ¾î¼­  __TEMPDUMP_ENABLE¿¡
+ *     µû¶ó Äİ½ºÅÃ Dump¿©ºÎ¸¦ °áÁ¤ÇÑ´Ù.
+ * 2.Callstack Ãâ·ÂÀº Áö±İ error.log ·Î °íÁ¤µÇ¾î ÀÖ´Ù. 
  ******************************************************************/
 void smuUtility::dumpFuncWithBuffer( UInt           aChkFlag, 
                                      ideLogModule   aModule, 
@@ -160,7 +155,7 @@ void smuUtility::dumpFuncWithBuffer( UInt           aChkFlag,
 {
     SChar        * sTempBuf;
 
-    /* __TEMPDUMP_ENABLEì— ë”°ë¼ Dumpí•¨ */
+    /* __TEMPDUMP_ENABLE¿¡ µû¶ó DumpÇÔ */
     if ( smuProperty::getTempDumpEnable() == 1 )
     {
         ideLog::logCallStack( aChkFlag, aModule, aLevel );
@@ -206,7 +201,7 @@ void smuUtility::printFuncWithBuffer( smuDumpFunc    aDumpFunc,
 
 /******************************************************************
  * DESCRIPTION : 
- *    ê³µìš© ë³€ìˆ˜ë“¤ì— ëŒ€í•œ DumpFunction
+ *    °ø¿ë º¯¼öµé¿¡ ´ëÇÑ DumpFunction
  ******************************************************************/
 void smuUtility::dumpGRID( void  * aTarget,
                            SChar * aOutBuf, 
@@ -248,33 +243,6 @@ void smuUtility::dumpExtDesc( void  * aTarget,
                          sExtDesc->mLength );
 }
 
-void smuUtility::dumpRunInfo( void  * aTarget,
-                              SChar * aOutBuf, 
-                              UInt    aOutSize ) 
-{
-    sdtTempMergeRunInfo *sRunInfo = (sdtTempMergeRunInfo*)aTarget;
-
-    idlVA::appendFormat( aOutBuf,
-                         aOutSize,
-                         "[%12"ID_UINT32_FMT
-                         " %12"ID_UINT32_FMT
-                         " %12"ID_UINT32_FMT"]",
-                         sRunInfo->mRunNo,
-                         sRunInfo->mPIDSeq,
-                         sRunInfo->mSlotNo );
-}
-
-void smuUtility::dumpPointer( void  * aTarget,
-                              SChar * aOutBuf, 
-                              UInt    aOutSize ) 
-{
-    idlVA::appendFormat( aOutBuf,
-                         aOutSize,
-                         "0x%"ID_xINT64_FMT,
-                         (vULong)aTarget );
-}
-
-
 
 //  IDE_RC smuUtility::makeDatabaseFileName(SChar  *aDBName,
 //                                          SChar **aDBDir)
@@ -315,11 +283,11 @@ void smuUtility::dumpPointer( void  * aTarget,
 
    Description :
 
-   createdbì‹œì— fileì„ ì €ì¥í•  database dirì„ ì°¾ëŠ”ë‹¤.
-   db_dirì´ ë‹¤ìˆ˜ê°œì´ê¸° ë•Œë¬¸ì— ê·¸ ì¤‘ ì„ì˜ì˜ í•˜ë‚˜ë¥¼
-   ì„ íƒí•œë‹¤. 
-   ì´ì œëŠ” PINGPONG datafileì€ êµ¬ë¶„ë˜ì§€ ì•Šìœ¼ë¯€ë¡œ ë”°ë¡œ ì €ì¥í•  í•„ìš”ê°€ ì—†ë‹¤.
-   propertyì—ì„œ ê°€ì¥ ì²«ë²ˆì§¸ dirì„ ì„ íƒí•  ê²ƒì´ë‹¤.
+   createdb½Ã¿¡ fileÀ» ÀúÀåÇÒ database dirÀ» Ã£´Â´Ù.
+   db_dirÀÌ ´Ù¼ö°³ÀÌ±â ¶§¹®¿¡ ±× Áß ÀÓÀÇÀÇ ÇÏ³ª¸¦
+   ¼±ÅÃÇÑ´Ù. 
+   ÀÌÁ¦´Â PINGPONG datafileÀº ±¸ºĞµÇÁö ¾ÊÀ¸¹Ç·Î µû·Î ÀúÀåÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
+   property¿¡¼­ °¡Àå Ã¹¹øÂ° dirÀ» ¼±ÅÃÇÒ °ÍÀÌ´Ù.
    
    ----------------------------------------------------------------- */
 

@@ -47,9 +47,11 @@ IDL_EXTERN_C void U_STACK_TRACE(void);
 
 PDL_HANDLE      iduStack::mFD;
 const SChar     iduStack::mDigitChars[17] = "0123456789ABCDEF";
-SInt            iduStack::mCallStackCriticalSection;
+volatile SInt   iduStack::mCallStackCriticalSection;
 IDTHREAD SInt   iduStack::mCallDepth;
 IDTHREAD void*  iduStack::mCallStack[IDU_MAX_CALL_DEPTH];
+
+#define IDU_DUMP_BUFSIZE_MAX                      8192
 
 SChar gSigIllMsgs[][64] = 
 {
@@ -112,7 +114,7 @@ void iduStack::clearBucketList(ideLogModule aModule)
     sContainer->mBucketMsgLength[aModule] = 0;
 }
 
-void iduStack::writeBucket()
+void iduStack::writeBucket(SChar *aBuff,UInt * aOffset)
 {
     SInt            i;
     size_t          sLen;
@@ -123,10 +125,10 @@ void iduStack::writeBucket()
         if(sContainer->mBucketMsgLength[i] != 0)
         {
             sLen = idlOS::strlen(ideLog::mMsgModuleName[i]);
-            writeString("===== ", 6);
-            writeString(ideLog::mMsgModuleName[i], sLen);
-            writeString(" =====\n", 7);
-            writeString(sContainer->mBucketMsg[i],
+            writeString(aBuff,aOffset,"===== ", 6);
+            writeString(aBuff,aOffset,ideLog::mMsgModuleName[i], sLen);
+            writeString(aBuff,aOffset," =====\n", 7);
+            writeString(aBuff,aOffset,sContainer->mBucketMsg[i],
                         sContainer->mBucketMsgLength[i]);
         }
         else
@@ -136,7 +138,7 @@ void iduStack::writeBucket()
     }
 }
 
-void iduStack::writeDec32(UInt aValue)
+void iduStack::writeDec32(SChar* aBuff,UInt* aOffset,UInt aValue)
 {
     SInt    i;
     SInt    sDigit;
@@ -149,7 +151,7 @@ void iduStack::writeDec32(UInt aValue)
         {
             if(sWritten == ID_TRUE)
             {
-                idlOS::write(mFD, mDigitChars + sDigit, 1);
+                copyToBuff(aBuff,aOffset,mDigitChars + sDigit ,1);
             }
             else
             {
@@ -158,60 +160,73 @@ void iduStack::writeDec32(UInt aValue)
         }
         else
         {
-            idlOS::write(mFD, mDigitChars + sDigit, 1);
+            copyToBuff(aBuff,aOffset,mDigitChars + sDigit ,1);
             sWritten = ID_TRUE;
         }
 
         aValue -= sDigit * i;
     }
 
-    idlOS::write(mFD, mDigitChars + aValue, 1);
+    copyToBuff(aBuff,aOffset,mDigitChars + aValue ,1);
 }
 
-void iduStack::writeHex32(UInt aValue)
+void iduStack::writeHex32(SChar* aBuff,UInt *aOffset,UInt aValue)
 {
-    idlOS::write(mFD, mDigitChars + ((aValue >> 28) % 16), 1);
-    idlOS::write(mFD, mDigitChars + ((aValue >> 24) % 16), 1);
-    idlOS::write(mFD, mDigitChars + ((aValue >> 20) % 16), 1);
-    idlOS::write(mFD, mDigitChars + ((aValue >> 16) % 16), 1);
-    idlOS::write(mFD, mDigitChars + ((aValue >> 12) % 16), 1);
-    idlOS::write(mFD, mDigitChars + ((aValue >>  8) % 16), 1);
-    idlOS::write(mFD, mDigitChars + ((aValue >>  4) % 16), 1);
-    idlOS::write(mFD, mDigitChars + ((aValue      ) % 16), 1);
+    copyToBuff(aBuff,aOffset,mDigitChars + ((aValue >> 28) % 16), 1);
+    copyToBuff(aBuff,aOffset,mDigitChars + ((aValue >> 24) % 16), 1);
+    copyToBuff(aBuff,aOffset,mDigitChars + ((aValue >> 20) % 16), 1);
+    copyToBuff(aBuff,aOffset,mDigitChars + ((aValue >> 16) % 16), 1);
+    copyToBuff(aBuff,aOffset,mDigitChars + ((aValue >> 12) % 16), 1);
+    copyToBuff(aBuff,aOffset,mDigitChars + ((aValue >>  8) % 16), 1);
+    copyToBuff(aBuff,aOffset,mDigitChars + ((aValue >>  4) % 16), 1);
+    copyToBuff(aBuff,aOffset,mDigitChars + ((aValue      ) % 16), 1);
 }
 
-void iduStack::writeHex64(ULong aValue)
+void iduStack::writeHex64(SChar* aBuff,UInt *aOffset,ULong aValue)
 {
-    idlOS::write(mFD, mDigitChars + ((aValue >> 60) % 16), 1);
-    idlOS::write(mFD, mDigitChars + ((aValue >> 56) % 16), 1);
-    idlOS::write(mFD, mDigitChars + ((aValue >> 52) % 16), 1);
-    idlOS::write(mFD, mDigitChars + ((aValue >> 48) % 16), 1);
-    idlOS::write(mFD, mDigitChars + ((aValue >> 44) % 16), 1);
-    idlOS::write(mFD, mDigitChars + ((aValue >> 40) % 16), 1);
-    idlOS::write(mFD, mDigitChars + ((aValue >> 36) % 16), 1);
-    idlOS::write(mFD, mDigitChars + ((aValue >> 32) % 16), 1);
-    idlOS::write(mFD, mDigitChars + ((aValue >> 28) % 16), 1);
-    idlOS::write(mFD, mDigitChars + ((aValue >> 24) % 16), 1);
-    idlOS::write(mFD, mDigitChars + ((aValue >> 20) % 16), 1);
-    idlOS::write(mFD, mDigitChars + ((aValue >> 16) % 16), 1);
-    idlOS::write(mFD, mDigitChars + ((aValue >> 12) % 16), 1);
-    idlOS::write(mFD, mDigitChars + ((aValue >>  8) % 16), 1);
-    idlOS::write(mFD, mDigitChars + ((aValue >>  4) % 16), 1);
-    idlOS::write(mFD, mDigitChars + ((aValue      ) % 16), 1);
+    copyToBuff(aBuff,aOffset,mDigitChars + ((aValue >> 60) % 16), 1);
+    copyToBuff(aBuff,aOffset,mDigitChars + ((aValue >> 56) % 16), 1);
+    copyToBuff(aBuff,aOffset,mDigitChars + ((aValue >> 52) % 16), 1);
+    copyToBuff(aBuff,aOffset,mDigitChars + ((aValue >> 48) % 16), 1);
+    copyToBuff(aBuff,aOffset,mDigitChars + ((aValue >> 44) % 16), 1);
+    copyToBuff(aBuff,aOffset,mDigitChars + ((aValue >> 40) % 16), 1);
+    copyToBuff(aBuff,aOffset,mDigitChars + ((aValue >> 36) % 16), 1);
+    copyToBuff(aBuff,aOffset,mDigitChars + ((aValue >> 32) % 16), 1);
+    copyToBuff(aBuff,aOffset,mDigitChars + ((aValue >> 28) % 16), 1);
+    copyToBuff(aBuff,aOffset,mDigitChars + ((aValue >> 24) % 16), 1);
+    copyToBuff(aBuff,aOffset,mDigitChars + ((aValue >> 20) % 16), 1);
+    copyToBuff(aBuff,aOffset,mDigitChars + ((aValue >> 16) % 16), 1);
+    copyToBuff(aBuff,aOffset,mDigitChars + ((aValue >> 12) % 16), 1);
+    copyToBuff(aBuff,aOffset,mDigitChars + ((aValue >>  8) % 16), 1);
+    copyToBuff(aBuff,aOffset,mDigitChars + ((aValue >>  4) % 16), 1);
+    copyToBuff(aBuff,aOffset,mDigitChars + ((aValue      ) % 16), 1);
 }
 
-void iduStack::writeHexPtr(void* aValue)
+void iduStack::writeHexPtr(SChar* aBuff,UInt *aOffset,void* aValue)
 {
 #if defined(COMPILE_64BIT)
-    writeHex64((ULong)aValue);
+    writeHex64(aBuff,aOffset,(ULong)aValue);
 #else
-    writeHex32((UInt)aValue);
+    writeHex32(aBuff,aOffset,(UInt)aValue);
 #endif
 }
 
-void iduStack::writeString(const void* aStr, size_t aLen)
+void iduStack::copyToBuff(SChar* aBuff,UInt *aOffset,const void* aStr, size_t aLen)
 {
-    idlOS::write(mFD, aStr, aLen);
+    // if the buffer is about to overflow, write to disk first!
+    if( (*aOffset + aLen) >= IDU_DUMP_BUFSIZE_MAX )// > is ok. but just in case...
+    {
+        idlOS::write(mFD ,aBuff ,*aOffset);// write buffer to disk
+        *aOffset = 0;
+    }
+
+    idlOS::memcpy(aBuff + *aOffset ,aStr ,aLen);
+    *aOffset = *aOffset + aLen;
+}
+
+void iduStack::writeString(SChar* aBuff,UInt *aOffset,const void* aStr, size_t aLen)
+{
+    copyToBuff(aBuff,aOffset,aStr,aLen);
 }
 
 void iduStack::convertHex64(ULong aValue, SChar* aStr, SChar** aEnd)
@@ -294,6 +309,7 @@ IDE_RC iduStack::initializeStatic(void)
     return IDE_FAILURE;
 }
 
+
 void iduStack::dumpStack( const CONTEXT    *aContext,
                           SChar            *aSqlString )
 {
@@ -303,6 +319,8 @@ void iduStack::dumpStack( const CONTEXT    *aContext,
     time_t          sTime;
     SChar*          sTemp;
     SChar           sLine[512] = "[0x";
+    SChar           sBuff[IDU_DUMP_BUFSIZE_MAX]; //BUG-48433
+    UInt            sOffset = 0;        //BUG-48433
 
     IDE_TEST(mHModule       == NULL);
     IDE_TEST(mWalkerFunc    == NULL);
@@ -321,7 +339,7 @@ void iduStack::dumpStack( const CONTEXT    *aContext,
     idlOS::strcpy(sTemp, "] Dump of Stack\n");
     sTemp += 16;
         
-    writeString(sLine, sTemp - sLine);
+    writeString(sBuff,&sOffset,sBuff,sLine, sTemp - sLine);
 
     if(aContext == NULL)
     {
@@ -329,27 +347,27 @@ void iduStack::dumpStack( const CONTEXT    *aContext,
         sContext.ContextFlags = CONTEXT_FULL;
         RtlCaptureContext(&sContext);
         
-        writeString("BEGIN-STACK [NORMAL] ============================\n", 50);
+        writeString(sBuff,&sOffset,"BEGIN-STACK [NORMAL] ============================\n", 50);
     }
     else
     {
         idlOS::memcpy(&sContext, aContext, sizeof(CONTEXT));
 
-        writeString("BEGIN-DUMP ======================================\n", 50);
-        writeBucket();
+        writeString(sBuff,&sOffset,"BEGIN-DUMP ======================================\n", 50);
+        writeBucket(sBuff,&sOffset);
         if( aSqlString != NULL ) 
         {
-            writeString( "SQL : ", 6 );
-            writeString( aSqlString, idlOS::strlen(aSqlString) );
-            writeString( "\n", 1 );
+            writeString(sBuff,&sOffset, "SQL : ", 6 );
+            writeString(sBuff,&sOffset, aSqlString, idlOS::strlen(aSqlString) );
+            writeString(sBuff,&sOffset, "\n", 1 );
         }
         else
         {
             /* Do nothing */
         }
-        writeString("END-DUMP ========================================\n", 50);
+        writeString(sBuff,&sOffset,"END-DUMP ========================================\n", 50);
 
-        writeString("BEGIN-STACK [CRASH] =============================\n", 50);
+        writeString(sBuff,&sOffset,"BEGIN-STACK [CRASH] =============================\n", 50);
     }
 
 # if defined(_M_IX86)
@@ -376,11 +394,11 @@ void iduStack::dumpStack( const CONTEXT    *aContext,
 
     mCallStack[mCallDepth] = (void*)sFrame.AddrPC.Offset;
 
-    writeString("Caller[", 7);
-    writeDec32(mCallDepth);
-    writeString("] ", 2);
-    writeHexPtr(mCallStack[mCallDepth]);
-    writeString("\n", 1);
+    writeString(sBuff,&sOffset,"Caller[", 7);
+    writeDec32(sBuff,&sOffset,mCallDepth);
+    writeString(sBuff,&sOffset,"] ", 2);
+    writeHexPtr(sBuff,&sOffset,mCallStack[mCallDepth]);
+    writeString(sBuff,&sOffset,"\n", 1);
 
     mCallDepth++;
 
@@ -396,16 +414,18 @@ void iduStack::dumpStack( const CONTEXT    *aContext,
 
         mCallStack[mCallDepth] = (void*)sFrame.AddrPC.Offset;
 
-        writeString("Caller[", 7);
-        writeDec32(mCallDepth);
-        writeString("] ", 2);
-        writeHexPtr(mCallStack[mCallDepth]);
-        writeString("\n", 1);
+        writeString(sBuff,&sOffset,"Caller[", 7);
+        writeDec32(sBuff,&sOffset,mCallDepth);
+        writeString(sBuff,&sOffset,"] ", 2);
+        writeHexPtr(sBuff,&sOffset,mCallStack[mCallDepth]);
+        writeString(sBuff,&sOffset,"\n", 1);
 
         mCallDepth++;
     }
 
-    writeString( "END-STACK =======================================\n", 50 );
+    writeString(sBuff,&sOffset, "END-STACK =======================================\n", 50 );
+
+    idlOS::write(mFD ,sBuff ,sOffset);// write buffer to disk
 
     return;
 
@@ -413,7 +433,8 @@ void iduStack::dumpStack( const CONTEXT    *aContext,
 
     if ( mFD != PDL_INVALID_HANDLE )
     {
-        writeString( "ERROR : Could not get context ===================\n", 50 );
+        writeString(sBuff,&sOffset, "ERROR : Could not get context ===================\n", 50 );
+        idlOS::write(mFD ,sBuff ,sOffset);// write buffer to disk
     }
     else
     {
@@ -615,9 +636,11 @@ void iduStack::dumpStack( const iduSignalDef    *aSignal,
     SInt        sLen;
     SChar*      sTemp;
     SChar       sLine[512] = "\n[0x"; //BUG-46515
-        
     void*       sIP;
     void**      sSP;
+    SChar       sBuff[IDU_DUMP_BUFSIZE_MAX];  //BUG-48433
+    UInt        sOffset = 0;         //BUG-48433
+
 
     ucontext_t* sContext;
     ucontext_t  sRealContext;
@@ -625,6 +648,9 @@ void iduStack::dumpStack( const iduSignalDef    *aSignal,
     time_t      sTime;
 
     mFD = ideLog::getErrFD();
+
+    IDE_TEST( mFD == PDL_INVALID_HANDLE ); //BUG-48552
+
     sTime = idlOS::time(NULL);
 
     convertHex64(sTime, sLine + 4, &sTemp);
@@ -646,9 +672,9 @@ void iduStack::dumpStack( const iduSignalDef    *aSignal,
 
     if( aDumpStackPrefix == ID_TRUE )
     {
-        writeString( IDU_DUMPSTACKS_PREFIX, IDU_DUMPSTACKS_PREFIX_LEN );
+        writeString(sBuff,&sOffset, IDU_DUMPSTACKS_PREFIX, IDU_DUMPSTACKS_PREFIX_LEN );
     }
-    writeString(sLine, sTemp - sLine);
+    writeString(sBuff,&sOffset,sLine, sTemp - sLine);
 
     if(aSignal == NULL)
     {
@@ -656,30 +682,30 @@ void iduStack::dumpStack( const iduSignalDef    *aSignal,
         sContext = &sRealContext;
         if( aDumpStackPrefix == ID_TRUE )
         {
-            writeString( IDU_DUMPSTACKS_PREFIX, IDU_DUMPSTACKS_PREFIX_LEN );
+            writeString(sBuff,&sOffset, IDU_DUMPSTACKS_PREFIX, IDU_DUMPSTACKS_PREFIX_LEN );
         }
-        writeString("BEGIN-STACK [NORMAL] ============================\n", 50);
+        writeString(sBuff,&sOffset,"BEGIN-STACK [NORMAL] ============================\n", 50);
     }
     else
     {
         sContext = aContext;
 
-        writeString("SIGNAL INFORMATION ==============================\n", 50);
+        writeString(sBuff,&sOffset,"SIGNAL INFORMATION ==============================\n", 50);
 
-        writeString("Signal ", 7);
-        writeDec32(aSignal->mNo);
-        writeString("(", 1);
+        writeString(sBuff,&sOffset,"Signal ", 7);
+        writeDec32(sBuff,&sOffset,aSignal->mNo);
+        writeString(sBuff,&sOffset,"(", 1);
         sLen = idlOS::strlen(aSignal->mName);
-        writeString(aSignal->mName, sLen);
-        writeString(") caught.\n", 10);
+        writeString(sBuff,&sOffset,aSignal->mName, sLen);
+        writeString(sBuff,&sOffset,") caught.\n", 10);
 
         if(aSigInfo->si_code <= 0)
         {
-            writeString("\tSent by process : ", 19);
-            writeDec32(aSigInfo->si_pid);
-            writeString("\n\tSent by user    : ", 20);
-            writeDec32(aSigInfo->si_uid);
-            writeString("\n", 1);
+            writeString(sBuff,&sOffset,"\tSent by process : ", 19);
+            writeDec32(sBuff,&sOffset,aSigInfo->si_pid);
+            writeString(sBuff,&sOffset,"\n\tSent by user    : ", 20);
+            writeDec32(sBuff,&sOffset,aSigInfo->si_uid);
+            writeString(sBuff,&sOffset,"\n", 1);
         }
         else
         {
@@ -717,15 +743,15 @@ void iduStack::dumpStack( const iduSignalDef    *aSignal,
                 
             if(sTemp != NULL)
             {
-                writeString(sTemp, idlOS::strlen(sTemp));
-                writeString("\n", 1);
+                writeString(sBuff,&sOffset,sTemp, idlOS::strlen(sTemp));
+                writeString(sBuff,&sOffset,"\n", 1);
             }
             else
             {
                 /* PROJ-2617 */
-                writeString("Signal code : ", 14);
-                writeDec32(aSigInfo->si_code);
-                writeString("\n", 1);
+                writeString(sBuff,&sOffset,"Signal code : ", 14);
+                writeDec32(sBuff,&sOffset,aSigInfo->si_code);
+                writeString(sBuff,&sOffset,"\n", 1);
             }
 
             switch(aSignal->mNo)
@@ -735,9 +761,9 @@ void iduStack::dumpStack( const iduSignalDef    *aSignal,
             case SIGBUS:    /* fall through */
             case SIGFPE:    /* fall through */
             case SIGTRAP:   /* fall through */
-                writeString("Fault address was 0x", 20);
-                writeHexPtr(aSigInfo->si_addr);
-                writeString("\n", 1);
+                writeString(sBuff,&sOffset,"Fault address was 0x", 20);
+                writeHexPtr(sBuff,&sOffset,aSigInfo->si_addr);
+                writeString(sBuff,&sOffset,"\n", 1);
                 break;
             default:
                 break;
@@ -748,30 +774,30 @@ void iduStack::dumpStack( const iduSignalDef    *aSignal,
         /* PROJ-2617 */
         if (aIsFaultTolerate == ID_TRUE)
         {
-            writeString("Fault tolerated!\n", 17);
+            writeString(sBuff,&sOffset,"Fault tolerated!\n", 17);
         }
         else
         {
             /* nothing to do */
         }
     
-        writeString("BEGIN-DUMP ======================================\n", 50);
+        writeString(sBuff,&sOffset,"BEGIN-DUMP ======================================\n", 50);
        
-        writeBucket();
+        writeBucket(sBuff,&sOffset);
         if( aSqlString != NULL ) 
         {
-            writeString( "SQL : ", 6 );
-            writeString( aSqlString, idlOS::strlen(aSqlString) );
-            writeString( "\n", 1 );
+            writeString(sBuff,&sOffset, "SQL : ", 6 );
+            writeString(sBuff,&sOffset, aSqlString, idlOS::strlen(aSqlString) );
+            writeString(sBuff,&sOffset, "\n", 1 );
         }
         else
         {
             /* Do nothing */
         }
         
-        writeString("END-DUMP ========================================\n", 50);
+        writeString(sBuff,&sOffset,"END-DUMP ========================================\n", 50);
 
-        writeString("BEGIN-STACK [CRASH] =============================\n", 50);
+        writeString(sBuff,&sOffset,"BEGIN-STACK [CRASH] =============================\n", 50);
     }
 
 # if defined(ALTI_CFG_OS_HPUX)
@@ -789,11 +815,11 @@ void iduStack::dumpStack( const iduSignalDef    *aSignal,
         mCallStack[mCallDepth] = sIP;
         mCallDepth++;
 
-        writeString("Caller[", 7);
-        writeDec32(mCallDepth);
-        writeString("] ", 2);
-        writeHexPtr(sIP);
-        writeString("\n", 1);
+        writeString(sBuff,&sOffset,"Caller[", 7);
+        writeDec32(sBuff,&sOffset,mCallDepth);
+        writeString(sBuff,&sOffset,"] ", 2);
+        writeHexPtr(sBuff,&sOffset,sIP);
+        writeString(sBuff,&sOffset,"\n", 1);
 
         sSP = (void**)sSP[0];
         if( sSP == NULL)
@@ -811,7 +837,7 @@ void iduStack::dumpStack( const iduSignalDef    *aSignal,
 #define NOUNWINDFUNC    \
         "Failed to get unwind functions.\n" \
         "Callstack cannot be logged.\n"
-        writeString(NOUNWINDFUNC, idlOS::strlen(NOUNWINDFUNC));
+        writeString(sBuff,&sOffset,NOUNWINDFUNC, idlOS::strlen(NOUNWINDFUNC));
 #undef NOUNWINDFUNC
     }
     else
@@ -821,13 +847,13 @@ void iduStack::dumpStack( const iduSignalDef    *aSignal,
         {
             if( aDumpStackPrefix == ID_TRUE )
             {
-                writeString( IDU_DUMPSTACKS_PREFIX, IDU_DUMPSTACKS_PREFIX_LEN );
+                writeString(sBuff,&sOffset, IDU_DUMPSTACKS_PREFIX, IDU_DUMPSTACKS_PREFIX_LEN );
             }
-            writeString("Caller[", 7);
-            writeDec32(i);
-            writeString("] ", 2);
-            writeHexPtr(mCallStack[i]);
-            writeString("\n", 1);
+            writeString(sBuff,&sOffset,"Caller[", 7);
+            writeDec32(sBuff,&sOffset,i);
+            writeString(sBuff,&sOffset,"] ", 2);
+            writeHexPtr(sBuff,&sOffset,mCallStack[i]);
+            writeString(sBuff,&sOffset,"\n", 1);
         }
     }
 #   endif
@@ -836,11 +862,11 @@ void iduStack::dumpStack( const iduSignalDef    *aSignal,
     walkcontext(sContext, iduStack::walker, NULL);
     for(i = 0; i < mCallDepth; i++)
     {
-        writeString("Caller[", 7);
-        writeDec32(i);
-        writeString("] ", 2);
-        writeHexPtr(mCallStack[i]);
-        writeString("\n", 1);
+        writeString(sBuff,&sOffset,"Caller[", 7);
+        writeDec32(sBuff,&sOffset,i);
+        writeString(sBuff,&sOffset,"] ", 2);
+        writeHexPtr(sBuff,&sOffset,mCallStack[i]);
+        writeString(sBuff,&sOffset,"\n", 1);
     }
 #  elif defined(ALTI_CFG_OS_AIX)
     mCallDepth = 0;
@@ -853,11 +879,11 @@ void iduStack::dumpStack( const iduSignalDef    *aSignal,
         mCallStack[mCallDepth] = sIP;
         mCallDepth++;
 
-        writeString("Caller[", 7);
-        writeDec32(mCallDepth);
-        writeString("] ", 2);
-        writeHexPtr(sIP);
-        writeString("\n", 1);
+        writeString(sBuff,&sOffset,"Caller[", 7);
+        writeDec32(sBuff,&sOffset,mCallDepth);
+        writeString(sBuff,&sOffset,"] ", 2);
+        writeHexPtr(sBuff,&sOffset,sIP);
+        writeString(sBuff,&sOffset,"\n", 1);
 
         sSP = (void**)sSP[0];
         if( sSP == NULL)
@@ -874,9 +900,9 @@ void iduStack::dumpStack( const iduSignalDef    *aSignal,
 # endif
     if( aDumpStackPrefix == ID_TRUE )
     {
-        writeString( IDU_DUMPSTACKS_PREFIX, IDU_DUMPSTACKS_PREFIX_LEN );
+        writeString(sBuff,&sOffset, IDU_DUMPSTACKS_PREFIX, IDU_DUMPSTACKS_PREFIX_LEN );
     }
-    writeString("END-STACK =======================================\n", 50);
+    writeString(sBuff,&sOffset,"END-STACK =======================================\n", 50);
 
     IDL_MEM_BARRIER; //BUG-46567
 
@@ -884,12 +910,19 @@ void iduStack::dumpStack( const iduSignalDef    *aSignal,
      * BUG-44297
      * Critical section end
      */
-    mCallStackCriticalSection = 0;
+    acpAtomicSet32(&mCallStackCriticalSection ,0); /* BUG-46999 */
+
+    idlOS::write(mFD ,sBuff ,sOffset);// write buffer to disk
 
     return;
 
     IDE_EXCEPTION_END;
-    writeString("ERROR : Could not get context ===================\n", 50);
+    writeString(sBuff,&sOffset,"ERROR : Could not get context ===================\n", 50);
+
+    if ( mFD != PDL_INVALID_HANDLE )
+    {
+        idlOS::write(mFD ,sBuff ,sOffset);// write buffer to disk
+    }
 
     IDL_MEM_BARRIER; //just in case..
 
@@ -897,7 +930,7 @@ void iduStack::dumpStack( const iduSignalDef    *aSignal,
      * BUG-44297
      * Critical section end
      */
-    mCallStackCriticalSection = 0;
+    acpAtomicSet32(&mCallStackCriticalSection ,0);
 
     return;
 #else

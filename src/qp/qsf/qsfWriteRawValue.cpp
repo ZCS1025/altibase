@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsfWriteRawValue.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qsfWriteRawValue.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <idl.h>
@@ -48,7 +48,7 @@ static IDE_RC qsfEstimate( mtcNode     * aNode,
 mtfModule qsfWriteRawValueModule = {
     1 | MTC_NODE_OPERATOR_MISC | MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0, /* default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜) */
+    1.0, /* default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô) */
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -111,7 +111,7 @@ IDE_RC qsfEstimate( mtcNode     * aNode,
 
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
-    /* returnê°’ì€ Integer */
+    /* return°ªÀº Integer */
     IDU_FIT_POINT( "qsfWriteRawValue::qsfEstimate::coverage::4" );
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      sModule,
@@ -137,7 +137,7 @@ IDE_RC qsfEstimate( mtcNode     * aNode,
     return IDE_FAILURE;
 }
 
-/* Varbyte íƒ€ì…ì˜ Valueì— ê¸°ë¡ë˜ëŠ” Length ë°ì´í„° í¬ê¸° */
+/* Varbyte Å¸ÀÔÀÇ Value¿¡ ±â·ÏµÇ´Â Length µ¥ÀÌÅÍ Å©±â */
 #define MTD_VARBAYE_LENGTH_SIZE 2
 
 IDE_RC qsfCalculate_WriteRawValue( mtcNode     * aNode,

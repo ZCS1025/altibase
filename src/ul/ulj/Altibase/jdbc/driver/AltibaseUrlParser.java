@@ -27,7 +27,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * ì •ê·œí‘œí˜„ì‹ì„ ì´ìš©í•´ connection stringì´ë‚˜ alternate servers stringì„ íŒŒì‹±í•œë‹¤.
+ * Á¤±ÔÇ¥Çö½ÄÀ» ÀÌ¿ëÇØ connection stringÀÌ³ª alternate servers stringÀ» ÆÄ½ÌÇÑ´Ù.
  */
 public class AltibaseUrlParser
 {
@@ -80,10 +80,10 @@ public class AltibaseUrlParser
     }
 
     /**
-     * URLì„ íŒŒì‹±í•´ aDestPropì— propertyë¡œ ì„¤ì •í•œë‹¤. <br>
-     * ì´ë•Œ URLì— shard prefixê°€ í¬í•¨ë˜ì–´ ìˆëŠ” ê²½ìš° trueë¥¼ ë¦¬í„´í•˜ê³  ê·¸ë ‡ì§€ ì•Šì€ ê²½ìš° falseë¥¼ ë¦¬í„´í•œë‹¤.
+     * URLÀ» ÆÄ½ÌÇØ aDestProp¿¡ property·Î ¼³Á¤ÇÑ´Ù. <br>
+     * ÀÌ¶§ URL¿¡ shard prefix°¡ Æ÷ÇÔµÇ¾î ÀÖ´Â °æ¿ì true¸¦ ¸®ÅÏÇÏ°í ±×·¸Áö ¾ÊÀº °æ¿ì false¸¦ ¸®ÅÏÇÑ´Ù.
      * <p>
-     * ìœ íš¨í•œ URL í¬ë§·ì€ ë‹¤ìŒê³¼ ê°™ë‹¤:
+     * À¯È¿ÇÑ URL Æ÷¸ËÀº ´ÙÀ½°ú °°´Ù:
      * <ul>
      * <li>jdbc:Altibase://123.123.123.123:20300/mydb</li>
      * <li>jdbc:Altibase://abc.abc.abc.abc:20300/mydb</li>
@@ -97,17 +97,17 @@ public class AltibaseUrlParser
      * <li>jdbc:sharding:Altibase://123.123.123.123:20300/mydb</li>
      * </ul>
      * <p>
-     * ì—°ê²° ì†ì„±ì€ connection urlì— ë”°ë¼ ì´ 3ê°€ì§€ì˜ ì„¤ì •ì´ ì¶©ëŒí•  ìˆ˜ ìˆëŠ”ë°, ê·¸ ë•Œ ì„¤ì •ê°’ì˜ ìš°ì„ ìˆœìœ„ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤:
+     * ¿¬°á ¼Ó¼ºÀº connection url¿¡ µû¶ó ÃÑ 3°¡ÁöÀÇ ¼³Á¤ÀÌ Ãæµ¹ÇÒ ¼ö ÀÖ´Âµ¥, ±× ¶§ ¼³Á¤°ªÀÇ ¿ì¼±¼øÀ§´Â ´ÙÀ½°ú °°´Ù:
      * <ol>
-     * <li>connection urlë¡œ ë°›ì€ê°’ (= aURL)</li>
-     * <li>ê¸°ì¡´ì— ì„¤ì •ëœ ê°’ (= aDestProp = connect ë©”ì†Œë“œë¡œ ë„˜ì–´ì˜¨ ê°’)</li>
-     * <li>altibase_cli.ini ì„¤ì • (DSNì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°)</li>
+     * <li>connection url·Î ¹ŞÀº°ª (= aURL)</li>
+     * <li>±âÁ¸¿¡ ¼³Á¤µÈ °ª (= aDestProp = connect ¸Ş¼Òµå·Î ³Ñ¾î¿Â °ª)</li>
+     * <li>altibase_cli.ini ¼³Á¤ (DSNÀ» »ç¿ëÇÏ´Â °æ¿ì)</li>
      * </ol>
      *
      * @param aURL connection url
-     * @param aDestProp íŒŒì‹± ê²°ê³¼ë¥¼ ë‹´ì„ Property
-     * @return shard prefixê°€ í¬í•¨ë˜ì–´ ìˆëŠ”ì§€ ì—¬ë¶€
-     * @throws SQLException URL êµ¬ì„±ì´ ì˜¬ë°”ë¥´ì§€ ì•Šì€ ê²½ìš°
+     * @param aDestProp ÆÄ½Ì °á°ú¸¦ ´ãÀ» Property
+     * @return shard prefix°¡ Æ÷ÇÔµÇ¾î ÀÖ´ÂÁö ¿©ºÎ
+     * @throws SQLException URL ±¸¼ºÀÌ ¿Ã¹Ù¸£Áö ¾ÊÀº °æ¿ì
      */
     public static boolean parseURL(String aURL, AltibaseProperties aDestProp) throws SQLException
     {
@@ -130,7 +130,7 @@ public class AltibaseUrlParser
         }
 
         String sDbName = sMatcher.group(URL_GRP_DBNAME);
-        if (sDbName == null) // DbNameì´ ì—†ìœ¼ë©´ DSNìœ¼ë¡œ ê°„ì£¼
+        if (sDbName == null) // DbNameÀÌ ¾øÀ¸¸é DSNÀ¸·Î °£ÁÖ
         {
             throwErrorForInvalidConnectionUrl(!URL_PATTERN_4VARNAME.matcher(sServerOrDSN).matches(), aURL);
             aDestProp.setDataSource(sServerOrDSN);
@@ -141,30 +141,30 @@ public class AltibaseUrlParser
             aDestProp.setServer(sServerOrDSN);
         }
 
-        // PROJ-2690 sharding prefixê°€ í¬í•¨ë˜ì–´ ìˆëŠ” ê²½ìš° trueë¥¼ ë¦¬í„´í•œë‹¤.
+        // PROJ-2690 sharding prefix°¡ Æ÷ÇÔµÇ¾î ÀÖ´Â °æ¿ì true¸¦ ¸®ÅÏÇÑ´Ù.
         return sMatcher.group(URL_GRP_SHARD_PREFIX) != null;
     }
 
     /**
-     * alternate servers stringì„ íŒŒì‹±í•´ <tt>AltibaseFailoverServerInfoList</tt>ë¥¼ ë§Œë“ ë‹¤.
+     * alternate servers stringÀ» ÆÄ½ÌÇØ <tt>AltibaseFailoverServerInfoList</tt>¸¦ ¸¸µç´Ù.
      * <p>
-     * alternate servers stringì€ "( host_name:port[/dbname][, host_name:port[/dbname]]* )"ì™€ ê°™ì€ í¬ë§·ì´ì–´ì•¼ í•œë‹¤.
-     * ì˜ˆë¥¼ ë“¤ë©´ ë‹¤ìŒê³¼ ê°™ë‹¤:<br />
+     * alternate servers stringÀº "( host_name:port[/dbname][, host_name:port[/dbname]]* )"¿Í °°Àº Æ÷¸ËÀÌ¾î¾ß ÇÑ´Ù.
+     * ¿¹¸¦ µé¸é ´ÙÀ½°ú °°´Ù:<br />
      * (192.168.3.54:20300, 192.168.3.55:20301)
      * (abc.abc.abc.abc:20300, abc.abc.abc.abc:20301)
      * (192.168.3.54:20300/mydb1, 192.168.3.55:20301/mydb2)
      * (abc.abc.abc.abc:20300/mydb1, abc.abc.abc.abc:20301/mydb2)
      * <p>
-     * ë§Œì•½ alternate servers stringì— IPv6 í˜•íƒœì˜ ì£¼ì†Œë¥¼ ì“°ê³ ì í•œë‹¤ë©´, ipë¥¼ [, ]ë¡œ ê°ì‹¸ì•¼ í•œë‹¤.
-     * ì˜ˆë¥¼ë“¤ì–´, "::1"ì„ ì“°ê³ ì í•œë‹¤ë©´ "[::1]:20300" ì²˜ëŸ¼ ì¨ì•¼ì§€ "::1:20300" ì²˜ëŸ¼ ì“°ë©´ ì•ˆëœë‹¤.
-     * ì´ëŸ° ê²½ìš°ì—ëŠ” ParseExceptionì„ ë‚¸ë‹¤.
+     * ¸¸¾à alternate servers string¿¡ IPv6 ÇüÅÂÀÇ ÁÖ¼Ò¸¦ ¾²°íÀÚ ÇÑ´Ù¸é, ip¸¦ [, ]·Î °¨½Î¾ß ÇÑ´Ù.
+     * ¿¹¸¦µé¾î, "::1"À» ¾²°íÀÚ ÇÑ´Ù¸é "[::1]:20300" Ã³·³ ½á¾ßÁö "::1:20300" Ã³·³ ¾²¸é ¾ÈµÈ´Ù.
+     * ÀÌ·± °æ¿ì¿¡´Â ParseExceptionÀ» ³½´Ù.
      * <p>
-     * alternate servers stringì´ nullì´ê±°ë‚˜ ì„œë²„ ì •ë³´ê°€ ì—†ì–´ë„ null ëŒ€ì‹  ë¹ˆ ë¦¬ìŠ¤íŠ¸ë¥¼ ë°˜í™˜í•œë‹¤.
-     * ì´ëŠ” ë°›ëŠ”ìª½ì—ì„œ null ì²˜ë¦¬ ì—†ì´ ì“¸ ìˆ˜ ìˆê²Œ í•˜ê¸° ìœ„í•¨ì´ë‹¤.
+     * alternate servers stringÀÌ nullÀÌ°Å³ª ¼­¹ö Á¤º¸°¡ ¾ø¾îµµ null ´ë½Å ºó ¸®½ºÆ®¸¦ ¹İÈ¯ÇÑ´Ù.
+     * ÀÌ´Â ¹Ş´ÂÂÊ¿¡¼­ null Ã³¸® ¾øÀÌ ¾µ ¼ö ÀÖ°Ô ÇÏ±â À§ÇÔÀÌ´Ù.
      *
-     * @param aAlternateServersStr ëŒ€ì•ˆ ì„œë²„ ëª©ë¡ì„ ë‹´ì€ ë¬¸ìì—´
-     * @return ë³€í™˜ëœ <tt>AltibaseFailoverServerInfoList</tt> ê°ì²´
-     * @throws SQLException alternate servers stringì˜ í¬ë§·ì´ ì˜¬ë°”ë¥´ì§€ ì•Šì„ ê²½ìš°
+     * @param aAlternateServersStr ´ë¾È ¼­¹ö ¸ñ·ÏÀ» ´ãÀº ¹®ÀÚ¿­
+     * @return º¯È¯µÈ <tt>AltibaseFailoverServerInfoList</tt> °´Ã¼
+     * @throws SQLException alternate servers stringÀÇ Æ÷¸ËÀÌ ¿Ã¹Ù¸£Áö ¾ÊÀ» °æ¿ì
     */
     public static AltibaseFailoverServerInfoList parseAlternateServers(String aAlternateServersStr) throws SQLException
     {
@@ -205,11 +205,11 @@ public class AltibaseUrlParser
     }
 
     /**
-     * connection urlì— í¬í•¨ëœ ì¸ìë¥¼ íŒŒì‹±í•´ aDestPropì— propertyë¡œ ì„¤ì •í•œë‹¤.
+     * connection url¿¡ Æ÷ÇÔµÈ ÀÎÀÚ¸¦ ÆÄ½ÌÇØ aDestProp¿¡ property·Î ¼³Á¤ÇÑ´Ù.
      *
-     * @param aArg ì¸ìë¥¼ ë‹´ì€ "{k}={v}(&{k}={v})*" í˜•íƒœì˜ ë¬¸ìì—´
-     * @param aDestProp íŒŒì‹± ê²°ê³¼ë¥¼ ë‹´ì„ Property
-     * @throws SQLException ë¬¸ìì—´ í˜•ì‹ì´ ì˜¬ë°”ë¥´ì§€ ì•Šì„ ê²½ìš°
+     * @param aArg ÀÎÀÚ¸¦ ´ãÀº "{k}={v}(&{k}={v})*" ÇüÅÂÀÇ ¹®ÀÚ¿­
+     * @param aDestProp ÆÄ½Ì °á°ú¸¦ ´ãÀ» Property
+     * @throws SQLException ¹®ÀÚ¿­ Çü½ÄÀÌ ¿Ã¹Ù¸£Áö ¾ÊÀ» °æ¿ì
      */
     private static void parseProperties(String aArg, Properties aDestProp) throws SQLException
     {
@@ -231,7 +231,7 @@ public class AltibaseUrlParser
     }
 
     /**
-     * alternateservers urlì´ ì •ìƒì ì¸ í¬ë§·ì¸ì§€ ì •ê·œí‘œí˜„ì‹ì„ ì´ìš©í•´ í™•ì¸í•œë‹¤.<br>
+     * alternateservers urlÀÌ Á¤»óÀûÀÎ Æ÷¸ËÀÎÁö Á¤±ÔÇ¥Çö½ÄÀ» ÀÌ¿ëÇØ È®ÀÎÇÑ´Ù.<br>
      *
      * @param aAlternateServersStr alternate servers url
      * @throws SQLException INVALID_FORMAT_OF_ALTERNATE_SERVERS

@@ -36,7 +36,7 @@ import Altibase.jdbc.driver.util.AltibaseProperties;
 public class CmRdmaSocket implements CmSocket
 {
     private int mRdmaSockId = CmSocket.INVALID_SOCKTFD; // rsocket identifier
-    private int mResponseTimeout;                       // milliseconds ë‹¨ìœ„
+    private int mResponseTimeout;                       // milliseconds ´ÜÀ§
     private int mIBLatency;                             // for RDMA_LATENCY rsocket option
     private int mIBConChkSpin;                          // for RDMA_CONCHKSPIN rsocket option
 
@@ -62,8 +62,7 @@ public class CmRdmaSocket implements CmSocket
 
     public void open(SocketAddress aSockAddr,
                      String        aBindAddr,
-                     int           aLoginTimeout,
-                     int           aResponseTimeout) throws SQLException
+                     int           aLoginTimeout) throws SQLException
     {
         try
         {
@@ -78,7 +77,7 @@ public class CmRdmaSocket implements CmSocket
             if (sSockAddr.getAddress() instanceof Inet6Address)
                 sDomain = RdmaSocketDef.AF_INET6;
 
-            // rsocket ìƒì„±
+            // rsocket »ı¼º
             mRdmaSockId = JniExtRdmaSocket.rsocket(sDomain);
 
             if (aBindAddr != null)
@@ -91,9 +90,9 @@ public class CmRdmaSocket implements CmSocket
             setSockSndBufSize(mSockSndBufSize);
             setTcpNoDelay(true);  // BUG-45275 disable nagle algorithm
 
-            // Berkeley socket ê³¼ ë‹¤ë¥´ê²Œ blocking mode ì´ë”ë¼ë„
-            // rsockets API ì˜ rconnect() í•¨ìˆ˜ëŠ” 'connecting' ìƒíƒœë¡œ ë°˜í™˜ë  ìˆ˜ ìˆìŒ.
-            // ê·¸ëŸ¬ë¯€ë¡œ JNI ë‚´ë¶€ì—ì„œ non-blocking ëª¨ë“œë¡œ ì ì‹œ ë³€ê²½í•˜ê³  timeout ë™ì‘ì‹œí‚´.
+            // Berkeley socket °ú ´Ù¸£°Ô blocking mode ÀÌ´õ¶óµµ
+            // rsockets API ÀÇ rconnect() ÇÔ¼ö´Â 'connecting' »óÅÂ·Î ¹İÈ¯µÉ ¼ö ÀÖÀ½.
+            // ±×·¯¹Ç·Î JNI ³»ºÎ¿¡¼­ non-blocking ¸ğµå·Î Àá½Ã º¯°æÇÏ°í timeout µ¿ÀÛ½ÃÅ´.
             JniExtRdmaSocket.rconnect(mRdmaSockId,
                                       sSockAddr.getAddress().getHostAddress(),
                                       sSockAddr.getPort(),
@@ -110,10 +109,11 @@ public class CmRdmaSocket implements CmSocket
                 setIBConChkSpin(mIBConChkSpin);
             }
 
-            mResponseTimeout = aResponseTimeout * 1000;
+            // BUG-47492 ÃÖÃÊ socket Á¢¼Ó ½ÃÁ¡¿¡¼­´Â login_timeoutÀ¸·Î response_timeoutÀ» ¼³Á¤ÇÑ´Ù.
+            mResponseTimeout = aLoginTimeout * 1000;
         }
-        // connect ì‹¤íŒ¨ì‹œ ë‚  ìˆ˜ ìˆëŠ” ì˜ˆì™¸ê°€ í•œì¢…ë¥˜ê°€ ì•„ë‹ˆë¯€ë¡œ ëª¨ë“  ì˜ˆì™¸ë¥¼ ì¡ì•„ ì—°ê²° ì‹¤íŒ¨ë¡œ ì²˜ë¦¬í•œë‹¤.
-        // ì˜ˆë¥¼ë“¤ì–´, AIX 6.1ì—ì„œëŠ” ClosedSelectorExceptionê°€ ë‚˜ëŠ”ë° ì´ëŠ” RuntimeExceptionì´ë‹¤. (ref. BUG-33341)
+        // connect ½ÇÆĞ½Ã ³¯ ¼ö ÀÖ´Â ¿¹¿Ü°¡ ÇÑÁ¾·ù°¡ ¾Æ´Ï¹Ç·Î ¸ğµç ¿¹¿Ü¸¦ Àâ¾Æ ¿¬°á ½ÇÆĞ·Î Ã³¸®ÇÑ´Ù.
+        // ¿¹¸¦µé¾î, AIX 6.1¿¡¼­´Â ClosedSelectorException°¡ ³ª´Âµ¥ ÀÌ´Â RuntimeExceptionÀÌ´Ù. (ref. BUG-33341)
         catch (Exception e)
         {
             Error.throwCommunicationErrorException(e);
@@ -130,7 +130,7 @@ public class CmRdmaSocket implements CmSocket
     }
 
     /**
-     * non-blocking ëª¨ë“œë¡œ JNI ë‚´ë¶€ì—ì„œ timeout ë™ì‘
+     * non-blocking ¸ğµå·Î JNI ³»ºÎ¿¡¼­ timeout µ¿ÀÛ
      */
     public int read(ByteBuffer aBuffer) throws IOException
     {
@@ -145,7 +145,7 @@ public class CmRdmaSocket implements CmSocket
     }
 
     /**
-     * non-blocking ëª¨ë“œë¡œ JNI ë‚´ë¶€ì—ì„œ timeout ë™ì‘
+     * non-blocking ¸ğµå·Î JNI ³»ºÎ¿¡¼­ timeout µ¿ÀÛ
      */
     public int write(ByteBuffer aBuffer) throws IOException
     {
@@ -212,7 +212,7 @@ public class CmRdmaSocket implements CmSocket
     }
 
     /**
-     * RDMA_LATENCY rsocket options ì„ ì„¤ì •í•œë‹¤.
+     * RDMA_LATENCY rsocket options À» ¼³Á¤ÇÑ´Ù.
      */
     private void setIBLatency(int aIBLatency) throws IOException
     {
@@ -231,7 +231,7 @@ public class CmRdmaSocket implements CmSocket
     }
 
     /**
-     * RDMA_CONCHKSPIN rsocket options ì„ ì„¤ì •í•œë‹¤.
+     * RDMA_CONCHKSPIN rsocket options À» ¼³Á¤ÇÑ´Ù.
      */
     private void setIBConChkSpin(int aIBConChkSpin) throws IOException
     {
@@ -259,6 +259,11 @@ public class CmRdmaSocket implements CmSocket
     public int getSocketFD() throws SQLException
     {
         return mRdmaSockId;
+    }
+
+    public void setResponseTimeout(int aResponseTimeout)
+    {
+        mResponseTimeout = aResponseTimeout * 1000;
     }
 
     private static void initialize()

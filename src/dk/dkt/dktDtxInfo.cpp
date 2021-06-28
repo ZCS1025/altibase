@@ -17,18 +17,60 @@
 #include <idu.h>
 #include <dktDtxInfo.h>
 
-void  dktDtxInfo::initialize( UInt aLocalTxId, UInt aGlobalTxId )
+IDE_RC dktDtxInfo::initialize( ID_XID * aXID,
+                               UInt     aLocalTxId, 
+                               UInt     aGlobalTxId,
+                               idBool   aIsRequestNode )
 {
+    SChar sMutexName[IDU_MUTEX_NAME_LEN + 1] = { 0, };
+
     mLocalTxId = aLocalTxId;
     mGlobalTxId = aGlobalTxId;
     mResult = SMI_DTX_ROLLBACK;
     mBranchTxCount = 0;
     mLinkerType = DKT_LINKER_TYPE_NONE;
+    mIsFailoverRequestNode = aIsRequestNode;
+    mFailoverTrans = NULL;
 
     idlOS::memset( &(mPrepareLSN), 0x00, ID_SIZEOF( smLSN ) );
     IDU_LIST_INIT( &mBranchTxInfo );
-    
-    return;
+
+    dktXid::initXID( &mXID );
+    mIsPassivePending = ID_FALSE;
+
+    if ( aXID != NULL )
+    {
+        dktXid::copyXID( &mXID, aXID );
+    }
+
+    SM_INIT_SCN( &mGlobalCommitSCN );
+
+    idlOS::snprintf( sMutexName, 
+                     IDU_MUTEX_NAME_LEN, 
+                     "DKT_DTXINFO_GLOBAL_TX_"ID_UINT32_FMT"_MUTEX", 
+                     aGlobalTxId );
+    IDE_TEST_RAISE( mDtxInfoGlobalTxResultMutex.initialize( (SChar *)sMutexName,
+                                                            IDU_MUTEX_KIND_POSIX,
+                                                            IDV_WAIT_INDEX_NULL )
+                    != IDE_SUCCESS, ERR_MUTEX_INIT );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_MUTEX_INIT );
+    {
+        IDE_SET( ideSetErrorCode( dkERR_FATAL_ThrMutexInit ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+void dktDtxInfo::finalize()
+{
+    if ( mDtxInfoGlobalTxResultMutex.destroy() != IDE_SUCCESS )
+    {
+        IDE_ERRLOG( IDE_DK_3 );
+    }
 }
 
 IDE_RC dktDtxInfo::removeDtxBranchTx( ID_XID * aXID )
@@ -157,7 +199,7 @@ IDE_RC  dktDtxInfo::addDtxBranchTx( ID_XID * aXID,
 {
     dktDtxBranchTxInfo * sDtxBranchTxInfo = NULL;
 
-    /* Ïù¥ÎØ∏ shardÎ°ú ÏÇ¨Ïö©ÌïòÍ≥† ÏûàÎäî Í≤ΩÏö∞ ÏóêÎü¨ */
+    /* ¿ÃπÃ shard∑Œ ªÁøÎ«œ∞Ì ¿÷¥¬ ∞ÊøÏ ø°∑Ø */
     IDE_TEST_RAISE( mLinkerType == DKT_LINKER_TYPE_SHARD,
                     ERR_SHARD_TX_ALREADY_EXIST );
 
@@ -168,6 +210,7 @@ IDE_RC  dktDtxInfo::addDtxBranchTx( ID_XID * aXID,
                     != IDE_SUCCESS, ERR_MEMORY_ALLOC_DTX_INFO );
 
     sDtxBranchTxInfo->mLinkerType = 'D'; /* dblink */
+    sDtxBranchTxInfo->mIsValid    = ID_TRUE;
 
     idlOS::strncpy( sDtxBranchTxInfo->mData.mTargetName, aTarget, DK_NAME_LEN );
     sDtxBranchTxInfo->mData.mTargetName[ DK_NAME_LEN ] = '\0';
@@ -212,17 +255,18 @@ IDE_RC  dktDtxInfo::addDtxBranchTx( ID_XID * aXID,
     return IDE_FAILURE;
 }
 
-IDE_RC  dktDtxInfo::addDtxBranchTx( ID_XID * aXID,
-                                    SChar  * aNodeName,
-                                    SChar  * aUserName,
-                                    SChar  * aUserPassword,
-                                    SChar  * aDataServerIP,
-                                    UShort   aDataPortNo,
-                                    UShort   aConnectType )
+IDE_RC  dktDtxInfo::addDtxBranchTx( ID_XID              * aXID,
+                                    sdiCoordinatorType    aCoordinatorType,
+                                    SChar               * aNodeName,
+                                    SChar               * aUserName,
+                                    SChar               * aUserPassword,
+                                    SChar               * aDataServerIP,
+                                    UShort                aDataPortNo,
+                                    UShort                aConnectType )
 {
     dktDtxBranchTxInfo * sDtxBranchTxInfo = NULL;
 
-    /* Ïù¥ÎØ∏ dblinkÎ°ú ÏÇ¨Ïö©ÌïòÍ≥† ÏûàÎäî Í≤ΩÏö∞ ÏóêÎü¨ */
+    /* ¿ÃπÃ dblink∑Œ ªÁøÎ«œ∞Ì ¿÷¥¬ ∞ÊøÏ ø°∑Ø */
     IDE_TEST_RAISE( mLinkerType == DKT_LINKER_TYPE_DBLINK,
                     ERR_DBLINK_TX_ALREADY_EXIST );
 
@@ -233,8 +277,17 @@ IDE_RC  dktDtxInfo::addDtxBranchTx( ID_XID * aXID,
                     != IDE_SUCCESS, ERR_MEMORY_ALLOC_DTX_INFO );
 
     sDtxBranchTxInfo->mLinkerType = 'S'; /* shard node */
+    sDtxBranchTxInfo->mIsValid    = ID_TRUE;
 
     /* set shard node info */
+    sDtxBranchTxInfo->mData.mNode.mCoordinatorType = (dktCoordinatorType)aCoordinatorType;
+    if ( aCoordinatorType == SDI_COORDINATOR_RESHARD )
+    {
+        if ( mIsPassivePending == ID_FALSE )
+        {
+            mIsPassivePending = ID_TRUE;
+        }
+    }
     idlOS::strncpy( sDtxBranchTxInfo->mData.mNode.mNodeName,
                     aNodeName,
                     DK_NAME_LEN + 1 );
@@ -291,22 +344,92 @@ IDE_RC  dktDtxInfo::addDtxBranchTx( ID_XID * aXID,
     return IDE_FAILURE;
 }
 
+void dktDtxInfo::dumpBranchTx( SChar  * aBuf,
+                               SInt     aBufSize,
+                               UInt   * aBranchTxCnt ) /* out */
+{
+    iduList            * sIterator = NULL;
+    dktDtxBranchTxInfo * sBranchTxNode = NULL;
+    UInt                 sShardBranchCounter = 0;
+    UInt                 sBranchTxCnt = 0;
+    UChar                sXidString[SMR_XID_DATA_MAX_LEN];
+    SInt                 sLen = 0;
+
+    IDU_LIST_ITERATE( &mBranchTxInfo, sIterator )
+    {
+        sLen += idlOS::snprintf( aBuf + sLen,
+                                 aBufSize - sLen,
+                                 "[ %"ID_UINT32_FMT" ] ",
+                                 sBranchTxCnt );
+        sBranchTxCnt++;
+
+        sBranchTxNode = (dktDtxBranchTxInfo *) sIterator->mObj;
+
+        (void)idaXaConvertXIDToString(NULL, &(sBranchTxNode->mXID), sXidString, SMR_XID_DATA_MAX_LEN);
+
+        sLen += idlOS::snprintf( aBuf + sLen,
+                                 aBufSize - sLen,
+                                 "XID: %s, "
+                                 "LinkerType: %c, ",
+                                 sXidString,
+                                 sBranchTxNode->mLinkerType );
+
+        if ( sBranchTxNode->mLinkerType == 'D' )
+        {
+            sLen += idlOS::snprintf( aBuf + sLen,
+                                     aBufSize - sLen,
+                                     "TargetName: %s\n",
+                                     sBranchTxNode->mData.mTargetName );
+        }
+        else
+        {
+            IDE_DASSERT( sBranchTxNode->mLinkerType == 'S' );
+
+            if ( sShardBranchCounter == 0 )
+            {
+                (void)idaXaConvertXIDToString(NULL, &mXID, sXidString, SMR_XID_DATA_MAX_LEN);
+                sLen += idlOS::snprintf( aBuf + sLen,
+                                         aBufSize - sLen,
+                                         "FromXID: %s, ",
+                                         sXidString );
+            }
+            ++sShardBranchCounter;
+
+           sLen += idlOS::snprintf( aBuf + sLen,
+                                    aBufSize - sLen,
+                                    "CoordinatorType: %"ID_UINT32_FMT", "
+                                    "NodeName: %s, "
+                                    "IP: %s, "
+                                    "PORT: %"ID_UINT32_FMT", "
+                                    "ConnectType: %"ID_UINT32_FMT"\n",
+                                    sBranchTxNode->mData.mNode.mCoordinatorType,
+                                    sBranchTxNode->mData.mNode.mNodeName,
+                                    sBranchTxNode->mData.mNode.mServerIP,
+                                    sBranchTxNode->mData.mNode.mPortNo,
+                                    sBranchTxNode->mData.mNode.mConnectType );
+        }
+    }
+
+    *aBranchTxCnt = sBranchTxCnt;
+}
+
 UInt  dktDtxInfo::estimateSerializeBranchTx()
 {
     iduList            * sIterator = NULL;
     dktDtxBranchTxInfo * sBranchTxNode = NULL;
     UInt                 sSize = 0;
+    UInt                 sShardBranchCounter = 0;
 
-    /* Í∏∏Ïù¥ 4byte */
+    /* ±Ê¿Ã 4byte */
     sSize += 4;
-    /* Í∞ØÏàò 4byte */
+    /* ∞πºˆ 4byte */
     sSize += 4;
 
     IDU_LIST_ITERATE( &mBranchTxInfo, sIterator )
     {
         sBranchTxNode = (dktDtxBranchTxInfo *) sIterator->mObj;
 
-        /* XID Í∏∏Ïù¥ 1byte */
+        /* XID ±Ê¿Ã 1byte */
         sSize += 1;
         /* XID */
         sSize += dktXid::sizeofXID( &(sBranchTxNode->mXID) );
@@ -316,30 +439,41 @@ UInt  dktDtxInfo::estimateSerializeBranchTx()
 
         if ( sBranchTxNode->mLinkerType == 'D' )
         {
-            /* target name Í∏∏Ïù¥ 1byte */
+            /* target name ±Ê¿Ã 1byte */
             sSize += 1;
-            /* target name (null Ìè¨Ìï®) */
+            /* target name (null ∆˜«‘) */
             sSize += idlOS::strlen( sBranchTxNode->mData.mTargetName ) + 1;
         }
         else
         {
             IDE_DASSERT( sBranchTxNode->mLinkerType == 'S' );
 
-            /* node name Í∏∏Ïù¥ 1byte */
+            if ( sShardBranchCounter == 0 )
+            {
+                /* XID ±Ê¿Ã 1byte */
+                sSize += 1;
+                /* XID */
+                sSize += dktXid::sizeofXID( &(sBranchTxNode->mXID) );
+            }
+            ++sShardBranchCounter;
+
+            /* node type ±Ê¿Ã 1byte */
             sSize += 1;
-            /* node name (null Ìè¨Ìï®) */
+            /* node name ±Ê¿Ã 1byte */
+            sSize += 1;
+            /* node name (null ∆˜«‘) */
             sSize += idlOS::strlen( sBranchTxNode->mData.mNode.mNodeName ) + 1;
-            /* user name Í∏∏Ïù¥ 1byte */
+            /* user name ±Ê¿Ã 1byte */
             sSize += 1;
-            /* user name (null Ìè¨Ìï®) */
+            /* user name (null ∆˜«‘) */
             sSize += idlOS::strlen( sBranchTxNode->mData.mNode.mUserName ) + 1;
-            /* user password Í∏∏Ïù¥ 1byte */
+            /* user password ±Ê¿Ã 1byte */
             sSize += 1;
-            /* user password (null Ìè¨Ìï®) */
+            /* user password (null ∆˜«‘) */
             sSize += idlOS::strlen( sBranchTxNode->mData.mNode.mUserPassword ) + 1;
-            /* ip Í∏∏Ïù¥ 1byte */
+            /* ip ±Ê¿Ã 1byte */
             sSize += 1;
-            /* ip (null Ìè¨Ìï®) */
+            /* ip (null ∆˜«‘) */
             sSize += idlOS::strlen( sBranchTxNode->mData.mNode.mServerIP ) + 1;
             /* port no 2byte */
             sSize += 2;
@@ -351,7 +485,7 @@ UInt  dktDtxInfo::estimateSerializeBranchTx()
     return sSize;
 }
 
-/* aBranchTxInfoÎäî Ìò∏Ï∂úÏù¥Ï†ÑÏóê estimateÌïú ÌÅ¨Í∏∞Î°ú Ìï†ÎãπÎêòÏñ¥ ÏûàÎã§. */
+/* aBranchTxInfo¥¬ »£√‚¿Ã¿¸ø° estimate«— ≈©±‚∑Œ «“¥Áµ«æÓ ¿÷¥Ÿ. */
 IDE_RC  dktDtxInfo::serializeBranchTx( UChar * aBranchTxInfo, UInt aSize )
 {
     iduList            * sIterator = NULL;
@@ -359,15 +493,16 @@ IDE_RC  dktDtxInfo::serializeBranchTx( UChar * aBranchTxInfo, UInt aSize )
     UChar              * sBuffer = NULL;
     UChar              * sFence = NULL;
     UChar                sXidLen;
+    UInt                 sShardBranchCounter = 0;
 
     sBuffer = aBranchTxInfo;
     sFence = sBuffer + aSize;
 
-    /* Í∏∏Ïù¥ 4byte */
-    /* ÎßàÏßÄÎßâÏóê Í∏∞Î°ùÌïúÎã§. */
+    /* ±Ê¿Ã 4byte */
+    /* ∏∂¡ˆ∏∑ø° ±‚∑œ«—¥Ÿ. */
     sBuffer += 4;
 
-    /* Í∞ØÏàò 4byte */
+    /* ∞πºˆ 4byte */
     IDE_TEST_RAISE( sBuffer >= sFence, ERR_OVERFLOW );
     ID_4_BYTE_ASSIGN( sBuffer, &mBranchTxCount );
     sBuffer += 4;
@@ -376,7 +511,7 @@ IDE_RC  dktDtxInfo::serializeBranchTx( UChar * aBranchTxInfo, UInt aSize )
     {
         sBranchTxNode = (dktDtxBranchTxInfo *) sIterator->mObj;
 
-        /* XID Í∏∏Ïù¥ 1byte */
+        /* XID ±Ê¿Ã 1byte */
         sXidLen = dktXid::sizeofXID(&(sBranchTxNode->mXID));
         IDE_TEST_RAISE( sBuffer >= sFence, ERR_OVERFLOW );
         ID_1_BYTE_ASSIGN( sBuffer, &sXidLen );
@@ -401,6 +536,26 @@ IDE_RC  dktDtxInfo::serializeBranchTx( UChar * aBranchTxInfo, UInt aSize )
         else
         {
             IDE_DASSERT( sBranchTxNode->mLinkerType == 'S' );
+
+            if ( sShardBranchCounter == 0 )
+            {
+                /* XID ±Ê¿Ã 1byte */
+                sXidLen = dktXid::sizeofXID( &mXID );
+                IDE_TEST_RAISE( sBuffer >= sFence, ERR_OVERFLOW );
+                ID_1_BYTE_ASSIGN( sBuffer, &sXidLen );
+                sBuffer += 1;
+
+                /* XID */
+                IDE_TEST_RAISE( sBuffer >= sFence, ERR_OVERFLOW );
+                idlOS::memcpy( sBuffer, &mXID, sXidLen );
+                sBuffer += sXidLen;
+            }
+            ++sShardBranchCounter;
+
+            /* node type 1byte */
+            IDE_TEST_RAISE( sBuffer >= sFence, ERR_OVERFLOW );
+            ID_1_BYTE_ASSIGN( sBuffer, &(sBranchTxNode->mData.mNode.mCoordinatorType) );
+            sBuffer += 1;
 
             /* node name string */
             IDE_TEST( copyString( &sBuffer, sFence, sBranchTxNode->mData.mNode.mNodeName )
@@ -432,7 +587,7 @@ IDE_RC  dktDtxInfo::serializeBranchTx( UChar * aBranchTxInfo, UInt aSize )
 
     IDE_TEST_RAISE( sBuffer != sFence, ERR_OVERFLOW );
 
-    /* Í∏∏Ïù¥ 4byte */
+    /* ±Ê¿Ã 4byte */
     ID_4_BYTE_ASSIGN( aBranchTxInfo, &aSize );
 
     return IDE_SUCCESS;
@@ -447,7 +602,7 @@ IDE_RC  dktDtxInfo::serializeBranchTx( UChar * aBranchTxInfo, UInt aSize )
     return IDE_FAILURE;
 }
 
-/* serializeÎêú branchTxInfoÎ•º unserializeÌïòÍ≥† Ï∂îÍ∞ÄÌïúÎã§. */
+/* serializeµ» branchTxInfo∏¶ unserialize«œ∞Ì √ﬂ∞°«—¥Ÿ. */
 IDE_RC  dktDtxInfo::unserializeAndAddDtxBranchTx( UChar * aBranchTxInfo, UInt aSize )
 {
     UInt           sBranchTxSize = 0;
@@ -455,6 +610,7 @@ IDE_RC  dktDtxInfo::unserializeAndAddDtxBranchTx( UChar * aBranchTxInfo, UInt aS
     UChar        * sBuffer = NULL;
     UChar          sLen = 0;
     SChar          sLinkerType = 0;
+    UChar          sCoordinatorType = 0;
     SChar        * sTargetName = NULL;
     SChar        * sNodeName = NULL;
     SChar        * sUserName = NULL;
@@ -465,22 +621,23 @@ IDE_RC  dktDtxInfo::unserializeAndAddDtxBranchTx( UChar * aBranchTxInfo, UInt aS
     ID_XID         sXID;
     UChar          sXidLen;
     UInt           i;
+    UInt           sShardBranchCounter = 0;
 
     sBuffer = aBranchTxInfo;
 
-    /* Í∏∏Ïù¥ 4byte */
+    /* ±Ê¿Ã 4byte */
     ID_4_BYTE_ASSIGN( &sBranchTxSize, sBuffer );
     sBuffer += 4;
 
     IDE_TEST_RAISE( sBranchTxSize != aSize, ERR_INVALID_BRANCH_TX_INFO );
 
-    /* Í∞ØÏàò 4byte */
+    /* ∞πºˆ 4byte */
     ID_4_BYTE_ASSIGN( &sBranchTxCount, sBuffer );
     sBuffer += 4;
 
     for ( i = 0; i < sBranchTxCount; i++ )
     {
-        /* XID Í∏∏Ïù¥ 1byte */
+        /* XID ±Ê¿Ã 1byte */
         ID_1_BYTE_ASSIGN( &sXidLen, sBuffer );
         sBuffer += 1;
 
@@ -506,6 +663,22 @@ IDE_RC  dktDtxInfo::unserializeAndAddDtxBranchTx( UChar * aBranchTxInfo, UInt aS
         else
         {
             IDE_TEST_RAISE( sLinkerType != 'S', ERR_INVALID_BRANCH_TX_INFO );
+
+            if ( sShardBranchCounter == 0 )
+            {
+                /* XID ±Ê¿Ã 1byte */
+                ID_1_BYTE_ASSIGN( &sXidLen, sBuffer );
+                sBuffer += 1;
+
+                /* XID */
+                idlOS::memcpy( &mXID, sBuffer, sXidLen );
+                sBuffer += sXidLen;
+            }
+            ++sShardBranchCounter;
+
+            /* node type 1byte */
+            ID_1_BYTE_ASSIGN( &sCoordinatorType, sBuffer );
+            sBuffer += 1;
 
             /* node name string */
             ID_1_BYTE_ASSIGN( &sLen, sBuffer );
@@ -541,6 +714,7 @@ IDE_RC  dktDtxInfo::unserializeAndAddDtxBranchTx( UChar * aBranchTxInfo, UInt aS
 
             /* add dtx branch shard tx */
             IDE_TEST( addDtxBranchTx( &sXID,
+                                      (sdiCoordinatorType)sCoordinatorType,
                                       sNodeName,
                                       sUserName,
                                       sUserPassword,
@@ -570,7 +744,7 @@ IDE_RC  dktDtxInfo::copyString( UChar ** aBuffer,
     UInt   sLen4 = 0;
     UChar  sLen1 = 0;
 
-    sLen4 = idlOS::strlen( aString ) + 1;   /* nullÍπåÏßÄ Ìè¨Ìï®ÌïúÎã§. */
+    sLen4 = idlOS::strlen( aString ) + 1;   /* null±Ó¡ˆ ∆˜«‘«—¥Ÿ. */
     IDE_TEST_RAISE( sLen4 > 255, ERR_OVERFLOW );
     IDE_TEST_RAISE( (*aBuffer) + 1 + sLen4 > aFence, ERR_OVERFLOW );
 
@@ -599,7 +773,7 @@ IDE_RC  dktDtxInfo::addDtxBranchTx( dktDtxBranchTxInfo * aDtxBranchTxInfo )
 
     if ( aDtxBranchTxInfo->mLinkerType == 'D' )
     {
-        /* Ïù¥ÎØ∏ shardÎ°ú ÏÇ¨Ïö©ÌïòÍ≥† ÏûàÎäî Í≤ΩÏö∞ ÏóêÎü¨ */
+        /* ¿ÃπÃ shard∑Œ ªÁøÎ«œ∞Ì ¿÷¥¬ ∞ÊøÏ ø°∑Ø */
         IDE_TEST_RAISE( mLinkerType == DKT_LINKER_TYPE_SHARD,
                         ERR_SHARD_TX_ALREADY_EXIST );
     }
@@ -607,7 +781,7 @@ IDE_RC  dktDtxInfo::addDtxBranchTx( dktDtxBranchTxInfo * aDtxBranchTxInfo )
     {
         IDE_DASSERT( aDtxBranchTxInfo->mLinkerType == 'S' );
 
-        /* Ïù¥ÎØ∏ dblinkÎ°ú ÏÇ¨Ïö©ÌïòÍ≥† ÏûàÎäî Í≤ΩÏö∞ ÏóêÎü¨ */
+        /* ¿ÃπÃ dblink∑Œ ªÁøÎ«œ∞Ì ¿÷¥¬ ∞ÊøÏ ø°∑Ø */
         IDE_TEST_RAISE( mLinkerType == DKT_LINKER_TYPE_DBLINK,
                         ERR_DBLINK_TX_ALREADY_EXIST );
     }
@@ -676,14 +850,14 @@ void dktXid::initXID( ID_XID * aXID )
     aXID->formatID     = 0;
     aXID->gtrid_length = DKT_2PC_MAXGTRIDSIZE;
     aXID->bqual_length = DKT_2PC_MAXBQUALSIZE;
-    idlOS::memset( aXID->data, 0x00, ID_XIDDATASIZE );
+    idlOS::memset( aXID->data, 0x00, ID_MAXXIDDATASIZE );
 }
 
 void dktXid::copyXID( ID_XID * aDst, ID_XID * aSrc )
 {
     SLong   sLength = aSrc->gtrid_length + aSrc->bqual_length;
 
-    if ( sLength <= ID_XIDDATASIZE )
+    if ( sLength <= ID_MAXXIDDATASIZE )
     {
         aDst->formatID     = aSrc->formatID;
         aDst->gtrid_length = aSrc->gtrid_length;
@@ -698,9 +872,9 @@ void dktXid::copyXID( ID_XID * aDst, ID_XID * aSrc )
             /* Nothing to do. */
         }
 
-        if ( sLength < ID_XIDDATASIZE )
+        if ( sLength < ID_MAXXIDDATASIZE )
         {
-            idlOS::memset( aDst->data + sLength, 0x00, ID_XIDDATASIZE - sLength );
+            idlOS::memset( aDst->data + sLength, 0x00, ID_MAXXIDDATASIZE - sLength );
         }
         else
         {
@@ -711,7 +885,7 @@ void dktXid::copyXID( ID_XID * aDst, ID_XID * aSrc )
     {
         IDE_DASSERT(0);
 
-        /* ÌòπÏãúÎùºÎèÑ Î°úÍ∑∏Í∞Ä Íπ®Ï°åÍ±∞ÎÇò ÏûòÎ™ªÎêú Í≤ΩÏö∞ Ï¥àÍ∏∞ÌôîÌïúÎã§. */
+        /* »§Ω√∂Ûµµ ∑Œ±◊∞° ±˙¡≥∞≈≥™ ¿ﬂ∏¯µ» ∞ÊøÏ √ ±‚»≠«—¥Ÿ. */
         idlOS::memset( aDst, 0x00, ID_SIZEOF(ID_XID) );
     }
 }
@@ -727,7 +901,7 @@ idBool dktXid::isEqualXID( ID_XID * aXID1, ID_XID * aXID2 )
     {
         sLength = aXID1->gtrid_length + aXID1->bqual_length;
 
-        if ( ( sLength > 0 ) && ( sLength <= ID_XIDDATASIZE ) )
+        if ( ( sLength > 0 ) && ( sLength <= ID_MAXXIDDATASIZE ) )
         {
             if ( idlOS::memcmp( aXID1->data, aXID2->data, sLength ) == 0 )
             {
@@ -751,11 +925,71 @@ idBool dktXid::isEqualXID( ID_XID * aXID1, ID_XID * aXID2 )
     return sEqual;
 }
 
+void dktXid::copyGlobalXID( ID_XID * aDst, ID_XID * aSrc )
+{
+    SLong   sLength = aSrc->gtrid_length;
+
+    if ( sLength <= ID_MAXXIDDATASIZE )
+    {
+        aDst->formatID     = aSrc->formatID;
+        aDst->gtrid_length = aSrc->gtrid_length;
+        aDst->bqual_length = aSrc->bqual_length;
+
+        if ( sLength > 0 )
+        {
+            idlOS::memcpy( aDst->data, aSrc->data, sLength );
+        }
+        else
+        {
+            /* Nothing to do. */
+        }
+
+        if ( sLength < ID_MAXXIDDATASIZE )
+        {
+            idlOS::memset( aDst->data + sLength, 0x00, ID_MAXXIDDATASIZE - sLength );
+        }
+        else
+        {
+            /* Nothing to do. */
+        }
+    }
+    else
+    {
+        IDE_DASSERT(0);
+
+        /* »§Ω√∂Ûµµ ∑Œ±◊∞° ±˙¡≥∞≈≥™ ¿ﬂ∏¯µ» ∞ÊøÏ √ ±‚»≠«—¥Ÿ. */
+        idlOS::memset( aDst, 0x00, ID_SIZEOF(ID_XID) );
+    }
+}
+
+idBool dktXid::isEqualGlobalXID( ID_XID * aXID1, ID_XID * aXID2 )
+{
+    idBool  sEqual = ID_FALSE;
+    SLong   sLength;
+
+    if ( ( aXID1->formatID     == aXID2->formatID ) &&
+         ( aXID1->gtrid_length == aXID2->gtrid_length ) &&
+         ( aXID1->bqual_length == aXID2->bqual_length ) )
+    {
+        sLength = aXID1->gtrid_length;
+
+        if ( ( sLength > 0 ) && ( sLength <= ID_MAXXIDDATASIZE ) )
+        {
+            if ( idlOS::memcmp( aXID1->data, aXID2->data, sLength ) == 0 )
+            {
+                sEqual = ID_TRUE;
+            }
+        }
+    }
+
+    return sEqual;
+}
+
 UChar dktXid::sizeofXID( ID_XID * aXID )
 {
     SLong   sLength = aXID->gtrid_length + aXID->bqual_length;
 
-    IDE_DASSERT( sLength <= ID_XIDDATASIZE );
+    IDE_DASSERT( sLength <= ID_MAXXIDDATASIZE );
 
     sLength += ID_SIZEOF(vSLong);  /* formatID */
     sLength += ID_SIZEOF(vSLong);  /* gtrid_length */
@@ -764,4 +998,30 @@ UChar dktXid::sizeofXID( ID_XID * aXID )
     IDE_DASSERT( sLength <= 255 );
 
     return (UChar)sLength;
+}
+
+UInt dktXid::getGlobalTxIDFromXID( ID_XID * aXID )
+{
+    UInt sGlobalTxID = SM_NULL_TID;
+
+    IDE_DASSERT( aXID != NULL );
+
+    idlOS::memcpy( &sGlobalTxID,
+                   (SChar*)(aXID->data) + ( DKT_2PC_MAXGTRIDSIZE - ID_SIZEOF(sGlobalTxID) ),
+                   ID_SIZEOF(sGlobalTxID) );
+
+    return sGlobalTxID;
+}
+
+UInt dktXid::getLocalTxIDFromXID( ID_XID * aXID )
+{
+    UInt sLocalTxID = SM_NULL_TID;
+
+    IDE_DASSERT( aXID != NULL );
+
+    idlOS::memcpy( &sLocalTxID,
+                   (SChar*)(aXID->data) + DKT_2PC_MAXGTRIDSIZE, 
+                   ID_SIZEOF(sLocalTxID) );
+
+    return sLocalTxID;
 }

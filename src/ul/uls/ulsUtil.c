@@ -16,7 +16,7 @@
 
 /***********************************************************************
  *
- * Spatio-Temporal ë‚´ë¶€ í•¨ìˆ˜
+ * Spatio-Temporal ³»ºÎ ÇÔ¼ö
  *
  ***********************************************************************/
 
@@ -74,7 +74,7 @@ ACI_RC readWKB_Header( ulsHandle       *aHandle,
         sValue[2]     = sIntermediate;
     }
 
-    *aOffset += 5; /*WKB_INT32_SIZE(4) + uchar(1) WKB ê³ ì • ì‚¬ì´ì¦ˆ*/
+    *aOffset += 5; /*WKB_INT32_SIZE(4) + uchar(1) WKB °íÁ¤ »çÀÌÁî*/
 
     return ACI_SUCCESS;
 
@@ -113,6 +113,33 @@ void readWKB_UInt( acp_uint8_t   *aBuf,
     *aOffset += WKB_INT32_SIZE;
 }
 
+void readWKB_SInt( acp_uint8_t   *aBuf,
+                   acp_sint32_t  *aVal,
+                   acp_uint32_t  *aOffset,
+                   acp_bool_t     aEquiEndian )
+{
+    acp_sint8_t *sValue;
+    acp_uint8_t  sIntermediate;
+
+    acpMemCpy( aVal, aBuf, WKB_INT32_SIZE );
+
+    if ( aEquiEndian == ACP_FALSE )
+    {
+        sValue        = (acp_sint8_t*)aVal;
+        sIntermediate = sValue[0];
+        sValue[0]     = sValue[3];
+        sValue[3]     = sIntermediate;
+        sIntermediate = sValue[1];
+        sValue[1]     = sValue[2];
+        sValue[2]     = sIntermediate;
+    }
+    else
+    {
+        // Nothing To Do
+    }
+
+    *aOffset += WKB_INT32_SIZE;
+}
 
 stdPoint2D *
 ulsM_GetPointsLS2D( stdLineString2DType *aLineString )
@@ -182,13 +209,98 @@ acp_sint32_t ulsM_IsGeometry2DType( stdGeoTypes aType )
     return 0;
 }
 
+acp_sint32_t ulsM_IsGeometry2DExtType( stdGeoTypes aType )
+{
+    acp_uint32_t sDim = (acp_uint32_t)aType / 1000;
+    if ( sDim == 2 )
+    {
+        sDim = (acp_uint32_t)( aType - 2000 ) / 100;
+        if( sDim == 5)
+        {
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+    else
+    {
+        // Nothing To Do
+    }
 
+    return 0;
+}
+
+acp_sint32_t ulsM_GetSRID( stdGeometryType * aGeometry )
+{
+    acp_sint32_t sSRID = ST_SRID_UNDEFINED;
+    
+    switch ( aGeometry->u.header.mType )
+    {
+        case STD_POINT_2D_EXT_TYPE:
+            sSRID = aGeometry->u.point2DExt.mSRID;
+            break;
+        case STD_LINESTRING_2D_EXT_TYPE:
+            sSRID = aGeometry->u.linestring2DExt.mSRID;
+            break;
+        case STD_POLYGON_2D_EXT_TYPE:
+            sSRID = aGeometry->u.polygon2DExt.mSRID;
+            break;
+        case STD_MULTIPOINT_2D_EXT_TYPE:
+            sSRID = aGeometry->u.mpoint2DExt.mSRID;
+            break;
+        case STD_MULTILINESTRING_2D_EXT_TYPE:
+            sSRID = aGeometry->u.mlinestring2DExt.mSRID;
+            break;
+        case STD_MULTIPOLYGON_2D_EXT_TYPE:   
+            sSRID = aGeometry->u.mpolygon2DExt.mSRID;
+            break;
+        case STD_GEOCOLLECTION_2D_EXT_TYPE:
+            sSRID = aGeometry->u.collection2DExt.mSRID;
+            break;
+        default:
+            break;
+    }
+
+    return sSRID;
+}
+
+void ulsM_SetSRID( stdGeometryType * aGeometry, acp_sint32_t aSRID )
+{
+    switch ( aGeometry->u.header.mType )
+    {
+        case STD_POINT_2D_EXT_TYPE:
+            aGeometry->u.point2DExt.mSRID = aSRID;
+            break;
+        case STD_LINESTRING_2D_EXT_TYPE:
+            aGeometry->u.linestring2DExt.mSRID = aSRID;
+            break;
+        case STD_POLYGON_2D_EXT_TYPE:
+            aGeometry->u.polygon2DExt.mSRID = aSRID;
+            break;
+        case STD_MULTIPOINT_2D_EXT_TYPE:
+            aGeometry->u.mpoint2DExt.mSRID = aSRID;
+            break;
+        case STD_MULTILINESTRING_2D_EXT_TYPE:
+            aGeometry->u.mlinestring2DExt.mSRID = aSRID;
+            break;
+        case STD_MULTIPOLYGON_2D_EXT_TYPE:   
+            aGeometry->u.mpolygon2DExt.mSRID = aSRID;
+            break;
+        case STD_GEOCOLLECTION_2D_EXT_TYPE:
+            aGeometry->u.collection2DExt.mSRID = aSRID;
+            break;
+        default:
+            break;
+    }
+}
 
 /*----------------------------------------------------------------*
  *
  * Description:
  *
- *   Point ê°ì²´ì˜ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
+ *   Point °´Ã¼ÀÇ Å©±â¸¦ ±¸ÇÑ´Ù.
  *
  * Implementation:
  *
@@ -203,7 +315,7 @@ ulsGetPoint2DSize( ulsHandle          * aHandle,
     /* Parameter Validation*/
     /*------------------------------*/
 
-    /* BUG-28414 : warnning ì œê±° */
+    /* BUG-28414 : warnning Á¦°Å */
     ACE_ASSERT( aHandle != NULL );
     ACE_ASSERT( aSize   != NULL );
 
@@ -222,9 +334,45 @@ ulsGetPoint2DSize( ulsHandle          * aHandle,
 
 /*----------------------------------------------------------------*
  *
+ * Description: PROJ-2422 SRID
+ *
+ *   Point °´Ã¼ÀÇ Å©±â¸¦ ±¸ÇÑ´Ù.
+ *
+ * Implementation:
+ *
+ *---------------------------------------------------------------*/
+
+ACI_RC
+ulsGetPoint2DExtSize( ulsHandle          * aHandle,
+                      acp_uint32_t       * aSize )
+{
+    
+    /*------------------------------*/
+    /* Parameter Validation*/
+    /*------------------------------*/
+
+    /* BUG-28414 : warnning Á¦°Å */
+    ACE_ASSERT( aHandle != NULL );
+    ACE_ASSERT( aSize   != NULL );
+
+    /*------------------------------*/
+    /* Get Size*/
+    /*------------------------------*/
+    
+    *aSize = ACI_SIZEOF( stdPoint2DExtType ) ;
+    
+    return ACI_SUCCESS;
+
+    /* ACI_EXCEPTION_END;*/
+    
+    /* return ACI_FAILURE;*/
+}
+
+/*----------------------------------------------------------------*
+ *
  * Description:
  *
- *   LineString ê°ì²´ì˜ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
+ *   LineString °´Ã¼ÀÇ Å©±â¸¦ ±¸ÇÑ´Ù.
  *
  * Implementation:
  *
@@ -237,7 +385,7 @@ ACI_RC ulsGetLineString2DSize( ulsHandle              * aHandle,
     /* Parameter Validation*/
     /*------------------------------*/
 
-    /* BUG-28414 : warnning ì œê±° */
+    /* BUG-28414 : warnning Á¦°Å */
     ACE_ASSERT( aHandle != NULL );
     ACE_ASSERT( aSize   != NULL );
 
@@ -259,7 +407,7 @@ ACI_RC ulsGetLineString2DSize( ulsHandle              * aHandle,
  *
  * Description:
  *
- *   LinearRing ê°ì²´ì˜ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
+ *   LinearRing °´Ã¼ÀÇ Å©±â¸¦ ±¸ÇÑ´Ù.
  *
  * Implementation:
  *
@@ -273,7 +421,7 @@ ACI_RC ulsGetLinearRing2DSize( ulsHandle              * aHandle,
     /* Parameter Validation*/
     /*------------------------------*/
 
-    /* BUG-28414 : warnning ì œê±° */
+    /* BUG-28414 : warnning Á¦°Å */
     ACE_ASSERT( aHandle != NULL );
     ACE_ASSERT( aSize   != NULL );
 
@@ -295,7 +443,7 @@ ACI_RC ulsGetLinearRing2DSize( ulsHandle              * aHandle,
  *
  * Description:
  *
- *   Polygon ê°ì²´ì˜ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
+ *   Polygon °´Ã¼ÀÇ Å©±â¸¦ ±¸ÇÑ´Ù.
  *
  * Implementation:
  *
@@ -344,7 +492,7 @@ ACI_RC ulsGetPolygon2DSize(    ulsHandle              * aHandle,
  *
  * Description:
  *
- *   Polygonì˜ ì²«ë²ˆì§¸Ringì˜ Pointerë¥¼ ì–»ì–´ì˜¨ë‹¤.
+ *   PolygonÀÇ Ã¹¹øÂ°RingÀÇ Pointer¸¦ ¾ò¾î¿Â´Ù.
  *
  * Implementation:
  *
@@ -358,7 +506,7 @@ ulsSeekFirstRing2D( ulsHandle                * aHandle,
     /* Parameter Validation*/
     /*------------------------------*/
 
-    /* BUG-28414 : warnning ì œê±° */
+    /* BUG-28414 : warnning Á¦°Å */
     ACE_ASSERT( aHandle   != NULL );
     ACE_ASSERT( aPolygon  != NULL );
     ACE_ASSERT( aRing     != NULL );
@@ -378,7 +526,7 @@ ulsSeekFirstRing2D( ulsHandle                * aHandle,
  *
  * Description:
  *
- *   Polygonì˜ ê¸°ì¤€Ring ì˜ ë‹¤ìŒë²ˆ Ring Pointerë¥¼ ì–»ì–´ì˜¨ë‹¤.
+ *   PolygonÀÇ ±âÁØRing ÀÇ ´ÙÀ½¹ø Ring Pointer¸¦ ¾ò¾î¿Â´Ù.
  *
  * Implementation:
  *
@@ -417,7 +565,7 @@ ulsSeekNextRing2D( ulsHandle                 * aHandle,
  *
  * Description:
  *
- *   MultiGeometryì˜ ì²˜ìŒ Geometry Pointerë¥¼ ì–»ì–´ì˜¨ë‹¤.
+ *   MultiGeometryÀÇ Ã³À½ Geometry Pointer¸¦ ¾ò¾î¿Â´Ù.
  *
  * Implementation:
  *
@@ -430,7 +578,7 @@ ACI_RC ulsSeekFirstGeometry(   ulsHandle              * aHandle,
     /* Parameter Validation*/
     /*------------------------------*/
 
-    /* BUG-28414 : warnning ì œê±° */
+    /* BUG-28414 : warnning Á¦°Å */
     ACE_ASSERT( aHandle        != NULL );
     ACE_ASSERT( aGeometry      != NULL );
     ACE_ASSERT( aFirstGeometry != NULL );
@@ -450,7 +598,7 @@ ACI_RC ulsSeekFirstGeometry(   ulsHandle              * aHandle,
  *
  * Description:
  *
- *   MultiGeometryì˜ ê¸°ì¤€ Geometryì˜ ë‹¤ìŒë²ˆ Geometry Pointerë¥¼ ì–»ì–´ì˜¨ë‹¤.
+ *   MultiGeometryÀÇ ±âÁØ GeometryÀÇ ´ÙÀ½¹ø Geometry Pointer¸¦ ¾ò¾î¿Â´Ù.
  *
  * Implementation:
  *
@@ -484,11 +632,11 @@ ACI_RC ulsSeekNextGeometry(    ulsHandle              * aHandle,
 
 /***********************************************************************
  * Description: BUG-28091
- * WKB(Well Known Binary)ë¥¼ ì½ì–´ë“¤ì—¬ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
- * WKBì—ëŠ” 3ì°¨ì› ë°ì´í„°ê°€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
- * ulsHandle *aHandle(In): ì—ëŸ¬ë“±ì„ ê¸°ë¡ í•˜ëŠ” ë“±ì˜ í™˜ê²½ì— ëŒ€í•œ í•¸ë“¤ì´ë‹¤.
- * acp_uint8_t **aPtr(InOut): ì½ì–´ë“¤ì¼ WKB ë²„í¼ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
- * acp_uint8_t * aFence(In): WKB ë²„í¼ì˜ Fence
+ * WKB(Well Known Binary)¸¦ ÀÐ¾îµé¿© Å©±â¸¦ ±¸ÇÑ´Ù.
+ * WKB¿¡´Â 3Â÷¿ø µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ * ulsHandle *aHandle(In): ¿¡·¯µîÀ» ±â·Ï ÇÏ´Â µîÀÇ È¯°æ¿¡ ´ëÇÑ ÇÚµéÀÌ´Ù.
+ * acp_uint8_t **aPtr(InOut): ÀÐ¾îµéÀÏ WKB ¹öÆÛ À§Ä¡, ÀÐÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
+ * acp_uint8_t * aFence(In): WKB ¹öÆÛÀÇ Fence
  * acp_uint32_t  * aSize(Out):  Size
  **********************************************************************/
 ACSRETURN
@@ -526,13 +674,48 @@ ulsGetPointSizeFromWKB( ulsHandle    * aHandle,
     return ACS_ERROR;
 }
 
+ACSRETURN
+ulsGetPointSizeFromEWKB( ulsHandle    * aHandle,
+                         acp_uint8_t ** aPtr,
+                         acp_uint8_t  * aFence,
+                         acp_uint32_t * aSize )
+{
+    acp_uint8_t*            sPtr       = *aPtr;
+    acp_uint32_t            sWKBSize   = EWKB_POINT_SIZE;
+
+    ACI_TEST_RAISE( ulsCheckEnv( aHandle ) != ACI_SUCCESS,
+                    ERR_INVALID_HANDLE );
+
+    ACI_TEST_RAISE( sPtr + sWKBSize > aFence, ERR_PARSING );
+
+    *aPtr    = sPtr + sWKBSize;
+    *aSize   = STD_POINT2D_EXT_SIZE;
+
+    return ACS_SUCCESS;
+
+    ACI_EXCEPTION( ERR_PARSING );
+    {
+        ulsSetErrorCode( aHandle,
+                         (ulERR_ABORT_ACS_INVALID_WKB) );
+    }
+
+    ACI_EXCEPTION( ERR_INVALID_HANDLE );
+    {
+        return ACS_INVALID_HANDLE;
+    }
+
+    ACI_EXCEPTION_END;
+
+    return ACS_ERROR;
+}
+
 /***********************************************************************
  * Description: BUG-28091
- * WKB(Well Known Binary)ë¥¼ ì½ì–´ë“¤ì—¬ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
- * WKBì—ëŠ” 3ì°¨ì› ë°ì´í„°ê°€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
- * ulsHandle *aHandle(In): ì—ëŸ¬ë“±ì„ ê¸°ë¡ í•˜ëŠ” ë“±ì˜ í™˜ê²½ì— ëŒ€í•œ í•¸ë“¤ì´ë‹¤.
- * acp_uint8_t **aPtr(InOut): ì½ì–´ë“¤ì¼ WKB ë²„í¼ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
- * acp_uint8_t * aFence(In): WKB ë²„í¼ì˜ Fence
+ * WKB(Well Known Binary)¸¦ ÀÐ¾îµé¿© Å©±â¸¦ ±¸ÇÑ´Ù.
+ * WKB¿¡´Â 3Â÷¿ø µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ * ulsHandle *aHandle(In): ¿¡·¯µîÀ» ±â·Ï ÇÏ´Â µîÀÇ È¯°æ¿¡ ´ëÇÑ ÇÚµéÀÌ´Ù.
+ * acp_uint8_t **aPtr(InOut): ÀÐ¾îµéÀÏ WKB ¹öÆÛ À§Ä¡, ÀÐÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
+ * acp_uint8_t * aFence(In): WKB ¹öÆÛÀÇ Fence
  * acp_uint32_t  * aSize(Out):  Size
  **********************************************************************/
 ACSRETURN
@@ -588,13 +771,70 @@ ulsGetLineStringSizeFromWKB( ulsHandle    * aHandle,
 
     return ACS_ERROR;
 }
+
+ACSRETURN
+ulsGetLineStringSizeFromEWKB( ulsHandle    * aHandle,
+                              acp_uint8_t ** aPtr,
+                              acp_uint8_t  * aFence,
+                              acp_uint32_t * aSize )
+{
+    acp_uint8_t*                    sPtr        = *aPtr;
+    acp_uint32_t                    sPtCnt      = 0;
+    acp_uint32_t                    sWKBSize    = 0;
+    acp_uint32_t                    sWkbOffset  = 0;
+    acp_uint32_t                    sWkbType;
+    acp_bool_t                      sEquiEndian = ACP_FALSE;
+    EWKBLineString*                 sBLine      = (EWKBLineString*)*aPtr;
+    acp_sint32_t                    sSRID;
+
+    ACI_TEST_RAISE( ulsCheckEnv( aHandle ) != ACI_SUCCESS,
+                    ERR_INVALID_HANDLE );
+
+    ACI_TEST_RAISE( ( sPtr + WKB_GEOHEAD_SIZE + EWKB_SRID_SIZE + WKB_INT32_SIZE ) > aFence,
+                    ERR_PARSING );
+    /* { Calc WKB Size*/
+    ACI_TEST( readWKB_Header( aHandle,
+                              (acp_uint8_t*)sBLine,
+                              &sEquiEndian,
+                              &sWkbType,
+                              &sWkbOffset ) != ACI_SUCCESS);
+
+    ACI_TEST_RAISE( sWkbType != EWKB_LINESTRING_TYPE , ERR_PARSING );
+    readWKB_SInt( sBLine->mSRID, &sSRID, &sWkbOffset, sEquiEndian );
+    readWKB_UInt( sBLine->mNumPoints, &sPtCnt, &sWkbOffset, sEquiEndian );
+    sWKBSize = EWKB_LINE_SIZE + WKB_PT_SIZE*sPtCnt;
+    /* } Calc WKB Size*/
+
+    ACI_TEST_RAISE( sPtr + sWKBSize > aFence, ERR_PARSING );
+
+    *aPtr    = *aPtr + sWKBSize;
+    *aSize   = STD_LINE2D_EXT_SIZE + STD_PT2D_SIZE*sPtCnt;
+
+    return ACS_SUCCESS;
+
+    ACI_EXCEPTION( ERR_PARSING );
+    {
+        ulsSetErrorCode( aHandle,
+                         (ulERR_ABORT_ACS_INVALID_WKB) );
+    }
+
+    ACI_EXCEPTION( ERR_INVALID_HANDLE );
+    {
+        return ACS_INVALID_HANDLE;
+    }
+
+    ACI_EXCEPTION_END;
+
+    return ACS_ERROR;
+}
+
 /***********************************************************************
  * Description: BUG-28091
- * WKB(Well Known Binary)ë¥¼ ì½ì–´ë“¤ì—¬ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
- * WKBì—ëŠ” 3ì°¨ì› ë°ì´í„°ê°€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
- * ulsHandle *aHandle(In): ì—ëŸ¬ë“±ì„ ê¸°ë¡ í•˜ëŠ” ë“±ì˜ í™˜ê²½ì— ëŒ€í•œ í•¸ë“¤ì´ë‹¤.
- * acp_uint8_t **aPtr(InOut): ì½ì–´ë“¤ì¼ WKB ë²„í¼ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
- * acp_uint8_t * aFence(In): WKB ë²„í¼ì˜ Fence
+ * WKB(Well Known Binary)¸¦ ÀÐ¾îµé¿© Å©±â¸¦ ±¸ÇÑ´Ù.
+ * WKB¿¡´Â 3Â÷¿ø µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ * ulsHandle *aHandle(In): ¿¡·¯µîÀ» ±â·Ï ÇÏ´Â µîÀÇ È¯°æ¿¡ ´ëÇÑ ÇÚµéÀÌ´Ù.
+ * acp_uint8_t **aPtr(InOut): ÀÐ¾îµéÀÏ WKB ¹öÆÛ À§Ä¡, ÀÐÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
+ * acp_uint8_t * aFence(In): WKB ¹öÆÛÀÇ Fence
  * acp_uint32_t  * aSize(Out):  Size
  **********************************************************************/
 ACSRETURN
@@ -673,13 +913,91 @@ ulsGetPolygonSizeFromWKB( ulsHandle    * aHandle,
     return ACS_ERROR;
 }
 
+ACSRETURN
+ulsGetPolygonSizeFromEWKB( ulsHandle    * aHandle,
+                           acp_uint8_t ** aPtr,
+                           acp_uint8_t  * aFence,
+                           acp_uint32_t * aSize )
+{
+    acp_uint8_t*                sPtr        = *aPtr;
+    acp_uint32_t                sPtCnt      = 0;
+    acp_uint32_t                sRingCnt    = 0;
+    acp_uint32_t                sWKBSize    = 0;
+    acp_uint32_t                i;
+    EWKBPolygon*                sBPolygon   = (EWKBPolygon*)*aPtr;
+    wkbLinearRing*              sBRing      = NULL;
+    acp_uint32_t                sWkbOffset  = 0;
+    acp_uint32_t                sWkbType;
+    acp_uint32_t                sNumPoints;
+    acp_bool_t                  sEquiEndian = ACP_FALSE;
+    acp_sint32_t                sSRID;
+
+    ACI_TEST_RAISE( ulsCheckEnv( aHandle ) != ACI_SUCCESS,
+                    ERR_INVALID_HANDLE );
+
+    ACI_TEST_RAISE( ( sPtr + WKB_GEOHEAD_SIZE + EWKB_SRID_SIZE + WKB_INT32_SIZE ) > aFence,
+                    ERR_PARSING );
+    /* { Calc WKB Size*/
+    ACI_TEST( readWKB_Header( aHandle,
+                              (acp_uint8_t*)sBPolygon,
+                              &sEquiEndian,
+                              &sWkbType,
+                              &sWkbOffset ) != ACI_SUCCESS );
+    ACI_TEST_RAISE( sWkbType != EWKB_POLYGON_TYPE, ERR_PARSING );
+    readWKB_SInt( sBPolygon->mSRID, &sSRID, &sWkbOffset, sEquiEndian );
+    readWKB_UInt( sBPolygon->mNumRings, &sRingCnt, &sWkbOffset, sEquiEndian );
+
+    sBRing = EWKB_FIRST_RN( sBPolygon );
+    ACI_TEST_RAISE( (acp_uint8_t*)sBRing > aFence, ERR_PARSING );
+
+    for ( i = 0; i < sRingCnt; i++ )
+    {
+        /* check valid position of numpoints*/
+        ACI_TEST_RAISE( sBRing->mNumPoints > aFence, ERR_PARSING );
+
+        readWKB_UInt( sBRing->mNumPoints, &sNumPoints, &sWkbOffset, sEquiEndian );
+
+        sPtCnt += sNumPoints;
+        /* check valid postion of next ring.*/
+        ACI_TEST_RAISE( ( sPtr + sWkbOffset + WKB_PT_SIZE*sNumPoints ) > aFence,
+                        ERR_PARSING );
+        sBRing = (wkbLinearRing*)( (acp_uint8_t*)(sBRing) +
+                                   WKB_RN_SIZE + WKB_PT_SIZE*sNumPoints );
+    }
+
+    sWKBSize = EWKB_POLY_SIZE + WKB_INT32_SIZE*sRingCnt + WKB_PT_SIZE*sPtCnt;
+    /* } Calc WKB Size*/
+
+    ACI_TEST_RAISE( sPtr + sWKBSize > aFence, ERR_PARSING );
+
+    *aPtr    = sPtr + sWKBSize;
+    *aSize   = STD_POLY2D_EXT_SIZE + STD_RN2D_SIZE*sRingCnt + STD_PT2D_SIZE*sPtCnt;
+
+    return ACS_SUCCESS;
+
+    ACI_EXCEPTION( ERR_PARSING );
+    {
+        ulsSetErrorCode( aHandle,
+                         (ulERR_ABORT_ACS_INVALID_WKB) );
+    }
+
+    ACI_EXCEPTION( ERR_INVALID_HANDLE );
+    {
+        return ACS_INVALID_HANDLE;
+    }
+
+    ACI_EXCEPTION_END;
+
+    return ACS_ERROR;
+}
+
 /***********************************************************************
  * Description: BUG-28091
- * WKB(Well Known Binary)ë¥¼ ì½ì–´ë“¤ì—¬ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
- * WKBì—ëŠ” 3ì°¨ì› ë°ì´í„°ê°€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
- * ulsHandle *aHandle(In): ì—ëŸ¬ë“±ì„ ê¸°ë¡ í•˜ëŠ” ë“±ì˜ í™˜ê²½ì— ëŒ€í•œ í•¸ë“¤ì´ë‹¤.
- * acp_uint8_t **aPtr(InOut): ì½ì–´ë“¤ì¼ WKB ë²„í¼ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
- * acp_uint8_t * aFence(In): WKB ë²„í¼ì˜ Fence
+ * WKB(Well Known Binary)¸¦ ÀÐ¾îµé¿© Å©±â¸¦ ±¸ÇÑ´Ù.
+ * WKB¿¡´Â 3Â÷¿ø µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ * ulsHandle *aHandle(In): ¿¡·¯µîÀ» ±â·Ï ÇÏ´Â µîÀÇ È¯°æ¿¡ ´ëÇÑ ÇÚµéÀÌ´Ù.
+ * acp_uint8_t **aPtr(InOut): ÀÐ¾îµéÀÏ WKB ¹öÆÛ À§Ä¡, ÀÐÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
+ * acp_uint8_t * aFence(In): WKB ¹öÆÛÀÇ Fence
  * acp_uint32_t  * aSize(Out):  Size
  **********************************************************************/
 ACSRETURN
@@ -738,11 +1056,11 @@ ulsGetMultiPointSizeFromWKB( ulsHandle    * aHandle,
 
 /***********************************************************************
  * Description:BUG-28091
- * WKB(Well Known Binary)ë¥¼ ì½ì–´ë“¤ì—¬ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
- * WKBì—ëŠ” 3ì°¨ì› ë°ì´í„°ê°€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
- * ulsHandle *aHandle(In): ì—ëŸ¬ë“±ì„ ê¸°ë¡ í•˜ëŠ” ë“±ì˜ í™˜ê²½ì— ëŒ€í•œ í•¸ë“¤ì´ë‹¤.
- * acp_uint8_t **aPtr(InOut): ì½ì–´ë“¤ì¼ WKB ë²„í¼ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
- * acp_uint8_t * aFence(In): WKB ë²„í¼ì˜ Fence
+ * WKB(Well Known Binary)¸¦ ÀÐ¾îµé¿© Å©±â¸¦ ±¸ÇÑ´Ù.
+ * WKB¿¡´Â 3Â÷¿ø µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ * ulsHandle *aHandle(In): ¿¡·¯µîÀ» ±â·Ï ÇÏ´Â µîÀÇ È¯°æ¿¡ ´ëÇÑ ÇÚµéÀÌ´Ù.
+ * acp_uint8_t **aPtr(InOut): ÀÐ¾îµéÀÏ WKB ¹öÆÛ À§Ä¡, ÀÐÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
+ * acp_uint8_t * aFence(In): WKB ¹öÆÛÀÇ Fence
  * acp_uint32_t  * aSize(Out):  Size
  **********************************************************************/
 ACSRETURN
@@ -827,11 +1145,11 @@ ulsGetMultiLineStringSizeFromWKB( ulsHandle    * aHandle,
 
 /***********************************************************************
  * Description:BUG-28091
- * WKB(Well Known Binary)ë¥¼ ì½ì–´ë“¤ì—¬ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
- * WKBì—ëŠ” 3ì°¨ì› ë°ì´í„°ê°€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
- * ulsHandle *aHandle(In): ì—ëŸ¬ë“±ì„ ê¸°ë¡ í•˜ëŠ” ë“±ì˜ í™˜ê²½ì— ëŒ€í•œ í•¸ë“¤ì´ë‹¤.
- * acp_uint8_t **aPtr(InOut): ì½ì–´ë“¤ì¼ WKB ë²„í¼ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
- * acp_uint8_t * aFence(In): WKB ë²„í¼ì˜ Fence
+ * WKB(Well Known Binary)¸¦ ÀÐ¾îµé¿© Å©±â¸¦ ±¸ÇÑ´Ù.
+ * WKB¿¡´Â 3Â÷¿ø µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ * ulsHandle *aHandle(In): ¿¡·¯µîÀ» ±â·Ï ÇÏ´Â µîÀÇ È¯°æ¿¡ ´ëÇÑ ÇÚµéÀÌ´Ù.
+ * acp_uint8_t **aPtr(InOut): ÀÐ¾îµéÀÏ WKB ¹öÆÛ À§Ä¡, ÀÐÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
+ * acp_uint8_t * aFence(In): WKB ¹öÆÛÀÇ Fence
  * acp_uint32_t  * aSize(Out):  Size
  **********************************************************************/
 ACSRETURN
@@ -915,11 +1233,11 @@ ulsGetMultiPolygonSizeFromWKB( ulsHandle    * aHandle,
 
 /***********************************************************************
  * Description:BUG-28091
- * WKB(Well Known Binary)ë¥¼ ì½ì–´ë“¤ì—¬ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
- * WKBì—ëŠ” 3ì°¨ì› ë°ì´í„°ê°€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
- * ulsHandle *aHandle(In): ì—ëŸ¬ë“±ì„ ê¸°ë¡ í•˜ëŠ” ë“±ì˜ í™˜ê²½ì— ëŒ€í•œ í•¸ë“¤ì´ë‹¤.
- * acp_uint8_t **aPtr(InOut): ì½ì–´ë“¤ì¼ WKB ë²„í¼ ìœ„ì¹˜, ì½ì€ ë‹¤ìŒ ê·¸ ë§Œí¼ ì¦ê°€í•œë‹¤.
- * acp_uint8_t * aFence(In): WKB ë²„í¼ì˜ Fence
+ * WKB(Well Known Binary)¸¦ ÀÐ¾îµé¿© Å©±â¸¦ ±¸ÇÑ´Ù.
+ * WKB¿¡´Â 3Â÷¿ø µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+ * ulsHandle *aHandle(In): ¿¡·¯µîÀ» ±â·Ï ÇÏ´Â µîÀÇ È¯°æ¿¡ ´ëÇÑ ÇÚµéÀÌ´Ù.
+ * acp_uint8_t **aPtr(InOut): ÀÐ¾îµéÀÏ WKB ¹öÆÛ À§Ä¡, ÀÐÀº ´ÙÀ½ ±× ¸¸Å­ Áõ°¡ÇÑ´Ù.
+ * acp_uint8_t * aFence(In): WKB ¹öÆÛÀÇ Fence
  * acp_uint32_t  * aSize(Out):  Size
  **********************************************************************/
 ACSRETURN
@@ -1002,7 +1320,7 @@ ulsGetGeoCollectionSizeFromWKB( ulsHandle    * aHandle,
                                                          &sSize) != ACS_SUCCESS );
                 break;
             default :
-                ACI_RAISE( ACI_EXCEPTION_END_LABEL );
+                ACI_RAISE( ERR_INVALID_DATA_TYPE );
         } /* switch*/
         sTotalSize += sSize;
     } /* while*/
@@ -1025,9 +1343,399 @@ ulsGetGeoCollectionSizeFromWKB( ulsHandle    * aHandle,
         return ACS_INVALID_HANDLE;
     }
 
+    ACI_EXCEPTION( ERR_INVALID_DATA_TYPE );
+    {
+        ulsSetErrorCode( aHandle,
+                         (ulERR_ABORT_ACS_INVALID_DATA_TYPE) );
+    }
+    
     ACI_EXCEPTION_END;
 
     return ACS_ERROR;
 }
 
+ACSRETURN
+ulsGetMultiPolygonSizeFromEWKB( ulsHandle    * aHandle,
+                                acp_uint8_t ** aPtr,
+                                acp_uint8_t  * aFence,
+                                acp_uint32_t * aSize )
+{
+    acp_uint8_t*                    sPtr        = *aPtr;
+    acp_uint32_t                    sObjectCnt;
+    acp_uint32_t                    sTotalSize  = 0;
+    acp_uint32_t                    i;
+    acp_uint32_t                    sWkbSize;
+    acp_uint32_t                    sWkbOffset  = 0;
+    acp_uint32_t                    sWkbType;
+    acp_uint32_t                    sTempSize;
+    EWKBMultiPolygon*               sBMPolygon  = (EWKBMultiPolygon*)*aPtr;
+    WKBPolygon*                     sBPolygon;
+    acp_bool_t                      sEquiEndian = ACP_FALSE;
+    acp_sint32_t                    sSRID;
+
+    ACI_TEST_RAISE( ulsCheckEnv( aHandle ) != ACI_SUCCESS,
+                    ERR_INVALID_HANDLE );
+
+    ACI_TEST_RAISE( ( sPtr + WKB_GEOHEAD_SIZE + EWKB_SRID_SIZE + WKB_INT32_SIZE ) > aFence,
+                    ERR_PARSING );
+    ACI_TEST( readWKB_Header( aHandle,
+                              (acp_uint8_t*)sBMPolygon,
+                              &sEquiEndian,
+                              &sWkbType,
+                              &sWkbOffset ) != ACI_SUCCESS );
+    ACI_TEST_RAISE( sWkbType != EWKB_MULTIPOLYGON_TYPE, ERR_PARSING );
+    readWKB_SInt( sBMPolygon->mSRID, &sSRID, &sWkbOffset, sEquiEndian );
+    readWKB_UInt( sBMPolygon->mNumWKBPolygons, &sObjectCnt, &sWkbOffset,
+                  sEquiEndian );
+
+    sBPolygon = EWKB_FIRST_POLY( sBMPolygon );
+    for ( i = 0; i < sObjectCnt; i++ )
+    {
+        ACI_TEST_RAISE( ( sPtr + sWkbOffset + WKB_GEOHEAD_SIZE ) > aFence,
+                        ERR_PARSING );
+        ACI_TEST( readWKB_Header( aHandle,
+                                  (acp_uint8_t*)sBPolygon,
+                                  &sEquiEndian,
+                                  &sWkbType,
+                                  &sWkbOffset ) != ACI_SUCCESS );
+        ACI_TEST_RAISE( sWkbType != WKB_POLYGON_TYPE, ERR_PARSING );
+        sWkbOffset -= WKB_GEOHEAD_SIZE;
+
+        switch( sWkbType )
+        {
+            case WKB_POLYGON_TYPE :
+                ACI_TEST( ulsGetPolygonSizeFromWKB( aHandle,
+                                                    (acp_uint8_t**)&sBPolygon,
+                                                    aFence,
+                                                    &sTempSize ) != ACS_SUCCESS );
+                break;
+            default :
+                ACI_RAISE( ACI_EXCEPTION_END_LABEL );
+        } /* switch*/
+
+        sTotalSize += sTempSize;
+
+    } /* while*/
+
+    sWkbSize   = ( ((acp_char_t*)sBPolygon) - ((acp_char_t*)sBMPolygon) );
+    sTotalSize += STD_MPOLY2D_EXT_SIZE;
+
+    ACI_TEST( ( sPtr + sWkbSize ) > aFence);
+
+    *aPtr  = sPtr + sWkbSize;
+    *aSize = sTotalSize;
+
+    return ACS_SUCCESS;
+
+    ACI_EXCEPTION( ERR_PARSING );
+    {
+        ulsSetErrorCode( aHandle,
+                         (ulERR_ABORT_ACS_INVALID_WKB) );
+    }
+
+    ACI_EXCEPTION( ERR_INVALID_HANDLE );
+    {
+        return ACS_INVALID_HANDLE;
+    }
+    ACI_EXCEPTION_END;
+
+    return ACS_ERROR;
+}
+
+ACSRETURN
+ulsGetMultiPointSizeFromEWKB( ulsHandle    * aHandle,
+                              acp_uint8_t ** aPtr,
+                              acp_uint8_t  * aFence,
+                              acp_uint32_t * aSize )
+{
+    acp_uint8_t*                    sPtr        = *aPtr;
+    acp_uint32_t                    sPtCnt      = 0;
+    acp_uint32_t                    sWKBSize    = 0;
+    EWKBMultiPoint*                 sBMpoint    = (EWKBMultiPoint*)*aPtr;
+    acp_uint32_t                    sWkbOffset  = 0;
+    acp_uint32_t                    sWkbType;
+    acp_bool_t                      sEquiEndian = ACP_FALSE;
+    acp_sint32_t                    sSRID;
+
+    ACI_TEST_RAISE( ulsCheckEnv( aHandle ) != ACI_SUCCESS,
+                    ERR_INVALID_HANDLE );
+
+    /* { Calc WKB Size*/
+    ACI_TEST_RAISE( ( sPtr + WKB_GEOHEAD_SIZE + EWKB_SRID_SIZE + WKB_INT32_SIZE ) > aFence,
+                    ERR_PARSING );
+    ACI_TEST( readWKB_Header( aHandle,
+                              (acp_uint8_t*)sBMpoint,
+                              &sEquiEndian,
+                              &sWkbType,
+                              &sWkbOffset ) != ACI_SUCCESS );
+    ACI_TEST_RAISE( sWkbType != EWKB_MULTIPOINT_TYPE , ERR_PARSING );
+    readWKB_SInt( sBMpoint->mSRID, &sSRID, &sWkbOffset, sEquiEndian );
+    readWKB_UInt( sBMpoint->mNumWKBPoints, &sPtCnt, &sWkbOffset, sEquiEndian );
+
+    sWKBSize = EWKB_MPOINT_SIZE + WKB_POINT_SIZE*sPtCnt;
+    /* } Calc WKB Size*/
+
+    ACI_TEST_RAISE( sPtr + sWKBSize > aFence, ERR_PARSING );
+
+    *aPtr  = sPtr + sWKBSize;
+    *aSize = STD_MPOINT2D_EXT_SIZE + STD_POINT2D_SIZE * sPtCnt;
+
+    return ACS_SUCCESS;
+
+    ACI_EXCEPTION( ERR_PARSING );
+    {
+        ulsSetErrorCode( aHandle,
+                         (ulERR_ABORT_ACS_INVALID_WKB) );
+    }
+
+    ACI_EXCEPTION( ERR_INVALID_HANDLE );
+    {
+        return ACS_INVALID_HANDLE;
+    }
+
+    ACI_EXCEPTION_END;
+
+    return ACS_ERROR;
+}
+
+ACSRETURN
+ulsGetMultiLineStringSizeFromEWKB( ulsHandle    * aHandle,
+                                   acp_uint8_t ** aPtr,
+                                   acp_uint8_t  * aFence,
+                                   acp_uint32_t * aSize )
+{
+    acp_uint8_t*                        sPtr        = *aPtr;
+    acp_uint32_t                        sObjectCnt;
+    acp_uint32_t                        sTotalSize  = 0;
+    acp_uint32_t                        i;
+    acp_uint32_t                        sWkbOffset  = 0;
+    acp_uint32_t                        sWkbSize;
+    acp_uint32_t                        sWkbType;
+    acp_uint32_t                        sTempSize;
+    EWKBMultiLineString*                sBMLine     = (EWKBMultiLineString*)*aPtr;
+    WKBLineString*                      sBLine;
+    acp_bool_t                          sEquiEndian = ACP_FALSE;
+    acp_sint32_t                        sSRID;
+
+    ACI_TEST_RAISE( ulsCheckEnv( aHandle ) != ACI_SUCCESS,
+                    ERR_INVALID_HANDLE );
+
+    ACI_TEST_RAISE( ( sPtr + WKB_GEOHEAD_SIZE + EWKB_SRID_SIZE + WKB_INT32_SIZE ) > aFence,
+                    ERR_PARSING );
+    ACI_TEST( readWKB_Header( aHandle,
+                              (acp_uint8_t*)sBMLine,
+                              &sEquiEndian,
+                              &sWkbType,
+                              &sWkbOffset ) != ACI_SUCCESS );
+    ACI_TEST_RAISE( sWkbType != EWKB_MULTILINESTRING_TYPE, ERR_PARSING );
+    readWKB_SInt( sBMLine->mSRID, &sSRID, &sWkbOffset, sEquiEndian );
+    readWKB_UInt( sBMLine->mNumWKBLineStrings, &sObjectCnt, &sWkbOffset,
+                  sEquiEndian );
+
+    sBLine = EWKB_FIRST_LINE( sBMLine );
+    for ( i = 0; i < sObjectCnt; i++ )
+    {
+        ACI_TEST_RAISE( ( sPtr + sWkbOffset + WKB_GEOHEAD_SIZE ) > aFence,
+                        ERR_PARSING );
+        ACI_TEST( readWKB_Header( aHandle,
+                                  (acp_uint8_t*)sBLine,
+                                  &sEquiEndian,
+                                  &sWkbType,
+                                  &sWkbOffset ) != ACI_SUCCESS );
+        ACI_TEST_RAISE( sWkbType != WKB_LINESTRING_TYPE, ERR_PARSING );
+
+        sWkbOffset -= WKB_GEOHEAD_SIZE;
+
+        switch( sWkbType )
+        {
+            case WKB_LINESTRING_TYPE :
+                ACI_TEST( ulsGetLineStringSizeFromWKB( aHandle,
+                                                       (acp_uint8_t**)&sBLine,
+                                                       aFence,
+                                                       &sTempSize ) != ACS_SUCCESS );
+                break;
+            default :
+                ACI_RAISE( ACI_EXCEPTION_END_LABEL );
+        } /* switch*/
+
+        sTotalSize += sTempSize;
+    } /* while*/
+
+    sWkbSize   = ( ((acp_char_t*)sBLine) - ((acp_char_t*)sBMLine) );
+    sTotalSize += STD_MLINE2D_EXT_SIZE;
+
+
+    ACI_TEST( ( sPtr + sWkbSize ) > aFence );
+    *aPtr  = sPtr + sWkbSize;
+    *aSize = sTotalSize;
+
+    return ACS_SUCCESS;
+
+    ACI_EXCEPTION( ERR_PARSING );
+    {
+        ulsSetErrorCode( aHandle,
+                         (ulERR_ABORT_ACS_INVALID_WKB) );
+    }
+
+    ACI_EXCEPTION( ERR_INVALID_HANDLE );
+    {
+        return ACS_INVALID_HANDLE;
+    }
+
+    ACI_EXCEPTION_END;
+
+    return ACS_ERROR;
+}
+
+ACSRETURN
+ulsGetGeoCollectionSizeFromEWKB( ulsHandle    * aHandle,
+                                 acp_uint8_t ** aPtr,
+                                 acp_uint8_t  * aFence,
+                                 acp_uint32_t * aSize )
+{
+    acp_uint8_t*                    sPtr        = *aPtr;
+    acp_uint32_t                    sObjectCnt;
+    acp_uint32_t                    sTotalSize  = 0;
+    acp_uint32_t                    sWkbOffset  = 0;
+    acp_uint32_t                    sWkbType;
+    acp_uint32_t                    sSize;
+    acp_uint32_t                    i;
+    EWKBGeometryCollection*         sBColl      = (EWKBGeometryCollection*)*aPtr;
+    WKBGeometry*                    sBCurrObj;
+    acp_bool_t                      sEquiEndian = ACP_FALSE;
+    acp_sint32_t                    sSRID;
+
+    ACI_TEST_RAISE( ulsCheckEnv( aHandle ) != ACI_SUCCESS,
+                    ERR_INVALID_HANDLE );
+
+    ACI_TEST_RAISE( ( sPtr + WKB_GEOHEAD_SIZE + EWKB_SRID_SIZE + WKB_INT32_SIZE ) > aFence,
+                    ERR_PARSING );
+    ACI_TEST( readWKB_Header( aHandle,
+                              (acp_uint8_t*)sBColl,
+                              &sEquiEndian,
+                              &sWkbType,
+                              &sWkbOffset ) != ACI_SUCCESS);
+    ACI_TEST_RAISE( sWkbType != EWKB_COLLECTION_TYPE, ERR_PARSING );
+    readWKB_SInt( sBColl->mSRID, &sSRID, &sWkbOffset, sEquiEndian );
+    readWKB_UInt( sBColl->mNumWKBGeometries, &sObjectCnt, &sWkbOffset, sEquiEndian );
+
+    sBCurrObj = EWKB_FIRST_COLL( sBColl );
+
+    for ( i = 0; i < sObjectCnt; i++ )
+    {
+        ACI_TEST( readWKB_Header( aHandle,
+                                  (acp_uint8_t*)sBCurrObj,
+                                  &sEquiEndian,
+                                  &sWkbType,
+                                  &sWkbOffset ) != ACI_SUCCESS );
+        sWkbOffset -= WKB_GEOHEAD_SIZE;
+
+        switch( sWkbType )
+        {
+            case WKB_POINT_TYPE :
+                ACI_TEST( ulsGetPointSizeFromWKB( aHandle,
+                                                  (acp_uint8_t**)&sBCurrObj,
+                                                  aFence,
+                                                  &sSize ) != ACS_SUCCESS );
+                break;
+            case WKB_LINESTRING_TYPE :
+                ACI_TEST( ulsGetLineStringSizeFromWKB( aHandle,
+                                                       (acp_uint8_t**)&sBCurrObj,
+                                                       aFence,
+                                                       &sSize ) != ACS_SUCCESS );
+                break;
+            case WKB_POLYGON_TYPE :
+                ACI_TEST( ulsGetPolygonSizeFromWKB( aHandle,
+                                                    (acp_uint8_t**)&sBCurrObj,
+                                                    aFence,
+                                                    &sSize ) != ACS_SUCCESS );
+                break;
+            case WKB_MULTIPOINT_TYPE :
+                ACI_TEST( ulsGetMultiPointSizeFromWKB( aHandle,
+                                                       (acp_uint8_t**)&sBCurrObj,
+                                                       aFence,
+                                                       &sSize ) != ACS_SUCCESS );
+                break;
+            case WKB_MULTILINESTRING_TYPE :
+                ACI_TEST( ulsGetMultiLineStringSizeFromWKB( aHandle,
+                                                            (acp_uint8_t**)&sBCurrObj,
+                                                            aFence,
+                                                            &sSize ) != ACS_SUCCESS );
+                break;
+            case WKB_MULTIPOLYGON_TYPE :
+                ACI_TEST( ulsGetMultiPolygonSizeFromWKB( aHandle,
+                                                         (acp_uint8_t**)&sBCurrObj,
+                                                         aFence,
+                                                         &sSize ) != ACS_SUCCESS );
+                break;
+            case EWKB_POINT_TYPE :
+                ACI_TEST( ulsGetPointSizeFromEWKB( aHandle,
+                                                   (acp_uint8_t**)&sBCurrObj,
+                                                   aFence,
+                                                   &sSize ) != ACS_SUCCESS );
+                break;
+            case EWKB_LINESTRING_TYPE :
+                ACI_TEST( ulsGetLineStringSizeFromEWKB( aHandle,
+                                                        (acp_uint8_t**)&sBCurrObj,
+                                                        aFence,
+                                                        &sSize ) != ACS_SUCCESS );
+                break;
+            case EWKB_POLYGON_TYPE :
+                ACI_TEST( ulsGetPolygonSizeFromEWKB( aHandle,
+                                                     (acp_uint8_t**)&sBCurrObj,
+                                                     aFence,
+                                                     &sSize ) != ACS_SUCCESS );
+                break;
+            case EWKB_MULTIPOINT_TYPE :
+                ACI_TEST( ulsGetMultiPointSizeFromEWKB( aHandle,
+                                                        (acp_uint8_t**)&sBCurrObj,
+                                                        aFence,
+                                                        &sSize ) != ACS_SUCCESS );
+                break;
+            case EWKB_MULTILINESTRING_TYPE :
+                ACI_TEST( ulsGetMultiLineStringSizeFromEWKB( aHandle,
+                                                             (acp_uint8_t**)&sBCurrObj,
+                                                             aFence,
+                                                             &sSize ) != ACS_SUCCESS );
+                break;
+            case EWKB_MULTIPOLYGON_TYPE :
+                ACI_TEST( ulsGetMultiPolygonSizeFromEWKB( aHandle,
+                                                          (acp_uint8_t**)&sBCurrObj,
+                                                          aFence,
+                                                          &sSize ) != ACS_SUCCESS );
+                break;
+            default :
+                ACI_RAISE( ERR_INVALID_DATA_TYPE );
+        } /* switch*/
+        sTotalSize += sSize;
+    } /* while*/
+
+    sTotalSize += STD_COLL2D_EXT_SIZE;
+
+    *aPtr  = sPtr;
+    *aSize = sTotalSize;
+
+    return ACS_SUCCESS;
+
+    ACI_EXCEPTION( ERR_PARSING );
+    {
+        ulsSetErrorCode( aHandle,
+                         (ulERR_ABORT_ACS_INVALID_WKB) );
+    }
+
+    ACI_EXCEPTION( ERR_INVALID_HANDLE );
+    {
+        return ACS_INVALID_HANDLE;
+    }
+
+    ACI_EXCEPTION( ERR_INVALID_DATA_TYPE );
+    {
+        ulsSetErrorCode( aHandle,
+                         (ulERR_ABORT_ACS_INVALID_DATA_TYPE) );
+    }
     
+    ACI_EXCEPTION_END;
+
+    return ACS_ERROR;
+}
+

@@ -409,7 +409,7 @@ IDE_RC mmtThreadManager::setupProtocolCallback()
 
     /* BUG-38496 */
     IDE_TEST(cmiSetCallback(CMI_PROTOCOL(DB, ConnectEx),
-                            mmtServiceThread::connectExProtocol) != IDE_SUCCESS);
+                            mmtServiceThread::connectProtocol) != IDE_SUCCESS);
 
     /* BUG-39463 Add new fetch protocol that can request over 65535 rows. */
     IDE_TEST(cmiSetCallback(CMI_PROTOCOL(DB, FetchV2),
@@ -463,6 +463,35 @@ IDE_RC mmtThreadManager::setupProtocolCallback()
 
     IDE_TEST( cmiSetCallback( CMI_PROTOCOL( DB, ShardNodeReport ),
                               mmtServiceThread::shardNodeReport) != IDE_SUCCESS );
+
+    /* PROJ-2733-Protocol */
+    IDE_TEST(cmiSetCallback(CMI_PROTOCOL(DB, ConnectV3),
+                            mmtServiceThread::connectProtocol) != IDE_SUCCESS);
+    IDE_TEST(cmiSetCallback(CMI_PROTOCOL(DB, ExecuteV3),
+                            mmtServiceThread::executeProtocol) != IDE_SUCCESS);
+    IDE_TEST(cmiSetCallback(CMI_PROTOCOL(DB, ParamDataInListV3),
+                            mmtServiceThread::paramDataInListProtocol) != IDE_SUCCESS);
+    IDE_TEST(cmiSetCallback(CMI_PROTOCOL(DB, PropertySetV3),
+                            mmtServiceThread::propertySetProtocol) != IDE_SUCCESS);
+    IDE_TEST(cmiSetCallback(CMI_PROTOCOL(DB, ShardTransactionV3),
+                            mmtServiceThread::shardTransactionProtocol) != IDE_SUCCESS);
+    IDE_TEST(cmiSetCallback(CMI_PROTOCOL(DB, ShardPrepareV3),
+                            mmtServiceThread::shardPrepareProtocol) != IDE_SUCCESS);
+    IDE_TEST(cmiSetCallback(CMI_PROTOCOL(DB, ShardEndPendingTxV3),
+                            mmtServiceThread::shardEndPendingTxProtocol) != IDE_SUCCESS);
+
+    /* PROJ-2728 Sharding LOB */
+    IDE_TEST( cmiSetCallback( CMI_PROTOCOL( DB, LobGetSizeV3 ),
+                              mmtServiceThread::lobGetSizeProtocol ) != IDE_SUCCESS );
+
+    IDE_TEST( cmiSetCallback( CMI_PROTOCOL( DB, FetchV3 ),
+                              mmtServiceThread::fetchProtocol ) != IDE_SUCCESS );
+
+    /* BUG-48775 */
+    IDE_TEST(cmiSetCallback(CMI_PROTOCOL(DB, PrepareV3),
+                            mmtServiceThread::prepareProtocol) != IDE_SUCCESS);
+    IDE_TEST(cmiSetCallback(CMI_PROTOCOL(DB, PrepareByCIDV3),
+                            mmtServiceThread::prepareByCIDProtocol) != IDE_SUCCESS);
 
     /* bug-33841: ipc thread's state is wrongly displayed */
     (void) cmiSetCallbackSetExecute(mmtServiceThread::setExecuteCallback);
@@ -570,7 +599,7 @@ IDE_RC mmtThreadManager::addListener(cmiLinkImpl aLinkImpl, SChar *aMsgBuffer, U
         sDispatcherImpl = cmiDispatcherImplForLinkImpl(aLinkImpl);
 
         // bug-27571: klocwork warnings: Array index out of bounds
-        // invalid ê°’ì„ array indexë¡œ ì‚¬ìš©í•˜ë©´ arrayë¥¼ ë„˜ì–´ì„œê²Œ ë¨.
+        // invalid °ªÀ» array index·Î »ç¿ëÇÏ¸é array¸¦ ³Ñ¾î¼­°Ô µÊ.
         IDE_TEST(sDispatcherImpl == CMI_DISPATCHER_IMPL_INVALID);
 
 
@@ -650,7 +679,7 @@ IDE_RC mmtThreadManager::startListener()
 
             sDispatcherImpl = cmiDispatcherImplForLinkImpl((cmiLinkImpl)sImpl);
             // bug-26979: codesonar: buffer-overrun
-            // invalid ê°’ì„ array indexë¡œ ì‚¬ìš©í•˜ë©´ arrayë¥¼ ë„˜ì–´ì„œê²Œ ë¨.
+            // invalid °ªÀ» array index·Î »ç¿ëÇÏ¸é array¸¦ ³Ñ¾î¼­°Ô µÊ.
             IDE_TEST(sDispatcherImpl == CMI_DISPATCHER_IMPL_INVALID);
 
             IDE_TEST(mDispatcher[sDispatcherImpl]->addLink(mListenLink[sImpl]) != IDE_SUCCESS);
@@ -681,7 +710,7 @@ IDE_RC mmtThreadManager::stopListener()
     mDispatcherRun = ID_FALSE;
 
     /*
-     * Listen Dispatcherë¥¼ ì¢…ë£Œí•œë‹¤. Service DispatcherëŠ” finalize() í˜¸ì¶œì‹œ ì¢…ë£Œí•œë‹¤.
+     * Listen Dispatcher¸¦ Á¾·áÇÑ´Ù. Service Dispatcher´Â finalize() È£Ãâ½Ã Á¾·áÇÑ´Ù.
      */
 
     for (sImpl = CMI_DISPATCHER_IMPL_BASE; sImpl < CMI_DISPATCHER_IMPL_MAX; sImpl++)
@@ -697,7 +726,7 @@ IDE_RC mmtThreadManager::stopListener()
     }
 
     /*
-     * Listen Linkë¥¼ ë‹«ëŠ”ë‹¤.
+     * Listen Link¸¦ ´İ´Â´Ù.
      */
 
     for (sImpl = CMI_LINK_IMPL_BASE; sImpl < CMI_LINK_IMPL_MAX; sImpl++)
@@ -727,7 +756,7 @@ IDE_RC mmtThreadManager::startServiceThreads()
     UInt      sIPCDAChannelCount = mmuProperty::getIPCDAChannelCount();
 
     /*
-     * ì£¼ Threadë“¤ì„ ìƒì„±
+     * ÁÖ ThreadµéÀ» »ı¼º
      */
 
     // Socket Service Thread
@@ -918,13 +947,13 @@ IDE_RC mmtThreadManager::stopServiceThreads()
         /*
          * BUG-37038
          *
-         * sThread->stop()ì´ ë¨¼ì € ì‹¤í–‰ë˜ì–´ì•¼ í•œë‹¤.
-         * ìˆœì„œê°€ ë°”ë€Œë©´ mutex destroy()ì‹œ ì‹¤íŒ¨(EBUSY)í•  ìˆ˜ ìˆë‹¤.
+         * sThread->stop()ÀÌ ¸ÕÀú ½ÇÇàµÇ¾î¾ß ÇÑ´Ù.
+         * ¼ø¼­°¡ ¹Ù²î¸é mutex destroy()½Ã ½ÇÆĞ(EBUSY)ÇÒ ¼ö ÀÖ´Ù.
          */
         IDL_MEM_BARRIER;
 
         /* PROJ-2108 Dedicated thread mode which uses less CPU */
-        /* BUG-37038 DEDICATED TYPEì¸ ê²½ìš°ì—ë§Œ signalì„ ë³´ë‚¸ë‹¤. */
+        /* BUG-37038 DEDICATED TYPEÀÎ °æ¿ì¿¡¸¸ signalÀ» º¸³½´Ù. */
         if (sThread->getServiceThreadType() == MMC_SERVICE_THREAD_TYPE_DEDICATED)
         {
             IDE_TEST(sThread->signalToServiceThread(sThread));
@@ -945,8 +974,8 @@ IDE_RC mmtThreadManager::stopServiceThreads()
         /*
          * BUG-37038
          *
-         * sThread->stop()ì´ ë¨¼ì € ì‹¤í–‰ë˜ì–´ì•¼ í•œë‹¤.
-         * ìˆœì„œê°€ ë°”ë€Œë©´ mutex destroy()ì‹œ ì‹¤íŒ¨(EBUSY)í•  ìˆ˜ ìˆë‹¤.
+         * sThread->stop()ÀÌ ¸ÕÀú ½ÇÇàµÇ¾î¾ß ÇÑ´Ù.
+         * ¼ø¼­°¡ ¹Ù²î¸é mutex destroy()½Ã ½ÇÆĞ(EBUSY)ÇÒ ¼ö ÀÖ´Ù.
          */
         IDL_MEM_BARRIER;
 
@@ -969,8 +998,8 @@ IDE_RC mmtThreadManager::stopServiceThreads()
         /*
          * BUG-37038
          *
-         * sThread->stop()ì´ ë¨¼ì € ì‹¤í–‰ë˜ì–´ì•¼ í•œë‹¤.
-         * ìˆœì„œê°€ ë°”ë€Œë©´ mutex destroy()ì‹œ ì‹¤íŒ¨(EBUSY)í•  ìˆ˜ ìˆë‹¤.
+         * sThread->stop()ÀÌ ¸ÕÀú ½ÇÇàµÇ¾î¾ß ÇÑ´Ù.
+         * ¼ø¼­°¡ ¹Ù²î¸é mutex destroy()½Ã ½ÇÆĞ(EBUSY)ÇÒ ¼ö ÀÖ´Ù.
          */
         IDL_MEM_BARRIER;
 
@@ -993,10 +1022,10 @@ IDE_RC mmtThreadManager::stopServiceThreads()
     unlock();
 
     //==========================================================
-    // bug-22948: shutdown ì¤‘ì— threadë¥¼ ì™„ì „íˆ ì¢…ë£Œì‹œí‚¤ì§€ ëª»í•´
-    // ì¶”í›„ mutex_destroy ë„ì¤‘ EBUSYë¡œ ë¹„ì •ìƒ ì¢…ë£Œí•¨
-    // ìˆ˜ì •ì‚¬í•­: ê¸°ì¡´ì— 10ì´ˆ(STOP_THREAD_WAIT_TIMEOUT)ë§Œ
-    // ê¸°ë‹¤ë¦¬ë˜ ê²ƒì„ ì¢…ë£Œí• ë•Œê¹Œì§€ ë¬´í•œ ëŒ€ê¸°í•˜ë„ë¡ ìˆ˜ì •í•¨
+    // bug-22948: shutdown Áß¿¡ thread¸¦ ¿ÏÀüÈ÷ Á¾·á½ÃÅ°Áö ¸øÇØ
+    // ÃßÈÄ mutex_destroy µµÁß EBUSY·Î ºñÁ¤»ó Á¾·áÇÔ
+    // ¼öÁ¤»çÇ×: ±âÁ¸¿¡ 10ÃÊ(STOP_THREAD_WAIT_TIMEOUT)¸¸
+    // ±â´Ù¸®´ø °ÍÀ» Á¾·áÇÒ¶§±îÁö ¹«ÇÑ ´ë±âÇÏµµ·Ï ¼öÁ¤ÇÔ
     while ((getServiceThreadSocketCount() > 0) ||
             (getServiceThreadIPCCount() > 0))
     {
@@ -1259,13 +1288,13 @@ IDE_RC mmtThreadManager::allocDispatcher(cmiDispatcherImpl aImpl)
     mmtDispatcher *sDispatcher = NULL;
 
     /*
-     * Dispatcher ìƒì„±
+     * Dispatcher »ı¼º
      */
 
     if (mDispatcher[aImpl] == NULL)
     {
         /*
-         * Dispatcher ë©”ëª¨ë¦¬ í• ë‹¹
+         * Dispatcher ¸Ş¸ğ¸® ÇÒ´ç
          */
 
         IDU_FIT_POINT( "mmtThreadManager::allocDispatcher::malloc::Dispatcher" );
@@ -1276,7 +1305,7 @@ IDE_RC mmtThreadManager::allocDispatcher(cmiDispatcherImpl aImpl)
                                    IDU_MEM_IMMEDIATE) != IDE_SUCCESS);
 
         /*
-         * Dispatcher ì´ˆê¸°í™”
+         * Dispatcher ÃÊ±âÈ­
          */
 
         sDispatcher = new (sDispatcher) mmtDispatcher();
@@ -1360,9 +1389,9 @@ IDE_RC mmtThreadManager::freeServiceThread(mmtServiceThread *aServiceThread)
 }
 
  /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-    ê¸°ì¡´ê³¼ë‹¬ë¦¬ í•œê°œì”© service threadë¥¼ ì¶”ê°€í•˜ëŠ”ê²ƒì´ ì•„ë‹ˆë¼,
-    í†µê³„ì¹˜ ê³„ì‚°ì— ì˜í•˜ì—¬ ì ì ˆí•œ service threadê°¯ìˆ˜ë§Œí¼
-    ìƒì„±í•œë‹¤.
+    ±âÁ¸°ú´Ş¸® ÇÑ°³¾¿ service thread¸¦ Ãß°¡ÇÏ´Â°ÍÀÌ ¾Æ´Ï¶ó,
+    Åë°èÄ¡ °è»ê¿¡ ÀÇÇÏ¿© ÀûÀıÇÑ service thread°¹¼ö¸¸Å­
+    »ı¼ºÇÑ´Ù.
  */
 IDE_RC mmtThreadManager::startServiceThread(mmcServiceThreadType aServiceThreadType,UInt aNewThrCnt, UInt *aAllocateThrCnt)
 {
@@ -1403,7 +1432,7 @@ IDE_RC mmtThreadManager::startServiceThread(mmcServiceThreadType aServiceThreadT
 }
 /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
    BUG-29083 When a task is assigned to service-thread, dispatcher make effort to choose a proper service-thread.
-   busy degreeê°€ ì œì¼ ì‘ì€ service threadì—ê²Œ taskë¶„ë°°ë¥¼ í•œë‹¤.
+   busy degree°¡ Á¦ÀÏ ÀÛÀº service thread¿¡°Ô taskºĞ¹è¸¦ ÇÑ´Ù.
  */
 mmtServiceThread* mmtThreadManager::chooseServiceThread()
 {
@@ -1482,7 +1511,7 @@ IDE_RC mmtThreadManager::addSocketTask(mmcTask *aTask)
     while (1)
     {
         /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-           instruction pipe-lineë•Œë¬¸ì— ì´ ì½”ë“œê°€ ë“¤ì–´ê°.
+           instruction pipe-line¶§¹®¿¡ ÀÌ ÄÚµå°¡ µé¾î°¨.
          */
         ID_SERIAL_BEGIN(lock());
         ID_SERIAL_EXEC(sChosenThread = chooseServiceThread(),1);
@@ -1596,21 +1625,21 @@ IDE_RC mmtThreadManager::addIpcTask(mmcTask *aTask)
     iduList           sTaskList;
     SInt              sRC;
 
-    // 1. í´ë¼ì´ì–¸íŠ¸ Channel í• ë‹¹
+    // 1. Å¬¶óÀÌ¾ğÆ® Channel ÇÒ´ç
     sLink = aTask->getLink();
     IDE_TEST(cmiAllocChannel(sLink, &sChannelID) != IDE_SUCCESS);
 
     // fix BUG-25102
-    // í´ë¼ì´ì–¸íŠ¸ê°€ ì •ìƒ ì ‘ì†ì´ ëœ í›„ TASKë¥¼ Threadì— ì¶”ê°€í•˜ë„ë¡ í•œë‹¤.
-    // 2. í´ë¼ì´ì–¸íŠ¸ì—ê²Œ IPC ì •ë³´ ì „ì†¡
+    // Å¬¶óÀÌ¾ğÆ®°¡ Á¤»ó Á¢¼ÓÀÌ µÈ ÈÄ TASK¸¦ Thread¿¡ Ãß°¡ÇÏµµ·Ï ÇÑ´Ù.
+    // 2. Å¬¶óÀÌ¾ğÆ®¿¡°Ô IPC Á¤º¸ Àü¼Û
     IDE_TEST(cmiHandshake(sLink) != IDE_SUCCESS);
 
-    // 3. IPC Service Threadì— Task ì¶”ê°€
+    // 3. IPC Service Thread¿¡ Task Ãß°¡
     sIpcServiceThread = mIpcServiceThreadArray[sChannelID];
     sIpcServiceThread->addTask(aTask);
     sAddTask = ID_TRUE;
 
-    // 4. IPC Service Thread ë™ì‘
+    // 4. IPC Service Thread µ¿ÀÛ
     sIpcServiceThreadMutex = &mIpcServiceThreadMutex[sChannelID];
     sIpcServiceThreadCV    = &mIpcServiceThreadCV[sChannelID];
 
@@ -1646,7 +1675,7 @@ IDE_RC mmtThreadManager::addIpcTask(mmcTask *aTask)
 
 /*****************************************************
  * PROJ-2616
- * IPCDA ì—°ê²°ì— ëŒ€í•˜ì—¬ í…ŒìŠ¤í¬ ìŠ¤íƒì— ì¶”ê°€í•˜ëŠ” í•¨ìˆ˜
+ * IPCDA ¿¬°á¿¡ ´ëÇÏ¿© Å×½ºÅ© ½ºÅÃ¿¡ Ãß°¡ÇÏ´Â ÇÔ¼ö
  *
  * aTask [in] - mmaTack
  *****************************************************/
@@ -1663,25 +1692,25 @@ IDE_RC mmtThreadManager::addIPCDATask(mmcTask *aTask)
 
     UInt              sThreadCnt = mmuProperty::getIPCDAChannelCount();
 
-    /* 1. í´ë¼ì´ì–¸íŠ¸ Channel í• ë‹¹ */
+    /* 1. Å¬¶óÀÌ¾ğÆ® Channel ÇÒ´ç */
     sLink = aTask->getLink();
     IDE_TEST(cmiAllocChannel(sLink, &sChannelID) != IDE_SUCCESS);
 
     cmnLinkPeerInitIPCDA(aTask->getProtocolContext(), sChannelID );
 
     /* fix BUG-25102 */
-    /* í´ë¼ì´ì–¸íŠ¸ê°€ ì •ìƒ ì ‘ì†ì´ ëœ í›„ TASKë¥¼ Threadì— ì¶”ê°€í•˜ë„ë¡ í•œë‹¤. */
-    /* 2. í´ë¼ì´ì–¸íŠ¸ì—ê²Œ IPC ì •ë³´ ì „ì†¡ */
+    /* Å¬¶óÀÌ¾ğÆ®°¡ Á¤»ó Á¢¼ÓÀÌ µÈ ÈÄ TASK¸¦ Thread¿¡ Ãß°¡ÇÏµµ·Ï ÇÑ´Ù. */
+    /* 2. Å¬¶óÀÌ¾ğÆ®¿¡°Ô IPC Á¤º¸ Àü¼Û */
     IDE_TEST(cmiHandshake(sLink) != IDE_SUCCESS);
 
-    /* 3. IPC Service Threadì— Task ì¶”ê°€ */
+    /* 3. IPC Service Thread¿¡ Task Ãß°¡ */
     sIPCDAServiceThread = mIPCDAServiceThreadArray[sThreadCnt == 1?0:sChannelID%sThreadCnt];
     sIPCDAServiceThread->addTask(aTask);
 
     sAddTask = ID_TRUE;
     if (sIPCDAServiceThread->getReadyTaskCount() == 1)
     {
-        /* 4. IPC Service Thread ë™ì‘ */
+        /* 4. IPC Service Thread µ¿ÀÛ */
         sIPCDAServiceThreadMutex = &mIPCDAServiceThreadMutex[sThreadCnt == 1?0:sChannelID%sThreadCnt];
         sIPCDAServiceThreadCV    = &mIPCDAServiceThreadCV[sThreadCnt == 1?0:sChannelID%sThreadCnt];
 
@@ -1758,7 +1787,7 @@ void mmtThreadManager::checkServiceThreads()
     mmtServiceThread *sThread;
     UInt              sThrCnt = 0;
     UInt              sSumOfTaskCnt = 0;
-    // a busy thread ì˜ listì— ë‹¬ë ¤ ìˆëŠ” task ê°¯ìˆ˜ .
+    // a busy thread ÀÇ list¿¡ ´Ş·Á ÀÖ´Â task °¹¼ö .
     UInt              sSumOfTaskCntOnBusyThrLst = 0;
     UInt              sSumOfTaskCntOnIdleThr = 0;
     UInt              sTaskCnt    = 0;
@@ -1774,12 +1803,12 @@ void mmtThreadManager::checkServiceThreads()
     IDU_LIST_INIT(&sBusyThreadList);
     IDU_LIST_INIT(&sIdleThreadList);
     /*
-     * Free Listì— ë‹¬ë¦° Threadë¥¼ Freeí•œë‹¤.
+     * Free List¿¡ ´Ş¸° Thread¸¦ FreeÇÑ´Ù.
      *
-     * ì„œë¹„ìŠ¤ ì“°ë ˆë“œê°€ ì¢…ë£Œí•  ë•Œ ì“°ë ˆë“œê°€ ê°€ì§€ê³  ìˆë˜ íƒœìŠ¤í¬ë“¤ì„
-     * ë‹¤ë¥¸ ì“°ë ˆë“œë¡œ ì˜®ê¸°ê¸° ìœ„í•´ addTaskí•˜ë©´ì„œ lock-unlockì„ ë°˜ë³µí•˜ë¯€ë¡œ
-     * thr_joinì„ í•˜ëŠ” freeServiceThreadsí•¨ìˆ˜ë¥¼ unlockí•˜ê³  ìˆ˜í–‰í•´ì•¼ í•œë‹¤.
-     * ì´ë¥¼ ìœ„í•´ Free Listë¥¼ ì˜®ê²¨ë†“ê³  unlockí•œë‹¤.
+     * ¼­ºñ½º ¾²·¹µå°¡ Á¾·áÇÒ ¶§ ¾²·¹µå°¡ °¡Áö°í ÀÖ´ø ÅÂ½ºÅ©µéÀ»
+     * ´Ù¸¥ ¾²·¹µå·Î ¿Å±â±â À§ÇØ addTaskÇÏ¸é¼­ lock-unlockÀ» ¹İº¹ÇÏ¹Ç·Î
+     * thr_joinÀ» ÇÏ´Â freeServiceThreadsÇÔ¼ö¸¦ unlockÇÏ°í ¼öÇàÇØ¾ß ÇÑ´Ù.
+     * ÀÌ¸¦ À§ÇØ Free List¸¦ ¿Å°Ü³õ°í unlockÇÑ´Ù.
      */
 
     
@@ -1792,14 +1821,14 @@ void mmtThreadManager::checkServiceThreads()
     freeServiceThreads(&sFreeThreadList);
 
     /*
-     * ëª¨ë“  Threadë“¤ì„ ê²€ì‚¬í•˜ì—¬ ë‹¤ìŒì„ ìˆ˜í–‰í•œë‹¤.
+     * ¸ğµç ThreadµéÀ» °Ë»çÇÏ¿© ´ÙÀ½À» ¼öÇàÇÑ´Ù.
      *
-     * 1. Idle Threadì˜ ìˆ˜ë¥¼ MULTIPEXLING_THREAD_COUNTë¡œ ìœ ì§€ (ë‚˜ë¨¸ì§€ëŠ” stopì‹œí‚´)
-     * 2. Idle Threadì¤‘ Task ìˆ˜ê°€ ê°€ì¥ ë§ì€ Threadì™€ ê°€ì¥ ì ì€ Threadë¥¼ íŒë³„
-     * 3. Busy Thread List, Idle Thread Listë¥¼ êµ¬ì„±
+     * 1. Idle ThreadÀÇ ¼ö¸¦ MULTIPEXLING_THREAD_COUNT·Î À¯Áö (³ª¸ÓÁö´Â stop½ÃÅ´)
+     * 2. Idle ThreadÁß Task ¼ö°¡ °¡Àå ¸¹Àº Thread¿Í °¡Àå ÀûÀº Thread¸¦ ÆÇº°
+     * 3. Busy Thread List, Idle Thread List¸¦ ±¸¼º
      *
-     * ìˆ˜í–‰ ì¤‘ ì„œë¹„ìŠ¤ ì“°ë ˆë“œì— í˜¸ì¶œí•˜ëŠ” í•¨ìˆ˜ëŠ” deadlockì„ ë°©ì§€í•˜ê³  ìˆ˜í–‰ì‹œê°„ì„
-     * ì¤„ì´ê¸° ìœ„í•´ lockì´ ì•„ë‹ˆë¼ trylockì„ ì‚¬ìš©í•˜ëŠ” í•¨ìˆ˜ë§Œ ì‚¬ìš©í•´ì•¼ í•œë‹¤.
+     * ¼öÇà Áß ¼­ºñ½º ¾²·¹µå¿¡ È£ÃâÇÏ´Â ÇÔ¼ö´Â deadlockÀ» ¹æÁöÇÏ°í ¼öÇà½Ã°£À»
+     * ÁÙÀÌ±â À§ÇØ lockÀÌ ¾Æ´Ï¶ó trylockÀ» »ç¿ëÇÏ´Â ÇÔ¼ö¸¸ »ç¿ëÇØ¾ß ÇÑ´Ù.
      */
 
     lock();
@@ -1817,12 +1846,12 @@ void mmtThreadManager::checkServiceThreads()
                 fix BUG-29117 approach to load-balance is too naive when there is no idle thread,
                 fix BUG-29144 approach to load-balance is too naive when there is a few idle thread
                 
-                threadë‹¹ assignëœ average task count,
-                SUM(busy threadì˜ task listì— ìˆëŠ” task ê°œìˆ˜),
-                idle thread ê°¯ìˆ˜ ,
-                thread ì´ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤.
+                thread´ç assignµÈ average task count,
+                SUM(busy threadÀÇ task list¿¡ ÀÖ´Â task °³¼ö),
+                idle thread °¹¼ö ,
+                thread ÃÑ°³¼ö¸¦ ±¸ÇÑ´Ù.
               */
-            //executeí•˜ê³  ìˆëŠ” taskëŠ” ì œì™¸í•˜ê¸°ìœ„í•˜ì—¬.
+            //executeÇÏ°í ÀÖ´Â task´Â Á¦¿ÜÇÏ±âÀ§ÇÏ¿©.
             if(sTaskCnt > 0)
             {
                 
@@ -1836,7 +1865,7 @@ void mmtThreadManager::checkServiceThreads()
         }
         else
         {
-            // í˜„ì¬ ì“°ë ˆë“œëŠ” IDLEí•œ ì“°ë ˆë“œì´ë‹¤.
+            // ÇöÀç ¾²·¹µå´Â IDLEÇÑ ¾²·¹µåÀÌ´Ù.
             sSumOfTaskCntOnIdleThr += sTaskCnt;
             sIdleThrCnt++;
             /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
@@ -1851,7 +1880,7 @@ void mmtThreadManager::checkServiceThreads()
     }//IDU_LIST_ITERATE
 
     /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-       service thread ë‹¹ í‰ê·  Taskê°¯ìˆ˜ ë¥¼ êµ¬í•œë‹¤.
+       service thread ´ç Æò±Õ Task°¹¼ö ¸¦ ±¸ÇÑ´Ù.
     */
     //fix BUG-29514 code-sonar mmXXX serires.
     IDE_TEST_CONT(sThrCnt == 0, nextLoadBalance);
@@ -1860,7 +1889,7 @@ void mmtThreadManager::checkServiceThreads()
     if (IDU_LIST_IS_EMPTY(&sIdleThreadList) == ID_TRUE)
     {
         /*
-         * ëª¨ë“  Threadê°€ Busyí•˜ë©´ Threadë¥¼ ë” ë§Œë“ ë‹¤.
+         * ¸ğµç Thread°¡ BusyÇÏ¸é Thread¸¦ ´õ ¸¸µç´Ù.
          */
         IDE_TEST_CONT(sSumOfTaskCntOnBusyThrLst == 0, nextLoadBalance);
         IDE_TEST_CONT( sSumOfTaskCnt <= sThrCnt,nextLoadBalance);
@@ -1879,7 +1908,7 @@ void mmtThreadManager::checkServiceThreads()
             sCntForNewThr = 1;
             ideLog::logLine(IDE_LB_1, "L6 Change to 1 because NewServiceThreadCount is 0");
         }//if
-        // í•„ìš”ì´ìƒìœ¼ë¡œ thread ê°¯ìˆ˜ ìƒì„±ì„ ë°©ì§€í•˜ê¸° ìœ„í•˜ì—¬  ë³´ì •í•œë‹¤.
+        // ÇÊ¿äÀÌ»óÀ¸·Î thread °¹¼ö »ı¼ºÀ» ¹æÁöÇÏ±â À§ÇÏ¿©  º¸Á¤ÇÑ´Ù.
         IDE_TEST_CONT(adjustCountForNewThr(sThrCnt, sSumOfTaskCnt ,&sCntForNewThr) != IDE_SUCCESS,
                        nextLoadBalance);
         IDE_TEST(createNewThr(sThrCnt,sCntForNewThr) != IDE_SUCCESS);
@@ -1887,14 +1916,14 @@ void mmtThreadManager::checkServiceThreads()
     else
     {
         /*
-           idle threadsê°„ì— task ëŒ€ê¸°ì—´ì˜ ê· í˜•ì„ ë§ì¶”ê¸° ìœ„í•˜ì—¬ ,
-           task ë¶„ë°°ë¥¼ ìˆ˜í–‰í•œë‹¤.
+           idle threads°£¿¡ task ´ë±â¿­ÀÇ ±ÕÇüÀ» ¸ÂÃß±â À§ÇÏ¿© ,
+           task ºĞ¹è¸¦ ¼öÇàÇÑ´Ù.
         */
         distributeTasksAmongIdleThreads(&sIdleThreadList);
         /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-           busy thread listê°€ ë¹„ì–´ìˆê±° ë‚˜, ë¹„ì–´ìˆì§€ì•Šë”ë¼ë„ busy threadì˜ taskê°€ ì—†ëŠ” ê²½ìš°ì—
-           skipí•˜ê³ , assignedëœ taskê°€ í•œê°œë„ ì—†ëŠ” a service threadë¥¼
-           ì¢…ë£Œì‹œí‚¨ë‹¤.
+           busy thread list°¡ ºñ¾îÀÖ°Å ³ª, ºñ¾îÀÖÁö¾Ê´õ¶óµµ busy threadÀÇ task°¡ ¾ø´Â °æ¿ì¿¡
+           skipÇÏ°í, assignedµÈ task°¡ ÇÑ°³µµ ¾ø´Â a service thread¸¦
+           Á¾·á½ÃÅ²´Ù.
         */
         if(IDU_LIST_IS_EMPTY(&sBusyThreadList) == ID_TRUE ||(sSumOfTaskCntOnBusyThrLst == 0))
         {
@@ -1904,26 +1933,26 @@ void mmtThreadManager::checkServiceThreads()
         {
 
             /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-               a idle threadì— í• ë‹¹ëœ í‰ê·  average taskê°¯ìˆ˜ë¥¼ êµ¬í•œë‹¤.
+               a idle thread¿¡ ÇÒ´çµÈ Æò±Õ average task°¹¼ö¸¦ ±¸ÇÑ´Ù.
             */
             //fix BUG-29514 code-sonar mmXXX serires.
-            // idle thread listê°€ emptyê°€ ì•„ë‹ˆê¸°ë•Œë¬¸ì— divide by zeroê°€ ë ìˆ˜ ì—†ì§€ë§Œ,
-            // conde-sonarë¥¼ ìœ„í•´ ë°©ì–´ì½”ë“œë¥¼ ë„£ëŠ”ë‹¤.
+            // idle thread list°¡ empty°¡ ¾Æ´Ï±â¶§¹®¿¡ divide by zero°¡ µÉ¼ö ¾øÁö¸¸,
+            // conde-sonar¸¦ À§ÇØ ¹æ¾îÄÚµå¸¦ ³Ö´Â´Ù.
             IDE_TEST_CONT(sIdleThrCnt  == 0 ,nextLoadBalance);
             sAvgTaskCntPerIdleThr = (sSumOfTaskCntOnBusyThrLst + sSumOfTaskCntOnIdleThr)  / sIdleThrCnt;
             /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-               a idle threadì— í• ë‹¹ëœ í‰ê·  average taskê°¯ìˆ˜ê°€ a service threadì— í• ë‹¹ëœ í‰ê·  taskê°¯ìˆ˜ë³´ë‹¤
-               í°ì§€ë¥¼ í™•ì¸
+               a idle thread¿¡ ÇÒ´çµÈ Æò±Õ average task°¹¼ö°¡ a service thread¿¡ ÇÒ´çµÈ Æò±Õ task°¹¼öº¸´Ù
+               Å«Áö¸¦ È®ÀÎ
             */
             if(sAvgTaskCntPerIdleThr > sAvgTaskCntPerThr)
             {
-                // ì¶”ê°€ë¡œ service threadë¥¼ ìƒì„±í• ì§€ë¥¼ íŒë‹¨.
+                // Ãß°¡·Î service thread¸¦ »ı¼ºÇÒÁö¸¦ ÆÇ´Ü.
                 if(needToCreateThr(sSumOfTaskCnt,sThrCnt,sAvgTaskCntPerIdleThr,sAvgTaskCntPerThr ) == ID_TRUE)
                 {
                     /* BUG-45274 reference http://nok.altibase.com/pages/viewpage.action?pageId=40570104  */
                     ideLog::logLine(IDE_LB_1, "L9 Too many Task's allocated to IdleServiceThread.");
 
-                    // ìƒˆë¡œ ìƒì„±í•  threadê°¯ìˆ˜ì—ì„œ ê¸°ì¡´ í™•ë³´í•œ idle threadëŠ” ê³ ë ¤í•´ì•¼ í•œë‹¤.
+                    // »õ·Î »ı¼ºÇÒ thread°¹¼ö¿¡¼­ ±âÁ¸ È®º¸ÇÑ idle thread´Â °í·ÁÇØ¾ß ÇÑ´Ù.
                     sCntForNewThr = (((sSumOfTaskCntOnBusyThrLst+ sSumOfTaskCntOnIdleThr)/ sAvgTaskCntPerThr) - sIdleThrCnt);
 
                     ideLog::logLine(IDE_LB_1, "L9 NewServiceThreadCount(%"ID_UINT32_FMT") = ((SumOfTaskCntOnBusyThrLst(%"ID_UINT32_FMT") + SumOfTaskCntOnIdleThr(%"ID_UINT32_FMT"))/ AvgTaskCntPerThr(%"ID_UINT32_FMT")) - IdleThrCnt(%"ID_UINT32_FMT")",
@@ -1935,7 +1964,7 @@ void mmtThreadManager::checkServiceThreads()
 
                     if(sCntForNewThr >  0)
                     {
-                        // í•„ìš”ì´ìƒìœ¼ë¡œ thread ê°¯ìˆ˜ ìƒì„±ì„ ë°©ì§€í•˜ê¸° ìœ„í•˜ì—¬  ë³´ì •í•œë‹¤.
+                        // ÇÊ¿äÀÌ»óÀ¸·Î thread °¹¼ö »ı¼ºÀ» ¹æÁöÇÏ±â À§ÇÏ¿©  º¸Á¤ÇÑ´Ù.
                         if( adjustCountForNewThr(sThrCnt, sSumOfTaskCnt ,&sCntForNewThr) == IDE_SUCCESS)
                         {
                             IDE_TEST(createNewThr(sThrCnt,sCntForNewThr) != IDE_SUCCESS);
@@ -1945,7 +1974,7 @@ void mmtThreadManager::checkServiceThreads()
                 }
             }//if        
             /*
-             * Busy Threadì˜ Taskë¥¼ Idle Threadë¡œ ë¶„ë°°í•œë‹¤.
+             * Busy ThreadÀÇ Task¸¦ Idle Thread·Î ºĞ¹èÇÑ´Ù.
              */
             IDU_LIST_INIT(&sTaskList);
             
@@ -2000,7 +2029,7 @@ void mmtThreadManager::checkServiceThreads()
 }
 
 /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-   aCntForNewThrê°¯ìˆ˜ ë§Œí¼ service threadë¥¼ ìƒì„±í•œë‹¤.
+   aCntForNewThr°¹¼ö ¸¸Å­ service thread¸¦ »ı¼ºÇÑ´Ù.
 */
 
 IDE_RC  mmtThreadManager::createNewThr(UInt aThrCnt,
@@ -2038,7 +2067,7 @@ IDE_RC  mmtThreadManager::createNewThr(UInt aThrCnt,
 
 }
 /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-  í•„ìš”ì´ìƒìœ¼ë¡œ thread ê°¯ìˆ˜ ìƒì„±ì„ ë°©ì§€í•˜ê¸° ìœ„í•˜ì—¬  ë³´ì •í•œë‹¤.
+  ÇÊ¿äÀÌ»óÀ¸·Î thread °¹¼ö »ı¼ºÀ» ¹æÁöÇÏ±â À§ÇÏ¿©  º¸Á¤ÇÑ´Ù.
 */
 IDE_RC  mmtThreadManager::adjustCountForNewThr(UInt  aThrCnt,
                                                UInt  aSumOfTaskCnt,
@@ -2095,10 +2124,10 @@ IDE_RC  mmtThreadManager::adjustCountForNewThr(UInt  aThrCnt,
     return IDE_FAILURE;
 }
 
-/* Idle thraed ì¤‘
- * Taskìˆ˜ê°€ ê°€ì¥ ë§ì€ Threadì—ì„œ ê°€ì¥ ì ì€ Threadë¡œ Taskë¥¼ ë‚˜ëˆ ì¤€ë‹¤.
+/* Idle thraed Áß
+ * Task¼ö°¡ °¡Àå ¸¹Àº Thread¿¡¼­ °¡Àå ÀûÀº Thread·Î Task¸¦ ³ª´²ÁØ´Ù.
  *
- * ì˜®ê¸°ëŠ” íƒœìŠ¤í¬ ìˆ˜(x)
+ * ¿Å±â´Â ÅÂ½ºÅ© ¼ö(x)
  *
          * a = sThreadMax->getTaskCount()
          * b = sThreadMin->getTaskCount()
@@ -2167,15 +2196,17 @@ IDE_RC mmtThreadManager::dispatchCallback(cmiLink *aLink, cmiDispatcherImpl aDis
     idBool   sIsRemoteIP = ID_FALSE;
     SChar   *sIPACL    = NULL;
     idBool   sLocked   = ID_FALSE;
+    /* BUG-46787 */
+    SChar    sAddrStr[IDL_IP_ADDR_MAX_LEN] = {'\0', };
 
     // fix BUG-28140
-    // acceptì‹œ ECONNABORTED ì—ëŸ¬ëŠ” ë¬´ì‹œí•˜ê³ , ë‹¤ìŒ connection ìš”ì²­ì„ ì²˜ë¦¬í•œë‹¤.
-    // ìœˆë„ìš° : WSAECONNRESET, POSIX : ECONNABORTED
+    // accept½Ã ECONNABORTED ¿¡·¯´Â ¹«½ÃÇÏ°í, ´ÙÀ½ connection ¿äÃ»À» Ã³¸®ÇÑ´Ù.
+    // À©µµ¿ì : WSAECONNRESET, POSIX : ECONNABORTED
     if (cmiAcceptLink(aLink, &sLinkPeer) != IDE_SUCCESS)
     {
         /* bug-35406: infinite loop when accept is failed
-         * socket fileì„ ì—´ì§€ ëª»í•˜ë©´ ë¬´í•œ ë£¨í”„ê°€ëŠ¥í•˜ë¯€ë¡œ
-         * ì ì‹œ sleep í•˜ê³  ì¬ì‹œë„ í•œë‹¤ */
+         * socket fileÀ» ¿­Áö ¸øÇÏ¸é ¹«ÇÑ ·çÇÁ°¡´ÉÇÏ¹Ç·Î
+         * Àá½Ã sleep ÇÏ°í Àç½Ãµµ ÇÑ´Ù */
         if ((errno == EMFILE) || (errno == ENFILE))
         {
             idlOS::sleep(1);
@@ -2191,7 +2222,7 @@ IDE_RC mmtThreadManager::dispatchCallback(cmiLink *aLink, cmiDispatcherImpl aDis
         mmuAccessList::lockRead();
         sLocked = ID_TRUE;
 
-        /* BUG-44530 SSLì—ì„œ ALTIBASE_SOCK_BIND_ADDR ì§€ì› */
+        /* BUG-44530 SSL¿¡¼­ ALTIBASE_SOCK_BIND_ADDR Áö¿ø */
         if (((sLinkPeer->mImpl == CMI_LINK_IMPL_TCP) ||
              (sLinkPeer->mImpl == CMI_LINK_IMPL_SSL) ||
              (sLinkPeer->mImpl == CMI_LINK_IMPL_IB)) &&
@@ -2203,6 +2234,11 @@ IDE_RC mmtThreadManager::dispatchCallback(cmiLink *aLink, cmiDispatcherImpl aDis
                 idlOS::memset(&sAddr, 0x00, ID_SIZEOF(sAddr));
                 IDE_TEST(cmiGetLinkInfo(sLinkPeer, (SChar *)&sAddr, ID_SIZEOF(sAddr),
                                         CMI_LINK_INFO_REMOTE_SOCKADDR)
+                         != IDE_SUCCESS);
+
+                /* BUG-46787 get ip address */
+                IDE_TEST(cmiGetLinkInfo(sLinkPeer, (SChar *)sAddrStr, ID_SIZEOF(sAddrStr),
+                                        CMI_LINK_INFO_REMOTE_IP_ADDRESS)
                          != IDE_SUCCESS);
 
                 (void) mmuAccessList::checkIPACL(&sAddr, &sIPAllowed, &sIPACL);
@@ -2251,7 +2287,8 @@ IDE_RC mmtThreadManager::dispatchCallback(cmiLink *aLink, cmiDispatcherImpl aDis
 
     IDE_EXCEPTION(connection_denied);
     {
-        IDE_SET(ideSetErrorCode(mmERR_ABORT_IP_ACL_DENIED, sIPACL));
+        /* BUG-46787 */
+        IDE_SET(ideSetErrorCode(mmERR_ABORT_IP_ACL_DENIED, sIPACL, sAddrStr));
     }
     IDE_EXCEPTION_END;
     {
@@ -2359,7 +2396,7 @@ void mmtThreadManager::serviceThreadStarted(mmtServiceThread    *aServiceThread,
 
 
     /*
-     * í†µê³„ ì •ë³´ ê¸°ë¡: ìš´ì˜ì¤‘ Service Threadê°€ ìƒì„±ëœ ê°¯ìˆ˜
+     * Åë°è Á¤º¸ ±â·Ï: ¿î¿µÁß Service Thread°¡ »ı¼ºµÈ °¹¼ö
      */
 
     IDV_SYS_ADD(IDV_STAT_INDEX_SERVICE_THREAD_CREATED, 1);
@@ -2370,9 +2407,9 @@ void mmtThreadManager::serviceThreadStarted(mmtServiceThread    *aServiceThread,
 }
 
 /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-   service threadê°¯ìˆ˜ê°€ multiplexing thread ê°¯ìˆ˜ì™€ Gapì´ SERVICE_THREAD_EXIT_RATE
-   ì´ìƒ  ë²Œì–´ì§€ë©´ life spanì„ ëª¨ë‘ ì†Œëª¨í•˜ê³ ,
-   assignëœ taskê°€ í•˜ë‚˜ë„ ì—†ëŠ” service threadë¥¼ ì¢…ë£Œì‹œí‚¨ë‹¤.
+   service thread°¹¼ö°¡ multiplexing thread °¹¼ö¿Í GapÀÌ SERVICE_THREAD_EXIT_RATE
+   ÀÌ»ó  ¹ú¾îÁö¸é life spanÀ» ¸ğµÎ ¼Ò¸ğÇÏ°í,
+   assignµÈ task°¡ ÇÏ³ªµµ ¾ø´Â service thread¸¦ Á¾·á½ÃÅ²´Ù.
 */
 void mmtThreadManager::tryToStopIdleThreads(UInt     aThrCnt,
                                             iduList *aIdleThreadList)
@@ -2458,7 +2495,7 @@ void mmtThreadManager::addServiceThread(mmtServiceThread    *aServiceThread)
                       aServiceThread->getThreadListNode());
     
     /*
-     * í†µê³„ ì •ë³´ ê¸°ë¡: ìš´ì˜ì¤‘ Service Threadê°€ ìƒì„±ëœ ê°¯ìˆ˜
+     * Åë°è Á¤º¸ ±â·Ï: ¿î¿µÁß Service Thread°¡ »ı¼ºµÈ °¹¼ö
      */
 
     IDV_SYS_ADD(IDV_STAT_INDEX_SERVICE_THREAD_CREATED, 1);    
@@ -2474,15 +2511,15 @@ void mmtThreadManager::noServiceThreadStarted(mmtServiceThread    *  /*aServiceT
 
 /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
    fix BUG-29144 approach to load-balance is too naive when there is a few idle thread
-   load balanceê³¼ì •ì—ì„œ ì¶”ê°€ì ìœ¼ë¡œ  idle threadê°¯ìˆ˜ë¥¼
-   ìƒì„±í• ì§€ë¥¼ íŒë‹¨í•˜ëŠ” í•¨ìˆ˜.
+   load balance°úÁ¤¿¡¼­ Ãß°¡ÀûÀ¸·Î  idle thread°¹¼ö¸¦
+   »ı¼ºÇÒÁö¸¦ ÆÇ´ÜÇÏ´Â ÇÔ¼ö.
 
-   a idle threadì— í• ë‹¹ëœ í‰ê·  average taskê°¯ìˆ˜ê°€
-   a service threadë‹¹ í‰ê·  Taskê°¯ìˆ˜ë³´ë‹¤  í¬ê³ ,
-   ê·¸ ë¹„ìœ¨ì´ NEW_SERVICE_CREATE_RATE ì´ìƒ ë²Œì–´ì¡Œê³ ,
-   ê·¸ í¸ì°¨ê°€ NEW_SERVICE_CREATE_RATE_GAP ì´ìƒ ë²Œì–´ì¡Œì„ë•Œ
-   ì¶”ê°€ì ìœ¼ë¡œ
-   service threadë¥¼  ìƒì„±í•˜ë„ë¡ ê²°ì •í•œë‹¤.
+   a idle thread¿¡ ÇÒ´çµÈ Æò±Õ average task°¹¼ö°¡
+   a service thread´ç Æò±Õ Task°¹¼öº¸´Ù  Å©°í,
+   ±× ºñÀ²ÀÌ NEW_SERVICE_CREATE_RATE ÀÌ»ó ¹ú¾îÁ³°í,
+   ±× ÆíÂ÷°¡ NEW_SERVICE_CREATE_RATE_GAP ÀÌ»ó ¹ú¾îÁ³À»¶§
+   Ãß°¡ÀûÀ¸·Î
+   service thread¸¦  »ı¼ºÇÏµµ·Ï °áÁ¤ÇÑ´Ù.
    
 */
 idBool  mmtThreadManager::needToCreateThr(UInt  aSumOfTaskCnt,
@@ -2570,8 +2607,8 @@ void mmtThreadManager::serviceThreadStopped(mmtServiceThread *aServiceThread)
         case MMC_SERVICE_THREAD_TYPE_SOCKET:
             /* fix BUG-30322 In case of terminating a transformed dedicated service thread,
             the count of service can be negative . */
-            /* dedicated service threadì¢…ë£Œì‹œ shared service list ì˜ service thread count
-             ë¥¼ ë§ˆì´ë„ˆìŠ¤ë¥¼ í•˜ë©´ ì•ˆëœë‹¤.*/
+            /* dedicated service threadÁ¾·á½Ã shared service list ÀÇ service thread count
+             ¸¦ ¸¶ÀÌ³Ê½º¸¦ ÇÏ¸é ¾ÈµÈ´Ù.*/
             if ( (aServiceThread->isRunModeShared() ==  ID_TRUE))
             {
                 mServiceThreadSocketCount--;
@@ -2645,7 +2682,7 @@ void mmtThreadManager::logError(const SChar *aMessage)
 
 void mmtThreadManager::logNetworkError(const SChar *aMessage)
 {
-    // BUG-24993 ë„¤íŠ¸ì›Œí¬ ì—ëŸ¬ ë©”ì‹œì§€ log ì—¬ë¶€
+    // BUG-24993 ³×Æ®¿öÅ© ¿¡·¯ ¸Ş½ÃÁö log ¿©ºÎ
     if(mmuProperty::getNetworkErrorLog() == 1)
     {
         ideLogEntry sLog(IDE_SERVER_2);
@@ -2808,19 +2845,19 @@ IDE_RC mmtThreadManager::removeFromServiceThrList(mmtServiceThread*  aServiceThr
     lock();
     sState =1;
 
-    // service thread ê°€ listì— ë‚˜ê°ìœ¼ë¡œì¨ ,ìµœì†Œê°’ ì œì•½ì„ ê¹¨ëŠ” ê²½ìš°.
+    // service thread °¡ list¿¡ ³ª°¨À¸·Î½á ,ÃÖ¼Ò°ª Á¦¾àÀ» ±ú´Â °æ¿ì.
     if( mServiceThreadSocketCount <= mmuProperty::getMultiplexingThreadCount())
     {
 
         /* BUG-31197
          * TC/FIT/LimitEnv/Bugs/BUG-31197/BUG-31197.sql
          */
-        // ìƒˆë¡œìš´ ì„œë¹„ìŠ¤ ì“°ë ˆë“œë¥¼ ìƒì„±í•œë‹¤.
+        // »õ·Î¿î ¼­ºñ½º ¾²·¹µå¸¦ »ı¼ºÇÑ´Ù.
         IDE_TEST(allocServiceThread(MMC_SERVICE_THREAD_TYPE_SOCKET,
                                     mmtThreadManager::noServiceThreadStarted,
                                     &sNewServiceThread) != IDE_SUCCESS);
 
-        // task listë¥¼ move  ì‹œí‚¨ë‹¤.
+        // task list¸¦ move  ½ÃÅ²´Ù.
         aServiceThread->moveTaskLists(sNewServiceThread);
         addServiceThread(sNewServiceThread);
                                    
@@ -2829,7 +2866,7 @@ IDE_RC mmtThreadManager::removeFromServiceThrList(mmtServiceThread*  aServiceThr
          */
         IDE_TEST_RAISE(sNewServiceThread->start() != IDE_SUCCESS, StartFail);
 
-        // service thread listì—ì„œ ë‚˜ê°„ë‹¤.
+        // service thread list¿¡¼­ ³ª°£´Ù.
         /* BUG-31197 remove from list when allocation and start succeeded */
         IDU_LIST_REMOVE(aServiceThread->getThreadListNode());    
         IDU_LIST_INIT_OBJ(aServiceThread->getThreadListNode(),aServiceThread);
@@ -2840,14 +2877,14 @@ IDE_RC mmtThreadManager::removeFromServiceThrList(mmtServiceThread*  aServiceThr
         IDU_LIST_REMOVE(aServiceThread->getThreadListNode());    
         IDU_LIST_INIT_OBJ(aServiceThread->getThreadListNode(),aServiceThread); 
 
-        //ìƒˆë¡œìš´ ì„œë¹„ìŠ¤ service ìƒì„± ì—†ì´ service thread listì—ì„œ ë‚˜ê°„ë‹¤.
+        //»õ·Î¿î ¼­ºñ½º service »ı¼º ¾øÀÌ service thread list¿¡¼­ ³ª°£´Ù.
         IDU_LIST_INIT(&sTaskLst);
-        //service threadê°€ ê°€ì§€ê³  ìˆë˜ task listë“¤ì„ í•˜ë‚˜ì˜ listë¡œ
-        //ë§Œë“ ë‹¤.
+        //service thread°¡ °¡Áö°í ÀÖ´ø task listµéÀ» ÇÏ³ªÀÇ list·Î
+        //¸¸µç´Ù.
         aServiceThread->removeAllTasks(&sTaskLst, MMT_SERVICE_THREAD_NO_LOCK);
         if(IDU_LIST_IS_EMPTY(&sTaskLst) == ID_FALSE)
         {
-            //taskë“¤ì„ service thread listìƒì— ìˆëŠ” ì„œë¹„ìŠ¤ ì“°ë ˆë“œì—ê²Œ ë¶„ë°°í•œë‹¤.
+            //taskµéÀ» service thread list»ó¿¡ ÀÖ´Â ¼­ºñ½º ¾²·¹µå¿¡°Ô ºĞ¹èÇÑ´Ù.
             IDU_LIST_ITERATE_SAFE(&sTaskLst,sIterator,sNodeNext)
             {
                 sTask = (mmcTask*)sIterator->mObj;
@@ -2876,7 +2913,7 @@ IDE_RC mmtThreadManager::removeFromServiceThrList(mmtServiceThread*  aServiceThr
          */
         IDU_LIST_REMOVE(sNewServiceThread->getThreadListNode());    
 
-        // task list ì›ë³µ
+        // task list ¿øº¹
         sNewServiceThread->moveTaskLists(aServiceThread);
 
         IDE_ASSERT(freeServiceThread(sNewServiceThread) == IDE_SUCCESS);

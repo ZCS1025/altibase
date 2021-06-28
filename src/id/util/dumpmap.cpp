@@ -154,7 +154,7 @@ SInt main(SInt aArgc, SChar** aArgv)
         sFunctionName = abi::__cxa_demangle(sTemp, 0, 0, &sStatus);
 
 
-        if(sFunctionName == NULL)
+        if ( sFunctionName == NULL )
         {
             sFunctionName = sTemp;
         }

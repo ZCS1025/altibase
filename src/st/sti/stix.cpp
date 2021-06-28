@@ -64,10 +64,6 @@ stix::addExtSM_Recovery( void )
                                            stndrUpdate::redo_SDR_STNDR_FREE_KEYS );
     sdrUpdate::appendExternalRedoFunction( SDR_STNDR_COMPACT_INDEX_PAGE,
                                            stndrUpdate::redo_SDR_STNDR_COMPACT_INDEX_PAGE );
-    sdrUpdate::appendExternalRedoFunction( SDR_STNDR_MAKE_CHAINED_KEYS,
-                                           stndrUpdate::redo_SDR_STNDR_MAKE_CHAINED_KEYS );
-    sdrUpdate::appendExternalRedoFunction( SDR_STNDR_MAKE_UNCHAINED_KEYS,
-                                           stndrUpdate::redo_SDR_STNDR_MAKE_UNCHAINED_KEYS );
     sdrUpdate::appendExternalRedoFunction( SDR_STNDR_KEY_STAMPING,
                                            stndrUpdate::redo_SDR_STNDR_KEY_STAMPING );
     

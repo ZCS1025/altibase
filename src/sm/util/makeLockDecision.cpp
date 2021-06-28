@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: makeLockDecision.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: makeLockDecision.cpp 86294 2019-10-21 04:20:49Z et16 $
  ***********************************************************************/
 
 #include <idl.h>
@@ -53,38 +53,33 @@ int main(void /*int argc, char* argv[]*/)
     {
         s_lockMode = SML_NLOCK;
         
-        if((i & smlLockMgr::mLockModeToMask[SML_SLOCK]) == 
-       smlLockMgr::mLockModeToMask[SML_SLOCK])
+        if ( smlLockMgr::isExistLockModeMask( i, SML_SLOCK ) == ID_TRUE )
         {
-            s_lockMode = smlLockMgr::mConversionTBL[s_lockMode][SML_SLOCK];
+            s_lockMode = smlLockMgr::getConversionLockMode( s_lockMode, SML_SLOCK );
         }
 
-        if((i & smlLockMgr::mLockModeToMask[SML_XLOCK]) == 
-       smlLockMgr::mLockModeToMask[SML_XLOCK])
+        if ( smlLockMgr::isExistLockModeMask( i, SML_XLOCK ) == ID_TRUE )
 
         {
-            s_lockMode = smlLockMgr::mConversionTBL[s_lockMode][SML_XLOCK];
+            s_lockMode = smlLockMgr::getConversionLockMode( s_lockMode, SML_XLOCK );
         }
 
-        if((i & smlLockMgr::mLockModeToMask[SML_ISLOCK]) == 
-       smlLockMgr::mLockModeToMask[SML_ISLOCK])
+        if ( smlLockMgr::isExistLockModeMask( i, SML_ISLOCK ) == ID_TRUE )
 
         {
-            s_lockMode = smlLockMgr::mConversionTBL[s_lockMode][SML_ISLOCK];
+            s_lockMode = smlLockMgr::getConversionLockMode( s_lockMode, SML_ISLOCK );
         }
 
-        if((i & smlLockMgr::mLockModeToMask[SML_IXLOCK]) == 
-       smlLockMgr::mLockModeToMask[SML_IXLOCK])
+        if ( smlLockMgr::isExistLockModeMask( i, SML_IXLOCK ) == ID_TRUE )
 
         {
-            s_lockMode = smlLockMgr::mConversionTBL[s_lockMode][SML_IXLOCK];
+            s_lockMode = smlLockMgr::getConversionLockMode( s_lockMode, SML_IXLOCK );
         }
 
-        if((i & smlLockMgr::mLockModeToMask[SML_SIXLOCK]) == 
-       smlLockMgr::mLockModeToMask[SML_SIXLOCK])
+        if ( smlLockMgr::isExistLockModeMask( i, SML_SIXLOCK ) == ID_TRUE )
 
         {
-            s_lockMode = smlLockMgr::mConversionTBL[s_lockMode][SML_SIXLOCK];
+            s_lockMode = smlLockMgr::getConversionLockMode( s_lockMode, SML_SIXLOCK );
         }
 
         if(i % 4 == 0)

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsxArray.h 82974 2018-05-04 01:41:02Z sbjang $
+ * $Id: qsxArray.h 82959 2018-05-02 05:00:30Z sbjang $
  *
  * Description :
  *     PROJ-1075 associative array info.

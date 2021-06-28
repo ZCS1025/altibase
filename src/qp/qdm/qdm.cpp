@@ -44,15 +44,15 @@
 /***********************************************************************
  *
  * Description :
- *    CREATE MATERIALIZED VIEW ... ì˜ validation ìˆ˜í–‰
+ *    CREATE MATERIALIZED VIEW ... ÀÇ validation ¼öÇà
  *
  * Implementation :
- *    1. Materialized View, Table, Viewê°€ ì´ë¯¸ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸
- *    2. Materialized View ìƒì„± ê¶Œí•œì´ ìˆëŠ”ì§€ í™•ì¸
- *    3. ì§€ì›í•˜ëŠ” Refreshì¸ì§€ í™•ì¸
+ *    1. Materialized View, Table, View°¡ ÀÌ¹Ì Á¸ÀçÇÏ´ÂÁö È®ÀÎ
+ *    2. Materialized View »ı¼º ±ÇÇÑÀÌ ÀÖ´ÂÁö È®ÀÎ
+ *    3. Áö¿øÇÏ´Â RefreshÀÎÁö È®ÀÎ
  *    4. validation of TABLESPACE
  *    5. validation of SELECT statement
- *    6. select ë¬¸ì— sequence(currval, nextval)ê°€ ìˆìœ¼ë©´ ì˜¤ë¥˜
+ *    6. select ¹®¿¡ sequence(currval, nextval)°¡ ÀÖÀ¸¸é ¿À·ù
  *    7. validation of column and target
  *    8. check circular view definition
  *
@@ -152,7 +152,7 @@ IDE_RC qdm::validateCreate( qcStatement * aStatement )
     }
     else
     {
-        /* 'ALTER VIEW ... COMPILE'ì—ì„œ í˜¸ì¶œí•œ ê²½ìš° */
+        /* 'ALTER VIEW ... COMPILE'¿¡¼­ È£ÃâÇÑ °æ¿ì */
     }
 
     /* check grant */
@@ -193,22 +193,22 @@ IDE_RC qdm::validateCreate( qcStatement * aStatement )
     IDE_TEST( qdbCreate::validateTableSpace( aStatement ) != IDE_SUCCESS );
 
     /* validation of SELECT statement */
-    ((qmsParseTree*)(sParseTree->select->myPlan->parseTree))->querySet->flag
+    ((qmsParseTree*)(sParseTree->select->myPlan->parseTree))->querySet->lflag
         &= ~(QMV_PERFORMANCE_VIEW_CREATION_MASK);
-    ((qmsParseTree*)(sParseTree->select->myPlan->parseTree))->querySet->flag
+    ((qmsParseTree*)(sParseTree->select->myPlan->parseTree))->querySet->lflag
         |= (QMV_PERFORMANCE_VIEW_CREATION_FALSE);
-    ((qmsParseTree*)(sParseTree->select->myPlan->parseTree))->querySet->flag
+    ((qmsParseTree*)(sParseTree->select->myPlan->parseTree))->querySet->lflag
         &= ~(QMV_VIEW_CREATION_MASK);
-    ((qmsParseTree*)(sParseTree->select->myPlan->parseTree))->querySet->flag
+    ((qmsParseTree*)(sParseTree->select->myPlan->parseTree))->querySet->lflag
         |= (QMV_VIEW_CREATION_TRUE);
 
     // PROJ-2204 join update, delete
-    // create viewì— ì‚¬ìš©ë˜ëŠ” SFWGHì„ì„ í‘œì‹œí•œë‹¤.
+    // create view¿¡ »ç¿ëµÇ´Â SFWGHÀÓÀ» Ç¥½ÃÇÑ´Ù.
     if ( ((qmsParseTree*)(sParseTree->select->myPlan->parseTree))->querySet->SFWGH != NULL )
     {
-        ((qmsParseTree*)(sParseTree->select->myPlan->parseTree))->querySet->SFWGH->flag
+        ((qmsParseTree*)(sParseTree->select->myPlan->parseTree))->querySet->SFWGH->lflag
             &= ~QMV_SFWGH_UPDATABLE_VIEW_MASK;
-        ((qmsParseTree*)(sParseTree->select->myPlan->parseTree))->querySet->SFWGH->flag
+        ((qmsParseTree*)(sParseTree->select->myPlan->parseTree))->querySet->SFWGH->lflag
             |= QMV_SFWGH_UPDATABLE_VIEW_TRUE;
     }
     else
@@ -244,7 +244,7 @@ IDE_RC qdm::validateCreate( qcStatement * aStatement )
     }
 
     /* validation of column and target
-     * Columnì„ ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš°, validateTargetAndMakeColumnList()ì—ì„œ Column Listë¥¼ ë§Œë“ ë‹¤.
+     * ColumnÀ» ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì, validateTargetAndMakeColumnList()¿¡¼­ Column List¸¦ ¸¸µç´Ù.
      */
     IDE_TEST( qdbCreate::validateTargetAndMakeColumnList( aStatement )
               != IDE_SUCCESS );
@@ -256,7 +256,7 @@ IDE_RC qdm::validateCreate( qcStatement * aStatement )
         sColumnCount++;
     }
 
-    /* í•˜ìœ„ Viewì—ì„œ ì‚¬ìš©í•  columnsë¥¼ ë³µì‚¬í•œë‹¤. */
+    /* ÇÏÀ§ View¿¡¼­ »ç¿ëÇÒ columns¸¦ º¹»çÇÑ´Ù. */
     IDE_TEST( qcm::copyQcmColumns( QC_QMP_MEM( aStatement ),
                     sParseTree->columns,
                     &(sParseTree->mviewViewColumns),
@@ -279,7 +279,7 @@ IDE_RC qdm::validateCreate( qcStatement * aStatement )
                             sParseTree->lobAttr )
               != IDE_SUCCESS );
 
-    /* Viewë¥¼ Memory Tableì— ë„£ê¸° ìœ„í•´ Tablespace IDì™€ Typeì„ ì ì‹œ ë³€ê²½í•œë‹¤. */
+    /* View¸¦ Memory Table¿¡ ³Ö±â À§ÇØ Tablespace ID¿Í TypeÀ» Àá½Ã º¯°æÇÑ´Ù. */
     sTBSAttrID   = sParseTree->TBSAttr.mID;
     sTBSAttrType = sParseTree->TBSAttr.mType;
     sParseTree->TBSAttr.mID   = SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC;
@@ -290,7 +290,7 @@ IDE_RC qdm::validateCreate( qcStatement * aStatement )
                                                       ID_FALSE )
               != IDE_SUCCESS );
 
-    /* Tablespace IDì™€ Typeì„ ë³µì›í•œë‹¤. */
+    /* Tablespace ID¿Í TypeÀ» º¹¿øÇÑ´Ù. */
     sParseTree->TBSAttr.mID   = sTBSAttrID;
     sParseTree->TBSAttr.mType = sTBSAttrType;
 
@@ -399,13 +399,13 @@ IDE_RC qdm::validateCreate( qcStatement * aStatement )
     }
 #endif
 
-    /* Attribute Listë¡œë¶€í„° Tableì˜ Flag ê³„ì‚° */
+    /* Attribute List·ÎºÎÅÍ TableÀÇ Flag °è»ê */
     IDE_TEST( qdbCreate::calculateTableAttrFlag( aStatement, sParseTree )
               != IDE_SUCCESS );
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì›
+    /* PROJ-2464 hybrid partitioned table Áö¿ø
      *  - PRJ-1671 Bitmap TableSpace And Segment Space Management
-     *     Segment Storage ì†ì„± validation
+     *     Segment Storage ¼Ó¼º validation
      */
     IDE_TEST( qdbCommon::validatePhysicalAttr( sParseTree )
               != IDE_SUCCESS );
@@ -415,13 +415,13 @@ IDE_RC qdm::validateCreate( qcStatement * aStatement )
           sRelatedObject != NULL;
           sRelatedObject = sRelatedObject->next )
     {
-        /* (1) public synonymì— ëŒ€í•œ circular view definitionê²€ì‚¬ */
+        /* (1) public synonym¿¡ ´ëÇÑ circular view definition°Ë»ç */
         if ( (sRelatedObject->objectType == QS_SYNONYM) &&
              (sRelatedObject->userID == QC_PUBLIC_USER_ID) )
         {
             /* BUG-32964
-             * ë™ì¼í•œ ì´ë¦„ì„ ê°€ì§„ Public Synonymì´ ì¡´ì¬í•˜ë©´,
-             * circular view definitionì´ ë°œìƒí•œë‹¤.
+             * µ¿ÀÏÇÑ ÀÌ¸§À» °¡Áø Public SynonymÀÌ Á¸ÀçÇÏ¸é,
+             * circular view definitionÀÌ ¹ß»ıÇÑ´Ù.
              */
             if ( idlOS::strMatch(
                         sParseTree->mviewViewName,
@@ -444,7 +444,7 @@ IDE_RC qdm::validateCreate( qcStatement * aStatement )
             /* Nothing to do */
         }
 
-        /* (2) view ë˜ëŠ” tableì— ëŒ€í•œ circular view definitionê²€ì‚¬ */
+        /* (2) view ¶Ç´Â table¿¡ ´ëÇÑ circular view definition°Ë»ç */
         if ( sRelatedObject->objectType == QS_TABLE )
         {
             IDE_TEST( qcmUser::getUserID( aStatement,
@@ -505,7 +505,7 @@ IDE_RC qdm::validateCreate( qcStatement * aStatement )
         }
     }
 
-    /* 'ALTER VIEW ... COMPILE'ì—ì„œ í˜¸ì¶œí•œ ê²½ìš°, qdv::executeAlter()ì—ì„œ í•„ìš”í•œ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤. */
+    /* 'ALTER VIEW ... COMPILE'¿¡¼­ È£ÃâÇÑ °æ¿ì, qdv::executeAlter()¿¡¼­ ÇÊ¿äÇÑ Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù. */
     if ( (sParseTree->flag & QDV_OPT_REPLACE_MASK) == QDV_OPT_REPLACE_TRUE )
     {
         sParseTree->flag &= ~QDV_MVIEW_TABLE_DDL_MASK;
@@ -573,15 +573,15 @@ IDE_RC qdm::validateCreate( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *    User ID, Materialized View Nameìœ¼ë¡œ Materialized View ì¡´ì¬ ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤.
+ *    User ID, Materialized View NameÀ¸·Î Materialized View Á¸Àç ¿©ºÎ¸¦ È®ÀÎÇÑ´Ù.
  *
  * Implementation :
- *    1. SYS_MATERIALIZED_VIEWS_ í…Œì´ë¸”ì˜ USER_ID, MVIEW_NAME ì»¬ëŸ¼ì„ êµ¬í•œë‹¤.
- *    2. SYS_MATERIALIZED_VIEWS_ í…Œì´ë¸”ì— ì¸ë±ìŠ¤ê°€ ìˆìœ¼ë©´,
- *       ëª…ì‹œëœ User ID, Materialized View Name ìœ¼ë¡œ keyRange ë¥¼ ë§Œë“¤ì–´ ì°¾ëŠ”ë‹¤.
- *       ì¸ë±ìŠ¤ê°€ ì—†ìœ¼ë©´,
- *       ëª…ì‹œëœ User ID, Materialized View Name ìœ¼ë¡œ í•˜ë‚˜ì”© ë¹„êµí•´ì„œ ì°¾ëŠ”ë‹¤.
- *    3. ì°¾ì€ Rowê°€ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
+ *    1. SYS_MATERIALIZED_VIEWS_ Å×ÀÌºíÀÇ USER_ID, MVIEW_NAME ÄÃ·³À» ±¸ÇÑ´Ù.
+ *    2. SYS_MATERIALIZED_VIEWS_ Å×ÀÌºí¿¡ ÀÎµ¦½º°¡ ÀÖÀ¸¸é,
+ *       ¸í½ÃµÈ User ID, Materialized View Name À¸·Î keyRange ¸¦ ¸¸µé¾î Ã£´Â´Ù.
+ *       ÀÎµ¦½º°¡ ¾øÀ¸¸é,
+ *       ¸í½ÃµÈ User ID, Materialized View Name À¸·Î ÇÏ³ª¾¿ ºñ±³ÇØ¼­ Ã£´Â´Ù.
+ *    3. Ã£Àº Row°¡ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
  *
  ***********************************************************************/
 IDE_RC qdm::existMViewByName(
@@ -606,7 +606,7 @@ IDE_RC qdm::existMViewByName(
     qcNameCharBuffer     sMViewNameValueBuffer;
     mtdCharType        * sMViewNameValue = (mtdCharType *)&sMViewNameValueBuffer;
 
-    scGRID               sRid; /* Disk Tableì„ ìœ„í•œ Record IDentifier */
+    scGRID               sRid; /* Disk TableÀ» À§ÇÑ Record IDentifier */
     smiCursorProperties  sCursorProperty;
 
     IDE_FT_BEGIN();
@@ -685,7 +685,7 @@ IDE_RC qdm::existMViewByName(
     }
     else
     {
-        /* mtdModule ì„¤ì • */
+        /* mtdModule ¼³Á¤ */
         IDE_TEST( mtd::moduleById( &(sUserIDColumn->module),
                                    sUserIDColumn->type.dataTypeId )
                   != IDE_SUCCESS );
@@ -693,7 +693,7 @@ IDE_RC qdm::existMViewByName(
                                    sMViewNameColumn->type.dataTypeId )
                   != IDE_SUCCESS );
 
-        /* mtlModule ì„¤ì • */
+        /* mtlModule ¼³Á¤ */
         IDE_TEST( mtl::moduleById( &(sUserIDColumn->language),
                                    sUserIDColumn->type.languageId )
                   != IDE_SUCCESS );
@@ -777,19 +777,19 @@ IDE_RC qdm::existMViewByName(
 /***********************************************************************
  *
  * Description :
- *    CREATE MATERIALIZED VIEW ... ì˜ execution ìˆ˜í–‰
+ *    CREATE MATERIALIZED VIEW ... ÀÇ execution ¼öÇà
  *
  * Implementation :
- *    1. ìƒˆë¡œìš´ Materialized View, Table, Viewì˜ IDë¥¼ êµ¬í•˜ê¸°
- *    2. SYS_MATERIALIZED_VIEWS_ì— Materialized View ì •ë³´ ì…ë ¥
+ *    1. »õ·Î¿î Materialized View, Table, ViewÀÇ ID¸¦ ±¸ÇÏ±â
+ *    2. SYS_MATERIALIZED_VIEWS_¿¡ Materialized View Á¤º¸ ÀÔ·Â
  *    3. createTableOnSM (Table)
- *    4. SYS_TABLES_, SYS_COLUMNS_ì— Table ì •ë³´ ì…ë ¥
- *    5. Table Meta Cache êµ¬ì„± (Table)
+ *    4. SYS_TABLES_, SYS_COLUMNS_¿¡ Table Á¤º¸ ÀÔ·Â
+ *    5. Table Meta Cache ±¸¼º (Table)
  *    6. createTableOnSM (View)
  *    7. SYS_TABLES_, SYS_COLUMNS_,
- *       SYS_VIEWS_, SYS_VIEW_PARSE_, SYS_VIEW_RELATED_ì— View ì •ë³´ ì…ë ¥
- *    8. Table Meta Cache êµ¬ì„± (View)
- *    9. Build Typeì´ IMMEDIATEì´ë©´, ë°ì´í„°ë¥¼ êµ¬ì„±
+ *       SYS_VIEWS_, SYS_VIEW_PARSE_, SYS_VIEW_RELATED_¿¡ View Á¤º¸ ÀÔ·Â
+ *    8. Table Meta Cache ±¸¼º (View)
+ *    9. Build TypeÀÌ IMMEDIATEÀÌ¸é, µ¥ÀÌÅÍ¸¦ ±¸¼º
  *
  ***********************************************************************/
 IDE_RC qdm::executeCreate( qcStatement * aStatement )
@@ -872,18 +872,18 @@ IDE_RC qdm::executeCreate( qcStatement * aStatement )
             /* Nothing to do */
         }
 
-        // TODO : Sourceì˜ LOB Column ìˆ˜ë¥¼ ì •í™•í•˜ê²Œ ì§€ì •í•˜ë©´, ë©”ëª¨ë¦¬ ì‚¬ìš©ëŸ‰ì„ ì¤„ì¼ ìˆ˜ ìˆë‹¤.
+        // TODO : SourceÀÇ LOB Column ¼ö¸¦ Á¤È®ÇÏ°Ô ÁöÁ¤ÇÏ¸é, ¸Ş¸ğ¸® »ç¿ë·®À» ÁÙÀÏ ¼ö ÀÖ´Ù.
         sLobColumnCount++;
     }
 
     /* PROJ-1502 PARTITIONED DISK TABLE
-     * ë…¼íŒŒí‹°ì…˜ë“œ í…Œì´ë¸” ìƒì„±
+     * ³íÆÄÆ¼¼Çµå Å×ÀÌºí »ı¼º
      */
     if ( sParseTree->partTable == NULL )
     {
         sIsPartitioned = ID_FALSE;
     }
-    /* íŒŒí‹°ì…˜ë“œ í…Œì´ë¸” ìƒì„± */
+    /* ÆÄÆ¼¼Çµå Å×ÀÌºí »ı¼º */
     else
     {
         sIsPartitioned = ID_TRUE;
@@ -904,7 +904,7 @@ IDE_RC qdm::executeCreate( qcStatement * aStatement )
                                       (UShort)sLobColumnCount )
               != IDE_SUCCESS );
 
-    /* BUG-36211 ê° Row Insert í›„, í•´ë‹¹ Lob Cursorë¥¼ ë°”ë¡œ í•´ì œí•©ë‹ˆë‹¤. */
+    /* BUG-36211 °¢ Row Insert ÈÄ, ÇØ´ç Lob Cursor¸¦ ¹Ù·Î ÇØÁ¦ÇÕ´Ï´Ù. */
     qmx::setImmediateCloseLobInfo( sLobInfo, ID_TRUE );
 
     /* get Materialized View, Table ID */
@@ -919,7 +919,7 @@ IDE_RC qdm::executeCreate( qcStatement * aStatement )
                                        sViewID )
               != IDE_SUCCESS );
 
-    /* Table ì‘ì—…ì„ í•˜ê¸° ì „ì— Parse Treeë¥¼ ì„¤ì •í•œë‹¤. */
+    /* Table ÀÛ¾÷À» ÇÏ±â Àü¿¡ Parse Tree¸¦ ¼³Á¤ÇÑ´Ù. */
     sParseTree->flag &= ~QDV_MVIEW_TABLE_DDL_MASK;
     sParseTree->flag |= QDV_MVIEW_TABLE_DDL_TRUE;
     sParseTree->flag &= ~QDV_MVIEW_VIEW_DDL_MASK;
@@ -954,7 +954,8 @@ IDE_RC qdm::executeCreate( qcStatement * aStatement )
                                                   sParseTree->segAttr,
                                                   sParseTree->segStoAttr,
                                                   QCM_TEMPORARY_ON_COMMIT_NONE,
-                                                  sParseTree->parallelDegree )  // PROJ-1071
+                                                  sParseTree->parallelDegree,   // PROJ-1071
+                                                  sParseTree->mShardFlag )      // TASK-7307
               != IDE_SUCCESS );
 
     IDE_TEST( qdbCommon::insertColumnSpecIntoMeta( aStatement,
@@ -1007,14 +1008,12 @@ IDE_RC qdm::executeCreate( qcStatement * aStatement )
                                                       &sTempPartInfoList )
                   != IDE_SUCCESS );
 
-        /* ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(X) */
+        /* ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(X) */
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                   sTempPartInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                                   SMI_TABLE_LOCK_X,
-                                                                  ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                                                    ID_ULONG_MAX :
-                                                                    smiGetDDLLockTimeOut() * 1000000 ) )
+                                                                  smiGetDDLLockTimeOut((QC_SMI_STMT(aStatement))->getTrans()))
                   != IDE_SUCCESS );
 
         sParseTree->partTable->partInfoList = sTempPartInfoList;
@@ -1034,7 +1033,7 @@ IDE_RC qdm::executeCreate( qcStatement * aStatement )
     }
     sTempTableInfo = NULL;
 
-    /* Tableì„ ìƒì„±í–ˆìœ¼ë¯€ë¡œ, Lockì„ íšë“í•œë‹¤. */
+    /* TableÀ» »ı¼ºÇßÀ¸¹Ç·Î, LockÀ» È¹µæÇÑ´Ù. */
     IDE_TEST( qcm::makeAndSetQcmTableInfo( QC_SMI_STMT( aStatement ),
                                            sTableID,
                                            sTableOID )
@@ -1056,7 +1055,7 @@ IDE_RC qdm::executeCreate( qcStatement * aStatement )
     (void)qcm::destroyQcmTableInfo( sTempTableInfo );
     sTempTableInfo = NULL;
 
-    /* Table ì •ë³´ë¥¼ ë‹¤ì‹œ ì–»ëŠ”ë‹¤. */
+    /* Table Á¤º¸¸¦ ´Ù½Ã ¾ò´Â´Ù. */
     IDE_TEST( qcm::makeAndSetQcmTableInfo( QC_SMI_STMT( aStatement ),
                                            sTableID,
                                            sTableOID )
@@ -1086,7 +1085,7 @@ IDE_RC qdm::executeCreate( qcStatement * aStatement )
         /* Nothing to do */
     }
 
-    /* View ì‘ì—…ì„ í•˜ê¸° ì „ì— Parse Treeë¥¼ ì„¤ì •í•œë‹¤. */
+    /* View ÀÛ¾÷À» ÇÏ±â Àü¿¡ Parse Tree¸¦ ¼³Á¤ÇÑ´Ù. */
     sParseTree->flag &= ~QDV_MVIEW_TABLE_DDL_MASK;
     sParseTree->flag |= QDV_MVIEW_TABLE_DDL_FALSE;
     sParseTree->flag &= ~QDV_MVIEW_VIEW_DDL_MASK;
@@ -1095,7 +1094,7 @@ IDE_RC qdm::executeCreate( qcStatement * aStatement )
     SET_POSITION( sParseTree->tableName, sViewNamePosition );
     QD_SEGMENT_OPTION_INIT( &sSegAttr, &sSegStorageAttr );
 
-    /* View ê°ì²´ë¥¼ ìƒì„±í•œë‹¤. */
+    /* View °´Ã¼¸¦ »ı¼ºÇÑ´Ù. */
     IDE_TEST( qdbCommon::createTableOnSM( aStatement,
                                           sParseTree->mviewViewColumns,
                                           sParseTree->userID,
@@ -1138,7 +1137,7 @@ IDE_RC qdm::executeCreate( qcStatement * aStatement )
                         QS_TABLE )
               != IDE_SUCCESS );
 
-    /* View ì‘ì—…ì„ ëë‚¸ í›„ì— Parse Treeë¥¼ ë³µì›í•œë‹¤. */
+    /* View ÀÛ¾÷À» ³¡³½ ÈÄ¿¡ Parse Tree¸¦ º¹¿øÇÑ´Ù. */
     sParseTree->flag &= ~QDV_MVIEW_TABLE_DDL_MASK;
     sParseTree->flag |= QDV_MVIEW_TABLE_DDL_FALSE;
     sParseTree->flag &= ~QDV_MVIEW_VIEW_DDL_MASK;
@@ -1150,7 +1149,7 @@ IDE_RC qdm::executeCreate( qcStatement * aStatement )
      */
     IDE_TEST( qtc::setDatePseudoColumn( QC_PRIVATE_TMPLATE( aStatement ) ) != IDE_SUCCESS );
 
-    /* Build Typeì´ IMMEDIATEì´ë©´, ë°ì´í„°ë¥¼ êµ¬ì„±í•œë‹¤. */
+    /* Build TypeÀÌ IMMEDIATEÀÌ¸é, µ¥ÀÌÅÍ¸¦ ±¸¼ºÇÑ´Ù. */
     if ( sParseTree->mviewBuildRefresh.buildType == QD_MVIEW_BUILD_IMMEDIATE )
     {
         IDU_LIMITPOINT( "qdm::executeCreate::malloc1");
@@ -1242,7 +1241,7 @@ IDE_RC qdm::executeCreate( qcStatement * aStatement )
             sTableRef->userID = sParseTree->userID;
             sTableRef->tableInfo = sTempTableInfo;
 
-            /* partitionRef êµ¬ì„± */
+            /* partitionRef ±¸¼º */
             for ( sPartInfoList = sTempPartInfoList, sPartCount = 0,
                       sPartAttr = sParseTree->partTable->partAttr;
                   sPartInfoList != NULL;
@@ -1287,7 +1286,7 @@ IDE_RC qdm::executeCreate( qcStatement * aStatement )
                         }
                     }
 
-                    /* minValueì˜ partCondValType ì¡°ì • */
+                    /* minValueÀÇ partCondValType Á¶Á¤ */
                     if ( sPartitionRef->minPartCondVal.partCondValCount == 0 )
                     {
                         sPartitionRef->minPartCondVal.partCondValType
@@ -1299,7 +1298,7 @@ IDE_RC qdm::executeCreate( qcStatement * aStatement )
                             = QMS_PARTCONDVAL_NORMAL;
                     }
 
-                    /* maxValueì˜ partCondValType ì¡°ì • */
+                    /* maxValueÀÇ partCondValType Á¶Á¤ */
                     if ( sPartitionRef->maxPartCondVal.partCondValCount == 0 )
                     {
                         sPartitionRef->maxPartCondVal.partCondValType
@@ -1331,12 +1330,13 @@ IDE_RC qdm::executeCreate( qcStatement * aStatement )
             sTableRef->partitionRef = sFirstPartitionRef;
             sTableRef->partitionCount = sPartCount;
 
-            /* PROJ-2464 hybrid partitioned table ì§€ì› */
+            /* PROJ-2464 hybrid partitioned table Áö¿ø */
             IDE_TEST( qcmPartition::makePartitionSummary( aStatement, sTableRef )
                       != IDE_SUCCESS );
 
             IDE_TEST( sInsertCursorMgr.initialize( aStatement->qmxMem,
                                                    sTableRef,
+                                                   ID_TRUE,
                                                    ID_TRUE ) /* init all partitions */
                       != IDE_SUCCESS );
 
@@ -1370,7 +1370,7 @@ IDE_RC qdm::executeCreate( qcStatement * aStatement )
                                                        sLobInfo )
                           != IDE_SUCCESS );
 
-                /* INSERTë¥¼ ìˆ˜í–‰ */
+                /* INSERT¸¦ ¼öÇà */
                 IDE_TEST( sInsertCursorMgr.partitionFilteringWithRow(
                               sInsertedRow,
                               sLobInfo,
@@ -1383,8 +1383,8 @@ IDE_RC qdm::executeCreate( qcStatement * aStatement )
                 if ( QCM_TABLE_TYPE_IS_DISK( sTempTableInfo->tableFlag ) !=
                      QCM_TABLE_TYPE_IS_DISK( sSelectedPartitionInfo->tableFlag ) )
                 {
-                    /* PROJ-2464 hybrid partitioned table ì§€ì›
-                     * Partitioned Tableì„ ê¸°ì¤€ìœ¼ë¡œ ë§Œë“  smiValue Arrayë¥¼ Table Partitionì— ë§ê²Œ ë³€í™˜í•œë‹¤.
+                    /* PROJ-2464 hybrid partitioned table Áö¿ø
+                     * Partitioned TableÀ» ±âÁØÀ¸·Î ¸¸µç smiValue Array¸¦ Table Partition¿¡ ¸Â°Ô º¯È¯ÇÑ´Ù.
                      */
                     IDE_TEST( qmx::makeSmiValueWithSmiValue( sTempTableInfo,
                                                              sSelectedPartitionInfo,
@@ -1406,7 +1406,7 @@ IDE_RC qdm::executeCreate( qcStatement * aStatement )
                                                        &sRowGRID )
                           != IDE_SUCCESS );
 
-                /* INSERTë¥¼ ìˆ˜í–‰í›„ Lob ì»¬ëŸ¼ì„ ì²˜ë¦¬ */
+                /* INSERT¸¦ ¼öÇàÈÄ Lob ÄÃ·³À» Ã³¸® */
                 IDE_TEST( qmx::copyAndOutBindLobInfo( aStatement,
                                                       sLobInfo,
                                                       sPartitionCursor,
@@ -1432,8 +1432,8 @@ IDE_RC qdm::executeCreate( qcStatement * aStatement )
         /* Nothing to do */
     }
 
-    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
-     * DDL Statement Textì˜ ë¡œê¹…
+    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
+     * DDL Statement TextÀÇ ·Î±ë
      */
     if ( QCU_DDL_SUPPLEMENTAL_LOG == 1 )
     {
@@ -1481,10 +1481,10 @@ IDE_RC qdm::executeCreate( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *    Materialized Viewì˜ ë©”íƒ€ ì •ë³´ë¥¼ ë©”íƒ€ í…Œì´ë¸”ì— ì…ë ¥í•œë‹¤.
+ *    Materialized ViewÀÇ ¸ŞÅ¸ Á¤º¸¸¦ ¸ŞÅ¸ Å×ÀÌºí¿¡ ÀÔ·ÂÇÑ´Ù.
  *
  * Implementation :
- *    1. SYS_MATERIALIZED_VIEWS_ ì…ë ¥
+ *    1. SYS_MATERIALIZED_VIEWS_ ÀÔ·Â
  *
  ***********************************************************************/
 IDE_RC qdm::insertMViewSpecIntoMeta(
@@ -1521,10 +1521,10 @@ IDE_RC qdm::insertMViewSpecIntoMeta(
 /***********************************************************************
  *
  * Description :
- *    SYS_MATERIALIZED_VIEWS_ì— Materialized View ì •ë³´ë¥¼ ì¶”ê°€í•œë‹¤.
+ *    SYS_MATERIALIZED_VIEWS_¿¡ Materialized View Á¤º¸¸¦ Ãß°¡ÇÑ´Ù.
  *
  * Implementation :
- *    1. SYS_MATERIALIZED_VIEWS_ì— Rowë¥¼ ì¶”ê°€í•œë‹¤.
+ *    1. SYS_MATERIALIZED_VIEWS_¿¡ Row¸¦ Ãß°¡ÇÑ´Ù.
  *
  ***********************************************************************/
 IDE_RC qdm::insertIntoMViewsMeta(
@@ -1587,12 +1587,12 @@ IDE_RC qdm::insertIntoMViewsMeta(
 /***********************************************************************
  *
  * Description :
- *    ALTER MATERIALIZED VIEW ... REFRESH ... ì˜ validation ìˆ˜í–‰
+ *    ALTER MATERIALIZED VIEW ... REFRESH ... ÀÇ validation ¼öÇà
  *
  * Implementation :
- *    1. Meta Tableì¸ì§€ í™•ì¸
- *    2. Materialized View ë³€ê²½ ê¶Œí•œì´ ìˆëŠ”ì§€ í™•ì¸
- *    3. ì§€ì›í•˜ëŠ” Refreshì¸ì§€ í™•ì¸
+ *    1. Meta TableÀÎÁö È®ÀÎ
+ *    2. Materialized View º¯°æ ±ÇÇÑÀÌ ÀÖ´ÂÁö È®ÀÎ
+ *    3. Áö¿øÇÏ´Â RefreshÀÎÁö È®ÀÎ
  *
  ***********************************************************************/
 IDE_RC qdm::validateAlterRefresh( qcStatement * aStatement )
@@ -1682,7 +1682,7 @@ IDE_RC qdm::validateAlterRefresh( qcStatement * aStatement )
     /* check refresh */
     switch ( sParseTree->mviewBuildRefresh.refreshType )
     {
-        case QD_MVIEW_REFRESH_NONE :    /* ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš° */
+        case QD_MVIEW_REFRESH_NONE :    /* ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì */
         case QD_MVIEW_REFRESH_FORCE :
         case QD_MVIEW_REFRESH_COMPLETE :
             break;
@@ -1695,7 +1695,7 @@ IDE_RC qdm::validateAlterRefresh( qcStatement * aStatement )
 
     switch ( sParseTree->mviewBuildRefresh.refreshTime )
     {
-        case QD_MVIEW_REFRESH_ON_NONE : /* ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš° */
+        case QD_MVIEW_REFRESH_ON_NONE : /* ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì */
         case QD_MVIEW_REFRESH_ON_DEMAND :
             break;
 
@@ -1729,12 +1729,12 @@ IDE_RC qdm::validateAlterRefresh( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *    ALTER MATERIALIZED VIEW ... REFRESH ... ì˜ execution ìˆ˜í–‰
+ *    ALTER MATERIALIZED VIEW ... REFRESH ... ÀÇ execution ¼öÇà
  *
  * Implementation :
- *    1. Meta Tableì—ì„œ Refresh Type ë³€ê²½
- *    2. Meta Tableì—ì„œ Refresh Time ë³€ê²½
- *    3. Meta Tableì—ì„œ Last DDL Time ë³€ê²½
+ *    1. Meta Table¿¡¼­ Refresh Type º¯°æ
+ *    2. Meta Table¿¡¼­ Refresh Time º¯°æ
+ *    3. Meta Table¿¡¼­ Last DDL Time º¯°æ
  *
  ***********************************************************************/
 IDE_RC qdm::executeAlterRefresh( qcStatement * aStatement )
@@ -1792,7 +1792,7 @@ IDE_RC qdm::executeAlterRefresh( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *    Meta Tableì—ì„œ Materialized Viewì˜ Refresh Typeì„ ë³€ê²½í•œë‹¤.
+ *    Meta Table¿¡¼­ Materialized ViewÀÇ Refresh TypeÀ» º¯°æÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1834,7 +1834,7 @@ IDE_RC qdm::updateRefreshTypeFromMeta(
 /***********************************************************************
  *
  * Description :
- *    Meta Tableì—ì„œ Materialized Viewì˜ Refresh Timeì„ ë³€ê²½í•œë‹¤.
+ *    Meta Table¿¡¼­ Materialized ViewÀÇ Refresh TimeÀ» º¯°æÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1876,7 +1876,7 @@ IDE_RC qdm::updateRefreshTimeFromMeta(
 /***********************************************************************
  *
  * Description :
- *    Meta Tableì—ì„œ Materialized Viewì˜ Last DDL Timeì„ ë³€ê²½í•œë‹¤.
+ *    Meta Table¿¡¼­ Materialized ViewÀÇ Last DDL TimeÀ» º¯°æÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1915,12 +1915,12 @@ IDE_RC qdm::updateLastDDLTimeFromMeta(
 /***********************************************************************
  *
  * Description :
- *    ìƒˆë¡œìš´ Materialized View IDë¥¼ ìƒì„±í•œë‹¤.
+ *    »õ·Î¿î Materialized View ID¸¦ »ı¼ºÇÑ´Ù.
  *
  * Implementation :
- *    1. Sequenceì—ì„œ ìƒˆë¡œìš´ ID ì–»ê¸°
- *    2. SYS_MATERIALIZED_VIEWS_ì—ì„œ ì´ë¯¸ ì‚¬ìš© ì¤‘ì¸ì§€ ê²€ì‚¬
- *    3. ì‚¬ìš© ì¤‘ì´ë©´, 1~2 ê³¼ì •ì„ ë‹¤ì‹œ ìˆ˜í–‰
+ *    1. Sequence¿¡¼­ »õ·Î¿î ID ¾ò±â
+ *    2. SYS_MATERIALIZED_VIEWS_¿¡¼­ ÀÌ¹Ì »ç¿ë ÁßÀÎÁö °Ë»ç
+ *    3. »ç¿ë ÁßÀÌ¸é, 1~2 °úÁ¤À» ´Ù½Ã ¼öÇà
  *
  ***********************************************************************/
 IDE_RC qdm::getNextMViewID( qcStatement * aStatement,
@@ -1952,9 +1952,9 @@ IDE_RC qdm::getNextMViewID( qcStatement * aStatement,
                         NULL )
                   != IDE_SUCCESS );
 
-        /* sSeqValì€ ë¹„ë¡ SLongì´ì§€ë§Œ, sequenceë¥¼ ìƒì„±í•  ë•Œ
-         * maxë¥¼ integer maxë¥¼ ì•ˆë„˜ë„ë¡ í•˜ì˜€ê¸° ë•Œë¬¸ì—
-         * ì—¬ê¸°ì„œ overflowì²´í¬ëŠ” í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        /* sSeqValÀº ºñ·Ï SLongÀÌÁö¸¸, sequence¸¦ »ı¼ºÇÒ ¶§
+         * max¸¦ integer max¸¦ ¾È³Ñµµ·Ï ÇÏ¿´±â ¶§¹®¿¡
+         * ¿©±â¼­ overflowÃ¼Å©´Â ÇÏÁö ¾Ê´Â´Ù.
          */
         IDE_TEST( searchMViewID( QC_SMI_STMT( aStatement ),
                                  (SInt)sSeqVal,
@@ -1968,7 +1968,7 @@ IDE_RC qdm::getNextMViewID( qcStatement * aStatement,
         }
         else
         {
-            /* ì°¾ë‹¤ì°¾ë‹¤ í•œë°”í€´ ëˆ ê²½ìš°, objectê°€ ê½‰ ì°¬ ê²ƒì„ ì˜ë¯¸ */
+            /* Ã£´ÙÃ£´Ù ÇÑ¹ÙÄû µ· °æ¿ì, object°¡ ²Ë Âù °ÍÀ» ÀÇ¹Ì */
             IDE_TEST_RAISE( sSeqVal == sSeqValFirst, ERR_OBJECTS_OVERFLOW );
         }
     }
@@ -1991,10 +1991,10 @@ IDE_RC qdm::getNextMViewID( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Materialized View IDê°€ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
+ *    Materialized View ID°¡ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
  *
  * Implementation :
- *    1. SYS_MATERIALIZED_VIEWS_ì—ì„œ ì´ë¯¸ ì‚¬ìš© ì¤‘ì¸ì§€ ê²€ì‚¬
+ *    1. SYS_MATERIALIZED_VIEWS_¿¡¼­ ÀÌ¹Ì »ç¿ë ÁßÀÎÁö °Ë»ç
  *
  ***********************************************************************/
 IDE_RC qdm::searchMViewID( smiStatement * aSmiStmt,
@@ -2009,12 +2009,12 @@ IDE_RC qdm::searchMViewID( smiStatement * aSmiStmt,
     mtcColumn          * sMViewIDColumn = NULL;
     qtcMetaRangeColumn   sRangeColumn;
 
-    scGRID               sRid; /* Disk Tableì„ ìœ„í•œ Record IDentifier */
+    scGRID               sRid; /* Disk TableÀ» À§ÇÑ Record IDentifier */
     smiCursorProperties  sCursorProperty;
 
     if ( gQcmMaterializedViewsIndex[QCM_MATERIALIZED_VIEWS_IDX_MVIEWID] == NULL )
     {
-        /* createdbí•˜ëŠ” ê²½ìš°, ê²€ì‚¬í•  í•„ìš”ê°€ ì—†ë‹¤. */
+        /* createdbÇÏ´Â °æ¿ì, °Ë»çÇÒ ÇÊ¿ä°¡ ¾ø´Ù. */
         *aExist = ID_FALSE;
     }
     else

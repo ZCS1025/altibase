@@ -19,6 +19,7 @@ package Altibase.jdbc.driver;
 import java.sql.SQLException;
 import java.util.List;
 
+import Altibase.jdbc.driver.datatype.Column;
 import Altibase.jdbc.driver.datatype.RowHandle;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
@@ -38,7 +39,7 @@ public class AltibaseEmptyResultSet extends AltibaseReadableResultSet
         mConcurrency = aResultSetConcurrency;
     }
 
-    protected List getTargetColumns()
+    protected List<Column> getTargetColumns()
     {
         return mColumns;
     }

@@ -161,15 +161,70 @@ extern "C" {
 
 /* altibase shard */
 #define ALTIBASE_SHARD_VER                           2065
-#define ALTIBASE_SHARD_SINGLE_NODE_TRANSACTION       2066
-#define ALTIBASE_SHARD_MULTIPLE_NODE_TRANSACTION     2067
-#define ALTIBASE_SHARD_GLOBAL_TRANSACTION            2069
+#define ALTIBASE_DEPRECATED_01                       2066   /* ALTIBASE_SHARD_SINGLE_NODE_TRANSACTION   */
+#define ALTIBASE_DEPRECATED_02                       2067   /* ALTIBASE_SHARD_MULTIPLE_NODE_TRANSACTION */
+#define ALTIBASE_DEPRECATED_03                       2069   /* ALTIBASE_SHARD_GLOBAL_TRANSACTION        */
 
 #define ALTIBASE_PREPARE_WITH_DESCRIBEPARAM          2068
 
 /* InfiniBand(IB) */    
 #define ALTIBASE_IB_LATENCY                          2069
 #define ALTIBASE_IB_CONCHKSPIN                       2070
+
+#define ALTIBASE_MESSAGE_CALLBACK                    2071
+
+#define ALTIBASE_GLOBAL_TRANSACTION_LEVEL            2072
+
+/* Connection Attributes */
+#define ALTIBASE_COMMIT_WRITE_WAIT_MODE              2073
+#define ALTIBASE_ST_OBJECT_BUFFER_SIZE               2074
+#define ALTIBASE_TRX_UPDATE_MAX_LOGSIZE              2075
+#define ALTIBASE_PARALLEL_DML_MODE                   2076
+#define ALTIBASE_NLS_NCHAR_CONV_EXCP                 2077
+#define ALTIBASE_AUTO_REMOTE_EXEC                    2078
+#define ALTIBASE_TRCLOG_DETAIL_PREDICATE             2079
+#define ALTIBASE_OPTIMIZER_DISK_INDEX_COST_ADJ       2080
+#define ALTIBASE_OPTIMIZER_MEMORY_INDEX_COST_ADJ     2081
+#define ALTIBASE_NLS_TERRITORY                       2082
+#define ALTIBASE_NLS_ISO_CURRENCY                    2083
+#define ALTIBASE_NLS_CURRENCY                        2084
+#define ALTIBASE_NLS_NUMERIC_CHARACTERS              2085
+#define ALTIBASE_QUERY_REWRITE_ENABLE                2086
+#define ALTIBASE_DBLINK_REMOTE_STATEMENT_AUTOCOMMIT  2087
+#define ALTIBASE_RECYCLEBIN_ENABLE                   2088
+#define ALTIBASE___USE_OLD_SORT                      2089
+#define ALTIBASE_ARITHMETIC_OPERATION_MODE           2090
+#define ALTIBASE_RESULT_CACHE_ENABLE                 2091
+#define ALTIBASE_TOP_RESULT_CACHE_MODE               2092
+#define ALTIBASE_OPTIMIZER_AUTO_STATS                2093
+#define ALTIBASE___OPTIMIZER_TRANSITIVITY_OLD_RULE   2094
+#define ALTIBASE_OPTIMIZER_PERFORMANCE_VIEW          2095
+#define ALTIBASE_REPLICATION_DDL_SYNC                2096
+#define ALTIBASE_REPLICATION_DDL_SYNC_TIMEOUT        2097
+#define ALTIBASE___PRINT_OUT_ENABLE                  2098
+#define ALTIBASE_TRCLOG_DETAIL_SHARD                 2099
+#define ALTIBASE_SERIAL_EXECUTE_MODE                 2100
+#define ALTIBASE_TRCLOG_DETAIL_INFORMATION           2101
+#define ALTIBASE___OPTIMIZER_DEFAULT_TEMP_TBS_TYPE   2102
+#define ALTIBASE_NORMALFORM_MAXIMUM                  2103
+#define ALTIBASE___REDUCE_PARTITION_PREPARE_MEMORY   2104
+#define ALTIBASE_TRANSACTIONAL_DDL                   2105
+#define ALTIBASE_GLOBAL_DDL                          2106
+#define ALTIBASE_SHARD_STATEMENT_RETRY               2107
+#define ALTIBASE_INDOUBT_FETCH_TIMEOUT               2108
+#define ALTIBASE_INDOUBT_FETCH_METHOD                2109
+#define ALTIBASE___OPTIMIZER_PLAN_HASH_OR_SORT_METHOD (2110) /* BUG-48132 */
+#define ALTIBASE___OPTIMIZER_BUCKET_COUNT_MAX         (2111) /* BUG-48161 */
+#define ALTIBASE_DDL_LOCK_TIMEOUT                    2112
+#define ALTIBASE___OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION (2113) /* BUG-48348 */
+
+#define ALTIBASE_UNUSED_02                           5005  /* ALTIBASE_SHARD_INTERNAL_LOCAL_OPERATION */
+#define ALTIBASE_UNUSED_03                           5006  /* ALTIBASE_INVOKE_USER */
+#define ALTIBASE_UNUSED_04                           5007  /* ALTIBASE_SHARD_SESSION_TYPE */
+#define ALTIBASE_UNUSED_05                           5008  /* ALTIBASE_SHARD_DIST_TX_INFO */
+#define ALTIBASE_UNUSED_06                           5009  /* ALTIBASE_SHARD_COORD_FIX_CTRL_CALLBACK */
+#define ALTIBASE_UNUSED_07                           5010  /* ALTIBASE_SHARD_META_NUMBER */
+#define ALTIBASE_UNUSED_08                           5011  /* ALTIBASE_REBUILD_SHARD_SHARD_META_NUMBER */
 
 /* Below Ver 6 */
 #define ALTIBASE_UNUSED_01                           6001  /* ALTIBASE_NUMERIC_DOUBLE_MODE */
@@ -240,6 +295,8 @@ extern "C" {
 
 /* Shard meta information is changed */
 #define ALITBASE_SHARD_META_INFO_CHANGED     0x5121f
+
+#define ALTIBASE_DISTRIBUTED_DEADLOCK_DETECTED 0x111b6
 
 /* Options for SQL_CURSOR_HOLD */
 #define SQL_CURSOR_HOLD_ON        1
@@ -360,6 +417,25 @@ typedef   struct SQLFailOverCallbackContext
     SQLFailOverCallbackFunc  mFailOverCallbackFunc;
 }SQLFailOverCallbackContext;
 
+
+SQLRETURN SQL_API SQLInitializeShardKeyContext( SQLShardKeyContext * ShardKeyContext,
+                                                SQLHDBC              ConnectionHandle,
+                                                SQLCHAR            * TableName,
+                                                SQLINTEGER           TableNameLen,
+                                                SQLCHAR            * KeyColumnName,
+                                                SQLINTEGER           KeyColumnNameLen,
+                                                SQLSMALLINT          KeyColumnValueType,
+                                                SQLPOINTER           KeyColumnValueBuffer,
+                                                SQLLEN               KeyColumnValueBufferLen,
+                                                SQLLEN             * KeyColumnStrLenOrIndPtr,
+                                                SQLCHAR              ShardDistType[1] );
+
+SQLRETURN SQL_API SQLGetNodeByShardKeyValue( SQLShardKeyContext     ShardKeyContext,
+                                             const SQLCHAR       ** DstNodeName );
+                                             //SQLINTEGER         * DstNodeNameLen );
+
+SQLRETURN SQL_API SQLFinalizeShardKeyContext( SQLShardKeyContext ShardKeyContext );
+
 /*
  * ----------------------------------
  * Altibase Connection Pool CLI Functions
@@ -397,6 +473,14 @@ enum ALTIBASE_TRACELOG_VALUE
     ALTIBASE_TRACELOG_FULL  = 4
 };
 
+enum ALTIBASE_GLOBAL_TRANSACTION_LEVEL_VALUE
+{
+    ALTIBASE_SINGLE_NODE_TRANSACTION        = 0,
+    ALTIBASE_MULTIPLE_NODE_TRANSACTION      = 1,
+    ALTIBASE_GLOBAL_TRANSACTION             = 2,
+    ALTIBASE_GLOBAL_CONSISTENT_TRANSACTION  = 3
+};
+
 SQLRETURN SQL_API SQLCPoolSetAttr(SQLHDBCP aConnectionPoolHandle,
         SQLINTEGER      aAttribute,
         SQLPOINTER      aValue,
@@ -417,6 +501,18 @@ SQLRETURN SQL_API SQLCPoolGetConnection(SQLHDBCP aConnectionPoolHandle,
 
 SQLRETURN SQL_API SQLCPoolReturnConnection(SQLHDBCP aConnectionPoolHandle,
         SQLHDBC         aConnectionHandle);
+
+
+/* Altibase Message Callback */
+typedef void (*SQLMessageCallback)(SQLCHAR     *aMessage,
+                                   SQLUINTEGER  aLength,
+                                   void        *aUserData);
+
+typedef struct SQLMessageCallbackStruct
+{
+    SQLMessageCallback  mFunction;
+    void               *mUserData;
+} SQLMessageCallbackStruct;
 
 #ifdef __cplusplus
 }

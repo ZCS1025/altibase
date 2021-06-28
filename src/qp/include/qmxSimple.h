@@ -68,7 +68,7 @@ typedef struct qmxFastScanInfo
 
 } qmxFastScanInfo;
 
-// PROJ-2551 simple query ÏµúÏ†ÅÌôî
+// PROJ-2551 simple query √÷¿˚»≠
 class qmxSimple
 {
 public:
@@ -107,6 +107,7 @@ private:
                                    struct qciBindParamInfo  * aParamInfo,
                                    UChar                    * aBindBuffer,
                                    SChar                   ** aBuffer,
+                                   idBool                     aIsMakeRange,
                                    idBool                     aNeedCanonize );
 
     static IDE_RC getSimpleConstMtdValue( qcStatement  * aStatement,
@@ -128,6 +129,7 @@ private:
                                      void                    ** aMtdValue,
                                      struct qciBindParamInfo  * aParamInfo,
                                      SChar                   ** aBuffer,
+                                     idBool                     aIsMakeRange,
                                      idBool                     aNeedCanonize );
 
     static IDE_RC getSimpleMtdValueSize( mtcColumn * aColumn,

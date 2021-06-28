@@ -260,12 +260,12 @@ static void finalizeAdapter( oaConfigHandle *aConfigHandle )
 }
 
 /**
- * @breif  processÎ•º daemonÏúºÎ°ú ÎßåÎì†Îã§.
+ * @breif  process∏¶ daemon¿∏∑Œ ∏∏µÁ¥Ÿ.
  *
- *         ÍªçÎç∞Í∏∞ ParentÍ∞Ä Ïù¥ Ìï®ÏàòÎ•º Ìò∏Ï∂úÌïòÏó¨,
- *         (--daemon ÏòµÏÖòÏúºÎ°ú) ChildÎ•º daemonized processÎ°ú ÏÉùÏÑ±ÌïúÎã§.
+ *         ≤Æµ•±‚ Parent∞° ¿Ã «‘ºˆ∏¶ »£√‚«œø©,
+ *         (--daemon ø…º«¿∏∑Œ) Child∏¶ daemonized process∑Œ ª˝º∫«—¥Ÿ.
  *
- * @return ÏÑ±Í≥µ Ïó¨Î∂Ä
+ * @return º∫∞¯ ø©∫Œ
  *
  */
 static ace_rc_t daemonize()
@@ -313,9 +313,9 @@ static ace_rc_t daemonize()
 }
 
 /**
- * @breif  daemonized processÍ∞Ä Ïù¥ Ìï®ÏàòÎ•º Ìò∏Ï∂úÌïòÏó¨, working directory Îì±ÏùÑ ÏÑ§Ï†ïÌïúÎã§.
+ * @breif  daemonized process∞° ¿Ã «‘ºˆ∏¶ »£√‚«œø©, working directory µÓ¿ª º≥¡§«—¥Ÿ.
  *
- * @return ÏÑ±Í≥µ Ïó¨Î∂Ä
+ * @return º∫∞¯ ø©∫Œ
  *
  */
 static ace_rc_t detachConsole()
@@ -387,7 +387,7 @@ static ace_rc_t handleOption( oaContext  * aContext,
         }
     }
 
-    /* BUG-32379 oraAdaterÎäî Îç∞Î™¨ÏúºÎ°ú Ïã§ÌñâÎê† ÌïÑÏöîÍ∞Ä ÏûàÏäµÎãàÎã§. */
+    /* BUG-32379 oraAdater¥¬ µ•∏Û¿∏∑Œ Ω««‡µ… « ø‰∞° ¿÷Ω¿¥œ¥Ÿ. */
     if ( sIsDaemonChild == ACP_TRUE )
     {
         ACE_TEST( detachConsole() != ACE_RC_SUCCESS );
@@ -517,11 +517,11 @@ static void doFinalizeJob( oaAlaReceiverHandle     * aAlaReceiverHandle,
     }
 }
 /**
- * @breif  Adapter for OracleÏùò Ï£º ÏûëÏóÖÏùÑ ÏàòÌñâÌïúÎã§.
+ * @breif  Adapter for Oracle¿« ¡÷ ¿€æ˜¿ª ºˆ«‡«—¥Ÿ.
  *
  * @param aContext oaContext
  *
- * @return ÏÑ±Í≥µ Ïó¨Î∂Ä
+ * @return º∫∞¯ ø©∫Œ
  *
  */
 static ace_rc_t doMainJob( oaContext               * aContext, 
@@ -565,16 +565,25 @@ static ace_rc_t doMainJob( oaContext               * aContext,
         {
             /* Nothing to do */
         }
+        
+        if ( sLogRecord->mCommon.mType != OA_LOG_RECORD_TYPE_STOP_REPLICATION )
+        {
+            *aCurrentLastProcessedSN = sLastProcessedSN;
+        }
     }
     while ( sLogRecord->mCommon.mType != OA_LOG_RECORD_TYPE_STOP_REPLICATION );
-
-    *aCurrentLastProcessedSN = sLastProcessedSN;
 
     return ACE_RC_SUCCESS;
 
     ACE_EXCEPTION_END;
 
-    *aCurrentLastProcessedSN = sLastProcessedSN;
+    if ( sLogRecord != NULL )
+    {
+        if ( sLogRecord->mCommon.mType != OA_LOG_RECORD_TYPE_STOP_REPLICATION )
+        {
+            *aCurrentLastProcessedSN = sLastProcessedSN;
+        }
+    }
 
     return ACE_RC_FAILURE;
 }
@@ -599,6 +608,58 @@ void setRestartCountNLastProcessedSN( oaLogSN        aLastProcessedSN,
 
     *aRestartCount = sRestartCount;
     *aPrevLastProcessedSN = sPrevLastProcessedSN;
+}
+
+
+ace_rc_t openStderrFile( oaContext          * aContext,
+                         acp_std_file_t     * aFile )
+{
+    acp_rc_t            sAcpRC = ACP_RC_EEXIST;
+    acp_char_t          sErrMsg[1024];
+    acp_char_t        * sHome = NULL;
+    acp_std_file_t      sFile = {NULL};
+
+    ACP_STR_DECLARE_DYNAMIC( sFilePath );
+    ACP_STR_INIT_DYNAMIC( sFilePath, 128, 128 );
+
+    sAcpRC = acpEnvGet( OA_ADAPTER_HOME_ENVIRONMENT_VARIABLE, &sHome );
+    if ( ACP_RC_NOT_ENOENT(sAcpRC) && (sAcpRC == ACP_RC_SUCCESS) )
+    {
+        (void)acpStrCpyFormat( &sFilePath, "%s/trc/", sHome );
+    }
+    else
+    {
+        (void)acpStrCpyCString( &sFilePath, "./trc/" );
+    }
+
+    (void)acpStrCatCString( &sFilePath, OA_ADAPTER_STD_ERR_FILE_NAME );
+
+    sAcpRC = acpStdOpen( &sFile,
+                         (char *)acpStrGetBuffer( &sFilePath ),
+                         ACP_STD_OPEN_READWRITE_TRUNC_TEXT );
+    ACE_TEST_RAISE( ACP_RC_NOT_SUCCESS( sAcpRC ), ERROR_FILE_OPEN );
+
+    ACP_STR_FINAL( sFilePath );
+
+    *aFile = sFile;
+
+    return ACE_RC_SUCCESS;
+
+    ACE_EXCEPTION( ERROR_FILE_OPEN )
+    {
+        acpErrorString( sAcpRC, sErrMsg, 1024 );
+        oaLogMessage( OAM_ERR_FILE_OPEN, OA_ADAPTER_STD_ERR_FILE_NAME, sErrMsg );
+    }
+    ACE_EXCEPTION_END;
+
+    ACP_STR_FINAL( sFilePath );
+
+    return ACE_RC_FAILURE;
+}
+
+void closeStderrFile( acp_std_file_t * aFile )
+{
+    (void)acpStdClose( aFile );
 }
 
 ace_rc_t runAdapter( oaContext * aContext )
@@ -673,6 +734,7 @@ ace_rc_t runAdapter( oaContext * aContext )
 
     finalizeImportedLibrary();
 
+    oaLogMessage( OAM_MSG_LAST_SN, sCurrentLastProcessedSN );    
     oaLogMessage( OAM_MSG_ADAPTER_FINALIZED );
     oaLogMessage( OAM_MSG_DUMP_LOG, "ALTIBASE Adapter ended." );
 
@@ -691,6 +753,8 @@ ace_rc_t runAdapter( oaContext * aContext )
 
     finalizeImportedLibrary();
 
+    oaLogMessage( OAM_MSG_LAST_SN, sCurrentLastProcessedSN );
+    
     if ( sIsAdapterInitialized == ACP_TRUE )
     {
         oaLogMessage( OAM_MSG_DUMP_LOG, "ALTIBASE Adapter finalized by error" );
@@ -710,6 +774,8 @@ int main(int argc, char *argv[])
 {
     acp_opt_t  sOpt;
     acp_bool_t sIsDaemonChild = ACP_FALSE;
+    acp_std_file_t  sFile       = {NULL};
+    acp_bool_t      sIsOpenFile = ACP_FALSE;
 
     OA_CONTEXT_INIT();
 
@@ -719,7 +785,14 @@ int main(int argc, char *argv[])
                             &sIsDaemonChild )
               != ACE_RC_SUCCESS );
 
-    /* BUG-32379 oraAdaterÎäî Îç∞Î™¨ÏúºÎ°ú Ïã§ÌñâÎê† ÌïÑÏöîÍ∞Ä ÏûàÏäµÎãàÎã§. */
+    ACE_TEST( openStderrFile( aContext,
+                              &sFile )
+              != ACE_RC_SUCCESS );
+    sIsOpenFile = ACP_TRUE;
+
+    ACE_TEST( acpStdDupStderr( sFile ) != ACP_TRUE );
+
+    /* BUG-32379 oraAdater¥¬ µ•∏Û¿∏∑Œ Ω««‡µ… « ø‰∞° ¿÷Ω¿¥œ¥Ÿ. */
     if ( sIsDaemonChild != ACP_TRUE )
     {
         ACE_TEST( daemonize() != ACE_RC_SUCCESS );
@@ -729,6 +802,16 @@ int main(int argc, char *argv[])
         ACE_TEST( runAdapter( aContext ) != ACE_RC_SUCCESS );
     }
 
+    if ( sIsOpenFile == ACP_TRUE )
+    {
+        sIsOpenFile = ACP_FALSE;
+        closeStderrFile( &sFile );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
     OA_CONTEXT_FINAL();
 
     return 0;
@@ -736,6 +819,16 @@ int main(int argc, char *argv[])
     ACE_EXCEPTION_END;
 
     OA_CONTEXT_FINAL();
+
+    if ( sIsOpenFile == ACP_TRUE )
+    {
+        sIsOpenFile = ACP_FALSE;
+        closeStderrFile( &sFile );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
     return -1;
 }

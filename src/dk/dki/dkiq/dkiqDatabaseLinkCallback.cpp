@@ -310,9 +310,10 @@ static void dkiCloseShardConnection( void * aDataNode )
     dkmCloseShardConnection( sDataNode );
 }
 
-static IDE_RC dkiAddShardTransaction( idvSQL  * aStatistics,
-                                      smTID     aTransID,
-                                      void    * aDataNode )
+static IDE_RC dkiAddShardTransaction( idvSQL        * aStatistics,
+                                      smTID           aTransID,
+                                      sdiClientInfo * aClientInfo,
+                                      void          * aDataNode )
 {
     sdiConnectInfo * sDataNode = (sdiConnectInfo*)aDataNode;
     dkmSession     * sSession  = NULL;
@@ -325,6 +326,7 @@ static IDE_RC dkiAddShardTransaction( idvSQL  * aStatistics,
     IDE_TEST( dkmAddShardTransaction( aStatistics,
                                       sSession,
                                       aTransID,
+                                      aClientInfo,
                                       sDataNode )
               != IDE_SUCCESS );
 
@@ -371,6 +373,51 @@ static IDE_RC dkiSetTransactionBrokenOnGlobalCoordinator( void  * aDkiSession,
     return IDE_FAILURE;
 }
 
+static IDE_RC dkiCheckGloablTransactionStatus( void          * aDataNode )
+{
+    sdiConnectInfo * sDataNode = (sdiConnectInfo*)aDataNode;
+    dkmSession     * sSession  = NULL;
+
+    IDE_DASSERT( sDataNode != NULL );
+    IDE_DASSERT( sDataNode->mDkiSession != NULL );
+
+    sSession = dkiSessionGetDkmSession( (dkiSession*)sDataNode->mDkiSession );
+
+    IDE_TEST( dkmCheckGlobalTransactionStatus( sSession ) != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+static IDE_RC dkiAddDtxBranchTx( void   * aDtxInfo,
+                                 UChar    aCoordinatorType,
+                                 SChar  * aNodeName,
+                                 SChar  * aUserName,
+                                 SChar  * aUserPassword,
+                                 SChar  * aDataServerIP,
+                                 UShort   aDataPortNo,
+                                 UShort   aConnectType )
+{
+    IDE_TEST( dkmAddDtxBranchTx( aDtxInfo,
+                                 (sdiCoordinatorType)aCoordinatorType,
+                                 aNodeName,
+                                 aUserName,
+                                 aUserPassword,
+                                 aDataServerIP,
+                                 aDataPortNo,
+                                 aConnectType )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 static qciDatabaseLinkCallback gDatabaseLinkCallack =
 {
     dkiqStartDatabaseLinker,
@@ -395,6 +442,10 @@ static qciDatabaseLinkCallback gDatabaseLinkCallack =
     dkiDelShardTransaction,
 
     dkiSetTransactionBrokenOnGlobalCoordinator,
+
+    dkiCheckGloablTransactionStatus,
+
+    dkiAddDtxBranchTx
 };
 
 /*

@@ -16,19 +16,53 @@
  
 
 /***********************************************************************
- * $Id: smxTransMgr.h 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: smxTransMgr.h 89746 2021-01-11 06:22:36Z emlee $
  **********************************************************************/
 
 #ifndef _O_SMX_TRANS_MGR_H_
 #define _O_SMX_TRANS_MGR_H_ 1
 
 #include <idu.h>
+#include <smiDef.h>
 #include <smxTrans.h>
 #include <smxTransFreeList.h>
 #include <smxMinSCNBuild.h>
 
 class smxTransFreeList;
 class smrUTransQueue;
+
+#define SMX_GET_SYSTEM_VIEW_SCN( aSCN )                         \
+    if ( smxTransMgr::isActiveVersioningMinTime() == ID_FALSE ) \
+    {                                                           \
+        smmDatabase::getViewSCN( aSCN );                        \
+    }                                                           \
+    else                                                        \
+    {                                                           \
+        smxTransMgr::getTimeSCN( aSCN  );                       \
+        SM_SET_SCN_VIEW_BIT( aSCN );                            \
+    }
+
+#define SMX_GET_MIN_MEM_VIEW( aSCN, aTID )                      \
+    if ( smxTransMgr::isActiveVersioningMinTime() == ID_FALSE ) \
+    {                                                           \
+        smxTransMgr::getMinMemViewSCNofAll( aSCN, aTID );       \
+    }                                                           \
+    else                                                        \
+    {                                                           \
+        smxTransMgr::getAgingMemViewSCN( aSCN, aTID );          \
+    }
+
+#define SMX_GET_MIN_DISK_VIEW( aSCN )                           \
+    if ( smxTransMgr::isActiveVersioningMinTime() == ID_FALSE ) \
+    {                                                           \
+        smxTransMgr::getSysMinDskViewSCN( aSCN );               \
+    }                                                           \
+    else                                                        \
+    {                                                           \
+        smxTransMgr::getAgingDskViewSCN( aSCN );                \
+    }
+
+
 
 class smxTransMgr
 {
@@ -37,7 +71,7 @@ public:
     // for idp::update
     enum {CONV_BUFF_SIZE=8};
 
-    static IDE_RC   calibrateTransCount(UInt *aTransCnt);
+    static IDE_RC calibrateTransCount(UInt *aTransCnt);
     static IDE_RC initialize();
     static IDE_RC destroy();
 
@@ -60,9 +94,15 @@ public:
     static inline idvSQL*   getStatisticsBySID(SInt aSlotN);
     static inline idBool    isActiveBySID(SInt aSlotN);
     static inline smTID     getTIDBySID(SInt aSlotN);
-    static inline void      setTransBlockedBySID(const SInt);
-    static inline void      setTransBegunBySID(const SInt);
-    static inline smxStatus getTransStatus(const SInt);
+    static inline void      setCommitLogLSN( smTID aTID, smLSN aLSN ) // BUG-47865
+    {
+        if (( aTID != SM_NULL_TID ) && ( aTID != 0 ))
+        {
+            smxTrans* sTrans = getTransByTID( aTID );
+            sTrans->setCommitLogLSN( aTID,
+                                     aLSN );
+        }
+    };
 
     static inline IDE_RC resetBuilderInterval();
     static inline IDE_RC rebuildMinViewSCN( idvSQL * aStatistics );
@@ -70,17 +110,18 @@ public:
 
     static inline void getSysMinDskFstViewSCN( smSCN* aMinDskFstViewSCN );
 
-    // BUG-26881 ìž˜ëª»ëœ CTS stampingìœ¼ë¡œ accesí•  ìˆ˜ ì—†ëŠ” rowë¥¼ ì ‘ê·¼í•¨
-    static inline void getSysAgableSCN( smSCN* aSysAagableSCN );
+    // BUG-26881 Àß¸øµÈ CTS stampingÀ¸·Î accesÇÒ ¼ö ¾ø´Â row¸¦ Á¢±ÙÇÔ
+    static inline void getMinOldestFstViewSCN( smSCN* aMinOldestFstViewSCN );
 
-    static void  getMinMemViewSCNofAll( smSCN* aMinSCN, smTID* aTID );
+    static void  getMinMemViewSCNofAll( smSCN* aMinSCN,
+                                        smTID* aTID,
+                                        idBool aUseTimeSCN = ID_FALSE );
 
-    // BUG-26881 ìž˜ëª»ëœ CTS stampingìœ¼ë¡œ accesí•  ìˆ˜ ì—†ëŠ” rowë¥¼ ì ‘ê·¼í•¨
     static void  getDskSCNsofAll( smSCN   * aMinViewSCN,
                                   smSCN   * aMinDskFstViewSCN,
                                   smSCN   * aMinOldestFstViewSCN );
 
-    static IDE_RC getMinLSNOfAllActiveTrans( smLSN  * aLSN );
+    static void getMinLSNOfAllActiveTrans( smLSN  * aLSN );
     static SInt getSlotID( smTID aTransID ){return aTransID & mSlotMask;}
 
     // for global transaction
@@ -94,12 +135,12 @@ public:
     /* BUG-18981 */
     static IDE_RC getXID( smTID aTID, ID_XID  * aXID );
     static IDE_RC rebuildTransFreeList();
-
+#if 0
     static void dump();
     static void dumpActiveTrans();
-
-    /* BUG-20862 ë²„í¼ hash resizeë¥¼ í•˜ê¸° ìœ„í•´ì„œ ë‹¤ë¥¸ íŠ¸ëžœìž­ì…˜ë“¤ì„ ëª¨ë‘ ì ‘ê·¼í•˜ì§€
-     * ëª»í•˜ê²Œ í•´ì•¼ í•©ë‹ˆë‹¤.*/
+#endif
+    /* BUG-20862 ¹öÆÛ hash resize¸¦ ÇÏ±â À§ÇØ¼­ ´Ù¸¥ Æ®·£Àè¼ÇµéÀ» ¸ðµÎ Á¢±ÙÇÏÁö
+     * ¸øÇÏ°Ô ÇØ¾ß ÇÕ´Ï´Ù.*/
     static void block( void * aTrans, UInt   aTryMicroSec, idBool *aSuccess );
     static void unblock(void);
     
@@ -124,11 +165,11 @@ public:
     static inline void addPreparedList( smxTrans  * aTrans );
     static inline void removePreparedList( smxTrans  *aTrans );
     static IDE_RC setXAInfoAnAddPrepareLst( void    * aTrans,
+                                            idBool     aIsGCTx,
                                             timeval   aTimeVal,
                                             ID_XID    aXID, /* BUG-18981 */
                                             smSCN   * aFstDskViewSCN );
     static void rebuildPrepareTransOldestSCN();
-
     static IDE_RC incRecCnt4InDoubtTrans( smTID aTransID,
                                           smOID aTableOID );
     static IDE_RC decRecCnt4InDoubtTrans( smTID aTransID,
@@ -160,6 +201,7 @@ public:
 
     static IDE_RC waitForTrans( void      * aTrans,
                                 smTID       aWaitTransID,
+                                scSpaceID   aSpaceID,
                                 ULong       aLockWaitTime );
 
     static SInt   getCurTransCnt();
@@ -176,10 +218,10 @@ public:
     static UInt   getPreparedTransCnt() { return mPreparedTransCnt; }
 
     /* PROJ-1594 Volatile TBS */
-    /* Volatile loggingì„ í•˜ê¸° ìœ„í•´ í•„ìš”í•œ í•¨ìˆ˜ */
+    /* Volatile loggingÀ» ÇÏ±â À§ÇØ ÇÊ¿äÇÑ ÇÔ¼ö */
     static svrLogEnv *getVolatileLogEnv( void *aTrans );
 
-    /* BUG-19245: Transactionì´ ë‘ë²ˆ Freeë˜ëŠ” ê²ƒì„ Detectí•˜ê¸° ìœ„í•´ ì¶”ê°€ë¨ */
+    /* BUG-19245: TransactionÀÌ µÎ¹ø FreeµÇ´Â °ÍÀ» DetectÇÏ±â À§ÇØ Ãß°¡µÊ */
     static void checkFreeTransList();
 
     /* PROJ-1704 MVCC renwal */
@@ -190,6 +232,7 @@ public:
 
     static IDE_RC initializeMinSCNBuilder();
     static IDE_RC startupMinSCNBuilder();
+    static IDE_RC destroyMinSCNBuilder();
     static IDE_RC shutdownMinSCNBuilder();
 
     static idBool existActiveTrans();
@@ -199,6 +242,31 @@ public:
     static idBool isReplTrans( void * aTrans );
     static idBool isSameReplID( void * aTrans, smTID aWaitTransID );
     static idBool isTransForReplConflictResolution( smTID aWaitTransID );
+    /* MM callback µî·Ï ¹× È£ÃâÇÔ¼ö*/
+    static void setSessionCallback( smiSessionCallback * aSessionCallback )
+    {   mSessionCallback = *aSessionCallback; };
+    static void setAllocTransRetryCount( idvSQL * aStatistics,
+                                         ULong    aRetryCount );
+
+    /* PROJ-2733 ºÐ»ê Æ®·£Àè¼Ç Á¤ÇÕ¼º */
+    static void getTimeSCN( smSCN * aSCN );
+    static void getAgingMemViewSCN( smSCN * aSCN, smTID * aTID );
+    static void getAgingDskViewSCN( smSCN * aSCN );
+    static void getAccessSCN( smSCN  * aSCN );
+    static void getTimeSCNList( smxTimeSCNNode ** aList );
+    static SInt getTimeSCNBaseIdx( void );
+    static SInt getTimeSCNLastIdx( void );
+    static SInt getTimeSCNMaxCnt( void );
+    static idBool isActiveVersioningMinTime( void );
+    static void setGlobalConsistentSCNAsSystemSCN( void );
+    static inline IDE_RC resetVersioningMinTime( void );
+
+    /* BUG-48250 */
+    static UInt getSessIndoubtFetchTimeout( idvSQL * aStatistics );
+    static UInt getSessIndoubtFetchMethod( idvSQL * aStatistics );
+
+    static void registPendingTable( UShort aCurSlotN, UShort aRowTransSlotN );
+    static void clearPendingTable( UShort aCurSlotN, UShort aRowTransSlotN );
 
 private:
     //For Versioning
@@ -225,8 +293,15 @@ public:
     static smxGetSmmViewSCNFunc   mGetSmmViewSCN;
     static smxGetSmmCommitSCNFunc mGetSmmCommitSCN;
 
-    /* BUG-33873 TRANSACTION_TABLE_SIZE ì— ë„ë‹¬í–ˆì—ˆëŠ”ì§€ trc ë¡œê·¸ì— ë‚¨ê¸´ë‹¤ */
-    static UInt               mTransTableFullCount;
+    /* BUG-47655 °¢ SessionÀÇ transaction ÇÒ´ç Àç½Ãµµ È½¼ö, ´©Àû°ª */
+    /* X$TRANSACTION_MANAGER */
+    static ULong              mTransTableFullCount;   /* ÀüÃ¼ Àç½Ãµµ È½¼ö */
+    static ULong              mAllocRetryTransCount;  /* Àç½ÃµµÇÑ TransactionÀÇ ¼ö */
+    /* X$SESSION */
+    static smiSessionCallback mSessionCallback;       /* ¼¼¼¾º° Àç½Ãµµ È½¼ö µî·Ï MM Callback */
+
+    /* PROJ-2733 ºÐ»ê Æ®·£Àè¼Ç Á¤ÇÕ¼º */
+    static UChar           ** mPendingWait;
 };
 
 inline smxTrans* smxTransMgr::getTransByTID(smTID aTransID)
@@ -267,14 +342,14 @@ IDE_RC smxTransMgr::freeTrans(smxTrans *aTrans)
 
     return IDE_FAILURE;
 }
-// active transaction listê´€ë ¨ í•¨ìˆ˜ ëª¨ìŒ.
-// active transaction listëŠ” circular double link list.
+// active transaction list°ü·Ã ÇÔ¼ö ¸ðÀ½.
+// active transaction list´Â circular double link list.
 inline void smxTransMgr::initATL()
 {
     mActiveTrans.mPrvAT = &mActiveTrans;
     mActiveTrans.mNxtAT = &mActiveTrans;
 }
-// active transaction listì— add.
+// active transaction list¿¡ add.
 inline void smxTransMgr::addAT(smxTrans *aTrans)
 {
     aTrans->mPrvAT = &mActiveTrans;
@@ -284,7 +359,7 @@ inline void smxTransMgr::addAT(smxTrans *aTrans)
     mActiveTrans.mNxtAT = aTrans;
     mActiveTransCnt++;
 }
-// active transaction listì—ì„œ remove
+// active transaction list¿¡¼­ remove
 inline void smxTransMgr::removeAT(smxTrans *aTrans)
 {
     aTrans->mPrvAT->mNxtAT = aTrans->mNxtAT;
@@ -304,7 +379,7 @@ inline idBool smxTransMgr::isEmptyActiveTrans()
     }
 }
 
-// prepared transaction listê´€ë ¨ í•¨ìˆ˜ ëª¨ìŒ.
+// prepared transaction list°ü·Ã ÇÔ¼ö ¸ðÀ½.
 inline void smxTransMgr::initPreparedList()
 {
     mPreparedTrans.mPrvPT = &mPreparedTrans;
@@ -379,25 +454,6 @@ inline smTID  smxTransMgr::getTIDBySID(SInt aSlotN)
     return sCurTx->mTransID;
 }
 
-inline void smxTransMgr::setTransBlockedBySID(const SInt aSlot)
-{
-    smxTrans* sTrans    = getTransBySID(aSlot);
-    sTrans->mStatus     = SMX_TX_BLOCKED;
-    sTrans->mStatus4FT  = SMX_TX_BLOCKED;
-}
-
-inline void smxTransMgr::setTransBegunBySID(const SInt aSlot)
-{
-    smxTrans* sTrans    = getTransBySID(aSlot);
-    sTrans->mStatus     = SMX_TX_BEGIN;
-    sTrans->mStatus4FT  = SMX_TX_BEGIN;
-}
-
-inline smxStatus smxTransMgr::getTransStatus(const SInt aSlot)
-{
-    return getTransBySID(aSlot)->mStatus;
-}
-
 inline svrLogEnv *smxTransMgr::getVolatileLogEnv(void *aTrans)
 {
     return ((smxTrans*)aTrans)->getVolatileLogEnv();
@@ -415,6 +471,12 @@ inline IDE_RC smxTransMgr::resetBuilderInterval()
     return mMinSCNBuilder.resetInterval();
 }
 
+/* PROJ-2733 ºÐ»ê Æ®·£Àè¼Ç Á¤ÇÕ¼º */
+inline IDE_RC smxTransMgr::resetVersioningMinTime()
+{
+    return mMinSCNBuilder.resetVersioningMinTime();
+}
+
 // BUG-24885 wrong delayed stamping
 // get the minimum fstDskViewSCN of all active transactions
 inline void smxTransMgr::getSysMinDskFstViewSCN( smSCN* aSysMinDskFstViewSCN )
@@ -422,11 +484,11 @@ inline void smxTransMgr::getSysMinDskFstViewSCN( smSCN* aSysMinDskFstViewSCN )
     mMinSCNBuilder.getMinDskFstViewSCN( aSysMinDskFstViewSCN );
 }
 
-// BUG-26881 ìž˜ëª»ëœ CTS stampingìœ¼ë¡œ accesí•  ìˆ˜ ì—†ëŠ” rowë¥¼ ì ‘ê·¼í•¨
-// systemì˜ active transactionë“¤ ì¤‘ ìµœì†Œì˜ oldestViewSCN(AgableSCN)ì„ êµ¬í•¨
-inline void smxTransMgr::getSysAgableSCN( smSCN* aSysAgableSCN )
+// BUG-26881 Àß¸øµÈ CTS stampingÀ¸·Î accesÇÒ ¼ö ¾ø´Â row¸¦ Á¢±ÙÇÔ
+// systemÀÇ active transactionµé Áß ÃÖ¼ÒÀÇ oldestViewSCN(AgableSCN)À» ±¸ÇÔ
+inline void smxTransMgr::getMinOldestFstViewSCN( smSCN* aMinOldestFstViewSCN )
 {
-    mMinSCNBuilder.getMinOldestFstViewSCN( aSysAgableSCN );
+    mMinSCNBuilder.getMinOldestFstViewSCN( aMinOldestFstViewSCN );
 }
 
 /* Description : update MinViewSCN of MinSCNBuilder right now*/
@@ -474,6 +536,142 @@ inline idBool smxTransMgr::isTransForReplConflictResolution( smTID aWaitTransID 
     {
         return ID_FALSE;
     }
+}
+
+/* PROJ-2733 ºÐ»ê Æ®·£Àè¼Ç Á¤ÇÕ¼º */
+inline void smxTransMgr::getTimeSCN( smSCN  * aSCN )
+{
+    smSCN sSCN;
+    mMinSCNBuilder.getTimeSCN( &sSCN );
+
+    if ( SM_SCN_IS_INFINITE( sSCN ) )
+    {
+        /* mAgingViewSCNÀÌ ÃÊ±â°ª ±×´ë·ÎÀÌ¸é, system scn ¸¦ ¹Þ¾Æ¿Â´Ù. */
+        sSCN = smmDatabase::getLstSystemSCN();
+    }
+
+    SM_SET_SCN( aSCN, &sSCN );
+}
+
+inline void smxTransMgr::getAgingMemViewSCN( smSCN * aSCN, smTID * aTID )
+{
+    smSCN sSCN;
+    smSCN sDummySCN;
+    smTID sOldestTID;
+
+    mMinSCNBuilder.getAgingMemViewSCN( &sSCN );
+
+    if ( SM_SCN_IS_INFINITE( sSCN ) )
+    {
+        /* mAgingViewSCNÀÌ ÃÊ±â°ª ±×´ë·ÎÀÌ¸é, system min view ¸¦ ¹Þ¾Æ¿Â´Ù. */
+        smxTransMgr::getMinMemViewSCNofAll( &sSCN, &sOldestTID ); 
+        IDE_DASSERT( SM_SCN_IS_NOT_INFINITE( sSCN ) );
+    }
+    else
+    {
+        /* MinSCNBuilder ¾²·¹µå¿¡¼­ ÁÖ±âÀû(0.1ÃÊ)À¸·Î
+           AgingViewSCNÀ» °»½ÅÇÏ´Âµ¥ ÀÌ¶§ Oldest TID µµ °»½ÅÇß¾ú´Ù.
+           ¹®Á¦´Â, Oldest TID°¡ »ç¶óÁ³´Âµ¥µµ ´ÙÀ½¹ø °»½ÅµÇ±â Àü±îÁö
+           Oldest TID°¡ °è¼Ó Á¸ÀçÇÏ´Â °ÍÀ¸·Î ÆÇ´ÜµÇ¾î
+           Delete Ager¿¡¼­ System SCNÀ» °è¼Ó Áõ°¡½ÃÅ°´Â ¹®Á¦°¡ ÀÖ¾ú´Ù.
+         
+           µû¶ó¼­, Oldest TID´Â AgingViewSCNÀ» ¿äÃ»ÇÒ¶§¸¶´Ù ¹Ù·Î¹Ù·Î ±¸ÇÏµµ·Ï ¼öÁ¤ÇÏ¿´´Ù.
+           (ÁÖÀÇ) AgingViewSCNÀº AccessSCNº¸´Ù Å©¸é ¾ÈµÇ±â¶§¹®¿¡ MinSCNBUilderÀÇ °ªÀ» ÀÌ¿ëÇÏ¿©¾ß ÇÑ´Ù. */
+
+        smxTransMgr::getMinMemViewSCNofAll( &sDummySCN, &sOldestTID, ID_TRUE ); 
+    }
+
+    SM_SET_SCN( aSCN, &sSCN );
+    *aTID = sOldestTID;
+}
+
+inline void smxTransMgr::getAgingDskViewSCN( smSCN * aSCN )
+{
+    smSCN sSCN;
+
+    /* min(DskViewSCN, TimeSCN) */
+    mMinSCNBuilder.getAgingDskViewSCN( &sSCN );
+
+    if ( SM_SCN_IS_INFINITE( sSCN ) )
+    {
+        /* mAgingViewSCNÀÌ ÃÊ±â°ª ±×´ë·ÎÀÌ¸é, system min view ¸¦ ¹Þ¾Æ¿Â´Ù. */
+        smxTransMgr::getSysMinDskViewSCN( &sSCN ); 
+    }
+
+    SM_SET_SCN( aSCN, &sSCN );
+}
+
+inline void smxTransMgr::getAccessSCN( smSCN * aSCN )
+{
+    smSCN sSCN;
+    mMinSCNBuilder.getAccessSCN( &sSCN );
+
+    if ( SM_SCN_IS_INFINITE( sSCN ) )
+    {
+        /* mAccessSCNÀÌ ÃÊ±â°ª ±×´ë·ÎÀÌ¸é, system scn ¸¦ ¹Þ¾Æ¿Â´Ù. */
+        sSCN = smmDatabase::getLstSystemSCN();
+    }
+
+    SM_SET_SCN( aSCN, &sSCN );
+}
+
+inline void smxTransMgr::getTimeSCNList( smxTimeSCNNode ** aList )
+{
+    mMinSCNBuilder.getTimeSCNList( aList );
+}
+inline SInt smxTransMgr::getTimeSCNBaseIdx()
+{
+    return mMinSCNBuilder.getTimeSCNBaseIdx();
+}
+inline SInt smxTransMgr::getTimeSCNLastIdx()
+{
+    return mMinSCNBuilder.getTimeSCNLastIdx();
+}
+inline SInt smxTransMgr::getTimeSCNMaxCnt()
+{
+    return mMinSCNBuilder.getTimeSCNMaxCnt();
+}
+inline idBool smxTransMgr::isActiveVersioningMinTime()
+{
+    return mMinSCNBuilder.isActiveVersioningMinTime();
+}
+inline void smxTransMgr::setGlobalConsistentSCNAsSystemSCN()
+{
+    mMinSCNBuilder.setGlobalConsistentSCNAsSystemSCN();
+}
+
+/* BUG-48250
+   Session Property ÀÎ INDOBUT_FETCH_TIMEOUT °ªÀ» °¡Á®¿Â´Ù. */
+inline UInt smxTransMgr::getSessIndoubtFetchTimeout( idvSQL * aStatistics )
+{
+    UInt sFetchTimeout = (UInt)IDP_SHARD_PROPERTY_INDOUBT_FETCH_TIMEOUT_DEFAULT;
+
+    if ( aStatistics != NULL ) 
+    {
+        IDE_DASSERT( aStatistics->mSess != NULL );
+        IDE_DASSERT( aStatistics->mSess->mSession != NULL );
+
+        sFetchTimeout = smxTransMgr::mSessionCallback.mGetIndoubtFetchTimeout( aStatistics->mSess->mSession );
+    }
+
+    return sFetchTimeout;
+}
+
+/* BUG-48250
+   Session Property ÀÎ INDOBUT_FETCH_METHOD °ªÀ» °¡Á®¿Â´Ù. */
+inline UInt smxTransMgr::getSessIndoubtFetchMethod( idvSQL * aStatistics )
+{
+    UInt sFetchMethod = (UInt)IDP_SHARD_PROPERTY_INDOUBT_FETCH_METHOD_DEFAULT;
+
+    if ( aStatistics != NULL )
+    {
+        IDE_DASSERT( aStatistics->mSess != NULL );
+        IDE_DASSERT( aStatistics->mSess->mSession != NULL );
+
+        sFetchMethod = smxTransMgr::mSessionCallback.mGetIndoubtFetchMethod( aStatistics->mSess->mSession );
+    }
+
+    return sFetchMethod;
 }
 
 #endif

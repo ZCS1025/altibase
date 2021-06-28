@@ -15,19 +15,19 @@
  */
  
 /***********************************************************************
- * $Id: qmoNormalForm.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmoNormalForm.h 89925 2021-02-03 04:40:48Z ahra.cho $
  *
  * Description :
  *     Normal Form Manager
  *
- *     ë¹„ì •ê·œí™”ëœ Predicateë“¤ì„ ì •ê·œí™”ëœ í˜•íƒœë¡œ ë³€ê²½ì‹œí‚¤ëŠ” ì—­í™œì„ í•œë‹¤.
- *     ë‹¤ìŒê³¼ ê°™ì€ ì •ê·œí™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *     ºñÁ¤±ÔÈ­µÈ PredicateµéÀ» Á¤±ÔÈ­µÈ ÇüÅÂ·Î º¯°æ½ÃÅ°´Â ¿ªÈ°À» ÇÑ´Ù.
+ *     ´ÙÀ½°ú °°Àº Á¤±ÔÈ­¸¦ ¼öÇàÇÑ´Ù.
  *         - CNF (Conjunctive Normal Form)
  *         - DNF (Disjunctive Normal Form)
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -40,103 +40,105 @@
 
 //-----------------------------------------------------------
 // To Fix PR-8379
-// Normal Form ë¹„êµ ì—°ì‚°ìž ë…¸ë“œ ìµœëŒ€ ê°œìˆ˜
-// Normal Form ë³€ê²½ì‹œ ì•„ëž˜ì˜ ê°œìˆ˜ê°€ ë„˜ëŠ” ê²½ìš°ë¼ë©´,
-// ì•„ë¬´ë¦¬ ë¹„ìš© ê³„ì‚°ì´ ì ê²Œ ë‚˜ì˜¤ë”ë¼ë„ ì§€ë‚˜ì¹˜ê²Œ ë§Žì€ Filterë¡œ
-// ì¸í•´ ì˜¤ížˆë ¤ ì„±ëŠ¥ì´ ë‚®ê²Œ ëœë‹¤.
-// CNFì™€ DNF ëª¨ë‘ í•´ë‹¹ ê°’ì„ ë„˜ëŠ”ë‹¤ë©´ ë¹„ìš© ë¹„êµê°€ ì´ë£¨ì–´ì§€ê¸°
-// ë•Œë¬¸ì— ê°’ì´ ë‚®ë‹¤ê³  í° ì§€ìž¥ì´ ë˜ì§€ ì•ŠëŠ”ë‹¤.
+// Normal Form ºñ±³ ¿¬»êÀÚ ³ëµå ÃÖ´ë °³¼ö
+// Normal Form º¯°æ½Ã ¾Æ·¡ÀÇ °³¼ö°¡ ³Ñ´Â °æ¿ì¶ó¸é,
+// ¾Æ¹«¸® ºñ¿ë °è»êÀÌ Àû°Ô ³ª¿À´õ¶óµµ Áö³ªÄ¡°Ô ¸¹Àº Filter·Î
+// ÀÎÇØ ¿ÀÈ÷·Á ¼º´ÉÀÌ ³·°Ô µÈ´Ù.
+// CNF¿Í DNF ¸ðµÎ ÇØ´ç °ªÀ» ³Ñ´Â´Ù¸é ºñ¿ë ºñ±³°¡ ÀÌ·ç¾îÁö±â
+// ¶§¹®¿¡ °ªÀÌ ³·´Ù°í Å« ÁöÀåÀÌ µÇÁö ¾Ê´Â´Ù.
 //-----------------------------------------------------------
 // #define QMO_NORMALFORM_MAXIMUM                         (128)
 
 //-----------------------------------------------------------
-// Normal Form ê´€ë¦¬ í•¨ìˆ˜
+// Normal Form °ü¸® ÇÔ¼ö
 //-----------------------------------------------------------
 
 class qmoNormalForm
 {
 public:
 
-    // CNFë¡œë§Œ ì²˜ë¦¬ë  ìˆ˜ ìžˆëŠ” ê²½ìš°ë¥¼ íŒë‹¨
+    // CNF·Î¸¸ Ã³¸®µÉ ¼ö ÀÖ´Â °æ¿ì¸¦ ÆÇ´Ü
     static IDE_RC normalizeCheckCNFOnly( qtcNode  * aNode,
                                          idBool   * aCNFonly );
 
-    // DNF ë¡œ ì •ê·œí™”
+    // DNF ·Î Á¤±ÔÈ­
     static IDE_RC normalizeDNF( qcStatement   * aStatement,
                                 qtcNode       * aNode,
                                 qtcNode      ** aDNF        );
 
-    // CNF ë¡œ ì •ê·œí™”
+    // CNF ·Î Á¤±ÔÈ­
     static IDE_RC normalizeCNF( qcStatement   * aStatement,
                                 qtcNode       * aNode,
-                                qtcNode      ** aCNF       );
+                                qtcNode      ** aCNF,
+                                idBool          aIsWhere = ID_FALSE,
+                                qmsHints      * aHints = NULL );
            
-    // DNFë¡œ ì •ê·œí™”ë˜ì—ˆì„ë•Œ ë§Œë“¤ì–´ì§€ëŠ” ë¹„êµì—°ì‚°ìž ë…¸ë“œì˜ ê°œìˆ˜ ì˜ˆì¸¡
+    // DNF·Î Á¤±ÔÈ­µÇ¾úÀ»¶§ ¸¸µé¾îÁö´Â ºñ±³¿¬»êÀÚ ³ëµåÀÇ °³¼ö ¿¹Ãø
     static IDE_RC estimateDNF( qtcNode  * aNode,
                                UInt     * aCount );
 
-    // CNFë¡œ ì •ê·œí™”ë˜ì—ˆì„ë•Œ ë§Œë“¤ì–´ì§€ëŠ” ë¹„êµì—°ì‚°ìž ë…¸ë“œì˜ ê°œìˆ˜ ì˜ˆì¸¡
+    // CNF·Î Á¤±ÔÈ­µÇ¾úÀ»¶§ ¸¸µé¾îÁö´Â ºñ±³¿¬»êÀÚ ³ëµåÀÇ °³¼ö ¿¹Ãø
     static IDE_RC estimateCNF( qtcNode  * aNode,
                                UInt     * aCount );
 
-    // ì •ê·œí™”í˜•íƒœë¡œ ë³€í™˜í•˜ë©´ì„œ ìƒê¸´ ìƒˆë¡œìš´ ë…¼ë¦¬ì—°ì‚°ìž ë…¸ë“œì— ëŒ€í•œ
-    // flagì™€ dependency ì„¤ì •
-    // qmoPredicate::nodeTransform()ì—ì„œë„ í˜¸ì¶œ
+    // Á¤±ÔÈ­ÇüÅÂ·Î º¯È¯ÇÏ¸é¼­ »ý±ä »õ·Î¿î ³í¸®¿¬»êÀÚ ³ëµå¿¡ ´ëÇÑ
+    // flag¿Í dependency ¼³Á¤
+    // qmoPredicate::nodeTransform()¿¡¼­µµ È£Ãâ
     static IDE_RC setFlagAndDependencies(qtcNode * aNode);    
 
 
-    // ì •ê·œí™”ëœ í˜•íƒœì—ì„œ ë¶ˆí•„ìš”í•œ AND, OR ë…¸ë“œë¥¼ ì œê±°
+    // Á¤±ÔÈ­µÈ ÇüÅÂ¿¡¼­ ºÒÇÊ¿äÇÑ AND, OR ³ëµå¸¦ Á¦°Å
     static IDE_RC optimizeForm( qtcNode  * aInputNode,
                                 qtcNode ** aOutputNode );
 
     // BUG-34295 Join ordering ANSI style query
-    // ì •ê·œí™” í˜•íƒœë¡œ ë³€í™˜í•˜ëŠ” ê³¼ì •ì—ì„œ predicate ì—°ê²°
+    // Á¤±ÔÈ­ ÇüÅÂ·Î º¯È¯ÇÏ´Â °úÁ¤¿¡¼­ predicate ¿¬°á
     static IDE_RC addToMerge( qtcNode     * aPrevNF,
                               qtcNode     * aCurrNF,
                               qtcNode    ** aNFNode );
 
     // BUG-35155 Partial CNF
-    // ê°€ëŠ¥í•œ ë²”ìœ„ë‚´ì—ì„œ CNF ëŒ€ìƒ ì„ ì • ë° ì •ê·œí™”ë˜ì—ˆì„ë•Œì˜ ë¹„êµì—°ì‚°ìž ë…¸ë“œ ê°œìˆ˜ ì˜ˆì¸¡
+    // °¡´ÉÇÑ ¹üÀ§³»¿¡¼­ CNF ´ë»ó ¼±Á¤ ¹× Á¤±ÔÈ­µÇ¾úÀ»¶§ÀÇ ºñ±³¿¬»êÀÚ ³ëµå °³¼ö ¿¹Ãø
     static void estimatePartialCNF( qtcNode  * aNode,
                                     UInt     * aCount,
                                     qtcNode  * aRoot,
                                     UInt       aNFMaximum );
 
-    // CNF ëŒ€ìƒì—ì„œ ì œì™¸ëœ qtcNode ì˜ NNF í•„í„° ìƒì„±
+    // CNF ´ë»ó¿¡¼­ Á¦¿ÜµÈ qtcNode ÀÇ NNF ÇÊÅÍ »ý¼º
     static IDE_RC extractNNFFilter4CNF( qcStatement  * aStatement,
                                         qtcNode      * aNode,
                                         qtcNode     ** aNNF );
 
 private:
 
-    // Subqueryë¥¼ í¬í•¨í•  ê²½ìš°, DNFë¥¼ ì‚¬ìš©í•˜ë©´ ì•ˆë¨
-    // DNF í˜•íƒœë¡œ predicate ë³€í™˜
+    // Subquery¸¦ Æ÷ÇÔÇÒ °æ¿ì, DNF¸¦ »ç¿ëÇÏ¸é ¾ÈµÊ
+    // DNF ÇüÅÂ·Î predicate º¯È¯
     static IDE_RC makeDNF( qcStatement  * aStatement,
                            qtcNode      * aNode,
                            qtcNode     ** aDNF );
 
-    // CNF í˜•íƒœë¡œ predicate ë³€í™˜
+    // CNF ÇüÅÂ·Î predicate º¯È¯
     static IDE_RC makeCNF( qcStatement  * aStatement,
                            qtcNode      * aNode,
                            qtcNode     ** aCNF );
     
-    // ì •ê·œí™” í˜•íƒœë¡œ ë³€í™˜í•˜ëŠ” ê³¼ì •ì—ì„œ predicateì— ëŒ€í•œ ë°°ë¶„ë²•ì¹™ ìˆ˜í–‰
+    // Á¤±ÔÈ­ ÇüÅÂ·Î º¯È¯ÇÏ´Â °úÁ¤¿¡¼­ predicate¿¡ ´ëÇÑ ¹èºÐ¹ýÄ¢ ¼öÇà
     static IDE_RC productToMerge( qcStatement * aStatement,
                                   qtcNode     * aPrevNF,
                                   qtcNode     * aCurrNF,
                                   qtcNode    ** aNFNode );
 
-    // NNF í•„í„° ìƒì„±
+    // NNF ÇÊÅÍ »ý¼º
     static IDE_RC makeNNF4CNFByCopyNodeTree( qcStatement  * aStatement,
                                              qtcNode      * aNode,
                                              qtcNode     ** aNNF );
 
-    // qtcNode íŠ¸ë¦¬ ë³µì‚¬
+    // qtcNode Æ®¸® º¹»ç
     static IDE_RC copyNodeTree( qcStatement  * aStatement,
                                 qtcNode      * aNode,
                                 qtcNode     ** aCopy );
 
-    // NULL ì„ ì§€ì›í•˜ëŠ” addToMerge
+    // NULL À» Áö¿øÇÏ´Â addToMerge
     static IDE_RC addToMerge2( qtcNode     * aPrevNF,
                                qtcNode     * aCurrNF,
                                qtcNode    ** aNFNode);

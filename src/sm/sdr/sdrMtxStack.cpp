@@ -82,13 +82,13 @@ void sdrMtxStack::logMtxStack( sdrMtxStackInfo *aStack )
 }
 
 /***********************************************************************
- * Description : ë§ˆì§€ë§‰ itemì„ stackì—ì„œ ì–»ëŠ”ë‹¤
+ * Description : ¸¶Áö¸· itemÀ» stack¿¡¼­ ¾ò´Â´Ù
  *
- * ìŠ¤íƒì—ì„œ ì œê±°í•˜ì§€ ì•ŠìŒ. ê°’ë§Œì–»ëŠ”ë‹¤.
+ * ½ºÅÃ¿¡¼­ Á¦°ÅÇÏÁö ¾ÊÀ½. °ª¸¸¾ò´Â´Ù.
  *
  * - 1st code design
  *
- *   aStack->mArray[í˜„ì¬ í¬ê¸°]ë¥¼ ë¦¬í„´
+ *   aStack->mArray[ÇöÀç Å©±â]¸¦ ¸®ÅÏ
  **********************************************************************/
 sdrMtxLatchItem* sdrMtxStack::getTop(sdrMtxStackInfo*  aStack )
 {
@@ -99,7 +99,7 @@ sdrMtxLatchItem* sdrMtxStack::getTop(sdrMtxStackInfo*  aStack )
 }
 
 /***********************************************************************
- * Description : í˜„ì¬ stackì˜ sizeë¥¼ ì–»ëŠ”ë‹¤.
+ * Description : ÇöÀç stackÀÇ size¸¦ ¾ò´Â´Ù.
  **********************************************************************/
 UInt sdrMtxStack::getTotalSize(sdrMtxStackInfo*  aStack)
 {
@@ -109,15 +109,15 @@ UInt sdrMtxStack::getTotalSize(sdrMtxStackInfo*  aStack)
 }
 
 /***********************************************************************
- * Description : ìŠ¤íƒì— í•´ë‹¹ ì•„ì´í…œì„ ì°¾ëŠ”ë‹¤.
+ * Description : ½ºÅÃ¿¡ ÇØ´ç ¾ÆÀÌÅÛÀ» Ã£´Â´Ù.
  *
- * ë¹„êµ í•¨ìˆ˜ê°€ ì œê³µëœë‹¤.
+ * ºñ±³ ÇÔ¼ö°¡ Á¦°øµÈ´Ù.
  *
  * - 1st. code design
  *
- *   + while( ëª¨ë“  ìŠ¤íƒì˜ ì•„ì´í…œì— ëŒ€í•´ì„œ )
- *     if( ì•„ì´í…œì´ ê°™ìœ¼ë©´  ) ì•„ì´í…œì„ ë¦¬í„´
- *   + nullì„ ë¦¬í„´
+ *   + while( ¸ğµç ½ºÅÃÀÇ ¾ÆÀÌÅÛ¿¡ ´ëÇØ¼­ )
+ *     if( ¾ÆÀÌÅÛÀÌ °°À¸¸é  ) ¾ÆÀÌÅÛÀ» ¸®ÅÏ
+ *   + nullÀ» ¸®ÅÏ
  **********************************************************************/
 sdrMtxLatchItem* sdrMtxStack::find( 
     sdrMtxStackInfo*          aStack,
@@ -140,14 +140,14 @@ sdrMtxLatchItem* sdrMtxStack::find(
     
     for( sLoop = 0; sLoop != sStackSize; ++sLoop )
     {
-        // í˜„ì¬ stackì˜ item
+        // ÇöÀç stackÀÇ item
         sCurrItem = &(aStack->mArray[sLoop]);
         
-        // stackì— ìˆëŠ” itemì˜ latch mode
+        // stack¿¡ ÀÖ´Â itemÀÇ latch mode
         sLatchMode = sCurrItem->mLatchMode;
 
-        // ìŠ¤íƒ ì•„ì´í…œì˜ íƒ€ì…ê³¼ ì¸ì íƒ€ì…ì´ ê°™ë‹¤. ì¦‰
-        // ê°™ì€ ì¢…ë¥˜ì˜ ì˜¤ë¸Œì íŠ¸ì´ë©° ê²€ì‚¬í•˜ê¸¸ ì›í•œë‹¤.
+        // ½ºÅÃ ¾ÆÀÌÅÛÀÇ Å¸ÀÔ°ú ÀÎÀÚ Å¸ÀÔÀÌ °°´Ù. Áï
+        // °°Àº Á¾·ùÀÇ ¿ÀºêÁ§Æ®ÀÌ¸ç °Ë»çÇÏ±æ ¿øÇÑ´Ù.
         if( aVector[sLatchMode].mSourceType == aType )
         {
             if( aVector[sLatchMode].mCompareFunc(
@@ -166,7 +166,7 @@ sdrMtxLatchItem* sdrMtxStack::find(
 
 /***********************************************************************
  * Description : 
- * stackì„ dump
+ * stackÀ» dump
  *
  **********************************************************************/
 void sdrMtxStack::dump(

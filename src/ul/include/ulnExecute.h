@@ -45,7 +45,7 @@ ACI_RC ulnCallbackExecuteResult(cmiProtocolContext *aProtocolContext,
                                 void               *aServiceSession,
                                 void               *aUserContext);
 
-/* BUG-45967 Data NodeÏùò Shard Session Ï†ïÎ¶¨ */
+/* BUG-45967 Data Node¿« Shard Session ¡§∏Æ */
 ACI_RC ulnCallbackExecuteResultInternal(cmiProtocolContext *aProtocolContext,
                                         void               *aUserContext,
                                         acp_uint32_t        aStatementID,

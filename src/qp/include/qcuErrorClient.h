@@ -22,7 +22,7 @@
 #ifndef _O_QCUERROR_CLIENT_H_
 #define _O_QCUERROR_CLIENT_H_ 1
 
-/* QPìš© ì—ëŸ¬ ì½”ë“œ */
+/* QP¿ë ¿¡·¯ ÄÚµå */
 enum QPERR_CODE
 {
 #include <qcuErrorCode.ih>

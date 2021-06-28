@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxSenderXLSN.cpp 84317 2018-11-12 00:39:24Z minku.kang $
+ * $Id: rpxSenderXLSN.cpp 90578 2021-04-13 05:32:12Z minku.kang $
  **********************************************************************/
 
 #include <idl.h>
@@ -51,8 +51,6 @@ IDE_RC rpxSender::updateXSN(smSN aSN)
     SInt              sStage = 0;
     idBool            sIsTxBegin = ID_FALSE;
     smiStatement     *spRootStmt;
-    //PROJ- 1677 DEQ
-    smSCN             sDummySCN;
     UInt              sFlag = 0;
 
     //----------------------------------------------------------------//
@@ -74,9 +72,9 @@ IDE_RC rpxSender::updateXSN(smSN aSN)
         return IDE_SUCCESS;
     }
 
-    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
-     * Service Threadì˜ Transactionìœ¼ë¡œ êµ¬ë™ë˜ê³  ìžˆëŠ” ê²½ìš°,
-     * Service Threadì˜ Transactionì„ ì‚¬ìš©í•œë‹¤.
+    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
+     * Service ThreadÀÇ TransactionÀ¸·Î ±¸µ¿µÇ°í ÀÖ´Â °æ¿ì,
+     * Service ThreadÀÇ TransactionÀ» »ç¿ëÇÑ´Ù.
      */
     if(mSvcThrRootStmt != NULL)
     {
@@ -111,7 +109,7 @@ IDE_RC rpxSender::updateXSN(smSN aSN)
                  != IDE_SUCCESS);
 
         sStage = 1;
-        IDE_TEST(sTrans.commit(&sDummySCN) != IDE_SUCCESS);
+        IDE_TEST(sTrans.commit() != IDE_SUCCESS);
         sIsTxBegin = ID_FALSE;
 
         mMeta.mReplication.mXSN = aSN;
@@ -148,12 +146,40 @@ IDE_RC rpxSender::updateXSN(smSN aSN)
     return IDE_FAILURE;
 }
 
+IDE_RC rpxSender::findAndUpdateInvalidMaxSN( smiStatement    * aSmiStmt,
+                                             rpdReplSyncItem * aSyncList,
+                                             rpdReplItems    * aReplItems,
+                                             smSN              aSN)
+{
+    if ( aSyncList != NULL )
+    {
+        if ( isSyncItem( aSyncList,
+                         aReplItems->mLocalUsername,
+                         aReplItems->mLocalTablename,
+                         aReplItems->mLocalPartname ) == ID_TRUE )
+        {
+            IDE_TEST( updateInvalidMaxSN( aSmiStmt,
+                                          aReplItems,
+                                          aSN )
+                      != IDE_SUCCESS );
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    IDE_ERRLOG(IDE_RP_0);
+
+    return IDE_FAILURE;
+}
+
 IDE_RC rpxSender::updateInvalidMaxSN(smiStatement * aSmiStmt,
                                      rpdReplItems * aReplItems,
                                      smSN           aSN)
 {
     // Do not need to update INVALID_MAX_SN again with the same value
-    if((aReplItems->mInvalidMaxSN == (ULong)aSN) ||
+    if((aReplItems->mInvalidMaxSN >= (ULong)aSN) ||
        (aSN == SM_SN_NULL) ||
        (isParallelChild() == ID_TRUE))
     {
@@ -161,7 +187,7 @@ IDE_RC rpxSender::updateInvalidMaxSN(smiStatement * aSmiStmt,
     }
     else
     {
-        /* PROJ-1915 off-line senderì˜ ê²½ìš° Meta ê°±ì‹ ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+        /* PROJ-1915 off-line senderÀÇ °æ¿ì Meta °»½ÅÀ» ÇÏÁö ¾Ê´Â´Ù. */
         if(mCurrentType != RP_OFFLINE)
         {
             IDU_FIT_POINT( "rpxSender::updateInvalidMaxSN::Erratic::rpERR_ABORT_RP_SENDER_UPDATE_INVALID_MAX_SN" ); 
@@ -192,13 +218,11 @@ IDE_RC rpxSender::initXSN( smSN aReceiverXSN )
 {
     smSN          sCurrentSN;
     smiTrans      sTrans;
-    //PROJ- 1677 DEQ
-    smSCN         sDummySCN;
     SInt          sStage = 0;
     idBool        sIsTxBegin = ID_FALSE;
     smiStatement *spRootStmt;
-    /* ë°˜ë“œì‹œ Normalë¡œ í•˜ì—¬ì•¼ í•œë‹¤. ê·¸ë ‡ê²Œ í•˜ì§€ ì•Šìœ¼ë©´
-       Savepointì‹œ Logê°€ ê¸°ë¡ë˜ì§€ ì•ŠëŠ”ë‹¤. */
+    /* ¹Ýµå½Ã Normal·Î ÇÏ¿©¾ß ÇÑ´Ù. ±×·¸°Ô ÇÏÁö ¾ÊÀ¸¸é
+       Savepoint½Ã Log°¡ ±â·ÏµÇÁö ¾Ê´Â´Ù. */
     static UInt   sFlag = RPU_ISOLATION_LEVEL | SMI_TRANSACTION_NORMAL |
                           SMI_TRANSACTION_REPL_NONE | SMX_COMMIT_WRITE_NOWAIT;
 
@@ -209,11 +233,12 @@ IDE_RC rpxSender::initXSN( smSN aReceiverXSN )
     {
         case RP_NORMAL:
         case RP_PARALLEL:
+        case RP_START_CONDITIONAL:
             if ( mMeta.mReplication.mXSN == SM_SN_NULL )
             {
                 // if first start
-                // parallel childëŠ” ìµœì´ˆì— ì‹œìž‘í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ,
-                // í•­ìƒ mXSNì´ NULLì´ ë  ìˆ˜ ì—†ë‹¤.
+                // parallel child´Â ÃÖÃÊ¿¡ ½ÃÀÛÇÒ ¼ö ¾øÀ¸¹Ç·Î,
+                // Ç×»ó mXSNÀÌ NULLÀÌ µÉ ¼ö ¾ø´Ù.
                 IDE_DASSERT(isParallelChild() != ID_TRUE);
 
                 IDE_TEST( sTrans.initialize() != IDE_SUCCESS );
@@ -227,43 +252,43 @@ IDE_RC rpxSender::initXSN( smSN aReceiverXSN )
                 sIsTxBegin = ID_TRUE;
                 sStage = 2;
 
-                /* BUG-14528 : Checkpoint Threadê°€ Replicationì´ ì½ì„
-                 * íŒŒì¼ì„ ì§€ìš°ì§€ ëª»í•˜ë„ë¡ Savepointë¡œê·¸ ê¸°ë¡
+                /* BUG-14528 : Checkpoint Thread°¡ ReplicationÀÌ ÀÐÀ»
+                 * ÆÄÀÏÀ» Áö¿ìÁö ¸øÇÏµµ·Ï Savepoint·Î±× ±â·Ï
                  *
-                 * 4.3.7 ê¹Œì§€ëŠ” checkpoint threadì™€ alter replication rep startë¥¼
-                 * ìˆ˜í–‰í•˜ëŠ” service thread, ê·¸ë¦¬ê³  sender thread ì‚¬ì´ì—
-                 * ë‹¤ìŒì˜ ì˜ˆì™€ ê°™ì€ ë¬¸ì œê°€ ìžˆì—ˆìŒ
-                 * ì˜ˆ>
-                 * 1> service threadëŠ” replicationì´ ì²˜ìŒ ì‹œìž‘í•  ë•Œ
-                 *    smiGetLastValidGSN( &sCurrentSN )ë¥¼ í†µí•´ ë¡œê·¸íŒŒì¼ 1ë²ˆì—
-                 *   í¬í•¨ëœ ê°€ìž¥ ìµœê·¼ì˜ SNì„ ì–»ì–´ì˜´
-                 * 2> bulk updateê°€ ë°œìƒí•˜ì—¬ ë¡œê·¸íŒŒì¼ì´ 10ë²ˆê¹Œì§€ ìƒì„±ë¨
-                 *  3> checkpoint threadê°€ replicationì—ì„œ í•„ìš”í•œ ìµœì†Œ íŒŒì¼ì„
-                 *     ë©”íƒ€ í…Œì´ë¸”(sys_replications_)ì—ì„œ QPì— ìžˆëŠ”
-                 *     getMinimumSN()í•¨ìˆ˜ë¥¼ í†µí•´ ê°€ì ¸ì˜´(-1: SM_SN_NULL)
-                 *  4> checkpoint threadëŠ” 1ë²ˆ ë¡œê·¸íŒŒì¼ ê¹Œì§€ ì§€ì›Œë„ ëœë‹¤ê³  íŒë‹¨í•˜ì—¬
-                 *     1ë²ˆ ë¡œê·¸íŒŒì¼ì„ ì§€ì›€
-                 * 5> service threadê°€ ë‹¤ì‹œ ì‹œìž‘ë˜ì–´ sys_replications_ì— XSNì„
-                 *    sCurrentSNë¡œ ê°±ì‹ í•˜ê³ (updateXSN), sender threadëŠ”  sCurrentSN(mXSN)ë¶€í„°
-                 *   ë¡œê·¸ë¥¼ ì½ìœ¼ë ¤ê³  í•˜ë‚˜ ë¡œê·¸íŒŒì¼ì´ ì§€ì›Œì ¸ì„œ ë¹„ì •ìƒ ì¢…ë£Œí•˜ê²Œ ë¨
+                 * 4.3.7 ±îÁö´Â checkpoint thread¿Í alter replication rep start¸¦
+                 * ¼öÇàÇÏ´Â service thread, ±×¸®°í sender thread »çÀÌ¿¡
+                 * ´ÙÀ½ÀÇ ¿¹¿Í °°Àº ¹®Á¦°¡ ÀÖ¾úÀ½
+                 * ¿¹>
+                 * 1> service thread´Â replicationÀÌ Ã³À½ ½ÃÀÛÇÒ ¶§
+                 *    smiGetLastValidGSN( &sCurrentSN )¸¦ ÅëÇØ ·Î±×ÆÄÀÏ 1¹ø¿¡
+                 *   Æ÷ÇÔµÈ °¡Àå ÃÖ±ÙÀÇ SNÀ» ¾ò¾î¿È
+                 * 2> bulk update°¡ ¹ß»ýÇÏ¿© ·Î±×ÆÄÀÏÀÌ 10¹ø±îÁö »ý¼ºµÊ
+                 *  3> checkpoint thread°¡ replication¿¡¼­ ÇÊ¿äÇÑ ÃÖ¼Ò ÆÄÀÏÀ»
+                 *     ¸ÞÅ¸ Å×ÀÌºí(sys_replications_)¿¡¼­ QP¿¡ ÀÖ´Â
+                 *     getMinimumSN()ÇÔ¼ö¸¦ ÅëÇØ °¡Á®¿È(-1: SM_SN_NULL)
+                 *  4> checkpoint thread´Â 1¹ø ·Î±×ÆÄÀÏ ±îÁö Áö¿öµµ µÈ´Ù°í ÆÇ´ÜÇÏ¿©
+                 *     1¹ø ·Î±×ÆÄÀÏÀ» Áö¿ò
+                 * 5> service thread°¡ ´Ù½Ã ½ÃÀÛµÇ¾î sys_replications_¿¡ XSNÀ»
+                 *    sCurrentSN·Î °»½ÅÇÏ°í(updateXSN), sender thread´Â  sCurrentSN(mXSN)ºÎÅÍ
+                 *   ·Î±×¸¦ ÀÐÀ¸·Á°í ÇÏ³ª ·Î±×ÆÄÀÏÀÌ Áö¿öÁ®¼­ ºñÁ¤»ó Á¾·áÇÏ°Ô µÊ
                  *
-                 * 4.3.9ì—ì„œ getMinimumSN í•¨ìˆ˜ê°€ RPìª½ìœ¼ë¡œ ì˜®ê²¨ì˜¤ë©´ì„œ getMinimumSN
-                 * í•¨ìˆ˜ ì•ˆì—ì„œ sendermutexë¥¼ ìž¡ê²Œ ë˜ì—ˆë‹¤.
-                 * checkpoint threadì—ì„œ getMinimumSNì„ ìˆ˜í–‰í•˜ëŠ” ê²ƒê³¼ sender threadê°€
-                 * initXSN() í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ëŠ” ê²ƒì´ (ì´ í•¨ìˆ˜ í˜¸ì¶œì „ì— sendermutexë¥¼ ìž¡ìŒ)
-                 * ì„œë¡œ ë™ì‹œì— ìˆ˜í–‰ë  ìˆ˜ ì—†ê²Œ ë˜ì—ˆê¸° ë•Œë¬¸ì—,
-                 * BUG-14528ì˜ ë¬¸ì œëŠ” ë” ì´ìƒ ë°œìƒí•˜ì§€ ì•ŠëŠ”ë‹¤.
-                 * ê·¸ëŸ¬ë‚˜  savepointë¡œê·¸ë¥¼ ì°ëŠ” ê²ƒì€ ë™ìž‘ì— ì˜í–¥ì„ ì£¼ì§€
-                 * ì•Šìœ¼ë¯€ë¡œ ì˜ˆë°© ì°¨ì›ì—ì„œ ì œê±°í•˜ì§€ ì•ŠëŠ”ë‹¤.
-                 * ë§Œì•½ BUG-14528ê³¼ ê°™ì€ ë¬¸ì œê°€ ë˜ ë°œìƒí•œë‹¤ë©´ RP_START_QUICK
-                 * RP_START_SYNC_ONLY/RP_START_SYNCë„ ê³ ë ¤í•´ì•¼ í•œë‹¤.
+                 * 4.3.9¿¡¼­ getMinimumSN ÇÔ¼ö°¡ RPÂÊÀ¸·Î ¿Å°Ü¿À¸é¼­ getMinimumSN
+                 * ÇÔ¼ö ¾È¿¡¼­ sendermutex¸¦ Àâ°Ô µÇ¾ú´Ù.
+                 * checkpoint thread¿¡¼­ getMinimumSNÀ» ¼öÇàÇÏ´Â °Í°ú sender thread°¡
+                 * initXSN() ÇÔ¼ö¸¦ È£ÃâÇÏ´Â °ÍÀÌ (ÀÌ ÇÔ¼ö È£ÃâÀü¿¡ sendermutex¸¦ ÀâÀ½)
+                 * ¼­·Î µ¿½Ã¿¡ ¼öÇàµÉ ¼ö ¾ø°Ô µÇ¾ú±â ¶§¹®¿¡,
+                 * BUG-14528ÀÇ ¹®Á¦´Â ´õ ÀÌ»ó ¹ß»ýÇÏÁö ¾Ê´Â´Ù.
+                 * ±×·¯³ª  savepoint·Î±×¸¦ Âï´Â °ÍÀº µ¿ÀÛ¿¡ ¿µÇâÀ» ÁÖÁö
+                 * ¾ÊÀ¸¹Ç·Î ¿¹¹æ Â÷¿ø¿¡¼­ Á¦°ÅÇÏÁö ¾Ê´Â´Ù.
+                 * ¸¸¾à BUG-14528°ú °°Àº ¹®Á¦°¡ ¶Ç ¹ß»ýÇÑ´Ù¸é RP_START_QUICK
+                 * RP_START_SYNC_ONLY/RP_START_SYNCµµ °í·ÁÇØ¾ß ÇÑ´Ù.
                  */
 
                 IDE_TEST(sTrans.savepoint(RPX_SENDER_SVP_NAME,
                                           NULL)
                          != IDE_SUCCESS);
 
-                /* For Parallel Logging: LSNì„ SNìœ¼ë¡œ ë³€ê²½ PRJ-1464  */
+                /* For Parallel Logging: LSNÀ» SNÀ¸·Î º¯°æ PRJ-1464  */
                 IDE_ASSERT(smiGetLastValidGSN(&sCurrentSN) == IDE_SUCCESS);
                 mXSN = sCurrentSN;
 
@@ -271,7 +296,7 @@ IDE_RC rpxSender::initXSN( smSN aReceiverXSN )
                 IDE_TEST(updateXSN(mXSN) != IDE_SUCCESS);
 
                 sStage = 1;
-                IDE_TEST( sTrans.commit(&sDummySCN) != IDE_SUCCESS );
+                IDE_TEST( sTrans.commit() != IDE_SUCCESS );
                 sIsTxBegin = ID_FALSE;
 
                 sStage = 0;
@@ -282,7 +307,7 @@ IDE_RC rpxSender::initXSN( smSN aReceiverXSN )
                 mXSN = mMeta.mReplication.mXSN;
                 mSkipXSN = aReceiverXSN;
 
-                /* For Parallel Logging: LSNì„ SNìœ¼ë¡œ ë³€ê²½ PRJ-1464  */
+                /* For Parallel Logging: LSNÀ» SNÀ¸·Î º¯°æ PRJ-1464  */
                 IDE_ASSERT(smiGetLastUsedGSN(&sCurrentSN) == IDE_SUCCESS);
                 
                 IDU_FIT_POINT_RAISE( "rpxSender::initXSN::Erratic::rpERR_ABORT_INVALID_XSN",
@@ -303,10 +328,11 @@ IDE_RC rpxSender::initXSN( smSN aReceiverXSN )
             break;
 
         case RP_SYNC:
+        case RP_SYNC_CONDITIONAL:
         case RP_SYNC_ONLY://fix BUG-9023
             if(mMeta.mReplication.mXSN == SM_SN_NULL)
             {
-                IDE_ASSERT(smiGetLastValidGSN(&sCurrentSN) == IDE_SUCCESS);
+                sCurrentSN = smiGetValidMinSNOfAllActiveTrans();
                 mXSN = sCurrentSN;
 
                 IDE_TEST(updateXSN(mXSN) != IDE_SUCCESS);
@@ -324,8 +350,8 @@ IDE_RC rpxSender::initXSN( smSN aReceiverXSN )
             IDE_DASSERT(mSNMapMgr != NULL);
             mXSN = mSNMapMgr->getMinReplicatedSN();
             mCommitXSN = mXSN;
-            // ì´ì „ receiverê°€ beginë§Œ ë°›ê³  ì¢…ë£Œëœ ê²½ìš° smMapì˜ ìµœì†Œ SNì´ SM_SN_NULLì´ ë  ìˆ˜ ìžˆìŒ
-            // ì´ ê²½ìš°ì—ëŠ” ë³µêµ¬í•  ì •ë³´ê°€ ì—†ìœ¼ë¯€ë¡œ ì¢…ë£Œí•´ì•¼í•¨.
+            // ÀÌÀü receiver°¡ begin¸¸ ¹Þ°í Á¾·áµÈ °æ¿ì smMapÀÇ ÃÖ¼Ò SNÀÌ SM_SN_NULLÀÌ µÉ ¼ö ÀÖÀ½
+            // ÀÌ °æ¿ì¿¡´Â º¹±¸ÇÒ Á¤º¸°¡ ¾øÀ¸¹Ç·Î Á¾·áÇØ¾ßÇÔ.
             if(mXSN == SM_SN_NULL)
             {
                 mExitFlag = ID_TRUE;
@@ -337,6 +363,27 @@ IDE_RC rpxSender::initXSN( smSN aReceiverXSN )
             mXSN = mMeta.mReplication.mXSN;
             mSkipXSN = aReceiverXSN;
             mCommitXSN = mXSN;
+            break;
+
+        case RP_XLOGFILE_FAILBACK_MASTER:
+            /* ÀÌ ¼¾´õ´Â incremental sync¿ëÀ¸·Î ÀÓ½Ã·Î »ç¿ëÇÏ´Â °ÍÀ¸·Î updateXSNÀ» ÇÏ¸é ¾ÈµÈ´Ù */
+            mXSN = SM_SN_NULL;
+            break;
+
+        case RP_XLOGFILE_FAILBACK_SLAVE:
+            /* ÀÌÁßÈ­¸¦ ÃÖÃÊ ½ÃÀÛÇÏ´Â °æ¿ì ¿©±â±îÁö ¿Ã ¼ö ¾ø´Ù. */
+            IDE_DASSERT ( mMeta.mReplication.mXSN != SM_SN_NULL );
+
+            mXSN = mMeta.mReplication.mXSN;
+            mSkipXSN = aReceiverXSN;
+
+            /* For Parallel Logging: LSNÀ» SNÀ¸·Î º¯°æ PRJ-1464  */
+            IDE_ASSERT(smiGetLastUsedGSN(&sCurrentSN) == IDE_SUCCESS);
+
+            IDU_FIT_POINT_RAISE( "rpxSender::initXSN::Erratic::rpERR_ABORT_INVALID_XSN",
+                                 ERR_INVALID_XSN ); 
+            IDE_TEST_RAISE( mXSN > sCurrentSN, ERR_INVALID_XSN);
+
             break;
 
         default:
@@ -376,11 +423,11 @@ IDE_RC rpxSender::initXSN( smSN aReceiverXSN )
 }
 /*
 return value: 
-mSenderInfoê°€ ì´ˆê¸°í™” ë˜ì§€ ì•Šì€ ê²½ìš°ì— SM_SN_NULLë¥¼ ë°˜í™˜í•˜ë©°,
-ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ mSenderInfoì˜ LastCommitSNì„ ë°˜í™˜
-SM_SN_NULLë¥¼ ë°˜í™˜í•˜ëŠ” ì´ìœ ëŠ” Senderê°€ ì •ìƒì ìœ¼ë¡œ ì´ˆê¸°í™” ë˜ê¸° ì „ì—
-FLUSHì— ì˜í•´ ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ë©´ FLUSHëŠ” ëŒ€ê¸°í•˜ì§€ ì•Šê³  ì§€ë‚˜ê°ˆ ìˆ˜
-ìžˆë„ë¡ í•˜ê¸° ìœ„í•¨ìž„
+mSenderInfo°¡ ÃÊ±âÈ­ µÇÁö ¾ÊÀº °æ¿ì¿¡ SM_SN_NULL¸¦ ¹ÝÈ¯ÇÏ¸ç,
+±×·¸Áö ¾ÊÀ¸¸é mSenderInfoÀÇ LastCommitSNÀ» ¹ÝÈ¯
+SM_SN_NULL¸¦ ¹ÝÈ¯ÇÏ´Â ÀÌÀ¯´Â Sender°¡ Á¤»óÀûÀ¸·Î ÃÊ±âÈ­ µÇ±â Àü¿¡
+FLUSH¿¡ ÀÇÇØ ÀÌ ÇÔ¼ö°¡ È£ÃâµÇ¸é FLUSH´Â ´ë±âÇÏÁö ¾Ê°í Áö³ª°¥ ¼ö
+ÀÖµµ·Ï ÇÏ±â À§ÇÔÀÓ
 */
 smSN
 rpxSender::getRmtLastCommitSN()
@@ -436,4 +483,14 @@ rpxSender::updateOldMaxXSN()
     {
         /* Nothing to do */
     }
+}
+
+smSN rpxSender::getLastArrivedSN()
+{
+    smSN sLastArrivedSN = SM_SN_NULL;
+    if(mSenderInfo != NULL)
+    {
+        sLastArrivedSN = mSenderInfo->getLastArrivedSN();
+    }
+    return sLastArrivedSN;
 }

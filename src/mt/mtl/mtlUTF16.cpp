@@ -61,7 +61,7 @@ mtlNCRet mtlUTF16NextCharPtr( UChar ** aSource, UChar * aFence )
  * Description : Next Char Pointer
  *
  * Implementation :
- *    ë‹¤ìŒ ë¬¸ì ìœ„ì¹˜ë¡œ Index ì´ë™
+ *    ´ÙÀ½ ¹®ÀÚ À§Ä¡·Î Index ÀÌµ¿
  *
  ***********************************************************************/    
     mtlNCRet sRet;
@@ -85,14 +85,14 @@ static SInt mtlUTF16MaxPrecision( SInt aLength )
 {
 /***********************************************************************
  *
- * Description : ë¬¸ìê°¯ìˆ˜(aLength)ì˜ UTF16ì˜ ìµœëŒ€ precision ê³„ì‚°
+ * Description : ¹®ÀÚ°¹¼ö(aLength)ÀÇ UTF16ÀÇ ÃÖ´ë precision °è»ê
  *
  * Implementation :
  *
- *    ì¸ìë¡œ ë°›ì€ aLengthì—
- *    UTF16 í•œë¬¸ìì˜ ìµœëŒ€ í¬ê¸°ë¥¼ ê³±í•œ ê°’ì„ ë¦¬í„´í•¨.
+ *    ÀÎÀÚ·Î ¹ŞÀº aLength¿¡
+ *    UTF16 ÇÑ¹®ÀÚÀÇ ÃÖ´ë Å©±â¸¦ °öÇÑ °ªÀ» ¸®ÅÏÇÔ.
  *
- *    aLengthëŠ” ë¬¸ìê°¯ìˆ˜ì˜ ì˜ë¯¸ê°€ ìˆìŒ.
+ *    aLength´Â ¹®ÀÚ°¹¼öÀÇ ÀÇ¹Ì°¡ ÀÖÀ½.
  *
  ***********************************************************************/
     

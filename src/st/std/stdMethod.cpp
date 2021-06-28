@@ -19,8 +19,8 @@
  * $Id: stdMethod.cpp 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * Geometry Í∞ùÏ≤¥Î•º WKT(Well Known Text) ÎòêÎäî WKB(Well Known Binary)Î°ú 
- * Ï∂úÎ†•ÌïòÎäî Î™®Îìà Íµ¨ÌòÑ
+ * Geometry ∞¥√º∏¶ WKT(Well Known Text) ∂«¥¬ WKB(Well Known Binary)∑Œ 
+ * √‚∑¬«œ¥¬ ∏µ‚ ±∏«ˆ
  **********************************************************************/
 
 #include <idl.h>
@@ -28,15 +28,16 @@
 #include <mtdTypes.h>
 #include <stdTypes.h>
 #include <stdMethod.h>
+#include <ste.h>
 
 /***********************************************************************
  * Description:
- * aPoint Í∞ùÏ≤¥Î•º ÏùΩÏñ¥ÏÑú Î≤ÑÌçºÏóê Î¨∏ÏûêÏó¥Î°ú Ï∂úÎ†•ÌïúÎã§.
+ * aPoint ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° πÆ¿⁄ø≠∑Œ √‚∑¬«—¥Ÿ.
  * 
- * stdPoint2DType*            aPoint(In): Ï∂úÎ†•Ìï† Í∞ùÏ≤¥
- * UChar*                     aBuf(Out): Î≤ÑÌçº
- * UInt                       aMaxSize(In): Î≤ÑÌçºÏùò ÏµúÎåÄÍ∞í 
- * UInt*                      aOffset(Out): Ï∂úÎ†•Îêú ÎßàÏßÄÎßâ Î¨∏ÏûêÏó¥ ÏúÑÏπò
+ * stdPoint2DType*            aPoint(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
  **********************************************************************/
 IDE_RC stdMethod::writePointWKT2D(
                     stdPoint2DType*            aPoint,
@@ -74,12 +75,12 @@ IDE_RC stdMethod::writePointWKT2D(
 
 /***********************************************************************
  * Description:
- * aLine Í∞ùÏ≤¥Î•º ÏùΩÏñ¥ÏÑú Î≤ÑÌçºÏóê Î¨∏ÏûêÏó¥Î°ú Ï∂úÎ†•ÌïúÎã§.
+ * aLine ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° πÆ¿⁄ø≠∑Œ √‚∑¬«—¥Ÿ.
  * 
- * stdLineString2DType*       aLine(In): Ï∂úÎ†•Ìï† Í∞ùÏ≤¥
- * UChar*                     aBuf(Out): Î≤ÑÌçº
- * UInt                       aMaxSize(In): Î≤ÑÌçºÏùò ÏµúÎåÄÍ∞í 
- * UInt*                      aOffset(Out): Ï∂úÎ†•Îêú ÎßàÏßÄÎßâ Î¨∏ÏûêÏó¥ ÏúÑÏπò
+ * stdLineString2DType*       aLine(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
  **********************************************************************/
 IDE_RC stdMethod::writeLineStringWKT2D(
                     stdLineString2DType*       aLine,
@@ -90,6 +91,7 @@ IDE_RC stdMethod::writeLineStringWKT2D(
     SChar             sTempBuf[10240];
     stdPoint2D*       sPoint;
     UInt              i, sMax;
+    UChar           * sFence;
     
     idlOS::sprintf(sTempBuf, STD_LINESTRING_NAME"(" );
     // BUG-27685 Valgrind BUG
@@ -100,8 +102,13 @@ IDE_RC stdMethod::writeLineStringWKT2D(
 
     sPoint = STD_FIRST_PT2D(aLine);
     sMax = STD_N_POINTS(aLine);
+    sFence = (UChar *)aLine + aLine->mSize;
+
     for( i = 0; i < sMax; i++)
     {
+        /* BUG-48557 */
+        IDE_TEST_RAISE( (UChar *)sPoint >= sFence, invalid_error );
+
         fill2DCoordString( sTempBuf, ID_SIZEOF(sTempBuf), sPoint );
         if( i < sMax - 1 )
         {
@@ -126,6 +133,11 @@ IDE_RC stdMethod::writeLineStringWKT2D(
         idlOS::snprintf((SChar*)aBuf, aMaxSize, STD_LINESTRING_NAME"( ... ) ");
         *aOffset = idlOS::strlen((SChar*)aBuf);
     }
+    IDE_EXCEPTION( invalid_error )
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_GEOMETRY_MADEBY_GEOMFROMWKB,
+                                  (char *)STD_LINESTRING_NAME ) );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -133,12 +145,12 @@ IDE_RC stdMethod::writeLineStringWKT2D(
 
 /***********************************************************************
  * Description:
- * aPolygon Í∞ùÏ≤¥Î•º ÏùΩÏñ¥ÏÑú Î≤ÑÌçºÏóê Î¨∏ÏûêÏó¥Î°ú Ï∂úÎ†•ÌïúÎã§.
+ * aPolygon ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° πÆ¿⁄ø≠∑Œ √‚∑¬«—¥Ÿ.
  * 
- * stdPolygon2DType*          aPolygon(In): Ï∂úÎ†•Ìï† Í∞ùÏ≤¥
- * UChar*                     aBuf(Out): Î≤ÑÌçº
- * UInt                       aMaxSize(In): Î≤ÑÌçºÏùò ÏµúÎåÄÍ∞í 
- * UInt*                      aOffset(Out): Ï∂úÎ†•Îêú ÎßàÏßÄÎßâ Î¨∏ÏûêÏó¥ ÏúÑÏπò
+ * stdPolygon2DType*          aPolygon(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
  **********************************************************************/
 IDE_RC stdMethod::writePolygonWKT2D(
                     stdPolygon2DType*          aPolygon,
@@ -150,6 +162,7 @@ IDE_RC stdMethod::writePolygonWKT2D(
     stdLinearRing2D * sRing;
     stdPoint2D      * sPoint;
     UInt              i, j, sMaxR, sMax;
+    UChar           * sFence;
     
     idlOS::sprintf(sTempBuf, STD_POLYGON_NAME"(" );
     IDE_TEST_RAISE((UInt)((*aOffset) + idlOS::strlen(sTempBuf))
@@ -159,6 +172,8 @@ IDE_RC stdMethod::writePolygonWKT2D(
 
     sRing = STD_FIRST_RN2D(aPolygon);
     sMaxR = STD_N_RINGS(aPolygon);
+    sFence = (UChar *)aPolygon + aPolygon->mSize;
+
     for(i = 0; i < sMaxR; i++)
     {
         IDE_TEST_RAISE((UInt)((*aOffset)+1) >= aMaxSize, err_large_object);
@@ -169,6 +184,9 @@ IDE_RC stdMethod::writePolygonWKT2D(
         sMax = STD_N_POINTS(sRing);
         for( j = 0; j < sMax; j++)
         {
+            /* BUG-48557 */
+            IDE_TEST_RAISE( (UChar *)sPoint >= sFence, invalid_error );
+
             fill2DCoordString( sTempBuf, ID_SIZEOF(sTempBuf), sPoint );
             if( j < sMax -1 )
             {
@@ -195,12 +213,22 @@ IDE_RC stdMethod::writePolygonWKT2D(
         }
         sRing = (stdLinearRing2D*)sPoint;
     } // for i    
+
+    // BUG-48051 geomFromWKBø°º≠ ¿ﬂ∏¯ ª˝º∫µ» polygon ∞¥√º¿Œ¡ˆ »Æ¿Œ
+    IDE_TEST_RAISE( sRing != (stdLinearRing2D *)((UChar*)(aPolygon) + aPolygon->mSize),
+                    invalid_error );
+
     IDE_TEST_RAISE((UInt)((*aOffset)+2) >= aMaxSize, err_large_object);
     idlOS::strcat((SChar*)aBuf, ") ");
     *aOffset += 2;
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( invalid_error )
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_GEOMETRY_MADEBY_GEOMFROMWKB,
+                                  (char *)STD_POLYGON_NAME ) );
+    }
     IDE_EXCEPTION(err_large_object);
     {
         idlOS::snprintf((SChar*)aBuf, aMaxSize, STD_POLYGON_NAME"( ... ) ");
@@ -213,12 +241,12 @@ IDE_RC stdMethod::writePolygonWKT2D(
 
 /***********************************************************************
  * Description:
- * aMPoint Í∞ùÏ≤¥Î•º ÏùΩÏñ¥ÏÑú Î≤ÑÌçºÏóê Î¨∏ÏûêÏó¥Î°ú Ï∂úÎ†•ÌïúÎã§.
+ * aMPoint ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° πÆ¿⁄ø≠∑Œ √‚∑¬«—¥Ÿ.
  * 
- * stdMultiPoint2DType*       aMPoint(In): Ï∂úÎ†•Ìï† Í∞ùÏ≤¥
- * UChar*                     aBuf(Out): Î≤ÑÌçº
- * UInt                       aMaxSize(In): Î≤ÑÌçºÏùò ÏµúÎåÄÍ∞í 
- * UInt*                      aOffset(Out): Ï∂úÎ†•Îêú ÎßàÏßÄÎßâ Î¨∏ÏûêÏó¥ ÏúÑÏπò
+ * stdMultiPoint2DType*       aMPoint(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
  **********************************************************************/
 IDE_RC stdMethod::writeMultiPointWKT2D(
                     stdMultiPoint2DType*       aMPoint,
@@ -229,6 +257,7 @@ IDE_RC stdMethod::writeMultiPointWKT2D(
     SChar             sTempBuf[10240];
     stdPoint2DType*   sPoint;
     UInt              i, sMaxO;
+    UChar           * sFence;
     
     idlOS::sprintf(sTempBuf, STD_MULTIPOINT_NAME"(" );
     IDE_TEST_RAISE((UInt)((*aOffset) + idlOS::strlen(sTempBuf))
@@ -238,8 +267,13 @@ IDE_RC stdMethod::writeMultiPointWKT2D(
 
     sPoint = STD_FIRST_POINT2D(aMPoint);
     sMaxO = STD_N_OBJECTS(aMPoint);
+    sFence = (UChar *)aMPoint + aMPoint->mSize;
+
     for( i = 0; i < sMaxO; i++)
     {
+        /* BUG-48557 */
+        IDE_TEST_RAISE( (UChar *)sPoint >= sFence, invalid_error );
+
         fill2DCoordString( sTempBuf, ID_SIZEOF(sTempBuf), & sPoint->mPoint );
         if( i < sMaxO - 1 )
         {
@@ -265,6 +299,11 @@ IDE_RC stdMethod::writeMultiPointWKT2D(
         idlOS::snprintf((SChar*)aBuf, aMaxSize, STD_MULTIPOINT_NAME"( ... ) ");
         *aOffset = idlOS::strlen((SChar*)aBuf);
     }
+    IDE_EXCEPTION( invalid_error )
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_GEOMETRY_MADEBY_GEOMFROMWKB,
+                                  (char *)STD_MULTIPOINT_NAME ) );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -272,12 +311,12 @@ IDE_RC stdMethod::writeMultiPointWKT2D(
 
 /***********************************************************************
  * Description:
- * aMLine Í∞ùÏ≤¥Î•º ÏùΩÏñ¥ÏÑú Î≤ÑÌçºÏóê Î¨∏ÏûêÏó¥Î°ú Ï∂úÎ†•ÌïúÎã§.
+ * aMLine ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° πÆ¿⁄ø≠∑Œ √‚∑¬«—¥Ÿ.
  * 
- * stdMultiLineString2DType*  aMLine(In): Ï∂úÎ†•Ìï† Í∞ùÏ≤¥
- * UChar*                     aBuf(Out): Î≤ÑÌçº
- * UInt                       aMaxSize(In): Î≤ÑÌçºÏùò ÏµúÎåÄÍ∞í 
- * UInt*                      aOffset(Out): Ï∂úÎ†•Îêú ÎßàÏßÄÎßâ Î¨∏ÏûêÏó¥ ÏúÑÏπò
+ * stdMultiLineString2DType*  aMLine(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
  **********************************************************************/
 IDE_RC stdMethod::writeMultiLineStringWKT2D(
                     stdMultiLineString2DType*  aMLine,
@@ -289,6 +328,7 @@ IDE_RC stdMethod::writeMultiLineStringWKT2D(
     stdLineString2DType* sLine;
     stdPoint2D*          sPoint;
     UInt                 i, j, sMaxO, sMax;
+    UChar              * sFence;
     
     idlOS::sprintf(sTempBuf, STD_MULTILINESTRING_NAME"(" );
     IDE_TEST_RAISE((UInt)((*aOffset) + idlOS::strlen(sTempBuf))
@@ -298,6 +338,8 @@ IDE_RC stdMethod::writeMultiLineStringWKT2D(
 
     sLine = STD_FIRST_LINE2D(aMLine);
     sMaxO = STD_N_OBJECTS(aMLine);
+    sFence = (UChar *)aMLine + aMLine->mSize;
+
     for(i = 0; i < sMaxO; i++)
     {
         IDE_TEST_RAISE((UInt)((*aOffset)+1) >= aMaxSize, err_large_object);
@@ -308,6 +350,9 @@ IDE_RC stdMethod::writeMultiLineStringWKT2D(
         sMax = STD_N_POINTS(sLine);
         for( j = 0; j < sMax; j++)
         {
+            /* BUG-48557 */
+            IDE_TEST_RAISE( (UChar *)sPoint >= sFence, invalid_error );
+
             fill2DCoordString( sTempBuf, ID_SIZEOF(sTempBuf), sPoint );
             if( j < sMax -1 )
             {
@@ -340,6 +385,11 @@ IDE_RC stdMethod::writeMultiLineStringWKT2D(
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( invalid_error )
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_GEOMETRY_MADEBY_GEOMFROMWKB,
+                                  (char *)STD_MULTILINESTRING_NAME ) );
+    }
     IDE_EXCEPTION(err_large_object);
     {
         idlOS::snprintf((SChar*)aBuf,
@@ -354,12 +404,12 @@ IDE_RC stdMethod::writeMultiLineStringWKT2D(
 
 /***********************************************************************
  * Description:
- * aMPolygon Í∞ùÏ≤¥Î•º ÏùΩÏñ¥ÏÑú Î≤ÑÌçºÏóê Î¨∏ÏûêÏó¥Î°ú Ï∂úÎ†•ÌïúÎã§.
+ * aMPolygon ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° πÆ¿⁄ø≠∑Œ √‚∑¬«—¥Ÿ.
  * 
- * stdMultiPolygon2DType*     aMPolygon(In): Ï∂úÎ†•Ìï† Í∞ùÏ≤¥
- * UChar*                     aBuf(Out): Î≤ÑÌçº
- * UInt                       aMaxSize(In): Î≤ÑÌçºÏùò ÏµúÎåÄÍ∞í 
- * UInt*                      aOffset(Out): Ï∂úÎ†•Îêú ÎßàÏßÄÎßâ Î¨∏ÏûêÏó¥ ÏúÑÏπò
+ * stdMultiPolygon2DType*     aMPolygon(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
  **********************************************************************/
 IDE_RC stdMethod::writeMultiPolygonWKT2D(
                     stdMultiPolygon2DType*     aMPolygon,
@@ -372,6 +422,7 @@ IDE_RC stdMethod::writeMultiPolygonWKT2D(
     stdLinearRing2D*  sRing;
     stdPoint2D*       sPoint;
     UInt              i, j, k, sMaxO, sMaxR, sMax;
+    UChar           * sFence;
     
     idlOS::sprintf(sTempBuf, STD_MULTIPOLYGON_NAME"(" );
     IDE_TEST_RAISE((UInt)((*aOffset) + idlOS::strlen(sTempBuf))
@@ -381,6 +432,8 @@ IDE_RC stdMethod::writeMultiPolygonWKT2D(
     
     sPolygon = STD_FIRST_POLY2D(aMPolygon);
     sMaxO = STD_N_OBJECTS(aMPolygon);
+    sFence = (UChar *)aMPolygon + aMPolygon->mSize;
+
     for(i = 0; i < sMaxO; i++)
     {
         IDE_TEST_RAISE((UInt)((*aOffset)+1) >= aMaxSize, err_large_object);
@@ -399,6 +452,9 @@ IDE_RC stdMethod::writeMultiPolygonWKT2D(
             sMax = STD_N_POINTS(sRing);            
             for( k = 0; k < sMax; k++)
             {
+                /* BUG-48557 */
+                IDE_TEST_RAISE( (UChar *)sPoint >= sFence, invalid_error );
+
                 fill2DCoordString( sTempBuf, ID_SIZEOF(sTempBuf), sPoint );
                 if( k < sMax -1 )
                 {
@@ -436,6 +492,10 @@ IDE_RC stdMethod::writeMultiPolygonWKT2D(
             idlOS::strcat((SChar*)aBuf, ", ");
             *aOffset += 2;
         }
+
+        // BUG-48051 geomFromWKBø°º≠ ¿ﬂ∏¯ ª˝º∫µ» polygon ∞¥√º¿Œ¡ˆ »Æ¿Œ
+        IDE_TEST_RAISE ( (stdPolygon2DType*)sRing != STD_NEXT_POLY2D(sPolygon),
+                         invalid_error );
         sPolygon = (stdPolygon2DType*)sRing;
     } // for i    
     IDE_TEST_RAISE((UInt)((*aOffset)+2) >= aMaxSize, err_large_object);
@@ -444,6 +504,11 @@ IDE_RC stdMethod::writeMultiPolygonWKT2D(
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( invalid_error )
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_GEOMETRY_MADEBY_GEOMFROMWKB,
+                                  (char *)STD_MULTIPOLYGON_NAME ) );
+    }
     IDE_EXCEPTION(err_large_object);
     {
         idlOS::snprintf((SChar*)aBuf,
@@ -458,12 +523,12 @@ IDE_RC stdMethod::writeMultiPolygonWKT2D(
 
 /***********************************************************************
  * Description:
- * aCollection Í∞ùÏ≤¥Î•º ÏùΩÏñ¥ÏÑú Î≤ÑÌçºÏóê Î¨∏ÏûêÏó¥Î°ú Ï∂úÎ†•ÌïúÎã§.
+ * aCollection ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° πÆ¿⁄ø≠∑Œ √‚∑¬«—¥Ÿ.
  * 
- * stdGeoCollection2DType*    aCollection(In): Ï∂úÎ†•Ìï† Í∞ùÏ≤¥
- * UChar*                     aBuf(Out): Î≤ÑÌçº
- * UInt                       aMaxSize(In): Î≤ÑÌçºÏùò ÏµúÎåÄÍ∞í 
- * UInt*                      aOffset(Out): Ï∂úÎ†•Îêú ÎßàÏßÄÎßâ Î¨∏ÏûêÏó¥ ÏúÑÏπò
+ * stdGeoCollection2DType*    aCollection(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
  **********************************************************************/
 IDE_RC stdMethod::writeGeoCollectionWKT2D(
                     stdGeoCollection2DType*    aCollection,
@@ -476,9 +541,11 @@ IDE_RC stdMethod::writeGeoCollectionWKT2D(
     UInt               i, sGab, sMax;
     UInt               sMaxSize = aMaxSize;    
     UInt               sStartOffset = *aOffset;
-    
-    idlOS::sprintf((SChar*)aBuf, STD_GEOCOLLECTION_NAME"( ");
-    *aOffset += idlOS::strlen((SChar*)aBuf);
+
+    IDE_TEST_RAISE( (UInt)( (*aOffset) + STD_GEOCOLLECTION_NAME_LEN + 2 )
+                     >= aMaxSize, err_large_object );
+    idlOS::strcat( (SChar*)aBuf, STD_GEOCOLLECTION_NAME"( " );
+    *aOffset += STD_GEOCOLLECTION_NAME_LEN + 2;
 
     sGeom = (stdGeometryHeader*)STD_FIRST_COLL2D(aCollection);
     sMax = STD_N_GEOMS(aCollection);
@@ -486,31 +553,37 @@ IDE_RC stdMethod::writeGeoCollectionWKT2D(
     {
         switch(sGeom->mType)
         {
+        case STD_POINT_2D_EXT_TYPE :
         case STD_POINT_2D_TYPE :
             IDE_TEST_RAISE( writePointWKT2D(
                 (stdPoint2DType*)sGeom,sBuf,sMaxSize,aOffset)
                 != IDE_SUCCESS, err_large_object);
             break;
+        case STD_LINESTRING_2D_EXT_TYPE :
         case STD_LINESTRING_2D_TYPE :
             IDE_TEST_RAISE( writeLineStringWKT2D(
                 (stdLineString2DType*)sGeom,sBuf,sMaxSize,aOffset)
                 != IDE_SUCCESS, err_large_object);
             break;
+        case STD_POLYGON_2D_EXT_TYPE :        
         case STD_POLYGON_2D_TYPE :        
             IDE_TEST_RAISE( writePolygonWKT2D(
                 (stdPolygon2DType*)sGeom,sBuf,sMaxSize,aOffset)
                 != IDE_SUCCESS, err_large_object);
             break;
+        case STD_MULTIPOINT_2D_EXT_TYPE :
         case STD_MULTIPOINT_2D_TYPE :
             IDE_TEST_RAISE( writeMultiPointWKT2D(
                 (stdMultiPoint2DType*)sGeom,sBuf,sMaxSize,aOffset)
                 != IDE_SUCCESS, err_large_object);
             break;
+        case STD_MULTILINESTRING_2D_EXT_TYPE :
         case STD_MULTILINESTRING_2D_TYPE :
             IDE_TEST_RAISE( writeMultiLineStringWKT2D(
                 (stdMultiLineString2DType*)sGeom,sBuf,sMaxSize,aOffset)
                 != IDE_SUCCESS, err_large_object);
             break;
+        case STD_MULTIPOLYGON_2D_EXT_TYPE :
         case STD_MULTIPOLYGON_2D_TYPE :
             IDE_TEST_RAISE( writeMultiPolygonWKT2D(
                 (stdMultiPolygon2DType*)sGeom,sBuf,sMaxSize,aOffset)
@@ -545,14 +618,292 @@ IDE_RC stdMethod::writeGeoCollectionWKT2D(
 
     IDE_EXCEPTION(err_large_object);
     {
-        idlOS::snprintf((SChar*)aBuf,
-                        sMaxSize,
-                        STD_GEOCOLLECTION_NAME"( ... ) ");
-        *aOffset = idlOS::strlen((SChar*)aBuf);
+        if ( ideGetErrorCode() == stERR_ABORT_INVALID_GEOMETRY_MADEBY_GEOMFROMWKB )
+        {
+            IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_GEOMETRY_MADEBY_GEOMFROMWKB,
+                                  (char *)STD_GEOCOLLECTION_NAME ) );
+        }
+        else
+        {
+            idlOS::snprintf((SChar*)aBuf,
+                            sMaxSize,
+                            STD_GEOCOLLECTION_NAME"( ... ) ");
+            *aOffset = idlOS::strlen((SChar*)aBuf);
+        }
     }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description:
+ * aPoint ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° πÆ¿⁄ø≠∑Œ √‚∑¬«—¥Ÿ.
+ * 
+ * stdPoint2DExtType*         aPoint(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
+ **********************************************************************/
+IDE_RC stdMethod::writePointEWKT2D( stdPoint2DExtType*         aPoint,
+                                    UChar*                     aBuf,
+                                    UInt                       aMaxSize,
+                                    UInt*                      aOffset )
+{
+    IDE_TEST( writeSRID( aPoint->mSRID,
+                         aBuf,
+                         aMaxSize,
+                         aOffset )
+              != IDE_SUCCESS );
+
+    IDE_TEST( writePointWKT2D( (stdPoint2DType*) aPoint,
+                               aBuf,
+                               aMaxSize,
+                               aOffset )
+              != IDE_SUCCESS );
+    
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;    
+}
+
+/***********************************************************************
+ * Description:
+ * aLine ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° πÆ¿⁄ø≠∑Œ √‚∑¬«—¥Ÿ.
+ * 
+ * stdLineString2DType*       aLine(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
+ **********************************************************************/
+IDE_RC stdMethod::writeLineStringEWKT2D( stdLineString2DExtType*    aLine,
+                                         UChar*                     aBuf,
+                                         UInt                       aMaxSize,
+                                         UInt*                      aOffset )
+{
+    IDE_TEST( writeSRID( aLine->mSRID,
+                         aBuf,
+                         aMaxSize,
+                         aOffset )
+              != IDE_SUCCESS );
+
+    IDE_TEST( writeLineStringWKT2D( (stdLineString2DType*) aLine,
+                                    aBuf,
+                                    aMaxSize,
+                                    aOffset )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description:
+ * aPolygon ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° πÆ¿⁄ø≠∑Œ √‚∑¬«—¥Ÿ.
+ * 
+ * stdPolygon2DType*          aPolygon(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
+ **********************************************************************/
+IDE_RC stdMethod::writePolygonEWKT2D( stdPolygon2DExtType*       aPolygon,
+                                      UChar*                     aBuf,
+                                      UInt                       aMaxSize,
+                                      UInt*                      aOffset )
+{
+    IDE_TEST( writeSRID( aPolygon->mSRID,
+                         aBuf,
+                         aMaxSize,
+                         aOffset )
+              != IDE_SUCCESS );
+
+    IDE_TEST( writePolygonWKT2D( (stdPolygon2DType*) aPolygon,
+                                 aBuf,
+                                 aMaxSize,
+                                 aOffset )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;    
+}
+
+/***********************************************************************
+ * Description:
+ * aMPoint ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° πÆ¿⁄ø≠∑Œ √‚∑¬«—¥Ÿ.
+ * 
+ * stdMultiPoint2DType*       aMPoint(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
+ **********************************************************************/
+IDE_RC stdMethod::writeMultiPointEWKT2D( stdMultiPoint2DExtType*    aMPoint,
+                                         UChar*                     aBuf,
+                                         UInt                       aMaxSize,
+                                         UInt*                      aOffset )
+{
+    IDE_TEST( writeSRID( aMPoint->mSRID,
+                         aBuf,
+                         aMaxSize,
+                         aOffset )
+              != IDE_SUCCESS );
+    
+    IDE_TEST( writeMultiPointWKT2D( (stdMultiPoint2DType*) aMPoint,
+                                    aBuf,
+                                    aMaxSize,
+                                    aOffset )
+              != IDE_SUCCESS );
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description:
+ * aMLine ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° πÆ¿⁄ø≠∑Œ √‚∑¬«—¥Ÿ.
+ * 
+ * stdMultiLineString2DType*  aMLine(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
+ **********************************************************************/
+IDE_RC stdMethod::writeMultiLineStringEWKT2D( stdMultiLineString2DExtType* aMLine,
+                                              UChar*                       aBuf,
+                                              UInt                         aMaxSize,
+                                              UInt*                        aOffset )
+{
+    IDE_TEST( writeSRID( aMLine->mSRID,
+                         aBuf,
+                         aMaxSize,
+                         aOffset )
+              != IDE_SUCCESS );
+
+    IDE_TEST( writeMultiLineStringWKT2D( (stdMultiLineString2DType*) aMLine,
+                                         aBuf,
+                                         aMaxSize,
+                                         aOffset )
+              != IDE_SUCCESS );
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description:
+ * aMPolygon ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° πÆ¿⁄ø≠∑Œ √‚∑¬«—¥Ÿ.
+ * 
+ * stdMultiPolygon2DType*     aMPolygon(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
+ **********************************************************************/
+IDE_RC stdMethod::writeMultiPolygonEWKT2D( stdMultiPolygon2DExtType*  aMPolygon,
+                                           UChar*                     aBuf,
+                                           UInt                       aMaxSize,
+                                           UInt*                      aOffset )
+{
+    IDE_TEST( writeSRID( aMPolygon->mSRID,
+                         aBuf,
+                         aMaxSize,
+                         aOffset )
+              != IDE_SUCCESS );
+
+    IDE_TEST( writeMultiPolygonWKT2D( (stdMultiPolygon2DType*) aMPolygon,
+                                      aBuf,
+                                      aMaxSize,
+                                      aOffset )
+              != IDE_SUCCESS );
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description:
+ * aCollection ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° πÆ¿⁄ø≠∑Œ √‚∑¬«—¥Ÿ.
+ * 
+ * stdGeoCollection2DType*    aCollection(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
+ **********************************************************************/
+IDE_RC stdMethod::writeGeoCollectionEWKT2D( stdGeoCollection2DExtType* aCollection,
+                                            UChar*                     aBuf,
+                                            UInt                       aMaxSize,
+                                            UInt*                      aOffset )
+{
+    IDE_TEST( writeSRID( aCollection->mSRID,
+                         aBuf,
+                         aMaxSize,
+                         aOffset )
+              != IDE_SUCCESS );
+
+    IDE_TEST( writeGeoCollectionWKT2D( (stdGeoCollection2DType*) aCollection,
+                                       aBuf,
+                                       aMaxSize,
+                                       aOffset )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description:
+ * aSRID∏¶ πˆ∆€ø° πÆ¿⁄ø≠∑Œ √‚∑¬«—¥Ÿ.
+ * 
+ * SInt                       aSRID(In): √‚∑¬«“ SRID
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
+ **********************************************************************/
+IDE_RC stdMethod::writeSRID( SInt     aSRID,
+                             UChar*   aBuf,
+                             UInt     aMaxSize,
+                             UInt*    aOffset )
+{
+    SChar  sTempBuf[128];
+
+    idlOS::snprintf( sTempBuf,
+                     ID_SIZEOF(sTempBuf),
+                     STD_SRID_NAME"=%"ID_INT32_FMT";",
+                     aSRID );
+    // BUG-27685 Valgrind BUG
+    // strlen(sting) + 1 > buffer_size because of null termination.
+    IDE_TEST_RAISE( (UInt)( (*aOffset) + idlOS::strlen(sTempBuf) ) >= aMaxSize,
+                    err_large_object );
+    idlOS::strcat( (SChar*)aBuf, sTempBuf );
+    *aOffset += idlOS::strlen( sTempBuf );
+
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION( err_large_object );
+    {
+        idlOS::snprintf( (SChar*)aBuf, aMaxSize, STD_SRID_NAME"=...;" );
+        *aOffset = idlOS::strlen( (SChar*)aBuf );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;    
 }
 
 /*
@@ -591,6 +942,18 @@ UChar *stdMethod::writeWKB_Char( UChar *aBuf, UChar aVal, UInt *aOffset )
 }
 
 UChar *stdMethod::writeWKB_UInt( UChar *aBuf, UInt aVal, UInt *aOffset )
+{
+    IDE_DASSERT( aBuf != NULL );
+    
+    UChar *sNext = aBuf + WKB_INT32_SIZE;
+    idlOS::memcpy( aBuf, &aVal, WKB_INT32_SIZE );
+    if( aOffset )
+        *aOffset += WKB_INT32_SIZE;
+    
+    return sNext;
+}
+
+UChar *stdMethod::writeWKB_SInt( UChar *aBuf, SInt aVal, UInt *aOffset )
 {
     IDE_DASSERT( aBuf != NULL );
     
@@ -680,18 +1043,18 @@ UChar *stdMethod::writeWKB_Point2Ds( UChar            * aBuf,
 /***********************************************************************
  * Description: 	835	* Description:
  * BUG-32531 Consider for GIS EMPTY
- * aMPoint Í∞ùÏ≤¥Î•º ÏùΩÏñ¥ÏÑú Î≤ÑÌçºÏóê WKB(Well Known Binary)Î°ú Ï∂úÎ†•ÌïúÎã§.
- * EmptyÎäî Multi pointÏùò point Í∞ØÏàòÍ∞Ä 0 ÏùºÍ≤ΩÏö∞ emptyÎ°ú Ï≤òÎ¶¨ÌïúÎã§.
+ * aMPoint ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° WKB(Well Known Binary)∑Œ √‚∑¬«—¥Ÿ.
+ * Empty¥¬ Multi point¿« point ∞πºˆ∞° 0 ¿œ∞ÊøÏ empty∑Œ √≥∏Æ«—¥Ÿ.
  *
  * BUGBUG
- * ASBINARY Î°ú TYPE Ï†ïÎ≥¥Î•º Ï∂úÎ†•ÌïòÍ≤å ÎêòÎ©¥ EMPTYÏùò TYPEÏùÄ Î¨¥Ï°∞Í±¥
- * MULTIPOINT Í∞íÏù∏ 4Î°ú Ï∂úÎ†• ÎêúÎã§. Ï∂îÌõÑ WKB HEADERÏùò TYPEÏóê EMPTYÎ•º
- * Í≥†Î†§ Ìï¥Ïïº ÌïúÎã§.
+ * ASBINARY ∑Œ TYPE ¡§∫∏∏¶ √‚∑¬«œ∞‘ µ«∏È EMPTY¿« TYPE¿∫ π´¡∂∞«
+ * MULTIPOINT ∞™¿Œ 4∑Œ √‚∑¬ µ»¥Ÿ. √ﬂ»ƒ WKB HEADER¿« TYPEø° EMPTY∏¶
+ * ∞Ì∑¡ «ÿæﬂ «—¥Ÿ.
  *
- * stdMultiPoint2DType* aMPoint(In): Ï∂úÎ†•Ìï† Í∞ùÏ≤¥
- * UChar* aBuf(Out): Î≤ÑÌçº
- * UInt aMaxSize(In): Î≤ÑÌçºÏùò ÏµúÎåÄÍ∞í
- * UInt* aOffset(Out): Ï∂úÎ†•Îêú ÎßàÏßÄÎßâ Î¨∏ÏûêÏó¥ ÏúÑÏπò
+ * stdMultiPoint2DType* aMPoint(In): √‚∑¬«“ ∞¥√º
+ * UChar* aBuf(Out): πˆ∆€
+ * UInt aMaxSize(In): πˆ∆€¿« √÷¥Î∞™
+ * UInt* aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
  **********************************************************************/
 IDE_RC stdMethod::writeEmptyWKB2D( stdMultiPoint2DType* /* aMPoint */,
                                    UChar*               aBuf,
@@ -730,12 +1093,12 @@ IDE_RC stdMethod::writeEmptyWKB2D( stdMultiPoint2DType* /* aMPoint */,
 
 /***********************************************************************
  * Description:
- * aPoint Í∞ùÏ≤¥Î•º ÏùΩÏñ¥ÏÑú Î≤ÑÌçºÏóê WKB(Well Known Binary)Î°ú Ï∂úÎ†•ÌïúÎã§.
+ * aPoint ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° WKB(Well Known Binary)∑Œ √‚∑¬«—¥Ÿ.
  * 
- * stdPoint2DType*            aPoint(In): Ï∂úÎ†•Ìï† Í∞ùÏ≤¥
- * UChar*                     aBuf(Out): Î≤ÑÌçº
- * UInt                       aMaxSize(In): Î≤ÑÌçºÏùò ÏµúÎåÄÍ∞í 
- * UInt*                      aOffset(Out): Ï∂úÎ†•Îêú ÎßàÏßÄÎßâ Î¨∏ÏûêÏó¥ ÏúÑÏπò
+ * stdPoint2DType*            aPoint(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
  **********************************************************************/
 IDE_RC stdMethod::writePointWKB2D(
                     stdPoint2DType*            aPoint,
@@ -744,7 +1107,7 @@ IDE_RC stdMethod::writePointWKB2D(
                     UInt*                      aOffset)    // Fix BUG-15834
 {
     WKBPoint*   sBPoint = (WKBPoint*)aBuf;
-    UInt        sWKBSize = WKB_GEOHEAD_SIZE + WKB_PT_SIZE;
+    UInt        sWKBSize = WKB_POINT_SIZE;
     UInt        sSize    = 0;
     
 
@@ -775,12 +1138,12 @@ IDE_RC stdMethod::writePointWKB2D(
 
 /***********************************************************************
  * Description:
- * aLine Í∞ùÏ≤¥Î•º ÏùΩÏñ¥ÏÑú Î≤ÑÌçºÏóê WKB(Well Known Binary)Î°ú Ï∂úÎ†•ÌïúÎã§.
+ * aLine ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° WKB(Well Known Binary)∑Œ √‚∑¬«—¥Ÿ.
  * 
- * stdLineString2DType*       aLine(In): Ï∂úÎ†•Ìï† Í∞ùÏ≤¥
- * UChar*                     aBuf(Out): Î≤ÑÌçº
- * UInt                       aMaxSize(In): Î≤ÑÌçºÏùò ÏµúÎåÄÍ∞í 
- * UInt*                      aOffset(Out): Ï∂úÎ†•Îêú ÎßàÏßÄÎßâ Î¨∏ÏûêÏó¥ ÏúÑÏπò
+ * stdLineString2DType*       aLine(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
  **********************************************************************/
 IDE_RC stdMethod::writeLineStringWKB2D(
                     stdLineString2DType*       aLine,
@@ -820,12 +1183,12 @@ IDE_RC stdMethod::writeLineStringWKB2D(
 
 /***********************************************************************
  * Description:
- * aPolygon Í∞ùÏ≤¥Î•º ÏùΩÏñ¥ÏÑú Î≤ÑÌçºÏóê WKB(Well Known Binary)Î°ú Ï∂úÎ†•ÌïúÎã§.
+ * aPolygon ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° WKB(Well Known Binary)∑Œ √‚∑¬«—¥Ÿ.
  * 
- * stdPolygon2DType*          aPolygon(In): Ï∂úÎ†•Ìï† Í∞ùÏ≤¥
- * UChar*                     aBuf(Out): Î≤ÑÌçº
- * UInt                       aMaxSize(In): Î≤ÑÌçºÏùò ÏµúÎåÄÍ∞í 
- * UInt*                      aOffset(Out): Ï∂úÎ†•Îêú ÎßàÏßÄÎßâ Î¨∏ÏûêÏó¥ ÏúÑÏπò
+ * stdPolygon2DType*          aPolygon(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
  **********************************************************************/
 IDE_RC stdMethod::writePolygonWKB2D(
                     stdPolygon2DType*          aPolygon,
@@ -856,6 +1219,10 @@ IDE_RC stdMethod::writePolygonWKB2D(
         sRing = (stdLinearRing2D*)sPoint;
     }
 
+    // BUG-48051 geomFromWKBø°º≠ ¿ﬂ∏¯ ª˝º∫µ» polygon ∞¥√º¿Œ¡ˆ »Æ¿Œ
+    IDE_TEST_RAISE( sRing != (stdLinearRing2D *)((UChar*)aPolygon + aPolygon->mSize),
+                    invalid_error );
+
     IDE_TEST_RAISE((UInt)((*aOffset) + sWKBSize ) > aMaxSize, 
            err_large_object);
 
@@ -880,6 +1247,11 @@ IDE_RC stdMethod::writePolygonWKB2D(
     
     return IDE_SUCCESS;
     
+    IDE_EXCEPTION( invalid_error )
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_GEOMETRY_MADEBY_GEOMFROMWKB,
+                                  (char *)STD_POLYGON_NAME ) );
+    }
     IDE_EXCEPTION(err_large_object);
     {
         if( (UInt)((*aOffset) + WKB_GEOHEAD_SIZE ) < aMaxSize )
@@ -895,12 +1267,12 @@ IDE_RC stdMethod::writePolygonWKB2D(
 
 /***********************************************************************
  * Description:
- * aMPoint Í∞ùÏ≤¥Î•º ÏùΩÏñ¥ÏÑú Î≤ÑÌçºÏóê WKB(Well Known Binary)Î°ú Ï∂úÎ†•ÌïúÎã§.
+ * aMPoint ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° WKB(Well Known Binary)∑Œ √‚∑¬«—¥Ÿ.
  * 
- * stdMultiPoint2DType*       aMPoint(In): Ï∂úÎ†•Ìï† Í∞ùÏ≤¥
- * UChar*                     aBuf(Out): Î≤ÑÌçº
- * UInt                       aMaxSize(In): Î≤ÑÌçºÏùò ÏµúÎåÄÍ∞í 
- * UInt*                      aOffset(Out): Ï∂úÎ†•Îêú ÎßàÏßÄÎßâ Î¨∏ÏûêÏó¥ ÏúÑÏπò
+ * stdMultiPoint2DType*       aMPoint(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
  **********************************************************************/
 IDE_RC stdMethod::writeMultiPointWKB2D(
                     stdMultiPoint2DType*       aMPoint,
@@ -952,12 +1324,12 @@ IDE_RC stdMethod::writeMultiPointWKB2D(
 
 /***********************************************************************
  * Description:
- * aMLine Í∞ùÏ≤¥Î•º ÏùΩÏñ¥ÏÑú Î≤ÑÌçºÏóê WKB(Well Known Binary)Î°ú Ï∂úÎ†•ÌïúÎã§.
+ * aMLine ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° WKB(Well Known Binary)∑Œ √‚∑¬«—¥Ÿ.
  * 
- * stdMultiLineString2DType*  aMLine(In): Ï∂úÎ†•Ìï† Í∞ùÏ≤¥
- * UChar*                     aBuf(Out): Î≤ÑÌçº
- * UInt                       aMaxSize(In): Î≤ÑÌçºÏùò ÏµúÎåÄÍ∞í 
- * UInt*                      aOffset(Out): Ï∂úÎ†•Îêú ÎßàÏßÄÎßâ Î¨∏ÏûêÏó¥ ÏúÑÏπò
+ * stdMultiLineString2DType*  aMLine(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
  **********************************************************************/
 IDE_RC stdMethod::writeMultiLineStringWKB2D(
                     stdMultiLineString2DType*  aMLine,
@@ -1030,12 +1402,12 @@ IDE_RC stdMethod::writeMultiLineStringWKB2D(
 
 /***********************************************************************
  * Description:
- * aMPolygon Í∞ùÏ≤¥Î•º ÏùΩÏñ¥ÏÑú Î≤ÑÌçºÏóê WKB(Well Known Binary)Î°ú Ï∂úÎ†•ÌïúÎã§.
+ * aMPolygon ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° WKB(Well Known Binary)∑Œ √‚∑¬«—¥Ÿ.
  * 
- * stdMultiPolygon2DType*     aMPolygon(In): Ï∂úÎ†•Ìï† Í∞ùÏ≤¥
- * UChar*                     aBuf(Out): Î≤ÑÌçº
- * UInt                       aMaxSize(In): Î≤ÑÌçºÏùò ÏµúÎåÄÍ∞í 
- * UInt*                      aOffset(Out): Ï∂úÎ†•Îêú ÎßàÏßÄÎßâ Î¨∏ÏûêÏó¥ ÏúÑÏπò
+ * stdMultiPolygon2DType*     aMPolygon(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
  **********************************************************************/
 IDE_RC stdMethod::writeMultiPolygonWKB2D(
                     stdMultiPolygon2DType*     aMPolygon,
@@ -1072,6 +1444,10 @@ IDE_RC stdMethod::writeMultiPolygonWKB2D(
             }
             sRing = (stdLinearRing2D*)sPoint;
         }
+        // BUG-48051 geomFromWKBø°º≠ ¿ﬂ∏¯ ª˝º∫µ» polygon ∞¥√º¿Œ¡ˆ »Æ¿Œ
+        IDE_TEST_RAISE( (stdPolygon2DType*)sRing != STD_NEXT_POLY2D(sPolygon),
+                        invalid_error );
+
         sPolygon = (stdPolygon2DType*)sRing;
     }
 
@@ -1110,8 +1486,13 @@ IDE_RC stdMethod::writeMultiPolygonWKB2D(
     // Fix BUG-15428           
     *aOffset += sWKBSize;
     return IDE_SUCCESS;
-    
-    IDE_EXCEPTION(err_large_object);
+
+    IDE_EXCEPTION( invalid_error )
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_GEOMETRY_MADEBY_GEOMFROMWKB,
+                                  (char *)STD_MULTIPOLYGON_NAME ) );
+    }
+    IDE_EXCEPTION(err_large_object)
     {
         if( (UInt)( (*aOffset) + WKB_GEOHEAD_SIZE ) < aMaxSize )
         {
@@ -1126,12 +1507,12 @@ IDE_RC stdMethod::writeMultiPolygonWKB2D(
 
 /***********************************************************************
  * Description:
- * aCollection Í∞ùÏ≤¥Î•º ÏùΩÏñ¥ÏÑú Î≤ÑÌçºÏóê WKB(Well Known Binary)Î°ú Ï∂úÎ†•ÌïúÎã§.
+ * aCollection ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° WKB(Well Known Binary)∑Œ √‚∑¬«—¥Ÿ.
  * 
- * stdGeoCollection2DType*    aCollection(In): Ï∂úÎ†•Ìï† Í∞ùÏ≤¥
- * UChar*                     aBuf(Out): Î≤ÑÌçº
- * UInt                       aMaxSize(In): Î≤ÑÌçºÏùò ÏµúÎåÄÍ∞í 
- * UInt*                      aOffset(Out): Ï∂úÎ†•Îêú ÎßàÏßÄÎßâ Î¨∏ÏûêÏó¥ ÏúÑÏπò
+ * stdGeoCollection2DType*    aCollection(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
  **********************************************************************/
 IDE_RC stdMethod::writeGeoCollectionWKB2D(
                     stdGeoCollection2DType*    aCollection,
@@ -1162,31 +1543,37 @@ IDE_RC stdMethod::writeGeoCollectionWKB2D(
     {
         switch(sGeom->mType)
         {
+        case STD_POINT_2D_EXT_TYPE :
         case STD_POINT_2D_TYPE :
             IDE_TEST_RAISE( writePointWKB2D(
                 (stdPoint2DType*)sGeom,sTraceWKB,aMaxSize,aOffset)
                 != IDE_SUCCESS, err_large_object);
             break;
+        case STD_LINESTRING_2D_EXT_TYPE :
         case STD_LINESTRING_2D_TYPE :
             IDE_TEST_RAISE( writeLineStringWKB2D(
                 (stdLineString2DType*)sGeom,sTraceWKB,aMaxSize,aOffset)
                 != IDE_SUCCESS, err_large_object);
             break;
+        case STD_POLYGON_2D_EXT_TYPE :
         case STD_POLYGON_2D_TYPE :        
             IDE_TEST_RAISE( writePolygonWKB2D(
                 (stdPolygon2DType*)sGeom,sTraceWKB,aMaxSize,aOffset)
                 != IDE_SUCCESS, err_large_object);
             break;
+        case STD_MULTIPOINT_2D_EXT_TYPE :
         case STD_MULTIPOINT_2D_TYPE :
             IDE_TEST_RAISE( writeMultiPointWKB2D(
                 (stdMultiPoint2DType*)sGeom,sTraceWKB,aMaxSize,aOffset)
                 != IDE_SUCCESS, err_large_object);
             break;
+        case STD_MULTILINESTRING_2D_EXT_TYPE :
         case STD_MULTILINESTRING_2D_TYPE :
             IDE_TEST_RAISE( writeMultiLineStringWKB2D(
                 (stdMultiLineString2DType*)sGeom,sTraceWKB,aMaxSize,aOffset)
                 != IDE_SUCCESS, err_large_object);
             break;
+        case STD_MULTIPOLYGON_2D_EXT_TYPE :
         case STD_MULTIPOLYGON_2D_TYPE :
             IDE_TEST_RAISE( writeMultiPolygonWKB2D(
                 (stdMultiPolygon2DType*)sGeom,sTraceWKB,aMaxSize,aOffset)
@@ -1208,10 +1595,617 @@ IDE_RC stdMethod::writeGeoCollectionWKB2D(
     
     IDE_EXCEPTION(err_large_object);
     {
-        if( (UInt)( sStartOffset + WKB_GEOHEAD_SIZE ) < aMaxSize )
+        if ( ideGetErrorCode() == stERR_ABORT_INVALID_GEOMETRY_MADEBY_GEOMFROMWKB )
+        {
+            IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_GEOMETRY_MADEBY_GEOMFROMWKB,
+                                  (char *)STD_GEOCOLLECTION_NAME) );
+        }
+        else
+        {
+            if( (UInt)( sStartOffset + WKB_GEOHEAD_SIZE ) < aMaxSize )
+            {
+                writeWKB_Header( aBuf, 0, &sSize );
+                *aOffset = sStartOffset + WKB_GEOHEAD_SIZE;    // Fix BUG-15428
+            }
+        }
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description:
+ * aPoint ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° EWKB(Extended Well Known Binary)∑Œ √‚∑¬«—¥Ÿ.
+ * 
+ * stdPoint2DExtType*         aPoint(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
+ **********************************************************************/
+IDE_RC stdMethod::writePointEWKB2D( stdPoint2DExtType*   aPoint,
+                                    UChar*               aBuf,
+                                    UInt                 aMaxSize,
+                                    UInt*                aOffset )  // Fix BUG-15834
+{
+    EWKBPoint*  sBPoint = (EWKBPoint*)aBuf;
+    UInt        sWKBSize = EWKB_POINT_SIZE;
+    UInt        sSize    = 0;
+
+    IDE_TEST_RAISE( (UInt)( (*aOffset) + sWKBSize ) > aMaxSize, 
+                    err_large_object );
+
+    writeWKB_Header( (UChar*)sBPoint, EWKB_POINT_TYPE, &sSize );
+    writeWKB_SInt( (UChar*)sBPoint->mSRID, aPoint->mSRID, &sSize );
+    writeWKB_Point2D( (UChar*)&sBPoint->mPoint, &aPoint->mPoint, &sSize );
+    
+    IDE_DASSERT( sSize == sWKBSize );
+    *aOffset += sSize;
+    
+    // Fix BUG-15428           
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION( err_large_object );
+    {
+        if( (UInt)( (*aOffset) + WKB_GEOHEAD_SIZE ) < aMaxSize )
         {
             writeWKB_Header( aBuf, 0, &sSize );
-            *aOffset = sStartOffset + WKB_GEOHEAD_SIZE;    // Fix BUG-15428
+            *aOffset  += WKB_GEOHEAD_SIZE;    // Fix BUG-15428
+        }
+        else
+        {
+            // Nothing To Do
+        }
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description:
+ * aLine ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° EWKB(Extended Well Known Binary)∑Œ √‚∑¬«—¥Ÿ.
+ * 
+ * stdLineString2DExtType*    aLine(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
+ **********************************************************************/
+IDE_RC stdMethod::writeLineStringEWKB2D( stdLineString2DExtType* aLine,
+                                         UChar*                  aBuf,
+                                         UInt                    aMaxSize,
+                                         UInt*                   aOffset )  // Fix BUG-15834
+{
+    stdPoint2D*     sPoint = STD_FIRST_PT2D( aLine );
+    EWKBLineString* sBLine = (EWKBLineString*)aBuf;
+    UInt            sNumPoints = STD_N_POINTS( aLine );
+    UInt            sWKBSize = EWKB_LINE_SIZE + WKB_PT_SIZE*sNumPoints;
+    UInt            sSize  = 0;
+
+    IDE_TEST_RAISE( (UInt)( (*aOffset) + sWKBSize ) > aMaxSize, 
+                    err_large_object );
+
+    writeWKB_Header( (UChar*)sBLine, EWKB_LINESTRING_TYPE, &sSize );
+    writeWKB_SInt( (UChar*)sBLine->mSRID, aLine->mSRID, &sSize );
+    writeWKB_Point2Ds( sBLine->mNumPoints, sNumPoints, sPoint, &sSize );
+    
+    IDE_DASSERT( sSize == sWKBSize );
+    *aOffset += sSize;
+    
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION( err_large_object );
+    {
+        if( (UInt)( (*aOffset) + WKB_GEOHEAD_SIZE ) < aMaxSize )
+        {
+            writeWKB_Header( aBuf, 0, &sSize );
+            *aOffset  += WKB_GEOHEAD_SIZE;    // Fix BUG-15428
+        }
+        else
+        {
+            // Nothing To Do
+        }
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description:
+ * aPolygon ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° EWKB(Extended Well Known Binary)∑Œ √‚∑¬«—¥Ÿ.
+ * 
+ * stdPolygon2DExtType*       aPolygon(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
+ **********************************************************************/
+IDE_RC stdMethod::writePolygonEWKB2D( stdPolygon2DExtType* aPolygon,
+                                      UChar*               aBuf,
+                                      UInt                 aMaxSize,
+                                      UInt*                aOffset )    // Fix BUG-15834
+{
+    stdLinearRing2D*    sRing;
+    stdPoint2D*         sPoint;
+    EWKBPolygon*        sBPolygon = (EWKBPolygon*)aBuf;
+    wkbLinearRing*      sBRing;    
+    UInt                sNumRings = STD_N_RINGS( aPolygon );
+    UInt                sWKBSize = EWKB_POLY_SIZE;
+    UInt                sSize = 0;
+    UInt                i,j, sMax;
+    
+    sRing = STD_FIRST_RN2D( aPolygon );
+    for ( i = 0; i < sNumRings; i++ )
+    {
+        sWKBSize += WKB_RN_SIZE; // numPoints
+        sPoint = STD_FIRST_PT2D( sRing );
+        sMax = STD_N_POINTS( sRing );
+        for ( j = 0; j < sMax; j++ )
+        {
+            sWKBSize += WKB_PT_SIZE; // ID_SIZEOF(wkbPoint);
+            sPoint = STD_NEXT_PT2D( sPoint );
+        }
+        sRing = (stdLinearRing2D*)sPoint;
+    }
+
+    // BUG-48051 geomFromWKBø°º≠ ¿ﬂ∏¯ ª˝º∫µ» polygon ∞¥√º¿Œ¡ˆ »Æ¿Œ
+    IDE_TEST_RAISE( sRing != (stdLinearRing2D *)((UChar*)aPolygon + aPolygon->mSize),
+                    invalid_error );
+
+    IDE_TEST_RAISE( (UInt)( (*aOffset) + sWKBSize ) > aMaxSize, 
+                    err_large_object );
+
+    writeWKB_Header( (UChar*)sBPolygon, EWKB_POLYGON_TYPE, &sSize );
+    writeWKB_SInt( (UChar*)sBPolygon->mSRID, aPolygon->mSRID, &sSize );
+    writeWKB_UInt( sBPolygon->mNumRings, sNumRings, &sSize );
+    
+    sRing = STD_FIRST_RN2D( aPolygon );
+    sBRing = EWKB_FIRST_RN( sBPolygon );
+    for ( i = 0; i < sNumRings; i++ )
+    {
+        sPoint = STD_FIRST_PT2D( sRing );
+        
+        sBRing = (wkbLinearRing*)writeWKB_Point2Ds(
+            sBRing->mNumPoints, STD_N_POINTS(sRing), sPoint, &sSize );
+
+        sRing = STD_NEXT_RN2D( sRing );
+    }
+
+    IDE_DASSERT( sWKBSize == sSize );
+    
+    *aOffset += sWKBSize;    // Fix BUG-15428
+    
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION( invalid_error )
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_GEOMETRY_MADEBY_GEOMFROMWKB,
+                                  (char *)STD_POLYGON_NAME ) );
+    }
+    IDE_EXCEPTION( err_large_object );
+    {
+        if( (UInt)( (*aOffset) + WKB_GEOHEAD_SIZE ) < aMaxSize )
+        {
+            writeWKB_Header( aBuf, 0, &sSize );
+            *aOffset  += WKB_GEOHEAD_SIZE;    // Fix BUG-15428
+        }
+        else
+        {
+            // Nothing To Do
+        }
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description:
+ * aMPoint ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° EWKB(Extended Well Known Binary)∑Œ √‚∑¬«—¥Ÿ.
+ * 
+ * stdMultiPoint2DExtType*    aMPoint(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
+ **********************************************************************/
+IDE_RC stdMethod::writeMultiPointEWKB2D( stdMultiPoint2DExtType* aMPoint,
+                                         UChar*                  aBuf,
+                                         UInt                    aMaxSize,
+                                         UInt*                   aOffset )  // Fix BUG-15834
+{
+    stdPoint2DType* sPoint = STD_FIRST_POINT2D( aMPoint );
+    EWKBMultiPoint* sBMpoint = (EWKBMultiPoint*)aBuf;
+    WKBPoint*       sBPoint = EWKB_FIRST_POINT( sBMpoint );
+    UInt            sNumPoints = STD_N_OBJECTS( aMPoint );
+    UInt            sWKBSize = EWKB_MPOINT_SIZE + WKB_POINT_SIZE*sNumPoints;
+    UInt            sSize = 0;
+    UInt            i;
+
+    IDE_TEST_RAISE( (UInt)( (*aOffset) + sWKBSize ) > aMaxSize, 
+                    err_large_object );
+
+    writeWKB_Header( (UChar*)sBMpoint, EWKB_MULTIPOINT_TYPE, &sSize );
+    writeWKB_SInt( (UChar*)sBMpoint->mSRID, aMPoint->mSRID, &sSize );
+    writeWKB_UInt( sBMpoint->mNumWKBPoints, sNumPoints, &sSize );
+    
+    for ( i = 0; i < sNumPoints; i++ )
+    {
+        writeWKB_Header( (UChar*)sBPoint, WKB_POINT_TYPE, &sSize );    
+        writeWKB_Point2D( (UChar*)&sBPoint->mPoint, &sPoint->mPoint, &sSize );
+        
+        sPoint = STD_NEXT_POINT2D( sPoint );
+        sBPoint = WKB_NEXT_POINT( sBPoint );
+    }
+           
+    IDE_DASSERT( sWKBSize == sSize );
+    
+    // Fix BUG-15428           
+    *aOffset += sWKBSize;
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION( err_large_object );
+    {
+        if( (UInt)( (*aOffset) + WKB_GEOHEAD_SIZE ) < aMaxSize )
+        {
+            writeWKB_Header( aBuf, 0, &sSize );
+            *aOffset  += WKB_GEOHEAD_SIZE;    // Fix BUG-15428
+        }
+        else
+        {
+            // Nothing To Do
+        }
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description:
+ * aMLine ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° EWKB(Extended Well Known Binary)∑Œ √‚∑¬«—¥Ÿ.
+ * 
+ * stdMultiLineString2DExtType*  aMLine(In): √‚∑¬«“ ∞¥√º
+ * UChar*                        aBuf(Out): πˆ∆€
+ * UInt                          aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                         aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
+ **********************************************************************/
+IDE_RC stdMethod::writeMultiLineStringEWKB2D( stdMultiLineString2DExtType* aMLine,
+                                              UChar*                       aBuf,
+                                              UInt                         aMaxSize,
+                                              UInt*                        aOffset )    // Fix BUG-15834
+{
+    stdLineString2DType*    sLine;
+    stdPoint2D*             sPoint;
+    EWKBMultiLineString*    sBMLine = (EWKBMultiLineString*)aBuf;
+    WKBLineString*          sBLine;    
+    UInt                    sNumLines = STD_N_OBJECTS( aMLine );
+    UInt                    sWKBSize = EWKB_MLINE_SIZE;
+    UInt                    sSize = 0;
+    UInt                    i,j, sMax;
+    
+    sLine = STD_FIRST_LINE2D( aMLine );
+    for ( i = 0; i < sNumLines; i++ )
+    {
+        sWKBSize += WKB_LINE_SIZE;
+        sPoint = STD_FIRST_PT2D( sLine );
+        sMax = STD_N_POINTS( sLine );
+        for ( j = 0; j < sMax; j++ )
+        {
+            sWKBSize += WKB_PT_SIZE; // point
+            sPoint = STD_NEXT_PT2D( sPoint );
+        }
+        sLine = (stdLineString2DType*)sPoint;
+    }
+
+    IDE_TEST_RAISE( (UInt)( (*aOffset) + sWKBSize ) > aMaxSize, 
+                    err_large_object );
+
+    // MultiLineString Header
+    writeWKB_Header( (UChar*)sBMLine, EWKB_MULTILINESTRING_TYPE, &sSize );
+    writeWKB_SInt( (UChar*)sBMLine->mSRID, aMLine->mSRID, &sSize );
+    writeWKB_UInt( sBMLine->mNumWKBLineStrings, sNumLines, &sSize );
+
+    sLine = STD_FIRST_LINE2D( aMLine );
+    sBLine = EWKB_FIRST_LINE( sBMLine );
+    for ( i = 0; i < sNumLines; i++ )
+    {
+        sPoint = STD_FIRST_PT2D( sLine );
+        
+        // LineString 
+        writeWKB_Header( (UChar*)sBLine, WKB_LINESTRING_TYPE, &sSize );        
+        sBLine = (WKBLineString*)writeWKB_Point2Ds( 
+            sBLine->mNumPoints, STD_N_POINTS( sLine ), sPoint, &sSize );
+       
+        sLine = STD_NEXT_LINE2D( sLine );
+    }
+           
+    IDE_DASSERT( sWKBSize == sSize );
+    // Fix BUG-15428           
+    *aOffset += sWKBSize;
+    
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION(err_large_object);
+    {
+        if( (UInt)( (*aOffset) + WKB_GEOHEAD_SIZE ) < aMaxSize )
+        {
+            writeWKB_Header( aBuf, 0, &sSize );
+            *aOffset  += WKB_GEOHEAD_SIZE;    // Fix BUG-15428
+        }
+        else
+        {
+            // Nothing To Do
+        }
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description:
+ * aMPolygon ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° EWKB(Extended Well Known Binary)∑Œ √‚∑¬«—¥Ÿ.
+ * 
+ * stdMultiPolygon2DExtType*  aMPolygon(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
+ **********************************************************************/
+IDE_RC stdMethod::writeMultiPolygonEWKB2D( stdMultiPolygon2DExtType* aMPolygon,
+                                           UChar*                    aBuf,
+                                           UInt                      aMaxSize,
+                                           UInt*                     aOffset ) // Fix BUG-15834
+{
+    stdPolygon2DType*   sPolygon;
+    stdLinearRing2D*    sRing;
+    stdPoint2D*         sPoint;
+    EWKBMultiPolygon*   sBMPolygon = (EWKBMultiPolygon*)aBuf;
+    WKBPolygon*         sBPolygon;
+    wkbLinearRing*      sBRing;    
+    UInt                sNumPolygons = STD_N_OBJECTS( aMPolygon );
+    UInt                sWKBSize = EWKB_MPOLY_SIZE;
+    UInt                sSize = 0;
+    UInt                i,j,k, sMaxR, sMax;
+    
+    sPolygon = STD_FIRST_POLY2D( aMPolygon );
+    for ( i = 0; i < sNumPolygons; i++ )
+    {
+        sWKBSize += WKB_POLY_SIZE;
+        sRing = STD_FIRST_RN2D( sPolygon );
+        sMaxR = STD_N_RINGS( sPolygon );
+        for ( j = 0; j < sMaxR; j++ )
+        {
+            sWKBSize += WKB_RN_SIZE;
+            sPoint = STD_FIRST_PT2D( sRing );
+            sMax = STD_N_POINTS( sRing );
+            for(k = 0; k < sMax; k++)
+            {
+                sWKBSize += WKB_PT_SIZE;
+                sPoint = STD_NEXT_PT2D( sPoint );
+            }
+            sRing = (stdLinearRing2D*)sPoint;
+        }
+        // BUG-48051 geomFromWKBø°º≠ ¿ﬂ∏¯ ª˝º∫µ» polygon ∞¥√º¿Œ¡ˆ »Æ¿Œ
+        IDE_TEST_RAISE ( (stdPolygon2DType*)sRing != STD_NEXT_POLY2D(sPolygon),
+                         invalid_error );
+
+        sPolygon = (stdPolygon2DType*)sRing;
+    }
+
+    IDE_TEST_RAISE( (UInt)( (*aOffset) + sWKBSize ) > aMaxSize, 
+                    err_large_object );
+
+    writeWKB_Header( (UChar*)sBMPolygon, EWKB_MULTIPOLYGON_TYPE, &sSize );
+    writeWKB_SInt( (UChar*)sBMPolygon->mSRID, aMPolygon->mSRID, &sSize );
+    writeWKB_UInt( sBMPolygon->mNumWKBPolygons, sNumPolygons, &sSize );
+    
+    sPolygon = STD_FIRST_POLY2D( aMPolygon );
+    sBPolygon = EWKB_FIRST_POLY( sBMPolygon );
+    for ( i = 0; i < sNumPolygons; i++ )
+    {
+        writeWKB_Header( (UChar*)sBPolygon, WKB_POLYGON_TYPE, &sSize );
+        writeWKB_UInt( sBPolygon->mNumRings, sPolygon->mNumRings, &sSize );
+        
+        sRing = STD_FIRST_RN2D( sPolygon );
+        sBRing = WKB_FIRST_RN( sBPolygon );
+        sMaxR = STD_N_RINGS( sPolygon );
+        for ( j = 0; j < sMaxR; j++ )
+        {
+            sPoint = STD_FIRST_PT2D( sRing );
+            
+            sBRing = (wkbLinearRing*)writeWKB_Point2Ds( 
+                sBRing->mNumPoints, STD_N_POINTS( sRing ), sPoint, &sSize );
+            
+            sRing = STD_NEXT_RN2D( sRing );
+            
+        }
+        sPolygon = (stdPolygon2DType*)sRing;
+        sBPolygon = (WKBPolygon*)sBRing;
+    }
+
+    IDE_DASSERT( sWKBSize == sSize );
+    
+    // Fix BUG-15428           
+    *aOffset += sWKBSize;
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION( invalid_error )
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_GEOMETRY_MADEBY_GEOMFROMWKB,
+                                  (char *)STD_MULTIPOLYGON_NAME ) );
+    }
+    IDE_EXCEPTION( err_large_object );
+    {
+        if( (UInt)( (*aOffset) + WKB_GEOHEAD_SIZE ) < aMaxSize )
+        {
+            writeWKB_Header( aBuf, 0, &sSize );
+            *aOffset  += WKB_GEOHEAD_SIZE;    // Fix BUG-15428
+        }
+        else
+        {
+            // Nothing To Do
+        }
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description:
+ * aCollection ∞¥√º∏¶ ¿–æÓº≠ πˆ∆€ø° EWKB(Extended Well Known Binary)∑Œ √‚∑¬«—¥Ÿ.
+ * 
+ * stdGeoCollection2DExtType* aCollection(In): √‚∑¬«“ ∞¥√º
+ * UChar*                     aBuf(Out): πˆ∆€
+ * UInt                       aMaxSize(In): πˆ∆€¿« √÷¥Î∞™ 
+ * UInt*                      aOffset(Out): √‚∑¬µ» ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ¿ßƒ°
+ **********************************************************************/
+IDE_RC stdMethod::writeGeoCollectionEWKB2D( stdGeoCollection2DExtType* aCollection,
+                                            UChar*                     aBuf,
+                                            UInt                       aMaxSize,
+                                            UInt*                      aOffset )    // Fix BUG-15834
+{
+    EWKBGeometryCollection* sBCollection = (EWKBGeometryCollection*)aBuf;
+    stdGeometryHeader*      sGeom;
+    UChar*                  sTraceWKB = aBuf;
+    UInt                    sNumGeom = STD_N_GEOMS( aCollection );
+    UInt                    sSize = 0;
+    UInt                    i, sGab;
+    UInt                    sStartOffset = *aOffset;
+
+    IDE_TEST_RAISE( (UInt)( (*aOffset) + WKB_GEOHEAD_SIZE ) > aMaxSize,
+                    err_large_object );
+    
+    writeWKB_Header( (UChar*)sBCollection, EWKB_COLLECTION_TYPE, &sSize );
+    writeWKB_SInt( (UChar*)sBCollection->mSRID, aCollection->mSRID, &sSize );
+    writeWKB_UInt( sBCollection->mNumWKBGeometries, 
+                   STD_N_GEOMS( aCollection ), &sSize );
+    
+    *aOffset += EWKB_COLL_SIZE;
+    sTraceWKB += EWKB_COLL_SIZE;
+
+    sGeom = (stdGeometryHeader*)STD_FIRST_COLL2D( aCollection );
+    for ( i = 0; i < sNumGeom; i++ )
+    {
+        switch( sGeom->mType )
+        {
+        case STD_POINT_2D_TYPE :
+            IDE_TEST_RAISE( writePointWKB2D( (stdPoint2DType*)sGeom,
+                                             sTraceWKB,
+                                             aMaxSize,
+                                             aOffset )
+                            != IDE_SUCCESS, err_large_object );
+            break;
+        case STD_POINT_2D_EXT_TYPE :
+            IDE_TEST_RAISE( writePointEWKB2D( (stdPoint2DExtType*)sGeom,
+                                              sTraceWKB,
+                                              aMaxSize,
+                                              aOffset )
+                            != IDE_SUCCESS, err_large_object );
+            break;
+        case STD_LINESTRING_2D_TYPE :
+            IDE_TEST_RAISE( writeLineStringWKB2D( (stdLineString2DType*)sGeom,
+                                                  sTraceWKB,
+                                                  aMaxSize,
+                                                  aOffset )
+                != IDE_SUCCESS, err_large_object );
+            break;
+        case STD_LINESTRING_2D_EXT_TYPE :
+            IDE_TEST_RAISE( writeLineStringEWKB2D( (stdLineString2DExtType*)sGeom,
+                                                   sTraceWKB,
+                                                   aMaxSize,
+                                                   aOffset )
+                            != IDE_SUCCESS, err_large_object );
+            break;
+        case STD_POLYGON_2D_TYPE :        
+            IDE_TEST_RAISE( writePolygonWKB2D( (stdPolygon2DType*)sGeom,
+                                               sTraceWKB,
+                                               aMaxSize,
+                                               aOffset )
+                != IDE_SUCCESS, err_large_object );
+            break;
+        case STD_POLYGON_2D_EXT_TYPE :        
+            IDE_TEST_RAISE( writePolygonEWKB2D( (stdPolygon2DExtType*)sGeom,
+                                                sTraceWKB,
+                                                aMaxSize,
+                                                aOffset )
+                            != IDE_SUCCESS, err_large_object );
+            break;
+        case STD_MULTIPOINT_2D_TYPE :
+            IDE_TEST_RAISE( writeMultiPointWKB2D( (stdMultiPoint2DType*)sGeom,
+                                                  sTraceWKB,
+                                                  aMaxSize,
+                                                  aOffset )
+                != IDE_SUCCESS, err_large_object );
+            break;
+        case STD_MULTIPOINT_2D_EXT_TYPE :
+            IDE_TEST_RAISE( writeMultiPointEWKB2D( (stdMultiPoint2DExtType*)sGeom,
+                                                   sTraceWKB,
+                                                   aMaxSize,
+                                                   aOffset )
+                != IDE_SUCCESS, err_large_object );
+            break;
+        case STD_MULTILINESTRING_2D_TYPE :
+            IDE_TEST_RAISE( writeMultiLineStringWKB2D( (stdMultiLineString2DType*)sGeom,
+                                                       sTraceWKB,
+                                                       aMaxSize,
+                                                       aOffset )
+                            != IDE_SUCCESS, err_large_object );
+            break;
+        case STD_MULTILINESTRING_2D_EXT_TYPE :
+            IDE_TEST_RAISE( writeMultiLineStringEWKB2D( (stdMultiLineString2DExtType*)sGeom,
+                                                        sTraceWKB,
+                                                        aMaxSize,
+                                                        aOffset )
+                            != IDE_SUCCESS, err_large_object );
+            break;
+        case STD_MULTIPOLYGON_2D_TYPE :
+            IDE_TEST_RAISE( writeMultiPolygonWKB2D( (stdMultiPolygon2DType*)sGeom,
+                                                    sTraceWKB,
+                                                    aMaxSize,
+                                                    aOffset )
+                            != IDE_SUCCESS, err_large_object );
+            break;
+        case STD_MULTIPOLYGON_2D_EXT_TYPE :
+            IDE_TEST_RAISE( writeMultiPolygonEWKB2D( (stdMultiPolygon2DExtType*)sGeom,
+                                                     sTraceWKB,
+                                                     aMaxSize,
+                                                     aOffset )
+                            != IDE_SUCCESS, err_large_object );
+            break;
+        default :
+            IDE_RAISE( err_large_object );
+        }        
+        
+        sGeom = (stdGeometryHeader*)STD_NEXT_GEOM(sGeom);
+        sGab = *aOffset - sStartOffset;
+        
+        IDE_TEST_RAISE( sGab > aMaxSize, err_large_object);
+        sTraceWKB = aBuf + sGab;
+        
+    } // for i
+
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION(err_large_object);
+    {
+        // BUG-48051
+        if ( ideGetErrorCode() == stERR_ABORT_INVALID_GEOMETRY_MADEBY_GEOMFROMWKB )
+        {
+            IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_GEOMETRY_MADEBY_GEOMFROMWKB,
+                                      (char *)STD_GEOCOLLECTION_NAME) );
+        }
+        else
+        {
+            if( (UInt)( sStartOffset + WKB_GEOHEAD_SIZE ) < aMaxSize )
+            {
+                writeWKB_Header( aBuf, 0, &sSize );
+                *aOffset = sStartOffset + WKB_GEOHEAD_SIZE;    // Fix BUG-15428
+            }
+            else
+            {
+                // Nothing To Do
+            }
         }
     }
     IDE_EXCEPTION_END;
@@ -1231,13 +2225,13 @@ void stdMethod::fill2DCoordString( SChar      * aBuffer,
     sTempOffset = 0;
 
     //--------------------------------
-    // Ï∞∏Ï°∞) iSQLSpool::PrintWithDouble
-    // Coord X Ï∂úÎ†•
+    // ¬¸¡∂) iSQLSpool::PrintWithDouble
+    // Coord X √‚∑¬
     //--------------------------------
     
     if( ( aPoint->mX < 1E-7 ) && ( aPoint->mX > -1E-7 ) )
     {
-        // 0Ïóê Í∞ÄÍπåÏö¥ ÏûëÏùÄ Í∞íÏùÄ 0ÏúºÎ°ú Ï∂úÎ†•Ìï®.
+        // 0ø° ∞°±ÓøÓ ¿€¿∫ ∞™¿∫ 0¿∏∑Œ √‚∑¬«‘.
         sTempOffset += idlOS::snprintf( sTemp,
                                         ID_SIZEOF(sTemp),
                                         "0 ");
@@ -1251,12 +2245,12 @@ void stdMethod::fill2DCoordString( SChar      * aBuffer,
     }
 
     //--------------------------------
-    // Coord Y Ï∂úÎ†•
+    // Coord Y √‚∑¬
     //--------------------------------
     
     if( ( aPoint->mY < 1E-7 ) && ( aPoint->mY > -1E-7 ) )
     {
-        // 0Ïóê Í∞ÄÍπåÏö¥ ÏûëÏùÄ Í∞íÏùÄ 0ÏúºÎ°ú Ï∂úÎ†•Ìï®.
+        // 0ø° ∞°±ÓøÓ ¿€¿∫ ∞™¿∫ 0¿∏∑Œ √‚∑¬«‘.
         sTempOffset += idlOS::snprintf( sTemp + sTempOffset,
                                         ID_SIZEOF(sTemp) - sTempOffset,
                                         "0");

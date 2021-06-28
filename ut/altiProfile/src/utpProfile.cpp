@@ -42,7 +42,7 @@ SChar* utpProfile::mTypeName[IDV_PROF_MAX] =
 
 /* Description:
  *
- * profiling íŒŒì¼ì—ì„œ ë°ì´í„°ë¥¼ ì½ì–´ì˜¬ ë²„í¼ í• ë‹¹
+ * profiling ÆÄÀÏ¿¡¼­ µ¥ÀÌÅÍ¸¦ ÀÐ¾î¿Ã ¹öÆÛ ÇÒ´ç
  */
 IDE_RC utpProfile::initialize(altiProfHandle *aHandle)
 {
@@ -88,7 +88,7 @@ IDE_RC utpProfile::finalize(altiProfHandle *aHandle)
     
 /* Description:
  *
- * profiling íŒŒì¼ ì˜¤í”ˆ
+ * profiling ÆÄÀÏ ¿ÀÇÂ
  */
 IDE_RC utpProfile::open(SChar *aFileName, altiProfHandle *aHandle)
 {
@@ -154,7 +154,7 @@ IDE_RC utpProfile::getBody(altiProfHandle *aHandle,
 
 /* Description:
  *
- * profiling íŒŒì¼ì—ì„œ í•œ ë¸”ë¡ì”© ë²„í¼ì— ì½ì–´ì˜¨ë‹¤.
+ * profiling ÆÄÀÏ¿¡¼­ ÇÑ ºí·Ï¾¿ ¹öÆÛ¿¡ ÀÐ¾î¿Â´Ù.
  */
 IDE_RC utpProfile::next(altiProfHandle *aHandle)
 {
@@ -162,7 +162,7 @@ IDE_RC utpProfile::next(altiProfHandle *aHandle)
     ULong  sRC;
     void  *sNewBuffer = NULL;
         
-    /* ë¸”ë¡ì˜ í¬ê¸°ë¥¼ ì½ì–´ì˜¨ë‹¤. */
+    /* ºí·ÏÀÇ Å©±â¸¦ ÀÐ¾î¿Â´Ù. */
     sBlockSize = ID_SIZEOF(UInt);
     sRC = idlOS::read(aHandle->mFP, aHandle->mBuffer, sBlockSize);
 

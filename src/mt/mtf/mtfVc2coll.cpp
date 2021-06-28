@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfVc2coll.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfVc2coll.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -56,7 +56,7 @@ static IDE_RC mtfVc2collEstimate( mtcNode*     aNode,
 mtfModule mtfVc2coll = {
      1|MTC_NODE_OPERATOR_FUNCTION|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfVc2collFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -94,7 +94,7 @@ IDE_RC mtfVc2collEstimate( mtcNode*     aNode,
     const mtdModule* sRepresentModule;
     mtcColumn      * sBiggestColumn;
 
-    // Argumentê°€ ì—†ìœ¼ë©´ ì•ˆëœë‹¤.
+    // Argument°¡ ¾øÀ¸¸é ¾ÈµÈ´Ù.
     IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) < 1,
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
@@ -109,27 +109,27 @@ IDE_RC mtfVc2collEstimate( mtcNode*     aNode,
 
     sFence = aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK;
 
-    // Argumentê°€ 2ê°œ ì´ìƒ ì¼ ë•Œ
+    // Argument°¡ 2°³ ÀÌ»ó ÀÏ ¶§
     if ( sFence > 1 )
     {
-        /* Arugmentë“¤ì˜ ëŒ€í‘œ íƒ€ì… ëª¨ë“ˆì„ êµ¬í•œë‹¤.
+        /* ArugmentµéÀÇ ´ëÇ¥ Å¸ÀÔ ¸ğµâÀ» ±¸ÇÑ´Ù.
          *
          * VC2COLL( 'A', 0.33, 'ABC', 5, 'K   '... )
          *           |     |     |
          *            -----      |
          *              |        |
-         *          ëŒ€í‘œíƒ€ì…    |
+         *          ´ëÇ¥Å¸ÀÔ    |
          *              |        |
          *               --------
          *                   |
-         *               ëŒ€í‘œíƒ€ì…
+         *               ´ëÇ¥Å¸ÀÔ
          *                     ...
          */
         for ( sCount = 1, sRepresentModule = aStack[1].column->module;
               sCount <= sFence;
               sCount++ )
         {
-            // Argumentë¡œ LIST / ROWTYPE / RECORDTYPE / ARRAY / LOB / UNDEF / GEOMETRY ê°€ ì˜¬ ìˆ˜ ì—†ë‹¤.
+            // Argument·Î LIST / ROWTYPE / RECORDTYPE / ARRAY / LOB / UNDEF / GEOMETRY °¡ ¿Ã ¼ö ¾ø´Ù.
             IDE_TEST_RAISE( ( aStack[sCount].column->module->id == MTD_LIST_ID ) ||
                             ( aStack[sCount].column->module->id == MTD_ROWTYPE_ID ) ||
                             ( aStack[sCount].column->module->id == MTD_RECORDTYPE_ID ) ||
@@ -144,23 +144,23 @@ IDE_RC mtfVc2collEstimate( mtcNode*     aNode,
 
             if ( sRepresentModule->id == aStack[sCount].column->module->id )
             {
-                // ê°™ì€ Moduleì¼ ê²½ìš°
+                // °°Àº ModuleÀÏ °æ¿ì
                 // Nothing to do.
             }
             else
             {
-                // ë‹¤ë¥¸ ëª¨ë“ˆì´ë©´ ëŒ€í‘œ íƒ€ì… ëª¨ë“ˆì„ êµ¬í•œë‹¤.
+                // ´Ù¸¥ ¸ğµâÀÌ¸é ´ëÇ¥ Å¸ÀÔ ¸ğµâÀ» ±¸ÇÑ´Ù.
                 IDE_TEST( mtf::getComparisonModule( &sRepresentModule,
                                                     sRepresentModule->no,
                                                     aStack[sCount].column->module->no )
                           != IDE_SUCCESS );
 
-                // ëŒ€í‘œ íƒ€ì… ëª¨ë“ˆì´ ì—†ë‹¤.
+                // ´ëÇ¥ Å¸ÀÔ ¸ğµâÀÌ ¾ø´Ù.
                 IDE_TEST_RAISE( sRepresentModule == NULL, ERR_CONVERSION_NOT_APPLICABLE );
             }
         }
 
-        // ëŒ€í‘œíƒ€ì… ëª¨ë“ˆì´ LIST / ROWTYPE / RECORDTYPE / ARRAY / LOB / UNDEF / GEOMETRY ì´ë©´ ì—ëŸ¬
+        // ´ëÇ¥Å¸ÀÔ ¸ğµâÀÌ LIST / ROWTYPE / RECORDTYPE / ARRAY / LOB / UNDEF / GEOMETRY ÀÌ¸é ¿¡·¯
         IDE_TEST_RAISE( ( sRepresentModule->id == MTD_LIST_ID ) ||
                         ( sRepresentModule->id == MTD_ROWTYPE_ID ) ||
                         ( sRepresentModule->id == MTD_RECORDTYPE_ID ) ||
@@ -173,8 +173,8 @@ IDE_RC mtfVc2collEstimate( mtcNode*     aNode,
                         ( sRepresentModule->id == MTD_GEOMETRY_ID ),
                         ERR_CONVERSION_NOT_APPLICABLE );
 
-        // Canonizeë¥¼ í”¼í•˜ê¸° ìœ„í•´ì„œ
-        // êµ¬í•´ì§„ ëŒ€í‘œ íƒ€ì…ì— ëŒ€ì‘ë˜ëŠ” Variable typeì´ ìˆë‹¤ë©´ í•´ë‹¹ Typeìœ¼ë¡œ êµì²´í•œë‹¤.
+        // Canonize¸¦ ÇÇÇÏ±â À§ÇØ¼­
+        // ±¸ÇØÁø ´ëÇ¥ Å¸ÀÔ¿¡ ´ëÀÀµÇ´Â Variable typeÀÌ ÀÖ´Ù¸é ÇØ´ç TypeÀ¸·Î ±³Ã¼ÇÑ´Ù.
         switch( sRepresentModule->id )
         {
             /*
@@ -215,7 +215,7 @@ IDE_RC mtfVc2collEstimate( mtcNode*     aNode,
                 break;
         }
 
-        // êµ¬í•´ì§„ ëŒ€í‘œ íƒ€ì… ëª¨ë“ˆë¡œ Conversion Nodeë¥¼ ìƒì„±í•˜ê¸° ìœ„í•œ module arrayë¥¼ ì„¸íŒ… í•œë‹¤.
+        // ±¸ÇØÁø ´ëÇ¥ Å¸ÀÔ ¸ğµâ·Î Conversion Node¸¦ »ı¼ºÇÏ±â À§ÇÑ module array¸¦ ¼¼ÆÃ ÇÑ´Ù.
         for ( sCount = 0;
               sCount < sFence;
               sCount++ )
@@ -223,7 +223,7 @@ IDE_RC mtfVc2collEstimate( mtcNode*     aNode,
             sModules[sCount] = sRepresentModule;
         }
 
-        // ì»¨ë²„ì „ ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤
+        // ÄÁ¹öÀü ³ëµå¸¦ »ı¼ºÇÑ´Ù
         IDE_TEST( mtf::makeConversionNodes( aNode,
                                             aNode->arguments,
                                             aTemplate,
@@ -232,7 +232,7 @@ IDE_RC mtfVc2collEstimate( mtcNode*     aNode,
                                             sModules )
                   != IDE_SUCCESS );
 
-        // Column sizeê°€ ê°€ì¥ í° Columnì„ êµ¬í•œë‹¤.
+        // Column size°¡ °¡Àå Å« ColumnÀ» ±¸ÇÑ´Ù.
         for ( sCount = 2, sBiggestColumn = aStack[1].column;
               sCount <= sFence;
               sCount++ )
@@ -247,7 +247,7 @@ IDE_RC mtfVc2collEstimate( mtcNode*     aNode,
             }
             else
             {
-                // Column size ê°€ ê°™ì•„ë„ Precisionì´ ë‹¤ë¥¼ ìˆ˜ ìˆë‹¤.
+                // Column size °¡ °°¾Æµµ PrecisionÀÌ ´Ù¸¦ ¼ö ÀÖ´Ù.
                 sBiggestColumn = ( sBiggestColumn->precision >= aStack[sCount].column->precision )?
                     sBiggestColumn : aStack[sCount].column;
             }
@@ -259,8 +259,8 @@ IDE_RC mtfVc2collEstimate( mtcNode*     aNode,
         {
             if ( aStack[sCount].column != sBiggestColumn )
             {
-                // VC2COLL()ì˜ Argumentë“¤ì˜ stackì„
-                // ìœ„ì—ì„œ êµ¬í•œ Sizeê°€ ê°€ì¥ í° Columnìœ¼ë¡œ ì´ˆê¸°í™” í•œë‹¤.
+                // VC2COLL()ÀÇ ArgumentµéÀÇ stackÀ»
+                // À§¿¡¼­ ±¸ÇÑ Size°¡ °¡Àå Å« ColumnÀ¸·Î ÃÊ±âÈ­ ÇÑ´Ù.
                 mtc::initializeColumn( aStack[sCount].column,
                                        sBiggestColumn );
             }
@@ -282,14 +282,14 @@ IDE_RC mtfVc2collEstimate( mtcNode*     aNode,
                                     (void**)&(aStack[0].value ) )
                   != IDE_SUCCESS );
 
-        // List stackì„ smiColumn.valueì— ê¸°ë¡í•´ë‘”ë‹¤.
+        // List stackÀ» smiColumn.value¿¡ ±â·ÏÇØµĞ´Ù.
         aStack[0].column->column.value = aStack[0].value;
 
         idlOS::memcpy( aStack[0].value,
                        aStack + 1,
                        aStack[0].column->column.size );
 
-        /* ìµœì¢…ì ìœ¼ë¡œ ë‹¤ìŒê³¼ ê°™ì€ í˜•íƒœê°€ ëœë‹¤.
+        /* ÃÖÁ¾ÀûÀ¸·Î ´ÙÀ½°ú °°Àº ÇüÅÂ°¡ µÈ´Ù.
          *
          * Function :  VC2COLL( A,  B,  C )
          *                 |    |   |   |
@@ -307,7 +307,7 @@ IDE_RC mtfVc2collEstimate( mtcNode*     aNode,
     }
     else
     {
-        // Argumentë¡œ LIST / ROWTYPE / RECORDTYPE / ARRAY / LOB / UNDEF / GEOMETRY ê°€ ì˜¬ ìˆ˜ ì—†ë‹¤.
+        // Argument·Î LIST / ROWTYPE / RECORDTYPE / ARRAY / LOB / UNDEF / GEOMETRY °¡ ¿Ã ¼ö ¾ø´Ù.
         IDE_TEST_RAISE( ( aStack[1].column->module->id == MTD_LIST_ID ) ||
                         ( aStack[1].column->module->id == MTD_ROWTYPE_ID ) ||
                         ( aStack[1].column->module->id == MTD_RECORDTYPE_ID ) ||

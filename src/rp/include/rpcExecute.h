@@ -41,6 +41,8 @@ public:
     static IDE_RC executeStart(void * aQcStatement);
     static IDE_RC executeQuickStart(void * aQcStatement);
     static IDE_RC executeSync(void * aQcStatement);
+    static IDE_RC executeSyncCondition(void * aQcStatement);
+    static IDE_RC executeTempSync(void * aQcStatement);
     static IDE_RC executeReset(void * aQcStatement);
     static IDE_RC executeAlterSetRecovery(void * aQcStatement);
 
@@ -72,6 +74,8 @@ public:
                                              qcmTableInfo  * aTableInfo,
                                              qcmTableInfo  * aSrcPartInfo );
 
+    static IDE_RC executeFailover( void * aQcStatement );
+
     /*------------------- DCL -------------------*/
     static IDE_RC executeStop( void         * aQcStatement,
                                SChar        * aReplName );                              
@@ -79,6 +83,10 @@ public:
                                 SChar         * aReplName,
                                 rpFlushOption * aFlushOption,
                                 idvSQL        * aStatistics );
+    static IDE_RC executeFailback(void * aQcStatement);
+
+    static IDE_RC executeDeleteItemReplaceHistory(void * aQcStatement);
+
 };
 
 #endif  // _O_RPC_EXECUTE_H_

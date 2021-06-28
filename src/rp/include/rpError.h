@@ -25,7 +25,7 @@
 #include <ideErrorMgr.h>
 #include <idErrorCode.h>
 
-/* RPìš© ì—ëŸ¬ ì½”ë“œ */
+/* RP¿ë ¿¡·¯ ÄÚµå */
 enum RPERR_CODE
 {
 #include <rpErrorCode.ih>

@@ -27,11 +27,12 @@ import Altibase.jdbc.driver.sharding.core.DataNode;
 import Altibase.jdbc.driver.sharding.core.ShardRange;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 /**
- * Shard split method ê°€ Cloneì¼ë•Œ ì¡°íšŒë¥¼ í•˜ëŠ” ê²½ìš° ëœë¤í•œ node idë¥¼ ëŒë ¤ì¤€ë‹¤.
+ * Shard split method °¡ CloneÀÏ¶§ Á¶È¸¸¦ ÇÏ´Â °æ¿ì ·£´ıÇÑ node id¸¦ µ¹·ÁÁØ´Ù.
  */
 public class RandomNodeRoutingEngine implements RoutingEngine
 {
@@ -44,7 +45,7 @@ public class RandomNodeRoutingEngine implements RoutingEngine
         mRandomGenerator = new Random();
     }
 
-    public SQLRouteResult route(String aSql, List<Column> aParameters) throws SQLException
+    public List<DataNode> route(String aSql, List<Column> aParameters) throws SQLException
     {
         CmProtocolContextShardConnect sShardConnectCtx = mShardStmtCtx.getShardContextConnect();
         DataNode sNode = null;
@@ -58,7 +59,7 @@ public class RandomNodeRoutingEngine implements RoutingEngine
             int sRandomNodeIndex = mRandomGenerator.nextInt(sShardAnalyzeResult.getShardRangeInfoCnt());
             List<ShardRange> sShardRangeList = sShardAnalyzeResult.getShardRangeList().getRangeList();
             int sRangeIdx = 0;
-            // BUG-46513 node listê°€ ì•„ë‹Œ rangeì—ì„œ randomí•˜ê²Œ ê°€ì ¸ì™€ì•¼ í•œë‹¤.
+            // BUG-46513 node list°¡ ¾Æ´Ñ range¿¡¼­ randomÇÏ°Ô °¡Á®¿Í¾ß ÇÑ´Ù.
             for (ShardRange sEach : sShardRangeList)
             {
                 sNode = sEach.getNode();
@@ -74,8 +75,9 @@ public class RandomNodeRoutingEngine implements RoutingEngine
             Error.throwSQLException(ErrorDef.SHARD_NODE_NOT_FOUNDED);
         }
 
-        SQLRouteResult sResult = new SQLRouteResult();
-        sResult.getExecutionUnits().add(new SQLExecutionUnit(sNode, aSql));
+        List<DataNode> sResult = new ArrayList<DataNode>();
+        sResult.add(sNode);
+
         return sResult;
     }
 

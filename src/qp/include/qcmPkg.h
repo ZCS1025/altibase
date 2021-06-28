@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcmPkg.h 84053 2018-09-20 09:40:16Z khkwak $
+ * $Id: qcmPkg.h 84052 2018-09-20 09:39:56Z khkwak $
  **********************************************************************/
 
 #ifndef _O_QCM_PKG_H_
@@ -121,7 +121,7 @@ public:
                   qsOID                 aPkgOID,
                   qcmPkgStatusType      aStatus);
    
-    // ë³„ë„ì˜ íŠ¸ëœì­ì…˜ì„ ì‚¬ìš©í•´ì„œ í”„ë¡œì‹œì €ì˜ ìƒíƒœë¥¼ ë°”ê¾¼ë‹¤. 
+    // º°µµÀÇ Æ®·£Àè¼ÇÀ» »ç¿ëÇØ¼­ ÇÁ·Î½ÃÀúÀÇ »óÅÂ¸¦ ¹Ù²Û´Ù. 
     static IDE_RC pkgUpdateStatusTx(
                   qcStatement         * aStatement,
                   qsOID                 aPkgOID,
@@ -220,8 +220,8 @@ public:
                   idBool           aIsUseTx = ID_FALSE ); // BUG-46416
 
     /* BUG-39340
-       alter package ~ compile specificationí•˜ë©´,
-       package bodyë§Œ invalidëœë‹¤. */
+       alter package ~ compile specificationÇÏ¸é,
+       package body¸¸ invalidµÈ´Ù. */
     static IDE_RC relSetInvalidPkgBody(
                   qcStatement    * aStatement,
                   UInt             aPkgBodyUserID,

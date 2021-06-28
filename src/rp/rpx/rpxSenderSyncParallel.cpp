@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxSenderSyncParallel.cpp 83835 2018-08-29 04:13:39Z yoonhee.kim $
+ * $Id: rpxSenderSyncParallel.cpp 88435 2020-08-27 08:31:39Z yoonhee.kim $
  **********************************************************************/
 
 #include <idl.h>
@@ -103,8 +103,8 @@ rpxSender::syncParallel()
         sTablename = mMeta.mItemsOrderByTableOID[i]->mItem.mLocalTablename;
         sPartitionname = mMeta.mItemsOrderByTableOID[i]->mItem.mLocalPartname;
 
-        // Replication Tableì´ ì§€ì •í•œ Sync Tableì¸ ê²½ìš°ì—ë§Œ ê³„ì† ì§„í–‰í•œë‹¤.
-        if ( isSyncItem( mSyncItems,
+        // Replication TableÀÌ ÁöÁ¤ÇÑ Sync TableÀÎ °æ¿ì¿¡¸¸ °è¼Ó ÁøÇàÇÑ´Ù.
+        if ( isSyncItem( mSyncInsertItems,
                          sUsername,
                          sTablename,
                          sPartitionname )
@@ -121,7 +121,7 @@ rpxSender::syncParallel()
                   != IDE_SUCCESS );
     }
 
-    /* Start Sync Apply ëª¨ë“œë¥¼ flagì— setting */
+    /* Start Sync Apply ¸ğµå¸¦ flag¿¡ setting */
     rpdMeta::setReplFlagStartSyncApply( &(mMeta.mReplication) );
     
     IDU_FIT_POINT( "rpxSender::syncParallel::Thread::mSyncer",
@@ -185,7 +185,7 @@ rpxSender::syncParallel()
     }
     IDE_EXCEPTION(ERR_SYNC)
     {
-        //PJMgrê³¼ PJChildë“¤ì„ ì¢…ë£Œì‹œí‚¤ê¸° ìœ„í•´ì„œ exitflagë¥¼ ì„¤ì •í•œë‹¤.
+        //PJMgr°ú PJChildµéÀ» Á¾·á½ÃÅ°±â À§ÇØ¼­ exitflag¸¦ ¼³Á¤ÇÑ´Ù.
         mExitFlag = ID_TRUE;
     }
     IDE_EXCEPTION_END;
@@ -234,9 +234,9 @@ rpxSender::syncParallel()
 
 /*
  * BUG-19770 SYNC_RECORD_COUNT
- * ì£¼ì˜: í•¨ìˆ˜ í˜¸ì¶œ ì „ PJ_lockì„ ì¡ì•„ì•¼ í•¨
- * aMetaItemìœ¼ë¡œ ë“¤ì–´ì˜¨ í…Œì´ë¸”ì˜ SYNC_RECORD_COUNTë¥¼ ë°˜í™˜
- * Syncê°€ ëë‚œ ê²½ìš° ULong Maxì„ ë°˜í™˜
+ * ÁÖÀÇ: ÇÔ¼ö È£Ãâ Àü PJ_lockÀ» Àâ¾Æ¾ß ÇÔ
+ * aMetaItemÀ¸·Î µé¾î¿Â Å×ÀÌºíÀÇ SYNC_RECORD_COUNT¸¦ ¹İÈ¯
+ * Sync°¡ ³¡³­ °æ¿ì ULong MaxÀ» ¹İÈ¯
  */
 ULong
 rpxSender::getJobCount( SChar *aTableName )
@@ -298,7 +298,7 @@ rpxSender::allocSCN( smiStatement ** aParallelStatements,
 
     sTransForLock->savepoint( RPX_SENDER_SVP_NAME, NULL );
 
-    /* Lockì„ ìœ ì§€í•˜ê¸° ìœ„í•´ Statement Begin */
+    /* LockÀ» À¯ÁöÇÏ±â À§ÇØ Statement Begin */
     IDE_TEST( sStmtForLock.begin( NULL,
                                   sRootStmt,
                                   SMI_STATEMENT_UNTOUCHABLE |
@@ -310,7 +310,7 @@ rpxSender::allocSCN( smiStatement ** aParallelStatements,
 
     IDE_TEST( setRestartSNforSync() != IDE_SUCCESS );
 
-    /* í˜„ì¬ SCNì˜ Viewë¥¼ SYNC ì¢…ë£Œê¹Œì§€ ìœ ì§€í•˜ê¸° ìœ„í•´ Statement Begin */
+    /* ÇöÀç SCNÀÇ View¸¦ SYNC Á¾·á±îÁö À¯ÁöÇÏ±â À§ÇØ Statement Begin */
     IDE_TEST( mPJStmt.begin( NULL,
                              sRootStmt,
                              SMI_STATEMENT_UNTOUCHABLE |
@@ -322,8 +322,8 @@ rpxSender::allocSCN( smiStatement ** aParallelStatements,
               != IDE_SUCCESS );
     sIsParallelStatementsAlloced = ID_TRUE;
 
-    sStep = 3;
     IDE_TEST( sStmtForLock.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    sStep = 3;
 
     sStep = 2;
     IDE_TEST( sTransForLock->rollback( RPX_SENDER_SVP_NAME ) != IDE_SUCCESS );
@@ -394,31 +394,26 @@ void rpxSender::destroySCN( smiStatement * aParallelStatements,
 }
 
 /**
- * @breif  Sync ì´í›„ì— Replicationì„ ì‹œì‘í•  ìœ„ì¹˜ë¥¼ ë©”íƒ€ ìºì‹œ/í…Œì´ë¸”ì— ì„¤ì •í•œë‹¤.
+ * @breif  Sync ÀÌÈÄ¿¡ ReplicationÀ» ½ÃÀÛÇÒ À§Ä¡¸¦ ¸ŞÅ¸ Ä³½Ã/Å×ÀÌºí¿¡ ¼³Á¤ÇÑ´Ù.
  *
- *         Replication ì‹œì‘ SN = ë§ˆì§€ë§‰ìœ¼ë¡œ ì‚¬ìš©í•œ SN
+ *         Replication ½ÃÀÛ SN = ¸¶Áö¸·À¸·Î »ç¿ëÇÑ SN
  *
- * @return ì‘ì—… ì„±ê³µ/ì‹¤íŒ¨
+ * @return ÀÛ¾÷ ¼º°ø/½ÇÆĞ
  */
 IDE_RC rpxSender::setRestartSNforSync()
 {
     SInt    i;
     smSN    sCurrentSN;
-    SChar * sUsername = NULL;
-    SChar * sTablename = NULL;
-    SChar * sPartname  = NULL;
-    if ( RPU_REPLICATION_SYNC_LOCK_TIMEOUT == 0 )
-    {
-        sCurrentSN = smiGetMinSNOfAllActiveTrans();
-        IDE_TEST_RAISE( sCurrentSN == SM_SN_NULL, ERR_RESTARTSN_FOR_SYNC );
-    }
-    else
-    {
-        IDE_ASSERT( smiGetLastValidGSN( &sCurrentSN ) == IDE_SUCCESS );
-    }
+ 
+    IDE_TEST_CONT( mIsSetRestartSNforSync == ID_TRUE, NORMAL_EXIT );
+    
+    sCurrentSN = smiGetValidMinSNOfAllActiveTrans();
+    IDE_TEST_RAISE( sCurrentSN == SM_SN_NULL, ERR_RESTARTSN_FOR_SYNC );
 
-    if ( mSyncItems == NULL )
+    if ( ( mSyncInsertItems == NULL ) &&
+         ( mSyncTruncateItems == NULL ) )
     {
+        /* ÀÏ¹İ sync */
         mXSN = sCurrentSN;
         IDE_TEST( updateXSN( mXSN ) != IDE_SUCCESS );
         mCommitXSN = mXSN;
@@ -427,29 +422,26 @@ IDE_RC rpxSender::setRestartSNforSync()
     {
         for ( i = 0; i < mMeta.mReplication.mItemCount; i++ )
         {
-            sUsername  = mMeta.mItemsOrderByTableOID[i]->mItem.mLocalUsername;
-            sTablename = mMeta.mItemsOrderByTableOID[i]->mItem.mLocalTablename;
-            sPartname = mMeta.mItemsOrderByTableOID[i]->mItem.mLocalPartname;
+            /* ÇÏ³ªÀÇ tableÀÌ mSyncInsertItems, mSyncTruncateItems¿¡ Áßº¹À¸·Î Á¸ÀçÇÒ ¼ö ¾ø´Ù. */
+            IDE_TEST( findAndUpdateInvalidMaxSN( mSvcThrRootStmt,
+                                                 mSyncInsertItems,
+                                                 &mMeta.mItemsOrderByTableOID[i]->mItem,
+                                                 sCurrentSN )
+                      != IDE_SUCCESS );
 
-            /* Replication Tableì´ ì§€ì •í•œ Sync Tableì¸ ê²½ìš°ì—ë§Œ ê³„ì† ì§„í–‰í•œë‹¤. */
-            if ( isSyncItem( mSyncItems, sUsername, sTablename, sPartname ) != ID_TRUE )
-            {
-                continue;
-            }
-            else
-            {
-                /* Nothing to do */
-            }
-
-            IDE_TEST( updateInvalidMaxSN( mSvcThrRootStmt,
-                                          &mMeta.mItemsOrderByTableOID[i]->mItem,
-                                          sCurrentSN )
+            IDE_TEST( findAndUpdateInvalidMaxSN( mSvcThrRootStmt,
+                                                 mSyncTruncateItems,
+                                                 &mMeta.mItemsOrderByTableOID[i]->mItem,
+                                                 sCurrentSN )
                       != IDE_SUCCESS );
         }
     }
 
-    return IDE_SUCCESS;
+    mIsSetRestartSNforSync = ID_TRUE;
     
+    RP_LABEL(NORMAL_EXIT);
+    return IDE_SUCCESS;
+
     IDE_EXCEPTION( ERR_RESTARTSN_FOR_SYNC );
     {
         IDE_ERRLOG( IDE_RP_0 );
@@ -462,14 +454,14 @@ IDE_RC rpxSender::setRestartSNforSync()
 }
 
 /**
- * @breif  Syncí•˜ê¸° ì „ì— Tableì— S, IS Lockì„ ì¡ëŠ”ë‹¤.
+ * @breif  SyncÇÏ±â Àü¿¡ Table¿¡ S, IS LockÀ» Àâ´Â´Ù.
  *
- *         S Lock  : Sync ì „ì— ë‹¤ìˆ˜ì˜ Childê°€ ê°™ì€ SCNì„ ì–»ì„ ìˆ˜ ìˆê²Œ í•œë‹¤.
- *         IS Lock : Sync ì¤‘ì— DDLì„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë„ë¡ í•œë‹¤.
+ *         S Lock  : Sync Àü¿¡ ´Ù¼öÀÇ Child°¡ °°Àº SCNÀ» ¾òÀ» ¼ö ÀÖ°Ô ÇÑ´Ù.
+ *         IS Lock : Sync Áß¿¡ DDLÀ» ¼öÇàÇÒ ¼ö ¾øµµ·Ï ÇÑ´Ù.
  *
- * @param  aStatementForLock    S Lockì„ ì¡ì„ Transactionì˜ Statement
+ * @param  aStatementForLock    S LockÀ» ÀâÀ» TransactionÀÇ Statement
  *
- * @return ì‘ì—… ì„±ê³µ/ì‹¤íŒ¨
+ * @return ÀÛ¾÷ ¼º°ø/½ÇÆĞ
  */
 IDE_RC rpxSender::lockTableforSync( smiStatement * aStatementForLock )
 {
@@ -479,7 +471,8 @@ IDE_RC rpxSender::lockTableforSync( smiStatement * aStatementForLock )
     SChar * sPartname  = NULL;
     SChar   sMsgBuffer[256];
 
-    if ( RPU_REPLICATION_SYNC_LOCK_TIMEOUT != 0 )
+    if ( ( RPU_REPLICATION_SYNC_LOCK_TIMEOUT != 0 ) &&
+         ( mCurrentType != RP_SYNC_CONDITIONAL ) )
     {
         for ( i = 0; i < mMeta.mReplication.mItemCount; i++ )
         {
@@ -487,12 +480,12 @@ IDE_RC rpxSender::lockTableforSync( smiStatement * aStatementForLock )
             sTablename = mMeta.mItemsOrderByTableOID[i]->mItem.mLocalTablename;
             sPartname = mMeta.mItemsOrderByTableOID[i]->mItem.mLocalPartname;
 
-            /* BUG-24185 [RP] Tableì„ ì§€ì •í•˜ì—¬ SYNCí•˜ëŠ” ê²½ìš°,
-             *           ì§€ì •í•œ Tableì—ë§Œ Lockì„ ì¡ì•„ì•¼ í•©ë‹ˆë‹¤
+            /* BUG-24185 [RP] TableÀ» ÁöÁ¤ÇÏ¿© SYNCÇÏ´Â °æ¿ì,
+             *           ÁöÁ¤ÇÑ Table¿¡¸¸ LockÀ» Àâ¾Æ¾ß ÇÕ´Ï´Ù
              *
-             * Replication Tableì´ ì§€ì •í•œ Sync Tableì¸ ê²½ìš°ì—ë§Œ ê³„ì† ì§„í–‰í•œë‹¤.
+             * Replication TableÀÌ ÁöÁ¤ÇÑ Sync TableÀÎ °æ¿ì¿¡¸¸ °è¼Ó ÁøÇàÇÑ´Ù.
              */
-            if ( isSyncItem( mSyncItems,
+            if ( isSyncItem( mSyncInsertItems,
                              sUsername,
                              sTablename,
                              sPartname )
@@ -508,19 +501,19 @@ IDE_RC rpxSender::lockTableforSync( smiStatement * aStatementForLock )
             /* Table S lock */
             IDE_TEST( mMeta.mItemsOrderByTableOID[i]->lockReplItem( aStatementForLock->getTrans(),
                                                                     aStatementForLock,
-                                                                    SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                                    SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                                     SMI_TABLE_LOCK_S,
                                                                     (ULong)RPU_REPLICATION_SYNC_LOCK_TIMEOUT * 1000000 )
                       != IDE_SUCCESS );
 
             /* Table IS lock
              *
-             * PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
-             *           Service Threadì˜ Transactionìœ¼ë¡œ IS Lockì„ ì¡ëŠ”ë‹¤.
+             * PROJ-1442 Replication Online Áß DDL Çã¿ë
+             *           Service ThreadÀÇ TransactionÀ¸·Î IS LockÀ» Àâ´Â´Ù.
              */
             IDE_TEST( mMeta.mItemsOrderByTableOID[i]->lockReplItem( mSvcThrRootStmt->getTrans(),
                                                                     aStatementForLock,
-                                                                    SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                                    SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                                     SMI_TABLE_LOCK_IS,
                                                                     (ULong)RPU_REPLICATION_SYNC_LOCK_TIMEOUT * 1000000 )
                       != IDE_SUCCESS );
@@ -558,16 +551,15 @@ IDE_RC rpxSender::lockTableforSync( smiStatement * aStatementForLock )
     }
     ideLog::log( IDE_RP_0, "%s", sMsgBuffer );
 
-
     return IDE_FAILURE;
 }
 
 /**
- * @breif  mParallelFactor ë§Œí¼ì˜ Statement ë°°ì—´ì„ í• ë‹¹í•˜ê³  ì‹œì‘í•œë‹¤.
+ * @breif  mParallelFactor ¸¸Å­ÀÇ Statement ¹è¿­À» ÇÒ´çÇÏ°í ½ÃÀÛÇÑ´Ù.
  *
- * @param  aParallelStatements í• ë‹¹í•˜ê³  ì‹œì‘í•œ Statement ë°°ì—´
+ * @param  aParallelStatements ÇÒ´çÇÏ°í ½ÃÀÛÇÑ Statement ¹è¿­
  *
- * @return ì‘ì—… ì„±ê³µ/ì‹¤íŒ¨
+ * @return ÀÛ¾÷ ¼º°ø/½ÇÆĞ
  */
 IDE_RC rpxSender::allocNBeginParallelStatements(
                   smiStatement ** aParallelStatements )
@@ -673,19 +665,18 @@ IDE_RC rpxSender::allocNBeginParallelStatements(
 }
 
 /**
- * @breif  Statement ë°°ì—´ì„ ì¢…ë£Œí•˜ê³ , Statementì˜ Transactionì„ ì œê±°í•œë‹¤.
+ * @breif  Statement ¹è¿­À» Á¾·áÇÏ°í, StatementÀÇ TransactionÀ» Á¦°ÅÇÑ´Ù.
  *
- *         rpxSender::allocNBeginParallelStatements()ì—ì„œ ì‹œì‘í•œ ì‘ì—…ì„ ì¢…ë£Œí•œë‹¤.
+ *         rpxSender::allocNBeginParallelStatements()¿¡¼­ ½ÃÀÛÇÑ ÀÛ¾÷À» Á¾·áÇÑ´Ù.
  *
- * @param  aParallelStatements ì œê±°í•  Statement ë°°ì—´
+ * @param  aParallelStatements Á¦°ÅÇÒ Statement ¹è¿­
  */
 void rpxSender::destroyParallelStatements( smiStatement * aParallelStatements )
 {
     smiTrans * sTransArray = NULL;
-    smSCN      sDummySCN;
     SInt       i;
 
-    /* Statementì™€ Transactionì„ ì¢…ë£Œí•œë‹¤. */
+    /* Statement¿Í TransactionÀ» Á¾·áÇÑ´Ù. */
     for ( i = 0; i < mParallelFactor; i++ )
     {
         sTransArray = aParallelStatements[i].getTrans();
@@ -697,7 +688,7 @@ void rpxSender::destroyParallelStatements( smiStatement * aParallelStatements )
 
             (void)aParallelStatements[i].end( SMI_STATEMENT_RESULT_FAILURE );
         }
-        if ( sTransArray->commit( &sDummySCN ) != IDE_SUCCESS )
+        if ( sTransArray->commit() != IDE_SUCCESS )
         {
             IDE_ERRLOG( IDE_RP_0 );
             IDE_CLEAR();
@@ -711,11 +702,11 @@ void rpxSender::destroyParallelStatements( smiStatement * aParallelStatements )
         }
     }
 
-    /* Transaction ë°°ì—´ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤. */
+    /* Transaction ¹è¿­ ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÑ´Ù. */
     sTransArray = aParallelStatements[0].getTrans();
     (void)iduMemMgr::free( sTransArray );
 
-    /* Statement ë°°ì—´ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤. */
+    /* Statement ¹è¿­ ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÑ´Ù. */
     (void)iduMemMgr::free( aParallelStatements );
 
     return;

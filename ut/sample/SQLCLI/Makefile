@@ -5,7 +5,7 @@ TARGETS = demo_ex1 demo_ex2 demo_ex3 demo_ex4 demo_ex5 demo_ex6 demo_ex7 demo_ex
 		  demo_meta5 demo_meta6 demo_meta7 demo_meta8 \
 		  demo_meta9 demo_meta10 \
 		  demo_tran1 demo_tran2 demo_mt demo_info1 demo_info2 \
-		  demo_sl demo_plan demo_cpool
+		  demo_sl demo_plan demo_cpool demo_message
 BINS = $(addsuffix $(BINEXT),$(TARGETS))
 
 all: $(TARGETS)
@@ -90,6 +90,10 @@ demo_sl: demo_ex2.$(OBJEXT)
 
 demo_cpool: demo_cpool.$(OBJEXT)
 	$(LD) $(LFLAGS) $(LDOUT)$@$(BINEXT) $^ $(LIBOPT)odbccli$(LIBAFT) $(LIBS)
+
+demo_message: demo_message.$(OBJEXT)
+	$(LD) $(LFLAGS) $(LDOUT)$@$(BINEXT) $^ $(LIBOPT)odbccli$(LIBAFT) $(LIBS)
+
 
 clean:
 	-$(RM) $(BINS) *.$(OBJEXT) core *.exe *.d

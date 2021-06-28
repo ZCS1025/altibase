@@ -23,10 +23,10 @@
 #include <smuProperty.h>
 #include <smuSynchroList.h>
 
-/* ê°ì²´ ì´ˆê¸°í™”
+/* °´Ã¼ ÃÊ±âÈ­
    
-   [IN] aListName - Listì˜ ì´ë¦„
-   [IN] aMemoryIndex - List Nodeë¥¼ í• ë‹¹í•  Memory Poolì— ê¸°ë¡í•  ëª¨ë“ˆëª…
+   [IN] aListName - ListÀÇ ÀÌ¸§
+   [IN] aMemoryIndex - List Node¸¦ ÇÒ´çÇÒ Memory Pool¿¡ ±â·ÏÇÒ ¸ğµâ¸í
  */
 IDE_RC smuSynchroList::initialize( SChar * aListName,
                                    iduMemoryClientIndex aMemoryIndex)
@@ -72,10 +72,10 @@ IDE_RC smuSynchroList::initialize( SChar * aListName,
 }
 
 
-/* ê°ì²´ íŒŒê´´ */
+/* °´Ã¼ ÆÄ±« */
 IDE_RC smuSynchroList::destroy()
 {
-    // Listì— List Nodeê°€ ë‚¨ì•„ìˆì–´ì„œëŠ” ì•ˆëœë‹¤.
+    // List¿¡ List Node°¡ ³²¾ÆÀÖ¾î¼­´Â ¾ÈµÈ´Ù.
     IDE_DASSERT( SMU_LIST_IS_EMPTY( &mList ) );
     IDE_DASSERT( mElemCount == 0 );
     
@@ -93,10 +93,10 @@ IDE_RC smuSynchroList::destroy()
 }
 
 
-/* Linked Listì˜ Headë¡œë¶€í„° Dataë¥¼ ì œê±° 
+/* Linked ListÀÇ Head·ÎºÎÅÍ Data¸¦ Á¦°Å 
 
-   [IN] aData - Linked Listì— ë§¤ë‹¬ì•„ ë†“ì€ ë°ì´í„°ì˜ í¬ì¸í„°
-                ë§Œì•½ Listê°€ ë¹„ì–´ìˆë‹¤ë©´ NULLì„ ë¦¬í„´í•œë‹¤.
+   [IN] aData - Linked List¿¡ ¸Å´Ş¾Æ ³õÀº µ¥ÀÌÅÍÀÇ Æ÷ÀÎÅÍ
+                ¸¸¾à List°¡ ºñ¾îÀÖ´Ù¸é NULLÀ» ¸®ÅÏÇÑ´Ù.
  */
 IDE_RC smuSynchroList::removeFromHead( void ** aData )
 {
@@ -122,16 +122,16 @@ IDE_RC smuSynchroList::removeFromHead( void ** aData )
 
     if ( sListNode == NULL )
     {
-        // Listê°€ ë¹„ì–´ìˆëŠ” ê²½ìš°
+        // List°¡ ºñ¾îÀÖ´Â °æ¿ì
         *aData = NULL;
     }
     else
     {
         *aData = sListNode->mData ;
 
-        // Listì— Addí• ë•Œë¶€í„° 
-        // ë°ì´í„°ì˜ í¬ì¸í„°ë¡œ NULLì„ í—ˆìš©í•˜ì§€ ì•Šì•˜ìœ¼ë¯€ë¡œ,
-        // Dataì˜ í¬ì¸í„°ê°€ NULLì¼ ìˆ˜ ì—†ë‹¤.
+        // List¿¡ AddÇÒ¶§ºÎÅÍ 
+        // µ¥ÀÌÅÍÀÇ Æ÷ÀÎÅÍ·Î NULLÀ» Çã¿ëÇÏÁö ¾Ê¾ÒÀ¸¹Ç·Î,
+        // DataÀÇ Æ÷ÀÎÅÍ°¡ NULLÀÏ ¼ö ¾ø´Ù.
         IDE_ASSERT( *aData != NULL );
         
         IDE_TEST( mListNodePool.memfree(sListNode) != IDE_SUCCESS );
@@ -158,10 +158,10 @@ IDE_RC smuSynchroList::removeFromHead( void ** aData )
 }
 
 
-/* Linked Listì˜ Tailë¡œë¶€í„° Dataë¥¼ ì œê±° 
+/* Linked ListÀÇ Tail·ÎºÎÅÍ Data¸¦ Á¦°Å 
 
-   [IN] aData - Linked Listì— ë§¤ë‹¬ì•„ ë†“ì€ ë°ì´í„°ì˜ í¬ì¸í„°
-                ë§Œì•½ Listê°€ ë¹„ì–´ìˆë‹¤ë©´ NULLì„ ë¦¬í„´í•œë‹¤.
+   [IN] aData - Linked List¿¡ ¸Å´Ş¾Æ ³õÀº µ¥ÀÌÅÍÀÇ Æ÷ÀÎÅÍ
+                ¸¸¾à List°¡ ºñ¾îÀÖ´Ù¸é NULLÀ» ¸®ÅÏÇÑ´Ù.
  */
 IDE_RC smuSynchroList::removeFromTail( void ** aData )
 {
@@ -187,16 +187,16 @@ IDE_RC smuSynchroList::removeFromTail( void ** aData )
 
     if ( sListNode == NULL )
     {
-        // Listê°€ ë¹„ì–´ìˆëŠ” ê²½ìš°
+        // List°¡ ºñ¾îÀÖ´Â °æ¿ì
         *aData = NULL;
     }
     else
     {
         *aData = sListNode->mData ;
 
-        // Listì— Addí• ë•Œë¶€í„° 
-        // ë°ì´í„°ì˜ í¬ì¸í„°ë¡œ NULLì„ í—ˆìš©í•˜ì§€ ì•Šì•˜ìœ¼ë¯€ë¡œ,
-        // Dataì˜ í¬ì¸í„°ê°€ NULLì¼ ìˆ˜ ì—†ë‹¤.
+        // List¿¡ AddÇÒ¶§ºÎÅÍ 
+        // µ¥ÀÌÅÍÀÇ Æ÷ÀÎÅÍ·Î NULLÀ» Çã¿ëÇÏÁö ¾Ê¾ÒÀ¸¹Ç·Î,
+        // DataÀÇ Æ÷ÀÎÅÍ°¡ NULLÀÏ ¼ö ¾ø´Ù.
         IDE_ASSERT( *aData != NULL );
         
         IDE_TEST( mListNodePool.memfree(sListNode) != IDE_SUCCESS );
@@ -223,10 +223,10 @@ IDE_RC smuSynchroList::removeFromTail( void ** aData )
 }
 
 
-/* Linked Listì˜ Tailì„ ë¦¬í„´, ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°í•˜ì§€ëŠ” ì•ŠìŒ )
+/* Linked ListÀÇ TailÀ» ¸®ÅÏ, ¸®½ºÆ®¿¡¼­ Á¦°ÅÇÏÁö´Â ¾ÊÀ½ )
 
-   [IN] aData - Linked Listì— ë§¤ë‹¬ì•„ ë†“ì€ ë°ì´í„°ì˜ í¬ì¸í„°
-                ë§Œì•½ Listê°€ ë¹„ì–´ìˆë‹¤ë©´ NULLì„ ë¦¬í„´í•œë‹¤.
+   [IN] aData - Linked List¿¡ ¸Å´Ş¾Æ ³õÀº µ¥ÀÌÅÍÀÇ Æ÷ÀÎÅÍ
+                ¸¸¾à List°¡ ºñ¾îÀÖ´Ù¸é NULLÀ» ¸®ÅÏÇÑ´Ù.
  */
 IDE_RC smuSynchroList::peekTail( void ** aData )
 {
@@ -249,7 +249,7 @@ IDE_RC smuSynchroList::peekTail( void ** aData )
 
     if ( sListNode == NULL )
     {
-        // Listê°€ ë¹„ì–´ìˆëŠ” ê²½ìš°
+        // List°¡ ºñ¾îÀÖ´Â °æ¿ì
         *aData = NULL;
     }
     else
@@ -278,9 +278,9 @@ IDE_RC smuSynchroList::peekTail( void ** aData )
 }
 
 
-/* Linked Listì˜ Headì— Dataë¥¼ Add 
+/* Linked ListÀÇ Head¿¡ Data¸¦ Add 
 
-   [IN] aData - Linked Listì— ë§¤ë‹¬ì•„ ë†“ì„ ë°ì´í„°ì˜ í¬ì¸í„°
+   [IN] aData - Linked List¿¡ ¸Å´Ş¾Æ ³õÀ» µ¥ÀÌÅÍÀÇ Æ÷ÀÎÅÍ
  */
 IDE_RC smuSynchroList::addToHead( void * aData )
 {
@@ -289,9 +289,9 @@ IDE_RC smuSynchroList::addToHead( void * aData )
     UInt         sStage = 0;
     smuList    * sListNode ;
 
-    // Poolì—ì„œ List Nodeí• ë‹¹
-    // List Poolì´ ë³„ë„ì˜ ë™ì‹œì„± ì œì–´ë¥¼ í•˜ê¸° ë•Œë¬¸ì—
-    // mListMutexë¥¼ ì¡ì§€ ì•Šì€ ì±„ë¡œ ìˆ˜í–‰ê°€ëŠ¥.
+    // Pool¿¡¼­ List NodeÇÒ´ç
+    // List PoolÀÌ º°µµÀÇ µ¿½Ã¼º Á¦¾î¸¦ ÇÏ±â ¶§¹®¿¡
+    // mListMutex¸¦ ÀâÁö ¾ÊÀº Ã¤·Î ¼öÇà°¡´É.
     IDE_TEST( mListNodePool.alloc( (void**) & sListNode ) != IDE_SUCCESS );
 
     SMU_LIST_INIT_NODE( sListNode );
@@ -328,9 +328,9 @@ IDE_RC smuSynchroList::addToHead( void * aData )
 }
 
 
-/* Linked Listì˜ Tailì— Dataë¥¼ Add 
+/* Linked ListÀÇ Tail¿¡ Data¸¦ Add 
 
-   [IN] aData - Linked Listì— ë§¤ë‹¬ì•„ ë†“ì„ ë°ì´í„°ì˜ í¬ì¸í„°
+   [IN] aData - Linked List¿¡ ¸Å´Ş¾Æ ³õÀ» µ¥ÀÌÅÍÀÇ Æ÷ÀÎÅÍ
  */
 IDE_RC smuSynchroList::addToTail( void * aData )
 {
@@ -339,9 +339,9 @@ IDE_RC smuSynchroList::addToTail( void * aData )
     UInt         sStage = 0;
     smuList    * sListNode ;
 
-    // Poolì—ì„œ List Nodeí• ë‹¹
-    // List Poolì´ ë³„ë„ì˜ ë™ì‹œì„± ì œì–´ë¥¼ í•˜ê¸° ë•Œë¬¸ì—
-    // mListMutexë¥¼ ì¡ì§€ ì•Šì€ ì±„ë¡œ ìˆ˜í–‰ê°€ëŠ¥.
+    // Pool¿¡¼­ List NodeÇÒ´ç
+    // List PoolÀÌ º°µµÀÇ µ¿½Ã¼º Á¦¾î¸¦ ÇÏ±â ¶§¹®¿¡
+    // mListMutex¸¦ ÀâÁö ¾ÊÀº Ã¤·Î ¼öÇà°¡´É.
     IDE_TEST( mListNodePool.alloc( (void**) & sListNode ) != IDE_SUCCESS );
 
     SMU_LIST_INIT_NODE( sListNode );
@@ -378,9 +378,9 @@ IDE_RC smuSynchroList::addToTail( void * aData )
 }
 
 
-/* Linked Listì•ˆì˜ Elementê°¯ìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤
+/* Linked List¾ÈÀÇ Element°¹¼ö¸¦ ¸®ÅÏÇÑ´Ù
 
-   [OUT] aElemCount - ë¦¬ìŠ¤íŠ¸ ì•ˆì˜ Elementê°¯ìˆ˜
+   [OUT] aElemCount - ¸®½ºÆ® ¾ÈÀÇ Element°¹¼ö
  */
 IDE_RC smuSynchroList::getElementCount( UInt * aElemCount )
 {

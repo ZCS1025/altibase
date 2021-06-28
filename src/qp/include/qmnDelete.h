@@ -21,11 +21,11 @@
  * Description :
  *     DETE(DEleTE) Node
  *
- *     Í¥ÄÍ≥ÑÌòï Î™®Îç∏ÏóêÏÑú deleteÎ•º ÏàòÌñâÌïòÎäî Plan Node Ïù¥Îã§.
+ *     ∞¸∞Ë«¸ ∏µ®ø°º≠ delete∏¶ ºˆ«‡«œ¥¬ Plan Node ¿Ã¥Ÿ.
  *
- * Ïö©Ïñ¥ ÏÑ§Î™Ö :
+ * øÎæÓ º≥∏Ì :
  *
- * ÏïΩÏñ¥ :
+ * æ‡æÓ :
  *
  **********************************************************************/
 
@@ -44,19 +44,19 @@
 //-----------------
 
 // qmncDETE.flag
-// LimitÏùÑ Í∞ÄÏßÄÎäîÏßÄÏóê ÎåÄÌïú Ïó¨Î∂Ä
+// Limit¿ª ∞°¡ˆ¥¬¡ˆø° ¥Î«— ø©∫Œ
 # define QMNC_DETE_LIMIT_MASK               (0x00000002)
 # define QMNC_DETE_LIMIT_FALSE              (0x00000000)
 # define QMNC_DETE_LIMIT_TRUE               (0x00000002)
 
 // qmncDETE.flag
-// VIEWÏóê ÎåÄÌïú deleteÏù∏ÏßÄ Ïó¨Î∂Ä
+// VIEWø° ¥Î«— delete¿Œ¡ˆ ø©∫Œ
 # define QMNC_DETE_VIEW_MASK                (0x00000004)
 # define QMNC_DETE_VIEW_FALSE               (0x00000000)
 # define QMNC_DETE_VIEW_TRUE                (0x00000004)
 
 // qmncDETE.flag
-// VIEWÏóê ÎåÄÌïú update key preserved property
+// VIEWø° ¥Î«— update key preserved property
 # define QMNC_DETE_VIEW_KEY_PRESERVED_MASK  (0x00000008)
 # define QMNC_DETE_VIEW_KEY_PRESERVED_FALSE (0x00000000)
 # define QMNC_DETE_VIEW_KEY_PRESERVED_TRUE  (0x00000008)
@@ -64,6 +64,10 @@
 # define QMNC_DETE_PARTITIONED_MASK         (0x00000010)
 # define QMNC_DETE_PARTITIONED_FALSE        (0x00000000)
 # define QMNC_DETE_PARTITIONED_TRUE         (0x00000010)
+
+# define QMNC_DETE_MULTIPLE_TABLE_MASK      (0x00000020)
+# define QMNC_DETE_MULTIPLE_TABLE_FALSE     (0x00000000)
+# define QMNC_DETE_MULTIPLE_TABLE_TRUE      (0x00000020)
 
 //-----------------
 // Data Node Flags
@@ -92,7 +96,7 @@
 typedef struct qmncDETE  
 {
     //---------------------------------
-    // Code ÏòÅÏó≠ Í≥µÌÜµ Ï†ïÎ≥¥
+    // Code øµø™ ∞¯≈Î ¡§∫∏
     //---------------------------------
 
     qmnPlan               plan;
@@ -100,42 +104,42 @@ typedef struct qmncDETE
     UInt                  planID;
 
     //---------------------------------
-    // querySet Í¥ÄÎ†® Ï†ïÎ≥¥
+    // querySet ∞¸∑√ ¡§∫∏
     //---------------------------------
     
     qmsTableRef         * tableRef;
 
     //---------------------------------
-    // delete Í¥ÄÎ†® Ï†ïÎ≥¥
+    // delete ∞¸∑√ ¡§∫∏
     //---------------------------------
     
-    // instead of triggerÏù∏ Í≤ΩÏö∞
+    // instead of trigger¿Œ ∞ÊøÏ
     idBool                insteadOfTrigger;
 
-    // PROJ-2551 simple query ÏµúÏ†ÅÌôî
+    // PROJ-2551 simple query √÷¿˚»≠
     idBool                isSimple;    // simple delete
     
     //---------------------------------
-    // Limitation Í¥ÄÎ†® Ï†ïÎ≥¥
+    // Limitation ∞¸∑√ ¡§∫∏
     //---------------------------------
     
     qmsLimit            * limit;
 
     //---------------------------------
-    // child constraint Ï≤òÎ¶¨Î•º ÏúÑÌïú Ï†ïÎ≥¥
+    // child constraint √≥∏Æ∏¶ ¿ß«— ¡§∫∏
     //---------------------------------
 
     qcmRefChildInfo     * childConstraints;
 
     //---------------------------------
-    // return into Ï≤òÎ¶¨Î•º ÏúÑÌïú Ï†ïÎ≥¥
+    // return into √≥∏Æ∏¶ ¿ß«— ¡§∫∏
     //---------------------------------
     
     /* PROJ-1584 DML Return Clause */
     qmmReturnInto       * returnInto;
     
     //---------------------------------
-    // Display Í¥ÄÎ†® Ï†ïÎ≥¥
+    // Display ∞¸∑√ ¡§∫∏
     //---------------------------------
 
     qmsNamePosition       tableOwnerName;     // Table Owner Name
@@ -150,63 +154,77 @@ typedef struct qmncDETE
     smiColumnList       ** wherePartColumnList;
     idBool                 withoutRetry;
 
+    /* PROJ-2714 Multiple Update Delete support */
+    UInt                   mMultiTableCount;
+    qmmDelMultiTables    * mTableList;
 } qmncDETE;
+
+typedef struct qmndDelMultiTables
+{
+    UInt                   mFlag;
+    qmsIndexTableCursors   mIndexTableCursorInfo;
+    qcmColumn            * mColumnsForRow;
+    idBool                 mNeedTriggerRow;
+    idBool                 mExistTrigger;
+    smiTableCursor       * mIndexDeleteCursor;
+    void                 * mOldRow;    // OLD ROW Reference∏¶ ¿ß«— ∞¯∞£
+} qmndDelMultiTables;
 
 typedef struct qmndDETE
 {
     //---------------------------------
-    // Data ÏòÅÏó≠ Í≥µÌÜµ Ï†ïÎ≥¥
+    // Data øµø™ ∞¯≈Î ¡§∫∏
     //---------------------------------
     qmndPlan              plan;
     doItFunc              doIt;
     UInt                * flag;        
 
     //---------------------------------
-    // DETE Í≥†Ïú† Ï†ïÎ≥¥
+    // DETE ∞Ì¿Ø ¡§∫∏
     //---------------------------------
 
     mtcTuple            * deleteTuple;
     UShort                deleteTupleID;
     smiTableCursor      * deleteCursor;
 
-    /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
     qcmTableInfo        * deletePartInfo;
 
     //---------------------------------
-    // Limitation Í¥ÄÎ†® Ï†ïÎ≥¥
+    // Limitation ∞¸∑√ ¡§∫∏
     //---------------------------------
     
-    ULong                 limitCurrent;    // ÌòÑÏû¨ Limit Í∞í
-    ULong                 limitStart;      // ÏãúÏûë Limit Í∞í
-    ULong                 limitEnd;        // ÏµúÏ¢Ö Limit Í∞í
+    ULong                 limitCurrent;    // «ˆ¿Á Limit ∞™
+    ULong                 limitStart;      // Ω√¿€ Limit ∞™
+    ULong                 limitEnd;        // √÷¡æ Limit ∞™
 
     //---------------------------------
-    // Trigger Ï≤òÎ¶¨Î•º ÏúÑÌïú Ï†ïÎ≥¥
+    // Trigger √≥∏Æ∏¶ ¿ß«— ¡§∫∏
     //---------------------------------
 
     qcmColumn           * columnsForRow;
-    void                * oldRow;    // OLD ROW ReferenceÎ•º ÏúÑÌïú Í≥µÍ∞Ñ
+    void                * oldRow;    // OLD ROW Reference∏¶ ¿ß«— ∞¯∞£
 
     // PROJ-1705
-    // trigger rowÍ∞Ä ÌïÑÏöîÏó¨Î∂Ä Ï†ïÎ≥¥
+    // trigger row∞° « ø‰ø©∫Œ ¡§∫∏
     idBool                needTriggerRow;
     idBool                existTrigger;
     
     //---------------------------------
-    // return into Ï≤òÎ¶¨Î•º ÏúÑÌïú Ï†ïÎ≥¥
+    // return into √≥∏Æ∏¶ ¿ß«— ¡§∫∏
     //---------------------------------
 
-    // instead of triggerÏùò oldRowÎäî smiValueÏù¥ÎØÄÎ°ú
-    // return intoÎ•º ÏúÑÌïú tableRowÍ∞Ä ÌïÑÏöîÌïòÎã§.
+    // instead of trigger¿« oldRow¥¬ smiValue¿Ãπ«∑Œ
+    // return into∏¶ ¿ß«— tableRow∞° « ø‰«œ¥Ÿ.
     void                * returnRow;
     
     //---------------------------------
-    // index table Ï≤òÎ¶¨Î•º ÏúÑÌïú Ï†ïÎ≥¥
+    // index table √≥∏Æ∏¶ ¿ß«— ¡§∫∏
     //---------------------------------
 
     qmsIndexTableCursors  indexTableCursorInfo;
 
-    // selectionÏóê ÏÇ¨Ïö©Îêú index table cursorÏùò Ïù∏Ïûê
+    // selectionø° ªÁøÎµ» index table cursor¿« ¿Œ¿⁄
     smiTableCursor      * indexDeleteCursor;
     mtcTuple            * indexDeleteTuple;
 
@@ -222,7 +240,18 @@ typedef struct qmndDETE
 
     qcmAccessOption       accessOption;
 
+    qmndDelMultiTables  * mTableArray;
 } qmndDETE;
+
+#define QMND_DETE_MULTI_TABLES( _dst_ )         \
+{                                               \
+    (_dst_)->mFlag                  = 0;        \
+    (_dst_)->mColumnsForRow         = NULL;     \
+    (_dst_)->mNeedTriggerRow        = ID_FALSE; \
+    (_dst_)->mExistTrigger          = ID_FALSE; \
+    (_dst_)->mIndexDeleteCursor     = NULL;     \
+    (_dst_)->mOldRow                = NULL;     \
+}
 
 class qmnDETE
 {
@@ -232,11 +261,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // Ï¥àÍ∏∞Ìôî
+    // √ ±‚»≠
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ÏàòÌñâ Ìï®Ïàò
+    // ºˆ«‡ «‘ºˆ
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -245,7 +274,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
     
-    // Plan Ï†ïÎ≥¥ Ï∂úÎ†•
+    // Plan ¡§∫∏ √‚∑¬
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -256,25 +285,34 @@ public:
     static IDE_RC checkDeleteRef( qcTemplate * aTemplate,
                                   qmnPlan    * aPlan );
     
-    // CursorÏùò Close
+    // Cursor¿« Close
     static IDE_RC closeCursor( qcTemplate * aTemplate,
                                qmnPlan    * aPlan );
 
     /* BUG-39399 remove search key preserved table */
     static IDE_RC checkDuplicateDelete( qmncDETE   * aCodePlan,
                                         qmndDETE   * aDataPlan );
-private:    
+
+    // Cursor¿« Close
+    static IDE_RC closeCursorMultiTable( qcTemplate * aTemplate,
+                                         qmnPlan    * aPlan );
+
+    static IDE_RC checkDeleteRefMultiTable( qcTemplate        * aTemplate,
+                                            qmnPlan           * aPlan,
+                                            qmmDelMultiTables * aTable,
+                                            UInt                aIndex );
+private:
 
     //------------------------
-    // Ï¥àÍ∏∞Ìôî Í¥ÄÎ†® Ìï®Ïàò
+    // √ ±‚»≠ ∞¸∑√ «‘ºˆ
     //------------------------
 
-    // ÏµúÏ¥à Ï¥àÍ∏∞Ìôî
+    // √÷√  √ ±‚»≠
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncDETE   * aCodePlan,
                              qmndDETE   * aDataPlan );
 
-    // cursor info ÏÉùÏÑ±
+    // cursor info ª˝º∫
     static IDE_RC allocCursorInfo( qcTemplate * aTemplate,
                                    qmncDETE   * aCodePlan,
                                    qmndDETE   * aDataPlan );
@@ -294,17 +332,17 @@ private:
                                          qmncDETE   * aCodePlan,
                                          qmndDETE   * aDataPlan );
     
-    // Ìò∏Ï∂úÎêòÏñ¥ÏÑúÎäî ÏïàÎê®.
+    // »£√‚µ«æÓº≠¥¬ æ»µ .
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // ÏµúÏ¥à DETEÏùÑ ÏàòÌñâ
+    // √÷√  DETE¿ª ºˆ«‡
     static IDE_RC doItFirst( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              qmcRowFlag * aFlag );
 
-    // Îã§Ïùå DETEÏùÑ ÏàòÌñâ
+    // ¥Ÿ¿Ω DETE¿ª ºˆ«‡
     static IDE_RC doItNext( qcTemplate * aTemplate,
                             qmnPlan    * aPlan,
                             qmcRowFlag * aFlag );
@@ -313,7 +351,7 @@ private:
     static IDE_RC checkTrigger( qcTemplate * aTemplate,
                                 qmnPlan    * aPlan );
     
-    // CursorÏùò Get
+    // Cursor¿« Get
     static IDE_RC getCursor( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              idBool     * aIsTableCursorChanged );
@@ -336,6 +374,63 @@ private:
     static IDE_RC deleteIndexTableCursor( qcTemplate     * aTemplate,
                                           qmncDETE       * aCodePlan,
                                           qmndDETE       * aDataPlan );
+
+    static IDE_RC firstInitMultiTable( qcTemplate * aTemplate,
+                                       qmncDETE   * aCodePlan,
+                                       qmndDETE   * aDataPlan );
+
+    static IDE_RC doItFirstMultiTable( qcTemplate * aTemplate,
+                                       qmnPlan    * aPlan,
+                                       qmcRowFlag * aFlag );
+
+    // ¥Ÿ¿Ω DETE¿ª ºˆ«‡
+    static IDE_RC doItNextMultiTable( qcTemplate * aTemplate,
+                                      qmnPlan    * aPlan,
+                                      qmcRowFlag * aFlag );
+
+    static IDE_RC getCursorMultiTable( qcTemplate        * aTemplate,
+                                       qmncDETE          * aCodePlan,
+                                       qmndDETE          * aDataPlan,
+                                       qmmDelMultiTables * aTable,
+                                       idBool            * aIsSkip );
+
+    static IDE_RC deleteOneRowMultiTable( qcTemplate        * aTemplate,
+                                          qmndDETE          * aDataPlan,
+                                          qmmDelMultiTables * aTable,
+                                          UInt                aIndex );
+
+    static IDE_RC checkSkipMultiTable( qcTemplate        * aTemplate,
+                                       qmndDETE          * aDataPlan,
+                                       qmmDelMultiTables * aTable,
+                                       idBool            * aIsSkip );
+
+    static IDE_RC deleteIndexTableCursorMultiTable( qcTemplate        * aTemplate,
+                                                    qmndDETE          * aDataPlan,
+                                                    qmmDelMultiTables * aTable,
+                                                    UInt                aIndex );
+
+    static IDE_RC allocIndexTableCursorMultiTable( qcTemplate * aTemplate,
+                                                   qmncDETE   * aCodePlan,
+                                                   qmndDETE   * aDataPlan );
+
+    static IDE_RC allocTriggerRowMultiTable( qcTemplate * aTemplate,
+                                             qmncDETE   * aCodePlan,
+                                             qmndDETE   * aDataPlan );
+
+    static IDE_RC checkTriggerMultiTable( qcTemplate        * aTemplate,
+                                          qmndDETE          * aDataPlan,
+                                          qmmDelMultiTables * aTable,
+                                          UInt                aIndex );
+
+    static IDE_RC fireInsteadOfTriggerMultiTable( qcTemplate        * aTemplate,
+                                                  qmndDETE          * aDataPlan,
+                                                  qmmDelMultiTables * aTable,
+                                                  UInt                aIndex );
+
+    static IDE_RC checkDeleteChildRefOnScanMultiTable( qcTemplate        * aTemplate,
+                                                       qmmDelMultiTables * aTable,
+                                                       qcmTableInfo      * aTableInfo,
+                                                       mtcTuple          * aDeleteTuple );
 };
 
 #endif /* _O_QMN_DETE_H_ */

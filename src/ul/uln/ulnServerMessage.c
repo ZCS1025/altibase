@@ -23,7 +23,7 @@ ACI_RC ulnCallbackMessage(cmiProtocolContext *aProtocolContext,
                           void               *aServiceSession,
                           void               *aUserContext)
 {
-    ulnFnContext    *sFnContext  = (ulnFnContext *)aUserContext;
+    ulnFnContext    *sFnContext = (ulnFnContext *)aUserContext;
     ulnDbc          *sDbc;
     ulnObject       *sObject;
     ulnObjType       sObjectType;
@@ -32,7 +32,7 @@ ACI_RC ulnCallbackMessage(cmiProtocolContext *aProtocolContext,
     acp_uint32_t     sRowSize;
     acp_uint8_t     *sBuffer = NULL;
 
-    ulnServerMessageCallbackStruct *sCallbackStruct = NULL;
+    ulnMessageCallbackStruct *sMessageCallback = NULL;
 
     ACP_UNUSED(aProtocol);
     ACP_UNUSED(aServiceSession);
@@ -50,7 +50,7 @@ ACI_RC ulnCallbackMessage(cmiProtocolContext *aProtocolContext,
     {
         if (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA)
         {
-            /* PROJ-2616 ë©”ëª¨ë¦¬ì— ë°”ë¡œ ì ‘ê·¼í•˜ì—¬ ë°ì´í„°ë¥¼ ì½ë„ë¡ í•œë‹¤. */
+            /* PROJ-2616 ¸Þ¸ð¸®¿¡ ¹Ù·Î Á¢±ÙÇÏ¿© µ¥ÀÌÅÍ¸¦ ÀÐµµ·Ï ÇÑ´Ù. */
             ACI_TEST( cmiSplitReadIPCDA(aProtocolContext,
                                         sRowSize,
                                         &sBuffer,
@@ -70,41 +70,41 @@ ACI_RC ulnCallbackMessage(cmiProtocolContext *aProtocolContext,
         sRowSize = 0;
     }
 
-    switch(sObjectType)
+    switch (sObjectType)
     {
         case ULN_OBJ_TYPE_DBC:
-            sCallbackStruct = ((ulnDbc *)sObject)->mMessageCallbackStruct;
+            sMessageCallback = ((ulnDbc *)sObject)->mMessageCallback;
             break;
 
         case ULN_OBJ_TYPE_STMT:
-            sCallbackStruct = (((ulnStmt *)sObject)->mParentDbc)->mMessageCallbackStruct;
+            sMessageCallback = (((ulnStmt *)sObject)->mParentDbc)->mMessageCallback;
             break;
 
         default:
             break;
     }
 
-    if(sCallbackStruct != NULL)
+    if (sMessageCallback != NULL)
     {
-        if(sCallbackStruct->mFunction != NULL)
+        if (sMessageCallback->mFunction != NULL)
         {
-            if(sVariableSize > 0)
+            if (sVariableSize > 0)
             {
-                ACI_TEST(sCallbackStruct->mFunction((acp_char_t*)sBuffer,
-                                                    sVariableSize,
-                                                    sCallbackStruct->mArgument) != ACI_SUCCESS);
+                sMessageCallback->mFunction(sBuffer,
+                                            sVariableSize,
+                                            sMessageCallback->mUserData);  /* BUG-46019 */
             }
         }
     }
 
     /* PROJ-2616
-     * IPC-DAëŠ” ë©”ëª¨ë¦¬ì— ë°”ë¡œ ì ‘ê·¼í•˜ì—¬ ë°ì´í„°ë¥¼ ì½ë„ë¡ í•œë‹¤.
-     * ê·¸ëž˜ì„œ ë©”ëª¨ë¦¬ í•´ì œë¥¼ í•˜ë©´ ì•ˆ ëœë‹¤.
+     * IPC-DA´Â ¸Þ¸ð¸®¿¡ ¹Ù·Î Á¢±ÙÇÏ¿© µ¥ÀÌÅÍ¸¦ ÀÐµµ·Ï ÇÑ´Ù.
+     * ±×·¡¼­ ¸Þ¸ð¸® ÇØÁ¦¸¦ ÇÏ¸é ¾È µÈ´Ù.
      */
-    ACI_TEST_RAISE(cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA
-                   ,ContCallbackMsg);
+    ACI_TEST_RAISE(cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA,
+                   ContCallbackMsg);
 
-    if(sBuffer != NULL)
+    if (sBuffer != NULL)
     {
         acpMemFree(sBuffer);
     }
@@ -141,11 +141,19 @@ ACI_RC ulnCallbackMessage(cmiProtocolContext *aProtocolContext,
     return ACI_FAILURE;
 }
 
-ACI_RC ulnRegisterServerMessageCallback(ulnDbc                         *aDbc,
-                                        ulnServerMessageCallbackStruct *aCallbackStruct)
+ACI_RC ulnRegisterMessageCallback(ulnDbc                   *aDbc,
+                                  ulnMessageCallbackStruct *aMessageCallback)
 {
-    aDbc->mMessageCallbackStruct = aCallbackStruct;
+    aDbc->mMessageCallback = aMessageCallback;
+
+    /* BUG-46019 mFunctionÀÌ NULLÀÎ °æ¿ì ÄÝ¹éÀÌ ¾ø´Â °æ¿ì·Î ¼³Á¤ */
+    if (aDbc->mMessageCallback != NULL)
+    {
+        if (aDbc->mMessageCallback->mFunction == NULL)
+        {
+            aDbc->mMessageCallback = NULL;
+        }
+    }
 
     return ACI_SUCCESS;
 }
-

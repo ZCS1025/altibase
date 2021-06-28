@@ -64,7 +64,7 @@ public:
                       idBool             aIsRestart );
 
 
-    // ALTER TABLESPACE TBS1 AUTOEXTEND .... Ïóê ÎåÄÌïú REDO ÏàòÌñâ
+    // ALTER TABLESPACE TBS1 AUTOEXTEND .... ø° ¥Î«— REDO ºˆ«‡
     static IDE_RC redo_SCT_UPDATE_VRDB_ALTER_AUTOEXTEND(
                        idvSQL*              aStatistics, 
                        void*                aTrans,
@@ -76,7 +76,7 @@ public:
                        idBool               /* aIsRestart */ );
 
 
-    // ALTER TABLESPACE TBS1 AUTOEXTEND .... Ïóê ÎåÄÌïú REDO ÏàòÌñâ
+    // ALTER TABLESPACE TBS1 AUTOEXTEND .... ø° ¥Î«— REDO ºˆ«‡
     static IDE_RC undo_SCT_UPDATE_VRDB_ALTER_AUTOEXTEND(
                        idvSQL*              aStatistics, 
                        void*                aTrans,
@@ -88,7 +88,7 @@ public:
                        idBool               aIsRestart );
 
 private:
-    // ALTER TABLESPACE TBS1 AUTOEXTEND .... Ïóê ÎåÄÌïú Log ImageÎ•º Î∂ÑÏÑùÌïúÎã§.
+    // ALTER TABLESPACE TBS1 AUTOEXTEND .... ø° ¥Î«— Log Image∏¶ ∫–ºÆ«—¥Ÿ.
     static IDE_RC getAlterAutoExtendImage( UInt       aValueSize,
                                            SChar    * aValuePtr,
                                            idBool   * aAutoExtMode,

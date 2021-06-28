@@ -37,11 +37,11 @@
 #define DKT_FETCH_ROW_COUNT_FOR_LARGE_RECORD    (10)
 #define DKT_FETCH_ROW_COUNT_FOR_SMALL_RECORD    (100)
 
-#define DKT_2PC_MAXGTRIDSIZE                    (14)     /* maximum size in bytes of gtrid */
+#define DKT_2PC_MAXGTRIDSIZE                    (18)     /* maximum size in bytes of gtrid */
 #define DKT_2PC_MAXBQUALSIZE                    (4)      /* maximum size in bytes of bqual */
 #define DKT_2PC_XIDDATASIZE                     (DKT_2PC_MAXGTRIDSIZE + DKT_2PC_MAXBQUALSIZE)      /* size in bytes */
 
-#define DKT_2PC_XID_STRING_LEN                  (256)    /* XID_DATA_MAX_LEN Ï∞∏Ï°∞ */
+#define DKT_2PC_XID_STRING_LEN                  (256)    /* XID_DATA_MAX_LEN ¬¸¡∂ */
 
 /* -------------------------------------------------------------
  * Atomic transaction levels
@@ -50,7 +50,9 @@ typedef enum
 {
     DKT_ADLP_REMOTE_STMT_EXECUTION = 0,
     DKT_ADLP_SIMPLE_TRANSACTION_COMMIT,
-    DKT_ADLP_TWO_PHASE_COMMIT
+    DKT_ADLP_TWO_PHASE_COMMIT,
+    DKT_ADLP_GCTX,
+    DKT_ADLP_MAX,
 } dktAtomicTxLevel;
 
 /* -------------------------------------------------------------
@@ -161,15 +163,18 @@ typedef struct dktErrorInfo
     SChar             * mErrorDesc;
 } dktErrorInfo;
 
+typedef UChar dktCoordinatorType;
+
 typedef struct dktShardNodeInfo
 {
-    // Ï†ëÏÜçÏ†ïÎ≥¥
+    // ¡¢º”¡§∫∏
     SChar     mNodeName[SDI_NODE_NAME_MAX_SIZE + 1];
     SChar     mUserName[QCI_MAX_OBJECT_NAME_LEN + 1];
     SChar     mUserPassword[IDS_MAX_PASSWORD_LEN + 1];
     SChar     mServerIP[SDI_SERVER_IP_SIZE];
     UShort    mPortNo;
     UShort    mConnectType;
+    UChar     mCoordinatorType;
 } dktShardNodeInfo;
 
 /* PROJ-2569 */
@@ -182,7 +187,8 @@ typedef struct dktDtxBranchTxInfo
         SChar            mTargetName[DK_NAME_LEN + 1];
         dktShardNodeInfo mNode;   /* for shard */
     } mData;
-
+    
+    idBool       mIsValid;
     iduListNode  mNode;
 } dktDtxBranchTxInfo;
 
@@ -191,8 +197,12 @@ typedef struct dktNotifierTransactionInfo
     UInt   mGlobalTransactionId;
     UInt   mLocalTransactionId;
     ID_XID mXID;
+    UInt   mIsRequestNode;
     SChar  mTransactionResult[DK_TX_RESULT_STR_SIZE];
     SChar  mTargetInfo[DK_NAME_LEN + 1];
+    ID_XID mSourceXID;
+    UInt   mTransactionState;
+    smSCN  mGlobalCommitSCN;
 } dktNotifierTransactionInfo;
 
 #endif /* _O_DKT_DEF_H_ */

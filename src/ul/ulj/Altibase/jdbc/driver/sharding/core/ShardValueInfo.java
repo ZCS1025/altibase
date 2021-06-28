@@ -21,16 +21,16 @@ import Altibase.jdbc.driver.datatype.Column;
 
 public class ShardValueInfo
 {
-    private int    mType;           // 0 : prepare,   1 : direct
-    private int    mBindParamId;    // bind parameter id
-    private Column mValue;
+    private ShardValueType mType;
+    private int            mBindParamId;
+    private Column         mValue;
 
     public void setType(byte aType)
     {
-        this.mType = aType;
+        this.mType = ShardValueType.get(aType);
     }
 
-    public int getType()
+    public ShardValueType getType()
     {
         return this.mType;
     }

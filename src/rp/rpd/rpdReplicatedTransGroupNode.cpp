@@ -149,6 +149,7 @@ void rpdReplicatedTransGroupNode::insertCompleteTrans( smTID      aTransID,
 
     /* new log is always bigger than log that is already in group */
     mEndSN = aEndSN;
+    mEndTransID = aTransID;
 
     mReplicatedTrans[mReplicatedTransCount].mReplicatedTransID = aTransID;
     mReplicatedTrans[mReplicatedTransCount].mBeginSN = aBeginSN;
@@ -343,11 +344,13 @@ smSN rpdReplicatedTransGroupNode::getEndSN( void )
     return mEndSN;
 }
 
-idBool rpdReplicatedTransGroupNode::isLastTrans( smSN   aEndSN )
+idBool rpdReplicatedTransGroupNode::isLastTrans( smTID  aTransID,
+                                                 smSN   aEndSN )
 {
     idBool      sRC = ID_FALSE;
 
-    if ( mEndSN == aEndSN )
+    if ( ( mEndSN == aEndSN ) &&
+         ( mEndTransID == aTransID ) )
     {
         sRC = ID_TRUE;
     }
@@ -424,6 +427,7 @@ void rpdReplicatedTransGroupNode::clear( void )
     mGroupTransID = SM_NULL_TID;
     mBeginSN = SM_SN_MAX;
     mEndSN = 0;
+    mEndTransID = SM_NULL_TID;
     mOperation = RPD_REPLICATED_TRANS_GROUP_NONE;
 
     for ( i = 0; i < mReplicatedTransCount; i++ )

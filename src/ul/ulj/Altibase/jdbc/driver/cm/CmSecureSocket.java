@@ -19,10 +19,6 @@ package Altibase.jdbc.driver.cm;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
-import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.sql.SQLException;
@@ -32,27 +28,18 @@ import javax.net.ssl.*;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
 import Altibase.jdbc.driver.util.AltibaseProperties;
-import Altibase.jdbc.driver.util.SocketUtils;
 import Altibase.jdbc.driver.util.StringUtils;
 
-class CmSecureSocket implements CmSocket
+class CmSecureSocket extends CmTcpSocket
 {
-    private Socket mSocket;
-    private int mSocketFD = INVALID_SOCKTFD; // PROJ-2625
-
-    private int mSockSndBufSize = CmChannel.CM_DEFAULT_SNDBUF_SIZE;
-    private int mSockRcvBufSize = CmChannel.CM_DEFAULT_RCVBUF_SIZE;
-    private WritableByteChannel mWriteChannel;
-    private ReadableByteChannel mReadChannel;
-
-    // PROJ-2474 keystoreíŒŒì¼ì„ ì ‘ê·¼í•˜ëŠ” ê¸°ë³¸ í”„ë¡œí† ì½œì€ file:ì´ë‹¤.
+    // PROJ-2474 keystoreÆÄÀÏÀ» Á¢±ÙÇÏ´Â ±âº» ÇÁ·ÎÅäÄİÀº file:ÀÌ´Ù.
     private static final String DEFAULT_URL_FILE_SCHEME = "file:";
     private static final String DEFAULT_KEYSTORE_TYPE = "JKS";
 
-    // PROJ-2474 SSL ê´€ë ¨ëœ ì†ì„±ë“¤ì„ ê°€ì§€ê³  ìˆëŠ” ê°ì²´
+    // PROJ-2474 SSL °ü·ÃµÈ ¼Ó¼ºµéÀ» °¡Áö°í ÀÖ´Â °´Ã¼
     private SSLProperties mSslProps;
 
-    public CmSecureSocket(AltibaseProperties aProps)
+    CmSecureSocket(AltibaseProperties aProps)
     {
         mSslProps = new SSLProperties(aProps);
     }
@@ -64,8 +51,7 @@ class CmSecureSocket implements CmSocket
 
     public void open(SocketAddress aSockAddr,
                      String        aBindAddr,
-                     int           aLoginTimeout,
-                     int           aResponseTimeout) throws SQLException
+                     int           aLoginTimeout) throws SQLException
     {
         try
         {
@@ -76,69 +62,24 @@ class CmSecureSocket implements CmSocket
                 ((SSLSocket)mSocket).setEnabledCipherSuites(mSslProps.getCipherSuiteList());
             }
 
-            if (aBindAddr != null)
-            {
-                mSocket.bind(new InetSocketAddress(aBindAddr, 0));
-            }
-
-            if (aResponseTimeout > 0)
-            {
-                mSocket.setSoTimeout(aResponseTimeout * 1000);
-            }
-
-            mSocket.setKeepAlive(true);
-            mSocket.setReceiveBufferSize(mSockRcvBufSize); // PROJ-2625
-            mSocket.setSendBufferSize(mSockSndBufSize);
-            mSocket.setTcpNoDelay(true);  // BUG-45275 disable nagle algorithm
-
-            mSocket.connect(aSockAddr, aLoginTimeout * 1000);
+            connectTcpSocket(aSockAddr, aBindAddr, aLoginTimeout);
 
             ((SSLSocket)mSocket).setEnabledProtocols(new String[] { "TLSv1" });
             ((SSLSocket)mSocket).startHandshake();
-
-            mWriteChannel = Channels.newChannel(mSocket.getOutputStream());
-            mReadChannel = Channels.newChannel(mSocket.getInputStream());
         }
-        catch (SQLException e)
-        {
-            throw e;
-        }
-        // connect ì‹¤íŒ¨ì‹œ ë‚  ìˆ˜ ìˆëŠ” ì˜ˆì™¸ê°€ í•œì¢…ë¥˜ê°€ ì•„ë‹ˆë¯€ë¡œ ëª¨ë“  ì˜ˆì™¸ë¥¼ ì¡ì•„ ì—°ê²° ì‹¤íŒ¨ë¡œ ì²˜ë¦¬í•œë‹¤.
-        // ì˜ˆë¥¼ë“¤ì–´, AIX 6.1ì—ì„œëŠ” ClosedSelectorExceptionê°€ ë‚˜ëŠ”ë° ì´ëŠ” RuntimeExceptionì´ë‹¤. (ref. BUG-33341)
+        // connect ½ÇÆĞ½Ã ³¯ ¼ö ÀÖ´Â ¿¹¿Ü°¡ ÇÑÁ¾·ù°¡ ¾Æ´Ï¹Ç·Î ¸ğµç ¿¹¿Ü¸¦ Àâ¾Æ ¿¬°á ½ÇÆĞ·Î Ã³¸®ÇÑ´Ù.
+        // ¿¹¸¦µé¾î, AIX 6.1¿¡¼­´Â ClosedSelectorException°¡ ³ª´Âµ¥ ÀÌ´Â RuntimeExceptionÀÌ´Ù. (ref. BUG-33341)
         catch (Exception e)
         {
             Error.throwCommunicationErrorException(e);
         }
     }
 
-    public void close() throws IOException
-    {
-        if (mWriteChannel != null)
-        {
-            mWriteChannel.close();
-            mWriteChannel = null;
-        }
-
-        if (mReadChannel != null)
-        {
-            mReadChannel.close();
-            mReadChannel = null;
-        }
-
-        if (mSocket != null)
-        {
-            mSocket.close();
-            mSocket = null;
-        }
-
-        mSocketFD = INVALID_SOCKTFD;
-    }
-
     /**
-     * ì¸ì¦ì„œ ì •ë³´ë¥¼ ì´ìš©í•´ SSLSocketFactory ê°ì²´ë¥¼ ìƒì„±í•œë‹¤.
-     * @param aCertiProps sslê´€ë ¨ ì„¤ì • ì •ë³´ë¥¼ ê°€ì§€ê³  ìˆëŠ” ê°ì²´
-     * @return SSLSocketFactory ê°ì²´
-     * @throws SQLException keystoreì—ì„œ ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš°
+     * ÀÎÁõ¼­ Á¤º¸¸¦ ÀÌ¿ëÇØ SSLSocketFactory °´Ã¼¸¦ »ı¼ºÇÑ´Ù.
+     * @param aCertiProps ssl°ü·Ã ¼³Á¤ Á¤º¸¸¦ °¡Áö°í ÀÖ´Â °´Ã¼
+     * @return SSLSocketFactory °´Ã¼
+     * @throws SQLException keystore¿¡¼­ ¿¡·¯°¡ ¹ß»ıÇÑ °æ¿ì
      */
     private SSLSocketFactory getSslSocketFactory(SSLProperties aCertiProps) throws SQLException
     {
@@ -164,7 +105,7 @@ class CmSecureSocket implements CmSocket
 
         loadKeyStore(sKeyStoreUrl, sKeyStorePassword, sKeyStoreType, sKmf);
 
-        // BUG-40165 verify_server_certificateê°€ trueì¼ë•Œë§Œ TrustManagerFactoryë¥¼ ì´ˆê¸°í™” í•´ì¤€ë‹¤.
+        // BUG-40165 verify_server_certificate°¡ trueÀÏ¶§¸¸ TrustManagerFactory¸¦ ÃÊ±âÈ­ ÇØÁØ´Ù.
         if (aCertiProps.verifyServerCertificate())
         {
             loadKeyStore(sTrustStoreUrl, sTrustStorePassword, sTrustStoreType, sTmf);
@@ -210,7 +151,7 @@ class CmSecureSocket implements CmSocket
     }
 
     /**
-     * PROJ-2474 KeyStore ë° TrustStore íŒŒì¼ì„ ì½ì–´ë“¤ì¸ë‹¤.
+     * PROJ-2474 KeyStore ¹× TrustStore ÆÄÀÏÀ» ÀĞ¾îµéÀÎ´Ù.
      */
     private void loadKeyStore(String aKeyStoreUrl,
                               String aKeyStorePassword,
@@ -278,70 +219,7 @@ class CmSecureSocket implements CmSocket
         }
     }
 
-    public int read(ByteBuffer aBuffer) throws IOException
-    {
-        return mReadChannel.read(aBuffer);
-    }
-
-    public int write(ByteBuffer aBuffer) throws IOException
-    {
-        return mWriteChannel.write(aBuffer);
-    }
-
-    public int getSockSndBufSize()
-    {
-        return mSockSndBufSize;
-    }
-
-    public int getSockRcvBufSize()
-    {
-        return mSockRcvBufSize;
-    }
-
-    /**
-     * Socket send buffer í¬ê¸°ë¥¼ ì„¤ì •í•œë‹¤.
-     */
-    public void setSockSndBufSize(int aSockSndBufSize) throws IOException
-    {
-        if (mSocket != null)
-        {
-            mSocket.setSendBufferSize(aSockSndBufSize);
-        }
-
-        mSockSndBufSize = aSockSndBufSize;
-    }
-
-    /**
-     * Socket receive buffer í¬ê¸°ë¥¼ ì„¤ì •í•œë‹¤.
-     */
-    public void setSockRcvBufSize(int aSockRcvBufSize) throws IOException
-    {
-        if (mSocket != null)
-        {
-            mSocket.setReceiveBufferSize(aSockRcvBufSize);
-        }
-
-        mSockRcvBufSize = aSockRcvBufSize;
-    }
-
-    public int getSocketFD() throws SQLException
-    {
-        try
-        {
-            if (mSocketFD == INVALID_SOCKTFD)
-            {
-                mSocketFD = SocketUtils.getFileDescriptor(mSocket);
-            }
-        }
-        catch (Exception e)
-        {
-            Error.throwSQLException(ErrorDef.COMMUNICATION_ERROR, "Failed to get a file descriptor of the socket.", e);
-        }
-
-        return mSocketFD;
-    }
-
-    public String[] getEnabledCipherSuites()
+    String[] getEnabledCipherSuites()
     {
         return ((SSLSocket)mSocket).getEnabledCipherSuites();
     }

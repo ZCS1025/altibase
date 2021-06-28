@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: ida.h 80575 2017-07-21 07:06:35Z yoonhee.kim $
+ * $Id: ida.h 90444 2021-04-02 10:15:58Z minku.kang $
  **********************************************************************/
 
 #ifndef _O_IDA_H_
@@ -440,6 +440,10 @@ UInt idaXaConvertXIDToString( void        *aBaseObj,
                               void        *aMember,
                               UChar       *aBuf,
                               UInt         aBufSize);
+UInt idaXaConvertGlobalXIDToString( void        *aBaseObj,
+                                    void        *aMember,
+                                    UChar       *aBuf,
+                                    UInt         aBufSize);
 
 #endif /* _O_IDA_H_ */
 

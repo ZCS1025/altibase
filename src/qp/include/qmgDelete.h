@@ -19,11 +19,11 @@
  * $Id: qmgDelete.h 53265 2012-05-18 00:05:06Z seo0jun $
  *
  * Description :
- *     Delete Graphë¥¼ ìœ„í•œ ì •ì˜
+ *     Delete Graph¸¦ À§ÇÑ Á¤ÀÇ
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -34,20 +34,20 @@
 #include <qmgDef.h>
 
 //---------------------------------------------------
-// Delete Graphì˜ Define ìƒìˆ˜
+// Delete GraphÀÇ Define »ó¼ö
 //---------------------------------------------------
 
 
 //---------------------------------------------------
-// Delete Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+// Delete Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
 //---------------------------------------------------
 
 typedef struct qmgDETE
 {
-    qmgGraph             graph;    // ê³µí†µ Graph ì •ë³´
+    qmgGraph             graph;    // °øÅë Graph Á¤º¸
 
     //---------------------------------
-    // delete ê´€ë ¨ ì •ë³´
+    // delete °ü·Ã Á¤º¸
     //---------------------------------
     
     qmsTableRef        * deleteTableRef; // delete target table
@@ -55,48 +55,50 @@ typedef struct qmgDETE
     idBool               insteadOfTrigger;  // instead of trigger
 
     //---------------------------------
-    // Limitation ê´€ë ¨ ì •ë³´
+    // Limitation °ü·Ã Á¤º¸
     //---------------------------------
     
-    qmsLimit           * limit;   // limit ì •ë³´
+    qmsLimit           * limit;   // limit Á¤º¸
 
     //---------------------------------
-    // constraint ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
+    // constraint Ã³¸®¸¦ À§ÇÑ Á¤º¸
     //---------------------------------
     
     qcmRefChildInfo    * childConstraints;
 
     //---------------------------------
-    // return into ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
+    // return into Ã³¸®¸¦ À§ÇÑ Á¤º¸
     //---------------------------------
     
     /* PROJ-1584 DML Return Clause */
     qmmReturnInto      * returnInto;
-    
+
+    /* PROJ-2714 Multiple Update Delete support */
+    qmmDelMultiTables  * mTableList;
 } qmgDETE;
 
 //---------------------------------------------------
-// Delete Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+// Delete Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
 //---------------------------------------------------
 
 class qmgDelete
 {
 public:
-    // Graph ì˜ ì´ˆê¸°í™”
+    // Graph ÀÇ ÃÊ±âÈ­
     static IDE_RC  init( qcStatement * aStatement,
                          qmsQuerySet * aQuerySet,
                          qmgGraph    * aChildGraph,
                          qmgGraph   ** aGraph );
 
-    // Graphì˜ ìµœì í™” ìˆ˜í–‰
+    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
     static IDE_RC  optimize( qcStatement * aStatement, qmgGraph * aGraph );
 
-    // Graphì˜ Plan Tree ìƒì„±
+    // GraphÀÇ Plan Tree »ı¼º
     static IDE_RC  makePlan( qcStatement    * aStatement,
                              const qmgGraph * aParent,
                              qmgGraph       * aGraph );
 
-    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
+    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
     static IDE_RC  printGraph( qcStatement  * aStatement,
                                qmgGraph     * aGraph,
                                ULong          aDepth,

@@ -41,7 +41,7 @@ ACI_RC cmxXidRead(cmiProtocolContext *aProtocolContext, ID_XID *aXid)
     sDataLen = cmtVariableGetSize(&sArg->mData);
 
     /* BUG-18981 */
-    ACI_TEST_RAISE(sDataLen != ID_XIDDATASIZE, InvalidXidDataSize);
+    ACI_TEST_RAISE(sDataLen != ID_MAXXIDDATASIZE, InvalidXidDataSize);
 
     ACI_TEST(cmtVariableGetData(&sArg->mData, (acp_uint8_t *)aXid->data, sDataLen) != ACI_SUCCESS);
 
@@ -74,7 +74,7 @@ ACI_RC cmxXidWrite(cmiProtocolContext *aProtocolContext, ID_XID *aXid)
     sArg->mGTRIDLength = aXid->gtrid_length;
     sArg->mBQUALLength = aXid->bqual_length;
 
-    ACI_TEST(cmtVariableSetData(&sArg->mData, (acp_uint8_t *)aXid->data, ID_XIDDATASIZE) != ACI_SUCCESS);
+    ACI_TEST(cmtVariableSetData(&sArg->mData, (acp_uint8_t *)aXid->data, ID_MAXXIDDATASIZE) != ACI_SUCCESS);
 
     ACI_TEST(cmiWriteProtocol(aProtocolContext, &sProtocol) != ACI_SUCCESS);
 

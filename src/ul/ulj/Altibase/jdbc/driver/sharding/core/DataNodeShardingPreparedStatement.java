@@ -17,15 +17,21 @@
 
 package Altibase.jdbc.driver.sharding.core;
 
+import Altibase.jdbc.driver.AltibasePreparedStatement;
+import Altibase.jdbc.driver.cm.CmProtocolContextShardStmt;
 import Altibase.jdbc.driver.datatype.Column;
+import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
 import Altibase.jdbc.driver.ex.ShardJdbcException;
-import Altibase.jdbc.driver.ex.ShardFailoverIsNotAvailableException;
 import Altibase.jdbc.driver.sharding.executor.*;
 import Altibase.jdbc.driver.sharding.merger.IteratorStreamResultSetMerger;
 import Altibase.jdbc.driver.sharding.routing.*;
 
+import java.io.InputStream;
+import java.io.Reader;
+import java.math.BigDecimal;
 import java.sql.*;
+import java.sql.Date;
 import java.util.*;
 
 import static Altibase.jdbc.driver.sharding.util.ShardingTraceLogger.shard_log;
@@ -38,6 +44,7 @@ public class DataNodeShardingPreparedStatement extends DataNodeShardingStatement
     private int                                       mBatchCount;
     private Map<DataNode, BatchPreparedStatementUnit> mBatchStmtUnitMap;
     private PreparedStatementExecutor                 mPreparedStmtExecutor;
+    private List<Statement>                           mPStmtUnit;
 
     DataNodeShardingPreparedStatement(AltibaseShardingConnection aShardCon, String aSql, int aResultSetType,
                                       int aResultSetConcurrency, int aResultSetHoldability,
@@ -48,20 +55,36 @@ public class DataNodeShardingPreparedStatement extends DataNodeShardingStatement
         mBatchStmtUnitMap = new LinkedHashMap<DataNode, BatchPreparedStatementUnit>();
         mRoutingEngine = createRoutingEngine();
         mPreparedStmtExecutor = new PreparedStatementExecutor(mMetaConn.getExecutorEngine());
-        prepareNodeDirect(aShardCon, aSql);
-        // BUG-46513 Meta Ïª§ÎÑ•ÏÖòÏóê ÏûàÎäî SMNÍ∞íÏùÑ ÏÖãÌåÖÌïúÎã§.
+        // BUG-47145 shard_lazy_connect∞° false¿œ∂ß¥¬ πŸ∑Œ range¿« ¿¸ ≥ÎµÂø° prepare∏¶ ºˆ«‡«—¥Ÿ.
+        if (!aShardCon.isLazyNodeConnect())
+        {
+            prepareNodeDirect(aShardCon);
+        }
+        mPStmtUnit = new ArrayList<Statement>();   // BUG-47460 routeµ» ≥ÎµÂ¿« StatementµÈ¿Ã ¿˙¿Âµ»¥Ÿ.
+        // BUG-46513 Meta ƒø≥ÿº«ø° ¿÷¥¬ SMN∞™¿ª º¬∆√«—¥Ÿ.
         mShardStmt.setShardMetaNumber(mMetaConn.getShardMetaNumber());
         mParameters = aShardStmt.getParameters();
     }
 
-    private void prepareNodeDirect(AltibaseShardingConnection aShardCon, String aSql) throws SQLException
+    private void prepareNodeDirect(AltibaseShardingConnection aShardCon) throws SQLException
     {
-        if (aShardCon.isLazyNodeConnect()) return;
-
         ShardRangeList sRangeList = mShardStmtCtx.getShardAnalyzeResult().getShardRangeList();
         Map<DataNode, Connection> sNodeConnMap = aShardCon.getCachedConnections();
         shard_log("[RANGELIST_INFO] {0}", sRangeList.getRangeList());
-        prepareNodeStatements(aSql, sRangeList, sNodeConnMap);
+
+        // BUG-47145 rangeø° «ÿ¥Á«œ¥¬ ¿¸ ≥ÎµÂ∏¶ loopµπ∏Èº≠ SQLExecutionUnit º¬¿ª ±∏º∫«—¥Ÿ.
+        List<DataNode> sNodes = new ArrayList<DataNode>();
+        for (ShardRange sEach : sRangeList.getRangeList())
+        {
+            DataNode sNode = sEach.getNode();
+            if (!sNodes.contains(sNode))
+            {
+                sNodes.add(sEach.getNode());
+            }
+        }
+
+        prepareNodeStatementsForNonLazyMode(sNodes);
+
         boolean sDefaultNodeIncluded = false;
         int sDefaultNodeId = mShardStmtCtx.getShardAnalyzeResult().getShardDefaultNodeID();
         if (sDefaultNodeId >= 0)
@@ -78,7 +101,7 @@ public class DataNodeShardingPreparedStatement extends DataNodeShardingStatement
             {
                 DataNode sDefaultNode = mMetaConn.getShardNodeConfig().getNode(sDefaultNodeId);
                 Connection sNodeConn = sNodeConnMap.get(sDefaultNode);
-                PreparedStatement sPstmt = sNodeConn.prepareStatement(aSql, mResultSetType,
+                PreparedStatement sPstmt = sNodeConn.prepareStatement(mSql, mResultSetType,
                                                                       mResultSetConcurrency,
                                                                       mResultSetHoldability);
                 mRoutedStatementMap.put(sDefaultNode, sPstmt);
@@ -87,97 +110,145 @@ public class DataNodeShardingPreparedStatement extends DataNodeShardingStatement
     }
 
     /**
-     * shard_lazy_connectÍ∞Ä falseÏùºÎïå rangeÏùò Î≤îÏúÑÎßåÌÅº Î£®ÌîÑÎ•º ÎèåÎ©¥ÏÑú Îç∞Ïù¥ÌÑ∞ÎÖ∏ÎìúÏùò StatementÎ•º ÏÉùÏÑ±ÌïúÎã§.
-     * 
-     * @param aSql sqlÎ¨∏
-     * @param aRangeList ÏÉ§Îìú Î≤îÏúÑ Í∞ùÏ≤¥
-     * @param aNodeConnMap ÎÖ∏ÎìúÏª§ÎÑ•ÏÖò Îßµ
-     * @throws SQLException ÎÖ∏Îìú Statement ÏÉùÏÑ±Ïãú ÏóêÎü¨Í∞Ä Î∞úÏÉùÌïú Í≤ΩÏö∞
+     * shard_lazy_connect∞° false¿œ∂ß range¿« π¸¿ß∏∏≈≠ ∫¥∑ƒ∑Œ µ•¿Ã≈Õ≥ÎµÂ¿« PreparedStatement∏¶ ª˝º∫«—¥Ÿ.
+     *
+     * @param aNodes Ω««‡«“ ≥ÎµÂ ∏ÆΩ∫∆Æ
+     * @throws SQLException ≥ÎµÂ Statement ª˝º∫Ω√ ø°∑Ø∞° πﬂª˝«— ∞ÊøÏ
      */
-    void prepareNodeStatements(String aSql, ShardRangeList aRangeList, Map<DataNode, Connection> aNodeConnMap) throws SQLException
+    private void prepareNodeStatementsForNonLazyMode(List<DataNode> aNodes) throws SQLException
     {
-        for (ShardRange sEach : aRangeList.getRangeList())
-        {
-            DataNode sNode = sEach.getNode();
-            Connection sNodeConn = aNodeConnMap.get(sNode);
-            // BUG-46513 ÏÉàÎ°ú Ï∂îÍ∞ÄÎêú ÎÖ∏ÎìúÎäî Ïª§ÎÑ•ÏÖòÏùÑ ÏÉàÎ°ú ÏÉùÏÑ±ÌïúÎã§.
-            if (sNodeConn == null)
-            {
-                sNodeConn = mMetaConn.getNodeConnection(sNode);
-            }
-            createStatementForLazyConnectOff(sNodeConn, sNode, aSql);
-        }
-    }
+        // BUG-47145 lazy mode∞° false¿œ∂ßµµ ∫¥∑ƒ∑Œ PreparedStatement∏¶ ª˝º∫«—¥Ÿ.
+        ExecutorEngine sExecutorEngine = mMetaConn.getExecutorEngine();
+        sExecutorEngine.generateStatement(aNodes,
+                          new GenerateCallback<PreparedStatement>()
+                          {
+                              public PreparedStatement generate(DataNode aNode) throws SQLException
+                              {
+                                  Connection sNodeCon = mMetaConn.getNodeConnection(aNode);
+                                  PreparedStatement sStmt = sNodeCon.prepareStatement(mSql, mResultSetType,
+                                                                    mResultSetConcurrency,
+                                                                    mResultSetHoldability);
+                                  shard_log("(NODE PREPARE) {0}", sStmt);
+                                  // BUG-46513 Meta ƒø≥ÿº«ø° ¿÷¥¬ SMN∞™¿ª º¬∆√«—¥Ÿ.
+                                  mShardStmt.setShardMetaNumber(mMetaConn.getShardMetaNumber());
+                                  mRoutedStatementMap.put(aNode, sStmt);
+                                  return sStmt;
+                              }
+                          });
 
-    void createStatementForLazyConnectOff(Connection aNodeConn, DataNode aNode, String aSql) throws SQLException
-    {
-        PreparedStatement sPstmt = aNodeConn.prepareStatement(aSql, mResultSetType,
-                                                              mResultSetConcurrency, mResultSetHoldability);
-        mRoutedStatementMap.put(aNode, sPstmt);
     }
 
     public ResultSet executeQuery() throws SQLException
     {
+        List<Statement> sStatements = null;
+        
         try
         {
-            ResultSet sResult;
-            List<? extends BaseStatementUnit> sStatementUnits = route();
+            ResultSet sResult = null;
+            sStatements = route();
             if (!mShardStmtCtx.isAutoCommitMode())
             {
                 touchNodes();
             }
+            List<ResultSet> sResultSets = mPreparedStmtExecutor.executeQuery(sStatements);
 
-            List<ResultSet> sResultSets = mPreparedStmtExecutor.executeQuery(sStatementUnits);
-            sResult = new AltibaseShardingResultSet(sResultSets, new IteratorStreamResultSetMerger(sResultSets), mShardStmt);
-            // BUG-46513 updateÎêú row countÎ•º Statement contextÏóê Ï†ÄÏû•ÌïúÎã§.
+            // BUG-47460 ResultSet¿Ã 1∞≥¿œ ∞ÊøÏø°¥¬ µ˚∑Œ AltibaseShardingResultSet¿ª ∏∏µÈ¡ˆ æ ∞Ì πŸ∑Œ AltibaseResultSet¿ª ∏Æ≈œ«—¥Ÿ.
+            if (sResultSets.size() == 1)
+            {
+                sResult = sResultSets.get(0);
+            }
+            else if (sResultSets.size() > 1)
+            {
+                sResult = new AltibaseShardingResultSet(sResultSets, new IteratorStreamResultSetMerger(sResultSets), mShardStmt);
+            }
+            // BUG-46513 updateµ» row count∏¶ Statement contextø° ¿˙¿Â«—¥Ÿ.
             mShardStmtCtx.setUpdateRowcount(getNodeUpdateRowCount());
-            setOneNodeTransactionInfo(mRouteResult.getExecutionUnits());
-            getNodeSqlWarnings();
+            setOneNodeTransactionInfo(mRouteResult);
+            getNodeSqlWarnings(mMetaConn.getShardContextConnect().needToDisconnect());
             mCurrentResultSet = sResult;
             return sResult;
         }
         catch (ShardJdbcException aShardJdbcEx)
         {
             clearRoutedStatementMap(aShardJdbcEx);
+            getNodeSqlWarnings(true);
             throw aShardJdbcEx;
+        }
+        catch (SQLException aEx)
+        {
+            processExecuteError(sStatements, aEx);
+            getNodeSqlWarnings(true);
+            throw aEx;
         }
     }
 
     public int executeUpdate() throws SQLException
     {
+        List<Statement> sStatements = null;
+        
         try
         {
-            List<? extends BaseStatementUnit> sStatementUnits = route();
+            sStatements = route();
             if (!mShardStmtCtx.isAutoCommitMode())
             {
                 touchNodes();
             }
 
-            int sUpdateCnt = mPreparedStmtExecutor.executeUpdate(sStatementUnits);
-            // BUG-46513 updateÎêú row countÎ•º Statement contextÏóê Ï†ÄÏû•ÌïúÎã§.
+            int sUpdateCnt = mPreparedStmtExecutor.executeUpdate(sStatements);
+            // BUG-46513 updateµ» row count∏¶ Statement contextø° ¿˙¿Â«—¥Ÿ.
             mShardStmtCtx.setUpdateRowcount(sUpdateCnt);
-            setOneNodeTransactionInfo(mRouteResult.getExecutionUnits());
-            getNodeSqlWarnings();
+            setOneNodeTransactionInfo(mRouteResult);
+            getNodeSqlWarnings(mMetaConn.getShardContextConnect().needToDisconnect());
 
             return sUpdateCnt;
         }
         catch (ShardJdbcException aShardJdbcEx)
         {
             clearRoutedStatementMap(aShardJdbcEx);
+            getNodeSqlWarnings(true);
             throw aShardJdbcEx;
+        }
+        catch (SQLException aEx)
+        {
+            processExecuteError(sStatements, aEx);
+            getNodeSqlWarnings(true);
+            throw aEx;
         }
     }
 
     public int[] executeBatch() throws SQLException
     {
+        List<Statement> sStatements = new ArrayList<Statement>();
+
+        for (BatchPreparedStatementUnit sEach : mBatchStmtUnitMap.values())
+        {
+            sStatements.add(sEach.getStatement());
+        }
+
+        calcDistTxInfo(sStatements);
+
         try
         {
-            return new BatchPreparedStatementExecutor(mMetaConn.getExecutorEngine(),
-                                                      mBatchStmtUnitMap, mBatchCount).executeBatch();
+            int[] sResult = new BatchPreparedStatementExecutor(mMetaConn.getExecutorEngine(),
+                                                               mBatchStmtUnitMap, mBatchCount).executeBatch();
+            getNodeSqlWarnings(mMetaConn.getShardContextConnect().needToDisconnect());
+
+            return sResult;
+        }
+        catch (ShardJdbcException aShardJdbcEx)
+        {
+            clearRoutedStatementMap(aShardJdbcEx);
+            getNodeSqlWarnings(true);
+            throw aShardJdbcEx;
+        }
+        catch (SQLException aEx)
+        {
+            processExecuteError(sStatements, aEx);
+            getNodeSqlWarnings(true);
+            throw aEx;
         }
         finally
         {
-            getNodeSqlWarnings();
             clearBatch();
         }
     }
@@ -195,26 +266,35 @@ public class DataNodeShardingPreparedStatement extends DataNodeShardingStatement
 
     public boolean execute() throws SQLException
     {
+        List<Statement> sStatements = null;
+        
         try
         {
-            List<? extends BaseStatementUnit> sStatementUnits = route();
+            sStatements = route();
             if (!mShardStmtCtx.isAutoCommitMode())
             {
                 touchNodes();
             }
 
-            boolean sResult = mPreparedStmtExecutor.execute(sStatementUnits);
-            // BUG-46513 updateÎêú row countÎ•º Statement contextÏóê Ï†ÄÏû•ÌïúÎã§.
+            boolean sResult = mPreparedStmtExecutor.execute(sStatements);
+            // BUG-46513 updateµ» row count∏¶ Statement contextø° ¿˙¿Â«—¥Ÿ.
             mShardStmtCtx.setUpdateRowcount(getNodeUpdateRowCount());
-            setOneNodeTransactionInfo(mRouteResult.getExecutionUnits());
-            getNodeSqlWarnings();
+            setOneNodeTransactionInfo(mRouteResult);
+            getNodeSqlWarnings(mMetaConn.getShardContextConnect().needToDisconnect());
 
             return sResult;
         }
         catch (ShardJdbcException aShardJdbcEx)
         {
             clearRoutedStatementMap(aShardJdbcEx);
+            getNodeSqlWarnings(true);
             throw aShardJdbcEx;
+        }
+        catch (SQLException aEx)
+        {
+            processExecuteError(sStatements, aEx);
+            getNodeSqlWarnings(true);
+            throw aEx;
         }
     }
 
@@ -271,91 +351,413 @@ public class DataNodeShardingPreparedStatement extends DataNodeShardingStatement
         mBatchCount = 0;
     }
 
+    public void rePrepare(CmProtocolContextShardStmt aShardStmtCtx) throws SQLException
+    {
+        mShardStmtCtx = aShardStmtCtx;
+        mRoutingEngine = createRoutingEngine();
+
+        /* BUG-47357 lazy node connect ∏µÂ∞° æ∆¥“∂ß¥¬ prepare∞° ∏’¿˙ ¿œæÓ≥™±‚ ∂ßπÆø° reprepareø‰√ª¿ª ∫∏≥ªæﬂ «—¥Ÿ.
+           π›∏Èø° lazy modeø°º≠¥¬ prepare∞° ≥™¡ﬂø° ¿œæÓ≥™±‚ ∂ßπÆø° reprepare∏¶ «“ « ø‰∞° æ¯¥Ÿ. */
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                AltibasePreparedStatement sPstmt = (AltibasePreparedStatement)sEach;
+                sPstmt.prepare(sPstmt.getSql());
+            }
+        }
+    }
+
+    public void setInt(int aParameterIndex, int aValue) throws SQLException
+    {
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                ((PreparedStatement)sEach).setInt(aParameterIndex, aValue);
+            }
+        }
+    }
+
+    public void setNull(int aParameterIndex, int aSqlType) throws SQLException
+    {
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                ((PreparedStatement)sEach).setNull(aParameterIndex, aSqlType);
+            }
+        }
+    }
+
+    public void setNull(int aParameterIndex, int aSqlType, String aTypeName) throws SQLException
+    {
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                ((PreparedStatement)sEach).setNull(aParameterIndex, aSqlType, aTypeName);
+            }
+        }
+    }
+
+    public void setBoolean(int aParameterIndex, boolean aValue) throws SQLException
+    {
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                ((PreparedStatement)sEach).setBoolean(aParameterIndex, aValue);
+            }
+        }
+    }
+
+    public void setByte(int aParameterIndex, byte aValue) throws SQLException
+    {
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                ((PreparedStatement)sEach).setByte(aParameterIndex, aValue);
+            }
+        }
+    }
+
+    public void setShort(int aParameterIndex, short aValue) throws SQLException
+    {
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                ((PreparedStatement)sEach).setShort(aParameterIndex, aValue);
+            }
+        }
+    }
+
+    public void setLong(int aParameterIndex, long aValue) throws SQLException
+    {
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                ((PreparedStatement)sEach).setLong(aParameterIndex, aValue);
+            }
+        }
+    }
+
+    public void setFloat(int aParameterIndex, float aValue) throws SQLException
+    {
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                ((PreparedStatement)sEach).setFloat(aParameterIndex, aValue);
+            }
+        }
+    }
+
+    public void setDouble(int aParameterIndex, double aValue) throws SQLException
+    {
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                ((PreparedStatement)sEach).setDouble(aParameterIndex, aValue);
+            }
+        }
+    }
+
+    public void setBigDecimal(int aParameterIndex, BigDecimal aValue) throws SQLException
+    {
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                ((PreparedStatement)sEach).setBigDecimal(aParameterIndex, aValue);
+            }
+        }
+    }
+
+    public void setString(int aParameterIndex, String aValue) throws SQLException
+    {
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                ((PreparedStatement)sEach).setString(aParameterIndex, aValue);
+            }
+        }
+    }
+
+    public void setBytes(int aParameterIndex, byte[] aValue) throws SQLException
+    {
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                ((PreparedStatement)sEach).setBytes(aParameterIndex, aValue);
+            }
+        }
+    }
+
+    public void setDate(int aParameterIndex, Date aValue) throws SQLException
+    {
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                ((PreparedStatement)sEach).setDate(aParameterIndex, aValue);
+            }
+        }
+    }
+
+    public void setDate(int aParameterIndex, Date aValue, Calendar aCal) throws SQLException
+    {
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                ((PreparedStatement)sEach).setDate(aParameterIndex, aValue, aCal);
+            }
+        }
+    }
+
+    public void setTime(int aParameterIndex, Time aValue) throws SQLException
+    {
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                ((PreparedStatement)sEach).setTime(aParameterIndex, aValue);
+            }
+        }
+    }
+
+    public void setTime(int aParameterIndex, Time aValue, Calendar aCal) throws SQLException
+    {
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                ((PreparedStatement)sEach).setTime(aParameterIndex, aValue, aCal);
+            }
+        }
+    }
+
+    public void setTimestamp(int aParameterIndex, Timestamp aValue) throws SQLException
+    {
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                ((PreparedStatement)sEach).setTimestamp(aParameterIndex, aValue);
+            }
+        }
+    }
+
+    public void setTimestamp(int aParameterIndex, Timestamp aValue, Calendar aCal) throws SQLException
+    {
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                ((PreparedStatement)sEach).setTimestamp(aParameterIndex, aValue, aCal);
+            }
+        }
+    }
+
+    public void setAsciiStream(int aParameterIndex, InputStream aValue, int aLength) throws SQLException
+    {
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                ((PreparedStatement)sEach).setAsciiStream(aParameterIndex, aValue, aLength);
+            }
+        }
+    }
+
+    public void setBinaryStream(int aParameterIndex, InputStream aValue, int aLength) throws SQLException
+    {
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                ((PreparedStatement)sEach).setBinaryStream(aParameterIndex, aValue, aLength);
+            }
+        }
+    }
+
+    public void setObject(int aParameterIndex, Object aValue, int aTargetSqlType, int aScale) throws SQLException
+    {
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                ((AltibasePreparedStatement)sEach).setObject(aParameterIndex, aValue, aTargetSqlType, aScale);
+            }
+        }
+    }
+
+    public void setObject(int aParameterIndex, Object aValue, int aTargetSqlType) throws SQLException
+    {
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                ((PreparedStatement)sEach).setObject(aParameterIndex, aValue, aTargetSqlType);
+            }
+        }
+    }
+
+    public void setCharacterStream(int aParameterIndex, Reader aReader, int aLength) throws SQLException
+    {
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                ((PreparedStatement)sEach).setCharacterStream(aParameterIndex, aReader, aLength);
+            }
+        }
+    }
+
+    public void setBlob(int aParameterIndex, Blob aValue) throws SQLException
+    {
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                ((PreparedStatement)sEach).setBlob(aParameterIndex, aValue);
+            }
+        }
+    }
+
+    public void setClob(int aParameterIndex, Clob aValue) throws SQLException
+    {
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            for (Statement sEach : mRoutedStatementMap.values())
+            {
+                ((PreparedStatement)sEach).setClob(aParameterIndex, aValue);
+            }
+        }
+    }
+
     /**
-     * ÏÉ§ÎìúÌÇ§Í∞íÏùÑ Í∏∞Ï§ÄÏúºÎ°ú Ìï¥ÎãπÌïòÎäî ÎÖ∏ÎìúÎì§Ïùò PreparedStatementÍ∞ùÏ≤¥Î•º Î¶¨ÌÑ¥ÌïúÎã§.
-     * @return PreparedStatement Í∞ùÏ≤¥
+     * ª˛µÂ≈∞∞™¿ª ±‚¡ÿ¿∏∑Œ «ÿ¥Á«œ¥¬ ≥ÎµÂµÈ¿« PreparedStatement∞¥√º∏¶ ∏Æ≈œ«—¥Ÿ.
+     * @return PreparedStatement ∞¥√º
      */
-    protected List<? extends BaseStatementUnit> route() throws SQLException
+    protected List<Statement> route() throws SQLException
     {
         mCurrentResultSet = null;
         mRouteResult = mRoutingEngine.route(mSql, mParameters);
+
+        // BUG-47460 lazy ∏µÂ¿œ∂ß∏∏ ∫¥∑ƒ∑Œ statement∏¶ ª˝º∫«—¥Ÿ.
         ExecutorEngine sExecutorEngine = mMetaConn.getExecutorEngine();
 
-        List<PreparedStatementUnit> sResult;
-
-        // ExecutorEngineÏùÑ ÌÜµÌï¥ Î≥ëÎ†¨Î°ú PreparedStatement Í∞ùÏ≤¥Î•º ÏÉùÏÑ±ÌïúÎã§.
-        sResult = sExecutorEngine.generateStatement(mRouteResult.getExecutionUnits(),
-                                                    new GenerateCallback<PreparedStatementUnit>()
+        if (mMetaConn.isLazyNodeConnect())
         {
-            public PreparedStatementUnit generate(SQLExecutionUnit aSqlExecutionUnit) throws SQLException
+            mPStmtUnit = sExecutorEngine.generateStatement(mRouteResult, new GenerateCallback<Statement>()
             {
-                Connection sNodeCon = mMetaConn.getNodeConnection(aSqlExecutionUnit.getNode());
-                PreparedStatement sStmt = getPreparedStatement(aSqlExecutionUnit, sNodeCon);
-                mShardStmt.replayMethodsInvocation(sStmt);
-                mShardStmt.replaySetParameter(sStmt);
-                mRoutedStatementMap.put(aSqlExecutionUnit.getNode(), sStmt);
-                return new PreparedStatementUnit(aSqlExecutionUnit, sStmt, mParameters);
-            }
-        });
+                public Statement generate(DataNode aNode) throws SQLException
+                {
+                    Connection sNodeCon = mMetaConn.getNodeConnection(aNode);
+                    PreparedStatement sStmt = getNodeStatement(aNode, sNodeCon);
+                    mRoutedStatementMap.put(aNode, sStmt);
+                    return sStmt;
+                }
+            });
+        }
 
-        return sResult;
+        mPStmtUnit.clear();
+        for (DataNode sEach : mRouteResult)
+        {
+            Statement sStmt = mRoutedStatementMap.get(sEach);
+            // BUG-47460 lazy connect mode¿Ã∞≈≥™ reshard∞° »∞º∫»≠ µ«æÓ ¿÷¥¬ ∞ÊøÏø°∏∏ setXXX∏ﬁº“µÂ∏¶ replay«—¥Ÿ.
+            if (mMetaConn.isLazyNodeConnect() || mMetaConn.isReshardEnabled())
+            {
+                mShardStmt.replaySetParameter((PreparedStatement)sStmt);
+                mShardStmt.replayMethodsInvocation(sStmt);
+            }
+            mPStmtUnit.add(sStmt);
+        }
+
+        // BUG-47096 lob ∞¸∑√ operation¿∫ ø©∑Ø∞≥¿« ≥ÎµÂµÈø° ¥Î«ÿ ºˆ«‡µ… ºˆ æ¯±‚ ∂ßπÆø° øπø‹∏¶ ø√∑¡æﬂ «—¥Ÿ.
+        if (mPStmtUnit.size() > 1 && isMultipleLobLocatorExist(mPStmtUnit))
+        {
+            Error.throwSQLException(ErrorDef.SHARD_MULTIPLE_LOB_OPERATION_NOT_SUPPORTED);
+        }
+        
+        calcDistTxInfo(mPStmtUnit);
+
+        return mPStmtUnit;
+    }
+
+    /**
+     * routeµ» PreparedStatementUnit¿ª º¯»Ø«œ∏Èº≠ lob locator∞° ¡∏¿Á«œ¥¬¡ˆ »Æ¿Œ«—¥Ÿ.
+     * @param aPreparedStmtUnits PreparedStatementUnit ∞¥√º∏ÆΩ∫∆Æ
+     * @return true - lob locator∞° ª˝º∫µ» node statement∞° 2∞≥ ¿ÃªÛ¿œ∂ß <br>
+     *         false - lob locator∞° ª˝º∫µ» node statement∞° 1∞≥ ¿Ã∞≈≥™ ∂«¥¬ 0¿œ∂ß
+     */
+    private boolean isMultipleLobLocatorExist(List<Statement> aPreparedStmtUnits)
+    {
+        int sLobStmtCnt = 0;
+        for (Statement sEach : aPreparedStmtUnits)
+        {
+            AltibasePreparedStatement sStmt = (AltibasePreparedStatement)sEach;
+            if (sStmt.getLobUpdator() != null)
+            {
+                sLobStmtCnt++;
+                if (sLobStmtCnt > 1)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private List<BatchPreparedStatementUnit> routeBatch() throws SQLException
     {
         List<BatchPreparedStatementUnit> sResult = new ArrayList<BatchPreparedStatementUnit>();
         mRouteResult = mRoutingEngine.route(mSql, mParameters);
-        for (SQLExecutionUnit sEach : mRouteResult.getExecutionUnits())
+        for (DataNode sEach : mRouteResult)
         {
             BatchPreparedStatementUnit sBatchStatementUnit = getPreparedBatchStatement(sEach);
             mShardStmt.replaySetParameter(sBatchStatementUnit.getStatement());
+            mShardStmt.replayMethodsInvocation(sBatchStatementUnit.getStatement());
             sResult.add(sBatchStatementUnit);
         }
 
         return sResult;
     }
 
-    private BatchPreparedStatementUnit getPreparedBatchStatement(SQLExecutionUnit aSqlExecutionUnit) throws SQLException
+    private BatchPreparedStatementUnit getPreparedBatchStatement(DataNode aNode) throws SQLException
     {
-        BatchPreparedStatementUnit sBatchStmtUnit = mBatchStmtUnitMap.get(aSqlExecutionUnit.getNode());
+        BatchPreparedStatementUnit sBatchStmtUnit = mBatchStmtUnitMap.get(aNode);
         if (sBatchStmtUnit == null)
         {
-            Connection sNodeCon = mMetaConn.getNodeConnection(aSqlExecutionUnit.getNode());
-            PreparedStatement sStmt = getPreparedStatement(aSqlExecutionUnit, sNodeCon);
-            sBatchStmtUnit = new BatchPreparedStatementUnit(aSqlExecutionUnit, sStmt, mParameters);
-            mBatchStmtUnitMap.put(aSqlExecutionUnit.getNode(), sBatchStmtUnit);
+            Connection sNodeCon = mMetaConn.getNodeConnection(aNode);
+            PreparedStatement sStmt = getNodeStatement(aNode, sNodeCon);
+            // BUG-47406 addBatchΩ√ Statement∏¶ ªı∑Œ ª˝º∫«— ∞ÊøÏ mRoutedStatementMapø° put¿ª «ÿ¡ÿ¥Ÿ.
+            mRoutedStatementMap.put(aNode, sStmt);
+            sBatchStmtUnit = new BatchPreparedStatementUnit(aNode, sStmt, mParameters);
+            mBatchStmtUnitMap.put(aNode, sBatchStmtUnit);
         }
 
         return sBatchStmtUnit;
     }
 
-    private PreparedStatement getPreparedStatement(SQLExecutionUnit aSqlExecutionUnit, Connection aConn) throws SQLException
+    PreparedStatement getNodeStatement(DataNode aNode, Connection aConn) throws SQLException
     {
-        PreparedStatement sStmt = (PreparedStatement)mRoutedStatementMap.get(aSqlExecutionUnit.getNode());
+        PreparedStatement sStmt = (PreparedStatement)mRoutedStatementMap.get(aNode);
         if (sStmt != null) return sStmt;
 
-        try
-        {
-            sStmt = aConn.prepareStatement(aSqlExecutionUnit.getSql(), mResultSetType, mResultSetConcurrency, mResultSetHoldability);
-            shard_log("(NODE PREPARE) {0}", aSqlExecutionUnit);
-            // BUG-46513 Meta Ïª§ÎÑ•ÏÖòÏóê ÏûàÎäî SMNÍ∞íÏùÑ ÏÖãÌåÖÌïúÎã§.
-            mShardStmt.setShardMetaNumber(mMetaConn.getShardMetaNumber());
-        }
-        catch (ShardFailoverIsNotAvailableException aShardFailoverEx)
-        {
-            mMetaConn.getCachedConnections().remove(aSqlExecutionUnit.getNode());
-            throw aShardFailoverEx;
-        }
-        catch (SQLException aEx)
-        {
-            if (ErrorDef.getErrorState(ErrorDef.FAILOVER_SUCCESS).equals(aEx.getSQLState()))
-            {
-                mMetaConn.getCachedConnections().remove(aSqlExecutionUnit.getNode());
-            }
-            throw aEx;
-        }
-
+        sStmt = aConn.prepareStatement(mSql, mResultSetType, mResultSetConcurrency, mResultSetHoldability);
+        shard_log("(NODE PREPARE) {0}", sStmt);
+        // BUG-46513 Meta ƒø≥ÿº«ø° ¿÷¥¬ SMN∞™¿ª º¬∆√«—¥Ÿ.
+        mShardStmt.setShardMetaNumber(mMetaConn.getShardMetaNumber());
         return sStmt;
     }
-
 }

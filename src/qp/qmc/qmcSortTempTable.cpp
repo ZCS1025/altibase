@@ -16,14 +16,14 @@
  
 
 /***********************************************************************
- * $Id: qmcSortTempTable.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmcSortTempTable.cpp 86786 2020-02-27 08:04:12Z donovan.seo $
  *
  * Description :
- *     Sort Temp Tableì„ ìœ„í•œ í•¨ìˆ˜
+ *     Sort Temp TableÀ» À§ÇÑ ÇÔ¼ö
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  *
  **********************************************************************/
@@ -44,32 +44,32 @@ qmcSortTemp::init( qmcdSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Sort Temp Tableì„ ì´ˆê¸°í™”í•œë‹¤.
+ *    Sort Temp TableÀ» ÃÊ±âÈ­ÇÑ´Ù.
  *
  * Implementation :
- *    Memory Temp Tableê³¼ Disk Temp Tableì˜ ì‚¬ìš©ì„ êµ¬ë¶„í•˜ì—¬
- *    ê·¸ì— ë§ëŠ” ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *    Memory Temp Table°ú Disk Temp TableÀÇ »ç¿ëÀ» ±¸ºĞÇÏ¿©
+ *    ±×¿¡ ¸Â´Â ÃÊ±âÈ­¸¦ ¼öÇàÇÑ´Ù.
  *
  *    BUG-38290
- *    Temp table ì€ ë‚´ë¶€ì— qcTemplate ê³¼ qmcMemory ë¥¼ ê°€ì§€ê³ 
- *    temp table ìƒì„±ì— ì‚¬ìš©í•œë‹¤.
- *    ì´ ë‘ê°€ì§€ëŠ” temp table ì„ init í•  ë•Œì˜ template ê³¼ ê·¸ template ì—
- *    ì—°ê²°ëœ QMX memory ì´ë‹¤.
- *    ë§Œì•½ temp table init ì‹œì ê³¼ temp table build ì‹œì ì— ì„œë¡œ ë‹¤ë¥¸
- *    template ì„ ì‚¬ìš©í•´ì•¼ í•œë‹¤ë©´ ì´ êµ¬ì¡°ê°€ ë³€ê²½ë˜ì–´ì•¼ í•œë‹¤.
- *    Parallel query ëŒ€ìƒì´ ì¦ê°€í•˜ë©´ì„œ temp table build ê°€ parallel ë¡œ
- *    ì§„í–‰ë  ê²½ìš° ì´ ë‚´ìš©ì„ ê³ ë ¤í•´ì•¼ í•œë‹¤.
+ *    Temp table Àº ³»ºÎ¿¡ qcTemplate °ú qmcMemory ¸¦ °¡Áö°í
+ *    temp table »ı¼º¿¡ »ç¿ëÇÑ´Ù.
+ *    ÀÌ µÎ°¡Áö´Â temp table À» init ÇÒ ¶§ÀÇ template °ú ±× template ¿¡
+ *    ¿¬°áµÈ QMX memory ÀÌ´Ù.
+ *    ¸¸¾à temp table init ½ÃÁ¡°ú temp table build ½ÃÁ¡¿¡ ¼­·Î ´Ù¸¥
+ *    template À» »ç¿ëÇØ¾ß ÇÑ´Ù¸é ÀÌ ±¸Á¶°¡ º¯°æµÇ¾î¾ß ÇÑ´Ù.
+ *    Parallel query ´ë»óÀÌ Áõ°¡ÇÏ¸é¼­ temp table build °¡ parallel ·Î
+ *    ÁøÇàµÉ °æ¿ì ÀÌ ³»¿ëÀ» °í·ÁÇØ¾ß ÇÑ´Ù.
  *
- *    Temp table build ëŠ” temp table ì´ ì¡´ì¬í•˜ëŠ” plan node ì˜
- *    init ì‹œì ì— ì‹¤í–‰ëœë‹¤.
- *    í•˜ì§€ë§Œ í˜„ì¬ parallel query ëŠ” partitioned table ì´ë‚˜ HASH, SORT,
- *    GRAG  ë…¸ë“œì—ë§Œ PRLQ ë…¸ë“œë¥¼ ìƒì„±, parallel ì‹¤í–‰í•˜ë¯€ë¡œ 
- *    temp table ì´ ì¡´ì¬í•˜ëŠ” plan node ë¥¼ ì§ì ‘ init  í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *    Temp table build ´Â temp table ÀÌ Á¸ÀçÇÏ´Â plan node ÀÇ
+ *    init ½ÃÁ¡¿¡ ½ÇÇàµÈ´Ù.
+ *    ÇÏÁö¸¸ ÇöÀç parallel query ´Â partitioned table ÀÌ³ª HASH, SORT,
+ *    GRAG  ³ëµå¿¡¸¸ PRLQ ³ëµå¸¦ »ı¼º, parallel ½ÇÇàÇÏ¹Ç·Î 
+ *    temp table ÀÌ Á¸ÀçÇÏ´Â plan node ¸¦ Á÷Á¢ init  ÇÏÁö ¾Ê´Â´Ù.
  *
- *    ë‹¤ë§Œ subqeury filter ë‚´ì—ì„œ temp table ì„ ì‚¬ìš©í•  ê²½ìš°ëŠ” ì˜ˆì™¸ê°€ ìˆì„ ìˆ˜
- *    ìˆìœ¼ë‚˜, subquery filter ëŠ” plan node ê°€ ì‹¤í–‰ë  ë•Œ ì´ˆê¸°í™” ë˜ë¯€ë¡œ
- *    ë™ì‹œì— temp table  ì´ ìƒì„±ë˜ëŠ” ì¼ì€ ì—†ë‹¤.
- *    (qmcTempTableMgr::addTempTable ì˜ ê´€ë ¨ ì£¼ì„ ì°¸ì¡°)
+ *    ´Ù¸¸ subqeury filter ³»¿¡¼­ temp table À» »ç¿ëÇÒ °æ¿ì´Â ¿¹¿Ü°¡ ÀÖÀ» ¼ö
+ *    ÀÖÀ¸³ª, subquery filter ´Â plan node °¡ ½ÇÇàµÉ ¶§ ÃÊ±âÈ­ µÇ¹Ç·Î
+ *    µ¿½Ã¿¡ temp table  ÀÌ »ı¼ºµÇ´Â ÀÏÀº ¾ø´Ù.
+ *    (qmcTempTableMgr::addTempTable ÀÇ °ü·Ã ÁÖ¼® ÂüÁ¶)
  *
  ***********************************************************************/
 
@@ -79,7 +79,7 @@ qmcSortTemp::init( qmcdSortTemp * aTempTable,
     mtcColumn  * sColumn;
     UInt         i;
 
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     IDE_DASSERT( aRecordNode != NULL );
 
     aTempTable->flag       = aFlag;
@@ -97,6 +97,7 @@ qmcSortTemp::init( qmcdSortTemp * aTempTable,
     aTempTable->nullRow = NULL;
     aTempTable->range = NULL;
     aTempTable->rangeArea = NULL;
+    aTempTable->rangeAreaSize = 0;
     aTempTable->memoryTemp = NULL;
     aTempTable->diskTemp = NULL;
 
@@ -117,13 +118,13 @@ qmcSortTemp::init( qmcdSortTemp * aTempTable,
          == QMCD_SORT_TMP_STORAGE_MEMORY )
     {
         //-----------------------------------------
-        // Memory Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
-        //    1. Null Row ìƒì„±
-        //    2. Memory Sort Temp Table ì´ˆê¸°í™”
-        //    3. Recordìš© Memory ê´€ë¦¬ì ì´ˆê¸°í™”
+        // Memory Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
+        //    1. Null Row »ı¼º
+        //    2. Memory Sort Temp Table ÃÊ±âÈ­
+        //    3. Record¿ë Memory °ü¸®ÀÚ ÃÊ±âÈ­
         //-----------------------------------------
 
-        // Memory Sort Temp Table ê°ì²´ì˜ ìƒì„± ë° ì´ˆê¸°í™”
+        // Memory Sort Temp Table °´Ã¼ÀÇ »ı¼º ¹× ÃÊ±âÈ­
         IDU_FIT_POINT( "qmcSortTemp::init::alloc::memoryTemp",
                         idERR_ABORT_InsufficientMemory );
 
@@ -136,7 +137,7 @@ qmcSortTemp::init( qmcdSortTemp * aTempTable,
                                     aTempTable->memory,
                                     aTempTable->sortNode ) != IDE_SUCCESS );
 
-        // Record ê³µê°„ í• ë‹¹ì„ ìœ„í•œ ë©”ëª¨ë¦¬ ê´€ë¦¬ì ì´ˆê¸°í™”
+        // Record °ø°£ ÇÒ´çÀ» À§ÇÑ ¸Ş¸ğ¸® °ü¸®ÀÚ ÃÊ±âÈ­
         IDU_FIT_POINT( "qmcSortTemp::init::alloc::memoryMgr",
                         idERR_ABORT_InsufficientMemory );
 
@@ -149,7 +150,7 @@ qmcSortTemp::init( qmcdSortTemp * aTempTable,
         /* BUG-38290 */
         aTempTable->memoryMgr->init( aTempTable->mtrRowSize );
 
-        // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+        // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
         for ( i = 0, sColumn = aTempTable->recordNode->dstTuple->columns;
               i < aTempTable->recordNode->dstTuple->columnCount;
               i++, sColumn++ )
@@ -165,7 +166,7 @@ qmcSortTemp::init( qmcdSortTemp * aTempTable,
             }
         }
             
-        // ë¯¸ë¦¬ ë²„í¼ë¥¼ í• ë‹¹í•œë‹¤.
+        // ¹Ì¸® ¹öÆÛ¸¦ ÇÒ´çÇÑ´Ù.
         if ( aTempTable->existTempType == ID_TRUE )
         {
             /* BUG-38290 */
@@ -180,20 +181,20 @@ qmcSortTemp::init( qmcdSortTemp * aTempTable,
             // Nothing to do.
         }
 
-        // Memory Temp Tableì„ ìœ„í•œ Null Rowë¥¼ ìƒì„±í•œë‹¤.
+        // Memory Temp TableÀ» À§ÇÑ Null Row¸¦ »ı¼ºÇÑ´Ù.
         IDE_TEST( makeMemNullRow( aTempTable ) != IDE_SUCCESS );
     }
     else
     {
         //-----------------------------------------
-        // Disk Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Disk Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
-        // Disk Temp Tableì„ ìœ„í•œ Null Row ìƒì„±ì€
-        // Disk Temp Tableì—ì„œ í•˜ë©°,
-        // Null Rowì˜ íšë“ì€ Disk Temp Tableë¡œë¶€í„° ì–»ì–´ì˜¨ë‹¤.
+        // Disk Temp TableÀ» À§ÇÑ Null Row »ı¼ºÀº
+        // Disk Temp Table¿¡¼­ ÇÏ¸ç,
+        // Null RowÀÇ È¹µæÀº Disk Temp Table·ÎºÎÅÍ ¾ò¾î¿Â´Ù.
 
-        // Disk Sort Temp Table ê°ì²´ì˜ ìƒì„± ë° ì´ˆê¸°í™”
+        // Disk Sort Temp Table °´Ã¼ÀÇ »ı¼º ¹× ÃÊ±âÈ­
         IDU_FIT_POINT( "qmcSortTemp::init::alloc::diskTemp",
                         idERR_ABORT_InsufficientMemory );
 
@@ -226,9 +227,9 @@ qmcSortTemp::clear( qmcdSortTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *     Temp Tableë‚´ì˜ ëª¨ë“  ë°ì´í„°ë¥¼ ì œê±°í•˜ê³ , ì´ˆê¸°í™”í•œë‹¤.
- *     Dependency ë³€ê²½ì— ì˜í•˜ì—¬ ì¤‘ê°„ ê²°ê³¼ë¥¼ ì¬êµ¬ì„±í•  í•„ìš”ê°€ ìˆì„ ë•Œ,
- *     ì‚¬ìš©ëœë‹¤.
+ *     Temp Table³»ÀÇ ¸ğµç µ¥ÀÌÅÍ¸¦ Á¦°ÅÇÏ°í, ÃÊ±âÈ­ÇÑ´Ù.
+ *     Dependency º¯°æ¿¡ ÀÇÇÏ¿© Áß°£ °á°ú¸¦ Àç±¸¼ºÇÒ ÇÊ¿ä°¡ ÀÖÀ» ¶§,
+ *     »ç¿ëµÈ´Ù.
  *
  * Implementation :
  *
@@ -243,16 +244,16 @@ qmcSortTemp::clear( qmcdSortTemp * aTempTable )
          == QMCD_SORT_TMP_STORAGE_MEMORY )
     {
         //-----------------------------------------
-        // Memory Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
-        //     1. Recordë¥¼ ìœ„í•´ í• ë‹¹ëœ ê³µê°„ ì œê±°
-        //     2. Memory Sort Temp Table ì˜ clear
+        // Memory Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
+        //     1. Record¸¦ À§ÇØ ÇÒ´çµÈ °ø°£ Á¦°Å
+        //     2. Memory Sort Temp Table ÀÇ clear
         //-----------------------------------------
 
-        // Memory Sort Temp Tableì˜ clear
+        // Memory Sort Temp TableÀÇ clear
         IDE_TEST( qmcMemSort::clear( aTempTable->memoryTemp )
                   != IDE_SUCCESS );
             
-        // ë¯¸ë¦¬ ë²„í¼ë¥¼ í• ë‹¹í•œë‹¤.
+        // ¹Ì¸® ¹öÆÛ¸¦ ÇÒ´çÇÑ´Ù.
         if ( aTempTable->existTempType == ID_TRUE )
         {
             /* BUG-38290 */
@@ -270,10 +271,10 @@ qmcSortTemp::clear( qmcdSortTemp * aTempTable )
     else
     {
         //-----------------------------------------
-        // Disk Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Disk Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
-        // Disk Sort Temp Tableì˜ clear
+        // Disk Sort Temp TableÀÇ clear
         IDE_TEST( qmcDiskSort::clear( aTempTable->diskTemp )
                   != IDE_SUCCESS );
     }
@@ -293,7 +294,7 @@ qmcSortTemp::clearHitFlag( qmcdSortTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *     ëª¨ë“  Recordì˜ Hit Flagì„ ì´ˆê¸°í™”í•œë‹¤.
+ *     ¸ğµç RecordÀÇ Hit FlagÀ» ÃÊ±âÈ­ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -306,7 +307,7 @@ qmcSortTemp::clearHitFlag( qmcdSortTemp * aTempTable )
          == QMCD_SORT_TMP_STORAGE_MEMORY )
     {
         //-----------------------------------------
-        // Memory Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Memory Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         IDE_TEST( qmcMemSort::clearHitFlag( aTempTable->memoryTemp )
@@ -315,7 +316,7 @@ qmcSortTemp::clearHitFlag( qmcdSortTemp * aTempTable )
     else
     {
         //-----------------------------------------
-        // Disk Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Disk Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         IDE_TEST( qmcDiskSort::clearHitFlag( aTempTable->diskTemp )
@@ -338,7 +339,7 @@ qmcSortTemp::alloc( qmcdSortTemp  * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Recordë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
+ *    Record¸¦ À§ÇÑ °ø°£À» ÇÒ´ç¹Ş´Â´Ù.
  *
  * Implementation :
  *
@@ -351,10 +352,10 @@ qmcSortTemp::alloc( qmcdSortTemp  * aTempTable,
          == QMCD_SORT_TMP_STORAGE_MEMORY )
     {
         //-----------------------------------------
-        // Memory Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Memory Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
-        // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+        // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
         if ( aTempTable->existTempType == ID_TRUE )
         {
             *aRow = aTempTable->insertRow;
@@ -372,8 +373,8 @@ qmcSortTemp::alloc( qmcdSortTemp  * aTempTable,
                 != IDE_SUCCESS);
            
             // PROJ-2462 ResultCache
-            // ResultCacheê°€ ì‚¬ìš©ë˜ë©´ CacheMemory ì™€ qmxMemoryì˜ í•©ê²Œë¡œ
-            // ExecuteMemoryMaxë¥¼ ì²´í¬í•œë‹¤.
+            // ResultCache°¡ »ç¿ëµÇ¸é CacheMemory ¿Í qmxMemoryÀÇ ÇÕ°Ô·Î
+            // ExecuteMemoryMax¸¦ Ã¼Å©ÇÑ´Ù.
             if ( ( aTempTable->mTemplate->resultCache.count > 0 ) &&
                  ( ( aTempTable->mTemplate->resultCache.flag & QC_RESULT_CACHE_MAX_EXCEED_MASK )
                    == QC_RESULT_CACHE_MAX_EXCEED_FALSE ) &&
@@ -393,12 +394,12 @@ qmcSortTemp::alloc( qmcdSortTemp  * aTempTable,
     else
     {
         //-----------------------------------------
-        // Disk Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Disk Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
-        // Disk Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
-        // ë³„ë„ì˜ Memory ê³µê°„ì„ í• ë‹¹ë°›ì§€ ì•Šê³  ì²˜ìŒì— í• ë‹¹í•œ
-        // ë©”ëª¨ë¦¬ ì˜ì—­ì„ ë°˜ë³µì ìœ¼ë¡œ ì‚¬ìš©í•œë‹¤.
+        // Disk Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
+        // º°µµÀÇ Memory °ø°£À» ÇÒ´ç¹ŞÁö ¾Ê°í Ã³À½¿¡ ÇÒ´çÇÑ
+        // ¸Ş¸ğ¸® ¿µ¿ªÀ» ¹İº¹ÀûÀ¸·Î »ç¿ëÇÑ´Ù.
 
         // Nothing To Do
     }
@@ -419,7 +420,7 @@ qmcSortTemp::addRow( qmcdSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Temp Tableì— Recordë¥¼ ì‚½ì…í•œë‹¤.
+ *    Temp Table¿¡ Record¸¦ »ğÀÔÇÑ´Ù.
  *
  * Implementation :
  *
@@ -436,7 +437,7 @@ qmcSortTemp::addRow( qmcdSortTemp * aTempTable,
     if ( (aTempTable->flag & QMCD_SORT_TMP_STORAGE_TYPE)
          == QMCD_SORT_TMP_STORAGE_MEMORY )
     {
-        // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+        // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
         if ( aTempTable->existTempType == ID_TRUE )
         {
             IDE_TEST( makeTempTypeRow( aTempTable,
@@ -450,26 +451,26 @@ qmcSortTemp::addRow( qmcdSortTemp * aTempTable,
         }
         
         //-----------------------------------------
-        // Memory Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
-        //    1. Hit Flagì„ ì´ˆê¸°í™”í•œë‹¤.
-        //    2. Memory Temp Tableì— ì‚½ì…í•œë‹¤.
+        // Memory Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
+        //    1. Hit FlagÀ» ÃÊ±âÈ­ÇÑ´Ù.
+        //    2. Memory Temp Table¿¡ »ğÀÔÇÑ´Ù.
         //-----------------------------------------
 
-        // Hit Flagì„ ì´ˆê¸°í™”í•œë‹¤.
+        // Hit FlagÀ» ÃÊ±âÈ­ÇÑ´Ù.
         sElement = (qmcMemSortElement*) sRow;
 
         sElement->flag  = QMC_ROW_INITIALIZE;
         sElement->flag &= ~QMC_ROW_HIT_MASK;
         sElement->flag |= QMC_ROW_HIT_FALSE;
 
-        // Memory Temp Tableì— ì‚½ì…í•œë‹¤.
+        // Memory Temp Table¿¡ »ğÀÔÇÑ´Ù.
         IDE_TEST( qmcMemSort::attach( aTempTable->memoryTemp, sRow )
                   != IDE_SUCCESS );
     }
     else
     {
         //-----------------------------------------
-        // Disk Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Disk Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         IDE_TEST( qmcDiskSort::insert( aTempTable->diskTemp, aRow )
@@ -495,7 +496,7 @@ qmcSortTemp::makeTempTypeRow( qmcdSortTemp  * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ì¼ë°˜ memory rowë¥¼ memory í™•ì¥ row í˜•íƒœë¡œ ë§Œë“ ë‹¤.
+ *    ÀÏ¹İ memory row¸¦ memory È®Àå row ÇüÅÂ·Î ¸¸µç´Ù.
  *
  * Implementation :
  *
@@ -542,7 +543,7 @@ qmcSortTemp::makeTempTypeRow( qmcdSortTemp  * aTempTable,
             & sExtRow )
         != IDE_SUCCESS);
 
-    // fixed row ë³µì‚¬
+    // fixed row º¹»ç
     idlOS::memcpy( (SChar*)sExtRow, (SChar*)aRow,
                    aTempTable->mtrRowSize );
 
@@ -552,7 +553,7 @@ qmcSortTemp::makeTempTypeRow( qmcdSortTemp  * aTempTable,
           i < aTempTable->recordNode->dstTuple->columnCount;
           i++, sColumn++ )
     {
-        // offset ì €ì¥
+        // offset ÀúÀå
         if ( ( sColumn->column.flag & SMI_COLUMN_TYPE_MASK )
              == SMI_COLUMN_TYPE_TEMP_1B )
         {
@@ -621,7 +622,7 @@ qmcSortTemp::sort( qmcdSortTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *     ì €ì¥ëœ Rowë“¤ì˜ ì •ë ¬ì„ ìˆ˜í–‰í•œë‹¤.
+ *     ÀúÀåµÈ RowµéÀÇ Á¤·ÄÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
  *
@@ -634,7 +635,7 @@ qmcSortTemp::sort( qmcdSortTemp * aTempTable )
          == QMCD_SORT_TMP_STORAGE_MEMORY )
     {
         //-----------------------------------------
-        // Memory Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Memory Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
         IDE_TEST( qmcMemSort::sort( aTempTable->memoryTemp )
                   != IDE_SUCCESS );
@@ -642,10 +643,10 @@ qmcSortTemp::sort( qmcdSortTemp * aTempTable )
     else
     {
         //-----------------------------------------
-        // Disk Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Disk Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
-        // PROJ-1431 : bottom-up index buildë¥¼ ìœ„í•´ rowë¥¼ ëª¨ë‘ ì±„ìš´ í›„
-        // index(sparse cluster b-tree)ë¥¼ buildí•¨
+        // PROJ-1431 : bottom-up index build¸¦ À§ÇØ row¸¦ ¸ğµÎ Ã¤¿î ÈÄ
+        // index(sparse cluster b-tree)¸¦ buildÇÔ
         if( aTempTable->diskTemp->sortNode != NULL )
         {
             IDE_TEST( qmcDiskSort::sort( aTempTable->diskTemp )
@@ -670,10 +671,10 @@ qmcSortTemp::shiftAndAppend( qmcdSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *     Limit Sortingì„ ìˆ˜í–‰í•œë‹¤.
+ *     Limit SortingÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *     Memory Temp Tableì¼ ê²½ìš°ë§Œ ìœ íš¨í•¨
+ *     Memory Temp TableÀÏ °æ¿ì¸¸ À¯È¿ÇÔ
  *
  ***********************************************************************/
 
@@ -685,7 +686,7 @@ qmcSortTemp::shiftAndAppend( qmcdSortTemp * aTempTable,
     if ( (aTempTable->flag & QMCD_SORT_TMP_STORAGE_TYPE)
          == QMCD_SORT_TMP_STORAGE_MEMORY )
     {
-        // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+        // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
         if ( aTempTable->existTempType == ID_TRUE )
         {
             IDE_TEST( makeTempTypeRow( aTempTable,
@@ -699,7 +700,7 @@ qmcSortTemp::shiftAndAppend( qmcdSortTemp * aTempTable,
         }
         
         //-----------------------------------------
-        // Memory Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Memory Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         IDE_TEST( qmcMemSort::shiftAndAppend( aTempTable->memoryTemp,
@@ -710,10 +711,10 @@ qmcSortTemp::shiftAndAppend( qmcdSortTemp * aTempTable,
     else
     {
         //-----------------------------------------
-        // Disk Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Disk Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
-        // Memory Temp Tableì—ì„œë§Œ ì‚¬ìš© ê°€ëŠ¥í•¨.
+        // Memory Temp Table¿¡¼­¸¸ »ç¿ë °¡´ÉÇÔ.
         IDE_DASSERT( 0 );
     }
 
@@ -734,10 +735,10 @@ qmcSortTemp::changeMinMax( qmcdSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *     Min-Max ì €ì¥ì„ ìœ„í•œ Limit Sortingì„ ìˆ˜í–‰í•œë‹¤.
+ *     Min-Max ÀúÀåÀ» À§ÇÑ Limit SortingÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *     Memory Temp Tableì¼ ê²½ìš°ë§Œ ìœ íš¨í•¨
+ *     Memory Temp TableÀÏ °æ¿ì¸¸ À¯È¿ÇÔ
  *
  ***********************************************************************/
 
@@ -749,7 +750,7 @@ qmcSortTemp::changeMinMax( qmcdSortTemp * aTempTable,
     if ( (aTempTable->flag & QMCD_SORT_TMP_STORAGE_TYPE)
          == QMCD_SORT_TMP_STORAGE_MEMORY )
     {
-        // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+        // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
         if ( aTempTable->existTempType == ID_TRUE )
         {
             IDE_TEST( makeTempTypeRow( aTempTable,
@@ -763,7 +764,7 @@ qmcSortTemp::changeMinMax( qmcdSortTemp * aTempTable,
         }
         
         //-----------------------------------------
-        // Memory Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Memory Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         IDE_TEST( qmcMemSort::changeMinMax( aTempTable->memoryTemp,
@@ -774,10 +775,10 @@ qmcSortTemp::changeMinMax( qmcdSortTemp * aTempTable,
     else
     {
         //-----------------------------------------
-        // Disk Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Disk Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
-        // Memory Temp Tableì—ì„œë§Œ ì‚¬ìš© ê°€ëŠ¥í•¨.
+        // Memory Temp Table¿¡¼­¸¸ »ç¿ë °¡´ÉÇÔ.
         IDE_DASSERT( 0 );
     }
 
@@ -797,7 +798,7 @@ qmcSortTemp::getFirstSequence( qmcdSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ì²«ë²ˆì§¸ ìˆœì°¨ ê²€ìƒ‰
+ *    Ã¹¹øÂ° ¼øÂ÷ °Ë»ö
  *
  * Implementation :
  *
@@ -810,7 +811,7 @@ qmcSortTemp::getFirstSequence( qmcdSortTemp * aTempTable,
          == QMCD_SORT_TMP_STORAGE_MEMORY )
     {
         //-----------------------------------------
-        // Memory Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Memory Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         IDE_TEST( qmcMemSort::getFirstSequence( aTempTable->memoryTemp,
@@ -820,7 +821,7 @@ qmcSortTemp::getFirstSequence( qmcdSortTemp * aTempTable,
     else
     {
         //-----------------------------------------
-        // Disk Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Disk Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         IDE_TEST( qmcDiskSort::getFirstSequence( aTempTable->diskTemp,
@@ -845,7 +846,7 @@ qmcSortTemp::getNextSequence( qmcdSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ë‹¤ìŒ ìˆœì°¨ ê²€ìƒ‰
+ *    ´ÙÀ½ ¼øÂ÷ °Ë»ö
  *
  * Implementation :
  *
@@ -858,7 +859,7 @@ qmcSortTemp::getNextSequence( qmcdSortTemp * aTempTable,
          == QMCD_SORT_TMP_STORAGE_MEMORY )
     {
         //-----------------------------------------
-        // Memory Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Memory Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         IDE_TEST( qmcMemSort::getNextSequence( aTempTable->memoryTemp,
@@ -868,7 +869,7 @@ qmcSortTemp::getNextSequence( qmcdSortTemp * aTempTable,
     else
     {
         //-----------------------------------------
-        // Disk Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Disk Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         IDE_TEST( qmcDiskSort::getNextSequence( aTempTable->diskTemp,
@@ -894,7 +895,7 @@ qmcSortTemp::getFirstRange( qmcdSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ì²«ë²ˆì§¸ Range ê²€ìƒ‰
+ *    Ã¹¹øÂ° Range °Ë»ö
  *
  * Implementation :
  *
@@ -907,14 +908,14 @@ qmcSortTemp::getFirstRange( qmcdSortTemp * aTempTable,
          == QMCD_SORT_TMP_STORAGE_MEMORY )
     {
         //-----------------------------------------
-        // Memory Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Memory Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
-        // Key Rangeë¥¼ ìƒì„±
+        // Key Range¸¦ »ı¼º
         IDE_TEST( makeMemKeyRange( aTempTable, aRangePredicate )
                   != IDE_SUCCESS );
 
-        // ìƒì„±í•œ Key Rangeë¥¼ ì´ìš©í•œ ê²€ìƒ‰
+        // »ı¼ºÇÑ Key Range¸¦ ÀÌ¿ëÇÑ °Ë»ö
         IDE_TEST( qmcMemSort::getFirstRange( aTempTable->memoryTemp,
                                              aTempTable->range,
                                              aRow )
@@ -923,12 +924,12 @@ qmcSortTemp::getFirstRange( qmcdSortTemp * aTempTable,
     else
     {
         //-----------------------------------------
-        // Disk Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Disk Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
-        // Key Rangeì˜ ìƒì„±ì„ ìœ„í•´ì„œëŠ” Index ì •ë³´ë“±ì´ í•„ìš”í•˜ë‹¤.
-        // ë”°ë¼ì„œ, Disk Temp Tableë‚´ì—ì„œ Key Rangeë¥¼ ìƒì„±í•˜ì—¬
-        // ì²˜ë¦¬í•œë‹¤.
+        // Key RangeÀÇ »ı¼ºÀ» À§ÇØ¼­´Â Index Á¤º¸µîÀÌ ÇÊ¿äÇÏ´Ù.
+        // µû¶ó¼­, Disk Temp Table³»¿¡¼­ Key Range¸¦ »ı¼ºÇÏ¿©
+        // Ã³¸®ÇÑ´Ù.
         IDE_TEST( qmcDiskSort::getFirstRange( aTempTable->diskTemp,
                                               aRangePredicate,
                                               aRow )
@@ -1003,7 +1004,7 @@ qmcSortTemp::getNextRange( qmcdSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ë‹¤ìŒ Range ê²€ìƒ‰
+ *    ´ÙÀ½ Range °Ë»ö
  *
  * Implementation :
  *
@@ -1016,17 +1017,17 @@ qmcSortTemp::getNextRange( qmcdSortTemp * aTempTable,
          == QMCD_SORT_TMP_STORAGE_MEMORY )
     {
         //-----------------------------------------
-        // Memory Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Memory Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
-        // ì´ë¯¸ ìƒì„±ëœ Key Rangeë¥¼ ì´ìš©í•œ ê²€ìƒ‰
+        // ÀÌ¹Ì »ı¼ºµÈ Key Range¸¦ ÀÌ¿ëÇÑ °Ë»ö
         IDE_TEST( qmcMemSort::getNextRange( aTempTable->memoryTemp, aRow )
                   != IDE_SUCCESS );
     }
     else
     {
         //-----------------------------------------
-        // Disk Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Disk Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         IDE_TEST( qmcDiskSort::getNextRange( aTempTable->diskTemp, aRow )
@@ -1049,7 +1050,7 @@ IDE_RC qmcSortTemp::getFirstHit( qmcdSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description : PROJ-2385
- *     ì²«ë²ˆì§¸ Hit ëœ Rowê²€ìƒ‰
+ *     Ã¹¹øÂ° Hit µÈ Row°Ë»ö
  *
  * Implementation :
  *
@@ -1059,7 +1060,7 @@ IDE_RC qmcSortTemp::getFirstHit( qmcdSortTemp * aTempTable,
          == QMCD_SORT_TMP_STORAGE_MEMORY )
     {
         //-----------------------------------------
-        // Memory Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Memory Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         IDE_TEST( qmcMemSort::getFirstHit( aTempTable->memoryTemp, aRow )
@@ -1068,7 +1069,7 @@ IDE_RC qmcSortTemp::getFirstHit( qmcdSortTemp * aTempTable,
     else
     {
         //-----------------------------------------
-        // Disk Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Disk Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         IDE_TEST( qmcDiskSort::getFirstHit( aTempTable->diskTemp, aRow )
@@ -1088,7 +1089,7 @@ IDE_RC qmcSortTemp::getNextHit( qmcdSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description : PROJ-2385
- *     ë‹¤ìŒ Hit ëœ Rowê²€ìƒ‰
+ *     ´ÙÀ½ Hit µÈ Row°Ë»ö
  *
  * Implementation :
  *
@@ -1098,7 +1099,7 @@ IDE_RC qmcSortTemp::getNextHit( qmcdSortTemp * aTempTable,
          == QMCD_SORT_TMP_STORAGE_MEMORY )
     {
         //-----------------------------------------
-        // Memory Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Memory Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         IDE_TEST( qmcMemSort::getNextHit( aTempTable->memoryTemp, aRow )
@@ -1107,7 +1108,7 @@ IDE_RC qmcSortTemp::getNextHit( qmcdSortTemp * aTempTable,
     else
     {
         //-----------------------------------------
-        // Disk Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Disk Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         IDE_TEST( qmcDiskSort::getNextHit( aTempTable->diskTemp, aRow )
@@ -1128,7 +1129,7 @@ qmcSortTemp::getFirstNonHit( qmcdSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Hitë˜ì§€ ì•Šì€ Recordë¥¼ ê²€ìƒ‰í•œë‹¤.
+ *    HitµÇÁö ¾ÊÀº Record¸¦ °Ë»öÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1138,7 +1139,7 @@ qmcSortTemp::getFirstNonHit( qmcdSortTemp * aTempTable,
          == QMCD_SORT_TMP_STORAGE_MEMORY )
     {
         //-----------------------------------------
-        // Memory Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Memory Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         IDE_TEST( qmcMemSort::getFirstNonHit( aTempTable->memoryTemp, aRow )
@@ -1147,7 +1148,7 @@ qmcSortTemp::getFirstNonHit( qmcdSortTemp * aTempTable,
     else
     {
         //-----------------------------------------
-        // Disk Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Disk Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         IDE_TEST( qmcDiskSort::getFirstNonHit( aTempTable->diskTemp, aRow )
@@ -1168,7 +1169,7 @@ qmcSortTemp::getNextNonHit( qmcdSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Hitë˜ì§€ ì•Šì€ Recordë¥¼ ê²€ìƒ‰í•œë‹¤.
+ *    HitµÇÁö ¾ÊÀº Record¸¦ °Ë»öÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1178,7 +1179,7 @@ qmcSortTemp::getNextNonHit( qmcdSortTemp * aTempTable,
          == QMCD_SORT_TMP_STORAGE_MEMORY )
     {
         //-----------------------------------------
-        // Memory Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Memory Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         IDE_TEST( qmcMemSort::getNextNonHit( aTempTable->memoryTemp, aRow )
@@ -1187,7 +1188,7 @@ qmcSortTemp::getNextNonHit( qmcdSortTemp * aTempTable,
     else
     {
         //-----------------------------------------
-        // Disk Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Disk Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         IDE_TEST( qmcDiskSort::getNextNonHit( aTempTable->diskTemp, aRow )
@@ -1209,7 +1210,7 @@ qmcSortTemp::getNullRow( qmcdSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    NULL Rowë¥¼ ê²€ìƒ‰í•œë‹¤.
+ *    NULL Row¸¦ °Ë»öÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1221,14 +1222,14 @@ qmcSortTemp::getNullRow( qmcdSortTemp * aTempTable,
          == QMCD_SORT_TMP_STORAGE_MEMORY )
     {
         //-----------------------------------------
-        // Memory Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Memory Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         IDE_DASSERT( aTempTable->nullRow != NULL );
         
         *aRow = aTempTable->nullRow;
         
-        // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+        // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
         for ( sNode = aTempTable->recordNode;
               sNode != NULL;
               sNode = sNode->next )
@@ -1240,7 +1241,7 @@ qmcSortTemp::getNullRow( qmcdSortTemp * aTempTable,
     else
     {
         //-----------------------------------------
-        // Disk Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Disk Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         IDE_TEST( qmcDiskSort::getNullRow( aTempTable->diskTemp, aRow )
@@ -1260,7 +1261,7 @@ qmcSortTemp::setHitFlag( qmcdSortTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    í˜„ì¬ ì½ì–´ê°„ Recordì— Hit Flagì„ ì„¤ì •í•œë‹¤.
+ *    ÇöÀç ÀĞ¾î°£ Record¿¡ Hit FlagÀ» ¼³Á¤ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1272,22 +1273,22 @@ qmcSortTemp::setHitFlag( qmcdSortTemp * aTempTable )
          == QMCD_SORT_TMP_STORAGE_MEMORY )
     {
         //-----------------------------------------
-        // Memory Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
-        //    1. í˜„ì¬ ì½ê³  ìˆëŠ” Recordë¥¼ ì°¾ëŠ”ë‹¤.
-        //    2. í•´ë‹¹ Recordì— Hit Flagì„ settingí•œë‹¤.
+        // Memory Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
+        //    1. ÇöÀç ÀĞ°í ÀÖ´Â Record¸¦ Ã£´Â´Ù.
+        //    2. ÇØ´ç Record¿¡ Hit FlagÀ» settingÇÑ´Ù.
         //-----------------------------------------
 
-        // í˜„ì¬ ì½ê³  ìˆëŠ” Record ê²€ìƒ‰
+        // ÇöÀç ÀĞ°í ÀÖ´Â Record °Ë»ö
         sElement = (qmcMemSortElement*) aTempTable->recordNode->dstTuple->row;
 
-        // í•´ë‹¹ Recordì— Hit Flag Setting
+        // ÇØ´ç Record¿¡ Hit Flag Setting
         sElement->flag &= ~QMC_ROW_HIT_MASK;
         sElement->flag |= QMC_ROW_HIT_TRUE;
     }
     else
     {
         //-----------------------------------------
-        // Disk Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Disk Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         IDE_TEST( qmcDiskSort::setHitFlag( aTempTable->diskTemp )
@@ -1306,7 +1307,7 @@ idBool qmcSortTemp::isHitFlagged( qmcdSortTemp * aTempTable )
 /***********************************************************************
  *
  * Description : PROJ-2385
- *    í˜„ì¬ ì½ì–´ê°„ Recordì— Hit Flagê°€ ìˆëŠ”ì§€ íŒë‹¨í•œë‹¤.
+ *    ÇöÀç ÀĞ¾î°£ Record¿¡ Hit Flag°¡ ÀÖ´ÂÁö ÆÇ´ÜÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1319,15 +1320,15 @@ idBool qmcSortTemp::isHitFlagged( qmcdSortTemp * aTempTable )
          == QMCD_SORT_TMP_STORAGE_MEMORY )
     {
         //----------------------------------------------
-        // Memory Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
-        //    1. í˜„ì¬ ì½ê³  ìˆëŠ” Recordë¥¼ ì°¾ëŠ”ë‹¤.
-        //    2. í•´ë‹¹ Recordì— Hit Flagê°€ ìˆëŠ”ì§€ íŒë‹¨í•œë‹¤.
+        // Memory Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
+        //    1. ÇöÀç ÀĞ°í ÀÖ´Â Record¸¦ Ã£´Â´Ù.
+        //    2. ÇØ´ç Record¿¡ Hit Flag°¡ ÀÖ´ÂÁö ÆÇ´ÜÇÑ´Ù.
         //----------------------------------------------
 
-        // í˜„ì¬ ì½ê³  ìˆëŠ” Record ê²€ìƒ‰
+        // ÇöÀç ÀĞ°í ÀÖ´Â Record °Ë»ö
         sElement = (qmcMemSortElement*) aTempTable->recordNode->dstTuple->row;
 
-        // í•´ë‹¹ Recordì— Hit Flagê°€ ìˆëŠ”ì§€ íŒë‹¨
+        // ÇØ´ç Record¿¡ Hit Flag°¡ ÀÖ´ÂÁö ÆÇ´Ü
         if ( ( sElement->flag & QMC_ROW_HIT_MASK ) == QMC_ROW_HIT_TRUE )
         {
             sIsHitFlagged = ID_TRUE;
@@ -1340,7 +1341,7 @@ idBool qmcSortTemp::isHitFlagged( qmcdSortTemp * aTempTable )
     else
     {
         //-----------------------------------------
-        // Disk Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Disk Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         sIsHitFlagged = qmcDiskSort::isHitFlagged( aTempTable->diskTemp );
@@ -1356,7 +1357,7 @@ qmcSortTemp::storeCursor( qmcdSortTemp     * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Merge Joinì„ ìœ„í•œ ê¸°ëŠ¥ìœ¼ë¡œ í˜„ì¬ Cursorë¥¼ ì €ì¥í•œë‹¤.
+ *    Merge JoinÀ» À§ÇÑ ±â´ÉÀ¸·Î ÇöÀç Cursor¸¦ ÀúÀåÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1369,23 +1370,23 @@ qmcSortTemp::storeCursor( qmcdSortTemp     * aTempTable,
          == QMCD_SORT_TMP_STORAGE_MEMORY )
     {
         //-----------------------------------------
-        // Memory Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Memory Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
-        // Cursor Index ì €ì¥
+        // Cursor Index ÀúÀå
         IDE_TEST( qmcMemSort::getCurrPosition(
                       aTempTable->memoryTemp,
                       & aCursorInfo->mCursor.mTRPos.mIndexPos )
                   != IDE_SUCCESS );
 
-        // Row Pointer ì €ì¥
+        // Row Pointer ÀúÀå
         aCursorInfo->mCursor.mTRPos.mRowPtr =
             aTempTable->recordNode->dstTuple->row;
     }
     else
     {
         //-----------------------------------------
-        // Disk Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Disk Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         IDE_TEST( qmcDiskSort::getCurrPosition( aTempTable->diskTemp,
@@ -1410,7 +1411,7 @@ qmcSortTemp::restoreCursor( qmcdSortTemp     * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Merge Joinì„ ìœ„í•œ ê¸°ëŠ¥ìœ¼ë¡œ ì§€ì •ëœ Cursorë¡œ ë³µì›í•œë‹¤.
+ *    Merge JoinÀ» À§ÇÑ ±â´ÉÀ¸·Î ÁöÁ¤µÈ Cursor·Î º¹¿øÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1423,23 +1424,23 @@ qmcSortTemp::restoreCursor( qmcdSortTemp     * aTempTable,
          == QMCD_SORT_TMP_STORAGE_MEMORY )
     {
         //-----------------------------------------
-        // Memory Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Memory Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
-        // Cursor Index ë³µì›
+        // Cursor Index º¹¿ø
         IDE_TEST( qmcMemSort::setCurrPosition(
                       aTempTable->memoryTemp,
                       aCursorInfo->mCursor.mTRPos.mIndexPos )
                   != IDE_SUCCESS );
 
-        // Row Pointer ë³µì›
+        // Row Pointer º¹¿ø
         aTempTable->recordNode->dstTuple->row =
             aCursorInfo->mCursor.mTRPos.mRowPtr;
     }
     else
     {
         //-----------------------------------------
-        // Disk Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Disk Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         IDE_TEST( qmcDiskSort::setCurrPosition( aTempTable->diskTemp,
@@ -1467,11 +1468,11 @@ qmcSortTemp::getCursorInfo( qmcdSortTemp     * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    View SCANë“±ì—ì„œ ì ‘ê·¼í•˜ê¸° ìœ„í•œ ì •ë³´ ì¶”ì¶œ
+ *    View SCANµî¿¡¼­ Á¢±ÙÇÏ±â À§ÇÑ Á¤º¸ ÃßÃâ
  *
  * Implementation :
- *    Memory Temp Tableì¼ ê²½ìš°, Memory Temp Table ê°ì²´ë¥¼ ë¦¬í„´
- *    Disk Temp Tableì¼ ê²½ìš°, Table Handleê³¼ Index Handleì„ ë¦¬í„´í•¨.
+ *    Memory Temp TableÀÏ °æ¿ì, Memory Temp Table °´Ã¼¸¦ ¸®ÅÏ
+ *    Disk Temp TableÀÏ °æ¿ì, Table Handle°ú Index HandleÀ» ¸®ÅÏÇÔ.
  *
  ***********************************************************************/
 
@@ -1482,15 +1483,15 @@ qmcSortTemp::getCursorInfo( qmcdSortTemp     * aTempTable,
          == QMCD_SORT_TMP_STORAGE_MEMORY )
     {
         //-----------------------------------------
-        // Memory Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Memory Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
-        // Memory Temp Table ê°ì²´ë¥¼ ì¤€ë‹¤.
+        // Memory Temp Table °´Ã¼¸¦ ÁØ´Ù.
         *aTableHandle = NULL;
         *aIndexHandle = NULL;
         *aMemSortTemp = aTempTable->memoryTemp;
 
-        // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+        // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
         if ( aTempTable->existTempType == ID_TRUE )
         {
             *aMemSortRecord = aTempTable->recordNode;
@@ -1503,10 +1504,10 @@ qmcSortTemp::getCursorInfo( qmcdSortTemp     * aTempTable,
     else
     {
         //-----------------------------------------
-        // Disk Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Disk Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
-        // Disk Temp Tableì˜ Handleì„ ì¤€ë‹¤.
+        // Disk Temp TableÀÇ HandleÀ» ÁØ´Ù.
         IDE_TEST( qmcDiskSort::getCursorInfo( aTempTable->diskTemp,
                                               aTableHandle,
                                               aIndexHandle )
@@ -1533,7 +1534,7 @@ qmcSortTemp::getDisplayInfo( qmcdSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Plan Displayë¥¼ ìœ„í•œ ì •ë³´ë¥¼ íšë“í•œë‹¤.
+ *    Plan Display¸¦ À§ÇÑ Á¤º¸¸¦ È¹µæÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1546,7 +1547,7 @@ qmcSortTemp::getDisplayInfo( qmcdSortTemp * aTempTable,
          == QMCD_SORT_TMP_STORAGE_MEMORY )
     {
         //-----------------------------------------
-        // Memory Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Memory Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         *aDiskPageCount = 0;
@@ -1555,7 +1556,7 @@ qmcSortTemp::getDisplayInfo( qmcdSortTemp * aTempTable,
     else
     {
         //-----------------------------------------
-        // Disk Sort Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Disk Sort Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
         //-----------------------------------------
 
         IDE_TEST( qmcDiskSort::getDisplayInfo( aTempTable->diskTemp,
@@ -1579,12 +1580,12 @@ qmcSortTemp::setSortNode( qmcdSortTemp     * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ì´ˆê¸°í™”ë˜ê³ , ë°ì´í„°ê°€ ì…ë ¥ëœ Temp Tableì˜ ì •ë ¬í‚¤ë¥¼ ë³€ê²½í•œë‹¤.
- *    (Window Sortì—ì„œ ì‚¬ìš©)
+ *    ÃÊ±âÈ­µÇ°í, µ¥ÀÌÅÍ°¡ ÀÔ·ÂµÈ Temp TableÀÇ Á¤·ÄÅ°¸¦ º¯°æÇÑ´Ù.
+ *    (Window Sort¿¡¼­ »ç¿ë)
  *
  * Implementation :
- *    í˜„ì¬ Disk Sort Tempì˜ ê²½ìš° ì¤‘ê°„ì— ì •ë ¬í‚¤ ë³€ê²½ì´ ë¶ˆê°€í•˜ë¯€ë¡œ
- *    Memory Sortì˜ ê²½ìš°ë§Œ ì„¤ì •í•¨
+ *    ÇöÀç Disk Sort TempÀÇ °æ¿ì Áß°£¿¡ Á¤·ÄÅ° º¯°æÀÌ ºÒ°¡ÇÏ¹Ç·Î
+ *    Memory SortÀÇ °æ¿ì¸¸ ¼³Á¤ÇÔ
  *
  ***********************************************************************/
 {
@@ -1628,8 +1629,8 @@ qmcSortTemp::setUpdateColumnList( qmcdSortTemp     * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    updateë¥¼ ìˆ˜í–‰í•  column listë¥¼ ì„¤ì •
- *    ì£¼ì˜: Disk Sort Temp Tableì˜ ê²½ìš°, hitFlagì™€ í•¨ê»˜ ì‚¬ìš© ë¶ˆê°€
+ *    update¸¦ ¼öÇàÇÒ column list¸¦ ¼³Á¤
+ *    ÁÖÀÇ: Disk Sort Temp TableÀÇ °æ¿ì, hitFlag¿Í ÇÔ²² »ç¿ë ºÒ°¡
  *
  * Implementation :
  *
@@ -1648,7 +1649,7 @@ qmcSortTemp::setUpdateColumnList( qmcdSortTemp     * aTempTable,
     }
     else
     {
-        // Memory Sort Temp Tableì˜ ê²½ìš°, ì˜ë¯¸ê°€ ì—†ìŒ
+        // Memory Sort Temp TableÀÇ °æ¿ì, ÀÇ¹Ì°¡ ¾øÀ½
         // do nothing
     }
     
@@ -1667,8 +1668,8 @@ qmcSortTemp::updateRow( qmcdSortTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    í˜„ì¬ ê²€ìƒ‰ ì¤‘ì¸ ìœ„ì¹˜ì˜ rowë¥¼ update
- *    (Diskì˜ ê²½ìš°ë§Œ ì˜ë¯¸ê°€ ìˆìŒ)
+ *    ÇöÀç °Ë»ö ÁßÀÎ À§Ä¡ÀÇ row¸¦ update
+ *    (DiskÀÇ °æ¿ì¸¸ ÀÇ¹Ì°¡ ÀÖÀ½)
  *
  * Implementation :
  *
@@ -1686,7 +1687,7 @@ qmcSortTemp::updateRow( qmcdSortTemp * aTempTable )
     }
     else
     {
-        // Memory Sort Temp Tableì˜ ê²½ìš° ì˜ë¯¸ê°€ ì—†ìŒ
+        // Memory Sort Temp TableÀÇ °æ¿ì ÀÇ¹Ì°¡ ¾øÀ½
         // do nothing
     }
     
@@ -1705,12 +1706,12 @@ qmcSortTemp::makeMemNullRow( qmcdSortTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    Memory Sort Temp Tableì„ ìœ„í•œ Null Rowë¥¼ ìƒì„±í•œë‹¤.
+ *    Memory Sort Temp TableÀ» À§ÇÑ Null Row¸¦ »ı¼ºÇÑ´Ù.
  *
  * Implementation :
- *    ê°’ì„ ì €ì¥í•˜ëŠ” Columnì— ëŒ€í•´ì„œë§Œ Null Valueë¥¼ ìƒì„±í•˜ê³ ,
- *    Pointer/RIDë“±ì„ ì €ì¥í•˜ëŠ” Columnì— ëŒ€í•´ì„œëŠ” Null Valueë¥¼ ìƒì„±í•˜ì§€
- *    ì•ŠëŠ”ë‹¤.
+ *    °ªÀ» ÀúÀåÇÏ´Â Column¿¡ ´ëÇØ¼­¸¸ Null Value¸¦ »ı¼ºÇÏ°í,
+ *    Pointer/RIDµîÀ» ÀúÀåÇÏ´Â Column¿¡ ´ëÇØ¼­´Â Null Value¸¦ »ı¼ºÇÏÁö
+ *    ¾Ê´Â´Ù.
  *
  ***********************************************************************/
 
@@ -1724,7 +1725,7 @@ qmcSortTemp::makeMemNullRow( qmcdSortTemp * aTempTable )
     idBool       sIsTempType;
     UInt         i;
 
-    // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+    // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
     if ( aTempTable->existTempType == ID_TRUE )
     {
         sRowSize = aTempTable->mtrRowSize;
@@ -1749,7 +1750,7 @@ qmcSortTemp::makeMemNullRow( qmcdSortTemp * aTempTable )
 
         aTempTable->nullRowSize = idlOS::align8( sRowSize );
 
-        // Null Rowë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
+        // Null Row¸¦ À§ÇÑ °ø°£ ÇÒ´ç
         IDU_FIT_POINT( "qmcSortTemp::makeMemNullRow::cralloc::nullRow",
                         idERR_ABORT_InsufficientMemory );
 
@@ -1763,7 +1764,7 @@ qmcSortTemp::makeMemNullRow( qmcdSortTemp * aTempTable )
               i < aTempTable->recordNode->dstTuple->columnCount;
               i++, sColumn++ )
         {
-            // offset ì €ì¥
+            // offset ÀúÀå
             if ( ( sColumn->column.flag & SMI_COLUMN_TYPE_MASK )
                  == SMI_COLUMN_TYPE_TEMP_1B )
             {
@@ -1817,7 +1818,7 @@ qmcSortTemp::makeMemNullRow( qmcdSortTemp * aTempTable )
     }
     else
     {
-        // Null Rowë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
+        // Null Row¸¦ À§ÇÑ °ø°£ ÇÒ´ç
         IDU_LIMITPOINT("qmcSortTemp::makeMemNullRow::malloc");
         IDE_TEST( aTempTable->memory->cralloc( aTempTable->nullRowSize,
                                                (void**) & aTempTable->nullRow )
@@ -1829,8 +1830,8 @@ qmcSortTemp::makeMemNullRow( qmcdSortTemp * aTempTable )
           sNode = sNode->next )
     {
         //-----------------------------------------------
-        // ì‹¤ì œ ê°’ì„ ì €ì¥í•˜ëŠ” Columnì— ëŒ€í•´ì„œë§Œ
-        // NULL Valueë¥¼ ìƒì„±í•œë‹¤.
+        // ½ÇÁ¦ °ªÀ» ÀúÀåÇÏ´Â Column¿¡ ´ëÇØ¼­¸¸
+        // NULL Value¸¦ »ı¼ºÇÑ´Ù.
         //-----------------------------------------------
 
         sNode->func.makeNull( sNode,
@@ -1853,50 +1854,49 @@ qmcSortTemp::makeMemKeyRange( qmcdSortTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Memory Temp Tableì„ ìœ„í•œ Key Rangeë¥¼ ìƒì„±í•œë‹¤.
+ *    Memory Temp TableÀ» À§ÇÑ Key Range¸¦ »ı¼ºÇÑ´Ù.
  *
  * Implementation :
- *    ë‹¤ìŒê³¼ ê°™ì€ ì ˆì°¨ë¡œ Key Rangeë¥¼ ìƒì„±í•œë‹¤.
- *    - Key Rangeì˜ í¬ê¸° ê³„ì‚°
- *    - Key Rangeë¥¼ ìœ„í•œ ê³µê°„ í™•ë³´
- *    - Key Range ìƒì„±
+ *    ´ÙÀ½°ú °°Àº ÀıÂ÷·Î Key Range¸¦ »ı¼ºÇÑ´Ù.
+ *    - Key RangeÀÇ Å©±â °è»ê
+ *    - Key Range¸¦ À§ÇÑ °ø°£ È®º¸
+ *    - Key Range »ı¼º
  ***********************************************************************/
 
 #define IDE_FN "qmcSortTemp::makeMemKeyRange"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY("qmcSortTemp::makeMemKeyRange"));
 
-    UInt sRangeSize;
     qtcNode * sFilter;
     UInt sKeyColsFlag;
     UInt sCompareType;
 
-    // Key Rangeì˜ í¬ê¸° ê³„ì‚° ë° ê³µê°„ í™•ë³´
+    // Key RangeÀÇ Å©±â °è»ê ¹× °ø°£ È®º¸
     if ( aTempTable->rangeArea == NULL )
     {
-        // Sort Temp Tableì˜ Key RangeëŠ” í•œ Columnì— ëŒ€í•´ì„œë§Œ ê°€ëŠ¥í•¨
+        // Sort Temp TableÀÇ Key Range´Â ÇÑ Column¿¡ ´ëÇØ¼­¸¸ °¡´ÉÇÔ
 
-        // Key Rangeì˜ Sizeê³„ì‚°
+        // Key RangeÀÇ Size°è»ê
         IDE_TEST(
             qmoKeyRange::estimateKeyRange( aTempTable->mTemplate,
                                            aRangePredicate,
-                                           & sRangeSize )
+                                           &aTempTable->rangeAreaSize )
             != IDE_SUCCESS);
 
-        // Key Rangeë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
+        // Key Range¸¦ À§ÇÑ °ø°£ ÇÒ´ç
         IDU_FIT_POINT( "qmcSortTemp::makeMemKeyRange::alloc::rangeArea",
                         idERR_ABORT_InsufficientMemory );
 
-        IDE_TEST( aTempTable->memory->alloc( sRangeSize,
-                                             (void**)& aTempTable->rangeArea )
+        IDE_TEST( aTempTable->memory->cralloc( aTempTable->rangeAreaSize,
+                                               (void**)& aTempTable->rangeArea )
                   != IDE_SUCCESS);
     }
     else
     {
-        // ì´ë¯¸ í• ë‹¹ë˜ì–´ ìˆìŒ
+        // ÀÌ¹Ì ÇÒ´çµÇ¾î ÀÖÀ½
         // Nothing To Do
     }
 
-    // Key Range ìƒì„±
+    // Key Range »ı¼º
 
     if ( (aTempTable->sortNode->myNode->flag & QMC_MTR_SORT_ORDER_MASK)
          == QMC_MTR_SORT_ASCENDING )
@@ -1908,13 +1908,13 @@ qmcSortTemp::makeMemKeyRange( qmcdSortTemp * aTempTable,
         sKeyColsFlag = SMI_COLUMN_ORDER_DESCENDING;
     }
 
-    // Memory Temp Tableì˜ key rangeëŠ” MT íƒ€ì…ê°„ì˜ compare
+    // Memory Temp TableÀÇ key range´Â MT Å¸ÀÔ°£ÀÇ compare
     sCompareType = MTD_COMPARE_MTDVAL_MTDVAL;
 
     // To Fix PR-8109
-    // Key Range ìƒì„±ì„ ìœ„í•´ì„œëŠ” ë¹„êµ ëŒ€ìƒì´ ë˜ëŠ”
-    // Columnì„ ì…ë ¥ ì¸ìë¡œ ì‚¬ìš©í•˜ì—¬ì•¼ í•œë‹¤.
-    // Key Range ìƒì„±
+    // Key Range »ı¼ºÀ» À§ÇØ¼­´Â ºñ±³ ´ë»óÀÌ µÇ´Â
+    // ColumnÀ» ÀÔ·Â ÀÎÀÚ·Î »ç¿ëÇÏ¿©¾ß ÇÑ´Ù.
+    // Key Range »ı¼º
     IDE_TEST(
         qmoKeyRange::makeKeyRange( aTempTable->mTemplate,
                                    aRangePredicate,
@@ -1923,11 +1923,12 @@ qmcSortTemp::makeMemKeyRange( qmcdSortTemp * aTempTable,
                                    & sKeyColsFlag,
                                    sCompareType,
                                    aTempTable->rangeArea,
+                                   aTempTable->rangeAreaSize,
                                    & (aTempTable->range),
                                    & sFilter ) != IDE_SUCCESS );
 
-    // ì í•©ì„± ê²€ì‚¬
-    // ë°˜ë“œì‹œ Range ìƒì„±ì´ ì„±ê³µí•´ì•¼ í•¨
+    // ÀûÇÕ¼º °Ë»ç
+    // ¹İµå½Ã Range »ı¼ºÀÌ ¼º°øÇØ¾ß ÇÔ
     IDE_DASSERT( sFilter == NULL );
 
     return IDE_SUCCESS;

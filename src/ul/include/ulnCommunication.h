@@ -26,16 +26,13 @@
 #include <ulnEndTran.h>
 #include <ulnFailOver.h>
 
-/* CMP_OP_DB_PropertySetV2(1) | PropetyID(2) | ValueLen(4) */
-#define PROPERTY_SETV2_FIXED_LEN    (1 + 2 + 4)
-
 /* BUG-39817 */
 ACP_EXTERN_C_BEGIN
 
 typedef enum
 {
     /*
-     * BUGBUG : ÏïÑÎûòÏùò enum ÏùÄ Î∞òÎìúÏãú cm/src/include/cmpDefDB.h Ïùò enum Í≥º Î∞òÎìúÏãú ÏùºÏπòÌï¥Ïïº ÌïúÎã§.
+     * BUGBUG : æ∆∑°¿« enum ¿∫ π›µÂΩ√ cm/src/include/cmpDefDB.h ¿« enum ∞˙ π›µÂΩ√ ¿œƒ°«ÿæﬂ «—¥Ÿ.
      */
     ULN_PROPERTY_CLIENT_PACKAGE_VERSION  = CMP_DB_PROPERTY_CLIENT_PACKAGE_VERSION,
     ULN_PROPERTY_CLIENT_PROTOCOL_VERSION = CMP_DB_PROPERTY_CLIENT_PROTOCOL_VERSION,
@@ -78,21 +75,64 @@ typedef enum
     ULN_PROPERTY_SHARD_NODE_NAME       = CMP_DB_PROPERTY_SHARD_NODE_NAME,
     ULN_PROPERTY_SHARD_PIN             = CMP_DB_PROPERTY_SHARD_PIN,
     /* PROJ-2660 */
-    ULN_PROPERTY_DBLINK_GLOBAL_TRANSACTION_LEVEL = CMP_DB_PROPERTY_DBLINK_GLOBAL_TRANSACTION_LEVEL,
-    /* BUG-46090 Meta Node SMN Ï†ÑÌåå */
+    ULN_PROPERTY_GLOBAL_TRANSACTION_LEVEL = CMP_DB_PROPERTY_GLOBAL_TRANSACTION_LEVEL,
+    /* BUG-46090 Meta Node SMN ¿¸∆ƒ */
     ULN_PROPERTY_SHARD_META_NUMBER     = CMP_DB_PROPERTY_SHARD_META_NUMBER,
     /* BUG-45707 */
     ULN_PROPERTY_SHARD_CLIENT          = CMP_DB_PROPERTY_SHARD_CLIENT,
     ULN_PROPERTY_SHARD_SESSION_TYPE    = CMP_DB_PROPERTY_SHARD_SESSION_TYPE,
-
     /* BUG-46092
      * ULN_PROPERTY_SHARD_CLIENT_CONNECTION_REPORT
      * Only send property by shardcli.
      * User can not set attibute value. */
     /* BUG- 46785 Deprecated */
     ULN_PROPERTY_SHARD_CLIENT_CONNECTION_REPORT = CMP_DB_PROPERTY_SHARD_CLIENT_CONNECTION_REPORT,
-
-    ULN_PROPERTY_MAX
+    ULN_PROPERTY_MESSAGE_CALLBACK = CMP_DB_PROPERTY_MESSAGE_CALLBACK, /* BUG-46019 */
+    // PROJ-2727 add connect attr
+    ULN_PROPERTY_COMMIT_WRITE_WAIT_MODE             = CMP_DB_PROPERTY_COMMIT_WRITE_WAIT_MODE,
+    ULN_PROPERTY_ST_OBJECT_BUFFER_SIZE              = CMP_DB_PROPERTY_ST_OBJECT_BUFFER_SIZE,
+    ULN_PROPERTY_TRX_UPDATE_MAX_LOGSIZE             = CMP_DB_PROPERTY_TRX_UPDATE_MAX_LOGSIZE,
+    ULN_PROPERTY_PARALLEL_DML_MODE                  = CMP_DB_PROPERTY_PARALLEL_DML_MODE,    
+    ULN_PROPERTY_NLS_NCHAR_CONV_EXCP                = CMP_DB_PROPERTY_NLS_NCHAR_CONV_EXCP,
+    ULN_PROPERTY_AUTO_REMOTE_EXEC                   = CMP_DB_PROPERTY_AUTO_REMOTE_EXEC,
+    ULN_PROPERTY_TRCLOG_DETAIL_PREDICATE            = CMP_DB_PROPERTY_TRCLOG_DETAIL_PREDICATE,
+    ULN_PROPERTY_OPTIMIZER_DISK_INDEX_COST_ADJ      = CMP_DB_PROPERTY_OPTIMIZER_DISK_INDEX_COST_ADJ,
+    ULN_PROPERTY_OPTIMIZER_MEMORY_INDEX_COST_ADJ    = CMP_DB_PROPERTY_OPTIMIZER_MEMORY_INDEX_COST_ADJ,
+    ULN_PROPERTY_NLS_TERRITORY                      = CMP_DB_PROPERTY_NLS_TERRITORY,
+    ULN_PROPERTY_NLS_ISO_CURRENCY                   = CMP_DB_PROPERTY_NLS_ISO_CURRENCY,
+    ULN_PROPERTY_NLS_CURRENCY                       = CMP_DB_PROPERTY_NLS_CURRENCY,
+    ULN_PROPERTY_NLS_NUMERIC_CHARACTERS             = CMP_DB_PROPERTY_NLS_NUMERIC_CHARACTERS,
+    ULN_PROPERTY_QUERY_REWRITE_ENABLE               = CMP_DB_PROPERTY_QUERY_REWRITE_ENABLE,
+    ULN_PROPERTY_DBLINK_REMOTE_STATEMENT_AUTOCOMMIT = CMP_DB_PROPERTY_DBLINK_REMOTE_STATEMENT_AUTOCOMMIT,
+    ULN_PROPERTY_RECYCLEBIN_ENABLE                  = CMP_DB_PROPERTY_RECYCLEBIN_ENABLE,
+    ULN_PROPERTY___USE_OLD_SORT                     = CMP_DB_PROPERTY___USE_OLD_SORT,
+    ULN_PROPERTY_ARITHMETIC_OPERATION_MODE          = CMP_DB_PROPERTY_ARITHMETIC_OPERATION_MODE,
+    ULN_PROPERTY_RESULT_CACHE_ENABLE                = CMP_DB_PROPERTY_RESULT_CACHE_ENABLE,
+    ULN_PROPERTY_TOP_RESULT_CACHE_MODE              = CMP_DB_PROPERTY_TOP_RESULT_CACHE_MODE,
+    ULN_PROPERTY_OPTIMIZER_AUTO_STATS               = CMP_DB_PROPERTY_OPTIMIZER_AUTO_STATS,
+    ULN_PROPERTY___OPTIMIZER_TRANSITIVITY_OLD_RULE  = CMP_DB_PROPERTY___OPTIMIZER_TRANSITIVITY_OLD_RULE,
+    ULN_PROPERTY_OPTIMIZER_PERFORMANCE_VIEW         = CMP_DB_PROPERTY_OPTIMIZER_PERFORMANCE_VIEW,
+    ULN_PROPERTY_REPLICATION_DDL_SYNC               = CMP_DB_PROPERTY_REPLICATION_DDL_SYNC,
+    ULN_PROPERTY_REPLICATION_DDL_SYNC_TIMEOUT       = CMP_DB_PROPERTY_REPLICATION_DDL_SYNC_TIMEOUT,
+    ULN_PROPERTY___PRINT_OUT_ENABLE                 = CMP_DB_PROPERTY___PRINT_OUT_ENABLE,
+    ULN_PROPERTY_TRCLOG_DETAIL_SHARD                = CMP_DB_PROPERTY_TRCLOG_DETAIL_SHARD,
+    ULN_PROPERTY_SERIAL_EXECUTE_MODE                = CMP_DB_PROPERTY_SERIAL_EXECUTE_MODE,
+    ULN_PROPERTY_TRCLOG_DETAIL_INFORMATION          = CMP_DB_PROPERTY_TRCLOG_DETAIL_INFORMATION,
+    ULN_PROPERTY___OPTIMIZER_DEFAULT_TEMP_TBS_TYPE  = CMP_DB_PROPERTY___OPTIMIZER_DEFAULT_TEMP_TBS_TYPE,
+    ULN_PROPERTY___REDUCE_PARTITION_PREPARE_MEMORY  = CMP_DB_PROPERTY___REDUCE_PARTITION_PREPARE_MEMORY,
+    ULN_PROPERTY_TRANSACTIONAL_DDL                  = CMP_DB_PROPERTY_TRANSACTIONAL_DDL,
+    ULN_PROPERTY_SHARD_INTERNAL_LOCAL_OPERATION     = CMP_DB_PROPERTY_SHARD_INTERNAL_LOCAL_OPERATION,
+    ULN_PROPERTY_INVOKE_USER                        = CMP_DB_PROPERTY_INVOKE_USER,
+    ULN_PROPERTY_GLOBAL_DDL                         = CMP_DB_PROPERTY_GLOBAL_DDL,
+    ULN_PROPERTY_SHARD_STATEMENT_RETRY              = CMP_DB_PROPERTY_SHARD_STATEMENT_RETRY,
+    ULN_PROPERTY_INDOUBT_FETCH_TIMEOUT              = CMP_DB_PROPERTY_INDOUBT_FETCH_TIMEOUT,
+    ULN_PROPERTY_INDOUBT_FETCH_METHOD               = CMP_DB_PROPERTY_INDOUBT_FETCH_METHOD,
+    ULN_PROPERTY___OPTIMIZER_PLAN_HASH_OR_SORT_METHOD = CMP_DB_PROPERTY___OPTIMIZER_PLAN_HASH_OR_SORT_METHOD, /* BUG-48132 */
+    ULN_PROPERTY___OPTIMIZER_BUCKET_COUNT_MAX         = CMP_DB_PROPERTY___OPTIMIZER_BUCKET_COUNT_MAX,         /* BUG-48161 */
+    ULN_PROPERTY_DDL_LOCK_TIMEOUT                   = CMP_DB_PROPERTY_DDL_LOCK_TIMEOUT,
+    ULN_PROPERTY___OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION = CMP_DB_PROPERTY___OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION, /* BUG-48348 */
+    ULN_PROPERTY_REBUILD_SHARD_META_NUMBER          = CMP_DB_PROPERTY_REBUILD_SHARD_META_NUMBER,
+    ULN_PROPERTY_MAX = CMP_DB_PROPERTY_MAX
 } ulnPropertyId;
 
 struct ulnPtContext
@@ -180,11 +220,11 @@ ACI_RC ulnWriteFetchMoveREQ(ulnFnContext *aFnContext,
                             acp_sint64_t  aOffset);
 
 /* BUG-39463 Add new fetch protocol that can request over 65535 rows. */
-ACI_RC ulnWriteFetchV2REQ(ulnFnContext *aFnContext,
-                          ulnPtContext *aPtContext,
-                          acp_uint32_t  aRowCountToFetch,
-                          acp_uint16_t  aFirstColumnIndex,
-                          acp_uint16_t  aLastColumnIndex);
+ACI_RC ulnWriteFetchREQ(ulnFnContext *aFnContext,
+                        ulnPtContext *aPtContext,
+                        acp_uint32_t  aRowCountToFetch,
+                        acp_uint16_t  aFirstColumnIndex,
+                        acp_uint16_t  aLastColumnIndex);
 
 ACI_RC ulnWriteExecuteREQ(ulnFnContext *aFnContext,
                           ulnPtContext *aPtContext,
@@ -237,10 +277,10 @@ ACI_RC ulnWriteLobTrimREQ(ulnFnContext *aFnContext,
                           acp_uint32_t  aOffset);
 
 /* BUG-41793 */
-ACI_RC ulnWritePropertySetV2REQ(ulnFnContext  *aContext,
-                                ulnPtContext  *aPtContext,
-                                ulnPropertyId  aCmPropertyId,
-                                void          *aValuePtr);
+ACI_RC ulnWritePropertySetREQ(ulnFnContext  *aContext,
+                              ulnPtContext  *aPtContext,
+                              ulnPropertyId  aCmPropertyId,
+                              void          *aValuePtr);
 
 ACI_RC ulnWritePropertyGetREQ(ulnFnContext  *aContext,
                               ulnPtContext  *aPtContext,
@@ -275,6 +315,7 @@ ACI_RC ulnWriteRollbackToSavepointREQ( ulnFnContext     *aFnContext,
                                        ulnPtContext     *aPtContext,
                                        const acp_char_t *aSavepointName,
                                        acp_uint32_t      aSavepointNameLength );
+
 /* BUG-39817 */
 ACP_EXTERN_C_END
 

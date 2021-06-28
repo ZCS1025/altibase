@@ -49,7 +49,7 @@ public class BlobInputStream extends InputStream implements ConnectionSharable
         {
             isCached = true;
         }
-        mClosed = true; // BUG-38008 open ì „ê¹Œì§„ closedë¡œ ì²˜ë¦¬
+        mClosed = true; // BUG-38008 open Àü±îÁø closed·Î Ã³¸®
     }
 
     void open(CmChannel aChannel) throws SQLException
@@ -205,7 +205,7 @@ public class BlobInputStream extends InputStream implements ConnectionSharable
                 
                 if(aLengthWantToRead > 0)
                 {
-                    // BUG-40158 ì„œë²„ë¡œë¶€í„° ë°ì´í„°ë¥¼ ë°›ì•„ì™€ì•¼ í•˜ê¸°ë•Œë¬¸ì— offsetê°’ì„ ì´ˆê¸°í™” í•´ì¤€ë‹¤.
+                    // BUG-40158 ¼­¹ö·ÎºÎÅÍ µ¥ÀÌÅÍ¸¦ ¹Ş¾Æ¿Í¾ß ÇÏ±â¶§¹®¿¡ offset°ªÀ» ÃÊ±âÈ­ ÇØÁØ´Ù.
                     mContext.setDstOffset(0);
                     readIntoStreamBufFromServer(aLengthWantToRead);
                 }
@@ -364,5 +364,10 @@ public class BlobInputStream extends InputStream implements ConnectionSharable
     public boolean isSameConnectionWith(CmChannel aChannel)
     {
         return mContext.channel().equals(aChannel) ? true : false;
+    }
+
+    public void setOffset4Server(long aOffset)
+    {
+        this.mOffset4Server = aOffset;
     }
 }

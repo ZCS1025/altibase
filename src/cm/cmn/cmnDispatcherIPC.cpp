@@ -34,12 +34,12 @@ IDE_RC cmnDispatcherInitializeIPC(cmnDispatcher *aDispatcher, UInt /*aMaxLink*/)
     cmnDispatcherIPC *sDispatcher = (cmnDispatcherIPC *)aDispatcher;
 
     /*
-     * ë©¤ë²„ ì´ˆê¸°í™”
+     * ¸â¹ö ÃÊ±âÈ­
      */
     sDispatcher->mMaxHandle  = PDL_INVALID_SOCKET;
 
     /*
-     * fdset ì´ˆê¸°í™”
+     * fdset ÃÊ±âÈ­
      */
     FD_ZERO(&sDispatcher->mFdSet);
 
@@ -57,22 +57,22 @@ IDE_RC cmnDispatcherAddLinkIPC(cmnDispatcher *aDispatcher, cmnLink *aLink)
     PDL_SOCKET         sHandle;
 
     /*
-     * Dispatcherì—ì„œ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” Link Implì¸ì§€ ê²€ì‚¬ (PROJ-2681)
+     * Dispatcher¿¡¼­ »ç¿ëÇÒ ¼ö ÀÖ´Â Link ImplÀÎÁö °Ë»ç (PROJ-2681)
      */
     IDE_TEST_RAISE(cmiDispatcherImplForLink(aLink) != sDispatcher->mDispatcher.mImpl, InvalidLinkImpl);
 
     /*
-     * Dispatcherì˜ Link Listì— ì¶”ê°€
+     * DispatcherÀÇ Link List¿¡ Ãß°¡
      */
     IDE_TEST(cmnDispatcherAddLink(aDispatcher, aLink) != IDE_SUCCESS);
 
     /*
-     * Linkì˜ socket íšë“
+     * LinkÀÇ socket È¹µæ
      */
     IDE_TEST(aLink->mOp->mGetHandle(aLink, &sHandle) != IDE_SUCCESS);
 
     /*
-     * MaxHandle ì„¸íŒ…
+     * MaxHandle ¼¼ÆÃ
      */
     if ((sDispatcher->mMaxHandle == PDL_INVALID_SOCKET) ||
         (sDispatcher->mMaxHandle < sHandle))
@@ -81,7 +81,7 @@ IDE_RC cmnDispatcherAddLinkIPC(cmnDispatcher *aDispatcher, cmnLink *aLink)
     }
 
     /*
-     * FdSetì— socket ì„¸íŒ…
+     * FdSet¿¡ socket ¼¼ÆÃ
      */
     FD_SET(sHandle, &sDispatcher->mFdSet);
 
@@ -101,7 +101,7 @@ IDE_RC cmnDispatcherRemoveLinkIPC(cmnDispatcher */*aDispatcher*/, cmnLink *aLink
     cmnLinkPeer *sLink = (cmnLinkPeer*)aLink;
 
     // bug-28277 ipc: server stop failed when idle clis exist
-    // server stopì‹œì—ë§Œ shutdown_mode_force ë„˜ê¸°ë„ë¡ í•¨.
+    // server stop½Ã¿¡¸¸ shutdown_mode_force ³Ñ±âµµ·Ï ÇÔ.
     IDE_TEST(sLink->mPeerOp->mShutdown(sLink, CMN_DIRECTION_RDWR,
                                        CMN_SHUTDOWN_MODE_NORMAL)
              != IDE_SUCCESS);
@@ -148,7 +148,7 @@ IDE_RC cmnDispatcherSelectIPC(cmnDispatcher  *aDispatcher,
     IDE_TEST_RAISE(sResult < 0, SelectError);
 
     /*
-     * Ready Count ì„¸íŒ…
+     * Ready Count ¼¼ÆÃ
      */
     if (aReadyCount != NULL)
     {
@@ -156,19 +156,19 @@ IDE_RC cmnDispatcherSelectIPC(cmnDispatcher  *aDispatcher,
     }
 
     /*
-     * Ready Link ê²€ìƒ‰
+     * Ready Link °Ë»ö
      */
     IDU_LIST_ITERATE(&aDispatcher->mLinkList, sIterator)
     {
         sLink = (cmnLink *)sIterator->mObj;
 
         /*
-         * Linkì˜ socketì„ íšë“
+         * LinkÀÇ socketÀ» È¹µæ
          */
         IDE_TEST(sLink->mOp->mGetHandle(sLink, &sHandle) != IDE_SUCCESS);
 
         /*
-         * ready ê²€ì‚¬
+         * ready °Ë»ç
          */
         if (FD_ISSET(sHandle, &sDispatcher->mFdSet))
         {
@@ -184,7 +184,8 @@ IDE_RC cmnDispatcherSelectIPC(cmnDispatcher  *aDispatcher,
 
     IDE_EXCEPTION(SelectError);
     {
-        IDE_SET(ideSetErrorCode(cmERR_ABORT_SELECT_ERROR));
+        /* BUG-47714 ¿¡·¯ ¸Ş¼¼Áö¿¡ sock number Ãß°¡ */
+        IDE_SET(ideSetErrorCode(cmERR_ABORT_SELECT_ERROR, sDispatcher->mMaxHandle));
     }
     IDE_EXCEPTION_END;
 
@@ -209,7 +210,7 @@ struct cmnDispatcherOP gCmnDispatcherOpIPC =
 IDE_RC cmnDispatcherMapIPC(cmnDispatcher *aDispatcher)
 {
     /*
-     * í•¨ìˆ˜ í¬ì¸í„° ì„¸íŒ…
+     * ÇÔ¼ö Æ÷ÀÎÅÍ ¼¼ÆÃ
      */
 
     aDispatcher->mOp = &gCmnDispatcherOpIPC;
@@ -234,16 +235,16 @@ IDE_RC cmnDispatcherWaitLinkIPC(cmnLink *        aLink,
     // bug-27250 free Buf list can be crushed when client killed
     if (aDirection == CMN_DIRECTION_WR)
     {
-        // receiverê°€ ì†¡ì‹  í—ˆë½ ì‹ í˜¸ë¥¼ ì¤„ë•Œê¹Œì§€ ë¬´í•œ ëŒ€ê¸°
-        // cmiWriteBlockì—ì„œ protocol end packet ì†¡ì‹ ì‹œ
-        // pending blockì´ ìˆëŠ” ê²½ìš° ì´ ì½”ë“œ ìˆ˜í–‰
+        // receiver°¡ ¼Û½Å Çã¶ô ½ÅÈ£¸¦ ÁÙ¶§±îÁö ¹«ÇÑ ´ë±â
+        // cmiWriteBlock¿¡¼­ protocol end packet ¼Û½Å½Ã
+        // pending blockÀÌ ÀÖ´Â °æ¿ì ÀÌ ÄÚµå ¼öÇà
         if (aTimeout == NULL)
         {
             // server
             if (idlOS::strcmp(sLink->mLink.mOp->mName, "IPC-PEER-SERVER") == 0)
             {
                 // cmnLinkPeerIPC (defined in cmnLinkPeerIPC.cpp)
-                // êµ¬ì¡°ì²´ë¥¼ ì§ì ‘ ì ‘ê·¼í•  ìˆ˜ ì—†ì–´ì„œ,í•œë²ˆë” í˜¸ì¶œì²˜ë¦¬.
+                // ±¸Á¶Ã¼¸¦ Á÷Á¢ Á¢±ÙÇÒ ¼ö ¾ø¾î¼­,ÇÑ¹ø´õ È£ÃâÃ³¸®.
                 sRet = cmnLinkPeerWaitSendServerIPC(aLink);
             }
             // client
@@ -253,7 +254,7 @@ IDE_RC cmnDispatcherWaitLinkIPC(cmnLink *        aLink,
             }
 
         }
-        // cmiWriteBlockì—ì„œ ì†¡ì‹  ëŒ€ê¸° listë¥¼ ë„˜ì–´ì„  ê²½ìš° ìˆ˜í–‰.
+        // cmiWriteBlock¿¡¼­ ¼Û½Å ´ë±â list¸¦ ³Ñ¾î¼± °æ¿ì ¼öÇà.
         else
         {
             sSleepTime.set(0, 1000); // wait 1 msec

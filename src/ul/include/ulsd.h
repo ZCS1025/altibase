@@ -24,6 +24,5 @@
 
 #include <ulsdDef.h>
 #include <ulsdMain.h>
-#include <ulsdConnString.h>
 
 #endif /* _O_ULSD_H_ */

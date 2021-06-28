@@ -130,12 +130,12 @@ ACP_EXPORT void aceSetError(void            *aContext,
     va_list               sArgs;
 
     /*
-     * ì—ëŸ¬ì½”ë“œ ì„¸íŒ…
+     * ¿¡·¯ÄÚµå ¼¼ÆÃ
      */
     aException->mErrorCode = (aErrorLevel << ACE_LEVEL_OFFSET) | aErrorCode;
 
     /*
-     * ì—ëŸ¬ì½”ë“œ ì¶œë ¥
+     * ¿¡·¯ÄÚµå Ãâ·Â
      */
     sProduct = aceMsgTableGetProduct(aErrorCode);
 
@@ -159,7 +159,7 @@ ACP_EXPORT void aceSetError(void            *aContext,
     }
 
     /*
-     * ì—ëŸ¬ë©”ì„¸ì§€ ì¶œë ¥
+     * ¿¡·¯¸Þ¼¼Áö Ãâ·Â
      */
     va_start(sArgs, aErrorCode);
 
@@ -171,7 +171,7 @@ ACP_EXPORT void aceSetError(void            *aContext,
     va_end(sArgs);
 
     /*
-     * ì½œë°± í•¨ìˆ˜ í˜¸ì¶œ
+     * ÄÝ¹é ÇÔ¼ö È£Ãâ
      */
     sCallback = aceGetErrorCallback(ACE_ERROR_PRODUCT(aErrorCode), aErrorLevel);
 

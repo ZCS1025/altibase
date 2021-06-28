@@ -24,8 +24,8 @@
 #include <mtcc.h>
 
 #include <ulsd.h>
-#include <ulsdConnString.h>
 #include <ulsdnTrans.h>
+#include <ulsdnExecute.h>
 
 /* PROJ-2638 shard native linker */
 SQLRETURN ulsdExecuteForMtDataRows( ulnStmt      *aStmt,
@@ -95,12 +95,9 @@ SQLRETURN ulsdExecuteForMtDataRowsAddCallback( acp_uint32_t       aIndex,
                                                acp_uint16_t       aColumnCount,
                                                ulsdFuncCallback **aCallback )
 {
-    ulnFnContext        sFnContext;
-    ulsdFuncCallback  * sCallback;
+    ulsdFuncCallback *sCallback = aStmt->mParentDbc->mShardDbcCxt.mFuncCallback;
 
-    ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(acpMemAlloc((void **)&sCallback,
-                                                  ACI_SIZEOF(ulsdFuncCallback))),
-                   LABEL_ALLOC_MEM_ERROR);
+    ACI_TEST(ulsdVerifyFuncCallback((ulnObject *)aStmt, sCallback) != ACI_SUCCESS);
 
     sCallback->mFuncType = ULSD_FUNC_EXECUTE_FOR_MT_DATA_ROWS;
     sCallback->mIndex    = aIndex;
@@ -131,18 +128,6 @@ SQLRETURN ulsdExecuteForMtDataRowsAddCallback( acp_uint32_t       aIndex,
 
     return SQL_SUCCESS;
 
-    ACI_EXCEPTION(LABEL_ALLOC_MEM_ERROR)
-    {
-        ULN_INIT_FUNCTION_CONTEXT( sFnContext,
-                                   ULN_FID_ALLOCHANDLE,
-                                   aStmt->mParentDbc,
-                                   ULN_OBJ_TYPE_DBC );
-
-        (void)ulnError( &sFnContext,
-                        ulERR_ABORT_SHARD_ERROR,
-                        "ulsdExecuteForMtDataRowsAddCallback",
-                        "Alloc node stmt memory error" );
-    }
     ACI_EXCEPTION_END;
 
     return SQL_ERROR;
@@ -152,12 +137,9 @@ SQLRETURN ulsdExecuteForMtDataAddCallback( acp_uint32_t       aIndex,
                                            ulnStmt           *aStmt,
                                            ulsdFuncCallback **aCallback )
 {
-    ulnFnContext        sFnContext;
-    ulsdFuncCallback  * sCallback;
+    ulsdFuncCallback *sCallback = aStmt->mParentDbc->mShardDbcCxt.mFuncCallback;
 
-    ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(acpMemAlloc((void **)&sCallback,
-                                                  ACI_SIZEOF(ulsdFuncCallback))),
-                   LABEL_ALLOC_MEM_ERROR);
+    ACI_TEST(ulsdVerifyFuncCallback((ulnObject *)aStmt, sCallback) != ACI_SUCCESS);
 
     sCallback->mFuncType = ULSD_FUNC_EXECUTE_FOR_MT_DATA;
     sCallback->mIndex    = aIndex;
@@ -182,18 +164,46 @@ SQLRETURN ulsdExecuteForMtDataAddCallback( acp_uint32_t       aIndex,
 
     return SQL_SUCCESS;
 
-    ACI_EXCEPTION(LABEL_ALLOC_MEM_ERROR)
-    {
-        ULN_INIT_FUNCTION_CONTEXT( sFnContext,
-                                   ULN_FID_ALLOCHANDLE,
-                                   aStmt->mParentDbc,
-                                   ULN_OBJ_TYPE_DBC );
+    ACI_EXCEPTION_END;
 
-        (void)ulnError( &sFnContext,
-                        ulERR_ABORT_SHARD_ERROR,
-                        "ulsdExecuteForMtDataAddCallback",
-                        "Alloc node stmt memory error" );
+    return SQL_ERROR;
+}
+SQLRETURN ulsdExecDirectAddCallback( acp_uint32_t       aIndex,
+                                     ulnStmt           *aStmt,
+                                     acp_char_t        *aQuery,
+                                     acp_sint32_t       aQueryLen,
+                                     ulsdFuncCallback **aCallback )
+{
+    ulsdFuncCallback *sCallback = aStmt->mParentDbc->mShardDbcCxt.mFuncCallback;
+
+    ACI_TEST(ulsdVerifyFuncCallback((ulnObject *)aStmt, sCallback) != ACI_SUCCESS);
+
+    sCallback->mFuncType = ULSD_FUNC_EXECUTE_DIRECT;
+    sCallback->mIndex    = aIndex;
+    sCallback->mRet      = SQL_SUCCESS;
+
+    sCallback->mStmt     = aStmt;
+    sCallback->mDbc      = NULL;
+
+    sCallback->mArg.mExecDirect.mQuery    = aQuery;
+    sCallback->mArg.mExecDirect.mQueryLen = aQueryLen;
+
+    if (*aCallback != NULL)
+    {
+        sCallback->mCount = (*aCallback)->mCount + 1;
     }
+    else
+    {
+        sCallback->mCount = 0;
+    }
+
+    /* add first */
+    sCallback->mNext = *aCallback;
+
+    *aCallback = sCallback;
+
+    return SQL_SUCCESS;
+
     ACI_EXCEPTION_END;
 
     return SQL_ERROR;
@@ -203,12 +213,9 @@ SQLRETURN ulsdExecuteAddCallback( acp_uint32_t       aIndex,
                                   ulnStmt           *aStmt,
                                   ulsdFuncCallback **aCallback )
 {
-    ulnFnContext        sFnContext;
-    ulsdFuncCallback  * sCallback;
+    ulsdFuncCallback *sCallback = aStmt->mParentDbc->mShardDbcCxt.mFuncCallback;
 
-    ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(acpMemAlloc((void **)&sCallback,
-                                                  ACI_SIZEOF(ulsdFuncCallback))),
-                   LABEL_ALLOC_MEM_ERROR);
+    ACI_TEST(ulsdVerifyFuncCallback((ulnObject *)aStmt, sCallback) != ACI_SUCCESS);
 
     sCallback->mFuncType = ULSD_FUNC_EXECUTE;
     sCallback->mIndex    = aIndex;
@@ -233,18 +240,6 @@ SQLRETURN ulsdExecuteAddCallback( acp_uint32_t       aIndex,
 
     return SQL_SUCCESS;
 
-    ACI_EXCEPTION(LABEL_ALLOC_MEM_ERROR)
-    {
-        ULN_INIT_FUNCTION_CONTEXT( sFnContext,
-                                   ULN_FID_ALLOCHANDLE,
-                                   aStmt->mParentDbc,
-                                   ULN_OBJ_TYPE_DBC );
-
-        (void)ulnError( &sFnContext,
-                        ulERR_ABORT_SHARD_ERROR,
-                        "ulsdExecuteAddCallback",
-                        "Alloc node stmt memory error" );
-    }
     ACI_EXCEPTION_END;
 
     return SQL_ERROR;
@@ -256,12 +251,9 @@ SQLRETURN ulsdPrepareAddCallback( acp_uint32_t       aIndex,
                                   acp_sint32_t       aQueryLen,
                                   ulsdFuncCallback **aCallback )
 {
-    ulnFnContext        sFnContext;
-    ulsdFuncCallback  * sCallback;
+    ulsdFuncCallback *sCallback = aStmt->mParentDbc->mShardDbcCxt.mFuncCallback;
 
-    ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(acpMemAlloc((void **)&sCallback,
-                                                  ACI_SIZEOF(ulsdFuncCallback))),
-                   LABEL_ALLOC_MEM_ERROR);
+    ACI_TEST(ulsdVerifyFuncCallback((ulnObject *)aStmt, sCallback) != ACI_SUCCESS);
 
     sCallback->mFuncType = ULSD_FUNC_PREPARE;
     sCallback->mIndex    = aIndex;
@@ -289,18 +281,6 @@ SQLRETURN ulsdPrepareAddCallback( acp_uint32_t       aIndex,
 
     return SQL_SUCCESS;
 
-    ACI_EXCEPTION(LABEL_ALLOC_MEM_ERROR)
-    {
-        ULN_INIT_FUNCTION_CONTEXT( sFnContext,
-                                   ULN_FID_ALLOCHANDLE,
-                                   aStmt->mParentDbc,
-                                   ULN_OBJ_TYPE_DBC );
-
-        (void)ulnError( &sFnContext,
-                        ulERR_ABORT_SHARD_ERROR,
-                        "ulsdPrepareAddCallback",
-                        "Alloc node stmt memory error" );
-    }
     ACI_EXCEPTION_END;
 
     return SQL_ERROR;
@@ -313,16 +293,13 @@ SQLRETURN ulsdPrepareTranAddCallback( acp_uint32_t       aIndex,
                                       acp_uint8_t       *aReadOnly,
                                       ulsdFuncCallback **aCallback )
 {
-    ulnFnContext        sFnContext;
-    ulsdFuncCallback  * sCallback;
+    ulsdFuncCallback *sCallback = aDbc->mShardDbcCxt.mFuncCallback;
 
-    ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(acpMemAlloc((void **)&sCallback,
-                                                  ACI_SIZEOF(ulsdFuncCallback))),
-                   LABEL_ALLOC_MEM_ERROR);
+    ACI_TEST(ulsdVerifyFuncCallback((ulnObject *)aDbc, sCallback) != ACI_SUCCESS);
 
     sCallback->mFuncType = ULSD_FUNC_PREPARE_TRAN;
     sCallback->mIndex    = aIndex;
-    sCallback->mRet      = SQL_SUCCESS;
+    sCallback->mRet      = (SQLRETURN)(-1111);
 
     sCallback->mStmt     = NULL;
     sCallback->mDbc      = aDbc;
@@ -347,18 +324,49 @@ SQLRETURN ulsdPrepareTranAddCallback( acp_uint32_t       aIndex,
 
     return SQL_SUCCESS;
 
-    ACI_EXCEPTION(LABEL_ALLOC_MEM_ERROR)
-    {
-        ULN_INIT_FUNCTION_CONTEXT( sFnContext,
-                                   ULN_FID_ALLOCHANDLE,
-                                   aDbc,
-                                   ULN_OBJ_TYPE_DBC );
+    ACI_EXCEPTION_END;
 
-        (void)ulnError( &sFnContext,
-                        ulERR_ABORT_SHARD_ERROR,
-                        "ulsdPrepareTranAddCallback",
-                        "Alloc node stmt memory error");
+    return SQL_ERROR;
+}
+
+SQLRETURN ulsdEndPendingTranAddCallback( acp_uint32_t       aIndex,
+                                         ulnDbc            *aDbc,
+                                         acp_uint32_t       aXIDSize,
+                                         acp_uint8_t       *aXID,
+                                         acp_sint16_t       aCompletionType,
+                                         ulsdFuncCallback **aCallback )
+{
+    ulsdFuncCallback *sCallback = aDbc->mShardDbcCxt.mFuncCallback;
+
+    ACI_TEST(ulsdVerifyFuncCallback((ulnObject *)aDbc, sCallback) != ACI_SUCCESS);
+
+    sCallback->mFuncType = ULSD_FUNC_END_PENDING_TRAN;
+    sCallback->mIndex    = aIndex;
+    sCallback->mRet      = (SQLRETURN)(-1111);
+
+    sCallback->mStmt     = NULL;
+    sCallback->mDbc      = aDbc;
+
+    sCallback->mArg.mEndPendingTran.mXIDSize        = aXIDSize;
+    sCallback->mArg.mEndPendingTran.mXID            = aXID;
+    sCallback->mArg.mEndPendingTran.mCompletionType = aCompletionType;
+
+    if (*aCallback != NULL)
+    {
+        sCallback->mCount = (*aCallback)->mCount + 1;
     }
+    else
+    {
+        sCallback->mCount = 0;
+    }
+
+    /* add first */
+    sCallback->mNext = *aCallback;
+
+    *aCallback = sCallback;
+
+    return SQL_SUCCESS;
+
     ACI_EXCEPTION_END;
 
     return SQL_ERROR;
@@ -369,12 +377,9 @@ SQLRETURN ulsdEndTranAddCallback( acp_uint32_t       aIndex,
                                   acp_sint16_t       aCompletionType,
                                   ulsdFuncCallback **aCallback )
 {
-    ulnFnContext        sFnContext;
-    ulsdFuncCallback  * sCallback;
+    ulsdFuncCallback *sCallback = aDbc->mShardDbcCxt.mFuncCallback;
 
-    ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(acpMemAlloc((void **)&sCallback,
-                                                  ACI_SIZEOF(ulsdFuncCallback))),
-                   LABEL_ALLOC_MEM_ERROR);
+    ACI_TEST(ulsdVerifyFuncCallback((ulnObject *)aDbc, sCallback) != ACI_SUCCESS);
 
     sCallback->mFuncType = ULSD_FUNC_END_TRAN;
     sCallback->mIndex    = aIndex;
@@ -401,18 +406,98 @@ SQLRETURN ulsdEndTranAddCallback( acp_uint32_t       aIndex,
 
     return SQL_SUCCESS;
 
-    ACI_EXCEPTION(LABEL_ALLOC_MEM_ERROR)
-    {
-        ULN_INIT_FUNCTION_CONTEXT( sFnContext,
-                                   ULN_FID_ALLOCHANDLE,
-                                   aDbc,
-                                   ULN_OBJ_TYPE_DBC);
+    ACI_EXCEPTION_END;
 
-        (void)ulnError( &sFnContext,
-                        ulERR_ABORT_SHARD_ERROR,
-                        "ulsdEndTranAddCallback",
-                        "Alloc node stmt memory error");
+    return SQL_ERROR;
+}
+
+#ifdef COMPILE_SHARDCLI
+SQLRETURN ulsdShardEndTranAddCallback( acp_uint32_t       aIndex,
+                                       ulnDbc            *aDbc,
+                                       acp_sint16_t       aCompletionType,
+                                       ulsdFuncCallback **aCallback )
+{
+    ulsdFuncCallback *sCallback = aDbc->mShardDbcCxt.mFuncCallback;
+
+    ACI_TEST(ulsdVerifyFuncCallback((ulnObject *)aDbc, sCallback) != ACI_SUCCESS);
+
+    sCallback->mFuncType = ULSD_FUNC_SHARD_END_TRAN;
+    sCallback->mIndex    = aIndex;
+    sCallback->mRet      = (SQLRETURN)(-1111);
+
+    sCallback->mStmt     = NULL;
+    sCallback->mDbc      = aDbc;
+
+    sCallback->mArg.mShardEndTran.mCompletionType = aCompletionType;
+
+    if (*aCallback != NULL)
+    {
+        sCallback->mCount = (*aCallback)->mCount + 1;
     }
+    else
+    {
+        sCallback->mCount = 0;
+    }
+
+    /* add first */
+    sCallback->mNext = *aCallback;
+
+    *aCallback = sCallback;
+
+    return SQL_SUCCESS;
+
+    ACI_EXCEPTION_END;
+
+    return SQL_ERROR;
+}
+#endif
+
+SQLRETURN ulsdPutLobAddCallback( acp_uint32_t       aIndex,
+                                 ulnStmt           *aStmt,
+                                 acp_sint16_t       aLocatorCType,
+                                 acp_uint64_t       aLocator,
+                                 acp_uint32_t       aFromPosition,
+                                 acp_uint32_t       aForLength,
+                                 acp_sint16_t       aSourceCType,
+                                 void              *aBuffer,
+                                 acp_uint32_t       aBufferSize,
+                                 ulsdFuncCallback **aCallback )
+{
+    ulsdFuncCallback *sCallback = aStmt->mParentDbc->mShardDbcCxt.mFuncCallback;
+
+    ACI_TEST(ulsdVerifyFuncCallback((ulnObject *)aStmt, sCallback) != ACI_SUCCESS);
+
+    sCallback->mFuncType = ULSD_FUNC_PUT_LOB;
+    sCallback->mIndex    = aIndex;
+    sCallback->mRet      = SQL_SUCCESS;
+
+    sCallback->mStmt     = aStmt;
+    sCallback->mDbc      = NULL;
+
+    sCallback->mArg.mPutLob.mLocatorCType    = aLocatorCType;
+    sCallback->mArg.mPutLob.mLocator         = aLocator;
+    sCallback->mArg.mPutLob.mFromPosition    = aFromPosition;
+    sCallback->mArg.mPutLob.mForLength       = aForLength;
+    sCallback->mArg.mPutLob.mSourceCType     = aSourceCType;
+    sCallback->mArg.mPutLob.mBuffer          = aBuffer;
+    sCallback->mArg.mPutLob.mBufferSize      = aBufferSize;
+
+    if (*aCallback != NULL)
+    {
+        sCallback->mCount = (*aCallback)->mCount + 1;
+    }
+    else
+    {
+        sCallback->mCount = 0;
+    }
+
+    /* add first */
+    sCallback->mNext = *aCallback;
+
+    *aCallback = sCallback;
+
+    return SQL_SUCCESS;
+
     ACI_EXCEPTION_END;
 
     return SQL_ERROR;
@@ -431,7 +516,7 @@ void ulsdDoCallback( ulsdFuncCallback *aCallback )
             aCallback->mDbc->mShardDbcCxt.mCallback = aCallback->mNext;
         }
 
-        /* call depthë¥¼ ì œí•œí•œë‹¤. */
+        /* call depth¸¦ Á¦ÇÑÇÑ´Ù. */
         if ( aCallback->mCount % ULSD_CALLBACK_DEPTH_MAX == 0 )
         {
             if ( aCallback->mStmt != NULL )
@@ -482,13 +567,28 @@ void ulsdDoCallback( ulsdFuncCallback *aCallback )
                 aCallback->mRet = ulnExecute(aCallback->mStmt);
                 break;
             }
-
+            case ULSD_FUNC_EXECUTE_DIRECT:
+            {
+                aCallback->mRet = ulnExecDirect(aCallback->mStmt,
+                                                aCallback->mArg.mExecDirect.mQuery,
+                                                aCallback->mArg.mExecDirect.mQueryLen);
+                break;
+            }
             case ULSD_FUNC_PREPARE_TRAN:
             {
                 aCallback->mRet = ulsdShardPrepareTran(aCallback->mDbc,
                                                        aCallback->mArg.mPrepareTran.mXIDSize,
                                                        aCallback->mArg.mPrepareTran.mXID,
                                                        aCallback->mArg.mPrepareTran.mReadOnly);
+                break;
+            }
+
+            case ULSD_FUNC_END_PENDING_TRAN:
+            {
+                aCallback->mRet = ulsdShardEndPendingTran(aCallback->mDbc,
+                                                          aCallback->mArg.mEndPendingTran.mXIDSize,
+                                                          aCallback->mArg.mEndPendingTran.mXID,
+                                                          aCallback->mArg.mEndPendingTran.mCompletionType);
                 break;
             }
 
@@ -499,6 +599,29 @@ void ulsdDoCallback( ulsdFuncCallback *aCallback )
                                              aCallback->mArg.mEndTran.mCompletionType);
                 break;
             }
+
+#ifdef COMPILE_SHARDCLI
+            case ULSD_FUNC_SHARD_END_TRAN:
+            {
+                aCallback->mRet = ulsdnSimpleShardEndTranDbc( aCallback->mDbc,
+                                                              aCallback->mArg.mShardEndTran.mCompletionType );
+                break;
+            }
+
+            case ULSD_FUNC_PUT_LOB:
+            {
+                aCallback->mRet = ulnPutLob(SQL_HANDLE_STMT,
+                                            (ulnObject *)aCallback->mStmt,
+                                            aCallback->mArg.mPutLob.mLocatorCType,
+                                            aCallback->mArg.mPutLob.mLocator,
+                                            aCallback->mArg.mPutLob.mFromPosition,
+                                            aCallback->mArg.mPutLob.mForLength,
+                                            aCallback->mArg.mPutLob.mSourceCType,
+                                            aCallback->mArg.mPutLob.mBuffer,
+                                            aCallback->mArg.mPutLob.mBufferSize);
+                break;
+            }
+#endif
 
             default:
                 break;
@@ -558,13 +681,28 @@ void ulsdReDoCallback( ulsdFuncCallback *aCallback )
             aCallback->mRet = ulnExecute(aCallback->mStmt);
             break;
         }
-
+        case ULSD_FUNC_EXECUTE_DIRECT:
+        {
+            aCallback->mRet = ulnExecDirect(aCallback->mStmt,
+                                            aCallback->mArg.mExecDirect.mQuery,
+                                            aCallback->mArg.mExecDirect.mQueryLen);
+            break;
+        }
         case ULSD_FUNC_PREPARE_TRAN:
         {
             aCallback->mRet = ulsdShardPrepareTran(aCallback->mDbc,
                                                    aCallback->mArg.mPrepareTran.mXIDSize,
                                                    aCallback->mArg.mPrepareTran.mXID,
                                                    aCallback->mArg.mPrepareTran.mReadOnly);
+            break;
+        }
+
+        case ULSD_FUNC_END_PENDING_TRAN:
+        {
+            aCallback->mRet = ulsdShardEndPendingTran(aCallback->mDbc,
+                                                      aCallback->mArg.mEndPendingTran.mXIDSize,
+                                                      aCallback->mArg.mEndPendingTran.mXID,
+                                                      aCallback->mArg.mEndPendingTran.mCompletionType);
             break;
         }
 
@@ -575,6 +713,29 @@ void ulsdReDoCallback( ulsdFuncCallback *aCallback )
                                          aCallback->mArg.mEndTran.mCompletionType);
             break;
         }
+
+#ifdef COMPILE_SHARDCLI
+        case ULSD_FUNC_SHARD_END_TRAN:
+        {
+            aCallback->mRet = ulsdnSimpleShardEndTranDbc( aCallback->mDbc,
+                                                          aCallback->mArg.mEndTran.mCompletionType );
+            break;
+        }
+
+        case ULSD_FUNC_PUT_LOB:
+        {
+            aCallback->mRet = ulnPutLob(SQL_HANDLE_STMT,
+                                        (ulnObject *)aCallback->mStmt,
+                                        aCallback->mArg.mPutLob.mLocatorCType,
+                                        aCallback->mArg.mPutLob.mLocator,
+                                        aCallback->mArg.mPutLob.mFromPosition,
+                                        aCallback->mArg.mPutLob.mForLength,
+                                        aCallback->mArg.mPutLob.mSourceCType,
+                                        aCallback->mArg.mPutLob.mBuffer,
+                                        aCallback->mArg.mPutLob.mBufferSize);
+            break;
+        }
+#endif
 
         default:
             break;
@@ -596,7 +757,7 @@ SQLRETURN ulsdGetResultCallback( acp_uint32_t      aIndex,
 
             if ( ( sRet == (SQLRETURN)(-1111) ) && ( aReCall == 1 ) )
             {
-                /* ì´ì „ callback ì˜ error ë¡œ ì¸í•´ ìˆ˜í–‰í•˜ì§€ ì•Šì€ ê²½ìš° ìž¬ì‹œë„ */
+                /* ÀÌÀü callback ÀÇ error ·Î ÀÎÇØ ¼öÇàÇÏÁö ¾ÊÀº °æ¿ì Àç½Ãµµ */
                 ulsdReDoCallback( sCallback );
                 sRet = sCallback->mRet;
             }
@@ -622,7 +783,7 @@ void ulsdRemoveCallback( ulsdFuncCallback *aCallback )
 
     while ( sCallback != NULL )
     {
-        /* ì´ˆê¸°í™” */
+        /* ÃÊ±âÈ­ */
         if ( sCallback->mStmt != NULL )
         {
             sCallback->mStmt->mShardStmtCxt.mCallback = NULL;
@@ -638,7 +799,7 @@ void ulsdRemoveCallback( ulsdFuncCallback *aCallback )
 
         sNext = sCallback->mNext;
 
-        acpMemFree(sCallback);
+        sCallback->mInUse = ACP_FALSE;  /* BUG-46814 */
 
         sCallback = sNext;
     }
@@ -666,4 +827,39 @@ void ulsdDbcCallback( ulnDbc *aDbc )
     {
         /* Nothing to do */
     }
+}
+
+/* BUG-46814 funcCallbackÀÌ »ç¿ëÁßÀÎÁö Ã¼Å© ÇÑ´Ù. */
+ACI_RC ulsdVerifyFuncCallback( ulnObject *aObject, ulsdFuncCallback *aFuncCallback )
+{
+    ulnFnContext sFnContext;
+
+    ACE_DASSERT( aFuncCallback != NULL );
+    ACE_DASSERT( aFuncCallback->mInUse == ACP_FALSE );
+
+    ACI_TEST_RAISE( aFuncCallback == NULL, LABEL_FUNC_CALLBACK_NULL );
+    ACI_TEST_RAISE( aFuncCallback->mInUse == ACP_TRUE, LABEL_FUNC_CALLBACK_IN_USE );
+    aFuncCallback->mInUse = ACP_TRUE;
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION(LABEL_FUNC_CALLBACK_NULL)
+    {
+        ULN_INIT_FUNCTION_CONTEXT( sFnContext, ULN_FID_NONE, aObject, ULN_OBJ_GET_TYPE(aObject) );
+        (void)ulnError( &sFnContext,
+                        ulERR_ABORT_SHARD_ERROR,
+                        "VerifyFuncCallback",
+                        "Unexpected Error: The funcCallback is NULL" );
+    }
+    ACI_EXCEPTION(LABEL_FUNC_CALLBACK_IN_USE)
+    {
+        ULN_INIT_FUNCTION_CONTEXT( sFnContext, ULN_FID_NONE, aObject, ULN_OBJ_GET_TYPE(aObject) );
+        (void)ulnError( &sFnContext,
+                        ulERR_ABORT_SHARD_ERROR,
+                        "VerifyFuncCallback",
+                        "Unexpected Error: The funcCallback is already in use" );
+    }
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
 }

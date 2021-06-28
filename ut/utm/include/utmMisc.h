@@ -21,6 +21,7 @@
 #ifndef _O_UTM_MISC_H_
 #define _O_UTM_MISC_H_ 1
 
+UInt utmGetErrorCODE();
 IDE_RC utmSetErrorMsgAfterAllocEnv();
 IDE_RC utmSetErrorMsgWithHandle(SQLSMALLINT aHandleType,
                                        SQLHANDLE   aHandle);

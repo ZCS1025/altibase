@@ -19,11 +19,11 @@
  * $Id: qmgCounting.cpp 20233 2007-08-06 01:58:21Z sungminee $
  *
  * Description :
- *     Counting Graphë¥¼ ìœ„í•œ ìˆ˜í–‰ í•¨ìˆ˜
+ *     Counting Graph¸¦ À§ÇÑ ¼öÇà ÇÔ¼ö
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -32,6 +32,7 @@
 #include <qmgCounting.h>
 #include <qmoOneNonPlan.h>
 #include <qmoSelectivity.h>
+#include <qmo.h>
 
 IDE_RC
 qmgCounting::init( qcStatement  * aStatement,
@@ -42,12 +43,12 @@ qmgCounting::init( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgCountingì˜ ì´ˆê¸°í™”
+ * Description : qmgCountingÀÇ ÃÊ±âÈ­
  *
  * Implementation :
- *    (1) qmgCountingì„ ìœ„í•œ ê³µê°„ í• ë‹¹
- *    (2) graph( ëª¨ë“  Graphë¥¼ ìœ„í•œ ê³µí†µ ìë£Œ êµ¬ì¡° ) ì´ˆê¸°í™”
- *    (3) out ì„¤ì •
+ *    (1) qmgCountingÀ» À§ÇÑ °ø°£ ÇÒ´ç
+ *    (2) graph( ¸ğµç Graph¸¦ À§ÇÑ °øÅë ÀÚ·á ±¸Á¶ ) ÃÊ±âÈ­
+ *    (3) out ¼³Á¤
  *
  ***********************************************************************/
 
@@ -57,7 +58,7 @@ qmgCounting::init( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgCounting::init::__FT__" );
 
     //---------------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
@@ -65,15 +66,15 @@ qmgCounting::init( qcStatement  * aStatement,
     IDE_DASSERT( aChildGraph != NULL );
 
     //---------------------------------------------------
-    // Counting Graphë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
+    // Counting Graph¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
     //---------------------------------------------------
 
-    // qmgCountingì„ ìœ„í•œ ê³µê°„ í• ë‹¹
+    // qmgCountingÀ» À§ÇÑ °ø°£ ÇÒ´ç
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmgCNTG ),
                                              (void**) &sMyGraph )
               != IDE_SUCCESS );
     
-    // Graph ê³µí†µ ì •ë³´ì˜ ì´ˆê¸°í™”
+    // Graph °øÅë Á¤º¸ÀÇ ÃÊ±âÈ­
     IDE_TEST( qmg::initGraph( & sMyGraph->graph ) != IDE_SUCCESS );
     
     sMyGraph->graph.type = QMG_COUNTING;
@@ -89,7 +90,7 @@ qmgCounting::init( qcStatement  * aStatement,
     sMyGraph->graph.makePlan = qmgCounting::makePlan;
     sMyGraph->graph.printGraph = qmgCounting::printGraph;
 
-    // Disk/Memory ì •ë³´ ì„¤ì •
+    // Disk/Memory Á¤º¸ ¼³Á¤
     for ( sQuerySet = aQuerySet;
           sQuerySet->left != NULL;
           sQuerySet = sQuerySet->left ) ;
@@ -97,7 +98,7 @@ qmgCounting::init( qcStatement  * aStatement,
     switch(  sQuerySet->SFWGH->hints->interResultType )
     {
         case QMO_INTER_RESULT_TYPE_NOT_DEFINED :
-            // ì¤‘ê°„ ê²°ê³¼ Type Hintê°€ ì—†ëŠ” ê²½ìš°, í•˜ìœ„ì˜ Typeì„ ë”°ë¥¸ë‹¤.
+            // Áß°£ °á°ú Type Hint°¡ ¾ø´Â °æ¿ì, ÇÏÀ§ÀÇ TypeÀ» µû¸¥´Ù.
             if ( ( aChildGraph->flag & QMG_GRAPH_TYPE_MASK )
                  == QMG_GRAPH_TYPE_DISK )
             {
@@ -124,7 +125,7 @@ qmgCounting::init( qcStatement  * aStatement,
     }
 
     //---------------------------------------------------
-    // Counting Graph ê³ ìœ  ì •ë³´ë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
+    // Counting Graph °íÀ¯ Á¤º¸¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
     //---------------------------------------------------
 
     sMyGraph->stopkeyPredicate = NULL;
@@ -132,7 +133,7 @@ qmgCounting::init( qcStatement  * aStatement,
     
     sMyGraph->stopRecordCount = 0;
 
-    // out ì„¤ì •
+    // out ¼³Á¤
     *aGraph = (qmgGraph *)sMyGraph;
     
     return IDE_SUCCESS;
@@ -148,12 +149,12 @@ qmgCounting::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- * Description : qmgCountingì˜ ìµœì í™”
+ * Description : qmgCountingÀÇ ÃÖÀûÈ­
  *
  * Implementation :
- *    (1) rownum predicateì˜ subquery ì²˜ë¦¬
- *    (2) stopkey ì¶”ì¶œ
- *    (3) ê³µí†µ ë¹„ìš© ì •ë³´
+ *    (1) rownum predicateÀÇ subquery Ã³¸®
+ *    (2) stopkey ÃßÃâ
+ *    (3) °øÅë ºñ¿ë Á¤º¸
  *    (4) Preserved Order
  *
  ***********************************************************************/
@@ -165,32 +166,43 @@ qmgCounting::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     IDU_FIT_POINT_FATAL( "qmgCounting::optimize::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //------------------------------------------
 
     sMyGraph = (qmgCNTG*) aGraph;
     sQuerySet = sMyGraph->graph.myQuerySet;
     
     //------------------------------------------
-    // Predicate ìµœì í™”
+    // Predicate ÃÖÀûÈ­
     //------------------------------------------
 
     if ( sMyGraph->graph.myPredicate != NULL )
     {
-        // rownum predicateì˜ subquery ì²˜ë¦¬
+        /* TASK-7219 Non-shard DML */
+        IDE_TEST( qmo::removeOutRefPredPushedForce( & sMyGraph->graph.myPredicate )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    if ( sMyGraph->graph.myPredicate != NULL )
+    {
+        // rownum predicateÀÇ subquery Ã³¸®
         IDE_TEST( qmoPred::optimizeSubqueries( aStatement,
                                                sMyGraph->graph.myPredicate,
                                                ID_FALSE )
                   != IDE_SUCCESS );
 
-        // stopkey predicate ì¶”ì¶œ
+        // stopkey predicate ÃßÃâ
         IDE_TEST( qmoPred::separateRownumPred( aStatement,
                                                sQuerySet,
                                                sMyGraph->graph.myPredicate,
@@ -212,7 +224,7 @@ qmgCounting::optimize( qcStatement * aStatement, qmgGraph * aGraph )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // ê³µí†µ ë¹„ìš© ì •ë³´ì˜ ì„¤ì •
+    // °øÅë ºñ¿ë Á¤º¸ÀÇ ¼³Á¤
     //------------------------------------------
 
     // selectivity
@@ -262,7 +274,7 @@ qmgCounting::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         sMyGraph->graph.left->costInfo.totalDiskCost;
 
     // PROJ-2242
-    // ROWNUM ì´ ìˆì„ë•ŒëŠ” íŠ¹ë³„ì´ cost ê°’ì„ ì¤„ì¼ í•„ìš”ê°€ ìˆë‹¤.
+    // ROWNUM ÀÌ ÀÖÀ»¶§´Â Æ¯º°ÀÌ cost °ªÀ» ÁÙÀÏ ÇÊ¿ä°¡ ÀÖ´Ù.
     sMyGraph->graph.costInfo.totalAllCost =
         ( sMyGraph->graph.left->costInfo.totalAllCost * 
           sMyGraph->graph.costInfo.selectivity ) +
@@ -281,20 +293,20 @@ qmgCounting::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGr
 {
 /***********************************************************************
  *
- * Description : qmgCountingìœ¼ë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
+ * Description : qmgCountingÀ¸·Î ºÎÅÍ PlanÀ» »ı¼ºÇÑ´Ù.
  *
  * Implementation :
- *     - qmgCountingìœ¼ë¡œ ë¶€í„° ìƒì„±ê°€ëŠ¥í•œ Plan
+ *     - qmgCountingÀ¸·Î ºÎÅÍ »ı¼º°¡´ÉÇÑ Plan
  *
- *         1.  stopkeyê°€ ì—†ëŠ” ê²½ìš°
+ *         1.  stopkey°¡ ¾ø´Â °æ¿ì
  *
  *                 [COUNTER]
  *
- *         2.  stopkeyê°€ ìˆëŠ” ê²½ìš°
+ *         2.  stopkey°¡ ÀÖ´Â °æ¿ì
  *
  *              [COUNTER STOPKEY]
  *
- *         3.  filterê°€ ìˆëŠ” ê²½ìš°
+ *         3.  filter°¡ ÀÖ´Â °æ¿ì
  *
  *                   [FILT]
  *
@@ -309,7 +321,7 @@ qmgCounting::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGr
     IDU_FIT_POINT_FATAL( "qmgCounting::makePlan::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
@@ -322,7 +334,7 @@ qmgCounting::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGr
     aGraph->flag |= (aParent->flag & QMG_PARALLEL_IMPOSSIBLE_MASK);
 
     // BUG-38410
-    // SCAN parallel flag ë¥¼ ìì‹ ë…¸ë“œë¡œ ë¬¼ë ¤ì¤€ë‹¤.
+    // SCAN parallel flag ¸¦ ÀÚ½Ä ³ëµå·Î ¹°·ÁÁØ´Ù.
     aGraph->left->flag  |= (aGraph->flag & QMG_PLAN_EXEC_REPEATED_MASK);
 
     sMyGraph->graph.myPlan = aParent->myPlan;
@@ -353,9 +365,9 @@ qmgCounting::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGr
                                            &sFILT ) != IDE_SUCCESS);
 
         // PROJ-2179
-        // FILTERê°€ COUNTERë³´ë‹¤ í•˜ìœ„ì— ìœ„ì¹˜í•˜ë¯€ë¡œ, í•˜ìœ„ operatorê°€ ìƒìœ„ operatorì˜
-        // ê²°ê³¼ë¥¼ ì°¸ì¡°í•˜ê²Œ ëœë‹¤. ì´ ë•Œ FILTERì˜ í•˜ìœ„ì—ì„œ ROWNUMì„ ìƒì†ë°›ì§€ ì•Šë„ë¡
-        // TERMINAL flagë¥¼ ì„¤ì •í•´ì¤€ë‹¤.
+        // FILTER°¡ COUNTERº¸´Ù ÇÏÀ§¿¡ À§Ä¡ÇÏ¹Ç·Î, ÇÏÀ§ operator°¡ »óÀ§ operatorÀÇ
+        // °á°ú¸¦ ÂüÁ¶ÇÏ°Ô µÈ´Ù. ÀÌ ¶§ FILTERÀÇ ÇÏÀ§¿¡¼­ ROWNUMÀ» »ó¼Ó¹ŞÁö ¾Êµµ·Ï
+        // TERMINAL flag¸¦ ¼³Á¤ÇØÁØ´Ù.
         for( sItrAttr = sFILT->resultDesc;
              sItrAttr != NULL;
              sItrAttr = sItrAttr->next )
@@ -379,7 +391,7 @@ qmgCounting::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGr
     }
 
     //---------------------------------------------------
-    // í•˜ìœ„ Planì˜ ìƒì„±
+    // ÇÏÀ§ PlanÀÇ »ı¼º
     //---------------------------------------------------
     
     IDE_TEST( sMyGraph->graph.left->makePlan( aStatement ,
@@ -390,7 +402,7 @@ qmgCounting::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGr
     sMyGraph->graph.myPlan = sMyGraph->graph.left->myPlan;
 
     //-----------------------------------------------------
-    // Filter ë…¸ë“œ ìƒì„±
+    // Filter ³ëµå »ı¼º
     //-----------------------------------------------------
     
     if ( sMyGraph->filterPredicate != NULL )
@@ -412,7 +424,7 @@ qmgCounting::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGr
     }
 
     //-----------------------------------------------------
-    // Counter ë…¸ë“œ ìƒì„±
+    // Counter ³ëµå »ı¼º
     //-----------------------------------------------------
     
     IDE_TEST( qmoOneNonPlan::makeCNTR( aStatement,
@@ -444,7 +456,7 @@ qmgCounting::printGraph( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Graphë¥¼ êµ¬ì„±í•˜ëŠ” ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *    Graph¸¦ ±¸¼ºÇÏ´Â °øÅë Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *    
  *
  * Implementation :
@@ -454,7 +466,7 @@ qmgCounting::printGraph( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgCounting::printGraph::__FT__" );
 
     //-----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //-----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -462,7 +474,7 @@ qmgCounting::printGraph( qcStatement  * aStatement,
     IDE_DASSERT( aString != NULL );
 
     //-----------------------------------
-    // Graph ê³µí†µ ì •ë³´ì˜ ì¶œë ¥
+    // Graph °øÅë Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
     IDE_TEST( qmg::printGraph( aStatement,
@@ -472,12 +484,12 @@ qmgCounting::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
+    // Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
 
     //-----------------------------------
-    // Child Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
+    // Child Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
     IDE_TEST( aGraph->left->printGraph( aStatement,
@@ -502,7 +514,7 @@ qmgCounting::makeOrderFromChild( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Left Child Graphì˜ Preserved Orderë¥¼ ë³µì‚¬í•œë‹¤.
+ *    Left Child GraphÀÇ Preserved Order¸¦ º¹»çÇÑ´Ù.
  *
  * Implementation :
  * 
@@ -516,7 +528,7 @@ qmgCounting::makeOrderFromChild( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgCounting::makeOrderFromChild::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -525,7 +537,7 @@ qmgCounting::makeOrderFromChild( qcStatement * aStatement,
     sGraphOrder = NULL;
     
     //------------------------------------------
-    // Leftì˜ Preserved Orderë¥¼ ë³µì‚¬í•œë‹¤.
+    // LeftÀÇ Preserved Order¸¦ º¹»çÇÑ´Ù.
     //------------------------------------------
     
     for ( sChildOrder = aGraph->left->preservedOrder;
@@ -555,7 +567,7 @@ qmgCounting::makeOrderFromChild( qcStatement * aStatement,
     }
 
     //------------------------------------------
-    // Join Graphì˜ Preserved Orderì •ë³´ ì„¤ì •
+    // Join GraphÀÇ Preserved OrderÁ¤º¸ ¼³Á¤
     //------------------------------------------
     
     aGraph->preservedOrder = sGraphOrder;
@@ -576,11 +588,11 @@ qmgCounting::finalizePreservedOrder( qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- *  Description : Preserved Orderì˜ directionì„ ê²°ì •í•œë‹¤.
- *                directionì´ NOT_DEFINED ì¼ ê²½ìš°ì—ë§Œ í˜¸ì¶œí•˜ì—¬ì•¼ í•œë‹¤.
+ *  Description : Preserved OrderÀÇ directionÀ» °áÁ¤ÇÑ´Ù.
+ *                directionÀÌ NOT_DEFINED ÀÏ °æ¿ì¿¡¸¸ È£ÃâÇÏ¿©¾ß ÇÑ´Ù.
  *
  *  Implementation :
- *     Child Graphì˜ orderë¡œ directionì„ ê²°ì •í•œë‹¤.
+ *     Child GraphÀÇ order·Î directionÀ» °áÁ¤ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -597,7 +609,7 @@ qmgCounting::finalizePreservedOrder( qmgGraph * aGraph )
 
     if ( sIsSamePresOrderWithChild == ID_TRUE )
     {
-        // Child graphì˜ Preserved order directionì„ ë³µì‚¬í•œë‹¤.
+        // Child graphÀÇ Preserved order directionÀ» º¹»çÇÑ´Ù.
         IDE_TEST( qmg::copyPreservedOrderDirection(
                       aGraph->preservedOrder,
                       aGraph->left->preservedOrder )
@@ -605,8 +617,8 @@ qmgCounting::finalizePreservedOrder( qmgGraph * aGraph )
     }
     else
     {
-        // Projectionì€ preserved orderë¥¼ ìƒì„±í•  ìˆ˜ ì—†ëŠ” graphì´ë¯€ë¡œ
-        // í•˜ìœ„ì™€ preserved orderê°€ ë‹¤ë¥¼ìˆ˜ ì—†ë‹¤.
+        // ProjectionÀº preserved order¸¦ »ı¼ºÇÒ ¼ö ¾ø´Â graphÀÌ¹Ç·Î
+        // ÇÏÀ§¿Í preserved order°¡ ´Ù¸¦¼ö ¾ø´Ù.
         IDE_DASSERT(0);
     }
     

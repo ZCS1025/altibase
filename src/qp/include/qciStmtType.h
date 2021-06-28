@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qciStmtType.h 85186 2019-04-09 07:37:00Z jayce.park $
+ * $Id: qciStmtType.h 90585 2021-04-13 07:35:51Z minku.kang $
  **********************************************************************/
 
 #ifndef _O_QCI_STMT_TYPE_H_
@@ -35,8 +35,8 @@
 #define QCI_STMT_MASK_MASK  (0x000F0000)
 #define QCI_STMT_MASK_INDEX (0x0000FFFF)
 
-// ulnStmtType.hÏóêÏÑú ÏïÑÎûò ÎÇ¥Ïö©ÏùÑ ÎòëÍ∞ôÏù¥ Î≥µÏÇ¨Ìï¥ÏÑú ÏÇ¨Ïö©ÌïòÍ≥† ÏûàÏùå.
-// qciStmtTypeÎ≥ÄÍ≤Ω Ïãú ulÏ™ΩÎèÑ Î≥ÄÍ≤ΩÌï¥Ïïº Ìï®.
+// ulnStmtType.hø°º≠ æ∆∑° ≥ªøÎ¿ª ∂»∞∞¿Ã ∫πªÁ«ÿº≠ ªÁøÎ«œ∞Ì ¿÷¿Ω.
+// qciStmtType∫Ø∞Ê Ω√ ul¬ µµ ∫Ø∞Ê«ÿæﬂ «‘.
 enum qciStmtType
 {
     QCI_STMT_MASK_DDL     = 0x00000000,
@@ -53,6 +53,7 @@ enum qciStmtType
     QCI_STMT_NON_SCHEMA_DDL,
     QCI_STMT_CRT_SP,
     QCI_STMT_COMMENT,
+    QCI_STMT_SHARD_DDL,
 
     //----------------------------------------------------
     //  DML
@@ -140,7 +141,7 @@ enum qciStmtType
     /* BUG-39074 */
     QCI_STMT_DELAUDIT_OPTION, 
 
-    /* BUG-42852 STOPÍ≥º FLUSHÎ•º DCLÎ°ú Î≥ÄÌôòÌï©ÎãàÎã§. */
+    /* BUG-42852 STOP∞˙ FLUSH∏¶ DCL∑Œ ∫Ø»Ø«’¥œ¥Ÿ. */
     QCI_STMT_ALT_REPLICATION_STOP,
     QCI_STMT_ALT_REPLICATION_FLUSH,
 
@@ -156,6 +157,21 @@ enum qciStmtType
     /* PROJ-2701 Sharding online data rebuild */
     QCI_STMT_RELOAD_SHARD_META_NUMBER,
     QCI_STMT_RELOAD_SHARD_META_NUMBER_LOCAL,
+
+    /* A sql for replication thread is DCL using one other internal transaction */
+    QCI_STMT_ALT_REPLICATION_START,
+    QCI_STMT_ALT_REPLICATION_QUICKSTART,
+    QCI_STMT_ALT_REPLICATION_SYNC,
+    QCI_STMT_ALT_REPLICATION_SYNC_CONDITION,
+    QCI_STMT_ALT_REPLICATION_TEMP_SYNC,
+
+    /* BUG-48216 */
+    QCI_STMT_ROLLBACK_TO_SAVEPOINT,
+
+    QCI_STMT_ALT_REPLICATION_FAILBACK,
+    QCI_STMT_ALT_REPLICATION_DELETE_ITEM_REPLACE_HISTORY,
+    
+    QCI_STMT_ALT_REPLICATION_FAILOVER,
 
     //----------------------------------------------------
     //  SP

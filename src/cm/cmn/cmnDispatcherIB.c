@@ -27,7 +27,7 @@ ACI_RC cmnDispatcherWaitLinkIB( cmnLink      *aLink,
     acp_sint32_t    sTimeout = (aTimeout != ACP_TIME_INFINITE) ? acpTimeToMsec(aTimeout) : -1;
     acp_sint32_t    sRet;
 
-    /* Linkì˜ socket íšë“ */
+    /* LinkÀÇ socket È¹µæ */
     ACI_TEST(aLink->mOp->mGetSocket(aLink, (void **)&sSock) != ACI_SUCCESS);
     
     sPollFd.fd = *sSock;

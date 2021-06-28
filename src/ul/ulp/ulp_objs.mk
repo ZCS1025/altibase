@@ -17,6 +17,7 @@ ULP_BIN_SRCS= $(UL_DIR)/ulp/ulpMain.cpp                \
               $(UL_DIR)/ulp/ulpErrorMgr.cpp
 
 ULP_LIB_SRCS = $(UL_DIR)/ulp/lib/ulpLibErrorMgr.c     \
+               $(UL_DIR)/ulp/lib/ulpLibMultiErrorMgr.c \
                $(UL_DIR)/ulp/lib/ulpLibHash.c         \
                $(UL_DIR)/ulp/lib/ulpLibConnection.c   \
                $(UL_DIR)/ulp/lib/ulpLibStmtCur.c      \

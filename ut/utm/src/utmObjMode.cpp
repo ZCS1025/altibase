@@ -171,8 +171,8 @@
     "WHERE parse.package_oid = pkg.package_oid "                               \
       "AND pkg.user_id = users.user_id "                                       \
 
-/* Object Mode Ïù∏ Í≤ΩÏö∞ÏóêÎäî Connect Íµ¨Î¨∏Ïù¥ Ï∂îÍ∞Ä ÎêòÏßÄ ÏïäÎäîÎã§.
- * Îã®, Ìï¥Îãπ object Ïùò Í∂åÌïúÏùÄ connect Íµ¨Î¨∏Ïù¥ Ï∂îÍ∞Ä ÎêúÎã§.
+/* Object Mode ¿Œ ∞ÊøÏø°¥¬ Connect ±∏πÆ¿Ã √ﬂ∞° µ«¡ˆ æ ¥¬¥Ÿ.
+ * ¥‹, «ÿ¥Á object ¿« ±««—¿∫ connect ±∏πÆ¿Ã √ﬂ∞° µ»¥Ÿ.
  * objectModeInfoQuery -> getSeqQuery(), getObjModeTableQuery(),
  * getObjModeProcQuery(),getObjModeViewQuery() -> searchObjPrivQuery()
  * */
@@ -359,7 +359,6 @@ SQLRETURN getObjModeTableQuery( FILE   *aTblFp,
     {
         IDE_TEST( getTableStats( sUserName, 
                   sTableName, 
-                  NULL,
                   aDbStatsFp ) 
                   != SQL_SUCCESS );
     }
@@ -367,26 +366,13 @@ SQLRETURN getObjModeTableQuery( FILE   *aTblFp,
     IDE_TEST( getTableQuery( sUserName,
                              sTableName,
                              aTblFp,
-                             aTblFp,    /* PROJ-2359 Table/Partition Access Option */
-                             aDbStatsFp,
-                             sMaxRow,
-                             sTbsName,
-                             sTbsType,
-                             sPctFree,
-                             sPctUsed )
+                             aTblFp )    /* PROJ-2359 Table/Partition Access Option */
               != SQL_SUCCESS );
 
     idlOS::fprintf(aTblFp,"\n");
 
-    IDE_TEST( getIndexQuery( sUserName, sPuserName, sTableName, aTblFp, aDbStatsFp )
+    IDE_TEST( getIndexQuery( sUserName, sPuserName, sTableName, aTblFp )
             != SQL_SUCCESS );
-
-    /* PROJ-1107 Check Constraint ÏßÄÏõê */
-    IDE_TEST( getCheckConstraintQuery( sUserName,
-                                       sPuserName,
-                                       sTableName,
-                                       aTblFp )
-              != SQL_SUCCESS );
 
     IDE_TEST( resultForeignKeys( sUserName, sPuserName, sTableName, aTblFp )
             != SQL_SUCCESS);
@@ -498,7 +484,7 @@ SQLRETURN getObjModeMViewQuery( FILE  * aMViewFp,
 
     sPuserName = sUserName;
 
-    /* View NameÏóêÏÑú $VIEW Ï†úÍ±∞ */
+    /* View Nameø°º≠ $VIEW ¡¶∞≈ */
     idlOS::memset( sMVIewName, 0x00, ID_SIZEOF( sMVIewName ) );
     idlOS::memcpy( sMVIewName, sViewName, idlOS::strlen( sViewName ) -
                                           UTM_MVIEW_VIEW_SUFFIX_SIZE );
@@ -506,14 +492,7 @@ SQLRETURN getObjModeMViewQuery( FILE  * aMViewFp,
     IDE_TEST( getObjPrivQuery( aMViewFp, UTM_MVIEW, sUserName, sMVIewName )
               != SQL_SUCCESS );
 
-    IDE_TEST( getIndexQuery( sUserName, sPuserName, sMVIewName, aMViewFp, aMViewFp )
-              != SQL_SUCCESS );
-
-    /* PROJ-1107 Check Constraint ÏßÄÏõê */
-    IDE_TEST( getCheckConstraintQuery( sUserName,
-                                       sPuserName,
-                                       sMVIewName,
-                                       aMViewFp )
+    IDE_TEST( getIndexQuery( sUserName, sPuserName, sMVIewName, aMViewFp )
               != SQL_SUCCESS );
 
     IDE_TEST( resultForeignKeys( sUserName, sPuserName, sMVIewName, aMViewFp )

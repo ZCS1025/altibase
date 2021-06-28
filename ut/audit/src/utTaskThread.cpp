@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: utTaskThread.cpp 80540 2017-07-19 08:00:50Z daramix $
+ * $Id: utTaskThread.cpp 86150 2019-09-10 06:40:44Z bethy $
  ******************************************************************************/
 #include <uto.h>
 #include <utAtb.h>
@@ -46,6 +46,7 @@ IDE_RC utTaskThread::initialize(utProperties * aProp)
 
     /* Master Init connection */
     mConnA = mProp->newMaConn();
+    mConnA->setServerType(MASTER); /* BUG-47434 */
 
     IDE_TEST_RAISE( mConnA == NULL, err_con_a);
     IDE_TEST_RAISE( mConnA->initialize(_error, sizeof(_error)
@@ -54,6 +55,7 @@ IDE_RC utTaskThread::initialize(utProperties * aProp)
 
     /* slave init connection */
     mConnB = mProp->newSlConn();
+    mConnB->setServerType(SLAVE); /* BUG-47434 */
 
     IDE_TEST_RAISE( mConnB == NULL , err_con_b);
     IDE_TEST_RAISE( mConnB->initialize(_error, sizeof(_error)
@@ -123,7 +125,7 @@ void utTaskThread::run()
         /* set meta for operation */
         IDE_TEST(mScanner->setTable(sTab)!= IDE_SUCCESS);
 
-        /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
+        /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
         IDE_TEST(mScanner->prepare(mProp) != IDE_SUCCESS );
 
         /* Execution cycle ( read from CSV file, then compare rows each other )  */
@@ -148,7 +150,7 @@ void utTaskThread::run()
 
     IDE_EXCEPTION_END;
 
-    mProp->log("FATAL[ TASK ] Process failure! [SCANER]: %s\n",mScanner->error());
+    mProp->log("FATAL[ TASK ] Process failure! [SCANER]: %s\n", mScanner->error());
 
     return;
 }

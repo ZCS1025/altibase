@@ -80,20 +80,20 @@ typedef struct qmncPRLQ
 typedef struct qmndPRLQ
 {
     //---------------------------------
-    // Data ì˜ì—­ ê³µí†µ ì •ë³´
+    // Data ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
     qmndPlan         plan;
     doItFunc         doIt;
     UInt           * flag;
 
     //---------------------------------
-    // PRLQ ê³ ìœ  ì •ë³´
+    // PRLQ °íÀ¯ Á¤º¸
     //---------------------------------
 
     // PROJ-2444
-    // ê¸°ì¡´ì—ëŠ” dequeue í•œ ë°ì´íƒ€ë¥¼ í•˜ìœ„ ìì‹ ë…¸ë“œì— ë‹¤ì‹œ ì„¸íŒ…í•´ ì£¼ì—ˆë‹¤.
-    // ì´ë¥¼ ë³€ê²½í•˜ì—¬ PRLQê°€ ë°ì´íƒ€ë¥¼ ì €ì¥í•˜ê³ 
-    // ìƒìœ„ PPCRD, PSCRD ì—ì„œ ì´ë¥¼ ì ‘ê·¼í•˜ì—¬ ê°€ì ¸ê°€ë„ë¡ ë³€ê²½í•œë‹¤.
+    // ±âÁ¸¿¡´Â dequeue ÇÑ µ¥ÀÌÅ¸¸¦ ÇÏÀ§ ÀÚ½Ä ³ëµå¿¡ ´Ù½Ã ¼¼ÆÃÇØ ÁÖ¾ú´Ù.
+    // ÀÌ¸¦ º¯°æÇÏ¿© PRLQ°¡ µ¥ÀÌÅ¸¸¦ ÀúÀåÇÏ°í
+    // »óÀ§ PPCRD, PSCRD ¿¡¼­ ÀÌ¸¦ Á¢±ÙÇÏ¿© °¡Á®°¡µµ·Ï º¯°æÇÑ´Ù.
     scGRID          mRid;
     void          * mRow;
 
@@ -105,13 +105,13 @@ typedef struct qmndPRLQ
     void          * nullRow;    // Null Row
     qtcNode       * myNode;
 
-    qmnPlan       * mCurrentNode;   // ë™ì  ì‹¤í–‰ì„ ìœ„í•œ left
+    qmnPlan       * mCurrentNode;   // µ¿Àû ½ÇÇàÀ» À§ÇÑ left
 
     /* BUG-38294 */
     idBool          mTemplateCloned;
     qcTemplate      mTemplate;
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     idBool         mExistDisk;
     UInt           mDiskRowOffset;
 } qmndPRLQ;
@@ -147,7 +147,7 @@ public:
 
     static IDE_RC startIt(qcTemplate* aTemplate, qmnPlan* aPlan, UInt* aTID);
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     static void setPRLQInfo( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              idBool       aExistDisk,
@@ -155,10 +155,10 @@ public:
 private:
 
     //------------------------
-    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
+    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
     //------------------------
 
-    // ìµœì´ˆ ì´ˆê¸°í™”
+    // ÃÖÃÊ ÃÊ±âÈ­
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmndPRLQ   * aDataPlan );
 
@@ -174,12 +174,12 @@ private:
                                    qmnPlan    * aPlan,
                                    qmcRowFlag * aFlag );
 
-    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨.
+    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ.
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // ìµœì´ˆ PRLQë¥¼ ìˆ˜í–‰
+    // ÃÖÃÊ PRLQ¸¦ ¼öÇà
     static IDE_RC doItFirst( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              qmcRowFlag * aFlag );

@@ -199,16 +199,16 @@ UInt idaXaConvertXIDToString( void        */*aBaseObj*/,
     UInt    sLen = 0;
 
     vULong sFormatID;
-    SChar  sGlobalTxId      [ID_XIDDATASIZE + 1];
-    SChar  sBranchQualifier [ID_XIDDATASIZE + 1];
+    SChar  sGlobalTxId      [ID_MAXXIDDATASIZE + 1];
+    SChar  sBranchQualifier [ID_MAXXIDDATASIZE + 1];
 
     idlOS::memset( sGlobalTxId,
                    0,
-                   ID_XIDDATASIZE + 1 );
+                   ID_MAXXIDDATASIZE + 1 );
 
     idlOS::memset( sBranchQualifier,
                    0,
-                   ID_XIDDATASIZE + 1 );
+                   ID_MAXXIDDATASIZE + 1 );
 
     sXID = (ID_XID *)aMember;
 
@@ -220,6 +220,40 @@ UInt idaXaConvertXIDToString( void        */*aBaseObj*/,
     sLen = idlOS::snprintf((SChar*)aBuf, aBufSize,
                            "%"ID_vSLONG_FMT".%s.%s",
                            sXID->formatID, sGlobalTxId, sBranchQualifier);
+
+    return sLen;
+}
+
+UInt idaXaConvertGlobalXIDToString( void        */*aBaseObj*/,
+                                    void        * aMember,
+                                    UChar       * aBuf,
+                                    UInt          aBufSize)
+{
+    ID_XID *sXID;
+    UInt    sLen = 0;
+
+    vULong sFormatID;
+    SChar  sGlobalTxId      [ID_MAXXIDDATASIZE + 1];
+    SChar  sBranchQualifier [ID_MAXXIDDATASIZE + 1];
+
+    idlOS::memset( sGlobalTxId,
+                   0,
+                   ID_MAXXIDDATASIZE + 1 );
+
+    idlOS::memset( sBranchQualifier,
+                   0,
+                   ID_MAXXIDDATASIZE + 1 );
+
+    sXID = (ID_XID *)aMember;
+
+    idaXaXidToString( sXID,
+                      &sFormatID, 
+                      sGlobalTxId, 
+                      sBranchQualifier );
+
+    sLen = idlOS::snprintf((SChar*)aBuf, aBufSize,
+                           "%"ID_vSLONG_FMT".%s",
+                           sXID->formatID, sGlobalTxId);
 
     return sLen;
 }

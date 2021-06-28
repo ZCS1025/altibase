@@ -18,7 +18,7 @@
 /***********************************************************************
  * $Id: stdGeometry.cpp 18883 2006-11-14 01:48:40Z sabbra $
  *
- * Description: stdGeometry ëª¨ë“ˆ êµ¬í˜„
+ * Description: stdGeometry ¸ğµâ ±¸Çö
  **********************************************************************/
 
 #include <ste.h>
@@ -148,7 +148,7 @@ static IDE_RC stdInitialize( UInt aNo )
               != IDE_SUCCESS );
     
     // IDE_TEST( mtdEstimate( &stdColumn, 0, 0, 0 ) != IDE_SUCCESS );
-    // stdColumnì˜ ì´ˆê¸°í™”
+    // stdColumnÀÇ ÃÊ±âÈ­
     IDE_TEST( mtc::initializeColumn( & stdColumn,
                                      & stdGeometry,
                                      0,
@@ -156,7 +156,7 @@ static IDE_RC stdInitialize( UInt aNo )
                                      0 )
               != IDE_SUCCESS );
               
-    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
+    // Fix BUG-15412 mtdModule.isNull »ç¿ë
     stdUtils::setType( & stdGeometryNull, STD_NULL_TYPE );
     stdGeometryNull.mSize = ID_SIZEOF(stdGeometryHeader);
     mtdDouble.null( NULL, &stdGeometryNull.mMbr.mMinX );
@@ -178,19 +178,19 @@ static IDE_RC stdInitialize( UInt aNo )
     return IDE_FAILURE;    
 }
 
-/*ê³µê°„ ë°ì´í„° íŠ¹ì„±ìƒ ì‹¤ì œ ë°ì´í„°ê°€ í™•ë³´ë˜ì§€ ì•ŠëŠ” ì´ìƒ ë¯¸ë¦¬ ê·¸ í¬ê¸°ë¥¼ 
-ì˜ˆì¸¡í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ ì´ í•¨ìˆ˜ë¥¼ ì“°ëŠ” ìš©ë„ë¥¼ ë³€ê²½í•´ì•¼ í•  ê²ƒ*/
+/*°ø°£ µ¥ÀÌÅÍ Æ¯¼º»ó ½ÇÁ¦ µ¥ÀÌÅÍ°¡ È®º¸µÇÁö ¾Ê´Â ÀÌ»ó ¹Ì¸® ±× Å©±â¸¦ 
+¿¹ÃøÇÒ ¼ö ¾øÀ¸¹Ç·Î ÀÌ ÇÔ¼ö¸¦ ¾²´Â ¿ëµµ¸¦ º¯°æÇØ¾ß ÇÒ °Í*/
 static IDE_RC stdEstimate( UInt * aColumnSize,
                            UInt * aArguments,
                            SInt * aPrecision,
                            SInt * /*aScale*/ )
 {
     // To Fix BUG-15365
-    // GEOMETRY íƒ€ì… ì„ ì–¸ì‹œ Precisionì„ ì§€ì •í•  ìˆ˜ ìˆë„ë¡ í•¨.
+    // GEOMETRY Å¸ÀÔ ¼±¾ğ½Ã PrecisionÀ» ÁöÁ¤ÇÒ ¼ö ÀÖµµ·Ï ÇÔ.
     switch ( *aArguments )
     {
         case 0:
-            // BUGBUG ì¶”í›„ BLOB í˜•ìœ¼ë¡œ ì²˜ë¦¬ë˜ì–´ì•¼ í•¨
+            // BUGBUG ÃßÈÄ BLOB ÇüÀ¸·Î Ã³¸®µÇ¾î¾ß ÇÔ
             *aPrecision = STD_GEOMETRY_PRECISION_DEFAULT;
             break;
         case 1:
@@ -204,7 +204,7 @@ static IDE_RC stdEstimate( UInt * aColumnSize,
                     ( *aPrecision > (SInt)STD_GEOMETRY_PRECISION_MAXIMUM ),
                     ERR_INVALID_LENGTH );
 
-    // BUG-16031 Precisiion ì˜ ê°œë…ì„ Headerë¥¼ ì œì™¸í•œ í¬ê¸°ë¡œ ìˆ˜ì •
+    // BUG-16031 Precisiion ÀÇ °³³äÀ» Header¸¦ Á¦¿ÜÇÑ Å©±â·Î ¼öÁ¤
     *aColumnSize = *aPrecision + ID_SIZEOF(stdGeometryHeader);
     
     return IDE_SUCCESS;
@@ -247,20 +247,22 @@ static IDE_RC stdValue( mtcTemplate* aTemplate,
     sQcTmplate = (qcTemplate*) aTemplate;
     sQmxMem    = QC_QMX_MEM( sQcTmplate->stmt );
       
-    // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
+    // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
     IDE_TEST( sQmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS);
     sStage = 1;
     
-    IDE_TEST(stdParsing::stdValue( sQmxMem,
-                                   (UChar*)aToken, // WellKnownText
-                                   aTokenLength,
-                                   sValue,         // Geometry Buffer
-                                   (((SChar*)aValue) + aValueSize), //  Fence
-                                   aResult,        // Memory Overflow Flag
-                                   STU_VALIDATION_ENABLE )
+    IDE_TEST( stdParsing::stdValue( sQmxMem,
+                                    (UChar*)aToken, // WellKnownText
+                                    aTokenLength,
+                                    sValue,         // Geometry Buffer
+                                    (((SChar*)aValue) + aValueSize), //  Fence
+                                    aResult,        // Memory Overflow Flag
+                                    STU_VALIDATION_ENABLE,
+                                    ID_TRUE,        // enable srid
+                                    ST_SRID_INIT )
               != IDE_SUCCESS );
 
-    // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
+    // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
     sStage = 0;
     IDE_TEST( sQmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS);
     
@@ -288,9 +290,9 @@ static UInt stdActualSize( const mtcColumn* ,
                            const void*      aRow )
 {
     // To Fix BUG-15365
-    // sValue->sizeëŠ” ì „ì²´ Sizeë¥¼ ì˜ë¯¸í•¨.
-    // ì˜ëª»ëœ Value í¬ê¸°ì˜ ì„¤ì •ìœ¼ë¡œ
-    // GEOMETRY(72) ì— Dataë¥¼ ì‚½ì…í•  ìˆ˜ ì—†ìŒ. 
+    // sValue->size´Â ÀüÃ¼ Size¸¦ ÀÇ¹ÌÇÔ.
+    // Àß¸øµÈ Value Å©±âÀÇ ¼³Á¤À¸·Î
+    // GEOMETRY(72) ¿¡ Data¸¦ »ğÀÔÇÒ ¼ö ¾øÀ½. 
     // return ID_SIZEOF(stdGeometryHeader) + sValue->mSize;
     return ((stdGeometryHeader*)aRow)->mSize;
 }
@@ -364,16 +366,43 @@ static IDE_RC stdCanonize( const mtcColumn * aCanon,
                            mtcEncryptInfo  * /* aColumnInfo */,
                            mtcTemplate     * /* aTemplate */ )
 {
-    IDE_TEST_RAISE( ((stdGeometryHeader*)aValue)->mSize >
-                    (UInt)aCanon->column.size,
+    stdGeometryHeader  * sValue = NULL;
+    SInt                 sSRID = 0;
+    
+    sValue = (stdGeometryHeader*)aValue;
+    
+    IDE_TEST_RAISE( sValue->mSize > (UInt)aCanon->column.size,
                     ERR_INVALID_LENGTH );
+
+    /* PROJ-2422 srid */
+    if ( aCanon->mColumnAttr.mSridAttr.mSrid != ST_SRID_UNDEFINED )
+    {
+        sSRID = stfBasic::getSRID( sValue );
+
+        if ( sSRID != ST_SRID_UNDEFINED )
+        {
+            IDE_TEST_RAISE( aCanon->mColumnAttr.mSridAttr.mSrid != sSRID,
+                            ERR_INVALID_SRID );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+    }
+    else
+    {
+        // Nothing to do.
+    }
     
     *aCanonized = aValue;
      
     return IDE_SUCCESS;
     
     IDE_EXCEPTION( ERR_INVALID_LENGTH );
-    IDE_SET(ideSetErrorCode(stERR_ABORT_INVALID_LENGTH));
+    IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_LENGTH ) );
+    
+    IDE_EXCEPTION( ERR_INVALID_SRID );
+    IDE_SET( ideSetErrorCode(stERR_ABORT_INVALID_SRID ) );
     
     IDE_EXCEPTION_END;
     
@@ -393,8 +422,8 @@ static IDE_RC stdStoredValue2StdValue( UInt              aColumnSize,
 {
 /*******************************************************************
  * PROJ-1705
- * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
- * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
+ * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
+ * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
  *******************************************************************/
 
     stdGeometryHeader*    sValue;
@@ -403,14 +432,14 @@ static IDE_RC stdStoredValue2StdValue( UInt              aColumnSize,
                    
     if( ( aDestValueOffset == 0 ) && ( aLength == 0 ) )
     {
-        // NULL ë°ì´íƒ€
+        // NULL µ¥ÀÌÅ¸
         (void)stdUtils::nullify(sValue);        
     }
     else
     {
-        // stdGeometry typeì€ mtdDataTypeí˜•íƒœë¡œ ì €ì¥ë˜ë¯€ë¡œ
-        // length ì— header sizeê°€ í¬í•¨ë˜ì–´ ìˆì–´ 
-        // ì—¬ê¸°ì„œ ë³„ë„ì˜ ê³„ì‚°ì„ í•˜ì§€ ì•Šì•„ë„ ëœë‹¤.         
+        // stdGeometry typeÀº mtdDataTypeÇüÅÂ·Î ÀúÀåµÇ¹Ç·Î
+        // length ¿¡ header size°¡ Æ÷ÇÔµÇ¾î ÀÖ¾î 
+        // ¿©±â¼­ º°µµÀÇ °è»êÀ» ÇÏÁö ¾Ê¾Æµµ µÈ´Ù.         
         IDE_TEST_RAISE( (aDestValueOffset + aLength) > aColumnSize, ERR_INVALID_STORED_VALUE );
 
         idlOS::memcpy( (UChar*) sValue + aDestValueOffset, aValue, aLength );
@@ -434,7 +463,7 @@ static UInt stdNullValueSize()
 {
 /*******************************************************************
  * PROJ-1705
- * ê° ë°ì´íƒ€íƒ€ì…ì˜ null Valueì˜ í¬ê¸° ë°˜í™˜    
+ * °¢ µ¥ÀÌÅ¸Å¸ÀÔÀÇ null ValueÀÇ Å©±â ¹İÈ¯    
  *******************************************************************/
     return stdActualSize( NULL, stdGeometry.staticNull );
 }
@@ -443,7 +472,7 @@ static UInt stdHeaderSize()
 {
 /***********************************************************************
  * PROJ-1705
- * lengthë¥¼ ê°€ì§€ëŠ” ë°ì´íƒ€íƒ€ì…ì˜ length ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ë³€ìˆ˜ì˜ í¬ê¸° ë°˜í™˜
+ * length¸¦ °¡Áö´Â µ¥ÀÌÅ¸Å¸ÀÔÀÇ length Á¤º¸¸¦ ÀúÀåÇÏ´Â º¯¼öÀÇ Å©±â ¹İÈ¯
  **********************************************************************/
 
     return ID_SIZEOF(stdGeometryHeader);    
@@ -515,9 +544,9 @@ static UInt stdStoreSize( const smiColumn * /*aColumn*/ )
 {
 /***********************************************************************
 * PROJ-2399 row tmaplate
-* smì— ì €ì¥ë˜ëŠ” ë°ì´í„°ì˜ í¬ê¸°ë¥¼ ë°˜í™˜í•œë‹¤.
-* varcharì™€ ê°™ì€ variable íƒ€ì…ì˜ ë°ì´í„° íƒ€ì…ì€ ID_UINT_MAXë¥¼ ë°˜í™˜
-* mtheaderê°€ smì— ì €ì¥ëœê²½ìš°ê°€ ì•„ë‹ˆë©´ mtheaderí¬ê¸°ë¥¼ ë¹¼ì„œ ë°˜í™˜
+* sm¿¡ ÀúÀåµÇ´Â µ¥ÀÌÅÍÀÇ Å©±â¸¦ ¹İÈ¯ÇÑ´Ù.
+* varchar¿Í °°Àº variable Å¸ÀÔÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀº ID_UINT_MAX¸¦ ¹İÈ¯
+* mtheader°¡ sm¿¡ ÀúÀåµÈ°æ¿ì°¡ ¾Æ´Ï¸é mtheaderÅ©±â¸¦ »©¼­ ¹İÈ¯
  **********************************************************************/
 
     return ID_UINT_MAX;

@@ -34,12 +34,12 @@
 #define ulvSLen     acp_sint64_t
 #define ulvULen     acp_uint64_t
 
-# if defined( __GNUC__ ) /* GNU ì»´íŒŒì¼ëŸ¬ (ULLì´ ìˆì–´ì•¼ í•¨) */
+# if defined( __GNUC__ ) /* GNU ÄÄÆÄÀÏ·¯ (ULLÀÌ ÀÖ¾î¾ß ÇÔ) */
 
 #define ULN_LEN(a)  a ## LL
 #define ULN_ULEN(a) a ## ULL
 
-# else /* ê¸°íƒ€ ì»´íŒŒì¼ëŸ¬ : ì¶”ê°€ì˜ì—­ */
+# else /* ±âÅ¸ ÄÄÆÄÀÏ·¯ : Ãß°¡¿µ¿ª */
 
 #define ULN_LEN(a)  a ## LL
 #define ULN_ULEN(a) a ## ULL
@@ -80,7 +80,7 @@
 #define ULN_NUMERIC_UNDEF_PRECISION ((acp_sint16_t)0x8000)
 
 /* bug-35142 cli trace log
-   hex dump ì‹œ ê¸¸ì´ ì œí•œ */
+   hex dump ½Ã ±æÀÌ Á¦ÇÑ */
 #define ULN_TRACE_LOG_MAX_DATA_LEN  30
 
 /* BUG-39817 */

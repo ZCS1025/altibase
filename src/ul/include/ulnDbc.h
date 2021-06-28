@@ -20,11 +20,16 @@
 #include <ulxXaConnection.h>
 #include <ulnFailOver.h>
 #include <ulsdDef.h>
+#include <ulsdDistTxInfo.h>
 
 #define UNIX_FILE_PATH_LEN 1024
 #define IPC_FILE_PATH_LEN  1024
 
 #define ULN_DBC_MAX_STMT   65536
+
+/* TASK-7219 Non-shard DML */
+#define ULN_DBC_SHARD_STMT_EXEC_SEQ_INIT 0
+#define ULN_DBC_SHARD_STMT_EXEC_SEQ_MAX  1999999999
 
 typedef enum ulnConnType
 {
@@ -44,14 +49,27 @@ typedef enum ulnPrivilege
     ULN_PRIVILEGE_SYSDBA    = 1
 } ulnPrivilege;
 
+#define ULN_SHARD_COORD_FIX_CTRL_EVENT_EXIT    (0) /* = SDI_SHARD_COORD_FIX_CTRL_EVENT_EXIT */
+#define ULN_SHARD_COORD_FIX_CTRL_EVENT_ENTER   (1) /* = SDI_SHARD_COORD_FIX_CTRL_EVENT_ENTER */
+typedef void (*ulnShardCoordFixCtrlCallback)( void        * aSession,
+                                              SQLINTEGER  * aCount,
+                                              SQLUINTEGER   aEnterOrExit );
+             /* = sdiShardCoordFixCtrlCallback */
+typedef struct ulnShardCoordFixCtrlContext
+{
+    void                         * mSession;
+    SQLINTEGER                     mCount;
+    ulnShardCoordFixCtrlCallback   mFunc;
+} ulnShardCoordFixCtrlContext;    /* = sdiShardCoordFixCtrlContext */
+
 /*
  * BUGBUG :
- * Note : ì§€ê¸ˆì€ ë”°ë¡œ ë–¨ì–´ì§„ DataSource êµ¬ì¡°ì²´ë‚˜ Connection Pooling ì„ ìœ„í•œ
- *        cmiLink ì˜ ë¦¬ìŠ¤íŠ¸, cmiConnectArg ì˜ ë¦¬ìŠ¤íŠ¸ ë“±ì„ ê´€ë¦¬í•˜ì§€ ì•Šê³ 
- *        ëª¨ë‘ ulnDbc ì˜ static member ë¡œ ë‘ì—ˆë‹¤.
+ * Note : Áö±İÀº µû·Î ¶³¾îÁø DataSource ±¸Á¶Ã¼³ª Connection Pooling À» À§ÇÑ
+ *        cmiLink ÀÇ ¸®½ºÆ®, cmiConnectArg ÀÇ ¸®½ºÆ® µîÀ» °ü¸®ÇÏÁö ¾Ê°í
+ *        ¸ğµÎ ulnDbc ÀÇ static member ·Î µÎ¾ú´Ù.
  *
- *        ê·¸ëŸ¬ë‚˜ ì°¨í›„ sql cache ë‚˜ connection pooling ë“±ì„ êµ¬í˜„í•˜ë ¤ê³  í•˜ë©´,
- *        ê·¸ì— ë”°ë¥¸ êµ¬ì¡°ì²´ë¥¼ ì¶”ê°€í•´ì„œ ìº¡ìŠí™” í•´ì•¼ í•  ê²ƒì´ë‹¤.
+ *        ±×·¯³ª Â÷ÈÄ sql cache ³ª connection pooling µîÀ» ±¸ÇöÇÏ·Á°í ÇÏ¸é,
+ *        ±×¿¡ µû¸¥ ±¸Á¶Ã¼¸¦ Ãß°¡ÇØ¼­ Ä¸½¶È­ ÇØ¾ß ÇÒ °ÍÀÌ´Ù.
  */
 struct ulnDbc
 {
@@ -59,20 +77,20 @@ struct ulnDbc
     ulnEnv       *mParentEnv;
 
     /*
-     * Database ì™€ì˜ ì‹¤ì œ ì—°ê²°ì— ê´€ë ¨ëœ ì†ì„±ë“¤
+     * Database ¿ÍÀÇ ½ÇÁ¦ ¿¬°á¿¡ °ü·ÃµÈ ¼Ó¼ºµé
      */
     cmiSession    mSession;
     cmiLink      *mLink;
     acp_bool_t    mIsConnected;
 
     /*
-     * cmiConnectArg ë¥¼ êµ¬ì„±í•˜ëŠ”ë° í•„ìš”í•œ ê°’ë“¤ê³¼ cmiConnectArg
-     * Note : cmiConnectArg ëŠ” cmiConnect() í•¨ìˆ˜ë¥¼ ë¶€ë¥´ê¸° ì§ì „ì— ì´ ê°’ë“¤ì„ ì´ìš©í•´ì„œ êµ¬ì„±ë¨.
+     * cmiConnectArg ¸¦ ±¸¼ºÇÏ´Âµ¥ ÇÊ¿äÇÑ °ªµé°ú cmiConnectArg
+     * Note : cmiConnectArg ´Â cmiConnect() ÇÔ¼ö¸¦ ºÎ¸£±â Á÷Àü¿¡ ÀÌ °ªµéÀ» ÀÌ¿ëÇØ¼­ ±¸¼ºµÊ.
      */
 
     /*
-     * Note : Port Number ëŠ” IPC ì˜ shm key ë¡œë„ ì“°ì¸ë‹¤.
-     *        ê·¸ë˜ì„œ UShort ê°€ ì•„ë‹Œ acp_sint32_t ì¼ í•„ìš”ê°€ ìˆë‹¤.
+     * Note : Port Number ´Â IPC ÀÇ shm key ·Îµµ ¾²ÀÎ´Ù.
+     *        ±×·¡¼­ UShort °¡ ¾Æ´Ñ acp_sint32_t ÀÏ ÇÊ¿ä°¡ ÀÖ´Ù.
      */
     acp_sint32_t  mPortNumber;
     acp_char_t    mUnixdomainFilepath[UNIX_FILE_PATH_LEN];
@@ -108,8 +126,8 @@ struct ulnDbc
     // PROJ-1579 NCHAR
     acp_uint32_t  mNlsNcharLiteralReplace;
     acp_uint32_t  mNlsCharactersetValidation;
-    acp_char_t   *mNlsCharsetString;       // ë°ì´í„°ë² ì´ìŠ¤ ìºë¦­í„° ì…‹
-    acp_char_t   *mNlsNcharCharsetString;  // ë‚´ì…”ë„ ìºë¦­í„° ì…‹
+    acp_char_t   *mNlsCharsetString;       // µ¥ÀÌÅÍº£ÀÌ½º Ä³¸¯ÅÍ ¼Â
+    acp_char_t   *mNlsNcharCharsetString;  // ³»¼Å³Î Ä³¸¯ÅÍ ¼Â
 
     mtlModule    *mCharsetLangModule;
     mtlModule    *mNcharCharsetLangModule;
@@ -118,21 +136,21 @@ struct ulnDbc
 
     acp_uint8_t   mIsSameEndian;
 
-    acp_bool_t    mIsURL;            // BUGBUG : ì•ˆì“°ì´ëŠ” ë©¤ë²„.
+    acp_bool_t    mIsURL;            // BUGBUG : ¾È¾²ÀÌ´Â ¸â¹ö.
     // bug-19279 remote sysdba enable
     ulnPrivilege  mPrivilege;
 
     /*
-     * ê´€ë¦¬ë¥¼ ìœ„í•œ êµ¬ì¡°ë“¤
+     * °ü¸®¸¦ À§ÇÑ ±¸Á¶µé
      */
     acp_list_t    mStmtList;
     acp_uint32_t  mStmtCount;
 
-    acp_list_t    mDescList;             /* ì‚¬ìš©ìê°€ í• ë‹¹í•œ explicit ë””ì‹œí¬ë¦½í„°ë“¤ì˜ ë¦¬ìŠ¤íŠ¸ */
-    acp_uint32_t  mDescCount;            /* ì‚¬ìš©ìê°€ í• ë‹¹í•œ explicit ë””ìŠ¤í¬ë¦½í„°ë“¤ì˜ ê°¯ìˆ˜ */
+    acp_list_t    mDescList;             /* »ç¿ëÀÚ°¡ ÇÒ´çÇÑ explicit µğ½ÃÅ©¸³ÅÍµéÀÇ ¸®½ºÆ® */
+    acp_uint32_t  mDescCount;            /* »ç¿ëÀÚ°¡ ÇÒ´çÇÑ explicit µğ½ºÅ©¸³ÅÍµéÀÇ °¹¼ö */
 
     /*
-     * ODBC ìŠ¤í™ì—ì„œ ì •ì˜í•˜ëŠ” Attribute ë“¤
+     * ODBC ½ºÆå¿¡¼­ Á¤ÀÇÇÏ´Â Attribute µé
      */
 
     acp_uint8_t   mAttrExplainPlan;       /* ALTIBASE_EXPLAIN_PLAN. */
@@ -157,7 +175,7 @@ struct ulnDbc
 
 
     /* ODBC 3.5 */
-    acp_uint32_t  mAttrLoginTimeout;     /* SQL_ATTR_LOGIN_TIMEOUT. ë‹¨ìœ„ : ì´ˆ */
+    acp_uint32_t  mAttrLoginTimeout;     /* SQL_ATTR_LOGIN_TIMEOUT. ´ÜÀ§ : ÃÊ */
     acp_uint32_t  mAttrConnTimeout;      /* SQL_ATTR_CONNECTION_TIMEOUT */
 
     acp_uint32_t  mAttrStackSize;        /* ALTIBASE_STACK_SIZE */ 
@@ -182,27 +200,24 @@ struct ulnDbc
     acp_uint64_t  mAttrQuietMode;        /* SQL_ATTR_QUIET_MODE. HWND. */
 
     acp_uint32_t  mAttrTrace;            /* SQL_ATTR_TRACE */
-    acp_char_t   *mAttrTracefile;        /* SQL_ATTR_TRACEFILE.      BUGBUG: íƒ€ì…. */
-    acp_char_t   *mAttrTranslateLib;     /* SQL_ATTR_TRANSLATE_LIB.  BUGBUG: íƒ€ì…. */
+    acp_char_t   *mAttrTracefile;        /* SQL_ATTR_TRACEFILE.      BUGBUG: Å¸ÀÔ. */
+    acp_char_t   *mAttrTranslateLib;     /* SQL_ATTR_TRANSLATE_LIB.  BUGBUG: Å¸ÀÔ. */
 
     acp_uint32_t  mAttrTranslateOption;  /* SQL_ATTR_TRANSLATE_OPTION is 32bit flag */
 
-    acp_uint32_t  mAttrFetchAheadRows;   /* SQL_ATTR_FETCH_AHEAD_ROWS ë¹„í‘œì¤€ ì†ì„±, ì•Œí‹°ë² ì´ìŠ¤ ì „ìš© */
+    acp_uint32_t  mAttrFetchAheadRows;   /* SQL_ATTR_FETCH_AHEAD_ROWS ºñÇ¥ÁØ ¼Ó¼º, ¾ËÆ¼º£ÀÌ½º Àü¿ë */
 
-    acp_bool_t    mAttrLongDataCompat;   /* SQL_ATTR_LONGDATA_COMPAT ë¹„í‘œì¤€ ì†ì„±,
-                                            ID_TRUE ë¡œ ì„¸íŒ…ì´ ë˜ì–´ ìˆì„ ê²½ìš°ì—ëŠ”
-                                            SQL_BLOB, SQL_CLOB ë“±ì˜ íƒ€ì…ì„ ì‚¬ìš©ìì—ê²Œ ëŒë ¤ ì¤„ ë•Œ
-                                            SQL_LONGVARBINARY, SQL_LONGVARCHAR ì˜ íƒ€ì…ìœ¼ë¡œ ì˜¬ë ¤ ì¤€ë‹¤.
-                                            ë””í´íŠ¸ê°’ì€ ID_FALSE. ì¦‰, ë§¤í•‘ ì•ˆí•˜ëŠ” ê²ƒì´ ë””í´íŠ¸ */
+    acp_bool_t    mAttrLongDataCompat;   /* SQL_ATTR_LONGDATA_COMPAT ºñÇ¥ÁØ ¼Ó¼º,
+                                            ID_TRUE ·Î ¼¼ÆÃÀÌ µÇ¾î ÀÖÀ» °æ¿ì¿¡´Â
+                                            SQL_BLOB, SQL_CLOB µîÀÇ Å¸ÀÔÀ» »ç¿ëÀÚ¿¡°Ô µ¹·Á ÁÙ ¶§
+                                            SQL_LONGVARBINARY, SQL_LONGVARCHAR ÀÇ Å¸ÀÔÀ¸·Î ¿Ã·Á ÁØ´Ù.
+                                            µğÆúÆ®°ªÀº ID_FALSE. Áï, ¸ÅÇÎ ¾ÈÇÏ´Â °ÍÀÌ µğÆúÆ® */
 
     acp_bool_t    mAttrAnsiApp;          /* SQL_ATTR_ANSI_APP */
 
-    /*
-     * BUGBUG : ë¦¬ë„¤ì„ ë° ìŠ¤ì½”í”„ ì§€ì •.
-     */
-    ulnServerMessageCallbackStruct *mMessageCallbackStruct;
-    /* ì„œë²„ ë©”ì„¸ì§€ ì½œë°±êµ¬ì¡°ì²´ì´ë‹¤. ì‚¬ìš©ìëŠ” ulnSetConnectAttr() í•¨ìˆ˜ì—
-     * SQL_ATTR_MESSAGE_CALLBACK attribute ë¡œ ì´ êµ¬ì¡°ì²´ë¥¼ ì„¸íŒ…í•  ìˆ˜ ìˆë‹¤. */
+    /* BUG-46019 ¼­¹ö ¸Ş¼¼Áö Äİ¹é±¸Á¶Ã¼ÀÌ´Ù. »ç¿ëÀÚ´Â ulnSetConnectAttr() ÇÔ¼ö¿¡
+       ALTIBASE_MESSAGE_CALLBACK attribute·Î ÀÌ ±¸Á¶Ã¼¸¦ ¼¼ÆÃÇÒ ¼ö ÀÖ´Ù. */
+    ulnMessageCallbackStruct   *mMessageCallback;
 
     ulxXaConnection            *mXaConnection;
     /* proj - 1573 xa */
@@ -222,6 +237,7 @@ struct ulnDbc
     ulnFailoverServerInfo      *mCurrentServer;
     SQLFailOverCallbackContext *mFailoverCallbackContext;
     ulnFailoverCallbackState    mFailoverCallbackState;
+    ulnFailoverSuspendState     mFailoverSuspendState;      /* BUG-47131 »şµå All meta È¯°æ¿¡¼­ Client failover ½Ã hang ¹ß»ı */
     acp_char_t                 *mFailoverSource;            /* BUG-31390 Failover info for v$session */
 
     acp_bool_t                  mAttrPreferIPv6;       /* ALTIBASE_PREFER_IPV6 */
@@ -230,16 +246,16 @@ struct ulnDbc
     acp_uint32_t                mTraceLog;             /* bug-31468 */
 #if 0
     /*
-     * ì§€ì›í•˜ì§€ ì•ŠëŠ” ì†ì„±ë“¤
+     * Áö¿øÇÏÁö ¾Ê´Â ¼Ó¼ºµé
      */
-    acp_uint32_t                mAttrMetadataID;       /* SQL_ATTR_METADATA_ID : BUG-17016 ì°¸ì¡° */
+    acp_uint32_t                mAttrMetadataID;       /* SQL_ATTR_METADATA_ID : BUG-17016 ÂüÁ¶ */
 #endif
 
     /* PROJ-2177 User Interface - Cancel */
 
-    acp_uint32_t  mSessionID;                                   /**< ìœ ì¼í•œ StmtCIDë¥¼ ìƒì„±í•˜ê¸° ìœ„í•´ ì°¸ì¡°í•  Server side Session ID */
-    acp_uint32_t  mNextCIDSeq;                                  /**< ìœ ì¼í•œ StmtCIDë¥¼ ìƒì„±í•˜ê¸° ìœ„í•œ, Sequence Number (0ë¶€í„° ì‹œì‘) */
-    acp_uint8_t   mUsingCIDSeqBMP[(ULN_DBC_MAX_STMT + 7) / 8];  /**< ì‚¬ìš©ì¤‘ì¸ CIDSeqë¥¼ íŒë‹¨í•˜ê¸° ìœ„í•œ Bitmap */
+    acp_uint32_t  mSessionID;                                   /**< À¯ÀÏÇÑ StmtCID¸¦ »ı¼ºÇÏ±â À§ÇØ ÂüÁ¶ÇÒ Server side Session ID */
+    acp_uint32_t  mNextCIDSeq;                                  /**< À¯ÀÏÇÑ StmtCID¸¦ »ı¼ºÇÏ±â À§ÇÑ, Sequence Number (0ºÎÅÍ ½ÃÀÛ) */
+    acp_uint8_t   mUsingCIDSeqBMP[(ULN_DBC_MAX_STMT + 7) / 8];  /**< »ç¿ëÁßÀÎ CIDSeq¸¦ ÆÇ´ÜÇÏ±â À§ÇÑ Bitmap */
     acp_char_t                 *mTimezoneString;       /* PROJ-2209 DBTIMEZONE */
 
     acp_uint8_t                 mAttrDeferredPrepare;       /* PROJ-1891 SQL_ATTR_DEFERRED_PREPARE */
@@ -275,20 +291,88 @@ struct ulnDbc
     acp_sint32_t                mAttrIBLatency;
     acp_sint32_t                mAttrIBConChkSpin;
 
+    /* BUG-47257 */
+    acp_uint8_t                 mAttrGlobalTransactionLevel;
+
+    // PROJ-2727
+    acp_uint16_t                mAttributeCID;
+    acp_uint64_t                mAttributeCVal;
+    acp_char_t                 *mAttributeCStr;
+    acp_uint32_t                mAttributeCLen;
+    // add connect attr
+    acp_uint32_t                mCommitWriteWaitMode;
+    acp_uint32_t                mSTObjBufSize;
+    acp_uint64_t                mUpdateMaxLogSize;
+    acp_uint32_t                mParallelDmlMode;
+    acp_uint32_t                mNlsNcharConvExcp;
+    acp_uint32_t                mAutoRemoteExec;
+    acp_uint32_t                mTrclogDetailPredicate;
+    acp_uint32_t                mOptimizerDiskIndexCostAdj;
+    acp_uint32_t                mOptimizerMemoryIndexCostAdj;
+    acp_char_t                 *mNlsTerritory;
+    acp_char_t                 *mNlsISOCurrency;
+    acp_char_t                 *mNlsCurrency;
+    acp_char_t                 *mNlsNumChar;
+    acp_uint32_t                mQueryRewriteEnable;
+    acp_uint32_t                mDblinkRemoteStatementAutoCommit;
+    acp_uint32_t                mRecyclebinEnable;
+    acp_uint32_t                mUseOldSort;
+    acp_uint32_t                mArithmeticOpMode;
+    acp_uint32_t                mResultCacheEnable;
+    acp_uint32_t                mTopResultCacheMode;
+    acp_uint32_t                mOptimizerAutoStats;
+    acp_uint32_t                mOptimizerTransitivityOldRule;
+    acp_uint32_t                mOptimizerPerformanceView;
+    acp_uint32_t                mReplicationDDLSync;
+    acp_uint32_t                mReplicationDDLSyncTimeout;
+    acp_uint32_t                mPrintOutEnable;
+    acp_uint32_t                mTrclogDetailShard;
+    acp_uint32_t                mSerialExecuteMode;
+    acp_uint32_t                mTrcLogDetailInformation;
+    acp_uint32_t                mOptimizerDefaultTempTbsType;
+    acp_uint32_t                mNormalFormMaximum;    
+    acp_uint32_t                mReducePartPrepareMemory;        
+    acp_uint32_t                mTransactionalDDL;     /* ALTIBASE_DDL_TRANSACTION */
+    acp_uint32_t                mGlobalDDL;            /* ALTIBASE_GLOBAL_DDL */
+    acp_uint32_t                mPlanHashOrSortMethod; /* BUG-48132 */
+    acp_uint32_t                mBucketCountMax;       /* BUG-48161 */
+    acp_uint32_t                mEliminateCommonSubexpression; /* BUG-48348 */
+
+    /* PROJ-2733-DistTxInfo DistTxInfo */
+    acp_uint64_t                mSCN;
+    acp_uint64_t                mTxFirstStmtSCN;
+    acp_time_t                  mTxFirstStmtTime;
+    ulsdDistLevel               mDistLevel;
+
+    acp_uint8_t                 mShardStatementRetry;
+    acp_uint32_t                mIndoubtFetchTimeout;
+    acp_uint8_t                 mIndoubtFetchMethod;
+    acp_uint32_t                mDDLLockTimeout;
+
+    /* BUG-48315 */
+    acp_uint32_t               *mClientTouchNodeArr;
+    acp_uint16_t                mClientTouchNodeCount;
+
+    /* Sharding Context °ü·ÃÀº ±¸Á¶Ã¼ ¸¶Áö¸·¿¡ À¯Áö. */
     ulsdDbcContext              mShardDbcCxt;
-    ulsdModule                 *mShardModule;       /* Shard Module */
+    ulsdModule                 *mShardModule;
+
+    ulnShardCoordFixCtrlContext * mShardCoordFixCtrlCtx;
+
+    /* TASK-7219 Non-shard DML */
+    acp_uint32_t                mStmtExecSeqForShardTx;
 };
 
 /*
- * DBC ì˜ ì´ˆê¸°í™” ë° ì •ë¦¬ì— ê´€ë ¨ëœ í•¨ìˆ˜ë“¤
+ * DBC ÀÇ ÃÊ±âÈ­ ¹× Á¤¸®¿¡ °ü·ÃµÈ ÇÔ¼öµé
  */
 
 ACI_RC ulnDbcCreate(ulnDbc **aOutputDbc);
 ACI_RC ulnDbcDestroy(ulnDbc *aDbc);
-ACI_RC ulnDbcInitialize(ulnDbc *aDbc);
+ACI_RC ulnDbcInitialize(ulnFnContext *aFnContext, ulnDbc *aDbc);
 
 /*
- * cmi ì™€ ê´€ë ¨ëœ ì²˜ë¦¬ë¥¼ í•˜ëŠ” í•¨ìˆ˜ë“¤
+ * cmi ¿Í °ü·ÃµÈ Ã³¸®¸¦ ÇÏ´Â ÇÔ¼öµé
  */
 ACI_RC ulnDbcAllocNewLink(ulnDbc *aDbc);
 ACI_RC ulnDbcFreeLink(ulnDbc *aDbc);
@@ -385,7 +469,7 @@ ACP_INLINE acp_char_t *ulnDbcGetNlsNcharCharsetString(ulnDbc *aDbc)
 }
 
 /*
- * DBC ì˜ ë©¤ë²„ë“¤ì„ Get / Set í•˜ëŠ” í•¨ìˆ˜ë“¤
+ * DBC ÀÇ ¸â¹öµéÀ» Get / Set ÇÏ´Â ÇÔ¼öµé
  */
 acp_uint32_t ulnDbcGetAttrFetchAheadRows(ulnDbc *aDbc);
 void         ulnDbcSetAttrFetchAheadRows(ulnDbc *aDbc, acp_uint32_t aNumberOfRow);
@@ -421,6 +505,26 @@ ACP_INLINE ACI_RC ulnDbcSetTimezoneSring( ulnDbc *aDbc, acp_char_t *aTzStr, acp_
 ACP_INLINE ACI_RC ulnDbcSetAppInfo(ulnDbc *aDbc, acp_char_t *aAppInfo, acp_sint32_t aAppInfoLen)
 {
     return ulnDbcSetStringAttr( &aDbc->mAppInfo, aAppInfo, aAppInfoLen );
+}
+// PROJ-2727 add connect attr
+ACP_INLINE ACI_RC ulnDbcSetNlsTerriroty(ulnDbc *aDbc, acp_char_t *aStr, acp_sint32_t aLen)
+{
+    return ulnDbcSetStringAttr( &aDbc->mNlsTerritory, aStr, aLen );
+}
+
+ACP_INLINE ACI_RC ulnNlsISOCurrency(ulnDbc *aDbc, acp_char_t *aStr, acp_sint32_t aLen)
+{
+    return ulnDbcSetStringAttr( &aDbc->mNlsISOCurrency, aStr, aLen );
+}
+
+ACP_INLINE ACI_RC ulnNlsCurrency(ulnDbc *aDbc, acp_char_t *aStr, acp_sint32_t aLen)
+{
+    return ulnDbcSetStringAttr( &aDbc->mNlsCurrency, aStr, aLen );
+}
+
+ACP_INLINE ACI_RC ulnNlsNumChar(ulnDbc *aDbc, acp_char_t *aStr, acp_sint32_t aLen)
+{
+    return ulnDbcSetStringAttr( &aDbc->mNlsNumChar, aStr, aLen );
 }
 
 ACP_INLINE ACI_RC ulnDbcSetPassword(ulnDbc *aDbc, acp_char_t *aPassword, acp_sint32_t aPasswordLen)
@@ -667,10 +771,10 @@ ACP_INLINE acp_bool_t ulnDbcIsAsyncPrefetchStmt(ulnDbc *aDbc, ulnStmt *aStmt)
 void ulnDbcCloseAllStatement(ulnDbc *aDbc);
 
 /* PROJ-2177 User Interface - Cancel
- * Note. MMC_STMT_CID_* ì™€ ê°’ì„ ë§ì¶œ ê²ƒ */
+ * Note. MMC_STMT_CID_* ¿Í °ªÀ» ¸ÂÃâ °Í */
 
 #define ULN_STMT_CID_SIZE_BIT                   32
-#define ULN_STMT_CID_SESSION_BIT                16 /* Note. MMC_STMT_CID_SESSION_BITì™€ ê°’ì„ ë§ì¶œ ê²ƒ */
+#define ULN_STMT_CID_SESSION_BIT                16 /* Note. MMC_STMT_CID_SESSION_BIT¿Í °ªÀ» ¸ÂÃâ °Í */
 #define ULN_STMT_CID_SEQ_BIT                    (ULN_STMT_CID_SIZE_BIT - ULN_STMT_CID_SESSION_BIT)
 
 #define ULN_STMT_CID_SESSION_MAX                (1 << ULN_STMT_CID_SESSION_BIT)
@@ -786,6 +890,16 @@ ACP_INLINE void ulnDbcSetFailoverCallbackState(ulnDbc *aDbc, ulnFailoverCallback
     aDbc->mFailoverCallbackState = aState;
 }
 
+ACP_INLINE ulnFailoverSuspendState ulnDbcGetFailoverSuspendState(ulnDbc *aDbc)
+{
+    return aDbc->mFailoverSuspendState;
+}
+
+ACP_INLINE void ulnDbcSetFailoverSuspendState(ulnDbc *aDbc, ulnFailoverSuspendState aState)
+{
+    aDbc->mFailoverSuspendState = aState;
+}
+
 /* BUG-31390 Failover info for v$session */
 ACP_INLINE ACI_RC ulnDbcSetFailoverSource(ulnDbc *aDbc, acp_char_t* aFailoverSource, acp_sint32_t aFailoverSourceLen)
 {
@@ -816,54 +930,59 @@ ACP_INLINE acp_uint64_t ulnDbcGetShardPin( ulnDbc *aDbc )
     return aDbc->mShardDbcCxt.mShardPin;
 }
 
-/* BUG-46090 Meta Node SMN ì „íŒŒ */
+/* BUG-46090 Meta Node SMN ÀüÆÄ */
 ACP_INLINE void ulnDbcSetShardMetaNumber( ulnDbc * aDbc, acp_uint64_t aShardMetaNumber )
 {
     aDbc->mShardDbcCxt.mShardMetaNumber = aShardMetaNumber;
 }
 
-/* BUG-46090 Meta Node SMN ì „íŒŒ */
+/* BUG-46090 Meta Node SMN ÀüÆÄ */
 ACP_INLINE acp_uint64_t ulnDbcGetShardMetaNumber( ulnDbc *aDbc )
 {
     return aDbc->mShardDbcCxt.mShardMetaNumber;
 }
 
-/* BUG-45967 Data Nodeì˜ Shard Session ì •ë¦¬ */
-ACP_INLINE void ulnDbcSetSMNOfDataNode( ulnDbc * aDbc, acp_uint64_t aSMNOfDataNode )
+ACP_INLINE void ulnDbcSetSentShardMetaNumber( ulnDbc * aDbc, acp_uint64_t aSentShardMetaNumber )
 {
-    if ( aDbc->mShardDbcCxt.mSMNOfDataNode < aSMNOfDataNode )
+    aDbc->mShardDbcCxt.mSentShardMetaNumber = aSentShardMetaNumber;
+}
+
+ACP_INLINE acp_uint64_t ulnDbcGetSentShardMetaNumber( ulnDbc *aDbc )
+{
+    return aDbc->mShardDbcCxt.mSentShardMetaNumber;
+}
+
+ACP_INLINE void ulnDbcSetSentRebuildShardMetaNumber( ulnDbc * aDbc, acp_uint64_t aSentRebuildShardMetaNumber )
+{
+    aDbc->mShardDbcCxt.mSentRebuildShardMetaNumber = aSentRebuildShardMetaNumber;
+}
+
+ACP_INLINE acp_uint64_t ulnDbcGetSentRebuildShardMetaNumber( ulnDbc *aDbc )
+{
+    return aDbc->mShardDbcCxt.mSentRebuildShardMetaNumber;
+}
+
+ACP_INLINE void ulnDbcSetTargetShardMetaNumber( ulnDbc * aDbc, acp_uint64_t aShardMetaNumber )
+{
+    if ( aDbc->mShardDbcCxt.mTargetShardMetaNumber < aShardMetaNumber )
     {
-        aDbc->mShardDbcCxt.mSMNOfDataNode = aSMNOfDataNode;
-    }
-    else
-    {
-        /* Nothing to do */
+        aDbc->mShardDbcCxt.mTargetShardMetaNumber = aShardMetaNumber;
     }
 }
 
-/* BUG-45967 Data Nodeì˜ Shard Session ì •ë¦¬ */
-ACP_INLINE acp_uint64_t ulnDbcGetSMNOfDataNode( ulnDbc *aDbc )
+ACP_INLINE acp_uint64_t ulnDbcGetTargetShardMetaNumber( ulnDbc *aDbc )
 {
-    return aDbc->mShardDbcCxt.mSMNOfDataNode;
+    return aDbc->mShardDbcCxt.mTargetShardMetaNumber;
 }
 
-/* BUG-46100 Session SMN Update */
-ACP_INLINE void ulnDbcSetNeedToDisconnect( ulnDbc * aDbc, acp_bool_t aNeedToDisconnect )
+ACP_INLINE void ulnDbcSet2PcCommitState( ulnDbc *aDbc, ulsd2PhaseCommitState aState )
 {
-    if ( aNeedToDisconnect == ACP_TRUE )
-    {
-        aDbc->mShardDbcCxt.mNeedToDisconnect = ACP_TRUE;
-    }
-    else
-    {
-        /* Nothing to do */
-    }
+    aDbc->mShardDbcCxt.m2PhaseCommitState = aState;
 }
 
-/* BUG-46100 Session SMN Update */
-ACP_INLINE acp_bool_t ulnDbcGetNeedToDisconnect( ulnDbc * aDbc )
+ACP_INLINE ulsd2PhaseCommitState ulnDbcGet2PcCommitState( ulnDbc *aDbc )
 {
-    return aDbc->mShardDbcCxt.mNeedToDisconnect;
+    return aDbc->mShardDbcCxt.m2PhaseCommitState;
 }
 
 /* PROJ-2681 */
@@ -887,5 +1006,93 @@ ACP_INLINE void ulnDbcSetIBConChkSpin(ulnDbc *aDbc, acp_sint32_t aIBConChkSpin)
     aDbc->mAttrIBConChkSpin = aIBConChkSpin;
 }
 
-#endif /* _ULN_DBC_H_ */
+ACP_INLINE void ulnDbcSetGlobalTransactionLevel( ulnDbc * aDbc, acp_uint8_t aValue )
+{
+    aDbc->mAttrGlobalTransactionLevel = aValue;
+}
 
+ACP_INLINE acp_uint8_t ulnDbcGetGlobalTransactionLevel( ulnDbc  * aDbc )
+{
+    return aDbc->mAttrGlobalTransactionLevel;
+}
+
+ACP_INLINE void ulnDbcSetShardStatementRetry( ulnDbc * aDbc, acp_uint8_t aValue )
+{
+    aDbc->mShardStatementRetry = aValue;
+}
+
+ACP_INLINE acp_uint8_t ulnDbcGetShardStatementRetry( ulnDbc  * aDbc )
+{
+    return aDbc->mShardStatementRetry;
+}
+
+ACP_INLINE void ulnDbcSetIndoubtFetchTimeout( ulnDbc * aDbc, acp_uint32_t aValue )
+{
+    aDbc->mIndoubtFetchTimeout = aValue;
+}
+
+ACP_INLINE acp_uint32_t ulnDbcGetIndoubtFetchTimeout( ulnDbc  * aDbc )
+{
+    return aDbc->mIndoubtFetchTimeout;
+}
+
+ACP_INLINE void ulnDbcSetIndoubtFetchMethod( ulnDbc * aDbc, acp_uint8_t aValue )
+{
+    aDbc->mIndoubtFetchMethod = aValue;
+}
+
+ACP_INLINE acp_uint8_t ulnDbcGetIndoubtFetchMethod( ulnDbc  * aDbc )
+{
+    return aDbc->mIndoubtFetchMethod;
+}
+
+ACP_INLINE void ulnDbcSetShardCoordFixCtrlContext(ulnDbc *aDbc, ulnShardCoordFixCtrlContext *aCtx)
+{
+    aDbc->mShardCoordFixCtrlCtx = aCtx;
+}
+
+ACP_INLINE ulnShardCoordFixCtrlContext * ulnDbcGetShardCoordFixCtrlContext(ulnDbc *aDbc)
+{
+    return aDbc->mShardCoordFixCtrlCtx;
+}
+
+ACP_INLINE void ulnDbcSetDDLLockTimeout( ulnDbc * aDbc, acp_uint32_t aValue )
+{
+    aDbc->mDDLLockTimeout = aValue;
+}
+
+ACP_INLINE acp_uint32_t ulnDbcGetDDLLockTimeout( ulnDbc  * aDbc )
+{
+    return aDbc->mDDLLockTimeout;
+}
+
+void ulnDbcShardCoordFixCtrlEnter(ulnFnContext *aFnContext, ulnShardCoordFixCtrlContext * aCtx);
+void ulnDbcShardCoordFixCtrlExit(ulnFnContext *aFnContext);
+
+/* TASK-7219 Non-shard DML */
+ACP_INLINE void ulnDbcInitStmtExecSeqForShardTx( ulnDbc * aDbc )
+{
+    aDbc->mStmtExecSeqForShardTx = ULN_DBC_SHARD_STMT_EXEC_SEQ_INIT;
+}
+
+ACP_INLINE void ulnDbcIncreaseStmtExecSeqForShardTx( ulnDbc * aDbc )
+{
+    aDbc->mStmtExecSeqForShardTx++;
+}
+
+ACP_INLINE void ulnDbcDecreaseStmtExecSeqForShardTx( ulnDbc * aDbc )
+{
+    aDbc->mStmtExecSeqForShardTx--;
+}
+
+ACP_INLINE void ulnDbcSetExecSeqForShardTx( ulnDbc *aDbc, acp_uint32_t aStmtExecSeqForShardTx )
+{
+    aDbc->mStmtExecSeqForShardTx = aStmtExecSeqForShardTx;
+}
+
+ACP_INLINE acp_uint32_t ulnDbcGetExecSeqForShardTx( ulnDbc *aDbc )
+{
+    return aDbc->mStmtExecSeqForShardTx;
+}
+
+#endif /* _ULN_DBC_H_ */

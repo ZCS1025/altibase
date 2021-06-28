@@ -100,7 +100,7 @@ static void oaCheckErrorCode( oaOciApplierHandle *aHandle, int aErrorCode )
 }
 
 /**
- * @breif  Array DML ì‹¤í–‰ ì˜¤ë¥˜ë¥¼ ì¶œë ¥í•œë‹¤.
+ * @breif  Array DML ½ÇÇà ¿À·ù¸¦ Ãâ·ÂÇÑ´Ù.
  *
  * @param  aContext   Context
  * @param  aHandle    Oracle Applier Handle
@@ -1350,16 +1350,16 @@ static ace_rc_t prepareUpdateStatement( oaContext          * aContext,
 }
 
 /**
- * @breif  Cacheì—ì„œ Prepared Update Statementë¥¼ ì–»ëŠ”ë‹¤.
+ * @breif  Cache¿¡¼­ Prepared Update Statement¸¦ ¾ò´Â´Ù.
  *
- *         ì´í›„ì— ë°˜ë“œì‹œ putPreparedUpdateStatementToCache()ë¥¼ í˜¸ì¶œí•´ì•¼ í•œë‹¤.
+ *         ÀÌÈÄ¿¡ ¹Ýµå½Ã putPreparedUpdateStatementToCache()¸¦ È£ÃâÇØ¾ß ÇÑ´Ù.
  *
  * @param  aContext   Context
  * @param  aHandle    Oracle Applier Handle
  * @param  aLogRecord Update Log Record
  * @param  aStatement OCI Statement
  *
- * @return ì„±ê³µ/ì‹¤íŒ¨
+ * @return ¼º°ø/½ÇÆÐ
  */
 static ace_rc_t getPreparedUpdateStatementFromCache( oaContext           * aContext,
                                                      oaOciApplierHandle  * aHandle,
@@ -1405,9 +1405,9 @@ static ace_rc_t getPreparedUpdateStatementFromCache( oaContext           * aCont
 }
 
 /**
- * @breif  Prepareí•œ Update Statementë¥¼ ì–»ëŠ”ë‹¤.
+ * @breif  PrepareÇÑ Update Statement¸¦ ¾ò´Â´Ù.
  *
- *         ì´í›„ì— ë°˜ë“œì‹œ putPreparedUpdateStatement()ë¥¼ í˜¸ì¶œí•´ì•¼ í•œë‹¤.
+ *         ÀÌÈÄ¿¡ ¹Ýµå½Ã putPreparedUpdateStatement()¸¦ È£ÃâÇØ¾ß ÇÑ´Ù.
  *
  * @param  aContext                Context
  * @param  aHandle                 Oracle Applier Handle
@@ -1415,7 +1415,7 @@ static ace_rc_t getPreparedUpdateStatementFromCache( oaContext           * aCont
  * @param  aStatement              OCI Statement
  * @param  aStatementFromCacheFlag OCI Statement From Cache?
  *
- * @return ì„±ê³µ/ì‹¤íŒ¨
+ * @return ¼º°ø/½ÇÆÐ
  */
 static ace_rc_t getPreparedUpdateStatement( oaContext           * aContext,
                                             oaOciApplierHandle  * aHandle,
@@ -1473,15 +1473,15 @@ static ace_rc_t getPreparedUpdateStatement( oaContext           * aContext,
 }
 
 /**
- * @breif  ì‚¬ìš©í•œ Prepared Update Statementë¥¼ Cacheì— ë„£ëŠ”ë‹¤.
+ * @breif  »ç¿ëÇÑ Prepared Update Statement¸¦ Cache¿¡ ³Ö´Â´Ù.
  *
- *         getPreparedUpdateStatementFromCache()ì™€ ì§ì„ ì´ë£¬ë‹¤.
+ *         getPreparedUpdateStatementFromCache()¿Í Â¦À» ÀÌ·é´Ù.
  *
  * @param  aContext   Context
  * @param  aHandle    Oracle Applier Handle
  * @param  aStatement OCI Statement
  *
- * @return ì„±ê³µ/ì‹¤íŒ¨
+ * @return ¼º°ø/½ÇÆÐ
  */
 static ace_rc_t putPreparedUpdateStatementToCache( oaContext          * aContext,
                                                    oaOciApplierHandle * aHandle,
@@ -1506,16 +1506,16 @@ static ace_rc_t putPreparedUpdateStatementToCache( oaContext          * aContext
 }
 
 /**
- * @breif  ì‚¬ìš©í•œ Prepared Update Statementë¥¼ ì²˜ë¦¬í•œë‹¤.
+ * @breif  »ç¿ëÇÑ Prepared Update Statement¸¦ Ã³¸®ÇÑ´Ù.
  *
- *         getPreparedUpdateStatement()ì™€ ì§ì„ ì´ë£¬ë‹¤.
+ *         getPreparedUpdateStatement()¿Í Â¦À» ÀÌ·é´Ù.
  *
  * @param  aContext                Context
  * @param  aHandle                 Oracle Applier Handle
  * @param  aStatement              OCI Statement
  * @param  aStatementFromCacheFlag OCI Statement From Cache?
  *
- * @return ì„±ê³µ/ì‹¤íŒ¨
+ * @return ¼º°ø/½ÇÆÐ
  */
 static ace_rc_t putPreparedUpdateStatement( oaContext          * aContext,
                                             oaOciApplierHandle * aHandle,
@@ -1908,9 +1908,9 @@ ACP_INLINE ace_rc_t applyDeleteLogRecordWithSkipProperty( oaContext          * a
 }
 
 /**
- * @breif  Log Record Listë¥¼ OCIë¡œ ë°˜ì˜í•œë‹¤.
+ * @breif  Log Record List¸¦ OCI·Î ¹Ý¿µÇÑ´Ù.
  *
- *         ì‹¤íŒ¨ ì‹œì—ë„ ë¡œê·¸ë§Œ ë‚¨ê¸°ê³  ê³„ì† ì§„í–‰í•˜ë¯€ë¡œ, ê²°ê³¼ë¥¼ ë°˜í™˜í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *         ½ÇÆÐ ½Ã¿¡µµ ·Î±×¸¸ ³²±â°í °è¼Ó ÁøÇàÇÏ¹Ç·Î, °á°ú¸¦ ¹ÝÈ¯ÇÏÁö ¾Ê´Â´Ù.
  *
  * @param  aContext       Context
  * @param  aHandle        Oracle Applier Handle
@@ -1947,11 +1947,11 @@ ace_rc_t oaOciApplierApplyLogRecordList( oaContext          * aContext,
         {
             if ( aPrevLastProcessedSN >= sLogRecord->mCommon.mSN )
             {
-                /* ë§Œì•½ ì´ì „ ì ‘ì†ë•Œ Apply í–ˆë˜ Log ë¼ë©´ Error ì— ëŒ€í•´ì„œ ìž¬ì‹œë„ í•˜ì§€ ì•Šê³  ë„˜ì–´ê°„ë‹¤. 
-                 * ì´ì „ì— Insert ê°€ Apply ë˜ìžˆëŠ” ìƒíƒœì—ì„œ ì—ëŸ¬ë¡œ ì¸í•´ Restart í•œ ìƒí™©ì¼ ë•Œ
-                 * ê°™ì€ Log ì— ëŒ€í•´ Insert ê°€ ë°œìƒí•˜ë©´ Unique key ì—ëŸ¬ê°€ ì§€ì†ì ìœ¼ë¡œ ë°œìƒí•  ê²ƒì´ê³  
-                 * ì´ë¥¼ ë¬´ì‹œí•˜ì§€ ì•Šìœ¼ë©´ ê³„ì† ì˜¤ë¥˜ë¡œ ì¢…ë£Œë  ê²ƒì´ë‹¤.
-                 * ë”°ë¼ì„œ ì´ì „ì— ì´ë¯¸ Apply ê°€ ì™„ë£Œëœ ë¡œê·¸ì— ëŒ€í•´ì„œ ë°œìƒí•˜ëŠ” ì—ëŸ¬ëŠ” ë¬´ì‹œí•´ì•¼ í•œë‹¤. */
+                /* ¸¸¾à ÀÌÀü Á¢¼Ó¶§ Apply Çß´ø Log ¶ó¸é Error ¿¡ ´ëÇØ¼­ Àç½Ãµµ ÇÏÁö ¾Ê°í ³Ñ¾î°£´Ù. 
+                 * ÀÌÀü¿¡ Insert °¡ Apply µÇÀÖ´Â »óÅÂ¿¡¼­ ¿¡·¯·Î ÀÎÇØ Restart ÇÑ »óÈ²ÀÏ ¶§
+                 * °°Àº Log ¿¡ ´ëÇØ Insert °¡ ¹ß»ýÇÏ¸é Unique key ¿¡·¯°¡ Áö¼ÓÀûÀ¸·Î ¹ß»ýÇÒ °ÍÀÌ°í 
+                 * ÀÌ¸¦ ¹«½ÃÇÏÁö ¾ÊÀ¸¸é °è¼Ó ¿À·ù·Î Á¾·áµÉ °ÍÀÌ´Ù.
+                 * µû¶ó¼­ ÀÌÀü¿¡ ÀÌ¹Ì Apply °¡ ¿Ï·áµÈ ·Î±×¿¡ ´ëÇØ¼­ ¹ß»ýÇÏ´Â ¿¡·¯´Â ¹«½ÃÇØ¾ß ÇÑ´Ù. */
 
                 break;
             }
@@ -2002,7 +2002,7 @@ ace_rc_t oaOciApplierApplyLogRecordList( oaContext          * aContext,
 
     ACE_EXCEPTION( ERR_RETRY_END )
     {
-        /* applyAbortLogRecord ëŠ” ë‘ë²ˆ ì‹¤í–‰ ë  ìˆ˜ ìžˆëŠ”ë° ë‘ë²ˆ ì‹¤í–‰ë˜ì–´ë„ ë¬¸ì œê°€ ë°œìƒí•˜ì§€ ì•ŠëŠ”ë‹¤. */
+        /* applyAbortLogRecord ´Â µÎ¹ø ½ÇÇà µÉ ¼ö ÀÖ´Âµ¥ µÎ¹ø ½ÇÇàµÇ¾îµµ ¹®Á¦°¡ ¹ß»ýÇÏÁö ¾Ê´Â´Ù. */
         oaLogMessage( OAM_MSG_DUMP_LOG, "LogRecord apply aborted" );
         (void)applyAbortLogRecord( aContext, aHandle );
 

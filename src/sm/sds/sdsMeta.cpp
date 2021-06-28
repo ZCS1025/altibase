@@ -21,18 +21,14 @@
 
 /***********************************************************************
  * PROJ-2102 The Fast Secondary Buffer 
- * BCBì—ì„œ ìµœì†Œí•œì˜ ì •ë³´ë§Œ ì¶”ì¶œí•´ì„œ frameê³¼ ê°™ì´ ì €ì¥í•œë‹¤.
- * Secondary Buffer File ê·¸ë¦¼ê³¼ ê°™ì€ êµ¬ì¡°ë¥¼ ê°€ì§
- * Group ë‚´  ì •ë³´ë¥¼ ì´ìš©í•´ MetaTableì„ ì‘ì„±í•œë‹¤. 
+ * BCB¿¡¼­ ÃÖ¼ÒÇÑÀÇ Á¤º¸¸¸ ÃßÃâÇØ¼­ frame°ú °°ÀÌ ÀúÀåÇÑ´Ù.
+ * Secondary Buffer File ±×¸²°ú °°Àº ±¸Á¶¸¦ °¡Áü
+ * Group ³»  Á¤º¸¸¦ ÀÌ¿ëÇØ MetaTableÀ» ÀÛ¼ºÇÑ´Ù. 
 
    |F|F|F|..|F|F|F|..|F|F|F|..|MetaTable|F|F|F|..|F|F|F|..
    |-Extent-|-Extent-|-Extent-|         |-Extent-|-Extent-|...
    |------     Group   -------|         |------     Group    ---- ...
  **********************************************************************/
-
-#include <idu.h>
-#include <ide.h>
-#include <idu.h>
 
 #include <smDef.h>
 #include <smErrorCode.h>
@@ -43,7 +39,7 @@
 
 /***********************************************************************
  * Description :
- * Meta Tableì„ ì“°ê¸° ìœ„í•´ ê³µê°„ì„ í™•ë³´í•œë‹¤.
+ * Meta TableÀ» ¾²±â À§ÇØ °ø°£À» È®º¸ÇÑ´Ù.
  ***********************************************************************/
 IDE_RC sdsMeta::initializeStatic( UInt            aGroupCnt,
                                   UInt            aExtCntInGroup,
@@ -54,11 +50,11 @@ IDE_RC sdsMeta::initializeStatic( UInt            aGroupCnt,
     SInt    sState = 0; 
     UInt    i;
 
-    /* ìµœëŒ€ Group ê°¯ìˆ˜ */
+    /* ÃÖ´ë Group °¹¼ö */
     mMaxMetaTableCnt = aGroupCnt,
-    /* í•˜ë‚˜ì˜ Groupì— ë“¤ì–´ê°€ëŠ” Extentì˜ ìˆ˜ */
+    /* ÇÏ³ªÀÇ Group¿¡ µé¾î°¡´Â ExtentÀÇ ¼ö */
     mExtCntInGroup = aExtCntInGroup;
-    /* í•œ Extentë‚´ì˜ Frame(=meta)ì˜ ê°¯ìˆ˜ëŠ” IOB ì‚¬ì´ì¦ˆì™€ ë™ì¼ */
+    /* ÇÑ Extent³»ÀÇ Frame(=meta)ÀÇ °¹¼ö´Â IOB »çÀÌÁî¿Í µ¿ÀÏ */
     mFrameCntInExt = smuProperty::getBufferIOBufferSize();
 
     mSBufferFile = aSBufferFile;
@@ -68,7 +64,7 @@ IDE_RC sdsMeta::initializeStatic( UInt            aGroupCnt,
     IDE_ASSERT( SDS_META_TABLE_SIZE > 
                 (mExtCntInGroup * mFrameCntInExt * ID_SIZEOF(sdsMetaData)) );
 
-    /* Meta ì •ë³´ë¥¼ ì €ì¥í•  ê³µê°„ì„ í™•ë³´ : í•œ Groupì˜ í¬ê¸°: ì•½ 58KB  */
+    /* Meta Á¤º¸¸¦ ÀúÀåÇÒ °ø°£À» È®º¸ : ÇÑ GroupÀÇ Å©±â: ¾à 58KB  */
     IDE_TEST_RAISE( iduFile::allocBuff4DirectIO( IDU_MEM_SM_SDS,
                                                  SDS_META_TABLE_SIZE,
                                                  (void**)&mBasePtr,
@@ -143,8 +139,8 @@ IDE_RC sdsMeta::destroyStatic()
 }
 
 /***********************************************************************
- * Description : smiStartupShutdown ì—ì„œ í˜¸ì¶œë¨ 
- *  shutdown ì‹œ ë©”íƒ€ ë°ì´íƒ€ë¥¼ ì—…ë°ì´íŠ¸ í•¨  
+ * Description : smiStartupShutdown ¿¡¼­ È£ÃâµÊ 
+ *  shutdown ½Ã ¸ŞÅ¸ µ¥ÀÌÅ¸¸¦ ¾÷µ¥ÀÌÆ® ÇÔ  
  ***********************************************************************/
 IDE_RC sdsMeta::finalize( idvSQL * aStatistics )
 {
@@ -155,7 +151,7 @@ IDE_RC sdsMeta::finalize( idvSQL * aStatistics )
     UInt        i;
     UInt        j;
     
-    /* Groupì„ 0~MAX ê¹Œì§€ ìŠ¤ìº”í•˜ì—¬ MetaTable ì„ ìƒˆë¡œ ìƒì„±í•¨ */ 
+    /* GroupÀ» 0~MAX ±îÁö ½ºÄµÇÏ¿© MetaTable À» »õ·Î »ı¼ºÇÔ */ 
     for( sMetaTableIndex = 0 ; sMetaTableIndex < mMaxMetaTableCnt ; sMetaTableIndex++ ) 
     {
         sBCBIndex = sMetaTableIndex * ( mFrameCntInExt * mExtCntInGroup );
@@ -173,16 +169,16 @@ IDE_RC sdsMeta::finalize( idvSQL * aStatistics )
             }
         }
 
-        /* mBaseì— ë³µì‚¬ í•˜ê¸° */
+        /* mBase¿¡ º¹»ç ÇÏ±â */
         (void)copyToMetaTable( sMetaTableIndex );
-        /* mBaseë¥¼ stableì— ë‚´ë ¤ì“°ê¸° */
+        /* mBase¸¦ stable¿¡ ³»·Á¾²±â */
         IDE_TEST( writeMetaTable( aStatistics, sMetaTableIndex )
                   != IDE_SUCCESS );
     }
 
     sLastMetaTableNum = mSBufferArea->getLastFlushExtent() / mExtCntInGroup;
 
-    /* File Header ì— Seq ì €ì¥ */ 
+    /* File Header ¿¡ Seq ÀúÀå */ 
     IDE_TEST( mSBufferFile->setAndWriteFileHdr( 
                 aStatistics,
                 NULL,               /* mRedoLSN       */
@@ -201,7 +197,7 @@ IDE_RC sdsMeta::finalize( idvSQL * aStatistics )
 /***********************************************************************
  * Description :
    | SEQ | LSN | MetaData(0), ,,,,, MetaData(N) | LSN |
- * aMetaTableSeqNum   - [IN] Groupì˜ ë²ˆí˜¸ 
+ * aMetaTableSeqNum   - [IN] GroupÀÇ ¹øÈ£ 
  ***********************************************************************/
 IDE_RC sdsMeta::writeMetaTable( idvSQL  * aStatistics, 
                                 UInt      aMetaTableSeqNum )
@@ -256,9 +252,9 @@ IDE_RC sdsMeta::copyToMetaTable( UInt aMetaTableSeqNum )
 
 /***********************************************************************
  * Description :
- * aMetaTableSeqNum  - [IN] ì½ì–´ì•¼í•˜ëŠ” MetaTable Num 
- * aMeta             - [OUT] MetaDataë¥¼ ë³µì‚¬í•  ë²„í¼
- * aIsValidate       - [OUT] MetaTableì„ í†µí•´ SBCBë¥¼ ë³µêµ¬í•´ë„ ë˜ëŠ”ì§€  
+ * aMetaTableSeqNum  - [IN] ÀĞ¾î¾ßÇÏ´Â MetaTable Num 
+ * aMeta             - [OUT] MetaData¸¦ º¹»çÇÒ ¹öÆÛ
+ * aIsValidate       - [OUT] MetaTableÀ» ÅëÇØ SBCB¸¦ º¹±¸ÇØµµ µÇ´ÂÁö  
  ***********************************************************************/
 IDE_RC sdsMeta::readAndCheckUpMetaTable( idvSQL         * aStatistics, 
                                          UInt             aMetaTableSeqNum,
@@ -297,17 +293,17 @@ IDE_RC sdsMeta::readAndCheckUpMetaTable( idvSQL         * aStatistics,
                    (SChar*)(mBase + ID_SIZEOF(UInt) + ID_SIZEOF(smLSN) + sMetaLen),
                    ID_SIZEOF(smLSN) );
 
-    /* checksumì´ ë‹¤ë¥´ë©´ skip */
+    /* checksumÀÌ ´Ù¸£¸é skip */
     IDE_TEST_CONT( smLayerCallback::isLSNEQ( &sFstLSN, &sLstLSN ) 
                     == ID_TRUE, 
                     CONT_SKIP );
     
-    /* ChecksumLSNê³¼ 0ë²ˆ MetaDataì˜ LSNì´ ë‹¤ë¥´ë©´ skip */
+    /* ChecksumLSN°ú 0¹ø MetaDataÀÇ LSNÀÌ ´Ù¸£¸é skip */
     IDE_TEST_CONT( smLayerCallback::isLSNEQ( &sFstLSN, &aMeta[0].mPageLSN ) 
                     == ID_TRUE,
                     CONT_SKIP );
 
-    /* ì½ì–´ì•¼ í•˜ëŠ” MetaTable ì´ë‘ ì½ì€ MetaTableì˜ ë²ˆí˜¸ê°€ ë‹¤ë¥´ë©´ skip */
+    /* ÀĞ¾î¾ß ÇÏ´Â MetaTable ÀÌ¶û ÀĞÀº MetaTableÀÇ ¹øÈ£°¡ ´Ù¸£¸é skip */
     IDE_TEST_CONT( sReadMetaTableSeq != aMetaTableSeqNum, 
                     CONT_SKIP );
 
@@ -324,7 +320,7 @@ IDE_RC sdsMeta::readAndCheckUpMetaTable( idvSQL         * aStatistics,
 
 /***********************************************************************
  * Description :
- * aLstMetaTableSeqNum - [OUT] ë§ˆì§€ë§‰ì— ì €ì¥ëœ MetaTable Seq ë²ˆí˜¸
+ * aLstMetaTableSeqNum - [OUT] ¸¶Áö¸·¿¡ ÀúÀåµÈ MetaTable Seq ¹øÈ£
  * aRecoveryLSN        - [OUT] RecoveryLSN
  ***********************************************************************/
 IDE_RC sdsMeta::readMetaInfo( idvSQL * aStatistics, 
@@ -346,7 +342,7 @@ IDE_RC sdsMeta::readMetaInfo( idvSQL * aStatistics,
 }
 
 /***********************************************************************
- * Description : Meta Tableì„ ì½ì–´ì„œ BCB ì •ë³´ë¥¼ ì¬êµ¬ì¶•í•œë‹¤.
+ * Description : Meta TableÀ» ÀĞ¾î¼­ BCB Á¤º¸¸¦ Àç±¸ÃàÇÑ´Ù.
 ************************************************************************/
 IDE_RC sdsMeta::copyToSBCB( idvSQL      * aStatistics,
                             sdsMetaData * aMetaData,
@@ -359,8 +355,8 @@ IDE_RC sdsMeta::copyToSBCB( idvSQL      * aStatistics,
     sdsBCB    * sExistBCB = NULL;
     sdbHashChainsLatchHandle  * sHashChainsHandle = NULL;
 
-    /* í•´ë‹¹ MetaTableì˜ ë§ˆì§€ë§‰ MetaDataë¶€í„° ì½ì–´ ì™€ì•¼ í•˜ë¯€ë¡œ
-       ê·¸ë‹¤ìŒ Extentì˜ ì²« MetaData ë²ˆí˜¸ ê°€ì ¸ì™€ì„œ í•˜ë‚˜ ë¹¼ê¸° */        
+    /* ÇØ´ç MetaTableÀÇ ¸¶Áö¸· MetaDataºÎÅÍ ÀĞ¾î ¿Í¾ß ÇÏ¹Ç·Î
+       ±×´ÙÀ½ ExtentÀÇ Ã¹ MetaData ¹øÈ£ °¡Á®¿Í¼­ ÇÏ³ª »©±â */        
     sBCBIndex = ( aMetaTableNum+1 ) * mFrameCntInExt * mExtCntInGroup;
     sBCBIndex--;
 
@@ -394,18 +390,18 @@ IDE_RC sdsMeta::copyToSBCB( idvSQL      * aStatistics,
         sSBCB->mState    = aMetaData[i].mState;
         SM_GET_LSN( sSBCB->mPageLSN, aMetaData[i].mPageLSN );
 
-        /* ì„¤ì •í•œ BCBë¥¼ hashì— ì‚½ì….. */
+        /* ¼³Á¤ÇÑ BCB¸¦ hash¿¡ »ğÀÔ.. */
         sHashChainsHandle = mHashTable->lockHashChainsXLatch( aStatistics,
                                                               sSBCB->mSpaceID,
                                                               sSBCB->mPageID );
 
-        /* Meta Tableì„ ì½ì–´ì„œ Hashë¥¼ ì¬êµ¬ì„± í• ë•ŒëŠ” backwardë¡œ ìŠ¤ìº”í•œë‹¤ */
-        /* ì´ë¯¸ ì‚½ì…ëœ ë°ì´íƒ€ê°€ ì¡´ì¬ í•œë‹¤ë©´ ê·¸ê²Œ ë” ìµœì‹  ë°ì´íƒ€ ì¸ê²ƒì„. */
+        /* Meta TableÀ» ÀĞ¾î¼­ Hash¸¦ Àç±¸¼º ÇÒ¶§´Â backward·Î ½ºÄµÇÑ´Ù */
+        /* ÀÌ¹Ì »ğÀÔµÈ µ¥ÀÌÅ¸°¡ Á¸Àç ÇÑ´Ù¸é ±×°Ô ´õ ÃÖ½Å µ¥ÀÌÅ¸ ÀÎ°ÍÀÓ. */
         mHashTable->insertBCB( sSBCB, (void**)&sExistBCB );
 
         if( sExistBCB != NULL )
         {
-            /* ìƒˆë¡œ ì½ì€ í˜ì´ì§€ì˜ LSNì´ ì¡´ì¬í•˜ëŠ” LSNë³´ë‹¤ í¬ë©´ ì‚½ì… */
+            /* »õ·Î ÀĞÀº ÆäÀÌÁöÀÇ LSNÀÌ Á¸ÀçÇÏ´Â LSNº¸´Ù Å©¸é »ğÀÔ */
             if ( smLayerCallback::isLSNGTE( &sSBCB->mPageLSN, 
                                             &sExistBCB->mPageLSN ) 
                  == ID_TRUE) 
@@ -430,8 +426,8 @@ IDE_RC sdsMeta::copyToSBCB( idvSQL      * aStatistics,
 
 /***********************************************************************
  * Description :
- * aLstMetaTableSeqNum - [IN] MetaTable ê²€ìƒ‰ì„ í†µí•´ BCBë¥¼ êµ¬ì¶•í•  ì²« Table ë²ˆí˜¸ 
- * aRecoveryLSN        - [IN] RecoveryLSN ë³´ë‹¤ ì‘ì€ pageLSNì„ ê°€ì§€ëŠ” BCBë¥¼ ë³µêµ¬í•  í•„ìš” ì—†ìŒ.
+ * aLstMetaTableSeqNum - [IN] MetaTable °Ë»öÀ» ÅëÇØ BCB¸¦ ±¸ÃàÇÒ Ã¹ Table ¹øÈ£ 
+ * aRecoveryLSN        - [IN] RecoveryLSN º¸´Ù ÀÛÀº pageLSNÀ» °¡Áö´Â BCB¸¦ º¹±¸ÇÒ ÇÊ¿ä ¾øÀ½.
  ***********************************************************************/
 IDE_RC sdsMeta::buildBCBByMetaTable( idvSQL * aStatistics, 
                                      UInt     aLstMetaTableSeqNum,
@@ -454,12 +450,12 @@ IDE_RC sdsMeta::buildBCBByMetaTable( idvSQL * aStatistics,
     
         if( sIsValidate == ID_FALSE )
         {
-            /* ì •ìƒì ì¸ MetaTableì´ ì•„ë‹ˆë¯€ë¡œ ë‹¤ìŒ MetaTableì„ ê²€ì‚¬ í•œë‹¤*/
+            /* Á¤»óÀûÀÎ MetaTableÀÌ ¾Æ´Ï¹Ç·Î ´ÙÀ½ MetaTableÀ» °Ë»ç ÇÑ´Ù*/
             continue;
         }
         else
         {
-            /* MetaTableì„ í†µí•œ SBCB ë³µêµ¬ë¥¼ ì‹œì‘í•œë‹¤. */
+            /* MetaTableÀ» ÅëÇÑ SBCB º¹±¸¸¦ ½ÃÀÛÇÑ´Ù. */
             /* nothing to do */
         }
         
@@ -494,7 +490,7 @@ IDE_RC sdsMeta::buildBCB( idvSQL * aStatistics, idBool aIsRecoveryMode )
     UInt  sLstMetaTableSeqNum;
     smLSN sRecoveryLSN;
 
-    if( aIsRecoveryMode != ID_TRUE ) /* ì •ìƒ ì¢…ë£Œ */
+    if( aIsRecoveryMode != ID_TRUE ) /* Á¤»ó Á¾·á */
     { 
         IDE_TEST( readMetaInfo( aStatistics, 
                                 &sLstMetaTableSeqNum,
@@ -517,7 +513,7 @@ IDE_RC sdsMeta::buildBCB( idvSQL * aStatistics, idBool aIsRecoveryMode )
     }
     else
     {
-         /* ë¹„ì •ìƒ ì¢…ë£Œì‹œì—ëŠ” BCB ì¬êµ¬ì¶•ì„ í•˜ì§€ ì•ŠìŒ. */
+         /* ºñÁ¤»ó Á¾·á½Ã¿¡´Â BCB Àç±¸ÃàÀ» ÇÏÁö ¾ÊÀ½. */
     }
 
     return IDE_SUCCESS;
@@ -528,10 +524,10 @@ IDE_RC sdsMeta::buildBCB( idvSQL * aStatistics, idBool aIsRecoveryMode )
 }
 
 /***********************************************************************
- * Description : dump í•¨ìˆ˜. Meta tableì„ ì¶œë ¥í•œë‹¤.
- * aPage     [IN]  - ì¶œë ¥í•  í˜ì´ì§€ ì •ë³´ 
- * aOutBuf   [OUT] - í˜ì´ì§€ ë‚´ìš©ì„ ì €ì¥í•  ë²„í¼
- * aOutSize  [IN]  - ë²„í¼ì˜ limit í¬ê¸° 
+ * Description : dump ÇÔ¼ö. Meta tableÀ» Ãâ·ÂÇÑ´Ù.
+ * aPage     [IN]  - Ãâ·ÂÇÒ ÆäÀÌÁö Á¤º¸ 
+ * aOutBuf   [OUT] - ÆäÀÌÁö ³»¿ëÀ» ÀúÀåÇÒ ¹öÆÛ
+ * aOutSize  [IN]  - ¹öÆÛÀÇ limit Å©±â 
  ***********************************************************************/
 IDE_RC sdsMeta::dumpMetaTable( const UChar    * aPage,
                                SChar          * aOutBuf, 

@@ -118,9 +118,9 @@ class sdsReqFunc
             return smrLogMgr::sync4BufferFlush( aLSN,
                                                 aSyncedLFCnt );
         };
-        static IDE_RC getLstLSN( smLSN * aLSN )
+        static void getLstLSN( smLSN * aLSN )
         {
-            return smrLogMgr::getLstLSN( aLSN );
+            smrLogMgr::getLstLSN( aLSN );
         };
 
         /* sdr */
@@ -152,11 +152,11 @@ class sdsReqFunc
         {
             sdpPhyPage::calcAndSetCheckSum( aPageHdr );
         };
-        static idBool isPageCorrupted( scSpaceID   aSpaceID,
-                                       UChar     * aPagePtr )
+        static idBool checkAndSetPageCorrupted( scSpaceID   aSpaceID,
+                                                UChar     * aPagePtr )
         {
-            return sdpPhyPage::isPageCorrupted( aSpaceID,
-                                                aPagePtr );
+            return sdpPhyPage::checkAndSetPageCorrupted( aSpaceID,
+                                                         aPagePtr );
         };
         static UInt getPhyPageType( UChar * aPagePtr )
         {
@@ -168,17 +168,22 @@ class sdsReqFunc
             sdpPhyPage::setIndexSMONo( aPagePtr,
                                        aSMONo );
         };
-
+        static ULong getIndexSMONo( UChar    * aPagePtr )
+        {
+            return sdpPhyPage::getIndexSMONo( (sdpPhyPageHdr*)aPagePtr );
+        };
+        static void resetIndexSMONo( void       * aPageHdr,
+                                     scSpaceID    aSpaceID,
+                                     idBool       aChkOnlineTBS )
+        {
+            sdpPhyPage::resetIndexSMONo( (sdpPhyPageHdr*)aPageHdr,
+                                         aSpaceID,
+                                         aChkOnlineTBS );
+        };
         /* sdb */
         static void setSBufferServiceable( void )
         {
             sdbBufferMgr::setSBufferServiceable();
-        };
-
-        /* sdd */
-        static smLSN getOnlineTBSLSN4Idx( sddTableSpaceNode * aSpaceNode )
-        {
-            return sddTableSpace::getOnlineTBSLSN4Idx( aSpaceNode );
         };
 
         /* sct */
@@ -189,12 +194,6 @@ class sdsReqFunc
         static idBool isTempTableSpace( scSpaceID aSpaceID )
         {
             return sctTableSpaceMgr::isTempTableSpace( aSpaceID );
-        };
-        static IDE_RC findSpaceNodeBySpaceID( scSpaceID    aSpaceID,
-                                              void      ** aSpaceNode )
-        {
-            return sctTableSpaceMgr::findSpaceNodeBySpaceID( aSpaceID,
-                                                             aSpaceNode );
         };
 };
 

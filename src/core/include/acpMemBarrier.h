@@ -106,9 +106,26 @@ ACP_EXPORT void acpMemPrefetchN(void* aPointer);
  * Not Windows, not gcc or NOINLINE
  */
 # elif !defined(__GNUC__) || defined(ACP_CFG_NOINLINE)
+
+#ifdef ALTI_CFG_CPU_POWERPC
+#define ACP_MEM_BARRIER()  do {                                   \
+                               acpMemBarrier();                   \
+                               __fence();  /* BUG-47897 */        \
+                           }while(0)
+#define ACP_MEM_RBARRIER()  do {                                   \
+                                acpMemRBarrier();                   \
+                                __fence();  /* BUG-47897 */        \
+                            }while(0)
+#define ACP_MEM_WBARRIER()  do {                                   \
+                                acpMemWBarrier();                   \
+                                __fence();  /* BUG-47897 */        \
+                            }while(0)
+#else
 #  define ACP_MEM_BARRIER()             acpMemBarrier()
 #  define ACP_MEM_RBARRIER()            acpMemRBarrier()
 #  define ACP_MEM_WBARRIER()            acpMemWBarrier()
+#endif
+
 #  define ACP_MEM_PREFETCH0(aPointer)   acpMemPrefetch0(aPointer)
 #  define ACP_MEM_PREFETCH1(aPointer)   acpMemPrefetch1(aPointer)
 #  define ACP_MEM_PREFETCH2(aPointer)   acpMemPrefetch2(aPointer)
@@ -197,9 +214,10 @@ ACP_EXPORT void acpMemPrefetchN(void* aPointer);
  */
 
 // borrowed from idl.
-#  define ACP_MEM_BARRIER()           asm("mfence")
-#  define ACP_MEM_RBARRIER()          asm("mfence")
-#  define ACP_MEM_WBARRIER()          asm("mfence")
+#  define ACP_MEM_BARRIER()  asm volatile("mfence":::"memory") /* BUG-47897 */
+#  define ACP_MEM_RBARRIER() asm volatile("mfence":::"memory") /* BUG-47897 */
+#  define ACP_MEM_WBARRIER() asm volatile("mfence":::"memory") /* BUG-47897 */
+   
 #  define ACP_MEM_PREFETCH0(aPointer) ACP_UNUSED(aPointer)
 #  define ACP_MEM_PREFETCH1(aPointer) ACP_UNUSED(aPointer)
 #  define ACP_MEM_PREFETCH2(aPointer) ACP_UNUSED(aPointer)

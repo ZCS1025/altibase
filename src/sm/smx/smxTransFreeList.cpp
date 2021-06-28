@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smxTransFreeList.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smxTransFreeList.cpp 88191 2020-07-27 03:08:54Z mason.lee $
  **********************************************************************/
 
 #include <idl.h>
@@ -98,7 +98,7 @@ IDE_RC smxTransFreeList::allocTrans(smxTrans **aTrans)
 
         if(mFstFreeTrans != NULL)
         {
-            /* BUG-19245: Transactionì´ ë‘ë²ˆ Freeë˜ëŠ” ê²ƒì„ Detectí•˜ê¸° ìœ„í•´ ì¶”ê°€ë¨ */
+            /* BUG-19245: TransactionÀÌ µÎ¹ø FreeµÇ´Â °ÍÀ» DetectÇÏ±â À§ÇØ Ãß°¡µÊ */
             IDE_ASSERT( mFstFreeTrans->mIsFree == ID_TRUE );
 
             *aTrans = mFstFreeTrans;
@@ -117,8 +117,8 @@ IDE_RC smxTransFreeList::allocTrans(smxTrans **aTrans)
         {
             if( (*aTrans)->mStatus != SMX_TX_END )
             {
-                /* BUG-43595 ìƒˆë¡œ allocí•œ transaction ê°ì²´ì˜ stateê°€
-                 * beginì¸ ê²½ìš°ê°€ ìˆìŠµë‹ˆë‹¤. ë¡œ ì¸í•œ ë””ë²„ê¹… ì •ë³´ ì¶œë ¥ ì¶”ê°€*/
+                /* BUG-43595 »õ·Î allocÇÑ transaction °´Ã¼ÀÇ state°¡
+                 * beginÀÎ °æ¿ì°¡ ÀÖ½À´Ï´Ù. ·Î ÀÎÇÑ µğ¹ö±ë Á¤º¸ Ãâ·Â Ãß°¡*/
                 ideLog::log(IDE_ERR_0,"Alloc invalid transaction.\n");
                 (*aTrans)->dumpTransInfo();
                 ideLog::logCallStack(IDE_ERR_0);
@@ -144,13 +144,13 @@ IDE_RC smxTransFreeList::allocTrans(smxTrans **aTrans)
 
 IDE_RC smxTransFreeList::freeTrans(smxTrans *aTrans)
 {
-    /* BUG-19245: Transactionì´ ë‘ë²ˆ Freeë˜ëŠ” ê²ƒì„ Detectí•˜ê¸° ìœ„í•´ ì¶”ê°€ë¨ */
+    /* BUG-19245: TransactionÀÌ µÎ¹ø FreeµÇ´Â °ÍÀ» DetectÇÏ±â À§ÇØ Ãß°¡µÊ */
     IDE_ASSERT( aTrans->mIsFree == ID_FALSE );
 
     IDE_TEST(lock() != IDE_SUCCESS);
 
     aTrans->mIsFree       = ID_TRUE;
-    // trans free listì˜ ì„ ë‘ë¡œ ì´ë™í•¨
+    // trans free listÀÇ ¼±µÎ·Î ÀÌµ¿ÇÔ
     aTrans->mNxtFreeTrans = mFstFreeTrans;
     mFstFreeTrans         = aTrans;
     mCurFreeTransCnt++;
@@ -164,7 +164,7 @@ IDE_RC smxTransFreeList::freeTrans(smxTrans *aTrans)
     return IDE_FAILURE;
 
 }
-
+#if 0
 void smxTransFreeList::dump()
 {
 
@@ -193,6 +193,7 @@ void smxTransFreeList::dump()
                    sFreeTransCnt);
 
 }
+#endif
 
 IDE_RC smxTransFreeList::rebuild(UInt aSeqNumber,
                                  SInt aFstItem,
@@ -219,15 +220,15 @@ IDE_RC smxTransFreeList::rebuild(UInt aSeqNumber,
     {
         sCurTrans = smxTransMgr::getTransBySID(i);
 
-        IDE_ASSERT(sCurTrans->mStatus == SMX_TX_END ||
-                   sCurTrans->mCommitState == SMX_XA_PREPARED);
+        IDE_ASSERT( (sCurTrans->mStatus == SMX_TX_END) ||
+                    (sCurTrans->isPrepared() == ID_TRUE) );
 
         sCurTrans->mTransFreeList = this;
         sCurTrans->mNxtFreeTrans = NULL;
 
         if (sCurTrans->isPrepared() == ID_TRUE)
         {
-            /* BUG-19245: Transactionì´ ë‘ë²ˆ Freeë˜ëŠ” ê²ƒì„ Detectí•˜ê¸° ìœ„í•´ ì¶”ê°€ë¨ */
+            /* BUG-19245: TransactionÀÌ µÎ¹ø FreeµÇ´Â °ÍÀ» DetectÇÏ±â À§ÇØ Ãß°¡µÊ */
             sCurTrans->mIsFree = ID_FALSE;
         }
         else
@@ -256,7 +257,7 @@ IDE_RC smxTransFreeList::rebuild(UInt aSeqNumber,
 }
 
 /***********************************************************************
- * Description : Free Listì— ì¡´ì¬í•˜ëŠ” Transactinoì´ Freeì¸ì§€ë¥¼ ê²€ì¦í•œë‹¤.
+ * Description : Free List¿¡ Á¸ÀçÇÏ´Â TransactinoÀÌ FreeÀÎÁö¸¦ °ËÁõÇÑ´Ù.
  ***********************************************************************/
 void smxTransFreeList::validateTransFreeList()
 {

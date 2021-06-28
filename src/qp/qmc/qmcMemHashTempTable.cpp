@@ -19,11 +19,11 @@
  * $Id: qmcMemHashTempTable.cpp 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     Memory Hash Temp Tableì„ ìœ„í•œ í•¨ìˆ˜
+ *     Memory Hash Temp TableÀ» À§ÇÑ ÇÔ¼ö
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -44,22 +44,22 @@ qmcMemHash::init( qmcdMemHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Memory Hash Temp Tableì„ ì´ˆê¸°í™”í•œë‹¤.
+ *    Memory Hash Temp TableÀ» ÃÊ±âÈ­ÇÑ´Ù.
  *
  * Implementation :
- *    - ê¸°ë³¸ ì •ë³´ ì„¤ì •
- *    - ì‚½ìž… ì •ë³´ ì„¤ì •
- *    - ê²€ìƒ‰ ì •ë³´ ì„¤ì •
+ *    - ±âº» Á¤º¸ ¼³Á¤
+ *    - »ðÀÔ Á¤º¸ ¼³Á¤
+ *    - °Ë»ö Á¤º¸ ¼³Á¤
  *
  ***********************************************************************/
 
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     IDE_DASSERT( aTempTable != NULL );
     IDE_DASSERT( aBucketCnt > 0 && aBucketCnt <= QMC_MEM_HASH_MAX_BUCKET_CNT );
     IDE_DASSERT( aRecordNode != NULL && aHashNode != NULL );
 
     //----------------------------------------------------
-    // Memory Hash Temp Tableì˜ ê¸°ë³¸ ì •ë³´ ì„¤ì •
+    // Memory Hash Temp TableÀÇ ±âº» Á¤º¸ ¼³Á¤
     //----------------------------------------------------
 
     aTempTable->flag = QMC_MEM_HASH_INITIALIZE;
@@ -68,8 +68,8 @@ qmcMemHash::init( qmcdMemHashTemp * aTempTable,
     aTempTable->mMemory    = aMemory;
     aTempTable->mBucketCnt = aBucketCnt;
 
-    // Bucketì„ ìœ„í•œ Memory í• ë‹¹
-    // Bucketë‚´ì˜ ì—°ê²° ì •ë³´ë¥¼ ì´ˆê¸°í™”ë¥¼ ìœ„í•´ crallocì„ ì‚¬ìš©í•œë‹¤.
+    // BucketÀ» À§ÇÑ Memory ÇÒ´ç
+    // Bucket³»ÀÇ ¿¬°á Á¤º¸¸¦ ÃÊ±âÈ­¸¦ À§ÇØ crallocÀ» »ç¿ëÇÑ´Ù.
     IDU_FIT_POINT( "qmcMemHash::init::alloc::mBucket",
                     idERR_ABORT_InsufficientMemory );
 
@@ -81,12 +81,12 @@ qmcMemHash::init( qmcdMemHashTemp * aTempTable,
     aTempTable->mHashNode   = aHashNode;
 
     //----------------------------------------------------
-    // ì‚½ìž…ì„ ìœ„í•œ ì •ë³´
+    // »ðÀÔÀ» À§ÇÑ Á¤º¸
     //----------------------------------------------------
 
     if ( aDistinct == ID_TRUE )
     {
-        // Distinct Insertionì˜ ê²½ìš°
+        // Distinct InsertionÀÇ °æ¿ì
         aTempTable->flag &= ~QMC_MEM_HASH_DISTINCT_MASK;
         aTempTable->flag |= QMC_MEM_HASH_DISTINCT_TRUE;
     }
@@ -101,13 +101,13 @@ qmcMemHash::init( qmcdMemHashTemp * aTempTable,
     
     aTempTable->mRecordCnt = 0;
 
-    // Distinctionì˜ ì—¬ë¶€ì— ê´€ê³„ ì—†ì´ ì²˜ìŒ ì‚½ìž…ì€ í•­ìƒ ì„±ê³µí•œë‹¤.
-    // ì´ ì™¸ì˜ ì´ˆê¸°í™” ì²˜ë¦¬ë¥¼ ìœ„í•´ ë‹¤ìŒ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ì—°ê²°í•œë‹¤.
+    // DistinctionÀÇ ¿©ºÎ¿¡ °ü°è ¾øÀÌ Ã³À½ »ðÀÔÀº Ç×»ó ¼º°øÇÑ´Ù.
+    // ÀÌ ¿ÜÀÇ ÃÊ±âÈ­ Ã³¸®¸¦ À§ÇØ ´ÙÀ½ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¿¬°áÇÑ´Ù.
     
     aTempTable->insert = qmcMemHash::insertFirst;
 
     //----------------------------------------------------
-    // ê²€ìƒ‰ì„ ìœ„í•œ ì •ë³´
+    // °Ë»öÀ» À§ÇÑ Á¤º¸
     //----------------------------------------------------
 
     aTempTable->mKey = 0;
@@ -127,27 +127,27 @@ qmcMemHash::clear( qmcdMemHashTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *     Memory Hash Temp Tableì„ ì´ˆê¸°í™”í•œë‹¤.
+ *     Memory Hash Temp TableÀ» ÃÊ±âÈ­ÇÑ´Ù.
  *
  * Implementation :
- *     Recordì— ëŒ€í•œ ë©”ëª¨ë¦¬ëŠ” ìƒìœ„ Hash Temp Tableì—ì„œ ê´€ë¦¬í•˜ë©°,
- *     Bucketì— ëŒ€í•œ ì—°ê²° ì •ë³´ë§Œ ì´ˆê¸°í™”í•œë‹¤.
+ *     Record¿¡ ´ëÇÑ ¸Þ¸ð¸®´Â »óÀ§ Hash Temp Table¿¡¼­ °ü¸®ÇÏ¸ç,
+ *     Bucket¿¡ ´ëÇÑ ¿¬°á Á¤º¸¸¸ ÃÊ±âÈ­ÇÑ´Ù.
  *
  ***********************************************************************/
 
-    // Bucketì˜ ì´ˆê¸°í™”
+    // BucketÀÇ ÃÊ±âÈ­
     idlOS::memset( aTempTable->mBucket,
                    0x00,
                    aTempTable->mBucketCnt * ID_SIZEOF(qmcBucket) );
 
-    // ì‚½ìž… ì •ë³´ì˜ ì´ˆê¸°í™”
+    // »ðÀÔ Á¤º¸ÀÇ ÃÊ±âÈ­
     aTempTable->mTop = NULL;
     aTempTable->mLast = NULL;
     aTempTable->mRecordCnt = 0;
 
     aTempTable->insert = qmcMemHash::insertFirst;
 
-    // ê²€ìƒ‰ ì •ë³´ì˜ ì´ˆê¸°í™”
+    // °Ë»ö Á¤º¸ÀÇ ÃÊ±âÈ­
     aTempTable->mKey = 0;
     aTempTable->mCurrent = NULL;
     aTempTable->mNext = NULL;
@@ -161,23 +161,23 @@ qmcMemHash::clearHitFlag( qmcdMemHashTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    Temp Tableë‚´ì˜ ëª¨ë“  Recordë“¤ì˜ Hit Flagì„ ì´ˆê¸°í™”í•œë‹¤.
+ *    Temp Table³»ÀÇ ¸ðµç RecordµéÀÇ Hit FlagÀ» ÃÊ±âÈ­ÇÑ´Ù.
  *
  * Implementation :
- *    ë ˆì½”ë“œê°€ ì¡´ìž¬í•  ë•Œê¹Œì§€ ìˆœì°¨ ê²€ìƒ‰í•˜ì—¬ Recordë“¤ì˜ Hit Flagì„ ì´ˆê¸°í™”
+ *    ·¹ÄÚµå°¡ Á¸ÀçÇÒ ¶§±îÁö ¼øÂ÷ °Ë»öÇÏ¿© RecordµéÀÇ Hit FlagÀ» ÃÊ±âÈ­
  *
  ***********************************************************************/
 
     qmcMemHashElement * sElement;
 
-    // ìµœì´ˆ Recordë¥¼ ì½ëŠ”ë‹¤.
+    // ÃÖÃÊ Record¸¦ ÀÐ´Â´Ù.
     IDE_TEST( qmcMemHash::getFirstSequence( aTempTable,
                                             (void**) & sElement )
               != IDE_SUCCESS );
 
     while ( sElement != NULL )
     {
-        // Hit Flagì„ ì´ˆê¸°í™”í•¨.
+        // Hit FlagÀ» ÃÊ±âÈ­ÇÔ.
         sElement->flag &= ~QMC_ROW_HIT_MASK;
         sElement->flag |= QMC_ROW_HIT_FALSE;
 
@@ -203,9 +203,9 @@ qmcMemHash::insertFirst( qmcdMemHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ìµœì´ˆ Recordë¥¼ ì‚½ìž…í•œë‹¤.
- *    Distinction ì—¬ë¶€ì— ê´€ê³„ ì—†ì´ ìµœì´ˆ recordì‚½ìž…ì€ ì„±ê³µí•˜ë©°,
- *    ìµœì´ˆ Bucketì— ëŒ€í•œ ì´ˆê¸°í™”ê°€ ì´ë£¨ì–´ì§„ë‹¤.
+ *    ÃÖÃÊ Record¸¦ »ðÀÔÇÑ´Ù.
+ *    Distinction ¿©ºÎ¿¡ °ü°è ¾øÀÌ ÃÖÃÊ record»ðÀÔÀº ¼º°øÇÏ¸ç,
+ *    ÃÖÃÊ Bucket¿¡ ´ëÇÑ ÃÊ±âÈ­°¡ ÀÌ·ç¾îÁø´Ù.
  * 
  * Implementation :
  *
@@ -213,43 +213,43 @@ qmcMemHash::insertFirst( qmcdMemHashTemp * aTempTable,
 
     UInt sKey;
 
-    // ì£¼ì–´ì§„ Hash Keyê°’ìœ¼ë¡œ Bucketì˜ ìœ„ì¹˜ë¥¼ ì–»ëŠ”ë‹¤.
+    // ÁÖ¾îÁø Hash Key°ªÀ¸·Î BucketÀÇ À§Ä¡¸¦ ¾ò´Â´Ù.
     sKey = qmcMemHash::getBucketID(aTempTable, aHash);
 
-    // ì‚½ìž… ê´€ë¦¬ë¥¼ ìœ„í•œ ìžë£Œ êµ¬ì¡°ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
-    // Bucketì— ëŒ€í•œ ì—°ê²°ê´€ê³„ë¥¼ ë§Œë“ ë‹¤.
+    // »ðÀÔ °ü¸®¸¦ À§ÇÑ ÀÚ·á ±¸Á¶¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // Bucket¿¡ ´ëÇÑ ¿¬°á°ü°è¸¦ ¸¸µç´Ù.
     aTempTable->mTop = & aTempTable->mBucket[sKey];
     aTempTable->mLast = & aTempTable->mBucket[sKey];
 
-    // í•´ë‹¹ Bucketì— Elementë¥¼ ì—°ê²°í•œë‹¤.
+    // ÇØ´ç Bucket¿¡ Element¸¦ ¿¬°áÇÑ´Ù.
     aTempTable->mLast->element = (qmcMemHashElement*) aElement;
     aTempTable->mLast->element->key = aHash;
 
-    // ì‚½ìž…ì´ ì„±ê³µí•˜ì˜€ìŒì„ í‘œì‹œ
+    // »ðÀÔÀÌ ¼º°øÇÏ¿´À½À» Ç¥½Ã
     *aOutElement = NULL;
 
     //-------------------------------------------------
-    // Distinction ì—¬ë¶€ì— ë”°ë¼ Insertí•  í•¨ìˆ˜ë¥¼ ê²°ì •í•¨
+    // Distinction ¿©ºÎ¿¡ µû¶ó InsertÇÒ ÇÔ¼ö¸¦ °áÁ¤ÇÔ
     //-------------------------------------------------
 
     if ( (aTempTable->flag & QMC_MEM_HASH_DISTINCT_MASK)
          == QMC_MEM_HASH_DISTINCT_TRUE )
     {
-        // Distinctionì¼ ê²½ìš°
+        // DistinctionÀÏ °æ¿ì
         aTempTable->insert = qmcMemHash::insertDist;
 
-        // Distinct Insertì¼ ê²½ìš°ë§Œ ìžë™ í™•ìž¥í•œë‹¤.
+        // Distinct InsertÀÏ °æ¿ì¸¸ ÀÚµ¿ È®ÀåÇÑ´Ù.
         aTempTable->flag &= ~QMC_MEM_HASH_AUTO_EXTEND_MASK;
         aTempTable->flag |= QMC_MEM_HASH_AUTO_EXTEND_ENABLE;
     }
     else
     {
-        // Non-distinctionì¸ ê²½ìš°
+        // Non-distinctionÀÎ °æ¿ì
         aTempTable->insert = qmcMemHash::insertAny;
 
-        // Non-Distinct Insertì¼ ê²½ìš°, ìžë™ í™•ìž¥í•˜ì§€ ì•ŠëŠ”ë‹¤.
-        // ì´ëŠ” Bucketì˜ í™•ìž¥ì´ even-distributionì„ ë³´ìž¥í•  ìˆ˜
-        // ì—†ê¸° ë•Œë¬¸ì´ë‹¤.
+        // Non-Distinct InsertÀÏ °æ¿ì, ÀÚµ¿ È®ÀåÇÏÁö ¾Ê´Â´Ù.
+        // ÀÌ´Â BucketÀÇ È®ÀåÀÌ even-distributionÀ» º¸ÀåÇÒ ¼ö
+        // ¾ø±â ¶§¹®ÀÌ´Ù.
         aTempTable->flag &= ~QMC_MEM_HASH_AUTO_EXTEND_MASK;
         aTempTable->flag |= QMC_MEM_HASH_AUTO_EXTEND_DISABLE;
     }
@@ -268,13 +268,13 @@ qmcMemHash::insertAny( qmcdMemHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Non-Distinct Insertionì„ ìˆ˜í–‰í•œë‹¤.
+ *    Non-Distinct InsertionÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
  *
  ***********************************************************************/
 
-    // Bucketì˜ ìœ„ì¹˜ íšë“
+    // BucketÀÇ À§Ä¡ È¹µæ
     UInt sKey;
     qmcMemHashElement * sElement;
 
@@ -284,31 +284,31 @@ qmcMemHash::insertAny( qmcdMemHashTemp * aTempTable,
     if ( sElement == NULL )
     {
         //----------------------------------
-        // ìƒˆë¡œìš´ Bucketì— í• ë‹¹ë°›ì€ ê²½ìš°
+        // »õ·Î¿î Bucket¿¡ ÇÒ´ç¹ÞÀº °æ¿ì
         //----------------------------------
 
-        // Bucketê°„ì˜ ì—°ê²° ì •ë³´ êµ¬ì¶•
+        // Bucket°£ÀÇ ¿¬°á Á¤º¸ ±¸Ãà
         aTempTable->mLast->next = & aTempTable->mBucket[sKey];
         aTempTable->mLast = & aTempTable->mBucket[sKey];
 
-        // ìƒˆë¡œìš´ Bucketì— element ì—°ê²°
+        // »õ·Î¿î Bucket¿¡ element ¿¬°á
         aTempTable->mLast->element = (qmcMemHashElement *) aElement;
         aTempTable->mLast->element->key = aHash;
     }
     else
     {
         //----------------------------------
-        // ì´ë¯¸ ì‚¬ìš©í•˜ê³  ìžˆëŠ” Bucketì¸ ê²½ìš°
+        // ÀÌ¹Ì »ç¿ëÇÏ°í ÀÖ´Â BucketÀÎ °æ¿ì
         //----------------------------------
 
-        // Bucketë‚´ì˜ elementë“¤ê³¼ ì—°ê²°í•œë‹¤.
+        // Bucket³»ÀÇ elementµé°ú ¿¬°áÇÑ´Ù.
         ((qmcMemHashElement *)aElement)->next =
             aTempTable->mBucket[sKey].element;
         aTempTable->mBucket[sKey].element = (qmcMemHashElement *)aElement;
         aTempTable->mBucket[sKey].element->key = aHash;
     }
 
-    // ì‚½ìž…ì´ ì„±ê³µí–ˆìŒì„ í‘œê¸°
+    // »ðÀÔÀÌ ¼º°øÇßÀ½À» Ç¥±â
     *aOutElement = NULL;
 
     aTempTable->mRecordCnt++;
@@ -325,17 +325,17 @@ qmcMemHash::insertDist( qmcdMemHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Distinction Insertë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *    Distinction Insert¸¦ ¼öÇàÇÑ´Ù.
  *  
  * Implementation :
- *    ë™ì¼í•œ Hash Keyë¥¼ ê°€ì§„ Recordë¥¼ ìš°ì„  ê²€ì‚¬í•˜ê³ ,
- *    Keyê°€ ë™ì¼í•˜ë‹¤ë©´, Data ìžì²´ë„ ë¹„êµí•œë‹¤.
- *    ë‹¤ë¥¸ recordë¼ë©´ ì‚½ìž…í•˜ê³ ,  ê°™ì€ Recordë¼ë©´ ì‚½ìž… ì‹¤íŒ¨ì˜ ì›ì¸ì´ ëœ
- *    Recordë¥¼ ëŒë ¤ì¤€ë‹¤.
+ *    µ¿ÀÏÇÑ Hash Key¸¦ °¡Áø Record¸¦ ¿ì¼± °Ë»çÇÏ°í,
+ *    Key°¡ µ¿ÀÏÇÏ´Ù¸é, Data ÀÚÃ¼µµ ºñ±³ÇÑ´Ù.
+ *    ´Ù¸¥ record¶ó¸é »ðÀÔÇÏ°í,  °°Àº Record¶ó¸é »ðÀÔ ½ÇÆÐÀÇ ¿øÀÎÀÌ µÈ
+ *    Record¸¦ µ¹·ÁÁØ´Ù.
  *
  ***********************************************************************/
 
-    // Bucket ìœ„ì¹˜ íšë“
+    // Bucket À§Ä¡ È¹µæ
     UInt sKey;
     qmcMemHashElement * sElement;
     qmcMemHashElement * sLastElement = NULL;
@@ -347,7 +347,7 @@ qmcMemHash::insertDist( qmcdMemHashTemp * aTempTable,
     if ( sElement == NULL )
     {
         //--------------------------------------------
-        // Bucketì´ ë¹„ì–´ ìžˆëŠ” ê²½ìš°, Recordë¥¼ ì‚½ìž…í•œë‹¤.
+        // BucketÀÌ ºñ¾î ÀÖ´Â °æ¿ì, Record¸¦ »ðÀÔÇÑ´Ù.
         //--------------------------------------------
 
         aTempTable->mLast->next = & aTempTable->mBucket[sKey];
@@ -356,32 +356,32 @@ qmcMemHash::insertDist( qmcdMemHashTemp * aTempTable,
         aTempTable->mLast->element->key = aHash;
         *aOutElement = NULL;
 
-        // Record ê°œìˆ˜ ì¦ê°€
+        // Record °³¼ö Áõ°¡
         aTempTable->mRecordCnt++;
     }
     else
     {
         //--------------------------------------------
-        // Bucketì´ ë¹„ì–´ ìžˆì§€ ì•Šì€ ê²½ìš°
-        // 1. Hash Key ê°€ ê°™ì€ì§€ ë¹„êµ
-        // 2. Hashing Columnì´ ë™ì¼í•œ ì§€ë¥¼ ë¹„êµ
+        // BucketÀÌ ºñ¾î ÀÖÁö ¾ÊÀº °æ¿ì
+        // 1. Hash Key °¡ °°ÀºÁö ºñ±³
+        // 2. Hashing ColumnÀÌ µ¿ÀÏÇÑ Áö¸¦ ºñ±³
         //--------------------------------------------
 
         sResult = 1;
 
-        // Bucketë‚´ì˜ ëª¨ë“  Record ì— ëŒ€í•˜ì—¬ ê²€ì‚¬
+        // Bucket³»ÀÇ ¸ðµç Record ¿¡ ´ëÇÏ¿© °Ë»ç
         while ( sElement != NULL )
         {
             if ( sElement->key == aHash )
             {
-                // Hash Keyê°€ ê°™ì€ ê²½ìš°, Hashing Columnì„ ë¹„êµ
+                // Hash Key°¡ °°Àº °æ¿ì, Hashing ColumnÀ» ºñ±³
                 sResult = qmcMemHash::compareRow( aTempTable, 
                                                   sElement, 
                                                   aElement );
                 if ( sResult == 0 )
                 {
                     //-----------------------
-                    // Columnì˜ Dataê°€ ê°™ë‹¤ë©´
+                    // ColumnÀÇ Data°¡ °°´Ù¸é
                     //-----------------------
                     break;
                 }
@@ -397,33 +397,33 @@ qmcMemHash::insertDist( qmcdMemHashTemp * aTempTable,
 
         if ( sResult == 0 )
         {
-            // ë™ì¼í•œ Recordê°€ ì¡´ìž¬í•˜ëŠ” ê²½ìš°,
-            // ì‚½ìž… ì‹¤íŒ¨ ì›ì¸ì´ ëœ recordë¥¼ ë¦¬í„´
+            // µ¿ÀÏÇÑ Record°¡ Á¸ÀçÇÏ´Â °æ¿ì,
+            // »ðÀÔ ½ÇÆÐ ¿øÀÎÀÌ µÈ record¸¦ ¸®ÅÏ
             *aOutElement = sElement;
         }
         else
         {
-            // ë™ì¼í•œ Recordê°€ ì—†ëŠ” ê²½ìš°, recordë¥¼ ì‚½ìž…
+            // µ¿ÀÏÇÑ Record°¡ ¾ø´Â °æ¿ì, record¸¦ »ðÀÔ
             sLastElement->next = (qmcMemHashElement *) aElement;
             sLastElement->next->key = aHash;
             *aOutElement = NULL;
 
-            // Record ê°œìˆ˜ ì¦ê°€
+            // Record °³¼ö Áõ°¡
             aTempTable->mRecordCnt++;
         }
     }
 
-    // [ìžë™ í™•ìž¥ ì—¬ë¶€ ê²€ì‚¬.]
-    // ë‹¤ìŒ ì¡°ê±´ì„ ê²€ì‚¬.
-    // 1. Recordê°€ ì§€ì •ëœ Bucketë³´ë‹¤ íŠ¹ì • ë¹„ìœ¨ ì´ìƒë³´ë‹¤ ë§Žì€ ê²½ìš°
-    // 2. Bucketì„ ì¦ê°€ì‹œí‚¬ ìˆ˜ ìžˆëŠ” ê²½ìš°
+    // [ÀÚµ¿ È®Àå ¿©ºÎ °Ë»ç.]
+    // ´ÙÀ½ Á¶°ÇÀ» °Ë»ç.
+    // 1. Record°¡ ÁöÁ¤µÈ Bucketº¸´Ù Æ¯Á¤ ºñÀ² ÀÌ»óº¸´Ù ¸¹Àº °æ¿ì
+    // 2. BucketÀ» Áõ°¡½ÃÅ³ ¼ö ÀÖ´Â °æ¿ì
     if ( ( aTempTable->mRecordCnt >
            (aTempTable->mBucketCnt * QMC_MEM_HASH_AUTO_EXTEND_CONDITION) )
          &&
          ( ( aTempTable->flag & QMC_MEM_HASH_AUTO_EXTEND_MASK )
            == QMC_MEM_HASH_AUTO_EXTEND_ENABLE ) )
     {
-        // Bucketì˜ ìžë™ í™•ìž¥ ìˆ˜í–‰
+        // BucketÀÇ ÀÚµ¿ È®Àå ¼öÇà
         IDE_TEST( extendBucket( aTempTable ) != IDE_SUCCESS );
     }
     else
@@ -445,17 +445,17 @@ qmcMemHash::getFirstSequence( qmcdMemHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ìˆœì°¨ ê²€ìƒ‰ì„ ìˆ˜í–‰
+ *    ¼øÂ÷ °Ë»öÀ» ¼öÇà
  *
  * Implementation :
- *    ìµœì´ˆ Bucketì˜ ìœ„ì¹˜ë¡œ ì´ë™í•˜ì—¬ Recordë¥¼ ë¦¬í„´í•œë‹¤.
+ *    ÃÖÃÊ BucketÀÇ À§Ä¡·Î ÀÌµ¿ÇÏ¿© Record¸¦ ¸®ÅÏÇÑ´Ù.
  *
  ***********************************************************************/
 
     if ( aTempTable->mTop == NULL )
     {
         //--------------------------
-        // ìµœì´ˆ Bucketì´ ì—†ëŠ” ê²½ìš°
+        // ÃÖÃÊ BucketÀÌ ¾ø´Â °æ¿ì
         //--------------------------
         
         *aElement = NULL;
@@ -464,16 +464,16 @@ qmcMemHash::getFirstSequence( qmcdMemHashTemp * aTempTable,
     else
     {
         //--------------------------
-        // ìµœì´ˆ Bucketì´ ìžˆëŠ” ê²½ìš°
+        // ÃÖÃÊ BucketÀÌ ÀÖ´Â °æ¿ì
         //--------------------------
 
-        // Bucketë‚´ì˜ ìµœì´ˆ Recordë¥¼ ë¦¬í„´
+        // Bucket³»ÀÇ ÃÖÃÊ Record¸¦ ¸®ÅÏ
         *aElement = aTempTable->mTop->element;
 
-        // í˜„ìž¬ Bucketì„ ì„¤ì •
+        // ÇöÀç BucketÀ» ¼³Á¤
         aTempTable->mCurrent = aTempTable->mTop;
 
-        // í˜„ìž¬ Bucketë‚´ì˜ ë‹¤ìŒ recordë¥¼ ê²°ì •
+        // ÇöÀç Bucket³»ÀÇ ´ÙÀ½ record¸¦ °áÁ¤
         aTempTable->mNext = aTempTable->mTop->element->next;
     }
 
@@ -487,22 +487,22 @@ qmcMemHash::getNextSequence( qmcdMemHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ë‹¤ìŒ ìˆœì°¨ ê²€ìƒ‰ì„ ìˆ˜í–‰
+ *    ´ÙÀ½ ¼øÂ÷ °Ë»öÀ» ¼öÇà
  *
  * Implementation :
- *    í•´ë‹¹ Recordê°€ ì—†ë‹¤ë©´, ë‹¤ìŒ Bucketì—ì„œ Recordë¥¼ ì¶”ì¶œí•œë‹¤.
+ *    ÇØ´ç Record°¡ ¾ø´Ù¸é, ´ÙÀ½ Bucket¿¡¼­ Record¸¦ ÃßÃâÇÑ´Ù.
  *
  ***********************************************************************/
 
     qmcMemHashElement * sElement;
 
-    // ë‹¤ìŒ Record ì •ë³´ íšë“
+    // ´ÙÀ½ Record Á¤º¸ È¹µæ
     sElement = aTempTable->mNext;
     
     if ( sElement != NULL )
     {
         //-----------------------------------
-        // ë‹¤ìŒ Recordê°€ ì¡´ìž¬í•˜ëŠ” ê²½ìš°
+        // ´ÙÀ½ Record°¡ Á¸ÀçÇÏ´Â °æ¿ì
         //-----------------------------------
         
         *aElement = sElement;
@@ -511,29 +511,29 @@ qmcMemHash::getNextSequence( qmcdMemHashTemp * aTempTable,
     else
     {
         //-----------------------------------
-        // ë‹¤ìŒ Recordê°€ ì—†ëŠ” ê²½ìš°
+        // ´ÙÀ½ Record°¡ ¾ø´Â °æ¿ì
         //-----------------------------------
 
-        // ë‹¤ìŒ Bucketì„ íšë“
+        // ´ÙÀ½ BucketÀ» È¹µæ
         aTempTable->mCurrent = aTempTable->mCurrent->next;
         if ( aTempTable->mCurrent != NULL )
         {
-            // ë‹¤ìŒ Bucketì´ ì¡´ìž¬í•˜ëŠ” ê²½ìš°
+            // ´ÙÀ½ BucketÀÌ Á¸ÀçÇÏ´Â °æ¿ì
 
-            // í•´ë‹¹ Bucketë‚´ì˜ recordë¥¼ ë¦¬í„´
+            // ÇØ´ç Bucket³»ÀÇ record¸¦ ¸®ÅÏ
             sElement = aTempTable->mCurrent->element;
             *aElement = sElement;
 
-            // ë‹¤ìŒ Recordë¥¼ ì§€ì •
+            // ´ÙÀ½ Record¸¦ ÁöÁ¤
             aTempTable->mNext = sElement->next;
         }
         else
         {
-            // ë‹¤ìŒ Bucketì´ ì—†ëŠ” ê²½ìš°
-            // ë” ì´ìƒ ë°ì´í„°ê°€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // ´ÙÀ½ BucketÀÌ ¾ø´Â °æ¿ì
+            // ´õ ÀÌ»ó µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
             *aElement = NULL;
 
-            // ë‹¤ìŒ Record ì—†ìŒì„ ì„¤ì •
+            // ´ÙÀ½ Record ¾øÀ½À» ¼³Á¤
             aTempTable->mNext = NULL;
         }
     }
@@ -550,15 +550,15 @@ qmcMemHash::getFirstRange( qmcdMemHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *     ì£¼ì–´ì§„ Key ê°’ê³¼ Filterë¥¼ ì´ìš©í•˜ì—¬ Range ê²€ìƒ‰ì„ í•œë‹¤.
+ *     ÁÖ¾îÁø Key °ª°ú Filter¸¦ ÀÌ¿ëÇÏ¿© Range °Ë»öÀ» ÇÑ´Ù.
  *
  * Implementation :
- *     Keyê°’ìœ¼ë¡œ Bucketì„ íšë“í•˜ê³ ,
- *     Keyê°’ì´ ê°™ê³  ì£¼ì–´ì§„ Filterë¥¼ ë§Œì¡±í•˜ëŠ” recordë¥¼ íšë“í•œë‹¤.
+ *     Key°ªÀ¸·Î BucketÀ» È¹µæÇÏ°í,
+ *     Key°ªÀÌ °°°í ÁÖ¾îÁø Filter¸¦ ¸¸Á·ÇÏ´Â record¸¦ È¹µæÇÑ´Ù.
  *     
  ***********************************************************************/
 
-    // Bucketì˜ ìœ„ì¹˜ íšë“
+    // BucketÀÇ À§Ä¡ È¹µæ
     UInt sKey;
     
     qmcMemHashElement * sElement;
@@ -566,18 +566,18 @@ qmcMemHash::getFirstRange( qmcdMemHashTemp * aTempTable,
 
     sKey = getBucketID(aTempTable, aHash);
 
-    // ë‹¤ìŒ Range ê²€ìƒ‰ì„ ìœ„í•´ Keyê°’ê³¼ Filterë¥¼ ì €ìž¥
+    // ´ÙÀ½ Range °Ë»öÀ» À§ÇØ Key°ª°ú Filter¸¦ ÀúÀå
     aTempTable->mKey = aHash;
     aTempTable->mFilter = aFilter;
 
     sElement = aTempTable->mBucket[sKey].element;
 
-    // Bucketë‚´ì˜ recordë“¤ì„ ê²€ì‚¬
+    // Bucket³»ÀÇ recordµéÀ» °Ë»ç
     while ( sElement != NULL )
     {
         if ( sElement->key == aHash )
         {
-            // ë™ì¼í•œ Keyê°’ì„ ê°–ëŠ” ê²½ìš°, Filterì¡°ê±´ë„ ê²€ì‚¬.
+            // µ¿ÀÏÇÑ Key°ªÀ» °®´Â °æ¿ì, FilterÁ¶°Çµµ °Ë»ç.
             IDE_TEST( qmcMemHash::judgeFilter( aTempTable,
                                                sElement,
                                                & sJudge)
@@ -585,12 +585,12 @@ qmcMemHash::getFirstRange( qmcdMemHashTemp * aTempTable,
             
             if ( sJudge == ID_TRUE )
             {
-                // ì›í•˜ëŠ” recordë¥¼ ì°¾ì€ ê²½ìš°
+                // ¿øÇÏ´Â record¸¦ Ã£Àº °æ¿ì
                 
                 // To Fix PR-8645
-                // Hash Key ê°’ì„ ê²€ì‚¬í•˜ê¸° ìœ„í•œ Filterì—ì„œ Accessê°’ì„
-                // ì¦ê°€í•˜ì˜€ê³ , ì´ í›„ Execution Nodeì—ì„œ ì´ë¥¼ ë‹¤ì‹œ ì¦ê°€ì‹œí‚´.
-                // ë”°ë¼ì„œ, ë§ˆì§€ë§‰ í•œë²ˆì˜ ê²€ì‚¬ì— ëŒ€í•´ì„œëŠ” accessíšŒìˆ˜ë¥¼ ê°ì†Œì‹œí‚´
+                // Hash Key °ªÀ» °Ë»çÇÏ±â À§ÇÑ Filter¿¡¼­ Access°ªÀ»
+                // Áõ°¡ÇÏ¿´°í, ÀÌ ÈÄ Execution Node¿¡¼­ ÀÌ¸¦ ´Ù½Ã Áõ°¡½ÃÅ´.
+                // µû¶ó¼­, ¸¶Áö¸· ÇÑ¹øÀÇ °Ë»ç¿¡ ´ëÇØ¼­´Â accessÈ¸¼ö¸¦ °¨¼Ò½ÃÅ´
                 aTempTable->mRecordNode->dstTuple->modify--;
                 break;
             }
@@ -605,18 +605,18 @@ qmcMemHash::getFirstRange( qmcdMemHashTemp * aTempTable,
 
     if ( sJudge == ID_TRUE )
     {
-        // ì›í•˜ëŠ” Recordë¥¼ ì°¾ì€ ê²½ìš°
+        // ¿øÇÏ´Â Record¸¦ Ã£Àº °æ¿ì
         *aElement = (void*)sElement;
 
-        // ë‹¤ìŒ ê²€ìƒ‰ì„ ìœ„í•˜ì—¬ ë‹¤ìŒ ìœ„ì¹˜ë¥¼ ì €ìž¥
+        // ´ÙÀ½ °Ë»öÀ» À§ÇÏ¿© ´ÙÀ½ À§Ä¡¸¦ ÀúÀå
         aTempTable->mNext = sElement->next;
     }
     else
     {
-        // ì›í•˜ëŠ” Recordë¥¼ ì°¾ì§€ ëª»í•œ ê²½ìš°
+        // ¿øÇÏ´Â Record¸¦ Ã£Áö ¸øÇÑ °æ¿ì
         *aElement = NULL;
 
-        // ë‹¤ìŒ Range ê²€ìƒ‰ì„ í•  ìˆ˜ ì—†ìŒì„ ì§€ì •
+        // ´ÙÀ½ Range °Ë»öÀ» ÇÒ ¼ö ¾øÀ½À» ÁöÁ¤
         aTempTable->mNext = NULL;
     }
 
@@ -634,21 +634,21 @@ qmcMemHash::getNextRange( qmcdMemHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ë‹¤ìŒ Range ê²€ìƒ‰ì„ ìˆ˜í–‰í•œë‹¤.
+ *    ´ÙÀ½ Range °Ë»öÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *    ì´ë¯¸ ì €ìž¥ëœ ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬, Bucketë‚´ì˜ ë‹¤ìŒ recordë¶€í„° filter
- *    ì¡°ê±´ì„ ê²€ì‚¬í•˜ì—¬ recordë¥¼ ê²€ìƒ‰í•œë‹¤.
+ *    ÀÌ¹Ì ÀúÀåµÈ Á¤º¸¸¦ ÀÌ¿ëÇÏ¿©, Bucket³»ÀÇ ´ÙÀ½ recordºÎÅÍ filter
+ *    Á¶°ÇÀ» °Ë»çÇÏ¿© record¸¦ °Ë»öÇÑ´Ù.
  *
  ***********************************************************************/
 
     qmcMemHashElement * sElement;
     idBool sJudge = ID_FALSE;
 
-    // ë™ì¼ Bucketë‚´ì—ì„œ ì´ì „ì˜ ê²€ìƒ‰ëœ recordì˜ ë‹¤ìŒ recordë¥¼ íšë“
+    // µ¿ÀÏ Bucket³»¿¡¼­ ÀÌÀüÀÇ °Ë»öµÈ recordÀÇ ´ÙÀ½ record¸¦ È¹µæ
     sElement = aTempTable->mNext;
 
-    // Bucketë‚´ì— recordê°€ ì—†ì„ ë•Œê¹Œì§€ ë°˜ë³µ
+    // Bucket³»¿¡ record°¡ ¾øÀ» ¶§±îÁö ¹Ýº¹
     while ( sElement != NULL )
     {
         if ( sElement->key == aTempTable->mKey )
@@ -660,12 +660,12 @@ qmcMemHash::getNextRange( qmcdMemHashTemp * aTempTable,
             
             if ( sJudge == ID_TRUE )
             {
-                // keyê°’ì´ ë™ì¼í•˜ê³  ì¡°ê±´ì„ ë§Œì¡±í•  ê²½ìš°
+                // key°ªÀÌ µ¿ÀÏÇÏ°í Á¶°ÇÀ» ¸¸Á·ÇÒ °æ¿ì
                 
                 // To Fix PR-8645
-                // Hash Key ê°’ì„ ê²€ì‚¬í•˜ê¸° ìœ„í•œ Filterì—ì„œ Accessê°’ì„
-                // ì¦ê°€í•˜ì˜€ê³ , ì´ í›„ Execution Nodeì—ì„œ ì´ë¥¼ ë‹¤ì‹œ ì¦ê°€ì‹œí‚´.
-                // ë”°ë¼ì„œ, ë§ˆì§€ë§‰ í•œë²ˆì˜ ê²€ì‚¬ì— ëŒ€í•´ì„œëŠ” accessíšŒìˆ˜ë¥¼ ê°ì†Œì‹œí‚´
+                // Hash Key °ªÀ» °Ë»çÇÏ±â À§ÇÑ Filter¿¡¼­ Access°ªÀ»
+                // Áõ°¡ÇÏ¿´°í, ÀÌ ÈÄ Execution Node¿¡¼­ ÀÌ¸¦ ´Ù½Ã Áõ°¡½ÃÅ´.
+                // µû¶ó¼­, ¸¶Áö¸· ÇÑ¹øÀÇ °Ë»ç¿¡ ´ëÇØ¼­´Â accessÈ¸¼ö¸¦ °¨¼Ò½ÃÅ´
                 aTempTable->mRecordNode->dstTuple->modify--;
                 
                 break;
@@ -681,15 +681,15 @@ qmcMemHash::getNextRange( qmcdMemHashTemp * aTempTable,
 
     if ( sJudge == ID_TRUE )
     {
-        // ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” recordë¥¼ ê²€ìƒ‰í•œ ê²½ìš°
+        // Á¶°ÇÀ» ¸¸Á·ÇÏ´Â record¸¦ °Ë»öÇÑ °æ¿ì
         *aElement = (void*)sElement;
 
-        // ë‹¤ìŒ ê²€ìƒ‰ì„ ìœ„í•˜ì—¬ ë‹¤ìŒ record ìœ„ì¹˜ë¥¼ ì €ìž¥
+        // ´ÙÀ½ °Ë»öÀ» À§ÇÏ¿© ´ÙÀ½ record À§Ä¡¸¦ ÀúÀå
         aTempTable->mNext = sElement->next;
     }
     else
     {
-        // ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” recordê°€ ì—†ëŠ” ê²½ìš°
+        // Á¶°ÇÀ» ¸¸Á·ÇÏ´Â record°¡ ¾ø´Â °æ¿ì
         *aElement = NULL;
         aTempTable->mNext = NULL;
     }
@@ -710,17 +710,17 @@ qmcMemHash::getSameRowAndNonHit( qmcdMemHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    í•´ë‹¹ Rowì™€ ë™ì¼í•œ Hashing Columnì˜ ê°’ì„ ê°€ì§€ë©´ì„œ,
- *    Hitë˜ì§€ ì•Šì€ recordë¥¼ ê²€ìƒ‰í•œë‹¤.
- *    Set Intersectoinì—ì„œ ì‚¬ìš©í•˜ë©°, í•œ ê±´ë§Œì´ ê²€ìƒ‰ëœë‹¤.
+ *    ÇØ´ç Row¿Í µ¿ÀÏÇÑ Hashing ColumnÀÇ °ªÀ» °¡Áö¸é¼­,
+ *    HitµÇÁö ¾ÊÀº record¸¦ °Ë»öÇÑ´Ù.
+ *    Set Intersectoin¿¡¼­ »ç¿ëÇÏ¸ç, ÇÑ °Ç¸¸ÀÌ °Ë»öµÈ´Ù.
  *
  * Implementation :
- *    ì£¼ì–´ì§„ Keyê°’ìœ¼ë¡œë¶€í„° Bucketì„ ì„ íƒí•œë‹¤.
- *    ì£¼ì–´ì§„ ëª¨ë“  recordì— ëŒ€í•˜ì—¬ ë‹¤ìŒê³¼ ê°™ì€ ê²€ì‚¬ë¥¼ ìˆ˜í–‰í•˜ì—¬
- *    ëª¨ë“  ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” recordë¥¼ ì°¾ëŠ”ë‹¤.
- *        - Key ê°€ ë™ì¼í•¨.
+ *    ÁÖ¾îÁø Key°ªÀ¸·ÎºÎÅÍ BucketÀ» ¼±ÅÃÇÑ´Ù.
+ *    ÁÖ¾îÁø ¸ðµç record¿¡ ´ëÇÏ¿© ´ÙÀ½°ú °°Àº °Ë»ç¸¦ ¼öÇàÇÏ¿©
+ *    ¸ðµç Á¶°ÇÀ» ¸¸Á·ÇÏ´Â record¸¦ Ã£´Â´Ù.
+ *        - Key °¡ µ¿ÀÏÇÔ.
  *        - Non-Hit
- *        - Hash Columnì˜ ê°’ì´ ë™ì¼í•¨.
+ *        - Hash ColumnÀÇ °ªÀÌ µ¿ÀÏÇÔ.
  *
  ***********************************************************************/
 
@@ -735,11 +735,11 @@ qmcMemHash::getSameRowAndNonHit( qmcdMemHashTemp * aTempTable,
     while ( sElement != NULL )
     {
         //------------------------------------
-        // Keyê°€ ê°™ê³ , Hitë˜ì§€ ì•Šê³ 
-        // Dataê°€ ë™ì¼í•œ Recordë¥¼ ì°¾ëŠ”ë‹¤.
+        // Key°¡ °°°í, HitµÇÁö ¾Ê°í
+        // Data°¡ µ¿ÀÏÇÑ Record¸¦ Ã£´Â´Ù.
         //------------------------------------
         
-        // Hash Keyê°’ ë° Hit Flag ê²€ì‚¬.
+        // Hash Key°ª ¹× Hit Flag °Ë»ç.
         if ( (sElement->key == aHash) &&
              ( (sElement->flag & QMC_ROW_HIT_MASK) == QMC_ROW_HIT_FALSE ) )
         {  
@@ -748,7 +748,7 @@ qmcMemHash::getSameRowAndNonHit( qmcdMemHashTemp * aTempTable,
                                   (void*) sElement );
             if ( sResult == 0 )
             {
-                // ë™ì¼í•œ Recordì¸ ê²½ìš°
+                // µ¿ÀÏÇÑ RecordÀÎ °æ¿ì
                 break;
             }
         }
@@ -768,10 +768,10 @@ qmcMemHash::getFirstHit( qmcdMemHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ìˆœì°¨ ê²€ìƒ‰í•˜ì—¬ Hitëœ Recordë¥¼ ë¦¬í„´í•œë‹¤.
+ *    ¼øÂ÷ °Ë»öÇÏ¿© HitµÈ Record¸¦ ¸®ÅÏÇÑ´Ù.
  *
  * Implementation :
- *    Hit ëœ recordë¥¼ ì°¾ì„ ë•Œê¹Œì§€ ë°˜ë³µì ìœ¼ë¡œ ìˆ˜í–‰í•œë‹¤.
+ *    Hit µÈ record¸¦ Ã£À» ¶§±îÁö ¹Ýº¹ÀûÀ¸·Î ¼öÇàÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -784,12 +784,12 @@ qmcMemHash::getFirstHit( qmcdMemHashTemp * aTempTable,
         sElement = (qmcMemHashElement*) *aElement;
         if ( (sElement->flag & QMC_ROW_HIT_MASK) == QMC_ROW_HIT_TRUE )
         {
-            // ì›í•˜ëŠ” Recordë¥¼ ì°¾ìŒ
+            // ¿øÇÏ´Â Record¸¦ Ã£À½
             break;
         }
         else
         {
-            // ë‹¤ìŒ recordë¥¼ ê²€ìƒ‰
+            // ´ÙÀ½ record¸¦ °Ë»ö
             IDE_TEST( getNextSequence( aTempTable, aElement ) != IDE_SUCCESS );
         }
     }
@@ -808,10 +808,10 @@ qmcMemHash::getNextHit( qmcdMemHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ìˆœì°¨ ê²€ìƒ‰í•˜ì—¬ Hitëœ Recordë¥¼ ë¦¬í„´í•œë‹¤.
+ *    ¼øÂ÷ °Ë»öÇÏ¿© HitµÈ Record¸¦ ¸®ÅÏÇÑ´Ù.
  *
  * Implementation :
- *    Hit ëœ recordë¥¼ ì°¾ì„ ë•Œê¹Œì§€ ë°˜ë³µì ìœ¼ë¡œ ìˆ˜í–‰í•œë‹¤.
+ *    Hit µÈ record¸¦ Ã£À» ¶§±îÁö ¹Ýº¹ÀûÀ¸·Î ¼öÇàÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -824,12 +824,12 @@ qmcMemHash::getNextHit( qmcdMemHashTemp * aTempTable,
         sElement = (qmcMemHashElement*) *aElement;
         if ( (sElement->flag & QMC_ROW_HIT_MASK) == QMC_ROW_HIT_TRUE )
         {
-            // ì›í•˜ëŠ” Recordë¥¼ ì°¾ìŒ
+            // ¿øÇÏ´Â Record¸¦ Ã£À½
             break;
         }
         else
         {
-            // ë‹¤ìŒ recordë¥¼ ê²€ìƒ‰
+            // ´ÙÀ½ record¸¦ °Ë»ö
             IDE_TEST( getNextSequence( aTempTable, aElement ) != IDE_SUCCESS );
         }
     }
@@ -848,10 +848,10 @@ qmcMemHash::getFirstNonHit( qmcdMemHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ìˆœì°¨ ê²€ìƒ‰í•˜ì—¬ NonHitëœ Recordë¥¼ ë¦¬í„´í•œë‹¤.
+ *    ¼øÂ÷ °Ë»öÇÏ¿© NonHitµÈ Record¸¦ ¸®ÅÏÇÑ´Ù.
  *
  * Implementation :
- *    NonHit ëœ recordë¥¼ ì°¾ì„ ë•Œê¹Œì§€ ë°˜ë³µì ìœ¼ë¡œ ìˆ˜í–‰í•œë‹¤.
+ *    NonHit µÈ record¸¦ Ã£À» ¶§±îÁö ¹Ýº¹ÀûÀ¸·Î ¼öÇàÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -864,12 +864,12 @@ qmcMemHash::getFirstNonHit( qmcdMemHashTemp * aTempTable,
         sElement = (qmcMemHashElement*) *aElement;
         if ( (sElement->flag & QMC_ROW_HIT_MASK) == QMC_ROW_HIT_FALSE )
         {
-            // ì›í•˜ëŠ” Recordë¥¼ ì°¾ìŒ
+            // ¿øÇÏ´Â Record¸¦ Ã£À½
             break;
         }
         else
         {
-            // ë‹¤ìŒ recordë¥¼ ê²€ìƒ‰
+            // ´ÙÀ½ record¸¦ °Ë»ö
             IDE_TEST( getNextSequence( aTempTable, aElement ) != IDE_SUCCESS );
         }
     }
@@ -888,10 +888,10 @@ qmcMemHash::getNextNonHit( qmcdMemHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ìˆœì°¨ ê²€ìƒ‰í•˜ì—¬ NonHitëœ Recordë¥¼ ë¦¬í„´í•œë‹¤.
+ *    ¼øÂ÷ °Ë»öÇÏ¿© NonHitµÈ Record¸¦ ¸®ÅÏÇÑ´Ù.
  *
  * Implementation :
- *    NonHit ëœ recordë¥¼ ì°¾ì„ ë•Œê¹Œì§€ ë°˜ë³µì ìœ¼ë¡œ ìˆ˜í–‰í•œë‹¤.
+ *    NonHit µÈ record¸¦ Ã£À» ¶§±îÁö ¹Ýº¹ÀûÀ¸·Î ¼öÇàÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -904,12 +904,12 @@ qmcMemHash::getNextNonHit( qmcdMemHashTemp * aTempTable,
         sElement = (qmcMemHashElement*) *aElement;
         if ( (sElement->flag & QMC_ROW_HIT_MASK) == QMC_ROW_HIT_FALSE )
         {
-            // ì›í•˜ëŠ” Recordë¥¼ ì°¾ìŒ
+            // ¿øÇÏ´Â Record¸¦ Ã£À½
             break;
         }
         else
         {
-            // ë‹¤ìŒ recordë¥¼ ê²€ìƒ‰
+            // ´ÙÀ½ record¸¦ °Ë»ö
             IDE_TEST( getNextSequence( aTempTable, aElement ) != IDE_SUCCESS );
         }
     }
@@ -929,7 +929,7 @@ qmcMemHash::getDisplayInfo( qmcdMemHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ì‚½ìž…ë˜ì–´ ìžˆëŠ” Record ê°œìˆ˜ë¥¼ íšë“í•œë‹¤.
+ *    »ðÀÔµÇ¾î ÀÖ´Â Record °³¼ö¸¦ È¹µæÇÑ´Ù.
  *
  * Implementation :
  *
@@ -948,7 +948,7 @@ qmcMemHash::getBucketID( qmcdMemHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ì£¼ì–´ì§„ Hash Keyë¡œë¶€í„° Bucket IDë¥¼ ì–»ëŠ”ë‹¤.
+ *    ÁÖ¾îÁø Hash Key·ÎºÎÅÍ Bucket ID¸¦ ¾ò´Â´Ù.
  *
  * Implementation :
  *
@@ -971,8 +971,8 @@ qmcMemHash::compareRow ( qmcdMemHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ì €ìž¥ëœ Recordì˜ Hashing Columnì˜ ê°’ì„ ë¹„êµí•˜ì—¬
- *    ê°’ì´ ë™ì¼í•œ ì§€ ë‹¤ë¥¸ ì§€ë¥¼ Returní•¨.
+ *    ÀúÀåµÈ RecordÀÇ Hashing ColumnÀÇ °ªÀ» ºñ±³ÇÏ¿©
+ *    °ªÀÌ µ¿ÀÏÇÑ Áö ´Ù¸¥ Áö¸¦ ReturnÇÔ.
  *
  * Implementation :
  *
@@ -988,7 +988,7 @@ qmcMemHash::compareRow ( qmcdMemHashTemp * aTempTable,
          sNode != NULL; 
          sNode = sNode->next )
     {
-        // ë‘ Recordì˜ Hashing Columnì˜ ê°’ì„ ë¹„êµ
+        // µÎ RecordÀÇ Hashing ColumnÀÇ °ªÀ» ºñ±³
         sValueInfo1.value  = sNode->func.getRow(sNode, aElem1);
         sValueInfo1.column = (const mtcColumn *)sNode->func.compareColumn;
         sValueInfo1.flag   = MTD_OFFSET_USE;
@@ -1001,7 +1001,7 @@ qmcMemHash::compareRow ( qmcdMemHashTemp * aTempTable,
                                        &sValueInfo2 );
         if( sResult != 0)
         {
-            // ì„œë¡œ ë‹¤ë¥¸ ê²½ìš°, ë” ì´ìƒ ë¹„êµë¥¼ í•˜ì§€ ì•ŠìŒ.
+            // ¼­·Î ´Ù¸¥ °æ¿ì, ´õ ÀÌ»ó ºñ±³¸¦ ÇÏÁö ¾ÊÀ½.
             break;
         }
     }
@@ -1018,23 +1018,23 @@ qmcMemHash::judgeFilter ( qmcdMemHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *     ì£¼ì–´ì§„ Recordê°€ Filter ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” ì§€ ê²€ì‚¬.
+ *     ÁÖ¾îÁø Record°¡ Filter Á¶°ÇÀ» ¸¸Á·ÇÏ´Â Áö °Ë»ç.
  *
  * Implementation :
- *     Filterì— ì ìš©í•  ìˆ˜ ìžˆë„ë¡ í•´ë‹¹ Hash Columnë“¤ì„ ë³µì›ì‹œí‚¤ê³ 
- *     Filterë¥¼ ì ìš©í•œë‹¤.  ì˜ˆë¥¼ ë“¤ì–´ memory columnì˜ ê²½ìš° í•´ë‹¹ recordì˜
- *     pointerê°€ ì €ìž¥ë˜ì–´ ìžˆì–´ ì´ pointerë¥¼ tuple setì— ë³µì›ì‹œì¼œì•¼ í•œë‹¤.
+ *     Filter¿¡ Àû¿ëÇÒ ¼ö ÀÖµµ·Ï ÇØ´ç Hash ColumnµéÀ» º¹¿ø½ÃÅ°°í
+ *     Filter¸¦ Àû¿ëÇÑ´Ù.  ¿¹¸¦ µé¾î memory columnÀÇ °æ¿ì ÇØ´ç recordÀÇ
+ *     pointer°¡ ÀúÀåµÇ¾î ÀÖ¾î ÀÌ pointer¸¦ tuple set¿¡ º¹¿ø½ÃÄÑ¾ß ÇÑ´Ù.
  *
  ***********************************************************************/
 
     qmdMtrNode * sNode;
 
     //------------------------------------
-    // Hashing ëŒ€ìƒ columnë“¤ì„ ë³µì›ì‹œí‚´
+    // Hashing ´ë»ó columnµéÀ» º¹¿ø½ÃÅ´
     //------------------------------------
 
     // To Fix PR-8024
-    // í˜„ìž¬ ì„ íƒëœ Rowë¥¼ Tuple Setì— ë“±ë¡ì‹œì¼œë‘ê³  ì²˜ë¦¬í•´ì•¼ í•¨
+    // ÇöÀç ¼±ÅÃµÈ Row¸¦ Tuple Set¿¡ µî·Ï½ÃÄÑµÎ°í Ã³¸®ÇØ¾ß ÇÔ
     aTempTable->mHashNode->dstTuple->row = aElem;
     
     for ( sNode = aTempTable->mHashNode; 
@@ -1046,7 +1046,7 @@ qmcMemHash::judgeFilter ( qmcdMemHashTemp * aTempTable,
     }
 
     //------------------------------------
-    // Filter ìˆ˜í–‰ ê²°ê³¼ë¥¼ íšë“
+    // Filter ¼öÇà °á°ú¸¦ È¹µæ
     //------------------------------------
     
     IDE_TEST( qtc::judge( aResult, 
@@ -1054,8 +1054,8 @@ qmcMemHash::judgeFilter ( qmcdMemHashTemp * aTempTable,
                           aTempTable->mTemplate ) != IDE_SUCCESS );
 
     // To Fix PR-8645
-    // Hash Keyê°’ì— ëŒ€í•œ ê²€ì‚¬ëŠ” ì‹¤ì œ Recordë¥¼ ì ‘ê·¼í•˜ëŠ” ê²€ì‚¬ì´ë©°,
-    // Access íšŒìˆ˜ë¥¼ ì¦ê°€ì‹œì¼œì•¼ Hash íš¨ê³¼ë¥¼ ì¸¡ì •í•  ìˆ˜ ìžˆë‹¤.
+    // Hash Key°ª¿¡ ´ëÇÑ °Ë»ç´Â ½ÇÁ¦ Record¸¦ Á¢±ÙÇÏ´Â °Ë»çÀÌ¸ç,
+    // Access È¸¼ö¸¦ Áõ°¡½ÃÄÑ¾ß Hash È¿°ú¸¦ ÃøÁ¤ÇÒ ¼ö ÀÖ´Ù.
     aTempTable->mRecordNode->dstTuple->modify++;
 
     return IDE_SUCCESS;
@@ -1072,16 +1072,16 @@ qmcMemHash::extendBucket ( qmcdMemHashTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    íŠ¹ì • ì¡°ê±´(Bucketë³´ë‹¤ Recordê°€ ë§¤ìš° ë§Žì€ ê²½ìš°)ì¼ ê²½ìš°
- *    Bucketì˜ ê°œìˆ˜ë¥¼ ìžë™ í™•ìž¥í•œë‹¤.
+ *    Æ¯Á¤ Á¶°Ç(Bucketº¸´Ù Record°¡ ¸Å¿ì ¸¹Àº °æ¿ì)ÀÏ °æ¿ì
+ *    BucketÀÇ °³¼ö¸¦ ÀÚµ¿ È®ÀåÇÑ´Ù.
  *
  * Implementation :
- *    ë‹¤ìŒê³¼ ê°™ì€ ì ˆì°¨ë¡œ ìˆ˜í–‰ëœë‹¤.
- *        - Bucketì˜ í™•ìž¥ ê°€ëŠ¥ì„± ê²€ì‚¬.
- *        - ìƒˆë¡œìš´ Bucketì„ í• ë‹¹ë°›ìŒ.
- *        - ê¸°ì¡´ Bucketìœ¼ë¡œë¶€í„° recordë¥¼ ì–»ì–´ì™€ ìƒˆë¡œìš´ Bucketì—
- *          ì‚½ìž…í•œë‹¤.
- *        - ì´ ë•Œ, Distinction ì—¬ë¶€ë¥¼ ê²€ì‚¬í•  í•„ìš”ëŠ” ì—†ë‹¤.
+ *    ´ÙÀ½°ú °°Àº ÀýÂ÷·Î ¼öÇàµÈ´Ù.
+ *        - BucketÀÇ È®Àå °¡´É¼º °Ë»ç.
+ *        - »õ·Î¿î BucketÀ» ÇÒ´ç¹ÞÀ½.
+ *        - ±âÁ¸ BucketÀ¸·ÎºÎÅÍ record¸¦ ¾ò¾î¿Í »õ·Î¿î Bucket¿¡
+ *          »ðÀÔÇÑ´Ù.
+ *        - ÀÌ ¶§, Distinction ¿©ºÎ¸¦ °Ë»çÇÒ ÇÊ¿ä´Â ¾ø´Ù.
  *
  ***********************************************************************/
 
@@ -1092,23 +1092,23 @@ qmcMemHash::extendBucket ( qmcdMemHashTemp * aTempTable )
     aTempTable->mExtLast = NULL;
     
 
-    // Bucket í™•ìž¥ì´ ê°€ëŠ¥í•œì§€ë¥¼ ê²€ì‚¬.
+    // Bucket È®ÀåÀÌ °¡´ÉÇÑÁö¸¦ °Ë»ç.
     if ( (aTempTable->mBucketCnt * QMC_MEM_HASH_AUTO_EXTEND_RATIO) >
          QMC_MEM_HASH_MAX_BUCKET_CNT )
     {
-        // Bucket Countë¥¼ ì¦ê°€ì‹œì¼°ì„ ë•Œ ìµœëŒ€ Bucket Sizeë¥¼ ë„˜ëŠ” ê²½ìš°ë¼ë©´,
-        // ì¦ê°€ì‹œí‚¬ ìˆ˜ ì—†ë‹¤.
+        // Bucket Count¸¦ Áõ°¡½ÃÄ×À» ¶§ ÃÖ´ë Bucket Size¸¦ ³Ñ´Â °æ¿ì¶ó¸é,
+        // Áõ°¡½ÃÅ³ ¼ö ¾ø´Ù.
 
-        // ë” ì´ìƒ ì¦ê°€í•  ìˆ˜ ì—†ìŒì„ í‘œì‹œ
+        // ´õ ÀÌ»ó Áõ°¡ÇÒ ¼ö ¾øÀ½À» Ç¥½Ã
         aTempTable->flag &= ~QMC_MEM_HASH_AUTO_EXTEND_MASK;
         aTempTable->flag |= QMC_MEM_HASH_AUTO_EXTEND_DISABLE;
     }
     else
     {
-        // Bucket Countë¥¼ ì¦ê°€ì‹œí‚¬ ìˆ˜ ìžˆëŠ” ê²½ìš°
+        // Bucket Count¸¦ Áõ°¡½ÃÅ³ ¼ö ÀÖ´Â °æ¿ì
 
         //-------------------------------------------------
-        // ìƒˆë¡­ê²Œ í™•ìž¥í•  Bucketì˜ ê°œìˆ˜ ê³„ì‚° ë° Memory í• ë‹¹
+        // »õ·Ó°Ô È®ÀåÇÒ BucketÀÇ °³¼ö °è»ê ¹× Memory ÇÒ´ç
         //-------------------------------------------------
         
         aTempTable->mExtBucketCnt = aTempTable->mBucketCnt * QMC_MEM_HASH_AUTO_EXTEND_RATIO;
@@ -1121,22 +1121,22 @@ qmcMemHash::extendBucket ( qmcdMemHashTemp * aTempTable )
                   != IDE_SUCCESS);
 
         //-------------------------------------------------
-        // ê¸°ì¡´ì˜ Bucketìœ¼ë¡œë¶€í„° Recordë¥¼ ì–»ì–´
-        // ìƒˆë¡œìš´ Bucketì— ì‚½ìž…
+        // ±âÁ¸ÀÇ BucketÀ¸·ÎºÎÅÍ Record¸¦ ¾ò¾î
+        // »õ·Î¿î Bucket¿¡ »ðÀÔ
         //-------------------------------------------------
 
-        // ìµœì´ˆ Record íšë“
+        // ÃÖÃÊ Record È¹µæ
         IDE_TEST( qmcMemHash::getFirstSequence( aTempTable,
                                                 (void**) & sElement )
                   != IDE_SUCCESS );
         IDE_ASSERT( sElement != NULL );
 
-        // ìµœì´ˆ Recordì˜ ì‚½ìž…
+        // ÃÖÃÊ RecordÀÇ »ðÀÔ
         IDE_TEST( qmcMemHash::insertFirstNewBucket( aTempTable, sElement )
                   != IDE_SUCCESS );
 
         //-------------------------------------------------
-        // Recordê°€ ì¡´ìž¬í•˜ì§€ ì•Šì„ ë•Œê¹Œì§€ ë°˜ë³µí•¨
+        // Record°¡ Á¸ÀçÇÏÁö ¾ÊÀ» ¶§±îÁö ¹Ýº¹ÇÔ
         //-------------------------------------------------
         
         IDE_TEST( qmcMemHash::getNextSequence( aTempTable,
@@ -1145,23 +1145,23 @@ qmcMemHash::extendBucket ( qmcdMemHashTemp * aTempTable )
 
         while ( sElement != NULL )
         {
-            // ë‹¤ìŒ Recordì˜ ì‚½ìž…
+            // ´ÙÀ½ RecordÀÇ »ðÀÔ
             IDE_TEST( qmcMemHash::insertNextNewBucket( aTempTable, sElement )
                       != IDE_SUCCESS );
 
-            // ë‹¤ìŒ Record íšë“
+            // ´ÙÀ½ Record È¹µæ
             IDE_TEST( qmcMemHash::getNextSequence( aTempTable,
                                                    (void**) & sElement )
                       != IDE_SUCCESS );
         }
 
         //-------------------------------------------------
-        // ìƒˆë¡œìš´ Bucketìœ¼ë¡œ ì „í™˜ì‹œí‚´
-        // ê¸°ì¡´ì˜ Bucket Memoryê°€ danglingë˜ë‚˜,
-        // ìµœì¢…ì ìœ¼ë¡œ qmxMemory ê´€ë¦¬ìžì— ì˜í•˜ì—¬ ì œê±°ëœë‹¤.
-        // Bucketì˜ í™•ìž¥ì€ insertê³¼ì • ì¤‘ì— ë°œìƒí•˜ë©°,
-        // Insertê³¼ì • ì£¼ì— ê²€ìƒ‰ ê³¼ì •ì€ ì¡´ìž¬í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ,
-        // ë‹¤ë¥¸ ì •ë³´ì— ëŒ€í•œ ì´ˆê¸°í™”ëŠ” í•„ìš”ì—†ë‹¤.
+        // »õ·Î¿î BucketÀ¸·Î ÀüÈ¯½ÃÅ´
+        // ±âÁ¸ÀÇ Bucket Memory°¡ danglingµÇ³ª,
+        // ÃÖÁ¾ÀûÀ¸·Î qmxMemory °ü¸®ÀÚ¿¡ ÀÇÇÏ¿© Á¦°ÅµÈ´Ù.
+        // BucketÀÇ È®ÀåÀº insert°úÁ¤ Áß¿¡ ¹ß»ýÇÏ¸ç,
+        // Insert°úÁ¤ ÁÖ¿¡ °Ë»ö °úÁ¤Àº Á¸ÀçÇÏÁö ¾ÊÀ¸¹Ç·Î,
+        // ´Ù¸¥ Á¤º¸¿¡ ´ëÇÑ ÃÊ±âÈ­´Â ÇÊ¿ä¾ø´Ù.
         //-------------------------------------------------
 
         aTempTable->mBucketCnt = aTempTable->mExtBucketCnt;
@@ -1184,30 +1184,30 @@ qmcMemHash::insertFirstNewBucket( qmcdMemHashTemp   * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Bucket í™•ìž¥ ì‹œ ìµœì´ˆ recordë¥¼ ì‚½ìž…í•¨.
+ *    Bucket È®Àå ½Ã ÃÖÃÊ record¸¦ »ðÀÔÇÔ.
  *
  * Implementation :
- *    ìƒˆë¡œìš´ Bucketì— ëŒ€í•œ ì´ˆê¸°í™” ë° recordë¥¼ ì‚½ìž…í•œë‹¤.
- *    ê¸°ì¡´ì˜ ì‚½ìž… ë°©ë²•ê³¼ ë‹¬ë¦¬,
- *    Hash Elementì— ì´ë¯¸ Keyê°’ì´ ì¡´ìž¬í•˜ë¯€ë¡œ ì´ì— ëŒ€í•œ
- *    ë³„ë„ì˜ ì €ìž¥ë„ í•„ìš” ì—†ë‹¤.
+ *    »õ·Î¿î Bucket¿¡ ´ëÇÑ ÃÊ±âÈ­ ¹× record¸¦ »ðÀÔÇÑ´Ù.
+ *    ±âÁ¸ÀÇ »ðÀÔ ¹æ¹ý°ú ´Þ¸®,
+ *    Hash Element¿¡ ÀÌ¹Ì Key°ªÀÌ Á¸ÀçÇÏ¹Ç·Î ÀÌ¿¡ ´ëÇÑ
+ *    º°µµÀÇ ÀúÀåµµ ÇÊ¿ä ¾ø´Ù.
  *    
  ***********************************************************************/
 
     UInt    sBucketID;
 
-    // ì£¼ì–´ì§„ Hash Keyê°’ìœ¼ë¡œ ìƒˆë¡œìš´ Bucketì˜ ìœ„ì¹˜ë¥¼ ì–»ëŠ”ë‹¤.
+    // ÁÖ¾îÁø Hash Key°ªÀ¸·Î »õ·Î¿î BucketÀÇ À§Ä¡¸¦ ¾ò´Â´Ù.
     sBucketID = aElem->key % aTempTable->mExtBucketCnt;
 
-    // ìƒˆë¡œìš´ ì—°ê²° ì •ë³´ë¥¼ ìœ„í•˜ì—¬ clearí•œë‹¤.
+    // »õ·Î¿î ¿¬°á Á¤º¸¸¦ À§ÇÏ¿© clearÇÑ´Ù.
     aElem->next = NULL;
     
-    // ì‚½ìž… ê´€ë¦¬ë¥¼ ìœ„í•œ ìžë£Œ êµ¬ì¡°ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
-    // Bucketì— ëŒ€í•œ ì—°ê²°ê´€ê³„ë¥¼ ë§Œë“ ë‹¤.
+    // »ðÀÔ °ü¸®¸¦ À§ÇÑ ÀÚ·á ±¸Á¶¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // Bucket¿¡ ´ëÇÑ ¿¬°á°ü°è¸¦ ¸¸µç´Ù.
     aTempTable->mExtTop = & aTempTable->mExtBucket[sBucketID];
     aTempTable->mExtLast = & aTempTable->mExtBucket[sBucketID];
 
-    // í•´ë‹¹ Bucketì— Elementë¥¼ ì—°ê²°í•œë‹¤.
+    // ÇØ´ç Bucket¿¡ Element¸¦ ¿¬°áÇÑ´Ù.
     aTempTable->mExtLast->element = (qmcMemHashElement*) aElem;
 
     return IDE_SUCCESS;
@@ -1220,14 +1220,14 @@ qmcMemHash::insertNextNewBucket( qmcdMemHashTemp   * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Bucket í™•ìž¥ ì‹œ ë‹¤ìŒ recordë¥¼ ì‚½ìž…í•¨.
+ *    Bucket È®Àå ½Ã ´ÙÀ½ record¸¦ »ðÀÔÇÔ.
  *
  * Implementation :
- *    ê¸°ì¡´ì˜ ì‚½ìž… ë°©ë²•ê³¼ ë‹¬ë¦¬,
- *    Hash Elementì— ì´ë¯¸ Keyê°’ì´ ì¡´ìž¬í•˜ë¯€ë¡œ ì´ì— ëŒ€í•œ
- *    ë³„ë„ì˜ ì €ìž¥ë„ í•„ìš” ì—†ë‹¤.
- *    ì´ë¯¸ Distinctionì´ ë³´ìž¥ë˜ì–´ ìžˆê¸° ë•Œë¬¸ì—,
- *    Hash Key ê²€ì‚¬ ë° Columnì˜ ê°’ ê²€ì‚¬ ë“±ì´ í•„ìš” ì—†ë‹¤.
+ *    ±âÁ¸ÀÇ »ðÀÔ ¹æ¹ý°ú ´Þ¸®,
+ *    Hash Element¿¡ ÀÌ¹Ì Key°ªÀÌ Á¸ÀçÇÏ¹Ç·Î ÀÌ¿¡ ´ëÇÑ
+ *    º°µµÀÇ ÀúÀåµµ ÇÊ¿ä ¾ø´Ù.
+ *    ÀÌ¹Ì DistinctionÀÌ º¸ÀåµÇ¾î ÀÖ±â ¶§¹®¿¡,
+ *    Hash Key °Ë»ç ¹× ColumnÀÇ °ª °Ë»ç µîÀÌ ÇÊ¿ä ¾ø´Ù.
  *
  ***********************************************************************/
 
@@ -1235,34 +1235,34 @@ qmcMemHash::insertNextNewBucket( qmcdMemHashTemp   * aTempTable,
     qmcMemHashElement * sElement;
 
     // To Fix PR-8382
-    // Extend Bucketì„ ì‚¬ìš©í•˜ì—¬ ì—°ê²° ê´€ê³„ë¥¼ ìƒì„±í•´ì•¼ í•¨.
-    // ì£¼ì–´ì§„ Hash Keyê°’ìœ¼ë¡œ ìƒˆë¡œìš´ Bucketì˜ ìœ„ì¹˜ë¥¼ ì–»ëŠ”ë‹¤.
+    // Extend BucketÀ» »ç¿ëÇÏ¿© ¿¬°á °ü°è¸¦ »ý¼ºÇØ¾ß ÇÔ.
+    // ÁÖ¾îÁø Hash Key°ªÀ¸·Î »õ·Î¿î BucketÀÇ À§Ä¡¸¦ ¾ò´Â´Ù.
     sBucketID = aElem->key % aTempTable->mExtBucketCnt;
     sElement = aTempTable->mExtBucket[sBucketID].element;
 
-    // ìƒˆë¡œìš´ ì—°ê²° ì •ë³´ë¥¼ ìœ„í•˜ì—¬ clearí•œë‹¤.
+    // »õ·Î¿î ¿¬°á Á¤º¸¸¦ À§ÇÏ¿© clearÇÑ´Ù.
     aElem->next = NULL;
 
     if ( sElement == NULL )
     {
         //----------------------------------
-        // ìƒˆë¡œìš´ Bucketì— í• ë‹¹ë°›ì€ ê²½ìš°
+        // »õ·Î¿î Bucket¿¡ ÇÒ´ç¹ÞÀº °æ¿ì
         //----------------------------------
 
-        // Bucketê°„ì˜ ì—°ê²° ì •ë³´ êµ¬ì¶•
+        // Bucket°£ÀÇ ¿¬°á Á¤º¸ ±¸Ãà
         aTempTable->mExtLast->next = & aTempTable->mExtBucket[sBucketID];
         aTempTable->mExtLast = & aTempTable->mExtBucket[sBucketID];
 
-        // ìƒˆë¡œìš´ Bucketì— element ì—°ê²°
+        // »õ·Î¿î Bucket¿¡ element ¿¬°á
         aTempTable->mExtLast->element = (qmcMemHashElement *) aElem;
     }
     else
     {
         //----------------------------------
-        // ì´ë¯¸ ì‚¬ìš©í•˜ê³  ìžˆëŠ” Bucketì¸ ê²½ìš°
+        // ÀÌ¹Ì »ç¿ëÇÏ°í ÀÖ´Â BucketÀÎ °æ¿ì
         //----------------------------------
 
-        // Bucketë‚´ì˜ elementë“¤ê³¼ ì—°ê²°í•œë‹¤.
+        // Bucket³»ÀÇ elementµé°ú ¿¬°áÇÑ´Ù.
         ((qmcMemHashElement *)aElem)->next =
             aTempTable->mExtBucket[sBucketID].element;
         aTempTable->mExtBucket[sBucketID].element = (qmcMemHashElement *)aElem;

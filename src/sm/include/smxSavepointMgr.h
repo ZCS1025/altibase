@@ -16,13 +16,16 @@
  
 
 /***********************************************************************
- * $Id: smxSavepointMgr.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smxSavepointMgr.h 90824 2021-05-13 05:35:21Z minku.kang $
  **********************************************************************/
 
 #ifndef _O_SMX_SAVEPOINT_MGR_H_
 #define _O_SMX_SAVEPOINT_MGR_H_ 1
 
 #include <smu.h>
+
+# define SM_DDL_BEGIN_SAVEPOINT  "$$DDL_BEGIN_SAVEPOINT$$"
+# define SM_DDL_INFO_SAVEPOINT   "$$DDL_INFO_SAVEPOINT$$"
 
 class smxTrans;
 class smxSavepointMgr
@@ -33,15 +36,21 @@ public:
     static IDE_RC destroyStatic();
 
     void   initialize(smxTrans *aTrans);
-    IDE_RC destroy();
+    IDE_RC destroy( void * aSmiTrans );
 
     /* For Explicit Savepoint */
-    IDE_RC setExpSavepoint(smxTrans    *aTrans,
-                           const SChar *aSavepointName,
-                           smxOIDNode  *aOIDNode,
-                           smLSN       *aLSN,
-                           svrLSN       aVolLSN,
-                           ULong        aLockSequence);
+    IDE_RC setExpSavepoint( smxTrans    * aTrans,
+                            const SChar * aSavepointName,
+                            smOID         aOldTableOID,
+                            UInt          aOldPartOIDCount,
+                            smOID       * aOldPartOIDArray,
+                            smOID         aNewTableOID,
+                            UInt          aNewPartOIDCount,
+                            smOID       * aNewPartOIDArray,
+                            smxOIDNode  * aOIDNode,
+                            smLSN       * aLSN,
+                            svrLSN        aVolLSN,
+                            ULong         aLockSequence );
 
     IDE_RC abortToExpSavepoint(smxTrans *aTrans,
                                const SChar *aSavePointName);
@@ -67,12 +76,16 @@ public:
     // For BUG-12512
     idBool isPsmSvpReserved() { return mReservePsmSvp; };
 
+    // TASK-7244 PSM partial rollback in Sharding
+    idBool isShardPsmSvpReserved() { return mReserveShardPsmSvp; };
+
     void clearPsmSvp() { mReservePsmSvp = ID_FALSE; };
 
     void reservePsmSvp( smxOIDNode  *aOIDNode,
                         smLSN       *aLSN,
                         svrLSN       aVolLSN,
-                        ULong        aLockSequence );
+                        ULong        aLockSequence,
+                        idBool       aIsShard );
 
     IDE_RC writePsmSvp(smxTrans* aTrans);
     IDE_RC abortToPsmSvp(smxTrans* aTrans);
@@ -80,7 +93,11 @@ public:
     IDE_RC unlockSeveralLock(smxTrans *aTrans,
                             ULong     aLockSequence);
 
+    void   rollbackDDLTargetTableInfo( const SChar * aSavepointName );
+
     inline UInt getLstReplStmtDepth();
+
+    idBool isExistExpSavepoint(const SChar *aSavepointName);  /* BUG-48489 */
 
     smxSavepointMgr(){};
     ~smxSavepointMgr(){};
@@ -107,13 +124,18 @@ private:
     smxSavepoint           mImpSavepoint;
     smxSavepoint           mExpSavepoint;
 
-    /* (BUG-45368) TPC-C ÏÑ±Îä•ÌÖåÏä§Ìä∏. savepoint ÌïúÍ∞úÏùºÎïåÎäî alloc ÌïòÏßÄ ÏïäÍ≥† Ïù¥Î≥ÄÏàòÎ•º Ïì¥Îã§. */
+    /* (BUG-45368) TPC-C º∫¥…≈◊Ω∫∆Æ. savepoint «—∞≥¿œ∂ß¥¬ alloc «œ¡ˆ æ ∞Ì ¿Ã∫Øºˆ∏¶ æ¥¥Ÿ. */
     smxSavepoint           mPreparedSP;
     idBool                 mIsUsedPreparedSP;
 
     // For BUG-12512
     idBool                 mReservePsmSvp;
     smxSavepoint           mPsmSavepoint;
+
+    // TASK-7244 PSM partial rollback in Sharding
+    idBool                 mReserveShardPsmSvp;
+
+    UInt                   mDDLInfoCount;
 };
 
 inline void smxSavepointMgr::addToSvpListTail(smxSavepoint *aList,

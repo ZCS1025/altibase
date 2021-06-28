@@ -30,15 +30,15 @@
 #include <smu.h>
 
 /*
-   Disk/Memory/Volatile Tablespaceì— ê³µí†µì ìœ¼ë¡œ ì ìš©ë˜ëŠ” Alterêµ¬ë¬¸ì˜ êµ¬í˜„
+   Disk/Memory/Volatile Tablespace¿¡ °øÅëÀûÀ¸·Î Àû¿ëµÇ´Â Alter±¸¹®ÀÇ ±¸Çö
  */
 class sctTBSAlter
 {
 public :
-   // ìƒì„±ì (ì•„ë¬´ê²ƒë„ ì•ˆí•¨)
+   // »ı¼ºÀÚ (¾Æ¹«°Íµµ ¾ÈÇÔ)
     sctTBSAlter() ;
 
-    // Tablespace Attrbute Flagì˜ ë³€ê²½ ( ex> ALTER TABLESPACE LOG COMPRESS ON )
+    // Tablespace Attrbute FlagÀÇ º¯°æ ( ex> ALTER TABLESPACE LOG COMPRESS ON )
     static IDE_RC alterTBSAttrFlag( void      * aTrans,
                                     scSpaceID   aTableSpaceID,
                                     UInt        aAttrFlagMask, 
@@ -46,7 +46,7 @@ public :
     
 private :
     
-    // Tablespace Attrbute Flagì˜ ë³€ê²½ì— ëŒ€í•œ ì—ëŸ¬ì²˜ë¦¬ 
+    // Tablespace Attrbute FlagÀÇ º¯°æ¿¡ ´ëÇÑ ¿¡·¯Ã³¸® 
     static IDE_RC checkErrorOnAttrFlag( sctTableSpaceNode * aSpaceNode,
                                         UInt        aCurrentAttrFlag,
                                         UInt        aAttrFlagMask, 

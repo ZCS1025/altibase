@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qcpUtil.cpp 82992 2018-05-08 06:30:01Z kclee $
+ * $Id: qcpUtil.cpp 82630 2018-03-27 00:23:41Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -29,7 +29,7 @@
 #include "qcpll.h"
 
 // BUG-44700 reserved words error msg
-// ì˜ˆì•½ì–´ ì¶”ê°€ì‹œ ì•„ëž˜ì˜ í•­ëª©ì— ì¶”ê°€ í•´ì•¼ í•©ë‹ˆë‹¤.
+// ¿¹¾à¾î Ãß°¡½Ã ¾Æ·¡ÀÇ Ç×¸ñ¿¡ Ãß°¡ ÇØ¾ß ÇÕ´Ï´Ù.
 static qcpUtilReservedWordTables reservedWordTables[] =
 {
     {"AT", 2, 1},
@@ -399,8 +399,8 @@ IDE_RC qcpUtil::makeColumns4Queue(
     IDE_TEST(STRUCT_CRALLOC(QC_QMP_MEM(aStatement), mtcColumn, &(sColumn->basicInfo))
              != IDE_SUCCESS);
 
-    //  Message ID columnì˜ basicInfo ì´ˆê¸°í™”
-    // : dataTypeì€ bigint, languageëŠ” sessionì˜ languageë¡œ ì„¤ì •
+    //  Message ID columnÀÇ basicInfo ÃÊ±âÈ­
+    // : dataTypeÀº bigint, language´Â sessionÀÇ language·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn(
                   sColumn->basicInfo,
                   MTD_BIGINT_ID,
@@ -467,8 +467,8 @@ IDE_RC qcpUtil::makeColumns4Queue(
         (UChar*)(aQueueSize->stmtText + aQueueSize->offset),
         aQueueSize->size );
 
-    // MESSAGE columnì˜ basicInfo ì´ˆê¸°í™”
-    // : dataTypeì€ varchar, languageëŠ”  sessionì˜ languageë¡œ ì„¤ì •
+    // MESSAGE columnÀÇ basicInfo ÃÊ±âÈ­
+    // : dataTypeÀº varchar, language´Â  sessionÀÇ language·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn(
                   sColumn->basicInfo,
                   MTD_VARCHAR_ID,
@@ -480,7 +480,7 @@ IDE_RC qcpUtil::makeColumns4Queue(
     sColumn->basicInfo->flag &= ~MTC_COLUMN_NOTNULL_TRUE;
 
     // fix BUG-14642
-    // queueì˜ message columnì˜ ì†ì„±ë„ tableê³¼ ë™ì¼í•˜ê²Œ ì§€ì •í•  ìˆ˜ ìžˆë‹¤.
+    // queueÀÇ message columnÀÇ ¼Ó¼ºµµ table°ú µ¿ÀÏÇÏ°Ô ÁöÁ¤ÇÒ ¼ö ÀÖ´Ù.
     // create queue q1(10);
     // create queue q1(10 fixed);
     // create queue q1(10 variable);
@@ -510,8 +510,8 @@ IDE_RC qcpUtil::makeColumns4Queue(
     IDE_TEST(STRUCT_CRALLOC(QC_QMP_MEM(aStatement), mtcColumn, &(sColumn->basicInfo))
              != IDE_SUCCESS);
 
-    // CORRID columnì˜ basicInfo ì´ˆê¸°í™”
-    // : dataTypeì€ smallint, languageëŠ”  sessionì˜ languageë¡œ ì„¤ì •
+    // CORRID columnÀÇ basicInfo ÃÊ±âÈ­
+    // : dataTypeÀº smallint, language´Â  sessionÀÇ language·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn(
                   sColumn->basicInfo,
                   MTD_INTEGER_ID,
@@ -620,8 +620,8 @@ IDE_RC qcpUtil::makeColumns4StructQueue(
     IDE_TEST(STRUCT_CRALLOC(QC_QMP_MEM(aStatement), mtcColumn, &(sColumn->basicInfo))
              != IDE_SUCCESS);
 
-    //  Message ID columnì˜ basicInfo ì´ˆê¸°í™”
-    // : dataTypeì€ bigint, languageëŠ” sessionì˜ languageë¡œ ì„¤ì •
+    //  Message ID columnÀÇ basicInfo ÃÊ±âÈ­
+    // : dataTypeÀº bigint, language´Â sessionÀÇ language·Î ¼³Á¤
     IDE_TEST( mtc::initializeColumn(
                   sColumn->basicInfo,
                   MTD_BIGINT_ID,
@@ -717,7 +717,7 @@ IDE_RC qcpUtil::makeColumns4StructQueue(
         IDE_TEST_RAISE( sColumn->basicInfo->module == NULL,
                         ERR_NOT_DATA_TYPE );
         
-        // ì¤‘ë³µ ì»¬ëŸ¼ëª… ë¶ˆê°€
+        // Áßº¹ ÄÃ·³¸í ºÒ°¡
         if ( ( idlOS::strMatch( sColumn->namePos.stmtText + sColumn->namePos.offset,
                                 sColumn->namePos.size,
                                 "MSGID", 5 ) == 0 ) ||
@@ -733,7 +733,7 @@ IDE_RC qcpUtil::makeColumns4StructQueue(
             // Nothing to do.
         }
         
-        // ì•”í˜¸ì»¬ëŸ¼ì€ ë¶ˆê°€
+        // ¾ÏÈ£ÄÃ·³Àº ºÒ°¡
         IDE_TEST_RAISE( ( sColumn->basicInfo->module->flag &
                           MTD_ENCRYPT_TYPE_MASK )
                         == MTD_ENCRYPT_TYPE_TRUE,
@@ -849,15 +849,15 @@ IDE_RC qcpUtil::makeConstraintColumnsFromExpression(
 /***********************************************************************
  *
  * Description :
- *  Parsing ë‹¨ê³„ì˜ expressionìœ¼ë¡œ Constraint Column Listë¥¼ ë§Œë“ ë‹¤.
- *      - subqueryë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *  Parsing ´Ü°èÀÇ expressionÀ¸·Î Constraint Column List¸¦ ¸¸µç´Ù.
+ *      - subquery¸¦ Áö¿øÇÏÁö ¾Ê´Â´Ù.
  *
  * Implementation :
- *  (1) qtc::makeColumn()ì—ì„œ ì§€ì •í•œ í•­ëª©ìœ¼ë¡œ Columnì¸ì§€ í™•ì¸í•˜ê³ ,
- *      Column Name ì¤‘ë³µì´ ì—†ëŠ” Constraint Column Listë¥¼ êµ¬ì„±í•œë‹¤.
- *      - Constraint Columnì— User Name, Table Nameì„ ì§€ì •í•  ìˆ˜ ì—†ë‹¤.
- *  (2) argumentsë¥¼ Recursive Call
- *  (3) nextë¥¼ Recursive Call
+ *  (1) qtc::makeColumn()¿¡¼­ ÁöÁ¤ÇÑ Ç×¸ñÀ¸·Î ColumnÀÎÁö È®ÀÎÇÏ°í,
+ *      Column Name Áßº¹ÀÌ ¾ø´Â Constraint Column List¸¦ ±¸¼ºÇÑ´Ù.
+ *      - Constraint Column¿¡ User Name, Table NameÀ» ÁöÁ¤ÇÒ ¼ö ¾ø´Ù.
+ *  (2) arguments¸¦ Recursive Call
+ *  (3) next¸¦ Recursive Call
  *
  ***********************************************************************/
 
@@ -866,13 +866,13 @@ IDE_RC qcpUtil::makeConstraintColumnsFromExpression(
     qcmColumn           * sNewColumn  = NULL;
     qcuSqlSourceInfo      sqlInfo;
 
-    /* qtc::makeColumn()ì—ì„œ ì§€ì •í•œ í•­ëª©ìœ¼ë¡œ Columnì¸ì§€ í™•ì¸í•˜ê³ ,
-     * Column Name ì¤‘ë³µì´ ì—†ëŠ” Constraint Column Listë¥¼ êµ¬ì„±í•œë‹¤.
+    /* qtc::makeColumn()¿¡¼­ ÁöÁ¤ÇÑ Ç×¸ñÀ¸·Î ColumnÀÎÁö È®ÀÎÇÏ°í,
+     * Column Name Áßº¹ÀÌ ¾ø´Â Constraint Column List¸¦ ±¸¼ºÇÑ´Ù.
      */
     if ( (QC_IS_NULL_NAME( aNode->columnName ) == ID_FALSE) &&
          (aNode->node.module == &qtc::columnModule) )
     {
-        /* Constraint Columnì— User Name, Table Nameì„ ì§€ì •í•  ìˆ˜ ì—†ë‹¤. */
+        /* Constraint Column¿¡ User Name, Table NameÀ» ÁöÁ¤ÇÒ ¼ö ¾ø´Ù. */
         if ( QC_IS_NULL_NAME( aNode->userName ) == ID_FALSE )
         {
             sqlInfo.setSourceInfo( aStatement,
@@ -931,8 +931,8 @@ IDE_RC qcpUtil::makeConstraintColumnsFromExpression(
     }
 
     /* BUG-35385
-     * user-defined functionì¸ ê²½ìš° user nameì„ ëª…ì‹œí•´ì•¼í•œë‹¤.
-     * (user.func1()ì€ tableName.columnNameìœ¼ë¡œ parsingëœë‹¤.)
+     * user-defined functionÀÎ °æ¿ì user nameÀ» ¸í½ÃÇØ¾ßÇÑ´Ù.
+     * (user.func1()Àº tableName.columnNameÀ¸·Î parsingµÈ´Ù.)
      */
     if ( (QC_IS_NULL_NAME( aNode->columnName ) == ID_FALSE) &&
          (QC_IS_NULL_NAME( aNode->tableName ) == ID_TRUE) &&
@@ -947,7 +947,7 @@ IDE_RC qcpUtil::makeConstraintColumnsFromExpression(
         /* Nothing to do */
     }
     
-    /* argumentsë¥¼ Recursive Call */
+    /* arguments¸¦ Recursive Call */
     if ( aNode->node.arguments != NULL )
     {
         IDE_TEST( makeConstraintColumnsFromExpression(
@@ -961,7 +961,7 @@ IDE_RC qcpUtil::makeConstraintColumnsFromExpression(
         /* Nothing to do */
     }
 
-    /* nextë¥¼ Recursive Call */
+    /* next¸¦ Recursive Call */
     if ( aNode->node.next != NULL )
     {
         IDE_TEST( makeConstraintColumnsFromExpression(
@@ -1054,8 +1054,8 @@ IDE_RC qcpUtil::makeHiddenColumnNameAndPosition(
 /***********************************************************************
  *
  * Description :
- *  create indexì˜ parsingì‹œ expressionì˜ ì •í™•í•œ positionì„ ê³„ì‚°í•˜ê³ 
- *  expressionì˜ hidden column nameì„ ìƒì„±í•œë‹¤.
+ *  create indexÀÇ parsing½Ã expressionÀÇ Á¤È®ÇÑ positionÀ» °è»êÇÏ°í
+ *  expressionÀÇ hidden column nameÀ» »ý¼ºÇÑ´Ù.
  *
  *  ex) create index abc on t1(i1+1, i2 asc, func(i3) desc)
  *                             ----  --      --------
@@ -1074,10 +1074,10 @@ IDE_RC qcpUtil::makeHiddenColumnNameAndPosition(
     qcNamePosition          sPosition;
     qcuSqlSourceInfo        sqlInfo;
     
-    /* ì²˜ìŒì˜ '('ë¥¼, Expression ìœ„ì¹˜ ì¡°ì‚¬ë¥¼ ìœ„í•´ ì§€ì •í•œë‹¤. */
+    /* Ã³À½ÀÇ '('¸¦, Expression À§Ä¡ Á¶»ç¸¦ À§ÇØ ÁöÁ¤ÇÑ´Ù. */
     SET_POSITION( aColumn->beforePosition, aStartPos );
 
-    /* Expressionì˜ ë’· ë¶€ë¶„ ìœ„ì¹˜ê°€ ì—†ìœ¼ë©´, ë‹¤ìŒ Expressionì˜ ì²« ë¶€ë¶„ ìœ„ì¹˜ë¡œ ì§€ì •í•œë‹¤. */
+    /* ExpressionÀÇ µÞ ºÎºÐ À§Ä¡°¡ ¾øÀ¸¸é, ´ÙÀ½ ExpressionÀÇ Ã¹ ºÎºÐ À§Ä¡·Î ÁöÁ¤ÇÑ´Ù. */
     for ( sCurrColumn = aColumn;
           sCurrColumn->next != NULL;
           sCurrColumn = sCurrColumn->next )
@@ -1089,18 +1089,18 @@ IDE_RC qcpUtil::makeHiddenColumnNameAndPosition(
         }
         else
         {
-            /* Expressionì˜ ë’· ë¶€ë¶„ ìœ„ì¹˜ëŠ” ASC ë˜ëŠ” DESC ì´ë‹¤. */
+            /* ExpressionÀÇ µÞ ºÎºÐ À§Ä¡´Â ASC ¶Ç´Â DESC ÀÌ´Ù. */
         }
     }
 
-    /* ë§ˆì§€ë§‰ ')'ë¥¼, Expression ìœ„ì¹˜ ì¡°ì‚¬ë¥¼ ìœ„í•´ ì§€ì •í•œë‹¤. */
+    /* ¸¶Áö¸· ')'¸¦, Expression À§Ä¡ Á¶»ç¸¦ À§ÇØ ÁöÁ¤ÇÑ´Ù. */
     if ( QC_IS_NULL_NAME( sCurrColumn->afterPosition ) == ID_TRUE )
     {
         SET_POSITION( sCurrColumn->afterPosition, aEndPos );
     }
     else
     {
-        /* Expressionì˜ ë’· ë¶€ë¶„ ìœ„ì¹˜ëŠ” ASC ë˜ëŠ” DESC ì´ë‹¤. */
+        /* ExpressionÀÇ µÞ ºÎºÐ À§Ä¡´Â ASC ¶Ç´Â DESC ÀÌ´Ù. */
     }
 
     /* PROJ-1090 Function-based Index */
@@ -1111,7 +1111,7 @@ IDE_RC qcpUtil::makeHiddenColumnNameAndPosition(
         if ( (sCurrColumn->column->flag & QCM_COLUMN_HIDDEN_COLUMN_MASK)
              == QCM_COLUMN_HIDDEN_COLUMN_TRUE )
         {
-            /* Hidden Columnì˜ Expression ìœ„ì¹˜ë¥¼ ì§€ì •í•œë‹¤. */
+            /* Hidden ColumnÀÇ Expression À§Ä¡¸¦ ÁöÁ¤ÇÑ´Ù. */
             sCurrColumn->column->defaultValue->position.offset =
                 sCurrColumn->beforePosition.offset +
                 sCurrColumn->beforePosition.size;
@@ -1120,7 +1120,7 @@ IDE_RC qcpUtil::makeHiddenColumnNameAndPosition(
                 sCurrColumn->beforePosition.offset -
                 sCurrColumn->beforePosition.size;
 
-            /* Expression ìœ„ì¹˜ì˜ ì•žë’¤ ê³µë°±ì„ ì œê±°í•œë‹¤. */
+            /* Expression À§Ä¡ÀÇ ¾ÕµÚ °ø¹éÀ» Á¦°ÅÇÑ´Ù. */
             SET_POSITION( sPosition,
                           sCurrColumn->column->defaultValue->position );
             while ( ( sPosition.stmtText[sPosition.offset] == ' ' ) ||
@@ -1141,7 +1141,7 @@ IDE_RC qcpUtil::makeHiddenColumnNameAndPosition(
             SET_POSITION( sCurrColumn->column->defaultValue->position,
                           sPosition );
 
-            /* Hidden Column ê¸¸ì´ê°€ 40ì„ ì´ˆê³¼í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤. */
+            /* Hidden Column ±æÀÌ°¡ 40À» ÃÊ°úÇÏ´ÂÁö °Ë»çÇÑ´Ù. */
             if ( aIndexName.size > QC_MAX_FUNCTION_BASED_INDEX_NAME_LEN )
             {
                 sqlInfo.setSourceInfo( aStatement,
@@ -1153,14 +1153,14 @@ IDE_RC qcpUtil::makeHiddenColumnNameAndPosition(
                 /* Nothing to do */
             }
 
-            /* Hidden Columnì˜ Nameì„ ìƒì„±í•œë‹¤.
+            /* Hidden ColumnÀÇ NameÀ» »ý¼ºÇÑ´Ù.
              *    Index Name + $ + IDX + Number
              */
             QC_STR_COPY( sCurrColumn->column->name, aIndexName );
             (void)idlVA::appendFormat( sCurrColumn->column->name,
                                        QC_MAX_OBJECT_NAME_LEN + 1,
                                        "$IDX%"ID_UINT32_FMT,
-                                       ++sColumnNumber ); // ìµœëŒ€ 32
+                                       ++sColumnNumber ); // ÃÖ´ë 32
             
             sCurrColumn->column->namePos.stmtText = sCurrColumn->column->name;
             sCurrColumn->column->namePos.offset   = 0;

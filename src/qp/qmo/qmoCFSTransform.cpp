@@ -19,14 +19,14 @@
  *
  * Description : PROJ-2242 Filter Subsumption Transformation
  *
- *       - AND, OR ì— ëŒ€í•œ TRUE, FALSE predicate ì ìš©
- *       - QTC_NODE_JOIN_OPERATOR_EXIST ì¼ ê²½ìš° ìˆ˜í–‰ ì•ˆí•¨
- *       - subquery, host variable, GEOMETRY type arguments ì œì™¸
- *       - __OPTIMIZER_CONSTANT_FILTER_SUBSUMPTION property ë¡œ ë™ì‘
+ *       - AND, OR ¿¡ ´ëÇÑ TRUE, FALSE predicate Àû¿ë
+ *       - QTC_NODE_JOIN_OPERATOR_EXIST ÀÏ °æ¿ì ¼öÇà ¾ÈÇÔ
+ *       - subquery, host variable, GEOMETRY type arguments Á¦¿Ü
+ *       - __OPTIMIZER_CONSTANT_FILTER_SUBSUMPTION property ·Î µ¿ÀÛ
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ : CFS (Constant Filter Subsumption)
+ * ¾à¾î : CFS (Constant Filter Subsumption)
  *
  *****************************************************************************/
 
@@ -38,6 +38,8 @@
 #include <qcuProperty.h>
 #include <qmoCSETransform.h>
 #include <qmoCFSTransform.h>
+#include <qcg.h> /* TASK-7219 Shard Transformer Refactoring */
+#include <sdi.h> /* TASK-7219 Shard Transformer Refactoring */
 
 IDE_RC
 qmoCFSTransform::doTransform4NNF( qcStatement  * aStatement,
@@ -45,7 +47,7 @@ qmoCFSTransform::doTransform4NNF( qcStatement  * aStatement,
 {
 /******************************************************************************
  *
- * PROJ-2242 : ìµœì´ˆ NNF í˜•íƒœì˜ ëª¨ë“  ì¡°ê±´ì ˆì— ëŒ€í•´ CFS (Filter Subsumption) ìˆ˜í–‰
+ * PROJ-2242 : ÃÖÃÊ NNF ÇüÅÂÀÇ ¸ğµç Á¶°ÇÀı¿¡ ´ëÇØ CFS (Filter Subsumption) ¼öÇà
  *
  * Implementation : 1. CFS for where clause predicate
  *                  2. CFS for from tree
@@ -56,27 +58,27 @@ qmoCFSTransform::doTransform4NNF( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCFSTransform::doTransform4NNF::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aQuerySet  != NULL );
 
     //--------------------------------------
-    // CFS í•¨ìˆ˜ ìˆ˜í–‰
+    // CFS ÇÔ¼ö ¼öÇà
     //--------------------------------------
 
     if ( aQuerySet->setOp == QMS_NONE )
     {
-        // From on clause predicate ì²˜ë¦¬
+        // From on clause predicate Ã³¸®
         IDE_TEST( doTransform4From( aStatement, aQuerySet->SFWGH->from )
                   != IDE_SUCCESS );
 
-        // Where clause predicate ì²˜ë¦¬
+        // Where clause predicate Ã³¸®
         IDE_TEST( doTransform( aStatement, &aQuerySet->SFWGH->where )
                   != IDE_SUCCESS );
 
-        // Having clause predicate ì²˜ë¦¬
+        // Having clause predicate Ã³¸®
         IDE_TEST( doTransform( aStatement, &aQuerySet->SFWGH->having )
                   != IDE_SUCCESS );
     }
@@ -100,23 +102,23 @@ qmoCFSTransform::doTransform4From( qcStatement  * aStatement,
 {
 /******************************************************************************
  *
- * PROJ-2242 : From ì ˆì— ëŒ€í•œ CFS (Constant Filter Subsumption) ìˆ˜í–‰
+ * PROJ-2242 : From Àı¿¡ ´ëÇÑ CFS (Constant Filter Subsumption) ¼öÇà
  *
- * Implementation : From tree ë¥¼ ìˆœíšŒí•˜ë©° CFS ìˆ˜í–‰
+ * Implementation : From tree ¸¦ ¼øÈ¸ÇÏ¸ç CFS ¼öÇà
  *
  ******************************************************************************/
 
     IDU_FIT_POINT_FATAL( "qmoCFSTransform::doTransform4From::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aFrom      != NULL );
 
     //--------------------------------------
-    // CFS ìˆ˜í–‰
+    // CFS ¼öÇà
     //--------------------------------------
 
     IDE_TEST( doTransform( aStatement, &aFrom->onCondition ) != IDE_SUCCESS );
@@ -144,14 +146,14 @@ qmoCFSTransform::doTransform( qcStatement  * aStatement,
 {
 /******************************************************************************
  *
- * PROJ-2242 : NNF ì˜ CFS (Constant Filter subsumption) ìˆ˜í–‰
- *             ë‹¨, ì¡°ê±´ì ˆì— oracle style outer mask '(+)' ê°€ ì¡´ì¬í•  ê²½ìš° ì œì™¸
+ * PROJ-2242 : NNF ÀÇ CFS (Constant Filter subsumption) ¼öÇà
+ *             ´Ü, Á¶°ÇÀı¿¡ oracle style outer mask '(+)' °¡ Á¸ÀçÇÒ °æ¿ì Á¦¿Ü
  *
  * Implementation :
  *
- *       1. ORACLE style outer mask ì¡´ì¬ ê²€ì‚¬
- *       2. NNF ì˜ constant filter subsumption ìˆ˜í–‰
- *       3. Envieronment ì˜ ê¸°ë¡
+ *       1. ORACLE style outer mask Á¸Àç °Ë»ç
+ *       2. NNF ÀÇ constant filter subsumption ¼öÇà
+ *       3. Envieronment ÀÇ ±â·Ï
  *
  ******************************************************************************/
 
@@ -160,14 +162,14 @@ qmoCFSTransform::doTransform( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCFSTransform::doTransform::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aNode      != NULL );
 
     //--------------------------------------
-    // CFS ìˆ˜í–‰
+    // CFS ¼öÇà
     //--------------------------------------
 
     if( *aNode != NULL && QCU_OPTIMIZER_CONSTANT_FILTER_SUBSUMPTION == 1 )
@@ -182,7 +184,7 @@ qmoCFSTransform::doTransform( qcStatement  * aStatement,
         }
         else
         {
-            // ì¡°ê±´ì ˆì— oracle style outer mask '(+)' ê°€ ì¡´ì¬í•  ê²½ìš°
+            // Á¶°ÇÀı¿¡ oracle style outer mask '(+)' °¡ Á¸ÀçÇÒ °æ¿ì
             // Nothing to do.
         }
     }
@@ -191,7 +193,7 @@ qmoCFSTransform::doTransform( qcStatement  * aStatement,
         // Nothing to do.
     }
 
-    // environmentì˜ ê¸°ë¡
+    // environmentÀÇ ±â·Ï
     qcgPlan::registerPlanProperty(
             aStatement,
             PLAN_PROPERTY_OPTIMIZER_CONSTANT_FILTER_SUBSUMPTION );
@@ -210,28 +212,28 @@ qmoCFSTransform::constantFilterSubsumption( qcStatement * aStatement,
 {
 /******************************************************************************
  *
- * PROJ-2242 : NNF ì— ëŒ€í•´ constant filter subsumption ì„ ìˆ˜í–‰í•œë‹¤.
+ * PROJ-2242 : NNF ¿¡ ´ëÇØ constant filter subsumption À» ¼öÇàÇÑ´Ù.
  *
- * Implementation : AND, OR ì— ëŒ€í•´ ë‹¤ìŒê³¼ ê°™ì´ ì ìš©í•œë‹¤.
- *                  ì°¸ê³ ë¡œ CSE ìˆ˜í–‰ì´í›„ë¼ T^T, F^F, TvT, FvF ë¹„êµëŠ” ì¡´ì¬í•  ìˆ˜
- *                  ì—†ì§€ë§Œ ë…ë¦½ì  ìˆ˜í–‰ì´ ê°€ëŠ¥í•˜ë„ë¡ ëª¨ë‘ ê³ ë ¤í•˜ê¸°ë¡œ í•œë‹¤.
+ * Implementation : AND, OR ¿¡ ´ëÇØ ´ÙÀ½°ú °°ÀÌ Àû¿ëÇÑ´Ù.
+ *                  Âü°í·Î CSE ¼öÇàÀÌÈÄ¶ó T^T, F^F, TvT, FvF ºñ±³´Â Á¸ÀçÇÒ ¼ö
+ *                  ¾øÁö¸¸ µ¶¸³Àû ¼öÇàÀÌ °¡´ÉÇÏµµ·Ï ¸ğµÎ °í·ÁÇÏ±â·Î ÇÑ´Ù.
  *
  *      1. OR  : T ^ F = F, T ^ P = P, F ^ P = F, F ^ F = F, T ^ T = T
  *      2. AND : T v F = T, T v P = T, F v P = P, F v F = F, T v T = T
- *         (ìµœìƒìœ„ level ì˜ F ^ P ì˜ ê²½ìš° subsumption ì ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.)
+ *         (ÃÖ»óÀ§ level ÀÇ F ^ P ÀÇ °æ¿ì subsumption Àû¿ëÇÏÁö ¾Ê´Â´Ù.)
  *
  *      ex) NNF : Predicate list pointer (<-aNode)
  *                 |
  *                OR
  *                 |
- *                P1 (<-sTarget) -- AND (<-sCompare:ì¬ê·€) -- P2 -- AND --...
+ *                P1 (<-sTarget) -- AND (<-sCompare:Àç±Í) -- P2 -- AND --...
  *                                   |
- *                                  Pn ( ìˆ˜í–‰ê²°ê³¼ í•œ ê°œì´ë©´ level up) ...
+ *                                  Pn ( ¼öÇà°á°ú ÇÑ °³ÀÌ¸é level up) ...
  *
- *      cf) ë¹„êµ ê²°ê³¼(sResult)ë¥¼ ë‹¤ìŒê³¼ ê°™ì´ êµ¬ë³„í•œë‹¤.
- *        - QMO_CFS_COMPARE_RESULT_BOTH : sTarget, sCompare ìœ ì§€
- *        - QMO_CFS_COMPARE_RESULT_WIN  : sTarget ìœ ì§€, sCompare ì œê±°
- *        - QMO_CFS_COMPARE_RESULT_LOSE : sTarget ì œê±°, sCompare ìœ ì§€
+ *      cf) ºñ±³ °á°ú(sResult)¸¦ ´ÙÀ½°ú °°ÀÌ ±¸º°ÇÑ´Ù.
+ *        - QMO_CFS_COMPARE_RESULT_BOTH : sTarget, sCompare À¯Áö
+ *        - QMO_CFS_COMPARE_RESULT_WIN  : sTarget À¯Áö, sCompare Á¦°Å
+ *        - QMO_CFS_COMPARE_RESULT_LOSE : sTarget Á¦°Å, sCompare À¯Áö
  *
  ******************************************************************************/
 
@@ -247,14 +249,14 @@ qmoCFSTransform::constantFilterSubsumption( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoCFSTransform::constantFilterSubsumption::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aNode      != NULL );
 
     //--------------------------------------
-    // CFS ìˆ˜í–‰
+    // CFS ¼öÇà
     //--------------------------------------
 
     if( ( (*aNode)->node.lflag & MTC_NODE_OPERATOR_MASK )
@@ -265,7 +267,7 @@ qmoCFSTransform::constantFilterSubsumption( qcStatement * aStatement,
         sTargetPrev = NULL;
         sTarget = (qtcNode **)(&(*aNode)->node.arguments);
 
-        // sTargetì— ëŒ€í•´ ìš°ì„  ìˆ˜í–‰, ì´í›„ next ìˆœíšŒí•˜ë©° sCompare ì—ì„œ ìˆ˜í–‰
+        // sTarget¿¡ ´ëÇØ ¿ì¼± ¼öÇà, ÀÌÈÄ next ¼øÈ¸ÇÏ¸ç sCompare ¿¡¼­ ¼öÇà
         if( *sTarget != NULL )
         {
             sTemp = (qtcNode *)((*sTarget)->node.next);
@@ -282,7 +284,7 @@ qmoCFSTransform::constantFilterSubsumption( qcStatement * aStatement,
             // Nothing to do.
         }
 
-        // sTarget ìˆœíšŒ
+        // sTarget ¼øÈ¸
         while( *sTarget != NULL )
         {
             sResult = QMO_CFS_COMPARE_RESULT_BOTH;
@@ -305,7 +307,7 @@ qmoCFSTransform::constantFilterSubsumption( qcStatement * aStatement,
             sComparePrev = (qtcNode *)(&(*sTarget)->node);
             sCompare = (qtcNode **)(&(*sTarget)->node.next);
 
-            // sCompare ìˆœíšŒ
+            // sCompare ¼øÈ¸
             while( *sCompare != NULL )
             {
                 sTemp = (qtcNode *)((*sCompare)->node.next);
@@ -334,7 +336,7 @@ qmoCFSTransform::constantFilterSubsumption( qcStatement * aStatement,
                     // Nothing to do.
                 }
 
-                // ë‘ ë…¸ë“œì˜ ë¹„êµ
+                // µÎ ³ëµåÀÇ ºñ±³
                 if( ( (*aNode)->node.lflag & MTC_NODE_OPERATOR_MASK )
                     == MTC_NODE_OPERATOR_AND )
                 {
@@ -365,21 +367,37 @@ qmoCFSTransform::constantFilterSubsumption( qcStatement * aStatement,
 
                 if( sResult == QMO_CFS_COMPARE_RESULT_WIN )
                 {
-                    // sCompare ì œê±°
+                    // sCompare Á¦°Å
                     sTemp = *sCompare;
                     sComparePrev->node.next = (*sCompare)->node.next;
                     sCompare = (qtcNode **)(&sComparePrev->node.next);
+
+                    /* TASK-7219 Shard Transformer Refactoring */
+                    if ( SDI_CHECK_QUERYSET_LIST_STATE( aStatement->mShardQuerySetList,
+                                                        SDI_QUERYSET_LIST_STATE_DUMMY_ANALYZE )
+                         == ID_TRUE )
+                    {
+                        IDE_TEST( sdi::preAnalyzeSubquery( aStatement,
+                                                           sTemp,
+                                                           QCG_GET_SESSION_SHARD_META_NUMBER( aStatement ) )
+                                  != IDE_SUCCESS );
+                    }
+                    else
+                    {
+                        /* Nothing to do */
+                    }
+
                     IDE_TEST( QC_QMP_MEM( aStatement )->free( sTemp )
                               != IDE_SUCCESS );
                 }
                 else if( sResult == QMO_CFS_COMPARE_RESULT_LOSE )
                 {
-                    // sTarget ì œê±°
+                    // sTarget Á¦°Å
                     break;
                 }
                 else
                 {
-                    // sTarget, sCompare ìœ ì§€
+                    // sTarget, sCompare À¯Áö
                     sComparePrev = (qtcNode *)(&(*sCompare)->node);
                     sCompare = (qtcNode **)(&(*sCompare)->node.next);
                 }
@@ -387,7 +405,7 @@ qmoCFSTransform::constantFilterSubsumption( qcStatement * aStatement,
 
             if( sResult == QMO_CFS_COMPARE_RESULT_LOSE )
             {
-                // sTarget ì œê±°
+                // sTarget Á¦°Å
                 sTemp = *sTarget;
                 if( sTargetPrev == NULL )
                 {
@@ -399,6 +417,22 @@ qmoCFSTransform::constantFilterSubsumption( qcStatement * aStatement,
                     sTargetPrev->node.next = (*sTarget)->node.next;
                     sTarget = (qtcNode **)(&sTargetPrev->node.next);
                 }
+
+                /* TASK-7219 Shard Transformer Refactoring */
+                if ( SDI_CHECK_QUERYSET_LIST_STATE( aStatement->mShardQuerySetList,
+                                                    SDI_QUERYSET_LIST_STATE_DUMMY_ANALYZE )
+                         == ID_TRUE )
+                {
+                    IDE_TEST( sdi::preAnalyzeSubquery( aStatement,
+                                                       sTemp,
+                                                       QCG_GET_SESSION_SHARD_META_NUMBER( aStatement ) )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+
                 IDE_TEST( QC_QMP_MEM( aStatement )->free( sTemp )
                           != IDE_SUCCESS );
             }
@@ -409,11 +443,27 @@ qmoCFSTransform::constantFilterSubsumption( qcStatement * aStatement,
             }
         }
 
-        // í•˜ë‚˜ì˜ ì¸ìë¥¼ ê°–ëŠ” logical operator ì²˜ë¦¬
+        // ÇÏ³ªÀÇ ÀÎÀÚ¸¦ °®´Â logical operator Ã³¸®
         if( (*aNode)->node.arguments->next == NULL )
         {
             sTemp = *aNode;
             *aNode = (qtcNode *)((*aNode)->node.arguments);
+
+            /* TASK-7219 Shard Transformer Refactoring */
+            if ( SDI_CHECK_QUERYSET_LIST_STATE( aStatement->mShardQuerySetList,
+                                                SDI_QUERYSET_LIST_STATE_DUMMY_ANALYZE )
+                         == ID_TRUE )
+            {
+                IDE_TEST( sdi::preAnalyzeSubquery( aStatement,
+                                                   sTemp,
+                                                   QCG_GET_SESSION_SHARD_META_NUMBER( aStatement ) )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+
             IDE_TEST( QC_QMP_MEM( aStatement )->free( sTemp ) != IDE_SUCCESS );
         }
         else

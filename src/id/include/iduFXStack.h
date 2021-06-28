@@ -28,25 +28,25 @@
 
 typedef struct iduFXStackInfo
 {
-    UInt       mMaxItemCnt;  // ìµœëŒ€ ìŠ¤íƒì´ ê°€ì§ˆìˆ˜ ìžˆëŠ” Itemì˜ ê°¯ìˆ˜
-    UInt       mCurItemCnt;  // í˜„ìž¬ ìŠ¤íƒì˜ ê°€ì§ˆìˆ˜ ìžˆëŠ” Itemì˜ ê°¯ìˆ˜
-    UInt       mItemSize;    // Itemì˜ í¬ê¸°(Byte)
+    UInt       mMaxItemCnt;  // ÃÖ´ë ½ºÅÃÀÌ °¡Áú¼ö ÀÖ´Â ItemÀÇ °¹¼ö
+    UInt       mCurItemCnt;  // ÇöÀç ½ºÅÃÀÇ °¡Áú¼ö ÀÖ´Â ItemÀÇ °¹¼ö
+    UInt       mItemSize;    // ItemÀÇ Å©±â(Byte)
 
-    UInt       mAlign;       // Alignì„ ìœ„í•´ì„œ ì¶”ê°€.
+    UInt       mAlign;       // AlignÀ» À§ÇØ¼­ Ãß°¡.
 
-    iduMutex        mMutex;  // ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•´.
-    iduCond         mCV;     // popì´ ëŒ€ê¸°í• ë•Œ ì‚¬ìš©.
+    iduMutex        mMutex;  // µ¿½Ã¼º Á¦¾î¸¦ À§ÇØ.
+    iduCond         mCV;     // popÀÌ ´ë±âÇÒ¶§ »ç¿ë.
     UInt            mWaiterCnt;
 
-    SChar      mArray[1];       // Itemì˜ ê°€ì§€ê³  ìžˆëŠ” Stack Array
+    SChar      mArray[1];       // ItemÀÇ °¡Áö°í ÀÖ´Â Stack Array
 } iduFXStackInfo;
 
-/* Stackì— ëŒ€í•´ì„œ Popì—°ì‚° ìˆ˜í–‰ì‹œ Stackì´ ë¹„ì–´ìžˆì„ë•Œ ìƒˆë¡œìš´ Itemì´
-   Pushë ë•Œê¹Œì§€ ë¬´í•œ ëŒ€ê¸°ë¥¼ í• ì§€ ë°”ë¡œ ë¹„ì—ˆë‹¤ê³  ë¦¬í„´í• ì§€ë¥¼ ê²°ì •  */
+/* Stack¿¡ ´ëÇØ¼­ Pop¿¬»ê ¼öÇà½Ã StackÀÌ ºñ¾îÀÖÀ»¶§ »õ·Î¿î ItemÀÌ
+   PushµÉ¶§±îÁö ¹«ÇÑ ´ë±â¸¦ ÇÒÁö ¹Ù·Î ºñ¾ú´Ù°í ¸®ÅÏÇÒÁö¸¦ °áÁ¤  */
 typedef enum iduFXStackWaitMode
 {
-    IDU_FXSTACK_POP_WAIT = 0, /* ë¬´í•œëŒ€ê¸° */
-    IDU_FXSTACK_POP_NOWAIT    /* ë°”ë¡œë¦¬í„´ */
+    IDU_FXSTACK_POP_WAIT = 0, /* ¹«ÇÑ´ë±â */
+    IDU_FXSTACK_POP_NOWAIT    /* ¹Ù·Î¸®ÅÏ */
 } iduFXStackWaitMode;
 
 class iduFXStack
@@ -77,13 +77,13 @@ public:
     static inline SInt getItemCnt( iduFXStackInfo *aStackInfo ) { return aStackInfo->mCurItemCnt;};
 };
 
-/* ìŠ¤íƒì´ ë¹„ì—ˆëŠ”ì§€ë¥¼ ë¦¬í„´ */
+/* ½ºÅÃÀÌ ºñ¾ú´ÂÁö¸¦ ¸®ÅÏ */
 inline idBool iduFXStack::isEmpty( iduFXStackInfo *aStackInfo )
 {
     return ( aStackInfo->mCurItemCnt == 0 ? ID_TRUE : ID_FALSE ) ;
 }
 
-/* ìŠ¤íƒì— ìƒˆë¡œìš´ Itemì´ Pushë ë•Œê¹Œì§€ ëŒ€ê¸° */
+/* ½ºÅÃ¿¡ »õ·Î¿î ItemÀÌ PushµÉ¶§±îÁö ´ë±â */
 inline IDE_RC iduFXStack::waitForPush( iduFXStackInfo *aStackInfo )
 {
     IDE_RC rc;
@@ -107,7 +107,7 @@ inline IDE_RC iduFXStack::waitForPush( iduFXStackInfo *aStackInfo )
     return IDE_FAILURE;
 }
 
-/* Stackì— Itemì´ Pushë˜ê¸°ë¥¼ ëŒ€ê¸°í•˜ëŠ” Waiterë¥¼ ê¹¨ìš´ë‹¤. */
+/* Stack¿¡ ItemÀÌ PushµÇ±â¸¦ ´ë±âÇÏ´Â Waiter¸¦ ±ú¿î´Ù. */
 inline IDE_RC iduFXStack::getupWaiters( iduFXStackInfo *aStackInfo )
 {
     if( aStackInfo->mWaiterCnt > 0 )

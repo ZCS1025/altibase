@@ -43,7 +43,9 @@ public:
     
     static IDE_RC open();
 
-    static IDE_RC close();
+    static IDE_RC close( idvSQL*        aStatistics,
+                         void         * aTrans,
+                         smLobViewEnv * aLobViewEnv );
 
     static IDE_RC read( idvSQL       * aStatistics,
                         void         * aTrans,

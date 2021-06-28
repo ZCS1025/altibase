@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxSenderMisc.cpp 83321 2018-06-21 07:03:04Z yoonhee.kim $
+ * $Id: rpxSenderMisc.cpp 90266 2021-03-19 05:23:09Z returns $
  **********************************************************************/
 
 #include <idl.h>
@@ -74,4 +74,52 @@ void rpxSender::getRemoteAddressForIB( SChar      ** aPeerIP,
     *aPeerIP    = mMessenger.mRemoteIP;
     *aPeerPort  = mMessenger.mRemotePort;
     *aIBLatency = mMessenger.mIBLatency;
+}
+
+RP_META_BUILD_TYPE rpxSender::getMetaBuildType(RP_SENDER_TYPE   aStartType,
+                                               UInt             aParallelID )
+{
+    RP_META_BUILD_TYPE sMetaBuildType = RP_META_BUILD_AUTO;
+    switch(aStartType)
+    {
+        case RP_NORMAL :
+        case RP_START_CONDITIONAL :
+            sMetaBuildType = RP_META_BUILD_AUTO;
+            break;
+
+        case RP_QUICK :
+        case RP_SYNC :
+        case RP_SYNC_ONLY :
+        case RP_SYNC_CONDITIONAL :
+            sMetaBuildType = RP_META_BUILD_LAST;
+            break;
+
+        case RP_XLOGFILE_FAILBACK_SLAVE :
+        case RP_XLOGFILE_FAILBACK_MASTER :
+        case RP_RECOVERY :
+            sMetaBuildType = RP_META_BUILD_LAST;
+            break;
+
+        /*offline sender는 meta를 build하지 않고 복사한다.*/
+        case RP_OFFLINE :
+            sMetaBuildType = RP_META_NO_BUILD;
+            break;
+
+        /*parallel sender*/
+        case RP_PARALLEL :
+            if ( aParallelID == RP_PARALLEL_PARENT_ID )
+            {
+                sMetaBuildType = RP_META_BUILD_AUTO;
+            }
+            else
+            {
+                sMetaBuildType = RP_META_NO_BUILD;
+            }
+            break;
+
+        default:
+            IDE_ASSERT(0);
+            break;
+    }
+    return sMetaBuildType;
 }

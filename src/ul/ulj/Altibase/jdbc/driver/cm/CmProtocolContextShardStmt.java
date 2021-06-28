@@ -17,23 +17,41 @@
 
 package Altibase.jdbc.driver.cm;
 
-import Altibase.jdbc.driver.sharding.core.ShardTransactionLevel;
+import Altibase.jdbc.driver.AltibaseStatement;
+import Altibase.jdbc.driver.sharding.core.AltibaseShardingConnection;
+import Altibase.jdbc.driver.sharding.core.GlobalTransactionLevel;
 
 public class CmProtocolContextShardStmt extends CmProtocolContext
 {
-    private CmProtocolContextShardConnect mShardContextConnect;
+    private AltibaseShardingConnection    mMetaConn;
     private CmShardAnalyzeResult          mShardAnalyzeResult;
     private CmPrepareResult               mShardPrepareResult;
 
-    /* BUG-46513 Node ì œê±° ì´í›„ì— getUpdateCount()ë¥¼ ìˆ˜í–‰í•´ë„ ê²°ê³¼ë¥¼ ê°ì†Œì‹œí‚¤ì§€ ì•Šê¸° ìœ„í•´
-       row countë¥¼ Statement shard contextì— ë³´ê´€í•œë‹¤.  */
+    /* BUG-46513 Node Á¦°Å ÀÌÈÄ¿¡ getUpdateCount()¸¦ ¼öÇàÇØµµ °á°ú¸¦ °¨¼Ò½ÃÅ°Áö ¾Ê±â À§ÇØ
+       row count¸¦ Statement shard context¿¡ º¸°üÇÑ´Ù.  */
     private int                           mUpdateRowcount;
 
-    public CmProtocolContextShardStmt(CmProtocolContextShardConnect aShardContextConnect)
+    public CmProtocolContextShardStmt(AltibaseShardingConnection aMetaConn, AltibaseStatement aStmt)
     {
         mShardAnalyzeResult = new CmShardAnalyzeResult();
         mShardPrepareResult = new CmPrepareResult();
-        mShardContextConnect = aShardContextConnect;
+        aStmt.setPrepareResult(mShardPrepareResult); // BUG-47274 Analyze¿ëÀ¸·Î »ı¼ºÇÑ statement¿¡ CmPrepareResult°´Ã¼¸¦ ÁÖÀÔÇÑ´Ù.
+        /* BUG-46790 failover½Ã shard context°´Ã¼°¡ »õ·Î »ı¼ºµÇ±â¶§¹®¿¡ context°´Ã¼¸¦ °¡Áö°í ÀÖ´Â
+           AltibaseShardingConnection °´Ã¼¸¦ ÁÖÀÔÇÑ´Ù. */
+        mMetaConn = aMetaConn;
+        // mMetaConnection.mDistTxInfo¸¦ CmProtocolContextShardStmt.mDistTxInfo¿¡ ÁÖÀÔÇÑ´Ù.
+        setDistTxInfo(aStmt.getAltibaseConnection().getDistTxInfo());
+    }
+
+    public CmProtocolContextShardStmt(AltibaseShardingConnection aMetaConn, AltibaseStatement aStmt,
+                                      CmPrepareResult aPrepareResult)
+    {
+        mShardAnalyzeResult = new CmShardAnalyzeResult();
+        mShardPrepareResult = aPrepareResult;
+        aStmt.setPrepareResult(mShardPrepareResult);
+        mMetaConn = aMetaConn;
+        // mMetaConnection.mDistTxInfo¸¦ CmProtocolContextShardStmt.mDistTxInfo¿¡ ÁÖÀÔÇÑ´Ù.
+        setDistTxInfo(aStmt.getAltibaseConnection().getDistTxInfo());
     }
 
     public CmShardAnalyzeResult getShardAnalyzeResult()
@@ -46,19 +64,24 @@ public class CmProtocolContextShardStmt extends CmProtocolContext
         return mShardPrepareResult;
     }
 
-    public CmProtocolContextShardConnect getShardContextConnect()
+    public void setShardPrepareResult(CmPrepareResult aShardPrepareResult)
     {
-        return mShardContextConnect;
+        this.mShardPrepareResult = aShardPrepareResult;
     }
 
-    public ShardTransactionLevel getShardTransactionLevel()
+    public CmProtocolContextShardConnect getShardContextConnect()
     {
-        return mShardContextConnect.getShardTransactionLevel();
+        return mMetaConn.getShardContextConnect();
+    }
+
+    public GlobalTransactionLevel getGlobalTransactionLevel()
+    {
+        return mMetaConn.getGlobalTransactionLevel();
     }
 
     public boolean isAutoCommitMode()
     {
-        return mShardContextConnect.isAutoCommitMode();
+        return mMetaConn.getShardContextConnect().isAutoCommitMode();
     }
 
     public int getUpdateRowcount()

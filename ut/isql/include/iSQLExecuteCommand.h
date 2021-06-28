@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLExecuteCommand.h 80544 2017-07-19 08:04:46Z daramix $
+ * $Id: iSQLExecuteCommand.h 86502 2020-01-07 05:24:08Z bethy $
  **********************************************************************/
 
 #ifndef _O_ISQLEXECUTECOMMAND_H_
@@ -37,48 +37,42 @@ public:
 
     void   EndTran(SInt aAutocommit);
 
-    /* [ select * from tab ÏøºÎ¶¨Ïùò Ïã§Ìñâ]
-     * ÌÖåÏù¥Î∏î Î¶¨Ïä§Ìä∏Î•º Î≥¥Ïó¨Ï£ºÍ±∞ÎÇò TABÌÖåÏù¥Î∏îÏùò ROWÎ•º Î≥¥Ïó¨Ï§ÄÎã§. */
-    IDE_RC DisplayTableListOrSelect(SChar *aCmdStr, SChar *aQueryStr);
-    IDE_RC DisplayTableListOrPrepare(SChar *aCmdStr, SChar *aQueryStr,
+    /* [ select * from tab ƒı∏Æ¿« Ω««‡]
+     * ≈◊¿Ã∫Ì ∏ÆΩ∫∆Æ∏¶ ∫∏ø©¡÷∞≈≥™ TAB≈◊¿Ã∫Ì¿« ROW∏¶ ∫∏ø©¡ÿ¥Ÿ. */
+    IDE_RC DisplayTableListOrSelect(SChar *aQueryStr);
+    IDE_RC DisplayTableListOrPrepare(SChar *aQueryStr,
                                      SInt aQueryBufLen);
 
-    IDE_RC DisplayFixedTableList(const SChar * a_CommandStr,
-                                 const SChar * a_PrefixName,
+    IDE_RC DisplayFixedTableList(const SChar * a_PrefixName,
                                  const SChar * a_TableType);
-    IDE_RC DisplaySequenceList( SChar * a_CommandStr );
-    IDE_RC DisplayAttributeList( SChar * a_CommandStr,
-                                 SChar * a_UserName,
+    IDE_RC DisplaySequenceList();
+    IDE_RC DisplayAttributeList( SChar * a_UserName,
                                  SChar * a_TableName );
-    IDE_RC DisplayAttributeList4FTnPV( SChar * a_CommandStr,
-                                       SChar * a_UserName,
+    IDE_RC DisplayAttributeList4FTnPV( SChar * a_UserName,
                                        SChar * a_TableName );
 
     IDE_RC BindParam();
     /* PROJ-1584 DML Return Clause */
     void   returnBindParam();
 
-    IDE_RC ExecuteDDLStmt( SChar           * a_CommandStr,
-                           SChar           * a_DDLStmt,
+    IDE_RC ExecuteDDLStmt( SChar           * a_DDLStmt,
                            iSQLCommandKind   a_CommandKind );
 
     /* BUG-37002 isql cannot parse package as a assigned variable */
-    IDE_RC ExecutePSMStmt( SChar * a_CommandStr,
-                           SChar * a_PSMStmt,
+    IDE_RC ExecutePSMStmt( SChar * a_PSMStmt,
                            SChar * a_UserName,
                            SChar * a_PkgName,
                            SChar * a_ProcName,
                            idBool  a_IsFunc );
    
-    IDE_RC ExecuteOtherCommandStmt( SChar * a_CommandStr,
-                                    SChar * a_OtherCommandStmt );
+    IDE_RC ExecuteOtherCommandStmt( SChar * a_OtherCommandStmt );
     IDE_RC ExecuteSysdbaCommandStmt( SChar * a_CommandStr,
                                      SChar * a_SysdbaCommandStmt );
 
-    IDE_RC ExecuteConnectStmt(const SChar *aCmdStr, SChar *aQueryStr,
+    IDE_RC ExecuteConnectStmt(SChar *aQueryStr,
                               SChar *aCmdUser, SChar *aCmdPasswd,
                               SChar *aCmdNlsUse, idBool aCmdIsSysDBA);
-    IDE_RC ExecuteDisconnectStmt(const SChar *aCmdStr, SChar *aQueryStr,
+    IDE_RC ExecuteDisconnectStmt(SChar *aQueryStr,
                                  idBool aDisplayMode);
     IDE_RC ExecuteAutoCommitStmt( SChar * a_CommandStr,
                                   idBool  a_IsAutoCommitOn );
@@ -93,21 +87,19 @@ public:
     void   ExecuteEditStmt( SChar        * a_InFileName,
                             iSQLPathType   a_PathType,
                             SChar        * a_OutFileName );
-    IDE_RC PrintHelpString( SChar           * a_CommandStr,
-                            iSQLCommandKind   eHelpArguKind );
+    IDE_RC PrintHelpString( iSQLCommandKind   eHelpArguKind );
 
     void   ShowElapsedTime();
 
-    void   ShowHostVar( SChar * a_CommandSt );
-    void   ShowHostVar( SChar * a_CommandStr,
-                        SChar * a_HostVarName );
+    void   ShowHostVar();
+    void   ShowHostVar( SChar * a_HostVarName );
 
     void   PrintHeader( SInt * ColSize,
                         SInt * pg,
                         SInt * space );
-    IDE_RC ExecuteSelectOrDMLStmt(SChar *aCmdStr, SChar *aQueryStr,
+    IDE_RC ExecuteSelectOrDMLStmt(SChar *aQueryStr,
                                   iSQLCommandKind aCmdKind);
-    IDE_RC PrepareSelectOrDMLStmt(SChar *aCmdStr, SChar *aQueryStr,
+    IDE_RC PrepareSelectOrDMLStmt(SChar *aQueryStr,
                                   iSQLCommandKind aCmdKind);
     IDE_RC FetchSelectStmt(idBool aPrepare, SInt *aRowCnt);
     IDE_RC PrintFoot(SInt aRowCnt, iSQLCommandKind aCmdKind, idBool aPrepare);
@@ -127,7 +119,7 @@ public:
     IDE_RC ShowForeignKeys( SChar * a_UserName,
                             SChar * a_TableName );
 
-    /* PROJ-1107 Check Constraint ÏßÄÏõê */
+    /* PROJ-1107 Check Constraint ¡ˆø¯ */
     IDE_RC ShowCheckConstraints( SChar * aUserName,
                                  SChar * aTableName );
 
@@ -143,8 +135,8 @@ public:
                              SInt   aTableId );
 
     // for admin
-    IDE_RC Startup(SChar *aCmdStr, SInt aMode, iSQLForkRunType aRunWServer);
-    IDE_RC Shutdown(SChar *aCmdStr, SInt aMode);
+    IDE_RC Startup(SInt aMode, iSQLForkRunType aRunWServer);
+    IDE_RC Shutdown(SInt aMode);
 
     /* BUG-43529 Need to reconnect to a normal service session */
     IDE_RC Reconnect();
@@ -161,8 +153,8 @@ public:
     };
     idBool IsFetchCanceled()  { return m_IsFetchCanceled;     };
 
-    /* BUG-39620 DESC, select * from tab, select * from seqÍ∞Ä Ï∂úÎ†•ÌïòÎäî
-     * Í∞ùÏ≤¥Ïùò DISPLAY SIZE Í≤∞Ï†ï, SET FULLNAME ON/OFF Ïãú Ìò∏Ï∂úÎêúÎã§. */
+    /* BUG-39620 DESC, select * from tab, select * from seq∞° √‚∑¬«œ¥¬
+     * ∞¥√º¿« DISPLAY SIZE ∞·¡§, SET FULLNAME ON/OFF Ω√ »£√‚µ»¥Ÿ. */
     void   SetObjectDispLen( UInt aObjectDispLen )
                               { mObjectDispLen = aObjectDispLen; };
 
@@ -178,6 +170,9 @@ public:
     /* BUG-44613 Set AsyncPrefetch On|Auto|Off */
     IDE_RC SetAsyncPrefetch(AsyncPrefetchType aType);
 
+    /* TASK-7218 Handling Multi-Error */
+    IDE_RC PrintMultiError();
+
     utISPApi   * m_ISPApi;
 
 private:
@@ -187,13 +182,13 @@ private:
     idBool       m_IsFetchCanceled;
     UInt         mObjectDispLen;
 
-    /* ÌòÑÏû¨ ÏÇ¨Ïö©ÏûêÍ∞Ä Í¥ÄÎ¶¨Ïûê Í∂åÌïúÏùÑ Í∞ÄÏßÑ ÏäàÌçºÏú†Ï†ÄÏù∏ÏßÄ ÏïåÏïÑÎÇ∏Îã§. */
+    /* «ˆ¿Á ªÁøÎ¿⁄∞° ∞¸∏Æ¿⁄ ±««—¿ª ∞°¡¯ Ω¥∆€¿Ø¿˙¿Œ¡ˆ æÀæ∆≥Ω¥Ÿ. */
     idBool IsSysUser();
 
-    /* ÌÖåÏù¥Î∏î Î¶¨Ïä§Ìä∏Î•º Î≥¥Ïó¨Ï§ÄÎã§. */
-    IDE_RC DisplayTableList( SChar * a_CommandStr );
+    /* ≈◊¿Ã∫Ì ∏ÆΩ∫∆Æ∏¶ ∫∏ø©¡ÿ¥Ÿ. */
+    IDE_RC DisplayTableList();
 
-    /* BUG-39620 Ìï®Ïàò ÏÑ§Î™ÖÏùÄ cpp Ï∞∏Ï°∞ */
+    /* BUG-39620 «‘ºˆ º≥∏Ì¿∫ cpp ¬¸¡∂ */
     void   printObjectForDesc( const SChar  * aName,
                                const idBool   aIsFixedLen,
                                const SChar  * aWhiteSpace );

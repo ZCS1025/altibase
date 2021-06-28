@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfSubstring.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfSubstring.cpp 90192 2021-03-12 02:01:03Z jayce.park $
  **********************************************************************/
 
 #include <mte.h>
@@ -48,7 +48,7 @@ static IDE_RC mtfSubstringEstimate( mtcNode*     aNode,
 mtfModule mtfSubstring = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfSubstringFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -80,14 +80,14 @@ static IDE_RC mtfSubstringCalculateXlobLocatorFor3Args( mtcNode*     aNode,
                                                         void*        aInfo,
                                                         mtcTemplate* aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 static IDE_RC mtfSubstringCalculateClobValueFor2Args( mtcNode     * aNode,
                                                       mtcStack    * aStack,
                                                       SInt          aRemain,
                                                       void        * aInfo,
                                                       mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 static IDE_RC mtfSubstringCalculateClobValueFor3Args( mtcNode     * aNode,
                                                       mtcStack    * aStack,
                                                       SInt          aRemain,
@@ -160,7 +160,7 @@ const mtcExecute mtfExecuteNcharFor3Args = {
     mtk::extractRangeNA
 };
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 const mtcExecute mtfExecuteClobValueFor2Args = {
     mtf::calculateNA,
     mtf::calculateNA,
@@ -173,7 +173,7 @@ const mtcExecute mtfExecuteClobValueFor2Args = {
     mtk::extractRangeNA
 };
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 const mtcExecute mtfExecuteClobValueFor3Args = {
     mtf::calculateNA,
     mtf::calculateNA,
@@ -230,9 +230,9 @@ IDE_RC mtfSubstringEstimate( mtcNode*     aNode,
         }
 
         // fix BUG-25560
-        // precisonì„ clobì˜ ìµœëŒ€ í¬ê¸°ë¡œ ì„¤ì •
-        /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì›
-         * Lob LocatorëŠ” VARCHARë¡œ ê°€ëŠ¥í•œ ìµœëŒ€ í¬ê¸°ë¡œ ì„¤ì •
+        // precisonÀ» clobÀÇ ÃÖ´ë Å©±â·Î ¼³Á¤
+        /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø
+         * Lob Locator´Â VARCHAR·Î °¡´ÉÇÑ ÃÖ´ë Å©±â·Î ¼³Á¤
          */
         sPrecision = MTD_VARCHAR_PRECISION_MAXIMUM;
     }
@@ -265,9 +265,9 @@ IDE_RC mtfSubstringEstimate( mtcNode*     aNode,
             }
 
             // fix BUG-25560
-            // precisonì„ clobì˜ ìµœëŒ€ í¬ê¸°ë¡œ ì„¤ì •
-            /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì›
-             * Lob Columnì´ë©´ VARCHARë¡œ ê°€ëŠ¥í•œ ìµœëŒ€ í¬ê¸°ë¡œ ì„¤ì •í•œë‹¤.
+            // precisonÀ» clobÀÇ ÃÖ´ë Å©±â·Î ¼³Á¤
+            /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø
+             * Lob ColumnÀÌ¸é VARCHAR·Î °¡´ÉÇÑ ÃÖ´ë Å©±â·Î ¼³Á¤ÇÑ´Ù.
              */
             sPrecision = MTD_VARCHAR_PRECISION_MAXIMUM;
         }
@@ -295,9 +295,9 @@ IDE_RC mtfSubstringEstimate( mtcNode*     aNode,
             }
 
             // fix BUG-25560
-            // precisonì„ clobì˜ ìµœëŒ€ í¬ê¸°ë¡œ ì„¤ì •
-            /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì›
-             * Lob Valueì´ë©´ VARCHARì˜ ìµœëŒ€ í¬ê¸°ì™€ Lob Valueì˜ í¬ê¸° ì¤‘ ì‘ì€ ê²ƒìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+            // precisonÀ» clobÀÇ ÃÖ´ë Å©±â·Î ¼³Á¤
+            /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø
+             * Lob ValueÀÌ¸é VARCHARÀÇ ÃÖ´ë Å©±â¿Í Lob ValueÀÇ Å©±â Áß ÀÛÀº °ÍÀ¸·Î ¼³Á¤ÇÑ´Ù.
              */
             sPrecision = IDL_MIN( MTD_VARCHAR_PRECISION_MAXIMUM,
                                   aStack[1].column->precision );
@@ -411,7 +411,7 @@ IDE_RC mtfSubstringCommon( const mtlModule * aLanguage,
     UShort            i;
 
     //-----------------------------------------
-    // ì „ì²´ ë¬¸ì ê°œìˆ˜ êµ¬í•¨
+    // ÀüÃ¼ ¹®ÀÚ °³¼ö ±¸ÇÔ
     //-----------------------------------------        
 
     sSourceIndex = aSource;
@@ -419,14 +419,14 @@ IDE_RC mtfSubstringCommon( const mtlModule * aLanguage,
     sSourceLength = 0;
 
     //-----------------------------------------
-    // ë¬¸ìì—´ì—ì„œ ì‹œì‘ ë¬¸ìê°€ ëª‡ë²ˆì§¸ ë¬¸ìì¸ì§€ ì•Œì•„ëƒ„
+    // ¹®ÀÚ¿­¿¡¼­ ½ÃÀÛ ¹®ÀÚ°¡ ¸î¹øÂ° ¹®ÀÚÀÎÁö ¾Ë¾Æ³¿
     //-----------------------------------------
 
     if( aStart > 0 )
     {
-        // substring('abcde', 0)ì´ë‚˜ substring('abcde', 1)ì´ë‚˜ ê°™ë‹¤.
-        // ê·¸ì§€ ê°™ì€ ì˜¤ë¼í´ ìŠ¤íŒ©ì´ ê·¸ëŸ¬í•´ì„œ ë”°ë¼í•œë‹¤.
-        // ë‚´ë¶€ êµ¬í˜„ì€ 0ë¶€í„°ì´ë‹¤.
+        // substring('abcde', 0)ÀÌ³ª substring('abcde', 1)ÀÌ³ª °°´Ù.
+        // ±×Áö °°Àº ¿À¶óÅ¬ ½ºÆÑÀÌ ±×·¯ÇØ¼­ µû¶óÇÑ´Ù.
+        // ³»ºÎ ±¸ÇöÀº 0ºÎÅÍÀÌ´Ù.
         aStart--;
     }
     else if( aStart < 0 )
@@ -444,20 +444,20 @@ IDE_RC mtfSubstringCommon( const mtlModule * aLanguage,
     }
 
     //-----------------------------------------
-    // ê²°ê³¼ ì €ì¥
+    // °á°ú ÀúÀå
     //-----------------------------------------
 
     if ( aStart < 0 )
     {
-        // ì‹œì‘ ë¬¸ì ìœ„ì¹˜ê°€ ë¬¸ìì—´ì˜ ë²”ìœ„ë¥¼ ë„˜ì–´ì„  ê²½ìš°,
-        // - ì²«ë²ˆì§¸ ë¬¸ìë³´ë‹¤ë„ ì‹œì‘ ë¬¸ì ìœ„ì¹˜ê°€ ì‘ì€ ê²½ìš°
-        // - ë§ˆì§€ë§‰ ë¬¸ìë³´ë‹¤ ì‹œì‘ ë¬¸ì ìœ„ì¹˜ê°€ í° ê²½ìš°
+        // ½ÃÀÛ ¹®ÀÚ À§Ä¡°¡ ¹®ÀÚ¿­ÀÇ ¹üÀ§¸¦ ³Ñ¾î¼± °æ¿ì,
+        // - Ã¹¹øÂ° ¹®ÀÚº¸´Ùµµ ½ÃÀÛ ¹®ÀÚ À§Ä¡°¡ ÀÛÀº °æ¿ì
+        // - ¸¶Áö¸· ¹®ÀÚº¸´Ù ½ÃÀÛ ¹®ÀÚ À§Ä¡°¡ Å« °æ¿ì
         aStack[0].column->module->null( aStack[0].column,
                                         aStack[0].value );
     }
     else
     {
-        // ì‹œì‘ indexë¥¼ ì°¾ìŒ
+        // ½ÃÀÛ index¸¦ Ã£À½
         sStartIndex = aSource;
 
         for ( i = 0; i < aStart; i++ )
@@ -483,7 +483,7 @@ IDE_RC mtfSubstringCommon( const mtlModule * aLanguage,
             }
         }
 
-        // ë indexë¥¼ ì°¾ìŒ
+        // ³¡ index¸¦ Ã£À½
         sEndIndex = sStartIndex;
 
         for ( i = 0 ; i < aLength ; i++ )
@@ -501,7 +501,7 @@ IDE_RC mtfSubstringCommon( const mtlModule * aLanguage,
         }
 
         //-----------------------------------------
-        // start positionë¶€í„° nê°œì˜ ê¸¸ì´ stringì„ copyí•˜ì—¬ ê²°ê³¼ì— ì €ì¥
+        // start positionºÎÅÍ n°³ÀÇ ±æÀÌ stringÀ» copyÇÏ¿© °á°ú¿¡ ÀúÀå
         //-----------------------------------------
         
         *aResultLen = sEndIndex - sStartIndex;
@@ -544,9 +544,9 @@ IDE_RC mtfSubstringCalculateFor2Args( mtcNode*     aNode,
  * Implementation :
  *    SUBSTR( string, m )
  *
- *    aStack[0] : ì…ë ¥ëœ ë¬¸ìì—´ì˜ më²ˆì§¸ ë¬¸ìë¶€í„° ëê¹Œì§€ ëª¨ë“  ë¬¸ì ë°˜í™˜
- *    aStack[1] : string ( ì…ë ¥ëœ ë¬¸ìì—´ )
- *    aStack[2] : n ( ì‹œì‘ì  )
+ *    aStack[0] : ÀÔ·ÂµÈ ¹®ÀÚ¿­ÀÇ m¹øÂ° ¹®ÀÚºÎÅÍ ³¡±îÁö ¸ğµç ¹®ÀÚ ¹İÈ¯
+ *    aStack[1] : string ( ÀÔ·ÂµÈ ¹®ÀÚ¿­ )
+ *    aStack[2] : n ( ½ÃÀÛÁ¡ )
  *
  *    ex ) SUBSTR( 'SALESMAN', 6 ) ==> 'MAN'
  *
@@ -585,7 +585,7 @@ IDE_RC mtfSubstringCalculateFor2Args( mtcNode*     aNode,
         sLanguage = aStack[1].column->language;
 
         //-----------------------------------------
-        // ì „ì²´ ë¬¸ì ê°œìˆ˜ êµ¬í•¨
+        // ÀüÃ¼ ¹®ÀÚ °³¼ö ±¸ÇÔ
         //-----------------------------------------        
 
         sSourceIndex = sSource->value;
@@ -594,14 +594,14 @@ IDE_RC mtfSubstringCalculateFor2Args( mtcNode*     aNode,
         sSourceLength = 0;
 
         //-----------------------------------------
-        // ë¬¸ìì—´ì—ì„œ ì‹œì‘ ë¬¸ìê°€ ëª‡ë²ˆì§¸ ë¬¸ìì¸ì§€ ì•Œì•„ëƒ„
+        // ¹®ÀÚ¿­¿¡¼­ ½ÃÀÛ ¹®ÀÚ°¡ ¸î¹øÂ° ¹®ÀÚÀÎÁö ¾Ë¾Æ³¿
         //-----------------------------------------
 
         if( sStart > 0 )
         {
-            // substring('abcde', 0)ì´ë‚˜ substring('abcde', 1)ì´ë‚˜ ê°™ë‹¤.
-            // ê·¸ì§€ ê°™ì€ ì˜¤ë¼í´ ìŠ¤íŒ©ì´ ê·¸ëŸ¬í•´ì„œ ë”°ë¼í•œë‹¤.
-            // ë‚´ë¶€ êµ¬í˜„ì€ 0ë¶€í„°ì´ë‹¤.
+            // substring('abcde', 0)ÀÌ³ª substring('abcde', 1)ÀÌ³ª °°´Ù.
+            // ±×Áö °°Àº ¿À¶óÅ¬ ½ºÆÑÀÌ ±×·¯ÇØ¼­ µû¶óÇÑ´Ù.
+            // ³»ºÎ ±¸ÇöÀº 0ºÎÅÍÀÌ´Ù.
             sStart--;
         }
         else if( sStart < 0 )
@@ -611,7 +611,7 @@ IDE_RC mtfSubstringCalculateFor2Args( mtcNode*     aNode,
                 (void)sLanguage->nextCharPtr( &sSourceIndex, sSourceFence );
                 sSourceLength++;
             }
-            // ìŒìˆ˜ì¸ ê²½ìš°
+            // À½¼öÀÎ °æ¿ì
             sStart = sStart + sSourceLength;
         }
         else
@@ -620,22 +620,22 @@ IDE_RC mtfSubstringCalculateFor2Args( mtcNode*     aNode,
         }
 
         //-----------------------------------------
-        // ê²°ê³¼ ì €ì¥
+        // °á°ú ÀúÀå
         //-----------------------------------------
         
         if ( sStart < 0 )
         {
-            // ì‹œì‘ ë¬¸ì ìœ„ì¹˜ê°€ ë¬¸ìì—´ì˜ ë²”ìœ„ë¥¼ ë„˜ì–´ì„  ê²½ìš°,
-            // - ì²«ë²ˆì§¸ ë¬¸ìë³´ë‹¤ë„ ì‹œì‘ ë¬¸ì ìœ„ì¹˜ê°€ ì‘ì€ ê²½ìš°
-            // - ë§ˆì§€ë§‰ ë¬¸ìë³´ë‹¤ ì‹œì‘ ë¬¸ì ìœ„ì¹˜ê°€ í° ê²½ìš°
+            // ½ÃÀÛ ¹®ÀÚ À§Ä¡°¡ ¹®ÀÚ¿­ÀÇ ¹üÀ§¸¦ ³Ñ¾î¼± °æ¿ì,
+            // - Ã¹¹øÂ° ¹®ÀÚº¸´Ùµµ ½ÃÀÛ ¹®ÀÚ À§Ä¡°¡ ÀÛÀº °æ¿ì
+            // - ¸¶Áö¸· ¹®ÀÚº¸´Ù ½ÃÀÛ ¹®ÀÚ À§Ä¡°¡ Å« °æ¿ì
             aStack[0].column->module->null( aStack[0].column,
                                             aStack[0].value );
         }
         else
         {
-            // ì‹œì‘ ë¬¸ì ìœ„ì¹˜ê°€ ë¬¸ì ì „ì²´ ê°œìˆ˜ë³´ë‹¤ ì‘ê±°ë‚˜ ê°™ì€  ê²½ìš°
+            // ½ÃÀÛ ¹®ÀÚ À§Ä¡°¡ ¹®ÀÚ ÀüÃ¼ °³¼öº¸´Ù ÀÛ°Å³ª °°Àº  °æ¿ì
             
-            // ì‹œì‘ indexë¥¼ ì°¾ìŒ
+            // ½ÃÀÛ index¸¦ Ã£À½
             sStartIndex = sSource->value;
        
             for ( i = 0; i < sStart; i++ )
@@ -662,7 +662,7 @@ IDE_RC mtfSubstringCalculateFor2Args( mtcNode*     aNode,
             }
 
             //-----------------------------------------
-            // ì‹œì‘ indexë¶€í„° ëê¹Œì§€ì˜ stringì„ copyí•˜ì—¬ ê²°ê³¼ì— ì €ì¥
+            // ½ÃÀÛ indexºÎÅÍ ³¡±îÁöÀÇ stringÀ» copyÇÏ¿© °á°ú¿¡ ÀúÀå
             //-----------------------------------------
             
             sResult->length = sSource->length - ( sStartIndex - sSource->value );
@@ -694,10 +694,10 @@ IDE_RC mtfSubstringCalculateFor3Args( mtcNode*     aNode,
  * Implementation :
  *    SUBSTR( string, m, n )
  *
- *    aStack[0] : ì…ë ¥ëœ ë¬¸ìì—´ì˜ më²ˆì§¸ ë¬¸ìë¶€í„° nê°œì˜ ë¬¸ì ë°˜í™˜
- *    aStack[1] : ì…ë ¥ëœ ë¬¸ìì—´
- *    aStack[2] : ì‹œì‘ ( eg. m )
- *    aStack[3] : ë°˜í™˜ ë¬¸ì ê°œìˆ˜   ( eg. n )
+ *    aStack[0] : ÀÔ·ÂµÈ ¹®ÀÚ¿­ÀÇ m¹øÂ° ¹®ÀÚºÎÅÍ n°³ÀÇ ¹®ÀÚ ¹İÈ¯
+ *    aStack[1] : ÀÔ·ÂµÈ ¹®ÀÚ¿­
+ *    aStack[2] : ½ÃÀÛ ( eg. m )
+ *    aStack[3] : ¹İÈ¯ ¹®ÀÚ °³¼ö   ( eg. n )
  *
  *    ex) SUBSTR('SALESMAN', 1, 5 ) ==> 'SALES'
  *
@@ -779,9 +779,9 @@ IDE_RC mtfSubstringCalculateXlobLocatorFor2Args( mtcNode*     aNode,
  * Implementation :
  *    SUBSTR( string, m )
  *
- *    aStack[0] : ì…ë ¥ëœ ë¬¸ìì—´ì˜ më²ˆì§¸ ë¬¸ìë¶€í„° ëê¹Œì§€ ëª¨ë“  ë¬¸ì ë°˜í™˜
- *    aStack[1] : string ( ì…ë ¥ëœ ë¬¸ìì—´ )
- *    aStack[2] : n ( ì‹œì‘ì  )
+ *    aStack[0] : ÀÔ·ÂµÈ ¹®ÀÚ¿­ÀÇ m¹øÂ° ¹®ÀÚºÎÅÍ ³¡±îÁö ¸ğµç ¹®ÀÚ ¹İÈ¯
+ *    aStack[1] : string ( ÀÔ·ÂµÈ ¹®ÀÚ¿­ )
+ *    aStack[2] : n ( ½ÃÀÛÁ¡ )
  *
  *    ex ) SUBSTR( 'SALESMAN', 6 ) ==> 'MAN'
  *
@@ -816,7 +816,8 @@ IDE_RC mtfSubstringCalculateXlobLocatorFor2Args( mtcNode*     aNode,
     
     IDE_TEST( mtc::getLobLengthLocator( sLocator,
                                         & sIsNull,
-                                        & sLobLength )
+                                        & sLobLength,
+                                        mtc::getStatistics(aTemplate) )
               != IDE_SUCCESS );
     
     if ( (sIsNull == ID_TRUE) ||
@@ -835,14 +836,14 @@ IDE_RC mtfSubstringCalculateXlobLocatorFor2Args( mtcNode*     aNode,
         sResult->length = 0;
         
         //-----------------------------------------
-        // ë¬¸ìì—´ì—ì„œ ì‹œì‘ ë¬¸ìê°€ ëª‡ë²ˆì§¸ ë¬¸ìì¸ì§€ ì•Œì•„ëƒ„
+        // ¹®ÀÚ¿­¿¡¼­ ½ÃÀÛ ¹®ÀÚ°¡ ¸î¹øÂ° ¹®ÀÚÀÎÁö ¾Ë¾Æ³¿
         //-----------------------------------------
         
         if( sStart > 0 )
         {
-            // substring('abcde', 0)ì´ë‚˜ substring('abcde', 1)ì´ë‚˜ ê°™ë‹¤.
-            // ê·¸ì§€ ê°™ì€ ì˜¤ë¼í´ ìŠ¤íŒ©ì´ ê·¸ëŸ¬í•´ì„œ ë”°ë¼í•œë‹¤.
-            // ë‚´ë¶€ êµ¬í˜„ì€ 0ë¶€í„°ì´ë‹¤.
+            // substring('abcde', 0)ÀÌ³ª substring('abcde', 1)ÀÌ³ª °°´Ù.
+            // ±×Áö °°Àº ¿À¶óÅ¬ ½ºÆÑÀÌ ±×·¯ÇØ¼­ µû¶óÇÑ´Ù.
+            // ³»ºÎ ±¸ÇöÀº 0ºÎÅÍÀÌ´Ù.
             sStart--;
         }
         else
@@ -851,25 +852,25 @@ IDE_RC mtfSubstringCalculateXlobLocatorFor2Args( mtcNode*     aNode,
         }
         
         //-----------------------------------------
-        // ê²°ê³¼ ì €ì¥
+        // °á°ú ÀúÀå
         //-----------------------------------------
         
         if ( ( sLobLength <= sStart ) || ( sStart < 0 ) )
         {
-            // ì‹œì‘ ë¬¸ì ìœ„ì¹˜ê°€ ë¬¸ìì—´ì˜ ë²”ìœ„ë¥¼ ë„˜ì–´ì„  ê²½ìš°,
-            // - ì²«ë²ˆì§¸ ë¬¸ìë³´ë‹¤ë„ ì‹œì‘ ë¬¸ì ìœ„ì¹˜ê°€ ì‘ì€ ê²½ìš°
+            // ½ÃÀÛ ¹®ÀÚ À§Ä¡°¡ ¹®ÀÚ¿­ÀÇ ¹üÀ§¸¦ ³Ñ¾î¼± °æ¿ì,
+            // - Ã¹¹øÂ° ¹®ÀÚº¸´Ùµµ ½ÃÀÛ ¹®ÀÚ À§Ä¡°¡ ÀÛÀº °æ¿ì
             aStack[0].column->module->null( aStack[0].column,
                                             aStack[0].value );
         }
         else
         {
-            // ì‹œì‘ indexë¥¼ ì°¾ìŒ
+            // ½ÃÀÛ index¸¦ Ã£À½
             sStartIndex = 0;
             sBufferOffset = 0;
 
             while ( sBufferOffset < sLobLength )
             {
-                // ë²„í¼ë¥¼ ì½ëŠ”ë‹¤.
+                // ¹öÆÛ¸¦ ÀĞ´Â´Ù.
                 if ( sBufferOffset + MTC_LOB_BUFFER_SIZE + MTL_MAX_PRECISION > sLobLength )
                 {
                     sBufferMount = sLobLength - sBufferOffset;
@@ -883,7 +884,7 @@ IDE_RC mtfSubstringCalculateXlobLocatorFor2Args( mtcNode*     aNode,
                 
                 //ideLog::log( IDE_QP_0, "[substring] offset=%d", sBufferOffset );
                 
-                IDE_TEST( mtc::readLob( mtc::getStatistics( aTemplate ), //  NULL, /* idvSQL* */
+                IDE_TEST( mtc::readLob( mtc::getStatistics( aTemplate ), /* idvSQL* */
                                         sLocator,
                                         sBufferOffset,
                                         sBufferMount,
@@ -891,7 +892,7 @@ IDE_RC mtfSubstringCalculateXlobLocatorFor2Args( mtcNode*     aNode,
                                         &sReadLength )
                           != IDE_SUCCESS );
                 
-                // ë²„í¼ì—ì„œ ë¬¸ìì—´ ê¸¸ì´ë¥¼ êµ¬í•œë‹¤.
+                // ¹öÆÛ¿¡¼­ ¹®ÀÚ¿­ ±æÀÌ¸¦ ±¸ÇÑ´Ù.
                 sIndex = sBuffer;
                 sFence = sIndex + sBufferSize;
                 sBufferFence = sIndex + sBufferMount;
@@ -910,7 +911,7 @@ IDE_RC mtfSubstringCalculateXlobLocatorFor2Args( mtcNode*     aNode,
                                         aStack[0].column->precision,
                                         ERR_EXCEED_MAX );
                         
-                        // ë³µì‚¬í•œë‹¤.
+                        // º¹»çÇÑ´Ù.
                         idlOS::memcpy( sResult->value + sResult->length,
                                        sIndexPrev,
                                        sSize );
@@ -927,7 +928,7 @@ IDE_RC mtfSubstringCalculateXlobLocatorFor2Args( mtcNode*     aNode,
 
             if ( sStartIndex < sStart )
             {
-                // ì‹œì‘ indexë¥¼ ì°¾ì§€ ëª»í–ˆë‹¤.
+                // ½ÃÀÛ index¸¦ Ã£Áö ¸øÇß´Ù.
                 aStack[0].column->module->null( aStack[0].column,
                                                 aStack[0].value );
             }
@@ -969,10 +970,10 @@ IDE_RC mtfSubstringCalculateXlobLocatorFor3Args( mtcNode*     aNode,
  * Implementation :
  *    SUBSTR( string, m, n )
  *
- *    aStack[0] : ì…ë ¥ëœ ë¬¸ìì—´ì˜ më²ˆì§¸ ë¬¸ìë¶€í„° nê°œì˜ ë¬¸ì ë°˜í™˜
- *    aStack[1] : ì…ë ¥ëœ ë¬¸ìì—´
- *    aStack[2] : ì‹œì‘ ( eg. m )
- *    aStack[3] : ë°˜í™˜ ë¬¸ì ê°œìˆ˜   ( eg. n )
+ *    aStack[0] : ÀÔ·ÂµÈ ¹®ÀÚ¿­ÀÇ m¹øÂ° ¹®ÀÚºÎÅÍ n°³ÀÇ ¹®ÀÚ ¹İÈ¯
+ *    aStack[1] : ÀÔ·ÂµÈ ¹®ÀÚ¿­
+ *    aStack[2] : ½ÃÀÛ ( eg. m )
+ *    aStack[3] : ¹İÈ¯ ¹®ÀÚ °³¼ö   ( eg. n )
  *
  *    ex) SUBSTR('SALESMAN', 1, 5 ) ==> 'SALES'
  *
@@ -1009,7 +1010,8 @@ IDE_RC mtfSubstringCalculateXlobLocatorFor3Args( mtcNode*     aNode,
     
     IDE_TEST( mtc::getLobLengthLocator( sLocator,
                                         & sIsNull,
-                                        & sLobLength )
+                                        & sLobLength,
+                                        mtc::getStatistics(aTemplate) )
               != IDE_SUCCESS );
     
     if ( (sIsNull == ID_TRUE) ||
@@ -1038,14 +1040,14 @@ IDE_RC mtfSubstringCalculateXlobLocatorFor3Args( mtcNode*     aNode,
         else
         {
             //-----------------------------------------
-            // ë¬¸ìì—´ì—ì„œ ì‹œì‘ ë¬¸ìê°€ ëª‡ë²ˆì§¸ ë¬¸ìì¸ì§€ ì•Œì•„ëƒ„
+            // ¹®ÀÚ¿­¿¡¼­ ½ÃÀÛ ¹®ÀÚ°¡ ¸î¹øÂ° ¹®ÀÚÀÎÁö ¾Ë¾Æ³¿
             //-----------------------------------------
         
             if( sStart > 0 )
             {
-                // substring('abcde', 0)ì´ë‚˜ substring('abcde', 1)ì´ë‚˜ ê°™ë‹¤.
-                // ê·¸ì§€ ê°™ì€ ì˜¤ë¼í´ ìŠ¤íŒ©ì´ ê·¸ëŸ¬í•´ì„œ ë”°ë¼í•œë‹¤.
-                // ë‚´ë¶€ êµ¬í˜„ì€ 0ë¶€í„°ì´ë‹¤.
+                // substring('abcde', 0)ÀÌ³ª substring('abcde', 1)ÀÌ³ª °°´Ù.
+                // ±×Áö °°Àº ¿À¶óÅ¬ ½ºÆÑÀÌ ±×·¯ÇØ¼­ µû¶óÇÑ´Ù.
+                // ³»ºÎ ±¸ÇöÀº 0ºÎÅÍÀÌ´Ù.
                 sStart--;
             }
             else
@@ -1054,26 +1056,26 @@ IDE_RC mtfSubstringCalculateXlobLocatorFor3Args( mtcNode*     aNode,
             }
         
             //-----------------------------------------
-            // ê²°ê³¼ ì €ì¥
+            // °á°ú ÀúÀå
             //-----------------------------------------
         
             if ( ( sLobLength <= sStart ) || ( sStart < 0 ) )
             {
-                // ì‹œì‘ ë¬¸ì ìœ„ì¹˜ê°€ ë¬¸ìì—´ì˜ ë²”ìœ„ë¥¼ ë„˜ì–´ì„  ê²½ìš°,
-                // - ì²«ë²ˆì§¸ ë¬¸ìë³´ë‹¤ë„ ì‹œì‘ ë¬¸ì ìœ„ì¹˜ê°€ ì‘ì€ ê²½ìš°
+                // ½ÃÀÛ ¹®ÀÚ À§Ä¡°¡ ¹®ÀÚ¿­ÀÇ ¹üÀ§¸¦ ³Ñ¾î¼± °æ¿ì,
+                // - Ã¹¹øÂ° ¹®ÀÚº¸´Ùµµ ½ÃÀÛ ¹®ÀÚ À§Ä¡°¡ ÀÛÀº °æ¿ì
                 aStack[0].column->module->null( aStack[0].column,
                                                 aStack[0].value );
             }
             else
             {
-                // ì‹œì‘ indexë¥¼ ì°¾ìŒ
+                // ½ÃÀÛ index¸¦ Ã£À½
                 sStartIndex = 0;
                 sEndIndex = 0;
                 sBufferOffset = 0;
                 
                 while ( sBufferOffset < sLobLength )
                 {
-                    // ë²„í¼ë¥¼ ì½ëŠ”ë‹¤.
+                    // ¹öÆÛ¸¦ ÀĞ´Â´Ù.
                     if ( sBufferOffset + MTC_LOB_BUFFER_SIZE + MTL_MAX_PRECISION > sLobLength )
                     {
                         sBufferMount = sLobLength - sBufferOffset;
@@ -1087,7 +1089,7 @@ IDE_RC mtfSubstringCalculateXlobLocatorFor3Args( mtcNode*     aNode,
                 
                     //ideLog::log( IDE_QP_0, "[substring] offset=%d", sBufferOffset );
                     
-                    IDE_TEST( mtc::readLob( mtc::getStatistics( aTemplate ), //  NULL, /* idvSQL* */
+                    IDE_TEST( mtc::readLob( mtc::getStatistics( aTemplate ), /* idvSQL* */
                                             sLocator,
                                             sBufferOffset,
                                             sBufferMount,
@@ -1095,7 +1097,7 @@ IDE_RC mtfSubstringCalculateXlobLocatorFor3Args( mtcNode*     aNode,
                                             &sReadLength )
                               != IDE_SUCCESS );
                     
-                    // ë²„í¼ì—ì„œ ë¬¸ìì—´ ê¸¸ì´ë¥¼ êµ¬í•œë‹¤.
+                    // ¹öÆÛ¿¡¼­ ¹®ÀÚ¿­ ±æÀÌ¸¦ ±¸ÇÑ´Ù.
                     sIndex = sBuffer;
                     sFence = sIndex + sBufferSize;
                     sBufferFence = sIndex + sBufferMount;
@@ -1114,7 +1116,7 @@ IDE_RC mtfSubstringCalculateXlobLocatorFor3Args( mtcNode*     aNode,
                                             aStack[0].column->precision,
                                             ERR_EXCEED_MAX );
                             
-                            // ë³µì‚¬í•œë‹¤.
+                            // º¹»çÇÑ´Ù.
                             idlOS::memcpy( sResult->value + sResult->length,
                                            sIndexPrev,
                                            sSize );
@@ -1151,7 +1153,7 @@ IDE_RC mtfSubstringCalculateXlobLocatorFor3Args( mtcNode*     aNode,
                 
                 if ( sStartIndex < sStart )
                 {
-                    // ì‹œì‘ indexë¥¼ ì°¾ì§€ ëª»í–ˆë‹¤.
+                    // ½ÃÀÛ index¸¦ Ã£Áö ¸øÇß´Ù.
                     aStack[0].column->module->null( aStack[0].column,
                                                     aStack[0].value );
                 }
@@ -1193,10 +1195,10 @@ IDE_RC mtfSubstringCalculateNcharFor3Args( mtcNode*     aNode,
  * Implementation :
  *    SUBSTR( string, m, n )
  *
- *    aStack[0] : ì…ë ¥ëœ ë¬¸ìì—´ì˜ më²ˆì§¸ ë¬¸ìë¶€í„° nê°œì˜ ë¬¸ì ë°˜í™˜
- *    aStack[1] : ì…ë ¥ëœ ë¬¸ìì—´
- *    aStack[2] : ì‹œì‘ ( eg. m )
- *    aStack[3] : ë°˜í™˜ ë¬¸ì ê°œìˆ˜   ( eg. n )
+ *    aStack[0] : ÀÔ·ÂµÈ ¹®ÀÚ¿­ÀÇ m¹øÂ° ¹®ÀÚºÎÅÍ n°³ÀÇ ¹®ÀÚ ¹İÈ¯
+ *    aStack[1] : ÀÔ·ÂµÈ ¹®ÀÚ¿­
+ *    aStack[2] : ½ÃÀÛ ( eg. m )
+ *    aStack[3] : ¹İÈ¯ ¹®ÀÚ °³¼ö   ( eg. n )
  *
  *    ex) SUBSTR('SALESMAN', 1, 5 ) ==> 'SALES'
  *
@@ -1279,9 +1281,9 @@ IDE_RC mtfSubstringCalculateClobValueFor2Args( mtcNode     * aNode,
  * Implementation :
  *    SUBSTR( clob_value, m )
  *
- *    aStack[0] : ì…ë ¥ëœ ë¬¸ìì—´ì˜ më²ˆì§¸ ë¬¸ìë¶€í„° ëê¹Œì§€ ëª¨ë“  ë¬¸ì ë°˜í™˜
- *    aStack[1] : clob_value ( ì…ë ¥ëœ ë¬¸ìì—´ )
- *    aStack[2] : m ( ì‹œì‘ì  )
+ *    aStack[0] : ÀÔ·ÂµÈ ¹®ÀÚ¿­ÀÇ m¹øÂ° ¹®ÀÚºÎÅÍ ³¡±îÁö ¸ğµç ¹®ÀÚ ¹İÈ¯
+ *    aStack[1] : clob_value ( ÀÔ·ÂµÈ ¹®ÀÚ¿­ )
+ *    aStack[2] : m ( ½ÃÀÛÁ¡ )
  *
  *    ex ) SUBSTR( CLOB'SALESMAN', 6 ) ==> 'MAN'
  *
@@ -1321,7 +1323,7 @@ IDE_RC mtfSubstringCalculateClobValueFor2Args( mtcNode     * aNode,
         sLanguage = aStack[1].column->language;
 
         //-----------------------------------------
-        // ì „ì²´ ë¬¸ì ê°œìˆ˜ êµ¬í•¨
+        // ÀüÃ¼ ¹®ÀÚ °³¼ö ±¸ÇÔ
         //-----------------------------------------
 
         sSourceIndex = sSource->value;
@@ -1330,14 +1332,14 @@ IDE_RC mtfSubstringCalculateClobValueFor2Args( mtcNode     * aNode,
         sSourceLength = 0;
 
         //-----------------------------------------
-        // ë¬¸ìì—´ì—ì„œ ì‹œì‘ ë¬¸ìê°€ ëª‡ë²ˆì§¸ ë¬¸ìì¸ì§€ ì•Œì•„ëƒ„
+        // ¹®ÀÚ¿­¿¡¼­ ½ÃÀÛ ¹®ÀÚ°¡ ¸î¹øÂ° ¹®ÀÚÀÎÁö ¾Ë¾Æ³¿
         //-----------------------------------------
 
         if ( sStart > 0 )
         {
-            // substring('abcde', 0)ì´ë‚˜ substring('abcde', 1)ì´ë‚˜ ê°™ë‹¤.
-            // ê·¸ì§€ ê°™ì€ ì˜¤ë¼í´ ìŠ¤íŒ©ì´ ê·¸ëŸ¬í•´ì„œ ë”°ë¼í•œë‹¤.
-            // ë‚´ë¶€ êµ¬í˜„ì€ 0ë¶€í„°ì´ë‹¤.
+            // substring('abcde', 0)ÀÌ³ª substring('abcde', 1)ÀÌ³ª °°´Ù.
+            // ±×Áö °°Àº ¿À¶óÅ¬ ½ºÆÑÀÌ ±×·¯ÇØ¼­ µû¶óÇÑ´Ù.
+            // ³»ºÎ ±¸ÇöÀº 0ºÎÅÍÀÌ´Ù.
             sStart--;
         }
         else if ( sStart < 0 )
@@ -1347,7 +1349,7 @@ IDE_RC mtfSubstringCalculateClobValueFor2Args( mtcNode     * aNode,
                 (void)sLanguage->nextCharPtr( &sSourceIndex, sSourceFence );
                 sSourceLength++;
             }
-            // ìŒìˆ˜ì¸ ê²½ìš°
+            // À½¼öÀÎ °æ¿ì
             sStart = sStart + sSourceLength;
         }
         else
@@ -1356,22 +1358,22 @@ IDE_RC mtfSubstringCalculateClobValueFor2Args( mtcNode     * aNode,
         }
 
         //-----------------------------------------
-        // ê²°ê³¼ ì €ì¥
+        // °á°ú ÀúÀå
         //-----------------------------------------
 
         if ( sStart < 0 )
         {
-            // ì‹œì‘ ë¬¸ì ìœ„ì¹˜ê°€ ë¬¸ìì—´ì˜ ë²”ìœ„ë¥¼ ë„˜ì–´ì„  ê²½ìš°,
-            // - ì²«ë²ˆì§¸ ë¬¸ìë³´ë‹¤ë„ ì‹œì‘ ë¬¸ì ìœ„ì¹˜ê°€ ì‘ì€ ê²½ìš°
-            // - ë§ˆì§€ë§‰ ë¬¸ìë³´ë‹¤ ì‹œì‘ ë¬¸ì ìœ„ì¹˜ê°€ í° ê²½ìš°
+            // ½ÃÀÛ ¹®ÀÚ À§Ä¡°¡ ¹®ÀÚ¿­ÀÇ ¹üÀ§¸¦ ³Ñ¾î¼± °æ¿ì,
+            // - Ã¹¹øÂ° ¹®ÀÚº¸´Ùµµ ½ÃÀÛ ¹®ÀÚ À§Ä¡°¡ ÀÛÀº °æ¿ì
+            // - ¸¶Áö¸· ¹®ÀÚº¸´Ù ½ÃÀÛ ¹®ÀÚ À§Ä¡°¡ Å« °æ¿ì
             aStack[0].column->module->null( aStack[0].column,
                                             aStack[0].value );
         }
         else
         {
-            // ì‹œì‘ ë¬¸ì ìœ„ì¹˜ê°€ ë¬¸ì ì „ì²´ ê°œìˆ˜ë³´ë‹¤ ì‘ê±°ë‚˜ ê°™ì€  ê²½ìš°
+            // ½ÃÀÛ ¹®ÀÚ À§Ä¡°¡ ¹®ÀÚ ÀüÃ¼ °³¼öº¸´Ù ÀÛ°Å³ª °°Àº  °æ¿ì
 
-            // ì‹œì‘ indexë¥¼ ì°¾ìŒ
+            // ½ÃÀÛ index¸¦ Ã£À½
             sStartIndex = sSource->value;
 
             for ( i = 0; i < sStart; i++ )
@@ -1398,7 +1400,7 @@ IDE_RC mtfSubstringCalculateClobValueFor2Args( mtcNode     * aNode,
             }
 
             //-----------------------------------------
-            // ì‹œì‘ indexë¶€í„° ëê¹Œì§€ì˜ stringì„ copyí•˜ì—¬ ê²°ê³¼ì— ì €ì¥
+            // ½ÃÀÛ indexºÎÅÍ ³¡±îÁöÀÇ stringÀ» copyÇÏ¿© °á°ú¿¡ ÀúÀå
             //-----------------------------------------
 
             sCopySize = sSource->length - (sStartIndex - sSource->value);
@@ -1438,10 +1440,10 @@ IDE_RC mtfSubstringCalculateClobValueFor3Args( mtcNode     * aNode,
  * Implementation :
  *    SUBSTR( clob_value, m, n )
  *
- *    aStack[0] : ì…ë ¥ëœ ë¬¸ìì—´ì˜ më²ˆì§¸ ë¬¸ìë¶€í„° nê°œì˜ ë¬¸ì ë°˜í™˜
- *    aStack[1] : clob_value ( ì…ë ¥ëœ ë¬¸ìì—´ )
- *    aStack[2] : m ( ì‹œì‘ì  )
- *    aStack[3] : n ( ë°˜í™˜ ë¬¸ì ìˆ˜ )
+ *    aStack[0] : ÀÔ·ÂµÈ ¹®ÀÚ¿­ÀÇ m¹øÂ° ¹®ÀÚºÎÅÍ n°³ÀÇ ¹®ÀÚ ¹İÈ¯
+ *    aStack[1] : clob_value ( ÀÔ·ÂµÈ ¹®ÀÚ¿­ )
+ *    aStack[2] : m ( ½ÃÀÛÁ¡ )
+ *    aStack[3] : n ( ¹İÈ¯ ¹®ÀÚ ¼ö )
  *
  *    ex ) SUBSTR( CLOB'SALESMAN', 1, 5 ) ==> 'SALES'
  *
@@ -1497,7 +1499,7 @@ IDE_RC mtfSubstringCalculateClobValueFor3Args( mtcNode     * aNode,
         }
 
         //-----------------------------------------
-        // ì „ì²´ ë¬¸ì ê°œìˆ˜ êµ¬í•¨
+        // ÀüÃ¼ ¹®ÀÚ °³¼ö ±¸ÇÔ
         //-----------------------------------------
 
         sSourceIndex = sSource->value;
@@ -1506,14 +1508,14 @@ IDE_RC mtfSubstringCalculateClobValueFor3Args( mtcNode     * aNode,
         sSourceLength = 0;
 
         //-----------------------------------------
-        // ë¬¸ìì—´ì—ì„œ ì‹œì‘ ë¬¸ìê°€ ëª‡ë²ˆì§¸ ë¬¸ìì¸ì§€ ì•Œì•„ëƒ„
+        // ¹®ÀÚ¿­¿¡¼­ ½ÃÀÛ ¹®ÀÚ°¡ ¸î¹øÂ° ¹®ÀÚÀÎÁö ¾Ë¾Æ³¿
         //-----------------------------------------
 
         if ( sStart > 0 )
         {
-            // substring('abcde', 0)ì´ë‚˜ substring('abcde', 1)ì´ë‚˜ ê°™ë‹¤.
-            // ê·¸ì§€ ê°™ì€ ì˜¤ë¼í´ ìŠ¤íŒ©ì´ ê·¸ëŸ¬í•´ì„œ ë”°ë¼í•œë‹¤.
-            // ë‚´ë¶€ êµ¬í˜„ì€ 0ë¶€í„°ì´ë‹¤.
+            // substring('abcde', 0)ÀÌ³ª substring('abcde', 1)ÀÌ³ª °°´Ù.
+            // ±×Áö °°Àº ¿À¶óÅ¬ ½ºÆÑÀÌ ±×·¯ÇØ¼­ µû¶óÇÑ´Ù.
+            // ³»ºÎ ±¸ÇöÀº 0ºÎÅÍÀÌ´Ù.
             sStart--;
         }
         else if ( sStart < 0 )
@@ -1523,7 +1525,7 @@ IDE_RC mtfSubstringCalculateClobValueFor3Args( mtcNode     * aNode,
                 (void)sLanguage->nextCharPtr( &sSourceIndex, sSourceFence );
                 sSourceLength++;
             }
-            // ìŒìˆ˜ì¸ ê²½ìš°
+            // À½¼öÀÎ °æ¿ì
             sStart = sStart + sSourceLength;
         }
         else
@@ -1532,22 +1534,22 @@ IDE_RC mtfSubstringCalculateClobValueFor3Args( mtcNode     * aNode,
         }
 
         //-----------------------------------------
-        // ê²°ê³¼ ì €ì¥
+        // °á°ú ÀúÀå
         //-----------------------------------------
 
         if ( sStart < 0 )
         {
-            // ì‹œì‘ ë¬¸ì ìœ„ì¹˜ê°€ ë¬¸ìì—´ì˜ ë²”ìœ„ë¥¼ ë„˜ì–´ì„  ê²½ìš°,
-            // - ì²«ë²ˆì§¸ ë¬¸ìë³´ë‹¤ë„ ì‹œì‘ ë¬¸ì ìœ„ì¹˜ê°€ ì‘ì€ ê²½ìš°
-            // - ë§ˆì§€ë§‰ ë¬¸ìë³´ë‹¤ ì‹œì‘ ë¬¸ì ìœ„ì¹˜ê°€ í° ê²½ìš°
+            // ½ÃÀÛ ¹®ÀÚ À§Ä¡°¡ ¹®ÀÚ¿­ÀÇ ¹üÀ§¸¦ ³Ñ¾î¼± °æ¿ì,
+            // - Ã¹¹øÂ° ¹®ÀÚº¸´Ùµµ ½ÃÀÛ ¹®ÀÚ À§Ä¡°¡ ÀÛÀº °æ¿ì
+            // - ¸¶Áö¸· ¹®ÀÚº¸´Ù ½ÃÀÛ ¹®ÀÚ À§Ä¡°¡ Å« °æ¿ì
             aStack[0].column->module->null( aStack[0].column,
                                             aStack[0].value );
         }
         else
         {
-            // ì‹œì‘ ë¬¸ì ìœ„ì¹˜ê°€ ë¬¸ì ì „ì²´ ê°œìˆ˜ë³´ë‹¤ ì‘ê±°ë‚˜ ê°™ì€  ê²½ìš°
+            // ½ÃÀÛ ¹®ÀÚ À§Ä¡°¡ ¹®ÀÚ ÀüÃ¼ °³¼öº¸´Ù ÀÛ°Å³ª °°Àº  °æ¿ì
 
-            // ì‹œì‘ indexë¥¼ ì°¾ìŒ
+            // ½ÃÀÛ index¸¦ Ã£À½
             sStartIndex = sSource->value;
 
             for ( i = 0; i < sStart; i++ )
@@ -1573,7 +1575,7 @@ IDE_RC mtfSubstringCalculateClobValueFor3Args( mtcNode     * aNode,
                 }
             }
 
-            // ë indexë¥¼ ì°¾ìŒ
+            // ³¡ index¸¦ Ã£À½
             sEndIndex = sStartIndex;
 
             for ( i = 0 ; i < sLength ; i++ )
@@ -1591,7 +1593,7 @@ IDE_RC mtfSubstringCalculateClobValueFor3Args( mtcNode     * aNode,
             }
 
             //-----------------------------------------
-            // ì‹œì‘ indexë¶€í„° nê°œì˜ ê¸¸ì´ stringì„ copyí•˜ì—¬ ê²°ê³¼ì— ì €ì¥
+            // ½ÃÀÛ indexºÎÅÍ n°³ÀÇ ±æÀÌ stringÀ» copyÇÏ¿© °á°ú¿¡ ÀúÀå
             //-----------------------------------------
 
             sCopySize = sEndIndex - sStartIndex;

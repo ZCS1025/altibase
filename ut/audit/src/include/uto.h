@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: uto.h 82688 2018-04-03 05:57:13Z bethy $
+ * $Id: uto.h 88614 2020-09-17 05:15:36Z chkim $
  ******************************************************************************/
 #ifndef _UTO_H_
 #define _UTO_H_ 1
@@ -25,7 +25,7 @@
 #include <iduMemMgr.h>
 #include <utProperties.h>
 
-//TASK-4212     auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„ 
+//TASK-4212     auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼±
 #define MAX_FILE_NAME    512
 #define NUM_FILE_THR     2
 #define MAX_COLUMN_NAME  128+30
@@ -34,7 +34,7 @@
 // 1 Mb for file read buffer
 #define MAX_FILE_BUF     (10240)
 #define FILE_BUF_LIMIT   (10240*0.95)
-/* í† í°ì˜ ìµœëŒ€ ê¸¸ì´ = VARBIT ë¬¸ìì—´ í‘œí˜„ì˜ ìµœëŒ€ ê¸¸ì´ */
+/* ÅäÅ«ÀÇ ÃÖ´ë ±æÀÌ = VARBIT ¹®ÀÚ¿­ Ç¥ÇöÀÇ ÃÖ´ë ±æÀÌ */
 #define MAX_TOKEN_VALUE_LEN 131070
 
 typedef enum
@@ -52,7 +52,7 @@ typedef enum
     MOSO       // Master exist Slave exist
 } ps_t;
 
-/* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
+/* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
 typedef enum
 {
     T_INIT = 0,
@@ -90,7 +90,7 @@ diff_t
     SShort sqlType;  // SQL Type of columns
 } diff_t;
 
-/* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
+/* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
 typedef struct utaFileMArg
 {
     SChar *mFilename;
@@ -105,7 +105,7 @@ typedef struct utaFileInfo
     SChar     mName[MAX_FILE_NAME];
     SChar     mBuffer[MAX_FILE_BUF];
     SInt      mOffset;
-    // fileë¡œ ë¶€í„° ì½ì€ size. (<=MAX_FILE_BUF)
+    // file·Î ºÎÅÍ ÀĞÀº size. (<=MAX_FILE_BUF)
     SInt      mFence;
 } utaFileInfo;
 
@@ -210,8 +210,8 @@ private:
 class utScanner: public Object
 {
     pmode_t       mMode;  // Execution mode SYNC/DIFF/MOVE
-    //TASK-4212     auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„ 
-    // utaFileModeWrite() ì—ì„œ ì‚¬ìš©í•˜ê¸°ìœ„í•´ staticìœ¼ë¡œ ë³€ê²½.
+    //TASK-4212     auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼±
+    // utaFileModeWrite() ¿¡¼­ »ç¿ëÇÏ±âÀ§ÇØ staticÀ¸·Î º¯°æ.
     SChar *_error; // error pointer // BUG-43607 remove static
 
     dmlQuery  *  mSD;
@@ -236,37 +236,37 @@ class utScanner: public Object
     void     reset();
     IDE_RC exec(dmlQuery*);
 
-    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
-    // property ì •ë³´ pointer.
+    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
+    // property Á¤º¸ pointer.
     static    utProperties *mProp;
     bool      mIsFileMode;
 
-    // master node file ê´€ë ¨ë³€ìˆ˜ë“¤.
+    // master node file °ü·Ãº¯¼öµé.
     utaFileInfo mMasterFile;
-    // slave node file ê´€ë ¨ë³€ìˆ˜ë“¤.
+    // slave node file °ü·Ãº¯¼öµé.
     utaFileInfo mSlaveFile;
 
-    // ë‹¤ìŒì— ì˜¬ csv tokenì„ ì €ì¥í•´ë‘ëŠ” ë³€ìˆ˜.
+    // ´ÙÀ½¿¡ ¿Ã csv tokenÀ» ÀúÀåÇØµÎ´Â º¯¼ö.
     utaCSVTOKENTYPE      mCSVNextToken;
 
-    // fetchëœ dataë¥¼ CSV formatting í•œë’¤ íŒŒì¼ì— ì¨ì¤€ë‹¤.
+    // fetchµÈ data¸¦ CSV formatting ÇÑµÚ ÆÄÀÏ¿¡ ½áÁØ´Ù.
     static void *utaFileModeWrite( void *aFileName );
 
-    // CSV formatì˜ êµ¬ë¶„ì ë³€ìˆ˜ë“¤.
+    // CSV formatÀÇ ±¸ºĞÀÚ º¯¼öµé.
     static SChar mFieldTerm;
     static SChar mRowTerm;
     static SChar mEnclosing;
 
-    // ì¼ë°˜dataë¥¼ CSV formatting í•´ì£¼ëŠ” í•¨ìˆ˜.
+    // ÀÏ¹İdata¸¦ CSV formatting ÇØÁÖ´Â ÇÔ¼ö.
     static IDE_RC utaCSVWrite ( SChar *aValue, UInt aValueLen, FILE *aWriteFp );
-    // íŒŒì¼ë²„í¼ë¡œ ë¶€í„° CSV ê´€ë ¨ tokenì„ í•˜ë‚˜ì”© ì–»ì–´ì˜¤ëŠ” í•¨ìˆ˜.
+    // ÆÄÀÏ¹öÆÛ·Î ºÎÅÍ CSV °ü·Ã tokenÀ» ÇÏ³ª¾¿ ¾ò¾î¿À´Â ÇÔ¼ö.
 
     /* BUG-32569 The string with null character should be processed in Audit */
     utaCSVTOKENTYPE utaGetCSVTokenFromBuff( utaFileInfo *aFileInfo,
                                             SChar       *aTokenBuff,
                                             UInt         aTokenBuffLen,
                                             UInt        *aTokenValueLength );
-    // utaGetCSVTokenFromBuff í•¨ìˆ˜ë¥¼ ë°˜ë³µ í˜¸ì¶œí•˜ì—¬ í•œ Rowì˜ Fieldë“¤ì— ëŒ€í•œ dataê°’ì„ ì„íŒ…í•œë‹¤.
+    // utaGetCSVTokenFromBuff ÇÔ¼ö¸¦ ¹İº¹ È£ÃâÇÏ¿© ÇÑ RowÀÇ Fieldµé¿¡ ´ëÇÑ data°ªÀ» ½êÆÃÇÑ´Ù.
     Row *utaReadCSVRow( utaFileInfo *aFileInfo, Query *aQuery );
 
 public:
@@ -277,7 +277,7 @@ public:
                       SChar      * =NULL); // Error message buffer
     IDE_RC finalize();
 
-    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
+    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
     IDE_RC prepare(utProperties *aProp);
 
     IDE_RC execute(void);
@@ -328,6 +328,8 @@ protected:
     diff_t        diffColumn; // current diff descriptor
     IDE_RC  log_diff(ps_t);
     IDE_RC  log_record(ps_t); /* BUG-44461 */
+    /* BUG-48134 Print MOSO EQ record to log file optionallay */
+    IDE_RC  log_equal();
 
     static IDE_RC  processDIFF_MI(utScanner* );
     static IDE_RC  processDIFF_SI(utScanner* );
@@ -372,6 +374,8 @@ protected:
     UInt             mMOSODiffCount;
     UInt             mMXSODiffCount;
     UInt             mMOSXDiffCount;
+    // BUG-47693
+    UInt             mMOSOSameCount;
 
 private:
     bool fetchA, fetchB; // fetch ahead states

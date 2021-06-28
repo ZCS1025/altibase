@@ -48,6 +48,9 @@ IDE_RC ConnectDB( ALTIBASE_ILOADER_HANDLE   aHandle,
                            aSslVerify,
                            aSslCipher)
              != IDE_SUCCESS);
+ 
+    /* BUG-47891 */
+    IDE_TEST( aISPApi->GetShardEnable() != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 

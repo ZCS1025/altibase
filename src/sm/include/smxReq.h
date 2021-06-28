@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smxReq.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smxReq.h 89355 2020-11-25 01:48:09Z justin.kwon $
  **********************************************************************/
 
 #ifndef _O_SMX_REQ_H_
@@ -42,7 +42,6 @@ class smxReqFunc
         static IDE_RC addList2LogicalAger( smTID           aTID,
                                            idBool          aIsDDL,
                                            smSCN         * aSCN,
-                                           smLSN         * aLSN,
                                            UInt            aCondition,
                                            smxOIDList    * aList,
                                            void         ** aAgerListPtr )
@@ -50,10 +49,9 @@ class smxReqFunc
             return smaLogicalAger::addList( aTID,
                                             aIsDDL,
                                             aSCN,
-                                            aLSN,
                                             aCondition,
                                             aList,
-                                            aAgerListPtr );
+                                            aAgerListPtr );  
         };
         static void setOIDListFinished( void    * aOIDList,
                                         idBool    aFlag )
@@ -67,9 +65,9 @@ class smxReqFunc
         };
 
         /* sml */
-        static idBool isCycle( SInt aSlotN )
+        static idBool isCycle( SInt aSlotN, idBool aIsReadyDistDeadlock )
         {
-            return smlLockMgr::isCycle( aSlotN );
+            return smlLockMgr::isCycle( aSlotN, aIsReadyDistDeadlock );
         };
         static void clearWaitItemColsOfTrans( idBool aDoInit,
                                               SInt   aSlotN )
@@ -118,24 +116,6 @@ class smxReqFunc
                                              aWaitSlotN );
         };
 #endif
-
-        /* BUG-18981 */
-        static IDE_RC logLock( void     * aTrans,
-                               smTID      aTID,
-                               UInt       aFlag,
-                               ID_XID   * aXID,
-                               SChar    * aLogBuffer,
-                               SInt       aSlotN,
-                               smSCN    * aFstDskViewSCN )
-        {
-            return smlLockMgr::logLocks( aTrans,
-                                         aTID,
-                                         aFlag,
-                                         aXID,
-                                         aLogBuffer,
-                                         aSlotN,
-                                         aFstDskViewSCN );
-        };
         static IDE_RC partialItemUnlock( SInt   aSlotN,
                                          ULong  aLockSequence,
                                          idBool aIsSeveralLock )

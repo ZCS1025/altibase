@@ -21,7 +21,6 @@ import Altibase.jdbc.driver.AltibaseDataSource;
 import Altibase.jdbc.driver.sharding.core.AltibaseShardingConnection;
 import Altibase.jdbc.driver.sharding.core.DataNode;
 import Altibase.jdbc.driver.sharding.core.ShardNodeConfig;
-import Altibase.jdbc.driver.sharding.core.ShardTransactionLevel;
 import Altibase.jdbc.driver.util.AltibaseProperties;
 import Altibase.jdbc.driver.util.StringUtils;
 
@@ -35,7 +34,6 @@ import static Altibase.jdbc.driver.util.AltibaseProperties.PROP_SHARD_META_NUMBE
 public class CmProtocolContextShardConnect extends CmProtocolContextConnect
 {
     private ShardNodeConfig            mShardNodeConfig;
-    private ShardTransactionLevel      mShardTransactionLevel;
     private DataNode                   mShardOnTransactionNode;
     private boolean                    mIsAutoCommit;
     private boolean                    mIsTouched;
@@ -46,14 +44,13 @@ public class CmProtocolContextShardConnect extends CmProtocolContextConnect
     private long                       mShardPin;
     private long                       mShardMetaNumber;
     private long                       mSMNOfDataNode;
-    private boolean                    mNeedToDisconnect; // BUG-46513 smn ì˜¤ë¥˜ê°€ ë°œìƒí–ˆì„ë•Œ ì ‘ì†ì„ ëŠì–´ì•¼í• ì§€ ì—¬ë¶€
+    private boolean                    mNeedToDisconnect; // BUG-46513 smn ¿À·ù°¡ ¹ß»ıÇßÀ»¶§ Á¢¼ÓÀ» ²÷¾î¾ßÇÒÁö ¿©ºÎ
     private AltibaseShardingConnection mMetaConn;
 
     public CmProtocolContextShardConnect(AltibaseShardingConnection aMetaConn)
     {
         super();
-        mShardTransactionLevel = ShardTransactionLevel.MULTI_NODE;
-        // BUG-46513 ë…¸ë“œê°€ ì œê±°ë˜ì—ˆì„ë•Œ í•´ë‹¹í•˜ëŠ” ë…¸ë“œ ì»¤ë„¥ì…˜ì„ ì •ë¦¬í•˜ê¸° ìœ„í•´ meta connection ê°ì²´ë¥¼ ì£¼ì…í•œë‹¤.
+        // BUG-46513 ³ëµå°¡ Á¦°ÅµÇ¾úÀ»¶§ ÇØ´çÇÏ´Â ³ëµå Ä¿³Ø¼ÇÀ» Á¤¸®ÇÏ±â À§ÇØ meta connection °´Ã¼¸¦ ÁÖÀÔÇÑ´Ù.
         mMetaConn = aMetaConn;
     }
 
@@ -68,10 +65,10 @@ public class CmProtocolContextShardConnect extends CmProtocolContextConnect
     }
 
     /**
-     * getNodeList í”„ë¡œí† ì½œì˜ ê²°ê³¼ë¡œ ìƒì„±ëœ ShardNodeConfigê°ì²´ë¥¼ ì£¼ì…í•œë‹¤.
-     * @param aShardPin ìƒ¤ë“œí•€ê°’
-     * @param aShardMetaNumber getNodeListí”„ë¡œí† ì½œì„ í†µí•´ ì „ë‹¬ë°›ì€ ShardMetaNumber ê°’
-     * @param aShardNodeConfig getNodeListí”„ë¡œí† ì½œì„ í†µí•´ ìƒˆë¡œ ìƒì„±í•œ ShardNodeConfig ê°ì²´
+     * getNodeList ÇÁ·ÎÅäÄİÀÇ °á°ú·Î »ı¼ºµÈ ShardNodeConfig°´Ã¼¸¦ ÁÖÀÔÇÑ´Ù.
+     * @param aShardPin »şµåÇÉ°ª
+     * @param aShardMetaNumber getNodeListÇÁ·ÎÅäÄİÀ» ÅëÇØ Àü´Ş¹ŞÀº ShardMetaNumber °ª
+     * @param aShardNodeConfig getNodeListÇÁ·ÎÅäÄİÀ» ÅëÇØ »õ·Î »ı¼ºÇÑ ShardNodeConfig °´Ã¼
      */
     public void setShardNodeConfig(long aShardPin, long aShardMetaNumber, ShardNodeConfig aShardNodeConfig)
     {
@@ -80,7 +77,7 @@ public class CmProtocolContextShardConnect extends CmProtocolContextConnect
             mShardPin = aShardPin;
             mShardMetaNumber = aShardMetaNumber;
 
-            // BUG-46513 ê¸°ì¡´ì— ì´ë¯¸ ShardNodeConfigê°ì²´ê°€ ìˆëŠ” ê²½ìš° ë…¸ë“œë¦¬ìŠ¤íŠ¸ë¥¼ ë³‘í•©í•œë‹¤.
+            // BUG-46513 ±âÁ¸¿¡ ÀÌ¹Ì ShardNodeConfig°´Ã¼°¡ ÀÖ´Â °æ¿ì ³ëµå¸®½ºÆ®¸¦ º´ÇÕÇÑ´Ù.
             if (mShardNodeConfig != null)
             {
                 Set<DataNode> sOldNodeSet = new LinkedHashSet<DataNode>(mShardNodeConfig.getDataNodes());
@@ -93,11 +90,11 @@ public class CmProtocolContextShardConnect extends CmProtocolContextConnect
     }
 
     /**
-     * ë‘ê°œì˜ ë…¸ë“œë¦¬ìŠ¤íŠ¸ë¥¼ ë³‘í•©í•œ ê²°ê³¼ë¥¼ ShardNodeConfigê°ì²´ì— ë‹¤ì‹œ ì…‹íŒ…í•œë‹¤.<br>
-     * ì œê±°ëœ ë…¸ë“œëŠ” ë‚´ë¶€ì ìœ¼ë¡œ closeì²˜ë¦¬ë¥¼ í•˜ê³  ì¶”ê°€ëœ ë…¸ë“œì— ëŒ€í•´ì„œëŠ” ë…¸ë“œ ì •ë³´ë§Œ ì—…ë°ì´íŠ¸ í•´ ë†“ëŠ”ë‹¤.<br>
-     * ë³‘í•©ì‹œ ì¤‘ë³µë…¸ë“œê°€ ìƒì„±ë˜ëŠ” ê²ƒì„ ë°©ì§€í•˜ê¸° ìœ„í•´ Setì„ ì‚¬ìš©í•¨.
-     * @param aOldNodes ê¸°ì¡´ ë…¸ë“œë¦¬ìŠ¤íŠ¸
-     * @param aCurrNodes ê°±ì‹ ëœ ë…¸ë“œë¦¬ìŠ¤íŠ¸
+     * µÎ°³ÀÇ ³ëµå¸®½ºÆ®¸¦ º´ÇÕÇÑ °á°ú¸¦ ShardNodeConfig°´Ã¼¿¡ ´Ù½Ã ¼ÂÆÃÇÑ´Ù.<br>
+     * Á¦°ÅµÈ ³ëµå´Â ³»ºÎÀûÀ¸·Î closeÃ³¸®¸¦ ÇÏ°í Ãß°¡µÈ ³ëµå¿¡ ´ëÇØ¼­´Â ³ëµå Á¤º¸¸¸ ¾÷µ¥ÀÌÆ® ÇØ ³õ´Â´Ù.<br>
+     * º´ÇÕ½Ã Áßº¹³ëµå°¡ »ı¼ºµÇ´Â °ÍÀ» ¹æÁöÇÏ±â À§ÇØ SetÀ» »ç¿ëÇÔ.
+     * @param aOldNodes ±âÁ¸ ³ëµå¸®½ºÆ®
+     * @param aCurrNodes °»½ÅµÈ ³ëµå¸®½ºÆ®
      */
     private void mergeNodeList(Set<DataNode> aOldNodes, Set<DataNode> aCurrNodes)
     {
@@ -109,25 +106,16 @@ public class CmProtocolContextShardConnect extends CmProtocolContextConnect
                 sRemovedNodeList.add(sEach);
             }
         }
-        // BUG-46513 ì œê±°ëœ ë…¸ë“œì»¤ë„¥ì…˜ì— ëŒ€í•´ close ì²˜ë¦¬ë¥¼ í•˜ê³  OldNodes ì—ì„œ ì‚­ì œ
+        // BUG-46513 Á¦°ÅµÈ ³ëµåÄ¿³Ø¼Ç¿¡ ´ëÇØ close Ã³¸®¸¦ ÇÏ°í OldNodes ¿¡¼­ »èÁ¦
         for (DataNode sRemovedNode : sRemovedNodeList)
         {
             mMetaConn.removeNode(sRemovedNode);
             aOldNodes.remove(sRemovedNode);
         }
-        aOldNodes.addAll(aCurrNodes); // BUG-46513 current ë¦¬ìŠ¤íŠ¸ë¥¼ OldNodesì— ë³‘í•©
+        aOldNodes.addAll(aCurrNodes); // BUG-46513 current ¸®½ºÆ®¸¦ OldNodes¿¡ º´ÇÕ
         List<DataNode> sResult = new ArrayList<DataNode>(aOldNodes);
         mShardNodeConfig.setDataNodes(sResult);
-    }
-
-    public ShardTransactionLevel getShardTransactionLevel()
-    {
-        return mShardTransactionLevel;
-    }
-
-    public void setShardTransactionLevel(ShardTransactionLevel aShardTransactionLevel)
-    {
-        mShardTransactionLevel = aShardTransactionLevel;
+        mShardNodeConfig.setNodeCount(sResult.size()); // BUG-47357 º´ÇÕ ÈÄ node count °ªµµ ¾÷µ¥ÀÌÆ® ÇØ¾ß ÇÑ´Ù.
     }
 
     public boolean isNodeTransactionStarted()
@@ -219,9 +207,9 @@ public class CmProtocolContextShardConnect extends CmProtocolContextConnect
     }
 
     /**
-     * DataNodeì˜ ì •ë³´ë¥¼ ë°”íƒ•ìœ¼ë¡œ DataSourceê°ì²´ë¥¼ ë§Œë“ ë‹¤. ì´ë•Œ shardpin, shard_meta_numberì™€ ê°™ì€ ê°’ë“¤ë„ í•¨ê»˜<br>
-     * ì…‹íŒ…í•œë‹¤.
-     * @param aProp AltibaseProperties ê°ì²´
+     * DataNodeÀÇ Á¤º¸¸¦ ¹ÙÅÁÀ¸·Î DataSource°´Ã¼¸¦ ¸¸µç´Ù. ÀÌ¶§ shardpin, shard_meta_number¿Í °°Àº °ªµéµµ ÇÔ²²<br>
+     * ¼ÂÆÃÇÑ´Ù.
+     * @param aProp AltibaseProperties °´Ã¼
      */
     public void createDataSources(AltibaseProperties aProp)
     {
@@ -232,7 +220,7 @@ public class CmProtocolContextShardConnect extends CmProtocolContextConnect
             removeConnAttributes(sPropsForDataNode);
             sPropsForDataNode.put(PROP_SERVER, sNode.getServerIp());
             sPropsForDataNode.put(PROP_PORT, String.valueOf(sNode.getPortNo()));
-            // data nodeì˜ dbnameì´ ë„˜ì–´ì˜¤ì§€ ì•Šê¸°ë•Œë¬¸ì— ê³µë°±ë¬¸ìë¡œ ì…‹íŒ…í•œë‹¤. ì´ë ‡ê²Œ í•˜ë©´ ì„œë²„ì—ì„œëŠ” dbnameì„ ì²´í¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // data nodeÀÇ dbnameÀÌ ³Ñ¾î¿ÀÁö ¾Ê±â¶§¹®¿¡ °ø¹é¹®ÀÚ·Î ¼ÂÆÃÇÑ´Ù. ÀÌ·¸°Ô ÇÏ¸é ¼­¹ö¿¡¼­´Â dbnameÀ» Ã¼Å©ÇÏÁö ¾Ê´Â´Ù.
             sPropsForDataNode.put(PROP_DBNAME, "");
             sPropsForDataNode.put(PROP_SHARD_NODE_NAME, sNode.getNodeName());
             sPropsForDataNode.put(PROP_SHARD_PIN, String.valueOf(mShardPin));
@@ -242,10 +230,13 @@ public class CmProtocolContextShardConnect extends CmProtocolContextConnect
                 sPropsForDataNode.put(PROP_CONNTYPE, mShardConnType.name());
                 if (mShardConnType == CmConnType.SSL)
                 {
-                    // sslì¸ ê²½ìš°ì—ëŠ” ì¶”ê°€ë¡œ ssl_enableì„ í™œì„±í™” í•´ì¤˜ì•¼ í•œë‹¤.
+                    // sslÀÎ °æ¿ì¿¡´Â Ãß°¡·Î ssl_enableÀ» È°¼ºÈ­ ÇØÁà¾ß ÇÑ´Ù.
                     sPropsForDataNode.put(PROP_SSL_ENABLE, "true");
                 }
             }
+            // BUG-47324
+            sPropsForDataNode.put(PROP_SHARD_CLIENT, "1");
+            sPropsForDataNode.put(PROP_SHARD_SESSION_TYPE, "2");
             makeAlternateServerProps(sNode, sPropsForDataNode);
             AltibaseDataSource sDataSource = new AltibaseDataSource(sPropsForDataNode);
             sDataSource.setUser(aProp.getUser());
@@ -256,9 +247,9 @@ public class CmProtocolContextShardConnect extends CmProtocolContextConnect
     }
 
     /**
-     * DataNodeì˜ AlternateServer ì •ë³´ë¥¼ ë°”íƒ•ìœ¼ë¡œ connection stringì„ êµ¬ì„±í•œë‹¤.
-     * @param aNode ë°ì´í„°ë…¸ë“œ ì •ë³´ ê°ì²´
-     * @param aPropsForDataNode alternateservers ì†ì„±ì„ í¬í•¨í•˜ëŠ” Property ê°ì²´
+     * DataNodeÀÇ AlternateServer Á¤º¸¸¦ ¹ÙÅÁÀ¸·Î connection stringÀ» ±¸¼ºÇÑ´Ù.
+     * @param aNode µ¥ÀÌÅÍ³ëµå Á¤º¸ °´Ã¼
+     * @param aPropsForDataNode alternateservers ¼Ó¼ºÀ» Æ÷ÇÔÇÏ´Â Property °´Ã¼
      */
     private void makeAlternateServerProps(DataNode aNode, AltibaseProperties aPropsForDataNode)
     {
@@ -274,9 +265,9 @@ public class CmProtocolContextShardConnect extends CmProtocolContextConnect
     }
 
     /**
-     * Metaì— ì ‘ì†í• ë•Œ ìƒì„±ëœ PropertyíŒŒì¼ì„ DataNodeì— ì‚¬ìš©í•˜ê¸° ìœ„í•´ ë³µì œí•œë‹¤.
-     * @param aProp ì›ë³¸ PropertyíŒŒì¼
-     * @return ë³µì œëœ PropertyíŒŒì¼
+     * Meta¿¡ Á¢¼ÓÇÒ¶§ »ı¼ºµÈ PropertyÆÄÀÏÀ» DataNode¿¡ »ç¿ëÇÏ±â À§ÇØ º¹Á¦ÇÑ´Ù.
+     * @param aProp ¿øº» PropertyÆÄÀÏ
+     * @return º¹Á¦µÈ PropertyÆÄÀÏ
      */
     private AltibaseProperties copyProps(AltibaseProperties aProp)
     {
@@ -293,9 +284,9 @@ public class CmProtocolContextShardConnect extends CmProtocolContextConnect
     }
 
     /**
-     * ì›ë³¸ í”„ë¡œí¼í‹°ì˜ keyì™€ valueë¥¼ loopë¥¼ ëŒë©´ì„œ ë³µì œí•œë‹¤.
-     * @param aResults ë³µì‚¬ëœ Property ê°ì²´
-     * @param aSourceProps ì›ë³¸ Property ê°ì²´
+     * ¿øº» ÇÁ·ÎÆÛÆ¼ÀÇ key¿Í value¸¦ loop¸¦ µ¹¸é¼­ º¹Á¦ÇÑ´Ù.
+     * @param aResults º¹»çµÈ Property °´Ã¼
+     * @param aSourceProps ¿øº» Property °´Ã¼
      */
     private void setProperties(AltibaseProperties aResults, AltibaseProperties aSourceProps)
     {
@@ -311,20 +302,22 @@ public class CmProtocolContextShardConnect extends CmProtocolContextConnect
     }
 
     /**
-     * DataNodeìš© Property íŒŒì¼ì„ ìƒì„±í• ë•Œ ê¸°ë³¸ í”„ë¡œí¼í‹°ë¥¼ ì œê±°í•œë‹¤.
-     * @param aProp ì›ë³¸ PropertyíŒŒì¼
+     * DataNode¿ë Property ÆÄÀÏÀ» »ı¼ºÇÒ¶§ ±âº» ÇÁ·ÎÆÛÆ¼¸¦ Á¦°ÅÇÑ´Ù.
+     * @param aProp ¿øº» PropertyÆÄÀÏ
      */
     private void removeConnAttributes(Properties aProp)
     {
         aProp.remove(AltibaseProperties.PROP_CONNTYPE);
         aProp.remove(AltibaseProperties.PROP_SHARD_CONNTYPE);
         aProp.remove(AltibaseProperties.PROP_SHARD_LAZYCONNECT);
+        aProp.remove(AltibaseProperties.PROP_RESHARD_ENABLE);
         aProp.remove(AltibaseProperties.PROP_SSL_ENABLE);
         aProp.remove(AltibaseProperties.PROP_DATASOURCE_NAME);
         aProp.remove(AltibaseProperties.PROP_ALT_SERVERS);
         aProp.remove(AltibaseProperties.PROP_PORT);
         aProp.remove(AltibaseProperties.PROP_SERVER);
         aProp.remove(AltibaseProperties.PROP_DBNAME);
+        aProp.remove(AltibaseProperties.PROP_LOAD_BALANCE);
     }
 
     public void setShardConnType(CmConnType aShardConnType)
@@ -347,7 +340,7 @@ public class CmProtocolContextShardConnect extends CmProtocolContextConnect
     {
         final StringBuilder sSb = new StringBuilder("CmProtocolContextShardConnect{");
         sSb.append("mShardNodeConfig=").append(mShardNodeConfig);
-        sSb.append(", mShardTransactionLevel=").append(mShardTransactionLevel);
+        //sSb.append(", mGlobalTransactionLevel=").append(mGlobalTransactionLevel);
         sSb.append(", mShardOnTransactionNode=").append(mShardOnTransactionNode);
         sSb.append(", mIsAutoCommit=").append(mIsAutoCommit);
         sSb.append(", mIsTouched=").append(mIsTouched);

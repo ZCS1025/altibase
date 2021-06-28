@@ -121,17 +121,17 @@ void isqlNumeric::Reformat()
 /**
  * ReformatNumber.
  *
- * SELECT ì¿¼ë¦¬ì˜ ê²°ê³¼ë¡œ ì–»ì–´ì§„
- * NUMERIC, DECIMAL, NUMBER, FLOATí˜• ì»¬ëŸ¼ì˜ ê°’ì„
- * ì¸ìžë¡œ ë°›ì€ ì¶œë ¥í­ì— ë§žì¶° ìž¬í¬ë§·íŒ…í•œë‹¤.
- * SQL_NULL_DATAì¸ ê²½ìš° ë³¸ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•´ì„œëŠ” ì•ˆëœë‹¤.
+ * SELECT Äõ¸®ÀÇ °á°ú·Î ¾ò¾îÁø
+ * NUMERIC, DECIMAL, NUMBER, FLOATÇü ÄÃ·³ÀÇ °ªÀ»
+ * ÀÎÀÚ·Î ¹ÞÀº Ãâ·ÂÆø¿¡ ¸ÂÃç ÀçÆ÷¸ËÆÃÇÑ´Ù.
+ * SQL_NULL_DATAÀÎ °æ¿ì º» ÇÔ¼ö¸¦ È£ÃâÇØ¼­´Â ¾ÈµÈ´Ù.
  *
  * @param[in,out] aCValue
- *  SELECT ì¿¼ë¦¬ì˜ ê²°ê³¼ë¡œ ì–»ì–´ì§„ ì»¬ëŸ¼ê°’.
+ *  SELECT Äõ¸®ÀÇ °á°ú·Î ¾ò¾îÁø ÄÃ·³°ª.
  * @param[in,out] aLen
- *  aCValueì˜ ê¸¸ì´.
+ *  aCValueÀÇ ±æÀÌ.
  * @param[in] aWidth
- *  ì¶œë ¥í­.
+ *  Ãâ·ÂÆø.
  */
 void isqlNumeric::ReformatNumber( SChar  *aCValue,
                                   SQLLEN *aLen,
@@ -144,7 +144,7 @@ void isqlNumeric::ReformatNumber( SChar  *aCValue,
     idBool  sCarriage;
     idBool  sNeg = ID_FALSE;
 
-    /* ë¶€í˜¸ë¥¼ ë°°ì œí•œë‹¤. */
+    /* ºÎÈ£¸¦ ¹èÁ¦ÇÑ´Ù. */
     if (aCValue[0] == '-')
     {
         sNeg = ID_TRUE;
@@ -153,10 +153,10 @@ void isqlNumeric::ReformatNumber( SChar  *aCValue,
         aWidth--;
     }
 
-    /* ì§€ìˆ˜ë¥¼ êµ¬í•œë‹¤. */
+    /* Áö¼ö¸¦ ±¸ÇÑ´Ù. */
     sExponent = GetExponent(aCValue);
 
-    /* aCValueì—ì„œ ì†Œìˆ˜ì  ë° ì§€ìˆ˜ë¶€ë¥¼ ì œê±°í•˜ê³ , ìˆœìˆ˜í•œ ìžë¦¬ìˆ˜ë§Œ ë‚¨ê¸´ë‹¤. */
+    /* aCValue¿¡¼­ ¼Ò¼öÁ¡ ¹× Áö¼öºÎ¸¦ Á¦°ÅÇÏ°í, ¼ø¼öÇÑ ÀÚ¸®¼ö¸¸ ³²±ä´Ù. */
     sC = idlOS::strchr(aCValue, 'E');
     if (sC != NULL)
     {
@@ -173,8 +173,8 @@ void isqlNumeric::ReformatNumber( SChar  *aCValue,
     idlOS::memmove(aCValue, sC, *aLen - (SQLLEN)(sC - aCValue) + 1);
     *aLen -= (SQLLEN)(sC - aCValue);
 
-    /* í­ì— ë§žì¶° ì¶œë ¥í•˜ê¸° ìœ„í•œ ìžë¦¬ìˆ˜ì˜ ê°œìˆ˜ë¥¼ ê³„ì‚°í•œë‹¤. */
-    /* ë¹„ì§€ìˆ˜í˜•ìœ¼ë¡œ í‘œí˜„í•´ì•¼ í•˜ëŠ” ê²½ìš° */
+    /* Æø¿¡ ¸ÂÃç Ãâ·ÂÇÏ±â À§ÇÑ ÀÚ¸®¼öÀÇ °³¼ö¸¦ °è»êÇÑ´Ù. */
+    /* ºñÁö¼öÇüÀ¸·Î Ç¥ÇöÇØ¾ß ÇÏ´Â °æ¿ì */
     if (-(aWidth - 2) <= sExponent && sExponent <= aWidth - 2)
     {
         if (0 <= sExponent)
@@ -193,7 +193,7 @@ void isqlNumeric::ReformatNumber( SChar  *aCValue,
             sNDigit = aWidth + sExponent - 1;
         }
     }
-    /* ì§€ìˆ˜í˜•ìœ¼ë¡œ í‘œí˜„í•´ì•¼ í•˜ëŠ” ê²½ìš° */
+    /* Áö¼öÇüÀ¸·Î Ç¥ÇöÇØ¾ß ÇÏ´Â °æ¿ì */
     else
     {
         if (-9 <= sExponent && sExponent <= 9)
@@ -210,8 +210,8 @@ void isqlNumeric::ReformatNumber( SChar  *aCValue,
         }
     }
 
-    /* ìžë¦¬ìˆ˜ë¥¼ ë§Œë“ ë‹¤. */
-    /* ë°˜ì˜¬ë¦¼ì´ í•„ìš” ì—†ëŠ” ê²½ìš° */
+    /* ÀÚ¸®¼ö¸¦ ¸¸µç´Ù. */
+    /* ¹Ý¿Ã¸²ÀÌ ÇÊ¿ä ¾ø´Â °æ¿ì */
     if (*aLen <= (SQLLEN)sNDigit)
     {
         for (; *aLen < (SQLLEN)sNDigit; (*aLen)++)
@@ -220,7 +220,7 @@ void isqlNumeric::ReformatNumber( SChar  *aCValue,
         }
         aCValue[*aLen] = '\0';
     }
-    /* ë°˜ì˜¬ë¦¼ì´ í•„ìš”í•œ ê²½ìš° */
+    /* ¹Ý¿Ã¸²ÀÌ ÇÊ¿äÇÑ °æ¿ì */
     else
     {
         sCarriage = (aCValue[sNDigit] >= '5')? ID_TRUE: ID_FALSE;
@@ -251,8 +251,8 @@ void isqlNumeric::ReformatNumber( SChar  *aCValue,
         *aLen = (SQLLEN)sNDigit;
     }
 
-    /* ìˆ«ìžë¥¼ ë§Œë“ ë‹¤. */
-    /* ë¹„ì§€ìˆ˜í˜•ìœ¼ë¡œ í‘œí˜„í•´ì•¼ í•˜ëŠ” ê²½ìš° */
+    /* ¼ýÀÚ¸¦ ¸¸µç´Ù. */
+    /* ºñÁö¼öÇüÀ¸·Î Ç¥ÇöÇØ¾ß ÇÏ´Â °æ¿ì */
     if (-(aWidth - 2) <= sExponent && sExponent <= aWidth - 2)
     {
         if (0 <= sExponent)
@@ -266,7 +266,7 @@ void isqlNumeric::ReformatNumber( SChar  *aCValue,
                 aCValue[aWidth - 1] = '\0';
                 *aLen = (SQLLEN)(aWidth - 1);
 
-                /* ì†Œìˆ˜ì  ë°‘ì˜ ë¶ˆí•„ìš”í•œ 0 ì œê±°. */
+                /* ¼Ò¼öÁ¡ ¹ØÀÇ ºÒÇÊ¿äÇÑ 0 Á¦°Å. */
                 for (; aCValue[*aLen - 1] == '0'; (*aLen)--) {};
                 if (aCValue[*aLen - 1] == '.')
                 {
@@ -293,12 +293,12 @@ void isqlNumeric::ReformatNumber( SChar  *aCValue,
             aCValue[aWidth] = '\0';
             *aLen = (SQLLEN)aWidth;
 
-            /* ì†Œìˆ˜ì  ë°‘ì˜ ë¶ˆí•„ìš”í•œ 0 ì œê±°. */
+            /* ¼Ò¼öÁ¡ ¹ØÀÇ ºÒÇÊ¿äÇÑ 0 Á¦°Å. */
             for (; aCValue[*aLen - 1] == '0'; (*aLen)--) {};
             aCValue[*aLen] = '\0';
         }
     }
-    /* ì§€ìˆ˜í˜•ìœ¼ë¡œ í‘œí˜„í•´ì•¼ í•˜ëŠ” ê²½ìš° */
+    /* Áö¼öÇüÀ¸·Î Ç¥ÇöÇØ¾ß ÇÏ´Â °æ¿ì */
     else
     {
         if (-9 <= sExponent && sExponent <= 9)
@@ -328,7 +328,7 @@ void isqlNumeric::ReformatNumber( SChar  *aCValue,
         *aLen = (SQLLEN)(aWidth - 1);
     }
 
-    /* ë°°ì œí–ˆë˜ ë¶€í˜¸ë¥¼ ê¸¸ì´ì— í¬í•¨ì‹œí‚´. */
+    /* ¹èÁ¦Çß´ø ºÎÈ£¸¦ ±æÀÌ¿¡ Æ÷ÇÔ½ÃÅ´. */
     if (sNeg == ID_TRUE)
     {
         (*aLen)++;
@@ -338,32 +338,32 @@ void isqlNumeric::ReformatNumber( SChar  *aCValue,
 /**
  * GetExponent.
  *
- * ì¸ìžë¡œ ë°›ì€ ìˆ«ìžì˜ ì§€ìˆ˜ë¥¼ êµ¬í•´ ë¦¬í„´í•œë‹¤.
+ * ÀÎÀÚ·Î ¹ÞÀº ¼ýÀÚÀÇ Áö¼ö¸¦ ±¸ÇØ ¸®ÅÏÇÑ´Ù.
  *
  * @param[in] aCValue
- *  ì§€ìˆ˜ë¥¼ êµ¬í•  ìˆ«ìž(ìˆ«ìžë¥¼ ë¬¸ìžì—´ë¡œ ì¶œë ¥í•œ í˜•íƒœ).
+ *  Áö¼ö¸¦ ±¸ÇÒ ¼ýÀÚ(¼ýÀÚ¸¦ ¹®ÀÚ¿­·Î Ãâ·ÂÇÑ ÇüÅÂ).
  */
 SInt isqlNumeric::GetExponent( SChar *aCValue )
 {
     SChar *sPos;
     SInt   sExponent;
 
-    /* ë¶€í˜¸ë¥¼ ë°°ì œí•œë‹¤. */
+    /* ºÎÈ£¸¦ ¹èÁ¦ÇÑ´Ù. */
     if (aCValue[0] == '-')
     {
         aCValue++;
     }
 
     sPos = idlOS::strchr(aCValue, 'E');
-    /* ì§€ìˆ˜í˜• í‘œí˜„ì¸ ê²½ìš° */
+    /* Áö¼öÇü Ç¥ÇöÀÎ °æ¿ì */
     if (sPos != NULL)
     {
         sExponent = (SInt)idlOS::strtol(sPos + 1, NULL, 10);
     }
-    /* ë¹„ì§€ìˆ˜í˜• í‘œí˜„ì¸ ê²½ìš° */
+    /* ºñÁö¼öÇü Ç¥ÇöÀÎ °æ¿ì */
     else
     {
-        /* 1..9ë¡œ ì‹œìž‘í•˜ëŠ” ìˆ«ìžì¸ ê²½ìš° */
+        /* 1..9·Î ½ÃÀÛÇÏ´Â ¼ýÀÚÀÎ °æ¿ì */
         if (aCValue[0] != '0')
         {
             sPos = idlOS::strchr(aCValue + 1, '.');
@@ -378,7 +378,7 @@ SInt isqlNumeric::GetExponent( SChar *aCValue )
                 sExponent = idlOS::strlen(aCValue) - 1;
             }
         }
-        /* 0ìœ¼ë¡œ ì‹œìž‘í•˜ëŠ” ìˆ«ìžì¸ ê²½ìš° */
+        /* 0À¸·Î ½ÃÀÛÇÏ´Â ¼ýÀÚÀÎ °æ¿ì */
         else /* (aCValue[0] == '0') */
         {
             /* 0 */
@@ -389,7 +389,7 @@ SInt isqlNumeric::GetExponent( SChar *aCValue )
             /* 0.xxx */
             else
             {
-                /* ì†Œìˆ˜ì  ì´í•˜ì—ì„œ ìµœì´ˆë¡œ 0ì´ ì•„ë‹Œ ìžë¦¬ìˆ˜ë¥¼ ì°¾ëŠ”ë‹¤. */
+                /* ¼Ò¼öÁ¡ ÀÌÇÏ¿¡¼­ ÃÖÃÊ·Î 0ÀÌ ¾Æ´Ñ ÀÚ¸®¼ö¸¦ Ã£´Â´Ù. */
                 for (sPos = &aCValue[2]; *sPos; sPos++)
                 {
                     if (*sPos != '0')
@@ -397,12 +397,12 @@ SInt isqlNumeric::GetExponent( SChar *aCValue )
                         break;
                     }
                 }
-                /* ì†Œìˆ˜ì  ì´í•˜ê°€ ëª¨ë‘ 0ì¸ ê²½ìš° */
+                /* ¼Ò¼öÁ¡ ÀÌÇÏ°¡ ¸ðµÎ 0ÀÎ °æ¿ì */
                 if (*sPos == '\0')
                 {
                     sExponent = 0;
                 }
-                /* ì†Œìˆ˜ì  ì´í•˜ì—ì„œ 0ì´ ì•„ë‹Œ ìžë¦¬ìˆ˜ë¥¼ ì°¾ì€ ê²½ìš° */
+                /* ¼Ò¼öÁ¡ ÀÌÇÏ¿¡¼­ 0ÀÌ ¾Æ´Ñ ÀÚ¸®¼ö¸¦ Ã£Àº °æ¿ì */
                 else
                 {
                     sExponent = -((SInt)(sPos - aCValue) - 1);

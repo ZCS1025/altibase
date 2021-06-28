@@ -19,11 +19,11 @@
  * $Id: qmgFullOuter.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     FullOuter Graphë¥¼ ìœ„í•œ ì •ì˜
+ *     FullOuter Graph¸¦ À§ÇÑ Á¤ÀÇ
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -36,30 +36,30 @@
 #include <qmoPredicate.h>
 
 //---------------------------------------------------
-// Full Outer Join Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+// Full Outer Join Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
 //---------------------------------------------------
 
 typedef struct qmgFOJN
 {
-    qmgGraph graph;  // ê³µí†µ Graph ì •ë³´
+    qmgGraph graph;  // °øÅë Graph Á¤º¸
 
-    // Full Outer Join Graphë¥¼ ìœ„í•œ ì •ë³´
+    // Full Outer Join Graph¸¦ À§ÇÑ Á¤º¸
 
     qmoCNF            * onConditionCNF;
 
     //-----------------------------------------------
-    // Join Method ì •ë³´
+    // Join Method Á¤º¸
     //-----------------------------------------------
 
     qmoJoinMethod     * nestedLoopJoinMethod;
     qmoJoinMethod     * sortBasedJoinMethod;
     qmoJoinMethod     * hashBasedJoinMethod;
 
-    qmoJoinMethodCost * selectedJoinMethod; // ê°€ì¥ costê°€ ë‚®ì€ Join Method
+    qmoJoinMethodCost * selectedJoinMethod; // °¡Àå cost°¡ ³·Àº Join Method
 
     //----------------------------------------------
-    // Join Predicate ì •ë³´:
-    //    ì„ íƒëœ Join Method Typeì— ë”°ë¼ ë‹¤ìŒê³¼ ê°™ì´ Join Predicateì´ ë¶„ë¥˜ëœë‹¤.
+    // Join Predicate Á¤º¸:
+    //    ¼±ÅÃµÈ Join Method Type¿¡ µû¶ó ´ÙÀ½°ú °°ÀÌ Join PredicateÀÌ ºĞ·ùµÈ´Ù.
     //
     //    - joinablePredicate
     //      Index Nested Loop or Anti Outer      : indexablePredicate
@@ -76,21 +76,21 @@ typedef struct qmgFOJN
     qmoPredicate      * nonJoinablePredicate;
 
     //----------------------------------------------
-    // Join Methodê°€ Anti Outer Joinìœ¼ë¡œ ê²°ì •ëœ ê²½ìš°, ì„¤ì •ë˜ëŠ” ì •ë³´
-    //    - antiLeftGraph  : right graphë¥¼ ë³µì‚¬í•˜ì—¬ ê°€ì§
-    //    - antiRightGraph : left graphë¥¼ ë³µì‚¬í•´ì„œ ê°€ì§
-    //                      joinable predicateì„ ë³µì‚¬í•˜ì—¬ myPredicateì— ì—°ê²°
+    // Join Method°¡ Anti Outer JoinÀ¸·Î °áÁ¤µÈ °æ¿ì, ¼³Á¤µÇ´Â Á¤º¸
+    //    - antiLeftGraph  : right graph¸¦ º¹»çÇÏ¿© °¡Áü
+    //    - antiRightGraph : left graph¸¦ º¹»çÇØ¼­ °¡Áü
+    //                      joinable predicateÀ» º¹»çÇÏ¿© myPredicate¿¡ ¿¬°á
     //----------------------------------------------
 
     qmgGraph          * antiLeftGraph;
     qmgGraph          * antiRightGraph;
 
     //---------------------------------------------
-    // Join Method Typeì´ Hash Based Joinì¸ ê²½ìš°, ì‚¬ìš©
+    // Join Method TypeÀÌ Hash Based JoinÀÎ °æ¿ì, »ç¿ë
     //---------------------------------------------
 
     UInt            hashBucketCnt;        // hash bucket count
-    UInt            hashTmpTblCnt;        // hash temp table ê°œìˆ˜
+    UInt            hashTmpTblCnt;        // hash temp table °³¼ö
 
     // PROJ-2242
     SDouble         firstRowsFactor;      // FIRST_ROWS_N
@@ -99,25 +99,25 @@ typedef struct qmgFOJN
 } qmgFOJN;
 
 //---------------------------------------------------
-// Full Outer Join Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+// Full Outer Join Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
 //---------------------------------------------------
 
 class qmgFullOuter
 {
 public:
-    // Graph ì˜ ì´ˆê¸°í™”
+    // Graph ÀÇ ÃÊ±âÈ­
     static IDE_RC  init( qcStatement * aStatement,
                          qmsQuerySet * aQuerySet,
                          qmsFrom     * aFrom,
                          qmgGraph   ** aGraph );
 
-    // Graphì˜ ìµœì í™” ìˆ˜í–‰
+    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
     static IDE_RC  optimize( qcStatement * aStatement, qmgGraph * aGraph );
 
-    // Graphì˜ Plan Tree ìƒì„±
+    // GraphÀÇ Plan Tree »ı¼º
     static IDE_RC  makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph * aGraph );
 
-    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
+    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
     static IDE_RC  printGraph( qcStatement  * aStatement,
                                qmgGraph     * aGraph,
                                ULong          aDepth,

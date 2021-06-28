@@ -20,7 +20,7 @@
  *
  * Description :
  *     TASK-4990 changing the method of collecting index statistics
- *     í•œ Indexì˜ í†µê³„ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
+ *     ÇÑ IndexÀÇ Åë°èÁ¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
  *
  * Syntax :
  *    SET_INDEX_STATS (
@@ -64,7 +64,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfSetIndexStatsModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -196,7 +196,6 @@ IDE_RC qsfCalculate_SetIndexStats( mtcNode*     aNode,
     smiStatement         * sDummyParentStmt;
     smiStatement           sDummyStmt;
     smiTrans               sSmiTrans;
-    smSCN                  sDummySCN;
     void                 * sMmSession;
     UInt                   sSmiStmtFlag;
     UInt                   sState = 0;
@@ -244,7 +243,7 @@ IDE_RC qsfCalculate_SetIndexStats( mtcNode*     aNode,
     }
     else
     {
-        // ì´ì „ Planë“¤ì„ invalidate ì‹œí‚¬ í•„ìš”ê°€ ì—†ë‹¤.
+        // ÀÌÀü PlanµéÀ» invalidate ½ÃÅ³ ÇÊ¿ä°¡ ¾ø´Ù.
         // Nothing to do.
     }
 
@@ -292,7 +291,7 @@ IDE_RC qsfCalculate_SetIndexStats( mtcNode*     aNode,
     IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT(sStatement))->getTrans(),
                                          sTableHandle,
                                          sTableSCN,
-                                         SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                         SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                          SMI_TABLE_LOCK_IX,
                                          ID_ULONG_MAX,
                                          ID_FALSE )         // BUG-28752 isExplicitLock
@@ -311,7 +310,7 @@ IDE_RC qsfCalculate_SetIndexStats( mtcNode*     aNode,
 
     if( sTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
-        /* Partitioned Tableì´ë©´ List ìˆœíšŒí•˜ë©´ì„œ ..*/
+        /* Partitioned TableÀÌ¸é List ¼øÈ¸ÇÏ¸é¼­ ..*/
         IDE_TEST( qcmPartition::getPartitionInfoList(
                 sStatement,
                 QC_SMI_STMT( sStatement),
@@ -322,7 +321,7 @@ IDE_RC qsfCalculate_SetIndexStats( mtcNode*     aNode,
 
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( sStatement,
                                                                   sPartInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                                   SMI_TABLE_LOCK_IX,
                                                                   ID_ULONG_MAX )
                   != IDE_SUCCESS );
@@ -334,8 +333,8 @@ IDE_RC qsfCalculate_SetIndexStats( mtcNode*     aNode,
             {
                 if (sPartInfo->indices[i].indexId == sIndexID)
                 {
-                    /* Partition Indexì¼ ê²½ìš°, IDê°€ ê°™ì€ Indexê°€
-                     * ì—¬ëŸ¿ ìˆìŒ. Break ì•ˆí•˜ê³  ìˆœíšŒ */
+                    /* Partition IndexÀÏ °æ¿ì, ID°¡ °°Àº Index°¡
+                     * ¿©·µ ÀÖÀ½. Break ¾ÈÇÏ°í ¼øÈ¸ */
                     sIndexInfo = &sPartInfo->indices[i];
                     IDE_TEST( smiStatistics::setIndexStatsByUser( 
                             (QC_SMI_STMT(sStatement))->getTrans(),
@@ -360,8 +359,8 @@ IDE_RC qsfCalculate_SetIndexStats( mtcNode*     aNode,
     }
 
     // BUG-38236
-    // Partitioned Tableì˜ Global Indexì¸ ê²½ìš°ì—ë„ 
-    // IndexStatì„ ì„¤ì •í•  ìˆ˜ ìˆì–´ì•¼ í•œë‹¤.
+    // Partitioned TableÀÇ Global IndexÀÎ °æ¿ì¿¡µµ 
+    // IndexStatÀ» ¼³Á¤ÇÒ ¼ö ÀÖ¾î¾ß ÇÑ´Ù.
     if ( sIndexInfo == NULL )
     {
         for ( i = 0; i < sTableInfo->indexCount; i++)
@@ -408,7 +407,7 @@ IDE_RC qsfCalculate_SetIndexStats( mtcNode*     aNode,
     }
     else
     {
-        // ì´ì „ Planë“¤ì„ invalidate ì‹œí‚¬ í•„ìš”ê°€ ì—†ë‹¤.
+        // ÀÌÀü PlanµéÀ» invalidate ½ÃÅ³ ÇÊ¿ä°¡ ¾ø´Ù.
         // Nothing to do.
     }
 
@@ -422,7 +421,7 @@ IDE_RC qsfCalculate_SetIndexStats( mtcNode*     aNode,
 
     // transaction commit
     sState = 1;
-    IDE_TEST( sSmiTrans.commit(&sDummySCN) != IDE_SUCCESS );
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
 
     // transaction destroy
     sState = 0;

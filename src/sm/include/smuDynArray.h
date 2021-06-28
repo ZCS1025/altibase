@@ -28,42 +28,42 @@
 #include <smuList.h>
 #include <iduLatch.h>
 /*
- *  smuDynArrayì˜ ëª©ì 
+ *  smuDynArrayÀÇ ¸ñÀû
  *
- *  ë¯¸ë¦¬ í¬ê¸°ë¥¼ ê²°ì •í•  ìˆ˜ ì—†ëŠ” ë°ì´íƒ€(ì˜ˆë¥¼ ë“¤ë©´ ë¡œê¹…)ì˜ ì €ìž¥ì„ ìœ„í•´
- *  ê°€ë³€ì ì¸ ë©”ëª¨ë¦¬ ê³µê°„ì„ ê´€ë¦¬í•˜ê³ , ì´í›„ì— ë°ì´í„°ë¥¼ êº¼ë‚´ê¸° ìœ„í•œ
- *  ëª©ì ìœ¼ë¡œ ì„¤ê³„ë˜ì—ˆìŒ.
+ *  ¹Ì¸® Å©±â¸¦ °áÁ¤ÇÒ ¼ö ¾ø´Â µ¥ÀÌÅ¸(¿¹¸¦ µé¸é ·Î±ë)ÀÇ ÀúÀåÀ» À§ÇØ
+ *  °¡º¯ÀûÀÎ ¸Þ¸ð¸® °ø°£À» °ü¸®ÇÏ°í, ÀÌÈÄ¿¡ µ¥ÀÌÅÍ¸¦ ²¨³»±â À§ÇÑ
+ *  ¸ñÀûÀ¸·Î ¼³°èµÇ¾úÀ½.
  *
- *  í¬ê²Œ ì €ìž¥ í•¨ìˆ˜ store()ì™€ êº¼ë‚´ê¸° í•¨ìˆ˜ load()ë¡œ ë‚˜ë‰˜ì–´ì§€ë©°,
- *  store()ì˜ ê²½ìš° í˜¸ì¶œìžê°€ ìž„ì˜ì˜ í¬ê¸°ì˜ ë°ì´í„°ë¥¼ ì €ìž¥í•  ìˆ˜ ìžˆë„ë¡ í•œë‹¤.
+ *  Å©°Ô ÀúÀå ÇÔ¼ö store()¿Í ²¨³»±â ÇÔ¼ö load()·Î ³ª´µ¾îÁö¸ç,
+ *  store()ÀÇ °æ¿ì È£ÃâÀÚ°¡ ÀÓÀÇÀÇ Å©±âÀÇ µ¥ÀÌÅÍ¸¦ ÀúÀåÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
  *
- *  load()ì˜ ê²½ìš° smuDynArray ê°ì²´ì— ì €ìž¥ëœ ë°ì´í„°ë¥¼ ìž…ë ¥ëœ ëŒ€ìƒ ë©”ëª¨ë¦¬
- *  ê³µê°„ì— ìˆœì°¨ì ìœ¼ë¡œ ë³µì‚¬ë¥¼ í•˜ë„ë¡ í•œë‹¤.
+ *  load()ÀÇ °æ¿ì smuDynArray °´Ã¼¿¡ ÀúÀåµÈ µ¥ÀÌÅÍ¸¦ ÀÔ·ÂµÈ ´ë»ó ¸Þ¸ð¸®
+ *  °ø°£¿¡ ¼øÂ÷ÀûÀ¸·Î º¹»ç¸¦ ÇÏµµ·Ï ÇÑ´Ù.
  *
- *  ê·¸ì™¸ì˜ APIëŠ” ë¶€ì°¨ì ì¸ ê²ƒìœ¼ë¡œ ìš”êµ¬ì‚¬í•­ì´ ë°œìƒí•  ê²½ìš° êµ¬í˜„í•œë‹¤.
+ *  ±×¿ÜÀÇ API´Â ºÎÂ÷ÀûÀÎ °ÍÀ¸·Î ¿ä±¸»çÇ×ÀÌ ¹ß»ýÇÒ °æ¿ì ±¸ÇöÇÑ´Ù.
  *
  *
  *  LayOut :
  *
  *  BaseNode     SubNode     SubNode
  *  +------+    +------+    +------+
- *  | Size |<-->|      |<-->|      |<-- ê³„ì† ì¦ê°€í•¨.
+ *  | Size |<-->|      |<-->|      |<-- °è¼Ó Áõ°¡ÇÔ.
  *  | Off  |    |      |    |      |
  *  | mem  |    | mem  |    | mem  |
  *  | (2k) |    | (?k) |    | (?k) |
  *  +------+    +------+    +------+
  *
- *  êµ¬í˜„ ì´ìŠˆ 
- *  - BaseNodeì—ëŠ” í˜„ìž¬ ì €ìž¥ëœ í¬ê¸° ë° ë‹¤ìŒì— ì €ìž¥ë  ë…¸ë“œ ë° í¬ì¸í„°ë¥¼ ìœ ì§€í•œë‹¤.
- *    íŠ¹ížˆ, ì²«ë²ˆì§¸ ë…¸ë“œì— ëŒ€í•œ ë©”ëª¨ë¦¬ í• ë‹¹ ë¹„ìš©ì„ ì¤„ì´ê¸° ìœ„í•´,
- *    BaseNode ë‚´ë¶€ì— ì •ì í¬ê¸°ì˜ ë²„í¼ë¥¼(SMU_DA_BASE_SIZE) ë§ˆë ¨í•´ë‘ì–´,
- *    í¬ê¸°ê°€ ì ì€ ê²½ìš° ë¹ ë¥¸ ì²˜ë¦¬ë¥¼ ë³´ìž¥í•œë‹¤. 
+ *  ±¸Çö ÀÌ½´ 
+ *  - BaseNode¿¡´Â ÇöÀç ÀúÀåµÈ Å©±â ¹× ´ÙÀ½¿¡ ÀúÀåµÉ ³ëµå ¹× Æ÷ÀÎÅÍ¸¦ À¯ÁöÇÑ´Ù.
+ *    Æ¯È÷, Ã¹¹øÂ° ³ëµå¿¡ ´ëÇÑ ¸Þ¸ð¸® ÇÒ´ç ºñ¿ëÀ» ÁÙÀÌ±â À§ÇØ,
+ *    BaseNode ³»ºÎ¿¡ Á¤ÀûÅ©±âÀÇ ¹öÆÛ¸¦(SMU_DA_BASE_SIZE) ¸¶·ÃÇØµÎ¾î,
+ *    Å©±â°¡ ÀûÀº °æ¿ì ºü¸¥ Ã³¸®¸¦ º¸ÀåÇÑ´Ù. 
  *
  *
- *  ì£¼ì˜ ì‚¬í•­
- *  - ì‘ìš© í”„ë¡œê·¸ëž¨ì˜ êµ¬ë™ì‹œ  initializeStatic() í•¨ìˆ˜ë¥¼ ë¶ˆëŸ¬
- *    ì „ì—­ ë©”ëª¨ë¦¬ ê°ì²´ë¥¼ ì´ˆê¸°í™”í•˜ê³ , ì¢…ë£Œì‹œì—ëŠ” destroyStatic()ì„ ë¶ˆëŸ¬
- *    ê°ì²´ë¥¼ ì†Œë©¸ì‹œì¼œì•¼ í•œë‹¤. 
+ *  ÁÖÀÇ »çÇ×
+ *  - ÀÀ¿ë ÇÁ·Î±×·¥ÀÇ ±¸µ¿½Ã  initializeStatic() ÇÔ¼ö¸¦ ºÒ·¯
+ *    Àü¿ª ¸Þ¸ð¸® °´Ã¼¸¦ ÃÊ±âÈ­ÇÏ°í, Á¾·á½Ã¿¡´Â destroyStatic()À» ºÒ·¯
+ *    °´Ã¼¸¦ ¼Ò¸ê½ÃÄÑ¾ß ÇÑ´Ù. 
  *
  */
 
@@ -72,21 +72,21 @@
 
 typedef struct smuDynArrayNode
 {
-    smuList mList;       // List êµ¬ì„± 
-    UInt    mStoredSize; // mChunkSize ë§Œí¼ ì»¤ì§ˆ ìˆ˜ ìžˆìŒ.
-    UInt    mCapacity;   // ì €ìž¥ ìµœëŒ€ í¬ê¸° 
-    ULong   mBuffer[1];  // Nodeì˜ ì‹¤ì œ ë©”ëª¨ë¦¬ ì˜ì—­ ì‹œìž‘ ì£¼ì†Œ
-                         //  smuDynArrayNodeê°€ ë³„ë„ì˜ ë©”ëª¨ë¦¬ ê³µê°„ì„ ê°€ë¦¬í‚¤ëŠ” 
-                         //  í¬ì¸í„°ë¥¼ ìœ ì§€í•˜ëŠ” ëŒ€ì‹  Node í• ë‹¹ì‹œì— 
-                         //  (ID_SIZEOF(smuDynArrayNode) + ë©”ëª¨ë¦¬í¬ê¸°) ë§Œí¼ ì•„ì˜ˆ
-                         //  í• ë‹¹í•  ëª©ì ìœ¼ë¡œ ì„ ì–¸ë˜ì—ˆìŒ.
-                         //  ULongì¸ ì´ìœ ëŠ” ì €ìž¥ë  ë°ì´í„° êµ¬ì¡°ë©¤ë²„ì¤‘ ULongì´
-                         // ìžˆì„ ê²½ìš° SIGBUSë¥¼ ë§‰ê¸° ìœ„í•¨ìž„.
+    smuList mList;       // List ±¸¼º 
+    UInt    mStoredSize; // mChunkSize ¸¸Å­ Ä¿Áú ¼ö ÀÖÀ½.
+    UInt    mCapacity;   // ÀúÀå ÃÖ´ë Å©±â 
+    ULong   mBuffer[1];  // NodeÀÇ ½ÇÁ¦ ¸Þ¸ð¸® ¿µ¿ª ½ÃÀÛ ÁÖ¼Ò
+                         //  smuDynArrayNode°¡ º°µµÀÇ ¸Þ¸ð¸® °ø°£À» °¡¸®Å°´Â 
+                         //  Æ÷ÀÎÅÍ¸¦ À¯ÁöÇÏ´Â ´ë½Å Node ÇÒ´ç½Ã¿¡ 
+                         //  (ID_SIZEOF(smuDynArrayNode) + ¸Þ¸ð¸®Å©±â) ¸¸Å­ ¾Æ¿¹
+                         //  ÇÒ´çÇÒ ¸ñÀûÀ¸·Î ¼±¾ðµÇ¾úÀ½.
+                         //  ULongÀÎ ÀÌÀ¯´Â ÀúÀåµÉ µ¥ÀÌÅÍ ±¸Á¶¸â¹öÁß ULongÀÌ
+                         // ÀÖÀ» °æ¿ì SIGBUS¸¦ ¸·±â À§ÇÔÀÓ.
 }smuDynArrayNode;
 
 typedef struct smuDynArrayBase
 {
-    UInt            mTotalSize;  // ì´ ê°ì²´ì— ì €ìž¥ëœ ì „ì²´ ë©”ëª¨ë¦¬ í¬ê¸°
+    UInt            mTotalSize;  // ÀÌ °´Ã¼¿¡ ÀúÀåµÈ ÀüÃ¼ ¸Þ¸ð¸® Å©±â
     smuDynArrayNode mNode;
     ULong           mBuffer[SMU_DA_BASE_SIZE / ID_SIZEOF(ULong) - 1];// for align8
 }smuDynArrayBase;
@@ -100,31 +100,31 @@ class smuDynArray
     static IDE_RC allocDynNode(smuDynArrayNode **aNode);
     static IDE_RC freeDynNode(smuDynArrayNode *aNode);
 
-    // ì§€ì •ëœ ë©”ëª¨ë¦¬ ë…¸ë“œ ê³µê°„ì— ë°ì´í„°ë¥¼ ë³µì‚¬í•œë‹¤.
+    // ÁöÁ¤µÈ ¸Þ¸ð¸® ³ëµå °ø°£¿¡ µ¥ÀÌÅÍ¸¦ º¹»çÇÑ´Ù.
     static IDE_RC copyData(smuDynArrayBase *aBase,
                            void *aDest, UInt *aStoredSize, UInt aDestCapacity,
                            void *aSrc,  UInt aSize);
     
 public:
-    static IDE_RC initializeStatic(UInt aNodeMemSize); // ì „ì—­ ì´ˆê¸°í™” 
-    static IDE_RC destroyStatic();                     // ì „ì—­ ì†Œë©¸ 
+    static IDE_RC initializeStatic(UInt aNodeMemSize); // Àü¿ª ÃÊ±âÈ­ 
+    static IDE_RC destroyStatic();                     // Àü¿ª ¼Ò¸ê 
 
-    static IDE_RC initialize(smuDynArrayBase *aBase);  // ê°ì²´ ì§€ì—­ ì´ˆê¸°í™” 
-    static IDE_RC destroy(smuDynArrayBase *aBase);     // ê°ì²´ ì§€ì—­ í•´ì œ 
+    static IDE_RC initialize(smuDynArrayBase *aBase);  // °´Ã¼ Áö¿ª ÃÊ±âÈ­ 
+    static IDE_RC destroy(smuDynArrayBase *aBase);     // °´Ã¼ Áö¿ª ÇØÁ¦ 
 
-    // DynArrayì— ë©”ëª¨ë¦¬ ì €ìž¥
+    // DynArray¿¡ ¸Þ¸ð¸® ÀúÀå
     inline static IDE_RC store( smuDynArrayBase * aBase,
                                 void            * aSrc,
                                 UInt              aSize );
-    // DynArrayì˜ ë©”ëª¨ë¦¬ë¥¼ Destë¡œ ë³µì‚¬.
+    // DynArrayÀÇ ¸Þ¸ð¸®¸¦ Dest·Î º¹»ç.
     static void load(smuDynArrayBase *aBase, void *aDest, UInt aDestBuffSize);
-    // í˜„ìž¬ ì €ìž¥ëœ ë©”ëª¨ë¦¬ í¬ê¸°ë¥¼ ë°˜í™˜í•¨.
+    // ÇöÀç ÀúÀåµÈ ¸Þ¸ð¸® Å©±â¸¦ ¹ÝÈ¯ÇÔ.
     inline static UInt getSize( smuDynArrayBase * aBase );
     
 };
 
 /*
- *  Tail Nodeë¥¼ ì¸ìžë¡œ ë„˜ê²¨, copyDataë¥¼ ìˆ˜í–‰í•œë‹¤. 
+ *  Tail Node¸¦ ÀÎÀÚ·Î ³Ñ°Ü, copyData¸¦ ¼öÇàÇÑ´Ù. 
  */
 inline IDE_RC smuDynArray::store( smuDynArrayBase * aBase,
                                   void            * aSrc,
@@ -151,7 +151,7 @@ inline IDE_RC smuDynArray::store( smuDynArrayBase * aBase,
     return IDE_FAILURE;
 }
 
-/* í¬ê¸° ë¦¬í„´ */
+/* Å©±â ¸®ÅÏ */
 inline UInt smuDynArray::getSize( smuDynArrayBase * aBase )
 {
     return aBase->mTotalSize;

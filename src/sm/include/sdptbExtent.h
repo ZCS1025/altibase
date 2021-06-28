@@ -17,7 +17,7 @@
 /***********************************************************************
  * $Id: sdptbExtent.h 27220 2008-07-23 14:56:22Z newdaily $
  *
- * TBSì—ì„œ extentë¥¼ í• ë‹¹í•˜ê³  í•´ì œí•˜ëŠ” ë£¨í‹´ì— ê´€ë ¨ëœ í•¨ìˆ˜ë“¤ì´ë‹¤.
+ * TBS¿¡¼­ extent¸¦ ÇÒ´çÇÏ°í ÇØÁ¦ÇÏ´Â ·çÆ¾¿¡ °ü·ÃµÈ ÇÔ¼öµéÀÌ´Ù.
  ***********************************************************************/
 
 # ifndef _O_SDPTB_EXTENT_H_
@@ -31,28 +31,32 @@ public:
     static IDE_RC initialize(){ return IDE_SUCCESS; }
     static IDE_RC destroy(){ return IDE_SUCCESS; }
 
-    /* tablespaceë¡œë¶€í„° extentë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.*/
+    /* tablespace·ÎºÎÅÍ extent¸¦ ÇÒ´ç¹Ş´Â´Ù.*/
     static IDE_RC allocExts( idvSQL         * aStatistics,
                              sdrMtxStartInfo* aStartInfo,
                              scSpaceID        aSpaceID,
                              UInt             aOrgNrExts,
                              sdpExtDesc     * aExtDesc );
 
-    /* ExtDir í˜ì´ì§€ë¥¼ í• ë‹¹í•œë‹¤. */
+    static IDE_RC allocTmpExt( idvSQL      * aStatistics,
+                               scSpaceID     aSpaceID,
+                               sdpExtDesc  * aExtSlot );
+
+    /* ExtDir ÆäÀÌÁö¸¦ ÇÒ´çÇÑ´Ù. */
     static IDE_RC tryAllocExtDir( idvSQL             * aStatistics,
                                   sdrMtxStartInfo    * aStartInfo,
                                   scSpaceID            aSpaceID,
                                   sdpFreeExtDirType    aFreeListIdx,
                                   scPageID           * aExtDirPID );
 
-    /* ExtDir í˜ì´ì§€ë¥¼ í•´ì œí•œë‹¤. */
+    /* ExtDir ÆäÀÌÁö¸¦ ÇØÁ¦ÇÑ´Ù. */
     static IDE_RC freeExtDir( idvSQL             * aStatistics,
                               sdrMtx             * aMtx,
                               scSpaceID            aSpaceID,
                               sdpFreeExtDirType    aFreeListIdx,
                               scPageID             aExtDirPID );
 
-    /* GGì—ì„œ extentë“¤ì˜ í• ë‹¹ì„ ì‹œë„í•œë‹¤ */
+    /* GG¿¡¼­ extentµéÀÇ ÇÒ´çÀ» ½ÃµµÇÑ´Ù */
     static IDE_RC tryAllocExtsInGG( idvSQL             * aStatistics,
                                     sdrMtxStartInfo    * aStartInfo,
                                     sdptbSpaceCache    * aCache,  
@@ -61,7 +65,7 @@ public:
                                     scPageID           * aExtFstPID,
                                     UInt               * aNrDone); 
 
-    /* LGì—ì„œ extentë“¤ì˜ í• ë‹¹ì„ ì‹œë„í•œë‹¤ */
+    /* LG¿¡¼­ extentµéÀÇ ÇÒ´çÀ» ½ÃµµÇÑ´Ù */
     static IDE_RC allocExtsInLG( idvSQL                  * aStatistics,
                                  sdrMtx                  * aMtx,
                                  sdptbSpaceCache         * aSpaceCache,  
@@ -72,28 +76,29 @@ public:
                                  UInt                    * aNrDone, 
                                  UInt                    * aFreeInLG);
 
-    /* space cacheë¡œë¶€í„° í˜„ì¬ í• ë‹¹ì´ ê°€ëŠ¥í•  ê°€ëŠ¥ì„±ì´ ìˆëŠ” FIDë¥¼ ì–»ëŠ”ë‹¤*/
+    /* space cache·ÎºÎÅÍ ÇöÀç ÇÒ´çÀÌ °¡´ÉÇÒ °¡´É¼ºÀÌ ÀÖ´Â FID¸¦ ¾ò´Â´Ù*/
     static IDE_RC getAvailFID( sdptbSpaceCache         * aCache,
                            smFileID                 * aFID);
 
-    /* deallcation LG hdrì— freeê°€ ìˆë‹¤ë©´ switchingì„ í•œë‹¤.*/
+    /* deallcation LG hdr¿¡ free°¡ ÀÖ´Ù¸é switchingÀ» ÇÑ´Ù.*/
     static IDE_RC trySwitch( sdrMtx                    *   aMtx,
                              sdptbGGHdr                *   aGGHdrPtr,
                              idBool                    *   aRet,
                              sdptbSpaceCache           *   aCache );
 
-    /* BUG-24730 [SD] Dropëœ Temp Segmentì˜ ExtentëŠ” ë¹ ë¥´ê²Œ ì¬ì‚¬ìš©ë˜ì–´ì•¼ í•©
-     * ë‹ˆë‹¤.  */
-    static IDE_RC pushFreeExtToSpaceCache( void * aData );
+    static IDE_RC prepareCachedFreeExts( idvSQL           * aStatistics,
+                                         sctTableSpaceNode* aSpaceNode );
 
     static IDE_RC freeExt( idvSQL           *  aStatistics,
                            sdrMtx           *  aMtx,
                            scSpaceID           aSpaceID,
                            scPageID            aExtFstPID,
                            UInt             *  aNrDone );
+    static IDE_RC freeTmpExt( scSpaceID           aSpaceID,
+                              scPageID            aExtFstPID );
 
-    /*[INTERFACE]  TBSì— extentë¥¼ ë°˜ë‚©í•œë‹¤. */
-    /* LGì— extentë“¤ì„ ë°˜ë‚©í•œë‹¤.*/
+    /*[INTERFACE]  TBS¿¡ extent¸¦ ¹İ³³ÇÑ´Ù. */
+    /* LG¿¡ extentµéÀ» ¹İ³³ÇÑ´Ù.*/
     static IDE_RC freeExts( idvSQL           *  aStatistics,
                             sdrMtx           *  aMtx,
                             scSpaceID           aSpaceID,
@@ -125,6 +130,20 @@ public:
                                  scSpaceID  aSpaceID,
                                  scPageID   aPageID,
                                  idBool   * aIsFreeExt);
+
+    /* BUG-47666 X$DATAFILE¿¡ Freeness Of GG Ç¥Çö */
+    static idBool getFreenessOfGG( sddTableSpaceNode  * aTBSNode,
+                                   sdFileID             aFID )
+    {
+        sdptbSpaceCache * sSpaceCache = sddDiskMgr::getSpaceCache( aTBSNode );
+
+        if ( aFID <= sSpaceCache->mMaxGGID )
+        {
+            return sdptbBit::getBit( (void *)sSpaceCache->mFreenessOfGGs, aFID );
+        }
+
+        return ID_FALSE;
+    };
 };
 
 #endif // _O_SDPTB_EXTENT_H_

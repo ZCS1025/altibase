@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: rpdMeta.cpp 85321 2019-04-25 04:58:40Z donghyun1 $
+ * $Id: rpdMeta.cpp 91064 2021-06-25 00:58:22Z donghyun1 $
  **********************************************************************/
 
 #include <idl.h>
@@ -45,10 +45,28 @@ processProtocolOperationType gProcessProtocolOperationType[RP_META_MAX] =
 {   
     { RP_META_DICTTABLECOUNT, 7, 4, 2, 0 },
     { RP_META_PARTITIONCOUNT, 7, 4, 4, 0 },
-    { RP_META_XSN           , 7, 4, 5, 0 }    
+    { RP_META_XSN           , 7, 4, 5, 0 },
+    { RP_META_SRID          , 7, 4, 6, 0 },
+    { RP_META_COMPRESSTYPE  , 7, 4, 8, 0 }
 };
 
-/* BUG-37770 Ïù∏Îç±Ïä§ Î∞∞Ïó¥ÏùÑ Ïù∏Îç±Ïä§ Ïª¨Îüº Ïù¥Î¶ÑÏùÑ Í∏∞Ï§ÄÏúºÎ°ú Ï†ïÎ†¨ÌïúÎã§. */
+typedef struct protocolCompressType
+{
+    cmiCompressType             mCompressType;
+    UInt                        mMajorVersion;
+    UInt                        mMinorVersion;
+    UInt                        mFixVersion;
+    UInt                        mEdianBit;
+} protocolCompressType;
+
+protocolCompressType gProtocolCompressType[CMI_COMPRESS_MAX] = 
+{   
+    { CMI_COMPRESS_NONE,  0, 0, 0, 0 },
+    { CMI_COMPRESS_LZO,   7, 3, 1, 0 },
+    { CMI_COMPRESS_LZ4,   7, 4, 8, 0 },
+};
+
+/* BUG-37770 ¿Œµ¶Ω∫ πËø≠¿ª ¿Œµ¶Ω∫ ƒ√∑≥ ¿Ã∏ß¿ª ±‚¡ÿ¿∏∑Œ ¡§∑ƒ«—¥Ÿ. */
 typedef struct rpdIndexSortInfo
 {
     rpdMetaItem * mItem;
@@ -208,7 +226,7 @@ rpdMetaCompareIndexColumnName( const void * aElem1, const void * aElem2 )
             }
         }
         else
-        {   /* (Index1Ïùò Key Column Count) > (Index2Ïùò Key Column Count) */
+        {   /* (Index1¿« Key Column Count) > (Index2¿« Key Column Count) */
             return 1;
         }
     }
@@ -218,9 +236,27 @@ rpdMetaCompareIndexColumnName( const void * aElem1, const void * aElem2 )
         return 0;
     }
     else
-    {   /* (Index1Ïùò Key Column Count) < (Index2Ïùò Key Column Count) */
+    {   /* (Index1¿« Key Column Count) < (Index2¿« Key Column Count) */
         return -1;
     }
+}
+
+static ULong getLockWaitMicroSec( ULong   aLockWaitMicroSec )
+{
+    ULong   sLockWaitMicroSec = 0;
+
+    /* BUG-46208 
+     * º≠πˆ Ω√¿€Ω√ø°¥¬ receiver execute«œ∏Èº≠ lock¿ª ¿‚∞Ì ¿÷¿ª ºˆ ¿÷¿∏π«∑Œ lock ¥Î±‚ «—¥Ÿ. */
+    if ( rpcManager::isInitRepl() == ID_TRUE )
+    {
+        sLockWaitMicroSec = ID_ULONG_MAX;
+    }
+    else
+    {
+        sLockWaitMicroSec = aLockWaitMicroSec;
+    }
+
+    return sLockWaitMicroSec;
 }
 
 rpdMeta::rpdMeta()
@@ -234,6 +270,8 @@ void rpdMeta::initialize()
     mReplication.mRemoteXSN = SM_SN_NULL;
     mReplication.mRemoteLastDDLXSN = SM_SN_NULL;
 
+    SM_LSN_INIT( mReplication.mCurrentReadLSNFromXLogfile );
+
     mItemsOrderByTableOID = NULL;
     mItemsOrderByRemoteTableOID = NULL;
     mItemsOrderByLocalName = NULL;
@@ -242,6 +280,7 @@ void rpdMeta::initialize()
     mDictTableCount     = 0;
     mDictTableOID       = NULL;
     mDictTableOIDSorted = NULL;
+    mDictTableCount = 0;
 
     idlOS::memset(mErrMsg, 0, RP_ACK_MSG_LEN);
     mChildXSN = SM_SN_NULL;
@@ -257,6 +296,8 @@ void rpdMeta::finalize()
     mReplication.mXSN = SM_SN_NULL;
     mReplication.mRemoteXSN = SM_SN_NULL;
     mReplication.mRemoteLastDDLXSN = SM_SN_NULL;
+
+    SM_LSN_INIT( mReplication.mCurrentReadLSNFromXLogfile );
 
     return;
 }
@@ -434,7 +475,8 @@ void rpdMetaItem::initialize( void )
     mIndexTableRef = NULL;
 
     mPartitionMethod = QCM_PARTITION_METHOD_NONE;
-    mPartitionOrder = 0;
+    mPartitionOrder = QCI_NO_PARTITION_ORDER;
+    mPartitionCount = 0;
 
     idlOS::memset( mPartCondMinValues, 0x00, (QC_MAX_PARTKEY_COND_VALUE_LEN + 1) * ID_SIZEOF(SChar) );
     idlOS::memset( mPartCondMaxValues, 0x00, (QC_MAX_PARTKEY_COND_VALUE_LEN + 1) * ID_SIZEOF(SChar) );
@@ -450,7 +492,7 @@ void rpdMetaItem::initialize( void )
 
     mHasLOBColumn   = ID_FALSE;
 
-    mNeedConvertSQL = ID_FALSE;
+    mApplyMode      = RP_APPLY_XLOG;
     mNeedCompact    = ID_FALSE;
     mQueueMsgIDSeq  = NULL;
 
@@ -464,7 +506,7 @@ void rpdMetaItem::initialize( void )
 void rpdMetaItem::finalize( void )
 {
     mHasLOBColumn = ID_FALSE;
-    mNeedConvertSQL = ID_FALSE;
+    mApplyMode = RP_APPLY_XLOG;
     mQueueMsgIDSeq = NULL;
 
     freeMemory();
@@ -834,12 +876,12 @@ IDE_RC rpdMetaItem::compareReplCheckColList( const SChar      *aTableName,
  *  compare default expression string
  *
  * Argument :
- *  aItem1           [IN]   : Replication Item Ï†ïÎ≥¥ (Sender)
+ *  aItem1           [IN]   : Replication Item ¡§∫∏ (Sender)
  *  aFuncBasedIndex1 [IN]   : Function-based Index (Sender)
- *  aColumns1        [IN]   : Column Ï†ïÎ≥¥ (Sender)
- *  aItem2           [IN]   : Replication Item Ï†ïÎ≥¥ (Receiver)
+ *  aColumns1        [IN]   : Column ¡§∫∏ (Sender)
+ *  aItem2           [IN]   : Replication Item ¡§∫∏ (Receiver)
  *  aFuncBasedIndex2 [IN]   : Function-based Index (Receiver)
- *  aColumns2        [IN]   : Column Ï†ïÎ≥¥ (Receiver)
+ *  aColumns2        [IN]   : Column ¡§∫∏ (Receiver)
  *
  * ********************************************************************/
 IDE_RC rpdMeta::equalFuncBasedIndex( const rpdReplItems * aItem1,
@@ -862,8 +904,8 @@ IDE_RC rpdMeta::equalFuncBasedIndex( const rpdReplItems * aItem1,
         if ( ( aColumns1[sColumnPos1].mQPFlag & QCM_COLUMN_HIDDEN_COLUMN_MASK )
              == QCM_COLUMN_HIDDEN_COLUMN_TRUE )
         {
-            /* equalIndex() ÏóêÏÑú Î®ºÏ†Ä Column Ï†ïÎ≥¥Îì§ ÎπÑÍµê,
-             * Ïù¥Í≥≥ÏóêÏÑúÎäî Í∞ôÏùÄ Hidden Ïóê ÎåÄÌï¥ÏÑú Í∞ôÏùÄ flag Í∞íÏùÑ Í∞ñÎäî Column Îì§Îßå ÎπÑÍµê */
+            /* equalIndex() ø°º≠ ∏’¿˙ Column ¡§∫∏µÈ ∫Ò±≥,
+             * ¿Ã∞˜ø°º≠¥¬ ∞∞¿∫ Hidden ø° ¥Î«ÿº≠ ∞∞¿∫ flag ∞™¿ª ∞Æ¥¬ Column µÈ∏∏ ∫Ò±≥ */
             IDE_DASSERT( ( aColumns2[sColumnPos2].mQPFlag & QCM_COLUMN_HIDDEN_COLUMN_MASK )
                          == QCM_COLUMN_HIDDEN_COLUMN_TRUE );
 
@@ -878,8 +920,8 @@ IDE_RC rpdMeta::equalFuncBasedIndex( const rpdReplItems * aItem1,
         }
         else
         {
-            /* equalIndex() ÏóêÏÑú Î®ºÏ†Ä Column Ï†ïÎ≥¥Îì§ ÎπÑÍµê,
-             * Ïù¥Í≥≥ÏóêÏÑúÎäî Í∞ôÏùÄ Hidden Ïóê ÎåÄÌï¥ÏÑú Í∞ôÏùÄ flag Í∞íÏùÑ Í∞ñÎäî Column Îì§Îßå ÎπÑÍµê */
+            /* equalIndex() ø°º≠ ∏’¿˙ Column ¡§∫∏µÈ ∫Ò±≥,
+             * ¿Ã∞˜ø°º≠¥¬ ∞∞¿∫ Hidden ø° ¥Î«ÿº≠ ∞∞¿∫ flag ∞™¿ª ∞Æ¥¬ Column µÈ∏∏ ∫Ò±≥ */
             IDE_DASSERT( ( aColumns2[sColumnPos2].mQPFlag & QCM_COLUMN_HIDDEN_COLUMN_MASK )
                          != QCM_COLUMN_HIDDEN_COLUMN_TRUE );
         }
@@ -912,11 +954,11 @@ IDE_RC rpdMeta::equalFuncBasedIndex( const rpdReplItems * aItem1,
 
 /********************************************************************
  * Description  : 
- *  aIndex ÏúÑÏπòÏóê ÏûàÎäî Index Í∞Ä function-based Index Ïù∏ÏßÄ Íµ¨Î∂Ñ
+ *  aIndex ¿ßƒ°ø° ¿÷¥¬ Index ∞° function-based Index ¿Œ¡ˆ ±∏∫–
  *
  * Argument :
- *  aIndex      [IN]  : Í≤ÄÏÇ¨Ìï† Index
- *  aColumns    [IN]  : Column Ï†ïÎ≥¥
+ *  aIndex      [IN]  : ∞ÀªÁ«“ Index
+ *  aColumns    [IN]  : Column ¡§∫∏
  *
  * ********************************************************************/
 idBool rpdMeta::isFuncBasedIndex( const qcmIndex  * aIndex,
@@ -947,14 +989,14 @@ idBool rpdMeta::isFuncBasedIndex( const qcmIndex  * aIndex,
 
 /********************************************************************
  * Description  :
- *  handshake Ïãú ÎπÑÍµêÌï¥ÏïºÌï†  index Ïù∏ÏßÄ ÌåêÎ≥Ñ
+ *  handshake Ω√ ∫Ò±≥«ÿæﬂ«“  index ¿Œ¡ˆ ∆«∫∞
  *
  * Argument :
- *  aTableName    [IN]  : IndexÎ•º Ìè¨Ìï®ÌïòÎäî TableÏùò Name
- *  aIndex        [IN]  : Í≤ÄÏÇ¨Ìï† Index
- *  aColumns      [IN]  : Column Ï†ïÎ≥¥
- *  aIsReplColArr [IN]  : Replication Ïª¨Îüº Ïó¨Î∂ÄÎ•º ÎÇòÌÉÄÎÇ¥Îäî Î∞∞Ïó¥
- *  sIsValid      [OUT] : handshake Ïãú ÎπÑÍµê Ïó¨Î∂Ä
+ *  aTableName    [IN]  : Index∏¶ ∆˜«‘«œ¥¬ Table¿« Name
+ *  aIndex        [IN]  : ∞ÀªÁ«“ Index
+ *  aColumns      [IN]  : Column ¡§∫∏
+ *  aIsReplColArr [IN]  : Replication ƒ√∑≥ ø©∫Œ∏¶ ≥™≈∏≥ª¥¬ πËø≠
+ *  sIsValid      [OUT] : handshake Ω√ ∫Ò±≥ ø©∫Œ
  *
  * ********************************************************************/
 IDE_RC rpdMeta::validateIndex( const SChar     * aTableName,
@@ -976,7 +1018,7 @@ IDE_RC rpdMeta::validateIndex( const SChar     * aTableName,
         ( aIndex->isLocalUnique == ID_TRUE ) ||
         ( sIsFuncBasedIndex == ID_TRUE ) )
     {
-        /* Index ÎÇ¥Ïùò Replication ÎåÄÏÉÅ Column ÏàòÎ•º ÏñªÎäîÎã§. */
+        /* Index ≥ª¿« Replication ¥ÎªÛ Column ºˆ∏¶ æÚ¥¬¥Ÿ. */
         rpdMetaItem::getReplColumnIDList( aIndex->keyColumns,
                                           aIndex->keyColCount,
                                           sReplColumnIDList );
@@ -985,21 +1027,21 @@ IDE_RC rpdMeta::validateIndex( const SChar     * aTableName,
                                                          aIndex->keyColCount,
                                                          aIsReplColArr );
 
-        /* Replication ÎåÄÏÉÅÏù¥ ÏïÑÎãå ColumnÏúºÎ°ú Íµ¨ÏÑ±Îêú
-         * function-based Index ÎÇò Unique IndexÎäî Í≤ÄÏÇ¨ÌïòÏßÄ ÏïäÎäîÎã§. */
+        /* Replication ¥ÎªÛ¿Ã æ∆¥— Column¿∏∑Œ ±∏º∫µ»
+         * function-based Index ≥™ Unique Index¥¬ ∞ÀªÁ«œ¡ˆ æ ¥¬¥Ÿ. */
         if(sReplColCount != 0)
         {
             if ( sIsFuncBasedIndex != ID_TRUE )
             {
-                /* Replication ÎåÄÏÉÅ ColumnÍ≥º Í∑∏Î†áÏßÄ ÏïäÏùÄ ColumnÏùÑ ÌòºÌï©ÌïòÏó¨,
-                 * Unique IndexÎ•º Íµ¨ÏÑ±Ìï† Ïàò ÏóÜÎã§. */
+                /* Replication ¥ÎªÛ Column∞˙ ±◊∑∏¡ˆ æ ¿∫ Column¿ª »•«’«œø©,
+                 * Unique Index∏¶ ±∏º∫«“ ºˆ æ¯¥Ÿ. */
                 IDE_TEST_RAISE( sReplColCount != aIndex->keyColCount,
                                 ERR_UNIQUE_INDEX_REPL_AND_NOT_REPL );
             }
             else
             {
-                /* Replication ÎåÄÏÉÅ ColumnÍ≥º Í∑∏Î†áÏßÄ ÏïäÏùÄ ColumnÏùÑ ÌòºÌï©ÌïòÏó¨,
-                 * Function-based IndexÎ•º Íµ¨ÏÑ±Ìï† Ïàò ÏóÜÎã§. */
+                /* Replication ¥ÎªÛ Column∞˙ ±◊∑∏¡ˆ æ ¿∫ Column¿ª »•«’«œø©,
+                 * Function-based Index∏¶ ±∏º∫«“ ºˆ æ¯¥Ÿ. */
                 IDE_TEST_RAISE( sReplColCount != aIndex->keyColCount,
                                 ERR_FUNC_BASED_INDEX_REPL_AND_NOT_REPL );
             }
@@ -1036,12 +1078,12 @@ IDE_RC rpdMeta::validateIndex( const SChar     * aTableName,
 
 /********************************************************************
  * Description  :
- *  mtcColumn List ÏùÑ Column ID(UInt) List Î°ú Î≥ÄÌôò
+ *  mtcColumn List ¿ª Column ID(UInt) List ∑Œ ∫Ø»Ø
  *
  * Argument :
- *  aColumnList     [IN]  : mtcColumn Íµ¨Ï°∞Ï≤¥ Î∞∞Ïó¥
- *  aColumnCount    [IN]  : Î≥ÄÌôòÌï† column Í∞úÏàò
- *  aReplColumnList [OUT] : Î≥ÄÌôòÌïòÏó¨ Ï†ÄÏû•Îê† Î∞∞Ïó¥
+ *  aColumnList     [IN]  : mtcColumn ±∏¡∂√º πËø≠
+ *  aColumnCount    [IN]  : ∫Ø»Ø«“ column ∞≥ºˆ
+ *  aReplColumnList [OUT] : ∫Ø»Ø«œø© ¿˙¿Âµ… πËø≠
  *
  * ********************************************************************/
 void rpdMetaItem::getReplColumnIDList( const mtcColumn  *aColumnList,
@@ -1070,7 +1112,7 @@ idBool rpdMeta::isLocalReplication( rpdMeta * aPeerMeta )
          ( ( aPeerMeta->mReplication.mOptions & RP_OPTION_LOCAL_MASK )
                                              == RP_OPTION_LOCAL_SET ) )
     {
-        /* MetaÎ•º ÎπÑÍµêÌï† Îïå, ÏñëÏ™ΩÏùò LOCAL ÏòµÏÖòÏù¥ Í∞ôÏùÄÏßÄ Í≤ÄÏÇ¨ÌïúÎã§. */
+        /* Meta∏¶ ∫Ò±≥«“ ∂ß, æÁ¬ ¿« LOCAL ø…º«¿Ã ∞∞¿∫¡ˆ ∞ÀªÁ«—¥Ÿ. */
         sIsLocalReplication = ID_TRUE;
     }
     else
@@ -1081,69 +1123,93 @@ idBool rpdMeta::isLocalReplication( rpdMeta * aPeerMeta )
     return sIsLocalReplication;
 }
 
-IDE_RC rpdMeta::equals( idvSQL  * aStatistics,
-                        idBool    aIsLocalReplication,
-                        UInt      aSqlApplyEnable,
-                        rpdMeta * aRemoteMeta,
-                        rpdMeta * aLocalMeta )
+IDE_RC rpdMeta::equals( smiStatement    * aSmiStatement,
+                        idBool            aIsLocalReplication,
+                        UInt              aSqlApplyEnable,
+                        UInt              aItemCountDiffEnable,
+                        rpdMeta         * aRemoteMeta,
+                        rpdMeta         * aLocalMeta )
 {
     idBool sIsNeedDummy = ID_FALSE;
 
-    IDU_FIT_POINT_RAISE( "rpdMeta::equals::Erratic::rpERR_ABORT_NOT_EXIST_REPL_ITEM",
-                         ERR_REPL_ITEMS_NOT_FOUND ); 
-    IDE_TEST_RAISE( ( aRemoteMeta->existMetaItems() != ID_TRUE ) ||
-                    ( aLocalMeta->existMetaItems() != ID_TRUE ),
-                    ERR_REPL_ITEMS_NOT_FOUND );
-
-    IDE_TEST( aLocalMeta->removeDummyMetaItems() != IDE_SUCCESS );
-
-    IDE_TEST( equalRepl( aIsLocalReplication, 
-                         aSqlApplyEnable,
-                         &( aRemoteMeta->mReplication ),
-                         &( aLocalMeta->mReplication ) )
-              != IDE_SUCCESS );
-
-    IDE_TEST( isNeedDummyItems( aSqlApplyEnable,
-                                aRemoteMeta, 
-                                aLocalMeta,
-                                &sIsNeedDummy ) 
-              != IDE_SUCCESS )
-
-    if ( sIsNeedDummy != ID_TRUE )
+    /* conditional sync ¿« ∞ÊøÏ */
+    if( ( rpdMeta::isRpSyncCondition( &aRemoteMeta->mReplication ) == ID_TRUE ) || 
+        ( rpdMeta::isRpStartCondition( &aRemoteMeta->mReplication ) == ID_TRUE ) )
     {
-        IDE_TEST( equalItems( aStatistics,
-                              aIsLocalReplication,
-                              aSqlApplyEnable,
-                              aRemoteMeta, 
-                              aLocalMeta ) 
-                  != IDE_SUCCESS );
-    }
-    else
-    {
-        IDE_TEST( equalItemsAndMakeDummy( aStatistics,
-                                          aIsLocalReplication,
-                                          aSqlApplyEnable,
-                                          aRemoteMeta, 
-                                          aLocalMeta ) 
-                  != IDE_SUCCESS );
+        IDE_TEST_RAISE( aRemoteMeta->mReplication.mItemCount != aLocalMeta->mReplication.mItemCount,
+                        ERR_ITEM_COUNT);
     }
 
-    idlOS::qsort( aRemoteMeta->mItemsOrderByRemoteTableOID,
-                  aRemoteMeta->mReplication.mItemCount,
-                  ID_SIZEOF(rpdMetaItem*),
-                  rpdMetaCompareRemoteTableOID );
-    idlOS::qsort( aLocalMeta->mItemsOrderByRemoteTableOID,
-                  aLocalMeta->mReplication.mItemCount,
-                  ID_SIZEOF(rpdMetaItem*),
-                  rpdMetaCompareRemoteTableOID );
+    if ( ( aRemoteMeta->existMetaItems() == ID_TRUE ) &&
+         ( aLocalMeta->existMetaItems() == ID_TRUE ) )
+    {
+        IDE_TEST( aLocalMeta->removeDummyMetaItems() != IDE_SUCCESS );
 
-    idlOS::memset( aLocalMeta->mErrMsg, 0x00, RP_ACK_MSG_LEN );
+        IDE_TEST( equalRepl( aIsLocalReplication, 
+                             aSqlApplyEnable,
+                             aItemCountDiffEnable,
+                             &( aRemoteMeta->mReplication ),
+                             &( aLocalMeta->mReplication ) )
+                  != IDE_SUCCESS );
 
+        IDE_TEST( isNeedDummyItems( aSqlApplyEnable,
+                                    aItemCountDiffEnable,
+                                    aRemoteMeta, 
+                                    aLocalMeta,
+                                    &sIsNeedDummy ) 
+                  != IDE_SUCCESS )
+
+            if ( sIsNeedDummy != ID_TRUE )
+            {
+                IDE_TEST( equalItems( aSmiStatement,
+                                      aIsLocalReplication,
+                                      aSqlApplyEnable,
+                                      aItemCountDiffEnable,
+                                      aRemoteMeta, 
+                                      aLocalMeta ) 
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                IDE_TEST( equalItemsAndMakeDummy( aSmiStatement,
+                                                  aIsLocalReplication,
+                                                  aSqlApplyEnable,
+                                                  aItemCountDiffEnable,
+                                                  aRemoteMeta, 
+                                                  aLocalMeta ) 
+                          != IDE_SUCCESS );
+            }
+
+        idlOS::qsort( aRemoteMeta->mItemsOrderByRemoteTableOID,
+                      aRemoteMeta->mReplication.mItemCount,
+                      ID_SIZEOF(rpdMetaItem*),
+                      rpdMetaCompareRemoteTableOID );
+        idlOS::qsort( aLocalMeta->mItemsOrderByRemoteTableOID,
+                      aLocalMeta->mReplication.mItemCount,
+                      ID_SIZEOF(rpdMetaItem*),
+                      rpdMetaCompareRemoteTableOID );
+
+
+        idlOS::memset( aLocalMeta->mErrMsg, 0x00, RP_ACK_MSG_LEN );
+    }
+    else 
+    {
+        /* PROJ-2737 ∑Œ ¿Œ«ÿ Replication ø° Item ¿Ã æ¯¥¬ ∞ÊøÏµµ «„øÎ¿Ã µ»¥Ÿ. */
+        IDE_TEST( equalRepl( aIsLocalReplication, 
+                             aSqlApplyEnable,
+                             aItemCountDiffEnable,
+                             &( aRemoteMeta->mReplication ),
+                             &( aLocalMeta->mReplication ) )
+                  != IDE_SUCCESS );
+    }
+    
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION(ERR_REPL_ITEMS_NOT_FOUND)
+    IDE_EXCEPTION( ERR_ITEM_COUNT );
     {
-        IDE_SET(ideSetErrorCode(rpERR_ABORT_NOT_EXIST_REPL_ITEM));
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_REPLICATION_ITEM_COUNT_MISMATCH,
+                                  aRemoteMeta->mReplication.mItemCount,
+                                  aLocalMeta->mReplication.mItemCount ) );
     }
     IDE_EXCEPTION_END;
 
@@ -1152,6 +1218,7 @@ IDE_RC rpdMeta::equals( idvSQL  * aStatistics,
 
 IDE_RC rpdMeta::equalRepl( idBool            aIsLocalReplication,
                            UInt              aSqlApplyEnable,
+                           UInt              aItemCountDiffEnable,
                            rpdReplications * aRemoteRepl,
                            rpdReplications * aLocalRepl )
 {
@@ -1163,8 +1230,8 @@ IDE_RC rpdMeta::equalRepl( idBool            aIsLocalReplication,
     /* Compare Replication Name */
     if ( aIsLocalReplication == ID_TRUE )
     {
-        /* BUG-45236 Local Replication ÏßÄÏõê
-         *  Local ReplicationÏùÄ Replication NameÏù¥ Îã§Î•¥Îã§.
+        /* BUG-45236 Local Replication ¡ˆø¯
+         *  Local Replication¿∫ Replication Name¿Ã ¥Ÿ∏£¥Ÿ.
          */
         IDE_TEST_RAISE( idlOS::strcmp( aRemoteRepl->mRepName,
                                        aLocalRepl->mRepName ) == 0,
@@ -1197,7 +1264,7 @@ IDE_RC rpdMeta::equalRepl( idBool            aIsLocalReplication,
         IDE_RAISE(ERR_CONFLICT_RESOLUTION);
     }
 
-    if ( aSqlApplyEnable == 0 ) 
+    if ( ( aSqlApplyEnable == 0 ) && ( aItemCountDiffEnable == 0 ) ) 
     {
         IDE_TEST_RAISE(aRemoteRepl->mItemCount != aLocalRepl->mItemCount, ERR_ITEM_COUNT);
     }
@@ -1206,19 +1273,23 @@ IDE_RC rpdMeta::equalRepl( idBool            aIsLocalReplication,
     IDE_TEST_RAISE(aRemoteRepl->mTransTblSize != aLocalRepl->mTransTblSize,
                    ERR_TRANS_TABLE_SIZE);
 
-    // PROJ-1537
-    IDE_TEST_RAISE( ( aRemoteRepl->mRole == RP_ROLE_ANALYSIS ) || 
-                    ( aLocalRepl->mRole == RP_ROLE_ANALYSIS ) ||
-                    ( aRemoteRepl->mRole == RP_ROLE_ANALYSIS_PROPAGATION ) ||
-                    ( aLocalRepl->mRole == RP_ROLE_ANALYSIS_PROPAGATION ), ERR_ROLE );
+    if ( ( aRemoteRepl->mRole != RP_ROLE_IGNORE ) &&
+         ( aLocalRepl->mRole != RP_ROLE_IGNORE ) )
+    {
+        // PROJ-1537
+        IDE_TEST_RAISE( ( aRemoteRepl->mRole == RP_ROLE_ANALYSIS ) ||
+                        ( aLocalRepl->mRole == RP_ROLE_ANALYSIS ) ||
+                        ( aRemoteRepl->mRole == RP_ROLE_ANALYSIS_PROPAGATION ) ||
+                        ( aLocalRepl->mRole == RP_ROLE_ANALYSIS_PROPAGATION ), ERR_ROLE );
+    }
 
     //PROJ-1608
     IDE_TEST_RAISE( ( aRemoteRepl->mOptions & RP_OPTION_RECOVERY_MASK ) !=
                     ( aLocalRepl->mOptions & RP_OPTION_RECOVERY_MASK ),
                     ERR_OPTIONS );
 
-    /* BUG-45236 Local Replication ÏßÄÏõê
-     *  ÏñëÏ™ΩÏùò LOCAL ÏòµÏÖòÏù¥ Í∞ôÏïÑÏïº ÌïúÎã§.
+    /* BUG-45236 Local Replication ¡ˆø¯
+     *  æÁ¬ ¿« LOCAL ø…º«¿Ã ∞∞æ∆æﬂ «—¥Ÿ.
      */
     IDE_TEST_RAISE( ( aRemoteRepl->mOptions & RP_OPTION_LOCAL_MASK ) !=
                     ( aLocalRepl->mOptions & RP_OPTION_LOCAL_MASK ),
@@ -1310,6 +1381,7 @@ IDE_RC rpdMeta::equalRepl( idBool            aIsLocalReplication,
 }
 
 IDE_RC rpdMeta::isNeedDummyItems( UInt      aSqlApplyEnable,
+                                  UInt      aItemCountDiffEnable,
                                   rpdMeta * aRemoteMeta, 
                                   rpdMeta * aLocalMeta,
                                   idBool  * aIsNeed )
@@ -1319,8 +1391,8 @@ IDE_RC rpdMeta::isNeedDummyItems( UInt      aSqlApplyEnable,
     IDE_TEST_RAISE( equalReplTables( aRemoteMeta, aLocalMeta ) != ID_TRUE, 
                     ERR_TABLE_ITEM );
 
-    if ( ( aSqlApplyEnable == 1 ) &&
-         ( equalReplItemsCount( aRemoteMeta, aLocalMeta ) != ID_TRUE ) )
+    if ( ( ( aSqlApplyEnable == 1 ) || ( aItemCountDiffEnable == 1 ) ) &&
+         ( equalReplTablePartition( aRemoteMeta, aLocalMeta ) != ID_TRUE ) )
     {
         sIsNeed = ID_TRUE;
     }
@@ -1331,6 +1403,8 @@ IDE_RC rpdMeta::isNeedDummyItems( UInt      aSqlApplyEnable,
 
     IDE_EXCEPTION( ERR_TABLE_ITEM );
     {
+        rpdMeta::printReplTables((SChar*)"Sender: ", aRemoteMeta);
+        rpdMeta::printReplTables((SChar*)"Receiver: ", aLocalMeta);
         IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG,
                                   "Table is different." ) )
     }
@@ -1339,11 +1413,12 @@ IDE_RC rpdMeta::isNeedDummyItems( UInt      aSqlApplyEnable,
     return IDE_FAILURE;
 }
 
-IDE_RC rpdMeta::equalItems( idvSQL  * aStatistics,
-                            idBool    aIsLocalReplication,
-                            UInt      aSqlApplyEnable,
-                            rpdMeta * aRemoteMeta, 
-                            rpdMeta * aLocalMeta )
+IDE_RC rpdMeta::equalItems( smiStatement    * aSmiStatement,
+                            idBool            aIsLocalReplication,
+                            UInt              aSqlApplyEnable,
+                            UInt              aItemCountDiffEnable,
+                            rpdMeta         * aRemoteMeta, 
+                            rpdMeta         * aLocalMeta )
 {
     SInt sItemCount = 0;
 
@@ -1356,12 +1431,14 @@ IDE_RC rpdMeta::equalItems( idvSQL  * aStatistics,
         aLocalMeta->mItemsOrderByRemoteName[sItemCount]->mRemoteTableOID
             = aRemoteMeta->mItemsOrderByLocalName[sItemCount]->mItem.mTableOID;
 
-        IDE_TEST( equalItem( aStatistics,
+        IDE_TEST( equalItem( aSmiStatement,
                              aLocalMeta->mReplication.mReplMode,
                              aIsLocalReplication,
                              aSqlApplyEnable,
+                             aItemCountDiffEnable,
                              aRemoteMeta->mItemsOrderByLocalName[sItemCount],
-                             aLocalMeta->mItemsOrderByRemoteName[sItemCount] )
+                             aLocalMeta->mItemsOrderByRemoteName[sItemCount],
+                             aRemoteMeta->mReplication.mRemoteVersion )
                   != IDE_SUCCESS );
 
     }
@@ -1373,11 +1450,12 @@ IDE_RC rpdMeta::equalItems( idvSQL  * aStatistics,
     return IDE_FAILURE;
 }
 
-IDE_RC rpdMeta::equalItemsAndMakeDummy( idvSQL  * aStatistics,
-                                        idBool    aIsLocalReplication,
-                                        UInt      aSqlApplyEnable,
-                                        rpdMeta * aRemoteMeta, 
-                                        rpdMeta * aLocalMeta )
+IDE_RC rpdMeta::equalItemsAndMakeDummy( smiStatement    * aSmiStatement,
+                                        idBool            aIsLocalReplication,
+                                        UInt              aSqlApplyEnable,
+                                        UInt              aItemCountDiffEnable,
+                                        rpdMeta         * aRemoteMeta, 
+                                        rpdMeta         * aLocalMeta )
 {
     SInt i = 0;
     SInt j = 0;
@@ -1392,87 +1470,100 @@ IDE_RC rpdMeta::equalItemsAndMakeDummy( idvSQL  * aStatistics,
     sNewItemCount = aLocalMeta->mReplication.mItemCount + 
         ( aRemoteMeta->mReplication.mItemCount - sMatchCount );
 
-    IDU_FIT_POINT_RAISE( "rpdMeta::equalItemsAndMakeDummy::calloc::sItems", 
-                          ERR_MEMORY_ALLOC_ITEMS );
-    IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPD_META,
-                                       sNewItemCount,
-                                       ID_SIZEOF(rpdMetaItem),
-                                       (void **)&sItems,
-                                       IDU_MEM_IMMEDIATE )
-                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_ITEMS );
-
-    for ( i = 0; i < sNewItemCount; i++ )
+    if ( sNewItemCount > 0 )
     {
-        sItems[i].initialize();
-    }
+        IDU_FIT_POINT_RAISE( "rpdMeta::equalItemsAndMakeDummy::calloc::sItems",
+                              ERR_MEMORY_ALLOC_ITEMS );
+        IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPD_META,
+                                           sNewItemCount,
+                                           ID_SIZEOF(rpdMetaItem),
+                                           (void **)&sItems,
+                                           IDU_MEM_IMMEDIATE )
+                        != IDE_SUCCESS, ERR_MEMORY_ALLOC_ITEMS );
 
-    for ( i = 0; i < aLocalMeta->mReplication.mItemCount; i++ )
-    {
-        IDE_TEST( copyTableInfo( &sItems[i], &( aLocalMeta->mItems[i] ) ) != IDE_SUCCESS );                
-        sDictTableCount += sItems[i].mCompressColCount;
-    }
-    sIdx = aLocalMeta->mReplication.mItemCount;
-
-    for ( i = 0; i < aRemoteMeta->mReplication.mItemCount; i++ )
-    {
-        sIsMatched = ID_FALSE;
-        for ( j = 0; j < aLocalMeta->mReplication.mItemCount; j++ )
+        for ( i = 0; i < sNewItemCount; i++ )
         {
-            if ( isMetaItemMatch( aRemoteMeta->mItemsOrderByLocalName[i],
-                                  &( sItems[j] ) ) 
-                 == ID_TRUE )
+            sItems[i].initialize();
+        }
+
+        for ( i = 0; i < aLocalMeta->mReplication.mItemCount; i++ )
+        {
+            IDE_TEST( copyTableInfo( &sItems[i], &( aLocalMeta->mItems[i] ) ) != IDE_SUCCESS );
+            sDictTableCount += sItems[i].mCompressColCount;
+        }
+        sIdx = aLocalMeta->mReplication.mItemCount;
+
+        for ( i = 0; i < aRemoteMeta->mReplication.mItemCount; i++ )
+        {
+            sIsMatched = ID_FALSE;
+            for ( j = 0; j < aLocalMeta->mReplication.mItemCount; j++ )
             {
+                if ( isMetaItemMatch( aRemoteMeta->mItemsOrderByLocalName[i],
+                                      &( sItems[j] ) )
+                     == ID_TRUE )
+                {
+                    aRemoteMeta->mItemsOrderByLocalName[i]->mRemoteTableOID
+                        = sItems[j].mItem.mTableOID;
+                    sItems[j].mRemoteTableOID
+                        = aRemoteMeta->mItemsOrderByLocalName[i]->mItem.mTableOID;
+
+                    IDE_TEST( equalItem( aSmiStatement,
+                                         aLocalMeta->mReplication.mReplMode,
+                                         aIsLocalReplication,
+                                         aSqlApplyEnable,
+                                         aItemCountDiffEnable,
+                                         aRemoteMeta->mItemsOrderByLocalName[i],
+                                         &sItems[j],
+                                         aRemoteMeta->mReplication.mRemoteVersion )
+                              != IDE_SUCCESS );
+
+                    sIsMatched = ID_TRUE;
+                    break;
+                }
+            }
+
+            if ( sIsMatched != ID_TRUE )
+            {
+                aLocalMeta->makeDummyMetaItem( aRemoteMeta->mItemsOrderByLocalName[i], &( sItems[sIdx] ) );
+                sDictTableCount += sItems[sIdx].mCompressColCount;
+
                 aRemoteMeta->mItemsOrderByLocalName[i]->mRemoteTableOID
-                    = sItems[j].mItem.mTableOID;
-                sItems[j].mRemoteTableOID
+                    = sItems[sIdx].mItem.mTableOID;
+                sItems[sIdx].mRemoteTableOID
                     = aRemoteMeta->mItemsOrderByLocalName[i]->mItem.mTableOID;
 
-                IDE_TEST( equalItem( aStatistics,
+                IDE_TEST( equalItem( aSmiStatement,
                                      aLocalMeta->mReplication.mReplMode,
                                      aIsLocalReplication,
                                      aSqlApplyEnable,
+                                     aItemCountDiffEnable,
                                      aRemoteMeta->mItemsOrderByLocalName[i],
-                                     &sItems[j] )
+                                     &sItems[sIdx],
+                                     aRemoteMeta->mReplication.mRemoteVersion )
                           != IDE_SUCCESS );
 
-                sIsMatched = ID_TRUE;
-                break;
+                sIdx += 1;
             }
         }
 
-        if ( sIsMatched != ID_TRUE )
+        aLocalMeta->freeItems();
+        aLocalMeta->mItems = sItems;
+        aLocalMeta->mReplication.mItemCount = sNewItemCount;
+
+        IDE_TEST( aLocalMeta->reallocSortItems() != IDE_SUCCESS );
+
+        if ( aLocalMeta->mDictTableCount != 0 )
         {
-            aLocalMeta->makeDummyMetaItem( aRemoteMeta->mItemsOrderByLocalName[i], &( sItems[sIdx] ) );                
-            sDictTableCount += sItems[sIdx].mCompressColCount;
-
-            aRemoteMeta->mItemsOrderByLocalName[i]->mRemoteTableOID
-                = sItems[sIdx].mItem.mTableOID;
-            sItems[sIdx].mRemoteTableOID
-                = aRemoteMeta->mItemsOrderByLocalName[i]->mItem.mTableOID;
-
-            IDE_TEST( equalItem( aStatistics,
-                                 aLocalMeta->mReplication.mReplMode,
-                                 aIsLocalReplication,
-                                 aSqlApplyEnable,
-                                 aRemoteMeta->mItemsOrderByLocalName[i],
-                                 &sItems[sIdx] )
-                      != IDE_SUCCESS );
-
-            sIdx += 1;
+            IDE_TEST( aLocalMeta->rebuildDictTables() != IDE_SUCCESS );
         }
     }
-
-    aLocalMeta->freeItems();
-    aLocalMeta->mItems = sItems;
-    aLocalMeta->mReplication.mItemCount = sNewItemCount;
-
-    IDE_TEST( aLocalMeta->reallocSortItems() != IDE_SUCCESS );
-
-    if ( aLocalMeta->mDictTableCount != 0 )
+    else
     {
-        IDE_TEST( aLocalMeta->rebuildDictTables() != IDE_SUCCESS );
+        aLocalMeta->freeItems();
+        aLocalMeta->mItems = NULL;
+        aLocalMeta->mReplication.mItemCount = 0;
+        aLocalMeta->mDictTableCount = 0;
     }
-
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(ERR_MEMORY_ALLOC_ITEMS);
@@ -1487,31 +1578,29 @@ IDE_RC rpdMeta::equalItemsAndMakeDummy( idvSQL  * aStatistics,
     return IDE_FAILURE;
 }
 
-IDE_RC rpdMeta::equalItem( idvSQL         * aStatistics,
+IDE_RC rpdMeta::equalItem( smiStatement   * aSmiStatement,
                            UInt             aReplMode,
                            idBool           aIsLocalReplication,
                            UInt             aSqlApplyEnable,
+                           UInt             aItemCountDiffEnable,
                            rpdMetaItem    * aRemoteItem,
-                           rpdMetaItem    * aLocalItem )
+                           rpdMetaItem    * aLocalItem,
+                           rpdVersion       aRemoteVersion )
 {
     idBool             sNeedConvertSQL = ID_FALSE;
+    idBool             sIsMetaItemCountDiff = ID_FALSE;
 
-    /* Argument Ï£ºÏÑù
-     * aItem1 : SenderÎ°úÎ∂ÄÌÑ∞ Î∞õÏùÄ Meta Item
-     * aItem2 : ReceiverÍ∞Ä ÏûêÏ≤¥ buildÌïú Meta Item
+    /* Argument ¡÷ºÆ
+     * aItem1 : Sender∑Œ∫Œ≈Õ πﬁ¿∫ Meta Item
+     * aItem2 : Receiver∞° ¿⁄√º build«— Meta Item
      */
 
-    /* BUG-45236 Local Replication ÏßÄÏõê
-     *  Local ReplicationÏù¥Î©¥, Source ItemÏùò Table OIDÏôÄ Target ItemÏùò Table OIDÍ∞Ä Îã¨ÎùºÏïº ÌïúÎã§.
+    /* BUG-45236 Local Replication ¡ˆø¯
+     *  Local Replication¿Ã∏È, Source Item¿« Table OIDøÕ Target Item¿« Table OID∞° ¥ﬁ∂Ûæﬂ «—¥Ÿ.
      */
     IDE_TEST_RAISE( ( aIsLocalReplication == ID_TRUE ) &&
                     ( aRemoteItem->mItem.mTableOID == aLocalItem->mItem.mTableOID ),
                     ERR_SELF_REPLICATION );
-
-    // PR-947
-    /* Compare Primary Key Column Count */
-    IDE_TEST_RAISE( aRemoteItem->mPKColCount != aLocalItem->mPKColCount,
-                   ERR_MISMATCH_PK_COL_COUNT);
 
     /* Compare Table's User Name : Sender Local, Receiver Remote */
     IDU_FIT_POINT_RAISE( "rpdMeta::equalItem::Erratic::rpERR_ABORT_USER_NAME_MISMATCH",
@@ -1534,8 +1623,19 @@ IDE_RC rpdMeta::equalItem( idvSQL         * aStatistics,
     if ( idlOS::strcmp( aRemoteItem->mItem.mLocalPartname,
                         aLocalItem->mItem.mRemotePartname ) != 0 )
     {
-        IDE_TEST_RAISE( aSqlApplyEnable == 0, ERR_MISMATCH_PART_NAME_1 );
-        sNeedConvertSQL = ID_TRUE;
+        IDE_TEST_RAISE( ( ( aSqlApplyEnable == 0 ) &&
+                          ( aItemCountDiffEnable == 0 ) ) || 
+                        ( aReplMode == RP_EAGER_MODE ), ERR_MISMATCH_PART_NAME_1 );
+
+        if ( aSqlApplyEnable == 1 )
+        {
+            sNeedConvertSQL = ID_TRUE;
+        }
+        
+        if ( aItemCountDiffEnable == 1 )
+        {
+            sIsMetaItemCountDiff = ID_TRUE;
+        }
     }
 
     /* Compare Table's User Name : Sender Remote, Receiver Local */
@@ -1553,26 +1653,60 @@ IDE_RC rpdMeta::equalItem( idvSQL         * aStatistics,
     if ( idlOS::strcmp( aRemoteItem->mItem.mRemotePartname,
                         aLocalItem->mItem.mLocalPartname ) != 0 )
     {
-        IDE_TEST_RAISE( aSqlApplyEnable == 0, ERR_MISMATCH_PART_NAME_2 );
-        sNeedConvertSQL = ID_TRUE;
+        IDE_TEST_RAISE( ( ( aSqlApplyEnable == 0 ) &&
+                          ( aItemCountDiffEnable == 0 ) ) || 
+                        ( aReplMode == RP_EAGER_MODE ), ERR_MISMATCH_PART_NAME_2 );
+
+        if ( aSqlApplyEnable == 1 )
+        {
+            sNeedConvertSQL = ID_TRUE;
+        }
+        
+        if ( aItemCountDiffEnable == 1 )
+        {
+            sIsMetaItemCountDiff = ID_TRUE;
+        }
     }
 
+    // PR-947
+    /* Compare Primary Key Column Count */
+    IDE_TEST_RAISE( aRemoteItem->mPKColCount != aLocalItem->mPKColCount,
+                   ERR_MISMATCH_PK_COL_COUNT);
+    
     if ( ( aRemoteItem->isDummyItem() == ID_TRUE ) ||
          ( aLocalItem->isDummyItem() == ID_TRUE ) )
     {
-        sNeedConvertSQL = ID_TRUE;
+        if ( aSqlApplyEnable == 1 )
+        {
+            sNeedConvertSQL = ID_TRUE;
+        }
+        
+        if ( aItemCountDiffEnable == 1 )
+        {
+            sIsMetaItemCountDiff = ID_TRUE;
+        }
     }
 
-    if ( rpdMeta::equalPartitionInfo( aStatistics,
+    if ( rpdMeta::equalPartitionInfo( aSmiStatement,
                                       aRemoteItem,
                                       aLocalItem )
          != IDE_SUCCESS )
     {
-        IDE_TEST( ( aSqlApplyEnable == 0 ) ||
+        IDE_TEST( ( ( aSqlApplyEnable == 0 ) &&
+                    ( aItemCountDiffEnable == 0 ) ) ||
                   ( aReplMode == RP_EAGER_MODE ) );
 
         IDE_ERRLOG( IDE_RP_0 );
-        sNeedConvertSQL = ID_TRUE;
+
+        if ( aSqlApplyEnable == 1 )
+        {
+            sNeedConvertSQL = ID_TRUE;
+        }
+        
+        if ( aItemCountDiffEnable == 1 )
+        {
+            sIsMetaItemCountDiff = ID_TRUE;
+        }
     }
     else
     {
@@ -1597,15 +1731,16 @@ IDE_RC rpdMeta::equalItem( idvSQL         * aStatistics,
         /* do nothing */
     }
 
-    IDE_TEST( rpdMeta::equalColumnsSecurity( aRemoteItem,
-                                             aLocalItem )
+    IDE_TEST( rpdMeta::equalColumnsAttr( aRemoteItem,
+                                         aLocalItem,
+                                         aRemoteVersion )
               != IDE_SUCCESS );
-
+    
     if ( rpdMeta::equalChecks( aRemoteItem,
                                aLocalItem )
          != IDE_SUCCESS )
     {
-        IDE_TEST( ( RPU_REPLICATION_SQL_APPLY_ENABLE == 0 ) ||
+        IDE_TEST( ( aSqlApplyEnable == 0 ) ||
                   ( aReplMode == RP_EAGER_MODE ) );
 
         IDE_ERRLOG( IDE_RP_0 );
@@ -1624,7 +1759,7 @@ IDE_RC rpdMeta::equalItem( idvSQL         * aStatistics,
                                 aLocalItem )
          != IDE_SUCCESS )
     {
-        IDE_TEST( ( RPU_REPLICATION_SQL_APPLY_ENABLE == 0 ) ||
+        IDE_TEST( ( aSqlApplyEnable == 0 ) ||
                   ( aReplMode == RP_EAGER_MODE ) );
 
         IDE_ERRLOG( IDE_RP_0 );
@@ -1655,9 +1790,22 @@ IDE_RC rpdMeta::equalItem( idvSQL         * aStatistics,
         /* do nothing */
     }
 
-    aRemoteItem->setNeedConvertSQL( sNeedConvertSQL );
-    aLocalItem->setNeedConvertSQL( sNeedConvertSQL );
-
+    if ( sIsMetaItemCountDiff == ID_TRUE )
+    {
+        aRemoteItem->setApplyMode( RP_APPLY_SKIP );
+        aLocalItem->setApplyMode( RP_APPLY_SKIP );
+    }
+    else if ( sNeedConvertSQL == ID_TRUE )
+    {
+        aRemoteItem->setApplyMode( RP_APPLY_SQL );
+        aLocalItem->setApplyMode( RP_APPLY_SQL );
+    }
+    else
+    {
+        aRemoteItem->setApplyMode( RP_APPLY_XLOG );
+        aLocalItem->setApplyMode( RP_APPLY_XLOG );
+    }
+    
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(ERR_MISMATCH_PK_COL_COUNT);
@@ -1723,11 +1871,11 @@ IDE_RC rpdMeta::equalItem( idvSQL         * aStatistics,
     return IDE_FAILURE;
 }
 
-IDE_RC rpdMeta::equalPartCondValues( idvSQL  * aStatistics,
-                                     SChar   * aTableName,
-                                     SChar   * aUserName,
-                                     SChar   * aPartCondValues1,
-                                     SChar   * aPartCondValues2 )
+IDE_RC rpdMeta::equalPartCondValues( smiStatement   * aSmiStatement,
+                                     SChar          * aTableName,
+                                     SChar          * aUserName,
+                                     SChar          * aPartCondValues1,
+                                     SChar          * aPartCondValues2 )
 {
     SInt   sResult = 0;
 
@@ -1735,11 +1883,12 @@ IDE_RC rpdMeta::equalPartCondValues( idvSQL  * aStatistics,
     {
         if( idlOS::strlen( aPartCondValues2 ) != 0 )
         {
-            IDE_TEST( qciMisc::comparePartCondValues( aStatistics, 
+            IDE_TEST( qciMisc::comparePartCondValues( aSmiStatement,
                                                       aTableName,
                                                       aUserName,
                                                       aPartCondValues1,
                                                       aPartCondValues2,
+                                                      smiGetDDLLockTimeOut(aSmiStatement->getTrans()),
                                                       &sResult )
                       != IDE_SUCCESS );
         }
@@ -1822,11 +1971,11 @@ IDE_RC rpdMeta::equalColumn( SChar      *aTableName1,
                     ERR_MISMATCH_COLUMN_HIDDEN );
 
     /* PROJ-1917  BUGBUG PROJ-1917
-     *     ÏñòÎ•º Ï≤¥ÌÅ¨ÌïòÎäî Í≤å ÏùòÎØ∏Í∞Ä ÏûàÎÇò?
-     *     Ïö∞ÏÑ†ÏùÄ ÎßâÍ≥† Ï∞®ÌõÑ ÌÖåÏä§Ìä∏ ÏºÄÏù¥Ïä§ Ï∂îÍ∞ÄÌïúÎã§. ÌîÑÎ°úÏ†ùÌä∏Î°ú Ïù∏Ìï¥
+     *     æÍ∏¶ √º≈©«œ¥¬ ∞‘ ¿«πÃ∞° ¿÷≥™?
+     *     øÏº±¿∫ ∏∑∞Ì ¬˜»ƒ ≈◊Ω∫∆Æ ƒ…¿ÃΩ∫ √ﬂ∞°«—¥Ÿ. «¡∑Œ¡ß∆Æ∑Œ ¿Œ«ÿ
      * MEM : variable (varchar variable) <--> DISK : variable (varchar variable)
-     *       Ï†ÄÏû• (flag 0) variable       Ï†ÄÏû• (flag 1) fixed -> variableÍ∞úÎÖêÏù¥ ÏóÜÏñ¥Ïßê.
-     * flagÍ∞íÏù¥ Îã¨ÎùºÏÑú Ìï∏„Ñ∑ÏâêÏù¥ÌÅ¨ Ïã§Ìå®ÌïúÎã§.
+     *       ¿˙¿Â (flag 0) variable       ¿˙¿Â (flag 1) fixed -> variable∞≥≥‰¿Ã æ¯æÓ¡¸.
+     * flag∞™¿Ã ¥ﬁ∂Ûº≠ «⁄§ßΩ¶¿Ã≈© Ω«∆–«—¥Ÿ.
      */
     /* Check Fixed & Variable Type
     IDE_TEST_RAISE( ( aCol1->mColumn.column.flag & SMI_COLUMN_TYPE_MASK ) !=
@@ -1895,21 +2044,44 @@ IDE_RC rpdMeta::equalColumn( SChar      *aTableName1,
     return IDE_FAILURE;
 }
 
-IDE_RC rpdMeta::equalColumnsSecurity( rpdMetaItem    * aItem1,
-                                      rpdMetaItem    * aItem2 )
+IDE_RC rpdMeta::equalColumnsAttr( rpdMetaItem    * aItem1,
+                                  rpdMetaItem    * aItem2,
+                                  rpdVersion       aRemoteVersion )
 {
     SInt        sColumnPos1 = 0;
     SInt        sColumnPos2 = 0;
 
     for ( sColumnPos1 = 0; sColumnPos1 < aItem1->mColCount; sColumnPos1++ )
     {
-        sColumnPos2 = aItem1->mMapColID[sColumnPos1];
+        if ( aItem1->mIsReplCol[sColumnPos1] == ID_TRUE )
+        {
+            sColumnPos2 = aItem1->mMapColID[sColumnPos1];
 
-        IDE_TEST( equalColumnSecurity( aItem1->mItem.mLocalTablename,
-                                       &aItem1->mColumns[sColumnPos1],
-                                       aItem2->mItem.mLocalTablename,
-                                       &aItem2->mColumns[sColumnPos2] )
-                  != IDE_SUCCESS );
+
+            if ( aItem2->mColumns[sColumnPos2].mColumn.type.dataTypeId == MTD_GEOMETRY_ID )
+            {
+                if ( needToProcessProtocolOperation( RP_META_SRID, aRemoteVersion ) == ID_TRUE )
+                {
+                    IDE_TEST( equalColumnSRID( aItem1->mItem.mLocalTablename,
+                                               &aItem1->mColumns[sColumnPos1],
+                                               aItem2->mItem.mLocalTablename,
+                                               &aItem2->mColumns[sColumnPos2] )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+            }
+            else
+            {
+                IDE_TEST( equalColumnSecurity( aItem1->mItem.mLocalTablename,
+                                               &aItem1->mColumns[sColumnPos1],
+                                               aItem2->mItem.mLocalTablename,
+                                               &aItem2->mColumns[sColumnPos2] )
+                          != IDE_SUCCESS );
+            }
+        }
     }
 
     return IDE_SUCCESS;
@@ -1934,15 +2106,16 @@ IDE_RC rpdMeta::equalColumnSecurity( SChar      * aTableName1,
     if ( ( aCol1->mColumn.type.dataTypeId == MTD_ECHAR_ID ) ||
          ( aCol1->mColumn.type.dataTypeId == MTD_EVARCHAR_ID ) )
     {
-        IDE_TEST_RAISE( aCol1->mColumn.encPrecision != aCol2->mColumn.encPrecision,
+        IDE_TEST_RAISE( aCol1->mColumn.mColumnAttr.mEncAttr.mEncPrecision !=
+                        aCol2->mColumn.mColumnAttr.mEncAttr.mEncPrecision,
                         ERR_MISMATCH_ENC_PRECISON );
 
         // policy name
-        sNameLen1 = idlOS::strlen( aCol1->mColumn.policy );
-        sNameLen2 = idlOS::strlen( aCol2->mColumn.policy );
+        sNameLen1 = idlOS::strlen( aCol1->mColumn.mColumnAttr.mEncAttr.mPolicy );
+        sNameLen2 = idlOS::strlen( aCol2->mColumn.mColumnAttr.mEncAttr.mPolicy );
         IDE_TEST_RAISE( ( sNameLen1 != sNameLen2 ) ||
-                        ( idlOS::memcmp( aCol1->mColumn.policy,
-                                         aCol2->mColumn.policy,
+                        ( idlOS::memcmp( aCol1->mColumn.mColumnAttr.mEncAttr.mPolicy,
+                                         aCol2->mColumn.mColumnAttr.mEncAttr.mPolicy,
                                          sNameLen1 ) != 0 ),
                         ERR_MISMATCH_POLICY);
 
@@ -1957,10 +2130,10 @@ IDE_RC rpdMeta::equalColumnSecurity( SChar      * aTableName1,
                         ERR_MISMATCH_ECC_POLICY );
 
         // policy code
-        // aCol2->mPolicyCodeÎ•º Ïù¥Ïö©ÌïòÏßÄ ÏïäÍ≥†, aCol2->mColumn.policyÎ•º
-        // Ïù¥Ïö©ÌïòÏó¨ aCol1->mPolicyCodeÎ•º Î≥¥ÏïàÎ™®ÎìàÏóêÏÑú ÏßÅÏ†ë Í≤ÄÏ¶ùÌïúÎã§.
+        // aCol2->mPolicyCode∏¶ ¿ÃøÎ«œ¡ˆ æ ∞Ì, aCol2->mColumn.policy∏¶
+        // ¿ÃøÎ«œø© aCol1->mPolicyCode∏¶ ∫∏æ»∏µ‚ø°º≠ ¡˜¡¢ ∞À¡ı«—¥Ÿ.
         sCodeLen = idlOS::strlen( (SChar*)aCol1->mPolicyCode );
-        IDE_TEST( qciMisc::verifyPolicyCode( aCol2->mColumn.policy,
+        IDE_TEST( qciMisc::verifyPolicyCode( aCol2->mColumn.mColumnAttr.mEncAttr.mPolicy,
                                              aCol1->mPolicyCode,
                                              (UShort)sCodeLen,
                                              & sIsValid )
@@ -1970,7 +2143,7 @@ IDE_RC rpdMeta::equalColumnSecurity( SChar      * aTableName1,
                         ERR_MISMATCH_POLICY_CODE );
 
         // ecc policy code
-        // aCol1->mECCPolicyCodeÎ•º Î≥¥ÏïàÎ™®ÎìàÏóêÏÑú ÏßÅÏ†ë Í≤ÄÏ¶ùÌïúÎã§.
+        // aCol1->mECCPolicyCode∏¶ ∫∏æ»∏µ‚ø°º≠ ¡˜¡¢ ∞À¡ı«—¥Ÿ.
         sCodeLen = idlOS::strlen( (SChar*)aCol1->mECCPolicyCode );
         IDE_TEST( qciMisc::verifyECCPolicyCode( aCol1->mECCPolicyCode,
                                                 (UShort)sCodeLen,
@@ -1992,30 +2165,30 @@ IDE_RC rpdMeta::equalColumnSecurity( SChar      * aTableName1,
         IDE_SET( ideSetErrorCode( rpERR_ABORT_ENCRYPT_PRECISION_MISMATCH,
                                   aTableName1,
                                   aCol1->mColumnName,
-                                  aCol1->mColumn.encPrecision,
+                                  aCol1->mColumn.mColumnAttr.mEncAttr.mEncPrecision,
                                   aTableName2,
                                   aCol2->mColumnName,
-                                  aCol2->mColumn.encPrecision ) );
+                                  aCol2->mColumn.mColumnAttr.mEncAttr.mEncPrecision ) );
     }
     IDE_EXCEPTION( ERR_MISMATCH_POLICY );
     {
         IDE_SET( ideSetErrorCode( rpERR_ABORT_POLICY_MISMATCH,
                                   aTableName1,
                                   aCol1->mColumnName,
-                                  aCol1->mColumn.policy,
+                                  aCol1->mColumn.mColumnAttr.mEncAttr.mPolicy,
                                   aTableName2,
                                   aCol2->mColumnName,
-                                  aCol2->mColumn.policy ) );
+                                  aCol2->mColumn.mColumnAttr.mEncAttr.mPolicy ) );
     }
     IDE_EXCEPTION( ERR_MISMATCH_POLICY_CODE );
     {
         IDE_SET( ideSetErrorCode( rpERR_ABORT_POLICY_CODE_MISMATCH,
                                   aTableName1,
                                   aCol1->mColumnName,
-                                  aCol1->mColumn.policy,
+                                  aCol1->mColumn.mColumnAttr.mEncAttr.mPolicy,
                                   aTableName2,
                                   aCol2->mColumnName,
-                                  aCol2->mColumn.policy ) );
+                                  aCol2->mColumn.mColumnAttr.mEncAttr.mPolicy ) );
     }
     IDE_EXCEPTION( ERR_MISMATCH_ECC_POLICY );
     {
@@ -2036,6 +2209,32 @@ IDE_RC rpdMeta::equalColumnSecurity( SChar      * aTableName1,
                                   aTableName2,
                                   aCol2->mColumnName,
                                   aCol2->mECCPolicyName ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpdMeta::equalColumnSRID( SChar      * aTableName1,
+                                 rpdColumn  * aCol1,
+                                 SChar      * aTableName2,
+                                 rpdColumn  * aCol2 )
+{
+    IDE_TEST_RAISE( aCol1->mColumn.mColumnAttr.mSridAttr.mSrid !=
+                    aCol2->mColumn.mColumnAttr.mSridAttr.mSrid,
+                    ERR_MISMATCH_SRID );
+
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION( ERR_MISMATCH_SRID );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_SRID_MISMATCH,
+                                  aTableName1,
+                                  aCol1->mColumnName,
+                                  aCol1->mColumn.mColumnAttr.mSridAttr.mSrid,
+                                  aTableName2,
+                                  aCol2->mColumnName,
+                                  aCol2->mColumn.mColumnAttr.mSridAttr.mSrid ) );
     }
     IDE_EXCEPTION_END;
 
@@ -2157,70 +2356,87 @@ IDE_RC rpdMeta::equalIndex(SChar     *aTableName1,
     return IDE_FAILURE;
 }
 
-IDE_RC rpdMeta::build(smiStatement       * aSmiStmt,
-                      SChar              * aRepName,
-                      idBool               aForUpdateFlag,
-                      RP_META_BUILD_TYPE   aMetaBuildType,
-                      smiTBSLockValidType  aTBSLvType)
+void rpdMeta::setRpdReplication( rpdReplications    * aReplication )
 {
     SChar       * sDBCharSetStr;
     SChar       * sNationalCharSetStr;
     SChar       * sServerID;
 
     // build SYS_REPLICATIONS_
-    idlOS::memset(&mReplication, 0, ID_SIZEOF(rpdReplications));
+    idlOS::memset(aReplication, 0, ID_SIZEOF(rpdReplications));
 
     // bug-17080 transaction table size diff 
-    mReplication.mTransTblSize = smiGetTransTblSize();
+    aReplication->mTransTblSize = smiGetTransTblSize();
 
 #ifdef COMPILE_64BIT
-    mReplication.mCompileBit = 64;
+    aReplication->mCompileBit = 64;
 #else
-    mReplication.mCompileBit = 32;
+    aReplication->mCompileBit = 32;
 #endif
-    mReplication.mLogFileSize = smiGetLogFileSize();
-    mReplication.mLFGCount = 1; //[TASK-6757]LFG,SN Ï†úÍ±∞
-    mReplication.mSmVersionID = smiGetSmVersionID();
-    idlOS::snprintf(mReplication.mOSInfo,
-                    ID_SIZEOF(mReplication.mOSInfo),
+    aReplication->mLogFileSize = smiGetLogFileSize();
+    aReplication->mLFGCount = 1; //[TASK-6757]LFG,SN ¡¶∞≈
+    aReplication->mSmVersionID = smiGetSmVersionID();
+    idlOS::snprintf(aReplication->mOSInfo,
+                    ID_SIZEOF(aReplication->mOSInfo),
                     "%s %"ID_INT32_FMT" %"ID_INT32_FMT"",
                     OS_TARGET,
                     OS_MAJORVER,
                     OS_MINORVER);
 
     //---------------------------------------------------------
-    // DB Ï∫êÎ¶≠ÌÑ∞ ÏÖãÍ≥º ÎÇ¥ÏÖîÎÑê Ï∫êÎ¶≠ÌÑ∞ ÏÖã ÏÑ∏ÌåÖ
+    // DB ƒ≥∏Ø≈Õ º¬∞˙ ≥ªº≈≥Œ ƒ≥∏Ø≈Õ º¬ ºº∆√
     //---------------------------------------------------------
     sDBCharSetStr = mtc::getDBCharSet();
     sNationalCharSetStr = mtc::getNationalCharSet();
 
-    (void)idlOS::memcpy(mReplication.mDBCharSet,
+    (void)idlOS::memcpy(aReplication->mDBCharSet,
                         sDBCharSetStr,
                         idlOS::strlen(sDBCharSetStr) + 1);
-    (void)idlOS::memcpy(mReplication.mNationalCharSet,
+    (void)idlOS::memcpy(aReplication->mNationalCharSet,
                         sNationalCharSetStr,
                         idlOS::strlen(sNationalCharSetStr) + 1);
 
-    // BUG-6093 Server ID Ï∂îÍ∞Ä
+    // BUG-6093 Server ID √ﬂ∞°
     sServerID = rpcManager::getServerID();
-    (void)idlOS::memcpy(mReplication.mServerID,
+    (void)idlOS::memcpy(aReplication->mServerID,
                         sServerID,
                         idlOS::strlen(sServerID) + 1);
 
     if(RPU_REPLICATION_FAILBACK_INCREMENTAL_SYNC == 1)
     {
-        setReplFlagFailbackIncrementalSync(&mReplication);
+        setReplFlagFailbackIncrementalSync(aReplication);
     }
     else
     {
-        clearReplFlagFailbackIncrementalSync(&mReplication);
+        clearReplFlagFailbackIncrementalSync(aReplication);
     }
 
-    clearReplFlagFailbackServerStartup( &mReplication );
+    clearReplFlagFailbackServerStartup( aReplication );
+#if defined(ENDIAN_IS_BIG_ENDIAN)
+    rpdMeta::setReplFlagBigEndian(aReplication);
+#else
+    rpdMeta::setReplFlagLittleEndian(aReplication);
+#endif
+}
+
+
+IDE_RC rpdMeta::build(smiStatement       * aSmiStmt,
+                      SChar              * aRepName,
+                      idBool               aForUpdateFlag,
+                      RP_META_BUILD_TYPE   aMetaBuildType,
+                      smiTBSLockValidType  aTBSLvType)
+{
+    setRpdReplication( &mReplication );
 
     // build SYS_REPLICATIONS_
     IDE_TEST(rpdCatalog::selectRepl(aSmiStmt, aRepName, &mReplication, aForUpdateFlag)
-             != IDE_SUCCESS)
+             != IDE_SUCCESS);
+
+    /* PROJ-2737 Internal replication - ¿Ã¡ﬂ»≠ NOWAIT ∏µÂ∞° ±∏«ˆµ«±‚ ¿¸±Ó¡ˆ¥¬ LAZY∑Œ µø¿€«—¥Ÿ. */
+    if ( mReplication.mReplMode == RP_NOWAIT_MODE )
+    {
+        mReplication.mReplMode = RP_LAZY_MODE;
+    }
 
     // build SYS_REPL_HOSTS_
     IDU_FIT_POINT_RAISE( "rpdMeta::build::calloc::ReplHosts", 
@@ -2238,33 +2454,19 @@ IDE_RC rpdMeta::build(smiStatement       * aSmiStmt,
                                                            mReplication.mHostCount )
               != IDE_SUCCESS );
 
-    /* PROJ-1442 Replication Online Ï§ë DDL ÌóàÏö©
-     * Restart SNÏù¥ ÏûàÎäî Replication SenderÎäî Î≥¥Í¥ÄÎêú MetaÎ•º ÏÇ¨Ïö©Ìï¥Ïïº ÌïúÎã§.
+    /* PROJ-1442 Replication Online ¡ﬂ DDL «„øÎ
+     * Restart SN¿Ã ¿÷¥¬ Replication Sender¥¬ ∫∏∞¸µ» Meta∏¶ ªÁøÎ«ÿæﬂ «—¥Ÿ.
      */
-    switch(aMetaBuildType)
+    if ( needLastMetaItemInfo( aMetaBuildType, &mReplication ) == ID_TRUE )
     {
-        case RP_META_BUILD_LAST :
-            IDE_TEST( buildLastItemInfo( aSmiStmt, aTBSLvType )
-                      != IDE_SUCCESS );
-
-            break;
-
-        case RP_META_BUILD_OLD :
-            IDE_TEST(buildOldItemsInfo(aSmiStmt) != IDE_SUCCESS);
-            break;
-
-        case RP_META_BUILD_AUTO :
-        default:
-            if(mReplication.mXSN == SM_SN_NULL)
-            {
-                IDE_TEST( buildLastItemInfo( aSmiStmt, aTBSLvType )
-                          != IDE_SUCCESS );
-            }
-            else
-            {
-                IDE_TEST(buildOldItemsInfo(aSmiStmt) != IDE_SUCCESS);
-            }
-            break;
+        IDE_TEST( buildLastItemInfo( aSmiStmt,
+                                     aForUpdateFlag,
+                                     aTBSLvType )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        IDE_TEST( buildOldItemsInfo( aSmiStmt ) != IDE_SUCCESS );
     }
 
     IDE_TEST( allocSortItems() != IDE_SUCCESS );
@@ -2277,12 +2479,7 @@ IDE_RC rpdMeta::build(smiStatement       * aSmiStmt,
     {
         /* Nothing to do */
     }
-
-#if defined(ENDIAN_IS_BIG_ENDIAN)
-    rpdMeta::setReplFlagBigEndian(&mReplication);
-#else
-    rpdMeta::setReplFlagLittleEndian(&mReplication);
-#endif
+    
     mChildXSN = SM_SN_NULL;
     return IDE_SUCCESS;
 
@@ -2365,7 +2562,6 @@ IDE_RC rpdMeta::buildWithNewTransaction( idvSQL             * aStatistics,
     SInt sStage = 0;
     UInt sFlag = 0;
     idBool sIsTxBegin = ID_FALSE;
-    smSCN sDummySCN;
 
     IDE_TEST( sTrans.initialize() != IDE_SUCCESS );
     sStage = 1;
@@ -2419,14 +2615,14 @@ IDE_RC rpdMeta::buildWithNewTransaction( idvSQL             * aStatistics,
 
     }
 
-    sStage = 2;
     IDU_FIT_POINT_RAISE( "rpdMeta::buildWithNewTransaction::Erratic::rpERR_ABORT_TX_COMMIT",
                          ERR_TRANS_COMMIT );
     IDE_TEST_RAISE( sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS)
                     != IDE_SUCCESS, ERR_TRANS_COMMIT );
+    sStage = 2;
 
     sStage = 1;
-    IDE_TEST_RAISE( sTrans.commit(&sDummySCN) != IDE_SUCCESS, ERR_TRANS_COMMIT );
+    IDE_TEST_RAISE( sTrans.commit() != IDE_SUCCESS, ERR_TRANS_COMMIT );
     sIsTxBegin = ID_FALSE;
 
     sStage = 0;
@@ -2482,19 +2678,17 @@ IDE_RC rpdMeta::getPeerReplNameWithNewTransaction( SChar * aRepName,
     smiTrans          sTrans;
     smiStatement    * spRootStmt = NULL;
     smiStatement      sSmiStmt;
-    smSCN             sDummySCN;
     SInt              sStage = 0;
     UInt              sFlag = 0;
     idBool            sIsTxBegin = ID_FALSE;
     rpdReplications   sReplication;
 
-    SMI_INIT_SCN( &sDummySCN );
     idlOS::memset( &sReplication, 0x00, ID_SIZEOF( rpdReplications ) );
 
     IDE_TEST( sTrans.initialize() != IDE_SUCCESS );
     sStage = 1;
 
-    sFlag = ( sFlag & ~SMI_ISOLATION_MASK ) | (UInt)RPU_ISOLATION_LEVEL;
+    sFlag = ( sFlag & ~SMI_ISOLATION_MASK ) | SMI_ISOLATION_NO_PHANTOM;
     sFlag = ( sFlag & ~SMI_TRANSACTION_MASK ) | SMI_TRANSACTION_NORMAL;
     sFlag = ( sFlag & ~SMI_TRANSACTION_REPL_MASK ) | SMI_TRANSACTION_REPL_NONE;
     sFlag = ( sFlag & ~SMI_COMMIT_WRITE_MASK ) | SMI_COMMIT_WRITE_NOWAIT;
@@ -2532,12 +2726,12 @@ IDE_RC rpdMeta::getPeerReplNameWithNewTransaction( SChar * aRepName,
         sStage = 3;
     }
 
-    sStage = 2;
     IDE_TEST_RAISE( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS )
                     != IDE_SUCCESS, ERR_TRANS_COMMIT );
+    sStage = 2;
 
     sStage = 1;
-    IDE_TEST_RAISE( sTrans.commit( &sDummySCN ) != IDE_SUCCESS, ERR_TRANS_COMMIT );
+    IDE_TEST_RAISE( sTrans.commit() != IDE_SUCCESS, ERR_TRANS_COMMIT );
     sIsTxBegin = ID_FALSE;
 
     sStage = 0;
@@ -2613,17 +2807,20 @@ IDE_RC rpdMeta::buildTableInfo(smiStatement * aSmiStmt,
 
     IDE_TEST( aMetaItem->lockReplItem( aSmiStmt->getTrans(),
                                        aSmiStmt,
-                                       aTBSLvType, // TBS Validation ÏòµÏÖò
+                                       aTBSLvType, // TBS Validation ø…º«
                                        SMI_TABLE_LOCK_IS,
-                                       ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                         ID_ULONG_MAX :
-                                         smiGetDDLLockTimeOut() * 1000000 ) )
+                                       smiGetDDLLockTimeOut(aSmiStmt->getTrans()))
               != IDE_SUCCESS );
 
     sItemInfo = (qcmTableInfo *)
                 rpdCatalog::rpdGetTableTempInfo(smiGetTable( (smOID)aMetaItem->mItem.mTableOID ));
 
-    IDE_TEST(buildPartitonInfo(aSmiStmt, sItemInfo, aMetaItem, aTBSLvType)
+    aMetaItem->mTableID = sItemInfo->tableID;
+    aMetaItem->mTablePartitionType = sItemInfo->tablePartitionType;
+
+    IDE_TEST( buildPartitonInfo( aSmiStmt, 
+                                 sItemInfo, 
+                                 aMetaItem )
              != IDE_SUCCESS);
     if( sItemInfo->tableType == QCM_QUEUE_TABLE )
     {
@@ -2770,20 +2967,8 @@ IDE_RC rpdMeta::buildTableInfo(smiStatement * aSmiStmt,
 
 IDE_RC rpdMeta::buildPartitonInfo(smiStatement * aSmiStmt,
                                   qcmTableInfo * aItemInfo,
-                                  rpdMetaItem  * aMetaItem,
-                                  smiTBSLockValidType aTBSLvType)
+                                  rpdMetaItem  * aMetaItem )
 {
-    qcmTableInfo     * sTableInfo;
-    void             * sTableHandle;
-    smSCN              sSCN;
-    qcmIndex         * sIndex;
-    qciIndexTableRef * sIndexTable;
-    qciIndexTableRef * sIndexTableRef = NULL;
-    ULong              sLockWaitMicroSec = 0;
-    UInt               sIndexTableCount = 0;
-    UInt               i;
-    UInt               j;
-    
     //to Fix BUG-19476
     aMetaItem->mPartitionMethod = aItemInfo->partitionMethod;
 
@@ -2813,23 +2998,65 @@ IDE_RC rpdMeta::buildPartitonInfo(smiStatement * aSmiStmt,
                      != IDE_SUCCESS);
         }
         
-        // PROJ-1624 non-partitioned index
-        // partitioned tableÏùò tableInfoÎ•º ÏñªÎäîÎã§.
+        IDE_TEST( qcmPartition::getPartitionCount4SmiStmt( aSmiStmt,
+                                                           aItemInfo->tableID,
+                                                           &aMetaItem->mPartitionCount )
+                  != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/* receiver ø°º≠∏∏ « ø‰«œ¥Ÿ */
+IDE_RC rpdMeta::buildIndexTableRef( smiStatement          * aSmiStmt )
+{
+    SInt i = 0;
+
+    for ( i = 0; i < mReplication.mItemCount; i++ )
+    {
+        IDE_TEST( buildIndexTableRef( aSmiStmt,
+                                      &mItems[i] )
+                  != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/* receiver ø°º≠∏∏ « ø‰«œ¥Ÿ */
+IDE_RC rpdMeta::buildIndexTableRef( smiStatement          * aSmiStmt,
+                                    rpdMetaItem           * aMetaItem )
+{
+    qcmTableInfo     * sTableInfo = NULL;
+    void             * sTableHandle = NULL;
+    smSCN              sSCN;
+    qcmIndex         * sIndex = NULL;
+    qciIndexTableRef * sIndexTable = NULL;
+    qciIndexTableRef * sIndexTableRef = NULL;
+    ULong              sLockWaitMicroSec = 0;
+    UInt               sIndexTableCount = 0;
+    UInt               i = 0;
+    UInt               j = 0;
+
+    if( aMetaItem->mTablePartitionType == QCM_TABLE_PARTITION )
+    {
         IDE_TEST( qciMisc::getTableInfoByID( aSmiStmt,
-                                             aItemInfo->tableID,
+                                             aMetaItem->mTableID,
                                              & sTableInfo,
                                              & sSCN,
                                              & sTableHandle )
                   != IDE_SUCCESS );
 
-        IDE_TEST( qcmPartition::getPartitionCount4SmiStmt( aSmiStmt,
-                                                           sTableInfo->tableID,
-                                                           &aMetaItem->mPartitionCount )
-                  != IDE_SUCCESS );
+        // Callerø°º≠ ¿ÃπÃ Lock¿ª ¿‚æ“¥Ÿ. (Partitioned Table)
 
-        // CallerÏóêÏÑú Ïù¥ÎØ∏ LockÏùÑ Ïû°ÏïòÎã§. (Partitioned Table)
-
-        // global index table refÎ•º Íµ¨ÏÑ±ÌïúÎã§.
+        // global index table ref∏¶ ±∏º∫«—¥Ÿ.
         for ( i = 0; i < sTableInfo->indexCount; i++ )
         {
             sIndex = & (sTableInfo->indices[i]);
@@ -2863,19 +3090,9 @@ IDE_RC rpdMeta::buildPartitonInfo(smiStatement * aSmiStmt,
 
                 if ( sIndex->indexPartitionType == QCM_NONE_PARTITIONED_INDEX )
                 {
-                    /* BUG-46208 ÏÑúÎ≤Ñ ÏãúÏûëÏãúÏóêÎäî receiver executeÌïòÎ©¥ÏÑú lockÏùÑ Ïû°Í≥† ÏûàÏùÑ Ïàò ÏûàÏúºÎØÄÎ°ú lock ÎåÄÍ∏∞ ÌïúÎã§. */
-                    if ( rpcManager::isInitRepl() == ID_TRUE )
-                    {
-                        sLockWaitMicroSec = ID_ULONG_MAX;
-                    }
-                    else
-                    {
-                        sLockWaitMicroSec = ( smiGetDDLLockTimeOut() == -1 ) ? ID_ULONG_MAX : smiGetDDLLockTimeOut() * 1000000;
-                    }
-
                     sIndexTable = & (sIndexTableRef[j]);
 
-                    // index Ï†ïÎ≥¥Î•º Î≥µÏÇ¨ÌïúÎã§.
+                    // index ¡§∫∏∏¶ ∫πªÁ«—¥Ÿ.
                     IDE_TEST( copyIndex( sIndex, &(sIndexTable->index) )
                               != IDE_SUCCESS );
                     
@@ -2888,10 +3105,11 @@ IDE_RC rpdMeta::buildPartitonInfo(smiStatement * aSmiStmt,
                                                          & sIndexTable->tableHandle )
                               != IDE_SUCCESS );
 
+                    sLockWaitMicroSec = getLockWaitMicroSec( smiGetDDLLockTimeOut(aSmiStmt->getTrans()) );
                     IDE_TEST( smiValidateAndLockObjects( aSmiStmt->getTrans(),
                                                          sIndexTable->tableHandle,
                                                          sIndexTable->tableSCN,
-                                                         aTBSLvType,
+                                                         SMI_TBSLV_DDL_DML,
                                                          SMI_TABLE_LOCK_IS,
                                                          sLockWaitMicroSec,
                                                          ID_FALSE )
@@ -2905,7 +3123,7 @@ IDE_RC rpdMeta::buildPartitonInfo(smiStatement * aSmiStmt,
                 }
             }
         
-            // listÎ•º Íµ¨ÏÑ±ÌïúÎã§.
+            // list∏¶ ±∏º∫«—¥Ÿ.
             for ( i = 0; i < sIndexTableCount - 1; i++ )
             {
                 sIndexTableRef[i].next = & (sIndexTableRef[i + 1]);
@@ -2926,7 +3144,7 @@ IDE_RC rpdMeta::buildPartitonInfo(smiStatement * aSmiStmt,
     {
         IDE_ERRLOG(IDE_RP_0);
         IDE_SET(ideSetErrorCode(rpERR_ABORT_MEMORY_ALLOC,
-                                "rpdMeta::buildPartitonInfo",
+                                "rpdMeta::buildGlobalIndexTableRef",
                                 "aMetaItem->mIndexTableRef"));
     }
     IDE_EXCEPTION_END;
@@ -2967,7 +3185,7 @@ IDE_RC rpdMeta::buildColumnInfo(RP_IN     qcmColumn    *aQcmColumn,
     if( (aRpdColumn->mColumn.type.dataTypeId == MTD_ECHAR_ID) ||
         (aRpdColumn->mColumn.type.dataTypeId == MTD_EVARCHAR_ID) )
     {
-        IDE_TEST( qciMisc::getPolicyCode( aQcmColumn->basicInfo->policy,
+        IDE_TEST( qciMisc::getPolicyCode( aQcmColumn->basicInfo->mColumnAttr.mEncAttr.mPolicy,
                                           aRpdColumn->mPolicyCode,
                                           & sCodeSize )
                   != IDE_SUCCESS );
@@ -3057,9 +3275,9 @@ IDE_RC rpdMeta::buildIndexInfo(RP_IN     qcmTableInfo *aTableInfo,
         (*aIndices)[sIC].indexTypeId = aTableInfo->indices[sIC].indexTypeId;
         (*aIndices)[sIC].keyColCount = aTableInfo->indices[sIC].keyColCount;
 
-        /* ÌòÑÏû¨ Partitioned TableÏùÄ Global Unique IndexÎ•º Ï†úÍ≥µÌïòÏßÄ ÏïäÎäîÎã§.
-         * Ï∂îÌõÑ Global Unique IndexÎ•º Ï†úÍ≥µÌïòÎ©¥,
-         * RP ProtocolÏóê Local Unique Index Ïó¨Î∂ÄÎ•º Ï∂îÍ∞ÄÌï¥Ïïº ÌïúÎã§.
+        /* «ˆ¿Á Partitioned Table¿∫ Global Unique Index∏¶ ¡¶∞¯«œ¡ˆ æ ¥¬¥Ÿ.
+         * √ﬂ»ƒ Global Unique Index∏¶ ¡¶∞¯«œ∏È,
+         * RP Protocolø° Local Unique Index ø©∫Œ∏¶ √ﬂ∞°«ÿæﬂ «—¥Ÿ.
          */
         (*aIndices)[sIC].isUnique = ((aTableInfo->indices[sIC].isUnique == ID_TRUE) ||
                                      (aTableInfo->indices[sIC].isLocalUnique == ID_TRUE))
@@ -3156,9 +3374,84 @@ IDE_RC rpdMeta::buildIndexInfo(RP_IN     qcmTableInfo *aTableInfo,
     return IDE_FAILURE;
 }
 
-IDE_RC rpdMeta::buildLastItemInfo( smiStatement * aSmiStmt, smiTBSLockValidType aTBSLvType )
+IDE_RC rpdMeta::isExistItemInLastMeta( smiStatement * aSmiStmt,
+                                       SChar        * aRepName,
+                                       smOID          aTableOID,
+                                       idBool       * aOutIsExist )
+{
+    rpdReplications   sReplications;
+    rpdMetaItem     * sReplMetaItems = NULL;
+    rpdReplItems    * sReplItem = NULL;
+    idBool            sIsAlloced = ID_FALSE;
+
+    IDE_TEST( rpdCatalog::selectRepl( aSmiStmt,
+                                      aRepName,
+                                      &sReplications,
+                                      ID_FALSE ) != IDE_SUCCESS );
+
+    if ( sReplications.mItemCount > 0 )
+    {
+        IDE_TEST( iduMemMgr::calloc( IDU_MEM_RP_RPD_META,
+                                     sReplications.mItemCount,
+                                     ID_SIZEOF(rpdMetaItem),
+                                     (void **)&sReplMetaItems,
+                                     IDU_MEM_IMMEDIATE )
+                  != IDE_SUCCESS );
+        sIsAlloced = ID_TRUE;
+
+        IDE_TEST( rpdCatalog::selectReplItems( aSmiStmt,
+                                               sReplications.mRepName,
+                                               sReplMetaItems,
+                                               sReplications.mItemCount,
+                                               ID_FALSE )
+                  != IDE_SUCCESS );
+
+        sReplItem = rpcManager::searchReplItem( sReplMetaItems,
+                                                sReplications.mItemCount,
+                                                aTableOID );
+
+        sIsAlloced = ID_FALSE;
+        (void)iduMemMgr::free( sReplMetaItems );
+        sReplMetaItems = NULL;
+    }
+    else
+    {
+    	sReplItem = NULL;
+    }
+
+    if ( sReplItem != NULL )
+    {
+        *aOutIsExist = ID_TRUE;
+    }
+    else
+    {
+        *aOutIsExist = ID_FALSE;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    if ( sIsAlloced == ID_TRUE )
+    {
+        (void)iduMemMgr::free( sReplMetaItems );
+        sReplMetaItems = NULL;
+    }
+    else
+    {
+        /* do nothing */
+    }
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpdMeta::buildLastItemInfo( smiStatement * aSmiStmt, 
+                                   idBool         aForUpdateFlag,
+                                   smiTBSLockValidType aTBSLvType )
 {
     SInt sTC;// Table Count
+
+    IDE_TEST_CONT( mReplication.mItemCount == 0, NORMAL_EXIT );
 
     // build SYS_REPL_ITEMS_
     IDU_FIT_POINT_RAISE( "rpdMeta::buildLastItemInfo::calloc::Items", 
@@ -3173,7 +3466,8 @@ IDE_RC rpdMeta::buildLastItemInfo( smiStatement * aSmiStmt, smiTBSLockValidType 
     IDE_TEST( rpdCatalog::selectReplItems( aSmiStmt,
                                            mReplication.mRepName,
                                            mItems,
-                                           mReplication.mItemCount )
+                                           mReplication.mItemCount,
+                                           aForUpdateFlag )
               != IDE_SUCCESS );
 
 
@@ -3184,6 +3478,8 @@ IDE_RC rpdMeta::buildLastItemInfo( smiStatement * aSmiStmt, smiTBSLockValidType 
                  != IDE_SUCCESS);
         mDictTableCount += mItems[sTC].mCompressColCount;
     }
+
+    RP_LABEL( NORMAL_EXIT );
 
     return IDE_SUCCESS;
 
@@ -3199,24 +3495,22 @@ IDE_RC rpdMeta::buildLastItemInfo( smiStatement * aSmiStmt, smiTBSLockValidType 
     return IDE_FAILURE;
 }
 
-IDE_RC rpdMeta::buildOldItemsInfo(smiStatement * aSmiStmt)
+IDE_RC rpdMeta::buildOldItemsInfo( smiStatement * aSmiStmt )
 {
     vSLong         sItemRowCount;
     rpdOldItem   * sItemArr   = NULL;
     rpdMetaItem  * sItem      = NULL;
-    rpdMetaItem  * sSrcItem   = NULL;
-    rpdMetaItem  * sLastItems = NULL;
-    qcmTableInfo * sItemInfo  = NULL;
-    SInt           sLastTableIndex = -1;
     SInt           sOldTableIndex  = -1;
     SInt           sIdxIndex;
 
-    // ItemÏùò ÏàòÏóê Ïù¥ÏÉÅÏù¥ ÏóÜÎäîÏßÄ ÌôïÏù∏ÌïúÎã§.
+    // Item¿« ºˆ »Æ¿Œ
     IDE_TEST( rpdCatalog::getReplOldItemsCount( aSmiStmt,
                                                 mReplication.mRepName,
                                                 &sItemRowCount )
               != IDE_SUCCESS );
 
+    IDE_TEST_CONT( sItemRowCount == 0, NORMAL_EXIT );
+    
     IDU_FIT_POINT_RAISE( "rpdMeta::buildOldItemsInfo::calloc::Items",
                          ERR_MEMORY_ALLOC_ITEM_ARRAY );
     IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPD_META,
@@ -3231,7 +3525,7 @@ IDE_RC rpdMeta::buildOldItemsInfo(smiStatement * aSmiStmt)
         mItems[sOldTableIndex].initialize();
     }
     
-    // SYS_REPL_ITEMS_ÏóêÏÑú ÏñªÏùÑ Ïàò ÏóÜÎäî Í≥ºÍ±∞Ïùò Ï†ïÎ≥¥Î•º ÏñªÎäîÎã§.
+    // SYS_REPL_ITEMS_ø°º≠ æÚ¿ª ºˆ æ¯¥¬ ∞˙∞≈¿« ¡§∫∏∏¶ æÚ¥¬¥Ÿ.
     IDU_FIT_POINT_RAISE( "rpdMeta::buildOldItemsInfo::calloc::ItemArray",
                          ERR_MEMORY_ALLOC_ITEM_ARRAY );
     IDE_TEST_RAISE( iduMemMgr::calloc(IDU_MEM_RP_RPD_META,
@@ -3247,67 +3541,19 @@ IDE_RC rpdMeta::buildOldItemsInfo(smiStatement * aSmiStmt)
                                             sItemRowCount)
              != IDE_SUCCESS);
 
-    IDE_TEST( getLastReplItems( aSmiStmt, &sLastItems ) != IDE_SUCCESS );
-
     for( sOldTableIndex = 0; sOldTableIndex < sItemRowCount; sOldTableIndex++ )
     {
         sItem = &mItems[sOldTableIndex];
-        sSrcItem = NULL;
-    
-        for( sLastTableIndex = 0; sLastTableIndex < mReplication.mItemCount; sLastTableIndex++ )
-        {
-            /* Ïù¥Ï§ëÌôî Í±∏Î¶∞ ÌååÌã∞ÏÖòÏóê Merge Split ÏùÑ ÏàòÌñâÌï† Í≤ΩÏö∞ Old ÏïÑÏù¥ÌÖúÍ≥º New ÏïÑÏù¥ÌÖúÏùò ÌååÌã∞ÏÖò
-             * Ïù¥Î¶ÑÏù¥ Î≥ÄÍ≤ΩÏù¥ ÎêòÏñ¥ ÌååÌã∞ÏÖòÏùò Ïù¥Î¶ÑÏù¥ ÎèôÏùºÏßÄ ÏïäÏùÑ Ïàò ÏûàÎã§.
-             * ÎèôÏùºÌïú ÌÖåÏù¥Î∏î ÎÇ¥Ïùò ÌååÌã∞ÏÖòÏùº Í≤ΩÏö∞ Partition Order , Cond Min, Cond Max Value Î•º
-             * Ï†úÏô∏ÌïòÍ≥†Îäî ÎèôÏùºÌïòÍ∏∞ ÎïåÎ¨∏Ïóê ÎèôÏùº ÌÖåÏù¥Î∏îÏùò Meta Ï†ïÎ≥¥Î•º Î≥µÏÇ¨Ìï¥ÏÑú Old Ï†ïÎ≥¥Î°ú ÎÇòÎ®∏ÏßÄ
-             * Ï†ïÎ≥¥Î•º Ï±ÑÏõåÎÜìÎäîÎã§.*/
-            if ( ( idlOS::strcmp( sLastItems[sLastTableIndex].mItem.mLocalTablename,
-                                  sItemArr[sOldTableIndex].mTableName ) == 0 ) &&
-                 ( idlOS::strcmp( sLastItems[sLastTableIndex].mItem.mLocalUsername,
-                                  sItemArr[sOldTableIndex].mUserName ) == 0 ) )
-            {
-                sSrcItem = &( sLastItems[sLastTableIndex] );
-
-                if ( idlOS::strcmp( sLastItems[sLastTableIndex].mItem.mLocalPartname,
-                                    sItemArr[sOldTableIndex].mPartName ) == 0 )
-                {
-                    break;
-                }
-            }
-        }
-        IDE_TEST_RAISE( sSrcItem == NULL, ERR_REPL_ITEMS_NOT_FOUND );
-
-        IDE_TEST( sSrcItem->lockReplItem( aSmiStmt->getTrans(),
-                                          aSmiStmt,
-                                          SMI_TBSLV_DDL_DML, // TBS Validation ÏòµÏÖò
-                                          SMI_TABLE_LOCK_IS,
-                                          ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                            ID_ULONG_MAX :
-                                            smiGetDDLLockTimeOut() * 1000000 ) )
-                  != IDE_SUCCESS );
-
-        IDE_TEST( copyTableInfo( sItem, sSrcItem ) != IDE_SUCCESS );
 
         fillOldMetaItem( sItem, &sItemArr[sOldTableIndex] );
 
-        sItemInfo = (qcmTableInfo *)
-            rpdCatalog::rpdGetTableTempInfo(smiGetTable( (smOID)sSrcItem->mItem.mTableOID ));
-
-
-        IDE_TEST( buildOldPartitonInfo( aSmiStmt,
-                                        sItem,
-                                        &sItemArr[sOldTableIndex],
-                                        sItemInfo,
-                                        SMI_TBSLV_DDL_DML )
-                  != IDE_SUCCESS );
-
-        // Column Ï†ïÎ≥¥Î•º ÏñªÎäîÎã§.
+        // Column ¡§∫∏∏¶ æÚ¥¬¥Ÿ.
         IDE_TEST(buildOldColumnsInfo(aSmiStmt, sItem) != IDE_SUCCESS);
 
-        // Index Ï†ïÎ≥¥Î•º ÏñªÎäîÎã§.
+        // Index ¡§∫∏∏¶ æÚ¥¬¥Ÿ.
         IDE_TEST(buildOldIndicesInfo(aSmiStmt, sItem) != IDE_SUCCESS);
 
-        // Primary Key Column CountÎ•º ÏñªÎäîÎã§.
+        // Primary Key Column Count∏¶ æÚ¥¬¥Ÿ.
         for(sIdxIndex = 0; sIdxIndex < sItem->mIndexCount; sIdxIndex++)
         {
             if(sItem->mPKIndex.indexId == sItem->mIndices[sIdxIndex].indexId)
@@ -3328,17 +3574,12 @@ IDE_RC rpdMeta::buildOldItemsInfo(smiStatement * aSmiStmt)
     (void)iduMemMgr::free((void *)sItemArr);
     sItemArr = NULL;
 
-    (void)iduMemMgr::free( (void *)sLastItems );
-    sLastItems = NULL;
+    RP_LABEL( NORMAL_EXIT );
 
     mReplication.mItemCount = sItemRowCount;
-
+    
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION( ERR_REPL_ITEMS_NOT_FOUND )
-    {
-        IDE_SET(ideSetErrorCode(rpERR_ABORT_NOT_EXIST_REPL_ITEM));
-    }
     IDE_EXCEPTION(ERR_MEMORY_ALLOC_ITEM_ARRAY);
     {
         IDE_ERRLOG(IDE_RP_0);
@@ -3354,183 +3595,7 @@ IDE_RC rpdMeta::buildOldItemsInfo(smiStatement * aSmiStmt)
         (void)iduMemMgr::free((void *)sItemArr);
     }
 
-    if ( sLastItems != NULL )
-    {
-        (void)iduMemMgr::free( (void *)sLastItems );
-        sLastItems = NULL;
-    }
-
     IDE_POP();
-
-    return IDE_FAILURE;
-}
-
-IDE_RC rpdMeta::buildOldPartitonInfo( smiStatement * aSmiStmt,
-                                      rpdMetaItem  * aMetaItem,
-                                      rpdOldItem   * aOldItem,
-                                      qciTableInfo * aItemInfo,
-                                      smiTBSLockValidType aTBSLvType )
-{
-    qcmTableInfo     * sTableInfo;
-    void             * sTableHandle;
-    smSCN              sSCN;
-    qcmIndex         * sIndex;
-    qciIndexTableRef * sIndexTable;
-    qciIndexTableRef * sIndexTableRef = NULL;
-    UInt               sIndexTableCount = 0;
-    UInt               i;
-    UInt               j;
-    ULong              sLockWaitMicroSec = 0;
-
-    aMetaItem->mPartitionMethod = aItemInfo->partitionMethod;
-    aMetaItem->mItem.mTBSType = aItemInfo->TBSType;
-
-    IDE_TEST_CONT( aItemInfo->tablePartitionType != QCM_TABLE_PARTITION, NORMAL_EXIT );
-
-    aMetaItem->mPartCondMinValues[0] = '\0';
-    aMetaItem->mPartCondMaxValues[0] = '\0';
-
-    idlOS::strncpy( aMetaItem->mItem.mLocalPartname,
-                    aOldItem->mPartName,
-                    QC_MAX_OBJECT_NAME_LEN + 1 );
-
-    idlOS::strncpy( aMetaItem->mItem.mRemotePartname,
-                    aOldItem->mRemotePartName,
-                    QC_MAX_OBJECT_NAME_LEN + 1 );
-
-    idlOS::strncpy( aMetaItem->mPartCondMinValues,
-                    aOldItem->mPartCondMinValues,
-                    QC_MAX_PARTKEY_COND_VALUE_LEN  + 1 );
-
-    idlOS::strncpy( aMetaItem->mPartCondMaxValues,
-                    aOldItem->mPartCondMaxValues,
-                    QC_MAX_PARTKEY_COND_VALUE_LEN + 1 );
-
-    aMetaItem->mPartitionOrder = aOldItem->mPartitionOrder;
-
-    // PROJ-1624 non-partitioned index
-    // partitioned tableÏùò tableInfoÎ•º ÏñªÎäîÎã§.
-    IDE_TEST( qciMisc::getTableInfoByID( aSmiStmt,
-                                         aItemInfo->tableID,
-                                         & sTableInfo,
-                                         & sSCN,
-                                         & sTableHandle )
-              != IDE_SUCCESS );
-    // CallerÏóêÏÑú Ïù¥ÎØ∏ LockÏùÑ Ïû°ÏïòÎã§. (Partitioned Table)
-
-    IDE_TEST( qcmPartition::getPartitionCount4SmiStmt( aSmiStmt,
-                                                       sTableInfo->tableID,
-                                                       &aMetaItem->mPartitionCount )
-              != IDE_SUCCESS );
-
-    // global index table refÎ•º Íµ¨ÏÑ±ÌïúÎã§.
-    for ( i = 0; i < sTableInfo->indexCount; i++ )
-    {
-        sIndex = & (sTableInfo->indices[i]);
-
-        if ( sIndex->indexPartitionType == QCM_NONE_PARTITIONED_INDEX )
-        {
-            sIndexTableCount++;
-        }
-        else
-        {
-            // Nothing to do.
-        }
-    }
-
-    if ( sIndexTableCount > 0 )
-    {
-        IDU_FIT_POINT_RAISE( "rpdMeta::buildOldPartitonInfo::calloc::IndexTableRef",
-                             ERR_MEMORY_ALLOC_INDEX_TABLE );
-
-        IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPD_META,
-                                           sIndexTableCount,
-                                           ID_SIZEOF(qciIndexTableRef),
-                                           (void **)&sIndexTableRef,
-                                           IDU_MEM_IMMEDIATE)
-                        != IDE_SUCCESS,
-                        ERR_MEMORY_ALLOC_INDEX_TABLE );
-
-        for ( i = 0, j = 0; i < sTableInfo->indexCount; i++ )
-        {
-            sIndex = & (sTableInfo->indices[i]);
-
-            if ( sIndex->indexPartitionType == QCM_NONE_PARTITIONED_INDEX )
-            {
-                /* BUG-46208 ÏÑúÎ≤Ñ ÏãúÏûëÏãúÏóêÎäî receiver executeÌïòÎ©¥ÏÑú lockÏùÑ Ïû°Í≥† ÏûàÏùÑ Ïàò ÏûàÏúºÎØÄÎ°ú lock ÎåÄÍ∏∞ ÌïúÎã§. */
-                if ( rpcManager::isInitRepl() == ID_TRUE )
-                {
-                    sLockWaitMicroSec = ID_ULONG_MAX;
-                }
-                else
-                {
-                    sLockWaitMicroSec = ( smiGetDDLLockTimeOut() == -1 ) ? ID_ULONG_MAX : smiGetDDLLockTimeOut() * 1000000;
-                }
-
-                sIndexTable = & (sIndexTableRef[j]);
-
-                // index Ï†ïÎ≥¥Î•º Î≥µÏÇ¨ÌïúÎã§.
-                IDE_TEST( copyIndex( sIndex, &(sIndexTable->index) )
-                          != IDE_SUCCESS );
-
-                sIndexTable->tableID = sIndex->indexTableID;
-
-                IDE_TEST( qciMisc::getTableInfoByID( aSmiStmt,
-                                                     sIndex->indexTableID,
-                                                     & sIndexTable->tableInfo,
-                                                     & sIndexTable->tableSCN,
-                                                     & sIndexTable->tableHandle )
-                          != IDE_SUCCESS );
-                IDE_TEST( smiValidateAndLockObjects( aSmiStmt->getTrans(),
-                                                     sIndexTable->tableHandle,
-                                                     sIndexTable->tableSCN,
-                                                     aTBSLvType,
-                                                     SMI_TABLE_LOCK_IS,
-                                                     ((smiGetDDLLockTimeOut() == -1) ?
-                                                      ID_ULONG_MAX :
-                                                      smiGetDDLLockTimeOut()*1000000),
-                                                     ID_FALSE )
-                          != IDE_SUCCESS );
-
-                j++;
-            }
-            else
-            {
-                // Nothing to do.
-            }
-        }
-
-        // listÎ•º Íµ¨ÏÑ±ÌïúÎã§.
-        for ( i = 0; i < sIndexTableCount - 1; i++ )
-        {
-            sIndexTableRef[i].next = & (sIndexTableRef[i + 1]);
-        }
-        sIndexTableRef[i].next = NULL;
-    }
-    else
-    {
-        // Nothing to do.
-    }
-
-    RP_LABEL( NORMAL_EXIT );
-    
-    aMetaItem->mIndexTableRef = sIndexTableRef;
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION( ERR_MEMORY_ALLOC_INDEX_TABLE )
-    {
-        IDE_ERRLOG(IDE_RP_0);
-        IDE_SET(ideSetErrorCode(rpERR_ABORT_MEMORY_ALLOC,
-                                "rpdMeta::buildOldPartitonInfo",
-                                "sMetaItem->mIndexTableRef"));
-    }
-    IDE_EXCEPTION_END;
-
-    if ( sIndexTableRef != NULL )
-    {
-        (void)iduMemMgr::free((void *)sIndexTableRef);
-    }
 
     return IDE_FAILURE;
 }
@@ -3549,7 +3614,7 @@ IDE_RC rpdMeta::buildOldColumnsInfo(smiStatement * aSmiStmt,
 
     aMetaItem->mColumns = NULL;
 
-    // Column Ï†ïÎ≥¥Î•º ÏúÑÌïú Î©îÎ™®Î¶¨Î•º Ìï†ÎãπÌïúÎã§.
+    // Column ¡§∫∏∏¶ ¿ß«— ∏ﬁ∏∏Æ∏¶ «“¥Á«—¥Ÿ.
     IDE_TEST(rpdCatalog::getReplOldColumnsCount(aSmiStmt,
                                              aMetaItem->mItem.mRepName,
                                              aMetaItem->mItem.mTableOID,
@@ -3575,7 +3640,7 @@ IDE_RC rpdMeta::buildOldColumnsInfo(smiStatement * aSmiStmt,
                                      IDU_MEM_IMMEDIATE)
                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_COLUMN_ARRAY);
 
-    // Column Ï†ïÎ≥¥Î•º ÏñªÎäîÎã§.
+    // Column ¡§∫∏∏¶ æÚ¥¬¥Ÿ.
     IDE_TEST(rpdCatalog::selectReplOldColumns(aSmiStmt,
                                            aMetaItem->mItem.mRepName,
                                            aMetaItem->mItem.mTableOID,
@@ -3614,34 +3679,43 @@ IDE_RC rpdMeta::buildOldColumnsInfo(smiStatement * aSmiStmt,
                 sColumn->mColumn.column.colSpace = sOldColumn->mSMColSpace;
 
 
-                //BUG-26891 : encPecision , Î∞è Î≥¥Ïïà Ïª¨Îüº Ï†ïÎ≥¥ Íµ¨ÌïòÍ∏∞
-                if( (sColumn->mColumn.type.dataTypeId == MTD_ECHAR_ID) ||
-                    (sColumn->mColumn.type.dataTypeId == MTD_EVARCHAR_ID) )
+                switch ( sColumn->mColumn.type.dataTypeId  )
                 {
-                    //BUG-26891
-                    sColumn->mColumn.encPrecision = sOldColumn->mMTEncPrecision;
-                    idlOS::memcpy((void *)sColumn->mColumn.policy, 
-                                  (const void *)sOldColumn->mMTPolicy, 
-                                  MTC_POLICY_NAME_SIZE + 1);
+                    //BUG-26891 : encPecision , π◊ ∫∏æ» ƒ√∑≥ ¡§∫∏ ±∏«œ±‚
+                    case MTD_ECHAR_ID :
+                    case MTD_EVARCHAR_ID :
+                        //BUG-26891
+                        sColumn->mColumn.mColumnAttr.mEncAttr.mEncPrecision = sOldColumn->mMTColumnAttr.mEncAttr.mEncPrecision;
+                        idlOS::memcpy( (void *)sColumn->mColumn.mColumnAttr.mEncAttr.mPolicy,
+                                       (const void *)sOldColumn->mMTColumnAttr.mEncAttr.mPolicy,
+                                       MTC_POLICY_NAME_SIZE + 1 );
 
-                    IDE_TEST( qciMisc::getPolicyCode( sOldColumn->mMTPolicy,
-                                                      sColumn->mPolicyCode,
-                                                      & sCodeSize )
-                              != IDE_SUCCESS );
-                    sColumn->mPolicyCode[sCodeSize] = '\0';
-                
-                    IDE_TEST( qciMisc::getECCPolicyName( sColumn->mECCPolicyName )
-                              != IDE_SUCCESS );
-                
-                    IDE_TEST( qciMisc::getECCPolicyCode( sColumn->mECCPolicyCode,
-                                                         & sCodeSize )
-                              != IDE_SUCCESS );
-                    sColumn->mECCPolicyCode[sCodeSize] = '\0';
+                        IDE_TEST( qciMisc::getPolicyCode( sOldColumn->mMTColumnAttr.mEncAttr.mPolicy,
+                                                          sColumn->mPolicyCode,
+                                                          & sCodeSize )
+                                  != IDE_SUCCESS );
+                        sColumn->mPolicyCode[sCodeSize] = '\0';
 
+                        IDE_TEST( qciMisc::getECCPolicyName( sColumn->mECCPolicyName )
+                                  != IDE_SUCCESS );
+
+                        IDE_TEST( qciMisc::getECCPolicyCode( sColumn->mECCPolicyCode,
+                                                             & sCodeSize )
+                                  != IDE_SUCCESS );
+                        sColumn->mECCPolicyCode[sCodeSize] = '\0';
+
+                        break;
+
+                    case MTD_GEOMETRY_ID :
+                        sColumn->mColumn.mColumnAttr.mSridAttr.mSrid = sOldColumn->mMTColumnAttr.mSridAttr.mSrid;
+                        break;
+
+                    default :
+                        break;
                 }
 
                 // PROJ-1705
-                // mtdValueÎ•º ÎßåÎì§Í∏∞ ÏúÑÌï¥ mtdModuleÏ†ïÎ≥¥Í∞Ä ÌïÑÏöîÌïòÎã§.
+                // mtdValue∏¶ ∏∏µÈ±‚ ¿ß«ÿ mtdModule¡§∫∏∞° « ø‰«œ¥Ÿ.
                 IDU_FIT_POINT_RAISE( "rpdMeta::buildOldColumnsInfo::Erratic::rpERR_ABORT_GET_MODULE",
                                      ERR_GET_MODULE );
                 IDE_TEST_RAISE(mtd::moduleById(&sColumn->mColumn.module,
@@ -3658,7 +3732,7 @@ IDE_RC rpdMeta::buildOldColumnsInfo(smiStatement * aSmiStmt,
 
                 /* BUG-35210 Function-based Index */
                 sColumn->mQPFlag                 = sOldColumn->mQPFlag;
-                /* Î©îÎ™®Î¶¨Î•º Ïû¨ Ìï†ÎãπÌïòÏßÄ ÏïäÍ≥† Ìè¨Ïù∏ÌÑ∞Îßå Ïó∞Í≤∞ ÏãúÏºúÏ§ÄÎã§. */
+                /* ∏ﬁ∏∏Æ∏¶ ¿Á «“¥Á«œ¡ˆ æ ∞Ì ∆˜¿Œ≈Õ∏∏ ø¨∞· Ω√ƒ—¡ÿ¥Ÿ. */
                 sColumn->mFuncBasedIdxStr        = sOldColumn->mDefaultValStr;
 
                 if ( ( sColumn->mColumn.column.flag & SMI_COLUMN_COMPRESSION_MASK ) == SMI_COLUMN_COMPRESSION_TRUE )
@@ -3747,7 +3821,7 @@ IDE_RC rpdMeta::buildOldIndicesInfo(smiStatement * aSmiStmt,
 
     aMetaItem->mIndices = NULL;
 
-    // Index Ï†ïÎ≥¥Î•º ÏúÑÌïú Î©îÎ™®Î¶¨Î•º Ìï†ÎãπÌïúÎã§.
+    // Index ¡§∫∏∏¶ ¿ß«— ∏ﬁ∏∏Æ∏¶ «“¥Á«—¥Ÿ.
     IDE_TEST(rpdCatalog::getReplOldIndexCount(aSmiStmt,
                                            aMetaItem->mItem.mRepName,
                                            aMetaItem->mItem.mTableOID,
@@ -3773,7 +3847,7 @@ IDE_RC rpdMeta::buildOldIndicesInfo(smiStatement * aSmiStmt,
                                      IDU_MEM_IMMEDIATE)
                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_INDEX_ARRAY);
     
-    // Index Ï†ïÎ≥¥Î•º ÏñªÎäîÎã§.
+    // Index ¡§∫∏∏¶ æÚ¥¬¥Ÿ.
     IDE_TEST(rpdCatalog::selectReplOldIndices(aSmiStmt,
                                            aMetaItem->mItem.mRepName,
                                            aMetaItem->mItem.mTableOID,
@@ -3796,7 +3870,7 @@ IDE_RC rpdMeta::buildOldIndicesInfo(smiStatement * aSmiStmt,
         sIndex->isLocalUnique = sOldIndex->mIsLocalUnique;
         sIndex->isRange       = sOldIndex->mIsRange;
 
-        // Index Column Ï†ïÎ≥¥Î•º ÏúÑÌïú Î©îÎ™®Î¶¨Î•º Ìï†ÎãπÌïúÎã§.
+        // Index Column ¡§∫∏∏¶ ¿ß«— ∏ﬁ∏∏Æ∏¶ «“¥Á«—¥Ÿ.
         IDE_TEST(rpdCatalog::getReplOldIndexColCount(aSmiStmt,
                                                   aMetaItem->mItem.mRepName,
                                                   aMetaItem->mItem.mTableOID,
@@ -3832,7 +3906,7 @@ IDE_RC rpdMeta::buildOldIndicesInfo(smiStatement * aSmiStmt,
                                          IDU_MEM_IMMEDIATE)
                        != IDE_SUCCESS, ERR_MEMORY_ALLOC_INDEX_COL_ARRAY);
 
-        // Index Column Ï†ïÎ≥¥Î•º ÏñªÎäîÎã§.
+        // Index Column ¡§∫∏∏¶ æÚ¥¬¥Ÿ.
         IDE_TEST(rpdCatalog::selectReplOldIndexCols(aSmiStmt,
                                                  aMetaItem->mItem.mRepName,
                                                  aMetaItem->mItem.mTableOID,
@@ -4014,7 +4088,7 @@ IDE_RC rpdMeta::buildOldCheckInfo( smiStatement * aSmiStmt,
             sChecks[i].constraintColumn[j] = sCheckColumnMeta[j].mColumnID;
         }
 
-        /* Memory Í≥µÍ∞ÑÎßå Ïù¥Ïñ¥Ïò®Îã§. */
+        /* Memory ∞¯∞£∏∏ ¿ÃæÓø¬¥Ÿ. */
         sChecks[i].checkCondition = sCheckMeta[i].mCondition;
         sCheckMeta[i].mCondition = NULL;
     }
@@ -4085,48 +4159,6 @@ IDE_RC rpdMeta::buildOldCheckInfo( smiStatement * aSmiStmt,
     return IDE_FAILURE;
 }
 
-IDE_RC rpdMeta::getLastReplItems( smiStatement * aSmiStmt, rpdMetaItem ** aLastItems )
-{
-    rpdMetaItem * sLastItems = NULL;
-
-    IDU_FIT_POINT_RAISE( "rpdMeta::getLastReplItems::calloc::sLastItems",
-                         ERR_MEMORY_ALLOC_ITEM_ARRAY );
-    IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPD_META,
-                                       mReplication.mItemCount,
-                                       ID_SIZEOF(rpdMetaItem),
-                                       (void **)&sLastItems,
-                                       IDU_MEM_IMMEDIATE )
-                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_ITEM_ARRAY );
-
-
-    IDE_TEST( rpdCatalog::selectReplItems( aSmiStmt,
-                                           mReplication.mRepName,
-                                           sLastItems,
-                                           mReplication.mItemCount )
-              != IDE_SUCCESS );
-
-    *aLastItems = sLastItems;
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION( ERR_MEMORY_ALLOC_ITEM_ARRAY );
-    {
-        IDE_ERRLOG( IDE_RP_0 );
-        IDE_SET( ideSetErrorCode( rpERR_ABORT_MEMORY_ALLOC,
-                                  "rpdMeta::getLastReplItems",
-                                  "sLastItems" ) );
-    }
-    IDE_EXCEPTION_END;
-
-    if ( sLastItems != NULL )
-    {
-        (void)iduMemMgr::free( (void *)sLastItems );
-        sLastItems = NULL;
-    }
-
-    return IDE_FAILURE;
-}
-
 idBool rpdMeta::needToProcessProtocolOperation( RP_PROTOCOL_OP_CODE aOpCode,
                                                 rpdVersion          aRemoteVersion )
 {
@@ -4161,155 +4193,148 @@ IDE_RC rpdMeta::recvMeta( cmiProtocolContext * aProtocolContext,
     SInt        sIC;             // Index Count 
     UInt        sCheckIndex;     // Check Index
 
-    /* MetaÏùò Replication Ï†ïÎ≥¥ Ï¥àÍ∏∞Ìôî */
+    /* Meta¿« Replication ¡§∫∏ √ ±‚»≠ */
     idlOS::memset(&mReplication, 0, ID_SIZEOF(rpdReplications));
 
-    /* ÌÜµÏã†ÏùÑ ÌÜµÌï¥ÏÑú Replication Ï†ïÎ≥¥(rpdReplications)Î•º Î∞õÎäîÎã§. */
+    /* recvMetaReplø°º≠ mXSNºˆΩ≈«œ¡ˆ æ ¿∏π«∑Œ SM_SN_NULL∑Œ º≥¡§«—¥Ÿ.*/
+    mReplication.mXSN = SM_SN_NULL;
+    mReplication.mRemoteVersion.mVersion = aVersion.mVersion;
+    
+    /* ≈ÎΩ≈¿ª ≈Î«ÿº≠ Replication ¡§∫∏(rpdReplications)∏¶ πﬁ¥¬¥Ÿ. */
     IDE_TEST( rpnComm::recvMetaRepl( aProtocolContext,
                                      aExitflag,
                                      &mReplication,
                                      aTimeoutSec )
               != IDE_SUCCESS );
-
-    /* recvMetaReplÏóêÏÑú mXSNÏàòÏã†ÌïòÏßÄ ÏïäÏúºÎØÄÎ°ú SM_SN_NULLÎ°ú ÏÑ§Ï†ïÌïúÎã§.*/
-    mReplication.mXSN = SM_SN_NULL;
-
-    /* ÌòÑÏû¨ ÏÉÅÎåÄÎ∞©Ïùò ÏöîÏ≤≠Ïù¥ Wakeup Peer SenderÏù∏ÏßÄÎ•º ÌôïÏù∏ */
+    
+    /* «ˆ¿Á ªÛ¥ÎπÊ¿« ø‰√ª¿Ã Wakeup Peer Sender¿Œ¡ˆ∏¶ »Æ¿Œ */
     if((rpdMeta::isRpWakeupPeerSender(&mReplication) == ID_TRUE) ||
        (rpdMeta::isRpRecoveryRequest(&mReplication) == ID_TRUE))
     {
         goto exit_success;
     }
 
-    /* ReplicationÏùò Item Í∞úÏàòÏóê Îî∞ÎùºÏÑú, Item Î©îÎ™®Î¶¨Î•º Ìï†Îãπ */
+    /* Replication¿« Item ∞≥ºˆø° µ˚∂Ûº≠, Item ∏ﬁ∏∏Æ∏¶ «“¥Á */
     if(mReplication.mItemCount != 0)
     {
         IDU_FIT_POINT_RAISE( "rpdMeta::recvMeta::calloc::Items",
-                              ERR_MEMORY_ALLOC_ITEMS );
+                             ERR_MEMORY_ALLOC_ITEMS );
         IDE_TEST_RAISE(iduMemMgr::calloc(IDU_MEM_RP_RPD_META,
                                          mReplication.mItemCount,
                                          ID_SIZEOF(rpdMetaItem),
                                          (void **)&mItems,
                                          IDU_MEM_IMMEDIATE)
                        != IDE_SUCCESS, ERR_MEMORY_ALLOC_ITEMS);
-    }
-    else
-    {
-        // Item countÍ∞Ä 0Ïù∏ Í≤ΩÏö∞Îäî Ïã§Ï†úÎ°ú Î∞úÏÉùÌï† Ïàò ÏóÜÏùå.
-        // Í∑∏Îü¨ÎÇò, Ïã§Ï†úÎ°ú Ïù¥ Í≤ΩÏö∞Í∞Ä Îì§Ïñ¥Ïò§Î©¥ Ìò∏Ï∂úÌïòÎäî Îã®Í≥ÑÏóêÏÑú FAILURE Ï≤òÎ¶¨Îê®
-        mItems = (rpdMetaItem*)NULL;
-    }
 
-    mReplication.mRemoteVersion.mVersion = aVersion.mVersion;
-
-    /* ReplicationÏù¥ Í≤∞Î†§ ÏûàÎäî ÌÖåÏù¥Î∏î(Item)Ïùò Ïà´ÏûêÎßåÌÅº Î∞òÎ≥µÌïòÎ©∞ MetaÎ•º Î∞õÎäîÎã§. */
-    for(sTC = 0; sTC < mReplication.mItemCount; sTC++)
-    {
-        mItems[sTC].mTsFlag      = NULL;
-
-        /* ÌÖåÏù¥Î∏î Ï†ïÎ≥¥Î•º Î∞õÏùå */
-        IDE_TEST( rpnComm::recvMetaReplTbl( aProtocolContext,
-                                            aExitflag,
-                                            &mItems[sTC],
-                                            aTimeoutSec )
-                  != IDE_SUCCESS );
-
-        /* BUG-46120 */
-        if ( needToProcessProtocolOperation( RP_META_PARTITIONCOUNT,
-                                             mReplication.mRemoteVersion )
-             == ID_TRUE )
+        /* Replication¿Ã ∞·∑¡ ¿÷¥¬ ≈◊¿Ã∫Ì(Item)¿« º˝¿⁄∏∏≈≠ π›∫π«œ∏Á Meta∏¶ πﬁ¥¬¥Ÿ. */
+        for(sTC = 0; sTC < mReplication.mItemCount; sTC++)
         {
-            IDE_TEST( rpnComm::recvMetaPartitionCount( aProtocolContext, 
-                                                       aExitflag,
-                                                       &(mItems[sTC].mPartitionCount),
-                                                       aTimeoutSec )
-                      != IDE_SUCCESS ); 
-        }
+            mItems[sTC].mTsFlag      = NULL;
 
-        /* Column Í∞úÏàòÎßåÌÅº, Item ÎÇ¥ÏóêÏÑú Column Î©îÎ™®Î¶¨ Ìï†Îãπ */
-        IDU_FIT_POINT_RAISE( "rpdMeta::recvMeta::calloc::Columns",
-                              ERR_MEMORY_ALLOC_COLUMNS );
-        IDE_TEST_RAISE(iduMemMgr::calloc(IDU_MEM_RP_RPD_META,
-                                         mItems[sTC].mColCount,
-                                         ID_SIZEOF(rpdColumn),
-                                         (void **)&mItems[sTC].mColumns,
-                                         IDU_MEM_IMMEDIATE)
-                       != IDE_SUCCESS, ERR_MEMORY_ALLOC_COLUMNS);
-
-        /* Column Í∞úÏàòÎßåÌÅº Î∞òÎ≥µÌïòÎ©∞, Í∞Å ColumnÏùò Ï†ïÎ≥¥Î•º Î∞õÎäîÎã§. */
-        for(sCC = 0; sCC < mItems[sTC].mColCount; sCC++)
-        {
-            /* MetaÏóêÏÑú Íµ¨ÏÑ±Ìïú Column Ï†ïÎ≥¥Î•º Î∞õÎäîÎã§. */
-            IDE_TEST( rpnComm::recvMetaReplCol( aProtocolContext,
+            /* ≈◊¿Ã∫Ì ¡§∫∏∏¶ πﬁ¿Ω */
+            IDE_TEST( rpnComm::recvMetaReplTbl( aProtocolContext,
                                                 aExitflag,
-                                                &mItems[sTC].mColumns[sCC],
-                                                aTimeoutSec )
-                      != IDE_SUCCESS );
-        }
-
-        /* Index Í∞úÏàòÎßåÌÅº, Item ÎÇ¥ÏóêÏÑú memory Ìï†Îãπ */
-        IDU_FIT_POINT_RAISE( "rpdMeta::recvMeta::calloc::Indices",
-                              ERR_MEMORY_ALLOC_INDICES );
-        IDE_TEST_RAISE(iduMemMgr::calloc(IDU_MEM_RP_RPD_META,
-                                         mItems[sTC].mIndexCount,
-                                         ID_SIZEOF(qcmIndex),
-                                         (void **)&mItems[sTC].mIndices,
-                                         IDU_MEM_IMMEDIATE)
-                       != IDE_SUCCESS, ERR_MEMORY_ALLOC_INDICES);
-
-        /* Index Í∞úÏàòÎßåÌÅº Î∞òÎ≥µÌïòÎ©∞, Í∞Å IndexÏùò Ï†ïÎ≥¥Î•º Î∞õÎäîÎã§. */
-        for(sIC = 0; sIC < mItems[sTC].mIndexCount; sIC++)
-        {
-            /* MetaÏóêÏÑú Íµ¨ÏÑ±Ìïú Index Ï†ïÎ≥¥Î•º Î∞õÎäîÎã§. */
-            IDE_TEST( rpnComm::recvMetaReplIdx( aProtocolContext,
-                                                aExitflag,
-                                                &mItems[sTC].mIndices[sIC],
+                                                &mItems[sTC],
                                                 aTimeoutSec )
                       != IDE_SUCCESS );
 
-            IDU_FIT_POINT_RAISE( "rpdMeta::recvMeta::calloc::IndexColumns",
-                                  ERR_MEMORY_ALLOC_INDEX_COLUMNS );
-            IDE_TEST_RAISE(iduMemMgr::calloc(IDU_MEM_RP_RPD_META,
-                                             mItems[sTC].mIndices[sIC].keyColCount,
-                                             ID_SIZEOF(mtcColumn),
-                                             (void **)&mItems[sTC].mIndices[sIC].keyColumns,
-                                             IDU_MEM_IMMEDIATE)
-                           != IDE_SUCCESS, ERR_MEMORY_ALLOC_INDEX_COLUMNS);
-
-            IDU_FIT_POINT_RAISE( "rpdMeta::recvMeta::calloc::IndexColumnsFlag",
-                                  ERR_MEMORY_ALLOC_INDEX_COLUMNS_FLAG );
-            IDE_TEST_RAISE(iduMemMgr::calloc(IDU_MEM_RP_RPD_META,
-                                             mItems[sTC].mIndices[sIC].keyColCount,
-                                             ID_SIZEOF(UInt),
-                                             (void **)&mItems[sTC].mIndices[sIC].keyColsFlag,
-                                             IDU_MEM_IMMEDIATE)
-                           != IDE_SUCCESS, ERR_MEMORY_ALLOC_INDEX_COLUMNS_FLAG);
-
-            for(sCC = 0; sCC < (SInt)mItems[sTC].mIndices[sIC].keyColCount; sCC ++)
+            /* BUG-46120 */
+            if ( needToProcessProtocolOperation( RP_META_PARTITIONCOUNT,
+                                                 mReplication.mRemoteVersion )
+                 == ID_TRUE )
             {
-                IDE_TEST( rpnComm::recvMetaReplIdxCol(
-                             aProtocolContext,
-                             aExitflag,
-                             &mItems[sTC].mIndices[sIC].keyColumns[sCC].column.id,
-                             &mItems[sTC].mIndices[sIC].keyColsFlag[sCC],
-                             aTimeoutSec )
+                IDE_TEST( rpnComm::recvMetaPartitionCount( aProtocolContext, 
+                                                           aExitflag,
+                                                           &(mItems[sTC].mPartitionCount),
+                                                           aTimeoutSec )
+                          != IDE_SUCCESS ); 
+            }
+
+            /* Column ∞≥ºˆ∏∏≈≠, Item ≥ªø°º≠ Column ∏ﬁ∏∏Æ «“¥Á */
+            IDU_FIT_POINT_RAISE( "rpdMeta::recvMeta::calloc::Columns",
+                                 ERR_MEMORY_ALLOC_COLUMNS );
+            IDE_TEST_RAISE(iduMemMgr::calloc(IDU_MEM_RP_RPD_META,
+                                             mItems[sTC].mColCount,
+                                             ID_SIZEOF(rpdColumn),
+                                             (void **)&mItems[sTC].mColumns,
+                                             IDU_MEM_IMMEDIATE)
+                           != IDE_SUCCESS, ERR_MEMORY_ALLOC_COLUMNS);
+
+            /* Column ∞≥ºˆ∏∏≈≠ π›∫π«œ∏Á, ∞¢ Column¿« ¡§∫∏∏¶ πﬁ¥¬¥Ÿ. */
+            for(sCC = 0; sCC < mItems[sTC].mColCount; sCC++)
+            {
+                /* Metaø°º≠ ±∏º∫«— Column ¡§∫∏∏¶ πﬁ¥¬¥Ÿ. */
+                IDE_TEST( rpnComm::recvMetaReplCol( aProtocolContext,
+                                                    aExitflag,
+                                                    &mItems[sTC].mColumns[sCC],
+                                                    mReplication.mRemoteVersion,
+                                                    aTimeoutSec )
                           != IDE_SUCCESS );
             }
-        }
 
-        if ( rpdMeta::isUseV6Protocol( &mReplication ) != ID_TRUE )
-        {
-            /* BUG-34360 Check Constraint */
-            if ( mItems[sTC].mCheckCount != 0 )
+            /* Index ∞≥ºˆ∏∏≈≠, Item ≥ªø°º≠ memory «“¥Á */
+            IDU_FIT_POINT_RAISE( "rpdMeta::recvMeta::calloc::Indices",
+                                 ERR_MEMORY_ALLOC_INDICES );
+            IDE_TEST_RAISE(iduMemMgr::calloc(IDU_MEM_RP_RPD_META,
+                                             mItems[sTC].mIndexCount,
+                                             ID_SIZEOF(qcmIndex),
+                                             (void **)&mItems[sTC].mIndices,
+                                             IDU_MEM_IMMEDIATE)
+                           != IDE_SUCCESS, ERR_MEMORY_ALLOC_INDICES);
+
+            /* Index ∞≥ºˆ∏∏≈≠ π›∫π«œ∏Á, ∞¢ Index¿« ¡§∫∏∏¶ πﬁ¥¬¥Ÿ. */
+            for(sIC = 0; sIC < mItems[sTC].mIndexCount; sIC++)
             {
-                IDU_FIT_POINT_RAISE( "rpdMeta::recvMeta::calloc::Checks",
-                                      ERR_MEMORY_ALLOC_CHECK );
-                IDE_TEST_RAISE( iduMemMgr::calloc(IDU_MEM_RP_RPD_META,
-                                                  mItems[sTC].mCheckCount,
-                                                  ID_SIZEOF(qcmCheck),
-                                                  (void **)&(mItems[sTC].mChecks),
-                                                  IDU_MEM_IMMEDIATE)
-                                != IDE_SUCCESS, ERR_MEMORY_ALLOC_CHECK );
+                /* Metaø°º≠ ±∏º∫«— Index ¡§∫∏∏¶ πﬁ¥¬¥Ÿ. */
+                IDE_TEST( rpnComm::recvMetaReplIdx( aProtocolContext,
+                                                    aExitflag,
+                                                    &mItems[sTC].mIndices[sIC],
+                                                    aTimeoutSec )
+                          != IDE_SUCCESS );
+
+                IDU_FIT_POINT_RAISE( "rpdMeta::recvMeta::calloc::IndexColumns",
+                                     ERR_MEMORY_ALLOC_INDEX_COLUMNS );
+                IDE_TEST_RAISE(iduMemMgr::calloc(IDU_MEM_RP_RPD_META,
+                                                 mItems[sTC].mIndices[sIC].keyColCount,
+                                                 ID_SIZEOF(mtcColumn),
+                                                 (void **)&mItems[sTC].mIndices[sIC].keyColumns,
+                                                 IDU_MEM_IMMEDIATE)
+                               != IDE_SUCCESS, ERR_MEMORY_ALLOC_INDEX_COLUMNS);
+
+                IDU_FIT_POINT_RAISE( "rpdMeta::recvMeta::calloc::IndexColumnsFlag",
+                                     ERR_MEMORY_ALLOC_INDEX_COLUMNS_FLAG );
+                IDE_TEST_RAISE(iduMemMgr::calloc(IDU_MEM_RP_RPD_META,
+                                                 mItems[sTC].mIndices[sIC].keyColCount,
+                                                 ID_SIZEOF(UInt),
+                                                 (void **)&mItems[sTC].mIndices[sIC].keyColsFlag,
+                                                 IDU_MEM_IMMEDIATE)
+                               != IDE_SUCCESS, ERR_MEMORY_ALLOC_INDEX_COLUMNS_FLAG);
+
+                for(sCC = 0; sCC < (SInt)mItems[sTC].mIndices[sIC].keyColCount; sCC ++)
+                {
+                    IDE_TEST( rpnComm::recvMetaReplIdxCol(
+                            aProtocolContext,
+                            aExitflag,
+                            &mItems[sTC].mIndices[sIC].keyColumns[sCC].column.id,
+                            &mItems[sTC].mIndices[sIC].keyColsFlag[sCC],
+                            aTimeoutSec )
+                        != IDE_SUCCESS );
+                }
+            }
+
+            if ( rpdMeta::isUseV6Protocol( &mReplication ) != ID_TRUE )
+            {
+                /* BUG-34360 Check Constraint */
+                if ( mItems[sTC].mCheckCount != 0 )
+                {
+                    IDU_FIT_POINT_RAISE( "rpdMeta::recvMeta::calloc::Checks",
+                                         ERR_MEMORY_ALLOC_CHECK );
+                    IDE_TEST_RAISE( iduMemMgr::calloc(IDU_MEM_RP_RPD_META,
+                                                      mItems[sTC].mCheckCount,
+                                                      ID_SIZEOF(qcmCheck),
+                                                      (void **)&(mItems[sTC].mChecks),
+                                                      IDU_MEM_IMMEDIATE)
+                                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_CHECK );
 
                     for ( sCheckIndex = 0; sCheckIndex < mItems[sTC].mCheckCount; sCheckIndex++ )
                     {
@@ -4319,17 +4344,22 @@ IDE_RC rpdMeta::recvMeta( cmiProtocolContext * aProtocolContext,
                                                               aTimeoutSec )
                                   != IDE_SUCCESS );
                     }
+                }
+                else
+                {
+                    /* do nothing */
+                }
             }
             else
             {
                 /* do nothing */
+                /* The a611b does not supports to check constraints.*/
             }
         }
-        else
-        {
-            /* do nothing */
-            /* The a611b does not supports to check constraints.*/
-        }
+    }
+    else
+    {
+        mItems = (rpdMetaItem*) NULL;
     }
 
     /* BUG-38759 recv mDictTableCount if remote Version is higher then 7.4.1
@@ -4351,7 +4381,7 @@ IDE_RC rpdMeta::recvMeta( cmiProtocolContext * aProtocolContext,
         /* Nothing to do */
     }
 
-
+    
     if(mReplication.mItemCount > 0)
     {
         IDE_TEST( allocSortItems() != IDE_SUCCESS );
@@ -4421,8 +4451,7 @@ exit_success:
                                  "rpdMeta::recvMeta",
                                  "mChecks" ) );
     }
-
-    IDE_EXCEPTION_END;
+    IDE_EXCEPTION_END;    
 
     freeMemory();
 
@@ -4440,7 +4469,7 @@ IDE_RC rpdMeta::sendMeta( void                  * aHBTResource,
     SInt  sIC;                   // Index Count
     UInt  sCheckIndex = 0;
 
-    /* ÌÜµÏã† ProtocolContextÏùÑ ÌÜµÌï¥ÏÑú Replication Ï†ïÎ≥¥(rpdReplications)Î•º Ï†ÑÏÜ°ÌïúÎã§. */
+    /* ≈ÎΩ≈ ProtocolContext¿ª ≈Î«ÿº≠ Replication ¡§∫∏(rpdReplications)∏¶ ¿¸º€«—¥Ÿ. */
     IDE_TEST( rpnComm::sendMetaRepl( aHBTResource,
                                      aProtocolContext,
                                      aExitflag,
@@ -4448,85 +4477,97 @@ IDE_RC rpdMeta::sendMeta( void                  * aHBTResource,
                                      aTimeoutSec )
              != IDE_SUCCESS );
 
-    /* ReplicationÏù¥ Í≤∞Î†§ ÏûàÎäî ÌÖåÏù¥Î∏î(Item)Ïùò Ïà´ÏûêÎßåÌÅº Î∞òÎ≥µÌïòÎ©∞ MetaÎ•º Ï†ÑÏÜ° */
-    for(sTC = 0; sTC < mReplication.mItemCount; sTC ++)
+    if ( mReplication.mItemCount != 0 )
     {
-        /* ÌÖåÏù¥Î∏î Ï†ïÎ≥¥Î•º Ï†ÑÏÜ° */
-        IDE_TEST( rpnComm::sendMetaReplTbl( aHBTResource,
-                                            aProtocolContext, 
-                                            aExitflag,
-                                            &mItems[sTC],
-                                            aTimeoutSec )
-                  != IDE_SUCCESS );
-
-        /* BUG-46120 */
-        if ( needToProcessProtocolOperation( RP_META_PARTITIONCOUNT,
-                                             mReplication.mRemoteVersion )
-             == ID_TRUE )
+        /* Replication¿Ã ∞·∑¡ ¿÷¥¬ ≈◊¿Ã∫Ì(Item)¿« º˝¿⁄∏∏≈≠ π›∫π«œ∏Á Meta∏¶ ¿¸º€ */
+        for(sTC = 0; sTC < mReplication.mItemCount; sTC ++)
         {
-            IDE_TEST( rpnComm::sendMetaPartitionCount( aHBTResource,
-                                                       aProtocolContext, 
-                                                       aExitflag,
-                                                       &(mItems[sTC].mPartitionCount),
-                                                       aTimeoutSec )
-                      != IDE_SUCCESS ); 
-        }
-
-        /* Column Í∞úÏàòÎßåÌÅº Î∞òÎ≥µÌïòÎ©∞, Í∞Å ColumnÏùò Ï†ïÎ≥¥Î•º Ï†ÑÏÜ°ÌïúÎã§. */
-        for(sCC = 0; sCC < mItems[sTC].mColCount; sCC ++)
-        {
-            IDE_TEST( rpnComm::sendMetaReplCol( aHBTResource,
-                                                aProtocolContext,
+            /* ≈◊¿Ã∫Ì ¡§∫∏∏¶ ¿¸º€ */
+            IDE_TEST( rpnComm::sendMetaReplTbl( aHBTResource,
+                                                aProtocolContext, 
                                                 aExitflag,
-                                                &mItems[sTC].mColumns[sCC],
-                                                aTimeoutSec )
-                      != IDE_SUCCESS );
-        }
-
-        /* Index Í∞úÏàòÎßåÌÅº Î∞òÎ≥µÌïòÎ©∞, Í∞Å IndexÏùò Ï†ïÎ≥¥Î•º Ï†ÑÏÜ°ÌïúÎã§. */
-        for(sIC = 0; sIC < mItems[sTC].mIndexCount; sIC ++)
-        {
-            IDE_TEST( rpnComm::sendMetaReplIdx( aHBTResource,
-                                                aProtocolContext,
-                                                aExitflag,
-                                                &mItems[sTC].mIndices[sIC],
+                                                &mItems[sTC],
                                                 aTimeoutSec )
                       != IDE_SUCCESS );
 
-            /* IndexÏùò ÏÜçÏÑ± Ï†ïÎ≥¥Î•º Ï†ÑÏÜ°ÌïúÎã§. (CID, Flag) */
-            for(sCC = 0; sCC < (SInt)mItems[sTC].mIndices[sIC].keyColCount; sCC ++)
+            /* BUG-46120 */
+            if ( needToProcessProtocolOperation( RP_META_PARTITIONCOUNT,
+                                                 mReplication.mRemoteVersion )
+                 == ID_TRUE )
             {
-                IDE_TEST( rpnComm::sendMetaReplIdxCol(
-                              aHBTResource,
-                              aProtocolContext,
-                              aExitflag,
-                              mItems[sTC].mIndices[sIC].keyColumns[sCC].column.id,
-                              mItems[sTC].mIndices[sIC].keyColsFlag[sCC],
-                              aTimeoutSec )
+                IDE_TEST( rpnComm::sendMetaPartitionCount( aHBTResource,
+                                                           aProtocolContext, 
+                                                           aExitflag,
+                                                           &(mItems[sTC].mPartitionCount),
+                                                           aTimeoutSec )
+                          != IDE_SUCCESS ); 
+            }
+
+            /* Column ∞≥ºˆ∏∏≈≠ π›∫π«œ∏Á, ∞¢ Column¿« ¡§∫∏∏¶ ¿¸º€«—¥Ÿ. */
+            for(sCC = 0; sCC < mItems[sTC].mColCount; sCC ++)
+            {
+                if ( ( RPU_REPLICATION_CHECK_SRID_IN_GEOMETRY_ENABLE == 1 ) && 
+                     ( needToProcessProtocolOperation( RP_META_SRID, mReplication.mRemoteVersion ) == ID_FALSE )   )
+                {
+                    IDE_TEST_RAISE( mItems[sTC].mColumns[sCC].mColumn.type.dataTypeId == MTD_GEOMETRY_ID,
+                                    ERR_NOT_SUPPORT_SRID );
+                }
+
+                IDE_TEST( rpnComm::sendMetaReplCol( aHBTResource,
+                                                    aProtocolContext,
+                                                    aExitflag,
+                                                    &mItems[sTC].mColumns[sCC],
+                                                    mReplication.mRemoteVersion,
+                                                    aTimeoutSec )
                           != IDE_SUCCESS );
+            }
+
+            /* Index ∞≥ºˆ∏∏≈≠ π›∫π«œ∏Á, ∞¢ Index¿« ¡§∫∏∏¶ ¿¸º€«—¥Ÿ. */
+            for(sIC = 0; sIC < mItems[sTC].mIndexCount; sIC ++)
+            {
+                IDE_TEST( rpnComm::sendMetaReplIdx( aHBTResource,
+                                                    aProtocolContext,
+                                                    aExitflag,
+                                                    &mItems[sTC].mIndices[sIC],
+                                                    aTimeoutSec )
+                          != IDE_SUCCESS );
+
+                /* Index¿« º”º∫ ¡§∫∏∏¶ ¿¸º€«—¥Ÿ. (CID, Flag) */
+                for(sCC = 0; sCC < (SInt)mItems[sTC].mIndices[sIC].keyColCount; sCC ++)
+                {
+                    IDE_TEST( rpnComm::sendMetaReplIdxCol(
+                            aHBTResource,
+                            aProtocolContext,
+                            aExitflag,
+                            mItems[sTC].mIndices[sIC].keyColumns[sCC].column.id,
+                            mItems[sTC].mIndices[sIC].keyColsFlag[sCC],
+                            aTimeoutSec )
+                        != IDE_SUCCESS );
+                }
+            }
+
+            /* BUG-34360 Check Constraint */
+            if ( rpdMeta::isUseV6Protocol( &mReplication ) != ID_TRUE )
+            {
+                for ( sCheckIndex = 0; sCheckIndex < mItems[sTC].mCheckCount; sCheckIndex++ )
+                {
+                    IDE_TEST( rpnComm::sendMetaReplCheck( aHBTResource,
+                                                          aProtocolContext,
+                                                          aExitflag,
+                                                          &(mItems[sTC].mChecks[sCheckIndex]),
+                                                          aTimeoutSec )
+                              != IDE_SUCCESS );
+                }
+            }
+            else
+            {
+                /* do nothing */
+                /* The a611b does not supports to check constraints.*/
             }
         }
 
-        /* BUG-34360 Check Constraint */
-        if ( rpdMeta::isUseV6Protocol( &mReplication ) != ID_TRUE )
-        {
-            for ( sCheckIndex = 0; sCheckIndex < mItems[sTC].mCheckCount; sCheckIndex++ )
-            {
-                IDE_TEST( rpnComm::sendMetaReplCheck( aHBTResource,
-                                                      aProtocolContext,
-                                                      aExitflag,
-                                                      &(mItems[sTC].mChecks[sCheckIndex]),
-                                                      aTimeoutSec )
-                          != IDE_SUCCESS );
-            }
-        }
-        else
-        {
-            /* do nothing */
-            /* The a611b does not supports to check constraints.*/
-        }
     }
-
+    
     /* BUG-38759 send mDictTableCount if remote Version is higher then 7.4.1
      * If you want to add new protocol, define current version as RP_X_X_X_VERSION 
      * and add if statement at the bottom of below one.
@@ -4561,6 +4602,11 @@ IDE_RC rpdMeta::sendMeta( void                  * aHBTResource,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_NOT_SUPPORT_SRID );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_NOT_SUPPORT_SRID_REMOTE,
+                                  mItems[sTC].mItem.mLocalTablename) );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -4573,11 +4619,11 @@ rpdMeta::searchTable( rpdMetaItem** aItem, ULong aTableOID )
     SInt sHigh;
     SInt sMid;
 
+    *aItem = NULL;
+    IDE_TEST_CONT( mReplication.mItemCount == 0, NORMAL_EXIT );
+
     sLow  = 0;
     sHigh = mReplication.mItemCount - 1;
-    *aItem = NULL;
-
-    IDE_TEST_RAISE(existMetaItems() != ID_TRUE, ERR_REPL_ITEMS_NOT_EXIST);
 
     while( sLow <= sHigh )
     {
@@ -4596,20 +4642,10 @@ rpdMeta::searchTable( rpdMetaItem** aItem, ULong aTableOID )
             break;
         }
     }
+    
+    RP_LABEL( NORMAL_EXIT );
 
     return IDE_SUCCESS;
-
-    IDE_EXCEPTION(ERR_REPL_ITEMS_NOT_EXIST);
-    {
-        IDE_SET(ideSetErrorCode(rpERR_ABORT_ITEM_NOT_EXIST,
-                                mReplication.mRepName));
-        IDE_ERRLOG(IDE_RP_0);
-
-        IDE_CALLBACK_FATAL("[Repl] Replication Items Not Exist");
-    }
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
 }
 
 idBool
@@ -4653,13 +4689,11 @@ rpdMeta::searchRemoteTable( rpdMetaItem** aItem, ULong aTableOID )
     SInt sHigh;
     SInt sMid;
 
+    *aItem = NULL;
+    IDE_TEST_CONT( mReplication.mItemCount == 0, NORMAL_EXIT );
+
     sLow  = 0;
     sHigh = mReplication.mItemCount - 1;
-    *aItem = NULL;
-
-    IDU_FIT_POINT_RAISE( "rpdMeta::searchRemoteTable::Erratic::rpERR_ABORT_ITEM_NOT_EXIST",
-                         ERR_REPL_ITEMS_NOT_EXIST );
-    IDE_TEST_RAISE(existMetaItems() != ID_TRUE, ERR_REPL_ITEMS_NOT_EXIST);
 
     while( sLow <= sHigh )
     {
@@ -4679,19 +4713,8 @@ rpdMeta::searchRemoteTable( rpdMetaItem** aItem, ULong aTableOID )
         }
     }
 
+    RP_LABEL( NORMAL_EXIT );
     return IDE_SUCCESS;
-
-    IDE_EXCEPTION(ERR_REPL_ITEMS_NOT_EXIST);
-    {
-        IDE_SET(ideSetErrorCode(rpERR_ABORT_ITEM_NOT_EXIST,
-                                mReplication.mRepName));
-        IDE_ERRLOG(IDE_RP_0);
-
-        IDE_CALLBACK_FATAL("[Repl] Replication Items Not Exist");
-    }
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
 }
 
 IDE_RC rpdMeta::getMetaItem(const void  *  aMeta,
@@ -4735,7 +4758,8 @@ IDE_RC rpdMeta::insertOldMetaItem( smiStatement * aSmiStmt, rpdMetaItem * aItem 
 
     idlOS::memset( &sOldItem, 0, ID_SIZEOF( rpdOldItem ) );
 
-    // Item Ï†ïÎ≥¥Î•º Î©îÌÉÄ ÌÖåÏù¥Î∏îÏóê Î≥¥Í¥ÄÌïúÎã§.
+    // Item ¡§∫∏∏¶ ∏ﬁ≈∏ ≈◊¿Ã∫Ìø° ∫∏∞¸«—¥Ÿ.
+    sOldItem.mTableID  = aItem->mTableID;
     sOldItem.mTableOID = (vULong)sTableOID;
     
     sOldItem.mInvalidMaxSN = aItem->mItem.mInvalidMaxSN;
@@ -4762,7 +4786,10 @@ IDE_RC rpdMeta::insertOldMetaItem( smiStatement * aSmiStmt, rpdMetaItem * aItem 
                    (const void *)aItem->mItem.mRemotePartname,
                    SM_MAX_NAME_LEN + 1 );
 
-    sOldItem.mPartitionOrder = aItem->mPartitionOrder;
+    sOldItem.mTBSType            = aItem->mItem.mTBSType;
+    sOldItem.mTablePartitionType = aItem->mTablePartitionType;
+    sOldItem.mPartitionOrder     = aItem->mPartitionOrder;
+    sOldItem.mPartitionMethod    = aItem->mPartitionMethod;
 
     copyPartCondValue( sOldItem.mPartCondMinValues, aItem->mPartCondMinValues );
     sOldItem.mPartCondMinValues[QC_MAX_PARTKEY_COND_VALUE_LEN] = '\0';
@@ -4772,12 +4799,20 @@ IDE_RC rpdMeta::insertOldMetaItem( smiStatement * aSmiStmt, rpdMetaItem * aItem 
 
     sOldItem.mPKIndexID = aItem->mPKIndex.indexId;
 
+    idlOS::strncpy( sOldItem.mIsPartition, 
+                    aItem->mItem.mIsPartition,
+                    2 );
+
+    idlOS::strncpy( sOldItem.mReplicationUnit,
+                    aItem->mItem.mReplicationUnit,
+                    2 );
+
     IDE_TEST(rpdCatalog::insertReplOldItem(aSmiStmt,
                                            sRepName,
                                            &sOldItem)
              != IDE_SUCCESS);
 
-    // Column Ï†ïÎ≥¥Î•º Î©îÌÉÄ ÌÖåÏù¥Î∏îÏóê Î≥¥Í¥ÄÌïúÎã§.
+    // Column ¡§∫∏∏¶ ∏ﬁ≈∏ ≈◊¿Ã∫Ìø° ∫∏∞¸«—¥Ÿ.
     for(sColumnIndex = 0; sColumnIndex < aItem->mColCount; sColumnIndex++)
     {
         sColumn = &aItem->mColumns[sColumnIndex];
@@ -4792,11 +4827,27 @@ IDE_RC rpdMeta::insertOldMetaItem( smiStatement * aSmiStmt, rpdMetaItem * aItem 
         sColumnMeta.mMTPrecision  = sColumn->mColumn.precision;
         sColumnMeta.mMTScale      = sColumn->mColumn.scale;
 
-        //BUG-26891 : encPrecision , Policy Ï†ÄÏû•
-        sColumnMeta.mMTEncPrecision = sColumn->mColumn.encPrecision;
-        idlOS::memcpy((void *)sColumnMeta.mMTPolicy, 
-                      (const void *)sColumn->mColumn.policy, 
-                      MTC_POLICY_NAME_SIZE + 1);
+        switch ( sColumn->mColumn.type.dataTypeId )
+        {
+            case MTD_ECHAR_ID :
+            case MTD_EVARCHAR_ID :
+                //BUG-26891 : encPrecision , Policy ¿˙¿Â
+                sColumnMeta.mMTColumnAttr.mEncAttr.mEncPrecision = sColumn->mColumn.mColumnAttr.mEncAttr.mEncPrecision;
+
+                idlOS::memcpy( (void *)sColumnMeta.mMTColumnAttr.mEncAttr.mPolicy,
+                               (const void *)sColumn->mColumn.mColumnAttr.mEncAttr.mPolicy,
+                               MTC_POLICY_NAME_SIZE + 1 );
+                break;
+
+            case MTD_GEOMETRY_ID :
+                sColumnMeta.mMTColumnAttr.mSridAttr.mSrid = sColumn->mColumn.mColumnAttr.mSridAttr.mSrid;
+                break;
+
+            default :
+                sColumnMeta.mMTColumnAttr.mEncAttr.mEncPrecision = 0;
+                sColumnMeta.mMTColumnAttr.mEncAttr.mPolicy[0] = '\0';
+                break;
+        }
 
         sColumnMeta.mSMID           = sColumn->mColumn.column.id;
         sColumnMeta.mSMFlag         = sColumn->mColumn.column.flag;
@@ -4815,7 +4866,7 @@ IDE_RC rpdMeta::insertOldMetaItem( smiStatement * aSmiStmt, rpdMetaItem * aItem 
                  != IDE_SUCCESS);
     }
 
-    // Check Constrain Ï†ïÎ≥¥Î•º Ï†ÄÏû•ÌïúÎã§.
+    // Check Constrain ¡§∫∏∏¶ ¿˙¿Â«—¥Ÿ.
     for ( i = 0; i < aItem->mCheckCount; i++ )
     {
         sCheck = &(aItem->mChecks[i]);
@@ -4839,7 +4890,7 @@ IDE_RC rpdMeta::insertOldMetaItem( smiStatement * aSmiStmt, rpdMetaItem * aItem 
         }
     }
 
-    // Index Ï†ïÎ≥¥Î•º Î©îÌÉÄ ÌÖåÏù¥Î∏îÏóê Î≥¥Í¥ÄÌïúÎã§.
+    // Index ¡§∫∏∏¶ ∏ﬁ≈∏ ≈◊¿Ã∫Ìø° ∫∏∞¸«—¥Ÿ.
     for(sIdxIndex = 0; sIdxIndex < aItem->mIndexCount; sIdxIndex++)
     {
         sIndex = &aItem->mIndices[sIdxIndex];
@@ -4861,7 +4912,7 @@ IDE_RC rpdMeta::insertOldMetaItem( smiStatement * aSmiStmt, rpdMetaItem * aItem 
                                              &sIndexMeta)
                  != IDE_SUCCESS);
 
-        // IndexÏùò Key Column Ï†ïÎ≥¥Î•º Î©îÌÉÄ ÌÖåÏù¥Î∏îÏóê Î≥¥Í¥ÄÌïúÎã§.
+        // Index¿« Key Column ¡§∫∏∏¶ ∏ﬁ≈∏ ≈◊¿Ã∫Ìø° ∫∏∞¸«—¥Ÿ.
         for(sIdxColIndex = 0;
             sIdxColIndex < sIndex->keyColCount;
             sIdxColIndex++)
@@ -5064,13 +5115,13 @@ IDE_RC rpdMeta::removeOldMetaRepl(smiStatement * aSmiStmt,
 }
 
 /*******************************************************************************
- * Table Meta Log RecordÎäî
+ * Table Meta Log Record¥¬
  *  smiTableMetaLog | Log Body | Log Tail
- *Î°ú Íµ¨ÏÑ±ÎêúÎã§.
+ *∑Œ ±∏º∫µ»¥Ÿ.
  *
- * Log BodyÎäî
+ * Log Body¥¬
  *  Column Count | Column                                     | Column defaultValueStr length | 
- *  (UInt)       | (smiColumnMeta ÏóêÏÑú*mDefaultValStrÎ•º Ï†úÏô∏) | (UInt)                        |
+ *  (UInt)       | (smiColumnMeta ø°º≠*mDefaultValStr∏¶ ¡¶ø‹) | (UInt)                        |
  *
  *  | Column defaultValueStr length | Column defaultValueStr | ..
  *  | (UInt)                        |                        | .. 
@@ -5086,31 +5137,32 @@ IDE_RC rpdMeta::removeOldMetaRepl(smiStatement * aSmiStmt,
  *
  *  | Partition Type          | Remote Partition Name  | Partition Order | Partition Cond Values
  *  | (qcmTablePartitionType) | SChar                  | (UInt)          | (SChar )
- * Î°ú Íµ¨ÏÑ±ÎêúÎã§.
+ * ∑Œ ±∏º∫µ»¥Ÿ.
  *
- * IndexÎäî
+ * Index¥¬
  * Index Header   | Key Column Count | Key Column           | ...
  * (smiIndexMeta) | (UInt)           | (smiIndexColumnMeta) |
- * Î°ú Íµ¨ÏÑ±ÎêúÎã§.
+ * ∑Œ ±∏º∫µ»¥Ÿ.
  * 
- * Ï£ºÏùò ) Column Ï†ïÎ≥¥Ïùò Í≤ΩÏö∞ LOG Record Ïùò BODY Ïóê Ï†ÄÏû•Ìï†Îïå
- *        Îß® ÎßàÏßÄÎßâ Î¨∏ÏûêÏó¥ Ìè¨Ïù∏ÌÑ∞Îäî Ï†úÏô∏ ÌïòÍ≥† Î≥µÌïòÍ≥†
- *        Îß® ÎßàÏßÄÎßâ Î¨∏ÏûêÏó¥ Ìè¨Ïù∏ÌÑ∞Ïùò Í≤ΩÏö∞ LOG RecordÏùò BODY Ïóê Î¨∏ÏûêÏó¥ÏùÑ
- *        ÏßÅÏ†ë Î≥µÏÇ¨Ìï¥ Ï§ÄÎã§.
+ * ¡÷¿« ) Column ¡§∫∏¿« ∞ÊøÏ LOG Record ¿« BODY ø° ¿˙¿Â«“∂ß
+ *        ∏« ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ∆˜¿Œ≈Õ¥¬ ¡¶ø‹ «œ∞Ì ∫π«œ∞Ì
+ *        ∏« ∏∂¡ˆ∏∑ πÆ¿⁄ø≠ ∆˜¿Œ≈Õ¿« ∞ÊøÏ LOG Record¿« BODY ø° πÆ¿⁄ø≠¿ª
+ *        ¡˜¡¢ ∫πªÁ«ÿ ¡ÿ¥Ÿ.
  ******************************************************************************/
-IDE_RC rpdMeta::writeTableMetaLog(void        * aQcStatement,
-                                  smOID         aOldTableOID,
-                                  smOID         aNewTableOID)
+IDE_RC rpdMeta::writeTableMetaLog( void         * aQcStatement,
+                                   smOID          aOldTableOID,
+                                   smOID          aNewTableOID,
+                                   SChar        * aRepName,
+                                   rpdReplItems * aReplItem,
+                                   idBool         aUpdateMeta )
+
 {
     smiStatement       * sSmiStmt = QCI_SMI_STMT(aQcStatement);
     qcmTableInfo       * sItemInfo;
-    qcmTableInfo       * sParentTableInfo;
     qcmColumn          * sQPColumn;
     mtcColumn          * sMTColumn;
     smiColumn          * sSMColumn;
     qcmIndex           * sIndex;
-    smSCN                sSCN;
-    void               * sTableHandle;
     smiTableMeta         sItemMeta;
     smiPartTableMeta     sPartTableMeta;
     smiColumnMeta        sColumnMeta;
@@ -5131,78 +5183,102 @@ IDE_RC rpdMeta::writeTableMetaLog(void        * aQcStatement,
      * CREATE TABLE -> aOldTableOID = 0;
      * DROP TABLE -> aNewTableOID = 0;
      */
-    if (aNewTableOID == 0)
+
+    if ( getTableMetaType( aOldTableOID, aNewTableOID ) == RP_META_DELETE_ITEM )
     {
         idlOS::memset(&sItemMeta, 0, ID_SIZEOF(smiTableMeta));
+        sItemMeta.mTableID     = 0;
         sItemMeta.mOldTableOID = (ULong)aOldTableOID;
+        sItemMeta.mTableOID    = (vULong)aNewTableOID;
+        sItemMeta.mTBSType     = 0;
 
-        sItemInfo = (qcmTableInfo *)rpdCatalog::rpdGetTableTempInfo(smiGetTable( aOldTableOID ));
-        IDE_TEST(qciMisc::getUserName(aQcStatement,
-                                      sItemInfo->tableOwnerID,
-                                      sItemMeta.mUserName)
-             != IDE_SUCCESS);
+        if ( aRepName != NULL )
+        {
+            idlOS::memcpy((void *)sItemMeta.mRepName,
+                          (const void *)aRepName,
+                          QC_MAX_NAME_LEN + 1);
+        }
 
-        // Table Meta Log RecordÎ•º Í∏∞Î°ùÌïúÎã§.
-        IDE_TEST(smiTable::writeTableMetaLog(sSmiStmt->getTrans(),
-                                             &sItemMeta,
-                                             NULL,
-                                             0)
+        sLogBodyLen = ID_SIZEOF( idBool );    // Update Meta
+
+        IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_RP_RPD_META,
+                                         (ULong)sLogBodyLen,
+                                         (void **)&sLogBody,
+                                         IDU_MEM_IMMEDIATE)
+                       != IDE_SUCCESS, ERR_MEMORY_ALLOC_LOG_BODY);
+        idlOS::memset((void *)sLogBody, 0x00, (ULong)sLogBodyLen);
+
+        idlOS::memcpy( (void *)&sLogBody[sOffset],
+                       (const void *)&aUpdateMeta,
+                       ID_SIZEOF(idBool) );
+        sOffset += ID_SIZEOF( idBool );
+
+        IDE_DASSERT(sLogBodyLen == sOffset);
+
+        // Table Meta Log Record∏¶ ±‚∑œ«—¥Ÿ.
+        IDE_TEST(smiTable::writeTableMetaLog( sSmiStmt->getTrans(),
+                                              &sItemMeta,
+                                              sLogBody,
+                                              sLogBodyLen )
                  != IDE_SUCCESS);
+
+        (void)iduMemMgr::free((void *)sLogBody);
 
         return IDE_SUCCESS;
     }
 
-    /* BUG-42817 Partitioned Table LockÏùÑ Ïû°Í≥† Partition LockÏùÑ Ïû°ÏïÑÏïº ÌïúÎã§.
-     *  DDLÏóêÏÑú LockÏùÑ Ïù¥ÎØ∏ ÌöçÎìùÌïú ÏÉÅÌÉúÏóêÏÑú Ìò∏Ï∂úÌïúÎã§. Îî∞ÎùºÏÑú, Ïó¨Í∏∞ÏóêÏÑúÎäî LockÏùÑ Ïû°ÏßÄ ÏïäÎäîÎã§.
+    IDE_DASSERT ( ( getTableMetaType( aOldTableOID, aNewTableOID ) == RP_META_INSERT_ITEM ) ||
+                  ( getTableMetaType( aOldTableOID, aNewTableOID ) == RP_META_UPDATE_ITEM ) )
+
+    /* BUG-42817 Partitioned Table Lock¿ª ¿‚∞Ì Partition Lock¿ª ¿‚æ∆æﬂ «—¥Ÿ.
+     *  DDLø°º≠ Lock¿ª ¿ÃπÃ »πµÊ«— ªÛ≈¬ø°º≠ »£√‚«—¥Ÿ. µ˚∂Ûº≠, ø©±‚ø°º≠¥¬ Lock¿ª ¿‚¡ˆ æ ¥¬¥Ÿ.
      */
 
-    sItemInfo = (qcmTableInfo *)rpdCatalog::rpdGetTableTempInfo(smiGetTable( aNewTableOID ));
-
-    // Item MetaÎ•º Íµ¨ÏÑ±ÌïúÎã§.
+    // Item Meta∏¶ ±∏º∫«—¥Ÿ.
     idlOS::memset(&sItemMeta, 0, ID_SIZEOF(smiTableMeta));
     sItemMeta.mTableOID = (vULong)aNewTableOID;
-    IDE_TEST(qciMisc::getUserName(aQcStatement,
-                                  sItemInfo->tableOwnerID,
-                                  sItemMeta.mUserName)
-             != IDE_SUCCESS);
-    if(sItemInfo->tablePartitionType == QCM_TABLE_PARTITION)
-    {
-        IDE_TEST( qciMisc::getTableInfoByID( sSmiStmt,
-                                             sItemInfo->tableID,
-                                             & sParentTableInfo,
-                                             & sSCN,
-                                             & sTableHandle )
-                  != IDE_SUCCESS );
 
-        /* BUG-42817 Partitioned Table LockÏùÑ Ïû°Í≥† Partition LockÏùÑ Ïû°ÏïÑÏïº ÌïúÎã§.
-         *  DDLÏóêÏÑú LockÏùÑ Ïù¥ÎØ∏ ÌöçÎìùÌïú ÏÉÅÌÉúÏóêÏÑú Ìò∏Ï∂úÌïúÎã§. Îî∞ÎùºÏÑú, Ïó¨Í∏∞ÏóêÏÑúÎäî LockÏùÑ Ïû°ÏßÄ ÏïäÎäîÎã§.
-         */
+    IDE_DASSERT( ( aReplItem != NULL ) && ( aRepName != NULL ) );
 
-        idlOS::memcpy((void *)sItemMeta.mTableName,
-                      (const void *)sParentTableInfo->name,
-                      SM_MAX_NAME_LEN + 1);
+    idlOS::memcpy((void *)sItemMeta.mRepName,
+                  (const void *)aRepName,
+                  QC_MAX_NAME_LEN + 1);
 
-        idlOS::memcpy((void *)sItemMeta.mPartName,
-                      (const void *)sItemInfo->name,
-                      SM_MAX_NAME_LEN + 1);
-    }
-    else
-    {
-        idlOS::memcpy((void *)sItemMeta.mTableName,
-                      (const void *)sItemInfo->name,
-                      SM_MAX_NAME_LEN + 1);
+    idlOS::memcpy((void *)sItemMeta.mUserName,
+                  (const void *)aReplItem->mLocalUsername,
+                  SM_MAX_NAME_LEN + 1);
 
-        sItemMeta.mPartName[0] = '\0';
-    }
+    idlOS::memcpy((void *)sItemMeta.mRemoteUserName,
+                  (const void *)aReplItem->mRemoteUsername,
+                  SM_MAX_NAME_LEN + 1);
 
+    idlOS::memcpy((void *)sItemMeta.mTableName,
+                  (const void *)aReplItem->mLocalTablename,
+                  SM_MAX_NAME_LEN + 1);
+
+    idlOS::memcpy((void *)sItemMeta.mRemoteTableName,
+                  (const void *)aReplItem->mRemoteTablename,
+                  SM_MAX_NAME_LEN + 1);
+
+    idlOS::memcpy((void *)sItemMeta.mPartName,
+                  (const void *)aReplItem->mLocalPartname,
+                  SM_MAX_NAME_LEN + 1);
+
+    idlOS::memcpy((void *)sItemMeta.mRemotePartName,
+                  (const void *)aReplItem->mRemotePartname,
+                  SM_MAX_NAME_LEN + 1);
+
+    sItemInfo = (qcmTableInfo *)rpdCatalog::rpdGetTableTempInfo( smiGetTable( aNewTableOID ) );
     if (sItemInfo->primaryKey != NULL)
     {
         sItemMeta.mPKIndexID   = sItemInfo->primaryKey->indexId;
     }
 
+    sItemMeta.mTableID     = sItemInfo->tableID;
     sItemMeta.mOldTableOID = (vULong)aOldTableOID;
+    sItemMeta.mTBSType     = sItemInfo->TBSType;
 
-    // Log BodyÏùò Í∏∏Ïù¥Î•º Íµ¨ÌïòÍ≥† Î©îÎ™®Î¶¨Î•º Ìï†ÎãπÌïúÎã§.
+    // Log Body¿« ±Ê¿Ã∏¶ ±∏«œ∞Ì ∏ﬁ∏∏Æ∏¶ «“¥Á«—¥Ÿ.
     sLogBodyLen = ID_SIZEOF(UInt)                                       // Column Count 
                 + ( RP_OLD_COLUMN_META_SIZE * sItemInfo->columnCount )  // Columns
                 + ( ID_SIZEOF(UInt) * sItemInfo->columnCount )          // defaultValueStr Length 
@@ -5210,10 +5286,11 @@ IDE_RC rpdMeta::writeTableMetaLog(void        * aQcStatement,
                 + ID_SIZEOF(UInt)                                       // Index Count
                 + ( ID_SIZEOF(smiIndexMeta) * sItemInfo->indexCount)    // Indices
                 + (ID_SIZEOF(UInt) * sItemInfo->indexCount)             // Key Column Count
-                + ID_SIZEOF(qcmTablePartitionType);                     // Partition Type
+                + ID_SIZEOF(qcmTablePartitionType)                      // Partition Type
+                + ID_SIZEOF(idBool);                                    // UpdateMeta
 
     /*
-     * Function-based IndexÏóêÏÑú ÏÇ¨Ïö©ÌïòÎäî defaultValueStr Í∏∏Ïù¥ Í≥ÑÏÇ∞
+     * Function-based Indexø°º≠ ªÁøÎ«œ¥¬ defaultValueStr ±Ê¿Ã ∞ËªÍ
      */
     for ( sColCount = 0; sColCount < sItemInfo->columnCount; sColCount++ )
     {
@@ -5230,7 +5307,7 @@ IDE_RC rpdMeta::writeTableMetaLog(void        * aQcStatement,
         }
     }
 
-    // Check Constraint Ï°∞Í±¥ ÌÅ¨Í∏∞ Í≥ÑÏÇ∞ 
+    // Check Constraint ¡∂∞« ≈©±‚ ∞ËªÍ 
     for ( i = 0; i < sItemInfo->checkCount; i++ )
     {
         // Name
@@ -5271,13 +5348,13 @@ IDE_RC rpdMeta::writeTableMetaLog(void        * aQcStatement,
                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_LOG_BODY);
     idlOS::memset((void *)sLogBody, 0x00, (ULong)sLogBodyLen);
 
-    // Log Body Íµ¨ÏÑ± : Column Count
+    // Log Body ±∏º∫ : Column Count
     idlOS::memcpy((void *)&sLogBody[sOffset],
                   (const void *)&sItemInfo->columnCount,
                   ID_SIZEOF(UInt));
     sOffset += ID_SIZEOF(UInt);
 
-    // Log Body Íµ¨ÏÑ± : Columns
+    // Log Body ±∏º∫ : Columns
     for(sColCount = 0; sColCount < sItemInfo->columnCount; sColCount++)
     {
         sQPColumn = &sItemInfo->columns[sColCount];
@@ -5286,7 +5363,7 @@ IDE_RC rpdMeta::writeTableMetaLog(void        * aQcStatement,
 
         idlOS::memset(&sColumnMeta, 0, ID_SIZEOF(smiColumnMeta));
 
-        // Log Body Íµ¨ÏÑ± : Column
+        // Log Body ±∏º∫ : Column
         idlOS::memcpy((void *)sColumnMeta.mName,
                       (const void *)sQPColumn->name,
                       SM_MAX_NAME_LEN + 1);
@@ -5297,12 +5374,28 @@ IDE_RC rpdMeta::writeTableMetaLog(void        * aQcStatement,
         sColumnMeta.mMTPrecision  = sMTColumn->precision;
         sColumnMeta.mMTScale      = sMTColumn->scale;
 
-        //BUG-26891 : ÌÖåÏù¥Î∏î Î©îÌÉÄ Î°úÍ∑∏Ïóê encPrecision, Policy Ï†ÄÏû•
-        sColumnMeta.mMTEncPrecision = sMTColumn->encPrecision;
-        idlOS::memcpy((void *)sColumnMeta.mMTPolicy, 
-                      (const void *)sMTColumn->policy, 
-                      MTC_POLICY_NAME_SIZE + 1);
+        switch ( sMTColumn->type.dataTypeId )
+        {
+            case MTD_ECHAR_ID :
+            case MTD_EVARCHAR_ID :
+                //BUG-26891 : ≈◊¿Ã∫Ì ∏ﬁ≈∏ ∑Œ±◊ø° encPrecision, Policy ¿˙¿Â
+                sColumnMeta.mMTColumnAttr.mEncAttr.mEncPrecision = sMTColumn->mColumnAttr.mEncAttr.mEncPrecision;
 
+                idlOS::memcpy( (void *)sColumnMeta.mMTColumnAttr.mEncAttr.mPolicy,
+                               (const void *)sMTColumn->mColumnAttr.mEncAttr.mPolicy,
+                               MTC_POLICY_NAME_SIZE + 1 );
+                break;
+
+            case MTD_GEOMETRY_ID :
+                sColumnMeta.mMTColumnAttr.mSridAttr.mSrid = sMTColumn->mColumnAttr.mSridAttr.mSrid;
+                break;
+
+            default :
+                sColumnMeta.mMTColumnAttr.mEncAttr.mEncPrecision = 0;
+                sColumnMeta.mMTColumnAttr.mEncAttr.mPolicy[0] = '\0';
+                break;
+        }
+        
         sColumnMeta.mSMID         = sSMColumn->id;
         sColumnMeta.mSMFlag       = sSMColumn->flag;
         sColumnMeta.mSMOffset     = sSMColumn->offset;
@@ -5394,19 +5487,19 @@ IDE_RC rpdMeta::writeTableMetaLog(void        * aQcStatement,
         sOffset += sCheckConditionLength;
     }
 
-    // Log Body Íµ¨ÏÑ± : Index Count
+    // Log Body ±∏º∫ : Index Count
     idlOS::memcpy((void *)&sLogBody[sOffset],
                   (const void *)&sItemInfo->indexCount,
                   ID_SIZEOF(UInt));
     sOffset += ID_SIZEOF(UInt);
 
-    // Log Body Íµ¨ÏÑ± : Indices
+    // Log Body ±∏º∫ : Indices
     for(sIndexCount = 0; sIndexCount < sItemInfo->indexCount; sIndexCount++)
     {
         sIndex = &sItemInfo->indices[sIndexCount];
         idlOS::memset(&sIndexMeta, 0, ID_SIZEOF(smiIndexMeta));
 
-        // Log Body Íµ¨ÏÑ± : Index
+        // Log Body ±∏º∫ : Index
         sIndexMeta.mIndexID = sIndex->indexId;
         idlOS::memcpy((void *)sIndexMeta.mName,
                       (const void *)sIndex->name,
@@ -5422,20 +5515,20 @@ IDE_RC rpdMeta::writeTableMetaLog(void        * aQcStatement,
                       ID_SIZEOF(smiIndexMeta));
         sOffset += ID_SIZEOF(smiIndexMeta);
 
-        // Log Body Íµ¨ÏÑ± : Key Column Count
+        // Log Body ±∏º∫ : Key Column Count
         idlOS::memcpy((void *)&sLogBody[sOffset],
                       (const void *)&sIndex->keyColCount,
                       ID_SIZEOF(UInt));
         sOffset += ID_SIZEOF(UInt);
 
-        // Log Body Íµ¨ÏÑ± : Key Columns
+        // Log Body ±∏º∫ : Key Columns
         for(sIndexColCount = 0;
             sIndexColCount < sIndex->keyColCount;
             sIndexColCount++)
         {
             idlOS::memset(&sIndexColMeta, 0, ID_SIZEOF(smiIndexColumnMeta));
 
-            // Log Body Íµ¨ÏÑ± : Key Column
+            // Log Body ±∏º∫ : Key Column
             sIndexColMeta.mID   = sIndex->keyColumns[sIndexColCount].column.id
                                 & SMI_COLUMN_ID_MASK;
             sIndexColMeta.mFlag = sIndex->keyColsFlag[sIndexColCount];
@@ -5456,13 +5549,19 @@ IDE_RC rpdMeta::writeTableMetaLog(void        * aQcStatement,
     if( sItemInfo->tablePartitionType == QCM_TABLE_PARTITION )
     {
         idlOS::memset( &sPartTableMeta, 0, ID_SIZEOF(smiPartTableMeta) );
+        sPartTableMeta.mPartitionMethod = sItemInfo->partitionMethod;
+
+        IDE_TEST( qcmPartition::getPartitionCount4SmiStmt( sSmiStmt,
+                                                           sItemInfo->tableID,
+                                                           &(sPartTableMeta.mPartitionCount) )
+                  != IDE_SUCCESS );
 
         if ( sItemInfo->partitionMethod != QCM_PARTITION_METHOD_HASH )
         {
             IDE_TEST( qciMisc::getPartMinMaxValue( sSmiStmt,
                                                    sItemInfo->partitionID,
-                                                   sPartTableMeta.mPartCondMinValues,
-                                                   sPartTableMeta.mPartCondMaxValues )
+                                                   sPartTableMeta.mNonHashCondition.mPartCondMinValues,
+                                                   sPartTableMeta.mNonHashCondition.mPartCondMaxValues )
                       != IDE_SUCCESS);
         }
         else
@@ -5471,7 +5570,7 @@ IDE_RC rpdMeta::writeTableMetaLog(void        * aQcStatement,
                                                   sItemInfo->tableID,
                                                   (UChar*)sItemInfo->name,
                                                   idlOS::strlen( sItemInfo->name ),
-                                                  &( sPartTableMeta.mPartitionOrder ) )
+                                                  &( sPartTableMeta.mHashCondition.mPartitionOrder ) )
                       != IDE_SUCCESS);
         }
 
@@ -5481,16 +5580,21 @@ IDE_RC rpdMeta::writeTableMetaLog(void        * aQcStatement,
         sOffset += ID_SIZEOF( smiPartTableMeta );
     }
 
+    idlOS::memcpy( (void *)&sLogBody[sOffset],
+                   (const void *)&aUpdateMeta,
+                   ID_SIZEOF(idBool) );
+    sOffset += ID_SIZEOF( idBool );
+
     IDE_DASSERT(sLogBodyLen == sOffset);
 
-    // Table Meta Log RecordÎ•º Í∏∞Î°ùÌïúÎã§.
+    // Table Meta Log Record∏¶ ±‚∑œ«—¥Ÿ.
     IDE_TEST(smiTable::writeTableMetaLog(sSmiStmt->getTrans(),
                                          &sItemMeta,
                                          (const void *)sLogBody,
                                          sLogBodyLen)
              != IDE_SUCCESS);
 
-    // Log BodyÏóê Ìï†ÎãπÌïú Î©îÎ™®Î¶¨Î•º Ìï¥Ï†úÌïúÎã§.
+    // Log Bodyø° «“¥Á«— ∏ﬁ∏∏Æ∏¶ «ÿ¡¶«—¥Ÿ.
     (void)iduMemMgr::free((void *)sLogBody);
     sLogBody = NULL;
 
@@ -5524,7 +5628,6 @@ IDE_RC rpdMeta::insertNewItem( smiStatement * aSmiStmt,
     SInt i = 0;
     UInt sDictTableCount = 0;
     rpdMetaItem * sItems = NULL;
-    rpdMetaItem * sSrcItem = NULL;
     
     IDU_FIT_POINT_RAISE( "rpdMeta::insertNewItem::calloc::sItems",
                          ERR_MEMORY_ALLOC_ITEMS );
@@ -5546,26 +5649,16 @@ IDE_RC rpdMeta::insertNewItem( smiStatement * aSmiStmt,
         sDictTableCount += mItems[i].mCompressColCount;
     }
 
-    sSrcItem = findTableMetaItem( aItemMeta->mUserName, aItemMeta->mTableName );
-    IDE_TEST_RAISE( sSrcItem == NULL, ERR_TABLE_NOT_FOUND );
-
-    IDE_TEST( copyTableInfo( &sItems[mReplication.mItemCount], sSrcItem ) != IDE_SUCCESS );
-
-    /* BUGBUG add item Ïù¥ ÎêòÎäî Í≤ΩÏö∞Îäî merge split Ïóê ÌïúÏ†ïÎêòÎäî Îç∞ Ïù¥Ï§ëÌôî Ï§ë merge split ÏùÄ
-     * remote ÏôÄ table, partition Ïùò Ïù¥Î¶ÑÏù¥ ÎèôÏùºÌï¥Ïïº ÌïúÎã§. 
-     * Îî∞ÎùºÏÑú local Ïùò name ÏùÑ Í∑∏ÎåÄÎ°ú remote Ïùò name Î°ú Î≥µÏÇ¨Ìï¥ÎèÑ ÎêúÎã§. 
-     * Ï∞® ÌõÑ Ï†úÏïΩÏ°∞Í±¥Ïù¥ Î∞îÎÄî Ïàò ÏûàÏúºÎØÄÎ°ú Ïú†ÏùòÌï¥Ïïº ÌïúÎã§. */
-
     idlOS::memcpy((void *)sItems[mReplication.mItemCount].mItem.mRepName,
                   (const void *)mReplication.mRepName,
-                  SM_MAX_NAME_LEN + 1);
+                  QC_MAX_NAME_LEN + 1);
 
     idlOS::memcpy((void *)sItems[mReplication.mItemCount].mItem.mLocalUsername,
                   (const void *)aItemMeta->mUserName,
                   SM_MAX_NAME_LEN + 1);
 
     idlOS::memcpy((void *)sItems[mReplication.mItemCount].mItem.mRemoteUsername,
-                  (const void *)aItemMeta->mUserName,
+                  (const void *)aItemMeta->mRemoteUserName,
                   SM_MAX_NAME_LEN + 1);
 
     idlOS::memcpy((void *)sItems[mReplication.mItemCount].mItem.mLocalTablename,
@@ -5573,7 +5666,7 @@ IDE_RC rpdMeta::insertNewItem( smiStatement * aSmiStmt,
                   SM_MAX_NAME_LEN + 1);
 
     idlOS::memcpy((void *)sItems[mReplication.mItemCount].mItem.mRemoteTablename,
-                  (const void *)aItemMeta->mTableName,
+                  (const void *)aItemMeta->mRemoteTableName,
                   SM_MAX_NAME_LEN + 1);
 
     idlOS::memcpy((void *)sItems[mReplication.mItemCount].mItem.mLocalPartname,
@@ -5581,7 +5674,7 @@ IDE_RC rpdMeta::insertNewItem( smiStatement * aSmiStmt,
                   SM_MAX_NAME_LEN + 1);
 
     idlOS::memcpy((void *)sItems[mReplication.mItemCount].mItem.mRemotePartname,
-                  (const void *)aItemMeta->mPartName,
+                  (const void *)aItemMeta->mRemotePartName,
                   SM_MAX_NAME_LEN + 1);
 
     IDE_TEST( updateOldTableInfo( aSmiStmt,
@@ -5608,10 +5701,6 @@ IDE_RC rpdMeta::insertNewItem( smiStatement * aSmiStmt,
                                   "rpdMeta::addNewItem",
                                   "sItems" ) );
     }
-    IDE_EXCEPTION( ERR_TABLE_NOT_FOUND );
-    {
-        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG, "Source table not found" ) )
-    }
     IDE_EXCEPTION_END;
 
     IDE_PUSH();
@@ -5632,54 +5721,91 @@ IDE_RC rpdMeta::insertNewItem( smiStatement * aSmiStmt,
     return IDE_FAILURE;
 }
 
-IDE_RC rpdMeta::deleteOldItem( smiStatement * aSmiStmt, smOID aOldTableOID )
+IDE_RC rpdMeta::deleteOldItem( smiStatement * aSmiStmt, 
+                               const void   * aLogBody,
+                               smOID          aOldTableOID,
+                               idBool         aIsUpdateOldItem )
 {
     SInt i    = 0;
     SInt sIdx = 0;
-    SInt sDelItemIdx     = 0;
+    UInt    sOffset  = 0;
+    SChar * sLogBody = (SChar *)aLogBody;
+    idBool  sUpdateMeta  = ID_FALSE;
     UInt sDictTableCount = 0;
     rpdMetaItem * sItems = NULL;
-
-    IDU_FIT_POINT_RAISE( "rpdMeta::deleteOldItem::calloc::sItems",
-                         ERR_MEMORY_ALLOC_ITEMS );
-    IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPD_META,
-                                       mReplication.mItemCount - 1,
-                                       ID_SIZEOF(rpdMetaItem),
-                                       (void **)&sItems,
-                                       IDU_MEM_IMMEDIATE )
-                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_ITEMS );
-
-    for( i = 0; i < mReplication.mItemCount - 1; i++ )
-    {
-        sItems[i].initialize();
-    }
+    idBool        sIsMyItem = ID_FALSE;
+    SInt          sNewItemCount = 0;
+    SChar         sRepName[QCI_MAX_NAME_LEN + 1];
 
     for( i = 0; i < mReplication.mItemCount; i++ )
     {
-        if ( mItems[i].mItem.mTableOID != aOldTableOID )
+        if ( mItems[i].mItem.mTableOID == aOldTableOID )
         {
-            IDE_TEST( copyTableInfo( &sItems[sIdx], &mItems[i] ) != IDE_SUCCESS );
-            sDictTableCount += mItems[i].mCompressColCount;
-
-            sIdx += 1;
+            idlOS::strncpy(sRepName, mItems[i].mItem.mRepName, QCI_MAX_NAME_LEN + 1);
+            sIsMyItem = ID_TRUE;
         }
         else
         {
-            sDelItemIdx = i;
+            sNewItemCount++;
         }
     }
-    IDE_DASSERT( sIdx == mReplication.mItemCount - 1 );
 
-    IDE_TEST( rpdMeta::deleteOldMetaItem( aSmiStmt,
-                                          mItems[sDelItemIdx].mItem.mRepName,
-                                          aOldTableOID )
-              != IDE_SUCCESS );
+    if ( sIsMyItem == ID_TRUE )
+    {
+        if ( sNewItemCount > 0 )
+        {
+            IDU_FIT_POINT_RAISE("rpdMeta::deleteOldItem::calloc::sItems",
+                                ERR_MEMORY_ALLOC_ITEMS);
+            IDE_TEST_RAISE(iduMemMgr::calloc( IDU_MEM_RP_RPD_META,
+                                              sNewItemCount,
+                                              ID_SIZEOF(rpdMetaItem),
+                                              (void **)&sItems,
+                                              IDU_MEM_IMMEDIATE ) != IDE_SUCCESS,
+                           ERR_MEMORY_ALLOC_ITEMS);
 
-    freeItems(); 
+            for (i = 0; i < sNewItemCount; i++)
+            {
+                sItems[i].initialize();
+            }
 
-    mItems = sItems;
-    mReplication.mItemCount -= 1;
-    mDictTableCount = sDictTableCount;
+            for (i = 0; i < mReplication.mItemCount; i++)
+            {
+                if (mItems[i].mItem.mTableOID != aOldTableOID)
+                {
+                    IDE_TEST(copyTableInfo(&sItems[sIdx], &mItems[i])
+                             != IDE_SUCCESS);
+                    sDictTableCount += mItems[i].mCompressColCount;
+                    sIdx += 1;
+                }
+                else
+                {
+                }
+            }
+            IDE_DASSERT(sIdx == sNewItemCount);
+            freeItems();
+            mItems = sItems;
+            mReplication.mItemCount = sNewItemCount;
+            mDictTableCount = sDictTableCount;
+        }
+        else
+        {
+            freeItems();
+            mItems = NULL;
+            mReplication.mItemCount = 0;
+            mDictTableCount = 0;
+        }
+
+        idlOS::memcpy((void *) &sUpdateMeta, (const void *) &sLogBody[sOffset],
+                       ID_SIZEOF(idBool));
+        sOffset += ID_SIZEOF(idBool);
+    
+        if ( ( sUpdateMeta == ID_TRUE ) && ( aIsUpdateOldItem == ID_TRUE ) )
+        {
+            IDE_TEST( rpdMeta::deleteOldMetaItem( aSmiStmt,
+                                                sRepName,
+                                                aOldTableOID) != IDE_SUCCESS);
+        }
+    }
 
     return IDE_SUCCESS;
 
@@ -5696,7 +5822,7 @@ IDE_RC rpdMeta::deleteOldItem( smiStatement * aSmiStmt, smOID aOldTableOID )
 
     if ( sItems != NULL )
     {
-        for( i = 0; i < mReplication.mItemCount - 1; i++ )
+        for( i = 0; i < sNewItemCount; i++ )
         {
             sItems[i].finalize();
         }
@@ -5712,44 +5838,53 @@ IDE_RC rpdMeta::deleteOldItem( smiStatement * aSmiStmt, smOID aOldTableOID )
 
 IDE_RC rpdMeta::allocSortItems()
 {
-    IDU_FIT_POINT_RAISE( "rpdMeta::allocSortItems::calloc::ItemsOrderByTableOID",
-                          ERR_MEMORY_ALLOC_ITEMS_TABLE_OID );
-    IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPD_META,
-                                       mReplication.mItemCount,
-                                       ID_SIZEOF(rpdMetaItem *),
-                                       (void **)&mItemsOrderByTableOID,
-                                       IDU_MEM_IMMEDIATE )
-                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_ITEMS_TABLE_OID );
+    if ( mReplication.mItemCount > 0 )
+    {
+        IDU_FIT_POINT_RAISE( "rpdMeta::allocSortItems::calloc::ItemsOrderByTableOID",
+                              ERR_MEMORY_ALLOC_ITEMS_TABLE_OID );
+        IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPD_META,
+                                           mReplication.mItemCount,
+                                           ID_SIZEOF(rpdMetaItem *),
+                                           (void **)&mItemsOrderByTableOID,
+                                           IDU_MEM_IMMEDIATE )
+                        != IDE_SUCCESS, ERR_MEMORY_ALLOC_ITEMS_TABLE_OID );
 
-    IDU_FIT_POINT_RAISE( "rpdMeta::allocSortItems::calloc::ItemsOrderByRemoteTableOID",
-                          ERR_MEMORY_ALLOC_ITEMS_REMOTE_TABLE_OID );
-    IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPD_META,
-                                       mReplication.mItemCount,
-                                       ID_SIZEOF(rpdMetaItem *),
-                                       (void **)&mItemsOrderByRemoteTableOID,
-                                       IDU_MEM_IMMEDIATE )
-                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_ITEMS_REMOTE_TABLE_OID );
+        IDU_FIT_POINT_RAISE( "rpdMeta::allocSortItems::calloc::ItemsOrderByRemoteTableOID",
+                              ERR_MEMORY_ALLOC_ITEMS_REMOTE_TABLE_OID );
+        IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPD_META,
+                                           mReplication.mItemCount,
+                                           ID_SIZEOF(rpdMetaItem *),
+                                           (void **)&mItemsOrderByRemoteTableOID,
+                                           IDU_MEM_IMMEDIATE )
+                        != IDE_SUCCESS, ERR_MEMORY_ALLOC_ITEMS_REMOTE_TABLE_OID );
 
-    IDU_FIT_POINT_RAISE( "rpdMeta::allocSortItems::calloc::ItemsOrderByLocalName",
-                          ERR_MEMORY_ALLOC_ITEMS_LOCAL_NAME );
-    IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPD_META,
-                                       mReplication.mItemCount,
-                                       ID_SIZEOF(rpdMetaItem *),
-                                       (void **)&mItemsOrderByLocalName,
-                                       IDU_MEM_IMMEDIATE )
-                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_ITEMS_LOCAL_NAME );
+        IDU_FIT_POINT_RAISE( "rpdMeta::allocSortItems::calloc::ItemsOrderByLocalName",
+                              ERR_MEMORY_ALLOC_ITEMS_LOCAL_NAME );
+        IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPD_META,
+                                           mReplication.mItemCount,
+                                           ID_SIZEOF(rpdMetaItem *),
+                                           (void **)&mItemsOrderByLocalName,
+                                           IDU_MEM_IMMEDIATE )
+                        != IDE_SUCCESS, ERR_MEMORY_ALLOC_ITEMS_LOCAL_NAME );
 
-    IDU_FIT_POINT_RAISE( "rpdMeta::allocSortItems::calloc::ItemsOrderByRemoteName",
-                          ERR_MEMORY_ALLOC_ITEMS_REMOTE_NAME );
-    IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPD_META,
-                                       mReplication.mItemCount,
-                                       ID_SIZEOF(rpdMetaItem *),
-                                       (void **)&mItemsOrderByRemoteName,
-                                       IDU_MEM_IMMEDIATE )
-                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_ITEMS_REMOTE_NAME );
+        IDU_FIT_POINT_RAISE( "rpdMeta::allocSortItems::calloc::ItemsOrderByRemoteName",
+                              ERR_MEMORY_ALLOC_ITEMS_REMOTE_NAME );
+        IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPD_META,
+                                           mReplication.mItemCount,
+                                           ID_SIZEOF(rpdMetaItem *),
+                                           (void **)&mItemsOrderByRemoteName,
+                                           IDU_MEM_IMMEDIATE )
+                        != IDE_SUCCESS, ERR_MEMORY_ALLOC_ITEMS_REMOTE_NAME );
 
-    sortItemsAfterBuild();
-
+        sortItemsAfterBuild();
+    }
+    else
+    {
+        mItemsOrderByTableOID       = NULL;
+        mItemsOrderByRemoteTableOID = NULL;
+        mItemsOrderByLocalName      = NULL;
+        mItemsOrderByRemoteName     = NULL;
+    }
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(ERR_MEMORY_ALLOC_ITEMS_TABLE_OID);
@@ -5829,18 +5964,26 @@ IDE_RC rpdMeta::reallocSortItems()
     IDE_TEST( allocSortItems() != IDE_SUCCESS );
     sIsAlloc = ID_TRUE;
 
-    (void)iduMemMgr::free( sItemsOrderByTableOID );
-    sItemsOrderByTableOID = NULL;
- 
-    (void)iduMemMgr::free( sItemsOrderByRemoteTableOID );
-    sItemsOrderByRemoteTableOID = NULL;
- 
-    (void)iduMemMgr::free( sItemsOrderByLocalName );
-    sItemsOrderByLocalName = NULL;
- 
-    (void)iduMemMgr::free( sItemsOrderByRemoteName );
-    sItemsOrderByRemoteName = NULL;
- 
+    if ( sItemsOrderByTableOID != NULL )
+    {
+        (void)iduMemMgr::free( sItemsOrderByTableOID );
+        sItemsOrderByTableOID = NULL;
+    }
+    if ( sItemsOrderByRemoteTableOID != NULL )
+    {
+        (void)iduMemMgr::free( sItemsOrderByRemoteTableOID );
+        sItemsOrderByRemoteTableOID = NULL;
+    }
+    if ( sItemsOrderByLocalName != NULL )
+    {
+        (void)iduMemMgr::free( sItemsOrderByLocalName );
+        sItemsOrderByLocalName = NULL;
+    }
+    if ( sItemsOrderByRemoteName != NULL )
+    {
+        (void)iduMemMgr::free( sItemsOrderByRemoteName );
+        sItemsOrderByRemoteName = NULL;
+    }
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -5856,17 +5999,26 @@ IDE_RC rpdMeta::reallocSortItems()
     }
     else
     {
-        (void)iduMemMgr::free( sItemsOrderByTableOID );
-        sItemsOrderByTableOID = NULL;
-
-        (void)iduMemMgr::free( sItemsOrderByRemoteTableOID );
-        sItemsOrderByRemoteTableOID = NULL;
-
-        (void)iduMemMgr::free( sItemsOrderByLocalName );
-        sItemsOrderByLocalName = NULL;
-
-        (void)iduMemMgr::free( sItemsOrderByRemoteName );
-        sItemsOrderByRemoteName = NULL;
+        if ( sItemsOrderByTableOID != NULL )
+        {
+            (void)iduMemMgr::free( sItemsOrderByTableOID );
+            sItemsOrderByTableOID = NULL;
+        }
+        if ( sItemsOrderByRemoteTableOID != NULL )
+        {
+            (void)iduMemMgr::free( sItemsOrderByRemoteTableOID );
+            sItemsOrderByRemoteTableOID = NULL;
+        }
+        if ( sItemsOrderByLocalName != NULL )
+        {
+            (void)iduMemMgr::free( sItemsOrderByLocalName );
+            sItemsOrderByLocalName = NULL;
+        }
+        if ( sItemsOrderByRemoteName != NULL )
+        {
+            (void)iduMemMgr::free( sItemsOrderByRemoteName );
+            sItemsOrderByRemoteName = NULL;
+        }
     }
 
     IDE_POP();
@@ -5876,6 +6028,7 @@ IDE_RC rpdMeta::reallocSortItems()
 
 IDE_RC rpdMeta::buildDictTables()
 {
+    IDE_DASSERT(mDictTableCount != 0);
     IDU_FIT_POINT_RAISE( "rpdMeta::buildDictTables::calloc::DictTableOID",
                          ERR_MEM_ALLOC_ITEMS_DICT_OID );
     IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPD_META,
@@ -6003,9 +6156,16 @@ IDE_RC rpdMeta::insertNewTableInfo( smiStatement * aSmiStmt,
     return IDE_FAILURE;
 }
 
-IDE_RC rpdMeta::deleteOldTableInfo( smiStatement * aSmiStmt, smOID aOldTableOID )
+IDE_RC rpdMeta::deleteOldTableInfo( smiStatement * aSmiStmt,                                     
+                                    const void   * aLogBody,
+                                    smOID          aOldTableOID,
+                                    idBool         aIsUpdate )
 {
-    IDE_TEST( deleteOldItem( aSmiStmt, aOldTableOID )  != IDE_SUCCESS );
+    IDE_TEST( deleteOldItem( aSmiStmt, 
+                             aLogBody,
+                             aOldTableOID,
+                             aIsUpdate )  
+              != IDE_SUCCESS );
 
     IDE_TEST( reallocSortItems() != IDE_SUCCESS );
 
@@ -6047,21 +6207,23 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
     UInt                 i = 0;
     UInt                 j = 0;
     UShort               sCodeSize = 0;
-    qcmTablePartitionType sPartitionType;
+    idBool               sUpdateMeta = ID_FALSE;
 
-    /* Table Meta CacheÎ•º Í∞±Ïã†ÌïúÎã§. */
-    // Í∏∞Ï°¥Ïóê Ìï†ÎãπÎêòÏóàÎçò Î©îÎ™®Î¶¨Î•º Ìï¥Ï†úÌïúÎã§. (SYS_REPL_ITEMS_ Í¥ÄÎ†® Ï†ïÎ≥¥Îäî Ï†úÏô∏)
+    /* Table Meta Cache∏¶ ∞ªΩ≈«—¥Ÿ. */
+    // ±‚¡∏ø° «“¥Áµ«æ˙¥¯ ∏ﬁ∏∏Æ∏¶ «ÿ¡¶«—¥Ÿ. (SYS_REPL_ITEMS_ ∞¸∑√ ¡§∫∏¥¬ ¡¶ø‹)
     aItemCache->freeMemory();
 
-    // Partition Ï†ïÎ≥¥Î•º Î≥ÄÍ≤ΩÌïòÎäî DDLÏùÄ ÏïÑÏßÅ ÏßÄÏõêÌïòÏßÄ ÏïäÎäîÎã§.
+    // Partition ¡§∫∏∏¶ ∫Ø∞Ê«œ¥¬ DDL¿∫ æ∆¡˜ ¡ˆø¯«œ¡ˆ æ ¥¬¥Ÿ.
     //      - Name, Method, Order, Condition Min/Max Values
 
-    // HeaderÏóêÏÑú Ï†ïÎ≥¥Î•º ÏñªÎäîÎã§. (User/Table/Partition NameÏùÄ Ï†úÏô∏)
+    // Headerø°º≠ ¡§∫∏∏¶ æÚ¥¬¥Ÿ. (User/Table/Partition Name¿∫ ¡¶ø‹)
+    aItemCache->mTableID  = aItemMeta->mTableID;
     aItemCache->mItem.mTableOID  = (ULong)aItemMeta->mTableOID;
     aItemCache->mPKIndex.indexId = aItemMeta->mPKIndexID;
     aItemCache->mItem.mInvalidMaxSN = aDDLCommitSN;
+    aItemCache->mItem.mTBSType = aItemMeta->mTBSType;
 
-    // Log BodyÏóêÏÑú Meta Íµ¨ÏÑ± : Column Count
+    // Log Bodyø°º≠ Meta ±∏º∫ : Column Count
     idlOS::memcpy((void *)&aItemCache->mColCount,
                   (const void *)&sLogBody[sOffset],
                   ID_SIZEOF(UInt));
@@ -6079,7 +6241,7 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
                                      IDU_MEM_IMMEDIATE)
                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_COLUMNS);
 
-    // Log BodyÏóêÏÑú Meta Íµ¨ÏÑ± : Columns
+    // Log Bodyø°º≠ Meta ±∏º∫ : Columns
     for(sColCount = 0; sColCount < aItemCache->mColCount; sColCount++)
     {
         sRPColumn = &aItemCache->mColumns[sColCount];
@@ -6092,7 +6254,7 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
                        RP_OLD_COLUMN_META_SIZE );
         sOffset = sOffset + RP_OLD_COLUMN_META_SIZE;
 
-        // Log BodyÏóêÏÑú Meta Íµ¨ÏÑ± : Column
+        // Log Bodyø°º≠ Meta ±∏º∫ : Column
         idlOS::memcpy((void *)sRPColumn->mColumnName,
                       (const void *)sColumnMeta.mName,
                       SM_MAX_NAME_LEN + 1);
@@ -6103,11 +6265,26 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
         sMTColumn->precision       = sColumnMeta.mMTPrecision;
         sMTColumn->scale           = sColumnMeta.mMTScale;
 
-        //BUG-26891 : encPrecison , Policy ÏóÖÎç∞Ïù¥Ìä∏
-        sMTColumn->encPrecision    = sColumnMeta.mMTEncPrecision;
-        idlOS::memcpy((void *)sMTColumn->policy, 
-                      (const void *)sColumnMeta.mMTPolicy, 
-                      MTC_POLICY_NAME_SIZE + 1);
+        switch ( sMTColumn->type.dataTypeId )
+        {
+            case MTD_ECHAR_ID :
+            case MTD_EVARCHAR_ID :
+                //BUG-26891 : encPrecison , Policy æ˜µ•¿Ã∆Æ
+                sMTColumn->mColumnAttr.mEncAttr.mEncPrecision = sColumnMeta.mMTColumnAttr.mEncAttr.mEncPrecision;
+                idlOS::memcpy( (void *)sMTColumn->mColumnAttr.mEncAttr.mPolicy,
+                               (const void *)sColumnMeta.mMTColumnAttr.mEncAttr.mPolicy,
+                               MTC_POLICY_NAME_SIZE + 1 );
+                break;
+
+            case MTD_GEOMETRY_ID :
+                sMTColumn->mColumnAttr.mSridAttr.mSrid = sColumnMeta.mMTColumnAttr.mSridAttr.mSrid;
+                break;
+
+            default :
+                sMTColumn->mColumnAttr.mEncAttr.mEncPrecision = 0;
+                sMTColumn->mColumnAttr.mEncAttr.mPolicy[0] = '\0';
+                break;
+        }
 
         sSMColumn->id                   = sColumnMeta.mSMID;
         sSMColumn->flag                 = sColumnMeta.mSMFlag;
@@ -6117,7 +6294,7 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
         sSMColumn->mDictionaryTableOID  = sColumnMeta.mSMDictTblOID;
 
         // PROJ-1705
-        // mtdValueÎ•º ÎßåÎì§Í∏∞ ÏúÑÌï¥ mtdModuleÏ†ïÎ≥¥Í∞Ä ÌïÑÏöîÌïòÎã§.
+        // mtdValue∏¶ ∏∏µÈ±‚ ¿ß«ÿ mtdModule¡§∫∏∞° « ø‰«œ¥Ÿ.
         IDU_FIT_POINT_RAISE( "rpdMeta::updateOldTableInfo::Erratic::rpERR_ABORT_GET_MODULE",
                              ERR_GET_MODULE );
         IDE_TEST_RAISE(mtd::moduleById(&(sMTColumn->module),
@@ -6127,7 +6304,7 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
         if ( ( sMTColumn->type.dataTypeId == MTD_ECHAR_ID ) ||
              ( sMTColumn->type.dataTypeId == MTD_EVARCHAR_ID ) )
         {
-            IDE_TEST( qciMisc::getPolicyCode( sMTColumn->policy,
+            IDE_TEST( qciMisc::getPolicyCode( sMTColumn->mColumnAttr.mEncAttr.mPolicy,
                                               sRPColumn->mPolicyCode,
                                               &sCodeSize )
                       != IDE_SUCCESS );
@@ -6184,9 +6361,9 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
             }
             /*
              * BUG-39393
-             *  FunctionBasedIdxStrLengthÍ∞Ä 0Ïù¥ ÏïÑÎãàÍ≥†, Ïã§Ï†úÎ°ú Function-based indexÍ∞Ä ÏïÑÎãå Í≤ΩÏö∞Îäî
-             *  Ïù¥Ï†Ñ old metaÏóêÏÑú default calumnÏùÑ ÏÇ¨Ïö© Ï§ëÏúºÎ°ú Î≥º Ïàò ÏûàÎã§.
-             *  Ïù¥ Í∞íÏùÄ update Ìï† ÌïÑÏöî ÏóÜÏúºÎØÄÎ°ú offsetÎßå Í≥ÑÏÇ∞ÌïòÏó¨ Í±¥ÎÑàÎõ∞ÎèÑÎ°ù ÌïúÎã§.
+             *  FunctionBasedIdxStrLength∞° 0¿Ã æ∆¥œ∞Ì, Ω«¡¶∑Œ Function-based index∞° æ∆¥— ∞ÊøÏ¥¬
+             *  ¿Ã¿¸ old metaø°º≠ default calumn¿ª ªÁøÎ ¡ﬂ¿∏∑Œ ∫º ºˆ ¿÷¥Ÿ.
+             *  ¿Ã ∞™¿∫ update «“ « ø‰ æ¯¿∏π«∑Œ offset∏∏ ∞ËªÍ«œø© ∞«≥ ∂Ÿµµ∑œ «—¥Ÿ.
              */
             sOffset += sFuncBasedIdxStrLength;
         }
@@ -6262,7 +6439,7 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
         sOffset += sCheckConditionLength;
     }
 
-    // Log BodyÏóêÏÑú Meta Íµ¨ÏÑ± : Index Count
+    // Log Bodyø°º≠ Meta ±∏º∫ : Index Count
     idlOS::memcpy((void *)&aItemCache->mIndexCount,
                   (const void *)&sLogBody[sOffset],
                   ID_SIZEOF(UInt));
@@ -6277,7 +6454,7 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
                                      IDU_MEM_IMMEDIATE)
                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_INDICES);
 
-    // Log BodyÏóêÏÑú Meta Íµ¨ÏÑ± : Indices
+    // Log Bodyø°º≠ Meta ±∏º∫ : Indices
     for(sIndexCount = 0; sIndexCount < aItemCache->mIndexCount; sIndexCount++)
     {
         sIndex = &aItemCache->mIndices[sIndexCount];
@@ -6288,7 +6465,7 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
                       ID_SIZEOF(smiIndexMeta));
         sOffset += ID_SIZEOF(smiIndexMeta);
 
-        // Log BodyÏóêÏÑú Meta Íµ¨ÏÑ± : Index
+        // Log Bodyø°º≠ Meta ±∏º∫ : Index
         sIndex->indexId = sIndexMeta.mIndexID;
         idlOS::memcpy((void *)sIndex->name,
                       (const void *)sIndexMeta.mName,
@@ -6297,9 +6474,9 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
         sIndex->indexTypeId   = sIndexMeta.mTypeID;
         sIndex->isRange       = sIndexMeta.mIsRange;
 
-        /* ÌòÑÏû¨ Partitioned TableÏùÄ Global Unique IndexÎ•º Ï†úÍ≥µÌïòÏßÄ ÏïäÎäîÎã§.
-         * Ï∂îÌõÑ Global Unique IndexÎ•º Ï†úÍ≥µÌïòÎ©¥,
-         * RP ProtocolÏóê Local Unique Index Ïó¨Î∂ÄÎ•º Ï∂îÍ∞ÄÌï¥Ïïº ÌïúÎã§.
+        /* «ˆ¿Á Partitioned Table¿∫ Global Unique Index∏¶ ¡¶∞¯«œ¡ˆ æ ¥¬¥Ÿ.
+         * √ﬂ»ƒ Global Unique Index∏¶ ¡¶∞¯«œ∏È,
+         * RP Protocolø° Local Unique Index ø©∫Œ∏¶ √ﬂ∞°«ÿæﬂ «—¥Ÿ.
          */
         sIndex->isUnique = ( ( sIndexMeta.mIsUnique == ID_TRUE ) ||
                              ( sIndexMeta.mIsLocalUnique == ID_TRUE ) ) 
@@ -6307,7 +6484,7 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
                            : ID_FALSE;
         sIndex->isLocalUnique = ID_FALSE;
 
-        // Log BodyÏóêÏÑú Meta Íµ¨ÏÑ± : Key Column Count
+        // Log Bodyø°º≠ Meta ±∏º∫ : Key Column Count
         idlOS::memcpy((void *)&sIndex->keyColCount,
                       (const void *)&sLogBody[sOffset],
                       ID_SIZEOF(UInt));
@@ -6331,7 +6508,7 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
                                          IDU_MEM_IMMEDIATE)
                        != IDE_SUCCESS, ERR_MEMORY_ALLOC_INDEX_COLUMNS_FLAG);
 
-        // Log BodyÏóêÏÑú Meta Íµ¨ÏÑ± : Key Columns
+        // Log Bodyø°º≠ Meta ±∏º∫ : Key Columns
         for(sIndexColCount = 0;
             sIndexColCount < sIndex->keyColCount;
             sIndexColCount++)
@@ -6342,7 +6519,7 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
                           ID_SIZEOF(smiIndexColumnMeta));
             sOffset += ID_SIZEOF(smiIndexColumnMeta);
 
-            // Log BodyÏóêÏÑú Meta Íµ¨ÏÑ± : Key Column
+            // Log Bodyø°º≠ Meta ±∏º∫ : Key Column
             sIndex->keyColumns[sIndexColCount].column.id = sIndexColMeta.mID
                                                          & SMI_COLUMN_ID_MASK;
             sIndex->keyColsFlag[sIndexColCount] = sIndexColMeta.mFlag;
@@ -6351,7 +6528,7 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
         }
     }
 
-    // Primary Key Column CountÎ•º ÏñªÎäîÎã§.
+    // Primary Key Column Count∏¶ æÚ¥¬¥Ÿ.
     for(sIndexCount = 0; sIndexCount < aItemCache->mIndexCount; sIndexCount++)
     {
         if(aItemCache->mPKIndex.indexId == aItemCache->mIndices[sIndexCount].indexId)
@@ -6392,51 +6569,59 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
     }
     IDE_DASSERT(aItemCache->mPKColCount > 0);
 
-    idlOS::memcpy((void *)&sPartitionType,
+    idlOS::memcpy((void *)&(aItemCache->mTablePartitionType),
                   (const void *)&sLogBody[sOffset],
                   ID_SIZEOF(qcmTablePartitionType));
     sOffset += ID_SIZEOF(qcmTablePartitionType);
 
-    if ( sPartitionType == QCM_TABLE_PARTITION )
+    if ( aItemCache->mTablePartitionType == QCM_TABLE_PARTITION )
     {
         idlOS::memcpy( (void *)&sPartTableMeta,
                        (const void *)&sLogBody[sOffset],
                        ID_SIZEOF(smiPartTableMeta));
         sOffset += ID_SIZEOF(smiPartTableMeta);
 
+        aItemCache->mPartitionMethod = sPartTableMeta.mPartitionMethod;
+        aItemCache->mPartitionCount = sPartTableMeta.mPartitionCount;
+
         if ( aItemCache->mPartitionMethod != QCM_PARTITION_METHOD_HASH )
         {
             idlOS::memcpy( (void *)aItemCache->mPartCondMinValues,
-                           (const void *)sPartTableMeta.mPartCondMinValues,
+                           (const void *)sPartTableMeta.mNonHashCondition.mPartCondMinValues,
                            QC_MAX_PARTKEY_COND_VALUE_LEN  + 1 );
 
             idlOS::memcpy( (void *)aItemCache->mPartCondMaxValues,
-                           (const void *)sPartTableMeta.mPartCondMaxValues,
+                           (const void *)sPartTableMeta.mNonHashCondition.mPartCondMaxValues,
                            QC_MAX_PARTKEY_COND_VALUE_LEN + 1 );
         }
         else
         {
-            aItemCache->mPartitionOrder = sPartTableMeta.mPartitionOrder;
+            aItemCache->mPartitionOrder = sPartTableMeta.mHashCondition.mPartitionOrder;
         }
     }
 
-    // BUG-24391 [RP] DDLÎ°ú Table OIDÍ∞Ä Î≥ÄÍ≤ΩÎê† ÎïåÎßàÎã§ Ï†ïÎ†¨ Î∞∞Ïó¥ÏùÑ Îã§Ïãú Íµ¨ÏÑ±Ìï¥Ïïº Ìï©ÎãàÎã§
+    // BUG-24391 [RP] DDL∑Œ Table OID∞° ∫Ø∞Êµ… ∂ß∏∂¥Ÿ ¡§∑ƒ πËø≠¿ª ¥ŸΩ√ ±∏º∫«ÿæﬂ «’¥œ¥Ÿ
     idlOS::qsort( mItemsOrderByTableOID,
                   mReplication.mItemCount,
                   ID_SIZEOF(rpdMetaItem*),
                   rpdMetaCompareTableOID );
 
-    /* Table MetaÎ•º Í∞±Ïã†ÌïúÎã§. */
-    // Î≥¥Í¥ÄÎêú Table MetaÎ•º Ï†úÍ±∞ÌïúÎã§.
-    /* PROJ-1915 off-line senderÏùò Í≤ΩÏö∞ metaÎ•º Í∞±Ïã† ÌïòÏßÄ ÏïäÎäîÎã§. */
-    if ( aIsUpdateOldItem == ID_TRUE )
+    idlOS::memcpy((void *)&sUpdateMeta,
+                  (const void *)&sLogBody[sOffset],
+                  ID_SIZEOF(idBool));
+    sOffset += ID_SIZEOF(idBool);
+
+    /* Table Meta∏¶ ∞ªΩ≈«—¥Ÿ. */
+    // ∫∏∞¸µ» Table Meta∏¶ ¡¶∞≈«—¥Ÿ.
+    /* PROJ-1915 off-line sender¿« ∞ÊøÏ meta∏¶ ∞ªΩ≈ «œ¡ˆ æ ¥¬¥Ÿ. */
+    if ( ( sUpdateMeta == ID_TRUE ) && ( aIsUpdateOldItem == ID_TRUE ) )
     {
         IDE_TEST(deleteOldMetaItem(aSmiStmt,
                                    aItemCache->mItem.mRepName,
                                    (ULong)aItemMeta->mOldTableOID)
                  != IDE_SUCCESS);
 
-        // Í∞±Ïã†Îêú Table Meta CacheÎ•º Table MetaÎ°ú Î≥¥Í¥ÄÌïúÎã§.
+        // ∞ªΩ≈µ» Table Meta Cache∏¶ Table Meta∑Œ ∫∏∞¸«—¥Ÿ.
         IDE_TEST(insertOldMetaItem(aSmiStmt, aItemCache) != IDE_SUCCESS);
     }
     else
@@ -6519,9 +6704,9 @@ void rpdMeta::sortItemsAfterBuild()
             = mItems + sTC;
     }
 
-    /* ÌòÑÏû¨ Build Îã®Í≥ÑÏóêÏÑúÎäî Remote Table OIDÎ•º ÏïåÏïÑÎÇº Ïàò ÏûàÎäî Î∞©Î≤ïÏù¥ ÏóÜÎã§.
-     * Îî∞ÎùºÏÑú, ÎÇòÎ®∏ÏßÄÏóê ÎåÄÌïú SortÌïòÎèÑÎ°ù ÌïòÍ≥†, Ï∂îÌõÑÏóê Handshake Í≥ºÏ†ïÏóêÏÑú
-     * Î©îÌÉÄÎ•º ÎπÑÍµêÌïòÎ©¥ÏÑú Remote Table OIDÎ•º setting ÌïòÎèÑÎ°ù ÌïúÎã§.
+    /* «ˆ¿Á Build ¥‹∞Ëø°º≠¥¬ Remote Table OID∏¶ æÀæ∆≥æ ºˆ ¿÷¥¬ πÊπ˝¿Ã æ¯¥Ÿ.
+     * µ˚∂Ûº≠, ≥™∏”¡ˆø° ¥Î«— Sort«œµµ∑œ «œ∞Ì, √ﬂ»ƒø° Handshake ∞˙¡§ø°º≠
+     * ∏ﬁ≈∏∏¶ ∫Ò±≥«œ∏Èº≠ Remote Table OID∏¶ setting «œµµ∑œ «—¥Ÿ.
      */
     idlOS::qsort( mItemsOrderByTableOID,
                   mReplication.mItemCount,
@@ -6541,18 +6726,41 @@ void rpdMeta::sortItemsAfterBuild()
     return;
 }
 
-/* PROJ-1915 MetaÎ•º Î≥µÏ†úÌïúÎã§. */
+static void swapObjName(SChar *aName1, SChar *aName2)
+{
+    SChar sTmpName[QC_MAX_OBJECT_NAME_LEN + 1] = {0,};
+    idlOS::strncpy(sTmpName, aName1, QC_MAX_OBJECT_NAME_LEN + 1);
+    idlOS::strncpy(aName1, aName2, QC_MAX_OBJECT_NAME_LEN + 1);
+    idlOS::strncpy(aName2, sTmpName, QC_MAX_OBJECT_NAME_LEN + 1);
+}
+void rpdMeta::changeToRemoteMetaForSimulateHandshake()
+{
+    SInt sTC;
+    mReplication.mRole = RP_ROLE_IGNORE;
+    if ( mReplication.mItemCount > 0 )
+    {
+        for( sTC = 0; sTC < mReplication.mItemCount; sTC++ )
+        {
+            swapObjName(mItems[sTC].mItem.mLocalUsername,mItems[sTC].mItem.mRemoteUsername);
+            swapObjName(mItems[sTC].mItem.mLocalTablename,mItems[sTC].mItem.mRemoteTablename);
+            swapObjName(mItems[sTC].mItem.mLocalPartname,mItems[sTC].mItem.mRemotePartname);
+        }
+        sortItemsAfterBuild();
+    }
+}
+
+/* PROJ-1915 Meta∏¶ ∫π¡¶«—¥Ÿ. */
 IDE_RC rpdMeta::copyMeta(rpdMeta * aDestMeta)
 {
     SInt sTC;             // Table Count
 
     aDestMeta->freeMemory();
     aDestMeta->initialize();
-    /* MetaÏùò Replication Í∏∞Î≥∏ Ï†ïÎ≥¥ Î≥µÏÇ¨ */
+    /* Meta¿« Replication ±‚∫ª ¡§∫∏ ∫πªÁ */
     idlOS::memcpy(&aDestMeta->mReplication, &mReplication, ID_SIZEOF(rpdReplications));
     aDestMeta->mDictTableCount = mDictTableCount;
 
-    /* Î©îÎ™®Î¶¨Î•º Ìï†ÎãπÌï† Î≥ÄÏàò Ï¥àÍ∏∞Ìôî */
+    /* ∏ﬁ∏∏Æ∏¶ «“¥Á«“ ∫Øºˆ √ ±‚»≠ */
     aDestMeta->mReplication.mReplHosts     = NULL;
 
     if(mReplication.mHostCount != 0)
@@ -6570,7 +6778,7 @@ IDE_RC rpdMeta::copyMeta(rpdMeta * aDestMeta)
                       mReplication.mReplHosts,
                       ID_SIZEOF(rpdReplHosts) * mReplication.mHostCount);
     }
-    /* ReplicationÏùò Item Í∞úÏàòÏóê Îî∞ÎùºÏÑú, Item Î©îÎ™®Î¶¨Î•º Ìï†Îãπ */
+    /* Replication¿« Item ∞≥ºˆø° µ˚∂Ûº≠, Item ∏ﬁ∏∏Æ∏¶ «“¥Á */
     if(mReplication.mItemCount != 0)
     {
         IDU_FIT_POINT_RAISE( "rpdMeta::copyMeta::calloc::Items",
@@ -6583,7 +6791,7 @@ IDE_RC rpdMeta::copyMeta(rpdMeta * aDestMeta)
                        != IDE_SUCCESS, ERR_MEMORY_ALLOC_ITEMS);
     }
 
-    /* ReplicationÏù¥ Í≤∞Î†§ ÏûàÎäî ÌÖåÏù¥Î∏î(Item)Ïùò Ïà´ÏûêÎßåÌÅº Î∞òÎ≥µÌïòÎ©∞ MetaÎ•º Î∞õÎäîÎã§. */
+    /* Replication¿Ã ∞·∑¡ ¿÷¥¬ ≈◊¿Ã∫Ì(Item)¿« º˝¿⁄∏∏≈≠ π›∫π«œ∏Á Meta∏¶ πﬁ¥¬¥Ÿ. */
     for( sTC = 0; sTC < mReplication.mItemCount; sTC++ )
     {
         IDE_TEST( copyTableInfo( &( aDestMeta->mItems[sTC] ), &( mItems[sTC] ) ) != IDE_SUCCESS );
@@ -6628,16 +6836,16 @@ IDE_RC rpdMeta::copyMeta(rpdMeta * aDestMeta)
 
 IDE_RC rpdMeta::copyTableInfo( rpdMetaItem * aDestItem, rpdMetaItem * aSrcItem )
 {
-    /* ÌÖåÏù¥Î∏î Ï†ïÎ≥¥Î•º Î∞õÏùå */
+    /* ≈◊¿Ã∫Ì ¡§∫∏∏¶ πﬁ¿Ω */
     idlOS::memcpy( aDestItem, aSrcItem, ID_SIZEOF(rpdMetaItem) );
     /* aDestMeta->mItems[sTC].mQueueMsgIDSeq     = mItems[sTC].mQueueMsgIDSeq; */
     aDestItem->mTsFlag               = NULL;
-    /* Î©îÎ™®Î¶¨Î•º Ìï†ÎãπÌï† Î≥ÄÏàòÎ∞è Ìè¨Ïù∏ÌÑ∞Îì§ Ï¥àÍ∏∞Ìôî */
+    /* ∏ﬁ∏∏Æ∏¶ «“¥Á«“ ∫Øºˆπ◊ ∆˜¿Œ≈ÕµÈ √ ±‚»≠ */
     aDestItem->mColumns              = NULL;
     aDestItem->mIndices              = NULL;
     aDestItem->mIndexTableRef        = NULL;
-    // ÏïÑÎûò Ìè¨Ïù∏ÌÑ∞Îäî receiverÎßå ÏÇ¨Ïö©ÌïòÎäî Íµ¨Ï°∞Ïù¥Î©∞,
-    // receiverÎäî copyMetaÎ•º Ìò∏Ï∂úÌïòÏßÄ ÏïäÎäîÎã§.
+    // æ∆∑° ∆˜¿Œ≈Õ¥¬ receiver∏∏ ªÁøÎ«œ¥¬ ±∏¡∂¿Ã∏Á,
+    // receiver¥¬ copyMeta∏¶ »£√‚«œ¡ˆ æ ¥¬¥Ÿ.
     aDestItem->mPKIndex.keyColumns   = NULL;
     aDestItem->mPKIndex.keyColsFlag  = NULL;
     aDestItem->mChecks               = NULL;
@@ -6672,7 +6880,7 @@ IDE_RC rpdMeta::copyColumns( rpdMetaItem * aDestItem, rpdMetaItem * aSrcItem )
     UInt    sFuncBasedIdxStrLength = 0;
     SChar * sFuncBasedIdxStr       = NULL;
 
-    /* Column Í∞úÏàòÎßåÌÅº, Item ÎÇ¥ÏóêÏÑú Column Î©îÎ™®Î¶¨ Ìï†Îãπ */
+    /* Column ∞≥ºˆ∏∏≈≠, Item ≥ªø°º≠ Column ∏ﬁ∏∏Æ «“¥Á */
     IDU_FIT_POINT_RAISE( "rpdMeta::copyColumns::calloc::Columns",
                          ERR_MEMORY_ALLOC_COLMUNS );
     IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPD_META,
@@ -6704,7 +6912,7 @@ IDE_RC rpdMeta::copyColumns( rpdMetaItem * aDestItem, rpdMetaItem * aSrcItem )
                    aSrcItem->mPKIndex.keyColsFlag,
                    ID_SIZEOF(UInt) * ( aSrcItem->mPKIndex.keyColCount ) );
 
-    /* Column Í∞úÏàòÎßåÌÅº Î∞òÎ≥µÌïòÎ©∞, Í∞Å ColumnÏùò Ï†ïÎ≥¥Î•º Î∞õÎäîÎã§. */
+    /* Column ∞≥ºˆ∏∏≈≠ π›∫π«œ∏Á, ∞¢ Column¿« ¡§∫∏∏¶ πﬁ¥¬¥Ÿ. */
     for( i = 0; i < aSrcItem->mColCount; i++ )
     {
         idlOS::memcpy( &aDestItem->mColumns[i],
@@ -6826,7 +7034,7 @@ IDE_RC rpdMeta::copyIndice( rpdMetaItem * aDestItem, rpdMetaItem * aSrcItem )
     SInt i = 0;
     SInt j = 0;
 
-    /* Index Í∞úÏàòÎßåÌÅº, Item ÎÇ¥ÏóêÏÑú memory Ìï†Îãπ */
+    /* Index ∞≥ºˆ∏∏≈≠, Item ≥ªø°º≠ memory «“¥Á */
     IDU_FIT_POINT_RAISE( "rpdMeta::copyIndice::calloc::Indices",
                          ERR_MEMORY_ALLOC_INDICES );
     IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPD_META,
@@ -6835,19 +7043,19 @@ IDE_RC rpdMeta::copyIndice( rpdMetaItem * aDestItem, rpdMetaItem * aSrcItem )
                                        (void **)( &aDestItem->mIndices ),
                                        IDU_MEM_IMMEDIATE )
                     != IDE_SUCCESS, ERR_MEMORY_ALLOC_INDICES );
-
-    /* Index Í∞úÏàòÎßåÌÅº Î∞òÎ≥µÌïòÎ©∞, Í∞Å IndexÏùò Ï†ïÎ≥¥Î•º Î∞õÎäîÎã§. */
+   
+    /* Index ∞≥ºˆ∏∏≈≠ π›∫π«œ∏Á, ∞¢ Index¿« ¡§∫∏∏¶ πﬁ¥¬¥Ÿ. */
     for( i = 0; i < aSrcItem->mIndexCount; i++)
     {
-        /* MetaÏóêÏÑú Íµ¨ÏÑ±Ìïú Index Ï†ïÎ≥¥Î•º Î∞õÎäîÎã§. */
+        /* Metaø°º≠ ±∏º∫«— Index ¡§∫∏∏¶ πﬁ¥¬¥Ÿ. */
         idlOS::memcpy( &( aDestItem->mIndices[i] ),
                        &( aSrcItem->mIndices[i] ),
                        ID_SIZEOF(qcmIndex) );
-
-        /* Î©îÎ™®Î¶¨Î•º Ìï†ÎãπÌï† Î≥ÄÏàò Ï¥àÍ∏∞Ìôî */
+ 
+        /* ∏ﬁ∏∏Æ∏¶ «“¥Á«“ ∫Øºˆ √ ±‚»≠ */
         aDestItem->mIndices[i].keyColumns  = NULL;
         aDestItem->mIndices[i].keyColsFlag = NULL;
-
+   
         IDU_FIT_POINT_RAISE( "rpdMeta::copyIndice::calloc::IndexColumns",
                              ERR_MEMORY_ALLOC_INDEX_COLUMNS );
         IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPD_META,
@@ -6933,7 +7141,7 @@ IDE_RC rpdMeta::copyIndexTableRef( rpdMetaItem * aDestItem, rpdMetaItem * aSrcIt
     UInt               sIndexTableCount = 0;
     qciIndexTableRef * sIndexTable      = NULL;
 
-    /* index table ref Î≥µÏÇ¨ */
+    /* index table ref ∫πªÁ */
     sIndexTableCount = 0;
     for ( sIndexTable = aSrcItem->mIndexTableRef;
           sIndexTable != NULL;
@@ -6956,7 +7164,7 @@ IDE_RC rpdMeta::copyIndexTableRef( rpdMetaItem * aDestItem, rpdMetaItem * aSrcIt
                              aSrcItem->mIndexTableRef,
                              ID_SIZEOF(qciIndexTableRef) * sIndexTableCount );
 
-        // index Ï†ïÎ≥¥Î•º Î≥µÏÇ¨ÌïúÎã§.
+        // index ¡§∫∏∏¶ ∫πªÁ«—¥Ÿ.
         for ( i = 0, sIndexTable = aSrcItem->mIndexTableRef;
               sIndexTable != NULL;
               i++, sIndexTable = sIndexTable->next )
@@ -6966,7 +7174,7 @@ IDE_RC rpdMeta::copyIndexTableRef( rpdMetaItem * aDestItem, rpdMetaItem * aSrcIt
                       != IDE_SUCCESS );
         }
 
-        // listÎ•º Íµ¨ÏÑ±ÌïúÎã§.
+        // list∏¶ ±∏º∫«—¥Ÿ.
         for ( i = 0; i < sIndexTableCount - 1; i++ )
         {
             aDestItem->mIndexTableRef[i].next = &( aDestItem->mIndexTableRef[i + 1]);
@@ -6999,14 +7207,14 @@ IDE_RC rpdMeta::copyIndexTableRef( rpdMetaItem * aDestItem, rpdMetaItem * aSrcIt
 }
 
 /**
- * @breif Î™®Îì† Ïª¨ÎüºÏùò ÏµúÎåÄ MT Type ÌÅ¨Í∏∞Î•º Ìï©Ìïú Í∞íÏùÑ Íµ¨ÌïúÎã§.
+ * @breif ∏µÁ ƒ√∑≥¿« √÷¥Î MT Type ≈©±‚∏¶ «’«— ∞™¿ª ±∏«—¥Ÿ.
  *
- * Ïù¥ Ìï®ÏàòÎäî Î©îÎ™®Î¶¨ Ïû¨ÏÇ¨Ïö©ÏùÑ ÏúÑÌï¥ ÌïÑÏöîÌïú ÌÅ¨Í∏∞Î•º Í≥ÑÏÇ∞ÌïòÍ∏∞ ÏúÑÌï¥ ÏÇ¨Ïö©ÎêòÎäîÎç∞,
- * GeometryÏôÄ LobÏùÄ ÏµúÎåÄ ÌÅ¨Í∏∞Í∞Ä ÎÑàÎ¨¥ Ïª§ÏÑú Ï†úÏô∏ÌïúÎã§.
+ * ¿Ã «‘ºˆ¥¬ ∏ﬁ∏∏Æ ¿ÁªÁøÎ¿ª ¿ß«ÿ « ø‰«— ≈©±‚∏¶ ∞ËªÍ«œ±‚ ¿ß«ÿ ªÁøÎµ«¥¬µ•,
+ * GeometryøÕ Lob¿∫ √÷¥Î ≈©±‚∞° ≥ π´ ƒøº≠ ¡¶ø‹«—¥Ÿ.
  *
- * BUG-44863  recv Ìï†Îïå CID, ACols, BCols ÏπºÎüºÏùÑ Ìï†ÎãπÎ∞õÍ∏∞ ÎïåÎ¨∏Ïóê 
- * mPKCols ÏôÄ ( mCIDs + ACols + BCols ) Î•º Ïª¨Îüº Í∞ØÏàòÎßåÌÅº ÌÅ¨Í∏∞Î•º Ìï†ÎãπÌïúÎã§
- * @return Î™®Îì† Ïª¨ÎüºÏùò ÏµúÎåÄ MT Type ÌÅ¨Í∏∞Î•º Ìï©Ìïú Í∞í
+ * BUG-44863  recv «“∂ß CID, ACols, BCols ƒÆ∑≥¿ª «“¥Áπﬁ±‚ ∂ßπÆø° 
+ * mPKCols øÕ ( mCIDs + ACols + BCols ) ∏¶ ƒ√∑≥ ∞πºˆ∏∏≈≠ ≈©±‚∏¶ «“¥Á«—¥Ÿ
+ * @return ∏µÁ ƒ√∑≥¿« √÷¥Î MT Type ≈©±‚∏¶ «’«— ∞™
  */
 ULong rpdMetaItem::getTotalColumnSizeExceptGeometryAndLob()
 {
@@ -7026,7 +7234,7 @@ ULong rpdMetaItem::getTotalColumnSizeExceptGeometryAndLob()
         }
         else
         {
-            /* Replication ÎåÄÏÉÅ Ïª¨ÎüºÏù¥ ÏïÑÎãàÎ©¥, NULL Í∞íÏùò ÌÅ¨Í∏∞Î•º ÏÇ¨Ïö©ÌïúÎã§. */
+            /* Replication ¥ÎªÛ ƒ√∑≥¿Ã æ∆¥œ∏È, NULL ∞™¿« ≈©±‚∏¶ ªÁøÎ«—¥Ÿ. */
             if ( mIsReplCol[sIndex] != ID_TRUE )
             {
                 sSum += (ULong)idlOS::align8( sColumn->module->nullValueSize() );
@@ -7253,19 +7461,20 @@ UInt rpdMeta::getMaxPkColCountInAllItem( void )
     SInt        i = 0;
     SInt        sMaxPkColCount = 0;
 
-    IDE_DASSERT( mItems != NULL );
-
-    sMaxPkColCount = mItems[0].mPKColCount;
-
-    for ( i = 1; i < mReplication.mItemCount; i++ )
+    if ( mItems != NULL )
     {
-        if ( sMaxPkColCount < mItems[i].mPKColCount )
+        sMaxPkColCount = mItems[0].mPKColCount;
+
+        for ( i = 1; i < mReplication.mItemCount; i++ )
         {
-            sMaxPkColCount = mItems[i].mPKColCount;
-        }
-        else
-        {
-            /* do nothing */
+            if ( sMaxPkColCount < mItems[i].mPKColCount )
+            {
+                sMaxPkColCount = mItems[i].mPKColCount;
+            }
+            else
+            {
+                /* do nothing */
+            }
         }
     }
 
@@ -7277,6 +7486,7 @@ idBool rpdMeta::isTransWait( rpdReplications * aRepl )
     idBool   sIsTransWait = ID_FALSE;
 
     if ( ( aRepl->mReplMode == RP_EAGER_MODE ) ||
+         ( aRepl->mReplMode == RP_CONSISTENT_MODE ) ||
          ( ( aRepl->mOptions & RP_OPTION_GAPLESS_MASK ) == RP_OPTION_GAPLESS_SET ) )
     {
         sIsTransWait = ID_TRUE;
@@ -7301,17 +7511,9 @@ IDE_RC rpdMetaItem::lockReplItem( smiTrans            * aTransForLock,
     UInt        sUserID      = 0;
     ULong       sLockWaitMicroSec = 0;
 
-    /* BUG-46208 ÏÑúÎ≤Ñ ÏãúÏûëÏãúÏóêÎäî receiver executeÌïòÎ©¥ÏÑú lockÏùÑ Ïû°Í≥† ÏûàÏùÑ Ïàò ÏûàÏúºÎØÄÎ°ú lock ÎåÄÍ∏∞ ÌïúÎã§. */
-    if ( rpcManager::isInitRepl() == ID_TRUE )
-    {
-        sLockWaitMicroSec = ID_ULONG_MAX;
-    }
-    else
-    {
-        sLockWaitMicroSec = aLockWaitMicroSec; 
-    }
-    
-    /* BUG-42817 Partitioned Table LockÏùÑ Ïû°Í≥† Partition LockÏùÑ Ïû°ÏïÑÏïº ÌïúÎã§. */
+    sLockWaitMicroSec = getLockWaitMicroSec( aLockWaitMicroSec );
+
+    /* BUG-42817 Partitioned Table Lock¿ª ¿‚∞Ì Partition Lock¿ª ¿‚æ∆æﬂ «—¥Ÿ. */
     if ( mItem.mLocalPartname[0] != '\0' )
     {
         IDE_TEST( qciMisc::getUserID( aTransForLock->getStatistics(),
@@ -7335,7 +7537,7 @@ IDE_RC rpdMetaItem::lockReplItem( smiTrans            * aTransForLock,
                                              aTBSLvType,
                                              aLockMode,
                                              sLockWaitMicroSec,
-                                             ID_FALSE ) // BUG-28752 Î™ÖÏãúÏ†Å LockÍ≥º ÎÇ¥Ïû¨Ï†Å LockÏùÑ Íµ¨Î∂ÑÌï©ÎãàÎã§.
+                                             ID_FALSE ) // BUG-28752 ∏ÌΩ√¿˚ Lock∞˙ ≥ª¿Á¿˚ Lock¿ª ±∏∫–«’¥œ¥Ÿ.
                   != IDE_SUCCESS );
 
         sPartHandle = (void *)smiGetTable( (smOID)mItem.mTableOID );
@@ -7347,7 +7549,7 @@ IDE_RC rpdMetaItem::lockReplItem( smiTrans            * aTransForLock,
                                              aTBSLvType,
                                              aLockMode,
                                              sLockWaitMicroSec,
-                                             ID_FALSE ) // BUG-28752 Î™ÖÏãúÏ†Å LockÍ≥º ÎÇ¥Ïû¨Ï†Å LockÏùÑ Íµ¨Î∂ÑÌï©ÎãàÎã§.
+                                             ID_FALSE ) // BUG-28752 ∏ÌΩ√¿˚ Lock∞˙ ≥ª¿Á¿˚ Lock¿ª ±∏∫–«’¥œ¥Ÿ.
                   != IDE_SUCCESS );
     }
     else
@@ -7361,7 +7563,7 @@ IDE_RC rpdMetaItem::lockReplItem( smiTrans            * aTransForLock,
                                              aTBSLvType,
                                              aLockMode,
                                              sLockWaitMicroSec,
-                                             ID_FALSE ) // BUG-28752 Î™ÖÏãúÏ†Å LockÍ≥º ÎÇ¥Ïû¨Ï†Å LockÏùÑ Íµ¨Î∂ÑÌï©ÎãàÎã§.
+                                             ID_FALSE ) // BUG-28752 ∏ÌΩ√¿˚ Lock∞˙ ≥ª¿Á¿˚ Lock¿ª ±∏∫–«’¥œ¥Ÿ.
                   != IDE_SUCCESS );
     }
 
@@ -7476,14 +7678,14 @@ IDE_RC rpdMetaItem::lockPartitionList( void                 * aQcStatement,
     return IDE_FAILURE;
 }
 
-idBool rpdMetaItem::needConvertSQL( void )
+rpdApplyMode rpdMetaItem::getApplyMode( void )
 {
-    return mNeedConvertSQL;
+    return mApplyMode;
 }
 
-void rpdMetaItem::setNeedConvertSQL( idBool aNeedConvertSQL )
+void rpdMetaItem::setApplyMode( rpdApplyMode aApplyMode )
 {
-    mNeedConvertSQL = aNeedConvertSQL;
+    mApplyMode = aApplyMode;
 }
 
 idBool rpdMetaItem::isDummyItem( void )
@@ -7503,7 +7705,7 @@ UInt rpdMeta::getSqlApplyTableCount( void )
 
     for ( i = 0; i < mReplication.mItemCount; i++ ) 
     {
-        if ( mItems[i].needConvertSQL() == ID_TRUE )
+        if ( mItems[i].getApplyMode() == RP_APPLY_SQL )
         {
             sCount++;
         }
@@ -7523,19 +7725,32 @@ void rpdMeta::printItemActionInfo( void )
 
     for ( i = 0; i < mReplication.mItemCount; i++ )
     {
-        if ( mItems[i].needConvertSQL() == ID_TRUE )
+        
+        switch ( mItems[i].getApplyMode() )
         {
-            sItemInfo = &mItems[i].mItem;
+            case RP_APPLY_SQL :
+                sItemInfo = &mItems[i].mItem;
+    
+                ideLog::log( IDE_RP_0, RP_TRC_R_CONVERT_APPLY_SQL_MODE, sItemInfo->mTableOID,
+                                                                        sItemInfo->mLocalUsername,
+                                                                        sItemInfo->mLocalTablename,
+                                                                        sItemInfo->mLocalPartname,
+                                                                        sItemInfo->mRepName );
+                break;
+   
+            case RP_APPLY_SKIP :
+                sItemInfo = &mItems[i].mItem;
+    
+                ideLog::log( IDE_RP_0, RP_TRC_R_CONVERT_APPLY_SKIP_MODE, sItemInfo->mTableOID,
+                                                                         sItemInfo->mLocalUsername,
+                                                                         sItemInfo->mLocalTablename,
+                                                                         sItemInfo->mLocalPartname,
+                                                                         sItemInfo->mRepName );
+                break;
 
-            ideLog::log( IDE_RP_0, RP_TRC_R_CONVERT_APPLY_MODE, sItemInfo->mTableOID,
-                                                                sItemInfo->mLocalUsername,
-                                                                sItemInfo->mLocalTablename,
-                                                                sItemInfo->mLocalPartname,
-                                                                sItemInfo->mRepName );
-        }
-        else
-        {
-            /* do nothing */
+            case RP_APPLY_XLOG :
+            default :
+                break;
         }
 
         if ( mItems[i].needCompact() == ID_TRUE )
@@ -7557,7 +7772,7 @@ void rpdMeta::printItemActionInfo( void )
     }
 }
 
-IDE_RC rpdMeta::equalPartitionInfo( idvSQL         * aStatistics,
+IDE_RC rpdMeta::equalPartitionInfo( smiStatement   * aSmiStatement,
                                     rpdMetaItem    * aItem1,
                                     rpdMetaItem    * aItem2 )
 {
@@ -7570,14 +7785,14 @@ IDE_RC rpdMeta::equalPartitionInfo( idvSQL         * aStatistics,
 
     if ( aItem1->mPartitionMethod != QCM_PARTITION_METHOD_HASH )
     {
-        IDE_TEST( equalPartCondValues( aStatistics,
+        IDE_TEST( equalPartCondValues( aSmiStatement,
                                        aItem2->mItem.mLocalTablename,
                                        aItem2->mItem.mLocalUsername,
                                        aItem1->mPartCondMinValues,
                                        aItem2->mPartCondMinValues )
                   != IDE_SUCCESS );
 
-        IDE_TEST( equalPartCondValues( aStatistics,
+        IDE_TEST( equalPartCondValues( aSmiStatement,
                                        aItem2->mItem.mLocalTablename,
                                        aItem2->mItem.mLocalUsername,
                                        aItem1->mPartCondMaxValues,
@@ -7590,8 +7805,9 @@ IDE_RC rpdMeta::equalPartitionInfo( idvSQL         * aStatistics,
         IDE_TEST_RAISE( aItem1->mPartitionOrder != aItem2->mPartitionOrder,
                         ERR_MISMATCH_PARTITION_ORDER );
 
-        /* BUG-46120 */
-        IDE_TEST_RAISE( aItem1->mPartitionCount != aItem2->mPartitionCount, 
+        /* BUG-46120 BUG-47140 */
+        IDE_TEST_RAISE( ( aItem1->mPartitionCount != 0 ) && 
+                        ( aItem1->mPartitionCount != aItem2->mPartitionCount), 
                         ERR_MISMATCH_PARTITION_COUNT );
     }
 
@@ -7683,15 +7899,12 @@ void rpdMeta::initializeAndMappingColumn( rpdMetaItem   * aItem1,
         }
     }
 
-    for ( sColumnPos2 = 0; sColumnPos2 < aItem2->mColCount; sColumnPos2++ )
+    sPrevColumnID = 0;
+    for ( sColumnPos1 = 0; sColumnPos1 < aItem1->mColCount; sColumnPos1++ )
     {
-        if ( aItem2->mIsReplCol[sColumnPos2] != ID_TRUE )
+        if ( aItem2->mMapColID[sColumnPos1] != RP_INVALID_COLUMN_ID )
         {
-            aItem2->mHasOnlyReplCol = ID_FALSE;
-        }
-        else
-        {
-            if ( sPrevColumnID > aItem2->mMapColID[sColumnPos2] )
+            if ( sPrevColumnID > aItem2->mMapColID[sColumnPos1] )
             {
                 aItem2->mNeedCompact = ID_TRUE;
             }
@@ -7700,7 +7913,23 @@ void rpdMeta::initializeAndMappingColumn( rpdMetaItem   * aItem1,
                 /* do nothing */
             }
 
-            sPrevColumnID =  aItem2->mMapColID[sColumnPos2];
+            sPrevColumnID =  aItem2->mMapColID[sColumnPos1];
+        }
+        else
+        {
+            /* do nothing */
+        }
+    }
+
+    for ( sColumnPos2 = 0; sColumnPos2 < aItem2->mColCount; sColumnPos2++ )
+    {
+        if ( aItem2->mIsReplCol[sColumnPos2] != ID_TRUE )
+        {
+            aItem2->mHasOnlyReplCol = ID_FALSE;
+        }
+        else
+        {
+            /* do nothing */
         }
     }
 
@@ -7798,7 +8027,7 @@ IDE_RC rpdMeta::equalPrimaryKey( rpdMetaItem   * aItem1,
     SInt    sIndexPos1 = 0;
     SInt    sIndexPos2 = 0;
 
-    /* BUG-37770 Primary KeyÎäî ÏßÅÏ†ë ÎπÑÍµêÌïúÎã§. */
+    /* BUG-37770 Primary Key¥¬ ¡˜¡¢ ∫Ò±≥«—¥Ÿ. */
     for ( sIndexPos1 = 0; sIndexPos1 < aItem1->mIndexCount; sIndexPos1++ )
     {
         if ( aItem1->mPKIndex.indexId == aItem1->mIndices[sIndexPos1].indexId )
@@ -7848,7 +8077,7 @@ IDE_RC rpdMeta::equalIndices( rpdMetaItem   * aItem1,
     idBool                    sIsFuncBasedIndex1 = ID_FALSE;
     idBool                    sIsFuncBasedIndex2 = ID_FALSE;
 
-    /* BUG-37770 Ïù∏Îç±Ïä§ Î∞∞Ïó¥ÏùÑ Ïù∏Îç±Ïä§ Ïª¨Îüº Ïù¥Î¶ÑÏùÑ Í∏∞Ï§ÄÏúºÎ°ú Ï†ïÎ†¨ÌïúÎã§. */
+    /* BUG-37770 ¿Œµ¶Ω∫ πËø≠¿ª ¿Œµ¶Ω∫ ƒ√∑≥ ¿Ã∏ß¿ª ±‚¡ÿ¿∏∑Œ ¡§∑ƒ«—¥Ÿ. */
     IDU_FIT_POINT_RAISE( "rpdMeta::equalIndices::calloc::sIndexSortInfo1", 
                          ERR_MEMORY_ALLOC_INDEX_SORT_INFO );
     IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPD_META,
@@ -7888,17 +8117,17 @@ IDE_RC rpdMeta::equalIndices( rpdMetaItem   * aItem1,
                   ID_SIZEOF( rpdIndexSortInfo ),
                   rpdMetaCompareIndexColumnName );
 
-    /* PROJ-1442 Replication Online Ï§ë DDL ÌóàÏö©
-     * 1. Replication Self-Deadlock Ï≤òÎ¶¨ÏôÄ Í¥ÄÎ†®Ìïú Unique Index Ï†úÏïΩÏùÑ Í≤ÄÏÇ¨ÌïúÎã§.
-     *   (1) Replication ÎåÄÏÉÅÏù¥ ÏïÑÎãå ColumnÏúºÎ°ú Íµ¨ÏÑ±Îêú Unique IndexÎäî Í≤ÄÏÇ¨ÌïòÏßÄ ÏïäÎäîÎã§.
-     *   (2) Replication ÎåÄÏÉÅ ColumnÍ≥º Í∑∏Î†áÏßÄ ÏïäÏùÄ ColumnÏùÑ ÌòºÌï©ÌïòÏó¨,
-     *     Unique IndexÎ•º Íµ¨ÏÑ±Ìï† Ïàò ÏóÜÎã§.
-     *   (3) Replication ÎåÄÏÉÅ ColumnÏùÄ ÏñëÏ™Ω ServerÏóêÏÑú Í∞ôÏùÄ Unique IndexÏùÑ Í∞ÄÏ†∏Ïïº ÌïúÎã§.
-     *       - Unique IndexÎ•º Íµ¨ÏÑ±ÌïòÎäî ColumnÏùÄ ÏàòÏôÄ ÌÅ¨Í∏∞Í∞Ä Í∞ôÏïÑÏïº ÌïúÎã§.
-     * 2. IndexÎ•º Íµ¨ÏÑ±ÌïòÎäî ColumnÏùÑ ÎπÑÍµêÌï† Îïå, Column ID ÎåÄÏã† Column Ïù¥Î¶ÑÏùÑ ÏÇ¨Ïö©ÌïúÎã§.
+    /* PROJ-1442 Replication Online ¡ﬂ DDL «„øÎ
+     * 1. Replication Self-Deadlock √≥∏ÆøÕ ∞¸∑√«— Unique Index ¡¶æ‡¿ª ∞ÀªÁ«—¥Ÿ.
+     *   (1) Replication ¥ÎªÛ¿Ã æ∆¥— Column¿∏∑Œ ±∏º∫µ» Unique Index¥¬ ∞ÀªÁ«œ¡ˆ æ ¥¬¥Ÿ.
+     *   (2) Replication ¥ÎªÛ Column∞˙ ±◊∑∏¡ˆ æ ¿∫ Column¿ª »•«’«œø©,
+     *     Unique Index∏¶ ±∏º∫«“ ºˆ æ¯¥Ÿ.
+     *   (3) Replication ¥ÎªÛ Column¿∫ æÁ¬  Serverø°º≠ ∞∞¿∫ Unique Index¿ª ∞°¡Ææﬂ «—¥Ÿ.
+     *       - Unique Index∏¶ ±∏º∫«œ¥¬ Column¿∫ ºˆøÕ ≈©±‚∞° ∞∞æ∆æﬂ «—¥Ÿ.
+     * 2. Index∏¶ ±∏º∫«œ¥¬ Column¿ª ∫Ò±≥«“ ∂ß, Column ID ¥ÎΩ≈ Column ¿Ã∏ß¿ª ªÁøÎ«—¥Ÿ.
      *
      * BUG-17923
-     * Non-Unique IndexÎäî Í≤ÄÏÇ¨ÌïòÏßÄ ÏïäÎäîÎã§.
+     * Non-Unique Index¥¬ ∞ÀªÁ«œ¡ˆ æ ¥¬¥Ÿ.
      */
     sIndexPos1 = 0;
     sIndexPos2 = 0;
@@ -8236,32 +8465,41 @@ IDE_RC rpdMeta::removeDummyMetaItems( void )
 
     sNewItemCount = mReplication.mItemCount - sDummyCount;
 
-    IDU_FIT_POINT_RAISE( "rpdMeta::removeDummyMetaItems::calloc::sItems",
-                          ERR_MEMORY_ALLOC_ITEMS );
-    IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPD_META,
-                                       sNewItemCount,
-                                       ID_SIZEOF(rpdMetaItem),
-                                       (void **)&sItems,
-                                       IDU_MEM_IMMEDIATE )
-                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_ITEMS );
-
-    for ( i = 0; i < mReplication.mItemCount; i++ )
+    if ( sNewItemCount > 0 )
     {
-        if ( mItems[i].isDummyItem() != ID_TRUE )
+        IDU_FIT_POINT_RAISE( "rpdMeta::removeDummyMetaItems::calloc::sItems",
+                              ERR_MEMORY_ALLOC_ITEMS );
+        IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPD_META,
+                                           sNewItemCount,
+                                           ID_SIZEOF(rpdMetaItem),
+                                           (void **)&sItems,
+                                           IDU_MEM_IMMEDIATE )
+                        != IDE_SUCCESS, ERR_MEMORY_ALLOC_ITEMS );
+
+        for ( i = 0; i < mReplication.mItemCount; i++ )
         {
-            IDE_TEST( copyTableInfo( &( sItems[sIdx] ), &( mItems[i] ) ) != IDE_SUCCESS );                    
-            sDictTableCount += mItems[i].mCompressColCount;
+            if ( mItems[i].isDummyItem() != ID_TRUE )
+            {
+                IDE_TEST( copyTableInfo( &( sItems[sIdx] ), &( mItems[i] ) ) != IDE_SUCCESS );
+                sDictTableCount += mItems[i].mCompressColCount;
 
-            sIdx += 1;
+                sIdx += 1;
+            }
         }
-    }
-    
-    freeItems();
-    mItems = sItems;
-    mDictTableCount = sDictTableCount;
-    mReplication.mItemCount = sNewItemCount;
 
-    IDE_TEST( reallocSortItems() != IDE_SUCCESS );
+        freeItems();
+        mItems = sItems;
+        mDictTableCount = sDictTableCount;
+        mReplication.mItemCount = sNewItemCount;
+        IDE_TEST( reallocSortItems() != IDE_SUCCESS );
+    }
+    else
+    {
+        freeItems();
+        mItems = NULL;
+        mDictTableCount = 0;
+        mReplication.mItemCount = 0;
+    }
 
     if ( mDictTableCount != 0 )
     {
@@ -8319,7 +8557,7 @@ IDE_RC rpdMeta::makeDummyMetaItem( rpdMetaItem * aRemoteItem, rpdMetaItem * aIte
                    aRemoteItem->mItem.mLocalPartname,
                    QC_MAX_OBJECT_NAME_LEN + 1 );
 
-    aItem->mPartitionOrder = ID_UINT_MAX;
+    aItem->mPartitionOrder = QCI_NO_PARTITION_ORDER;
     idlOS::memset( aItem->mPartCondMinValues, 0x00, (QC_MAX_PARTKEY_COND_VALUE_LEN + 1) * ID_SIZEOF(SChar) );
     idlOS::memset( aItem->mPartCondMaxValues, 0x00, (QC_MAX_PARTKEY_COND_VALUE_LEN + 1) * ID_SIZEOF(SChar) );
 
@@ -8371,16 +8609,64 @@ idBool rpdMeta::equalReplTables( rpdMeta * aMeta1, rpdMeta * aMeta2 )
     return sIsMatch;
 }
 
-idBool rpdMeta::equalReplItemsCount( rpdMeta * aMeta1, rpdMeta * aMeta2 )
-{    
-    idBool sEqual = ID_FALSE;
+void rpdMeta::printReplTables( SChar *aHeader, rpdMeta * aMeta )
+{
+    SInt i = 0;
+    ideLogEntry sLog(IDE_RP_0);
 
-    if ( aMeta1->mReplication.mItemCount == aMeta2->mReplication.mItemCount )
+    if ( aHeader != NULL )
     {
-        sEqual = ID_TRUE;
+        sLog.appendFormat("%s ", aHeader);
     }
 
-    return sEqual;
+    for ( i = 0; i < aMeta->mReplication.mItemCount; i++ )
+    {
+        sLog.appendFormat("FROM: %s.%s.%s TO %s.%s.%s ",
+                          aMeta->mItems[i].mItem.mLocalUsername,
+                          aMeta->mItems[i].mItem.mLocalTablename,
+                          aMeta->mItems[i].mItem.mLocalPartname,
+                          aMeta->mItems[i].mItem.mRemoteUsername,
+                          aMeta->mItems[i].mItem.mRemoteTablename,
+                          aMeta->mItems[i].mItem.mRemotePartname);
+    }
+    sLog.write();
+}
+idBool rpdMeta::equalReplTablePartition( rpdMeta * aMeta1, rpdMeta * aMeta2 )
+{
+    SInt i = 0;
+    rpdMetaItem * sItem = NULL;
+    idBool sIsMatch = ID_TRUE;
+
+    for ( i = 0; i < aMeta1->mReplication.mItemCount; i++ )
+    {
+        sItem = aMeta2->findTablePartitionMetaItem( aMeta1->mItems[i].mItem.mRemoteUsername,
+                                                    aMeta1->mItems[i].mItem.mRemoteTablename,
+                                                    aMeta1->mItems[i].mItem.mRemotePartname );
+
+        if ( sItem == NULL )
+        {
+            sIsMatch = ID_FALSE;
+            break;
+        }
+    }
+
+    if ( sIsMatch == ID_TRUE )
+    {
+        for ( i = 0; i < aMeta2->mReplication.mItemCount; i++ )
+        {
+            sItem = aMeta1->findTablePartitionMetaItem( aMeta2->mItems[i].mItem.mRemoteUsername,
+                                                        aMeta2->mItems[i].mItem.mRemoteTablename,
+                                                        aMeta2->mItems[i].mItem.mRemotePartname );
+
+            if ( sItem == NULL )
+            {
+                sIsMatch = ID_FALSE;
+                break;
+            }
+        }
+    }
+
+    return sIsMatch;
 }
 
 SInt rpdMeta::getMetaItemMatchCount( rpdMeta * aMeta )
@@ -8413,7 +8699,7 @@ rpdMetaItem * rpdMeta::findTableMetaItem( SChar * aLocalUserName, SChar * aLocal
     {
         if ( ( mItems[i].isDummyItem() != ID_TRUE ) &&
              ( idlOS::strcmp( aLocalUserName,
-                              mItems[i].mItem.mLocalUsername ) == 0 )  &&
+                              mItems[i].mItem.mLocalUsername ) == 0 ) &&
              ( idlOS::strcmp( aLocalTableName,
                               mItems[i].mItem.mLocalTablename ) == 0 ) )
         {
@@ -8421,6 +8707,31 @@ rpdMetaItem * rpdMeta::findTableMetaItem( SChar * aLocalUserName, SChar * aLocal
             break;
         }
 
+    }
+
+    return sItem;
+}
+
+rpdMetaItem * rpdMeta::findTablePartitionMetaItem( SChar * aLocalUserName,
+                                                   SChar * aLocalTableName,
+                                                   SChar * aLocalPartName )
+{
+    SInt i = 0;
+    rpdMetaItem * sItem = NULL;
+
+    for ( i = 0; i < mReplication.mItemCount; i++ )
+    {
+        if ( ( mItems[i].isDummyItem() != ID_TRUE ) &&
+             ( idlOS::strcmp( aLocalUserName,
+                              mItems[i].mItem.mLocalUsername ) == 0 ) &&
+             ( idlOS::strcmp( aLocalTableName,
+                              mItems[i].mItem.mLocalTablename ) == 0 ) &&
+             ( idlOS::strcmp( aLocalPartName,
+                              mItems[i].mItem.mLocalPartname ) == 0 ) )
+        {
+            sItem = &( mItems[i] );
+            break;
+        }
     }
 
     return sItem;
@@ -8474,10 +8785,15 @@ void rpdMeta::copyPartCondValue( SChar * aDst, SChar * aSrc )
 
 void rpdMeta::fillOldMetaItem( rpdMetaItem * aItem, rpdOldItem * aOldItem )
 {
-
+    aItem->mTableID = aOldItem->mTableID;
+    aItem->mItem.mInvalidMaxSN = aOldItem->mInvalidMaxSN;
     aItem->mItem.mTableOID = (ULong)aOldItem->mTableOID;
     aItem->mPKIndex.indexId = aOldItem->mPKIndexID;
-    aItem->mItem.mInvalidMaxSN = aOldItem->mInvalidMaxSN;
+
+    idlOS::memcpy( (void *)aItem->mItem.mRepName,
+                   (const void *)aOldItem->mRepName, 
+                   QC_MAX_NAME_LEN + 1 );
+    aItem->mItem.mRepName[QC_MAX_NAME_LEN] = '\0';
 
     idlOS::memcpy( (void *)aItem->mItem.mLocalUsername,
                    (const void *)aOldItem->mUserName, 
@@ -8508,6 +8824,33 @@ void rpdMeta::fillOldMetaItem( rpdMetaItem * aItem, rpdOldItem * aOldItem )
                    (const void *)aOldItem->mRemotePartName, 
                    QC_MAX_OBJECT_NAME_LEN );
     aItem->mItem.mRemotePartname[QC_MAX_OBJECT_NAME_LEN] = '\0';
+
+    aItem->mTablePartitionType = aOldItem->mTablePartitionType;
+    aItem->mPartitionMethod    = aOldItem->mPartitionMethod;
+
+    aItem->mPartitionCount     = aOldItem->mPartitionCount;
+
+    // Hash
+    aItem->mPartitionOrder     = aOldItem->mPartitionOrder;
+
+    // non-Hash
+    idlOS::memcpy( (void *)aItem->mPartCondMinValues,
+                   (const void *)aOldItem->mPartCondMinValues,
+                   QC_MAX_PARTKEY_COND_VALUE_LEN );
+ 
+    idlOS::memcpy( (void *)aItem->mPartCondMaxValues,
+                   (const void *)aOldItem->mPartCondMaxValues,
+                   QC_MAX_PARTKEY_COND_VALUE_LEN );
+
+    aItem->mItem.mTBSType      = aOldItem->mTBSType;
+
+    idlOS::strncpy( aItem->mItem.mIsPartition, 
+                    aOldItem->mIsPartition,
+                    2 );
+
+    idlOS::strncpy( aItem->mItem.mReplicationUnit,
+                    aOldItem->mReplicationUnit,
+                    2 );
 }
 
 idBool rpdMeta::isUseV6Protocol( rpdReplications * aReplication )
@@ -8521,5 +8864,368 @@ idBool rpdMeta::isUseV6Protocol( rpdReplications * aReplication )
     }
 
     return sResult;
+}
+rpdTableMetaType rpdMeta::getTableMetaType( smOID aOldTableOID, smOID aNewTableOID )
+{
+    rpdTableMetaType sType = RP_META_NONE_ITEM;
+
+    if ( ( aOldTableOID == SM_OID_NULL ) && ( aNewTableOID != SM_OID_NULL ) )
+    {
+        sType = RP_META_INSERT_ITEM;    
+    }
+    else if ( ( aOldTableOID != SM_OID_NULL ) && ( aNewTableOID == SM_OID_NULL ) )
+    {
+        sType = RP_META_DELETE_ITEM;
+    }
+    else if ( ( aOldTableOID != SM_OID_NULL ) && ( aNewTableOID != SM_OID_NULL ) )
+    {
+        sType = RP_META_UPDATE_ITEM;
+    }
+    else
+    {
+        sType = RP_META_NONE_ITEM;
+    }
+
+    return sType;
+}
+
+IDE_RC rpdMeta::makeConditionInfoWithItems( smiStatement           * aSmiStmt,
+                                            SInt                     aItemCount,
+                                            rpdMetaItem           ** aItemList,
+                                            rpdConditionItemInfo   * aConditionInfo )
+{
+    SInt                   sTC;                   // Table Count
+
+    ULong                  sTableOID;
+    idBool                 sIsEmpty = ID_FALSE;
+
+    IDE_DASSERT( aConditionInfo != NULL );
+    IDE_DASSERT( aItemCount > 0 );
+    IDE_DASSERT( aItemList != NULL );
+    for( sTC = 0 ; sTC < aItemCount; sTC ++ )
+    {
+        sTableOID = aItemList[sTC]->mItem.mTableOID;
+        IDE_TEST( isEmptyTable( aSmiStmt, 
+                                sTableOID, 
+                                &sIsEmpty ) 
+                  != IDE_SUCCESS );
+
+        aConditionInfo[sTC].mTableOID = sTableOID;
+        aConditionInfo[sTC].mIsEmpty = sIsEmpty;
+    }
+    
+    return IDE_SUCCESS;
+    IDE_EXCEPTION_END;
+    return IDE_FAILURE;
+}
+
+void rpdMeta::compareCondition( rpdConditionItemInfo   * aSrcCondition,
+                                rpdConditionItemInfo   * aDstCondition,
+                                UInt                     aItemCount,
+                                rpdConditionActInfo    * aResultCondition )
+{
+    UInt                   i;                   // Table Count
+    
+    RP_CONDITION_ACTION    sAction;
+
+    IDE_DASSERT( aItemCount > 0 );
+    IDE_DASSERT( ( aSrcCondition != NULL ) && ( aDstCondition != NULL ) );
+    IDE_DASSERT( aResultCondition != NULL );
+
+    for( i  = 0; i < aItemCount; i ++ )
+    {
+        aResultCondition[i].mTableOID = aSrcCondition[i].mTableOID;
+
+        switch( aSrcCondition[i].mIsEmpty )
+        {
+            case ID_TRUE :
+                if ( aDstCondition[i].mIsEmpty == ID_TRUE )
+                {
+                    sAction = RP_CONDITION_START;
+                }
+                else
+                {
+                    sAction = RP_CONDITION_TRUNCATE;
+                }
+                break;
+            case ID_FALSE :
+                if ( aDstCondition[i].mIsEmpty == ID_TRUE )
+                {
+                    sAction = RP_CONDITION_SYNC;
+                }
+                else
+                {
+                    sAction = RP_CONDITION_START;
+                }
+                break;
+            default:
+                IDE_ASSERT(0);
+        }
+
+        aResultCondition[i].mAction = sAction;
+    }
+}
+
+IDE_RC rpdMeta::isEmptyTable( smiStatement * aSmiStmt,
+                              ULong          aTableOID, 
+                              idBool       * aIsEmpty )
+{
+
+    void     * sTableHandle;
+    smiTrans * sTrans;
+    SLong      sTupleCnt;
+
+    sTableHandle = (void *)smiGetTable((smOID)aTableOID);
+
+    sTrans = aSmiStmt->getTrans();
+
+    IDE_TEST( smiStatistics::getTableStatNumRow( sTableHandle,
+                                                 ID_TRUE,
+                                                 sTrans,
+                                                 &sTupleCnt )
+              != IDE_SUCCESS );
+
+    if ( sTupleCnt == 0 )
+    {
+        *aIsEmpty = ID_TRUE;
+    }
+    else
+    {
+        *aIsEmpty = ID_FALSE;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+    
+    return IDE_FAILURE;
+}
+
+void rpdMeta::remappingTableOID( rpdMeta * aRemoteMeta,
+                                 rpdMeta * aLocalMeta )
+{
+    SInt sItemCount = 0;
+
+    IDE_DASSERT( aRemoteMeta->mReplication.mItemCount == aLocalMeta->mReplication.mItemCount );
+
+    for( sItemCount = 0;
+         sItemCount < aRemoteMeta->mReplication.mItemCount;
+         sItemCount++ )
+    {
+        aRemoteMeta->mItemsOrderByLocalName[sItemCount]->mRemoteTableOID
+            = aLocalMeta->mItemsOrderByRemoteName[sItemCount]->mItem.mTableOID;
+        aLocalMeta->mItemsOrderByRemoteName[sItemCount]->mRemoteTableOID
+            = aRemoteMeta->mItemsOrderByLocalName[sItemCount]->mItem.mTableOID;
+
+    }
+
+    idlOS::qsort( aRemoteMeta->mItemsOrderByRemoteTableOID,
+                  aRemoteMeta->mReplication.mItemCount,
+                  ID_SIZEOF(rpdMetaItem*),
+                  rpdMetaCompareRemoteTableOID );
+    idlOS::qsort( aLocalMeta->mItemsOrderByRemoteTableOID,
+                  aLocalMeta->mReplication.mItemCount,
+                  ID_SIZEOF(rpdMetaItem*),
+                  rpdMetaCompareRemoteTableOID );
+
+}
+
+idBool rpdMeta::needLastMetaItemInfo( RP_META_BUILD_TYPE    aMetaBuildType, 
+                                      rpdReplications     * aReplication ) 
+{
+    idBool  sNeedLastMetaItemInfo = ID_FALSE;
+
+    switch( aMetaBuildType )
+    {
+        case RP_META_BUILD_LAST :
+            sNeedLastMetaItemInfo = ID_TRUE;
+            break;
+
+        case RP_META_BUILD_OLD :
+            sNeedLastMetaItemInfo = ID_FALSE;
+            break;
+
+        case RP_META_BUILD_AUTO :
+        default:
+            if ( aReplication->mXSN == SM_SN_NULL)
+            {
+                sNeedLastMetaItemInfo = ID_TRUE;
+            }
+            else
+            {
+                sNeedLastMetaItemInfo = ID_FALSE;
+            }
+            break;
+    }
+
+    return sNeedLastMetaItemInfo;
+}
+
+rpReceiverStartMode rpdMeta::getReceiverStartMode( void )
+{
+    rpReceiverStartMode     sStartMode = RP_RECEIVER_NORMAL;
+
+    if ( rpdMeta::isRpStartSyncApply( &mReplication ) == ID_TRUE )
+    {
+        sStartMode = RP_RECEIVER_SYNC;
+    }
+    else if ( rpdMeta::isRpRecoverySender( &mReplication ) == ID_TRUE )
+    {
+        sStartMode = RP_RECEIVER_RECOVERY;
+    }
+    else if ( rpdMeta::isRpOfflineSender( &mReplication ) == ID_TRUE )
+    {
+        sStartMode = RP_RECEIVER_OFFLINE;
+    }
+    else if (rpdMeta::isRpParallelSender( &mReplication ) == ID_TRUE )
+    {
+        sStartMode = RP_RECEIVER_PARALLEL;
+    }
+    else if( rpdMeta::isRpSyncCondition( &mReplication ) == ID_TRUE )
+    {
+        if ( mReplication.mItemCount != 0 )
+        {
+            sStartMode = RP_RECEIVER_SYNC_CONDITIONAL;
+        }
+        else
+        {
+            sStartMode = RP_RECEIVER_NORMAL;
+        }
+    }
+    else if ( rpdMeta::isRpStartCondition( &mReplication ) == ID_TRUE )
+    {
+        sStartMode = RP_RECEIVER_NORMAL;
+    }
+    else if(rpdMeta::isRpXLogfileFailbackIncrementalSyncMaster(&mReplication) == ID_TRUE)
+    {
+            sStartMode = RP_RECEIVER_NORMAL;
+    }
+    else if(rpdMeta::isRpXLogfileFailbackIncrementalSyncSlave(&mReplication) == ID_TRUE)
+    {
+        sStartMode = RP_RECEIVER_XLOGFILE_FAILBACK_MASTER;
+    }
+    else
+    {
+        if ( getReplMode() == RP_CONSISTENT_MODE )
+        {
+            sStartMode = RP_RECEIVER_USING_TRANSFER;
+        }
+        else
+        {
+            sStartMode = RP_RECEIVER_NORMAL;
+        }
+    }
+
+    return sStartMode;
+}
+
+/* PROJ-2742 Consistent replication failback
+ * replication failback ±∏πÆ¿∫ ¿Ã¿¸ø° TABLE REPLACE∏¶ ∞Ì∑¡«—¥Ÿ.
+ * item list µπ∏Èº≠ REPL_ITEM_REPLACE_HISTORYø° «ÿ¥Á æ∆¿Ã≈€¿Ã ¿÷¿∏∏È
+ * ∏ﬁ≈∏ø° table_oid∏¶REPL_ITEM_REPLACE_HISTORYø° ¿˙¿Âµ» old_oid ∑Œ πŸ≤€¥Ÿ */
+IDE_RC rpdMeta::checkItemReplaceHistoryAndSetTableOID( )
+{
+    SInt i;
+    smiTrans sTrans;
+    smiStatement * spRootStmt = NULL;
+    smiStatement sSmiStmt;
+    SInt sStage = 0;
+    UInt sFlag = 0;
+    idBool sIsTxBegin = ID_FALSE;
+
+    IDE_TEST( sTrans.initialize() != IDE_SUCCESS );
+    sStage = 1;
+
+    sFlag = ( sFlag & ~SMI_ISOLATION_MASK ) | SMI_ISOLATION_NO_PHANTOM;
+    sFlag = ( sFlag & ~SMI_TRANSACTION_MASK ) | SMI_TRANSACTION_NORMAL;
+    sFlag = ( sFlag & ~SMI_TRANSACTION_REPL_MASK ) | SMI_TRANSACTION_REPL_NONE;
+    sFlag = ( sFlag & ~SMI_COMMIT_WRITE_MASK ) | SMI_COMMIT_WRITE_NOWAIT;
+   
+    IDE_TEST_RAISE( sTrans.begin( &spRootStmt, NULL, sFlag, SMX_NOT_REPL_TX_ID )
+                    != IDE_SUCCESS, ERR_TRANS_BEGIN );
+    sIsTxBegin = ID_TRUE;
+    sStage = 2;
+
+    IDE_TEST_RAISE( sSmiStmt.begin( sTrans.getStatistics(),
+                                    spRootStmt, 
+                                    SMI_STATEMENT_UNTOUCHABLE | 
+                                    SMI_STATEMENT_ALL_CURSOR )
+                    != IDE_SUCCESS, ERR_TRANS_BEGIN );
+    sStage = 3;
+
+    for ( i = 0 ; i < mReplication.mItemCount ; i++ )
+    {
+        IDE_TEST( rpdCatalog::setTableOIDReferToItemReplaceHistory( &sSmiStmt, &mItems[i].mItem )
+                  != IDE_SUCCESS );
+    }
+
+    IDE_TEST_RAISE( sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS)
+                    != IDE_SUCCESS, ERR_TRANS_COMMIT );
+    sStage = 2;
+
+    sStage = 1;
+    IDE_TEST_RAISE( sTrans.commit() != IDE_SUCCESS, ERR_TRANS_COMMIT );
+    sIsTxBegin = ID_FALSE;
+
+    sStage = 0;
+    IDE_TEST( sTrans.destroy(NULL) != IDE_SUCCESS );
+
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_TRANS_BEGIN );
+    {
+        IDE_ERRLOG( IDE_RP_0 );
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_TX_BEGIN ) );
+    }
+    IDE_EXCEPTION( ERR_TRANS_COMMIT );
+    {
+        IDE_ERRLOG( IDE_RP_0 );
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_TX_COMMIT ) );
+    }
+    IDE_EXCEPTION_END;
+
+    IDE_PUSH();
+
+    switch ( sStage )
+    {
+        case 3:
+            (void)sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+        case 2:
+            IDE_ASSERT( sTrans.rollback() == IDE_SUCCESS );
+            sIsTxBegin = ID_FALSE;
+        case 1:
+            if ( sIsTxBegin == ID_TRUE )
+            {
+                IDE_ASSERT( sTrans.rollback() == IDE_SUCCESS );
+                sIsTxBegin = ID_FALSE;
+            }
+            (void)sTrans.destroy( NULL );
+        default:
+            break;
+    }
+
+    IDE_POP();
+
+    return IDE_FAILURE;
+}
+
+void rpdMeta::getProtocolCompressType( rpdVersion         aRemoteVersion,
+                                       cmiCompressType   *aCompressType )
+{
+    UInt                sCompressType    = 0;
+    
+    for ( sCompressType = (UInt)CMI_COMPRESS_MAX - 1; sCompressType > (UInt)CMI_COMPRESS_NONE; sCompressType-- )
+    {    
+        if ( aRemoteVersion.mVersion >= RP_MAKE_VERSION( gProtocolCompressType[sCompressType].mMajorVersion,
+                                                         gProtocolCompressType[sCompressType].mMinorVersion,
+                                                         gProtocolCompressType[sCompressType].mFixVersion,
+                                                         gProtocolCompressType[sCompressType].mEdianBit ) )
+        {
+            break;
+        }
+    }
+    
+    *aCompressType = (cmiCompressType)sCompressType;
 }
 

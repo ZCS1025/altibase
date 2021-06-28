@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcmSynonym.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qcmSynonym.h 90130 2021-03-05 02:10:09Z donovan.seo $
  **********************************************************************/
 
 #ifndef _O_QCM_SYNONYMS_H_
@@ -27,7 +27,7 @@
 #include <qtc.h>
 
 /***********************************************************************
- * qcmSynonym::resolveObjectÏóêÏÑú ÏÇ¨Ïö©Ìï† Í∞ùÏ≤¥Ïùò type Ï†ïÏùò
+ * qcmSynonym::resolveObjectø°º≠ ªÁøÎ«“ ∞¥√º¿« type ¡§¿«
 ***********************************************************************/
 #define QCM_OBJECT_TYPE_TABLE                   (0)
 #define QCM_OBJECT_TYPE_SEQUENCE                (1)
@@ -35,6 +35,7 @@
 #define QCM_OBJECT_TYPE_LINK                    (3)
 #define QCM_OBJECT_TYPE_LIBRARY                 (4) // PROJ-1685
 #define QCM_OBJECT_TYPE_PACKAGE                 (5) // PROJ-1073 Package
+#define QCM_MAX_SYNOM_NAME_LEN                  (45)
 
 typedef struct qcmSynonymInfo
 {
@@ -43,6 +44,21 @@ typedef struct qcmSynonymInfo
     idBool  isSynonymName;
     idBool  isPublicSynonym;
 } qcmSynonymInfo;
+
+typedef struct qcmSynonymInfo2
+{
+    SChar   mObjectOwnerName[QCM_MAX_SYNOM_NAME_LEN + 1];
+    SChar   mObjectName[QCM_MAX_SYNOM_NAME_LEN + 1];
+} qcmSynonymInfo2;
+
+/* BUG-48594
+ * Synonym¿Ã plan cacheø° µÓ∑œµ» ∞ÊøÏ º¯»Ø±∏¡∂∏¶ »Æ¿Œ«œ±‚ ¿ß«— ±∏¡∂√º
+ */
+typedef struct qcmSynonymArr
+{
+    qcmSynonymInfo2  mInfo[QCM_MAX_RESOLVE_SYNONYM];
+    UShort           mCount;
+} qcmSynonymArr;
 
 class qcmSynonym
 {
@@ -57,6 +73,16 @@ private:
         void          ** aTableHandle,
         iduList        * aSynonymInfoList);
 
+    /* BUG-48594 */
+    static IDE_RC resolveTableViewQueueInternal4PlanCache( qcStatement      * aStatement,
+                                                           qcmSynonymInfo   * aSynonymInfo,
+                                                           qcmTableInfo    ** aTableInfo,
+                                                           UInt             * aUserID,
+                                                           smSCN            * aSCN,
+                                                           idBool           * aExist,
+                                                           void            ** aTableHandle,
+                                                           qcmSynonymArr    * aSynonymArr );
+
     static IDE_RC resolveSequenceInternal(
         qcStatement     * aStatement,
         qcmSynonymInfo  * aSynonymInfo,
@@ -66,6 +92,15 @@ private:
         void           ** aSequenceHandle,
         iduList         * aSynonymInfoList);
 
+    /* BUG-48594 */
+    static IDE_RC resolveSequenceInternal4PlanCache( qcStatement      * aStatement,
+                                                     qcmSynonymInfo   * aSynonymInfo,
+                                                     qcmSequenceInfo  * aSequenceInfo,
+                                                     UInt             * aUserID,
+                                                     idBool           * aExist,
+                                                     void            ** aSequenceHandle,
+                                                     qcmSynonymArr    * aSynonymArr );
+
     static IDE_RC resolvePSMInternal(
         qcStatement    * aStatement,
         qcmSynonymInfo * aSynonymInfo,
@@ -73,6 +108,14 @@ private:
         UInt           * aUserID,
         idBool         * aExist,
         iduList        * aSynonymInfoList);
+
+    /* BUG-48594 */
+    static IDE_RC resolvePSMInternal4PlanCache( qcStatement      * aStatement,
+                                                qcmSynonymInfo   * aSynonymInfo,
+                                                qsOID            * aProcID,
+                                                UInt             * aUserID,
+                                                idBool           * aExist,
+                                                qcmSynonymArr    * aSynonymArr );
 
     static IDE_RC resolveObjectInternal(
         qcStatement     * aStatement,
@@ -98,10 +141,16 @@ private:
         iduList        * aList,
         qcmSynonymInfo * aSynonymInfo );
 
+    static idBool checkSynonymCircularityArr( qcmSynonymArr  * aSynonymArr,
+                                              qcmSynonymInfo * aSynonymInfo );
+
     static IDE_RC addToSynonymInfoList(
         qcStatement    * aStatement,
         iduList        * aList,
         qcmSynonymInfo * aSynonymInfo );
+
+    static IDE_RC addToSynonymArr( qcmSynonymArr  * aSynonymArr,
+                                   qcmSynonymInfo * aSynonymInfo );
 
     // PROJ-1073 Package
     static IDE_RC resolvePkgInternal(
@@ -141,6 +190,14 @@ public:
         qcmSynonymInfo  * aSynonymInfo,
         void           ** aTableHandle);
 
+    /* BUG-48594 */
+    static IDE_RC resolveTableViewQueue4PlanCache( qcStatement     * aStatement,
+                                                   qcNamePosition    aUserName,
+                                                   qcNamePosition    aObjectName,
+                                                   idBool          * aExist,
+                                                   qcmSynonymInfo  * aSynonymInfo,
+                                                   void           ** aTableHandle );
+
     static IDE_RC resolveSequence(
         qcStatement     * aStatement,
         qcNamePosition    aUserName,
@@ -151,6 +208,15 @@ public:
         qcmSynonymInfo  * aSynonymInfo,
         void           ** aSequenceHandle);
 
+    /* BUG-48594 */
+    static IDE_RC resolveSequence4PlanCache( qcStatement     * aStatement,
+                                             qcNamePosition    aUserName,
+                                             qcNamePosition    aObjectName,
+                                             qcmSequenceInfo * aSequenceInfo,
+                                             idBool          * aExist,
+                                             qcmSynonymInfo  * aSynonymInfo,
+                                             void           ** aSequenceHandle);
+
     static IDE_RC resolvePSM(
         qcStatement    * aStatement,
         qcNamePosition   aUserName,
@@ -159,6 +225,14 @@ public:
         UInt           * aUserID,
         idBool         * aExist,
         qcmSynonymInfo * aSynonymInfo);
+
+    /* BUG-48594 */
+    static IDE_RC resolvePSM4PlanCache( qcStatement    * aStatement,
+                                        qcNamePosition   aUserName,
+                                        qcNamePosition   aObjectName,
+                                        qsOID          * aProcID,
+                                        idBool         * aExist,
+                                        qcmSynonymInfo * aSynonymInfo );
 
     static IDE_RC resolveObject(
         qcStatement     * aStatement,

@@ -70,11 +70,11 @@ public:
                           idBool          * aTrySuccess );
 
     static IDE_RC allocCTSAndSetDirty(
-        idvSQL            * aStatistics,
-        sdrMtx            * aFixMtx,
-        sdrMtxStartInfo   * aStartInfo,
-        sdpPhyPageHdr     * aPagePtr,
-        UChar             * aCTSSlotIdx );
+                            idvSQL            * aStatistics,
+                            sdrMtx            * aFixMtx,
+                            sdrMtxStartInfo   * aStartInfo,
+                            sdpPhyPageHdr     * aPagePtr,
+                            UChar             * aCTSSlotIdx );
 
     static IDE_RC allocCTS( idvSQL            * aStatistics,
                             sdrMtx            * aFixMtx,
@@ -112,25 +112,25 @@ public:
                                    smSCN         * aCommitSCN );
 
     static IDE_RC stampingAll4RedoValidation( 
-        idvSQL           * aStatistics,
-        UChar            * aPagePtr1,
-        UChar            * aPagePtr2 );
+                                    idvSQL           * aStatistics,
+                                    UChar            * aPagePtr1,
+                                    UChar            * aPagePtr2 );
 
     static IDE_RC runDelayedStamping( idvSQL           * aStatistics,
+                                      void             * aTrans,
                                       UChar              aCTSlotIdx,
                                       void             * aObjPtr,
                                       sdbPageReadMode    aPageReadMode,
+                                      smSCN              aStmtViewSCN,
                                       idBool           * aTrySuccess,
                                       smTID            * aWait4TransID,
                                       smSCN            * aRowCommitSCN,
                                       SShort           * aFSCreditSize );
 
-    static IDE_RC runDelayedStampingAll(
-        idvSQL          * aStatistics,
-        void            * aTrans,
-        UChar           * aPagePtr,
-        sdbPageReadMode   aPageReadMode );
-
+    static IDE_RC runDelayedStampingAll( idvSQL          * aStatistics,
+                                         void            * aTrans,
+                                         UChar           * aPagePtr,
+                                         sdbPageReadMode   aPageReadMode );
 
     static IDE_RC logAndRunRowStamping( sdrMtx    * aMtx,
                                         UChar       aCTSlotIdx,
@@ -138,21 +138,19 @@ public:
                                         SShort      aFSCreditSize,
                                         smSCN     * aCommitSCN );
 
-    static IDE_RC runRowStampingAll(
-        idvSQL          * aStatistics,
-        sdrMtxStartInfo * aStartInfo,
-        UChar           * aPagePtr,
-        sdbPageReadMode   aPageReadMode,
-        UInt            * aStampingSuccessCnt );
+    static IDE_RC runRowStampingAll( idvSQL          * aStatistics,
+                                     sdrMtxStartInfo * aStartInfo,
+                                     UChar           * aPagePtr,
+                                     sdbPageReadMode   aPageReadMode );
 
     static IDE_RC logAndRunDelayedRowStamping(
-        idvSQL          * aStatistics,
-        sdrMtx          * aMtx,
-        UChar             aCTSlotIdx,
-        void            * aObjPtr,
-        sdbPageReadMode   aPageReadMode,
-        smTID           * aWait4TransID,
-        smSCN           * aRowCommitSCN );
+                                        idvSQL          * aStatistics,
+                                        sdrMtx          * aMtx,
+                                        UChar             aCTSlotIdx,
+                                        void            * aObjPtr,
+                                        sdbPageReadMode   aPageReadMode,
+                                        smTID           * aWait4TransID,
+                                        smSCN           * aRowCommitSCN );
 
     static inline sdpCTL * getCTL( sdpPhyPageHdr  * aPageHdrPtr );
 
@@ -175,10 +173,10 @@ public:
                                    SShort          aRestoreSize );
 
     static IDE_RC checkAndMakeSureRowStamping(
-        idvSQL          * aStatistics,
-        sdrMtxStartInfo * aStartInfo,
-        UChar           * aTargetRow,
-        sdbPageReadMode   aPageReadMode );
+                                    idvSQL          * aStatistics,
+                                    sdrMtxStartInfo * aStartInfo,
+                                    UChar           * aTargetRow,
+                                    sdbPageReadMode   aPageReadMode );
 
     static IDE_RC checkAndRunSelfAging( idvSQL           * aStatistics,
                                         sdrMtxStartInfo  * aMtx,
@@ -191,18 +189,21 @@ public:
 
     static UInt getTotAgingSize( sdpPhyPageHdr * aPageHdrPtr );
 
-
     static IDE_RC runDelayedStampingOnCTS( idvSQL           * aStatistics,
+                                           void             * aTrans,
                                            sdpCTS           * aCTS,
                                            sdbPageReadMode    aPageReadMode,
+                                           smSCN              aStmtViewSCN,
                                            idBool           * aTrySuccess,
                                            smTID            * aWait4TransID,
                                            smSCN            * aRowCommitSCN,
                                            SShort           * aFSCreditSize );
 
     static IDE_RC runDelayedStampingOnRow( idvSQL           * aStatistics,
+                                           void             * aTrans,
                                            UChar            * aRowSlotPtr,
                                            sdbPageReadMode    aPageReadMode,
+                                           smSCN              aStmtViewSCN,
                                            idBool           * aTrySuccess,
                                            smTID            * aWait4TransID,
                                            smSCN            * aRowCommitSCN,
@@ -240,15 +241,17 @@ public:
                                      smSCN   * aFSCNOrCSCN );
 
     static IDE_RC getCommitSCN( idvSQL   * aStatistics,
+                                void     * aTrans,
                                 UChar      aCTSlotIdx,
                                 void     * aObjPtr,
+                                smSCN      aStmtViewSCN,
                                 smTID    * aTID4Wait,
                                 smSCN    * aCommitSCN );
 
     static UInt getCountOfCTS( sdpPhyPageHdr  * aPageHdrPtr );
 
-    /* TASK-4007 [SM] PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
-     * CTS Dumpí•  ìˆ˜ ìžˆëŠ” ê¸°ëŠ¥ ì¶”ê°€*/
+    /* TASK-4007 [SM] PBT¸¦ À§ÇÑ ±â´É Ãß°¡
+     * CTS DumpÇÒ ¼ö ÀÖ´Â ±â´É Ãß°¡*/
     static IDE_RC dump( UChar *aPage ,
                         SChar *aOutBuf ,
                         UInt   aOutSize );
@@ -281,13 +284,13 @@ private:
                                    idBool           aDecDelRowCnt );
 
     static sdpSelfAgingFlag canAgingBySelf(
-                       sdpPhyPageHdr * aPageHdrPtr,
-                       smSCN         * aSCNtoAging );
+                                   sdpPhyPageHdr * aPageHdrPtr,
+                                   smSCN         * aSCNtoAging );
 
     static IDE_RC logAndRunSelfAging( idvSQL          * aStatistics,
                                       sdrMtxStartInfo * aStartInfo,
                                       sdpPhyPageHdr   * aPageHdrPtr,
-                                      smSCN           * aSCNtoAging );
+                                      smSCN           * aSCNtoAging);
 
     static inline void incDelRowCntOfCTL( sdpCTL * aCTL );
     static inline void decDelRowCntOfCTL( sdpCTL * aCTL );
@@ -306,11 +309,12 @@ private:
 
     static inline idBool hasState( UChar    aState, UChar  aStateSet );
     static inline UInt getCnt( sdpCTL * aHdrPtr );
+#if 0  //not used
     static idBool isMyTrans( sdSID         * aTransTSSlotSID,
                              smSCN         * aTransOldestBSCN,
                              sdpPhyPageHdr * aPagePtr,
                              UChar           aCTSlotIdx );
-
+#endif
     static idBool isMyTrans( sdSID         * aTransTSSlotSID,
                              smSCN         * aTransOldestBSCN,
                              sdpCTS        * aCTS );
@@ -319,9 +323,9 @@ private:
 
 /***********************************************************************
  *
- * Description : CTLí—¤ë”ë¡œë¶€í„° ì´ CTS ê°œìˆ˜ ë°˜í™˜
+ * Description : CTLÇì´õ·ÎºÎÅÍ ÃÑ CTS °³¼ö ¹ÝÈ¯
  *
- * aCTL  - [IN] CTL í—¤ë” í¬ì¸í„°
+ * aCTL  - [IN] CTL Çì´õ Æ÷ÀÎÅÍ
  *
  ***********************************************************************/
 inline UInt sdcTableCTL::getCnt( sdpCTL * aCTL )
@@ -331,9 +335,9 @@ inline UInt sdcTableCTL::getCnt( sdpCTL * aCTL )
 
 /***********************************************************************
  *
- * Description : íŽ˜ì´ì§€ í¬ì¸í„°ë¡œë¶€í„° CTL í—¤ë” ë°˜í™˜
+ * Description : ÆäÀÌÁö Æ÷ÀÎÅÍ·ÎºÎÅÍ CTL Çì´õ ¹ÝÈ¯
  *
- * aPageHdrPtr - [IN] íŽ˜ì´ì§€ í—¤ë” ì‹œìž‘ í¬ì¸í„°
+ * aPageHdrPtr - [IN] ÆäÀÌÁö Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
  *
  ***********************************************************************/
 inline sdpCTL* sdcTableCTL::getCTL( sdpPhyPageHdr  * aPageHdrPtr )
@@ -343,28 +347,28 @@ inline sdpCTL* sdcTableCTL::getCTL( sdpPhyPageHdr  * aPageHdrPtr )
 
 /***********************************************************************
  *
- * Description : íŽ˜ì´ì§€ í¬ì¸í„°ë¡œë¶€í„° CTS í¬ì¸í„° ë°˜í™˜
+ * Description : ÆäÀÌÁö Æ÷ÀÎÅÍ·ÎºÎÅÍ CTS Æ÷ÀÎÅÍ ¹ÝÈ¯
  *
- * aPageHdrPtr   - [IN] íŽ˜ì´ì§€ í—¤ë” ì‹œìž‘ í¬ì¸í„°
- * aCTSlotIdx - [IN] ë°˜í™˜í•  CTSì˜ ë²ˆí˜¸
+ * aPageHdrPtr   - [IN] ÆäÀÌÁö Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
+ * aCTSlotIdx - [IN] ¹ÝÈ¯ÇÒ CTSÀÇ ¹øÈ£
  *
  ***********************************************************************/
 inline sdpCTS * sdcTableCTL::getCTS( sdpPhyPageHdr  * aPageHdrPtr,
-                                    UChar            aCTSlotIdx )
+                                     UChar            aCTSlotIdx )
 {
-    return getCTS( getCTL( aPageHdrPtr) , aCTSlotIdx );
+    return getCTS( getCTL(aPageHdrPtr) , aCTSlotIdx );
 }
 
 /***********************************************************************
  *
- * Description : CTL í—¤ë”ë¡œë¶€í„° CTS í¬ì¸í„° ë°˜í™˜
+ * Description : CTL Çì´õ·ÎºÎÅÍ CTS Æ÷ÀÎÅÍ ¹ÝÈ¯
  *
- * aCTL       - [IN] CTL í—¤ë” í¬ì¸í„°
- * aCTSlotIdx - [IN] ë°˜í™˜í•  CTSì˜ ë²ˆí˜¸
+ * aCTL       - [IN] CTL Çì´õ Æ÷ÀÎÅÍ
+ * aCTSlotIdx - [IN] ¹ÝÈ¯ÇÒ CTSÀÇ ¹øÈ£
  *
- * [ ë°˜í™˜ê°’ ]
+ * [ ¹ÝÈ¯°ª ]
  *
- * aCTSlotIdx ì— í•´ë‹¹í•˜ëŠ” CTS í¬ì¸í„° ë°˜í™˜
+ * aCTSlotIdx ¿¡ ÇØ´çÇÏ´Â CTS Æ÷ÀÎÅÍ ¹ÝÈ¯
  *
  ***********************************************************************/
 inline sdpCTS * sdcTableCTL::getCTS( sdpCTL * aHdrPtr,
@@ -376,19 +380,19 @@ inline sdpCTS * sdcTableCTL::getCTS( sdpCTL * aHdrPtr,
 
 /***********************************************************************
  *
- * Description : CTSì˜ ìƒíƒœ í™•ì¸
+ * Description : CTSÀÇ »óÅÂ È®ÀÎ
  *
- * aState     - [IN] CTSì˜ ìƒíƒœ
- * aStateSet  - [IN] í™•ì¸í•´ë³¼ ìƒíƒœì˜ ì§‘í•©
+ * aState     - [IN] CTSÀÇ »óÅÂ
+ * aStateSet  - [IN] È®ÀÎÇØº¼ »óÅÂÀÇ ÁýÇÕ
  *
- * [ ë°˜í™˜ê°’ ]
+ * [ ¹ÝÈ¯°ª ]
  *
- * CTSì˜ ìƒíƒœê°’ì´ ì§‘í•©ì¤‘ì— í•˜ë‚˜ë¼ë„ ì¼ì¹˜í•œë‹¤ë©´ ID_TRUEë¥¼ ë°˜í™˜í•˜ê³ 
- * ê·¸ë ‡ì§€ ì•Šë‹¤ë©´, ID_FALSEë¥¼ ë°˜í™˜í•œë‹¤.
+ * CTSÀÇ »óÅÂ°ªÀÌ ÁýÇÕÁß¿¡ ÇÏ³ª¶óµµ ÀÏÄ¡ÇÑ´Ù¸é ID_TRUE¸¦ ¹ÝÈ¯ÇÏ°í
+ * ±×·¸Áö ¾Ê´Ù¸é, ID_FALSE¸¦ ¹ÝÈ¯ÇÑ´Ù.
  *
- * ì˜ˆë¥¼ë“¤ì–´, CTSì˜ ìƒíƒœê°€ SDP_CTS_STAT_RTSë¼ê³  í• ë•Œ,
- *         í™•ì¸í•˜ê³ ìží•˜ëŠ” StateSetì´ (SDP_CTS_STAT_RTS|SDC_CTS_STAT_CTS)
- *         ë¼ê³  í•œë‹¤ë©´ í•˜ë‚˜ì˜ ìƒíƒœê°€ ì¼ì¹˜í•˜ê¸° ë•Œë¬¸ì— TRUEë¥¼ ë°˜í™˜í•œë‹¤.
+ * ¿¹¸¦µé¾î, CTSÀÇ »óÅÂ°¡ SDP_CTS_STAT_RTS¶ó°í ÇÒ¶§,
+ *         È®ÀÎÇÏ°íÀÚÇÏ´Â StateSetÀÌ (SDP_CTS_STAT_RTS|SDC_CTS_STAT_CTS)
+ *         ¶ó°í ÇÑ´Ù¸é ÇÏ³ªÀÇ »óÅÂ°¡ ÀÏÄ¡ÇÏ±â ¶§¹®¿¡ TRUE¸¦ ¹ÝÈ¯ÇÑ´Ù.
  *
  ***********************************************************************/
 inline idBool sdcTableCTL::hasState( UChar    aState,
@@ -410,16 +414,16 @@ inline idBool sdcTableCTL::hasState( UChar    aState,
 
 /***********************************************************************
  *
- * Description : CTSì˜ Free Space Credit ê°’ì„ ì¦ê°€
+ * Description : CTSÀÇ Free Space Credit °ªÀ» Áõ°¡
  *
- * íŠ¸ëžœìž­ì…˜ì˜ ë¡¤ë°±ì„ ëŒ€ë¹„í•˜ì—¬ íŠ¸ëžœìž­ì…˜ ì™„ë£Œì „ê¹Œì§€ ë°˜ë“œì‹œ í™•ë³´í•´ ë‘ì–´ì•¼ í•˜ëŠ” íŽ˜ì´ì§€
- * ê°€ìš©ê³µê°„ì„ ëˆ„ì ì‹œì¼œë‘”ë‹¤. í•´ë‹¹ íŠ¸ëžœìž­ì…˜ì´ ì™„ë£Œë˜ê¸° ì „ê¹Œì§€ëŠ” í•´ë‹¹ íŽ˜ì´ì§€ì—ì„œ ëˆ„ì ëœ
- * ê°€ìš©ê³µê°„ì´ í•´ì œë˜ì–´ ë‹¤ë¥¸ íŠ¸ëžœìž­ì…˜ì— ì˜í•´ì„œ í• ë‹¹ë˜ì§€ ëª»í•˜ë„ë¡ í•œë‹¤.
+ * Æ®·£Àè¼ÇÀÇ ·Ñ¹éÀ» ´ëºñÇÏ¿© Æ®·£Àè¼Ç ¿Ï·áÀü±îÁö ¹Ýµå½Ã È®º¸ÇØ µÎ¾î¾ß ÇÏ´Â ÆäÀÌÁö
+ * °¡¿ë°ø°£À» ´©Àû½ÃÄÑµÐ´Ù. ÇØ´ç Æ®·£Àè¼ÇÀÌ ¿Ï·áµÇ±â Àü±îÁö´Â ÇØ´ç ÆäÀÌÁö¿¡¼­ ´©ÀûµÈ
+ * °¡¿ë°ø°£ÀÌ ÇØÁ¦µÇ¾î ´Ù¸¥ Æ®·£Àè¼Ç¿¡ ÀÇÇØ¼­ ÇÒ´çµÇÁö ¸øÇÏµµ·Ï ÇÑ´Ù.
  *
- * ì¦‰, íŠ¸ëžœìž­ì…˜ì´ ë¡¤ë°±í•˜ëŠ” ê²½ìš°ì— ë°˜ë“œì‹œ ë¡¤ë°±ì´ ì„±ê³µí•´ì•¼í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+ * Áï, Æ®·£Àè¼ÇÀÌ ·Ñ¹éÇÏ´Â °æ¿ì¿¡ ¹Ýµå½Ã ·Ñ¹éÀÌ ¼º°øÇØ¾ßÇÏ±â ¶§¹®ÀÌ´Ù.
  *
- * aCTS       - [IN] CTS í¬ì¸í„°
- * aFSCredit  - [IN] ì¦ê°€ì‹œí‚¬ FreeSpaceCredit í¬ê¸° (>0)
+ * aCTS       - [IN] CTS Æ÷ÀÎÅÍ
+ * aFSCredit  - [IN] Áõ°¡½ÃÅ³ FreeSpaceCredit Å©±â (>0)
  *
  ***********************************************************************/
 inline void sdcTableCTL::incFSCreditOfCTS( sdpCTS   * aCTS,
@@ -433,16 +437,16 @@ inline void sdcTableCTL::incFSCreditOfCTS( sdpCTS   * aCTS,
 
 /***********************************************************************
  *
- * Description : CTSì˜ Free Space Credit ê°’ì„ ê°ì†Œì‹œí‚´
+ * Description : CTSÀÇ Free Space Credit °ªÀ» °¨¼Ò½ÃÅ´
  *
- * íŠ¸ëžœìž­ì…˜ì˜ ë¡¤ë°±ì„ ëŒ€ë¹„í•˜ì—¬ íŠ¸ëžœìž­ì…˜ ì™„ë£Œì „ê¹Œì§€ ë°˜ë“œì‹œ í™•ë³´í•´ ë‘ì–´ì•¼ í•˜ëŠ”
- * íŽ˜ì´ì§€ ê°€ìš©ê³µê°„ì„ í•´ì œí•œë§Œí¼ CTSì˜ Free Space Creditë¥¼ ë¹¼ì¤€ë‹¤.
+ * Æ®·£Àè¼ÇÀÇ ·Ñ¹éÀ» ´ëºñÇÏ¿© Æ®·£Àè¼Ç ¿Ï·áÀü±îÁö ¹Ýµå½Ã È®º¸ÇØ µÎ¾î¾ß ÇÏ´Â
+ * ÆäÀÌÁö °¡¿ë°ø°£À» ÇØÁ¦ÇÑ¸¸Å­ CTSÀÇ Free Space Credit¸¦ »©ÁØ´Ù.
  *
- * íŠ¸ëžœìž­ì…˜ì´ ë¡¤ë°±ì„ í•˜ê±°ë‚˜ ì»¤ë°‹ì´í›„ì— RowStamping ê³¼ì •ì—ì„œ Free Space CreditëŠ”
- * í•´ì œëœë‹¤.
+ * Æ®·£Àè¼ÇÀÌ ·Ñ¹éÀ» ÇÏ°Å³ª Ä¿¹ÔÀÌÈÄ¿¡ RowStamping °úÁ¤¿¡¼­ Free Space Credit´Â
+ * ÇØÁ¦µÈ´Ù.
  *
- * aCTS       - [IN] CTS í¬ì¸í„°
- * aFSCredit  - [IN] ê°ì†Œì‹œí‚¬ FreeSpaceCredit í¬ê¸° (>0)
+ * aCTS       - [IN] CTS Æ÷ÀÎÅÍ
+ * aFSCredit  - [IN] °¨¼Ò½ÃÅ³ FreeSpaceCredit Å©±â (>0)
  *
  ***********************************************************************/
 inline void sdcTableCTL::decFSCreditOfCTS( sdpCTS  * aCTS,
@@ -456,12 +460,12 @@ inline void sdcTableCTL::decFSCreditOfCTS( sdpCTS  * aCTS,
 
 /***********************************************************************
  *
- * Description : CTLì˜ Deleteì¤‘ì¸ í˜¹ì€ Deleteëœ Row Pieceì˜ ê°œìˆ˜ë¥¼ ì¦ê°€
+ * Description : CTLÀÇ DeleteÁßÀÎ È¤Àº DeleteµÈ Row PieceÀÇ °³¼ö¸¦ Áõ°¡
  *
- * í•´ë‹¹ ë°ì´íƒ€ íŽ˜ì´ì§€ì— Self-Agingì´ í•„ìš”í• ì§€ë„ ëª¨ë¥´ëŠ” Deleted Row
- * Piece ê°œìˆ˜ë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤
+ * ÇØ´ç µ¥ÀÌÅ¸ ÆäÀÌÁö¿¡ Self-AgingÀÌ ÇÊ¿äÇÒÁöµµ ¸ð¸£´Â Deleted Row
+ * Piece °³¼ö¸¦ Áõ°¡½ÃÅ²´Ù
  *
- * aCTL       - [IN] CTL í¬ì¸í„°
+ * aCTL       - [IN] CTL Æ÷ÀÎÅÍ
  *
  ***********************************************************************/
 inline void sdcTableCTL::incDelRowCntOfCTL( sdpCTL * aCTL )
@@ -472,12 +476,12 @@ inline void sdcTableCTL::incDelRowCntOfCTL( sdpCTL * aCTL )
 
 /***********************************************************************
  *
- * Description : CTLì˜ Deleteì¤‘ì¸ í˜¹ì€ Deleteëœ Row Pieceì˜ ê°œìˆ˜ë¥¼ ê°ì†Œ
+ * Description : CTLÀÇ DeleteÁßÀÎ È¤Àº DeleteµÈ Row PieceÀÇ °³¼ö¸¦ °¨¼Ò
  *
- * í•´ë‹¹ ë°ì´íƒ€ íŽ˜ì´ì§€ì— Self-Agingì„ ì²˜ë¦¬í•˜ê³  ë‚˜ì„œ í˜¹ì€ Delete ì—°ì‚°ì´ ë¡¤ë°±í•˜ëŠ” ê²½ìš°ì—
- * Piece ê°œìˆ˜ë¥¼ ê°ì†Œì‹œí‚¨ë‹¤.
+ * ÇØ´ç µ¥ÀÌÅ¸ ÆäÀÌÁö¿¡ Self-AgingÀ» Ã³¸®ÇÏ°í ³ª¼­ È¤Àº Delete ¿¬»êÀÌ ·Ñ¹éÇÏ´Â °æ¿ì¿¡
+ * Piece °³¼ö¸¦ °¨¼Ò½ÃÅ²´Ù.
  *
- * aCTL       - [IN] CTL í¬ì¸í„°
+ * aCTL       - [IN] CTL Æ÷ÀÎÅÍ
  *
  ***********************************************************************/
 inline void sdcTableCTL::decDelRowCntOfCTL( sdpCTL * aCTL )
@@ -488,9 +492,9 @@ inline void sdcTableCTL::decDelRowCntOfCTL( sdpCTL * aCTL )
 
 /***********************************************************************
  *
- * Description : CTLì˜ ë°”ì¸ë”© ëœ CTSì˜ ê°œìˆ˜ë¥¼ 1ì¦ê°€ì‹œí‚¨ë‹¤.
+ * Description : CTLÀÇ ¹ÙÀÎµù µÈ CTSÀÇ °³¼ö¸¦ 1Áõ°¡½ÃÅ²´Ù.
  *
- * aCTL       - [IN] CTL í¬ì¸í„°
+ * aCTL       - [IN] CTL Æ÷ÀÎÅÍ
  *
  ************************************************************************/
 inline void sdcTableCTL::incBindCTSCntOfCTL( sdpCTL * aCTL )
@@ -501,10 +505,10 @@ inline void sdcTableCTL::incBindCTSCntOfCTL( sdpCTL * aCTL )
 
 /***********************************************************************
  *
- * Description : CTLì˜ ë°”ì¸ë”© ëœ CTSì˜ ê°œìˆ˜ë¥¼ 1ê°ì†Œì‹œí‚¨ë‹¤.
+ * Description : CTLÀÇ ¹ÙÀÎµù µÈ CTSÀÇ °³¼ö¸¦ 1°¨¼Ò½ÃÅ²´Ù.
  *
- * aCTL       - [IN] CTL í¬ì¸í„°
- * aCTS       - [IN] CTS í¬ì¸í„°
+ * aCTL       - [IN] CTL Æ÷ÀÎÅÍ
+ * aCTS       - [IN] CTS Æ÷ÀÎÅÍ
  *
  ************************************************************************/
 inline void sdcTableCTL::decBindCTSCntOfCTL( sdpCTL * aCTL,
@@ -536,9 +540,9 @@ inline void sdcTableCTL::decBindCTSCntOfCTL( sdpCTL * aCTL,
 
 /***********************************************************************
  *
- * Description : CTLì˜ Rowì— ë°”ì¸ë”© ëœ CTSì˜ ê°œìˆ˜ë¥¼ 1ì¦ê°€ì‹œí‚¨ë‹¤.
+ * Description : CTLÀÇ Row¿¡ ¹ÙÀÎµù µÈ CTSÀÇ °³¼ö¸¦ 1Áõ°¡½ÃÅ²´Ù.
  *
- * aCTL       - [IN] CTL í¬ì¸í„°
+ * aCTL       - [IN] CTL Æ÷ÀÎÅÍ
  *
  ************************************************************************/
 inline void sdcTableCTL::incBindRowCTSCntOfCTL( sdpCTL * aCTL )
@@ -549,10 +553,10 @@ inline void sdcTableCTL::incBindRowCTSCntOfCTL( sdpCTL * aCTL )
 
 /***********************************************************************
  *
- * Description : CTLì˜ Rowë°”ì¸ë”© ëœ CTSì˜ ê°œìˆ˜ë¥¼ 1ê°ì†Œì‹œí‚¨ë‹¤.
+ * Description : CTLÀÇ Row¹ÙÀÎµù µÈ CTSÀÇ °³¼ö¸¦ 1°¨¼Ò½ÃÅ²´Ù.
  *
- * aCTL       - [IN] CTL í¬ì¸í„°
- * aCTS       - [IN] CTS í¬ì¸í„°
+ * aCTL       - [IN] CTL Æ÷ÀÎÅÍ
+ * aCTS       - [IN] CTS Æ÷ÀÎÅÍ
  *
  ************************************************************************/
 inline void sdcTableCTL::decBindRowCTSCntOfCTL( sdpCTL * aCTL )

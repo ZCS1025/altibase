@@ -30,6 +30,7 @@
 #include <ide.h>
 #include <idp.h>
 
+#include <dkDef.h>
 #include <dkuProperty.h>
 
 #ifdef ALTIBASE_PRODUCT_XDB
@@ -48,7 +49,7 @@ UInt dkuProperty::mDblinkEnable;
 UInt dkuProperty::mDblinkDataBufferBlockCount;
 UInt dkuProperty::mDblinkDataBufferBlockSize;
 UInt dkuProperty::mDblinkDataBufferAllocRatio;
-UInt dkuProperty::mDblinkGlobalTransactionLevel;
+UInt dkuProperty::mGlobalTransactionLevel;
 UInt dkuProperty::mDblinkRemoteStatementAutoCommit;
 UInt dkuProperty::mDblinkAltilinkerConnectTimeout;
 UInt dkuProperty::mDblinkRemoteTableBufferSize;
@@ -74,9 +75,18 @@ IDE_RC dkuProperty::load( void )
                            &mDblinkDataBufferAllocRatio )
                 == IDE_SUCCESS );
 
-    IDE_ASSERT( idp::read( (SChar *)"DBLINK_GLOBAL_TRANSACTION_LEVEL",
-                           &mDblinkGlobalTransactionLevel )
-                == IDE_SUCCESS );
+    if ( DKU_DBLINK_ENABLE == DK_ENABLE )
+    {
+        IDE_ASSERT( idp::read( (SChar *)"DBLINK_GLOBAL_TRANSACTION_LEVEL",
+                               &mGlobalTransactionLevel )
+                    == IDE_SUCCESS );
+    }
+    else
+    {
+        IDE_ASSERT( idp::read( (SChar *)"GLOBAL_TRANSACTION_LEVEL",
+                               &mGlobalTransactionLevel )
+                    == IDE_SUCCESS );
+    }
 
     IDE_ASSERT( idp::read( (SChar *)"DBLINK_REMOTE_STATEMENT_AUTOCOMMIT",
                            &mDblinkRemoteStatementAutoCommit )
@@ -90,10 +100,20 @@ IDE_RC dkuProperty::load( void )
                            &mDblinkRemoteTableBufferSize )
                 == IDE_SUCCESS );
 
-    IDE_TEST( idp::setupAfterUpdateCallback(
-                  (const SChar *)"DBLINK_GLOBAL_TRANSACTION_LEVEL",
-                  dkuProperty::notifyDBLINK_GLOBAL_TRANSACTION_LEVEL )
-              != IDE_SUCCESS );
+    if ( DKU_DBLINK_ENABLE == DK_ENABLE )
+    {
+        IDE_TEST( idp::setupAfterUpdateCallback(
+                (const SChar *)"DBLINK_GLOBAL_TRANSACTION_LEVEL",
+                dkuProperty::notifyGLOBAL_TRANSACTION_LEVEL )
+            != IDE_SUCCESS );
+    }
+    else
+    {
+        IDE_TEST( idp::setupAfterUpdateCallback(
+                (const SChar *)"GLOBAL_TRANSACTION_LEVEL",
+                dkuProperty::notifyGLOBAL_TRANSACTION_LEVEL )
+            != IDE_SUCCESS );
+    }
 
     IDE_TEST( idp::setupAfterUpdateCallback(
                   (const SChar *)"DBLINK_REMOTE_STATEMENT_AUTOCOMMIT",
@@ -137,9 +157,9 @@ UInt dkuProperty::getDblinkDataBufferAllocRatio( void )
     return mDblinkDataBufferAllocRatio;
 }
 
-UInt dkuProperty::getDblinkGlobalTransactionLevel( void )
+UInt dkuProperty::getGlobalTransactionLevel( void )
 {
-    return mDblinkGlobalTransactionLevel;
+    return mGlobalTransactionLevel;
 }
 
 UInt dkuProperty::getDblinkRemoteStatementAutoCommit( void )
@@ -162,13 +182,13 @@ UInt dkuProperty::getDblinkRecoveryMaxLogfile( void )
     return mDblinkRecoveryMaxLogfile;
 }
 
-IDE_RC dkuProperty::notifyDBLINK_GLOBAL_TRANSACTION_LEVEL( idvSQL* /* aStatistics */,
-                                                           SChar * /* Name */,
-                                                           void  * /* aOldValue */,
-                                                           void  * aNewValue,
-                                                           void  * /* aArg */ )
+IDE_RC dkuProperty::notifyGLOBAL_TRANSACTION_LEVEL( idvSQL* /* aStatistics */,
+                                                    SChar * /* Name */,
+                                                    void  * /* aOldValue */,
+                                                    void  * aNewValue,
+                                                    void  * /* aArg */ )
 {
-    idlOS::memcpy( &mDblinkGlobalTransactionLevel,
+    idlOS::memcpy( &mGlobalTransactionLevel,
                    aNewValue,
                    ID_SIZEOF( UInt ) );
 

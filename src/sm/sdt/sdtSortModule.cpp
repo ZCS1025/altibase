@@ -13,32 +13,31 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
- 
 
 /***********************************************************************
  * $Id $
  **********************************************************************/
 
-#include <sdtSortModule.h>
 #include <sdtDef.h>
-#include <sdtTempDef.h>
-#include <sdtWAMap.h>
-#include <sdtTempRow.h>
 #include <smiMisc.h>
+#include <sdtSortDef.h>
+#include <sdtTempRow.h>
+#include <sdtSortModule.h>
+#include <sdtSortSegment.h>
+
 
 /**************************************************************************
  * Description :
- * WorkAreaë¥¼ í• ë‹¹ë°›ê³  temptableHeaderë“±ì„ ì´ˆê¸°í™” í•´ì¤€ë‹¤.
- * ì§í›„ insertNSort, insert ë‘˜ ì¤‘ í•˜ë‚˜ì˜ ìƒíƒœê°€
- * ëœë‹¤.
+ * WorkArea¸¦ ÇÒ´ç¹Ş°í temptableHeaderµîÀ» ÃÊ±âÈ­ ÇØÁØ´Ù.
+ * Á÷ÈÄ insertNSort, insert µÑ Áß ÇÏ³ªÀÇ »óÅÂ°¡
+ * µÈ´Ù.
  *
  * <IN>
- * aHeader        - ëŒ€ìƒ Table
+ * aHeader        - ´ë»ó Table
  ***************************************************************************/
-IDE_RC sdtSortModule::init( void * aHeader )
+IDE_RC sdtSortModule::init( smiTempTableHeader * aHeader )
 {
-    smiTempTableHeader * sHeader;
-    sdtWASegment       * sWASeg;
+    sdtSortSegHdr      * sWASeg;
     UInt                 sInitGroupPageCount;
     UInt                 sSortGroupPageCount;
     UInt                 sFlushGroupPageCount;
@@ -46,61 +45,79 @@ IDE_RC sdtSortModule::init( void * aHeader )
 
     IDE_ERROR( aHeader != NULL );
 
-    sHeader = (smiTempTableHeader*)aHeader;
-    sWASeg  = (sdtWASegment*)sHeader->mWASegment;
-    sKeyColumn = (smiColumnList*) sHeader->mKeyColumnList;
+    sWASeg  = (sdtSortSegHdr*)aHeader->mWASegment;
+    sKeyColumn = (smiColumnList*) aHeader->mKeyColumnList;
 
-    /* SortTempëŠ” unique ì²´í¬ ì•ˆí•¨ */
-    IDE_ERROR( SM_IS_FLAG_OFF( sHeader->mTTFlag, SMI_TTFLAG_UNIQUE )
+    /* SortTemp´Â unique Ã¼Å© ¾ÈÇÔ */
+    IDE_ERROR( SM_IS_FLAG_OFF( aHeader->mTTFlag, SMI_TTFLAG_UNIQUE )
                == ID_TRUE );
 
-    /************************** Groupì„¤ì • *******************************/
-    sInitGroupPageCount = sdtWASegment::getAllocableWAGroupPageCount(
+    /************************** Group¼³Á¤ *******************************/
+    sInitGroupPageCount = sdtSortSegment::getAllocableWAGroupPageCount(
         sWASeg, SDT_WAGROUPID_INIT );
-    sSortGroupPageCount = sInitGroupPageCount
-        * sHeader->mWorkGroupRatio / 100;
+
+    /* BUG-46427 °¢ group´ç ÃÖ¼Ò 2°³ ÀÌ»óÀÇ page°¡ ÀÖ¾î¾ß ÇÑ´Ù.
+     * Flush groupÀº ÀÌ ÈÄ sub flush groupÀÌ ºĞ¸® µÉ ¼öµµ ÀÖ´Ù.
+     * Áï 3°³ groupÀÌ µÉ ¼öµµ ÀÖ´Ù. */
+    IDE_ERROR( sInitGroupPageCount >= ( SDT_WAGROUP_MIN_PAGECOUNT * 3 ) );
+
+    sSortGroupPageCount = sInitGroupPageCount * aHeader->mWorkGroupRatio / 100;
+
+    if ( sSortGroupPageCount < SDT_WAGROUP_MIN_PAGECOUNT )
+    {
+        /* BUG-46427 °¢ group´ç 2°³ ÀÌ»óÀÇ page°¡ ÀÖ¾î¾ß ÇÑ´Ù. */
+        sSortGroupPageCount = SDT_WAGROUP_MIN_PAGECOUNT;
+    }
+
     sFlushGroupPageCount= ( sInitGroupPageCount - sSortGroupPageCount);
-    IDE_TEST( sdtWASegment::createWAGroup( sWASeg,
-                                           SDT_WAGROUPID_SORT,
-                                           sSortGroupPageCount,
-                                           SDT_WA_REUSE_INMEMORY )
-              != IDE_SUCCESS );
-    IDE_TEST( sdtWASegment::createWAGroup( sWASeg,
-                                           SDT_WAGROUPID_FLUSH,
-                                           sFlushGroupPageCount,
-                                           SDT_WA_REUSE_FIFO )
-              != IDE_SUCCESS );
 
-    sHeader->mSortGroupID       = SDT_WAGROUPID_SORT;
-    sHeader->mInitMergePosition = NULL;
-    sHeader->mScanPosition      = NULL;
-    sHeader->mGRID              = SC_NULL_GRID;
-
-    IDE_TEST( sdtWAMap::create( sWASeg,
-                                sHeader->mSortGroupID,
-                                SDT_WM_TYPE_POINTER,
-                                0, /* Slot Count */
-                                2, /* aVersionCount */
-                                (void*)&sWASeg->mSortHashMapHdr )
+    if ( sFlushGroupPageCount < ( SDT_WAGROUP_MIN_PAGECOUNT * 2 ) )
+    {
+        /* BUG-46427 °¢ group´ç 2°³ ÀÌ»óÀÇ page°¡ ÀÖ¾î¾ß ÇÑ´Ù.
+         * Flush GroupÀº ÀÌ ÈÄ sub flush·Î µÑ·Î ³ª´©¾î Áú ¼ö ÀÖ´Ù.
+         * ¹Ì¸® 4°³ ÀÌ»óÀÇ page¸¦ ÇÒ´çÇØ ³õ´Â´Ù. */
+        sFlushGroupPageCount = SDT_WAGROUP_MIN_PAGECOUNT * 2 ;
+        sSortGroupPageCount = sInitGroupPageCount - sFlushGroupPageCount;
+    }
+    IDE_TEST( sdtSortSegment::createWAGroup( sWASeg,
+                                             SDT_WAGROUPID_SORT,
+                                             sSortGroupPageCount,
+                                             SDT_WA_REUSE_INMEMORY )
               != IDE_SUCCESS );
 
-    IDE_TEST( sHeader->mSortStack.initialize( IDU_MEM_SM_TEMP,
+    IDE_TEST( sdtSortSegment::createWAGroup( sWASeg,
+                                             SDT_WAGROUPID_FLUSH,
+                                             sFlushGroupPageCount,
+                                             SDT_WA_REUSE_FIFO )
+              != IDE_SUCCESS );
+
+    aHeader->mSortGroupID       = SDT_WAGROUPID_SORT;
+    aHeader->mInitMergePosition = NULL;
+    aHeader->mScanPosition      = NULL;
+    SC_MAKE_NULL_GRID( aHeader->mGRID );
+
+    IDE_TEST( sdtWASortMap::create( sWASeg,
+                                    aHeader->mSortGroupID,
+                                    SDT_WM_TYPE_POINTER,
+                                    0, /* Slot Count */
+                                    2, /* aVersionCount */
+                                    &sWASeg->mSortMapHdr )
+              != IDE_SUCCESS );
+
+    IDE_TEST( aHeader->mSortStack.initialize( IDU_MEM_SM_TEMP,
                                               ID_SIZEOF(smnSortStack) )
               != IDE_SUCCESS);
 
-    sHeader->mModule.mInsert = insert;
-    sHeader->mModule.mSort   = sort;
-
-    /* BUG-39440 ì‚½ì…í•œ ìˆœì„œëŒ€ë¡œ ì¶”ì¶œì´ ê°€ëŠ¥í•˜ë„ë¡ keyColumnì´ ì—†ëŠ” ê²½ìš°
-     * ì •ë ¬ì—†ëŠ” insertë¥¼ í•¨
+    /* BUG-39440 »ğÀÔÇÑ ¼ø¼­´ë·Î ÃßÃâÀÌ °¡´ÉÇÏµµ·Ï keyColumnÀÌ ¾ø´Â °æ¿ì
+     * Á¤·Ä¾ø´Â insert¸¦ ÇÔ
      */
     if ( sKeyColumn != NULL )
     {
-        IDE_TEST( insertNSort( sHeader ) != IDE_SUCCESS );
+        aHeader->mTTState = SMI_TTSTATE_SORT_INSERTNSORT;
     }
     else
     {
-        IDE_TEST( insertOnly( sHeader ) != IDE_SUCCESS );
+        aHeader->mTTState = SMI_TTSTATE_SORT_INSERTONLY;
     }
     return IDE_SUCCESS;
 
@@ -111,73 +128,71 @@ IDE_RC sdtSortModule::init( void * aHeader )
 
 /**************************************************************************
  * Description :
- * ì‚½ì…ëœ Rowë“¤ì„ ì •ë ¬í•œë‹¤.
- * ì´ë¯¸ Flushëœ Runì´ Queueì— ì¡´ì¬í•˜ë©´ Mergeê°€ í•„ìš”í•˜ê³ ,
- * ê·¸ ì™¸ì˜ ê²½ìš°ëŠ” InMemorySortë¡œ ìˆ˜í–‰í•œë‹¤.
+ * »ğÀÔµÈ RowµéÀ» Á¤·ÄÇÑ´Ù.
+ * ÀÌ¹Ì FlushµÈ RunÀÌ Queue¿¡ Á¸ÀçÇÏ¸é Merge°¡ ÇÊ¿äÇÏ°í,
+ * ±× ¿ÜÀÇ °æ¿ì´Â InMemorySort·Î ¼öÇàÇÑ´Ù.
  *
- * ë§Œì•½ WindowSortë¥¼ í•˜ëŠ” ìƒí™©ì´ë©´, ì´ë¯¸ ì €ì¥ëœ Rowë¥¼ ì¬ì •ë ¬í•œë‹¤.
+ * ¸¸¾à WindowSort¸¦ ÇÏ´Â »óÈ²ÀÌ¸é, ÀÌ¹Ì ÀúÀåµÈ Row¸¦ ÀçÁ¤·ÄÇÑ´Ù.
  *
  * <IN>
- * aHeader        - ëŒ€ìƒ Table
+ * aHeader        - ´ë»ó Table
  ***************************************************************************/
-IDE_RC sdtSortModule::sort(void * aHeader)
+IDE_RC sdtSortModule::sort(smiTempTableHeader * aHeader)
 {
-    smiTempTableHeader * sHeader = (smiTempTableHeader *)aHeader;
-
-    switch( sHeader->mTTState )
+    switch( aHeader->mTTState )
     {
-        /********************** ì •ë ¬ì´ í•„ìš”í•œ ìƒí™© ***********************/
+        /********************** Á¤·ÄÀÌ ÇÊ¿äÇÑ »óÈ² ***********************/
         case SMI_TTSTATE_SORT_INSERTNSORT:
-            /* keyColumnì´ ì—†ëŠ”ê²Œ ì˜ë„ëœ ìƒí™©ì´ë¼ë©´ assert ë¥¼ ì œê±° í•´ì•¼ í•œë‹¤. */
-            IDE_ERROR( sHeader->mKeyColumnList != NULL );
+            /* keyColumnÀÌ ¾ø´Â°Ô ÀÇµµµÈ »óÈ²ÀÌ¶ó¸é assert ¸¦ Á¦°Å ÇØ¾ß ÇÑ´Ù. */
+            IDE_ERROR( aHeader->mKeyColumnList != NULL );
 
-            if ( sHeader->mRunQueue.getQueueLength() > 0 )
+            if ( aHeader->mRunQueue.getQueueLength() > 0 )
             {
-                /* Runì„ ìƒì„±í•œ ì ì´ ìˆìŒ. InMemoryê°€ ì•„ë‹ˆë¼ëŠ” ì´ì•¼ê¸° */
-                IDE_TEST( merge( sHeader ) != IDE_SUCCESS );
+                /* RunÀ» »ı¼ºÇÑ ÀûÀÌ ÀÖÀ½. InMemory°¡ ¾Æ´Ï¶ó´Â ÀÌ¾ß±â */
+                IDE_TEST( merge( aHeader ) != IDE_SUCCESS );
 
-                if ( SM_IS_FLAG_ON( sHeader->mTTFlag, SMI_TTFLAG_RANGESCAN ) )
+                if ( SM_IS_FLAG_ON( aHeader->mTTFlag, SMI_TTFLAG_RANGESCAN ) )
                 {
-                    IDE_TEST( makeIndex( sHeader ) != IDE_SUCCESS );
-                    IDE_TEST( indexScan( sHeader ) != IDE_SUCCESS );
+                    IDE_TEST( makeIndex( aHeader ) != IDE_SUCCESS );
+                    IDE_TEST( indexScan( aHeader ) != IDE_SUCCESS );
                 }
                 else
                 {
-                    IDE_TEST( mergeScan( sHeader ) != IDE_SUCCESS );
+                    IDE_TEST( mergeScan( aHeader ) != IDE_SUCCESS );
                 }
             }
             else
             {
-                IDE_TEST( inMemoryScan( sHeader ) != IDE_SUCCESS );
+                IDE_TEST( inMemoryScan( aHeader ) != IDE_SUCCESS );
             }
             break;
 
-            /******************** ê·¸ëƒ¥ ìˆœì„œëŒ€ë¡œ ì½ì–´ë´…ì‹œë‹¤ *******************/
+            /******************** ±×³É ¼ø¼­´ë·Î ÀĞ¾îº¾½Ã´Ù *******************/
         case SMI_TTSTATE_SORT_INSERTONLY:
         case SMI_TTSTATE_SORT_SCAN:
-            IDE_ERROR( sHeader->mKeyColumnList == NULL );
+            IDE_ERROR( aHeader->mKeyColumnList == NULL );
 
-            if ( sHeader->mRunQueue.getQueueLength() > 0 )
+            if ( aHeader->mRunQueue.getQueueLength() > 0 )
             {
-                IDE_TEST( scan( sHeader ) != IDE_SUCCESS );
+                IDE_TEST( scan( aHeader ) != IDE_SUCCESS );
             }
             else
             {
-                IDE_TEST( inMemoryScan( sHeader ) != IDE_SUCCESS );
+                IDE_TEST( inMemoryScan( aHeader ) != IDE_SUCCESS );
             }
             break;
 
-            /********************** ì¬ì •ë ¬ì„ ìš”êµ¬í•œ ê²½ìš° *********************/
+            /********************** ÀçÁ¤·ÄÀ» ¿ä±¸ÇÑ °æ¿ì *********************/
         case SMI_TTSTATE_SORT_INMEMORYSCAN:
-            /* ì¬ì •ë ¬ì€ RangeScanë§Œ ìš”êµ¬í•¨ */
-            IDE_ERROR( SM_IS_FLAG_ON( sHeader->mTTFlag, SMI_TTFLAG_RANGESCAN ) );
-            /* ì–´ì°¨í”¼ InMemoryì´ë¯€ë¡œ, ê·¸ëƒ¥ ë³€ê²½ëœ Columnì— ë”°ë¼ ì¬ì •ë ¬í•˜ë©´ ë¨*/
-            IDE_TEST( inMemoryScan( sHeader ) != IDE_SUCCESS );
+            /* ÀçÁ¤·ÄÀº RangeScan¸¸ ¿ä±¸ÇÔ */
+            IDE_ERROR( SM_IS_FLAG_ON( aHeader->mTTFlag, SMI_TTFLAG_RANGESCAN ) );
+            /* ¾îÂ÷ÇÇ InMemoryÀÌ¹Ç·Î, ±×³É º¯°æµÈ Column¿¡ µû¶ó ÀçÁ¤·ÄÇÏ¸é µÊ*/
+            IDE_TEST( inMemoryScan( aHeader ) != IDE_SUCCESS );
             break;
         case SMI_TTSTATE_SORT_INDEXSCAN:
-            /* ì¬ì •ë ¬ì€ RangeScanë§Œ ìš”êµ¬í•¨ */
-            IDE_ERROR( SM_IS_FLAG_ON( sHeader->mTTFlag, SMI_TTFLAG_RANGESCAN ) );
-            IDE_TEST( extractNSort( sHeader ) != IDE_SUCCESS );
+            /* ÀçÁ¤·ÄÀº RangeScan¸¸ ¿ä±¸ÇÔ */
+            IDE_ERROR( SM_IS_FLAG_ON( aHeader->mTTFlag, SMI_TTFLAG_RANGESCAN ) );
+            IDE_TEST( extractNSort( aHeader ) != IDE_SUCCESS );
             break;
         default:
         case SMI_TTSTATE_SORT_EXTRACTNSORT:
@@ -197,17 +212,17 @@ IDE_RC sdtSortModule::sort(void * aHeader)
 
 /**************************************************************************
  * Description :
- * ë§ˆì§€ë§‰ìœ¼ë¡œ ì˜ˆì¸¡ í†µê³„ì¹˜ë¥¼ ê³„ì‚°í•œë‹¤
+ * ¸¶Áö¸·À¸·Î ¿¹Ãø Åë°èÄ¡¸¦ °è»êÇÑ´Ù
  *
  * <IN>
- * aHeader        - ëŒ€ìƒ Table
+ * aHeader        - ´ë»ó Table
  ***************************************************************************/
 IDE_RC sdtSortModule::calcEstimatedStats( smiTempTableHeader * aHeader )
 {
     smiTempTableStats * sStatsPtr;
-    ULong               sDataPageCount;  /* ì´ Dataì˜ Pageê°œìˆ˜ */
-    UInt                sRowPageCount;   /* Rowê°€ ì°¨ì§€í•  ìµœëŒ€ Pageê°œìˆ˜ */
-    UInt                sRunPageCount;   /* Runì˜ Page í¬ê¸° */
+    ULong               sDataPageCount;  /* ÃÑ DataÀÇ Page°³¼ö */
+    UInt                sRowPageCount;   /* Row°¡ Â÷ÁöÇÒ ÃÖ´ë Page°³¼ö */
+    UInt                sRunPageCount;   /* RunÀÇ Page Å©±â */
 
     sStatsPtr      = aHeader->mStatsPtr;
     sDataPageCount = ( SDT_TR_HEADER_SIZE_FULL + aHeader->mRowSize )
@@ -215,30 +230,30 @@ IDE_RC sdtSortModule::calcEstimatedStats( smiTempTableHeader * aHeader )
     sRowPageCount  = ( aHeader->mRowSize / SD_PAGE_SIZE ) + 2;
     sRunPageCount  = sRowPageCount * 2;
 
-    /* Optimal(InMemory)ì€ ëª¨ë“  ë°ì´í„°ê°€ SortAreaì— ë‹´ê¸¸ í¬ê¸°ë©´ ëœë‹¤. */
-    sStatsPtr->mEstimatedOptimalSortSize = sDataPageCount;
+    /* Optimal(InMemory)Àº ¸ğµç µ¥ÀÌÅÍ°¡ SortArea¿¡ ´ã±æ Å©±â¸é µÈ´Ù. */
+    sStatsPtr->mEstimatedOptimalSize = sDataPageCount;
 
-    /* OnePassëŠ”,
-     * Nê°œì˜ Pageë¥¼ ê°€ì§„ Runì´ ë§Œë“¤ì–´ì§„ í›„ ( InserttNSort )
-     * Mê°œì˜ Runì„ Mergeí•˜ì—¬ ì™„ë£Œë˜ë©´ Onepassì´ë‹¤.
+    /* OnePass´Â,
+     * N°³ÀÇ Page¸¦ °¡Áø RunÀÌ ¸¸µé¾îÁø ÈÄ ( InserttNSort )
+     * M°³ÀÇ RunÀ» MergeÇÏ¿© ¿Ï·áµÇ¸é OnepassÀÌ´Ù.
      *
-     * N = SortAreaSize / SD_PAGE_SIZE => SortAreaì— ìŒ“ì€ í›„ Rowë¥¼ ë§Œë“œë‹ˆê¹Œ
-     * M = SortAreaSize / RunSize      => SortAreaì— Runì„ ìŒ“ìœ¼ë‹ˆê¹Œ
-     * Data = N * M                    => Nê°œì˜ Pageë¥¼ ê°€ì§„ Run Mê°œ
+     * N = SortAreaSize / SD_PAGE_SIZE => SortArea¿¡ ½×Àº ÈÄ Row¸¦ ¸¸µå´Ï±î
+     * M = SortAreaSize / RunSize      => SortArea¿¡ RunÀ» ½×À¸´Ï±î
+     * Data = N * M                    => N°³ÀÇ Page¸¦ °¡Áø Run M°³
      *
      * Data = SortAreaSize * SortAreaSize / SD_PAGE_SIZE / RunSize
      * SortAreaSize^2 = Data * RunSize * SD_PAGE_SIZE
      * SortAreaSize = sqrt( Data*RunSize ) */
-    sStatsPtr->mEstimatedOnepassSortSize = (ULong)idlOS::sqrt(
+    sStatsPtr->mEstimatedSubOptimalSize = (ULong)idlOS::sqrt(
         (SDouble) sDataPageCount * sRunPageCount );
 
-    /* SortGroupRatioë¥¼ ê³ ë ¤í•˜ê³ , PageHeaderë‚˜ WCBë“±ì„ ê³ ë ¤í•˜ì—¬,
-     * 1.3ë°° ì •ë„ ê³±í•´ì¤Œ */
-    sStatsPtr->mEstimatedOptimalSortSize =
-        (ULong)( sStatsPtr->mEstimatedOptimalSortSize
+    /* SortGroupRatio¸¦ °í·ÁÇÏ°í, PageHeader³ª WCBµîÀ» °í·ÁÇÏ¿©,
+     * 1.3¹è Á¤µµ °öÇØÁÜ */
+    sStatsPtr->mEstimatedOptimalSize =
+        (ULong)( sStatsPtr->mEstimatedOptimalSize
                  * SD_PAGE_SIZE * 100 / aHeader->mWorkGroupRatio * 1.3);
-    sStatsPtr->mEstimatedOnepassSortSize =
-        (ULong)( sStatsPtr->mEstimatedOnepassSortSize
+    sStatsPtr->mEstimatedSubOptimalSize =
+        (ULong)( sStatsPtr->mEstimatedSubOptimalSize
                  * SD_PAGE_SIZE * 100 / aHeader->mWorkGroupRatio * 1.3);
 
     return IDE_SUCCESS;
@@ -247,135 +262,34 @@ IDE_RC sdtSortModule::calcEstimatedStats( smiTempTableHeader * aHeader )
 
 /**************************************************************************
  * Description :
- * ì •ë¦¬í•œë‹¤. WorkAreaë° Cursorë“±ì€ smiTempì—ì„œ ì•Œì•„ì„œ í•œë‹¤.
+ * Á¤¸®ÇÑ´Ù. WorkArea¹× CursorµîÀº smiTemp¿¡¼­ ¾Ë¾Æ¼­ ÇÑ´Ù.
  *
  * <IN>
- * aHeader        - ëŒ€ìƒ Table
+ * aHeader        - ´ë»ó Table
  ***************************************************************************/
-IDE_RC sdtSortModule::destroy( void * aHeader )
+IDE_RC sdtSortModule::destroy( smiTempTableHeader * aHeader )
 {
-    smiTempTableHeader * sHeader = (smiTempTableHeader*)aHeader;
-
-    if ( sHeader->mTTState != SMI_TTSTATE_INIT )
+    if ( aHeader->mTTState != SMI_TTSTATE_INIT )
     {
-        IDE_TEST( sHeader->mSortStack.destroy() != IDE_SUCCESS );
+        IDE_TEST( aHeader->mSortStack.destroy() != IDE_SUCCESS );
     }
 
-    if ( sHeader->mInitMergePosition != NULL )
+    if ( aHeader->mInitMergePosition != NULL )
     {
-        IDE_TEST( iduMemMgr::free( sHeader->mInitMergePosition )
+        IDE_TEST( iduMemMgr::free( aHeader->mInitMergePosition )
                   != IDE_SUCCESS );
-        sHeader->mInitMergePosition = NULL;
+        aHeader->mInitMergePosition = NULL;
     }
 
-    if ( sHeader->mScanPosition != NULL )
+    if ( aHeader->mScanPosition != NULL )
     {
-        IDE_TEST( iduMemMgr::free( sHeader->mScanPosition )
+        IDE_TEST( iduMemMgr::free( aHeader->mScanPosition )
                   != IDE_SUCCESS );
-        sHeader->mScanPosition = NULL;
+        aHeader->mScanPosition = NULL;
     }
 
-    /* ì¢…ë£Œë˜ë©´ì„œ ì˜ˆì¸¡ í†µê³„ì¹˜ë¥¼ ê³„ì‚°í•œë‹¤. */
-    IDE_TEST( calcEstimatedStats( sHeader ) != IDE_SUCCESS );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-/**************************************************************************
- * Description :
- * ë°ì´í„°ë¥¼ ì‚½ì…í•œë‹¤. InsertNSort, Insert ìƒíƒœì—¬ì•¼
- * í•œë‹¤.
- *
- * <IN>
- * aTable     - ëŒ€ìƒ Table
- * aValue     - ì‚½ì…í•  Value
- * aHashValue - ì‚½ì…í•  HashValue (HashTempë§Œ ìœ íš¨ )
- * <OUT>
- * aGRID      - ì‚½ì…í•œ ìœ„ì¹˜
- * aResult    - ì‚½ì…ì´ ì„±ê³µí•˜ì˜€ëŠ”ê°€?(UniqueViolation Checkìš© )
- ***************************************************************************/
-IDE_RC sdtSortModule::insert(void     * aHeader,
-                             smiValue * aValue,
-                             UInt       aHashValue,
-                             scGRID   * aGRID,
-                             idBool   * aResult )
-{
-    smiTempTableHeader * sHeader = (smiTempTableHeader *)aHeader;
-    sdtWASegment       * sWASeg = (sdtWASegment*)sHeader->mWASegment;
-    sdtTRInsertResult    sTRInsertResult;
-    sdtTRPInfo4Insert    sTRPInfo;
-    UInt                 sWAMapIdx;
-    idBool               sResetSortGroup = ID_FALSE;
-
-    /* Unique Hashtempì „ìš©. ë”°ë¼ì„œ  ë¬´ì¡°ê±´ Trueë¡œ ì„¤ì •í•¨ */
-    *aResult = ID_TRUE;
-
-    IDE_ERROR( (sHeader->mTTState == SMI_TTSTATE_SORT_INSERTNSORT) ||
-               (sHeader->mTTState == SMI_TTSTATE_SORT_INSERTONLY) );
-
-    while( 1 )
-    {
-        sdtTempRow::makeTRPInfo( SDT_TRFLAG_HEAD,
-                                 0, /*HitSequence */
-                                 aHashValue, /*NullHashValue */
-                                 SC_NULL_GRID, /* aChildGRID */
-                                 SC_NULL_GRID, /* aNextGRID */
-                                 sHeader->mRowSize,
-                                 sHeader->mColumnCount,
-                                 sHeader->mColumns,
-                                 aValue,
-                                 &sTRPInfo );
-
-        IDE_TEST( sdtTempRow::append( sWASeg,
-                                      sHeader->mSortGroupID,
-                                      SDT_TEMP_PAGETYPE_INMEMORYGROUP,
-                                      0, /* CuttingOffset */
-                                      &sTRPInfo,
-                                      &sTRInsertResult )
-                  != IDE_SUCCESS );
-
-        /* WAMapì— ìŠ¬ë¡¯ ì‚½ì… */
-        if ( sTRInsertResult.mComplete == ID_TRUE )
-        {
-            /* ì²« RowPieceê¹Œì§€ ì˜¨ì „íˆ ì‚½ì…í•˜ì˜€ìŒ */
-            IDE_TEST( sdtWAMap::expand(
-                          &sWASeg->mSortHashMapHdr,
-                          SC_MAKE_PID( sTRInsertResult.mHeadRowpieceGRID ),
-                          &sWAMapIdx )
-                      != IDE_SUCCESS );
-
-            if ( sWAMapIdx != SDT_WASLOT_UNUSED  )
-            {
-                /* Slotí™•ì¥ ì„±ê³µ */
-                IDE_ERROR( !SC_GRID_IS_NULL(
-                               sTRInsertResult.mHeadRowpieceGRID ) );
-                IDE_TEST( sdtWAMap::setvULong(
-                              &sWASeg->mSortHashMapHdr,
-                              sWAMapIdx,
-                              (vULong*)&sTRInsertResult.mHeadRowpiecePtr )
-                          != IDE_SUCCESS );
-                break;
-            }
-        }
-
-        /* Reset í•œë²ˆ í–ˆëŠ”ë°ë„ ì‚½ì… ì‹¤íŒ¨í•˜ëŠ”ê±´ ìˆì„ ìˆ˜ ì—†ìŒ */
-        IDE_ERROR( sResetSortGroup == ID_FALSE );
-
-        /* ê³µê°„ë¶€ì¡±ìœ¼ë¡œ Rowë‚˜ KeySlotì„ ì‚½ì…ì— ì‹¤íŒ¨í•˜ë©´
-         * í•´ë‹¹ ëŸ°ì„ ì •ë ¬í•´ì„œ ë‚´ë¦¼ */
-        if ( sHeader->mTTState == SMI_TTSTATE_SORT_INSERTNSORT )
-        {
-            IDE_TEST( sortSortGroup( sHeader ) != IDE_SUCCESS );
-        }
-        IDE_TEST( storeSortedRun(sHeader) != IDE_SUCCESS );
-        sResetSortGroup = ID_TRUE;
-    }
-
-    *aGRID = sTRInsertResult.mHeadRowpieceGRID;
+    /* Á¾·áµÇ¸é¼­ ¿¹Ãø Åë°èÄ¡¸¦ °è»êÇÑ´Ù. */
+    IDE_TEST( calcEstimatedStats( aHeader ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -386,98 +300,96 @@ IDE_RC sdtSortModule::insert(void     * aHeader,
 
 /***************************************************************************
  * Description :
- * InMemoryScanìš© ì»¤ì„œë¥¼ ì—½ë‹ˆë‹¤.
+ * InMemoryScan¿ë Ä¿¼­¸¦ ¿±´Ï´Ù.
  *
  * <IN>
- * aHeader        - ëŒ€ìƒ Table
+ * aHeader        - ´ë»ó Table
  * <OUT>
- * aCursor        - ë°˜í™˜ê°’
+ * aCursor        - ¹İÈ¯°ª
  ***************************************************************************/
-IDE_RC sdtSortModule::openCursorInMemoryScan( void * aHeader,
-                                              void * aCursor )
+IDE_RC sdtSortModule::openCursorInMemoryScan( smiTempTableHeader * aHeader,
+                                              smiSortTempCursor  * aCursor )
 {
-    smiTempTableHeader * sHeader = (smiTempTableHeader *)aHeader;
-    smiTempCursor      * sCursor = (smiTempCursor *)aCursor;
-    sdtWASegment       * sWASeg  = (sdtWASegment*)sHeader->mWASegment;
+    sdtSortSegHdr      * sWASeg  = (sdtSortSegHdr*)aHeader->mWASegment;
 
-    if ( sHeader->mTTState == SMI_TTSTATE_SORT_INSERTNSORT )
+    if ( aHeader->mTTState == SMI_TTSTATE_SORT_INSERTNSORT )
     {
-        /*Sort ì—†ì´ ì ‘ê·¼í•œ ê²½ìš° */
-        IDE_ERROR( sHeader->mRunQueue.getQueueLength() == 0 );
-        IDE_ERROR( sHeader->mKeyColumnList != NULL );
+        /*Sort ¾øÀÌ Á¢±ÙÇÑ °æ¿ì */
+        IDE_ERROR( aHeader->mRunQueue.getQueueLength() == 0 );
+        IDE_ERROR( aHeader->mKeyColumnList != NULL );
 
-        sHeader->mTTState = SMI_TTSTATE_SORT_INMEMORYSCAN;
+        aHeader->mTTState = SMI_TTSTATE_SORT_INMEMORYSCAN;
     }
     else
     {
-        if ( sHeader->mTTState == SMI_TTSTATE_SORT_INSERTONLY )
+        if ( aHeader->mTTState == SMI_TTSTATE_SORT_INSERTONLY )
         {
-            IDE_ERROR( sHeader->mRunQueue.getQueueLength() == 0 );
-            IDE_ERROR( sHeader->mKeyColumnList == NULL );
+            IDE_ERROR( aHeader->mRunQueue.getQueueLength() == 0 );
+            IDE_ERROR( aHeader->mKeyColumnList == NULL );
 
-            sHeader->mTTState = SMI_TTSTATE_SORT_INMEMORYSCAN;
+            aHeader->mTTState = SMI_TTSTATE_SORT_INMEMORYSCAN;
         }
         else
         {
-            IDE_ERROR( sHeader->mTTState == SMI_TTSTATE_SORT_INMEMORYSCAN );
+            IDE_ERROR( aHeader->mTTState == SMI_TTSTATE_SORT_INMEMORYSCAN );
         }
     }
 
-    sHeader->mFetchGroupID  = SDT_WAGROUPID_NONE;
-    sCursor->mWAGroupID     = SDT_WAGROUPID_NONE;
-    sCursor->mGRID          = SC_NULL_GRID;
-    sCursor->mStoreCursor   = storeCursorInMemoryScan;
-    sCursor->mRestoreCursor = restoreCursorInMemoryScan;
+    SC_MAKE_NULL_GRID( aCursor->mGRID );
+    aHeader->mFetchGroupID  = SDT_WAGROUPID_NONE;
+    aCursor->mWAGroupID     = SDT_WAGROUPID_NONE;
+    aCursor->mStoreCursor   = storeCursorInMemoryScan;
+    aCursor->mRestoreCursor = restoreCursorInMemoryScan;
 
-    if ( SM_IS_FLAG_ON( sCursor->mTCFlag, SMI_TCFLAG_FORWARD ) )
+    if ( SM_IS_FLAG_ON( aCursor->mTCFlag, SMI_TCFLAG_FORWARD ) )
     {
-        sCursor->mFetch   = fetchInMemoryScanForward;
-        sCursor->mSeq     = -1;
-        sCursor->mLastSeq = sdtWAMap::getSlotCount( &sWASeg->mSortHashMapHdr );
+        aCursor->mFetch   = fetchInMemoryScanForward;
+        aCursor->mSeq     = -1;
+        aCursor->mLastSeq = sdtWASortMap::getSlotCount( &sWASeg->mSortMapHdr );
     }
     else
     {
-        sCursor->mFetch   = fetchInMemoryScanBackward;
-        sCursor->mSeq     = sdtWAMap::getSlotCount( &sWASeg->mSortHashMapHdr );
-        sCursor->mLastSeq = -1;
+        aCursor->mFetch   = fetchInMemoryScanBackward;
+        aCursor->mSeq     = sdtWASortMap::getSlotCount( &sWASeg->mSortMapHdr );
+        aCursor->mLastSeq = -1;
     }
 
-    if ( SM_IS_FLAG_ON( sCursor->mTCFlag, SMI_TCFLAG_ORDEREDSCAN ) )
+    if ( SM_IS_FLAG_ON( aCursor->mTCFlag, SMI_TCFLAG_ORDEREDSCAN ) )
     {
         /* nothing to do ... */
     }
     else
     {
-        IDE_ERROR( SM_IS_FLAG_ON( sCursor->mTCFlag, SMI_TCFLAG_RANGESCAN ) );
+        IDE_ERROR( SM_IS_FLAG_ON( aCursor->mTCFlag, SMI_TCFLAG_RANGESCAN ) );
 
-        /* RangeScanì„ í•˜ê¸° ìœ„í•´ BeforeFirst, ë˜ëŠ” AfterLastë¥¼ íƒìƒ‰í•¨ */
-        if ( SM_IS_FLAG_ON( sCursor->mTCFlag, SMI_TCFLAG_FORWARD ) )
+        /* RangeScanÀ» ÇÏ±â À§ÇØ BeforeFirst, ¶Ç´Â AfterLast¸¦ Å½»öÇÔ */
+        if ( SM_IS_FLAG_ON( aCursor->mTCFlag, SMI_TCFLAG_FORWARD ) )
         {
-            IDE_TEST( traverseInMemoryScan( sHeader,
-                                            &sCursor->mRange->minimum,
+            IDE_TEST( traverseInMemoryScan( aHeader,
+                                            &aCursor->mRange->minimum,
                                             ID_TRUE, /* aDirection */
-                                            &sCursor->mSeq )
+                                            &aCursor->mSeq )
                       != IDE_SUCCESS );
-            IDE_TEST( traverseInMemoryScan( sHeader,
-                                            &sCursor->mRange->maximum,
+            IDE_TEST( traverseInMemoryScan( aHeader,
+                                            &aCursor->mRange->maximum,
                                             ID_FALSE, /* aDirection */
-                                            &sCursor->mLastSeq )
+                                            &aCursor->mLastSeq )
                       != IDE_SUCCESS );
-            sCursor->mLastSeq ++;
+            aCursor->mLastSeq++;
         }
         else
         {
-            IDE_TEST( traverseInMemoryScan( sHeader,
-                                            &sCursor->mRange->maximum,
+            IDE_TEST( traverseInMemoryScan( aHeader,
+                                            &aCursor->mRange->maximum,
                                             ID_FALSE, /* aDirection */
-                                            &sCursor->mSeq )
+                                            &aCursor->mSeq )
                       != IDE_SUCCESS );
-            IDE_TEST( traverseInMemoryScan( sHeader,
-                                            &sCursor->mRange->minimum,
+            IDE_TEST( traverseInMemoryScan( aHeader,
+                                            &aCursor->mRange->minimum,
                                             ID_TRUE, /* aDirection */
-                                            &sCursor->mLastSeq )
+                                            &aCursor->mLastSeq )
                       != IDE_SUCCESS );
-            sCursor->mLastSeq --;
+            aCursor->mLastSeq--;
         }
     }
 
@@ -490,85 +402,34 @@ IDE_RC sdtSortModule::openCursorInMemoryScan( void * aHeader,
 
 /***************************************************************************
  * Description :
- * MergeScanìš© ì»¤ì„œë¥¼ ì—½ë‹ˆë‹¤.
+ * MergeScan¿ë Ä¿¼­¸¦ ¿±´Ï´Ù.
  *
  * <IN>
- * aHeader        - ëŒ€ìƒ Table
+ * aHeader        - ´ë»ó Table
  * <OUT>
- * aCursor        - ë°˜í™˜ê°’
+ * aCursor        - ¹İÈ¯°ª
  ***************************************************************************/
-IDE_RC sdtSortModule::openCursorMergeScan( void * aHeader,
-                                           void * aCursor )
+IDE_RC sdtSortModule::openCursorMergeScan( smiTempTableHeader * aHeader,
+                                           smiSortTempCursor     * aCursor )
 {
-    smiTempTableHeader   * sHeader = (smiTempTableHeader *)aHeader;
-    smiTempCursor        * sCursor = (smiTempCursor *)aCursor;
+    IDE_ERROR( SM_IS_FLAG_ON( aCursor->mTCFlag, SMI_TCFLAG_FORWARD ) );
+    IDE_ERROR( SM_IS_FLAG_ON( aCursor->mTCFlag, SMI_TCFLAG_ORDEREDSCAN ) );
 
-    IDE_ERROR( SM_IS_FLAG_ON( sCursor->mTCFlag, SMI_TCFLAG_FORWARD ) );
-    IDE_ERROR( SM_IS_FLAG_ON( sCursor->mTCFlag, SMI_TCFLAG_ORDEREDSCAN ) );
-
-    sCursor->mWAGroupID     = SDT_WAGROUPID_SORT;
-    sHeader->mFetchGroupID  = SDT_WAGROUPID_NONE;
-    IDE_TEST( makeMergeRuns( sHeader,
-                             sHeader->mInitMergePosition )
+    aCursor->mWAGroupID     = SDT_WAGROUPID_SORT;
+    aHeader->mFetchGroupID  = SDT_WAGROUPID_NONE;
+    IDE_TEST( makeMergeRuns( aHeader,
+                             aHeader->mInitMergePosition )
               != IDE_SUCCESS );
 
-    /* RangeScan ë¶ˆê°€ëŠ¥ */
-    IDE_ERROR( sCursor->mRange == smiGetDefaultKeyRange() );
+    /* RangeScan ºÒ°¡´É */
+    IDE_ERROR( aCursor->mRange == smiGetDefaultKeyRange() );
 
-    sCursor->mGRID          = SC_NULL_GRID;
-    sCursor->mFetch         = fetchMergeScan;
-    sCursor->mStoreCursor   = storeCursorMergeScan;
-    sCursor->mRestoreCursor = restoreCursorMergeScan;
+    SC_MAKE_NULL_GRID( aCursor->mGRID );
+    aCursor->mFetch         = fetchMergeScan;
+    aCursor->mStoreCursor   = storeCursorMergeScan;
+    aCursor->mRestoreCursor = restoreCursorMergeScan;
 
-    sCursor->mMergePosition = NULL;
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-/***************************************************************************
- * Description :
- * IndexScanìš© ì»¤ì„œë¥¼ ì—½ë‹ˆë‹¤.
- *
- * <IN>
- * aHeader        - ëŒ€ìƒ Table
- * <OUT>
- * aCursor        - ë°˜í™˜ê°’
- ***************************************************************************/
-IDE_RC sdtSortModule::openCursorIndexScan( void * aHeader,
-                                           void * aCursor )
-{
-    smiTempTableHeader * sHeader = (smiTempTableHeader *)aHeader;
-    smiTempCursor      * sCursor = (smiTempCursor *)aCursor;
-
-    IDE_ERROR( sHeader->mTTState == SMI_TTSTATE_SORT_INDEXSCAN );
-
-    sCursor->mWAGroupID     = SDT_WAGROUPID_LNODE;
-    sHeader->mFetchGroupID  = SDT_WAGROUPID_LNODE;
-
-    if ( sHeader->mHeight == 0 )
-    {
-        sCursor->mGRID    = SC_NULL_GRID;
-    }
-    else
-    {
-        IDE_TEST( traverseIndexScan( sHeader, sCursor ) != IDE_SUCCESS );
-    }
-
-    if ( SM_IS_FLAG_ON( sCursor->mTCFlag, SMI_TCFLAG_FORWARD ) )
-    {
-        sCursor->mFetch = fetchIndexScanForward;
-    }
-    else
-    {
-        sCursor->mFetch = fetchIndexScanBackward;
-    }
-
-    sCursor->mStoreCursor   = storeCursorIndexScan;
-    sCursor->mRestoreCursor = restoreCursorIndexScan;
+    aCursor->mMergePosition = NULL;
 
     return IDE_SUCCESS;
 
@@ -579,49 +440,91 @@ IDE_RC sdtSortModule::openCursorIndexScan( void * aHeader,
 
 /***************************************************************************
  * Description :
- * Scanìš© ì»¤ì„œë¥¼ ì—½ë‹ˆë‹¤. (BUG-39450)
+ * IndexScan¿ë Ä¿¼­¸¦ ¿±´Ï´Ù.
  *
  * <IN>
- * aHeader        - ëŒ€ìƒ Table
+ * aHeader        - ´ë»ó Table
  * <OUT>
- * aCursor        - ë°˜í™˜ê°’
+ * aCursor        - ¹İÈ¯°ª
  ***************************************************************************/
-IDE_RC sdtSortModule::openCursorScan( void * aHeader,
-                                      void * aCursor )
+IDE_RC sdtSortModule::openCursorIndexScan( smiTempTableHeader * aHeader,
+                                           smiSortTempCursor     * aCursor )
 {
-    smiTempCursor      * sCursor = (smiTempCursor *)aCursor;
-    smiTempTableHeader * sHeader = (smiTempTableHeader *)aHeader;
-    sdtWASegment       * sWASeg  = (sdtWASegment*)sHeader->mWASegment;
+    IDE_ERROR( aHeader->mTTState == SMI_TTSTATE_SORT_INDEXSCAN );
 
-    IDE_ERROR( sHeader->mTTState == SMI_TTSTATE_SORT_SCAN );
-    /* RangeScan ë¶ˆê°€ëŠ¥ */
-    IDE_ERROR( sCursor->mRange == smiGetDefaultKeyRange() );
+    aCursor->mWAGroupID     = SDT_WAGROUPID_LNODE;
+    aHeader->mFetchGroupID  = SDT_WAGROUPID_LNODE;
+    if ( aHeader->mHeight == 0 )
+    {
+        SC_MAKE_NULL_GRID( aCursor->mGRID );
+    }
+    else
+    {
+        IDE_TEST( traverseIndexScan( aHeader, aCursor ) != IDE_SUCCESS );
+    }
 
-    IDE_ERROR( SM_IS_FLAG_ON( sCursor->mTCFlag, SMI_TCFLAG_FORWARD ) );
-    IDE_ERROR( SM_IS_FLAG_ON( sCursor->mTCFlag, SMI_TCFLAG_ORDEREDSCAN ) );
-    IDE_ERROR( sHeader->mScanPosition != NULL );
+    if ( SM_IS_FLAG_ON( aCursor->mTCFlag, SMI_TCFLAG_FORWARD ) )
+    {
+        aCursor->mFetch = fetchIndexScanForward;
+    }
+    else
+    {
+        aCursor->mFetch = fetchIndexScanBackward;
+    }
 
-    /*Fetchì‹œ ì‚¬ìš©í•˜ëŠ” GroupID ì„¤ì • */
-    sCursor->mWAGroupID    = SDT_WAGROUPID_SCAN;
+    aCursor->mStoreCursor   = storeCursorIndexScan;
+    aCursor->mRestoreCursor = restoreCursorIndexScan;
 
-    sCursor->mFetch         = fetchScan;
-    sCursor->mStoreCursor   = storeCursorScan;
-    sCursor->mRestoreCursor = restoreCursorScan;
+    return IDE_SUCCESS;
 
-    sCursor->mPinIdx        = 0;
-    sHeader->mScanPosition[ SDT_TEMP_SCANPOS_PINIDX ] = 0;
+    IDE_EXCEPTION_END;
 
-    SC_MAKE_GRID( sCursor->mGRID,
-                  sHeader->mSpaceID,
-                  sHeader->mScanPosition[ SDT_TEMP_SCANPOS_HEADERIDX ],
+    return IDE_FAILURE;
+}
+
+/***************************************************************************
+ * Description :
+ * Scan¿ë Ä¿¼­¸¦ ¿±´Ï´Ù. (BUG-39450)
+ *
+ * <IN>
+ * aHeader        - ´ë»ó Table
+ * <OUT>
+ * aCursor        - ¹İÈ¯°ª
+ ***************************************************************************/
+IDE_RC sdtSortModule::openCursorScan( smiTempTableHeader * aHeader,
+                                      smiSortTempCursor     * aCursor )
+{
+    sdtSortSegHdr      * sWASeg  = (sdtSortSegHdr*)aHeader->mWASegment;
+
+    IDE_ERROR( aHeader->mTTState == SMI_TTSTATE_SORT_SCAN );
+    /* RangeScan ºÒ°¡´É */
+    IDE_ERROR( aCursor->mRange == smiGetDefaultKeyRange() );
+
+    IDE_ERROR( SM_IS_FLAG_ON( aCursor->mTCFlag, SMI_TCFLAG_FORWARD ) );
+    IDE_ERROR( SM_IS_FLAG_ON( aCursor->mTCFlag, SMI_TCFLAG_ORDEREDSCAN ) );
+    IDE_ERROR( aHeader->mScanPosition != NULL );
+
+    /*Fetch½Ã »ç¿ëÇÏ´Â GroupID ¼³Á¤ */
+    aCursor->mWAGroupID    = SDT_WAGROUPID_SCAN;
+
+    aCursor->mFetch         = fetchScan;
+    aCursor->mStoreCursor   = storeCursorScan;
+    aCursor->mRestoreCursor = restoreCursorScan;
+
+    aCursor->mPinIdx        = 0;
+    aHeader->mScanPosition[ SDT_TEMP_SCANPOS_PINIDX ] = 0;
+
+    SC_MAKE_GRID( aCursor->mGRID,
+                  aHeader->mSpaceID,
+                  aHeader->mScanPosition[ SDT_TEMP_SCANPOS_HEADERIDX ],
                   0 /* offset */);
 
-    IDE_TEST( sdtWASegment::getPageWithFix( sWASeg,
-                                            sCursor->mWAGroupID,
-                                            sCursor->mGRID,
-                                            &sCursor->mWPID,
-                                            &sCursor->mWAPagePtr,
-                                            &sCursor->mSlotCount )
+    IDE_TEST( sdtSortSegment::getPageWithFix( sWASeg,
+                                              aCursor->mWAGroupID,
+                                              aCursor->mGRID,
+                                              &aCursor->mWPID,
+                                              &aCursor->mWAPagePtr,
+                                              &aCursor->mSlotCount )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -633,51 +536,49 @@ IDE_RC sdtSortModule::openCursorScan( void * aHeader,
 
 /***************************************************************************
  * Description :
- * InMemoryìš©ìœ¼ë¡œ ëŒ€ìƒ Rowë¥¼ íƒìƒ‰í•©ë‹ˆë‹¤.
+ * InMemory¿ëÀ¸·Î ´ë»ó Row¸¦ Å½»öÇÕ´Ï´Ù.
  *
  * <IN>
- * aHeader        - ëŒ€ìƒ Table
- * aCallBack      - ë¹„êµí•˜ëŠ”ë° ì“°ì¼ ì½œë°±
- * aDirection     - ë°©í–¥
+ * aHeader        - ´ë»ó Table
+ * aCallBack      - ºñ±³ÇÏ´Âµ¥ ¾²ÀÏ Äİ¹é
+ * aDirection     - ¹æÇâ
  * <OUT>
- * aSeq           - ì°¾ì€ ìœ„ì¹˜
+ * aSeq           - Ã£Àº À§Ä¡
  ***************************************************************************/
 IDE_RC sdtSortModule::traverseInMemoryScan( smiTempTableHeader * aHeader,
                                             const smiCallBack  * aCallBack,
                                             idBool               aDirection,
-                                            UInt               * aSeq )
+                                            SInt               * aSeq )
 {
-    sdtWASegment       * sWASeg = (sdtWASegment*)aHeader->mWASegment;
+    sdtSortSegHdr      * sWASeg = (sdtSortSegHdr*)aHeader->mWASegment;
     SInt                 sLeft;
     SInt                 sRight;
     SInt                 sMid;
-    UChar              * sPtr;
     idBool               sResult;
-    sdtTRPInfo4Select    sTRPInfo;
+    sdtSortScanInfo      sScanInfo;
 
     sLeft  = 0;
-    sRight = sdtWAMap::getSlotCount( &sWASeg->mSortHashMapHdr ) - 1;
+    sRight = sdtWASortMap::getSlotCount( &sWASeg->mSortMapHdr ) - 1;
+
+    sScanInfo.mFetchEndOffset = aHeader->mRowSize;
 
     while( sLeft <= sRight )
     {
         sMid   = ( sLeft + sRight ) >> 1;
 
-        IDE_TEST( sdtWAMap::getvULong( &sWASeg->mSortHashMapHdr,
-                                       sMid,
-                                       (vULong*)&sPtr )
+        IDE_TEST( sdtWASortMap::getvULong( &sWASeg->mSortMapHdr,
+                                           sMid,
+                                           (vULong*)&sScanInfo.mTRPHeader )
                   != IDE_SUCCESS );
 
-        SC_MAKE_NULL_GRID( sTRPInfo.mTRPHGRID );
         IDE_TEST( sdtTempRow::fetch( sWASeg,
                                      SDT_WAGROUPID_NONE,
-                                     sPtr,
-                                     aHeader->mRowSize,
                                      aHeader->mRowBuffer4Compare,
-                                     &sTRPInfo )
+                                     &sScanInfo )
                   != IDE_SUCCESS );
 
         IDE_TEST( aCallBack->callback( &sResult,
-                                       sTRPInfo.mValuePtr,
+                                       sScanInfo.mValuePtr,
                                        NULL,
                                        0,
                                        SC_NULL_GRID,
@@ -705,31 +606,31 @@ IDE_RC sdtSortModule::traverseInMemoryScan( smiTempTableHeader * aHeader,
 
 /***************************************************************************
  * Description :
- * IndexScanìš©ìœ¼ë¡œ ëŒ€ìƒ Rowë¥¼ íƒìƒ‰í•©ë‹ˆë‹¤.
+ * IndexScan¿ëÀ¸·Î ´ë»ó Row¸¦ Å½»öÇÕ´Ï´Ù.
  *
  * <IN>
- * aHeader        - ëŒ€ìƒ Table
- * aCursor        - ëŒ€ìƒ ì»¤ì„œ
+ * aHeader        - ´ë»ó Table
+ * aCursor        - ´ë»ó Ä¿¼­
  ***************************************************************************/
 IDE_RC sdtSortModule::traverseIndexScan( smiTempTableHeader * aHeader,
-                                         smiTempCursor      * aCursor )
+                                         smiSortTempCursor  * aCursor )
 {
-    sdtWASegment       * sWASeg = (sdtWASegment*)aHeader->mWASegment;
+    sdtSortSegHdr      * sWASeg = (sdtSortSegHdr*)aHeader->mWASegment;
     scPageID             sNPID;
     const smiCallBack  * sCallBack;
     idBool               sResult;
-    sdtTRPInfo4Select    sTRPInfo;
-    UChar              * sPtr = NULL;
+    sdtSortScanInfo      sScanInfo;
     idBool               sIsValidSlot;
     UInt                 sHeight;
     SInt                 sLeft;
     SInt                 sRight;
     SInt                 sMid;
 
-    /* RangeScanì„ í•˜ê¸° ìœ„í•´ BeforeFirst, ë˜ëŠ” AfterLastë¥¼ íƒìƒ‰í•¨ */
+    /* RangeScanÀ» ÇÏ±â À§ÇØ BeforeFirst, ¶Ç´Â AfterLast¸¦ Å½»öÇÔ */
     aCursor->mWAGroupID = SDT_WAGROUPID_INODE;
     sNPID               = aHeader->mRootWPID;
     sHeight             = aHeader->mHeight;
+    sScanInfo.mFetchEndOffset = aHeader->mRowSize;
 
     if ( SM_IS_FLAG_ON( aCursor->mTCFlag, SMI_TCFLAG_FORWARD ) )
     {
@@ -753,12 +654,12 @@ IDE_RC sdtSortModule::traverseIndexScan( smiTempTableHeader * aHeader,
         }
         SC_MAKE_GRID( aCursor->mGRID, aHeader->mSpaceID, sNPID, 0 );
 
-        IDE_TEST( sdtWASegment::getPageWithFix( sWASeg,
-                                                aCursor->mWAGroupID,
-                                                aCursor->mGRID,
-                                                &aCursor->mWPID,
-                                                &aCursor->mWAPagePtr,
-                                                &aCursor->mSlotCount )
+        IDE_TEST( sdtSortSegment::getPageWithFix( sWASeg,
+                                                  aCursor->mWAGroupID,
+                                                  aCursor->mGRID,
+                                                  &aCursor->mWPID,
+                                                  &aCursor->mWAPagePtr,
+                                                  &aCursor->mSlotCount )
                   != IDE_SUCCESS );
 
         sLeft  = 0;
@@ -769,24 +670,21 @@ IDE_RC sdtSortModule::traverseIndexScan( smiTempTableHeader * aHeader,
         {
             sMid   = ( sLeft + sRight ) >> 1;
 
-            sdtWASegment::getSlot( aCursor->mWAPagePtr,
-                                   aCursor->mSlotCount,
-                                   sMid,
-                                   &sPtr,
-                                   &sIsValidSlot );
+            sdtSortSegment::getSlot( aCursor->mWAPagePtr,
+                                     aCursor->mSlotCount,
+                                     sMid,
+                                     (UChar**)&sScanInfo.mTRPHeader,
+                                     &sIsValidSlot );
             IDE_ERROR( sIsValidSlot == ID_TRUE );
 
-            SC_COPY_GRID( aCursor->mGRID, sTRPInfo.mTRPHGRID );
             IDE_TEST( sdtTempRow::fetch( sWASeg,
                                          aCursor->mWAGroupID,
-                                         sPtr,
-                                         aHeader->mRowSize,
                                          aHeader->mRowBuffer4Compare,
-                                         &sTRPInfo )
+                                         &sScanInfo )
                       != IDE_SUCCESS );
 
             IDE_TEST( sCallBack->callback( &sResult,
-                                           sTRPInfo.mValuePtr,
+                                           sScanInfo.mValuePtr,
                                            NULL,        /* aDirectKey */
                                            0,           /* aDirectKeyPartialSize */
                                            SC_NULL_GRID,
@@ -822,8 +720,8 @@ IDE_RC sdtSortModule::traverseIndexScan( smiTempTableHeader * aHeader,
 
         if ( sHeight > 1 )
         {
-            /* LeftMostê°€ Valueë¥¼ ê°–ëŠ” ë°©ì‹ì´ê¸° ë•Œë¬¸ì—, -1ì¼ ìˆ˜ ìˆìŒ
-             * ê·¸ëŸ¬ë¯€ë¡œ 0ìœ¼ë¡œ ì¬ì¡°ì •í•´ì¤Œ */
+            /* LeftMost°¡ Value¸¦ °®´Â ¹æ½ÄÀÌ±â ¶§¹®¿¡, -1ÀÏ ¼ö ÀÖÀ½
+             * ±×·¯¹Ç·Î 0À¸·Î ÀçÁ¶Á¤ÇØÁÜ */
             if ( sMid < 0 )
             {
                 sMid = 0;
@@ -834,37 +732,37 @@ IDE_RC sdtSortModule::traverseIndexScan( smiTempTableHeader * aHeader,
             }
             SC_MAKE_GRID( aCursor->mGRID, aHeader->mSpaceID, sNPID, sMid );
 
-            /* ChildNode íƒìƒ‰. */
+            /* ChildNode Å½»ö. */
             IDE_TEST( sdtTempRow::fetchByGRID( sWASeg,
                                                aCursor->mWAGroupID,
                                                aCursor->mGRID,
                                                aHeader->mRowSize,
                                                aHeader->mRowBuffer4Fetch,
-                                               &sTRPInfo )
+                                               &sScanInfo )
                       != IDE_SUCCESS );
-            IDE_ERROR( SM_IS_FLAG_ON( sTRPInfo.mTRPHeader->mTRFlag,
+            IDE_ERROR( SM_IS_FLAG_ON( sScanInfo.mTRPHeader->mTRFlag,
                                       SDT_TRFLAG_CHILDGRID ) );
 
-            sNPID = SC_MAKE_PID( sTRPInfo.mTRPHeader->mChildGRID );
+            sNPID = SC_MAKE_PID( sScanInfo.mTRPHeader->mChildGRID );
         }
         else
         {
-            /* íƒìƒ‰ ëë‚¬ìŒ */
+            /* Å½»ö ³¡³µÀ½ */
             SC_MAKE_GRID( aCursor->mGRID, aHeader->mSpaceID, sNPID, sMid );
         }
-        sHeight --;
+        sHeight--;
     }// while ( sHeight > 0 )
 
-    /* íƒìƒ‰í•  ëŒ€ìƒì´ ìˆìœ¼ë©´ */
-    if ( !SC_GRID_IS_NULL( aCursor->mGRID ) )
+    /* Å½»öÇÒ ´ë»óÀÌ ÀÖÀ¸¸é */
+    if ( SC_GRID_IS_NOT_NULL( aCursor->mGRID ) )
     {
-        /* getPageí•´ë‘  */
-        IDE_TEST( sdtWASegment::getPageWithFix( sWASeg,
-                                                aHeader->mFetchGroupID,
-                                                aCursor->mGRID,
-                                                &aCursor->mWPID,
-                                                &aCursor->mWAPagePtr,
-                                                &aCursor->mSlotCount )
+        /* getPageÇØµÒ */
+        IDE_TEST( sdtSortSegment::getPageWithFix( sWASeg,
+                                                  aHeader->mFetchGroupID,
+                                                  aCursor->mGRID,
+                                                  &aCursor->mWPID,
+                                                  &aCursor->mWAPagePtr,
+                                                  &aCursor->mSlotCount )
                   != IDE_SUCCESS );
     }
     else
@@ -881,45 +779,43 @@ IDE_RC sdtSortModule::traverseIndexScan( smiTempTableHeader * aHeader,
 
 /**************************************************************************
  * Description :
- * ì»¤ì„œë¡œë¶€í„° Rowë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
+ * Ä¿¼­·ÎºÎÅÍ Row¸¦ °¡Á®¿É´Ï´Ù.
  *
  * <IN>
- * aCursor        - ëŒ€ìƒ Cursor
+ * aCursor        - ´ë»ó Cursor
  * <OUT>
- * aRow           - ëŒ€ìƒ Row
- * aGRID          - ê°€ì ¸ì˜¨ Rowì˜ GRID
+ * aRow           - ´ë»ó Row
+ * aGRID          - °¡Á®¿Â RowÀÇ GRID
  ***************************************************************************/
-IDE_RC sdtSortModule::fetchInMemoryScanForward( void    * aCursor,
+IDE_RC sdtSortModule::fetchInMemoryScanForward( smiSortTempCursor* aCursor,
                                                 UChar  ** aRow,
                                                 scGRID  * aRowGRID )
 {
-    smiTempCursor      * sCursor = (smiTempCursor *)aCursor;
-    smiTempTableHeader * sHeader = sCursor->mTTHeader;
-    sdtWASegment       * sWASeg = (sdtWASegment*)sHeader->mWASegment;
-    UChar              * sPtr;
+    sdtSortSegHdr      * sWASeg = (sdtSortSegHdr*)aCursor->mTTHeader->mWASegment;
+    sdtSortTRPHdr      * sTRPHeader;
     idBool               sResult = ID_FALSE;
 
     do
     {
-        sCursor->mSeq ++;
-        if ( sCursor->mSeq >= sCursor->mLastSeq )
+        aCursor->mSeq++;
+        if ( aCursor->mSeq >= aCursor->mLastSeq )
         {
             break;
         }
 
-        IDE_TEST( sdtWAMap::getvULong( &sWASeg->mSortHashMapHdr,
-                                       sCursor->mSeq,
-                                       (vULong*)&sPtr )
+        IDE_TEST( sdtWASortMap::getvULong( &sWASeg->mSortMapHdr,
+                                           aCursor->mSeq,
+                                           (vULong*)&sTRPHeader )
                   != IDE_SUCCESS );
 
-        /* InMemoryGroupì—ì„œ ê°€ì ¸ì˜¬ ê²½ìš°, Pageê°€ ì•„ë‹Œ SortHashMapìœ¼ë¡œ
-         * Pointingí•´ì•¼ í•˜ê¸° ë•Œë¬¸ì—, ë‹¤ìŒê³¼ ê°™ì´ ì„¤ì •í•œë‹¤. */
-        SC_MAKE_GRID( sCursor->mGRID,
+        /* InMemoryGroup¿¡¼­ °¡Á®¿Ã °æ¿ì, Page°¡ ¾Æ´Ñ SortHashMapÀ¸·Î
+         * PointingÇØ¾ß ÇÏ±â ¶§¹®¿¡, ´ÙÀ½°ú °°ÀÌ ¼³Á¤ÇÑ´Ù. */
+        SC_MAKE_GRID( aCursor->mGRID,
                       SDT_SPACEID_WAMAP,
-                      sCursor->mSeq,
+                      aCursor->mSeq,
                       0 );
-        IDE_TEST( sdtTempRow::filteringAndFetch( sCursor,
-                                                 sPtr,
+        IDE_TEST( sdtTempRow::filteringAndFetch( aCursor,
+                                                 sTRPHeader,
                                                  aRow,
                                                  aRowGRID,
                                                  &sResult )
@@ -936,45 +832,43 @@ IDE_RC sdtSortModule::fetchInMemoryScanForward( void    * aCursor,
 
 /**************************************************************************
  * Description :
- * ì»¤ì„œë¡œë¶€í„° Rowë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤. ( backwardë¡œ )
+ * Ä¿¼­·ÎºÎÅÍ Row¸¦ °¡Á®¿É´Ï´Ù. ( backward·Î )
  *
  * <IN>
- * aCursor        - ëŒ€ìƒ Cursor
+ * aCursor        - ´ë»ó Cursor
  * <OUT>
- * aRow           - ëŒ€ìƒ Row
- * aGRID          - ê°€ì ¸ì˜¨ Rowì˜ GRID
+ * aRow           - ´ë»ó Row
+ * aGRID          - °¡Á®¿Â RowÀÇ GRID
  ***************************************************************************/
-IDE_RC sdtSortModule::fetchInMemoryScanBackward( void    * aCursor,
+IDE_RC sdtSortModule::fetchInMemoryScanBackward( smiSortTempCursor* aCursor,
                                                  UChar  ** aRow,
                                                  scGRID  * aRowGRID )
 {
-    smiTempCursor      * sCursor = (smiTempCursor *)aCursor;
-    smiTempTableHeader * sHeader = sCursor->mTTHeader;
-    sdtWASegment       * sWASeg = (sdtWASegment*)sHeader->mWASegment;
-    UChar              * sPtr;
+    sdtSortSegHdr      * sWASeg = (sdtSortSegHdr*)aCursor->mTTHeader->mWASegment;
+    sdtSortTRPHdr      * sTRPHeader;
     idBool               sResult = ID_FALSE;
 
     do
     {
-        sCursor->mSeq --;
-        if ( sCursor->mSeq <= sCursor->mLastSeq )
+        aCursor->mSeq--;
+        if ( aCursor->mSeq <= aCursor->mLastSeq )
         {
             break;
         }
 
-        IDE_TEST( sdtWAMap::getvULong( &sWASeg->mSortHashMapHdr,
-                                       sCursor->mSeq,
-                                       (vULong*)&sPtr )
+        IDE_TEST( sdtWASortMap::getvULong( &sWASeg->mSortMapHdr,
+                                           aCursor->mSeq,
+                                           (vULong*)&sTRPHeader )
                   != IDE_SUCCESS );
 
-        /* InMemoryGroupì—ì„œ ê°€ì ¸ì˜¬ ê²½ìš°, Pageê°€ ì•„ë‹Œ SortHashMapìœ¼ë¡œ
-         * Pointingí•´ì•¼ í•˜ê¸° ë•Œë¬¸ì—, ë‹¤ìŒê³¼ ê°™ì´ ì„¤ì •í•œë‹¤. */
-        SC_MAKE_GRID( sCursor->mGRID,
+        /* InMemoryGroup¿¡¼­ °¡Á®¿Ã °æ¿ì, Page°¡ ¾Æ´Ñ SortHashMapÀ¸·Î
+         * PointingÇØ¾ß ÇÏ±â ¶§¹®¿¡, ´ÙÀ½°ú °°ÀÌ ¼³Á¤ÇÑ´Ù. */
+        SC_MAKE_GRID( aCursor->mGRID,
                       SDT_SPACEID_WAMAP,
-                      sCursor->mSeq,
+                      aCursor->mSeq,
                       0 );
-        IDE_TEST( sdtTempRow::filteringAndFetch( sCursor,
-                                                 sPtr,
+        IDE_TEST( sdtTempRow::filteringAndFetch( aCursor,
+                                                 sTRPHeader,
                                                  aRow,
                                                  aRowGRID,
                                                  &sResult )
@@ -991,32 +885,31 @@ IDE_RC sdtSortModule::fetchInMemoryScanBackward( void    * aCursor,
 
 /**************************************************************************
  * Description :
- * ì»¤ì„œë¡œë¶€í„° Rowë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
+ * Ä¿¼­·ÎºÎÅÍ Row¸¦ °¡Á®¿É´Ï´Ù.
  *
  * <IN>
- * aCursor        - ëŒ€ìƒ Cursor
+ * aCursor        - ´ë»ó Cursor
  * <OUT>
- * aRow           - ëŒ€ìƒ Row
- * aGRID          - ê°€ì ¸ì˜¨ Rowì˜ GRID
+ * aRow           - ´ë»ó Row
+ * aGRID          - °¡Á®¿Â RowÀÇ GRID
  ***************************************************************************/
-IDE_RC sdtSortModule::fetchMergeScan( void    * aCursor,
+IDE_RC sdtSortModule::fetchMergeScan( smiSortTempCursor* aCursor,
                                       UChar  ** aRow,
                                       scGRID  * aRowGRID )
 {
-    smiTempCursor      * sCursor = (smiTempCursor *)aCursor;
-    smiTempTableHeader * sHeader = sCursor->mTTHeader;
-    sdtWASegment       * sWASeg = (sdtWASegment*)sHeader->mWASegment;
+    smiTempTableHeader * sHeader = aCursor->mTTHeader;
+    sdtSortSegHdr      * sWASeg = (sdtSortSegHdr*)sHeader->mWASegment;
     sdtTempMergeRunInfo sTopRunInfo;
     scGRID               sGRID;
     idBool               sResult = ID_FALSE;
 
-    /* ì´ì „ì— íŒ¨ì¹˜ëœ GRIDì™€ í…Œì´ë¸”ì—ì„œ ë§ˆì§€ë§‰ìœ¼ë¡œ ì ‘ê·¼í•œ GRIDê°€ ë‹¤ë¥´ë©´
-       ì»¤ì„œì— ë§¤ë‹¬ë¦° ëŸ°ì •ë³´ë¥¼ ì´ìš©í•´ map ì¬êµ¬ì¶• */
-    if ( (!(SC_GRID_IS_NULL(sCursor->mGRID))) &&
-         (!(SC_GRID_IS_EQUAL(sCursor->mGRID, sHeader->mGRID))) )
+    /* ÀÌÀü¿¡ ÆĞÄ¡µÈ GRID¿Í Å×ÀÌºí¿¡¼­ ¸¶Áö¸·À¸·Î Á¢±ÙÇÑ GRID°¡ ´Ù¸£¸é
+       Ä¿¼­¿¡ ¸Å´Ş¸° ·±Á¤º¸¸¦ ÀÌ¿ëÇØ map Àç±¸Ãà */
+    if ( SC_GRID_IS_NOT_NULL(aCursor->mGRID) &&
+         SC_GRID_IS_NOT_EQUAL(aCursor->mGRID, sHeader->mGRID) )
     {
         IDE_TEST( makeMergeRuns( sHeader,
-                                 sCursor->mMergePosition )
+                                 aCursor->mMergePosition )
                   != IDE_SUCCESS );
     }
     else
@@ -1026,27 +919,27 @@ IDE_RC sdtSortModule::fetchMergeScan( void    * aCursor,
 
     while( sResult == ID_FALSE )
     {
-        /* Heapì˜ Top Slotì„ ë½‘ì•„ëƒ„ */
-        IDE_TEST( sdtWAMap::get( &sWASeg->mSortHashMapHdr,
-                                 1,   /* aIdx */
-                                 (void*)&sTopRunInfo )
+        /* HeapÀÇ Top SlotÀ» »Ì¾Æ³¿ */
+        IDE_TEST( sdtWASortMap::get( &sWASeg->mSortMapHdr,
+                                     1,   /* aIdx */
+                                     (void*)&sTopRunInfo )
                   != IDE_SUCCESS );
 
         if ( sTopRunInfo.mRunNo == SDT_TEMP_RUNINFO_NULL )
         {
-            /* Runì—ì„œ Rowë“¤ì„ ì „ë¶€ ë½‘ì•„ëƒ„ */
-            sCursor->mGRID = SC_NULL_GRID;
+            /* Run¿¡¼­ RowµéÀ» ÀüºÎ »Ì¾Æ³¿ */
+            SC_MAKE_NULL_GRID( aCursor->mGRID );
             break;
         }
 
         getGRIDFromRunInfo( sHeader, &sTopRunInfo, &sGRID );
-        /* íŒ¨ì¹˜ëœ GRID */
-        sCursor->mGRID = sGRID;
-        /* í…Œì´ë¸”ì—ì„œ ë§ˆì§€ë§‰ìœ¼ë¡œ ì ‘ê·¼í•œ GRID */
-        sHeader->mGRID = sGRID;
+        /* ÆĞÄ¡µÈ GRID */
+        SC_COPY_GRID( sGRID, aCursor->mGRID );
+        /* Å×ÀÌºí¿¡¼­ ¸¶Áö¸·À¸·Î Á¢±ÙÇÑ GRID */
+        SC_COPY_GRID( sGRID, sHeader->mGRID );
 
-        IDE_TEST( sdtTempRow::filteringAndFetchByGRID( sCursor,
-                                                       sCursor->mGRID,
+        IDE_TEST( sdtTempRow::filteringAndFetchByGRID( aCursor,
+                                                       aCursor->mGRID,
                                                        aRow,
                                                        aRowGRID,
                                                        &sResult )
@@ -1054,11 +947,11 @@ IDE_RC sdtSortModule::fetchMergeScan( void    * aCursor,
         IDE_TEST( heapPop( sHeader ) != IDE_SUCCESS );
     }
 
-    /* BUG-41284 : ë‘ê°œ ì´ìƒì˜ ì»¤ì„œê°€ ì ‘ê·¼í•˜ë©´ ì»¤ì„œê°€ ë´ì•¼ í•˜ëŠ” í˜ì´ì§€ì™€
-     *  í…Œì´ë¸”ì—ì„œ ì—´ë ¤ ìˆëŠ” í˜ì´ì§€ê°€ ë‹¤ë¥¼ìˆ˜ ìˆìœ¼ë¯€ë¡œ
-     *  ë‚˜ì¤‘ì— ë³µì›í• ìˆ˜ ìˆë„ë¡ ëŸ°ì •ë³´ë¥¼ ì €ì¥í•´ë‘  */
+    /* BUG-41284 : µÎ°³ ÀÌ»óÀÇ Ä¿¼­°¡ Á¢±ÙÇÏ¸é Ä¿¼­°¡ ºÁ¾ß ÇÏ´Â ÆäÀÌÁö¿Í
+     *  Å×ÀÌºí¿¡¼­ ¿­·Á ÀÖ´Â ÆäÀÌÁö°¡ ´Ù¸¦¼ö ÀÖÀ¸¹Ç·Î
+     *  ³ªÁß¿¡ º¹¿øÇÒ¼ö ÀÖµµ·Ï ·±Á¤º¸¸¦ ÀúÀåÇØµÒ */
     IDE_TEST( makeMergePosition( sHeader,
-                                 &sCursor->mMergePosition )
+                                 &aCursor->mMergePosition )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -1070,73 +963,78 @@ IDE_RC sdtSortModule::fetchMergeScan( void    * aCursor,
 
 /**************************************************************************
  * Description :
- * ì»¤ì„œë¡œë¶€í„° Rowë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
+ * Ä¿¼­·ÎºÎÅÍ Row¸¦ °¡Á®¿É´Ï´Ù.
  *
  * <IN>
- * aCursor        - ëŒ€ìƒ Cursor
+ * aCursor        - ´ë»ó Cursor
  * <OUT>
- * aRow           - ëŒ€ìƒ Row
- * aGRID          - ê°€ì ¸ì˜¨ Rowì˜ GRID
+ * aRow           - ´ë»ó Row
+ * aGRID          - °¡Á®¿Â RowÀÇ GRID
  ***************************************************************************/
-IDE_RC sdtSortModule::fetchIndexScanForward( void    * aCursor,
+IDE_RC sdtSortModule::fetchIndexScanForward( smiSortTempCursor* aCursor,
                                              UChar  ** aRow,
                                              scGRID  * aRowGRID )
 {
-    smiTempCursor      * sCursor = (smiTempCursor *)aCursor;
-    smiTempTableHeader * sHeader = sCursor->mTTHeader;
-    sdtWASegment       * sWASeg = (sdtWASegment*)sHeader->mWASegment;
+    smiTempTableHeader * sHeader = aCursor->mTTHeader;
+    sdtSortSegHdr      * sWASeg = (sdtSortSegHdr*)sHeader->mWASegment;
     scPageID             sNPID;
-    UChar              * sPtr = NULL;
     idBool               sIsValidSlot;
-    const smiCallBack  * sCallBack = &sCursor->mRange->maximum;
+    const smiCallBack  * sCallBack = &aCursor->mRange->maximum;
     idBool               sResult = ID_FALSE;
-    sdtTRPInfo4Select    sTRPInfo;
+    sdtSortScanInfo      sScanInfo;
 
-    while ( ( sResult == ID_FALSE ) && ( !SC_GRID_IS_NULL( sCursor->mGRID ) ) )
+    sScanInfo.mFetchEndOffset = sHeader->mRowSize;
+
+    while ( ( sResult == ID_FALSE ) && ( SC_GRID_IS_NOT_NULL( aCursor->mGRID ) ) )
     {
-        sCursor->mGRID.mOffset ++;
-        sdtWASegment::getSlot( sCursor->mWAPagePtr,
-                               sCursor->mSlotCount,
-                               SC_MAKE_OFFSET( sCursor->mGRID ),
-                               &sPtr,
-                               &sIsValidSlot );
+        aCursor->mGRID.mOffset++;
+        sdtSortSegment::getSlot( aCursor->mWAPagePtr,
+                                 aCursor->mSlotCount,
+                                 SC_MAKE_OFFSET( aCursor->mGRID ),
+                                 (UChar**)&sScanInfo.mTRPHeader,
+                                 &sIsValidSlot );
 
         if ( sIsValidSlot == ID_FALSE )
         {
-            /*ë‹¤ìŒ í˜ì´ì§€ë¡œ*/
-            sNPID = sdtTempPage::getNextPID( sCursor->mWAPagePtr );
+            /*´ÙÀ½ ÆäÀÌÁö·Î*/
+            sNPID = sdtTempPage::getNextPID( aCursor->mWAPagePtr );
             if ( sNPID == SC_NULL_PID )
             {
-                sCursor->mGRID = SC_NULL_GRID;
+                SC_MAKE_NULL_GRID( aCursor->mGRID );
                 break;
             }
-            SC_MAKE_GRID( sCursor->mGRID, sHeader->mSpaceID, sNPID, -1 );
+            SC_MAKE_GRID( aCursor->mGRID, sHeader->mSpaceID, sNPID, -1 );
 
-            IDE_TEST( sdtWASegment::getPageWithFix( sWASeg,
-                                                    sHeader->mFetchGroupID,
-                                                    sCursor->mGRID,
-                                                    &sCursor->mWPID,
-                                                    &sCursor->mWAPagePtr,
-                                                    &sCursor->mSlotCount )
+            IDE_TEST( sdtSortSegment::getPageWithFix( sWASeg,
+                                                      sHeader->mFetchGroupID,
+                                                      aCursor->mGRID,
+                                                      &aCursor->mWPID,
+                                                      &aCursor->mWAPagePtr,
+                                                      &aCursor->mSlotCount )
                       != IDE_SUCCESS );
         }
         else
         {
-            if ( SM_IS_FLAG_ON( ( (sdtTRPHeader*)sPtr )->mTRFlag, SDT_TRFLAG_HEAD ) )
+            if ( SM_IS_FLAG_ON( sScanInfo.mTRPHeader->mTRFlag, SDT_TRFLAG_HEAD ) )
             {
-                SC_COPY_GRID( sCursor->mGRID, sTRPInfo.mTRPHGRID );
+#ifdef DEBUG
+                sdtWCB * sWCBPtr = sdtSortSegment::getWCBInternal( sWASeg,
+                                                                   aCursor->mWPID );
+                IDE_DASSERT( sWCBPtr->mWAPagePtr == aCursor->mWAPagePtr ) ;
+                IDE_DASSERT( sWCBPtr->mNPageID   == SC_MAKE_PID( aCursor->mGRID ) ) ;
+                IDE_DASSERT( sdtSortSegment::isFixedPage( sWCBPtr) == ID_TRUE );
+#endif
+
                 IDE_TEST( sdtTempRow::fetch( sWASeg,
-                                             sCursor->mWAGroupID,
-                                             sPtr,
-                                             sHeader->mRowSize,
+                                             aCursor->mWAGroupID,
                                              sHeader->mRowBuffer4Fetch,
-                                             &sTRPInfo )
+                                             &sScanInfo )
                           != IDE_SUCCESS );
 
-                /******************** Range ì²´í¬ *****************************/
-                /* ì´ Nodeê°€ Range ì¡°ê±´ì„ ë§Œì¡±í•œëŠ” ë§ˆì§€ë§‰ nodeì¸ì§€ ê²€ì‚¬ê°€ í•„ìš”í•¨ */
+                /******************** Range Ã¼Å© *****************************/
+                /* ÀÌ Node°¡ Range Á¶°ÇÀ» ¸¸Á·ÇÑ´Â ¸¶Áö¸· nodeÀÎÁö °Ë»ç°¡ ÇÊ¿äÇÔ */
                 IDE_TEST( sCallBack->callback( &sResult,
-                                               sTRPInfo.mValuePtr,
+                                               sScanInfo.mValuePtr,
                                                NULL,        /* aDirectKey */
                                                0,           /* aDirectKeyPartialSize */
                                                SC_NULL_GRID,
@@ -1144,18 +1042,18 @@ IDE_RC sdtSortModule::fetchIndexScanForward( void    * aCursor,
                           != IDE_SUCCESS );
                 if ( sResult == ID_FALSE )
                 {
-                    /* ì´ Node ë‚´ì—ì„œ Rangeê°€ ëë‚œë‹¤. */
-                    /* ë§ˆì§€ë§‰ê¹Œì§€ íƒìƒ‰ ì™„ë£Œí•˜ì˜€ìŒ */
+                    /* ÀÌ Node ³»¿¡¼­ Range°¡ ³¡³­´Ù. */
+                    /* ¸¶Áö¸·±îÁö Å½»ö ¿Ï·áÇÏ¿´À½ */
                     break;
                 }
                 else
                 {
-                    /* ë§ˆì§€ë§‰ Slotë„ MaxRangeì— í¬í•¨ëœë‹¤. ë”°ë¼ì„œ ì´ Nodeë‚´ì˜ ëª¨ë“ 
-                     * DataëŠ” íƒìƒ‰ ëŒ€ìƒì— í¬í•¨ëœë‹¤. */
+                    /* ¸¶Áö¸· Slotµµ MaxRange¿¡ Æ÷ÇÔµÈ´Ù. µû¶ó¼­ ÀÌ Node³»ÀÇ ¸ğµç
+                     * Data´Â Å½»ö ´ë»ó¿¡ Æ÷ÇÔµÈ´Ù. */
                 }
 
-                IDE_TEST( sdtTempRow::filteringAndFetch( sCursor,
-                                                         sPtr,
+                IDE_TEST( sdtTempRow::filteringAndFetch( aCursor,
+                                                         sScanInfo.mTRPHeader,
                                                          aRow,
                                                          aRowGRID,
                                                          &sResult )
@@ -1177,75 +1075,72 @@ IDE_RC sdtSortModule::fetchIndexScanForward( void    * aCursor,
 
 /**************************************************************************
  * Description :
- * ì»¤ì„œë¡œë¶€í„° Rowë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
+ * Ä¿¼­·ÎºÎÅÍ Row¸¦ °¡Á®¿É´Ï´Ù.
  *
  * <IN>
- * aCursor        - ëŒ€ìƒ Cursor
+ * aCursor        - ´ë»ó Cursor
  * <OUT>
- * aRow           - ëŒ€ìƒ Row
- * aGRID          - ê°€ì ¸ì˜¨ Rowì˜ GRID
+ * aRow           - ´ë»ó Row
+ * aGRID          - °¡Á®¿Â RowÀÇ GRID
  ***************************************************************************/
-IDE_RC sdtSortModule::fetchIndexScanBackward( void    * aCursor,
+IDE_RC sdtSortModule::fetchIndexScanBackward( smiSortTempCursor* aCursor,
                                               UChar  ** aRow,
                                               scGRID  * aRowGRID )
 {
-    smiTempCursor      * sCursor = (smiTempCursor *)aCursor;
-    smiTempTableHeader * sHeader = sCursor->mTTHeader;
-    sdtWASegment       * sWASeg = (sdtWASegment*)sHeader->mWASegment;
+    smiTempTableHeader * sHeader = aCursor->mTTHeader;
+    sdtSortSegHdr      * sWASeg = (sdtSortSegHdr*)sHeader->mWASegment;
     scPageID             sNPID;
-    UChar              * sPtr = NULL;
     idBool               sIsValidSlot;
-    const smiCallBack  * sCallBack = &sCursor->mRange->minimum;
+    const smiCallBack  * sCallBack = &aCursor->mRange->minimum;
     idBool               sResult = ID_FALSE;
-    sdtTRPInfo4Select    sTRPInfo;
+    sdtSortScanInfo      sScanInfo;
+
+    sScanInfo.mFetchEndOffset = sHeader->mRowSize;
 
     while ( ( sResult == ID_FALSE ) &&
-            ( !SC_GRID_IS_NULL( sCursor->mGRID ) ) )
+            ( SC_GRID_IS_NOT_NULL( aCursor->mGRID ) ) )
     {
-        if ( sCursor->mGRID.mOffset == 0 )
+        if ( aCursor->mGRID.mOffset == 0 )
         {
-            /*ì´ì „ í˜ì´ì§€ë¡œ*/
-            sNPID = sdtTempPage::getPrevPID( sCursor->mWAPagePtr );
+            /*ÀÌÀü ÆäÀÌÁö·Î*/
+            sNPID = sdtTempPage::getPrevPID( aCursor->mWAPagePtr );
             if ( sNPID == SC_NULL_PID )
             {
-                sCursor->mGRID = SC_NULL_GRID;
+                SC_MAKE_NULL_GRID( aCursor->mGRID );
                 break;
             }
-            SC_MAKE_GRID( sCursor->mGRID, sHeader->mSpaceID, sNPID,  0 );
-            IDE_TEST( sdtWASegment::getPageWithFix( sWASeg,
-                                                    sHeader->mFetchGroupID,
-                                                    sCursor->mGRID,
-                                                    &sCursor->mWPID,
-                                                    &sCursor->mWAPagePtr,
-                                                    &sCursor->mSlotCount )
+            SC_MAKE_GRID( aCursor->mGRID, sHeader->mSpaceID, sNPID,  0 );
+            IDE_TEST( sdtSortSegment::getPageWithFix( sWASeg,
+                                                      sHeader->mFetchGroupID,
+                                                      aCursor->mGRID,
+                                                      &aCursor->mWPID,
+                                                      &aCursor->mWAPagePtr,
+                                                      &aCursor->mSlotCount )
                       != IDE_SUCCESS );
-            sCursor->mGRID.mOffset = sCursor->mSlotCount;
+            aCursor->mGRID.mOffset = aCursor->mSlotCount;
         }
         else
         {
-            sCursor->mGRID.mOffset --;
-            sdtWASegment::getSlot( sCursor->mWAPagePtr,
-                                   sCursor->mSlotCount,
-                                   SC_MAKE_OFFSET( sCursor->mGRID ),
-                                   &sPtr,
-                                   &sIsValidSlot );
+            aCursor->mGRID.mOffset--;
+            sdtSortSegment::getSlot( aCursor->mWAPagePtr,
+                                     aCursor->mSlotCount,
+                                     SC_MAKE_OFFSET( aCursor->mGRID ),
+                                     (UChar**)&sScanInfo.mTRPHeader,
+                                     &sIsValidSlot );
             IDE_ERROR( sIsValidSlot == ID_TRUE );
 
-            if ( SM_IS_FLAG_ON( ( (sdtTRPHeader*)sPtr )->mTRFlag, SDT_TRFLAG_HEAD ) )
+            if ( SM_IS_FLAG_ON( sScanInfo.mTRPHeader->mTRFlag, SDT_TRFLAG_HEAD ) )
             {
-                SC_COPY_GRID( sCursor->mGRID, sTRPInfo.mTRPHGRID );
                 IDE_TEST( sdtTempRow::fetch( sWASeg,
-                                             sCursor->mWAGroupID,
-                                             sPtr,
-                                             sHeader->mRowSize,
+                                             aCursor->mWAGroupID,
                                              sHeader->mRowBuffer4Fetch,
-                                             &sTRPInfo )
+                                             &sScanInfo )
                           != IDE_SUCCESS );
 
-                /******************** Range ì²´í¬ *****************************/
-                /* ì´ Nodeê°€ Rangeë¥¼ ë§Œì¡±í•˜ëŠ” ë§ˆì§€ë§‰ nodeì¸ì§€ í™•ì¸ì´ í•„ìš”í•¨ */
+                /******************** Range Ã¼Å© *****************************/
+                /* ÀÌ Node°¡ Range¸¦ ¸¸Á·ÇÏ´Â ¸¶Áö¸· nodeÀÎÁö È®ÀÎÀÌ ÇÊ¿äÇÔ */
                 IDE_TEST( sCallBack->callback( &sResult,
-                                               sTRPInfo.mValuePtr,
+                                               sScanInfo.mValuePtr,
                                                NULL,        /* aDirectKey */
                                                0,           /* aDirectKeyPartialSize */
                                                SC_NULL_GRID,
@@ -1254,18 +1149,18 @@ IDE_RC sdtSortModule::fetchIndexScanBackward( void    * aCursor,
 
                 if ( sResult == ID_FALSE )
                 {
-                    /* ì´ Node ë‚´ì—ì„œ Rangeê°€ ëë‚œë‹¤. */
-                    /* ë§ˆì§€ë§‰ê¹Œì§€ íƒìƒ‰ ì™„ë£Œí•˜ì˜€ìŒ */
+                    /* ÀÌ Node ³»¿¡¼­ Range°¡ ³¡³­´Ù. */
+                    /* ¸¶Áö¸·±îÁö Å½»ö ¿Ï·áÇÏ¿´À½ */
                     break;
                 }
                 else
                 {
-                    /* MaxRangeì— í¬í•¨ëœë‹¤. ë”°ë¼ì„œ ì´ Nodeë‚´ì˜ ëª¨ë“ 
-                     * DataëŠ” íƒìƒ‰ ëŒ€ìƒì— í¬í•¨ëœë‹¤. */
+                    /* MaxRange¿¡ Æ÷ÇÔµÈ´Ù. µû¶ó¼­ ÀÌ Node³»ÀÇ ¸ğµç
+                     * Data´Â Å½»ö ´ë»ó¿¡ Æ÷ÇÔµÈ´Ù. */
                 }
 
-                IDE_TEST( sdtTempRow::filteringAndFetch( sCursor,
-                                                         sPtr,
+                IDE_TEST( sdtTempRow::filteringAndFetch( aCursor,
+                                                         sScanInfo.mTRPHeader,
                                                          aRow,
                                                          aRowGRID,
                                                          &sResult )
@@ -1287,21 +1182,20 @@ IDE_RC sdtSortModule::fetchIndexScanBackward( void    * aCursor,
 
 /**************************************************************************
  * Description :
- * ì»¤ì„œë¡œë¶€í„° Rowë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤. (BUG-39450)
+ * Ä¿¼­·ÎºÎÅÍ Row¸¦ °¡Á®¿É´Ï´Ù. (BUG-39450)
  *
  * <IN>
- * aCursor        - ëŒ€ìƒ Cursor
+ * aCursor        - ´ë»ó Cursor
  * <OUT>
- * aRow           - ëŒ€ìƒ Row
- * aGRID          - ê°€ì ¸ì˜¨ Rowì˜ GRID
+ * aRow           - ´ë»ó Row
+ * aGRID          - °¡Á®¿Â RowÀÇ GRID
  ***************************************************************************/
-IDE_RC sdtSortModule::fetchScan( void    * aCursor,
+IDE_RC sdtSortModule::fetchScan( smiSortTempCursor* aCursor,
                                  UChar  ** aRow,
                                  scGRID  * aRowGRID )
 {
-    smiTempCursor      * sCursor;
     smiTempTableHeader * sHeader;
-    sdtWASegment       * sWASeg;
+    sdtSortSegHdr      * sWASeg;
     idBool               sResult = ID_FALSE;
     scPageID             sNPID;
     UChar              * sPtr = NULL;
@@ -1311,54 +1205,53 @@ IDE_RC sdtSortModule::fetchScan( void    * aCursor,
 
     IDE_ASSERT( aCursor != NULL );
 
-    sCursor = (smiTempCursor *)aCursor;
-    sHeader = (smiTempTableHeader *)sCursor->mTTHeader;
-    sWASeg  = (sdtWASegment*)sHeader->mWASegment;
+    sHeader = (smiTempTableHeader *)aCursor->mTTHeader;
+    sWASeg  = (sdtSortSegHdr*)sHeader->mWASegment;
     sScanPos = sHeader->mScanPosition;
 
     IDE_ERROR( sHeader->mTTState == SMI_TTSTATE_SORT_SCAN );
     IDE_ERROR( sHeader->mKeyColumnList == NULL );
 
-    while( !SC_GRID_IS_NULL( sCursor->mGRID ) )
+    while( SC_GRID_IS_NOT_NULL( aCursor->mGRID ) )
     {
-        sdtWASegment::getSlot( sCursor->mWAPagePtr,
-                               sCursor->mSlotCount,
-                               SC_MAKE_OFFSET( sCursor->mGRID ),
-                               &sPtr,
-                               &sIsValidSlot );
+        sdtSortSegment::getSlot( aCursor->mWAPagePtr,
+                                 aCursor->mSlotCount,
+                                 SC_MAKE_OFFSET( aCursor->mGRID ),
+                                 &sPtr,
+                                 &sIsValidSlot );
 
         if ( sIsValidSlot == ID_FALSE )
         {
-            /*ë‹¤ìŒ í˜ì´ì§€ë¡œ*/
-            sNPID = sdtTempPage::getNextPID( sCursor->mWAPagePtr );
+            /*´ÙÀ½ ÆäÀÌÁö·Î*/
+            sNPID = sdtTempPage::getNextPID( aCursor->mWAPagePtr );
 
             if ( sNPID == SC_NULL_PID )
             {
                 sIdx = sScanPos[ SDT_TEMP_SCANPOS_PINIDX ];
 
-                if ( sCursor->mPinIdx == sIdx )
+                if ( aCursor->mPinIdx == sIdx )
                 {
                     /* nothing to do */
                 }
                 else
                 {
-                    /* ì´ì „ì— íŒ¨ì¹˜ëœ pageì™€ í…Œì´ë¸”ì—ì„œ ë§ˆì§€ë§‰ìœ¼ë¡œ ì ‘ê·¼í•œ pageê°€ ë‹¤ë¥´ë©´
-                     *  cursorê°€ ë´ì•¼ í•˜ëŠ” ê°’ìœ¼ë¡œ ë³µì› */
-                    sIdx = sCursor->mPinIdx;
+                    /* ÀÌÀü¿¡ ÆĞÄ¡µÈ page¿Í Å×ÀÌºí¿¡¼­ ¸¶Áö¸·À¸·Î Á¢±ÙÇÑ page°¡ ´Ù¸£¸é
+                     *  cursor°¡ ºÁ¾ß ÇÏ´Â °ªÀ¸·Î º¹¿ø */
+                    sIdx = aCursor->mPinIdx;
                 }
                 sIdx++;
 
-                /* ë”ì´ìƒ ë‚¨ì€ Run ë„ ì—†ìŒ */
+                /* ´õÀÌ»ó ³²Àº Run µµ ¾øÀ½ */
                 if ( sScanPos[SDT_TEMP_SCANPOS_SIZEIDX] == sIdx )
                 {
-                    sCursor->mGRID = SC_NULL_GRID;
+                    SC_MAKE_NULL_GRID( aCursor->mGRID );
                     break;
                 }
                 else
                 {
-                    /* íŒ¨ì¹˜ëœ idx */
-                    sCursor->mPinIdx = sIdx;
-                    /* í…Œì´ë¸”ì—ì„œ ë§ˆì§€ë§‰ìœ¼ë¡œ ì ‘ê·¼í•œ idx */
+                    /* ÆĞÄ¡µÈ idx */
+                    aCursor->mPinIdx = sIdx;
+                    /* Å×ÀÌºí¿¡¼­ ¸¶Áö¸·À¸·Î Á¢±ÙÇÑ idx */
                     sScanPos[ SDT_TEMP_SCANPOS_PINIDX ] = sIdx;
                     sNPID = sScanPos[ SDT_TEMP_SCANPOS_PIDIDX( sIdx ) ];
                 }
@@ -1368,23 +1261,22 @@ IDE_RC sdtSortModule::fetchScan( void    * aCursor,
                 /* nothing to do */
             }
 
-            SC_MAKE_GRID( sCursor->mGRID, sHeader->mSpaceID, sNPID, 0 );
-            IDE_TEST( sdtWASegment::getPageWithFix( sWASeg,
-                                                    sCursor->mWAGroupID,
-                                                    sCursor->mGRID,
-                                                    &sCursor->mWPID,
-                                                    &sCursor->mWAPagePtr,
-                                                    &sCursor->mSlotCount )
+            SC_MAKE_GRID( aCursor->mGRID, sHeader->mSpaceID, sNPID, 0 );
+            IDE_TEST( sdtSortSegment::getPageWithFix( sWASeg,
+                                                      aCursor->mWAGroupID,
+                                                      aCursor->mGRID,
+                                                      &aCursor->mWPID,
+                                                      &aCursor->mWAPagePtr,
+                                                      &aCursor->mSlotCount )
                       != IDE_SUCCESS );
         }
         else
         {
-            if ( SM_IS_FLAG_ON( ( (sdtTRPHeader*)sPtr )->mTRFlag,
-                                SDT_TRFLAG_HEAD ) )
+            if ( SM_IS_FLAG_ON( ( (sdtSortTRPHdr*)sPtr )->mTRFlag, SDT_TRFLAG_HEAD ) )
             {
-                /* í•´ë‹¹ Rowë¥¼ ê°€ì ¸ì˜´ */
-                IDE_TEST( sdtTempRow::filteringAndFetchByGRID( sCursor,
-                                                               sCursor->mGRID,
+                /* ÇØ´ç Row¸¦ °¡Á®¿È */
+                IDE_TEST( sdtTempRow::filteringAndFetchByGRID( aCursor,
+                                                               aCursor->mGRID,
                                                                aRow,
                                                                aRowGRID,
                                                                &sResult )
@@ -1396,7 +1288,7 @@ IDE_RC sdtSortModule::fetchScan( void    * aCursor,
                 /* nothing to do */
             }
 
-            sCursor->mGRID.mOffset ++;
+            aCursor->mGRID.mOffset++;
 
             if (sResult == ID_TRUE )
             {
@@ -1419,27 +1311,24 @@ IDE_RC sdtSortModule::fetchScan( void    * aCursor,
 
 /**************************************************************************
  * Description :
- * ì»¤ì„œì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•©ë‹ˆë‹¤.
+ * Ä¿¼­ÀÇ À§Ä¡¸¦ ÀúÀåÇÕ´Ï´Ù.
  *
  * <IN>
- * aCursor        - ëŒ€ìƒ Cursor
+ * aCursor        - ´ë»ó Cursor
  * <OUT>
- * aPosition      - ì €ì¥í•œ ìœ„ì¹˜
+ * aPosition      - ÀúÀåÇÑ À§Ä¡
  ***************************************************************************/
-IDE_RC sdtSortModule::storeCursorInMemoryScan( void * aCursor,
-                                               void * aPosition )
+IDE_RC sdtSortModule::storeCursorInMemoryScan( smiSortTempCursor* aCursor,
+                                               smiTempPosition * aPosition )
 {
-    smiTempCursor      * sCursor   = (smiTempCursor *)aCursor;
-    smiTempPosition    * sPosition = (smiTempPosition*)aPosition;
-
-    IDE_ERROR( sPosition->mOwner == sCursor );
-    IDE_ERROR( sPosition->mTTState == SMI_TTSTATE_SORT_INMEMORYSCAN );
-    IDE_ERROR( SM_IS_FLAG_ON( ((sdtTRPHeader*)sCursor->mRowPtr)->mTRFlag,
+    IDE_ERROR( aPosition->mOwner == aCursor );
+    IDE_ERROR( aPosition->mTTState == SMI_TTSTATE_SORT_INMEMORYSCAN );
+    IDE_ERROR( SM_IS_FLAG_ON( ((sdtSortTRPHdr*)aCursor->mRowPtr)->mTRFlag,
                               SDT_TRFLAG_HEAD ) );
 
-    sPosition->mGRID      = sCursor->mGRID;
-    sPosition->mRowPtr    = sCursor->mRowPtr;
-    sPosition->mSeq       = sCursor->mSeq;
+    SC_COPY_GRID( aCursor->mGRID, aPosition->mGRID );
+    aPosition->mRowPtr = aCursor->mRowPtr;
+    aPosition->mSeq    = aCursor->mSeq;
 
 
     return IDE_SUCCESS;
@@ -1451,26 +1340,23 @@ IDE_RC sdtSortModule::storeCursorInMemoryScan( void * aCursor,
 
 /**************************************************************************
  * Description :
- * ì»¤ì„œë¥¼ ì €ì¥í•œ ìœ„ì¹˜ë¡œ ë˜ëŒë¦½ë‹ˆë‹¤.
+ * Ä¿¼­¸¦ ÀúÀåÇÑ À§Ä¡·Î µÇµ¹¸³´Ï´Ù.
  *
  * <IN>
- * aCursor        - ëŒ€ìƒ Cursor
- * aPosition      - ì €ì¥í•œ ìœ„ì¹˜
+ * aCursor        - ´ë»ó Cursor
+ * aPosition      - ÀúÀåÇÑ À§Ä¡
  ***************************************************************************/
-IDE_RC sdtSortModule::restoreCursorInMemoryScan( void * aCursor,
-                                                 void * aPosition )
+IDE_RC sdtSortModule::restoreCursorInMemoryScan( smiSortTempCursor* aCursor,
+                                                 smiTempPosition * aPosition )
 {
-    smiTempCursor      * sCursor = (smiTempCursor *)aCursor;
-    smiTempPosition    * sPosition = (smiTempPosition*)aPosition;
+    IDE_ERROR( aPosition->mOwner == aCursor );
+    IDE_ERROR( aPosition->mTTState == SMI_TTSTATE_SORT_INMEMORYSCAN );
 
-    IDE_ERROR( sPosition->mOwner == sCursor );
-    IDE_ERROR( sPosition->mTTState == SMI_TTSTATE_SORT_INMEMORYSCAN );
+    SC_COPY_GRID( aPosition->mGRID, aCursor->mGRID );
+    aCursor->mRowPtr = aPosition->mRowPtr;
+    aCursor->mSeq    = aPosition->mSeq;
 
-    sCursor->mGRID      = sPosition->mGRID;
-    sCursor->mRowPtr    = sPosition->mRowPtr;
-    sCursor->mSeq       = sPosition->mSeq;
-
-    IDE_ERROR( SM_IS_FLAG_ON( ((sdtTRPHeader*)sCursor->mRowPtr)->mTRFlag,
+    IDE_ERROR( SM_IS_FLAG_ON( ((sdtSortTRPHdr*)aCursor->mRowPtr)->mTRFlag,
                               SDT_TRFLAG_HEAD ) );
 
     return IDE_SUCCESS;
@@ -1482,35 +1368,34 @@ IDE_RC sdtSortModule::restoreCursorInMemoryScan( void * aCursor,
 
 /**************************************************************************
  * Description :
- * ì»¤ì„œì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•©ë‹ˆë‹¤.
+ * Ä¿¼­ÀÇ À§Ä¡¸¦ ÀúÀåÇÕ´Ï´Ù.
  *
  * <IN>
- * aCursor        - ëŒ€ìƒ Cursor
+ * aCursor        - ´ë»ó Cursor
  * <OUT>
- * aPosition      - ì €ì¥í•œ ìœ„ì¹˜
+ * aPosition      - ÀúÀåÇÑ À§Ä¡
  ***************************************************************************/
-IDE_RC sdtSortModule::storeCursorMergeScan( void * aCursor,
-                                            void * aPosition )
+IDE_RC sdtSortModule::storeCursorMergeScan( smiSortTempCursor* aCursor,
+                                            smiTempPosition * aPosition )
 {
-    smiTempCursor      * sCursor   = (smiTempCursor *)aCursor;
-    smiTempTableHeader * sHeader   = sCursor->mTTHeader;
-    sdtWASegment       * sWASeg    = (sdtWASegment*)sHeader->mWASegment;
-    smiTempPosition    * sPosition = (smiTempPosition*)aPosition;
+    smiTempTableHeader * sHeader   = aCursor->mTTHeader;
+    sdtSortSegHdr      * sWASeg    = (sdtSortSegHdr*)sHeader->mWASegment;
 
-    IDE_ERROR( sPosition->mOwner == sCursor );
-    IDE_ERROR( sPosition->mTTState == SMI_TTSTATE_SORT_MERGESCAN );
-    IDE_ERROR( SM_IS_FLAG_ON( ((sdtTRPHeader*)sCursor->mRowPtr)->mTRFlag,
+    IDE_ERROR( aPosition->mOwner == aCursor );
+    IDE_ERROR( aPosition->mTTState == SMI_TTSTATE_SORT_MERGESCAN );
+    IDE_ERROR( SM_IS_FLAG_ON( ((sdtSortTRPHdr*)aCursor->mRowPtr)->mTRFlag,
                               SDT_TRFLAG_HEAD ) );
 
     IDE_TEST( makeMergePosition( sHeader,
-                                 &sPosition->mExtraInfo )
+                                 &aPosition->mExtraInfo )
               != IDE_SUCCESS );
-    sPosition->mGRID      = sCursor->mGRID;
-    sPosition->mRowPtr    = sCursor->mRowPtr;
 
-    sdtWASegment::convertFromWGRIDToNGRID( sWASeg,
-                                           sPosition->mGRID,
-                                           &sPosition->mGRID );
+    SC_COPY_GRID( aCursor->mGRID, aPosition->mGRID );
+    aPosition->mRowPtr = aCursor->mRowPtr;
+
+    sdtSortSegment::convertFromWGRIDToNGRID( sWASeg,
+                                             aPosition->mGRID,
+                                             &aPosition->mGRID );
 
     return IDE_SUCCESS;
 
@@ -1521,66 +1406,67 @@ IDE_RC sdtSortModule::storeCursorMergeScan( void * aCursor,
 
 /**************************************************************************
  * Description :
- * ì»¤ì„œë¥¼ ì €ì¥í•œ ìœ„ì¹˜ë¡œ ë˜ëŒë¦½ë‹ˆë‹¤.
+ * Ä¿¼­¸¦ ÀúÀåÇÑ À§Ä¡·Î µÇµ¹¸³´Ï´Ù.
  *
  * <IN>
- * aCursor        - ëŒ€ìƒ Cursor
- * aPosition      - ì €ì¥í•œ ìœ„ì¹˜
+ * aCursor        - ´ë»ó Cursor
+ * aPosition      - ÀúÀåÇÑ À§Ä¡
  ***************************************************************************/
-IDE_RC sdtSortModule::restoreCursorMergeScan( void * aCursor,
-                                              void * aPosition )
+IDE_RC sdtSortModule::restoreCursorMergeScan( smiSortTempCursor* aCursor,
+                                              smiTempPosition * aPosition )
 {
-    smiTempCursor      * sCursor = (smiTempCursor *)aCursor;
-    smiTempTableHeader * sHeader = sCursor->mTTHeader;
-    smiTempPosition    * sPosition = (smiTempPosition*)aPosition;
-    idBool               sIsValidSlot;
+    smiTempTableHeader * sHeader = aCursor->mTTHeader;
+    sdtSortSegHdr      * sWASeg  = (sdtSortSegHdr*)sHeader->mWASegment;
+    sdtWCB             * sWCBPtr;
+    idBool               sIsValid;
 
-    IDE_ERROR( sPosition->mOwner == sCursor );
-    IDE_ERROR( sPosition->mTTState == SMI_TTSTATE_SORT_MERGESCAN );
+    IDE_ERROR( aPosition->mOwner == aCursor );
+    IDE_ERROR( aPosition->mTTState == SMI_TTSTATE_SORT_MERGESCAN );
 
     IDE_TEST( makeMergeRuns( sHeader,
-                             sPosition->mExtraInfo )
+                             aPosition->mExtraInfo )
               != IDE_SUCCESS );
-    sCursor->mGRID = sPosition->mGRID;
+    SC_COPY_GRID( aPosition->mGRID, aCursor->mGRID );
 
-    /* í…Œì´ë¸”ì—ì„œ ë§ˆì§€ë§‰ìœ¼ë¡œ ì ‘ê·¼í•œ GRID
-     * ì •í™•í•˜ê²ŒëŠ” smiTempTable::restoreCursorì—ì„œ sHeader->mGRID ê°±ì‹ ë¨.
-     *
-     * ì´ì „ì— íŒ¨ì¹˜ëœ GRIDì™€ í…Œì´ë¸”ì—ì„œ ë§ˆì§€ë§‰ìœ¼ë¡œ ì ‘ê·¼í•œ GRIDê°€ ë‹¤ë¥´ë©´
-     * ì»¤ì„œì— ë§¤ë‹¬ë¦° ëŸ°ì •ë³´ë¥¼ ì´ìš©í•´ map ì„ ì¬êµ¬ì¶• í•˜ëŠ” ê³¼ì •ì´ í•„ìš”í•˜ë¯€ë¡œ 
-     * mRowPtr ì„ ë³´ê³  í˜ì´ì§€ë§Œ ë‹¤ì‹œ ì½ëŠ” ì‘ì—…ì€ í•˜ì§€ ì•ŠëŠ”ë‹¤. */
-    sHeader->mGRID = sPosition->mGRID;
+    /* Å×ÀÌºí¿¡¼­ ¸¶Áö¸·À¸·Î Á¢±ÙÇÑ GRID
+       Á¤È®ÇÏ°Ô´Â smiTempTable::restoreCursor¿¡¼­ sHeader->mGRID °»½ÅµÊ. */
+    SC_COPY_GRID( aPosition->mGRID, sHeader->mGRID );
 
-    if ( sPosition->mRowPtr == NULL )
+    if ( aPosition->mRowPtr == NULL )
     {
-        sCursor->mRowPtr = NULL;
+        aCursor->mRowPtr = NULL;
     }
     else
     {
-        // mRowPtrì´ Nullì´ ì•„ë‹ˆì–´ì•¼ í™•ì¸ê°€ëŠ¥
-        if ( SC_MAKE_PID( sCursor->mGRID ) ==
-             sdtTempPage::getPID( sdtTempPage::getPageStartPtr( sPosition->mRowPtr ) ))
+        sWCBPtr = sdtSortSegment::findWCB( sWASeg, SC_MAKE_PID( aPosition->mGRID ) );
+
+        // makeMergeRuns()¿¡¼­ loadµÇ¾ú´Ù. ¹İµå½Ã ÀÖ¾î¾ß ÇÑ´Ù.
+        IDE_ERROR( sWCBPtr != NULL );
+
+        if (( aPosition->mRowPtr > sWCBPtr->mWAPagePtr ) &&
+            ( aPosition->mRowPtr < ( sWCBPtr->mWAPagePtr + SD_PAGE_SIZE )))
         {
-            sCursor->mRowPtr = sPosition->mRowPtr;
+            // aPosition->mRowPtrÀÌ NULLÀÌ°Å³ª,
+            // WAPagePtr¹üÀ§ ¾ÈÀÌ¸é Cursor¿¡ ¼³Á¤ÇÑ´Ù.
+            // PageHdr³ª Row HdrÀÌ ÀÖÀ¸¹Ç·Î <=,>= ·Î °Ë»çÇÒ ÇÊ¿ä´Â ¾ø´Ù.
+            aCursor->mRowPtr = aPosition->mRowPtr;
         }
         else
         {
-            // BUG-46322 makeMergeRunsì—ì„œ run pageë“¤ì„ ëª¨ë‘ loadí•˜ì˜€ë‹¤.
-            // GRIDì—ì„œ ê°€ë¦¬í‚¤ëŠ” pageëŠ” loadë˜ì—ˆì–´ì•¼ í•œë‹¤.
-            // ë§Œì•½ ì´ë¯¸ loadë˜ì–´ ìˆë‹¤ë©´ Slotì„ ì°¾ì•„ì˜¤ê³ ,
-            // ë§Œì•½ í•´ë‹¹ pageê°€ ì—†ë‹¤ë©´ WA GroupIDê°€ NONEì´ë¯€ë¡œ ì˜¤ë¥˜ ë°˜í™˜í•œë‹¤.
-            // ì¶”ê°€ë¡œ, MerceScanì€ pageë¥¼ fixí•˜ì§€ëŠ” ì•ŠëŠ”ë‹¤.
-            IDE_ERROR( sdtWASegment::getPagePtrByGRID( (sdtWASegment*)sHeader->mWASegment,
-                                                       SDT_WAGROUPID_NONE,
-                                                       sCursor->mGRID,
-                                                       &sCursor->mRowPtr,
-                                                       &sIsValidSlot ) == IDE_SUCCESS );
-            IDE_ERROR( sIsValidSlot == ID_TRUE );
+            IDE_ERROR( sdtTempPage::getSelfPID( sWCBPtr->mWAPagePtr ) == SC_MAKE_PID( aCursor->mGRID ) );
+
+            // BUG-46322 WAPageÀÇ Pointer°¡ º¯°æ µÇ¾ú´Ù¸é, ´Ù½Ã ÀĞ¾î¿Â´Ù.
+            sdtSortSegment::getSlot( sWCBPtr->mWAPagePtr,
+                                     sdtTempPage::getSlotCount( sWCBPtr->mWAPagePtr ),
+                                     SC_MAKE_OFFSET( aCursor->mGRID ),
+                                     &aCursor->mRowPtr,
+                                     &sIsValid );
+
+            IDE_ERROR( sIsValid == ID_TRUE );
         }
 
-        IDE_ERROR( SM_IS_FLAG_ON( ((sdtTRPHeader*)sCursor->mRowPtr)->mTRFlag,
+        IDE_ERROR( SM_IS_FLAG_ON( ((sdtSortTRPHdr*)aCursor->mRowPtr)->mTRFlag,
                                   SDT_TRFLAG_HEAD ) );
-
     }
 
     return IDE_SUCCESS;
@@ -1592,35 +1478,34 @@ IDE_RC sdtSortModule::restoreCursorMergeScan( void * aCursor,
 
 /**************************************************************************
  * Description :
- * ì»¤ì„œì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•©ë‹ˆë‹¤.
+ * Ä¿¼­ÀÇ À§Ä¡¸¦ ÀúÀåÇÕ´Ï´Ù.
  *
  * <IN>
- * aCursor        - ëŒ€ìƒ Cursor
+ * aCursor        - ´ë»ó Cursor
  * <OUT>
- * aPosition      - ì €ì¥í•œ ìœ„ì¹˜
+ * aPosition      - ÀúÀåÇÑ À§Ä¡
  ***************************************************************************/
-IDE_RC sdtSortModule::storeCursorIndexScan( void * aCursor,
-                                            void * aPosition )
+IDE_RC sdtSortModule::storeCursorIndexScan( smiSortTempCursor* aCursor,
+                                            smiTempPosition * aPosition )
 {
-    smiTempCursor      * sCursor   = (smiTempCursor *)aCursor;
-    smiTempTableHeader * sHeader   = sCursor->mTTHeader;
-    sdtWASegment       * sWASeg    = (sdtWASegment*)sHeader->mWASegment;
-    smiTempPosition    * sPosition = (smiTempPosition*)aPosition;
+    sdtSortSegHdr      * sWASeg    = (sdtSortSegHdr*)aCursor->mTTHeader->mWASegment;
 
-    IDE_ERROR( sPosition->mOwner == sCursor );
-    IDE_ERROR( sPosition->mTTState == SMI_TTSTATE_SORT_INDEXSCAN );
-    IDE_ERROR( SM_IS_FLAG_ON( ((sdtTRPHeader*)sCursor->mRowPtr)->mTRFlag,
+    IDE_ERROR( aPosition->mOwner == aCursor );
+    IDE_ERROR( aPosition->mTTState == SMI_TTSTATE_SORT_INDEXSCAN );
+    IDE_ERROR( SM_IS_FLAG_ON( ((sdtSortTRPHdr*)aCursor->mRowPtr)->mTRFlag,
                               SDT_TRFLAG_HEAD ) );
 
-    sPosition->mGRID      = sCursor->mGRID;
-    sPosition->mRowPtr    = sCursor->mRowPtr;
-    sPosition->mWAPagePtr = sCursor->mWAPagePtr;
-    sPosition->mSlotCount = sCursor->mSlotCount;
-    sPosition->mWPID      = sCursor->mWPID;
+    SC_COPY_GRID( aCursor->mGRID, aPosition->mGRID );
+    aPosition->mRowPtr    = aCursor->mRowPtr;
+    aPosition->mWAPagePtr = aCursor->mWAPagePtr;
+    aPosition->mSlotCount = aCursor->mSlotCount;
+    aPosition->mWPID      = aCursor->mWPID;
 
-    sdtWASegment::convertFromWGRIDToNGRID( sWASeg,
-                                           sPosition->mGRID,
-                                           &sPosition->mGRID );
+    IDE_DASSERT( aPosition->mWPID != SM_NULL_PID );
+
+    sdtSortSegment::convertFromWGRIDToNGRID( sWASeg,
+                                             aPosition->mGRID,
+                                             &aPosition->mGRID );
 
     return IDE_SUCCESS;
 
@@ -1631,68 +1516,68 @@ IDE_RC sdtSortModule::storeCursorIndexScan( void * aCursor,
 
 /**************************************************************************
  * Description :
- * ì»¤ì„œë¥¼ ì €ì¥í•œ ìœ„ì¹˜ë¡œ ë˜ëŒë¦½ë‹ˆë‹¤.
+ * Ä¿¼­¸¦ ÀúÀåÇÑ À§Ä¡·Î µÇµ¹¸³´Ï´Ù.
  *
  * <IN>
- * aCursor        - ëŒ€ìƒ Cursor
- * aPosition      - ì €ì¥í•œ ìœ„ì¹˜
+ * aCursor        - ´ë»ó Cursor
+ * aPosition      - ÀúÀåÇÑ À§Ä¡
  ***************************************************************************/
-IDE_RC sdtSortModule::restoreCursorIndexScan( void * aCursor,
-                                              void * aPosition )
+IDE_RC sdtSortModule::restoreCursorIndexScan( smiSortTempCursor* aCursor,
+                                              smiTempPosition * aPosition )
 {
-    smiTempCursor      * sCursor = (smiTempCursor *)aCursor;
-    smiTempTableHeader * sHeader = sCursor->mTTHeader;
-    smiTempPosition    * sPosition = (smiTempPosition*)aPosition;
-    sdtWASegment       * sWASeg = (sdtWASegment*)sHeader->mWASegment;
-    scPageID             sNPID  = SC_NULL_PID;
-    UChar              * sPtr   = NULL;
+    smiTempTableHeader * sHeader = aCursor->mTTHeader;
+    sdtSortSegHdr      * sWASeg = (sdtSortSegHdr*)sHeader->mWASegment;
+    UChar              * sPtr;
+    sdtWCB             * sWCBPtr;
     idBool               sIsValidSlot;
-    UChar              * sPageStartPtr = NULL;
 
-    IDE_ERROR( sPosition->mOwner == sCursor );
-    IDE_ERROR( sPosition->mTTState == SMI_TTSTATE_SORT_INDEXSCAN );
+    IDE_ERROR( aPosition->mOwner == aCursor );
+    IDE_ERROR( aPosition->mTTState == SMI_TTSTATE_SORT_INDEXSCAN );
 
-    sCursor->mGRID      = sPosition->mGRID;
-    sCursor->mRowPtr    = sPosition->mRowPtr;
-    sCursor->mWAPagePtr = sPosition->mWAPagePtr;
-    sCursor->mSlotCount = sPosition->mSlotCount;
+    SC_COPY_GRID( aPosition->mGRID, aCursor->mGRID );
+    aCursor->mRowPtr    = aPosition->mRowPtr;
+    aCursor->mWAPagePtr = aPosition->mWAPagePtr;
+    aCursor->mSlotCount = aPosition->mSlotCount;
 
-    sPageStartPtr = sdtTempPage::getPageStartPtr( sCursor->mRowPtr );
-    sNPID = sdtTempPage::getPID( sPageStartPtr );
+    IDE_DASSERT( aCursor->mWPID   != SM_NULL_PID );
+    IDE_DASSERT( aPosition->mWPID != SM_NULL_PID );
 
-    if ( SC_MAKE_PID( sCursor->mGRID ) != sNPID )
+    sWCBPtr = sdtSortSegment::getWCBInternal( sWASeg,
+                                              aPosition->mWPID );
+
+    IDE_DASSERT( sWCBPtr->mWAPagePtr == aCursor->mWAPagePtr );
+
+    if ( sWCBPtr->mNPageID != aCursor->mGRID.mPageID )
     {
-        /* ê·¸ ì‚¬ì´ ì´ì „ Positionì—ì„œ ì½ì—ˆë˜ pageê°€ ë³€ê²½ë˜ì—ˆìŒ.
-         * ë‹¤ì‹œ ì½ìŒ.*/
-        IDE_TEST( sdtWASegment::getPageWithFix( sWASeg,
-                                                sHeader->mFetchGroupID,
-                                                sCursor->mGRID,
-                                                &sCursor->mWPID,
-                                                &sCursor->mWAPagePtr,
-                                                &sCursor->mSlotCount )
+        /* ±× »çÀÌ ÀÌÀü Position¿¡¼­ ÀĞ¾ú´ø page°¡ º¯°æµÇ¾úÀ½.
+         * ´Ù½Ã ÀĞÀ½.*/
+        IDE_TEST( sdtSortSegment::getPageWithFix( sWASeg,
+                                                  sHeader->mFetchGroupID,
+                                                  aCursor->mGRID,
+                                                  &aCursor->mWPID,
+                                                  &aCursor->mWAPagePtr,
+                                                  &aCursor->mSlotCount )
                   != IDE_SUCCESS );
-        sdtWASegment::getSlot( sCursor->mWAPagePtr,
-                               sCursor->mSlotCount,
-                               SC_MAKE_OFFSET( sCursor->mGRID ),
-                               &sPtr,
-                               &sIsValidSlot );
+        sdtSortSegment::getSlot( aCursor->mWAPagePtr,
+                                 aCursor->mSlotCount,
+                                 SC_MAKE_OFFSET( aCursor->mGRID ),
+                                 &sPtr,
+                                 &sIsValidSlot );
         IDE_ERROR( sIsValidSlot == ID_TRUE );
 
-        sCursor->mRowPtr = sPtr;
+        aCursor->mRowPtr = sPtr;
     }
     else
     {
-        // BUG-46384 sCursor->mWPIDëŠ” fixëœ pageë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
-        // ë³µì›í•˜ë ¤ëŠ” WPIDì™€ ë‹¤ë¥´ë‹¤ë©´ ë‹¤ì‹œ fix í•´ ì¤€ë‹¤.
-        if ( sCursor->mWPID != sPosition->mWPID )
+        if ( aCursor->mWPID != aPosition->mWPID )
         {
-            sdtWASegment::unfixPage( sWASeg, sCursor->mWPID );
-            sCursor->mWPID = sPosition->mWPID;
-            sdtWASegment::fixPage( sWASeg, sCursor->mWPID );
+            sdtSortSegment::unfixWAPage( sWASeg, aCursor->mWPID );
+            aCursor->mWPID = aPosition->mWPID;
+            sdtSortSegment::fixWAPage( sWCBPtr );
         }
     }
 
-    IDE_ERROR( SM_IS_FLAG_ON( ((sdtTRPHeader*)sCursor->mRowPtr)->mTRFlag,
+    IDE_ERROR( SM_IS_FLAG_ON( ((sdtSortTRPHdr*)aCursor->mRowPtr)->mTRFlag,
                               SDT_TRFLAG_HEAD ) );
 
     return IDE_SUCCESS;
@@ -1704,34 +1589,33 @@ IDE_RC sdtSortModule::restoreCursorIndexScan( void * aCursor,
 
 /**************************************************************************
  * Description :
- * ì»¤ì„œì˜ ìœ„ì¹˜ë¥¼ ì €ì¥í•©ë‹ˆë‹¤. (BUG-39450)
+ * Ä¿¼­ÀÇ À§Ä¡¸¦ ÀúÀåÇÕ´Ï´Ù. (BUG-39450)
  *
  * <IN>
- * aCursor        - ëŒ€ìƒ Cursor
+ * aCursor        - ´ë»ó Cursor
  * <OUT>
- * aPosition      - ì €ì¥í•œ ìœ„ì¹˜
+ * aPosition      - ÀúÀåÇÑ À§Ä¡
  ***************************************************************************/
-IDE_RC sdtSortModule::storeCursorScan( void * aCursor,
-                                       void * aPosition )
+IDE_RC sdtSortModule::storeCursorScan( smiSortTempCursor* aCursor,
+                                       smiTempPosition * aPosition )
 {
-    smiTempCursor      * sCursor   = (smiTempCursor *)aCursor;
-    smiTempTableHeader * sHeader   = (smiTempTableHeader*)sCursor->mTTHeader;
-    sdtWASegment       * sWASeg    = (sdtWASegment*)sHeader->mWASegment;
-    smiTempPosition    * sPosition = (smiTempPosition*)aPosition;
+    sdtSortSegHdr * sWASeg = (sdtSortSegHdr*)aCursor->mTTHeader->mWASegment;
 
-    IDE_ERROR( sPosition->mOwner == sCursor );
-    IDE_ERROR( sPosition->mTTState == SMI_TTSTATE_SORT_SCAN );
-    IDE_ERROR( SM_IS_FLAG_ON( ((sdtTRPHeader*)sCursor->mRowPtr)->mTRFlag,
+    IDE_ERROR( aPosition->mOwner == aCursor );
+    IDE_ERROR( aPosition->mTTState == SMI_TTSTATE_SORT_SCAN );
+    IDE_ERROR( SM_IS_FLAG_ON( ((sdtSortTRPHdr*)aCursor->mRowPtr)->mTRFlag,
                               SDT_TRFLAG_HEAD ) );
 
-    sPosition->mGRID   = sCursor->mGRID;
-    sPosition->mRowPtr = sCursor->mRowPtr;
-    sPosition->mPinIdx = sCursor->mPinIdx;
-    sPosition->mWPID   = sCursor->mWPID;
+    SC_COPY_GRID( aCursor->mGRID, aPosition->mGRID );
+    aPosition->mRowPtr = aCursor->mRowPtr;
+    aPosition->mPinIdx = aCursor->mPinIdx;
+    aPosition->mWPID   = aCursor->mWPID;
 
-    sdtWASegment::convertFromWGRIDToNGRID( sWASeg,
-                                           sPosition->mGRID,
-                                           &sPosition->mGRID );
+    IDE_DASSERT( aPosition->mWPID != SM_NULL_PID );
+
+    sdtSortSegment::convertFromWGRIDToNGRID( sWASeg,
+                                             aPosition->mGRID,
+                                             &aPosition->mGRID );
 
     return IDE_SUCCESS;
 
@@ -1742,69 +1626,69 @@ IDE_RC sdtSortModule::storeCursorScan( void * aCursor,
 
 /**************************************************************************
  * Description :
- * ì»¤ì„œë¥¼ ì €ì¥í•œ ìœ„ì¹˜ë¡œ ë˜ëŒë¦½ë‹ˆë‹¤. (BUG-39450)
+ * Ä¿¼­¸¦ ÀúÀåÇÑ À§Ä¡·Î µÇµ¹¸³´Ï´Ù. (BUG-39450)
  *
  * <IN>
- * aCursor        - ëŒ€ìƒ Cursor
- * aPosition      - ì €ì¥í•œ ìœ„ì¹˜
+ * aCursor        - ´ë»ó Cursor
+ * aPosition      - ÀúÀåÇÑ À§Ä¡
  ***************************************************************************/
-IDE_RC sdtSortModule::restoreCursorScan( void * aCursor,
-                                         void * aPosition )
+IDE_RC sdtSortModule::restoreCursorScan( smiSortTempCursor* aCursor,
+                                         smiTempPosition * aPosition )
 {
-    smiTempCursor      * sCursor   = (smiTempCursor *)aCursor;
-    smiTempPosition    * sPosition = (smiTempPosition*)aPosition;
-    smiTempTableHeader * sHeader   = (smiTempTableHeader*)sCursor->mTTHeader;
-    sdtWASegment       * sWASeg    = (sdtWASegment*)sHeader->mWASegment;
-    scPageID             sNPID     = SC_NULL_PID;
-    UChar              * sPtr      = NULL;
+    smiTempTableHeader * sHeader   = aCursor->mTTHeader;
+    sdtSortSegHdr      * sWASeg    = (sdtSortSegHdr*)sHeader->mWASegment;
+    UChar              * sPtr;
+    sdtWCB             * sWCBPtr;
     idBool               sIsValidSlot;
-    UChar              * sPageStartPtr = NULL;
 
-    IDE_ERROR( sPosition->mOwner == sCursor );
-    IDE_ERROR( sPosition->mTTState == SMI_TTSTATE_SORT_SCAN );
+    IDE_ERROR( aPosition->mOwner == aCursor );
+    IDE_ERROR( aPosition->mTTState == SMI_TTSTATE_SORT_SCAN );
     IDE_ERROR( sHeader->mScanPosition != NULL);
 
-    sCursor->mGRID      = sPosition->mGRID;
-    sCursor->mRowPtr    = sPosition->mRowPtr;
-    sCursor->mPinIdx    = sPosition->mPinIdx;
+    SC_COPY_GRID( aPosition->mGRID, aCursor->mGRID );
+    aCursor->mRowPtr = aPosition->mRowPtr;
+    aCursor->mPinIdx = aPosition->mPinIdx;
 
-    sPageStartPtr = sdtTempPage::getPageStartPtr( sCursor->mRowPtr );
-    sNPID = sdtTempPage::getPID( sPageStartPtr );
+    IDE_DASSERT( aCursor->mWPID   != SM_NULL_PID );
+    IDE_DASSERT( aPosition->mWPID != SM_NULL_PID );
 
-    if ( SC_MAKE_PID( sCursor->mGRID ) != sNPID )
+    sWCBPtr = sdtSortSegment::getWCBInternal( sWASeg,
+                                              aPosition->mWPID );
+
+    IDE_DASSERT( sWCBPtr->mWAPagePtr == aCursor->mWAPagePtr );
+
+    if ( sWCBPtr->mNPageID != aCursor->mGRID.mPageID )
     {
-        /* ê·¸ ì‚¬ì´ ì´ì „ Positionì—ì„œ ì½ì—ˆë˜ pageê°€ ë³€ê²½ë˜ì—ˆìŒ.
-         * ë‹¤ì‹œ ì½ìŒ.*/
-        IDE_TEST( sdtWASegment::getPageWithFix( sWASeg,
-                                                sHeader->mFetchGroupID,
-                                                sCursor->mGRID,
-                                                &sCursor->mWPID,
-                                                &sCursor->mWAPagePtr,
-                                                &sCursor->mSlotCount )
+        /* ±× »çÀÌ ÀÌÀü Position¿¡¼­ ÀĞ¾ú´ø page°¡ º¯°æµÇ¾úÀ½.
+         * ´Ù½Ã ÀĞÀ½.*/
+        IDE_TEST( sdtSortSegment::getPageWithFix( sWASeg,
+                                                  sHeader->mFetchGroupID,
+                                                  aCursor->mGRID,
+                                                  &aCursor->mWPID,
+                                                  &aCursor->mWAPagePtr,
+                                                  &aCursor->mSlotCount )
 
                   != IDE_SUCCESS );
-        sdtWASegment::getSlot( sCursor->mWAPagePtr,
-                               sCursor->mSlotCount,
-                               SC_MAKE_OFFSET( sCursor->mGRID ),
-                               &sPtr,
-                               &sIsValidSlot );
+        sdtSortSegment::getSlot( aCursor->mWAPagePtr,
+                                 aCursor->mSlotCount,
+                                 SC_MAKE_OFFSET( aCursor->mGRID ),
+                                 &sPtr,
+                                 &sIsValidSlot );
         IDE_ERROR( sIsValidSlot == ID_TRUE );
 
-        sCursor->mRowPtr = sPtr;
+        aCursor->mRowPtr = sPtr;
     }
     else
     {
-        // BUG-46384 sCursor->mWPIDëŠ” fixëœ pageë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
-        // ë³µì›í•˜ë ¤ëŠ” WPIDì™€ ë‹¤ë¥´ë‹¤ë©´ ë‹¤ì‹œ fix í•´ ì¤€ë‹¤.
-        if ( sCursor->mWPID != sPosition->mWPID )
+        if ( aCursor->mWPID != aPosition->mWPID )
         {
-            sdtWASegment::unfixPage( sWASeg, sCursor->mWPID );
-            sCursor->mWPID = sPosition->mWPID;
-            sdtWASegment::fixPage( sWASeg, sCursor->mWPID );
+            sdtSortSegment::unfixWAPage( sWASeg, aCursor->mWPID );
+            aCursor->mWPID = aPosition->mWPID;
+            sdtSortSegment::fixWAPage( sWCBPtr );
         }
     }
 
-    IDE_ERROR( SM_IS_FLAG_ON( ((sdtTRPHeader*)sCursor->mRowPtr)->mTRFlag,
+    IDE_ERROR( SM_IS_FLAG_ON( ((sdtSortTRPHdr*)aCursor->mRowPtr)->mTRFlag,
                               SDT_TRFLAG_HEAD ) );
 
     return IDE_SUCCESS;
@@ -1814,47 +1698,13 @@ IDE_RC sdtSortModule::restoreCursorScan( void * aCursor,
     return IDE_FAILURE;
 }
 
+
 /**************************************************************************
  * Description :
- * ì»¤ì„œë¥¼ ë‹«ìŠµë‹ˆë‹¤.
+ * ÀÌÀü¿¡ »ğÀÔÇÑ Row¸¦ ÃßÃâÇÏ¿© ÀçÁ¤·ÄÇÕ´Ï´Ù.
  *
- * <IN>
- * aCursor        - ëŒ€ìƒ Cursor
- ***************************************************************************/
-IDE_RC sdtSortModule::closeCursorCommon( void * /*aCursor*/ )
-{
-    return IDE_SUCCESS;
-}
-
-
-/**************************************************************************
- * Description :
- * ë°ì´í„°ë¥¼ ì‚½ì…í•˜ê¸° ìœ„í•œ ìƒíƒœë¡œ ì „í™˜í•œë‹¤. (í• ê±° ì—†ìŒ)
- ***************************************************************************/
-IDE_RC sdtSortModule::insertNSort(smiTempTableHeader * aHeader)
-{
-    aHeader->mTTState = SMI_TTSTATE_SORT_INSERTNSORT;
-
-    return IDE_SUCCESS;
-}
-
-/**************************************************************************
- * Description :
- * ë°ì´í„°ë¥¼ ì‚½ì…í•˜ê¸° ìœ„í•œ ìƒíƒœ(sortë„ ì—†ë‹¤)ë¡œ ì „í™˜í•œë‹¤. (í• ê±° ì—†ìŒ)
- ***************************************************************************/
-IDE_RC sdtSortModule::insertOnly(smiTempTableHeader * aHeader)
-{
-    aHeader->mTTState = SMI_TTSTATE_SORT_INSERTONLY;
-
-    return IDE_SUCCESS;
-}
-
-/**************************************************************************
- * Description :
- * ì´ì „ì— ì‚½ì…í•œ Rowë¥¼ ì¶”ì¶œí•˜ì—¬ ì¬ì •ë ¬í•©ë‹ˆë‹¤.
- *
- * ë°ì´í„°ë¥¼ ì¶”ì¶œí•´ ì •ë ¬í•˜ëŠ” extractNSort ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
- * ì™„ë£Œë˜ë©´ ìŠ¤ìŠ¤ë¡œ merge í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
+ * µ¥ÀÌÅÍ¸¦ ÃßÃâÇØ Á¤·ÄÇÏ´Â extractNSort ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+ * ¿Ï·áµÇ¸é ½º½º·Î merge ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
  ***************************************************************************/
 IDE_RC sdtSortModule::extractNSort(smiTempTableHeader * aHeader)
 {
@@ -1865,53 +1715,72 @@ IDE_RC sdtSortModule::extractNSort(smiTempTableHeader * aHeader)
     UInt                sSortGroupPageCount;
     UInt                sFlushGroupPageCount;
     UChar             * sWAPagePtr = NULL;
-    scGRID              sGRID      = SC_NULL_GRID;
+    scGRID              sGRID ;
     UInt                sSlotCount = 0;
     UInt                sWAMapIdx  = 0;
-    sdtWASegment      * sWASeg     = (sdtWASegment*)aHeader->mWASegment;
-    sdtTRInsertResult   sTRInsertResult;
+    sdtSortSegHdr     * sWASeg     = (sdtSortSegHdr*)aHeader->mWASegment;
+    sdtSortInsertResult   sTRInsertResult;
     UInt                i;
 
-    /* Indexë‹¨ê³„ì—ì„œì˜ ëª¨ë“  Groupì„ ë•ë‹¤. */
-    IDE_TEST( sdtWASegment::dropWAGroup( sWASeg,
-                                         SDT_WAGROUPID_LNODE,
-                                         ID_TRUE ) /*wait4flush */
+    /* Index´Ü°è¿¡¼­ÀÇ ¸ğµç GroupÀ» ¶©´Ù. */
+    IDE_TEST( sdtSortSegment::dropWAGroup( sWASeg,
+                                           SDT_WAGROUPID_LNODE,
+                                           ID_TRUE ) /*wait4flush */
               != IDE_SUCCESS );
 
-    IDE_TEST( sdtWASegment::dropWAGroup( sWASeg,
-                                         SDT_WAGROUPID_INODE,
-                                         ID_TRUE ) /*wait4flush */
+    IDE_TEST( sdtSortSegment::dropWAGroup( sWASeg,
+                                           SDT_WAGROUPID_INODE,
+                                           ID_TRUE ) /*wait4flush */
               != IDE_SUCCESS );
 
-    /* InsertNSortì™€ ê°™ì€ ëª¨ì–‘ì˜ Groupìœ¼ë¡œ ì¬ìƒì„± */
-    sInitGroupPageCount = sdtWASegment::getAllocableWAGroupPageCount(
+    /* InsertNSort¿Í °°Àº ¸ğ¾çÀÇ GroupÀ¸·Î Àç»ı¼º */
+    sInitGroupPageCount = sdtSortSegment::getAllocableWAGroupPageCount(
         sWASeg, SDT_WAGROUPID_INIT );
-    sSortGroupPageCount = sInitGroupPageCount
-        * aHeader->mWorkGroupRatio / 100;
-    sFlushGroupPageCount= ( sInitGroupPageCount - sSortGroupPageCount )
-        / 2;
-    IDE_TEST( sdtWASegment::createWAGroup( sWASeg,
-                                           SDT_WAGROUPID_SORT,
-                                           sSortGroupPageCount,
-                                           SDT_WA_REUSE_INMEMORY )
-              != IDE_SUCCESS );
-    IDE_TEST( sdtWASegment::createWAGroup( sWASeg,
-                                           SDT_WAGROUPID_FLUSH,
-                                           sFlushGroupPageCount,
-                                           SDT_WA_REUSE_FIFO )
-              != IDE_SUCCESS );
-    IDE_TEST( sdtWASegment::createWAGroup( sWASeg,
-                                           SDT_WAGROUPID_SUBFLUSH,
-                                           sFlushGroupPageCount,
-                                           SDT_WA_REUSE_FIFO )
+
+    /* BUG-46427 °¢ group´ç 2°³ ÀÌ»óÀÇ page°¡ ÀÖ¾î¾ß ÇÑ´Ù. */
+    IDE_ERROR( sInitGroupPageCount >= ( SDT_WAGROUP_MIN_PAGECOUNT * 3 ) );
+
+    sSortGroupPageCount = sInitGroupPageCount * aHeader->mWorkGroupRatio / 100;
+
+    if ( sSortGroupPageCount < SDT_WAGROUP_MIN_PAGECOUNT )
+    {
+        /* BUG-46427 °¢ group´ç 2°³ ÀÌ»óÀÇ page°¡ ÀÖ¾î¾ß ÇÑ´Ù. */
+        sSortGroupPageCount = SDT_WAGROUP_MIN_PAGECOUNT;
+    }
+
+    sFlushGroupPageCount = ( sInitGroupPageCount - sSortGroupPageCount ) / 2;
+
+    if ( sFlushGroupPageCount < SDT_WAGROUP_MIN_PAGECOUNT )
+    {
+        /* BUG-46427 °¢ group´ç 2°³ ÀÌ»óÀÇ page°¡ ÀÖ¾î¾ß ÇÑ´Ù. */
+        sFlushGroupPageCount = SDT_WAGROUP_MIN_PAGECOUNT;
+        sSortGroupPageCount = sInitGroupPageCount - ( sFlushGroupPageCount * 2 );
+    }
+
+    IDE_TEST( sdtSortSegment::createWAGroup( sWASeg,
+                                             SDT_WAGROUPID_SORT,
+                                             sSortGroupPageCount,
+                                             SDT_WA_REUSE_INMEMORY )
               != IDE_SUCCESS );
 
-    IDE_TEST( sdtWAMap::create( sWASeg,
-                                aHeader->mSortGroupID,
-                                SDT_WM_TYPE_POINTER,
-                                0, /* Slot Count */
-                                2, /* aVersionCount */
-                                (void*)&sWASeg->mSortHashMapHdr )
+    IDE_TEST( sdtSortSegment::createWAGroup( sWASeg,
+                                             SDT_WAGROUPID_FLUSH,
+                                             sFlushGroupPageCount,
+                                             SDT_WA_REUSE_FIFO )
+              != IDE_SUCCESS );
+
+    IDE_TEST( sdtSortSegment::createWAGroup( sWASeg,
+                                             SDT_WAGROUPID_SUBFLUSH,
+                                             sFlushGroupPageCount,
+                                             SDT_WA_REUSE_FIFO )
+              != IDE_SUCCESS );
+
+    IDE_TEST( sdtWASortMap::create( sWASeg,
+                                    aHeader->mSortGroupID,
+                                    SDT_WM_TYPE_POINTER,
+                                    0, /* Slot Count */
+                                    2, /* aVersionCount */
+                                    &sWASeg->mSortMapHdr )
               != IDE_SUCCESS );
 
     aHeader->mTTState = SMI_TTSTATE_SORT_EXTRACTNSORT;
@@ -1920,16 +1789,16 @@ IDE_RC sdtSortModule::extractNSort(smiTempTableHeader * aHeader)
     while( sNPID != SC_NULL_PID )
     {
         SC_MAKE_GRID( sGRID, aHeader->mSpaceID, sNPID, 0 );
-        IDE_TEST( sdtWASegment::getPage( sWASeg,
-                                         SDT_WAGROUPID_SUBFLUSH,
-                                         sGRID,
-                                         &sWPID,
-                                         &sWAPagePtr,
-                                         &sSlotCount )
+        IDE_TEST( sdtSortSegment::getPage( sWASeg,
+                                           SDT_WAGROUPID_SUBFLUSH,
+                                           sGRID,
+                                           &sWPID,
+                                           &sWAPagePtr )
                   != IDE_SUCCESS );
+        sSlotCount = sdtTempPage::getSlotCount(sWAPagePtr);
         sNextNPID = sdtTempPage::getNextPID( sWAPagePtr );
 
-        for( i = 0 ; i < sSlotCount ; i ++ )
+        for( i = 0 ; i < sSlotCount ; i++ )
         {
             while( 1 )
             {
@@ -1942,25 +1811,30 @@ IDE_RC sdtSortModule::extractNSort(smiTempTableHeader * aHeader)
                                          &sTRInsertResult )
                           != IDE_SUCCESS );
 
-                /* WAMapì— ìŠ¬ë¡¯ ì‚½ì… */
+                /* WAMap¿¡ ½½·Ô »ğÀÔ */
                 if ( sTRInsertResult.mComplete == ID_TRUE )
                 {
-                    /* Rowë¥¼ ì˜¨ì „íˆ ì‚½ì…í•˜ì˜€ìŒ */
-                    IDE_TEST( sdtWAMap::expand(
-                                  &sWASeg->mSortHashMapHdr,
+                    /* Row¸¦ ¿ÂÀüÈ÷ »ğÀÔÇÏ¿´À½ */
+                    IDE_TEST( sdtWASortMap::expand(
+                                  &sWASeg->mSortMapHdr,
                                   SC_MAKE_PID( sTRInsertResult.mHeadRowpieceGRID ),
                                   &sWAMapIdx )
                               != IDE_SUCCESS );
                     if ( sWAMapIdx != SDT_WASLOT_UNUSED )
                     {
-                        IDE_TEST( sdtWAMap::setvULong(
-                                      &sWASeg->mSortHashMapHdr,
+                        IDE_TEST( sdtWASortMap::setvULong(
+                                      &sWASeg->mSortMapHdr,
                                       sWAMapIdx,
                                       (vULong*)&sTRInsertResult.mHeadRowpiecePtr )
                                   != IDE_SUCCESS );
                         break;
                     }
                 }
+
+                /* BUG-46438 ÇÑ¹ø¿¡ ÇÑ °Çµµ ³ÖÁö ¸øÇÒ Á¤µµ·Î °ø°£ÀÌ ÀÛ´Ù¸é,
+                 * sort temp¸¦ »ç¿ë ÇÒ ¼ö ¾ø´Ù.*/
+                IDE_TEST_RAISE( sdtWASortMap::getSlotCount( &sWASeg->mSortMapHdr ) == 0 ,
+                                error_invalid_sortareasize );
 
                 IDE_TEST( sortSortGroup( aHeader ) != IDE_SUCCESS );
                 IDE_TEST( storeSortedRun( aHeader ) != IDE_SUCCESS );
@@ -1973,18 +1847,22 @@ IDE_RC sdtSortModule::extractNSort(smiTempTableHeader * aHeader)
             break;
         }
     } // end of while ( sNPID != SC_NULL_PID )
-    IDE_TEST( sdtWASegment::dropWAGroup( sWASeg,
-                                         SDT_WAGROUPID_SUBFLUSH,
-                                         ID_TRUE ) /*wait4flush */
+    IDE_TEST( sdtSortSegment::dropWAGroup( sWASeg,
+                                           SDT_WAGROUPID_SUBFLUSH,
+                                           ID_TRUE ) /*wait4flush */
               != IDE_SUCCESS );
 
-    /* ë‹¤ ëë‚˜ë©´, merge, makeIndex, indexScanì„ ìˆ˜í–‰í•¨ */
+    /* ´Ù ³¡³ª¸é, merge, makeIndex, indexScanÀ» ¼öÇàÇÔ */
     IDE_TEST( merge( aHeader ) != IDE_SUCCESS );
     IDE_TEST( makeIndex( aHeader ) != IDE_SUCCESS );
     IDE_TEST( indexScan( aHeader ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( error_invalid_sortareasize);
+    {
+        IDE_SET( ideSetErrorCode( smERR_ABORT_INVALID_SORTAREASIZE ) );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -1992,26 +1870,26 @@ IDE_RC sdtSortModule::extractNSort(smiTempTableHeader * aHeader)
 
 /**************************************************************************
  * Description :
- * runë“¤ì„ mergeí•œë‹¤.
+ * runµéÀ» mergeÇÑ´Ù.
  **************************************************************************/
 IDE_RC sdtSortModule::merge(smiTempTableHeader * aHeader)
 {
-    sdtTempMergeRunInfo sTopRunInfo;
-    scGRID               sGRID;
-    scPageID             sHeadNPID = SD_NULL_PID;
-    sdtWASegment       * sWASeg = (sdtWASegment*)aHeader->mWASegment;
-    sdtTRInsertResult    sTRInsertResult;
+    sdtTempMergeRunInfo   sTopRunInfo;
+    scGRID                sGRID;
+    scPageID              sHeadNPID = SD_NULL_PID;
+    sdtSortSegHdr       * sWASeg = (sdtSortSegHdr*)aHeader->mWASegment;
+    sdtSortInsertResult sTRInsertResult;
 
     IDE_ERROR( ( aHeader->mTTState == SMI_TTSTATE_SORT_INSERTNSORT  ) ||
                ( aHeader->mTTState == SMI_TTSTATE_SORT_EXTRACTNSORT ) );
     IDE_ERROR( aHeader->mKeyColumnList != NULL );
 
-    /* ë§ˆì§€ë§‰ Runì˜ Slot ê°œìˆ˜ */
+    /* ¸¶Áö¸· RunÀÇ Slot °³¼ö */
     aHeader->mStatsPtr->mExtraStat2 =
-        sdtWAMap::getSlotCount( &sWASeg->mSortHashMapHdr );
+        sdtWASortMap::getSlotCount( &sWASeg->mSortMapHdr );
 
-    /* ë§ˆì§€ë§‰ Runì„ ìƒì„±í•´ì„œ ë‚´ë¦¼ */
-    if ( sdtWAMap::getSlotCount( &sWASeg->mSortHashMapHdr ) > 0 )
+    /* ¸¶Áö¸· RunÀ» »ı¼ºÇØ¼­ ³»¸² */
+    if ( sdtWASortMap::getSlotCount( &sWASeg->mSortMapHdr ) > 0 )
     {
         IDE_TEST( sortSortGroup( aHeader ) != IDE_SUCCESS );
         IDE_TEST( storeSortedRun( aHeader ) != IDE_SUCCESS );
@@ -2019,14 +1897,14 @@ IDE_RC sdtSortModule::merge(smiTempTableHeader * aHeader)
 
     aHeader->mTTState = SMI_TTSTATE_SORT_MERGE;
 
-    /* SortGroupì„ ì´ˆê¸°í™”í•œë‹¤. Mergeí•  ê³µê°„ìœ¼ë¡œ ë§Œë“¤ê¸° ìœ„í•¨ì´ë‹¤. */
-    IDE_TEST( sdtWASegment::resetWAGroup( sWASeg,
-                                          SDT_WAGROUPID_SORT,
-                                          ID_FALSE/*wait4flsuh*/ )
+    /* SortGroupÀ» ÃÊ±âÈ­ÇÑ´Ù. MergeÇÒ °ø°£À¸·Î ¸¸µé±â À§ÇÔÀÌ´Ù. */
+    IDE_TEST( sdtSortSegment::resetWAGroup( sWASeg,
+                                            SDT_WAGROUPID_SORT,
+                                            ID_FALSE/*wait4flsuh*/ )
               != IDE_SUCCESS );
-    IDE_TEST( sdtWASegment::resetWAGroup( sWASeg,
-                                          SDT_WAGROUPID_FLUSH,
-                                          ID_TRUE/*wait4flsuh*/ )
+    IDE_TEST( sdtSortSegment::resetWAGroup( sWASeg,
+                                            SDT_WAGROUPID_FLUSH,
+                                            ID_TRUE/*wait4flsuh*/ )
               != IDE_SUCCESS );
 
     while( 1 )
@@ -2035,23 +1913,23 @@ IDE_RC sdtSortModule::merge(smiTempTableHeader * aHeader)
 
         if ( aHeader->mRunQueue.getQueueLength() == 0 )
         {
-            /* ë”ì´ìƒ ë‚¨ì€ Runì´ ì—†ìŒ. ì¦‰ ì´ë²ˆ Mergeë¡œ ì™„ë£Œë¨
-             * ë‹¤ìŒ ìƒíƒœë¡œ ì§„ì…í•¨ */
+            /* ´õÀÌ»ó ³²Àº RunÀÌ ¾øÀ½. Áï ÀÌ¹ø Merge·Î ¿Ï·áµÊ
+             * ´ÙÀ½ »óÅÂ·Î ÁøÀÔÇÔ */
             break;
         }
 
         sHeadNPID = SD_NULL_PID;
         while(1)
         {
-            /* Heapì˜ Top Slotì„ ë½‘ì•„ëƒ„ */
-            IDE_TEST( sdtWAMap::get( &sWASeg->mSortHashMapHdr,
-                                     1,
-                                     (void*)&sTopRunInfo )
+            /* HeapÀÇ Top SlotÀ» »Ì¾Æ³¿ */
+            IDE_TEST( sdtWASortMap::get( &sWASeg->mSortMapHdr,
+                                         1,
+                                         (void*)&sTopRunInfo )
                       != IDE_SUCCESS );
 
             if ( sTopRunInfo.mRunNo == SDT_TEMP_RUNINFO_NULL )
             {
-                /* Runì—ì„œ Rowë“¤ì„ ì „ë¶€ ë½‘ì•„ëƒ„ */
+                /* Run¿¡¼­ RowµéÀ» ÀüºÎ »Ì¾Æ³¿ */
                 break;
             }
 
@@ -2065,13 +1943,13 @@ IDE_RC sdtSortModule::merge(smiTempTableHeader * aHeader)
                                      &sTRInsertResult )
                       != IDE_SUCCESS );
 
-            if( sHeadNPID == SD_NULL_PID )
+            if ( sHeadNPID == SD_NULL_PID )
             {
                 sHeadNPID = SC_MAKE_PID( sTRInsertResult.mHeadRowpieceGRID );
             }
 
-            /* ë³µì‚¬ ê³¼ì •ìœ¼ë¡œ ì¸í•œ Rowì¬ë°°ì¹˜ë¥¼ í†µí•´ CurRowPageCountê°€
-             * ì¦ê°€í•  ìˆ˜ ìˆìœ¼ë‹ˆ, ë‹¤ì‹œ ê³„ì‚°í•¨ */
+            /* º¹»ç °úÁ¤À¸·Î ÀÎÇÑ RowÀç¹èÄ¡¸¦ ÅëÇØ CurRowPageCount°¡
+             * Áõ°¡ÇÒ ¼ö ÀÖÀ¸´Ï, ´Ù½Ã °è»êÇÔ */
             aHeader->mMaxRowPageCount = IDL_MAX(
                 aHeader->mMaxRowPageCount, sTRInsertResult.mRowPageCount );
 
@@ -2081,9 +1959,9 @@ IDE_RC sdtSortModule::merge(smiTempTableHeader * aHeader)
         IDE_TEST( aHeader->mRunQueue.enqueue(ID_FALSE, (void*)&sHeadNPID )
                   != IDE_SUCCESS );
 
-        IDE_TEST( sdtWASegment::resetWAGroup( sWASeg,
-                                              SDT_WAGROUPID_FLUSH,
-                                              ID_TRUE/*wait4flsuh*/ )
+        IDE_TEST( sdtSortSegment::resetWAGroup( sWASeg,
+                                                SDT_WAGROUPID_FLUSH,
+                                                ID_TRUE/*wait4flsuh*/ )
                   != IDE_SUCCESS );
 
         IDE_TEST(iduCheckSessionEvent(aHeader->mStatistics) != IDE_SUCCESS);
@@ -2099,7 +1977,7 @@ IDE_RC sdtSortModule::merge(smiTempTableHeader * aHeader)
 
 /**************************************************************************
  * Description :
- * Indexë¥¼ ìƒì„±í•œë‹¤.
+ * Index¸¦ »ı¼ºÇÑ´Ù.
  **************************************************************************/
 IDE_RC sdtSortModule::makeIndex(smiTempTableHeader * aHeader)
 {
@@ -2109,59 +1987,96 @@ IDE_RC sdtSortModule::makeIndex(smiTempTableHeader * aHeader)
     UInt                   sLNodeGroupPageCount;
     scPageID               sChildNPID;
     idBool                 sNeedMore = ID_FALSE;
-    sdtWASegment         * sWASeg = (sdtWASegment*)aHeader->mWASegment;
+    sdtSortSegHdr        * sWASeg = (sdtSortSegHdr*)aHeader->mWASegment;
 
     IDE_ERROR( aHeader->mTTState == SMI_TTSTATE_SORT_MERGE );
     aHeader->mTTState  = SMI_TTSTATE_SORT_MAKETREE;
 
-    /* ì´ë¯¸ MergeRunì´ êµ¬ì„±ë˜ì–´ìˆëŠ” ìƒíƒœë¡œ ì˜´. ë”°ë¼ì„œ RunQueueëŠ” ë¹„ì–´ìˆìŒ */
+    /* ÀÌ¹Ì MergeRunÀÌ ±¸¼ºµÇ¾îÀÖ´Â »óÅÂ·Î ¿È. µû¶ó¼­ RunQueue´Â ºñ¾îÀÖÀ½ */
     IDE_ERROR( aHeader->mRunQueue.getQueueLength() == 0 );
 
-    /* ExtraRowë¥¼ ì €ì¥í•˜ê¸° ìœ„í•´ ì ì‹œ ìƒì„±í•œë‹¤. */
-    IDE_TEST( sdtWASegment::splitWAGroup( sWASeg,
-                                          SDT_WAGROUPID_FLUSH,
-                                          SDT_WAGROUPID_SUBFLUSH,
-                                          SDT_WA_REUSE_FIFO )
+    sInitGroupPageCount = sdtSortSegment::getAllocableWAGroupPageCount(
+        sWASeg,
+        SDT_WAGROUPID_INIT );
+
+    if ( sInitGroupPageCount >= SDT_WAGROUP_MIN_PAGECOUNT )
+    {
+        /* BUG-46427 ÀÓ½Ã·Î sub flush¸¦ ¸¸µé¾ú´Ù ÇØÁ¦ÇÏ´Â °æ¿ì°¡ ÀÖ´Ù.
+         * ±×·¯¹Ç·Î init group¿¡ ÀÌÀü sub flush groupÀ» ÇØÁ¦ÇÑ
+         * ºñ¾îÀÖ´Â page°¡ ÀÖ´ÂÁö È®ÀÎÇØ¼­ ÀÖ´Ù¸é ÀÌ ³²Àº page·Î
+         * sub flush groupÀ» ¸¸µç´Ù.*/
+        IDE_TEST( sdtSortSegment::createWAGroup( sWASeg,
+                                                 SDT_WAGROUPID_SUBFLUSH,
+                                                 sInitGroupPageCount,
+                                                 SDT_WA_REUSE_FIFO )
               != IDE_SUCCESS );
+    }
+    else
+    {
+        /* ExtraRow¸¦ ÀúÀåÇÏ±â À§ÇØ Àá½Ã »ı¼ºÇÑ´Ù. */
+        IDE_TEST( sdtSortSegment::splitWAGroup( sWASeg,
+                                                SDT_WAGROUPID_FLUSH,
+                                                SDT_WAGROUPID_SUBFLUSH,
+                                                SDT_WA_REUSE_FIFO )
+                  != IDE_SUCCESS );
+    }
 
     IDE_TEST( makeLNodes( aHeader, &sNeedMore ) != IDE_SUCCESS );
 
-    /*********************** Group ì¬êµ¬ì„± *****************************/
-    IDE_TEST( sdtWASegment::dropWAGroup( sWASeg,
-                                         SDT_WAGROUPID_SUBFLUSH,
-                                         ID_FALSE ) /*wait4flush */
+    /*********************** Group Àç±¸¼º *****************************/
+    IDE_TEST( sdtSortSegment::dropWAGroup( sWASeg,
+                                           SDT_WAGROUPID_SUBFLUSH,
+                                           ID_FALSE ) /*wait4flush */
               != IDE_SUCCESS );
 
-    IDE_TEST( sdtWASegment::dropWAGroup( sWASeg,
-                                         SDT_WAGROUPID_FLUSH,
-                                         ID_FALSE ) /*wait4flush */
+    IDE_TEST( sdtSortSegment::dropWAGroup( sWASeg,
+                                           SDT_WAGROUPID_FLUSH,
+                                           ID_FALSE ) /*wait4flush */
               != IDE_SUCCESS );
 
-    IDE_TEST( sdtWASegment::dropWAGroup( sWASeg,
-                                         SDT_WAGROUPID_SORT,
-                                         ID_FALSE ) /*wait4flush */
+    IDE_TEST( sdtSortSegment::dropWAGroup( sWASeg,
+                                           SDT_WAGROUPID_SORT,
+                                           ID_FALSE ) /*wait4flush */
               != IDE_SUCCESS );
 
-    sInitGroupPageCount = sdtWASegment::getAllocableWAGroupPageCount(
+    sInitGroupPageCount = sdtSortSegment::getAllocableWAGroupPageCount(
         sWASeg,
         SDT_WAGROUPID_INIT );
+
+    /* BUG-46427 °¢ group´ç 2°³ ÀÌ»óÀÇ page°¡ ÀÖ¾î¾ß ÇÑ´Ù. */
+    IDE_ERROR( sInitGroupPageCount >= ( SDT_WAGROUP_MIN_PAGECOUNT * 2 ) );
+
     sLNodeGroupPageCount = sInitGroupPageCount * aHeader->mWorkGroupRatio / 100;
+
+    if ( sLNodeGroupPageCount < SDT_WAGROUP_MIN_PAGECOUNT )
+    {
+        /* BUG-46427 °¢ group´ç 2°³ ÀÌ»óÀÇ page°¡ ÀÖ¾î¾ß ÇÑ´Ù. */
+        sLNodeGroupPageCount = SDT_WAGROUP_MIN_PAGECOUNT;
+    }
+
     sINodeGroupPageCount = sInitGroupPageCount - sLNodeGroupPageCount;
 
-    IDE_TEST( sdtWASegment::createWAGroup( sWASeg,
-                                           SDT_WAGROUPID_INODE,
-                                           sINodeGroupPageCount,
-                                           SDT_WA_REUSE_LRU )
-              != IDE_SUCCESS );
-    IDE_TEST( sdtWASegment::createWAGroup( sWASeg,
-                                           SDT_WAGROUPID_LNODE,
-                                           sLNodeGroupPageCount,
-                                           SDT_WA_REUSE_LRU )
+    if ( sINodeGroupPageCount < SDT_WAGROUP_MIN_PAGECOUNT )
+    {
+        /* BUG-46427 °¢ group´ç 2°³ ÀÌ»óÀÇ page°¡ ÀÖ¾î¾ß ÇÑ´Ù. */
+        sINodeGroupPageCount = SDT_WAGROUP_MIN_PAGECOUNT;
+        sLNodeGroupPageCount = sInitGroupPageCount - sINodeGroupPageCount ;
+    }
+
+    IDE_TEST( sdtSortSegment::createWAGroup( sWASeg,
+                                             SDT_WAGROUPID_INODE,
+                                             sINodeGroupPageCount,
+                                             SDT_WA_REUSE_LRU )
               != IDE_SUCCESS );
 
-    /* IndexScanì—ì„œëŠ” Mapì„ ë”ì´ìƒ ì‚¬ìš© ì•ˆí•¨ */
-    IDE_TEST( sdtWAMap::disable( (void*)&sWASeg->mSortHashMapHdr )
+    IDE_TEST( sdtSortSegment::createWAGroup( sWASeg,
+                                             SDT_WAGROUPID_LNODE,
+                                             sLNodeGroupPageCount,
+                                             SDT_WA_REUSE_LRU )
               != IDE_SUCCESS );
+
+    /* IndexScan¿¡¼­´Â MapÀ» ´õÀÌ»ó »ç¿ë ¾ÈÇÔ */
+    sdtWASortMap::disable( sWASeg );
 
     sChildNPID = aHeader->mRowHeadNPID;
     while( sNeedMore == ID_TRUE )
@@ -2179,12 +2094,12 @@ IDE_RC sdtSortModule::makeIndex(smiTempTableHeader * aHeader)
 
 /**************************************************************************
  * Description :
- * Indexì˜ LeafNodeë¥¼ ìƒì„±í•œë‹¤.
+ * IndexÀÇ LeafNode¸¦ »ı¼ºÇÑ´Ù.
  *
  * <IN>
- * aHeader        - ëŒ€ìƒ Table
+ * aHeader        - ´ë»ó Table
  * <OUT>
- * aNeedMoreINode - ì¶”ê°€ì ìœ¼ë¡œ INodeë¥¼ ë§Œë“¤ì–´ì•¼ í•˜ëŠ”ê°€?
+ * aNeedMoreINode - Ãß°¡ÀûÀ¸·Î INode¸¦ ¸¸µé¾î¾ß ÇÏ´Â°¡?
  **************************************************************************/
 IDE_RC sdtSortModule::makeLNodes( smiTempTableHeader * aHeader,
                                   idBool             * aNeedMoreINode )
@@ -2193,15 +2108,15 @@ IDE_RC sdtSortModule::makeLNodes( smiTempTableHeader * aHeader,
     scPageID               sHeadNPID = SD_NULL_PID;
     scGRID                 sGRID;
     scPageID               sInsertedNPID;
-    sdtTRInsertResult      sTRInsertResult;
-    sdtWASegment         * sWASeg = (sdtWASegment*)aHeader->mWASegment;
+    sdtSortInsertResult  sTRInsertResult;
+    sdtSortSegHdr        * sWASeg = (sdtSortSegHdr*)aHeader->mWASegment;
 
     *aNeedMoreINode = ID_FALSE;
 
-    /*  Heapì—ì„œ Top Slotì„ ë½‘ì•„ëƒ„ */
-    IDE_TEST( sdtWAMap::get( &sWASeg->mSortHashMapHdr,
-                             1,
-                             (void*)&sTopRunInfo )
+    /*  Heap¿¡¼­ Top SlotÀ» »Ì¾Æ³¿ */
+    IDE_TEST( sdtWASortMap::get( &sWASeg->mSortMapHdr,
+                                 1,
+                                 (void*)&sTopRunInfo )
               != IDE_SUCCESS );
     while( sTopRunInfo.mRunNo != SDT_TEMP_RUNINFO_NULL )
     {
@@ -2216,7 +2131,7 @@ IDE_RC sdtSortModule::makeLNodes( smiTempTableHeader * aHeader,
                   != IDE_SUCCESS );
         sInsertedNPID = SC_MAKE_PID( sTRInsertResult.mHeadRowpieceGRID );
 
-        if( sHeadNPID == SD_NULL_PID ) /* ìµœì´ˆ ì‚½ì… */
+        if ( sHeadNPID == SD_NULL_PID ) /* ÃÖÃÊ »ğÀÔ */
         {
             sHeadNPID = sInsertedNPID;
 
@@ -2226,17 +2141,17 @@ IDE_RC sdtSortModule::makeLNodes( smiTempTableHeader * aHeader,
         }
         else
         {
-            if( sHeadNPID != sInsertedNPID ) /* ë…¸ë“œê°€ 2ê°œ ì´ìƒ */
+            if ( sHeadNPID != sInsertedNPID ) /* ³ëµå°¡ 2°³ ÀÌ»ó */
             {
                 *aNeedMoreINode = ID_TRUE;
             }
         }
 
-        IDE_TEST( heapPop( aHeader ) != IDE_SUCCESS ); /* ë‹¤ìŒ rowë¥¼ ê°€ì ¸ì˜´*/
+        IDE_TEST( heapPop( aHeader ) != IDE_SUCCESS ); /* ´ÙÀ½ row¸¦ °¡Á®¿È*/
 
-        IDE_TEST( sdtWAMap::get( &sWASeg->mSortHashMapHdr,
-                                 1,
-                                 (void*)&sTopRunInfo )
+        IDE_TEST( sdtWASortMap::get( &sWASeg->mSortMapHdr,
+                                     1,
+                                     (void*)&sTopRunInfo )
                   != IDE_SUCCESS );
     } /*while */
 
@@ -2249,10 +2164,10 @@ IDE_RC sdtSortModule::makeLNodes( smiTempTableHeader * aHeader,
 
 /**************************************************************************
  * Description :
- * Indexì˜ INodeë¥¼ ìƒì„±í•œë‹¤.
+ * IndexÀÇ INode¸¦ »ı¼ºÇÑ´Ù.
  *
- * - INodeë¥¼ ë§Œë“œëŠ” Logic ì„¤ëª…
- * ë‹¤ìŒ íŠ¸ë¦¬ë¥¼ ë°”íƒ•ìœ¼ë¡œ ì„¤ëª…í•œë‹¤.
+ * - INode¸¦ ¸¸µå´Â Logic ¼³¸í
+ * ´ÙÀ½ Æ®¸®¸¦ ¹ÙÅÁÀ¸·Î ¼³¸íÇÑ´Ù.
  *       D-----+
  *    +--|1 3 7|
  *    |  +-----+
@@ -2261,27 +2176,27 @@ IDE_RC sdtSortModule::makeLNodes( smiTempTableHeader * aHeader,
  * |1 2|-|3 5|-|7 9|
  * +---+ +---+ +---+
  *
- * 1) resetWAGroupì˜ í•„ìš”ì„±
- *   A,B,C ë…¸ë“œë¥¼ ë§Œë“  í›„ Dë…¸ë“œë¥¼ ë§Œë“¤ê¸° ìœ„í•´ í˜„ ì§€ì ì— ì™”ì„ë•Œ,
- * resetWAGroupì„ í•˜ì§€ ì•Šìœ¼ë©´, Cì™€ Dë¥¼ ì´ì›ƒ ë…¸ë“œë¡œ ë¬¶ê²Œ ëœë‹¤.
- * ë”°ë¼ì„œ resetWAGroupì„ í†µí•´ HintPageë¥¼ ì´ˆê¸°í™”, ì´ì›ƒì´ ì•„ë‹ˆê²Œ í•œë‹¤.
+ * 1) resetWAGroupÀÇ ÇÊ¿ä¼º
+ *   A,B,C ³ëµå¸¦ ¸¸µç ÈÄ D³ëµå¸¦ ¸¸µé±â À§ÇØ Çö ÁöÁ¡¿¡ ¿ÔÀ»¶§,
+ * resetWAGroupÀ» ÇÏÁö ¾ÊÀ¸¸é, C¿Í D¸¦ ÀÌ¿ô ³ëµå·Î ¹­°Ô µÈ´Ù.
+ * µû¶ó¼­ resetWAGroupÀ» ÅëÇØ HintPage¸¦ ÃÊ±âÈ­, ÀÌ¿ôÀÌ ¾Æ´Ï°Ô ÇÑ´Ù.
  *
- * 2) INodeìƒì„± ë°©ë²•.
- *  INodeëŠ” ê°„ë‹¨í•˜ê²Œ ChildNodeë“¤ì˜ 0ë²ˆì§¸ Keyê°’ë§Œ ìœ„ë¡œì˜¬ë¦¬ë©´ ëœë‹¤.
- * ìœ„ì˜ ê²½ìš°, A,B,C ê° ë…¸ë“œì˜ 1,3,7 ì´ ì˜¬ë¼ì˜¤ê²Œ ëœë‹¤.
- *  ì´ì¤‘ 1ë²ˆì˜ ê²½ìš° LeftMostì˜ ì—­í• ì„ ìˆ˜í–‰í•œë‹¤.
+ * 2) INode»ı¼º ¹æ¹ı.
+ *  INode´Â °£´ÜÇÏ°Ô ChildNodeµéÀÇ 0¹øÂ° Key°ª¸¸ À§·Î¿Ã¸®¸é µÈ´Ù.
+ * À§ÀÇ °æ¿ì, A,B,C °¢ ³ëµåÀÇ 1,3,7 ÀÌ ¿Ã¶ó¿À°Ô µÈ´Ù.
+ *  ÀÌÁß 1¹øÀÇ °æ¿ì LeftMostÀÇ ¿ªÇÒÀ» ¼öÇàÇÑ´Ù.
  *
- * * ì´ ë°©ë²•ì€ BufferMissê°€ ì¼ì–´ë‚˜ê¸° ì‰¬ì›Œ íš¨ìœ¨ì€ ê·¸ë‹¤ì§€ ì¢‹ì§€ ì•Šë‹¤. í•˜ì§€ë§Œ
- * RangeScanì„ ì“°ëŠ” ê²½ìš°ëŠ” SortJoinë¿ì´ë©°, ê·¸ ê²½ìš°ë„ ëŒ€ë¶€ë¶„ InMemoryë¡œ í’€ë¦°ë‹¤.
- * ë”°ë¼ì„œ INodeë¥¼ ë§Œë“œëŠ” ê²½ìš°ëŠ” ì ê³ , ë˜ INodeì˜ Pageìˆ˜ë„ ì ê¸°ì— ì´ë¥¼ íƒí•œë‹¤.
- *   ë¬¼ë¡  ì´í›„ ê°œëŸ‰ë„ ê°€ëŠ¥í•˜ë‹¤. ( sdtBUBuild::makeTreeì°¸ì¡° )
+ * * ÀÌ ¹æ¹ıÀº BufferMiss°¡ ÀÏ¾î³ª±â ½¬¿ö È¿À²Àº ±×´ÙÁö ÁÁÁö ¾Ê´Ù. ÇÏÁö¸¸
+ * RangeScanÀ» ¾²´Â °æ¿ì´Â SortJoin»ÓÀÌ¸ç, ±× °æ¿ìµµ ´ëºÎºĞ InMemory·Î Ç®¸°´Ù.
+ * µû¶ó¼­ INode¸¦ ¸¸µå´Â °æ¿ì´Â Àû°í, ¶Ç INodeÀÇ Page¼öµµ Àû±â¿¡ ÀÌ¸¦ ÅÃÇÑ´Ù.
+ *   ¹°·Ğ ÀÌÈÄ °³·®µµ °¡´ÉÇÏ´Ù. ( sdtBUBuild::makeTreeÂüÁ¶ )
  *
  * <IN>
- * aHeader        - ëŒ€ìƒ Table
+ * aHeader        - ´ë»ó Table
  * <IN/OUT>
- * aChildNPID     - ë§Œë“¤ ëŒ€ìƒ ChildNPID. ëë‚˜ë©´, ë‹¤ìŒ ChildNPIDë¥¼ ë°˜í™˜í•¨.
+ * aChildNPID     - ¸¸µé ´ë»ó ChildNPID. ³¡³ª¸é, ´ÙÀ½ ChildNPID¸¦ ¹İÈ¯ÇÔ.
  * <OUT>
- * aNeedMoreINode - ì¶”ê°€ì ìœ¼ë¡œ INodeë¥¼ ë§Œë“¤ì–´ì•¼ í•˜ëŠ”ê°€?
+ * aNeedMoreINode - Ãß°¡ÀûÀ¸·Î INode¸¦ ¸¸µé¾î¾ß ÇÏ´Â°¡?
  *****************************************************************************/
 IDE_RC sdtSortModule::makeINodes( smiTempTableHeader * aHeader,
                                   scPageID           * aChildNPID,
@@ -2291,15 +2206,14 @@ IDE_RC sdtSortModule::makeINodes( smiTempTableHeader * aHeader,
     scPageID               sChildNPID;
     scPageID               sWPID;
     scPageID               sInsertedNPID;
-    UInt                   sSlotCount = 0;
-    scGRID                 sGRID      = SC_NULL_GRID;
-    sdtTRInsertResult      sTRInsertResult;
+    scGRID                 sGRID;
+    sdtSortInsertResult  sTRInsertResult;
     UChar                * sWAPagePtr = NULL;
-    sdtWASegment         * sWASeg     = (sdtWASegment*)aHeader->mWASegment;
+    sdtSortSegHdr        * sWASeg     = (sdtSortSegHdr*)aHeader->mWASegment;
 
-    IDE_TEST( sdtWASegment::resetWAGroup( sWASeg,
-                                          SDT_WAGROUPID_INODE,
-                                          ID_TRUE/*wait4flsuh*/ )
+    IDE_TEST( sdtSortSegment::resetWAGroup( sWASeg,
+                                            SDT_WAGROUPID_INODE,
+                                            ID_TRUE/*wait4flsuh*/ )
               != IDE_SUCCESS );
 
     sChildNPID      = *aChildNPID;
@@ -2307,7 +2221,7 @@ IDE_RC sdtSortModule::makeINodes( smiTempTableHeader * aHeader,
     *aNeedMoreINode = ID_FALSE;
     while( sChildNPID != SC_NULL_PID )
     {
-        /* ì´ì „ì— ë§Œë“  Nodeë“¤ì—ì„œë¶€í„° ìˆœì°¨ íƒìƒ‰ì„ ì‹œë„í•¨ */
+        /* ÀÌÀü¿¡ ¸¸µç Nodeµé¿¡¼­ºÎÅÍ ¼øÂ÷ Å½»öÀ» ½ÃµµÇÔ */
         SC_MAKE_GRID( sGRID, aHeader->mSpaceID, sChildNPID, 0 );
         IDE_TEST( copyRowByGRID( aHeader,
                                  sGRID,
@@ -2318,31 +2232,30 @@ IDE_RC sdtSortModule::makeINodes( smiTempTableHeader * aHeader,
                   != IDE_SUCCESS );
         sInsertedNPID = SC_MAKE_PID( sTRInsertResult.mHeadRowpieceGRID );
 
-        if( sHeadNPID == SD_NULL_PID )
+        if ( sHeadNPID == SD_NULL_PID )
         {
             sHeadNPID = sInsertedNPID;
 
             aHeader->mRootWPID = sHeadNPID;
-            aHeader->mHeight ++;
+            aHeader->mHeight++;
 
-            /* ì•„ë¬´ë¦¬ ìƒê°í•´ë„, 1024ì´ìƒ ë†’ì´ê°€ ë˜ê¸´ ì–´ë ¤ì›€ */
+            /* ¾Æ¹«¸® »ı°¢ÇØµµ, 1024ÀÌ»ó ³ôÀÌ°¡ µÇ±ä ¾î·Á¿ò */
             IDE_ERROR( aHeader->mHeight <= 1024 );
         }
         else
         {
-            if( sHeadNPID != sInsertedNPID )
+            if ( sHeadNPID != sInsertedNPID )
             {
                 *aNeedMoreINode = ID_TRUE;
             }
         }
 
-        /* ë‹¤ìŒ í˜ì´ì§€ì˜ IDë¥¼ ê°€ì ¸ì˜¨ë‹¤. */
-        IDE_TEST( sdtWASegment::getPage( sWASeg,
-                                         SDT_WAGROUPID_LNODE,
-                                         sGRID,
-                                         &sWPID,
-                                         &sWAPagePtr,
-                                         &sSlotCount )
+        /* ´ÙÀ½ ÆäÀÌÁöÀÇ ID¸¦ °¡Á®¿Â´Ù. */
+        IDE_TEST( sdtSortSegment::getPage( sWASeg,
+                                           SDT_WAGROUPID_LNODE,
+                                           sGRID,
+                                           &sWPID,
+                                           &sWAPagePtr )
                   != IDE_SUCCESS );
         sChildNPID = sdtTempPage::getNextPID( sWAPagePtr );
     } /*while */
@@ -2358,7 +2271,7 @@ IDE_RC sdtSortModule::makeINodes( smiTempTableHeader * aHeader,
 
 /**************************************************************************
  * Description :
- * InMemoryScanìƒíƒœë¡œ ë§Œë“ ë‹¤. í˜„ì¬ ì‚½ì…ëœ Waìƒì˜ Rowë“¤ì„ ì •ë ¬í•œë‹¤.
+ * InMemoryScan»óÅÂ·Î ¸¸µç´Ù. ÇöÀç »ğÀÔµÈ Wa»óÀÇ RowµéÀ» Á¤·ÄÇÑ´Ù.
  ***************************************************************************/
 IDE_RC sdtSortModule::inMemoryScan(smiTempTableHeader * aHeader)
 {
@@ -2370,8 +2283,7 @@ IDE_RC sdtSortModule::inMemoryScan(smiTempTableHeader * aHeader)
     }
     aHeader->mTTState = SMI_TTSTATE_SORT_INMEMORYSCAN;
 
-    aHeader->mModule.mOpenCursor    = openCursorInMemoryScan;
-    aHeader->mModule.mCloseCursor   = closeCursorCommon;
+    aHeader->mOpenCursor    = openCursorInMemoryScan;
 
     return IDE_SUCCESS;
 
@@ -2382,7 +2294,7 @@ IDE_RC sdtSortModule::inMemoryScan(smiTempTableHeader * aHeader)
 
 /**************************************************************************
  * Description :
- * mergeScan ìƒíƒœë¡œ ë§Œë“ ë‹¤.
+ * mergeScan »óÅÂ·Î ¸¸µç´Ù.
  ***************************************************************************/
 IDE_RC sdtSortModule::mergeScan(smiTempTableHeader * aHeader)
 {
@@ -2392,8 +2304,7 @@ IDE_RC sdtSortModule::mergeScan(smiTempTableHeader * aHeader)
                                  &aHeader->mInitMergePosition )
               != IDE_SUCCESS );
 
-    aHeader->mModule.mOpenCursor    = openCursorMergeScan;
-    aHeader->mModule.mCloseCursor   = closeCursorCommon;
+    aHeader->mOpenCursor    = openCursorMergeScan;
 
     return IDE_SUCCESS;
 
@@ -2404,21 +2315,20 @@ IDE_RC sdtSortModule::mergeScan(smiTempTableHeader * aHeader)
 
 /**************************************************************************
  * Description :
- * indexScanìƒíƒœë¡œ ë§Œë“ ë‹¤.
+ * indexScan»óÅÂ·Î ¸¸µç´Ù.
  ***************************************************************************/
 IDE_RC sdtSortModule::indexScan(smiTempTableHeader * aHeader)
 {
     aHeader->mTTState = SMI_TTSTATE_SORT_INDEXSCAN;
 
-    aHeader->mModule.mOpenCursor    = openCursorIndexScan;
-    aHeader->mModule.mCloseCursor   = closeCursorCommon;
+    aHeader->mOpenCursor    = openCursorIndexScan;
 
     return IDE_SUCCESS;
 }
 
 /**************************************************************************
  * Description :
- * fullScanìƒíƒœë¡œ ë§Œë“ ë‹¤.
+ * fullScan»óÅÂ·Î ¸¸µç´Ù.
  ***************************************************************************/
 IDE_RC sdtSortModule::scan(smiTempTableHeader * aHeader)
 {
@@ -2428,8 +2338,7 @@ IDE_RC sdtSortModule::scan(smiTempTableHeader * aHeader)
                                 &aHeader->mScanPosition )
               != IDE_SUCCESS );
 
-    aHeader->mModule.mOpenCursor    = openCursorScan;
-    aHeader->mModule.mCloseCursor   = closeCursorCommon;
+    aHeader->mOpenCursor    = openCursorScan;
 
     return IDE_SUCCESS;
 
@@ -2440,19 +2349,19 @@ IDE_RC sdtSortModule::scan(smiTempTableHeader * aHeader)
 
 /**************************************************************************
  * Description :
- * SortGroupì˜ Rowë“¤ì„ ì •ë ¬í•œë‹¤.
+ * SortGroupÀÇ RowµéÀ» Á¤·ÄÇÑ´Ù.
  *
- * * êµ¬í˜„
- * Quicksortë¡œ ë¶€ë¶„ì •ë ¬ í•œ í›„, Mergeí•œë‹¤.
- * ì™œëƒí•˜ë©´ QuickSortì˜ ê²½ìš° ìµœì•…ì˜ ê²½ìš° n^2 ë§Œí¼ Compareí•˜ê¸° ë•Œë¬¸ì— Rowê°€
- * ë§ì„ë•Œ ì •ë ¬í•˜ë©´ ë˜ë ¤ ëŠë ¤ì§ˆ ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤. ë”°ë¼ì„œ PartitionSizeì— ë”°ë¼
- * ë‚˜ëˆ„ì–´ í•´ë‹¹ í¬ê¸°ì”© QuickSortë¡œ ì •ë ¬í•œ í›„, í•´ë‹¹ Partitionë“¤ì„ mergeí•œë‹¤.
+ * * ±¸Çö
+ * Quicksort·Î ºÎºĞÁ¤·Ä ÇÑ ÈÄ, MergeÇÑ´Ù.
+ * ¿Ö³ÄÇÏ¸é QuickSortÀÇ °æ¿ì ÃÖ¾ÇÀÇ °æ¿ì n^2 ¸¸Å­ CompareÇÏ±â ¶§¹®¿¡ Row°¡
+ * ¸¹À»¶§ Á¤·ÄÇÏ¸é µÇ·Á ´À·ÁÁú ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù. µû¶ó¼­ PartitionSize¿¡ µû¶ó
+ * ³ª´©¾î ÇØ´ç Å©±â¾¿ QuickSort·Î Á¤·ÄÇÑ ÈÄ, ÇØ´ç PartitionµéÀ» mergeÇÑ´Ù.
  *
- * * MergeSortì™€ Version
- *   MergeSortëŠ”, ì •ë ¬ ì „ Slotì˜ ìœ„ì¹˜ë¥¼ ìœ ì§€í•˜ë©´ì„œ, ì •ë ¬ëœ Slotë“¤ì„ ì €ì¥í• 
- * ìœ„ì¹˜ë¥¼ ë˜ í•„ìš”ë¡œ í•œë‹¤. ë”°ë¼ì„œ WAMapì„ Versioningí•œë‹¤.
+ * * MergeSort¿Í Version
+ *   MergeSort´Â, Á¤·Ä Àü SlotÀÇ À§Ä¡¸¦ À¯ÁöÇÏ¸é¼­, Á¤·ÄµÈ SlotµéÀ» ÀúÀåÇÒ
+ * À§Ä¡¸¦ ¶Ç ÇÊ¿ä·Î ÇÑ´Ù. µû¶ó¼­ WAMapÀ» VersioningÇÑ´Ù.
  *
- * - ì˜ˆ
+ * - ¿¹
  *           <-Left> <-Right>
  *           @       @
  * Version0: 1 5 6 9 2 3 4 8 3 5 7 8
@@ -2488,14 +2397,14 @@ IDE_RC sdtSortModule::scan(smiTempTableHeader * aHeader)
  *
  *           @               @
  * Version1: 1 2 3 4 5 6 8 9 3 5 7 8
- * Version2: 1 5 6 9 2 3 4 8         <- ì´ì „ì— Version0ì´ì—ˆìŒ
- * ë‹¤ì‹œ Mergeë¥¼ ë°˜ë³µí•¨
+ * Version2: 1 5 6 9 2 3 4 8         <- ÀÌÀü¿¡ Version0ÀÌ¾úÀ½
+ * ´Ù½Ã Merge¸¦ ¹İº¹ÇÔ
  *
  ***************************************************************************/
 IDE_RC sdtSortModule::sortSortGroup(smiTempTableHeader * aHeader)
 {
-    sdtWASegment       * sWASeg = (sdtWASegment*)aHeader->mWASegment;
-    void               * sMapHdr = &sWASeg->mSortHashMapHdr;
+    sdtSortSegHdr      * sWASeg = (sdtSortSegHdr*)aHeader->mWASegment;
+    sdtWASortMapHdr    * sMapHdr = &sWASeg->mSortMapHdr;
     UInt                 sSlotCount;
     UInt                 sPartitionSize;
     vULong               sPtr;
@@ -2509,18 +2418,18 @@ IDE_RC sdtSortModule::sortSortGroup(smiTempTableHeader * aHeader)
     IDE_ERROR ( aHeader->mKeyColumnList != NULL );
 
     sPartitionSize = smuProperty::getTempSortPartitionSize();
-    sSlotCount     = sdtWAMap::getSlotCount( sMapHdr );
+    sSlotCount     = sdtWASortMap::getSlotCount( sMapHdr );
 
-    if( sSlotCount > 0 )
+    if ( sSlotCount > 0 )
     {
-        if( sPartitionSize == 0 )
+        if ( sPartitionSize == 0 )
         {
             IDE_TEST( quickSort( aHeader, 0, sSlotCount - 1 )
                       != IDE_SUCCESS );
         }
         else
         {
-            /* Partitionë³„ë¡œ ë‚˜ëˆ„ì–´ì„œ ë¶€ë¶„ QuickSortí•¨ */
+            /* Partitionº°·Î ³ª´©¾î¼­ ºÎºĞ QuickSortÇÔ */
             for( i = 0 ; i < sSlotCount ; i += sPartitionSize )
             {
                 j = IDL_MIN ( i + sPartitionSize,
@@ -2530,14 +2439,14 @@ IDE_RC sdtSortModule::sortSortGroup(smiTempTableHeader * aHeader)
                           != IDE_SUCCESS );
             }
 
-            /* MergeSortë¥¼ ìˆ˜í–‰í•¨ */
+            /* MergeSort¸¦ ¼öÇàÇÔ */
             for( ; sPartitionSize < sSlotCount; sPartitionSize *= 2 )
             {
                 for( i = 0 ; i < sSlotCount; i += sPartitionSize * 2 )
                 {
-                    if( i + sPartitionSize < sSlotCount )
+                    if ( i + sPartitionSize < sSlotCount )
                     {
-                        if( i + sPartitionSize*2 > sSlotCount )
+                        if ( i + sPartitionSize*2 > sSlotCount )
                         {
                             /* |----+-|
                              *
@@ -2567,24 +2476,24 @@ IDE_RC sdtSortModule::sortSortGroup(smiTempTableHeader * aHeader)
                     {
                         /* |--|
                          *
-                         *  ~~~ <- ë¹„êµí• , Rightìª½ì´ ì—†ì–´ ë¹„êµì•ˆí•¨
-                         * ë‹¤ë§Œ Mapë‚´ì—ì„œ ë‹¤ìŒ Versionìœ¼ë¡œ ì˜®ê²¨ëŠ” ì¤˜ì•¼í•¨ */
-                        for ( j = i ; j < sSlotCount ; j ++ )
+                         *  ~~~ <- ºñ±³ÇÒ, RightÂÊÀÌ ¾ø¾î ºñ±³¾ÈÇÔ
+                         * ´Ù¸¸ Map³»¿¡¼­ ´ÙÀ½ VersionÀ¸·Î ¿Å°Ü´Â Áà¾ßÇÔ */
+                        for ( j = i ; j < sSlotCount ; j++ )
                         {
-                            IDE_TEST( sdtWAMap::getvULong( sMapHdr,
-                                                           j,
-                                                           &sPtr )
+                            IDE_TEST( sdtWASortMap::getvULong( sMapHdr,
+                                                               j,
+                                                               &sPtr )
                                       != IDE_SUCCESS );
-                            IDE_TEST( sdtWAMap::setNextVersion( sMapHdr,
-                                                                j,
-                                                                &sPtr)
+                            IDE_TEST( sdtWASortMap::setNextVersion( sMapHdr,
+                                                                    j,
+                                                                    &sPtr)
                                       != IDE_SUCCESS );
 
                         }
                     }
                 }
 
-                IDE_TEST( sdtWAMap::incVersionIdx( sMapHdr )
+                IDE_TEST( sdtWASortMap::incVersionIdx( sMapHdr )
                           != IDE_SUCCESS );
             }
         }
@@ -2600,7 +2509,7 @@ IDE_RC sdtSortModule::sortSortGroup(smiTempTableHeader * aHeader)
 
 /**************************************************************************
  * Description :
- * QuickSortë¥¼ ìˆ˜í–‰í•œë‹¤.
+ * QuickSort¸¦ ¼öÇàÇÑ´Ù.
  ***************************************************************************/
 IDE_RC sdtSortModule::quickSort( smiTempTableHeader * aHeader,
                                  UInt                 aLeftPos,
@@ -2612,35 +2521,33 @@ IDE_RC sdtSortModule::quickSort( smiTempTableHeader * aHeader,
     SInt                 sLeft;
     SInt                 sRight;
     SInt                 sMid;
-    UChar              * sPivot;
-    sdtTRPInfo4Select    sPivotTRPInfo;
-    UChar              * sCurRowPtr;
-    sdtTRPInfo4Select    sTargetTRPInfo;
+    sdtSortScanInfo      sPivotTRPInfo;
+    sdtSortScanInfo      sTargetTRPInfo;
     SInt                 sResult = 0;
     idBool               sEqualSet = ID_TRUE;
-    sdtWASegment       * sWASeg = (sdtWASegment*)aHeader->mWASegment;
+    sdtSortSegHdr      * sWASeg = (sdtSortSegHdr*)aHeader->mWASegment;
     UInt                 sCompareCount = 0;
 
     sCurStack.mLeftPos  = aLeftPos;
     sCurStack.mRightPos = aRightPos;
-    IDE_TEST( aHeader->mSortStack.push(ID_FALSE, /*Lock*/
-                                       &sCurStack) != IDE_SUCCESS );
 
-    SC_MAKE_NULL_GRID( sPivotTRPInfo.mTRPHGRID ); /*RowGRID, WA Mapì´ì–´ì„œ Fix í•˜ì§€ ì•Šì•„ë„ ëœë‹¤.*/
-    SC_MAKE_NULL_GRID( sTargetTRPInfo.mTRPHGRID );
+    sPivotTRPInfo.mFetchEndOffset  = aHeader->mRowSize;
+    sTargetTRPInfo.mFetchEndOffset = aHeader->mRowSize;
+
+    IDE_TEST( aHeader->mSortStack.push( ID_FALSE, /*Lock*/
+                                        &sCurStack ) != IDE_SUCCESS );
 
     sEmpty = ID_FALSE;
     while( 1 )
     {
-
         IDE_TEST(aHeader->mSortStack.pop(ID_FALSE, &sCurStack, &sEmpty)
                  != IDE_SUCCESS);
 
-        // QuickSortì˜ ì•Œê³ ë¦¬ì¦˜ìƒ, CallStackì€ ItemCountë³´ë‹¤ ë§ì•„ì§ˆ ìˆ˜ ì—†ë‹¤
-        // ë”°ë¼ì„œ ì´ë³´ë‹¤ ë§ìœ¼ë©´, ë¬´í•œë£¨í”„ì— ë¹ ì¡Œì„ ê°€ëŠ¥ì„±ì´ ë†’ë‹¤.
+        // QuickSortÀÇ ¾Ë°í¸®Áò»ó, CallStackÀº ItemCountº¸´Ù ¸¹¾ÆÁú ¼ö ¾ø´Ù
+        // µû¶ó¼­ ÀÌº¸´Ù ¸¹À¸¸é, ¹«ÇÑ·çÇÁ¿¡ ºüÁ³À» °¡´É¼ºÀÌ ³ô´Ù.
         IDE_ERROR( aRightPos*2 >= aHeader->mSortStack.getTotItemCnt() );
 
-        if( sEmpty == ID_TRUE)
+        if ( sEmpty == ID_TRUE)
         {
             break;
         }
@@ -2649,22 +2556,20 @@ IDE_RC sdtSortModule::quickSort( smiTempTableHeader * aHeader,
         sRight = sCurStack.mRightPos + 1;
         sMid   = (sCurStack.mLeftPos + sCurStack.mRightPos)/2;
 
-        if( sCurStack.mLeftPos < sCurStack.mRightPos )
+        if ( sCurStack.mLeftPos < sCurStack.mRightPos )
         {
-            IDE_TEST( sdtWAMap::swapvULong( &sWASeg->mSortHashMapHdr,
-                                            sMid,
-                                            sLeft )
+            IDE_TEST( sdtWASortMap::swapvULong( &sWASeg->mSortMapHdr,
+                                                sMid,
+                                                sLeft )
                       != IDE_SUCCESS );
 
-            IDE_TEST( sdtWAMap::getvULong( &sWASeg->mSortHashMapHdr,
-                                           sLeft,
-                                           (vULong*)&sPivot )
+            IDE_TEST( sdtWASortMap::getvULong( &sWASeg->mSortMapHdr,
+                                               sLeft,
+                                               (vULong*)&sPivotTRPInfo.mTRPHeader )
                       != IDE_SUCCESS );
 
             IDE_TEST( sdtTempRow::fetch( sWASeg,
                                          SDT_WAGROUPID_NONE,
-                                         sPivot,
-                                         aHeader->mRowSize,
                                          aHeader->mRowBuffer4Compare,
                                          &sPivotTRPInfo )
                       != IDE_SUCCESS );
@@ -2675,16 +2580,14 @@ IDE_RC sdtSortModule::quickSort( smiTempTableHeader * aHeader,
             {
                 while( ( ++sLeft ) <= sCurStack.mRightPos )
                 {
-                    IDE_TEST( sdtWAMap::getvULong( &sWASeg->mSortHashMapHdr,
-                                                   sLeft,
-                                                   (vULong*)&sCurRowPtr )
+                    IDE_TEST( sdtWASortMap::getvULong( &sWASeg->mSortMapHdr,
+                                                       sLeft,
+                                                       (vULong*)&sTargetTRPInfo.mTRPHeader )
                               != IDE_SUCCESS );
 
                     IDE_TEST( sdtTempRow::fetch(
                                   sWASeg,
                                   SDT_WAGROUPID_NONE,
-                                  sCurRowPtr,
-                                  aHeader->mRowSize,
                                   aHeader->mRowBuffer4CompareSub,
                                   &sTargetTRPInfo )
                               != IDE_SUCCESS );
@@ -2694,13 +2597,13 @@ IDE_RC sdtSortModule::quickSort( smiTempTableHeader * aHeader,
                                        &sPivotTRPInfo,
                                        &sResult )
                               != IDE_SUCCESS );
-                    sCompareCount ++;
-                    if( sResult != 0 )
+                    sCompareCount++;
+                    if ( sResult != 0 )
                     {
                         sEqualSet = ID_FALSE;
                     }
 
-                    if( sResult > 0 )
+                    if ( sResult > 0 )
                     {
                         break;
                     }
@@ -2708,15 +2611,13 @@ IDE_RC sdtSortModule::quickSort( smiTempTableHeader * aHeader,
 
                 while( ( --sRight ) > sCurStack.mLeftPos )
                 {
-                    IDE_TEST( sdtWAMap::getvULong( &sWASeg->mSortHashMapHdr,
-                                                   sRight,
-                                                   (vULong*)&sCurRowPtr )
+                    IDE_TEST( sdtWASortMap::getvULong( &sWASeg->mSortMapHdr,
+                                                       sRight,
+                                                       (vULong*)&sTargetTRPInfo.mTRPHeader )
                               != IDE_SUCCESS );
 
                     IDE_TEST( sdtTempRow::fetch( sWASeg,
                                                  SDT_WAGROUPID_NONE,
-                                                 sCurRowPtr,
-                                                 aHeader->mRowSize,
                                                  aHeader->mRowBuffer4CompareSub,
                                                  &sTargetTRPInfo )
                               != IDE_SUCCESS );
@@ -2726,22 +2627,22 @@ IDE_RC sdtSortModule::quickSort( smiTempTableHeader * aHeader,
                                        &sPivotTRPInfo,
                                        &sResult )
                               != IDE_SUCCESS );
-                    sCompareCount ++;
-                    if( sResult != 0 )
+                    sCompareCount++;
+                    if ( sResult != 0 )
                     {
                         sEqualSet = ID_FALSE;
                     }
 
-                    if( sResult < 0 )
+                    if ( sResult < 0 )
                     {
                         break;
                     }
                 }
 
-                if( sLeft < sRight )
+                if ( sLeft < sRight )
                 {
-                    IDE_TEST( sdtWAMap::swapvULong(
-                                  &sWASeg->mSortHashMapHdr,sLeft,sRight)
+                    IDE_TEST( sdtWASortMap::swapvULong(
+                                  &sWASeg->mSortMapHdr,sLeft,sRight)
                               != IDE_SUCCESS );
                 }
                 else
@@ -2750,15 +2651,15 @@ IDE_RC sdtSortModule::quickSort( smiTempTableHeader * aHeader,
                 }
             }
 
-            /* Pivotì„ ë³µêµ¬í•¨ */
-            IDE_TEST( sdtWAMap::swapvULong( &sWASeg->mSortHashMapHdr,
-                                            sLeft - 1,
-                                            sCurStack.mLeftPos )
+            /* PivotÀ» º¹±¸ÇÔ */
+            IDE_TEST( sdtWASortMap::swapvULong( &sWASeg->mSortMapHdr,
+                                                sLeft - 1,
+                                                sCurStack.mLeftPos )
                       != IDE_SUCCESS );
 
-            if( sEqualSet == ID_FALSE )
+            if ( sEqualSet == ID_FALSE )
             {
-                if( sLeft > (sCurStack.mLeftPos + 2 ) )
+                if ( sLeft > (sCurStack.mLeftPos + 2 ) )
                 {
                     sNewStack.mLeftPos = sCurStack.mLeftPos;
                     sNewStack.mRightPos = sLeft - 2;
@@ -2766,7 +2667,7 @@ IDE_RC sdtSortModule::quickSort( smiTempTableHeader * aHeader,
                     IDE_TEST(aHeader->mSortStack.push( ID_FALSE, &sNewStack)
                              != IDE_SUCCESS);
                 }
-                if( sLeft < sCurStack.mRightPos )
+                if ( sLeft < sCurStack.mRightPos )
                 {
                     sNewStack.mLeftPos  = sLeft;
                     sNewStack.mRightPos = sCurStack.mRightPos;
@@ -2789,7 +2690,7 @@ IDE_RC sdtSortModule::quickSort( smiTempTableHeader * aHeader,
 
 /**************************************************************************
  * Description :
- * MergeSortë¥¼ ìˆ˜í–‰í•œë‹¤.
+ * MergeSort¸¦ ¼öÇàÇÑ´Ù.
  ***************************************************************************/
 IDE_RC sdtSortModule::mergeSort( smiTempTableHeader * aHeader,
                                  SInt                 aLeftBeginPos,
@@ -2797,46 +2698,46 @@ IDE_RC sdtSortModule::mergeSort( smiTempTableHeader * aHeader,
                                  SInt                 aRightBeginPos,
                                  SInt                 aRightEndPos )
 {
-    sdtWASegment       * sWASeg = (sdtWASegment*)aHeader->mWASegment;
-    void               * sMapHdr = &sWASeg->mSortHashMapHdr;
+    sdtSortSegHdr      * sWASeg = (sdtSortSegHdr*)aHeader->mWASegment;
+    sdtWASortMapHdr    * sMapHdr = &sWASeg->mSortMapHdr;
     SInt                 sLeft;
     SInt                 sRight;
     SInt                 sNext;
     vULong               sLeftPtr;
     vULong               sRightPtr;
-    sdtTRPInfo4Select    sLeftTRPInfo;
-    sdtTRPInfo4Select    sRightTRPInfo;
+    sdtSortScanInfo      sLeftTRPInfo;
+    sdtSortScanInfo      sRightTRPInfo;
     SInt                 sResult = 0;
     UInt                 sCompareCount = 0;
     SInt                 i;
 
-    /* Left/Right ë‘˜ì€ ë§ë‹¿ì•„ìˆì–´ì•¼ í•¨ */
+    /* Left/Right µÑÀº ¸Â´ê¾ÆÀÖ¾î¾ß ÇÔ */
     IDE_ERROR( aLeftEndPos +1 == aRightBeginPos );
 
     sLeft   = aLeftBeginPos;
     sRight  = aRightBeginPos;
-    sNext   = aLeftBeginPos;  /* Mergeí•œ ê²°ê³¼ë¥¼ ë‘˜ NextVersionì˜ SlotIdx */
+    sNext   = aLeftBeginPos;  /* MergeÇÑ °á°ú¸¦ µÑ NextVersionÀÇ SlotIdx */
 
-    IDE_TEST( sdtWAMap::getvULong( sMapHdr, sLeft, &sLeftPtr )
+    IDE_TEST( sdtWASortMap::getvULong( sMapHdr,
+                                       sLeft,
+                                       (vULong*)&sLeftTRPInfo.mTRPHeader )
               != IDE_SUCCESS );
-    IDE_TEST( sdtWAMap::getvULong( sMapHdr, sRight, &sRightPtr )
+    IDE_TEST( sdtWASortMap::getvULong( sMapHdr,
+                                       sRight,
+                                       (vULong*)&sRightTRPInfo.mTRPHeader )
               != IDE_SUCCESS );
 
-    SC_MAKE_NULL_GRID( sLeftTRPInfo.mTRPHGRID ); /*RowGRID, WA Mapì´ì–´ì„œ Fix í•˜ì§€ ì•Šì•„ë„ ëœë‹¤.*/
-    SC_MAKE_NULL_GRID( sRightTRPInfo.mTRPHGRID );
+    sLeftTRPInfo.mFetchEndOffset  = aHeader->mRowSize;
+    sRightTRPInfo.mFetchEndOffset = aHeader->mRowSize;
 
     IDE_TEST( sdtTempRow::fetch( sWASeg,
                                  SDT_WAGROUPID_NONE,
-                                 (UChar*)sLeftPtr,
-                                 aHeader->mRowSize,
                                  aHeader->mRowBuffer4Compare,
                                  &sLeftTRPInfo )
               != IDE_SUCCESS );
 
     IDE_TEST( sdtTempRow::fetch( sWASeg,
                                  SDT_WAGROUPID_NONE,
-                                 (UChar*)sRightPtr,
-                                 aHeader->mRowSize,
                                  aHeader->mRowBuffer4CompareSub,
                                  &sRightTRPInfo )
               != IDE_SUCCESS );
@@ -2848,26 +2749,26 @@ IDE_RC sdtSortModule::mergeSort( smiTempTableHeader * aHeader,
                            &sRightTRPInfo,
                            &sResult )
                   != IDE_SUCCESS );
-        sCompareCount ++;
-        if( sResult > 0 )
+        sCompareCount++;
+        if ( sResult > 0 )
         {
-            IDE_TEST( sdtWAMap::setNextVersion( sMapHdr,
-                                                sNext,
-                                                &sRightPtr)
+            IDE_TEST( sdtWASortMap::setNextVersion( sMapHdr,
+                                                    sNext,
+                                                    &sRightTRPInfo.mTRPHeader )
                       != IDE_SUCCESS );
-            sNext  ++;
-            sRight ++;
-            if( sRight > aRightEndPos )
+            sNext++;
+            sRight++;
+            if ( sRight > aRightEndPos )
             {
                 break;
             }
 
-            IDE_TEST( sdtWAMap::getvULong( sMapHdr, sRight, &sRightPtr)
+            IDE_TEST( sdtWASortMap::getvULong( sMapHdr,
+                                               sRight,
+                                               (vULong*)&sRightTRPInfo.mTRPHeader )
                       != IDE_SUCCESS );
             IDE_TEST( sdtTempRow::fetch( sWASeg,
                                          SDT_WAGROUPID_NONE,
-                                         (UChar*)sRightPtr,
-                                         aHeader->mRowSize,
                                          aHeader->mRowBuffer4CompareSub,
                                          &sRightTRPInfo )
                       != IDE_SUCCESS );
@@ -2875,68 +2776,69 @@ IDE_RC sdtSortModule::mergeSort( smiTempTableHeader * aHeader,
         }
         else
         {
-            IDE_TEST( sdtWAMap::setNextVersion( sMapHdr,
-                                                sNext,
-                                                &sLeftPtr)
+            IDE_TEST( sdtWASortMap::setNextVersion( sMapHdr,
+                                                    sNext,
+                                                    &sLeftTRPInfo.mTRPHeader  )
                       != IDE_SUCCESS );
-            sNext ++;
-            sLeft ++;
-            if( sLeft > aLeftEndPos )
+            sNext++;
+            sLeft++;
+            if ( sLeft > aLeftEndPos )
             {
                 break;
             }
 
-            IDE_TEST( sdtWAMap::getvULong( sMapHdr, sLeft, &sLeftPtr )
+            IDE_TEST( sdtWASortMap::getvULong( sMapHdr,
+                                               sLeft,
+                                               (vULong*)&sLeftTRPInfo.mTRPHeader)
                       != IDE_SUCCESS );
+
             IDE_TEST( sdtTempRow::fetch( sWASeg,
                                          SDT_WAGROUPID_NONE,
-                                         (UChar*)sLeftPtr,
-                                         aHeader->mRowSize,
                                          aHeader->mRowBuffer4Compare,
                                          &sLeftTRPInfo )
                       != IDE_SUCCESS );
         }
     }
 
-    if( sRight > aRightEndPos )
+    if ( sRight > aRightEndPos )
     {
-        /* ì˜¤ë¥¸ìª½ Groupì´ ëª¨ë‘ ë°”ë‹¥ë‚œ ê²½ìš°ë¡œ, ì™¼ìª½ì˜ ë‚¨ì€ ê²ƒë“¤ì€ ê°€ì¥ í° ê°’ë“¤
-         * ì´ ë˜ê²Œ ëœë‹¤. ë”°ë¼ì„œ ì´ë¥¼ ë°°ì¹˜í•œ í›„, NextSlotArrayì— ì •ë ¬ëœ
-         * ê°’ë“¤ì„ ê°€ì ¸ì˜¤ë©´ ëœë‹¤.
+        /* ¿À¸¥ÂÊ GroupÀÌ ¸ğµÎ ¹Ù´Ú³­ °æ¿ì·Î, ¿ŞÂÊÀÇ ³²Àº °ÍµéÀº °¡Àå Å« °ªµé
+         * ÀÌ µÇ°Ô µÈ´Ù. µû¶ó¼­ ÀÌ¸¦ ¹èÄ¡ÇÑ ÈÄ, NextSlotArray¿¡ Á¤·ÄµÈ
+         * °ªµéÀ» °¡Á®¿À¸é µÈ´Ù.
          *
-         * ì˜ˆ) ë‹¤ìŒê³¼ ê°™ì€ ê²½ìš°ë¥¼ ì •ë ¬í•˜ê²Œ ë˜ë©´,
+         * ¿¹) ´ÙÀ½°ú °°Àº °æ¿ì¸¦ Á¤·ÄÇÏ°Ô µÇ¸é,
          *  Version0 : 3 4 5 6 7 8 1 2 3 4 5
          *                   ^              ^
          *                sLeft         sRight
          *  Version1 : 1 2 3 3 4 4 5 5 . . .
          *
-         * ì¦‰, sRightë§Œ EndPosì— ë„ë‹¬í•˜ê³ , LeftëŠ” ëª»í•œë‹¤.
-         * ë”°ë¼ì„œ sLeftPosë’¤ì˜ 6,7,8ì„ NextVersionì— ì„¤ì •í•´ì£¼ë©´ ëœë‹¤. */
+         * Áï, sRight¸¸ EndPos¿¡ µµ´ŞÇÏ°í, Left´Â ¸øÇÑ´Ù.
+         * µû¶ó¼­ sLeftPosµÚÀÇ 6,7,8À» NextVersion¿¡ ¼³Á¤ÇØÁÖ¸é µÈ´Ù. */
         i = sNext;
-        for( ; sLeft <= aLeftEndPos ; sLeft ++, i ++ )
+        for( ; sLeft <= aLeftEndPos ; sLeft++, i++ )
         {
-            IDE_TEST( sdtWAMap::getvULong( sMapHdr, sLeft, &sLeftPtr )
+            IDE_TEST( sdtWASortMap::getvULong( sMapHdr, sLeft, &sLeftPtr )
                       != IDE_SUCCESS );
-            IDE_TEST( sdtWAMap::setNextVersion( sMapHdr,
-                                                i,
-                                                &sLeftPtr )
+            IDE_TEST( sdtWASortMap::setNextVersion( sMapHdr,
+                                                    i,
+                                                    &sLeftPtr )
                       != IDE_SUCCESS );
         }
     }
     else
     {
         IDE_ERROR( sLeft > aLeftEndPos );
-        /* ì™¼ìª½ Groupì´ ë°”ë‹¥ë‚œ ê²½ìš°ë¡œ, ì˜¤ë¥¸ìª½ì˜ ë‚¨ì€ ê²ƒë“¤ì´ í° ê²½ìš°ì´ë‹¤. */
+        /* ¿ŞÂÊ GroupÀÌ ¹Ù´Ú³­ °æ¿ì·Î, ¿À¸¥ÂÊÀÇ ³²Àº °ÍµéÀÌ Å« °æ¿ìÀÌ´Ù. */
 
         i = sNext;
-        for( ; sRight <= aRightEndPos ; sRight ++, i ++ )
+        for( ; sRight <= aRightEndPos ; sRight++, i++ )
         {
-            IDE_TEST( sdtWAMap::getvULong( sMapHdr, sRight, &sRightPtr )
+            IDE_TEST( sdtWASortMap::getvULong( sMapHdr, sRight, &sRightPtr )
                       != IDE_SUCCESS );
             IDE_ERROR( i == sRight );
-            IDE_TEST( sdtWAMap::setNextVersion( sMapHdr,
-                                                i,
-                                                &sRightPtr )
+            IDE_TEST( sdtWASortMap::setNextVersion( sMapHdr,
+                                                    i,
+                                                    &sRightPtr )
                       != IDE_SUCCESS );
         }
     }
@@ -2951,17 +2853,17 @@ IDE_RC sdtSortModule::mergeSort( smiTempTableHeader * aHeader,
 
 /**************************************************************************
  * Description :
- * rowë¥¼ ì–»ì–´ compareí•œë‹¤.
+ * row¸¦ ¾ò¾î compareÇÑ´Ù.
  ***************************************************************************/
 IDE_RC sdtSortModule::compareGRIDAndGRID(smiTempTableHeader * aHeader,
-                                         sdtWAGroupID         aGroupID,
+                                         sdtGroupID           aGroupID,
                                          scGRID               aSrcGRID,
                                          scGRID               aDstGRID,
                                          SInt               * aResult )
 {
-    sdtWASegment      * sWASeg     = (sdtWASegment*)aHeader->mWASegment;
-    sdtTRPInfo4Select   sSrcTRPInfo;
-    sdtTRPInfo4Select   sDstTRPInfo;
+    sdtSortSegHdr     * sWASeg     = (sdtSortSegHdr*)aHeader->mWASegment;
+    sdtSortScanInfo     sSrcTRPInfo;
+    sdtSortScanInfo     sDstTRPInfo;
 
     IDE_TEST( sdtTempRow::fetchByGRID( sWASeg,
                                        aGroupID,
@@ -2998,19 +2900,19 @@ IDE_RC sdtSortModule::compareGRIDAndGRID(smiTempTableHeader * aHeader,
 
 /**************************************************************************
  * Description :
- * rowë¥¼ ì–»ì–´ compareí•œë‹¤.
+ * row¸¦ ¾ò¾î compareÇÑ´Ù.
  ***************************************************************************/
 IDE_RC sdtSortModule::compare( smiTempTableHeader * aHeader,
-                               sdtTRPInfo4Select  * aSrcTRPInfo,
-                               sdtTRPInfo4Select  * aDstTRPInfo,
+                               sdtSortScanInfo    * aSrcTRPInfo,
+                               sdtSortScanInfo    * aDstTRPInfo,
                                SInt               * aResult )
 {
-    smiTempColumn     * sColumn;
-    smiValueInfo        sValueInfo1;
-    smiValueInfo        sValueInfo2;
-    idBool              sIsNull1;
-    idBool              sIsNull2;
-    UInt                sColumnCount = 0;
+    smiTempColumn * sColumn;
+    smiValueInfo    sValueInfo1;
+    smiValueInfo    sValueInfo2;
+    idBool          sIsNull1;
+    idBool          sIsNull2;
+    UInt            sColumnCount = 0;
 
     *aResult = 0;
 
@@ -3031,7 +2933,7 @@ IDE_RC sdtSortModule::compare( smiTempTableHeader * aHeader,
         if ( ( sColumn->mColumn.flag & SMI_COLUMN_NULLS_ORDER_MASK )
              == SMI_COLUMN_NULLS_ORDER_NONE )
         {
-            /* NULLS first/last ê°€ ì—†ì„ê²½ìš° ê¸°ì¡´ë™ì‘ ìˆ˜í–‰*/
+            /* NULLS first/last °¡ ¾øÀ»°æ¿ì ±âÁ¸µ¿ÀÛ ¼öÇà*/
             *aResult = sColumn->mCompare( &sValueInfo1,
                                           &sValueInfo2 );
         }
@@ -3039,7 +2941,7 @@ IDE_RC sdtSortModule::compare( smiTempTableHeader * aHeader,
         {
             IDE_DASSERT( ( sColumn->mColumn.flag & SMI_COLUMN_TYPE_MASK )
                          == SMI_COLUMN_TYPE_FIXED );
-            /* 1. 2ê°œì˜ valueì˜ Null ì—¬ë¶€ë¥¼ ì¡°ì‚¬í•œë‹¤. */
+            /* 1. 2°³ÀÇ valueÀÇ Null ¿©ºÎ¸¦ Á¶»çÇÑ´Ù. */
             sIsNull1 = sColumn->mIsNull( (const smiColumn *)&sColumn->mColumn,
                                          ((UChar*)sValueInfo1.value + sColumn->mColumn.offset) );
             sIsNull2 = sColumn->mIsNull( (const smiColumn *)&sColumn->mColumn,
@@ -3049,13 +2951,13 @@ IDE_RC sdtSortModule::compare( smiTempTableHeader * aHeader,
             {
                 if ( sIsNull1 == ID_FALSE  )
                 {
-                    /* 2. NULLì´ì—†ì„ê²½ìš° ê¸°ì¡´ë™ì‘ ìˆ˜í–‰*/
+                    /* 2. NULLÀÌ¾øÀ»°æ¿ì ±âÁ¸µ¿ÀÛ ¼öÇà*/
                     *aResult = sColumn->mCompare( &sValueInfo1,
                                                   &sValueInfo2 );
                 }
                 else
                 {
-                    /* 3. ë‘˜ë‹¤ NULL ì¼ ê²½ìš° 0 */
+                    /* 3. µÑ´Ù NULL ÀÏ °æ¿ì 0 */
                     *aResult = 0;
                 }
             }
@@ -3064,7 +2966,7 @@ IDE_RC sdtSortModule::compare( smiTempTableHeader * aHeader,
                 if ( ( sColumn->mColumn.flag & SMI_COLUMN_NULLS_ORDER_MASK )
                      == SMI_COLUMN_NULLS_ORDER_FIRST )
                 {
-                    /* 4. NULLS FIRST ì¼ê²½ìš° Nullì„ ìµœì†Œë¡œ í•œë‹¤. */
+                    /* 4. NULLS FIRST ÀÏ°æ¿ì NullÀ» ÃÖ¼Ò·Î ÇÑ´Ù. */
                     if ( sIsNull1 == ID_TRUE )
                     {
                         *aResult = -1;
@@ -3076,7 +2978,7 @@ IDE_RC sdtSortModule::compare( smiTempTableHeader * aHeader,
                 }
                 else
                 {
-                    /* 5. NULLS LAST ì¼ê²½ìš° Nullì„ ìµœëŒ€ë¡œ í•œë‹¤. */
+                    /* 5. NULLS LAST ÀÏ°æ¿ì NullÀ» ÃÖ´ë·Î ÇÑ´Ù. */
                     if ( sIsNull1 == ID_TRUE )
                     {
                         *aResult = 1;
@@ -3089,7 +2991,7 @@ IDE_RC sdtSortModule::compare( smiTempTableHeader * aHeader,
             }
         }
 
-        if( *aResult != 0 )
+        if ( *aResult != 0 )
         {
             break;
         }
@@ -3105,14 +3007,14 @@ IDE_RC sdtSortModule::compare( smiTempTableHeader * aHeader,
 
 /**************************************************************************
  * Description :
- * ë‘ ìì‹ Runì„ ë¹„êµí•œë‹¤.
- * ìì‹ì´ ì—†ìœ¼ë©´, ID_UINT_MAXë¥¼ ë°˜í™˜í•œë‹¤.
+ * µÎ ÀÚ½Ä RunÀ» ºñ±³ÇÑ´Ù.
+ * ÀÚ½ÄÀÌ ¾øÀ¸¸é, ID_UINT_MAX¸¦ ¹İÈ¯ÇÑ´Ù.
  *
  * <IN>
- * aHeader        - ëŒ€ìƒ Table
- * aPos           - ë¶€ëª¨ Slot ID
+ * aHeader        - ´ë»ó Table
+ * aPos           - ºÎ¸ğ Slot ID
  * <OUT>
- * aChild         - ë¹„êµ ê²°ê³¼ ì„ íƒí•œ Childì˜ Slot ID
+ * aChild         - ºñ±³ °á°ú ¼±ÅÃÇÑ ChildÀÇ Slot ID
  ***************************************************************************/
 IDE_RC sdtSortModule::findAndSetLoserSlot( smiTempTableHeader * aHeader,
                                            UInt                 aPos,
@@ -3125,43 +3027,44 @@ IDE_RC sdtSortModule::findAndSetLoserSlot( smiTempTableHeader * aHeader,
     UInt                 sSelectedChild = ID_UINT_MAX;
     UInt                 sSelectedChildPos = ID_UINT_MAX;
     SInt                 sResult = 0;
-    sdtWASegment       * sWASeg = (sdtWASegment*)aHeader->mWASegment;
+    sdtSortSegHdr      * sWASeg = (sdtSortSegHdr*)aHeader->mWASegment;
     UInt                 i;
 
     IDE_ERROR( ( aHeader->mTTState == SMI_TTSTATE_SORT_MERGE ) ||
                ( aHeader->mTTState == SMI_TTSTATE_SORT_MERGESCAN ) ||
                ( aHeader->mTTState == SMI_TTSTATE_SORT_MAKETREE ) );
-    IDE_ERROR( aPos < sdtWAMap::getSlotCount( &sWASeg->mSortHashMapHdr ) );
+    IDE_ERROR( aPos < sdtWASortMap::getSlotCount( &sWASeg->mSortMapHdr ) );
 
     sChildPos[0] = aPos * 2;
     sChildPos[1] = aPos * 2 + 1;
 
-    if( ( sChildPos[ 0 ] >=
-          sdtWAMap::getSlotCount( &sWASeg->mSortHashMapHdr ) ) &&
-        ( sChildPos[ 1 ] >=
-          sdtWAMap::getSlotCount( &sWASeg->mSortHashMapHdr ) )  )
+    if ( (aPos * 2) >= sdtWASortMap::getSlotCount( &sWASeg->mSortMapHdr ) )
     {
-        /* ê°€ì ¸ì˜¬ ìì‹ì´ ì—†ìŒ */
+        /* ( sChildPos[ 0 ] >=
+         *   sdtWASortMap::getSlotCount( &sWASeg->mSortMapHdr ) ) &&
+         * ( sChildPos[ 1 ] >=
+         *   sdtWASortMap::getSlotCount( &sWASeg->mSortMapHdr ) )  ) */
+        /* °¡Á®¿Ã ÀÚ½ÄÀÌ ¾øÀ½ */
     }
     else
     {
-        /* ìì‹ìœ¼ë¡œë¶€í„° ì„ íƒí•˜ë©´ ë¨ */
-        for( i = 0 ; i < 2 ; i ++ )
+        /* ÀÚ½ÄÀ¸·ÎºÎÅÍ ¼±ÅÃÇÏ¸é µÊ */
+        for( i = 0 ; i < 2 ; i++ )
         {
-            if( sChildPos[ i ] >=
-                sdtWAMap::getSlotCount( &sWASeg->mSortHashMapHdr ) )
+            if ( sChildPos[ i ] >=
+                 sdtWASortMap::getSlotCount( &sWASeg->mSortMapHdr ) )
             {
                 sChildRunInfo[i].mRunNo = SDT_TEMP_RUNINFO_NULL;
             }
             else
             {
-                IDE_TEST( sdtWAMap::get( &sWASeg->mSortHashMapHdr,
-                                         sChildPos[i],
-                                         (void*)&sChildRunInfo[i] )
+                IDE_TEST( sdtWASortMap::get( &sWASeg->mSortMapHdr,
+                                             sChildPos[i],
+                                             (void*)&sChildRunInfo[i] )
                           != IDE_SUCCESS );
             }
 
-            if( sChildRunInfo[i].mRunNo != SDT_TEMP_RUNINFO_NULL )
+            if ( sChildRunInfo[i].mRunNo != SDT_TEMP_RUNINFO_NULL )
             {
                 SC_MAKE_GRID( sChildGRID[i],
                               SDT_SPACEID_WORKAREA,
@@ -3172,11 +3075,11 @@ IDE_RC sdtSortModule::findAndSetLoserSlot( smiTempTableHeader * aHeader,
             }
         }
 
-        if( ( sChildRunInfo[0].mRunNo != SDT_TEMP_RUNINFO_NULL ) &&
-            ( sChildRunInfo[1].mRunNo != SDT_TEMP_RUNINFO_NULL ) )
+        if ( ( sChildRunInfo[0].mRunNo != SDT_TEMP_RUNINFO_NULL ) &&
+             ( sChildRunInfo[1].mRunNo != SDT_TEMP_RUNINFO_NULL ) )
         {
             /* Both values are not null, ( not null ). */
-            /* í•­ìƒ InMemoryì—°ì‚°ì´ì–´ì•¼ í•˜ê¸°ì—, None Group */
+            /* Ç×»ó InMemory¿¬»êÀÌ¾î¾ß ÇÏ±â¿¡, None Group */
             IDE_TEST( compareGRIDAndGRID( aHeader,
                                           SDT_WAGROUPID_NONE,
                                           sChildGRID[0],
@@ -3184,9 +3087,9 @@ IDE_RC sdtSortModule::findAndSetLoserSlot( smiTempTableHeader * aHeader,
                                           &sResult )
                       != IDE_SUCCESS );
 
-            if( sResult <= 0 )
+            if ( sResult <= 0 )
             {
-                /* ì™¼ìª½ì´ ì‘ê±°ë‚˜ ë‘˜ì´ ê°™ìœ¼ë©´ */
+                /* ¿ŞÂÊÀÌ ÀÛ°Å³ª µÑÀÌ °°À¸¸é */
                 sSelectedChild = 0;
             }
             else
@@ -3196,22 +3099,22 @@ IDE_RC sdtSortModule::findAndSetLoserSlot( smiTempTableHeader * aHeader,
         }
         else
         {
-            if( ( sChildRunInfo[0].mRunNo == SDT_TEMP_RUNINFO_NULL ) &&
-                ( sChildRunInfo[1].mRunNo != SDT_TEMP_RUNINFO_NULL ) )
+            if ( ( sChildRunInfo[0].mRunNo == SDT_TEMP_RUNINFO_NULL ) &&
+                 ( sChildRunInfo[1].mRunNo != SDT_TEMP_RUNINFO_NULL ) )
             {
-                /* 1ë§Œ ìœ íš¨, 0ì€ ìœ íš¨í•˜ì§€ ì•ŠìŒ */
+                /* 1¸¸ À¯È¿, 0Àº À¯È¿ÇÏÁö ¾ÊÀ½ */
                 sSelectedChild = 1;
             }
             else
             {
-                if( ( sChildRunInfo[0].mRunNo!=SDT_TEMP_RUNINFO_NULL ) &&
-                    ( sChildRunInfo[1].mRunNo==SDT_TEMP_RUNINFO_NULL ) )
+                if ( ( sChildRunInfo[0].mRunNo!=SDT_TEMP_RUNINFO_NULL ) &&
+                     ( sChildRunInfo[1].mRunNo==SDT_TEMP_RUNINFO_NULL ) )
                 {
                     sSelectedChild = 0;
                 }
                 else
                 {
-                    /* ì–‘ìª½ë‹¤ Nullì´ë‹ˆ ë­˜ ì˜¬ë ¤ë„ ìƒê´€ ì—†ìŒ */
+                    /* ¾çÂÊ´Ù NullÀÌ´Ï ¹» ¿Ã·Áµµ »ó°ü ¾øÀ½ */
                     IDE_ERROR( ( sChildRunInfo[0].mRunNo ==
                                  SDT_TEMP_RUNINFO_NULL ) &&
                                ( sChildRunInfo[1].mRunNo ==
@@ -3221,34 +3124,34 @@ IDE_RC sdtSortModule::findAndSetLoserSlot( smiTempTableHeader * aHeader,
         }
     }
 
-    if( sSelectedChild != ID_UINT_MAX )
+    if ( sSelectedChild != ID_UINT_MAX )
     {
-        /* Childë¡œ ì„ íƒë  ë§Œí•œ Slotì´ ìˆìŒ */
-        IDE_TEST( sdtWAMap::set( &sWASeg->mSortHashMapHdr,
-                                 aPos,
-                                 (void*)&sChildRunInfo[ sSelectedChild ] )
+        /* Child·Î ¼±ÅÃµÉ ¸¸ÇÑ SlotÀÌ ÀÖÀ½ */
+        IDE_TEST( sdtWASortMap::set( &sWASeg->mSortMapHdr,
+                                     aPos,
+                                     (void*)&sChildRunInfo[ sSelectedChild ] )
                   != IDE_SUCCESS );
         sSelectedChildPos = sChildPos[ sSelectedChild ];
     }
     else
     {
-        /* ê°€ì ¸ì˜¬ ìì‹ì´ ì—†ìœ¼ë‹ˆ, ìì‹ ì´ Source Slotì´ ë˜ì–´, Runì˜ ë‹¤ìŒ
-         * í˜ì´ì§€ë¥¼ ê°€ì ¸ì˜´ */
-        IDE_TEST( sdtWAMap::get( &sWASeg->mSortHashMapHdr,
-                                 aPos,
-                                 (void*)&sRunInfo )
+        /* °¡Á®¿Ã ÀÚ½ÄÀÌ ¾øÀ¸´Ï, ÀÚ½ÅÀÌ Source SlotÀÌ µÇ¾î, RunÀÇ ´ÙÀ½
+         * ÆäÀÌÁö¸¦ °¡Á®¿È */
+        IDE_TEST( sdtWASortMap::get( &sWASeg->mSortMapHdr,
+                                     aPos,
+                                     (void*)&sRunInfo )
                   != IDE_SUCCESS );
         IDE_TEST( readNextRowByRun( aHeader,
                                     &sRunInfo )
                   != IDE_SUCCESS );
-        IDE_TEST( sdtWAMap::set( &sWASeg->mSortHashMapHdr,
-                                 aPos,
-                                 (void*)&sRunInfo )
+        IDE_TEST( sdtWASortMap::set( &sWASeg->mSortMapHdr,
+                                     aPos,
+                                     (void*)&sRunInfo )
                   != IDE_SUCCESS );
 
     }
 
-    if( aChild != NULL )
+    if ( aChild != NULL )
     {
         ( * aChild ) = sSelectedChildPos;
     }
@@ -3262,77 +3165,82 @@ IDE_RC sdtSortModule::findAndSetLoserSlot( smiTempTableHeader * aHeader,
 
 /**************************************************************************
  * Description :
- * SortGroupì˜ ì •ë ¬ëœ Key(ë˜ëŠ” Row)ë“¤ì„ Runì˜ í˜•íƒœë¡œ ì €ì¥í•œë‹¤
+ * SortGroupÀÇ Á¤·ÄµÈ Key(¶Ç´Â Row)µéÀ» RunÀÇ ÇüÅÂ·Î ÀúÀåÇÑ´Ù
  *
  * <IN>
- * aHeader        - ëŒ€ìƒ Table
+ * aHeader        - ´ë»ó Table
  ***************************************************************************/
 IDE_RC sdtSortModule::storeSortedRun( smiTempTableHeader * aHeader )
 {
-    scPageID             sHeadNPID = SD_NULL_PID;
-    UChar              * sSrcPtr;
-    sdtWASegment       * sWASeg = (sdtWASegment*)aHeader->mWASegment;
-    sdtTRInsertResult    sTRInsertResult;
-    UInt                 i;
+    scPageID              sHeadNPID = SD_NULL_PID;
+    UChar               * sSrcPtr;
+    sdtSortSegHdr       * sWASeg = (sdtSortSegHdr*)aHeader->mWASegment;
+    sdtSortInsertResult sTRInsertResult;
+    UInt                  sSlotCount;
+    UInt                  i;
 
-    /* FlushGroupì„ ì´ˆê¸°í™”í•˜ì§€ ì•Šìœ¼ë©´, Runë¼ë¦¬ ì„ì¸ë‹¤. */
-    IDE_TEST( sdtWASegment::resetWAGroup( sWASeg,
-                                          SDT_WAGROUPID_FLUSH,
-                                          ID_TRUE/*wait4flsuh*/ )
-              != IDE_SUCCESS );
+    sSlotCount = sdtWASortMap::getSlotCount( &sWASeg->mSortMapHdr );
 
-    IDE_ERROR( ( aHeader->mTTState == SMI_TTSTATE_SORT_INSERTNSORT ) ||
-               ( aHeader->mTTState == SMI_TTSTATE_SORT_INSERTONLY ) ||
-               ( aHeader->mTTState == SMI_TTSTATE_SORT_EXTRACTNSORT ) ||
-               ( aHeader->mTTState == SMI_TTSTATE_SORT_SCAN ) );
-
-    /* SortGroupì˜ Rowë“¤ì„ FlushGroupìœ¼ë¡œ ì •ë ¬ìˆœ ëŒ€ë¡œ ë³µì‚¬í•¨. */
-    for( i = 0 ;
-         i < sdtWAMap::getSlotCount( &sWASeg->mSortHashMapHdr ) ;
-         i ++ )
+    if ( sSlotCount > 0 )
     {
-        IDE_TEST( sdtWAMap::getvULong( &sWASeg->mSortHashMapHdr,
-                                       i,
-                                       (vULong*)&sSrcPtr )
+        /* FlushGroupÀ» ÃÊ±âÈ­ÇÏÁö ¾ÊÀ¸¸é, Run³¢¸® ¼¯ÀÎ´Ù. */
+        IDE_TEST( sdtSortSegment::resetWAGroup( sWASeg,
+                                                SDT_WAGROUPID_FLUSH,
+                                                ID_TRUE/*wait4flsuh*/ )
                   != IDE_SUCCESS );
 
-        IDE_TEST( copyRowByPtr( aHeader,
-                                sSrcPtr,
-                                SC_NULL_GRID, /* SrcGRID, WA Mapì´ì–´ì„œ ë°€ë ¤ë‚˜ì§€ ì•ŠëŠ”ë‹¤. */
-                                SDT_COPY_NORMAL,
-                                SDT_TEMP_PAGETYPE_SORTEDRUN,
-                                SC_NULL_GRID, /* ChildRID */
-                                &sTRInsertResult )
-                  != IDE_SUCCESS );
+        IDE_ERROR( ( aHeader->mTTState == SMI_TTSTATE_SORT_INSERTNSORT ) ||
+                   ( aHeader->mTTState == SMI_TTSTATE_SORT_INSERTONLY ) ||
+                   ( aHeader->mTTState == SMI_TTSTATE_SORT_EXTRACTNSORT ) ||
+                   ( aHeader->mTTState == SMI_TTSTATE_SORT_SCAN ) );
 
-        if( sHeadNPID == SD_NULL_PID )
+        /* SortGroupÀÇ RowµéÀ» FlushGroupÀ¸·Î Á¤·Ä¼ø ´ë·Î º¹»çÇÔ. */
+        for( i = 0 ;
+             i < sSlotCount ;
+             i++ )
         {
-            sHeadNPID = SC_MAKE_PID( sTRInsertResult.mHeadRowpieceGRID );
+            IDE_TEST( sdtWASortMap::getvULong( &sWASeg->mSortMapHdr,
+                                               i,
+                                               (vULong*)&sSrcPtr )
+                      != IDE_SUCCESS );
+
+            IDE_TEST( copyRowByPtr( aHeader,
+                                    sSrcPtr,
+                                    SDT_COPY_NORMAL,
+                                    SDT_TEMP_PAGETYPE_SORTEDRUN,
+                                    SC_NULL_GRID, /* ChildRID */
+                                    &sTRInsertResult )
+                      != IDE_SUCCESS );
+
+            if ( sHeadNPID == SD_NULL_PID )
+            {
+                sHeadNPID = SC_MAKE_PID( sTRInsertResult.mHeadRowpieceGRID );
+            }
+            aHeader->mMaxRowPageCount = IDL_MAX( aHeader->mMaxRowPageCount,
+                                                 sTRInsertResult.mRowPageCount );
         }
-        aHeader->mMaxRowPageCount = IDL_MAX( aHeader->mMaxRowPageCount,
-                                             sTRInsertResult.mRowPageCount );
+
+        IDE_ERROR( sHeadNPID != SD_NULL_PID );
+        IDE_ERROR( aHeader->mSortGroupID == SDT_WAGROUPID_SORT );
+
+        IDE_TEST( aHeader->mRunQueue.enqueue(ID_FALSE, (void*)&sHeadNPID )
+                  != IDE_SUCCESS );
+
+        /* RunÀ¸·Î ¸¸µé¾î ÀüºÎ FlushÇßÀ¸´Ï, SortGroupÀ» ÃÊ±âÈ­ÇÔ */
+        IDE_TEST( sdtSortSegment::resetWAGroup( sWASeg,
+                                                SDT_WAGROUPID_SORT,
+                                                ID_FALSE/*wait4flsuh*/ )
+                  != IDE_SUCCESS );
+
+        /* WAMapÀ» ÃÊ±âÈ­ */
+        IDE_TEST( sdtWASortMap::create( sWASeg,
+                                        SDT_WAGROUPID_SORT,
+                                        SDT_WM_TYPE_POINTER,
+                                        0, /* Slot Count */
+                                        2, /* aVersionCount */
+                                        &sWASeg->mSortMapHdr )
+                  != IDE_SUCCESS );
     }
-
-    IDE_ERROR( sHeadNPID != SD_NULL_PID );
-    IDE_ERROR( aHeader->mSortGroupID == SDT_WAGROUPID_SORT );
-
-    IDE_TEST( aHeader->mRunQueue.enqueue(ID_FALSE, (void*)&sHeadNPID )
-              != IDE_SUCCESS );
-
-    /* Runìœ¼ë¡œ ë§Œë“¤ì–´ ì „ë¶€ Flushí–ˆìœ¼ë‹ˆ, SortGroupì„ ì´ˆê¸°í™”í•¨ */
-    IDE_TEST( sdtWASegment::resetWAGroup( sWASeg,
-                                          SDT_WAGROUPID_SORT,
-                                          ID_FALSE/*wait4flsuh*/ )
-              != IDE_SUCCESS );
-
-    /* WAMapì„ ì´ˆê¸°í™” */
-    IDE_TEST( sdtWAMap::create( sWASeg,
-                                SDT_WAGROUPID_SORT,
-                                SDT_WM_TYPE_POINTER,
-                                0, /* Slot Count */
-                                2, /* aVersionCount */
-                                (void*)&sWASeg->mSortHashMapHdr )
-              != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -3343,31 +3251,32 @@ IDE_RC sdtSortModule::storeSortedRun( smiTempTableHeader * aHeader )
 
 /**************************************************************************
  * Description :
- * Rowë¥¼ ë‹¤ë¥¸ Groupìœ¼ë¡œ ë³µì‚¬í•œë‹¤.
- * ë³µì‚¬ ëª©ì  (aPurpose)ì— ë”°ë¼, ì›ë³¸/ì‚¬ë³¸ Group, Rowì²˜ë¦¬ë“±ì´ ë‹¬ë¼ì§„ë‹¤.
+ * Row¸¦ ´Ù¸¥ GroupÀ¸·Î º¹»çÇÑ´Ù.
+ * º¹»ç ¸ñÀû (aPurpose)¿¡ µû¶ó, ¿øº»/»çº» Group, RowÃ³¸®µîÀÌ ´Ş¶óÁø´Ù.
  *
  * <IN>
- * aHeader         - ëŒ€ìƒ Table
- * aSrcGRID        - ë³µì‚¬í•  ì›ë³¸ Row
- * aPurpose        - ë³µì‚¬í•˜ëŠ” ëª©ì 
- * aPageType       - ë³µì‚¬í•œ ëŒ€ìƒ Pageì˜ Type
- * aChildGRID      - ì¹˜í™˜í•  ChildGRID(ì›ë³¸ Rowì˜ ë‹¤ë¥¸ ë¶€ë¶„ì€ ë‘ê³ , ChildGRIDë§Œ
- *                   ë³€ê²½í•¨ )
- * aTRInsertResult - ë³µì‚¬í•œ ê²°ê³¼.
+ * aHeader         - ´ë»ó Table
+ * aSrcGRID        - º¹»çÇÒ ¿øº» Row
+ * aPurpose        - º¹»çÇÏ´Â ¸ñÀû
+ * aPageType       - º¹»çÇÑ ´ë»ó PageÀÇ Type
+ * aChildGRID      - Ä¡È¯ÇÒ ChildGRID(¿øº» RowÀÇ ´Ù¸¥ ºÎºĞÀº µÎ°í, ChildGRID¸¸
+ *                   º¯°æÇÔ )
+ * aTRInsertResult - º¹»çÇÑ °á°ú.
  ***************************************************************************/
 IDE_RC sdtSortModule::copyRowByGRID( smiTempTableHeader * aHeader,
                                      scGRID               aSrcGRID,
                                      sdtCopyPurpose       aPurpose,
                                      sdtTempPageType      aPageType,
                                      scGRID               aChildGRID,
-                                     sdtTRInsertResult  * aTRInsertResult )
+                                     sdtSortInsertResult  * aTRInsertResult )
 {
-    sdtWAGroupID        sSrcGroupID  = SDT_WAGROUPID_SORT;
-    sdtWASegment      * sWASeg       = (sdtWASegment*)aHeader->mWASegment;
-    UChar             * sCursor      = NULL;
-    idBool              sIsValidSlot = ID_FALSE;
+    sdtGroupID     sSrcGroupID  = SDT_WAGROUPID_SORT;
+    sdtSortSegHdr* sWASeg       = (sdtSortSegHdr*)aHeader->mWASegment;
+    UChar        * sCursor      = NULL;
+    sdtWCB       * sWCBPtr;
+    idBool         sIsFixedPage = ID_FALSE;
 
-    /* ì–´ëŠ ê·¸ë£¹ì—ì„œ ì–´ëŠ ê·¸ë£¹ìœ¼ë¡œì˜ ì´ë™ì¸ê°€  */
+    /* ¾î´À ±×·ì¿¡¼­ ¾î´À ±×·ìÀ¸·ÎÀÇ ÀÌµ¿ÀÎ°¡  */
     switch( aPurpose )
     {
         case SDT_COPY_NORMAL:
@@ -3385,63 +3294,81 @@ IDE_RC sdtSortModule::copyRowByGRID( smiTempTableHeader * aHeader,
             break;
     }
 
-    IDE_TEST( sdtWASegment::getPagePtrByGRID( sWASeg,
-                                              sSrcGroupID,
-                                              aSrcGRID,
-                                              &sCursor,
-                                              &sIsValidSlot )
+    IDE_TEST( sdtSortSegment::getPagePtrByGRID( sWASeg,
+                                                sSrcGroupID,
+                                                aSrcGRID,
+                                                &sCursor )
               != IDE_SUCCESS );
-    IDE_ERROR( sIsValidSlot == ID_TRUE );
-    IDE_DASSERT( SM_IS_FLAG_ON( ((sdtTRPHeader*)sCursor)->mTRFlag, SDT_TRFLAG_HEAD ) );
+
+    if ( sSrcGroupID != SDT_WAGROUPID_SORT )
+    {
+        IDE_DASSERT( ( SC_MAKE_SPACE( aSrcGRID ) != SDT_SPACEID_WAMAP ) &&
+                     ( SC_MAKE_SPACE( aSrcGRID ) != SDT_SPACEID_WORKAREA ) );
+
+        sWCBPtr = sdtSortSegment::findWCB( sWASeg, SC_MAKE_PID( aSrcGRID ) );
+
+        IDE_DASSERT( sWCBPtr != NULL ); // ¹æ±İ get pageÇÑ ³ğÀÌ NULLÀÏ¸® ¾ø´Ù.
+
+        sdtSortSegment::fixWAPage( sWCBPtr );
+        sIsFixedPage = ID_TRUE;
+    }
 
     IDE_TEST( copyRowByPtr( aHeader,
                             sCursor,
-                            aSrcGRID,
                             aPurpose,
                             aPageType,
                             aChildGRID,
                             aTRInsertResult )
               != IDE_SUCCESS );
 
+    if ( sIsFixedPage == ID_TRUE )
+    {
+        sIsFixedPage = ID_FALSE;
+        sdtSortSegment::unfixWAPage( sWCBPtr );
+    }
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 
+    if ( sIsFixedPage == ID_TRUE )
+    {
+        sdtSortSegment::unfixWAPage( sWCBPtr );
+    }
     return IDE_FAILURE;
 }
 
 /**************************************************************************
  * Description :
- * Rowë¥¼ ë‹¤ë¥¸ Groupìœ¼ë¡œ ë³µì‚¬í•œë‹¤.
- * ë³µì‚¬ ëª©ì  (aPurpose)ì— ë”°ë¼, ì›ë³¸/ì‚¬ë³¸ Group, Rowì²˜ë¦¬ë“±ì´ ë‹¬ë¼ì§„ë‹¤.
+ * Row¸¦ ´Ù¸¥ GroupÀ¸·Î º¹»çÇÑ´Ù.
+ * º¹»ç ¸ñÀû (aPurpose)¿¡ µû¶ó, ¿øº»/»çº» Group, RowÃ³¸®µîÀÌ ´Ş¶óÁø´Ù.
  *
  * <IN>
- * aHeader         - ëŒ€ìƒ Table
- * aSrcPtr         - ë³µì‚¬í•  ì›ë³¸ Row
- * aPurpose        - ë³µì‚¬í•˜ëŠ” ëª©ì 
- * aPageType       - ë³µì‚¬í•œ ëŒ€ìƒ Pageì˜ Type
- * aChildGRID      - ì¹˜í™˜í•  ChildGRID(ì›ë³¸ Rowì˜ ë‹¤ë¥¸ ë¶€ë¶„ì€ ë‘ê³ , ChildGRIDë§Œ
- *                   ë³€ê²½í•¨ )
- * aTRInsertResult - ë³µì‚¬í•œ ê²°ê³¼.
+ * aHeader         - ´ë»ó Table
+ * aSrcPtr         - º¹»çÇÒ ¿øº» Row
+ * aPurpose        - º¹»çÇÏ´Â ¸ñÀû
+ * aPageType       - º¹»çÇÑ ´ë»ó PageÀÇ Type
+ * aChildGRID      - Ä¡È¯ÇÒ ChildGRID(¿øº» RowÀÇ ´Ù¸¥ ºÎºĞÀº µÎ°í, ChildGRID¸¸
+ *                   º¯°æÇÔ )
+ * aTRInsertResult - º¹»çÇÑ °á°ú.
  ***************************************************************************/
 IDE_RC sdtSortModule::copyRowByPtr(smiTempTableHeader * aHeader,
                                    UChar              * aSrcPtr,
-                                   scGRID               aSrcGRID,
-                                   sdtCopyPurpose       aPurpose,
+                                   sdtCopyPurpose      aPurpose,
                                    sdtTempPageType      aPageType,
                                    scGRID               aChildGRID,
-                                   sdtTRInsertResult  * aTRInsertResult )
+                                   sdtSortInsertResult  * aTRInsertResult )
 {
-    sdtTRPInfo4Select   sTRPInfo4Select;
-    sdtTRPInfo4Insert   sTRPInfo4Insert;
+    sdtSortScanInfo     sScanInfo4Select;
+    sdtSortInsertInfo   sScanInfo4Insert;
     smiValue            sValueList[ SMI_COLUMN_ID_MAXIMUM ];
-    sdtTRPHeader      * sTRPHeader;
-    sdtWAGroupID        sSrcGroupID  = SDT_WAGROUPID_SORT;
-    sdtWAGroupID        sDestGroupID = SDT_WAGROUPID_FLUSH;
-    sdtWASegment      * sWASeg = (sdtWASegment*)aHeader->mWASegment;
+    sdtSortTRPHdr     * sTRPHeader;
+    sdtGroupID          sSrcGroupID  = SDT_WAGROUPID_SORT;
+    sdtGroupID          sDestGroupID = SDT_WAGROUPID_FLUSH;
+    sdtSortSegHdr     * sWASeg = (sdtSortSegHdr*)aHeader->mWASegment;
     UInt                i;
 
-    /* ì–´ëŠ ê·¸ë£¹ì—ì„œ ì–´ëŠ ê·¸ë£¹ìœ¼ë¡œì˜ ì´ë™ì¸ê°€  */
+    /* ¾î´À ±×·ì¿¡¼­ ¾î´À ±×·ìÀ¸·ÎÀÇ ÀÌµ¿ÀÎ°¡  */
     switch( aPurpose )
     {
         case SDT_COPY_NORMAL:
@@ -3464,79 +3391,79 @@ IDE_RC sdtSortModule::copyRowByPtr(smiTempTableHeader * aHeader,
             break;
     }
 
-    /*************** SortGroupì—ì„œ í•´ë‹¹ Rowë¥¼ ê°€ì ¸ì˜´ ********************/
-    SC_COPY_GRID( aSrcGRID, sTRPInfo4Select.mTRPHGRID );
+    sScanInfo4Select.mTRPHeader      = (sdtSortTRPHdr*)aSrcPtr;
+    sScanInfo4Select.mFetchEndOffset = aHeader->mRowSize;
+
+    /*************** SortGroup¿¡¼­ ÇØ´ç Row¸¦ °¡Á®¿È ********************/
     IDE_TEST( sdtTempRow::fetch( sWASeg,
                                  sSrcGroupID,
-                                 aSrcPtr,
-                                 aHeader->mRowSize,
                                  aHeader->mRowBuffer4Fetch,
-                                 &sTRPInfo4Select )
+                                 &sScanInfo4Select )
               != IDE_SUCCESS );
 
-    /**************** TRPInfo4selectë¡œ TRPInfo4Insertë§Œë“¬ ****************/
+    /**************** TRPInfo4select·Î TRPInfo4Insert¸¸µë ****************/
 
-    /* TRPHeaderë¥¼ ë³µì œ í›„ Flagë¥¼ ì¡°ì‘í•œë‹¤. */
-    idlOS::memcpy( &sTRPInfo4Insert.mTRPHeader,
-                   sTRPInfo4Select.mTRPHeader,
-                   ID_SIZEOF( sdtTRPHeader ) );
-    sTRPHeader = &sTRPInfo4Insert.mTRPHeader;
-    /* í•˜ë‚˜ë¡œ í•©ì³ì„œ ì½ê¸° ë•Œë¬¸ì—, NextëŠ” ë•Œì–´ì¤˜ì•¼ í•œë‹¤. */
+    /* TRPHeader¸¦ º¹Á¦ ÈÄ Flag¸¦ Á¶ÀÛÇÑ´Ù. */
+    idlOS::memcpy( &sScanInfo4Insert.mTRPHeader,
+                   sScanInfo4Select.mTRPHeader,
+                   ID_SIZEOF( sdtSortTRPHdr) );
+    sTRPHeader = &sScanInfo4Insert.mTRPHeader;
+    /* ÇÏ³ª·Î ÇÕÃÄ¼­ ÀĞ±â ¶§¹®¿¡, Next´Â ¶§¾îÁà¾ß ÇÑ´Ù. */
     SM_SET_FLAG_OFF( sTRPHeader->mTRFlag, SDT_TRFLAG_NEXTGRID );
-    sTRPHeader->mNextGRID         = SC_NULL_GRID;
-    sTRPInfo4Insert.mColumnCount  = aHeader->mColumnCount;
-    sTRPInfo4Insert.mColumns      = aHeader->mColumns;
-    sTRPInfo4Insert.mValueLength  = aHeader->mRowSize;
-    sTRPInfo4Insert.mValueList    = sValueList;
-    for( i = 0; i < aHeader->mColumnCount; i ++ )
+    SC_MAKE_NULL_GRID( sTRPHeader->mNextGRID );
+    sScanInfo4Insert.mColumnCount  = aHeader->mColumnCount;
+    sScanInfo4Insert.mColumns      = aHeader->mColumns;
+    sScanInfo4Insert.mValueLength  = aHeader->mRowSize;
+    sScanInfo4Insert.mValueList    = sValueList;
+    for( i = 0; i < aHeader->mColumnCount; i++ )
     {
-        sTRPInfo4Insert.mValueList[ i ].length =
+        sScanInfo4Insert.mValueList[ i ].length =
             aHeader->mColumns[ i ].mColumn.size;
-        sTRPInfo4Insert.mValueList[ i ].value  =
-            sTRPInfo4Select.mValuePtr +
+        sScanInfo4Insert.mValueList[ i ].value  =
+            sScanInfo4Select.mValuePtr +
             aHeader->mColumns[ i ].mColumn.offset;
     }
-    if( !SC_GRID_IS_NULL( aChildGRID ) )
+    if ( SC_GRID_IS_NOT_NULL( aChildGRID ) )
     {
-        sTRPHeader->mChildGRID  =  aChildGRID;
+        SC_COPY_GRID( aChildGRID, sTRPHeader->mChildGRID ) ;
         SM_SET_FLAG_ON( sTRPHeader->mTRFlag, SDT_TRFLAG_CHILDGRID );
     }
 
-    /*************************** ì „ì²˜ë¦¬ ê³¼ì • ****************************/
+    /*************************** ÀüÃ³¸® °úÁ¤ ****************************/
     switch( aPurpose )
     {
         case SDT_COPY_NORMAL:
         case SDT_COPY_EXTRACT_ROW:
-            /* LeafKeyì—ì„œ ì¶”ì¶œí•˜ëŠ” ê²ƒì´ê¸°ì—, Unsplitì´ ìˆë‹¤.
-             * ì´ë¥¼ ë¹¼ì¤˜ì•¼ ì•Œì•„ì„œ ìª¼ê°œì„œ ì €ì¥í•œë‹¤. */
+            /* LeafKey¿¡¼­ ÃßÃâÇÏ´Â °ÍÀÌ±â¿¡, UnsplitÀÌ ÀÖ´Ù.
+             * ÀÌ¸¦ »©Áà¾ß ¾Ë¾Æ¼­ ÂÉ°³¼­ ÀúÀåÇÑ´Ù. */
             SM_SET_FLAG_OFF( sTRPHeader->mTRFlag, SDT_TRFLAG_UNSPLIT );
             break;
         case SDT_COPY_MAKE_KEY:
-            /* Keyì´ê¸° ë•Œë¬¸ì— ChildGRIDê°€ ìˆì–´ì•¼ í•œë‹¤. */
-            IDE_ERROR( ! SC_GRID_IS_NULL( aChildGRID ) );
+            /* KeyÀÌ±â ¶§¹®¿¡ ChildGRID°¡ ÀÖ¾î¾ß ÇÑ´Ù. */
+            IDE_ERROR( SC_GRID_IS_NOT_NULL( aChildGRID ) );
             break;
         case SDT_COPY_MAKE_LNODE:
-            if( SDT_TR_HEADER_SIZE( sTRPHeader->mTRFlag )
-                + sTRPInfo4Insert.mValueLength
-                > smuProperty::getTempMaxKeySize() )
+            /* BUG-48226 appendRowPiece()¿¡¼­ header size ÀÌÇÏÀÇ ÀÛÀº slotÀÌ ÇÒ´çµÇ´Â ¹®Á¦°¡ ¹ß»ı
+             * header size´Â Á¦¿ÜÇÏ°í value size°¡ property ¼³Á¤ Å©±âº¸´Ù Ä¿¾ßÇÑ´Ù. */
+            if ( sScanInfo4Insert.mValueLength > smuProperty::getTempMaxKeySize() )
             {
-                /* í‚¤ê°€ ë„ˆë¬´ í¬ë‹ˆ ExtraPageì— ì—¬ë¶„ì„ ë„£ê³  ë‚˜ë¨¸ì§€ë§Œ ì‚½ì… */
-                IDE_TEST( copyExtraRow( aHeader, &sTRPInfo4Insert )
+                /* Å°°¡ ³Ê¹« Å©´Ï ExtraPage¿¡ ¿©ºĞÀ» ³Ö°í ³ª¸ÓÁö¸¸ »ğÀÔ */
+                IDE_TEST( copyExtraRow( aHeader, &sScanInfo4Insert )
                           != IDE_SUCCESS );
             }
             SM_SET_FLAG_ON( sTRPHeader->mTRFlag, SDT_TRFLAG_UNSPLIT );
             IDE_ERROR( SC_GRID_IS_NULL( aChildGRID ) );
             break;
         case SDT_COPY_MAKE_INODE:
-            /* INodeë¥¼ ìƒì„±í• ë•Œ, LNodeì™€ ê°™ì€ ExtraRowë¥¼ ê°–ìœ¼ë©´ ëœë‹¤.
-             * ë”°ë¼ì„œ NextGRIDë¥¼ ê°€ì ¸ì˜¤ê³ , ValueLengthë¥¼ LNodeì˜ FirstRowPieceë§Œí¼
-             * ì¶•ì†Œì‹œí‚¨ë‹¤. */
-            if( SM_IS_FLAG_ON( sTRPInfo4Select.mTRPHeader->mTRFlag,
-                               SDT_TRFLAG_NEXTGRID ) )
+            /* INode¸¦ »ı¼ºÇÒ¶§, LNode¿Í °°Àº ExtraRow¸¦ °®À¸¸é µÈ´Ù.
+             * µû¶ó¼­ NextGRID¸¦ °¡Á®¿À°í, ValueLength¸¦ LNodeÀÇ FirstRowPiece¸¸Å­
+             * Ãà¼Ò½ÃÅ²´Ù. */
+            if ( SM_IS_FLAG_ON( sScanInfo4Select.mTRPHeader->mTRFlag,
+                                SDT_TRFLAG_NEXTGRID ) )
             {
-                sTRPHeader->mNextGRID = sTRPInfo4Select.mTRPHeader->mNextGRID;
-                sTRPInfo4Insert.mValueLength =
-                    sTRPInfo4Select.mTRPHeader->mValueLength;
+                SC_COPY_GRID( sScanInfo4Select.mTRPHeader->mNextGRID, sTRPHeader->mNextGRID );
+                sScanInfo4Insert.mValueLength =
+                    sScanInfo4Select.mTRPHeader->mValueLength;
                 SM_SET_FLAG_ON( sTRPHeader->mTRFlag, SDT_TRFLAG_NEXTGRID );
             }
             SM_SET_FLAG_ON( sTRPHeader->mTRFlag, SDT_TRFLAG_UNSPLIT );
@@ -3546,12 +3473,12 @@ IDE_RC sdtSortModule::copyRowByPtr(smiTempTableHeader * aHeader,
             break;
     }
 
-    /******************************* ë³µì‚¬ ********************************/
+    /******************************* º¹»ç ********************************/
     IDE_TEST( sdtTempRow::append( sWASeg,
                                   sDestGroupID,
                                   aPageType,
                                   0, /* CuttingOffset */
-                                  &sTRPInfo4Insert,
+                                  &sScanInfo4Insert,
                                   aTRInsertResult )
               != IDE_SUCCESS );
 
@@ -3564,17 +3491,17 @@ IDE_RC sdtSortModule::copyRowByPtr(smiTempTableHeader * aHeader,
 
 /**************************************************************************
  * Description :
- * Rowë¥¼ Keyë¡œ ë§Œë“¤ê¸° ìœ„í•´, Rowì˜ ë’¤ìª½ ë¶€ë¶„ì„ ExtraGroupìœ¼ë¡œ ë³µì‚¬í•œë‹¤.
+ * Row¸¦ Key·Î ¸¸µé±â À§ÇØ, RowÀÇ µÚÂÊ ºÎºĞÀ» ExtraGroupÀ¸·Î º¹»çÇÑ´Ù.
  *
  * <IN>
- * aHeader         - ëŒ€ìƒ Table
- * aTRInsertResult - ë³µì‚¬í•œ ê²°ê³¼.
+ * aHeader         - ´ë»ó Table
+ * aTRInsertResult - º¹»çÇÑ °á°ú.
  ***************************************************************************/
 IDE_RC sdtSortModule::copyExtraRow( smiTempTableHeader * aHeader,
-                                    sdtTRPInfo4Insert  * aTRPInfo )
+                                    sdtSortInsertInfo  * aTRPInfo )
 {
-    sdtTRInsertResult  sTRInsertResult;
-    IDE_TEST( sdtTempRow::append( (sdtWASegment*)aHeader->mWASegment,
+    sdtSortInsertResult  sTRInsertResult;
+    IDE_TEST( sdtTempRow::append( (sdtSortSegHdr*)aHeader->mWASegment,
                                   SDT_WAGROUPID_SUBFLUSH,
                                   SDT_TEMP_PAGETYPE_INDEX_EXTRA,
                                   smuProperty::getTempMaxKeySize(),
@@ -3593,26 +3520,26 @@ IDE_RC sdtSortModule::copyExtraRow( smiTempTableHeader * aHeader,
 
 /**************************************************************************
  * Description :
- * runë“¤ì„ ì½ì–´ Heapì„ êµ¬ì¶•í•œë‹¤.
- * ( mergeScanë„ì¤‘ restoreCursor ì—ì„œë„ ì‚¬ìš©í•œë‹¤.)
+ * runµéÀ» ÀĞ¾î HeapÀ» ±¸ÃàÇÑ´Ù.
+ * ( mergeScanµµÁß restoreCursor ¿¡¼­µµ »ç¿ëÇÑ´Ù.)
  *
- * - êµ¬í˜„
+ * - ±¸Çö
  * +-+-+-+-+-+-+-+---+-------+-------+-------+-------+
  * |1|1|2|1|2|3|4|   |   4   |   3   |   2   |   1   |
  * +-+-+-+-+-+-+-+---+-------+-------+-------+-------+
  * <----Slot----->   <-------------Run--------------->
  *
- * Heapì€ ìœ„ì™€ê°™ì´ êµ¬ì„±ëœë‹¤.
+ * HeapÀº À§¿Í°°ÀÌ ±¸¼ºµÈ´Ù.
  *
  * - Slot ( sdtTempMergeRunInfo )
- *   Slotì€ Runë“¤ê°„ ëŒ€ì†Œê´€ê³„ë¥¼ ê°€ì§€ê³  ìˆëŠ” Arrayë¡œ WaMapìœ¼ë¡œ í‘œí˜„ëœë‹¤. ìœ„
- *   ì˜ˆì œì—ì„œ Slotë“¤ì€ ë…¼ë¦¬ì ìœ¼ë¡œ ë‹¤ìŒê³¼ ê°™ì€ ê´€ê³„ë¥¼ ê°€ì§„ë‹¤.
+ *   SlotÀº Runµé°£ ´ë¼Ò°ü°è¸¦ °¡Áö°í ÀÖ´Â Array·Î WaMapÀ¸·Î Ç¥ÇöµÈ´Ù. À§
+ *   ¿¹Á¦¿¡¼­ SlotµéÀº ³í¸®ÀûÀ¸·Î ´ÙÀ½°ú °°Àº °ü°è¸¦ °¡Áø´Ù.
  *      1
  *    1   2
  *   1 2 3 4
  *
  * - Run
- *   Runì€ mMaxRowPageCountë§Œí¼ì˜ Pageê°œìˆ˜ë¡œ êµ¬ì„±ëœë‹¤.
+ *   RunÀº mMaxRowPageCount¸¸Å­ÀÇ Page°³¼ö·Î ±¸¼ºµÈ´Ù.
  ***************************************************************************/
 IDE_RC sdtSortModule::heapInit(smiTempTableHeader * aHeader)
 {
@@ -3623,66 +3550,66 @@ IDE_RC sdtSortModule::heapInit(smiTempTableHeader * aHeader)
     idBool                 sIsEmpty;
     UInt                   sCurLimitRunNo;
     sdtTempMergeRunInfo   sRunInfo;
-    sdtWASegment         * sWASeg = (sdtWASegment*)aHeader->mWASegment;
+    sdtSortSegHdr        * sWASeg = (sdtSortSegHdr*)aHeader->mWASegment;
     UInt                   i;
 
     aHeader->mMergeRunCount = calcMaxMergeRunCount(
         aHeader, aHeader->mMaxRowPageCount );
     IDE_TEST_RAISE( aHeader->mMergeRunCount <= 1, error_invalid_sortareasize );
 
-    /* Queueê¸¸ì´ë³´ë‹¤ ë§ì´ Mergeí•  í•„ìš”ëŠ” ì—†ìŒ */
+    /* Queue±æÀÌº¸´Ù ¸¹ÀÌ MergeÇÒ ÇÊ¿ä´Â ¾øÀ½ */
     aHeader->mMergeRunCount = IDL_MIN( aHeader->mMergeRunCount,
                                        aHeader->mRunQueue.getQueueLength() );
 
-    /* HeapMapì„ êµ¬ì„±í•¨.  */
-    IDE_TEST( sdtWAMap::create( sWASeg,
-                                SDT_WAGROUPID_SORT,
-                                SDT_WM_TYPE_RUNINFO,
-                                aHeader->mMergeRunCount*3 + 2 , /*count*/
-                                1, /* aVersionCount */
-                                (void*)&sWASeg->mSortHashMapHdr )
+    /* HeapMapÀ» ±¸¼ºÇÔ.  */
+    IDE_TEST( sdtWASortMap::create( sWASeg,
+                                    SDT_WAGROUPID_SORT,
+                                    SDT_WM_TYPE_RUNINFO,
+                                    aHeader->mMergeRunCount*3 + 2 , /*count*/
+                                    1, /* aVersionCount */
+                                    &sWASeg->mSortMapHdr )
               != IDE_SUCCESS );
 
-    /* Slotë“¤ì„ ì¼ë‹¨ NULL RunNoë¡œ ì´ˆê¸°í™”ì‹œí‚´ */
-    for( i = 0 ; i < aHeader->mMergeRunCount*3 + 2; i ++ )
+    /* SlotµéÀ» ÀÏ´Ü NULL RunNo·Î ÃÊ±âÈ­½ÃÅ´ */
+    for( i = 0 ; i < aHeader->mMergeRunCount*3 + 2; i++ )
     {
         sRunInfo.mRunNo  = SDT_TEMP_RUNINFO_NULL;
         sRunInfo.mPIDSeq = 0;
         sRunInfo.mSlotNo = 0;
 
-        IDE_TEST( sdtWAMap::set( &sWASeg->mSortHashMapHdr,
-                                 i,
-                                 (void*)&sRunInfo )
+        IDE_TEST( sdtWASortMap::set( &sWASeg->mSortMapHdr,
+                                     i,
+                                     (void*)&sRunInfo )
                   != IDE_SUCCESS );
     }
 
-    if( aHeader->mMergeRunCount == 0 )
+    if ( aHeader->mMergeRunCount == 0 )
     {
         aHeader->mMergeRunSize = 1;
     }
     else
     {
-        /* Run í•˜ë‚˜ì˜ í¬ê¸°ë¥¼ ê³„ì‚°í•¨ */
+        /* Run ÇÏ³ªÀÇ Å©±â¸¦ °è»êÇÔ */
         aHeader->mMergeRunSize =
-            sdtWASegment::getAllocableWAGroupPageCount( sWASeg,
-                                                        SDT_WAGROUPID_SORT )
+            sdtSortSegment::getAllocableWAGroupPageCount( sWASeg,
+                                                          SDT_WAGROUPID_SORT )
             / aHeader->mMergeRunCount;
 
-        /* ê°€ì¥ ì™¼ìª½ì˜ Runì´  ê°€ì¥ ì˜¤ë¥¸ìª½ì˜ MapSlotê³¼ ë§Œë‚˜ë©´ ì•ˆë¨ */
+        /* °¡Àå ¿ŞÂÊÀÇ RunÀÌ  °¡Àå ¿À¸¥ÂÊÀÇ MapSlot°ú ¸¸³ª¸é ¾ÈµÊ */
         IDE_ERROR( getWPIDFromRunInfo( aHeader,
                                        aHeader->mMergeRunCount - 1,
                                        aHeader->mMergeRunSize - 1 )
-                   > sdtWAMap::getEndWPID( &sWASeg->mSortHashMapHdr ) -1 );
+                   > sdtWASortMap::getEndWPID( &sWASeg->mSortMapHdr ) -1 );
 
-        /* LeftPosëŠ” ë™ì¼í•œ ë†’ì´ì˜ í•œ Lineì—ì„œ ê°€ì¥ ì™¼ìª½ Slotì˜ ìœ„ì¹˜ì´ë‹¤.
-         * ì˜ˆ)        1
+        /* LeftPos´Â µ¿ÀÏÇÑ ³ôÀÌÀÇ ÇÑ Line¿¡¼­ °¡Àå ¿ŞÂÊ SlotÀÇ À§Ä¡ÀÌ´Ù.
+         * ¿¹)        1
          *      2           3
          *   4     5     6     7
          *  8  9 10 11 12 13 14 15
-         * ì—¬ê¸°ì„œ LetPosê°€ ë  ìˆ˜ ìˆëŠ” ê°’ì´ 1,2,4,8ì´ë‹¤.
-         * ê·¸ë¦¬ê³  ì´ ê°’ì€ ë™ì‹œì— í•´ë‹¹ Lineì˜ í¬ê¸°ì´ë‹¤. ìœ„ì—ì„œ ì„¸ë²ˆì§¸ 4ì—ëŠ”
-         * 4,5,6,7 ë„¤ê°œì˜ Slotì´ ìˆê³ , ë„¤ë²ˆì§¸ 8ì—ëŠ” 8ê°œì˜ Slotì´ ìˆë‹¤.
-         * ë”°ë¼ì„œ sLeftPosê°€ MergeRunCountë¥¼ ë„˜ëŠ” ìˆœê°„ì´ ë°”ë‹¥ì´ë‹¤.*/
+         * ¿©±â¼­ LetPos°¡ µÉ ¼ö ÀÖ´Â °ªÀÌ 1,2,4,8ÀÌ´Ù.
+         * ±×¸®°í ÀÌ °ªÀº µ¿½Ã¿¡ ÇØ´ç LineÀÇ Å©±âÀÌ´Ù. À§¿¡¼­ ¼¼¹øÂ° 4¿¡´Â
+         * 4,5,6,7 ³×°³ÀÇ SlotÀÌ ÀÖ°í, ³×¹øÂ° 8¿¡´Â 8°³ÀÇ SlotÀÌ ÀÖ´Ù.
+         * µû¶ó¼­ sLeftPos°¡ MergeRunCount¸¦ ³Ñ´Â ¼ø°£ÀÌ ¹Ù´ÚÀÌ´Ù.*/
         for( sLeftPos = 1 ;
              sLeftPos < aHeader->mMergeRunCount;
              sLeftPos *= 2 )
@@ -3691,9 +3618,9 @@ IDE_RC sdtSortModule::heapInit(smiTempTableHeader * aHeader)
         }
         aHeader->mLeftBottomPos = sLeftPos;
 
-        /* ê°€ì¥ ë°‘ë°”ë‹¥ì— ëŒ€í•œ ì„¤ì •ì„ í•´ì¤Œ */
+        /* °¡Àå ¹Ø¹Ù´Ú¿¡ ´ëÇÑ ¼³Á¤À» ÇØÁÜ */
         sCurLimitRunNo = IDL_MIN( sLeftPos, aHeader->mMergeRunCount );
-        for( sRunNo = 0 ; sRunNo < sCurLimitRunNo ; sRunNo ++ )
+        for( sRunNo = 0 ; sRunNo < sCurLimitRunNo ; sRunNo++ )
         {
             IDE_TEST( aHeader->mRunQueue.dequeue( ID_FALSE, /* a_bLock */
                                                   (void*)&sNextNPID,
@@ -3701,9 +3628,9 @@ IDE_RC sdtSortModule::heapInit(smiTempTableHeader * aHeader)
                       != IDE_SUCCESS );
             IDE_ERROR( sIsEmpty == ID_FALSE );
 
-            /* Runì˜ ë‚´ìš©ì„ Pageì— Loading */
+            /* RunÀÇ ³»¿ëÀ» Page¿¡ Loading */
             sPageSeq = aHeader->mMergeRunSize;
-            while( sPageSeq -- )
+            while( sPageSeq-- )
             {
                 IDE_TEST( readRunPage( aHeader,
                                        sRunNo,
@@ -3712,9 +3639,9 @@ IDE_RC sdtSortModule::heapInit(smiTempTableHeader * aHeader)
                                        ID_FALSE ) /*aReadNextNPID*/
                           != IDE_SUCCESS );
 
-                if( sNextNPID == SD_NULL_PID )
+                if ( sNextNPID == SD_NULL_PID )
                 {
-                    /* í•´ë‹¹ run ì— ë‹¤ìŒ Rowê°€ ì—†ìŒ */
+                    /* ÇØ´ç run ¿¡ ´ÙÀ½ Row°¡ ¾øÀ½ */
                     break;
                 }
                 else
@@ -3723,21 +3650,21 @@ IDE_RC sdtSortModule::heapInit(smiTempTableHeader * aHeader)
                 }
             }
 
-            /* Bottomì— Runì •ë³´ ì„¤ì • */
+            /* Bottom¿¡ RunÁ¤º¸ ¼³Á¤ */
             sRunInfo.mRunNo  = sRunNo;
             sRunInfo.mPIDSeq = aHeader->mMergeRunSize - 1;
             sRunInfo.mSlotNo = 0;
-            IDE_TEST( sdtWAMap::set( &sWASeg->mSortHashMapHdr,
-                                     aHeader->mLeftBottomPos + sRunNo,
-                                     (void*)&sRunInfo )
+            IDE_TEST( sdtWASortMap::set( &sWASeg->mSortMapHdr,
+                                         aHeader->mLeftBottomPos + sRunNo,
+                                         (void*)&sRunInfo )
                       != IDE_SUCCESS );
         }
 
         IDE_TEST( buildLooserTree( aHeader ) != IDE_SUCCESS );
     }
 
-    /* Mergeí•œë‹¨ê³„ í• ë•Œë§ˆë‹¤ IOPassê°€ ì¦ê°€í•¨ */
-    aHeader->mStatsPtr->mIOPassNo ++;
+    /* MergeÇÑ´Ü°è ÇÒ¶§¸¶´Ù IOPass°¡ Áõ°¡ÇÔ */
+    aHeader->mStatsPtr->mIOPassNo++;
 
     return IDE_SUCCESS;
 
@@ -3752,7 +3679,7 @@ IDE_RC sdtSortModule::heapInit(smiTempTableHeader * aHeader)
 
 /**************************************************************************
  * Description :
- * Runì„ Childë¶€í„° ì½ì–´ ë¹„êµí•˜ë©°, LooserTreeë¥¼ êµ¬ì„±í•œë‹¤
+ * RunÀ» ChildºÎÅÍ ÀĞ¾î ºñ±³ÇÏ¸ç, LooserTree¸¦ ±¸¼ºÇÑ´Ù
  ***************************************************************************/
 IDE_RC sdtSortModule::buildLooserTree(smiTempTableHeader * aHeader)
 {
@@ -3763,12 +3690,12 @@ IDE_RC sdtSortModule::buildLooserTree(smiTempTableHeader * aHeader)
 
     sLeftPos = aHeader->mLeftBottomPos / 2;
 
-    /* ì•„ë˜ì—ì„œë¶€í„° ì˜¬ë¼ì˜¤ë©´ì„œ ì„¤ì •í•´ì¤Œ. */
+    /* ¾Æ·¡¿¡¼­ºÎÅÍ ¿Ã¶ó¿À¸é¼­ ¼³Á¤ÇØÁÜ. */
     while( sLeftPos > 0 )
     {
         for( sRunNo = 0 ;
              sRunNo < sLeftPos ;
-             sRunNo ++ )
+             sRunNo++ )
         {
             IDE_TEST( findAndSetLoserSlot( aHeader,
                                            sLeftPos + sRunNo,
@@ -3787,23 +3714,23 @@ IDE_RC sdtSortModule::buildLooserTree(smiTempTableHeader * aHeader)
 
 /**************************************************************************
  * Description :
- * heapì—ì„œ ìµœìƒë‹¨ì˜ Row, ì¦‰ LooserRowë¥¼ ì œê±°í•œë‹¤.
+ * heap¿¡¼­ ÃÖ»ó´ÜÀÇ Row, Áï LooserRow¸¦ Á¦°ÅÇÑ´Ù.
  ***************************************************************************/
 IDE_RC sdtSortModule::heapPop(smiTempTableHeader * aHeader )
 {
-    sdtWASegment         * sWASeg = (sdtWASegment*)aHeader->mWASegment;
+    sdtSortSegHdr        * sWASeg = (sdtSortSegHdr*)aHeader->mWASegment;
     sdtTempMergeRunInfo   sTopRunInfo;
     UInt                   sPos;
 
-    /* Heapì˜ Top Slotì„ ë½‘ì•„ëƒ„ */
-    IDE_TEST( sdtWAMap::get( &sWASeg->mSortHashMapHdr,
-                             1,  /* aIdx */
-                             (void*)&sTopRunInfo )
+    /* HeapÀÇ Top SlotÀ» »Ì¾Æ³¿ */
+    IDE_TEST( sdtWASortMap::get( &sWASeg->mSortMapHdr,
+                                 1,  /* aIdx */
+                                 (void*)&sTopRunInfo )
               != IDE_SUCCESS );
 
     IDE_ERROR( sTopRunInfo.mRunNo != SDT_TEMP_RUNINFO_NULL );
 
-    /* ì•„ë˜ì—ì„œë¶€í„° Topìœ¼ë¡œ ê°€ì¥ ì‘ì€ Rowë¥¼ ì°¾ì•„ ì˜¬ë¦°ë‹¤. */
+    /* ¾Æ·¡¿¡¼­ºÎÅÍ TopÀ¸·Î °¡Àå ÀÛÀº Row¸¦ Ã£¾Æ ¿Ã¸°´Ù. */
     sPos = aHeader->mLeftBottomPos + sTopRunInfo.mRunNo;
     do
     {
@@ -3824,13 +3751,13 @@ IDE_RC sdtSortModule::heapPop(smiTempTableHeader * aHeader )
 
 /**************************************************************************
  * Description :
- * Runì—ì„œ ë‹¤ìŒ Rowë¥¼ ì½ëŠ”ë‹¤.
+ * Run¿¡¼­ ´ÙÀ½ Row¸¦ ÀĞ´Â´Ù.
  ***************************************************************************/
 IDE_RC sdtSortModule::readNextRowByRun( smiTempTableHeader   * aHeader,
                                         sdtTempMergeRunInfo * aRun )
 {
-    sdtWASegment         * sWASeg = (sdtWASegment*)aHeader->mWASegment;
-    sdtTRPHeader         * sTRPHeader;
+    sdtSortSegHdr        * sWASeg = (sdtSortSegHdr*)aHeader->mWASegment;
+    sdtSortTRPHdr        * sTRPHeader;
     scGRID                 sGRID;
     scPageID               sNPID;
     scPageID               sWPID;
@@ -3838,7 +3765,8 @@ IDE_RC sdtSortModule::readNextRowByRun( smiTempTableHeader   * aHeader,
     sdtTempMergeRunInfo   sCurRunInfo;
     UChar                * sPtr = NULL;
     idBool                 sIsValidSlot = ID_FALSE;
-
+    UChar                * sWAPagePtr = NULL;
+    UInt                   sSlotCount;
     /* Head
      * +---+    +---+
      * | A |    | C |
@@ -3847,59 +3775,72 @@ IDE_RC sdtSortModule::readNextRowByRun( smiTempTableHeader   * aHeader,
      * +---+    +   |
      * | C`|    |   |
      * +---+    +---+
-     * (`ëŠ” Chainëœ NextPageì„ì„ ì˜ë¯¸. ì¦‰ C -> C` ì´ë ‡ê²Œ ë˜ê³  Cê°€ First)
+     * (`´Â ChainµÈ NextPageÀÓÀ» ÀÇ¹Ì. Áï C -> C` ÀÌ·¸°Ô µÇ°í C°¡ First)
      *
-     * Aë¶€í„° íƒìƒ‰ì„ ì‹œì‘í•˜ë©°, NextSlotì„ í–¥í• ë•Œ ì°¾ì•„ì•¼í•  ë‹¤ìŒ Rowì˜ ê¼¬ë¦¬
-     * ë¶€í„° ì°¾ì•„ê°€ê²Œ ëœë‹¤. ë”°ë¼ì„œ FirstRowë¥¼ ì°¾ëŠ” ìˆœê°„ íƒìƒ‰ì„ ì¢…ë£Œí•˜ë©´
-     * ëœë‹¤. */
+     * AºÎÅÍ Å½»öÀ» ½ÃÀÛÇÏ¸ç, NextSlotÀ» ÇâÇÒ¶§ Ã£¾Æ¾ßÇÒ ´ÙÀ½ RowÀÇ ²¿¸®
+     * ºÎÅÍ Ã£¾Æ°¡°Ô µÈ´Ù. µû¶ó¼­ FirstRow¸¦ Ã£´Â ¼ø°£ Å½»öÀ» Á¾·áÇÏ¸é
+     * µÈ´Ù. */
     sCurRunInfo = *aRun;
 
-    /* FirstRowPieceë¥¼ ì°¾ì„ë•Œê¹Œì§€, ì¦‰ ë‹¤ìŒ Rowë¥¼ ì½ì„ë•Œê¹Œì§€ ì½ëŠ”ë‹¤. */
+    /* FirstRowPiece¸¦ Ã£À»¶§±îÁö, Áï ´ÙÀ½ Row¸¦ ÀĞÀ»¶§±îÁö ÀĞ´Â´Ù. */
     while ( 1 )
     {
-        sCurRunInfo.mSlotNo ++;
-        if( sCurRunInfo.mRunNo == SDT_TEMP_RUNINFO_NULL )
+        sCurRunInfo.mSlotNo++;
+        if ( sCurRunInfo.mRunNo == SDT_TEMP_RUNINFO_NULL )
         {
             break;
-            /* ë‹¤ ë½‘ì•„ëƒ„ */
+            /* ´Ù »Ì¾Æ³¿ */
         }
 
         getGRIDFromRunInfo( aHeader, &sCurRunInfo, &sGRID );
-        IDE_TEST( sdtWASegment::getPagePtrByGRID( (sdtWASegment*)
-                                                  aHeader->mWASegment,
-                                                  SDT_WAGROUPID_NONE,
-                                                  sGRID,
-                                                  &sPtr,
-                                                  &sIsValidSlot )
+
+        sWAPagePtr = NULL;
+        sWPID      = SC_NULL_PID;
+
+        IDE_TEST( sdtSortSegment::getPage( (sdtSortSegHdr*)
+                                           aHeader->mWASegment,
+                                           SDT_WAGROUPID_NONE,
+                                           sGRID,
+                                           &sWPID,
+                                           &sWAPagePtr )
                   != IDE_SUCCESS );
-        if( sIsValidSlot == ID_FALSE )
+
+        sSlotCount = sdtTempPage::getSlotCount(sWAPagePtr);
+
+        sdtSortSegment::getSlot( sWAPagePtr,
+                                 sSlotCount,
+                                 SC_MAKE_OFFSET( sGRID ),
+                                 &sPtr,
+                                 &sIsValidSlot );
+
+        if ( sIsValidSlot == ID_FALSE )
         {
-            /* Pageë‚´ Slotì„ ì „ë¶€ ìˆœíšŒí•¨. ë‹¤ìŒ í˜ì´ì§€ë¥¼ ê°€ì ¸ì˜´. */
+            /* Page³» SlotÀ» ÀüºÎ ¼øÈ¸ÇÔ. ´ÙÀ½ ÆäÀÌÁö¸¦ °¡Á®¿È. */
             sNPID = sdtTempPage::getNextPID( sPtr );
 
-            /* ë‚˜ì¤‘ì— Freeí•˜ë¼ê³  í‘œì‹œí•´ë‘ . ë°”ë¡œ í‘œì‹œ í–ˆë‹¤ê°€ëŠ”,
-             * ìœ„ ê·¸ë¦¼ì—ì„œ Row Cë¥¼ ì½ì„ë•Œ C`ë¥¼ ê°€ì§„ í˜ì´ì§€ê°€ ì—†ì„ ìˆ˜ ìˆìŒ*/
+            /* ³ªÁß¿¡ FreeÇÏ¶ó°í Ç¥½ÃÇØµÒ. ¹Ù·Î Ç¥½Ã Çß´Ù°¡´Â,
+             * À§ ±×¸²¿¡¼­ Row C¸¦ ÀĞÀ»¶§ C`¸¦ °¡Áø ÆäÀÌÁö°¡ ¾øÀ» ¼ö ÀÖÀ½*/
             sWPID = getWPIDFromRunInfo( aHeader,
                                         sCurRunInfo.mRunNo,
                                         sCurRunInfo.mPIDSeq );
-            sdtWASegment::bookedFree( sWASeg, sWPID );
+            sdtSortSegment::bookedFree( sWASeg, sWPID );
 
-            if( sNPID == SD_NULL_PID )
+            if ( sNPID == SD_NULL_PID )
             {
-                /*ë‹¤ìŒ Rowë¥¼ ë°œê²¬í•˜ì§€ ëª»í•˜ë˜ ìƒí™©ì—ì„œ, ì¢…ë£Œë¨ */
+                /*´ÙÀ½ Row¸¦ ¹ß°ßÇÏÁö ¸øÇÏ´ø »óÈ²¿¡¼­, Á¾·áµÊ */
                 aRun->mRunNo = SDT_TEMP_RUNINFO_NULL;
                 break;
             }
             else
             {
-                /* ë¬´í•œ Loopë¥¼ ë„ëŠ”ê±´ ì•„ë‹Œì§€ ê²€ì‚¬í•œë‹¤.
-                 * UShortMaxì˜ í¬ê¸°ë©´, 65536*8192 = 512MBë¡œ ì´ì •ë„ í¬ê¸°ì˜
-                 * RowëŠ” ì—†ë‹¤. */
-                sReadPIDCount ++;
+                /* ¹«ÇÑ Loop¸¦ µµ´Â°Ç ¾Æ´ÑÁö °Ë»çÇÑ´Ù.
+                 * UShortMaxÀÇ Å©±â¸é, 65536*8192 = 512MB·Î ÀÌÁ¤µµ Å©±âÀÇ
+                 * Row´Â ¾ø´Ù. */
+                sReadPIDCount++;
                 IDE_ERROR( sReadPIDCount < ID_USHORT_MAX );
 
-                /* ë‹¤ìŒ í˜ì´ì§€ë¡œ */
-                sCurRunInfo.mPIDSeq ++;
+                /* ´ÙÀ½ ÆäÀÌÁö·Î */
+                sCurRunInfo.mPIDSeq++;
                 sCurRunInfo.mSlotNo = -1;
 
                 IDE_TEST( readRunPage( aHeader,
@@ -3913,7 +3854,7 @@ IDE_RC sdtSortModule::readNextRowByRun( smiTempTableHeader   * aHeader,
         }
         else
         {
-            sTRPHeader = (sdtTRPHeader*)sPtr;
+            sTRPHeader = (sdtSortTRPHdr*)sPtr;
             if ( SM_IS_FLAG_ON( sTRPHeader->mTRFlag , SDT_TRFLAG_HEAD ) )
             {
                 *aRun = sCurRunInfo;
@@ -3931,16 +3872,16 @@ IDE_RC sdtSortModule::readNextRowByRun( smiTempTableHeader   * aHeader,
 
 /**************************************************************************
  * Description :
- * Runì—ì„œ ë‹¤ìŒ Rowë¥¼ ì½ê¸° ìœ„í•´, Runì˜ ë‹¤ìŒ Pageë¥¼ ìœ íš¨í•œ
- * ì¥ì†Œì— ì˜¬ë¦°ë‹¤.
+ * Run¿¡¼­ ´ÙÀ½ Row¸¦ ÀĞ±â À§ÇØ, RunÀÇ ´ÙÀ½ Page¸¦ À¯È¿ÇÑ
+ * Àå¼Ò¿¡ ¿Ã¸°´Ù.
  *
  * <IN>
- * aHeader        - ëŒ€ìƒ Table
- * aRunNo         - ëŒ€ìƒ Runì˜ ë²ˆí˜¸
- * aPageSeq       - Runë‚´ì—ì„œ ëª‡ë²ˆì§¸ Pageì¸ê°€.
+ * aHeader        - ´ë»ó Table
+ * aRunNo         - ´ë»ó RunÀÇ ¹øÈ£
+ * aPageSeq       - Run³»¿¡¼­ ¸î¹øÂ° PageÀÎ°¡.
  * <IN/OUT>
- * aNextPID       - ì½ì„ ë‹¤ìŒ PID. ê·¸ë¦¬ê³  ë‹¤ì‹œ ë‹¤ìŒ PIDë¥¼ ë°˜í™˜í•¨
- * aReadNextNPID  - NextPIDë¥¼ ì½ì–´ì•¼ í•˜ë‚˜? (Falseë©´ PrevPIDë¥¼ ì½ìŒ )
+ * aNextPID       - ÀĞÀ» ´ÙÀ½ PID. ±×¸®°í ´Ù½Ã ´ÙÀ½ PID¸¦ ¹İÈ¯ÇÔ
+ * aReadNextNPID  - NextPID¸¦ ÀĞ¾î¾ß ÇÏ³ª? (False¸é PrevPID¸¦ ÀĞÀ½ )
  ***************************************************************************/
 IDE_RC sdtSortModule::readRunPage( smiTempTableHeader   * aHeader,
                                    UInt                   aRunNo,
@@ -3948,51 +3889,59 @@ IDE_RC sdtSortModule::readRunPage( smiTempTableHeader   * aHeader,
                                    scPageID             * aNextPID,
                                    idBool                 aReadNextNPID )
 {
-    scPageID       sOrgPID;
     UChar        * sWAPagePtr;
     scPageID       sRunNPID;
     scPageID       sWPID;
-    sdtWASegment * sWASeg = (sdtWASegment*)aHeader->mWASegment;
+    sdtSortSegHdr* sWASeg = (sdtSortSegHdr*)aHeader->mWASegment;
+    sdtWCB       * sWCBPtr;
+    sdtWCB       * sOldWCB;
 
     sRunNPID = *aNextPID;
-    if( sRunNPID != SD_NULL_PID )
+    if ( sRunNPID != SD_NULL_PID )
     {
-        sWPID    = getWPIDFromRunInfo( aHeader, aRunNo, aPageSeq );
+        sWPID = getWPIDFromRunInfo( aHeader, aRunNo, aPageSeq );
 
-        /* ì´ë¯¸ í•´ë‹¹ í˜ì´ì§€ê°€ Loading ë¼ì–´ ìˆëŠ” ê²½ìš°ëŠ” ì œì™¸í•œë‹¤.
-         * ì´ì „ì— ì½ì€ Pageì˜ Rowê°€ Chainingë¼ì–´ ìˆìœ¼ë©´, ì´ë¯¸ ê°™ì€ í˜ì´ì§€ê°€
-         * ì½ì–´ì ¸ ìˆì—ˆì„ ìˆ˜ë„ ìˆë‹¤. */
-        sOrgPID = sdtWASegment::getNPID( sWASeg, sWPID );
-        if( sOrgPID != sRunNPID )
+        /* ÀÌ¹Ì ÇØ´ç ÆäÀÌÁö°¡ Loading µÅ¾î ÀÖ´Â °æ¿ì´Â Á¦¿ÜÇÑ´Ù.
+         * ÀÌÀü¿¡ ÀĞÀº PageÀÇ Row°¡ ChainingµÅ¾î ÀÖÀ¸¸é, ÀÌ¹Ì °°Àº ÆäÀÌÁö°¡
+         * ÀĞ¾îÁ® ÀÖ¾úÀ» ¼öµµ ÀÖ´Ù. */
+        sWCBPtr = sdtSortSegment::getWCBWithLnk( sWASeg, sWPID );
+        sOldWCB = sdtSortSegment::findWCB( sWASeg, sRunNPID );
+
+        if ( sWCBPtr != sOldWCB )
         {
-            if( sOrgPID != SC_NULL_PID )
+            // sOldWCB°¡ nullÀÌ°Å³ª,
+            // sWCBPtr->mNPage != sRunNPID ÀÌ°Å³ª
+            if ( sdtSortSegment::getNPID( sWCBPtr ) != SC_NULL_PID )
             {
-                IDE_TEST( sdtWASegment::makeInitPage( sWASeg,
-                                                      sWPID,
-                                                      ID_TRUE ) /*Flush */
+                IDE_TEST( sdtSortSegment::makeInitPage( sWASeg,
+                                                        sWCBPtr,
+                                                        ID_TRUE ) /*Flush */
                           != IDE_SUCCESS );
             }
-            IDE_TEST( sdtWASegment::readNPage( sWASeg,
-                                               SDT_WAGROUPID_SORT,
-                                               sWPID,
-                                               aHeader->mSpaceID,
-                                               sRunNPID )
+            else
+            {
+                IDE_TEST( sdtSortSegment::chkAndSetWAPagePtr( sWASeg,
+                                                              sWCBPtr ) != IDE_SUCCESS );
+            }
+
+            IDE_TEST( sdtSortSegment::readNPage( sWASeg,
+                                                 SDT_WAGROUPID_SORT,
+                                                 sWCBPtr,
+                                                 sRunNPID )
                       != IDE_SUCCESS );
         }
 
-        sWAPagePtr = sdtWASegment::getWAPagePtr( sWASeg,
-                                                 SDT_WAGROUPID_SORT,
-                                                 sWPID );
+        sWAPagePtr = sdtSortSegment::getWAPagePtr( sWCBPtr );
 
-        // BUG-46383 Disk Sort Tempì—ì„œ moveNPageê°€ skipë˜ëŠ” ê²½ìš°ê°€ ìˆìŠµë‹ˆë‹¤.
-        // ì¦‰ readNPageì—ì„œ NPIDë¥¼ WPID ì— ì˜®ë†“ì§€ ëª»í•˜ëŠ” ê²½ìš°ê°€ ìˆìŒ.
-        // ì œëŒ€ë¡œ ì½ì–´ ì™”ëŠ”ì§€ í™•ì¸í•´ì•¼ í•¨.
-        IDE_ERROR( sdtTempPage::getPID( sWAPagePtr ) == sRunNPID );
+        // BUG-46383 Disk Sort Temp¿¡¼­ moveWAPage°¡ skipµÇ´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù.
+        // Áï readNPage¿¡¼­ NPID¸¦ WPID ¿¡ ¿Å³õÁö ¸øÇÏ´Â °æ¿ì°¡ ÀÖÀ½.
+        // Á¦´ë·Î ÀĞ¾î ¿Ô´ÂÁö È®ÀÎÇØ¾ß ÇÔ.
+        IDE_ERROR( sdtTempPage::getSelfPID( sWAPagePtr ) == sRunNPID );
 
-        /* ë‹¤ìŒì— ì½ì„ Pageë¥¼ ì½ì€ë‹¤. ë‹¤ë§Œ Pageì—ê²Œ ìˆì–´,
-         * NextPID ë§í¬ë¥¼ ë”°ë¼ê°ˆì§€, PrevPID ë§í¬ë¥¼ ë”°ë¼ê°ˆì§€ëŠ”
-         * ë‹¤ìŒ Booleanì— ë”°ë¼ ê²°ì •ëœë‹¤. */
-        if( aReadNextNPID == ID_TRUE )
+        /* ´ÙÀ½¿¡ ÀĞÀ» Page¸¦ ÀĞÀº´Ù. ´Ù¸¸ Page¿¡°Ô ÀÖ¾î,
+         * NextPID ¸µÅ©¸¦ µû¶ó°¥Áö, PrevPID ¸µÅ©¸¦ µû¶ó°¥Áö´Â
+         * ´ÙÀ½ Boolean¿¡ µû¶ó °áÁ¤µÈ´Ù. */
+        if ( aReadNextNPID == ID_TRUE )
         {
             *aNextPID = sdtTempPage::getNextPID( sWAPagePtr );
         }
@@ -4013,12 +3962,12 @@ IDE_RC sdtSortModule::readRunPage( smiTempTableHeader   * aHeader,
 
 /**************************************************************************
  * Description :
- * MergeCursorë¥¼ ë§Œë“ ë‹¤.
+ * MergeCursor¸¦ ¸¸µç´Ù.
  *
  * +------+------+------+------+------+
  * | Size |0 PID |0 Slot|1 PID |1 Slot|
  * +------+------+------+------+------+
- * MergeRunì€ ìœ„ì™€ê°™ì€ ëª¨ì–‘ì˜ Arrayë¡œ, MergeRunCount * 2 + 1 ê°œë¡œ êµ¬ì„±ëœë‹¤.
+ * MergeRunÀº À§¿Í°°Àº ¸ğ¾çÀÇ Array·Î, MergeRunCount * 2 + 1 °³·Î ±¸¼ºµÈ´Ù.
  ***************************************************************************/
 IDE_RC sdtSortModule::makeMergePosition( smiTempTableHeader  * aHeader,
                                          void               ** aMergePos )
@@ -4026,7 +3975,7 @@ IDE_RC sdtSortModule::makeMergePosition( smiTempTableHeader  * aHeader,
     sdtTempMergeRunInfo    sRunInfo;
     sdtTempMergePos      * sMergePos = (sdtTempMergePos*)*aMergePos;
     scPageID                sWPID;
-    sdtWASegment          * sWASeg = (sdtWASegment*)aHeader->mWASegment;
+    sdtSortSegHdr         * sWASeg = (sdtSortSegHdr*)aHeader->mWASegment;
     UInt                    i;
     UInt                    sState = 0;
     ULong                   sSize  = 0;
@@ -4038,7 +3987,8 @@ IDE_RC sdtSortModule::makeMergePosition( smiTempTableHeader  * aHeader,
     {
         sSize  = ID_SIZEOF( sdtTempMergePos ) * SDT_TEMP_MERGEPOS_SIZE(aHeader->mMergeRunCount );
 
-        /* sdtSortModule_makeMergePosition_malloc_MergePos.tc */
+        /* TC/FIT/Server/sm/Project/PROJ-2458/Memory/sdt/
+         * sdtSortModule_makeMergePosition_malloc_MergePos.tc */
         IDU_FIT_POINT_RAISE("sdtSortModule::makeMergePosition::malloc::MergePos",
                             insufficient_memory);
         IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_TEMP,
@@ -4053,26 +4003,26 @@ IDE_RC sdtSortModule::makeMergePosition( smiTempTableHeader  * aHeader,
         /* nothing to do */
     }
 
-    for( i = 0 ; i < aHeader->mMergeRunCount ; i ++ )
+    for( i = 0 ; i < aHeader->mMergeRunCount ; i++ )
     {
-        IDE_TEST( sdtWAMap::get( &sWASeg->mSortHashMapHdr,
-                                 aHeader->mLeftBottomPos + i,
-                                 (void*)&sRunInfo )
+        IDE_TEST( sdtWASortMap::get( &sWASeg->mSortMapHdr,
+                                     aHeader->mLeftBottomPos + i,
+                                     (void*)&sRunInfo )
                   != IDE_SUCCESS );
 
         sWPID = getWPIDFromRunInfo( aHeader,
                                     sRunInfo.mRunNo,
                                     sRunInfo.mPIDSeq );
-        if( sWPID != SC_NULL_PID )
+        if ( sWPID != SC_NULL_PID )
         {
             sMergePos[ SDT_TEMP_MERGEPOS_PIDIDX(i) ] =
-                sdtWASegment::getNPID( sWASeg, sWPID );
+                sdtSortSegment::getNPID( sWASeg, sWPID );
             sMergePos[ SDT_TEMP_MERGEPOS_SLOTIDX(i) ] =
                 sRunInfo.mSlotNo;
         }
         else
         {
-            /* Runì´ ë¹„ì–´ìˆìŒ */
+            /* RunÀÌ ºñ¾îÀÖÀ½ */
             sMergePos[ SDT_TEMP_MERGEPOS_PIDIDX(i) ] = SC_NULL_PID;
             sMergePos[ SDT_TEMP_MERGEPOS_SLOTIDX(i) ] = SC_NULL_PID;
         }
@@ -4106,9 +4056,9 @@ IDE_RC sdtSortModule::makeMergePosition( smiTempTableHeader  * aHeader,
 
 /**************************************************************************
  * Description :
- * MergeCursorë¥¼ ë§Œë“ ë‹¤.
+ * MergeCursor¸¦ ¸¸µç´Ù.
  *
- * MergePositionìœ¼ë¡œ MergeRunë“¤ì„ ë§Œë“ ë‹¤.
+ * MergePositionÀ¸·Î MergeRunµéÀ» ¸¸µç´Ù.
  ***************************************************************************/
 IDE_RC sdtSortModule::makeMergeRuns( smiTempTableHeader  * aHeader,
                                      void                * aMergePosition )
@@ -4116,7 +4066,7 @@ IDE_RC sdtSortModule::makeMergeRuns( smiTempTableHeader  * aHeader,
     sdtTempMergeRunInfo   sRunInfo;
     sdtTempMergePos     * sMergePos;
     scPageID               sWPID;
-    sdtWASegment         * sWASeg = (sdtWASegment*)aHeader->mWASegment;
+    sdtSortSegHdr        * sWASeg = (sdtSortSegHdr*)aHeader->mWASegment;
     scPageID               sPageSeq;
     scPageID               sNPID;
     UInt                   sSlotIdx;
@@ -4129,13 +4079,13 @@ IDE_RC sdtSortModule::makeMergeRuns( smiTempTableHeader  * aHeader,
                == aHeader->mMergeRunCount );
     IDE_ERROR( aHeader->mMergeRunSize > 0 );
 
-    /* Runê°œìˆ˜ ë§Œí¼ ìˆœíšŒ */
-    for( i = 0 ; i < sMergePos[ SDT_TEMP_MERGEPOS_SIZEIDX ] ; i ++ )
+    /* Run°³¼ö ¸¸Å­ ¼øÈ¸ */
+    for( i = 0 ; i < sMergePos[ SDT_TEMP_MERGEPOS_SIZEIDX ] ; i++ )
     {
         sNPID    = sMergePos[ SDT_TEMP_MERGEPOS_PIDIDX( i ) ];
         sSlotIdx = sMergePos[ SDT_TEMP_MERGEPOS_SLOTIDX(i) ];
 
-        if( sNPID == SC_NULL_PID )
+        if ( sNPID == SC_NULL_PID )
         {
             sRunInfo.mRunNo  = SDT_TEMP_RUNINFO_NULL;
             sRunInfo.mPIDSeq = 0;
@@ -4143,34 +4093,34 @@ IDE_RC sdtSortModule::makeMergeRuns( smiTempTableHeader  * aHeader,
         }
         else
         {
-            /* ì´ë²ˆ Runì—ì„œ ì½ì–´ì•¼í•  í˜ì´ì§€ê°€ Loadë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤ */
-            for( j = 0 ; j < aHeader->mMergeRunSize ; j ++ )
+            /* ÀÌ¹ø Run¿¡¼­ ÀĞ¾î¾ßÇÒ ÆäÀÌÁö°¡ LoadµÇ¾î ÀÖ´ÂÁö È®ÀÎÇÑ´Ù */
+            for( j = 0 ; j < aHeader->mMergeRunSize ; j++ )
             {
                 sWPID = getWPIDFromRunInfo( aHeader, i, j );
-                if( sNPID == sdtWASegment::getNPID( sWASeg, sWPID ) )
+                if ( sNPID == sdtSortSegment::getNPID( sWASeg, sWPID ) )
                 {
                     break;
                 }
             }
 
-            /* ëª»ì°¾ì•˜ìŒ. ê·¸ëŸ¬ë©´ 0ë²ˆë¶€í„° ì°¨ë¡€ë¡œ ë¶ˆëŸ¬ì˜¤ë©´ ë¨. */
-            if( j == aHeader->mMergeRunSize )
+            /* ¸øÃ£¾ÒÀ½. ±×·¯¸é 0¹øºÎÅÍ Â÷·Ê·Î ºÒ·¯¿À¸é µÊ. */
+            if ( j == aHeader->mMergeRunSize )
             {
                 j = 0;
             }
 
-            /* Runì •ë³´ ì„¤ì • */
+            /* RunÁ¤º¸ ¼³Á¤ */
             sRunInfo.mRunNo  = i;
             sRunInfo.mPIDSeq = j;
             sRunInfo.mSlotNo = sSlotIdx;
 
-            /* í•œ í˜ì´ì§€ì— 1024ê°œ ì´ìƒì˜ Slotì€ ë¶ˆê°€ëŠ¥. 8byte alignì„
-             * ë§ì¶”ë‹ˆ, 8192/8 =1024ë‹ˆê¹Œ */
+            /* ÇÑ ÆäÀÌÁö¿¡ 1024°³ ÀÌ»óÀÇ SlotÀº ºÒ°¡´É. 8byte alignÀ»
+             * ¸ÂÃß´Ï, 8192/8 =1024´Ï±î */
             IDE_DASSERT( sSlotIdx <= 1024 );
 
-            /* Loadëœ í˜ì´ì§€ë¶€í„°, MaxRowPageCount*2ë§Œí¼ Loadí•´ì£¼ë©´ ëœë‹¤. */
+            /* LoadµÈ ÆäÀÌÁöºÎÅÍ, MaxRowPageCount*2¸¸Å­ LoadÇØÁÖ¸é µÈ´Ù. */
             sPageSeq = aHeader->mMaxRowPageCount*2;
-            while( sPageSeq -- )
+            while( sPageSeq-- )
             {
                 IDE_TEST( readRunPage( aHeader,
                                        i,
@@ -4178,15 +4128,15 @@ IDE_RC sdtSortModule::makeMergeRuns( smiTempTableHeader  * aHeader,
                                        &sNPID,
                                        ID_FALSE ) /*aReadNextNPID*/
                           != IDE_SUCCESS );
-                if( j == 0 )
+                if ( j == 0 )
                 {
                     j = aHeader->mMergeRunSize;
                 }
-                j --;
+                j--;
 
-                if( sNPID == SD_NULL_PID )
+                if ( sNPID == SD_NULL_PID )
                 {
-                    /* í•´ë‹¹ run ì— ë‹¤ìŒ Rowê°€ ì—†ìŒ */
+                    /* ÇØ´ç run ¿¡ ´ÙÀ½ Row°¡ ¾øÀ½ */
                     break;
                 }
                 else
@@ -4196,13 +4146,13 @@ IDE_RC sdtSortModule::makeMergeRuns( smiTempTableHeader  * aHeader,
             }
         }
 
-        IDE_TEST( sdtWAMap::set( &sWASeg->mSortHashMapHdr,
-                                 aHeader->mLeftBottomPos + i,
-                                 (void*)&sRunInfo )
+        IDE_TEST( sdtWASortMap::set( &sWASeg->mSortMapHdr,
+                                     aHeader->mLeftBottomPos + i,
+                                     (void*)&sRunInfo )
                   != IDE_SUCCESS );
     }
 
-    /* Runì„ ì ì œì‹œì¼°ìœ¼ë‹ˆ LoserTreeë¥¼ êµ¬ì„±í•œë‹¤. */
+    /* RunÀ» ÀûÁ¦½ÃÄ×À¸´Ï LoserTree¸¦ ±¸¼ºÇÑ´Ù. */
     IDE_TEST( buildLooserTree( aHeader ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -4219,9 +4169,8 @@ IDE_RC sdtSortModule::makeMergeRuns( smiTempTableHeader  * aHeader,
 IDE_RC sdtSortModule::makeScanPosition( smiTempTableHeader  * aHeader,
                                         scPageID           ** aScanPosition )
 {
-    smiTempTableHeader * sHeader = (smiTempTableHeader *)aHeader;
-    sdtWASegment       * sWASeg  = (sdtWASegment*)aHeader->mWASegment;
-    UInt                 sRunCnt = sHeader->mRunQueue.getQueueLength();
+    sdtSortSegHdr      * sWASeg  = (sdtSortSegHdr*)aHeader->mWASegment;
+    UInt                 sRunCnt = aHeader->mRunQueue.getQueueLength();
     sdtTempScanPos    * sScanPos;
     UInt                 i;
     UInt                 sState  = 0;
@@ -4230,44 +4179,43 @@ IDE_RC sdtSortModule::makeScanPosition( smiTempTableHeader  * aHeader,
 
     IDE_ERROR( aHeader->mTTState == SMI_TTSTATE_SORT_SCAN );
 
-    /* runì´ ì—†ëŠ”ë° ì´ìª½ìœ¼ë¡œ ì™”ì„ë¦¬ê°€ ì—†ìŒ. */
-    IDE_ERROR( sHeader->mRunQueue.getQueueLength() != 0 );
+    /* runÀÌ ¾ø´Âµ¥ ÀÌÂÊÀ¸·Î ¿ÔÀ»¸®°¡ ¾øÀ½. */
+    IDE_ERROR( aHeader->mRunQueue.getQueueLength() != 0 );
 
-    /* ë§ˆì§€ë§‰ Runì˜ Slot ê°œìˆ˜ */
-    sHeader->mStatsPtr->mExtraStat2 =
-        sdtWAMap::getSlotCount( &sWASeg->mSortHashMapHdr );
+    /* ¸¶Áö¸· RunÀÇ Slot °³¼ö */
+    aHeader->mStatsPtr->mExtraStat2 =
+        sdtWASortMap::getSlotCount( &sWASeg->mSortMapHdr );
 
-    /* ë§ˆì§€ë§‰ Runì„ ìƒì„±í•´ì„œ ë‚´ë¦¼ */
-    if( sdtWAMap::getSlotCount( &sWASeg->mSortHashMapHdr ) > 0 )
+    /* ¸¶Áö¸· RunÀ» »ı¼ºÇØ¼­ ³»¸² */
+    if ( sdtWASortMap::getSlotCount( &sWASeg->mSortMapHdr ) > 0 )
     {
-        IDE_TEST( storeSortedRun( sHeader ) != IDE_SUCCESS );
+        IDE_TEST( storeSortedRun( aHeader ) != IDE_SUCCESS );
         sRunCnt++;
     }
 
-    /* ê²€ì¦ìš© */
-    IDE_DASSERT ( sRunCnt == sHeader->mRunQueue.getQueueLength() );
+    /* °ËÁõ¿ë */
+    IDE_DASSERT ( sRunCnt == aHeader->mRunQueue.getQueueLength() );
 
-    /* Scan Groupìœ¼ë¡œ ì¬ìƒì„± */
-    IDE_TEST( sdtWASegment::dropWAGroup( sWASeg,
-                                         SDT_WAGROUPID_FLUSH,
-                                         ID_FALSE ) /*wait4flush */
+    /* Scan GroupÀ¸·Î Àç»ı¼º */
+    IDE_TEST( sdtSortSegment::dropWAGroup( sWASeg,
+                                           SDT_WAGROUPID_FLUSH,
+                                           ID_FALSE ) /*wait4flush */
               != IDE_SUCCESS );
 
-    IDE_TEST( sdtWASegment::dropWAGroup( sWASeg,
-                                         SDT_WAGROUPID_SORT,
-                                         ID_FALSE ) /*wait4flush */
+    IDE_TEST( sdtSortSegment::dropWAGroup( sWASeg,
+                                           SDT_WAGROUPID_SORT,
+                                           ID_FALSE ) /*wait4flush */
               != IDE_SUCCESS );
 
-    /* Scan Groupìœ¼ë¡œ ì¬ìƒì„± */
-    IDE_TEST( sdtWASegment::createWAGroup( sWASeg,
-                                           SDT_WAGROUPID_SCAN,
-                                           0, /* aPageCount */
-                                           SDT_WA_REUSE_FIFO )
+    /* Scan GroupÀ¸·Î Àç»ı¼º */
+    IDE_TEST( sdtSortSegment::createWAGroup( sWASeg,
+                                             SDT_WAGROUPID_SCAN,
+                                             0, /* aPageCount */
+                                             SDT_WA_REUSE_FIFO )
               != IDE_SUCCESS );
 
-    /* Mapì„ ë”ì´ìƒ ì‚¬ìš© ì•ˆí•¨ */
-    IDE_TEST( sdtWAMap::disable( (void*)&sWASeg->mSortHashMapHdr )
-              != IDE_SUCCESS );
+    /* MapÀ» ´õÀÌ»ó »ç¿ë ¾ÈÇÔ */
+    sdtWASortMap::disable( sWASeg );
 
     /* sdtSortModule_makeScanPosition_malloc_ScanPos.tc */
     IDU_FIT_POINT("sdtSortModule::makeScanPosition::malloc::ScanPos");
@@ -4278,10 +4226,10 @@ IDE_RC sdtSortModule::makeScanPosition( smiTempTableHeader  * aHeader,
               != IDE_SUCCESS );
     sState = 1;
 
-    for( i = 0 ; i < sRunCnt ; i ++ )
+    for( i = 0 ; i < sRunCnt ; i++ )
     {
-        /* Queue ì—ì„œ í˜ì´ì§€ë¥¼ í•˜ë‚˜ì”© êº¼ëƒ„*/
-        IDE_TEST( sHeader->mRunQueue.dequeue( ID_FALSE, /* a_bLock */
+        /* Queue ¿¡¼­ ÆäÀÌÁö¸¦ ÇÏ³ª¾¿ ²¨³¿*/
+        IDE_TEST( aHeader->mRunQueue.dequeue( ID_FALSE, /* a_bLock */
                                               (void*)&sNPID,
                                               &sIsEmpty ) );
         if ( sIsEmpty == ID_FALSE )
@@ -4291,7 +4239,7 @@ IDE_RC sdtSortModule::makeScanPosition( smiTempTableHeader  * aHeader,
         }
         else
         {
-            /* Runì´ ë¹„ì–´ìˆìŒ */
+            /* RunÀÌ ºñ¾îÀÖÀ½ */
             sScanPos[ SDT_TEMP_SCANPOS_PIDIDX(i) ] = SC_NULL_PID;
         }
     }

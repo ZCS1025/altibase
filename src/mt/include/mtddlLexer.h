@@ -2905,7 +2905,7 @@ extern int mtddllex (yyscan_t yyscanner);
 #undef YY_DECL
 #endif
 
-#line 286 "/home/archo/work/altidev4_710/src/mt/mtd/mtddlex.l"
+#line 286 "/home/archo/work/altidev4_trunk/src/mt/mtd/mtddlex.l"
 
 
 #line 2896 "mtddlLexer.h"

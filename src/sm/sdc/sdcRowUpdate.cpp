@@ -76,9 +76,9 @@ IDE_RC sdcRowUpdate::redo_SDR_SDC_INSERT_ROW_PIECE( SChar       * aLogPtr,
     sSlotNumBeforeCrash = aRedoInfo->mSlotNum;
     sSlotNumAfterCrash  = SD_MAKE_SLOTNUM(sAllocSlotSID);
 
-    /* recoveryÎäî redo all, undo all Ïù¥ÎØÄÎ°ú,
-     * restart redoÏãúÏóê Ìï†ÎãπÌïú slot numÎäî
-     * crash Ïù¥Ï†ÑÏóê Ìï†ÎãπÌïú slot numÏôÄ Î∞òÎìúÏãú Í∞ôÏïÑÏïº ÌïúÎã§.
+    /* recovery¥¬ redo all, undo all ¿Ãπ«∑Œ,
+     * restart redoΩ√ø° «“¥Á«— slot num¥¬
+     * crash ¿Ã¿¸ø° «“¥Á«— slot numøÕ π›µÂΩ√ ∞∞æ∆æﬂ «—¥Ÿ.
      * */
     IDE_ERROR_MSG( sSlotNumBeforeCrash == sSlotNumAfterCrash,
                    " sSlotNumBeforeCrash : %"ID_UINT32_FMT"\n"
@@ -135,19 +135,19 @@ IDE_RC sdcRowUpdate::redo_SDR_SDC_INSERT_ROW_PIECE_FOR_DELETEUNDO( SChar       *
     IDE_ERROR( sCanAlloc == ID_TRUE );
 
     /* BUG-23989
-     * [TSM] delete rollbackÏóê ÎåÄÌïú
-     * restart redoÍ∞Ä Ï†ïÏÉÅÏ†ÅÏúºÎ°ú ÏàòÌñâÎêòÏßÄ ÏïäÏäµÎãàÎã§. */
+     * [TSM] delete rollbackø° ¥Î«—
+     * restart redo∞° ¡§ªÛ¿˚¿∏∑Œ ºˆ«‡µ«¡ˆ æ Ω¿¥œ¥Ÿ. */
 
-    /* delete undo Ïó∞ÏÇ∞Ïóê ÎåÄÌïú CLRÏùº Í≤ΩÏö∞,
-     * Î°úÍ∑∏Ïóê Ï†ÅÌòÄÏûàÎäî slot numÎ°ú allocSlot() ÌïúÌõÑ,
-     * Ìï†ÎãπÌïú slotÏóê old imageÎ•º writeÌï¥Ïïº ÌïúÎã§.
+    /* delete undo ø¨ªÍø° ¥Î«— CLR¿œ ∞ÊøÏ,
+     * ∑Œ±◊ø° ¿˚«Ù¿÷¥¬ slot num∑Œ allocSlot() «—»ƒ,
+     * «“¥Á«— slotø° old image∏¶ write«ÿæﬂ «—¥Ÿ.
      *
-     * Í∑∏Îü∞Îç∞ sdpPageList::allocSlot() Ìï®ÏàòÎäî
-     * ÎÇ¥Î∂ÄÏ†ÅÏúºÎ°ú sdpSlotDirectory::findUnusedSlotEntry()Î•º ÌïòÏó¨
-     * minimum slot entryÎ•º Íµ¨ÌïúÎã§.
+     * ±◊∑±µ• sdpPageList::allocSlot() «‘ºˆ¥¬
+     * ≥ª∫Œ¿˚¿∏∑Œ sdpSlotDirectory::findUnusedSlotEntry()∏¶ «œø©
+     * minimum slot entry∏¶ ±∏«—¥Ÿ.
      *
-     * Í∑∏Îü¨ÎØÄÎ°ú Ïù¥ Ìï®ÏàòÎ•º Ìò∏Ï∂úÌïòÎ©¥ ÏïàÎêòÍ≥†
-     * sdpPhyPage::allocSlot4SID()Î•º ÏßÅÏ†ë Ìò∏Ï∂úÌï¥Ïïº ÌïúÎã§. */
+     * ±◊∑Øπ«∑Œ ¿Ã «‘ºˆ∏¶ »£√‚«œ∏È æ»µ«∞Ì
+     * sdpPhyPage::allocSlot4SID()∏¶ ¡˜¡¢ »£√‚«ÿæﬂ «—¥Ÿ. */
 
     IDE_TEST( sdpPhyPage::allocSlot4SID( sPageHdr,
                                          sRowPieceSize,
@@ -200,32 +200,33 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_INSERT_ROW_PIECE( idvSQL   * aStatistics,
     IDE_DASSERT( aOID        != SM_NULL_OID );
     IDE_DASSERT( aLogPtr     != NULL );
     IDE_DASSERT( aPrevLSN    != NULL );
-    IDE_DASSERT( SC_GRID_IS_NULL(aRecGRID) != ID_TRUE );
+    IDE_DASSERT( SC_GRID_IS_NOT_NULL(aRecGRID));
 
-    IDE_TEST( sdrMiniTrans::begin( aStatistics,
-                                   &sMtx,
-                                   smxTransMgr::getTransByTID(aTransID),
-                                   SDR_MTX_LOGGING,
-                                   ID_FALSE,/*MtxUndoable(PROJ-2162)*/
-                                   SM_DLOG_ATTR_DEFAULT )
-              != IDE_SUCCESS );
-    sState = 1;
-
-    IDE_TEST( sdbBufferMgr::getPageByGRID( aStatistics,
-                                           aRecGRID,
-                                           SDB_X_LATCH,
-                                           SDB_WAIT_NORMAL,
-                                           &sMtx,
-                                           (UChar**)&sSlotPtr,
-                                           &sDummy )
-              != IDE_SUCCESS );
-
-    IDE_ERROR( sSlotPtr != NULL );
-    IDE_ERROR( sdcRow::isDeleted(sSlotPtr) != ID_TRUE );
-
+    //BUG-48460: undo_SDR_SDC_INSERT_ROW_PIECE TBS ªÛ≈¬ √º≈© ¿ßƒ° ¡∂¡§ 
     if( sctTableSpaceMgr::hasState(SC_MAKE_SPACE(aRecGRID),
                                    SCT_SS_SKIP_UNDO) == ID_FALSE )
     {
+        IDE_TEST( sdrMiniTrans::begin( aStatistics,
+                                       &sMtx,
+                                       smxTransMgr::getTransByTID(aTransID),
+                                       SDR_MTX_LOGGING,
+                                       ID_FALSE,/*MtxUndoable(PROJ-2162)*/
+                                       SM_DLOG_ATTR_DEFAULT )
+                  != IDE_SUCCESS );
+        sState = 1;
+
+        IDE_TEST( sdbBufferMgr::getPageByGRID( aStatistics,
+                                               aRecGRID,
+                                               SDB_X_LATCH,
+                                               SDB_WAIT_NORMAL,
+                                               &sMtx,
+                                               (UChar**)&sSlotPtr,
+                                               &sDummy )
+                  != IDE_SUCCESS );
+
+        IDE_ERROR( sSlotPtr != NULL );
+        IDE_ERROR( sdcRow::isDeleted(sSlotPtr) != ID_TRUE );
+
         sPageHdr = sdpPhyPage::getHdr( sSlotPtr );
 
         if( sdpPhyPage::isConsistentPage( (UChar*)sPageHdr ) == ID_TRUE )
@@ -241,9 +242,9 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_INSERT_ROW_PIECE( idvSQL   * aStatistics,
                 if (smrRecoveryMgr::isRestart() == ID_FALSE)
                 {
                     IDE_TEST( smLayerCallback::undoInsertOfTableInfo(
-                                  smxTransMgr::getTransByTID( aTransID ),
-                                  aOID )
-                              != IDE_SUCCESS );
+                                                smxTransMgr::getTransByTID( aTransID ),
+                                                aOID )
+                               != IDE_SUCCESS );
                 }
             }
 
@@ -269,10 +270,10 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_INSERT_ROW_PIECE( idvSQL   * aStatistics,
 
             sdrMiniTrans::setCLR( &sMtx, aPrevLSN );
         }
+        
+        sState = 0;
+        IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
     }
-
-    sState = 0;
-    IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -284,13 +285,12 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_INSERT_ROW_PIECE( idvSQL   * aStatistics,
                     == IDE_SUCCESS );
     }
 
-    smrRecoveryMgr::prepareRTOIForUndoFailure( 
-        smxTransMgr::getTransByTID(aTransID),
-        SMR_RTOI_TYPE_DISKPAGE,
-        aOID, /* aTableOID */
-        0,    /* aIndexID */
-        aRecGRID.mSpaceID, 
-        aRecGRID.mPageID );
+    smrRecoveryMgr::prepareRTOIForUndoFailure( smxTransMgr::getTransByTID(aTransID),
+                                               SMR_RTOI_TYPE_DISKPAGE,
+                                               aOID, /* aTableOID */
+                                               0,    /* aIndexID */
+                                               aRecGRID.mSpaceID, 
+                                               aRecGRID.mPageID );
 
     return IDE_FAILURE;
 }
@@ -339,10 +339,10 @@ IDE_RC sdcRowUpdate::redo_SDR_SDC_UPDATE_ROW_PIECE( SChar       * aLogPtr,
         SDC_UPDATE_LOG_FLAG_UPDATE_METHOD_INPLACE )
     {
         IDE_ERROR( sdcRow::redo_undo_UPDATE_INPLACE_ROW_PIECE( 
-                               NULL,     /* aMtx */
-                               (UChar*)aLogPtr, 
-                               sSlotPtr,
-                               SDC_REDO_MAKE_NEWROW )
+                                                   NULL,     /* aMtx */
+                                                   (UChar*)aLogPtr, 
+                                                   sSlotPtr,
+                                                   SDC_REDO_MAKE_NEWROW )
                    == IDE_SUCCESS );
     }
     else
@@ -350,14 +350,14 @@ IDE_RC sdcRowUpdate::redo_SDR_SDC_UPDATE_ROW_PIECE( SChar       * aLogPtr,
         sSlotSID = SD_MAKE_SID( sPageHdr->mPageID, sSlotNum );
 
         IDE_ERROR( sdcRow::redo_undo_UPDATE_OUTPLACE_ROW_PIECE(
-                               NULL,     /* aMtx */
-                               (UChar*)aLogPtr,
-                               sSlotPtr,
-                               sSlotSID,
-                               SDC_REDO_MAKE_NEWROW,
-                               NULL,     /* aRowBuf4MVCC */
-                               &sNewSlotPtr,
-                               NULL )    /* aFSCreditSize */
+                                           NULL,     /* aMtx */
+                                           (UChar*)aLogPtr,
+                                           sSlotPtr,
+                                           sSlotSID,
+                                           SDC_REDO_MAKE_NEWROW,
+                                           NULL,     /* aRowBuf4MVCC */
+                                           &sNewSlotPtr,
+                                           NULL )    /* aFSCreditSize */
                     == IDE_SUCCESS );
     }
 
@@ -400,31 +400,32 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_UPDATE_ROW_PIECE( idvSQL  * aStatistics,
 
     IDE_DASSERT( aOID        != SM_NULL_OID );
     IDE_DASSERT( aPrevLSN    != NULL );
-    IDE_DASSERT( SC_GRID_IS_NULL(aRecGRID) != ID_TRUE );
+    IDE_DASSERT( SC_GRID_IS_NOT_NULL(aRecGRID));
 
-    IDE_TEST( sdrMiniTrans::begin( aStatistics,
-                                   &sMtx,
-                                   smxTransMgr::getTransByTID(aTransID),
-                                   SDR_MTX_LOGGING,
-                                   ID_FALSE,/*MtxUndoable(PROJ-2162)*/
-                                   SM_DLOG_ATTR_DEFAULT )
-              != IDE_SUCCESS );
-    sState = 1;
-
-    IDE_TEST( sdbBufferMgr::getPageByGRID( aStatistics,
-                                           aRecGRID,
-                                           SDB_X_LATCH,
-                                           SDB_WAIT_NORMAL,
-                                           &sMtx,
-                                           &sSlotPtr,
-                                           &sDummy ) != IDE_SUCCESS );
-
-    IDE_ERROR( sSlotPtr != NULL );
-    IDE_ERROR( sdcRow::isDeleted(sSlotPtr) != ID_TRUE );
-
+    //BUG-48460: undo_SDR_SDC_UPDATE_ROW_PIECE TBS ªÛ≈¬ √º≈© ¿ßƒ° ¡∂¡§
     if( sctTableSpaceMgr::hasState(SC_MAKE_SPACE(aRecGRID),
                                    SCT_SS_SKIP_UNDO) == ID_FALSE )
     {
+        IDE_TEST( sdrMiniTrans::begin( aStatistics,
+                                       &sMtx,
+                                       smxTransMgr::getTransByTID(aTransID),
+                                       SDR_MTX_LOGGING,
+                                       ID_FALSE,/*MtxUndoable(PROJ-2162)*/
+                                       SM_DLOG_ATTR_DEFAULT )
+                  != IDE_SUCCESS );
+        sState = 1;
+
+        IDE_TEST( sdbBufferMgr::getPageByGRID( aStatistics,
+                                               aRecGRID,
+                                               SDB_X_LATCH,
+                                               SDB_WAIT_NORMAL,
+                                               &sMtx,
+                                               &sSlotPtr,
+                                               &sDummy ) != IDE_SUCCESS );
+
+        IDE_ERROR( sSlotPtr != NULL );
+        IDE_ERROR( sdcRow::isDeleted(sSlotPtr) != ID_TRUE );
+
         sPageHdr = sdpPhyPage::getHdr( sSlotPtr );
 
         if( sdpPhyPage::isConsistentPage( (UChar*)sPageHdr ) == ID_TRUE )
@@ -433,18 +434,18 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_UPDATE_ROW_PIECE( idvSQL  * aStatistics,
             IDE_ERROR( sRowHdrInfo.mUndoSID != SD_NULL_SID );
 
             IDE_TEST( sdbBufferMgr::getPageBySID( 
-                               aStatistics,
-                               SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO,
-                               sRowHdrInfo.mUndoSID,
-                               SDB_X_LATCH,
-                               SDB_WAIT_NORMAL,
-                               NULL,
-                               (UChar**)&sUndoRecHdr,
-                               &sDummy ) != IDE_SUCCESS );
+                                            aStatistics,
+                                            SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO,
+                                            sRowHdrInfo.mUndoSID,
+                                            SDB_X_LATCH,
+                                            SDB_WAIT_NORMAL,
+                                            NULL,
+                                            (UChar**)&sUndoRecHdr,
+                                            &sDummy ) 
+                      != IDE_SUCCESS );
             sState = 2;
 
-            sUndoRecBodyPtr =
-                sdcUndoRecord::getUndoRecBodyStartPtr(sUndoRecHdr);
+            sUndoRecBodyPtr = sdcUndoRecord::getUndoRecBodyStartPtr(sUndoRecHdr);
 
             ID_READ_VALUE( sUndoRecBodyPtr, &sFlag, ID_SIZEOF(sFlag) );
 
@@ -458,10 +459,10 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_UPDATE_ROW_PIECE( idvSQL  * aStatistics,
                                "sChangeSize : %"ID_UINT32_FMT, sChangeSize );
 
                 IDE_TEST( sdcRow::redo_undo_UPDATE_INPLACE_ROW_PIECE( 
-                                       &sMtx,
-                                       sUndoRecBodyPtr,
-                                       sSlotPtr,
-                                       SDC_UNDO_MAKE_OLDROW ) 
+                                                    &sMtx,
+                                                    sUndoRecBodyPtr,
+                                                    sSlotPtr,
+                                                    SDC_UNDO_MAKE_OLDROW ) 
                           != IDE_SUCCESS );
 
                 sNewSlotPtr = sSlotPtr;
@@ -471,14 +472,15 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_UPDATE_ROW_PIECE( idvSQL  * aStatistics,
                 sSlotSID = SD_MAKE_SID_FROM_GRID( aRecGRID );
 
                 IDE_TEST( sdcRow::redo_undo_UPDATE_OUTPLACE_ROW_PIECE(
-                              &sMtx,
-                              sUndoRecBodyPtr,
-                              sSlotPtr,
-                              sSlotSID,
-                              SDC_UNDO_MAKE_OLDROW,
-                              NULL,          /* aRowBuf4MVCC */
-                              &sNewSlotPtr,
-                              &sFSCreditSize ) != IDE_SUCCESS );
+                                                    &sMtx,
+                                                    sUndoRecBodyPtr,
+                                                    sSlotPtr,
+                                                    sSlotSID,
+                                                    SDC_UNDO_MAKE_OLDROW,
+                                                    NULL,          /* aRowBuf4MVCC */
+                                                    &sNewSlotPtr,
+                                                    &sFSCreditSize ) 
+                           != IDE_SUCCESS );
 
                 if ( sFSCreditSize != 0 )
                 {
@@ -487,47 +489,42 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_UPDATE_ROW_PIECE( idvSQL  * aStatistics,
                                == IDE_SUCCESS );
                     IDE_DASSERT( sTableHeader != NULL );
 
-                    sEntry = (sdpPageListEntry*)
-                        smcTable::getDiskPageListEntry(sTableHeader);
+                    sEntry = (sdpPageListEntry*)smcTable::getDiskPageListEntry(sTableHeader);
                     IDE_DASSERT(sEntry != NULL);
 
-                    // reallocSlotÏùÑ ÌïúÏù¥ÌõÑÏóê,
-                    // SegmentÏóê ÎåÄÌïú Í∞ÄÏö©ÎèÑ Î≥ÄÍ≤ΩÏó∞ÏÇ∞ÏùÑ ÏàòÌñâÌïúÎã§.
-                    IDE_TEST( sdpPageList::updatePageState(
-                                  aStatistics,
-                                  SC_MAKE_SPACE(aRecGRID),
-                                  sEntry,
-                                  sdpPhyPage::getPageStartPtr(sSlotPtr),
-                                  &sMtx )
+                    // reallocSlot¿ª «—¿Ã»ƒø°,
+                    // Segmentø° ¥Î«— ∞°øÎµµ ∫Ø∞Êø¨ªÍ¿ª ºˆ«‡«—¥Ÿ.
+                    IDE_TEST( sdpPageList::updatePageState( aStatistics,
+                                                            SC_MAKE_SPACE(aRecGRID),
+                                                            sEntry,
+                                                            sdpPhyPage::getPageStartPtr(sSlotPtr),
+                                                            &sMtx )
                               != IDE_SUCCESS );
                 }
             }
 
-            IDE_TEST( sdcRow::writeUpdateRowPieceCLR(
-                          sUndoRecHdr,
-                          aRecGRID,
-                          sRowHdrInfo.mUndoSID,
-                          &sMtx )
+            IDE_TEST( sdcRow::writeUpdateRowPieceCLR( sUndoRecHdr,
+                                                      aRecGRID,
+                                                      sRowHdrInfo.mUndoSID,
+                                                      &sMtx )
                       != IDE_SUCCESS );
 
             sdrMiniTrans::setCLR( &sMtx, aPrevLSN );
 
             sdcUndoRecord::setInvalid( sUndoRecHdr );
 
-            sdbBufferMgr::setDirtyPageToBCB(
-                aStatistics,
-                sdpPhyPage::getPageStartPtr(sUndoRecHdr) );
+            sdbBufferMgr::setDirtyPageToBCB( aStatistics,
+                                             sdpPhyPage::getPageStartPtr(sUndoRecHdr) );
 
             sState = 1;
             IDE_TEST( sdbBufferMgr::releasePage( aStatistics,
                                                  sUndoRecHdr )
                       != IDE_SUCCESS );
         }
+
+        sState = 0;
+        IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
     }
-
-    sState = 0;
-    IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
-
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -547,13 +544,12 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_UPDATE_ROW_PIECE( idvSQL  * aStatistics,
             break;
     }
 
-    smrRecoveryMgr::prepareRTOIForUndoFailure( 
-        smxTransMgr::getTransByTID(aTransID),
-        SMR_RTOI_TYPE_DISKPAGE,
-        aOID, /* aTableOID */
-        0,    /* aIndexID */
-        aRecGRID.mSpaceID, 
-        aRecGRID.mPageID );
+    smrRecoveryMgr::prepareRTOIForUndoFailure( smxTransMgr::getTransByTID(aTransID),
+                                               SMR_RTOI_TYPE_DISKPAGE,
+                                               aOID, /* aTableOID */
+                                               0,    /* aIndexID */
+                                               aRecGRID.mSpaceID, 
+                                               aRecGRID.mPageID );
 
     return IDE_FAILURE;
 }
@@ -597,14 +593,14 @@ IDE_RC sdcRowUpdate::redo_SDR_SDC_OVERWRITE_ROW_PIECE( SChar       * aLogPtr,
 
     sSlotSID = SD_MAKE_SID( sPageHdr->mPageID, sSlotNum );
     IDE_ERROR( sdcRow::redo_undo_OVERWRITE_ROW_PIECE(
-                                  NULL, /* aMtx */
-                                  (UChar*)aLogPtr,
-                                  sSlotPtr,
-                                  sSlotSID,
-                                  SDC_REDO_MAKE_NEWROW,
-                                  NULL, /* aRowBuf4MVCC */
-                                  &sNewSlotPtr,
-                                  NULL )/* aFSCreditSize*/
+                                              NULL, /* aMtx */
+                                              (UChar*)aLogPtr,
+                                              sSlotPtr,
+                                              sSlotSID,
+                                              SDC_REDO_MAKE_NEWROW,
+                                              NULL, /* aRowBuf4MVCC */
+                                              &sNewSlotPtr,
+                                              NULL )/* aFSCreditSize*/
                == IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -644,32 +640,32 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_OVERWRITE_ROW_PIECE( idvSQL * aStatistics,
     IDE_DASSERT( aOID     != SM_NULL_OID );
     IDE_DASSERT( aPrevLSN != NULL );
 
-    IDE_DASSERT( SC_GRID_IS_NULL(aRecGRID) != ID_TRUE );
+    IDE_DASSERT( SC_GRID_IS_NOT_NULL(aRecGRID));
 
-    IDE_TEST( sdrMiniTrans::begin( aStatistics,
-                                   &sMtx,
-                                   smxTransMgr::getTransByTID(aTransID),
-                                   SDR_MTX_LOGGING,
-                                   ID_FALSE,/*MtxUndoable(PROJ-2162)*/
-                                   SM_DLOG_ATTR_DEFAULT )
-              != IDE_SUCCESS );
-    sState = 1;
-
-    IDE_TEST( sdbBufferMgr::getPageByGRID( aStatistics,
-                                           aRecGRID,
-                                           SDB_X_LATCH,
-                                           SDB_WAIT_NORMAL,
-                                           &sMtx,
-                                           (UChar**)&sSlotPtr,
-                                           &sDummy )
-              != IDE_SUCCESS );
-
-    IDE_ERROR( sSlotPtr != NULL );
-    IDE_ERROR( sdcRow::isDeleted(sSlotPtr) != ID_TRUE );
-
+    //BUG-48460: undo_SDR_SDC_OVERWRITE_ROW_PIECE TBS ªÛ≈¬ √º≈© ¿ßƒ° ¡∂¡§
     if( sctTableSpaceMgr::hasState( SC_MAKE_SPACE(aRecGRID),
                                     SCT_SS_SKIP_UNDO ) == ID_FALSE )
     {
+        IDE_TEST( sdrMiniTrans::begin( aStatistics,
+                                       &sMtx,
+                                       smxTransMgr::getTransByTID(aTransID),
+                                       SDR_MTX_LOGGING,
+                                       ID_FALSE,/*MtxUndoable(PROJ-2162)*/
+                                       SM_DLOG_ATTR_DEFAULT )
+                  != IDE_SUCCESS );
+        sState = 1;
+
+        IDE_TEST( sdbBufferMgr::getPageByGRID( aStatistics,
+                                               aRecGRID,
+                                               SDB_X_LATCH,
+                                               SDB_WAIT_NORMAL,
+                                               &sMtx,
+                                               (UChar**)&sSlotPtr,
+                                               &sDummy )
+                  != IDE_SUCCESS );
+
+        IDE_ERROR( sSlotPtr != NULL );
+        IDE_ERROR( sdcRow::isDeleted(sSlotPtr) != ID_TRUE );
         sPageHdr = sdpPhyPage::getHdr( sSlotPtr );
 
         if ( sdpPhyPage::isConsistentPage( (UChar*)sPageHdr )
@@ -679,28 +675,29 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_OVERWRITE_ROW_PIECE( idvSQL * aStatistics,
             IDE_ERROR( sRowHdrInfo.mUndoSID != SD_NULL_SID );
 
             IDE_TEST( sdbBufferMgr::getPageBySID( 
-                               aStatistics,
-                               SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO,
-                               sRowHdrInfo.mUndoSID,
-                               SDB_X_LATCH,
-                               SDB_WAIT_NORMAL,
-                               NULL,
-                               (UChar**)&sUndoRecHdr,
-                               &sDummy ) != IDE_SUCCESS );
+                                                aStatistics,
+                                                SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO,
+                                                sRowHdrInfo.mUndoSID,
+                                                SDB_X_LATCH,
+                                                SDB_WAIT_NORMAL,
+                                                NULL,
+                                                (UChar**)&sUndoRecHdr,
+                                                &sDummy ) 
+                       != IDE_SUCCESS );
             sState = 2;
 
             sSlotSID = SD_MAKE_SID_FROM_GRID( aRecGRID );
 
             IDE_TEST( sdcRow::redo_undo_OVERWRITE_ROW_PIECE(
-                                        &sMtx,
-                                        sdcUndoRecord::getUndoRecBodyStartPtr(sUndoRecHdr),
-                                        sSlotPtr,
-                                        sSlotSID,
-                                        SDC_UNDO_MAKE_OLDROW,
-                                        NULL, /* aRowBuf4MVCC */
-                                        &sNewSlotPtr,
-                                        &sFSCreditSize )
-                      != IDE_SUCCESS );
+                                    &sMtx,
+                                    sdcUndoRecord::getUndoRecBodyStartPtr(sUndoRecHdr),
+                                    sSlotPtr,
+                                    sSlotSID,
+                                    SDC_UNDO_MAKE_OLDROW,
+                                    NULL, /* aRowBuf4MVCC */
+                                    &sNewSlotPtr,
+                                    &sFSCreditSize )
+                       != IDE_SUCCESS );
 
             if( sFSCreditSize != 0 )
             {
@@ -709,49 +706,43 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_OVERWRITE_ROW_PIECE( idvSQL * aStatistics,
                            == IDE_SUCCESS );
                 IDE_DASSERT( sTableHeader != NULL );
 
-                sEntry = (sdpPageListEntry*)
-                    smcTable::getDiskPageListEntry(sTableHeader);
+                sEntry = (sdpPageListEntry*)smcTable::getDiskPageListEntry(sTableHeader);
                 IDE_DASSERT(sEntry != NULL);
 
-                // reallocSlotÏùÑ ÌïúÏù¥ÌõÑÏóê, SegmentÏóê ÎåÄÌïú
-                // Í∞ÄÏö©ÎèÑ Î≥ÄÍ≤ΩÏó∞ÏÇ∞ÏùÑ ÏàòÌñâÌïúÎã§.
+                // reallocSlot¿ª «—¿Ã»ƒø°, Segmentø° ¥Î«—
+                // ∞°øÎµµ ∫Ø∞Êø¨ªÍ¿ª ºˆ«‡«—¥Ÿ.
                 IDE_TEST( sdpPageList::updatePageState(
-                              aStatistics,
-                              SC_MAKE_SPACE(aRecGRID),
-                              sEntry,
-                              sdpPhyPage::getPageStartPtr(sSlotPtr),
-                              &sMtx )
-                          != IDE_SUCCESS );
+                                                    aStatistics,
+                                                    SC_MAKE_SPACE(aRecGRID),
+                                                    sEntry,
+                                                    sdpPhyPage::getPageStartPtr(sSlotPtr),
+                                                    &sMtx )
+                           != IDE_SUCCESS );
             }
 
             IDE_TEST( sdcRow::writeOverwriteRowPieceCLR(
-                          sUndoRecHdr,
-                          aRecGRID,
-                          SD_MAKE_SLOTNUM(sRowHdrInfo.mUndoSID),
-                          &sMtx )
+                                                    sUndoRecHdr,
+                                                    aRecGRID,
+                                                    SD_MAKE_SLOTNUM(sRowHdrInfo.mUndoSID),
+                                                    &sMtx )
                       != IDE_SUCCESS );
 
             sdrMiniTrans::setCLR( &sMtx, aPrevLSN );
 
             sdcUndoRecord::setInvalid( sUndoRecHdr );
 
-            sdbBufferMgr::setDirtyPageToBCB(
-                aStatistics,
-                sdpPhyPage::getPageStartPtr(sUndoRecHdr) );
+            sdbBufferMgr::setDirtyPageToBCB( aStatistics,
+                                             sdpPhyPage::getPageStartPtr(sUndoRecHdr) );
 
             sState = 1;
             IDE_TEST( sdbBufferMgr::releasePage( aStatistics,
                                                  sUndoRecHdr )
                       != IDE_SUCCESS );
         }
-    }
-    else
-    {
-        // nothing to do..
-    }
 
-    sState = 0;
-    IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
+        sState = 0;
+        IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
+    }
 
     return IDE_SUCCESS;
 
@@ -772,13 +763,12 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_OVERWRITE_ROW_PIECE( idvSQL * aStatistics,
             break;
     }
 
-    smrRecoveryMgr::prepareRTOIForUndoFailure( 
-        smxTransMgr::getTransByTID(aTransID),
-        SMR_RTOI_TYPE_DISKPAGE,
-        aOID, /* aTableOID */
-        0,    /* aIndexID */
-        aRecGRID.mSpaceID, 
-        aRecGRID.mPageID );
+    smrRecoveryMgr::prepareRTOIForUndoFailure( smxTransMgr::getTransByTID(aTransID),
+                                               SMR_RTOI_TYPE_DISKPAGE,
+                                               aOID, /* aTableOID */
+                                               0,    /* aIndexID */
+                                               aRecGRID.mSpaceID, 
+                                               aRecGRID.mPageID );
 
     return IDE_FAILURE;
 }
@@ -867,29 +857,29 @@ IDE_RC sdcRowUpdate::redo_SDR_SDC_CHANGE_ROW_PIECE_LINK( SChar       * aLogPtr,
                        sOldRowPieceSize );
 
         /*
-         * ###   FSC ÌîåÎûòÍ∑∏   ###
+         * ###   FSC «√∑°±◊   ###
          *
-         * DML Ïó∞ÏÇ∞Ï§ëÏóêÎäî ÎãπÏó∞Ìûà FSCÎ•º reserve Ìï¥Ïïº ÌïúÎã§.
-         * Í∑∏Îü¨Î©¥ redoÎÇò undoÏãúÏóêÎäî Ïñ¥ÎñªÍ≤å Ìï¥Ïïº ÌïòÎÇò?
+         * DML ø¨ªÍ¡ﬂø°¥¬ ¥Áø¨»˜ FSC∏¶ reserve «ÿæﬂ «—¥Ÿ.
+         * ±◊∑Ø∏È redo≥™ undoΩ√ø°¥¬ æÓ∂ª∞‘ «ÿæﬂ «œ≥™?
          *
-         * redoÎäî DML Ïó∞ÏÇ∞ÏùÑ Îã§Ïãú ÏàòÌñâÌïòÎäî Í≤ÉÏù¥ÎØÄÎ°ú,
-         * DML Ïó∞ÏÇ∞Ìï†ÎïåÏôÄ ÎèôÏùºÌïòÍ≤å FSCÎ•º reserve Ìï¥Ïïº ÌïúÎã§.
+         * redo¥¬ DML ø¨ªÍ¿ª ¥ŸΩ√ ºˆ«‡«œ¥¬ ∞Õ¿Ãπ«∑Œ,
+         * DML ø¨ªÍ«“∂ßøÕ µø¿œ«œ∞‘ FSC∏¶ reserve «ÿæﬂ «—¥Ÿ.
          *
-         * Î∞òÎ©¥ undoÏãúÏóêÎäî FSCÎ•º reserveÌïòÎ©¥ ÏïàÎêúÎã§.
-         * ÏôúÎÇòÌïòÎ©¥ FSCÎäî DML Ïó∞ÏÇ∞ÏùÑ undoÏãúÌÇ¨ÎïåÎ•º ÎåÄÎπÑÌï¥ÏÑú
-         * Í≥µÍ∞ÑÏùÑ ÏòàÏïΩÌï¥ÎëêÎäî Í≤ÉÏù¥ÎØÄÎ°ú,
-         * undoÏãúÏóêÎäî Ïù¥Ï†ÑÏóê reserveÌï¥Îëî FSCÎ•º
-         * ÌéòÏù¥ÏßÄÏóê ÎêòÎèåÎ†§(restore)Ï£ºÏñ¥Ïïº ÌïòÍ≥†,
-         * undoÏãúÏóê Îòê Îã§Ïãú FSCÎ•º reserveÌïòÎ†§Í≥† Ìï¥ÏÑúÎäî ÏïàÎêúÎã§.
+         * π›∏È undoΩ√ø°¥¬ FSC∏¶ reserve«œ∏È æ»µ»¥Ÿ.
+         * ø÷≥™«œ∏È FSC¥¬ DML ø¨ªÍ¿ª undoΩ√≈≥∂ß∏¶ ¥Î∫Ò«ÿº≠
+         * ∞¯∞£¿ª øπæ‡«ÿµŒ¥¬ ∞Õ¿Ãπ«∑Œ,
+         * undoΩ√ø°¥¬ ¿Ã¿¸ø° reserve«ÿµ– FSC∏¶
+         * ∆‰¿Ã¡ˆø° µ«µπ∑¡(restore)¡÷æÓæﬂ «œ∞Ì,
+         * undoΩ√ø° ∂« ¥ŸΩ√ FSC∏¶ reserve«œ∑¡∞Ì «ÿº≠¥¬ æ»µ»¥Ÿ.
          *
-         * clrÏùÄ undoÏóê ÎåÄÌïú redoÏù¥ÎØÄÎ°ú undoÎïåÏôÄ ÎèôÏùºÌïòÍ≤å
-         * FSCÎ•º reserveÌïòÎ©¥ ÏïàÎêúÎã§.
+         * clr¿∫ undoø° ¥Î«— redo¿Ãπ«∑Œ undo∂ßøÕ µø¿œ«œ∞‘
+         * FSC∏¶ reserve«œ∏È æ»µ»¥Ÿ.
          *
-         * Ïù¥ ÏÑ∏Í∞ÄÏßÄ Í≤ΩÏö∞Î•º Íµ¨Î∂ÑÌïòÏó¨
-         * FSC reserve Ï≤òÎ¶¨Î•º Ìï¥Ïïº ÌïòÎäîÎç∞,
-         * ÎÇò(upinel9)Îäî Î°úÍ∑∏Î•º Í∏∞Î°ùÌï†Îïå FSC reserve Ïó¨Î∂ÄÎ•º ÌîåÎûòÍ∑∏Î°ú ÎÇ®Í≤®ÏÑú,
-         * redoÎÇò undoÏãúÏóêÎäî Ïù¥ ÌîåÎûòÍ∑∏Îßå Î≥¥Í≥†
-         * reallocSlot()ÏùÑ ÌïòÎèÑÎ°ù ÏÑ§Í≥ÑÌïòÏòÄÎã§.
+         * ¿Ã ºº∞°¡ˆ ∞ÊøÏ∏¶ ±∏∫–«œø©
+         * FSC reserve √≥∏Æ∏¶ «ÿæﬂ «œ¥¬µ•,
+         * ≥™(upinel9)¥¬ ∑Œ±◊∏¶ ±‚∑œ«“∂ß FSC reserve ø©∫Œ∏¶ «√∑°±◊∑Œ ≥≤∞‹º≠,
+         * redo≥™ undoΩ√ø°¥¬ ¿Ã «√∑°±◊∏∏ ∫∏∞Ì
+         * reallocSlot()¿ª «œµµ∑œ º≥∞Ë«œø¥¥Ÿ.
          *
          * redo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_TRUE
          * undo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_FALSE
@@ -992,32 +982,33 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_CHANGE_ROW_PIECE_LINK( idvSQL * aStatistics,
 
     IDE_DASSERT( aOID        != SM_NULL_OID );
     IDE_DASSERT( aPrevLSN    != NULL );
-    IDE_DASSERT( SC_GRID_IS_NULL(aRecGRID) != ID_TRUE );
+    IDE_DASSERT( SC_GRID_IS_NOT_NULL(aRecGRID));
 
-    IDE_TEST( sdrMiniTrans::begin( aStatistics,
-                                   &sMtx,
-                                   smxTransMgr::getTransByTID(aTransID),
-                                   SDR_MTX_LOGGING,
-                                   ID_FALSE,/*MtxUndoable(PROJ-2162)*/
-                                   SM_DLOG_ATTR_DEFAULT )
-              != IDE_SUCCESS );
-    sState = 1;
-
-    IDE_TEST( sdbBufferMgr::getPageByGRID( aStatistics,
-                                           aRecGRID,
-                                           SDB_X_LATCH,
-                                           SDB_WAIT_NORMAL,
-                                           &sMtx,
-                                           (UChar**)&sSlotPtr,
-                                           &sDummy )
-              != IDE_SUCCESS );
-
-    IDE_ERROR( sSlotPtr != NULL );
-    IDE_ERROR( sdcRow::isDeleted(sSlotPtr) != ID_TRUE );
-
+    //BUG-48460: undo_SDR_SDC_CHANGE_ROW_PIECE_LINK TBS ªÛ≈¬ √º≈© ¿ßƒ° ¡∂¡§
     if( sctTableSpaceMgr::hasState( SC_MAKE_SPACE(aRecGRID),
                                     SCT_SS_SKIP_UNDO) == ID_FALSE )
     {
+        IDE_TEST( sdrMiniTrans::begin( aStatistics,
+                                       &sMtx,
+                                       smxTransMgr::getTransByTID(aTransID),
+                                       SDR_MTX_LOGGING,
+                                       ID_FALSE,/*MtxUndoable(PROJ-2162)*/
+                                       SM_DLOG_ATTR_DEFAULT )
+                  != IDE_SUCCESS );
+        sState = 1;
+
+        IDE_TEST( sdbBufferMgr::getPageByGRID( aStatistics,
+                                               aRecGRID,
+                                               SDB_X_LATCH,
+                                               SDB_WAIT_NORMAL,
+                                               &sMtx,
+                                               (UChar**)&sSlotPtr,
+                                               &sDummy )
+                  != IDE_SUCCESS );
+
+        IDE_ERROR( sSlotPtr != NULL );
+        IDE_ERROR( sdcRow::isDeleted(sSlotPtr) != ID_TRUE );
+
         sPageHdr = sdpPhyPage::getHdr( sSlotPtr );
         if( sdpPhyPage::isConsistentPage( (UChar*)sPageHdr ) == ID_TRUE )
         {
@@ -1025,27 +1016,29 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_CHANGE_ROW_PIECE_LINK( idvSQL * aStatistics,
             IDE_ERROR( sRowHdrInfo.mUndoSID != SD_NULL_SID );
 
             IDE_TEST( sdbBufferMgr::getPageBySID( 
-                               aStatistics,
-                               SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO,
-                               sRowHdrInfo.mUndoSID,
-                               SDB_X_LATCH,
-                               SDB_WAIT_NORMAL,
-                               NULL,
-                               (UChar**)&sUndoRecHdr,
-                               &sDummy ) != IDE_SUCCESS );
+                                                aStatistics,
+                                                SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO,
+                                                sRowHdrInfo.mUndoSID,
+                                                SDB_X_LATCH,
+                                                SDB_WAIT_NORMAL,
+                                                NULL,
+                                                (UChar**)&sUndoRecHdr,
+                                                &sDummy ) 
+                      != IDE_SUCCESS );
             sState = 2;
 
             sSlotSID = SD_MAKE_SID_FROM_GRID( aRecGRID );
 
             IDE_TEST( sdcRow::undo_CHANGE_ROW_PIECE_LINK(
-                                   &sMtx,
-                                   sdcUndoRecord::getUndoRecBodyStartPtr(sUndoRecHdr),
-                                   sSlotPtr,
-                                   sSlotSID,
-                                   SDC_UNDO_MAKE_OLDROW,
-                                   NULL, /* aRowBuf4MVCC */
-                                   &sNewSlotPtr,
-                                   &sFSCreditSize ) != IDE_SUCCESS );
+                                    &sMtx,
+                                    sdcUndoRecord::getUndoRecBodyStartPtr(sUndoRecHdr),
+                                    sSlotPtr,
+                                    sSlotSID,
+                                    SDC_UNDO_MAKE_OLDROW,
+                                    NULL, /* aRowBuf4MVCC */
+                                    &sNewSlotPtr,
+                                    &sFSCreditSize ) 
+                       != IDE_SUCCESS );
 
             if( sFSCreditSize != 0 )
             {
@@ -1054,48 +1047,42 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_CHANGE_ROW_PIECE_LINK( idvSQL * aStatistics,
                            == IDE_SUCCESS );
                 IDE_DASSERT( sTableHeader != NULL );
 
-                sEntry = (sdpPageListEntry*)
-                    smcTable::getDiskPageListEntry(sTableHeader);
+                sEntry = (sdpPageListEntry*)smcTable::getDiskPageListEntry(sTableHeader);
                 IDE_DASSERT(sEntry != NULL);
 
-                // reallocSlotÏùÑ ÌïúÏù¥ÌõÑÏóê, SegmentÏóê ÎåÄÌïú
-                // Í∞ÄÏö©ÎèÑ Î≥ÄÍ≤ΩÏó∞ÏÇ∞ÏùÑ ÏàòÌñâÌïúÎã§.
+                // reallocSlot¿ª «—¿Ã»ƒø°, Segmentø° ¥Î«—
+                // ∞°øÎµµ ∫Ø∞Êø¨ªÍ¿ª ºˆ«‡«—¥Ÿ.
                 IDE_TEST( sdpPageList::updatePageState(
-                              aStatistics,
-                              SC_MAKE_SPACE(aRecGRID),
-                              sEntry,
-                              sdpPhyPage::getPageStartPtr(sSlotPtr),
-                              &sMtx ) != IDE_SUCCESS );
+                                                    aStatistics,
+                                                    SC_MAKE_SPACE(aRecGRID),
+                                                    sEntry,
+                                                    sdpPhyPage::getPageStartPtr(sSlotPtr),
+                                                    &sMtx ) 
+                          != IDE_SUCCESS );
             }
 
-            IDE_TEST( sdcRow::writeChangeRowPieceLinkCLR(
-                          sUndoRecHdr,
-                          aRecGRID,
-                          sRowHdrInfo.mUndoSID,
-                          &sMtx )
+            IDE_TEST( sdcRow::writeChangeRowPieceLinkCLR( sUndoRecHdr,
+                                                          aRecGRID,
+                                                          sRowHdrInfo.mUndoSID,
+                                                          &sMtx )
                       != IDE_SUCCESS );
 
             sdrMiniTrans::setCLR( &sMtx, aPrevLSN );
 
             sdcUndoRecord::setInvalid( sUndoRecHdr );
 
-            sdbBufferMgr::setDirtyPageToBCB(
-                aStatistics,
-                sdpPhyPage::getPageStartPtr(sUndoRecHdr) );
+            sdbBufferMgr::setDirtyPageToBCB( aStatistics,
+                                             sdpPhyPage::getPageStartPtr(sUndoRecHdr) );
 
             sState = 1;
             IDE_TEST( sdbBufferMgr::releasePage( aStatistics,
                                                  sUndoRecHdr )
                       != IDE_SUCCESS );
         }
-    }
-    else
-    {
-    }
 
-    sState = 0;
-    IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
-
+        sState = 0;
+        IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
+    }
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -1115,13 +1102,12 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_CHANGE_ROW_PIECE_LINK( idvSQL * aStatistics,
             break;
     }
 
-    smrRecoveryMgr::prepareRTOIForUndoFailure( 
-        smxTransMgr::getTransByTID(aTransID),
-        SMR_RTOI_TYPE_DISKPAGE,
-        aOID, /* aTableOID */
-        0,    /* aIndexID */
-        aRecGRID.mSpaceID, 
-        aRecGRID.mPageID );
+    smrRecoveryMgr::prepareRTOIForUndoFailure( smxTransMgr::getTransByTID(aTransID),
+                                               SMR_RTOI_TYPE_DISKPAGE,
+                                               aOID, /* aTableOID */
+                                               0,    /* aIndexID */
+                                               aRecGRID.mSpaceID, 
+                                               aRecGRID.mPageID );
 
     return IDE_FAILURE;
 }
@@ -1193,29 +1179,29 @@ IDE_RC sdcRowUpdate::redo_SDR_SDC_DELETE_FIRST_COLUMN_PIECE( SChar       * aLogP
     sNewRowPieceSize = sOldRowPieceSize + (sChangeSize);
 
     /*
-     * ###   FSC ÌîåÎûòÍ∑∏   ###
+     * ###   FSC «√∑°±◊   ###
      *
-     * DML Ïó∞ÏÇ∞Ï§ëÏóêÎäî ÎãπÏó∞Ìûà FSCÎ•º reserve Ìï¥Ïïº ÌïúÎã§.
-     * Í∑∏Îü¨Î©¥ redoÎÇò undoÏãúÏóêÎäî Ïñ¥ÎñªÍ≤å Ìï¥Ïïº ÌïòÎÇò?
+     * DML ø¨ªÍ¡ﬂø°¥¬ ¥Áø¨»˜ FSC∏¶ reserve «ÿæﬂ «—¥Ÿ.
+     * ±◊∑Ø∏È redo≥™ undoΩ√ø°¥¬ æÓ∂ª∞‘ «ÿæﬂ «œ≥™?
      *
-     * redoÎäî DML Ïó∞ÏÇ∞ÏùÑ Îã§Ïãú ÏàòÌñâÌïòÎäî Í≤ÉÏù¥ÎØÄÎ°ú,
-     * DML Ïó∞ÏÇ∞Ìï†ÎïåÏôÄ ÎèôÏùºÌïòÍ≤å FSCÎ•º reserve Ìï¥Ïïº ÌïúÎã§.
+     * redo¥¬ DML ø¨ªÍ¿ª ¥ŸΩ√ ºˆ«‡«œ¥¬ ∞Õ¿Ãπ«∑Œ,
+     * DML ø¨ªÍ«“∂ßøÕ µø¿œ«œ∞‘ FSC∏¶ reserve «ÿæﬂ «—¥Ÿ.
      *
-     * Î∞òÎ©¥ undoÏãúÏóêÎäî FSCÎ•º reserveÌïòÎ©¥ ÏïàÎêúÎã§.
-     * ÏôúÎÇòÌïòÎ©¥ FSCÎäî DML Ïó∞ÏÇ∞ÏùÑ undoÏãúÌÇ¨ÎïåÎ•º ÎåÄÎπÑÌï¥ÏÑú
-     * Í≥µÍ∞ÑÏùÑ ÏòàÏïΩÌï¥ÎëêÎäî Í≤ÉÏù¥ÎØÄÎ°ú,
-     * undoÏãúÏóêÎäî Ïù¥Ï†ÑÏóê reserveÌï¥Îëî FSCÎ•º
-     * ÌéòÏù¥ÏßÄÏóê ÎêòÎèåÎ†§(restore)Ï£ºÏñ¥Ïïº ÌïòÍ≥†,
-     * undoÏãúÏóê Îòê Îã§Ïãú FSCÎ•º reserveÌïòÎ†§Í≥† Ìï¥ÏÑúÎäî ÏïàÎêúÎã§.
+     * π›∏È undoΩ√ø°¥¬ FSC∏¶ reserve«œ∏È æ»µ»¥Ÿ.
+     * ø÷≥™«œ∏È FSC¥¬ DML ø¨ªÍ¿ª undoΩ√≈≥∂ß∏¶ ¥Î∫Ò«ÿº≠
+     * ∞¯∞£¿ª øπæ‡«ÿµŒ¥¬ ∞Õ¿Ãπ«∑Œ,
+     * undoΩ√ø°¥¬ ¿Ã¿¸ø° reserve«ÿµ– FSC∏¶
+     * ∆‰¿Ã¡ˆø° µ«µπ∑¡(restore)¡÷æÓæﬂ «œ∞Ì,
+     * undoΩ√ø° ∂« ¥ŸΩ√ FSC∏¶ reserve«œ∑¡∞Ì «ÿº≠¥¬ æ»µ»¥Ÿ.
      *
-     * clrÏùÄ undoÏóê ÎåÄÌïú redoÏù¥ÎØÄÎ°ú undoÎïåÏôÄ ÎèôÏùºÌïòÍ≤å
-     * FSCÎ•º reserveÌïòÎ©¥ ÏïàÎêúÎã§.
+     * clr¿∫ undoø° ¥Î«— redo¿Ãπ«∑Œ undo∂ßøÕ µø¿œ«œ∞‘
+     * FSC∏¶ reserve«œ∏È æ»µ»¥Ÿ.
      *
-     * Ïù¥ ÏÑ∏Í∞ÄÏßÄ Í≤ΩÏö∞Î•º Íµ¨Î∂ÑÌïòÏó¨
-     * FSC reserve Ï≤òÎ¶¨Î•º Ìï¥Ïïº ÌïòÎäîÎç∞,
-     * ÎÇò(upinel9)Îäî Î°úÍ∑∏Î•º Í∏∞Î°ùÌï†Îïå FSC reserve Ïó¨Î∂ÄÎ•º ÌîåÎûòÍ∑∏Î°ú ÎÇ®Í≤®ÏÑú,
-     * redoÎÇò undoÏãúÏóêÎäî Ïù¥ ÌîåÎûòÍ∑∏Îßå Î≥¥Í≥†
-     * reallocSlot()ÏùÑ ÌïòÎèÑÎ°ù ÏÑ§Í≥ÑÌïòÏòÄÎã§.
+     * ¿Ã ºº∞°¡ˆ ∞ÊøÏ∏¶ ±∏∫–«œø©
+     * FSC reserve √≥∏Æ∏¶ «ÿæﬂ «œ¥¬µ•,
+     * ≥™(upinel9)¥¬ ∑Œ±◊∏¶ ±‚∑œ«“∂ß FSC reserve ø©∫Œ∏¶ «√∑°±◊∑Œ ≥≤∞‹º≠,
+     * redo≥™ undoΩ√ø°¥¬ ¿Ã «√∑°±◊∏∏ ∫∏∞Ì
+     * reallocSlot()¿ª «œµµ∑œ º≥∞Ë«œø¥¥Ÿ.
      *
      * redo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_TRUE
      * undo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_FALSE
@@ -1305,32 +1291,33 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_DELETE_FIRST_COLUMN_PIECE( idvSQL * aStatistic
 
     IDE_DASSERT( aOID        != SM_NULL_OID );
     IDE_DASSERT( aPrevLSN    != NULL );
-    IDE_DASSERT( SC_GRID_IS_NULL(aRecGRID) != ID_TRUE );
+    IDE_DASSERT( SC_GRID_IS_NOT_NULL(aRecGRID));
 
-    IDE_TEST( sdrMiniTrans::begin( aStatistics,
-                                   &sMtx,
-                                   smxTransMgr::getTransByTID(aTransID),
-                                   SDR_MTX_LOGGING,
-                                   ID_FALSE,/*MtxUndoable(PROJ-2162)*/
-                                   SM_DLOG_ATTR_DEFAULT )
-              != IDE_SUCCESS );
-    sState = 1;
-
-    IDE_TEST( sdbBufferMgr::getPageByGRID( aStatistics,
-                                           aRecGRID,
-                                           SDB_X_LATCH,
-                                           SDB_WAIT_NORMAL,
-                                           &sMtx,
-                                           (UChar**)&sSlotPtr,
-                                           &sDummy )
-              != IDE_SUCCESS );
-
-    IDE_ERROR( sSlotPtr != NULL );
-    IDE_ERROR( sdcRow::isDeleted(sSlotPtr) != ID_TRUE );
-
+    //BUG-48460: undo_SDR_SDC_DELETE_FIRST_COLUMN_PIECE TBS ªÛ≈¬ √º≈© ¿ßƒ° ¡∂¡§
     if( sctTableSpaceMgr::hasState(SC_MAKE_SPACE(aRecGRID),
                                    SCT_SS_SKIP_UNDO) == ID_FALSE )
     {
+        IDE_TEST( sdrMiniTrans::begin( aStatistics,
+                                       &sMtx,
+                                       smxTransMgr::getTransByTID(aTransID),
+                                       SDR_MTX_LOGGING,
+                                       ID_FALSE,/*MtxUndoable(PROJ-2162)*/
+                                       SM_DLOG_ATTR_DEFAULT )
+                  != IDE_SUCCESS );
+        sState = 1;
+
+        IDE_TEST( sdbBufferMgr::getPageByGRID( aStatistics,
+                                               aRecGRID,
+                                               SDB_X_LATCH,
+                                               SDB_WAIT_NORMAL,
+                                               &sMtx,
+                                               (UChar**)&sSlotPtr,
+                                               &sDummy )
+                  != IDE_SUCCESS );
+
+        IDE_ERROR( sSlotPtr != NULL );
+        IDE_ERROR( sdcRow::isDeleted(sSlotPtr) != ID_TRUE );
+
         sPageHdr = sdpPhyPage::getHdr( sSlotPtr );
         if( sdpPhyPage::isConsistentPage( (UChar*)sPageHdr ) == ID_TRUE )
         {
@@ -1338,79 +1325,77 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_DELETE_FIRST_COLUMN_PIECE( idvSQL * aStatistic
             IDE_ERROR( sRowHdrInfo.mUndoSID != SD_NULL_SID );
 
             IDE_TEST( sdbBufferMgr::getPageBySID(
-                                    aStatistics,
-                                    SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO,
-                                    sRowHdrInfo.mUndoSID,
-                                    SDB_X_LATCH,
-                                    SDB_WAIT_NORMAL,
-                                    NULL,
-                                    (UChar**)&sUndoRecHdr,
-                                    &sDummy )
+                                                aStatistics,
+                                                SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO,
+                                                sRowHdrInfo.mUndoSID,
+                                                SDB_X_LATCH,
+                                                SDB_WAIT_NORMAL,
+                                                NULL,
+                                                (UChar**)&sUndoRecHdr,
+                                                &sDummy )
                       != IDE_SUCCESS );
             sState = 2;
 
             IDE_ERROR_MSG( SDC_UNDOREC_FLAG_IS_UNDO_FOR_HEAD_ROWPIECE(
-                            *SDC_GET_UNDOREC_HDR_FIELD_PTR(
-                                sUndoRecHdr,
-                                SDC_UNDOREC_HDR_FLAG ))
-                            != ID_TRUE,
-                            "sUndoRecHdrFlag : %"ID_UINT32_FMT,
-                            *SDC_GET_UNDOREC_HDR_FIELD_PTR(
-                                sUndoRecHdr,
-                                SDC_UNDOREC_HDR_FLAG ) );
+                                *SDC_GET_UNDOREC_HDR_FIELD_PTR( sUndoRecHdr,
+                                                                SDC_UNDOREC_HDR_FLAG ))
+                           != ID_TRUE,
+                           "sUndoRecHdrFlag : %"ID_UINT32_FMT,
+                           *SDC_GET_UNDOREC_HDR_FIELD_PTR( sUndoRecHdr,
+                                                           SDC_UNDOREC_HDR_FLAG ) );
 
             sSlotSID = SD_MAKE_SID_FROM_GRID( aRecGRID );
 
             IDE_TEST( sdcRow::undo_DELETE_FIRST_COLUMN_PIECE(
-                              &sMtx,
-                              sdcUndoRecord::getUndoRecBodyStartPtr(sUndoRecHdr),
-                              sSlotPtr,
-                              sSlotSID,
-                              SDC_UNDO_MAKE_OLDROW,
-                              NULL, /* aRowBuf4MVCC */
-                              &sNewSlotPtr ) != IDE_SUCCESS );
+                                        &sMtx,
+                                        sdcUndoRecord::getUndoRecBodyStartPtr(sUndoRecHdr),
+                                        sSlotPtr,
+                                        sSlotSID,
+                                        SDC_UNDO_MAKE_OLDROW,
+                                        NULL, /* aRowBuf4MVCC */
+                                        &sNewSlotPtr ) 
+                      != IDE_SUCCESS );
 
             IDE_ERROR( smLayerCallback::getTableHeaderFromOID( aOID,
                                                                (void**)&sTableHeader )
                        == IDE_SUCCESS );
             IDE_DASSERT( sTableHeader != NULL );
 
-            sEntry = (sdpPageListEntry*)
-                smcTable::getDiskPageListEntry(sTableHeader);
+            sEntry = (sdpPageListEntry*)smcTable::getDiskPageListEntry(sTableHeader);
             IDE_DASSERT(sEntry != NULL);
 
-            // reallocSlotÏùÑ ÌïúÏù¥ÌõÑÏóê, SegmentÏóê ÎåÄÌïú Í∞ÄÏö©ÎèÑ Î≥ÄÍ≤ΩÏó∞ÏÇ∞ÏùÑ ÏàòÌñâÌïúÎã§.
+            // reallocSlot¿ª «—¿Ã»ƒø°, Segmentø° ¥Î«— ∞°øÎµµ ∫Ø∞Êø¨ªÍ¿ª ºˆ«‡«—¥Ÿ.
             IDE_TEST( sdpPageList::updatePageState(
-                          aStatistics,
-                          SC_MAKE_SPACE(aRecGRID),
-                          sEntry,
-                          sdpPhyPage::getPageStartPtr(sSlotPtr),
-                          &sMtx )
+                                                aStatistics,
+                                                SC_MAKE_SPACE(aRecGRID),
+                                                sEntry,
+                                                sdpPhyPage::getPageStartPtr(sSlotPtr),
+                                                &sMtx )
                       != IDE_SUCCESS );
 
             IDE_TEST( sdcRow::writeDeleteFstColumnPieceCLR(
-                          sUndoRecHdr,
-                          aRecGRID,
-                          sRowHdrInfo.mUndoSID,
-                          &sMtx ) != IDE_SUCCESS );
+                                                sUndoRecHdr,
+                                                aRecGRID,
+                                                sRowHdrInfo.mUndoSID,
+                                                &sMtx ) 
+                      != IDE_SUCCESS );
 
             sdrMiniTrans::setCLR( &sMtx, aPrevLSN );
 
             sdcUndoRecord::setInvalid( sUndoRecHdr );
 
-            sdbBufferMgr::setDirtyPageToBCB(
-                aStatistics,
-                sdpPhyPage::getPageStartPtr(sUndoRecHdr) );
+            sdbBufferMgr::setDirtyPageToBCB( aStatistics,
+                                             sdpPhyPage::getPageStartPtr(sUndoRecHdr) );
 
             sState = 1;
             IDE_TEST( sdbBufferMgr::releasePage( aStatistics,
                                                  sUndoRecHdr )
                       != IDE_SUCCESS );
         }
-    }
 
-    sState = 0;
-    IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
+        sState = 0;
+        IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
+    }
 
     return IDE_SUCCESS;
 
@@ -1431,13 +1416,12 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_DELETE_FIRST_COLUMN_PIECE( idvSQL * aStatistic
             break;
     }
 
-    smrRecoveryMgr::prepareRTOIForUndoFailure( 
-        smxTransMgr::getTransByTID(aTransID),
-        SMR_RTOI_TYPE_DISKPAGE,
-        aOID, /* aTableOID */
-        0,    /* aIndexID */
-        aRecGRID.mSpaceID, 
-        aRecGRID.mPageID );
+    smrRecoveryMgr::prepareRTOIForUndoFailure( smxTransMgr::getTransByTID(aTransID),
+                                               SMR_RTOI_TYPE_DISKPAGE,
+                                               aOID, /* aTableOID */
+                                               0,    /* aIndexID */
+                                               aRecGRID.mSpaceID, 
+                                               aRecGRID.mPageID );
 
     return IDE_FAILURE;
 }
@@ -1483,13 +1467,13 @@ IDE_RC sdcRowUpdate::redo_SDR_SDC_ADD_FIRST_COLUMN_PIECE( SChar       * aLogPtr,
     sSlotSID = SD_MAKE_SID( sPageHdr->mPageID, sSlotNum );
 
     IDE_ERROR( sdcRow::undo_DELETE_FIRST_COLUMN_PIECE(
-                                    NULL, /* aMtx */
-                                    sLogPtr,
-                                    sOldSlotPtr,
-                                    sSlotSID,
-                                    SDC_REDO_MAKE_NEWROW,
-                                    NULL, /* aRowBuf4MVCC */
-                                    &sNewSlotPtr )
+                                                NULL, /* aMtx */
+                                                sLogPtr,
+                                                sOldSlotPtr,
+                                                sSlotSID,
+                                                SDC_REDO_MAKE_NEWROW,
+                                                NULL, /* aRowBuf4MVCC */
+                                                &sNewSlotPtr )
                == IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -1608,31 +1592,32 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_DELETE_ROW_PIECE( idvSQL * aStatistics,
     IDE_DASSERT( aOID        != SM_NULL_OID );
     IDE_DASSERT( aLogPtr     != NULL );
     IDE_DASSERT( aPrevLSN    != NULL );
-    IDE_DASSERT( SC_GRID_IS_NULL(aRecGRID) != ID_TRUE );
+    IDE_DASSERT( SC_GRID_IS_NOT_NULL(aRecGRID));
 
-    IDE_TEST( sdrMiniTrans::begin( aStatistics,
-                                   &sMtx,
-                                   smxTransMgr::getTransByTID(aTransID),
-                                   SDR_MTX_LOGGING,
-                                   ID_FALSE,/*MtxUndoable(PROJ-2162)*/
-                                   SM_DLOG_ATTR_DEFAULT )
-              != IDE_SUCCESS );
-    sState = 1;
-
-    IDE_TEST( sdbBufferMgr::getPageByGRID( aStatistics,
-                                           aRecGRID,
-                                           SDB_X_LATCH,
-                                           SDB_WAIT_NORMAL,
-                                           &sMtx,
-                                           (UChar**)&sSlotPtr,
-                                           &sDummy )
-              != IDE_SUCCESS );
-    IDE_ERROR( sSlotPtr != NULL );
-    IDE_ERROR( sdcRow::isDeleted(sSlotPtr) == ID_TRUE );
-
+    //BUG-48460: undo_SDR_SDC_DELETE_ROW_PIECE TBS ªÛ≈¬ √º≈© ¿ßƒ° ¡∂¡§
     if( sctTableSpaceMgr::hasState(SC_MAKE_SPACE(aRecGRID),
                                    SCT_SS_SKIP_UNDO) == ID_FALSE )
     {
+        IDE_TEST( sdrMiniTrans::begin( aStatistics,
+                                       &sMtx,
+                                       smxTransMgr::getTransByTID(aTransID),
+                                       SDR_MTX_LOGGING,
+                                       ID_FALSE,/*MtxUndoable(PROJ-2162)*/
+                                       SM_DLOG_ATTR_DEFAULT )
+                  != IDE_SUCCESS );
+        sState = 1;
+
+        IDE_TEST( sdbBufferMgr::getPageByGRID( aStatistics,
+                                               aRecGRID,
+                                               SDB_X_LATCH,
+                                               SDB_WAIT_NORMAL,
+                                               &sMtx,
+                                               (UChar**)&sSlotPtr,
+                                               &sDummy )
+                  != IDE_SUCCESS );
+        IDE_ERROR( sSlotPtr != NULL );
+        IDE_ERROR( sdcRow::isDeleted(sSlotPtr) == ID_TRUE );
+
         sPageHdr = sdpPhyPage::getHdr( sSlotPtr );
 
         if( sdpPhyPage::isConsistentPage( (UChar*)sPageHdr ) == ID_TRUE )
@@ -1641,14 +1626,15 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_DELETE_ROW_PIECE( idvSQL * aStatistics,
             IDE_ERROR( sRowHdrInfo.mUndoSID != SD_NULL_SID );
 
             IDE_TEST( sdbBufferMgr::getPageBySID( 
-                               aStatistics,
-                               SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO,
-                               sRowHdrInfo.mUndoSID,
-                               SDB_X_LATCH,
-                               SDB_WAIT_NORMAL,
-                               NULL,
-                               (UChar**)&sUndoRecHdr,
-                               &sDummy ) != IDE_SUCCESS );
+                                                aStatistics,
+                                                SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO,
+                                                sRowHdrInfo.mUndoSID,
+                                                SDB_X_LATCH,
+                                                SDB_WAIT_NORMAL,
+                                                NULL,
+                                                (UChar**)&sUndoRecHdr,
+                                                &sDummy )
+                      != IDE_SUCCESS );
             sState = 2;
 
             if( SDC_UNDOREC_FLAG_IS_UNDO_FOR_HEAD_ROWPIECE(
@@ -1658,13 +1644,13 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_DELETE_ROW_PIECE( idvSQL * aStatistics,
             {
                 ID_READ_VALUE( aLogPtr, &sLogHdr, ID_SIZEOF(sdrLogHdr) );
                 IDE_ERROR( sLogHdr.mType !=
-                            SDR_SDC_DELETE_ROW_PIECE_FOR_UPDATE );
+                           SDR_SDC_DELETE_ROW_PIECE_FOR_UPDATE );
 
                 if (smrRecoveryMgr::isRestart() == ID_FALSE)
                 {
                     IDE_TEST( smLayerCallback::undoDeleteOfTableInfo(
-                                  smxTransMgr::getTransByTID( aTransID ),
-                                  aOID )
+                                                smxTransMgr::getTransByTID( aTransID ),
+                                                aOID )
                               != IDE_SUCCESS );
                 }
             }
@@ -1673,8 +1659,7 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_DELETE_ROW_PIECE( idvSQL * aStatistics,
                                                   &sChangeSize );
             IDE_ERROR( sChangeSize >= 0 );
 
-            sUndoRecBodyPtr =
-                sdcUndoRecord::getUndoRecBodyStartPtr(sUndoRecHdr);
+            sUndoRecBodyPtr = sdcUndoRecord::getUndoRecBodyStartPtr(sUndoRecHdr);
 
             sUndoRecBodyPtr += ID_SIZEOF(SShort);
 
@@ -1685,12 +1670,12 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_DELETE_ROW_PIECE( idvSQL * aStatistics,
                                                       sOldRowPieceSize );
 
             IDE_TEST( sdcTableCTL::unbind(
-                          &sMtx,
-                          sSlotPtr,
-                          *(UChar*)sSlotPtr,        /* aCTSlotIdxBfrUndo */
-                          *(UChar*)sUndoRecBodyPtr, /* aCTSlotIdxAftUndo */
-                          sFSCreditSize,
-                          ID_TRUE )                 /* aDecDeleteRowCnt */
+                                    &sMtx,
+                                    sSlotPtr,
+                                    *(UChar*)sSlotPtr,        /* aCTSlotIdxBfrUndo */
+                                    *(UChar*)sUndoRecBodyPtr, /* aCTSlotIdxAftUndo */
+                                    sFSCreditSize,
+                                    ID_TRUE )                 /* aDecDeleteRowCnt */
                       != IDE_SUCCESS );
 
             sSlotSID = SD_MAKE_SID_FROM_GRID( aRecGRID );
@@ -1710,8 +1695,8 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_DELETE_ROW_PIECE( idvSQL * aStatistics,
 
             IDE_ERROR( sdcRow::isDeleted(sNewSlotPtr) != ID_TRUE );
 
-            /* DeleteÎêú RowPiece Îßå ÎÇ®ÏïÑÏûàÎçò Í≤ÉÏùÑ FreeSlotÌïòÎèÑÎ°ù RedoÎ°úÍ∑∏Îßå 
-             * ÎÇ®Í∏¥Îã§. */
+            /* Deleteµ» RowPiece ∏∏ ≥≤æ∆¿÷¥¯ ∞Õ¿ª FreeSlot«œµµ∑œ Redo∑Œ±◊∏∏ 
+             * ≥≤±‰¥Ÿ. */
             IDE_TEST( sdrMiniTrans::writeLogRec( &sMtx,
                                                  aRecGRID,
                                                  &sOldRowPieceSize,
@@ -1732,8 +1717,8 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_DELETE_ROW_PIECE( idvSQL * aStatistics,
             sEntry = (sdpPageListEntry*) smcTable::getDiskPageListEntry(sTableHeader);
             IDE_DASSERT(sEntry != NULL);
 
-            // reallocSlotÏùÑ ÌïúÏù¥ÌõÑÏóê,
-            // SegmentÏóê ÎåÄÌïú Í∞ÄÏö©ÎèÑ Î≥ÄÍ≤ΩÏó∞ÏÇ∞ÏùÑ ÏàòÌñâÌïúÎã§.
+            // reallocSlot¿ª «—¿Ã»ƒø°,
+            // Segmentø° ¥Î«— ∞°øÎµµ ∫Ø∞Êø¨ªÍ¿ª ºˆ«‡«—¥Ÿ.
             IDE_TEST( sdpPageList::updatePageState( aStatistics,
                                                     SC_MAKE_SPACE(aRecGRID),
                                                     sEntry,
@@ -1753,14 +1738,10 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_DELETE_ROW_PIECE( idvSQL * aStatistics,
                                                  sUndoRecHdr )
                       != IDE_SUCCESS );
         }
-    }
-    else
-    {
-        // Nothing To Do..
-    }
 
-    sState = 0;
-    IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
+        sState = 0;
+        IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
+    }
 
     return IDE_SUCCESS;
 
@@ -1781,13 +1762,12 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_DELETE_ROW_PIECE( idvSQL * aStatistics,
             break;
     }
 
-    smrRecoveryMgr::prepareRTOIForUndoFailure( 
-        smxTransMgr::getTransByTID(aTransID),
-        SMR_RTOI_TYPE_DISKPAGE,
-        aOID, /* aTableOID */
-        0,    /* aIndexID */
-        aRecGRID.mSpaceID, 
-        aRecGRID.mPageID );
+    smrRecoveryMgr::prepareRTOIForUndoFailure( smxTransMgr::getTransByTID(aTransID),
+                                               SMR_RTOI_TYPE_DISKPAGE,
+                                               aOID, /* aTableOID */
+                                               0,    /* aIndexID */
+                                               aRecGRID.mSpaceID, 
+                                               aRecGRID.mPageID );
 
     return IDE_FAILURE;
 }
@@ -1868,32 +1848,33 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_LOCK_ROW( idvSQL * aStatistics,
     sdcRowHdrInfo   sRowHdrInfo;
 
     IDE_DASSERT( aPrevLSN    != NULL );
-    IDE_DASSERT( SC_GRID_IS_NULL(aRecGRID) != ID_TRUE );
+    IDE_DASSERT( SC_GRID_IS_NOT_NULL(aRecGRID));
 
-    IDE_TEST( sdrMiniTrans::begin( aStatistics,
-                                   &sMtx,
-                                   smxTransMgr::getTransByTID(aTransID),
-                                   SDR_MTX_LOGGING,
-                                   ID_FALSE,/*MtxUndoable(PROJ-2162)*/
-                                   SM_DLOG_ATTR_DEFAULT )
-              != IDE_SUCCESS );
-    sState = 1;
-
-    IDE_TEST( sdbBufferMgr::getPageByGRID( aStatistics,
-                                           aRecGRID,
-                                           SDB_X_LATCH,
-                                           SDB_WAIT_NORMAL,
-                                           &sMtx,
-                                           (UChar**)&sSlotPtr,
-                                           &sDummy )
-              != IDE_SUCCESS );
-
-    IDE_ERROR( sSlotPtr != NULL );
-    IDE_ERROR( sdcRow::isDeleted(sSlotPtr) != ID_TRUE );
-
+    //BUG-48460: undo_SDR_SDC_LOCK_ROW TBS ªÛ≈¬ √º≈© ¿ßƒ° ¡∂¡§
     if( sctTableSpaceMgr::hasState(SC_MAKE_SPACE(aRecGRID), SCT_SS_SKIP_UNDO)
         == ID_FALSE )
     {
+        IDE_TEST( sdrMiniTrans::begin( aStatistics,
+                                       &sMtx,
+                                       smxTransMgr::getTransByTID(aTransID),
+                                       SDR_MTX_LOGGING,
+                                       ID_FALSE,/*MtxUndoable(PROJ-2162)*/
+                                       SM_DLOG_ATTR_DEFAULT )
+                  != IDE_SUCCESS );
+        sState = 1;
+
+        IDE_TEST( sdbBufferMgr::getPageByGRID( aStatistics,
+                                               aRecGRID,
+                                               SDB_X_LATCH,
+                                               SDB_WAIT_NORMAL,
+                                               &sMtx,
+                                               (UChar**)&sSlotPtr,
+                                               &sDummy )
+                  != IDE_SUCCESS );
+
+        IDE_ERROR( sSlotPtr != NULL );
+        IDE_ERROR( sdcRow::isDeleted(sSlotPtr) != ID_TRUE );
+
         sPageHdr = sdpPhyPage::getHdr(sSlotPtr);
 
         if( sdpPhyPage::isConsistentPage((UChar*)sPageHdr) == ID_TRUE )
@@ -1902,51 +1883,46 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_LOCK_ROW( idvSQL * aStatistics,
             IDE_ERROR( sRowHdrInfo.mUndoSID != SD_NULL_SID );
 
             IDE_TEST( sdbBufferMgr::getPageBySID( 
-                               aStatistics,
-                               SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO,
-                               sRowHdrInfo.mUndoSID,
-                               SDB_X_LATCH,
-                               SDB_WAIT_NORMAL,
-                               NULL,
-                               (UChar**)&sUndoRecHdr,
-                               &sDummy ) != IDE_SUCCESS );
+                                            aStatistics,
+                                            SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO,
+                                            sRowHdrInfo.mUndoSID,
+                                            SDB_X_LATCH,
+                                            SDB_WAIT_NORMAL,
+                                            NULL,
+                                            (UChar**)&sUndoRecHdr,
+                                            &sDummy )
+                      != IDE_SUCCESS );
             sState = 2;
 
             IDE_TEST( sdcRow::redo_undo_LOCK_ROW(
-                                   &sMtx,
-                                   sdcUndoRecord::getUndoRecBodyStartPtr(sUndoRecHdr),
-                                   sSlotPtr,
-                                   SDC_UNDO_MAKE_OLDROW )
-                      != IDE_SUCCESS );
+                                    &sMtx,
+                                    sdcUndoRecord::getUndoRecBodyStartPtr(sUndoRecHdr),
+                                    sSlotPtr,
+                                    SDC_UNDO_MAKE_OLDROW )
+                       != IDE_SUCCESS );
 
-            IDE_TEST( sdcRow::writeLockRowCLR(
-                                   sUndoRecHdr,
-                                   aRecGRID,
-                                   sRowHdrInfo.mUndoSID,
-                                   &sMtx ) != IDE_SUCCESS );
+            IDE_TEST( sdcRow::writeLockRowCLR( sUndoRecHdr,
+                                               aRecGRID,
+                                               sRowHdrInfo.mUndoSID,
+                                               &sMtx )
+                      != IDE_SUCCESS );
 
             sdrMiniTrans::setCLR( &sMtx, aPrevLSN );
 
             sdcUndoRecord::setInvalid( sUndoRecHdr );
 
-            sdbBufferMgr::setDirtyPageToBCB(
-                aStatistics,
-                sdpPhyPage::getPageStartPtr(sUndoRecHdr) );
+            sdbBufferMgr::setDirtyPageToBCB( aStatistics,
+                                             sdpPhyPage::getPageStartPtr(sUndoRecHdr) );
 
             sState = 1;
             IDE_TEST( sdbBufferMgr::releasePage( aStatistics,
                                                  sUndoRecHdr )
                       != IDE_SUCCESS );
         }
-    }
-    else
-    {
-        // Nothing To Do ...
-    }
 
-    sState = 0;
-    IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
-
+        sState = 0;
+        IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
+    }
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -1966,13 +1942,12 @@ IDE_RC sdcRowUpdate::undo_SDR_SDC_LOCK_ROW( idvSQL * aStatistics,
             break;
     }
 
-    smrRecoveryMgr::prepareRTOIForUndoFailure( 
-        smxTransMgr::getTransByTID(aTransID),
-        SMR_RTOI_TYPE_DISKPAGE,
-        aOID, /* aTableOID */
-        0,    /* aIndexID */
-        aRecGRID.mSpaceID, 
-        aRecGRID.mPageID );
+    smrRecoveryMgr::prepareRTOIForUndoFailure( smxTransMgr::getTransByTID(aTransID),
+                                               SMR_RTOI_TYPE_DISKPAGE,
+                                               aOID, /* aTableOID */
+                                               0,    /* aIndexID */
+                                               aRecGRID.mSpaceID, 
+                                               aRecGRID.mPageID );
 
     return IDE_FAILURE;
 }

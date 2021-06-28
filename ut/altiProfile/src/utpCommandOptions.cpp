@@ -31,22 +31,22 @@ utpStatOutFormat utpCommandOptions::mStatFormat  = UTP_STAT_NONE;
 
 IDE_RC utpCommandOptions::parse(SInt aArgc, SChar **aArgv)
 {
-    SInt sArgIdx = 1; /* ì´ˆê¸°ê°’ ì„¤ì • */
+    SInt sArgIdx = 1; /* ÃÊ±â°ª ¼³Á¤ */
     idBool sIsLenOption  = ID_FALSE;
     idBool sIsStatOption = ID_FALSE;
     idBool sIsOutOption  = ID_FALSE;
 
     IDE_TEST_RAISE(aArgc < 2, err_invalid_option);
 
-    /* ì˜µì…˜ ì—†ì´ íŒŒì¼ ì´ë¦„ë§Œ ì§€ì •í•˜ëŠ” ê²½ìš° */
+    /* ¿É¼Ç ¾øÀÌ ÆÄÀÏ ÀÌ¸§¸¸ ÁöÁ¤ÇÏ´Â °æ¿ì */
     mCommandType = UTP_CMD_DUMP;
 
     while ((aArgc > 1) && (aArgv[sArgIdx][0] == '-'))
     {
         /* proj_2160 cm_type removal
-         * command-line ìž…ë ¥ì—ì„œ len ì˜µì…˜ì„ ì¶”ê°€í•œë‹¤
-         * ì´ ì˜µì…˜ì€ ë°”ì¸ë”© ë°ì´í„°ì¤‘ ê°€ë³€ê¸¸ì´ ë°ì´í„°ì˜ ì¶œë ¥ê¸¸ì´ë¥¼
-         * ì œí•œí•˜ê¸° ìœ„í•˜ì—¬ ì¶”ê°€í•˜ì˜€ë‹¤
+         * command-line ÀÔ·Â¿¡¼­ len ¿É¼ÇÀ» Ãß°¡ÇÑ´Ù
+         * ÀÌ ¿É¼ÇÀº ¹ÙÀÎµù µ¥ÀÌÅÍÁß °¡º¯±æÀÌ µ¥ÀÌÅÍÀÇ Ãâ·Â±æÀÌ¸¦
+         * Á¦ÇÑÇÏ±â À§ÇÏ¿© Ãß°¡ÇÏ¿´´Ù
          */
         if (idlOS::strcasecmp(aArgv[sArgIdx], "-len") == 0)
         {
@@ -60,7 +60,7 @@ IDE_RC utpCommandOptions::parse(SInt aArgc, SChar **aArgv)
             IDE_TEST_RAISE(aArgc <= 1, err_invalid_option);
 
             mBindMaxLen = idlOS::atoi(aArgv[sArgIdx]);
-            /* 0ì´ë©´ ì „ë¶€ ì¶œë ¥í•œë‹¤ */
+            /* 0ÀÌ¸é ÀüºÎ Ãâ·ÂÇÑ´Ù */
             if (mBindMaxLen == 0)
             {
                 mBindMaxLen = UTP_BIND_UNLIMIT_MAX_LEN;
@@ -134,8 +134,8 @@ IDE_RC utpCommandOptions::parse(SInt aArgc, SChar **aArgv)
     IDE_TEST_RAISE(sIsOutOption == ID_TRUE && sIsStatOption == ID_FALSE,
                    err_invalid_option);
 
-    /* command ì˜µì…˜ì— ì§€ì •ëœ profiling íŒŒì¼ì˜ ê°¯ìˆ˜ì™€ ìœ„ì¹˜ ì§€ì • */
-    mArgc = aArgc - 1; /* ëª…ë ¹ì–´ ìžì²´ëŠ” ê°¯ìˆ˜ì—ì„œ ì œì™¸ */
+    /* command ¿É¼Ç¿¡ ÁöÁ¤µÈ profiling ÆÄÀÏÀÇ °¹¼ö¿Í À§Ä¡ ÁöÁ¤ */
+    mArgc = aArgc - 1; /* ¸í·É¾î ÀÚÃ¼´Â °¹¼ö¿¡¼­ Á¦¿Ü */
     mArgIdx = sArgIdx;
 
     return IDE_SUCCESS;

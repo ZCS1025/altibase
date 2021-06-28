@@ -52,7 +52,7 @@ public:
                                   UInt    aTimeMilliSec,
                                   idBool *aBCBAdded);
 
-    // sdbBCBListStatì„ ìœ„í•œ í•¨ìˆ˜ë“¤
+    // sdbBCBListStatÀ» À§ÇÑ ÇÔ¼öµé
     inline sdbBCB* getFirst();
     inline sdbBCB* getLast();
     inline UInt    getID();
@@ -61,31 +61,31 @@ private:
     IDE_RC checkValidation(idvSQL *aStatistics);
 
 private:
-    /* prepare list ì‹ë³„ì. prepare listë¥¼ ì—¬ëŸ¬ê°œ ìœ ì§€í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ, ê° ë¦¬ìŠ¤íŠ¸ ë§ˆë‹¤
-     * ì‹ë³„ìë¥¼ ë‘”ë‹¤.  ì´ ì‹ë³„ìë¥¼ í†µí•´ BCBë‚´ì— ìœ ì§€í•¨ìœ¼ë¡œ í•´ì„œ ê° BCBê°€
-     * ì–´ë–¤ ë¦¬ìŠ¤íŠ¸ì— ì†í•´ìˆëŠ”ì§€ ì •í™•íˆ ì•Œì•„ë‚¼ ìˆ˜ ìˆë‹¤.*/
+    /* prepare list ½Äº°ÀÚ. prepare list¸¦ ¿©·¯°³ À¯ÁöÇÒ ¼ö ÀÖÀ¸¹Ç·Î, °¢ ¸®½ºÆ® ¸¶´Ù
+     * ½Äº°ÀÚ¸¦ µĞ´Ù.  ÀÌ ½Äº°ÀÚ¸¦ ÅëÇØ BCB³»¿¡ À¯ÁöÇÔÀ¸·Î ÇØ¼­ °¢ BCB°¡
+     * ¾î¶² ¸®½ºÆ®¿¡ ¼ÓÇØÀÖ´ÂÁö Á¤È®È÷ ¾Ë¾Æ³¾ ¼ö ÀÖ´Ù.*/
     UInt      mID;
 
-    /* smuListì—ì„œ í•„ìš”ë¡œ í•˜ëŠ” base list ì‹¤ì œë¡œ mDataëŠ” ì•„ë¬´ê²ƒë„ ê°€ë¦¬í‚¤ê³ 
-     * ìˆì§€ ì•ŠëŠ”ë‹¤.*/
+    /* smuList¿¡¼­ ÇÊ¿ä·Î ÇÏ´Â base list ½ÇÁ¦·Î mData´Â ¾Æ¹«°Íµµ °¡¸®Å°°í
+     * ÀÖÁö ¾Ê´Â´Ù.*/
     smuList     mBaseObj;
     smuList    *mBase;
 
     iduMutex    mMutex;
-    /* prepare listê°€ ë¹„ì—ˆì„ë•Œ, BCBê°€ ì‚½ì…ë˜ê¸°ë¥¼  ëŒ€ê¸°í•˜ê¸° ìœ„í•œ mutex */
+    /* prepare list°¡ ºñ¾úÀ»¶§, BCB°¡ »ğÀÔµÇ±â¸¦  ´ë±âÇÏ±â À§ÇÑ mutex */
     iduMutex    mMutexForWait;
-    /* prepare listê°€ ë¹„ì—ˆì„ë•Œ, BCBê°€ ì‚½ì…ë˜ê¸°ë¥¼  ëŒ€ê¸°í•˜ê¸° ìœ„í•œ cond variable */
+    /* prepare list°¡ ºñ¾úÀ»¶§, BCB°¡ »ğÀÔµÇ±â¸¦  ´ë±âÇÏ±â À§ÇÑ cond variable */
     iduCond     mCondVar;
 
     UInt        mListLength;
-    /* í˜„ì¬ prepare listì— ëŒ€í•´ì„œ ëŒ€ê¸°ì¤‘ì¸ ì“°ë ˆë“œì˜ ê°¯ìˆ˜ */
+    /* ÇöÀç prepare list¿¡ ´ëÇØ¼­ ´ë±âÁßÀÎ ¾²·¹µåÀÇ °¹¼ö */
     UInt        mWaitingClientCount;
 };
 
 /***********************************************************************
  * Description :
- *  í˜„ì¬ listì˜ ê¸¸ì´ë¥¼ ì–»ëŠ”ë‹¤. ë®¤í…ìŠ¤ë¥¼ ì¡ì§€ ì•Šê¸° ë•Œë¬¸ì—, ì •í™•í•œ í˜„ì¬ ìƒí™©ì„
- *  ë°˜ì˜í•˜ì§€ ì•Šì„ ìˆ˜ ìˆë‹¤.
+ *  ÇöÀç listÀÇ ±æÀÌ¸¦ ¾ò´Â´Ù. ¹ÂÅØ½º¸¦ ÀâÁö ¾Ê±â ¶§¹®¿¡, Á¤È®ÇÑ ÇöÀç »óÈ²À»
+ *  ¹İ¿µÇÏÁö ¾ÊÀ» ¼ö ÀÖ´Ù.
  ***********************************************************************/
 UInt sdbPrepareList::getLength()
 {

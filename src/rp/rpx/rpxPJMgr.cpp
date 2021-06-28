@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxPJMgr.cpp 85220 2019-04-12 03:29:08Z donghyun1 $
+ * $Id: rpxPJMgr.cpp 85417 2019-05-09 08:36:26Z yoonhee.kim $
  **********************************************************************/
 
 #include <idl.h> // to remove win32 compile warning
@@ -220,7 +220,7 @@ IDE_RC rpxPJMgr::allocSyncItem( rpdMetaItem * aTable )
 
 void rpxPJMgr::removeTotalSyncItems()
 {
-    /* Child ì—ì„œ mSyncList ë¥¼ ì‚¬ìš©í•˜ê³  ìˆê¸° ë•Œë¬¸ì— Child ê°€ ì¢…ë£Œë˜ê¸° ì „ì— ì‹¤í–‰ì‹œí‚¤ë©´ ì•ˆëœë‹¤ */
+    /* Child ¿¡¼­ mSyncList ¸¦ »ç¿ëÇÏ°í ÀÖ±â ¶§¹®¿¡ Child °¡ Á¾·áµÇ±â Àü¿¡ ½ÇÇà½ÃÅ°¸é ¾ÈµÈ´Ù */
 
     rpxSyncItem * sSyncItem  = NULL;
     iduListNode * sNode      = NULL;
@@ -294,7 +294,7 @@ void rpxPJMgr::run()
     IDE_ASSERT(mMutex.lock(NULL /*idvSQL* */) == IDE_SUCCESS);
     sPos = 1;
 
-    // PJChild ì¤‘ í•˜ë‚˜ë¼ë„ ì‹œì‘í–ˆìœ¼ë©´, ì •ìƒìœ¼ë¡œ ì·¨ê¸‰í•œë‹¤.
+    // PJChild Áß ÇÏ³ª¶óµµ ½ÃÀÛÇßÀ¸¸é, Á¤»óÀ¸·Î Ãë±ŞÇÑ´Ù.
     for(i = 0; i < mChildCount; i++)
     {
         IDU_FIT_POINT( "rpxPJMgr::run::Thread::mChildArray",
@@ -317,9 +317,9 @@ void rpxPJMgr::run()
     IDE_ASSERT(mMutex.unlock() == IDE_SUCCESS);
 
     /* ------------------------------------------------
-     * ëª¨ë“  ì‘ì—…ì´ ëë‚  ë•Œ ê¹Œì§€ ëŒ€ê¸°
+     * ¸ğµç ÀÛ¾÷ÀÌ ³¡³¯ ¶§ ±îÁö ´ë±â
      * ----------------------------------------------*/
-    while( 1 )  // ëŒ€ê¸°í•˜ëŠ” ê³³ì—ì„œëŠ” ì‹¤íŒ¨í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
+    while( 1 )  // ´ë±âÇÏ´Â °÷¿¡¼­´Â ½ÇÆĞÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
     {
         sEnd  = 0;
         for (i = 0; i < mChildCount; i++)
@@ -331,7 +331,7 @@ void rpxPJMgr::run()
             }
         }
 
-        if (sEnd == sStartCount) // ëª¨ë‘ê°€ ì¢…ë£Œí•œ ìƒíƒœì„
+        if (sEnd == sStartCount) // ¸ğµÎ°¡ Á¾·áÇÑ »óÅÂÀÓ
         {
             break;
         }
@@ -355,18 +355,12 @@ void rpxPJMgr::run()
     mPJMgrExitFlag = ID_TRUE;
 
     return;
-    //ì´ í•¨ìˆ˜ëŠ” ì—ëŸ¬ë¥¼ ë°˜í™˜í•˜ì§€ ì•Šê³  ì—ëŸ¬ë¥¼ ì„¤ì •í•  í•„ìš”ê°€ ì—†ìœ¼ë¯€ë¡œ,
-    //ì—ëŸ¬ì½”ë“œë¥¼ ì„¤ì •í•˜ì§€ ì•Šê³  ì•„ë˜ì™€ ê°™ì´ ì‚¬ìš©í•´ë„ ëœë‹¤.
+    //ÀÌ ÇÔ¼ö´Â ¿¡·¯¸¦ ¹İÈ¯ÇÏÁö ¾Ê°í ¿¡·¯¸¦ ¼³Á¤ÇÒ ÇÊ¿ä°¡ ¾øÀ¸¹Ç·Î,
+    //¿¡·¯ÄÚµå¸¦ ¼³Á¤ÇÏÁö ¾Ê°í ¾Æ·¡¿Í °°ÀÌ »ç¿ëÇØµµ µÈ´Ù.
     IDE_EXCEPTION( ERR_ALL_CHILD_START );
     {
         ideLog::log( IDE_RP_0, RP_TRC_PJM_ERR_ALL_CHILD_START );
     }
-    IDE_EXCEPTION( ERR_FAIL_SYNC_TABLE );
-    {
-        IDE_SET(ideSetErrorCode(rpERR_ABORT_RP_SENDER_SYNC_TABLE));
-        IDE_ERRLOG(IDE_RP_0);
-    }
-
     IDE_EXCEPTION_END;
 
     mIsError = ID_TRUE;

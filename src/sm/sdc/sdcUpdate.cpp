@@ -16,11 +16,11 @@
  
 
 /***********************************************************************
- * $Id: sdcUpdate.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdcUpdate.cpp 89495 2020-12-14 05:19:22Z emlee $
  *
  * Description :
  *
- * ë³¸ íŒŒì¼ì€ undo tablespace ê´€ë ¨ redo í•¨ìˆ˜ì— ëŒ€í•œ êµ¬í˜„íŒŒì¼ì´ë‹¤.
+ * º» ÆÄÀÏÀº undo tablespace °ü·Ã redo ÇÔ¼ö¿¡ ´ëÇÑ ±¸ÇöÆÄÀÏÀÌ´Ù.
  *
  **********************************************************************/
 
@@ -551,6 +551,8 @@ IDE_RC sdcUpdate::redo_SDR_SDC_ROW_TIMESTAMPING( SChar       * aData,
     }        
     else
     {
+        IDE_DASSERT( sCTSlotIdx == SDP_CTS_IDX_NULL );
+
         IDE_TEST( sdcTableCTL::runRowStampingOnRow( aPagePtr, 
                                                     sCTSlotIdx, 
                                                     &sCommitSCN )

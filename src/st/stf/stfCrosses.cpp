@@ -168,7 +168,7 @@ IDE_RC stfCrossesEstimateRange(
                         UInt*    aSize )
 {
     // BUG-28934
-    // merge rangeì—ì„œ ì‚¬ìš©í•  stdMBR ê³µê°„ì„ í™•ë³´í•œë‹¤.
+    // merge range¿¡¼­ »ç¿ëÇÒ stdMBR °ø°£À» È®º¸ÇÑ´Ù.
     *aSize = ID_SIZEOF(smiRange) + (ID_SIZEOF(mtkRangeCallBack) << 1)
         + ID_SIZEOF(stdMBR);
 
@@ -221,7 +221,7 @@ IDE_RC stfCrossesExtractRange(
 
     sValueColumn = aTemplate->rows[sValueNode->table].columns + 
                    sValueNode->column;
-    sValue       = aTemplate->rows[sValueNode->table].row; //rowì— mbrê°’ì€ ì–´ë””ì—?
+    sValue       = aTemplate->rows[sValueNode->table].row; //row¿¡ mbr°ªÀº ¾îµğ¿¡?
 
     sValueTemp = (void*)mtd::valueForModule( (smiColumn*)sValueColumn,
                                              sValue,

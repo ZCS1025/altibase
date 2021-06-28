@@ -22,7 +22,7 @@
 iduLatch  mmuAccessList::mLatch;
 idBool    mmuAccessList::mInitialized = ID_FALSE;
 
-/* PROJ-2624 [ê¸°ëŠ¥ì„±] MM - ìœ ì—°í•œ access_list ê´€ë¦¬ë°©ë²• ì œê³µ : 1024ë¡œ ëŠ˜ë¦¼ */
+/* PROJ-2624 [±â´É¼º] MM - À¯¿¬ÇÑ access_list °ü¸®¹æ¹ı Á¦°ø : 1024·Î ´Ã¸² */
 idBool    mmuAccessList::mIPACLPermit[MM_IP_ACL_MAX_COUNT]; /* ID_TRUE: Permit, ID_FALSE: Deny */
 struct in6_addr mmuAccessList::mIPACLAddr[MM_IP_ACL_MAX_COUNT];
 SChar     mmuAccessList::mIPACLAddrStr[MM_IP_ACL_MAX_COUNT][MM_IP_ACL_MAX_ADDR_STR];
@@ -169,17 +169,17 @@ LABEL_BIT_DIFF:
  * 3.    ipv6            ipv6       ipv6-dual
  */
 /**
- * ACLì„ ê²€ì‚¬í•´ ì ‘ì†ì„ í—ˆìš©í• ì§€ ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤.
+ * ACLÀ» °Ë»çÇØ Á¢¼ÓÀ» Çã¿ëÇÒÁö ¿©ºÎ¸¦ È®ÀÎÇÑ´Ù.
  *
- * @param aLink    ACLì„ ê²€ì‚¬í•  cmiLink
- * @param aAllowed ì ‘ì†ì„ í—ˆìš©í• ì§€ ì—¬ë¶€
- * @param aIPACL   ACL ì •ë³´.
- *                 aAllowedê°€ ID_FALSE ì¼ë•Œ í•´ë‹¹ ê·œì¹™ ì •ë³´ë¥¼ ë‹´ëŠ”ë‹¤.
- *                 aAllowedê°€ ID_TRUE ì¼ ë•ŒëŠ” ì˜ë¯¸ ì—†ìŒ.
+ * @param aLink    ACLÀ» °Ë»çÇÒ cmiLink
+ * @param aAllowed Á¢¼ÓÀ» Çã¿ëÇÒÁö ¿©ºÎ
+ * @param aIPACL   ACL Á¤º¸.
+ *                 aAllowed°¡ ID_FALSE ÀÏ¶§ ÇØ´ç ±ÔÄ¢ Á¤º¸¸¦ ´ã´Â´Ù.
+ *                 aAllowed°¡ ID_TRUE ÀÏ ¶§´Â ÀÇ¹Ì ¾øÀ½.
  *
- * @return ì—ëŸ¬ê°€ ë°œìƒí–ˆìœ¼ë©´ IDE_FAILURE, ì•„ë‹ˆë©´ IDE_SUCCESS
+ * @return ¿¡·¯°¡ ¹ß»ıÇßÀ¸¸é IDE_FAILURE, ¾Æ´Ï¸é IDE_SUCCESS
  */
-/* latchëŠ” ë°–ì—ì„œ ì¡ì•˜ë‹¤. */
+/* latch´Â ¹Û¿¡¼­ Àâ¾Ò´Ù. */
 IDE_RC mmuAccessList::checkIPACL( struct sockaddr_storage  * aAddr,
                                   idBool                   * aAllowed,
                                   SChar                   ** aIPACL )
@@ -230,7 +230,7 @@ IDE_RC mmuAccessList::checkIPACL( struct sockaddr_storage  * aAddr,
         }
     }
 
-    /* fix BUG-28834 IP Access Control List ì˜ëª»ë˜ì—ˆìŠµë‹ˆë‹¤ */
+    /* fix BUG-28834 IP Access Control List Àß¸øµÇ¾ú½À´Ï´Ù */
     /* IF BITXOR (BITAND(IP_Packet, mask) , BITAND(address,mask)) */
     /* if ipv4 or v4mapped-ipv6, then sIsIPv6Client is false */
     if (sIsIPv6Client == ID_FALSE)
@@ -253,7 +253,7 @@ IDE_RC mmuAccessList::checkIPACL( struct sockaddr_storage  * aAddr,
                     else
                     {
                         *aAllowed = ID_FALSE;
-                        /* ë³„ë„ë¡œ ê¸°ë¡ëœ address stringì„ ë°˜í™˜ */
+                        /* º°µµ·Î ±â·ÏµÈ address stringÀ» ¹İÈ¯ */
                         *aIPACL = mIPACLAddrStr[i];
                     }
                 }
@@ -284,7 +284,7 @@ IDE_RC mmuAccessList::checkIPACL( struct sockaddr_storage  * aAddr,
                     else
                     {
                         *aAllowed = ID_FALSE;
-                        /* ë³„ë„ë¡œ ê¸°ë¡ëœ address stringì„ ë°˜í™˜ */
+                        /* º°µµ·Î ±â·ÏµÈ address stringÀ» ¹İÈ¯ */
                         *aIPACL = mIPACLAddrStr[i];
                     }
                 }
@@ -305,10 +305,10 @@ IDE_RC mmuAccessList::checkIPACL( struct sockaddr_storage  * aAddr,
     return IDE_SUCCESS;
 }
 
-/* idp::readSPFile()ì„ ì°¸ì¡°í•˜ì—¬ êµ¬í˜„ */
+/* idp::readSPFile()À» ÂüÁ¶ÇÏ¿© ±¸Çö */
 
-/* ACCESS_LIST_METHODê°€ 1ì¸ ê²½ìš°ëŠ” 0ì¼ë•Œì— ë¹„í•´
- * access control valueë¥¼ ì—„ê²©í•˜ê²Œ ê²€ì‚¬í•œë‹¤.
+/* ACCESS_LIST_METHOD°¡ 1ÀÎ °æ¿ì´Â 0ÀÏ¶§¿¡ ºñÇØ
+ * access control value¸¦ ¾ö°İÇÏ°Ô °Ë»çÇÑ´Ù.
  */
 IDE_RC mmuAccessList::loadAccessList()
 {
@@ -330,7 +330,7 @@ IDE_RC mmuAccessList::loadAccessList()
     UInt             sMask[MM_IP_ACL_MAX_COUNT];
     UInt             sCount = 0;
 
-    /* ACCESS_LIST_FILE í”„ë¡œí¼í‹°ì— ì§€ì •ëœ ì´ë¦„ì´ NULL - error */
+    /* ACCESS_LIST_FILE ÇÁ·ÎÆÛÆ¼¿¡ ÁöÁ¤µÈ ÀÌ¸§ÀÌ NULL - error */
     IDE_TEST_RAISE( mmuProperty::mIPACLFile[0] == '\0',
                     ERR_ABORT_RELOAD_ACL_NOT_PERMITTED );
 
@@ -342,7 +342,7 @@ IDE_RC mmuAccessList::loadAccessList()
                     ERR_ABORT_ACCESS_LIST_FILE_OPEN_ERROR );
     sOpened = ID_TRUE;
 
-    /* ì„ì‹œë³€ìˆ˜ì— ê¸°ë¡í•œë‹¤. */
+    /* ÀÓ½Ãº¯¼ö¿¡ ±â·ÏÇÑ´Ù. */
     i = 0;
     while ( idlOS::idlOS_feof( sFP ) == 0 )
     {
@@ -388,8 +388,8 @@ IDE_RC mmuAccessList::loadAccessList()
                          "%s",
                          sLineBuf );
 
-        /* ACCESS_LIST stringì— ëŒ€í•œ validation í•„ìš” */
-        /* ascii í™•ì¸ */
+        /* ACCESS_LIST string¿¡ ´ëÇÑ validation ÇÊ¿ä */
+        /* ascii È®ÀÎ */
         sLen = idlOS::strlen( sLineBuf );
         for ( j = 0; j < sLen; j++ )
         {
@@ -397,7 +397,7 @@ IDE_RC mmuAccessList::loadAccessList()
                             ERR_ABORT_INVALID_ACCESS_LIST_VALUE );
         }
 
-        /* ê¸¸ì´ í™•ì¸ */
+        /* ±æÀÌ È®ÀÎ */
         IDE_TEST_RAISE( sLen > IDP_MAX_PROP_STRING_LEN,
                         ERR_ABORT_INVALID_ACCESS_LIST_VALUE );
 
@@ -464,7 +464,7 @@ IDE_RC mmuAccessList::loadAccessList()
         }
         else
         {
-            sMask[i] = (UInt)idlOS::atoi(sTk);
+            sMask[i] = idlOS::atoi(sTk);
             /* max ipv6 addr bits: 128 */
             IDE_TEST_RAISE( sMask[i] > 128, 
                             ERR_ABORT_INVALID_ACCESS_LIST_VALUE );
@@ -479,7 +479,7 @@ IDE_RC mmuAccessList::loadAccessList()
     IDE_TEST_RAISE( idlOS::fclose( sFP ) != 0,
                     ERR_ABORT_ACCESS_LIST_FILE_CLOSE_ERROR );
 
-    /* ë³µì œ */
+    /* º¹Á¦ */
     lock();
 
     for ( i = 0; i < sCount; i++ )
@@ -529,7 +529,7 @@ IDE_RC mmuAccessList::loadAccessList()
                                   sLine,
                                   sMsg ) );
 
-        /* startupì‹œ error mgrê°€ ë¡œë”©ë˜ì§€ ì•Šì€ ìƒíƒœì¼ ìˆ˜ ìˆì–´ ì¶”ê°€ ê¸°ë¡í•œë‹¤. */
+        /* startup½Ã error mgr°¡ ·ÎµùµÇÁö ¾ÊÀº »óÅÂÀÏ ¼ö ÀÖ¾î Ãß°¡ ±â·ÏÇÑ´Ù. */
         ideLog::log( IDE_SERVER_0,
                      "[ACCESS LIST] value is not acceptable : "
                      "(Line %"ID_INT32_FMT") %s",

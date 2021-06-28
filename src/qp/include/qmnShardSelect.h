@@ -20,11 +20,11 @@
  *
  * Description : SDSL(SharD SElect) Node
  *
- *     Shard data node Ïóê ÎåÄÌïú scanÏùÑ ÏàòÌñâÌïòÎäî Plan Node Ïù¥Îã§.
+ *     Shard data node ø° ¥Î«— scan¿ª ºˆ«‡«œ¥¬ Plan Node ¿Ã¥Ÿ.
  *
- * Ïö©Ïñ¥ ÏÑ§Î™Ö :
+ * øÎæÓ º≥∏Ì :
  *
- * ÏïΩÏñ¥ :
+ * æ‡æÓ :
  *
  **********************************************************************/
 
@@ -58,7 +58,7 @@
 typedef struct qmncSDSE
 {
     //---------------------------------
-    // Í≥µÌÜµ Ï†ïÎ≥¥
+    // ∞¯≈Î ¡§∫∏
     //---------------------------------
 
     qmnPlan          plan;
@@ -66,7 +66,7 @@ typedef struct qmncSDSE
     UInt             planID;
 
     //---------------------------------
-    // Í≥†Ïú† Ï†ïÎ≥¥
+    // ∞Ì¿Ø ¡§∫∏
     //---------------------------------
 
     qmsTableRef    * tableRef;
@@ -76,6 +76,7 @@ typedef struct qmncSDSE
     qtcNode        * subqueryFilter;
     qtcNode        * nnfFilter;
     qtcNode        * filter;
+    qtcNode        * lobFilter;       // Lob Filter ( BUG-25916 ) 
 
     UInt             shardDataIndex;
     UInt             shardDataOffset;
@@ -85,10 +86,14 @@ typedef struct qmncSDSE
     UInt             mOffset;       // offset
     UInt             mMaxByteSize;  // offset
     UInt             mBindParam;    // offset
+    UInt             mOutBindParam; // offset
+
+    /* TASK-7219 Non-shard DML */
+    UInt             mOutRefBindData; // offset
 
     qcNamePosition * mQueryPos;
     sdiAnalyzeInfo * mShardAnalysis;
-    UShort           mShardParamOffset;
+    qcShardParamInfo * mShardParamInfo; /* TASK-7219 Non-shard DML */
     UShort           mShardParamCount;
 
 } qmncSDSE;
@@ -96,22 +101,24 @@ typedef struct qmncSDSE
 typedef struct qmndSDSE
 {
     //---------------------------------
-    // Í≥µÌÜµ Ï†ïÎ≥¥
+    // ∞¯≈Î ¡§∫∏
     //---------------------------------
 
     qmndPlan       plan;
     doItFunc       doIt;
     UInt         * flag;
 
+    UInt           lobBindCount; // PROJ-2728
+
     //---------------------------------
-    // Disk Table Í¥ÄÎ†® Ï†ïÎ≥¥
+    // Disk Table ∞¸∑√ ¡§∫∏
     //---------------------------------
 
-    void         * nullRow;  // Disk TableÏùÑ ÏúÑÌïú null row
+    void         * nullRow;  // Disk Table¿ª ¿ß«— null row
     scGRID         nullRID;
 
     //---------------------------------
-    // Í≥†Ïú† Ï†ïÎ≥¥
+    // ∞Ì¿Ø ¡§∫∏
     //---------------------------------
 
     UShort         mCurrScanNode;
@@ -133,7 +140,7 @@ public:
                         qmnPlan    * aPlan );
 
     //------------------------
-    // ÏàòÌñâ Ìï®Ïàò
+    // ºˆ«‡ «‘ºˆ
     // mapping by doIt() function pointer
     //------------------------
 
@@ -161,7 +168,7 @@ public:
                            qmnPlan    * aPlan );
 
     //------------------------
-    // Plan Ï†ïÎ≥¥ Ï∂úÎ†•
+    // Plan ¡§∫∏ √‚∑¬
     //------------------------
 
     static IDE_RC printPlan( qcTemplate   * aTemplate,
@@ -170,19 +177,32 @@ public:
                              iduVarString * aString,
                              qmnDisplay     aMode );
 
+    //------------------------
+    // TASK-7219 Non-shard DML
+    // Transformed out ref column bind
+    //------------------------
+
+    static IDE_RC setTransformedOutRefBindValue( qcTemplate * aTemplate,
+                                                 qmncSDSE   * aCodePlan );
+
 private:
 
     //------------------------
-    // ÏµúÏ¥à Ï¥àÍ∏∞Ìôî
+    // √÷√  √ ±‚»≠
     //------------------------
 
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncSDSE   * aCodePlan,
                              qmndSDSE   * aDataPlan );
-
+    
     static IDE_RC setParamInfo( qcTemplate   * aTemplate,
                                 qmncSDSE     * aCodePlan,
-                                sdiBindParam * aBindParams );
+                                sdiBindParam * aBindParams,
+                                void         * aOutRefBindData,
+                                UInt         * aLobBindCount );
+
+    static IDE_RC setLobInfo( qcTemplate   * aTemplate,
+                              qmncSDSE     * aCodePlan );
 };
 
 #endif /* _O_QMN_SDSE_H_ */

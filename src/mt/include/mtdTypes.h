@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtdTypes.h 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtdTypes.h 88554 2020-09-11 06:44:49Z donovan.seo $
  **********************************************************************/
 
 #ifndef _O_MTD_TYPES_H_
@@ -39,8 +39,8 @@ typedef struct mtdCharType {
 extern const mtdCharType mtdCharNull;
 
 #define MTD_CHAR_PRECISION_MINIMUM (0)    // to fix BUG-12597
-// BUG-19925 : ëª¨ë“  ë°ì´í„°íƒ€ì…ì˜ (GEOMETRYì œì™¸) ìµœëŒ€ í¬ê¸°ë¥¼
-// constant tupleì˜ ìµœëŒ€ í¬ê¸°ì¸ 65536ìœ¼ë¡œ ì œí•œí•¨
+// BUG-19925 : ¸ğµç µ¥ÀÌÅÍÅ¸ÀÔÀÇ (GEOMETRYÁ¦¿Ü) ÃÖ´ë Å©±â¸¦
+// constant tupleÀÇ ÃÖ´ë Å©±âÀÎ 65536À¸·Î Á¦ÇÑÇÔ
 #define MTD_CHAR_PRECISION_MAXIMUM ((SInt)(65536 - ID_SIZEOF(UShort)))
 
 // fix BUG-22220
@@ -192,8 +192,8 @@ typedef enum mtdTypesMTDNumber
 #define MTD_NUMBER_FORMAT_BUFFER_LEN    (70)
 
 // BUG-18788
-// formatì— ëŒ€í•œ ì •ë³´ê°€ ìˆ˜ì •ë˜ëŠ” ê²½ìš°, mtfTo_char.cppì˜
-// gFormatFuncSet ë˜í•œ ì ì ˆí•˜ê²Œ ìˆ˜ì •ë˜ì–´ì•¼ í•¨
+// format¿¡ ´ëÇÑ Á¤º¸°¡ ¼öÁ¤µÇ´Â °æ¿ì, mtfTo_char.cppÀÇ
+// gFormatFuncSet ¶ÇÇÑ ÀûÀıÇÏ°Ô ¼öÁ¤µÇ¾î¾ß ÇÔ
 # define MTD_DATE_FORMAT_NONE                 (1)    // general character
 # define MTD_DATE_FORMAT_AM_U                 (2)    // AM
 # define MTD_DATE_FORMAT_AM_UL                (3)    // Am
@@ -247,15 +247,15 @@ typedef enum mtdTypesMTDNumber
 # define MTD_DATE_FORMAT_Y                    (51)   // Y
 # define MTD_DATE_FORMAT_DOUBLE_QUOTE_STRING  (52)   // "****"
 # define MTD_DATE_FORMAT_FM                   (53)   // FM, To fix BUG-17693
-# define MTD_DATE_FORMAT_SEPARATOR            (54)   // êµ¬ë¶„ì
-# define MTD_DATE_FORMAT_IW                   (55)   /* BUG-42926 TO_CHAR()ì— IW ì¶”ê°€ */
-# define MTD_DATE_FORMAT_WW2                  (56)   /* BUG-42941 TO_CHAR()ì— WW2(Oracle Version WW) ì¶”ê°€ */
-# define MTD_DATE_FORMAT_SYYYY                (57)   /* BUG-36296 SYYYY Format ì§€ì› */
-# define MTD_DATE_FORMAT_SCC                  (58)   /* BUG-36296 SCC Format ì§€ì› */
-# define MTD_DATE_FORMAT_IYYY                 (59)   /* BUG-46727 TO_CHAR()ì— IYYY ì¶”ê°€ */
-# define MTD_DATE_FORMAT_IYY                  (60)   /* BUG-46727 TO_CHAR()ì— IYY ì¶”ê°€ */
-# define MTD_DATE_FORMAT_IY                   (61)   /* BUG-46727 TO_CHAR()ì— IY ì¶”ê°€ */
-# define MTD_DATE_FORMAT_I                    (62)   /* BUG-46727 TO_CHAR()ì— I ì¶”ê°€ */
+# define MTD_DATE_FORMAT_SEPARATOR            (54)   // ±¸ºĞÀÚ
+# define MTD_DATE_FORMAT_IW                   (55)   /* BUG-42926 TO_CHAR()¿¡ IW Ãß°¡ */
+# define MTD_DATE_FORMAT_WW2                  (56)   /* BUG-42941 TO_CHAR()¿¡ WW2(Oracle Version WW) Ãß°¡ */
+# define MTD_DATE_FORMAT_SYYYY                (57)   /* BUG-36296 SYYYY Format Áö¿ø */
+# define MTD_DATE_FORMAT_SCC                  (58)   /* BUG-36296 SCC Format Áö¿ø */
+# define MTD_DATE_FORMAT_IYYY                 (59)   /* BUG-46727 TO_CHAR()¿¡ IYYY Ãß°¡ */
+# define MTD_DATE_FORMAT_IYY                  (60)   /* BUG-46727 TO_CHAR()¿¡ IYY Ãß°¡ */
+# define MTD_DATE_FORMAT_IY                   (61)   /* BUG-46727 TO_CHAR()¿¡ IY Ãß°¡ */
+# define MTD_DATE_FORMAT_I                    (62)   /* BUG-46727 TO_CHAR()¿¡ I Ãß°¡ */
 
 # define MTD_DATE_GREGORY_ONLY       (0)
 # define MTD_DATE_GREGORY_AND_JULIAN (1)
@@ -303,21 +303,21 @@ typedef enum
 class mtdDateInterface
 {
 private:
-    // toDateì˜ input stringì— ëŒ€í•œ symbol table
+    // toDateÀÇ input string¿¡ ´ëÇÑ symbol table
     static const UChar mInputST[256];
-    // symbole tableì„ êµ¬ì„±í•˜ëŠ” ê°’
-    static const UChar mNONE;        // ì •ì˜ë˜ì§€ ì•Šì€ ì‹¬ë³¼
-    static const UChar mDIGIT;       // ìˆ«ì 0~9
-    static const UChar mALPHA;       // ì•ŒíŒŒë²³
-    static const UChar mSEPAR;       // ìˆœìˆ˜ êµ¬ë¶„ì 7ê°œ - / , . : ; '
-    static const UChar mWHSP;        // êµ¬ë¶„ìì¤‘, ê³µë°±, íƒ­, ì¤„ë°”ê¿ˆ
+    // symbole tableÀ» ±¸¼ºÇÏ´Â °ª
+    static const UChar mNONE;        // Á¤ÀÇµÇÁö ¾ÊÀº ½Éº¼
+    static const UChar mDIGIT;       // ¼ıÀÚ 0~9
+    static const UChar mALPHA;       // ¾ËÆÄºª
+    static const UChar mSEPAR;       // ¼ø¼ö ±¸ºĞÀÚ 7°³ - / , . : ; '
+    static const UChar mWHSP;        // ±¸ºĞÀÚÁß, °ø¹é, ÅÇ, ÁÙ¹Ù²Ş
 
-    static const UChar mDaysOfMonth[2][13];         // ì›”ë³„ ë‚  ìˆ˜
-    static const UInt  mAccDaysOfMonth[2][13];      // ì›”ë³„ ëˆ„ì  ë‚  ìˆ˜
+    static const UChar mDaysOfMonth[2][13];         // ¿ùº° ³¯ ¼ö
+    static const UInt  mAccDaysOfMonth[2][13];      // ¿ùº° ´©Àû ³¯ ¼ö
 
-    static const UInt  mHashMonth[12];           // ë¬¸ìì—´ í•´ì‹œ ê°’ ì €ì¥
+    static const UInt  mHashMonth[12];           // ¹®ÀÚ¿­ ÇØ½Ã °ª ÀúÀå
 
-    /* toDate()ì—ì„œ í•„ìš”ë¡œ í•˜ëŠ” í•¨ìˆ˜ */
+    /* toDate()¿¡¼­ ÇÊ¿ä·Î ÇÏ´Â ÇÔ¼ö */
     static IDE_RC toDateGetInteger( UChar** aString,
                                     UInt*   aLength,
                                     UInt    aMax,
@@ -400,10 +400,10 @@ public:
     static inline idBool isLeapYear( SShort aYear )
     {
         // BUG-22710
-        // 4ë¡œ ë‚˜ëˆ„ì–´ë–¨ì–´ì§€ì§€ë§Œ 100ìœ¼ë¡œ ë‚˜ëˆ„ì–´ë–¨ì–´ì§€ë©´ ì•ˆë˜ê³ 
-        // í˜¹ì€ 400ìœ¼ë¡œ ë‚˜ëˆ„ì–´ë–¨ì–´ì§€ì§€ë§Œ 4000ìœ¼ë¡œ ë‚˜ëˆ„ì–´ë–¨ì–´ì§€ì§€ì§€
-        // ì•Šìœ¼ë©´ ìœ¤ë…„ì´ë‹¤.
-        /* BUG-36296 ê·¸ë ˆê³ ë¦¬ë ¥ì˜ ìœ¤ë…„ ê·œì¹™ì€ 1583ë…„ë¶€í„° ì ìš©í•œë‹¤. 1582ë…„ ì´ì „ì—ëŠ” 4ë…„ë§ˆë‹¤ ìœ¤ë…„ì´ë‹¤. */
+        // 4·Î ³ª´©¾î¶³¾îÁöÁö¸¸ 100À¸·Î ³ª´©¾î¶³¾îÁö¸é ¾ÈµÇ°í
+        // È¤Àº 400À¸·Î ³ª´©¾î¶³¾îÁöÁö¸¸ 4000À¸·Î ³ª´©¾î¶³¾îÁöÁöÁö
+        // ¾ÊÀ¸¸é À±³âÀÌ´Ù.
+        /* BUG-36296 ±×·¹°í¸®·ÂÀÇ À±³â ±ÔÄ¢Àº 1583³âºÎÅÍ Àû¿ëÇÑ´Ù. 1582³â ÀÌÀü¿¡´Â 4³â¸¶´Ù À±³âÀÌ´Ù. */
         if ( ( ( aYear % 4 ) == 0 ) &&
              ( ( aYear < 1583 ) || ( ( aYear % 100 ) != 0 ) || ( ( aYear % 400 ) == 0 ) ) )
         {
@@ -467,13 +467,29 @@ public:
                          UChar*       aFormat,
                          UInt         aFormatLen);
 
-    // date format ì •ë³´ë¥¼ ëª¨ë¥´ëŠ” ê²½ìš°
+    // date format Á¤º¸¸¦ ¸ğ¸£´Â °æ¿ì
     static IDE_RC toChar(mtdDateType* aDate,
                          UChar*       aString,
                          UInt*        aStringLen,
                          SInt         aStringMaxLen,
                          UChar*       aFormat,
                          UInt         aFormatLen );
+
+    static IDE_RC toDateInternal(mtdDateType * aDate,
+                                 UChar       * aString,
+                                 UInt          aStringLen,
+                                 UChar       * aFormat,
+                                 UInt          aFormatLen,
+                                 void        * aScanner );
+
+    // date format Á¤º¸¸¦ ¸ğ¸£´Â °æ¿ì
+    static IDE_RC toCharInternal(mtdDateType * aDate,
+                                 UChar       * aString,
+                                 UInt        * aStringLen,
+                                 SInt          aStringMaxLen,
+                                 UChar       * aFormat,
+                                 UInt          aFormatLen,
+                                 void        * aScanner );
 
     static IDE_RC getMaxCharLength( UChar*       aFormat,
 				    UInt         aFormatLen,
@@ -534,9 +550,9 @@ extern const mtdBitType mtdBitNull; /* PROJ-2632 */
 #define MTD_BIT_STORE_PRECISION_MAXIMUM (64000)     // BUG-28921
 
 // PROJ-1583, PR-15722
-// SQL_BINARYì— ëŒ€ì‘í•˜ëŠ” mtdBinaryType
+// SQL_BINARY¿¡ ´ëÀÀÇÏ´Â mtdBinaryType
 // PROJ-1583 large geometry 
-// mLengthì˜ íƒ€ì…ì„ UIntë¡œ ë³€ê²½
+// mLengthÀÇ Å¸ÀÔÀ» UInt·Î º¯°æ
 typedef struct mtdBinaryType
 {
     UInt   mLength;
@@ -549,7 +565,7 @@ typedef struct mtdBinaryType
 
 #define MTD_CLOB_PRECISION_MINIMUM (0) // To Fix BUG-12597
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 #define MTD_CLOB_PRECISION_MAXIMUM (104857600)
 
 // PROJ-1362
@@ -631,7 +647,7 @@ extern const mtdNibbleType mtdNibbleNull; /* PROJ-2632 */
 #define MTD_NCHAR_PRECISION_DEFAULT         (1)
 #define MTD_NVARCHAR_PRECISION_DEFAULT      (1)
 
-// BUG-25914 : UTF8ì˜ í•œ ê¸€ìì˜ í¬ê¸°ëŠ” 3Byteì„.
+// BUG-25914 : UTF8ÀÇ ÇÑ ±ÛÀÚÀÇ Å©±â´Â 3ByteÀÓ.
 // MTD_NCHAR_PRECISION_MAXIMUM / MTL_UTF8_PRECISION
 #define MTD_UTF8_NCHAR_PRECISION_MAXIMUM    ( (65536/3) - ID_SIZEOF(UShort) )
 // MTD_NCHAR_PRECISION_MAXIMUM / MTL_UTF16_PRECISION
@@ -640,7 +656,7 @@ extern const mtdNibbleType mtdNibbleNull; /* PROJ-2632 */
 #define MTD_NCHAR_PRECISION_MINIMUM (0)    // to fix BUG-12597
 #define MTD_NCHAR_PRECISION_MAXIMUM (65536 - ID_SIZEOF(UShort) )
 
-// CHAR_PRECISION_MAXIMUMê³¼ SYNCë¥¼ ë§ì¶”ì–´ì•¼ í•¨
+// CHAR_PRECISION_MAXIMUM°ú SYNC¸¦ ¸ÂÃß¾î¾ß ÇÔ
 // MTD_NCHAR_PRECISION_MAXIMUM / MTL_UTF8_PRECISION
 #define MTD_UTF8_NCHAR_STORE_PRECISION_MAXIMUM    (10666)
 
@@ -649,7 +665,7 @@ extern const mtdNibbleType mtdNibbleNull; /* PROJ-2632 */
 
 
 typedef struct mtdNcharType {
-    UShort length;      // ë°”ì´íŠ¸ìˆ˜
+    UShort length;      // ¹ÙÀÌÆ®¼ö
     UChar  value[1];
 } mtdNcharType;
 
@@ -743,11 +759,11 @@ extern const mtdEcharType mtdEcharNull;
 
 #define MTD_ECHAR_STORE_PRECISION_MAXIMUM  (10000)
 
-// decryptë„ encryptì™€ ë§ˆì°¬ê°€ì§€ë¡œ blockë‹¨ìœ„ë¡œ ë³µí˜¸í™”ë¥¼ ìˆ˜í–‰í•˜ë¯€ë¡œ
-// block í¬ê¸°ë§Œí¼ì˜ ê³µê°„ì„ ë” ì‚¬ìš©í•˜ì—¬ ë³µí˜¸í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
-// ê·¸ëŸ¬ë¯€ë¡œ decryptì‹œ ë³„ë„ì˜ decrypt bufferë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤.
-// ë˜í•œ, salt(initial vector)ë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš° block sizeì—
-// salt sizeë¥¼ ì¶”ê°€ë¡œ ê³ ë ¤í•´ì•¼ í•œë‹¤.
+// decryptµµ encrypt¿Í ¸¶Âù°¡Áö·Î block´ÜÀ§·Î º¹È£È­¸¦ ¼öÇàÇÏ¹Ç·Î
+// block Å©±â¸¸Å­ÀÇ °ø°£À» ´õ »ç¿ëÇÏ¿© º¹È£È­¸¦ ¼öÇàÇÑ´Ù.
+// ±×·¯¹Ç·Î decrypt½Ã º°µµÀÇ decrypt buffer¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù.
+// ¶ÇÇÑ, salt(initial vector)¸¦ »ç¿ëÇÏ´Â °æ¿ì block size¿¡
+// salt size¸¦ Ãß°¡·Î °í·ÁÇØ¾ß ÇÑ´Ù.
 //
 // 32byte block size + 32byte salt size -> 64 byte
 //
@@ -755,7 +771,7 @@ extern const mtdEcharType mtdEcharNull;
 #define MTD_ECHAR_DECRYPT_BUFFER_SIZE      (MTD_ECHAR_STORE_PRECISION_MAXIMUM \
                                             + MTD_ECHAR_DECRYPT_BLOCK_SIZE)
 
-// PROJ-2163 ë°”ì¸ë“œ ì¬ì •ë¦½ - mtdUndef ì¶”ê°€
+// PROJ-2163 ¹ÙÀÎµå ÀçÁ¤¸³ - mtdUndef Ãß°¡
 typedef UChar mtdUndefType;
 
 #endif /* _O_MTD_TYPES_H_ */

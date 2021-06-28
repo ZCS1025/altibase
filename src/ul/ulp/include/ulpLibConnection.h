@@ -26,6 +26,7 @@
 #include <ulpLibOption.h>
 #include <ulpLibErrorMgr.h>
 #include <ulpLibMacro.h>
+#include <ulpLibMultiErrorMgr.h>
 
 /*
  * The node managed by connection hash table.
@@ -35,12 +36,12 @@ struct ulpLibConnNode
 {
     SQLHENV        mHenv;
     SQLHDBC        mHdbc;
-    SQLHSTMT       mHstmt;         /* single threadì¼ ê²½ìš° ê³µìœ ë˜ëŠ” statement handle */
-    acp_char_t     mConnName[MAX_CONN_NAME_LEN + 1];  /* connection ì´ë¦„ (ATì ˆ) */
+    SQLHSTMT       mHstmt;         /* single threadÀÏ °æ¿ì °øÀ¯µÇ´Â statement handle */
+    acp_char_t     mConnName[MAX_CONN_NAME_LEN + 1];  /* connection ÀÌ¸§ (ATÀı) */
     acp_char_t    *mUser;          /* user id */
     acp_char_t    *mPasswd;        /* password */
     acp_char_t    *mConnOpt1;
-    acp_char_t    *mConnOpt2;      /* ì²«ë²ˆì§¸ ConnOpt1 ìœ¼ë¡œ ì ‘ì† ì‹¤íŒ¨í•  ê²½ìš° ì´ë¥¼ ì´ìš©í•˜ì—¬ ì‹œë„ */
+    acp_char_t    *mConnOpt2;      /* Ã¹¹øÂ° ConnOpt1 À¸·Î Á¢¼Ó ½ÇÆĞÇÒ °æ¿ì ÀÌ¸¦ ÀÌ¿ëÇÏ¿© ½Ãµµ */
 
     /* statement hash table */
     ulpLibStmtHASHTAB mStmtHashT;
@@ -51,21 +52,23 @@ struct ulpLibConnNode
     /* unnamed statement cache list */
     ulpLibStmtLIST mUnnamedStmtCacheList;
 
-    acp_bool_t       mIsXa;       /* Xaì ‘ì† ê´€ë ¨ ì •ë³´ */
+    /* TASK-7218 Handling Multiple Errors
+     * ÀÌ º¯¼ö¸¦ ConnNode ³»¿¡ µÎ´Â ÀÌÀ¯:
+     *  ¿¡·¯ °¹¼ö°¡ °¡º¯ÀûÀÌ¹Ç·Î µ¿Àû ¸Ş¸ğ¸® ÇÒ´çÀÌ ºÒ°¡ÇÇÇÑµ¥,
+     *  sqlcaÃ³·³ thread local º¯¼ö¸¦ »ç¿ëÇÒ °æ¿ì ÇØÁ¦ÇÒ ¹æ¹ıÀÌ ¾ø´Ù. 
+     *  µû¶ó¼­, ConnNode ³»¿¡ µÎ¾î¼­ ConnNode°¡ »èÁ¦µÉ ¶§ ÀÌ º¯¼ö¿¡
+     *  ÇÒ´çµÈ ¸Ş¸ğ¸®µµ ÇØÁ¦µÇµµ·Ï ÇÔ.
+     */
+    ulpMultiErrorMgr mMultiErrorMgr;
+
+    acp_bool_t       mIsXa;       /* XaÁ¢¼Ó °ü·Ã Á¤º¸ */
     acp_sint32_t     mXaRMID;
     acp_thr_rwlock_t mLatch4Xa;
 
-    /* BUG-31405 : Failoverì„±ê³µí›„ Failure of finding statement ì—ëŸ¬ ë°œìƒ. */
-    /* ë°©ê¸ˆ failoverê°€ ì„±ê³µí–ˆìŒì„ ì•Œë ¤ì¤€ë‹¤. ì´ ë³€ìˆ˜ê°€ trueë©´ ë‚´ì¥êµ¬ë¬¸ ì¬ìˆ˜í–‰ì‹œ ë¬´ì¡°ê±´ reprepareí•¨.
-    ulpLibStmtNodeì˜ mNeedReprepare flagê°€ ì„íŒ…ë˜ê¸° ì „ì— ë¯¸ë¦¬ ì„íŒ…ë˜ì–´ multi-threaded ì–´í”Œì—ì„œ
-    failoverì„±ê³µí›„ reprepareê°€ ë˜ì§€ì•Šì•„ ì—ëŸ¬ê°€ ë°œìƒí•˜ëŠ” í™•ë¥ ì„ ì¤„ì„.
-    */
-    acp_bool_t      mFailoveredJustnow;
-
     ulpLibConnNode *mNext;       /* bucket list link */
 
-    /* ì‚¬ìš©ê°€ëŠ¥í•œ ìƒíƒœì¸ê°€ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.ulpConnect()ì—ì„œ í˜¸ì¶œì‹œì—ëŠ” falseë¡œ ì´ˆê¸°í™”ë˜ë©°
-       ë‚˜ë¨¸ì§€ëŠ” trueë¡œ ì´ˆê¸°í™” ëœë‹¤.*/
+    /* »ç¿ë°¡´ÉÇÑ »óÅÂÀÎ°¡¸¦ ³ªÅ¸³½´Ù.ulpConnect()¿¡¼­ È£Ãâ½Ã¿¡´Â false·Î ÃÊ±âÈ­µÇ¸ç
+       ³ª¸ÓÁö´Â true·Î ÃÊ±âÈ­ µÈ´Ù.*/
     acp_bool_t      mValid;
 };
 
@@ -126,25 +129,25 @@ ulpLibConnNode *ulpLibConNewNode( acp_char_t *aConnName, acp_bool_t  aValidInit 
 /* init default connection node */
 void            ulpLibConInitDefaultConn( void );
 
-/* default connection ê°ì²´ë¥¼ ì–»ì–´ì˜¨ë‹¤ */
+/* default connection °´Ã¼¸¦ ¾ò¾î¿Â´Ù */
 ulpLibConnNode *ulpLibConGetDefaultConn();
 
-/* connection ì´ë¦„ì„ ê°€ì§€ê³  í•´ë‹¹ connectionê°ì²´ë¥¼ ì°¾ëŠ”ë‹¤ */
+/* connection ÀÌ¸§À» °¡Áö°í ÇØ´ç connection°´Ã¼¸¦ Ã£´Â´Ù */
 ulpLibConnNode *ulpLibConLookupConn(acp_char_t* aConName);
 
-/* ìƒˆë¡œìš´ connectionì„ ì—°ê²° hash tableì— ì¶”ê°€í•œë‹¤. */
+/* »õ·Î¿î connectionÀ» ¿¬°á hash table¿¡ Ãß°¡ÇÑ´Ù. */
 ulpLibConnNode *ulpLibConAddConn( ulpLibConnNode *aConnNode );
 
-/* í•´ë‹¹ ì´ë¦„ì˜ connectionì„ ì œê±°í•œë‹¤ */
+/* ÇØ´ç ÀÌ¸§ÀÇ connectionÀ» Á¦°ÅÇÑ´Ù */
 ACI_RC          ulpLibConDelConn(acp_char_t* aConName);
 
-/* hash tableì˜ ëª¨ë“  ConnNodeë“¤ì„ ì œê±°í•œë‹¤ */
+/* hash tableÀÇ ¸ğµç ConnNodeµéÀ» Á¦°ÅÇÑ´Ù */
 void            ulpLibConDelAllConn( void );
 
-/* ConnNode ìë£Œêµ¬ì¡° í•´ì œí•¨. */
+/* ConnNode ÀÚ·á±¸Á¶ ÇØÁ¦ÇÔ. */
 void            ulpLibConFreeConnNode( ulpLibConnNode *aConnNode );
 
-/* BUG-28209 : AIX ì—ì„œ c compilerë¡œ ì»´íŒŒì¼í•˜ë©´ ìƒì„±ì í˜¸ì¶œì•ˆë¨. */
+/* BUG-28209 : AIX ¿¡¼­ c compiler·Î ÄÄÆÄÀÏÇÏ¸é »ı¼ºÀÚ È£Ãâ¾ÈµÊ. */
 ACI_RC          ulpLibConInitConnMgr( void );
 
 

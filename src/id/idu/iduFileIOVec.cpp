@@ -21,7 +21,7 @@
 
 /***********************************************************************
  * Description : creator
- * ë©¤ë²„ ë³€ìˆ˜ë¥¼ ì´ˆê¸°í™”í•´ì¤€ë‹¤.
+ * ¸â¹ö º¯¼ö¸¦ ÃÊ±âÈ­ÇØÁØ´Ù.
  ***********************************************************************/
 iduFileIOVec::iduFileIOVec() :
     mIOVec(NULL), mCount(0), mSize(0)
@@ -31,8 +31,8 @@ iduFileIOVec::iduFileIOVec() :
 /***********************************************************************
  * Description : destructor
  *
- * DEBUG ëª¨ë“œì—ì„œëŠ” destroyê°€ í˜¸ì¶œë˜ì§€ ì•Šìœ¼ë©´ ASSERTë¡œ ê²½ê³ í•œë‹¤.
- * RELEASE ëª¨ë“œì—ì„œëŠ” mIOVecì´ í•´ì œë˜ì§€ ì•Šì•˜ìœ¼ë©´ í•´ì œí•´ì¤€ë‹¤.
+ * DEBUG ¸ðµå¿¡¼­´Â destroy°¡ È£ÃâµÇÁö ¾ÊÀ¸¸é ASSERT·Î °æ°íÇÑ´Ù.
+ * RELEASE ¸ðµå¿¡¼­´Â mIOVecÀÌ ÇØÁ¦µÇÁö ¾Ê¾ÒÀ¸¸é ÇØÁ¦ÇØÁØ´Ù.
  ***********************************************************************/
 iduFileIOVec::~iduFileIOVec()
 {
@@ -46,14 +46,14 @@ iduFileIOVec::~iduFileIOVec()
 
 /***********************************************************************
  * Description : initialize
- * ë©¤ë²„ ë³€ìˆ˜ì— ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•˜ê³ 
- * ë°ì´í„°ë¥¼ ì €ìž¥í•  í¬ì¸í„°ì™€ í¬ê¸°ë¥¼ ì„¤ì •í•œë‹¤.
+ * ¸â¹ö º¯¼ö¿¡ ¸Þ¸ð¸®¸¦ ÇÒ´çÇÏ°í
+ * µ¥ÀÌÅÍ¸¦ ÀúÀåÇÒ Æ÷ÀÎÅÍ¿Í Å©±â¸¦ ¼³Á¤ÇÑ´Ù.
  *
- * aCount - [IN] ë’¤ì— ê°€ë³€ì¸ìˆ˜ë¡œ ìž…ë ¥ë˜ëŠ”
- *               í¬ì¸í„°ì™€ í¬ê¸°ì˜ ê°œìˆ˜ë¥¼ ì„¤ì •í•œë‹¤.
- *               í¬ì¸í„°ì™€ í¬ê¸°ëŠ” ì§ìœ¼ë¡œ ë“¤ì–´ì˜¤ë‹ˆ ì´ ì¸ìˆ˜ ê°œìˆ˜ëŠ”
- *               aCount * 2 + 1ê°œì´ë‹¤.
- * í•¨ìˆ˜ ì‚¬ìš© ì˜ˆì œ :
+ * aCount - [IN] µÚ¿¡ °¡º¯ÀÎ¼ö·Î ÀÔ·ÂµÇ´Â
+ *               Æ÷ÀÎÅÍ¿Í Å©±âÀÇ °³¼ö¸¦ ¼³Á¤ÇÑ´Ù.
+ *               Æ÷ÀÎÅÍ¿Í Å©±â´Â Â¦À¸·Î µé¾î¿À´Ï ÃÑ ÀÎ¼ö °³¼ö´Â
+ *               aCount * 2 + 1°³ÀÌ´Ù.
+ * ÇÔ¼ö »ç¿ë ¿¹Á¦ :
  *      iduFileIOVec sVec;
  *      sVec.initialize();
  *      sVec.initialize(0);
@@ -97,12 +97,12 @@ IDE_RC iduFileIOVec::initialize(SInt aCount, ...)
 
 /***********************************************************************
  * Description : initialize
- * ë©¤ë²„ ë³€ìˆ˜ì— ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•˜ê³ 
- * ë°ì´í„°ë¥¼ ì €ìž¥í•  í¬ì¸í„°ì™€ í¬ê¸°ë¥¼ ì„¤ì •í•œë‹¤.
+ * ¸â¹ö º¯¼ö¿¡ ¸Þ¸ð¸®¸¦ ÇÒ´çÇÏ°í
+ * µ¥ÀÌÅÍ¸¦ ÀúÀåÇÒ Æ÷ÀÎÅÍ¿Í Å©±â¸¦ ¼³Á¤ÇÑ´Ù.
  *
- * aCount - [IN] aPtrê³¼ aLenì— ë“¤ì–´ìžˆëŠ” í¬ì¸í„°ì™€ í¬ê¸° ê°œìˆ˜ë¥¼ ì§€ì •í•œë‹¤.
- * aPtr   - [IN] ë°ì´í„°ë¥¼ ì €ìž¥í•  í¬ì¸í„° ë°°ì—´
- * aLen   - [IN] ë°ì´í„° í¬ê¸° ë°°ì—´
+ * aCount - [IN] aPtr°ú aLen¿¡ µé¾îÀÖ´Â Æ÷ÀÎÅÍ¿Í Å©±â °³¼ö¸¦ ÁöÁ¤ÇÑ´Ù.
+ * aPtr   - [IN] µ¥ÀÌÅÍ¸¦ ÀúÀåÇÒ Æ÷ÀÎÅÍ ¹è¿­
+ * aLen   - [IN] µ¥ÀÌÅÍ Å©±â ¹è¿­
  ***********************************************************************/
 IDE_RC iduFileIOVec::initialize(SInt aCount, void** aPtr, size_t* aLen)
 {
@@ -133,7 +133,7 @@ IDE_RC iduFileIOVec::initialize(SInt aCount, void** aPtr, size_t* aLen)
 /***********************************************************************
  * Description : destroy
  *
- * ë©¤ë²„ ë³€ìˆ˜ë¥¼ ì´ˆê¸°í™”í•˜ê³  í• ë‹¹ë°›ì€ ë©”ëª¨ë¦¬ë¥¼ ëª¨ë‘ í•´ì œí•œë‹¤.
+ * ¸â¹ö º¯¼ö¸¦ ÃÊ±âÈ­ÇÏ°í ÇÒ´ç¹ÞÀº ¸Þ¸ð¸®¸¦ ¸ðµÎ ÇØÁ¦ÇÑ´Ù.
  ***********************************************************************/
 IDE_RC iduFileIOVec::destroy(void)
 {
@@ -157,10 +157,10 @@ IDE_RC iduFileIOVec::destroy(void)
     
 /***********************************************************************
  * Description : add
- * í¬ì¸í„°ì™€ ê¸¸ì´ë¥¼ ì¶”ê°€í•œë‹¤.
+ * Æ÷ÀÎÅÍ¿Í ±æÀÌ¸¦ Ãß°¡ÇÑ´Ù.
  *
- * aPtr   - [IN] ë°ì´í„°ë¥¼ ì €ìž¥í•  í¬ì¸í„°
- * aLen   - [IN] ë°ì´í„° í¬ê¸°
+ * aPtr   - [IN] µ¥ÀÌÅÍ¸¦ ÀúÀåÇÒ Æ÷ÀÎÅÍ
+ * aLen   - [IN] µ¥ÀÌÅÍ Å©±â
  ***********************************************************************/
 IDE_RC iduFileIOVec::add(void* aPtr, size_t aLen)
 {
@@ -191,11 +191,11 @@ IDE_RC iduFileIOVec::add(void* aPtr, size_t aLen)
 
 /***********************************************************************
  * Description : add
- * í¬ì¸í„°ì™€ ê¸¸ì´ë¥¼ ì¶”ê°€í•œë‹¤.
+ * Æ÷ÀÎÅÍ¿Í ±æÀÌ¸¦ Ãß°¡ÇÑ´Ù.
  *
- * aCount - [IN] aPtrê³¼ aLenì— ë“¤ì–´ìžˆëŠ” í¬ì¸í„°ì™€ í¬ê¸° ê°œìˆ˜ë¥¼ ì§€ì •í•œë‹¤.
- * aPtr   - [IN] ë°ì´í„°ë¥¼ ì €ìž¥í•  í¬ì¸í„° ë°°ì—´
- * aLen   - [IN] ë°ì´í„° í¬ê¸° ë°°ì—´
+ * aCount - [IN] aPtr°ú aLen¿¡ µé¾îÀÖ´Â Æ÷ÀÎÅÍ¿Í Å©±â °³¼ö¸¦ ÁöÁ¤ÇÑ´Ù.
+ * aPtr   - [IN] µ¥ÀÌÅÍ¸¦ ÀúÀåÇÒ Æ÷ÀÎÅÍ ¹è¿­
+ * aLen   - [IN] µ¥ÀÌÅÍ Å©±â ¹è¿­
  ***********************************************************************/
 IDE_RC iduFileIOVec::add(SInt aCount, void** aPtr, size_t* aLen)
 {
@@ -234,8 +234,8 @@ IDE_RC iduFileIOVec::add(SInt aCount, void** aPtr, size_t* aLen)
 
 /***********************************************************************
  * Description : clear
- * í¬ì¸í„°ì™€ ê¸¸ì´ë¥¼ ëª¨ë‘ í•´ì œí•œë‹¤.
- * ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•˜ì§€ëŠ” ì•ŠëŠ”ë‹¤.
+ * Æ÷ÀÎÅÍ¿Í ±æÀÌ¸¦ ¸ðµÎ ÇØÁ¦ÇÑ´Ù.
+ * ¸Þ¸ð¸®¸¦ ÇØÁ¦ÇÏÁö´Â ¾Ê´Â´Ù.
  ***********************************************************************/
 IDE_RC iduFileIOVec::clear(void)
 {

@@ -16,7 +16,7 @@
 
 /***********************************************************************
  *
- * Spatio-Temporal Date Ï°∞Ïûë Ìï®Ïàò
+ * Spatio-Temporal Date ¡∂¿€ «‘ºˆ
  *
  ***********************************************************************/
 
@@ -40,7 +40,7 @@
  *  Date(acsDateType) Manipulation Interfaces                     
  *----------------------------------------------------------------*/
 
-/* DATE Í∞í ÌöçÎìù*/
+/* DATE ∞™ »πµÊ*/
 ACSRETURN ulsGetDate( ulsHandle           * aHandle,
                       mtdDateType         * aDateValue,
                       acp_sint32_t        * aYear,
@@ -51,7 +51,7 @@ ACSRETURN ulsGetDate( ulsHandle           * aHandle,
                       acp_sint32_t        * aSec,
                       acp_sint32_t        * aMicSec );
 
-/* DATE Í∞í ÏÑ§Ï†ï*/
+/* DATE ∞™ º≥¡§*/
 ACSRETURN ulsSetDate( ulsHandle           * aHandle,
                       mtdDateType         * aDateValue,
                       acp_sint32_t          aYear,

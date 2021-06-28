@@ -22,10 +22,11 @@
 #include <ulnConnectCore.h>
 #include <ulnConnString.h>
 #include <mmErrorCodeClient.h>
+#include <ulsdDistTxInfo.h>
 
 /*
  * ULN_SFID_68
- * SQLDriverConnect(), DBC ÏÉÅÌÉúÏ†ÑÏù¥ : C2 ÏÉÅÌÉú
+ * SQLDriverConnect(), DBC ªÛ≈¬¿¸¿Ã : C2 ªÛ≈¬
  *      C4 [s]
  *      -- [nf]
  *  where
@@ -34,8 +35,8 @@
  *           This does not apply when SQLExecDirect, SQLExecute, or SQLParamData
  *           returns SQL_NO_DATA after executing a searched update or delete statement.
  *
- *  Note : SQLDriverConnect() ÏóêÏÑú Îã§Ïù¥ÏñºÎ°úÍ∑∏ Î∞ïÏä§Î•º Îì∏Ïõ†ÎäîÎç∞, ÏÇ¨Ïö©ÏûêÍ∞Ä Cancel Î≤ÑÌäºÏùÑ ÎàÑÎ•¥Î©¥
- *         SQL_NO_DATA Í∞Ä Î¶¨ÌÑ¥ÎêúÎã§.
+ *  Note : SQLDriverConnect() ø°º≠ ¥Ÿ¿ÃæÛ∑Œ±◊ π⁄Ω∫∏¶ µÔø¸¥¬µ•, ªÁøÎ¿⁄∞° Cancel πˆ∆∞¿ª ¥©∏£∏È
+ *         SQL_NO_DATA ∞° ∏Æ≈œµ»¥Ÿ.
  */
 
 ACI_RC ulnSFID_68(ulnFnContext *aFnContext)
@@ -55,17 +56,17 @@ ACI_RC ulnSFID_68(ulnFnContext *aFnContext)
 
 /* PROJ-2177 User Interface - Cancel */
 /* BUG-38496 */
-ACI_RC ulnCallbackDBConnectExResult(cmiProtocolContext *aProtocolContext,
-                                    cmiProtocol        *aProtocol,
-                                    void               *aServiceSession,
-                                    void               *aUserContext)
+ACI_RC ulnCallbackDBConnectResult(cmiProtocolContext *aProtocolContext,
+                                  cmiProtocol        *aProtocol,
+                                  void               *aServiceSession,
+                                  void               *aUserContext)
 {
     ulnFnContext           *sFnContext  = (ulnFnContext *)aUserContext;
     ulnDbc                 *sDbc        = sFnContext->mHandle.mDbc;
     acp_uint32_t            sSessionID;
     acp_uint32_t            sResultCode;
     acp_uint32_t            sResultInfo;
-    acp_uint64_t            sReserved;
+    acp_uint64_t            sSCN;
 
     ACP_UNUSED(aProtocol);
     ACP_UNUSED(aServiceSession);
@@ -73,14 +74,19 @@ ACI_RC ulnCallbackDBConnectExResult(cmiProtocolContext *aProtocolContext,
     CMI_RD4(aProtocolContext, &sSessionID);
     CMI_RD4(aProtocolContext, &sResultCode);
     CMI_RD4(aProtocolContext, &sResultInfo);
-    CMI_RD8(aProtocolContext, &sReserved); /* reserved */
+    CMI_RD8(aProtocolContext, &sSCN);  /* PROJ-2733-Protocol */
 
     ACI_TEST_RAISE(ULN_OBJ_GET_TYPE(sDbc) != ULN_OBJ_TYPE_DBC, LABEL_MEM_MANAGE_ERR);
 
-    /* Í∞ôÏùÄ CIDÍ∞Ä ÎßåÎì§Ïñ¥ÏßÄÎäîÍ±∏ ÎßâÍ∏∞ ÏúÑÌï¥ÏÑú SessionID(server side)Î•º Î∞õÏïÑ Ï∞∏Ï°∞ÌïúÎã§. */
+    /* ∞∞¿∫ CID∞° ∏∏µÈæÓ¡ˆ¥¬∞… ∏∑±‚ ¿ß«ÿº≠ SessionID(server side)∏¶ πﬁæ∆ ¬¸¡∂«—¥Ÿ. */
     sDbc->mSessionID  = sSessionID;
     sDbc->mNextCIDSeq = 0;
     ulnDbcInitUsingCIDSeq(sDbc);
+
+    if (sSCN > 0)
+    {
+        ulsdUpdateSCN(sDbc, &sSCN);  /* PROJ-2733-DistTxInfo */
+    }
 
     /*
      * proj_2160 cm_type removal
@@ -114,8 +120,8 @@ ACI_RC ulnCallbackDBConnectExResult(cmiProtocolContext *aProtocolContext,
     }
     ACI_EXCEPTION_END;
 
-    /* CM ÏΩúÎ∞± Ìï®ÏàòÎäî communication errorÍ∞Ä ÏïÑÎãå Ìïú ACI_SUCCESSÎ•º Î∞òÌôòÌï¥Ïïº ÌïúÎã§.
-     * ÏΩúÎ∞± ÏóêÎü¨Îäî function contextÏóê ÏÑ§Ï†ïÎêú Í∞íÏúºÎ°ú ÌåêÎã®ÌïúÎã§. */
+    /* CM ƒ›πÈ «‘ºˆ¥¬ communication error∞° æ∆¥— «— ACI_SUCCESS∏¶ π›»Ø«ÿæﬂ «—¥Ÿ.
+     * ƒ›πÈ ø°∑Ø¥¬ function contextø° º≥¡§µ» ∞™¿∏∑Œ ∆«¥‹«—¥Ÿ. */
     return ACI_SUCCESS;
 }
 
@@ -190,13 +196,13 @@ SQLRETURN ulnDriverConnect(ulnDbc       *aDbc,
         aConnStringLength = acpCStrLen(aConnString, aConnStringLength);
     }
 
-    //PROJ-1645 UL-FailOver DSNÎßå ÏÑ§Ï†ïÌïúÎã§.
+    //PROJ-1645 UL-FailOver DSN∏∏ º≥¡§«—¥Ÿ.
     ACI_TEST(ulnSetDSNByConnString(&sFnContext,
                                    aConnString,
                                    aConnStringLength) != ACI_SUCCESS);
 
-    /* ALTIBASE_CLI.ini,  ODBC.ini, Connection StringÏùò Ïö∞ÏÑ†ÏàúÏúÑ
-       Îäî Îã§ÏùåÍ≥º Í∞ôÎã§.
+    /* ALTIBASE_CLI.ini,  ODBC.ini, Connection String¿« øÏº±º¯¿ß
+       ¥¬ ¥Ÿ¿Ω∞˙ ∞∞¥Ÿ.
        Connection String > ODBC.ini > ALTIBASE_CLI.ini    */
 
     //PROJ-1645 UL Fail-Over.
@@ -207,9 +213,9 @@ SQLRETURN ulnDriverConnect(ulnDbc       *aDbc,
         ACI_TEST(ulnDataSourceSetConnAttr(&sFnContext,sDataSource) != ACI_SUCCESS);
     }
     /*
-     * User Profile (odbc.ini, registry Îì±) ÏùÑ Ïù¥Ïö©Ìïú DBC Attribute ÏÑ∏ÌåÖ
+     * User Profile (odbc.ini, registry µÓ) ¿ª ¿ÃøÎ«— DBC Attribute ºº∆√
      *
-     * cli Î•º ÏßÅÏ†ë Ïì∏ Í≤ΩÏö∞ ÏïÑÎ¨¥Í≤ÉÎèÑ ÏïàÌïòÎäî ÎçîÎØ∏ Ìï®Ïàò Ìò∏Ï∂ú
+     * cli ∏¶ ¡˜¡¢ æµ ∞ÊøÏ æ∆π´∞Õµµ æ»«œ¥¬ ¥ıπÃ «‘ºˆ »£√‚
      */
 
     ACI_TEST(ulnSetConnAttrByProfileFunc(&sFnContext,
@@ -217,16 +223,35 @@ SQLRETURN ulnDriverConnect(ulnDbc       *aDbc,
                                          (acp_char_t *)"ODBC.INI") != ACI_SUCCESS);
 
     /*
-     * connection string ÏùÑ Ïù¥Ïö©Ìïú DBC Attribute ÏÑ∏ÌåÖ
+     * connection string ¿ª ¿ÃøÎ«— DBC Attribute ºº∆√
      */
 
     ACI_TEST(ulnSetConnAttrByConnString(&sFnContext,
                                         aConnString,
                                         aConnStringLength) != ACI_SUCCESS);
 
+#ifdef COMPILE_SHARDCLI
+    /* BUG-45707 */
+    ulsdDbcSetShardCli( aDbc, ULSD_SHARD_CLIENT_TRUE );
+
+    aDbc->mShardDbcCxt.mTargetShardMetaNumber = 0UL;
+
+    ulnDbcSetShardMetaNumber( aDbc, 0 );
+
+    /* BUG-47272 */
+    if ( aDbc->mShardDbcCxt.mShardSessionType == ULSD_SESSION_TYPE_LIB )
+    {
+        ACI_TEST( ulsdSetConnAttrForLibConn( &sFnContext ) != ACI_SUCCESS );
+    }
+#endif
+
+    ulsdInitDistTxInfo(aDbc);  /* PROJ-2733-DistTxInfo */
+
+    /* TASK-7219 Non-shard DML */
+    ulnDbcInitStmtExecSeqForShardTx(aDbc);
 
     /*
-     * ÏÇ¨Ïö©ÏûêÏóêÍ≤å full connection string ÏùÑ Ïû¨Ï°∞Ìï©Ìï¥ÏÑú Î¶¨ÌÑ¥
+     * ªÁøÎ¿⁄ø°∞‘ full connection string ¿ª ¿Á¡∂«’«ÿº≠ ∏Æ≈œ
      */
     ACI_TEST(ulnConnStrBuildOutConnString(&sFnContext,
                                           aOutConnStr,
@@ -238,10 +263,12 @@ SQLRETURN ulnDriverConnect(ulnDbc       *aDbc,
     ACI_TEST( ulnConnectCore(aDbc, &sFnContext) != ACI_SUCCESS );
 
 #ifdef COMPILE_SHARDCLI
-    ACI_TEST( !SQL_SUCCEEDED(ulsdModuleNodeDriverConnect(aDbc,
-                                                         &sFnContext,
-                                                         aConnString,
-                                                         aConnStringLength)) );
+    // shard connection Ω«∆–Ω√
+    // sFnContext ø° SQL_SUCCESS_WITH_INFO ∏¶ ºº∆√«œ∞Ì SQL_ERROR ∏¶ π›»Ø
+    ACI_TEST( !SQL_SUCCEEDED( ulsdModuleNodeDriverConnect( aDbc,
+                                                           &sFnContext,
+                                                           aConnString,
+                                                           aConnStringLength ) ) );
 #endif /* COMPILE_SHARDCLI */
 
     /*

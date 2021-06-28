@@ -16,19 +16,19 @@
  
 
 /***********************************************************************
- * $Id: qmnAggregation.cpp 85262 2019-04-17 01:37:36Z andrew.shin $
+ * $Id: qmnAggregation.cpp 85261 2019-04-17 01:26:11Z andrew.shin $
  *
  * Description :
  *     AGGR(AGGRegation) Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ ë‹¤ìŒê³¼ ê°™ì€ ê¸°ëŠ¥ì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     °ü°èÇü ¸ğµ¨¿¡¼­ ´ÙÀ½°ú °°Àº ±â´ÉÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
  *
  *         - Sort-based Grouping
  *         - Distinct Aggregation
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -44,7 +44,7 @@ qmnAGGR::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    AGGR ë…¸ë“œì˜ ì´ˆê¸°í™”
+ *    AGGR ³ëµåÀÇ ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -105,10 +105,10 @@ qmnAGGR::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    AGGRì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
+ *    AGGRÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *    ì§€ì •ëœ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *    ÁöÁ¤µÈ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼öÇàÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -118,11 +118,11 @@ qmnAGGR::doIt( qcTemplate * aTemplate,
     qmndAGGR * sDataPlan =
         (qmndAGGR *) (aTemplate->tmplate.data + aPlan->offset);
 
-    // ì €ì¥ ìœ„ì¹˜ë¥¼ ë³€ê²½í•œë‹¤.
+    // ÀúÀå À§Ä¡¸¦ º¯°æÇÑ´Ù.
     sDataPlan->mtrRowIdx++;
     sDataPlan->plan.myTuple->row = sDataPlan->mtrRow[sDataPlan->mtrRowIdx % 2];
 
-    // í•´ë‹¹ í•¨ìˆ˜ë¥¼ ìˆ˜í–‰í•œë‹¤.
+    // ÇØ´ç ÇÔ¼ö¸¦ ¼öÇàÇÑ´Ù.
     IDE_TEST( sDataPlan->doIt( aTemplate, aPlan, aFlag ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -141,8 +141,8 @@ qmnAGGR::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Childì— ëŒ€í•˜ì—¬ padNull()ì„ í˜¸ì¶œí•˜ê³ 
- *    AGGR ë…¸ë“œì˜ null rowë¥¼ settingí•œë‹¤.
+ *    Child¿¡ ´ëÇÏ¿© padNull()À» È£ÃâÇÏ°í
+ *    AGGR ³ëµåÀÇ null row¸¦ settingÇÑ´Ù.
  *
  * Implementation :
  *
@@ -161,14 +161,14 @@ qmnAGGR::padNull( qcTemplate * aTemplate,
         IDE_TEST( aPlan->init( aTemplate, aPlan ) != IDE_SUCCESS );
     }
 
-    // Child Planì— ëŒ€í•˜ì—¬ Null Paddingìˆ˜í–‰
+    // Child Plan¿¡ ´ëÇÏ¿© Null Padding¼öÇà
     IDE_TEST( aPlan->left->padNull( aTemplate, aPlan->left )
               != IDE_SUCCESS );
 
-    // AGGR ë…¸ë“œì˜ Null Rowì„¤ì •
+    // AGGR ³ëµåÀÇ Null Row¼³Á¤
     sDataPlan->plan.myTuple->row = sDataPlan->nullRow;
 
-    // Null Paddingë„ recordê°€ ë³€í•œ ê²ƒì„
+    // Null Paddingµµ record°¡ º¯ÇÑ °ÍÀÓ
     sDataPlan->plan.myTuple->modify++;
 
     return IDE_SUCCESS;
@@ -190,7 +190,7 @@ qmnAGGR::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    AGGR ë…¸ë“œì˜ ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *    AGGR ³ëµåÀÇ ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  * Implementation :
  *
@@ -233,7 +233,7 @@ qmnAGGR::printPlan( qcTemplate   * aTemplate,
             else
             {
                 // BUG-29209
-                // ITEM_SIZE ì •ë³´ ë³´ì—¬ì£¼ì§€ ì•ŠìŒ
+                // ITEM_SIZE Á¤º¸ º¸¿©ÁÖÁö ¾ÊÀ½
                 iduVarStringAppendFormat( aString,
                                           "AGGREGATION ( "
                                           "ITEM_SIZE: BLOCKED, "
@@ -256,7 +256,7 @@ qmnAGGR::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Cost ì¶œë ¥
+    // Cost Ãâ·Â
     //----------------------------
     qmn::printCost( aString,
                     sCodePlan->plan.qmgAllCost );
@@ -285,7 +285,7 @@ qmnAGGR::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
+    // Operatorº° °á°ú Á¤º¸ Ãâ·Â
     //----------------------------
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
     {
@@ -301,7 +301,7 @@ qmnAGGR::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Child Plan ì •ë³´ ì¶œë ¥
+    // Child Plan Á¤º¸ Ãâ·Â
     //----------------------------
 
     IDE_TEST( aPlan->left->printPlan( aTemplate,
@@ -327,7 +327,7 @@ qmnAGGR::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨.
+ *    ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ¸é ¾ÈµÊ.
  *
  * Implementation :
  *
@@ -351,10 +351,10 @@ qmnAGGR::doItAggregation( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     One-Group Aggregationì„ ìˆ˜í–‰
+ *     One-Group AggregationÀ» ¼öÇà
  *
  * Implementation :
- *     Childê°€ ì—†ì„ ë•Œê¹Œì§€ ë°˜ë³µ ìˆ˜í–‰í•˜ì—¬ ê·¸ ê²°ê³¼ë¥¼ Returní•œë‹¤.
+ *     Child°¡ ¾øÀ» ¶§±îÁö ¹İº¹ ¼öÇàÇÏ¿© ±× °á°ú¸¦ ReturnÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -371,14 +371,14 @@ qmnAGGR::doItAggregation( qcTemplate * aTemplate,
                                  aPlan->left,
                                  & sFlag ) != IDE_SUCCESS);
 
-    // ì´ˆê¸°í™” ìˆ˜í–‰
+    // ÃÊ±âÈ­ ¼öÇà
     IDE_TEST( clearDistNode( sDataPlan )
               != IDE_SUCCESS);
 
     IDE_TEST( initAggregation(aTemplate, sDataPlan)
               != IDE_SUCCESS);
 
-    // Recordê°€ ìˆì„ ë•Œê¹Œì§€ Aggregation ìˆ˜í–‰
+    // Record°¡ ÀÖÀ» ¶§±îÁö Aggregation ¼öÇà
     while( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
     {
         IDE_TEST( execAggregation( aTemplate, sDataPlan )
@@ -390,7 +390,7 @@ qmnAGGR::doItAggregation( qcTemplate * aTemplate,
                                      & sFlag ) != IDE_SUCCESS);
     }
 
-    // Aggregationì„ ë§ˆë¬´ë¦¬
+    // AggregationÀ» ¸¶¹«¸®
     IDE_TEST( finiAggregation( aTemplate, sDataPlan )
               != IDE_SUCCESS );
 
@@ -400,7 +400,7 @@ qmnAGGR::doItAggregation( qcTemplate * aTemplate,
 
     *aFlag = QMC_ROW_DATA_EXIST;
 
-    // ìµœì¢…ì ìœ¼ë¡œ Data ì—†ìŒì„ ë¦¬í„´í•˜ê¸° ìœ„í•¨
+    // ÃÖÁ¾ÀûÀ¸·Î Data ¾øÀ½À» ¸®ÅÏÇÏ±â À§ÇÔ
     sDataPlan->doIt = qmnAGGR::doItLast;
 
     return IDE_SUCCESS;
@@ -420,13 +420,13 @@ qmnAGGR::doItGroupAggregation( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Multi-Group Aggregatinoì„ ìµœì´ˆ ìˆ˜í–‰
+ *     Multi-Group AggregatinoÀ» ÃÖÃÊ ¼öÇà
  *
  * Implementation :
- *     ë™ì¼ Groupì¸ ë™ì•ˆ Childë¥¼ ë°˜ë³µ ìˆ˜í–‰í•˜ì—¬ Aggregationì„ í•œë‹¤.
- *     ë‹¤ë¥¸ Groupì´ ì˜¬ë¼ì˜¨ ê²½ìš°
- *        ìƒˆë¡œìš´ Groupì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
- *        í˜„ì¬ Groupì— ëŒ€í•œ ë§ˆë¬´ë¦¬ë¥¼ ìˆ˜í–‰í•˜ê³  ë¦¬í„´
+ *     µ¿ÀÏ GroupÀÎ µ¿¾È Child¸¦ ¹İº¹ ¼öÇàÇÏ¿© AggregationÀ» ÇÑ´Ù.
+ *     ´Ù¸¥ GroupÀÌ ¿Ã¶ó¿Â °æ¿ì
+ *        »õ·Î¿î Group¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
+ *        ÇöÀç Group¿¡ ´ëÇÑ ¸¶¹«¸®¸¦ ¼öÇàÇÏ°í ¸®ÅÏ
  *
  ***********************************************************************/
 
@@ -438,7 +438,7 @@ qmnAGGR::doItGroupAggregation( qcTemplate * aTemplate,
     qmcRowFlag        sFlag     = QMC_ROW_INITIALIZE;
 
     //------------------------------------
-    // ìµœì´ˆ Groupì— ëŒ€í•œ Aggregation ìˆ˜í–‰
+    // ÃÖÃÊ Group¿¡ ´ëÇÑ Aggregation ¼öÇà
     //------------------------------------
 
     IDE_TEST( aPlan->left->doIt( aTemplate,
@@ -448,7 +448,7 @@ qmnAGGR::doItGroupAggregation( qcTemplate * aTemplate,
     if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
     {
         //--------------------------------
-        // ìµœì´ˆ Groupì— ëŒ€í•œ ì´ˆê¸°í™”
+        // ÃÖÃÊ Group¿¡ ´ëÇÑ ÃÊ±âÈ­
         //--------------------------------
 
         IDE_TEST( clearDistNode( sDataPlan )
@@ -460,7 +460,7 @@ qmnAGGR::doItGroupAggregation( qcTemplate * aTemplate,
         IDE_TEST( execAggregation( aTemplate, sDataPlan )
                   != IDE_SUCCESS );
 
-        // ë™ì¼ Groupì— ëŒ€í•œ ë°˜ë³µ ìˆ˜í–‰
+        // µ¿ÀÏ Group¿¡ ´ëÇÑ ¹İº¹ ¼öÇà
         IDE_TEST( aPlan->left->doIt( aTemplate,
                                      aPlan->left,
                                      & sFlag ) != IDE_SUCCESS);
@@ -478,32 +478,32 @@ qmnAGGR::doItGroupAggregation( qcTemplate * aTemplate,
         if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_NONE )
         {
             //--------------------------------
-            // Record ê°€ ë”ì´ìƒ ì—†ëŠ” ê²½ìš°
+            // Record °¡ ´õÀÌ»ó ¾ø´Â °æ¿ì
             //--------------------------------
 
             sDataPlan->doIt = qmnAGGR::doItLast;
 
             /* BUG-46906 */
-            // í˜„ì¬ Groupì— ëŒ€í•œ ë§ˆë¬´ë¦¬ ìˆ˜í–‰
+            // ÇöÀç Group¿¡ ´ëÇÑ ¸¶¹«¸® ¼öÇà
             IDE_TEST( finiAggregation( aTemplate, sDataPlan )
                       != IDE_SUCCESS );
         }
         else
         {
             /* BUG-46906 */
-            // í˜„ì¬ Groupì— ëŒ€í•œ ë§ˆë¬´ë¦¬ ìˆ˜í–‰
+            // ÇöÀç Group¿¡ ´ëÇÑ ¸¶¹«¸® ¼öÇà
             IDE_TEST( finiAggregation( aTemplate, sDataPlan )
                       != IDE_SUCCESS );
 
             //--------------------------------
-            // ë‹¤ë¥¸ Groupì´ ì˜¬ë¼ì˜¨ ê²½ìš°
+            // ´Ù¸¥ GroupÀÌ ¿Ã¶ó¿Â °æ¿ì
             //--------------------------------
 
-            // ìƒˆë¡œìš´ Groupì— ëŒ€í•œ ì²˜ë¦¬
+            // »õ·Î¿î Group¿¡ ´ëÇÑ Ã³¸®
             IDE_TEST( setNewGroup( aTemplate, sDataPlan )
                       != IDE_SUCCESS );
 
-            // í˜„ì¬ Groupì˜ ìœ„ì¹˜ë¡œ ëŒë¦¬ê³  ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜ë¥¼ ì„¤ì •
+            // ÇöÀç GroupÀÇ À§Ä¡·Î µ¹¸®°í ´ÙÀ½ ¼öÇà ÇÔ¼ö¸¦ ¼³Á¤
             sDataPlan->plan.myTuple->row =
                 sDataPlan->mtrRow[sDataPlan->mtrRowIdx % 2];
 
@@ -512,7 +512,7 @@ qmnAGGR::doItGroupAggregation( qcTemplate * aTemplate,
 
         /* BUG-46906 */
         IDE_TEST( setTupleSet( aTemplate, sDataPlan )
-                  != IDE_SUCCESS );
+                   != IDE_SUCCESS );
 
         *aFlag = QMC_ROW_DATA_EXIST;
     }
@@ -538,14 +538,14 @@ qmnAGGR::doItNext( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Multi-Group Aggregationì˜ ë‹¤ìŒ ìˆ˜í–‰
+ *    Multi-Group AggregationÀÇ ´ÙÀ½ ¼öÇà
  *
  * Implementation :
- *    í˜„ì¬ Group ì •ë³´ë¡œ Tuple Setì„ êµ¬ì„±
- *    ë™ì¼ Groupì¼ë™ì•ˆ ë°˜ë³µí•˜ì—¬ Aggregationì„ ìˆ˜í–‰
- *    ë‹¤ë¥¸ Groupì´ ì˜¬ë¼ì˜¨ ê²½ìš°
- *        ìƒˆë¡œìš´ Groupì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
- *        í˜„ì¬ Groupì— ëŒ€í•œ ë§ˆë¬´ë¦¬ë¥¼ ìˆ˜í–‰í•˜ê³  ë¦¬í„´
+ *    ÇöÀç Group Á¤º¸·Î Tuple SetÀ» ±¸¼º
+ *    µ¿ÀÏ GroupÀÏµ¿¾È ¹İº¹ÇÏ¿© AggregationÀ» ¼öÇà
+ *    ´Ù¸¥ GroupÀÌ ¿Ã¶ó¿Â °æ¿ì
+ *        »õ·Î¿î Group¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
+ *        ÇöÀç Group¿¡ ´ëÇÑ ¸¶¹«¸®¸¦ ¼öÇàÇÏ°í ¸®ÅÏ
  *
  ***********************************************************************/
 
@@ -558,13 +558,13 @@ qmnAGGR::doItNext( qcTemplate * aTemplate,
     qmcRowFlag sFlag     = QMC_ROW_INITIALIZE;
 
     // To fix PR-4355
-    // í˜¸ì¶œ ì‹œì ì—ëŠ” ì´ì „ Groupì— ëŒ€í•œ Tuple Set ì •ë³´ê°€ ì„¤ì •ë˜ì–´ ìˆë‹¤.
-    // ë”°ë¼ì„œ, í˜„ì¬ Groupì— ëŒ€í•œ Tuple Setì •ë³´ë¡œ ë³€ê²½í•œë‹¤.
+    // È£Ãâ ½ÃÁ¡¿¡´Â ÀÌÀü Group¿¡ ´ëÇÑ Tuple Set Á¤º¸°¡ ¼³Á¤µÇ¾î ÀÖ´Ù.
+    // µû¶ó¼­, ÇöÀç Group¿¡ ´ëÇÑ Tuple SetÁ¤º¸·Î º¯°æÇÑ´Ù.
     IDE_TEST( setTupleSet( aTemplate, sDataPlan )
               != IDE_SUCCESS );
 
     //-----------------------------
-    // ë™ì¼ Groupì— ëŒ€í•œ ë°˜ë³µ ìˆ˜í–‰
+    // µ¿ÀÏ Group¿¡ ´ëÇÑ ¹İº¹ ¼öÇà
     //-----------------------------
 
     IDE_TEST( aPlan->left->doIt( aTemplate,
@@ -582,34 +582,34 @@ qmnAGGR::doItNext( qcTemplate * aTemplate,
     }
 
     //-----------------------------
-    // í˜„ì¬ Groupì— ëŒ€í•œ ë§ˆë¬´ë¦¬
+    // ÇöÀç Group¿¡ ´ëÇÑ ¸¶¹«¸®
     //-----------------------------
 
     if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_NONE )
     {
-        // ë” ì´ìƒ Recordê°€ ì—†ëŠ” ê²½ìš°
+        // ´õ ÀÌ»ó Record°¡ ¾ø´Â °æ¿ì
         sDataPlan->doIt = qmnAGGR::doItLast;
 
         /* BUG-46906 */
-        // í˜„ì¬ Groupì— ëŒ€í•œ ë§ˆë¬´ë¦¬ ìˆ˜í–‰
+        // ÇöÀç Group¿¡ ´ëÇÑ ¸¶¹«¸® ¼öÇà
         IDE_TEST( finiAggregation( aTemplate, sDataPlan )
                   != IDE_SUCCESS );
     }
     else
     {
         /* BUG-46906 */
-        // í˜„ì¬ Groupì— ëŒ€í•œ ë§ˆë¬´ë¦¬ ìˆ˜í–‰
+        // ÇöÀç Group¿¡ ´ëÇÑ ¸¶¹«¸® ¼öÇà
         IDE_TEST( finiAggregation( aTemplate, sDataPlan )
                   != IDE_SUCCESS );
 
-        // ë‹¤ë¥¸ Groupì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
-        // ë‹¤ë¥¸ Groupì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
+        // ´Ù¸¥ GroupÀÌ Á¸ÀçÇÏ´Â °æ¿ì
+        // ´Ù¸¥ Group¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇàÇÑ´Ù.
 
-        // ìƒˆë¡œìš´ Groupì— ëŒ€í•œ ì²˜ë¦¬
+        // »õ·Î¿î Group¿¡ ´ëÇÑ Ã³¸®
         IDE_TEST( setNewGroup( aTemplate, sDataPlan )
                   != IDE_SUCCESS );
 
-        // í˜„ì¬ Groupì˜ ìœ„ì¹˜ ì„¤ì •
+        // ÇöÀç GroupÀÇ À§Ä¡ ¼³Á¤
         sDataPlan->plan.myTuple->row = sDataPlan->mtrRow[sDataPlan->mtrRowIdx % 2];
     }
 
@@ -636,7 +636,7 @@ qmnAGGR::doItLast( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Record ì—†ìŒì„ ë¦¬í„´í•œë‹¤.
+ *    Record ¾øÀ½À» ¸®ÅÏÇÑ´Ù.
  *
  * Implementation :
  *
@@ -652,7 +652,7 @@ qmnAGGR::doItLast( qcTemplate * aTemplate,
     // set that no data found
     *aFlag = QMC_ROW_DATA_NONE;
 
-    // BUG-44041 ì €ì¥ìœ„ì¹˜ë¥¼ ì¡°ì •í•©ë‹ˆë‹¤.
+    // BUG-44041 ÀúÀåÀ§Ä¡¸¦ Á¶Á¤ÇÕ´Ï´Ù.
     sDataPlan->plan.myTuple->row = sDataPlan->mtrRow[(sDataPlan->mtrRowIdx-1) % 2];
 
     if ( (sCodePlan->flag & QMNC_AGGR_GROUPED_MASK )
@@ -679,7 +679,7 @@ qmnAGGR::firstInit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    AGGR nodeì˜ Data ì˜ì—­ì˜ ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
+ *    AGGR nodeÀÇ Data ¿µ¿ªÀÇ ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
  *
  * Implementation :
  *
@@ -689,18 +689,18 @@ qmnAGGR::firstInit( qcTemplate * aTemplate,
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
     //---------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------
 
     //---------------------------------
-    // AGGR ê³ ìœ  ì •ë³´ì˜ ì´ˆê¸°í™”
+    // AGGR °íÀ¯ Á¤º¸ÀÇ ÃÊ±âÈ­
     //---------------------------------
 
-    // 1. ì €ì¥ Columnì˜ ì´ˆê¸°í™”
-    // 2. Distinct Columnì •ë³´ì˜ ì´ˆê¸°í™”
-    // 3. Aggregation Column ì •ë³´ì˜ ì´ˆê¸°í™”
-    // 4. Grouping Column ì •ë³´ì˜ ìœ„ì¹˜ ì§€ì •
-    // 5. Tuple ìœ„ì¹˜ ì§€ì •
+    // 1. ÀúÀå ColumnÀÇ ÃÊ±âÈ­
+    // 2. Distinct ColumnÁ¤º¸ÀÇ ÃÊ±âÈ­
+    // 3. Aggregation Column Á¤º¸ÀÇ ÃÊ±âÈ­
+    // 4. Grouping Column Á¤º¸ÀÇ À§Ä¡ ÁöÁ¤
+    // 5. Tuple À§Ä¡ ÁöÁ¤
 
     IDE_TEST( initMtrNode( aTemplate, aCodePlan, aDataPlan )
               != IDE_SUCCESS );
@@ -740,7 +740,7 @@ qmnAGGR::firstInit( qcTemplate * aTemplate,
     aDataPlan->plan.myTuple = aDataPlan->mtrNode->dstTuple;
 
     //---------------------------------
-    // ì„œë¡œ ë‹¤ë¥¸ Groupì„ ìœ„í•œ ìë£Œ êµ¬ì¡°ì˜ ì´ˆê¸°í™”
+    // ¼­·Î ´Ù¸¥ GroupÀ» À§ÇÑ ÀÚ·á ±¸Á¶ÀÇ ÃÊ±âÈ­
     //---------------------------------
 
     aDataPlan->mtrRowSize = qmc::getMtrRowSize( aDataPlan->mtrNode );
@@ -752,7 +752,7 @@ qmnAGGR::firstInit( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     //---------------------------------
-    // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
+    // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
     //---------------------------------
 
     *aDataPlan->flag &= ~QMND_AGGR_INIT_DONE_MASK;
@@ -775,7 +775,7 @@ qmnAGGR::initMtrNode( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ì €ì¥ Columnì˜ ì •ë³´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ *    ÀúÀå ColumnÀÇ Á¤º¸¸¦ ÃÊ±âÈ­ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -788,21 +788,21 @@ qmnAGGR::initMtrNode( qcTemplate * aTemplate,
     UShort       i;    
 
     //---------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------
 
     IDE_DASSERT( aCodePlan->mtrNodeOffset > 0 );
 
-    // Distinct Columnì„ Disk Temp Tableì„ ì‚¬ìš©í•˜ë˜ Memory Temp Tableì„
-    // ì‚¬ìš©í•˜ë˜, Row ì €ì¥ì„ ìœ„í•œ Tuple Setì˜ ì •ë³´ëŠ” Memory Storageì—¬ì•¼ í•œë‹¤.
-    // Distinct Columnì„  Diskì— ì €ì¥í•  ê²½ìš°, Planì˜ flagì •ë³´ëŠ” DISK
-    // ê° Distinct Columnì„ ìœ„í•œ Tuple Setì˜ Storage ì—­ì‹œ Disk Typeì´ ëœë‹¤.
+    // Distinct ColumnÀ» Disk Temp TableÀ» »ç¿ëÇÏ´ø Memory Temp TableÀ»
+    // »ç¿ëÇÏ´ø, Row ÀúÀåÀ» À§ÇÑ Tuple SetÀÇ Á¤º¸´Â Memory Storage¿©¾ß ÇÑ´Ù.
+    // Distinct ColumnÀ»  Disk¿¡ ÀúÀåÇÒ °æ¿ì, PlanÀÇ flagÁ¤º¸´Â DISK
+    // °¢ Distinct ColumnÀ» À§ÇÑ Tuple SetÀÇ Storage ¿ª½Ã Disk TypeÀÌ µÈ´Ù.
     IDE_DASSERT(
         ( aTemplate->tmplate.rows[aCodePlan->myNode->dstNode->node.table].lflag
           & MTC_TUPLE_STORAGE_MASK ) == MTC_TUPLE_STORAGE_MEMORY );
 
     //----------------------------------
-    // Aggregation ì˜ì—­ì˜ êµ¬ë¶„
+    // Aggregation ¿µ¿ªÀÇ ±¸ºĞ
     //----------------------------------
 
     for( i = 0, sNode = aCodePlan->myNode;
@@ -832,29 +832,29 @@ qmnAGGR::initMtrNode( qcTemplate * aTemplate,
     }
 
     //---------------------------------
-    // ì €ì¥ Columnì˜ ì´ˆê¸°í™”
+    // ÀúÀå ColumnÀÇ ÃÊ±âÈ­
     //---------------------------------
 
     aDataPlan->mtrNode =
         (qmdMtrNode*) (aTemplate->tmplate.data + aCodePlan->mtrNodeOffset);
 
-    // ì €ì¥ Columnì˜ ì—°ê²° ì •ë³´ ìƒì„±
+    // ÀúÀå ColumnÀÇ ¿¬°á Á¤º¸ »ı¼º
     IDE_TEST( qmc::linkMtrNode( aCodePlan->myNode,
                                 aDataPlan->mtrNode ) != IDE_SUCCESS );
 
-    // ì €ì¥ Columnì˜ ì´ˆê¸°í™”
-    // Aggregationì˜ ì €ì¥ ì‹œ Conversionê°’ì„ ì €ì¥í•´ì„œëŠ” ì•ˆë¨
+    // ÀúÀå ColumnÀÇ ÃÊ±âÈ­
+    // AggregationÀÇ ÀúÀå ½Ã Conversion°ªÀ» ÀúÀåÇØ¼­´Â ¾ÈµÊ
     IDE_TEST( qmc::initMtrNode( aTemplate,
                                 aDataPlan->mtrNode,
                                 (UShort)aCodePlan->baseTableCount + aDataPlan->aggrNodeCnt )
               != IDE_SUCCESS );
 
-    // ì €ì¥ Columnì˜ offsetì„ ì¬ì¡°ì •.
+    // ÀúÀå ColumnÀÇ offsetÀ» ÀçÁ¶Á¤.
     IDE_TEST( qmc::refineOffsets( aDataPlan->mtrNode,
-                                  0 ) // ë³„ë„ì˜ headerê°€ í•„ìš” ì—†ìŒ
+                                  0 ) // º°µµÀÇ header°¡ ÇÊ¿ä ¾øÀ½
               != IDE_SUCCESS );
 
-    // Row Sizeì˜ ê³„ì‚°
+    // Row SizeÀÇ °è»ê
     IDE_TEST( qmc::setRowSize( aTemplate->stmt->qmxMem,
                                & aTemplate->tmplate,
                                aDataPlan->mtrNode->dstNode->node.table )
@@ -877,14 +877,14 @@ qmnAGGR::initDistNode( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Distinct Argumentë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ Distinct ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
+ *    Distinct Argument¸¦ °ü¸®ÇÏ±â À§ÇÑ Distinct Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
  *
  * Implementation :
- *    ë‹¤ë¥¸ ì €ì¥ Columnê³¼ ë‹¬ë¦¬ Distinct Argument Columnì •ë³´ëŠ”
- *    ì„œë¡œ ê°„ì˜ ì—°ê²° ì •ë³´ë¥¼ ìœ ì§€í•˜ì§€ ì•ŠëŠ”ë‹¤.
- *    ì´ëŠ” ê° Columnì •ë³´ëŠ” ë³„ë„ì˜ Tupleì„ ì‚¬ìš©í•˜ë©°, ì„œë¡œ ê°„ì˜ ì—°ê´€
- *    ê´€ê³„ë¥¼ ê°–ì§€ ì•Šì„ ë¿ë”ëŸ¬ Hash Temp Tableì˜ ìˆ˜ì • ì—†ì´ ì‰½ê²Œ
- *    ì‚¬ìš©í•˜ê¸° ìœ„í•´ì„œì´ë‹¤.
+ *    ´Ù¸¥ ÀúÀå Column°ú ´Ş¸® Distinct Argument ColumnÁ¤º¸´Â
+ *    ¼­·Î °£ÀÇ ¿¬°á Á¤º¸¸¦ À¯ÁöÇÏÁö ¾Ê´Â´Ù.
+ *    ÀÌ´Â °¢ ColumnÁ¤º¸´Â º°µµÀÇ TupleÀ» »ç¿ëÇÏ¸ç, ¼­·Î °£ÀÇ ¿¬°ü
+ *    °ü°è¸¦ °®Áö ¾ÊÀ» »Ó´õ·¯ Hash Temp TableÀÇ ¼öÁ¤ ¾øÀÌ ½±°Ô
+ *    »ç¿ëÇÏ±â À§ÇØ¼­ÀÌ´Ù.
  *
  ***********************************************************************/
 
@@ -897,13 +897,13 @@ qmnAGGR::initDistNode( qcTemplate * aTemplate,
     UInt          sHeaderSize;
     UInt          i;
 
-    // ì í•©ì„± ê²€ì‚¬.
+    // ÀûÇÕ¼º °Ë»ç.
     IDE_DASSERT( aCodePlan->distNodeOffset > 0 );
 
     //------------------------------------------------------
-    // Distinct ì €ì¥ Columnì˜ ê¸°ë³¸ ì •ë³´ êµ¬ì„±
-    // Distinct NodeëŠ” ê°œë³„ì ìœ¼ë¡œ ì €ì¥ ê³µê°„ì„ ê°–ê³  ì²˜ë¦¬ë˜ë©°,
-    // ë”°ë¼ì„œ Distinct Nodeê°„ì— ì—°ê²° ì •ë³´ë¥¼ ìƒì„±í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // Distinct ÀúÀå ColumnÀÇ ±âº» Á¤º¸ ±¸¼º
+    // Distinct Node´Â °³º°ÀûÀ¸·Î ÀúÀå °ø°£À» °®°í Ã³¸®µÇ¸ç,
+    // µû¶ó¼­ Distinct Node°£¿¡ ¿¬°á Á¤º¸¸¦ »ı¼ºÇÏÁö ¾Ê´Â´Ù.
     //------------------------------------------------------
 
     aDataPlan->distNode =
@@ -921,12 +921,12 @@ qmnAGGR::initDistNode( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------------------
-    // [Hash Temp Tableì„ ìœ„í•œ ì •ë³´ ì •ì˜]
-    // AGGR ë…¸ë“œì˜ Rowì™€ ë‹¬ë¦¬ Distinct Columnì€ ì €ì¥ ë§¤ì²´ê°€
-    // Memory ë˜ëŠ” Diskì¼ ìˆ˜ ìˆë‹¤.  ì´ ì •ë³´ëŠ” plan.flagì„ ì´ìš©í•˜ì—¬
-    // íŒë³„í•˜ë©°, í•´ë‹¹ distinct columnì„ ì €ì¥í•˜ê¸° ìœ„í•œ Tuple Setë˜í•œ
-    // ë™ì¼í•œ ì €ì¥ ë§¤ì²´ë¥¼ ì‚¬ìš©í•˜ê³  ìˆì–´ì•¼ í•œë‹¤.
-    // ì´ì— ëŒ€í•œ ì í•©ì„± ê²€ì‚¬ëŠ” Hash Temp Tableì—ì„œ ê²€ì‚¬í•˜ê²Œ ëœë‹¤.
+    // [Hash Temp TableÀ» À§ÇÑ Á¤º¸ Á¤ÀÇ]
+    // AGGR ³ëµåÀÇ Row¿Í ´Ş¸® Distinct ColumnÀº ÀúÀå ¸ÅÃ¼°¡
+    // Memory ¶Ç´Â DiskÀÏ ¼ö ÀÖ´Ù.  ÀÌ Á¤º¸´Â plan.flagÀ» ÀÌ¿ëÇÏ¿©
+    // ÆÇº°ÇÏ¸ç, ÇØ´ç distinct columnÀ» ÀúÀåÇÏ±â À§ÇÑ Tuple Set¶ÇÇÑ
+    // µ¿ÀÏÇÑ ÀúÀå ¸ÅÃ¼¸¦ »ç¿ëÇÏ°í ÀÖ¾î¾ß ÇÑ´Ù.
+    // ÀÌ¿¡ ´ëÇÑ ÀûÇÕ¼º °Ë»ç´Â Hash Temp Table¿¡¼­ °Ë»çÇÏ°Ô µÈ´Ù.
     //------------------------------------------------------------
 
     if ( (aCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK)
@@ -948,12 +948,12 @@ qmnAGGR::initDistNode( qcTemplate * aTemplate,
     }
 
     // PROJ-2553
-    // DISTINCT Hashingì€ Bucket List Hashing ë°©ë²•ì„ ì¨ì•¼ í•œë‹¤.
+    // DISTINCT HashingÀº Bucket List Hashing ¹æ¹ıÀ» ½á¾ß ÇÑ´Ù.
     sFlag &= ~QMCD_HASH_TMP_HASHING_TYPE;
     sFlag |= QMCD_HASH_TMP_HASHING_BUCKET;
 
     //----------------------------------------------------------
-    // ê°œë³„ Distinct ì €ì¥ Columnì˜ ì´ˆê¸°í™”
+    // °³º° Distinct ÀúÀå ColumnÀÇ ÃÊ±âÈ­
     //----------------------------------------------------------
 
     for ( i = 0, sDistNode = aDataPlan->distNode;
@@ -961,13 +961,13 @@ qmnAGGR::initDistNode( qcTemplate * aTemplate,
           i++, sDistNode++ )
     {
         //---------------------------------------------------
-        // 1. Dist Columnì˜ êµ¬ì„± ì •ë³´ ì´ˆê¸°í™”
-        // 2. Dist Columnì˜ offsetì¬ì¡°ì •
-        // 3. Disk Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš° memory ê³µê°„ì„ í• ë‹¹ë°›ìœ¼ë©°,
-        //    Dist NodeëŠ” ì´ ì •ë³´ë¥¼ ê³„ì† ìœ ì§€í•˜ì—¬ì•¼ í•œë‹¤.
-        //    Memory Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš° ë³„ë„ì˜ ê³µê°„ì„ í• ë‹¹ ë°›ì§€
-        //    ì•ŠëŠ”ë‹¤.
-        // 4. Dist Columnì„ ìœ„í•œ Hash Temp Tableì„ ì´ˆê¸°í™”í•œë‹¤.
+        // 1. Dist ColumnÀÇ ±¸¼º Á¤º¸ ÃÊ±âÈ­
+        // 2. Dist ColumnÀÇ offsetÀçÁ¶Á¤
+        // 3. Disk Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì memory °ø°£À» ÇÒ´ç¹ŞÀ¸¸ç,
+        //    Dist Node´Â ÀÌ Á¤º¸¸¦ °è¼Ó À¯ÁöÇÏ¿©¾ß ÇÑ´Ù.
+        //    Memory Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì º°µµÀÇ °ø°£À» ÇÒ´ç ¹ŞÁö
+        //    ¾Ê´Â´Ù.
+        // 4. Dist ColumnÀ» À§ÇÑ Hash Temp TableÀ» ÃÊ±âÈ­ÇÑ´Ù.
         //---------------------------------------------------
 
         IDE_TEST( qmc::initMtrNode( aTemplate,
@@ -984,16 +984,16 @@ qmnAGGR::initDistNode( qcTemplate * aTemplate,
                                    sDistNode->dstNode->node.table )
                   != IDE_SUCCESS );
 
-        // Disk Temp Tableì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°ë¼ë©´
-        // ì´ ê³µê°„ì„ ìƒì§€ ì•Šë„ë¡ í•´ì•¼ í•œë‹¤.
+        // Disk Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì¶ó¸é
+        // ÀÌ °ø°£À» ÀÒÁö ¾Êµµ·Ï ÇØ¾ß ÇÑ´Ù.
         sDistNode->mtrRow = sDistNode->dstTuple->row;
         sDistNode->isDistinct = ID_TRUE;
 
         IDE_TEST( qmcHashTemp::init( & sDistNode->hashMgr,
                                      aTemplate,
                                      ID_UINT_MAX,
-                                     (qmdMtrNode*) sDistNode,  // ì €ì¥ ëŒ€ìƒ
-                                     (qmdMtrNode*) sDistNode,  // ë¹„êµ ëŒ€ìƒ
+                                     (qmdMtrNode*) sDistNode,  // ÀúÀå ´ë»ó
+                                     (qmdMtrNode*) sDistNode,  // ºñ±³ ´ë»ó
                                      NULL,
                                      sDistNode->myNode->bucketCnt,
                                      sFlag )
@@ -1017,11 +1017,11 @@ qmnAGGR::initAggrNode( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Aggregation Columnì˜ ì´ˆê¸°í™”
+ *    Aggregation ColumnÀÇ ÃÊ±âÈ­
  *
  * Implementation :
- *    Aggregation Columnì„ ì´ˆê¸°í™”í•˜ê³ ,
- *    Distinct Aggregationì¸ ê²½ìš° í•´ë‹¹ Distinct Nodeë¥¼ ì°¾ì•„ ì—°ê²°í•œë‹¤.
+ *    Aggregation ColumnÀ» ÃÊ±âÈ­ÇÏ°í,
+ *    Distinct AggregationÀÎ °æ¿ì ÇØ´ç Distinct Node¸¦ Ã£¾Æ ¿¬°áÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1034,7 +1034,7 @@ qmnAGGR::initAggrNode( qcTemplate * aTemplate,
     qmdDistNode * sDistNode;
 
     //-----------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //-----------------------------------------------
 
     IDE_DASSERT( aCodePlan->aggrNodeOffset > 0 );
@@ -1043,7 +1043,7 @@ qmnAGGR::initAggrNode( qcTemplate * aTemplate,
         (qmdAggrNode*) (aTemplate->tmplate.data + aCodePlan->aggrNodeOffset);
 
     //-----------------------------------------------
-    // Aggregation Nodeì˜ ì—°ê²° ì •ë³´ë¥¼ ì„¤ì •í•˜ê³  ì´ˆê¸°í™”
+    // Aggregation NodeÀÇ ¿¬°á Á¤º¸¸¦ ¼³Á¤ÇÏ°í ÃÊ±âÈ­
     //-----------------------------------------------
 
     IDE_TEST( linkAggrNode( aCodePlan,
@@ -1057,14 +1057,14 @@ qmnAGGR::initAggrNode( qcTemplate * aTemplate,
                                 (UShort)aDataPlan->aggrNodeCnt )
               != IDE_SUCCESS );
 
-    // Aggregation Column ì˜ offsetì„ ì¬ì¡°ì •
+    // Aggregation Column ÀÇ offsetÀ» ÀçÁ¶Á¤
     IDE_TEST( qmc::refineOffsets( (qmdMtrNode*) aDataPlan->aggrNode,
-                                  0 ) // ë³„ë„ì˜ headerê°€ í•„ìš” ì—†ìŒ
+                                  0 ) // º°µµÀÇ header°¡ ÇÊ¿ä ¾øÀ½
               != IDE_SUCCESS );
 
     //-----------------------------------------------
-    // Distinct Aggregationì˜ ê²½ìš° í•´ë‹¹ Distinct Nodeë¥¼
-    // ì°¾ì•„ ì—°ê²°í•œë‹¤.
+    // Distinct AggregationÀÇ °æ¿ì ÇØ´ç Distinct Node¸¦
+    // Ã£¾Æ ¿¬°áÇÑ´Ù.
     //-----------------------------------------------
 
     for ( sAggrNode = aDataPlan->aggrNode;
@@ -1073,7 +1073,7 @@ qmnAGGR::initAggrNode( qcTemplate * aTemplate,
     {
         if ( sAggrNode->myNode->myDist != NULL )
         {
-            // Distinct Aggregationì¸ ê²½ìš°
+            // Distinct AggregationÀÎ °æ¿ì
             for ( i = 0, sDistNode = aDataPlan->distNode;
                   i < aDataPlan->distNodeCnt;
                   i++, sDistNode++ )
@@ -1087,7 +1087,7 @@ qmnAGGR::initAggrNode( qcTemplate * aTemplate,
         }
         else
         {
-            // ì¼ë°˜ Aggregationì¸ ê²½ìš°
+            // ÀÏ¹İ AggregationÀÎ °æ¿ì
             sAggrNode->myDist = NULL;
         }
     }
@@ -1108,16 +1108,16 @@ qmnAGGR::linkAggrNode( qmncAGGR   * aCodePlan,
 /***********************************************************************
  *
  * Description :
- *    Code Materialized Node ì˜ì—­ìœ¼ë¡œë¶€í„° Aggregation Nodeì˜ì—­ë§Œì„
- *    ì¶”ì¶œí•˜ì—¬ ì—°ê²°í•œë‹¤.
+ *    Code Materialized Node ¿µ¿ªÀ¸·ÎºÎÅÍ Aggregation Node¿µ¿ª¸¸À»
+ *    ÃßÃâÇÏ¿© ¿¬°áÇÑ´Ù.
  *
  * Implementation :
- *    Code ì˜ì—­ì˜ Materialized Nodeì˜ êµ¬ì„±ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
+ *    Code ¿µ¿ªÀÇ Materialized NodeÀÇ ±¸¼ºÀº ´ÙÀ½°ú °°´Ù.
  *
- *    <----- Aggregation ì˜ì—­ ---->|<----- Grouping ì˜ì—­ ------>
+ *    <----- Aggregation ¿µ¿ª ---->|<----- Grouping ¿µ¿ª ------>
  *    [SUM]----->[AVG]----->[MAX]----->[i1]----->[i2]
  *
- *    Aggregationì˜ì—­ì˜ ëì€ GROUPING ì˜ì—­ì˜ ì‹œì‘ ì „ê¹Œì§€ê°€ ëœë‹¤.
+ *    Aggregation¿µ¿ªÀÇ ³¡Àº GROUPING ¿µ¿ªÀÇ ½ÃÀÛ Àü±îÁö°¡ µÈ´Ù.
  *
  ***********************************************************************/
 
@@ -1213,7 +1213,7 @@ qmnAGGR::allocMtrRow( qcTemplate * aTemplate,
     sMemory = aTemplate->stmt->qmxMem;
 
     //-------------------------------------------
-    // ë‘ Rowì˜ ì €ì¥ë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
+    // µÎ RowÀÇ ÀúÀå¸¦ À§ÇÑ °ø°£ ÇÒ´ç
     //-------------------------------------------
 
     IDU_FIT_POINT_RAISE( "qmnAGGR::allocMtrRow::cralloc::DataPlan_mtrRow0",
@@ -1264,7 +1264,7 @@ qmnAGGR::makeNullRow(qcTemplate * aTemplate,
     sMemory = aTemplate->stmt->qmxMem;
 
     //-------------------------------------------
-    // Null Rowë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
+    // Null Row¸¦ À§ÇÑ °ø°£ ÇÒ´ç
     //-------------------------------------------
 
     IDU_FIT_POINT_RAISE( "qmnAGGR::makeNullRow::cralloc::DataPlan_nullRow", 
@@ -1277,8 +1277,8 @@ qmnAGGR::makeNullRow(qcTemplate * aTemplate,
     for ( sNode = aDataPlan->mtrNode; sNode != NULL; sNode = sNode->next )
     {
         //-----------------------------------------------
-        // ì‹¤ì œ ê°’ì„ ì €ì¥í•˜ëŠ” Columnì— ëŒ€í•´ì„œë§Œ
-        // NULL Valueë¥¼ ìƒì„±í•œë‹¤.
+        // ½ÇÁ¦ °ªÀ» ÀúÀåÇÏ´Â Column¿¡ ´ëÇØ¼­¸¸
+        // NULL Value¸¦ »ı¼ºÇÑ´Ù.
         //-----------------------------------------------
 
         sNode->func.makeNull( sNode,
@@ -1304,8 +1304,8 @@ qmnAGGR::clearDistNode( qmndAGGR   * aDataPlan )
 /***********************************************************************
  *
  * Description :
- *    Distinct Columnì˜ êµ¬ë¶„ì„ ìœ„í•´ ìƒì„±í•œ
- *    Temp Tableì„ Clearí•œë‹¤.
+ *    Distinct ColumnÀÇ ±¸ºĞÀ» À§ÇØ »ı¼ºÇÑ
+ *    Temp TableÀ» ClearÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1345,8 +1345,8 @@ qmnAGGR::initAggregation( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ì €ì¥ Rowë¥¼ êµ¬ì„±í•œë‹¤.
- *    Aggregation Columnì€ ì´ˆê¸°í™”í•˜ê³ , Group Columnì„ êµ¬ì„±í•œë‹¤.
+ *    ÀúÀå Row¸¦ ±¸¼ºÇÑ´Ù.
+ *    Aggregation ColumnÀº ÃÊ±âÈ­ÇÏ°í, Group ColumnÀ» ±¸¼ºÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1384,7 +1384,7 @@ qmnAGGR::setGroupColumns( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Grouping Columnì— ëŒ€í•œ ì €ì¥ì„ ìˆ˜í–‰
+ *    Grouping Column¿¡ ´ëÇÑ ÀúÀåÀ» ¼öÇà
  * Implementation :
  *
  ***********************************************************************/
@@ -1424,12 +1424,12 @@ qmnAGGR::execAggregation( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Aggregationì„ ìˆ˜í–‰í•œë‹¤.
+ *    AggregationÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *    Distinct Columnì— ëŒ€í•˜ì—¬ ìˆ˜í–‰í•˜ê³ ,
- *    Distinct Aggregationì¸ ê²½ìš° Distinction ì—¬ë¶€ì— ë”°ë¼,
- *    Aggregation ìˆ˜í–‰ ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
+ *    Distinct Column¿¡ ´ëÇÏ¿© ¼öÇàÇÏ°í,
+ *    Distinct AggregationÀÎ °æ¿ì Distinction ¿©ºÎ¿¡ µû¶ó,
+ *    Aggregation ¼öÇà ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1452,23 +1452,23 @@ qmnAGGR::execAggregation( qcTemplate * aTemplate,
     {
         if ( sAggrNode->myDist == NULL )
         {
-            // Non Distinct Aggregationì¸ ê²½ìš°
+            // Non Distinct AggregationÀÎ °æ¿ì
             IDE_TEST( qtc::aggregate( sAggrNode->dstNode, aTemplate )
                       != IDE_SUCCESS );
         }
         else
         {
-            // Distinct Aggregationì¸ ê²½ìš°
+            // Distinct AggregationÀÎ °æ¿ì
             if ( sAggrNode->myDist->isDistinct == ID_TRUE )
             {
-                // Distinct Argumentì¸ ê²½ìš°
+                // Distinct ArgumentÀÎ °æ¿ì
                 IDE_TEST( qtc::aggregate( sAggrNode->dstNode, aTemplate )
                           != IDE_SUCCESS );
             }
             else
             {
-                // Non-Distinct Argumentì¸ ê²½ìš°
-                // Aggregationì„ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                // Non-Distinct ArgumentÀÎ °æ¿ì
+                // AggregationÀ» ¼öÇàÇÏÁö ¾Ê´Â´Ù.
             }
         }
     }
@@ -1489,11 +1489,11 @@ qmnAGGR::setDistMtrColumns( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Distinct Columnì„ êµ¬ì„±í•œë‹¤.
+ *     Distinct ColumnÀ» ±¸¼ºÇÑ´Ù.
  *
  * Implementation :
- *     Memory ê³µê°„ì„ í• ë‹¹ ë°›ê³ , Distinct Columnì„ êµ¬ì„±
- *     Hash Temp Tableì— ì‚½ì…ì„ ì‹œë„í•œë‹¤.
+ *     Memory °ø°£À» ÇÒ´ç ¹Ş°í, Distinct ColumnÀ» ±¸¼º
+ *     Hash Temp Table¿¡ »ğÀÔÀ» ½ÃµµÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1509,8 +1509,8 @@ qmnAGGR::setDistMtrColumns( qcTemplate * aTemplate,
     {
         if ( sDistNode->isDistinct == ID_TRUE )
         {
-            // ìƒˆë¡œìš´ ë©”ëª¨ë¦¬ ê³µê°„ì„ í• ë‹¹
-            // Memory Temp Tableì¸ ê²½ìš°ì—ë§Œ ìƒˆë¡œìš´ ê³µê°„ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
+            // »õ·Î¿î ¸Ş¸ğ¸® °ø°£À» ÇÒ´ç
+            // Memory Temp TableÀÎ °æ¿ì¿¡¸¸ »õ·Î¿î °ø°£À» ÇÒ´ç¹Ş´Â´Ù.
             IDE_TEST( qmcHashTemp::alloc( & sDistNode->hashMgr,
                                           & sDistNode->mtrRow )
                       != IDE_SUCCESS );
@@ -1520,17 +1520,17 @@ qmnAGGR::setDistMtrColumns( qcTemplate * aTemplate,
         else
         {
             // To Fix PR-8556
-            // ì´ì „ ë©”ëª¨ë¦¬ë¥¼ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” ê²½ìš°
+            // ÀÌÀü ¸Ş¸ğ¸®¸¦ ±×´ë·Î »ç¿ëÇÒ ¼ö ÀÖ´Â °æ¿ì
             sDistNode->mtrRow = sDistNode->dstTuple->row;
         }
 
-        // Distinct Columnì„ êµ¬ì„±
+        // Distinct ColumnÀ» ±¸¼º
         IDE_TEST( sDistNode->func.setMtr( aTemplate,
                                           (qmdMtrNode*) sDistNode,
                                           sDistNode->mtrRow ) != IDE_SUCCESS );
 
-        // Hash Temp Tableì— ì‚½ì…
-        // Is Distinctì˜ ê²°ê³¼ë¡œ ì‚½ì… ì„±ê³µ ì—¬ë¶€ë¥¼ íŒë‹¨í•  ìˆ˜ ìˆë‹¤.
+        // Hash Temp Table¿¡ »ğÀÔ
+        // Is DistinctÀÇ °á°ú·Î »ğÀÔ ¼º°ø ¿©ºÎ¸¦ ÆÇ´ÜÇÒ ¼ö ÀÖ´Ù.
         IDE_TEST( qmcHashTemp::addDistRow( & sDistNode->hashMgr,
                                            & sDistNode->mtrRow,
                                            & sDistNode->isDistinct )
@@ -1553,7 +1553,7 @@ qmnAGGR::finiAggregation( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Aggregationì„ ë§ˆë¬´ë¦¬í•˜ê³  ê²°ê³¼ë¥¼ Tuple Setì— Settingí•œë‹¤.
+ *    AggregationÀ» ¸¶¹«¸®ÇÏ°í °á°ú¸¦ Tuple Set¿¡ SettingÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1588,7 +1588,7 @@ qmnAGGR::setTupleSet( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ìˆ˜í–‰ ê²°ê³¼ë¥¼ Tuple Setì— ì„¤ì •í•œë‹¤.
+ *    ¼öÇà °á°ú¸¦ Tuple Set¿¡ ¼³Á¤ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1627,23 +1627,23 @@ qmnAGGR::setNewGroup( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Aggregation ìˆ˜í–‰ ì¤‘ ìƒˆë¡œìš´ ê·¸ë£¹ì— ëŒ€í•œ ì´ˆê¸°í™”
+ *     Aggregation ¼öÇà Áß »õ·Î¿î ±×·ì¿¡ ´ëÇÑ ÃÊ±âÈ­
  *
  * Implementation :
- *     ìƒˆë¡œìš´ Groupì— ëŒ€í•œ ê³µê°„ì„ ì§€ì •í•˜ê³  ì´ˆê¸°í™” ìˆ˜í–‰
- *     ì´ì „  Groupì˜ ìœ„ì¹˜ë¡œ ì´ë™
+ *     »õ·Î¿î Group¿¡ ´ëÇÑ °ø°£À» ÁöÁ¤ÇÏ°í ÃÊ±âÈ­ ¼öÇà
+ *     ÀÌÀü  GroupÀÇ À§Ä¡·Î ÀÌµ¿
  *
  ***********************************************************************/
 
 #define IDE_FN "qmnAGGR::setNewGroup"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
-    // ìƒˆë¡œìš´ Groupì˜ ìœ„ì¹˜ë¡œ ì´ë™
+    // »õ·Î¿î GroupÀÇ À§Ä¡·Î ÀÌµ¿
     aDataPlan->mtrRowIdx++;
     aDataPlan->plan.myTuple->row =
         aDataPlan->mtrRow[aDataPlan->mtrRowIdx % 2];
 
-    // ìƒˆë¡œìš´ Groupì— ëŒ€í•œ ì´ˆê¸°í™” ë° Aggregation ìˆ˜í–‰
+    // »õ·Î¿î Group¿¡ ´ëÇÑ ÃÊ±âÈ­ ¹× Aggregation ¼öÇà
     IDE_TEST( clearDistNode( aDataPlan )
               != IDE_SUCCESS);
 
@@ -1653,7 +1653,7 @@ qmnAGGR::setNewGroup( qcTemplate * aTemplate,
     IDE_TEST( execAggregation( aTemplate, aDataPlan )
               != IDE_SUCCESS );
 
-    // ì´ì „ Groupìœ¼ë¡œ ì›ë³µ
+    // ÀÌÀü GroupÀ¸·Î ¿øº¹
     aDataPlan->mtrRowIdx--;
 
     return IDE_SUCCESS;

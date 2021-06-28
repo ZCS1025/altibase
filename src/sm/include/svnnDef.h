@@ -38,7 +38,8 @@ typedef struct svnnIterator
     UInt                flag;
 
     smiCursorProperties  * mProperties;
-    /* smiIterator ê³µí†µ ë³€ìˆ˜ ë */
+    smiStatement         * mStatement;
+    /* smiIterator °øÅë º¯¼ö ³¡ */
 
     idBool             least;
     idBool             highest;
@@ -47,7 +48,7 @@ typedef struct svnnIterator
     scPageID           page;
 
     /*
-     * BUG-25179 [SMM] Full Scanì„ ìœ„í•œ í˜ì´ì§€ê°„ Scan Listê°€ í•„ìš”í•©ë‹ˆë‹¤.
+     * BUG-25179 [SMM] Full ScanÀ» À§ÇÑ ÆäÀÌÁö°£ Scan List°¡ ÇÊ¿äÇÕ´Ï´Ù.
      */
     scPageID           mScanBackPID;
     ULong              mScanBackModifySeq;

@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: idp.h 84709 2019-01-10 07:06:14Z mason.lee $
+ * $Id: idp.h 88191 2020-07-27 03:08:54Z mason.lee $
  **********************************************************************/
 
 #ifndef _O_IDP_H_
@@ -19,19 +19,19 @@ class iduFixedTableMemory;
 struct idvSQL;
 
 /*
- * ÏÜçÏÑ± Type Descriptor Îì±Î°ù Phase :  each Instance : regist()
+ * º”º∫ Type Descriptor µÓ∑œ Phase :  each Instance : regist()
  *
- * ÌîÑÎ°úÌçºÌã∞ conf Ï†ïÎ≥¥ Îì±Î°ù :  build()->insert() : string typeÏùò Îç∞Ïù¥ÌÉÄÏûÑ
+ * «¡∑Œ∆€∆º conf ¡§∫∏ µÓ∑œ :  build()->insert() : string type¿« µ•¿Ã≈∏¿”
  *
- * ÌîÑÎ°úÌçºÌã∞ ÏùΩÍ∏∞/Î≥ÄÍ≤Ω : read(), update()
+ * «¡∑Œ∆€∆º ¿–±‚/∫Ø∞Ê : read(), update()
  */
 
 #define IDP_MAX_PROP_COUNT      (1024)
 #define IDP_MAX_PROP_LINE_SIZE  (1024)
 #define IDP_MAX_PROP_STRING_LEN (1024)
-#define IDP_MAX_PROP_DBNAME_LEN (128 - 1) // (SM_MAX_DB_NAME - 1)Í≥º Í∞ôÏïÑÏïº Ìï®
+#define IDP_MAX_PROP_DBNAME_LEN (128 - 1) // (SM_MAX_DB_NAME - 1)∞˙ ∞∞æ∆æﬂ «‘
 
-// ÏµúÎåÄ Ìä∏ÎûúÏû≠ÏÖò Í∞ØÏàò
+// √÷¥Î ∆Æ∑£¿Ëº« ∞πºˆ
 #define IDP_MAX_TRANSACTION_COUNT (16384) // 2^14
 
 #define IDP_PROPERTY_PREFIX      ALTIBASE_ENV_PREFIX /* from environment */
@@ -48,6 +48,10 @@ struct idvSQL;
 
 #define IDP_REPLICATION_MAX_EAGER_PARALLEL_FACTOR (512)
 
+#define IDP_ATTR_SHARD_ALL   (0)
+#define IDP_ATTR_SHARD_USER  (1)
+#define IDP_ATTR_SHARD_COORD (2)
+#define IDP_ATTR_SHARD_LIB   (3)
 
 typedef enum
 {
@@ -68,6 +72,24 @@ typedef enum
     IDP_SHARD_INTERNAL_CONN_ATTR_LOGIN_TIMEOUT_MAX          = ID_UINT_MAX,  /* = ULN_TMOUT_MAX */
 } idpShardInternalConnAttrConst;
 
+typedef enum
+{
+    IDP_SHARD_PROPERTY_SHARE_TRANS_HASH_BUCKET_COUNT_DEFAULT    = 1024,     /* = Default value of TRANSACTION_TABLE_SIZE */
+    IDP_SHARD_PROPERTY_SHARE_TRANS_HASH_BUCKET_COUNT_MIN        = 16,       /* = IDP_MIN_TRANSACTION_COUNT */
+    IDP_SHARD_PROPERTY_SHARE_TRANS_HASH_BUCKET_COUNT_MAX        = 16384,    /* = IDP_MAX_TRANSACTION_COUNT */
+
+    IDP_SHARD_PROPERTY_SHARD_STATEMENT_RETRY_DEFAULT            = 1,        /* = ULN_SHARD_STATEMENT_RETRY_DEFAULT */
+    IDP_SHARD_PROPERTY_SHARD_STATEMENT_RETRY_MIN                = 0,        /* = ULN_SHARD_STATEMENT_RETRY_MIN */
+    IDP_SHARD_PROPERTY_SHARD_STATEMENT_RETRY_MAX                = 65535,    /* = ULN_SHARD_STATEMENT_RETRY_MAX */
+
+    IDP_SHARD_PROPERTY_INDOUBT_FETCH_TIMEOUT_DEFAULT            = 10,       /* FETCH_TIMEOUT ∫∏¥Ÿ ¿€¿∫ æÓ∂≤∞™ */
+    IDP_SHARD_PROPERTY_INDOUBT_FETCH_TIMEOUT_MIN                = 0,        /* π´«—¥Î±‚ */
+    IDP_SHARD_PROPERTY_INDOUBT_FETCH_TIMEOUT_MAX                = 86400,    /* 60*60*24 = 1¿œ */
+
+    IDP_SHARD_PROPERTY_INDOUBT_FETCH_METHOD_DEFAULT             = 1,
+    IDP_SHARD_PROPERTY_INDOUBT_FETCH_METHOD_MIN                 = 0,        /* skip */ 
+    IDP_SHARD_PROPERTY_INDOUBT_FETCH_METHOD_MAX                 = 1,        /* øπø‹πﬂª˝ */
+} idpShardPropertyConst;
 
 class idp
 {
@@ -76,8 +98,8 @@ class idp
     static SChar               *mConfName;
     static SChar               *mSID;
     static PDL_thread_mutex_t   mMutex;
-    static UInt                 mCount; // Îì±Î°ù Î™®ÎìàÏùò ÏµúÎåÄ Í∞ØÏàò
-    static iduList              mArrBaseList[IDP_MAX_PROP_COUNT]; // Property Î¶¨Ïä§Ìä∏Ïùò Î∞∞Ïó¥ : (id/mt/qp/mm)
+    static UInt                 mCount; // µÓ∑œ ∏µ‚¿« √÷¥Î ∞πºˆ
+    static iduList              mArrBaseList[IDP_MAX_PROP_COUNT]; // Property ∏ÆΩ∫∆Æ¿« πËø≠ : (id/mt/qp/mm)
 
     static IDE_RC insertBySrc(const SChar     *aName,
                               SChar           *aValue,
@@ -231,7 +253,13 @@ public:
     static IDE_RC getMemValueCount (const SChar *aName,
                                     UInt        *aPropertyCount);
 
-    static IDE_RC validate( const SChar *aName, SChar* aInParam );
+    static IDE_RC validate( const SChar * aName,
+                            SChar       * aInParam,
+                            idBool        aIsSytem );
+
+    // PROJ-2727
+    static IDE_RC getPropertyAttribute( const SChar * aName,
+                                        UInt        * aOutParam );
 
     static void dumpProperty( ideLogEntry &aLog );
 };

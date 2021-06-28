@@ -26,6 +26,8 @@
 #include <rpdCatalog.h>
 #include <rpcManager.h>
 #include <qci.h>
+#include <rpdLockTableManager.h>
+#include <sdi.h>
 
 /***********************************************************************
  * EXECUTE
@@ -44,6 +46,8 @@ qciExecuteReplicationCallback rpcExecute::mCallback =
     rpcExecute::executeStart,
     rpcExecute::executeQuickStart,
     rpcExecute::executeSync,
+    rpcExecute::executeSyncCondition,
+    rpcExecute::executeTempSync,
     rpcExecute::executeReset,
     rpcExecute::executeAlterSetRecovery,
     rpcExecute::executeAlterSetOfflineEnable,
@@ -55,8 +59,11 @@ qciExecuteReplicationCallback rpcExecute::mCallback =
     rpcExecute::executeAlterSplitPartition,
     rpcExecute::executeAlterMergePartition,
     rpcExecute::executeAlterDropPartition,
+    rpcExecute::executeFailover,
     rpcExecute::executeStop,
-    rpcExecute::executeFlush
+    rpcExecute::executeFlush,
+    rpcExecute::executeFailback,
+    rpcExecute::executeDeleteItemReplaceHistory
 };
 
 IDE_RC rpcExecute::executeCreate(void * aQcStatement)
@@ -72,55 +79,12 @@ IDE_RC rpcExecute::executeCreate(void * aQcStatement)
 
 IDE_RC rpcExecute::executeAlterAddTbl(void * aQcStatement)
 {
-    qriParseTree     * sParseTree;
-    idBool             sIsStarted;
-
-    sParseTree = ( qriParseTree * )( qriParseTree * )QCI_PARSETREE( aQcStatement );
-
-    // If this altering replication is already started,
-    //    then ERR_REPLICATION_ALREADY_STARTED
-    IDE_TEST(rpdCatalog::checkReplicationStarted(
-                 aQcStatement, sParseTree->replName, &sIsStarted) != IDE_SUCCESS);
-    IDE_TEST_RAISE(sIsStarted == ID_TRUE, ERR_REPLICATION_ALREADY_STARTED);
-
-    IDE_TEST( rpi::alterReplicationAddTable( aQcStatement )!= IDE_SUCCESS);
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION(ERR_REPLICATION_ALREADY_STARTED)
-    {
-        IDE_SET(ideSetErrorCode(rpERR_ABORT_RPC_REPLICATION_ALREADY_STARTED));
-    }
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
+    return rpi::alterReplicationAddTable( aQcStatement );
 }
 
 IDE_RC rpcExecute::executeAlterDropTbl(void * aQcStatement)
 {
-    qriParseTree     * sParseTree;
-    idBool            sIsStarted;
-
-    sParseTree = ( qriParseTree * )QCI_PARSETREE( aQcStatement );
-
-    // If this altering replication is already started,
-    //    then ERR_REPLICATION_ALREADY_STARTED
-    IDE_TEST(rpdCatalog::checkReplicationStarted(
-                 aQcStatement, sParseTree->replName, &sIsStarted) != IDE_SUCCESS);
-    IDE_TEST_RAISE(sIsStarted == ID_TRUE, ERR_REPLICATION_ALREADY_STARTED);
-
-    IDE_TEST( rpi::alterReplicationDropTable( aQcStatement )!= IDE_SUCCESS);
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION(ERR_REPLICATION_ALREADY_STARTED)
-    {
-        IDE_SET(ideSetErrorCode(rpERR_ABORT_RPC_REPLICATION_ALREADY_STARTED));
-    }
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-
+    return rpi::alterReplicationDropTable( aQcStatement );
 }
 
 IDE_RC rpcExecute::executeAlterAddHost(void * aQcStatement)
@@ -247,17 +211,24 @@ IDE_RC rpcExecute::executeStart(void * aQcStatement)
         sTryHandshakeOnce = ID_TRUE;
     }
 
-    //BUG-22703 : Begin Statementë¥¼ ìˆ˜í–‰í•œ í›„ì— Hangì´ ê±¸ë¦¬ì§€ ì•Šì•„ì•¼ í•©ë‹ˆë‹¤.
-    // mStatistics í†µê³„ ì •ë³´ë¥¼ ì „ë‹¬ í•©ë‹ˆë‹¤.
-    IDE_TEST(rpi::startSenderThread(QCI_SMI_STMT( aQcStatement ),
-                                    sReplName,
-                                    sParseTree->startType,
-                                    sTryHandshakeOnce,
-                                    sStartSN,
-                                    NULL,
-                                    1,
-                                    QCI_STATISTIC( aQcStatement ))
-             != IDE_SUCCESS);
+    if(sParseTree->startType == RP_START_CONDITIONAL)
+    {
+        sTryHandshakeOnce = ID_TRUE;
+    }
+
+    //BUG-22703 : Begin Statement¸¦ ¼öÇàÇÑ ÈÄ¿¡ HangÀÌ °É¸®Áö ¾Ê¾Æ¾ß ÇÕ´Ï´Ù.
+    // mStatistics Åë°è Á¤º¸¸¦ Àü´Þ ÇÕ´Ï´Ù.
+    IDE_TEST( rpi::startSenderThread( QCI_STATISTIC(aQcStatement),
+                                      QCI_QMP_MEM(aQcStatement),
+                                      QCI_SMI_STMT(aQcStatement),
+                                      sReplName,
+                                      sParseTree->startType,
+                                      sTryHandshakeOnce,
+                                      sStartSN,
+                                      NULL,
+                                      1,
+                                      sParseTree->lockTable )
+              != IDE_SUCCESS);
 
     return IDE_SUCCESS;
 
@@ -280,17 +251,45 @@ IDE_RC rpcExecute::executeQuickStart(void * aQcStatement)
         sTryHandshakeOnce = ID_FALSE;
     }
 
-    //BUG-22703 : Begin Statementë¥¼ ìˆ˜í–‰í•œ í›„ì— Hangì´ ê±¸ë¦¬ì§€ ì•Šì•„ì•¼ í•©ë‹ˆë‹¤.
-    // mStatistics í†µê³„ ì •ë³´ë¥¼ ì „ë‹¬ í•©ë‹ˆë‹¤.
-    IDE_TEST(rpi::startSenderThread(QCI_SMI_STMT(aQcStatement),
-                                    sReplName,
-                                    RP_QUICK,
-                                    sTryHandshakeOnce,
-                                    SM_SN_NULL,
-                                    NULL,
-                                    1,
-                                    QCI_STATISTIC( aQcStatement ))
-             != IDE_SUCCESS);
+    //BUG-22703 : Begin Statement¸¦ ¼öÇàÇÑ ÈÄ¿¡ HangÀÌ °É¸®Áö ¾Ê¾Æ¾ß ÇÕ´Ï´Ù.
+    // mStatistics Åë°è Á¤º¸¸¦ Àü´Þ ÇÕ´Ï´Ù.
+    IDE_TEST( rpi::startSenderThread( QCI_STATISTIC(aQcStatement),
+                                      QCI_QMP_MEM(aQcStatement),
+                                      QCI_SMI_STMT(aQcStatement),
+                                      sReplName,
+                                      RP_QUICK,
+                                      sTryHandshakeOnce,
+                                      SM_SN_NULL,
+                                      NULL,
+                                      1,
+                                      sParseTree->lockTable )
+              != IDE_SUCCESS);
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpcExecute::executeSyncCondition(void * aQcStatement)
+{
+    SChar          sReplName[ QCI_MAX_NAME_LEN + 1 ];
+    qriParseTree * sParseTree = ( qriParseTree * )QCI_PARSETREE( aQcStatement );
+
+    QCI_STR_COPY( sReplName, sParseTree->replName );
+
+    IDE_TEST( rpi::startSenderThread( QCI_STATISTIC(aQcStatement),
+                                      QCI_QMP_MEM(aQcStatement),
+                                      QCI_SMI_STMT(aQcStatement),
+                                      sReplName,
+                                      sParseTree->startType,
+                                      ID_TRUE,
+                                      SM_SN_NULL,
+                                      NULL,
+                                      sParseTree->parallelFactor,
+                                      sParseTree->lockTable )
+              != IDE_SUCCESS);
 
     return IDE_SUCCESS;
 
@@ -437,16 +436,18 @@ IDE_RC rpcExecute::executeSync(void * aQcStatement)
 
     }
 
-    //BUG-22703 : Begin Statementë¥¼ ìˆ˜í–‰í•œ í›„ì— Hangì´ ê±¸ë¦¬ì§€ ì•Šì•„ì•¼ í•©ë‹ˆë‹¤.
-    // mStatistics í†µê³„ ì •ë³´ë¥¼ ì „ë‹¬ í•©ë‹ˆë‹¤.
-    IDE_TEST( rpi::startSenderThread( QCI_SMI_STMT( aQcStatement ),
+    //BUG-22703 : Begin Statement¸¦ ¼öÇàÇÑ ÈÄ¿¡ HangÀÌ °É¸®Áö ¾Ê¾Æ¾ß ÇÕ´Ï´Ù.
+    // mStatistics Åë°è Á¤º¸¸¦ Àü´Þ ÇÕ´Ï´Ù.
+    IDE_TEST( rpi::startSenderThread( QCI_STATISTIC(aQcStatement),
+                                      QCI_QMP_MEM(aQcStatement),
+                                      QCI_SMI_STMT(aQcStatement),
                                       sReplName,
                                       sParseTree->startType,
                                       ID_TRUE,
                                       SM_SN_NULL,
                                       sSyncItemList,
                                       sParseTree->parallelFactor,
-                                      QCI_STATISTIC( aQcStatement ))
+                                      sParseTree->lockTable )
               != IDE_SUCCESS);
 
     return IDE_SUCCESS;
@@ -456,13 +457,29 @@ IDE_RC rpcExecute::executeSync(void * aQcStatement)
     return IDE_FAILURE;
 }
 
+IDE_RC rpcExecute::executeTempSync(void * aQcStatement)
+{
+    IDE_TEST( rpi::startTempSync( aQcStatement ) 
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+
+}
+
 IDE_RC rpcExecute::executeStop( void         * aQcStatement,
                                 SChar        * aReplName )                               
 {
     qriParseTree * sParseTree = ( qriParseTree * )QCI_PARSETREE( aQcStatement );
 
-    //BUG-22703 : Begin Statementë¥¼ ìˆ˜í–‰í•œ í›„ì— Hangì´ ê±¸ë¦¬ì§€ ì•Šì•„ì•¼ í•©ë‹ˆë‹¤.
-    // mStatistics í†µê³„ ì •ë³´ë¥¼ ì „ë‹¬ í•©ë‹ˆë‹¤.
+    /* BUG-48290 */
+    IDE_TEST( sdi::checkShardReplication( (qcStatement*)aQcStatement ) != IDE_SUCCESS );
+
+    //BUG-22703 : Begin Statement¸¦ ¼öÇàÇÑ ÈÄ¿¡ HangÀÌ °É¸®Áö ¾Ê¾Æ¾ß ÇÕ´Ï´Ù.
+    // mStatistics Åë°è Á¤º¸¸¦ Àü´Þ ÇÕ´Ï´Ù.
     IDE_TEST( rpi::stopSenderThread( QCI_SMI_STMT( aQcStatement ),
                                      aReplName,
                                      QCI_STATISTIC( aQcStatement ),
@@ -484,12 +501,21 @@ IDE_RC rpcExecute::executeReset(void * aQcStatement)
 
     QCI_STR_COPY( sReplName, sParseTree->replName );
 
-    //BUG-22703 : Begin Statementë¥¼ ìˆ˜í–‰í•œ í›„ì— Hangì´ ê±¸ë¦¬ì§€ ì•Šì•„ì•¼ í•©ë‹ˆë‹¤.
-    // mStatistics í†µê³„ ì •ë³´ë¥¼ ì „ë‹¬ í•©ë‹ˆë‹¤.
+    //BUG-22703 : Begin Statement¸¦ ¼öÇàÇÑ ÈÄ¿¡ HangÀÌ °É¸®Áö ¾Ê¾Æ¾ß ÇÕ´Ï´Ù.
+    // mStatistics Åë°è Á¤º¸¸¦ Àü´Þ ÇÕ´Ï´Ù.
     IDE_TEST(rpi::resetReplication(QCI_SMI_STMT(aQcStatement),
                                    sReplName,
                                    QCI_STATISTIC( aQcStatement ))
              != IDE_SUCCESS);
+
+    if ( qciMisc::getTransactionalDDL( aQcStatement ) == ID_TRUE )
+    {
+        qciMisc::setDDLDestInfo( aQcStatement,
+                                 0,
+                                 NULL,
+                                 0,
+                                 NULL );
+    }
 
     return IDE_SUCCESS;
 
@@ -508,7 +534,7 @@ rpcExecute::executeFlush( smiStatement  * aSmiStmt,
  *
  * Description :
  *    To Fix PR-10590
- *    ALTER REPLICATION name FLUSH ì— ëŒ€í•œ Execution
+ *    ALTER REPLICATION name FLUSH ¿¡ ´ëÇÑ Execution
  *
  * Implementation :
  *
@@ -589,4 +615,55 @@ IDE_RC rpcExecute::executeAlterDropPartition( void          * aQcStatement,
     return rpcManager::dropPartitionForAllRepl( aQcStatement,
                                                 aTableInfo,
                                                 aSrcPartInfo );
+}
+
+
+IDE_RC rpcExecute::executeFailback(void * aQcStatement)
+{
+    SChar          sReplName[ QC_MAX_OBJECT_NAME_LEN + 1 ];
+    qriParseTree * sParseTree = ( qriParseTree * )QCI_PARSETREE( aQcStatement );
+
+    QCI_STR_COPY( sReplName, sParseTree->replName );
+
+    IDE_TEST( rpi::startSenderThread( QCI_STATISTIC(aQcStatement),
+                                      QCI_QMP_MEM(aQcStatement),
+                                      QCI_SMI_STMT( aQcStatement ),
+                                      sReplName,
+                                      sParseTree->startType,
+                                      ID_TRUE,
+                                      SM_SN_NULL,
+                                      NULL,
+                                      1,
+                                      sParseTree->lockTable )
+              != IDE_SUCCESS);
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpcExecute::executeDeleteItemReplaceHistory(void * aQcStatement)
+{
+    qriParseTree     * sParseTree;
+    smiStatement     * sSmiStmt;
+    SChar              sRepName[ QCI_MAX_NAME_LEN + 1 ];
+
+    sParseTree = ( qriParseTree * )QCI_PARSETREE( aQcStatement );
+    sSmiStmt   = QCI_SMI_STMT( aQcStatement );
+    QCI_STR_COPY( sRepName, sParseTree->replName );
+
+    IDE_TEST( rpdCatalog::removeReplItemReplaceHistory( sSmiStmt, sRepName ) != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+    
+IDE_RC rpcExecute::executeFailover( void * aQcStatement )
+{
+    return rpcManager::executeFailover( aQcStatement );
 }

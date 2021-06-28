@@ -19,11 +19,11 @@
  * $Id: qmoTransitivity.h 23857 2007-11-02 02:36:53Z sungminee $
  *
  * Description :
- *     PROJ-1404 Transitive Predicate Generationì„ ìœ„í•œ ìë£Œ êµ¬ì¡° ì •ì˜
+ *     PROJ-1404 Transitive Predicate GenerationÀ» À§ÇÑ ÀÚ·á ±¸Á¶ Á¤ÀÇ
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -36,23 +36,23 @@
 #define QMO_OPERATION_MATRIX_SIZE   (12)
 
 //---------------------------------------------------
-// ì§€ì›í•˜ëŠ” Operator ë°°ì—´ì„ ìœ„í•œ ìë£Œêµ¬ì£ 
+// Áö¿øÇÏ´Â Operator ¹è¿­À» À§ÇÑ ÀÚ·á±¸ÁÒ
 //---------------------------------------------------
 
 typedef struct qmoTransOperatorModule
 {
     mtfModule     * module;
-    UInt            transposeModuleId; // ì—­ìœ¼ë¡œ ë³€í™˜í–ˆì„ ë•Œì˜ ì—°ì‚°ì
+    UInt            transposeModuleId; // ¿ªÀ¸·Î º¯È¯ÇßÀ» ¶§ÀÇ ¿¬»êÀÚ
 } qmoTransOperatorModule;
 
 //---------------------------------------------------
-// Predicateì˜ Operandë¥¼ ìœ„í•œ ìë£Œêµ¬ì¡°
+// PredicateÀÇ Operand¸¦ À§ÇÑ ÀÚ·á±¸Á¶
 //---------------------------------------------------
 
 typedef struct qmoTransOperand
 {
     qtcNode          * operandFirst;
-    qtcNode          * operandSecond;   // between, like escapeì¸ ê²½ìš°
+    qtcNode          * operandSecond;   // between, like escapeÀÎ °æ¿ì
     
     UInt               id;         // operand Id (0~n)
 
@@ -64,7 +64,7 @@ typedef struct qmoTransOperand
 } qmoTransOperand;
 
 //---------------------------------------------------
-// Predicateì˜ Operatorë¥¼ ìœ„í•œ ìë£Œêµ¬ì£ 
+// PredicateÀÇ Operator¸¦ À§ÇÑ ÀÚ·á±¸ÁÒ
 //---------------------------------------------------
 
 typedef struct qmoTransOperator
@@ -79,7 +79,7 @@ typedef struct qmoTransOperator
 } qmoTransOperator;
 
 //---------------------------------------------------
-// Transitive Predicateì„ ìœ„í•œ ìë£Œ êµ¬ì¡°
+// Transitive PredicateÀ» À§ÇÑ ÀÚ·á ±¸Á¶
 //---------------------------------------------------
 
 typedef struct qmoTransPredicate
@@ -97,7 +97,7 @@ typedef struct qmoTransPredicate
 } qmoTransPredicate;
 
 //---------------------------------------------------
-// Transitive Predicate Matrixë¥¼ ìœ„í•œ ìë£Œ êµ¬ì¡°
+// Transitive Predicate Matrix¸¦ À§ÇÑ ÀÚ·á ±¸Á¶
 //---------------------------------------------------
 
 typedef struct qmoTransMatrixInfo
@@ -118,34 +118,34 @@ class qmoTransMgr
 {
 public:
 
-    // Transitve Predicate ìƒì„± í•¨ìˆ˜
+    // Transitve Predicate »ı¼º ÇÔ¼ö
     static IDE_RC  processTransitivePredicate( qcStatement  * aStatement,
                                                qmsQuerySet  * aQuerySet,
                                                qtcNode      * aNode,
                                                idBool         aIsOnCondition,
                                                qtcNode     ** aTransitiveNode );
 
-    // Transitve Predicate ìƒì„± í•¨ìˆ˜
+    // Transitve Predicate »ı¼º ÇÔ¼ö
     static IDE_RC  processTransitivePredicate( qcStatement   * aStatement,
                                                qmsQuerySet   * aQuerySet,
                                                qtcNode       * aNode,
                                                qmoPredicate  * aPredicate,
                                                qtcNode      ** aTransitiveNode );
 
-    // qtcNodeí˜•íƒœì˜ predicateì„ qtcNodeí˜•íƒœë¡œ ì—°ê²°
+    // qtcNodeÇüÅÂÀÇ predicateÀ» qtcNodeÇüÅÂ·Î ¿¬°á
     static IDE_RC  linkPredicate( qtcNode      * aTransitiveNode,
                                   qtcNode     ** aNode );
 
-    // qtcNodeí˜•íƒœì˜ predicateì„ qmoPredicateí˜•íƒœë¡œ ì—°ê²°
+    // qtcNodeÇüÅÂÀÇ predicateÀ» qmoPredicateÇüÅÂ·Î ¿¬°á
     static IDE_RC  linkPredicate( qcStatement   * aStatement,
                                   qtcNode       * aTransitiveNode,
                                   qmoPredicate ** aPredicate );
 
-    // qmoPredicateí˜•íƒœì˜ predicateì„ qmoPredicateìœ¼ë¡œ ì—°ê²°
+    // qmoPredicateÇüÅÂÀÇ predicateÀ» qmoPredicateÀ¸·Î ¿¬°á
     static IDE_RC  linkPredicate( qmoPredicate  * aTransitivePred,
                                   qmoPredicate ** aPredicate );
 
-    // ë…¼ë¦¬ì ìœ¼ë¡œ ë™ì¼í•œ predicateì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
+    // ³í¸®ÀûÀ¸·Î µ¿ÀÏÇÑ predicateÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
     static IDE_RC  isExistEquivalentPredicate( qcStatement  * aStatement,
                                                qmoPredicate * aPredicate,
                                                qmoPredicate * aPredicateList,
@@ -153,90 +153,90 @@ public:
     
 private:
 
-    // ì§€ì›í•˜ëŠ” 12ê°œì˜ ì—°ì‚°ì
+    // Áö¿øÇÏ´Â 12°³ÀÇ ¿¬»êÀÚ
     static const   qmoTransOperatorModule operatorModule[];
 
     // Transitive Operation Matrix
     static const   UInt operationMatrix[QMO_OPERATION_MATRIX_SIZE][QMO_OPERATION_MATRIX_SIZE];
 
-    // ì´ˆê¸°í™” í•¨ìˆ˜
+    // ÃÊ±âÈ­ ÇÔ¼ö
     static IDE_RC  init( qcStatement        * aStatement,
                          qmoTransPredicate ** aTransPredicate );
 
-    // qtcNodeí˜•íƒœì˜ predicateìœ¼ë¡œ operator listì™€ operand listë¥¼ êµ¬ì„±
+    // qtcNodeÇüÅÂÀÇ predicateÀ¸·Î operator list¿Í operand list¸¦ ±¸¼º
     static IDE_RC  addBasePredicate( qcStatement       * aStatement,
                                      qmsQuerySet       * aQuerySet,
                                      qmoTransPredicate * aTransPredicate,
                                      qtcNode           * aNode );
 
-    // qmoPredicateí˜•íƒœì˜ predicateìœ¼ë¡œ operator listì™€ operand listë¥¼ êµ¬ì„±
+    // qmoPredicateÇüÅÂÀÇ predicateÀ¸·Î operator list¿Í operand list¸¦ ±¸¼º
     static IDE_RC  addBasePredicate( qcStatement       * aStatement,
                                      qmsQuerySet       * aQuerySet,
                                      qmoTransPredicate * aTransPredicate,
                                      qmoPredicate      * aPredicate );
 
-    // operator listì™€ operand listë¡œ transitive predicate matrixë¥¼ ìƒì„±í•˜ê³  ê³„ì‚°
+    // operator list¿Í operand list·Î transitive predicate matrix¸¦ »ı¼ºÇÏ°í °è»ê
     static IDE_RC  processPredicate( qcStatement        * aStatement,
                                      qmsQuerySet        * aQuerySet,
                                      qmoTransPredicate  * aTransPredicate,
                                      qmoTransMatrix    ** aTransMatrix,
                                      idBool             * aIsApplicable );
 
-    // transitive predicate matrixë¡œ transitive predicateì„ ìƒì„±
+    // transitive predicate matrix·Î transitive predicateÀ» »ı¼º
     static IDE_RC  generatePredicate( qcStatement     * aStatement,
                                       qmsQuerySet     * aQuerySet,
                                       qmoTransMatrix  * aTransMatrix,
                                       qtcNode        ** aTransitiveNode );
 
-    // predicateë“¤ë¡œ operator listì™€ operand listë¥¼ ìƒì„±
+    // predicateµé·Î operator list¿Í operand list¸¦ »ı¼º
     static IDE_RC  createOperatorAndOperandList( qcStatement       * aStatement,
                                                  qmsQuerySet       * aQuerySet,
                                                  qmoTransPredicate * aTransPredicate,
                                                  qtcNode           * aNode,
                                                  idBool              aOnlyOneNode );
 
-    // í•˜ë‚˜ì˜ predicateì„ qmoTransOperatorë¡œ ìƒì„±
+    // ÇÏ³ªÀÇ predicateÀ» qmoTransOperator·Î »ı¼º
     static IDE_RC  createOperatorAndOperand( qcStatement       * aStatement,
                                              qmoTransPredicate * aTransPredicate,
                                              qtcNode           * aCompareNode );
 
-    // ë…¸ë“œê°€ indexë¥¼ ê°€ì§„ ì»¬ëŸ¼ë…¸ë“œì¸ì§€ ê²€ì‚¬
+    // ³ëµå°¡ index¸¦ °¡Áø ÄÃ·³³ëµåÀÎÁö °Ë»ç
     static IDE_RC  isIndexColumn( qcStatement * aStatement,
                                   qtcNode     * aNode,
                                   idBool      * aIsIndexColumn );
 
-    // ë¬¸ì typeì˜ ì»¬ëŸ¼ì´ ë™ì¼ typeì¸ì§€ ê²€ì‚¬
+    // ¹®ÀÚ typeÀÇ ÄÃ·³ÀÌ µ¿ÀÏ typeÀÎÁö °Ë»ç
     static IDE_RC  isSameCharType( qcStatement * aStatement,
                                    qtcNode     * aLeftNode,
                                    qtcNode     * aRightNode,
                                    idBool      * aIsSameType );
 
-    // transitive predicateì„ ìƒì„±í•  base predicate ê²€ì‚¬
+    // transitive predicateÀ» »ı¼ºÇÒ base predicate °Ë»ç
     static IDE_RC  isTransitiveForm( qcStatement * aStatement,
                                      qmsQuerySet * aQuerySet,
                                      qtcNode     * aCompareNode,
                                      idBool        aCheckNext,
                                      idBool      * aIsTransitiveForm );
 
-    // operand listë¡œ operand setì„ ìƒì„±
+    // operand list·Î operand setÀ» »ı¼º
     static IDE_RC  createOperandSet( qcStatement       * aStatement,
                                      qmoTransPredicate * aTransPredicate,
                                      idBool            * aIsApplicable );
 
-    // í˜„ì¬ë…¸ë“œë¥¼ ì°¸ì¡°í•˜ëŠ” operatorì˜ ì¸ìë¥¼ ë³€ê²½
+    // ÇöÀç³ëµå¸¦ ÂüÁ¶ÇÏ´Â operatorÀÇ ÀÎÀÚ¸¦ º¯°æ
     static IDE_RC  changeOperand( qmoTransPredicate * aTransPredicate,
                                   qmoTransOperand   * aFrom,
                                   qmoTransOperand   * aTo );
 
-    // transitive predicate matrixë¥¼ ìƒì„±í•˜ê³  ì´ˆê¸°í™”
+    // transitive predicate matrix¸¦ »ı¼ºÇÏ°í ÃÊ±âÈ­
     static IDE_RC  initializeTransitiveMatrix( qmoTransMatrix * aTransMatrix );
 
-    // transitive predicate matrixë¥¼ ê³„ì‚°
+    // transitive predicate matrix¸¦ °è»ê
     static IDE_RC  calculateTransitiveMatrix( qcStatement    * aStatement,
                                               qmsQuerySet    * aQuerySet,
                                               qmoTransMatrix * aTransMatrix );
 
-    // ìƒì„±í•  transitive predicateì´ bad transitive predicateì¸ì§€ íŒë‹¨
+    // »ı¼ºÇÒ transitive predicateÀÌ bad transitive predicateÀÎÁö ÆÇ´Ü
     static IDE_RC  isBadTransitivePredicate( qcStatement       * aStatement,
                                              qmsQuerySet       * aQuerySet,
                                              qmoTransPredicate * aTransPredicate,
@@ -245,26 +245,26 @@ private:
                                              UInt                aOperandId3,
                                              idBool            * aIsBad );
 
-    // qmoTransOperatorë¥¼ ìƒì„±
+    // qmoTransOperator¸¦ »ı¼º
     static IDE_RC  createNewOperator( qcStatement       * aStatement,
                                       qmoTransPredicate * aTransPredicate,
                                       UInt                aLeftId,
                                       UInt                aRightId,
                                       UInt                aNewOperatorId );
 
-    // transitive predicateë¥¼ ìƒì„±
+    // transitive predicate¸¦ »ı¼º
     static IDE_RC  generateTransitivePredicate( qcStatement     * aStatement,
                                                 qmsQuerySet     * aQuerySet,
                                                 qmoTransMatrix  * aTransMatrix,
                                                 qtcNode        ** aTransitiveNode );
 
-    // í•˜ë‚˜ì˜ transitive predicateë¥¼ ìƒì„±
+    // ÇÏ³ªÀÇ transitive predicate¸¦ »ı¼º
     static IDE_RC  createTransitivePredicate( qcStatement        * aStatement,
                                               qmsQuerySet        * aQuerySet,
                                               qmoTransOperator   * aOperator,
                                               qtcNode           ** aTransitivePredicate );
 
-    // ë…¼ë¦¬ì ìœ¼ë¡œ ë™ì¼í•œ predicateì¸ì§€ ê²€ì‚¬
+    // ³í¸®ÀûÀ¸·Î µ¿ÀÏÇÑ predicateÀÎÁö °Ë»ç
     static IDE_RC  isEquivalentPredicate( qcStatement  * aStatement,
                                           qmoPredicate * aPredicate1,
                                           qmoPredicate * aPredicate2,

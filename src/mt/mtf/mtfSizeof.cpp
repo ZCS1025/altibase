@@ -45,7 +45,7 @@ static IDE_RC mtfSizeofEstimate( mtcNode*     aNode,
 mtfModule mtfSizeof = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfSizeofFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -69,7 +69,7 @@ static const mtcExecute mtfExecute = {
     NULL,
     mtx::calculateNA,
     mtk::estimateRangeNA,
-    mtk::extractRangeNA
+    mtk::extractRangeNA,
 };
 
 IDE_RC mtfSizeofEstimate( mtcNode*     aNode,
@@ -130,7 +130,7 @@ IDE_RC mtfSizeofEstimate( mtcNode*     aNode,
  *
  * Description :
  *    Add Float : aStack[0] = aStack[1] + aStack[2] 
- *    ì‹¤ì œì ì¸ ê³„ì‚°ì€ idaAddì—ì„œ ì´ë£¨ì–´ì§„ë‹¤.
+ *    ½ÇÁ¦ÀûÀÎ °è»êÀº idaAdd¿¡¼­ ÀÌ·ç¾îÁø´Ù.
  * ---------------------------------------------------------------------------*/
 
 IDE_RC mtfSizeofCalculate( mtcNode*     aNode,

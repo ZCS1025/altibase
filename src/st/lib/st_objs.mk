@@ -93,6 +93,7 @@ STF_SRCS = $(ST_DIR)/stf/stfSt_Geometry.cpp \
            $(ST_DIR)/stf/stfGeomFromWKB.cpp \
            $(ST_DIR)/stf/stfPointFromWKB.cpp \
            $(ST_DIR)/stf/stfLineFromWKB.cpp \
+           $(ST_DIR)/stf/stfLinestringFromWKB.cpp \
            $(ST_DIR)/stf/stfPolyFromWKB.cpp \
            $(ST_DIR)/stf/stfRectFromWKB.cpp \
            $(ST_DIR)/stf/stfMPointFromWKB.cpp \
@@ -110,6 +111,20 @@ STF_SRCS = $(ST_DIR)/stf/stfSt_Geometry.cpp \
            $(ST_DIR)/stf/stfIsMBRWithin.cpp \
            $(ST_DIR)/stf/stfReverse.cpp \
            $(ST_DIR)/stf/stfMakeEnvelope.cpp \
+           $(ST_DIR)/stf/stfEWKT.cpp \
+           $(ST_DIR)/stf/stfAsEWKT.cpp \
+           $(ST_DIR)/stf/stfAsEWKB.cpp \
+           $(ST_DIR)/stf/stfGeomFromEWKT.cpp \
+           $(ST_DIR)/stf/stfSRID.cpp \
+           $(ST_DIR)/stf/stfSetSRID.cpp \
+           $(ST_DIR)/stf/stfMakePoint.cpp \
+           $(ST_DIR)/stf/stfMakeLine.cpp \
+           $(ST_DIR)/stf/stfProj4.cpp \
+           $(ST_DIR)/stf/stfTransform.cpp \
+           $(ST_DIR)/stf/stfMakePolygon.cpp \
+           $(ST_DIR)/stf/stfPolygon.cpp \
+           $(ST_DIR)/stf/stfCollect.cpp \
+           $(ST_DIR)/stf/stfIsCollection.cpp 
 
 STM_SRCS = $(ST_DIR)/stm/stm.cpp \
            $(ST_DIR)/stm/stmFixedTable.cpp 

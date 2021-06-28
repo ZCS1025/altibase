@@ -19,15 +19,15 @@
  *
  * $Id: sdpstStackMgr.cpp 27229 2008-07-23 17:37:19Z newdaily $
  *
- * ë³¸ íŒŒì¼ì€ Treelist Managed Segmentì—ì„œ ìœ„ì¹˜ ì´ë ¥ì •ë³´ë¥¼ ê´€ë¦¬í•˜ëŠ”
- * Stack ê´€ë¦¬ìì˜ êµ¬í˜„íŒŒì¼ì´ë‹¤.
+ * º» ÆÄÀÏÀº Treelist Managed Segment¿¡¼­ À§Ä¡ ÀÌ·ÂÁ¤º¸¸¦ °ü¸®ÇÏ´Â
+ * Stack °ü¸®ÀÚÀÇ ±¸ÇöÆÄÀÏÀÌ´Ù.
  *
  ***********************************************************************/
 
 # include <sdpstStackMgr.h>
 
 /***********************************************************************
- * Description : Stackì„ ì´ˆê¸°í™”í•œë‹¤.
+ * Description : StackÀ» ÃÊ±âÈ­ÇÑ´Ù.
  ***********************************************************************/
 void sdpstStackMgr::initialize( sdpstStack  * aStack )
 {
@@ -39,7 +39,7 @@ void sdpstStackMgr::initialize( sdpstStack  * aStack )
 }
 
 /***********************************************************************
- * Description : Stackì„ í•´ì œí•œë‹¤.
+ * Description : StackÀ» ÇØÁ¦ÇÑ´Ù.
  ***********************************************************************/
 void sdpstStackMgr::destroy()
 {
@@ -47,8 +47,8 @@ void sdpstStackMgr::destroy()
 }
 
 /***********************************************************************
- * Description : Virtual Stack Depth ì—ì„œì˜ Slot ê°„ì˜ (aLHS ì™€ aRHS)
- *               ê±°ë¦¬ì°¨ë¥¼ ë°˜í™˜í•œë‹¤.
+ * Description : Virtual Stack Depth ¿¡¼­ÀÇ Slot °£ÀÇ (aLHS ¿Í aRHS)
+ *               °Å¸®Â÷¸¦ ¹İÈ¯ÇÑ´Ù.
  ***********************************************************************/
 SShort sdpstStackMgr::getDistInVtDepth( sdpstPosItem       * aLHS,
                                         sdpstPosItem       * aRHS )
@@ -60,8 +60,8 @@ SShort sdpstStackMgr::getDistInVtDepth( sdpstPosItem       * aLHS,
 }
 
 /***********************************************************************
- * Description : Root Stack Depth ì—ì„œì˜ Slot ê°„ì˜ (aLHS ì™€ aRHS)
- *               ê±°ë¦¬ì°¨ë¥¼ ë°˜í™˜í•œë‹¤.
+ * Description : Root Stack Depth ¿¡¼­ÀÇ Slot °£ÀÇ (aLHS ¿Í aRHS)
+ *               °Å¸®Â÷¸¦ ¹İÈ¯ÇÑ´Ù.
  ***********************************************************************/
 SShort sdpstStackMgr::getDistInRtDepth( sdpstPosItem       * aLHS,
                                         sdpstPosItem       * aRHS )
@@ -73,8 +73,8 @@ SShort sdpstStackMgr::getDistInRtDepth( sdpstPosItem       * aLHS,
 }
 
 /***********************************************************************
- * Description : Internal Stack Depth ì—ì„œì˜ Slot ê°„ì˜ (aLHS ì™€ aRHS)
- *               ê±°ë¦¬ì°¨ë¥¼ ë°˜í™˜í•œë‹¤.
+ * Description : Internal Stack Depth ¿¡¼­ÀÇ Slot °£ÀÇ (aLHS ¿Í aRHS)
+ *               °Å¸®Â÷¸¦ ¹İÈ¯ÇÑ´Ù.
  ***********************************************************************/
 SShort sdpstStackMgr::getDistInItDepth( sdpstPosItem       * aLHS,
                                         sdpstPosItem       * aRHS )
@@ -86,8 +86,8 @@ SShort sdpstStackMgr::getDistInItDepth( sdpstPosItem       * aLHS,
 }
 
 /***********************************************************************
- * Description : Leaf Stack Depth ì—ì„œì˜ Slot ê°„ì˜ (aLHS ì™€ aRHS)
- *               ê±°ë¦¬ì°¨ë¥¼ ë°˜í™˜í•œë‹¤.
+ * Description : Leaf Stack Depth ¿¡¼­ÀÇ Slot °£ÀÇ (aLHS ¿Í aRHS)
+ *               °Å¸®Â÷¸¦ ¹İÈ¯ÇÑ´Ù.
  ***********************************************************************/
 SShort sdpstStackMgr::getDistInLfDepth( sdpstPosItem       * aLHS,
                                         sdpstPosItem       * aRHS )
@@ -99,7 +99,7 @@ SShort sdpstStackMgr::getDistInLfDepth( sdpstPosItem       * aLHS,
 }
 
 /***********************************************************************
- * Description : Stack Depthì— ìƒê´€ì—†ì´ ë‘ ìœ„ì¹˜ê°„ì˜ ì„ í›„ê´€ê³„ë¥¼ ë°˜í™˜í•œë‹¤.
+ * Description : Stack Depth¿¡ »ó°ü¾øÀÌ µÎ À§Ä¡°£ÀÇ ¼±ÈÄ°ü°è¸¦ ¹İÈ¯ÇÑ´Ù.
  ***********************************************************************/
 SShort sdpstStackMgr::compareStackPos( sdpstStack  * aLHS,
                                        sdpstStack  * aRHS )
@@ -121,22 +121,22 @@ SShort sdpstStackMgr::compareStackPos( sdpstStack  * aLHS,
     {
         if ( sDepthR == SDPST_EMPTY )
         {
-            return 0; // ë‘˜ë‹¤ empty ì¸ê²½ìš°
+            return 0; // µÑ´Ù empty ÀÎ°æ¿ì
         }
         else
         {
-            return 1; // lhsë§Œ emptyì¸ ê²½ìš°
+            return 1; // lhs¸¸ emptyÀÎ °æ¿ì
         }
     }
     else
     {
         if ( sDepthR == SDPST_EMPTY )
         {
-            return -1; // rhs ë§Œ emptyì¸ ê²½ìš°
+            return -1; // rhs ¸¸ emptyÀÎ °æ¿ì
         }
         else
         {
-            // ë‘˜ë‹¤ emptyê°€ ì•„ë‹Œê²½ìš°
+            // µÑ´Ù empty°¡ ¾Æ´Ñ°æ¿ì
         }
     }
 
@@ -151,18 +151,18 @@ SShort sdpstStackMgr::compareStackPos( sdpstStack  * aLHS,
     {
         sDist = getDist( &(sLHS[ sDepth ]), &(sRHS[ sDepth ]));
 
-        // ëª¨ë“  stack levelì—ì„œ distanceê°€ 0ì—¬ì•¼ í•œë‹¤.
+        // ¸ğµç stack level¿¡¼­ distance°¡ 0¿©¾ß ÇÑ´Ù.
         if ( sDist == SDPST_FAR_AWAY_OFF )
         {
-            // íŒë‹¨ì´ ë˜ì§€ ì•Šìœ¼ë¯€ë¡œ ìƒìœ„ë¹„êµê°€ í•„ìš”í•˜ë‹¤.
+            // ÆÇ´ÜÀÌ µÇÁö ¾ÊÀ¸¹Ç·Î »óÀ§ºñ±³°¡ ÇÊ¿äÇÏ´Ù.
         }
         else
         {
             if ( sDist == 0)
             {
-                // í•˜ìœ„ì—ì„œë¶€í„° ë¹„êµí•˜ê¸° ë•Œë¬¸ì— ë™ì¼í•˜ì§€ ì•Šìœ¼ë©´,
-                // ê·¸ ìƒìœ„ì—ì„œëŠ” ì ˆëŒ€ ê°™ì€ ê²½ìš°ê°€ ë‚˜ì˜¤ì§€ ì•ŠëŠ”ë‹¤.
-                // ì™œëƒí•˜ë©´, ì•„ë˜ elseì—ì„œ ë‹¤ ê±¸ëŸ¬ì§€ê¸° ë•Œë¬¸ì´ë‹¤.
+                // ÇÏÀ§¿¡¼­ºÎÅÍ ºñ±³ÇÏ±â ¶§¹®¿¡ µ¿ÀÏÇÏÁö ¾ÊÀ¸¸é,
+                // ±× »óÀ§¿¡¼­´Â Àı´ë °°Àº °æ¿ì°¡ ³ª¿ÀÁö ¾Ê´Â´Ù.
+                // ¿Ö³ÄÇÏ¸é, ¾Æ·¡ else¿¡¼­ ´Ù °É·¯Áö±â ¶§¹®ÀÌ´Ù.
                 break;
             }
             else

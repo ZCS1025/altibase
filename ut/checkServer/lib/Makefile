@@ -8,10 +8,10 @@ SRCS = $(CHKSERV_DIR)/lib/checkServerPid.$(CHKSERV_EXT) \
        $(CHKSERV_DIR)/lib/checkServerLib.$(CHKSERV_EXT) \
        $(CHKSERV_DIR)/lib/checkServerLibWrap.$(CHKSERV_EXT) \
        $(CHKSERV_DIR)/lib/checkServerStat.cpp
-DEP_SRCS = $(MM_DIR)/mmu/mmuProperty.cpp $(MM_DIR)/mmu/mmuAccessList.cpp $(RP_DIR)/rpu/rpuProperty.cpp 
+DEP_SRCS = $(MM_DIR)/mmu/mmuProperty.cpp $(MM_DIR)/mmu/mmuAccessList.cpp $(RP_DIR)/rpu/rpuProperty.cpp $(SD_DIR)/sdu/sduProperty.cpp
 OBJS = $(SRCS:$(DEV_DIR)/%.$(CHKSERV_EXT)=$(TARGET_DIR)/%.$(OBJEXT))
 DEP_OBJS = $(DEP_SRCS:$(DEV_DIR)/%.cpp=$(TARGET_DIR)/%.$(OBJEXT)) \
-           $(PD_OBJS) $(ID_OBJS) $(RP_OBJS)
+           $(PD_OBJS) $(ID_OBJS) $(RP_OBJS) $(SD_OBJS)
 SHOBJS = $(SRCS:$(DEV_DIR)/%.$(CHKSERV_EXT)=$(TARGET_DIR)/%_shobj.$(OBJEXT))
 DEP_SHOBJS = $(DEP_SRCS:$(DEV_DIR)/%.cpp=$(TARGET_DIR)/%_shobj.$(OBJEXT)) \
              $(PD_SHOBJS) $(ID_SHOBJS)

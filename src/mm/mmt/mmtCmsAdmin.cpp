@@ -17,6 +17,7 @@
 #include <idl.h>
 #include <smi.h>
 #include <qci.h>
+#include <dki.h>
 #include <mmm.h>
 #include <mmErrorCode.h>
 #include <mmcTask.h>
@@ -115,8 +116,8 @@ IDE_RC mmtServiceThread::shutdownDatabase(idvSQL */*aStatistics*/, void *aArg)
             /* TASK-5894 Permit sysdba via IPC */
             IDE_TEST_RAISE(sLinkImpl == CMN_LINK_IMPL_IPC, NotSupportedViaIPC)
 
-            /* BUG-20727 prepared transaction ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš° transaction ì„
-               ì‚´ë ¤ë‘¬ì•¼ í•˜ê¸° ë•Œë¬¸ì— abort ë¡œ ì•Œí‹°ë² ì´ìŠ¤ë¥¼ ì¢…ë£Œí•œë‹¤. */
+            /* BUG-20727 prepared transaction ÀÌ Á¸ÀçÇÏ´Â °æ¿ì transaction À»
+               »ì·ÁµÖ¾ß ÇÏ±â ¶§¹®¿¡ abort ·Î ¾ËÆ¼º£ÀÌ½º¸¦ Á¾·áÇÑ´Ù. */
             (void)smiExistPreparedTrans(&sExist);
             if ( sExist == ID_TRUE )
             {
@@ -125,6 +126,12 @@ IDE_RC mmtServiceThread::shutdownDatabase(idvSQL */*aStatistics*/, void *aArg)
                 ADM_SEND_MSG("Shutdown Abort Altibase.");
                 idlOS::exit(0);
             }
+
+            /* BUG-47863
+               Notifier¿¡ µî·ÏµÇ¾îÀÖ´Â Global TX°¡ Á¸ÀçÇÑ´Ù¸é ½ÇÆĞÃ³¸® */
+            IDE_TEST_RAISE( ( dkiGetDtxInfoCnt() > 0 ), GlobalTransactionsAreOpen );
+
+            IDU_FIT_POINT( "mmtServiceThread::shutdownDatabase::dkiGetDtxInfoCnt::normal_sleep" );
 
             mmm::prepareShutdown(ALTIBASE_STATUS_SHUTDOWN_NORMAL, ID_TRUE);
 
@@ -147,6 +154,12 @@ IDE_RC mmtServiceThread::shutdownDatabase(idvSQL */*aStatistics*/, void *aArg)
                 ADM_SEND_MSG("Shutdown Abort Altibase.");
                 idlOS::exit(0);
             }
+
+            /* BUG-47863
+               Notifier¿¡ µî·ÏµÇ¾îÀÖ´Â Global TX°¡ Á¸ÀçÇÑ´Ù¸é ½ÇÆĞÃ³¸® */
+            IDE_TEST_RAISE( ( dkiGetDtxInfoCnt() > 0 ), GlobalTransactionsAreOpen );
+
+            IDU_FIT_POINT( "mmtServiceThread::shutdownDatabase::dkiGetDtxInfoCnt::immediate_sleep" );
 
             mmm::prepareShutdown(ALTIBASE_STATUS_SHUTDOWN_IMMEDIATE, ID_TRUE);
 
@@ -183,6 +196,14 @@ IDE_RC mmtServiceThread::shutdownDatabase(idvSQL */*aStatistics*/, void *aArg)
     {
         ideLog::log(IDE_SERVER_0, MM_TRC_ABORT_SHUTDOWN_NOT_SUPPORTED_VIA_IPC);
         IDE_SET(ideSetErrorCode(mmERR_ABORT_SHUTDOWN_NOT_SUPPORTED_VIA_IPC));
+    }
+    IDE_EXCEPTION(GlobalTransactionsAreOpen);
+    {
+        ideLog::log( IDE_SERVER_0, "[ERR] Shutdown failed. Global TX is still open." );
+
+        (void)dkiPrintNotifierInfo();
+
+        IDE_SET(ideSetErrorCode(mmERR_ABORT_GLOBAL_TRANSACTIONS_ARE_OPEN));
     }
     IDE_EXCEPTION_END;
 
@@ -242,10 +263,19 @@ IDE_RC mmtServiceThread::closeSession(idvSQL */*aStatistics*/, void *aArg)
                                             &sResultCount )
               != IDE_SUCCESS );
 
-    IDE_TEST_RAISE( sResultCount == 0, SESSION_NOT_FOUND_ERROR );
+    if( mmcSession::getShardInternalLocalOperation( sSession ) == SDI_INTERNAL_OP_NOT )
+    {
+        IDE_TEST_RAISE( sResultCount == 0, SESSION_NOT_FOUND_ERROR );
 
-    idlOS::snprintf( sMessage, ID_SIZEOF(sMessage), MM_MSG_SESSION_CLOSED, sResultCount );
-    mmcSession::printToClientCallback( sSession, (UChar *)sMessage, idlOS::strlen(sMessage) );
+        idlOS::snprintf( sMessage, ID_SIZEOF(sMessage), MM_MSG_SESSION_CLOSED, sResultCount );
+
+        mmcSession::printToClientCallback( sSession, (UChar *)sMessage, idlOS::strlen(sMessage) );
+    }
+    else
+    {
+        /* shard internal local operationÀÌ ÄÑ ÀÖ´Â °æ¿ì shard drop node¿¡¼­
+         * ³»ºÎÀûÀ¸·Î È£ÃâµÈ °ÍÀÌ¹Ç·Î ¼º°ø/½ÇÆĞ ¸Ş½ÃÁö¸¦ ³Ñ±âÁö ¾Êµµ·Ï ÇÑ´Ù. */
+    }
 
     return IDE_SUCCESS;
 
@@ -269,17 +299,17 @@ IDE_RC mmtServiceThread::closeSession(idvSQL */*aStatistics*/, void *aArg)
  * Description :
  *
  *    To Fix BUG-15361
- *    DB ì œì–´ë¬¸ì—ì„œ ì‚¬ìš©ë˜ëŠ” database nameì˜ ì´ë¦„ì„ ê²€ì¦í•œë‹¤.
+ *    DB Á¦¾î¹®¿¡¼­ »ç¿ëµÇ´Â database nameÀÇ ÀÌ¸§À» °ËÁõÇÑ´Ù.
  *
  *       Ex) ALTER DATABASE mydb
  *
  * Implementation :
  *
- *    DB Nameì€ ë‹¤ìŒ ë‘ ê°€ì§€ê°€ ë™ì¼í•œ ì´ë¦„ìœ¼ë¡œ ì¡´ì¬í•œë‹¤.
- *       - altibase.propertiesì˜ DB_NAME
- *       - Databaseì— ì €ì¥ëœ ì´ë¦„
+ *    DB NameÀº ´ÙÀ½ µÎ °¡Áö°¡ µ¿ÀÏÇÑ ÀÌ¸§À¸·Î Á¸ÀçÇÑ´Ù.
+ *       - altibase.propertiesÀÇ DB_NAME
+ *       - Database¿¡ ÀúÀåµÈ ÀÌ¸§
  *
- *    DATABASEì— ì €ì¥ëœ ì´ë¦„ì„ ì‚¬ìš©í•˜ì—¬ ê²€ì‚¬í•œë‹¤.
+ *    DATABASE¿¡ ÀúÀåµÈ ÀÌ¸§À» »ç¿ëÇÏ¿© °Ë»çÇÑ´Ù.
  *
  **********************************************************************/
 

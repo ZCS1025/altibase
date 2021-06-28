@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsxExecutor.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsxExecutor.h 90088 2021-02-26 05:02:04Z khkwak $
  **********************************************************************/
 
 #ifndef _O_QSX_EXECUTOR_H_
@@ -80,6 +80,17 @@ typedef struct qsxExecutorInfo
     qsOID                   mObjectID;
 } qsxExecutorInfo;
 
+typedef struct intProcUtilFuncArg
+{
+    UInt     mOption;
+    SInt     mResult;
+    void   * mMemory;
+    void   * mFunction;
+    void   * mArgument1;
+    void   * mArgument2;
+    void  ** mArgument3;
+} intProcUtilFuncArg;
+
 class qsxExecutor
 {
 private:
@@ -95,9 +106,9 @@ private:
         qsxExecutorInfo * aExecInfo,
         UInt              aIdeErrorCode);
 
-    // PROJ-1335, To fix BUG-12475 GOTO ÏßÄÏõê
-    // Ìï¥Îãπ statementÏóê labelIDÏôÄ Í∞ôÏùÄ Í≤ÉÏù¥ Ï°¥Ïû¨ÌïòÎäîÏßÄ
-    // Í≤ÄÏÇ¨ÌïòÍ≥†, Ï°¥Ïû¨ÌïòÎ©¥ aLabelÏóê labelÏùò Ìè¨Ïù∏ÌÑ∞Î•º ÎÑòÍ≤®Ï§å
+    // PROJ-1335, To fix BUG-12475 GOTO ¡ˆø¯
+    // «ÿ¥Á statementø° labelIDøÕ ∞∞¿∫ ∞Õ¿Ã ¡∏¿Á«œ¥¬¡ˆ
+    // ∞ÀªÁ«œ∞Ì, ¡∏¿Á«œ∏È aLabelø° label¿« ∆˜¿Œ≈Õ∏¶ ≥—∞‹¡‹
     static idBool findLabel( qsProcStmts *  aProcStmt,
                              SInt           aLabelID,
                              qsLabels    ** aLabel );
@@ -156,6 +167,10 @@ private:
                                      qmsInto         * aIntoVariables,
                                      idBool            aIsIntoVarRecordType, 
                                      idBool            aRecordExist );
+
+    // TASK-7244 Global PSM - commit/rollback/savepoint/DDL ¡§√•
+    static IDE_RC checkRestrictionsForShard( qcStatement * aQcStmt );
+
 public:
 
     static IDE_RC initVariableItems(
@@ -246,14 +261,14 @@ public:
         qsProcStmts     * aProcIf);
 
     // PROJ-1335, To Fix BUG-12475
-    // GOTO Î¨∏ÏùÑ ÏúÑÌï¥ Ï∂îÍ∞ÄÌï®
+    // GOTO πÆ¿ª ¿ß«ÿ √ﬂ∞°«‘
     static IDE_RC execThen (
         qsxExecutorInfo * aExecInfo,
         qcStatement     * aQcStmt,
         qsProcStmts     * aProcThen);
 
     // PROJ-1335, To Fix BUG-12475
-    // GOTO Î¨∏ÏùÑ ÏúÑÌï¥ Ï∂îÍ∞ÄÌï®
+    // GOTO πÆ¿ª ¿ß«ÿ √ﬂ∞°«‘
     static IDE_RC execElse (
         qsxExecutorInfo * aExecInfo,
         qcStatement     * aQcStmt,
@@ -357,6 +372,10 @@ public:
     static IDE_RC execExtproc( qsxExecutorInfo * aExecInfo,
                                qcStatement     * aQcStmt );
 
+    // PROJ-2717
+    static IDE_RC execIntproc( qsxExecutorInfo * aExecInfo,
+                               qcStatement     * aQcStmt );
+
     // PROJ-1073 Package
     static IDE_RC execPkgPlan (
         qsxExecutorInfo * aExecInfo,
@@ -375,6 +394,8 @@ public:
                                        qsProcStmts      * aProcStmts,
                                        qcuSqlSourceInfo * aSqlInfo,
                                        idBool             aIsSetPosition );
+
+    static IDE_RC utilFunc4IntProc( intProcUtilFuncArg * aArg );
 };
 
 #endif

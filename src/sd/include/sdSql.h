@@ -22,6 +22,7 @@
 #ifndef _O_SDSQL_H_
 # define _O_SDSQL_H_ 1
 
+#include <acpTypes.h>
 /* For LoadLibrary : dlopen's option flag.*/
 #if !defined(RTLD_GLOBAL)
 #  define RTLD_GLOBAL 4
@@ -45,6 +46,8 @@ typedef void *    SQLPOINTER;
 #if (SIZEOF_LONG == 8)
 typedef SInt            SQLINTEGER;
 typedef UInt            SQLUINTEGER;
+typedef SLong           SQLBIGINT;  /* PROJ-2733-DistTxInfo */
+typedef ULong           SQLUBIGINT;
 #define SQLLEN          SQLINTEGER
 #define SQLULEN         SQLUINTEGER
 #define SQLSETPOSIROW   SQLUSMALLINT
@@ -53,8 +56,10 @@ typedef SQLULEN         SQLROWSETSIZE;
 typedef SQLULEN         SQLTRANSID;
 typedef SQLLEN          SQLROWOFFSET;
 #else
-typedef SLong           SQLINTEGER;
-typedef ULong           SQLUINTEGER;
+typedef SInt            SQLINTEGER;
+typedef UInt            SQLUINTEGER;
+typedef SLong           SQLBIGINT;  /* PROJ-2733-DistTxInfo */
+typedef ULong           SQLUBIGINT;
 #define SQLLEN          SQLINTEGER
 #define SQLULEN         SQLUINTEGER
 #define SQLSETPOSIROW   SQLUSMALLINT
@@ -63,6 +68,32 @@ typedef SQLULEN         SQLROWSETSIZE;
 typedef SQLULEN         SQLTRANSID;
 typedef SQLLEN          SQLROWOFFSET;
 #endif
+
+#define SQL_SIGNED_OFFSET       (-20)
+#define SQL_UNSIGNED_OFFSET     (-22)
+
+/* SQL data type codes */
+#define SQL_UNKNOWN_TYPE    0
+#define SQL_CHAR            1
+#define SQL_NUMERIC         2
+#define SQL_DECIMAL         3
+#define SQL_INTEGER         4
+#define SQL_SMALLINT        5
+#define SQL_FLOAT           6
+#define SQL_REAL            7
+#define SQL_DOUBLE          8
+#define SQL_BIGINT          (-5)
+#define SQL_VARCHAR        12
+
+/* C datatype to SQL datatype mapping      SQL types
+                                           ------------------- */
+#define SQL_C_CHAR    SQL_CHAR             /* CHAR, VARCHAR, DECIMAL, NUMERIC */
+#define SQL_C_LONG    SQL_INTEGER          /* INTEGER                      */
+#define SQL_C_SHORT   SQL_SMALLINT         /* SMALLINT                     */
+#define SQL_C_FLOAT   SQL_REAL             /* REAL                         */
+#define SQL_C_DOUBLE  SQL_DOUBLE           /* FLOAT, DOUBLE                */
+#define SQL_C_SBIGINT   (SQL_BIGINT+SQL_SIGNED_OFFSET)     /* SIGNED BIGINT */
+#define SQL_C_UBIGINT   (SQL_BIGINT+SQL_UNSIGNED_OFFSET)   /* UNSIGNED BIGINT */
 
 #ifndef SQL_DATA_AT_EXEC
 # define SQL_DATA_AT_EXEC         (-2)
@@ -196,6 +227,12 @@ typedef SQLRETURN (*ODBCSetConnectAttr)(SQLHDBC,
                                         SQLINTEGER,
                                         SQLPOINTER,
                                         SQLINTEGER);        // 26
+typedef SQLRETURN (*ODBCBindCol)(SQLHSTMT,
+                                 SQLSMALLINT,
+                                 SQLSMALLINT,
+                                 SQLPOINTER,
+                                 SQLLEN,
+                                 SQLLEN *);        // 27
 typedef void      (*ODBCGetDbcShardTargetDataNodeName)(SQLHDBC,
                                                        SQLCHAR *,
                                                        SQLINTEGER); // 31
@@ -255,16 +292,12 @@ typedef void      (*ODBCRemoveCallback)(SQLPOINTER*);       // 47
 
 typedef void      (*ODBCSetShardMetaNumber)(SQLHDBC, ULong);// 48
 
-typedef ULong     (*ODBCGetSMNOfDataNode)(SQLHDBC);         // 49
-
 typedef SQLRETURN (*ODBCGetNeedFailover)( SQLSMALLINT,
                                           SQLHANDLE,
                                           SQLINTEGER *);    // 50
 
 typedef SQLRETURN (*ODBCReconnect)( SQLSMALLINT,
                                     SQLHANDLE );            // 51
-
-typedef SQLCHAR   (*ODBCGetNeedToDisconnect)(SQLHDBC);      // 52
 
 typedef SQLRETURN (*ODBCSetSavepoint)( SQLHDBC,
                                        const SQLCHAR *,
@@ -275,6 +308,109 @@ typedef SQLRETURN (*ODBCRollbackToSavepoint)( SQLHDBC,
                                               SQLINTEGER );   // 54
 
 typedef SQLRETURN (*ODBCShardStmtPartialRollback)( SQLHDBC );    // 55
+
+typedef SQLRETURN (*ODBCEndPendingTranAddCallback)( SQLUINTEGER,
+                                                    SQLHDBC,
+                                                    SQLUINTEGER,
+                                                    SQLPOINTER*,
+                                                    SQLSMALLINT,
+                                                    SQLPOINTER** );  // 56
+
+typedef void (*ODBCSetFailoverSuspend)( SQLHDBC    aConnectionHandle,
+                                        SQLINTEGER aSuspendOnOff ); // 57
+
+/* PROJ-2728 Sharding LOB */
+typedef SQLRETURN (*ODBCGetLobForSd)(SQLSMALLINT  aHandleType,
+                                     SQLHANDLE    aHandle,
+                                     SQLSMALLINT  aLocatorCType,
+                                     SQLUBIGINT   aLocator,
+                                     SQLUINTEGER  aStartOffset,
+                                     SQLUINTEGER  aSizeToGet,
+                                     SQLSMALLINT  aTargetCType,
+                                     SQLPOINTER   aBufferToStoreData,
+                                     SQLUINTEGER  aSizeBuffer,
+                                     SQLUINTEGER *aSizeReadPtr);    // 58
+
+typedef SQLRETURN (*ODBCPutLobForSd)(SQLSMALLINT  aHandleType,
+                                     SQLHANDLE    aHandle,
+                                     SQLSMALLINT  aLocatorCType,
+                                     SQLUBIGINT   aLocator,
+                                     SQLUINTEGER  aStartOffset,
+                                     SQLUINTEGER  aSizeToBeUpdated,
+                                     SQLSMALLINT  aSourceCType,
+                                     SQLPOINTER   aDataToPut,
+                                     SQLUINTEGER  aSizeDataToPut);  // 59
+
+typedef SQLRETURN (*ODBCGetLobLengthForSd)(SQLSMALLINT   aHandleType,
+                                           SQLHANDLE     aHandle,
+                                           SQLUBIGINT    aLocator,
+                                           SQLSMALLINT   aLocatorCType,
+                                           SQLUINTEGER  *aLobLengthPtr,
+                                           SQLUSMALLINT *aIsNullLob); // 60
+
+typedef SQLRETURN (*ODBCFreeLobForSd)(SQLSMALLINT  aHandleType,
+                                      SQLHANDLE    aHandle,
+                                      SQLUBIGINT   aLocator);       // 61
+
+typedef SQLRETURN (*ODBCTrimLobForSd)(SQLSMALLINT aHandleType,
+                                      SQLHANDLE   aHandle,
+                                      SQLSMALLINT aLocatorCType,
+                                      SQLUBIGINT  aLocator,
+                                      SQLUINTEGER aStartOffset);    // 62
+
+typedef SQLRETURN (*ODBCLobPrepare4Write)(
+                                  SQLSMALLINT  aHandleType,
+                                  SQLHANDLE    aHandle,
+                                  SQLSMALLINT  aLocatorCType,
+                                  SQLUBIGINT   aLocator,
+                                  SQLUINTEGER  aStartOffset,
+                                  SQLUINTEGER  aSize);              // 63
+
+typedef SQLRETURN (*ODBCLobWrite)(SQLSMALLINT  aHandleType,
+                                  SQLHANDLE    aHandle,
+                                  SQLSMALLINT  aLocatorCType,
+                                  SQLUBIGINT   aLocator,
+                                  SQLSMALLINT  aSourceCType,
+                                  SQLPOINTER   aDataToPut,
+                                  SQLUINTEGER  aSizeDataToPut);     // 64
+
+typedef SQLRETURN (*ODBCLobFinishWrite)(
+                                  SQLSMALLINT  aHandleType,
+                                  SQLHANDLE    aHandle,
+                                  SQLSMALLINT  aLocatorCType,
+                                  SQLUBIGINT   aLocator);           // 65
+
+/* PROJ-2733-DistTxInfo */
+typedef SQLRETURN (*ODBCGetScn)( SQLHDBC     ConnectionHandle,
+                                 SQLUBIGINT *Scn );  // 66
+
+typedef SQLRETURN (*ODBCSetScn)( SQLHDBC     ConnectionHandle,
+                                 SQLUBIGINT *Scn );  // 67
+
+typedef SQLRETURN (*ODBCSetTxFirstStmtScn)( SQLHDBC     ConnectionHandle,
+                                            SQLUBIGINT *TxFirstStmtSCN );  // 68
+
+typedef SQLRETURN (*ODBCSetTxFirstStmtTime)( SQLHDBC     ConnectionHandle,
+                                             SQLUBIGINT  TxFirstStmtTime );  // 69
+
+typedef SQLRETURN (*ODBCSetDistLevel)( SQLHDBC      ConnectionHandle,
+                                       SQLUSMALLINT DistLevel );  // 70
+
+typedef SQLRETURN (*ODBCExecDirectAddCallback)( SQLUINTEGER   aIndex,
+                                                SQLHSTMT      aStatementHandle,
+                                                SQLCHAR      *aStatementText,
+                                                SQLINTEGER    aTextLength,
+                                                SQLPOINTER  **aCallback );  // 71
+
+typedef void (*ODBCSetTargetShardMetaNumber)( SQLHDBC aConnectionHandle,
+                                              ULong   aShardMetaNumber );   // 72
+
+/* TASK-7219 Non-shard DML */
+typedef SQLRETURN (*ODBCSetPartialExecType)( SQLHSTMT   aStmt,
+                                             SQLINTEGER aPartialExecType ); // 73
+
+typedef void      (*ODBCSetStmtExecSeq)( SQLHDBC      aConnectionHandle,
+                                         SQLUINTEGER  aExecSequence ); // 74
 
 /* SQL Function Name Tag */
 #define STR_SQLAllocHandle                    "SQLAllocHandle"                    // 01
@@ -303,6 +439,7 @@ typedef SQLRETURN (*ODBCShardStmtPartialRollback)( SQLHDBC );    // 55
 #define STR_SQLBindParameter                  "SQLBindParameter"                  // 24
 #define STR_SQLGetConnectAttr                 "SQLGetConnectAttr"                 // 25
 #define STR_SQLSetConnectAttr                 "SQLSetConnectAttr"                 // 26
+#define STR_SQLBindCol                        "SQLBindCol"                        // 27
 #define STR_SQLGetDbcShardTargetDataNodeName  "SQLGetDbcShardTargetDataNodeName"  // 31
 #define STR_SQLGetStmtShardTargetDataNodeName "SQLGetStmtShardTargetDataNodeName" // 32
 #define STR_SQLSetDbcShardTargetDataNodeName  "SQLSetDbcShardTargetDataNodeName"  // 33
@@ -328,6 +465,26 @@ typedef SQLRETURN (*ODBCShardStmtPartialRollback)( SQLHDBC );    // 55
 #define STR_SQLSetSavepoint                   "SQLSetSavepoint"                   // 53
 #define STR_SQLRollbackToSavepoint            "SQLRollbackToSavepoint"            // 54
 #define STR_SQLShardStmtPartialRollback       "SQLShardStmtPartialRollback"       // 55
+#define STR_SQLEndPendingTranAddCallback      "SQLEndPendingTranAddCallback"      // 56
+#define STR_SQLSetFailoverSuspend             "SQLSetFailoverSuspend"             // 57
+
+#define STR_SQLGetLobForSd                    "SQLGetLobForSd"                    // 58
+#define STR_SQLPutLobForSd                    "SQLPutLobForSd"                    // 59
+#define STR_SQLGetLobLengthForSd              "SQLGetLobLengthForSd"              // 60
+#define STR_SQLFreeLobForSd                   "SQLFreeLobForSd"                   // 61
+#define STR_SQLTrimLobForSd                   "SQLTrimLobForSd"                   // 62
+#define STR_SQLLobPrepare4Write               "SQLLobPrepare4Write"               // 63
+#define STR_SQLLobWrite                       "SQLLobWrite"                       // 64
+#define STR_SQLLobFinishWrite                 "SQLLobFinishWrite"                 // 65
+#define STR_SQLGetScn                         "SQLGetScn"                         // 66
+#define STR_SQLSetScn                         "SQLSetScn"                         // 67
+#define STR_SQLSetTxFirstStmtScn              "SQLSetTxFirstStmtScn"              // 68
+#define STR_SQLSetTxFirstStmtTime             "SQLSetTxFirstStmtTime"             // 69
+#define STR_SQLSetDistLevel                   "SQLSetDistLevel"                   // 70
+#define STR_SQLExecDirectAddCallback          "SQLExecDirectAddCallback"          // 71
+#define STR_SQLSetTargetShardMetaNumber       "SQLSetTargetShardMetaNumber"       // 72
+#define STR_SQLSetPartialExecType             "SQLSetPartialExecType"             // 73
+#define STR_SQLSetStmtExecSeq                 "SQLSetStmtExecSeq"                 // 74
 
 typedef enum sdlTransactionOp
 {

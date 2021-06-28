@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * ë³¸ íŒŒì¼ì€ extent directory pageì— ëŒ€í•œ êµ¬í˜„ íŒŒì¼ì´ë‹¤.
+ * º» ÆÄÀÏÀº extent directory page¿¡ ´ëÇÑ ±¸Çö ÆÄÀÏÀÌ´Ù.
  *
  **********************************************************************/
 
@@ -29,16 +29,16 @@
 #include <sdpsfExtDirPage.h>
 #include <sdpsfExtent.h>
 #include <sdpsfSH.h>
-//XXX sdptbë¥¼ ë°”ë¡œ ì°¸ì¡°í•˜ë©´ ì•ˆë©ë‹ˆë‹¤.
+//XXX sdptb¸¦ ¹Ù·Î ÂüÁ¶ÇÏ¸é ¾ÈµË´Ï´Ù.
 #include <sdptbExtent.h>
 #include <smErrorCode.h>
 
 /***********************************************************************
- * Description: ExtDirPageë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ * Description: ExtDirPage¸¦ ÃÊ±âÈ­ÇÑ´Ù.
  *
  * aMtx           - [IN] Min Transaction Pointer
  * aExtDirCntlHdr - [IN] ExtDirCntlHdr
- * aMaxExtDescCnt - [IN] ìµœëŒ€ Extent ê°¯ìˆ˜
+ * aMaxExtDescCnt - [IN] ÃÖ´ë Extent °¹¼ö
  **********************************************************************/
 IDE_RC sdpsfExtDirPage::initialize( sdrMtx*              aMtx,
                                     sdpsfExtDirCntlHdr*  aExtDirCntlHdr,
@@ -83,16 +83,16 @@ IDE_RC sdpsfExtDirPage::destroy()
 }
 
 /***********************************************************************
- * Description : ExtDirPageë¥¼ ìƒì„±í•œë‹¤. ìƒì„±ëœ ExtDirPageì˜ Pointerì™€
- *               Headerë¥¼ êµ¬í•´ì¤€ë‹¤.
+ * Description : ExtDirPage¸¦ »ı¼ºÇÑ´Ù. »ı¼ºµÈ ExtDirPageÀÇ Pointer¿Í
+ *               Header¸¦ ±¸ÇØÁØ´Ù.
  *
- * aStatistics    - [IN] í†µê³„ì •ë³´
+ * aStatistics    - [IN] Åë°èÁ¤º¸
  * aMtx           - [IN] Mini Transaction Pointer
  * aSpaceID       - [IN] TableSpace ID
  * aPageID        - [IN] ExtDirPage ID
  *
- * aPagePtr       - [OUT] Createëœ ExtDirPage Pointerê°€ ì„¤ì •ëœë‹¤.
- * aRetExtDirHdr  - [OUT] ExtDirPageì˜ ExtDirCntlHdrê°€ ì„¤ì •ëœë‹¤.
+ * aPagePtr       - [OUT] CreateµÈ ExtDirPage Pointer°¡ ¼³Á¤µÈ´Ù.
+ * aRetExtDirHdr  - [OUT] ExtDirPageÀÇ ExtDirCntlHdr°¡ ¼³Á¤µÈ´Ù.
  **********************************************************************/
 IDE_RC sdpsfExtDirPage::create( idvSQL              * aStatistics,
                                 sdrMtx              * aMtx,
@@ -144,16 +144,16 @@ IDE_RC sdpsfExtDirPage::create( idvSQL              * aStatistics,
 }
 
 /***********************************************************************
- * Description : <aSpaceID, aPageID>ì— í•´ë‹¹í•˜ëŠ” Pageì— ëŒ€í•´ì„œ XLatchë¥¼
- *               ì¡ê³  í˜ì´ì§€ì˜ í¬ì¸í„°ì™€ ExtDirCntlHeaderë¥¼ ë¦¬í„´í•œë‹¤.
+ * Description : <aSpaceID, aPageID>¿¡ ÇØ´çÇÏ´Â Page¿¡ ´ëÇØ¼­ XLatch¸¦
+ *               Àâ°í ÆäÀÌÁöÀÇ Æ÷ÀÎÅÍ¿Í ExtDirCntlHeader¸¦ ¸®ÅÏÇÑ´Ù.
  *
- * aStatistics    - [IN] í†µê³„ì •ë³´
+ * aStatistics    - [IN] Åë°èÁ¤º¸
  * aMtx           - [IN] Mini Transaction Pointer
  * aSpaceID       - [IN] TableSpace ID
  * aPageID        - [IN] ExtDirPage ID
  *
- * aPagePtr       - [OUT] ExtDirPage Pointerê°€ ì„¤ì •ëœë‹¤.
- * aRetExtDirHdr  - [OUT] ExtDirPageì˜ ExtDirCntlHdrê°€ ì„¤ì •ëœë‹¤.
+ * aPagePtr       - [OUT] ExtDirPage Pointer°¡ ¼³Á¤µÈ´Ù.
+ * aRetExtDirHdr  - [OUT] ExtDirPageÀÇ ExtDirCntlHdr°¡ ¼³Á¤µÈ´Ù.
  **********************************************************************/
 IDE_RC sdpsfExtDirPage::getPage4Update( idvSQL              * aStatistics,
                                         sdrMtx              * aMtx,
@@ -193,14 +193,14 @@ IDE_RC sdpsfExtDirPage::getPage4Update( idvSQL              * aStatistics,
 }
 
 /***********************************************************************
- * Description : <aSpaceID, aPageID>ì— í•´ë‹¹í•˜ëŠ” Pageë¥¼ Bufferì— Fixí•œë‹¤.
+ * Description : <aSpaceID, aPageID>¿¡ ÇØ´çÇÏ´Â Page¸¦ Buffer¿¡ FixÇÑ´Ù.
  *
- * aStatistics    - [IN] í†µê³„ì •ë³´
+ * aStatistics    - [IN] Åë°èÁ¤º¸
  * aSpaceID       - [IN] TableSpace ID
  * aPageID        - [IN] ExtDirPage ID
  *
- * aPagePtr       - [OUT] ExtDirPage Pointerê°€ ì„¤ì •ëœë‹¤.
- * aRetExtDirHdr  - [OUT] ExtDirPageì˜ ExtDirCntlHdrê°€ ì„¤ì •ëœë‹¤.
+ * aPagePtr       - [OUT] ExtDirPage Pointer°¡ ¼³Á¤µÈ´Ù.
+ * aRetExtDirHdr  - [OUT] ExtDirPageÀÇ ExtDirCntlHdr°¡ ¼³Á¤µÈ´Ù.
  **********************************************************************/
 IDE_RC sdpsfExtDirPage::fixPage( idvSQL              * aStatistics,
                                  scSpaceID             aSpaceID,
@@ -232,17 +232,17 @@ IDE_RC sdpsfExtDirPage::fixPage( idvSQL              * aStatistics,
 }
 
 /***********************************************************************
- * Description : ìƒˆë¡œìš´ ExtDescë¥¼ ì´ aExtDirHdrì˜ ëì— ì¶”ê°€í•œë‹¤. ë§Œì•½ ê³µê°„
- *               ì´ ì—†ë‹¤ë©´ aNewExtDescë¥¼ NULLë¡œ ì„¤ì •í•˜ê³  ìˆë‹¤ë©´ ì¶”ê°€í•œ
- *               ExtDescì˜ ì‹œì‘ì£¼ì†Œë¥¼ ë„˜ê²¨ì¤€ë‹¤.
+ * Description : »õ·Î¿î ExtDesc¸¦ ÀÌ aExtDirHdrÀÇ ³¡¿¡ Ãß°¡ÇÑ´Ù. ¸¸¾à °ø°£
+ *               ÀÌ ¾ø´Ù¸é aNewExtDesc¸¦ NULL·Î ¼³Á¤ÇÏ°í ÀÖ´Ù¸é Ãß°¡ÇÑ
+ *               ExtDescÀÇ ½ÃÀÛÁÖ¼Ò¸¦ ³Ñ°ÜÁØ´Ù.
  *
  * aMtx           - [IN] Mini Transaction Pointer
  * aExtDirHdr     - [IN] ExtDirPage Header
- * aFstPID        - [IN] ìƒˆë¡œìš´ Extentì˜ ì²«ë²ˆì§¸ í˜ì´ì§€
- * aFlag          - [IN] ExtDescì˜ Flag ì •ë³´.
+ * aFstPID        - [IN] »õ·Î¿î ExtentÀÇ Ã¹¹øÂ° ÆäÀÌÁö
+ * aFlag          - [IN] ExtDescÀÇ Flag Á¤º¸.
  *
- * aNewExtDesc    - [OUT] If ê³µê°„ì´ ì—†ë‹¤ë©´ NULL, else ìƒˆë¡œ Addëœ Extent Desc
- *                        ì˜ ì‹œì‘ ì£¼ì†Œ.
+ * aNewExtDesc    - [OUT] If °ø°£ÀÌ ¾ø´Ù¸é NULL, else »õ·Î AddµÈ Extent Desc
+ *                        ÀÇ ½ÃÀÛ ÁÖ¼Ò.
  **********************************************************************/
 IDE_RC sdpsfExtDirPage::addNewExtDescAtLst( sdrMtx             * aMtx,
                                             sdpsfExtDirCntlHdr * aExtDirHdr,
@@ -262,8 +262,8 @@ IDE_RC sdpsfExtDirPage::addNewExtDescAtLst( sdrMtx             * aMtx,
     {
         sExtCnt = aExtDirHdr->mExtDescCnt;
 
-        /* ìƒˆë¡œìš´ Extentê°€ ì¶”ê°€ë˜ì—ˆê¸°ë•Œë¬¸ì— ExtDescê°¯ìˆ˜ë¥¼ 1ì¦ê°€
-         * ì‹œì¼œì¤€ë‹¤. */
+        /* »õ·Î¿î Extent°¡ Ãß°¡µÇ¾ú±â¶§¹®¿¡ ExtDesc°¹¼ö¸¦ 1Áõ°¡
+         * ½ÃÄÑÁØ´Ù. */
         IDE_TEST( setExtDescCnt( aMtx,
                                  aExtDirHdr,
                                  sExtCnt + 1 )
@@ -271,7 +271,7 @@ IDE_RC sdpsfExtDirPage::addNewExtDescAtLst( sdrMtx             * aMtx,
 
         sNewExtDesc  = getLstExtDesc( aExtDirHdr );
 
-        /* ìƒˆë¡œìš´ Extentì˜ ì‹œì‘ í˜ì´ì§€ë¥¼ ì„¤ì •í•œë‹¤. */
+        /* »õ·Î¿î ExtentÀÇ ½ÃÀÛ ÆäÀÌÁö¸¦ ¼³Á¤ÇÑ´Ù. */
         IDE_TEST( sdpsfExtent::setFirstPID( sNewExtDesc,
                                             aFstPID,
                                             aMtx )
@@ -286,7 +286,7 @@ IDE_RC sdpsfExtDirPage::addNewExtDescAtLst( sdrMtx             * aMtx,
     }
     else
     {
-        /* ê³µê°„ì´ ì—†ë‹¤. */
+        /* °ø°£ÀÌ ¾ø´Ù. */
         *aNewExtDesc = NULL;
     }
 
@@ -300,13 +300,13 @@ IDE_RC sdpsfExtDirPage::addNewExtDescAtLst( sdrMtx             * aMtx,
 }
 
 /***********************************************************************
- * Description : Segmentì—ì„œ aCurExtRID ë‹¤ìŒì— ì¡´ì¬í•˜ëŠ” Extent RIDì™€
- *               ExtDescë¥¼ êµ¬í•œë‹¤.
+ * Description : Segment¿¡¼­ aCurExtRID ´ÙÀ½¿¡ Á¸ÀçÇÏ´Â Extent RID¿Í
+ *               ExtDesc¸¦ ±¸ÇÑ´Ù.
  *
  * aExtDirHdr     - [IN] Extent Directory Page Pointer
- * aCurExtRID     - [IN] í˜„ì¬ Extent RID
- * aNxtExtRID     - [IN] ë‹¤ìŒ Extent RID
- * aExtDesc       - [OUT] ë‹¤ìŒ ExtDesc ê°€ ë³µì‚¬ë  ë²„í¼
+ * aCurExtRID     - [IN] ÇöÀç Extent RID
+ * aNxtExtRID     - [IN] ´ÙÀ½ Extent RID
+ * aExtDesc       - [OUT] ´ÙÀ½ ExtDesc °¡ º¹»çµÉ ¹öÆÛ
  **********************************************************************/
 IDE_RC sdpsfExtDirPage::getNxtExt( sdpsfExtDirCntlHdr * aExtDirHdr,
                                    sdRID                aCurExtRID,
@@ -340,20 +340,20 @@ IDE_RC sdpsfExtDirPage::getNxtExt( sdpsfExtDirCntlHdr * aExtDirHdr,
 }
 
 /***********************************************************************
- * Description : aExtDirPIDê°€ ê°€ë¦¬í‚¤ëŠ” í˜ì´ì§€ì—ì„œ OUTì¸ìì˜ ì •ë³´ë¥¼ ê°€ì ¸
- *               ì˜¨ë‹¤. aExtDirPIDê°€ ê°€ë¦¬í‚¤ëŠ” í˜ì´ì§€ëŠ” Extent Directory
- *               Pageì´ì–´ì•¼ í•œë‹¤.
+ * Description : aExtDirPID°¡ °¡¸®Å°´Â ÆäÀÌÁö¿¡¼­ OUTÀÎÀÚÀÇ Á¤º¸¸¦ °¡Á®
+ *               ¿Â´Ù. aExtDirPID°¡ °¡¸®Å°´Â ÆäÀÌÁö´Â Extent Directory
+ *               PageÀÌ¾î¾ß ÇÑ´Ù.
  *
- * aStatistics    - [IN] í†µê³„ì •ë³´
+ * aStatistics    - [IN] Åë°èÁ¤º¸
  * aSpaceID       - [IN] TableSpace ID
  * aExtDirPID     - [IN] Extent Directory PageID
  *
- * aExtCnt        - [OUT] aExtDirPIDê°€ ê°€ë¦¬í‚¤ëŠ” í˜ì´ì§€ì— ì¡´ì¬í•˜ëŠ” Extent
- *                        ê°¯ìˆ˜
- * aFstExtRID     - [OUT] ì²«ë²ˆì§¸ Extent RID
- * aFstExtDescPtr - [OUT] ì²«ë²ˆì¬ Extent Descê°€ ë³µì‚¬ë  ë²„í¼
- * aLstExtRID     - [OUT] Extent Directory Pageë‚´ì˜ ë§ˆì§€ë§‰ Extent RID
- * aNxtExtDirPID  - [OUT] aExtDirPIDì˜ ë‹¤ìŒ ExtDirPageID
+ * aExtCnt        - [OUT] aExtDirPID°¡ °¡¸®Å°´Â ÆäÀÌÁö¿¡ Á¸ÀçÇÏ´Â Extent
+ *                        °¹¼ö
+ * aFstExtRID     - [OUT] Ã¹¹øÂ° Extent RID
+ * aFstExtDescPtr - [OUT] Ã¹¹øÀç Extent Desc°¡ º¹»çµÉ ¹öÆÛ
+ * aLstExtRID     - [OUT] Extent Directory Page³»ÀÇ ¸¶Áö¸· Extent RID
+ * aNxtExtDirPID  - [OUT] aExtDirPIDÀÇ ´ÙÀ½ ExtDirPageID
  **********************************************************************/
 IDE_RC sdpsfExtDirPage::getPageInfo( idvSQL        * aStatistics,
                                      scSpaceID       aSpaceID,
@@ -430,10 +430,10 @@ IDE_RC sdpsfExtDirPage::getPageInfo( idvSQL        * aStatistics,
 }
 
 /***********************************************************************
- * Description : aExtDirCntlHdrì´ ê°€ë¦¬í‚¤ëŠ” í˜ì´ì§€ì˜ ëì—ì„œ ExtDescë¥¼ ì œê±°
- *               í•œë‹¤.
+ * Description : aExtDirCntlHdrÀÌ °¡¸®Å°´Â ÆäÀÌÁöÀÇ ³¡¿¡¼­ ExtDesc¸¦ Á¦°Å
+ *               ÇÑ´Ù.
  *
- * aStatistics    - [IN] í†µê³„ ì •ë³´
+ * aStatistics    - [IN] Åë°è Á¤º¸
  * aMtx           - [IN] Mini Transaction Pointer
  * aSpaceID       - [IN] TableSpace ID
  * aSegHdr        - [IN] Segment Header
@@ -482,10 +482,10 @@ IDE_RC sdpsfExtDirPage::freeLstExt( idvSQL             * aStatistics,
 }
 
 /***********************************************************************
- * Description : aExtDirCntlHdrê°€ ê°€ë¦¬í‚¤ëŠ” í˜ì´ì§€ì—ì„œ ì²«ë²ˆì§¸ Extent
- *               ì œì™¸í•˜ê³  ëª¨ë“  Extentë¥¼ freeí•œë‹¤.
+ * Description : aExtDirCntlHdr°¡ °¡¸®Å°´Â ÆäÀÌÁö¿¡¼­ Ã¹¹øÂ° Extent
+ *               Á¦¿ÜÇÏ°í ¸ğµç Extent¸¦ freeÇÑ´Ù.
  *
- * aStatistics    - [IN] í†µê³„ ì •ë³´
+ * aStatistics    - [IN] Åë°è Á¤º¸
  * aStartInfo     - [IN] Mini Transaction Start Info
  * aSpaceID       - [IN] TableSpace ID
  * aSegHdr        - [IN] Segment Header Pointer
@@ -511,8 +511,8 @@ IDE_RC sdpsfExtDirPage::freeAllExtExceptFst( idvSQL             * aStatistics,
     sExtDirPagePtr = sdpPhyPage::getPageStartPtr( aExtDirCntlHdr );
     sSegHdrPagePtr = sdpPhyPage::getPageStartPtr( aSegHdr );
 
-    /* ì²«ë²ˆì§¸ ExtDescëŠ” ExtDirPageê°€ ìˆëŠ” Extentì´ê¸°ë•Œë¬¸ì— ê°€ì¥ ë‚˜ì¤‘ì— Freeí•´ì•¼ í•œë‹¤.
-     * í•˜ì—¬ Extent Dir Pageì˜ Extentë¥¼ ì—­ìˆœìœ¼ë¡œ Freeí•œë‹¤. */
+    /* Ã¹¹øÂ° ExtDesc´Â ExtDirPage°¡ ÀÖ´Â ExtentÀÌ±â¶§¹®¿¡ °¡Àå ³ªÁß¿¡ FreeÇØ¾ß ÇÑ´Ù.
+     * ÇÏ¿© Extent Dir PageÀÇ Extent¸¦ ¿ª¼øÀ¸·Î FreeÇÑ´Ù. */
     sExtDescCnt    = aExtDirCntlHdr->mExtDescCnt;
 
     while( sExtDescCnt > 1 )
@@ -558,9 +558,9 @@ IDE_RC sdpsfExtDirPage::freeAllExtExceptFst( idvSQL             * aStatistics,
 }
 
 /***********************************************************************
- * Description : aExtRIDê°€ ê°€ë¦¬í‚¤ëŠ” Extentì´í›„ì˜ ëª¨ë“  Extentë¥¼ freeí•œë‹¤.
+ * Description : aExtRID°¡ °¡¸®Å°´Â ExtentÀÌÈÄÀÇ ¸ğµç Extent¸¦ freeÇÑ´Ù.
  *
- * aStatistics    - [IN] í†µê³„ ì •ë³´
+ * aStatistics    - [IN] Åë°è Á¤º¸
  * aStartInfo     - [IN] Mini Transaction Start Info
  * aSpaceID       - [IN] TableSpace ID
  * aSegHdr        - [IN] Segment Header
@@ -590,8 +590,8 @@ IDE_RC sdpsfExtDirPage::freeAllNxtExt( idvSQL             * aStatistics,
     sExtDirPagePtr = sdpPhyPage::getPageStartPtr( aExtDirCntlHdr );
     sSegHdrPagePtr = sdpPhyPage::getPageStartPtr( aSegHdr );
 
-    /* ì²«ë²ˆì§¸ ExtDescëŠ” ExtDirPageê°€ ìˆëŠ” Extentì´ê¸°ë•Œë¬¸ì— ê°€ì¥ ë‚˜ì¤‘ì— Freeí•´ì•¼ í•œë‹¤.
-     * í•˜ì—¬ Extent Dir Pageì˜ Extentë¥¼ ì—­ìˆœìœ¼ë¡œ Freeí•œë‹¤. */
+    /* Ã¹¹øÂ° ExtDesc´Â ExtDirPage°¡ ÀÖ´Â ExtentÀÌ±â¶§¹®¿¡ °¡Àå ³ªÁß¿¡ FreeÇØ¾ß ÇÑ´Ù.
+     * ÇÏ¿© Extent Dir PageÀÇ Extent¸¦ ¿ª¼øÀ¸·Î FreeÇÑ´Ù. */
     sExtDescCnt = aExtDirCntlHdr->mExtDescCnt;
 
     while( sExtDescCnt > 0 )
@@ -644,7 +644,7 @@ IDE_RC sdpsfExtDirPage::freeAllNxtExt( idvSQL             * aStatistics,
 }
 
 /***********************************************************************
- * Description : Debugë¥¼ ìœ„í•´ì„œ Consoleì— ExtentDescì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ * Description : Debug¸¦ À§ÇØ¼­ Console¿¡ ExtentDescÁ¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  * aExtDirCntlHdr- [IN] Extent Direct Control Header
  **********************************************************************/

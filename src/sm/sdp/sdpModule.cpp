@@ -19,7 +19,7 @@
  *
  * $Id: sdpModule.cpp 27220 2008-07-23 14:56:22Z newdaily $
  *
- * Page Layerì˜ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë° ì„¸ê·¸ë¨¼íŠ¸ì˜ ê³µê°„ê´€ë¦¬ ëª¨ë“ˆë“¤ì„ ì •ì˜í•œë‹¤.
+ * Page LayerÀÇ Å×ÀÌºí½ºÆäÀÌ½º ¹× ¼¼±×¸ÕÆ®ÀÇ °ø°£°ü¸® ¸ğµâµéÀ» Á¤ÀÇÇÑ´Ù.
  *
  **********************************************************************/
 
@@ -30,48 +30,8 @@
 # include <sdpModule.h>
 
 /*
- * [ FETB ]
- * Bitmapì„ ì‚¬ìš©í•œ Extent Tablespaceì˜ ê³µê°„ê´€ë¦¬ ëª¨ë“ˆì„ ì •ì˜í•œë‹¤.
- */
-sdpExtMgmtOp gSdptbOp =
-{
-    (sdptInitializeFunc)sdptbGroup::allocAndInitSpaceCache,
-    (sdptDestroyFunc)sdptbGroup::destroySpaceCache,
-    (sdptFreeExtentFunc)sdptbExtent::freeExt,
-    (sdptTryAllocExtDirFunc)sdptbExtent::tryAllocExtDir,
-    (sdptFreeExtDirFunc)sdptbExtent::freeExtDir,
-    (sdptCreateFunc)sdptbSpaceDDL::createTBS,
-    (sdptResetFunc)sdptbSpaceDDL::resetTBSCore,
-    (sdptDropFunc)sdptbSpaceDDL::dropTBS,
-    (sdptAlterStatusFunc)sdptbSpaceDDL::alterTBSStatus,
-    (sdptAlterDiscardFunc)sdptbSpaceDDL::alterTBSdiscard,
-    (sdptCreateFilesFunc)sdptbSpaceDDL::createDataFilesFEBT,
-    (sdptDropFileFunc)sdptbSpaceDDL::removeDataFile,
-    (sdptAlterFileAutoExtendFunc)sdptbSpaceDDL::alterDataFileAutoExtendFEBT,
-    (sdptAlterFileNameFunc)sdptbSpaceDDL::alterDataFileName,
-    (sdptAlterFileResizeFunc)sdptbSpaceDDL::alterDataFileReSizeFEBT,
-
-    (sdptSetTSSPIDFunc)sdptbSpaceDDL::setTSSPID,
-    (sdptGetTSSPIDFunc)sdptbSpaceDDL::getTSSPID,
-    (sdptSetUDSPIDFunc)sdptbSpaceDDL::setUDSPID,
-    (sdptGetUDSPIDFunc)sdptbSpaceDDL::getUDSPID,
-
-    (sdptDumpFunc)sdptbVerifyAndDump::dump,
-    (sdptVerifyFunc)sdptbVerifyAndDump::verify,
-    (sdptRefineSpaceCacheFunc)sdptbGroup::doRefineSpaceCacheCore,
-    (sdptAlterOfflineCommitPendingFunc)sdptbSpaceDDL::alterOfflineCommitPending,
-    (sdptAlterOnlineCommitPendingFunc)sdptbSpaceDDL::alterOnlineCommitPending,
-    (sdptGetTotalPageCountFunc)sdptbGroup::getTotalPageCount,
-    (sdptGetAllocPageCountFunc)sdptbGroup::getAllocPageCount,
-    (sdptGetCachedFreeExtCountFunc)sdptbGroup::getCachedFreeExtCount,
-    (sdptBuildRecord4FreeExtOfTBS)sdptbFT::buildRecord4FreeExtOfTBS,
-    (sdptIsFreeExtPageFunc)sdptbExtent::isFreeExtPage
-};
-
-
-/*
  * [ FMS ]
- * Freelist Managed Segment ì˜ ê³µê°„ê´€ë¦¬ ëª¨ë“ˆì„ ì •ì˜í•œë‹¤.
+ * Freelist Managed Segment ÀÇ °ø°£°ü¸® ¸ğµâÀ» Á¤ÀÇÇÑ´Ù.
  */
 sdpSegMgmtOp gSdpsfOp =
 {
@@ -122,7 +82,7 @@ sdpSegMgmtOp gSdpsfOp =
 
 /*
  * [ TMS ]
- * Treelist Managed Segment ì˜ ê³µê°„ê´€ë¦¬ ëª¨ë“ˆì„ ì •ì˜í•œë‹¤.
+ * Treelist Managed Segment ÀÇ °ø°£°ü¸® ¸ğµâÀ» Á¤ÀÇÇÑ´Ù.
  */
 sdpSegMgmtOp gSdpstOp =
 {
@@ -173,7 +133,7 @@ sdpSegMgmtOp gSdpstOp =
 
 /*
  * [ CMS ]
- * Circular-List Managed Segment ì˜ ê³µê°„ê´€ë¦¬ ëª¨ë“ˆì„ ì •ì˜í•œë‹¤.
+ * Circular-List Managed Segment ÀÇ °ø°£°ü¸® ¸ğµâÀ» Á¤ÀÇÇÑ´Ù.
  */
 sdpSegMgmtOp gSdpscOp =
 {

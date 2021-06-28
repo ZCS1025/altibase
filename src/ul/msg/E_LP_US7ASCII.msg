@@ -21,7 +21,7 @@
 # 브랜치에서 에러코드를 할당받으시면 안됩니다.
 # 반드시 main trunk에서 번호를 할당받은 후 브랜치에서 사용하셔야 합니다.
 # 의문 사항이 있으시면 AK팀 혹은 QP(품질본부)팀에 문의 부탁드립니다.
-# Last Number = 125
+# Last Number = 126
 
 SECTION = 5
 
@@ -444,6 +444,11 @@ SECTION = 5
 # *Cause: The apre host variable type and psm array type do not match.
 # *Action: Change the apre host variable types to the data types that are supported by psm array.
 
-125, 07006, ulpERR_ABORT_PSM_Not_Exist_Error = The name of PSM does not exist. (<0%s>)
+#125, 07006, ulpERR_ABORT_PSM_Not_Exist_Error = The name of PSM does not exist. (<0%s>)
 # *Cause: There is no PSM with the name you specified.
 # *Action: Verify the existence of PSM name and try again.
+
+126, 07006, ulpERR_ABORT_Incompatible_Type_With_Diag_Item = Incompatible host variable type with the diagnostic item. (<0%s>)
+# *Cause: The data type of the target is not compatible with the data type of the requested diagnostic item.
+# *Action: Change the apre host variable type to the data type that is compatible with the data type of the diagnostic item.
+

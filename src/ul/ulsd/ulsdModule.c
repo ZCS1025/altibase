@@ -39,6 +39,25 @@ SQLRETURN ulsdModuleNodeDriverConnect(ulnDbc       *aDbc,
                                                            aConnStringLength);
 }
 
+SQLRETURN ulsdModuleNodeConnect( ulnDbc       * aDbc,
+                                 ulnFnContext * aFnContext,
+                                 acp_char_t   * aServerName,
+                                 acp_sint16_t   aServerNameLength,
+                                 acp_char_t   * aUserName,
+                                 acp_sint16_t   aUserNameLength,
+                                 acp_char_t   * aPassword,
+                                 acp_sint16_t   aPasswordLength )
+{
+    return aDbc->mShardModule->ulsdModuleNodeConnect( aDbc,
+                                                      aFnContext,
+                                                      aServerName,
+                                                      aServerNameLength,
+                                                      aUserName,
+                                                      aUserNameLength,
+                                                      aPassword,
+                                                      aPasswordLength );
+}                                                     
+
 ACI_RC ulsdModuleEnvRemoveDbc(ulnEnv *aEnv, ulnDbc *aDbc)
 {
     return aDbc->mShardModule->ulsdModuleEnvRemoveDbc(aEnv, aDbc);
@@ -147,3 +166,86 @@ acp_bool_t ulsdModuleHasNoData( ulnStmt * aStmt )
 {
     return aStmt->mShardModule->ulsdModuleHasNoData( aStmt );
 }
+
+/*
+ * PROJ-2739 Client-side Sharding LOB
+ */
+SQLRETURN ulsdModuleGetLobLength( ulnFnContext *aFnContext,
+                                  ulnStmt      *aStmt,
+                                  acp_uint64_t  aLocator,
+                                  acp_sint16_t  aLocatorType,
+                                  acp_uint32_t *aLengthPtr )
+{
+    return aStmt->mShardModule->ulsdModuleGetLobLength( aFnContext,
+                                                        aStmt,
+                                                        aLocator,
+                                                        aLocatorType,
+                                                        aLengthPtr );
+}
+
+SQLRETURN ulsdModuleGetLob( ulnFnContext *aFnContext,
+                            ulnStmt      *aStmt,
+                            acp_sint16_t  aLocatorCType,
+                            acp_uint64_t  aSrcLocator,
+                            acp_uint32_t  aFromPosition,
+                            acp_uint32_t  aForLength,
+                            acp_sint16_t  aTargetCType,
+                            void         *aBuffer,
+                            acp_uint32_t  aBufferSize,
+                            acp_uint32_t *aLengthWritten )
+{
+    return aStmt->mShardModule->ulsdModuleGetLob( aFnContext,
+                                                  aStmt,
+                                                  aLocatorCType,
+                                                  aSrcLocator,
+                                                  aFromPosition,
+                                                  aForLength,
+                                                  aTargetCType,
+                                                  aBuffer,
+                                                  aBufferSize,
+                                                  aLengthWritten );
+}
+
+SQLRETURN ulsdModulePutLob( ulnFnContext *aFnContext,
+                            ulnStmt      *aStmt,
+                            acp_sint16_t  aLocatorCType,
+                            acp_uint64_t  aLocator,
+                            acp_uint32_t  aFromPosition,
+                            acp_uint32_t  aForLength,
+                            acp_sint16_t  aSourceCType,
+                            void         *aBuffer,
+                            acp_uint32_t  aBufferSize )
+{
+    return aStmt->mShardModule->ulsdModulePutLob( aFnContext,
+                                                  aStmt,
+                                                  aLocatorCType,
+                                                  aLocator,
+                                                  aFromPosition,
+                                                  aForLength,
+                                                  aSourceCType,
+                                                  aBuffer,
+                                                  aBufferSize );
+}
+
+SQLRETURN ulsdModuleFreeLob( ulnFnContext *aFnContext,
+                             ulnStmt      *aStmt,
+                             acp_uint64_t  aLocator )
+{
+    return aStmt->mShardModule->ulsdModuleFreeLob( aFnContext,
+                                                   aStmt,
+                                                   aLocator );
+}
+
+SQLRETURN ulsdModuleTrimLob( ulnFnContext  *aFnContext,
+                             ulnStmt       *aStmt,
+                             acp_sint16_t   aLocatorCType,
+                             acp_uint64_t   aLocator,
+                             acp_uint32_t   aStartOffset )
+{
+    return aStmt->mShardModule->ulsdModuleTrimLob( aFnContext,
+                                                   aStmt,
+                                                   aLocatorCType,
+                                                   aLocator,
+                                                   aStartOffset );
+}
+

@@ -16,11 +16,11 @@
  
 
 /***********************************************************************
- * $Id: stndrUpdate.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: stndrUpdate.cpp 88414 2020-08-25 04:45:02Z justin.kwon $
  *
  * Description :
  *
- * ë³¸ íŒŒì¼ì€ Disk R-Tree Index ê´€ë ¨ redo/undo í•¨ìˆ˜ì— ëŒ€í•œ êµ¬í˜„íŒŒì¼ì´ë‹¤.
+ * º» ÆÄÀÏÀº Disk R-Tree Index °ü·Ã redo/undo ÇÔ¼ö¿¡ ´ëÇÑ ±¸ÇöÆÄÀÏÀÌ´Ù.
  *
  **********************************************************************/
 
@@ -217,7 +217,7 @@ IDE_RC stndrUpdate::undo_SDR_STNDR_INSERT_KEY( idvSQL   * aStatistics,
     
     sIndexTypeID = sIndexHeader->mType;
     
-    /* BUG-27690 Disk Btree for Spatial Undo ë° Redoì—ì„œì˜ ì˜¤ë¥˜ íƒìƒ‰ */
+    /* BUG-27690 Disk Btree for Spatial Undo ¹× Redo¿¡¼­ÀÇ ¿À·ù Å½»ö */
     sTableTypeID = SMN_GET_BASE_TABLE_TYPE_ID(sTableHeader->mFlag); 
     
     sIndexModule = gSmnAllIndex[sIndexTypeID]->mModule[sTableTypeID];
@@ -395,7 +395,7 @@ IDE_RC stndrUpdate::undo_SDR_STNDR_DELETE_KEY_WITH_NTA( idvSQL  * aStatistics,
     sLKey = (stndrLKey*)sTempBuf;
     
     sIndexTypeID = sIndexHeader->mType;
-    /* BUG-27690 Disk Btree for Spatial Undo ë° Redoì—ì„œì˜ ì˜¤ë¥˜ íƒìƒ‰ */
+    /* BUG-27690 Disk Btree for Spatial Undo ¹× Redo¿¡¼­ÀÇ ¿À·ù Å½»ö */
     sTableTypeID = SMN_GET_BASE_TABLE_TYPE_ID(sTableHeader->mFlag);
 
     sIndexModule = gSmnAllIndex[sIndexTypeID]->mModule[sTableTypeID];
@@ -464,7 +464,7 @@ IDE_RC stndrUpdate::redo_SDR_STNDR_FREE_KEYS( SChar         * aLogPtr,
 
     if( STNDR_IS_LEAF_NODE(sNodeHdr) == ID_TRUE )
     {
-        // BUG-29538 splitì‹œ TBK countë¥¼ ì¡°ì •í•˜ì§€ ì•Šê³  ìžˆìŠµë‹ˆë‹¤.
+        // BUG-29538 split½Ã TBK count¸¦ Á¶Á¤ÇÏÁö ¾Ê°í ÀÖ½À´Ï´Ù.
         IDE_TEST( stndrRTree::freeKeysLeaf( sPageHdr,
                                             sKeyArray,
                                             0,
@@ -539,7 +539,7 @@ IDE_RC stndrUpdate::redo_SDR_STNDR_COMPACT_INDEX_PAGE( SChar        * /*aLogPtr*
 
     return IDE_FAILURE;
 }
-
+#if 0
 /***********************************************************************
  * Description : SDR_STNDR_MAKE_CHAINED_KEYS
  **********************************************************************/
@@ -604,8 +604,8 @@ IDE_RC stndrUpdate::redo_SDR_STNDR_MAKE_CHAINED_KEYS( SChar         * aLogPtr,
 
     return IDE_FAILURE;
 }
-
-
+#endif
+#if 0
 /***********************************************************************
  * Description : SDR_STNDR_MAKE_UNCHAINED_KEYS
  **********************************************************************/
@@ -671,7 +671,7 @@ IDE_RC stndrUpdate::redo_SDR_STNDR_MAKE_UNCHAINED_KEYS( SChar       * aLogPtr,
 
     return IDE_FAILURE;
 }
-
+#endif
     
 /***********************************************************************
  * Description : SDR_STNDR_KEY_STAMPING
@@ -719,7 +719,6 @@ IDE_RC stndrUpdate::redo_SDR_STNDR_KEY_STAMPING( SChar       * aLogPtr,
         if( STNDR_GET_CCTS_NO( sLKey ) == sCTSlotNum )
         {
             STNDR_SET_CCTS_NO( sLKey, SDN_CTS_INFINITE );
-            STNDR_SET_CHAINED_CCTS( sLKey, SDN_CHAINED_NO );
 
             /*
              * To fix BUG-23337
@@ -742,8 +741,6 @@ IDE_RC stndrUpdate::redo_SDR_STNDR_KEY_STAMPING( SChar       * aLogPtr,
             STNDR_SET_CCTS_NO( sLKey, SDN_CTS_INFINITE );
             STNDR_SET_LCTS_NO( sLKey, SDN_CTS_INFINITE );
             STNDR_SET_STATE( sLKey, STNDR_KEY_DEAD );
-            STNDR_SET_CHAINED_CCTS( sLKey, SDN_CHAINED_NO );
-            STNDR_SET_CHAINED_LCTS( sLKey, SDN_CHAINED_NO );
 
             STNDR_SET_LSCN( sLKey, &sCIInfinite );
         }

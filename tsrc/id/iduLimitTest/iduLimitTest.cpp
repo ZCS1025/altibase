@@ -47,7 +47,7 @@ int main(void)
     idlOS::printf("Initialize\n");
 
     /* --------------------
-     *  í”„ë¡œí¼í‹° ë¡œë”©
+     *  ÇÁ·ÎÆÛÆ¼ ·Îµù
      * -------------------*/
     IDE_TEST_RAISE(idp::initialize(NULL, NULL) != IDE_SUCCESS,
                    load_property_error);

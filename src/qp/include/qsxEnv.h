@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qsxEnv.h 83637 2018-08-07 05:40:38Z khkwak $
+ * $Id: qsxEnv.h 90088 2021-02-26 05:02:04Z khkwak $
  **********************************************************************/
 
 #ifndef _O_QSX_ENV_H_
@@ -41,13 +41,30 @@
 // qsxEnvInfo.mFlag
 #define QSX_ENV_FLAG_INIT                          0x00000000
 
+#define QSX_ENV_STMT_TYPE_MASK                     0x0000001F
+
 #define QSX_ENV_DURING_SELECT                      0x00000001
 #define QSX_ENV_DURING_SELECT_FOR_UPDATE           0x00000003  // 0x00000001 & 0x00000002
 /* BUG-43197 autonomous transaction */
 #define QSX_ENV_DURING_AT                          0x00000004
-// BUG-44294 PSMÎÇ¥ÏóêÏÑú Ïã§ÌñâÌïú DMLÏù¥ Î≥ÄÍ≤ΩÌïú row ÏàòÎ•º Î∞òÌôòÌïòÎèÑÎ°ù Ìï©ÎãàÎã§.
+// BUG-44294 PSM≥ªø°º≠ Ω««‡«— DML¿Ã ∫Ø∞Ê«— row ºˆ∏¶ π›»Ø«œµµ∑œ «’¥œ¥Ÿ.
 #define QSX_ENV_DURING_DML                         0x00000008
 #define QSX_ENV_DURING_DDL                         0x00000010
+
+// TASK-7244 PSM partial rollback in Sharding
+#define QSX_ENV_BEGIN_PROC                         0x00000100
+
+// TASK-7244 Set shard split method to PSM info
+#define QSX_ENV_SHARD_FLAG                         ( QSX_ENV_SHARD_HASH_PROC |  \
+                                                     QSX_ENV_SHARD_RANGE_PROC | \
+                                                     QSX_ENV_SHARD_LIST_PROC |  \
+                                                     QSX_ENV_SHARD_CLONE_PROC | \
+                                                     QSX_ENV_SHARD_SOLO_PROC )
+#define QSX_ENV_SHARD_HASH_PROC                    0x00000200
+#define QSX_ENV_SHARD_RANGE_PROC                   0x00000400
+#define QSX_ENV_SHARD_LIST_PROC                    0x00000800
+#define QSX_ENV_SHARD_CLONE_PROC                   0x00001000
+#define QSX_ENV_SHARD_SOLO_PROC                    0x00002000
 
 struct qsxCursorInfo;
 struct qsxArrayInfo;
@@ -76,8 +93,8 @@ typedef struct qsxRaisedExcpInfo
     UInt                   mRaisedExcpErrorMsgLen;
     /* user_maxsize_name.package_maxsize_name.exception_maxsize_name = (128 * 3) + (1 * 2) = 386
        MAX_ERROR_MSG_LEN + 1 = 2048 + 1 = 2049
-       Í∞ùÏ≤¥ Ï†ïÎ≥¥ + ÏóêÎü¨ Î©îÏãúÏßÄÎ•º Î™®Îëê Ìè¨Ìï®ÌïòÍ≤å ÏúÑÌï¥ÏÑúÎäî MAX_ERROR_MSG_LEN + 1ÏùÑ ÏÇ¨Ïö©ÌïúÎã§.
-       ÏóêÎü¨ Î©îÏãúÏßÄÍ∞Ä MAX_ERROR_MSG_LENÏùÑ ÎÑòÏúºÎ©¥, MAX SIZEÎßåÌÅºÎßå ÏóêÎü¨Î©îÏãúÏßÄÎ•º Ï∞çÏñ¥Ï§ÄÎã§. */
+       ∞¥√º ¡§∫∏ + ø°∑Ø ∏ﬁΩ√¡ˆ∏¶ ∏µŒ ∆˜«‘«œ∞‘ ¿ß«ÿº≠¥¬ MAX_ERROR_MSG_LEN + 1¿ª ªÁøÎ«—¥Ÿ.
+       ø°∑Ø ∏ﬁΩ√¡ˆ∞° MAX_ERROR_MSG_LEN¿ª ≥—¿∏∏È, MAX SIZE∏∏≈≠∏∏ ø°∑Ø∏ﬁΩ√¡ˆ∏¶ ¬ÔæÓ¡ÿ¥Ÿ. */
     SChar                  mRaisedExcpErrorMsg[MAX_ERROR_MSG_LEN + 1]; 
 } qsxRaisedExcpInfo;
 
@@ -89,11 +106,6 @@ typedef struct qsxEnvInfo
 
     idBool                 mIsInitialized;
     
-    // "SQL" sCursor attributes.
-    idBool                 mSqlIsFound;
-    vSLong                 mSqlRowCount;
-    idBool                 mSqlIsRowCountNull;
-  
     // PROJ-1381 Fetch Across Commit
     // BUG-41729
     // Prevent parallel execution while executing 'select for update' clause.
@@ -115,9 +127,9 @@ typedef struct qsxEnvInfo
    
     //--------------------------------
     // session attributes
-    // commit, rollbackÎì± sessionÏ†ïÎ≥¥Î•º ÏñªÍ∏∞ ÏúÑÌï¥ÏÑúÎäî
-    // qciSessionCallback Ìï®ÏàòÎ•º Ìò∏Ï∂úÌï¥ÏïºÌïòÎäîÎç∞,
-    // Ïù¥Îïå, mmSession Ï†ïÎ≥¥Í∞Ä ÌïÑÏöîÌï®.
+    // commit, rollbackµÓ session¡§∫∏∏¶ æÚ±‚ ¿ß«ÿº≠¥¬
+    // qciSessionCallback «‘ºˆ∏¶ »£√‚«ÿæﬂ«œ¥¬µ•,
+    // ¿Ã∂ß, mmSession ¡§∫∏∞° « ø‰«‘.
     //--------------------------------
     qcSession            * mSession;
 
@@ -127,6 +139,10 @@ typedef struct qsxEnvInfo
     // PROJ-1075 array variables
     qsxReturnVarList     * mReturnVar;
    
+    // TASK-7244 DBMS_SHARD_GET_DIAGNOSTICS package
+    iduList                mErrorList;
+    SInt                   mErrorListCount;
+
     // SQLCODE, SQLERRM attributes.
     UInt                   mSqlCode ;
     SChar                  mSqlErrorMessage [ MAX_ERROR_MSG_LEN + 1 ];
@@ -137,7 +153,7 @@ typedef struct qsxEnvInfo
     qsxStackFrame          mPrevStackInfo;
 
     /* BUG-43154
-       password_verify_functionÏù¥ autonomous_transaction(AT) pragmaÍ∞Ä ÏÑ†Ïñ∏Îêú functionÏùº Í≤ΩÏö∞ ÎπÑÏ†ïÏÉÅ Ï¢ÖÎ£å */
+       password_verify_function¿Ã autonomous_transaction(AT) pragma∞° º±æµ» function¿œ ∞ÊøÏ ∫Ò¡§ªÛ ¡æ∑· */
     idBool                 mExecPWVerifyFunc;
 
     /* BUG-43160 */
@@ -147,14 +163,17 @@ typedef struct qsxEnvInfo
     qcNamePosition         mSqlInfo;
 
     // BUG-46074 Multiple trigger event
-    qcmColumn               * mTriggerUptColList;
-    UInt                      mTriggerEventType;
+    qcmColumn            * mTriggerUptColList;
+    UInt                   mTriggerEventType;
+
+    // TASK-7218
+    UInt                   mSqlCode4Restore;
 } qsxEnvInfo;
 
 /* PROJ-2197 PSM Renewal
- * PSMÏùò SQLÍµ¨Î¨∏ÏóêÏÑú return bulk intoÎ•º ÏÇ¨Ïö©ÌïòÎ©¥ arrayÎ•º binding Ìï† Ïàò ÏóÜÏñ¥ÏÑú
- * return node(array)ÏôÄ PSMÏùò tmplateÎ•º DMLÏùÑ Ïã§ÌñâÌïòÎäî qcStatementÏóê
- * ÎÑòÍ≤®Ï£ºÍ∏∞ ÏúÑÌïú Íµ¨Ï°∞Ï≤¥ */
+ * PSM¿« SQL±∏πÆø°º≠ return bulk into∏¶ ªÁøÎ«œ∏È array∏¶ binding «“ ºˆ æ¯æÓº≠
+ * return node(array)øÕ PSM¿« tmplate∏¶ DML¿ª Ω««‡«œ¥¬ qcStatementø°
+ * ≥—∞‹¡÷±‚ ¿ß«— ±∏¡∂√º */
 typedef struct qsxEnvParentInfo
 {
     qcTemplate              * parentTmplate;
@@ -173,31 +192,6 @@ typedef struct qsxEnvParentInfo
 
 #define QSX_ENV_TEMPLATE_POOL(env) \
     ( (env)-> mProcTemplatePool )
-
-#define QSX_ENV_SET_SQL_IS_FOUND( env, aIsFound )  \
-    {                                              \
-        (env)-> mSqlIsFound = ( aIsFound ) ;       \
-    }
-      
-#define QSX_ENV_SET_SQL_ROW_COUNT( env, aRowCount )  \
-    {                                                \
-        (env)-> mSqlRowCount     = ( aRowCount );    \
-        (env)-> mSqlIsRowCountNull = ( ID_FALSE );   \
-    }
-
-#define QSX_ENV_SET_SQL_ROW_COUNT_NULL( env )       \
-    {                                               \
-        (env)-> mSqlIsRowCountNull = ( ID_TRUE ) ;  \
-    }
-
-#define QSX_ENV_SQL_IS_FOUND( env )   \
-    ( (env)-> mSqlIsFound        )
-      
-#define QSX_ENV_SQL_ROW_COUNT( env )  \
-    ( (env)-> mSqlRowCount       )
-
-#define QSX_ENV_SQL_ROW_COUNT_IS_NULL( env )       \
-    ( (env)-> mSqlIsRowCountNull )
 
 #define QSX_ENV_ERROR_CODE( env )  \
     ( (env)-> mSqlCode )
@@ -243,16 +237,16 @@ class qsxEnv
     static IDE_RC invoke (
         qsxEnvInfo         * aEnv,
         qcStatement        * aQcStmt,
-        qsOID                aProcOID,     /* procedure, function, package specÏùò OID */
-        qsOID                aPkgBodyOID,  /* package bodyÏùò OID */
+        qsOID                aProcOID,     /* procedure, function, package spec¿« OID */
+        qsOID                aPkgBodyOID,  /* package body¿« OID */
         UInt                 aSubprogramID,
         qtcNode            * aCallSpecNode );
 
     static IDE_RC invokeWithStack (
         qsxEnvInfo        * aEnv,
         qcStatement       * aQcStmt,
-        qsOID               aProcOID,     /* procedure, function, package specÏùò OID */
-        qsOID               aPkgBodyOID,  /* package bodyÏùò OID */
+        qsOID               aProcOID,     /* procedure, function, package spec¿« OID */
+        qsOID               aPkgBodyOID,  /* package body¿« OID */
         UInt                aSubprogramID,
         qtcNode           * aCallSpecNode,
         mtcStack          * aStack,
@@ -310,7 +304,7 @@ class qsxEnv
         qsxEnvInfo    * aEnv,
         qsxArrayInfo  * aArrayInfo );
     
-    // PROJ-1075 functionÏóêÏÑú returnÎêú arrayÎ≥ÄÏàòÏùò Ìï†Îãπ Ìï¥Ï†ú
+    // PROJ-1075 functionø°º≠ returnµ» array∫Øºˆ¿« «“¥Á «ÿ¡¶
     static void freeReturnArray( qsxEnvInfo * aEnv );
 
     /* REAL static functions that does not require qsxEnvInfo */
@@ -336,6 +330,11 @@ class qsxEnv
 
     /* BUG-43160 */
     static void initializeRaisedExcpInfo( qsxRaisedExcpInfo * aRaisedExcpInfo );
+
+    // TASK-7244 PSM partial rollback in Sharding
+    static void setBeginSP( qsxEnvInfo * aEnv );
+    static void unsetBeginSP( qsxEnvInfo * aEnv );
+    static idBool isBeginSP( qsxEnvInfo * aEnv );
 };
 
 #endif /* _O_QSX_ENV_H_ */

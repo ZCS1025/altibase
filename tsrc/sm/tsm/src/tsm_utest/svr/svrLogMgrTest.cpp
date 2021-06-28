@@ -15,7 +15,7 @@
  */
  
 /*****************************************************************
- * svrLogMgrì˜ ê¸°ëŠ¥ í…ŒìŠ¤íŠ¸ë¥¼ í•œë‹¤.
+ * svrLogMgrÀÇ ±â´É Å×½ºÆ®¸¦ ÇÑ´Ù.
  *****************************************************************/
 
 #include <ide.h>
@@ -197,10 +197,10 @@ int main(int argc, char** argv)
         sSeed = atoi(argv[1]);
     }
 
-    // random numberë¥¼ ìƒì‚°í•˜ê¸° ìœ„í•´ seed ê°’ì„ ì„¸íŒ…í•œë‹¤.
+    // random number¸¦ »ı»êÇÏ±â À§ÇØ seed °ªÀ» ¼¼ÆÃÇÑ´Ù.
     idlOS::srand(sSeed);
 
-    /* iduMemMgrì„ ì‚¬ìš©í•˜ê¸° ìœ„í•´ ì´ˆê¸°í™”í•œë‹¤. */
+    /* iduMemMgrÀ» »ç¿ëÇÏ±â À§ÇØ ÃÊ±âÈ­ÇÑ´Ù. */
     IDE_TEST(iduMutexMgr::initializeStatic() != IDE_SUCCESS);
     IDE_TEST(iduMemMgr::initializeStatic(IDU_CLIENT_TYPE)
              != IDE_SUCCESS);
@@ -210,32 +210,32 @@ int main(int argc, char** argv)
 
     IDE_TEST(iduCond::initializeStatic() != IDE_SUCCESS);
 
-    /* svrLogMgrì„ ì‚¬ìš©í•˜ê¸° ìœ„í•´ svrLogMgrì„ ì´ˆê¸°í™”í•œë‹¤. */
+    /* svrLogMgrÀ» »ç¿ëÇÏ±â À§ÇØ svrLogMgrÀ» ÃÊ±âÈ­ÇÑ´Ù. */
     IDE_TEST(svrLogMgr::initializeStatic() != IDE_SUCCESS);
 
-    /* sample ë¡œê·¸ êµ¬ì„± */
+    /* sample ·Î±× ±¸¼º */
     sLog.mType = 1;
     sLog.mSomeValue = 12;
     idlOS::sprintf(sLog.mStringValue,
-                   "svrLogMgrì„ í…ŒìŠ¤íŠ¸í•˜ì. ì—´ë¼ê²Œ í•˜ì\n"
-                   "ì§¬ë½•ë‚˜~~ì§œì¥ë‚˜~~ë„ˆë¬´ë„ˆë¬´ ë°°ê³ íŒŒ~~\n");
+                   "svrLogMgrÀ» Å×½ºÆ®ÇÏÀÚ. ¿­¶ó°Ô ÇÏÀÚ\n"
+                   "Â«»Í³ª~~Â¥Àå³ª~~³Ê¹«³Ê¹« ¹è°íÆÄ~~\n");
 
-    /* log env ì´ˆê¸°í™” */
+    /* log env ÃÊ±âÈ­ */
     IDE_TEST(svrLogMgr::initEnv(&sLogEnv, ID_TRUE) != IDE_SUCCESS);
 
 
     /******************************************************************
      * WRITING TEST
      ******************************************************************/
-    /* ì‹œê°„ ì¸¡ì •ì„ ìœ„í•´ ì‹œì‘ ì‹œê° ì €ì¥ */
+    /* ½Ã°£ ÃøÁ¤À» À§ÇØ ½ÃÀÛ ½Ã°¢ ÀúÀå */
     startTime = idlOS::gettimeofday();
 
-    /* ì—´ë¼ê²Œ ë¡œê·¸ ê¸°ë¡ */
+    /* ¿­¶ó°Ô ·Î±× ±â·Ï */
     for (i = 0; i < 100000; i++)
     {
         sLog.mID = i;
 
-        // ê°€ë³€ê¸¸ì´ë¡œ ë¡œê¹…í•˜ê¸° ìœ„í•´ rand()ë¥¼ ì‚¬ìš©í•œë‹¤.
+        // °¡º¯±æÀÌ·Î ·Î±ëÇÏ±â À§ÇØ rand()¸¦ »ç¿ëÇÑ´Ù.
         sLog.mLogLength = abs(idlOS::rand()) % 9000 + 100;
 
         IDE_TEST(svrLogMgr::writeLog(&sLogEnv,
@@ -249,10 +249,10 @@ int main(int argc, char** argv)
     elapsedSec = (endTime - startTime).sec();
     elapsedUSec = (endTime - startTime).usec();
 
-    /* ë¡œê¹… íƒ€ì„ ì¶œë ¥ */
+    /* ·Î±ë Å¸ÀÓ Ãâ·Â */
     idlOS::printf("log wrinting time: %d.%d seconds\n", elapsedSec, elapsedUSec);
 
-    /* ë¡œê·¸ ë©”ëª¨ë¦¬ í¬ê¸°ë¥¼ ì¶œë ¥í•œë‹¤. */
+    /* ·Î±× ¸Ş¸ğ¸® Å©±â¸¦ Ãâ·ÂÇÑ´Ù. */
     printf("log buffer size = %d\n", svrLogMgr::getAllocMemSize(&sLogEnv));
     printf("log data size = %"ID_UINT64_FMT"\n", sSize);
 
@@ -260,13 +260,13 @@ int main(int argc, char** argv)
     /********************************************************************
      * READING TEST - readLog()
      ********************************************************************/
-    /* ë§ˆì§€ë§‰ ê¸°ë¡í•œ ë¡œê·¸ì˜ id */
+    /* ¸¶Áö¸· ±â·ÏÇÑ ·Î±×ÀÇ id */
     j = --i;
 
     sLSN = svrLogMgr::getLastLSN(&sLogEnv);
 
     startTime = idlOS::gettimeofday();
-    /* ì—´ë¼ê²Œ ë¡œê·¸ ì½ì–´ì„œ ê²€ì¦í•˜ê¸° */
+    /* ¿­¶ó°Ô ·Î±× ÀĞ¾î¼­ °ËÁõÇÏ±â */
     while (sLSN != SVR_LSN_BEFORE_FIRST)
     {
         IDE_TEST(svrLogMgr::readLog(&sLogEnv, sLSN, &sLogData, &sLSN, &sDummyLSN)
@@ -288,7 +288,7 @@ int main(int argc, char** argv)
     elapsedSec = (endTime - startTime).sec();
     elapsedUSec = (endTime - startTime).usec();
 
-    /* ë¡œê¹… íƒ€ì„ ì¶œë ¥ */
+    /* ·Î±ë Å¸ÀÓ Ãâ·Â */
     idlOS::printf("readLog() reading time: %d.%d seconds\n", elapsedSec, elapsedUSec);
 
 
@@ -299,7 +299,7 @@ int main(int argc, char** argv)
     i = j;
 
     startTime = idlOS::gettimeofday();
-    /* ì—´ë¼ê²Œ ë¡œê·¸ ì½ì–´ì„œ ê²€ì¦í•˜ê¸° */
+    /* ¿­¶ó°Ô ·Î±× ÀĞ¾î¼­ °ËÁõÇÏ±â */
     while (sLSN != SVR_LSN_BEFORE_FIRST)
     {
         IDE_TEST(svrLogMgr::readLogCopy(&sLogEnv, sLSN, (svrLog*)sBuf, &sLSN, &sDummyLSN)
@@ -321,7 +321,7 @@ int main(int argc, char** argv)
     elapsedSec = (endTime - startTime).sec();
     elapsedUSec = (endTime - startTime).usec();
 
-    /* ë¡œê¹… íƒ€ì„ ì¶œë ¥ */
+    /* ·Î±ë Å¸ÀÓ Ãâ·Â */
     idlOS::printf("readLogCopy() reading time: %d.%d seconds\n", elapsedSec, elapsedUSec);
 
     /* sub log test */

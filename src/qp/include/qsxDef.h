@@ -45,9 +45,12 @@
 #define     QSX_DELETE_FAILED_NO            (-19)
 #define     QSX_RENAME_FAILED_NO            (-20)
 
+// TASK-7218 Handling shard mult-errors
+#define     QSX_SHARD_MULTIPLE_ERRORS_NO    (-21)
+
 #define     QSX_OTHER_SYSTEM_ERROR_NO       (-101)
 
-// user-defined exceptionÏùÑ re-raiseÌï† Îïå ÏÇ¨Ïö©.
+// user-defined exception¿ª re-raise«“ ∂ß ªÁøÎ.
 #define     QSX_USER_DEFINED_EXCEPTION_NO   (-998)
 
 #define     QSX_LATEST_CURSOR_ID            (-999)
@@ -121,25 +124,29 @@ typedef struct qsxArrayInfo
  ********************************************************************/
 
 // BUG-43158 Enhance statement list caching in PSM
-// ID_SIZEOF(UInt) * 8
-#define QSX_STMT_LIST_UNIT_SIZE (32)
+#define QSX_STMT_LIST_IS_UNUSED( _list_, _idx_ )                                  \
+    ( ( (_list_)[ (_idx_) / QC_UCHAR_BIT ] & (0x1 << ((_idx_) % QC_UCHAR_BIT )) ) \
+      == 0x0 ? ID_TRUE : ID_FALSE )
 
-#define QSX_STMT_LIST_IS_UNUSED( _list_, _idx_ )               \
-    ( ( (_list_)[ (_idx_)/QSX_STMT_LIST_UNIT_SIZE ] &          \
-        (0x00000001 << ((_idx_) % QSX_STMT_LIST_UNIT_SIZE )) ) \
-      == 0x00000000 ? ID_TRUE : ID_FALSE )
+#define QSX_STMT_LIST_SET_USED( _list_, _idx_ )                                   \
+    (_list_)[ (_idx_) / QC_UCHAR_BIT ] |= (0x1 << ((_idx_) % QC_UCHAR_BIT))
 
-#define QSX_STMT_LIST_SET_USED( _list_, _idx_ )      \
-    (_list_)[ (_idx_)/QSX_STMT_LIST_UNIT_SIZE ] |= (0x00000001 << ((_idx_) % QSX_STMT_LIST_UNIT_SIZE))
 
 // BUG-43158 Enhance statement list caching in PSM
 typedef struct qsxStmtList
 {
-    qsProcParseTree * mParseTree;
-    qsxStmtList     * mNext;
-
-    UInt            * mStmtPoolStatus;
-    void           ** mStmtPool;
+    qsProcParseTree  * mParseTree;
+    void            ** mStmtPool;
+    UChar            * mStmtPoolStatus;
+    qsxStmtList      * mNext;
 } qsxStmtList;
+
+typedef struct qsxStmtList2
+{
+    qsProcParseTree  * mParseTree;
+    void             * mStmtPool[QC_PSM_POOL_DEFAULT];
+    UChar              mStmtPoolStatus[QC_PSM_POOL_DEFAULT_STATUS_SIZE];
+    qsxStmtList2     * mNext;
+} qsxStmtList2;
 
 #endif

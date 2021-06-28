@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdn.cpp 84969 2019-03-06 05:26:17Z ahra.cho $
+ * $Id: qdn.cpp 90824 2021-05-13 05:35:21Z minku.kang $
  **********************************************************************/
 
 #include <idl.h>
@@ -49,6 +49,7 @@
 #include <qdnTrigger.h>
 #include <qdpRole.h>
 #include <qmoPartition.h>
+#include <sdi.h>
 
 /***********************************************************************
  * VALIDATE
@@ -88,6 +89,9 @@ IDE_RC qdn::validateAddConstr(qcStatement * aStatement)
                                          &(sParseTree->tableSCN))
               != IDE_SUCCESS);
 
+    /* BUG-48290 shard object¿¡ ´ëÇÑ DDL Â÷´Ü */
+    IDE_TEST( sdi::checkShardObjectForDDL( aStatement, SDI_DDL_TYPE_TABLE ) != IDE_SUCCESS );
+
     IDE_TEST( qcm::lockTableForDDLValidation(aStatement,
                                              sParseTree->tableHandle,
                                              sParseTree->tableSCN)
@@ -102,7 +106,7 @@ IDE_RC qdn::validateAddConstr(qcStatement * aStatement)
               != IDE_SUCCESS );
 
     // To Fix PR-10909
-    // validateConstraints()ë¥¼ ìœ„í•˜ì—¬ ì •ë³´ë¥¼ ì„¤ì •í•´ì¤€ë‹¤.
+    // validateConstraints()¸¦ À§ÇÏ¿© Á¤º¸¸¦ ¼³Á¤ÇØÁØ´Ù.
     sParseTree->columns = sParseTree->tableInfo->columns;
     
     // check grant
@@ -113,19 +117,19 @@ IDE_RC qdn::validateAddConstr(qcStatement * aStatement)
     // PROJ-1502 PARTITIONED DISK TABLE
     if( sParseTree->tableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
-        // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(IS)
-        // íŒŒí‹°ì…˜ ë¦¬ìŠ¤íŠ¸ë¥¼ íŒŒìŠ¤íŠ¸ë¦¬ì— ë‹¬ì•„ë†“ëŠ”ë‹¤.
+        // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(IS)
+        // ÆÄÆ¼¼Ç ¸®½ºÆ®¸¦ ÆÄ½ºÆ®¸®¿¡ ´Ş¾Æ³õ´Â´Ù.
         IDE_TEST( qdbCommon::checkAndSetAllPartitionInfo(
                             aStatement,
                             sParseTree->tableInfo->tableID,
                             & (sParseTree->partTable->partInfoList) )
                   != IDE_SUCCESS );
 
-        /* PROJ-2464 hybrid partitioned table ì§€ì› */
+        /* PROJ-2464 hybrid partitioned table Áö¿ø */
         sIsPartitioned = ID_TRUE;
     }
 
-    /* PROJ-1107 Check Constraint ì§€ì› */
+    /* PROJ-1107 Check Constraint Áö¿ø */
     /* check existence of table and get table META Info */
     sFlag &= ~QMV_PERFORMANCE_VIEW_CREATION_MASK;
     sFlag |=  QMV_PERFORMANCE_VIEW_CREATION_FALSE;
@@ -136,18 +140,12 @@ IDE_RC qdn::validateAddConstr(qcStatement * aStatement)
     sParseTree->from->tableRef->flag &= ~QMS_TABLE_REF_SCAN_FOR_NON_SELECT_MASK;
     sParseTree->from->tableRef->flag |=  QMS_TABLE_REF_SCAN_FOR_NON_SELECT_TRUE;
 
-    QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_SHARD_TRANSFORM_MASK;
-    QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_SHARD_TRANSFORM_DISABLE;
-
     IDE_TEST( qmvQuerySet::validateQmsTableRef( aStatement,
                                                 NULL,
                                                 sParseTree->from->tableRef,
                                                 sFlag,
                                                 MTC_COLUMN_NOTNULL_TRUE ) /* PR-13597 */
               != IDE_SUCCESS );
-
-    QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_SHARD_TRANSFORM_MASK;
-    QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_SHARD_TRANSFORM_ENABLE;
 
     // validation of constraints
     IDE_TEST(validateConstraints( aStatement,
@@ -160,17 +158,17 @@ IDE_RC qdn::validateAddConstr(qcStatement * aStatement)
                                   &sUniqueKeyCnt)
              != IDE_SUCCESS);
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì›
-     *  - qdn::validateConstraints, Tablespace Vaildate ì´í›„ì— í˜¸ì¶œí•œë‹¤.
+    /* PROJ-2464 hybrid partitioned table Áö¿ø
+     *  - qdn::validateConstraints, Tablespace Vaildate ÀÌÈÄ¿¡ È£ÃâÇÑ´Ù.
      */
     IDE_TEST( qdbCommon::validateConstraintRestriction( aStatement,
                                                         sParseTree )
               != IDE_SUCCESS );
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì›
-     *  Check Constraintì—ì„œ qtc::calculate()ë¥¼ í˜¸ì¶œí•˜ê¸° ìœ„í•´, Partition Tupleì„ ë§Œë“ ë‹¤.
-     *      Partition Tupleì„ ë§Œë“¤ê¸° ìœ„í•´, Partition Infoê°€ í•„ìš”í•˜ë‹¤.
-     *      Partition Infoì™€ Tuple IDë¥¼ ë³´ê´€í•˜ê¸° ìœ„í•´, qmsPartitionRef Listë¥¼ ë§Œë“ ë‹¤.
+    /* PROJ-2464 hybrid partitioned table Áö¿ø
+     *  Check Constraint¿¡¼­ qtc::calculate()¸¦ È£ÃâÇÏ±â À§ÇØ, Partition TupleÀ» ¸¸µç´Ù.
+     *      Partition TupleÀ» ¸¸µé±â À§ÇØ, Partition Info°¡ ÇÊ¿äÇÏ´Ù.
+     *      Partition Info¿Í Tuple ID¸¦ º¸°üÇÏ±â À§ÇØ, qmsPartitionRef List¸¦ ¸¸µç´Ù.
      */
     if ( sIsPartitioned == ID_TRUE )
     {
@@ -215,7 +213,7 @@ IDE_RC qdn::validateAddConstr(qcStatement * aStatement)
                                                 sParseTree->from->tableRef )
                   != IDE_SUCCESS );
 
-        /* PROJ-2464 hybrid partitioned table ì§€ì› */
+        /* PROJ-2464 hybrid partitioned table Áö¿ø */
         IDE_TEST( qcmPartition::makePartitionSummary( aStatement, sParseTree->from->tableRef )
                   != IDE_SUCCESS );
 
@@ -265,29 +263,32 @@ IDE_RC qdn::validateAddConstr(qcStatement * aStatement)
         }
     }
 
-    // BUG-10889 ëª¨ë“  ê²½ìš°ì— í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ IDë¥¼ ì´ˆê¸°í™”í•´ì£¼ì–´ UMR ë‚˜ì§€ ì•Šë„ë¡
+    // BUG-10889 ¸ğµç °æ¿ì¿¡ Å×ÀÌºí ½ºÆäÀÌ½º ID¸¦ ÃÊ±âÈ­ÇØÁÖ¾î UMR ³ªÁö ¾Êµµ·Ï
     sParseTree->TBSAttr.mID = sParseTree->tableInfo->TBSID;
 
     /* To Fix BUG-13528
-    // key size limit ê²€ì‚¬
+    // key size limit °Ë»ç
     IDE_TEST( qdbCommon::validateKeySizeLimit(
     aStatement,
     sParseTree->tableInfo,
     sParseTree->constraints) != IDE_SUCCESS );
     */
 
-    if ( sParseTree->tableInfo->replicationCount > 0 )
+    if ( ( sParseTree->tableInfo->replicationCount > 0 ) ||
+         ( QCG_GET_SESSION_IS_NEED_DDL_INFO( aStatement ) == ID_TRUE ) )
     {
-        qrc::setDDLReplInfo( aStatement,
-                             sParseTree->tableInfo->tableOID,
-                             SM_OID_NULL,
-                             SM_OID_NULL );
+        qrc::setDDLSrcInfo( aStatement,
+                            ID_TRUE,
+                            1,
+                            &(sParseTree->tableInfo->tableOID),
+                            0,
+                            NULL );
     }
     else
     {
         // Nothing to do.
     }
-
+    
     return IDE_SUCCESS;
     
     IDE_EXCEPTION(ERR_NOT_ALTER_META);
@@ -313,16 +314,16 @@ IDE_RC qdn::validateDropConstr(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER TABLE ... DROP CONSTAINT ì˜ validation  ìˆ˜í–‰
+ *    ALTER TABLE ... DROP CONSTAINT ÀÇ validation  ¼öÇà
  *
  * Implementation :
- *    1. ì¡´ì¬í•˜ëŠ” í…Œì´ë¸”ì¸ì§€ ê²€ì‚¬
- *    2. AlterTable ì„ ìˆ˜í–‰í•  ìˆ˜ ìˆëŠ” ê¶Œí•œì´ ìˆëŠ”ì§€ ê²€ì‚¬
- *    3. ì´ì¤‘í™”ê°€ ê±¸ë ¤ ìˆëŠ” í…Œì´ë¸”ì´ë©´ ì—ëŸ¬ ë°˜í™˜
- *    4. drop í•˜ê³ ì í•˜ëŠ” constraint ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬
+ *    1. Á¸ÀçÇÏ´Â Å×ÀÌºíÀÎÁö °Ë»ç
+ *    2. AlterTable À» ¼öÇàÇÒ ¼ö ÀÖ´Â ±ÇÇÑÀÌ ÀÖ´ÂÁö °Ë»ç
+ *    3. ÀÌÁßÈ­°¡ °É·Á ÀÖ´Â Å×ÀÌºíÀÌ¸é ¿¡·¯ ¹İÈ¯
+ *    4. drop ÇÏ°íÀÚ ÇÏ´Â constraint °¡ Á¸ÀçÇÏ´ÂÁö Ã¼Å©
  *    5. check existence of referencing constraint.
- *    6. drop í•˜ê³ ì í•˜ëŠ” constraint ê°€ not null constraint ë©´,
- *       ê·¸ ì»¬ëŸ¼ì´ primary key ì»¬ëŸ¼ì´ ì•„ë‹Œì§€ ì²´í¬
+ *    6. drop ÇÏ°íÀÚ ÇÏ´Â constraint °¡ not null constraint ¸é,
+ *       ±× ÄÃ·³ÀÌ primary key ÄÃ·³ÀÌ ¾Æ´ÑÁö Ã¼Å©
  *
  ***********************************************************************/
 
@@ -350,6 +351,9 @@ IDE_RC qdn::validateDropConstr(qcStatement * aStatement)
                                          &(sParseTree->tableSCN))
               != IDE_SUCCESS);
 
+    /* BUG-48290 shard object¿¡ ´ëÇÑ DDL Â÷´Ü */
+    IDE_TEST( sdi::checkShardObjectForDDL( aStatement, SDI_DDL_TYPE_TABLE ) != IDE_SUCCESS );
+
     IDE_TEST( qcm::lockTableForDDLValidation(aStatement,
                                              sParseTree->tableHandle,
                                              sParseTree->tableSCN)
@@ -364,7 +368,7 @@ IDE_RC qdn::validateDropConstr(qcStatement * aStatement)
               != IDE_SUCCESS );
 
     // To Fix PR-10909
-    // ì´ë¯¸ ì¡´ì¬í•˜ëŠ” í…Œì´ë¸”ì˜ columns ì •ë³´ë¥¼ ì„¤ì •í•¨.
+    // ÀÌ¹Ì Á¸ÀçÇÏ´Â Å×ÀÌºíÀÇ columns Á¤º¸¸¦ ¼³Á¤ÇÔ.
     sParseTree->columns = sParseTree->tableInfo->columns;
     
     // check grant
@@ -395,7 +399,7 @@ IDE_RC qdn::validateDropConstr(qcStatement * aStatement)
                                        &sChildInfo)
                      != IDE_SUCCESS);
 
-            // fix BUG-19735 foreign keyê°€ ìˆì„ ê²½ìš° drop ê±°ë¶€
+            // fix BUG-19735 foreign key°¡ ÀÖÀ» °æ¿ì drop °ÅºÎ
             IDE_TEST_RAISE( sChildInfo != NULL,
                             ERR_ABORT_REFERENTIAL_CONSTRAINT_EXIST );
         }
@@ -431,8 +435,8 @@ IDE_RC qdn::validateDropConstr(qcStatement * aStatement)
     // PROJ-1502 PARTITIONED DISK TABLE
     if( sParseTree->tableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
-        // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(IS)
-        // íŒŒí‹°ì…˜ ë¦¬ìŠ¤íŠ¸ë¥¼ íŒŒìŠ¤íŠ¸ë¦¬ì— ë‹¬ì•„ë†“ëŠ”ë‹¤.
+        // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(IS)
+        // ÆÄÆ¼¼Ç ¸®½ºÆ®¸¦ ÆÄ½ºÆ®¸®¿¡ ´Ş¾Æ³õ´Â´Ù.
         IDE_TEST( qdbCommon::checkAndSetAllPartitionInfo(
                             aStatement,
                             sParseTree->tableInfo->tableID,
@@ -465,12 +469,15 @@ IDE_RC qdn::validateDropConstr(qcStatement * aStatement)
         // Nothing to do.
     }
 
-    if ( sParseTree->tableInfo->replicationCount > 0 )
+    if ( ( sParseTree->tableInfo->replicationCount > 0 ) ||
+         ( QCG_GET_SESSION_IS_NEED_DDL_INFO( aStatement ) == ID_TRUE ) )
     {
-        qrc::setDDLReplInfo( aStatement,
-                             sParseTree->tableInfo->tableOID,
-                             SM_OID_NULL,
-                             SM_OID_NULL );
+        qrc::setDDLSrcInfo( aStatement,
+                            ID_TRUE,
+                            1,
+                            &(sParseTree->tableInfo->tableOID),
+                            0,
+                            NULL );
     }
     else
     {
@@ -511,12 +518,12 @@ IDE_RC qdn::validateRenameConstr(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER TABLE ... RENAME CONSTAINT ì˜ validation  ìˆ˜í–‰
+ *    ALTER TABLE ... RENAME CONSTAINT ÀÇ validation  ¼öÇà
  *
  * Implementation :
- *    1. ì¡´ì¬í•˜ëŠ” í…Œì´ë¸”ì¸ì§€ ê²€ì‚¬
- *    2. AlterTable ì„ ìˆ˜í–‰í•  ìˆ˜ ìˆëŠ” ê¶Œí•œì´ ìˆëŠ”ì§€ ê²€ì‚¬
- *    3. rename í•˜ê³ ì í•˜ëŠ” constraint ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬
+ *    1. Á¸ÀçÇÏ´Â Å×ÀÌºíÀÎÁö °Ë»ç
+ *    2. AlterTable À» ¼öÇàÇÒ ¼ö ÀÖ´Â ±ÇÇÑÀÌ ÀÖ´ÂÁö °Ë»ç
+ *    3. rename ÇÏ°íÀÚ ÇÏ´Â constraint °¡ Á¸ÀçÇÏ´ÂÁö Ã¼Å©
  *
  ***********************************************************************/
 
@@ -537,6 +544,9 @@ IDE_RC qdn::validateRenameConstr(qcStatement * aStatement)
                                          &(sParseTree->tableHandle),
                                          &(sParseTree->tableSCN))
               != IDE_SUCCESS);
+
+    /* BUG-48290 shard object¿¡ ´ëÇÑ DDL Â÷´Ü */
+    IDE_TEST( sdi::checkShardObjectForDDL( aStatement, SDI_DDL_TYPE_TABLE ) != IDE_SUCCESS );
 
     IDE_TEST( qcm::lockTableForDDLValidation(aStatement,
                                              sParseTree->tableHandle,
@@ -569,8 +579,8 @@ IDE_RC qdn::validateRenameConstr(qcStatement * aStatement)
     // PROJ-1502 PARTITIONED DISK TABLE
     if( sParseTree->tableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
-        // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(IS)
-        // íŒŒí‹°ì…˜ ë¦¬ìŠ¤íŠ¸ë¥¼ íŒŒìŠ¤íŠ¸ë¦¬ì— ë‹¬ì•„ë†“ëŠ”ë‹¤.
+        // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(IS)
+        // ÆÄÆ¼¼Ç ¸®½ºÆ®¸¦ ÆÄ½ºÆ®¸®¿¡ ´Ş¾Æ³õ´Â´Ù.
         IDE_TEST( qdbCommon::checkAndSetAllPartitionInfo(
                             aStatement,
                             sParseTree->tableInfo->tableID,
@@ -603,12 +613,15 @@ IDE_RC qdn::validateRenameConstr(qcStatement * aStatement)
         // Nothing to do.
     }
 
-    if ( sParseTree->tableInfo->replicationCount > 0 )
+    if ( ( sParseTree->tableInfo->replicationCount > 0 ) ||
+         ( QCG_GET_SESSION_IS_NEED_DDL_INFO( aStatement ) == ID_TRUE ) )
     {
-        qrc::setDDLReplInfo( aStatement,
-                             sParseTree->tableInfo->tableOID,
-                             SM_OID_NULL,
-                             SM_OID_NULL );
+        qrc::setDDLSrcInfo( aStatement,
+                            ID_TRUE,
+                            1,
+                            &(sParseTree->tableInfo->tableOID),
+                            0,
+                            NULL );
     }
     else
     {
@@ -636,16 +649,16 @@ IDE_RC qdn::validateDropUnique(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER TABLE ... DROP UNIQUE ... ì˜ validation ìˆ˜í–‰
+ *    ALTER TABLE ... DROP UNIQUE ... ÀÇ validation ¼öÇà
  *
  * Implementation :
- *    1. ì¡´ì¬í•˜ëŠ” í…Œì´ë¸”ì¸ì§€ ê²€ì‚¬
- *    2. AlterTable ì„ ìˆ˜í–‰í•  ìˆ˜ ìˆëŠ” ê¶Œí•œì´ ìˆëŠ”ì§€ ê²€ì‚¬
- *    4. ì»¬ëŸ¼ì´ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•˜ê³ , column ID ì™€ flag ì„ ë¶€ì—¬í•œë‹¤
- *    5. 4 ì—ì„œ ë§Œë“  ì»¬ëŸ¼ìœ¼ë¡œ unique ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬
- *    6. ê·¸ unique key ë¥¼ ì°¸ì¡°í•˜ëŠ” child ê°€ ìˆê³ , ê·¸ ì°¸ì¡°í•˜ëŠ” í…Œì´ë¸”ì´
- *       alter í•˜ê³ ì í•˜ëŠ” í…Œì´ë¸”ì´ ì•„ë‹ˆë©´ ì—ëŸ¬(ì¦‰, ë‹¤ë¥¸ í…Œì´ë¸”ì´ alter
- *       í•˜ë ¤ëŠ” í…Œì´ë¸”ì„ ì°¸ì¡°í•˜ê³  ìˆìœ¼ë©´..)
+ *    1. Á¸ÀçÇÏ´Â Å×ÀÌºíÀÎÁö °Ë»ç
+ *    2. AlterTable À» ¼öÇàÇÒ ¼ö ÀÖ´Â ±ÇÇÑÀÌ ÀÖ´ÂÁö °Ë»ç
+ *    4. ÄÃ·³ÀÌ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÏ°í, column ID ¿Í flag À» ºÎ¿©ÇÑ´Ù
+ *    5. 4 ¿¡¼­ ¸¸µç ÄÃ·³À¸·Î unique °¡ Á¸ÀçÇÏ´ÂÁö Ã¼Å©
+ *    6. ±× unique key ¸¦ ÂüÁ¶ÇÏ´Â child °¡ ÀÖ°í, ±× ÂüÁ¶ÇÏ´Â Å×ÀÌºíÀÌ
+ *       alter ÇÏ°íÀÚ ÇÏ´Â Å×ÀÌºíÀÌ ¾Æ´Ï¸é ¿¡·¯(Áï, ´Ù¸¥ Å×ÀÌºíÀÌ alter
+ *       ÇÏ·Á´Â Å×ÀÌºíÀ» ÂüÁ¶ÇÏ°í ÀÖÀ¸¸é..)
  *
  ***********************************************************************/
 
@@ -676,6 +689,9 @@ IDE_RC qdn::validateDropUnique(qcStatement * aStatement)
                                          &(sParseTree->tableSCN))
               != IDE_SUCCESS);
 
+    /* BUG-48290 shard object¿¡ ´ëÇÑ DDL Â÷´Ü */
+    IDE_TEST( sdi::checkShardObjectForDDL( aStatement, SDI_DDL_TYPE_TABLE ) != IDE_SUCCESS );
+
     IDE_TEST( qcm::lockTableForDDLValidation(aStatement,
                                              sParseTree->tableHandle,
                                              sParseTree->tableSCN)
@@ -690,7 +706,7 @@ IDE_RC qdn::validateDropUnique(qcStatement * aStatement)
               != IDE_SUCCESS );
 
     // To Fix PR-10909
-    // ì´ë¯¸ ì¡´ì¬í•˜ëŠ” í…Œì´ë¸”ì˜ columns ì •ë³´ë¥¼ ì„¤ì •í•¨.
+    // ÀÌ¹Ì Á¸ÀçÇÏ´Â Å×ÀÌºíÀÇ columns Á¤º¸¸¦ ¼³Á¤ÇÔ.
     sParseTree->columns = sParseTree->tableInfo->columns;
 
     // check grant
@@ -753,8 +769,8 @@ IDE_RC qdn::validateDropUnique(qcStatement * aStatement)
     // PROJ-1502 PARTITIONED DISK TABLE
     if( sParseTree->tableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
-        // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(IS)
-        // íŒŒí‹°ì…˜ ë¦¬ìŠ¤íŠ¸ë¥¼ íŒŒìŠ¤íŠ¸ë¦¬ì— ë‹¬ì•„ë†“ëŠ”ë‹¤.
+        // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(IS)
+        // ÆÄÆ¼¼Ç ¸®½ºÆ®¸¦ ÆÄ½ºÆ®¸®¿¡ ´Ş¾Æ³õ´Â´Ù.
         IDE_TEST( qdbCommon::checkAndSetAllPartitionInfo(
                             aStatement,
                             sParseTree->tableInfo->tableID,
@@ -782,12 +798,15 @@ IDE_RC qdn::validateDropUnique(qcStatement * aStatement)
         // Nothing to do.
     }
 
-    if ( sParseTree->tableInfo->replicationCount > 0 ) 
+    if ( ( sParseTree->tableInfo->replicationCount > 0 ) ||
+         ( QCG_GET_SESSION_IS_NEED_DDL_INFO( aStatement ) == ID_TRUE ) )
     {
-        qrc::setDDLReplInfo( aStatement,
-                             sParseTree->tableInfo->tableOID,
-                             SM_OID_NULL,
-                             SM_OID_NULL );
+        qrc::setDDLSrcInfo( aStatement,
+                            ID_TRUE,
+                            1,
+                            &(sParseTree->tableInfo->tableOID),
+                            0,
+                            NULL );
     }
     else
     {
@@ -821,7 +840,7 @@ IDE_RC qdn::validateDropLocalUnique(qcStatement * aStatement)
  *
  * Description :
  *    PROJ-1502 PARTITIONED DISK TABLE
- *    ALTER TABLE ... DROP LOCAL UNIQUE ... ì˜ validation ìˆ˜í–‰
+ *    ALTER TABLE ... DROP LOCAL UNIQUE ... ÀÇ validation ¼öÇà
  *
  * Implementation :
  *
@@ -849,6 +868,9 @@ IDE_RC qdn::validateDropLocalUnique(qcStatement * aStatement)
                                          &(sParseTree->tableSCN))
               != IDE_SUCCESS);
 
+    /* BUG-48290 shard object¿¡ ´ëÇÑ DDL Â÷´Ü */
+    IDE_TEST( sdi::checkShardObjectForDDL( aStatement, SDI_DDL_TYPE_TABLE ) != IDE_SUCCESS );
+
     IDE_TEST( qcm::lockTableForDDLValidation(aStatement,
                                              sParseTree->tableHandle,
                                              sParseTree->tableSCN)
@@ -862,7 +884,7 @@ IDE_RC qdn::validateDropLocalUnique(qcStatement * aStatement)
                                          sParseTree->tableInfo )
               != IDE_SUCCESS );
 
-    // ì´ë¯¸ ì¡´ì¬í•˜ëŠ” í…Œì´ë¸”ì˜ columns ì •ë³´ë¥¼ ì„¤ì •í•¨.
+    // ÀÌ¹Ì Á¸ÀçÇÏ´Â Å×ÀÌºíÀÇ columns Á¤º¸¸¦ ¼³Á¤ÇÔ.
     sParseTree->columns = sParseTree->tableInfo->columns;
 
     // check grant
@@ -911,8 +933,8 @@ IDE_RC qdn::validateDropLocalUnique(qcStatement * aStatement)
     // PROJ-1502 PARTITIONED DISK TABLE
     if( sParseTree->tableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
-        // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(IS)
-        // íŒŒí‹°ì…˜ ë¦¬ìŠ¤íŠ¸ë¥¼ íŒŒìŠ¤íŠ¸ë¦¬ì— ë‹¬ì•„ë†“ëŠ”ë‹¤.
+        // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(IS)
+        // ÆÄÆ¼¼Ç ¸®½ºÆ®¸¦ ÆÄ½ºÆ®¸®¿¡ ´Ş¾Æ³õ´Â´Ù.
         IDE_TEST( qdbCommon::checkAndSetAllPartitionInfo(
                             aStatement,
                             sParseTree->tableInfo->tableID,
@@ -920,12 +942,15 @@ IDE_RC qdn::validateDropLocalUnique(qcStatement * aStatement)
                   != IDE_SUCCESS );
     }
 
-    if ( sParseTree->tableInfo->replicationCount > 0 )
+    if ( ( sParseTree->tableInfo->replicationCount > 0 ) ||
+         ( QCG_GET_SESSION_IS_NEED_DDL_INFO( aStatement ) == ID_TRUE ) )
     {
-        qrc::setDDLReplInfo( aStatement,
-                             sParseTree->tableInfo->tableOID,
-                             SM_OID_NULL,
-                             SM_OID_NULL );
+        qrc::setDDLSrcInfo( aStatement,
+                            ID_TRUE,
+                            1,
+                            &(sParseTree->tableInfo->tableOID),
+                            0,
+                            NULL );
     }
     else
     {
@@ -948,16 +973,16 @@ IDE_RC qdn::validateDropPrimary(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER TABLE ... DROP PRIMARY KEY ... ì˜ validation ìˆ˜í–‰
+ *    ALTER TABLE ... DROP PRIMARY KEY ... ÀÇ validation ¼öÇà
  *
  * Implementation :
- *    1. ì¡´ì¬í•˜ëŠ” í…Œì´ë¸”ì¸ì§€ ê²€ì‚¬
- *    2. AlterTable ì„ ìˆ˜í–‰í•  ìˆ˜ ìˆëŠ” ê¶Œí•œì´ ìˆëŠ”ì§€ ê²€ì‚¬
- *    3. ì´ì¤‘í™”ê°€ ê±¸ë ¤ ìˆëŠ” í…Œì´ë¸”ì´ë©´ ì—ëŸ¬
- *    4. PRIMARY KEY ê°€ ìˆëŠ”ì§€ í™•ì¸
- *    6. PRIMARY KEY ë¥¼ ì°¸ì¡°í•˜ëŠ” child ê°€ ìˆê³ , ê·¸ ì°¸ì¡°í•˜ëŠ” í…Œì´ë¸”ì´
- *       alter í•˜ê³ ì í•˜ëŠ” í…Œì´ë¸”ì´ ì•„ë‹ˆë©´ ì—ëŸ¬(ì¦‰, ë‹¤ë¥¸ í…Œì´ë¸”ì´ alter
- *       í•˜ë ¤ëŠ” í…Œì´ë¸”ì„ ì°¸ì¡°í•˜ê³  ìˆìœ¼ë©´..)
+ *    1. Á¸ÀçÇÏ´Â Å×ÀÌºíÀÎÁö °Ë»ç
+ *    2. AlterTable À» ¼öÇàÇÒ ¼ö ÀÖ´Â ±ÇÇÑÀÌ ÀÖ´ÂÁö °Ë»ç
+ *    3. ÀÌÁßÈ­°¡ °É·Á ÀÖ´Â Å×ÀÌºíÀÌ¸é ¿¡·¯
+ *    4. PRIMARY KEY °¡ ÀÖ´ÂÁö È®ÀÎ
+ *    6. PRIMARY KEY ¸¦ ÂüÁ¶ÇÏ´Â child °¡ ÀÖ°í, ±× ÂüÁ¶ÇÏ´Â Å×ÀÌºíÀÌ
+ *       alter ÇÏ°íÀÚ ÇÏ´Â Å×ÀÌºíÀÌ ¾Æ´Ï¸é ¿¡·¯(Áï, ´Ù¸¥ Å×ÀÌºíÀÌ alter
+ *       ÇÏ·Á´Â Å×ÀÌºíÀ» ÂüÁ¶ÇÏ°í ÀÖÀ¸¸é..)
  *
  ***********************************************************************/
 
@@ -984,6 +1009,9 @@ IDE_RC qdn::validateDropPrimary(qcStatement * aStatement)
                                          &(sParseTree->tableSCN))
               != IDE_SUCCESS);
 
+    /* BUG-48290 shard object¿¡ ´ëÇÑ DDL Â÷´Ü */
+    IDE_TEST( sdi::checkShardObjectForDDL( aStatement, SDI_DDL_TYPE_TABLE ) != IDE_SUCCESS );
+
     IDE_TEST( qcm::lockTableForDDLValidation(aStatement,
                                              sParseTree->tableHandle,
                                              sParseTree->tableSCN)
@@ -997,7 +1025,7 @@ IDE_RC qdn::validateDropPrimary(qcStatement * aStatement)
                                          sParseTree->tableInfo )
               != IDE_SUCCESS );
 
-    // ì´ë¯¸ ì¡´ì¬í•˜ëŠ” í…Œì´ë¸”ì˜ columns ì •ë³´ë¥¼ ì„¤ì •í•¨.
+    // ÀÌ¹Ì Á¸ÀçÇÏ´Â Å×ÀÌºíÀÇ columns Á¤º¸¸¦ ¼³Á¤ÇÔ.
     sParseTree->columns = sParseTree->tableInfo->columns;
 
     // check grant
@@ -1008,7 +1036,7 @@ IDE_RC qdn::validateDropPrimary(qcStatement * aStatement)
     // if specified tables is replicated, the error
     IDE_TEST_RAISE(sParseTree->tableInfo->replicationCount > 0,
                    ERR_DDL_WITH_REPLICATED_TABLE);
-    //proj-1608:replicationCountê°€ 0ì¼ ë•Œ recovery countëŠ” í•­ìƒ 0ì´ì–´ì•¼ í•¨
+    //proj-1608:replicationCount°¡ 0ÀÏ ¶§ recovery count´Â Ç×»ó 0ÀÌ¾î¾ß ÇÔ
     IDE_DASSERT(sParseTree->tableInfo->replicationRecoveryCount == 0);
 
     // PROJ-1723 SUPPLEMENTAL LOGGING
@@ -1049,8 +1077,8 @@ IDE_RC qdn::validateDropPrimary(qcStatement * aStatement)
     // PROJ-1502 PARTITIONED DISK TABLE
     if( sParseTree->tableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
-        // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(IS)
-        // íŒŒí‹°ì…˜ ë¦¬ìŠ¤íŠ¸ë¥¼ íŒŒìŠ¤íŠ¸ë¦¬ì— ë‹¬ì•„ë†“ëŠ”ë‹¤.
+        // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(IS)
+        // ÆÄÆ¼¼Ç ¸®½ºÆ®¸¦ ÆÄ½ºÆ®¸®¿¡ ´Ş¾Æ³õ´Â´Ù.
         IDE_TEST( qdbCommon::checkAndSetAllPartitionInfo(
                             aStatement,
                             sParseTree->tableInfo->tableID,
@@ -1110,12 +1138,12 @@ IDE_RC qdn::validateModifyConstr(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    ALTER TABLE ... MODIFY CONSTAINT ì˜ validation  ìˆ˜í–‰
+ *    ALTER TABLE ... MODIFY CONSTAINT ÀÇ validation  ¼öÇà
  *
  * Implementation :
- *    1. AlterTable ì„ ìˆ˜í–‰í•  ìˆ˜ ìˆëŠ” ê¶Œí•œì´ ìˆëŠ”ì§€ ê²€ì‚¬
- *    2. modify í•˜ê³ ì í•˜ëŠ” constraint ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
- *    3. Constraintì— ì ìš© ê°€ëŠ¥í•œ Stateì¸ì§€ ê²€ì‚¬
+ *    1. AlterTable À» ¼öÇàÇÒ ¼ö ÀÖ´Â ±ÇÇÑÀÌ ÀÖ´ÂÁö °Ë»ç
+ *    2. modify ÇÏ°íÀÚ ÇÏ´Â constraint °¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+ *    3. Constraint¿¡ Àû¿ë °¡´ÉÇÑ StateÀÎÁö °Ë»ç
  *
  ***********************************************************************/
 
@@ -1133,7 +1161,7 @@ IDE_RC qdn::validateModifyConstr(qcStatement * aStatement)
 
     IDE_ASSERT(sConstraintState != NULL);
 
-    // Tableì˜ Table Info ì¡°íšŒ
+    // TableÀÇ Table Info Á¶È¸
     IDE_TEST( qdbCommon::checkTableInfo( aStatement,
                                          sParseTree->userName,
                                          sParseTree->tableName,
@@ -1143,13 +1171,16 @@ IDE_RC qdn::validateModifyConstr(qcStatement * aStatement)
                                          &(sParseTree->tableSCN))
               != IDE_SUCCESS);
 
+    /* BUG-48290 shard object¿¡ ´ëÇÑ DDL Â÷´Ü */
+    IDE_TEST( sdi::checkShardObjectForDDL( aStatement, SDI_DDL_TYPE_TABLE ) != IDE_SUCCESS );
+
     // Lock Table
     IDE_TEST( qcm::lockTableForDDLValidation(aStatement,
                                              sParseTree->tableHandle,
                                              sParseTree->tableSCN)
               != IDE_SUCCESS );
 
-    // Meta Tableì— DDL ê¸ˆì§€
+    // Meta Table¿¡ DDL ±İÁö
     IDE_TEST_RAISE(sUserID == QC_SYSTEM_USER_ID, ERR_NOT_ALTER_META);
 
     // PR-13725
@@ -1182,7 +1213,7 @@ IDE_RC qdn::validateModifyConstr(qcStatement * aStatement)
                                                          sConstraintState->validate )
               != IDE_SUCCESS );
 
-    // Modifyì‹œ Constraintì— ì ìš© ê°€ëŠ¥í•œ Stateì¸ì§€ ê²€ì‚¬
+    // Modify½Ã Constraint¿¡ Àû¿ë °¡´ÉÇÑ StateÀÎÁö °Ë»ç
     // ===============================================================
 
     //                    | Primary  | Unique   | Foreign  | Not Null |
@@ -1199,11 +1230,11 @@ IDE_RC qdn::validateModifyConstr(qcStatement * aStatement)
     // initial deferred/  |     O    |     O    |     O    |     O    |
     //  initial immediate |     O    |     O    |     O    |     O    |
     // ---------------------------------------------------------------
-    // * í‘œì‹œëœ Stateë§Œ êµ¬í˜„
+    // * Ç¥½ÃµÈ State¸¸ ±¸Çö
 
-    // Primary key, Unique keyëŠ” NOVALIDATEë¥¼ ì“¸ ìˆ˜ ì—†ë‹¤.
-    // í˜„ì¬ VALIDATE/NOVALIDATEë§Œ ë³€ê²½ ê°€ëŠ¥í•˜ë¯€ë¡œ PK, UKëŠ” ì˜¤ë¥˜ì²˜ë¦¬í•œë‹¤.
-    // Constraintì— ì—°ê²°ëœ Indexê°€ ìˆë‹¤ë©´ Primary í˜¹ì€ Unique keyì´ë‹¤.
+    // Primary key, Unique key´Â NOVALIDATE¸¦ ¾µ ¼ö ¾ø´Ù.
+    // ÇöÀç VALIDATE/NOVALIDATE¸¸ º¯°æ °¡´ÉÇÏ¹Ç·Î PK, UK´Â ¿À·ùÃ³¸®ÇÑ´Ù.
+    // Constraint¿¡ ¿¬°áµÈ Index°¡ ÀÖ´Ù¸é Primary È¤Àº Unique keyÀÌ´Ù.
     if( sIndex != NULL )
     {
         sqlInfo.setSourceInfo(
@@ -1215,8 +1246,8 @@ IDE_RC qdn::validateModifyConstr(qcStatement * aStatement)
     // PROJ-1502 PARTITIONED DISK TABLE
     if( sParseTree->tableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
-        // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(IS)
-        // íŒŒí‹°ì…˜ ë¦¬ìŠ¤íŠ¸ë¥¼ íŒŒìŠ¤íŠ¸ë¦¬ì— ë‹¬ì•„ë†“ëŠ”ë‹¤.
+        // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(IS)
+        // ÆÄÆ¼¼Ç ¸®½ºÆ®¸¦ ÆÄ½ºÆ®¸®¿¡ ´Ş¾Æ³õ´Â´Ù.
         IDE_TEST( qdbCommon::checkAndSetAllPartitionInfo(
                             aStatement,
                             sParseTree->tableInfo->tableID,
@@ -1263,24 +1294,24 @@ IDE_RC qdn::validateConstraints(
  *
  * Description :
  *    CREATE TABLE, ALTER TABLE ADD COLUMN, ALTER TABLE ADD CONSTRAINT
- *    ìˆ˜í–‰ì‹œ Constraints ì˜ validation
+ *    ¼öÇà½Ã Constraints ÀÇ validation
  *
  * Implementation :
- *    1. constraint ì´ë¦„ì´ ìˆìœ¼ë©´ ì´ë¦„ì— í•´ë‹¹í•˜ëŠ” constraint ì¡´ì¬ì—¬ë¶€ ê²€ì‚¬
- *    2. constraint ê±¸ë¦° ì»¬ëŸ¼ ê°œìˆ˜ë§Œí¼ constraint ë¦¬ìŠ¤íŠ¸ì— ëŒ€í•´ì„œ
- *       ì•„ë˜ if/else ë°˜ë³µ
+ *    1. constraint ÀÌ¸§ÀÌ ÀÖÀ¸¸é ÀÌ¸§¿¡ ÇØ´çÇÏ´Â constraint Á¸Àç¿©ºÎ °Ë»ç
+ *    2. constraint °É¸° ÄÃ·³ °³¼ö¸¸Å­ constraint ¸®½ºÆ®¿¡ ´ëÇØ¼­
+ *       ¾Æ·¡ if/else ¹İº¹
  *       if ALTER_TABLE
  *          if add constraint
- *              constraint ë¥¼ ì¶”ê°€í•˜ëŠ” ì»¬ëŸ¼ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
- *          primary key, unique, not null constraint ì— ë”°ë¼ column flag ì…‹íŒ…
- *          if primary key ë˜ëŠ” not null constraint ì´ë©´ì„œ ADD_COLUMN
- *              defaultValue ê°€ ëª…ì‹œë˜ì§€ ì•Šê³ , í…Œì´ë¸”ì— ì´ë¯¸ ë ˆì½”ë“œê°€ ì¡´ì¬í•˜ë©´
- *              ì—ëŸ¬ ë°œìƒ
+ *              constraint ¸¦ Ãß°¡ÇÏ´Â ÄÃ·³ÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
+ *          primary key, unique, not null constraint ¿¡ µû¶ó column flag ¼ÂÆÃ
+ *          if primary key ¶Ç´Â not null constraint ÀÌ¸é¼­ ADD_COLUMN
+ *              defaultValue °¡ ¸í½ÃµÇÁö ¾Ê°í, Å×ÀÌºí¿¡ ÀÌ¹Ì ·¹ÄÚµå°¡ Á¸ÀçÇÏ¸é
+ *              ¿¡·¯ ¹ß»ı
  *       else : CREATE_TABLE
- *           ì¿¼ë¦¬ë¬¸ìœ¼ë¡œë¶€í„° ì»¬ëŸ¼ì„ êµ¬í•´ì„œ flag ì…‹íŒ…
- *    3. constraint ë¦¬ìŠ¤íŠ¸ ì¤‘ foreign key, primary key, unique key,
- *       local unique key, check constraintì— ëŒ€í•´ì„œ validation ìˆ˜í–‰
- *    4. constraint ë¦¬ìŠ¤íŠ¸ì— ëŒ€í•´ì„œ Constraint ì¤‘ë³µ ê²€ì‚¬
+ *           Äõ¸®¹®À¸·ÎºÎÅÍ ÄÃ·³À» ±¸ÇØ¼­ flag ¼ÂÆÃ
+ *    3. constraint ¸®½ºÆ® Áß foreign key, primary key, unique key,
+ *       local unique key, check constraint¿¡ ´ëÇØ¼­ validation ¼öÇà
+ *    4. constraint ¸®½ºÆ®¿¡ ´ëÇØ¼­ Constraint Áßº¹ °Ë»ç
  *
  ***********************************************************************/
 
@@ -1303,7 +1334,7 @@ IDE_RC qdn::validateConstraints(
 
     smiTableCursor       sTmpCursor;
     smiCursorProperties  sCursorProperty;
-    scGRID               sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
+    scGRID               sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
 
     UInt                 sTableType;
     UInt                 sRowSize;
@@ -1336,7 +1367,7 @@ IDE_RC qdn::validateConstraints(
         {
             sIsPartitioned = ID_TRUE;
 
-            // íŒŒìŠ¤íŠ¸ë¦¬ì—ì„œ íŒŒí‹°ì…˜ ì •ë³´ ë¦¬ìŠ¤íŠ¸ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+            // ÆÄ½ºÆ®¸®¿¡¼­ ÆÄÆ¼¼Ç Á¤º¸ ¸®½ºÆ®¸¦ °¡Á®¿Â´Ù.
             sPartInfoList = sParseTree->partTable->partInfoList;
         }
         else
@@ -1367,7 +1398,7 @@ IDE_RC qdn::validateConstraints(
     }
     
     // PROJ-1874 Novalidate
-    // CREATE ì‹œì—ëŠ” Constraint Stateë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // CREATE ½Ã¿¡´Â Constraint State¸¦ Áö¿øÇÏÁö ¾Ê´Â´Ù.
     if ( (aConstraintOption == QDN_ON_CREATE_TABLE) &&
          (aConstr != NULL) )
     {
@@ -1418,17 +1449,17 @@ IDE_RC qdn::validateConstraints(
         // Nothing to do.
     }
 
-    /* constraintType ê°€  QD_NOT_NULL ë˜ëŠ”  QD_PRIMARYKEY ì´ê³ ,
-     * aConstraintOption == QDN_ON_ADD_COLUMN  ì´ë©´ì„œ
-     * ì»¬ëŸ¼ì˜ defaultValue == NULL ì¼ ë•Œ sTmpRow ë¥¼ ì‚¬ìš©í•˜ê²Œ ë¨ */
+    /* constraintType °¡  QD_NOT_NULL ¶Ç´Â  QD_PRIMARYKEY ÀÌ°í,
+     * aConstraintOption == QDN_ON_ADD_COLUMN  ÀÌ¸é¼­
+     * ÄÃ·³ÀÇ defaultValue == NULL ÀÏ ¶§ sTmpRow ¸¦ »ç¿ëÇÏ°Ô µÊ */
     if ( aTableInfo != NULL )
     {
         sTableType = aTableInfo->tableFlag & SMI_TABLE_TYPE_MASK;
 
-        /* PROJ-2464 hybrid partitioned table ì§€ì›
-         *  - Alter êµ¬ë¬¸ì¸ ê²½ìš°, sPartInfoListì— ì ì ˆí•œ TBS ì •ë³´ê°€ ë“¤ì–´ê°€ ìˆë‹¤.
-         *  - ë”°ë¼ì„œ Disk Partitionì´ í¬í•¨ë˜ì—ˆëŠ” ì§€ ê²€ì‚¬í•˜ê³ , Row Bufferë¥¼ ìƒì„±í•œë‹¤.
-         *  - í˜„ì¬(15-03-12)ì—ëŠ” aConstraintOption == QDN_ON_ADD_COLUMN ì¸ ê²½ìš°ë§Œ Row Bufferë¥¼ ì‚¬ìš©í•˜ê³  ìˆë‹¤.
+        /* PROJ-2464 hybrid partitioned table Áö¿ø
+         *  - Alter ±¸¹®ÀÎ °æ¿ì, sPartInfoList¿¡ ÀûÀıÇÑ TBS Á¤º¸°¡ µé¾î°¡ ÀÖ´Ù.
+         *  - µû¶ó¼­ Disk PartitionÀÌ Æ÷ÇÔµÇ¾ú´Â Áö °Ë»çÇÏ°í, Row Buffer¸¦ »ı¼ºÇÑ´Ù.
+         *  - ÇöÀç(15-03-12)¿¡´Â aConstraintOption == QDN_ON_ADD_COLUMN ÀÎ °æ¿ì¸¸ Row Buffer¸¦ »ç¿ëÇÏ°í ÀÖ´Ù.
          */
         if ( sIsPartitioned == ID_TRUE )
         {
@@ -1463,27 +1494,27 @@ IDE_RC qdn::validateConstraints(
 
         if ( sDiskInfo != NULL )
         {
-            // Disk Tableì¸ ê²½ìš°
-            // Record Readë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹í•œë‹¤.
+            // Disk TableÀÎ °æ¿ì
+            // Record Read¸¦ À§ÇÑ °ø°£À» ÇÒ´çÇÑ´Ù.
             IDE_TEST( qdbCommon::getDiskRowSize( sDiskInfo,
                                                  & sRowSize )
                       != IDE_SUCCESS );
 
             // To Fix PR-10247
-            // Disk Variable Column Loadingì‹œ RIDë¥¼ ì´ìš©í•œ
-            // ì¤‘ë³µ Loading ê²€ì‚¬ë¥¼ ìœ„í•˜ì—¬ ì´ˆê¸°í™”í•´ì£¼ì–´ì•¼ í•¨.
+            // Disk Variable Column Loading½Ã RID¸¦ ÀÌ¿ëÇÑ
+            // Áßº¹ Loading °Ë»ç¸¦ À§ÇÏ¿© ÃÊ±âÈ­ÇØÁÖ¾î¾ß ÇÔ.
             IDU_LIMITPOINT("qdn::validateConstraints::malloc1");
             IDE_TEST( QC_QMP_MEM(aStatement)->cralloc( sRowSize,
                                                        (void **) & sTmpRow )
                       != IDE_SUCCESS );
 
-            // íŒŒí‹°ì…˜ë“œ í…Œì´ë¸”ì˜ ê²½ìš° ê° íŒŒí‹°ì…˜ì„ ë°˜ë³µí•˜ë©° ê²€ì‚¬í•´ì•¼í•˜ê¸°
-            // ë•Œë¬¸ì— ì²˜ìŒ sTempRowë¥¼ ì €ì¥í•´ë†“ëŠ”ë‹¤.
+            // ÆÄÆ¼¼Çµå Å×ÀÌºíÀÇ °æ¿ì °¢ ÆÄÆ¼¼ÇÀ» ¹İº¹ÇÏ¸ç °Ë»çÇØ¾ßÇÏ±â
+            // ¶§¹®¿¡ Ã³À½ sTempRow¸¦ ÀúÀåÇØ³õ´Â´Ù.
             sRow = sTmpRow;
         }
         else
         {
-            // Memory Tableì¸ ê²½ìš°
+            // Memory TableÀÎ °æ¿ì
             // Nothing To Do
         }
     }
@@ -1497,7 +1528,7 @@ IDE_RC qdn::validateConstraints(
          sCurrConstr = sCurrConstr->next)
     {
         //---------------------------------
-        // ë™ì¼í•œ Constraint Nameì„ ê°€ì§„ constraintê°€ ìˆëŠ”ì§€ ê²€ì‚¬
+        // µ¿ÀÏÇÑ Constraint NameÀ» °¡Áø constraint°¡ ÀÖ´ÂÁö °Ë»ç
         //---------------------------------
 
         if (QC_IS_NULL_NAME(sCurrConstr->constrName) == ID_FALSE)
@@ -1525,8 +1556,8 @@ IDE_RC qdn::validateConstraints(
 
         if (sCurrConstr->constrType == QD_PRIMARYKEY)
         {
-            // ì¶”ê°€ë  constraintê°€ primary key ì´ê³ ,
-            // í•´ë‹¹ Tableì— ì´ë¯¸ Primary Keyê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+            // Ãß°¡µÉ constraint°¡ primary key ÀÌ°í,
+            // ÇØ´ç Table¿¡ ÀÌ¹Ì Primary Key°¡ Á¸ÀçÇÏ´Â °æ¿ì
             IDE_TEST_RAISE(sHasPrimary == ID_TRUE,
                            ERR_DUP_PRIMARY);
             sHasPrimary = ID_TRUE;
@@ -1574,9 +1605,9 @@ IDE_RC qdn::validateConstraints(
                     //         & SMI_COLUMN_TYPE_MASK);
 
                     // To Fix PR-10247
-                    // ìœ„ì™€ ê°™ì€ Macroì˜ ì‚¬ìš©ì€ ìë£Œ êµ¬ì¡°ì˜ ë³€ê²½ì—
-                    // ìœ ì—°í•˜ê²Œ ëŒ€ì²˜í•  ìˆ˜ ì—†ë‹¤.
-                    // Key Columnì˜ Order ì •ë³´ë¥¼ ìœ ì§€í•´ ì£¼ì–´ì•¼ í•œë‹¤.
+                    // À§¿Í °°Àº MacroÀÇ »ç¿ëÀº ÀÚ·á ±¸Á¶ÀÇ º¯°æ¿¡
+                    // À¯¿¬ÇÏ°Ô ´ëÃ³ÇÒ ¼ö ¾ø´Ù.
+                    // Key ColumnÀÇ Order Á¤º¸¸¦ À¯ÁöÇØ ÁÖ¾î¾ß ÇÑ´Ù.
                     sFlag = sColumn->basicInfo->column.flag
                         & SMI_COLUMN_ORDER_MASK;
 
@@ -1592,12 +1623,12 @@ IDE_RC qdn::validateConstraints(
                         (sFlag & SMI_COLUMN_ORDER_MASK);
 
                     // To Fix PR-10207
-                    // geometry, blob, clob typeì€ primary keyë‚˜
-                    // unique keyë¥¼ ìƒì„±í•  ìˆ˜ ì—†ë‹¤.
+                    // geometry, blob, clob typeÀº primary key³ª
+                    // unique key¸¦ »ı¼ºÇÒ ¼ö ¾ø´Ù.
                     // PROJ-1362
-                    // blob, clobì¶”ê°€
-                    // Data Typeì´ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” ì¸ë±ìŠ¤ì— ë”°ë¼
-                    // primary keyë‚˜ unique keyë¥¼ ìƒì„± ì—¬ë¶€ê°€ ê²°ì •ë¨
+                    // blob, clobÃß°¡
+                    // Data TypeÀÌ »ç¿ëÇÒ ¼ö ÀÖ´Â ÀÎµ¦½º¿¡ µû¶ó
+                    // primary key³ª unique key¸¦ »ı¼º ¿©ºÎ°¡ °áÁ¤µÊ
                     if ( smiCanUseUniqueIndex(
                              mtd::getDefaultIndexTypeID(
                                  sColumn->basicInfo->module ) ) == ID_FALSE )
@@ -1634,9 +1665,9 @@ IDE_RC qdn::validateConstraints(
                     // sColumn->basicInfo->flag |= MTC_COLUMN_NOTNULL_TRUE;
 
                     // To Fix PR-10247
-                    // ìœ„ì™€ ê°™ì€ Macroì˜ ì‚¬ìš©ì€ ìë£Œ êµ¬ì¡°ì˜ ë³€ê²½ì—
-                    // ìœ ì—°í•˜ê²Œ ëŒ€ì²˜í•  ìˆ˜ ì—†ë‹¤.
-                    // NOT NULL ì •ë³´ë¥¼ ì„¤ì •í•´ ì£¼ì–´ì•¼ í•¨.
+                    // À§¿Í °°Àº MacroÀÇ »ç¿ëÀº ÀÚ·á ±¸Á¶ÀÇ º¯°æ¿¡
+                    // À¯¿¬ÇÏ°Ô ´ëÃ³ÇÒ ¼ö ¾ø´Ù.
+                    // NOT NULL Á¤º¸¸¦ ¼³Á¤ÇØ ÁÖ¾î¾ß ÇÔ.
 
                     // fix BUG-33258
                     if( sColumn->basicInfo != sColumnInfo->basicInfo )
@@ -1684,20 +1715,20 @@ IDE_RC qdn::validateConstraints(
                                 sPartInfo = sTempPartInfoList->partitionInfo;
 
                                 //----------------------------------------------------
-                                // PROJ-1705 fetch column list êµ¬ì„±
-                                // ì´ í•¨ìˆ˜ë‚´ì—ì„œëŠ”
-                                // ì¡°ê±´ì— ë§ëŠ” ë ˆì½”ë“œ ì¡´ì¬ ìœ ë¬´ë§Œ ì²´í¬í•˜ê¸° ë•Œë¬¸ì—
-                                // cursor propertyì˜ mFetchColumnListë¥¼ NULLë¡œ ë‚´ë¦°ë‹¤.
-                                // mFetchColumnListë¥¼ NULLë¡œ ë‚´ë¦´ ê²½ìš°
-                                // smì—ì„œëŠ” ì»¬ëŸ¼ì˜ ë³µì‚¬ì‘ì—…ì—†ì´
-                                // qpì—ì„œ ë‚´ë ¤ì¤€ ë©”ëª¨ë¦¬í¬ì¸í„°ë§Œ ë°˜í™˜í•œë‹¤.
+                                // PROJ-1705 fetch column list ±¸¼º
+                                // ÀÌ ÇÔ¼ö³»¿¡¼­´Â
+                                // Á¶°Ç¿¡ ¸Â´Â ·¹ÄÚµå Á¸Àç À¯¹«¸¸ Ã¼Å©ÇÏ±â ¶§¹®¿¡
+                                // cursor propertyÀÇ mFetchColumnList¸¦ NULL·Î ³»¸°´Ù.
+                                // mFetchColumnList¸¦ NULL·Î ³»¸± °æ¿ì
+                                // sm¿¡¼­´Â ÄÃ·³ÀÇ º¹»çÀÛ¾÷¾øÀÌ
+                                // qp¿¡¼­ ³»·ÁÁØ ¸Ş¸ğ¸®Æ÷ÀÎÅÍ¸¸ ¹İÈ¯ÇÑ´Ù.
                                 //----------------------------------------------------
 
                                 SMI_CURSOR_PROP_INIT_FOR_FULL_SCAN( &sCursorProperty, aStatement->mStatistics );
                                 sCursorProperty.mFetchColumnList = NULL;
 
                                 // PROJ-1705
-                                // smì—ì„œ ë ˆì½”ë“œ íŒ¨ì¹˜ì‹œ ridì •ë³´ë¥¼ ê°€ì ¸ì˜¤ì§€ ì•Šì•„ë„ ë¨.
+                                // sm¿¡¼­ ·¹ÄÚµå ÆĞÄ¡½Ã ridÁ¤º¸¸¦ °¡Á®¿ÀÁö ¾Ê¾Æµµ µÊ.
 
                                 sTmpCursor.initialize();
 
@@ -1722,7 +1753,7 @@ IDE_RC qdn::validateConstraints(
 
                                 IDE_TEST(sTmpCursor.beforeFirst() != IDE_SUCCESS);
 
-                                // ì›ë˜ sRowë¡œ ì›ë³µ
+                                // ¿ø·¡ sRow·Î ¿øº¹
                                 sTmpRow = sRow;
                                 IDE_TEST(sTmpCursor.readRow(&sTmpRow,
                                                             &sRid,
@@ -1737,19 +1768,19 @@ IDE_RC qdn::validateConstraints(
                         else
                         {
                             //----------------------------------------------------
-                            // PROJ-1705 fetch column list êµ¬ì„±
-                            // ì´ í•¨ìˆ˜ë‚´ì—ì„œëŠ”
-                            // ì¡°ê±´ì— ë§ëŠ” ë ˆì½”ë“œ ì¡´ì¬ ìœ ë¬´ë§Œ ì²´í¬í•˜ê¸° ë•Œë¬¸ì—
-                            // cursor propertyì˜ mFetchColumnListë¥¼ NULLë¡œ ë‚´ë¦°ë‹¤.
-                            // mFetchColumnListë¥¼ NULLë¡œ ë‚´ë¦´ ê²½ìš°
-                            // smì—ì„œëŠ” ì»¬ëŸ¼ì˜ ë³µì‚¬ì‘ì—…ì—†ì´
-                            // qpì—ì„œ ë‚´ë ¤ì¤€ ë©”ëª¨ë¦¬í¬ì¸í„°ë§Œ ë°˜í™˜í•œë‹¤.
+                            // PROJ-1705 fetch column list ±¸¼º
+                            // ÀÌ ÇÔ¼ö³»¿¡¼­´Â
+                            // Á¶°Ç¿¡ ¸Â´Â ·¹ÄÚµå Á¸Àç À¯¹«¸¸ Ã¼Å©ÇÏ±â ¶§¹®¿¡
+                            // cursor propertyÀÇ mFetchColumnList¸¦ NULL·Î ³»¸°´Ù.
+                            // mFetchColumnList¸¦ NULL·Î ³»¸± °æ¿ì
+                            // sm¿¡¼­´Â ÄÃ·³ÀÇ º¹»çÀÛ¾÷¾øÀÌ
+                            // qp¿¡¼­ ³»·ÁÁØ ¸Ş¸ğ¸®Æ÷ÀÎÅÍ¸¸ ¹İÈ¯ÇÑ´Ù.
                             //----------------------------------------------------
                             SMI_CURSOR_PROP_INIT_FOR_FULL_SCAN( &sCursorProperty, aStatement->mStatistics );
                             sCursorProperty.mFetchColumnList = NULL;
 
                             // PROJ-1705
-                            // smì—ì„œ ë ˆì½”ë“œ íŒ¨ì¹˜ì‹œ ridì •ë³´ë¥¼ ê°€ì ¸ì˜¤ì§€ ì•Šì•„ë„ ë¨.
+                            // sm¿¡¼­ ·¹ÄÚµå ÆĞÄ¡½Ã ridÁ¤º¸¸¦ °¡Á®¿ÀÁö ¾Ê¾Æµµ µÊ.
 
                             sTmpCursor.initialize();
 
@@ -1802,9 +1833,9 @@ IDE_RC qdn::validateConstraints(
                     //                    sColumnInfo->basicInfo);
 
                     // To Fix PR-10247
-                    // ìœ„ì™€ ê°™ì€ Macroì˜ ì‚¬ìš©ì€ ìë£Œ êµ¬ì¡°ì˜ ë³€ê²½ì—
-                    // ìœ ì—°í•˜ê²Œ ëŒ€ì²˜í•  ìˆ˜ ì—†ë‹¤.
-                    // Key Columnì˜ Order ì •ë³´ë¥¼ ìœ ì§€í•´ ì£¼ì–´ì•¼ í•œë‹¤.
+                    // À§¿Í °°Àº MacroÀÇ »ç¿ëÀº ÀÚ·á ±¸Á¶ÀÇ º¯°æ¿¡
+                    // À¯¿¬ÇÏ°Ô ´ëÃ³ÇÒ ¼ö ¾ø´Ù.
+                    // Key ColumnÀÇ Order Á¤º¸¸¦ À¯ÁöÇØ ÁÖ¾î¾ß ÇÑ´Ù.
                     sFlag = sColumn->basicInfo->column.flag
                         & SMI_COLUMN_ORDER_MASK;
 
@@ -1820,12 +1851,12 @@ IDE_RC qdn::validateConstraints(
                         (sFlag & SMI_COLUMN_ORDER_MASK);
 
                     // To Fix PR-10207
-                    // geometry typeì€ primary keyë‚˜
-                    // unique keyë¥¼ ìƒì„±í•  ìˆ˜ ì—†ë‹¤.
+                    // geometry typeÀº primary key³ª
+                    // unique key¸¦ »ı¼ºÇÒ ¼ö ¾ø´Ù.
                     // PROJ-1362
-                    // blob, clobì¶”ê°€
-                    // Data Typeì´ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” ì¸ë±ìŠ¤ì— ë”°ë¼
-                    // primary keyë‚˜ unique keyë¥¼ ìƒì„± ì—¬ë¶€ê°€ ê²°ì •ë¨
+                    // blob, clobÃß°¡
+                    // Data TypeÀÌ »ç¿ëÇÒ ¼ö ÀÖ´Â ÀÎµ¦½º¿¡ µû¶ó
+                    // primary key³ª unique key¸¦ »ı¼º ¿©ºÎ°¡ °áÁ¤µÊ
                     if ( smiCanUseUniqueIndex(
                              mtd::getDefaultIndexTypeID(
                                  sColumn->basicInfo->module ) ) == ID_FALSE )
@@ -1882,7 +1913,7 @@ IDE_RC qdn::validateConstraints(
                   ( sCurrConstr->constrType == QD_LOCAL_UNIQUE ) )
         {
             // To Fix PR-10437
-            // Constraintì˜ Index TableSpace ì •ë³´ íšë“
+            // ConstraintÀÇ Index TableSpace Á¤º¸ È¹µæ
             IDE_TEST( qdtCommon::getAndValidateIndexTBS(
                           aStatement,
                           aTableTBSID,
@@ -1894,18 +1925,18 @@ IDE_RC qdn::validateConstraints(
                       != IDE_SUCCESS );
 
             /* BUG-40099
-             * - Temporary Table ì˜ PK/UK ìƒì„± ì‹œ, tableì´ ì†í•œ tablespace ì§€ì • í—ˆìš©. 
+             * - Temporary Table ÀÇ PK/UK »ı¼º ½Ã, tableÀÌ ¼ÓÇÑ tablespace ÁöÁ¤ Çã¿ë. 
              *
-             * ì°¸ê³ ) sCurrConstr->indexTBSID ëŠ”
-             *       qcply.yì—ì„œ QD_SET_INIT_CONSTRAINT_SPEC() ë¥¼ í˜¸ì¶œ,
-             *       ID_USHORT_MAX ë¡œ ì´ˆê¸°í™”ëœë‹¤.
+             * Âü°í) sCurrConstr->indexTBSID ´Â
+             *       qcply.y¿¡¼­ QD_SET_INIT_CONSTRAINT_SPEC() ¸¦ È£Ãâ,
+             *       ID_USHORT_MAX ·Î ÃÊ±âÈ­µÈ´Ù.
              */
             if ( aTableInfo == NULL ) /* create table */
             {
                 /* qdbCreate::validateCreateTable()
                  *   qdbCreate::validateTableSpace()
-                 * table tablespaceê°€ volatile ì¸ì§€ëŠ” ì´ í•¨ìˆ˜ ì´ì „ì— í™•ì¸ëœë‹¤.
-                 * Constraintì˜ TBS IDê°€ ì´ì™€ ê°™ì€ì§€ë§Œ í™•ì¸í•˜ë©´ ëœë‹¤.
+                 * table tablespace°¡ volatile ÀÎÁö´Â ÀÌ ÇÔ¼ö ÀÌÀü¿¡ È®ÀÎµÈ´Ù.
+                 * ConstraintÀÇ TBS ID°¡ ÀÌ¿Í °°ÀºÁö¸¸ È®ÀÎÇÏ¸é µÈ´Ù.
                  */
                 if ( ( sParseTree->flag & QDT_CREATE_TEMPORARY_MASK )
                      == QDT_CREATE_TEMPORARY_TRUE )
@@ -1920,8 +1951,8 @@ IDE_RC qdn::validateConstraints(
             }
             else /* alter table */
             {
-                /* temporary table ì¸ì§€ë§Œ í™•ì¸ë˜ë©´, tablespaceê°€ volatile ì¸ì§€ëŠ” ë”°ë¡œ
-                 * í™•ì¸í•  í•„ìš”ì—†ë‹¤. 
+                /* temporary table ÀÎÁö¸¸ È®ÀÎµÇ¸é, tablespace°¡ volatile ÀÎÁö´Â µû·Î
+                 * È®ÀÎÇÒ ÇÊ¿ä¾ø´Ù. 
                  */
                 if( qcuTemporaryObj::isTemporaryTable( aTableInfo ) == ID_TRUE )
                 {
@@ -1934,28 +1965,28 @@ IDE_RC qdn::validateConstraints(
                 }
             }
 
-            /* PROJ-2461 pk, uk constraintì—ì„œ prefix index ì œí•œ ì™„í™”
-             * local/global index ìƒì„±í•˜ëŠ” ê²½ìš°ë¥¼ ë‚˜ëˆ  validation.
-             * localuniqueë„ ë¹„ìŠ·í•˜ê²Œ validationí•˜ê¸° ë•Œë¬¸ì— ê³ ë ¤í•œë‹¤.
-             * ê¸°ì¡´ validation ì½”ë“œëŠ” ì‚­ì œí•œë‹¤.
+            /* PROJ-2461 pk, uk constraint¿¡¼­ prefix index Á¦ÇÑ ¿ÏÈ­
+             * local/global index »ı¼ºÇÏ´Â °æ¿ì¸¦ ³ª´² validation.
+             * localuniqueµµ ºñ½ÁÇÏ°Ô validationÇÏ±â ¶§¹®¿¡ °í·ÁÇÑ´Ù.
+             * ±âÁ¸ validation ÄÚµå´Â »èÁ¦ÇÑ´Ù.
              */
             if ( sIsPartitioned == ID_TRUE )
             {
-                /* Partitioned Table ëŒ€ìƒìœ¼ë¡œ PK/UKë¥¼ ìƒì„±í•  ë•Œ
-                 * using index local êµ¬ë¬¸ ì‚¬ìš©ê³¼ëŠ” ê´€ê³„ ì—†ì´ ê¸°ë³¸ì´ local indexë‹¤.
-                 * ì¦‰ local indexë¡œ ìƒì„± ê°€ëŠ¥í•˜ë©´ ê·¸ë ‡ê²Œ í•œë‹¤.
+                /* Partitioned Table ´ë»óÀ¸·Î PK/UK¸¦ »ı¼ºÇÒ ¶§
+                 * using index local ±¸¹® »ç¿ë°ú´Â °ü°è ¾øÀÌ ±âº»ÀÌ local index´Ù.
+                 * Áï local index·Î »ı¼º °¡´ÉÇÏ¸é ±×·¸°Ô ÇÑ´Ù.
                  *
-                 * ì´ë¥¼ ìœ„í•´ì„œ index partition keyê°€ index keyì— í¬í•¨ë˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
-                 * í¬í•¨ë˜ì–´ ìˆìŒ -> local indexë¡œ ìƒì„± (PMT/PDT ëª¨ë‘)
-                 * ì—†ìŒ -> 1) PDTë©´ global non-partitioned indexë¡œ ìƒì„±
-                 *         2) PMTë©´ ERROR(PMTëŠ” ë¬´ì¡°ê±´ localë¡œ ìƒì„±í•´ì•¼ í•˜ê¸° ë•Œë¬¸)
+                 * ÀÌ¸¦ À§ÇØ¼­ index partition key°¡ index key¿¡ Æ÷ÇÔµÇ´ÂÁö °Ë»çÇÑ´Ù.
+                 * Æ÷ÇÔµÇ¾î ÀÖÀ½ -> local index·Î »ı¼º (PMT/PDT ¸ğµÎ)
+                 * ¾øÀ½ -> 1) PDT¸é global non-partitioned index·Î »ı¼º
+                 *         2) PMT¸é ERROR(PMT´Â ¹«Á¶°Ç local·Î »ı¼ºÇØ¾ß ÇÏ±â ¶§¹®)
                  */
                 sIsLocalIndex = ID_TRUE;
                 if ( ( sCurrConstr->constrType == QD_PRIMARYKEY ) ||
                      ( sCurrConstr->constrType == QD_UNIQUE ) )
                 {
-                    /* Partitioned Tableì„ ê¸°ì¤€ìœ¼ë¡œ ê²€ì‚¬í•œë‹¤.
-                     * Table Partitionì€ qdbCommon::validateConstraintRestriction()ì—ì„œ ê²€ì‚¬í•œë‹¤.
+                    /* Partitioned TableÀ» ±âÁØÀ¸·Î °Ë»çÇÑ´Ù.
+                     * Table PartitionÀº qdbCommon::validateConstraintRestriction()¿¡¼­ °Ë»çÇÑ´Ù.
                      */
                     IDE_TEST( qdn::checkLocalIndex( aStatement,
                                                     sCurrConstr,
@@ -1969,18 +2000,18 @@ IDE_RC qdn::validateConstraints(
                     /* Nothing To Do */
                 }
 
-                /* PK, UK ì²˜ë¦¬
-                 * local/global index ìƒì„±í•˜ëŠ” ê²½ìš°ë¥¼ ë‚˜ëˆ  validationí•œë‹¤.
-                 * local indexì˜ ê²½ìš°, using index local ì ˆì„ ì¼ì„ë•Œë§Œ í•„ìš”.
+                /* PK, UK Ã³¸®
+                 * local/global index »ı¼ºÇÏ´Â °æ¿ì¸¦ ³ª´² validationÇÑ´Ù.
+                 * local indexÀÇ °æ¿ì, using index local ÀıÀ» ½èÀ»¶§¸¸ ÇÊ¿ä.
                  */
                 if ( sIsLocalIndex != ID_TRUE )
                 {
-                    /* Global indexì¸ ê²½ìš° */
+                    /* Global indexÀÎ °æ¿ì */
                     if ( sCurrConstr->partIndex != NULL )
                     {
-                        /* USING INDEX ì ˆì´ ìˆëŠ” ê²½ìš° */
+                        /* USING INDEX ÀıÀÌ ÀÖ´Â °æ¿ì */
 
-                        /* global indexì—ì„œ USING INDEX LOCAL ì ˆ ì‚¬ìš©ì€ ê¸ˆì§€ */
+                        /* global index¿¡¼­ USING INDEX LOCAL Àı »ç¿ëÀº ±İÁö */
                         IDE_TEST_RAISE( (sCurrConstr->partIndex->partIndexType !=
                                          QCM_NONE_PARTITIONED_INDEX),
                                         ERR_CREATE_PART_INDEX_ON_NONE_PART_TABLE );
@@ -2007,9 +2038,9 @@ IDE_RC qdn::validateConstraints(
                                       sCurrConstr->ridIndexName )
                                       != IDE_SUCCESS );
 
-                        /* í•´ë‹¹ constraintì— USING INDEXì ˆì„ ì‚¬ìš©í•˜ì§€ ì•Šì•˜ë‹¤.
-                         * sConstr->partIndexì— ë‹¬ì•„ë†“ëŠ”ë‹¤.
-                         * EXECUTION ë‹¨ê³„ì—ì„œ ì‚¬ìš©í•˜ê¸° ìœ„í•´ ë‹¬ì•„ë†“ìŒ.
+                        /* ÇØ´ç constraint¿¡ USING INDEXÀıÀ» »ç¿ëÇÏÁö ¾Ê¾Ò´Ù.
+                         * sConstr->partIndex¿¡ ´Ş¾Æ³õ´Â´Ù.
+                         * EXECUTION ´Ü°è¿¡¼­ »ç¿ëÇÏ±â À§ÇØ ´Ş¾Æ³õÀ½.
                          */
                         IDU_LIMITPOINT("qdn::validateConstraints::malloc3");
                         IDE_TEST( STRUCT_ALLOC_WITH_COUNT( QC_QMP_MEM(aStatement),
@@ -2025,18 +2056,18 @@ IDE_RC qdn::validateConstraints(
                 }
                 else
                 {
-                    /* Local indexì¸ ê²½ìš° */
+                    /* Local indexÀÎ °æ¿ì */
                     if ( sCurrConstr->partIndex != NULL )
                     {
-                        /* Localì´ë©´ì„œ, USING INDEX ì ˆì´ ìˆëŠ” ê²½ìš°
+                        /* LocalÀÌ¸é¼­, USING INDEX ÀıÀÌ ÀÖ´Â °æ¿ì
                          * Partitioned index validation
-                         * PK, UK LOCALUNIQUE ëª¨ë‘ í•´ë‹¹
-                         * using index localì ˆì´ ìˆìœ¼ë©´ í•´ë‹¹ ì ˆì—ì„œ
-                         * ì‚¬ìš©ìê°€ ì…ë ¥í•œ ì •ë³´(íŒŒí‹°ì…˜ ì´ë¦„ ë“±)ë¥¼ validateí•´ì•¼ í•œë‹¤.
+                         * PK, UK LOCALUNIQUE ¸ğµÎ ÇØ´ç
+                         * using index localÀıÀÌ ÀÖÀ¸¸é ÇØ´ç Àı¿¡¼­
+                         * »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ Á¤º¸(ÆÄÆ¼¼Ç ÀÌ¸§ µî)¸¦ validateÇØ¾ß ÇÑ´Ù.
                          */
                         if ( sCurrConstr->partIndex->partIndexType != QCM_NONE_PARTITIONED_INDEX )
                         {
-                            /* USING INDEX LOCAL ì ˆ ì‚¬ìš© */
+                            /* USING INDEX LOCAL Àı »ç¿ë */
                             if ( aTableInfo != NULL )
                             {
                                 /* called by alter table */
@@ -2058,8 +2089,8 @@ IDE_RC qdn::validateConstraints(
                         }
                         else
                         {
-                            /* USING INDEX ì ˆì€ ìˆì§€ë§Œ ë’¤ì— LOCALì€ ì•ˆ ë¶™ì€ ê²½ìš°
-                             * ì´ ë•ŒëŠ” validateí•  ëŒ€ìƒì´ ì—†ë‹¤.
+                            /* USING INDEX ÀıÀº ÀÖÁö¸¸ µÚ¿¡ LOCALÀº ¾È ºÙÀº °æ¿ì
+                             * ÀÌ ¶§´Â validateÇÒ ´ë»óÀÌ ¾ø´Ù.
                              *
                              * Nothing To Do
                              * */
@@ -2067,9 +2098,9 @@ IDE_RC qdn::validateConstraints(
                     }
                     else
                     {
-                        /* Localì´ì§€ë§Œ USING INDEXì ˆì„ ì‚¬ìš©í•˜ì§€ ì•Šì€ ê²½ìš°
-                         * sConstr->partIndexì— ë‹¬ì•„ë†“ëŠ”ë‹¤.
-                         * EXECUTION ë‹¨ê³„ì—ì„œ ì‚¬ìš©í•˜ê¸° ìœ„í•´ ë‹¬ì•„ë†“ìŒ.
+                        /* LocalÀÌÁö¸¸ USING INDEXÀıÀ» »ç¿ëÇÏÁö ¾ÊÀº °æ¿ì
+                         * sConstr->partIndex¿¡ ´Ş¾Æ³õ´Â´Ù.
+                         * EXECUTION ´Ü°è¿¡¼­ »ç¿ëÇÏ±â À§ÇØ ´Ş¾Æ³õÀ½.
                          */
                         IDU_LIMITPOINT("qdn::validateConstraints::malloc3");
                         IDE_TEST( STRUCT_ALLOC_WITH_COUNT( QC_QMP_MEM(aStatement),
@@ -2086,8 +2117,8 @@ IDE_RC qdn::validateConstraints(
             }
             else
             {
-                /* Non-Partitioned Tableì— USING INDEX ì ˆì—ì„œ
-                 * LOCAL PARTITIONED INDEXì— ëŒ€í•´ ì§€ì •í•˜ë©´ ì—ëŸ¬
+                /* Non-Partitioned Table¿¡ USING INDEX Àı¿¡¼­
+                 * LOCAL PARTITIONED INDEX¿¡ ´ëÇØ ÁöÁ¤ÇÏ¸é ¿¡·¯
                  */
                 if( sCurrConstr->partIndex != NULL )
                 {
@@ -2097,23 +2128,23 @@ IDE_RC qdn::validateConstraints(
                 }
                 else
                 {
-                    /* í•´ë‹¹ constraintì— USING INDEXì ˆì„ ì‚¬ìš©í•˜ì§€ ì•Šì€ ê²½ìš°
+                    /* ÇØ´ç constraint¿¡ USING INDEXÀıÀ» »ç¿ëÇÏÁö ¾ÊÀº °æ¿ì
                      * Nothing to do
                      */
                 }
             }
         }
-        /* PROJ-1107 Check Constraint ì§€ì› */
+        /* PROJ-1107 Check Constraint Áö¿ø */
         else if ( sCurrConstr->constrType == QD_CHECK )
         {
-            /* Check Constraintì˜ Nchar Listë¥¼ êµ¬í•œë‹¤. */
+            /* Check ConstraintÀÇ Nchar List¸¦ ±¸ÇÑ´Ù. */
             IDE_TEST( qdbCommon::makeNcharLiteralStrForConstraint(
                                     aStatement,
                                     sParseTree->ncharList,
                                     sCurrConstr )
                       != IDE_SUCCESS );
 
-            /* Defaultì˜ Nchar Listì—ì„œ Checkì˜ ê²ƒì„ ì œê±°í•œë‹¤. */
+            /* DefaultÀÇ Nchar List¿¡¼­ CheckÀÇ °ÍÀ» Á¦°ÅÇÑ´Ù. */
             if ( aConstraintOption == QDN_ON_MODIFY_COLUMN )
             {
                 sDefaultColumns = sParseTree->modifyColumns;
@@ -2127,18 +2158,18 @@ IDE_RC qdn::validateConstraints(
                   sColumn != NULL;
                   sColumn = sColumn->next )
             {
-                /* CREATE TABLE T1 ( I1 NCHAR DEFAULT N'ê°€'||N'ë‚˜' CHECK ( I1 = 'ë‹¤' ),
+                /* CREATE TABLE T1 ( I1 NCHAR DEFAULT N'°¡'||N'³ª' CHECK ( I1 = '´Ù' ),
                  *                   I2 ... );
-                 * ë¡œ Tableì„ ìƒì„±í•  ë•Œ,
-                 * DEFAULTì— êµ¬ë¶„ìê°€ ì—†ì–´ì„œ 'ê°€', 'ë‚˜', 'ë‹¤'ë¥¼ DEFAULTì˜ Nchar Literalë¡œ ì·¨ê¸‰í•œë‹¤.
-                 * ê·¸ëŸ¬ë‚˜, 'ë‹¤'ëŠ” Checkì˜ ê²ƒì´ë¯€ë¡œ, DEFAULTì˜ Nchar Literal Listì—ì„œ 'ë‹¤'ë¥¼ ì œê±°í•œë‹¤.
-                 * ALTER TABLE ... ADD CONSTRAINT ë„ ë™ì¼í•˜ê²Œ ì ìš©í•œë‹¤.
+                 * ·Î TableÀ» »ı¼ºÇÒ ¶§,
+                 * DEFAULT¿¡ ±¸ºĞÀÚ°¡ ¾ø¾î¼­ '°¡', '³ª', '´Ù'¸¦ DEFAULTÀÇ Nchar Literal·Î Ãë±ŞÇÑ´Ù.
+                 * ±×·¯³ª, '´Ù'´Â CheckÀÇ °ÍÀÌ¹Ç·Î, DEFAULTÀÇ Nchar Literal List¿¡¼­ '´Ù'¸¦ Á¦°ÅÇÑ´Ù.
+                 * ALTER TABLE ... ADD CONSTRAINT µµ µ¿ÀÏÇÏ°Ô Àû¿ëÇÑ´Ù.
                  */
                 qdbCommon::removeNcharLiteralStr( &(sColumn->ncharLiteralPos),
                                                   sCurrConstr->ncharList );
             }
 
-            /* LOBì„ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+            /* LOBÀ» Áö¿øÇÏÁö ¾Ê´Â´Ù. */
             for ( sColumn = sCurrConstr->constraintColumns;
                   sColumn != NULL;
                   sColumn = sColumn->next )
@@ -2155,7 +2186,7 @@ IDE_RC qdn::validateConstraints(
                 }
             }
 
-            /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
+            /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
             IDE_TEST( qmsDefaultExpr::makeFunctionNameListFromExpression(
                                     aStatement,
                                     &(sParseTree->relatedFunctionNames),
@@ -2163,7 +2194,7 @@ IDE_RC qdn::validateConstraints(
                                     sCurrConstr->checkCondition )
                       != IDE_SUCCESS );
 
-            /* Estimateë¥¼ ìˆ˜í–‰í•œë‹¤. */
+            /* Estimate¸¦ ¼öÇàÇÑ´Ù. */
             if ( aConstraintOption == QDN_ON_ADD_CONSTRAINT )
             {
                 IDE_TEST( qdbCommon::validateCheckConstrDefinition(
@@ -2348,16 +2379,16 @@ IDE_RC qdn::validateConstraints(
 /***********************************************************************
  *
  * Description :
- *    PROJ-2461 pk, uk constraintì—ì„œ prefix index ì œí•œ ì™„í™” 
- *    tableì˜ partition keyê°€ constraint column(pk/ukì˜ index key)ì— í¬í•¨ë˜ëŠ”ì§€ ì²´í¬
- *    ì¦‰ local indexê°€ í…Œì´ë¸” ì „ì²´ì˜ uniquenessë¥¼ ë³´ì¥í•  ìˆ˜ ìˆëŠ”ì§€ ì²´í¬í•œë‹¤.
+ *    PROJ-2461 pk, uk constraint¿¡¼­ prefix index Á¦ÇÑ ¿ÏÈ­ 
+ *    tableÀÇ partition key°¡ constraint column(pk/ukÀÇ index key)¿¡ Æ÷ÇÔµÇ´ÂÁö Ã¼Å©
+ *    Áï local index°¡ Å×ÀÌºí ÀüÃ¼ÀÇ uniqueness¸¦ º¸ÀåÇÒ ¼ö ÀÖ´ÂÁö Ã¼Å©ÇÑ´Ù.
  *
- *    partition key ì „ë¶€ê°€ constraint columnì— ìˆë‹¤ë©´ aIsLocalIndexë¥¼ TRUEë¡œ í•œë‹¤.
+ *    partition key ÀüºÎ°¡ constraint column¿¡ ÀÖ´Ù¸é aIsLocalIndex¸¦ TRUE·Î ÇÑ´Ù.
  *
- *    ë§Œì•½ ê·¸ë ‡ì§€ ì•Šê³ , partition key ì¼ë¶€/ì „ì²´ê°€ constraint columnì— í¬í•¨ë˜ì–´ ìˆì§€ ì•Šë‹¤ë©´
- *    1) PDT -> PK/UKì— ì‚¬ìš©í•  ì¸ë±ìŠ¤ë¥¼ ê¸€ë¡œë²Œ ë…¼íŒŒí‹°ì…˜ë“œ ì¸ë±ìŠ¤ë¡œ ìƒì„±
- *           -> aIsLocalIndexë¥¼ FALSEë¡œ í•œë‹¤.
- *    2) PMT -> PMTì—ì„œ PK/UKëŠ” ë°˜ë“œì‹œ local index ì¨ì•¼ í•˜ë¯€ë¡œ ì—ëŸ¬ ë°œìƒì‹œí‚¨ë‹¤.
+ *    ¸¸¾à ±×·¸Áö ¾Ê°í, partition key ÀÏºÎ/ÀüÃ¼°¡ constraint column¿¡ Æ÷ÇÔµÇ¾î ÀÖÁö ¾Ê´Ù¸é
+ *    1) PDT -> PK/UK¿¡ »ç¿ëÇÒ ÀÎµ¦½º¸¦ ±Û·Î¹ú ³íÆÄÆ¼¼Çµå ÀÎµ¦½º·Î »ı¼º
+ *           -> aIsLocalIndex¸¦ FALSE·Î ÇÑ´Ù.
+ *    2) PMT -> PMT¿¡¼­ PK/UK´Â ¹İµå½Ã local index ½á¾ß ÇÏ¹Ç·Î ¿¡·¯ ¹ß»ı½ÃÅ²´Ù.
  *
  * Implementation : 
  *
@@ -2392,7 +2423,7 @@ IDE_RC qdn::checkLocalIndex( qcStatement      * aStatement,
 
     }
 
-    /* Global IndexëŠ” Disk Partitioned Tableì—ë§Œ ì‚¬ìš©í•  ìˆ˜ ìˆë‹¤. */
+    /* Global Index´Â Disk Partitioned Table¿¡¸¸ »ç¿ëÇÒ ¼ö ÀÖ´Ù. */
     IDE_TEST_RAISE( ( *aIsLocalIndex != ID_TRUE ) && ( aIsDiskTBS != ID_TRUE ),
                     ERR_GLOBAL_INDEX_IN_NON_DISK_TABLE );
 
@@ -2416,22 +2447,22 @@ IDE_RC qdn::validateDuplicateConstraintSpec(
 /***********************************************************************
  *
  * Description :
- *    validateConstraints ì—ì„œ í˜¸ì¶œ, Constraint ì¤‘ë³µ ê²€ì‚¬
+ *    validateConstraints ¿¡¼­ È£Ãâ, Constraint Áßº¹ °Ë»ç
  *
  * Implementation :
- *    constraint íƒ€ì…ì´ PRIMARY KEY ë˜ëŠ” UNIQUE ì¼ ë•Œ
- *    1. ì´ë¯¸ ìˆëŠ” uniquekey ë˜ëŠ” ì¸ë±ìŠ¤ì™€ ì»¬ëŸ¼ì´ ì¤‘ë³µë˜ëŠ”ì§€ ì²´í¬
- *    2. ì¶”ê°€í•˜ëŠ” constraint ì‚¬ì´ì—ì„œ ì»¬ëŸ¼êµ¬ì„±ì´ ì¤‘ë³µëœ ê²ƒì´ ì—†ëŠ”ì§€ ì²´í¬
+ *    constraint Å¸ÀÔÀÌ PRIMARY KEY ¶Ç´Â UNIQUE ÀÏ ¶§
+ *    1. ÀÌ¹Ì ÀÖ´Â uniquekey ¶Ç´Â ÀÎµ¦½º¿Í ÄÃ·³ÀÌ Áßº¹µÇ´ÂÁö Ã¼Å©
+ *    2. Ãß°¡ÇÏ´Â constraint »çÀÌ¿¡¼­ ÄÃ·³±¸¼ºÀÌ Áßº¹µÈ °ÍÀÌ ¾ø´ÂÁö Ã¼Å©
  *
- *    constraint íƒ€ì…ì´ NOT NULL ì¼ ë•Œ
- *    1. ì´ë¯¸ ìˆëŠ” NOT NULL constraint ì™€ ì»¬ëŸ¼ì´ ì¤‘ë³µë˜ëŠ”ì§€ ì²´í¬
- *    2. ì¶”ê°€í•˜ëŠ” constraint ì‚¬ì´ì—ì„œ ì»¬ëŸ¼êµ¬ì„±ì´ ì¤‘ë³µëœ ê²ƒì´ ì—†ëŠ”ì§€ ì²´í¬
+ *    constraint Å¸ÀÔÀÌ NOT NULL ÀÏ ¶§
+ *    1. ÀÌ¹Ì ÀÖ´Â NOT NULL constraint ¿Í ÄÃ·³ÀÌ Áßº¹µÇ´ÂÁö Ã¼Å©
+ *    2. Ãß°¡ÇÏ´Â constraint »çÀÌ¿¡¼­ ÄÃ·³±¸¼ºÀÌ Áßº¹µÈ °ÍÀÌ ¾ø´ÂÁö Ã¼Å©
  *
- *    constraint íƒ€ì…ì´ CHECK ì¼ ë•Œ, ì¤‘ë³µ í—ˆìš©
+ *    constraint Å¸ÀÔÀÌ CHECK ÀÏ ¶§, Áßº¹ Çã¿ë
  *
- *    constraint íƒ€ì…ì´ FOREIGN KEY ì¼ ë•Œ
- *    1. ì´ë¯¸ ìˆëŠ” FOREIGN KEY ì˜ ì°¸ì¡°í•˜ëŠ” í…Œì´ë¸”.ì»¬ëŸ¼ê³¼ ì¸ë±ìŠ¤ì™€ ì¤‘ë³µ ë˜ëŠ”ì§€ ì²´í¬
- *    2. ì¶”ê°€í•˜ëŠ” FOREIGN KEY ì‚¬ì´ì—ì„œ ì°¸ì¡°í•˜ëŠ” êµ¬ì„±ì´ ì¤‘ë³µëœ ê²ƒì´ ì—†ëŠ”ì§€ ì²´í¬
+ *    constraint Å¸ÀÔÀÌ FOREIGN KEY ÀÏ ¶§
+ *    1. ÀÌ¹Ì ÀÖ´Â FOREIGN KEY ÀÇ ÂüÁ¶ÇÏ´Â Å×ÀÌºí.ÄÃ·³°ú ÀÎµ¦½º¿Í Áßº¹ µÇ´ÂÁö Ã¼Å©
+ *    2. Ãß°¡ÇÏ´Â FOREIGN KEY »çÀÌ¿¡¼­ ÂüÁ¶ÇÏ´Â ±¸¼ºÀÌ Áßº¹µÈ °ÍÀÌ ¾ø´ÂÁö Ã¼Å©
  *
  ***********************************************************************/
 
@@ -2444,7 +2475,7 @@ IDE_RC qdn::validateDuplicateConstraintSpec(
         (aConstr->constrType == QD_UNIQUE) ||
         (aConstr->constrType == QD_LOCAL_UNIQUE) )
     {
-        // 1. ì´ë¯¸ ìˆëŠ” uniquekey ë˜ëŠ” ì¸ë±ìŠ¤ì™€ ì»¬ëŸ¼ì´ ì¤‘ë³µë˜ëŠ”ì§€ ì²´í¬
+        // 1. ÀÌ¹Ì ÀÖ´Â uniquekey ¶Ç´Â ÀÎµ¦½º¿Í ÄÃ·³ÀÌ Áßº¹µÇ´ÂÁö Ã¼Å©
         if (aTableInfo != NULL)
         {
             for (i = 0; i < aTableInfo->uniqueKeyCount; i++)
@@ -2468,7 +2499,7 @@ IDE_RC qdn::validateDuplicateConstraintSpec(
             }
         }
 
-        // 2. ì¶”ê°€í•˜ëŠ” constraint ì‚¬ì´ì—ì„œ ì»¬ëŸ¼êµ¬ì„±ì´ ì¤‘ë³µëœ ê²ƒì´ ì—†ëŠ”ì§€ ì²´í¬
+        // 2. Ãß°¡ÇÏ´Â constraint »çÀÌ¿¡¼­ ÄÃ·³±¸¼ºÀÌ Áßº¹µÈ °ÍÀÌ ¾ø´ÂÁö Ã¼Å©
         sTempConstr = aAllConstr;
         while (sTempConstr != NULL)
         {
@@ -2490,7 +2521,7 @@ IDE_RC qdn::validateDuplicateConstraintSpec(
     }
     else if (aConstr->constrType == QD_NOT_NULL)
     {
-        // 1. ì´ë¯¸ ìˆëŠ” NOT NULL constraint ì™€ ì»¬ëŸ¼ì´ ì¤‘ë³µë˜ëŠ”ì§€ ì²´í¬
+        // 1. ÀÌ¹Ì ÀÖ´Â NOT NULL constraint ¿Í ÄÃ·³ÀÌ Áßº¹µÇ´ÂÁö Ã¼Å©
         if (aTableInfo != NULL)
         {
             for (i = 0; i < aTableInfo->notNullCount; i++)
@@ -2504,7 +2535,7 @@ IDE_RC qdn::validateDuplicateConstraintSpec(
             }
         }
 
-        // 2. ì¶”ê°€í•˜ëŠ” constraint ì‚¬ì´ì—ì„œ ì»¬ëŸ¼êµ¬ì„±ì´ ì¤‘ë³µëœ ê²ƒì´ ì—†ëŠ”ì§€ ì²´í¬
+        // 2. Ãß°¡ÇÏ´Â constraint »çÀÌ¿¡¼­ ÄÃ·³±¸¼ºÀÌ Áßº¹µÈ °ÍÀÌ ¾ø´ÂÁö Ã¼Å©
         sTempConstr = aAllConstr;
         while (sTempConstr != NULL)
         {
@@ -2520,14 +2551,14 @@ IDE_RC qdn::validateDuplicateConstraintSpec(
             sTempConstr = sTempConstr->next;
         }
     }
-    /* PROJ-1107 Check Constraint ì§€ì› */
+    /* PROJ-1107 Check Constraint Áö¿ø */
     else if ( aConstr->constrType == QD_CHECK )
     {
-        /* ì¤‘ë³µì„ í—ˆìš©í•œë‹¤. */
+        /* Áßº¹À» Çã¿ëÇÑ´Ù. */
     }
     else if (aConstr->constrType == QD_FOREIGN)
     {
-        // 1. ì´ë¯¸ ìˆëŠ” FOREIGN KEY ì˜ ì°¸ì¡°í•˜ëŠ” í…Œì´ë¸”.ì»¬ëŸ¼ê³¼ ì¸ë±ìŠ¤ì™€ ì¤‘ë³µ ë˜ëŠ”ì§€ ì²´í¬
+        // 1. ÀÌ¹Ì ÀÖ´Â FOREIGN KEY ÀÇ ÂüÁ¶ÇÏ´Â Å×ÀÌºí.ÄÃ·³°ú ÀÎµ¦½º¿Í Áßº¹ µÇ´ÂÁö Ã¼Å©
         if (aTableInfo != NULL)
         {
             for (i = 0; i < aTableInfo->foreignKeyCount; i++)
@@ -2551,7 +2582,7 @@ IDE_RC qdn::validateDuplicateConstraintSpec(
             }
         }
 
-        // 2. ì¶”ê°€í•˜ëŠ” FOREIGN KEY ì‚¬ì´ì—ì„œ ì°¸ì¡°í•˜ëŠ” êµ¬ì„±ì´ ì¤‘ë³µëœ ê²ƒì´ ì—†ëŠ”ì§€ ì²´í¬
+        // 2. Ãß°¡ÇÏ´Â FOREIGN KEY »çÀÌ¿¡¼­ ÂüÁ¶ÇÏ´Â ±¸¼ºÀÌ Áßº¹µÈ °ÍÀÌ ¾ø´ÂÁö Ã¼Å©
         sTempConstr = aAllConstr;
         while (sTempConstr != NULL)
         {
@@ -2572,8 +2603,8 @@ IDE_RC qdn::validateDuplicateConstraintSpec(
                             ( aConstr->referentialConstraintSpec->referencedIndexID
                              == sTempConstr->referentialConstraintSpec->referencedIndexID ) )
                         {
-                            // BUG-27001 ê°™ì€ ì¸ë±ìŠ¤ë¥¼ ì°¸ì¡°í•˜ì§€ë§Œ ì°¸ì¡° ìˆœì„œëŠ” ë‹¤ë¥¼ ìˆ˜ ìˆìœ¼ë¯€ë¡œ
-                            // foreign key ì¬ì •ë ¬ í›„ì— ì°¸ì¡° ìˆœì„œê¹Œì§€ ê°™ì•„ì•¼ë§Œ ì¤‘ë³µìœ¼ë¡œ íŒë‹¨
+                            // BUG-27001 °°Àº ÀÎµ¦½º¸¦ ÂüÁ¶ÇÏÁö¸¸ ÂüÁ¶ ¼ø¼­´Â ´Ù¸¦ ¼ö ÀÖÀ¸¹Ç·Î
+                            // foreign key ÀçÁ¤·Ä ÈÄ¿¡ ÂüÁ¶ ¼ø¼­±îÁö °°¾Æ¾ß¸¸ Áßº¹À¸·Î ÆÇ´Ü
                             IDE_TEST_RAISE(
                                 matchColumnList( aConstr->constraintColumns,
                                                  sTempConstr->constraintColumns )
@@ -2646,7 +2677,7 @@ SInt qdn::matchColumnOffsetLengthOrder(qcmColumn *aColList1,
                     break;
                 }
                 /* PROJ-2419
-                 * smiColumn ì— ë©¤ë²„ varOrder ì¶”ê°€ë˜ì—ˆìœ¼ë¯€ë¡œ ì´ê²ƒë„ ë¹„êµí•´ì•¼í•œë‹¤. */
+                 * smiColumn ¿¡ ¸â¹ö varOrder Ãß°¡µÇ¾úÀ¸¹Ç·Î ÀÌ°Íµµ ºñ±³ÇØ¾ßÇÑ´Ù. */
                 if ( sColumn1->basicInfo->column.varOrder !=
                      sColumn2->basicInfo->column.varOrder )
                 {
@@ -2682,10 +2713,10 @@ IDE_RC qdn::getColumnFromDefinitionList(
 /***********************************************************************
  *
  * Description :
- *    aColumnList ì—ì„œ aColumnName ì˜ ì»¬ëŸ¼ì„ ì°¾ì•„ì„œ ë°˜í™˜
+ *    aColumnList ¿¡¼­ aColumnName ÀÇ ÄÃ·³À» Ã£¾Æ¼­ ¹İÈ¯
  *
  * Implementation :
- *    1. aColumnList ì—ì„œ aColumnName ì˜ ì´ë¦„ì„ ê°€ì§€ëŠ” ì»¬ëŸ¼ì„ ì°¾ëŠ”ë‹¤
+ *    1. aColumnList ¿¡¼­ aColumnName ÀÇ ÀÌ¸§À» °¡Áö´Â ÄÃ·³À» Ã£´Â´Ù
  *
  ***********************************************************************/
 
@@ -2736,14 +2767,14 @@ IDE_RC qdn::executeAddConstr(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *      ALTER TABLE ... ADD CONSTRAINT ìˆ˜í–‰
+ *      ALTER TABLE ... ADD CONSTRAINT ¼öÇà
  *
  * Implementation :
- *      1. primary key ë˜ëŠ” unique ê°€ ìˆìœ¼ë©´ ìƒì„±
- *      2. Foreign key ê°€ ìˆìœ¼ë©´ ìƒì„±
- *      3. check constraint ê°€ ìˆìœ¼ë©´ ìƒì„±
+ *      1. primary key ¶Ç´Â unique °¡ ÀÖÀ¸¸é »ı¼º
+ *      2. Foreign key °¡ ÀÖÀ¸¸é »ı¼º
+ *      3. check constraint °¡ ÀÖÀ¸¸é »ı¼º
  *      4. qcm::touchTable
- *      5. ë©”íƒ€ ìºì‰¬ ì¬êµ¬ì„±
+ *      5. ¸ŞÅ¸ Ä³½¬ Àç±¸¼º
  *
  ***********************************************************************/
 
@@ -2775,7 +2806,7 @@ IDE_RC qdn::executeAddConstr(qcStatement * aStatement)
     sConstraintState = sParseTree->constraints->constrState;
 
     // TASK-2176
-    // Tableì— ëŒ€í•œ Lockì„ íšë“í•œë‹¤.
+    // Table¿¡ ´ëÇÑ LockÀ» È¹µæÇÑ´Ù.
     IDE_TEST( qcm::validateAndLockTable(aStatement,
                                         sParseTree->tableHandle,
                                         sParseTree->tableSCN,
@@ -2785,23 +2816,21 @@ IDE_RC qdn::executeAddConstr(qcStatement * aStatement)
     sOldTableInfo = sParseTree->tableInfo;
 
     // PROJ-1407 Temporary table
-    // session temporary tableì´ ì¡´ì¬í•˜ëŠ” ê²½ìš° DDLì„ í•  ìˆ˜ ì—†ë‹¤.
+    // session temporary tableÀÌ Á¸ÀçÇÏ´Â °æ¿ì DDLÀ» ÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( qcuTemporaryObj::existSessionTable( sOldTableInfo ) == ID_TRUE,
                     ERR_SESSION_TEMPORARY_TABLE_EXIST );
 
     if( sOldTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
-        // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(X)
+        // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(X)
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                   sParseTree->partTable->partInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                                   SMI_TABLE_LOCK_X,
-                                                                  ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                                                    ID_ULONG_MAX :
-                                                                    smiGetDDLLockTimeOut() * 1000000 ) )
+                                                                  smiGetDDLLockTimeOut((QC_SMI_STMT(aStatement))->getTrans()))
                   != IDE_SUCCESS );
 
-        // ì˜ˆì™¸ ì²˜ë¦¬ë¥¼ ìœ„í•˜ì—¬, Lockì„ ì¡ì€ í›„ì— Partition Listë¥¼ ì„¤ì •í•œë‹¤.
+        // ¿¹¿Ü Ã³¸®¸¦ À§ÇÏ¿©, LockÀ» ÀâÀº ÈÄ¿¡ Partition List¸¦ ¼³Á¤ÇÑ´Ù.
         sOldPartInfoList = sParseTree->partTable->partInfoList;
 
         if ( ( sOldTableInfo->replicationCount > 0 ) ||
@@ -2871,10 +2900,10 @@ IDE_RC qdn::executeAddConstr(qcStatement * aStatement)
 
         case QD_FOREIGN:
             // To Fix PR-10385
-            //  Foreign Key ì œì•½ ì¡°ê±´ì„ ìƒì„±í•˜ê¸° ì „ì—
-            //  ì´ë¯¸ ì¡´ì¬í•˜ëŠ” Dataì— ëŒ€í•˜ì—¬ ì¡°ê±´ì„ ê²€ì‚¬í•˜ì—¬ì•¼ í•œë‹¤.
+            //  Foreign Key Á¦¾à Á¶°ÇÀ» »ı¼ºÇÏ±â Àü¿¡
+            //  ÀÌ¹Ì Á¸ÀçÇÏ´Â Data¿¡ ´ëÇÏ¿© Á¶°ÇÀ» °Ë»çÇÏ¿©¾ß ÇÑ´Ù.
             // PROJ-1874 Novalidate
-            //  Constraint stateë¥¼ ì§€ì •í•˜ì§€ ì•Šì•˜ê±°ë‚˜ Validateë¡œ ì§€ì •í–ˆì„ë•Œë§Œ ê²€ì‚¬í•œë‹¤.
+            //  Constraint state¸¦ ÁöÁ¤ÇÏÁö ¾Ê¾Ò°Å³ª Validate·Î ÁöÁ¤ÇßÀ»¶§¸¸ °Ë»çÇÑ´Ù.
             if ( sConstraintState == NULL )
             {
                 IDE_TEST( qdnForeignKey::checkRef4AddConst(
@@ -2908,7 +2937,7 @@ IDE_RC qdn::executeAddConstr(qcStatement * aStatement)
 
         case QD_CHECK:
             // PROJ-1874 Novalidate
-            //  Constraint stateë¥¼ ì§€ì •í•˜ì§€ ì•Šì•˜ê±°ë‚˜ Validateë¡œ ì§€ì •í–ˆì„ë•Œë§Œ ê²€ì‚¬í•œë‹¤.
+            //  Constraint state¸¦ ÁöÁ¤ÇÏÁö ¾Ê¾Ò°Å³ª Validate·Î ÁöÁ¤ÇßÀ»¶§¸¸ °Ë»çÇÑ´Ù.
             if ( sConstraintState == NULL )
             {
                 IDE_TEST( qdnCheck::verifyCheckConstraintListWithFullTableScan(
@@ -2933,7 +2962,7 @@ IDE_RC qdn::executeAddConstr(qcStatement * aStatement)
                 }
             }
 
-            /* PROJ-1107 Check Constraint ì§€ì› */
+            /* PROJ-1107 Check Constraint Áö¿ø */
             IDE_TEST( qdbCommon::createConstrCheck( aStatement,
                                                     sParseTree->constraints,
                                                     sOldTableInfo->tableOwnerID,
@@ -2970,7 +2999,7 @@ IDE_RC qdn::executeAddConstr(qcStatement * aStatement)
 
     if ( sNewIndexTable != NULL )
     {
-        // new index tableì€ í•œê°œì´ë‹¤.
+        // new index tableÀº ÇÑ°³ÀÌ´Ù.
         IDE_DASSERT( sNewIndexTable->next == NULL );
         
         IDE_TEST( qdx::buildIndexTable( aStatement,
@@ -2986,8 +3015,8 @@ IDE_RC qdn::executeAddConstr(qcStatement * aStatement)
         // Nothing to do.
     }
     
-    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
-       DDL Statement Textì˜ ë¡œê¹…
+    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
+       DDL Statement TextÀÇ ·Î±ë
     */
     if ( sDDLSupplementalLog == 1 )
     {
@@ -3045,6 +3074,16 @@ IDE_RC qdn::executeAddConstr(qcStatement * aStatement)
         /* do nothing */
     }
 
+    if ( ( sParseTree->tableInfo->replicationCount > 0 ) ||
+         ( QCG_GET_SESSION_IS_NEED_DDL_INFO( aStatement ) == ID_TRUE ) )
+    {
+        qrc::setDDLDestInfo( aStatement, 
+                             1,
+                             &(sNewTableInfo->tableOID),
+                             0,
+                             NULL );
+    }
+
     if ( sNewTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
         (void)qcmPartition::destroyQcmPartitionInfoList( sOldPartInfoList );
@@ -3090,12 +3129,12 @@ IDE_RC qdn::executeRenameConstr(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *      ALTER TABLE ... RENAME CONSTRAINT ìˆ˜í–‰
+ *      ALTER TABLE ... RENAME CONSTRAINT ¼öÇà
  *
  * Implementation :
- *      1. Constraint ì´ë¦„ìœ¼ë¡œ ConstraintID êµ¬í•˜ê¸°
- *      2. SYS_CONSTRAINTS_, ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ì´ë¦„ë³€ê²½
- *      3. ë©”íƒ€ ìºì‰¬ ì¬êµ¬ì„±
+ *      1. Constraint ÀÌ¸§À¸·Î ConstraintID ±¸ÇÏ±â
+ *      2. SYS_CONSTRAINTS_, ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ ÀÌ¸§º¯°æ
+ *      3. ¸ŞÅ¸ Ä³½¬ Àç±¸¼º
  *
  ***********************************************************************/
 
@@ -3104,7 +3143,6 @@ IDE_RC qdn::executeRenameConstr(qcStatement * aStatement)
     UInt                      sConstraintID;
     qcmIndex                * sIndex = NULL;
     UInt                      sTableID;
-    smOID                     sTableOID;
     qcmTableInfo            * sOldTableInfo = NULL;
     qcmTableInfo            * sNewTableInfo = NULL;
     SChar                   * sSqlStr;
@@ -3129,10 +3167,19 @@ IDE_RC qdn::executeRenameConstr(qcStatement * aStatement)
     qcNamePosition            sUserNamePos;
     qcmTableInfo            * sNewIndexTableInfo = NULL;
 
+    smOID                   * sOldPartitionOID = NULL;
+    UInt                      sOldPartitionCount = 0;
+    idBool                    sIsReplicatedTable = ID_FALSE;
+    smOID                     sOldTableOID = 0;
+    smOID                     sNewTableOID = 0;
+    smOID                   * sOldTableOIDArray = NULL;
+    smOID                   * sNewTableOIDArray = NULL;
+    UInt                      sTableOIDCount = 0;
+
     sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;
 
     // TASK-2176
-    // Tableì— ëŒ€í•œ Lockì„ íšë“í•œë‹¤.
+    // Table¿¡ ´ëÇÑ LockÀ» È¹µæÇÑ´Ù.
     IDE_TEST( qcm::validateAndLockTable(aStatement,
                                         sParseTree->tableHandle,
                                         sParseTree->tableSCN,
@@ -3140,23 +3187,23 @@ IDE_RC qdn::executeRenameConstr(qcStatement * aStatement)
               != IDE_SUCCESS);
 
     sOldTableInfo = sParseTree->tableInfo;
+    sTableID = sOldTableInfo->tableID;
+    sOldTableOID = smiGetTableId(sOldTableInfo->tableHandle);
 
     // PROJ-1502 PARTITIONED DISK TABLE
     if( sOldTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
         sIsPartitioned = ID_TRUE;
 
-        // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(X)
+        // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(X)
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                   sParseTree->partTable->partInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                                   SMI_TABLE_LOCK_X,
-                                                                  ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                                                    ID_ULONG_MAX :
-                                                                    smiGetDDLLockTimeOut() * 1000000 ) )
+                                                                  smiGetDDLLockTimeOut((QC_SMI_STMT(aStatement))->getTrans()))
                   != IDE_SUCCESS );
 
-        // ì˜ˆì™¸ ì²˜ë¦¬ë¥¼ ìœ„í•˜ì—¬, Lockì„ ì¡ì€ í›„ì— Partition Listë¥¼ ì„¤ì •í•œë‹¤.
+        // ¿¹¿Ü Ã³¸®¸¦ À§ÇÏ¿©, LockÀ» ÀâÀº ÈÄ¿¡ Partition List¸¦ ¼³Á¤ÇÑ´Ù.
         sOldPartInfoList = sParseTree->partTable->partInfoList;
         
         sOldIndexTable = sParseTree->oldIndexTables;
@@ -3166,16 +3213,27 @@ IDE_RC qdn::executeRenameConstr(qcStatement * aStatement)
         {
             IDE_TEST( qdx::validateAndLockIndexTableList( aStatement,
                                                           sOldIndexTable,
-                                                          SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                          SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                           SMI_TABLE_LOCK_X,
-                                                          ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                                            ID_ULONG_MAX :
-                                                            smiGetDDLLockTimeOut() * 1000000 ) )
+                                                          smiGetDDLLockTimeOut((QC_SMI_STMT(aStatement))->getTrans()))
                       != IDE_SUCCESS );
         }
         else
         {
             // Nothing to do.
+        }
+
+        if ( sOldTableInfo->replicationCount > 0 )
+        {
+            IDE_TEST( qcmPartition::getAllPartitionOID( QC_QMX_MEM(aStatement),
+                                                        sOldPartInfoList,
+                                                        &sOldPartitionOID,
+                                                        &sOldPartitionCount )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* do nothing */
         }
     }
     else
@@ -3187,14 +3245,43 @@ IDE_RC qdn::executeRenameConstr(qcStatement * aStatement)
 
     QC_STR_COPY( sNewConstraintName, sParseTree->constraints->next->constrName );
 
-    // constraintê°€ ì¡´ì¬í•´ì•¼ í•¨.
+    // constraint°¡ Á¸ÀçÇØ¾ß ÇÔ.
     sConstraintID = qcmCache::getConstraintIDByName(sParseTree->tableInfo,
                                                     sConstraintName,
                                                     &sIndex);
 
     IDE_TEST_RAISE(sConstraintID == 0, ERR_NOT_EXIST_CONSTRAINT_NAME);
 
-    // ìƒˆë¡œìš´ ì´ë¦„ì˜ constraintëŠ” ì¡´ì¬í•˜ë©´ ì•ˆë¨.
+    // PROJ-2642 Table on Replication Allow DDL
+    if ( sOldTableInfo->replicationCount > 0 )
+    {
+        if ( sOldTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
+        {
+            sOldTableOIDArray = sOldPartitionOID;
+            sTableOIDCount = sOldPartitionCount;
+        }
+        else
+        {
+            sOldTableOIDArray = &sOldTableOID;
+            sTableOIDCount = 1;
+        }
+
+        IDE_TEST( qdn::checkOperatableForReplication( aStatement,
+                                                      sOldTableInfo,
+                                                      getConstraintType( sOldTableInfo,
+                                                                         sConstraintID ),
+                                                      sOldTableOIDArray,
+                                                      sTableOIDCount )
+                  != IDE_SUCCESS );
+
+        sIsReplicatedTable = ID_TRUE;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    // »õ·Î¿î ÀÌ¸§ÀÇ constraint´Â Á¸ÀçÇÏ¸é ¾ÈµÊ.
     IDE_TEST( existSameConstrName(aStatement,
                                   sNewConstraintName,
                                   sOldTableInfo->tableOwnerID,
@@ -3210,7 +3297,7 @@ IDE_RC qdn::executeRenameConstr(qcStatement * aStatement)
         sUserNamePos.offset   = 0;
         sUserNamePos.size     = idlOS::strlen(sOldTableInfo->tableOwnerName);
         
-        // ìƒˆì´ë¦„ ê²€ì‚¬
+        // »õÀÌ¸§ °Ë»ç
         IDE_TEST( qdx::checkIndexTableName( aStatement,
                                             sUserNamePos,
                                             sParseTree->constraints->next->constrName,
@@ -3246,9 +3333,6 @@ IDE_RC qdn::executeRenameConstr(qcStatement * aStatement)
 
     IDE_TEST_RAISE(sRowCnt != 1, ERR_META_CRASH);
 
-    sTableID = sOldTableInfo->tableID;
-    sTableOID = smiGetTableId(sOldTableInfo->tableHandle);
-
     IDE_TEST(qcm::touchTable(QC_SMI_STMT( aStatement ),
                              sTableID,
                              SMI_TBSLV_DDL_DML )
@@ -3257,7 +3341,7 @@ IDE_RC qdn::executeRenameConstr(qcStatement * aStatement)
     IDE_TEST(qcm::makeAndSetQcmTableInfo(
                  QC_SMI_STMT( aStatement ),
                  sTableID,
-                 sTableOID) != IDE_SUCCESS);
+                 sOldTableOID) != IDE_SUCCESS);
 
     IDE_TEST(qcm::getTableInfoByID(aStatement,
                                    sTableID,
@@ -3266,7 +3350,7 @@ IDE_RC qdn::executeRenameConstr(qcStatement * aStatement)
                                    &sTableHandle) != IDE_SUCCESS);
 
     // PROJ-1624 global non-partitioned index
-    // constraint ì´ë¦„ì— ë”°ë¼ index table nameê³¼ index table index nameë„ ë³€ê²½í•œë‹¤.
+    // constraint ÀÌ¸§¿¡ µû¶ó index table name°ú index table index nameµµ º¯°æÇÑ´Ù.
     if ( sOldIndexTable != NULL )
     {
         //------------------------
@@ -3299,7 +3383,7 @@ IDE_RC qdn::executeRenameConstr(qcStatement * aStatement)
         // rename index table index
         //------------------------
 
-        // key index, rid indexë¥¼ ì°¾ëŠ”ë‹¤.
+        // key index, rid index¸¦ Ã£´Â´Ù.
         IDE_TEST( qdx::getIndexTableIndices( sOldIndexTable->tableInfo,
                                              sIndexTableIndex )
                   != IDE_SUCCESS );
@@ -3308,7 +3392,7 @@ IDE_RC qdn::executeRenameConstr(qcStatement * aStatement)
         sIndexNamePos.offset   = 0;
         sIndexNamePos.size     = idlOS::strlen(sKeyIndexName);
 
-        // indexì´ë¦„ì„ ë©”íƒ€ì—ì„œ ê°±ì‹ .
+        // indexÀÌ¸§À» ¸ŞÅ¸¿¡¼­ °»½Å.
         IDE_TEST(qdx::updateIndexNameFromMeta(aStatement,
                                               sIndexTableIndex[0]->indexId,
                                               sIndexNamePos)
@@ -3326,7 +3410,7 @@ IDE_RC qdn::executeRenameConstr(qcStatement * aStatement)
         sIndexNamePos.offset   = 0;
         sIndexNamePos.size     = idlOS::strlen(sRidIndexName);
         
-        // indexì´ë¦„ì„ ë©”íƒ€ì—ì„œ ê°±ì‹ .
+        // indexÀÌ¸§À» ¸ŞÅ¸¿¡¼­ °»½Å.
         IDE_TEST(qdx::updateIndexNameFromMeta(aStatement,
                                               sIndexTableIndex[1]->indexId,
                                               sIndexNamePos)
@@ -3381,8 +3465,8 @@ IDE_RC qdn::executeRenameConstr(qcStatement * aStatement)
         // Nothing to do.
     }
     
-    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
-       DDL Statement Textì˜ ë¡œê¹…
+    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
+       DDL Statement TextÀÇ ·Î±ë
     */
     if (QCU_DDL_SUPPLEMENTAL_LOG == 1)
     {
@@ -3406,6 +3490,49 @@ IDE_RC qdn::executeRenameConstr(qcStatement * aStatement)
                   != IDE_SUCCESS );
 
         (void)qcmPartition::destroyQcmPartitionInfoList( sOldPartInfoList );
+    }
+
+    // PROJ-2642 Table on Replication Allow DDL
+    if ( sIsReplicatedTable == ID_TRUE )
+    {
+        sNewTableOID = smiGetTableId( sNewTableInfo->tableHandle );
+
+        if ( sOldTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
+        {
+            sOldTableOIDArray = sOldPartitionOID;
+
+            IDE_TEST( qcmPartition::getAllPartitionOID( QC_QMX_MEM(aStatement),
+                                                        sNewPartInfoList,
+                                                        &sNewTableOIDArray,
+                                                        &sTableOIDCount )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            sOldTableOIDArray = &sOldTableOID;
+            sNewTableOIDArray = &sNewTableOID;
+            sTableOIDCount = 1;
+        }
+
+        IDE_TEST( qciMisc::writeTableMetaLogForReplication( aStatement,
+                                                            sOldTableOIDArray,
+                                                            sNewTableOIDArray,
+                                                            sTableOIDCount )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* do nothing */
+    }
+
+    if ( ( sParseTree->tableInfo->replicationCount > 0 ) ||
+         ( QCG_GET_SESSION_IS_NEED_DDL_INFO( aStatement ) == ID_TRUE ) )
+    {
+        qrc::setDDLDestInfo( aStatement, 
+                             1,
+                             &(sNewTableInfo->tableOID),
+                             0, 
+                             NULL );
     }
 
     if ( sOldIndexTable != NULL )
@@ -3453,16 +3580,16 @@ IDE_RC qdn::executeDropConstr(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *      ALTER TABLE ... DROP CONSTRAINT ìˆ˜í–‰
+ *      ALTER TABLE ... DROP CONSTRAINT ¼öÇà
  *
  * Implementation :
- *      1. Constraint ì´ë¦„ìœ¼ë¡œ ConstraintID, IndexID êµ¬í•˜ê¸°
+ *      1. Constraint ÀÌ¸§À¸·Î ConstraintID, IndexID ±¸ÇÏ±â
  *      2. smiTable::dropIndex
- *      3. SYS_INDICES_,SYS_INDEX_COLUMNS_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ì‚­ì œ
- *      4. SYS_CONSTRAINTS_,  SYS_CONSTRAINT_COLUMNS_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ì‚­ì œ
- *      5. SYS_COLUMNS_ ì—ì„œ primary key, not null ì •ë³´ ë³€ê²½
- *      6. Constraintì™€ ê´€ë ¨ëœ Procedureì— ëŒ€í•œ ì •ë³´ë¥¼ ì‚­ì œ
- *      7. ë©”íƒ€ ìºì‰¬ ì¬êµ¬ì„±
+ *      3. SYS_INDICES_,SYS_INDEX_COLUMNS_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ »èÁ¦
+ *      4. SYS_CONSTRAINTS_,  SYS_CONSTRAINT_COLUMNS_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ »èÁ¦
+ *      5. SYS_COLUMNS_ ¿¡¼­ primary key, not null Á¤º¸ º¯°æ
+ *      6. Constraint¿Í °ü·ÃµÈ Procedure¿¡ ´ëÇÑ Á¤º¸¸¦ »èÁ¦
+ *      7. ¸ŞÅ¸ Ä³½¬ Àç±¸¼º
  *
  ***********************************************************************/
 
@@ -3499,7 +3626,7 @@ IDE_RC qdn::executeDropConstr(qcStatement * aStatement)
     sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;
 
     // TASK-2176
-    // Tableì— ëŒ€í•œ Lockì„ íšë“í•œë‹¤.
+    // Table¿¡ ´ëÇÑ LockÀ» È¹µæÇÑ´Ù.
     IDE_TEST( qcm::validateAndLockTable(aStatement,
                                         sParseTree->tableHandle,
                                         sParseTree->tableSCN,
@@ -3511,24 +3638,22 @@ IDE_RC qdn::executeDropConstr(qcStatement * aStatement)
     sOldTableOID = smiGetTableId( sInfo->tableHandle );
 
     // PROJ-1407 Temporary table
-    // session temporary tableì´ ì¡´ì¬í•˜ëŠ” ê²½ìš° DDLì„ í•  ìˆ˜ ì—†ë‹¤.
+    // session temporary tableÀÌ Á¸ÀçÇÏ´Â °æ¿ì DDLÀ» ÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( qcuTemporaryObj::existSessionTable( sInfo ) == ID_TRUE,
                     ERR_SESSION_TEMPORARY_TABLE_EXIST );
 
     // PROJ-1502 PARTITIONED DISK TABLE
     if( sInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
-        // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(X)
+        // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(X)
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                   sParseTree->partTable->partInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                                   SMI_TABLE_LOCK_X,
-                                                                  ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                                                    ID_ULONG_MAX :
-                                                                    smiGetDDLLockTimeOut() * 1000000 ) )
+                                                                  smiGetDDLLockTimeOut((QC_SMI_STMT(aStatement))->getTrans()))
                   != IDE_SUCCESS );
 
-        // ì˜ˆì™¸ ì²˜ë¦¬ë¥¼ ìœ„í•˜ì—¬, Lockì„ ì¡ì€ í›„ì— Partition Listë¥¼ ì„¤ì •í•œë‹¤.
+        // ¿¹¿Ü Ã³¸®¸¦ À§ÇÏ¿©, LockÀ» ÀâÀº ÈÄ¿¡ Partition List¸¦ ¼³Á¤ÇÑ´Ù.
         sOldPartInfoList = sParseTree->partTable->partInfoList;
         
         sOldIndexTable = sParseTree->oldIndexTables;
@@ -3538,11 +3663,9 @@ IDE_RC qdn::executeDropConstr(qcStatement * aStatement)
         {
             IDE_TEST( qdx::validateAndLockIndexTableList( aStatement,
                                                           sOldIndexTable,
-                                                          SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                          SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                           SMI_TABLE_LOCK_X,
-                                                          ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                                            ID_ULONG_MAX :
-                                                            smiGetDDLLockTimeOut() * 1000000 ) )
+                                                          smiGetDDLLockTimeOut((QC_SMI_STMT(aStatement))->getTrans()))
                       != IDE_SUCCESS );
         }
         else
@@ -3763,7 +3886,7 @@ IDE_RC qdn::executeDropConstr(qcStatement * aStatement)
         }
     }
 
-    /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
+    /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
     IDE_TEST( qcmProc::relRemoveRelatedToConstraintByConstraintID(
                     aStatement,
                     sConstraintID )
@@ -3785,8 +3908,8 @@ IDE_RC qdn::executeDropConstr(qcStatement * aStatement)
                                    &sSCN,
                                    &sTableHandle) != IDE_SUCCESS);
 
-    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
-       DDL Statement Textì˜ ë¡œê¹…
+    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
+       DDL Statement TextÀÇ ·Î±ë
     */
     if ( sDDLSupplementalLog == 1 )
     {
@@ -3844,6 +3967,17 @@ IDE_RC qdn::executeDropConstr(qcStatement * aStatement)
         /* do nothing */
     }
 
+
+    if ( ( sParseTree->tableInfo->replicationCount > 0 ) ||
+         ( QCG_GET_SESSION_IS_NEED_DDL_INFO( aStatement ) == ID_TRUE ) )
+    {
+        qrc::setDDLDestInfo( aStatement, 
+                             1,
+                             &(sNewTableInfo->tableOID),
+                             0,
+                             NULL );
+    }
+
     if ( sNewTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
         (void)qcmPartition::destroyQcmPartitionInfoList( sOldPartInfoList );
@@ -3894,16 +4028,16 @@ IDE_RC qdn::executeDropUnique(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *      ALTER TABLE ... DROP UNIQUE ìˆ˜í–‰
+ *      ALTER TABLE ... DROP UNIQUE ¼öÇà
  *
  * Implementation :
- *      1. Unique Constraint êµ¬í•˜ê¸°
- *      2. ê´€ë ¨ index ì‚­ì œ
- *      3. SYS_INDICES_,SYS_INDEX_COLUMNS_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ì¸ë±ìŠ¤ ì •ë³´ ì‚­ì œ
- *      4. SYS_CONSTRAINTS_, SYS_CONSTRAINT_COLUMNS_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ì‚­ì œ
- *      5. SYS_COLUMNS_ ì—ì„œ not null ì •ë³´ ë³€ê²½
- *      6. ê´€ë ¨ PSM ì„ invalid ìƒíƒœë¡œ ë³€ê²½
- *      7. ë©”íƒ€ ìºì‰¬ ì¬êµ¬ì„±
+ *      1. Unique Constraint ±¸ÇÏ±â
+ *      2. °ü·Ã index »èÁ¦
+ *      3. SYS_INDICES_,SYS_INDEX_COLUMNS_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ ÀÎµ¦½º Á¤º¸ »èÁ¦
+ *      4. SYS_CONSTRAINTS_, SYS_CONSTRAINT_COLUMNS_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ »èÁ¦
+ *      5. SYS_COLUMNS_ ¿¡¼­ not null Á¤º¸ º¯°æ
+ *      6. °ü·Ã PSM À» invalid »óÅÂ·Î º¯°æ
+ *      7. ¸ŞÅ¸ Ä³½¬ Àç±¸¼º
  *
  ***********************************************************************/
 
@@ -3944,7 +4078,7 @@ IDE_RC qdn::executeDropUnique(qcStatement * aStatement)
     sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;
 
     // TASK-2176
-    // Tableì— ëŒ€í•œ Lockì„ íšë“í•œë‹¤.
+    // Table¿¡ ´ëÇÑ LockÀ» È¹µæÇÑ´Ù.
     IDE_TEST( qcm::validateAndLockTable(aStatement,
                                         sParseTree->tableHandle,
                                         sParseTree->tableSCN,
@@ -3954,24 +4088,22 @@ IDE_RC qdn::executeDropUnique(qcStatement * aStatement)
     sOldTableInfo = sParseTree->tableInfo;
 
     // PROJ-1407 Temporary table
-    // session temporary tableì´ ì¡´ì¬í•˜ëŠ” ê²½ìš° DDLì„ í•  ìˆ˜ ì—†ë‹¤.
+    // session temporary tableÀÌ Á¸ÀçÇÏ´Â °æ¿ì DDLÀ» ÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( qcuTemporaryObj::existSessionTable( sOldTableInfo ) == ID_TRUE,
                     ERR_SESSION_TEMPORARY_TABLE_EXIST );
 
     // PROJ-1502 PARTITIONED DISK TABLE
     if( sOldTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
-        // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(X)
+        // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(X)
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                   sParseTree->partTable->partInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                                   SMI_TABLE_LOCK_X,
-                                                                  ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                                                    ID_ULONG_MAX :
-                                                                    smiGetDDLLockTimeOut() * 1000000 ) )
+                                                                  smiGetDDLLockTimeOut((QC_SMI_STMT(aStatement))->getTrans()))
                   != IDE_SUCCESS );
 
-        // ì˜ˆì™¸ ì²˜ë¦¬ë¥¼ ìœ„í•˜ì—¬, Lockì„ ì¡ì€ í›„ì— Partition Listë¥¼ ì„¤ì •í•œë‹¤.
+        // ¿¹¿Ü Ã³¸®¸¦ À§ÇÏ¿©, LockÀ» ÀâÀº ÈÄ¿¡ Partition List¸¦ ¼³Á¤ÇÑ´Ù.
         sOldPartInfoList = sParseTree->partTable->partInfoList;
         
         sOldIndexTable = sParseTree->oldIndexTables;
@@ -3981,11 +4113,9 @@ IDE_RC qdn::executeDropUnique(qcStatement * aStatement)
         {
             IDE_TEST( qdx::validateAndLockIndexTableList( aStatement,
                                                           sOldIndexTable,
-                                                          SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                          SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                           SMI_TABLE_LOCK_X,
-                                                          ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                                            ID_ULONG_MAX :
-                                                            smiGetDDLLockTimeOut() * 1000000 ) )
+                                                          smiGetDDLLockTimeOut((QC_SMI_STMT(aStatement))->getTrans()))
                       != IDE_SUCCESS );
         }
         else
@@ -4042,8 +4172,8 @@ IDE_RC qdn::executeDropUnique(qcStatement * aStatement)
         IDE_DASSERT( sParseTree->tableInfo->replicationRecoveryCount == 0 );
     }
     
-    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
-       DDL Statement Textì˜ ë¡œê¹…
+    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
+       DDL Statement TextÀÇ ·Î±ë
     */
     if ( sDDLSupplementalLog == 1 )
     {
@@ -4247,6 +4377,16 @@ IDE_RC qdn::executeDropUnique(qcStatement * aStatement)
         /* do nothing */
     }
 
+    if ( ( sParseTree->tableInfo->replicationCount > 0 ) ||
+         ( QCG_GET_SESSION_IS_NEED_DDL_INFO( aStatement ) == ID_TRUE ) )
+    {    
+        qrc::setDDLDestInfo( aStatement, 
+                             1,
+                             &(sNewTableInfo->tableOID),
+                             0,
+                             NULL );
+    }
+
     if ( sNewTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
         (void)qcmPartition::destroyQcmPartitionInfoList( sOldPartInfoList );
@@ -4297,7 +4437,7 @@ IDE_RC qdn::executeDropLocalUnique(qcStatement * aStatement)
  *
  * Description :
  *    PROJ-1502 PARTITIONED DISK TABLE
- *    ALTER TABLE ... DROP LOCAL UNIQUE ... ì˜ ìˆ˜í–‰
+ *    ALTER TABLE ... DROP LOCAL UNIQUE ... ÀÇ ¼öÇà
  *
  * Implementation :
  *
@@ -4335,7 +4475,7 @@ IDE_RC qdn::executeDropLocalUnique(qcStatement * aStatement)
     sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;
 
     // TASK-2176
-    // Tableì— ëŒ€í•œ Lockì„ íšë“í•œë‹¤.
+    // Table¿¡ ´ëÇÑ LockÀ» È¹µæÇÑ´Ù.
     IDE_TEST( qcm::validateAndLockTable(aStatement,
                                         sParseTree->tableHandle,
                                         sParseTree->tableSCN,
@@ -4348,24 +4488,22 @@ IDE_RC qdn::executeDropLocalUnique(qcStatement * aStatement)
 
 
     // PROJ-1407 Temporary table
-    // session temporary tableì´ ì¡´ì¬í•˜ëŠ” ê²½ìš° DDLì„ í•  ìˆ˜ ì—†ë‹¤.
+    // session temporary tableÀÌ Á¸ÀçÇÏ´Â °æ¿ì DDLÀ» ÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( qcuTemporaryObj::existSessionTable( sOldTableInfo ) == ID_TRUE,
                     ERR_SESSION_TEMPORARY_TABLE_EXIST );
 
     // PROJ-1502 PARTITIONED DISK TABLE
     if( sOldTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
-        // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(X)
+        // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(X)
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                   sParseTree->partTable->partInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                                   SMI_TABLE_LOCK_X,
-                                                                  ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                                                    ID_ULONG_MAX :
-                                                                    smiGetDDLLockTimeOut() * 1000000 ) )
+                                                                  smiGetDDLLockTimeOut((QC_SMI_STMT(aStatement))->getTrans()))
                   != IDE_SUCCESS );
 
-        // ì˜ˆì™¸ ì²˜ë¦¬ë¥¼ ìœ„í•˜ì—¬, Lockì„ ì¡ì€ í›„ì— Partition Listë¥¼ ì„¤ì •í•œë‹¤.
+        // ¿¹¿Ü Ã³¸®¸¦ À§ÇÏ¿©, LockÀ» ÀâÀº ÈÄ¿¡ Partition List¸¦ ¼³Á¤ÇÑ´Ù.
         sOldPartInfoList = sParseTree->partTable->partInfoList;
 
         if ( ( sOldTableInfo->replicationCount > 0 ) ||
@@ -4413,8 +4551,8 @@ IDE_RC qdn::executeDropLocalUnique(qcStatement * aStatement)
         IDE_DASSERT( sParseTree->tableInfo->replicationRecoveryCount == 0 );
     }
 
-    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
-       DDL Statement Textì˜ ë¡œê¹…
+    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
+       DDL Statement TextÀÇ ·Î±ë
     */
     if ( sDDLSupplementalLog == 1 )
     {
@@ -4584,6 +4722,16 @@ IDE_RC qdn::executeDropLocalUnique(qcStatement * aStatement)
         /* do nothing */
     }
 
+    if ( ( sParseTree->tableInfo->replicationCount > 0 ) ||
+         ( QCG_GET_SESSION_IS_NEED_DDL_INFO( aStatement ) == ID_TRUE ) )
+    {
+        qrc::setDDLDestInfo( aStatement, 
+                             1,
+                             &(sNewTableInfo->tableOID),
+                             0,
+                             NULL );
+    }
+
     if ( sNewTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
         (void)qcmPartition::destroyQcmPartitionInfoList( sOldPartInfoList );
@@ -4622,16 +4770,16 @@ IDE_RC qdn::executeDropPrimary(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *      ALTER TABLE ... DROP PRIMARY KEY ìˆ˜í–‰
+ *      ALTER TABLE ... DROP PRIMARY KEY ¼öÇà
  *
  * Implementation :
- *      1. PRIMARYKEY ì— í•´ë‹¹í•˜ëŠ” Constraint êµ¬í•˜ê¸°
+ *      1. PRIMARYKEY ¿¡ ÇØ´çÇÏ´Â Constraint ±¸ÇÏ±â
  *      2. smiTable::dropIndex
- *      3. SYS_INDICES_,SYS_INDEX_COLUMNS_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ì‚­ì œ
- *      4. SYS_CONSTRAINTS_,  SYS_CONSTRAINT_COLUMNS_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ì‚­ì œ
- *      5. SYS_COLUMNS_ ì—ì„œ not null ì •ë³´ ë³€ê²½
- *      6. ê´€ë ¨ PSM ì„ invalid ìƒíƒœë¡œ ë³€ê²½
- *      7. ë©”íƒ€ ìºì‰¬ ì¬êµ¬ì„±
+ *      3. SYS_INDICES_,SYS_INDEX_COLUMNS_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ »èÁ¦
+ *      4. SYS_CONSTRAINTS_,  SYS_CONSTRAINT_COLUMNS_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ »èÁ¦
+ *      5. SYS_COLUMNS_ ¿¡¼­ not null Á¤º¸ º¯°æ
+ *      6. °ü·Ã PSM À» invalid »óÅÂ·Î º¯°æ
+ *      7. ¸ŞÅ¸ Ä³½¬ Àç±¸¼º
  *
  ***********************************************************************/
 
@@ -4660,7 +4808,7 @@ IDE_RC qdn::executeDropPrimary(qcStatement * aStatement)
     sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;
 
     // TASK-2176
-    // Tableì— ëŒ€í•œ Lockì„ íšë“í•œë‹¤.
+    // Table¿¡ ´ëÇÑ LockÀ» È¹µæÇÑ´Ù.
     IDE_TEST( qcm::validateAndLockTable(aStatement,
                                         sParseTree->tableHandle,
                                         sParseTree->tableSCN,
@@ -4670,24 +4818,22 @@ IDE_RC qdn::executeDropPrimary(qcStatement * aStatement)
     sOldTableInfo = sParseTree->tableInfo;
 
     // PROJ-1407 Temporary table
-    // session temporary tableì´ ì¡´ì¬í•˜ëŠ” ê²½ìš° DDLì„ í•  ìˆ˜ ì—†ë‹¤.
+    // session temporary tableÀÌ Á¸ÀçÇÏ´Â °æ¿ì DDLÀ» ÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( qcuTemporaryObj::existSessionTable( sOldTableInfo ) == ID_TRUE,
                     ERR_SESSION_TEMPORARY_TABLE_EXIST );
 
     // PROJ-1502 PARTITIONED DISK TABLE
     if( sOldTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
-        // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(X)
+        // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(X)
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                   sParseTree->partTable->partInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                                   SMI_TABLE_LOCK_X,
-                                                                  ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                                                    ID_ULONG_MAX :
-                                                                    smiGetDDLLockTimeOut() * 1000000 ) )
+                                                                  smiGetDDLLockTimeOut((QC_SMI_STMT(aStatement))->getTrans()))
                   != IDE_SUCCESS );
 
-        // ì˜ˆì™¸ ì²˜ë¦¬ë¥¼ ìœ„í•˜ì—¬, Lockì„ ì¡ì€ í›„ì— Partition Listë¥¼ ì„¤ì •í•œë‹¤.
+        // ¿¹¿Ü Ã³¸®¸¦ À§ÇÏ¿©, LockÀ» ÀâÀº ÈÄ¿¡ Partition List¸¦ ¼³Á¤ÇÑ´Ù.
         sOldPartInfoList = sParseTree->partTable->partInfoList;
         
         sOldIndexTable = sParseTree->oldIndexTables;
@@ -4697,11 +4843,9 @@ IDE_RC qdn::executeDropPrimary(qcStatement * aStatement)
         {
             IDE_TEST( qdx::validateAndLockIndexTableList( aStatement,
                                                           sOldIndexTable,
-                                                          SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                          SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                           SMI_TABLE_LOCK_X,
-                                                          ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                                            ID_ULONG_MAX :
-                                                            smiGetDDLLockTimeOut() * 1000000 ) )
+                                                          smiGetDDLLockTimeOut((QC_SMI_STMT(aStatement))->getTrans()))
                       != IDE_SUCCESS );
         }
         else
@@ -4714,8 +4858,8 @@ IDE_RC qdn::executeDropPrimary(qcStatement * aStatement)
         // Nothing to do.
     }
 
-    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
-       DDL Statement Textì˜ ë¡œê¹…
+    /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
+       DDL Statement TextÀÇ ·Î±ë
     */
     if (QCU_DDL_SUPPLEMENTAL_LOG == 1)
     {
@@ -4751,7 +4895,7 @@ IDE_RC qdn::executeDropPrimary(qcStatement * aStatement)
 
     if( sOldTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
-        // non-partitioned index ì‚­ì œ
+        // non-partitioned index »èÁ¦
         if ( sIndex->indexPartitionType == QCM_NONE_PARTITIONED_INDEX )
         {
             if ( sOldIndexTable != NULL )
@@ -4771,9 +4915,9 @@ IDE_RC qdn::executeDropPrimary(qcStatement * aStatement)
             // Nothing to do.
         }
 
-        // primary key indexì˜ ê²½ìš° non-partitioned indexì™€ partitioned index
-        // ë‘˜ ë‹¤ ìƒì„±í•œë‹¤.
-        // local index ì‚­ì œ
+        // primary key indexÀÇ °æ¿ì non-partitioned index¿Í partitioned index
+        // µÑ ´Ù »ı¼ºÇÑ´Ù.
+        // local index »èÁ¦
         IDE_TEST(qdd::dropIndexPartitions( aStatement,
                                            sOldPartInfoList,
                                            sIndex->indexId,
@@ -4953,14 +5097,14 @@ IDE_RC qdn::executeModifyConstr(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *      ALTER TABLE ... MODIFY CONSTRAINT ìˆ˜í–‰
+ *      ALTER TABLE ... MODIFY CONSTRAINT ¼öÇà
  *
  * Implementation :
- *      1. Constraint ì´ë¦„ìœ¼ë¡œ ConstraintID êµ¬í•˜ê¸°
- *      2. Constraint State ë¬´ê²°ì„± ê²€ì‚¬
+ *      1. Constraint ÀÌ¸§À¸·Î ConstraintID ±¸ÇÏ±â
+ *      2. Constraint State ¹«°á¼º °Ë»ç
  *       2-1. FK Validate check
- *      3. SYS_CONSTRAINTS_, ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ì •ë³´ë³€ê²½
- *      4. ë©”íƒ€ ìºì‰¬ ì¬êµ¬ì„±
+ *      3. SYS_CONSTRAINTS_, ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ Á¤º¸º¯°æ
+ *      4. ¸ŞÅ¸ Ä³½¬ Àç±¸¼º
  *
  ***********************************************************************/
 
@@ -4990,7 +5134,7 @@ IDE_RC qdn::executeModifyConstr(qcStatement * aStatement)
     sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;
     sConstraintState = sParseTree->constraints->constrState;
 
-    // Tableì— ëŒ€í•œ Lockì„ íšë“í•œë‹¤.
+    // Table¿¡ ´ëÇÑ LockÀ» È¹µæÇÑ´Ù.
     IDE_TEST( qcm::validateAndLockTable(aStatement,
                                         sParseTree->tableHandle,
                                         sParseTree->tableSCN,
@@ -5000,7 +5144,7 @@ IDE_RC qdn::executeModifyConstr(qcStatement * aStatement)
     sOldTableInfo = sParseTree->tableInfo;
 
     // PROJ-1407 Temporary table
-    // session temporary tableì´ ì¡´ì¬í•˜ëŠ” ê²½ìš° DDLì„ í•  ìˆ˜ ì—†ë‹¤.
+    // session temporary tableÀÌ Á¸ÀçÇÏ´Â °æ¿ì DDLÀ» ÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( qcuTemporaryObj::existSessionTable( sOldTableInfo ) == ID_TRUE,
                     ERR_SESSION_TEMPORARY_TABLE_EXIST );
 
@@ -5009,30 +5153,28 @@ IDE_RC qdn::executeModifyConstr(qcStatement * aStatement)
     {
         sIsPartitioned = ID_TRUE;
 
-        // ëª¨ë“  íŒŒí‹°ì…˜ì— LOCK(X)
+        // ¸ğµç ÆÄÆ¼¼Ç¿¡ LOCK(X)
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                   sParseTree->partTable->partInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                                   SMI_TABLE_LOCK_X,
-                                                                  ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                                                    ID_ULONG_MAX :
-                                                                    smiGetDDLLockTimeOut() * 1000000 ) )
+                                                                  smiGetDDLLockTimeOut((QC_SMI_STMT(aStatement))->getTrans()))
                   != IDE_SUCCESS );
 
-        // ì˜ˆì™¸ ì²˜ë¦¬ë¥¼ ìœ„í•˜ì—¬, Lockì„ ì¡ì€ í›„ì— Partition Listë¥¼ ì„¤ì •í•œë‹¤.
+        // ¿¹¿Ü Ã³¸®¸¦ À§ÇÏ¿©, LockÀ» ÀâÀº ÈÄ¿¡ Partition List¸¦ ¼³Á¤ÇÑ´Ù.
         sOldPartInfoList = sParseTree->partTable->partInfoList;
     }
 
     QC_STR_COPY( sConstraintName, sParseTree->constraints->constrName );
 
-    // 1. constraintê°€ ì¡´ì¬í•´ì•¼ í•¨.
+    // 1. constraint°¡ Á¸ÀçÇØ¾ß ÇÔ.
     sConstraintID = qcmCache::getConstraintIDByName(sParseTree->tableInfo,
                                                     sConstraintName,
                                                     NULL);
 
     IDE_TEST_RAISE(sConstraintID == 0, ERR_NOT_EXIST_CONSTRAINT_NAME);
 
-    // 2. Constraint State ë¬´ê²°ì„± ê²€ì‚¬
+    // 2. Constraint State ¹«°á¼º °Ë»ç
     sForeignKey = sOldTableInfo->foreignKeys;
 
     for( i = 0; i < sOldTableInfo->foreignKeyCount; i++ )
@@ -5050,7 +5192,7 @@ IDE_RC qdn::executeModifyConstr(qcStatement * aStatement)
             }
             else
             {
-                // NovalidateëŠ” ê²€ì¦í•  í•„ìš”ê°€ ì—†ê³ , Validateì‹œì—ë§Œ ê²€ì¦í•œë‹¤.
+                // Novalidate´Â °ËÁõÇÒ ÇÊ¿ä°¡ ¾ø°í, Validate½Ã¿¡¸¸ °ËÁõÇÑ´Ù.
                 if( sConstraintState->validate == ID_TRUE )
                 {
                     // Check data in child table and referenced(parent) table
@@ -5074,8 +5216,8 @@ IDE_RC qdn::executeModifyConstr(qcStatement * aStatement)
         }
     }
 
-    // Forein keyë¥¼ ëª» ì°¾ì•˜ìœ¼ë©´ ë‹¤ë¥¸ Constraint(Not Null)ì´ë¯€ë¡œ
-    // Constraint stateë¥¼ ì“¸ ìˆ˜ ì—†ìŒ. ì—ëŸ¬
+    // Forein key¸¦ ¸ø Ã£¾ÒÀ¸¸é ´Ù¸¥ Constraint(Not Null)ÀÌ¹Ç·Î
+    // Constraint state¸¦ ¾µ ¼ö ¾øÀ½. ¿¡·¯
     if( i == sOldTableInfo->foreignKeyCount )
     {
         sqlInfo.setSourceInfo(
@@ -5084,7 +5226,7 @@ IDE_RC qdn::executeModifyConstr(qcStatement * aStatement)
         IDE_RAISE( ERR_NOT_SUPPORTED_CONSTR_STATE );
     }
 
-    // 3. ë©”íƒ€ ì •ë³´ ìˆ˜ì •
+    // 3. ¸ŞÅ¸ Á¤º¸ ¼öÁ¤
     if (sDoModifyMeta == ID_TRUE )
     {
         IDE_TEST(STRUCT_ALLOC_WITH_SIZE(aStatement->qmxMem,
@@ -5134,8 +5276,8 @@ IDE_RC qdn::executeModifyConstr(qcStatement * aStatement)
                                        &sSCN,
                                        &sTableHandle) != IDE_SUCCESS);
 
-        /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
-           DDL Statement Textì˜ ë¡œê¹…
+        /* PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
+           DDL Statement TextÀÇ ·Î±ë
         */
         if (QCU_DDL_SUPPLEMENTAL_LOG == 1)
         {
@@ -5214,13 +5356,13 @@ IDE_RC qdn::insertConstraintIntoMeta(
     UInt         aReferencedTblID,
     UInt         aReferencedIndexID,
     UInt         aReferencedRule,
-    SChar       *aCheckCondition, /* PROJ-1107 Check Constraint ì§€ì› */
+    SChar       *aCheckCondition, /* PROJ-1107 Check Constraint Áö¿ø */
     idBool       aValidated )
 {
 /***********************************************************************
  *
  * Description :
- *      SYS_CONSTRAINTS_ ë©”íƒ€ í…Œì´ë¸”ì— constraint ì •ë³´ ì…ë ¥
+ *      SYS_CONSTRAINTS_ ¸ŞÅ¸ Å×ÀÌºí¿¡ constraint Á¤º¸ ÀÔ·Â
  *
  * Implementation :
  *
@@ -5304,7 +5446,7 @@ IDE_RC qdn::insertConstraintColumnIntoMeta(
 /***********************************************************************
  *
  * Description :
- *      SYS_CONSTRAINT_COLUMNS_ ë©”íƒ€ í…Œì´ë¸”ì— constraint ì»¬ëŸ¼ ì •ë³´ ì…ë ¥
+ *      SYS_CONSTRAINT_COLUMNS_ ¸ŞÅ¸ Å×ÀÌºí¿¡ constraint ÄÃ·³ Á¤º¸ ÀÔ·Â
  *
  * Implementation :
  *
@@ -5364,7 +5506,7 @@ IDE_RC qdn::copyConstraintRelatedMeta( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *      SYS_CONSTRAINT_RELATED_ë¥¼ Constraint ë‹¨ìœ„ë¡œ ë³µì‚¬í•œë‹¤.
+ *      SYS_CONSTRAINT_RELATED_¸¦ Constraint ´ÜÀ§·Î º¹»çÇÑ´Ù.
  *
  * Implementation :
  *
@@ -5415,12 +5557,12 @@ qdn::matchColumnId( qcmColumn * aColumnList,
 /***********************************************************************
  *
  * Description :
- *      qcmColumn ì˜ ë¦¬ìŠ¤íŠ¸ì™€ Column ID ì˜ ë¦¬ìŠ¤íŠ¸ì˜ ID ê°’ì¼ ëª¨ë‘ ë™ì¼í•œì§€?
+ *      qcmColumn ÀÇ ¸®½ºÆ®¿Í Column ID ÀÇ ¸®½ºÆ®ÀÇ ID °ªÀÏ ¸ğµÎ µ¿ÀÏÇÑÁö?
  *
  * Implementation :
- *      1. qcmColumn ì˜ ë¦¬ìŠ¤íŠ¸ì˜ ìˆœì„œëŒ€ë¡œ Column ID ì˜ ë¦¬ìŠ¤íŠ¸ì˜ ID ê°’ì´
- *         ë™ì¼í•œì§€ ì²´í¬
- *      2. ê° ë¦¬ìŠ¤íŠ¸ì˜ ê°œìˆ˜ê°€ ë™ì¼í•œì§€ ì²´í¬
+ *      1. qcmColumn ÀÇ ¸®½ºÆ®ÀÇ ¼ø¼­´ë·Î Column ID ÀÇ ¸®½ºÆ®ÀÇ ID °ªÀÌ
+ *         µ¿ÀÏÇÑÁö Ã¼Å©
+ *      2. °¢ ¸®½ºÆ®ÀÇ °³¼ö°¡ µ¿ÀÏÇÑÁö Ã¼Å©
  *
  ***********************************************************************/
 
@@ -5475,13 +5617,13 @@ qdn::matchColumnIdOutOfOrder( qcmColumn * aColumnList,
 /***********************************************************************
  *
  * Description :
- *      qcmColumn ì˜ ë¦¬ìŠ¤íŠ¸ì™€ Column ID ì˜ ë¦¬ìŠ¤íŠ¸ì˜ ID ê°’ì´ ìˆœì„œì—
- *      ê´€ê³„ì—†ì´ ë™ì¼í•œì§€ í™•ì¸
+ *      qcmColumn ÀÇ ¸®½ºÆ®¿Í Column ID ÀÇ ¸®½ºÆ®ÀÇ ID °ªÀÌ ¼ø¼­¿¡
+ *      °ü°è¾øÀÌ µ¿ÀÏÇÑÁö È®ÀÎ
  *
  * Implementation :
- *      1. qcmColumn ë¦¬ìŠ¤íŠ¸ì˜ ê° IDê°€ Column ID ì˜ ë¦¬ìŠ¤íŠ¸ì— ëª¨ë‘
- *         í¬í•¨ë˜ì—ˆëŠ”ì§€ í™•ì¸
- *      2. ê° ë¦¬ìŠ¤íŠ¸ì˜ ê°œìˆ˜ê°€ ë™ì¼í•œì§€ ì²´í¬
+ *      1. qcmColumn ¸®½ºÆ®ÀÇ °¢ ID°¡ Column ID ÀÇ ¸®½ºÆ®¿¡ ¸ğµÎ
+ *         Æ÷ÇÔµÇ¾ú´ÂÁö È®ÀÎ
+ *      2. °¢ ¸®½ºÆ®ÀÇ °³¼ö°¡ µ¿ÀÏÇÑÁö Ã¼Å©
  *
  ***********************************************************************/
 
@@ -5545,7 +5687,7 @@ qdn::matchColumnIdOutOfOrder( qcmColumn * aColumnList,
         sColumnCount ++;
     }
 
-    // listì™€ arrayì˜ ê¸¸ì´ê°€ ê°™ì€ì§€ ë¹„êµ
+    // list¿Í arrayÀÇ ±æÀÌ°¡ °°ÀºÁö ºñ±³
     if (sColumnCount != aKeyColCount)
     {
         sReturnVal = ID_FALSE;
@@ -5566,11 +5708,11 @@ idBool qdn::matchColumnList(
 /***********************************************************************
  *
  * Description :
- *      qcmColumn ì˜ ê° ë¦¬ìŠ¤íŠ¸ì˜ ì»¬ëŸ¼ ì´ë¦„ì´ ë™ì¼í•œì§€?
+ *      qcmColumn ÀÇ °¢ ¸®½ºÆ®ÀÇ ÄÃ·³ ÀÌ¸§ÀÌ µ¿ÀÏÇÑÁö?
  *
  * Implementation :
- *      1. qcmColumn ì˜ ê° ë¦¬ìŠ¤íŠ¸ì˜ ì»¬ëŸ¼ ì´ë¦„ì´ ë™ì¼í•œì§€ ì²´í¬
- *      2. ê° ë¦¬ìŠ¤íŠ¸ì˜ ê°œìˆ˜ê°€ ë™ì¼í•œì§€ ì²´í¬
+ *      1. qcmColumn ÀÇ °¢ ¸®½ºÆ®ÀÇ ÄÃ·³ ÀÌ¸§ÀÌ µ¿ÀÏÇÑÁö Ã¼Å©
+ *      2. °¢ ¸®½ºÆ®ÀÇ °³¼ö°¡ µ¿ÀÏÇÑÁö Ã¼Å©
  *
  ***********************************************************************/
 
@@ -5604,11 +5746,11 @@ idBool qdn::matchColumnListOutOfOrder(
 /***********************************************************************
  *
  * Description :
- *      ë‘ ë¦¬ìŠ¤íŠ¸ì— í¬í•¨ëœ ì¹¼ëŸ¼ë“¤ì´ ìˆœì„œìƒê´€ì—†ì´ ê°™ì€ì§€ ì²´í¬
+ *      µÎ ¸®½ºÆ®¿¡ Æ÷ÇÔµÈ Ä®·³µéÀÌ ¼ø¼­»ó°ü¾øÀÌ °°ÀºÁö Ã¼Å©
  *
  * Implementation :
- *      1. qcmColumn ì˜ ê° ë¦¬ìŠ¤íŠ¸ì— í¬í•¨ëœ ì¹¼ëŸ¼ë“¤ì´ ê°™ì€ì§€ ì²´í¬
- *      2. ê° ë¦¬ìŠ¤íŠ¸ì˜ ê°œìˆ˜ê°€ ë™ì¼í•œì§€ ì²´í¬
+ *      1. qcmColumn ÀÇ °¢ ¸®½ºÆ®¿¡ Æ÷ÇÔµÈ Ä®·³µéÀÌ °°ÀºÁö Ã¼Å©
+ *      2. °¢ ¸®½ºÆ®ÀÇ °³¼ö°¡ µ¿ÀÏÇÑÁö Ã¼Å©
  *
  ***********************************************************************/
 
@@ -5648,7 +5790,7 @@ idBool qdn::matchColumnListOutOfOrder(
 
     if( sReturnVal == ID_TRUE )
     {
-        // listì˜ ê¸¸ì´ê°€ ê°™ì€ì§€ ë¹„êµ
+        // listÀÇ ±æÀÌ°¡ °°ÀºÁö ºñ±³
         sColumn1 = aColList1;
         sColumn2 = aColList2;
         while( ( sColumn1 != NULL ) && ( sColumn2 != NULL ) )
@@ -5678,11 +5820,11 @@ idBool qdn::intersectColumn( UInt *aColumnIDList1,
 /***********************************************************************
  *
  * Description :
- *      aColumnIDList2 ê°€ aColumnIDList1 ì»¬ëŸ¼ì— ì†í•˜ëŠ”ì§€ ê²€ì‚¬
+ *      aColumnIDList2 °¡ aColumnIDList1 ÄÃ·³¿¡ ¼ÓÇÏ´ÂÁö °Ë»ç
  *
  * Implementation :
- *      aColumnIDList2 ì¤‘ì˜ ì»¬ëŸ¼ì´ í•˜ë‚˜ë¼ë„ aColumnIDList1 ì— ì†í•˜ë©´
- *         ID_TRUE ë°˜í™˜
+ *      aColumnIDList2 ÁßÀÇ ÄÃ·³ÀÌ ÇÏ³ª¶óµµ aColumnIDList1 ¿¡ ¼ÓÇÏ¸é
+ *         ID_TRUE ¹İÈ¯
  *
  ***********************************************************************/
 
@@ -5720,11 +5862,11 @@ idBool qdn::intersectColumn( mtcColumn  * aColumnList1,
 /***********************************************************************
  *
  * Description :
- *      aColumnIDList2 ê°€ aColumnIDList1 ì»¬ëŸ¼ì— ì†í•˜ëŠ”ì§€ ê²€ì‚¬
+ *      aColumnIDList2 °¡ aColumnIDList1 ÄÃ·³¿¡ ¼ÓÇÏ´ÂÁö °Ë»ç
  *
  * Implementation :
- *      aColumnIDList2 ì¤‘ì˜ ì»¬ëŸ¼ì´ í•˜ë‚˜ë¼ë„ aColumnIDList1 ì— ì†í•˜ë©´
- *         ID_TRUE ë°˜í™˜
+ *      aColumnIDList2 ÁßÀÇ ÄÃ·³ÀÌ ÇÏ³ª¶óµµ aColumnIDList1 ¿¡ ¼ÓÇÏ¸é
+ *         ID_TRUE ¹İÈ¯
  *
  ***********************************************************************/
 
@@ -5769,11 +5911,11 @@ idBool qdn::existNotNullConstraint( qcmTableInfo * aTableInfo,
 /***********************************************************************
  *
  * Description :
- *      aCols ì— NOT NULL Constraintê°€ ìˆëŠ”ì§€ ì²´í¬
+ *      aCols ¿¡ NOT NULL Constraint°¡ ÀÖ´ÂÁö Ã¼Å©
  *
  * Implementation :
- *      1. í…Œì´ë¸”ì˜ not null constraint ì¤‘ì—ì„œ aCols ì»¬ëŸ¼ì´ í¬í•¨ëœ ê²ƒì´
- *         ìˆìœ¼ë©´ ID_TRUE ë°˜í™˜
+ *      1. Å×ÀÌºíÀÇ not null constraint Áß¿¡¼­ aCols ÄÃ·³ÀÌ Æ÷ÇÔµÈ °ÍÀÌ
+ *         ÀÖÀ¸¸é ID_TRUE ¹İÈ¯
  *
  ***********************************************************************/
 
@@ -5801,8 +5943,8 @@ IDE_RC qdn::existSameConstrName(qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *      sys_constraint_ ë©”íƒ€ í…Œì´ë¸”ì— ë™ì¼í•œ constraint nameì´
- *      ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
+ *      sys_constraint_ ¸ŞÅ¸ Å×ÀÌºí¿¡ µ¿ÀÏÇÑ constraint nameÀÌ
+ *      Á¸ÀçÇÏ´ÂÁö °Ë»ç
  *
  * Implementation :
  *
@@ -5830,14 +5972,14 @@ IDE_RC qdn::existSameConstrName(qcStatement  * aStatement,
     *aExistSameConstrName = ID_FALSE;
 
     // To fix BUG-13544
-    // constraint nameì€ user-idë³„ë¡œ uniqueí•´ì•¼ í•¨
-    // constraint user_id column ì •ë³´
+    // constraint nameÀº user-idº°·Î uniqueÇØ¾ß ÇÔ
+    // constraint user_id column Á¤º¸
     IDE_TEST( smiGetTableColumns( gQcmConstraints,
                                   QCM_CONSTRAINTS_USER_ID_COL_ORDER,
                                   (const smiColumn**)&sConstrUserIDCol )
               != IDE_SUCCESS );
 
-    // constraint name column ì •ë³´
+    // constraint name column Á¤º¸
     IDE_TEST( smiGetTableColumns( gQcmConstraints,
                                   QCM_CONSTRAINTS_CONSTRAINT_NAME_COL_ORDER,
                                   (const smiColumn**)&sConstrNameCol )
@@ -5878,7 +6020,7 @@ IDE_RC qdn::existSameConstrName(qcStatement  * aStatement,
         sCurConstrName[sConstrName->length] = '\0';
 
         // To fix BUG-13544
-        // constraint nameì€ user-idë³„ë¡œ uniqueí•´ì•¼ í•¨
+        // constraint nameÀº user-idº°·Î uniqueÇØ¾ß ÇÔ
         if ( ( idlOS::strMatch( sCurConstrName,
                                 idlOS::strlen( sCurConstrName ),
                                 aConstrName ,
@@ -5929,7 +6071,7 @@ IDE_RC qdn::existSameConstrName(qcStatement  * aStatement,
 }
 
 // PROJ-2642 Table on Replication Allow DDL
-// ì œì•½ì¡°ê±´ íƒ€ì…ì— ë”°ë¼ DDL ìˆ˜í–‰ ì—¬ë¶€ ê²°ì • 
+// Á¦¾àÁ¶°Ç Å¸ÀÔ¿¡ µû¶ó DDL ¼öÇà ¿©ºÎ °áÁ¤ 
 IDE_RC qdn::checkOperatableForReplication( qcStatement     * aStatement,
                                            qcmTableInfo    * aTableInfo,
                                            UInt              aConstrType,
@@ -5942,8 +6084,8 @@ IDE_RC qdn::checkOperatableForReplication( qcStatement     * aStatement,
     {
         case QD_FOREIGN:
             /* BUG-42881 
-             * CHECK_FK_IN_CREATE_REPLICATION_DISABLE ê°€ 1ë¡œ ì„¤ì •ë˜ì–´ ìˆìœ¼ë©´ 
-             * Replication ëŒ€ìƒ í…Œì´ë¸”ì´ì–´ë„ FK ë¥¼ ì¶”ê°€í•˜ê±°ë‚˜ ì‚­ì œí• ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+             * CHECK_FK_IN_CREATE_REPLICATION_DISABLE °¡ 1·Î ¼³Á¤µÇ¾î ÀÖÀ¸¸é 
+             * Replication ´ë»ó Å×ÀÌºíÀÌ¾îµµ FK ¸¦ Ãß°¡ÇÏ°Å³ª »èÁ¦ÇÒ¼ö ÀÖ½À´Ï´Ù.
              */   
             IDE_TEST_RAISE( QCU_CHECK_FK_IN_CREATE_REPLICATION_DISABLE == 0,
                             ERR_DDL_WITH_REPLICATED_TABLE );

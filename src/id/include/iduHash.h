@@ -40,7 +40,7 @@ public:
     IDE_RC          remove(vULong aKey);
 
 
-    // ëª¨ë“  (Hash Key, Data)ë¥¼ ìˆœíšŒí•œë‹¤
+    // ¸ðµç (Hash Key, Data)¸¦ ¼øÈ¸ÇÑ´Ù
     IDE_RC          traverse( iduHashVisitor    aVisitor,
                               void            * aVisitorArg );
 private:

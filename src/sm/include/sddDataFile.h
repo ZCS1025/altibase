@@ -16,11 +16,11 @@
  
 
 /***********************************************************************
- * $Id: sddDataFile.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sddDataFile.h 86490 2020-01-02 05:59:08Z et16 $
  *
  * Description :
  *
- * ë³¸ íŒŒì¼ì€ ë””ìŠ¤í¬ê´€ë¦¬ìžì˜ datafile ë…¸ë“œì— ëŒ€í•œ í—¤ë”íŒŒì¼ì´ë‹¤.
+ * º» ÆÄÀÏÀº µð½ºÅ©°ü¸®ÀÚÀÇ datafile ³ëµå¿¡ ´ëÇÑ Çì´õÆÄÀÏÀÌ´Ù.
  *
  *
  **********************************************************************/
@@ -49,7 +49,8 @@ public:
     static IDE_RC reuse( idvSQL          * aStatistics,
                          sddDataFileNode * aDataFileNode );
 
-    static IDE_RC open( sddDataFileNode*  aDataFileNode );
+    static IDE_RC open( sddDataFileNode * aDataFileNode,
+                        idBool            aIsDirectIO );
 
     static IDE_RC close( sddDataFileNode*  aDataFileNode );
 
@@ -60,34 +61,46 @@ public:
     static IDE_RC truncate( sddDataFileNode*  aDataFileNode,
                             ULong             aNewDataFileSize );
 
-    static IDE_RC read( idvSQL*          aStatistics,
-                        sddDataFileNode* aDataFileNode,
-                        ULong            aWhere,
-                        ULong            aReadByteSize,
-                        UChar*           aBuffer );
+    inline static IDE_RC read( idvSQL*          aStatistics,
+                               sddDataFileNode* aDataFileNode,
+                               ULong            aWhere,
+                               ULong            aReadByteSize,
+                               UChar*           aBuffer );
 
-    static IDE_RC write( idvSQL*          aStatistics,
-                         sddDataFileNode* aDataFileNode,
-                         ULong            aWhere,
-                         ULong            aReadByteSize,
-                         UChar*           aBuffer );
+    inline static IDE_RC readv( idvSQL         * aStatistics,
+                                sddDataFileNode* aDataFileNode,
+                                ULong            aWhere,
+                                iduFileIOVec&    aVec );
 
-    static IDE_RC sync( sddDataFileNode*  aDataFileNode );
+    inline static IDE_RC write( idvSQL*          aStatistics,
+                                sddDataFileNode* aDataFileNode,
+                                ULong            aWhere,
+                                ULong            aWriteByteSize,
+                                UChar*           aBuffer,
+                                iduEmergencyFuncType aSetEmergencyFunc );
+
+    inline static IDE_RC writev( idvSQL*          aStatistics,
+                                 sddDataFileNode* aDataFileNode,
+                                 ULong            aWhere,
+                                 iduFileIOVec&    aVec,
+                                 iduEmergencyFuncType aSetEmergencyFunc );
+
+    inline static IDE_RC sync( sddDataFileNode*  aDataFileNode,
+                               iduEmergencyFuncType aSetEmergencyFunc );
 
     static IDE_RC addPendingOperation( 
-                     void             *aTrans,
-                     sddDataFileNode  *aDataFileNode,
-                     idBool            aIsCommit,  /* ë™ìž‘ ì‹œê¸° ê²°ì • */  
-                     sctPendingOpType  aPendingOpType,
-                     sctPendingOp    **aPendingOp = NULL );
+        void             *aTrans,
+        sddDataFileNode  *aDataFileNode,
+        idBool            aIsCommit,  /* µ¿ÀÛ ½Ã±â °áÁ¤ */  
+        sctPendingOpType  aPendingOpType,
+        sctPendingOp    **aPendingOp = NULL );
     
-    static void prepareIO( sddDataFileNode*  aDataFileNode );
+    inline static void prepareIO( idvSQL          * aStatistics,
+                                  sddDataFileNode * aDataFileNode );
 
-    static void completeIO( sddDataFileNode*  aDataFileNode,
-                            sddIOMode         aIOMode );
-
-    static void setModifiedFlag( sddDataFileNode*  aDataFileNode,
-                                 idBool            aModifiedFlag );
+    inline static void completeIO( idvSQL          * aStatistics,
+                                   sddDataFileNode * aDataFileNode,
+                                   sddIOMode         aIOMode );
 
     static void setAutoExtendProp( sddDataFileNode*  aDataFileNode,
                                    idBool            aAutoExtendMode,
@@ -100,14 +113,14 @@ public:
     static void setInitSize(sddDataFileNode*  aDataFileNode,
                             ULong             aSize );
 
-    /* PRJ-1149 ë°ì´íƒ€ë…¸ë“œì™€ íŒŒì¼headerë¥¼ ë¹„êµí•˜ì—¬ media recoveryê°€
-       í•„ìš”í•œì§€ ê²€ì‚¬ */
+    /* PRJ-1149 µ¥ÀÌÅ¸³ëµå¿Í ÆÄÀÏheader¸¦ ºñ±³ÇÏ¿© media recovery°¡
+       ÇÊ¿äÇÑÁö °Ë»ç */
     static IDE_RC checkValidationDBFHdr( 
                        sddDataFileNode*   aFileNode,
                        sddDataFileHdr*    aFileMetaHdr,
                        idBool*            aNeedRecovery );
     
-    //PROJ-2133 incremental backup aDataFileDescSlotIDì¶”ê°€
+    //PROJ-2133 incremental backup aDataFileDescSlotIDÃß°¡
     static void setDBFHdr( sddDataFileHdr*              aFileMetaHdr,
                            smLSN*                       aRedoLSN,
                            smLSN*                       aCreateLSN,
@@ -124,37 +137,44 @@ public:
     static void getDataFileAttr(sddDataFileNode* aDataFileNode,
                                 smiDataFileAttr* aDataFileAttr);
 
-    /* datafile ë…¸ë“œì˜ ì •ë³´ë¥¼ ì¶œë ¥ */
+    /* datafile ³ëµåÀÇ Á¤º¸¸¦ Ãâ·Â */
     static IDE_RC dumpDataFileNode(sddDataFileNode* aDataFileNode);
 
     // PRJ-1548 User Memory Tablespace
-    // ë°ì´íƒ€íŒŒì¼ ë…¸ë“œì˜ Openì´ ë˜ì–´ ìžˆëŠ”ì§€ ë°˜í™˜
+    // µ¥ÀÌÅ¸ÆÄÀÏ ³ëµåÀÇ OpenÀÌ µÇ¾î ÀÖ´ÂÁö ¹ÝÈ¯
     static idBool isOpened( sddDataFileNode  * aFileNode ) 
     { return aFileNode->mIsOpened; }
 
-    // ë°ì´íƒ€íŒŒì¼ ë…¸ë“œë¥¼ ì°¸ì¡°í•˜ëŠ” I/O ê°œìˆ˜ ë°˜í™˜
+    // µ¥ÀÌÅ¸ÆÄÀÏ ³ëµå¸¦ ÂüÁ¶ÇÏ´Â I/O °³¼ö ¹ÝÈ¯
     static UInt getIOCount( sddDataFileNode * aFileNode )
     { return aFileNode->mIOCount; }
 
-    // Datafileì— Headerë¥¼ ê¸°ë¡í•œë‹¤.
+    // Datafile¿¡ Header¸¦ ±â·ÏÇÑ´Ù.
     static IDE_RC writeDBFileHdr(
                      idvSQL          * aStatistics,
                      sddDataFileNode * aDataFileNode,
                      sddDataFileHdr  * aDBFileHdr );
 
-    // ìž„ì˜ì˜ ê²½ë¡œì˜ Datafileì— Headerë¥¼ ê¸°ë¡í•œë‹¤.
+    // ÀÓÀÇÀÇ °æ·ÎÀÇ Datafile¿¡ Header¸¦ ±â·ÏÇÑ´Ù.
     static IDE_RC writeDBFileHdrByPath(
                      SChar           * aDBFilePath,
                      sddDataFileHdr  * aDBFileHdr );
 
     static inline IDE_RC setMaxFDCount( sddDataFileNode *aDataFileNode,
                                         UInt             aMaxFDCnt);
-    static inline idBool isDropped( sddDataFileNode *aDataFileNode );
+
+    // FileÀÇ Open°ú Close±×¸®°í IsOpened ¸¦ º¸È£ÇÑ´Ù.
+    static void lockFileNode( idvSQL          *aStatistics,
+                              sddDataFileNode *aDataFileNode )
+    {   aDataFileNode->mMutex.lock( aStatistics ); };
+
+    static void unlockFileNode( sddDataFileNode *aDataFileNode )
+    {   aDataFileNode->mMutex.unlock(); };
 
 private:
-    // BUG-17415 ë°ì´í„° íŒŒì¼ ìƒì„± ë˜ëŠ” reuseì‹œ íŒŒì¼ ì´ˆê¸°í™” writingì„ ìˆ˜í–‰í•œë‹¤.
-    static IDE_RC writeNewPages(idvSQL          *aStatistics,
-                                sddDataFileNode *aDataFileNode);
+    // BUG-17415 µ¥ÀÌÅÍ ÆÄÀÏ »ý¼º ¶Ç´Â reuse½Ã ÆÄÀÏ ÃÊ±âÈ­ writingÀ» ¼öÇàÇÑ´Ù.
+    static IDE_RC writeNewPages( idvSQL          *aStatistics,
+                                 sddDataFileNode *aDataFileNode );
 
 };
 
@@ -164,14 +184,118 @@ inline IDE_RC sddDataFile::setMaxFDCount( sddDataFileNode *aDataFileNode,
     return aDataFileNode->mFile.setMaxFDCnt( aMaxFDCnt );
 }
 
-inline idBool sddDataFile::isDropped( sddDataFileNode *aDataFileNode )
+/***********************************************************************
+ * Description : datafileÀÇ pageoffsetºÎÅÍ readsize¸¸Å­ data ÆÇµ¶
+ **********************************************************************/
+IDE_RC sddDataFile::read( idvSQL         * aStatistics,
+                          sddDataFileNode* aDataFileNode,
+                          ULong            aWhere,
+                          ULong            aReadByteSize,
+                          UChar*           aBuffer )
 {
-    if( SMI_FILE_STATE_IS_DROPPED( aDataFileNode->mState ) )
+    return aDataFileNode->mFile.read( aStatistics,
+                                      aWhere + SM_DBFILE_METAHDR_PAGE_SIZE,
+                                      (void*)aBuffer,
+                                      aReadByteSize,
+                                      NULL );
+}
+
+/***********************************************************************
+ * Description : datafileÀÇ pageoffsetºÎÅÍ readsize¸¸Å­ data ÆÇµ¶
+ **********************************************************************/
+IDE_RC sddDataFile::readv( idvSQL         * aStatistics,
+                           sddDataFileNode* aDataFileNode,
+                           ULong            aWhere,
+                           iduFileIOVec   & aVec )
+{
+    return aDataFileNode->mFile.readv( aStatistics,
+                                       aWhere + SM_DBFILE_METAHDR_PAGE_SIZE,
+                                       aVec);
+}
+
+
+/***********************************************************************
+ * Description : datafileÀÇ pageoffsetºÎÅÍ writesize¸¸Å­ data ±â·Ï
+ * size¸¸Å­ extendÇÏ´Â °æ¿ì¿¡ write page size´Â extendÀÇ Å©±âÀÇ
+ * ¹è¼ö°¡ µÉ °ÍÀÌ´Ù.
+ **********************************************************************/
+IDE_RC sddDataFile::write( idvSQL         * aStatistics,
+                           sddDataFileNode* aDataFileNode,
+                           ULong            aWhere,
+                           ULong            aWriteByteSize,
+                           UChar*           aBuffer,
+                           iduEmergencyFuncType aSetEmergencyFunc )
+{
+    return aDataFileNode->mFile.writeUntilSuccess( aStatistics,
+                                                   aWhere + SM_DBFILE_METAHDR_PAGE_SIZE,
+                                                   (void*)aBuffer,
+                                                   aWriteByteSize,
+                                                   aSetEmergencyFunc );
+}
+
+
+/***********************************************************************
+ * Description : datafileÀÇ pageoffsetºÎÅÍ writesize¸¸Å­ data ±â·Ï
+ * size¸¸Å­ extendÇÏ´Â °æ¿ì¿¡ write page size´Â extendÀÇ Å©±âÀÇ
+ * ¹è¼ö°¡ µÉ °ÍÀÌ´Ù.
+ **********************************************************************/
+IDE_RC sddDataFile::writev( idvSQL         * aStatistics,
+                            sddDataFileNode* aDataFileNode,
+                            ULong            aWhere,
+                            iduFileIOVec   & aVec,
+                            iduEmergencyFuncType aSetEmergencyFunc )
+{
+    return aDataFileNode->mFile.writevUntilSuccess( aStatistics,
+                                                    aWhere + SM_DBFILE_METAHDR_PAGE_SIZE,
+                                                    aVec,
+                                                    aSetEmergencyFunc );
+}
+
+/***********************************************************************
+ * Description : datafileÀ» syncÇÑ´Ù.
+ **********************************************************************/
+IDE_RC sddDataFile::sync( sddDataFileNode*     aDataFileNode,
+                          iduEmergencyFuncType aSetEmergencyFunc )
+{
+    IDE_DASSERT( aDataFileNode != NULL );
+
+    return aDataFileNode->mFile.syncUntilSuccess( aSetEmergencyFunc );
+}
+
+/***********************************************************************
+ * Description : datafile¿¡ ´ëÇÑ I/O ÁØºñÀÛ¾÷ ¼öÇà
+ **********************************************************************/
+void sddDataFile::prepareIO( idvSQL          * aStatistics,
+                             sddDataFileNode * aDataFileNode )
+{
+    IDE_DASSERT( aDataFileNode != NULL );
+
+    (void)aDataFileNode->mMutex.lock( aStatistics );
+    aDataFileNode->mIOCount++;
+    (void)aDataFileNode->mMutex.unlock();
+    return;
+}
+
+/***********************************************************************
+ * Description : datafile¿¡ ´ëÇÑ I/O ¸¶¹«¸® ÀÛ¾÷ ¼öÇà
+ **********************************************************************/
+void sddDataFile::completeIO( idvSQL          * aStatistics,
+                              sddDataFileNode * aDataFileNode,
+                              sddIOMode         aIOMode )
+{
+    IDE_DASSERT(aDataFileNode != NULL);
+
+    (void)aDataFileNode->mMutex.lock( aStatistics );
+
+    if (aIOMode == SDD_IO_WRITE)
     {
-        return ID_TRUE;
+        aDataFileNode->mIsModified = ID_TRUE;
     }
 
-    return ID_FALSE;
+    aDataFileNode->mIOCount--;
+    (void)aDataFileNode->mMutex.unlock();
+
+    return;
 }
 
 #endif // _O_SDD_DATA_FILE_H_

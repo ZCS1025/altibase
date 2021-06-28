@@ -20,23 +20,23 @@
  *
  * Description :
  *
- *     SKIPì— í•´ë‹¹í•˜ëŠ” Data Type
- *     ë³„ë„ì˜ Data Typeì´ ì—†ëŠ” ê°œë…ì„ ê°–ëŠ” ë…¸ë“œë“¤ì— ëŒ€í•œ
- *     Column ì •ë³´ë¥¼ Settingí•˜ê¸° ìœ„í•´ ì‚¬ìš©ëœë‹¤.
+ *     SKIP¿¡ ÇØ´çÇÏ´Â Data Type
+ *     º°µµÀÇ Data TypeÀÌ ¾ø´Â °³³äÀ» °®´Â ³ëµåµé¿¡ ´ëÇÑ
+ *     Column Á¤º¸¸¦ SettingÇÏ±â À§ÇØ »ç¿ëµÈ´Ù.
  *
- *     ë‹¤ìŒê³¼ ê°™ì€ ìš©ë„ë¥¼ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
- *     1.  Indirect Nodeì˜ Column ì •ë³´
+ *     ´ÙÀ½°ú °°Àº ¿ëµµ¸¦ À§ÇØ »ç¿ëµÈ´Ù.
+ *     1.  Indirect NodeÀÇ Column Á¤º¸
  *         - qtc::makeIndirect()
- *     2.  ì²˜ë¦¬í•  í•„ìš”ê°€ ì—†ëŠ” Nodeì— ëŒ€í•œ Column ì •ë³´
+ *     2.  Ã³¸®ÇÒ ÇÊ¿ä°¡ ¾ø´Â Node¿¡ ´ëÇÑ Column Á¤º¸
  *         - qtc::modifyQuantifedExpression()
  *         - WHERE I1 IN ( (SELECT A1 FROM T1) )
  *                       *                     *
- *     3. ì²˜ë¦¬ê°€ í•„ìš” ì—†ëŠ” Procedure Variable
+ *     3. Ã³¸®°¡ ÇÊ¿ä ¾ø´Â Procedure Variable
  *         - qtc::makeProcVariable()
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -45,7 +45,7 @@
 #include <qtc.h>
 
 //-----------------------------------------
-// Skip ë°ì´í„° íƒ€ì…ì˜ Module ì— ëŒ€í•œ ì •ë³´
+// Skip µ¥ÀÌÅÍ Å¸ÀÔÀÇ Module ¿¡ ´ëÇÑ Á¤º¸
 //-----------------------------------------
 
 static IDE_RC mtdEstimate( UInt * aColumnSize,
@@ -54,26 +54,26 @@ static IDE_RC mtdEstimate( UInt * aColumnSize,
                            SInt * aScale );
 
 mtdModule qtc::skipModule = {
-    NULL,           // ì´ë¦„
-    NULL,           // ì»¬ëŸ¼ ì •ë³´
+    NULL,           // ÀÌ¸§
+    NULL,           // ÄÃ·³ Á¤º¸
     MTD_NULL_ID,    // data type id
     0,              // no
     {0,0,0,0,0,0,0,0}, // index type
-    1,              // align ê°’
+    1,              // align °ª
     0,              // flag
     0,              // max precision
     0,              // min scale
     0,              // max scale
-    NULL,           // staticNull ê°’
-    NULL,           // ì„œë²„ êµ¬ë™ì‹œ ì´ˆê¸°í™” í•¨ìˆ˜
-    mtdEstimate,    // Estimation í•¨ìˆ˜
-    NULL,           // ë¬¸ìì—´ => Value ì „í™˜ í•¨ìˆ˜
-    NULL,           // ì‹¤ì œ Dataì˜ í¬ê¸° ì¶”ì¶œ í•¨ìˆ˜
-    NULL,           // ì‹¤ì œ Dataì˜ precisionì„ ì–»ëŠ” í•¨ìˆ˜
-    NULL,           // NULL ê°’ ì¶”ì¶œ í•¨ìˆ˜
-    NULL,           // Hash ê°’ ì¶”ì¶œ í•¨ìˆ˜
-    NULL,           // NULLì—¬ë¶€ íŒë‹¨ í•¨ìˆ˜
-    NULL,           // Boolean TRUE íŒë‹¨ í•¨ìˆ˜
+    NULL,           // staticNull °ª
+    NULL,           // ¼­¹ö ±¸µ¿½Ã ÃÊ±âÈ­ ÇÔ¼ö
+    mtdEstimate,    // Estimation ÇÔ¼ö
+    NULL,           // ¹®ÀÚ¿­ => Value ÀüÈ¯ ÇÔ¼ö
+    NULL,           // ½ÇÁ¦ DataÀÇ Å©±â ÃßÃâ ÇÔ¼ö
+    NULL,           // ½ÇÁ¦ DataÀÇ precisionÀ» ¾ò´Â ÇÔ¼ö
+    NULL,           // NULL °ª ÃßÃâ ÇÔ¼ö
+    NULL,           // Hash °ª ÃßÃâ ÇÔ¼ö
+    NULL,           // NULL¿©ºÎ ÆÇ´Ü ÇÔ¼ö
+    NULL,           // Boolean TRUE ÆÇ´Ü ÇÔ¼ö
     {
         mtd::compareNA,           // Logical Comparison
         mtd::compareNA
@@ -96,15 +96,15 @@ mtdModule qtc::skipModule = {
             mtd::compareNA
         }
     },
-    NULL,           // Canonize í•¨ìˆ˜
-    NULL,           // Endian ë³€ê²½ í•¨ìˆ˜
-    NULL,           // Validation í•¨ìˆ˜
-    NULL,           // Selectivity í•¨ìˆ˜
-    NULL,           // Enconding í•¨ìˆ˜
-    NULL,           // Decoding í•¨ìˆ˜
-    NULL,           // Compfile Format í•¨ìˆ˜
-    NULL,           // Oracleë¡œë¶€í„° Value ì¶”ì¶œ í•¨ìˆ˜
-    NULL,           // Meta ë³€ê²½ í•¨ìˆ˜
+    NULL,           // Canonize ÇÔ¼ö
+    NULL,           // Endian º¯°æ ÇÔ¼ö
+    NULL,           // Validation ÇÔ¼ö
+    NULL,           // Selectivity ÇÔ¼ö
+    NULL,           // Enconding ÇÔ¼ö
+    NULL,           // Decoding ÇÔ¼ö
+    NULL,           // Compfile Format ÇÔ¼ö
+    NULL,           // Oracle·ÎºÎÅÍ Value ÃßÃâ ÇÔ¼ö
+    NULL,           // Meta º¯°æ ÇÔ¼ö
 
     // BUG-28934
     NULL,
@@ -132,7 +132,7 @@ IDE_RC mtdEstimate( UInt * aColumnSize,
  *
  * Description :
  *
- *    Skip Data Typeì˜ Column ì •ë³´ë¥¼ Settingí•¨
+ *    Skip Data TypeÀÇ Column Á¤º¸¸¦ SettingÇÔ
  *
  * Implementation :
  *

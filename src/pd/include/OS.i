@@ -501,6 +501,18 @@ PDL_Time_Value::msec (long milliseconds)
   this->tv_.tv_usec = (milliseconds - (this->tv_.tv_sec * 1000)) * 1000;
 }
 
+/* Converts from micro-seconds format into Time_Value format. */
+
+PDL_INLINE void
+PDL_Time_Value::microsec (long microseconds)
+{
+  PDL_TRACE ("PDL_Time_Value::microsec");
+  /* Convert microseconds units to seconds; */
+  this->tv_.tv_sec = microseconds / 1000000;
+  /* Convert remainder to microseconds; */
+  this->tv_.tv_usec = ( microseconds % 1000000 );
+}
+
 // Returns number of micro-seconds.
 
 PDL_INLINE long

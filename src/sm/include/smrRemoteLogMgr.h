@@ -17,7 +17,7 @@
 
 /***********************************************************************
  * PROJ-1915 : Off-line Replicator
- * Off-line ì„¼ë”ë¥¼ ìœ„í•œ LFGMgr ì˜¤ì§ ë¡œê·¸ ì½ê¸° ê¸°ëŠ¥ ë§Œì„ ìˆ˜í–‰ í•œë‹¤.
+ * Off-line ¼¾´õ¸¦ À§ÇÑ LFGMgr ¿ÀÁ÷ ·Î±× ÀÐ±â ±â´É ¸¸À» ¼öÇà ÇÑ´Ù.
  *
  **********************************************************************/
 
@@ -30,11 +30,11 @@
 #include <smrDef.h>
 
 typedef struct smrRemoteLogMgrInfo{
-    /* ì²«ë²ˆì§¸ ë¡œê·¸ íŒŒì¼ ë²ˆí˜¸ */
+    /* Ã¹¹øÂ° ·Î±× ÆÄÀÏ ¹øÈ£ */
     UInt    mFstFileNo;
-    /* ë§ˆì§€ë§‰ ë¡œê·¸ íŒŒì¼ ë²ˆí˜¸ */
+    /* ¸¶Áö¸· ·Î±× ÆÄÀÏ ¹øÈ£ */
     UInt    mEndFileNo;
-    /* ë§ˆì§€ë§‰ ê¸°ë¡ëœ ë¡œê·¸ LstLSN*/
+    /* ¸¶Áö¸· ±â·ÏµÈ ·Î±× LstLSN*/
     smLSN    mLstLSN;
 }smrRemoteLogMgrInfo;
 
@@ -47,40 +47,42 @@ public :
     /*
      * aLogFileSize - off-line Log File Size
      * aLogDirPath  - LogDirPath array
+     * aNotDecomp   - ¾ÐÃàµÈ ·Î±×ÆÄÀÏÀÇ °æ¿ì ¾ÐÃàÀ» Ç®Áö¾Ê°í ¹ÝÈ¯ÇÒÁö ¿©ºÎ (¾ÐÃàµÈ ÇüÅÂ·Î ¹ÝÈ¯)
      */
     IDE_RC initialize( ULong    aLogFileSize,
-                       SChar ** aLogDirPath );
+                       SChar ** aLogDirPath,
+                       idBool   aNotDecomp );
 
-    /* ë¡œê·¸ ê·¸ë£¹ ê´€ë¦¬ìž í•´ì œ */
+    /* ·Î±× ±×·ì °ü¸®ÀÚ ÇØÁ¦ */
     IDE_RC destroy();
 
-    /* ë§ˆì§€ë§‰ LSNê°’ì„ êµ¬í•œë‹¤. */
-    IDE_RC getLstLSN( smLSN * aLstLSN );
+    /* ¸¶Áö¸· LSN°ªÀ» ±¸ÇÑ´Ù. */
+    void getLstLSN( smLSN * aLstLSN );
 
-    /* íŠ¹ì • ë¡œê·¸íŒŒì¼ì˜ ì²«ë²ˆì§¸ ë¡œê·¸ë ˆì½”ë“œì˜ Headë¥¼ Fileë¡œë¶€í„° ì§ì ‘ ì½ëŠ”ë‹¤ */
+    /* Æ¯Á¤ ·Î±×ÆÄÀÏÀÇ Ã¹¹øÂ° ·Î±×·¹ÄÚµåÀÇ Head¸¦ File·ÎºÎÅÍ Á÷Á¢ ÀÐ´Â´Ù */
     IDE_RC readFirstLogHeadFromDisk( smLSN      * aLSN,
                                      smrLogHead * aLogHead,
                                      idBool     * aIsValid );
 
-    /* aLogFileì„ Closeí•œë‹¤. */
+    /* aLogFileÀ» CloseÇÑ´Ù. */
     IDE_RC closeLogFile(smrLogFile * aLogFile);
 
-    /* aLSNì´ ê°€ë¦¬í‚¤ëŠ” ë¡œê·¸íŒŒì¼ì˜ ì²«ë²ˆì§¸ Log ì˜ Headë¥¼ ì½ëŠ”ë‹¤ */
+    /* aLSNÀÌ °¡¸®Å°´Â ·Î±×ÆÄÀÏÀÇ Ã¹¹øÂ° Log ÀÇ Head¸¦ ÀÐ´Â´Ù */
     IDE_RC readFirstLogHead( smLSN      * aLSN,
                              smrLogHead * aLogHead,
                              idBool     * aIsValid );
 
     /*
-      aFirstFileNoì—ì„œ aEndFileNoì‚¬ì´ì˜
-      ëª¨ë“  LogFileì„ ì¡°ì‚¬í•´ì„œ aMinSNë³´ë‹¤ ìž‘ì€ SNì„ ê°€ì§€ëŠ” ë¡œê·¸ë¥¼
-      ì²«ë²ˆì§¸ë¡œ ê°€ì§€ëŠ” LogFile Noë¥¼ êµ¬í•´ì„œ aNeedFirstFileNoì— ë„£ì–´ì¤€ë‹¤.
+      aFirstFileNo¿¡¼­ aEndFileNo»çÀÌÀÇ
+      ¸ðµç LogFileÀ» Á¶»çÇØ¼­ aMinSNº¸´Ù ÀÛÀº SNÀ» °¡Áö´Â ·Î±×¸¦
+      Ã¹¹øÂ°·Î °¡Áö´Â LogFile No¸¦ ±¸ÇØ¼­ aNeedFirstFileNo¿¡ ³Ö¾îÁØ´Ù.
     */
     IDE_RC getFirstNeedLFN( smLSN        aMinLSN,
                             const UInt   aFirstFileNo,
                             const UInt   aEndFileNo,
                             UInt       * aNeedFirstFileNo );
 
-    /* íŠ¹ì • LSNì˜ log recordì™€ í•´ë‹¹ log recordê°€ ì†í•œ ë¡œê·¸ íŒŒì¼ì„ ë¦¬í„´í•œë‹¤. */
+    /* Æ¯Á¤ LSNÀÇ log record¿Í ÇØ´ç log record°¡ ¼ÓÇÑ ·Î±× ÆÄÀÏÀ» ¸®ÅÏÇÑ´Ù. */
     IDE_RC readLog( iduMemoryHandle * aDecompBufferHandle,
                     smLSN           * aLSN,
                     idBool            aIsCloseLogFile,
@@ -89,7 +91,7 @@ public :
                     SChar          ** aLogPtr,
                     UInt            * aLogSizeAtDisk );
 
-    /* readLogì— Valid ê²€ì‚¬ ê¹Œì§€ í•œë‹¤.  */
+    /* readLog¿¡ Valid °Ë»ç ±îÁö ÇÑ´Ù.  */
     IDE_RC readLogAndValid( iduMemoryHandle * aDecompBufferHandle,
                             smLSN           * aLSN,
                             idBool            aIsCloseLogFile,
@@ -100,8 +102,8 @@ public :
                             UInt            * aLogSizeAtDisk );
 
     /*
-       aFileNoì— í•´ë‹¹í•˜ëŠ” Logfileì„ opení•œí›„
-       aLogFilePtrì— openëœ logfileì˜ pointerë¥¼ ë„˜ê²¨ì¤€ë‹¤..
+       aFileNo¿¡ ÇØ´çÇÏ´Â LogfileÀ» openÇÑÈÄ
+       aLogFilePtr¿¡ openµÈ logfileÀÇ pointer¸¦ ³Ñ°ÜÁØ´Ù..
      */
     IDE_RC openLogFile( UInt          aFileNo,
                         idBool        aIsWrite,
@@ -110,48 +112,51 @@ public :
     /* Check LogDir Exist */
     IDE_RC checkLogDirExist(void);
 
-    /* aIndexì— í•´ë‹¹í•˜ëŠ” ë¡œê·¸ ê²½ë¡œë¥¼ ë¦¬í„´ í•œë‹¤. */
+    /* aIndex¿¡ ÇØ´çÇÏ´Â ·Î±× °æ·Î¸¦ ¸®ÅÏ ÇÑ´Ù. */
     SChar* getLogDirPath();
 
-    /* aIndexì— ë¡œê·¸ ê²½ë¡œë¥¼ ì„¸íŒ… í•œë‹¤. */
+    /* aIndex¿¡ ·Î±× °æ·Î¸¦ ¼¼ÆÃ ÇÑ´Ù. */
     void   setLogDirPath(SChar * aDirPath);
 
-    /* ë¡œê·¸ íŒŒì¼ ì‚¬ì´ì¦ˆë¥¼ ë¦¬í„´ í•œë‹¤. */
+    /* ·Î±× ÆÄÀÏ »çÀÌÁî¸¦ ¸®ÅÏ ÇÑ´Ù. */
     ULong  getLogFileSize(void);
 
-    /* ë¡œê·¸ íŒŒì¼ ì‚¬ì´ì¦ˆë¥¼ ì„¤ì • í•œë‹¤. */
+    /* ·Î±× ÆÄÀÏ »çÀÌÁî¸¦ ¼³Á¤ ÇÑ´Ù. */
     void   setLogFileSize(ULong aLogFileSize);
 
-    /* ë¡œê·¸ íŒŒì¼ ì¡´ìž¬ ìœ ë¬´ ê²€ì‚¬ */
+    /* ·Î±× ÆÄÀÏ Á¸Àç À¯¹« °Ë»ç */
     IDE_RC isLogFileExist(UInt aFileNo, idBool * aIsExist);
 
-    /* mRemoteLogMgrs ì •ë³´ë¥¼ ì±„ìš´ë‹¤. */
+    /* mRemoteLogMgrs Á¤º¸¸¦ Ã¤¿î´Ù. */
     IDE_RC setRemoteLogMgrsInfo();
 
-    /* ìµœì†Œ íŒŒì¼ ë²ˆí˜¸, ìµœëŒ€ íŒŒì¼ ë²ˆí˜¸ */
+    /* ÃÖ¼Ò ÆÄÀÏ ¹øÈ£, ÃÖ´ë ÆÄÀÏ ¹øÈ£ */
     IDE_RC setFstFileNoAndEndFileNo(UInt * aFstFileNo,
                                     UInt * aEndFileNo);
 
-    /* ëª¨ë“  ë¡œê·¸ íŒŒì¼ ë²ˆí˜¸ì—ì„œ ìµœì´ˆ íŒŒì¼ ë²ˆí˜¸ë¥¼ ë¦¬í„´ í•œë‹¤. */
+    /* ¸ðµç ·Î±× ÆÄÀÏ ¹øÈ£¿¡¼­ ÃÖÃÊ ÆÄÀÏ ¹øÈ£¸¦ ¸®ÅÏ ÇÑ´Ù. */
     void   getFirstFileNo(UInt * aFileNo);
 
-    /* logfileXXXì—ì„œ XXXë¥¼ ë²ˆí˜¸ë¥¼ ë°˜í™˜ í•œë‹¤. */
+    /* logfileXXX¿¡¼­ XXX¸¦ ¹øÈ£¸¦ ¹ÝÈ¯ ÇÑ´Ù. */
     UInt   chkLogFileAndGetFileNo(SChar  * aFileName,
                                   idBool * aIsLogFile);
 
 private :
 
-    /* smrLogFile ê°ì²´ í• ë‹¹ì„ ìœ„í•œ memory pool */
+    /* smrLogFile °´Ã¼ ÇÒ´çÀ» À§ÇÑ memory pool */
     iduMemPool mMemPool;
 
-    /* ë¡œê·¸ íŒŒì¼ ì‚¬ì´ì¦ˆ */
+    /* ·Î±× ÆÄÀÏ »çÀÌÁî */
     ULong      mLogFileSize;
 
-    /* ë¡œê·¸ íŒŒì¼ ê²½ë¡œ */
+    /* ·Î±× ÆÄÀÏ °æ·Î */
     SChar    * mLogDirPath;
 
-    /* ë¡œê·¸íŒŒì¼ë§¤ë‹ˆì € */
+    /* ·Î±×ÆÄÀÏ¸Å´ÏÀú */
     smrRemoteLogMgrInfo mRemoteLogMgrs;
+
+    /* BUG-46944 ¾ÐÃàµÈ ·Î±×ÆÄÀÏÀÇ °æ¿ì ¾ÐÃàÀ» Ç®Áö¾Ê°í ¹ÝÈ¯ÇÒÁö ¿©ºÎ (¾ÐÃàµÈ ÇüÅÂ·Î ¹ÝÈ¯)*/
+    idBool mNotDecomp;
 };
 #endif /* _O_SMR_REMOTE_LFG_MGR_H_ */
 

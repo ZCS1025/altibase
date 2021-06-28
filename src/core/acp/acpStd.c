@@ -913,3 +913,7 @@ ACP_EXPORT acp_rc_t acpStdGetString(acp_std_file_t *aFile, acp_str_t *aString)
     }
 }
 
+ACP_EXPORT acp_bool_t acpStdDupStderr(acp_std_file_t aFile)
+{
+    return (dup2(fileno(aFile.mFP), fileno(stderr)) != -1) ? ACP_TRUE : ACP_FALSE;
+}

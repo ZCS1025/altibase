@@ -508,6 +508,41 @@ ACP_EXPORT acp_rc_t acpVsnprintf(acp_char_t       *aBuffer,
 }
 
 /**
+ * Altibase Core implementation of standard snprintf() function
+ * Refer to the online manual page of snprintf() for detail.
+ *
+ * The difference between acpSnprintf() and acpSnprintfSize() is
+ * that acpSnprintfSize() returns, via the aWritten parameter, the
+ * number of bytes that have been written, or would have been written
+ * if enough space had been available.
+ *
+ * @param aBuffer pointer to the output buffer
+ * @param aSize size of output buffer
+ * @param aWritten returns either the number of bytes written, or, in
+ * case where the output string was truncated, the number of bytes
+ * that would have been written if enough space had been available.
+ * @param aFormat pointer to the format string
+ * @param ... variable number of arguments to be converted
+ * @return Result code
+ */
+ACP_EXPORT acp_rc_t acpSnprintfSize(acp_char_t       *aBuffer,
+                                    acp_size_t        aSize,
+                                    acp_size_t       *aWritten,
+                                    const acp_char_t *aFormat, ...)
+{
+    va_list  sArgs;
+    acp_rc_t sRC;
+
+    va_start(sArgs, aFormat);
+
+    sRC = acpVsnprintfSize(aBuffer, aSize, aWritten, aFormat, sArgs);
+
+    va_end(sArgs);
+
+    return sRC;
+}
+
+/**
  * Altibase Core implementation of standard vsnprintf() function
  * Refer to the online manual page of vsnprintf() for detail.
  *

@@ -96,8 +96,9 @@ IDE_RC mmcMutexPool::initialize()
             {
                 sMutex = (iduMutex *)(sIterator->mObj);
                 IDE_ASSERT(sMutex->destroy() == IDE_SUCCESS);
-                IDE_TEST( mMutexPool.memfree(sMutex) != IDE_SUCCESS );
-                IDE_TEST( mListNodePool.memfree(sIterator) != IDE_SUCCESS );
+                /* BUG-47003 */
+                (void)mMutexPool.memfree(sMutex);
+                (void)mListNodePool.memfree(sIterator);
             }
         case 2:
             mListNodePool.destroy(ID_FALSE);

@@ -18,8 +18,9 @@
 package Altibase.jdbc.driver.sharding.executor;
 
 import java.sql.SQLException;
+import java.sql.Statement;
 
 public interface ExecuteCallback<T>
 {
-    T execute(BaseStatementUnit aBaseStatementUnit) throws SQLException;
+    T execute(Statement aStatement) throws SQLException;
 }

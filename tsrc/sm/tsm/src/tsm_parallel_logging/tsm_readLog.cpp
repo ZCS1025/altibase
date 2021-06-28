@@ -44,7 +44,7 @@ int main(SInt /*argc*/, SChar **/*argv*/)
     idlOS::printf("%"ID_xINT64_FMT"\n", sSLong);
     return 1;
     
-    /* Test Ï¥àÍ∏∞Ìôî */
+    /* Test √ ±‚»≠ */
     IDE_TEST(tsmInit() != IDE_SUCCESS);
 
     IDE_TEST(smiStartup(SMI_STARTUP_PRE_PROCESS,
@@ -70,19 +70,19 @@ int main(SInt /*argc*/, SChar **/*argv*/)
              != IDE_SUCCESS);
     idlOS::printf("Read Log By Order Mgr Initialize Success.  \n");
     
-    /* Log ÏÉùÏÑ± */
+    /* Log ª˝º∫ */
     IDE_TEST(tsmGenerateLogs() != IDE_SUCCESS);
 
-    /* Log ÏùΩÍ∏∞ */
+    /* Log ¿–±‚ */
     IDE_TEST(tsmReadLogsByOrder() != IDE_SUCCESS);
 
-    /* Log ÏÉùÏÑ± */
+    /* Log ª˝º∫ */
     IDE_TEST(tsmGenerateLogs() != IDE_SUCCESS);
 
-    /* Log ÏùΩÍ∏∞ */
+    /* Log ¿–±‚ */
     IDE_TEST(tsmReadLogsByOrder() != IDE_SUCCESS);
 
-    /* Log ÏùΩÍ∏∞ */
+    /* Log ¿–±‚ */
     IDE_TEST(tsmReadLogsByOrder() != IDE_SUCCESS);
 
     idlOS::printf("Read Log By Order Mgr Destroy.  \n");
@@ -90,7 +90,7 @@ int main(SInt /*argc*/, SChar **/*argv*/)
              != IDE_SUCCESS);
     idlOS::printf("Read Log By Order Mgr Destroy Success.  \n");
 
-    /* TestÏ¢ÖÎ£å */
+    /* Test¡æ∑· */
     IDE_TEST(smiStartup(SMI_STARTUP_SHUTDOWN,
                         SMI_STARTUP_NOACTION,
                         &gTsmGlobalCallBackList)

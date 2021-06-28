@@ -35,23 +35,23 @@ public class StandardCompositeShardingAlgorithmTest extends TestCase
     public void testShardingWithPrimarySubShardingValue() throws SQLException
     {
         CompositeShardingAlgorithm sAlgorithm = new StandardCompositeShardingAlgorithm(makeRangeInfo());
-        List<PreciseShardingValue> sShardValueList = new ArrayList<PreciseShardingValue>();
-        sShardValueList.add(new PreciseShardingValue<Integer>(0, 587));
-        sShardValueList.add(new PreciseShardingValue<Integer>(1, 731));
+        List<Comparable<?>> sShardValueList = new ArrayList<Comparable<?>>();
+        sShardValueList.add(587);
+        sShardValueList.add(731);
 
-        Set<DataNode> sResult = sAlgorithm.doSharding(sShardValueList, Arrays.asList(ShardSplitMethod.HASH,
+        List<DataNode> sResult = sAlgorithm.doSharding(sShardValueList, Arrays.asList(ShardSplitMethod.HASH,
                                                                                      ShardSplitMethod.HASH),
-                                                      null);
+                                                      null, 1, 1);
         assertThat(sResult.size(), is(1));
         assertThat(sResult.iterator().next().getNodeName(), is("NODE3"));
 
-        sShardValueList = new ArrayList<PreciseShardingValue>();
-        sShardValueList.add(new PreciseShardingValue<Integer>(0, 299));
-        sShardValueList.add(new PreciseShardingValue<Integer>(1, 300));
+        sShardValueList = new ArrayList<Comparable<?>>();
+        sShardValueList.add(299);
+        sShardValueList.add(300);
 
         sResult = sAlgorithm.doSharding(sShardValueList, Arrays.asList(ShardSplitMethod.HASH,
                                                                        ShardSplitMethod.HASH),
-                                                    null);
+                                                    null, 1, 1);
         assertThat(sResult.size(), is(1));
         assertThat(sResult.iterator().next().getNodeName(), is("NODE2"));
     }
@@ -59,29 +59,28 @@ public class StandardCompositeShardingAlgorithmTest extends TestCase
     public void testShardingWithOnlySubShardingValue() throws SQLException
     {
         CompositeShardingAlgorithm sAlgorithm = new StandardCompositeShardingAlgorithm(makeRangeInfo());
-        List<PreciseShardingValue> sShardValueList = new ArrayList<PreciseShardingValue>();
-        sShardValueList.add(null);
-        sShardValueList.add(new PreciseShardingValue<Integer>(1, 731));
+        List<Comparable<?>> sShardValueList = new ArrayList<Comparable<?>>();
+        sShardValueList.add(731);
 
-        Set<DataNode> sResult = sAlgorithm.doSharding(sShardValueList, Arrays.asList(ShardSplitMethod.HASH,
+        List<DataNode> sResult = sAlgorithm.doSharding(sShardValueList, Arrays.asList(ShardSplitMethod.HASH,
                                                                                      ShardSplitMethod.HASH),
-                                                     null);
+                                                     null, 0, 1);
         assertThat(sResult.size(), is(2));
     }
 
     public void testShardingWithDefaultNodeName() throws SQLException
     {
         CompositeShardingAlgorithm sAlgorithm = new StandardCompositeShardingAlgorithm(makeRangeInfo());
-        List<PreciseShardingValue> sShardValueList = new ArrayList<PreciseShardingValue>();
-        sShardValueList.add(new PreciseShardingValue<Integer>(1, 300));
-        sShardValueList.add(new PreciseShardingValue<Integer>(2, 1000));
+        List<Comparable<?>> sShardValueList = new ArrayList<Comparable<?>>();
+        sShardValueList.add(300);
+        sShardValueList.add(1000);
 
         DataNode sDefaultNode = new DataNode();
         sDefaultNode.setNodeId(4);
         sDefaultNode.setNodeName("NODE4");
-        Set<DataNode> sResult = sAlgorithm.doSharding(sShardValueList, Arrays.asList(ShardSplitMethod.HASH,
+        List<DataNode> sResult = sAlgorithm.doSharding(sShardValueList, Arrays.asList(ShardSplitMethod.HASH,
                                                                                      ShardSplitMethod.HASH),
-                                                      sDefaultNode);
+                                                      sDefaultNode, 1, 1);
         assertThat(sResult.size(), is(1));
         assertThat(sResult.iterator().next(), is(sDefaultNode));
     }

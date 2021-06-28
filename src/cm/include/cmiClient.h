@@ -73,6 +73,19 @@
 
 #define CMI_BLOCK_DEFAULT_SIZE              CMB_BLOCK_DEFAULT_SIZE
 
+/* PROJ-2733-Protocol cmpDefDBClient.h */
+#define CMI_IS_CONNECT_GROUP                CMP_IS_CONNECT_GROUP
+#define CMI_IS_PROPERTY_SET_GROUP           CMP_IS_PROPERTY_SET_GROUP
+#define CMI_IS_PROPERTY_GET_GROUP           CMP_IS_PROPERTY_GET_GROUP
+#define CMI_IS_PARAM_DATA_IN_LIST_GROUP     CMP_IS_PARAM_DATA_IN_LIST_GROUP
+#define CMI_IS_EXECUTE_GROUP                CMP_IS_EXECUTE_GROUP
+#define CMI_IS_FETCH_GROUP                  CMP_IS_FETCH_GROUP
+#define CMI_IS_TRANSACTION_GROUP            CMP_IS_TRANSACTION_GROUP
+#define CMI_IS_SHARD_TRANSACTION_GROUP      CMP_IS_SHARD_TRANSACTION_GROUP
+#define CMI_IS_SHARD_PREPARE_GROUP          CMP_IS_SHARD_PREPARE_GROUP
+#define CMI_IS_SHARD_END_PENDING_GROUP      CMP_IS_SHARD_END_PENDING_GROUP
+#define CMI_IS_PREPARE_GROUP                CMP_IS_PREPARE_GROUP
+
 #ifndef SO_NONE
 #define SO_NONE 0
 #endif
@@ -86,7 +99,7 @@
 #define CMI_IPCDA_MESSAGEQ_MAX_MESSAGE   10
 /* Size of a message queue segment */
 #define CMI_IPCDA_MESSAGEQ_MESSAGE_SIZE  1  
-/* serverì˜ ì‘ë‹µì´ ì „ì†¡ë˜ì—ˆìŒì„ message queueë¡œ ì•Œë¦°ë‹¤. */
+/* serverÀÇ ÀÀ´äÀÌ Àü¼ÛµÇ¾úÀ½À» message queue·Î ¾Ë¸°´Ù. */
 #define CMI_IPCDA_MESSAGEQ_NOTIFY    1
 #endif
 /*
@@ -137,6 +150,14 @@ typedef cmpCallbackFunction cmiCallbackFunction;
         aArg = CMI_PROTOCOL_GET_ARG(aProtocol, aModule, aOp);                   \
     } while (0)
 
+/* BUG-48871 ¾ĞÃà ¹æ½Ä LZ4·Î º¯°æ ÈÄ ÀÌÁßÈ­ ÇÏÀ§ È£È¯¼º À¯Áö */
+typedef enum cmiCompressType
+{
+    CMI_COMPRESS_NONE       = 0,
+    CMI_COMPRESS_LZO        = 1,
+    CMI_COMPRESS_LZ4        = 2,
+    CMI_COMPRESS_MAX        
+} cmiCompressType;
 
 /* cmiProtocolContext */
 typedef struct cmiProtocolContext
@@ -159,7 +180,7 @@ typedef struct cmiProtocolContext
     acp_list_t                    mWriteBlockList;
 
     /*
-     * BUG-19465 : CM_Bufferì˜ pending listë¥¼ ì œí•œ
+     * BUG-19465 : CM_BufferÀÇ pending list¸¦ Á¦ÇÑ
      */
     acp_uint32_t                  mListLength; /* BUG-44468 [cm] codesonar warning in CM */
 
@@ -171,8 +192,14 @@ typedef struct cmiProtocolContext
     void                         *mOwner;
     acp_bool_t                    mSessionCloseNeeded;
 
-    /* PROJ-2296 */
-    acp_bool_t                    mCompressFlag;
+    /* BUG-47078 */
+    acp_uint32_t                  mCompressLevel;
+    /* BUG-48871 ¾ĞÃà ¹æ½Ä LZ4·Î º¯°æ ÈÄ ÀÌÁßÈ­ ÇÏÀ§ È£È¯¼º À¯Áö  */
+    /* send½Ã ¾ĞÃàÀ» ÇÏÁö ¾Ê¾Æ CompressTypeÀÌ NONEÀÌ¾îµµ »ó´ë°¡ ¾ĞÃàÀ» ÇØ¼­ º¸³¾ °æ¿ì */ 
+    /* recv½Ã¿¡´Â ¾î¶² Å¸ÀÔÀ¸·Î ¾ĞÃàÀ» Ç®¾î¾ß µÉÁö ¼³Á¤µÇ¾î ÀÖ¾î¾ß ÇÏ±â ¶§¹®¿¡ */
+    /* CompressType°ú DecompressTypeÀ» º°µµ·Î »ç¿ëÇÕ´Ï´Ù. */
+    cmiCompressType               mCompressType;
+    cmiCompressType               mDecompressType;
 
     /* PROJ-2616 */
     cmbBlockSimpleQueryFetchIPCDA mSimpleQueryFetchIPCDAReadBlock;
@@ -184,7 +211,7 @@ typedef struct cmiProtocolContext
  */
 
 /*
- * BUG-19465 : CM_Bufferì˜ pending listë¥¼ ì œí•œ
+ * BUG-19465 : CM_BufferÀÇ pending list¸¦ Á¦ÇÑ
  */
 ACI_RC cmiInitialize( acp_uint32_t aCmMaxPendingList );
 ACI_RC cmiFinalize();
@@ -247,8 +274,8 @@ ACI_RC cmiConnectWithoutData(cmiProtocolContext *aCtx, cmiConnectArg *aConnectAr
  * fix BUG-17947.
  */
 ACI_RC cmiInitializeProtocol(cmiProtocol *aProtocol,cmpModule*  aModule, acp_uint8_t aOperationID);
-/*fix BUG-30041 cmiReadProtocolì—ì„œ mFinalization ì´ì´ˆê¸°í™” ë˜ê¸°ì „ì—
- ì‹¤íŒ¨í•˜ëŠ” caseì— cmiFinalizationì—ì„œ ë¹„ì •ìƒì¢…ë£Œë©ë‹ˆë‹¤.*/
+/*fix BUG-30041 cmiReadProtocol¿¡¼­ mFinalization ÀÌÃÊ±âÈ­ µÇ±âÀü¿¡
+ ½ÇÆĞÇÏ´Â case¿¡ cmiFinalization¿¡¼­ ºñÁ¤»óÁ¾·áµË´Ï´Ù.*/
 void  cmiInitializeProtocolNullFinalization(cmiProtocol *aProtocol);
 ACI_RC cmiFinalizeProtocol(cmiProtocol *aProtocol);
 
@@ -428,7 +455,7 @@ ACP_INLINE void cmNoEndianAssign8( acp_uint64_t* aDst, acp_uint64_t* aSrc)
 }
 
 /* read */
-/* ë¸”ëŸ­ì— ì§ì ‘ ë°ì´íƒ€ë¥¼ ì½ê³ , ì“°ê¸° ìœ„í•´ì„œ ì‚¬ìš©ëœë‹¤. Align ì„ ë§ì¶”ì§€ ì•Šê³  1ë°”ì´íŠ¸ì”© ë³µì‚¬í•œë‹¤. */
+/* ºí·°¿¡ Á÷Á¢ µ¥ÀÌÅ¸¸¦ ÀĞ°í, ¾²±â À§ÇØ¼­ »ç¿ëµÈ´Ù. Align À» ¸ÂÃßÁö ¾Ê°í 1¹ÙÀÌÆ®¾¿ º¹»çÇÑ´Ù. */
 #define CMI_RD1(aCtx, aDst)                                                                    \
     do                                                                                         \
     {                                                                                          \
@@ -544,8 +571,8 @@ ACP_INLINE void cmNoEndianAssign8( acp_uint64_t* aDst, acp_uint64_t* aSrc)
     ((aCtx)->mWriteBlock->mCursor) += (acp_ulong_t)ACP_ALIGN8_PTR((aCtx)->mWriteBlock->mData + (aCtx)->mWriteBlock->mCursor) - (acp_ulong_t)((aCtx)->mWriteBlock->mData + (aCtx)->mWriteBlock->mCursor)
 
 /* CMI_WRITE_CHECK
- * aLen ì˜ ê¸¸ì´ë§Œí¼ì˜ ë°ì´íƒ€ë¥¼ 1ê°œì˜ ë¸”ë½ì— ë„£ì„ìˆ˜ ìˆëŠ”ì§€ ì²´í¬í•œë‹¤.
- * í”„ë¡œí† ì½œì´ ë¶„í• ë˜ì§€ ì•ŠëŠ” ì˜ì—­ì„ ë³´ì¥í•˜ê¸° ìœ„í•´ì„œ ì‚¬ìš©ëœë‹¤.*/
+ * aLen ÀÇ ±æÀÌ¸¸Å­ÀÇ µ¥ÀÌÅ¸¸¦ 1°³ÀÇ ºí¶ô¿¡ ³ÖÀ»¼ö ÀÖ´ÂÁö Ã¼Å©ÇÑ´Ù.
+ * ÇÁ·ÎÅäÄİÀÌ ºĞÇÒµÇÁö ¾Ê´Â ¿µ¿ªÀ» º¸ÀåÇÏ±â À§ÇØ¼­ »ç¿ëµÈ´Ù.*/
 #define CMI_WRITE_CHECK(aCtx, aLen)                                                                                    \
     do {                                                                                                               \
         if (cmiGetLinkImpl(aCtx) != CMN_LINK_IMPL_IPCDA)                                                               \
@@ -563,11 +590,11 @@ ACP_INLINE void cmNoEndianAssign8( acp_uint64_t* aDst, acp_uint64_t* aSrc)
         }                                                                                                              \
     } while (0);
 
-/* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
+/* BUG-44125 [mm-cli] IPCDA ¸ğµå Å×½ºÆ® Áß hang - iloader CLOB */
 /* CMI_WRITE_CHECK_WITH_IPCDA
- * aLen ì˜ ê¸¸ì´ë§Œí¼ì˜ ë°ì´íƒ€ë¥¼ 1ê°œì˜ ë¸”ë½ì— ë„£ì„ìˆ˜ ìˆëŠ”ì§€ ì²´í¬í•œë‹¤.
- * í”„ë¡œí† ì½œì´ ë¶„í• ë˜ì§€ ì•ŠëŠ” ì˜ì—­ì„ ë³´ì¥í•˜ê¸° ìœ„í•´ì„œ ì‚¬ìš©ëœë‹¤.
- * IPCDAì¼ê²½ìš° sizeê°€ ë‹¤ë¥¸ê²½ìš°ê°€ ì¡´ì¬í•˜ê¸° ë•Œë¬¸ì— ì¶”ê°€ ì¸ìë¥¼ ë°›ì•„ì„œ ì²˜ë¦¬í•œë‹¤. */
+ * aLen ÀÇ ±æÀÌ¸¸Å­ÀÇ µ¥ÀÌÅ¸¸¦ 1°³ÀÇ ºí¶ô¿¡ ³ÖÀ»¼ö ÀÖ´ÂÁö Ã¼Å©ÇÑ´Ù.
+ * ÇÁ·ÎÅäÄİÀÌ ºĞÇÒµÇÁö ¾Ê´Â ¿µ¿ªÀ» º¸ÀåÇÏ±â À§ÇØ¼­ »ç¿ëµÈ´Ù.
+ * IPCDAÀÏ°æ¿ì size°¡ ´Ù¸¥°æ¿ì°¡ Á¸ÀçÇÏ±â ¶§¹®¿¡ Ãß°¡ ÀÎÀÚ¸¦ ¹Ş¾Æ¼­ Ã³¸®ÇÑ´Ù. */
 #define CMI_WRITE_CHECK_WITH_IPCDA(aCtx, aLen, aLenIPCDA)                                                              \
     do {                                                                                                               \
         if (cmiGetLinkImpl(aCtx) != CMN_LINK_IMPL_IPCDA)                                                               \
@@ -597,7 +624,7 @@ ACP_INLINE void cmNoEndianAssign8( acp_uint64_t* aDst, acp_uint64_t* aSrc)
 #define CMI_SKIP_READ_BLOCK(aCtx, aByte) \
         (((aCtx)->mReadBlock->mCursor) += (aByte))
 
-/* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
+/* BUG-44125 [mm-cli] IPCDA ¸ğµå Å×½ºÆ® Áß hang - iloader CLOB */
 #define CMI_SET_CURSOR(aCtx , aPos) \
         (((aCtx)->mWriteBlock->mCursor) = (aPos))
 
@@ -641,15 +668,20 @@ ACI_RC cmiSplitWrite( cmiProtocolContext *aCtx,
                       acp_uint64_t        aWriteSize,
                       acp_uint8_t        *aBuffer );
 
-void cmiEnableCompress( cmiProtocolContext * aCtx );
+/* BUG-48871 ¾ĞÃà ¹æ½Ä LZ4·Î º¯°æ ÈÄ ÀÌÁßÈ­ ÇÏÀ§ È£È¯¼º À¯Áö */
+void cmiEnableCompress( cmiProtocolContext * aCtx,
+                        acp_uint32_t         aLevel,
+                        cmiCompressType      aCompressType );
 void cmiDisableCompress( cmiProtocolContext * aCtx );
+void cmiSetDecompressType( cmiProtocolContext * aCtx,
+                           cmiCompressType      aDecompressType );
 
 /* PROJ-2616*/
 ACP_INLINE void cmiIPCDAIncDataCount( cmiProtocolContext *aCtx )
 {
-    /* í˜„ì¬ì˜ ë°ì´í„° ì»¤ì„œì˜ ìœ„ì¹˜ë¥¼ ë°ì´í„° ì‚¬ì´ì¦ˆë¡œ ê°±ì‹ */
+    /* ÇöÀçÀÇ µ¥ÀÌÅÍ Ä¿¼­ÀÇ À§Ä¡¸¦ µ¥ÀÌÅÍ »çÀÌÁî·Î °»½Å*/
     aCtx->mWriteBlock->mDataSize = aCtx->mWriteBlock->mCursor;
-    /* BUG-46502 atomic í•¨ìˆ˜ ì ìš©  atomicì— mem_barrierê°€ í¬í•¨ë˜ì–´ ìˆë‹¤. */
+    /* BUG-46502 atomic ÇÔ¼ö Àû¿ë  atomic¿¡ mem_barrier°¡ Æ÷ÇÔµÇ¾î ÀÖ´Ù. */
     acpAtomicInc32( &(((cmbBlockIPCDA*)aCtx->mWriteBlock)->mOperationCount) );
 }
 
@@ -668,10 +700,10 @@ ACP_INLINE ACI_RC cmiLinkPeerInitCliWriteForIPCDA(void *aCtx)
     cmnLinkPeer        *sLink       = sCtx->mLink;
     acp_bool_t          sConClosed  = ACP_FALSE;
 
-    /* BUG-46502 atomic í•¨ìˆ˜ ì ìš© atomicì— mem_barrierê°€ í¬í•¨ë˜ì–´ ìˆë‹¤. */
+    /* BUG-46502 atomic ÇÔ¼ö Àû¿ë atomic¿¡ mem_barrier°¡ Æ÷ÇÔµÇ¾î ÀÖ´Ù. */
     ACI_TEST_RAISE(acpAtomicGet32(&sWriteBlock->mWFlag) == CMB_IPCDA_SHM_ACTIVATED, ContInitCliWriteForIPCDA);
 
-    /* ë‹¤ë¥¸ ì“°ë ˆë“œì—ì„œ ë°ì´í„°ë¥¼ ì½ê³  ìˆëŠ” ìƒíƒœì—ì„œëŠ” ëŒ€ê¸° í•œë‹¤. */
+    /* ´Ù¸¥ ¾²·¹µå¿¡¼­ µ¥ÀÌÅÍ¸¦ ÀĞ°í ÀÖ´Â »óÅÂ¿¡¼­´Â ´ë±â ÇÑ´Ù. */
     while (acpAtomicGet32(&sWriteBlock->mRFlag) == CMB_IPCDA_SHM_ACTIVATED)
     {
         sLink->mPeerOp->mCheck(sLink, &sConClosed);
@@ -679,7 +711,7 @@ ACP_INLINE ACI_RC cmiLinkPeerInitCliWriteForIPCDA(void *aCtx)
         acpThrYield();
     }
 
-    /* BUG-46502 atomic í•¨ìˆ˜ ì ìš© atomicì— mem_barrierê°€ í¬í•¨ë˜ì–´ ìˆë‹¤. */
+    /* BUG-46502 atomic ÇÔ¼ö Àû¿ë atomic¿¡ mem_barrier°¡ Æ÷ÇÔµÇ¾î ÀÖ´Ù. */
     acpAtomicSet32(&sWriteBlock->mWFlag, CMB_IPCDA_SHM_ACTIVATED);
 
     sWriteBlock->mBlock.mData      = &sWriteBlock->mData;
@@ -736,12 +768,12 @@ ACP_INLINE ACI_RC cmiReadyToWriteBufferIPCDA(cmiProtocolContext *aCtx)
 
 /**************************************************
  * PROJ-2616
- * IPCDAëŠ” cmiSplitReadë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ * IPCDA´Â cmiSplitRead¸¦ »ç¿ëÇÏÁö ¾Ê´Â´Ù.
  *
  * aCtx[in]      - cmiProtocolContext
- * aReadSize[in] - acp_uint64_t ì½ì„ ë°ì´í„° ì‚¬ì´ì¦ˆ
- * aBuffer1[in]  - acp_uint8_t  ë°ì´í„°ì˜ ì €ì¥ëœ ì£¼ì†Œë¥¼ ì°¸ì¡°í•œë‹¤.
- * aBuffer2[in]  - acp_uint8_t  ë°ì´í„°ê°€ copyëœë‹¤.
+ * aReadSize[in] - acp_uint64_t ÀĞÀ» µ¥ÀÌÅÍ »çÀÌÁî
+ * aBuffer1[in]  - acp_uint8_t  µ¥ÀÌÅÍÀÇ ÀúÀåµÈ ÁÖ¼Ò¸¦ ÂüÁ¶ÇÑ´Ù.
+ * aBuffer2[in]  - acp_uint8_t  µ¥ÀÌÅÍ°¡ copyµÈ´Ù.
  **************************************************/
 ACP_INLINE ACI_RC cmiSplitReadIPCDA(cmiProtocolContext *aCtx,
                                     acp_uint64_t        aReadSize,

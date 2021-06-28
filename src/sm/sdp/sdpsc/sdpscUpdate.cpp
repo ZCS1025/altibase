@@ -29,14 +29,14 @@
 
 /***********************************************************************
  *
- * Description : Segment Header ì´ˆê¸°í™”ë¥¼ REDOí•œë‹¤.
+ * Description : Segment Header ÃÊ±âÈ­¸¦ REDOÇÑ´Ù.
  *
  *
- * aStatistics    - [IN] í†µê³„ì •ë³´
+ * aStatistics    - [IN] Åë°èÁ¤º¸
  * aData          - [IN] Log Pointer
- * aLength        - [IN] Log ê¸¸ì´
- * aPagePtr       - [IN] í˜ì´ì§€ Pointer
- * aRedoInfo      - [IN] Redo ì •ë³´
+ * aLength        - [IN] Log ±æÀÌ
+ * aPagePtr       - [IN] ÆäÀÌÁö Pointer
+ * aRedoInfo      - [IN] Redo Á¤º¸
  * aMtx           - [IN] Mini Transaction Pointer
  *
  ***********************************************************************/
@@ -90,13 +90,13 @@ IDE_RC sdpscUpdate::redo_SDPSC_INIT_SEGHDR( SChar       * aData,
 
 /***********************************************************************
  *
- * Description : ExtDir í˜ì´ì§€ ì´ˆê¸°í™”ë¥¼ REDOí•œë‹¤.
+ * Description : ExtDir ÆäÀÌÁö ÃÊ±âÈ­¸¦ REDOÇÑ´Ù.
  *
- * aStatistics    - [IN] í†µê³„ì •ë³´
+ * aStatistics    - [IN] Åë°èÁ¤º¸
  * aData          - [IN] Log Pointer
- * aLength        - [IN] Log ê¸¸ì´
- * aPagePtr       - [IN] í˜ì´ì§€ Pointer
- * aRedoInfo      - [IN] Redo ì •ë³´
+ * aLength        - [IN] Log ±æÀÌ
+ * aPagePtr       - [IN] ÆäÀÌÁö Pointer
+ * aRedoInfo      - [IN] Redo Á¤º¸
  * aMtx           - [IN] Mini Transaction Pointer
  *
  ***********************************************************************/
@@ -142,13 +142,13 @@ IDE_RC sdpscUpdate::redo_SDPSC_INIT_EXTDIR( SChar       * aData,
 
 /***********************************************************************
  *
- * Description : ExtDescì„ ExtDir í˜ì´ì§€ì— ì¶”ê°€í•œë‹¤.
+ * Description : ExtDescÀ» ExtDir ÆäÀÌÁö¿¡ Ãß°¡ÇÑ´Ù.
  *
- * aStatistics    - [IN] í†µê³„ì •ë³´
+ * aStatistics    - [IN] Åë°èÁ¤º¸
  * aData          - [IN] Log Pointer
- * aLength        - [IN] Log ê¸¸ì´
- * aPagePtr       - [IN] í˜ì´ì§€ Pointer
- * aRedoInfo      - [IN] Redo ì •ë³´
+ * aLength        - [IN] Log ±æÀÌ
+ * aPagePtr       - [IN] ÆäÀÌÁö Pointer
+ * aRedoInfo      - [IN] Redo Á¤º¸
  * aMtx           - [IN] Mini Transaction Pointer
  *
  ***********************************************************************/

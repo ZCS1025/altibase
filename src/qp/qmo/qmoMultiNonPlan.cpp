@@ -16,21 +16,21 @@
  
 
 /***********************************************************************
- * $Id: qmoMultiNonPlan.cpp 84968 2019-03-06 05:01:56Z donovan.seo $
+ * $Id: qmoMultiNonPlan.cpp 90438 2021-04-02 08:20:57Z ahra.cho $
  *
  * Description :
  *     Plan Generator
  *
- *     Multi-child Non-materialized Planì„ ìƒì„±í•˜ê¸° ìœ„í•œ ê´€ë¦¬ìì´ë‹¤.
+ *     Multi-child Non-materialized PlanÀ» »ı¼ºÇÏ±â À§ÇÑ °ü¸®ÀÚÀÌ´Ù.
  *
- *     ë‹¤ìŒê³¼ ê°™ì€ Plan Nodeì˜ ìƒì„±ì„ ê´€ë¦¬í•œë‹¤.
- *         - MultiBUNI ë…¸ë“œ
- *         - PCRD ë…¸ë“œ (PROJ-1502 Partitioned Disk Table)
- *         - PPCRD ë…¸ë“œ (PROJ-1071 Parallel query)
+ *     ´ÙÀ½°ú °°Àº Plan NodeÀÇ »ı¼ºÀ» °ü¸®ÇÑ´Ù.
+ *         - MultiBUNI ³ëµå
+ *         - PCRD ³ëµå (PROJ-1502 Partitioned Disk Table)
+ *         - PPCRD ³ëµå (PROJ-1071 Parallel query)
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -61,16 +61,16 @@ qmoMultiNonPlan::initMultiBUNI( qcStatement  * aStatement ,
 {
 /***********************************************************************
  *
- * Description : MultiBUNI ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤
+ * Description : MultiBUNI ³ëµå¸¦ »ı¼ºÇÑ´Ù
  *
  * Implementation :
- *     + ì´ˆê¸°í™” ì‘ì—…
- *         - qmncMultiBUNIì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
- *     + ë©”ì¸ ì‘ì—…
- *     + ë§ˆë¬´ë¦¬ ì‘ì—…
- *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
- *         - dependencyì˜ ì²˜ë¦¬
- *         - subqueryì˜ ì²˜ë¦¬
+ *     + ÃÊ±âÈ­ ÀÛ¾÷
+ *         - qmncMultiBUNIÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
+ *     + ¸ŞÀÎ ÀÛ¾÷
+ *     + ¸¶¹«¸® ÀÛ¾÷
+ *         - data ¿µ¿ªÀÇ Å©±â °è»ê
+ *         - dependencyÀÇ Ã³¸®
+ *         - subqueryÀÇ Ã³¸®
  *
  ***********************************************************************/
 
@@ -80,16 +80,16 @@ qmoMultiNonPlan::initMultiBUNI( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoMultiNonPlan::initMultiBUNI::__FT__" );
 
     //----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //------------------------------------------------------------
-    // ì´ˆê¸°í™” ì‘ì—…
+    // ÃÊ±âÈ­ ÀÛ¾÷
     //------------------------------------------------------------
 
-    // qmncMultiBUNIì˜ í• ë‹¹ë° ì´ˆê¸°í™”
+    // qmncMultiBUNIÀÇ ÇÒ´ç¹× ÃÊ±âÈ­
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmncMultiBUNI) ,
                                              (void **) & sMultiBUNI )
               != IDE_SUCCESS );
@@ -125,16 +125,16 @@ qmoMultiNonPlan::makeMultiBUNI( qcStatement  * aStatement ,
 {
 /***********************************************************************
  *
- * Description : MultiBUNI ë…¸ë“œë¥¼ ìƒì„±í•œë‹¤
+ * Description : MultiBUNI ³ëµå¸¦ »ı¼ºÇÑ´Ù
  *
  * Implementation :
- *     + ì´ˆê¸°í™” ì‘ì—…
- *         - qmncMultiBUNIì˜ í• ë‹¹ ë° ì´ˆê¸°í™”
- *     + ë©”ì¸ ì‘ì—…
- *     + ë§ˆë¬´ë¦¬ ì‘ì—…
- *         - data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
- *         - dependencyì˜ ì²˜ë¦¬
- *         - subqueryì˜ ì²˜ë¦¬
+ *     + ÃÊ±âÈ­ ÀÛ¾÷
+ *         - qmncMultiBUNIÀÇ ÇÒ´ç ¹× ÃÊ±âÈ­
+ *     + ¸ŞÀÎ ÀÛ¾÷
+ *     + ¸¶¹«¸® ÀÛ¾÷
+ *         - data ¿µ¿ªÀÇ Å©±â °è»ê
+ *         - dependencyÀÇ Ã³¸®
+ *         - subqueryÀÇ Ã³¸®
  *
  ***********************************************************************/
 
@@ -147,14 +147,14 @@ qmoMultiNonPlan::makeMultiBUNI( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoMultiNonPlan::makeMultiBUNI::__FT__" );
 
     //----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aChildrenGraph != NULL );
 
     //------------------------------------------------------------
-    // ì´ˆê¸°í™” ì‘ì—…
+    // ÃÊ±âÈ­ ÀÛ¾÷
     //------------------------------------------------------------
 
     aPlan->offset = aStatement->myPlan->sTmplate->tmplate.dataSize;
@@ -162,7 +162,7 @@ qmoMultiNonPlan::makeMultiBUNI( qcStatement  * aStatement ,
                                      ID_SIZEOF(qmndMultiBUNI));
 
     //----------------------------------
-    // ì—¬ëŸ¬ Child Plan ì—°ê²°
+    // ¿©·¯ Child Plan ¿¬°á
     //----------------------------------
 
     sCurPlanChildren = NULL;
@@ -172,7 +172,7 @@ qmoMultiNonPlan::makeMultiBUNI( qcStatement  * aStatement ,
           sGraphChildren = sGraphChildren->next )
     {
         //----------------------------------------------
-        // ê° Graphì˜ Planì„ ì–»ì–´ í•˜ë‚˜ì˜ children planì„ êµ¬ì¶•
+        // °¢ GraphÀÇ PlanÀ» ¾ò¾î ÇÏ³ªÀÇ children planÀ» ±¸Ãà
         //----------------------------------------------
 
         IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmnChildren) ,
@@ -183,7 +183,7 @@ qmoMultiNonPlan::makeMultiBUNI( qcStatement  * aStatement ,
         sPlanChildren->next = NULL;
 
         //----------------------------------------------
-        // Children Planì˜ ì—°ê²° ê´€ê³„ë¥¼ êµ¬ì¶•
+        // Children PlanÀÇ ¿¬°á °ü°è¸¦ ±¸Ãà
         //----------------------------------------------
 
         if ( sCurPlanChildren == NULL )
@@ -198,7 +198,7 @@ qmoMultiNonPlan::makeMultiBUNI( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // Flag ì„¤ì •
+    // Flag ¼³Á¤
     //----------------------------------
 
     sMultiBUNI->flag      = QMN_PLAN_FLAG_CLEAR;
@@ -213,14 +213,14 @@ qmoMultiNonPlan::makeMultiBUNI( qcStatement  * aStatement ,
     }
 
     //------------------------------------------------------------
-    // ë§ˆë¬´ë¦¬ ì‘ì—…
+    // ¸¶¹«¸® ÀÛ¾÷
     //------------------------------------------------------------
 
-    //data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+    //data ¿µ¿ªÀÇ Å©±â °è»ê
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
     //----------------------------------
-    // dependency ì²˜ë¦¬ ë° subqueryì˜ ì²˜ë¦¬
+    // dependency Ã³¸® ¹× subqueryÀÇ Ã³¸®
     //----------------------------------
 
     IDE_TEST( qmoDependency::setDependency( aStatement ,
@@ -237,7 +237,7 @@ qmoMultiNonPlan::makeMultiBUNI( qcStatement  * aStatement ,
 
     /*
      * PROJ-1071 Parallel Query
-     * parallel degree, PARALLEL_EXEC flag ëŠ” children graph ì˜ flag ë¥¼ ë°›ëŠ”ë‹¤.
+     * parallel degree, PARALLEL_EXEC flag ´Â children graph ÀÇ flag ¸¦ ¹Ş´Â´Ù.
      */
     for ( sGraphChildren = aChildrenGraph;
           sGraphChildren != NULL;
@@ -254,7 +254,7 @@ qmoMultiNonPlan::makeMultiBUNI( qcStatement  * aStatement ,
             /* nothing to do */
         }
 
-        // PARALLEL_EXEC flag ë„ í•˜ìœ„ ë…¸ë“œì˜ flag ë¥¼ ë°›ëŠ”ë‹¤.
+        // PARALLEL_EXEC flag µµ ÇÏÀ§ ³ëµåÀÇ flag ¸¦ ¹Ş´Â´Ù.
         sMultiBUNI->plan.flag |= ( sGraphChildren->childGraph->myPlan->flag
                                    & QMN_PLAN_NODE_EXIST_MASK);
     }
@@ -280,16 +280,16 @@ qmoMultiNonPlan::initPCRD( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoMultiNonPlan::initPCRD::__FT__" );
 
     //----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //------------------------------------------------------------
-    // ì´ˆê¸°í™” ì‘ì—…
+    // ÃÊ±âÈ­ ÀÛ¾÷
     //------------------------------------------------------------
 
-    // qmncPCRDì˜ í• ë‹¹ë° ì´ˆê¸°í™”
+    // qmncPCRDÀÇ ÇÒ´ç¹× ÃÊ±âÈ­
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmncPCRD) ,
                                              (void **) & sPCRD )
               != IDE_SUCCESS );
@@ -357,13 +357,13 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
     qmnRangeSortedChildren * sRangeSortedChildrenArray;
     qmnChildren            * sCurrChildren;
 
-    // BUG-42387 Templateì— Partitioned Tableì˜ Tupleì„ ë³´ê´€
+    // BUG-42387 Template¿¡ Partitioned TableÀÇ TupleÀ» º¸°ü
     mtcTuple               * sPartitionedTuple;
 
     IDU_FIT_POINT_FATAL( "qmoMultiNonPlan::makePCRD::__FT__" );
 
     //----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -372,7 +372,7 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
     IDE_DASSERT( aPCRDInfo != NULL );
 
     //------------------------------------------------------------
-    // ì´ˆê¸°í™” ì‘ì—…
+    // ÃÊ±âÈ­ ÀÛ¾÷
     //------------------------------------------------------------
 
     aPlan->offset = aStatement->myPlan->sTmplate->tmplate.dataSize;
@@ -384,8 +384,12 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
     sPCRD->table         = aFrom->tableRef->tableInfo->tableHandle;
     sPCRD->tableSCN      = aFrom->tableRef->tableSCN;
 
+    // BUG-48800
+    sPCRD->mPrePruningPartHandle = aPCRDInfo->mPrePruningPartHandle;
+    sPCRD->mPrePruningPartSCN    = aPCRDInfo->mPrePruningPartSCN;
+
     //----------------------------------
-    // ì—¬ëŸ¬ Child Plan ì—°ê²°
+    // ¿©·¯ Child Plan ¿¬°á
     //----------------------------------
 
     sCurPlanChildren = NULL;
@@ -395,7 +399,7 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
           sGraphChildren = sGraphChildren->next )
     {
         //----------------------------------------------
-        // ê° Graphì˜ Planì„ ì–»ì–´ í•˜ë‚˜ì˜ children planì„ êµ¬ì¶•
+        // °¢ GraphÀÇ PlanÀ» ¾ò¾î ÇÏ³ªÀÇ children planÀ» ±¸Ãà
         //----------------------------------------------
 
         IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmnChildren) ,
@@ -406,7 +410,7 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
         sPlanChildren->next = NULL;
 
         //----------------------------------------------
-        // Children Planì˜ ì—°ê²° ê´€ê³„ë¥¼ êµ¬ì¶•
+        // Children PlanÀÇ ¿¬°á °ü°è¸¦ ±¸Ãà
         //----------------------------------------------
 
         if ( sCurPlanChildren == NULL )
@@ -474,7 +478,7 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // Flag ì„¤ì •
+    // Flag ¼³Á¤
     //----------------------------------
 
     sPCRD->flag      = QMN_PLAN_FLAG_CLEAR;
@@ -486,7 +490,7 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
     QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sPCRD->tupleRowID].lflag
         |= MTC_TUPLE_PARTITIONED_TABLE_TRUE;
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     if ( sPCRD->tableRef->partitionSummary->isHybridPartitionedTable == ID_TRUE )
     {
         QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sPCRD->tupleRowID].lflag
@@ -499,12 +503,12 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
         /* Nothing to do */
     }
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì›
-     *  Partitioned Table Tupleì— Partitioned Tableì˜ ì •ë³´ê°€ ìˆìœ¼ë©´, Table Handleì´ ì—†ë‹¤.
+    /* PROJ-2464 hybrid partitioned table Áö¿ø
+     *  Partitioned Table Tuple¿¡ Partitioned TableÀÇ Á¤º¸°¡ ÀÖÀ¸¸é, Table HandleÀÌ ¾ø´Ù.
      */
     QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sPCRD->tupleRowID].tableHandle = (void *)sPCRD->table;
 
-    // BUG-42387 Templateì— Partitioned Tableì˜ Tupleì„ ë³´ê´€
+    // BUG-42387 Template¿¡ Partitioned TableÀÇ TupleÀ» º¸°ü
     IDE_TEST( qtc::nextTable( &( sPCRD->partitionedTupleID ),
                               aStatement,
                               sPCRD->tableRef->tableInfo,
@@ -515,7 +519,7 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
     sPartitionedTuple = &(QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sPCRD->partitionedTupleID]);
     sPartitionedTuple->lflag = QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sPCRD->tupleRowID].lflag;
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     qmx::copyMtcTupleForPartitionedTable( sPartitionedTuple,
                                           &(QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sPCRD->tupleRowID]) );
 
@@ -540,7 +544,7 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
         sIsDiskTable = ID_TRUE;
     }
 
-    // Previous Disable ì„¤ì •
+    // Previous Disable ¼³Á¤
     sPCRD->flag &= ~QMNC_SCAN_PREVIOUS_ENABLE_MASK;
     sPCRD->flag |= QMNC_SCAN_PREVIOUS_ENABLE_FALSE;
 
@@ -548,7 +552,7 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
     sPCRD->flag |= QMNC_SCAN_TABLE_FV_FALSE;
 
     //----------------------------------
-    // ì¸ë±ìŠ¤ ì„¤ì • ë° ë°©í–¥ ì„¤ì •
+    // ÀÎµ¦½º ¼³Á¤ ¹× ¹æÇâ ¼³Á¤
     //----------------------------------
 
     sPCRD->index           = aPCRDInfo->index;
@@ -558,11 +562,11 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
     {
         if ( sPCRD->index->indexPartitionType == QCM_NONE_PARTITIONED_INDEX )
         {
-            // index table scanì¸ ê²½ìš°
+            // index table scanÀÎ °æ¿ì
             sPCRD->flag &= ~QMNC_SCAN_INDEX_TABLE_SCAN_MASK;
             sPCRD->flag |= QMNC_SCAN_INDEX_TABLE_SCAN_TRUE;
 
-            // tableRefì—ë„ ê¸°ë¡
+            // tableRef¿¡µµ ±â·Ï
             for ( sIndexTable = aFrom->tableRef->indexTableRef;
                   sIndexTable != NULL;
                   sIndexTable = sIndexTable->next )
@@ -583,7 +587,7 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
 
             IDE_DASSERT( sIndexTable != NULL );
 
-            // key index, rid indexë¥¼ ì°¾ëŠ”ë‹¤.
+            // key index, rid index¸¦ Ã£´Â´Ù.
             IDE_TEST( qdx::getIndexTableIndices( sIndexTable->tableInfo,
                                                  sIndexTableIndex )
                       != IDE_SUCCESS );
@@ -591,7 +595,7 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
             // key index
             sPCRD->indexTableIndex = sIndexTableIndex[0];
 
-            // index table scanìš© tuple í• ë‹¹
+            // index table scan¿ë tuple ÇÒ´ç
             IDE_TEST( qtc::nextTable( & sIndexTupleRowID,
                                       aStatement,
                                       sIndexTable->tableInfo,
@@ -603,16 +607,16 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
 
             sIndexTable->table = sIndexTupleRowID;
 
-            //index ì •ë³´ ë° order byì— ë”°ë¥¸ traverse ë°©í–¥ ì„¤ì •
-            //aLeafInfo->preservedOrderë¥¼ ë³´ê³  ì¸ë±ìŠ¤ ë°©í–¥ê³¼ ë‹¤ë¥´ë©´ sSCAN->flag
-            //ë¥¼ BACKWARDë¡œ ì„¤ì •í•´ì£¼ì–´ì•¼ í•œë‹¤.
+            //index Á¤º¸ ¹× order by¿¡ µû¸¥ traverse ¹æÇâ ¼³Á¤
+            //aLeafInfo->preservedOrder¸¦ º¸°í ÀÎµ¦½º ¹æÇâ°ú ´Ù¸£¸é sSCAN->flag
+            //¸¦ BACKWARD·Î ¼³Á¤ÇØÁÖ¾î¾ß ÇÑ´Ù.
             IDE_TEST( qmoOneNonPlan::setDirectionInfo( &(sPCRD->flag) ,
                                                        aPCRDInfo->index ,
                                                        aPCRDInfo->preservedOrder )
                       != IDE_SUCCESS );
 
             // To fix BUG-12742
-            // index scanì´ ê³ ì •ë˜ì–´ ìˆëŠ” ê²½ìš°ë¥¼ ì„¸íŒ…í•œë‹¤.
+            // index scanÀÌ °íÁ¤µÇ¾î ÀÖ´Â °æ¿ì¸¦ ¼¼ÆÃÇÑ´Ù.
             if( aPCRDInfo->forceIndexScan == ID_TRUE )
             {
                 aPCRDInfo->flag &= ~QMNC_SCAN_FORCE_INDEX_SCAN_MASK;
@@ -647,7 +651,7 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // Cursor Propertyì˜ ì„¤ì •
+    // Cursor PropertyÀÇ ¼³Á¤
     //----------------------------------
 
     if ( (aStatement->myPlan->parseTree->stmtKind == QCI_STMT_SELECT) ||
@@ -658,7 +662,7 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
         if ( sParseTree->forUpdate != NULL )
         {
             // Proj 1360 Queue
-            // dequeueë¬¸ì˜ ê²½ìš°, rowì˜ ì‚­ì œë¥¼ ìœ„í•´ exclusive lockì´ ìš”êµ¬ë¨
+            // dequeue¹®ÀÇ °æ¿ì, rowÀÇ »èÁ¦¸¦ À§ÇØ exclusive lockÀÌ ¿ä±¸µÊ
             if (sParseTree->forUpdate->isQueue == ID_TRUE)
             {
                 sPCRD->flag |= QMNC_SCAN_TABLE_QUEUE_TRUE;
@@ -679,7 +683,7 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // Display ì •ë³´ ì„¸íŒ…
+    // Display Á¤º¸ ¼¼ÆÃ
     //----------------------------------
 
     IDE_TEST( qmg::setDisplayInfo( aFrom ,
@@ -687,27 +691,35 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
                                    &(sPCRD->tableName) ,
                                    &(sPCRD->aliasName) ) != IDE_SUCCESS );
 
-    //data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+    //data ¿µ¿ªÀÇ Å©±â °è»ê
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
     sPCRD->selectedPartitionCount = aPCRDInfo->selectedPartitionCount;
-    sPCRD->partitionCount         = aFrom->tableRef->partitionCount;
-
     sPCRD->partitionKeyRange = aPCRDInfo->partKeyRange;
     sPCRD->nnfFilter         = aPCRDInfo->nnfFilter;
 
+    // BUG-47599 Partition coordinator print plan 
+    if ( aFrom->tableRef->mEmptyPartRef == NULL )
+    {
+        sPCRD->partitionCount = aFrom->tableRef->partitionCount;
+    }
+    else
+    {
+        sPCRD->partitionCount = aFrom->tableRef->partitionCount-1;
+    }
+
     //-------------------------------------------------------------
-    // ë©”ì¸ ì‘ì—…
+    // ¸ŞÀÎ ÀÛ¾÷
     //-------------------------------------------------------------
 
     //----------------------------------
-    // Predicateì˜ ì²˜ë¦¬
+    // PredicateÀÇ Ã³¸®
     //----------------------------------
 
     if ( ( sPCRD->flag & QMNC_SCAN_INDEX_TABLE_SCAN_MASK )
          == QMNC_SCAN_INDEX_TABLE_SCAN_TRUE )
     {
-        // partition filterë§Œ ì¶”ì¶œí•˜ê¸° ìœ„í•´ subqueryë¥¼ ì œì™¸í•˜ê³  ë³µì‚¬í•œë‹¤.
+        // partition filter¸¸ ÃßÃâÇÏ±â À§ÇØ subquery¸¦ Á¦¿ÜÇÏ°í º¹»çÇÑ´Ù.
         IDE_TEST( qmoPred::copyPredicate4Partition( aStatement,
                                                     aPCRDInfo->partFilterPredicate,
                                                     & sPartFilterPred,
@@ -716,7 +728,7 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
                                                     ID_TRUE )
                   != IDE_SUCCESS );
 
-        // partition filter ìƒì„±
+        // partition filter »ı¼º
         IDE_TEST( processPredicate( aStatement,
                                     aQuerySet,
                                     aFrom,
@@ -731,11 +743,11 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
         IDE_DASSERT( sConstFilter == NULL );
         IDE_DASSERT( sSubQFilter == NULL );
 
-        // partition filter ìƒì„±ìš©ìœ¼ë¡œë§Œ ì‚¬ìš©í–ˆì„ë¿
-        // sRemainì€ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // partition filter »ı¼º¿ëÀ¸·Î¸¸ »ç¿ëÇßÀ»»Ó
+        // sRemainÀº »ç¿ëÇÏÁö ¾Ê´Â´Ù.
         sRemain = NULL;
 
-        // key range ìƒì„±
+        // key range »ı¼º
         IDE_TEST( qmoOneNonPlan::processPredicate( aStatement,
                                                    aQuerySet,
                                                    aPCRDInfo->predicate,
@@ -766,7 +778,7 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
 
         IDE_DASSERT( sMethod.ridRange == NULL );
 
-        // key range, key filter, filter ì´ˆê¸°í™”
+        // key range, key filter, filter ÃÊ±âÈ­
         sPCRD->fixKeyRange         = sMethod.fixKeyRange;
         sPCRD->fixKeyRange4Print   = sMethod.fixKeyRange4Print;
         sPCRD->varKeyRange         = sMethod.varKeyRange;
@@ -795,7 +807,7 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
                                     &sRemain )
                   != IDE_SUCCESS );
 
-        // key range, key filter, filter ì´ˆê¸°í™”
+        // key range, key filter, filter ÃÊ±âÈ­
         sPCRD->fixKeyRange         = NULL;
         sPCRD->fixKeyRange4Print   = NULL;
         sPCRD->varKeyRange         = NULL;
@@ -810,7 +822,7 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
         sPCRD->lobFilter           = NULL;
     }
 
-    // queueì—ëŠ” nnf, lob, subquery filterë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // queue¿¡´Â nnf, lob, subquery filter¸¦ Áö¿øÇÏÁö ¾Ê´Â´Ù.
     if ( (sPCRD->flag & QMNC_SCAN_TABLE_QUEUE_MASK) == QMNC_SCAN_TABLE_QUEUE_TRUE )
     {
         IDE_TEST_RAISE( ( sPCRD->nnfFilter != NULL ) ||
@@ -824,8 +836,8 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // Host ë³€ìˆ˜ë¥¼ í¬í•¨í•œ
-    // Constant Expressionì˜ ìµœì í™”
+    // Host º¯¼ö¸¦ Æ÷ÇÔÇÑ
+    // Constant ExpressionÀÇ ÃÖÀûÈ­
     //----------------------------------
 
     if ( sPCRD->nnfFilter != NULL )
@@ -840,7 +852,7 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // Predicate ê´€ë ¨ Flag ì •ë³´ ì„¤ì •
+    // Predicate °ü·Ã Flag Á¤º¸ ¼³Á¤
     //----------------------------------
 
     if( sInSubQueryKeyRange == ID_TRUE )
@@ -855,7 +867,7 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // dependency ì²˜ë¦¬ ë° subqueryì˜ ì²˜ë¦¬
+    // dependency Ã³¸® ¹× subqueryÀÇ Ã³¸®
     //----------------------------------
 
     sPredicate[0] = sPCRD->partitionFilter;
@@ -870,11 +882,11 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
     sPredicate[9] = sPCRD->filter;
     sPredicate[10] = sPCRD->lobFilter;
     sPredicate[11] = sPCRD->subqueryFilter;
-    sPredicate[12] = sRemain; // ë¶„ë¥˜ë˜ê³  ë‚¨ì€ ë…¸ë“œë“¤ì„.
+    sPredicate[12] = sRemain; // ºĞ·ùµÇ°í ³²Àº ³ëµåµéÀÓ.
 
     //----------------------------------
     // PROJ-1437
-    // dependency ì„¤ì •ì „ì— predicateë“¤ì˜ ìœ„ì¹˜ì •ë³´ ë³€ê²½.
+    // dependency ¼³Á¤Àü¿¡ predicateµéÀÇ À§Ä¡Á¤º¸ º¯°æ.
     //----------------------------------
 
     for( i = 0; i <= 12; i++ )
@@ -899,8 +911,8 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
                                             NULL )
               != IDE_SUCCESS );
 
-    // Join predicateì´ push downëœ ê²½ìš°, SCANì˜ depInfoì—ëŠ” dependencyê°€ ì—¬ëŸ¬ê°œì¼ ìˆ˜ ìˆë‹¤.
-    // Result descriptorë¥¼ ì •í•™íˆ êµ¬ì„±í•˜ê¸° ìœ„í•´ SCANì˜ IDë¡œ filteringí•œë‹¤.
+    // Join predicateÀÌ push downµÈ °æ¿ì, SCANÀÇ depInfo¿¡´Â dependency°¡ ¿©·¯°³ÀÏ ¼ö ÀÖ´Ù.
+    // Result descriptor¸¦ Á¤ÇĞÈ÷ ±¸¼ºÇÏ±â À§ÇØ SCANÀÇ ID·Î filteringÇÑ´Ù.
     qtc::dependencySet( sPCRD->tupleRowID, &sDepInfo );
 
     IDE_TEST( qmc::filterResultDesc( aStatement,
@@ -916,7 +928,7 @@ qmoMultiNonPlan::makePCRD( qcStatement  * aStatement ,
     /*
      * PROJ-1071 Parallel Query
      * parallel degree
-     * PCRD ëŠ” í•˜ìœ„ì— PRLQ ê°€ ì˜¬ ìˆ˜ ì—†ìœ¼ë¯€ë¡œ PARALLEL_EXEC_FALSE ì´ë‹¤.
+     * PCRD ´Â ÇÏÀ§¿¡ PRLQ °¡ ¿Ã ¼ö ¾øÀ¸¹Ç·Î PARALLEL_EXEC_FALSE ÀÌ´Ù.
      */
     sPCRD->plan.mParallelDegree = aFrom->tableRef->mParallelDegree;
     sPCRD->plan.flag &= ~QMN_PLAN_NODE_EXIST_MASK;
@@ -944,16 +956,16 @@ qmoMultiNonPlan::initMRGE( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoMultiNonPlan::initMRGE::__FT__" );
 
     //----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //----------------------------------------------------------------
-    // ì´ˆê¸°í™” ì‘ì—…
+    // ÃÊ±âÈ­ ÀÛ¾÷
     //----------------------------------------------------------------
 
-    //qmncSCANì˜ í• ë‹¹ë° ì´ˆê¸°í™”
+    //qmncSCANÀÇ ÇÒ´ç¹× ÃÊ±âÈ­
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmncMRGE) , (void **)&sMRGE )
               != IDE_SUCCESS );
 
@@ -989,13 +1001,13 @@ qmoMultiNonPlan::makeMRGE( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoMultiNonPlan::makeMRGE::__FT__" );
 
     //----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //----------------------------------------------------------------
-    // ì´ˆê¸°í™” ì‘ì—…
+    // ÃÊ±âÈ­ ÀÛ¾÷
     //----------------------------------------------------------------
 
     aPlan->offset = aStatement->myPlan->sTmplate->tmplate.dataSize;
@@ -1003,7 +1015,7 @@ qmoMultiNonPlan::makeMRGE( qcStatement  * aStatement ,
                                      ID_SIZEOF(qmndMRGE) );
 
     //----------------------------------
-    // ì—¬ëŸ¬ Child Plan ì—°ê²°
+    // ¿©·¯ Child Plan ¿¬°á
     //----------------------------------
 
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF(qmnChildren) * QMO_MERGE_IDX_MAX,
@@ -1017,7 +1029,7 @@ qmoMultiNonPlan::makeMRGE( qcStatement  * aStatement ,
     for ( i = 0; i < QMO_MERGE_IDX_MAX; i++ )
     {
         //----------------------------------------------
-        // ê° Graphì˜ Planì„ ì–»ì–´ í•˜ë‚˜ì˜ children planì„ êµ¬ì¶•
+        // °¢ GraphÀÇ PlanÀ» ¾ò¾î ÇÏ³ªÀÇ children planÀ» ±¸Ãà
         //----------------------------------------------
 
         if ( sChildrenGraph->childGraph != NULL )
@@ -1026,12 +1038,12 @@ qmoMultiNonPlan::makeMRGE( qcStatement  * aStatement ,
         }
         else
         {
-            // planì„ indexë¡œ ì ‘ê·¼í•˜ë¯€ë¡œ childPlanì´ ì—†ëŠ” ê²½ìš° nullë¡œ ì±„ì›Œë‘”ë‹¤.
+            // planÀ» index·Î Á¢±ÙÇÏ¹Ç·Î childPlanÀÌ ¾ø´Â °æ¿ì null·Î Ã¤¿öµĞ´Ù.
             sPlanChildren->childPlan = NULL;
         }
 
         //----------------------------------------------
-        // Children Planì˜ ì—°ê²° ê´€ê³„ë¥¼ êµ¬ì¶•
+        // Children PlanÀÇ ¿¬°á °ü°è¸¦ ±¸Ãà
         //----------------------------------------------
 
         if ( i + 1 < QMO_MERGE_IDX_MAX )
@@ -1048,17 +1060,17 @@ qmoMultiNonPlan::makeMRGE( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // Flag ì„¤ì •
+    // Flag ¼³Á¤
     //----------------------------------
 
     sMRGE->flag = QMN_PLAN_FLAG_CLEAR;
     sMRGE->plan.flag = QMN_PLAN_FLAG_CLEAR;
 
     //----------------------------------
-    // Display ì •ë³´ ì„¸íŒ…
+    // Display Á¤º¸ ¼¼ÆÃ
     //----------------------------------
 
-    // tableRefë§Œ ìˆìœ¼ë©´ ë¨
+    // tableRef¸¸ ÀÖÀ¸¸é µÊ
     sFrom.tableRef = aMRGEInfo->tableRef;
 
     IDE_TEST( qmg::setDisplayInfo( & sFrom ,
@@ -1068,14 +1080,14 @@ qmoMultiNonPlan::makeMRGE( qcStatement  * aStatement ,
               != IDE_SUCCESS );
 
     //----------------------------------------------------------------
-    // ë©”ì¸ ì‘ì—…
+    // ¸ŞÀÎ ÀÛ¾÷
     //----------------------------------------------------------------
 
     //----------------------------------
-    // insert ê´€ë ¨ ì •ë³´
+    // insert °ü·Ã Á¤º¸
     //----------------------------------
 
-    // insert target ì„¤ì •
+    // insert target ¼³Á¤
     sMRGE->tableRef = aMRGEInfo->tableRef;
 
     // child statements
@@ -1097,14 +1109,14 @@ qmoMultiNonPlan::makeMRGE( qcStatement  * aStatement ,
     sMRGE->resetExecInfoEndIndex   = aMRGEInfo->resetExecInfoEndIndex;
 
     //----------------------------------------------------------------
-    // ë§ˆë¬´ë¦¬ ì‘ì—…
+    // ¸¶¹«¸® ÀÛ¾÷
     //----------------------------------------------------------------
 
-    //data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+    //data ¿µ¿ªÀÇ Å©±â °è»ê
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
     //----------------------------------
-    // dependency ì²˜ë¦¬ ë° subqueryì˜ ì²˜ë¦¬
+    // dependency Ã³¸® ¹× subqueryÀÇ Ã³¸®
     //----------------------------------
 
     qtc::dependencyClear( & sMRGE->plan.depInfo );
@@ -1112,7 +1124,7 @@ qmoMultiNonPlan::makeMRGE( qcStatement  * aStatement ,
     /*
      * PROJ-1071 Parallel Query
      * parallel degree
-     * MERGE .. INTO ... êµ¬ë¬¸ì€ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+     * MERGE .. INTO ... ±¸¹®Àº Áö¿øÇÏÁö ¾Ê´Â´Ù.
      */
     sMRGE->plan.mParallelDegree = aMRGEInfo->tableRef->mParallelDegree;
     sMRGE->plan.flag &= ~QMN_PLAN_PRLQ_EXIST_MASK;
@@ -1135,16 +1147,16 @@ qmoMultiNonPlan::initMTIT( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoMultiNonPlan::initMTIT::__FT__" );
 
     //----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //----------------------------------------------------------------
-    // ì´ˆê¸°í™” ì‘ì—…
+    // ÃÊ±âÈ­ ÀÛ¾÷
     //----------------------------------------------------------------
 
-    //qmncSCANì˜ í• ë‹¹ë° ì´ˆê¸°í™”
+    //qmncSCANÀÇ ÇÒ´ç¹× ÃÊ±âÈ­
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmncMTIT ),
                                                (void **)& sMTIT )
               != IDE_SUCCESS );
@@ -1179,14 +1191,14 @@ qmoMultiNonPlan::makeMTIT( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoMultiNonPlan::makeMTIT::__FT__" );
 
     //----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aChildrenGraph != NULL );
 
     //----------------------------------------------------------------
-    // ì´ˆê¸°í™” ì‘ì—…
+    // ÃÊ±âÈ­ ÀÛ¾÷
     //----------------------------------------------------------------
 
     aPlan->offset = aStatement->myPlan->sTmplate->tmplate.dataSize;
@@ -1194,7 +1206,7 @@ qmoMultiNonPlan::makeMTIT( qcStatement  * aStatement ,
                                      ID_SIZEOF(qmndMTIT) );
 
     //----------------------------------
-    // ì—¬ëŸ¬ Child Plan ì—°ê²°
+    // ¿©·¯ Child Plan ¿¬°á
     //----------------------------------
 
     sCurPlanChildren = NULL;
@@ -1204,7 +1216,7 @@ qmoMultiNonPlan::makeMTIT( qcStatement  * aStatement ,
           sGraphChildren = sGraphChildren->next )
     {
         //----------------------------------------------
-        // ê° Graphì˜ Planì„ ì–»ì–´ í•˜ë‚˜ì˜ children planì„ êµ¬ì¶•
+        // °¢ GraphÀÇ PlanÀ» ¾ò¾î ÇÏ³ªÀÇ children planÀ» ±¸Ãà
         //----------------------------------------------
 
         IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmnChildren) ,
@@ -1215,7 +1227,7 @@ qmoMultiNonPlan::makeMTIT( qcStatement  * aStatement ,
         sPlanChildren->next = NULL;
 
         //----------------------------------------------
-        // Children Planì˜ ì—°ê²° ê´€ê³„ë¥¼ êµ¬ì¶•
+        // Children PlanÀÇ ¿¬°á °ü°è¸¦ ±¸Ãà
         //----------------------------------------------
 
         if ( sCurPlanChildren == NULL )
@@ -1230,7 +1242,7 @@ qmoMultiNonPlan::makeMTIT( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // Flag ì„¤ì •
+    // Flag ¼³Á¤
     //----------------------------------
 
     sMTIT->flag      = QMN_PLAN_FLAG_CLEAR;
@@ -1245,21 +1257,21 @@ qmoMultiNonPlan::makeMTIT( qcStatement  * aStatement ,
     }
 
     //------------------------------------------------------------
-    // ë§ˆë¬´ë¦¬ ì‘ì—…
+    // ¸¶¹«¸® ÀÛ¾÷
     //------------------------------------------------------------
 
-    //data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+    //data ¿µ¿ªÀÇ Å©±â °è»ê
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
     //----------------------------------
-    // dependency ì²˜ë¦¬ ë° subqueryì˜ ì²˜ë¦¬
+    // dependency Ã³¸® ¹× subqueryÀÇ Ã³¸®
     //----------------------------------
 
     qtc::dependencyClear( & sMTIT->plan.depInfo );
 
     /*
      * PROJ-1071 Parallel Query
-     * parallel degree, PARALLEL_EXEC flag ëŠ” children graph ì˜ flag ë¥¼ ë°›ëŠ”ë‹¤.
+     * parallel degree, PARALLEL_EXEC flag ´Â children graph ÀÇ flag ¸¦ ¹Ş´Â´Ù.
      */
     for ( sGraphChildren = aChildrenGraph;
           sGraphChildren != NULL;
@@ -1308,7 +1320,7 @@ IDE_RC qmoMultiNonPlan::initPPCRD( qcStatement  * aStatement,
 
     IDE_DASSERT( aStatement != NULL );
 
-    // qmncPPCRDì˜ í• ë‹¹ë° ì´ˆê¸°í™”
+    // qmncPPCRDÀÇ ÇÒ´ç¹× ÃÊ±âÈ­
 
     IDE_TEST(QC_QMP_MEM(aStatement)->alloc(ID_SIZEOF(qmncPPCRD),
                                            (void **)&sPPCRD)
@@ -1369,13 +1381,13 @@ IDE_RC qmoMultiNonPlan::makePPCRD( qcStatement  * aStatement,
     qmnRangeSortedChildren * sRangeSortedChildrenArray;
     qmnChildren            * sCurrChildren;
 
-    // BUG-42387 Templateì— Partitioned Tableì˜ Tupleì„ ë³´ê´€
+    // BUG-42387 Template¿¡ Partitioned TableÀÇ TupleÀ» º¸°ü
     mtcTuple               * sPartitionedTuple;
 
     IDU_FIT_POINT_FATAL( "qmoMultiNonPlan::makePPCRD::__FT__" );
 
     //----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1386,7 +1398,7 @@ IDE_RC qmoMultiNonPlan::makePPCRD( qcStatement  * aStatement,
     IDE_DASSERT( aPCRDInfo != NULL );
 
     //------------------------------------------------------------
-    // ì´ˆê¸°í™” ì‘ì—…
+    // ÃÊ±âÈ­ ÀÛ¾÷
     //------------------------------------------------------------
 
     aPlan->offset      = aStatement->myPlan->sTmplate->tmplate.dataSize;
@@ -1397,8 +1409,12 @@ IDE_RC qmoMultiNonPlan::makePPCRD( qcStatement  * aStatement,
     sPPCRD->table      = aFrom->tableRef->tableInfo->tableHandle;
     sPPCRD->tableSCN   = aFrom->tableRef->tableSCN;
 
+    // BUG-48800
+    sPPCRD->mPrePruningPartHandle = aPCRDInfo->mPrePruningPartHandle;
+    sPPCRD->mPrePruningPartSCN    = aPCRDInfo->mPrePruningPartSCN;
+
     //----------------------------------
-    // ì—¬ëŸ¬ Child Plan ì—°ê²°
+    // ¿©·¯ Child Plan ¿¬°á
     //----------------------------------
 
     sCurPlanChildren = NULL;
@@ -1408,7 +1424,7 @@ IDE_RC qmoMultiNonPlan::makePPCRD( qcStatement  * aStatement,
           sGraphChildren = sGraphChildren->next )
     {
         //----------------------------------------------
-        // ê° Graphì˜ Planì„ ì–»ì–´ í•˜ë‚˜ì˜ children planì„ êµ¬ì¶•
+        // °¢ GraphÀÇ PlanÀ» ¾ò¾î ÇÏ³ªÀÇ children planÀ» ±¸Ãà
         //----------------------------------------------
 
         IDE_TEST(QC_QMP_MEM(aStatement)->alloc(ID_SIZEOF(qmnChildren),
@@ -1419,7 +1435,7 @@ IDE_RC qmoMultiNonPlan::makePPCRD( qcStatement  * aStatement,
         sPlanChildren->next = NULL;
 
         //----------------------------------------------
-        // Children Planì˜ ì—°ê²° ê´€ê³„ë¥¼ êµ¬ì¶•
+        // Children PlanÀÇ ¿¬°á °ü°è¸¦ ±¸Ãà
         //----------------------------------------------
 
         if ( sCurPlanChildren == NULL )
@@ -1487,7 +1503,7 @@ IDE_RC qmoMultiNonPlan::makePPCRD( qcStatement  * aStatement,
     }
 
     //----------------------------------
-    // Flag ì„¤ì •
+    // Flag ¼³Á¤
     //----------------------------------
 
     sPPCRD->flag      = QMN_PLAN_FLAG_CLEAR;
@@ -1499,14 +1515,14 @@ IDE_RC qmoMultiNonPlan::makePPCRD( qcStatement  * aStatement,
     QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sPPCRD->tupleRowID].lflag
         |= MTC_TUPLE_PARTITIONED_TABLE_TRUE;
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     if ( sPPCRD->tableRef->partitionSummary->isHybridPartitionedTable == ID_TRUE )
     {
-        /* BUG-45737 hybrid patitioned tableì— parallel grouping ì—°ì‚° ê²°ê³¼ ì˜¤ë¥˜ ë° FATAL ë°œìƒí•©ë‹ˆë‹¤.
-         *  - Partitioned Tableê³¼ Partitionì— ë™ì¼í•œ Materialized Functionì„ ì‚¬ìš©í•˜ë„ë¡ ì¡°ì •í•©ë‹ˆë‹¤.
-         *  - ë³¸ë˜ MTC_TUPLE_HYBRID_PARTITIONED_TABLE_TRUEì€ Hybrid Patitioned Tableì˜ Key Columnì—ë§Œ ì‚¬ìš©í•˜ì§€ë§Œ,
-         *  - Parallel Planì´ê³  Grouping í•¨ìˆ˜ê°€ ìˆë‹¤ë©´, ëª¨ë‘ ë™ì¼í•œ Materialized Functionì„ ì‚¬ìš©í•´ì•¼ë§Œ ê²°ê³¼ë¥¼ Mergeí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
-         *  - ë”°ë¼ì„œ Partitionì˜ Planì¸ sPPCRD->plan.children ë¥¼ ìˆœíšŒí•˜ë©´ì„œ, í•´ë‹¹ Tupleì˜ lflagë¥¼ ì¡°ì •í•©ë‹ˆë‹¤.
+        /* BUG-45737 hybrid patitioned table¿¡ parallel grouping ¿¬»ê °á°ú ¿À·ù ¹× FATAL ¹ß»ıÇÕ´Ï´Ù.
+         *  - Partitioned Table°ú Partition¿¡ µ¿ÀÏÇÑ Materialized FunctionÀ» »ç¿ëÇÏµµ·Ï Á¶Á¤ÇÕ´Ï´Ù.
+         *  - º»·¡ MTC_TUPLE_HYBRID_PARTITIONED_TABLE_TRUEÀº Hybrid Patitioned TableÀÇ Key Column¿¡¸¸ »ç¿ëÇÏÁö¸¸,
+         *  - Parallel PlanÀÌ°í Grouping ÇÔ¼ö°¡ ÀÖ´Ù¸é, ¸ğµÎ µ¿ÀÏÇÑ Materialized FunctionÀ» »ç¿ëÇØ¾ß¸¸ °á°ú¸¦ MergeÇÒ ¼ö ÀÖ½À´Ï´Ù.
+         *  - µû¶ó¼­ PartitionÀÇ PlanÀÎ sPPCRD->plan.children ¸¦ ¼øÈ¸ÇÏ¸é¼­, ÇØ´ç TupleÀÇ lflag¸¦ Á¶Á¤ÇÕ´Ï´Ù.
          */
         for ( sCurrChildren  = sPPCRD->plan.children;
               sCurrChildren != NULL;
@@ -1529,12 +1545,12 @@ IDE_RC qmoMultiNonPlan::makePPCRD( qcStatement  * aStatement,
         /* Nothing to do */
     }
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì›
-     *  Partitioned Table Tupleì— Partitioned Tableì˜ ì •ë³´ê°€ ìˆìœ¼ë©´, Table Handleì´ ì—†ë‹¤.
+    /* PROJ-2464 hybrid partitioned table Áö¿ø
+     *  Partitioned Table Tuple¿¡ Partitioned TableÀÇ Á¤º¸°¡ ÀÖÀ¸¸é, Table HandleÀÌ ¾ø´Ù.
      */
     QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sPPCRD->tupleRowID].tableHandle = (void *)sPPCRD->table;
 
-    // BUG-42387 Templateì— Partitioned Tableì˜ Tupleì„ ë³´ê´€
+    // BUG-42387 Template¿¡ Partitioned TableÀÇ TupleÀ» º¸°ü
     IDE_TEST( qtc::nextTable( &( sPPCRD->partitionedTupleID ),
                               aStatement,
                               sPPCRD->tableRef->tableInfo,
@@ -1545,7 +1561,7 @@ IDE_RC qmoMultiNonPlan::makePPCRD( qcStatement  * aStatement,
     sPartitionedTuple = &(QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sPPCRD->partitionedTupleID]);
     sPartitionedTuple->lflag = QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sPPCRD->tupleRowID].lflag;
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     qmx::copyMtcTupleForPartitionedTable( sPartitionedTuple,
                                           &(QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sPPCRD->tupleRowID]) );
 
@@ -1570,7 +1586,7 @@ IDE_RC qmoMultiNonPlan::makePPCRD( qcStatement  * aStatement,
         sIsDiskTable = ID_TRUE;
     }
 
-    // Previous Disable ì„¤ì •
+    // Previous Disable ¼³Á¤
     sPPCRD->flag &= ~QMNC_SCAN_PREVIOUS_ENABLE_MASK;
     sPPCRD->flag |= QMNC_SCAN_PREVIOUS_ENABLE_FALSE;
 
@@ -1578,7 +1594,7 @@ IDE_RC qmoMultiNonPlan::makePPCRD( qcStatement  * aStatement,
     sPPCRD->flag |= QMNC_SCAN_TABLE_FV_FALSE;
 
     //----------------------------------
-    // ì¸ë±ìŠ¤ ì„¤ì • ë° ë°©í–¥ ì„¤ì •
+    // ÀÎµ¦½º ¼³Á¤ ¹× ¹æÇâ ¼³Á¤
     //----------------------------------
 
     sPPCRD->index           = aPCRDInfo->index;
@@ -1588,11 +1604,11 @@ IDE_RC qmoMultiNonPlan::makePPCRD( qcStatement  * aStatement,
     {
         if ( sPPCRD->index->indexPartitionType == QCM_NONE_PARTITIONED_INDEX )
         {
-            // index table scanì¸ ê²½ìš°
+            // index table scanÀÎ °æ¿ì
             sPPCRD->flag &= ~QMNC_SCAN_INDEX_TABLE_SCAN_MASK;
             sPPCRD->flag |= QMNC_SCAN_INDEX_TABLE_SCAN_TRUE;
 
-            // tableRefì—ë„ ê¸°ë¡
+            // tableRef¿¡µµ ±â·Ï
             for ( sIndexTable = aFrom->tableRef->indexTableRef;
                   sIndexTable != NULL;
                   sIndexTable = sIndexTable->next )
@@ -1613,7 +1629,7 @@ IDE_RC qmoMultiNonPlan::makePPCRD( qcStatement  * aStatement,
 
             IDE_DASSERT( sIndexTable != NULL );
 
-            // key index, rid indexë¥¼ ì°¾ëŠ”ë‹¤.
+            // key index, rid index¸¦ Ã£´Â´Ù.
             IDE_TEST( qdx::getIndexTableIndices( sIndexTable->tableInfo,
                                                  sIndexTableIndex )
                       != IDE_SUCCESS );
@@ -1621,7 +1637,7 @@ IDE_RC qmoMultiNonPlan::makePPCRD( qcStatement  * aStatement,
             // key index
             sPPCRD->indexTableIndex = sIndexTableIndex[0];
 
-            // index table scanìš© tuple í• ë‹¹
+            // index table scan¿ë tuple ÇÒ´ç
             IDE_TEST( qtc::nextTable( & sIndexTupleRowID,
                                       aStatement,
                                       sIndexTable->tableInfo,
@@ -1633,16 +1649,16 @@ IDE_RC qmoMultiNonPlan::makePPCRD( qcStatement  * aStatement,
 
             sIndexTable->table = sIndexTupleRowID;
 
-            //index ì •ë³´ ë° order byì— ë”°ë¥¸ traverse ë°©í–¥ ì„¤ì •
-            //aLeafInfo->preservedOrderë¥¼ ë³´ê³  ì¸ë±ìŠ¤ ë°©í–¥ê³¼ ë‹¤ë¥´ë©´ sSCAN->flag
-            //ë¥¼ BACKWARDë¡œ ì„¤ì •í•´ì£¼ì–´ì•¼ í•œë‹¤.
+            //index Á¤º¸ ¹× order by¿¡ µû¸¥ traverse ¹æÇâ ¼³Á¤
+            //aLeafInfo->preservedOrder¸¦ º¸°í ÀÎµ¦½º ¹æÇâ°ú ´Ù¸£¸é sSCAN->flag
+            //¸¦ BACKWARD·Î ¼³Á¤ÇØÁÖ¾î¾ß ÇÑ´Ù.
             IDE_TEST( qmoOneNonPlan::setDirectionInfo( &( sPPCRD->flag ),
                                                        aPCRDInfo->index,
                                                        aPCRDInfo->preservedOrder )
                       != IDE_SUCCESS );
 
             // To fix BUG-12742
-            // index scanì´ ê³ ì •ë˜ì–´ ìˆëŠ” ê²½ìš°ë¥¼ ì„¸íŒ…í•œë‹¤.
+            // index scanÀÌ °íÁ¤µÇ¾î ÀÖ´Â °æ¿ì¸¦ ¼¼ÆÃÇÑ´Ù.
             if ( aPCRDInfo->forceIndexScan == ID_TRUE )
             {
                 aPCRDInfo->flag &= ~QMNC_SCAN_FORCE_INDEX_SCAN_MASK;
@@ -1677,7 +1693,7 @@ IDE_RC qmoMultiNonPlan::makePPCRD( qcStatement  * aStatement,
     }
 
     //----------------------------------
-    // Display ì •ë³´ ì„¸íŒ…
+    // Display Á¤º¸ ¼¼ÆÃ
     //----------------------------------
 
     IDE_TEST( qmg::setDisplayInfo( aFrom ,
@@ -1686,21 +1702,30 @@ IDE_RC qmoMultiNonPlan::makePPCRD( qcStatement  * aStatement,
                                    &(sPPCRD->aliasName) )
               != IDE_SUCCESS );
 
-    //data ì˜ì—­ì˜ í¬ê¸° ê³„ì‚°
+    //data ¿µ¿ªÀÇ Å©±â °è»ê
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
     sPPCRD->selectedPartitionCount = aPCRDInfo->selectedPartitionCount;
-    sPPCRD->partitionCount         = aFrom->tableRef->partitionCount;
-
     sPPCRD->partitionKeyRange = aPCRDInfo->partKeyRange;
     sPPCRD->nnfFilter         = aPCRDInfo->nnfFilter;
 
+    // BUG-47599 Partition coordinator print plan 
+    if ( aFrom->tableRef->mEmptyPartRef == NULL )
+    {
+        sPPCRD->partitionCount = aFrom->tableRef->partitionCount;
+    }
+    else
+    {
+        sPPCRD->partitionCount = aFrom->tableRef->partitionCount-1;
+    }
+
+
     //-------------------------------------------------------------
-    // ë©”ì¸ ì‘ì—…
+    // ¸ŞÀÎ ÀÛ¾÷
     //-------------------------------------------------------------
 
     //----------------------------------
-    // Predicateì˜ ì²˜ë¦¬
+    // PredicateÀÇ Ã³¸®
     //----------------------------------
 
     IDE_DASSERT((sPPCRD->flag & QMNC_SCAN_INDEX_TABLE_SCAN_MASK)
@@ -1718,8 +1743,8 @@ IDE_RC qmoMultiNonPlan::makePPCRD( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //----------------------------------
-    // Host ë³€ìˆ˜ë¥¼ í¬í•¨í•œ
-    // Constant Expressionì˜ ìµœì í™”
+    // Host º¯¼ö¸¦ Æ÷ÇÔÇÑ
+    // Constant ExpressionÀÇ ÃÖÀûÈ­
     //----------------------------------
 
     if ( sPPCRD->nnfFilter != NULL )
@@ -1734,25 +1759,25 @@ IDE_RC qmoMultiNonPlan::makePPCRD( qcStatement  * aStatement,
     }
 
     //----------------------------------
-    // Predicate ê´€ë ¨ Flag ì •ë³´ ì„¤ì •
+    // Predicate °ü·Ã Flag Á¤º¸ ¼³Á¤
     //----------------------------------
 
     sPPCRD->flag &= ~QMNC_SCAN_INSUBQ_KEYRANGE_MASK;
     sPPCRD->flag |= QMNC_SCAN_INSUBQ_KEYRANGE_FALSE;
 
     //----------------------------------
-    // dependency ì²˜ë¦¬ ë° subqueryì˜ ì²˜ë¦¬
+    // dependency Ã³¸® ¹× subqueryÀÇ Ã³¸®
     //----------------------------------
 
     sPredicate[0] = sPPCRD->partitionFilter;
     sPredicate[1] = sPPCRD->nnfFilter;
     sPredicate[2] = sPPCRD->constantFilter;
     sPredicate[3] = sPPCRD->subqueryFilter;
-    sPredicate[4] = sRemain; // ë¶„ë¥˜ë˜ê³  ë‚¨ì€ ë…¸ë“œë“¤ì„.
+    sPredicate[4] = sRemain; // ºĞ·ùµÇ°í ³²Àº ³ëµåµéÀÓ.
 
     //----------------------------------
     // PROJ-1437
-    // dependency ì„¤ì •ì „ì— predicateë“¤ì˜ ìœ„ì¹˜ì •ë³´ ë³€ê²½.
+    // dependency ¼³Á¤Àü¿¡ predicateµéÀÇ À§Ä¡Á¤º¸ º¯°æ.
     //----------------------------------
 
     for ( i = 0; i <= 4; i++ )
@@ -1865,7 +1890,7 @@ IDE_RC qmoMultiNonPlan::processPredicate( qcStatement   * aStatement,
 
     if( sPartFilter != NULL )
     {
-        // fixedê°€ ë˜ë©´ remainìœ¼ë¡œ ë¹ ì§„ë‹¤.
+        // fixed°¡ µÇ¸é remainÀ¸·Î ºüÁø´Ù.
         if( ( sPartFilter->flag & QMO_PRED_VALUE_MASK )
             == QMO_PRED_VARIABLE )
         {
@@ -1876,10 +1901,10 @@ IDE_RC qmoMultiNonPlan::processPredicate( qcStatement   * aStatement,
             if( sKey != NULL )
             {
                 // To Fix PR-9481
-                // CNFë¡œ êµ¬ì„±ëœ Key Range Predicateì„ DNF normalizeí•  ê²½ìš°
-                // ì—„ì²­ë‚˜ê²Œ ë§ì€ Nodeë¡œ ë³€í™˜ë  ìˆ˜ ìˆë‹¤.
-                // ì´ë¥¼ ê²€ì‚¬í•˜ì—¬ ì§€ë‚˜ì¹˜ê²Œ ë§ì€ ë³€í™”ê°€ í•„ìš”í•œ ê²½ìš°ì—ëŠ”
-                // Default Key Rangeë§Œì„ ìƒì„±í•˜ê²Œ í•œë‹¤.
+                // CNF·Î ±¸¼ºµÈ Key Range PredicateÀ» DNF normalizeÇÒ °æ¿ì
+                // ¾öÃ»³ª°Ô ¸¹Àº Node·Î º¯È¯µÉ ¼ö ÀÖ´Ù.
+                // ÀÌ¸¦ °Ë»çÇÏ¿© Áö³ªÄ¡°Ô ¸¹Àº º¯È­°¡ ÇÊ¿äÇÑ °æ¿ì¿¡´Â
+                // Default Key Range¸¸À» »ı¼ºÇÏ°Ô ÇÑ´Ù.
                 IDE_TEST( qmoNormalForm::estimateDNF( sKey, &sEstDNFCnt )
                           != IDE_SUCCESS );
 
@@ -1889,14 +1914,14 @@ IDE_RC qmoMultiNonPlan::processPredicate( qcStatement   * aStatement,
                 }
                 else
                 {
-                    // DNFí˜•íƒœë¡œ ë³€í™˜
+                    // DNFÇüÅÂ·Î º¯È¯
                     IDE_TEST( qmoNormalForm::normalizeDNF( aStatement ,
                                                            sKey ,
                                                            &sDNFKey )
                               != IDE_SUCCESS );
                 }
 
-                // environmentì˜ ê¸°ë¡
+                // environmentÀÇ ±â·Ï
                 qcgPlan::registerPlanProperty( aStatement,
                                                PLAN_PROPERTY_NORMAL_FORM_MAXIMUM );
             }
@@ -2013,12 +2038,12 @@ IDE_RC qmoMultiNonPlan::checkSimplePCRD( qcStatement * aStatement,
     }
     else
     {
-        // full scan/index full scanì¸ ê²½ìš°
+        // full scan/index full scanÀÎ °æ¿ì
         if ( ( sPCRD->fixKeyRange == NULL ) &&
              ( sPCRD->varKeyRange == NULL ) )
         {
-            // ë ˆì½”ë“œê°€ ë§ì€ ê²½ìš° simpleë¡œ ì²˜ë¦¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
-            // (ì¼ë‹¨ì€ 1024000ê°œ ê¹Œì§€ë§Œ)
+            // ·¹ÄÚµå°¡ ¸¹Àº °æ¿ì simple·Î Ã³¸®ÇÏÁö ¾Ê´Â´Ù.
+            // (ÀÏ´ÜÀº 1024000°³ ±îÁö¸¸)
             if ( sPCRD->tableRef->statInfo->totalRecordCnt 
                  <= ( QMO_STAT_TABLE_RECORD_COUNT * 100 ) )
             {
@@ -2089,7 +2114,7 @@ IDE_RC qmoMultiNonPlan::checkSimplePCRD( qcStatement * aStatement,
         }
         else
         {
-            // <, <=, >, >=ì¸ ê²½ìš°
+            // <, <=, >, >=ÀÎ °æ¿ì
             if ( sCompareNode->node.module == &mtfLessThan )
             {
                 if ( sCompareNode->indexArgument == 0 )
@@ -2158,7 +2183,7 @@ IDE_RC qmoMultiNonPlan::checkSimplePCRD( qcStatement * aStatement,
             sValueNode  = (qtcNode*)(sCompareNode->node.arguments);
         }
 
-        // ìˆœìˆ˜ì»¬ëŸ¼ê³¼ ê°’ì´ì–´ì•¼ í•œë‹¤.
+        // ¼ø¼öÄÃ·³°ú °ªÀÌ¾î¾ß ÇÑ´Ù.
         if ( QTC_IS_COLUMN( aStatement, sColumnNode ) == ID_TRUE )
         {
             // Nothing to do.
@@ -2171,7 +2196,7 @@ IDE_RC qmoMultiNonPlan::checkSimplePCRD( qcStatement * aStatement,
 
         sColumn = QTC_STMT_COLUMN( aStatement, sColumnNode );
 
-        // ì •ìˆ˜í˜•ê³¼ ë¬¸ìí˜•ë§Œ ê°€ëŠ¥í•˜ë‹¤.
+        // Á¤¼öÇü°ú ¹®ÀÚÇü¸¸ °¡´ÉÇÏ´Ù.
         if ( ( sColumn->module->id == MTD_SMALLINT_ID ) ||
              ( sColumn->module->id == MTD_BIGINT_ID ) ||
              ( sColumn->module->id == MTD_INTEGER_ID ) ||
@@ -2190,11 +2215,11 @@ IDE_RC qmoMultiNonPlan::checkSimplePCRD( qcStatement * aStatement,
 
         sValueInfo->column = *sColumn;
 
-        // ì»¬ëŸ¼, ìƒìˆ˜ë‚˜ í˜¸ìŠ¤íŠ¸ë³€ìˆ˜ë§Œ ê°€ëŠ¥í•˜ë‹¤.
+        // ÄÃ·³, »ó¼ö³ª È£½ºÆ®º¯¼ö¸¸ °¡´ÉÇÏ´Ù.
         if ( QTC_IS_COLUMN( aStatement, sValueNode ) == ID_TRUE )
         {
-            // ì»¬ëŸ¼ì¸ ê²½ìš° column nodeì™€ value nodeì— conversionì´
-            // ì—†ì–´ì•¼ í•œë‹¤.
+            // ÄÃ·³ÀÎ °æ¿ì column node¿Í value node¿¡ conversionÀÌ
+            // ¾ø¾î¾ß ÇÑ´Ù.
             if ( ( sColumnNode->node.conversion != NULL ) ||
                  ( sValueNode->node.conversion != NULL ) )
             {
@@ -2208,7 +2233,7 @@ IDE_RC qmoMultiNonPlan::checkSimplePCRD( qcStatement * aStatement,
 
             sValueColumn = QTC_STMT_COLUMN( aStatement, sValueNode );
 
-            // ë™ì¼ íƒ€ì…ì´ì–´ì•¼ í•œë‹¤.
+            // µ¿ÀÏ Å¸ÀÔÀÌ¾î¾ß ÇÑ´Ù.
             if ( sColumn->module->id == sValueColumn->module->id )
             {
                 sValueInfo->type = QMN_VALUE_TYPE_COLUMN;
@@ -2233,7 +2258,7 @@ IDE_RC qmoMultiNonPlan::checkSimplePCRD( qcStatement * aStatement,
                                 sValueNode )
              == ID_TRUE )
         {
-            // ìƒìˆ˜ì¸ ê²½ìš° column nodeì— conversionì´ ì—†ì–´ì•¼ í•œë‹¤.
+            // »ó¼öÀÎ °æ¿ì column node¿¡ conversionÀÌ ¾ø¾î¾ß ÇÑ´Ù.
             if ( sColumnNode->node.conversion != NULL )
             {
                 sIsSimple = ID_FALSE;
@@ -2246,7 +2271,7 @@ IDE_RC qmoMultiNonPlan::checkSimplePCRD( qcStatement * aStatement,
 
             sConstColumn = QTC_STMT_COLUMN( aStatement, sValueNode );
 
-            // ìƒìˆ˜ëŠ” ë™ì¼ íƒ€ì…ì´ì–´ì•¼ í•œë‹¤.
+            // »ó¼ö´Â µ¿ÀÏ Å¸ÀÔÀÌ¾î¾ß ÇÑ´Ù.
             if ( ( sColumn->module->id == sConstColumn->module->id ) ||
                  ( ( sColumn->module->id == MTD_NUMERIC_ID ) &&
                    ( sConstColumn->module->id == MTD_FLOAT_ID ) ) ||
@@ -2270,7 +2295,7 @@ IDE_RC qmoMultiNonPlan::checkSimplePCRD( qcStatement * aStatement,
             /* Nothing to do */
         }
 
-        // post processë¥¼ ìˆ˜í–‰í–ˆìœ¼ë¯€ë¡œ host const warpperê°€ ë‹¬ë¦´ ìˆ˜ ìˆë‹¤.
+        // post process¸¦ ¼öÇàÇßÀ¸¹Ç·Î host const warpper°¡ ´Ş¸± ¼ö ÀÖ´Ù.
         if ( sValueNode->node.module == &qtc::hostConstantWrapperModule )
         {
             sValueNode = (qtcNode*) sValueNode->node.arguments;
@@ -2284,13 +2309,13 @@ IDE_RC qmoMultiNonPlan::checkSimplePCRD( qcStatement * aStatement,
                                   sValueNode )
              == ID_TRUE )
         {
-            // í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ì¸ ê²½ìš° column nodeì™€ value nodeì˜
-            // conversion nodeëŠ” ë™ì¼ íƒ€ì…ìœ¼ë¡œë§Œ bindí•œë‹¤ë©´
-            // ë¬´ì‹œí•  ìˆ˜ ìˆë‹¤.
+            // È£½ºÆ® º¯¼öÀÎ °æ¿ì column node¿Í value nodeÀÇ
+            // conversion node´Â µ¿ÀÏ Å¸ÀÔÀ¸·Î¸¸ bindÇÑ´Ù¸é
+            // ¹«½ÃÇÒ ¼ö ÀÖ´Ù.
             sValueInfo->type = QMN_VALUE_TYPE_HOST_VALUE;
             sValueInfo->value.id = sValueNode->node.column;
 
-            // param ë“±ë¡
+            // param µî·Ï
             IDE_TEST( qmv::describeParamInfo( aStatement,
                                               sColumn,
                                               sValueNode )
@@ -2303,7 +2328,7 @@ IDE_RC qmoMultiNonPlan::checkSimplePCRD( qcStatement * aStatement,
             // Nothing to do.
         }
 
-        // ì—¬ê¸°ê¹Œì§€ ì™”ë‹¤ë©´ simpleì´ ì•„ë‹ˆë‹¤.
+        // ¿©±â±îÁö ¿Ô´Ù¸é simpleÀÌ ¾Æ´Ï´Ù.
         sIsSimple = ID_FALSE;
     }
     else

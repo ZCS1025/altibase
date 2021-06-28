@@ -22,7 +22,7 @@ import java.sql.*;
 import java.util.Calendar;
 
 /**
- * ServerSide ë˜ëŠ” ClientSideì—ì„œ ê³µí†µì ìœ¼ë¡œ ì‹¤í–‰ë˜ëŠ” java.sql.CallableStatement ì¸í„°í˜ì´ìŠ¤ ëª¨ìŒ
+ * ServerSide ¶Ç´Â ClientSide¿¡¼­ °øÅëÀûÀ¸·Î ½ÇÇàµÇ´Â java.sql.CallableStatement ÀÎÅÍÆäÀÌ½º ¸ğÀ½
  */
 public interface InternalShardingCallableStatement extends InternalShardingPreparedStatement
 {

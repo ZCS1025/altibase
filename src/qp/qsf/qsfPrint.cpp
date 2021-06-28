@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsfPrint.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qsfPrint.cpp 91010 2021-06-17 01:33:11Z hykim $
  **********************************************************************/
 
 #include <idl.h>
@@ -31,7 +31,7 @@
 #include <qsxUtil.h>
 
 
-//BUG-24432 PRINTLN, PRINT ì— ëŒ€í•´ì„œ ì‚¬ìš©í• ìˆ˜ ìžˆëŠ” ê¸¸ì´ ì œí•œì— ëŒ€í•œ ê°œì„ 
+//BUG-24432 PRINTLN, PRINT ¿¡ ´ëÇØ¼­ »ç¿ëÇÒ¼ö ÀÖ´Â ±æÀÌ Á¦ÇÑ¿¡ ´ëÇÑ °³¼±
 #define QSF_PRINT_VARCHAR_MAX (MTD_VARCHAR_PRECISION_MAXIMUM)
 
 static mtcName qsfFunctionName[1] = {
@@ -47,7 +47,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfPrintModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -152,7 +152,8 @@ IDE_RC qsfCalculate_SpPrint(
     /* PROJ-1438 Job Scheduler */
     /* PROJ-2451 Concurrent Exec Package */
     if ( ( QC_SMI_STMT_SESSION_IS_JOB( sStatement ) == ID_FALSE ) &&
-         ( QC_SESSION_IS_INTERNAL_EXEC( sStatement ) == ID_FALSE ) )
+         ( QC_SESSION_IS_INTERNAL_EXEC( sStatement ) == ID_FALSE ) &&
+         ( QC_SESSION_IS_TEMP_SQL( sStatement ) == ID_FALSE ) )
     {
         if ( (QC_SMI_STMT(sStatement))->isDummy() == ID_TRUE )
         {
@@ -171,8 +172,8 @@ IDE_RC qsfCalculate_SpPrint(
         else
         {
             // BUG-39276
-            // Trigger ë˜ëŠ” DMLì—ì„œ ì‚¬ìš©í•œ PSMì—ì„œ í˜¸ì¶œí•œ PRINT_OUTì€
-            // clientë¡œ ì¶œë ¥í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // Trigger ¶Ç´Â DML¿¡¼­ »ç¿ëÇÑ PSM¿¡¼­ È£ÃâÇÑ PRINT_OUTÀº
+            // client·Î Ãâ·ÂÇÏÁö ¾Ê´Â´Ù.
         }
     }
     else
@@ -180,26 +181,28 @@ IDE_RC qsfCalculate_SpPrint(
         if ( QC_SESSION_IS_INTERNAL_EXEC( sStatement ) == ID_TRUE )
         {
             sLen = (SInt)sPrintString->length;
-            ideLog::log( IDE_QP_2, "[DBMS_CONCURRENT_EXEC : PRINT] %.*s\n", sLen, sPrintString->value );
+            ideLog::log( IDE_QP_3, "[DBMS_CONCURRENT_EXEC : PRINT] %.*s\n", sLen, sPrintString->value );
+        }
+        else if ( QC_SMI_STMT_SESSION_IS_JOB( sStatement ) == ID_TRUE )
+        {
+            sLen = (SInt)sPrintString->length;
+            ideLog::log( IDE_QP_3, "[JOB : PRINT] %.*s\n", sLen, sPrintString->value );
+        }
+        else if ( QC_SESSION_IS_TEMP_SQL( sStatement ) == ID_TRUE )
+        {
+            sLen = (SInt)sPrintString->length;
+            ideLog::log( IDE_SD_17, "[Temporary SQL] %.*s\n", sLen, sPrintString->value );
         }
         else
         {
-            if ( QC_SMI_STMT_SESSION_IS_JOB( sStatement ) == ID_TRUE )
-            {
-                sLen = (SInt)sPrintString->length;
-                ideLog::log( IDE_QP_2, "[JOB : PRINT] %.*s\n", sLen, sPrintString->value );
-            }
-            else
-            {
-                IDE_DASSERT(0);
-            }
+            IDE_DASSERT(0);
         }
     }
-            
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
-    
+
     return IDE_FAILURE;
 }
 

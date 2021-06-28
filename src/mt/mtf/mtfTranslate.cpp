@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfTranslate.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfTranslate.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -43,7 +43,7 @@ static IDE_RC mtfTranslateEstimate( mtcNode*     aNode,
 mtfModule mtfTranslate = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfTranslateFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -92,13 +92,13 @@ const mtcExecute mtfExecuteNchar = {
  *    IDE_RC mtfTranslateEstimate()
  *
  * Argument :
- *    aNode - ì…ë ¥ì •ë³´
- *    aStack - ì…ë ¥ê°’
+ *    aNode - ÀÔ·ÂÁ¤º¸
+ *    aStack - ÀÔ·Â°ª
  *
  * Description :
- *    1. ì•„ê·œë¨¼íŠ¸ ì…ë ¥ê°œìˆ˜ê°€ 3ê°œì¸ì§€ , ì•„ë‹ˆë©´ ì—ëŸ¬!
- *    2. *sModules[0]->language->translate ë¥¼ ì‹¤í–‰
- *    3. precision ê³„ì‚°
+ *    1. ¾Æ±Ô¸ÕÆ® ÀÔ·Â°³¼ö°¡ 3°³ÀÎÁö , ¾Æ´Ï¸é ¿¡·¯!
+ *    2. *sModules[0]->language->translate ¸¦ ½ÇÇà
+ *    3. precision °è»ê
  * ---------------------------------------------------------------------------*/
 IDE_RC mtfTranslateEstimate( mtcNode*     aNode,
                              mtcTemplate* aTemplate,
@@ -197,8 +197,8 @@ IDE_RC mtfTranslateCommon( const mtlModule * aLanguage,
  * Implementation :
  *    TRANSLATE( char, string1, string2 )
  *   
- *    aStack[0] : string1ì˜ ê° ë¬¸ìì— ëŒ€ì‘í•˜ëŠ” string2ì˜ ê° ë¬¸ìë¡œ êµì²´
- *                ëœ char
+ *    aStack[0] : string1ÀÇ °¢ ¹®ÀÚ¿¡ ´ëÀÀÇÏ´Â string2ÀÇ °¢ ¹®ÀÚ·Î ±³Ã¼
+ *                µÈ char
  *    aStack[1] : string1
  *    aStack[2] : string2
  *
@@ -230,7 +230,7 @@ IDE_RC mtfTranslateCommon( const mtlModule * aLanguage,
     while ( sSourceIndex < sSourceFence )
     {
         //---------------------------------
-        // Sourceì—ì„œ from stringê³¼ ë™ì¼í•œ ë¬¸ì ì°¾ê¸°
+        // Source¿¡¼­ from string°ú µ¿ÀÏÇÑ ¹®ÀÚ Ã£±â
         //---------------------------------
         
         sSourceSize =  mtl::getOneCharSize( sSourceIndex,
@@ -258,7 +258,7 @@ IDE_RC mtfTranslateCommon( const mtlModule * aLanguage,
             }
             else
             {
-                // ë‹¤ìŒ From ë¬¸ìë¡œ ì§„í–‰
+                // ´ÙÀ½ From ¹®ÀÚ·Î ÁøÇà
                 (void)aLanguage->nextCharPtr( &sFromIndex, sFromFence );
         
                 sFromStart++;
@@ -266,13 +266,13 @@ IDE_RC mtfTranslateCommon( const mtlModule * aLanguage,
         }
 
         //---------------------------------
-        // - ë™ì¼ ë¬¸ì ì—†ëŠ” ê²½ìš°: ê¸°ì¡´ ë¬¸ìë¥¼ ê²°ê³¼ì— copy
-        // - ë™ì¼ ë¬¸ì ìˆëŠ” ê²½ìš°: From ë¬¸ì ëŒ€ì‹  To ë¬¸ìë¥¼ ê²°ê³¼ì— copy 
+        // - µ¿ÀÏ ¹®ÀÚ ¾ø´Â °æ¿ì: ±âÁ¸ ¹®ÀÚ¸¦ °á°ú¿¡ copy
+        // - µ¿ÀÏ ¹®ÀÚ ÀÖ´Â °æ¿ì: From ¹®ÀÚ ´ë½Å To ¹®ÀÚ¸¦ °á°ú¿¡ copy 
         //---------------------------------
 
         sSourceIndexPrev = sSourceIndex;
         
-        // ë‹¤ìŒ source ë¬¸ìë¡œ ì§„í–‰
+        // ´ÙÀ½ source ¹®ÀÚ·Î ÁøÇà
         (void)aLanguage->nextCharPtr( & sSourceIndex, sSourceFence );
         
         if ( sIsSame == ID_FALSE )
@@ -291,7 +291,7 @@ IDE_RC mtfTranslateCommon( const mtlModule * aLanguage,
         else
         {
             //---------------------------------
-            // ëŒ€ì‘ë˜ëŠ” To ë¬¸ì ë¬¸ì ì°¾ê¸°
+            // ´ëÀÀµÇ´Â To ¹®ÀÚ ¹®ÀÚ Ã£±â
             //---------------------------------
             
             sToIndex = aTo;
@@ -330,7 +330,7 @@ IDE_RC mtfTranslateCommon( const mtlModule * aLanguage,
             }
             else
             {
-                // ë™ì¼ ë¬¸ì ì°¾ì•˜ì§€ë§Œ, ëŒ€ì‘ë˜ëŠ” To ë¬¸ìê°€ ì—†ëŠ” ê²½ìš°
+                // µ¿ÀÏ ¹®ÀÚ Ã£¾ÒÁö¸¸, ´ëÀÀµÇ´Â To ¹®ÀÚ°¡ ¾ø´Â °æ¿ì
             }
         }
     }
@@ -362,8 +362,8 @@ IDE_RC mtfTranslateCalculate( mtcNode*     aNode,
  * Implementation :
  *    TRANSLATE( char, string1, string2 )
  *   
- *    aStack[0] : string1ì˜ ê° ë¬¸ìì— ëŒ€ì‘í•˜ëŠ” string2ì˜ ê° ë¬¸ìë¡œ êµì²´
- *                ëœ char
+ *    aStack[0] : string1ÀÇ °¢ ¹®ÀÚ¿¡ ´ëÀÀÇÏ´Â string2ÀÇ °¢ ¹®ÀÚ·Î ±³Ã¼
+ *                µÈ char
  *    aStack[1] : string1
  *    aStack[2] : string2
  *
@@ -437,8 +437,8 @@ IDE_RC mtfTranslateCalculateNchar( mtcNode*     aNode,
  * Implementation :
  *    TRANSLATE( char, string1, string2 )
  *   
- *    aStack[0] : string1ì˜ ê° ë¬¸ìì— ëŒ€ì‘í•˜ëŠ” string2ì˜ ê° ë¬¸ìë¡œ êµì²´
- *                ëœ char
+ *    aStack[0] : string1ÀÇ °¢ ¹®ÀÚ¿¡ ´ëÀÀÇÏ´Â string2ÀÇ °¢ ¹®ÀÚ·Î ±³Ã¼
+ *                µÈ char
  *    aStack[1] : string1
  *    aStack[2] : string2
  *

@@ -62,7 +62,7 @@
   https://gmplib.org/ 
   http://www.mpfr.org/
   http://www.multiprecision.org/
-  https://github.com/WolfgangSt/libelf
+  http://www.mr511.de/software/english.html
   Gmp => ./configure --enable-shared --enable-static --prefix=/usr/gmp
   Mpfr => ./configure --enable-shared --enable-static --prefix=/usr/mpfr --with-gmp=/usr/gmp
   Mpc => ./configure --enable-shared --enable-static --prefix=/usr/mpc --with-gmp=/usr/gmp --with-mpfr=/usr/mpfr
@@ -77,7 +77,8 @@
   --with-gmp=/usr/gmp \
   --with-mpfr=/usr/mpfr \
   --with-mpc=/usr/mpc \
-  --with-libelf=/usr/elf
+  --with-libelf=/usr/elf \
+  make; make install
 - glibc 2.12 ~ 2.27 (ldd --version) (If system doesn't have right one, change OS version itself)
 - gcc 4.6.3 ~ 7.3.0 (gcc --version)
   If you want to use gcc 7.x then refer this repostory Wiki page "changes for using gcc 7"

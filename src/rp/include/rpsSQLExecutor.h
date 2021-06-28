@@ -79,7 +79,8 @@ private:
 
     static IDE_RC setBindParamInfo( qciStatement       * aQciStatement,
                                     mtcColumn          * aColumn,
-                                    UInt                 aId );
+                                    UInt                 aId,
+                                    UInt                 aLength );
 
     static IDE_RC setBindParamInfoArray( qciStatement      * aQciStatement,
                                          rpdMetaItem       * aMetaItem,
@@ -87,15 +88,18 @@ private:
                                          smiValue          * aValueArray,
                                          UInt                aColumnCount,
                                          rpdXLog           * aXLog,
+                                         idBool              aUpdateWere,
                                          UInt                aStartId,
                                          UInt              * aEndId );
 
     static IDE_RC setBindParamDataArray( qciStatement       * aQciStatement,
-                                         rpdMetaItem        * aMetaItem,
+                                         rpdMetaItem        * aRemoteMetaItem,
+                                         rpdMetaItem        * aLocalMetaItem,
                                          UInt               * aCIDArray,
                                          smiValue           * aValueArray,
                                          UInt                 aColumnCount,
                                          rpdXLog            * aXLog,
+                                         idBool               aUpdateWere,
                                          UInt                 aStartId,
                                          UInt               * aEndId );
 

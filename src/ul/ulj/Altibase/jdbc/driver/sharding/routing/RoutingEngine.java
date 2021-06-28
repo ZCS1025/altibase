@@ -18,11 +18,12 @@
 package Altibase.jdbc.driver.sharding.routing;
 
 import Altibase.jdbc.driver.datatype.Column;
+import Altibase.jdbc.driver.sharding.core.DataNode;
 
 import java.sql.SQLException;
 import java.util.List;
 
 public interface RoutingEngine
 {
-    SQLRouteResult route(String aSql, List<Column> aParameters) throws SQLException;
+    List<DataNode> route(String aSql, List<Column> aParameters) throws SQLException;
 }

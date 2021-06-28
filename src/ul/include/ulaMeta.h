@@ -24,12 +24,12 @@
 #define ULA_ROLE_ANALYSIS_PROPAGATION   (4)
 
 /* Replication Handshake Flags */
-// 1Î≤à ÎπÑÌä∏ : Endian bit : 0 - Big Endian, 1 - Little Endian
+// 1π¯ ∫Ò∆Æ : Endian bit : 0 - Big Endian, 1 - Little Endian
 #define ULA_LITTLE_ENDIAN                   (0x00000001)
 #define ULA_BIG_ENDIAN                      (0x00000000)
 #define ULA_ENDIAN_MASK                     (0x00000001)
 
-// 3Î≤à ÎπÑÌä∏ : Wakeup Peer Sender
+// 3π¯ ∫Ò∆Æ : Wakeup Peer Sender
 #define ULA_WAKEUP_PEER_SENDER_FLAG_SET     (0x00000004)
 #define ULA_WAKEUP_PEER_SENDER_FLAG_UNSET   (0x00000000)
 #define ULA_WAKEUP_PEER_SENDER_MASK         (0x00000004)
@@ -38,11 +38,20 @@
 
 
 /* PROJ-1090 Function-based Index
- *  Hidden ColumnÏù∏ÏßÄ Ïó¨Î∂Ä: QCM_COLUMN_HIDDEN_COLUMN_MASK Ï∞∏Ï°∞
+ *  Hidden Column¿Œ¡ˆ ø©∫Œ: QCM_COLUMN_HIDDEN_COLUMN_MASK ¬¸¡∂
  */
 #define ULN_QPFLAG_HIDDEN_COLUMN_MASK            (0x00002000)
 #define ULN_QPFLAG_HIDDEN_COLUMN_FALSE           (0x00000000)
 #define ULN_QPFLAG_HIDDEN_COLUMN_TRUE            (0x00002000)
+
+typedef enum
+{
+    ULA_META_DICTTABLECOUNT  = 0,
+    ULA_META_PARTITIONCOUNT  = 1,
+    ULA_META_XSN             = 2,
+    ULA_META_SRID            = 3,
+    ULA_META_MAX
+} ULA_PROTOCOL_OP_CODE;
 
 typedef struct ulaTable ulaTable;
 typedef struct ulaIndex ulaIndex;
@@ -61,6 +70,7 @@ typedef struct ulaReplication
     ulaTable     *mTableArray;                    /* Table Array */
     acp_char_t    mDBCharSet[ULA_NAME_LEN];       /* DB Charter Set */
     acp_char_t    mDBNCharSet[ULA_NAME_LEN];      /* DB National Charter Set */
+    acp_uint64_t  mSenderVersion;                 /* Sender Version */
 } ulaReplication;
 
 typedef struct ulaReplTempInfo
@@ -155,12 +165,14 @@ ACI_RC ulaMetaGetProtocolVersion(ulaProtocolVersion *aOutProtocolVersion,
 
 ACI_RC ulaMetaSendMeta( cmiProtocolContext * aProtocolContext,
                         acp_char_t         * aRepName,
+                        ulaMeta            * aMeta,
                         acp_uint32_t         aFlag,
                         ulaErrorMgr        * aOutErrorMgr );
 
 ACI_RC ulaMetaRecvMeta( ulaMeta            * aMeta,
                         cmiProtocolContext * aProtocolContext,
                         acp_uint32_t         aTimeoutSec,
+                        ulaVersion           aOutReplVersion,
                         acp_char_t         * aXLogSenderName,
                         acp_uint32_t       * aOutTransTableSize,
                         ulaErrorMgr        * aOutErrorMgr );
@@ -193,5 +205,8 @@ ACI_RC ulaMetaGetIndexInfo(ulaTable      *aTable,
                            ulaErrorMgr   *aOutErrorMgr);
 
 acp_bool_t ulaMetaIsHiddenColumn( ulaColumn  * aColumn );
+
+acp_bool_t needToProcessProtocolOperation( ULA_PROTOCOL_OP_CODE aOpCode,
+                                           acp_uint64_t         aVersion );
 
 #endif /* _O_ULA_META_H_ */

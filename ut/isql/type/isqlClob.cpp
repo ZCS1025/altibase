@@ -38,10 +38,22 @@ IDE_RC isqlClob::initBuffer()
 
 IDE_RC isqlClob::InitLobBuffer( SInt aSize )
 {
-    mValueSize = aSize;
+    /* Clob은 Fetch할 때마다 SQLGetLobLength,SQLGetLob으로
+     * 데이터를 가져오므로 필요한 버퍼 크기가 매번 달라질 수 있다.
+     * aSize가 현재 버퍼 크기보다 클 때만 할당하도록 한다.
+     */
+    if ( aSize > mValueSize )
+    {
+        freeMem();
+        mValueSize = aSize;
 
-    mValue = (SChar *) idlOS::malloc(mValueSize);
-    IDE_TEST(mValue == NULL);
+        mValue = (SChar *) idlOS::malloc(mValueSize);
+        IDE_TEST(mValue == NULL);
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
     return IDE_SUCCESS;
 
@@ -78,17 +90,19 @@ void isqlClob::SetNull()
 
 void isqlClob::Reformat()
 {
-    /* BUG-41677 null lob locator */
-    if ( mInd == SQL_NULL_DATA )
-    {
-        mValue[0] = '\0';
-    }
-    else
-    {
-        /* Do nothing */
-    }
-    mCurr = mValue;
-    mCurrLen = 0;
+    /*
+     * BUG-49014
+     *   이 함수는 아래와 같이 utISPApi::Fetch에서 호출된다.
+     *     iSQLExecuteCommand::FetchSelectStmt
+     *       utISPApi::Fetch
+     *         isqlClob::Reformat
+     *       iSQLExecuteCommand::printRow
+     *         utISPApi::GetLobData
+     *           isqlClob::InitLobBuffer
+     *   다른 타입과 달리 isqlClob은 이 시점에 mValue를 할당전이므로
+     *   여기서 할 것이 없다.
+     */
+    return;
 }
 
 void isqlClob::SetLobValue()

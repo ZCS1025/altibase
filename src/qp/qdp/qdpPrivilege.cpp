@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdpPrivilege.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qdpPrivilege.cpp 88963 2020-10-19 03:33:18Z jake.jang $
  **********************************************************************/
 
 #include <idl.h>
@@ -126,8 +126,8 @@ IDE_RC qdpPrivilege::checkDDLCreateTablePriv(
     }
 
     // To Fix PR-11549
-    // SYSTEM_ ê³„ì • ì´ì™¸ì—ëŠ”
-    // SYSTEM_ ìœ ì €ì— ì–´ë– í•œ DDLë„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.
+    // SYSTEM_ °èÁ¤ ÀÌ¿Ü¿¡´Â
+    // SYSTEM_ À¯Àú¿¡ ¾î¶°ÇÑ DDLµµ ¼öÇàÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( ( ( aTableOwnerID == QC_SYSTEM_USER_ID ) &&
                       ( sGranteeID != QC_SYSTEM_USER_ID ) ),
                     ERR_NO_GRANT_DDL_META_TABLE );
@@ -245,8 +245,8 @@ IDE_RC qdpPrivilege::checkDDLCreateViewPriv(
     }
 
     // To Fix PR-11549
-    // SYSTEM_ ê³„ì • ì´ì™¸ì—ëŠ”
-    // SYSTEM_ ìœ ì €ì— ì–´ë– í•œ DDLë„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.
+    // SYSTEM_ °èÁ¤ ÀÌ¿Ü¿¡´Â
+    // SYSTEM_ À¯Àú¿¡ ¾î¶°ÇÑ DDLµµ ¼öÇàÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( ( ( sViewOwnerID == QC_SYSTEM_USER_ID ) &&
                       ( sGranteeID != QC_SYSTEM_USER_ID ) ),
                     ERR_NO_GRANT_DDL_META_TABLE );
@@ -339,8 +339,8 @@ IDE_RC qdpPrivilege::checkDDLCreateIndexPriv(
     }
 
     // To Fix PR-11549
-    // SYSTEM_ ê³„ì • ì´ì™¸ì—ëŠ”
-    // SYSTEM_ ìœ ì €ì— ì–´ë– í•œ DDLë„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.
+    // SYSTEM_ °èÁ¤ ÀÌ¿Ü¿¡´Â
+    // SYSTEM_ À¯Àú¿¡ ¾î¶°ÇÑ DDLµµ ¼öÇàÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( ( ( aTableInfo->tableOwnerID == QC_SYSTEM_USER_ID ) &&
                       ( sGranteeID != QC_SYSTEM_USER_ID ) ),
                     ERR_NO_GRANT_DDL_META_TABLE );
@@ -455,8 +455,8 @@ IDE_RC qdpPrivilege::checkDDLCreateSequencePriv(
     }
 
     // To Fix PR-11549
-    // SYSTEM_ ê³„ì • ì´ì™¸ì—ëŠ”
-    // SYSTEM_ ìœ ì €ì— ì–´ë– í•œ DDLë„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.
+    // SYSTEM_ °èÁ¤ ÀÌ¿Ü¿¡´Â
+    // SYSTEM_ À¯Àú¿¡ ¾î¶°ÇÑ DDLµµ ¼öÇàÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( ( ( aSequenceOwnerID == QC_SYSTEM_USER_ID ) &&
                       ( sGranteeID != QC_SYSTEM_USER_ID ) ),
                     ERR_NO_GRANT_DDL_META_TABLE );
@@ -571,8 +571,8 @@ IDE_RC qdpPrivilege::checkDDLCreatePSMPriv(
     }
 
     // To Fix PR-11549
-    // SYSTEM_ ê³„ì • ì´ì™¸ì—ëŠ”
-    // SYSTEM_ ìœ ì €ì— ì–´ë– í•œ DDLë„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.
+    // SYSTEM_ °èÁ¤ ÀÌ¿Ü¿¡´Â
+    // SYSTEM_ À¯Àú¿¡ ¾î¶°ÇÑ DDLµµ ¼öÇàÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( ( ( aPSMOwnerID == QC_SYSTEM_USER_ID ) &&
                       ( sGranteeID != QC_SYSTEM_USER_ID ) ),
                     ERR_NO_GRANT_DDL_META_TABLE );
@@ -604,7 +604,7 @@ qdpPrivilege::checkDDLCreateTriggerPriv( qcStatement * aStatement,
  *
  * Description :
  *
- *    CREATE TRIGGERë¥¼ ìœ„í•œ ê¶Œí•œ ê²€ì‚¬ë¥¼ ìˆ˜í–‰í•¨.
+ *    CREATE TRIGGER¸¦ À§ÇÑ ±ÇÇÑ °Ë»ç¸¦ ¼öÇàÇÔ.
  *    check privilege to execute CREATE TRIGGER statement
  *        - CREATE TRIGGER ( system privilege )
  *        - CREATE ANY TRIGGER ( system privilege )
@@ -685,7 +685,7 @@ qdpPrivilege::checkDDLCreateTriggerPriv( qcStatement * aStatement,
     }
 
     // To Fix PR-10709
-    // SYSTEM_ Userì—ëŠ” Triggerë¥¼ ìƒì„±í•  ìˆ˜ ì—†ìŒ.
+    // SYSTEM_ User¿¡´Â Trigger¸¦ »ý¼ºÇÒ ¼ö ¾øÀ½.
     IDE_TEST_RAISE ( aTriggerOwnerID == QC_SYSTEM_USER_ID,
                      err_invalid_trigger );
 
@@ -718,7 +718,7 @@ qdpPrivilege::checkDDLCreateTriggerTablePriv( qcStatement * aStatement,
  * Description :
  *
  *    To Fix PR-10618
- *    CREATE TRIGGERë¥¼ ìœ„í•´ì„œëŠ” Table Ownerì— ëŒ€í•œ ê²€ì‚¬ê°€ í•„ìš”í•¨.
+ *    CREATE TRIGGER¸¦ À§ÇØ¼­´Â Table Owner¿¡ ´ëÇÑ °Ë»ç°¡ ÇÊ¿äÇÔ.
  *    check privilege to execute CREATE TRIGGER statement
  *        - CREATE TRIGGER ( system privilege )
  *        - CREATE ANY TRIGGER ( system privilege )
@@ -799,7 +799,7 @@ qdpPrivilege::checkDDLCreateTriggerTablePriv( qcStatement * aStatement,
     }
 
     // To Fix PR-10709
-    // SYSTEM_ Userì—ëŠ” Triggerë¥¼ ìƒì„±í•  ìˆ˜ ì—†ìŒ.
+    // SYSTEM_ User¿¡´Â Trigger¸¦ »ý¼ºÇÒ ¼ö ¾øÀ½.
     IDE_TEST_RAISE ( aTableOwnerID == QC_SYSTEM_USER_ID,
                      err_invalid_trigger );
 
@@ -902,8 +902,9 @@ IDE_RC qdpPrivilege::checkDDLReplicationPriv(qcStatement * aStatement)
 {
 #define IDE_FN "qdpPrivilege::checkDDLReplicationPriv"
 
-    // check Grant : A Current user is only SYS user
-    IDE_TEST_RAISE( QCG_GET_SESSION_USER_ID(aStatement) != QC_SYS_USER_ID,
+    // check Grant : A Current user is SYS or SYSTEM user
+    IDE_TEST_RAISE( !( QCG_GET_SESSION_USER_ID(aStatement) == QC_SYS_USER_ID || 
+                     QCG_GET_SESSION_USER_ID(aStatement) == QC_SYSTEM_USER_ID ),
                     ERR_NO_GRANT );
 
     return IDE_SUCCESS;
@@ -985,8 +986,8 @@ IDE_RC qdpPrivilege::checkDDLAlterTablePriv(
     }
 
     // To Fix PR-11549
-    // SYSTEM_ ê³„ì • ì´ì™¸ì—ëŠ”
-    // SYSTEM_ ìœ ì €ì— ì–´ë– í•œ DDLë„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.
+    // SYSTEM_ °èÁ¤ ÀÌ¿Ü¿¡´Â
+    // SYSTEM_ À¯Àú¿¡ ¾î¶°ÇÑ DDLµµ ¼öÇàÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( ( ( aTableInfo->tableOwnerID == QC_SYSTEM_USER_ID ) &&
                       ( sGranteeID != QC_SYSTEM_USER_ID ) ),
                     ERR_NO_GRANT_DDL_META_TABLE );
@@ -1080,8 +1081,8 @@ IDE_RC qdpPrivilege::checkDDLAlterIndexPriv(
     }
 
     // To Fix PR-11549
-    // SYSTEM_ ê³„ì • ì´ì™¸ì—ëŠ”
-    // SYSTEM_ ìœ ì €ì— ì–´ë– í•œ DDLë„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.
+    // SYSTEM_ °èÁ¤ ÀÌ¿Ü¿¡´Â
+    // SYSTEM_ À¯Àú¿¡ ¾î¶°ÇÑ DDLµµ ¼öÇàÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( ( ( aIndexOwnerID == QC_SYSTEM_USER_ID ) &&
                       ( sGranteeID != QC_SYSTEM_USER_ID ) ),
                     ERR_NO_GRANT_DDL_META_TABLE );
@@ -1187,8 +1188,8 @@ IDE_RC qdpPrivilege::checkDDLAlterSequencePriv(
     }
 
     // To Fix PR-11549
-    // SYSTEM_ ê³„ì • ì´ì™¸ì—ëŠ”
-    // SYSTEM_ ìœ ì €ì— ì–´ë– í•œ DDLë„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.
+    // SYSTEM_ °èÁ¤ ÀÌ¿Ü¿¡´Â
+    // SYSTEM_ À¯Àú¿¡ ¾î¶°ÇÑ DDLµµ ¼öÇàÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( ( ( aSequenceInfo->sequenceOwnerID == QC_SYSTEM_USER_ID ) &&
                       ( sGranteeID != QC_SYSTEM_USER_ID ) ),
                     ERR_NO_GRANT_DDL_META_TABLE );
@@ -1266,8 +1267,8 @@ IDE_RC qdpPrivilege::checkDDLAlterPSMPriv(
     }
 
     // To Fix PR-11549
-    // SYSTEM_ ê³„ì • ì´ì™¸ì—ëŠ”
-    // SYSTEM_ ìœ ì €ì— ì–´ë– í•œ DDLë„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.
+    // SYSTEM_ °èÁ¤ ÀÌ¿Ü¿¡´Â
+    // SYSTEM_ À¯Àú¿¡ ¾î¶°ÇÑ DDLµµ ¼öÇàÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( ( ( aPSMOwnerID == QC_SYSTEM_USER_ID ) &&
                       ( sGranteeID != QC_SYSTEM_USER_ID ) ),
                     ERR_NO_GRANT_DDL_META_TABLE );
@@ -1298,7 +1299,7 @@ qdpPrivilege::checkDDLAlterTriggerPriv( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *    ALTER TRIGGERë¥¼ ìœ„í•œ Privilege ê²€ì‚¬
+ *    ALTER TRIGGER¸¦ À§ÇÑ Privilege °Ë»ç
  *
  *    check privilege to execute ALTER TRIGGER statement
  *        - ALTER ANY TRIGGER ( system privilege )
@@ -1343,8 +1344,8 @@ qdpPrivilege::checkDDLAlterTriggerPriv( qcStatement * aStatement,
     }
 
     // To Fix PR-11549
-    // SYSTEM_ ê³„ì • ì´ì™¸ì—ëŠ”
-    // SYSTEM_ ìœ ì €ì— ì–´ë– í•œ DDLë„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.
+    // SYSTEM_ °èÁ¤ ÀÌ¿Ü¿¡´Â
+    // SYSTEM_ À¯Àú¿¡ ¾î¶°ÇÑ DDLµµ ¼öÇàÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( ( ( aTriggerOwnerID == QC_SYSTEM_USER_ID ) &&
                       ( sGranteeID != QC_SYSTEM_USER_ID ) ),
                     ERR_NO_GRANT_DDL_META_TABLE );
@@ -1420,8 +1421,8 @@ IDE_RC qdpPrivilege::checkDDLAlterUserPriv(
     }
 
     // To Fix PR-11549
-    // SYSTEM_ ê³„ì • ì´ì™¸ì—ëŠ”
-    // SYSTEM_ ìœ ì €ì— ì–´ë– í•œ DDLë„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.
+    // SYSTEM_ °èÁ¤ ÀÌ¿Ü¿¡´Â
+    // SYSTEM_ À¯Àú¿¡ ¾î¶°ÇÑ DDLµµ ¼öÇàÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( ( ( aRealUserID == QC_SYSTEM_USER_ID ) &&
                       ( sGranteeID != QC_SYSTEM_USER_ID ) ),
                     ERR_NO_GRANT_DDL_META_TABLE );
@@ -1623,8 +1624,8 @@ IDE_RC qdpPrivilege::checkDDLDropTablePriv(
     }
 
     // To Fix PR-11549
-    // SYSTEM_ ê³„ì • ì´ì™¸ì—ëŠ”
-    // SYSTEM_ ìœ ì €ì— ì–´ë– í•œ DDLë„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.
+    // SYSTEM_ °èÁ¤ ÀÌ¿Ü¿¡´Â
+    // SYSTEM_ À¯Àú¿¡ ¾î¶°ÇÑ DDLµµ ¼öÇàÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( ( ( aTableOwnerID == QC_SYSTEM_USER_ID ) &&
                       ( sGranteeID != QC_SYSTEM_USER_ID ) ),
                     ERR_NO_GRANT_DDL_META_TABLE );
@@ -1701,8 +1702,8 @@ IDE_RC qdpPrivilege::checkDDLDropViewPriv(
     }
 
     // To Fix PR-11549
-    // SYSTEM_ ê³„ì • ì´ì™¸ì—ëŠ”
-    // SYSTEM_ ìœ ì €ì— ì–´ë– í•œ DDLë„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.
+    // SYSTEM_ °èÁ¤ ÀÌ¿Ü¿¡´Â
+    // SYSTEM_ À¯Àú¿¡ ¾î¶°ÇÑ DDLµµ ¼öÇàÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( ( ( aViewOwnerID == QC_SYSTEM_USER_ID ) &&
                       ( sGranteeID != QC_SYSTEM_USER_ID ) ),
                     ERR_NO_GRANT_DDL_META_TABLE );
@@ -1796,8 +1797,8 @@ IDE_RC qdpPrivilege::checkDDLDropIndexPriv(
     }
 
     // To Fix PR-11549
-    // SYSTEM_ ê³„ì • ì´ì™¸ì—ëŠ”
-    // SYSTEM_ ìœ ì €ì— ì–´ë– í•œ DDLë„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.
+    // SYSTEM_ °èÁ¤ ÀÌ¿Ü¿¡´Â
+    // SYSTEM_ À¯Àú¿¡ ¾î¶°ÇÑ DDLµµ ¼öÇàÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( ( ( aIndexOwnerID == QC_SYSTEM_USER_ID ) &&
                       ( sGranteeID != QC_SYSTEM_USER_ID ) ),
                     ERR_NO_GRANT_DDL_META_TABLE );
@@ -1874,8 +1875,8 @@ IDE_RC qdpPrivilege::checkDDLDropSequencePriv(
     }
 
     // To Fix PR-11549
-    // SYSTEM_ ê³„ì • ì´ì™¸ì—ëŠ”
-    // SYSTEM_ ìœ ì €ì— ì–´ë– í•œ DDLë„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.
+    // SYSTEM_ °èÁ¤ ÀÌ¿Ü¿¡´Â
+    // SYSTEM_ À¯Àú¿¡ ¾î¶°ÇÑ DDLµµ ¼öÇàÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( ( ( aSequenceOwnerID == QC_SYSTEM_USER_ID ) &&
                       ( sGranteeID != QC_SYSTEM_USER_ID ) ),
                     ERR_NO_GRANT_DDL_META_TABLE );
@@ -1954,8 +1955,8 @@ IDE_RC qdpPrivilege::checkDDLDropPSMPriv(
     }
 
     // To Fix PR-11549
-    // SYSTEM_ ê³„ì • ì´ì™¸ì—ëŠ”
-    // SYSTEM_ ìœ ì €ì— ì–´ë– í•œ DDLë„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.
+    // SYSTEM_ °èÁ¤ ÀÌ¿Ü¿¡´Â
+    // SYSTEM_ À¯Àú¿¡ ¾î¶°ÇÑ DDLµµ ¼öÇàÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( ( ( aPSMOwnerID == QC_SYSTEM_USER_ID ) &&
                       ( sGranteeID != QC_SYSTEM_USER_ID ) ),
                     ERR_NO_GRANT_DDL_META_TABLE );
@@ -1986,7 +1987,7 @@ qdpPrivilege::checkDDLDropTriggerPriv( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *    DROP TRIGGERë¥¼ ìœ„í•œ Validationì„ ìˆ˜í–‰í•¨.
+ *    DROP TRIGGER¸¦ À§ÇÑ ValidationÀ» ¼öÇàÇÔ.
  *
  *    check privilege to execute DROP TRIGGER statement
  *        - owner of procedure
@@ -2032,8 +2033,8 @@ qdpPrivilege::checkDDLDropTriggerPriv( qcStatement * aStatement,
     }
 
     // To Fix PR-11549
-    // SYSTEM_ ê³„ì • ì´ì™¸ì—ëŠ”
-    // SYSTEM_ ìœ ì €ì— ì–´ë– í•œ DDLë„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.
+    // SYSTEM_ °èÁ¤ ÀÌ¿Ü¿¡´Â
+    // SYSTEM_ À¯Àú¿¡ ¾î¶°ÇÑ DDLµµ ¼öÇàÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( ( ( aTriggerOwnerID == QC_SYSTEM_USER_ID ) &&
                       ( sGranteeID != QC_SYSTEM_USER_ID ) ),
                     ERR_NO_GRANT_DDL_META_TABLE );
@@ -2248,13 +2249,13 @@ IDE_RC qdpPrivilege::checkReferencesPriv( qcStatement  * aStatement,
     UInt              sGranteeID = QCG_GET_SESSION_USER_ID(aStatement);
 
     // BUG-27950
-    // ìƒìœ„í˜¸ì¶œì§€ì—ì„œ table ê¶Œí•œê²€ì‚¬ëŠ” ëª¨ë‘ ì™„ë£Œëœ ìƒíƒœë¡œ
-    // ì†Œìœ ìžì™€ ì°¸ì¡°ê°ì²´ì˜ ì†Œìœ ìžê°€ ê°™ì„ê²½ìš° ê°ì²´ê¶Œí•œ í†µê³¼
+    // »óÀ§È£ÃâÁö¿¡¼­ table ±ÇÇÑ°Ë»ç´Â ¸ðµÎ ¿Ï·áµÈ »óÅÂ·Î
+    // ¼ÒÀ¯ÀÚ¿Í ÂüÁ¶°´Ã¼ÀÇ ¼ÒÀ¯ÀÚ°¡ °°À»°æ¿ì °´Ã¼±ÇÇÑ Åë°ú
     if ( ( sGranteeID != QC_SYSTEM_USER_ID ) &&
          ( sGranteeID != QC_SYS_USER_ID ) &&
          ( aTableOwnerID != aTableInfo->tableOwnerID ) )
     {
-        // ì†Œìœ ìžì™€ ì°¸ì¡°ê°ì²´ì˜ ì†Œìœ ìžê°€ ë‹¤ë¥¼ê²½ìš°
+        // ¼ÒÀ¯ÀÚ¿Í ÂüÁ¶°´Ã¼ÀÇ ¼ÒÀ¯ÀÚ°¡ ´Ù¸¦°æ¿ì
         // check object privilege : REFERENCES
 
         IDE_TEST( qcmPriv::checkPrivilegeInfo(
@@ -3140,11 +3141,11 @@ IDE_RC qdpPrivilege::checkDDLCreateTableSpacePriv(
 /***********************************************************************
  *
  * Description :
- *    CREATE TABLESPACE ê¶Œí•œ ê²€ì‚¬
+ *    CREATE TABLESPACE ±ÇÇÑ °Ë»ç
  *
  * Implementation :
- *    (1) SYS ì‚¬ìš©ìž ì´ê±°ë‚˜ tablespace ìƒì„±ê¶Œí•œì„ ê°€ì§„ ì‚¬ìš©ìžì¸ì§€ ê²€ì‚¬
- *    (2) PUBLIC ë˜ëŠ” All PRIVILEGESì¸ì§€ ê²€ì‚¬
+ *    (1) SYS »ç¿ëÀÚ ÀÌ°Å³ª tablespace »ý¼º±ÇÇÑÀ» °¡Áø »ç¿ëÀÚÀÎÁö °Ë»ç
+ *    (2) PUBLIC ¶Ç´Â All PRIVILEGESÀÎÁö °Ë»ç
  *
  ***********************************************************************/
 #define IDE_FN "qdpPrivilege::checkDDLCreateTableSpacePriv"
@@ -3157,10 +3158,10 @@ IDE_RC qdpPrivilege::checkDDLCreateTableSpacePriv(
         (sGranteeID != QC_SYS_USER_ID))
     {
         //--------------------------------
-        // SYS, SYSTEM ì‚¬ìš©ìžê°€ ì•„ë‹Œ ê²½ìš°
+        // SYS, SYSTEM »ç¿ëÀÚ°¡ ¾Æ´Ñ °æ¿ì
         //--------------------------------
 
-        // create tablespace ê¶Œí•œì„ ê°€ì¡ŒëŠ”ì§€ ê²€ì‚¬
+        // create tablespace ±ÇÇÑÀ» °¡Á³´ÂÁö °Ë»ç
         IDE_TEST(qcmPriv::checkSystemPrivWithoutGrantor(
                      aStatement,
                      sGranteeID,
@@ -3171,9 +3172,9 @@ IDE_RC qdpPrivilege::checkDDLCreateTableSpacePriv(
         if (sExist == ID_FALSE)
         {
             //--------------------------------
-            // PUBLIC ë˜ëŠ” All PRIVILEGESì¸ì§€ ê²€ì‚¬
-            // - PUBLIC : ëª¨ë“  ì‚¬ìš©ìžì—ê²Œ ì‹œìŠ¤í…œ ì ‘ê·¼ ê¶Œí•œì„ ë¶€ì—¬
-            // - ALL PRIVILEGES : ì‹œìŠ¤í…œ ì ‘ê·¼ ê¶Œí•œì— ê´€í•œ ëª¨ë“  ê¶Œí•œ ë¶€ì—¬
+            // PUBLIC ¶Ç´Â All PRIVILEGESÀÎÁö °Ë»ç
+            // - PUBLIC : ¸ðµç »ç¿ëÀÚ¿¡°Ô ½Ã½ºÅÛ Á¢±Ù ±ÇÇÑÀ» ºÎ¿©
+            // - ALL PRIVILEGES : ½Ã½ºÅÛ Á¢±Ù ±ÇÇÑ¿¡ °üÇÑ ¸ðµç ±ÇÇÑ ºÎ¿©
             //--------------------------------
 
             IDE_TEST(checkSystemPrivAllAndPublic(
@@ -3189,7 +3190,7 @@ IDE_RC qdpPrivilege::checkDDLCreateTableSpacePriv(
     else
     {
         //--------------------------------
-        // SYS, SYSTEM ì‚¬ìš©ìžì¸ ê²½ìš°
+        // SYS, SYSTEM »ç¿ëÀÚÀÎ °æ¿ì
         //--------------------------------
     }
 
@@ -3214,11 +3215,11 @@ IDE_RC qdpPrivilege::checkDDLAlterTableSpacePriv(
 /***********************************************************************
  *
  * Description :
- *    ALTER TABLESPACE ê¶Œí•œ ê²€ì‚¬
+ *    ALTER TABLESPACE ±ÇÇÑ °Ë»ç
  *
  * Implementation :
- *    (1) SYS ì‚¬ìš©ìž ì´ê±°ë‚˜ tablespace ë³€ê²½ ê¶Œí•œì„ ê°€ì§„ ì‚¬ìš©ìžì¸ì§€ ê²€ì‚¬
- *    (2) PUBLIC ë˜ëŠ” All PRIVILEGESì¸ì§€ ê²€ì‚¬
+ *    (1) SYS »ç¿ëÀÚ ÀÌ°Å³ª tablespace º¯°æ ±ÇÇÑÀ» °¡Áø »ç¿ëÀÚÀÎÁö °Ë»ç
+ *    (2) PUBLIC ¶Ç´Â All PRIVILEGESÀÎÁö °Ë»ç
  *
  ***********************************************************************/
 #define IDE_FN "qdpPrivilege::checkDDLAlterTableSpacePriv"
@@ -3231,10 +3232,10 @@ IDE_RC qdpPrivilege::checkDDLAlterTableSpacePriv(
         (sGranteeID != QC_SYS_USER_ID))
     {
         //--------------------------------
-        // SYS, SYSTEM ì‚¬ìš©ìžê°€ ì•„ë‹Œ ê²½ìš°
+        // SYS, SYSTEM »ç¿ëÀÚ°¡ ¾Æ´Ñ °æ¿ì
         //--------------------------------
 
-        // alter tablespace ê¶Œí•œì„ ê°€ì¡ŒëŠ”ì§€ ê²€ì‚¬
+        // alter tablespace ±ÇÇÑÀ» °¡Á³´ÂÁö °Ë»ç
         IDE_TEST(qcmPriv::checkSystemPrivWithoutGrantor(
                      aStatement,
                      sGranteeID,
@@ -3245,9 +3246,9 @@ IDE_RC qdpPrivilege::checkDDLAlterTableSpacePriv(
         if (sExist == ID_FALSE)
         {
             //--------------------------------
-            // PUBLIC ë˜ëŠ” All PRIVILEGESì¸ì§€ ê²€ì‚¬
-            // - PUBLIC : ëª¨ë“  ì‚¬ìš©ìžì—ê²Œ ì‹œìŠ¤í…œ ì ‘ê·¼ ê¶Œí•œì„ ë¶€ì—¬
-            // - ALL PRIVILEGES : ì‹œìŠ¤í…œ ì ‘ê·¼ ê¶Œí•œì— ê´€í•œ ëª¨ë“  ê¶Œí•œ ë¶€ì—¬
+            // PUBLIC ¶Ç´Â All PRIVILEGESÀÎÁö °Ë»ç
+            // - PUBLIC : ¸ðµç »ç¿ëÀÚ¿¡°Ô ½Ã½ºÅÛ Á¢±Ù ±ÇÇÑÀ» ºÎ¿©
+            // - ALL PRIVILEGES : ½Ã½ºÅÛ Á¢±Ù ±ÇÇÑ¿¡ °üÇÑ ¸ðµç ±ÇÇÑ ºÎ¿©
             //--------------------------------
 
             IDE_TEST(checkSystemPrivAllAndPublic(
@@ -3263,7 +3264,7 @@ IDE_RC qdpPrivilege::checkDDLAlterTableSpacePriv(
     else
     {
         //--------------------------------
-        // SYS, SYSTEM ì‚¬ìš©ìžì¸ ê²½ìš°
+        // SYS, SYSTEM »ç¿ëÀÚÀÎ °æ¿ì
         //--------------------------------
     }
 
@@ -3435,7 +3436,7 @@ IDE_RC qdpPrivilege::checkDDLCreateSynonymPriv(
 {
 /***********************************************************************
  *
- * Description : Private Synonym ìƒì„±ê¶Œí•œì„ ê²€ì‚¬í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ * Description : Private Synonym »ý¼º±ÇÇÑÀ» °Ë»çÇÏ´Â ÇÔ¼öÀÌ´Ù.
  *
  * Implementation :
  *
@@ -3448,17 +3449,17 @@ IDE_RC qdpPrivilege::checkDDLCreateSynonymPriv(
     UInt        sPrivID;
     idBool      sExist     = ID_FALSE;
 
-    // SYSTEM_USER, SYS_USERëŠ” ëª¨ë“  ê¶Œí•œì„ ê°€ì§
+    // SYSTEM_USER, SYS_USER´Â ¸ðµç ±ÇÇÑÀ» °¡Áü
     if( (QC_SYSTEM_USER_ID == sGrantorID) ||
         (QC_SYS_USER_ID == sGrantorID) )
     {
         return IDE_SUCCESS;
     }
 
-    // 1. ìžì‹ ì˜ Synonymì„ ìƒì„±í•˜ëŠ” ê²½ìš°
+    // 1. ÀÚ½ÅÀÇ SynonymÀ» »ý¼ºÇÏ´Â °æ¿ì
     if(sGrantorID == aSynonymOwnerID)
     {
-        // 1.1 CREATE SYNONYM ê¶Œí•œ ì²´í¬
+        // 1.1 CREATE SYNONYM ±ÇÇÑ Ã¼Å©
         sPrivID = QCM_PRIV_ID_SYSTEM_CREATE_SYNONYM_NO;
 
         IDE_TEST(
@@ -3483,7 +3484,7 @@ IDE_RC qdpPrivilege::checkDDLCreateSynonymPriv(
 
         if(sExist == ID_FALSE)
         {
-            // 1.2 CREATE ANY SYNONYM ê¶Œí•œ ì²´í¬
+            // 1.2 CREATE ANY SYNONYM ±ÇÇÑ Ã¼Å©
             sPrivID = QCM_PRIV_ID_SYSTEM_CREATE_ANY_SYNONYM_NO;
 
             IDE_TEST(
@@ -3505,16 +3506,16 @@ IDE_RC qdpPrivilege::checkDDLCreateSynonymPriv(
                              &sExist)
                          != IDE_SUCCESS);
 
-                // CREATE SYNONYM ê¶Œí•œì´ ì—†ìŒ
+                // CREATE SYNONYM ±ÇÇÑÀÌ ¾øÀ½
                 IDE_TEST_RAISE(sExist == ID_FALSE,
                                ERR_NO_GRANT_CREATE_SYNONYM);
             }
         }
     }
-    // 2. íƒ€ ì‚¬ìš©ìžì˜ Synonymì„ ìƒì„±í•˜ëŠ” ê²½ìš°
+    // 2. Å¸ »ç¿ëÀÚÀÇ SynonymÀ» »ý¼ºÇÏ´Â °æ¿ì
     else
     {
-        // 2.1 CREATE ANY SYNONYM ê¶Œí•œ ì²´í¬
+        // 2.1 CREATE ANY SYNONYM ±ÇÇÑ Ã¼Å©
         sPrivID = QCM_PRIV_ID_SYSTEM_CREATE_ANY_SYNONYM_NO;
 
         IDE_TEST(
@@ -3537,7 +3538,7 @@ IDE_RC qdpPrivilege::checkDDLCreateSynonymPriv(
                      != IDE_SUCCESS);
 
             // To fix BUG-13761
-            // CREATE_ANY_SYNONYM ê¶Œí•œì´ ì—†ë‹¤ê³  ë‚˜ì™€ì•¼ í•¨.
+            // CREATE_ANY_SYNONYM ±ÇÇÑÀÌ ¾ø´Ù°í ³ª¿Í¾ß ÇÔ.
             IDE_TEST_RAISE(sExist == ID_FALSE,
                            ERR_NO_GRANT_CREATE_ANY_SYNONYM);
         }
@@ -3551,7 +3552,7 @@ IDE_RC qdpPrivilege::checkDDLCreateSynonymPriv(
                                 QCM_PRIV_NAME_SYSTEM_CREATE_SYNONYM_STR));
     }
     // To fix BUG-13761
-    // CREATE_ANY_SYNONYM ê¶Œí•œì´ ì—†ë‹¤ê³  ë‚˜ì™€ì•¼ í•¨.
+    // CREATE_ANY_SYNONYM ±ÇÇÑÀÌ ¾ø´Ù°í ³ª¿Í¾ß ÇÔ.
     IDE_EXCEPTION(ERR_NO_GRANT_CREATE_ANY_SYNONYM);
     {
         IDE_SET(ideSetErrorCode(qpERR_ABORT_QDP_INSUFFICIENT_PRIVILEGES,
@@ -3570,7 +3571,7 @@ IDE_RC qdpPrivilege::checkDDLCreatePublicSynonymPriv(
 {
 /***********************************************************************
  *
- * Description : Public Synonym ìƒì„±ê¶Œí•œì„ ê²€ì‚¬í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ * Description : Public Synonym »ý¼º±ÇÇÑÀ» °Ë»çÇÏ´Â ÇÔ¼öÀÌ´Ù.
  *
  * Implementation :
  *
@@ -3582,7 +3583,7 @@ IDE_RC qdpPrivilege::checkDDLCreatePublicSynonymPriv(
     UInt        sPrivID;
     idBool      sExist     = ID_FALSE;
 
-    // SYSTEM_USER, SYS_USERëŠ” ëª¨ë“  ê¶Œí•œì„ ê°€ì§
+    // SYSTEM_USER, SYS_USER´Â ¸ðµç ±ÇÇÑÀ» °¡Áü
     if( (QC_SYSTEM_USER_ID == sGrantorID) ||
         (QC_SYS_USER_ID == sGrantorID) )
     {
@@ -3590,7 +3591,7 @@ IDE_RC qdpPrivilege::checkDDLCreatePublicSynonymPriv(
     }
 
 
-    // CREATE PUBLIC SYNONYM ê¶Œí•œ ì²´í¬
+    // CREATE PUBLIC SYNONYM ±ÇÇÑ Ã¼Å©
     sPrivID = QCM_PRIV_ID_SYSTEM_CREATE_PUBLIC_SYNONYM_NO;
 
     IDE_TEST(
@@ -3612,7 +3613,7 @@ IDE_RC qdpPrivilege::checkDDLCreatePublicSynonymPriv(
                      &sExist)
                  != IDE_SUCCESS);
 
-        // CREATE PUBLIC SYNONYM ê¶Œí•œì´ ì—†ìŒ
+        // CREATE PUBLIC SYNONYM ±ÇÇÑÀÌ ¾øÀ½
         IDE_TEST_RAISE(sExist == ID_FALSE, ERR_NO_GRANT_CREATE_PUBLIC_SYNONYM);
     }
 
@@ -3638,7 +3639,7 @@ IDE_RC qdpPrivilege::checkDDLDropSynonymPriv(
 {
 /***********************************************************************
  *
- * Description : Private Synonym ì†Œë©¸(Drop)ê¶Œí•œì„ ê²€ì‚¬í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ * Description : Private Synonym ¼Ò¸ê(Drop)±ÇÇÑÀ» °Ë»çÇÏ´Â ÇÔ¼öÀÌ´Ù.
  *
  * Implementation :
  *
@@ -3651,23 +3652,23 @@ IDE_RC qdpPrivilege::checkDDLDropSynonymPriv(
     UInt        sPrivID;
     idBool      sExist     = ID_FALSE;
 
-    // SYSTEM_USER, SYS_USERëŠ” ëª¨ë“  ê¶Œí•œì„ ê°€ì§
+    // SYSTEM_USER, SYS_USER´Â ¸ðµç ±ÇÇÑÀ» °¡Áü
     if( (QC_SYSTEM_USER_ID == sGrantorID) ||
         (QC_SYS_USER_ID == sGrantorID) )
     {
         return IDE_SUCCESS;
     }
 
-    // ìžì‹ ì˜ Synonymì„ ì†Œë©¸(Drop)í•˜ëŠ” ê²½ìš°
+    // ÀÚ½ÅÀÇ SynonymÀ» ¼Ò¸ê(Drop)ÇÏ´Â °æ¿ì
     if(sGrantorID == aSynonymOwnerID)
     {
-        // Synonym ì†Œìœ ìžëŠ” ìžì‹ ì˜ Private Synonymì„ ì‚­ì œí•  ìˆ˜ ìžˆìŒ
+        // Synonym ¼ÒÀ¯ÀÚ´Â ÀÚ½ÅÀÇ Private SynonymÀ» »èÁ¦ÇÒ ¼ö ÀÖÀ½
         return IDE_SUCCESS;
     }
-    // íƒ€ ì‚¬ìš©ìžì˜ Synonymì„ ì†Œë©¸(Drop)í•˜ëŠ” ê²½ìš°
+    // Å¸ »ç¿ëÀÚÀÇ SynonymÀ» ¼Ò¸ê(Drop)ÇÏ´Â °æ¿ì
     else
     {
-        // DROP ANY SYNONYM ê¶Œí•œ ì²´í¬
+        // DROP ANY SYNONYM ±ÇÇÑ Ã¼Å©
         sPrivID = QCM_PRIV_ID_SYSTEM_DROP_ANY_SYNONYM_NO;
 
         IDE_TEST(
@@ -3689,7 +3690,7 @@ IDE_RC qdpPrivilege::checkDDLDropSynonymPriv(
                          &sExist)
                      != IDE_SUCCESS);
 
-            // DROP ANY SYNONYM ê¶Œí•œì´ ì—†ìŒ
+            // DROP ANY SYNONYM ±ÇÇÑÀÌ ¾øÀ½
             IDE_TEST_RAISE(sExist == ID_FALSE,
                            ERR_NO_GRANT_DROP_SYNONYM);
         }
@@ -3714,7 +3715,7 @@ IDE_RC qdpPrivilege::checkDDLDropPublicSynonymPriv(
 {
 /***********************************************************************
  *
- * Description : Public Synonym ì†Œë©¸(Drop)ê¶Œí•œì„ ê²€ì‚¬í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ * Description : Public Synonym ¼Ò¸ê(Drop)±ÇÇÑÀ» °Ë»çÇÏ´Â ÇÔ¼öÀÌ´Ù.
  *
  * Implementation :
  *
@@ -3726,14 +3727,14 @@ IDE_RC qdpPrivilege::checkDDLDropPublicSynonymPriv(
     UInt        sPrivID;
     idBool      sExist     = ID_FALSE;
 
-    // SYSTEM_USER, SYS_USERëŠ” ëª¨ë“  ê¶Œí•œì„ ê°€ì§
+    // SYSTEM_USER, SYS_USER´Â ¸ðµç ±ÇÇÑÀ» °¡Áü
     if( (QC_SYSTEM_USER_ID == sGrantorID) ||
         (QC_SYS_USER_ID == sGrantorID) )
     {
         return IDE_SUCCESS;
     }
 
-    // DROP PUBLIC SYNONYM ê¶Œí•œ ì²´í¬
+    // DROP PUBLIC SYNONYM ±ÇÇÑ Ã¼Å©
     sPrivID = QCM_PRIV_ID_SYSTEM_DROP_PUBLIC_SYNONYM_NO;
 
     IDE_TEST(
@@ -3755,7 +3756,7 @@ IDE_RC qdpPrivilege::checkDDLDropPublicSynonymPriv(
                      &sExist)
                  != IDE_SUCCESS);
 
-        // DROP PUBLIC SYNONYM ê¶Œí•œì´ ì—†ìŒ
+        // DROP PUBLIC SYNONYM ±ÇÇÑÀÌ ¾øÀ½
         IDE_TEST_RAISE(sExist == ID_FALSE,
                        ERR_NO_GRANT_DROP_PUBLIC_SYNONYM);
     }
@@ -3783,11 +3784,11 @@ IDE_RC qdpPrivilege::checkDDLCreateDirectoryPriv(
 {
 /***********************************************************************
  *
- * Description : create directory ê¶Œí•œ ê²€ì‚¬
+ * Description : create directory ±ÇÇÑ °Ë»ç
  *
  * Implementation :
- *       1. systemìœ ì €ê°€ ì•„ë‹ˆë¼ë©´ create any directoryê¶Œí•œ ê²€ì‚¬
- *       2. ë§Œì•½ ê¶Œí•œì´ ì—†ë‹¤ë©´ publicì´ë‚˜ all privilegeê°€ ìžˆëŠ”ì§€ ê²€ì‚¬
+ *       1. systemÀ¯Àú°¡ ¾Æ´Ï¶ó¸é create any directory±ÇÇÑ °Ë»ç
+ *       2. ¸¸¾à ±ÇÇÑÀÌ ¾ø´Ù¸é publicÀÌ³ª all privilege°¡ ÀÖ´ÂÁö °Ë»ç
  *
  ***********************************************************************/
 
@@ -3853,11 +3854,11 @@ IDE_RC qdpPrivilege::checkDDLDropDirectoryPriv(
 {
 /***********************************************************************
  *
- * Description : drop directory ê¶Œí•œ ê²€ì‚¬
+ * Description : drop directory ±ÇÇÑ °Ë»ç
  *
  * Implementation :
- *       1. systemìœ ì €ë˜ëŠ” ownerê°€ ì•„ë‹ˆë¼ë©´ drop any directoryê¶Œí•œ ê²€ì‚¬
- *       2. ë§Œì•½ ê¶Œí•œì´ ì—†ë‹¤ë©´ publicì´ë‚˜ all privilegeê°€ ìžˆëŠ”ì§€ ê²€ì‚¬
+ *       1. systemÀ¯Àú¶Ç´Â owner°¡ ¾Æ´Ï¶ó¸é drop any directory±ÇÇÑ °Ë»ç
+ *       2. ¸¸¾à ±ÇÇÑÀÌ ¾ø´Ù¸é publicÀÌ³ª all privilege°¡ ÀÖ´ÂÁö °Ë»ç
  *
  ***********************************************************************/
 
@@ -3925,11 +3926,11 @@ IDE_RC qdpPrivilege::checkDMLReadDirectoryPriv(
 {
 /***********************************************************************
  *
- * Description : read on directory ê¶Œí•œ ê²€ì‚¬
+ * Description : read on directory ±ÇÇÑ °Ë»ç
  *
  * Implementation :
- *       1. systemìœ ì €ë˜ëŠ” ownerê°€ ì•„ë‹ˆë¼ë©´ read on directoryê¶Œí•œ ê²€ì‚¬
- *       2. public->granteeìˆœì„œë¡œ ê²€ì‚¬
+ *       1. systemÀ¯Àú¶Ç´Â owner°¡ ¾Æ´Ï¶ó¸é read on directory±ÇÇÑ °Ë»ç
+ *       2. public->grantee¼ø¼­·Î °Ë»ç
  *
  ***********************************************************************/
 
@@ -4001,11 +4002,11 @@ IDE_RC qdpPrivilege::checkDMLWriteDirectoryPriv(
 {
 /***********************************************************************
  *
- * Description : write on directory ê¶Œí•œ ê²€ì‚¬
+ * Description : write on directory ±ÇÇÑ °Ë»ç
  *
  * Implementation :
- *       1. systemìœ ì €ë˜ëŠ” ownerê°€ ì•„ë‹ˆë¼ë©´ write on directoryê¶Œí•œ ê²€ì‚¬
- *       2. public->granteeìˆœì„œë¡œ ê²€ì‚¬
+ *       1. systemÀ¯Àú¶Ç´Â owner°¡ ¾Æ´Ï¶ó¸é write on directory±ÇÇÑ °Ë»ç
+ *       2. public->grantee¼ø¼­·Î °Ë»ç
  *
  ***********************************************************************/
 
@@ -4107,14 +4108,14 @@ IDE_RC qdpPrivilege::checkDBMSStatPriv(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *    Materialized View ìƒì„± ê¶Œí•œì„ ê²€ì‚¬í•œë‹¤.
+ *    Materialized View »ý¼º ±ÇÇÑÀ» °Ë»çÇÑ´Ù.
  *
  * Implementation :
- *    1. ì‚¬ìš©ìžê°€ SYSTEM, SYSì´ë©´, ê¶Œí•œì„ ê°€ì§€ê³  ìžˆëŠ” ê²ƒìœ¼ë¡œ ê°„ì£¼í•œë‹¤.
- *    2. ì‚¬ìš©ìžê°€ ì†Œìœ ìžì´ë©´, CREATE MATERIALIZED VIEW, CREATE ANY MATERIALIZED VIEW,
- *       PUBLIC or All PRIVILEGES ê¶Œí•œì„ í™•ì¸í•œë‹¤.
- *    3. ì‚¬ìš©ìžê°€ ì†Œìœ ìžê°€ ì•„ë‹ˆë©´, CREATE ANY MATERIALIZED VIEW,
- *       PUBLIC or All PRIVILEGES ê¶Œí•œì„ í™•ì¸í•œë‹¤.
+ *    1. »ç¿ëÀÚ°¡ SYSTEM, SYSÀÌ¸é, ±ÇÇÑÀ» °¡Áö°í ÀÖ´Â °ÍÀ¸·Î °£ÁÖÇÑ´Ù.
+ *    2. »ç¿ëÀÚ°¡ ¼ÒÀ¯ÀÚÀÌ¸é, CREATE MATERIALIZED VIEW, CREATE ANY MATERIALIZED VIEW,
+ *       PUBLIC or All PRIVILEGES ±ÇÇÑÀ» È®ÀÎÇÑ´Ù.
+ *    3. »ç¿ëÀÚ°¡ ¼ÒÀ¯ÀÚ°¡ ¾Æ´Ï¸é, CREATE ANY MATERIALIZED VIEW,
+ *       PUBLIC or All PRIVILEGES ±ÇÇÑÀ» È®ÀÎÇÑ´Ù.
  *
  ***********************************************************************/
 IDE_RC qdpPrivilege::checkDDLCreateMViewPriv(
@@ -4205,7 +4206,7 @@ IDE_RC qdpPrivilege::checkDDLCreateMViewPriv(
     }
 
     /* To Fix PR-11549
-     * SYSTEM_ ê³„ì • ì´ì™¸ì—ëŠ” SYSTEM_ ìœ ì €ì— ì–´ë– í•œ DDLë„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.
+     * SYSTEM_ °èÁ¤ ÀÌ¿Ü¿¡´Â SYSTEM_ À¯Àú¿¡ ¾î¶°ÇÑ DDLµµ ¼öÇàÇÒ ¼ö ¾ø´Ù.
      */
     IDE_TEST_RAISE( ((aOwnerID == QC_SYSTEM_USER_ID) &&
                      (sGranteeID != QC_SYSTEM_USER_ID)),
@@ -4230,12 +4231,12 @@ IDE_RC qdpPrivilege::checkDDLCreateMViewPriv(
 /***********************************************************************
  *
  * Description :
- *    Materialized View ë³€ê²½ ê¶Œí•œì„ ê²€ì‚¬í•œë‹¤.
+ *    Materialized View º¯°æ ±ÇÇÑÀ» °Ë»çÇÑ´Ù.
  *
  * Implementation :
- *    1. ì‚¬ìš©ìžê°€ SYSTEM, SYS, ì†Œìœ ìžì´ë©´, ê¶Œí•œì„ ê°€ì§€ê³  ìžˆëŠ” ê²ƒìœ¼ë¡œ ê°„ì£¼í•œë‹¤.
- *    2. ALTER ê°ì²´ ê¶Œí•œì„ í™•ì¸í•œë‹¤.
- *    3. ALTER ANY MATERIALIZED VIEW, PUBLIC or All PRIVILEGES ê¶Œí•œì„ í™•ì¸í•œë‹¤.
+ *    1. »ç¿ëÀÚ°¡ SYSTEM, SYS, ¼ÒÀ¯ÀÚÀÌ¸é, ±ÇÇÑÀ» °¡Áö°í ÀÖ´Â °ÍÀ¸·Î °£ÁÖÇÑ´Ù.
+ *    2. ALTER °´Ã¼ ±ÇÇÑÀ» È®ÀÎÇÑ´Ù.
+ *    3. ALTER ANY MATERIALIZED VIEW, PUBLIC or All PRIVILEGES ±ÇÇÑÀ» È®ÀÎÇÑ´Ù.
  *
  ***********************************************************************/
 IDE_RC qdpPrivilege::checkDDLAlterMViewPriv(
@@ -4298,7 +4299,7 @@ IDE_RC qdpPrivilege::checkDDLAlterMViewPriv(
     }
 
     /* To Fix PR-11549
-     * SYSTEM_ ê³„ì • ì´ì™¸ì—ëŠ” SYSTEM_ ìœ ì €ì— ì–´ë– í•œ DDLë„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.
+     * SYSTEM_ °èÁ¤ ÀÌ¿Ü¿¡´Â SYSTEM_ À¯Àú¿¡ ¾î¶°ÇÑ DDLµµ ¼öÇàÇÒ ¼ö ¾ø´Ù.
      */
     IDE_TEST_RAISE( ((aTableInfo->tableOwnerID == QC_SYSTEM_USER_ID) &&
                      (sGranteeID != QC_SYSTEM_USER_ID)),
@@ -4324,11 +4325,11 @@ IDE_RC qdpPrivilege::checkDDLAlterMViewPriv(
 /***********************************************************************
  *
  * Description :
- *    Materialized View ì‚­ì œ ê¶Œí•œì„ ê²€ì‚¬í•œë‹¤.
+ *    Materialized View »èÁ¦ ±ÇÇÑÀ» °Ë»çÇÑ´Ù.
  *
  * Implementation :
- *    1. ì‚¬ìš©ìžê°€ SYSTEM, SYS, ì†Œìœ ìžì´ë©´, ê¶Œí•œì„ ê°€ì§€ê³  ìžˆëŠ” ê²ƒìœ¼ë¡œ ê°„ì£¼í•œë‹¤.
- *    2. DROP ANY MATERIALIZED VIEW, PUBLIC or All PRIVILEGES ê¶Œí•œì„ í™•ì¸í•œë‹¤.
+ *    1. »ç¿ëÀÚ°¡ SYSTEM, SYS, ¼ÒÀ¯ÀÚÀÌ¸é, ±ÇÇÑÀ» °¡Áö°í ÀÖ´Â °ÍÀ¸·Î °£ÁÖÇÑ´Ù.
+ *    2. DROP ANY MATERIALIZED VIEW, PUBLIC or All PRIVILEGES ±ÇÇÑÀ» È®ÀÎÇÑ´Ù.
  *
  ***********************************************************************/
 IDE_RC qdpPrivilege::checkDDLDropMViewPriv(
@@ -4374,7 +4375,7 @@ IDE_RC qdpPrivilege::checkDDLDropMViewPriv(
     }
 
     /* To Fix PR-11549
-     * SYSTEM_ ê³„ì • ì´ì™¸ì—ëŠ” SYSTEM_ ìœ ì €ì— ì–´ë– í•œ DDLë„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.
+     * SYSTEM_ °èÁ¤ ÀÌ¿Ü¿¡´Â SYSTEM_ À¯Àú¿¡ ¾î¶°ÇÑ DDLµµ ¼öÇàÇÒ ¼ö ¾ø´Ù.
      */
     IDE_TEST_RAISE( ((aOwnerID == QC_SYSTEM_USER_ID) &&
                      (sGranteeID != QC_SYSTEM_USER_ID)),
@@ -4472,8 +4473,8 @@ IDE_RC qdpPrivilege::checkDDLCreateLibraryPriv(
     }
 
     // To Fix PR-11549
-    // SYSTEM_ ê³„ì • ì´ì™¸ì—ëŠ”
-    // SYSTEM_ ìœ ì €ì— ì–´ë– í•œ DDLë„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.
+    // SYSTEM_ °èÁ¤ ÀÌ¿Ü¿¡´Â
+    // SYSTEM_ À¯Àú¿¡ ¾î¶°ÇÑ DDLµµ ¼öÇàÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( ( ( aLibraryOwnerID == QC_SYSTEM_USER_ID ) &&
                       ( sGranteeID != QC_SYSTEM_USER_ID ) ),
                     ERR_NO_GRANT_DDL_META_TABLE );

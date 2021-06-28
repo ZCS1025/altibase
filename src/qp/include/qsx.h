@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsx.h 85120 2019-04-02 01:27:30Z khkwak $
+ * $Id: qsx.h 86373 2019-11-19 23:12:16Z khkwak $
  **********************************************************************/
 
 #ifndef _Q_QSX_H_
@@ -29,7 +29,7 @@
 
 #define QSX_CHECK_AT_PSM_BLOCK( aQsxEnvInfo , aProcPlanTree ) \
     ( ((aQsxEnvInfo->mExecPWVerifyFunc == ID_FALSE) && \
-       (aProcPlanTree->procType == QS_INTERNAL) && \
+       (aProcPlanTree->procType == QS_NORMAL) && \
        (aProcPlanTree->block->isAutonomousTransBlock == ID_TRUE))?ID_TRUE:ID_FALSE )
 
 struct qcmProcedures;
@@ -81,7 +81,7 @@ private :
                                  UInt          aPkgNameSize,
                                  qsPkgOption   aOption );
 
-    /* BUG-38844 drop package ì‹œ meta ì •ë³´ ì‚­ì œ */
+    /* BUG-38844 drop package ½Ã meta Á¤º¸ »èÁ¦ */
     static IDE_RC dropPkgCommonForMeta( qcStatement * aStatement,
                                         qsOID         aPkgOID,
                                         UInt          aUserID,
@@ -89,7 +89,7 @@ private :
                                         UInt          aPkgNameSize,
                                         qsObjectType  aPkgType );
 
-    /* BUG-38844 drop package ì‹œ qsxPkgInfo free */
+    /* BUG-38844 drop package ½Ã qsxPkgInfo free */
     static IDE_RC dropPkgCommonForPkgInfo( qsOID          aPkgOID,
                                            qsxPkgInfo   * aPkgInfo );
 
@@ -106,8 +106,8 @@ private :
 public:
 
     /* PROJ-2197 PSM Renewal
-     * PSMì„ ìƒì„±í•  ë•Œ prepare memoryë¥¼ ì˜¨ì „íˆ ë³´í˜¸í•˜ê¸° ìœ„í•´ì„œ
-     * PSMì„ ìƒì„±í•œ ì´í›„ì— prepare memoryë¥¼ ìƒˆë¡œ ë§Œë“ ë‹¤. */
+     * PSMÀ» »ı¼ºÇÒ ¶§ prepare memory¸¦ ¿ÂÀüÈ÷ º¸È£ÇÏ±â À§ÇØ¼­
+     * PSMÀ» »ı¼ºÇÑ ÀÌÈÄ¿¡ prepare memory¸¦ »õ·Î ¸¸µç´Ù. */
     static IDE_RC makeNewPreparedMem( qcStatement * aStatement );
 
     static IDE_RC makeProcInfoMembers(

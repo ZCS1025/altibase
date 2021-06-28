@@ -20,16 +20,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
-import java.sql.Array;
-import java.sql.Blob;
-import java.sql.CallableStatement;
-import java.sql.Clob;
-import java.sql.Date;
-import java.sql.Ref;
-import java.sql.SQLException;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.sql.Types;
+import java.sql.*;
 import java.util.Calendar;
 import java.util.Map;
 
@@ -37,7 +28,7 @@ import Altibase.jdbc.driver.datatype.Column;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
 
-public class AltibaseCallableStatement extends AltibasePreparedStatement implements CallableStatement
+public class AltibaseCallableStatement extends AbstractCallableStatement
 {
     protected int mLastFetchedColumnIndex;
 
@@ -356,7 +347,7 @@ public class AltibaseCallableStatement extends AltibasePreparedStatement impleme
 
     public void registerOutParameter(int aIndex, int aSqlType, String aTypeName) throws SQLException
     {
-        // REF, STRUCT, DISTINCTÎ•º ÏßÄÏõêÌïòÏßÄ ÏïäÍ∏∞ ÎïåÎ¨∏Ïóê aTypeNameÏùÑ Î¨¥ÏãúÌïúÎã§.
+        // REF, STRUCT, DISTINCT∏¶ ¡ˆø¯«œ¡ˆ æ ±‚ ∂ßπÆø° aTypeName¿ª π´Ω√«—¥Ÿ.
         registerOutParameter(aIndex, aSqlType);
     }
 
@@ -512,6 +503,255 @@ public class AltibaseCallableStatement extends AltibasePreparedStatement impleme
         {
             Error.throwSQLException(ErrorDef.WAS_NULL_CALLED_BEFORE_CALLING_GETXXX);
         }
-        return ((Column)mBindColumns.get(mLastFetchedColumnIndex - 1)).isNull();
+        return mBindColumns.get(mLastFetchedColumnIndex - 1).isNull();
+    }
+
+    @Override
+    public String getNString(int aIndex) throws SQLException
+    {
+        return getString(aIndex);
+    }
+
+    @Override
+    public String getNString(String aParamName) throws SQLException
+    {
+        return getString(aParamName);
+    }
+
+    @Override
+    public void setNString(String aParamName, String aValue) throws SQLException
+    {
+        setString(aParamName, aValue);
+    }
+
+    @Override
+    public void setClob(String aParameterIndex, Clob aValue) throws SQLException
+    {
+        setClob(getColumnIndex(aParameterIndex), aValue);
+    }
+
+    @Override
+    public void setClob(String aParamName, Reader aValue) throws SQLException
+    {
+        setClob(getColumnIndex(aParamName), aValue);
+    }
+
+    @Override
+    public void setClob(String aParamName, Reader aValue, long aLength) throws SQLException
+    {
+        setClob(getColumnIndex(aParamName), aValue, aLength);
+    }
+
+    @Override
+    public void setBlob(String aParamName, Blob aValue) throws SQLException
+    {
+        setBlob(getColumnIndex(aParamName), aValue);
+    }
+
+    @Override
+    public void setBlob(String aParamName, InputStream aInputStream) throws SQLException
+    {
+        setBlob(getColumnIndex(aParamName), aInputStream);
+    }
+
+    @Override
+    public void setBlob(String aParamName, InputStream aInputStream, long aLength) throws SQLException
+    {
+        setBlob(getColumnIndex(aParamName), aInputStream, aLength);
+    }
+
+    @Override
+    public Reader getCharacterStream(int aIndex) throws SQLException
+    {
+        return getOutBoundColumn(aIndex).getCharacterStream();
+    }
+
+    @Override
+    public Reader getCharacterStream(String aParameName) throws SQLException
+    {
+        return getOutBoundColumn(getColumnIndex(aParameName)).getCharacterStream();
+    }
+
+    @Override
+    public void setAsciiStream(String aParamName, InputStream aValue) throws SQLException
+    {
+        setAsciiStream(getColumnIndex(aParamName), aValue);
+    }
+
+    @Override
+    public void setAsciiStream(String aParamName, InputStream aValue, long aLength) throws SQLException
+    {
+        setAsciiStream(getColumnIndex(aParamName), aValue, aLength);
+    }
+
+    @Override
+    public void setCharacterStream(String aParamName, Reader aValue) throws SQLException
+    {
+        setCharacterStream(getColumnIndex(aParamName), aValue);
+    }
+
+    @Override
+    public void setCharacterStream(String aParamName, Reader aValue, long aLength) throws SQLException
+    {
+        setCharacterStream(getColumnIndex(aParamName), aValue, aLength);
+    }
+
+    @Override
+    public void setBinaryStream(String aParamName, InputStream aValue) throws SQLException
+    {
+        setBinaryStream(getColumnIndex(aParamName), aValue);
+    }
+
+    @Override
+    public void setBinaryStream(String aParamName, InputStream aValue, long aLength) throws SQLException
+    {
+        setBinaryStream(getColumnIndex(aParamName), aValue, aLength);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T getObject(int aIndex, Class<T> aType) throws SQLException
+    {
+        if (aType == null)
+        {
+            Error.throwSQLException(ErrorDef.TYPE_PARAMETER_CANNOT_BE_NULL);
+        }
+
+        if (aType.equals(String.class))
+        {
+            return (T)getString(aIndex);
+        }
+        else if (aType.equals(BigDecimal.class))
+        {
+            return (T)getBigDecimal(aIndex);
+        }
+        else if (aType.equals(Boolean.class) || aType.equals(Boolean.TYPE))
+        {
+            return (T)Boolean.valueOf(getBoolean(aIndex));
+        }
+        else if (aType.equals(Integer.class) || aType.equals(Integer.TYPE))
+        {
+            return (T)Integer.valueOf(getInt(aIndex));
+        }
+        else if (aType.equals(Long.class) || aType.equals(Long.TYPE))
+        {
+            return (T)Long.valueOf(getLong(aIndex));
+        }
+        else if (aType.equals(Short.class) || aType.equals(Short.TYPE))
+        {
+            return (T)Short.valueOf(getShort(aIndex));
+        }
+        else if (aType.equals(Float.class) || aType.equals(Float.TYPE))
+        {
+            return (T)Float.valueOf(getFloat(aIndex));
+        }
+        else if (aType.equals(Double.class) || aType.equals(Double.TYPE))
+        {
+            return (T)Double.valueOf(getDouble(aIndex));
+        }
+        else if (aType.equals(byte[].class))
+        {
+            return (T)getBytes(aIndex);
+        }
+        else if (aType.equals(java.sql.Date.class))
+        {
+            return (T)getDate(aIndex);
+        }
+        else if (aType.equals(Time.class))
+        {
+            return (T)getTime(aIndex);
+        }
+        else if (aType.equals(Timestamp.class))
+        {
+            return (T)getTimestamp(aIndex);
+        }
+        else if (aType.equals(Clob.class))
+        {
+            return (T)getClob(aIndex);
+        }
+        else if (aType.equals(Blob.class))
+        {
+            return (T)getBlob(aIndex);
+        }
+        else if (aType.equals(Array.class))
+        {
+            return (T)getArray(aIndex);
+        }
+        else if (aType.equals(Ref.class))
+        {
+            return (T)getRef(aIndex);
+        }
+        else if (aType.equals(URL.class))
+        {
+            return (T)getURL(aIndex);
+        }
+        else
+        {
+            try
+            {
+                return aType.cast(getObject(aIndex));
+            }
+            catch (ClassCastException aEx)
+            {
+                Error.throwSQLException(ErrorDef.TYPE_CONVERSION_NOT_SUPPORTED, aType.getName());
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public <T> T getObject(String aParamName, Class<T> aType) throws SQLException
+    {
+        return getObject(getColumnIndex(aParamName), aType);
+    }
+
+    @Override
+    public void registerOutParameter(int aIndex, SQLType aSqlType) throws SQLException
+    {
+        registerOutParameter(aIndex, aSqlType.getVendorTypeNumber());
+    }
+
+    @Override
+    public void registerOutParameter(int aIndex, SQLType aSqlType,int aScale) throws SQLException
+    {
+        registerOutParameter(aIndex, aSqlType.getVendorTypeNumber(), aScale);
+    }
+
+    @Override
+    public void registerOutParameter (int aIndex, SQLType aSqlType, String aTypeName) throws SQLException
+    {
+        registerOutParameter(aIndex, aSqlType.getVendorTypeNumber(), aTypeName);
+    }
+
+    @Override
+    public void registerOutParameter(String aParamName, SQLType aSqlType) throws SQLException
+    {
+        registerOutParameter(aParamName, aSqlType.getVendorTypeNumber());
+    }
+
+    @Override
+    public void registerOutParameter(String aParamName, SQLType aSqlType, int aScale) throws SQLException
+    {
+        registerOutParameter(aParamName, aSqlType.getVendorTypeNumber(), aScale);
+    }
+
+    @Override
+    public void registerOutParameter (String aParamName, SQLType aSqlType, String aTypeName) throws SQLException
+    {
+        registerOutParameter(aParamName, aSqlType.getVendorTypeNumber(), aTypeName);
+    }
+
+    @Override
+    public void setObject(String aParamName, Object aValue, SQLType aTargetSqlType) throws SQLException
+    {
+        setObject(aParamName, aValue, aTargetSqlType.getVendorTypeNumber());
+    }
+
+    @Override
+    public void setObject(String aParamName, Object aValue, SQLType aTargetSqlType,
+                          int aScaleOrLength) throws SQLException
+    {
+        setObject(aParamName, aValue, aTargetSqlType.getVendorTypeNumber(), aScaleOrLength);
     }
 }

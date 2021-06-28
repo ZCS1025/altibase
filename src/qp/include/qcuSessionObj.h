@@ -26,7 +26,7 @@
 class qcuSessionObj
 {
 public:
-    /* BUG-41307 User Lock ÏßÄÏõê */
+    /* BUG-41307 User Lock ¡ˆø¯ */
     static IDE_RC initializeStatic();
     static void   finalizeStatic();
 
@@ -57,7 +57,7 @@ public:
                                        SLong              aConnectionNodeKey,
                                        PDL_SOCKET       * aSocket );
 
-    /* PROJ-2657 UTL_SMTP ÏßÄÏõê */
+    /* PROJ-2657 UTL_SMTP ¡ˆø¯ */
     static void setConnectionState( qcSessionObjInfo * aSessionObjInfo,
                                     SLong              aConnectionNodeKey,
                                     SInt               aState );
@@ -66,7 +66,7 @@ public:
                                     SLong              aConnectionNodeKey,
                                     SInt             * aState );
 
-    /* BUG-41307 User Lock ÏßÄÏõê */
+    /* BUG-41307 User Lock ¡ˆø¯ */
     static void   initializeUserLockList( qcSessionObjInfo * aSessionObjInfo );
     static void   finalizeUserLockList( qcSessionObjInfo * aSessionObjInfo );
 
@@ -78,7 +78,7 @@ public:
                                    SInt             * aResult );
 
 private:
-    /* BUG-41307 User Lock ÏßÄÏõê */
+    /* BUG-41307 User Lock ¡ˆø¯ */
     static void   findUserLockFromSession( qcSessionObjInfo  * aSessionObjInfo,
                                            SInt                aUserLockID,
                                            qcUserLockNode   ** aUserLockNode );

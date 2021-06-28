@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smnbDef.h 85340 2019-04-30 00:15:02Z justin.kwon $
+ * $Id: smnbDef.h 88191 2020-07-27 03:08:54Z mason.lee $
  **********************************************************************/
 
 #ifndef _O_SMNB_DEF_H_
@@ -54,12 +54,18 @@
 # define SMNB_NODE_VALID         (0x00000000)
 # define SMNB_NODE_INVALID       (0x00000010)
 
+#define SMNB_IS_LEAF_NODE( aNode ) \
+    ( ( (aNode)->flag & SMNB_NODE_TYPE_MASK ) == SMNB_NODE_TYPE_LEAF )
+
+#define SMNB_IS_INTERNAL_NODE( aNode ) \
+    ( ( (aNode)->flag & SMNB_NODE_TYPE_MASK ) == SMNB_NODE_TYPE_INTERNAL )
+
 /* BUG_40691
- * ì‹¤ìˆ˜í˜•(SDouble) ê³„ì‚° ë³´ì •ì„ ìœ„í•´ ì¶”ê°€í•¨. */
+ * ½Ç¼öÇü(SDouble) °è»ê º¸Á¤À» À§ÇØ Ãß°¡ÇÔ. */
 #define SMNB_COST_EPS           (1e-8)
 
 /* PROJ-2433
- * NODE aNodeì˜ aSlotIdx ë²ˆì§¸ slotì˜ direct key pointer */
+ * NODE aNodeÀÇ aSlotIdx ¹øÂ° slotÀÇ direct key pointer */
 # define SMNB_GET_KEY_PTR( aNode, aSlotIdx ) \
     ((void *)(( (SChar *)( (aNode)->mKeys ) ) + ( (aNode)->mKeySize * (aSlotIdx) )))
 
@@ -72,7 +78,7 @@ typedef struct smnbColumn
     smiColumn         column;
     smiColumn         keyColumn;
 
-    /*BUG-24449 í‚¤ë§ˆë‹¤ Headerê¸¸ì´ê°€ ë‹¤ë¥¼ ìˆ˜ ìˆìŒ */
+    /*BUG-24449 Å°¸¶´Ù Header±æÀÌ°¡ ´Ù¸¦ ¼ö ÀÖÀ½ */
     smiActualSizeFunc          actualSize;
     smiCopyDiskColumnValueFunc makeMtdValue;
     UInt                       headerSize;
@@ -89,8 +95,8 @@ typedef struct smnbKeyInfo
 {
     SChar   * rowPtr;
 
-/* BUG-22719: 32bit Compileì‹œ Index Buildì‹œ KeyValueì‹œì‘ ì£¼ì†Œê°€
- *            8byteë¡œ Alignë˜ì§€ ì•ŠëŠ”ë‹¤. */
+/* BUG-22719: 32bit Compile½Ã Index Build½Ã KeyValue½ÃÀÛ ÁÖ¼Ò°¡
+ *            8byte·Î AlignµÇÁö ¾Ê´Â´Ù. */
 #ifndef COMPILE_64BIT
     SChar     mAlign[4];
 #endif
@@ -105,6 +111,8 @@ typedef struct smnbBuildRun
     SChar          mBody[1];
 } smnbBuildRun;
 
+/* smnbINode ±¸Á¶Ã¼¿Í smnbLNode ±¸Á¶Ã¼´Â
+   smnbNode ±¸Á¶Ã¼¿Í µ¿ÀÏÇÏ°Ô ½ÃÀÛµÇ¾î¾ß ÇÑ´Ù. */
 typedef struct smnbNode
 {
     /* For Physical Aging   */
@@ -116,30 +124,48 @@ typedef struct smnbNode
     /* Latch                */
     IDU_LATCH       latch;
     SInt            flag;
+
+    UInt            sequence;
+    smnbNode*       prevSPtr;
+    smnbNode*       nextSPtr;
+
+    UInt            mKeySize;      /* ÀúÀåµÇ´Â Direct key »çÀÌÁî (ÀÏ¹İ indexÀÇ °æ¿ì´Â 0) */
+    SShort          mMaxSlotCount; /* ÀúÀåÇÒ ¼ö ÀÖ´Â ÃÖ´ë slot°¹¼ö */
+    SShort          mSlotCount;    /* »ç¿ëÁßÀÎ slot °¹¼ö */
+
+    SChar        ** mRowPtrs;      /* row pointer°¡ ÀúÀåµÇ´Â ½ÃÀÛ pointer */
+    void          * mKeys;         /* Direct key°¡ ÀúÀåµÇ´Â ½ÃÀÛ pointer (ÀÏ¹İ indexÀÇ °æ¿ì´Â NULL) */
 } smnbNode;
 
+/* BUG-47554 MEM_BARRIER ¸¦ atomicÀ¸·Î º¯°æÇÔ.
+ * ÀÌ¹Ì lockÀ» Àâ°í latch¸¦ Àâ´Â °ÍÀÌ¾î¼­ node¿¡ ´ëÇØ¼­ ÀÌ¹Ì ÇÑ¹ø cache ¸¦ °»½Å ÇÏ¿´´Ù.
+ * ³»°¡ ÃÖ½Å°ªÀ» º¸±â À§ÇØ MEM_BARRIER ¸¦ ´Ù½Ã ÇÒ ÇÊ¿ä´Â ¾ø´Ù.*/
 #define SMNB_SCAN_LATCH(aNode) \
-    IDL_MEM_BARRIER;           \
     IDE_DASSERT((((smnbNode*)(aNode))->latch & SMNB_SCAN_LATCH_BIT) != SMNB_SCAN_LATCH_BIT); \
-    ((smnbNode*)(aNode))->latch |= SMNB_SCAN_LATCH_BIT; \
-    IDL_MEM_BARRIER;
+    idCore::acpAtomicInc32( &(((smnbNode*)(aNode))->latch) );
 
+/* BUG-47554 MEM_BARRIER ¸¦ atomicÀ¸·Î º¯°æÇÔ.
+ * latch¸¦ Ç®±â Àü¿¡ MEM_BARRIER·Î ³»°¡ ¼öÁ¤ÇÑ °ªÀ» ¹İ¿µ ½ÃÅ²´Ù..*/
 #define SMNB_SCAN_UNLATCH(aNode) \
     IDL_MEM_BARRIER;             \
     IDE_DASSERT((((smnbNode*)(aNode))->latch & SMNB_SCAN_LATCH_BIT) == SMNB_SCAN_LATCH_BIT); \
-    (((smnbNode*)(aNode))->latch)++; \
-    IDL_MEM_BARRIER;
+    idCore::acpAtomicInc32( &(((smnbNode*)(aNode))->latch) );
 
 /* PROJ-2433
- * internal nodeì˜ ìµœëŒ€slotìˆ˜ */
+ * internal nodeÀÇ ÃÖ´ëslot¼ö */
 #define SMNB_INTERNAL_SLOT_MAX_COUNT( aHeader ) \
     ( /*smnbHeader*/ aHeader->mINodeMaxSlotCount )
 
 /* PROJ-2433
- * node splitë ë•Œ slot ë‚˜ëˆ„ëŠ” ê¸°ì¤€ìœ¼ë¡œ ì‚¬ìš©ë¨  */
+ * node splitµÉ¶§ slot ³ª´©´Â ±âÁØÀ¸·Î »ç¿ëµÊ  */
 #define SMNB_INTERNAL_SLOT_SPLIT_COUNT( aHeader) \
     ( ( /*smnbHeader*/ aHeader->mINodeMaxSlotCount * smnbBTree::getNodeSplitRate() ) / 100 )
 
+/*
+   < INTERNAL NODE ±¸Á¶ >
+   ÀÏ¹İ INDEX ÀÎ °æ¿ì       : smnbINode + child_pointers + row_pointers
+   DIRECT KEY INDEX ÀÎ °æ¿ì : smnbINode + child_pointers + row_pointers + direct_keys
+ */
 typedef struct smnbINode
 {
     /* For Physical Aging   */
@@ -154,27 +180,20 @@ typedef struct smnbINode
     
     /* Body                 */
     UInt            sequence;
-    smnbINode*      prevSPtr;
-    smnbINode*      nextSPtr;
+    smnbINode*      prevSPtr; /* smnbNode ±¸Á¶Ã¼´Â (smnbNode *) µ¥ÀÌÅÍÇüÀÓ */
+    smnbINode*      nextSPtr; /* smnbNode ±¸Á¶Ã¼´Â (smnbNode *) µ¥ÀÌÅÍÇüÀÓ */
 
-    /* PROJ-2433
-       ì¼ë°˜ INDEXì˜ INTERNAL NODE êµ¬ì¡°       : smnbINode + child_pointers + row_pointers
-       DIRECT KEY INDEXì˜ INTERNAL NODE êµ¬ì¡° : smnbINode + child_pointers + row_pointers + direct_keys
-
-       mMaxSlotCount : ì €ì¥í•  ìˆ˜ ìˆëŠ” ìµœëŒ€ slotê°¯ìˆ˜
-       mSlotCount    : ì‚¬ìš©ì¤‘ì¸ slot ê°¯ìˆ˜
-       mRowPtrs      : row pointerê°€ ì €ì¥ë˜ëŠ” ì‹œì‘ pointer
-       mChildPtrs    : child node pointerê°€ ì €ì¥ë˜ëŠ” ì‹œì‘ pointer
-
-       < Direct Key Index ê´€ë ¨ > 
-       mKeySize      : ì €ì¥ë˜ëŠ” Direct key ì‚¬ì´ì¦ˆ         (ì¼ë°˜ indexì˜ ê²½ìš°ëŠ” 0)
-       mKeys         : Direct keyê°€ ì €ì¥ë˜ëŠ” ì‹œì‘ pointer (ì¼ë°˜ indexì˜ ê²½ìš°ëŠ” NULL) */
     UInt            mKeySize;
     SShort          mMaxSlotCount;
     SShort          mSlotCount;
+
     SChar        ** mRowPtrs;
     void          * mKeys;
-    smnbNode      * mChildPtrs[1];
+
+    /* ----- ¿©±â±îÁö smnbNode ¿Í µ¿ÀÏ ----- */
+
+    smnbNode      * mChildPtrs[1]; /* child node pointer°¡ ÀúÀåµÇ´Â ½ÃÀÛ pointer */
+
 } smnbINode;
 
 typedef struct smnbMergeRunInfo
@@ -185,15 +204,21 @@ typedef struct smnbMergeRunInfo
 } smnbMergeRunInfo;
 
 /* PROJ-2433
- * leaf nodeì˜ ìµœëŒ€slotìˆ˜ */
+ * leaf nodeÀÇ ÃÖ´ëslot¼ö */
 #define SMNB_LEAF_SLOT_MAX_COUNT( aHeader ) \
     ( /*smnbHeader*/ aHeader->mLNodeMaxSlotCount )
 
 /* PROJ-2433
- * node splitë ë•Œ slot ë‚˜ëˆ„ëŠ” ê¸°ì¤€ìœ¼ë¡œ ì‚¬ìš©ë¨  */
+ * node splitµÉ¶§ slot ³ª´©´Â ±âÁØÀ¸·Î »ç¿ëµÊ  */
 #define SMNB_LEAF_SLOT_SPLIT_COUNT( aHeader) \
     ( ( /*smnbHeader*/ aHeader->mLNodeMaxSlotCount * smnbBTree::getNodeSplitRate() ) / 100 )
 
+
+/*
+   < LEAF NODE ±¸Á¶ >
+   ÀÏ¹İ INDEX ÀÎ °æ¿ì       : smnbLNode + row_pointers
+   DIRECT KEY INDEX ÀÎ °æ¿ì : smnbLNode + row_pointers + direct_keys
+ */
 typedef struct smnbLNode
 {
     /* For Physical Aging   */
@@ -208,26 +233,20 @@ typedef struct smnbLNode
 
     /* Body                 */
     UInt            sequence;
-    smnbLNode*      prevSPtr;
-    smnbLNode*      nextSPtr;
-    iduMutex        nodeLatch;
+    smnbLNode*      prevSPtr; /* smnbNode ±¸Á¶Ã¼´Â (smnbNode *) µ¥ÀÌÅÍÇüÀÓ */
+    smnbLNode*      nextSPtr; /* smnbNode ±¸Á¶Ã¼´Â (smnbNode *) µ¥ÀÌÅÍÇüÀÓ */
 
-    /* PROJ-2433
-       ì¼ë°˜ INDEXì˜ LEAF NODE êµ¬ì¡°       : smnbLNode + row_pointers
-       DIRECT KEY INDEXì˜ LEAF NODE êµ¬ì¡° : smnbLNode + row_pointers + direct_keys
-
-       mMaxSlotCount : ì €ì¥í•  ìˆ˜ ìˆëŠ” ìµœëŒ€ slotê°¯ìˆ˜
-       mSlotCount    : ì‚¬ìš©ì¤‘ì¸ slot ê°¯ìˆ˜
-       mRowPtrs      : row pointerê°€ ì €ì¥ë˜ëŠ” ì‹œì‘ pointer
-
-       < Direct Key Index ê´€ë ¨ > 
-       mKeySize      : ì €ì¥ë˜ëŠ” Direct key ì‚¬ì´ì¦ˆ         (ì¼ë°˜ indexì˜ ê²½ìš°ëŠ” 0)
-       mKeys         : Direct keyê°€ ì €ì¥ë˜ëŠ” ì‹œì‘ pointer (ì¼ë°˜ indexì˜ ê²½ìš°ëŠ” NULL) */
     UInt            mKeySize;
     SShort          mMaxSlotCount;
     SShort          mSlotCount;
+
+    SChar        ** mRowPtrs;
     void          * mKeys;
-    SChar         * mRowPtrs[1];
+
+    /* ----- ¿©±â±îÁö smnbNode ¿Í µ¿ÀÏ ----- */
+
+    iduMutex        nodeLatch;
+
 } smnbLNode;
 
 // PROJ-1617
@@ -239,7 +258,7 @@ typedef struct smnbStatistic
     ULong   mNodeDeleteCount;
 } smnbStatistic;
 
-// BUG-18201 : Memory/Disk Index í†µê³„ì¹˜
+// BUG-18201 : Memory/Disk Index Åë°èÄ¡
 #define SMNB_ADD_STATISTIC( dest, src ) \
 {                                                              \
     (dest)->mKeyCompareCount    += (src)->mKeyCompareCount;    \
@@ -261,7 +280,7 @@ typedef struct smnbHeader
     // To fix BUG-17726
     idBool            mIsNotNull;
     
-    // PROJ-1617 STMTë° AGERë¡œ ì¸í•œ í†µê³„ì •ë³´ êµ¬ì¶•
+    // PROJ-1617 STMT¹× AGER·Î ÀÎÇÑ Åë°èÁ¤º¸ ±¸Ãà
     smnbStatistic     mStmtStat;
     smnbStatistic     mAgerStat;
     
@@ -279,12 +298,12 @@ typedef struct smnbHeader
     UInt              cRef;
 
     /* PROJ-2433
-       mINodeMaxSlotCount  : INTERNAL NODEì˜ ìµœëŒ€ slot ê°¯ìˆ˜
-       mLNodeMaxSlotCount  : LEAF NODEì˜ ìµœëŒ€ slot ê°¯ìˆ˜ 
+       mINodeMaxSlotCount  : INTERNAL NODEÀÇ ÃÖ´ë slot °¹¼ö
+       mLNodeMaxSlotCount  : LEAF NODEÀÇ ÃÖ´ë slot °¹¼ö 
    
-       < Direct Key Index ê´€ë ¨ > 
-       mKeySize           : nodeì— ì €ì¥ë˜ëŠ” Direct key ì‚¬ì´ì¦ˆ (ì¼ë°˜ indexì˜ ê²½ìš°ëŠ” 0)
-       mIsPartialKey      : nodeì— Direct keyê°€ fullë¡œ ì €ì¥ë˜ì§€ëª»í•˜ê³  ì¼ë¶€ë§Œ ì €ì¥ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€ */
+       < Direct Key Index °ü·Ã > 
+       mKeySize           : node¿¡ ÀúÀåµÇ´Â Direct key »çÀÌÁî (ÀÏ¹İ indexÀÇ °æ¿ì´Â 0)
+       mIsPartialKey      : node¿¡ Direct key°¡ full·Î ÀúÀåµÇÁö¸øÇÏ°í ÀÏºÎ¸¸ ÀúÀåµÇ¾ú´ÂÁö ¿©ºÎ */
     UInt              mKeySize;
     idBool            mIsPartialKey;
     SShort            mINodeMaxSlotCount;
@@ -301,15 +320,19 @@ typedef struct smnbHeader
 } smnbHeader;
 
 /* PROJ-2433
- * í•´ë‹¹ nodeê°€ direct keyë¥¼ ì‚¬ìš©ì¤‘ì¸ì§€ ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤.
- * LEAF NODE, INTERNAL NODE ë™ì¼ define ì‚¬ìš©í•œë‹¤. */
+ * ÇØ´ç node°¡ direct key¸¦ »ç¿ëÁßÀÎÁö ¿©ºÎ¸¦ È®ÀÎÇÑ´Ù.
+ * LEAF NODE, INTERNAL NODE µ¿ÀÏ define »ç¿ëÇÑ´Ù. */
 #define SMNB_IS_DIRECTKEY_IN_NODE( aNode) \
     ( /* smnbLNode or smnbINode */ (aNode)->mKeys != NULL )
+
+/* BUG-47206
+   DIRECT KEY INDEX ÀÎÁö INDEX HEADER¸¦ ÅëÇØ¼­µµ È®ÀÎÇÒ ¼ö ÀÖ´Ù. */
+#define SMNB_IS_DIRECTKEY_INDEX( aHeader ) \
+    ( /* smnbHeader */ (aHeader)->mKeySize != 0 )
 
 typedef struct smnbStack
 {
     void*               node;
-    IDU_LATCH           version;
     SInt                lstReadPos;
     SInt                slotCount;
 } smnbStack;
@@ -346,7 +369,8 @@ typedef struct smnbIterator
     UInt                flag;
 
     smiCursorProperties  * mProperties;
-    /* smiIterator ê³µí†µ ë³€ìˆ˜ ë */
+    smiStatement         * mStatement;
+    /* smiIterator °øÅë º¯¼ö ³¡ */
 
     idBool             least;
     idBool             highest;
@@ -363,7 +387,7 @@ typedef struct smnbIterator
 
     SChar *            lstReturnRecPtr;
     SChar *            rows[1];
-    // row cacheê°€ 1ê°œ ë‚¨ìœ¼ë©´ rowë¥¼ ë‹¤ìŒ Nodeì˜ row cacheì˜ 0ë²ˆì§¸ë¡œ í•œë‹¤.
+    // row cache°¡ 1°³ ³²À¸¸é row¸¦ ´ÙÀ½ NodeÀÇ row cacheÀÇ 0¹øÂ°·Î ÇÑ´Ù.
 } smnbIterator;
 
 typedef struct smnbHeader4PerfV
@@ -379,17 +403,17 @@ typedef struct smnbHeader4PerfV
     
     UInt       mUsedNodeCount;    // USED_NODE_COUNT
 
-    // BUG-18292 : V$MEM_BTREE_HEADER ì •ë³´ ì¶”ê°€.
+    // BUG-18292 : V$MEM_BTREE_HEADER Á¤º¸ Ãß°¡.
     UInt       mPrepareNodeCount; // PREPARE_NODE_COUNT
 
     // BUG-19249
     SChar      mBuiltType;        // BUILT_TYPE
     
-    SChar      mIsConsistent;     /* PROJ-2162 IndexConsistent ì—¬ë¶€ */
+    SChar      mIsConsistent;     /* PROJ-2162 IndexConsistent ¿©ºÎ */
 } smnbHeader4PerfV;
 
 //-------------------------------
-// X$MEM_BTREE_STAT ì˜ êµ¬ì¡°
+// X$MEM_BTREE_STAT ÀÇ ±¸Á¶
 //-------------------------------
 
 typedef struct smnbStat4PerfV
@@ -407,17 +431,17 @@ typedef struct smnbStat4PerfV
     UChar            mMaxValue[MAX_MINMAX_VALUE_SIZE];  // MAX_VALUE
 
     /* PROJ-2433
-       mDirectKeySize     : indexì˜ direct key size (direct key indexê°€ ì•„ë‹ˆë©´ 0)
-       mINodeMaxSlotCount : internal nodeì˜ ìµœëŒ€slotìˆ˜
-       mLNodeMaxSlotCount : leaf nodeì˜ ìµœëŒ€slotìˆ˜ */
+       mDirectKeySize     : indexÀÇ direct key size (direct key index°¡ ¾Æ´Ï¸é 0)
+       mINodeMaxSlotCount : internal nodeÀÇ ÃÖ´ëslot¼ö
+       mLNodeMaxSlotCount : leaf nodeÀÇ ÃÖ´ëslot¼ö */
     UInt             mDirectKeySize;
     SShort           mINodeMaxSlotCount;
     SShort           mLNodeMaxSlotCount;
 } smnbStat4PerfV;
 
-// BUG-18122 : MEM_BTREE_NODEPOOL performance view ì¶”ê°€
+// BUG-18122 : MEM_BTREE_NODEPOOL performance view Ãß°¡
 //-------------------------------
-// X$MEM_BTREE_NODEPOOL ì˜ êµ¬ì¡°
+// X$MEM_BTREE_NODEPOOL ÀÇ ±¸Á¶
 //-------------------------------
 
 typedef struct smnbNodePool4PerfV
@@ -429,7 +453,7 @@ typedef struct smnbNodePool4PerfV
     UInt             mNodeSize;        // NODE_SIZE
     ULong            mTotalAllocReq;   // TOTAL_ALLOC_REQ
     ULong            mTotalFreeReq;    // TOTAL_FREE_REQ
-    // BUG-18292 : V$MEM_BTREE_HEADER ì •ë³´ ì¶”ê°€.
+    // BUG-18292 : V$MEM_BTREE_HEADER Á¤º¸ Ãß°¡.
     UInt             mFreeReqCount;    // FREE_REQ_COUNT
 } smnbNodePool4PerfV;
 

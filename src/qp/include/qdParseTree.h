@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdParseTree.h 82844 2018-04-19 00:41:18Z andrew.shin $
+ * $Id: qdParseTree.h 90311 2021-03-24 09:46:45Z ahra.cho $
  **********************************************************************/
 
 #ifndef _O_QD_PARSE_TREE_H_
@@ -27,6 +27,7 @@
 #include <qmsParseTree.h>
 #include <qcmPriv.h>
 #include <qcuProperty.h>
+#include <sdiTypes.h>
 
 //PROJ-1583 large geometry
 #define QD_MAX_SQL_LENGTH                               (32767)
@@ -68,11 +69,11 @@
 
 
 // BUG-29728 referenced options flags
-// flagì˜ ì•žì€ ì„¸ìžë¦¬ëŠ” DML êµ¬ë¶„ìš©ìœ¼ë¡œ ì¤‘ë³µ ì²´í¬ í•´ì£¼ê³ ,
-// ë’¤ì˜ ì„¸ìžë¦¬ëŠ” ì˜µì…˜ êµ¬ë¶„ì„ ìœ„í•´ì„œ ì‚¬ìš©ëœë‹¤
-// ê¸°ì¡´ Meta ì •ë³´ë¥¼ ìˆ˜ì •í•˜ì§€ ì•Šê³  ë²„ê·¸ë¥¼ ìˆ˜ì •í•˜ê³ ,,
-// ì¤‘ë³µ ì²´í¬ë¥¼ ìœ„í•´(ì´ë¯¸ ì‚¬ìš©ëœ DMLì˜ option êµ¬ë¶„)ì„ ìœ„í•´
-// ë‘ê°€ì§€ ì •ë³´ë¥¼ í•œ flagì— ë„£ì–´ì¤Œ.
+// flagÀÇ ¾ÕÀº ¼¼ÀÚ¸®´Â DML ±¸ºÐ¿ëÀ¸·Î Áßº¹ Ã¼Å© ÇØÁÖ°í,
+// µÚÀÇ ¼¼ÀÚ¸®´Â ¿É¼Ç ±¸ºÐÀ» À§ÇØ¼­ »ç¿ëµÈ´Ù
+// ±âÁ¸ Meta Á¤º¸¸¦ ¼öÁ¤ÇÏÁö ¾Ê°í ¹ö±×¸¦ ¼öÁ¤ÇÏ°í,,
+// Áßº¹ Ã¼Å©¸¦ À§ÇØ(ÀÌ¹Ì »ç¿ëµÈ DMLÀÇ option ±¸ºÐ)À» À§ÇØ
+// µÎ°¡Áö Á¤º¸¸¦ ÇÑ flag¿¡ ³Ö¾îÁÜ.
 
 #define QD_FOREIGN_INIT                  (0x00000000)
 #define QD_FOREIGN_DML_MASK              (0x0000F000)
@@ -108,6 +109,12 @@
 #define QDS_SEQUENCE_MAX_VALUE          ((SLong)ID_LONG(9223372036854775806))
 #define QDS_SEQUENCE_MIN_VALUE_STR      (UChar*)"-9223372036854775806"
 #define QDS_SEQUENCE_MAX_VALUE_STR      (UChar*)"9223372036854775806"
+
+/* TASK-7217 Sharded sequence */
+#define QDS_SHARD_SEQUENCE_MIN_VALUE     ((SLong)ID_LONG(-999999999999999))
+#define QDS_SHARD_SEQUENCE_MAX_VALUE     ((SLong)ID_LONG(999999999999999))
+#define QDS_SHARD_SEQUENCE_MIN_VALUE_STR (UChar*)"-999999999999999"
+#define QDS_SHARD_SEQUENCE_MAX_VALUE_STR (UChar*)"999999999999999"
 
 // BUG-38852
 // qdSynonymParseTree->flag   FOR CREATE SYNONYM
@@ -190,12 +197,30 @@
 #define QDS_SEQ_OPT_NOMAX_FALSE          (0x00000000)
 #define QDS_SEQ_OPT_NOMAX_TRUE           (0x00000002)
 
+/* TASK-7217 Sharded sequence */
+// qdSequenceOptions->flag
+#define QDS_SEQ_OPT_RESTART_MASK         (0x00000004)
+#define QDS_SEQ_OPT_RESTART_FALSE        (0x00000000)
+#define QDS_SEQ_OPT_RESTART_TRUE         (0x00000004)
+
+/* TASK-7217 Sharded sequence */
+// qdSequenceOptions->flag
+#define QDS_SEQ_OPT_LOCALITY_MASK        SMI_SEQUENCE_LOCALITY_MASK     // (0x00000700)
+#define QDS_SEQ_OPT_LOCALITY_LOCAL       SMI_SEQUENCE_LOCALITY_LOCAL    // (0x00000100)
+#define QDS_SEQ_OPT_LOCALITY_SHARD       SMI_SEQUENCE_LOCALITY_SHARD    // (0x00000200)
+#define QDS_SEQ_OPT_LOCALITY_GLOBAL      SMI_SEQUENCE_LOCALITY_GLOBAL   // (0x00000400) UNUSED
+
+/* TASK-7217 Sharded sequence */
+#define QDS_SEQ_OPT_SCALE_FIXED_MASK     SMI_SEQUENCE_SCALE_FIXED_MASK  // (0x00001000)
+#define QDS_SEQ_OPT_SCALE_FIXED_FALSE    SMI_SEQUENCE_SCALE_FIXED_FALSE // (0x00000000) VARIABLE
+#define QDS_SEQ_OPT_SCALE_FIXED_TRUE     SMI_SEQUENCE_SCALE_FIXED_TRUE  // (0x00001000)
+
 // qdIndexParseTree->flag
 #define QDX_IDX_OPT_PERSISTENT_MASK      SMI_INDEX_PERSISTENT_MASK
 #define QDX_IDX_OPT_PERSISTENT_FALSE     SMI_INDEX_PERSISTENT_DISABLE
 #define QDX_IDX_OPT_PERSISTENT_TRUE      SMI_INDEX_PERSISTENT_ENABLE
 
-// BUG-10518 ê´€ë ¨í•˜ì—¬, ì•„ëž˜ flagëŠ” ì“°ì´ì§€ ì•ŠìŒ.
+// BUG-10518 °ü·ÃÇÏ¿©, ¾Æ·¡ flag´Â ¾²ÀÌÁö ¾ÊÀ½.
 // qdIndexParseTree->flag
 #define QDX_IDX_OPT_DISABLE_MASK         SMI_INDEX_USE_MASK
 #define QDX_IDX_OPT_DISABLE_FALSE        SMI_INDEX_USE_ENABLE
@@ -218,18 +243,22 @@
 
 // PROJ-1509
 // qdDropParseTree->flag
-// drop table ... cascade constraints ì¶”ê°€
+// drop table ... cascade constraints Ãß°¡
 #define QDD_DROP_CASCADE_CONSTRAINTS_MASK  (0x00000001)
 #define QDD_DROP_CASCADE_CONSTRAINTS_FALSE (0x00000000)
 #define QDD_DROP_CASCADE_CONSTRAINTS_TRUE  (0x00000001)
 
 /* PROJ-1812 ROLE
- * current userid, public ë¥¼ ì œì™¸ í•œ ê²ƒì´ role ìµœëŒ€ ë¶€ì—¬ ê°œìˆ˜ (126) */
+ * current userid, public ¸¦ Á¦¿Ü ÇÑ °ÍÀÌ role ÃÖ´ë ºÎ¿© °³¼ö (126) */
 #define QDD_USER_TO_ROLES_MAX_COUNT        (128)
 
 /* PROJ-2626 Snapshot Export */
 #define QD_ALTER_DATABASE_SNAPSHOT_BEGIN   (1)
 #define QD_ALTER_DATABASE_SNAPSHOT_END     (2)
+
+/* BUG-47599 */
+#define QD_EMPTY_PARTITION_NAME            ((SChar*)"")
+#define QD_EMPTY_PARTITION_NAME_SIZE       (0)
 
 /* PROJ-2207 Password policy support */
 enum qdPasswPolicy
@@ -260,7 +289,7 @@ enum qdConstraintType
     QD_NULL,
     QD_TIMESTAMP,
     QD_LOCAL_UNIQUE, // PROJ-1502 PARTITIONED DISK TABLE
-    QD_CHECK,       /* PROJ-1107 Check Constraint ì§€ì› */
+    QD_CHECK,       /* PROJ-1107 Check Constraint Áö¿ø */
     QD_CONSTR_MAX
 };
 
@@ -293,7 +322,8 @@ enum qdPartValuesType
 // PROJ-1502 PARTITIONED DISK TABLE
 enum qdAlterPartitionType
 {
-    QD_ADD_PARTITION = 0,
+    QD_ADD_HASH_PARTITION = 0,
+    QD_ADD_RANGE_PARTITION,
     QD_COALESCE_PARTITION,
     QD_DROP_PARTITION,
     QD_MERGE_PARTITION,
@@ -304,7 +334,8 @@ enum qdAlterPartitionType
     QD_ENABLE_ROW_MOVEMENT,
     QD_DISABLE_ROW_MOVEMENT,
     QD_ACCESS_PARTITION,        /* PROJ-2359 Table/Partition Access Option */
-    QD_ALTER_PARTITION,         /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    QD_ALTER_PARTITION,         /* PROJ-2464 hybrid partitioned table Áö¿ø */
+    QD_USABLE_PARTITION,        /* TASK-7307 DML Data Consistency in Shard */
     QD_NONE_ALTER_PARTITION
 };
 
@@ -385,7 +416,7 @@ typedef struct qdLobAttribute
 // PROJ-1671 Bitmap Segment
 typedef struct qdSegStorageAttr  // temporary struct for parser
 {
-    // "HIGH" í˜¹ì€ "LOW" Identifierì˜ Position
+    // "HIGH" È¤Àº "LOW" IdentifierÀÇ Position
     qcNamePosition      attrPosition;
     
     UInt              * initExtCnt;
@@ -397,15 +428,22 @@ typedef struct qdSegStorageAttr  // temporary struct for parser
 } qdSegStorageAttr;
 
 // PROJ-2002 Column Security
-typedef struct qdEncryptedColumnAttr  // temporary struct for parser
+typedef struct qdExtColumnAttr  // temporary struct for parser
 {
-    qcNamePosition      policyPosition;
-} qdEncryptedColumnAttr;
+    qcNamePosition      mPolicyPosition;
+    SLong               mSrid;
+} qdExtColumnAttr;
+
+#define QD_SET_INIT_EXT_COLUMN_ATTR(_col_attr_)         \
+{                                                       \
+    SET_EMPTY_POSITION( _col_attr_->mPolicyPosition );  \
+    _col_attr_->mSrid = 0 ;                             \
+}
 
 // PROJ-1502 PARTITIONED DISK TABLE
 // for alter table split, merge, add partition
-// ìƒˆë¡œ ìƒì„±ë˜ëŠ” ì¸ë±ìŠ¤ íŒŒí‹°ì…˜ì— ëŒ€í•œ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
-// í˜„ìž¬ ì¡´ìž¬í•˜ëŠ” ì¸ë±ìŠ¤ì˜ ê°œìˆ˜ì— ë”°ë¼ ì—¬ëŸ¬ê°œê°€ ì˜¬ ìˆ˜ ìžˆë‹¤.
+// »õ·Î »ý¼ºµÇ´Â ÀÎµ¦½º ÆÄÆ¼¼Ç¿¡ ´ëÇÑ Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
+// ÇöÀç Á¸ÀçÇÏ´Â ÀÎµ¦½ºÀÇ °³¼ö¿¡ µû¶ó ¿©·¯°³°¡ ¿Ã ¼ö ÀÖ´Ù.
 typedef struct qdIndexPartitionAttribute
 {
     qcNamePosition             partIndexName;
@@ -489,8 +527,11 @@ typedef struct qdPartitionAttribute
     qcmAccessOption            accessOption;
 
     /* PROJ-1810 Partition Exchange */
-    qcNamePosition             oldTableName;    //JOIN TABLE ëŒ€ìƒ í…Œì´ë¸”(ì›ëž˜ ìžˆë˜)ì˜ ì´ë¦„
+    qcNamePosition             oldTableName;    //JOIN TABLE ´ë»ó Å×ÀÌºí(¿ø·¡ ÀÖ´ø)ÀÇ ÀÌ¸§
     SChar                    * oldTableNameStr;
+
+    /* TASK-7307 DML Data Consistency in Shard */
+    idBool                     mIsUsable;
 } qdPartitionAttribute;
 
 // PROJ-1502 PARTITIONED DISK TABLE
@@ -514,6 +555,7 @@ typedef struct qdPartitionAttribute
         _part_attr_->accessOption = QCM_ACCESS_OPTION_NONE;                                     \
         SET_EMPTY_POSITION( _part_attr_->oldTableName );                                        \
         _part_attr_->oldTableNameStr = NULL;                                                    \
+        _part_attr_->mIsUsable = ID_TRUE;                                                       \
     }
 
 // PROJ-1502 PARTITIONED DISK TABLE
@@ -536,17 +578,17 @@ typedef struct qdPartitionedTable
         _part_table_->partInfoList = NULL;                      \
     }
 
-/* Create/Alter Tableêµ¬ë¬¸ì—ì„œ Tableì˜ Flagë¥¼ ì„¤ì •í•˜ëŠ”ë° ì‚¬ìš© */
+/* Create/Alter Table±¸¹®¿¡¼­ TableÀÇ Flag¸¦ ¼³Á¤ÇÏ´Âµ¥ »ç¿ë */
 typedef struct qdTableAttrFlagList
 {
     UInt    attrMask;
     UInt    attrValue;
 
-    // SQL TEXTë‚´ì—ì„œì˜ ì´ Attiributeì— í•´ë‹¹ë˜ëŠ” Offsetê³¼ Size
-    // Validationì¤‘ íŠ¹ì • Attributeë¥¼ ì°ì–´ì„œ ì—ëŸ¬ë¥¼ ë‚´ê³ ìž í•  ë•Œ ì‚¬ìš©
+    // SQL TEXT³»¿¡¼­ÀÇ ÀÌ Attiribute¿¡ ÇØ´çµÇ´Â Offset°ú Size
+    // ValidationÁß Æ¯Á¤ Attribute¸¦ Âï¾î¼­ ¿¡·¯¸¦ ³»°íÀÚ ÇÒ ¶§ »ç¿ë
     qcNamePosition attrPosition;
     
-    // Linked Listì˜ Nextí¬ì¸í„°
+    // Linked ListÀÇ NextÆ÷ÀÎÅÍ
     qdTableAttrFlagList * next;
 } qdTableAttrFlagList;
 
@@ -598,7 +640,7 @@ typedef struct qdPartitionedTableList
         (_dst_)->mNext           = NULL;                        \
     }
 
-/* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
+/* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
 typedef struct qdFunctionNameList
 {
     UInt                 userID;
@@ -611,18 +653,18 @@ typedef struct qdFunctionNameList
 typedef struct qdDisjoinTable
 {
     /* set in parser */
-    /* ê¸°ì¡´ íŒŒí‹°ì…˜ì˜ ì´ë¦„, IDì™€ ì´ì— ëŒ€ì‘ë˜ëŠ” ìƒˆ ì´ë¦„, IDë¥¼ ì €ìž¥ */
-    qcNamePosition         oldPartName;     // old; êµ¬ë¬¸ì—ì„œ ì§€ì •í•œ íŒŒí‹°ì…˜ ì´ë¦„
-    qcNamePosition         newTableName;    // new; ìƒˆë¡œ ë³€í™˜ë˜ëŠ” í…Œì´ë¸” ì´ë¦„
+    /* ±âÁ¸ ÆÄÆ¼¼ÇÀÇ ÀÌ¸§, ID¿Í ÀÌ¿¡ ´ëÀÀµÇ´Â »õ ÀÌ¸§, ID¸¦ ÀúÀå */
+    qcNamePosition         oldPartName;     // old; ±¸¹®¿¡¼­ ÁöÁ¤ÇÑ ÆÄÆ¼¼Ç ÀÌ¸§
+    qcNamePosition         newTableName;    // new; »õ·Î º¯È¯µÇ´Â Å×ÀÌºí ÀÌ¸§
 
     /* set in validation */
-    UInt                   oldPartID;       // íŒŒí‹°ì…˜ ID
-    smOID                  oldPartOID;      // í…Œì´ë¸” OID(ì›ëž˜ íŒŒí‹°ì…˜ OID)
-    qcmTableInfo         * oldPartInfo;     // íŒŒí‹°ì…˜ info
+    UInt                   oldPartID;       // ÆÄÆ¼¼Ç ID
+    smOID                  oldPartOID;      // Å×ÀÌºí OID(¿ø·¡ ÆÄÆ¼¼Ç OID)
+    qcmTableInfo         * oldPartInfo;     // ÆÄÆ¼¼Ç info
 
     /* set in execution */
-    /* ë©”íƒ€ì—ì„œ ìƒˆë¡­ê²Œ ì €ìž¥í•˜ëŠ” ë¶€ë¶„ */
-    UInt                   newTableID;      // new í…Œì´ë¸” ID
+    /* ¸ÞÅ¸¿¡¼­ »õ·Ó°Ô ÀúÀåÇÏ´Â ºÎºÐ */
+    UInt                   newTableID;      // new Å×ÀÌºí ID
 
     /* next ptr */
     qdDisjoinTable       * next;
@@ -636,7 +678,7 @@ typedef struct qdDisjoinTable
     (_dst_)->next = NULL;                               \
 }
 
-/* PROJ-2464 hybrid partitioned table ì§€ì› */
+/* PROJ-2464 hybrid partitioned table Áö¿ø */
 typedef struct qdSegStoAttrExist
 {
     idBool mInitExt;
@@ -667,7 +709,7 @@ typedef struct qdTableParseTree
     struct qdConstraintSpec  * constraints;
     qcmColumn                * columns;
     qcmColumn                * modifyColumns;  // PROJ-1877 alter table modify column
-    qmsFrom                  * from;           /* PROJ-1107 Check Constraint ì§€ì› */
+    qmsFrom                  * from;           /* PROJ-1107 Check Constraint Áö¿ø */
 
     qcStatement              * select;  // CREATE TABLE ... AS SELECT ...
                                         // CREATE VIEW AS SELECT
@@ -682,10 +724,10 @@ typedef struct qdTableParseTree
     // set in processing tablespace validation
 
     // PRJ-1671 Bitmap TableSpace And Segment Space Management
-    // smiSegAttr ìžë£Œêµ¬ì¡°    ( insert high/low limit, init/max trans )
+    // smiSegAttr ÀÚ·á±¸Á¶    ( insert high/low limit, init/max trans )
     smiSegAttr                 segAttr;
 
-    // smiSegStoAttr ìžë£Œêµ¬ì¡° ( initextents, nextextents,
+    // smiSegStoAttr ÀÚ·á±¸Á¶ ( initextents, nextextents,
     //                          minextents, maxextents )
     smiSegStorageAttr          segStoAttr;
 
@@ -710,11 +752,11 @@ typedef struct qdTableParseTree
     idBool                     isRowmovement;
 
     // TASK-2398 Log Compression
-    // Create/Alter Tableêµ¬ë¬¸ì„ í†µí•´ Tableì˜ Flagì„¤ì •/ë³€ê²½
+    // Create/Alter Table±¸¹®À» ÅëÇØ TableÀÇ Flag¼³Á¤/º¯°æ
     qdTableAttrFlagList      * tableAttrFlagList;
 
-    // í•˜ë‚˜ ì´ìƒì˜ Attribute Flagë“¤ì˜ Maskì™€ Valueë¥¼ ORí•œ ê°’
-    // Create Tableì˜ ê²½ìš° ì‚¬ìš©ë˜ë©°, Validationë‹¨ê³„ì—ì„œ ì„¤ì •í•œë‹¤.
+    // ÇÏ³ª ÀÌ»óÀÇ Attribute FlagµéÀÇ Mask¿Í Value¸¦ ORÇÑ °ª
+    // Create TableÀÇ °æ¿ì »ç¿ëµÇ¸ç, Validation´Ü°è¿¡¼­ ¼³Á¤ÇÑ´Ù.
     UInt                       tableAttrMask;
     UInt                       tableAttrValue;
 
@@ -725,13 +767,13 @@ typedef struct qdTableParseTree
     // PROJ-1407 Temporary Table
     qdTemporaryOption        * temporaryOption;
     
-    // PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin ê°œë°œ
+    // PROJ-1723 [MDW/INTEGRATOR] Altibase Plugin °³¹ß
     // ID_TRUE  : ADD SUPPLEMENTAL LOG
     // ID_FALSE : DROP SUPPLEMENTAL LOG
     idBool                     isSuppLogging;
 
     // BUG-21761
-    // Níƒ€ìž…ì„ Uíƒ€ìž…ìœ¼ë¡œ ë³€í˜•ì‹œí‚¬ ë•Œ ì‚¬ìš©
+    // NÅ¸ÀÔÀ» UÅ¸ÀÔÀ¸·Î º¯Çü½ÃÅ³ ¶§ »ç¿ë
     qcNamePosList            * ncharList;
 
     /* PROJ-2211 Materialized View */
@@ -745,14 +787,14 @@ typedef struct qdTableParseTree
     
     /* PROJ-1090 Function-based Index */
     struct qdIndexParseTree  * createIndexParseTree;
-    idBool                     addHiddenColumn;  /* create indexì˜ ì˜ë¯¸ë¥¼ í¬í•¨í•œë‹¤. */
-    idBool                     dropHiddenColumn; /* drop indexì˜ ì˜ë¯¸ë¥¼ í¬í•¨í•œë‹¤. */
+    idBool                     addHiddenColumn;  /* create indexÀÇ ÀÇ¹Ì¸¦ Æ÷ÇÔÇÑ´Ù. */
+    idBool                     dropHiddenColumn; /* drop indexÀÇ ÀÇ¹Ì¸¦ Æ÷ÇÔÇÑ´Ù. */
     qcmColumn                * defaultExprColumns;
 
     // PROJ-2264 Dictionary table
     qcmCompressionColumn     * compressionColumn;
 
-    /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
+    /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
     qdFunctionNameList       * relatedFunctionNames;
 
     /* PROJ-2359 Table/Partition Access Option */
@@ -761,7 +803,7 @@ typedef struct qdTableParseTree
     /* PROJ-2441 flashback  */
     idBool                     useOriginalName;
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     qdSegStoAttrExist          existSegStoAttr;
 
     // BUG-45745
@@ -778,6 +820,10 @@ typedef struct qdTableParseTree
     qcmRefChildInfo          * mSourceRefChildInfoList; // Child Info(having Parent Index) List of Source
     qcmRefChildInfo          * mTargetRefChildInfoList; // Child Info(having Parent Index) List of Target
     qdPartitionedTableList   * mRefChildPartTableList;  // Child Partitioned Table Info List for Lock and Meta Cache
+
+    /* TASK-7307 DML Data Consistency in Shard */
+    idBool                     mIsUsable;
+    qcmShardFlag               mShardFlag;
 } qdTableParseTree;
 
 #define QD_SEGMENT_OPTION_INIT( _dst_segAttr_, _dst_segStoAttr )                  \
@@ -858,6 +904,8 @@ typedef struct qdTableParseTree
     (_dst_)->relatedFunctionNames = NULL;                                   \
                                                                             \
     (_dst_)->accessOption = QCM_ACCESS_OPTION_NONE;                         \
+    (_dst_)->mIsUsable = ID_TRUE;                                           \
+    (_dst_)->mShardFlag = QCM_SHARD_FLAG_TABLE_NONE;                        \
     QD_SEGMENT_STORAGE_EXIST_INIT( &((_dst_)->existSegStoAttr ) );          \
     (_dst_)->mPartAttr = NULL;                                              \
                                                                             \
@@ -889,6 +937,7 @@ typedef struct qdTableOptions // temporary struct for parser
     UInt                       parallelDegree;
     qcmCompressionColumn     * compressionColumn;
     qcmAccessOption            accessOption;    /* PROJ-2359 Table/Partition Access Option */
+    qcmShardFlag               mShardFlag;      /* TASK-7307 DML Data Consistency in Shard */
 } qdTableOptions;
 
 typedef struct qdTableElement // temporary struct for parser
@@ -963,7 +1012,7 @@ typedef struct qdIndexParseTree
     qcmColumn            * keyColumns;
     UInt                   flag;        // UNIQUE, NON-UNIQUE
 
-    // BUG-17848 : ì˜ì†ì ì¸ ì†ì„±ê³¼ íœ˜ë°œì„± ì†ì„±ì„ ë¶„ë¦¬
+    // BUG-17848 : ¿µ¼ÓÀûÀÎ ¼Ó¼º°ú ÈÖ¹ß¼º ¼Ó¼ºÀ» ºÐ¸®
     UInt                   buildFlag;
 
     qcNamePosition         indexType;
@@ -1007,13 +1056,13 @@ typedef struct qdIndexParseTree
     qmsFrom              * defaultExprFrom;
     qcNamePosList        * ncharList;
 
-    /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
+    /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
     qdFunctionNameList   * relatedFunctionNames;
 
     /* PROJ-2433 Direct Key Index */
     ULong                  mDirectKeyMaxSize;
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     qdSegStoAttrExist     existSegStoAttr;
 } qdIndexParseTree;
 
@@ -1051,7 +1100,7 @@ typedef struct qdSequenceOptions
     SLong   * maxValue;
     SLong   * cacheValue;
     UInt    * cycleOption;
-    UInt    * flag; // for NOMINVALUE, NOMAXVALUE option of ALTER SEQUENCE
+    UInt      flag; // for NOMINVALUE, NOMAXVALUE, RESTART, LOCALITY(SHARD/LOCAL), SCALE(FIXED/VARIABLE for SHARD) option of ALTER SEQUENCE
 } qdSequenceOptions;
 
 typedef struct qdSequenceParseTree
@@ -1070,8 +1119,7 @@ typedef struct qdSequenceParseTree
     // TASK-2176
     void                * sequenceHandle;
     UInt                  sequenceID;    // fix BUG-14394
-                                         // validateAlter ì‹œ ì„¸íŒ…ë¨.
-
+                                         // validateAlter ½Ã ¼¼ÆÃµÊ.
 } qdSequenceParseTree;
 
 #define QD_SEQUENCE_PARSE_TREE_INIT(_dst_)              \
@@ -1143,21 +1191,21 @@ typedef struct qdUserParseTree
     scSpaceID          tempTBSID;
     
     /* PROJ-2207 Password policy support */
-    UInt               accountLock;       /* ëª…ì‹œì  Lock ì„¤ì • */
-    UInt               passwLimitFlag;    /* PASSWORD POLICY ì„¤ì • */
-    qdExpLockStatus    expLock;           /* ëª…ì‹œì  lock (ALTER LOCK) */
+    UInt               accountLock;       /* ¸í½ÃÀû Lock ¼³Á¤ */
+    UInt               passwLimitFlag;    /* PASSWORD POLICY ¼³Á¤ */
+    qdExpLockStatus    expLock;           /* ¸í½ÃÀû lock (ALTER LOCK) */
     SInt               failedCount;
     SInt               reuseCount;
 
-    SChar            * lockDate;          /* LOCK ëœ ë‚ ì§œ */
-    SChar            * expiryDate;        /* íŒ¨ìŠ¤ì›Œë“œ ë§Œë£Œ ë‚ ì§œ */
-    UInt               failLoginAttempts; /* ì‹œë„ ê°€ëŠ¥ íšŸìˆ˜ */
-    UInt               passwLifeTime;     /* ë§Œë£Œ ë˜ëŠ” ê¸°ê°„ */
-    UInt               passwReuseTime;    /* ìž¬ì‚¬ìš© ê°€ëŠ¥ ê¸°ê°„ */
-    UInt               passwReuseMax;     /* ìž¬ì‚¬ìš© íšŸìˆ˜ */
-    UInt               passwLockTime;     /* unlockìœ¼ë¡œ ë˜ëŠ” ê¸°ê°„ */
-    UInt               passwGraceTime;    /* ë§Œë£Œì— ìœ ì˜ˆê¸°ê°„ */
-    qcNamePosition     passwVerifyFunc;   /* ê²€ì¦ function */
+    SChar            * lockDate;          /* LOCK µÈ ³¯Â¥ */
+    SChar            * expiryDate;        /* ÆÐ½º¿öµå ¸¸·á ³¯Â¥ */
+    UInt               failLoginAttempts; /* ½Ãµµ °¡´É È½¼ö */
+    UInt               passwLifeTime;     /* ¸¸·á µÇ´Â ±â°£ */
+    UInt               passwReuseTime;    /* Àç»ç¿ë °¡´É ±â°£ */
+    UInt               passwReuseMax;     /* Àç»ç¿ë È½¼ö */
+    UInt               passwLockTime;     /* unlockÀ¸·Î µÇ´Â ±â°£ */
+    UInt               passwGraceTime;    /* ¸¸·á¿¡ À¯¿¹±â°£ */
+    qcNamePosition     passwVerifyFunc;   /* °ËÁõ function */
     qdDisableTCP       disableTCP;        /* PROJ-2474 SSL/TLS Support */
 } qdUserParseTree;
 
@@ -1227,7 +1275,7 @@ typedef struct qdConstraintSpec
 {
     UInt                     flag;
 
-    // BUG-17848 : ì˜ì†ì ì¸ ì†ì„±ê³¼ íœ˜ë°œì„± ì†ì„±ì„ ë¶„ë¦¬
+    // BUG-17848 : ¿µ¼ÓÀûÀÎ ¼Ó¼º°ú ÈÖ¹ß¼º ¼Ó¼ºÀ» ºÐ¸®
     UInt                     buildFlag;
 
     qcNamePosition           constrName;
@@ -1238,7 +1286,7 @@ typedef struct qdConstraintSpec
     qcNamePosition           indexTBSName;
     UInt                     parallelDegree;
 
-    /* PROJ-1107 Check Constraint ì§€ì› */
+    /* PROJ-1107 Check Constraint Áö¿ø */
     qtcNode                * checkCondition;
     qcNamePosList          * ncharList;
 
@@ -1246,8 +1294,8 @@ typedef struct qdConstraintSpec
 
     // information after validation
     UInt                     constrColumnCount;
-    scSpaceID                indexTBSID;   // Index ê°€ ì €ìž¥ë  TBS ID
-    smiTableSpaceType        indexTBSType; // Index ê°€ ì €ìž¥ë  TBS Type
+    scSpaceID                indexTBSID;   // Index °¡ ÀúÀåµÉ TBS ID
+    smiTableSpaceType        indexTBSType; // Index °¡ ÀúÀåµÉ TBS Type
 
     // fix BUG-18937
     qdPartitionedIndex     * partIndex;
@@ -1325,7 +1373,7 @@ typedef struct qdConstraintState
 }
 
 /*
-//   Enable, Defferableê³¼ InitialDeferredëŠ” ì•„ì§ ë¯¸êµ¬í˜„ì´ë‹¤.
+//   Enable, Defferable°ú InitialDeferred´Â ¾ÆÁ÷ ¹Ì±¸ÇöÀÌ´Ù.
 typedef struct qdConstraintState
 {
     idBool                  enable;
@@ -1438,8 +1486,8 @@ typedef struct qdSystemSetParseTree
 {
     qcParseTree         common;
 
-    qcNamePosition      name;   // System Property ì´ë¦„
-    qcNamePosition      value;  // ë³€ê²½í•  ê°’
+    qcNamePosition      name;   // System Property ÀÌ¸§
+    qcNamePosition      value;  // º¯°æÇÒ °ª
 } qdSystemSetParseTree;
 
 typedef struct qdDefaultParseTree
@@ -1503,7 +1551,7 @@ enum qdUserType
     QDP_ROLE_TYPE
 };
 
-/* roleì—ì˜í•´ reference ê¶Œí•œì„ ë¶€ì—¬ ë°›ì€ userid list */
+/* role¿¡ÀÇÇØ reference ±ÇÇÑÀ» ºÎ¿© ¹ÞÀº userid list */
 typedef struct qdReferenceGranteeList
 {
     UInt                              userID;
@@ -1635,22 +1683,22 @@ typedef struct qdTBSFilesSpec
 } qdTBSFilesSpec;
 
 
-/* Tablespace Attribute Flagì˜ List */
+/* Tablespace Attribute FlagÀÇ List */
 typedef struct qdTBSAttrFlagList
 {
     UInt    attrMask;
     UInt    attrValue;
 
-    // SQL TEXTë‚´ì—ì„œì˜ ì´ Attiributeì— í•´ë‹¹ë˜ëŠ” Offsetê³¼ Size
-    // Validationì¤‘ íŠ¹ì • Attributeë¥¼ ì°ì–´ì„œ ì—ëŸ¬ë¥¼ ë‚´ê³ ìž í•  ë•Œ ì‚¬ìš©
+    // SQL TEXT³»¿¡¼­ÀÇ ÀÌ Attiribute¿¡ ÇØ´çµÇ´Â Offset°ú Size
+    // ValidationÁß Æ¯Á¤ Attribute¸¦ Âï¾î¼­ ¿¡·¯¸¦ ³»°íÀÚ ÇÒ ¶§ »ç¿ë
     qcNamePosition attrPosition;
     
-    // Linked Listì˜ Nextí¬ì¸í„°
+    // Linked ListÀÇ NextÆ÷ÀÎÅÍ
     qdTBSAttrFlagList * next;
 } qdTBSAttrFlagList;
 
 
-/* Table Attribute Flagì˜ List */
+/* Table Attribute FlagÀÇ List */
 
 // TABLESPACE
 typedef struct qdCreateTBSParseTree
@@ -1666,12 +1714,12 @@ typedef struct qdCreateTBSParseTree
     smiSegMgmtType             segMgmtType;
     smiExtMgmtType             extMgmtType;
 
-    /* Tablespaceì˜ Attribute Flag
+    /* TablespaceÀÇ Attribute Flag
        Ex> LOG_COMPRESS ON/OFF
      */
     qdTBSAttrFlagList         * attrFlagList;
-    // Validationì´í›„ ì„¸íŒ… :
-    // Tablespaceì˜ ëª¨ë“  Attribute Flagë“¤ì„ Bitwise ORë¡œ ë¬¶ì€ FLAG
+    // ValidationÀÌÈÄ ¼¼ÆÃ :
+    // TablespaceÀÇ ¸ðµç Attribute FlagµéÀ» Bitwise OR·Î ¹­Àº FLAG
     UInt                        attrFlag;
     
     /* fields used by memory tablespace. */
@@ -1724,7 +1772,7 @@ typedef struct qdAlterTBSParseTree
     qdAlterChkptPath         * memAlterChkptPath;
     UInt                       fileCount;
     // TASK-2398 Log Compress
-    // ë³€ê²½í•  Tablespaceì˜ Attribute Flag
+    // º¯°æÇÒ TablespaceÀÇ Attribute Flag
     qdTBSAttrFlagList        * attrFlagToAlter;
 } qdAlterTBSParseTree;
 
@@ -1841,11 +1889,11 @@ typedef struct qdMediaRecoveryParseTree
 {
     qcParseTree                common;
 
-    // ë©”ëª¨ë¦¬/ë””ìŠ¤í¬ ë°ì´íƒ€íŒŒì¼ SPEC
+    // ¸Þ¸ð¸®/µð½ºÅ© µ¥ÀÌÅ¸ÆÄÀÏ SPEC
     SChar                    * oldName;
     SChar                    * newName;
 
-    // ë¯¸ë””ì–´ ë³µêµ¬ ì˜µì…˜
+    // ¹Ìµð¾î º¹±¸ ¿É¼Ç
     idBool                     useAnchorfile;
     qdMediaRecoveryType        recoveryType;
     qdRecoverSpec            * recoverSpec;
@@ -1935,16 +1983,16 @@ typedef struct qdDisjoinTableParseTree
 
 //------------------------------------------
 // To Fix BUG-13127, 13364
-// Index Attribute ì •ë³´ë¥¼ ê°€ì§€ëŠ” ìžë£Œ êµ¬ì¡°
+// Index Attribute Á¤º¸¸¦ °¡Áö´Â ÀÚ·á ±¸Á¶
 // - type
 //   index attribyte type
 // - TBSName
-//   typeì´ tablespaceì¸ ê²½ìš°, tablespace name ì •ë³´ ì„¤ì •, ê·¸ ì™¸ëŠ” NULL
+//   typeÀÌ tablespaceÀÎ °æ¿ì, tablespace name Á¤º¸ ¼³Á¤, ±× ¿Ü´Â NULL
 // - parallelDegree
-//   typeì´ parallelì¸ ê²½ìš°, parallel degree ê°’ ì„¤ì •, ê·¸ ì™¸ëŠ” 0
+//   typeÀÌ parallelÀÎ °æ¿ì, parallel degree °ª ¼³Á¤, ±× ¿Ü´Â 0
 //------------------------------------------
 
-// BUG-17848 : LOGGING_MASK, FORCE_MASK ë¶„ë¦¬
+// BUG-17848 : LOGGING_MASK, FORCE_MASK ºÐ¸®
 #define QD_INDEX_ATTR_TYPE_MASK 0x000000FC
 
 enum qdIndexAttrType
@@ -1986,7 +2034,7 @@ typedef struct qdIndexAttribute // temporary struct for parser
 // INITRANS n MAXTRANS n;
 typedef struct qdTTL // temporary struct for parser
 {
-    // "INITRANS" í˜¹ì€ "MAXTRANS" Identifierì˜ Position
+    // "INITRANS" È¤Àº "MAXTRANS" IdentifierÀÇ Position
     qcNamePosition    * identPosition;
     
     UInt              * initTrans;
@@ -2004,7 +2052,7 @@ typedef struct qdIndexAttrAndLocalIndex // temporary struct for parser
 
 typedef struct qdTablePhysicalAttr
 {
-    // "FREE" í˜¹ì€ "USED" Identifierì˜ Position
+    // "FREE" È¤Àº "USED" IdentifierÀÇ Position
     qcNamePosition    * freeUsedIdentPosition;
 
     UInt              * pctFree;
@@ -2012,7 +2060,7 @@ typedef struct qdTablePhysicalAttr
 } qdTablePhysicalAttr;
 
 // temporary struct for
-// Partitioned Tableì˜ Row Movement
+// Partitioned TableÀÇ Row Movement
 typedef struct qdTableRowMovement
 {
     qcNamePosition namePosition;
@@ -2025,7 +2073,7 @@ typedef struct qdTableMaxRows
     ULong          maxRows;
 } qdTableMaxRows;
 
-// BUG-42883 alter index parser ê°œì„ 
+// BUG-42883 alter index parser °³¼±
 typedef struct qdIndexTypeAndDirectKey // temporary struct for parser
 {
     qcNamePosition position;
@@ -2093,10 +2141,10 @@ typedef struct qdIndexTableCursors
     qdIndexTableList    * indexTables;
     UInt                  indexTableCount;
     
-    // index tableë§Œí¼ í• ë‹¹í•¨
+    // index table¸¸Å­ ÇÒ´çÇÔ
     qdIndexCursor       * indexCursors;
     
-    // maxë¡œ í• ë‹¹í•˜ê³  ê³µìœ í•¨
+    // max·Î ÇÒ´çÇÏ°í °øÀ¯ÇÔ
     const void          * row;
     smiValue            * newRow;
     
@@ -2120,7 +2168,7 @@ typedef struct qdColumnWithPosition // temporary struct for parser
 /* PROJ-1810 Partition Exchange */
 typedef struct qdDisjoinConstr
 {
-    /* ê¸°ì¡´ constraintì˜ IDì™€ ì´ì— ëŒ€ì‘ë˜ëŠ” ìƒˆ ID, ì´ë¦„ì„ ì €ìž¥ */
+    /* ±âÁ¸ constraintÀÇ ID¿Í ÀÌ¿¡ ´ëÀÀµÇ´Â »õ ID, ÀÌ¸§À» ÀúÀå */
     UInt                  oldConstrID;
     UInt                  newConstrID;
     UInt                  columnCount;
@@ -2155,6 +2203,82 @@ typedef struct qdQueueSequenceParseTree
         _dst_->mTableHandle = NULL;                     \
         SMI_INIT_SCN( & (_dst_)->mTableSCN );           \
         _dst_->mQueueSequenceHandle = NULL;             \
+    }
+
+typedef enum 
+{
+    SHARD_DDL_UNKNOWN = 0,
+    SHARD_ADD,
+    SHARD_JOIN,
+    SHARD_DROP,
+    SHARD_DROP_FORCE,
+    SHARD_FAILOVER_NORMAL,
+    SHARD_FAILOVER_IMMEDIATE,
+    SHARD_FAILOVER_EXIT,
+    SHARD_FAILOVER_FORCE,
+    SHARD_FAILBACK,
+    SHARD_MOVE_TO,
+    SHARD_MOVE_TO_INTERNAL_CLONE_COPY,
+    SHARD_MOVE_REMOVE,
+} shardDDLType;
+
+typedef struct qdReShardAttribute
+{
+    /* the variable below will be filled at parsing syntax */
+    qcNamePosition          mUserName;
+    qcNamePosition          mObjectName;
+    qcNamePosition          mPartitionName;
+    qmmValueNode *          mKeyValue;
+    SChar                   mObjectType; /* 'P':procedure, 'T':table */
+    qdReShardAttribute    * next;
+
+    /* the variable below will be filled at validating syntax */
+    SChar                   mFromNodeName[SDI_NODE_NAME_MAX_SIZE + 1];
+    SChar                   mDefaultNodeName[SDI_NODE_NAME_MAX_SIZE + 1];
+    qcmTableInfo          * mTableInfo;
+    smSCN                   mTableSCN;
+    void                  * mTableHandle;
+    sdiObjectInfo         * mShardObjectInfo;
+} qdReShardAttribute;
+
+#define QD_SET_INIT_RESHARD_ATTR(_reshard_attr_)                   \
+    {                                                              \
+        SET_EMPTY_POSITION( _reshard_attr_->mUserName );           \
+        SET_EMPTY_POSITION( _reshard_attr_->mObjectName );          \
+        SET_EMPTY_POSITION( _reshard_attr_->mPartitionName );      \
+        _reshard_attr_->mKeyValue = NULL;                          \
+        _reshard_attr_->mObjectType = 'T';                         \
+        _reshard_attr_->mFromNodeName[0] = '\0';                   \
+        _reshard_attr_->mDefaultNodeName[0] = '\0';                \
+        _reshard_attr_->mTableInfo = NULL;                         \
+        SM_INIT_SCN(&(_reshard_attr_->mTableSCN));                 \
+        _reshard_attr_->mTableHandle = NULL;                       \
+        _reshard_attr_->mShardObjectInfo = NULL;                   \
+        _reshard_attr_->next = NULL;                               \
+    }
+
+typedef struct qdShardParseTree
+{
+    qcParseTree           common;
+
+    /* the variable below will be filled at parsing shard table syntax */
+    qcNamePosition        mNodeName;
+    qdReShardAttribute    * mReShardAttr;
+    shardDDLType          mDDLType;
+
+    /* the variable below will be filled at validating syntax or starting execution*/
+    iduList             * mNodeInfoList;
+    UInt                  mNodeCount;
+} qdShardParseTree;
+
+#define QDSD_SHARD_PARSE_TREE_INIT(_dst_)               \
+    {                                                   \
+        SET_EMPTY_POSITION(_dst_->mNodeName);           \
+        _dst_->mReShardAttr         = NULL;             \
+        _dst_->mNodeInfoList        = NULL;             \
+        _dst_->mDDLType             = SHARD_DDL_UNKNOWN;  \
+        _dst_->mNodeCount           = 0;                  \
+        _dst_->mNodeInfoList        = NULL;             \
     }
 
 #endif /* _O_QD_PARSE_TREE_H_ */

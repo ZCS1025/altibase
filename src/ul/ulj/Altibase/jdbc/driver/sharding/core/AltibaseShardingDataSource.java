@@ -17,17 +17,20 @@
 
 package Altibase.jdbc.driver.sharding.core;
 
-import Altibase.jdbc.driver.AltibaseUrlParser;
-import Altibase.jdbc.driver.cm.CmProtocolContextShardConnect;
-import Altibase.jdbc.driver.util.AltibaseProperties;
-
 import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Map;
+import java.util.logging.Logger;
 
-public class AltibaseShardingDataSource extends JdbcMethodInvoker implements DataSource
+import Altibase.jdbc.driver.AltibaseUrlParser;
+import Altibase.jdbc.driver.WrapperAdapter;
+import Altibase.jdbc.driver.cm.CmProtocolContextShardConnect;
+import Altibase.jdbc.driver.util.AltibaseProperties;
+
+public class AltibaseShardingDataSource extends WrapperAdapter implements DataSource
 {
     private Map<DataNode, DataSource> mDataSourceMap;
     private AltibaseProperties        mProperties;
@@ -41,7 +44,7 @@ public class AltibaseShardingDataSource extends JdbcMethodInvoker implements Dat
     public Connection getConnection() throws SQLException
     {
         AltibaseShardingConnection sShardCon = new AltibaseShardingConnection(mProperties);
-        CmProtocolContextShardConnect sShardContextConnect = sShardCon.getShardContext();
+        CmProtocolContextShardConnect sShardContextConnect = sShardCon.getShardContextConnect();
         if (mDataSourceMap != null)
         {
             sShardContextConnect.setDataSourceMap(mDataSourceMap);
@@ -106,5 +109,11 @@ public class AltibaseShardingDataSource extends JdbcMethodInvoker implements Dat
     public void setDataSourceMap(Map<DataNode, DataSource> aDataSourceMap)
     {
         mDataSourceMap = aDataSourceMap;
+    }
+
+    @Override
+    public Logger getParentLogger() throws SQLFeatureNotSupportedException
+    {
+        return null;
     }
 }

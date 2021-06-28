@@ -68,4 +68,9 @@ void   ulpAfterXAOpen ( acp_sint32_t    aRmid,
 
 void   ulpAfterXAClose ( void );
 
+/* TASK-7218 Handling Multi-Error */
+ACI_RC ulpGetStmtDiag ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserved );
+
+ACI_RC ulpGetConditionDiag ( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *reserved );
+
 #endif

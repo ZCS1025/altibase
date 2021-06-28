@@ -33,7 +33,7 @@ idBool assertSystemError(SChar *aFile, SInt aLine, idBool aAcceptFaultTolerance)
 
     sLog.appendFormat(MM_TRC_ASSERT, aFile, aLine);
     /* fix BUG-28226 ,
-       IDE_ASSERTì—ì„œ last altibase error code, error messageë¥¼ ì°ì—ˆìœ¼ë©´ ì¢‹ê² ìŠµë‹ˆë‹¤. */
+       IDE_ASSERT¿¡¼­ last altibase error code, error message¸¦ Âï¾úÀ¸¸é ÁÁ°Ú½À´Ï´Ù. */
     ideLog::logErrorMsgInternal(sLog);
 
     sLog.write();
@@ -170,6 +170,11 @@ static IDE_RC mmmPhaseActionCallback(mmmPhase         /*aPhase*/,
 
     IDE_TEST( sti::addExtQP_Callback() != IDE_SUCCESS );
 
+    smiSetSessionCallback(&mmcSession::mSessionInfoCallback); 
+ 
+    /* PROJ-2735 DDL Transaction */   
+    smiSetTransactionalDDLCallback( &qciMisc::mTransactionalDDLCallback );
+    
     qci::setSessionCallback(&mmcSession::mCallback);
 
     qci::setQueueCallback(mmqManager::createQueue,

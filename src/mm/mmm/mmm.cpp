@@ -82,14 +82,14 @@ smiGlobalCallBackList mmm::mSmiGlobalCallBackList =
     mmiSetEmergencyFlag,
     mmiClrEmergencyFlag,
     mmtSessionManager::getBaseTime,
-    NULL,/*qdc::setExecDDLdisableProperty BUGBUG : What? ì‚¬ë¦¬ì§..*/
+    NULL,/*qdc::setExecDDLdisableProperty BUGBUG : What? »ç¸®Áü..*/
     qciMisc::makeNullRow,
     qciMisc::smiCallbackCheckNeedUndoRecord, // BUG-21895
     mmcSession::getSessionUpdateMaxLogSizeCallback,
     mmcSession::getSessionSqlText,
     // TASK-3171 B-Tree for spatial
     mtc::getNonStoringSize,
-    // Proj-2059 DB Upgrade ê¸°ëŠ¥
+    // Proj-2059 DB Upgrade ±â´É
     NULL, /*qciMisc::getColumnHeaderDesc*/
     NULL, /*qciMisc::getTableHeaderDesc*/
     NULL, /*qciMisc::getPartitionHeaderDesc*/
@@ -97,12 +97,13 @@ smiGlobalCallBackList mmm::mSmiGlobalCallBackList =
     // BUG-37484
     mtc::needMinMaxStatistics,
     mtc::getColumnStoreLen,
-    mtd::isUsablePartialDirectKeyIndex
+    mtd::isUsablePartialDirectKeyIndex,
+    mmcSession::getDDLLockTimeout
 };
 
 /*
- * ê° ë‹¨ê³„ì—ì„œ ë‹¤ìŒ ë‹¨ê³„ë¡œ ê°ˆ ë•Œ í—ˆìš© ì—¬ë¶€
- * 0ì¼ ê²½ìš° í—ˆìš© ì•ˆë¨. 1ì¼ ê²½ìš° í—ˆìš©ë¨.
+ * °¢ ´Ü°è¿¡¼­ ´ÙÀ½ ´Ü°è·Î °¥ ¶§ Çã¿ë ¿©ºÎ
+ * 0ÀÏ °æ¿ì Çã¿ë ¾ÈµÊ. 1ÀÏ °æ¿ì Çã¿ëµÊ.
  */
 UChar mmm::mTransitionMatrix[MMM_STARTUP_MAX][MMM_STARTUP_MAX] =
 {
@@ -161,7 +162,7 @@ IDE_RC mmm::executeInternal(mmmPhaseDesc *aDesc, UInt aOptionflag)
          sCurAction++)
     {
         /* bug-36515 mismatched err-msg when startup failed
-           ì´ì „ ë‹¨ê³„ì—ì„œ ì„¸íŒ…ëì„ ìˆ˜ë„ ìžˆëŠ” í•„ìš”ì—†ëŠ” ì—ëŸ¬ë©”ì‹œì§€ë¥¼ clear */
+           ÀÌÀü ´Ü°è¿¡¼­ ¼¼ÆÃµÆÀ» ¼öµµ ÀÖ´Â ÇÊ¿ä¾ø´Â ¿¡·¯¸Þ½ÃÁö¸¦ clear */
         ideClearError();
 
         if ( ((*sCurAction)->mFlag & MMM_ACTION_NO_LOG) == 0)
@@ -249,11 +250,11 @@ IDE_RC mmm::execute(mmmPhase aPhase, UInt aOptionflag)
 
 
 /*
- * startup ë˜ë©´ì„œ, ë©”ì‹œì§€ ë¡œê¹… ì¡°ì°¨ ì´ˆê¸°í™” ë˜ê¸° ì´ì „ì—
- * ì—ëŸ¬ê°€ ë°œìƒí•  ê²½ìš° ì—¬ê¸°ë¡œ í˜¸ì¶œë¨.
+ * startup µÇ¸é¼­, ¸Þ½ÃÁö ·Î±ë Á¶Â÷ ÃÊ±âÈ­ µÇ±â ÀÌÀü¿¡
+ * ¿¡·¯°¡ ¹ß»ýÇÒ °æ¿ì ¿©±â·Î È£ÃâµÊ.
  * Howto?
- * ê°€ìž¥ ì¢‹ì€ ë°©ë²•ì€ clientì—ê²Œ ë©”ì‹œì§€ë¥¼ ë³´ë‚´ëŠ” ê²ƒì´ë‚˜, ë¶ˆê°€ëŠ¥.
- * ì‹œìŠ¤í…œ ë¡œê·¸ë¡œ ë©”ì‹œì§€ë¥¼ ë¡œê¹…í•˜ë„ë¡ ê³„íšì„ ì„¸ì›€. not yet. BUGBUG
+ * °¡Àå ÁÁÀº ¹æ¹ýÀº client¿¡°Ô ¸Þ½ÃÁö¸¦ º¸³»´Â °ÍÀÌ³ª, ºÒ°¡´É.
+ * ½Ã½ºÅÛ ·Î±×·Î ¸Þ½ÃÁö¸¦ ·Î±ëÇÏµµ·Ï °èÈ¹À» ¼¼¿ò. not yet. BUGBUG
  *
  */
 void mmm::logToSystem(mmmPhase /*aPhase*/, mmmPhaseAction * /*aAction*/)

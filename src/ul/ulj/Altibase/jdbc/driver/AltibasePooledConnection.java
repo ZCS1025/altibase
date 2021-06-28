@@ -19,13 +19,13 @@ package Altibase.jdbc.driver;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.LinkedList;
-import java.util.ListIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.sql.ConnectionEvent;
 import javax.sql.ConnectionEventListener;
 import javax.sql.PooledConnection;
+import javax.sql.StatementEventListener;
 
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
@@ -34,10 +34,10 @@ import Altibase.jdbc.driver.logging.TraceFlag;
 
 public class AltibasePooledConnection implements PooledConnection
 {
-    private Connection       mPhysicalConnection;
-    private Connection       mLogicalConnection;
-    private LinkedList       mListeners;
-    private transient Logger mLogger;
+    private Connection                                mPhysicalConnection;
+    private Connection                                mLogicalConnection;
+    private final LinkedList<ConnectionEventListener> mListeners;
+    private transient Logger                          mLogger;
     
     AltibasePooledConnection(Connection aPhysicalConnection)
     {
@@ -49,13 +49,12 @@ public class AltibasePooledConnection implements PooledConnection
         }
         mPhysicalConnection = aPhysicalConnection;
         mLogicalConnection = null;
-        mListeners = new LinkedList();
+        mListeners = new LinkedList<>();
     }
     
     protected Connection createLogicalConnection(Connection aPhysicalConnection, AltibasePooledConnection aParent)
     {
-        Connection sLogicalCon = new AltibaseLogicalConnection(aPhysicalConnection, aParent);
-        return sLogicalCon;
+        return new AltibaseLogicalConnection(aPhysicalConnection, aParent);
     }
     
     void notifyLogicalConnectionClosed()
@@ -63,10 +62,9 @@ public class AltibasePooledConnection implements PooledConnection
         ConnectionEvent sEvent = new ConnectionEvent(this);
         synchronized (mListeners)
         {
-            ListIterator sIterator = mListeners.listIterator();
-            while (sIterator.hasNext())
+            for (ConnectionEventListener sEach : mListeners)
             {
-                ((ConnectionEventListener)sIterator.next()).connectionClosed(sEvent);
+                sEach.connectionClosed(sEvent);
             }
         }
     }
@@ -76,10 +74,9 @@ public class AltibasePooledConnection implements PooledConnection
         ConnectionEvent sEvent = new ConnectionEvent(this, aException);
         synchronized (mListeners)
         {
-            ListIterator sIterator = mListeners.listIterator();
-            while (sIterator.hasNext())
+            for (ConnectionEventListener sEach : mListeners)
             {
-                ((ConnectionEventListener)sIterator.next()).connectionErrorOccurred(sEvent);
+                sEach.connectionErrorOccurred(sEvent);
             }
         }
     }
@@ -144,5 +141,17 @@ public class AltibasePooledConnection implements PooledConnection
         {
             mListeners.remove(aListener);
         }
+    }
+
+    @Override
+    public void addStatementEventListener(StatementEventListener aListener)
+    {
+        // Ignore(StatementEventListener is not supported)
+    }
+
+    @Override
+    public void removeStatementEventListener(StatementEventListener aListener)
+    {
+        // Ignore(StatementEventListener is not supported)
     }
 }

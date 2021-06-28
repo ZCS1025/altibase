@@ -16,11 +16,11 @@
  
 
 /***********************************************************************
- * $Id: qsfFGetLine.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qsfFGetLine.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  *
  * Description :
  *     PROJ-1371 PSM File Handling
- *     FILEì—ì„œ í•œ lineì„ ì–»ì–´ì˜¤ëŠ” í•¨ìˆ˜
+ *     FILE¿¡¼­ ÇÑ lineÀ» ¾ò¾î¿À´Â ÇÔ¼ö
  *
  * Syntax :
  *     FILE_GETLINE( file FILE_TYPE,linesize INTEGER );
@@ -52,7 +52,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfFGetLineModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -113,7 +113,7 @@ IDE_RC qsfEstimate( mtcNode*     aNode,
 
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
-    // varcharëª¨ë“ˆë¡œ estimateí•´ì•¼í•¨.. precisionì€ 32768
+    // varchar¸ğµâ·Î estimateÇØ¾ßÇÔ.. precisionÀº 32768
 
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      sModule,
@@ -151,9 +151,9 @@ IDE_RC qsfCalculate_FGetLine( mtcNode*     aNode,
  *     file_getline calculate
  *
  * Implementation :
- *     1. filehandleì´ nullì¸ ê²½ìš° openìƒíƒœê°€ ì•„ë‹ˆë¯€ë¡œ error
- *     2. openmodeê°€ 'r'ì´ ì•„ë‹Œ ê²½ìš° error
- *     3. ìµœëŒ€ linesizeë¥¼ ë„˜ê±°ë‚˜, 1ë³´ë‹¤ ì‘ìœ¼ë©´ error
+ *     1. filehandleÀÌ nullÀÎ °æ¿ì open»óÅÂ°¡ ¾Æ´Ï¹Ç·Î error
+ *     2. openmode°¡ 'r'ÀÌ ¾Æ´Ñ °æ¿ì error
+ *     3. ÃÖ´ë linesize¸¦ ³Ñ°Å³ª, 1º¸´Ù ÀÛÀ¸¸é error
  *
  ***********************************************************************/
     

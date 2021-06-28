@@ -27,15 +27,15 @@ ACP_EXTERN_C_BEGIN
 
 #define ACICONV_MAX_CHAR_SET_LEN ((acp_uint32_t)40)
 
-/* ASCII ë¬¸ìžì¸ì§€ ì²´í¬ */
+/* ASCII ¹®ÀÚÀÎÁö Ã¼Å© */
 #define ACICONV_IS_ASCII(c)       ( (((c) & ~0x7F) == 0) ? ACP_TRUE : ACP_FALSE )
 
 #define ACICONV_IS_UTF16_ASCII_PTR(s) ( ( ( *(acp_uint8_t*)s == 0 ) && ( (*((acp_uint8_t*)s+1) & ~0x7F) == 0 ) ) ? ACP_TRUE : ACP_FALSE )
 
-/* ìºë¦­í„° ì…‹ ë³€í™˜ ì‹œ, ë³€í™˜í•  ë¬¸ìžê°€ ì—†ëŠ” ê²½ìš° ë‚˜íƒ€ë‚´ëŠ” ë¬¸ìž
- ASCIIì˜ ê²½ìš° '?'ì´ë‹¤.
- WE8ISO8859P1ì˜ ê²½ìš° ê±°ê¾¸ë¡œ ë¬¼ìŒí‘œ(0xBF)ê°€ default_replace_characterì´ë‹¤.
- (í˜„ìž¬ WE8ISO8859P1ëŠ” ì§€ì›í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ ê³ ë ¤í•˜ì§€ ì•ŠëŠ”ë‹¤.) */
+/* Ä³¸¯ÅÍ ¼Â º¯È¯ ½Ã, º¯È¯ÇÒ ¹®ÀÚ°¡ ¾ø´Â °æ¿ì ³ªÅ¸³»´Â ¹®ÀÚ
+ ASCIIÀÇ °æ¿ì '?'ÀÌ´Ù.
+ WE8ISO8859P1ÀÇ °æ¿ì °Å²Ù·Î ¹°À½Ç¥(0xBF)°¡ default_replace_characterÀÌ´Ù.
+ (ÇöÀç WE8ISO8859P1´Â Áö¿øÇÏÁö ¾ÊÀ¸¹Ç·Î °í·ÁÇÏÁö ¾Ê´Â´Ù.) */
 #define ACICONV_ASCII_DEFAULT_REPLACE_CHARACTER ((acp_uint8_t)(0x3F))
 
 /*  space character ' ' */
@@ -56,8 +56,8 @@ ACP_EXTERN_C_BEGIN
 
 
 /* PROJ-1579 NCHAR */
-/* ì§€ì›í•˜ëŠ” ìºë¦­í„°ì…‹ì˜ idë¥¼ ì§€ì •í•œë‹¤.  */
-/* conversion matrixì™€ ì—°ê´€ì´ ìžˆê¸° ë•Œë¬¸ì— 0ë¶€í„° ìˆœì„œëŒ€ë¡œ ë²ˆí˜¸ë¥¼ ë§¤ê²¨ì•¼ í•¨ */
+/* Áö¿øÇÏ´Â Ä³¸¯ÅÍ¼ÂÀÇ id¸¦ ÁöÁ¤ÇÑ´Ù.  */
+/* conversion matrix¿Í ¿¬°üÀÌ ÀÖ±â ¶§¹®¿¡ 0ºÎÅÍ ¼ø¼­´ë·Î ¹øÈ£¸¦ ¸Å°Ü¾ß ÇÔ */
 typedef enum aciConvCharSetList
 {
     ACICONV_ASCII_ID = 0,
@@ -65,10 +65,10 @@ typedef enum aciConvCharSetList
     ACICONV_MS949_ID,
     ACICONV_EUCJP_ID,
     ACICONV_SHIFTJIS_ID,
-    ACICONV_MS932_ID, /* PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì› */
+    ACICONV_MS932_ID, /* PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø */
     ACICONV_BIG5_ID,
     ACICONV_GB231280_ID,
-    /* PORJ-2414 [ê¸°ëŠ¥ì„±] GBK, CP936 character set ì¶”ê°€ */
+    /* PORJ-2414 [±â´É¼º] GBK, CP936 character set Ãß°¡ */
     ACICONV_MS936_ID,
     ACICONV_UTF8_ID,
     ACICONV_UTF16_ID,

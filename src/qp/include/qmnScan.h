@@ -16,16 +16,16 @@
  
 
 /***********************************************************************
- * $Id: qmnScan.h 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qmnScan.h 89517 2020-12-15 06:08:38Z donovan.seo $
  *
  * Description :
  *     SCAN Node
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ selectionì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
- *     Storage Managerì— ì§ì ‘ ì ‘ê·¼í•˜ì—¬ selectionì„ ìˆ˜í–‰í•œë‹¤.
+ *     °ü°èÇü ¸ğµ¨¿¡¼­ selectionÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
+ *     Storage Manager¿¡ Á÷Á¢ Á¢±ÙÇÏ¿© selectionÀ» ¼öÇàÇÑ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -43,64 +43,64 @@
 
 /* qmncSCAN.flag                                     */
 // Iterator Traverse Direction
-// ì£¼ì˜ : smiDef.h ì— ìˆëŠ” ê°’ì„ ì‚¬ìš©í•˜ëŠ” ê²ƒì€ Buggyí•¨.
+// ÁÖÀÇ : smiDef.h ¿¡ ÀÖ´Â °ªÀ» »ç¿ëÇÏ´Â °ÍÀº BuggyÇÔ.
 #define QMNC_SCAN_TRAVERSE_MASK            (0x00000001)
 #define QMNC_SCAN_TRAVERSE_FORWARD         (0x00000000)
 #define QMNC_SCAN_TRAVERSE_BACKWARD        (0x00000001)
 
 /* qmncSCAN.flag                                     */
-// IN Subqueryê°€ Key Rangeë¡œ ì‚¬ìš©ë˜ê³  ìˆëŠ”ì§€ì˜ ì—¬ë¶€
+// IN Subquery°¡ Key Range·Î »ç¿ëµÇ°í ÀÖ´ÂÁöÀÇ ¿©ºÎ
 #define QMNC_SCAN_INSUBQ_KEYRANGE_MASK     (0x00000002)
 #define QMNC_SCAN_INSUBQ_KEYRANGE_FALSE    (0x00000000)
 #define QMNC_SCAN_INSUBQ_KEYRANGE_TRUE     (0x00000002)
 
 /* qmncSCAN.flag                                     */
-// Foreign Key ê²€ì‚¬ë¥¼ ìœ„í•´ Previous ì‚¬ìš© ì—¬ë¶€
+// Foreign Key °Ë»ç¸¦ À§ÇØ Previous »ç¿ë ¿©ºÎ
 #define QMNC_SCAN_PREVIOUS_ENABLE_MASK     (0x00000004)
 #define QMNC_SCAN_PREVIOUS_ENABLE_FALSE    (0x00000000)
 #define QMNC_SCAN_PREVIOUS_ENABLE_TRUE     (0x00000004)
 
 /* qmncSCAN.flag                                     */
-// ì°¸ì¡°ë˜ëŠ” tableì´ fixed table ë˜ëŠ” performance viewì¸ì§€ì˜ ì •ë³´ë¥¼ ë‚˜íƒ€ëƒ„.
-// fixed table ë˜ëŠ” performance viewì— ëŒ€í•´ì„œëŠ”
-// tableì— ëŒ€í•œ IS LOCKì„ ì¡ì§€ ì•Šë„ë¡ í•˜ê¸° ìœ„í•¨.
+// ÂüÁ¶µÇ´Â tableÀÌ fixed table ¶Ç´Â performance viewÀÎÁöÀÇ Á¤º¸¸¦ ³ªÅ¸³¿.
+// fixed table ¶Ç´Â performance view¿¡ ´ëÇØ¼­´Â
+// table¿¡ ´ëÇÑ IS LOCKÀ» ÀâÁö ¾Êµµ·Ï ÇÏ±â À§ÇÔ.
 #define QMNC_SCAN_TABLE_FV_MASK            (0x00000008)
 #define QMNC_SCAN_TABLE_FV_FALSE           (0x00000000)
 #define QMNC_SCAN_TABLE_FV_TRUE            (0x00000008)
 
 // Proj-1360 Queue
 /* qmncSCAN.flag                                     */
-// ì°¸ì¡°ë˜ëŠ” table queue ì¸ê²½ìš°, dequeue í›„ì— ë ˆì½”ë“œ ì‚­ì œë¥¼ ë‚˜íƒ€ëƒ„
+// ÂüÁ¶µÇ´Â table queue ÀÎ°æ¿ì, dequeue ÈÄ¿¡ ·¹ÄÚµå »èÁ¦¸¦ ³ªÅ¸³¿
 #define QMNC_SCAN_TABLE_QUEUE_MASK         (0x00000010)
 #define QMNC_SCAN_TABLE_QUEUE_FALSE        (0x00000000)
 #define QMNC_SCAN_TABLE_QUEUE_TRUE         (0x00000010)
 
 // PROJ-1502 PARTITIONED DISK TABLE
 /* qmncSCAN.flag                                     */
-// partitionì— ëŒ€í•œ scanì¸ì§€ ì—¬ë¶€ë¥¼
+// partition¿¡ ´ëÇÑ scanÀÎÁö ¿©ºÎ¸¦
 #define QMNC_SCAN_FOR_PARTITION_MASK       (0x00000020)
 #define QMNC_SCAN_FOR_PARTITION_FALSE      (0x00000000)
 #define QMNC_SCAN_FOR_PARTITION_TRUE       (0x00000020)
 
 // To fix BUG-12742
-// indexë¥¼ ë°˜ë“œì‹œ ì‚¬ìš©í•´ì•¼ í•˜ëŠ”ì§€ ì—¬ë¶€ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
+// index¸¦ ¹İµå½Ã »ç¿ëÇØ¾ß ÇÏ´ÂÁö ¿©ºÎ¸¦ ³ªÅ¸³½´Ù.
 #define QMNC_SCAN_FORCE_INDEX_SCAN_MASK    (0x00000040)
 #define QMNC_SCAN_FORCE_INDEX_SCAN_FALSE   (0x00000000)
 #define QMNC_SCAN_FORCE_INDEX_SCAN_TRUE    (0x00000040)
 
-// Indexable MIN-MAX ìµœì í™”ê°€ ì ìš©ëœ ê²½ìš°
+// Indexable MIN-MAX ÃÖÀûÈ­°¡ Àû¿ëµÈ °æ¿ì
 #define QMNC_SCAN_NOTNULL_RANGE_MASK       (0x00000080)
 #define QMNC_SCAN_NOTNULL_RANGE_FALSE      (0x00000000)
 #define QMNC_SCAN_NOTNULL_RANGE_TRUE       (0x00000080)
 
 // PROJ-1624 global non-partitioned index
-// index table scan ì—¬ë¶€ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
+// index table scan ¿©ºÎ¸¦ ³ªÅ¸³½´Ù.
 #define QMNC_SCAN_INDEX_TABLE_SCAN_MASK    (0x00000200)
 #define QMNC_SCAN_INDEX_TABLE_SCAN_FALSE   (0x00000000)
 #define QMNC_SCAN_INDEX_TABLE_SCAN_TRUE    (0x00000200)
 
 // PROJ-1624 global non-partitioned index
-// rid scanì„ ë°˜ë“œì‹œ ì‚¬ìš©í•´ì•¼ í•˜ëŠ”ì§€ ì—¬ë¶€ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
+// rid scanÀ» ¹İµå½Ã »ç¿ëÇØ¾ß ÇÏ´ÂÁö ¿©ºÎ¸¦ ³ªÅ¸³½´Ù.
 #define QMNC_SCAN_FORCE_RID_SCAN_MASK      (0x00000400)
 #define QMNC_SCAN_FORCE_RID_SCAN_FALSE     (0x00000000)
 #define QMNC_SCAN_FORCE_RID_SCAN_TRUE      (0x00000400)
@@ -142,27 +142,27 @@
 #define QMND_SCAN_CURSOR_OPEN              (0x00000002)
 
 /* qmndSCAN.flag                                     */
-// Constant Filterì˜ ìˆ˜í–‰ ê²°ê³¼
+// Constant FilterÀÇ ¼öÇà °á°ú
 #define QMND_SCAN_ALL_FALSE_MASK           (0x00000004)
 #define QMND_SCAN_ALL_FALSE_FALSE          (0x00000000)
 #define QMND_SCAN_ALL_FALSE_TRUE           (0x00000004)
 
 /* qmndSCAN.flag                                     */
-// IN SUBQUERY KEYRANGEì˜ ìƒì„± ì„±ê³µ ì—¬ë¶€
-// IN SUBQUERY KEYRANGEê°€ ì¡´ì¬í•  ê²½ìš°ì—ë§Œ ìœ íš¨í•˜ë©°,
-// ë” ì´ìƒ Key Rangeë¥¼ ìƒì„±í•  ìˆ˜ ì—†ì„ ë•Œ ë³€ê²½ëœë‹¤.
+// IN SUBQUERY KEYRANGEÀÇ »ı¼º ¼º°ø ¿©ºÎ
+// IN SUBQUERY KEYRANGE°¡ Á¸ÀçÇÒ °æ¿ì¿¡¸¸ À¯È¿ÇÏ¸ç,
+// ´õ ÀÌ»ó Key Range¸¦ »ı¼ºÇÒ ¼ö ¾øÀ» ¶§ º¯°æµÈ´Ù.
 #define QMND_SCAN_INSUBQ_RANGE_BUILD_MASK     (0x00000008)
 #define QMND_SCAN_INSUBQ_RANGE_BUILD_SUCCESS  (0x00000000)
 #define QMND_SCAN_INSUBQ_RANGE_BUILD_FAILURE  (0x00000008)
 
 /* qmndSCAN.flag                                     */
-// planì˜ selected methodê°€ ì„¸íŒ…ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ êµ¬í•œë‹¤.
+// planÀÇ selected method°¡ ¼¼ÆÃµÇ¾ú´ÂÁö ¿©ºÎ¸¦ ±¸ÇÑ´Ù.
 #define QMND_SCAN_SELECTED_METHOD_SET_MASK    (0x00000010)
 #define QMND_SCAN_SELECTED_METHOD_SET_FALSE   (0x00000000)
 #define QMND_SCAN_SELECTED_METHOD_SET_TRUE    (0x00000010)
 
 /* qmndSCAN.flag                                     */
-// doItFirstì—ì„œ cursorì˜ restart í•„ìš” ì—¬ë¶€ë¥¼ êµ¬í•œë‹¤.
+// doItFirst¿¡¼­ cursorÀÇ restart ÇÊ¿ä ¿©ºÎ¸¦ ±¸ÇÑ´Ù.
 #define QMND_SCAN_RESTART_CURSOR_MASK       (0x00000020)
 #define QMND_SCAN_RESTART_CURSOR_FALSE      (0x00000000)
 #define QMND_SCAN_RESTART_CURSOR_TRUE       (0x00000020)
@@ -183,15 +183,15 @@
  *       qtc  qtc  qtc  qtc
  ----------------------------------------------------------------------*/
 
-// PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
-// qmncSCANì— ì‚°ì¬í•´ ìˆë˜ ê°ì¢… filter/key range ì •ë³´ë“¤ì„
-// í•˜ë‚˜ì˜ ìë£Œêµ¬ì¡°ë¡œ ë¬¶ìŒ
+// PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+// qmncSCAN¿¡ »êÀçÇØ ÀÖ´ø °¢Á¾ filter/key range Á¤º¸µéÀ»
+// ÇÏ³ªÀÇ ÀÚ·á±¸Á¶·Î ¹­À½
 typedef struct qmncScanMethod
 {
     qcmIndex     * index;
 
     //---------------------------------
-    // Predicate ì¢…ë¥˜
+    // Predicate Á¾·ù
     //---------------------------------
 
     // Key Range
@@ -219,7 +219,7 @@ typedef struct qmncScanMethod
 typedef struct qmncSCAN
 {
     //---------------------------------
-    // Code ì˜ì—­ ê³µí†µ ì •ë³´
+    // Code ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmnPlan        plan;
@@ -227,7 +227,7 @@ typedef struct qmncSCAN
     UInt           planID;
 
     //---------------------------------
-    // SCAN ê³ ìœ  ì •ë³´
+    // SCAN °íÀ¯ Á¤º¸
     //---------------------------------
 
     UShort         tupleRowID;          // Tuple ID
@@ -241,35 +241,35 @@ typedef struct qmncSCAN
 
     UInt           lockMode;            // Lock Mode
     smiCursorProperties cursorProperty; // Cursor Property
-    qmsLimit     * limit;               // qmsParseTreeì˜ limitë¥¼ ë³µì‚¬
+    qmsLimit     * limit;               // qmsParseTreeÀÇ limit¸¦ º¹»ç
 
     /* PROJ-1832 New database link */
     SChar        * databaseLinkName;
     SChar        * remoteQuery;
     
-    // PROJ-2551 simple query ìµœì í™”
+    // PROJ-2551 simple query ÃÖÀûÈ­
     idBool         isSimple;    // simple index scan or simple full scan
     UShort         simpleValueCount;
     qmnValueInfo * simpleValues;
-    UInt           simpleValueBufSize;  // c-type valueë¥¼ mt-type valueë¡œ ë³€í™˜
-    idBool         simpleUnique;  // ìµœëŒ€ 1ê±´ì¸ ê²½ìš°
-    idBool         simpleRid;     // rid scanì¸ ê²½ìš°
+    UInt           simpleValueBufSize;  // c-type value¸¦ mt-type value·Î º¯È¯
+    idBool         simpleUnique;  // ÃÖ´ë 1°ÇÀÎ °æ¿ì
+    idBool         simpleRid;     // rid scanÀÎ °æ¿ì
     UInt           simpleCompareOpCount;
     mtcColumn    * mSimpleColumns;
     
     //---------------------------------
-    // Predicate ì¢…ë¥˜
+    // Predicate Á¾·ù
     //---------------------------------
-    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
-    // ì§ì ‘ ê°€ì§€ê³  ìˆë˜ ê°ì¢… filter/key rangeë“±ì˜ ì •ë³´ë¥¼
-    // qmncScanMethod ìë£Œ êµ¬ì¡°ë¡œ ë¬¶ìŒ
+    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+    // Á÷Á¢ °¡Áö°í ÀÖ´ø °¢Á¾ filter/key rangeµîÀÇ Á¤º¸¸¦
+    // qmncScanMethod ÀÚ·á ±¸Á¶·Î ¹­À½
     qmncScanMethod  method;
 
     // NNF Filter
     qtcNode      * nnfFilter;
 
     //---------------------------------
-    // Display ê´€ë ¨ ì •ë³´
+    // Display °ü·Ã Á¤º¸
     //---------------------------------
 
     qmsNamePosition      remoteUserName;     // Remote User Name
@@ -279,17 +279,17 @@ typedef struct qmncSCAN
     qmsNamePosition      tableName;          // Table Name
     qmsNamePosition      aliasName;          // Alias Name
 
-    /* BUG-44520 ë¯¸ì‚¬ìš© Disk Partitionì˜ SCAN Nodeë¥¼ ì¶œë ¥í•˜ë‹¤ê°€,
-     *           Partition Name ë¶€ë¶„ì—ì„œ ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
-     *  Lockì„ ì¡ì§€ ì•Šê³  Meta Cacheë¥¼ ì‚¬ìš©í•˜ë©´, ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
-     *  SCAN Nodeì—ì„œ Partition Nameì„ ë³´ê´€í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤.
+    /* BUG-44520 ¹Ì»ç¿ë Disk PartitionÀÇ SCAN Node¸¦ Ãâ·ÂÇÏ´Ù°¡,
+     *           Partition Name ºÎºĞ¿¡¼­ ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ½À´Ï´Ù.
+     *  LockÀ» ÀâÁö ¾Ê°í Meta Cache¸¦ »ç¿ëÇÏ¸é, ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ½À´Ï´Ù.
+     *  SCAN Node¿¡¼­ Partition NameÀ» º¸°üÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù.
      */
     SChar                partitionName[QC_MAX_OBJECT_NAME_LEN + 1];
 
-    /* BUG-44633 ë¯¸ì‚¬ìš© Disk Partitionì˜ SCAN Nodeë¥¼ ì¶œë ¥í•˜ë‹¤ê°€,
-     *           Index Name ë¶€ë¶„ì—ì„œ ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
-     *  Lockì„ ì¡ì§€ ì•Šê³  Meta Cacheë¥¼ ì‚¬ìš©í•˜ë©´, ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
-     *  SCAN Nodeì—ì„œ Index IDë¥¼ ë³´ê´€í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤.
+    /* BUG-44633 ¹Ì»ç¿ë Disk PartitionÀÇ SCAN Node¸¦ Ãâ·ÂÇÏ´Ù°¡,
+     *           Index Name ºÎºĞ¿¡¼­ ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ½À´Ï´Ù.
+     *  LockÀ» ÀâÁö ¾Ê°í Meta Cache¸¦ »ç¿ëÇÏ¸é, ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ½À´Ï´Ù.
+     *  SCAN Node¿¡¼­ Index ID¸¦ º¸°üÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù.
      */
     UInt                 partitionIndexId;
 
@@ -297,7 +297,7 @@ typedef struct qmncSCAN
     qmsPartitionRef    * partitionRef;
     qmsTableRef        * tableRef;
 
-    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
     qmoScanDecisionFactor * sdf;
 
     /* PROJ-2632 */
@@ -316,17 +316,17 @@ typedef struct qmndScanFixedTable
     iduFixedTableMemory   memory;
 } qmndScanFixedTable;
 //-----------------------------------------------------------------
-// [Data ì˜ì—­ì˜ SCAN ë…¸ë“œ]
-// - Predicate ì¢…ë¥˜
-//    A3ì™€ ë‹¬ë¦¬ ìµœì¢… Key Range Pointerë¥¼ ê´€ë¦¬í•œë‹¤.
-//    ì´ëŠ” IN SUBQUERY KEYRANGEë“±ê³¼ ê°™ì´ Key Range ìƒì„±ì˜
-//    ì„±ê³µ, ì‹¤íŒ¨ê°€ í•¨ê»˜ ë°œìƒí•  ìˆ˜ ìˆì–´ Variable Key Rangeì˜ì—­ì„
-//    ìƒì‹¤í•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤.
+// [Data ¿µ¿ªÀÇ SCAN ³ëµå]
+// - Predicate Á¾·ù
+//    A3¿Í ´Ş¸® ÃÖÁ¾ Key Range Pointer¸¦ °ü¸®ÇÑ´Ù.
+//    ÀÌ´Â IN SUBQUERY KEYRANGEµî°ú °°ÀÌ Key Range »ı¼ºÀÇ
+//    ¼º°ø, ½ÇÆĞ°¡ ÇÔ²² ¹ß»ıÇÒ ¼ö ÀÖ¾î Variable Key Range¿µ¿ªÀ»
+//    »ó½ÇÇÒ ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù.
 //-----------------------------------------------------------------
 typedef struct qmndSCAN
 {
     //---------------------------------
-    // Data ì˜ì—­ ê³µí†µ ì •ë³´
+    // Data ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmndPlan                    plan;
@@ -334,87 +334,87 @@ typedef struct qmndSCAN
     UInt                      * flag;
 
     //---------------------------------
-    // SCAN ê³ ìœ  ì •ë³´
+    // SCAN °íÀ¯ Á¤º¸
     //---------------------------------
 
     // fix BUG-9052
-    // subquery filterê°€ outer column ì°¸ì¡°ì‹œ
-    // outer columnì„ ì°¸ì¡°í•œ store and searchë¥¼
-    // ì¬ìˆ˜í–‰í•˜ë„ë¡ í•˜ê¸° ìœ„í•´ì„œ ... qmnSCAN::readRow()í•¨ìˆ˜ì£¼ì„ì°¸ì¡°
-    // printPlan()ë‚´ì—ì„œ ACCESS count displayì‹œ
-    // DataPlan->plan.myTuple->modifyì—ì„œ ì´ ê°’ì„ ë¹¼ì£¼ë„ë¡ í•œë‹¤.
+    // subquery filter°¡ outer column ÂüÁ¶½Ã
+    // outer columnÀ» ÂüÁ¶ÇÑ store and search¸¦
+    // Àç¼öÇàÇÏµµ·Ï ÇÏ±â À§ÇØ¼­ ... qmnSCAN::readRow()ÇÔ¼öÁÖ¼®ÂüÁ¶
+    // printPlan()³»¿¡¼­ ACCESS count display½Ã
+    // DataPlan->plan.myTuple->modify¿¡¼­ ÀÌ °ªÀ» »©ÁÖµµ·Ï ÇÑ´Ù.
     UInt                        subQFilterDepCnt;
 
     // PROJ-1071
     smiTableCursor            * cursor;          // Cursor
-    smiCursorProperties         cursorProperty;  // Cursor ê´€ë ¨ ì •ë³´
+    smiCursorProperties         cursorProperty;  // Cursor °ü·Ã Á¤º¸
     smiCursorType               cursorType;      // PROJ-1502 PARTITIONED DISK TABLE
     UInt                        lockMode;        // Lock Mode
     qmndScanFixedTable          fixedTable;         // BUG-42639 Monitoring Query
     smiFixedTableProperties     fixedTableProperty; // BUG-42639 Mornitoring Query
 
     //---------------------------------
-    // Updateë¥¼ ìœ„í•œ Column List
+    // Update¸¦ À§ÇÑ Column List
     //---------------------------------
 
-    smiColumnList             * updateColumnList;   // Updateê°€ ì•„ë‹Œ ê²½ìš°, NULLë¡œ ì„¤ì •
+    smiColumnList             * updateColumnList;   // Update°¡ ¾Æ´Ñ °æ¿ì, NULL·Î ¼³Á¤
     idBool                      inplaceUpdate;      // inplace update
 
     //---------------------------------
-    // Predicate ì¢…ë¥˜
+    // Predicate Á¾·ù
     //---------------------------------
 
-    smiRange                  * fixKeyRangeArea; // Fixed Key Range ì˜ì—­
+    smiRange                  * fixKeyRangeArea; // Fixed Key Range ¿µ¿ª
     smiRange                  * fixKeyRange;     // Fixed Key Range
-    UInt                        fixKeyRangeSize; // Fixed Key Range í¬ê¸°
+    UInt                        fixKeyRangeSize; // Fixed Key Range Å©±â
 
-    smiRange                  * fixKeyFilterArea; //Fixed Key Filter ì˜ì—­
+    smiRange                  * fixKeyFilterArea; //Fixed Key Filter ¿µ¿ª
     smiRange                  * fixKeyFilter;    // Fixed Key Filter
-    UInt                        fixKeyFilterSize;// Fixed Key Filter í¬ê¸°
+    UInt                        fixKeyFilterSize;// Fixed Key Filter Å©±â
 
-    smiRange                  * varKeyRangeArea; // Variable Key Range ì˜ì—­
+    smiRange                  * varKeyRangeArea; // Variable Key Range ¿µ¿ª
     smiRange                  * varKeyRange;     // Variable Key Range
-    UInt                        varKeyRangeSize; // Variable Key Range í¬ê¸°
+    UInt                        varKeyRangeSize; // Variable Key Range Å©±â
 
-    smiRange                  * varKeyFilterArea; //Variable Key Filter ì˜ì—­
+    smiRange                  * varKeyFilterArea; //Variable Key Filter ¿µ¿ª
     smiRange                  * varKeyFilter;    // Variable Key Filter
-    UInt                        varKeyFilterSize;// Variable Key Filter í¬ê¸°
+    UInt                        varKeyFilterSize;// Variable Key Filter Å©±â
 
     smiRange                  * notNullKeyRange; // Not Null Key Range
     
-    smiRange                  * keyRange;        // ìµœì¢… Key Range
-    smiRange                  * keyFilter;       // ìµœì¢… Key Filter
+    smiRange                  * keyRange;        // ÃÖÁ¾ Key Range
+    smiRange                  * keyFilter;       // ÃÖÁ¾ Key Filter
     smiRange                  * ridRange;
 
-    // Filter ê´€ë ¨ CallBack ì •ë³´
+    // Filter °ü·Ã CallBack Á¤º¸
     smiCallBack                 callBack;        // Filter CallBack
     qtcSmiCallBackDataAnd       callBackDataAnd; //
-    qtcSmiCallBackData          callBackData[3]; // ì„¸ ì¢…ë¥˜ì˜ Filterê°€ ê°€ëŠ¥í•¨.
+    qtcSmiCallBackData          callBackData[3]; // ¼¼ Á¾·ùÀÇ Filter°¡ °¡´ÉÇÔ.
 
     //---------------------------------
-    // Merge Join ê´€ë ¨ ì •ë³´
+    // Merge Join °ü·Ã Á¤º¸
     //---------------------------------
 
     smiCursorPosInfo            cursorInfo;
 
     //---------------------------------
-    // Disk Table ê´€ë ¨ ì •ë³´
+    // Disk Table °ü·Ã Á¤º¸
     //---------------------------------
 
-    void                      * nullRow;  // Disk Tableì„ ìœ„í•œ null row
+    void                      * nullRow;  // Disk TableÀ» À§ÇÑ null row
     scGRID                      nullRID;
 
     //---------------------------------
-    // Trigger ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
+    // Trigger Ã³¸®¸¦ À§ÇÑ Á¤º¸
     //---------------------------------
 
     // PROJ-1705
-    // 1. update, deleteì˜ ê²½ìš° trigger rowê°€ í•„ìš”ì—¬ë¶€ ì •ë³´
-    //   ì´ ì •ë³´ëŠ” cusor openì‹œ fetch columnì •ë³´êµ¬ì„±ì— ì“°ì´ë©°,
-    //   trigger rowê°€ í•„ìš”í•œ ê²½ìš° ( í…Œì´ë¸” ì „ì²´ ì»¬ëŸ¼ íŒ¨ì¹˜ )
-    //   trigger rowê°€ í•„ìš”í•˜ì§€ ì•Šì€ ê²½ìš° ( validationì‹œ ìˆ˜ì§‘í•œ ì»¬ëŸ¼ì— ëŒ€í•´ì„œ íŒ¨ì¹˜ )
-    // 2. partitioned tableì˜ updateì‹œ
-    //    rowMovementì¸ ê²½ìš° í…Œì´ë¸” ì „ì²´ ì»¬ëŸ¼ íŒ¨ì¹˜
+    // 1. update, deleteÀÇ °æ¿ì trigger row°¡ ÇÊ¿ä¿©ºÎ Á¤º¸
+    //   ÀÌ Á¤º¸´Â cusor open½Ã fetch columnÁ¤º¸±¸¼º¿¡ ¾²ÀÌ¸ç,
+    //   trigger row°¡ ÇÊ¿äÇÑ °æ¿ì ( Å×ÀÌºí ÀüÃ¼ ÄÃ·³ ÆĞÄ¡ )
+    //   trigger row°¡ ÇÊ¿äÇÏÁö ¾ÊÀº °æ¿ì ( validation½Ã ¼öÁıÇÑ ÄÃ·³¿¡ ´ëÇØ¼­ ÆĞÄ¡ )
+    // 2. partitioned tableÀÇ update½Ã
+    //    rowMovementÀÎ °æ¿ì Å×ÀÌºí ÀüÃ¼ ÄÃ·³ ÆĞÄ¡
     idBool                      isNeedAllFetchColumn;    
 
     // PROJ-1071 Parallel query
@@ -436,11 +436,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ìˆ˜í–‰ í•¨ìˆ˜
+    // ¼öÇà ÇÔ¼ö
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -449,7 +449,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan ì •ë³´ ì¶œë ¥
+    // Plan Á¤º¸ Ãâ·Â
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -476,32 +476,32 @@ public:
     // mapping by doIt() function pointer
     //------------------------
 
-    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨.
+    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ.
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // í•­ìƒ ì¡°ê±´ì„ ë§Œì¡±í•  ìˆ˜ ì—†ëŠ” ê²½ìš°
+    // Ç×»ó Á¶°ÇÀ» ¸¸Á·ÇÒ ¼ö ¾ø´Â °æ¿ì
     static IDE_RC doItAllFalse( qcTemplate * aTemplate,
                                 qmnPlan    * aPlan,
                                 qmcRowFlag * aFlag );
 
-    // ìµœì´ˆ SCANì„ ìˆ˜í–‰
+    // ÃÖÃÊ SCANÀ» ¼öÇà
     static IDE_RC doItFirst( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              qmcRowFlag * aFlag );
 
-    // ë‹¤ìŒ SCANì„ ìˆ˜í–‰
+    // ´ÙÀ½ SCANÀ» ¼öÇà
     static IDE_RC doItNext( qcTemplate * aTemplate,
                             qmnPlan    * aPlan,
                             qmcRowFlag * aFlag );
 
-    // ìµœì´ˆ Fixed Table SCANì„ ìˆ˜í–‰
+    // ÃÖÃÊ Fixed Table SCANÀ» ¼öÇà
     static IDE_RC doItFirstFixedTable( qcTemplate * aTemplate,
                                        qmnPlan    * aPlan,
                                        qmcRowFlag * aFlag );
 
-    // ë‹¤ìŒ Fixed Table SCANì„ ìˆ˜í–‰
+    // ´ÙÀ½ Fixed Table SCANÀ» ¼öÇà
     static IDE_RC doItNextFixedTable( qcTemplate * aTemplate,
                                       qmnPlan    * aPlan,
                                       qmcRowFlag * aFlag );
@@ -509,17 +509,17 @@ public:
     // Direct External Call
     //------------------------
 
-    // Cursorë¥¼ ì €ì¥í•¨
+    // Cursor¸¦ ÀúÀåÇÔ
     static IDE_RC storeCursor( qcTemplate * aTemplate,
                                qmnPlan    * aPlan );
 
-    // ì €ì¥í•œ Cursor ìœ„ì¹˜ë¡œ ë³µì›í•¨
+    // ÀúÀåÇÑ Cursor À§Ä¡·Î º¹¿øÇÔ
     static IDE_RC restoreCursor( qcTemplate * aTemplate,
                                  qmnPlan    * aPlan );
 
     // khshim moved this function from private section to public.
     // for Referential integrity check upon delete/update
-    // Key Range, Key Filter, Filter ìƒì„±
+    // Key Range, Key Filter, Filter »ı¼º
     static IDE_RC makeKeyRangeAndFilter( qcTemplate * aTemplate,
                                          qmncSCAN   * aCodePlan,
                                          qmndSCAN   * aDataPlan );
@@ -528,25 +528,25 @@ public:
                                qmncSCAN  * aCodePlan,
                                qmndSCAN  * aDataPlan);
 
-    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
-    // planì—ê²Œ data ì˜ì—­ì— selected methodê°€ ì„¸íŒ…ë˜ì—ˆìŒì„ ì•Œë ¤ì¤€ë‹¤.
+    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+    // plan¿¡°Ô data ¿µ¿ª¿¡ selected method°¡ ¼¼ÆÃµÇ¾úÀ½À» ¾Ë·ÁÁØ´Ù.
     static IDE_RC notifyOfSelectedMethodSet( qcTemplate * aTemplate,
                                              qmncSCAN   * aCodePlan );
 
-    // PCRDì—ì„œ ì§ì ‘ cursorë¥¼ ì—´ìˆ˜ ìˆë„ë¡ ì œê³µí•¨
+    // PCRD¿¡¼­ Á÷Á¢ cursor¸¦ ¿­¼ö ÀÖµµ·Ï Á¦°øÇÔ
     static IDE_RC openCursorForPartition( qcTemplate * aTemplate,
                                           qmncSCAN   * aCodePlan,
                                           qmndSCAN   * aDataPlan );
 
     // PROJ-1624 global non-partitioned index
-    // PCRDì—ì„œ ì§ì ‘ readRowë¥¼ í•  ìˆ˜ ìˆë„ë¡ ì œê³µí•¨
+    // PCRD¿¡¼­ Á÷Á¢ readRow¸¦ ÇÒ ¼ö ÀÖµµ·Ï Á¦°øÇÔ
     static IDE_RC readRowFromGRID( qcTemplate * aTemplate,
                                    qmnPlan    * aPlan,
                                    scGRID       aRowGRID,
                                    qmcRowFlag * aFlag );
 
-    // code planì˜ qmncScanMethodë¥¼ ì‚¬ìš©í•  ì§€,
-    // sdfì˜ candidateë“¤ ì¤‘ì˜ qmncScanMethodë¥¼ ì‚¬ìš©í•  ì§€ íŒë‹¨í•œë‹¤.
+    // code planÀÇ qmncScanMethod¸¦ »ç¿ëÇÒ Áö,
+    // sdfÀÇ candidateµé ÁßÀÇ qmncScanMethod¸¦ »ç¿ëÇÒ Áö ÆÇ´ÜÇÑ´Ù.
     static qmncScanMethod * getScanMethod( qcTemplate * aTemplate,
                                            qmncSCAN   * aCodePlan );
 
@@ -555,35 +555,35 @@ public:
 private:
 
     //------------------------
-    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
+    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
     //------------------------
 
-    // ìµœì´ˆ ì´ˆê¸°í™”
+    // ÃÖÃÊ ÃÊ±âÈ­
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncSCAN   * aCodePlan,
                              qmndSCAN   * aDataPlan );
 
-    // Fixed Key Rangeë¥¼ ìœ„í•œ Range ê³µê°„ í• ë‹¹
+    // Fixed Key Range¸¦ À§ÇÑ Range °ø°£ ÇÒ´ç
     static IDE_RC allocFixKeyRange( qcTemplate * aTemplate,
                                     qmncSCAN   * aCodePlan,
                                     qmndSCAN   * aDataPlan );
 
-    // Fixed Key Filterë¥¼ ìœ„í•œ Range ê³µê°„ í• ë‹¹
+    // Fixed Key Filter¸¦ À§ÇÑ Range °ø°£ ÇÒ´ç
     static IDE_RC allocFixKeyFilter( qcTemplate * aTemplate,
                                      qmncSCAN   * aCodePlan,
                                      qmndSCAN   * aDataPlan );
 
-    // Variable Key Rangeë¥¼ ìœ„í•œ Range ê³µê°„ í• ë‹¹
+    // Variable Key Range¸¦ À§ÇÑ Range °ø°£ ÇÒ´ç
     static IDE_RC allocVarKeyRange( qcTemplate * aTemplate,
                                     qmncSCAN   * aCodePlan,
                                     qmndSCAN   * aDataPlan );
 
-    // Variable Key Filterë¥¼ ìœ„í•œ Range ê³µê°„ í• ë‹¹
+    // Variable Key Filter¸¦ À§ÇÑ Range °ø°£ ÇÒ´ç
     static IDE_RC allocVarKeyFilter( qcTemplate * aTemplate,
                                      qmncSCAN   * aCodePlan,
                                      qmndSCAN   * aDataPlan );
 
-    // Not Null Key Rangeë¥¼ ìœ„í•œ Range ê³µê°„ í• ë‹¹
+    // Not Null Key Range¸¦ À§ÇÑ Range °ø°£ ÇÒ´ç
     static IDE_RC allocNotNullKeyRange( qcTemplate * aTemplate,
                                         qmncSCAN   * aCodePlan,
                                         qmndSCAN   * aDataPlan );
@@ -593,15 +593,15 @@ private:
                                 qmndSCAN  * aDataPlan);
 
     //------------------------
-    // Cursor ê´€ë ¨ í•¨ìˆ˜
+    // Cursor °ü·Ã ÇÔ¼ö
     //------------------------
 
-    // Cursorì˜ Open
+    // CursorÀÇ Open
     static IDE_RC openCursor( qcTemplate * aTemplate,
                               qmncSCAN   * aCodePlan,
                               qmndSCAN   * aDataPlan );
 
-    // Cursorì˜ Restart
+    // CursorÀÇ Restart
     static IDE_RC restartCursor( qmncSCAN   * aCodePlan,
                                  qmndSCAN   * aDataPlan );
 
@@ -611,60 +611,62 @@ private:
     //                            qmndSCAN * aDataPlan );
 
     //------------------------
-    // SCANì˜ doIt() ê´€ë ¨ í•¨ìˆ˜
+    // SCANÀÇ doIt() °ü·Ã ÇÔ¼ö
     //------------------------
 
-    // í•˜ë‚˜ì˜ recordë¥¼ ì½ìŒ
+    // ÇÏ³ªÀÇ record¸¦ ÀĞÀ½
     static IDE_RC readRow( qcTemplate * aTemplate,
                            qmncSCAN   * aCodePlan,
                            qmndSCAN   * aDataPlan,
                            qmcRowFlag * aFlag);
 
-    // í•˜ë‚˜ì˜ FixedTable recordë¥¼ ì½ìŒ
+    // ÇÏ³ªÀÇ FixedTable record¸¦ ÀĞÀ½
     static IDE_RC readRowFixedTable( qcTemplate * aTemplate,
                                      qmncSCAN   * aCodePlan,
                                      qmndSCAN   * aDataPlan,
                                      qmcRowFlag * aFlag );
 
-    // IN Subquery KeyRangeë¥¼ ìœ„í•œ ì¬ì‹œë„
+    // IN Subquery KeyRange¸¦ À§ÇÑ Àç½Ãµµ
     static IDE_RC reRead4InSubRange( qcTemplate * aTemplate,
                                      qmncSCAN   * aCodePlan,
                                      qmndSCAN   * aDataPlan,
                                      void      ** aRow );
 
     //------------------------
-    // Plan Display ê´€ë ¨ í•¨ìˆ˜
+    // Plan Display °ü·Ã ÇÔ¼ö
     //------------------------
 
-    // Accessì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+    // AccessÁ¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
     static IDE_RC printAccessInfo( qmncSCAN     * aCodePlan,
                                    qmndSCAN     * aDataPlan,
                                    iduVarString * aString,                                   
                                    qmnDisplay      aMode );
 
-    // Predicateì˜ ìƒì„¸ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+    // PredicateÀÇ »ó¼¼ Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
     static IDE_RC printPredicateInfo( qcTemplate   * aTemplate,
                                       qmncSCAN     * aCodePlan,
                                       ULong          aDepth,
-                                      iduVarString * aString );
+                                      iduVarString * aString,
+                                      qmnDisplay     aMode );
 
-    // Key Rangeì˜ ìƒì„¸ ì •ë³´ë¥¼ ì¶œë ¥
+    // Key RangeÀÇ »ó¼¼ Á¤º¸¸¦ Ãâ·Â
     static IDE_RC printKeyRangeInfo( qcTemplate   * aTemplate,
                                      qmncSCAN     * aCodePlan,
                                      ULong          aDepth,
                                      iduVarString * aString );
 
-    // Key Filterì˜ ìƒì„¸ ì •ë³´ë¥¼ ì¶œë ¥
+    // Key FilterÀÇ »ó¼¼ Á¤º¸¸¦ Ãâ·Â
     static IDE_RC printKeyFilterInfo( qcTemplate   * aTemplate,
                                       qmncSCAN     * aCodePlan,
                                       ULong          aDepth,
                                       iduVarString * aString );
 
-    // Filterì˜ ìƒì„¸ ì •ë³´ë¥¼ ì¶œë ¥
+    // FilterÀÇ »ó¼¼ Á¤º¸¸¦ Ãâ·Â
     static IDE_RC printFilterInfo( qcTemplate   * aTemplate,
                                    qmncSCAN     * aCodePlan,
                                    ULong          aDepth,
-                                   iduVarString * aString );
+                                   iduVarString * aString,
+                                   qmnDisplay     aMode );
 
     //fix BUG-17553
     static void addAccessCount( qmncSCAN   * aPlan,

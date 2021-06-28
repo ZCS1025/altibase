@@ -21,18 +21,18 @@
  * Description :
  *     MGJN(MerGe JoiN) Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ Merge Join ì—°ì‚°ì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     °ü°èÇü ¸ðµ¨¿¡¼­ Merge Join ¿¬»êÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
  *
- *     Join Methodì¤‘ Merge Joinë§Œì„ ë‹´ë‹¹í•˜ë©°, Leftë° Right Childë¡œëŠ”
- *     ë‹¤ìŒê³¼ ê°™ì€ Plan Nodeë§Œì´ ì¡´ìž¬í•  ìˆ˜ ìžˆë‹¤.
+ *     Join MethodÁß Merge Join¸¸À» ´ã´çÇÏ¸ç, Left¹× Right Child·Î´Â
+ *     ´ÙÀ½°ú °°Àº Plan Node¸¸ÀÌ Á¸ÀçÇÒ ¼ö ÀÖ´Ù.
  *
  *         - SCAN Node
  *         - SORT Node
  *         - MGJN Node
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -55,7 +55,7 @@ qmnMGJN::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    MGJN ë…¸ë“œì˜ ì´ˆê¸°í™”
+ *    MGJN ³ëµåÀÇ ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -83,7 +83,7 @@ qmnMGJN::init( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // Child Planì˜ ì´ˆê¸°í™”
+    // Child PlanÀÇ ÃÊ±âÈ­
     //------------------------------------------------
 
     IDE_TEST( aPlan->left->init( aTemplate,
@@ -93,14 +93,14 @@ qmnMGJN::init( qcTemplate * aTemplate,
                                   aPlan->right ) != IDE_SUCCESS);
 
     //------------------------------------------------
-    // ì €ìž¥ Cursorê°€ ì—†ìŒì„ í‘œê¸°
+    // ÀúÀå Cursor°¡ ¾øÀ½À» Ç¥±â
     //------------------------------------------------
 
     *sDataPlan->flag &= ~QMND_MGJN_CURSOR_STORED_MASK;
     *sDataPlan->flag |= QMND_MGJN_CURSOR_STORED_FALSE;
 
     //------------------------------------------------
-    // ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
+    // ¼öÇà ÇÔ¼ö °áÁ¤
     //------------------------------------------------
 
     sDataPlan->doIt = qmnMGJN::doItFirst;
@@ -151,15 +151,15 @@ qmnMGJN::doItInner( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    MGJNì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
+ *    MGJNÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *    1.ì§€ì •ëœ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ìˆ˜í–‰í•œë‹¤.
- *    2.rowê°€ ì¡´ìž¬í•˜ëŠ”ê²½ìš° filterì¡°ê±´ì„ ê²€ì‚¬í•œë‹¤.
- *    2.1.rowê°€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ” ê²½ìš° ì™„ë£Œ.
- *    3.filterì¡°ê±´ì„ ê²€ì‚¬í•œë‹¤.
- *    3.1 filterì¡°ê±´ì´ ë§žëŠ” ê²½ìš° ì™„ë£Œ.
- *    3.2 filterì¡°ê±´ì´ ë§žì§€ ì•ŠëŠ” ê²½ìš° 1ë¡œ
+ *    1.ÁöÁ¤µÈ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼öÇàÇÑ´Ù.
+ *    2.row°¡ Á¸ÀçÇÏ´Â°æ¿ì filterÁ¶°ÇÀ» °Ë»çÇÑ´Ù.
+ *    2.1.row°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì ¿Ï·á.
+ *    3.filterÁ¶°ÇÀ» °Ë»çÇÑ´Ù.
+ *    3.1 filterÁ¶°ÇÀÌ ¸Â´Â °æ¿ì ¿Ï·á.
+ *    3.2 filterÁ¶°ÇÀÌ ¸ÂÁö ¾Ê´Â °æ¿ì 1·Î
  ***********************************************************************/
 
     qmncMGJN * sCodePlan = (qmncMGJN *) aPlan;
@@ -170,24 +170,24 @@ qmnMGJN::doItInner( qcTemplate * aTemplate,
 
     while( sJudge == ID_FALSE )
     {
-        // Merge Join Predicate ì¡°ê±´ ê²€ì‚¬í›„ ë§žëŠ” ë ˆì½”ë“œë¥¼ ì˜¬ë¦¼
+        // Merge Join Predicate Á¶°Ç °Ë»çÈÄ ¸Â´Â ·¹ÄÚµå¸¦ ¿Ã¸²
         IDE_TEST( sDataPlan->doIt( aTemplate, aPlan, aFlag ) != IDE_SUCCESS );
 
-        // ë§Œì•½ ë§žëŠ” ë ˆì½”ë“œê°€ ì˜¬ë¼ì˜¤ë©´
+        // ¸¸¾à ¸Â´Â ·¹ÄÚµå°¡ ¿Ã¶ó¿À¸é
         if ( (*aFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
         {
             // 
-            // Join Filter ì¡°ê±´ ê²€ì‚¬
+            // Join Filter Á¶°Ç °Ë»ç
             IDE_TEST( checkJoinFilter( aTemplate,
                                        sCodePlan,
                                        & sJudge )
                       != IDE_SUCCESS );
 
-            // Join Filterì¡°ê±´ì— ë§žìœ¼ë©´ sJudgeëŠ” TRUEê°€ ë˜ê³  ë£¨í”„ë¥¼ ë¹ ì ¸ë‚˜ì˜´
+            // Join FilterÁ¶°Ç¿¡ ¸ÂÀ¸¸é sJudge´Â TRUE°¡ µÇ°í ·çÇÁ¸¦ ºüÁ®³ª¿È
         }
         else
         {
-            // ë§žëŠ” ê²°ê³¼ê°€ ì—†ìœ¼ë©´ break
+            // ¸Â´Â °á°ú°¡ ¾øÀ¸¸é break
             break;
         }
     }
@@ -206,11 +206,11 @@ qmnMGJN::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Null Paddingì„ ìˆ˜í–‰í•œë‹¤.
+ *    Null PaddingÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *    ë³„ë„ì˜ Null Rowë¥¼ ê°€ì§€ì§€ ì•Šìœ¼ë©°,
- *    Childì— ëŒ€í•œ Null Paddingì„ ìˆ˜í–‰í•œë‹¤.
+ *    º°µµÀÇ Null Row¸¦ °¡ÁöÁö ¾ÊÀ¸¸ç,
+ *    Child¿¡ ´ëÇÑ Null PaddingÀ» ¼öÇàÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -233,7 +233,7 @@ qmnMGJN::padNull( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // Child ì— ëŒ€í•œ Null Padding
+    // Child ¿¡ ´ëÇÑ Null Padding
     //------------------------------------------------
 
     IDE_TEST( aPlan->left->padNull( aTemplate, aPlan->left )
@@ -263,7 +263,7 @@ qmnMGJN::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *    ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  * Implementation :
  *
@@ -280,7 +280,7 @@ qmnMGJN::printPlan( qcTemplate   * aTemplate,
     ULong i;
 
     //----------------------------
-    // Display ìœ„ì¹˜ ê²°ì •
+    // Display À§Ä¡ °áÁ¤
     //----------------------------
 
     for ( i = 0; i < aDepth; i++ )
@@ -290,7 +290,7 @@ qmnMGJN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // MGJN ë…¸ë“œ í‘œì‹œ
+    // MGJN ³ëµå Ç¥½Ã
     //----------------------------
 
     switch( sCodePlan->flag & QMNC_MGJN_TYPE_MASK )
@@ -309,23 +309,23 @@ qmnMGJN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Join Method ì¶œë ¥
+    // Join Method Ãâ·Â
     //----------------------------
     qmn::printJoinMethod( aString, sCodePlan->plan.flag );
 
     //----------------------------
-    // Cost ì¶œë ¥
+    // Cost Ãâ·Â
     //----------------------------
     qmn::printCost( aString,
                     sCodePlan->plan.qmgAllCost );
 
     //----------------------------
-    // Predicate ì •ë³´ì˜ ìƒì„¸ ì¶œë ¥
+    // Predicate Á¤º¸ÀÇ »ó¼¼ Ãâ·Â
     //----------------------------
 
     if (QCG_GET_SESSION_TRCLOG_DETAIL_PREDICATE(aTemplate->stmt) == 1)
     {
-        // Key Range ì •ë³´ ì¶œë ¥
+        // Key Range Á¤º¸ Ãâ·Â
         for ( i = 0; i < aDepth; i++ )
         {
             iduVarStringAppend( aString,
@@ -339,7 +339,7 @@ qmnMGJN::printPlan( qcTemplate   * aTemplate,
                                           sCodePlan->mergeJoinPred )
                  != IDE_SUCCESS);
 
-        // Filter ì •ë³´ ì¶œë ¥
+        // Filter Á¤º¸ Ãâ·Â
         if ( sCodePlan->joinFilter != NULL)
         {
             for ( i = 0; i < aDepth; i++ )
@@ -366,8 +366,8 @@ qmnMGJN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Subquery ì •ë³´ì˜ ì¶œë ¥
-    // SubqueryëŠ” ë‹¤ìŒê³¼ ê°™ì€ predicateì—ë§Œ ì¡´ìž¬í•  ìˆ˜ ìžˆë‹¤.
+    // Subquery Á¤º¸ÀÇ Ãâ·Â
+    // Subquery´Â ´ÙÀ½°ú °°Àº predicate¿¡¸¸ Á¸ÀçÇÒ ¼ö ÀÖ´Ù.
     //     1. Merge Join Predicate
     //     2. Join Filter
     //----------------------------
@@ -407,7 +407,7 @@ qmnMGJN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
+    // Operatorº° °á°ú Á¤º¸ Ãâ·Â
     //----------------------------
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
     {
@@ -423,7 +423,7 @@ qmnMGJN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Child Planì˜ ì •ë³´ ì¶œë ¥
+    // Child PlanÀÇ Á¤º¸ Ãâ·Â
     //----------------------------
 
     IDE_TEST( aPlan->left->printPlan( aTemplate,
@@ -455,7 +455,7 @@ qmnMGJN::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨.
+ *    ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ¸é ¾ÈµÊ.
  *
  * Implementation :
  *
@@ -479,10 +479,10 @@ qmnMGJN::doItFirst( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
+ *    ÃÖÃÊ ¼öÇà ÇÔ¼ö
  *
  * Implementation :
- *     Left Child ë˜ëŠ” Right Childì˜ ê²°ê³¼ê°€ ëª¨ë‘ ìžˆëŠ” ê²½ìš°ì—ë§Œ ìˆ˜í–‰
+ *     Left Child ¶Ç´Â Right ChildÀÇ °á°ú°¡ ¸ðµÎ ÀÖ´Â °æ¿ì¿¡¸¸ ¼öÇà
  *
  ***********************************************************************/
 
@@ -496,7 +496,7 @@ qmnMGJN::doItFirst( qcTemplate * aTemplate,
     qmcRowFlag sFlag     = QMC_ROW_INITIALIZE;
 
     //----------------------------
-    // Left Childì˜ ìˆ˜í–‰
+    // Left ChildÀÇ ¼öÇà
     //----------------------------
 
     IDE_TEST( aPlan->left->doIt( aTemplate, aPlan->left, & sFlag )
@@ -508,7 +508,7 @@ qmnMGJN::doItFirst( qcTemplate * aTemplate,
     else
     {
         //----------------------------
-        // Right Childì˜ ìˆ˜í–‰
+        // Right ChildÀÇ ¼öÇà
         //----------------------------
 
         IDE_TEST( aPlan->right->doIt( aTemplate, aPlan->right, & sFlag )
@@ -520,20 +520,20 @@ qmnMGJN::doItFirst( qcTemplate * aTemplate,
         }
         else
         {
-            // Leftì™€ Right ëª¨ë‘ ì¡´ìž¬í•˜ëŠ” ê²½ìš°
-            // Merge Join ìˆ˜í–‰
+            // Left¿Í Right ¸ðµÎ Á¸ÀçÇÏ´Â °æ¿ì
+            // Merge Join ¼öÇà
 
             IDE_TEST( mergeJoin( aTemplate,
                                  sCodePlan,
                                  sDataPlan,
-                                 ID_TRUE,  // Right Dataê°€ ì¡´ìž¬í•¨
+                                 ID_TRUE,  // Right Data°¡ Á¸ÀçÇÔ
                                  aFlag )
                       != IDE_SUCCESS );
         }
     }
 
     //----------------------------
-    // ê²°ê³¼ì˜ ì¡´ìž¬ ìœ ë¬´ì— ë”°ë¥¸ ì²˜ë¦¬
+    // °á°úÀÇ Á¸Àç À¯¹«¿¡ µû¸¥ Ã³¸®
     //----------------------------
 
     if ( (*aFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_NONE )
@@ -563,10 +563,10 @@ qmnMGJN::doItNext( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
+ *    ´ÙÀ½ ¼öÇà ÇÔ¼ö
  *
  * Implementation :
- *    Rightë¥¼ ìˆ˜í–‰í•˜ê³  Data ì¡´ìž¬ ìœ ë¬´ì— ë”°ë¥¸ Merge Joinì„ ìˆ˜í–‰í•œë‹¤.
+ *    Right¸¦ ¼öÇàÇÏ°í Data Á¸Àç À¯¹«¿¡ µû¸¥ Merge JoinÀ» ¼öÇàÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -580,7 +580,7 @@ qmnMGJN::doItNext( qcTemplate * aTemplate,
     qmcRowFlag sFlag     = QMC_ROW_INITIALIZE;
 
     //----------------------------
-    // Right Childì˜ ìˆ˜í–‰
+    // Right ChildÀÇ ¼öÇà
     //----------------------------
 
     IDE_TEST( aPlan->right->doIt( aTemplate, aPlan->right, & sFlag )
@@ -591,7 +591,7 @@ qmnMGJN::doItNext( qcTemplate * aTemplate,
         IDE_TEST( mergeJoin( aTemplate,
                              sCodePlan,
                              sDataPlan,
-                             ID_FALSE,  // Right Dataê°€ ì—†ìŒ
+                             ID_FALSE,  // Right Data°¡ ¾øÀ½
                              aFlag )
                   != IDE_SUCCESS );
     }
@@ -600,13 +600,13 @@ qmnMGJN::doItNext( qcTemplate * aTemplate,
         IDE_TEST( mergeJoin( aTemplate,
                              sCodePlan,
                              sDataPlan,
-                             ID_TRUE,  // Right Dataê°€ ì¡´ìž¬í•¨
+                             ID_TRUE,  // Right Data°¡ Á¸ÀçÇÔ
                              aFlag )
                   != IDE_SUCCESS );
     }
 
     //----------------------------
-    // ê²°ê³¼ì˜ ì¡´ìž¬ ìœ ë¬´ì— ë”°ë¥¸ ì²˜ë¦¬
+    // °á°úÀÇ Á¸Àç À¯¹«¿¡ µû¸¥ Ã³¸®
     //----------------------------
 
     if ( (*aFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_NONE )
@@ -638,10 +638,10 @@ qmnMGJN::doItSemi( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
+ *    ´ÙÀ½ ¼öÇà ÇÔ¼ö
  *
  * Implementation :
- *    Semi merge joinì„ ìˆ˜í–‰í•œë‹¤.
+ *    Semi merge joinÀ» ¼öÇàÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -665,7 +665,7 @@ qmnMGJN::doItSemi( qcTemplate * aTemplate,
     }
 
     //----------------------------
-    // Left Childì˜ ìˆ˜í–‰
+    // Left ChildÀÇ ¼öÇà
     //----------------------------
 
     IDE_TEST( aPlan->left->doIt( aTemplate, aPlan->left, & sLeftFlag )
@@ -740,11 +740,11 @@ qmnMGJN::doItSemi( qcTemplate * aTemplate,
 
         if( sJudge == ID_TRUE )
         {
-            // mergeJoinPredê°€ ë§Œì¡±ë˜ëŠ” ì²« ë²ˆìž¬ rightì¸ ê²½ìš° cursor ì €ìž¥
+            // mergeJoinPred°¡ ¸¸Á·µÇ´Â Ã¹ ¹øÀç rightÀÎ °æ¿ì cursor ÀúÀå
             IDE_TEST( manageCursor( aTemplate, sCodePlan, sDataPlan )
                       != IDE_SUCCESS );
 
-            // joinFilterê°€ ë§Œì¡±ë˜ëŠ”ì§€ í™•ì¸
+            // joinFilter°¡ ¸¸Á·µÇ´ÂÁö È®ÀÎ
             IDE_TEST( checkJoinFilter( aTemplate, sCodePlan, &sJudge )
                       != IDE_SUCCESS );
 
@@ -755,7 +755,7 @@ qmnMGJN::doItSemi( qcTemplate * aTemplate,
             }
             else
             {
-                // joinFilterê°€ ì‹¤íŒ¨í•˜ì˜€ìœ¼ë¯€ë¡œ ë‹¤ìŒ rightë¥¼ fetch
+                // joinFilter°¡ ½ÇÆÐÇÏ¿´À¸¹Ç·Î ´ÙÀ½ right¸¦ fetch
                 sFetchRight = ID_TRUE;
             }
         }
@@ -763,7 +763,7 @@ qmnMGJN::doItSemi( qcTemplate * aTemplate,
         {
             if( sCodePlan->compareLeftRight != NULL )
             {
-                // Equi-joniì¸ ê²½ìš°
+                // Equi-joniÀÎ °æ¿ì
                 IDE_TEST( qtc::judge( &sJudge,
                                       sCodePlan->compareLeftRight,
                                       aTemplate )
@@ -786,21 +786,21 @@ qmnMGJN::doItSemi( qcTemplate * aTemplate,
             }
             else
             {
-                // Non equi-joinì¸ ê²½ìš°
+                // Non equi-joinÀÎ °æ¿ì
                 // BUG-41632 Semi-Merge-Join gives different result
-                // í”„ë¦¬ë””í‚·ì˜ í˜•íƒœì— ë”°ë¼ì„œ ìˆ˜í–‰ë°©ì‹ì´ ë°”ë€Œì–´ì•¼ í•œë‹¤.
+                // ÇÁ¸®µðÅ¶ÀÇ ÇüÅÂ¿¡ µû¶ó¼­ ¼öÇà¹æ½ÄÀÌ ¹Ù²î¾î¾ß ÇÑ´Ù.
                 if ( sCodePlan->mergeJoinPred->indexArgument == 0 )
                 {
                     // T2.i1 < T1.i1
                     //      MGJN
                     //     |    |
-                    //    T1    T2 ì¸ ê²½ìš°ìž„
+                    //    T1    T2 ÀÎ °æ¿ìÀÓ
 
                     if( ( sCodePlan->mergeJoinPred->node.module == &mtfLessThan ) ||
                         ( sCodePlan->mergeJoinPred->node.module == &mtfLessEqual ) )
                     {
-                        // <, <= ì¸ ê²½ìš°
-                        // Leftë¥¼ ì½ì–´ë“¤ì¸ë‹¤.
+                        // <, <= ÀÎ °æ¿ì
+                        // Left¸¦ ÀÐ¾îµéÀÎ´Ù.
 
                         sFetchRight = ID_FALSE;
                         IDE_TEST( aPlan->left->doIt( aTemplate, aPlan->left, & sLeftFlag )
@@ -811,8 +811,8 @@ qmnMGJN::doItSemi( qcTemplate * aTemplate,
                     }
                     else
                     {
-                        // >, >= ì¸ ê²½ìš°
-                        // Rightë¥¼ ì½ì–´ë“¤ì¸ë‹¤.
+                        // >, >= ÀÎ °æ¿ì
+                        // Right¸¦ ÀÐ¾îµéÀÎ´Ù.
 
                         *sDataPlan->flag &= ~QMND_MGJN_CURSOR_STORED_MASK;
                         *sDataPlan->flag |= QMND_MGJN_CURSOR_STORED_FALSE;
@@ -825,7 +825,7 @@ qmnMGJN::doItSemi( qcTemplate * aTemplate,
                     // T1.i1 < T2.i1
                     //      MGJN
                     //     |    |
-                    //    T1    T2 ì¸ ê²½ìš°ìž„
+                    //    T1    T2 ÀÎ °æ¿ìÀÓ
 
                     if( ( sCodePlan->mergeJoinPred->node.module == &mtfLessThan ) ||
                         ( sCodePlan->mergeJoinPred->node.module == &mtfLessEqual ) )
@@ -833,14 +833,14 @@ qmnMGJN::doItSemi( qcTemplate * aTemplate,
                         *sDataPlan->flag &= ~QMND_MGJN_CURSOR_STORED_MASK;
                         *sDataPlan->flag |= QMND_MGJN_CURSOR_STORED_FALSE;
 
-                        // <, <= ì¸ ê²½ìš°
-                        // Rightë¥¼ ì½ì–´ë“¤ì¸ë‹¤.
+                        // <, <= ÀÎ °æ¿ì
+                        // Right¸¦ ÀÐ¾îµéÀÎ´Ù.
                         sFetchRight = ID_TRUE;
                     }
                     else
                     {
-                        // >, >= ì¸ ê²½ìš°
-                        // Leftë¥¼ ì½ì–´ë“¤ì¸ë‹¤.
+                        // >, >= ÀÎ °æ¿ì
+                        // Left¸¦ ÀÐ¾îµéÀÎ´Ù.
                         sFetchRight = ID_FALSE;
                         IDE_TEST( aPlan->left->doIt( aTemplate, aPlan->left, & sLeftFlag )
                                   != IDE_SUCCESS );
@@ -884,10 +884,10 @@ qmnMGJN::doItAnti( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
+ *    ´ÙÀ½ ¼öÇà ÇÔ¼ö
  *
  * Implementation :
- *    Anti merge joinì„ ìˆ˜í–‰í•œë‹¤.
+ *    Anti merge joinÀ» ¼öÇàÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -911,7 +911,7 @@ qmnMGJN::doItAnti( qcTemplate * aTemplate,
     }
 
     //----------------------------
-    // Left Childì˜ ìˆ˜í–‰
+    // Left ChildÀÇ ¼öÇà
     //----------------------------
 
     IDE_TEST( aPlan->left->doIt( aTemplate, aPlan->left, & sLeftFlag )
@@ -974,25 +974,25 @@ qmnMGJN::doItAnti( qcTemplate * aTemplate,
 
         if( sJudge == ID_TRUE )
         {
-            // mergeJoinPredê°€ ë§Œì¡±ë˜ëŠ” ì²« ë²ˆìž¬ rightì¸ ê²½ìš° cursor ì €ìž¥
+            // mergeJoinPred°¡ ¸¸Á·µÇ´Â Ã¹ ¹øÀç rightÀÎ °æ¿ì cursor ÀúÀå
             IDE_TEST( manageCursor( aTemplate, sCodePlan, sDataPlan )
                       != IDE_SUCCESS );
 
-            // joinFilterê°€ ë§Œì¡±ë˜ëŠ”ì§€ í™•ì¸
+            // joinFilter°¡ ¸¸Á·µÇ´ÂÁö È®ÀÎ
             IDE_TEST( checkJoinFilter( aTemplate, sCodePlan, &sJudge )
                       != IDE_SUCCESS );
 
             if( sJudge == ID_TRUE )
             {
-                // Anti join ì‹¤íŒ¨
-                // ë‹¤ìŒ leftë¥¼ ì½ì–´ë“¤ì¸ë‹¤.
+                // Anti join ½ÇÆÐ
+                // ´ÙÀ½ left¸¦ ÀÐ¾îµéÀÎ´Ù.
                 IDE_TEST( aPlan->left->doIt( aTemplate, aPlan->left, & sLeftFlag )
                           != IDE_SUCCESS );
                 sFetchRight = ID_FALSE;
             }
             else
             {
-                // joinFilterê°€ ì‹¤íŒ¨í•˜ì˜€ìœ¼ë¯€ë¡œ ë‹¤ìŒ rightë¥¼ fetch
+                // joinFilter°¡ ½ÇÆÐÇÏ¿´À¸¹Ç·Î ´ÙÀ½ right¸¦ fetch
                 sFetchRight = ID_TRUE;
             }
         }
@@ -1003,7 +1003,7 @@ qmnMGJN::doItAnti( qcTemplate * aTemplate,
                 *sDataPlan->flag &= ~QMND_MGJN_CURSOR_STORED_MASK;
                 *sDataPlan->flag |= QMND_MGJN_CURSOR_STORED_FALSE;
 
-                // Equi-joniì¸ ê²½ìš°
+                // Equi-joniÀÎ °æ¿ì
                 IDE_TEST( qtc::judge( &sJudge,
                                       sCodePlan->compareLeftRight,
                                       aTemplate )
@@ -1017,7 +1017,7 @@ qmnMGJN::doItAnti( qcTemplate * aTemplate,
                 else
                 {
                     // L < R
-                    // Anti join ì„±ê³µ
+                    // Anti join ¼º°ø
                     IDE_TEST( manageCursor( aTemplate, sCodePlan, sDataPlan )
                               != IDE_SUCCESS );
 
@@ -1030,19 +1030,19 @@ qmnMGJN::doItAnti( qcTemplate * aTemplate,
                 *sDataPlan->flag &= ~QMND_MGJN_CURSOR_STORED_MASK;
                 *sDataPlan->flag |= QMND_MGJN_CURSOR_STORED_FALSE;
 
-                // Non equi-joinì¸ ê²½ìš°
+                // Non equi-joinÀÎ °æ¿ì
 
                 if( ( sCodePlan->mergeJoinPred->node.module == &mtfLessThan ) ||
                     ( sCodePlan->mergeJoinPred->node.module == &mtfLessEqual ) )
                 {
-                    // <, <= ì¸ ê²½ìš°
-                    // Rightë¥¼ ì½ì–´ë“¤ì¸ë‹¤.
+                    // <, <= ÀÎ °æ¿ì
+                    // Right¸¦ ÀÐ¾îµéÀÎ´Ù.
                     sFetchRight = ID_TRUE;
                 }
                 else
                 {
-                    // >, >= ì¸ ê²½ìš°
-                    // Anti join ì„±ê³µ
+                    // >, >= ÀÎ °æ¿ì
+                    // Anti join ¼º°ø
                     IDE_TEST( manageCursor( aTemplate, sCodePlan, sDataPlan )
                               != IDE_SUCCESS );
 
@@ -1077,7 +1077,7 @@ qmnMGJN::firstInit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    MGJN nodeì˜ Data ì˜ì—­ì˜ ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
+ *    MGJN nodeÀÇ Data ¿µ¿ªÀÇ ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
  *
  * Implementation :
  *
@@ -1089,7 +1089,7 @@ qmnMGJN::firstInit( qcTemplate * aTemplate,
     iduMemory * sMemory;
 
     //---------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------
 
     switch ( aCodePlan->flag & QMNC_MGJN_LEFT_CHILD_MASK )
@@ -1132,13 +1132,13 @@ qmnMGJN::firstInit( qcTemplate * aTemplate,
     IDE_DASSERT( aCodePlan->storedMergeJoinPred != NULL );
 
     //---------------------------------
-    // MGJN ê³ ìœ  ì •ë³´ì˜ ì´ˆê¸°í™”
+    // MGJN °íÀ¯ Á¤º¸ÀÇ ÃÊ±âÈ­
     //---------------------------------
 
     IDE_TEST( initMtrNode( aTemplate, aCodePlan, aDataPlan ) != IDE_SUCCESS );
     aDataPlan->mtrRowSize = qmc::getMtrRowSize( aDataPlan->mtrNode );
 
-    // Right Value ì €ìž¥ì„ ìœ„í•œ ê³µê°„ í™•ë³´
+    // Right Value ÀúÀåÀ» À§ÇÑ °ø°£ È®º¸
     sMemory = aTemplate->stmt->qmxMem;
     IDE_TEST( sMemory->alloc( aDataPlan->mtrRowSize,
                               (void**) & aDataPlan->mtrNode->dstTuple->row )
@@ -1146,7 +1146,7 @@ qmnMGJN::firstInit( qcTemplate * aTemplate,
     IDE_TEST_RAISE( aDataPlan->mtrNode->dstTuple->row == NULL, err_mem_alloc );
 
     //---------------------------------
-    // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
+    // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
     //---------------------------------
 
     *aDataPlan->flag &= ~QMND_MGJN_INIT_DONE_MASK;
@@ -1174,7 +1174,7 @@ qmnMGJN::initMtrNode( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ì €ìž¥ Columnì˜ ì´ˆê¸°í™”
+ *    ÀúÀå ColumnÀÇ ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -1184,7 +1184,7 @@ qmnMGJN::initMtrNode( qcTemplate * aTemplate,
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
     //---------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------
 
     IDE_DASSERT( aCodePlan->myNode->next == NULL );
@@ -1194,13 +1194,13 @@ qmnMGJN::initMtrNode( qcTemplate * aTemplate,
           & MTC_TUPLE_STORAGE_MASK ) == MTC_TUPLE_STORAGE_MEMORY );
 
     //---------------------------------
-    // ì €ìž¥ Columnì˜ ì´ˆê¸°í™”
+    // ÀúÀå ColumnÀÇ ÃÊ±âÈ­
     //---------------------------------
 
-    // 1.  ì €ìž¥ Columnì˜ ì—°ê²° ì •ë³´ ìƒì„±
-    // 2.  ì €ìž¥ Columnì˜ ì´ˆê¸°í™”
-    // 3.  ì €ìž¥ Columnì˜ offsetì„ ìž¬ì¡°ì •
-    // 4.  Row Sizeì˜ ê³„ì‚°
+    // 1.  ÀúÀå ColumnÀÇ ¿¬°á Á¤º¸ »ý¼º
+    // 2.  ÀúÀå ColumnÀÇ ÃÊ±âÈ­
+    // 3.  ÀúÀå ColumnÀÇ offsetÀ» ÀçÁ¶Á¤
+    // 4.  Row SizeÀÇ °è»ê
 
     aDataPlan->mtrNode =
         (qmdMtrNode*) (aTemplate->tmplate.data + aCodePlan->mtrNodeOffset);
@@ -1210,11 +1210,11 @@ qmnMGJN::initMtrNode( qcTemplate * aTemplate,
 
     IDE_TEST( qmc::initMtrNode( aTemplate,
                                 aDataPlan->mtrNode,
-                                0 ) // Base Tableì„ ì €ìž¥í•˜ì§€ ì•ŠìŒ
+                                0 ) // Base TableÀ» ÀúÀåÇÏÁö ¾ÊÀ½
               != IDE_SUCCESS );
 
     IDE_TEST( qmc::refineOffsets( aDataPlan->mtrNode,
-                                  0 ) // Temp Tableì„ ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
+                                  0 ) // Temp TableÀ» »ç¿ëÇÏÁö ¾ÊÀ½
               != IDE_SUCCESS );
 
     IDE_TEST( qmc::setRowSize( aTemplate->stmt->qmxMem,
@@ -1223,7 +1223,7 @@ qmnMGJN::initMtrNode( qcTemplate * aTemplate,
               != IDE_SUCCESS );
 
     //---------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------
 
     return IDE_SUCCESS;
@@ -1246,38 +1246,38 @@ qmnMGJN::mergeJoin( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Merge Join Algorithmì„ í†µí•´ Rowë¥¼ êµ¬ì„±í•˜ì—¬ ë¦¬í„´í•œë‹¤.
+ *     Merge Join AlgorithmÀ» ÅëÇØ Row¸¦ ±¸¼ºÇÏ¿© ¸®ÅÏÇÑ´Ù.
  *
  * Implementation :
- *     Merge Join Algorithmì˜ ì ˆì°¨ëŠ” ëŒ€ëžµ ë‹¤ìŒê³¼ ê°™ë‹¤.
+ *     Merge Join AlgorithmÀÇ ÀýÂ÷´Â ´ë·« ´ÙÀ½°ú °°´Ù.
  *
- *     - Right Rowê°€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
- *         A.  ìµœì´ˆ Stored Merge ì¡°ê±´ ê²€ì‚¬
- *             - Left Row íšë“
- *             - ë‹¤ìŒ ì¡°ê±´ì— ë”°ë¼ ì²˜ë¦¬
- *                 : Left Rowê°€ ì—†ëŠ” ê²½ìš°, [ê²°ê³¼ ì—†ìŒ]
- *                 : Stored Merge ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•ŠëŠ” ê²½ìš°, [ê²°ê³¼ ì—†ìŒ]
- *                 : Stored Merge ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” ê²½ìš°[ê²°ê³¼ ìžˆìŒ]
+ *     - Right Row°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
+ *         A.  ÃÖÃÊ Stored Merge Á¶°Ç °Ë»ç
+ *             - Left Row È¹µæ
+ *             - ´ÙÀ½ Á¶°Ç¿¡ µû¶ó Ã³¸®
+ *                 : Left Row°¡ ¾ø´Â °æ¿ì, [°á°ú ¾øÀ½]
+ *                 : Stored Merge Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾Ê´Â °æ¿ì, [°á°ú ¾øÀ½]
+ *                 : Stored Merge Á¶°ÇÀ» ¸¸Á·ÇÏ´Â °æ¿ì[°á°ú ÀÖÀ½]
  *
- *     - Right Rowê°€ ì¡´ìž¬í•˜ëŠ” ê²½ìš°
- *         B.  Merge ì¡°ê±´ ê²€ì‚¬
- *             - ë‹¤ìŒ ì¡°ê±´ì— ë”°ë¼ ì²˜ë¦¬
- *                 : Merge ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•ŠëŠ” ê²½ìš°, [C ë¶€í„° ì§„í–‰]
- *                 : Merge ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” ê²½ìš° [ê²°ê³¼ ìžˆìŒ]
+ *     - Right Row°¡ Á¸ÀçÇÏ´Â °æ¿ì
+ *         B.  Merge Á¶°Ç °Ë»ç
+ *             - ´ÙÀ½ Á¶°Ç¿¡ µû¶ó Ã³¸®
+ *                 : Merge Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾Ê´Â °æ¿ì, [C ºÎÅÍ ÁøÇà]
+ *                 : Merge Á¶°ÇÀ» ¸¸Á·ÇÏ´Â °æ¿ì [°á°ú ÀÖÀ½]
  *
- *         C. Stored Merge ì¡°ê±´ ê²€ì‚¬
- *             - ì ì ˆí•œ Left ë˜ëŠ” Right Row íšë“
- *             - ë‹¤ìŒ ì¡°ê±´ì— ë”°ë¼ ì²˜ë¦¬
- *                 - Leftë¥¼ ì½ê³  rowê°€ ì—†ëŠ” ê²½ìš°, [ê²°ê³¼ ì—†ìŒ]
- *                 - ì €ìž¥ Cursorê°€ ì—†ê±°ë‚˜ Stored Mergeì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•ŠëŠ” ê²½ìš°
- *                     - Right Rowê°€ ì—†ëŠ” ê²½ìš°, [ê²°ê³¼ ì—†ìŒ]
- *                     - Right Rowê°€ ìžˆëŠ” ê²½ìš°, [B ë¶€í„° ì§„í–‰]
- *                 - Stored Merge ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” ê²½ìš° [ê²°ê³¼ ìžˆìŒ]
+ *         C. Stored Merge Á¶°Ç °Ë»ç
+ *             - ÀûÀýÇÑ Left ¶Ç´Â Right Row È¹µæ
+ *             - ´ÙÀ½ Á¶°Ç¿¡ µû¶ó Ã³¸®
+ *                 - Left¸¦ ÀÐ°í row°¡ ¾ø´Â °æ¿ì, [°á°ú ¾øÀ½]
+ *                 - ÀúÀå Cursor°¡ ¾ø°Å³ª Stored MergeÁ¶°ÇÀ» ¸¸Á·ÇÏÁö ¾Ê´Â °æ¿ì
+ *                     - Right Row°¡ ¾ø´Â °æ¿ì, [°á°ú ¾øÀ½]
+ *                     - Right Row°¡ ÀÖ´Â °æ¿ì, [B ºÎÅÍ ÁøÇà]
+ *                 - Stored Merge Á¶°ÇÀ» ¸¸Á·ÇÏ´Â °æ¿ì [°á°ú ÀÖÀ½]
  *
- *    ìœ„ì™€ ê°™ì€ ì ˆì°¨ë¥¼ ì¶”ìƒí™”í•˜ë©´ ë‹¤ìŒê³¼ ê°™ì€ ê³¼ì •ìœ¼ë¡œ ìˆ˜í–‰ëœë‹¤.
- *        - Right Rowê°€ ì—†ëŠ” ê²½ìš°
+ *    À§¿Í °°Àº ÀýÂ÷¸¦ Ãß»óÈ­ÇÏ¸é ´ÙÀ½°ú °°Àº °úÁ¤À¸·Î ¼öÇàµÈ´Ù.
+ *        - Right Row°¡ ¾ø´Â °æ¿ì
  *            A --> [C --> B --> C --> B]
- *        - Right Rowê°€ ìžˆëŠ” ê²½ìš°
+ *        - Right Row°¡ ÀÖ´Â °æ¿ì
  *            B --> [C --> B --> C --> B]
  *
  ***********************************************************************/
@@ -1290,10 +1290,10 @@ qmnMGJN::mergeJoin( qcTemplate * aTemplate,
     if ( aRightExist == ID_FALSE )
     {
         //----------------------------------
-        // Right Rowê°€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
+        // Right Row°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
         //----------------------------------
 
-        // A.  ìµœì´ˆ Stored Merge ì¡°ê±´ì„ ê²€ì‚¬
+        // A.  ÃÖÃÊ Stored Merge Á¶°ÇÀ» °Ë»ç
 
         IDE_TEST( checkFirstStoredMerge( aTemplate,
                                          aCodePlan,
@@ -1304,10 +1304,10 @@ qmnMGJN::mergeJoin( qcTemplate * aTemplate,
     else
     {
         //-----------------------------------
-        // Right Rowê°€ ì¡´ìž¬í•˜ëŠ” ê²½ìš°
+        // Right Row°¡ Á¸ÀçÇÏ´Â °æ¿ì
         //-----------------------------------
 
-        // B. Merge Join ì¡°ê±´ ê²€ì‚¬
+        // B. Merge Join Á¶°Ç °Ë»ç
 
         IDE_TEST( checkMerge( aTemplate,
                               aCodePlan,
@@ -1347,13 +1347,13 @@ qmnMGJN::loopMerge( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     ë§Œì¡±í•˜ëŠ” ê²°ê³¼ê°€ ìžˆê±°ë‚˜, ì•„ì˜ˆ ì—†ì„ ë•Œê¹Œì§€ ë°˜ë³µ ìˆ˜í–‰
- *     cf) mergeJoin()ì˜ C-->B ì˜ ë°˜ë³µ ê³¼ì •
+ *     ¸¸Á·ÇÏ´Â °á°ú°¡ ÀÖ°Å³ª, ¾Æ¿¹ ¾øÀ» ¶§±îÁö ¹Ýº¹ ¼öÇà
+ *     cf) mergeJoin()ÀÇ C-->B ÀÇ ¹Ýº¹ °úÁ¤
  *
  * Implementation :
- *     ê²°ê³¼ê°€ ìžˆì„ ë•Œê¹Œì§€ ë‹¤ìŒì„ ìˆ˜í–‰
- *         C : Stored Merge Join ì¡°ê±´ ê²€ì‚¬
- *         B : Merge Join ì¡°ê±´ ê²€ì‚¬
+ *     °á°ú°¡ ÀÖÀ» ¶§±îÁö ´ÙÀ½À» ¼öÇà
+ *         C : Stored Merge Join Á¶°Ç °Ë»ç
+ *         B : Merge Join Á¶°Ç °Ë»ç
  *
  ***********************************************************************/
 
@@ -1363,7 +1363,7 @@ qmnMGJN::loopMerge( qcTemplate * aTemplate,
     idBool     sContinue;
 
     //-----------------------------------
-    // ì§ˆì˜ ê²°ê³¼ê°€ ìžˆê±°ë‚˜, ì—†ìŒì´ ë³´ìž¥ë  ë•Œê¹Œì§€ ë°˜ë³µ ìˆ˜í–‰
+    // ÁúÀÇ °á°ú°¡ ÀÖ°Å³ª, ¾øÀ½ÀÌ º¸ÀåµÉ ¶§±îÁö ¹Ýº¹ ¼öÇà
     //-----------------------------------
 
     sContinue = ID_TRUE;
@@ -1371,7 +1371,7 @@ qmnMGJN::loopMerge( qcTemplate * aTemplate,
     while ( sContinue == ID_TRUE )
     {
         //-----------------------------------
-        // C. Stored Merge ì¡°ê±´ ê²€ì‚¬
+        // C. Stored Merge Á¶°Ç °Ë»ç
         //-----------------------------------
 
         IDE_TEST( checkStoredMerge( aTemplate,
@@ -1391,7 +1391,7 @@ qmnMGJN::loopMerge( qcTemplate * aTemplate,
         }
 
         //-----------------------------------
-        // B. Merge Join ì¡°ê±´ ê²€ì‚¬
+        // B. Merge Join Á¶°Ç °Ë»ç
         //-----------------------------------
 
         IDE_TEST( checkMerge( aTemplate,
@@ -1422,14 +1422,14 @@ qmnMGJN::checkMerge( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Merge ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” ì§€ë¥¼ íŒë‹¨í•˜ê³ ,
- *    ì´ì— ë”°ë¼ ê³„ì† ì§„í–‰í•  ê²ƒì¸ì§€ë¥¼ ê²°ì •í•œë‹¤.
+ *    Merge Á¶°ÇÀ» ¸¸Á·ÇÏ´Â Áö¸¦ ÆÇ´ÜÇÏ°í,
+ *    ÀÌ¿¡ µû¶ó °è¼Ó ÁøÇàÇÒ °ÍÀÎÁö¸¦ °áÁ¤ÇÑ´Ù.
  *
  * Implementation :
- *    ê³„ì† ì§„í–‰í•˜ëŠ” ê²½ìš° :
- *        Merge ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•ŠëŠ” ê²½ìš°
- *    ì§„í–‰í•˜ì§€ ì•ŠëŠ” ê²½ìš° :
- *        ëª¨ë“  ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” ê²½ìš° : ê²°ê³¼ ìžˆìŒ
+ *    °è¼Ó ÁøÇàÇÏ´Â °æ¿ì :
+ *        Merge Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾Ê´Â °æ¿ì
+ *    ÁøÇàÇÏÁö ¾Ê´Â °æ¿ì :
+ *        ¸ðµç Á¶°ÇÀ» ¸¸Á·ÇÏ´Â °æ¿ì : °á°ú ÀÖÀ½
  *
  ***********************************************************************/
 
@@ -1438,13 +1438,13 @@ qmnMGJN::checkMerge( qcTemplate * aTemplate,
 
     idBool sJudge;
 
-    // Merge Join ì¡°ê±´ ê²€ì‚¬
+    // Merge Join Á¶°Ç °Ë»ç
     IDE_TEST( qtc::judge( & sJudge, aCodePlan->mergeJoinPred, aTemplate )
               != IDE_SUCCESS );
 
     if ( sJudge == ID_TRUE )
     {
-        // ì»¤ì„œì˜ ì €ìž¥ ì—¬ë¶€ ê²°ì •
+        // Ä¿¼­ÀÇ ÀúÀå ¿©ºÎ °áÁ¤
         IDE_TEST( manageCursor( aTemplate, aCodePlan, aDataPlan )
                   != IDE_SUCCESS );
 
@@ -1474,13 +1474,13 @@ qmnMGJN::checkFirstStoredMerge( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ìµœì´ˆ Right Row ê°€ ì—†ëŠ” ê²½ìš°ì— í˜¸ì¶œë˜ë©°,
- *    Stored Merge ì¡°ê±´ì„ ê²€ì‚¬í•˜ì—¬
- *    ê²°ê³¼ë¥¼ ë¦¬í„´í•  ê²ƒì¸ì§€ Loop Mergeê°€ í•„ìš”í•œ ì§€ë¥¼ íŒë‹¨
- *    cf) mergeJoin()ì—ì„œ Aì— í•´ë‹¹í•˜ëŠ” ë‚´ìš© ì°¸ì¡°
+ *    ÃÖÃÊ Right Row °¡ ¾ø´Â °æ¿ì¿¡ È£ÃâµÇ¸ç,
+ *    Stored Merge Á¶°ÇÀ» °Ë»çÇÏ¿©
+ *    °á°ú¸¦ ¸®ÅÏÇÒ °ÍÀÎÁö Loop Merge°¡ ÇÊ¿äÇÑ Áö¸¦ ÆÇ´Ü
+ *    cf) mergeJoin()¿¡¼­ A¿¡ ÇØ´çÇÏ´Â ³»¿ë ÂüÁ¶
  *
  * Implementation :
- *    Left Rowë¥¼ ì½ì–´ Stored Merge ì¡°ê±´ì„ ê²€ì‚¬í•œë‹¤.
+ *    Left Row¸¦ ÀÐ¾î Stored Merge Á¶°ÇÀ» °Ë»çÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1490,15 +1490,15 @@ qmnMGJN::checkFirstStoredMerge( qcTemplate * aTemplate,
     idBool sJudge;
 
     //-----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //-----------------------------------
 
-    // ë°˜ë“œì‹œ ì €ìž¥ Cursorê°€ ì¡´ìž¬í•œë‹¤.
+    // ¹Ýµå½Ã ÀúÀå Cursor°¡ Á¸ÀçÇÑ´Ù.
     IDE_DASSERT( (*aDataPlan->flag & QMND_MGJN_CURSOR_STORED_MASK)
                  == QMND_MGJN_CURSOR_STORED_TRUE );
 
     //-----------------------------------
-    // Left Row íšë“
+    // Left Row È¹µæ
     //-----------------------------------
 
     IDE_TEST( aCodePlan->plan.left->doIt( aTemplate,
@@ -1508,13 +1508,13 @@ qmnMGJN::checkFirstStoredMerge( qcTemplate * aTemplate,
 
     if ( (*aFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_NONE )
     {
-        // ê²°ê³¼ê°€ ë” ì´ìƒ ì—†ëŠ” ê²½ìš°ì´ë‹¤.
+        // °á°ú°¡ ´õ ÀÌ»ó ¾ø´Â °æ¿ìÀÌ´Ù.
         // Nothing to do.
     }
     else
     {
         //-----------------------------------
-        // Stored Merge Join ì¡°ê±´ ê²€ì‚¬
+        // Stored Merge Join Á¶°Ç °Ë»ç
         //-----------------------------------
 
         IDE_TEST( qtc::judge( &sJudge,
@@ -1525,10 +1525,10 @@ qmnMGJN::checkFirstStoredMerge( qcTemplate * aTemplate,
         if ( sJudge == ID_TRUE )
         {
             //-----------------------------------
-            // Stored Merge Join ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” ê²½ìš°
+            // Stored Merge Join Á¶°ÇÀ» ¸¸Á·ÇÏ´Â °æ¿ì
             //-----------------------------------
 
-            // Cursorë¥¼ ë³µì›í•˜ì—¬ Right Rowë¥¼ êµ¬ì„±í•œë‹¤.
+            // Cursor¸¦ º¹¿øÇÏ¿© Right Row¸¦ ±¸¼ºÇÑ´Ù.
             IDE_TEST( restoreRightCursor( aTemplate, aCodePlan, aDataPlan )
                       != IDE_SUCCESS );
             
@@ -1537,14 +1537,14 @@ qmnMGJN::checkFirstStoredMerge( qcTemplate * aTemplate,
         else
         {
             //-----------------------------------
-            // Stored Merge Join ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•ŠëŠ” ê²½ìš°
+            // Stored Merge Join Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾Ê´Â °æ¿ì
             //-----------------------------------
 
-            // ë”ì´ìƒ Cursorê°€ ìœ íš¨í•˜ì§€ ì•ŠìŒ
+            // ´õÀÌ»ó Cursor°¡ À¯È¿ÇÏÁö ¾ÊÀ½
             *aDataPlan->flag &= ~QMND_MGJN_CURSOR_STORED_MASK;
             *aDataPlan->flag |= QMND_MGJN_CURSOR_STORED_FALSE;
 
-            // ë”ì´ìƒ ê²°ê³¼ê°€ ì¡´ìž¬í•˜ì§€ ì•ŠìŒ
+            // ´õÀÌ»ó °á°ú°¡ Á¸ÀçÇÏÁö ¾ÊÀ½
             *aFlag = QMC_ROW_DATA_NONE;
         }
     }
@@ -1569,24 +1569,24 @@ qmnMGJN::checkStoredMerge( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Stored Merge ì¡°ê±´ê³¼ Filter ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” ì§€ë¥¼
- *    íŒë‹¨í•˜ê³ , ì´ì— ë”°ë¼ ê³„ì† ì§„í–‰í•  ê²ƒì¸ì§€ë¥¼ ê²°ì •í•œë‹¤.
+ *    Stored Merge Á¶°Ç°ú Filter Á¶°ÇÀ» ¸¸Á·ÇÏ´Â Áö¸¦
+ *    ÆÇ´ÜÇÏ°í, ÀÌ¿¡ µû¶ó °è¼Ó ÁøÇàÇÒ °ÍÀÎÁö¸¦ °áÁ¤ÇÑ´Ù.
  *
  * Implementation :
  *
- *    ë‹¤ìŒê³¼ ê°™ì€ ê³¼ì •ì„ ë°˜ë³µí•œë‹¤.
- *       - ìƒˆë¡œìš´ Rowë¥¼ íšë“
- *           - Left Rowë¥¼ ì½ì—ˆëŠ”ë° ì—†ëŠ” ê²½ìš°, [ê²°ê³¼ ì—†ìŒ]
- *       - ì €ìž¥ Cursorê°€ ì—†ëŠ” ê²½ìš°
- *           - ìƒˆë¡œìš´ Rowê°€ ìžˆë‹¤ë©´, [B(Merge ì¡°ê±´)ë¶€í„° ì§„í–‰]
- *           - ìƒˆë¡œìš´ Rowê°€ ì—†ë‹¤ë©´, [ê²°ê³¼ ì—†ìŒ]
- *       - ì €ìž¥ Cursorê°€ ìžˆëŠ” ê²½ìš°
- *           - Stored Mergeì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•ŠëŠ” ê²½ìš°
- *               - ìƒˆë¡œìš´ Rowê°€ ì—†ë‹¤ë©´, [ê²°ê³¼ ì—†ìŒ]
- *               - ìƒˆë¡œìš´ Rowê°€ ìžˆë‹¤ë©´, [Bë¶€í„° ì§„í–‰]
- *           - Stored Mergeì¡°ê±´ì€ ë§Œì¡±í•˜ë‚˜, Filterë¥¼ ë§Œì¡±í•˜ì§€ ì•ŠëŠ” ê²½ìš°
- *               - [ê³„ì† ë°˜ë³µ]
- *           - Stored Mergeì¡°ê±´ê³¼ Filter ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” ê²½ìš°, [ê²°ê³¼ ìžˆìŒ]
+ *    ´ÙÀ½°ú °°Àº °úÁ¤À» ¹Ýº¹ÇÑ´Ù.
+ *       - »õ·Î¿î Row¸¦ È¹µæ
+ *           - Left Row¸¦ ÀÐ¾ú´Âµ¥ ¾ø´Â °æ¿ì, [°á°ú ¾øÀ½]
+ *       - ÀúÀå Cursor°¡ ¾ø´Â °æ¿ì
+ *           - »õ·Î¿î Row°¡ ÀÖ´Ù¸é, [B(Merge Á¶°Ç)ºÎÅÍ ÁøÇà]
+ *           - »õ·Î¿î Row°¡ ¾ø´Ù¸é, [°á°ú ¾øÀ½]
+ *       - ÀúÀå Cursor°¡ ÀÖ´Â °æ¿ì
+ *           - Stored MergeÁ¶°ÇÀ» ¸¸Á·ÇÏÁö ¾Ê´Â °æ¿ì
+ *               - »õ·Î¿î Row°¡ ¾ø´Ù¸é, [°á°ú ¾øÀ½]
+ *               - »õ·Î¿î Row°¡ ÀÖ´Ù¸é, [BºÎÅÍ ÁøÇà]
+ *           - Stored MergeÁ¶°ÇÀº ¸¸Á·ÇÏ³ª, Filter¸¦ ¸¸Á·ÇÏÁö ¾Ê´Â °æ¿ì
+ *               - [°è¼Ó ¹Ýº¹]
+ *           - Stored MergeÁ¶°Ç°ú Filter Á¶°ÇÀ» ¸¸Á·ÇÏ´Â °æ¿ì, [°á°ú ÀÖÀ½]
  *
  ***********************************************************************/
 
@@ -1599,7 +1599,7 @@ qmnMGJN::checkStoredMerge( qcTemplate * aTemplate,
     while ( 1 )
     {
         //----------------------------------------
-        // ìƒˆë¡œìš´ Rowë¥¼ íšë“ì„ í†µí•œ ì§€ì† ì—¬ë¶€ ê²€ì‚¬
+        // »õ·Î¿î Row¸¦ È¹µæÀ» ÅëÇÑ Áö¼Ó ¿©ºÎ °Ë»ç
         //----------------------------------------
 
         IDE_TEST(
@@ -1608,23 +1608,23 @@ qmnMGJN::checkStoredMerge( qcTemplate * aTemplate,
 
         //---------------------------------------
         // To Fix PR-8260
-        // ë‹¤ìŒê³¼ ê°™ì€ ê³ ë ¤ê°€ ë¶€ì¡±í–ˆìŒ.
-        // Left Rowë¥¼ ì½ì€ ê²½ìš°ë¼ë©´ Store Cursorë¥¼ ê²€ì‚¬í•´ì•¼ í•˜ì§€ë§Œ,
-        // Right Rowë¥¼ ì½ì€ ê²½ìš°ë¼ë©´ Store Cursorë¥¼ ê²€ì‚¬í•˜ì§€ ë§ì•„ì•¼ í•œë‹¤.
-        // ë”°ë¼ì„œ, ë‹¤ìŒê³¼ ê°™ì´ ì •ë¦¬í•œë‹¤.
+        // ´ÙÀ½°ú °°Àº °í·Á°¡ ºÎÁ·ÇßÀ½.
+        // Left Row¸¦ ÀÐÀº °æ¿ì¶ó¸é Store Cursor¸¦ °Ë»çÇØ¾ß ÇÏÁö¸¸,
+        // Right Row¸¦ ÀÐÀº °æ¿ì¶ó¸é Store Cursor¸¦ °Ë»çÇÏÁö ¸»¾Æ¾ß ÇÑ´Ù.
+        // µû¶ó¼­, ´ÙÀ½°ú °°ÀÌ Á¤¸®ÇÑ´Ù.
         //
-        // Left Rowë¥¼ ì½ì€ ê²½ìš°
-        //    - Dataê°€ ìžˆëŠ” ê²½ìš°
-        //        - Store ì¡°ê±´ì´ ìžˆìœ¼ë©´ ê²€ì‚¬
-        //        - Store ì¡°ê±´ì´ ì—†ìœ¼ë©´ Return í›„ ê³„ì† ì§„í–‰
-        //    - Dataê°€ ì—†ëŠ” ê²½ìš°
-        //        - ì¢…ë£Œ ì¡°ê±´
-        // Right Rowë¥¼ ì½ì€ ê²½ìš°
-        //    - Dataê°€ ìžˆëŠ” ê²½ìš°
-        //        - Return í›„ ê³„ì† ì§„í–‰
-        //    - Dataê°€ ì—†ëŠ” ê²½ìš°
-        //        - Store ì¡°ê±´ì´ ìžˆìœ¼ë©´ Leftë¥¼ ì½ì€ í›„ ì¡´ìž¬í•˜ë©´ ê²€ì‚¬
-        //        - Store ì¡°ê±´ì´ ì—†ìœ¼ë©´ ì¢…ë£Œ ì¡°ê±´
+        // Left Row¸¦ ÀÐÀº °æ¿ì
+        //    - Data°¡ ÀÖ´Â °æ¿ì
+        //        - Store Á¶°ÇÀÌ ÀÖÀ¸¸é °Ë»ç
+        //        - Store Á¶°ÇÀÌ ¾øÀ¸¸é Return ÈÄ °è¼Ó ÁøÇà
+        //    - Data°¡ ¾ø´Â °æ¿ì
+        //        - Á¾·á Á¶°Ç
+        // Right Row¸¦ ÀÐÀº °æ¿ì
+        //    - Data°¡ ÀÖ´Â °æ¿ì
+        //        - Return ÈÄ °è¼Ó ÁøÇà
+        //    - Data°¡ ¾ø´Â °æ¿ì
+        //        - Store Á¶°ÇÀÌ ÀÖÀ¸¸é Left¸¦ ÀÐÀº ÈÄ Á¸ÀçÇÏ¸é °Ë»ç
+        //        - Store Á¶°ÇÀÌ ¾øÀ¸¸é Á¾·á Á¶°Ç
         //---------------------------------------
 
         if ( sReadLeft == ID_TRUE )
@@ -1634,7 +1634,7 @@ qmnMGJN::checkStoredMerge( qcTemplate * aTemplate,
                 if ( (*aDataPlan->flag & QMND_MGJN_CURSOR_STORED_MASK)
                      == QMND_MGJN_CURSOR_STORED_TRUE )
                 {
-                    // Store Conditionì´ ì¡´ìž¬í•˜ë©´ ê²€ì‚¬í•œë‹¤.
+                    // Store ConditionÀÌ Á¸ÀçÇÏ¸é °Ë»çÇÑ´Ù.
                     // Nothing To Do
                 }
                 else
@@ -1661,14 +1661,14 @@ qmnMGJN::checkStoredMerge( qcTemplate * aTemplate,
                 if ( (*aDataPlan->flag & QMND_MGJN_CURSOR_STORED_MASK)
                      == QMND_MGJN_CURSOR_STORED_TRUE )
                 {
-                    // Store Conditionì´ ì¡´ìž¬í•˜ë©´ Leftë¥¼ ì½ì€ í›„ ê²€ì‚¬í•œë‹¤.
+                    // Store ConditionÀÌ Á¸ÀçÇÏ¸é Left¸¦ ÀÐÀº ÈÄ °Ë»çÇÑ´Ù.
                     IDE_TEST( aCodePlan->plan.left->doIt( aTemplate,
                                                           aCodePlan->plan.left,
                                                           aFlag )
                               != IDE_SUCCESS );
                     if ( (*aFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
                     {
-                        // ì €ìž¥ Cursorë¡œë¶€í„° ë‹¤ì‹œ ê²€ì‚¬í•œë‹¤.
+                        // ÀúÀå Cursor·ÎºÎÅÍ ´Ù½Ã °Ë»çÇÑ´Ù.
                         // Nothing To Do
                     }
                     else
@@ -1686,10 +1686,10 @@ qmnMGJN::checkStoredMerge( qcTemplate * aTemplate,
         }
 
         //----------------------------------------
-        // Stored Merge ì¡°ê±´ì„ ì´ìš©í•œ ê²€ì‚¬
+        // Stored Merge Á¶°ÇÀ» ÀÌ¿ëÇÑ °Ë»ç
         //----------------------------------------
 
-        // ì½ì€ Rowê°€ leftì¸ ê²½ìš°ì—ë§Œ ê²€ì‚¬í•˜ê²Œ ëœë‹¤.
+        // ÀÐÀº Row°¡ leftÀÎ °æ¿ì¿¡¸¸ °Ë»çÇÏ°Ô µÈ´Ù.
         IDE_TEST( qtc::judge( &sJudge,
                               aCodePlan->storedMergeJoinPred,
                               aTemplate )
@@ -1697,23 +1697,23 @@ qmnMGJN::checkStoredMerge( qcTemplate * aTemplate,
 
         if ( sJudge == ID_FALSE )
         {
-            // Stored Merge Join ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•ŠëŠ” ê²½ìš°
+            // Stored Merge Join Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾Ê´Â °æ¿ì
 
-            // ë”ì´ìƒ Cursorê°€ ìœ íš¨í•˜ì§€ ì•ŠìŒ
+            // ´õÀÌ»ó Cursor°¡ À¯È¿ÇÏÁö ¾ÊÀ½
             *aDataPlan->flag &= ~QMND_MGJN_CURSOR_STORED_MASK;
             *aDataPlan->flag |= QMND_MGJN_CURSOR_STORED_FALSE;
 
             if ( sReadLeft == ID_TRUE )
             {
-                // Stored Conditionì´ ì—†ê¸° ë•Œë¬¸ì—
-                // ì½ì€ Rowì˜ êµ¬ì„±ì— ë§žê²Œ ì§„í–‰í•˜ê²Œ ëœë‹¤.
+                // Stored ConditionÀÌ ¾ø±â ¶§¹®¿¡
+                // ÀÐÀº RowÀÇ ±¸¼º¿¡ ¸Â°Ô ÁøÇàÇÏ°Ô µÈ´Ù.
                 *aContinueNeed = ID_TRUE;
             }
             else
             {
-                // Rightë¥¼ ì½ì€ ê²½ìš°ë¼ë©´ Rightê°€ Dataê°€ ì—†ê³ 
-                // Leftë¥¼ ë‹¤ì‹œ ì½ì€ í›„ì— ê²€ì‚¬í•˜ëŠ” ê²½ìš°ì´ë‹¤.
-                // ë” ì´ìƒ ì§„í–‰í•  ìˆ˜ ì—†ë‹¤.
+                // Right¸¦ ÀÐÀº °æ¿ì¶ó¸é Right°¡ Data°¡ ¾ø°í
+                // Left¸¦ ´Ù½Ã ÀÐÀº ÈÄ¿¡ °Ë»çÇÏ´Â °æ¿ìÀÌ´Ù.
+                // ´õ ÀÌ»ó ÁøÇàÇÒ ¼ö ¾ø´Ù.
                 *aContinueNeed = ID_FALSE;
                 // To Fix BUG-8747
                 *aFlag = QMC_ROW_DATA_NONE;
@@ -1722,15 +1722,15 @@ qmnMGJN::checkStoredMerge( qcTemplate * aTemplate,
         }
         else
         {
-            // Stored Merge Join ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” ê²½ìš°
+            // Stored Merge Join Á¶°ÇÀ» ¸¸Á·ÇÏ´Â °æ¿ì
 
-            // Cursorë¥¼ ë³µì›í•˜ì—¬ Right Rowë¥¼ Tuple Setì— ë³µì›
+            // Cursor¸¦ º¹¿øÇÏ¿© Right Row¸¦ Tuple Set¿¡ º¹¿ø
             IDE_TEST( restoreRightCursor( aTemplate,
                                           aCodePlan,
                                           aDataPlan )
                       != IDE_SUCCESS );
 
-            // ë§Œì¡±í•  ê²½ìš° ê²°ê³¼ ë¦¬í„´
+            // ¸¸Á·ÇÒ °æ¿ì °á°ú ¸®ÅÏ
             *aFlag = QMC_ROW_DATA_EXIST;
             *aContinueNeed = ID_FALSE;
             break;
@@ -1754,13 +1754,13 @@ qmnMGJN::manageCursor( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Merge Join Predicate ë§Œì¡± ì‹œ Cursor ê´€ë¦¬
+ *     Merge Join Predicate ¸¸Á· ½Ã Cursor °ü¸®
  *
  * Implementation :
- *     ì´ë¯¸ ì €ìž¥ Cursorê°€ ì¡´ìž¬í•œë‹¤ë©´, ë³„ë‹¤ë¥¸ ìž‘ì—…ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
- *     ì €ìž¥ Cursorê°€ ì¡´ìž¬í•˜ì§€ ì•Šì„ ê²½ìš°,
- *         - Cursor ì €ìž¥
- *         - Right Value ì €ìž¥
+ *     ÀÌ¹Ì ÀúÀå Cursor°¡ Á¸ÀçÇÑ´Ù¸é, º°´Ù¸¥ ÀÛ¾÷À» ÇÏÁö ¾Ê´Â´Ù.
+ *     ÀúÀå Cursor°¡ Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì,
+ *         - Cursor ÀúÀå
+ *         - Right Value ÀúÀå
  *
  ***********************************************************************/
 
@@ -1773,19 +1773,19 @@ qmnMGJN::manageCursor( qcTemplate * aTemplate,
          == QMND_MGJN_CURSOR_STORED_FALSE )
     {
         //------------------------------------
-        // Cursorë¥¼ ì €ìž¥
+        // Cursor¸¦ ÀúÀå
         //------------------------------------
 
         IDE_TEST( storeRightCursor( aTemplate, aCodePlan )
                   != IDE_SUCCESS );
 
         // To Fix PR-8062
-        // Mask ì´ˆê¸°í™” ìž˜ëª»í•¨.
+        // Mask ÃÊ±âÈ­ Àß¸øÇÔ.
         *aDataPlan->flag &= ~QMND_MGJN_CURSOR_STORED_MASK;
         *aDataPlan->flag |= QMND_MGJN_CURSOR_STORED_TRUE;
 
         //------------------------------------
-        // Right Value ì €ìž¥
+        // Right Value ÀúÀå
         //------------------------------------
 
         for ( sNode = aDataPlan->mtrNode;
@@ -1821,13 +1821,13 @@ qmnMGJN::readNewRow( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     ì ì ˆí•œ Left ë˜ëŠ” Right Rowë¥¼ íšë“í•œë‹¤.
+ *     ÀûÀýÇÑ Left ¶Ç´Â Right Row¸¦ È¹µæÇÑ´Ù.
  *
  * Implementation :
- *     ë“±í˜¸ ì—°ì‚°ìžì¸ ê²½ìš°(Compare ì¡°ê±´ì´ ì¡´ìž¬)
- *         - ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•Šìœ¼ë©´, Left Read
- *         - ì¡°ê±´ì„ ë§Œì¡±í•˜ì§€ ì•Šìœ¼ë©´, Right Read
- *     ë“±í˜¸ ì—°ì‚°ìžê°€ ì•„ë‹Œ ê²½ìš°(Compare ì¡°ê±´ì´ ì—†ìŒ)
+ *     µîÈ£ ¿¬»êÀÚÀÎ °æ¿ì(Compare Á¶°ÇÀÌ Á¸Àç)
+ *         - Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾ÊÀ¸¸é, Left Read
+ *         - Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾ÊÀ¸¸é, Right Read
+ *     µîÈ£ ¿¬»êÀÚ°¡ ¾Æ´Ñ °æ¿ì(Compare Á¶°ÇÀÌ ¾øÀ½)
  *         - Left Read
  *
  ***********************************************************************/
@@ -1838,7 +1838,7 @@ qmnMGJN::readNewRow( qcTemplate * aTemplate,
     idBool sJudge;
 
     //------------------------------------
-    // ì½ì„ Rowì˜ ê²°ì •
+    // ÀÐÀ» RowÀÇ °áÁ¤
     //------------------------------------
 
     if ( aCodePlan->compareLeftRight != NULL )
@@ -1854,12 +1854,12 @@ qmnMGJN::readNewRow( qcTemplate * aTemplate,
     }
 
     //------------------------------------
-    // ìƒˆë¡œìš´ Rowì˜ íšë“
+    // »õ·Î¿î RowÀÇ È¹µæ
     //------------------------------------
 
     if ( sJudge == ID_TRUE )
     {
-        // Right Rowë¥¼ ì½ëŠ”ë‹¤.
+        // Right Row¸¦ ÀÐ´Â´Ù.
         IDE_TEST( aCodePlan->plan.right->doIt( aTemplate,
                                                aCodePlan->plan.right,
                                                aFlag )
@@ -1869,7 +1869,7 @@ qmnMGJN::readNewRow( qcTemplate * aTemplate,
     else
     {
         // To Fix PR-8062
-        // Left Rowë¥¼ ì½ëŠ”ë‹¤.
+        // Left Row¸¦ ÀÐ´Â´Ù.
         IDE_TEST( aCodePlan->plan.left->doIt( aTemplate,
                                               aCodePlan->plan.left,
                                               aFlag )
@@ -1898,7 +1898,7 @@ qmnMGJN::checkJoinFilter( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Join Filterì˜ ë§Œì¡± ì—¬ë¶€ ê²€ì‚¬
+ *     Join FilterÀÇ ¸¸Á· ¿©ºÎ °Ë»ç
  *
  * Implementation :
  *
@@ -1933,10 +1933,10 @@ qmnMGJN::storeRightCursor( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Right Childì˜ Cursorë¥¼ ì €ìž¥í•œë‹¤.
+ *     Right ChildÀÇ Cursor¸¦ ÀúÀåÇÑ´Ù.
  *
  * Implementation :
- *     Childì˜ ì¢…ë¥˜ì— ë”°ë¼ Cursor ì €ìž¥ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
+ *     ChildÀÇ Á¾·ù¿¡ µû¶ó Cursor ÀúÀå ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1944,7 +1944,7 @@ qmnMGJN::storeRightCursor( qcTemplate * aTemplate,
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
     //------------------------------------
-    // Right Childì˜ Cursor ì €ìž¥
+    // Right ChildÀÇ Cursor ÀúÀå
     //------------------------------------
 
     switch ( aCodePlan->flag & QMNC_MGJN_RIGHT_CHILD_MASK )
@@ -1983,10 +1983,10 @@ qmnMGJN::restoreRightCursor( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Right Childì˜ Cursorë¥¼ ë³µì›í•œë‹¤.
+ *     Right ChildÀÇ Cursor¸¦ º¹¿øÇÑ´Ù.
  *
  * Implementation :
- *     Childì˜ ì¢…ë¥˜ì— ë”°ë¼ Cursor ë³µì› í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
+ *     ChildÀÇ Á¾·ù¿¡ µû¶ó Cursor º¹¿ø ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1998,7 +1998,7 @@ qmnMGJN::restoreRightCursor( qcTemplate * aTemplate,
                 == QMND_MGJN_CURSOR_STORED_TRUE );
 
     //------------------------------------
-    // Right Childì˜ Cursor ë³µì›
+    // Right ChildÀÇ Cursor º¹¿ø
     //------------------------------------
 
     switch ( aCodePlan->flag & QMNC_MGJN_RIGHT_CHILD_MASK )

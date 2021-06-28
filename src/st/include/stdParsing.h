@@ -19,8 +19,8 @@
  * $Id: stdParsing.h 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * ÏûÖÎ†• Î≤ÑÌçºÎ°ú Î∂ÄÌÑ∞ WKT(Well Known Text) ÎòêÎäî WKB(Well Known Binary)Î•º ÏùΩÏñ¥
- * Geometry Í∞ùÏ≤¥Î°ú Ï†ÄÏû•ÌïòÎäî Î™®Îìà
+ * ¿‘∑¬ πˆ∆€∑Œ ∫Œ≈Õ WKT(Well Known Text) ∂«¥¬ WKB(Well Known Binary)∏¶ ¿–æÓ
+ * Geometry ∞¥√º∑Œ ¿˙¿Â«œ¥¬ ∏µ‚
  **********************************************************************/
 
 #ifndef _O_STD_GEO_PARSING_H_
@@ -30,8 +30,8 @@
 #include <mtcDef.h>
 #include <stdTypes.h>
 
-/* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()Î•º ÏßÄÏõêÌï¥Ïïº Ìï©ÎãàÎã§.
- *  ST_RECTFROMTEXT(), ST_RECTFROMWKB()ÏóêÏÑúÎßå ÏÇ¨Ïö©ÌïòÎäî ÎπÑÍ≥µÏãù ÌÉÄÏûÖÏù¥ÎØÄÎ°ú, Ïô∏Î∂ÄÏóê Í≥µÍ∞úÌïòÏßÄ ÏïäÎäîÎã§.
+/* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()∏¶ ¡ˆø¯«ÿæﬂ «’¥œ¥Ÿ.
+ *  ST_RECTFROMTEXT(), ST_RECTFROMWKB()ø°º≠∏∏ ªÁøÎ«œ¥¬ ∫Ò∞¯Ωƒ ≈∏¿‘¿Ãπ«∑Œ, ø‹∫Œø° ∞¯∞≥«œ¡ˆ æ ¥¬¥Ÿ.
  */
 #define WKB_RECTANGLE_TYPE  (8)
 
@@ -44,7 +44,9 @@ typedef enum
     STT_LPAREN_TOKEN,
     STT_RPAREN_TOKEN,
     STT_LBRACK_TOKEN,
-    STT_RBRACK_TOKEN
+    STT_RBRACK_TOKEN,
+    STT_SEMICOLON_TOKEN,
+    STT_EQUAL_TOKEN
 } STT_TOKEN;
 
 class stdParsing
@@ -76,7 +78,9 @@ public:
                             void*        aBuf,
                             void*        aFence,
                             IDE_RC      *aResult,
-                            UInt         aValidateOption );
+                            UInt         aValidateOption,
+                            idBool       aSRIDOption,
+                            SInt         aSRID );
 
     // BUG-27002 add aValidateOption
     static IDE_RC stdBinValue( iduMemory*   aQmxMem,
@@ -91,35 +95,42 @@ public:
                                 idBool              aIsValid,
                                 UInt                aValidateOption);
     
+    // PROJ-2422 srid ¡ˆø¯
+    static IDE_RC skipSRID( UChar**    aPtr,
+                            UChar*     aWKTFence );
+    
+    static IDE_RC getSRID( UChar**     aPtr,
+                           UChar*      aWKTFence,
+                           SInt*       aSRID );
+    
     // BUG-27002
     // Add aValidateOption for GeomFromText validation level.
+    static IDE_RC getPoint( UChar**                    aPtr,
+                            UChar*                     aWKTFence,
+                            stdGeometryHeader*         aGeom,
+                            void*                      aFence,
+                            IDE_RC*                    aResult,
+                            UInt                       aValidateOption,
+                            SInt                       aSRID );
     
-    static IDE_RC getPoint(
-                    UChar**                    aPtr,
-                    UChar*                     aWKTFence,
-                    stdGeometryHeader*         aGeom,
-                    void*                      aFence,
-                    IDE_RC*                    aResult,
-                    UInt                       aValidateOption);
+    static IDE_RC getLineString( UChar**                    aPtr,
+                                 UChar*                     aWKTFence,
+                                 stdGeometryHeader*         aGeom,
+                                 void*                      aFence,
+                                 IDE_RC*                    aResult,
+                                 UInt                       aValidateOption,
+                                 SInt                       aSRID );
     
-    static IDE_RC getLineString(
-                    UChar**                    aPtr,
-                    UChar*                     aWKTFence,
-                    stdGeometryHeader*         aGeom,
-                    void*                      aFence,
-                    IDE_RC*                    aResult,
-                    UInt                       aValidateOption);
-    
-    static IDE_RC getPolygon(
-                    iduMemory*                 aQmxMem,
-                    UChar**                    aPtr,
-                    UChar*                     aWKTFence,
-                    stdGeometryHeader*         aGeom,
-                    void*                      aFence,
-                    IDE_RC*                    aResult,
-                    UInt                       aValidateOption);
+    static IDE_RC getPolygon( iduMemory*                 aQmxMem,
+                              UChar**                    aPtr,
+                              UChar*                     aWKTFence,
+                              stdGeometryHeader*         aGeom,
+                              void*                      aFence,
+                              IDE_RC*                    aResult,
+                              UInt                       aValidateOption,
+                              SInt                       aSRID );
 
-    /* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()Î•º ÏßÄÏõêÌï¥Ïïº Ìï©ÎãàÎã§. */
+    /* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()∏¶ ¡ˆø¯«ÿæﬂ «’¥œ¥Ÿ. */
     static IDE_RC getRectangle(
                     iduMemory                * aQmxMem,
                     UChar                   ** aPtr,
@@ -129,39 +140,39 @@ public:
                     IDE_RC                   * aResult,
                     UInt                       aValidateOption );
 
-    static IDE_RC getMultiPoint(
-                    UChar**                    aPtr,
-                    UChar*                     aWKTFence,
-                    stdGeometryHeader*         aGeom,
-                    void*                      aFence,
-                    IDE_RC*                    aResult,
-                    UInt                       aValidateOption);
+    static IDE_RC getMultiPoint( UChar**                    aPtr,
+                                 UChar*                     aWKTFence,
+                                 stdGeometryHeader*         aGeom,
+                                 void*                      aFence,
+                                 IDE_RC*                    aResult,
+                                 UInt                       aValidateOption,
+                                 SInt                       aSRID );
     
-    static IDE_RC getMultiLineString(
-                    UChar**                    aPtr,
-                    UChar*                     aWKTFence,
-                    stdGeometryHeader*         aGeom,
-                    void*                      aFence,
-                    IDE_RC*                    aResult,
-                    UInt                       aValidateOption);
+    static IDE_RC getMultiLineString( UChar**                    aPtr,
+                                      UChar*                     aWKTFence,
+                                      stdGeometryHeader*         aGeom,
+                                      void*                      aFence,
+                                      IDE_RC*                    aResult,
+                                      UInt                       aValidateOption,
+                                      SInt                       aSRID );
     
-    static IDE_RC getMultiPolygon(
-                    iduMemory*                 aQmxMem,
-                    UChar**                    aPtr,
-                    UChar*                     aWKTFence,
-                    stdGeometryHeader*         aGeom,
-                    void*                      aFence,
-                    IDE_RC*                    aResult,
-                    UInt                       aValidateOption);
+    static IDE_RC getMultiPolygon( iduMemory*                 aQmxMem,
+                                   UChar**                    aPtr,
+                                   UChar*                     aWKTFence,
+                                   stdGeometryHeader*         aGeom,
+                                   void*                      aFence,
+                                   IDE_RC*                    aResult,
+                                   UInt                       aValidateOption,
+                                   SInt                       aSRID );
     
-    static IDE_RC getGeoCollection(
-                    iduMemory*                 aQmxMem,
-                    UChar**                    aPtr,
-                    UChar*                     aWKTFence,
-                    stdGeometryHeader*         aGeom,
-                    void*                      aFence,
-                    IDE_RC*                    aResult,
-                    UInt                       aValidateOption);
+    static IDE_RC getGeoCollection( iduMemory*                 aQmxMem,
+                                    UChar**                    aPtr,
+                                    UChar*                     aWKTFence,
+                                    stdGeometryHeader*         aGeom,
+                                    void*                      aFence,
+                                    IDE_RC*                    aResult,
+                                    UInt                       aValidateOption,
+                                    SInt                       aSRID );
 
     /* BUG-32531 Consider for GIS EMPTY */
     static IDE_RC getEmpty( stdGeometryHeader* aGeom,
@@ -177,6 +188,7 @@ private:
         case ')':
         case '(':
         case ',':
+        case ';':
             return ID_TRUE;
         default:
             return ID_FALSE;
@@ -189,10 +201,14 @@ private:
     static IDE_RC skipToLast(UChar** aPtr, UChar* aWKTFence);
     static UChar* findSubObjFence(UChar** aPtr, UChar* aWKTFence);
     static IDE_RC skipComma(UChar** aPtr, UChar *aWKTFence);
+    static IDE_RC skipSemicolon( UChar** aPtr, UChar *aWKTFence );
+    static IDE_RC skipEqual( UChar** aPtr, UChar *aWKTFence );
     static IDE_RC skipDate(UChar** aPtr, UChar *aWKTFence);
     static IDE_RC getDate(UChar** aPtr, UChar *aWKTFence, mtdDateType* aDate );
     static IDE_RC skipNumber(UChar** aPtr, UChar *aWKTFence);
     static IDE_RC getNumber(UChar** aPtr, UChar* aWKTFence, SDouble* aD);
+    static IDE_RC skipLong( UChar** aPtr, UChar *aWKTFence );
+    static IDE_RC getLong( UChar** aPtr, UChar* aWKTFence, SLong* aL );
 
     
     /* BUG-32531 Consider for GIS EMPTY */
@@ -220,7 +236,7 @@ public:
                     void*                      aFence,
                     IDE_RC*                    aResult);
 
-    /* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()Î•º ÏßÄÏõêÌï¥Ïïº Ìï©ÎãàÎã§. */
+    /* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()∏¶ ¡ˆø¯«ÿæﬂ «’¥œ¥Ÿ. */
     static IDE_RC getWKBRectangle(
                     UChar**                    aPtr,
                     UChar*                     aWKBFence,
@@ -256,6 +272,48 @@ public:
                     void*                      aFence,
                     IDE_RC*                    aResult);
 
+    static IDE_RC getEWKBPoint( UChar**                    aPtr,
+                                UChar*                     aWKBFence,
+                                stdGeometryHeader*         aGeom,
+                                void*                      aFence,
+                                IDE_RC*                    aResult );
+    
+    static IDE_RC getEWKBLineString( UChar**                    aPtr,
+                                     UChar*                     aWKBFence,
+                                     stdGeometryHeader*         aGeom,
+                                     void*                      aFence,
+                                     IDE_RC*                    aResult );
+    
+    static IDE_RC getEWKBPolygon( UChar**                    aPtr,
+                                  UChar*                     aWKBFence,
+                                  stdGeometryHeader*         aGeom,
+                                  void*                      aFence,
+                                  IDE_RC*                    aResult );
+    
+    static IDE_RC getEWKBMultiPoint( UChar**                    aPtr,
+                                     UChar*                     aWKBFence,
+                                     stdGeometryHeader*         aGeom,
+                                     void*                      aFence,
+                                     IDE_RC*                    aResult );
+    
+    static IDE_RC getEWKBMultiLineString( UChar**                    aPtr,
+                                          UChar*                     aWKBFence,
+                                          stdGeometryHeader*         aGeom,
+                                          void*                      aFence,
+                                          IDE_RC*                    aResult );
+    
+    static IDE_RC getEWKBMultiPolygon( UChar**                    aPtr,
+                                       UChar*                     aWKBFence,
+                                       stdGeometryHeader*         aGeom,
+                                       void*                      aFence,
+                                       IDE_RC*                    aResult );
+        
+    static IDE_RC getEWKBGeoCollection( UChar**                    aPtr,
+                                        UChar*                     aWKBFence,
+                                        stdGeometryHeader*         aGeom,
+                                        void*                      aFence,
+                                        IDE_RC*                    aResult );
+    
     // BUG-24357 WKB Endian.
     static IDE_RC readWKB_Header( UChar     * aBuf,
                                   idBool    * aIsEquiEndian,
@@ -263,7 +321,7 @@ public:
                                   UInt      * aOffset,
                                   UChar    ** aNext );
 
-    // WKB Ìï®Ïàò ////////////////////////////////////////////////////////////////
+    // WKB «‘ºˆ ////////////////////////////////////////////////////////////////
     //  { Internal WKB read Function
 private:
     static UChar *readWKB_Char( UChar  * aBuf,
@@ -274,6 +332,11 @@ private:
                                 UInt   * aVal,
                                 UInt   * aOffset,
                                 idBool   aEquiEndian);
+    
+    static UChar *readWKB_SInt( UChar  * aBuf,
+                                SInt   * aVal,
+                                UInt   * aOffset,
+                                idBool   aEquiEndian );
     
     static UChar *readWKB_SDouble( UChar    * aBuf,
                                    SDouble  * aVal,

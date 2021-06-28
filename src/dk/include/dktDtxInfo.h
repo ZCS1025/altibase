@@ -36,27 +36,43 @@ public:
     UInt           mBranchTxCount;
     dktLinkerType  mLinkerType;
     iduListNode    mNode;
+    ID_XID         mXID;
+    idBool         mIsFailoverRequestNode;
+    idBool         mIsPassivePending;
+    smSCN          mGlobalCommitSCN;
+    smiTransNode * mFailoverTrans;
+    iduMutex       mDtxInfoGlobalTxResultMutex;
 
-    void initialize( UInt aLocalTxId, UInt aGlobalTxId );
+    IDE_RC initialize( ID_XID * aXID,
+                       UInt     aLocalTxId, 
+                       UInt     aGlobalTxId,
+                       idBool   aIsRequestNode );
 
     void finalize( );
 
-    IDE_RC createDtxInfo( UInt aTID, UInt  aGlobalTxId );
+    IDE_RC createDtxInfo( ID_XID * aXID, 
+                          UInt     aTID, 
+                          UInt     aGlobalTxId );
 
     IDE_RC removeDtxBranchTx( ID_XID * aXID );
     IDE_RC removeDtxBranchTx( dktDtxBranchTxInfo * aDtxBranchTxInfo );
     void removeAllBranchTx();
 
     IDE_RC addDtxBranchTx( ID_XID * aXID, SChar * aTarget );
-    IDE_RC addDtxBranchTx( ID_XID * aXID,
-                           SChar  * aNodeName,
-                           SChar  * aUserName,
-                           SChar  * aUserPassword,
-                           SChar  * aDataServerIP,
-                           UShort   aDataPortNo,
-                           UShort   aConnectType );
+    IDE_RC addDtxBranchTx( ID_XID               * aXID,
+                           sdiCoordinatorType     aCoordinatorType,
+                           SChar                * aNodeName,
+                           SChar                * aUserName,
+                           SChar                * aUserPassword,
+                           SChar                * aDataServerIP,
+                           UShort                 aDataPortNo,
+                           UShort                 aConnectType );
     IDE_RC addDtxBranchTx( dktDtxBranchTxInfo * aDtxBranchTxInfo );
     dktDtxBranchTxInfo * getDtxBranchTx( ID_XID * aXID );
+
+    void dumpBranchTx( SChar  * aBuf,
+                       SInt     aBufSize,
+                       UInt   * aBranchTxCnt ); /* out */
 
     UInt estimateSerializeBranchTx();
     IDE_RC serializeBranchTx( UChar * aBranchTxInfo, UInt aSize );
@@ -69,6 +85,9 @@ public:
     inline smLSN * getPrepareLSN( void );
     inline UInt getFileNo( void );
     inline idBool isEmpty();
+
+    inline void globalTxResultLock();
+    inline void globalTxResultUnlock();
 };
 
 class dktXid
@@ -77,7 +96,13 @@ public:
     static void   initXID( ID_XID * aXID );
     static void   copyXID( ID_XID * aDst, ID_XID * aSrc );
     static idBool isEqualXID( ID_XID * aXID1, ID_XID * aXID2 );
+    static void   copyGlobalXID( ID_XID * aDst, ID_XID * aSrc );
+    static idBool isEqualGlobalXID( ID_XID * aXID1, ID_XID * aXID2 );
+
     static UChar  sizeofXID( ID_XID * aXID );
+
+    static UInt   getGlobalTxIDFromXID( ID_XID * aXID );
+    static UInt   getLocalTxIDFromXID( ID_XID * aXID );
 };
 
 inline dktLinkerType dktDtxInfo::getLinkerType()
@@ -101,4 +126,15 @@ inline idBool dktDtxInfo::isEmpty()
         return ID_FALSE;
     }
 }
+
+inline void dktDtxInfo::globalTxResultLock()
+{
+    IDE_ASSERT( mDtxInfoGlobalTxResultMutex.lock( NULL /*idvSQL* */  ) == IDE_SUCCESS );
+}
+
+inline void dktDtxInfo::globalTxResultUnlock()
+{
+    IDE_ASSERT( mDtxInfoGlobalTxResultMutex.unlock() == IDE_SUCCESS );
+}
+
 #endif  /* _O_DKT_DTX_INFO_H_ */

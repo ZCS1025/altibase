@@ -19,6 +19,15 @@
 
 #include <ulnDef.h>
 
+/*
+ * PROJ-2047 Strengthening LOB - LOBCACHE
+ *
+ * LOCATOR (8) + SIZE (8) + HASDATA (1)
+ *         0  ~ 15              16
+ */
+#define LOB_MT_SIZE           17
+#define LOB_MT_HASDATA_OFFSET 16
+
 typedef struct ulnLengthPair
 {
     ulvSLen mWritten;

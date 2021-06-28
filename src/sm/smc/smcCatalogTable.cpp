@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smcCatalogTable.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smcCatalogTable.cpp 90259 2021-03-19 01:22:22Z emlee $
  **********************************************************************/
 
 #include <idl.h>
@@ -40,7 +40,7 @@ UInt  smcCatalogTable::getCatTempTableOffset()
 }
 
 /***********************************************************************
- * Description : DB ìƒì„±ì‹œì— Catalog Tableê³¼ Temp Catalog Table ìƒì„±
+ * Description : DB »ı¼º½Ã¿¡ Catalog Table°ú Temp Catalog Table »ı¼º
  *
  **********************************************************************/
 IDE_RC smcCatalogTable::createCatalogTable()
@@ -59,16 +59,16 @@ IDE_RC smcCatalogTable::createCatalogTable()
 }
 
 /***********************************************************************
- * Description : Server shutdownì‹œ Catalog Tableì— ëŒ€í•´ ë©”ëª¨ë¦¬ í•´ì œ ìˆ˜í–‰
+ * Description : Server shutdown½Ã Catalog Table¿¡ ´ëÇØ ¸Ş¸ğ¸® ÇØÁ¦ ¼öÇà
  *
- * Catalog Tableê³¼ Temp Catalog Tableì˜ Recordì¸ Temp Table
- * Headerì˜ Lock Itemê³¼ RunTime ì˜ì—­ì„ í•´ì œí•œë‹¤.
+ * Catalog Table°ú Temp Catalog TableÀÇ RecordÀÎ Temp Table
+ * HeaderÀÇ Lock Item°ú RunTime ¿µ¿ªÀ» ÇØÁ¦ÇÑ´Ù.
  **********************************************************************/
 IDE_RC smcCatalogTable::finalizeCatalogTable()
 {
-    /* Catalog Tableì˜ Recordë“¤ì˜ Lock Itemê³¼ RunTimeì˜ì—­ í•´ì œ*/
+    /* Catalog TableÀÇ RecordµéÀÇ Lock Item°ú RunTime¿µ¿ª ÇØÁ¦*/
     IDE_TEST( finCatalog( SMC_CAT_TABLE ) != IDE_SUCCESS );
-    /* Temp Catalog Tableì˜ Recordë“¤ì˜ Lock Itemê³¼ RunTimeì˜ì—­ í•´ì œ*/
+    /* Temp Catalog TableÀÇ RecordµéÀÇ Lock Item°ú RunTime¿µ¿ª ÇØÁ¦*/
     IDE_TEST( finCatalog( SMC_CAT_TEMPTABLE ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -79,7 +79,7 @@ IDE_RC smcCatalogTable::finalizeCatalogTable()
 }
 
 /***********************************************************************
- * Description : ì¸í„°í˜ì´ìŠ¤ë¥¼ ë§ì¶”ê¸° ìœ„í•œ Dummyí•¨ìˆ˜
+ * Description : ÀÎÅÍÆäÀÌ½º¸¦ ¸ÂÃß±â À§ÇÑ DummyÇÔ¼ö
  **********************************************************************/
 IDE_RC smcCatalogTable::initialize()
 {
@@ -87,7 +87,7 @@ IDE_RC smcCatalogTable::initialize()
 }
 
 /***********************************************************************
- * Description : ì¸í„°í˜ì´ìŠ¤ë¥¼ ë§ì¶”ê¸° ìœ„í•œ Dummyí•¨ìˆ˜
+ * Description : ÀÎÅÍÆäÀÌ½º¸¦ ¸ÂÃß±â À§ÇÑ DummyÇÔ¼ö
  **********************************************************************/
 IDE_RC smcCatalogTable::destroy()
 {
@@ -95,8 +95,8 @@ IDE_RC smcCatalogTable::destroy()
 }
 
 /***********************************************************************
- * Description : Shutdownì‹œ Catalog Tableë° ê·¸ì•ˆì˜
- *               ëª¨ë“  Tableì˜ Runtimeì •ë³´ í•´ì œ
+ * Description : Shutdown½Ã Catalog Table¹× ±×¾ÈÀÇ
+ *               ¸ğµç TableÀÇ RuntimeÁ¤º¸ ÇØÁ¦
  *
  * aCatTableHeader - [IN] Catalog Table Header (Normal or Temp)
  *
@@ -109,11 +109,11 @@ IDE_RC smcCatalogTable::finCatalog( void* aCatTableHeader )
 
     sCatTblHdr = (smcTableHeader*) aCatTableHeader;
 
-    /* Catalog Tableì•ˆì˜ Used Slotë“¤ì— ëŒ€í•´ Runtimeì •ë³´ í•´ì œ */
+    /* Catalog Table¾ÈÀÇ Used Slotµé¿¡ ´ëÇØ RuntimeÁ¤º¸ ÇØÁ¦ */
     IDE_TEST( finAllocedTableSlots( sCatTblHdr )
               != IDE_SUCCESS );
 
-    /* aCatTableHeaderì˜ Lock Itemê³¼ Runtimeì˜ì—­ì„ í•´ì œ */
+    /* aCatTableHeaderÀÇ Lock Item°ú Runtime¿µ¿ªÀ» ÇØÁ¦ */
     IDE_TEST( smcTable::finLockAndRuntimeItem( sCatTblHdr )
               != IDE_SUCCESS );
 
@@ -126,12 +126,12 @@ IDE_RC smcCatalogTable::finCatalog( void* aCatTableHeader )
 
 
 /***********************************************************************
- * Description : Catalog Tableì„ ìƒì„±í•˜ê¸° ìœ„í•´ Catalog Tabler Headerë¥¼ ì´ˆê¸°
- *               í™”í•œë‹¤.
+ * Description : Catalog TableÀ» »ı¼ºÇÏ±â À§ÇØ Catalog Tabler Header¸¦ ÃÊ±â
+ *               È­ÇÑ´Ù.
  *
  * aCatTableHeader - [IN] Catalog Table Header Ponter
- * aOffset         - [IN] Offset: Catalog Table HeaderëŠ” 0ë²ˆì§¸ Pageì— ìœ„ì¹˜í•˜ëŠ”
- *                        ë° ì´ Offsetì€ ê·¸ 0ë²ˆ í˜ì´ì§€ì˜ ì‹œì‘ìœ„ì¹˜ì—ì„œì˜ offsetì´ë‹¤.
+ * aOffset         - [IN] Offset: Catalog Table Header´Â 0¹øÂ° Page¿¡ À§Ä¡ÇÏ´Â
+ *                        µ¥ ÀÌ OffsetÀº ±× 0¹ø ÆäÀÌÁöÀÇ ½ÃÀÛÀ§Ä¡¿¡¼­ÀÇ offsetÀÌ´Ù.
  **********************************************************************/
 IDE_RC smcCatalogTable::createCatalog( void*   aCatTableHeader,
                                        UShort  aOffset )
@@ -141,21 +141,19 @@ IDE_RC smcCatalogTable::createCatalog( void*   aCatTableHeader,
     UInt i;
 
 
-    /* Catalog Tableì„ DB ìƒì„±ì‹œì— ì´ˆê¸°í™”í•œë‹¤. */
+    /* Catalog TableÀ» DB »ı¼º½Ã¿¡ ÃÊ±âÈ­ÇÑ´Ù. */
     sCatTblHdr = (smcTableHeader*)aCatTableHeader;
 
-    /* ì¹´íƒˆë¡œê·¸ í…Œì´ë¸”ì´ Pageê²½ê³„ë¥¼ ë²—ì–´ë‚˜ì§€ëŠ” ì•ŠëŠ”ì§€ ì²´í¬ */
+    /* Ä«Å»·Î±× Å×ÀÌºíÀÌ Page°æ°è¸¦ ¹ş¾î³ªÁö´Â ¾Ê´ÂÁö Ã¼Å© */
     IDE_ASSERT( aOffset + ID_SIZEOF(smpSlotHeader) + ID_SIZEOF(smcTableHeader)
                 <= SM_PAGE_SIZE );
-    /* aCatTableHeaderì˜ Slot Headerë¥¼ ì´ˆê¸°í™” í•œë‹¤.*/
+    /* aCatTableHeaderÀÇ Slot Header¸¦ ÃÊ±âÈ­ ÇÑ´Ù.*/
     idlOS::memset((UChar *)sCatTblHdr - SMP_SLOT_HEADER_SIZE, 0,
                   ID_SIZEOF(smcTableHeader) + SMP_SLOT_HEADER_SIZE);
 
     /* m_self of record header contains offset from page header */
     sSlotHeader = (smpSlotHeader *)((UChar *)sCatTblHdr - SMP_SLOT_HEADER_SIZE);
     SMP_SLOT_SET_OFFSET( sSlotHeader, aOffset );
-
-    sCatTblHdr->mVarCount      = SM_VAR_PAGE_LIST_COUNT;
 
     for(i = 0 ; i < SMC_MAX_INDEX_OID_CNT; i++)
     {
@@ -170,7 +168,7 @@ IDE_RC smcCatalogTable::createCatalog( void*   aCatTableHeader,
     sCatTblHdr->mFlag          = SMI_TABLE_REPLICATION_DISABLE
         | SMI_TABLE_LOCK_ESCALATION_DISABLE | SMI_TABLE_META ;
 
-    /* Catalog Tableì— ëŒ€í•œ ì¹¼ëŸ¼ ì •ë³´ë¥¼ variable slotì˜ì—­ì— í• ë‹¹í•œë‹¤.*/
+    /* Catalog Table¿¡ ´ëÇÑ Ä®·³ Á¤º¸¸¦ variable slot¿µ¿ª¿¡ ÇÒ´çÇÑ´Ù.*/
     sCatTblHdr->mColumnSize      = 0;
     sCatTblHdr->mColumnCount     = 0;
     sCatTblHdr->mColumns.length  = 0;
@@ -179,22 +177,20 @@ IDE_RC smcCatalogTable::createCatalog( void*   aCatTableHeader,
 
     sCatTblHdr->mNullOID = SM_NULL_OID;
 
-    /* Catalog Tableì˜ Page Listë¥¼ ì´ˆê¸°í™” í•œë‹¤. */
+    /* Catalog TableÀÇ Page List¸¦ ÃÊ±âÈ­ ÇÑ´Ù. */
     smpFixedPageList::initializePageListEntry(
                        &sCatTblHdr->mFixed.mMRDB,
                        sCatTblHdr->mSelfOID,
-                       idlOS::align8( (UInt)( ID_SIZEOF(smcTableHeader) +
-                                            SMP_SLOT_HEADER_SIZE) )
-                       );
+                       idlOS::align8( (UInt)( ID_SIZEOF(smcTableHeader) + SMP_SLOT_HEADER_SIZE) ) );
 
     smpVarPageList::initializePageListEntry( sCatTblHdr->mVar.mMRDB,
-                                       sCatTblHdr->mSelfOID);
+                                             sCatTblHdr->mSelfOID);
 
     smpAllocPageList::initializePageListEntry( sCatTblHdr->mFixedAllocList.mMRDB );
     smpAllocPageList::initializePageListEntry( sCatTblHdr->mVarAllocList.mMRDB );
 
     IDE_TEST(smmDirtyPageMgr::insDirtyPage(SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
-                                           (scPageID)0)
+                                           SMM_MEMBASE_PAGEID)
              != IDE_SUCCESS);
 
     IDE_TEST( smcTable::initLockAndRuntimeItem( sCatTblHdr ) != IDE_SUCCESS );
@@ -204,8 +200,8 @@ IDE_RC smcCatalogTable::createCatalog( void*   aCatTableHeader,
     IDE_EXCEPTION_END;
 
     IDE_PUSH();
-    IDE_ASSERT(smmDirtyPageMgr::insDirtyPage(
-                   SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC, (scPageID)0)
+    IDE_ASSERT(smmDirtyPageMgr::insDirtyPage(SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC, 
+                                             SMM_MEMBASE_PAGEID)
                == IDE_SUCCESS);
     IDE_POP();
 
@@ -213,17 +209,17 @@ IDE_RC smcCatalogTable::createCatalog( void*   aCatTableHeader,
 }
 
 /**
- *  Catalog Tableì•ˆì˜ Used Slotì— ëŒ€í•´ Lock Itemê³¼ Runtime Itemí•´ì œ
+ *  Catalog Table¾ÈÀÇ Used Slot¿¡ ´ëÇØ Lock Item°ú Runtime ItemÇØÁ¦
  *
- *  ëŒ€ìƒ í…Œì´ë¸” :
- *    Dropë˜ì§€ ì•Šì€ Tableì´ê±°ë‚˜, Create Tableë„ì¤‘ Abortí•˜ì—¬
- *    Drop Flagê°€ ì„¸íŒ…ëœ í…Œì´ë¸”
+ *  ´ë»ó Å×ÀÌºí :
+ *    DropµÇÁö ¾ÊÀº TableÀÌ°Å³ª, Create TableµµÁß AbortÇÏ¿©
+ *    Drop Flag°¡ ¼¼ÆÃµÈ Å×ÀÌºí
  *
- *  aCatTableHeaderê°€ ê°€ë¦¬í‚¤ëŠ” Tableì˜ Recordë“¤ì€ Table Headerë“¤ì´ë‹¤.
- *  ì´ Table Headerì—ëŠ” Server Startì‹œ í• ë‹¹ë˜ëŠ” Lock Itemê³¼ RunTimeì˜
- *  ì—­ì´ ìˆë‹¤. ë•Œë¬¸ì— Server Stopì‹œ ì´ ì˜ì—­ì„ Freeí•˜ê¸° ìœ„í•´
- *  aCatTableHeaderì˜ ëª¨ë“  Createëœ Tableì— ëŒ€í•´ì„œ
- *  smcTable::finLockAndRuntimeItemì„ ìˆ˜í–‰í•œë‹¤.
+ *  aCatTableHeader°¡ °¡¸®Å°´Â TableÀÇ RecordµéÀº Table HeaderµéÀÌ´Ù.
+ *  ÀÌ Table Header¿¡´Â Server Start½Ã ÇÒ´çµÇ´Â Lock Item°ú RunTime¿µ
+ *  ¿ªÀÌ ÀÖ´Ù. ¶§¹®¿¡ Server Stop½Ã ÀÌ ¿µ¿ªÀ» FreeÇÏ±â À§ÇØ
+ *  aCatTableHeaderÀÇ ¸ğµç CreateµÈ Table¿¡ ´ëÇØ¼­
+ *  smcTable::finLockAndRuntimeItemÀ» ¼öÇàÇÑ´Ù.
  *
  * aCatTableHeader - [IN] Catalog Table Header (Normal or Temp)
  */
@@ -235,13 +231,13 @@ IDE_RC smcCatalogTable::finAllocedTableSlots( smcTableHeader * aCatTblHdr )
     smpSlotHeader  * sPtr;
     SChar          * sCurPtr;
     SChar          * sNxtPtr;
-    smSCN            sScn;
+    smSCN            sSCN;
 
     sCurPtr = NULL;
 
     while(1)
     {
-        /* ë‹¤ìŒ Recordë¥¼ Fetch: if sCurPtr == NULL, fetch first record,
+        /* ´ÙÀ½ Record¸¦ Fetch: if sCurPtr == NULL, fetch first record,
            else fetch next record.*/
         IDE_TEST( smcRecord::nextOIDall( aCatTblHdr, sCurPtr, &sNxtPtr )
                   != IDE_SUCCESS );
@@ -251,17 +247,17 @@ IDE_RC smcCatalogTable::finAllocedTableSlots( smcTableHeader * aCatTblHdr )
             break;
         }
         sPtr = (smpSlotHeader *)sNxtPtr;
-        SM_GET_SCN( &sScn, &(sPtr->mCreateSCN) );
+        SM_GET_SCN( &sSCN, &(sPtr->mCreateSCN) );
 
         sHeader = (smcTableHeader *)( sPtr + 1 );
 
-        /* BUG-15653: server stopì‹œ mutex leakì´ ë§ì´ ë°œìƒí•¨.
-           ë©”ëª¨ë¦¬ í…Œì´ë¸”ì´ Drop Pendingì‹œì— finLockAndRuntimeItemì„ í˜¸ì¶œí•˜ì§€ ì•Šì•˜ìŒ.
-           ë””ìŠ¤í¬ì™€ ë™ì¼í•˜ê²Œ DBê°€ ë‚´ë ¤ê°ˆë•Œ ì²´í¬í•´ì„œ Lock, Mutexë¥¼ Freeí•´ì¤Œ*/
-        if( SM_SCN_IS_NOT_DELETED( sScn ) ||
+        /* BUG-15653: server stop½Ã mutex leakÀÌ ¸¹ÀÌ ¹ß»ıÇÔ.
+           ¸Ş¸ğ¸® Å×ÀÌºíÀÌ Drop Pending½Ã¿¡ finLockAndRuntimeItemÀ» È£ÃâÇÏÁö ¾Ê¾ÒÀ½.
+           µğ½ºÅ©¿Í µ¿ÀÏÇÏ°Ô DB°¡ ³»·Á°¥¶§ Ã¼Å©ÇØ¼­ Lock, Mutex¸¦ FreeÇØÁÜ*/
+        if( SM_SCN_IS_NOT_DELETED( sSCN ) ||
             SMP_SLOT_IS_DROP( sPtr ) )
         {
-            /* Disk LOB Columnì— ëŒ€í•œ Segment Handle í•´ì œí•œë‹¤. */
+            /* Disk LOB Column¿¡ ´ëÇÑ Segment Handle ÇØÁ¦ÇÑ´Ù. */
             if( SMI_TABLE_TYPE_IS_DISK( sHeader ) == ID_TRUE )
             {
                 IDE_TEST( smcTable::destroyLOBSegmentDesc( sHeader )
@@ -270,7 +266,7 @@ IDE_RC smcCatalogTable::finAllocedTableSlots( smcTableHeader * aCatTblHdr )
                 IDE_TEST( smcTable::destroyRowTemplate( sHeader )!= IDE_SUCCESS );
             }
 
-            /* Tableì˜ Lock Itemê³¼ Runtimeì˜ì—­ì„ í•´ì œ */
+            /* TableÀÇ Lock Item°ú Runtime¿µ¿ªÀ» ÇØÁ¦ */
             IDE_TEST( smcTable::finLockAndRuntimeItem( sHeader )
                       != IDE_SUCCESS );
 
@@ -288,11 +284,11 @@ IDE_RC smcCatalogTable::finAllocedTableSlots( smcTableHeader * aCatTblHdr )
 
 
 /***********************************************************************
- * Description : DRDB(Disk Resident Database)ëŠ” Restart Recoveryì˜ Undoì‹œì—
- *               Index Headerì— ì ‘ê·¼í•œë‹¤. ë•Œë¬¸ì— Redoí›„ MMDBì— ìˆëŠ” Catalog
- *               Tableì˜ Recordë“¤ ì¤‘ Disk Tableì˜ Headerì— ëŒ€í•´ Lock Itemê³¼
- *               Runtimeì˜ì—­ì„ ì´ˆê¸°í™”í•˜ê³  Indexë“¤ì— ëŒ€í•´ ì—°ì‚°ì„ ìˆ˜í–‰í•  ìˆ˜ ìˆë„ë¡
- *               ì ì ˆí•œ ì—°ì‚°ì„ ìˆ˜í–‰í•´ì•¼ í•œë‹¤.
+ * Description : DRDB(Disk Resident Database)´Â Restart RecoveryÀÇ Undo½Ã¿¡
+ *               Index Header¿¡ Á¢±ÙÇÑ´Ù. ¶§¹®¿¡ RedoÈÄ MMDB¿¡ ÀÖ´Â Catalog
+ *               TableÀÇ Recordµé Áß Disk TableÀÇ Header¿¡ ´ëÇØ Lock Item°ú
+ *               Runtime¿µ¿ªÀ» ÃÊ±âÈ­ÇÏ°í Indexµé¿¡ ´ëÇØ ¿¬»êÀ» ¼öÇàÇÒ ¼ö ÀÖµµ·Ï
+ *               ÀûÀıÇÑ ¿¬»êÀ» ¼öÇàÇØ¾ß ÇÑ´Ù.
  *
  *
  **********************************************************************/
@@ -300,8 +296,8 @@ IDE_RC smcCatalogTable::refineDRDBTables()
 {
     idBool    sInitLockAndRuntimeItem = ID_TRUE;
 
-    /* A. ë””ìŠ¤í¬ ì¸ë±ìŠ¤ì˜ ëŸ°íƒ€ì„ í—¤ë”ì™€ ë””ìŠ¤í¬ í…Œì´ë¸”ì˜ LOB ì„¸ê·¸ë¨¼íŠ¸ì˜
-     *    ê¸°ìˆ ìë¥¼ ì´ˆê¸°í™”í•œë‹¤. */
+    /* A. µğ½ºÅ© ÀÎµ¦½ºÀÇ ·±Å¸ÀÓ Çì´õ¿Í µğ½ºÅ© Å×ÀÌºíÀÇ LOB ¼¼±×¸ÕÆ®ÀÇ
+     *    ±â¼úÀÚ¸¦ ÃÊ±âÈ­ÇÑ´Ù. */
     IDE_TEST( doAction4EachTBL( NULL, /* aStatistics */
                                 smcTable::initRuntimeInfos,
                                 (void*)&sInitLockAndRuntimeItem )
@@ -317,11 +313,11 @@ IDE_RC smcCatalogTable::refineDRDBTables()
 
 /***********************************************************************
  *
- * Description : ê°ê°ì˜ Tableì— ëŒ€í•´ íŠ¹ì • Actionì„ ìˆ˜í–‰í•œë‹¤.
+ * Description : °¢°¢ÀÇ Table¿¡ ´ëÇØ Æ¯Á¤ ActionÀ» ¼öÇàÇÑ´Ù.
  *
- *   aStatistics - [IN] í†µê³„ì •ë³´
- *   aAction     - [IN] ìˆ˜í–‰í•  Actioní•¨ìˆ˜
- *   aActionArg  - [IN] Actioní•¨ìˆ˜ì— ë³´ë‚¼ Argument
+ *   aStatistics - [IN] Åë°èÁ¤º¸
+ *   aAction     - [IN] ¼öÇàÇÒ ActionÇÔ¼ö
+ *   aActionArg  - [IN] ActionÇÔ¼ö¿¡ º¸³¾ Argument
  *
  **********************************************************************/
 IDE_RC smcCatalogTable::doAction4EachTBL(idvSQL            * aStatistics,
@@ -333,14 +329,14 @@ IDE_RC smcCatalogTable::doAction4EachTBL(idvSQL            * aStatistics,
     smpSlotHeader  * sPtr;
     SChar          * sCurPtr;
     SChar          * sNxtPtr;
-    smSCN            sScn;
+    smSCN            sSCN;
 
     sCatTblHdr = (smcTableHeader*)SMC_CAT_TABLE;
     sCurPtr    = NULL;
 
     while(1)
     {
-        /* ë‹¤ìŒ Recordë¥¼ Fetch: if sCurPtr == NULL, fetch first record,
+        /* ´ÙÀ½ Record¸¦ Fetch: if sCurPtr == NULL, fetch first record,
            else fetch next record.*/
         IDE_TEST( smcRecord::nextOIDall( sCatTblHdr, sCurPtr, &sNxtPtr )
                   != IDE_SUCCESS );
@@ -350,41 +346,41 @@ IDE_RC smcCatalogTable::doAction4EachTBL(idvSQL            * aStatistics,
             break;
         }
         sPtr = (smpSlotHeader *)sNxtPtr;
-        SM_GET_SCN( &sScn, &(sPtr->mCreateSCN) );
+        SM_GET_SCN( &sSCN, &(sPtr->mCreateSCN) );
 
 /*
         BUG-13936
 
-        Tableì˜ ìƒì„± ë„ì¤‘ì— ì‹¤íŒ¨í•œ ê²½ìš° ë‹¤ìŒê³¼ ê°™ì€ ì²˜ë¦¬ë¥¼ í†µí•´ Slotì´ í•´ì œëœë‹¤.
+        TableÀÇ »ı¼º µµÁß¿¡ ½ÇÆĞÇÑ °æ¿ì ´ÙÀ½°ú °°Àº Ã³¸®¸¦ ÅëÇØ SlotÀÌ ÇØÁ¦µÈ´Ù.
 
         Create Table
-          Catalog Tableì—ì„œ Rowí• ë‹¹
+          Catalog Table¿¡¼­ RowÇÒ´ç
              ==> Drop=0(Not Dropped), Used='U'(Used), Delete=0
-             (ë§Œì•½) Create Tableë„ì¤‘ ì‹¤íŒ¨? Abortìˆ˜í–‰!
-                 ==> Delete Bit=1       .... (ê°€)
-                     Agerê°€ Slotì‚­ì œ
-                          ==> Used='F'  .... (ë‚˜)
+             (¸¸¾à) Create TableµµÁß ½ÇÆĞ? Abort¼öÇà!
+                 ==> Delete Bit=1       .... (°¡)
+                     Ager°¡ Slot»èÁ¦
+                          ==> Used='F'  .... (³ª)
 
-        ë§Œì•½ Agerê°€ ìˆ˜í–‰í•˜ì—¬ (ë‚˜)ì˜ ìƒíƒœê¹Œì§€ ê°”ë‹¤ë©´ Used='F'ì´ë¯€ë¡œ nextOIDAll
-        ì— ì˜í•´ ê±¸ëŸ¬ì§ˆ ê²ƒì´ë‹¤.
+        ¸¸¾à Ager°¡ ¼öÇàÇÏ¿© (³ª)ÀÇ »óÅÂ±îÁö °¬´Ù¸é Used='F'ÀÌ¹Ç·Î nextOIDAll
+        ¿¡ ÀÇÇØ °É·¯Áú °ÍÀÌ´Ù.
 
-        ê·¸ëŸ¬ë‚˜, Agerê°€ ì•„ì§ ìˆ˜í–‰ë˜ì§€ ì•Šì•„ì„œ (ê°€)ì˜ ìƒíƒœì— ìˆë‹¤ë©´,
-        Tableì˜ ìƒì„± ë„ì¤‘ì— ì‹¤íŒ¨í•œ ê²½ìš°ì´ë¯€ë¡œ refineëŒ€ìƒì—ì„œ ì œì™¸í•´ì•¼í•œë‹¤.
+        ±×·¯³ª, Ager°¡ ¾ÆÁ÷ ¼öÇàµÇÁö ¾Ê¾Æ¼­ (°¡)ÀÇ »óÅÂ¿¡ ÀÖ´Ù¸é,
+        TableÀÇ »ı¼º µµÁß¿¡ ½ÇÆĞÇÑ °æ¿ìÀÌ¹Ç·Î refine´ë»ó¿¡¼­ Á¦¿ÜÇØ¾ßÇÑ´Ù.
 
-        ì°¸ê³ ë¡œ, Drop Tableì‹œì˜ Flagë³€í™”ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.
+        Âü°í·Î, Drop Table½ÃÀÇ Flagº¯È­´Â ´ÙÀ½°ú °°´Ù.
 
         Drop Table
           ==> Drop = 1(Dropped)
-          (ë§Œì•½) Commití•œë‹¤ë©´?
+          (¸¸¾à) CommitÇÑ´Ù¸é?
                ==> Delete Bit=1
-                   AgerëŠ” ì´ë¥¼ ì§€ìš°ì§€ ì•ŠëŠ”ë‹¤.(Prepareëœ Txê°€ ì ‘ê·¼í•˜ê³  ìˆì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ)
-                   Shutdowní›„ Startupì‹œ Refineë„ì¤‘ì— Catalog Table ì—ì„œ rowì‚­ì œ
+                   Ager´Â ÀÌ¸¦ Áö¿ìÁö ¾Ê´Â´Ù.(PrepareµÈ Tx°¡ Á¢±ÙÇÏ°í ÀÖÀ» ¼ö ÀÖÀ¸¹Ç·Î)
+                   ShutdownÈÄ Startup½Ã RefineµµÁß¿¡ Catalog Table ¿¡¼­ row»èÁ¦
                    => Used='F'
 */
-        // 1. Tableì˜ ìƒì„± ë„ì¤‘ì— ì‹¤íŒ¨í•œ ê²½ìš° refineëŒ€ìƒì—ì„œ ì œì™¸í•´ì•¼í•œë‹¤.
-        // 2. sPtr->mDropFlagì´ TRUEì´ë”ë¼ë„ Rollbackìœ¼ë¡œ FALSEë¡œ ë ìˆ˜ ìˆë‹¤.
+        // 1. TableÀÇ »ı¼º µµÁß¿¡ ½ÇÆĞÇÑ °æ¿ì refine´ë»ó¿¡¼­ Á¦¿ÜÇØ¾ßÇÑ´Ù.
+        // 2. sPtr->mDropFlagÀÌ TRUEÀÌ´õ¶óµµ RollbackÀ¸·Î FALSE·Î µÉ¼ö ÀÖ´Ù.
         if ( SMP_SLOT_IS_NOT_DROP( sPtr ) &&
-             SM_SCN_IS_DELETED( sScn ) )
+             SM_SCN_IS_DELETED( sSCN ) )
         {
             sCurPtr = sNxtPtr;
             continue;

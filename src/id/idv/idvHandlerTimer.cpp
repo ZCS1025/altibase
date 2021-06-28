@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: idvHandlerTimer.cpp 82316 2018-02-21 22:33:24Z kclee $
+ * $Id: idvHandlerTimer.cpp 82277 2018-02-18 22:21:58Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -170,7 +170,7 @@ static IDE_RC startupTimer(idvResource *aRsc)
     IDE_TEST(aRsc->mTimerThread.start() != IDE_SUCCESS);
     IDE_TEST(aRsc->mTimerThread.waitToStart(0) != IDE_SUCCESS);
 
-    // mClockì´ ì´ˆê¸°í™”ë ë•Œê¹Œì§€ ëŒ€ê¸°
+    // mClockÀÌ ÃÊ±âÈ­µÉ¶§±îÁö ´ë±â
     aRsc->mTimerThread.waitServiceAvail();
     
     return IDE_SUCCESS;

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmvQTC.h 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: qmvQTC.h 88630 2020-09-18 00:40:36Z ahra.cho $
  **********************************************************************/
 
 #ifndef _Q_QMV_QTC_H_
@@ -77,7 +77,7 @@ public:
         idBool       * aIdcFlag,
         qmsSFWGH    ** aColumnSFWGH );
 
-    // PROJ-2533 function objectì— ëŒ€í•´ì„œ ê°ê°ì˜ objectì— ë§ê²Œ node ë³€ê²½
+    // PROJ-2533 function object¿¡ ´ëÇØ¼­ °¢°¢ÀÇ object¿¡ ¸Â°Ô node º¯°æ
     static IDE_RC changeModuleToArray( 
         qtcNode      * aNode,
         mtcCallBack  * aCallBack );
@@ -127,10 +127,10 @@ public:
 
     /* PROJ-2469 Optimize View Materialization
      *
-     * ì¡°ì • ê°€ëŠ¥ì„±ì´ ìˆëŠ”, Targetì— ì˜í•´ ë“±ë¡ëœ ì°¸ì¡° ë¦¬ìŠ¤íŠ¸ë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
+     * Á¶Á¤ °¡´É¼ºÀÌ ÀÖ´Â, Target¿¡ ÀÇÇØ µî·ÏµÈ ÂüÁ¶ ¸®½ºÆ®¸¦ »ı¼ºÇÏ´Â ÇÔ¼ö
      *
-     * Args :  aTargetOrder     - ëª‡ ë²ˆ ì§¸ Targetì—ì„œ ì°¸ì¡°í•˜ëŠ”ì§€ ìˆœë²ˆ
-     *         aViewTargetOrder - Grouping Setsì˜ Transparent Viewì˜ ì²˜ë¦¬ë¥¼ ìœ„í•œ ì¸ì
+     * Args :  aTargetOrder     - ¸î ¹ø Â° Target¿¡¼­ ÂüÁ¶ÇÏ´ÂÁö ¼ø¹ø
+     *         aViewTargetOrder - Grouping SetsÀÇ Transparent ViewÀÇ Ã³¸®¸¦ À§ÇÑ ÀÎÀÚ
      */
     static IDE_RC addViewColumnRefListForTarget(
         qcStatement     * aStatement,
@@ -153,24 +153,25 @@ public:
                                       qmsSFWGH    * aSQSFWGH );
 
     // PROJ-2418
-    // QuerySetì˜ lateralDepInfo ì„¤ì •
+    // QuerySetÀÇ lateralDepInfo ¼³Á¤
     static IDE_RC setLateralDependencies( qmsSFWGH  * aSFWGH,
                                           qcDepInfo * aLateralDepInfo );
 
     // PROJ-2418
-    // Fromì˜ lateralDepInfo íšë“
+    // FromÀÇ lateralDepInfo È¹µæ
     static IDE_RC getFromLateralDepInfo( qmsFrom   * aFrom,
                                          qcDepInfo * aFromLateralDepInfo );
 
     // BUG-39567
-    // Set Operationì„ ê³ ë ¤í•œ lateralDepInfo ë§ˆì§€ë§‰ ì„¤ì •
+    // Set OperationÀ» °í·ÁÇÑ lateralDepInfo ¸¶Áö¸· ¼³Á¤
     static IDE_RC setLateralDependenciesLast( qmsQuerySet * aLateralQuerySet );
 
 private:
     static IDE_RC checkSubquery4IsGroup(
         qcStatement     * aStatement,
         qmsSFWGH        * aSFWGHofOuterQuery,
-        qmsQuerySet     * aQuerySet);
+        qmsQuerySet     * aQuerySet,
+        idBool            aMakePassNode ); /* BUG-48128 */
 
     static IDE_RC checkSubquery4IsAggregation(
         qmsSFWGH        * aSFWGHofOuterQuery,
@@ -246,6 +247,12 @@ private:
                                                 qtcNode         * aQtcColumn,
                                                 idBool          * aIsFound,
                                                 qmsTableRef    ** aTableRef );
+
+    /* TASK-7219 */
+    static IDE_RC setColumnIDOfOrderByForShard( qcStatement  * aStatement,
+                                                qmsSFWGH     * aSFWGH,
+                                                qtcNode      * aQtcColumn,
+                                                idBool       * aIsFound );
 };
 
 #endif  // _Q_QMV_QTC_H_

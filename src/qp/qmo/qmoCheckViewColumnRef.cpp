@@ -16,46 +16,47 @@
  
 
 /***********************************************************************
- * $Id: qmoCheckViewColumnRef.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmoCheckViewColumnRef.cpp 89448 2020-12-07 04:24:14Z cory.chae $
  *
  * PROJ-2469 Optimize View Materialization
  *
- * View Columnì— ëŒ€í•œ ì°¸ì¡° ì •ë³´( qmsTableRef->viewColumnRefList )ë¥¼
- * ìƒìœ„ Query Blockìœ¼ë¡œ ë¶€í„° Top-Downìœ¼ë¡œ ì „ë‹¬ í•˜ë©´ì„œ
- * ìƒìœ„ ì—ì„œ ì‚¬ìš©ë˜ì§€ ì•Šì•„, ì œê±° ë˜ì–´ë„ ê²°ê³¼ì— ì˜í–¥ì„ ë¯¸ì¹˜ì§€ ì•ŠëŠ” Viewì˜ Targetì— ëŒ€í•´
- * ì‚¬ìš©í•˜ì§€ ì•ŠìŒ( QMS_TARGET_IS_USELESS_TRUE )ìœ¼ë¡œ flagì²˜ë¦¬ë¥¼ í•œë‹¤.
+ * View Column¿¡ ´ëÇÑ ÂüÁ¶ Á¤º¸( qmsTableRef->viewColumnRefList )¸¦
+ * »óÀ§ Query BlockÀ¸·Î ºÎÅÍ Top-DownÀ¸·Î Àü´Þ ÇÏ¸é¼­
+ * »óÀ§ ¿¡¼­ »ç¿ëµÇÁö ¾Ê¾Æ, Á¦°Å µÇ¾îµµ °á°ú¿¡ ¿µÇâÀ» ¹ÌÄ¡Áö ¾Ê´Â ViewÀÇ Target¿¡ ´ëÇØ
+ * »ç¿ëÇÏÁö ¾ÊÀ½( QMS_TARGET_IS_USELESS_TRUE )À¸·Î flagÃ³¸®¸¦ ÇÑ´Ù.
  *
- * ex ) SELECT i1 << i1ë§Œ ì‚¬ìš©ëœë‹¤.
+ * ex ) SELECT i1 << i1¸¸ »ç¿ëµÈ´Ù.
  *        FROM (
  *               SELECT i1, i2
- *                 FROM (   ^ ì‚¬ìš©ë˜ì§€ ì•ŠëŠ”ë‹¤ê³  í‘œì‹œ
+ *                 FROM (   ^ »ç¿ëµÇÁö ¾Ê´Â´Ù°í Ç¥½Ã
  *                        SELECT i1, i2, i3
- *                          FROM T1  ^   ^ ì‚¬ìš©ë˜ì§€ ì•ŠëŠ”ë‹¤ê³  í‘œì‹œ
+ *                          FROM T1  ^   ^ »ç¿ëµÇÁö ¾Ê´Â´Ù°í Ç¥½Ã
  *                      )
  *              );
  *
- * ì‚¬ìš©ë˜ì§€ ì•ŠëŠ”ë‹¤ê³  í‘œì‹œ ëœ Viewì˜ Target Columnì€
+ * »ç¿ëµÇÁö ¾Ê´Â´Ù°í Ç¥½Ã µÈ ViewÀÇ Target ColumnÀº
  * qmoOneNonPlan::initPROJ()
  * qmoOneMtrPlan::initVMTR()
- * qmoOneMtrPlan::initCMTR() í•¨ìˆ˜ì—ì„œ Result Descriptorë¥¼ ìƒì„± í•  ë•Œ ë°˜ì˜ë˜ì–´,
+ * qmoOneMtrPlan::initCMTR() ÇÔ¼ö¿¡¼­ Result Descriptor¸¦ »ý¼º ÇÒ ¶§ ¹Ý¿µµÇ¾î,
  *                                  ( createResultFromQuerySet() )
- * í•´ë‹¹ Nodeë¥¼ calculate í•˜ì§€ ì•Šê±°ë‚˜, Materialized Nodeë¥¼ Minimize í•´ì„œ
- * ê²°ê³¼ì ìœ¼ë¡œ Dummyí™” ì‹œí‚¨ë‹¤.
+ * ÇØ´ç Node¸¦ calculate ÇÏÁö ¾Ê°Å³ª, Materialized Node¸¦ Minimize ÇØ¼­
+ * °á°úÀûÀ¸·Î DummyÈ­ ½ÃÅ²´Ù.
  *
- * <<<<<<<<<< Viewì˜ Targetì„ ìˆ˜í–‰ì—ì„œ ì œì™¸í•˜ì§€ ì•ŠëŠ” ê²½ìš°( ì˜ˆì™¸ì‚¬í•­ ) >>>>>>>>>>
+ * <<<<<<<<<< ViewÀÇ TargetÀ» ¼öÇà¿¡¼­ Á¦¿ÜÇÏÁö ¾Ê´Â °æ¿ì( ¿¹¿Ü»çÇ× ) >>>>>>>>>>
  *
- * 1. SELECT Clauseì—ë§Œ ì ìš©í•œë‹¤. - DML( INSERT/UPDATE/DELETE )ì œì™¸. ( SubqueryëŠ” ìˆ˜í–‰í•œë‹¤. )
+ * 1. SELECT Clause¿¡¸¸ Àû¿ëÇÑ´Ù. - DML( INSERT/UPDATE/DELETE )Á¦¿Ü. ( Subquery´Â ¼öÇàÇÑ´Ù. )
  *
- * 2. Set Operator Typeì´ NONE ì´ê±°ë‚˜ UNION_ALL( BAG OPERATION ) ì¼ ë•Œë§Œ ìˆ˜í–‰í•œë‹¤.
- *    ( Set ì—°ì‚°ì€ ê·¸ ìžì²´ë¡œ Targetì´ ëª¨ë‘ ìœ ì˜ë¯¸í•˜ë‹¤. )
+ * 2. Set Operator TypeÀÌ NONE ÀÌ°Å³ª UNION_ALL( BAG OPERATION ) ÀÏ ¶§¸¸ ¼öÇàÇÑ´Ù.
+ *    ( Set ¿¬»êÀº ±× ÀÚÃ¼·Î TargetÀÌ ¸ðµÎ À¯ÀÇ¹ÌÇÏ´Ù. )
  *
- * 3. DISTINCT ê°€ ìžˆëŠ”ê²½ìš° ì œì™¸í•˜ì§€ ì•ŠëŠ”ë‹¤. ( ëª¨ë“  Targetì´ ìœ ì˜ë¯¸í•˜ë‹¤. )
+ * 3. DISTINCT °¡ ÀÖ´Â°æ¿ì Á¦¿ÜÇÏÁö ¾Ê´Â´Ù. ( ¸ðµç TargetÀÌ À¯ÀÇ¹ÌÇÏ´Ù. )
  *
  **********************************************************************/
 
 #include <qmoCheckViewColumnRef.h>
 #include <qmsParseTree.h>
 #include <qcuProperty.h>
+#include <qmv.h>
 
 IDE_RC
 qmoCheckViewColumnRef::checkViewColumnRef( qcStatement      * aStatement,
@@ -65,20 +66,20 @@ qmoCheckViewColumnRef::checkViewColumnRef( qcStatement      * aStatement,
 /***********************************************************************
  *
  * Description :
- *     SELECT Statementì˜ Transformì„ ë°œìƒ ì‹œí‚¬ ìˆ˜ ìžˆëŠ”
- *     ëª¨ë“  Validationì´ ëë‚˜ê³  ìˆ˜í–‰ë˜ì–´, ìµœìƒìœ„ Query Block ë¶€í„°
- *     ìµœí•˜ìœ„ Query Block ê¹Œì§€ ìˆœíšŒí•˜ë©°, ì‹¤ì œë¡œ ì‚¬ìš©ë˜ì§€ ì•ŠëŠ”
- *     View Target Columnì„ ì°¾ì•„ë‚´ flag ì²˜ë¦¬í•œë‹¤.
+ *     SELECT StatementÀÇ TransformÀ» ¹ß»ý ½ÃÅ³ ¼ö ÀÖ´Â
+ *     ¸ðµç ValidationÀÌ ³¡³ª°í ¼öÇàµÇ¾î, ÃÖ»óÀ§ Query Block ºÎÅÍ
+ *     ÃÖÇÏÀ§ Query Block ±îÁö ¼øÈ¸ÇÏ¸ç, ½ÇÁ¦·Î »ç¿ëµÇÁö ¾Ê´Â
+ *     View Target ColumnÀ» Ã£¾Æ³» flag Ã³¸®ÇÑ´Ù.
  *
  * Implementation :
- *     1. SELECT Statement ì˜ Parse Treeë¥¼ ëŒ€ìƒìœ¼ë¡œ
- *        Query Setì— ëŒ€í•˜ì—¬ ë¶ˆí•„ìš”í•œ( ìƒìœ„Query Blockì—ì„œ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” )
- *        View Target Columnì„ ì°¾ëŠ” í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
+ *     1. SELECT Statement ÀÇ Parse Tree¸¦ ´ë»óÀ¸·Î
+ *        Query Set¿¡ ´ëÇÏ¿© ºÒÇÊ¿äÇÑ( »óÀ§Query Block¿¡¼­ »ç¿ëÇÏÁö ¾Ê´Â )
+ *        View Target ColumnÀ» Ã£´Â ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
  *
  * Arguments :
- *     aStatement       ( ì´ˆê¸° Statement )
- *     aParentColumnRef ( ìƒìœ„ Query Blockì˜ View Column ì°¸ì¡° ë¦¬ìŠ¤íŠ¸ )
- *     aAllColumnUsed   ( ëª¨ë“  Target Columnì´ ìœ íš¨í•´ì•¼ í•˜ëŠ”ì§€ ì—¬ë¶€ )
+ *     aStatement       ( ÃÊ±â Statement )
+ *     aParentColumnRef ( »óÀ§ Query BlockÀÇ View Column ÂüÁ¶ ¸®½ºÆ® )
+ *     aAllColumnUsed   ( ¸ðµç Target ColumnÀÌ À¯È¿ÇØ¾ß ÇÏ´ÂÁö ¿©ºÎ )
  *
  ***********************************************************************/
     qmsParseTree   * sParseTree;
@@ -88,16 +89,16 @@ qmoCheckViewColumnRef::checkViewColumnRef( qcStatement      * aStatement,
 
     IDE_DASSERT( aStatement != NULL );
 
-    // PLAN PROPERTY : __OPTIMIZER_VIEW_TARGET_ENABLE = 1 ì¼ë•Œë§Œ ìˆ˜í–‰í•œë‹¤.
+    // PLAN PROPERTY : __OPTIMIZER_VIEW_TARGET_ENABLE = 1 ÀÏ¶§¸¸ ¼öÇàÇÑ´Ù.
     if ( QCU_OPTIMIZER_VIEW_TARGET_ENABLE == 1 )
     {
         sParseTree = ( qmsParseTree * )aStatement->myPlan->parseTree;
 
         // BUG-43669
-        // View Mergingì´ ìˆ˜í–‰ ëœ í›„ì˜ view targetì€ ëª¨ë‘ ì‚¬ìš©í•˜ëŠ” ê²ƒìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤.
-        // ê¸°ì¡´ ë¡œì§ì—ì„œëŠ” tableRef->isNewAliasNameìœ¼ë¡œ viewMerging ì—¬ë¶€ë¥¼ í™•ì¸ í–ˆëŠ”ë°,
-        // Fromì˜ typeì´ (OUTER)JOINì¼ ê²½ìš° tableRefê°€ ì—†ì–´ì„œ viewMergingì´ ê±¸ëŸ¬ì§€ì§€ ì•Šì•˜ë‹¤.
-        // ì´ë¥¼ ParseTreeì˜ isTransformedë¥¼ ë³´ê³  íŒë‹¨í•˜ëŠ” ê²ƒ ìœ¼ë¡œ ìˆ˜ì •í•œë‹¤.
+        // View MergingÀÌ ¼öÇà µÈ ÈÄÀÇ view targetÀº ¸ðµÎ »ç¿ëÇÏ´Â °ÍÀ¸·Î Ã³¸®ÇÑ´Ù.
+        // ±âÁ¸ ·ÎÁ÷¿¡¼­´Â tableRef->isNewAliasNameÀ¸·Î viewMerging ¿©ºÎ¸¦ È®ÀÎ Çß´Âµ¥,
+        // FromÀÇ typeÀÌ (OUTER)JOINÀÏ °æ¿ì tableRef°¡ ¾ø¾î¼­ viewMergingÀÌ °É·¯ÁöÁö ¾Ê¾Ò´Ù.
+        // ÀÌ¸¦ ParseTreeÀÇ isTransformed¸¦ º¸°í ÆÇ´ÜÇÏ´Â °Í À¸·Î ¼öÁ¤ÇÑ´Ù.
         if ( sParseTree->isTransformed == ID_TRUE )
         {
             sAllColumnUsed = ID_TRUE;
@@ -108,10 +109,10 @@ qmoCheckViewColumnRef::checkViewColumnRef( qcStatement      * aStatement,
         }
 
         /**********************************************************************
-         * ë§ˆì§€ë§‰ ì¸ìž( aAllTargetUsed )ëŠ”
-         * Top Query Block ì´ê±°ë‚˜, ìƒìœ„ì— Set ì—°ì‚°ì´ ì¡´ìž¬í•˜ì—¬
-         * ëª¨ë“  Targetì´ ì‚¬ìš©ë˜ëŠ” ê²½ìš° TRUE ì´ê³ ,
-         * ìƒìœ„ì— Setì—°ì‚°ì´ ì—†ëŠ” View Query Block ì¼ ê²½ìš° FALSE ì´ë‹¤.
+         * ¸¶Áö¸· ÀÎÀÚ( aAllTargetUsed )´Â
+         * Top Query Block ÀÌ°Å³ª, »óÀ§¿¡ Set ¿¬»êÀÌ Á¸ÀçÇÏ¿©
+         * ¸ðµç TargetÀÌ »ç¿ëµÇ´Â °æ¿ì TRUE ÀÌ°í,
+         * »óÀ§¿¡ Set¿¬»êÀÌ ¾ø´Â View Query Block ÀÏ °æ¿ì FALSE ÀÌ´Ù.
          **********************************************************************/
         IDE_TEST( checkQuerySet( sParseTree->querySet,
                                  aParentColumnRef,
@@ -139,20 +140,20 @@ qmoCheckViewColumnRef::checkQuerySet( qmsQuerySet      * aQuerySet,
 /***********************************************************************
  *
  * Description :
- *     Query Setì˜ Targetì— ëŒ€í•´, ìƒìœ„ Query Blockì˜ ì°¸ì¡°ì •ë³´( aParentColumnRef )ë¥¼
- *     ê¸°ì´ˆë¡œ, ì œê±°ë˜ì–´ë„ ê²°ê³¼ì— ì˜í–¥ì„ ì£¼ì§€ì•ŠëŠ” Columnì— ëŒ€í•´ flag ì²˜ë¦¬í•œë‹¤.
+ *     Query SetÀÇ Target¿¡ ´ëÇØ, »óÀ§ Query BlockÀÇ ÂüÁ¶Á¤º¸( aParentColumnRef )¸¦
+ *     ±âÃÊ·Î, Á¦°ÅµÇ¾îµµ °á°ú¿¡ ¿µÇâÀ» ÁÖÁö¾Ê´Â Column¿¡ ´ëÇØ flag Ã³¸®ÇÑ´Ù.
  *
  * Implementation :
- *     1. ëª¨ë“  Targetì´ ìœ íš¨í•œì§€ í™•ì¸
- *     2. í•„ìš”ì—†ëŠ” View Targetì„ ì°¾ì•„ë‚´ì–´ flagì²˜ë¦¬
- *     3. í•˜ìœ„ Viewì— ëŒ€í•œ ì²˜ë¦¬ë¥¼ ìœ„í•œ í•¨ìˆ˜ í˜¸ì¶œ
- *     4. SETì— ëŒ€í•´ì„œ LEFT, RIGHT ìž¬ê·€í˜¸ì¶œ
+ *     1. ¸ðµç TargetÀÌ À¯È¿ÇÑÁö È®ÀÎ
+ *     2. ÇÊ¿ä¾ø´Â View TargetÀ» Ã£¾Æ³»¾î flagÃ³¸®
+ *     3. ÇÏÀ§ View¿¡ ´ëÇÑ Ã³¸®¸¦ À§ÇÑ ÇÔ¼ö È£Ãâ
+ *     4. SET¿¡ ´ëÇØ¼­ LEFT, RIGHT Àç±ÍÈ£Ãâ
  *
  * Arguments :
  *     aQuerySet
- *     aParentColumnRef ( ìƒìœ„ Query Blockì˜ View Column ì°¸ì¡° ë¦¬ìŠ¤íŠ¸ )
+ *     aParentColumnRef ( »óÀ§ Query BlockÀÇ View Column ÂüÁ¶ ¸®½ºÆ® )
  *     aOrderBy
- *     aAllColumnUsed   ( ëª¨ë“  Target Columnì´ ìœ íš¨í•´ì•¼ í•˜ëŠ”ì§€ ì—¬ë¶€ )
+ *     aAllColumnUsed   ( ¸ðµç Target ColumnÀÌ À¯È¿ÇØ¾ß ÇÏ´ÂÁö ¿©ºÎ )
  *
  ***********************************************************************/
 {
@@ -163,7 +164,7 @@ qmoCheckViewColumnRef::checkQuerySet( qmsQuerySet      * aQuerySet,
     IDU_FIT_POINT_FATAL( "qmoCheckViewColumnRef::checkQuerySet::__FT__" );
 
     /********************************************
-     * 1. ëª¨ë“  Columnì„ ì‚¬ìš©í•´ì•¼ í•˜ëŠ”ì§€ í™•ì¸
+     * 1. ¸ðµç ColumnÀ» »ç¿ëÇØ¾ß ÇÏ´ÂÁö È®ÀÎ
      ********************************************/
     switch ( aQuerySet->setOp )
     {
@@ -173,11 +174,11 @@ qmoCheckViewColumnRef::checkQuerySet( qmsQuerySet      * aQuerySet,
                 /**********************************************************************************
                  *
                  * BUG-40893
-                 * TARGETì— DISTINCTê°€ ìžˆì–´ì„œ ëª¨ë“  Columnì´ í•„ìš” í•  ê²½ìš°
+                 * TARGET¿¡ DISTINCT°¡ ÀÖ¾î¼­ ¸ðµç ColumnÀÌ ÇÊ¿ä ÇÒ °æ¿ì
                  *
                  * ex ) SELECT i1
                  *        FROM (
-                 *               SELECT DISTINCT i1, i2<<< DISTINCTIONì„ ìœ„í•´ ëª¨ë“  Columnì´ í•„ìš”í•˜ë‹¤.
+                 *               SELECT DISTINCT i1, i2<<< DISTINCTIONÀ» À§ÇØ ¸ðµç ColumnÀÌ ÇÊ¿äÇÏ´Ù.
                  *                 FROM ( SELECT i1, i2, i3
                  *                        FROM T1
                  *                        LIMIT 10 ) );
@@ -188,6 +189,19 @@ qmoCheckViewColumnRef::checkQuerySet( qmsQuerySet      * aQuerySet,
             else
             {
                 sAllColumnUsed = aAllColumnUsed;
+
+                // BUG-48090 ÇöÀç QuerySet ÀýÀ» Å½»öÇÏ¿© With View ÇÃ·¡±×°¡ ¼³Á¤µÇ¾î ÀÖÀ¸¸é, 
+                // ¸ðµç ÄÃ·³ÀÌ À¯È¿ÇÏµµ·Ï ¼³Á¤ÇÑ´Ù.
+                if ( sAllColumnUsed == ID_FALSE )
+                {
+                    IDE_TEST( checkWithViewFlagFromQuerySet( aQuerySet,
+                                                             &sAllColumnUsed /* sIsWithView */ )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
             }
             break;
 
@@ -198,13 +212,13 @@ qmoCheckViewColumnRef::checkQuerySet( qmsQuerySet      * aQuerySet,
         default :
             /**********************************************************************************
              *
-             * Set ì—°ì‚°ìœ¼ë¡œ ëª¨ë“  Columnì´ í•„ìš” í•  ê²½ìš°
+             * Set ¿¬»êÀ¸·Î ¸ðµç ColumnÀÌ ÇÊ¿ä ÇÒ °æ¿ì
              *
              * ex ) SELECT i1
              *        FROM (
              *               SELECT i1, i2, i3
-             *                 FROM T1  ^   ^ ìƒìœ„ Query blockì—ì„œ ì‚¬ìš©ë˜ì§€ ì•Šì§€ë§Œ,
-             *               INTERSECT        INTERSECTì˜ ê²°ê³¼ì— ì˜í–¥ì„ ì£¼ê¸° ë•Œë¬¸ì— í•„ìš”í•˜ë‹¤.
+             *                 FROM T1  ^   ^ »óÀ§ Query block¿¡¼­ »ç¿ëµÇÁö ¾ÊÁö¸¸,
+             *               INTERSECT        INTERSECTÀÇ °á°ú¿¡ ¿µÇâÀ» ÁÖ±â ¶§¹®¿¡ ÇÊ¿äÇÏ´Ù.
              *               SELECT i1, i2, i3
              *                 FROM T1  ^   ^
              *              );
@@ -215,12 +229,12 @@ qmoCheckViewColumnRef::checkQuerySet( qmsQuerySet      * aQuerySet,
     }
 
     /**************************************************
-     * 2. í•„ìš”ì—†ëŠ” View Targetì„ ì°¾ì•„ë‚´ì–´ flag ì²˜ë¦¬
+     * 2. ÇÊ¿ä¾ø´Â View TargetÀ» Ã£¾Æ³»¾î flag Ã³¸®
      **************************************************/
-    // ëª¨ë“  Columnì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°ê°€ ì•„ë‹ë•Œ
+    // ¸ðµç ColumnÀ» »ç¿ëÇÏ´Â °æ¿ì°¡ ¾Æ´Ò¶§
     if ( sAllColumnUsed == ID_FALSE )
     {
-        // ìƒìœ„ Query Block ë˜ëŠ” Order Byì—ì„œ Targetì´ í•˜ë‚˜ë¼ë„ ì°¸ì¡°ë˜ëŠ” ê²½ìš°
+        // »óÀ§ Query Block ¶Ç´Â Order By¿¡¼­ TargetÀÌ ÇÏ³ª¶óµµ ÂüÁ¶µÇ´Â °æ¿ì
         if ( ( aParentColumnRef != NULL ) || ( aOrderBy != NULL ) )
         {
             IDE_TEST( checkUselessViewTarget( aQuerySet->target,
@@ -230,7 +244,7 @@ qmoCheckViewColumnRef::checkQuerySet( qmsQuerySet      * aQuerySet,
         else
         {
             /**********************************************************
-             * ìƒìœ„ì—ì„œ Viewì˜ Targetì„ í•˜ë‚˜ë„ ì°¸ì¡°í•˜ì§€ ì•Šì„ ê²½ìš°
+             * »óÀ§¿¡¼­ ViewÀÇ TargetÀ» ÇÏ³ªµµ ÂüÁ¶ÇÏÁö ¾ÊÀ» °æ¿ì
              **********************************************************/
             for ( sTarget  = aQuerySet->target;
                   sTarget != NULL;
@@ -251,7 +265,7 @@ qmoCheckViewColumnRef::checkQuerySet( qmsQuerySet      * aQuerySet,
     else
     {
         /**********************************************************
-         * View Targetì´ ëª¨ë‘ ìœ íš¨í•œ ê²½ìš°
+         * View TargetÀÌ ¸ðµÎ À¯È¿ÇÑ °æ¿ì
          **********************************************************/
         for ( sTarget  = aQuerySet->target;
               sTarget != NULL;
@@ -271,7 +285,7 @@ qmoCheckViewColumnRef::checkQuerySet( qmsQuerySet      * aQuerySet,
     }
 
     /**************************************************
-     * 3. Fromì— ëŒ€í•œ ì²˜ë¦¬
+     * 3. From¿¡ ´ëÇÑ Ã³¸®
      **************************************************/
     if ( aQuerySet->setOp == QMS_NONE )
     {
@@ -317,21 +331,21 @@ qmoCheckViewColumnRef::checkFromTree( qmsFrom          * aFrom,
 /***********************************************************************
  *
  * Description :
- *     ìƒìœ„ì˜ View Column ì°¸ì¡°ì •ë³´( aParentColumnRef )ì™€ ë¹„êµí•˜ì—¬
- *     ìžì‹ ì˜ View Column ì°¸ì¡°ì •ë³´ì—ì„œ ë¶ˆí•„ìš”í•œ Target Columnì„ í‘œì‹œí•˜ê³ ,
- *     í•˜ìœ„ Viewì— ëŒ€í•´ì„œ ì´ˆê¸°í•¨ìˆ˜ì¸ checkViewColumnRef() ë¥¼ ìž¬ê·€ìˆ˜í–‰í•œë‹¤.
+ *     »óÀ§ÀÇ View Column ÂüÁ¶Á¤º¸( aParentColumnRef )¿Í ºñ±³ÇÏ¿©
+ *     ÀÚ½ÅÀÇ View Column ÂüÁ¶Á¤º¸¿¡¼­ ºÒÇÊ¿äÇÑ Target ColumnÀ» Ç¥½ÃÇÏ°í,
+ *     ÇÏÀ§ View¿¡ ´ëÇØ¼­ ÃÊ±âÇÔ¼öÀÎ checkViewColumnRef() ¸¦ Àç±Í¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *     1. ìƒìœ„ ì°¸ì¡°ì •ë³´ì— ë“¤ì–´ìžˆì§€ ì•Šì€, ë‚˜ì˜ ì°¸ì¡°ì •ë³´ì˜ Target Columnì— ì‚¬ìš©ì•ˆí•¨ í‘œì‹œ
- *     2. í•˜ìœ„ Viewì— ëŒ€í•´ì„œ ì´ˆê¸°ìˆ˜í–‰í•¨ìˆ˜ qmoCheckViewColumnRef() í˜¸ì¶œ
- *     3. SameViewì— ëŒ€í•´ì„œ ì´ˆê¸°ìˆ˜í–‰í•¨ìˆ˜ qmoCheckViewColumnRef() í˜¸ì¶œ
- *     4. JOIN TreeìˆœíšŒ
+ *     1. »óÀ§ ÂüÁ¶Á¤º¸¿¡ µé¾îÀÖÁö ¾ÊÀº, ³ªÀÇ ÂüÁ¶Á¤º¸ÀÇ Target Column¿¡ »ç¿ë¾ÈÇÔ Ç¥½Ã
+ *     2. ÇÏÀ§ View¿¡ ´ëÇØ¼­ ÃÊ±â¼öÇàÇÔ¼ö qmoCheckViewColumnRef() È£Ãâ
+ *     3. SameView¿¡ ´ëÇØ¼­ ÃÊ±â¼öÇàÇÔ¼ö qmoCheckViewColumnRef() È£Ãâ
+ *     4. JOIN Tree¼øÈ¸
  *
  * Arguments :
  *     aFrom
- *     aParentColumnRef ( ìƒìœ„ Query Blockì˜ View Column ì°¸ì¡° ë¦¬ìŠ¤íŠ¸ )
+ *     aParentColumnRef ( »óÀ§ Query BlockÀÇ View Column ÂüÁ¶ ¸®½ºÆ® )
  *     aOrderBy
- *     aAllColumnUsed   ( ëª¨ë“  Target Columnì´ ìœ íš¨í•´ì•¼ í•˜ëŠ”ì§€ ì—¬ë¶€ )
+ *     aAllColumnUsed   ( ¸ðµç Target ColumnÀÌ À¯È¿ÇØ¾ß ÇÏ´ÂÁö ¿©ºÎ )
  *
  ***********************************************************************/
     qmsTableRef      * sTableRef;
@@ -342,11 +356,11 @@ qmoCheckViewColumnRef::checkFromTree( qmsFrom          * aFrom,
     {
         sTableRef = aFrom->tableRef;
 
-        // í•˜ìœ„ì— Viewê°€ ì—†ëŠ” ê²½ìš° ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // ÇÏÀ§¿¡ View°¡ ¾ø´Â °æ¿ì ¼öÇàÇÏÁö ¾Ê´Â´Ù.
         if ( sTableRef->view != NULL )
         {
             /*
-             * Top Query Block, Merged View ë˜ëŠ” Set Operationìœ¼ë¡œ ì¸í•´ ëª¨ë“  Columnì´ ìœ íš¨í•˜ë©´ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+             * Top Query Block, Merged View ¶Ç´Â Set OperationÀ¸·Î ÀÎÇØ ¸ðµç ColumnÀÌ À¯È¿ÇÏ¸é ¼öÇàÇÏÁö ¾Ê´Â´Ù.
              */
             if ( aAllColumnUsed == ID_FALSE )
             {
@@ -361,18 +375,41 @@ qmoCheckViewColumnRef::checkFromTree( qmsFrom          * aFrom,
                 // Nothing to do.
             }
 
-            IDE_TEST( checkViewColumnRef( sTableRef->view,
-                                          sTableRef->viewColumnRefList,
-                                          ID_FALSE )
-                      != IDE_SUCCESS );
-
-            // Same View Reference ê°€ ìžˆì„ ê²½ìš° ì²˜ë¦¬
-            if ( sTableRef->sameViewRef != NULL )
+            // BUG-48090 sTableRef¿¡ With View ÇÃ·¡±×°¡ ¼³Á¤µÇ¾î ÀÖÀ¸¸é, 
+            // sTableRefÀÇ ÇÏÀ§ View¸¦ ÃÖÀûÈ­ÇÒ ¶§, ¸ðµç ÄÃ·³ÀÌ À¯È¿ÇÏµµ·Ï ¼³Á¤ÇÑ´Ù.
+            if ( ( sTableRef->flag & QMS_TABLE_REF_WITH_VIEW_MASK ) 
+                 == QMS_TABLE_REF_WITH_VIEW_TRUE )
             {
-                IDE_TEST( checkViewColumnRef( sTableRef->sameViewRef->view,
+                IDE_TEST( checkViewColumnRef( sTableRef->view,
+                                              NULL,
+                                              ID_TRUE )
+                          != IDE_SUCCESS );                
+            }
+            else
+            {
+                IDE_TEST( checkViewColumnRef( sTableRef->view,
                                               sTableRef->viewColumnRefList,
                                               ID_FALSE )
                           != IDE_SUCCESS );
+            }
+
+            // Same View Reference °¡ ÀÖÀ» °æ¿ì Ã³¸®
+            if ( sTableRef->sameViewRef != NULL )
+            {
+                /* BUG-47787 recursive with ±¸¹®ÀÌ ÁßÃ¸µÇ°í CASE WHENÀÇ
+                 * Subquery·Î »ç¿ëµÉ °æ¿ì FATAL
+                 */
+                if ( sTableRef->sameViewRef->view != NULL )
+                {
+                    IDE_TEST( checkViewColumnRef( sTableRef->sameViewRef->view,
+                                                  sTableRef->viewColumnRefList,
+                                                  ID_FALSE )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    /* Nothingt to do */
+                }
             }
             else
             {
@@ -415,7 +452,7 @@ qmoCheckViewColumnRef::checkUselessViewTarget( qmsTarget        * aTarget,
 /***********************************************************************
  *
  * Description :
- *     í•„ìš”ì—†ëŠ” View Targetì„ ì°¾ì•„ë‚´ì–´ flagì²˜ë¦¬í•œë‹¤.
+ *     ÇÊ¿ä¾ø´Â View TargetÀ» Ã£¾Æ³»¾î flagÃ³¸®ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -443,7 +480,7 @@ qmoCheckViewColumnRef::checkUselessViewTarget( qmsTarget        * aTarget,
             if ( ( sParentColumnRef->viewTargetOrder == sTargetOrder ) &&
                  ( sParentColumnRef->isUsed == ID_TRUE ) )
             {
-                // ìƒìœ„ì—ì„œ ì‚¬ìš© ë¨
+                // »óÀ§¿¡¼­ »ç¿ë µÊ
                 sIsFound = ID_TRUE;
 
                 // UNKNOWN->FALSE, TRUE->FALSE
@@ -471,8 +508,8 @@ qmoCheckViewColumnRef::checkUselessViewTarget( qmsTarget        * aTarget,
                   sOrderBy != NULL;
                   sOrderBy  = sOrderBy->next )
             {
-                // ëª…ì‹œì  Indicatorë¡œ ë“±ë¡ëœ SortNodeëŠ” targetPositionì´ ì„¸íŒ…ëœë‹¤.
-                // OrderByì—ì„œ ì‚¬ìš© ëœ Targetì€ ì œê±°ëŒ€ìƒì—ì„œ ì œì™¸í•œë‹¤.
+                // ¸í½ÃÀû Indicator·Î µî·ÏµÈ SortNode´Â targetPositionÀÌ ¼¼ÆÃµÈ´Ù.
+                // OrderBy¿¡¼­ »ç¿ë µÈ TargetÀº Á¦°Å´ë»ó¿¡¼­ Á¦¿ÜÇÑ´Ù.
                 if ( sOrderBy->targetPosition == ( sTargetOrder + 1 ) )
                 {
                     /********************************
@@ -511,7 +548,7 @@ qmoCheckViewColumnRef::checkUselessViewTarget( qmsTarget        * aTarget,
             // Nothing to do.
         }
 
-        // ìƒìœ„ Query Blockì—ì„œ ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” Column
+        // »óÀ§ Query Block¿¡¼­ »ç¿ëµÇÁö ¾Ê´Â Column
         if ( ( sIsFound == ID_FALSE ) &&
              ( ( sTarget->flag & QMS_TARGET_IS_USELESS_MASK ) == QMS_TARGET_IS_USELESS_UNKNOWN ) )
         {
@@ -536,7 +573,7 @@ qmoCheckViewColumnRef::checkUselessViewColumnRef( qmsTableRef      * aTableRef,
 /***********************************************************************
  *
  * Description :
- *     í•„ìš”ì—†ëŠ” View Column Refë¥¼ ì°¾ì•„ë‚´ì–´ flagì²˜ë¦¬í•œë‹¤.
+ *     ÇÊ¿ä¾ø´Â View Column Ref¸¦ Ã£¾Æ³»¾î flagÃ³¸®ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -555,7 +592,7 @@ qmoCheckViewColumnRef::checkUselessViewColumnRef( qmsTableRef      * aTableRef,
           sColumnRef != NULL;
           sColumnRef  = sColumnRef->next )
     {
-        // Target ì—ì„œ ì°¸ì¡°ëœ Columnë§Œì„ ëŒ€ìƒìœ¼ë¡œ í•œë‹¤.
+        // Target ¿¡¼­ ÂüÁ¶µÈ Column¸¸À» ´ë»óÀ¸·Î ÇÑ´Ù.
         if ( sColumnRef->usedInTarget == ID_TRUE )
         {
             sIsFound = ID_FALSE;
@@ -567,7 +604,7 @@ qmoCheckViewColumnRef::checkUselessViewColumnRef( qmsTableRef      * aTableRef,
                 if ( ( sColumnRef->targetOrder  == sParentColumnRef->viewTargetOrder ) &&
                      ( sParentColumnRef->isUsed == ID_TRUE ) )
                 {
-                    // ìƒìœ„ Query Blockì—ì„œ ì‚¬ìš© ëœë‹¤.
+                    // »óÀ§ Query Block¿¡¼­ »ç¿ë µÈ´Ù.
                     sIsFound = ID_TRUE;
                     break;
                 }
@@ -585,7 +622,7 @@ qmoCheckViewColumnRef::checkUselessViewColumnRef( qmsTableRef      * aTableRef,
                 {
                     if ( ( sColumnRef->targetOrder + 1 ) == sOrderBy->targetPosition )
                     {
-                        // Order Byì—ì„œ ì‚¬ìš© ëœë‹¤.
+                        // Order By¿¡¼­ »ç¿ë µÈ´Ù.
                         sIsFound = ID_TRUE;
                         break;
                     }
@@ -604,9 +641,9 @@ qmoCheckViewColumnRef::checkUselessViewColumnRef( qmsTableRef      * aTableRef,
             {
                 /****************************************************************************
                  *
-                 * ìƒìœ„ Query Blockì—ì„œ ì‚¬ìš©ë˜ì§€ ì•ŠëŠ”,
-                 * Targetì—ì„œ ë“±ë¡ëœ Columnì— ëŒ€í•´ì„œ
-                 * ì‚¬ìš©í•˜ì§€ ì•ŠìŒìœ¼ë¡œ í‘œì‹œí•œë‹¤.
+                 * »óÀ§ Query Block¿¡¼­ »ç¿ëµÇÁö ¾Ê´Â,
+                 * Target¿¡¼­ µî·ÏµÈ Column¿¡ ´ëÇØ¼­
+                 * »ç¿ëÇÏÁö ¾ÊÀ½À¸·Î Ç¥½ÃÇÑ´Ù.
                  *
                  ****************************************************************************/
                 sColumnRef->isUsed = ID_FALSE;
@@ -626,3 +663,95 @@ qmoCheckViewColumnRef::checkUselessViewColumnRef( qmsTableRef      * aTableRef,
     return IDE_SUCCESS;
 }
 
+IDE_RC qmoCheckViewColumnRef::checkWithViewFlagFromQuerySet( qmsQuerySet  * aQuerySet,
+                                                             idBool       * aIsWithView )
+{
+    qmsFrom  * sFrom;
+ 
+    if ( *aIsWithView == ID_FALSE )
+    {
+        if ( aQuerySet->setOp == QMS_NONE )
+        {
+            sFrom = aQuerySet->SFWGH->from;
+
+            for ( ; sFrom != NULL; sFrom = sFrom->next )
+            {
+                IDE_TEST( checkWithViewFlagFromFromTree( sFrom, aIsWithView )
+                          != IDE_SUCCESS );
+            }
+        }
+        else
+        {
+            // Recursive Call
+            IDE_TEST( checkWithViewFlagFromQuerySet( aQuerySet->left,
+                                                     aIsWithView )
+                      != IDE_SUCCESS );
+                      
+            IDE_TEST( checkWithViewFlagFromQuerySet( aQuerySet->right,
+                                                     aIsWithView )
+                      != IDE_SUCCESS );
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmoCheckViewColumnRef::checkWithViewFlagFromFromTree( qmsFrom      * aFrom,
+                                                             idBool       * aIsWithView )
+{
+    qmsTableRef  * sTableRef;
+ 
+    if ( *aIsWithView == ID_FALSE )
+    {
+        if ( aFrom->joinType == QMS_NO_JOIN )
+        {
+            if ( aFrom->tableRef != NULL )
+            {
+                sTableRef = aFrom->tableRef;
+
+                if ( ( sTableRef->flag & QMS_TABLE_REF_WITH_VIEW_MASK ) 
+                     == QMS_TABLE_REF_WITH_VIEW_TRUE )
+                {
+                    *aIsWithView = ID_TRUE;
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        else
+        {
+            // Recursive Call For From Tree
+            IDE_TEST( checkWithViewFlagFromFromTree( aFrom->left,
+                                                     aIsWithView )
+                      != IDE_SUCCESS );
+                      
+            IDE_TEST( checkWithViewFlagFromFromTree( aFrom->right,
+                                                     aIsWithView )
+                      != IDE_SUCCESS );
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}

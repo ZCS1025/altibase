@@ -30,7 +30,7 @@ IDE_RC cmnLinkListenInitializeIPCDA(cmnLink *aLink)
     cmnLinkListenIPCDA *sLink = (cmnLinkListenIPCDA *)aLink;
 
     /*
-     * Handle ì´ˆê¸°í™”
+     * Handle ÃÊ±âÈ­
      */
     sLink->mHandle = PDL_INVALID_SOCKET;
 
@@ -51,7 +51,7 @@ IDE_RC cmnLinkListenCloseIPCDA(cmnLink *aLink)
     cmnLinkListenIPCDA *sLink = (cmnLinkListenIPCDA *)aLink;
 
     /*
-     * socketì´ ì—´ë ¤ìžˆìœ¼ë©´ ë‹«ìŒ
+     * socketÀÌ ¿­·ÁÀÖÀ¸¸é ´ÝÀ½
      */
     if (sLink->mHandle != PDL_INVALID_SOCKET)
     {
@@ -67,7 +67,7 @@ IDE_RC cmnLinkListenGetHandleIPCDA(cmnLink *aLink, void *aHandle)
     cmnLinkListenIPCDA *sLink = (cmnLinkListenIPCDA *)aLink;
 
     /*
-     * socketì„ ëŒë ¤ì¤Œ
+     * socketÀ» µ¹·ÁÁÜ
      */
     *(PDL_SOCKET *)aHandle = sLink->mHandle;
 
@@ -80,7 +80,7 @@ IDE_RC cmnLinkListenGetDispatchInfoIPCDA(cmnLink * aLink, void * aDispatchInfo)
     cmnLinkListenIPCDA *sLink = (cmnLinkListenIPCDA *)aLink;
 
     /*
-     * DispatcherInfoë¥¼ ëŒë ¤ì¤Œ
+     * DispatcherInfo¸¦ µ¹·ÁÁÜ
      */
     *(UInt *)aDispatchInfo = sLink->mDispatchInfo;
 
@@ -92,7 +92,7 @@ IDE_RC cmnLinkListenSetDispatchInfoIPCDA(cmnLink * aLink, void * aDispatchInfo)
     cmnLinkListenIPCDA *sLink = (cmnLinkListenIPCDA *)aLink;
 
     /*
-     * DispatchInfoë¥¼ ì„¸íŒ…
+     * DispatchInfo¸¦ ¼¼ÆÃ
      */
     sLink->mDispatchInfo = *(UInt *)aDispatchInfo;
 
@@ -109,30 +109,30 @@ IDE_RC cmnLinkListenListenIPCDA(cmnLinkListen *aLink, cmnLinkListenArg *aListenA
     cmnLinkListenIPCDA *sLink = (cmnLinkListenIPCDA *)aLink;
 
     /* --------------------------------------------------
-     * UNIX ì†Œì¼“ ì´ˆê¸°í™”
+     * UNIX ¼ÒÄÏ ÃÊ±âÈ­
      * ------------------------------------------------*/
 
     /*
-     * socketì´ ì´ë¯¸ ì—´ë ¤ìžˆëŠ”ì§€ ê²€ì‚¬
+     * socketÀÌ ÀÌ¹Ì ¿­·ÁÀÖ´ÂÁö °Ë»ç
      */
     IDE_TEST_RAISE(sLink->mHandle != PDL_INVALID_SOCKET, SocketAlreadyOpened);
 
     /*
-     * IPC íŒŒì¼ ì´ë¦„ ê²€ì‚¬
+     * IPC ÆÄÀÏ ÀÌ¸§ °Ë»ç
      */
     sPathLen = idlOS::strlen(aListenArg->mIPCDA.mFilePath);
 
     IDE_TEST_RAISE(ID_SIZEOF(sAddr.sun_path) <= sPathLen, IpcPathTruncated);
 
     /*
-     * socket ìƒì„±
+     * socket »ý¼º
      */
     sLink->mHandle = idlOS::socket(AF_UNIX, SOCK_STREAM, 0);
 
     IDE_TEST_RAISE(sLink->mHandle == PDL_INVALID_SOCKET, SocketError);
 
     /*
-     * SO_REUSEADDR ì„¸íŒ…
+     * SO_REUSEADDR ¼¼ÆÃ
      */
     sOption = 1;
 
@@ -146,7 +146,7 @@ IDE_RC cmnLinkListenListenIPCDA(cmnLinkListen *aLink, cmnLinkListenArg *aListenA
     }
 
     /*
-     * IPC íŒŒì¼ ì´ë¦„ ìƒì„±
+     * IPC ÆÄÀÏ ÀÌ¸§ »ý¼º
      */
     idlOS::snprintf(sAddr.sun_path,
                     ID_SIZEOF(sAddr.sun_path),
@@ -154,7 +154,7 @@ IDE_RC cmnLinkListenListenIPCDA(cmnLinkListen *aLink, cmnLinkListenArg *aListenA
                     aListenArg->mIPCDA.mFilePath);
 
     /*
-     * IPC íŒŒì¼ ì‚­ì œ
+     * IPC ÆÄÀÏ »èÁ¦
      */
     idlOS::unlink(sAddr.sun_path);
 
@@ -175,7 +175,7 @@ IDE_RC cmnLinkListenListenIPCDA(cmnLinkListen *aLink, cmnLinkListenArg *aListenA
     IDE_TEST_RAISE(idlOS::listen(sLink->mHandle, sChannelCount) < 0, ListenError);
 
     /*
-     * Shared Memory ìƒì„±
+     * Shared Memory »ý¼º
      */
 
     IDE_TEST(cmbShmIPCDACreate(sChannelCount) != IDE_SUCCESS);
@@ -217,23 +217,23 @@ IDE_RC cmnLinkListenAcceptIPCDA(cmnLinkListen *aLink, cmnLinkPeer **aLinkPeer)
     cmnLinkDescTCP     sTmpDesc;
 
     /*
-     * ìƒˆë¡œìš´ Linkë¥¼ í• ë‹¹
+     * »õ·Î¿î Link¸¦ ÇÒ´ç
      */
     /* BUG-29957
-     * cmnLinkAlloc ì‹¤íŒ¨ì‹œ Connectë¥¼ ìš”ì²­í•œ Socketì„ ìž„ì‹œë¡œ accept í•´ì¤˜ì•¼ í•œë‹¤.
+     * cmnLinkAlloc ½ÇÆÐ½Ã Connect¸¦ ¿äÃ»ÇÑ SocketÀ» ÀÓ½Ã·Î accept ÇØÁà¾ß ÇÑ´Ù.
      */
     IDE_TEST_RAISE(cmnLinkAlloc((cmnLink **)&sLinkPeer,
                                 CMN_LINK_TYPE_PEER_SERVER,
                                 CMN_LINK_IMPL_IPCDA) != IDE_SUCCESS, LinkError);
 
     /*
-     * Desc íšë“
+     * Desc È¹µæ
      */
     IDE_TEST_RAISE(sLinkPeer->mPeerOp->mGetDesc(sLinkPeer, &sDesc) != IDE_SUCCESS, LinkError);
 
     /* TASK-3873 5.3.3 Release Static Analysis Code-sonar */
-    /* Code-Sonarê°€ Function  Pointerë¥¼ followí•˜ì§€ ëª»í•´ì„œ..
-       assertë¥¼ ë„£ì—ˆìŠµë‹ˆë‹¤ */
+    /* Code-Sonar°¡ Function  Pointer¸¦ followÇÏÁö ¸øÇØ¼­..
+       assert¸¦ ³Ö¾ú½À´Ï´Ù */
     IDE_ASSERT( sDesc != NULL);
 
     /*
@@ -248,7 +248,7 @@ IDE_RC cmnLinkListenAcceptIPCDA(cmnLinkListen *aLink, cmnLinkPeer **aLinkPeer)
     IDE_TEST_RAISE(sDesc->mHandle == PDL_INVALID_SOCKET, AcceptError);
 
     /*
-     * Linkë¥¼ ëŒë ¤ì¤Œ
+     * Link¸¦ µ¹·ÁÁÜ
      */
     *aLinkPeer = sLinkPeer;
 
@@ -313,14 +313,14 @@ IDE_RC cmnLinkListenMapIPCDA(cmnLink *aLink)
     cmnLinkListen *sLink = (cmnLinkListen *)aLink;
 
     /*
-     * Link ê²€ì‚¬
+     * Link °Ë»ç
      */
 
     IDE_ASSERT(aLink->mType == CMN_LINK_TYPE_LISTEN);
     IDE_ASSERT(aLink->mImpl == CMN_LINK_IMPL_IPCDA);
 
     /*
-     * í•¨ìˆ˜ í¬ì¸í„° ì„¸íŒ…
+     * ÇÔ¼ö Æ÷ÀÎÅÍ ¼¼ÆÃ
      */
 
     aLink->mOp       = &gCmnLinkListenOpIPCDA;

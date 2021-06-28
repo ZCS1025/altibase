@@ -29,7 +29,7 @@ private:
     static mmcTask   *mTask;
     static iduMutex   mMutex;
     // bug-24366: sendMsgService mutex invalid
-    // mutexê°€ destroy ë˜ì—ˆëŠ”ì§€ í™•ì¸í•  ìˆ˜ ìˆëŠ” flag ì¶”ê°€.
+    // mutex°¡ destroy µÇ¾ú´ÂÁö È®ÀÎÇÒ ¼ö ÀÖ´Â flag Ãß°¡.
     static idBool     mMutexEnable;
 
 public:

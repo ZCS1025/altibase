@@ -21,9 +21,10 @@ import Altibase.jdbc.driver.datatype.*;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
 import Altibase.jdbc.driver.sharding.core.ShardKeyDataType;
+import Altibase.jdbc.driver.util.CharsetUtils;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.sql.SQLException;
 
 public class HashGenerator
@@ -134,11 +135,15 @@ public class HashGenerator
                 String sStr = (aParameter.getString() == null) ? "" : aParameter.getString();
                 try
                 {
-                    sResult = doHashWithoutSpace(sStr.getBytes(aServerCharSet));
+                    // BUG-47228 서버캐릭터셋으로 직접 encoding하지 않고 Charset으로 변환한 다음 시도한다.
+                    Charset sCharset = CharsetUtils.getCharset(aServerCharSet);
+                    sResult = doHashWithoutSpace(sStr.getBytes(sCharset.name()));
                 }
-                catch (UnsupportedEncodingException aException)
+                catch (Exception aException)
                 {
-                    Error.throwSQLException(ErrorDef.INVALID_DATA_CONVERSION);
+                    /* BUG-47228 CharsetUtils.getCharset에서 RuntimeException이 올라올 수 있기때문에
+                       Exception으로 catch하여 SHARD_CHARSET_ENCODE_ERROR 예외를 던진다. */
+                    Error.throwSQLException(ErrorDef.SHARD_CHARSET_ENCODE_ERROR, sStr, aServerCharSet);
                 }
                 break;
         }

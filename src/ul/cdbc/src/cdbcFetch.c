@@ -27,11 +27,11 @@ CDBC_INTERNAL ALTIBASE_RC altibase_result_store (cdbcABRes *aABRes);
 
 
 /**
- * ê²°ê³¼ì…‹ì˜ í–‰ì˜ ê°œìˆ˜ë¥¼ ì–»ëŠ”ë‹¤.
- * altibase_store_result()ë¥¼ ì¼ì„ë•Œë§Œ ì˜¬ë°”ë¥¸ ê°’ì„ ë°˜í™˜í•œë‹¤.
+ * °á°ú¼ÂÀÇ ÇàÀÇ °³¼ö¸¦ ¾ò´Â´Ù.
+ * altibase_store_result()¸¦ ½èÀ»¶§¸¸ ¿Ã¹Ù¸¥ °ªÀ» ¹İÈ¯ÇÑ´Ù.
  *
- * @param[in] aABRes ê²°ê³¼ì…‹ í•¸ë“¤
- * @return ê²°ê³¼ì…‹ì˜ ì»¬ëŸ¼ ìˆ˜, ì‹¤íŒ¨í•˜ë©´ ALTIBASE_INVALID_ROWCOUNT
+ * @param[in] aABRes °á°ú¼Â ÇÚµé
+ * @return °á°ú¼ÂÀÇ ÄÃ·³ ¼ö, ½ÇÆĞÇÏ¸é ALTIBASE_INVALID_ROWCOUNT
  * @see altibase_store_result
  */
 CDBC_EXPORT
@@ -61,11 +61,11 @@ ALTIBASE_LONG altibase_num_rows (ALTIBASE_RES aABRes)
 }
 
 /**
- * ê²°ê³¼ì…‹ì˜ í–‰ì˜ ê°œìˆ˜ë¥¼ ì–»ëŠ”ë‹¤.
- * altibase_stmt_store_result()ë¥¼ ì¼ì„ë•Œë§Œ ì˜¬ë°”ë¥¸ ê°’ì„ ë°˜í™˜í•œë‹¤.
+ * °á°ú¼ÂÀÇ ÇàÀÇ °³¼ö¸¦ ¾ò´Â´Ù.
+ * altibase_stmt_store_result()¸¦ ½èÀ»¶§¸¸ ¿Ã¹Ù¸¥ °ªÀ» ¹İÈ¯ÇÑ´Ù.
  *
- * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
- * @return ê²°ê³¼ì…‹ì˜ ì»¬ëŸ¼ ìˆ˜, ì‹¤íŒ¨í•˜ë©´ ALTIBASE_INVALID_ROWCOUNT
+ * @param[in] aABStmt ¸í·É¹® ÇÚµé
+ * @return °á°ú¼ÂÀÇ ÄÃ·³ ¼ö, ½ÇÆĞÇÏ¸é ALTIBASE_INVALID_ROWCOUNT
  * @see altibase_stmt_store_result
  */
 CDBC_EXPORT
@@ -109,10 +109,10 @@ ALTIBASE_LONG altibase_stmt_num_rows (ALTIBASE_STMT aABStmt)
 }
 
 /**
- * í˜„ì¬ í–‰ì„ êµ¬ì„±í•˜ê³ ìˆëŠ” ê° ì»¬ëŸ¼ì˜ ë°ì´íƒ€ ê¸¸ì´ë¥¼ ë°°ì—´ë¡œ ì–»ëŠ”ë‹¤.
+ * ÇöÀç ÇàÀ» ±¸¼ºÇÏ°íÀÖ´Â °¢ ÄÃ·³ÀÇ µ¥ÀÌÅ¸ ±æÀÌ¸¦ ¹è¿­·Î ¾ò´Â´Ù.
  *
- * @param[in] aABRes ê²°ê³¼ì…‹ í•¸ë“¤
- * @return ê° ì»¬ëŸ¼ì˜ ë°ì´íƒ€ ê¸¸ì´ë¥¼ ë‹´ì€ ë°°ì—´, ì‹¤íŒ¨í•˜ë©´ NULL
+ * @param[in] aABRes °á°ú¼Â ÇÚµé
+ * @return °¢ ÄÃ·³ÀÇ µ¥ÀÌÅ¸ ±æÀÌ¸¦ ´ãÀº ¹è¿­, ½ÇÆĞÇÏ¸é NULL
  */
 CDBC_EXPORT
 ALTIBASE_LONG * altibase_fetch_lengths (ALTIBASE_RES aABRes)
@@ -150,14 +150,14 @@ ALTIBASE_LONG * altibase_fetch_lengths (ALTIBASE_RES aABRes)
 }
 
 /**
- * LOB ë°ì´íƒ€ë¥¼ ì–»ëŠ”ë‹¤.
+ * LOB µ¥ÀÌÅ¸¸¦ ¾ò´Â´Ù.
  *
- * ì–»ì€ ë°ì´íƒ€ëŠ” ê²°ê³¼ì…‹ í•¸ë“¤ì˜ ë²„í¼ ëª©ë¡ì—ì„œ ê´€ë¦¬ë˜ë¯€ë¡œ
- * ì„ì˜ë¡œ ë©”ëª¨ë¦¬ í•´ì œë¥¼ í•´ì„œëŠ” ì•ˆëœë‹¤.
+ * ¾òÀº µ¥ÀÌÅ¸´Â °á°ú¼Â ÇÚµéÀÇ ¹öÆÛ ¸ñ·Ï¿¡¼­ °ü¸®µÇ¹Ç·Î
+ * ÀÓÀÇ·Î ¸Ş¸ğ¸® ÇØÁ¦¸¦ ÇØ¼­´Â ¾ÈµÈ´Ù.
  *
- * @param[in] aABRes ê²°ê³¼ì…‹ í•¸ë“¤
- * @param[in] aFieldIdx í•„ë“œ ë²ˆí˜¸
- * @return ì–»ì€ ë°ì´íƒ€ì˜ í¬ì¸í„°. ì‹¤íŒ¨í•˜ë©´ NULL
+ * @param[in] aABRes °á°ú¼Â ÇÚµé
+ * @param[in] aFieldIdx ÇÊµå ¹øÈ£
+ * @return ¾òÀº µ¥ÀÌÅ¸ÀÇ Æ÷ÀÎÅÍ. ½ÇÆĞÇÏ¸é NULL
  */
 CDBC_INTERNAL
 cdbcBufferItm * altibase_get_lob (cdbcABRes *aABRes, acp_sint32_t aFieldIdx, acp_sint32_t aArrayIdx)
@@ -207,11 +207,11 @@ cdbcBufferItm * altibase_get_lob (cdbcABRes *aABRes, acp_sint32_t aFieldIdx, acp
     if ((sLobLength > 0)
      && (aABRes->mFieldInfos[aFieldIdx].type == ALTIBASE_TYPE_CLOB))
     {
-        /* ì¸ì½”ë”© ë³€í™˜ê³¼ NULL-term ê³ ë ¤.
-           NLS_USEê°€ UTF8ì´ë©´ í•œ ë¬¸ìê°€ ìµœëŒ€ 4ë°”ì´íŠ¸ê°€ ë  ìˆ˜ ìˆë‹¤. */
-        /* BUGBUG: ë²„í¼ í¬ê¸°ê°€ ì‹¤ì œ ë°ì´íƒ€ í¬ê¸°ì˜ ë°°ë¡œ ì§€ì •ë˜ë¯€ë¡œ
-           ìµœëŒ€ 4GB(CLOBì˜ ìµœëŒ€ í¬ê¸° 2G * 4)ê¹Œì§€ í• ë‹¹í•  ìˆ˜ ìˆë‹¤.
-           CLOBì¼ ë•Œ ë²„í¼ í¬ê¸° ì •í•˜ëŠ” ë°©ì‹ì„ ê°œì„ í•´ì•¼í•œë‹¤.*/
+        /* ÀÎÄÚµù º¯È¯°ú NULL-term °í·Á.
+           NLS_USE°¡ UTF8ÀÌ¸é ÇÑ ¹®ÀÚ°¡ ÃÖ´ë 4¹ÙÀÌÆ®°¡ µÉ ¼ö ÀÖ´Ù. */
+        /* BUGBUG: ¹öÆÛ Å©±â°¡ ½ÇÁ¦ µ¥ÀÌÅ¸ Å©±âÀÇ ¹è·Î ÁöÁ¤µÇ¹Ç·Î
+           ÃÖ´ë 4GB(CLOBÀÇ ÃÖ´ë Å©±â 2G * 4)±îÁö ÇÒ´çÇÒ ¼ö ÀÖ´Ù.
+           CLOBÀÏ ¶§ ¹öÆÛ Å©±â Á¤ÇÏ´Â ¹æ½ÄÀ» °³¼±ÇØ¾ßÇÑ´Ù.*/
         sBufSize = sLobLength * 4 + CDBC_NULLTERM_SIZE;
     }
     else
@@ -264,8 +264,8 @@ cdbcBufferItm * altibase_get_lob (cdbcABRes *aABRes, acp_sint32_t aFieldIdx, acp
     }
     CDBC_EXCEPTION_END;
 
-    /* ì—ëŸ¬ê°€ ë°œìƒí•´ë„ ìƒˆë¡œ ìƒì„±í•œ ë²„í¼ë¥¼ êµ³ì´ í•´ì œí•˜ì§€ ì•ŠëŠ”ë‹¤.
-       altibase_clean_buffer()ë¥¼ í˜¸ì¶œí•  ë•Œ í•´ì œë˜ë„ë¡ í•œë‹¤. */
+    /* ¿¡·¯°¡ ¹ß»ıÇØµµ »õ·Î »ı¼ºÇÑ ¹öÆÛ¸¦ ±»ÀÌ ÇØÁ¦ÇÏÁö ¾Ê´Â´Ù.
+       altibase_clean_buffer()¸¦ È£ÃâÇÒ ¶§ ÇØÁ¦µÇµµ·Ï ÇÑ´Ù. */
 
     CDBCLOG_OUT_VAL("%s", "{null}");
 
@@ -275,9 +275,9 @@ cdbcBufferItm * altibase_get_lob (cdbcABRes *aABRes, acp_sint32_t aFieldIdx, acp
 }
 
 /**
- * ê²°ê³¼ í•¸ë“¤ì´ ê°–ê³ ìˆëŠ” LOB Locatorë¥¼ ëª¨ë‘ í•´ì§€í•œë‹¤.
+ * °á°ú ÇÚµéÀÌ °®°íÀÖ´Â LOB Locator¸¦ ¸ğµÎ ÇØÁöÇÑ´Ù.
  *
- * @param[in] aABRes ê²°ê³¼ì…‹ í•¸ë“¤
+ * @param[in] aABRes °á°ú¼Â ÇÚµé
  */
 CDBC_INTERNAL
 void altibase_clean_locator (cdbcABRes *aABRes)
@@ -307,8 +307,8 @@ void altibase_clean_locator (cdbcABRes *aABRes)
                     CDBCLOG_CALL("SQLFreeLob");
                     sRC = SQLFreeLob(aABRes->mHstmt, sLobLocator);
                     CDBCLOG_BACK_VAL("SQLFreeLob", "%d", sRC);
-                    /* í•´ì œì— ì‹¤íŒ¨í•˜ë©´ stmt í•¸ë“¤ ë˜ëŠ” locatorê°€
-                       ìœ íš¨í•˜ì§€ ì•Šì€ ê²ƒì´ë¯€ë¡œ ë¬´ì‹œ */
+                    /* ÇØÁ¦¿¡ ½ÇÆĞÇÏ¸é stmt ÇÚµé ¶Ç´Â locator°¡
+                       À¯È¿ÇÏÁö ¾ÊÀº °ÍÀÌ¹Ç·Î ¹«½Ã */
                     ((ALTIBASE_LOBLOCATOR *)(sBind->buffer))[sArrIdx] = 0;
                 }
             }
@@ -321,10 +321,10 @@ void altibase_clean_locator (cdbcABRes *aABRes)
 }
 
 /**
- * ê²°ê³¼ì…‹ì—ì„œ í•œ í–‰ì„ ì–»ëŠ”ë‹¤.
+ * °á°ú¼Â¿¡¼­ ÇÑ ÇàÀ» ¾ò´Â´Ù.
  *
- * @param[in] aABRes ê²°ê³¼ì…‹ í•¸ë“¤
- * @return í•œ í–‰ì˜ ë°ì´íƒ€. ë” ê°€ì ¸ì˜¬ í–‰ì´ ì—†ê±°ë‚˜ ì—ëŸ¬ê°€ ë°œìƒí•˜ë©´ NULL
+ * @param[in] aABRes °á°ú¼Â ÇÚµé
+ * @return ÇÑ ÇàÀÇ µ¥ÀÌÅ¸. ´õ °¡Á®¿Ã ÇàÀÌ ¾ø°Å³ª ¿¡·¯°¡ ¹ß»ıÇÏ¸é NULL
  */
 CDBC_EXPORT
 ALTIBASE_ROW altibase_fetch_row (ALTIBASE_RES aABRes)
@@ -358,7 +358,7 @@ ALTIBASE_ROW altibase_fetch_row (ALTIBASE_RES aABRes)
         CDBC_DASSERT(sABRes->mFetchedRow != NULL);
         CDBC_DASSERT(sABRes->mLengths != NULL);
 
-        /* ì „ì— LOBì„ ìœ„í•´ í• ë‹¹í•œ ë²„í¼ê°€ ìˆìœ¼ë©´ í•´ì œ */
+        /* Àü¿¡ LOBÀ» À§ÇØ ÇÒ´çÇÑ ¹öÆÛ°¡ ÀÖÀ¸¸é ÇØÁ¦ */
         altibase_clean_buffer(&(sABRes->mDatBuffer));
         altibase_clean_locator(sABRes);
 
@@ -372,8 +372,8 @@ ALTIBASE_ROW altibase_fetch_row (ALTIBASE_RES aABRes)
         for (i = 0; i < sABRes->mFieldCount; i++)
         {
             CDBCLOG_PRINT_VAL("%d", i);
-            /* LOBì€ í•œë²ˆì— ë‹¤ ê°€ì ¸ì˜¬ ìˆ˜ ì—†ìœ¼ë¯€ë¡œ
-               locatorë¥¼ ì´ìš©í•´ ìˆœì°¨ì ìœ¼ë¡œ ë°ì´íƒ€ë¥¼ ì–»ëŠ”ë‹¤.
+            /* LOBÀº ÇÑ¹ø¿¡ ´Ù °¡Á®¿Ã ¼ö ¾øÀ¸¹Ç·Î
+               locator¸¦ ÀÌ¿ëÇØ ¼øÂ÷ÀûÀ¸·Î µ¥ÀÌÅ¸¸¦ ¾ò´Â´Ù.
              */
             if ( IS_LOB_TYPE(sABRes->mFieldInfos[i].type) )
             {
@@ -439,10 +439,10 @@ ALTIBASE_ROW altibase_fetch_row (ALTIBASE_RES aABRes)
 }
 
 /**
- * ëª¨ë“  ê²°ê³¼ë¥¼ ê²°ê³¼ í•¸ë“¤ì— ë°›ì•„ì˜¨ë‹¤.
+ * ¸ğµç °á°ú¸¦ °á°ú ÇÚµé¿¡ ¹Ş¾Æ¿Â´Ù.
  *
- * @param[in] aABRes ê²°ê³¼ í•¸ë“¤
- * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
+ * @param[in] aABRes °á°ú ÇÚµé
+ * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
  */
 CDBC_INTERNAL
 ALTIBASE_RC altibase_result_store (cdbcABRes *aABRes)
@@ -484,7 +484,7 @@ ALTIBASE_RC altibase_result_store (cdbcABRes *aABRes)
         CDBCLOG_PRINT_VAL("%d", (acp_sint32_t)(aABRes->mArrayFetched));
         aABRes->mRowCount += aABRes->mArrayFetched;
 
-        /* í•œ í–‰ì„ ë‹´ëŠ”ë° í•„ìš”í•œ ë©”ëª¨ë¦¬ í¬ê¸° ê³„ì‚° */
+        /* ÇÑ ÇàÀ» ´ã´Âµ¥ ÇÊ¿äÇÑ ¸Ş¸ğ¸® Å©±â °è»ê */
         sBufSize = ACI_SIZEOF(cdbcABRowList) + aABRes->mFieldCount
                   * (ACI_SIZEOF(ALTIBASE_COL) + ACI_SIZEOF(ALTIBASE_LONG));
         CDBC_ADJUST_ALIGN(sBufSize);
@@ -500,7 +500,7 @@ ALTIBASE_RC altibase_result_store (cdbcABRes *aABRes)
                 /* for ALTIBASE_COL */
                 if ( IS_LOB_TYPE(aABRes->mFieldInfos[sColIdx].type) )
                 {
-                    /* altibase_get_lob()ì„ ì´ìš©í•´ ì–»ì–´ì˜¤ë¯€ë¡œ ë”°ë¡œ allocí•  í•„ìš” ì—†ë‹¤ */
+                    /* altibase_get_lob()À» ÀÌ¿ëÇØ ¾ò¾î¿À¹Ç·Î µû·Î allocÇÒ ÇÊ¿ä ¾ø´Ù */
                 }
                 else if (sBind[sColIdx].length[sArrIdx] != ALTIBASE_NULL_DATA)
                 {
@@ -624,7 +624,7 @@ ALTIBASE_RC altibase_result_store (cdbcABRes *aABRes)
         aABRes->mFetchedColOffsetMaxCount = aABRes->mFieldCount;
     }
 
-    /* ë°ì´íƒ€ë¥¼ ë‹¤ ê°€ì ¸ì™”ìœ¼ë¯€ë¡œ ì»¤ì„œë¥¼ ë‹«ëŠ”ë‹¤. */
+    /* µ¥ÀÌÅ¸¸¦ ´Ù °¡Á®¿ÔÀ¸¹Ç·Î Ä¿¼­¸¦ ´İ´Â´Ù. */
     CDBCLOG_CALL("SQLFreeStmt : SQL_CLOSE");
     sRC = SQLFreeStmt(aABRes->mHstmt, SQL_CLOSE);
     CDBCLOG_BACK_VAL("SQLFreeStmt", "%d", sRC);
@@ -672,10 +672,10 @@ ALTIBASE_RC altibase_result_store (cdbcABRes *aABRes)
 }
 
 /**
- * ì €ì¥ëœ ê²°ê³¼ë¥¼ í•´ì œí•œë‹¤.
+ * ÀúÀåµÈ °á°ú¸¦ ÇØÁ¦ÇÑ´Ù.
  *
- * @param[in] aABRes ê²°ê³¼ í•¸ë“¤
- * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
+ * @param[in] aABRes °á°ú ÇÚµé
+ * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
  */
 CDBC_INTERNAL
 void altibase_clean_stored_result (cdbcABRes *aABRes)
@@ -688,7 +688,7 @@ void altibase_clean_stored_result (cdbcABRes *aABRes)
 
     if (aABRes->mRowList != NULL)
     {
-        /* ì‹¤ì œ ë©”ëª¨ë¦¬ëŠ” altibase_new_buffer()ë¡œ ì¡ì•˜ìœ¼ë¯€ë¡œ ë³€ìˆ˜ë§Œ ì´ˆê¸°í™” */
+        /* ½ÇÁ¦ ¸Ş¸ğ¸®´Â altibase_new_buffer()·Î Àâ¾ÒÀ¸¹Ç·Î º¯¼ö¸¸ ÃÊ±âÈ­ */
         aABRes->mRowList = NULL;
         aABRes->mRowCursor = NULL;
         aABRes->mFetchedRowCursor = NULL;
@@ -706,10 +706,10 @@ void altibase_clean_stored_result (cdbcABRes *aABRes)
 }
 
 /**
- * ê²°ê³¼ í•¸ë“¤ì„ ì–»ëŠ”ë‹¤.
+ * °á°ú ÇÚµéÀ» ¾ò´Â´Ù.
  *
- * @param[in] aABConn ì—°ê²° í•¸ë“¤
- * @return ì„±ê³µí–ˆìœ¼ë©´ ê²°ê³¼ í•¸ë“¤, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ NULL
+ * @param[in] aABConn ¿¬°á ÇÚµé
+ * @return ¼º°øÇßÀ¸¸é °á°ú ÇÚµé, ±×·¸Áö ¾ÊÀ¸¸é NULL
  */
 CDBC_EXPORT
 ALTIBASE_RES altibase_use_result (ALTIBASE aABConn)
@@ -741,8 +741,8 @@ ALTIBASE_RES altibase_use_result (ALTIBASE aABConn)
     CDBCLOG_PRINT_VAL("%p", sABRes);
     CDBC_TEST(sABRes == NULL);
 
-    /* ì¼ì „ì— altibase_store_result()ë¥¼ í•œ ì˜í–¥ì´ CLIì˜ stmtì— ë‚¨ì•„ìˆì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ
-       ë°˜ë“œì‹œ ì´ˆê¸°í™”í•´ì•¼í•œë‹¤. */
+    /* ÀÏÀü¿¡ altibase_store_result()¸¦ ÇÑ ¿µÇâÀÌ CLIÀÇ stmt¿¡ ³²¾ÆÀÖÀ» ¼ö ÀÖÀ¸¹Ç·Î
+       ¹İµå½Ã ÃÊ±âÈ­ÇØ¾ßÇÑ´Ù. */
     sRC = altibase_result_set_array_fetch(sABRes, 1);
     CDBC_TEST(ALTIBASE_NOT_SUCCEEDED(sRC));
 
@@ -752,7 +752,7 @@ ALTIBASE_RES altibase_use_result (ALTIBASE aABConn)
     sRC = altibase_result_bind_proc(sABRes, CDBC_USE_LOCATOR_ON);
     CDBC_TEST(ALTIBASE_NOT_SUCCEEDED(sRC));
 
-    /* mLengths ê¹Œì§€ í•œë²ˆì— alloc */
+    /* mLengths ±îÁö ÇÑ¹ø¿¡ alloc */
     CDBCLOG_CALL("acpMemCalloc");
     sRC = acpMemCalloc((void **)&(sBuffer), sFieldCount,
                        ACI_SIZEOF(ALTIBASE_COL) + ACI_SIZEOF(ALTIBASE_LONG));
@@ -768,7 +768,7 @@ ALTIBASE_RES altibase_use_result (ALTIBASE aABConn)
     CDBCLOG_PRINT_VAL("%p", sABRes->mFetchedRow);
     CDBCLOG_PRINT_VAL("%p", sABRes->mLengths);
 
-    /* ìƒíƒœ ë³€ê²½: res returned */
+    /* »óÅÂ º¯°æ: res returned */
     RES_SET_RESRETURNED(sABRes);
 
     CDBC_EXCEPTION_CONT(NoResult);
@@ -792,7 +792,7 @@ ALTIBASE_RES altibase_use_result (ALTIBASE aABConn)
 
     if (sABRes != NULL)
     {
-        /* sABResëŠ” ìœ íš¨í•œ í•¸ë“¤ì´ë¯€ë¡œ ì—ëŸ¬ ë©”ì‹œì§€ê°€ ë®ì–´ì¨ì§ˆ ì¼ì€ ì—†ë‹¤ */
+        /* sABRes´Â À¯È¿ÇÑ ÇÚµéÀÌ¹Ç·Î ¿¡·¯ ¸Ş½ÃÁö°¡ µ¤¾î½áÁú ÀÏÀº ¾ø´Ù */
         altibase_free_result(sABRes);
     }
 
@@ -804,10 +804,10 @@ ALTIBASE_RES altibase_use_result (ALTIBASE aABConn)
 }
 
 /**
- * ëª¨ë“  ê²°ê³¼ë¥¼ ë‹´ì€ ê²°ê³¼ í•¸ë“¤ì„ ì–»ëŠ”ë‹¤.
+ * ¸ğµç °á°ú¸¦ ´ãÀº °á°ú ÇÚµéÀ» ¾ò´Â´Ù.
  *
- * @param[in] aABConn ì—°ê²° í•¸ë“¤
- * @return ì„±ê³µí–ˆìœ¼ë©´ ê²°ê³¼ í•¸ë“¤, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ NULL
+ * @param[in] aABConn ¿¬°á ÇÚµé
+ * @return ¼º°øÇßÀ¸¸é °á°ú ÇÚµé, ±×·¸Áö ¾ÊÀ¸¸é NULL
  */
 CDBC_EXPORT
 ALTIBASE_RES altibase_store_result (ALTIBASE aABConn)
@@ -838,7 +838,7 @@ ALTIBASE_RES altibase_store_result (ALTIBASE aABConn)
     CDBCLOG_PRINT_VAL("%p", sABRes);
     CDBC_TEST(sABRes == NULL);
 
-    /* storeëŠ” í•­ìƒ array fetch */
+    /* store´Â Ç×»ó array fetch */
     sRC = altibase_result_set_array_fetch(sABRes, CDBC_DEFAULT_ARRAY_SIZE);
     CDBC_TEST(ALTIBASE_NOT_SUCCEEDED(sRC));
 
@@ -851,7 +851,7 @@ ALTIBASE_RES altibase_store_result (ALTIBASE aABConn)
     sRC = altibase_result_store(sABRes);
     CDBC_TEST(ALTIBASE_NOT_SUCCEEDED(sRC));
 
-    /* ìƒíƒœ ë³€ê²½: res returned */
+    /* »óÅÂ º¯°æ: res returned */
     RES_SET_RESRETURNED(sABRes);
 
     CDBC_EXCEPTION_CONT(NoResult);
@@ -869,7 +869,7 @@ ALTIBASE_RES altibase_store_result (ALTIBASE aABConn)
 
     if (sABRes != NULL)
     {
-        /* sABResëŠ” ìœ íš¨í•œ í•¸ë“¤ì´ë¯€ë¡œ ì—ëŸ¬ ë©”ì‹œì§€ê°€ ë®ì–´ì¨ì§ˆ ì¼ì€ ì—†ë‹¤ */
+        /* sABRes´Â À¯È¿ÇÑ ÇÚµéÀÌ¹Ç·Î ¿¡·¯ ¸Ş½ÃÁö°¡ µ¤¾î½áÁú ÀÏÀº ¾ø´Ù */
         altibase_free_result(sABRes);
     }
 
@@ -881,10 +881,10 @@ ALTIBASE_RES altibase_store_result (ALTIBASE aABConn)
 }
 
 /**
- * ëª¨ë“  ê²°ê³¼ë¥¼ ë°›ì•„ë‘”ë‹¤.
+ * ¸ğµç °á°ú¸¦ ¹Ş¾ÆµĞ´Ù.
  *
- * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
- * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
+ * @param[in] aABStmt ¸í·É¹® ÇÚµé
+ * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
  */
 CDBC_EXPORT
 ALTIBASE_RC altibase_stmt_store_result (ALTIBASE_STMT aABStmt)
@@ -909,7 +909,7 @@ ALTIBASE_RC altibase_stmt_store_result (ALTIBASE_STMT aABStmt)
 
     if (sABStmt->mArrayFetchSize > 1)
     {
-        /* ì‚¬ìš©ìê°€ ì„¤ì •í•œ array fetch ì‚¬ìš© */
+        /* »ç¿ëÀÚ°¡ ¼³Á¤ÇÑ array fetch »ç¿ë */
         sRC = altibase_result_rebind_for_lob(sABStmt->mRes);
         CDBC_TEST(ALTIBASE_NOT_SUCCEEDED(sRC));
     }
@@ -926,7 +926,7 @@ ALTIBASE_RC altibase_stmt_store_result (ALTIBASE_STMT aABStmt)
     sRC = altibase_result_store(sABStmt->mRes);
     CDBC_TEST(ALTIBASE_NOT_SUCCEEDED(sRC));
 
-    /* ìƒíƒœ ë³€ê²½: res returned */
+    /* »óÅÂ º¯°æ: res returned */
     STMT_SET_RESRETURNED(sABStmt);
 
     CDBC_EXCEPTION_CONT(NoResult);
@@ -960,12 +960,12 @@ ALTIBASE_RC altibase_stmt_store_result (ALTIBASE_STMT aABStmt)
 }
 
 /**
- * ì»¤ì„œë¥¼ ì´ë™í•œë‹¤.
- * altibase_store_result()ë¥¼ ì¼ì„ë•Œë§Œ ì˜¬ë°”ë¡œ ë™ì‘í•œë‹¤.
+ * Ä¿¼­¸¦ ÀÌµ¿ÇÑ´Ù.
+ * altibase_store_result()¸¦ ½èÀ»¶§¸¸ ¿Ã¹Ù·Î µ¿ÀÛÇÑ´Ù.
  *
- * @param[in] aABRes ê²°ê³¼ í•¸ë“¤
- * @param[in] aOffset ì´ë™í•œ ì»¤ì„œ ìœ„ì¹˜ (0ë¶€í„° ì‹œì‘)
- * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
+ * @param[in] aABRes °á°ú ÇÚµé
+ * @param[in] aOffset ÀÌµ¿ÇÑ Ä¿¼­ À§Ä¡ (0ºÎÅÍ ½ÃÀÛ)
+ * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
  * @see altibase_store_result
  */
 CDBC_EXPORT
@@ -988,7 +988,7 @@ ALTIBASE_RC altibase_data_seek (ALTIBASE_RES aABRes, ALTIBASE_LONG aOffset)
     CDBC_TEST_RAISE(INDEX_NOT_VALID(aOffset, 0, sABRes->mRowCount),
                     InvalidParamRange);
 
-    /* ë©”ëª¨ë¦¬ì— ì—¬ìœ ê°€ ìˆìœ¼ë©´ row map ìƒì„± */
+    /* ¸Ş¸ğ¸®¿¡ ¿©À¯°¡ ÀÖÀ¸¸é row map »ı¼º */
     if ((sABRes->mRowMapAllocFailed == ACP_FALSE)
      && (sABRes->mRowMap == NULL))
     {
@@ -1013,7 +1013,7 @@ ALTIBASE_RC altibase_data_seek (ALTIBASE_RES aABRes, ALTIBASE_LONG aOffset)
         }
     }
 
-    /* ë©”ëª¨ë¦¬ê°€ ë¶€ì¡±í•´ì„œ row map ìƒì„±ì— ì‹¤íŒ¨í–ˆë‹¤ë©´ row listë¡œ ì²˜ë¦¬ */
+    /* ¸Ş¸ğ¸®°¡ ºÎÁ·ÇØ¼­ row map »ı¼º¿¡ ½ÇÆĞÇß´Ù¸é row list·Î Ã³¸® */
     if (sABRes->mRowMap == NULL)
     {
         sRowCur = sABRes->mRowList;
@@ -1061,12 +1061,12 @@ ALTIBASE_RC altibase_data_seek (ALTIBASE_RES aABRes, ALTIBASE_LONG aOffset)
 }
 
 /**
- * ì»¤ì„œë¥¼ ì´ë™í•œë‹¤.
- * altibase_stmt_store_result()ë¥¼ ì¼ì„ë•Œë§Œ ì˜¬ë°”ë¡œ ë™ì‘í•œë‹¤.
+ * Ä¿¼­¸¦ ÀÌµ¿ÇÑ´Ù.
+ * altibase_stmt_store_result()¸¦ ½èÀ»¶§¸¸ ¿Ã¹Ù·Î µ¿ÀÛÇÑ´Ù.
  *
- * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
- * @param[in] aOffset ì´ë™í•œ ì»¤ì„œ ìœ„ì¹˜ (0ë¶€í„° ì‹œì‘)
- * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
+ * @param[in] aABStmt ¸í·É¹® ÇÚµé
+ * @param[in] aOffset ÀÌµ¿ÇÑ Ä¿¼­ À§Ä¡ (0ºÎÅÍ ½ÃÀÛ)
+ * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
  * @see altibase_stmt_store_result
  */
 CDBC_EXPORT
@@ -1101,21 +1101,21 @@ ALTIBASE_RC altibase_stmt_data_seek (ALTIBASE_STMT aABStmt, ALTIBASE_LONG aOffse
 }
 
 /**
- * stored resultì˜ í˜„ì¬ ì»¤ì„œì˜ í•œ ì»¬ëŸ¼ ê°’ì„ ALTIBASE_BINDë¡œ ë³µì‚¬í•œë‹¤.
+ * stored resultÀÇ ÇöÀç Ä¿¼­ÀÇ ÇÑ ÄÃ·³ °ªÀ» ALTIBASE_BIND·Î º¹»çÇÑ´Ù.
  *
- * altibase_stmt_fetch(), altibase_stmt_fetch_column()ì—ì„œ ì‚¬ìš©í•˜ëŠ” ë‚´ë¶€ í•¨ìˆ˜ë¡œ
- * altibase_store_result()ë¥¼ ì¼ì„ë•Œë§Œ ì‚¬ìš©í•œë‹¤.
+ * altibase_stmt_fetch(), altibase_stmt_fetch_column()¿¡¼­ »ç¿ëÇÏ´Â ³»ºÎ ÇÔ¼ö·Î
+ * altibase_store_result()¸¦ ½èÀ»¶§¸¸ »ç¿ëÇÑ´Ù.
  *
- * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
- * @param[in] aBind ë°ì´íƒ€ë¥¼ ë‹´ì„ ê³³
- * @param[in] aRowCursor ë°ì´íƒ€ ì»¤ì„œ
- * @param[in] aColIdx ì»¬ëŸ¼ ì¸ë±ìŠ¤ (0ë¶€í„° ì‹œì‘)
- * @param[in] aArrIdx ì–´ë ˆì´ ì¸ë±ìŠ¤ (0ë¶€í„° ì‹œì‘)
- * @param[in] aOffset ë°ì´íƒ€ë¥¼ ì–»ê¸° ì‹œì‘í•  ìœ„ì¹˜ (0ë¶€í„° ì‹œì‘).
- *                    ë°ì´íƒ€ê°€ NULLì´ë©´ ë¬´ì‹œ.
- * @return ì„±ê³µí–ˆê³  ë°ì´íƒ€ë¥¼ ì „ë¶€ ì˜ ê°€ì ¸ì™”ìœ¼ë©´ ALTIBASE_SUCCESS,
- *         ì„±ê³µí–ˆëŠ”ë° ë²„í¼ ê¸¸ì´ê°€ ì‘ì•„ì„œ ë°ì´íƒ€ê°€ ì§¤ë ¸ê±°ë‚˜ ë” ì–»ì„ ë°ì´íƒ€ê°€ ì—†ìœ¼ë©´ ALTIBASE_SUCCESS_WITH_INFO,
- *         ì‹¤íŒ¨í–ˆìœ¼ë©´ ALTIBASE_ERROR
+ * @param[in] aABStmt ¸í·É¹® ÇÚµé
+ * @param[in] aBind µ¥ÀÌÅ¸¸¦ ´ãÀ» °÷
+ * @param[in] aRowCursor µ¥ÀÌÅ¸ Ä¿¼­
+ * @param[in] aColIdx ÄÃ·³ ÀÎµ¦½º (0ºÎÅÍ ½ÃÀÛ)
+ * @param[in] aArrIdx ¾î·¹ÀÌ ÀÎµ¦½º (0ºÎÅÍ ½ÃÀÛ)
+ * @param[in] aOffset µ¥ÀÌÅ¸¸¦ ¾ò±â ½ÃÀÛÇÒ À§Ä¡ (0ºÎÅÍ ½ÃÀÛ).
+ *                    µ¥ÀÌÅ¸°¡ NULLÀÌ¸é ¹«½Ã.
+ * @return ¼º°øÇß°í µ¥ÀÌÅ¸¸¦ ÀüºÎ Àß °¡Á®¿ÔÀ¸¸é ALTIBASE_SUCCESS,
+ *         ¼º°øÇß´Âµ¥ ¹öÆÛ ±æÀÌ°¡ ÀÛ¾Æ¼­ µ¥ÀÌÅ¸°¡ Â©·È°Å³ª ´õ ¾òÀ» µ¥ÀÌÅ¸°¡ ¾øÀ¸¸é ALTIBASE_SUCCESS_WITH_INFO,
+ *         ½ÇÆĞÇßÀ¸¸é ALTIBASE_ERROR
  */
 CDBC_INTERNAL
 ALTIBASE_RC altibase_stmt_copy_col (cdbcABStmt       *aABStmt,
@@ -1143,13 +1143,13 @@ ALTIBASE_RC altibase_stmt_copy_col (cdbcABStmt       *aABStmt,
     CDBC_DASSERT(aBind != NULL);
     CDBC_DASSERT(aRowCursor != NULL);
 
-    /* column index ë²”ìœ„ í™•ì¸ */
+    /* column index ¹üÀ§ È®ÀÎ */
     CDBCLOG_PRINT_VAL("%d", aABStmt->mRes->mFieldCount);
     CDBC_TEST_RAISE(INDEX_NOT_VALID(aColIdx, 0, aABStmt->mRes->mFieldCount),
                     InvalidParamRange);
 
-    /* altibase_stmt_store_result()ë¥¼ í˜¸ì¶œí–ˆë‹¤ë©´,
-       ë°”ì¸ë“œ í–ˆì„ë•Œì˜ buffer_typeê³¼ ë™ì¼í•œ buffer_typeë§Œì´ í—ˆìš©ëœë‹¤. */
+    /* altibase_stmt_store_result()¸¦ È£ÃâÇß´Ù¸é,
+       ¹ÙÀÎµå ÇßÀ»¶§ÀÇ buffer_type°ú µ¿ÀÏÇÑ buffer_type¸¸ÀÌ Çã¿ëµÈ´Ù. */
     CDBCLOG_PRINT_VAL("%d", aABStmt->mRes->mBindResult[aColIdx].buffer_type);
     CDBCLOG_PRINT_VAL("%d", aBind->buffer_type);
     CDBC_TEST_RAISE(aABStmt->mRes->mBindResult[aColIdx].buffer_type
@@ -1158,7 +1158,7 @@ ALTIBASE_RC altibase_stmt_copy_col (cdbcABStmt       *aABStmt,
     sDatLen = aRowCursor->mLengths[aColIdx];
     CDBCLOG_PRINT_VAL("%d", (acp_sint32_t) sDatLen);
 
-    /* ALTIBASE_FETCH_CONT ë“±ì„ ì´ìš©í•´ì„œ ë§ˆì§€ë§‰ ë°ì´íƒ€ê¹Œì§€ ì–»ì–´ì„œ, ë” ì¤„ê²Œ ì—†ìœ¼ë©´.. */
+    /* ALTIBASE_FETCH_CONT µîÀ» ÀÌ¿ëÇØ¼­ ¸¶Áö¸· µ¥ÀÌÅ¸±îÁö ¾ò¾î¼­, ´õ ÁÙ°Ô ¾øÀ¸¸é.. */
     if (aOffset == sDatLen)
     {
         sRC = ALTIBASE_SUCCESS_WITH_INFO;
@@ -1167,11 +1167,11 @@ ALTIBASE_RC altibase_stmt_copy_col (cdbcABStmt       *aABStmt,
 
     if (sDatLen != ALTIBASE_NULL_DATA)
     {
-        /* ë°ì´íƒ€ë¥¼ ë‹¤ ì–»ì–´ì„œ index ë²”ìœ„ë¥¼ ë„˜ê¸´ê²Œ ì•„ë‹ˆë©´,
-           ì˜ˆë¥¼ë“¤ì–´ ì„ì˜ë¡œ offsetì„ sDatLen + n (n > 0)ë¡œ ì„¤ì •í•˜ë©´ ì—ëŸ¬ë¡œ ì²˜ë¦¬ */
+        /* µ¥ÀÌÅ¸¸¦ ´Ù ¾ò¾î¼­ index ¹üÀ§¸¦ ³Ñ±ä°Ô ¾Æ´Ï¸é,
+           ¿¹¸¦µé¾î ÀÓÀÇ·Î offsetÀ» sDatLen + n (n > 0)·Î ¼³Á¤ÇÏ¸é ¿¡·¯·Î Ã³¸® */
         CDBC_TEST_RAISE(INDEX_NOT_VALID(aOffset, 0, sDatLen), InvalidParamRange);
 
-        /* lengthì—ëŠ” ALTIBASE_NULL_DATA ì™¸ì—ëŠ” ìŒìˆ˜ê°€ ì˜¤ì§€ ì•ŠëŠ”ë‹¤ */
+        /* length¿¡´Â ALTIBASE_NULL_DATA ¿Ü¿¡´Â À½¼ö°¡ ¿ÀÁö ¾Ê´Â´Ù */
         CDBC_TEST_RAISE(sDatLen == 0, EmptyData);
         CDBC_DASSERT(sDatLen > 0);
 
@@ -1196,15 +1196,15 @@ ALTIBASE_RC altibase_stmt_copy_col (cdbcABStmt       *aABStmt,
         }
         else /* if (aBaseBindInfo[i].buffer_length == 0) */
         {
-            /* í¬ê¸°ê°€ ì •í•´ì ¸ìˆëŠ” ë°”ì¸ë“œ íƒ€ì…ì˜ buffer_sizeê°€ 0ì´ë©´
-               ìë™ìœ¼ë¡œ ì ì ˆí•œ ê°’ì„ ì„¤ì •í•œë‹¤. */
+            /* Å©±â°¡ Á¤ÇØÁ®ÀÖ´Â ¹ÙÀÎµå Å¸ÀÔÀÇ buffer_size°¡ 0ÀÌ¸é
+               ÀÚµ¿À¸·Î ÀûÀıÇÑ °ªÀ» ¼³Á¤ÇÑ´Ù. */
             sBufLen = altibase_bind_max_typesize(aBind->buffer_type);
             CDBC_DASSERT(sBufLen != CDBC_EXPNO_INVALID_BIND_TYPE);
             if (sBufLen == CDBC_EXPNO_VARSIZE_TYPE)
             {
-                /* ALTIBASE_BIND_BINARY ê°™ì€ ë°”ì¸ë“œ íƒ€ì…ì€
-                   ë°˜ë“œì‹œ buffet_lengthë¥¼ ìœ íš¨í•œ ê°’ìœ¼ë¡œ ì§€ì •í•´ì£¼ì–´ì•¼ í•˜ë¯€ë¡œ
-                   ì—¬ê¸°ì„œëŠ” ë²„í¼ ê¸¸ì´ê°€ 0ì¸ ê²ƒìœ¼ë¡œ ê°„ì£¼í•œë‹¤. */
+                /* ALTIBASE_BIND_BINARY °°Àº ¹ÙÀÎµå Å¸ÀÔÀº
+                   ¹İµå½Ã buffet_length¸¦ À¯È¿ÇÑ °ªÀ¸·Î ÁöÁ¤ÇØÁÖ¾î¾ß ÇÏ¹Ç·Î
+                   ¿©±â¼­´Â ¹öÆÛ ±æÀÌ°¡ 0ÀÎ °ÍÀ¸·Î °£ÁÖÇÑ´Ù. */
                 sBufLen = 0;
                 CDBCLOG_PRINT_VAL("%d", aBind->buffer_type);
             }
@@ -1268,12 +1268,12 @@ ALTIBASE_RC altibase_stmt_copy_col (cdbcABStmt       *aABStmt,
 }
 
 /**
- * fetch í•œë‹¤.
+ * fetch ÇÑ´Ù.
  *
- * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
- * @return ì„±ê³µí–ˆê³  ë°ì´íƒ€ë¥¼ ì „ë¶€ ì˜ ê°€ì ¸ì™”ìœ¼ë©´ ALTIBASE_SUCCESS,
- *         ì„±ê³µí–ˆëŠ”ë° ë²„í¼ ê¸¸ì´ê°€ ì‘ì•„ì„œ ë°ì´íƒ€ê°€ ì§¤ë ¸ê±°ë‚˜ ë” ì–»ì„ ë°ì´íƒ€ê°€ ì—†ìœ¼ë©´ ALTIBASE_SUCCESS_WITH_INFO,
- *         ì‹¤íŒ¨í–ˆìœ¼ë©´ ALTIBASE_ERROR
+ * @param[in] aABStmt ¸í·É¹® ÇÚµé
+ * @return ¼º°øÇß°í µ¥ÀÌÅ¸¸¦ ÀüºÎ Àß °¡Á®¿ÔÀ¸¸é ALTIBASE_SUCCESS,
+ *         ¼º°øÇß´Âµ¥ ¹öÆÛ ±æÀÌ°¡ ÀÛ¾Æ¼­ µ¥ÀÌÅ¸°¡ Â©·È°Å³ª ´õ ¾òÀ» µ¥ÀÌÅ¸°¡ ¾øÀ¸¸é ALTIBASE_SUCCESS_WITH_INFO,
+ *         ½ÇÆĞÇßÀ¸¸é ALTIBASE_ERROR
  */
 CDBC_EXPORT
 ALTIBASE_RC altibase_stmt_fetch (ALTIBASE_STMT aABStmt)
@@ -1321,13 +1321,13 @@ ALTIBASE_RC altibase_stmt_fetch (ALTIBASE_STMT aABStmt)
                 sABRes->mArrayStatusResult[sArrIdx] = sRowCursor->mStatus;
             }
 
-            /* storeê°€ ì˜ ëë‹¤ë©´ SUCCESS_WITH_INFOëŠ” ì—†ì–´ì•¼ í•œë‹¤ */
+            /* store°¡ Àß µÆ´Ù¸é SUCCESS_WITH_INFO´Â ¾ø¾î¾ß ÇÑ´Ù */
             CDBC_DASSERT(sRowCursor->mStatus != ALTIBASE_ROW_SUCCESS_WITH_INFO);
 
             sRC = ALTIBASE_SUCCESS;
             for (sColIdx = 0; sColIdx < sABRes->mFieldCount; sColIdx++)
             {
-                /* SUCCESS == 0, SUCCESS_WITH_INFO == 1 ì¸ê±¸ ì´ìš© */
+                /* SUCCESS == 0, SUCCESS_WITH_INFO == 1 ÀÎ°É ÀÌ¿ë */
                 sRC |= altibase_stmt_copy_col(sABStmt,
                                               &(sABStmt->mBindResult[sColIdx]),
                                               sRowCursor, sColIdx, sArrIdx, 0);
@@ -1354,7 +1354,7 @@ ALTIBASE_RC altibase_stmt_fetch (ALTIBASE_STMT aABStmt)
     }
     else /* not stored */
     {
-        /* BUG-42089 altibase_stmt_store_result()ì˜ ì˜í–¥ì´ ë‚¨ì•„ìˆì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì¬ì„¤ì • */
+        /* BUG-42089 altibase_stmt_store_result()ÀÇ ¿µÇâÀÌ ³²¾ÆÀÖÀ» ¼ö ÀÖÀ¸¹Ç·Î Àç¼³Á¤ */
         if (sABRes->mArrayFetchSize != sABStmt->mArrayFetchSize)
         {
             CDBCLOG_PRINTF_ARG2("reset sABRes->mArrayFetchSize : %d ==> %d",
@@ -1451,13 +1451,13 @@ ALTIBASE_RC altibase_stmt_fetch (ALTIBASE_STMT aABStmt)
 }
 
 /**
- * íŠ¹ì • ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼ ì–»ëŠ”ë‹¤.
+ * Æ¯Á¤ ÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦ ¾ò´Â´Ù.
  *
- * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
- * @param[in] aBind ë°ì´íƒ€ë¥¼ ì–»ëŠ”ë° ì‚¬ìš©í•  ì •ë³´
- * @param[in] aIdx ì»¬ëŸ¼ ì¸ë±ìŠ¤ (0 ë¶€í„° ì‹œì‘)
- * @param[in] aOffset ì–»ê¸° ì‹œì‘í•  ìœ„ì¹˜ (0 ë¶€í„° ì‹œì‘)
- * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
+ * @param[in] aABStmt ¸í·É¹® ÇÚµé
+ * @param[in] aBind µ¥ÀÌÅ¸¸¦ ¾ò´Âµ¥ »ç¿ëÇÒ Á¤º¸
+ * @param[in] aIdx ÄÃ·³ ÀÎµ¦½º (0 ºÎÅÍ ½ÃÀÛ)
+ * @param[in] aOffset ¾ò±â ½ÃÀÛÇÒ À§Ä¡ (0 ºÎÅÍ ½ÃÀÛ)
+ * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
  */
 CDBC_EXPORT
 ALTIBASE_RC altibase_stmt_fetch_column (ALTIBASE_STMT  aABStmt,
@@ -1487,10 +1487,10 @@ ALTIBASE_RC altibase_stmt_fetch_column (ALTIBASE_STMT  aABStmt,
     CDBCLOG_PRINT_VAL("%d", STMT_IS_STORED(sABStmt));
     if (STMT_IS_STORED(sABStmt))
     {
-        /* fetch í•˜ë©´ ì»¤ì„œê°€ ë‹¤ìŒìœ¼ë¡œ ì´ë™í•˜ë¯€ë¡œ FecthedRowCursor ì‚¬ìš© */
+        /* fetch ÇÏ¸é Ä¿¼­°¡ ´ÙÀ½À¸·Î ÀÌµ¿ÇÏ¹Ç·Î FecthedRowCursor »ç¿ë */
         sRowCursor = sABStmt->mRes->mFetchedRowCursor;
 
-        /* altibase_stmt_fetch()ì— ì„±ê³µí•´ì•¼í•œë‹¤. */
+        /* altibase_stmt_fetch()¿¡ ¼º°øÇØ¾ßÇÑ´Ù. */
         CDBC_TEST_RAISE(sRowCursor == NULL, FuncSeqError);
 
         if (aOffset == ALTIBASE_FETCH_CONT)
@@ -1504,8 +1504,8 @@ ALTIBASE_RC altibase_stmt_fetch_column (ALTIBASE_STMT  aABStmt,
     }
     else /* not stored */
     {
-        /* aOffsetì— ALTIBASE_FETCH_CONT ì™¸ì˜ ê°’ì„ ì“°ë ¤ë©´,
-           ë¨¼ì € altibase_stmt_store_result()ë¥¼ í˜¸ì¶œí•´ì•¼ í•œë‹¤. */
+        /* aOffset¿¡ ALTIBASE_FETCH_CONT ¿ÜÀÇ °ªÀ» ¾²·Á¸é,
+           ¸ÕÀú altibase_stmt_store_result()¸¦ È£ÃâÇØ¾ß ÇÑ´Ù. */
         CDBC_TEST_RAISE(aOffset != ALTIBASE_FETCH_CONT, FuncSeqError);
 
         CDBCLOG_CALL("SQLGetData");

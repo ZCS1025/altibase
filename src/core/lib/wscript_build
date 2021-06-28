@@ -206,6 +206,22 @@ libedit_sources = [
         'local_ctype.c'
 ]
 
+externalLib_sources = [
+        'lz4.c'
+]
+
+zookeeper_source = [
+        'zookeeper.c',
+        'recordio.c',
+        'zookeeper.jute.c',
+        'zk_log.c',
+        'zk_hashtable.c',
+        'addrvec.c',
+        'mt_adaptor.c',
+        'hashtable_itr.c',
+        'hashtable.c'
+]
+
 # ACT sources list
 altictest_sources = [
         'actDump.c',
@@ -307,6 +323,8 @@ alticore_src.extend(src_search(bld.env.ALTICORE_ACI_DIR, alticore_aci_sources))
 if bld.env.READLINE_SUPPORT == 'yes':
     alticore_src.extend(src_search(bld.env.ALTICORE_LIBEDIT_DIR, libedit_sources))
 
+alticore_src.extend(src_search(bld.env.ALTICORE_EXTERNAL_LIB_DIR, externalLib_sources))
+
 ################################
 # Build altictest sources list #
 ################################
@@ -316,6 +334,8 @@ altictest_src = src_search(bld.env.ALTICORE_ACT_DIR, altictest_sources)
 # ALINT ignores #
 #################
 alint_ignores_src = src_search(bld.env.ALTICORE_LIBEDIT_DIR, libedit_sources)
+alint_ignores_src = src_search(bld.env.ALTICORE_EXTERNAL_LIB_DIR, externalLib_sources)
+
 alint_ignores_src.extend(src_search(bld.env.ALTICORE_ACI_DIR, alticore_aci_sources))
 alint_ignores_src.extend(src_search(bld.env.ALTICORE_ACL_DIR, ['aclLzo.c']))
 alint_ignores_src.extend(src_search(bld.env.ALTICORE_ACP_DIR, ['acpCStrDouble.c']))
@@ -328,11 +348,13 @@ bld (
         includes = [bld.env.ALTICORE_INCLUDE_DIR,
                     bld.env.ALTICORE_INCLUDE_DIR.get_bld(),
                     bld.env.ALTICORE_ACP_DIR,
-                    bld.env.LIBEDIT_INCLUDE_DIR],
+                    bld.env.LIBEDIT_INCLUDE_DIR,
+                    bld.env.EXTERNAL_LIB_INCLUDE_DIR],
         export_includes = [bld.env.ALTICORE_INCLUDE_DIR,
                            bld.env.ALTICORE_INCLUDE_DIR.get_bld(),
                            bld.env.ALTICORE_ACP_DIR,
-                           bld.env.LIBEDIT_INCLUDE_DIR],
+                           bld.env.LIBEDIT_INCLUDE_DIR,
+                           bld.env.EXTERNAL_LIB_INCLUDE_DIR],
         name     = 'alticore_includes'
 )
 

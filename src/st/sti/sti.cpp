@@ -50,10 +50,6 @@ sti::addExtQP_Callback ( void )
     return stix::addExtQP_Callback ();
 }
 
-extern iduFixedTableDesc gLinearUnitTableDesc;
-extern iduFixedTableDesc gAreaUnitTableDesc;
-extern iduFixedTableDesc gAngularUnitTableDesc;
-
 extern iduFixedTableDesc gDumpMemRTreeKeyTableDesc;
 extern iduFixedTableDesc gDumpVolRTreeKeyTableDesc;
 extern iduFixedTableDesc gMemRTreeHeaderDesc;
@@ -66,10 +62,6 @@ IDE_RC
 sti::initSystemTables( void )
 {
     // initialize fixed table
-    IDU_FIXED_TABLE_DEFINE_RUNTIME( gLinearUnitTableDesc );
-    IDU_FIXED_TABLE_DEFINE_RUNTIME( gAreaUnitTableDesc );
-    IDU_FIXED_TABLE_DEFINE_RUNTIME( gAngularUnitTableDesc );
-
     IDU_FIXED_TABLE_DEFINE_RUNTIME( gDumpMemRTreeKeyTableDesc );
     IDU_FIXED_TABLE_DEFINE_RUNTIME( gDumpVolRTreeKeyTableDesc );
     IDU_FIXED_TABLE_DEFINE_RUNTIME( gMemRTreeHeaderDesc );
@@ -92,8 +84,8 @@ sti::initSystemTables( void )
 }
 
 // Proj-2059 DB Upgrade
-// Geometryíƒ€ì… í™•ì¸ì„ ìœ„í•´ Toolì—ì„œ Insertê°€ëŠ¥í•œ Textí˜•íƒœë¡œ ì¶œë ¥í• 
-// ìˆ˜ ìˆì–´ì•¼ í•©ë‹ˆë‹¤.
+// GeometryÅ¸ÀÔ È®ÀÎÀ» À§ÇØ Tool¿¡¼­ Insert°¡´ÉÇÑ TextÇüÅÂ·Î Ãâ·ÂÇÒ
+// ¼ö ÀÖ¾î¾ß ÇÕ´Ï´Ù.
 
 IDE_RC sti::getTextFromGeometry(
     void*               aObj,

@@ -85,16 +85,16 @@ SQLRETURN ulsdnGetFailoverIsNeeded( acp_sint16_t   aHandleType,
  *      - Server-side failover and align data node connection.
  *  3. ulsdModuleOnCmError_NODE()
  *     -> ulsdFODoReconnect()
- *     -> ulsdnReconnect()
+ *     -> ulsdnReconnectWithoutEnter()
  *      - Node connection retry.
  */
 ACI_RC ulsdnFailoverConnectToSpecificServer( ulnFnContext *aFnContext, ulnFailoverServerInfo *aNewServerInfo )
 {
-    ulnFnContext   sFnContext;
     ulnDbc       * sDbc       = NULL;
     ACI_RC         sRC        = ACI_FAILURE;
 
     ULN_FNCONTEXT_GET_DBC( aFnContext, sDbc );
+    ACI_TEST_RAISE( sDbc == NULL, INVALID_HANDLE_EXCEPTION );
 
     ACI_TEST( ( ulnDbcGetConnType( sDbc ) != ULN_CONNTYPE_TCP     ) &&
               ( ulnDbcGetConnType( sDbc ) != ULN_CONNTYPE_IB      ) && /* PROJ-2681 */
@@ -140,21 +140,28 @@ ACI_RC ulsdnFailoverConnectToSpecificServer( ulnFnContext *aFnContext, ulnFailov
 
     return ACI_SUCCESS;
 
+    ACI_EXCEPTION( INVALID_HANDLE_EXCEPTION )
+    {
+        ULN_FNCONTEXT_SET_RC( aFnContext, SQL_INVALID_HANDLE );
+    }
     ACI_EXCEPTION( LABEL_MEM_MAN_ERR )
     {
-        (void)ulnError( &sFnContext,
+        (void)ulnError( aFnContext,
                         ulERR_FATAL_MEMORY_MANAGEMENT_ERROR,
                         "ulsdnFailoverConnectToSpecificServer" );
     }
     ACI_EXCEPTION_END;
 
-    ULN_TRACE_LOG( &sFnContext, ULN_TRACELOG_LOW, NULL, 0,
+    ULN_TRACE_LOG( aFnContext, ULN_TRACELOG_LOW, NULL, 0,
                    "%-18s| fail", "ulnFailoverConnectToSpecificServer" );
 
-    if ( ulnDbcIsConnected( sDbc ) == ACP_TRUE )
+    if ( sDbc != NULL )
     {
-        ulnDbcSetIsConnected( sDbc, ACP_FALSE );
-        ulnClosePhysicalConn( sDbc );
+        if ( ulnDbcIsConnected( sDbc ) == ACP_TRUE )
+        {
+            ulnDbcSetIsConnected( sDbc, ACP_FALSE );
+            ulnClosePhysicalConn( sDbc );
+        }
     }
 
     ulsdnRaiseShardNodeFailoverIsNotAvailableError( aFnContext );
@@ -162,36 +169,27 @@ ACI_RC ulsdnFailoverConnectToSpecificServer( ulnFnContext *aFnContext, ulnFailov
     return sRC;
 }
 
-SQLRETURN ulsdnReconnect( acp_sint16_t aHandleType, ulnObject *aObject )
+SQLRETURN ulsdnReconnectCore( ulnFnContext * aFnContext )
 {
-    ulnFnContext           sFnContext;
     ulnDbc                *sDbc           = NULL;
     ulnFailoverServerInfo *sServerInfo    = NULL;
     acp_bool_t             sHasAlternate  = ACP_TRUE;
 
-    ULN_INIT_FUNCTION_CONTEXT( sFnContext, ULN_FID_NONE, aObject, aHandleType );
-
-    ACI_TEST_RAISE( aObject == NULL, InvalidHandle );
-
-    ULN_FNCONTEXT_GET_DBC( &sFnContext, sDbc );
+    ULN_FNCONTEXT_GET_DBC( aFnContext, sDbc );
 
     ACI_TEST_RAISE( sDbc == NULL, InvalidHandle );
-
-    ACI_TEST_RAISE( ulnClearDiagnosticInfoFromObject( aObject )
-                    != ACI_SUCCESS,
-                    LABEL_MEM_MAN_ERR );
 
     sServerInfo = ulnDbcGetCurrentServer( sDbc );
     if ( sServerInfo == NULL )
     {
         /* No alternate server */
         sHasAlternate = ACP_FALSE;
-        ACI_TEST( ulnFailoverCreatePrimaryServerInfo( &sFnContext, &sServerInfo ) != ACI_SUCCESS );
+        ACI_TEST( ulnFailoverCreatePrimaryServerInfo( aFnContext, &sServerInfo ) != ACI_SUCCESS );
         ulnDbcSetCurrentServer( sDbc, sServerInfo );
     }
     ACI_TEST_RAISE( sServerInfo == NULL, InvalidCurrrentServer );
     
-    ACI_TEST( ulsdnFailoverConnectToSpecificServer( &sFnContext,
+    ACI_TEST( ulsdnFailoverConnectToSpecificServer( aFnContext,
                                                     sServerInfo )
               != ACI_SUCCESS );
 
@@ -201,21 +199,15 @@ SQLRETURN ulsdnReconnect( acp_sint16_t aHandleType, ulnObject *aObject )
         ulnFailoverDestroyServerInfo( sServerInfo );
     }
 
-    return ULN_FNCONTEXT_GET_RC(&sFnContext);
+    return ULN_FNCONTEXT_GET_RC(aFnContext);
 
-    ACI_EXCEPTION( LABEL_MEM_MAN_ERR )
-    {
-        (void)ulnError( &sFnContext,
-                        ulERR_FATAL_MEMORY_MANAGEMENT_ERROR,
-                        "ulsdnReconnect" );
-    }
     ACI_EXCEPTION( InvalidHandle )
     {
-        ULN_FNCONTEXT_SET_RC( &sFnContext, SQL_INVALID_HANDLE );
+        ULN_FNCONTEXT_SET_RC( aFnContext, SQL_INVALID_HANDLE );
     }
     ACI_EXCEPTION( InvalidCurrrentServer )
     {
-        (void)ulnError( &sFnContext, ulERR_ABORT_NO_CONNECTION );
+        (void)ulnError( aFnContext, ulERR_ABORT_NO_CONNECTION );
     }
 
     ACI_EXCEPTION_END;
@@ -225,6 +217,74 @@ SQLRETURN ulsdnReconnect( acp_sint16_t aHandleType, ulnObject *aObject )
         ulnDbcSetCurrentServer( sDbc, NULL );
         ulnFailoverDestroyServerInfo( sServerInfo );
     }
+
+    return ULN_FNCONTEXT_GET_RC(aFnContext);
+}
+
+SQLRETURN ulsdnReconnect( acp_sint16_t aHandleType, ulnObject *aObject )
+{
+    ULN_FLAG(sNeedExit);
+    ulnFnContext sFnContext;
+
+    ULN_INIT_FUNCTION_CONTEXT( sFnContext, ULN_FID_FOR_SD, aObject, aHandleType );
+
+    ACI_TEST_RAISE( aObject == NULL, InvalidHandle );
+
+    ACI_TEST(ulnEnter(&sFnContext, NULL) != ACI_SUCCESS);
+    ULN_FLAG_UP(sNeedExit);
+
+    ACI_TEST( ulsdnReconnectCore( &sFnContext )
+              != SQL_SUCCESS );
+
+    ULN_FLAG_DOWN(sNeedExit);
+    ACI_TEST(ulnExit(&sFnContext) != ACI_SUCCESS);
+
+    return ULN_FNCONTEXT_GET_RC(&sFnContext);
+
+    ACI_EXCEPTION( InvalidHandle )
+    {
+        ULN_FNCONTEXT_SET_RC( &sFnContext, SQL_INVALID_HANDLE );
+    }
+
+    ACI_EXCEPTION_END;
+
+    ULN_IS_FLAG_UP(sNeedExit)
+    {
+        ulnExit(&sFnContext);
+    }
+
+    return ULN_FNCONTEXT_GET_RC(&sFnContext);
+}
+
+SQLRETURN ulsdnReconnectWithoutEnter( acp_sint16_t aHandleType, ulnObject *aObject )
+{
+    ulnFnContext sFnContext;
+
+    ULN_INIT_FUNCTION_CONTEXT( sFnContext, ULN_FID_NONE, aObject, aHandleType );
+
+    ACI_TEST_RAISE( aObject == NULL, InvalidHandle );
+
+    ACI_TEST_RAISE( ulnClearDiagnosticInfoFromObject( aObject )
+                    != ACI_SUCCESS,
+                    LABEL_MEM_MAN_ERR );
+
+    ACI_TEST( ulsdnReconnectCore( &sFnContext )
+              != SQL_SUCCESS );
+
+    return ULN_FNCONTEXT_GET_RC(&sFnContext);
+
+    ACI_EXCEPTION( InvalidHandle )
+    {
+        ULN_FNCONTEXT_SET_RC( &sFnContext, SQL_INVALID_HANDLE );
+    }
+    ACI_EXCEPTION( LABEL_MEM_MAN_ERR )
+    {
+        (void)ulnError( &sFnContext,
+                        ulERR_FATAL_MEMORY_MANAGEMENT_ERROR,
+                        "ulsdnReconnectWithoutEnter" );
+    }
+
+    ACI_EXCEPTION_END;
 
     return ULN_FNCONTEXT_GET_RC(&sFnContext);
 }

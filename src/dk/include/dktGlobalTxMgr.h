@@ -26,22 +26,36 @@
 #include <dktGlobalCoordinator.h>
 #include <dktNotifier.h>
 
+/* BUG-48501 */
+typedef struct dktGlobalCoordinatorList
+{
+    iduList  mHead;
+    iduLatch mLatch;
+    UInt     mCnt;
+} dktGlobalCoordinatorList;
+
 class dktGlobalTxMgr
 {
 private:
-    static UInt         mUniqueGlobalTxSeq;
-    /* ì–¼ë§ˆë‚˜ ë§ì€ ê¸€ë¡œë²Œ íŠ¸ëœì­ì…˜ì„ ìˆ˜í–‰í•˜ê³  ìˆëŠ”ì§€ */
-    static UInt         mActiveGlobalCoordinatorCnt;
-    /* DK ì— ìƒì„±ë˜ì–´ ì¡´ì¬í•˜ëŠ” ëª¨ë“  global coordinator ë“¤ì˜ ë¦¬ìŠ¤íŠ¸ */
-    static iduList      mGlobalCoordinatorList;
-    /* mGlobalCoordinatorList ì— ëŒ€í•œ ë™ì‹œì ‘ê·¼ì„ ë§‰ê¸° ìœ„í•œ mutex */
-    static iduMutex     mDktMutex;
 
-    static dktNotifier  mNotifier;  /* PROJ-2569 2PC */
+    static iduMemPool                 mGlobalCoordinatorPool;
+
+    static SLong                      mUniqueGlobalTxSeq;
+
+    /* DK ¿¡ »ı¼ºµÇ¾î Á¸ÀçÇÏ´Â ¸ğµç global coordinator µéÀÇ ¸®½ºÆ® */
+    static dktGlobalCoordinatorList * mGlobalCoordinatorList;
+
+    static dktNotifier                mNotifier;  /* PROJ-2569 2PC */
 
 public:
+
+    static void lockRead( UInt aIdx );
+    static void lockWrite( UInt aIdx );
+    static void unlock( UInt aIdx );
+
     static UChar         mMacAddr[ACP_SYS_MAC_ADDR_LEN];
     static UInt          mInitTime;
+    static SInt          mProcessID;
     /* Initialize / Finalize */
     static IDE_RC       initializeStatic();
     static IDE_RC       finalizeStatic();
@@ -60,22 +74,20 @@ public:
     static IDE_RC       getAllRemoteStmtInfo( dktRemoteStmtInfo * aInfo,
                                               UInt              * aRemoteStmtCnt );
 
-    static IDE_RC       getAllRemoteTransactionCount( UInt  *aCount );
-    static IDE_RC       getAllRemoteTransactionCountWithoutLock( UInt  *aCount );
+    static void         getAllRemoteTransactionCount( UInt * aCount );
 
     static IDE_RC       getAllRemoteStmtCount( UInt  *aCount );
 
-    /* ì…ë ¥ë°›ì€ global coordinator ë¥¼ ê´€ë¦¬ëŒ€ìƒìœ¼ë¡œ ì¶”ê°€í•œë‹¤. */
-    static IDE_RC       addGlobalCoordinatorToList(
-                                        dktGlobalCoordinator  *aGlobalCrd );
+    /* ÀÔ·Â¹ŞÀº global coordinator ¸¦ °ü¸®´ë»óÀ¸·Î Ãß°¡ÇÑ´Ù. */
+    static void         addGlobalCoordinatorToList( dktGlobalCoordinator * aGlobalCrd );
 
-    /* Global transaction id ë¥¼ ì…ë ¥ë°›ì•„ í•´ë‹¹ global transaction ì„ ìˆ˜í–‰í•œ
-       global coordinator list node ë¥¼ list ì—ì„œ ì°¾ì•„ ë°˜í™˜í•œë‹¤. */
+    /* Global transaction id ¸¦ ÀÔ·Â¹Ş¾Æ ÇØ´ç global transaction À» ¼öÇàÇÑ
+       global coordinator list node ¸¦ list ¿¡¼­ Ã£¾Æ ¹İÈ¯ÇÑ´Ù. */
     static IDE_RC       findGlobalCoordinator( 
                                         UInt                  aGlobalTxId,
                                         dktGlobalCoordinator **aGlobalCrd );
 
-    /* Linker data session id ë¥¼ ê°–ëŠ” global coordinator ë¥¼ ì°¾ëŠ”ë‹¤.*/
+    /* Linker data session id ¸¦ °®´Â global coordinator ¸¦ Ã£´Â´Ù.*/
     static IDE_RC       findGlobalCoordinatorWithSessionId( 
                                         UInt                   aSessionId, 
                                         dktGlobalCoordinator **aGlobalCrd );
@@ -93,11 +105,10 @@ public:
     static UInt getNotifierBranchTxCnt();
     static IDE_RC getNotifierTransactionInfo( dktNotifierTransactionInfo ** aInfo,
                                               UInt                        * aInfoCount );
+    static IDE_RC getShardNotifierTransactionInfo( dktNotifierTransactionInfo ** aInfo,
+                                                   UInt                        * aInfoCount );
     static inline idBool isGT( const smLSN * aLSN1,
                                const smLSN * aLSN2 );
-    static UInt getDtxGlobalTxId( UInt aLocalTxId );
-    static void findGlobalCoordinatorByLocalTxId( UInt                    aLocalTxId,
-                                                  dktGlobalCoordinator ** aGlobalCrd );
     
     static IDE_RC createGlobalCoordinatorAndSetSessionTxId( dksDataSession        * aSession,
                                                             UInt                    aLocalTxId,
@@ -106,11 +117,6 @@ public:
     static void   destroyGlobalCoordinatorAndUnSetSessionTxId(  dktGlobalCoordinator * aGlobalCoordinator,
                                                                 dksDataSession       * aSession );
 };
-
-inline UInt dktGlobalTxMgr::getActiveGlobalCoordinatorCnt()
-{
-    return mActiveGlobalCoordinatorCnt;
-}
 
 inline dktNotifier * dktGlobalTxMgr::getNotifier()
 {

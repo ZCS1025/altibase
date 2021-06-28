@@ -28,7 +28,7 @@
 #include <svmTBSStartupShutdown.h>
 
 /*
-  ìƒì„±ì (ì•„ë¬´ê²ƒë„ ì•ˆí•¨)
+  »ı¼ºÀÚ (¾Æ¹«°Íµµ ¾ÈÇÔ)
 */
 svmTBSStartupShutdown::svmTBSStartupShutdown()
 {
@@ -37,11 +37,11 @@ svmTBSStartupShutdown::svmTBSStartupShutdown()
 
 
 /*
-    Server startupì‹œ Log Anchorì˜ Tablespace Attributeë¥¼ ë°”íƒ•ìœ¼ë¡œ
-    Tablespace Nodeë¥¼ êµ¬ì¶•í•œë‹¤.
+    Server startup½Ã Log AnchorÀÇ Tablespace Attribute¸¦ ¹ÙÅÁÀ¸·Î
+    Tablespace Node¸¦ ±¸ÃàÇÑ´Ù.
 
-    [IN] aTBSAttr      - Log Anchorì— ì €ì¥ëœ Tablespaceì˜ Attribute
-    [IN] aAnchorOffset - Log Anchorìƒì— Tablespace Attributeê°€ ì €ì¥ëœ Offset
+    [IN] aTBSAttr      - Log Anchor¿¡ ÀúÀåµÈ TablespaceÀÇ Attribute
+    [IN] aAnchorOffset - Log Anchor»ó¿¡ Tablespace Attribute°¡ ÀúÀåµÈ Offset
 */
 IDE_RC svmTBSStartupShutdown::loadTableSpaceNode(
            smiTableSpaceAttr   * aTBSAttr,
@@ -53,26 +53,26 @@ IDE_RC svmTBSStartupShutdown::loadTableSpaceNode(
     IDE_DASSERT( aTBSAttr != NULL );
     IDE_DASSERT( aTBSAttr->mAttrType == SMI_TBS_ATTR );
 
-    // sTBSNodeë¥¼ ì´ˆê¸°í™” í•œë‹¤.
+    // sTBSNode¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
     IDE_TEST(svmManager::allocTBSNode(&sTBSNode, aTBSAttr)
              != IDE_SUCCESS);
 
     sStage = 1;
 
-    // Volatile Tablespaceë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+    // Volatile Tablespace¸¦ ÃÊ±âÈ­ÇÑ´Ù.
     IDE_TEST(svmManager::initTBS(sTBSNode) != IDE_SUCCESS);
 
     sStage = 2;
 
-    // Log Anchorìƒì˜ Offsetì´ˆê¸°í™”
+    // Log Anchor»óÀÇ OffsetÃÊ±âÈ­
     sTBSNode->mAnchorOffset = aAnchorOffset;
 
-    /* ë™ì¼í•œ tablespaceëª…ì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤. */
-    // BUG-26695 TBS Nodeê°€ ì—†ëŠ”ê²ƒì´ ì •ìƒì´ë¯€ë¡œ ì—†ì„ ê²½ìš° ì˜¤ë¥˜ ë©”ì‹œì§€ë¥¼ ë°˜í™˜í•˜ì§€ ì•Šë„ë¡ ìˆ˜ì •
+    /* µ¿ÀÏÇÑ tablespace¸íÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù. */
+    // BUG-26695 TBS Node°¡ ¾ø´Â°ÍÀÌ Á¤»óÀÌ¹Ç·Î ¾øÀ» °æ¿ì ¿À·ù ¸Ş½ÃÁö¸¦ ¹İÈ¯ÇÏÁö ¾Êµµ·Ï ¼öÁ¤
     IDE_ASSERT( sctTableSpaceMgr::checkExistSpaceNodeByName(
                     sTBSNode->mHeader.mName ) == ID_FALSE );
 
-    // ìƒì„±í•œ Tablespace Nodeë¥¼ Tablespaceê´€ë¦¬ìì— ì¶”ê°€
+    // »ı¼ºÇÑ Tablespace Node¸¦ Tablespace°ü¸®ÀÚ¿¡ Ãß°¡
     sctTableSpaceMgr::addTableSpaceNode((sctTableSpaceNode*)sTBSNode);
     sStage = 3;
 
@@ -89,8 +89,8 @@ IDE_RC svmTBSStartupShutdown::loadTableSpaceNode(
                                   (sctTableSpaceNode*) sTBSNode );
         case 2:
             /* BUG-39806 Valgrind Warning
-             * - svmTBSDrop::dropTableSpacePending() ì˜ ì²˜ë¦¬ë¥¼ ìœ„í•´ì„œ, ë¨¼ì € ê²€ì‚¬
-             *   í•˜ê³  svmManager::finiTBS()ë¥¼ í˜¸ì¶œí•©ë‹ˆë‹¤.
+             * - svmTBSDrop::dropTableSpacePending() ÀÇ Ã³¸®¸¦ À§ÇØ¼­, ¸ÕÀú °Ë»ç
+             *   ÇÏ°í svmManager::finiTBS()¸¦ È£ÃâÇÕ´Ï´Ù.
              */
             if ( ( sTBSNode->mHeader.mState & SMI_TBS_DROPPED )
                  != SMI_TBS_DROPPED )
@@ -99,7 +99,7 @@ IDE_RC svmTBSStartupShutdown::loadTableSpaceNode(
             }
             else
             {
-                // Dropëœ TBSëŠ”  ì´ë¯¸ ìì›ì´ í•´ì œë˜ì–´ ìˆë‹¤.
+                // DropµÈ TBS´Â  ÀÌ¹Ì ÀÚ¿øÀÌ ÇØÁ¦µÇ¾î ÀÖ´Ù.
             }
         case 1:
             IDE_ASSERT(svmManager::destroyTBSNode(sTBSNode)
@@ -114,11 +114,11 @@ IDE_RC svmTBSStartupShutdown::loadTableSpaceNode(
 }
 
 /*
- * svmTBSStartupShutdown::prepareAllTBSë¥¼ ìœ„í•œ Actioní•¨ìˆ˜
- * í•˜ë‚˜ì˜ Volatile TBSì— ëŒ€í•´ TBS ì´ˆê¸°í™” ê³¼ì •ì„ ìˆ˜í–‰í•œë‹¤.
- * ì´ë¯¸ TBSNodeëŠ” ì´ˆê¸°í™”ê°€ ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
- * Volatile TBS ì´ˆê¸°í™” ê³¼ì •ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
- *  1. TBS page ìƒì„±
+ * svmTBSStartupShutdown::prepareAllTBS¸¦ À§ÇÑ ActionÇÔ¼ö
+ * ÇÏ³ªÀÇ Volatile TBS¿¡ ´ëÇØ TBS ÃÊ±âÈ­ °úÁ¤À» ¼öÇàÇÑ´Ù.
+ * ÀÌ¹Ì TBSNode´Â ÃÊ±âÈ­°¡ µÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
+ * Volatile TBS ÃÊ±âÈ­ °úÁ¤Àº ´ÙÀ½°ú °°´Ù.
+ *  1. TBS page »ı¼º
  */
 IDE_RC svmTBSStartupShutdown::prepareTBSAction(idvSQL*            /*aStatistics*/,
                                                sctTableSpaceNode *aTBSNode,
@@ -146,10 +146,10 @@ IDE_RC svmTBSStartupShutdown::prepareTBSAction(idvSQL*            /*aStatistics*
 
 
 /*
- * ëª¨ë“  TBSNodeë¥¼ ìˆœíšŒí•˜ë©´ì„œ Volatile TBSì— ëŒ€í•´
- * ì´ˆê¸°í™” ì‘ì—…ì„ í•œë‹¤.
- * ì´ í•¨ìˆ˜ê°€ ë¶ˆë ¤ì§€ê¸° ì „ì— smrLogAnchorMgrì´
- * ëª¨ë“  TBSNodeë“¤ì„ ì´ˆê¸°í™” ê³¼ì •ì„ ë§ˆì¹œ ìƒíƒœì´ì–´ì•¼ í•œë‹¤.
+ * ¸ğµç TBSNode¸¦ ¼øÈ¸ÇÏ¸é¼­ Volatile TBS¿¡ ´ëÇØ
+ * ÃÊ±âÈ­ ÀÛ¾÷À» ÇÑ´Ù.
+ * ÀÌ ÇÔ¼ö°¡ ºÒ·ÁÁö±â Àü¿¡ smrLogAnchorMgrÀÌ
+ * ¸ğµç TBSNodeµéÀ» ÃÊ±âÈ­ °úÁ¤À» ¸¶Ä£ »óÅÂÀÌ¾î¾ß ÇÑ´Ù.
  */
 IDE_RC svmTBSStartupShutdown::prepareAllTBS()
 {
@@ -167,7 +167,7 @@ IDE_RC svmTBSStartupShutdown::prepareAllTBS()
 }
 
 /*
- * ëª¨ë“  Volatile Tablespaceë¥¼ destroyí•œë‹¤.
+ * ¸ğµç Volatile Tablespace¸¦ destroyÇÑ´Ù.
  */
 IDE_RC svmTBSStartupShutdown::destroyAllTBSNode()
 {
@@ -176,13 +176,11 @@ IDE_RC svmTBSStartupShutdown::destroyAllTBSNode()
     sctTableSpaceNode * sCurrSpaceNode;
     svmTBSNode        * sTBSNode;
 
-    sctTableSpaceMgr::getFirstSpaceNode( (void**)&sCurrSpaceNode );
+    sCurrSpaceNode = sctTableSpaceMgr::getFirstSpaceNode();
 
     while( sCurrSpaceNode != NULL )
     {
-        sctTableSpaceMgr::getNextSpaceNodeIncludingDropped(
-                              (void*)sCurrSpaceNode,
-                              (void**)&sNextSpaceNode );
+        sNextSpaceNode = sctTableSpaceMgr::getNextSpaceNodeIncludingDropped( sCurrSpaceNode->mID );
 
         if ( sctTableSpaceMgr::isVolatileTableSpace(sCurrSpaceNode->mID) == ID_TRUE )
         {
@@ -190,8 +188,8 @@ IDE_RC svmTBSStartupShutdown::destroyAllTBSNode()
             sctTableSpaceMgr::removeTableSpaceNode( sCurrSpaceNode );
 
             /* BUG-39806 Valgrind Warning
-             * - svmTBSDrop::dropTableSpacePending() ì˜ ì²˜ë¦¬ë¥¼ ìœ„í•´ì„œ, ë¨¼ì € ê²€ì‚¬
-             *   í•˜ê³  svmManager::finiTBS()ë¥¼ í˜¸ì¶œí•©ë‹ˆë‹¤.
+             * - svmTBSDrop::dropTableSpacePending() ÀÇ Ã³¸®¸¦ À§ÇØ¼­, ¸ÕÀú °Ë»ç
+             *   ÇÏ°í svmManager::finiTBS()¸¦ È£ÃâÇÕ´Ï´Ù.
              */
             sTBSNode = (svmTBSNode*)sCurrSpaceNode;
 
@@ -202,10 +200,10 @@ IDE_RC svmTBSStartupShutdown::destroyAllTBSNode()
             }
             else
             {
-                // Dropëœ TBSëŠ”  ì´ë¯¸ ìì›ì´ í•´ì œë˜ì–´ ìˆë‹¤.
+                // DropµÈ TBS´Â  ÀÌ¹Ì ÀÚ¿øÀÌ ÇØÁ¦µÇ¾î ÀÖ´Ù.
             }
 
-            // ì´ ì•ˆì—ì„œ sCurrSpaceNodeì˜ ë©”ëª¨ë¦¬ê¹Œì§€ í•´ì œí•œë‹¤.
+            // ÀÌ ¾È¿¡¼­ sCurrSpaceNodeÀÇ ¸Ş¸ğ¸®±îÁö ÇØÁ¦ÇÑ´Ù.
             IDE_TEST(svmManager::destroyTBSNode((svmTBSNode*)sCurrSpaceNode)
                      != IDE_SUCCESS );
         }
@@ -222,11 +220,11 @@ IDE_RC svmTBSStartupShutdown::destroyAllTBSNode()
 
 
 /*
-    Volatile Tablespace ê´€ë¦¬ìì˜ ì´ˆê¸°í™”
+    Volatile Tablespace °ü¸®ÀÚÀÇ ÃÊ±âÈ­
  */
 IDE_RC svmTBSStartupShutdown::initializeStatic()
 {
-    // ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // ¾Æ¹«°Íµµ ÇÏÁö ¾Ê´Â´Ù.
 
     return IDE_SUCCESS;
 }
@@ -234,11 +232,11 @@ IDE_RC svmTBSStartupShutdown::initializeStatic()
 
 
 /*
-    Volatile Tablespaceê´€ë¦¬ìì˜ í•´ì œ
+    Volatile Tablespace°ü¸®ÀÚÀÇ ÇØÁ¦
  */
 IDE_RC svmTBSStartupShutdown::destroyStatic()
 {
-    // ëª¨ë“  Memory Tablespaceë¥¼ destroyí•œë‹¤.
+    // ¸ğµç Memory Tablespace¸¦ destroyÇÑ´Ù.
     IDE_TEST( destroyAllTBSNode() != IDE_SUCCESS );
 
     return IDE_SUCCESS;

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smrDirtyPageList.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smrDirtyPageList.h 90522 2021-04-09 01:29:20Z emlee $
  **********************************************************************/
 
 #ifndef _O_SMR_DIRTY_PAGE_LIST_
@@ -38,29 +38,29 @@ public:
     
     IDE_RC destroy();
 
-    inline void  add(smmPCH*  aPCHPtr,
-                     scPageID  aPageID);
+    inline void  add( smmPCH  * aPCHPtr,
+                      scPageID  aPageID );
     
     inline vULong getDirtyPageCnt() { return mDirtyPageCnt; }
 
-    // Dirty Page IDë“¤ì„ ì†ŒíŒ…í•˜ê³  Page IDê°€ ìž‘ì€ê²ƒë¶€í„° ë¡œê¹…í•œë‹¤.
+    // Dirty Page IDµéÀ» ¼ÒÆÃÇÏ°í Page ID°¡ ÀÛÀº°ÍºÎÅÍ ·Î±ëÇÑ´Ù.
     IDE_RC writePIDLogs();
     
-    // Dirty Pageë“¤ì„ Checkpoint Imageì— Writeí•œë‹¤.
+    // Dirty PageµéÀ» Checkpoint Image¿¡ WriteÇÑ´Ù.
     IDE_RC writeDirtyPages(
                 smmTBSNode                * aTBSNode,
                 smmGetFlushTargetDBNoFunc   aGetFlushTargetDBNoFunc,
                 idBool                      aIsFinalWrite,
-                scPageID                    aTotalCnt,
-                scPageID                  * aWriteCnt,
-                scPageID                  * aRemoveCnt,
+                UInt                        aTotalCnt,
+                UInt                      * aWriteCnt,
+                UInt                      * aRemoveCnt,
                 ULong                     * aWaitTime,
                 ULong                     * aSyncTime );
 
-    //  SMM Dirty Page Mgrë¡œë¶€í„° Dirty Pageë“¤ì„ ê°€ì ¸ì˜¨ë‹¤
+    //  SMM Dirty Page Mgr·ÎºÎÅÍ Dirty PageµéÀ» °¡Á®¿Â´Ù
     IDE_RC moveDirtyPagesFrom( smmDirtyPageMgr * aSmmDPMgr,
-                               scPageID        * aNewCnt,
-                               scPageID        * aDupCnt);
+                               UInt            * aNewCnt,
+                               UInt            * aDupCnt );
 
     void  removeAll( idBool aIsForce );
     
@@ -72,7 +72,7 @@ public:
     inline IDE_RC unlock() { return mMutex.unlock(); };
     
 private:
-    // ì¤‘ë³µëœ PIDê°€ ì—†ëŠ”ì§€ ì²´í¬í•œë‹¤.
+    // Áßº¹µÈ PID°¡ ¾ø´ÂÁö Ã¼Å©ÇÑ´Ù.
     idBool isAllPageUnique();
     
     inline void remove( smmPCH * aPCHPtr );
@@ -82,18 +82,18 @@ private:
                                   smmDatabaseFile* aDBFilePtr, 
                                   scPageID         aPID); 
 
-    // Page ID Arrayê°€ ê¸°ë¡ëœ Log Bufferë¥¼ Log Recordë¡œ ê¸°ë¡í•œë‹¤.
+    // Page ID Array°¡ ±â·ÏµÈ Log Buffer¸¦ Log Record·Î ±â·ÏÇÑ´Ù.
     static IDE_RC writePIDLogRec(SChar * aLogBuffer,
                                  UInt    aDirtyPageCount);
 
 
-    // Page Imageë¥¼ Checkpoint Imageì— ê¸°ë¡í•œë‹¤.
+    // Page Image¸¦ Checkpoint Image¿¡ ±â·ÏÇÑ´Ù.
    
     static IDE_RC writePageImage( smmTBSNode * aTBSNode,
                                   SInt         aWhichDB,
                                   scPageID     aPageID );
     
-    // ì´ Dirty Pageê´€ë¦¬ìžëŠ” ì´ Tablespaceì— ì†í•œ Pageë“¤ë§Œ ê´€ë¦¬í•œë‹¤.
+    // ÀÌ Dirty Page°ü¸®ÀÚ´Â ÀÌ Tablespace¿¡ ¼ÓÇÑ Pageµé¸¸ °ü¸®ÇÑ´Ù.
     scSpaceID   mSpaceID ;
     vULong            mMaxDirtyPageCnt;
     vULong            mDirtyPageCnt;
@@ -115,8 +115,8 @@ inline void  smrDirtyPageList::add( smmPCH    * aPCHPtr,
     
     if(aPCHPtr->m_pnxtDirtyPCH == NULL)
     {
-        /* ì´ íŽ˜ì´ì§€ê°€ DirtyPageListì— ì—†ìŒ */
-        /* ì¤‘ë³µëœ Dirty Pageê°€ ì¡´ìž¬í•˜ëŠ”ì§€ ì²´í¬í•œë‹¤. */
+        /* ÀÌ ÆäÀÌÁö°¡ DirtyPageList¿¡ ¾øÀ½ */
+        /* Áßº¹µÈ Dirty Page°¡ Á¸ÀçÇÏ´ÂÁö Ã¼Å©ÇÑ´Ù. */
 #if defined(DEBUG_SMR_DIRTY_PAGE_LIST_CHECK )
         for( i = 0; i < mDirtyPageCnt; i++)
         {
@@ -163,7 +163,7 @@ inline void  smrDirtyPageList::add( smmPCH    * aPCHPtr,
     }
     else
     {
-        /* ì´ íŽ˜ì´ì§€ê°€ ì´ë¯¸ DirtyPageListì— ë“¤ì–´ê°€ ìžˆìŒ */
+        /* ÀÌ ÆäÀÌÁö°¡ ÀÌ¹Ì DirtyPageList¿¡ µé¾î°¡ ÀÖÀ½ */
         IDE_ASSERT((aPCHPtr->m_dirtyStat & SMM_PCH_DIRTY_STAT_MASK)
                    != SMM_PCH_DIRTY_STAT_INIT);
 

@@ -40,7 +40,7 @@ public class SingletonExecutorService
         shard_log("(SINGLETON_EXECUTOR_SERVICE) create thread pool. core size : {0}, max size : {1}, idle timeout : {2} ",
                   new Object[] { CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, IDLE_TIMEOUT_MIN } );
     }
-    // SynchronousQueueëŠ” sizeê°€ 0ì´ê¸° ë•Œë¬¸ì— core poolì´ ë‹¤ ì°¬ ê²½ìš° max sizeê¹Œì§€ ëŠ˜ì–´ë‚œ í›„ rejectë¥¼ í•˜ê²Œ ëœë‹¤.
+    // SynchronousQueue´Â size°¡ 0ÀÌ±â ¶§¹®¿¡ core poolÀÌ ´Ù Âù °æ¿ì max size±îÁö ´Ã¾î³­ ÈÄ reject¸¦ ÇÏ°Ô µÈ´Ù.
     private static ExecutorService mInstance =
             new ThreadPoolExecutor(
                     CORE_POOL_SIZE,
@@ -56,7 +56,7 @@ public class SingletonExecutorService
                             return sThread;
                         }
                     },
-                    // maxê¹Œì§€ ì°¨ë©´ ë¬´ì¡°ê±´ rejectí•˜ëŠ” ëŒ€ì‹  caller ì“°ë ˆë“œì— taskë¥¼ ìœ„ì„ì‹œí‚¨ë‹¤.
+                    // max±îÁö Â÷¸é ¹«Á¶°Ç rejectÇÏ´Â ´ë½Å caller ¾²·¹µå¿¡ task¸¦ À§ÀÓ½ÃÅ²´Ù.
                     new ThreadPoolExecutor.CallerRunsPolicy()
             );
 

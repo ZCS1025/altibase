@@ -20,7 +20,7 @@
  *
  * Description :
  *     TASK-4990 changing the method of collecting index statistics
- *     SYSTEM ê´€ë ¨ í†µê³„ì •ë³´ë¥¼ ìˆ˜ì§‘í•œë‹¤.
+ *     SYSTEM °ü·Ã Åë°èÁ¤º¸¸¦ ¼öÁıÇÑ´Ù.
  *
  * Syntax :
  *    GATHER_SYSTEM_STATS ()
@@ -57,7 +57,7 @@ static IDE_RC qsfEstimate( mtcNode*        aNode,
 mtfModule qsfGatherSystemStatsModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -279,7 +279,7 @@ IDE_RC qsfCalculate_GatherSystemStats( mtcNode*     aNode,
             != IDE_SUCCESS );
 
     // BUG-37125 tpch plan optimization
-    // ì¸¡ì •ëœ ê²°ê³¼ì¹˜ê°€ ì‹¤ì œ ìƒí™©ì„ ì œëŒ€ë¡œ ë°˜ì˜í•˜ì§€ ëª»í•œë‹¤.
+    // ÃøÁ¤µÈ °á°úÄ¡°¡ ½ÇÁ¦ »óÈ²À» Á¦´ë·Î ¹İ¿µÇÏÁö ¸øÇÑ´Ù.
     sHashTime    = benchHashTime();
     sCompareTime = benchCompareTime() * COMPARE_ADJ;
     sStoreTime   = benchStoreTime() * STORE_ADJ;

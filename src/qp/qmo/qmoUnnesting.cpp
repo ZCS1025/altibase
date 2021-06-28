@@ -31,12 +31,14 @@
 #include <qmoNormalForm.h>
 #include <qmvQuerySet.h>
 #include <qtcCache.h>
+#include <sdi.h> /* TASK-7219 Shard Transformer Refactoring */
 
-// Subquery unnesting ì‹œ ìƒì„±ë˜ëŠ” viewì˜ ì´ë¦„
-#define VIEW_NAME_PREFIX        "VIEW"
-#define VIEW_NAME_LENGTH        8
+// Subquery unnesting ½Ã »ı¼ºµÇ´Â viewÀÇ ÀÌ¸§
+/* BUG-48052 */
+#define VIEW_NAME_PREFIX        "$VIEW"
+#define VIEW_NAME_LENGTH        11
 
-// Subquery unnesting ì‹œ ìƒì„±ë˜ëŠ” viewì˜ column ì´ë¦„
+// Subquery unnesting ½Ã »ı¼ºµÇ´Â viewÀÇ column ÀÌ¸§
 #define COLUMN_NAME_PREFIX      "COL"
 #define COLUMN_NAME_LENGTH      8
 
@@ -88,28 +90,28 @@ qmoUnnesting::doTransform( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *     PROJ-1718 Subquery Unnesting ê¸°ë²•
- *     SQLêµ¬ë¬¸ì— í¬í•¨ëœ subqueryë“¤ì„ ëª¨ë‘ ì°¾ì•„ unnesting ì‹œë„í•œë‹¤.
+ *     PROJ-1718 Subquery Unnesting ±â¹ı
+ *     SQL±¸¹®¿¡ Æ÷ÇÔµÈ subqueryµéÀ» ¸ğµÎ Ã£¾Æ unnesting ½ÃµµÇÑ´Ù.
  *
  * Implementation :
- *     Unnestingë˜ì–´ view mergingì´ ìˆ˜í–‰ë˜ì–´ì•¼ í•˜ëŠ” ê²½ìš° aChangeì˜
- *     ê°’ì´ trueë¡œ ë°˜í™˜ëœë‹¤.
+ *     UnnestingµÇ¾î view mergingÀÌ ¼öÇàµÇ¾î¾ß ÇÏ´Â °æ¿ì aChangeÀÇ
+ *     °ªÀÌ true·Î ¹İÈ¯µÈ´Ù.
  *
  ***********************************************************************/
 
-    qmsQuerySet * sQuerySet = NULL;
-    idBool        sChanged = ID_FALSE;
+    qmsParseTree * sParseTree = NULL; /* TASK-7219 */
+    idBool         sChanged = ID_FALSE;
 
     IDU_FIT_POINT_FATAL( "qmoUnnesting::doTransform::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //------------------------------------------
-    // Subqury Unnesting ìˆ˜í–‰
+    // Subqury Unnesting ¼öÇà
     //------------------------------------------
 
     if ( QCU_OPTIMIZER_UNNEST_SUBQUERY == 0 )
@@ -124,10 +126,11 @@ qmoUnnesting::doTransform( qcStatement  * aStatement,
     }
 
     /* BUG-46544 unnest hit */
-    if ( QCU_OPTIMIZER_UNNEST_COMPATIBILITY == 1 )
+    if ( (QCU_OPTIMIZER_UNNEST_COMPATIBILITY & QCU_UNNEST_COMPATIBILITY_MASK_MODE1)
+         == QCU_UNNEST_COMPATIBILITY_MASK_MODE1 )
     {
-        // ê¸°ì¡´ì— unnestì˜ ê²½ìš° hintë³´ë‹¤ í”„ë¡œí¼í‹° ê°€ ìš°ì„ ì´ì—¬ì„œ í˜¸í™˜ì„±ì„ ìœ„í•´
-        // í”„ë¡œí¼í‹°ë¥¼ ìš°ì„ í•˜ë„ë¡ í•œë‹¤.
+        // ±âÁ¸¿¡ unnestÀÇ °æ¿ì hintº¸´Ù ÇÁ·ÎÆÛÆ¼ °¡ ¿ì¼±ÀÌ¿©¼­ È£È¯¼ºÀ» À§ÇØ
+        // ÇÁ·ÎÆÛÆ¼¸¦ ¿ì¼±ÇÏµµ·Ï ÇÑ´Ù.
         QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_UNNEST_COMPATIBILITY_1_MASK;
         QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_UNNEST_COMPATIBILITY_1_TRUE;
     }
@@ -137,21 +140,30 @@ qmoUnnesting::doTransform( qcStatement  * aStatement,
         QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_UNNEST_COMPATIBILITY_1_FALSE;
     }
 
-    // BUG-43059 Target subquery unnest/removal disable
-    sQuerySet = ((qmsParseTree*)(aStatement->myPlan->parseTree))->querySet;
+    /* TASK-7219 ¿ø°İÁö¿¡¼­ ¼öÇàÇÒ Shard View¿¡´Â UnnestingÀ» ¼öÇàÇÏÁö ¾Ê´Â´Ù. */
+    sParseTree = (qmsParseTree*)aStatement->myPlan->parseTree;
 
-    if ( ( sQuerySet->flag & QMV_QUERYSET_TARGET_SUBQUERY_UNNEST_MASK )
+    IDE_TEST_CONT( ( ( sParseTree->common.stmtShard != QC_STMT_SHARD_NONE )
+                     &&
+                     ( sParseTree->common.stmtShard != QC_STMT_SHARD_META ) ),
+                   NORMAL_EXIT );
+
+    // BUG-43059 Target subquery unnest/removal disable
+    if ( ( sParseTree->querySet->lflag & QMV_QUERYSET_TARGET_SUBQUERY_UNNEST_MASK )
          == QMV_QUERYSET_TARGET_SUBQUERY_UNNEST_TRUE )
     {
         IDE_TEST( doTransformQuerySet( aStatement,
-                                       sQuerySet,
-                                       &sChanged )
+                                       sParseTree->querySet,
+                                       & sChanged )
                   != IDE_SUCCESS );
     }
     else
     {
         // Nothing to do.
     }
+
+    /* TASK-7219 */
+    IDE_EXCEPTION_CONT( NORMAL_EXIT );
 
     qcgPlan::registerPlanProperty( aStatement,
                                    PLAN_PROPERTY_OPTIMIZER_UNNEST_SUBQUERY );
@@ -176,13 +188,13 @@ qmoUnnesting::doTransformSubqueries( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     ì£¼ì–´ì§„ predicateì—ì„œ í¬í•¨ëœ subqueryë“¤ì„ ëª¨ë‘ ì°¾ì•„ unnesting
- *     ì‹œë„í•œë‹¤.
- *     SELECT ì™¸ êµ¬ë¬¸ì— í¬í•¨ëœ predicateë“¤ì„ ìœ„í•´ ì‚¬ìš©í•œë‹¤.
+ *     ÁÖ¾îÁø predicate¿¡¼­ Æ÷ÇÔµÈ subqueryµéÀ» ¸ğµÎ Ã£¾Æ unnesting
+ *     ½ÃµµÇÑ´Ù.
+ *     SELECT ¿Ü ±¸¹®¿¡ Æ÷ÇÔµÈ predicateµéÀ» À§ÇØ »ç¿ëÇÑ´Ù.
  *
  * Implementation :
- *     Unnestingë˜ì–´ view mergingì´ ìˆ˜í–‰ë˜ì–´ì•¼ í•˜ëŠ” ê²½ìš° aChangeì˜
- *     ê°’ì´ trueë¡œ ë°˜í™˜ëœë‹¤.
+ *     UnnestingµÇ¾î view mergingÀÌ ¼öÇàµÇ¾î¾ß ÇÏ´Â °æ¿ì aChangeÀÇ
+ *     °ªÀÌ true·Î ¹İÈ¯µÈ´Ù.
  *
  ***********************************************************************/
 
@@ -200,10 +212,11 @@ qmoUnnesting::doTransformSubqueries( qcStatement * aStatement,
     }
 
     /* BUG-46544 unnest hit */
-    if ( QCU_OPTIMIZER_UNNEST_COMPATIBILITY == 1 )
+    if ( (QCU_OPTIMIZER_UNNEST_COMPATIBILITY & QCU_UNNEST_COMPATIBILITY_MASK_MODE1) 
+         == QCU_UNNEST_COMPATIBILITY_MASK_MODE1 )
     {
-        // ê¸°ì¡´ì— unnestì˜ ê²½ìš° hintë³´ë‹¤ í”„ë¡œí¼í‹° ê°€ ìš°ì„ ì´ì—¬ì„œ í˜¸í™˜ì„±ì„ ìœ„í•´
-        // í”„ë¡œí¼í‹°ë¥¼ ìš°ì„ í•˜ë„ë¡ í•œë‹¤.
+        // ±âÁ¸¿¡ unnestÀÇ °æ¿ì hintº¸´Ù ÇÁ·ÎÆÛÆ¼ °¡ ¿ì¼±ÀÌ¿©¼­ È£È¯¼ºÀ» À§ÇØ
+        // ÇÁ·ÎÆÛÆ¼¸¦ ¿ì¼±ÇÏµµ·Ï ÇÑ´Ù.
         QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_UNNEST_COMPATIBILITY_1_MASK;
         QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_UNNEST_COMPATIBILITY_1_TRUE;
     }
@@ -240,7 +253,7 @@ qmoUnnesting::doTransformQuerySet( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Query-setì— í¬í•¨ëœ subqueryë“¤ì„ ì°¾ì•„ unnesting ì‹œë„í•œë‹¤.
+ *     Query-set¿¡ Æ÷ÇÔµÈ subqueryµéÀ» Ã£¾Æ unnesting ½ÃµµÇÑ´Ù.
  *
  * Implementation :
  *
@@ -279,30 +292,58 @@ qmoUnnesting::doTransformQuerySet( qcStatement * aStatement,
             sUnnestSubquery = ID_FALSE;
         }
 
-        for( sFrom = aQuerySet->SFWGH->from;
-             sFrom != NULL;
-             sFrom = sFrom->next )
+        if ( sUnnestSubquery == ID_TRUE )
         {
-            IDE_TEST( doTransformFrom( aStatement,
-                                       aQuerySet->SFWGH,
-                                       sFrom,
-                                       aChanged )
-                      != IDE_SUCCESS );
-        }
-
-        if( ( aQuerySet->SFWGH->hierarchy == NULL ) &&
-            ( aQuerySet->SFWGH->rownum    == NULL ) )
-        {
-            IDE_TEST( findAndRemoveSubquery( aStatement,
-                                             aQuerySet->SFWGH,
-                                             aQuerySet->SFWGH->where,
-                                             &sRemoved )
-                      != IDE_SUCCESS );
-
-            // BUG-38288 RemoveSubquery ë¥¼ í•˜ê²Œ ë˜ë©´ target ì´ ë³€ê²½ëœë‹¤
-            // ì´ë¥¼ ìƒìœ„ QuerySet ì—ì„œ ì•Œì•„ì•¼ í•œë‹¤.
-            if( sRemoved == ID_TRUE )
+            for( sFrom = aQuerySet->SFWGH->from;
+                 sFrom != NULL;
+                 sFrom = sFrom->next )
             {
+                IDE_TEST( doTransformFrom( aStatement,
+                                           aQuerySet->SFWGH,
+                                           sFrom,
+                                           aChanged )
+                          != IDE_SUCCESS );
+            }
+
+            if( ( aQuerySet->SFWGH->hierarchy == NULL ) &&
+                ( aQuerySet->SFWGH->rownum    == NULL ) )
+            {
+                IDE_TEST( findAndRemoveSubquery( aStatement,
+                                                 aQuerySet->SFWGH,
+                                                 aQuerySet->SFWGH->where,
+                                                 &sRemoved )
+                          != IDE_SUCCESS );
+
+                // BUG-38288 RemoveSubquery ¸¦ ÇÏ°Ô µÇ¸é target ÀÌ º¯°æµÈ´Ù
+                // ÀÌ¸¦ »óÀ§ QuerySet ¿¡¼­ ¾Ë¾Æ¾ß ÇÑ´Ù.
+                if( sRemoved == ID_TRUE )
+                {
+                    *aChanged = ID_TRUE;
+                }
+                else
+                {
+                    // Nothing to do.
+                }
+            }
+            else
+            {
+                // Hierarchy query »ç¿ë ½Ã subquery removal ¼öÇà¾ÈÇÔ
+            }
+
+            // SET ¿¬»êÀÌ ¾Æ´Ñ °æ¿ì WHEREÀıÀÇ subqueryµéÀ» unnestingÀ» ½Ãµµ ÇÑ´Ù.
+            IDE_TEST( findAndUnnestSubquery( aStatement,
+                                             aQuerySet->SFWGH,
+                                             sUnnestSubquery,
+                                             aQuerySet->SFWGH->where,
+                                             &sChanged )
+                      != IDE_SUCCESS );
+
+            if( sChanged == ID_TRUE )
+            {
+                IDE_TEST( qmoViewMerging::validateNode( aStatement,
+                                                        aQuerySet->SFWGH->where )
+                          != IDE_SUCCESS );
+
                 *aChanged = ID_TRUE;
             }
             else
@@ -312,33 +353,12 @@ qmoUnnesting::doTransformQuerySet( qcStatement * aStatement,
         }
         else
         {
-            // Hierarchy query ì‚¬ìš© ì‹œ subquery removal ìˆ˜í–‰ì•ˆí•¨
-        }
-
-        // SET ì—°ì‚°ì´ ì•„ë‹Œ ê²½ìš° WHEREì ˆì˜ subqueryë“¤ì„ unnestingì„ ì‹œë„ í•œë‹¤.
-        IDE_TEST( findAndUnnestSubquery( aStatement,
-                                         aQuerySet->SFWGH,
-                                         sUnnestSubquery,
-                                         aQuerySet->SFWGH->where,
-                                         &sChanged )
-                  != IDE_SUCCESS );
-
-        if( sChanged == ID_TRUE )
-        {
-            IDE_TEST( qmoViewMerging::validateNode( aStatement,
-                                                    aQuerySet->SFWGH->where )
-                      != IDE_SUCCESS );
-
-            *aChanged = ID_TRUE;
-        }
-        else
-        {
-            // Nothing to do.
+            /* Nothing to do */
         }
     }
     else
     {
-        // SET ì—°ì‚°ì¸ ê²½ìš° ê° query block ë³„ transformationì„ ì‹œë„ í•œë‹¤.
+        // SET ¿¬»êÀÎ °æ¿ì °¢ query block º° transformationÀ» ½Ãµµ ÇÑ´Ù.
         IDE_TEST( doTransformQuerySet( aStatement,
                                        aQuerySet->left,
                                        aChanged )
@@ -367,7 +387,7 @@ qmoUnnesting::doTransformFrom( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     FROMì ˆì˜ relationì´ viewì¸ ê²½ìš° viewì—ì„œ subqueryë¥¼ ì°¾ëŠ”ë‹¤.
+ *     FROMÀıÀÇ relationÀÌ viewÀÎ °æ¿ì view¿¡¼­ subquery¸¦ Ã£´Â´Ù.
  *
  * Implementation :
  *
@@ -427,7 +447,7 @@ qmoUnnesting::findAndUnnestSubquery( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Predicateì— í¬í•¨ëœ subqueryë¥¼ ì°¾ì•„ unnestingí•œë‹¤.
+ *     Predicate¿¡ Æ÷ÇÔµÈ subquery¸¦ Ã£¾Æ unnestingÇÑ´Ù.
  *
  * Implementation :
  *
@@ -445,7 +465,7 @@ qmoUnnesting::findAndUnnestSubquery( qcStatement * aStatement,
         {
             if( isSubqueryPredicate( aPredicate ) == ID_TRUE )
             {
-                // EXISTS/NOT EXISTSë¡œ ë³€í™˜ ì‹œë„
+                // EXISTS/NOT EXISTS·Î º¯È¯ ½Ãµµ
                 if( isExistsTransformable( aStatement, aSFWGH, aPredicate, aUnnestSubquery ) == ID_TRUE )
                 {
                     IDE_TEST( transformToExists( aStatement, aPredicate )
@@ -466,7 +486,7 @@ qmoUnnesting::findAndUnnestSubquery( qcStatement * aStatement,
                 ( aPredicate->node.module == &mtfUnique ) ||
                 ( aPredicate->node.module == &mtfNotUnique ) )
             {
-                // EXISTS/NOT EXISTS/UNIQUE/NOT UNIQUEì˜ ê²½ìš° SELECTì ˆì„ ë‹¨ìˆœí•˜ê²Œ ë³€ê²½
+                // EXISTS/NOT EXISTS/UNIQUE/NOT UNIQUEÀÇ °æ¿ì SELECTÀıÀ» ´Ü¼øÇÏ°Ô º¯°æ
                 IDE_TEST( setDummySelect( aStatement, aPredicate, ID_TRUE )
                           != IDE_SUCCESS );
             }
@@ -479,7 +499,7 @@ qmoUnnesting::findAndUnnestSubquery( qcStatement * aStatement,
                 ( ( aPredicate->node.module == &mtfExists ) ||
                   ( aPredicate->node.module == &mtfNotExists ) ) )
             {
-                // Subqueryì— í¬í•¨ëœ subqueryë“¤ì— ëŒ€í•´ ë¨¼ì € unnesting ì‹œë„
+                // Subquery¿¡ Æ÷ÇÔµÈ subqueryµé¿¡ ´ëÇØ ¸ÕÀú unnesting ½Ãµµ
                 IDE_TEST( doTransform( ((qtcNode *)aPredicate->node.arguments)->subquery,
                                        aChanged )
                           != IDE_SUCCESS );
@@ -490,7 +510,7 @@ qmoUnnesting::findAndUnnestSubquery( qcStatement * aStatement,
                 }
                 else
                 {
-                    // ì¶” í›„ cost-based query transformationìœ¼ë¡œ êµ¬í˜„ë˜ì–´ì•¼ í•¨
+                    // Ãß ÈÄ cost-based query transformationÀ¸·Î ±¸ÇöµÇ¾î¾ß ÇÔ
                     if( QCU_OPTIMIZER_UNNEST_COMPLEX_SUBQUERY == 0 )
                     {
                         sUnnestSubquery = ID_FALSE;
@@ -507,7 +527,7 @@ qmoUnnesting::findAndUnnestSubquery( qcStatement * aStatement,
                 if( ( sUnnestSubquery == ID_TRUE ) &&
                     ( isUnnestableSubquery( aStatement, aSFWGH, aPredicate ) == ID_TRUE ) )
                 {
-                    // Unnesting ì‹œë„
+                    // Unnesting ½Ãµµ
                     IDE_TEST( unnestSubquery( aStatement,
                                               aSFWGH,
                                               aPredicate )
@@ -517,7 +537,7 @@ qmoUnnesting::findAndUnnestSubquery( qcStatement * aStatement,
                 }
                 else
                 {
-                    // Unnesting ë¶ˆê°€ëŠ¥í•œ subquery
+                    // Unnesting ºÒ°¡´ÉÇÑ subquery
                 }
             }
             else
@@ -541,9 +561,18 @@ qmoUnnesting::findAndUnnestSubquery( qcStatement * aStatement,
                     if( ( aPredicate->node.lflag & MTC_NODE_OPERATOR_MASK )
                         != MTC_NODE_OPERATOR_AND )
                     {
-                        // ANDê°€ ì•„ë‹Œ ì—°ì‚°ìì˜ í•˜ìœ„ subqueryëŠ”
-                        // Unnestingí•˜ì§€ ì•ŠëŠ”ë‹¤.
+                        // AND°¡ ¾Æ´Ñ ¿¬»êÀÚÀÇ ÇÏÀ§ subquery´Â
+                        // UnnestingÇÏÁö ¾Ê´Â´Ù.
                         aUnnestSubquery = ID_FALSE;
+
+                        /* BUG-47786 Unnesting °á°ú ¿À·ù */
+                        if ( ( ( aPredicate->node.lflag & MTC_NODE_OPERATOR_MASK )
+                               == MTC_NODE_OPERATOR_OR ) &&
+                             ( aSFWGH != NULL ) )
+                        {
+                            aSFWGH->lflag &= ~QMV_SFWGH_UNNEST_OR_STOP_MASK;
+                            aSFWGH->lflag |= QMV_SFWGH_UNNEST_OR_STOP_TRUE;
+                        }
                     }
                     else
                     {
@@ -574,6 +603,19 @@ qmoUnnesting::findAndUnnestSubquery( qcStatement * aStatement,
         // Nothing to do.
     }
 
+    /* BUG-47786 Unnesting °á°ú ¿À·ù */
+    if ( aSFWGH != NULL )
+    {
+        if ( ( ( aSFWGH->lflag & QMV_SFWGH_UNNEST_LEFT_DISK_MASK )
+               == QMV_SFWGH_UNNEST_LEFT_DISK_TRUE ) &&
+             ( ( aSFWGH->lflag & QMV_SFWGH_UNNEST_OR_STOP_MASK )
+               == QMV_SFWGH_UNNEST_OR_STOP_TRUE ) )
+        {
+            QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_UNNEST_INVERSE_JOIN_DISABLE_MASK;
+            QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_UNNEST_INVERSE_JOIN_DISABLE_TRUE;
+        }
+    }
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -590,14 +632,14 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Subqueryê°€ EXISTS/NOT EXISTS í˜•íƒœë¡œ ë³€í™˜ ê°€ëŠ¥í•œì§€ í™•ì¸í•œë‹¤.
+ *     Subquery°¡ EXISTS/NOT EXISTS ÇüÅÂ·Î º¯È¯ °¡´ÉÇÑÁö È®ÀÎÇÑ´Ù.
  *
  * Implementation :
- *     1. Subqueryì—ì„œ LIMITì ˆ, ROWNUM column, window function í¬í•¨ì—¬ë¶€ í™•ì¸
- *     2. Oracle style outer joinì´ë‚˜ GROUP BYì ˆë“±ì˜ ìœ ë¬´ í™•ì¸
- *     3. EXISTS/NOT EXISTS í˜•íƒœë¡œ ë³€í™˜ì´ ë” ìœ ë¦¬í•œì§€ í™•ì¸
- *        ì–´ì°¨í”¼ unnesting ë¶ˆê°€ëŠ¥í•œ ê²½ìš° ì†Œê·¹ì ìœ¼ë¡œ transformationí•˜ê³ 
- *        ê¸°ì¡´ì˜ subquery optimization tipì„ ìµœëŒ€í•œ í™œìš©í•œë‹¤.
+ *     1. Subquery¿¡¼­ LIMITÀı, ROWNUM column, window function Æ÷ÇÔ¿©ºÎ È®ÀÎ
+ *     2. Oracle style outer joinÀÌ³ª GROUP BYÀıµîÀÇ À¯¹« È®ÀÎ
+ *     3. EXISTS/NOT EXISTS ÇüÅÂ·Î º¯È¯ÀÌ ´õ À¯¸®ÇÑÁö È®ÀÎ
+ *        ¾îÂ÷ÇÇ unnesting ºÒ°¡´ÉÇÑ °æ¿ì ¼Ò±ØÀûÀ¸·Î transformationÇÏ°í
+ *        ±âÁ¸ÀÇ subquery optimization tipÀ» ÃÖ´ëÇÑ È°¿ëÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -607,6 +649,8 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
     qmsParseTree   * sSQParseTree;
     qmsSFWGH       * sSQSFWGH;
     qmsTarget      * sTarget;
+    idBool           sIsTrue;
+    idBool           sIsCheck; /* BUG-48336 */
 
     sSQNode      = (qtcNode *)aNode->node.arguments->next;
     sSQStatement = sSQNode->subquery;
@@ -615,7 +659,7 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
 
     if ( (aNode->lflag & QTC_NODE_JOIN_OPERATOR_MASK) == QTC_NODE_JOIN_OPERATOR_EXIST )
     {
-        // Subqueryì™€ outer join ì‹œ ë¶ˆê°€
+        // Subquery¿Í outer join ½Ã ºÒ°¡
         IDE_CONT( INVALID_FORM );
     }
     else
@@ -625,7 +669,7 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
     
     if( sSQParseTree->limit != NULL )
     {
-        // LIMITì ˆ ì‚¬ìš© ì‹œ ë¶ˆê°€ëŠ¥
+        // LIMITÀı »ç¿ë ½Ã ºÒ°¡´É
         IDE_CONT( INVALID_FORM );
     }
     else
@@ -635,7 +679,7 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
 
     if( sSQSFWGH == NULL )
     {
-        // UNION, UNION ALL, MINUS, INTERSECT ë“± ì‚¬ìš©í•˜ëŠ” ê²½ìš° SFWGHê°€ NULLì´ë‹¤.
+        // UNION, UNION ALL, MINUS, INTERSECT µî »ç¿ëÇÏ´Â °æ¿ì SFWGH°¡ NULLÀÌ´Ù.
         IDE_CONT( INVALID_FORM );
     }
     else
@@ -647,7 +691,7 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
     if( sSQSFWGH->top != NULL )
     {
 
-        // topì ˆ ì‚¬ìš© ì‹œ ë¶ˆê°€ëŠ¥
+        // topÀı »ç¿ë ½Ã ºÒ°¡´É
         return ID_FALSE;
     }
     else
@@ -659,12 +703,35 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
     {
         if ( (sSQSFWGH->where->lflag & QTC_NODE_JOIN_OPERATOR_MASK) == QTC_NODE_JOIN_OPERATOR_EXIST )
         {
-            // Oracle styleì˜ outer join ì‚¬ìš© ì‹œ unnestingí•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // Oracle styleÀÇ outer join »ç¿ë ½Ã unnestingÇÏÁö ¾Ê´Â´Ù.
             IDE_CONT( INVALID_FORM );
         }
         else
         {
             // Nothing to do.
+        }
+
+        /* BUG-47576 aggregation +  ¿ÜºÎÂüÁ¶ ÄÃ·³½Ã unnest °á°ú ¿À·ù */
+        if ( ( sSQSFWGH->aggsDepth1 != NULL ) &&
+             ( sSQSFWGH->outerDepInfo.depCount > 0 ) )
+        {
+            sIsTrue = ID_TRUE; 
+            isAggrExistTransformable( sSQSFWGH->where,
+                                      &sSQSFWGH->outerDepInfo,
+                                      &sIsTrue );
+
+            if ( sIsTrue == ID_FALSE )
+            {
+                IDE_CONT( INVALID_FORM );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        else
+        {
+            /* Nothing to do */
         }
     }
     else
@@ -674,7 +741,7 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
 
     if( isQuantifiedSubquery( aNode ) == ID_FALSE )
     {
-        // BUG-45250 ë¹„êµ ì—°ì‚°ìì¼ ë•Œ, leftê°€ list typeì´ë©´ ì•ˆë©ë‹ˆë‹¤.
+        // BUG-45250 ºñ±³ ¿¬»êÀÚÀÏ ¶§, left°¡ list typeÀÌ¸é ¾ÈµË´Ï´Ù.
         if( ( ( aNode->node.module == &mtfGreaterThan ) ||
               ( aNode->node.module == &mtfGreaterEqual ) ||
               ( aNode->node.module == &mtfLessThan ) ||
@@ -688,7 +755,7 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
             // Nothing to do.
         }
 
-        // Quantified predicateì´ ì•„ë‹ˆë”ë¼ë„ single row subqueryì¸ ê²½ìš°
+        // Quantified predicateÀÌ ¾Æ´Ï´õ¶óµµ single row subqueryÀÎ °æ¿ì
         if( isSingleRowSubquery( sSQStatement ) == ID_FALSE )
         {
             IDE_CONT( INVALID_FORM );
@@ -701,7 +768,7 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
             }
             else
             {
-                // Single rowì´ë©´ì„œ unnesting ê°€ëŠ¥í•œ ì¡°ê±´
+                // Single rowÀÌ¸é¼­ unnesting °¡´ÉÇÑ Á¶°Ç
             }
 
             if( aSFWGH != NULL )
@@ -709,7 +776,7 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
                 if( qtc::dependencyContains( &aSFWGH->depInfo,
                                              &sSQSFWGH->outerDepInfo ) == ID_FALSE )
                 {
-                    // Subqueryì˜ correlationì€ parent query blockì— í•œì •ë˜ì–´ì•¼ í•œë‹¤.
+                    // SubqueryÀÇ correlationÀº parent query block¿¡ ÇÑÁ¤µÇ¾î¾ß ÇÑ´Ù.
                     IDE_CONT( INVALID_FORM );
                 }
                 else
@@ -730,7 +797,7 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
             if( qtc::dependencyContains( &aSFWGH->depInfo,
                                          &sSQSFWGH->outerDepInfo ) == ID_FALSE )
             {
-                // Subqueryì˜ correlationì€ parent query blockì— í•œì •ë˜ì–´ì•¼ í•œë‹¤.
+                // SubqueryÀÇ correlationÀº parent query block¿¡ ÇÑÁ¤µÇ¾î¾ß ÇÑ´Ù.
                 IDE_CONT( INVALID_FORM );
             }
             else
@@ -748,7 +815,7 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
         ( sSQSFWGH->aggsDepth1 != NULL ) &&
         ( qtc::haveDependencies( &sSQSFWGH->outerDepInfo ) == ID_FALSE ) )
     {
-        // GROUP BYì ˆê³¼ correlation ì—†ì´ aggregate functionì„ ì‚¬ìš©í•œ ê²½ìš°
+        // GROUP BYÀı°ú correlation ¾øÀÌ aggregate functionÀ» »ç¿ëÇÑ °æ¿ì
         IDE_CONT( INVALID_FORM );
     }
     else
@@ -757,9 +824,9 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
     }
 
     // BUG-38996
-    // OPTIMIZER_UNNEST_AGGREGATION_SUBQUERY ë¥¼ ì‚¬ìš©ì‹œ ê²°ê³¼ê°€ í‹€ë ¤ì§
-    // aggr í•¨ìˆ˜ê°€ count ì´ë©´ì„œ group by ë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” ê²½ìš°ì—ëŠ” ê²°ê³¼ê°€ ë‹¤ë¥¼ìˆ˜ ìˆë‹¤.
-    // ìœ„ ì¡°ê±´ì¼ë•ŒëŠ” ë¹„êµí•˜ëŠ” ê°’ì´ 0,1 ì¼ë•Œë§Œ unnset ê°€ ê°€ëŠ¥í•˜ë‹¤.
+    // OPTIMIZER_UNNEST_AGGREGATION_SUBQUERY ¸¦ »ç¿ë½Ã °á°ú°¡ Æ²·ÁÁü
+    // aggr ÇÔ¼ö°¡ count ÀÌ¸é¼­ group by ¸¦ »ç¿ëÇÏÁö ¾Ê´Â °æ¿ì¿¡´Â °á°ú°¡ ´Ù¸¦¼ö ÀÖ´Ù.
+    // À§ Á¶°ÇÀÏ¶§´Â ºñ±³ÇÏ´Â °ªÀÌ 0,1 ÀÏ¶§¸¸ unnset °¡ °¡´ÉÇÏ´Ù.
     if( ( sSQSFWGH->group      == NULL ) &&
         ( sSQSFWGH->aggsDepth1 != NULL ) )
     {
@@ -770,7 +837,7 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
         {
             if ( findCountAggr4Target( sTarget->targetColumn ) == ID_TRUE )
             {
-                //ã…‘ count(*)ì™€ì˜ ì—°ì‚°ì´ ëœ target columnì´ë©´ ì•ˆëœë‹¤.
+                //¤Á count(*)¿ÍÀÇ ¿¬»êÀÌ µÈ target columnÀÌ¸é ¾ÈµÈ´Ù.
                 if ( sTarget->targetColumn->node.module != &mtfCount )
                 {
                     IDE_CONT( INVALID_FORM );
@@ -778,10 +845,10 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
                 else
                 {
                     // Nothing to do.
-                    // subqueryì˜ targetì ˆì— count ì»¬ëŸ¼ í•œê°œë§Œ ìˆëŠ” ê²½ìš°
+                    // subqueryÀÇ targetÀı¿¡ count ÄÃ·³ ÇÑ°³¸¸ ÀÖ´Â °æ¿ì
                 }
 
-                // subqueryì˜ targetì ˆì— count ì»¬ëŸ¼ì´ ìˆë‹¤ë©´, listê°€ ì•„ë‹ˆì—¬ì•¼ í•œë‹¤.
+                // subqueryÀÇ targetÀı¿¡ count ÄÃ·³ÀÌ ÀÖ´Ù¸é, list°¡ ¾Æ´Ï¿©¾ß ÇÑ´Ù.
                 if ( aNode->node.arguments->module == &mtfList )
                 {
                     IDE_CONT( INVALID_FORM );
@@ -789,17 +856,17 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
                 else
                 {
                     // Nothing to do.
-                    // subqueryì˜ targetì ˆì— count ì»¬ëŸ¼ í•œê°œë§Œ ìˆëŠ” ê²½ìš°
+                    // subqueryÀÇ targetÀı¿¡ count ÄÃ·³ ÇÑ°³¸¸ ÀÖ´Â °æ¿ì
                 }
 
-                // countì»¬ëŸ¼ ì´ ìˆë‹¤ë©´, ë‹¤ë¥¸ aggregate functionê³¼ í•¨ê»˜ ì“¸ ìˆ˜ ì—†ë‹¤
+                // countÄÃ·³ ÀÌ ÀÖ´Ù¸é, ´Ù¸¥ aggregate function°ú ÇÔ²² ¾µ ¼ö ¾ø´Ù
                 if ( sSQSFWGH->aggsDepth1->next != NULL )
                 {
                     IDE_CONT( INVALID_FORM );
                 }
                 else
                 {
-                    // ë‹¤ë¥¸ aggregate functionì´ ì‚¬ìš©ë˜ë©´ EXISTSë³€í™˜ë˜ë©´ì„œ ê²°ê³¼ê°€ ë‹¬ë¼ì§ˆ ìˆ˜ ìˆë‹¤.
+                    // ´Ù¸¥ aggregate functionÀÌ »ç¿ëµÇ¸é EXISTSº¯È¯µÇ¸é¼­ °á°ú°¡ ´Ş¶óÁú ¼ö ÀÖ´Ù.
                     // Nothing to do.
                 }
 
@@ -812,7 +879,7 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
                     // Nothing to do.
                 }
 
-                // EXISTS ë˜ëŠ” NOT EXISTSë¡œ ë³€í™˜ ê°€ëŠ¥í•´ì•¼í•œë‹¤.
+                // EXISTS ¶Ç´Â NOT EXISTS·Î º¯È¯ °¡´ÉÇØ¾ßÇÑ´Ù.
                 if( toExistsModule4CountAggr( aStatement,aNode ) == NULL )
                 {
                     IDE_CONT( INVALID_FORM );
@@ -824,7 +891,7 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
             }
             else
             {
-                // COUNT ë¥¼ ì œì™¸í•œ ëª¨ë“ ê²ƒ
+                // COUNT ¸¦ Á¦¿ÜÇÑ ¸ğµç°Í
                 // Nothing to do.
             }
         }
@@ -836,7 +903,7 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
 
     if( sSQSFWGH->aggsDepth2 != NULL )
     {
-        // Nested aggregate functionì„ ì‚¬ìš©í•œ ê²½ìš°
+        // Nested aggregate functionÀ» »ç¿ëÇÑ °æ¿ì
         IDE_CONT( INVALID_FORM );
     }
     else
@@ -853,14 +920,14 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
         // Nothing to do.
     }
 
-    // SELECTì ˆ ê²€ì‚¬
+    // SELECTÀı °Ë»ç
     for( sTarget = sSQSFWGH->target;
          sTarget != NULL;
          sTarget = sTarget->next )
     {
         if ( (sTarget->targetColumn->lflag & QTC_NODE_ANAL_FUNC_MASK ) == QTC_NODE_ANAL_FUNC_EXIST )
         {
-            // Window functionì„ ì‚¬ìš©í•œ ê²½ìš°
+            // Window functionÀ» »ç¿ëÇÑ °æ¿ì
             IDE_CONT( INVALID_FORM );
         }
         else
@@ -870,7 +937,7 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
 
         if( sTarget->targetColumn->depInfo.depCount > 1 )
         {
-            // Subqueryì˜ SELECTì ˆì—ì„œ ë‘˜ ì´ìƒì˜ tableì„ ì°¸ì¡°í•˜ëŠ” ê²½ìš°
+            // SubqueryÀÇ SELECTÀı¿¡¼­ µÑ ÀÌ»óÀÇ tableÀ» ÂüÁ¶ÇÏ´Â °æ¿ì
             // ex) t1.i1 IN (SELECT t2.i1 + t3.i1 FROM t2, t3 ... );
             IDE_CONT( INVALID_FORM );
         }
@@ -888,7 +955,7 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
         {
             if( sArg->depInfo.depCount > 1 )
             {
-                // Outer queryì˜ ì¡°ê±´ì—ì„œ ë‘˜ ì´ìƒì˜ tableì„ ì°¸ì¡°í•˜ëŠ” ê²½ìš°
+                // Outer queryÀÇ Á¶°Ç¿¡¼­ µÑ ÀÌ»óÀÇ tableÀ» ÂüÁ¶ÇÏ´Â °æ¿ì
                 // ex) (t1.i1 + t2.i1, ...) IN (SELECT i1, ...);
 
                 IDE_CONT( INVALID_FORM );
@@ -903,7 +970,7 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
     {
         if( ((qtcNode*)aNode->node.arguments)->depInfo.depCount > 1 )
         {
-            // Outer queryì˜ ì¡°ê±´ì—ì„œ ë‘˜ ì´ìƒì˜ tableì„ ì°¸ì¡°í•˜ëŠ” ê²½ìš°
+            // Outer queryÀÇ Á¶°Ç¿¡¼­ µÑ ÀÌ»óÀÇ tableÀ» ÂüÁ¶ÇÏ´Â °æ¿ì
             // ex) t1.i1 + t2.i1 IN (SELECT i1 FROM ...);
 
             IDE_CONT( INVALID_FORM );
@@ -914,11 +981,11 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
         }
     }
 
-    // Subqueryì— correlationì´ ì—†ëŠ” ê²½ìš° ê¸°ì¡´ì˜ subquery optimization tipì„
-    // ì´ìš©í•˜ëŠ”ê²ƒì´ ë” íš¨ìœ¨ì ì¸ ê²½ìš°ë“¤ì´ ì¡´ì¬í•œë‹¤.
+    // Subquery¿¡ correlationÀÌ ¾ø´Â °æ¿ì ±âÁ¸ÀÇ subquery optimization tipÀ»
+    // ÀÌ¿ëÇÏ´Â°ÍÀÌ ´õ È¿À²ÀûÀÎ °æ¿ìµéÀÌ Á¸ÀçÇÑ´Ù.
     if( qtc::haveDependencies( &sSQSFWGH->outerDepInfo ) == ID_FALSE )
     {
-        // ì–´ì°¨í”¼ unnesting ëª»í•˜ëŠ” ê²½ìš°(ONì ˆ ë“±) EXISTSë¡œ ë³€í™˜í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // ¾îÂ÷ÇÇ unnesting ¸øÇÏ´Â °æ¿ì(ONÀı µî) EXISTS·Î º¯È¯ÇÏÁö ¾Ê´Â´Ù.
         if( aUnnestSubquery == ID_FALSE )
         {
             IDE_CONT( INVALID_FORM );
@@ -928,8 +995,8 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
             // Notihng to do.
         }
 
-        // Nullable columnì´ í¬í•¨ëœ ê²½ìš° ì–´ì°¨í”¼ anti joinì„ ìˆ˜í–‰í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ,
-        // NOT EXISTS predicateì˜ ë³€í™˜ì„ í¬ê¸°í•œë‹¤.
+        // Nullable columnÀÌ Æ÷ÇÔµÈ °æ¿ì ¾îÂ÷ÇÇ anti joinÀ» ¼öÇàÇÒ ¼ö ¾øÀ¸¹Ç·Î,
+        // NOT EXISTS predicateÀÇ º¯È¯À» Æ÷±âÇÑ´Ù.
         if( ( ( aNode->node.lflag & MTC_NODE_GROUP_COMPARISON_MASK ) == MTC_NODE_GROUP_COMPARISON_TRUE ) &&
             ( ( aNode->node.lflag & MTC_NODE_GROUP_MASK ) == MTC_NODE_GROUP_ALL ) )
         {
@@ -966,8 +1033,8 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
             if( ( aNode->node.lflag & MTC_NODE_OPERATOR_MASK )
                 == MTC_NODE_OPERATOR_EQUAL )
             {
-                // =ALLì˜ ê²½ìš° NOT EXISTSì— <>í˜•ì˜ correlationì„ ê°€ì§€ë¯€ë¡œ
-                // ê²°êµ­ anti joiní•  ìˆ˜ ì—†ë‹¤.
+                // =ALLÀÇ °æ¿ì NOT EXISTS¿¡ <>ÇüÀÇ correlationÀ» °¡Áö¹Ç·Î
+                // °á±¹ anti joinÇÒ ¼ö ¾ø´Ù.
                 IDE_CONT( INVALID_FORM );
             }
             else
@@ -980,7 +1047,7 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
             // Nothing to do.
         }
 
-        // List typeê³¼ <>, <>ANYì¸ ê²½ìš° predicateë“¤ì´ ORë¡œ ì—°ê²°ë˜ì–´ semi joiní•˜ì§€ ëª»í•œë‹¤.
+        // List type°ú <>, <>ANYÀÎ °æ¿ì predicateµéÀÌ OR·Î ¿¬°áµÇ¾î semi joinÇÏÁö ¸øÇÑ´Ù.
         if( ( ( aNode->node.module == &mtfNotEqual ) || ( aNode->node.module == &mtfNotEqualAny ) ) &&
             ( aNode->node.arguments->module == &mtfList ) )
         {
@@ -992,7 +1059,65 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
         }
     }
 
-    // BUG-43300 no_unnest íŒíŠ¸ ì‚¬ìš©ì‹œ exists ë³€í™˜ì„ ë§‰ìŠµë‹ˆë‹¤.
+    // BUG-42637 subquery unnesting½Ã lob Á¦¾à Á¦°Å
+    // lob ÄÃ·³Àº group by ¿¡ ¾µ ¼ö°¡ ¾ø´Ù.
+    // subquery unnesting½Ã group by ³ª AGGR ÇÔ¼ö°¡ ÀÖ´Â °æ¿ì¿¡´Â
+    // group by ¿¡ Ãß°¡°¡ µÇ¹Ç·Î ¸·¾Æ¾ß ÇÑ´Ù.
+    // BUG-47751 unnestingÀÌ µÇÁö ¾Ê´Â´Ù¸é existsº¯È¯µµ ¸·´Â´Ù.
+    if ( (sSQSFWGH->group != NULL) ||
+         (sSQSFWGH->aggsDepth1 != NULL) )
+    {
+        if( sSQSFWGH->where != NULL )
+        {
+            if ( (sSQSFWGH->where->lflag & QTC_NODE_LOB_COLUMN_MASK)
+                 == QTC_NODE_LOB_COLUMN_EXIST )
+            {
+                IDE_CONT( INVALID_FORM );
+            }
+            else
+            {
+                // Nothing to do.
+            }
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
+        if ( sSQSFWGH->having != NULL )
+        {
+            if ( (sSQSFWGH->having->lflag & QTC_NODE_LOB_COLUMN_MASK)
+                 == QTC_NODE_LOB_COLUMN_EXIST )
+            {
+                IDE_CONT( INVALID_FORM );
+            }
+            else
+            {
+                // Nothing to do.
+            }
+        }
+        else
+        {
+            // Nothing to do.
+        }
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    // BUG-48336 compatibiltiy°¡ 2ÀÌ¸é ¹ö±×¹İ¿µ Á¶°ÇÀ» È®ÀÎÇÏÁö ¾Ê½À´Ï´Ù. 
+    if ( (QCU_OPTIMIZER_UNNEST_COMPATIBILITY & QCU_UNNEST_COMPATIBILITY_MASK_MODE2)
+         != QCU_UNNEST_COMPATIBILITY_MASK_MODE2 )
+    { 
+        sIsCheck = ID_TRUE;
+    }
+    else
+    {
+        sIsCheck = ID_FALSE;
+    }
+
+    // BUG-43300 no_unnest ÈùÆ® »ç¿ë½Ã exists º¯È¯À» ¸·½À´Ï´Ù.
     if ( sSQSFWGH->hints->subqueryUnnestType == QMO_SUBQUERY_UNNEST_TYPE_NO_UNNEST )
     {
         IDE_CONT( INVALID_FORM );
@@ -1013,8 +1138,8 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
     {
         /* BUG-46544 Unnest hit */
         // Hint QMO_SUBQUERY_UNNEST_TYPE_UNNEST
-        // hintê°€ ì¡´ì¬í•˜ê³  PropertyëŠ” 0ì´ê³  Compatibilityê°€ 1 ì´ë©´ Property
-        // ìš°ì„ ìœ¼ë¡œ unnestë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // hint°¡ Á¸ÀçÇÏ°í Property´Â 0ÀÌ°í Compatibility°¡ 1 ÀÌ¸é Property
+        // ¿ì¼±À¸·Î unnest¸¦ ÇÏÁö ¾Ê´Â´Ù.
         if ( ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_UNNEST_SUBQUERY_MASK )
                == QC_TMP_UNNEST_SUBQUERY_FALSE ) &&
              ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_UNNEST_COMPATIBILITY_1_MASK )
@@ -1024,8 +1149,86 @@ qmoUnnesting::isExistsTransformable( qcStatement * aStatement,
         }
         else
         {
-            /* Nothing to do */
+            // BUG-48336
+            // hint°¡ Á¸ÀçÇÏ°í Compatibility°¡ 2°¡ ¾Æ´Ï¸é unnest¸¦ ÇÕ´Ï´Ù.
+            sIsCheck = ID_FALSE;
         }
+    }
+
+    /*********************************
+     *   Á¦ÀÏ ¸¶Áö¸·Á¶°ÇÀÌ¿©¾ßÇÕ´Ï´Ù.    
+     *********************************/
+    if ( sIsCheck == ID_TRUE )
+    {
+        /**************************************
+         *  BUG-48336 ¾Æ·¡ Á¶°ÇÀ» ¸ğµÎ ¸¸Á·ÇÏ´Â °æ¿ì
+         *            subquery filterÇÃ·£ÀÌ »ı¼ºµÇ´Â ¸ğµå Ãß°¡ÇÕ´Ï´Ù.
+         *   1. subquery¿¡outer depÀÌ 1ÀÌ°í,
+         *               Á¶ÀÎÀÌ ¾ø°í ºä°¡ ¾Æ´Ñ Å×ÀÌºíÀÎ °æ¿ì
+         *   2. parent query block¿¡´Â 1°³ ÀÌ»óÀÇ left outer joinÀÌ ÀÖ´Â °æ¿ì
+         **************************************/
+        // 1. Subquery Á¶°Ç
+        if ( ( qtc::haveDependencies( &sSQSFWGH->outerDepInfo ) == ID_FALSE ) &&
+             ( ( sSQSFWGH->from->next == NULL ) &&
+               ( sSQSFWGH->from->joinType == QMS_NO_JOIN ) ) )
+        { 
+            // - view( view, inline view, with) recursive withÀÎ°æ¿ì Á¦¿Ü
+            if ( ( sSQSFWGH->from->tableRef->view == NULL ) &&
+                 ( (sSQSFWGH->from->tableRef->flag & QMS_TABLE_REF_RECURSIVE_VIEW_MASK)
+                   == QMS_TABLE_REF_RECURSIVE_VIEW_FALSE ) )
+            {
+                // 2. parent query block Á¶°Ç
+                if ( ( aSFWGH->from->next != NULL ) ||
+                     ( aSFWGH->from->joinType != QMS_NO_JOIN ) )
+                {
+                    // parent query block¿¡ Oracle styleÀÇ outer join »ç¿ë ½Ã
+                    if ( aSFWGH->where != NULL )
+                    {
+                        if ( ( aSFWGH->where->lflag & QTC_NODE_JOIN_OPERATOR_MASK)
+                             == QTC_NODE_JOIN_OPERATOR_EXIST )
+                        {
+                            IDE_CONT( INVALID_FORM );
+                        }
+                    } 
+                    else
+                    {
+                        // Nothing to do.
+                    }
+
+                    // parent query block¿¡ Ansi style outer joinÀ» ´Ü ÇÏ³ª¶óµµ »ç¿ëÇÑ °æ¿ì
+                    if ( ( (aSFWGH->lflag & QMV_SFWGH_JOIN_LEFT_OUTER)  == QMV_SFWGH_JOIN_LEFT_OUTER ) ||
+                         ( (aSFWGH->lflag & QMV_SFWGH_JOIN_RIGHT_OUTER) == QMV_SFWGH_JOIN_RIGHT_OUTER ) )
+                    {
+                        IDE_CONT( INVALID_FORM );
+                    }
+                    else
+                    {
+                        // Nothing to do.
+                    }
+                }
+                else
+                {
+                    // main query°¡ joinÀÌ ¾Æ´Ñ°æ¿ì
+                    // Nothing to do.
+                }
+            }
+            else
+            {
+                // Nothing to do.
+            }
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
+        // À§ÀÇ Á¶°Ç¿¡µµ EXISTSº¯È¯ÀÌ ÀÏ¾î³­ °æ¿ì SU º¯È¯ÀÌ ÀÏ¾î³ªµµ·Ï ÇÑ´Ù.
+        sSQNode->lflag &= ~QTC_NODE_TRANS_IN_TO_EXISTS_MASK;
+        sSQNode->lflag |= QTC_NODE_TRANS_IN_TO_EXISTS_TRUE;
+    }
+    else
+    {
+        // Nothing to do.
     }
 
     return ID_TRUE;
@@ -1042,15 +1245,15 @@ qmoUnnesting::transformToExists( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Subqueryê°€ quantified predicateê³¼ í•¨ê»˜ ì‚¬ìš©ëœ ê²½ìš°
- *     EXISTS/NOT EXISTS í˜•íƒœë¡œ ë³€í™˜í•œë‹¤.
+ *     Subquery°¡ quantified predicate°ú ÇÔ²² »ç¿ëµÈ °æ¿ì
+ *     EXISTS/NOT EXISTS ÇüÅÂ·Î º¯È¯ÇÑ´Ù.
  *
  * Implementation :
- *     1. Subqueryì—ì„œ LIMITì ˆ, ROWNUM column, window function í¬í•¨ì—¬ë¶€ í™•ì¸
- *        (Window functionì€ WHEREì ˆì—ì„œ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.)
- *     2. Correlation predicate ìƒì„±
- *     3. ìƒì„±ëœ correlation predicateì„ WHEREì ˆ ë˜ëŠ” HAVINGì ˆì— ì—°ê²°
- *     4. Subquery predicateì„ EXISTS/NOT EXISTSë¡œ ë³€ê²½í•œë‹¤.
+ *     1. Subquery¿¡¼­ LIMITÀı, ROWNUM column, window function Æ÷ÇÔ¿©ºÎ È®ÀÎ
+ *        (Window functionÀº WHEREÀı¿¡¼­ »ç¿ëÇÒ ¼ö ¾ø´Ù.)
+ *     2. Correlation predicate »ı¼º
+ *     3. »ı¼ºµÈ correlation predicateÀ» WHEREÀı ¶Ç´Â HAVINGÀı¿¡ ¿¬°á
+ *     4. Subquery predicateÀ» EXISTS/NOT EXISTS·Î º¯°æÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1080,21 +1283,37 @@ qmoUnnesting::transformToExists( qcStatement * aStatement,
     sSQParseTree = (qmsParseTree *)sSQStatement->myPlan->parseTree;
     sSQSFWGH     = sSQParseTree->querySet->SFWGH;
 
-    // Correlation predicateì„ ìƒì„±
+    /* TASK-7219 Shard Transformer Refactoring */
+    if ( SDI_CHECK_QUERYSET_LIST_STATE( aStatement->mShardQuerySetList,
+                                        SDI_QUERYSET_LIST_STATE_DUMMY_ANALYZE )
+         == ID_TRUE )
+    {
+        IDE_TEST( sdi::preAnalyzeQuerySet( sSQStatement,
+                                           sSQParseTree->querySet,
+                                           QCG_GET_SESSION_SHARD_META_NUMBER( aStatement ) )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    // Correlation predicateÀ» »ı¼º
     IDE_TEST( genCorrPredicates( aStatement,
                                  aNode,
+                                 ID_TRUE, /* aExistsTrans */
                                  &sCorrPreds )
               != IDE_SUCCESS );
 
-    // Correlation predicate ì¶”ê°€ë¡œ ì¸í•œ ê´€ë ¨ ì •ë³´ ê°±ì‹ 
+    // Correlation predicate Ãß°¡·Î ÀÎÇÑ °ü·Ã Á¤º¸ °»½Å
     IDE_TEST( qmvQTC::setOuterColumns( sSQStatement,
                                        NULL,
                                        sSQSFWGH,
                                        sCorrPreds )
               != IDE_SUCCESS );
 
-    // BUG-45668 ì™¼ìª½ì— ì„œë¸Œì¿¼ë¦¬ê°€ ìˆì„ë•Œ exists ë³€í™˜í›„ ê²°ê³¼ê°€ í‹€ë¦½ë‹ˆë‹¤.
-    // ì™¼ìª½ ì„œë¸Œì¿¼ë¦¬ì˜ outerColumns ì„ ì˜¤ë¥¸ìª½ìœ¼ë¡œ ë„˜ê²¨ì£¼ì–´ì•¼ í•œë‹¤.
+    // BUG-45668 ¿ŞÂÊ¿¡ ¼­ºêÄõ¸®°¡ ÀÖÀ»¶§ exists º¯È¯ÈÄ °á°ú°¡ Æ²¸³´Ï´Ù.
+    // ¿ŞÂÊ ¼­ºêÄõ¸®ÀÇ outerColumns À» ¿À¸¥ÂÊÀ¸·Î ³Ñ°ÜÁÖ¾î¾ß ÇÑ´Ù.
     if ( sCorrPreds->node.arguments->module == &qtc::subqueryModule )
     {
         sTempStatement = ((qtcNode*)(sCorrPreds->node.arguments))->subquery;
@@ -1116,8 +1335,8 @@ qmoUnnesting::transformToExists( qcStatement * aStatement,
         // nothing to do.
     }
 
-    // BUG-40753 aggsDepth1 ê´€ë¦¬ê°€ ì˜ëª»ë˜ì–´ ê²°ê³¼ê°€ í‹€ë¦¼
-    // aggsDepth1ì„ ì œëŒ€ë¡œ ì„¤ì •í•´ì£¼ë„ë¡ í•œë‹¤.
+    // BUG-40753 aggsDepth1 °ü¸®°¡ Àß¸øµÇ¾î °á°ú°¡ Æ²¸²
+    // aggsDepth1À» Á¦´ë·Î ¼³Á¤ÇØÁÖµµ·Ï ÇÑ´Ù.
     IDE_TEST( setAggrNode( sSQStatement,
                            sSQSFWGH,
                            sCorrPreds )
@@ -1136,8 +1355,8 @@ qmoUnnesting::transformToExists( qcStatement * aStatement,
     if( (sSQSFWGH->group      == NULL) &&
         (sSQSFWGH->aggsDepth1 == NULL) )
     {
-        // GROUP BYì ˆ, aggregate functionì„ ì‚¬ìš©í•˜ì§€ ì•Šì€ ê²½ìš°
-        // Correlation predicateì„ WHEREì ˆì— ì¶”ê°€
+        // GROUP BYÀı, aggregate functionÀ» »ç¿ëÇÏÁö ¾ÊÀº °æ¿ì
+        // Correlation predicateÀ» WHEREÀı¿¡ Ãß°¡
         IDE_TEST( concatPredicate( aStatement,
                                    sSQSFWGH->where,
                                    sCorrPreds,
@@ -1148,10 +1367,10 @@ qmoUnnesting::transformToExists( qcStatement * aStatement,
     else
     {
         // BUG-38996
-        // OPTIMIZER_UNNEST_AGGREGATION_SUBQUERY ë¥¼ ì‚¬ìš©ì‹œ ê²°ê³¼ê°€ í‹€ë ¤ì§
-        // aggr í•¨ìˆ˜ê°€ count(*) ì´ë©´ì„œ group by ë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” ê²½ìš°ì—ëŠ” ê²°ê³¼ê°€ ë‹¤ë¥¼ìˆ˜ ìˆë‹¤.
-        // ìœ„ ì¡°ê±´ì¼ë•ŒëŠ” ë¹„êµí•˜ëŠ” ê°’ì´ 0,1 ì¼ë•Œë§Œ unnset ê°€ ê°€ëŠ¥í•˜ë‹¤.
-        // ë³€í™˜ì´ ê°€ëŠ¥í• ë•ŒëŠ” having ì ˆ, aggr í•¨ìˆ˜ë¥¼ ì œê±° í•œë‹¤.
+        // OPTIMIZER_UNNEST_AGGREGATION_SUBQUERY ¸¦ »ç¿ë½Ã °á°ú°¡ Æ²·ÁÁü
+        // aggr ÇÔ¼ö°¡ count(*) ÀÌ¸é¼­ group by ¸¦ »ç¿ëÇÏÁö ¾Ê´Â °æ¿ì¿¡´Â °á°ú°¡ ´Ù¸¦¼ö ÀÖ´Ù.
+        // À§ Á¶°ÇÀÏ¶§´Â ºñ±³ÇÏ´Â °ªÀÌ 0,1 ÀÏ¶§¸¸ unnset °¡ °¡´ÉÇÏ´Ù.
+        // º¯È¯ÀÌ °¡´ÉÇÒ¶§´Â having Àı, aggr ÇÔ¼ö¸¦ Á¦°Å ÇÑ´Ù.
         if( (sSQSFWGH->group      == NULL) &&
             (sSQSFWGH->aggsDepth1 != NULL) )
         {
@@ -1161,7 +1380,7 @@ qmoUnnesting::transformToExists( qcStatement * aStatement,
             }
             else
             {
-                // Correlation predicateì„ HAVINGì ˆì— ì¶”ê°€
+                // Correlation predicateÀ» HAVINGÀı¿¡ Ãß°¡
                 IDE_TEST( concatPredicate( aStatement,
                                            sSQSFWGH->having,
                                            sCorrPreds,
@@ -1173,7 +1392,7 @@ qmoUnnesting::transformToExists( qcStatement * aStatement,
         }
         else
         {
-            // Correlation predicateì„ HAVINGì ˆì— ì¶”ê°€
+            // Correlation predicateÀ» HAVINGÀı¿¡ Ãß°¡
             IDE_TEST( concatPredicate( aStatement,
                                        sSQSFWGH->having,
                                        sCorrPreds,
@@ -1184,19 +1403,19 @@ qmoUnnesting::transformToExists( qcStatement * aStatement,
     }
 
     // BUG-38996
-    // OPTIMIZER_UNNEST_AGGREGATION_SUBQUERY ë¥¼ ì‚¬ìš©ì‹œ ê²°ê³¼ê°€ í‹€ë ¤ì§
-    // aggr í•¨ìˆ˜ê°€ count(*) ì´ë©´ì„œ group by ë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” ê²½ìš°ì—ëŠ” ê²°ê³¼ê°€ ë‹¤ë¥¼ìˆ˜ ìˆë‹¤.
-    // ìœ„ ì¡°ê±´ì¼ë•ŒëŠ” ë¹„êµí•˜ëŠ” ê°’ì´ 0,1 ì¼ë•Œë§Œ unnset ê°€ ê°€ëŠ¥í•˜ë‹¤.
-    // ë³€í™˜ì´ ê°€ëŠ¥í• ë•ŒëŠ” having ì ˆ, aggr í•¨ìˆ˜ë¥¼ ì œê±° í•œë‹¤.
+    // OPTIMIZER_UNNEST_AGGREGATION_SUBQUERY ¸¦ »ç¿ë½Ã °á°ú°¡ Æ²·ÁÁü
+    // aggr ÇÔ¼ö°¡ count(*) ÀÌ¸é¼­ group by ¸¦ »ç¿ëÇÏÁö ¾Ê´Â °æ¿ì¿¡´Â °á°ú°¡ ´Ù¸¦¼ö ÀÖ´Ù.
+    // À§ Á¶°ÇÀÏ¶§´Â ºñ±³ÇÏ´Â °ªÀÌ 0,1 ÀÏ¶§¸¸ unnset °¡ °¡´ÉÇÏ´Ù.
+    // º¯È¯ÀÌ °¡´ÉÇÒ¶§´Â having Àı, aggr ÇÔ¼ö¸¦ Á¦°Å ÇÑ´Ù.
     if( (sSQSFWGH->group      == NULL) &&
         (sSQSFWGH->aggsDepth1 != NULL) )
     {
         if( sSQSFWGH->aggsDepth1->aggr->node.module == &mtfCount )
         {
             // BUG-45238
-            // isExistsTransformableì´ ê°€ëŠ¥í•˜ë‹¤ë©´, countê°€ ìˆëŠ” ê²½ìš°ì—ëŠ”
-            // ë‹¤ë¥¸ aggregationê³¼ í•¨ê»˜ ì“¸ ìˆ˜ ì—†ì–´ì„œ countì»¬ëŸ¼ë§Œ ìˆë‹¤.
-            // COUNT( arguments ) ì»¬ëŸ¼ì´ ìˆëŠ” ê²½ìš°, (arguments) IS NOT NULLì„ whereì ˆì— ì¶”ê°€í•œë‹¤.
+            // isExistsTransformableÀÌ °¡´ÉÇÏ´Ù¸é, count°¡ ÀÖ´Â °æ¿ì¿¡´Â
+            // ´Ù¸¥ aggregation°ú ÇÔ²² ¾µ ¼ö ¾ø¾î¼­ countÄÃ·³¸¸ ÀÖ´Ù.
+            // COUNT( arguments ) ÄÃ·³ÀÌ ÀÖ´Â °æ¿ì, (arguments) IS NOT NULLÀ» whereÀı¿¡ Ãß°¡ÇÑ´Ù.
             if ( sSQSFWGH->aggsDepth1->aggr->node.arguments != NULL )
             {
                 IDE_TEST( qtc::makeNode( aStatement,
@@ -1241,7 +1460,7 @@ qmoUnnesting::transformToExists( qcStatement * aStatement,
         sTransModule = toExistsModule( aNode->node.module );
     }
 
-    // Subquery predicateì˜ EXISTS/NOT EXISTSë¡œ ë³€ê²½
+    // Subquery predicateÀÇ EXISTS/NOT EXISTS·Î º¯°æ
     IDE_TEST( qtc::makeNode( aStatement,
                              sPredicate,
                              &sEmptyPosition,
@@ -1280,7 +1499,7 @@ qmoUnnesting::isUnnestableSubquery( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Unnesting ê°€ëŠ¥í•œ subqueryì¸ì§€ íŒë‹¨í•œë‹¤.
+ *     Unnesting °¡´ÉÇÑ subqueryÀÎÁö ÆÇ´ÜÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1295,6 +1514,7 @@ qmoUnnesting::isUnnestableSubquery( qcStatement * aStatement,
     qtcNode          * sSQNode;
     qcDepInfo          sDepInfo;
     qmsFrom          * sSQFrom; 
+    idBool             sIsCheck; /* BUG-48336 */
 
     sSQNode      = (qtcNode *)aSubqueryPredicate->node.arguments;
     sSQStatement = sSQNode->subquery;
@@ -1303,12 +1523,23 @@ qmoUnnesting::isUnnestableSubquery( qcStatement * aStatement,
 
     if( sSQParseTree->querySet->setOp != QMS_NONE )
     {
-        // SET ì—°ì‚°ì¸ ê²½ìš°
+        // SET ¿¬»êÀÎ °æ¿ì
         IDE_CONT( INVALID_FORM );
     }
     else
     {
         // Nothing to do.
+    }
+
+    // BUG-48336 compatibiltiy°¡ 2ÀÌ¸é ¹ö±×¹İ¿µ Á¶°ÇÀ» È®ÀÎÇÏÁö ¾Ê½À´Ï´Ù. 
+    if ( (QCU_OPTIMIZER_UNNEST_COMPATIBILITY & QCU_UNNEST_COMPATIBILITY_MASK_MODE2)
+         != QCU_UNNEST_COMPATIBILITY_MASK_MODE2 )
+    { 
+        sIsCheck = ID_TRUE;
+    }
+    else
+    {
+        sIsCheck = ID_FALSE;
     }
 
     if ( sSQSFWGH->hints->subqueryUnnestType == QMO_SUBQUERY_UNNEST_TYPE_NO_UNNEST )
@@ -1331,8 +1562,8 @@ qmoUnnesting::isUnnestableSubquery( qcStatement * aStatement,
     {
         /* BUG-46544 Unnest hit */
         // Hint QMO_SUBQUERY_UNNEST_TYPE_UNNEST
-        // hintê°€ ì¡´ì¬í•˜ê³  PropertyëŠ” 0ì´ê³  Compatibilityê°€ 1 ì´ë©´ Property
-        // ìš°ì„ ìœ¼ë¡œ unnestë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // hint°¡ Á¸ÀçÇÏ°í Property´Â 0ÀÌ°í Compatibility°¡ 1 ÀÌ¸é Property
+        // ¿ì¼±À¸·Î unnest¸¦ ÇÏÁö ¾Ê´Â´Ù.
         if ( ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_UNNEST_SUBQUERY_MASK )
                == QC_TMP_UNNEST_SUBQUERY_FALSE ) &&
              ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_UNNEST_COMPATIBILITY_1_MASK )
@@ -1342,13 +1573,15 @@ qmoUnnesting::isUnnestableSubquery( qcStatement * aStatement,
         }
         else
         {
-            /* Nothing to do */
+            // BUG-48336
+            // hint°¡ Á¸ÀçÇÏ°í Compatibility°¡ 2°¡ ¾Æ´Ï¸é unnest¸¦ ÇÕ´Ï´Ù.
+            sIsCheck = ID_FALSE;
         }
     }
 
     if( sSQParseTree->limit != NULL )
     {
-        // LIMITì ˆì„ ì‚¬ìš©í•œ ê²½ìš°
+        // LIMITÀıÀ» »ç¿ëÇÑ °æ¿ì
         IDE_CONT( INVALID_FORM );
     }
     else
@@ -1366,7 +1599,7 @@ qmoUnnesting::isUnnestableSubquery( qcStatement * aStatement,
         // Nothing to do.
     }
 
-    /* BUG-37314 ì„œë¸Œì¿¼ë¦¬ì— rownum ì´ ìˆëŠ” ê²½ìš°ì—ë§Œ unnest ë¥¼ ì œí•œí•´ì•¼ í•œë‹¤. */
+    /* BUG-37314 ¼­ºêÄõ¸®¿¡ rownum ÀÌ ÀÖ´Â °æ¿ì¿¡¸¸ unnest ¸¦ Á¦ÇÑÇØ¾ß ÇÑ´Ù. */
     if( sSQSFWGH->rownum != NULL )
     {
         IDE_CONT( INVALID_FORM );
@@ -1378,7 +1611,7 @@ qmoUnnesting::isUnnestableSubquery( qcStatement * aStatement,
 
     if( sSQSFWGH->hierarchy != NULL )
     {
-        // Hierarchyì ˆì—ì„œ correlationì„ ì°¸ì¡°í•œ ê²½ìš°
+        // HierarchyÀı¿¡¼­ correlationÀ» ÂüÁ¶ÇÑ °æ¿ì
 
         if( sSQSFWGH->hierarchy->startWith != NULL )
         {
@@ -1422,8 +1655,8 @@ qmoUnnesting::isUnnestableSubquery( qcStatement * aStatement,
     }
 
     // PROJ-2418
-    // sSQSFWGHì˜ Fromì—ì„œ Lateral Viewê°€ ì¡´ì¬í•˜ë©´ Unnesting í•  ìˆ˜ ì—†ë‹¤.
-    // ë‹¨, Lateral Viewê°€ ì´ì „ì— ëª¨ë‘ Merging ë˜ì—ˆë‹¤ë©´ Unnestingì´ ê°€ëŠ¥í•˜ë‹¤.
+    // sSQSFWGHÀÇ From¿¡¼­ Lateral View°¡ Á¸ÀçÇÏ¸é Unnesting ÇÒ ¼ö ¾ø´Ù.
+    // ´Ü, Lateral View°¡ ÀÌÀü¿¡ ¸ğµÎ Merging µÇ¾ú´Ù¸é UnnestingÀÌ °¡´ÉÇÏ´Ù.
     for ( sSQFrom = sSQSFWGH->from; sSQFrom != NULL; sSQFrom = sSQFrom->next )
     {
         IDE_TEST( qmvQTC::getFromLateralDepInfo( sSQFrom, & sDepInfo )
@@ -1431,7 +1664,7 @@ qmoUnnesting::isUnnestableSubquery( qcStatement * aStatement,
 
         if ( qtc::haveDependencies( & sDepInfo ) == ID_TRUE )
         {
-            // í•´ë‹¹ Fromì— Lateral Viewê°€ ì¡´ì¬í•˜ë©´ Unnesting ë¶ˆê°€
+            // ÇØ´ç From¿¡ Lateral View°¡ Á¸ÀçÇÏ¸é Unnesting ºÒ°¡
             IDE_CONT( INVALID_FORM );
         }
         else
@@ -1443,7 +1676,7 @@ qmoUnnesting::isUnnestableSubquery( qcStatement * aStatement,
     if( ( sSQSFWGH->where  != NULL ) ||
         ( sSQSFWGH->having != NULL ) )
     {
-        // WHEREì ˆê³¼ HAVINGì ˆì˜ ì¡°ê±´ì„ í™•ì¸í•œë‹¤.
+        // WHEREÀı°ú HAVINGÀıÀÇ Á¶°ÇÀ» È®ÀÎÇÑ´Ù.
         if( isUnnestablePredicate( aStatement,
                                    aSFWGH,
                                    aSubqueryPredicate,
@@ -1466,15 +1699,15 @@ qmoUnnesting::isUnnestableSubquery( qcStatement * aStatement,
     {
         if( qtc::haveDependencies( &sSQSFWGH->outerDepInfo ) == ID_FALSE )
         {
-            // GROUP BYì ˆê³¼ correlation ì—†ì´ aggregate functionì„ ì‚¬ìš©í•œ ê²½ìš°
+            // GROUP BYÀı°ú correlation ¾øÀÌ aggregate functionÀ» »ç¿ëÇÑ °æ¿ì
             IDE_CONT( INVALID_FORM );
         }
         else
         {
-            // Cost-based query transformationì´ í•„ìš”í•œ ì‹œì 
+            // Cost-based query transformationÀÌ ÇÊ¿äÇÑ ½ÃÁ¡
             // ex) SELECT * FROM T1 WHERE I1 = (SELECT SUM(I1) FROM T2 WHERE T1.I2 = T2.I2);
-            //     ë§Œì•½ T2.I2ì— indexê°€ ì¡´ì¬í•˜ê³  T1ì˜ cardinalityê°€ ë†’ì§€ ì•Šë‹¤ë©´
-            //     unnestingí•˜ì§€ ì•ŠëŠ” ê²ƒì´ ìœ ë¦¬í•˜ê³  ê·¸ë ‡ì§€ ì•Šë‹¤ë©´ ë‹¤ìŒê³¼ ê°™ì´ ë³€ê²½í•˜ëŠ”ê²ƒì´ ìœ ë¦¬í•˜ë‹¤.
+            //     ¸¸¾à T2.I2¿¡ index°¡ Á¸ÀçÇÏ°í T1ÀÇ cardinality°¡ ³ôÁö ¾Ê´Ù¸é
+            //     unnestingÇÏÁö ¾Ê´Â °ÍÀÌ À¯¸®ÇÏ°í ±×·¸Áö ¾Ê´Ù¸é ´ÙÀ½°ú °°ÀÌ º¯°æÇÏ´Â°ÍÀÌ À¯¸®ÇÏ´Ù.
             //     SELECT * FROM T1, (SELECT SUM(I1) COL1, I2 COL2 FROM T2 GROUP BY I2) V1
             //       WHERE T1.I1 = V1.COL1 AND T1.I2 = V1.COL2;
 
@@ -1498,7 +1731,7 @@ qmoUnnesting::isUnnestableSubquery( qcStatement * aStatement,
 
     if( sSQSFWGH->aggsDepth2 != NULL )
     {
-        // Nested aggregate functionì„ ì‚¬ìš©í•œ ê²½ìš°
+        // Nested aggregate functionÀ» »ç¿ëÇÑ °æ¿ì
         IDE_CONT( INVALID_FORM );
     }
     else
@@ -1509,7 +1742,7 @@ qmoUnnesting::isUnnestableSubquery( qcStatement * aStatement,
     if( qtc::dependencyContains( &aSFWGH->depInfo,
                                  &sSQSFWGH->outerDepInfo ) == ID_FALSE )
     {
-        // Subqueryì˜ correlationì€ parent query blockì— í•œì •ë˜ì–´ì•¼ í•œë‹¤.
+        // SubqueryÀÇ correlationÀº parent query block¿¡ ÇÑÁ¤µÇ¾î¾ß ÇÑ´Ù.
         IDE_CONT( INVALID_FORM );
     }
     else
@@ -1531,7 +1764,7 @@ qmoUnnesting::isUnnestableSubquery( qcStatement * aStatement,
         }
 
         // BUG-41564
-        // Target Subqueryê°€ í˜„ì¬ Subquery ë°–ì„ ì°¸ì¡°í•œë‹¤ë©´ Unnesting ë¶ˆê°€
+        // Target Subquery°¡ ÇöÀç Subquery ¹ÛÀ» ÂüÁ¶ÇÑ´Ù¸é Unnesting ºÒ°¡
         if( isOuterRefSubquery( sTarget->targetColumn, &sSQSFWGH->depInfo ) == ID_TRUE )
         {
             IDE_CONT( INVALID_FORM );
@@ -1546,10 +1779,10 @@ qmoUnnesting::isUnnestableSubquery( qcStatement * aStatement,
          sGroup != NULL;
          sGroup = sGroup->next )
     {
-        // BUG-45151 ROLL-UP, CUBE ë“±ì„ ì‚¬ìš©í•˜ë©´ sGroup->arithmeticOrListê°€ NULLì´ë¼ì„œ ì£½ìŠµë‹ˆë‹¤.
+        // BUG-45151 ROLL-UP, CUBE µîÀ» »ç¿ëÇÏ¸é sGroup->arithmeticOrList°¡ NULLÀÌ¶ó¼­ Á×½À´Ï´Ù.
         if( sGroup->type != QMS_GROUPBY_NORMAL )
         {
-            // ROLL-UP, CUBE ë“±ì„ ì‚¬ìš© í•˜ëŠ” ê²½ìš°
+            // ROLL-UP, CUBE µîÀ» »ç¿ë ÇÏ´Â °æ¿ì
             IDE_CONT( INVALID_FORM );
         }
         else
@@ -1563,7 +1796,7 @@ qmoUnnesting::isUnnestableSubquery( qcStatement * aStatement,
 
         if( sDepInfo.depCount != 0 )
         {
-            // SELECT, WHERE, HAVING ì™¸ clauseì—ì„œ outer queryì˜ columnì„ ì°¸ì¡°í•œ ê²½ìš°
+            // SELECT, WHERE, HAVING ¿Ü clause¿¡¼­ outer queryÀÇ columnÀ» ÂüÁ¶ÇÑ °æ¿ì
             IDE_CONT( INVALID_FORM );
         }
         else
@@ -1582,7 +1815,7 @@ qmoUnnesting::isUnnestableSubquery( qcStatement * aStatement,
 
         if( sDepInfo.depCount != 0 )
         {
-            // SELECT, WHERE, HAVING ì™¸ clauseì—ì„œ outer queryì˜ columnì„ ì°¸ì¡°í•œ ê²½ìš°
+            // SELECT, WHERE, HAVING ¿Ü clause¿¡¼­ outer queryÀÇ columnÀ» ÂüÁ¶ÇÑ °æ¿ì
             IDE_CONT( INVALID_FORM );
         }
         else
@@ -1601,7 +1834,7 @@ qmoUnnesting::isUnnestableSubquery( qcStatement * aStatement,
 
         if( sDepInfo.depCount != 0 )
         {
-            // SELECT, WHERE, HAVING ì™¸ clauseì—ì„œ outer queryì˜ columnì„ ì°¸ì¡°í•œ ê²½ìš°
+            // SELECT, WHERE, HAVING ¿Ü clause¿¡¼­ outer queryÀÇ columnÀ» ÂüÁ¶ÇÑ °æ¿ì
             IDE_CONT( INVALID_FORM );
         }
         else
@@ -1610,10 +1843,10 @@ qmoUnnesting::isUnnestableSubquery( qcStatement * aStatement,
         }
     }
 
-    // BUG-42637 subquery unnestingì‹œ lob ì œì•½ ì œê±°
-    // lob ì»¬ëŸ¼ì€ group by ì— ì“¸ ìˆ˜ê°€ ì—†ë‹¤.
-    // subquery unnestingì‹œ group by ë‚˜ AGGR í•¨ìˆ˜ê°€ ìˆëŠ” ê²½ìš°ì—ëŠ”
-    // group by ì— ì¶”ê°€ê°€ ë˜ë¯€ë¡œ ë§‰ì•„ì•¼ í•œë‹¤.
+    // BUG-42637 subquery unnesting½Ã lob Á¦¾à Á¦°Å
+    // lob ÄÃ·³Àº group by ¿¡ ¾µ ¼ö°¡ ¾ø´Ù.
+    // subquery unnesting½Ã group by ³ª AGGR ÇÔ¼ö°¡ ÀÖ´Â °æ¿ì¿¡´Â
+    // group by ¿¡ Ãß°¡°¡ µÇ¹Ç·Î ¸·¾Æ¾ß ÇÑ´Ù.
     if ( (sSQSFWGH->group != NULL) ||
          (sSQSFWGH->aggsDepth1 != NULL) )
     {
@@ -1656,6 +1889,88 @@ qmoUnnesting::isUnnestableSubquery( qcStatement * aStatement,
         // Nothing to do.
     }
 
+    /********************************
+     * Á¦ÀÏ ¸¶Áö¸·Á¶°ÇÀÌ¿©¾ßÇÕ´Ï´Ù.                
+     ********************************/
+    if ( sIsCheck == ID_TRUE )
+    { 
+        /**************************************
+         *  BUG-48336 ¾Æ·¡ Á¶°ÇÀ» ¸ğµÎ ¸¸Á·ÇÏ´Â °æ¿ì
+         *            subquery filterÇÃ·£ÀÌ »ı¼ºµÇ´Â ¸ğµå Ãß°¡ÇÕ´Ï´Ù.
+         *   1. subquery´ÂIN->EXISTS º¯È¯À» ¾ÈÇß°í,
+         *               outer depÀÌ 1ÀÌ°í,
+         *               Á¶ÀÎÀÌ ¾ø°í ºä°¡ ¾Æ´Ñ Å×ÀÌºíÀÎ °æ¿ì
+         *   2. parent query block¿¡´Â 1°³ ÀÌ»óÀÇ left outer joinÀÌ ÀÖ´Â °æ¿ì
+         *************************/
+        // 1. Subquery Á¶°Ç
+        //    IN->EXISTS Äõ¸®º¯È¯À» ÇÑ °æ¿ì UNNEST
+        if ( (sSQNode->lflag & QTC_NODE_TRANS_IN_TO_EXISTS_MASK)
+             == QTC_NODE_TRANS_IN_TO_EXISTS_FALSE )
+        {
+            // JOINÀÌ ÀÖ°Å³ª outer dependency°¡ 1 ¾Æ´Ñ°æ¿ì UNNEST
+            if ( ( sSQSFWGH->from->next == NULL ) &&
+                 ( sSQSFWGH->from->joinType == QMS_NO_JOIN ) &&
+                 ( sSQSFWGH->outerDepInfo.depCount == 1 ) )
+            {
+                // view( view, inline view, with) recursive withÀÎ °æ¿ì UNNEST
+                if ( ( sSQSFWGH->from->tableRef->view == NULL ) &&
+                     ( (sSQSFWGH->from->tableRef->flag & QMS_TABLE_REF_RECURSIVE_VIEW_MASK)
+                       == QMS_TABLE_REF_RECURSIVE_VIEW_FALSE ) )
+                {
+                    // 2. parent query block Á¶°Ç 
+                    if ( ( aSFWGH->from->next != NULL ) ||
+                         ( aSFWGH->from->joinType != QMS_NO_JOIN ) )
+                    {
+                        // Oracle styleÀÇ outer join 
+                        if ( aSFWGH->where != NULL )
+                        {
+                            if ( ( aSFWGH->where->lflag & QTC_NODE_JOIN_OPERATOR_MASK)
+                                 == QTC_NODE_JOIN_OPERATOR_EXIST )
+                            {
+                                IDE_CONT( INVALID_FORM );
+                            }
+                        } 
+                        else
+                        {
+                            // Nothing to do.
+                        }
+
+                        // Ansi style outer joinÀ» ´Ü ÇÏ³ª¶óµµ »ç¿ëÇÑ °æ¿ì
+                        if ( ( (aSFWGH->lflag & QMV_SFWGH_JOIN_LEFT_OUTER) == QMV_SFWGH_JOIN_LEFT_OUTER ) ||
+                             ( (aSFWGH->lflag & QMV_SFWGH_JOIN_RIGHT_OUTER) == QMV_SFWGH_JOIN_RIGHT_OUTER ) )
+                        {
+                            IDE_CONT( INVALID_FORM );
+                        }
+                        else
+                        {
+                            // Nothing to do.
+                        }
+                    }
+                    else
+                    {
+                        // Nothing to do.
+                    }
+                }
+                else
+                {
+                    // Nothing to do.
+                }
+            }
+            else
+            {
+                // Nothing to do.
+            }
+        }
+        else
+        {
+            // Nothing to do.
+        }
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
     return ID_TRUE;
 
     IDE_EXCEPTION_CONT( INVALID_FORM );
@@ -1673,12 +1988,12 @@ qmoUnnesting::unnestSubquery( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Subqueryë¥¼ unnesting ì‹œë„ í•œë‹¤.
+ *     Subquery¸¦ unnesting ½Ãµµ ÇÑ´Ù.
  *
  * Implementation :
- *     1. Simple/complex subqueryë¥¼ êµ¬ë¶„í•œë‹¤.
- *     2. Subqueryì˜ ê²°ê³¼ê°€ single/multiple rowì¸ì§€ ì—¬ë¶€ì— ë”°ë¼
- *        joinì˜ ì¢…ë¥˜(semi/inner)ë¥¼ ê²°ì •í•œë‹¤.
+ *     1. Simple/complex subquery¸¦ ±¸ºĞÇÑ´Ù.
+ *     2. SubqueryÀÇ °á°ú°¡ single/multiple rowÀÎÁö ¿©ºÎ¿¡ µû¶ó
+ *        joinÀÇ Á¾·ù(semi/inner)¸¦ °áÁ¤ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1691,6 +2006,7 @@ qmoUnnesting::unnestSubquery( qcStatement * aStatement,
     qcDepInfo      sDepInfo;
     idBool         sIsSingleRow;
     idBool         sIsRemoveSemi;
+    UInt           sTuple;
     
     IDU_FIT_POINT_FATAL( "qmoUnnesting::unnestSubquery::__FT__" );
 
@@ -1701,9 +2017,24 @@ qmoUnnesting::unnestSubquery( qcStatement * aStatement,
     sSQParseTree = (qmsParseTree *)sSQStatement->myPlan->parseTree;
     sSQSFWGH     = sSQParseTree->querySet->SFWGH;
 
+    /* TASK-7219 Shard Transformer Refactoring */
+    if ( SDI_CHECK_QUERYSET_LIST_STATE( aStatement->mShardQuerySetList,
+                                        SDI_QUERYSET_LIST_STATE_DUMMY_ANALYZE )
+         == ID_TRUE )
+    {
+        IDE_TEST( sdi::preAnalyzeQuerySet( sSQStatement,
+                                           sSQParseTree->querySet,
+                                           QCG_GET_SESSION_SHARD_META_NUMBER( aStatement ) )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
     if( sSQSFWGH->where != NULL )
     {
-        // WHEREì ˆì˜ correlation predicate ì œê±°
+        // WHEREÀıÀÇ correlation predicate Á¦°Å
         IDE_TEST( removeCorrPredicate( aStatement,
                                        &sSQSFWGH->where,
                                        &sSQParseTree->querySet->outerDepInfo,
@@ -1717,7 +2048,7 @@ qmoUnnesting::unnestSubquery( qcStatement * aStatement,
 
     if( sSQSFWGH->having != NULL )
     {
-        // HAVINGì ˆì˜ correlation predicate ì œê±°
+        // HAVINGÀıÀÇ correlation predicate Á¦°Å
         IDE_TEST( removeCorrPredicate( aStatement,
                                        &sSQSFWGH->having,
                                        &sSQParseTree->querySet->outerDepInfo,
@@ -1729,19 +2060,19 @@ qmoUnnesting::unnestSubquery( qcStatement * aStatement,
         // Nothing to do.
     }
 
-    // Subqueryì˜ SELECTì ˆì„ ëª¨ë‘ ì œê±°
+    // SubqueryÀÇ SELECTÀıÀ» ¸ğµÎ Á¦°Å
     sSQSFWGH->target               = NULL;
     sSQParseTree->querySet->target = NULL;
 
-    // Correlation predicateì—ì„œ ì‚¬ìš©í•˜ëŠ” columnë“¤ì„ SELECTì ˆì— ë‚˜ì—´
+    // Correlation predicate¿¡¼­ »ç¿ëÇÏ´Â columnµéÀ» SELECTÀı¿¡ ³ª¿­
     IDE_TEST( genViewSelect( sSQStatement,
                              sCorrPred,
                              ID_FALSE )
               != IDE_SUCCESS );
 
     // BUG-42637
-    // unnest ê³¼ì •ì—ì„œ ìƒì„±ëœ viewì˜ targetì— lob ì»¬ëŸ¼ì´ ìˆì„ê²½ìš° LobLocatorFuncì„ ì—°ê²°í•´ì¤€ë‹¤.
-    // viewëŠ” ë°˜ë“œì‹œ lobLocator íƒ€ì…ìœ¼ë¡œ ë³€í™˜ë˜ì–´ì•¼ í•œë‹¤.
+    // unnest °úÁ¤¿¡¼­ »ı¼ºµÈ viewÀÇ target¿¡ lob ÄÃ·³ÀÌ ÀÖÀ»°æ¿ì LobLocatorFuncÀ» ¿¬°áÇØÁØ´Ù.
+    // view´Â ¹İµå½Ã lobLocator Å¸ÀÔÀ¸·Î º¯È¯µÇ¾î¾ß ÇÑ´Ù.
     IDE_TEST( qmvQuerySet::addLobLocatorFunc( sSQStatement, sSQSFWGH->target )
               != IDE_SUCCESS );
 
@@ -1750,7 +2081,7 @@ qmoUnnesting::unnestSubquery( qcStatement * aStatement,
                                        &sViewFrom )
               != IDE_SUCCESS );
 
-    // Subqueryì—ì„œ ì œê±°ëœ correlation predicateì„ viewì™€ì˜ join predicateìœ¼ë¡œ ë³€í™˜
+    // Subquery¿¡¼­ Á¦°ÅµÈ correlation predicateÀ» view¿ÍÀÇ join predicateÀ¸·Î º¯È¯
     IDE_TEST( toViewColumns( sSQStatement,
                              sViewFrom->tableRef,
                              &sCorrPred,
@@ -1768,7 +2099,7 @@ qmoUnnesting::unnestSubquery( qcStatement * aStatement,
         {
             if( sIsSingleRow == ID_TRUE )
             {
-                // Inner joinìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤.
+                // Inner joinÀ¸·Î Ã³¸®ÇÑ´Ù.
             }
             else
             {
@@ -1778,8 +2109,8 @@ qmoUnnesting::unnestSubquery( qcStatement * aStatement,
 
                 if ( QCU_OPTIMIZER_SEMI_JOIN_REMOVE == 1 )
                 {
-                    // BUG-45172 semi ì¡°ì¸ì„ ì œê±°í•  ì¡°ê±´ì„ ê²€ì‚¬í•˜ì—¬ flagë¥¼ ì„¤ì •í•´ ë‘”ë‹¤.
-                    // ìƒìœ„ì— ì„œë¸Œì¿¼ë¦¬ê°€ semi ì¡°ì¸ì¼ ê²½ìš° flag ë¥¼ ë³´ê³  semi ì¡°ì¸ì„ ì œê±°í•¨
+                    // BUG-45172 semi Á¶ÀÎÀ» Á¦°ÅÇÒ Á¶°ÇÀ» °Ë»çÇÏ¿© flag¸¦ ¼³Á¤ÇØ µĞ´Ù.
+                    // »óÀ§¿¡ ¼­ºêÄõ¸®°¡ semi Á¶ÀÎÀÏ °æ¿ì flag ¸¦ º¸°í semi Á¶ÀÎÀ» Á¦°ÅÇÔ
                     sIsRemoveSemi = isRemoveSemiJoin( sSQStatement, sSQParseTree );
                 }
                 else
@@ -1800,7 +2131,7 @@ qmoUnnesting::unnestSubquery( qcStatement * aStatement,
         else
         {
             // Nothing to do.
-            // Outer queryì˜ outer queryë¥¼ ì°¸ì¡°í•˜ëŠ” predicateì¸ ê²½ìš°
+            // Outer queryÀÇ outer query¸¦ ÂüÁ¶ÇÏ´Â predicateÀÎ °æ¿ì
         }
     }
     else
@@ -1813,16 +2144,29 @@ qmoUnnesting::unnestSubquery( qcStatement * aStatement,
         setJoinMethodHint( aStatement, aSFWGH, sCorrPred, sViewFrom, ID_TRUE );
     }
 
-    // EXISTS/NOT EIXSTSê°€ ìˆë˜ ìë¦¬ì— view join predicateì„ ë³µì‚¬í•œë‹¤.
+    /* BUG-47786 Unnesting °á°ú ¿À·ù */
+    if ( aSQPredicate->depInfo.depCount == 1 )
+    {
+        sTuple = aSQPredicate->depInfo.depend[0];
+
+        if ( ( QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sTuple].lflag & MTC_TUPLE_STORAGE_MASK )
+             == MTC_TUPLE_STORAGE_DISK )
+        {
+            aSFWGH->lflag &= ~QMV_SFWGH_UNNEST_LEFT_DISK_MASK;
+            aSFWGH->lflag |= QMV_SFWGH_UNNEST_LEFT_DISK_TRUE;
+        }
+    }
+
+    // EXISTS/NOT EIXSTS°¡ ÀÖ´ø ÀÚ¸®¿¡ view join predicateÀ» º¹»çÇÑ´Ù.
     sNext = aSQPredicate->node.next;
     idlOS::memcpy( aSQPredicate, sCorrPred, ID_SIZEOF( qtcNode ) );
     aSQPredicate->node.next = sNext;
 
-    // FROMì ˆì˜ ì²« ë²ˆì§¸ì— ë‚˜ì—´í•œë‹¤.
+    // FROMÀıÀÇ Ã¹ ¹øÂ°¿¡ ³ª¿­ÇÑ´Ù.
     sViewFrom->next = aSFWGH->from;
     aSFWGH->from = sViewFrom;
 
-    // Dependency ì„¤ì •
+    // Dependency ¼³Á¤
     IDE_TEST( qtc::dependencyOr( &aSFWGH->depInfo,
                                  &sViewFrom->depInfo,
                                  &aSFWGH->depInfo )
@@ -1849,19 +2193,19 @@ qmoUnnesting::setJoinMethodHint( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Subqueryì— ëª…ì‹œí•œ hintì— ë”°ë¼ outer queryì—ì„œ join method hintë¥¼
- *     ì„¤ì •í•´ì¤€ë‹¤.
+ *     Subquery¿¡ ¸í½ÃÇÑ hint¿¡ µû¶ó outer query¿¡¼­ join method hint¸¦
+ *     ¼³Á¤ÇØÁØ´Ù.
  *
  * Implementation :
- *     | Subqueryì˜ hint    | Outer queryì˜ hint |
+ *     | SubqueryÀÇ hint    | Outer queryÀÇ hint |
  *     | NL_SJ, NL_AJ       | USE_NL             |
  *     | HASH_SJ, HASH_AJ   | USE_HASH           |
  *     | MERGE_SJ, MERGE_AJ | USE_MERGE          |
  *     | SORT_SJ, SORT_AJ   | USE_SORT           |
  * 
  *   - PROJ-2385 //
- *     NL_AJ, MERGE_SJ/_AJë¥¼ ì œì™¸í•˜ê³ ëŠ” 
- *     ëª¨ë‘ Inverse Join Method Hint ì ìš©ì´ ê°€ëŠ¥í•˜ë‹¤.
+ *     NL_AJ, MERGE_SJ/_AJ¸¦ Á¦¿ÜÇÏ°í´Â 
+ *     ¸ğµÎ Inverse Join Method Hint Àû¿ëÀÌ °¡´ÉÇÏ´Ù.
  *
  ***********************************************************************/
 
@@ -1880,7 +2224,7 @@ qmoUnnesting::setJoinMethodHint( qcStatement * aStatement,
 
     if( aIsAntiJoin == ID_FALSE )
     {
-        // Inner/semi joinì¸ ê²½ìš°
+        // Inner/semi joinÀÎ °æ¿ì
         switch( sViewSFWGH->hints->semiJoinMethod )
         {
             case QMO_SEMI_JOIN_METHOD_NOT_DEFINED:
@@ -1908,7 +2252,7 @@ qmoUnnesting::setJoinMethodHint( qcStatement * aStatement,
     }
     else
     {
-        // Anti joinì¸ ê²½ìš°
+        // Anti joinÀÎ °æ¿ì
         switch( sViewSFWGH->hints->antiJoinMethod )
         {
             case QMO_ANTI_JOIN_METHOD_NOT_DEFINED:
@@ -1936,24 +2280,24 @@ qmoUnnesting::setJoinMethodHint( qcStatement * aStatement,
     }
 
     // PROJ-2385
-    // PROJ-2339ì—ì„œ ì¶”ê°€í•œ íŒíŠ¸ë¥¼ ì‚­ì œí•˜ê³ , ë¶€ê°€ íŒíŠ¸ë¥¼ ì§€ì›í•œë‹¤.
-    // ì´ì „ì˜ íŒíŠ¸ë¡œëŠ”, INVERSEë¥¼ ì œì™¸í•œ ë‚˜ë¨¸ì§€ Methodë¥¼ ì„ íƒí•  ìˆ˜ ì—†ê¸° ë•Œë¬¸ì´ë‹¤.
+    // PROJ-2339¿¡¼­ Ãß°¡ÇÑ ÈùÆ®¸¦ »èÁ¦ÇÏ°í, ºÎ°¡ ÈùÆ®¸¦ Áö¿øÇÑ´Ù.
+    // ÀÌÀüÀÇ ÈùÆ®·Î´Â, INVERSE¸¦ Á¦¿ÜÇÑ ³ª¸ÓÁö Method¸¦ ¼±ÅÃÇÒ ¼ö ¾ø±â ¶§¹®ÀÌ´Ù.
     switch ( sViewSFWGH->hints->inverseJoinOption )
     {
         case QMO_INVERSE_JOIN_METHOD_DENIED: // NO_INVERSE_JOIN
         {
             if ( sExistHint == ID_FALSE )
             {
-                /* Join Method Hintê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°,
-                 * ëª¨ë“  Inverse Join Methodë¥¼ ë°°ì œí•œ ë‚˜ë¨¸ì§€ Methodë§Œ ê³ ë ¤í•œë‹¤.  */
+                /* Join Method Hint°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì,
+                 * ¸ğµç Inverse Join Method¸¦ ¹èÁ¦ÇÑ ³ª¸ÓÁö Method¸¸ °í·ÁÇÑ´Ù.  */
                 sExistHint = ID_TRUE;
                 sFlag |= QMO_JOIN_METHOD_MASK;
                 sFlag &= ~QMO_JOIN_METHOD_INVERSE;
             }
             else
             {
-                /* Join Method Hintê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°,
-                 * í•´ë‹¹ Method ì¤‘ì—ì„œ Inverse Join Methodë¥¼ ë°°ì œí•œë‹¤. */
+                /* Join Method Hint°¡ Á¸ÀçÇÏ´Â °æ¿ì,
+                 * ÇØ´ç Method Áß¿¡¼­ Inverse Join Method¸¦ ¹èÁ¦ÇÑ´Ù. */
                 sFlag &= ~QMO_JOIN_METHOD_INVERSE;
             }
             break;
@@ -1962,19 +2306,19 @@ qmoUnnesting::setJoinMethodHint( qcStatement * aStatement,
         {
             if ( sExistHint == ID_FALSE )
             {
-                /* Join Method Hintê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°,
-                 * ëª¨ë“  Inverse Join Methodë§Œ ê³ ë ¤í•œë‹¤. */
+                /* Join Method Hint°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì,
+                 * ¸ğµç Inverse Join Method¸¸ °í·ÁÇÑ´Ù. */
                 sExistHint = ID_TRUE;
                 sFlag &= ~QMO_JOIN_METHOD_MASK;
                 sFlag |= QMO_JOIN_METHOD_INVERSE;
             }
             else
             {
-                /* Join Method Hintê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°,
-                 * í•´ë‹¹ Method ì¤‘ì—ì„œ Inverse Join Methodë§Œ ê³ ë ¤í•œë‹¤.
-                 * ë‹¨, í•´ë‹¹ Methodì— Inverse Join Methodê°€ ì•„ì˜ˆ ì„ íƒë  ìˆ˜ ì—†ëŠ” ê²½ìš°
-                 * ( ì˜ˆ, NL Join (Anti), MERGE Join(Semi/Anti) )
-                 * INVERSE íŒíŠ¸ë¥¼ ì•”ë¬µì ìœ¼ë¡œ ë¬´ì‹œí•œë‹¤. */
+                /* Join Method Hint°¡ Á¸ÀçÇÏ´Â °æ¿ì,
+                 * ÇØ´ç Method Áß¿¡¼­ Inverse Join Method¸¸ °í·ÁÇÑ´Ù.
+                 * ´Ü, ÇØ´ç Method¿¡ Inverse Join Method°¡ ¾Æ¿¹ ¼±ÅÃµÉ ¼ö ¾ø´Â °æ¿ì
+                 * ( ¿¹, NL Join (Anti), MERGE Join(Semi/Anti) )
+                 * INVERSE ÈùÆ®¸¦ ¾Ï¹¬ÀûÀ¸·Î ¹«½ÃÇÑ´Ù. */
 
                 if ( ( sViewSFWGH->hints->antiJoinMethod == QMO_ANTI_JOIN_METHOD_NL    ) ||
                      ( sViewSFWGH->hints->semiJoinMethod == QMO_SEMI_JOIN_METHOD_MERGE ) ||
@@ -2012,8 +2356,8 @@ qmoUnnesting::setJoinMethodHint( qcStatement * aStatement,
                 QCP_SET_INIT_JOIN_METHOD_HINTS( sJoinMethodHint );
 
                 // PROJ-2339, 2385
-                // ë§Œì•½ Join Methodê°€ Inverse Join Methodë¥¼ í—ˆë½í•˜ëŠ” ê²½ìš°ë¼ë©´ (ALLOWED)
-                // ì •ë°˜ëŒ€ dependencyë¥¼ ê°€ì§„ Inverse Join Methodë„ ê°™ì´ ê³ ë ¤í•´ì•¼ í•œë‹¤.
+                // ¸¸¾à Join Method°¡ Inverse Join Method¸¦ Çã¶ôÇÏ´Â °æ¿ì¶ó¸é (ALLOWED)
+                // Á¤¹İ´ë dependency¸¦ °¡Áø Inverse Join Methodµµ °°ÀÌ °í·ÁÇØ¾ß ÇÑ´Ù.
                 if( sViewSFWGH->hints->inverseJoinOption == QMO_INVERSE_JOIN_METHOD_ALLOWED )
                 {
                     sJoinMethodHint->isUndirected = ID_TRUE;
@@ -2078,11 +2422,11 @@ qmoUnnesting::setNoMergeHint( qmsFrom * aViewFrom )
 /***********************************************************************
  *
  * Description :
- *     Viewì— í¬í•¨ëœ relationì´ ë‘˜ ì´ìƒì¸ ê²½ìš° NO_MERGE hintë¥¼
- *     ì„¤ì •í•˜ì—¬ view mergingì´ ìˆ˜í–‰ë˜ì§€ ì•Šë„ë¡ í•œë‹¤.
- *     Viewë¥¼ ëŒ€ìƒìœ¼ë¡œ semi/anti joinì„ ì‹œë„í•˜ëŠ” ê²½ìš°ì—ë§Œ í•„ìš”í•˜ë‹¤.
- *     ë§Œì•½ view ë‚´ë¶€ì˜ joinë³´ë‹¤ semi/anti joinì´ ë¨¼ì € ìˆ˜í–‰ë˜ë©´
- *     ê²°ê³¼ê°€ ë‹¬ë¼ì§ˆ ìˆ˜ ìˆë‹¤.
+ *     View¿¡ Æ÷ÇÔµÈ relationÀÌ µÑ ÀÌ»óÀÎ °æ¿ì NO_MERGE hint¸¦
+ *     ¼³Á¤ÇÏ¿© view mergingÀÌ ¼öÇàµÇÁö ¾Êµµ·Ï ÇÑ´Ù.
+ *     View¸¦ ´ë»óÀ¸·Î semi/anti joinÀ» ½ÃµµÇÏ´Â °æ¿ì¿¡¸¸ ÇÊ¿äÇÏ´Ù.
+ *     ¸¸¾à view ³»ºÎÀÇ joinº¸´Ù semi/anti joinÀÌ ¸ÕÀú ¼öÇàµÇ¸é
+ *     °á°ú°¡ ´Ş¶óÁú ¼ö ÀÖ´Ù.
  *
  * Implementation :
  *
@@ -2096,7 +2440,7 @@ qmoUnnesting::setNoMergeHint( qmsFrom * aViewFrom )
     sViewParseTree = (qmsParseTree *)sViewStatement->myPlan->parseTree;
     sViewSFWGH     = sViewParseTree->querySet->SFWGH;
 
-    // Viewì— ë‘˜ ì´ìƒì˜ relationì´ í¬í•¨ëœ ê²½ìš°ì—ë§Œ NO_MERGE hintë¥¼ ì„¤ì •í•œë‹¤.
+    // View¿¡ µÑ ÀÌ»óÀÇ relationÀÌ Æ÷ÇÔµÈ °æ¿ì¿¡¸¸ NO_MERGE hint¸¦ ¼³Á¤ÇÑ´Ù.
     if( ( sViewSFWGH->from->next != NULL ) ||
         ( sViewSFWGH->from->joinType != QMS_NO_JOIN ) )
     {
@@ -2117,7 +2461,7 @@ qmoUnnesting::setJoinType( qtcNode * aPredicate,
 /***********************************************************************
  *
  * Description :
- *     Join predicateì— semi/anti joinì˜ ì¢…ë¥˜ ë°©í–¥ì„ flagë¡œ ì„¤ì •í•œë‹¤.
+ *     Join predicate¿¡ semi/anti joinÀÇ Á¾·ù ¹æÇâÀ» flag·Î ¼³Á¤ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -2144,15 +2488,15 @@ qmoUnnesting::setJoinType( qtcNode * aPredicate,
         qtc::dependencyAnd( &aPredicate->depInfo, &sDepInfo, &sDepInfo );
         if( qtc::haveDependencies( &sDepInfo ) == ID_TRUE )
         {
-            // Type ì„¤ì •
+            // Type ¼³Á¤
             if( aType == ID_FALSE )
             {
                 // Semi-join
                 aPredicate->lflag &= ~QTC_NODE_JOIN_TYPE_MASK;
                 aPredicate->lflag |= QTC_NODE_JOIN_TYPE_SEMI;
 
-                // BUG-45172 semi ì¡°ì¸ì„ ì œê±°í•  ì¡°ê±´ì„ ê²€ì‚¬í•˜ì—¬ flagë¥¼ ì„¤ì •í•´ ë‘”ë‹¤.
-                // ìƒìœ„ì— ì„œë¸Œì¿¼ë¦¬ê°€ semi ì¡°ì¸ì¼ ê²½ìš° flag ë¥¼ ë³´ê³  í•˜ìœ„ semi ì¡°ì¸ì„ ì œê±°í•¨
+                // BUG-45172 semi Á¶ÀÎÀ» Á¦°ÅÇÒ Á¶°ÇÀ» °Ë»çÇÏ¿© flag¸¦ ¼³Á¤ÇØ µĞ´Ù.
+                // »óÀ§¿¡ ¼­ºêÄõ¸®°¡ semi Á¶ÀÎÀÏ °æ¿ì flag ¸¦ º¸°í ÇÏÀ§ semi Á¶ÀÎÀ» Á¦°ÅÇÔ
                 if ( aIsRemoveSemi == ID_TRUE )
                 {
                     aPredicate->lflag &= ~QTC_NODE_REMOVABLE_SEMI_JOIN_MASK;
@@ -2170,8 +2514,8 @@ qmoUnnesting::setJoinType( qtcNode * aPredicate,
                 aPredicate->lflag |= QTC_NODE_JOIN_TYPE_ANTI;
             }
 
-            // BUG-45167 ì„œë¸Œì¿¼ë¦¬ê°€ ë¶€ëª¨ì¿¼ë¦¬ì˜ í…Œì´ë¸”ì„ ì°¸ì¡°í•˜ëŠ” one table predicateë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš° fatalì´ ë°œìƒí•©ë‹ˆë‹¤.
-            // ì„œë¸Œì¿¼ë¦¬ë¥¼ ì°¸ì¡°í•˜ëŠ” predicate ì˜ ë””íœë˜ì‹œë§Œ ì¶”ê°€í•´ì•¼ í•œë‹¤.
+            // BUG-45167 ¼­ºêÄõ¸®°¡ ºÎ¸ğÄõ¸®ÀÇ Å×ÀÌºíÀ» ÂüÁ¶ÇÏ´Â one table predicate¸¦ »ç¿ëÇÏ´Â °æ¿ì fatalÀÌ ¹ß»ıÇÕ´Ï´Ù.
+            // ¼­ºêÄõ¸®¸¦ ÂüÁ¶ÇÏ´Â predicate ÀÇ µğÆæ´ø½Ã¸¸ Ãß°¡ÇØ¾ß ÇÑ´Ù.
             qtc::dependencyOr( &aPredicate->depInfo,
                                &aViewFrom->semiAntiJoinDepInfo,
                                &aViewFrom->semiAntiJoinDepInfo );
@@ -2180,7 +2524,7 @@ qmoUnnesting::setJoinType( qtcNode * aPredicate,
         {
             // Nothing to do.
             // SELECT * FROM T1 WHERE EXISTS (SELECT 0 FROM T2 WHERE T1.I1 = T2.I1 AND T1.I2 > 0);
-            // ì—ì„œ I1.I2ëŠ” correlation predicateì´ì§€ë§Œ join ëŒ€ìƒì´ ì—†ìœ¼ë¯€ë¡œ ì—¬ê¸°ì— í•´ë‹¹í•œë‹¤.
+            // ¿¡¼­ I1.I2´Â correlation predicateÀÌÁö¸¸ join ´ë»óÀÌ ¾øÀ¸¹Ç·Î ¿©±â¿¡ ÇØ´çÇÑ´Ù.
         }
     }
 
@@ -2197,16 +2541,16 @@ idBool qmoUnnesting::isRemoveSemiJoin( qcStatement  * aSQStatement,
 /***********************************************************************
  *
  * Description : BUG-45172
- *     semi ì¡°ì¸ì„ ì œê±°í•  ì¡°ê±´ì„ ê²€ì‚¬í•˜ì—¬ flagë¥¼ ì„¤ì •í•´ ë‘”ë‹¤.
- *     ìƒìœ„ ì„œë¸Œì¿¼ë¦¬ê°€ semi ì¡°ì¸ì´ë©´
- *     í•˜ìœ„ semi ì¡°ì¸ì— flagê°€ ì„¤ì •ë˜ì—ˆì„ ê²½ìš° í•˜ìœ„ semi ì¡°ì¸ì„ ì œê±°í•œë‹¤.
+ *     semi Á¶ÀÎÀ» Á¦°ÅÇÒ Á¶°ÇÀ» °Ë»çÇÏ¿© flag¸¦ ¼³Á¤ÇØ µĞ´Ù.
+ *     »óÀ§ ¼­ºêÄõ¸®°¡ semi Á¶ÀÎÀÌ¸é
+ *     ÇÏÀ§ semi Á¶ÀÎ¿¡ flag°¡ ¼³Á¤µÇ¾úÀ» °æ¿ì ÇÏÀ§ semi Á¶ÀÎÀ» Á¦°ÅÇÑ´Ù.
  *
  * Implementation :
  *              1. union x, target 1
  *              2. view x, group x, aggr x, having x, ansi x
- *              3. í…Œì´ë¸”ì´ 1ê°œì¸ ê²½ìš° ì œê±° ê°€ëŠ¥
- *              4. í…Œì´ë¸”ì´ 2ê°œì¸ ê²½ìš°
- *                  2ê°œì˜ í…Œì´ë¸”ì¤‘ 1ê°œì˜ í…Œì´ë¸”ì´ 1row ê°€ ë³´ì¥ë ë•Œ
+ *              3. Å×ÀÌºíÀÌ 1°³ÀÎ °æ¿ì Á¦°Å °¡´É
+ *              4. Å×ÀÌºíÀÌ 2°³ÀÎ °æ¿ì
+ *                  2°³ÀÇ Å×ÀÌºíÁß 1°³ÀÇ Å×ÀÌºíÀÌ 1row °¡ º¸ÀåµÉ¶§
  ***********************************************************************/
 
     idBool         sResult = ID_FALSE;
@@ -2225,7 +2569,7 @@ idBool qmoUnnesting::isRemoveSemiJoin( qcStatement  * aSQStatement,
         sSFWGH     = aSQParseTree->querySet->SFWGH;
     }
 
-    // ì§ˆì˜ í˜•íƒœ ì²´í¬
+    // ÁúÀÇ ÇüÅÂ Ã¼Å©
     if ( ( sSFWGH->from->joinType        == QMS_NO_JOIN ) &&
          ( sSFWGH->from->tableRef        != NULL ) &&
          ( sSFWGH->from->tableRef->view  == NULL ) &&
@@ -2235,7 +2579,7 @@ idBool qmoUnnesting::isRemoveSemiJoin( qcStatement  * aSQStatement,
     {
         if ( sSFWGH->from->next == NULL )
         {
-            // í…Œì´ë¸”ì´ 1ê°œì¸ ê²½ìš° ì œê±° ê°€ëŠ¥
+            // Å×ÀÌºíÀÌ 1°³ÀÎ °æ¿ì Á¦°Å °¡´É
             sTableCount = 1;
 
             sResult = ID_TRUE;
@@ -2246,7 +2590,7 @@ idBool qmoUnnesting::isRemoveSemiJoin( qcStatement  * aSQStatement,
                   ( sSFWGH->from->next->tableRef->view   == NULL ) &&
                   ( sSFWGH->from->next->next             == NULL ) )
         {
-            // í…Œì´ë¸”ì´ 2ê°œì¸ ê²½ìš°
+            // Å×ÀÌºíÀÌ 2°³ÀÎ °æ¿ì
             sTableCount = 2;
         }
         else
@@ -2259,11 +2603,11 @@ idBool qmoUnnesting::isRemoveSemiJoin( qcStatement  * aSQStatement,
         IDE_CONT( INVALID_FORM );
     }
 
-    // target ì´ 1ê°œ ì¸ ê²½ìš°ë§Œ
+    // target ÀÌ 1°³ ÀÎ °æ¿ì¸¸
     if ( ( sSFWGH->target       != NULL ) &&
          ( sSFWGH->target->next == NULL ) )
     {
-        // value or ì»¬ëŸ¼
+        // value or ÄÃ·³
         if ( ( QTC_IS_COLUMN( aSQStatement, sSFWGH->target->targetColumn ) == ID_TRUE ) ||
              ( sSFWGH->target->targetColumn->node.module == &qtc::valueModule ) )
         {
@@ -2294,8 +2638,8 @@ idBool qmoUnnesting::isRemoveSemiJoin( qcStatement  * aSQStatement,
                      ( sTableInfo->indices[i].keyColCount == 1 ) )
                 {
                     // if B.i1 is unique
-                    // find A.i1 = B.i1 and A.i1 = ìƒìˆ˜
-                    // find B.i1 = ìƒìˆ˜
+                    // find A.i1 = B.i1 and A.i1 = »ó¼ö
+                    // find B.i1 = »ó¼ö
                     if ( findUniquePredicate(
                                 aSQStatement,
                                 sSFWGH,
@@ -2350,7 +2694,7 @@ idBool qmoUnnesting::findUniquePredicate( qcStatement * aStatement,
         sNode = (mtcNode*)aNode;
     }
 
-    // unique = ìƒìˆ˜
+    // unique = »ó¼ö
     for ( sTemp = sNode; sTemp != NULL; sTemp = sTemp->next )
     {
         if( sTemp->module == &mtfEqual )
@@ -2378,7 +2722,7 @@ idBool qmoUnnesting::findUniquePredicate( qcStatement * aStatement,
         }
     }
 
-    // A.i1 = B.i1 and A.i1 = ìƒìˆ˜
+    // A.i1 = B.i1 and A.i1 = »ó¼ö
     if ( sResult == ID_FALSE )
     {
         for ( sTemp = sNode; sTemp != NULL; sTemp = sTemp->next )
@@ -2481,7 +2825,7 @@ void qmoUnnesting::removeDownSemiJoinFlag( qmsSFWGH * aSFWGH )
             sNode = sNode;
         }
 
-        // target = ìƒìˆ˜ ì¡°ê±´ì´ ì¡´ì¬í•˜ë©´ semi ì¡°ì¸ì„ ì œê±°í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // target = »ó¼ö Á¶°ÇÀÌ Á¸ÀçÇÏ¸é semi Á¶ÀÎÀ» Á¦°ÅÇÏÁö ¾Ê´Â´Ù.
         for ( ; sTarget != NULL; sTarget = sTarget->next )
         {
             for ( sTemp = sNode; sTemp != NULL; sTemp = (qtcNode*)sTemp->node.next )
@@ -2554,7 +2898,7 @@ qmoUnnesting::makeDummyConstant( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *     CHAR typeì˜ '0'ê°’ì„ ê°–ëŠ” constant nodeë¥¼ ìƒì„±í•œë‹¤.
+ *     CHAR typeÀÇ '0'°ªÀ» °®´Â constant node¸¦ »ı¼ºÇÑ´Ù.
  *
  * Implementation :
  *
@@ -2599,11 +2943,11 @@ qmoUnnesting::removePassNode( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     HAVINGì ˆì˜ predicateì„ WHEREì ˆë¡œ ì˜®ê¸°ê¸° ìœ„í•´ HAVINGì ˆì— í¬í•¨ëœ
- *     pass nodeë“¤ì„ ëª¨ë‘ ì œê±°í•œë‹¤.
+ *     HAVINGÀıÀÇ predicateÀ» WHEREÀı·Î ¿Å±â±â À§ÇØ HAVINGÀı¿¡ Æ÷ÇÔµÈ
+ *     pass nodeµéÀ» ¸ğµÎ Á¦°ÅÇÑ´Ù.
  *
  * Implementation :
- *     Pass nodeì˜ childë¥¼ pass nodeê°€ ìˆë˜ ìœ„ì¹˜ì— ë³µì‚¬í•œë‹¤.
+ *     Pass nodeÀÇ child¸¦ pass node°¡ ÀÖ´ø À§Ä¡¿¡ º¹»çÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -2662,7 +3006,7 @@ qmoUnnesting::setDummySelect( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Subqueryì˜ SELECTì ˆì„ ë‹¤ìŒê³¼ ê°™ì´ ë³€ê²½í•œë‹¤.
+ *     SubqueryÀÇ SELECTÀıÀ» ´ÙÀ½°ú °°ÀÌ º¯°æÇÑ´Ù.
  *     SELECT DISTINCT i1, i2 FROM t1 WHERE ...
  *     => SELECT '0' FROM t1 WHERE ...
  *
@@ -2683,12 +3027,27 @@ qmoUnnesting::setDummySelect( qcStatement * aStatement,
     sSQStatement = ((qtcNode *)aNode->node.arguments)->subquery;
     sParseTree = (qmsParseTree *)sSQStatement->myPlan->parseTree;
 
+    /* TASK-7219 Shard Transformer Refactoring */
+    if ( SDI_CHECK_QUERYSET_LIST_STATE( aStatement->mShardQuerySetList,
+                                        SDI_QUERYSET_LIST_STATE_DUMMY_ANALYZE )
+         == ID_TRUE )
+    {
+        IDE_TEST( sdi::preAnalyzeQuerySet( sSQStatement,
+                                           sParseTree->querySet,
+                                           QCG_GET_SESSION_SHARD_META_NUMBER( aStatement ) )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
     if( sParseTree->querySet->setOp == QMS_NONE )
     {
         if( ( aNode->node.module == &mtfExists ) ||
             ( aNode->node.module == &mtfNotExists ) )
         {
-            // DISTINCTí•  í•„ìš” ì—†ë‹¤.
+            // DISTINCTÇÒ ÇÊ¿ä ¾ø´Ù.
             sParseTree->querySet->SFWGH->selectType = QMS_ALL;
             sChange = ID_TRUE;
 
@@ -2698,7 +3057,7 @@ qmoUnnesting::setDummySelect( qcStatement * aStatement,
                      sTarget != NULL;
                      sTarget = sTarget->next )
                 {
-                    // EXISTS(SELECT COUNT(...), ...) ì˜ ê²½ìš° ìƒìˆ˜ë¡œ ë³€í™˜ ì‹œ ê²°ê³¼ê°€ ë‹¬ë¼ì§ˆ ìˆ˜ ìˆë‹¤.
+                    // EXISTS(SELECT COUNT(...), ...) ÀÇ °æ¿ì »ó¼ö·Î º¯È¯ ½Ã °á°ú°¡ ´Ş¶óÁú ¼ö ÀÖ´Ù.
                     if( ( sTarget->targetColumn->lflag & QTC_NODE_AGGREGATE_MASK )
                         == QTC_NODE_AGGREGATE_EXIST )
                     {
@@ -2718,7 +3077,7 @@ qmoUnnesting::setDummySelect( qcStatement * aStatement,
         }
         else
         {
-            // UNIQUEì‹œì—ëŠ” DISTINCTì ˆì„ ë‚¨ê²¨ì•¼ í•œë‹¤.
+            // UNIQUE½Ã¿¡´Â DISTINCTÀıÀ» ³²°Ü¾ß ÇÑ´Ù.
             if( sParseTree->querySet->SFWGH->selectType == QMS_ALL )
             {
                 sChange = ID_TRUE;
@@ -2731,8 +3090,8 @@ qmoUnnesting::setDummySelect( qcStatement * aStatement,
 
         if( sChange == ID_TRUE )
         {
-            // BUG-45591 aggsDepth1 ê´€ë¦¬
-            // target ì´ ì—¬ëŸ¬ê°œ ì¼ë•Œ ëª¨ë‘ ì œê±° ê°€ëŠ¥í•œì§€ ì²´í¬í•´ì•¼ í•œë‹¤.
+            // BUG-45591 aggsDepth1 °ü¸®
+            // target ÀÌ ¿©·¯°³ ÀÏ¶§ ¸ğµÎ Á¦°Å °¡´ÉÇÑÁö Ã¼Å©ÇØ¾ß ÇÑ´Ù.
             for ( sTarget = sParseTree->querySet->target;
                   sTarget != NULL;
                   sTarget = sTarget->next )
@@ -2740,10 +3099,10 @@ qmoUnnesting::setDummySelect( qcStatement * aStatement,
                 delAggrNode( sParseTree->querySet->SFWGH, sTarget->targetColumn );
             }
 
-            // BUG-45271 exists ë³€í™˜í›„ ì—ëŸ¬ê°€ ë°œìƒí•©ë‹ˆë‹¤.
-            // exists ë³€í™˜ì‹œ target ì€ ë³µì‚¬ë¥¼ í•˜ì§€ë§Œ ì»¨ë²„ì ¼ ë…¸ë“œëŠ” ë³µì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
-            // ì˜ëª»ëœ ì—°ì‚°ì„ ìˆ˜í–‰í•˜ë‹¤ ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚µë‹ˆë‹¤.
-            // exists ë³€í™˜í›„ target ì€ ì˜ë¯¸ê°€ ì—†ìœ¼ë¯€ë¡œ ë¬´ì¡°ê±´ ì œê±°í•˜ê³  ìƒˆë¡œ ìƒì„±í•©ë‹ˆë‹¤.
+            // BUG-45271 exists º¯È¯ÈÄ ¿¡·¯°¡ ¹ß»ıÇÕ´Ï´Ù.
+            // exists º¯È¯½Ã target Àº º¹»ç¸¦ ÇÏÁö¸¸ ÄÁ¹öÁ¯ ³ëµå´Â º¹»çÇÏÁö ¾Ê´Â´Ù.
+            // Àß¸øµÈ ¿¬»êÀ» ¼öÇàÇÏ´Ù ¿¡·¯¸¦ ¹ß»ı½ÃÅµ´Ï´Ù.
+            // exists º¯È¯ÈÄ target Àº ÀÇ¹Ì°¡ ¾øÀ¸¹Ç·Î ¹«Á¶°Ç Á¦°ÅÇÏ°í »õ·Î »ı¼ºÇÕ´Ï´Ù.
             IDE_TEST( makeDummyConstant( sSQStatement,
                                          & sConstNode )
                       != IDE_SUCCESS );
@@ -2768,7 +3127,7 @@ qmoUnnesting::setDummySelect( qcStatement * aStatement,
             ( sParseTree->querySet->SFWGH->aggsDepth2 == NULL ) &&
             ( sParseTree->querySet->SFWGH->group != NULL ) )
         {
-            // GROUP BYì ˆì„ ì œê±°í•œë‹¤.
+            // GROUP BYÀıÀ» Á¦°ÅÇÑ´Ù.
             sParseTree->querySet->SFWGH->group = NULL;
 
             if( sParseTree->querySet->SFWGH->having != NULL )
@@ -2777,7 +3136,7 @@ qmoUnnesting::setDummySelect( qcStatement * aStatement,
                                           sParseTree->querySet->SFWGH->having )
                           != IDE_SUCCESS );
 
-                // HAVINGì ˆì„ WHEREì ˆì— ë§ ë¶™ì¸ë‹¤.
+                // HAVINGÀıÀ» WHEREÀı¿¡ µ¡ ºÙÀÎ´Ù.
                 IDE_TEST( concatPredicate( sSQStatement,
                                            sParseTree->querySet->SFWGH->where,
                                            sParseTree->querySet->SFWGH->having,
@@ -2798,7 +3157,7 @@ qmoUnnesting::setDummySelect( qcStatement * aStatement,
     }
     else
     {
-        // SET ì—°ì‚°ì¸ ê²½ìš°
+        // SET ¿¬»êÀÎ °æ¿ì
     }
 
     return IDE_SUCCESS;
@@ -2817,11 +3176,11 @@ qmoUnnesting::concatPredicate( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *     ë‘ê°œì˜ predicateì„ conjunctive formìœ¼ë¡œ ì—°ê²°í•œë‹¤.
+ *     µÎ°³ÀÇ predicateÀ» conjunctive formÀ¸·Î ¿¬°áÇÑ´Ù.
  *
  * Implementation :
- *     ë‘˜ ì¤‘ í•œê³³ì— ANDê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš° ì´ë¥¼ í™œìš©í•œë‹¤.
- *     ì–´ëŠ í•œìª½ì—ë„ ANDê°€ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´ ìƒˆë¡œ ìƒì„±í•œë‹¤.
+ *     µÑ Áß ÇÑ°÷¿¡ AND°¡ Á¸ÀçÇÏ´Â °æ¿ì ÀÌ¸¦ È°¿ëÇÑ´Ù.
+ *     ¾î´À ÇÑÂÊ¿¡µµ AND°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é »õ·Î »ı¼ºÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -2847,9 +3206,9 @@ qmoUnnesting::concatPredicate( qcStatement  * aStatement,
         if( ( aPredicate1->node.module == &mtfAnd ) &&
             ( sArgCount1 < MTC_NODE_ARGUMENT_COUNT_MAXIMUM ) )
         {
-            // aPredicate1ì´ ANDì¸ ê²½ìš°
+            // aPredicate1ÀÌ ANDÀÎ °æ¿ì
 
-            // ANDì˜ ë§ˆì§€ë§‰ argumentë¥¼ ì°¾ëŠ”ë‹¤.
+            // ANDÀÇ ¸¶Áö¸· argument¸¦ Ã£´Â´Ù.
             sArg = (qtcNode *)aPredicate1->node.arguments;
             while( sArg->node.next != NULL )
             {
@@ -2859,13 +3218,13 @@ qmoUnnesting::concatPredicate( qcStatement  * aStatement,
             if( ( aPredicate2->node.module == &mtfAnd ) &&
                 ( sArgCount1 + sArgCount2 <= MTC_NODE_ARGUMENT_COUNT_MAXIMUM ) )
             {
-                // aPredicate2ë„ ANDë¡œ ë¬¶ì¸ ê²½ìš° argumentë“¤ë¼ë¦¬ ì—°ê²°í•œë‹¤.
+                // aPredicate2µµ AND·Î ¹­ÀÎ °æ¿ì argumentµé³¢¸® ¿¬°áÇÑ´Ù.
                 sArg->node.next = aPredicate2->node.arguments;
                 aPredicate1->node.lflag += sArgCount2;
             }
             else
             {
-                // aPredicate2ê°€ ANDê°€ ì•„ë‹Œ ê²½ìš° ì§ì ‘ ì—°ê²°í•œë‹¤.
+                // aPredicate2°¡ AND°¡ ¾Æ´Ñ °æ¿ì Á÷Á¢ ¿¬°áÇÑ´Ù.
                 sArg->node.next = (mtcNode *)aPredicate2;
                 aPredicate1->node.lflag++;
             }
@@ -2881,9 +3240,9 @@ qmoUnnesting::concatPredicate( qcStatement  * aStatement,
             if( ( aPredicate2->node.module == &mtfAnd ) &&
                 ( sArgCount2 < MTC_NODE_ARGUMENT_COUNT_MAXIMUM ) )
             {
-                // aPredicate2ê°€ ANDì¸ ê²½ìš°
+                // aPredicate2°¡ ANDÀÎ °æ¿ì
 
-                // ANDì˜ ë§ˆì§€ë§‰ argumentë¥¼ ì°¾ëŠ”ë‹¤.
+                // ANDÀÇ ¸¶Áö¸· argument¸¦ Ã£´Â´Ù.
                 sArg = (qtcNode *)aPredicate2->node.arguments;
                 while( sArg->node.next != NULL )
                 {
@@ -2903,7 +3262,7 @@ qmoUnnesting::concatPredicate( qcStatement  * aStatement,
             {
                 SET_EMPTY_POSITION( sEmptyPosition );
 
-                // ì–´ëŠ í•œìª½ë„ ANDê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
+                // ¾î´À ÇÑÂÊµµ AND°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
                 IDE_TEST( qtc::makeNode( aStatement,
                                          sANDNode,
                                          &sEmptyPosition,
@@ -2920,7 +3279,7 @@ qmoUnnesting::concatPredicate( qcStatement  * aStatement,
                 sANDNode[0]->node.lflag &= ~MTC_NODE_ARGUMENT_COUNT_MASK;
                 sANDNode[0]->node.lflag |= 2;
 
-                // AND nodeë¥¼ ìµœì¢… ê²°ê³¼ë¡œ ë°˜í™˜í•œë‹¤.
+                // AND node¸¦ ÃÖÁ¾ °á°ú·Î ¹İÈ¯ÇÑ´Ù.
                 *aResult = sANDNode[0];
             }
         }
@@ -2939,8 +3298,8 @@ qmoUnnesting::isSubqueryPredicate( qtcNode * aPredicate )
 /***********************************************************************
  *
  * Description :
- *     Predicateì´ =ANY, =ALL ë“±ì˜ quantified predicateì´ë©°
- *     ë‘ë²ˆì§¸ ì¸ìê°€ subqueryì¸ ê²½ìš°ì—ë§Œ trueë¥¼ ë°˜í™˜í•œë‹¤.
+ *     PredicateÀÌ =ANY, =ALL µîÀÇ quantified predicateÀÌ¸ç
+ *     µÎ¹øÂ° ÀÎÀÚ°¡ subqueryÀÎ °æ¿ì¿¡¸¸ true¸¦ ¹İÈ¯ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -2987,8 +3346,8 @@ qmoUnnesting::isQuantifiedSubquery( qtcNode * aPredicate )
 /***********************************************************************
  *
  * Description :
- *     Predicateì´ =ANY, =ALL ë“±ì˜ quantified predicateì´ë©°
- *     ë‘ë²ˆì§¸ ì¸ìê°€ subqueryì¸ ê²½ìš°ì—ë§Œ trueë¥¼ ë°˜í™˜í•œë‹¤.
+ *     PredicateÀÌ =ANY, =ALL µîÀÇ quantified predicateÀÌ¸ç
+ *     µÎ¹øÂ° ÀÎÀÚ°¡ subqueryÀÎ °æ¿ì¿¡¸¸ true¸¦ ¹İÈ¯ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -3026,10 +3385,10 @@ qmoUnnesting::isNullable( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Nullableí•œ expressionì¸ì§€ í™•ì¸í•œë‹¤.
- *     ë‹¤ìŒ ë‘ê°€ì§€ ê²½ìš°ë¥¼ ì œì™¸í•˜ê³  ëª¨ë‘ nullableì´ë‹¤.
- *     1. Columnì´ë©´ì„œ not nullable constraintê°€ ì„¤ì •ëœ ê²½ìš°
- *     2. ìƒìˆ˜ì´ë©´ì„œ nullì´ ì•„ë‹Œ ê²½ìš°
+ *     NullableÇÑ expressionÀÎÁö È®ÀÎÇÑ´Ù.
+ *     ´ÙÀ½ µÎ°¡Áö °æ¿ì¸¦ Á¦¿ÜÇÏ°í ¸ğµÎ nullableÀÌ´Ù.
+ *     1. ColumnÀÌ¸é¼­ not nullable constraint°¡ ¼³Á¤µÈ °æ¿ì
+ *     2. »ó¼öÀÌ¸é¼­ nullÀÌ ¾Æ´Ñ °æ¿ì
  *
  * Implementation :
  *
@@ -3054,24 +3413,24 @@ qmoUnnesting::isNullable( qcStatement * aStatement,
         if( ( QTC_STMT_TUPLE( aStatement, sNode )->lflag & MTC_TUPLE_TYPE_MASK )
             == MTC_TUPLE_TYPE_CONSTANT )
         {
-            // ìƒìˆ˜ì¸ ê²½ìš°
+            // »ó¼öÀÎ °æ¿ì
             sColumn = QTC_STMT_COLUMN( aStatement, sNode );
             sValue  = (UChar *)QTC_STMT_TUPLE( aStatement, sNode )->row + sColumn->column.offset;
             if( sColumn->module->isNull( sColumn, 
                                          sValue )
                 == ID_FALSE )
             {
-                // ìƒìˆ˜ ê°’ì´ nullì´ ì•„ë‹Œ ê²½ìš°
+                // »ó¼ö °ªÀÌ nullÀÌ ¾Æ´Ñ °æ¿ì
                 sResult = ID_FALSE;
             }
             else
             {
-                // ìƒìˆ˜ ê°’ì´ nullì¸ ê²½ìš°
+                // »ó¼ö °ªÀÌ nullÀÎ °æ¿ì
             }
         }
         else
         {
-            // Bind ë³€ìˆ˜ì¸ ê²½ìš°
+            // Bind º¯¼öÀÎ °æ¿ì
         }
     }
     else
@@ -3079,11 +3438,11 @@ qmoUnnesting::isNullable( qcStatement * aStatement,
         if( ( QTC_STMT_COLUMN( aStatement, sNode )->flag & MTC_COLUMN_NOTNULL_MASK )
             == MTC_COLUMN_NOTNULL_FALSE )
         {
-            // Nullable columnì¸ ê²½ìš°
+            // Nullable columnÀÎ °æ¿ì
         }
         else
         {
-            // Not nullable columnì¸ ê²½ìš°
+            // Not nullable columnÀÎ °æ¿ì
             sResult = ID_FALSE;
         }
     }
@@ -3096,15 +3455,16 @@ qmoUnnesting::genCorrPredicate( qcStatement  * aStatement,
                                 qtcNode      * aPredicate,
                                 qtcNode      * aOperand1,
                                 qtcNode      * aOperand2,
+                                idBool         aExistsTrans,
                                 qtcNode     ** aResult )
 {
 /***********************************************************************
  *
  * Description : 
- *     Subquery predicateì˜ ì¢…ë¥˜ì— ë”°ë¼ correlation predicateì„ ìƒì„±í•œë‹¤.
+ *     Subquery predicateÀÇ Á¾·ù¿¡ µû¶ó correlation predicateÀ» »ı¼ºÇÑ´Ù.
  *
  * Implementation :
- *     ë‹¤ìŒì˜ tableì— ë”°ë¼ predicateì„ ë³€í™˜í•œë‹¤.
+ *     ´ÙÀ½ÀÇ table¿¡ µû¶ó predicateÀ» º¯È¯ÇÑ´Ù.
  *     | Input | Not nullable | Nullable      |
  *     | =ANY  | a = b        | a = b         |
  *     | <>ANY | a <> b       | a <> b        |
@@ -3119,6 +3479,15 @@ qmoUnnesting::genCorrPredicate( qcStatement  * aStatement,
  *     | <ALL  | a >= b       | LNNVL(a < b)  |
  *     | <=ALL | a > b        | LNNVL(a <= b) |
  *
+ *     subquery removalÀÇ °æ¿ì ´ÙÀ½ tabel¿¡ µû¶ó predicate¸¦ º¯È¯ÇÑ´Ù.
+ *     | Input         || correlation predicate
+ *     | =ANY  | =ALL  || a = b        
+ *     | <>ANY | <>ALL || a <> b       
+ *     | >ANY  | >ALL  || a > b        
+ *     | >=ANY | >=ALL || a >= b       
+ *     | <ANY  | <ALL  || a < b        
+ *     | <=ANY | <=ALL || a <= b       
+ *
  ***********************************************************************/
 
     qtcNode        * sLnnvlNode[2];
@@ -3132,7 +3501,7 @@ qmoUnnesting::genCorrPredicate( qcStatement  * aStatement,
 
     SET_EMPTY_POSITION( sEmptyPosition );
 
-    // Predicateì˜ operand ë³µì‚¬
+    // PredicateÀÇ operand º¹»ç
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qtcNode ),
                                                (void **)&sOperand1 )
               != IDE_SUCCESS );
@@ -3149,7 +3518,7 @@ qmoUnnesting::genCorrPredicate( qcStatement  * aStatement,
 
     if( QTC_IS_COLUMN( aStatement, sOperand1 ) == ID_TRUE )
     {
-        // Outer queryì˜ columnì— ëŒ€í•˜ì—¬ table aliasë¥¼ í•­ìƒ ì„¤ì •í•´ì¤€ë‹¤.
+        // Outer queryÀÇ column¿¡ ´ëÇÏ¿© table alias¸¦ Ç×»ó ¼³Á¤ÇØÁØ´Ù.
         sTableRef = QC_SHARED_TMPLATE( aStatement )->tableMap[sOperand1->node.table].from->tableRef;
         if( QC_IS_NULL_NAME( sOperand1->tableName ) == ID_TRUE )
         {
@@ -3166,13 +3535,14 @@ qmoUnnesting::genCorrPredicate( qcStatement  * aStatement,
     }
 
     if( ( ( aPredicate->node.lflag & MTC_NODE_GROUP_COMPARISON_MASK ) == MTC_NODE_GROUP_COMPARISON_TRUE ) &&
-        ( ( aPredicate->node.lflag & MTC_NODE_GROUP_MASK ) == MTC_NODE_GROUP_ALL ) )
+        ( ( aPredicate->node.lflag & MTC_NODE_GROUP_MASK ) == MTC_NODE_GROUP_ALL ) &&
+        ( aExistsTrans == ID_TRUE ) )
     {
-        // Subquery predicateì´ ALLê³„ì—´ì¸ ê²½ìš°
+        // Subquery predicateÀÌ ALL°è¿­ÀÎ °æ¿ì
         if( ( isNullable( aStatement, sOperand1 ) == ID_TRUE ) ||
             ( isNullable( aStatement, sOperand2 ) == ID_TRUE ) )
         {
-            // Operandê°€ nullableì¸ ê²½ìš° LNNVLì´ í•„ìš”í•˜ë‹¤.
+            // Operand°¡ nullableÀÎ °æ¿ì LNNVLÀÌ ÇÊ¿äÇÏ´Ù.
             IDE_TEST( qtc::makeNode( aStatement,
                                      sPredicate,
                                      &sEmptyPosition,
@@ -3195,7 +3565,7 @@ qmoUnnesting::genCorrPredicate( qcStatement  * aStatement,
         }
         else
         {
-            // Operandê°€ ëª¨ë‘ not nullableì¸ ê²½ìš° counter operatorë¥¼ ìƒì„±í•œë‹¤.
+            // Operand°¡ ¸ğµÎ not nullableÀÎ °æ¿ì counter operator¸¦ »ı¼ºÇÑ´Ù.
             IDE_TEST( qtc::makeNode( aStatement,
                                      sPredicate,
                                      &sEmptyPosition,
@@ -3208,7 +3578,7 @@ qmoUnnesting::genCorrPredicate( qcStatement  * aStatement,
     }
     else
     {
-        // Subquery predicateì´ ANYê³„ì—´ì¸ ê²½ìš°
+        // Subquery predicateÀÌ ANY°è¿­ÀÎ °æ¿ì
         IDE_TEST( qtc::makeNode( aStatement,
                                  sPredicate,
                                  &sEmptyPosition,
@@ -3233,22 +3603,23 @@ qmoUnnesting::genCorrPredicate( qcStatement  * aStatement,
 IDE_RC
 qmoUnnesting::genCorrPredicates( qcStatement  * aStatement,
                                  qtcNode      * aNode,
+                                 idBool         aExistsTrans,
                                  qtcNode     ** aResult )
 {
 /***********************************************************************
  *
  * Description :
- *     Quantified subquery predicateìœ¼ë¡œë¶€í„° correlation predicateì„
- *     ìƒì„±í•œë‹¤.
+ *     Quantified subquery predicateÀ¸·ÎºÎÅÍ correlation predicateÀ»
+ *     »ı¼ºÇÑ´Ù.
  *     ex) (t1.i1, t1.i2) IN (SELECT t2.i1, t2.i2 FROM t2 ...)
  *         => t1.i1 = t2.i1 AND t1.i2 = t2.i2
  *
  * Implementation :
- *     1. Predicateì˜ ì²« ë²ˆì§¸ operatorê°€ listì¸ ê²½ìš°
- *        Listì˜ ê° elementë“¤ì— ëŒ€í•´ correlation predicateì„ ìƒì„± í›„
- *        ANDë¡œ ì—°ê²° í•˜ì—¬ ë°˜í™˜í•œë‹¤.
- *     2. Predicateì˜ ì²« ë²ˆì§¸ operatorê°€ single valueì¸ ê²½ìš°
- *        Correlation predicate í•˜ë‚˜ë¥¼ ìƒì„±í•˜ì—¬ ë°˜í™˜í•œë‹¤.
+ *     1. PredicateÀÇ Ã¹ ¹øÂ° operator°¡ listÀÎ °æ¿ì
+ *        ListÀÇ °¢ elementµé¿¡ ´ëÇØ correlation predicateÀ» »ı¼º ÈÄ
+ *        AND·Î ¿¬°á ÇÏ¿© ¹İÈ¯ÇÑ´Ù.
+ *     2. PredicateÀÇ Ã¹ ¹øÂ° operator°¡ single valueÀÎ °æ¿ì
+ *        Correlation predicate ÇÏ³ª¸¦ »ı¼ºÇÏ¿© ¹İÈ¯ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -3275,7 +3646,7 @@ qmoUnnesting::genCorrPredicates( qcStatement  * aStatement,
 
     if( aNode->node.arguments->module == &mtfList )
     {
-        // Listì¸ ê²½ìš°
+        // ListÀÎ °æ¿ì
         for( sArg = (qtcNode *)aNode->node.arguments->arguments;
              sArg != NULL;
              sArg = (qtcNode *)sArg->node.next, sSQTarget = sSQTarget->next )
@@ -3284,10 +3655,11 @@ qmoUnnesting::genCorrPredicates( qcStatement  * aStatement,
                                         aNode,
                                         sArg,
                                         sSQTarget->targetColumn,
+                                        aExistsTrans,
                                         &sResult )
                       != IDE_SUCCESS );
 
-            // ìƒì„±ëœ predicateì„ ì—°ê²°í•œë‹¤.
+            // »ı¼ºµÈ predicateÀ» ¿¬°áÇÑ´Ù.
             if( sFirst == NULL )
             {
                 sFirst = sLast = sResult;
@@ -3337,11 +3709,12 @@ qmoUnnesting::genCorrPredicates( qcStatement  * aStatement,
     }
     else
     {
-        // Single value ê²½ìš°
+        // Single value °æ¿ì
         IDE_TEST( genCorrPredicate( aStatement,
                                     aNode,
                                     (qtcNode *)aNode->node.arguments,
                                     sSQTarget->targetColumn,
+                                    aExistsTrans,
                                     &sResult )
                   != IDE_SUCCESS );
 
@@ -3361,12 +3734,12 @@ qmoUnnesting::toExistsModule( const mtfModule * aQuantifier )
 /***********************************************************************
  *
  * Description :
- *     Subquery predicateì— ì‚¬ìš©ëœ ì—°ì‚°ìì˜ ì¢…ë¥˜ì— ë”°ë¼ predicateì˜
- *     ë³€í™˜ í›„ ì‚¬ìš©í•  ì—°ì‚°ìë¥¼ ë°˜í™˜í•œë‹¤.
+ *     Subquery predicate¿¡ »ç¿ëµÈ ¿¬»êÀÚÀÇ Á¾·ù¿¡ µû¶ó predicateÀÇ
+ *     º¯È¯ ÈÄ »ç¿ëÇÒ ¿¬»êÀÚ¸¦ ¹İÈ¯ÇÑ´Ù.
  *
  * Implementation :
- *     ANY ê³„ì—´ ì—°ì‚°ì: EXISTS
- *     ALL ê³„ì—´ ì—°ì‚°ì: NOT EXISTS
+ *     ANY °è¿­ ¿¬»êÀÚ: EXISTS
+ *     ALL °è¿­ ¿¬»êÀÚ: NOT EXISTS
  *
  ***********************************************************************/
 
@@ -3390,10 +3763,10 @@ mtfModule * qmoUnnesting::toExistsModule4CountAggr( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : aggr í•¨ìˆ˜ê°€ count ì´ë©´ì„œ group by ë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” ê²½ìš°
- *               ë¹„êµí•˜ëŠ” ê°’ì´ 0,1 ì¼ë•Œë§Œ unnset ê°€ ê°€ëŠ¥í•˜ë‹¤.
- *               ì´ í•¨ìˆ˜ì—ì„œëŠ” ê°’ì´ 0,1 ì¸ì§€ ì²´í¬í•˜ê³ 
- *               ê²½ìš°ë§ˆë‹¤ ì‚¬ìš©ê°€ëŠ¥í•œ exists ëª¨ë“ˆì„ ë°˜í™˜í•´ì¤€ë‹¤.
+ * Description : aggr ÇÔ¼ö°¡ count ÀÌ¸é¼­ group by ¸¦ »ç¿ëÇÏÁö ¾Ê´Â °æ¿ì
+ *               ºñ±³ÇÏ´Â °ªÀÌ 0,1 ÀÏ¶§¸¸ unnset °¡ °¡´ÉÇÏ´Ù.
+ *               ÀÌ ÇÔ¼ö¿¡¼­´Â °ªÀÌ 0,1 ÀÎÁö Ã¼Å©ÇÏ°í
+ *               °æ¿ì¸¶´Ù »ç¿ë°¡´ÉÇÑ exists ¸ğµâÀ» ¹İÈ¯ÇØÁØ´Ù.
  *
  ***********************************************************************/
 
@@ -3408,7 +3781,7 @@ mtfModule * qmoUnnesting::toExistsModule4CountAggr( qcStatement * aStatement,
 
     sTemplate = QC_SHARED_TMPLATE(aStatement);
 
-    // ë°”ì¸ë“œ ë³€ìˆ˜ëŠ” ê°’ì´ ë³€ê²½ë ìˆ˜ ìˆê¸° ë•Œë¬¸ì— ë³€í™˜í•´ì„œëŠ” ì•ˆëœë‹¤.
+    // ¹ÙÀÎµå º¯¼ö´Â °ªÀÌ º¯°æµÉ¼ö ÀÖ±â ¶§¹®¿¡ º¯È¯ÇØ¼­´Â ¾ÈµÈ´Ù.
     if ( (sNode->arguments->module == &qtc::valueModule) &&
          (sNode->arguments->lflag & MTC_NODE_BIND_MASK) == MTC_NODE_BIND_ABSENT )
     {
@@ -3516,14 +3889,14 @@ qmoUnnesting::toNonQuantifierModule( const mtfModule * aQuantifier )
 /***********************************************************************
  *
  * Description :
- *     Subquery predicateì— ì‚¬ìš©ëœ ì—°ì‚°ìì˜ ì¢…ë¥˜ì— ë”°ë¼
- *     correlation predicateì—ì„œ ì‚¬ìš©í•  ì—°ì‚°ìë¥¼ ë°˜í™˜í•œë‹¤.
+ *     Subquery predicate¿¡ »ç¿ëµÈ ¿¬»êÀÚÀÇ Á¾·ù¿¡ µû¶ó
+ *     correlation predicate¿¡¼­ »ç¿ëÇÒ ¿¬»êÀÚ¸¦ ¹İÈ¯ÇÑ´Ù.
  *
  * Implementation :
  *
  ***********************************************************************/
 
-    mtfModule * sResult;
+    mtfModule * sResult = NULL;
 
     switch( aQuantifier->lflag & MTC_NODE_OPERATOR_MASK )
     {
@@ -3564,15 +3937,15 @@ qmoUnnesting::isSingleRowSubquery( qcStatement * aSQStatement )
 /***********************************************************************
  *
  * Description :
- *     Subqueryì˜ ê²°ê³¼ê°€ 1ê°œ ì´í•˜ë¥¼ ë³´ì¥í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
+ *     SubqueryÀÇ °á°ú°¡ 1°³ ÀÌÇÏ¸¦ º¸ÀåÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
  *
  * Implementation :
- *     Subqueryê°€ ë‹¤ìŒ ì¡°ê±´ ì¤‘ í•œê°€ì§€ë¥¼ ë§Œì¡±í•˜ë©´ single rowì„ì„ ë³´ì¥í•  ìˆ˜ ìˆë‹¤.
- *     1. GROUP BYì ˆì´ ì—†ì´ aggregate functionì„ ì‚¬ìš©í•œ ê²½ìš°
- *     2. Nested aggregate functionì„ ì‚¬ìš©í•œ ê²½ìš°
- *     3. WHEREì ˆì— unique keyì™€ equal predicateì´ í¬í•¨ëœ ê²½ìš°
- *     4. HAVINGì ˆì— GROUP BYì ˆì˜ expressionë“¤ê³¼ equal predicateì´
- *        í¬í•¨ëœ ê²½ìš°
+ *     Subquery°¡ ´ÙÀ½ Á¶°Ç Áß ÇÑ°¡Áö¸¦ ¸¸Á·ÇÏ¸é single rowÀÓÀ» º¸ÀåÇÒ ¼ö ÀÖ´Ù.
+ *     1. GROUP BYÀıÀÌ ¾øÀÌ aggregate functionÀ» »ç¿ëÇÑ °æ¿ì
+ *     2. Nested aggregate functionÀ» »ç¿ëÇÑ °æ¿ì
+ *     3. WHEREÀı¿¡ unique key¿Í equal predicateÀÌ Æ÷ÇÔµÈ °æ¿ì
+ *     4. HAVINGÀı¿¡ GROUP BYÀıÀÇ expressionµé°ú equal predicateÀÌ
+ *        Æ÷ÇÔµÈ °æ¿ì
  *
  ***********************************************************************/
 
@@ -3587,7 +3960,7 @@ qmoUnnesting::isSingleRowSubquery( qcStatement * aSQStatement )
     {
         sSFWGH     = sParseTree->querySet->SFWGH;
 
-        // 1. GROUP BYì ˆì´ ì—†ì´ aggregate functionì„ ì‚¬ìš©í•œ ê²½ìš°
+        // 1. GROUP BYÀıÀÌ ¾øÀÌ aggregate functionÀ» »ç¿ëÇÑ °æ¿ì
         if( ( sSFWGH->aggsDepth1 != NULL ) &&
             ( sSFWGH->group == NULL ) )
         {
@@ -3598,7 +3971,7 @@ qmoUnnesting::isSingleRowSubquery( qcStatement * aSQStatement )
             // Nothing to do.
         }
 
-        // 2. Nested aggregate functionì„ ì‚¬ìš©í•œ ê²½ìš°
+        // 2. Nested aggregate functionÀ» »ç¿ëÇÑ °æ¿ì
         if( sSFWGH->aggsDepth2 != NULL )
         {
             return ID_TRUE;
@@ -3608,19 +3981,19 @@ qmoUnnesting::isSingleRowSubquery( qcStatement * aSQStatement )
             // Nothing to do.
         }
 
-        // 3. WHEREì ˆì— unique keyì™€ equal predicateì´ í¬í•¨ëœ ê²½ìš°
-        // Unique key constraint ì¡°ê±´ì€ 1ê°œ tableë§Œ ì°¸ì¡°ì‹œ í™•ì¸í•œë‹¤.
+        // 3. WHEREÀı¿¡ unique key¿Í equal predicateÀÌ Æ÷ÇÔµÈ °æ¿ì
+        // Unique key constraint Á¶°ÇÀº 1°³ table¸¸ ÂüÁ¶½Ã È®ÀÎÇÑ´Ù.
         if( ( sSFWGH->from->joinType == QMS_NO_JOIN ) &&
             ( sSFWGH->from->next     == NULL ) &&
             ( sSFWGH->where          != NULL ) )
         {
-            // Viewê°€ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
+            // View°¡ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
             if( sSFWGH->from->tableRef->view == NULL )
             {
                 sTableInfo = sSFWGH->from->tableRef->tableInfo;
 
-                // BUG-45168 unique indexë¥¼ ì‚¬ìš©í•´ì„œ subqueryë¥¼ INNER JOINìœ¼ë¡œ ë³€í™˜í•  ìˆ˜ ìˆì–´ì•¼ í•©ë‹ˆë‹¤.
-                // unique ì œì•½ì¡°ê±´ ëŒ€ì‹ ì— unique indexë¥¼ ì‚¬ìš©í•´ì„œ ì²´í¬í•˜ë„ë¡ ë³€ê²½
+                // BUG-45168 unique index¸¦ »ç¿ëÇØ¼­ subquery¸¦ INNER JOINÀ¸·Î º¯È¯ÇÒ ¼ö ÀÖ¾î¾ß ÇÕ´Ï´Ù.
+                // unique Á¦¾àÁ¶°Ç ´ë½Å¿¡ unique index¸¦ »ç¿ëÇØ¼­ Ã¼Å©ÇÏµµ·Ï º¯°æ
                 for( i = 0; i < sTableInfo->indexCount; i++ )
                 {
                     if ( sTableInfo->indices[i].isUnique == ID_TRUE )
@@ -3654,7 +4027,7 @@ qmoUnnesting::isSingleRowSubquery( qcStatement * aSQStatement )
             // Nothing to do.
         }
 
-        // 4. HAVINGì ˆì— GROUP BYì ˆì˜ expressionë“¤ê³¼ equal predicateì´ í¬í•¨ëœ ê²½ìš°
+        // 4. HAVINGÀı¿¡ GROUP BYÀıÀÇ expressionµé°ú equal predicateÀÌ Æ÷ÇÔµÈ °æ¿ì
         if( ( sSFWGH->group != NULL ) &&
             ( sSFWGH->having != NULL ) )
         {
@@ -3674,7 +4047,7 @@ qmoUnnesting::isSingleRowSubquery( qcStatement * aSQStatement )
     }
     else
     {
-        // SET ì—°ì‚° ì‹œì—ëŠ” íŒë‹¨ ë¶ˆê°€
+        // SET ¿¬»ê ½Ã¿¡´Â ÆÇ´Ü ºÒ°¡
     }
 
     return ID_FALSE;
@@ -3689,24 +4062,24 @@ qmoUnnesting::containsUniqueKeyPredicate( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     ì£¼ì–´ì§„ unique key constraintì˜ columnë“¤ê³¼ equal predicateì„
- *     í¬í•¨í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
+ *     ÁÖ¾îÁø unique key constraintÀÇ columnµé°ú equal predicateÀ»
+ *     Æ÷ÇÔÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
  *
  * Implementation :
- *     findUniqueKeyPredicate()ë¥¼ í˜¸ì¶œí•œ í›„, unique keyì˜ columnë“¤ì´
- *     ëª¨ë‘ í¬í•¨ë˜ì—ˆëŠ”ì§€ í™•ì¸í•œë‹¤.
+ *     findUniqueKeyPredicate()¸¦ È£ÃâÇÑ ÈÄ, unique keyÀÇ columnµéÀÌ
+ *     ¸ğµÎ Æ÷ÇÔµÇ¾ú´ÂÁö È®ÀÎÇÑ´Ù.
  *
  ***********************************************************************/
 
     UChar sRefVector[QC_MAX_KEY_COLUMN_COUNT];
     UInt  i;
 
-    // Vectorë¥¼ ì´ˆê¸°í™”
+    // Vector¸¦ ÃÊ±âÈ­
     idlOS::memset( sRefVector, 0, ID_SIZEOF(sRefVector) );
 
     findUniqueKeyPredicate( aStatement, aPredicate, aJoinTable, aUniqueIndex, sRefVector );
 
-    // Unique key constraintì˜ columnë“¤ì´ ëª¨ë‘ equi-joinë˜ì—ˆëŠ”ì§€ í™•ì¸
+    // Unique key constraintÀÇ columnµéÀÌ ¸ğµÎ equi-joinµÇ¾ú´ÂÁö È®ÀÎ
     for( i = 0; i < aUniqueIndex->keyColCount; i++ )
     {
         if( sRefVector[i] == 0 )
@@ -3739,11 +4112,11 @@ qmoUnnesting::findUniqueKeyPredicate( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Predicateì´ unique key constraintì˜ columnë“¤ê³¼ equalitiy predicate
- *     í¬í•¨ ì—¬ë¶€ë¥¼ í™•ì¸í•˜ì—¬ vectorì— í‘œì‹œí•œë‹¤.
+ *     PredicateÀÌ unique key constraintÀÇ columnµé°ú equalitiy predicate
+ *     Æ÷ÇÔ ¿©ºÎ¸¦ È®ÀÎÇÏ¿© vector¿¡ Ç¥½ÃÇÑ´Ù.
  *
  * Implementation :
- *     AND ì—°ì‚°ì í•˜ìœ„ì—ì„œ = ì—°ì‚°ìë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš°ë§Œ ì¸ì •í•œë‹¤.
+ *     AND ¿¬»êÀÚ ÇÏÀ§¿¡¼­ = ¿¬»êÀÚ¸¦ »ç¿ëÇÏ´Â °æ¿ì¸¸ ÀÎÁ¤ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -3755,7 +4128,7 @@ qmoUnnesting::findUniqueKeyPredicate( qcStatement * aStatement,
 
     if( qtc::dependencyContains( &aPredicate->depInfo, &sDepInfo ) == ID_TRUE )
     {
-        // BUG-44988 SingleRowSubquery ë¥¼ ì˜ëª» íŒë‹¨í•˜ê³  ìˆìŒ
+        // BUG-44988 SingleRowSubquery ¸¦ Àß¸ø ÆÇ´ÜÇÏ°í ÀÖÀ½
         if( aPredicate->node.module == &mtfAnd )
         {
             for( sArg = (qtcNode *)aPredicate->node.arguments;
@@ -3771,7 +4144,7 @@ qmoUnnesting::findUniqueKeyPredicate( qcStatement * aStatement,
         }
         else if( aPredicate->node.module == &mtfEqual )
         {
-            // Equalë§Œì„ í™•ì¸í•œë‹¤.
+            // Equal¸¸À» È®ÀÎÇÑ´Ù.
             if( (qtc::dependencyEqual( &sDepInfo, &(((qtcNode*)aPredicate->node.arguments)->depInfo) ) == ID_TRUE) &&
                 (qtc::dependencyEqual( &sDepInfo, &(((qtcNode*)aPredicate->node.arguments->next)->depInfo) ) == ID_FALSE) )
             {
@@ -3834,11 +4207,11 @@ qmoUnnesting::findUniqueKeyColumn( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Columnì´ unique key constraintì˜ ì–´ë–¤ columnì„ ì°¸ì¡°í•˜ëŠ”ì§€ ì°¾ëŠ”ë‹¤.
+ *     ColumnÀÌ unique key constraintÀÇ ¾î¶² columnÀ» ÂüÁ¶ÇÏ´ÂÁö Ã£´Â´Ù.
  *
  * Implementation :
- *     Unique key constraintì˜ columnë“¤ê³¼ idë¥¼ ìˆœì°¨ë¡œ ë¹„êµí•œë‹¤.
- *     ì„±ê³µ ì‹œ í•´ë‹¹ columnì˜ indexë¥¼, ì‹¤íŒ¨ ì‹œ UINT_MAXë¥¼ ë°˜í™˜í•œë‹¤.
+ *     Unique key constraintÀÇ columnµé°ú id¸¦ ¼øÂ÷·Î ºñ±³ÇÑ´Ù.
+ *     ¼º°ø ½Ã ÇØ´ç columnÀÇ index¸¦, ½ÇÆĞ ½Ã UINT_MAX¸¦ ¹İÈ¯ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -3848,8 +4221,8 @@ qmoUnnesting::findUniqueKeyColumn( qcStatement * aStatement,
     {
         for( i = 0; i < aUniqueIndex->keyColCount; i++ )
         {
-            // BUG-45168 unique indexë¥¼ ì‚¬ìš©í•´ì„œ subqueryë¥¼ INNER JOINìœ¼ë¡œ ë³€í™˜í•  ìˆ˜ ìˆì–´ì•¼ í•©ë‹ˆë‹¤.
-            // unique ì œì•½ì¡°ê±´ ëŒ€ì‹ ì— unique indexë¥¼ ì‚¬ìš©í•´ì„œ ì²´í¬í•˜ë„ë¡ ë³€ê²½
+            // BUG-45168 unique index¸¦ »ç¿ëÇØ¼­ subquery¸¦ INNER JOINÀ¸·Î º¯È¯ÇÒ ¼ö ÀÖ¾î¾ß ÇÕ´Ï´Ù.
+            // unique Á¦¾àÁ¶°Ç ´ë½Å¿¡ unique index¸¦ »ç¿ëÇØ¼­ Ã¼Å©ÇÏµµ·Ï º¯°æ
             if( QTC_STMT_COLUMN( aStatement, aNode )->column.id
                 == aUniqueIndex->keyColumns[i].column.id )
             {
@@ -3875,8 +4248,8 @@ qmoUnnesting::containsGroupByPredicate( qmsSFWGH * aSFWGH )
 /***********************************************************************
  *
  * Description :
- *     GROUP BYì ˆì˜ ëª¨ë“  expressionë“¤ê³¼ì˜ equal predicateì´ HAVINGì ˆì—
- *     í¬í•¨ë˜ì–´ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
+ *     GROUP BYÀıÀÇ ¸ğµç expressionµé°úÀÇ equal predicateÀÌ HAVINGÀı¿¡
+ *     Æ÷ÇÔµÇ¾îÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
  *
  * Implementation :
  *
@@ -3896,12 +4269,12 @@ qmoUnnesting::containsGroupByPredicate( qmsSFWGH * aSFWGH )
 
     if( sCount > ID_SIZEOF( sRefVector ) )
     {
-        // Vector ì‚¬ì´ì¦ˆë³´ë‹¤ GROUP BY expressionì˜ ê°œìˆ˜ê°€ ë” ë§ì€ ê²½ìš°
-        // í™•ì¸ ë¶ˆê°€
+        // Vector »çÀÌÁîº¸´Ù GROUP BY expressionÀÇ °³¼ö°¡ ´õ ¸¹Àº °æ¿ì
+        // È®ÀÎ ºÒ°¡
     }
     else
     {
-        // Vectorë¥¼ ì´ˆê¸°í™”
+        // Vector¸¦ ÃÊ±âÈ­
         idlOS::memset( sRefVector, 0, ID_SIZEOF(sRefVector) );
 
         findGroupByPredicate( aSFWGH, aSFWGH->group, aSFWGH->having, sRefVector );
@@ -3944,8 +4317,8 @@ qmoUnnesting::findGroupByPredicate( qmsSFWGH         * aSFWGH,
 /***********************************************************************
  *
  * Description :
- *     GROUP BYì ˆì˜ expressionì„ ì°¸ì¡°í•˜ëŠ” predicateì„ ì°¾ì•„ vectorì—
- *     marking í•œë‹¤.
+ *     GROUP BYÀıÀÇ expressionÀ» ÂüÁ¶ÇÏ´Â predicateÀ» Ã£¾Æ vector¿¡
+ *     marking ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -3968,7 +4341,7 @@ qmoUnnesting::findGroupByPredicate( qmsSFWGH         * aSFWGH,
     }
     else if( aPredicate->node.module == &mtfEqual )
     {
-        // BUG-44988 SingleRowSubquery ë¥¼ ì˜ëª» íŒë‹¨í•˜ê³  ìˆìŒ
+        // BUG-44988 SingleRowSubquery ¸¦ Àß¸ø ÆÇ´ÜÇÏ°í ÀÖÀ½
         if ( (qtc::haveDependencies( &(((qtcNode*)aPredicate->node.arguments)->depInfo) ) == ID_TRUE ) &&
              (qtc::dependencyContains( &aSFWGH->depInfo, &(((qtcNode*)aPredicate->node.arguments)->depInfo) ) == ID_TRUE) &&
              (qtc::dependencyContains( &aSFWGH->outerDepInfo, &(((qtcNode*)aPredicate->node.arguments->next)->depInfo) ) == ID_TRUE) )
@@ -4022,7 +4395,7 @@ qmoUnnesting::findGroupByExpression( qmsConcatElement * aGroup,
 /***********************************************************************
  *
  * Description :
- *     ì£¼ì–´ì§„ expressionì´ GROUP BYì ˆì˜ ëª‡ ë²ˆì§¸ expressionì¸ì§€ ê²€ìƒ‰í•œë‹¤.
+ *     ÁÖ¾îÁø expressionÀÌ GROUP BYÀıÀÇ ¸î ¹øÂ° expressionÀÎÁö °Ë»öÇÑ´Ù.
  *
  * Implementation :
  *
@@ -4051,7 +4424,7 @@ qmoUnnesting::findGroupByExpression( qmsConcatElement * aGroup,
     }
     else
     {
-        // GROUP BY expressionì´ ì•„ë‹Œ ê²½ìš°
+        // GROUP BY expressionÀÌ ¾Æ´Ñ °æ¿ì
     }
 
     return sResult;
@@ -4063,15 +4436,15 @@ qmoUnnesting::isSimpleSubquery( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *     ì£¼ì–´ì§„ statementê°€ simple subqueryì¸ì§€ í™•ì¸í•œë‹¤.
+ *     ÁÖ¾îÁø statement°¡ simple subqueryÀÎÁö È®ÀÎÇÑ´Ù.
  *
  * Implementation :
- *     ë‹¤ìŒì˜ ì¡°ê±´ë“¤ì„ ëª¨ë‘ ë§Œì¡±í•´ì•¼ í•œë‹¤.
- *     1) FROMì ˆì— í•˜ë‚˜ì˜ relationë§Œ ì¡´ì¬í•œë‹¤.
- *     2) FROMì ˆì— relationì´ viewê°€ ì•„ë‹ˆë‹¤.
- *     3) Correlationì€ 1ê°œ tableì— ëŒ€í•´ì„œë§Œ ì¡´ì¬í•œë‹¤.
- *     4) Hierarchy, GROUP BY, LIMIT ë˜ëŠ” HAVING ì ˆì„ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
- *     5) ROWNUM, LEVEL, ISLEAF, PRIOR columnì„ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *     ´ÙÀ½ÀÇ Á¶°ÇµéÀ» ¸ğµÎ ¸¸Á·ÇØ¾ß ÇÑ´Ù.
+ *     1) FROMÀı¿¡ ÇÏ³ªÀÇ relation¸¸ Á¸ÀçÇÑ´Ù.
+ *     2) FROMÀı¿¡ relationÀÌ view°¡ ¾Æ´Ï´Ù.
+ *     3) CorrelationÀº 1°³ table¿¡ ´ëÇØ¼­¸¸ Á¸ÀçÇÑ´Ù.
+ *     4) Hierarchy, GROUP BY, LIMIT ¶Ç´Â HAVING ÀıÀ» »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+ *     5) ROWNUM, LEVEL, ISLEAF, PRIOR columnÀ» »ç¿ëÇÏÁö ¾Ê´Â´Ù.
  *
  ***********************************************************************/
 
@@ -4085,7 +4458,7 @@ qmoUnnesting::isSimpleSubquery( qcStatement * aStatement )
 
     if( sSFWGH == NULL )
     {
-        // Set ì—°ì‚°ì´ í¬í•¨ëœ ê²½ìš°
+        // Set ¿¬»êÀÌ Æ÷ÇÔµÈ °æ¿ì
         IDE_CONT( INVALID_FORM );
     }
     else
@@ -4095,7 +4468,7 @@ qmoUnnesting::isSimpleSubquery( qcStatement * aStatement )
 
     if( sSFWGH->depInfo.depCount != 1 )
     {
-        // FROMì ˆì—ëŠ” í•˜ë‚˜ì˜ relationë§Œì´ ì¡´ì¬í•´ì•¼ í•œë‹¤.
+        // FROMÀı¿¡´Â ÇÏ³ªÀÇ relation¸¸ÀÌ Á¸ÀçÇØ¾ß ÇÑ´Ù.
         IDE_CONT( INVALID_FORM );
     }
     else
@@ -4105,7 +4478,7 @@ qmoUnnesting::isSimpleSubquery( qcStatement * aStatement )
 
     if( sSFWGH->from->tableRef->view != NULL )
     {
-        // FROMì ˆì— viewê°€ ì˜¬ ìˆ˜ ì—†ë‹¤.
+        // FROMÀı¿¡ view°¡ ¿Ã ¼ö ¾ø´Ù.
         IDE_CONT( INVALID_FORM );
     }
     else
@@ -4115,7 +4488,7 @@ qmoUnnesting::isSimpleSubquery( qcStatement * aStatement )
 
     if( sSFWGH->outerDepInfo.depCount != 1 )
     {
-        // 1ê°œì˜ outer query tableë§Œì„ ì°¸ì¡°í•´ì•¼ í•œë‹¤.
+        // 1°³ÀÇ outer query table¸¸À» ÂüÁ¶ÇØ¾ß ÇÑ´Ù.
         IDE_CONT( INVALID_FORM );
     }
     else
@@ -4135,14 +4508,14 @@ qmoUnnesting::isSimpleSubquery( qcStatement * aStatement )
         ( sSFWGH->level      != NULL ) )
     {
         // START WITH, CONNECT BY, GROUP BY, HAVING, LIMIT clause,
-        // ROWNUM, ISLEAF, LEVEL pseudo column, aggregate functionì„ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+        // ROWNUM, ISLEAF, LEVEL pseudo column, aggregate functionÀ» »ç¿ëÇÒ ¼ö ¾ø´Ù.
         IDE_CONT( INVALID_FORM );
     }
     else
     {
-        // EXISTS/NOT EXISTS predicateì— í¬í•¨ëœ subqueryì¸ ê²½ìš°
-        // SELECTì ˆì—ëŠ” ìƒìˆ˜ë¿ì´ë¯€ë¡œ ì—¬ê¸°ê¹Œì§€ ì™”ë‹¤ë©´
-        // Aggregate/window functionì€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // EXISTS/NOT EXISTS predicate¿¡ Æ÷ÇÔµÈ subqueryÀÎ °æ¿ì
+        // SELECTÀı¿¡´Â »ó¼ö»ÓÀÌ¹Ç·Î ¿©±â±îÁö ¿Ô´Ù¸é
+        // Aggregate/window functionÀº Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
     }
 
     if( sSFWGH->where != NULL )
@@ -4152,7 +4525,7 @@ qmoUnnesting::isSimpleSubquery( qcStatement * aStatement )
 
         if( ( sSFWGH->where->lflag & sMask ) != sCondition )
         {
-            // PRIOR columnì€ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+            // PRIOR columnÀº »ç¿ëÇÒ ¼ö ¾ø´Ù.
             IDE_CONT( INVALID_FORM );
         }
         else
@@ -4181,16 +4554,16 @@ qmoUnnesting::isUnnestablePredicate( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Subqueryì˜ WHEREì ˆê³¼ HAVINGì ˆì— í¬í•¨ëœ correlation predicateë“¤ì´
- *     unnesting ê°€ëŠ¥í•œ ì¡°ê±´ì˜ predicateì¸ì§€ í™•ì¸í•œë‹¤.
+ *     SubqueryÀÇ WHEREÀı°ú HAVINGÀı¿¡ Æ÷ÇÔµÈ correlation predicateµéÀÌ
+ *     unnesting °¡´ÉÇÑ Á¶°ÇÀÇ predicateÀÎÁö È®ÀÎÇÑ´Ù.
  *
  * Implementation :
- *     ë‹¤ìŒ ë‘ê°€ì§€ ì¡°ê±´ì„ ë§Œì¡±í•´ì•¼ í•œë‹¤.
- *     1) í•­ìƒ conjunctive(ANDë¡œ ì—°ê²°)í•œ í˜•íƒœë¡œ ì¡´ì¬í•´ì•¼ í•œë‹¤.
- *     2) WHEREì ˆ ë˜ëŠ” HAVINGì ˆ, ìµœì†Œí•œ í•œ ê³³ì—ì„œ outer queryì˜ tableê³¼ì˜
- *        join predicateì„ í¬í•¨í•´ì•¼ í•œë‹¤.
- *        ì´ ë•Œ subqueryì˜ predicateì´ EXISTS/NOT EXISTSì—¬ë¶€ì— ë”°ë¼
- *        join predicateìœ¼ë¡œ ì¸ì •í•˜ëŠ” ì—°ì‚°ìê°€ ë‹¤ë¥´ë‹¤.
+ *     ´ÙÀ½ µÎ°¡Áö Á¶°ÇÀ» ¸¸Á·ÇØ¾ß ÇÑ´Ù.
+ *     1) Ç×»ó conjunctive(AND·Î ¿¬°á)ÇÑ ÇüÅÂ·Î Á¸ÀçÇØ¾ß ÇÑ´Ù.
+ *     2) WHEREÀı ¶Ç´Â HAVINGÀı, ÃÖ¼ÒÇÑ ÇÑ °÷¿¡¼­ outer queryÀÇ table°úÀÇ
+ *        join predicateÀ» Æ÷ÇÔÇØ¾ß ÇÑ´Ù.
+ *        ÀÌ ¶§ subqueryÀÇ predicateÀÌ EXISTS/NOT EXISTS¿©ºÎ¿¡ µû¶ó
+ *        join predicateÀ¸·Î ÀÎÁ¤ÇÏ´Â ¿¬»êÀÚ°¡ ´Ù¸£´Ù.
  *
  ***********************************************************************/
 
@@ -4220,7 +4593,7 @@ qmoUnnesting::isUnnestablePredicate( qcStatement * aStatement,
         if( existOuterJoinCorrelation( aSQSFWGH->where,
                                        &aSQSFWGH->outerDepInfo ) == ID_TRUE )
         {
-            // Correlationê³¼ì˜ outer joinì´ í¬í•¨ëœ ê²½ìš°
+            // Correlation°úÀÇ outer joinÀÌ Æ÷ÇÔµÈ °æ¿ì
             // ex) SELECT * FROM t1 WHERE EXISTS (SELECT 0 FROM t2 WHERE t1.i1 (+) = t2.i1);
             IDE_CONT( INVALID_FORM );
         }
@@ -4230,8 +4603,8 @@ qmoUnnesting::isUnnestablePredicate( qcStatement * aStatement,
         }
         
         // BUG-41564
-        // Correlated Predicateì—ì„œ Subqueryë¥¼ Argumentë¡œ ê°€ì§€ëŠ” ê²½ìš°,
-        // Subquery Argumentê°€ í˜„ì¬ Subquery ë°–ì„ ì°¸ì¡°í•œë‹¤ë©´ Unnesting ë¶ˆê°€
+        // Correlated Predicate¿¡¼­ Subquery¸¦ Argument·Î °¡Áö´Â °æ¿ì,
+        // Subquery Argument°¡ ÇöÀç Subquery ¹ÛÀ» ÂüÁ¶ÇÑ´Ù¸é Unnesting ºÒ°¡
         if( existOuterSubQueryArgument( aSQSFWGH->where,
                                         &aSQSFWGH->depInfo ) == ID_TRUE )
         {
@@ -4259,7 +4632,7 @@ qmoUnnesting::isUnnestablePredicate( qcStatement * aStatement,
         if( existOuterJoinCorrelation( aSQSFWGH->having,
                                        &aSQSFWGH->outerDepInfo ) == ID_TRUE )
         {
-            // Correlationê³¼ì˜ outer joinì´ í¬í•¨ëœ ê²½ìš°
+            // Correlation°úÀÇ outer joinÀÌ Æ÷ÇÔµÈ °æ¿ì
             // ex) SELECT * FROM t1 WHERE EXISTS (SELECT 0 FROM t2 WHERE t1.i1 (+) = t2.i1);
             IDE_CONT( INVALID_FORM );
         }
@@ -4269,8 +4642,8 @@ qmoUnnesting::isUnnestablePredicate( qcStatement * aStatement,
         }
         
         // BUG-41564
-        // Correlated Predicateì—ì„œ Subqueryë¥¼ Argumentë¡œ ê°€ì§€ëŠ” ê²½ìš°,
-        // Subquery Argumentê°€ í˜„ì¬ Subquery ë°–ì„ ì°¸ì¡°í•œë‹¤ë©´ Unnesting ë¶ˆê°€
+        // Correlated Predicate¿¡¼­ Subquery¸¦ Argument·Î °¡Áö´Â °æ¿ì,
+        // Subquery Argument°¡ ÇöÀç Subquery ¹ÛÀ» ÂüÁ¶ÇÑ´Ù¸é Unnesting ºÒ°¡
         if( existOuterSubQueryArgument( aSQSFWGH->having,
                                         &aSQSFWGH->depInfo ) == ID_TRUE )
         {
@@ -4298,9 +4671,9 @@ qmoUnnesting::isUnnestablePredicate( qcStatement * aStatement,
 
     if( aSubqueryPredicate->node.module == &mtfNotExists )
     {
-        // NOT EXISTSì¸ ê²½ìš° subquery ë‚´ tableì„ ì°¸ì¡°í•˜ì§€ ì•ŠëŠ” predicateì„ í¬í•¨í•˜ëŠ” ê²½ìš°
-        // (constant predicate ë˜ëŠ” outer tableì˜ columnìœ¼ë¡œë§Œ êµ¬ì„±ëœ predicate)
-        // anti joinìœ¼ë¡œ transformí•  ìˆ˜ ì—†ë‹¤.
+        // NOT EXISTSÀÎ °æ¿ì subquery ³» tableÀ» ÂüÁ¶ÇÏÁö ¾Ê´Â predicateÀ» Æ÷ÇÔÇÏ´Â °æ¿ì
+        // (constant predicate ¶Ç´Â outer tableÀÇ columnÀ¸·Î¸¸ ±¸¼ºµÈ predicate)
+        // anti joinÀ¸·Î transformÇÒ ¼ö ¾ø´Ù.
         if( aSQSFWGH->where != NULL )
         {
             if( isAntiJoinablePredicate( aSQSFWGH->where, &aSQSFWGH->depInfo ) == ID_FALSE )
@@ -4339,14 +4712,14 @@ qmoUnnesting::isUnnestablePredicate( qcStatement * aStatement,
     }
 
     // BUG-38827
-    // Subquery block ë‚´ì— view target(inline view ì˜ target ì ˆ) ëŒ€ìƒì´
-    // ì—†ëŠ” ê²½ìš°ëŠ” unnest í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // Subquery block ³»¿¡ view target(inline view ÀÇ target Àı) ´ë»óÀÌ
+    // ¾ø´Â °æ¿ì´Â unnest ÇÏÁö ¾Ê´Â´Ù.
     if ( ( existViewTarget( aSQSFWGH->where,
                             &aSQSFWGH->depInfo ) != ID_TRUE ) &&
          ( existViewTarget( aSQSFWGH->having,
                             &aSQSFWGH->depInfo ) != ID_TRUE ) )
     {
-        // Inline view ì˜ target ì ˆì´ ì—†ë‹¤ë©´ unnest í•´ì„  ì•ˆëœë‹¤.
+        // Inline view ÀÇ target ÀıÀÌ ¾ø´Ù¸é unnest ÇØ¼± ¾ÈµÈ´Ù.
         IDE_CONT( INVALID_FORM );
     }
     else
@@ -4362,8 +4735,8 @@ qmoUnnesting::isUnnestablePredicate( qcStatement * aStatement,
         (void)qmoNormalForm::estimateCNF( aSFWGH->where,
                                           &sCnfCount );
 
-        // sEstimated = WHEREì ˆì˜ CNF ë³€í™˜ ì‹œ ì˜ˆì¸¡ predicate ìˆ˜ + subqueryì˜ correlation predicateì˜ ìˆ˜ - 1
-        // * EXISTS/NOT EXISTSì˜ ìœ„ì¹˜ì— correlation predicateì´ ì„¤ì •ë˜ë¯€ë¡œ 1ê°œë¥¼ ì œì™¸í•œë‹¤.
+        // sEstimated = WHEREÀıÀÇ CNF º¯È¯ ½Ã ¿¹Ãø predicate ¼ö + subqueryÀÇ correlation predicateÀÇ ¼ö - 1
+        // * EXISTS/NOT EXISTSÀÇ À§Ä¡¿¡ correlation predicateÀÌ ¼³Á¤µÇ¹Ç·Î 1°³¸¦ Á¦¿ÜÇÑ´Ù.
         sEstimated = sCnfCount + sJoinPredCount - 1;
 
         if( sEstimated > QCG_GET_SESSION_NORMALFORM_MAXIMUM( aStatement ) )
@@ -4377,7 +4750,7 @@ qmoUnnesting::isUnnestablePredicate( qcStatement * aStatement,
     }
     else
     {
-        // SELECTêµ¬ë¬¸ì´ ì•„ë‹ˆê±°ë‚˜ WHEREì ˆ ì™¸ ON ì ˆ ë“±ì¸ ê²½ìš°
+        // SELECT±¸¹®ÀÌ ¾Æ´Ï°Å³ª WHEREÀı ¿Ü ON Àı µîÀÎ °æ¿ì
     }
 
     return ID_TRUE;
@@ -4394,7 +4767,7 @@ qmoUnnesting::existOuterJoinCorrelation( qtcNode   * aNode,
 /***********************************************************************
  *
  * Description :
- *     Subqueryì—ì„œ correlationê³¼ì˜ outer joinì´ í¬í•¨ë˜ì–´ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
+ *     Subquery¿¡¼­ correlation°úÀÇ outer joinÀÌ Æ÷ÇÔµÇ¾îÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
  *
  * Implementation :
  *
@@ -4437,7 +4810,7 @@ qmoUnnesting::existOuterJoinCorrelation( qtcNode   * aNode,
         }
         else
         {
-            // ë…¼ë¦¬ ì—°ì‚°ìê°€ ì•„ë‹ˆë©´ì„œ outer join operatorì™€ correlationì„ í¬í•¨í•˜ëŠ” ê²½ìš°
+            // ³í¸® ¿¬»êÀÚ°¡ ¾Æ´Ï¸é¼­ outer join operator¿Í correlationÀ» Æ÷ÇÔÇÏ´Â °æ¿ì
             IDE_CONT( APPLICABLE_EXIT );
         }
     }
@@ -4460,14 +4833,14 @@ qmoUnnesting::isAntiJoinablePredicate( qtcNode   * aNode,
 /***********************************************************************
  *
  * Description :
- *     Anti joinì´ ê°€ëŠ¥í•œì§€ subqueryì— í¬í•¨ëœ predicateì„ í™•ì¸í•œë‹¤.
- *     Subqueryì— í¬í•¨ëœ predicate ì¤‘ subqueryì˜ columnë“¤ì„ ì°¸ì¡°í•˜ì§€
- *     ì•ŠëŠ” predicateì´ í¬í•¨ëœ ê²½ìš° anti joinì´ ë¶ˆê°€ëŠ¥í•˜ë‹¤.
- *     ex) Constant predicate, correlationìœ¼ë¡œë§Œ êµ¬ì„±ëœ predicate ë“±
+ *     Anti joinÀÌ °¡´ÉÇÑÁö subquery¿¡ Æ÷ÇÔµÈ predicateÀ» È®ÀÎÇÑ´Ù.
+ *     Subquery¿¡ Æ÷ÇÔµÈ predicate Áß subqueryÀÇ columnµéÀ» ÂüÁ¶ÇÏÁö
+ *     ¾Ê´Â predicateÀÌ Æ÷ÇÔµÈ °æ¿ì anti joinÀÌ ºÒ°¡´ÉÇÏ´Ù.
+ *     ex) Constant predicate, correlationÀ¸·Î¸¸ ±¸¼ºµÈ predicate µî
  *
  * Implementation :
- *     aNodeì˜ depInfoê°€ aDepInfoì™€ ê²¹ì¹˜ì§€ ì•Šìœ¼ë©´ ë¶ˆê°€ëŠ¥ìœ¼ë¡œ íŒë‹¨í•œë‹¤.
- *     ì´ ë•Œ aDepInfoëŠ” subqueryì˜ depInfoë¥¼ ì„¤ì •í•´ì•¼ í•œë‹¤.
+ *     aNodeÀÇ depInfo°¡ aDepInfo¿Í °ãÄ¡Áö ¾ÊÀ¸¸é ºÒ°¡´ÉÀ¸·Î ÆÇ´ÜÇÑ´Ù.
+ *     ÀÌ ¶§ aDepInfo´Â subqueryÀÇ depInfo¸¦ ¼³Á¤ÇØ¾ß ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -4533,15 +4906,15 @@ qmoUnnesting::existConjunctiveJoin( qtcNode   * aSubqueryPredicate,
 /***********************************************************************
  *
  * Description :
- *     ì£¼ì–´ì§„ predicateì— í¬í•¨ëœ correlation predicateë“¤ì´ conjunctiveí•œì§€,
- *     ê·¸ë¦¬ê³  subqueryì˜ tableê³¼ join ì¡°ê±´ì„ í•˜ë‚˜ ì´ìƒ í¬í•¨í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
- *     aIsConjunctiveëŠ” ë°˜ë“œì‹œ ID_FALSE, aContainsJoinì€ ID_TRUEë¡œ
- *     ì´ˆê¸°ê°’ì„ ì„¤ì •í•œ í›„ ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•´ì•¼ í•œë‹¤.
+ *     ÁÖ¾îÁø predicate¿¡ Æ÷ÇÔµÈ correlation predicateµéÀÌ conjunctiveÇÑÁö,
+ *     ±×¸®°í subqueryÀÇ table°ú join Á¶°ÇÀ» ÇÏ³ª ÀÌ»ó Æ÷ÇÔÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
+ *     aIsConjunctive´Â ¹İµå½Ã ID_FALSE, aContainsJoinÀº ID_TRUE·Î
+ *     ÃÊ±â°ªÀ» ¼³Á¤ÇÑ ÈÄ ÀÌ ÇÔ¼ö¸¦ È£ÃâÇØ¾ß ÇÑ´Ù.
  *
  * Implementation :
- *     Correlation predicateì„ í¬í•¨í•˜ëŠ” ë…¼ë¦¬ ì—°ì‚°ìê°€ ANDë§Œ ì¡´ì¬í•˜ë©´
- *     trueë¥¼, ê·¸ ì™¸ ë‹¤ë¥¸ ë…¼ë¦¬ ì—°ì‚°ìê°€ correlation predicateì„
- *     í¬í•¨í•˜ë©´ falseë¥¼ ë°˜í™˜í•œë‹¤.
+ *     Correlation predicateÀ» Æ÷ÇÔÇÏ´Â ³í¸® ¿¬»êÀÚ°¡ AND¸¸ Á¸ÀçÇÏ¸é
+ *     true¸¦, ±× ¿Ü ´Ù¸¥ ³í¸® ¿¬»êÀÚ°¡ correlation predicateÀ»
+ *     Æ÷ÇÔÇÏ¸é false¸¦ ¹İÈ¯ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -4585,7 +4958,7 @@ qmoUnnesting::existConjunctiveJoin( qtcNode   * aSubqueryPredicate,
             }
             else
             {
-                // OR, NOT ë“±ì´ í¬í•¨ë  ìˆ˜ ì—†ë‹¤.
+                // OR, NOT µîÀÌ Æ÷ÇÔµÉ ¼ö ¾ø´Ù.
                 *aIsConjunctive = ID_FALSE;
             }
         }
@@ -4593,7 +4966,7 @@ qmoUnnesting::existConjunctiveJoin( qtcNode   * aSubqueryPredicate,
         {
             IDE_FT_ASSERT( ( aNode->node.lflag & MTC_NODE_COMPARISON_MASK ) == MTC_NODE_COMPARISON_TRUE );
 
-            // Quantifier ì—°ì‚°ì, EXISTS/NOT EXISTS, BETWEEN, not equal(<>)ì€ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // Quantifier ¿¬»êÀÚ, EXISTS/NOT EXISTS, BETWEEN, not equal(<>)Àº Áö¿øÇÏÁö ¾Ê´Â´Ù.
             if( ( ( aNode->node.lflag & MTC_NODE_GROUP_COMPARISON_MASK ) == MTC_NODE_GROUP_COMPARISON_TRUE ) ||
                 ( aNode->node.module == &mtfExists ) ||
                 ( aNode->node.module == &mtfNotExists ) )
@@ -4603,7 +4976,7 @@ qmoUnnesting::existConjunctiveJoin( qtcNode   * aSubqueryPredicate,
             }
             else
             {
-                // Quantifier ì—°ì‚°ì, BETWEEN ë“±ì€ ë¹„êµ ì—°ì‚°ìë¡œ ë³€í™˜í•œë‹¤ë©´ ê°€ëŠ¥í•˜ë‹¤.
+                // Quantifier ¿¬»êÀÚ, BETWEEN µîÀº ºñ±³ ¿¬»êÀÚ·Î º¯È¯ÇÑ´Ù¸é °¡´ÉÇÏ´Ù.
                 switch( aNode->node.lflag & MTC_NODE_OPERATOR_MASK )
                 {
                     case MTC_NODE_OPERATOR_EQUAL:
@@ -4636,7 +5009,7 @@ qmoUnnesting::existConjunctiveJoin( qtcNode   * aSubqueryPredicate,
                     if( ( sFirstArg->depInfo.depCount  == 1 ) &&
                         ( sSecondArg->depInfo.depCount == 1 ) )
                     {
-                        // ë‘ argumentê°€ ê°ê° inner queryì™€ outer queryì˜ dependencyë¥¼ ê°–ëŠ”ì§€ í™•ì¸í•œë‹¤.
+                        // µÎ argument°¡ °¢°¢ inner query¿Í outer queryÀÇ dependency¸¦ °®´ÂÁö È®ÀÎÇÑ´Ù.
                         if( ( ( qtc::dependencyContains( aOuterDepInfo, &sFirstArg->depInfo ) == ID_TRUE ) &&
                               ( qtc::dependencyContains( aInnerDepInfo, &sSecondArg->depInfo ) == ID_TRUE ) ) ||
                             ( ( qtc::dependencyContains( aInnerDepInfo, &sFirstArg->depInfo ) == ID_TRUE ) &&
@@ -4675,7 +5048,7 @@ qmoUnnesting::transformSubqueryToView( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Subqueryë¥¼ viewë¡œ ë³€í™˜í•˜ì—¬ ë°˜í™˜í•œë‹¤.
+ *     Subquery¸¦ view·Î º¯È¯ÇÏ¿© ¹İÈ¯ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -4711,7 +5084,7 @@ qmoUnnesting::transformSubqueryToView( qcStatement  * aStatement,
     sTableRef->view = sSQStatement;
     sFrom->tableRef = sTableRef;
 
-    // Uniqueí•œ view name ì§€ì •
+    // UniqueÇÑ view name ÁöÁ¤
     IDE_TEST( genUniqueViewName( aStatement, (UChar **)&sTableRef->aliasName.stmtText )
               != IDE_SUCCESS );
     sTableRef->aliasName.offset = 0;
@@ -4719,12 +5092,12 @@ qmoUnnesting::transformSubqueryToView( qcStatement  * aStatement,
 
     sSQParseTree->querySet->SFWGH->selectType = QMS_ALL;
 
-    // Viewì—ëŠ” outer columnì´ ì—†ìœ¼ë¯€ë¡œ ì •ë³´ ì œê±°
+    // View¿¡´Â outer columnÀÌ ¾øÀ¸¹Ç·Î Á¤º¸ Á¦°Å
     qtc::dependencyClear( &sSQParseTree->querySet->outerDepInfo );
     qtc::dependencyClear( &sSQParseTree->querySet->SFWGH->outerDepInfo );
 
-    // PROJ-2418 Unnesting ëœ ìƒí™©ì—ì„œëŠ” Lateral Viewê°€ ì—†ìœ¼ë¯€ë¡œ
-    // lateralDepInfo ì •ë³´ë„ ê°™ì´ ì œê±°í•œë‹¤.
+    // PROJ-2418 Unnesting µÈ »óÈ²¿¡¼­´Â Lateral View°¡ ¾øÀ¸¹Ç·Î
+    // lateralDepInfo Á¤º¸µµ °°ÀÌ Á¦°ÅÇÑ´Ù.
     qtc::dependencyClear( &sSQParseTree->querySet->lateralDepInfo );
 
     for( sOuterNode = sSQParseTree->querySet->SFWGH->outerColumns;
@@ -4754,7 +5127,7 @@ qmoUnnesting::transformSubqueryToView( qcStatement  * aStatement,
     }
     sSQParseTree->querySet->SFWGH->outerColumns = NULL;
 
-    // ìƒì„±ëœ inline viewë¥¼ validationí•œë‹¤.
+    // »ı¼ºµÈ inline view¸¦ validationÇÑ´Ù.
     IDE_TEST( qmvQuerySet::validateInlineView( aStatement,
                                                sSFWGH,
                                                sTableRef,
@@ -4763,8 +5136,8 @@ qmoUnnesting::transformSubqueryToView( qcStatement  * aStatement,
 
     sMtcTuple = &(QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sTableRef->table]);
 
-    // BUG-43708 unnest ì´í›„ ë§Œë“¤ì–´ì§„ viewì— ëŒ€í•´ì„œ
-    // MTC_COLUMN_USE_COLUMN_TRUE ë¥¼ ì„¤ì •í•´ì•¼í•¨
+    // BUG-43708 unnest ÀÌÈÄ ¸¸µé¾îÁø view¿¡ ´ëÇØ¼­
+    // MTC_COLUMN_USE_COLUMN_TRUE ¸¦ ¼³Á¤ÇØ¾ßÇÔ
     for( i = 0;
          i < sMtcTuple->columnCount;
          i++ )
@@ -4773,7 +5146,7 @@ qmoUnnesting::transformSubqueryToView( qcStatement  * aStatement,
         sMtcTuple->columns[i].flag |=  MTC_COLUMN_USE_COLUMN_TRUE;
     }
 
-    // Viewì˜ column nameë“¤ì„ qmsTableRefì— ë³µì‚¬í•œë‹¤.
+    // ViewÀÇ column nameµéÀ» qmsTableRef¿¡ º¹»çÇÑ´Ù.
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( (QC_MAX_OBJECT_NAME_LEN + 1) *
                                              (sTableRef->tableInfo->columnCount),
                                              (void**)&( sTableRef->columnsName ) )
@@ -4788,10 +5161,10 @@ qmoUnnesting::transformSubqueryToView( qcStatement  * aStatement,
                        (QC_MAX_OBJECT_NAME_LEN + 1) );
     }
 
-    // Table mapì— viewë¥¼ ë“±ë¡í•œë‹¤.
+    // Table map¿¡ view¸¦ µî·ÏÇÑ´Ù.
     QC_SHARED_TMPLATE( aStatement )->tableMap[sTableRef->table].from = sFrom;
 
-    // Dependency ì„¤ì •
+    // Dependency ¼³Á¤
     qtc::dependencyClear( &sFrom->depInfo );
     qtc::dependencySet( sTableRef->table, &sFrom->depInfo );
 
@@ -4812,76 +5185,40 @@ qmoUnnesting::genUniqueViewName( qcStatement * aStatement, UChar ** aViewName )
 /***********************************************************************
  *
  * Description :
- *     Uniqueí•œ viewì˜ ì´ë¦„ì„ ìƒì„±í•œë‹¤.
+ *     UniqueÇÑ viewÀÇ ÀÌ¸§À» »ı¼ºÇÑ´Ù.
  *
  * Implementation :
- *     ì´ë¦„ì„ ìƒì„±í•œ í›„ table mapì„ ê²€ìƒ‰í•˜ì—¬ ì¤‘ë³µì„ í™•ì¸í•˜ë©°,
- *     ì„±ê³µí•  ë•Œê¹Œì§€ ë°˜ë³µí•œë‹¤.
  *
  ***********************************************************************/
 
-    qmsFrom * sFrom;
     UChar   * sViewName;
-    UShort    sIdx = 1;
-    UShort    i;
+    UInt      sIdx = 0;
 
     IDU_FIT_POINT_FATAL( "qmoUnnesting::genUniqueViewName::__FT__" );
 
     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( VIEW_NAME_LENGTH, (void**)&sViewName )
               != IDE_SUCCESS );
 
-    while( 1 )
-    {
-        idlOS::snprintf( (char*)sViewName, VIEW_NAME_LENGTH, VIEW_NAME_PREFIX"%"ID_UINT32_FMT, sIdx );
+    sIdx = ++QC_SHARED_TMPLATE( aStatement )->mUnnestViewNameIdx;
 
-        for( i = 0; i < QC_SHARED_TMPLATE( aStatement )->tmplate.rowCount; i++ )
-        {
-            sFrom = QC_SHARED_TMPLATE( aStatement )->tableMap[i].from;
+    IDE_TEST_RAISE ( sIdx > 99999, ERR_INDEX );
 
-            if( sFrom != NULL )
-            {
-                if( sFrom->tableRef->aliasName.stmtText != NULL )
-                {
-                    // Table/view tupleì¸ ê²½ìš°
-                    if ( idlOS::strMatch( (SChar*)(sFrom->tableRef->aliasName.stmtText + sFrom->tableRef->aliasName.offset),
-                                          sFrom->tableRef->aliasName.size,
-                                          (SChar*)sViewName,
-                                          idlOS::strlen( (SChar*)sViewName ) ) == 0 )
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        // Nothing to do.
-                    }
-                }
-                else
-                {
-                    // Aliasë¥¼ ì„¤ì •í•˜ì§€ ì•Šì€ inline view
-                }
-            }
-            else
-            {
-                // Constant/intermediate tupleì¸ ê²½ìš°
-            }
-        }
-
-        if( i == QC_SHARED_TMPLATE( aStatement )->tmplate.rowCount )
-        {
-            // ì¤‘ë³µë˜ì§€ ì•Šì€ ì´ë¦„ì„ ì°¾ì€ ê²½ìš°
-            break;
-        }
-        else
-        {
-            // ì¤‘ë³µì„ ì°¾ì€ ê²½ìš° ë‹¤ì‹œ ì‹œë„
-            sIdx++;
-        }
-    }
+    /* BUG-48052
+     * PREFIX(5)  $VIEW  + Number(5) - max (99999)
+     * = 10 + 1 = 11
+     */
+    idlOS::snprintf( (char*)sViewName, VIEW_NAME_LENGTH, VIEW_NAME_PREFIX"%"ID_UINT32_FMT, sIdx );
 
     *aViewName = sViewName;
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_INDEX )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmoUnnesting::genUniqueViewName",
+                                  "Invalid View Name" ));
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -4896,13 +5233,13 @@ qmoUnnesting::removeCorrPredicate( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *     ì£¼ì–´ì§„ predicateì—ì„œ correlation predicateë§Œì„ ì œê±°í•œë‹¤.
+ *     ÁÖ¾îÁø predicate¿¡¼­ correlation predicate¸¸À» Á¦°ÅÇÑ´Ù.
  *
  * Implementation :
- *     ì¬ê·€ì ìœ¼ë¡œ íƒìƒ‰í•˜ë©´ì„œ ë…¼ë¦¬ ì—°ì‚°ìê°€ ì•„ë‹Œ ê²½ìš° ë–¼ì–´ë‚´ì–´ ëª¨ì•„ì„œ
- *     ë°˜í™˜í•œë‹¤.
- *     Correlation predicateì„ ì œê±°í•˜ê¸° ìœ„í•´ì„œ, parent nodeë¥¼ ë³„ë„ì˜
- *     ì¸ìë¡œ ë„˜ê²¨ë°›ëŠ” ëŒ€ì‹  double pointerë¥¼ ì‚¬ìš©í•˜ë„ë¡ êµ¬í˜„í•œë‹¤.
+ *     Àç±ÍÀûÀ¸·Î Å½»öÇÏ¸é¼­ ³í¸® ¿¬»êÀÚ°¡ ¾Æ´Ñ °æ¿ì ¶¼¾î³»¾î ¸ğ¾Æ¼­
+ *     ¹İÈ¯ÇÑ´Ù.
+ *     Correlation predicateÀ» Á¦°ÅÇÏ±â À§ÇØ¼­, parent node¸¦ º°µµÀÇ
+ *     ÀÎÀÚ·Î ³Ñ°Ü¹Ş´Â ´ë½Å double pointer¸¦ »ç¿ëÇÏµµ·Ï ±¸ÇöÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -4951,7 +5288,7 @@ qmoUnnesting::removeCorrPredicate( qcStatement  * aStatement,
 
             if( sNode->node.arguments == NULL )
             {
-                // ANDì˜ operandê°€ ëª¨ë‘ ì œê±°ëœ ê²½ìš°
+                // ANDÀÇ operand°¡ ¸ğµÎ Á¦°ÅµÈ °æ¿ì
                 *aPredicate = NULL;
             }
             else
@@ -4964,7 +5301,7 @@ qmoUnnesting::removeCorrPredicate( qcStatement  * aStatement,
             *aPredicate = (qtcNode *)sNode->node.next;
             sNode->node.next = NULL;
 
-            // ë…¼ë¦¬ ì—°ì‚°ìê°€ ì•„ë‹ˆë©´ predicateì´ë¯€ë¡œ ì œê±°
+            // ³í¸® ¿¬»êÀÚ°¡ ¾Æ´Ï¸é predicateÀÌ¹Ç·Î Á¦°Å
             IDE_TEST( concatPredicate( aStatement,
                                        *aRemoved,
                                        sNode,
@@ -4993,11 +5330,11 @@ qmoUnnesting::genViewSelect( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Subqueryë¡œë¶€í„° ì œê±°ëœ correlation predicateìœ¼ë¡œë¶€í„° VIEWì˜
- *     SELECT listë¥¼ ìƒì„±í•œë‹¤.
+ *     Subquery·ÎºÎÅÍ Á¦°ÅµÈ correlation predicateÀ¸·ÎºÎÅÍ VIEWÀÇ
+ *     SELECT list¸¦ »ı¼ºÇÑ´Ù.
  *
  * Implementation :
- *     Predicateì¤‘ subqueryì˜ columnë“¤ì„ ì°¾ì•„ appendí•œë‹¤.
+ *     PredicateÁß subqueryÀÇ columnµéÀ» Ã£¾Æ appendÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -5018,13 +5355,13 @@ qmoUnnesting::genViewSelect( qcStatement * aStatement,
     {
         qtc::dependencyAnd( &sQuerySet->depInfo, &aNode->depInfo, &sDepInfo );
 
-        // BUG-45279 ë””íœë˜ì‹œê°€ ì—†ëŠ” aggr í•¨ìˆ˜ë„ targetì— ë„£ì–´ì•¼ í•œë‹¤.
+        // BUG-45279 µğÆæ´ø½Ã°¡ ¾ø´Â aggr ÇÔ¼öµµ target¿¡ ³Ö¾î¾ß ÇÑ´Ù.
         if( (qtc::haveDependencies( &sDepInfo ) == ID_TRUE) ||
             (QTC_HAVE_AGGREGATE( aNode ) == ID_TRUE) )
         {
-            // Columnì´ë‚˜ pass nodeë¥¼ ì°¾ì„ ë•Œê¹Œì§€ ì¬ê·€ì ìœ¼ë¡œ ìˆœíšŒí•œë‹¤.
-            // BUG-42113 LOB type ì— ëŒ€í•œ subquery ë³€í™˜ì´ ìˆ˜í–‰ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
-            // mtfGetBlobLocator, mtfGetClobLocatorì€ pass nodeì²˜ëŸ¼ ì·¨ê¸‰í•´ì•¼ í•œë‹¤.
+            // ColumnÀÌ³ª pass node¸¦ Ã£À» ¶§±îÁö Àç±ÍÀûÀ¸·Î ¼øÈ¸ÇÑ´Ù.
+            // BUG-42113 LOB type ¿¡ ´ëÇÑ subquery º¯È¯ÀÌ ¼öÇàµÇ¾î¾ß ÇÕ´Ï´Ù.
+            // mtfGetBlobLocator, mtfGetClobLocatorÀº pass nodeÃ³·³ Ãë±ŞÇØ¾ß ÇÑ´Ù.
             if( ( QTC_IS_COLUMN( aStatement, aNode ) == ID_TRUE ) || 
                 ( aNode->node.module == &qtc::passModule ) ||
                 ( aNode->node.module == &mtfGetBlobLocator ) ||
@@ -5039,7 +5376,7 @@ qmoUnnesting::genViewSelect( qcStatement * aStatement,
             }
             else if( aNode->node.module == &qtc::subqueryModule )
             {
-                // BUG-45226 ì„œë¸Œì¿¼ë¦¬ì˜ target ì— ì„œë¸Œì¿¼ë¦¬ê°€ ìˆì„ë•Œ ì˜¤ë¥˜ê°€ ë°œìƒí•©ë‹ˆë‹¤.
+                // BUG-45226 ¼­ºêÄõ¸®ÀÇ target ¿¡ ¼­ºêÄõ¸®°¡ ÀÖÀ»¶§ ¿À·ù°¡ ¹ß»ıÇÕ´Ï´Ù.
                 sTempQuerySet = ((qmsParseTree*)(aNode->subquery->myPlan->parseTree))->querySet;
 
                 IDE_TEST( genViewSetOp( aStatement,
@@ -5103,7 +5440,7 @@ IDE_RC qmoUnnesting::genViewSetOp( qcStatement * aStatement,
  *
  * Description :
  *     BUG-45226
- *     ì„œë¸Œì¿¼ë¦¬ì˜ outerColumns ë¥¼ ì°¾ì•„ì„œ genViewSelect í˜¸ì¶œí•œë‹¤.
+ *     ¼­ºêÄõ¸®ÀÇ outerColumns ¸¦ Ã£¾Æ¼­ genViewSelect È£ÃâÇÑ´Ù.
  *
  ***********************************************************************/
     qmsOuterNode * sOuter;
@@ -5146,8 +5483,8 @@ IDE_RC qmoUnnesting::appendViewSelect( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Viewì˜ SELECTì ˆì— columnì„ appendí•œë‹¤.
- *     ë§Œì•½ ì´ë¯¸ SELECTì ˆì— ì¡´ì¬í•˜ëŠ” columnì¸ ê²½ìš° ë¬´ì‹œí•œë‹¤.
+ *     ViewÀÇ SELECTÀı¿¡ columnÀ» appendÇÑ´Ù.
+ *     ¸¸¾à ÀÌ¹Ì SELECTÀı¿¡ Á¸ÀçÇÏ´Â columnÀÎ °æ¿ì ¹«½ÃÇÑ´Ù.
  *
  * Implementation :
  *
@@ -5185,7 +5522,7 @@ IDE_RC qmoUnnesting::appendViewSelect( qcStatement * aStatement,
         if( ( sNode->node.table  == aNode->node.table ) &&
             ( sNode->node.column == aNode->node.column ) )
         {
-            // ë™ì¼í•œ columnì´ ì´ë¯¸ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+            // µ¿ÀÏÇÑ columnÀÌ ÀÌ¹Ì Á¸ÀçÇÏ´Â °æ¿ì
             break;
         }
         else
@@ -5196,9 +5533,9 @@ IDE_RC qmoUnnesting::appendViewSelect( qcStatement * aStatement,
 
     if( sTarget == NULL )
     {
-        // ìƒˆë¡œ ì¶”ê°€í•´ì•¼ í•˜ëŠ” ê²½ìš°
+        // »õ·Î Ãß°¡ÇØ¾ß ÇÏ´Â °æ¿ì
 
-        // Uniqueí•œ column ì´ë¦„ì„ ì„¤ì •í•´ì¤€ë‹¤.
+        // UniqueÇÑ column ÀÌ¸§À» ¼³Á¤ÇØÁØ´Ù.
         IDE_TEST( QC_QMP_MEM( aStatement )->alloc( COLUMN_NAME_LENGTH,
                                                    (void**)&sColumnName )
                   != IDE_SUCCESS );
@@ -5216,8 +5553,8 @@ IDE_RC qmoUnnesting::appendViewSelect( qcStatement * aStatement,
 
         /*
          * BUG-39287
-         * ì›ë³¸ node ë¥¼ ì˜®ê¸°ì§€ ì•Šê³  node ë¥¼ ìƒˆë¡œ ìƒì„±í•˜ì—¬ ë³µì‚¬í•œë‹¤.
-         * pass node ì¼ ê²½ìš°ì—ëŠ” pass node ì˜ argument ë„ ìƒˆë¡œ ìƒì„±í•œë‹¤.
+         * ¿øº» node ¸¦ ¿Å±âÁö ¾Ê°í node ¸¦ »õ·Î »ı¼ºÇÏ¿© º¹»çÇÑ´Ù.
+         * pass node ÀÏ °æ¿ì¿¡´Â pass node ÀÇ argument µµ »õ·Î »ı¼ºÇÑ´Ù.
          */
         IDE_TEST(QC_QMP_MEM(aStatement)->alloc(ID_SIZEOF(qtcNode),
                                                (void**)&sNode)
@@ -5250,12 +5587,12 @@ IDE_RC qmoUnnesting::appendViewSelect( qcStatement * aStatement,
                                                sNode)
                  != IDE_SUCCESS);
 
-        // Aggregate functionë„ ì•„ë‹ˆë©° pass nodeë„ ì•„ë‹Œ ê²½ìš°
-        // (ì´ë¯¸ GROUP BYì ˆì˜ columnì´ì—ˆë˜ ê²½ìš°ì—ëŠ” pass nodeê°€ ì„¤ì •ëœë‹¤.)
+        // Aggregate functionµµ ¾Æ´Ï¸ç pass nodeµµ ¾Æ´Ñ °æ¿ì
+        // (ÀÌ¹Ì GROUP BYÀıÀÇ columnÀÌ¾ú´ø °æ¿ì¿¡´Â pass node°¡ ¼³Á¤µÈ´Ù.)
         if( ( ( aNode->node.lflag & MTC_NODE_OPERATOR_MASK ) != MTC_NODE_OPERATOR_AGGREGATION ) &&
             ( aNode->node.module != &qtc::passModule ) )
         {
-            // GROUP BYì ˆ ì²˜ë¦¬
+            // GROUP BYÀı Ã³¸®
             for( sGroup = sQuerySet->SFWGH->group;
                  sGroup != NULL;
                  sGroup = sGroup->next )
@@ -5281,7 +5618,7 @@ IDE_RC qmoUnnesting::appendViewSelect( qcStatement * aStatement,
             {
                 if( sIsEquivalent == ID_FALSE )
                 {
-                    // GROUP BYì ˆì— ìƒˆ expression ì¶”ê°€
+                    // GROUP BYÀı¿¡ »õ expression Ãß°¡
                     IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmsConcatElement ),
                                                                (void**)&sGroup )
                               != IDE_SUCCESS );
@@ -5292,17 +5629,20 @@ IDE_RC qmoUnnesting::appendViewSelect( qcStatement * aStatement,
 
                     idlOS::memcpy( sGroup->arithmeticOrList, aNode, ID_SIZEOF( qtcNode ) );
 
-                    // BUG-41018 taget ì»¬ëŸ¼ì— ì»¨ë²„ì ¼ì„ ì œê±°í•˜ê³  ì¶”ê°€í–ˆìœ¼ë¯€ë¡œ
-                    // group by ì—ë„ ì»¨ë²„ì ¼ì„ ì œê±°í•œí›„ ì¶”ê°€í•´ì•¼ í•œë‹¤.
+                    // BUG-41018 taget ÄÃ·³¿¡ ÄÁ¹öÁ¯À» Á¦°ÅÇÏ°í Ãß°¡ÇßÀ¸¹Ç·Î
+                    // group by ¿¡µµ ÄÁ¹öÁ¯À» Á¦°ÅÇÑÈÄ Ãß°¡ÇØ¾ß ÇÑ´Ù.
                     sGroup->arithmeticOrList->node.conversion        = NULL;
                     sGroup->arithmeticOrList->node.leftConversion    = NULL;
 
                     // BUG-38011
-                    // target ì ˆê³¼ ë§ˆì°¬ê°€ì§€ë¡œ dependency ê°€ ì¼ì¹˜í•˜ëŠ” ë…¸ë“œë§Œ ê°€ì ¸ì˜¨ë‹¤.
+                    // target Àı°ú ¸¶Âù°¡Áö·Î dependency °¡ ÀÏÄ¡ÇÏ´Â ³ëµå¸¸ °¡Á®¿Â´Ù.
                     sGroup->arithmeticOrList->node.next = NULL;
 
                     sGroup->type = QMS_GROUPBY_NORMAL;
                     sGroup->next = sQuerySet->SFWGH->group;
+
+                    /* TASK-7219 Shard Transformer Refactoring */
+                    sGroup->arguments = NULL;
                     sQuerySet->SFWGH->group = sGroup;
                 }
                 else
@@ -5310,7 +5650,7 @@ IDE_RC qmoUnnesting::appendViewSelect( qcStatement * aStatement,
                     // Nothing to do.
                 }
 
-                // GROUP BYì ˆ expressionì„ ê°€ë¦¬í‚¤ë„ë¡ pass node ìƒì„±
+                // GROUP BYÀı expressionÀ» °¡¸®Å°µµ·Ï pass node »ı¼º
                 IDE_TEST( qtc::makePassNode( aStatement,
                                              sNode,
                                              sGroup->arithmeticOrList,
@@ -5339,7 +5679,7 @@ IDE_RC qmoUnnesting::appendViewSelect( qcStatement * aStatement,
     }
     else
     {
-        // ë™ì¼í•œ columnì´ ì´ë¯¸ ì¡´ì¬í•˜ë¯€ë¡œ ì¶”ê°€í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // µ¿ÀÏÇÑ columnÀÌ ÀÌ¹Ì Á¸ÀçÇÏ¹Ç·Î Ãß°¡ÇÏÁö ¾Ê´Â´Ù.
     }
 
     return IDE_SUCCESS;
@@ -5357,10 +5697,10 @@ IDE_RC qmoUnnesting::toViewColumns( qcStatement  * aViewStatement,
 /***********************************************************************
  *
  * Description :
- *     Subquery ë‚´ tableì„ ì°¸ì¡°í•˜ëŠ” columnì„ viewë¥¼ ì°¸ì¡°í•˜ëŠ” tableë¡œ
- *     ë³€ê²½í•œë‹¤.
- *     Subqueryë¥¼ viewë¡œ ë³€ê²½í• ë•Œ subqueryì— í¬í•¨ëœ correlation predicateì„
- *     outer queryë¡œ ì˜®ê²¨ viewì™€ì˜ join predicateìœ¼ë¡œ ë³€í™˜í•˜ê¸° ìœ„í•´ ì‚¬ìš©í•œë‹¤.
+ *     Subquery ³» tableÀ» ÂüÁ¶ÇÏ´Â columnÀ» view¸¦ ÂüÁ¶ÇÏ´Â table·Î
+ *     º¯°æÇÑ´Ù.
+ *     Subquery¸¦ view·Î º¯°æÇÒ¶§ subquery¿¡ Æ÷ÇÔµÈ correlation predicateÀ»
+ *     outer query·Î ¿Å°Ü view¿ÍÀÇ join predicateÀ¸·Î º¯È¯ÇÏ±â À§ÇØ »ç¿ëÇÑ´Ù.
  *
  * Implementation :
  *
@@ -5391,13 +5731,13 @@ IDE_RC qmoUnnesting::toViewColumns( qcStatement  * aViewStatement,
     qtc::dependencySet( aViewTableRef->table, &sViewDefInfo );
     qtc::dependencyAnd( &sQuerySet->depInfo, &(*aNode)->depInfo, &sDepInfo );
 
-    // BUG-45279 ë””íœë˜ì‹œê°€ ì—†ëŠ” aggr í•¨ìˆ˜ë„ targetì— ë„£ì–´ì•¼ í•œë‹¤.
-    // viewì˜ target ì— ìˆìœ¼ë¯€ë¡œ ë³€í™˜ë„ ê°€ëŠ¥í•´ì•¼ í•œë‹¤.
+    // BUG-45279 µğÆæ´ø½Ã°¡ ¾ø´Â aggr ÇÔ¼öµµ target¿¡ ³Ö¾î¾ß ÇÑ´Ù.
+    // viewÀÇ target ¿¡ ÀÖÀ¸¹Ç·Î º¯È¯µµ °¡´ÉÇØ¾ß ÇÑ´Ù.
     if( (qtc::haveDependencies( &sDepInfo ) == ID_TRUE) ||
         (QTC_HAVE_AGGREGATE( *aNode ) == ID_TRUE) )
     {
-        // BUG-42113 LOB type ì— ëŒ€í•œ subquery ë³€í™˜ì´ ìˆ˜í–‰ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
-        // mtfGetBlobLocator, mtfGetClobLocatorì€ pass nodeì²˜ëŸ¼ ì·¨ê¸‰í•´ì•¼ í•œë‹¤.
+        // BUG-42113 LOB type ¿¡ ´ëÇÑ subquery º¯È¯ÀÌ ¼öÇàµÇ¾î¾ß ÇÕ´Ï´Ù.
+        // mtfGetBlobLocator, mtfGetClobLocatorÀº pass nodeÃ³·³ Ãë±ŞÇØ¾ß ÇÑ´Ù.
         if( ( QTC_IS_COLUMN( aViewStatement, *aNode ) == ID_TRUE ) ||
             ( (*aNode)->node.module == &qtc::passModule ) ||
             ( (*aNode)->node.module == &mtfGetBlobLocator ) ||
@@ -5405,30 +5745,30 @@ IDE_RC qmoUnnesting::toViewColumns( qcStatement  * aViewStatement,
             ( ( ( aIsOuterExpr == ID_FALSE  ) &&
                 ( (*aNode)->node.lflag & MTC_NODE_OPERATOR_MASK) == MTC_NODE_OPERATOR_AGGREGATION ) ) )
         {
-            // Column, ë˜ëŠ” pass nodeì¸ ê²½ìš°
+            // Column, ¶Ç´Â pass nodeÀÎ °æ¿ì
             for( sTarget = sQuerySet->target;
                  sTarget != NULL;
                  sTarget = sTarget->next )
             {
-                // Viewì˜ SELECTì ˆì—ì„œ predicateì˜ columnì„ ì°¾ì•„ viewë¥¼ ì°¸ì¡°í•˜ë„ë¡ ë³€ê²½í•œë‹¤.
+                // ViewÀÇ SELECTÀı¿¡¼­ predicateÀÇ columnÀ» Ã£¾Æ view¸¦ ÂüÁ¶ÇÏµµ·Ï º¯°æÇÑ´Ù.
                 // ex) SELECT ... FROM t2, (SELECT t1.c1 COL1, t1.c2 COL2 ... FROM t1) view1
-                //     aNodeê°€ "t1.c1 = t2.c1" ì´ì—ˆì„ ë•Œ "view1.col1 = t2.c1" ë¡œ ë³€ê²½í•œë‹¤.
+                //     aNode°¡ "t1.c1 = t2.c1" ÀÌ¾úÀ» ¶§ "view1.col1 = t2.c1" ·Î º¯°æÇÑ´Ù.
 
                 // BUG-38228
-                // group by ê°€ ìˆì„ë•ŒëŠ” target ì— pass nodeê°€ ìˆì„ìˆ˜ ìˆë‹¤.
-                // group by ì— ìˆëŠ” ì»¬ëŸ¼ì´ aNode ë¡œ ë“¤ì–´ì˜¬ë•Œ ë‹¤ìŒê³¼ ê°™ì€ ìƒí™©ì´ ë°œìƒí•œë‹¤.
+                // group by °¡ ÀÖÀ»¶§´Â target ¿¡ pass node°¡ ÀÖÀ»¼ö ÀÖ´Ù.
+                // group by ¿¡ ÀÖ´Â ÄÃ·³ÀÌ aNode ·Î µé¾î¿Ã¶§ ´ÙÀ½°ú °°Àº »óÈ²ÀÌ ¹ß»ıÇÑ´Ù.
                 // select i1 from t1 where i4 in ( select i4 from t1 ) group by i1;
-                //        1ë²ˆ ìƒí™©                                               2ë²ˆ ìƒí™©
-                // 1. aNode ê°€ ì™¸ë¶€ ì§ˆì˜ì˜ tagetì¼ë•ŒëŠ” pass nodeê°€ ìˆë‹¤.
-                //    ì´ë•ŒëŠ” 1ë²ˆì§¸ if ë¬¸ì—ì„œ ì²˜ë¦¬ê°€ ëœë‹¤.
-                // 2. aNode ê°€ ì™¸ë¶€ ì§ˆì˜ì˜ group by ì ˆì¼ë•ŒëŠ” pass nodeê°€ ì—†ë‹¤.
-                //    ì´ë•ŒëŠ” 2ë²ˆì§¸ if ë¬¸ì—ì„œ ì²˜ë¦¬ê°€ ëœë‹¤.
+                //        1¹ø »óÈ²                                               2¹ø »óÈ²
+                // 1. aNode °¡ ¿ÜºÎ ÁúÀÇÀÇ tagetÀÏ¶§´Â pass node°¡ ÀÖ´Ù.
+                //    ÀÌ¶§´Â 1¹øÂ° if ¹®¿¡¼­ Ã³¸®°¡ µÈ´Ù.
+                // 2. aNode °¡ ¿ÜºÎ ÁúÀÇÀÇ group by ÀıÀÏ¶§´Â pass node°¡ ¾ø´Ù.
+                //    ÀÌ¶§´Â 2¹øÂ° if ¹®¿¡¼­ Ã³¸®°¡ µÈ´Ù.
                 if( ( sTarget->targetColumn->node.table  == (*aNode)->node.table ) &&
                     ( sTarget->targetColumn->node.column == (*aNode)->node.column ) )
                 {
                     sFind = ID_TRUE;
                 }
-                // mtfGetBlobLocator, mtfGetClobLocatorì€ pass nodeì²˜ëŸ¼ ì·¨ê¸‰í•´ì•¼ í•œë‹¤.
+                // mtfGetBlobLocator, mtfGetClobLocatorÀº pass nodeÃ³·³ Ãë±ŞÇØ¾ß ÇÑ´Ù.
                 else if ( (sTarget->targetColumn->node.module == &qtc::passModule)   ||
                           (sTarget->targetColumn->node.module == &mtfGetBlobLocator) ||
                           (sTarget->targetColumn->node.module == &mtfGetClobLocator) )
@@ -5452,16 +5792,16 @@ IDE_RC qmoUnnesting::toViewColumns( qcStatement  * aViewStatement,
                 {
                     /*
                      * BUG-39287
-                     * appendViewSelect ê³¼ì •ì—ì„œ view target ì„ ë³µì‚¬í•´ì„œ ë§Œë“¤ì—ˆìœ¼ë¯€ë¡œ
-                     * ì—¬ê¸°ì„œëŠ” ì›ë³¸ node ë¥¼ view target ìœ¼ë¡œ ê°€ë¦¬í‚¤ë„ë¡ ë³€ê²½í•œë‹¤.
-                     * ë‹¨, target ì´ aggr node ì¸ ê²½ìš° ìƒˆë¡œ ìƒì„±í•œë‹¤.
-                     * ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ qmsSFWGH->aggsDepth1 ì´ ì˜ëª»ëœ node ë¥¼ ê°€ë¦¬í‚¤ê²Œ ëœë‹¤.
+                     * appendViewSelect °úÁ¤¿¡¼­ view target À» º¹»çÇØ¼­ ¸¸µé¾úÀ¸¹Ç·Î
+                     * ¿©±â¼­´Â ¿øº» node ¸¦ view target À¸·Î °¡¸®Å°µµ·Ï º¯°æÇÑ´Ù.
+                     * ´Ü, target ÀÌ aggr node ÀÎ °æ¿ì »õ·Î »ı¼ºÇÑ´Ù.
+                     * ±×·¸Áö ¾ÊÀ¸¸é qmsSFWGH->aggsDepth1 ÀÌ Àß¸øµÈ node ¸¦ °¡¸®Å°°Ô µÈ´Ù.
                      */
                     if (((*aNode)->node.lflag & MTC_NODE_OPERATOR_MASK) ==
                         MTC_NODE_OPERATOR_AGGREGATION)
                     {
-                        /* aggr node ì¸ ê²½ìš° ìƒˆë¡œìš´ node ìƒì„±
-                         * subquery unnesting ì¸ ê²½ìš°ë§Œ í•´ë‹¹ë¨ */
+                        /* aggr node ÀÎ °æ¿ì »õ·Î¿î node »ı¼º
+                         * subquery unnesting ÀÎ °æ¿ì¸¸ ÇØ´çµÊ */
 
                         IDE_TEST( qtc::makeColumn( aViewStatement,
                                                    sNode,
@@ -5499,7 +5839,7 @@ IDE_RC qmoUnnesting::toViewColumns( qcStatement  * aViewStatement,
                     }
                     else
                     {
-                        /* aggr node ì•„ë‹Œê²½ìš° ì›ë³¸ node ì˜ ì •ë³´ ë³€ê²½ */
+                        /* aggr node ¾Æ´Ñ°æ¿ì ¿øº» node ÀÇ Á¤º¸ º¯°æ */
 
                         sNextNode           = aNode[0]->node.next;
                         sConversionNode     = aNode[0]->node.conversion;
@@ -5514,9 +5854,9 @@ IDE_RC qmoUnnesting::toViewColumns( qcStatement  * aViewStatement,
                         aNode[0]->node.baseColumn     = aNode[0]->node.column;
                         aNode[0]->node.next           = sNextNode;
 
-                        // BUG-42113 LOB type ì— ëŒ€í•œ subquery ë³€í™˜ì´ ìˆ˜í–‰ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
-                        // unnest ê³¼ì •ì—ì„œ ìƒì„±ëœ view ì—ì„œëŠ” ë¬´ì¡°ê±´ lobLocator íƒ€ì…ìœ¼ë¡œ ë„˜ê²¨ì¤€ë‹¤.
-                        // lob íƒ€ì…ì˜ ê±¸ëŸ¼ì€ lobLocator ì»¨ë²„ì ¼ ë…¸ë“œê°€ ë‹¬ë ¤ìˆìœ¼ë¯€ë¡œ ì»¨ë²„ì ¼ ë…¸ë“œë¥¼ ì œê±°í•´ì£¼ì–´ì•¼ í•œë‹¤.
+                        // BUG-42113 LOB type ¿¡ ´ëÇÑ subquery º¯È¯ÀÌ ¼öÇàµÇ¾î¾ß ÇÕ´Ï´Ù.
+                        // unnest °úÁ¤¿¡¼­ »ı¼ºµÈ view ¿¡¼­´Â ¹«Á¶°Ç lobLocator Å¸ÀÔÀ¸·Î ³Ñ°ÜÁØ´Ù.
+                        // lob Å¸ÀÔÀÇ °É·³Àº lobLocator ÄÁ¹öÁ¯ ³ëµå°¡ ´Ş·ÁÀÖÀ¸¹Ç·Î ÄÁ¹öÁ¯ ³ëµå¸¦ Á¦°ÅÇØÁÖ¾î¾ß ÇÑ´Ù.
                         // ex: SELECT SUBSTR(i2,0,LENGTH(i2)) FROM t1 WHERE i1 = (SELECT MAX(i1) FROM t1);
                         if ( (sTarget->targetColumn->node.module == &mtfGetBlobLocator) ||
                              (sTarget->targetColumn->node.module == &mtfGetClobLocator) )
@@ -5552,12 +5892,12 @@ IDE_RC qmoUnnesting::toViewColumns( qcStatement  * aViewStatement,
                 }
                 sIdx++;
             }
-            // Viewì˜ SELECTì ˆì— ë°˜ë“œì‹œ ì¡´ì¬í•´ì•¼ í•œë‹¤.
+            // ViewÀÇ SELECTÀı¿¡ ¹İµå½Ã Á¸ÀçÇØ¾ß ÇÑ´Ù.
             IDE_FT_ERROR( sTarget != NULL );
         }
         else
         {
-            // Terminal nodeê°€ ì•„ë‹Œ ê²½ìš° ì¬ê·€ì ìœ¼ë¡œ ìˆœíšŒí•œë‹¤.
+            // Terminal node°¡ ¾Æ´Ñ °æ¿ì Àç±ÍÀûÀ¸·Î ¼øÈ¸ÇÑ´Ù.
             if( (*aNode)->node.module != &qtc::subqueryModule )
             {
                 sDoublePointer = (qtcNode **)&(*aNode)->node.arguments;
@@ -5577,7 +5917,7 @@ IDE_RC qmoUnnesting::toViewColumns( qcStatement  * aViewStatement,
             }
             else
             {
-                // BUG-45226 ì„œë¸Œì¿¼ë¦¬ì˜ target ì— ì„œë¸Œì¿¼ë¦¬ê°€ ìˆì„ë•Œ ì˜¤ë¥˜ê°€ ë°œìƒí•©ë‹ˆë‹¤.
+                // BUG-45226 ¼­ºêÄõ¸®ÀÇ target ¿¡ ¼­ºêÄõ¸®°¡ ÀÖÀ»¶§ ¿À·ù°¡ ¹ß»ıÇÕ´Ï´Ù.
                 sTempQuerySet = ((qmsParseTree*)((*aNode)->subquery->myPlan->parseTree))->querySet;
 
                 IDE_TEST( toViewSetOp( aViewStatement,
@@ -5633,7 +5973,7 @@ IDE_RC qmoUnnesting::toViewSetOp( qcStatement  * aViewStatement,
  *
  * Description :
  *     BUG-45226
- *     ì„œë¸Œì¿¼ë¦¬ì˜ outerColumns ë¥¼ ì°¾ì•„ì„œ toViewColumns í˜¸ì¶œí•œë‹¤.
+ *     ¼­ºêÄõ¸®ÀÇ outerColumns ¸¦ Ã£¾Æ¼­ toViewColumns È£ÃâÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -5683,7 +6023,7 @@ qmoUnnesting::findAndRemoveSubquery( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     aPredicateì—ì„œ aggregation subqueryë¥¼ ì°¾ì•„ ì œê±°í•œë‹¤.
+ *     aPredicate¿¡¼­ aggregation subquery¸¦ Ã£¾Æ Á¦°ÅÇÑ´Ù.
  *
  * Implementation :
  *
@@ -5718,7 +6058,7 @@ qmoUnnesting::findAndRemoveSubquery( qcStatement * aStatement,
 
                 *aResult = ID_TRUE;
 
-                // Removable subqueryì¼ ë•Œì—ë§Œ í•´ì œí•´ì£¼ë©´ ëœë‹¤.
+                // Removable subqueryÀÏ ¶§¿¡¸¸ ÇØÁ¦ÇØÁÖ¸é µÈ´Ù.
                 IDE_TEST( QC_QMP_MEM( aStatement )->free( sRelationMap )
                           != IDE_SUCCESS );
             }
@@ -5738,8 +6078,8 @@ qmoUnnesting::findAndRemoveSubquery( qcStatement * aStatement,
 
                         if( *aResult == ID_TRUE )
                         {
-                            // í•œ queryì— í•œ ë²ˆë°–ì— ì ìš©í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ
-                            // ë” ì´ìƒ ì‹œë„ í•˜ì§€ ì•ŠìŒ
+                            // ÇÑ query¿¡ ÇÑ ¹ø¹Û¿¡ Àû¿ëÇÒ ¼ö ¾øÀ¸¹Ç·Î
+                            // ´õ ÀÌ»ó ½Ãµµ ÇÏÁö ¾ÊÀ½
                             break;
                         }
                         else
@@ -5781,8 +6121,8 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Aggregationì„ í¬í•¨í•˜ì—¬ windowing viewë¥¼ ìƒì„±í•˜ê³  ì œê±° ê°€ëŠ¥í•œ
- *     subqueryì¸ì§€ íŒë‹¨í•œë‹¤.
+ *     AggregationÀ» Æ÷ÇÔÇÏ¿© windowing view¸¦ »ı¼ºÇÏ°í Á¦°Å °¡´ÉÇÑ
+ *     subqueryÀÎÁö ÆÇ´ÜÇÑ´Ù.
  *
  * Implementation :
  *
@@ -5806,8 +6146,14 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
 
     *aRelationMap = NULL;
 
+    // BUG-47616
+    if ( SDU_SHARD_ENABLE == 1 )
+    {
+        IDE_CONT( UNREMOVABLE );
+    }
+
     // BUG-43059 Target subquery unnest/removal disable
-    if ( ( aSFWGH->thisQuerySet->flag & QMV_QUERYSET_TARGET_SUBQUERY_REMOVAL_MASK )
+    if ( ( aSFWGH->thisQuerySet->lflag & QMV_QUERYSET_TARGET_SUBQUERY_REMOVAL_MASK )
          == QMV_QUERYSET_TARGET_SUBQUERY_REMOVAL_FALSE )
     {
         IDE_CONT( UNREMOVABLE );
@@ -5834,29 +6180,40 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
             case MTC_NODE_OPERATOR_LESS_EQUAL:
                 break;
             default:
-                // =, <>, >, >=, <, <= ì™¸ ë¹„êµ ì—°ì‚°ìëŠ” ë¶ˆê°€
+                // =, <>, >, >=, <, <= ¿Ü ºñ±³ ¿¬»êÀÚ´Â ºÒ°¡
                 IDE_CONT( UNREMOVABLE );
         }
 
         if( aSubqueryPredicate->node.arguments->next->module != &qtc::subqueryModule )
         {
-            // ë¹„êµ ì—°ì‚°ìì˜ ë‘ ë²ˆì§¸ ì¸ìê°€ subqueryê°€ ì•„ë‹˜
+            // ºñ±³ ¿¬»êÀÚÀÇ µÎ ¹øÂ° ÀÎÀÚ°¡ subquery°¡ ¾Æ´Ô
             IDE_CONT( UNREMOVABLE );
         }
         else
         {
             sSQNode = (qtcNode *)aSubqueryPredicate->node.arguments->next;
         }
+
+        // BUG-46952 left°¡ list typeÀÌ¸é ¾ÈµË´Ï´Ù.
+        if( aSubqueryPredicate->node.arguments->module == &mtfList )
+        {
+            IDE_CONT( UNREMOVABLE );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
     }
 
-    // Subqueryì˜ ì¡°ê±´ í™•ì¸
+    // SubqueryÀÇ Á¶°Ç È®ÀÎ
     sSQStatement = sSQNode->subquery;
     sSQParseTree = (qmsParseTree *)sSQStatement->myPlan->parseTree;
     sSQSFWGH     = sSQParseTree->querySet->SFWGH;
 
     if( sSQParseTree->querySet->setOp != QMS_NONE )
     {
-        // SET ì—°ì‚°ì¸ ê²½ìš°
+        // SET ¿¬»êÀÎ °æ¿ì
         IDE_CONT( UNREMOVABLE );
     }
     else
@@ -5877,15 +6234,15 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
         }
         else
         {
-            /* Nothing to do */
+            /* Noting to do */
         }
     }
     else
     {
         /* BUG-46544 Unnest hit */
         // Hint QMO_SUBQUERY_UNNEST_TYPE_UNNEST
-        // hintê°€ ì¡´ì¬í•˜ê³  PropertyëŠ” 0ì´ê³  Compatibilityê°€ 1 ì´ë©´ Property
-        // ìš°ì„ ìœ¼ë¡œ unnestë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // hint°¡ Á¸ÀçÇÏ°í Property´Â 0ÀÌ°í Compatibility°¡ 1 ÀÌ¸é Property
+        // ¿ì¼±À¸·Î unnest¸¦ ÇÏÁö ¾Ê´Â´Ù.
         if ( ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_UNNEST_SUBQUERY_MASK )
                == QC_TMP_UNNEST_SUBQUERY_FALSE ) &&
              ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_UNNEST_COMPATIBILITY_1_MASK )
@@ -5902,7 +6259,7 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
     if( ( aSFWGH->hierarchy != NULL ) ||
         ( sSQSFWGH->hierarchy != NULL ) )
     {
-        // Hierarchy êµ¬ë¬¸ì„ ì‚¬ìš©í•œ ê²½ìš°
+        // Hierarchy ±¸¹®À» »ç¿ëÇÑ °æ¿ì
         IDE_CONT( UNREMOVABLE );
     }
     else
@@ -5912,7 +6269,7 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
 
     if( sSQParseTree->limit != NULL )
     {
-        // Subqueryì—ì„œ LIMITì ˆ ì‚¬ìš©í•œ ê²½ìš°
+        // Subquery¿¡¼­ LIMITÀı »ç¿ëÇÑ °æ¿ì
         IDE_CONT( UNREMOVABLE );
     }
     else
@@ -5923,7 +6280,7 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
     /* BUG-36580 supported TOP */
     if ( aSFWGH->top != NULL )
     {
-        // Subqueryì—ì„œ TOPì ˆ ì‚¬ìš©í•œ ê²½ìš°
+        // Subquery¿¡¼­ TOPÀı »ç¿ëÇÑ °æ¿ì
         IDE_CONT( UNREMOVABLE );
     }
     else
@@ -5935,7 +6292,7 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
         ( sSQSFWGH->level  != NULL ) ||
         ( sSQSFWGH->isLeaf != NULL ) )
     {
-        // Subqueryì—ì„œ ROWNUM, LEVEL, ISLEAFë¥¼ ì‚¬ìš©í•œ ê²½ìš°
+        // Subquery¿¡¼­ ROWNUM, LEVEL, ISLEAF¸¦ »ç¿ëÇÑ °æ¿ì
         IDE_CONT( UNREMOVABLE );
     }
     else
@@ -5949,7 +6306,7 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
     {
         if( sFrom->joinType != QMS_NO_JOIN )
         {
-            // Ansi style joinì„ ì‚¬ìš©í•œ ê²½ìš° ë¶ˆê°€
+            // Ansi style joinÀ» »ç¿ëÇÑ °æ¿ì ºÒ°¡
             IDE_CONT( UNREMOVABLE );
         }
         else
@@ -5964,7 +6321,7 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
     {
         if( sFrom->joinType != QMS_NO_JOIN )
         {
-            // Ansi style joinì„ ì‚¬ìš©í•œ ê²½ìš° ë¶ˆê°€
+            // Ansi style joinÀ» »ç¿ëÇÑ °æ¿ì ºÒ°¡
             IDE_CONT( UNREMOVABLE );
         }
         else
@@ -5973,14 +6330,14 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
         }
 
         // PROJ-2418
-        // sSQSFWGHì˜ Fromì—ì„œ Lateral Viewê°€ ì¡´ì¬í•˜ë©´ Removal í•  ìˆ˜ ì—†ë‹¤.
-        // ë‹¨, Lateral Viewê°€ ì´ì „ì— ëª¨ë‘ Merging ë˜ì—ˆë‹¤ë©´ Removalì´ ê°€ëŠ¥í•˜ë‹¤.
+        // sSQSFWGHÀÇ From¿¡¼­ Lateral View°¡ Á¸ÀçÇÏ¸é Removal ÇÒ ¼ö ¾ø´Ù.
+        // ´Ü, Lateral View°¡ ÀÌÀü¿¡ ¸ğµÎ Merging µÇ¾ú´Ù¸é RemovalÀÌ °¡´ÉÇÏ´Ù.
         IDE_TEST( qmvQTC::getFromLateralDepInfo( sFrom, & sDepInfo )
                   != IDE_SUCCESS );
 
         if ( qtc::haveDependencies( & sDepInfo ) == ID_TRUE )
         {
-            // í•´ë‹¹ tableRefê°€ Lateral Viewë¼ë©´ Removal ë¶ˆê°€
+            // ÇØ´ç tableRef°¡ Lateral View¶ó¸é Removal ºÒ°¡
             IDE_CONT( UNREMOVABLE );
         }
         else
@@ -5991,7 +6348,7 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
 
     if( sSQSFWGH->group != NULL )
     {
-        // GROUP BYì ˆì„ í¬í•¨í•˜ëŠ” ê²½ìš°
+        // GROUP BYÀıÀ» Æ÷ÇÔÇÏ´Â °æ¿ì
         IDE_CONT( UNREMOVABLE );
     }
     else
@@ -6001,7 +6358,7 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
 
     if( sSQSFWGH->aggsDepth1 == NULL )
     {
-        // Aggregate functionì„ ì‚¬ìš©í•˜ì§€ ì•Šì€ ê²½ìš°
+        // Aggregate functionÀ» »ç¿ëÇÏÁö ¾ÊÀº °æ¿ì
         IDE_CONT( UNREMOVABLE );
     }
     else
@@ -6013,7 +6370,7 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
             if( ( sAggrNode->aggr->node.lflag & MTC_NODE_DISTINCT_MASK )
                 == MTC_NODE_DISTINCT_TRUE )
             {
-                // Aggregate functionì— DISTINCTì ˆ ì‚¬ìš© ì‹œ ë¶ˆê°€
+                // Aggregate function¿¡ DISTINCTÀı »ç¿ë ½Ã ºÒ°¡
                 IDE_CONT( UNREMOVABLE );
             }
             else
@@ -6023,7 +6380,7 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
 
             if( sAggrNode->aggr->node.arguments == NULL )
             {
-                // COUNT(*) ì‚¬ìš© ì‹œ ë¶ˆê°€
+                // COUNT(*) »ç¿ë ½Ã ºÒ°¡
                 IDE_CONT( UNREMOVABLE );
             }
             else
@@ -6031,14 +6388,14 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
                 // Nothing to do.
             }
 
-            /* BUG-43703 WITHIN GROUP êµ¬ë¬¸ ì‚¬ìš©ì‹œ Subquery Unnestingì„ í•˜ì§€ ì•Šë„ë¡ í•©ë‹ˆë‹¤. */
+            /* BUG-43703 WITHIN GROUP ±¸¹® »ç¿ë½Ã Subquery UnnestingÀ» ÇÏÁö ¾Êµµ·Ï ÇÕ´Ï´Ù. */
             IDE_TEST_CONT( sAggrNode->aggr->node.funcArguments != NULL, UNREMOVABLE );
         }
     }
 
     if( sSQSFWGH->aggsDepth2 != NULL )
     {
-        // Nested aggregate functionì„ ì‚¬ìš©í•œ ê²½ìš°
+        // Nested aggregate functionÀ» »ç¿ëÇÑ °æ¿ì
         IDE_CONT( UNREMOVABLE );
     }
     else
@@ -6048,7 +6405,7 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
 
     if( sSQSFWGH->having != NULL )
     {
-        // BUG-41170 having ì ˆì„ ì‚¬ìš©í•œ ê²½ìš°
+        // BUG-41170 having ÀıÀ» »ç¿ëÇÑ °æ¿ì
         IDE_CONT( UNREMOVABLE );
     }
     else
@@ -6056,7 +6413,7 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
         // Nothing to do.
     }
 
-    // Subsumption property í™•ì¸
+    // Subsumption property È®ÀÎ
     IDE_TEST( isSubsumed( aStatement,
                           aSFWGH,
                           sSQSFWGH,
@@ -6067,7 +6424,7 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
 
     if( sResult == ID_FALSE )
     {
-        // Subsumption propertyë¥¼ ë§Œì¡±í•˜ì§€ ì•ŠìŒ
+        // Subsumption property¸¦ ¸¸Á·ÇÏÁö ¾ÊÀ½
         IDE_CONT( UNREMOVABLE );
     }
     else
@@ -6075,16 +6432,16 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
         // Nothing to do.
     }
 
-    // Subqueryì˜ aggregate function ì¸ìì™€ outer queryì˜ columnì´ ê°™ì€
-    // expressionì¸ì§€ ë¹„êµ
+    // SubqueryÀÇ aggregate function ÀÎÀÚ¿Í outer queryÀÇ columnÀÌ °°Àº
+    // expressionÀÎÁö ºñ±³
     if( aSubqueryPredicate->node.arguments->module == &mtfList )
     {
-        // List typeì¸ ê²½ìš° listì˜ argument
+        // List typeÀÎ °æ¿ì listÀÇ argument
         sOuterNode = (qtcNode *)aSubqueryPredicate->node.arguments->arguments;
     }
     else
     {
-        // List typeì´ ì•„ë‹Œ ê²½ìš° í•´ë‹¹ column
+        // List typeÀÌ ¾Æ´Ñ °æ¿ì ÇØ´ç column
         sOuterNode = (qtcNode *)aSubqueryPredicate->node.arguments;
     }
 
@@ -6098,7 +6455,7 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
         }
         else
         {
-            // Aggregate functionì˜ ì¸ìë¥¼ outer queryì˜ relationìœ¼ë¡œ ë°”ê¿ˆ
+            // Aggregate functionÀÇ ÀÎÀÚ¸¦ outer queryÀÇ relationÀ¸·Î ¹Ù²Ş
             IDE_TEST( changeRelation( aStatement,
                                       sTarget->targetColumn,
                                       &sSQSFWGH->depInfo,
@@ -6117,7 +6474,7 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
                 sIsEquivalent = ID_FALSE;
             }
 
-            // ë°”ë€Œì—ˆë˜ relationì„ ë‹¤ì‹œ ë³µì›
+            // ¹Ù²î¾ú´ø relationÀ» ´Ù½Ã º¹¿ø
             IDE_TEST( changeRelation( aStatement,
                                       sTarget->targetColumn,
                                       &sOuterCommonDepInfo,
@@ -6135,8 +6492,8 @@ qmoUnnesting::isRemovableSubquery( qcStatement  * aStatement,
         }
     }
 
-    // BUG-45226 ì„œë¸Œì¿¼ë¦¬ì˜ target ì— ì„œë¸Œì¿¼ë¦¬ê°€ ìˆì„ë•Œ ì˜¤ë¥˜ê°€ ë°œìƒí•©ë‹ˆë‹¤.
-    // remove ì¼ë•ŒëŠ” ë§‰ëŠ”ë‹¤.
+    // BUG-45226 ¼­ºêÄõ¸®ÀÇ target ¿¡ ¼­ºêÄõ¸®°¡ ÀÖÀ»¶§ ¿À·ù°¡ ¹ß»ıÇÕ´Ï´Ù.
+    // remove ÀÏ¶§´Â ¸·´Â´Ù.
     for( sTarget = aSFWGH->target;
          sTarget != NULL;
          sTarget = sTarget->next )
@@ -6208,10 +6565,10 @@ idBool qmoUnnesting::isRemovableTarget( qtcNode   * aNode,
  *
  * Description :
  *     BUG-45226
- *     1. target ì— ì„œë¸Œì¿¼ë¦¬ê°€ ìˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
- *     2. ì„œë¸Œì¿¼ë¦¬ì— Removable í…Œì´ë¸”ì„ ì°¸ì¡°í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
- *     3. ì°¸ì¡°í•œë‹¤ë©´ Removable ì´ ì•ˆë˜ë„ë¡ í•œë‹¤.
- *        ì´ìœ ëŠ” ì—ëŸ¬ê°€ ë§ì´ ë°œìƒí•´ì„œ ì´ë‹¤.
+ *     1. target ¿¡ ¼­ºêÄõ¸®°¡ ÀÖ´ÂÁö °Ë»çÇÑ´Ù.
+ *     2. ¼­ºêÄõ¸®¿¡ Removable Å×ÀÌºíÀ» ÂüÁ¶ÇÏ´ÂÁö °Ë»çÇÑ´Ù.
+ *     3. ÂüÁ¶ÇÑ´Ù¸é Removable ÀÌ ¾ÈµÇµµ·Ï ÇÑ´Ù.
+ *        ÀÌÀ¯´Â ¿¡·¯°¡ ¸¹ÀÌ ¹ß»ıÇØ¼­ ÀÌ´Ù.
  *
  ***********************************************************************/
     idBool      sIsRemovable = ID_TRUE;
@@ -6264,11 +6621,11 @@ qmoUnnesting::isSubsumed( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Outer queryê°€ subqueryì˜ relationë“¤ì„ ëª¨ë‘ í¬í•¨í•˜ê³  ìˆëŠ”ì§€
- *     í™•ì¸í•œë‹¤.
+ *     Outer query°¡ subqueryÀÇ relationµéÀ» ¸ğµÎ Æ÷ÇÔÇÏ°í ÀÖ´ÂÁö
+ *     È®ÀÎÇÑ´Ù.
  *
  * Implementation :
- *     FROMì ˆì˜ relation, ê·¸ë¦¬ê³  predicateë“¤ì˜ ì¡°ê±´ì„ í™•ì¸í•œë‹¤.
+ *     FROMÀıÀÇ relation, ±×¸®°í predicateµéÀÇ Á¶°ÇÀ» È®ÀÎÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -6284,14 +6641,14 @@ qmoUnnesting::isSubsumed( qcStatement  * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmoUnnesting::isSubsumed::__FT__" );
 
-    // ê³µí†µì ì¸ relationì„ ê°–ëŠ”ì§€ í™•ì¸
-    // Outer queryëŠ” subqueryê°€ í¬í•¨í•˜ëŠ” relationë“¤ì„ ëª¨ë‘ í¬í•¨í•´ì•¼ í•¨
+    // °øÅëÀûÀÎ relationÀ» °®´ÂÁö È®ÀÎ
+    // Outer query´Â subquery°¡ Æ÷ÇÔÇÏ´Â relationµéÀ» ¸ğµÎ Æ÷ÇÔÇØ¾ß ÇÔ
     IDE_TEST( createRelationMap( aStatement, aOQSFWGH, aSQSFWGH, &sRelationMap )
               != IDE_SUCCESS );
 
     if( sRelationMap == NULL )
     {
-        // Outer queryì—ì„œ subqueryì˜ relationì„ ëª¨ë‘ í¬í•¨í•˜ì§€ ì•ŠìŒ
+        // Outer query¿¡¼­ subqueryÀÇ relationÀ» ¸ğµÎ Æ÷ÇÔÇÏÁö ¾ÊÀ½
         IDE_CONT( UNREMOVABLE );
     }
     else
@@ -6299,10 +6656,10 @@ qmoUnnesting::isSubsumed( qcStatement  * aStatement,
         // Nothing to do.
     }
 
-    // Outer queryì™€ subquery ëª¨ë‘ predicateì´ ANDë¡œë§Œ êµ¬ì„±ë˜ì–´ì•¼ í•¨
+    // Outer query¿Í subquery ¸ğµÎ predicateÀÌ AND·Î¸¸ ±¸¼ºµÇ¾î¾ß ÇÔ
     if( isConjunctiveForm( aSQSFWGH->where ) == ID_FALSE )
     {
-        // Subqueryì—ì„œ AND ì™¸ ë…¼ë¦¬ì—°ì‚°ìë¥¼ í¬í•¨í•  ìˆ˜ ì—†ìŒ
+        // Subquery¿¡¼­ AND ¿Ü ³í¸®¿¬»êÀÚ¸¦ Æ÷ÇÔÇÒ ¼ö ¾øÀ½
         IDE_CONT( UNREMOVABLE );
     }
     else
@@ -6312,7 +6669,7 @@ qmoUnnesting::isSubsumed( qcStatement  * aStatement,
 
     if( isConjunctiveForm( aOQSFWGH->where ) == ID_FALSE )
     {
-        // Outer queryì—ì„œë„ AND ì™¸ ë…¼ë¦¬ì—°ì‚°ìë¥¼ í¬í•¨í•  ìˆ˜ ì—†ìŒ
+        // Outer query¿¡¼­µµ AND ¿Ü ³í¸®¿¬»êÀÚ¸¦ Æ÷ÇÔÇÒ ¼ö ¾øÀ½
         IDE_CONT( UNREMOVABLE );
     }
     else
@@ -6320,14 +6677,14 @@ qmoUnnesting::isSubsumed( qcStatement  * aStatement,
         // Nothing to do.
     }
 
-    // ë‘ queryê°„ ê³µí†µ relationì„ subqueryì—ì„œ ì°¸ì¡°í•  ìˆ˜ ì—†ìŒ
+    // µÎ query°£ °øÅë relationÀ» subquery¿¡¼­ ÂüÁ¶ÇÒ ¼ö ¾øÀ½
     sTable = qtc::getPosFirstBitSet( &aSQSFWGH->outerDepInfo );
 
     while( sTable != QTC_DEPENDENCIES_END )
     {
         if( sRelationMap[sTable] != ID_USHORT_MAX )
         {
-            // Outer queryì™€ì˜ ê³µí†µ relationì„ subqueryì—ì„œ ì°¸ì¡°í•˜ë©´ ì•ˆë¨
+            // Outer query¿ÍÀÇ °øÅë relationÀ» subquery¿¡¼­ ÂüÁ¶ÇÏ¸é ¾ÈµÊ
             IDE_CONT( UNREMOVABLE );
         }
         else
@@ -6338,7 +6695,7 @@ qmoUnnesting::isSubsumed( qcStatement  * aStatement,
         sTable = qtc::getPosNextBitSet( &aSQSFWGH->outerDepInfo, sTable );
     }
 
-    // ê³µí†µ relationë“¤ ì¤‘ outer queryì˜ relation ì •ë³´ë¥¼ ì¶”ì¶œ
+    // °øÅë relationµé Áß outer queryÀÇ relation Á¤º¸¸¦ ÃßÃâ
     qtc::dependencyClear( aOuterCommonDepInfo );
 
     sTable = qtc::getPosFirstBitSet( &aOQSFWGH->depInfo );
@@ -6370,7 +6727,7 @@ qmoUnnesting::isSubsumed( qcStatement  * aStatement,
                                 &sSQPredList )
               != IDE_SUCCESS );
 
-    // ê³µí†µ relationë“¤ì— ëŒ€í•˜ì—¬ ë™ì¼í•œ predicateë“¤ì„ ê°–ëŠ”ì§€ í™•ì¸
+    // °øÅë relationµé¿¡ ´ëÇÏ¿© µ¿ÀÏÇÑ predicateµéÀ» °®´ÂÁö È®ÀÎ
     for( sPredNode1 = sOQPredList;
          sPredNode1 != NULL;
          sPredNode1 = sPredNode1->next )
@@ -6385,13 +6742,13 @@ qmoUnnesting::isSubsumed( qcStatement  * aStatement,
             {
                 if( sExistSubquery == ID_FALSE )
                 {
-                    // SubqueryëŠ” ë‹¨ 1ê°œ(removing ëŒ€ìƒ)ë§Œ ì¡´ì¬í•  ìˆ˜ ìˆë‹¤.
+                    // Subquery´Â ´Ü 1°³(removing ´ë»ó)¸¸ Á¸ÀçÇÒ ¼ö ÀÖ´Ù.
                     sExistSubquery = ID_TRUE;
                     continue;
                 }
                 else
                 {
-                    // ë‘ ê°œ ì´ìƒ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+                    // µÎ °³ ÀÌ»ó Á¸ÀçÇÏ´Â °æ¿ì
                     IDE_CONT( UNREMOVABLE );
                 }
             }
@@ -6403,8 +6760,8 @@ qmoUnnesting::isSubsumed( qcStatement  * aStatement,
             if( ( qtc::haveDependencies( &aSQSFWGH->outerDepInfo ) == ID_FALSE ) &&
                 ( qtc::dependencyContains( aOuterCommonDepInfo, &sPredNode1->predicate->depInfo ) == ID_FALSE ) )
             {
-                // Subqueryì— correlationì´ ì—†ìœ¼ë©´ì„œ ê³µí†µ relationë¼ë¦¬ì˜
-                // predicateì´ ì•„ë‹Œ ê²½ìš° í™•ì¸í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                // Subquery¿¡ correlationÀÌ ¾øÀ¸¸é¼­ °øÅë relation³¢¸®ÀÇ
+                // predicateÀÌ ¾Æ´Ñ °æ¿ì È®ÀÎÇÏÁö ¾Ê´Â´Ù.
                 continue;
             }
             else
@@ -6418,22 +6775,22 @@ qmoUnnesting::isSubsumed( qcStatement  * aStatement,
             {
                 sIsEquivalent = ID_TRUE;
                 
-                // Subqueryì˜ predicateì´ outer queryì˜ ê³µí†µ relationë“¤ì„
-                // ì°¸ì¡°í•˜ëŠ” predicateìœ¼ë¡œ ì¼ì‹œì ìœ¼ë¡œ ë³€ê²½
+                // SubqueryÀÇ predicateÀÌ outer queryÀÇ °øÅë relationµéÀ»
+                // ÂüÁ¶ÇÏ´Â predicateÀ¸·Î ÀÏ½ÃÀûÀ¸·Î º¯°æ
                 IDE_TEST( changeRelation( aStatement,
                                           sPredNode2->predicate,
                                           &aSQSFWGH->depInfo,
                                           sRelationMap )
                           != IDE_SUCCESS );
 
-                // ë¹„êµ
+                // ºñ±³
                 IDE_TEST( qtc::isEquivalentPredicate( aStatement,
                                                       sPredNode1->predicate,
                                                       sPredNode2->predicate,
                                                       &sIsEquivalent )
                           != IDE_SUCCESS );
 
-                // ë³€ê²½í•˜ì˜€ë˜ predicateë“¤ì„ ë‹¤ì‹œ ì›ìƒë³µêµ¬
+                // º¯°æÇÏ¿´´ø predicateµéÀ» ´Ù½Ã ¿ø»óº¹±¸
                 IDE_TEST( changeRelation( aStatement,
                                           sPredNode2->predicate,
                                           aOuterCommonDepInfo,
@@ -6442,7 +6799,7 @@ qmoUnnesting::isSubsumed( qcStatement  * aStatement,
 
                 if( sIsEquivalent == ID_TRUE )
                 {
-                    // ë™ì¼í•˜ë‹¤ê³  íŒë‹¨ëœ predicateì— hit flag ì„¤ì •
+                    // µ¿ÀÏÇÏ´Ù°í ÆÇ´ÜµÈ predicate¿¡ hit flag ¼³Á¤
                     sPredNode2->hit = ID_TRUE;
 
                     break;
@@ -6455,7 +6812,7 @@ qmoUnnesting::isSubsumed( qcStatement  * aStatement,
 
             if( sPredNode2 == NULL )
             {
-                // ë™ì¼í•œ predicateì„ ì°¾ì§€ ëª»í•œ ê²½ìš°
+                // µ¿ÀÏÇÑ predicateÀ» Ã£Áö ¸øÇÑ °æ¿ì
                 IDE_CONT( UNREMOVABLE );
             }
             else
@@ -6465,11 +6822,11 @@ qmoUnnesting::isSubsumed( qcStatement  * aStatement,
         }
         else
         {
-            // ê³µí†µ relationë“¤ê³¼ ê´€ê³„ì—†ëŠ” predicate
+            // °øÅë relationµé°ú °ü°è¾ø´Â predicate
         }
     }
 
-    // Subqueryì˜ ëª¨ë“  predicateì— hit flagê°€ ì„¤ì •ë˜ì—ˆëŠ”ì§€ í™•ì¸
+    // SubqueryÀÇ ¸ğµç predicate¿¡ hit flag°¡ ¼³Á¤µÇ¾ú´ÂÁö È®ÀÎ
     for( sPredNode2 = sSQPredList;
          sPredNode2 != NULL;
          sPredNode2 = sPredNode2->next )
@@ -6530,8 +6887,8 @@ qmoUnnesting::changeRelation( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     aPredicateì— í¬í•¨ëœ nodeë“¤ ì¤‘ aDepInfoì— í¬í•¨ë˜ëŠ” nodeë“¤ì˜
- *     tableê°’ì„ aRelationMapì— ë”°ë¼ ë³€ê²½í•œë‹¤.
+ *     aPredicate¿¡ Æ÷ÇÔµÈ nodeµé Áß aDepInfo¿¡ Æ÷ÇÔµÇ´Â nodeµéÀÇ
+ *     table°ªÀ» aRelationMap¿¡ µû¶ó º¯°æÇÑ´Ù.
  *
  * Implementation :
  *
@@ -6551,9 +6908,9 @@ qmoUnnesting::changeRelation( qcStatement * aStatement,
         {
             aPredicate->node.table = aRelationMap[aPredicate->node.table];
 
-            // BUG-42113 LOB type ì— ëŒ€í•œ subquery ë³€í™˜ì´ ìˆ˜í–‰ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
-            // lobì— ëŒ€í•œ ì»¨ë²„ì ¼ í•¨ìˆ˜ì—ì„œëŠ” baseTable ì„ ì‚¬ìš©í•œë‹¤.
-            // ë”°ë¼ì„œ ê°™ì´ ë³€ê²½í•´ì£¼ì–´ì•¼ í•œë‹¤.
+            // BUG-42113 LOB type ¿¡ ´ëÇÑ subquery º¯È¯ÀÌ ¼öÇàµÇ¾î¾ß ÇÕ´Ï´Ù.
+            // lob¿¡ ´ëÇÑ ÄÁ¹öÁ¯ ÇÔ¼ö¿¡¼­´Â baseTable À» »ç¿ëÇÑ´Ù.
+            // µû¶ó¼­ °°ÀÌ º¯°æÇØÁÖ¾î¾ß ÇÑ´Ù.
             sConversion = aPredicate->node.conversion;
             while ( sConversion != NULL )
             {
@@ -6565,8 +6922,8 @@ qmoUnnesting::changeRelation( qcStatement * aStatement,
             qtc::dependencySet( aPredicate->node.table,
                                 &aPredicate->depInfo );
 
-            // BUG-41141 estimate ê°€ ë˜ì—ˆë‹¤ê³  ë³´ì¥í• ìˆ˜ ì—†ìœ¼ë¯€ë¡œ
-            // estimate ë¥¼ í•´ì£¼ì–´ì•¼ í•œë‹¤.
+            // BUG-41141 estimate °¡ µÇ¾ú´Ù°í º¸ÀåÇÒ¼ö ¾øÀ¸¹Ç·Î
+            // estimate ¸¦ ÇØÁÖ¾î¾ß ÇÑ´Ù.
             IDE_TEST( qtc::estimateNodeWithoutArgument( aStatement,
                                                         aPredicate )
                       != IDE_SUCCESS );
@@ -6609,10 +6966,10 @@ qmoUnnesting::createRelationMap( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *     Relation map ìë£Œêµ¬ì¡°ë¥¼ êµ¬ì„±í•œë‹¤.
+ *     Relation map ÀÚ·á±¸Á¶¸¦ ±¸¼ºÇÑ´Ù.
  *     ex) SELECT * FROM t1, t2, t3 WHERE ... AND t1.c1 IN
  *             (SELECT AVG(t1.c1) FROM t1, t2 ... )
- *         ì´ ë•Œ tuple-setê³¼ êµ¬ì„±ëœ relation mapì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
+ *         ÀÌ ¶§ tuple-set°ú ±¸¼ºµÈ relation mapÀº ´ÙÀ½°ú °°´Ù.
  *         | Idx. | Description        | Map |
  *         | 0    | Intermediate tuple | N/A |
  *         | 1    | T1(outer query)    | 4   |
@@ -6650,7 +7007,7 @@ qmoUnnesting::createRelationMap( qcStatement  * aStatement,
     {
         if( sSQFrom->tableRef->tableInfo->tableID == 0 )
         {
-            // Inline viewëŠ” ë¹„êµí•  ìˆ˜ ì—†ë‹¤.
+            // Inline view´Â ºñ±³ÇÒ ¼ö ¾ø´Ù.
             IDE_CONT( UNABLE );
         }
         else
@@ -6667,7 +7024,7 @@ qmoUnnesting::createRelationMap( qcStatement  * aStatement,
             {
                 if( sRelationMap[sOQFrom->tableRef->table] != ID_USHORT_MAX )
                 {
-                    // ì´ë¯¸ mapping ëœ relationì¸ ê²½ìš°
+                    // ÀÌ¹Ì mapping µÈ relationÀÎ °æ¿ì
                 }
                 else
                 {
@@ -6684,7 +7041,7 @@ qmoUnnesting::createRelationMap( qcStatement  * aStatement,
 
         if( sOQFrom == NULL )
         {
-            // sSQFromê³¼ ë™ì¼í•œ relationì„ outer queryì—ì„œ ì°¾ì§€ ëª»í•¨
+            // sSQFrom°ú µ¿ÀÏÇÑ relationÀ» outer query¿¡¼­ Ã£Áö ¸øÇÔ
             IDE_CONT( UNABLE );
         }
         else
@@ -6724,10 +7081,10 @@ qmoUnnesting::isConjunctiveForm( qtcNode * aPredicate )
 /***********************************************************************
  *
  * Description :
- *     ì¸ìë¡œ ë°›ì€ predicateì´ conjunctive formì¸ì§€ í™•ì¸í•œë‹¤.
+ *     ÀÎÀÚ·Î ¹ŞÀº predicateÀÌ conjunctive formÀÎÁö È®ÀÎÇÑ´Ù.
  *
  * Implementation :
- *     AND ì™¸ ë…¼ë¦¬ì—°ì‚°ìê°€ í¬í•¨ë˜ì§€ ì•Šì•˜ëŠ”ì§€ ì¬ê·€ì ìœ¼ë¡œ í™•ì¸í•œë‹¤.
+ *     AND ¿Ü ³í¸®¿¬»êÀÚ°¡ Æ÷ÇÔµÇÁö ¾Ê¾Ò´ÂÁö Àç±ÍÀûÀ¸·Î È®ÀÎÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -6785,7 +7142,7 @@ qmoUnnesting::genPredicateList( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *     ë…¼ë¦¬ ì—°ì‚°ìê°€ ì•„ë‹Œ predicateë“¤ì„ ëª¨ë‘ ì°¾ì•„ listë¡œ êµ¬ì„±í•œë‹¤.
+ *     ³í¸® ¿¬»êÀÚ°¡ ¾Æ´Ñ predicateµéÀ» ¸ğµÎ Ã£¾Æ list·Î ±¸¼ºÇÑ´Ù.
  *     ex) A AND (B AND C), A AND B AND C
  *         => A, B, C
  *
@@ -6862,7 +7219,7 @@ qmoUnnesting::freePredicateList( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     aPredListë¥¼ í•´ì œí•œë‹¤.
+ *     aPredList¸¦ ÇØÁ¦ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -6897,8 +7254,8 @@ qmoUnnesting::changeSemiJoinInnerTable( qmsSFWGH * aSFWGH,
 /***********************************************************************
  *
  * Description :
- *     Subquery ì œê±°ì‹œ remove ëŒ€ìƒ subqueryì˜ tableì´ semi/anti joinì˜
- *     inner tableì¸ ê²½ìš° ë³€í™˜ëœ viewë¥¼ inner tableë¡œ ê°€ë¦¬í‚¤ë„ë¡ í•œë‹¤.
+ *     Subquery Á¦°Å½Ã remove ´ë»ó subqueryÀÇ tableÀÌ semi/anti joinÀÇ
+ *     inner tableÀÎ °æ¿ì º¯È¯µÈ view¸¦ inner table·Î °¡¸®Å°µµ·Ï ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -6953,9 +7310,9 @@ qmoUnnesting::removeSubquery( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     TPC-Hì˜ 2, 15, 17ë²ˆ queryê³¼ ê°™ì´ subqueryì™€ outer queryê°€
- *     ê³µí†µ relationë“¤ì„ ê°–ê³  subqueryì—ì„œ aggregate functionì„ ì‚¬ìš©í•˜ëŠ”
- *     ê²½ìš°ì˜ transformationì„ ìˆ˜í–‰í•œë‹¤.
+ *     TPC-HÀÇ 2, 15, 17¹ø query°ú °°ÀÌ subquery¿Í outer query°¡
+ *     °øÅë relationµéÀ» °®°í subquery¿¡¼­ aggregate functionÀ» »ç¿ëÇÏ´Â
+ *     °æ¿ìÀÇ transformationÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
  *
@@ -6986,6 +7343,21 @@ qmoUnnesting::removeSubquery( qcStatement * aStatement,
     sSQParseTree = (qmsParseTree *)sSQStatement->myPlan->parseTree;
     sSQSFWGH     = sSQParseTree->querySet->SFWGH;
 
+    /* TASK-7219 Shard Transformer Refactoring */
+    if ( SDI_CHECK_QUERYSET_LIST_STATE( aStatement->mShardQuerySetList,
+                                        SDI_QUERYSET_LIST_STATE_DUMMY_ANALYZE )
+         == ID_TRUE )
+    {
+        IDE_TEST( sdi::preAnalyzeQuerySet( sSQStatement,
+                                           sSQParseTree->querySet,
+                                           QCG_GET_SESSION_SHARD_META_NUMBER( aStatement ) )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
     if( qtc::haveDependencies( &sSQSFWGH->outerDepInfo ) == ID_TRUE )
     {
         sIsCorrelatedSQ = ID_TRUE;
@@ -7003,20 +7375,20 @@ qmoUnnesting::removeSubquery( qcStatement * aStatement,
 
     sSQSFWGH->aggsDepth1 = NULL;
 
-    // Outer queryì˜ FROMì ˆì— relationë“¤ì„ subqueryë¡œ ì´ë™í•œë‹¤.
+    // Outer queryÀÇ FROMÀı¿¡ relationµéÀ» subquery·Î ÀÌµ¿ÇÑ´Ù.
     sSQSFWGH->where = NULL;
     if( sIsCorrelatedSQ == ID_TRUE )
     {
-        // Correlated subqueryì¸ ê²½ìš° ëª¨ë“  relationë“¤ì„ ì˜®ê¸´ë‹¤.
+        // Correlated subqueryÀÎ °æ¿ì ¸ğµç relationµéÀ» ¿Å±ä´Ù.
         sSQSFWGH->from = aSFWGH->from;
 
-        // Subqueryì˜ dependency ì„¤ì •
+        // SubqueryÀÇ dependency ¼³Á¤
         qtc::dependencySetWithDep( &sSQSFWGH->depInfo, &aSFWGH->depInfo );
         qtc::dependencySetWithDep( &sSQSFWGH->thisQuerySet->depInfo, &aSFWGH->thisQuerySet->depInfo );
     }
     else
     {
-        // Uncorrelated subqueryì¸ ê²½ìš° ê³µí†µ relationë“¤ë§Œ ì˜®ê¸´ë‹¤.
+        // Uncorrelated subqueryÀÎ °æ¿ì °øÅë relationµé¸¸ ¿Å±ä´Ù.
         sSQSFWGH->from = NULL;
         sDoublePointer = &aSFWGH->from;
 
@@ -7031,7 +7403,7 @@ qmoUnnesting::removeSubquery( qcStatement * aStatement,
                 sFrom->next = sSQSFWGH->from;
                 sSQSFWGH->from = sFrom;
 
-                // Subqueryì˜ dependency ì„¤ì •
+                // SubqueryÀÇ dependency ¼³Á¤
                 qtc::dependencyChange( aRelationMap[sFrom->tableRef->table],
                                        sFrom->tableRef->table,
                                        &sSQSFWGH->depInfo,
@@ -7049,18 +7421,18 @@ qmoUnnesting::removeSubquery( qcStatement * aStatement,
         }
     }
 
-    // Viewë¡œ ë³€í™˜ë  ê²ƒì´ë¯€ë¡œ outer dependencyê°€ ì—†ì–´ì•¼ í•œë‹¤.
+    // View·Î º¯È¯µÉ °ÍÀÌ¹Ç·Î outer dependency°¡ ¾ø¾î¾ß ÇÑ´Ù.
     qtc::dependencyClear( &sSQSFWGH->outerDepInfo );
 
-    // PROJ-2418 Viewë¡œ ë³€í™˜ë  ìƒí™©ì—ì„œëŠ” Lateral Viewê°€ ì—†ìœ¼ë¯€ë¡œ
-    // lateralDepInfo ì •ë³´ë„ ê°™ì´ ì œê±°í•œë‹¤.
+    // PROJ-2418 View·Î º¯È¯µÉ »óÈ²¿¡¼­´Â Lateral View°¡ ¾øÀ¸¹Ç·Î
+    // lateralDepInfo Á¤º¸µµ °°ÀÌ Á¦°ÅÇÑ´Ù.
     qtc::dependencyClear( &sSQParseTree->querySet->lateralDepInfo );
 
-    // Outer queryì˜ WHEREì ˆ ì¡°ê±´ì„ view(ì•„ì§ì€ subquery)ë¡œ ì˜®ê¸´ë‹¤.
+    // Outer queryÀÇ WHEREÀı Á¶°ÇÀ» view(¾ÆÁ÷Àº subquery)·Î ¿Å±ä´Ù.
     IDE_TEST( movePredicates( sSQStatement, &aSFWGH->where, sSQSFWGH )
               != IDE_SUCCESS );
 
-    // WHEREì ˆì— ì°¸ì¡°í•˜ëŠ” columnë“¤ì€ viewì—ì„œ ë°˜í™˜í•œë‹¤.
+    // WHEREÀı¿¡ ÂüÁ¶ÇÏ´Â columnµéÀº view¿¡¼­ ¹İÈ¯ÇÑ´Ù.
     for( sTarget = aSFWGH->target;
          sTarget != NULL;
          sTarget = sTarget->next )
@@ -7097,30 +7469,30 @@ qmoUnnesting::removeSubquery( qcStatement * aStatement,
         // Nothing to do.
     }
 
-    // Viewì˜ SELECTì ˆì„ êµ¬ì„±í•œë‹¤.
+    // ViewÀÇ SELECTÀıÀ» ±¸¼ºÇÑ´Ù.
     IDE_TEST( genViewSelect( sSQStatement, aSFWGH->where, ID_TRUE )
               != IDE_SUCCESS );
 
-    // BUG-42113 LOB type ì— ëŒ€í•œ subquery ë³€í™˜ì´ ìˆ˜í–‰ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
-    // unnest ê³¼ì •ì—ì„œ ìƒì„±ëœ viewì˜ targetì— lob ì»¬ëŸ¼ì´ ìˆì„ê²½ìš° LobLocatorFuncì„ ì—°ê²°í•´ì¤€ë‹¤.
-    // viewëŠ” ë°˜ë“œì‹œ lobLocator íƒ€ì…ìœ¼ë¡œ ë³€í™˜ë˜ì–´ì•¼ í•œë‹¤.
+    // BUG-42113 LOB type ¿¡ ´ëÇÑ subquery º¯È¯ÀÌ ¼öÇàµÇ¾î¾ß ÇÕ´Ï´Ù.
+    // unnest °úÁ¤¿¡¼­ »ı¼ºµÈ viewÀÇ target¿¡ lob ÄÃ·³ÀÌ ÀÖÀ»°æ¿ì LobLocatorFuncÀ» ¿¬°áÇØÁØ´Ù.
+    // view´Â ¹İµå½Ã lobLocator Å¸ÀÔÀ¸·Î º¯È¯µÇ¾î¾ß ÇÑ´Ù.
     IDE_TEST( qmvQuerySet::addLobLocatorFunc( sSQStatement, sSQSFWGH->target )
               != IDE_SUCCESS );
 
-    // Subqueryë¥¼ viewë¡œ ë³€í™˜
+    // Subquery¸¦ view·Î º¯È¯
     IDE_TEST( transformSubqueryToView( aStatement,
                                        sSQNode,
                                        &sViewFrom )
               != IDE_SUCCESS );
 
-    // Viewë¡œ í¡ìˆ˜ëœ tableì´ semi/anti joinì˜ inner tableì´ì—ˆë˜ ê²½ìš°
-    // inner tableì„ viewë¡œ ê°€ë¦¬í‚¤ë„ë¡ í•œë‹¤.
+    // View·Î Èí¼öµÈ tableÀÌ semi/anti joinÀÇ inner tableÀÌ¾ú´ø °æ¿ì
+    // inner tableÀ» view·Î °¡¸®Å°µµ·Ï ÇÑ´Ù.
     IDE_TEST( changeSemiJoinInnerTable( aSFWGH,
                                         sSQSFWGH,
                                         sViewFrom->tableRef->table )
               != IDE_SUCCESS );
 
-    // Subquery predicateì´ ìˆë˜ ìë¦¬ì— COL1 IS NOT NULLì„ ì„¤ì •í•œë‹¤.
+    // Subquery predicateÀÌ ÀÖ´ø ÀÚ¸®¿¡ COL1 IS NOT NULLÀ» ¼³Á¤ÇÑ´Ù.
     SET_EMPTY_POSITION( sEmptyPosition );
 
     IDE_TEST( qtc::makeColumn( aStatement,
@@ -7167,7 +7539,7 @@ qmoUnnesting::removeSubquery( qcStatement * aStatement,
     idlOS::memcpy( aPredicate, sIsNotNull[0], ID_SIZEOF( qtcNode ) );
     aPredicate->node.next = sNext;
 
-    // Outer queryì˜ ê° clauseì—ì„œ ì°¸ì¡°í•˜ë˜ columnë“¤ì„ view columnì„ ì°¸ì¡°í•˜ë„ë¡ ë³€ê²½í•œë‹¤.
+    // Outer queryÀÇ °¢ clause¿¡¼­ ÂüÁ¶ÇÏ´ø columnµéÀ» view columnÀ» ÂüÁ¶ÇÏµµ·Ï º¯°æÇÑ´Ù.
     if( sParseTree->querySet == aSFWGH->thisQuerySet )
     {
         for( sSort = sParseTree->orderBy;
@@ -7182,7 +7554,7 @@ qmoUnnesting::removeSubquery( qcStatement * aStatement,
         }
 
         // BUG-38228
-        // Outer queryì˜ group by ì ˆë„ viewë¥¼ ê°€ë¦¬ì¼œì•¼ í•œë‹¤.
+        // Outer queryÀÇ group by Àıµµ view¸¦ °¡¸®ÄÑ¾ß ÇÑ´Ù.
         for( sGroup = sParseTree->querySet->SFWGH->group;
              sGroup != NULL;
              sGroup = sGroup->next )
@@ -7226,7 +7598,7 @@ qmoUnnesting::removeSubquery( qcStatement * aStatement,
         aSFWGH->from = sViewFrom;
     }
 
-    // Dependency ì„¤ì •
+    // Dependency ¼³Á¤
     qtc::dependencyClear( &aSFWGH->depInfo );
     qtc::dependencyClear( &aSFWGH->thisQuerySet->depInfo );
 
@@ -7262,8 +7634,8 @@ qmoUnnesting::transformToCase2Expression( qtcNode * aSubqueryPredicate )
 /***********************************************************************
  *
  * Description :
- *     Subquery predicateì„ ì´ìš©í•˜ì—¬ SELECTì ˆì„ CASE2 expressionìœ¼ë¡œ
- *     ë³€í™˜í•œë‹¤.
+ *     Subquery predicateÀ» ÀÌ¿ëÇÏ¿© SELECTÀıÀ» CASE2 expressionÀ¸·Î
+ *     º¯È¯ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -7286,6 +7658,7 @@ qmoUnnesting::transformToCase2Expression( qtcNode * aSubqueryPredicate )
 
     IDE_TEST( genCorrPredicates( sSQStatement,
                                  aSubqueryPredicate,
+                                 ID_FALSE /* aExistsTrans */,
                                  &sCorrPred )
               != IDE_SUCCESS );
 
@@ -7301,7 +7674,7 @@ qmoUnnesting::transformToCase2Expression( qtcNode * aSubqueryPredicate )
                              &mtfCase2 )
               != IDE_SUCCESS );
 
-    // Argumentë“¤ì„ ì„¤ì •í•œë‹¤.
+    // ArgumentµéÀ» ¼³Á¤ÇÑ´Ù.
     // ex) CASE2( T1.C1 = AVG(T1.C1) OVER (PARTITION BY ...), '0' )
     sCase2[0]->node.arguments = (mtcNode *)sCorrPred;
     sCorrPred->node.next      = (mtcNode *)sConstNode;
@@ -7310,7 +7683,7 @@ qmoUnnesting::transformToCase2Expression( qtcNode * aSubqueryPredicate )
                                              sCase2[0] )
               != IDE_SUCCESS );
 
-    // COL1ë¡œ aliasë¥¼ ì„¤ì •í•œë‹¤.
+    // COL1·Î alias¸¦ ¼³Á¤ÇÑ´Ù.
     IDE_TEST( QC_QMP_MEM( sSQStatement )->alloc( COLUMN_NAME_LENGTH,
                                                  (void**)&sColumnName )
               != IDE_SUCCESS );
@@ -7339,11 +7712,11 @@ qmoUnnesting::transformAggr2Window( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *     SELECTì ˆì˜ aggregate functionì„ window functionìœ¼ë¡œ ë³€í™˜í•œë‹¤.
- *     ì´ ë•Œ PARTITION BYì ˆì˜ expressionì€ WHEREì ˆì˜ correlationë“¤ë¡œ í•œë‹¤.
+ *     SELECTÀıÀÇ aggregate functionÀ» window functionÀ¸·Î º¯È¯ÇÑ´Ù.
+ *     ÀÌ ¶§ PARTITION BYÀıÀÇ expressionÀº WHEREÀıÀÇ correlationµé·Î ÇÑ´Ù.
  *
  * Implementation :
- *     Correlation predicateë“¤ì„ ì°¾ì•„ PARTITION BYì ˆì— ë‚˜ì—´í•œë‹¤.
+ *     Correlation predicateµéÀ» Ã£¾Æ PARTITION BYÀı¿¡ ³ª¿­ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -7369,7 +7742,7 @@ qmoUnnesting::transformAggr2Window( qcStatement * aStatement,
                                                          (void **)&sOver )
                       != IDE_SUCCESS );
 
-            // Aggregate functionì˜ argumentë¥¼ outer queryì˜ relationìœ¼ë¡œ ë³€ê²½í•œë‹¤.
+            // Aggregate functionÀÇ argument¸¦ outer queryÀÇ relationÀ¸·Î º¯°æÇÑ´Ù.
             for( sArg = (qtcNode *)aNode->node.arguments;
                  sArg != NULL;
                  sArg = (qtcNode *)sArg->node.next )
@@ -7389,7 +7762,7 @@ qmoUnnesting::transformAggr2Window( qcStatement * aStatement,
                                      &sPartitions )
                       != IDE_SUCCESS );
 
-            // PARTITION BYì ˆì˜ columnë“¤ì„ outer queryì˜ relationìœ¼ë¡œ ë³€ê²½í•œë‹¤.
+            // PARTITION BYÀıÀÇ columnµéÀ» outer queryÀÇ relationÀ¸·Î º¯°æÇÑ´Ù.
             for( sPartition = sPartitions;
                  sPartition != NULL;
                  sPartition = sPartition->next )
@@ -7448,9 +7821,9 @@ qmoUnnesting::movePredicates( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *     aPredicateì„ aSFWGHì˜ WHEREì ˆë¡œ ì˜®ê¸´ë‹¤.
- *     ì˜®ê²¨ì§„ predicateì€ ì›ë˜ ìœ„ì¹˜ì—ì„œ ì œê±°ë˜ì–´ì•¼ í•˜ë¯€ë¡œ double pointerë¡œ
- *     ë„˜ê²¨ ë°›ëŠ”ë‹¤.
+ *     aPredicateÀ» aSFWGHÀÇ WHEREÀı·Î ¿Å±ä´Ù.
+ *     ¿Å°ÜÁø predicateÀº ¿ø·¡ À§Ä¡¿¡¼­ Á¦°ÅµÇ¾î¾ß ÇÏ¹Ç·Î double pointer·Î
+ *     ³Ñ°Ü ¹Ş´Â´Ù.
  *
  * Implementation :
  *
@@ -7502,7 +7875,7 @@ qmoUnnesting::movePredicates( qcStatement  * aStatement,
 
             if( sNode->node.arguments == NULL )
             {
-                // ANDì˜ operandê°€ ëª¨ë‘ ì œê±°ëœ ê²½ìš°
+                // ANDÀÇ operand°¡ ¸ğµÎ Á¦°ÅµÈ °æ¿ì
                 *aPredicate = NULL;
             }
             else
@@ -7518,7 +7891,7 @@ qmoUnnesting::movePredicates( qcStatement  * aStatement,
                                            &sNode->depInfo ) == ID_TRUE ) &&
                 ( ( sNode->lflag & sMask ) == sCondition ) )
             {
-                // Correlationì´ê±°ë‚˜ ROWNUM ë˜ëŠ” subqueryë¥¼ í¬í•¨í•˜ëŠ” predicateì€ ì œì™¸í•œë‹¤.
+                // CorrelationÀÌ°Å³ª ROWNUM ¶Ç´Â subquery¸¦ Æ÷ÇÔÇÏ´Â predicateÀº Á¦¿ÜÇÑ´Ù.
 
                 *aPredicate = (qtcNode *)sNode->node.next;
                 sNode->node.next = NULL;
@@ -7556,8 +7929,8 @@ qmoUnnesting::addPartition( qcStatement    * aStatement,
 /***********************************************************************
  *
  * Description :
- *     PARTITION BYì ˆì— expressionì„ ì¶”ê°€í•œë‹¤.
- *     ë§Œì•½ ë™ì¼í•œ expressionì´ ì´ë¯¸ ì¡´ì¬í•˜ë©´ ë¬´ì‹œí•œë‹¤.
+ *     PARTITION BYÀı¿¡ expressionÀ» Ãß°¡ÇÑ´Ù.
+ *     ¸¸¾à µ¿ÀÏÇÑ expressionÀÌ ÀÌ¹Ì Á¸ÀçÇÏ¸é ¹«½ÃÇÑ´Ù.
  *
  * Implementation :
  *
@@ -7568,7 +7941,7 @@ qmoUnnesting::addPartition( qcStatement    * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmoUnnesting::addPartition::__FT__" );
 
-    // ì´ë¯¸ ë™ì¼í•œ expressionì´ partitionì— ì¡´ì¬í•˜ëŠ”ì§€ ì°¾ëŠ”ë‹¤.
+    // ÀÌ¹Ì µ¿ÀÏÇÑ expressionÀÌ partition¿¡ Á¸ÀçÇÏ´ÂÁö Ã£´Â´Ù.
     for( sPartition = *aPartitions;
          sPartition != NULL;
          sPartition = sPartition->next )
@@ -7593,7 +7966,7 @@ qmoUnnesting::addPartition( qcStatement    * aStatement,
     // BUG-37781
     if ( sIsEquivalent == ID_FALSE )
     {
-        // ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš° ì¶”ê°€í•œë‹¤.
+        // Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì Ãß°¡ÇÑ´Ù.
         IDE_TEST( QC_QMP_MEM( aStatement )->cralloc( ID_SIZEOF( qtcOverColumn ),
                                                      (void **)&sPartition )
                   != IDE_SUCCESS );
@@ -7624,8 +7997,8 @@ qmoUnnesting::genPartitions( qcStatement    * aStatement,
 /***********************************************************************
  *
  * Description :
- *     WHEREì ˆì˜ ì¡°ê±´ ì¤‘ correlation predicateì„ ì°¾ì•„ window functionì˜
- *     PARTITION BYì ˆì— ì„¤ì •í•œ expressionë“¤ì„ ìƒì„±í•œë‹¤.
+ *     WHEREÀıÀÇ Á¶°Ç Áß correlation predicateÀ» Ã£¾Æ window functionÀÇ
+ *     PARTITION BYÀı¿¡ ¼³Á¤ÇÑ expressionµéÀ» »ı¼ºÇÑ´Ù.
  *
  * Implementation :
  *
@@ -7675,7 +8048,7 @@ qmoUnnesting::genPartitions( qcStatement    * aStatement,
 
                 if( qtc::haveDependencies( &sDepInfo ) == ID_TRUE )
                 {
-                    // Correlation predicateì¸ ê²½ìš°
+                    // Correlation predicateÀÎ °æ¿ì
                     for( sArg = (qtcNode *)aPredicate->node.arguments;
                          sArg != NULL;
                          sArg = (qtcNode *)sArg->node.next )
@@ -7725,15 +8098,15 @@ idBool qmoUnnesting::existViewTarget( qtcNode   * aNode,
 /***********************************************************************
  *
  * Description :
- *     Subqueryì— í¬í•¨ëœ predicate ì¤‘ì—ì„œ
- *     unnest ì‹œ ìƒì„±ë  view ì˜ target ì ˆì´ ë  column ì´ ìˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+ *     Subquery¿¡ Æ÷ÇÔµÈ predicate Áß¿¡¼­
+ *     unnest ½Ã »ı¼ºµÉ view ÀÇ target ÀıÀÌ µÉ column ÀÌ ÀÖ´ÂÁö °Ë»çÇÑ´Ù.
  *
  * Implementation :
- *     Corelation predicate ì—ì„œ column ì´ë‚˜ pass node,
- *     aggragation node ê°€ ìˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+ *     Corelation predicate ¿¡¼­ column ÀÌ³ª pass node,
+ *     aggragation node °¡ ÀÖ´ÂÁö °Ë»çÇÑ´Ù.
  *
- *     removeCorrPredicate í•¨ìˆ˜ì—ì„œ corelation predicate ì˜ ë¶„ë¥˜ ì¡°ê±´ì´ ë°”ë€Œê±°ë‚˜,
- *     genViewSelect í•¨ìˆ˜ì—ì„œ target ì ˆ ì„ íƒ ì¡°ê±´ì´ ë°”ë€Œë©´ ì´ í•¨ìˆ˜ë„ ë°”ë€Œì–´ì•¼ í•œë‹¤.
+ *     removeCorrPredicate ÇÔ¼ö¿¡¼­ corelation predicate ÀÇ ºĞ·ù Á¶°ÇÀÌ ¹Ù²î°Å³ª,
+ *     genViewSelect ÇÔ¼ö¿¡¼­ target Àı ¼±ÅÃ Á¶°ÇÀÌ ¹Ù²î¸é ÀÌ ÇÔ¼öµµ ¹Ù²î¾î¾ß ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -7755,20 +8128,20 @@ idBool qmoUnnesting::existViewTarget( qtcNode   * aNode,
                  ( ( aNode->node.lflag & MTC_NODE_OPERATOR_MASK )
                    == MTC_NODE_OPERATOR_AGGREGATION ) )
             {
-                // genViewSelect í•¨ìˆ˜ì™€ ë™ì¼í•œ ì¡°ê±´ì„ ë§Œì¡±í•˜ë©´ 
-                // target ì ˆë¡œ ì„ íƒë  ê²ƒì´ë‹¤.
+                // genViewSelect ÇÔ¼ö¿Í µ¿ÀÏÇÑ Á¶°ÇÀ» ¸¸Á·ÇÏ¸é 
+                // target Àı·Î ¼±ÅÃµÉ °ÍÀÌ´Ù.
                 sExist = ID_TRUE;
             }
             else
             {
                 if ( aNode->node.module == &qtc::subqueryModule )
                 {
-                    // SubqueryëŠ” Targetìœ¼ë¡œ ê³ ë ¤í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                    // Subquery´Â TargetÀ¸·Î °í·ÁÇÏÁö ¾Ê´Â´Ù.
                     // Nothing to do.
                 }
                 else
                 {
-                    // Arguments ë¥¼ ì¬ê·€ì ìœ¼ë¡œ ê²€ì‚¬í•œë‹¤.
+                    // Arguments ¸¦ Àç±ÍÀûÀ¸·Î °Ë»çÇÑ´Ù.
                     for ( sArg = (qtcNode *)aNode->node.arguments;
                           sArg != NULL;
                           sArg = (qtcNode *)sArg->node.next )
@@ -7788,13 +8161,13 @@ idBool qmoUnnesting::existViewTarget( qtcNode   * aNode,
         }
         else
         {
-            // Dependency ë¥¼ ê°–ì§€ ì•ŠëŠ” node
+            // Dependency ¸¦ °®Áö ¾Ê´Â node
             // Nothing to do.
         }
     }
     else
     {
-        // Node ê°€ null ì¸ ê²½ìš°
+        // Node °¡ null ÀÎ °æ¿ì
         // Nothing to do.
     }
 
@@ -7809,14 +8182,14 @@ IDE_RC qmoUnnesting::setAggrNode( qcStatement * aSQStatement,
 /***********************************************************************
  *
  * Description :
- *     BUG-40753 aggsDepth1 ê´€ë¦¬
+ *     BUG-40753 aggsDepth1 °ü¸®
  *
  * Implementation :
- *     aggr Node ë¥¼ ì°¾ì•„ì„œ aggsDepth1 ì— ì¶”ê°€í•œë‹¤.
- *     subQuery ì˜ ë‚´ë¶€ëŠ” ì°¾ì§€ ì•ŠëŠ”ë‹¤.
- *     ì•„ë˜ì™€ ê°™ì€ ìƒí™©ì—ì„œ sum ë…¸ë“œë¥¼ ë³µì‚¬ë¥¼ í–ˆê¸°ë•Œë¬¸ì— ì¶”ê°€ê°€ ëœë‹¤.
+ *     aggr Node ¸¦ Ã£¾Æ¼­ aggsDepth1 ¿¡ Ãß°¡ÇÑ´Ù.
+ *     subQuery ÀÇ ³»ºÎ´Â Ã£Áö ¾Ê´Â´Ù.
+ *     ¾Æ·¡¿Í °°Àº »óÈ²¿¡¼­ sum ³ëµå¸¦ º¹»ç¸¦ Çß±â¶§¹®¿¡ Ãß°¡°¡ µÈ´Ù.
  *         ex) i1 in ( select sum( c1 ) from ...
- *     ì•„ë˜ì™€ ê°™ì€ ê²½ìš°ëŠ” ì¶”ê°€ê°€ ì•ˆëœë‹¤.
+ *     ¾Æ·¡¿Í °°Àº °æ¿ì´Â Ãß°¡°¡ ¾ÈµÈ´Ù.
  *         ex) i1 in ( select sum( c1 )+1 from ...
  ***********************************************************************/
 
@@ -7893,14 +8266,14 @@ void qmoUnnesting::delAggrNode( qmsSFWGH    * aSQSFWGH,
 /***********************************************************************
  *
  * Description :
- *     BUG-45591 aggsDepth1 ê´€ë¦¬
- *               ë¶ˆí•„ìš”í•´ì§„ aggsDepth1 ë¥¼ ì§€ìš´ë‹¤.
+ *     BUG-45591 aggsDepth1 °ü¸®
+ *               ºÒÇÊ¿äÇØÁø aggsDepth1 ¸¦ Áö¿î´Ù.
  *
  * Implementation :
- *     aggr Node ë¥¼ ì°¾ì•„ì„œ aggsDepth1 ì— ì œê±°í•œë‹¤.
- *     ì•„ë˜ì™€ ê°™ì€ ìƒí™©ì—ì„œ sum ë…¸ë“œë¥¼ ë³µì‚¬ë¥¼ í–ˆê¸°ë•Œë¬¸ì— ê¸°ì¡´ ë…¸ë“œê°€ ì‚­ì œëœë‹¤.
+ *     aggr Node ¸¦ Ã£¾Æ¼­ aggsDepth1 ¿¡ Á¦°ÅÇÑ´Ù.
+ *     ¾Æ·¡¿Í °°Àº »óÈ²¿¡¼­ sum ³ëµå¸¦ º¹»ç¸¦ Çß±â¶§¹®¿¡ ±âÁ¸ ³ëµå°¡ »èÁ¦µÈ´Ù.
  *         ex) i1 in ( select sum( c1 ) from ...
- *     ì•„ë˜ì™€ ê°™ì€ ê²½ìš°ëŠ” ì‚­ì œê°€ ì•ˆëœë‹¤.
+ *     ¾Æ·¡¿Í °°Àº °æ¿ì´Â »èÁ¦°¡ ¾ÈµÈ´Ù.
  *         ex) i1 in ( select sum( c1 )+1 from ...
  ***********************************************************************/
 
@@ -7936,25 +8309,25 @@ idBool qmoUnnesting::existOuterSubQueryArgument( qtcNode   * aNode,
 /*****************************************************************************
  *
  * Description : BUG-41564
- *               Subquery Argumentë¥¼ ê°€ì§„ Predicateê°€ ì¡´ì¬í•  ë•Œ,
- *               ì´ Subquery Argumentê°€ í˜„ì¬ Unnesting ì¤‘ì¸ Subquery ì™¸ì—
- *               Outer Query Blockì„ ì°¸ì¡°í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
- *               ê·¸ë ‡ë‹¤ë©´, Unnestingì„ í•  ìˆ˜ ì—†ë‹¤.
+ *               Subquery Argument¸¦ °¡Áø Predicate°¡ Á¸ÀçÇÒ ¶§,
+ *               ÀÌ Subquery Argument°¡ ÇöÀç Unnesting ÁßÀÎ Subquery ¿Ü¿¡
+ *               Outer Query BlockÀ» ÂüÁ¶ÇÏ´ÂÁö °Ë»çÇÑ´Ù.
+ *               ±×·¸´Ù¸é, UnnestingÀ» ÇÒ ¼ö ¾ø´Ù.
  *
  * (e.g.) SELECT T1 FROM T1 
  *        WHERE  T1.I1 < ( SELECT SUM(I1) FROM T1 A
  *                         WHERE  A.I1 < ( SELECT SUM(B.I1) FROM T2 B 
  *                                         WHERE B.I2 = T1.I1 ) );
  * 
- *    ì²« ë²ˆì§¸ Subqueryê°€ Correlated Predicate ( A.I1 < (..) )ë¥¼ ê°€ì§€ê³  ìˆê³ 
- *    GROUP BYì—†ëŠ” SUM(I1)ì´ë¯€ë¡œ Single Row Subquery ì´ë‹¤.
- *    ê·¸ëŸ¬ë‚˜, Predicate ë‚´ë¶€ì— ìˆëŠ” ë‘ ë²ˆì§¸ SubqueryëŠ” Main Queryì˜ T1ì„ ì°¸ì¡°í•œë‹¤.
+ *    Ã¹ ¹øÂ° Subquery°¡ Correlated Predicate ( A.I1 < (..) )¸¦ °¡Áö°í ÀÖ°í
+ *    GROUP BY¾ø´Â SUM(I1)ÀÌ¹Ç·Î Single Row Subquery ÀÌ´Ù.
+ *    ±×·¯³ª, Predicate ³»ºÎ¿¡ ÀÖ´Â µÎ ¹øÂ° Subquery´Â Main QueryÀÇ T1À» ÂüÁ¶ÇÑ´Ù.
  *
- *    Inner Joinìœ¼ë¡œ ë³€í™˜ë˜ì–´ T1ì´ RIGHTì— ìœ„ì¹˜í•˜ê²Œ ë˜ë©´,
- *    ë‘ ë²ˆì§¸ Subqueryì˜ ê²°ê³¼ë¡œ ì¸í•´ T1ì˜ ê²°ê³¼ê°€ ì¤‘ë³µë˜ì–´ ë°˜í™˜ëœë‹¤.
+ *    Inner JoinÀ¸·Î º¯È¯µÇ¾î T1ÀÌ RIGHT¿¡ À§Ä¡ÇÏ°Ô µÇ¸é,
+ *    µÎ ¹øÂ° SubqueryÀÇ °á°ú·Î ÀÎÇØ T1ÀÇ °á°ú°¡ Áßº¹µÇ¾î ¹İÈ¯µÈ´Ù.
  *
  *
- *  Note : Lateral Viewë¥¼ í¬í•¨í•  ë•Œ Unnesting ì‹œí‚¤ì§€ ì•ŠëŠ” ê²ƒê³¼ ê°™ì€ ë§¥ë½ì´ë‹¤.
+ *  Note : Lateral View¸¦ Æ÷ÇÔÇÒ ¶§ Unnesting ½ÃÅ°Áö ¾Ê´Â °Í°ú °°Àº ¸Æ¶ôÀÌ´Ù.
  *
  *****************************************************************************/
 
@@ -7972,7 +8345,7 @@ idBool qmoUnnesting::existOuterSubQueryArgument( qtcNode   * aNode,
             {
                 if ( existOuterSubQueryArgument( sArg, aInnerDepInfo ) == ID_TRUE )
                 {
-                    // í•˜ë‚˜ë¼ë„ ì¡´ì¬í•˜ë©´, íƒìƒ‰ì„ ì¢…ë£Œí•œë‹¤.
+                    // ÇÏ³ª¶óµµ Á¸ÀçÇÏ¸é, Å½»öÀ» Á¾·áÇÑ´Ù.
                     sExistCorrSubQArg = ID_TRUE;
                     break;
                 }
@@ -7990,7 +8363,7 @@ idBool qmoUnnesting::existOuterSubQueryArgument( qtcNode   * aNode,
             {
                 if ( isOuterRefSubquery( sArg, aInnerDepInfo ) == ID_TRUE )
                 {
-                    // í•˜ë‚˜ë¼ë„ ì¡´ì¬í•˜ë©´, íƒìƒ‰ì„ ì¢…ë£Œí•œë‹¤.
+                    // ÇÏ³ª¶óµµ Á¸ÀçÇÏ¸é, Å½»öÀ» Á¾·áÇÑ´Ù.
                     sExistCorrSubQArg = ID_TRUE;
                     break;
                 }
@@ -8016,10 +8389,10 @@ idBool qmoUnnesting::isOuterRefSubquery( qtcNode   * aArg,
  *
  * Description : BUG-41564
  *
- *    Subquery Nodeê°€ ì£¼ì–´ì§„ Dependency ë°–ì„ ì°¸ì¡°í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
- *    ì´ëŸ° ê²½ìš°ì—ë§Œ TRUE, ë‚˜ë¨¸ì§€ëŠ” FALSEë¥¼ ë°˜í™˜í•œë‹¤.
+ *    Subquery Node°¡ ÁÖ¾îÁø Dependency ¹ÛÀ» ÂüÁ¶ÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
+ *    ÀÌ·± °æ¿ì¿¡¸¸ TRUE, ³ª¸ÓÁö´Â FALSE¸¦ ¹İÈ¯ÇÑ´Ù.
  *
- *    Predicateì˜ Subquery Argument, Target Subqueryì— ëŒ€í•´ í˜¸ì¶œí•œë‹¤.
+ *    PredicateÀÇ Subquery Argument, Target Subquery¿¡ ´ëÇØ È£ÃâÇÑ´Ù.
  *
  *****************************************************************************/
 
@@ -8054,7 +8427,7 @@ qmoUnnesting::findCountAggr4Target( qtcNode  * aTarget )
  *
  * Description : BUG-45238
  *
- *    target columnì—ì„œ count aggregationì„ ì°¾ëŠ”ë‹¤. 
+ *    target column¿¡¼­ count aggregationÀ» Ã£´Â´Ù. 
  *
  *****************************************************************************/
 
@@ -8077,7 +8450,7 @@ qmoUnnesting::findCountAggr4Target( qtcNode  * aTarget )
             {
                 if ( findCountAggr4Target( sArg ) == ID_TRUE )
                 {
-                    // í•˜ë‚˜ë¼ë„ ì¡´ì¬í•˜ë©´, íƒìƒ‰ì„ ì¢…ë£Œí•œë‹¤.
+                    // ÇÏ³ª¶óµµ Á¸ÀçÇÏ¸é, Å½»öÀ» Á¾·áÇÑ´Ù.
                     sFind = ID_TRUE;
                     break;
                 }
@@ -8095,3 +8468,64 @@ qmoUnnesting::findCountAggr4Target( qtcNode  * aTarget )
 
     return sFind;
 }
+
+void qmoUnnesting::isAggrExistTransformable( qtcNode   * aNode,
+                                             qcDepInfo * aOuterDep,
+                                             idBool    * aIsTrue )
+{
+    if ( *aIsTrue == ID_TRUE )
+    {
+        if ( ( aNode->node.lflag & MTC_NODE_COMPARISON_MASK )
+             == MTC_NODE_COMPARISON_TRUE )
+        {
+            if ( ( aNode->node.lflag & MTC_NODE_OPERATOR_MASK )
+                  != MTC_NODE_OPERATOR_EQUAL )
+            {
+                if ( qtc::dependencyContains( &aNode->depInfo, aOuterDep )
+                     == ID_TRUE )
+                {
+                    *aIsTrue = ID_FALSE;
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        if ( aNode->node.arguments != NULL )
+        {
+            isAggrExistTransformable( ( qtcNode * )aNode->node.arguments, 
+                                      aOuterDep,
+                                      aIsTrue );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        if ( aNode->node.next != NULL )
+        {
+            isAggrExistTransformable( ( qtcNode * )aNode->node.next,
+                                      aOuterDep,
+                                      aIsTrue );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+}
+

@@ -13,7 +13,6 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
- 
 
 /***********************************************************************
  * $Id
@@ -21,14 +20,14 @@
  * Description :
  *
  * TempPage
- * Persistent Pageì˜ sdpPhyPageì— ëŒ€ì‘ë˜ëŠ” íŒŒì¼ ë° êµ¬ì¡°ì²´ì´ë‹¤.
- * TempPageëŠ” LSN, SmoNo, PageState, Consistent ë“± sdpPhyPageHdrì— ìˆëŠ” ìƒë‹¹
- * ìˆ˜ì˜ ë‚´ìš©ê³¼ ë¬´ê´€í•˜ë‹¤.
- * ë”°ë¼ì„œ ê³µê°„íš¨ìœ¨ì„± ë“±ì„ ìœ„í•´ ì´ë¥¼ ëª¨ë‘ ë¬´ì‹œí•œë‹¤.
+ * Persistent PageÀÇ sdpPhyPage¿¡ ´ëÀÀµÇ´Â ÆÄÀÏ ¹× ±¸Á¶Ã¼ÀÌ´Ù.
+ * TempPage´Â LSN, SmoNo, PageState, Consistent µî sdpPhyPageHdr¿¡ ÀÖ´Â »ó´ç
+ * ¼öÀÇ ³»¿ë°ú ¹«°üÇÏ´Ù.
+ * µû¶ó¼­ °ø°£È¿À²¼º µîÀ» À§ÇØ ÀÌ¸¦ ¸ğµÎ ¹«½ÃÇÑ´Ù.
  *
- *  # ê´€ë ¨ ìë£Œêµ¬ì¡°
+ *  # °ü·Ã ÀÚ·á±¸Á¶
  *
- *    - sdpPageHdr êµ¬ì¡°ì²´
+ *    - sdpPageHdr ±¸Á¶Ã¼
  *
  **********************************************************************/
 
@@ -38,174 +37,112 @@
 #include <smDef.h>
 #include <sdr.h>
 #include <smu.h>
-#include <sdtDef.h>
+#include <sdtSortDef.h>
 #include <smrCompareLSN.h>
 
 class sdtTempPage
 {
 public:
-    static IDE_RC init( UChar    * aPagePtr,
-                        UInt       aType,
-                        scPageID   aPrev,
-                        scPageID   aSelf,
-                        scPageID   aNext);
+    static void init( sdtSortPageHdr  * aPageHdr,
+                      sdtTempPageType   aType,
+                      scPageID   aPrev,
+                      scPageID   aSelf,
+                      scPageID   aNext );
 
-    inline static void allocSlotDir( UChar * aPagePtr, scSlotNum * aSlotNo );
+    inline static scSlotNum allocSlotDir( UChar * aPagePtr );
 
-    inline static void allocSlot( UChar     * aPagePtr,
-                                  scSlotNum   aSlotNo,
-                                  UInt        aNeedSize,
-                                  UInt        aMinSize,
-                                  UInt      * aRetSize,
-                                  UChar    ** aRetPtr );
+    inline static UChar * allocSlot( sdtSortPageHdr * aPageHdr,
+                                     scSlotNum   aSlotNo,
+                                     UInt        aNeedSize,
+                                     UInt        aMinSize,
+                                     UInt      * aRetSize );
 
     inline static IDE_RC getSlotPtr( UChar      * aPagePtr,
                                      scSlotNum    aSlotNo,
                                      UChar     ** aSlotPtr );
 
-    inline static UInt getSlotDirOffset( scSlotNum    aSlotNo );
+    inline static UInt getSlotDirOffset( scSlotNum    aSlotNo )
+    {
+        return SDT_SORT_PAGE_HEADER_SIZE + ( aSlotNo * ID_SIZEOF( scOffset ) );
+    };
 
     inline static scOffset getSlotOffset( UChar      * aPagePtr,
-                                          scSlotNum    aSlotNo );
+                                          scSlotNum    aSlotNo )
+    {
+        return ((sdtSortPageHdr*)aPagePtr)->mSlotDir[aSlotNo];
+    };
 
-    inline static void setSlot( UChar     * aPagePtr,
-                                scSlotNum   aSlotNo,
-                                UInt        aOffset);
-    inline static IDE_RC getSlotCount( UChar * aPagePtr, UInt *aSlotCount );
-    inline static void   spendFreeSpace( UChar * aPagePtr,  UInt aSize );
+    inline static UInt getSlotCount( UChar * aPagePtr );
 
     /********************** GetSet ************************/
     static scPageID getPrevPID( UChar * aPagePtr )
     {
-        return ( (sdtTempPageHdr*)aPagePtr )->mPrevPID;
+        return ( (sdtSortPageHdr*)aPagePtr )->mPrevPID;
     }
-    static scPageID getPID( UChar * aPagePtr )
+    static scPageID getSelfPID( UChar * aPagePtr )
     {
-        return ( (sdtTempPageHdr*)aPagePtr )->mSelfPID;
+        return ( (sdtSortPageHdr*)aPagePtr )->mSelfPID;
     }
     static scPageID getNextPID( UChar * aPagePtr )
     {
-        return ( (sdtTempPageHdr*)aPagePtr )->mNextPID;
+        return ( (sdtSortPageHdr*)aPagePtr )->mNextPID;
     }
-/*  not used
-    static void setPrevPID( UChar * aPagePtr, scPageID aPrevPID )
+
+    static void setNextPID( UChar * aPagePtr, scPageID aNextNPID )
     {
-    sdtTempPageHdr *sHdr = (sdtTempPageHdr*)aPagePtr;
-
-    sHdr->mPrevPID = aPrevPID;
+        ((sdtSortPageHdr*)aPagePtr)->mNextPID = aNextNPID;
     }
-*/
-/*  not used
-    static void setPID( UChar * aPagePtr, scPageID aPID )
+
+    static sdtTempPageType getType( sdtSortPageHdr *aPageHdr )
     {
-    sdtTempPageHdr *sHdr = (sdtTempPageHdr*)aPagePtr;
-
-    sHdr->mSelfPID = aPID;
+        return (sdtTempPageType)(aPageHdr->mTypeAndFreeOffset >> SDT_TEMP_TYPE_SHIFT);
     }
-*/
-    static void setNextPID( UChar * aPagePtr, scPageID aNextPID )
+
+    /* FreeSpace°¡ ½ÃÀÛµÇ´Â Offset */
+    static UInt getBeginFreeOffset( sdtSortPageHdr *aPageHdr )
     {
-        sdtTempPageHdr *sHdr = (sdtTempPageHdr*)aPagePtr;
-
-        sHdr->mNextPID = aNextPID;
+        return idlOS::align8( SDT_SORT_PAGE_HEADER_SIZE +
+                              ( aPageHdr->mSlotCount * ID_SIZEOF( scOffset ) ));
     }
 
-    static UInt getType( UChar *aPagePtr )
+    /* FreeSpace°¡ ³¡³ª´Â Offset */
+    static UInt getFreeOffset( sdtSortPageHdr *aPageHdr )
     {
-        sdtTempPageHdr *sHdr = (sdtTempPageHdr*)aPagePtr;
-
-        return sHdr->mTypeAndFreeOffset >> SDT_TEMP_TYPE_SHIFT;
+        return aPageHdr->mTypeAndFreeOffset & SDT_TEMP_FREEOFFSET_BITMASK;
     }
-
-    /* FreeSpaceê°€ ì‹œì‘ë˜ëŠ” Offset */
-    static UInt getBeginFreeOffset( UChar *aPagePtr )
+    static void setFreeOffset( sdtSortPageHdr *aPageHdr,
+                               scOffset        aFreeOffset )
     {
-        sdtTempPageHdr *sHdr = (sdtTempPageHdr*)aPagePtr;
-
-        return ID_SIZEOF( sdtTempPageHdr )
-            + sHdr->mSlotCount * ID_SIZEOF( scSlotNum );
+        aPageHdr->mTypeAndFreeOffset = ( aPageHdr->mTypeAndFreeOffset & SDT_TEMP_TYPE_BITMASK ) | aFreeOffset;
     }
 
-    /* FreeSpaceê°€ ëë‚˜ëŠ” Offset */
-    static UInt getFreeOffset( UChar *aPagePtr )
-    {
-        sdtTempPageHdr *sHdr = (sdtTempPageHdr*)aPagePtr;
-
-        return sHdr->mTypeAndFreeOffset & SDT_TEMP_FREEOFFSET_BITMASK;
-    }
-
-    /* í•œ í˜ì´ì§€ë‚´ì— í¬ì¸í„°ê°€ ì£¼ì–´ì¡Œì„ë•Œ, í˜ì´ì§€ì˜ ì‹œì‘ì ì„ êµ¬í•œë‹¤. */
-    static UChar* getPageStartPtr( void   *aPagePtr )
-    {
-        IDE_DASSERT( aPagePtr != NULL );
-
-        return (UChar *)idlOS::alignDown( (void*)aPagePtr,
-                                          (UInt)SD_PAGE_SIZE );
-    }
-
-    /* FreeOffsetì„ ì„¤ì •í•œë‹¤. */
-    static void setFreeOffset( UChar *aPagePtr, UInt aFreeOffset )
-    {
-        sdtTempPageHdr *sHdr = (sdtTempPageHdr*)aPagePtr;
-
-        sHdr->mTypeAndFreeOffset = ( getType( aPagePtr )
-                                     << SDT_TEMP_TYPE_SHIFT ) |
-            ( aFreeOffset );
-    }
 
 public:
     static void dumpTempPage( void  * aPagePtr,
                               SChar * aOutBuf,
                               UInt    aOutSize );
+    static void dumpWAPageHeaders( void           * aWASegment,
+                                   SChar          * aOutBuf,
+                                   UInt             aOutSize );
     static SChar mPageName[ SDT_TEMP_PAGETYPE_MAX ][ SMI_TT_STR_SIZE ];
 };
 
-/**************************************************************************
- * Description :
- * SlotDirectoryë¡œë¶€í„° Slotì˜ Offsetìœ„ì¹˜ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
- *
- * <IN>
- * aPagePtr       - ì´ˆê¸°í™”í•  ëŒ€ìƒ Page
- * aSlotNo        - Slot ë²ˆí˜¸
- ***************************************************************************/
-UInt       sdtTempPage::getSlotDirOffset( scSlotNum    aSlotNo )
-{
-    return ID_SIZEOF( sdtTempPageHdr ) + ( aSlotNo * ID_SIZEOF( scSlotNum ) );
-}
-
 
 /**************************************************************************
  * Description :
- * SlotDirectoryë¡œë¶€í„° aSlotNoë¥¼ ì´ìš©í•´ì„œ Slotì˜ Offsetì„ ê°€ì ¸ì˜¨ë‹¤.
+ * ½½·ÔÀÇ Pointer¸¦ °¡Á®¿Â´Ù.
  *
  * <IN>
- * aPagePtr       - ì´ˆê¸°í™”í•  ëŒ€ìƒ Page
- * aSlotNo        - Slot ë²ˆí˜¸
- ***************************************************************************/
-scOffset sdtTempPage::getSlotOffset( UChar      * aPagePtr,
-                                     scSlotNum    aSlotNo )
-{
-    return *( (scOffset*)( aPagePtr + getSlotDirOffset( aSlotNo ) ) );
-}
-
-
-/**************************************************************************
- * Description :
- * ìŠ¬ë¡¯ì˜ Pointerë¥¼ ê°€ì ¸ì˜¨ë‹¤.
- *
- * <IN>
- * aPagePtr       - ì´ˆê¸°í™”í•  ëŒ€ìƒ Page
- * aSlotNo        - í• ë‹¹ë°›ì•˜ë˜ Slot ë²ˆí˜¸
+ * aPagePtr       - ÃÊ±âÈ­ÇÒ ´ë»ó Page
+ * aSlotNo        - ÇÒ´ç¹Ş¾Ò´ø Slot ¹øÈ£
  * <OUT>
- * aSlotPtr       - Slotì˜ ìœ„ì¹˜
+ * aSlotPtr       - SlotÀÇ À§Ä¡
  ***************************************************************************/
 IDE_RC sdtTempPage::getSlotPtr( UChar      * aPagePtr,
                                 scSlotNum    aSlotNo,
                                 UChar     ** aSlotPtr )
 {
-    sdtTempPageHdr * sPageHdr = ( sdtTempPageHdr * ) aPagePtr;
-
-    IDE_ERROR( sPageHdr->mSlotCount > aSlotNo );
+    IDE_ERROR( ((sdtSortPageHdr*)aPagePtr)->mSlotCount > aSlotNo );
 
     *aSlotPtr = aPagePtr + getSlotOffset( aPagePtr, aSlotNo );
 
@@ -218,166 +155,110 @@ IDE_RC sdtTempPage::getSlotPtr( UChar      * aPagePtr,
 
 /**************************************************************************
  * Description :
- * Slotì˜ ê°œìˆ˜ë¥¼ ê°€ì ¸ì˜¨ë‹¤. Headerì—ì„œ ê°€ì ¸ì˜¤ë©´ ë˜ì§€ë§Œ, ë§ˆì§€ë§‰ Slotì´
- * UnusedSlotì´ë¼ë©´, ì‚¬ìš©í•˜ì§€ ì•Šì€ ê²ƒìœ¼ë¡œ ì¹˜ê¸°ì— ì¶”ê°€ ì²˜ë¦¬ë¥¼ í•´ì•¼ í•œë‹¤.
+ * SlotÀÇ °³¼ö¸¦ °¡Á®¿Â´Ù. Header¿¡¼­ °¡Á®¿À¸é µÇÁö¸¸, ¸¶Áö¸· SlotÀÌ
+ * UnusedSlotÀÌ¶ó¸é, »ç¿ëÇÏÁö ¾ÊÀº °ÍÀ¸·Î Ä¡±â¿¡ Ãß°¡ Ã³¸®¸¦ ÇØ¾ß ÇÑ´Ù.
  *
  * <IN>
- * aPagePtr       - ì´ˆê¸°í™”í•  ëŒ€ìƒ Page
+ * aPagePtr       - ÃÊ±âÈ­ÇÒ ´ë»ó Page
  * <OUT>
- * aSlotCount     - Slot ê°œìˆ˜
+ * aSlotCount     - Slot °³¼ö
  ***************************************************************************/
-IDE_RC sdtTempPage::getSlotCount( UChar * aPagePtr, UInt *aSlotCount )
+UInt sdtTempPage::getSlotCount( UChar * aPagePtr )
 {
-    sdtTempPageHdr * sHdr = (sdtTempPageHdr*)aPagePtr;
-    UInt             sSlotValue;
+    sdtSortPageHdr * sHdr = (sdtSortPageHdr*)aPagePtr;
 
-    if( sHdr->mSlotCount > 1 )
+    if ( sHdr->mSlotCount > 1 )
     {
-        /* Slotì´ í•˜ë‚˜ë¼ë„ ìˆë‹¤ë©´, ê·¸ Slotì´ Unusedì¸ì§€ ì²´í¬í•œë‹¤. */
-        sSlotValue = getSlotOffset( aPagePtr, sHdr->mSlotCount - 1 );
-        if( sSlotValue == SDT_TEMP_SLOT_UNUSED )
+        /* SlotÀÌ ÇÏ³ª¶óµµ ÀÖ´Ù¸é, ±× SlotÀÌ UnusedÀÎÁö Ã¼Å©ÇÑ´Ù. */
+        if ( getSlotOffset( aPagePtr, sHdr->mSlotCount - 1 ) == SDT_TEMP_SLOT_UNUSED )
         {
-            (*aSlotCount) = sHdr->mSlotCount - 1;
-        }
-        else
-        {
-            (*aSlotCount) = sHdr->mSlotCount;
+            return sHdr->mSlotCount - 1;
         }
     }
-    else
-    {
-        (*aSlotCount) = sHdr->mSlotCount;
-    }
-
-
-    return IDE_SUCCESS;
+    return sHdr->mSlotCount;
 }
 
 /**************************************************************************
  * Description :
- * ìŠ¬ë¡¯ì„ ìƒˆë¡œ í• ë‹¹ë°›ëŠ”ë‹¤. ì´ ìŠ¬ë¡¯ì€ ì•„ë¬´ê²ƒë„ ê°€ë¦¬ì¹˜ì§€ ì•Šì€ì²´,
- * UNUSED(ID_USHORT_MAX)ìœ¼ë¡œ ì´ˆê¸°í™” ë˜ì–´ìˆë‹¤.
+ * ½½·ÔÀ» »õ·Î ÇÒ´ç¹Ş´Â´Ù. ÀÌ ½½·ÔÀº ¾Æ¹«°Íµµ °¡¸®Ä¡Áö ¾ÊÀºÃ¼,
+ * UNUSED(ID_USHORT_MAX)À¸·Î ÃÊ±âÈ­ µÇ¾îÀÖ´Ù.
  *
  * <IN>
- * aPagePtr       - ì´ˆê¸°í™”í•  ëŒ€ìƒ Page
+ * aPagePtr       - ÃÊ±âÈ­ÇÒ ´ë»ó Page
  * <OUT>
- * aSlotNo        - í• ë‹¹í•œ Slot ë²ˆí˜¸
+ * aSlotNo        - ÇÒ´çÇÑ Slot ¹øÈ£
  ***************************************************************************/
-void sdtTempPage::allocSlotDir( UChar * aPagePtr, scSlotNum * aSlotNo )
+scSlotNum sdtTempPage::allocSlotDir( UChar * aPagePtr )
 {
-    UInt            sCandidateSlotDirOffset;
-    sdtTempPageHdr *sHdr = (sdtTempPageHdr*)aPagePtr;
+    sdtSortPageHdr *sHdr = (sdtSortPageHdr*)aPagePtr;
 
-    sCandidateSlotDirOffset = getSlotDirOffset( sHdr->mSlotCount + 1 );
-
-    if( sCandidateSlotDirOffset < getFreeOffset( aPagePtr ) )
+    if ( getSlotDirOffset( sHdr->mSlotCount + 1 ) < getFreeOffset( sHdr ) )
     {
-        /* í• ë‹¹ ê°€ëŠ¥ */
-        (*aSlotNo) = sHdr->mSlotCount;
-        setSlot( aPagePtr, (*aSlotNo), SDT_TEMP_SLOT_UNUSED );
+        /* ÇÒ´ç °¡´É */
+        sHdr->mSlotDir[sHdr->mSlotCount] = SDT_TEMP_SLOT_UNUSED;
 
-        sHdr->mSlotCount ++;
+        return sHdr->mSlotCount++;
     }
-    else
-    {
-        (*aSlotNo) = SDT_TEMP_SLOT_UNUSED;
-    }
+
+    return SDT_TEMP_SLOT_UNUSED;
 }
 
 /**************************************************************************
  * Description :
- * ìŠ¬ë¡¯ì´ ì˜ì—­ì„ í• ë‹¹ë°›ëŠ”ë‹¤. ìš”ì²­í•œ í¬ê¸°ë§Œí¼ í• ë‹¹ë˜ì–´ ë°˜í™˜ëœë‹¤.
+ * ½½·ÔÀÌ ¿µ¿ªÀ» ÇÒ´ç¹Ş´Â´Ù. ¿äÃ»ÇÑ Å©±â¸¸Å­ ÇÒ´çµÇ¾î ¹İÈ¯µÈ´Ù.
  *
  * <IN>
- * aPagePtr       - ì´ˆê¸°í™”í•  ëŒ€ìƒ Page
- * aSlotNo        - í• ë‹¹ë°›ì•˜ë˜ Slot ë²ˆí˜¸
- * aNeedSize      - ìš”êµ¬í•˜ëŠ” Byteê³µê°„
- * aMinSize       - aNeedSizeê°€ ì•ˆë˜ë©´ ìµœì†Œ aMinSizeë§Œí¼ì€ í• ë‹¹ë°›ì•¼ì•„ í•œë‹¤
+ * aPagePtr       - ÃÊ±âÈ­ÇÒ ´ë»ó Page
+ * aSlotNo        - ÇÒ´ç¹Ş¾Ò´ø Slot ¹øÈ£
+ * aNeedSize      - ¿ä±¸ÇÏ´Â Byte°ø°£
+ * aMinSize       - aNeedSize°¡ ¾ÈµÇ¸é ÃÖ¼Ò aMinSize¸¸Å­Àº ÇÒ´ç¹Ş¾ß¾Æ ÇÑ´Ù
  * <OUT>
- * aRetSize       - ì‹¤ì œë¡œ í• ë‹¹ë°›ì€ í¬ê¸°
- * aRetPtr        - í• ë‹¹ë°›ì€ Slotì˜ Beginì§€ì 
+ * aRetSize       - ½ÇÁ¦·Î ÇÒ´ç¹ŞÀº Å©±â
+ * aRetPtr        - ÇÒ´ç¹ŞÀº SlotÀÇ BeginÁöÁ¡
  ***************************************************************************/
-void sdtTempPage::allocSlot( UChar     * aPagePtr,
-                             scSlotNum   aSlotNo,
-                             UInt        aNeedSize,
-                             UInt        aMinSize,
-                             UInt      * aRetSize,
-                             UChar    ** aRetPtr )
+UChar* sdtTempPage::allocSlot( sdtSortPageHdr  * aPageHdr,
+                               scSlotNum   aSlotNo,
+                               UInt        aNeedSize,
+                               UInt        aMinSize,
+                               UInt      * aRetSize )
 {
-    UInt sEndFreeOffset   = getFreeOffset( aPagePtr );
-    UInt sBeginFreeOffset = getBeginFreeOffset( aPagePtr );
-    UInt sAlignedBeginFreeOffset = idlOS::align8( sBeginFreeOffset );
-    UInt sFreeSize = ( sEndFreeOffset - sAlignedBeginFreeOffset );
-    UInt sRetOffset;
+    UInt sEndFreeOffset   = getFreeOffset( aPageHdr );
+    UInt sBeginFreeOffset = getBeginFreeOffset( aPageHdr );
+    UInt sFreeSize = ( sEndFreeOffset - sBeginFreeOffset );
+    scOffset sRetOffset;
 
-    if( sFreeSize < aMinSize )
+    if ( sFreeSize >= aMinSize )
     {
-        /* ê³µê°„ ë¶€ì¡±ìœ¼ë¡œ í• ë‹¹ì¡°ì°¨ ì‹¤íŒ¨í•¨ */
-        *aRetPtr  = NULL;
-        *aRetSize = 0;
-    }
-    else
-    {
-        if( sFreeSize < aNeedSize )
+        if ( sFreeSize < aNeedSize )
         {
-            /* ìµœì†Œë³´ë‹¨ ë§ì§€ë§Œ, ë„‰ë„‰í•˜ì§„ ì•ŠìŒ.
-             * Alignëœ BegeinFreeOffsetë¶€í„° ì „ë¶€ë¥¼ ë°˜í™˜í•´ì¤Œ */
-            sRetOffset = sAlignedBeginFreeOffset;
+            /* ÃÖ¼Òº¸´Ü ¸¹Áö¸¸, ³Ë³ËÇÏÁø ¾ÊÀ½.
+             * AlignµÈ BegeinFreeOffsetºÎÅÍ ÀüºÎ¸¦ ¹İÈ¯ÇØÁÜ */
+            sRetOffset = sBeginFreeOffset;
         }
         else
         {
-            /* í• ë‹¹ ê°€ëŠ¥í•¨.
-             * í•„ìš”í•œ ê³µê°„ë§Œí¼ ëº€ BeginOffsetì— 8BteAlingìœ¼ë¡œ ë‹¹ê²¨ì¤Œ */
+            /* ÇÒ´ç °¡´ÉÇÔ.
+             * ÇÊ¿äÇÑ °ø°£¸¸Å­ »« BeginOffset¿¡ 8BteAlingÀ¸·Î ´ç°ÜÁÜ */
             sRetOffset = sEndFreeOffset - aNeedSize;
             sRetOffset = sRetOffset - ( sRetOffset & 7 );
         }
 
-        *aRetPtr  = aPagePtr + sRetOffset;
-        /* Alignì„ ìœ„í•œ Padding ë•Œë¬¸ì— sRetOffsetì´ ì¡°ê¸ˆ ë„‰ë„‰í•˜ê²Œ ë  ìˆ˜
-         * ìˆìŒ. ë”°ë¼ì„œ Minìœ¼ë¡œ ì¤„ì—¬ì¤Œ */
+        /* AlignÀ» À§ÇÑ Padding ¶§¹®¿¡ sRetOffsetÀÌ Á¶±İ ³Ë³ËÇÏ°Ô µÉ ¼ö
+         * ÀÖÀ½. µû¶ó¼­ MinÀ¸·Î ÁÙ¿©ÁÜ */
         *aRetSize = IDL_MIN( sEndFreeOffset - sRetOffset,
                              aNeedSize );
-        spendFreeSpace( aPagePtr, sEndFreeOffset - sRetOffset );
-        setSlot( aPagePtr, aSlotNo, sRetOffset );
+        setFreeOffset( aPageHdr, sRetOffset );
+        // SlotÀ» ¼³Á¤ÇÑ´Ù
+        aPageHdr->mSlotDir[aSlotNo] = sRetOffset;
+
+        return (UChar*)aPageHdr + sRetOffset;
     }
+
+    *aRetSize = 0;
+
+    return NULL;
 }
 
 
-/**************************************************************************
- * Description :
- * í•´ë‹¹ SlotDirì— offsetì„ ì„¤ì •í•œë‹¤
- *
- * <IN>
- * aPagePtr       - ì´ˆê¸°í™”í•  ëŒ€ìƒ Page
- * aSlotNo        - í• ë‹¹ë°›ì•˜ë˜ Slot ë²ˆí˜¸
- * aOffset        - ì„¤ì •í•  Offset
- ***************************************************************************/
-void sdtTempPage::setSlot( UChar     * aPagePtr,
-                           scSlotNum   aSlotNo,
-                           UInt        aOffset)
-{
-    scSlotNum  * sSlotOffset;
-
-    sSlotOffset  = (scSlotNum*)( aPagePtr + getSlotDirOffset( aSlotNo ) );
-    *sSlotOffset = aOffset;
-}
-
-/**************************************************************************
- * Description :
- * FreeSpaceë¥¼ ì¼ì •ë¶€ë¶„ ê·¸ëƒ¥ ì†Œëª¨ì‹œí‚¨ë‹¤. ( Align ìš©ë„ )
- *
- * <IN>
- * aPagePtr       - ì´ˆê¸°í™”í•  ëŒ€ìƒ Page
- * aSize          - ì†Œëª¨ë  í¬ê¸°
- ***************************************************************************/
-void sdtTempPage::spendFreeSpace( UChar * aPagePtr, UInt aSize )
-{
-    SInt             sBeginFreeOffset;
-
-    sBeginFreeOffset = getFreeOffset( aPagePtr ) - aSize;
-
-    IDE_DASSERT( sBeginFreeOffset >= 0 );
-    setFreeOffset( aPagePtr, sBeginFreeOffset );
-}
 
 #endif // _SDT_PAGE_H_

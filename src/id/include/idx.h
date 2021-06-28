@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: idx.h 79340 2017-03-16 01:30:49Z khkwak $
+ * $Id: idx.h 86373 2019-11-19 23:12:16Z khkwak $
  **********************************************************************/
 
 #ifndef _O_IDX_H_
@@ -72,7 +72,8 @@ typedef enum idxParamType {
     IDX_TYPE_DOUBLE,
     IDX_TYPE_NUMERIC,
     IDX_TYPE_TIMESTAMP,
-    IDX_TYPE_LOB            // BUG-39814
+    IDX_TYPE_LOB,            // BUG-39814
+    IDX_TYPE_BYTE            // PROJ-2717 Internal procedure
 } idxParamType;
 
 typedef enum idxParamPropType {
@@ -146,6 +147,16 @@ typedef struct idxParamInfo {
     } mD;
 } idxParamInfo;
 
+typedef struct idxIntProcMsg {
+    UInt                mParamCount;                        /* all parameter count for calling C function */
+    SChar             * mLibName;                           /* library name */
+    SChar             * mFuncName;                          /* function name */
+    PDL_SHLIB_HANDLE    mHandle;
+    void              * mFuncPtr;
+    idxParamInfo      * mParamInfos;                        /* parameter info(s) for calling C function */
+    idxParamInfo        mReturnInfo;                        /* return info(s) for calling C function */
+} idxIntProcMsg;
+
 typedef struct idxExtProcMsg {
     UInt                mErrorCode;                         /* error code */
     SChar               mLibName[IDX_LIB_NAME_MAXLEN + 1];  /* library name */
@@ -182,6 +193,67 @@ class idxProc
 
         // finalize class
         static void   destroyStatic();
+
+        /* Set pointers of each parameters (by its type) */
+        static inline IDE_RC setParamPtr( idxParamInfo *aParam, void ** aOutPtr )
+        {
+            switch( aParam->mType )
+            {
+                case IDX_TYPE_BOOL:
+                    *aOutPtr = &aParam->mD.mBool;
+                    break;
+                case IDX_TYPE_SHORT:
+                    *aOutPtr = &aParam->mD.mShort;
+                    break;
+                case IDX_TYPE_INT:
+                    *aOutPtr = &aParam->mD.mInt;
+                    break;
+                case IDX_TYPE_INT64:
+                    *aOutPtr = &aParam->mD.mLong;
+                    break;
+                case IDX_TYPE_FLOAT:
+                    *aOutPtr = &aParam->mD.mFloat;
+                    break;
+                case IDX_TYPE_DOUBLE:
+                case IDX_TYPE_NUMERIC:
+                    *aOutPtr = &aParam->mD.mDouble;
+                    break;
+                case IDX_TYPE_TIMESTAMP:
+                    *aOutPtr = &aParam->mD.mTimestamp;
+                    break;
+                case IDX_TYPE_CHAR:
+                case IDX_TYPE_LOB:   // BUG-39814 IN mode LOB Parameter in Extproc
+                case IDX_TYPE_BYTE:  // PROJ-2717 Internal procedure
+                    *aOutPtr =  aParam->mD.mPointer;
+                    break;
+                default:
+                    break;
+            }
+
+            if( *aOutPtr == NULL )
+            {
+                return IDE_FAILURE;
+            }
+            else
+            {
+                return IDE_SUCCESS;
+            }
+        }
+
+        /* Backup original property values of each parameters */ 
+        static inline void backupParamProperty( idxParamInfo *aDestParams,
+                                                idxParamInfo *aSrcParams,
+                                                UInt          aParamCount )
+        {
+            UInt i = 0;
+
+            for( i = 0; i < aParamCount; i++ )
+            {
+                idlOS::memcpy( &aDestParams[i],
+                               &aSrcParams[i],
+                               ID_SIZEOF(idxParamInfo) );
+            }
+        }
 
         /* ---------------------------------------------------------------------
          * Interfaces for an agent process

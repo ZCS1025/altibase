@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLCommand.cpp 85096 2019-03-28 04:04:46Z bethy $
+ * $Id: iSQLCommand.cpp 85564 2019-06-02 23:26:09Z bethy $
  **********************************************************************/
 
 #include <ideErrorMgr.h>
@@ -48,6 +48,9 @@ iSQLCommand::iSQLCommand()
 
 iSQLCommand::~iSQLCommand()
 {
+    /* BUG-47126 Need to allocate temp. host variable dynamically */
+    FreeHostVarValue();
+
     if ( m_Query != NULL )
     {
         idlOS::free(m_Query);
@@ -90,8 +93,8 @@ iSQLCommand::reset()
     idlOS::memset(m_OldStr, 0x00, ID_SIZEOF(m_OldStr));
     idlOS::memset(m_NewStr, 0x00, ID_SIZEOF(m_NewStr));
     idlOS::memset(mHostVarScale, 0x00, ID_SIZEOF(mHostVarScale));
-    idlOS::memset(mHostVarValue, 0x00, ID_SIZEOF(mHostVarValue));
 
+    mHostVarValue  = NULL; /* BUG-47126 */
     m_Timescale    = iSQL_SEC;
     m_OnOff        = ID_FALSE;
     m_Colsize      = 0;
@@ -283,7 +286,7 @@ iSQLCommand::SetQuotedFileName( SChar        * a_FileName,
     {
         idlOS::strcpy(m_FileName, a_FileName + 1);
 
-        // quotation marks Ï†úÍ±∞Ìïú Í∏∏Ïù¥ÎßåÌÅº ..
+        // quotation marks ¡¶∞≈«— ±Ê¿Ã∏∏≈≠ ..
         sFileLen = idlOS::strlen(a_FileName) - 2;
         m_FileName[sFileLen] = '\0';
     }
@@ -768,13 +771,36 @@ iSQLCommand::SetHostVarScale( SChar * aHostVarScale )
 void
 iSQLCommand::SetHostVarValue( SChar * aHostVarValue )
 {
+    int sSize = 0;
+
+    /* BUG-47126 Need to allocate temp. host variable dynamically */
+    FreeHostVarValue();
+
     if (aHostVarValue != NULL)
     {
-        idlOS::strcpy(mHostVarValue, aHostVarValue);
+        sSize = idlOS::strlen(aHostVarValue) + 1;
+        mHostVarValue = (SChar *) idlOS::malloc(sSize);
+        idlOS::strncpy(mHostVarValue, aHostVarValue, sSize);
     }
     else
     {
-        mHostVarValue[0] = '\0';
+        /*
+         * This is defensive code.
+         * aHostVarValue cannot be NULL
+         * because aHostVarValue with "NULL" is passed from parser.
+         */
+        mHostVarValue = NULL;
+    }
+}
+
+/* BUG-47126 Need to allocate temp. host variable dynamically */
+void
+iSQLCommand::FreeHostVarValue() 
+{
+    if (mHostVarValue != NULL)
+    {
+        idlOS::free(mHostVarValue);
+        mHostVarValue = NULL;
     }
 }
 

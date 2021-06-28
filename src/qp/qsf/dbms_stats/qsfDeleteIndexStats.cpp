@@ -56,7 +56,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfDeleteIndexStatsModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -178,7 +178,6 @@ IDE_RC qsfCalculate_DeleteIndexStats( mtcNode*     aNode,
     smiStatement         * sDummyParentStmt;
     smiStatement           sDummyStmt;
     smiTrans               sSmiTrans;
-    smSCN                  sDummySCN;
     void                 * sMmSession;
     UInt                   sSmiStmtFlag;
     UInt                   sState = 0;
@@ -220,7 +219,7 @@ IDE_RC qsfCalculate_DeleteIndexStats( mtcNode*     aNode,
     }
     else
     {
-        // ì´ì „ Planë“¤ì„ invalidate ì‹œí‚¬ í•„ìš”ê°€ ì—†ë‹¤.
+        // ÀÌÀü PlanµéÀ» invalidate ½ÃÅ³ ÇÊ¿ä°¡ ¾ø´Ù.
         // Nothing to do.
     }
 
@@ -251,7 +250,7 @@ IDE_RC qsfCalculate_DeleteIndexStats( mtcNode*     aNode,
     sIndexName.offset   = 0;
     sIndexName.size     = sIndexNameValue->length;
 
-    /* Index ì •ë³´ íšë“ */
+    /* Index Á¤º¸ È¹µæ */
     IDE_TEST( qcm::checkIndexByUser( sStatement,
                                      sOwnerName,
                                      sIndexName,
@@ -260,7 +259,7 @@ IDE_RC qsfCalculate_DeleteIndexStats( mtcNode*     aNode,
                                      &sIndexID ) 
               != IDE_SUCCESS );
 
-    /* Table ì •ë³´ íšë“ */
+    /* Table Á¤º¸ È¹µæ */
     IDE_TEST( qcm::getTableInfoByID( sStatement,
                                      sTableID,
                                      &sTableInfo,
@@ -271,7 +270,7 @@ IDE_RC qsfCalculate_DeleteIndexStats( mtcNode*     aNode,
     IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT(sStatement))->getTrans(),
                                          sTableHandle,
                                          sTableSCN,
-                                         SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                         SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                          SMI_TABLE_LOCK_IX,
                                          ID_ULONG_MAX,
                                          ID_FALSE )         // BUG-28752 isExplicitLock
@@ -288,7 +287,7 @@ IDE_RC qsfCalculate_DeleteIndexStats( mtcNode*     aNode,
                 NULL )
             != IDE_SUCCESS );
 
-    /* Tableì´ Partitioned Tableì´ë©´, Partition List ìˆœíšŒí•˜ë©´ì„œ í†µê³„ ì •ë³´ ì‚­ì œ */
+    /* TableÀÌ Partitioned TableÀÌ¸é, Partition List ¼øÈ¸ÇÏ¸é¼­ Åë°è Á¤º¸ »èÁ¦ */
     if ( sTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
         IDE_TEST( qcmPartition::getPartitionInfoList(
@@ -301,7 +300,7 @@ IDE_RC qsfCalculate_DeleteIndexStats( mtcNode*     aNode,
 
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( sStatement,
                                                                   sPartInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                                   SMI_TABLE_LOCK_IX,
                                                                   ID_ULONG_MAX )
                   != IDE_SUCCESS );
@@ -313,7 +312,7 @@ IDE_RC qsfCalculate_DeleteIndexStats( mtcNode*     aNode,
             {
                 if (sPartInfo->indices[i].indexId == sIndexID)
                 {
-                    /* Partition Indexì¼ ê²½ìš°, IDê°€ ê°™ì€ Indexê°€ ì—¬ëŸ¬ ê°œ ìˆìŒ */
+                    /* Partition IndexÀÏ °æ¿ì, ID°¡ °°Àº Index°¡ ¿©·¯ °³ ÀÖÀ½ */
                     sIndexInfo = &sPartInfo->indices[i];
 
                     // Clear Index Stats
@@ -332,8 +331,8 @@ IDE_RC qsfCalculate_DeleteIndexStats( mtcNode*     aNode,
         // Nothing to do.
     }
 
-    /* ìœ„ì—ì„œëŠ” Partitioned Tableì˜ ê° Partitionì— ëŒ€í•´ì„œë§Œ í†µê³„ ì •ë³´ë¥¼ ì‚­ì œí–ˆìœ¼ë¯€ë¡œ
-     * í˜„ì¬ Tableì˜ íŠ¹ì • Indexì— ëŒ€í•´ì„œë„ ì°¾ì•„ë‚´ í†µê³„ ì •ë³´ë¥¼ ì‚­ì œí•´ì•¼ í•œë‹¤. */
+    /* À§¿¡¼­´Â Partitioned TableÀÇ °¢ Partition¿¡ ´ëÇØ¼­¸¸ Åë°è Á¤º¸¸¦ »èÁ¦ÇßÀ¸¹Ç·Î
+     * ÇöÀç TableÀÇ Æ¯Á¤ Index¿¡ ´ëÇØ¼­µµ Ã£¾Æ³» Åë°è Á¤º¸¸¦ »èÁ¦ÇØ¾ß ÇÑ´Ù. */
     for ( i = 0; i < sTableInfo->indexCount; i++)
     {
         if ( sTableInfo->indices[i].indexId == sIndexID )
@@ -368,7 +367,7 @@ IDE_RC qsfCalculate_DeleteIndexStats( mtcNode*     aNode,
     }
     else
     {
-        // ì´ì „ Planë“¤ì„ invalidate ì‹œí‚¬ í•„ìš”ê°€ ì—†ë‹¤.
+        // ÀÌÀü PlanµéÀ» invalidate ½ÃÅ³ ÇÊ¿ä°¡ ¾ø´Ù.
         // Nothing to do.
     }
 
@@ -382,7 +381,7 @@ IDE_RC qsfCalculate_DeleteIndexStats( mtcNode*     aNode,
 
     // transaction commit
     sState = 1;
-    IDE_TEST( sSmiTrans.commit(&sDummySCN) != IDE_SUCCESS );
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
 
     // transaction destroy
     sState = 0;

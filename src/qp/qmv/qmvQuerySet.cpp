@@ -13,9 +13,9 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 /***********************************************************************
- * $Id: qmvQuerySet.cpp 85186 2019-04-09 07:37:00Z jayce.park $
+ * $Id: qmvQuerySet.cpp 90409 2021-04-01 04:19:46Z donovan.seo $
  **********************************************************************/
 
 #include <idl.h>
@@ -107,8 +107,8 @@ IDE_RC qmvQuerySet::validate(
         // PROJ-2418
         if ( aQuerySet->SFWGH->outerQuery != NULL )
         {
-            // outerQueryÍ∞Ä Ïù¥ÎØ∏ ÏßÄÏ†ïÎêòÏñ¥ ÏûàÎã§Î©¥, Lateral ViewÏù¥Îã§.
-            // Ïù¥ÎØ∏ ÏßÄÏ†ïÎêú outerQueryÎ•º Ïû¨ÏÑ§Ï†ïÌïòÏßÄ ÏïäÎäîÎã§.
+            // outerQuery∞° ¿ÃπÃ ¡ˆ¡§µ«æÓ ¿÷¥Ÿ∏È, Lateral View¿Ã¥Ÿ.
+            // ¿ÃπÃ ¡ˆ¡§µ» outerQuery∏¶ ¿Áº≥¡§«œ¡ˆ æ ¥¬¥Ÿ.
 
             // Nothing to do.
         }
@@ -120,8 +120,8 @@ IDE_RC qmvQuerySet::validate(
         // PROJ-2418
         if ( aQuerySet->SFWGH->outerFrom != NULL )
         {
-            // outerFromÍ∞Ä Ïù¥ÎØ∏ ÏßÄÏ†ïÎêòÏñ¥ ÏûàÎã§Î©¥, Lateral ViewÏù¥Îã§.
-            // Ïù¥ÎØ∏ ÏßÄÏ†ïÎêú outerFromÏùÑ Ïû¨ÏÑ§Ï†ïÌïòÏßÄ ÏïäÎäîÎã§.
+            // outerFrom∞° ¿ÃπÃ ¡ˆ¡§µ«æÓ ¿÷¥Ÿ∏È, Lateral View¿Ã¥Ÿ.
+            // ¿ÃπÃ ¡ˆ¡§µ» outerFrom¿ª ¿Áº≥¡§«œ¡ˆ æ ¥¬¥Ÿ.
 
             // Nothing to do.
         }
@@ -130,10 +130,10 @@ IDE_RC qmvQuerySet::validate(
             aQuerySet->SFWGH->outerFrom = aOuterQueryFrom;
         }
 
-        aQuerySet->SFWGH->flag &= ~(QMV_PERFORMANCE_VIEW_CREATION_MASK);
-        aQuerySet->SFWGH->flag |= (aQuerySet->flag&QMV_PERFORMANCE_VIEW_CREATION_MASK);
-        aQuerySet->SFWGH->flag &= ~(QMV_VIEW_CREATION_MASK);
-        aQuerySet->SFWGH->flag |= (aQuerySet->flag&QMV_VIEW_CREATION_MASK);
+        aQuerySet->SFWGH->lflag &= ~(QMV_PERFORMANCE_VIEW_CREATION_MASK);
+        aQuerySet->SFWGH->lflag |= (aQuerySet->lflag&QMV_PERFORMANCE_VIEW_CREATION_MASK);
+        aQuerySet->SFWGH->lflag &= ~(QMV_VIEW_CREATION_MASK);
+        aQuerySet->SFWGH->lflag |= (aQuerySet->lflag&QMV_VIEW_CREATION_MASK);
 
         IDE_TEST( qmvQuerySet::validateQmsSFWGH( aStatement,
                                                  aQuerySet,
@@ -160,7 +160,7 @@ IDE_RC qmvQuerySet::validate(
                   != IDE_SUCCESS );
 
         // PROJ-2418
-        // lateral ViewÏùò dependencies (lateralDepInfo) ÏÑ§Ï†ï
+        // lateral View¿« dependencies (lateralDepInfo) º≥¡§
         IDE_TEST( qmvQTC::setLateralDependencies( aQuerySet->SFWGH,
                                                   & aQuerySet->lateralDepInfo )
                   != IDE_SUCCESS );
@@ -177,29 +177,29 @@ IDE_RC qmvQuerySet::validate(
         IDE_TEST_RAISE(sParseTree->forUpdate != NULL,
                        ERR_DISTINCT_SETFUNCTION_ON_FORUPDATE);
 
-        aQuerySet->left->flag &= ~(QMV_PERFORMANCE_VIEW_CREATION_MASK);
-        aQuerySet->left->flag |= (aQuerySet->flag&QMV_PERFORMANCE_VIEW_CREATION_MASK);
-        aQuerySet->right->flag &= ~(QMV_PERFORMANCE_VIEW_CREATION_MASK);
-        aQuerySet->right->flag |= (aQuerySet->flag&QMV_PERFORMANCE_VIEW_CREATION_MASK);
-        aQuerySet->left->flag &= ~(QMV_VIEW_CREATION_MASK);
-        aQuerySet->left->flag |= (aQuerySet->flag&QMV_VIEW_CREATION_MASK);
-        aQuerySet->right->flag &= ~(QMV_VIEW_CREATION_MASK);
-        aQuerySet->right->flag |= (aQuerySet->flag&QMV_VIEW_CREATION_MASK);
+        aQuerySet->left->lflag &= ~(QMV_PERFORMANCE_VIEW_CREATION_MASK);
+        aQuerySet->left->lflag |= (aQuerySet->lflag&QMV_PERFORMANCE_VIEW_CREATION_MASK);
+        aQuerySet->right->lflag &= ~(QMV_PERFORMANCE_VIEW_CREATION_MASK);
+        aQuerySet->right->lflag |= (aQuerySet->lflag&QMV_PERFORMANCE_VIEW_CREATION_MASK);
+        aQuerySet->left->lflag &= ~(QMV_VIEW_CREATION_MASK);
+        aQuerySet->left->lflag |= (aQuerySet->lflag&QMV_VIEW_CREATION_MASK);
+        aQuerySet->right->lflag &= ~(QMV_VIEW_CREATION_MASK);
+        aQuerySet->right->lflag |= (aQuerySet->lflag&QMV_VIEW_CREATION_MASK);
 
         // PROJ-2582 recursive with
-        if ( ( aQuerySet->flag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
+        if ( ( aQuerySet->lflag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
              == QMV_QUERYSET_RECURSIVE_VIEW_TOP )
         {
-            // recursive query Íµ¨Î∂ÑÏùÑ ÏúÑÌï¥ right querySet flagÏÑ§Ï†ï
-            aQuerySet->right->flag &= ~QMV_QUERYSET_RECURSIVE_VIEW_MASK;
-            aQuerySet->right->flag |= QMV_QUERYSET_RECURSIVE_VIEW_RIGHT;
-            aQuerySet->right->flag &= ~QMV_QUERYSET_RESULT_CACHE_MASK;
-            aQuerySet->right->flag |= QMV_QUERYSET_RESULT_CACHE_NO;
+            // recursive query ±∏∫–¿ª ¿ß«ÿ right querySet flagº≥¡§
+            aQuerySet->right->lflag &= ~QMV_QUERYSET_RECURSIVE_VIEW_MASK;
+            aQuerySet->right->lflag |= QMV_QUERYSET_RECURSIVE_VIEW_RIGHT;
+            aQuerySet->right->lflag &= ~QMV_QUERYSET_RESULT_CACHE_MASK;
+            aQuerySet->right->lflag |= QMV_QUERYSET_RESULT_CACHE_NO;
 
-            aQuerySet->left->flag &= ~QMV_QUERYSET_RECURSIVE_VIEW_MASK;
-            aQuerySet->left->flag |= QMV_QUERYSET_RECURSIVE_VIEW_LEFT;
-            aQuerySet->left->flag &= ~QMV_QUERYSET_RESULT_CACHE_MASK;
-            aQuerySet->left->flag |= QMV_QUERYSET_RESULT_CACHE_NO;
+            aQuerySet->left->lflag &= ~QMV_QUERYSET_RECURSIVE_VIEW_MASK;
+            aQuerySet->left->lflag |= QMV_QUERYSET_RECURSIVE_VIEW_LEFT;
+            aQuerySet->left->lflag &= ~QMV_QUERYSET_RESULT_CACHE_MASK;
+            aQuerySet->left->lflag |= QMV_QUERYSET_RESULT_CACHE_NO;
         }
         else
         {
@@ -274,7 +274,7 @@ IDE_RC qmvQuerySet::validate(
                 IDE_RAISE( ERR_PROWID_NOT_SUPPORTED );
             }
             
-            // Î¶¨Ïä§Ìä∏ ÌÉÄÏûÖÏùò ÏÇ¨Ïö© Ïó¨Î∂Ä ÌôïÏù∏
+            // ∏ÆΩ∫∆Æ ≈∏¿‘¿« ªÁøÎ ø©∫Œ »Æ¿Œ
             sMtcColumn = QTC_STMT_COLUMN( aStatement, sLeftTarget->targetColumn );
             if ( sMtcColumn->module->id == MTD_LIST_ID )
             {
@@ -300,7 +300,7 @@ IDE_RC qmvQuerySet::validate(
             }
             
             // BUG-16000
-            // compareÏó∞ÏÇ∞Ïù¥ Î∂àÍ∞ÄÎä•Ìïú ÌÉÄÏûÖÏùÄ ÏóêÎü¨.
+            // compareø¨ªÍ¿Ã ∫“∞°¥…«— ≈∏¿‘¿∫ ø°∑Ø.
             if (aQuerySet->setOp != QMS_UNION_ALL)
             {
                 // UNION, INTERSECT, MINUS
@@ -338,10 +338,10 @@ IDE_RC qmvQuerySet::validate(
             }
 
             // PROJ-2582 recursive with
-            if ( ( aQuerySet->flag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
+            if ( ( aQuerySet->lflag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
                  == QMV_QUERYSET_RECURSIVE_VIEW_TOP )
             {
-                // recursive viewÏù∏ Í≤ΩÏö∞ target typeÏùÄ leftÏùò type, precisionÏúºÎ°ú ÎßûÏ∂òÎã§.
+                // recursive view¿Œ ∞ÊøÏ target type¿∫ left¿« type, precision¿∏∑Œ ∏¬√·¥Ÿ.
                 IDE_TEST(
                     qtc::makeLeftDataType4TwoNode( aStatement,
                                                    sLeftTarget->targetColumn,
@@ -350,7 +350,7 @@ IDE_RC qmvQuerySet::validate(
             }
             else
             {   
-                // Query SetÏùò ÏñëÏ™Ω TargetÏùÑ ÎèôÏùºÌïú Data TypeÏúºÎ°ú ÏÉùÏÑ±Ìï®.
+                // Query Set¿« æÁ¬  Target¿ª µø¿œ«— Data Type¿∏∑Œ ª˝º∫«‘.
                 IDE_TEST(
                     qtc::makeSameDataType4TwoNode( aStatement,
                                                    sLeftTarget->targetColumn,
@@ -382,7 +382,7 @@ IDE_RC qmvQuerySet::validate(
                      != IDE_SUCCESS);
             
             // PROJ-2415 Grouping Sets Clause
-            // leftÏôÄ right NodeÏùò flagÎ•º SetÏùò Target NodeÎ°ú Ï†ÑÎã¨ÌïúÎã§.
+            // leftøÕ right Node¿« flag∏¶ Set¿« Target Node∑Œ ¿¸¥ﬁ«—¥Ÿ.
             if ( ( ( sLeftTarget->targetColumn->lflag & QTC_NODE_GBGS_ORDER_BY_NODE_MASK )
                    == QTC_NODE_GBGS_ORDER_BY_NODE_TRUE ) ||
                  ( ( sRightTarget->targetColumn->lflag & QTC_NODE_GBGS_ORDER_BY_NODE_MASK )
@@ -447,15 +447,15 @@ IDE_RC qmvQuerySet::validate(
                 &QC_SHARED_TMPLATE(aStatement)->tmplate);      
             
             // To Fix Case-2175
-            // LeftÏôÄ RightÏ§ë Î≥¥Îã§ SizeÍ∞Ä ÌÅ∞ ColumnÏùò Ï†ïÎ≥¥Î•º
-            // ViewÏùò Column Ï†ïÎ≥¥Î°ú ÏÇ¨Ïö©ÌïúÎã§.
+            // LeftøÕ Right¡ﬂ ∫∏¥Ÿ Size∞° ≈´ Column¿« ¡§∫∏∏¶
+            // View¿« Column ¡§∫∏∑Œ ªÁøÎ«—¥Ÿ.
             if ( QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sLeftNode->table].
                  columns[sLeftNode->column].column.size
                  >=
                  QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sRightNode->table].
                  columns[sRightNode->column].column.size )
             {
-                // LeftÏ™ΩÏùò Column Ï†ïÎ≥¥Î•º Î≥µÏÇ¨
+                // Left¬ ¿« Column ¡§∫∏∏¶ ∫πªÁ
                 // copy size, type, module
                 mtc::copyColumn(
                     &( QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sTable]
@@ -465,7 +465,7 @@ IDE_RC qmvQuerySet::validate(
             }
             else
             {
-                // RightÏ™ΩÏùò Column Ï†ïÎ≥¥Î•º Î≥µÏÇ¨
+                // Right¬ ¿« Column ¡§∫∏∏¶ ∫πªÁ
                 // copy size, type, module
                 mtc::copyColumn(
                     &( QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sTable]
@@ -489,7 +489,7 @@ IDE_RC qmvQuerySet::validate(
         QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sTable].lflag
             |= MTC_TUPLE_ROW_SKIP_TRUE;
 
-        // SETÏóê ÏùòÌï¥ ÏÉùÏÑ±Îêú ÏïîÏãúÏ†Å ViewÏûÑÏùÑ ÌëúÏãúÌï®
+        // SETø° ¿««ÿ ª˝º∫µ» æœΩ√¿˚ View¿”¿ª «•Ω√«‘
         QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sTable].lflag &= ~MTC_TUPLE_VIEW_MASK;
         QC_SHARED_TMPLATE(aStatement)->tmplate.rows[sTable].lflag |= MTC_TUPLE_VIEW_TRUE;
 
@@ -500,7 +500,7 @@ IDE_RC qmvQuerySet::validate(
         qtc::dependencySet( sTable, & aQuerySet->depInfo );
 
         // PROJ-1358
-        // SET ÏùÄ ÌïòÏúÑÏùò DependencyÎ•º OR-ing ÌïòÏßÄ ÏïäÎäîÎã§.
+        // SET ¿∫ «œ¿ß¿« Dependency∏¶ OR-ing «œ¡ˆ æ ¥¬¥Ÿ.
         //     (2) left->dependencies
         // qtc::dependencyOr(aQuerySet->left->dependencies,
         //                   aQuerySet->dependencies,
@@ -513,7 +513,7 @@ IDE_RC qmvQuerySet::validate(
         // set outer column dependencies
 
         // PROJ-1413
-        // outer column dependencyÎäî ÌïòÏúÑ dependencyÎ•º OR-ingÌïúÎã§.
+        // outer column dependency¥¬ «œ¿ß dependency∏¶ OR-ing«—¥Ÿ.
         //     (1) left->dependencies
         IDE_TEST( qtc::dependencyOr( & aQuerySet->left->outerDepInfo,
                                      & aQuerySet->outerDepInfo,
@@ -526,7 +526,7 @@ IDE_RC qmvQuerySet::validate(
                   != IDE_SUCCESS );
 
         // PROJ-2418
-        // lateral view dependencyÎäî ÌïòÏúÑ dependencyÎ•º OR-ingÌïúÎã§.
+        // lateral view dependency¥¬ «œ¿ß dependency∏¶ OR-ing«—¥Ÿ.
         IDE_TEST( qtc::dependencyOr( & aQuerySet->left->lateralDepInfo,
                                      & aQuerySet->lateralDepInfo,
                                      & aQuerySet->lateralDepInfo )
@@ -601,7 +601,6 @@ IDE_RC qmvQuerySet::validateQmsSFWGH(
     qmsParseTree     * sParseTree = NULL;
     qmsFrom          * sFrom = NULL;
     qmsTarget        * sTarget = NULL;
-    idBool             sOnlyInnerJoin = ID_FALSE;
 
     IDU_FIT_POINT_FATAL( "qmvQuerySet::validateQmsSFWGH::__FT__" );
 
@@ -614,8 +613,8 @@ IDE_RC qmvQuerySet::validateQmsSFWGH(
 
     if ( aQuerySet != NULL )
     {
-        // BUG-21985 : replicationÏóêÏÑú WHEREÏóê ÎåÄÌïú validation Ìï†Îïå,
-        //             querySet Ï†ïÎ≥¥Í∞Ä ÏóÜÏñ¥ ÎÑòÍ∏∞ÏßÄ ÏïäÏùå
+        // BUG-21985 : replicationø°º≠ WHEREø° ¥Î«— validation «“∂ß,
+        //             querySet ¡§∫∏∞° æ¯æÓ ≥—±‚¡ˆ æ ¿Ω
         aQuerySet->processPhase = QMS_VALIDATE_INIT;
     }
     else
@@ -635,14 +634,14 @@ IDE_RC qmvQuerySet::validateQmsSFWGH(
 
     // PROJ-2582 recursive with
     IDE_TEST_RAISE( ( aSFWGH->selectType == QMS_DISTINCT ) &&
-                    ( ( aQuerySet->flag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
+                    ( ( aQuerySet->lflag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
                       == QMV_QUERYSET_RECURSIVE_VIEW_RIGHT ),
                     ERR_DISTINCT_NOT_ALLOWED_RECURSIVE_VIEW );
 
     // PROJ-2204 Join Update, Delete
-    // create view, insert view, update view, delete viewÏùò
-    // ÏµúÏÉÅÏúÑ SFWGHÎßå key preserved tableÏùÑ Í≤ÄÏÇ¨ÌïúÎã§.
-    if ( ( aSFWGH->flag & QMV_SFWGH_UPDATABLE_VIEW_MASK )
+    // create view, insert view, update view, delete view¿«
+    // √÷ªÛ¿ß SFWGH∏∏ key preserved table¿ª ∞ÀªÁ«—¥Ÿ.
+    if ( ( aSFWGH->lflag & QMV_SFWGH_UPDATABLE_VIEW_MASK )
          == QMV_SFWGH_UPDATABLE_VIEW_TRUE )
     {
         IDE_TEST( qmsPreservedTable::initialize( aStatement,
@@ -657,14 +656,14 @@ IDE_RC qmvQuerySet::validateQmsSFWGH(
     qtc::dependencyClear( & aSFWGH->depInfo );
 
     //-------------------------------------
-    // 1473TODO ÌôïÏù∏ÌïÑÏöî
+    // 1473TODO »Æ¿Œ« ø‰
     // PROJ-1473
-    // Ïª¨ÎüºÏ†ïÎ≥¥ÏàòÏßëÏãú hintÏ†ïÎ≥¥Í∞Ä ÌïÑÏöîÌï¥ÏÑú Ï¥àÍ∏∞Ìôî ÏûëÏóÖÏùÑ ÏïûÏúºÎ°ú ÎãπÍπÄ.
+    // ƒ√∑≥¡§∫∏ºˆ¡˝Ω√ hint¡§∫∏∞° « ø‰«ÿº≠ √ ±‚»≠ ¿€æ˜¿ª æ’¿∏∑Œ ¥Á±Ë.
     //-------------------------------------
 
     if ( aSFWGH->hints == NULL )
     {
-        // ÏÇ¨Ïö©ÏûêÍ∞Ä ÌûåÌä∏Î•º Î™ÖÏãúÌïòÏßÄ ÏïäÏùÄ Í≤ΩÏö∞ Ï¥àÍ∏∞Í∞íÏúºÎ°ú ÌûåÌä∏ Íµ¨Ï°∞Ï≤¥ Ìï†Îãπ
+        // ªÁøÎ¿⁄∞° »˘∆Æ∏¶ ∏ÌΩ√«œ¡ˆ æ ¿∫ ∞ÊøÏ √ ±‚∞™¿∏∑Œ »˘∆Æ ±∏¡∂√º «“¥Á
 
         IDE_TEST ( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                                  qmsHints,
@@ -678,9 +677,9 @@ IDE_RC qmvQuerySet::validateQmsSFWGH(
     }
 
     // PROJ-1473
-    // ÏßàÏùòÏóê ÏÇ¨Ïö©Îêú Ïª¨ÎüºÏ†ïÎ≥¥Î•º ÏñªÍ∏∞ÏúÑÌï¥
-    // processType hintÏóê ÎåÄÌï¥ÏÑúÎßå ÏùºÎ∂Ä ÏÑ†Íµ¨Ï∂ïÌïúÎã§.
-    // (Ïòà: on Ï†àÏóê ÏÇ¨Ïö©Îêú Ïª¨ÎüºÏ≤òÎ¶¨)
+    // ¡˙¿«ø° ªÁøÎµ» ƒ√∑≥¡§∫∏∏¶ æÚ±‚¿ß«ÿ
+    // processType hintø° ¥Î«ÿº≠∏∏ ¿œ∫Œ º±±∏√‡«—¥Ÿ.
+    // (øπ: on ¿˝ø° ªÁøÎµ» ƒ√∑≥√≥∏Æ)
     
     if( aSFWGH->hints->materializeType == QMO_MATERIALIZE_TYPE_NOT_DEFINED )
     {
@@ -770,65 +769,8 @@ IDE_RC qmvQuerySet::validateQmsSFWGH(
         /* Nothing to do */
     }
 
-    // BUG-38402
-    if ( QCU_OPTIMIZER_ANSI_INNER_JOIN_CONVERT == 1 )
-    {
-        // BUG-38273
-        // ansi Ïä§ÌÉÄÏùº inner join ÏùÑ ÏùºÎ∞ò Ïä§ÌÉÄÏùºÏùò Ï°∞Ïù∏ÏúºÎ°ú Î≥ÄÍ≤ΩÌïúÎã§.
-        for (sFrom = aSFWGH->from; sFrom != NULL; sFrom = sFrom->next)
-        {
-            if ( sFrom->joinType == QMS_NO_JOIN )
-            {
-                sOnlyInnerJoin = ID_TRUE;
-            }
-            else if ( sFrom->joinType == QMS_INNER_JOIN )
-            {
-                sOnlyInnerJoin = checkInnerJoin( sFrom );
-            }
-            else
-            {
-                sOnlyInnerJoin = ID_FALSE;
-            }
-
-            if ( sOnlyInnerJoin == ID_FALSE )
-            {
-                break;
-            }
-            else
-            {
-                // Nothing to do.
-            }
-        }
-
-        if ( sOnlyInnerJoin == ID_TRUE )
-        {
-            qcgPlan::registerPlanProperty(
-                aStatement,
-                PLAN_PROPERTY_OPTIMIZER_ANSI_INNER_JOIN_CONVERT );
-
-            for (sFrom = aSFWGH->from; sFrom != NULL; sFrom = sFrom->next)
-            {
-                if (sFrom->joinType == QMS_INNER_JOIN)
-                {
-                    IDE_TEST( innerJoinToNoJoin( aStatement,
-                                                 aSFWGH,
-                                                 sFrom ) != IDE_SUCCESS);
-                }
-                else
-                {
-                    // Nothing to do.
-                }
-            }
-        }
-        else
-        {
-            // Nothing to do.
-        }
-    }
-    else
-    {
-        // Nothing to do.
-    }
+    IDE_TEST( convertAnsiInnerJoin( aStatement, aSFWGH )
+              != IDE_SUCCESS );
 
     for (sFrom = aSFWGH->from; sFrom != NULL; sFrom = sFrom->next)
     {
@@ -846,18 +788,18 @@ IDE_RC qmvQuerySet::validateQmsSFWGH(
             IDE_TEST(validateQmsTableRef( aStatement,
                                           aSFWGH,
                                           sFrom->tableRef,
-                                          aSFWGH->flag,
+                                          aSFWGH->lflag,
                                           MTC_COLUMN_NOTNULL_TRUE ) // PR-13597
                      != IDE_SUCCESS);
 
-            // Table Map ÏÑ§Ï†ï
+            // Table Map º≥¡§
             QC_SHARED_TMPLATE(aStatement)->tableMap[sFrom->tableRef->table].from = sFrom;
 
-            // FROM Ï†àÏóê ÎåÄÌïú dependencies ÏÑ§Ï†ï
+            // FROM ¿˝ø° ¥Î«— dependencies º≥¡§
             qtc::dependencyClear( & sFrom->depInfo );
             qtc::dependencySet( sFrom->tableRef->table, & sFrom->depInfo );
             
-            // PROJ-1718 Semi/anti joinÍ≥º Í¥ÄÎ†®Îêú dependency Ï¥àÍ∏∞Ìôî
+            // PROJ-1718 Semi/anti join∞˙ ∞¸∑√µ» dependency √ ±‚»≠
             qtc::dependencyClear( & sFrom->semiAntiJoinDepInfo );
 
             IDE_TEST( qmsPreservedTable::addTable( aStatement,
@@ -877,8 +819,8 @@ IDE_RC qmvQuerySet::validateQmsSFWGH(
                 /* PROJ-2462 Result Cache */
                 if ( aQuerySet != NULL )
                 {
-                    aQuerySet->flag &= ~QMV_QUERYSET_RESULT_CACHE_INVALID_MASK;
-                    aQuerySet->flag |= QMV_QUERYSET_RESULT_CACHE_INVALID_TRUE;
+                    aQuerySet->lflag &= ~QMV_QUERYSET_RESULT_CACHE_INVALID_MASK;
+                    aQuerySet->lflag |= QMV_QUERYSET_RESULT_CACHE_INVALID_TRUE;
                 }
                 else
                 {
@@ -902,7 +844,7 @@ IDE_RC qmvQuerySet::validateQmsSFWGH(
                                   NULL )
                               != IDE_SUCCESS );
                         
-                    // environmentÏùò Í∏∞Î°ù
+                    // environment¿« ±‚∑œ
                     IDE_TEST( qcgPlan::registerPlanPrivTable(
                                   aStatement,
                                   QCM_PRIV_ID_OBJECT_SELECT_NO,
@@ -918,8 +860,8 @@ IDE_RC qmvQuerySet::validateQmsSFWGH(
                 if ( ( sFrom->tableRef->tableInfo->temporaryInfo.type != QCM_TEMPORARY_ON_COMMIT_NONE ) &&
                      ( aQuerySet != NULL ) )
                 {
-                    aQuerySet->flag &= ~QMV_QUERYSET_RESULT_CACHE_INVALID_MASK;
-                    aQuerySet->flag |= QMV_QUERYSET_RESULT_CACHE_INVALID_TRUE;
+                    aQuerySet->lflag &= ~QMV_QUERYSET_RESULT_CACHE_INVALID_MASK;
+                    aQuerySet->lflag |= QMV_QUERYSET_RESULT_CACHE_INVALID_TRUE;
                 }
                 else
                 {
@@ -950,7 +892,7 @@ IDE_RC qmvQuerySet::validateQmsSFWGH(
     aSFWGH->validatePhase = QMS_VALIDATE_TARGET;
 
     // BUG-41311 table function
-    if ( ( aSFWGH->flag & QMV_SFWGH_TABLE_FUNCTION_VIEW_MASK )
+    if ( ( aSFWGH->lflag & QMV_SFWGH_TABLE_FUNCTION_VIEW_MASK )
          == QMV_SFWGH_TABLE_FUNCTION_VIEW_TRUE )
     {
         IDE_TEST( qmvTableFuncTransform::expandTarget( aStatement,
@@ -961,9 +903,9 @@ IDE_RC qmvQuerySet::validateQmsSFWGH(
     {
         /* Nothing to do */
     }
-    
-    /* PROJ-2188 Support pivot clause */
-    if ( ( aSFWGH->flag & QMV_SFWGH_PIVOT_MASK )
+
+    // PROJ-2188 Support pivot clause 
+    if ( ( aSFWGH->lflag & QMV_SFWGH_PIVOT_MASK )
          == QMV_SFWGH_PIVOT_TRUE )
     {
         IDE_TEST(qmvPivotTransform::expandPivotDummy( aStatement,
@@ -975,11 +917,9 @@ IDE_RC qmvQuerySet::validateQmsSFWGH(
         /* Nothing to do */
     }
 
-    /*
-     * PROJ-2523 Unpivot clause
-     * Unpivot targetÏùÑ ÌôïÏûêÌïúÎã§.
-     */
-    if ( ( aSFWGH->flag & QMV_SFWGH_UNPIVOT_MASK )
+    // PROJ-2523 Unpivot clause
+    // Unpivot target¿ª »Æ¿Â«—¥Ÿ.
+    if ( ( aSFWGH->lflag & QMV_SFWGH_UNPIVOT_MASK )
          == QMV_SFWGH_UNPIVOT_TRUE )
     {
         IDE_TEST( qmvUnpivotTransform::expandUnpivotTarget( aStatement,
@@ -993,8 +933,8 @@ IDE_RC qmvQuerySet::validateQmsSFWGH(
 
     IDE_TEST(validateQmsTarget(aStatement, aQuerySet, aSFWGH) != IDE_SUCCESS);
 
-    // right outer joinÏùÑ left outer joinÏúºÎ°ú Î≥ÄÌôò
-    // (expand asterisk ÎïåÎ¨∏Ïóê validate targetÌõÑÏóê ÏúÑÏπòÌïúÎã§.)
+    // right outer join¿ª left outer join¿∏∑Œ ∫Ø»Ø
+    // (expand asterisk ∂ßπÆø° validate target»ƒø° ¿ßƒ°«—¥Ÿ.)
     for (sFrom = aSFWGH->from; sFrom != NULL; sFrom = sFrom->next)
     {
         IDE_TEST(validateJoin(aStatement, sFrom, aSFWGH) != IDE_SUCCESS);
@@ -1079,9 +1019,9 @@ IDE_RC qmvQuerySet::validateQmsSFWGH(
 
     // PROJ-2415 Grouping Sets Clause
     if ( ( aSFWGH->group != NULL ) &&
-         ( ( ( aSFWGH->flag & QMV_SFWGH_GBGS_TRANSFORM_MASK )
+         ( ( ( aSFWGH->lflag & QMV_SFWGH_GBGS_TRANSFORM_MASK )
              == QMV_SFWGH_GBGS_TRANSFORM_MIDDLE ) ||
-           ( ( aSFWGH->flag & QMV_SFWGH_GBGS_TRANSFORM_MASK )
+           ( ( aSFWGH->lflag & QMV_SFWGH_GBGS_TRANSFORM_MASK )
              == QMV_SFWGH_GBGS_TRANSFORM_BOTTOM ) ) )
     {
         // PROJ-2415 Grouping Sets Clause
@@ -1148,7 +1088,7 @@ IDE_RC qmvQuerySet::validateQmsSFWGH(
                        ERR_AGGREGATE_ON_FORUPDATE);
 
         // PROJ-2582 recursive with
-        IDE_TEST_RAISE( ( aQuerySet->flag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
+        IDE_TEST_RAISE( ( aQuerySet->lflag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
                         == QMV_QUERYSET_RECURSIVE_VIEW_RIGHT,
                         ERR_AGGREGATE_NOT_ALLOWED_RECURSIVE_VIEW );
     }
@@ -1428,7 +1368,7 @@ IDE_RC qmvQuerySet::validateHints( qcStatement* aStatement,
 
     if ( aSFWGH->hints == NULL )
     {
-        // ÏÇ¨Ïö©ÏûêÍ∞Ä ÌûåÌä∏Î•º Î™ÖÏãúÌïòÏßÄ ÏïäÏùÄ Í≤ΩÏö∞ Ï¥àÍ∏∞Í∞íÏúºÎ°ú ÌûåÌä∏ Íµ¨Ï°∞Ï≤¥ Ìï†Îãπ
+        // ªÁøÎ¿⁄∞° »˘∆Æ∏¶ ∏ÌΩ√«œ¡ˆ æ ¿∫ ∞ÊøÏ √ ±‚∞™¿∏∑Œ »˘∆Æ ±∏¡∂√º «“¥Á
 
         IDE_TEST ( STRUCT_ALLOC( QC_QMP_MEM(aStatement),
                                  qmsHints,
@@ -1442,7 +1382,7 @@ IDE_RC qmvQuerySet::validateHints( qcStatement* aStatement,
     }
 
     // PROJ-2638
-    // shard Ïùò Í≤ΩÏö∞ Î≥ÑÎèÑÏùò hint Í∞Ä ÏóÜÎäîÌïú memory temp Î•º ÏÇ¨Ïö©ÌïúÎã§.
+    // shard ¿« ∞ÊøÏ ∫∞µµ¿« hint ∞° æ¯¥¬«— memory temp ∏¶ ªÁøÎ«—¥Ÿ.
     if ( aSFWGH->hints->interResultType == QMO_INTER_RESULT_TYPE_NOT_DEFINED )
     {
         for ( sFrom = aSFWGH->from; sFrom != NULL; sFrom = sFrom->next )
@@ -1482,9 +1422,9 @@ IDE_RC qmvQuerySet::validateHints( qcStatement* aStatement,
 
     /*
      *  PROJ-2206 viewMaterialize
-     *  ÌïòÏúÑ fromÏóê viewÍ∞Ä Ï°¥Ïû¨ ÌïòÍ≥† viewÏóê MATERIALIZE, NO_MATERIALIZE ÌûåÌä∏Í∞Ä
-     *  Ï†ÅÏö©ÎêòÏóàÎäîÏßÄ ÌåêÎã®Ìï¥ÏÑú QMO_VIEW_OPT_TYPE_FORCE_VMTR,
-     *  QMO_VIEW_OPT_TYPE_PUSH Î•º Ï†ÅÏö©Ìï¥ Ï§ÄÎã§.
+     *  «œ¿ß fromø° view∞° ¡∏¿Á «œ∞Ì viewø° MATERIALIZE, NO_MATERIALIZE »˘∆Æ∞°
+     *  ¿˚øÎµ«æ˙¥¬¡ˆ ∆«¥‹«ÿº≠ QMO_VIEW_OPT_TYPE_FORCE_VMTR,
+     *  QMO_VIEW_OPT_TYPE_PUSH ∏¶ ¿˚øÎ«ÿ ¡ÿ¥Ÿ.
      */
     for (sFrom = aSFWGH->from;
          sFrom != NULL;
@@ -1495,7 +1435,7 @@ IDE_RC qmvQuerySet::validateHints( qcStatement* aStatement,
             if ( sFrom->tableRef->view != NULL )
             {
                 // PROJ-2638
-                // shard Ïùò Í≤ΩÏö∞ view materialize hint Î•º Î∞∞Ï†úÌïúÎã§.
+                // shard ¿« ∞ÊøÏ view materialize hint ∏¶ πË¡¶«—¥Ÿ.
                 if ( ( sFrom->tableRef->view->myPlan->parseTree->stmtShard
                        == QC_STMT_SHARD_NONE ) ||
                      ( sFrom->tableRef->view->myPlan->parseTree->stmtShard
@@ -1574,7 +1514,7 @@ IDE_RC qmvQuerySet::validateHints( qcStatement* aStatement,
             findHintTableInFromClause(aStatement, sFrom, sHintTable);
 
             // PROJ-2638
-            // shard Ïùò Í≤ΩÏö∞ view optimize hint Î•º Î∞∞Ï†úÌïúÎã§.
+            // shard ¿« ∞ÊøÏ view optimize hint ∏¶ πË¡¶«—¥Ÿ.
             if ( sHintTable->table != NULL )
             {
                 if ( sHintTable->table->tableRef->view != NULL )
@@ -1609,7 +1549,7 @@ IDE_RC qmvQuerySet::validateHints( qcStatement* aStatement,
                 if( sHintTable->table->tableRef->view != NULL )
                 {
                     // PROJ-1413
-                    // hintÏóêÏÑú ÏßÄÏ†ïÎêú viewÎäî mergeÌïòÏßÄ ÏïäÏùå
+                    // hintø°º≠ ¡ˆ¡§µ» view¥¬ merge«œ¡ˆ æ ¿Ω
                     sHintTable->table->tableRef->noMergeHint = ID_TRUE;
                 }
                 else
@@ -1642,28 +1582,28 @@ IDE_RC qmvQuerySet::validateHints( qcStatement* aStatement,
             {
                 if( sHintTable->table->tableRef->view != NULL )
                 {
-                    // Ìï¥Îãπ view tableÏùÑ Ï∞æÏùå
+                    // «ÿ¥Á view table¿ª √£¿Ω
 
                     // PROJ-1413
-                    // hintÏóêÏÑú ÏßÄÏ†ïÎêú viewÎäî mergeÌïòÏßÄ ÏïäÏùå
+                    // hintø°º≠ ¡ˆ¡§µ» view¥¬ merge«œ¡ˆ æ ¿Ω
                     sHintTable->table->tableRef->noMergeHint = ID_TRUE;
 
                     break;
                 }
                 else
                 {
-                    // viewÍ∞Ä ÏïÑÎãå base tableÎ°ú ÏûòÎ™ªÎêú hint
+                    // view∞° æ∆¥— base table∑Œ ¿ﬂ∏¯µ» hint
                     sHintTable->table = NULL;
                 }
             }
             else
             {
-                // Ìï¥Îãπ view tableÏù¥ ÏóÜÏùåÏùò ÏûòÎ™ªÎêú hint
+                // «ÿ¥Á view table¿Ã æ¯¿Ω¿« ¿ﬂ∏¯µ» hint
                 // Nothing To Do
             }
         }
 
-        // 2. PUSH_PRED hint viewÏùò Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+        // 2. PUSH_PRED hint view¿« ¿˚«’º∫ ∞ÀªÁ
         if( sHintTable->table != NULL )
         {
             sIsValid = ID_TRUE;
@@ -1679,7 +1619,7 @@ IDE_RC qmvQuerySet::validateHints( qcStatement* aStatement,
             }
             else
             {
-                // VIEWÍ∞Ä hintÎ•º Ï†ÅÏö©ÌïòÍ∏∞Ïóê Î∂ÄÏ†ÅÌï©
+                // VIEW∞° hint∏¶ ¿˚øÎ«œ±‚ø° ∫Œ¿˚«’
                 sHintTable->table = NULL;
             }
         }
@@ -1717,7 +1657,7 @@ IDE_RC qmvQuerySet::validateHints( qcStatement* aStatement,
     }
     
     // PROJ-2582 recursive with
-    // recursive viewÍ∞Ä ÏûàÎäî right subqueryÏù∏ Í≤ΩÏö∞ push pred hintÎäî Î¨¥ÏãúÌïúÎã§.
+    // recursive view∞° ¿÷¥¬ right subquery¿Œ ∞ÊøÏ push pred hint¥¬ π´Ω√«—¥Ÿ.
     if ( aSFWGH->recursiveViewID != ID_USHORT_MAX )
     {
         aSFWGH->hints->pushPredHint = NULL;
@@ -1728,7 +1668,7 @@ IDE_RC qmvQuerySet::validateHints( qcStatement* aStatement,
     }
     
     // PROJ-2582 recursive with    
-    // recursive viewÍ∞Ä ÏûàÎäî right subqueryÏù∏ Í≤ΩÏö∞ ordered hintÎäî Î¨¥ÏãúÌïúÎã§.
+    // recursive view∞° ¿÷¥¬ right subquery¿Œ ∞ÊøÏ ordered hint¥¬ π´Ω√«—¥Ÿ.
     if ( ( aSFWGH->recursiveViewID != ID_USHORT_MAX ) &&
          ( aSFWGH->hints->joinOrderType == QMO_JOIN_ORDER_TYPE_ORDERED ) )
     {
@@ -1759,7 +1699,7 @@ IDE_RC qmvQuerySet::validateHints( qcStatement* aStatement,
             }
 
             // To Fix PR-8045
-            // Join MethodÏóê dependenciesÎ•º ÏÑ§Ï†ïÌï¥Ïïº Ìï®
+            // Join Methodø° dependencies∏¶ º≥¡§«ÿæﬂ «‘
             if ( sHintTable->table != NULL )
             {
                 IDE_TEST( qtc::dependencyOr( & sJoin->depInfo,
@@ -1769,7 +1709,7 @@ IDE_RC qmvQuerySet::validateHints( qcStatement* aStatement,
             }
             else
             {
-                // ÏûòÎ™ªÎêú HintÏûÑ
+                // ¿ﬂ∏¯µ» Hint¿”
                 // Nothing To Do
             }
         }
@@ -1792,6 +1732,18 @@ IDE_RC qmvQuerySet::validateHints( qcStatement* aStatement,
                   sFrom = sFrom->next )
             {
                 findHintTableInFromClause(aStatement, sFrom, sHintTable);
+            }
+
+            // BUG-47410 leading »˘∆Æø° lateral view∞° ¿÷¥¬ ∞ÊøÏ π´Ω√«—¥Ÿ.
+            if ( sHintTable->table != NULL )
+            {
+                if ( (sHintTable->table->tableRef->flag & QMS_TABLE_REF_LATERAL_VIEW_MASK) ==
+                     QMS_TABLE_REF_LATERAL_VIEW_TRUE )
+                {
+                    aSFWGH->hints->leading = NULL;
+                    aSFWGH->hints->joinOrderType = QMO_JOIN_ORDER_TYPE_OPTIMIZED; 
+                    break;
+                }
             }
         }
     }
@@ -1819,7 +1771,7 @@ IDE_RC qmvQuerySet::validateHints( qcStatement* aStatement,
                     if( sHintTable->table->tableRef->view != NULL )
                     {
                         // PROJ-1413
-                        // hintÏóêÏÑú ÏßÄÏ†ïÎêú viewÎäî mergeÌïòÏßÄ ÏïäÏùå
+                        // hintø°º≠ ¡ˆ¡§µ» view¥¬ merge«œ¡ˆ æ ¿Ω
                         sHintTable->table->tableRef->noMergeHint = ID_TRUE;
                     }
                     else
@@ -1929,7 +1881,7 @@ IDE_RC qmvQuerySet::validateHints( qcStatement* aStatement,
             aSFWGH->hints->optGoalType = QMO_OPT_GOAL_TYPE_RULE;
         }
 
-        // environmentÏùò Í∏∞Î°ù
+        // environment¿« ±‚∑œ
         qcgPlan::registerPlanProperty( aStatement,
                                        PLAN_PROPERTY_OPTIMIZER_MODE );
     }
@@ -1951,7 +1903,7 @@ IDE_RC qmvQuerySet::validateHints( qcStatement* aStatement,
         // Nothing To Do
     }
 
-    // BUG-23780 TEMP_TBS_MEMORY ÌûåÌä∏ Ï†ÅÏö©Ïó¨Î∂ÄÎ•º propertyÎ°ú Ï†úÍ≥µ
+    // BUG-23780 TEMP_TBS_MEMORY »˘∆Æ ¿˚øÎø©∫Œ∏¶ property∑Œ ¡¶∞¯
     if( aSFWGH->hints->interResultType == QMO_INTER_RESULT_TYPE_NOT_DEFINED )
     {
         if( QCG_GET_SESSION_OPTIMIZER_DEFAULT_TEMP_TBS_TYPE( aStatement )  == 1 )
@@ -1984,7 +1936,7 @@ IDE_RC qmvQuerySet::validateHints( qcStatement* aStatement,
     {
         sHintTable = sNoMergeHint->table;
 
-        // BUG-43536 no_merge() ÌûåÌä∏ ÏßÄÏõê
+        // BUG-43536 no_merge() »˘∆Æ ¡ˆø¯
         if ( sHintTable == NULL )
         {
             continue;
@@ -2007,7 +1959,7 @@ IDE_RC qmvQuerySet::validateHints( qcStatement* aStatement,
             {
                 if( sHintTable->table->tableRef->view != NULL )
                 {
-                    // hintÏóêÏÑú ÏßÄÏ†ïÎêú viewÎäî mergeÌïòÏßÄ ÏïäÏùå
+                    // hintø°º≠ ¡ˆ¡§µ» view¥¬ merge«œ¡ˆ æ ¿Ω
                     sHintTable->table->tableRef->noMergeHint = ID_TRUE;
                 }
                 else
@@ -2037,24 +1989,24 @@ IDE_RC qmvQuerySet::validateHints( qcStatement* aStatement,
     if ( aSFWGH->thisQuerySet != NULL )
     {
         // PROJ-2582 recursive with
-        if ( ( ( aSFWGH->thisQuerySet->flag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
+        if ( ( ( aSFWGH->thisQuerySet->lflag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
                == QMV_QUERYSET_RECURSIVE_VIEW_LEFT ) ||
-             ( ( aSFWGH->thisQuerySet->flag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
+             ( ( aSFWGH->thisQuerySet->lflag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
                == QMV_QUERYSET_RECURSIVE_VIEW_RIGHT ) )
         {
             // nothing to do
         }
         else
         {
-            aSFWGH->thisQuerySet->flag &= ~QMV_QUERYSET_RESULT_CACHE_MASK;
+            aSFWGH->thisQuerySet->lflag &= ~QMV_QUERYSET_RESULT_CACHE_MASK;
 
             if ( aSFWGH->hints->resultCacheType == QMO_RESULT_CACHE_NO )
             {
-                aSFWGH->thisQuerySet->flag |= QMV_QUERYSET_RESULT_CACHE_NO;
+                aSFWGH->thisQuerySet->lflag |= QMV_QUERYSET_RESULT_CACHE_NO;
             }
             else if ( aSFWGH->hints->resultCacheType == QMO_RESULT_CACHE )
             {
-                aSFWGH->thisQuerySet->flag |= QMV_QUERYSET_RESULT_CACHE;
+                aSFWGH->thisQuerySet->lflag |= QMV_QUERYSET_RESULT_CACHE;
             }
             else
             {
@@ -2073,12 +2025,12 @@ IDE_RC qmvQuerySet::validateHints( qcStatement* aStatement,
               != IDE_SUCCESS );
 
     //------------------------------------------------
-    // ÌûåÌä∏Ïóê ÎåÄÌïú Ï†ïÎ≥¥ Íµ¨Ï∂ïÏù¥ ÏôÑÎ£åÎêòÎ©¥, Ïù¥Î•º Î∞îÌÉïÏúºÎ°ú
-    // ÏùºÎ∞ò TableÏóê ÎåÄÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º Íµ¨Ï∂ï
-    // qmsSFWGH->fromÏùÑ Îî∞ÎùºÍ∞ÄÎ©¥ÏÑú, Î™®Îì† ÏùºÎ∞ò  TableÏóê ÎåÄÌïú ÌÜµÍ≥Ñ Ï†ïÎ≥¥ Íµ¨Ï∂ï
-    // JOINÏù∏ Í≤ΩÏö∞, ÌïòÏúÑ ÏùºÎ∞ò ÌÖåÏù¥Î∏îÎèÑ Î™®Îëê Í≤ÄÏÇ¨...
-    // ÏùºÎ∞ò Table : qmsSFWGH->from->joinType = QMS_NO_JOIN Ïù¥Í≥†,
-    //              qmsSFWGH->from->tableRef->view == NULL Ïù∏ÏßÄÎ•º Í≤ÄÏÇ¨.
+    // »˘∆Æø° ¥Î«— ¡§∫∏ ±∏√‡¿Ã øœ∑·µ«∏È, ¿Ã∏¶ πŸ≈¡¿∏∑Œ
+    // ¿œπ› Tableø° ¥Î«— ≈Î∞Ë ¡§∫∏∏¶ ±∏√‡
+    // qmsSFWGH->from¿ª µ˚∂Û∞°∏Èº≠, ∏µÁ ¿œπ›  Tableø° ¥Î«— ≈Î∞Ë ¡§∫∏ ±∏√‡
+    // JOIN¿Œ ∞ÊøÏ, «œ¿ß ¿œπ› ≈◊¿Ã∫Ìµµ ∏µŒ ∞ÀªÁ...
+    // ¿œπ› Table : qmsSFWGH->from->joinType = QMS_NO_JOIN ¿Ã∞Ì,
+    //              qmsSFWGH->from->tableRef->view == NULL ¿Œ¡ˆ∏¶ ∞ÀªÁ.
     //------------------------------------------------
 
     IDE_TEST( qmoStat::getStatInfo4AllBaseTables( aStatement,
@@ -2158,17 +2110,17 @@ void qmvQuerySet::validateParallelHint(qcStatement* aStatement,
             {
                 /*
                  * BUG-39173
-                 * USER_TABLE Ïóê ÎåÄÌï¥ÏÑúÎßå parallel Ï†ÅÏö©
+                 * USER_TABLE ø° ¥Î«ÿº≠∏∏ parallel ¿˚øÎ
                  */
                 if ((sHintTable->table->tableRef->view == NULL) &&
                     (sHintTable->table->tableRef->tableType == QCM_USER_TABLE))
                 {
-                    /* view Í∞Ä ÏïÑÎãå base table Ïóê ÎåÄÌï¥ÏÑúÎßå hint Ï†ÅÏö© */
+                    /* view ∞° æ∆¥— base table ø° ¥Î«ÿº≠∏∏ hint ¿˚øÎ */
                     sHintTable->table->tableRef->mParallelDegree = sDegree;
                 }
                 else
                 {
-                    /* View Îäî parallel degree Ïóê ÏòÅÌñ•Î∞õÏßÄ ÏïäÎäîÎã§. */
+                    /* View ¥¬ parallel degree ø° øµ«‚πﬁ¡ˆ æ ¥¬¥Ÿ. */
                 }
             }
             else
@@ -2190,7 +2142,7 @@ void qmvQuerySet::setParallelDegreeOnAllTables(qmsFrom* aFrom, UInt aDegree)
         {
             /*
              * BUG-39173
-             * USER_TABLE Ïóê ÎåÄÌï¥ÏÑúÎßå parallel Ï†ÅÏö©
+             * USER_TABLE ø° ¥Î«ÿº≠∏∏ parallel ¿˚øÎ
              */
             if ((sFrom->tableRef->view == NULL) &&
                 (sFrom->tableRef->tableType == QCM_USER_TABLE))
@@ -2199,7 +2151,7 @@ void qmvQuerySet::setParallelDegreeOnAllTables(qmsFrom* aFrom, UInt aDegree)
             }
             else
             {
-                /* view Ïù∏ Í≤ΩÏö∞ parallel hint Î¨¥Ïãú */
+                /* view ¿Œ ∞ÊøÏ parallel hint π´Ω√ */
             }
         }
         else
@@ -2348,7 +2300,7 @@ IDE_RC qmvQuerySet::validateWhere(
         IDE_RAISE( ERR_PROWID_NOT_SUPPORTED );
     }
 
-    /* Plan PropertyÏóê Îì±Î°ù */
+    /* Plan Propertyø° µÓ∑œ */
     qcgPlan::registerPlanProperty( aStatement,
                                    PLAN_PROPERTY_QUERY_REWRITE_ENABLE );
     
@@ -2367,10 +2319,10 @@ IDE_RC qmvQuerySet::validateWhere(
         /* Nothing to do */
     }
 
-    // BUG-41289 subquery Ïùò where Ï†àÏóêÎèÑ DescribeParamInfo Ï†ÅÏö©
+    // BUG-41289 subquery ¿« where ¿˝ø°µµ DescribeParamInfo ¿˚øÎ
     if ( QC_SHARED_TMPLATE(aStatement)->stmt->myPlan->sBindParamCount > 0 )
     {
-        // BUG-15746 DescribeParamInfo ÏÑ§Ï†ï
+        // BUG-15746 DescribeParamInfo º≥¡§
         IDE_TEST( qtc::setDescribeParamInfo4Where( QC_SHARED_TMPLATE(aStatement)->stmt,
                                                    aSFWGH->where )
                   != IDE_SUCCESS );
@@ -2450,18 +2402,18 @@ IDE_RC qmvQuerySet::validateGroupBy(
     IDE_TEST_RAISE(sParseTree->forUpdate != NULL, ERR_GROUP_ON_FORUPDATE);
 
     // PROJ-2582 recursive with
-    IDE_TEST_RAISE( ( aQuerySet->flag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
+    IDE_TEST_RAISE( ( aQuerySet->lflag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
                     == QMV_QUERYSET_RECURSIVE_VIEW_RIGHT,
                     ERR_OPERATION_NOT_ALLOWED_RECURSIVE_VIEW );
 
     // PROJ-2415 Grouping Sets Clause    
-    if ( ( aSFWGH->flag & QMV_SFWGH_GBGS_TRANSFORM_MASK )
+    if ( ( aSFWGH->lflag & QMV_SFWGH_GBGS_TRANSFORM_MASK )
          != QMV_SFWGH_GBGS_TRANSFORM_NONE )
     {
-        // Nested Aggregate Function ÏÇ¨Ïö©Î∂àÍ∞Ä
+        // Nested Aggregate Function ªÁøÎ∫“∞°
         IDE_TEST_RAISE( aSFWGH->aggsDepth2 != NULL, ERR_NOT_NESTED_AGGR );
 
-        // Over Cluase ÏÇ¨Ïö©Î∂àÍ∞Ä
+        // Over Cluase ªÁøÎ∫“∞°
         IDE_TEST_RAISE( aQuerySet->analyticFuncList != NULL, ERR_NOT_WINDOWING );            
     }
     else
@@ -2498,7 +2450,7 @@ IDE_RC qmvQuerySet::validateGroupBy(
                 break;
             case QMS_GROUPBY_ROLLUP:
             case QMS_GROUPBY_CUBE:
-                /* PROJ-1353 Rollup, CubeÎäî Group by Ï†àÏóê 1Î≤àÎßå Í∞ÄÎä•ÌïòÎã§ */
+                /* PROJ-1353 Rollup, Cube¥¬ Group by ¿˝ø° 1π¯∏∏ ∞°¥…«œ¥Ÿ */
                 IDE_TEST_RAISE( sGroupExtCount > 0, ERR_NOT_SUPPORT_COMPLICATE_GROUP_EXT );
 
                 for ( sTemp = sConcatElement->arguments;
@@ -2540,9 +2492,9 @@ IDE_RC qmvQuerySet::validateGroupBy(
                 sGroupExtCount++;
                 break;
             case QMS_GROUPBY_GROUPING_SETS:
-                /* PROJ-2415 Grouping Sets ClauseÎ°ú Ìï¥Îãπ ÏóêÎü¨Îäî ÎçîÏù¥ÏÉÅ Î∞úÏÉùÌïòÏßÄ ÏïäÍ≤å ÎêúÎã§.
-                 * Ïã§Ï†úÎ°ú GroupÏùò Validation ÏãúÏóê GROUPING SETSÎäî Ï°¥Ïû¨ ÌïòÏßÄ ÏïäÏúºÎ©∞
-                 * ÎßåÏïΩ Ïù¥ CASEÏóê Ï†ëÍ∑º ÎêúÎã§Î©¥ Internal errorÎ•º Î∞úÏÉù ÏãúÏºúÏïº ÌïúÎã§.
+                /* PROJ-2415 Grouping Sets Clause∑Œ «ÿ¥Á ø°∑Ø¥¬ ¥ı¿ÃªÛ πﬂª˝«œ¡ˆ æ ∞‘ µ»¥Ÿ.
+                 * Ω«¡¶∑Œ Group¿« Validation Ω√ø° GROUPING SETS¥¬ ¡∏¿Á «œ¡ˆ æ ¿∏∏Á
+                 * ∏∏æ‡ ¿Ã CASEø° ¡¢±Ÿ µ»¥Ÿ∏È Internal error∏¶ πﬂª˝ Ω√ƒ—æﬂ «—¥Ÿ.
                  */
                 IDE_RAISE( ERR_NOT_SUPPORT_GROUPING_SETS );
                 break;
@@ -2736,16 +2688,14 @@ IDE_RC qmvQuerySet::validateHierarchy(
     qmsQuerySet     * aQuerySet,
     qmsSFWGH        * aSFWGH)
 {
-    qcuSqlSourceInfo        sqlInfo;
-    qtcNode               * sNode[2];
-    qcNamePosition          sPosition;
-    qtcNode               * sStart;
-    qtcNode               * sConnect;
+    qcuSqlSourceInfo sqlInfo;
+    qtcNode        * sStart;
+    qtcNode        * sConnect;
 
     IDU_FIT_POINT_FATAL( "qmvQuerySet::validateHierarchy::__FT__" );
 
     //------------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //------------------------------------------
     
     IDE_FT_ASSERT( aSFWGH != NULL );
@@ -2760,7 +2710,7 @@ IDE_RC qmvQuerySet::validateHierarchy(
     //------------------------------------------
     
     // PROJ-2582 recursive with
-    IDE_TEST_RAISE( ( aQuerySet->flag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
+    IDE_TEST_RAISE( ( aQuerySet->lflag & QMV_QUERYSET_RECURSIVE_VIEW_MASK )
                     == QMV_QUERYSET_RECURSIVE_VIEW_RIGHT,
                     ERR_OPERATION_NOT_ALLOWED_RECURSIVE_VIEW );
 
@@ -2858,84 +2808,7 @@ IDE_RC qmvQuerySet::validateHierarchy(
         }
         IDE_TEST( searchConnectByAggr( aStatement, sConnect )
                   != IDE_SUCCESS );
-    }
 
-    if (aSFWGH->level == NULL)
-    {
-        SET_EMPTY_POSITION( sPosition );
-
-        IDE_TEST( qtc::makeColumn( aStatement,
-                                   sNode,
-                                   NULL,
-                                   NULL,
-                                   &sPosition,
-                                   NULL ) != IDE_SUCCESS );
-
-        aSFWGH->level = sNode[0];
-
-        // make tuple for LEVEL
-        IDE_TEST(qmvQTC::makeOneTupleForPseudoColumn(
-                     aStatement,
-                     aSFWGH->level,
-                     (SChar *)"BIGINT",
-                     6)
-                 != IDE_SUCCESS);
-    }
-    else
-    {
-        /* Nothing to do */
-    }
-
-    /* PROJ-1715 isLeaf Pseudo Column */
-    if ( aSFWGH->isLeaf == NULL )
-    {
-        SET_EMPTY_POSITION( sPosition );
-
-        IDE_TEST( qtc::makeColumn( aStatement,
-                                   sNode,
-                                   NULL,
-                                   NULL,
-                                   &sPosition,
-                                   NULL ) != IDE_SUCCESS );
-
-        aSFWGH->isLeaf = sNode[0];
-
-        /* make tuple for isLeaf */
-        IDE_TEST(qmvQTC::makeOneTupleForPseudoColumn( aStatement,
-                                                      aSFWGH->isLeaf,
-                                                      (SChar *)"BIGINT",
-                                                      6 )
-                 != IDE_SUCCESS);
-    }
-    else
-    {
-        /* Nothing to do */
-    }
-
-    /* PROJ-1715 Connect By Stack Address Pseudo Column */
-    if ( aSFWGH->cnbyStackAddr == NULL )
-    {
-        SET_EMPTY_POSITION( sPosition );
-
-        IDE_TEST( qtc::makeColumn( aStatement,
-                                   sNode,
-                                   NULL,
-                                   NULL,
-                                   &sPosition,
-                                   NULL ) != IDE_SUCCESS );
-
-        aSFWGH->cnbyStackAddr = sNode[0];
-
-        /* make tuple for Connect By Stack Address */
-        IDE_TEST(qmvQTC::makeOneTupleForPseudoColumn( aStatement,
-                                                      aSFWGH->cnbyStackAddr,
-                                                      (SChar *)"BIGINT",
-                                                      6 )
-                 != IDE_SUCCESS);
-    }
-    else
-    {
-        /* Nothing to do */
     }
 
     return IDE_SUCCESS;
@@ -3006,16 +2879,16 @@ IDE_RC qmvQuerySet::validateJoin(
             case QMS_NO_JOIN :
                 break;
             case QMS_INNER_JOIN :
-                aSFWGH->flag |= QMV_SFWGH_JOIN_INNER;
+                aSFWGH->lflag |= QMV_SFWGH_JOIN_INNER;
                 break;
             case QMS_FULL_OUTER_JOIN :
-                aSFWGH->flag |= QMV_SFWGH_JOIN_FULL_OUTER;
+                aSFWGH->lflag |= QMV_SFWGH_JOIN_FULL_OUTER;
                 break;
             case QMS_LEFT_OUTER_JOIN :
-                aSFWGH->flag |= QMV_SFWGH_JOIN_LEFT_OUTER;
+                aSFWGH->lflag |= QMV_SFWGH_JOIN_LEFT_OUTER;
                 break;
             case QMS_RIGHT_OUTER_JOIN :
-                aSFWGH->flag |= QMV_SFWGH_JOIN_RIGHT_OUTER;
+                aSFWGH->lflag |= QMV_SFWGH_JOIN_RIGHT_OUTER;
                 break;
             default:
                 break;
@@ -3062,14 +2935,14 @@ IDE_RC qmvQuerySet::addLobLocatorFunc(
         {
             if( sMtcColumn->module->id == MTD_BLOB_ID )
             {
-                // get_blob_locator Ìï®ÏàòÎ•º ÎßåÎì†Îã§.
+                // get_blob_locator «‘ºˆ∏¶ ∏∏µÁ¥Ÿ.
                 IDE_TEST( qtc::makeNode(aStatement,
                                         sNode,
                                         &sCurrTarget->targetColumn->columnName,
                                         &mtfGetBlobLocator )
                           != IDE_SUCCESS );
 
-                // Ìï®ÏàòÎ•º Ïó∞Í≤∞ÌïúÎã§.
+                // «‘ºˆ∏¶ ø¨∞·«—¥Ÿ.
                 sNode[0]->node.arguments = (mtcNode*)sCurrTarget->targetColumn;
                 sNode[0]->node.next = sCurrTarget->targetColumn->node.next;
                 sNode[0]->node.arguments->next = NULL;
@@ -3083,26 +2956,26 @@ IDE_RC qmvQuerySet::addLobLocatorFunc(
                     // Nothing to do.
                 }
 
-                // Ìï®ÏàòÎßå estimate Î•º ÏàòÌñâÌïúÎã§.
+                // «‘ºˆ∏∏ estimate ∏¶ ºˆ«‡«—¥Ÿ.
                 IDE_TEST( qtc::estimateNodeWithArgument( aStatement,
                                                          sNode[0] )
                           != IDE_SUCCESS );
 
-                // target ÎÖ∏ÎìúÎ•º Î∞îÍæºÎã§.
+                // target ≥ÎµÂ∏¶ πŸ≤€¥Ÿ.
                 sCurrTarget->targetColumn = sNode[0];
 
                 sPrevNode = sNode[0];
             }
             else if( sMtcColumn->module->id == MTD_CLOB_ID )
             {
-                // get_clob_locator Ìï®ÏàòÎ•º ÎßåÎì†Îã§.
+                // get_clob_locator «‘ºˆ∏¶ ∏∏µÁ¥Ÿ.
                 IDE_TEST( qtc::makeNode(aStatement,
                                         sNode,
                                         &sCurrTarget->targetColumn->columnName,
                                         &mtfGetClobLocator )
                           != IDE_SUCCESS );
 
-                // Ìï®ÏàòÎ•º Ïó∞Í≤∞ÌïúÎã§.
+                // «‘ºˆ∏¶ ø¨∞·«—¥Ÿ.
                 sNode[0]->node.arguments = (mtcNode*)sCurrTarget->targetColumn;
                 sNode[0]->node.next = sCurrTarget->targetColumn->node.next;
                 sNode[0]->node.arguments->next = NULL;
@@ -3116,12 +2989,12 @@ IDE_RC qmvQuerySet::addLobLocatorFunc(
                     // Nothing to do.
                 }
 
-                // Ìï®ÏàòÎßå estimate Î•º ÏàòÌñâÌïúÎã§.
+                // «‘ºˆ∏∏ estimate ∏¶ ºˆ«‡«—¥Ÿ.
                 IDE_TEST( qtc::estimateNodeWithArgument( aStatement,
                                                          sNode[0] )
                           != IDE_SUCCESS );
 
-                // target ÎÖ∏ÎìúÎ•º Î∞îÍæºÎã§.
+                // target ≥ÎµÂ∏¶ πŸ≤€¥Ÿ.
                 sCurrTarget->targetColumn = sNode[0];
 
                 sPrevNode = sNode[0];
@@ -3133,7 +3006,7 @@ IDE_RC qmvQuerySet::addLobLocatorFunc(
         }
         else
         {
-            // SPÏô∏ÏóêÏÑú select targetÏóê lob valueÍ∞Ä Ïò§Îäî Í≤ΩÏö∞ ÏóêÎü¨.
+            // SPø‹ø°º≠ select targetø° lob value∞° ø¿¥¬ ∞ÊøÏ ø°∑Ø.
             if ( ( aStatement->spvEnv->createProc == NULL ) &&
                  ( aStatement->calledByPSMFlag != ID_TRUE ) &&
                  ( ( sMtcColumn->module->id == MTD_BLOB_ID ) ||
@@ -3188,7 +3061,7 @@ IDE_RC qmvQuerySet::validateQmsTarget(qcStatement* aStatement,
 
     IDU_FIT_POINT_FATAL( "qmvQuerySet::validateQmsTarget::__FT__" );
 
-    // Í∏∞Î≥∏ Ï¥àÍ∏∞Ìôî
+    // ±‚∫ª √ ±‚»≠
     sPrevTarget  = NULL;
     sCurrTarget  = NULL;
     sFirstTarget = NULL;
@@ -3231,7 +3104,7 @@ IDE_RC qmvQuerySet::validateQmsTarget(qcStatement* aStatement,
     else
     {
         // BUG-34234
-        // targetÏ†àÏóê ÏÇ¨Ïö©Îêú Ìò∏Ïä§Ìä∏ Î≥ÄÏàòÎ•º varchar typeÏúºÎ°ú Í∞ïÏ†ú Í≥†Ï†ïÌïúÎã§.
+        // target¿˝ø° ªÁøÎµ» »£Ω∫∆Æ ∫Øºˆ∏¶ varchar type¿∏∑Œ ∞≠¡¶ ∞Ì¡§«—¥Ÿ.
         IDE_TEST( addCastOper( aStatement,
                                aSFWGH->target )
                   != IDE_SUCCESS );
@@ -3312,8 +3185,8 @@ IDE_RC qmvQuerySet::validateQmsTarget(qcStatement* aStatement,
                                              sCurrTarget )
                           != IDE_SUCCESS );
                 // PROJ-2469 Optimize View Materialization
-                // SFWGHÏóê ÌòÑÏû¨ ValidationÏ§ëÏù∏ TargetÏù¥ Î™á Î≤à Ïß∏ TargetÏù∏ÏßÄ Í∏∞Î°ùÌïúÎã§.
-                // ( viewColumnRefList ÏÉùÏÑ± Ïãú ÌôúÏö© )
+                // SFWGHø° «ˆ¿Á Validation¡ﬂ¿Œ Target¿Ã ∏Ó π¯ ¬∞ Target¿Œ¡ˆ ±‚∑œ«—¥Ÿ.
+                // ( viewColumnRefList ª˝º∫ Ω√ »∞øÎ )
                 aSFWGH->currentTargetNum++;
                 sPrevTarget = sCurrTarget;
             }
@@ -3322,10 +3195,10 @@ IDE_RC qmvQuerySet::validateQmsTarget(qcStatement* aStatement,
 
     /*
      * BUG-16000
-     * lob or binary typeÏùÄ distinctÎ•º ÏÇ¨Ïö©Ìï† Ïàò ÏóÜÎã§.
+     * lob or binary type¿∫ distinct∏¶ ªÁøÎ«“ ºˆ æ¯¥Ÿ.
      *
      * PROJ-1789 PROWID
-     * SELECT DISTINCT (_PROWID) FROM .. ÏßÄÏõê X
+     * SELECT DISTINCT (_PROWID) FROM .. ¡ˆø¯ X
      *
      * BUG-41047 distinct list type X
      */
@@ -3392,7 +3265,7 @@ IDE_RC qmvQuerySet::validateQmsTarget(qcStatement* aStatement,
     }
 
     // PROJ-2002 Column Security
-    // subqueryÏùò targetÏóê ÏïîÌò∏ Ïª¨ÎüºÏù¥ Ïò§Îäî Í≤ΩÏö∞ decrypt Ìï®ÏàòÎ•º ÏÉùÏÑ±ÌïúÎã§.
+    // subquery¿« targetø° æœ»£ ƒ√∑≥¿Ã ø¿¥¬ ∞ÊøÏ decrypt «‘ºˆ∏¶ ª˝º∫«—¥Ÿ.
     IDE_TEST( addDecryptFunc( aStatement, aSFWGH->target )
               != IDE_SUCCESS );
     
@@ -3436,12 +3309,11 @@ IDE_RC qmvQuerySet::validateQmsTarget(qcStatement* aStatement,
         }
     }
 
-    /*
-     * PROJ-2523 Unpivot clause
-     * Unpivot transformÏóê ÏÇ¨Ïö©Îêú columnÏù¥ Ïã§Ï†ú Ìï¥Îãπ tableÏùò columnÏù∏ÏßÄ ÌôïÏù∏ÌïúÎã§.
-     * Pseudo column, PSM variableÎì± Ïù¥ ÌÜµÍ≥ºÎêòÎäî Í≤É ÏùÑ Î∞©ÏßÄÌïúÎã§.
+    /* PROJ-2523 Unpivot clause
+     *  Unpivot transformø° ªÁøÎµ» column¿Ã Ω«¡¶ «ÿ¥Á table¿« column¿Œ¡ˆ »Æ¿Œ«—¥Ÿ.
+     *  Pseudo column, PSM variableµÓ ¿Ã ≈Î∞˙µ«¥¬ ∞Õ ¿ª πÊ¡ˆ«—¥Ÿ.
      */
-    if ( ( aSFWGH->flag & QMV_SFWGH_UNPIVOT_MASK ) == QMV_SFWGH_UNPIVOT_TRUE )
+    if ( ( aSFWGH->lflag & QMV_SFWGH_UNPIVOT_MASK ) == QMV_SFWGH_UNPIVOT_TRUE )
     {
         sTupleID =  aSFWGH->from->tableRef->table;
 
@@ -3533,12 +3405,12 @@ IDE_RC qmvQuerySet::expandAllTarget(
 {
 /***********************************************************************
  *
- * Description : Ï†ÑÏ≤¥ target ÌôïÏû•
+ * Description : ¿¸√º target »Æ¿Â
  *
  * Implementation :
- *    SELECT * FROM ...Í≥º Í∞ôÏùÄ Í≤ΩÏö∞, parsing Í≥ºÏ†ïÏóêÏÑú targetÏóê
- *    Ìï¥ÎãπÌïòÎäî ÏπºÎüº ÎÖ∏ÎìúÍ∞Ä ÏÉùÏÑ±ÎêòÏßÄ ÏïäÎäîÎã§.
- *    Ïù¥Î•º Ïù¥ Ìï®ÏàòÏóêÏÑú ÏÉùÏÑ±ÌïúÎã§.
+ *    SELECT * FROM ...∞˙ ∞∞¿∫ ∞ÊøÏ, parsing ∞˙¡§ø°º≠ targetø°
+ *    «ÿ¥Á«œ¥¬ ƒÆ∑≥ ≥ÎµÂ∞° ª˝º∫µ«¡ˆ æ ¥¬¥Ÿ.
+ *    ¿Ã∏¶ ¿Ã «‘ºˆø°º≠ ª˝º∫«—¥Ÿ.
  ***********************************************************************/
     qmsTableRef       * sTableRef;
     qmsTarget         * sFirstTarget;
@@ -3644,12 +3516,12 @@ IDE_RC qmvQuerySet::expandTarget(
 {
 /***********************************************************************
  *
- * Description : target ÌôïÏû•
+ * Description : target »Æ¿Â
  *
  * Implementation :
- *    targe Ï§ë 'T1.*', 'U1,T1.*' Í≥º Í∞ôÏùÄ Í≤ΩÏö∞Îäî Parsing Í≥ºÏ†ïÏóêÏÑú targetÏóê
- *    Ìï¥ÎãπÌïòÎäî ÏπºÎüº ÎÖ∏ÎìúÍ∞Ä ÏÉùÏÑ±ÎêòÏßÄ ÏïäÎäîÎã§.
- *    Ïù¥Î•º Ïù¥ Ìï®ÏàòÏóêÏÑú ÏÉùÏÑ±ÌïúÎã§.
+ *    targe ¡ﬂ 'T1.*', 'U1,T1.*' ∞˙ ∞∞¿∫ ∞ÊøÏ¥¬ Parsing ∞˙¡§ø°º≠ targetø°
+ *    «ÿ¥Á«œ¥¬ ƒÆ∑≥ ≥ÎµÂ∞° ª˝º∫µ«¡ˆ æ ¥¬¥Ÿ.
+ *    ¿Ã∏¶ ¿Ã «‘ºˆø°º≠ ª˝º∫«—¥Ÿ.
  ***********************************************************************/
     UInt               sUserID;
     qmsTableRef      * sTableRef;
@@ -3677,7 +3549,7 @@ IDE_RC qmvQuerySet::expandTarget(
     sTableRef = NULL;
 
     // PROJ-2415 Grouping Sets Clause
-    if ( ( aSFWGH->flag & QMV_SFWGH_GBGS_TRANSFORM_MASK )
+    if ( ( aSFWGH->lflag & QMV_SFWGH_GBGS_TRANSFORM_MASK )
          == QMV_SFWGH_GBGS_TRANSFORM_MIDDLE )
     {
         sFrom = ( ( qmsParseTree * )aSFWGH->from->tableRef->view->myPlan->parseTree )->querySet->SFWGH->from;
@@ -3736,7 +3608,7 @@ IDE_RC qmvQuerySet::validateTargetExp(
 {
 /***********************************************************************
  *
- * Description : target expressionÏóê ÎåÄÌïòÏó¨ validation Í≤ÄÏÇ¨
+ * Description : target expressionø° ¥Î«œø© validation ∞ÀªÁ
  *
  * Implementation :
  *
@@ -3753,7 +3625,7 @@ IDE_RC qmvQuerySet::validateTargetExp(
     sExpression->lflag |= QTC_NODE_COLUMN_CONVERT_TRUE;
 
     // BUG-42790
-    // targetÏóê ÏßëÍ≥ÑÌï®ÏàòÍ∞Ä Ïò§Î©¥ Î≥ÄÏàòÏùº Ïàò ÏóÜÎã§.
+    // targetø° ¡˝∞Ë«‘ºˆ∞° ø¿∏È ∫Øºˆ¿œ ºˆ æ¯¥Ÿ.
     if ( ( sExpression->node.module != &qtc::columnModule ) &&
          ( sExpression->node.module != &qtc::spFunctionCallModule ) &&
          ( ( ( sExpression->lflag) & QTC_NODE_SP_ARRAY_INDEX_VAR_MASK ) ==
@@ -4002,14 +3874,18 @@ IDE_RC qmvQuerySet::makeTargetListForTableRef(
     UShort            sCount;
     qmsTableRef     * sTableRef = NULL;
 
+    /* TASK-7219 */
+    UShort            sOrderStart = ID_USHORT_MAX;
+    UShort            sOrderEnd   = ID_USHORT_MAX;
+
     IDU_FIT_POINT_FATAL( "qmvQuerySet::makeTargetListForTableRef::__FT__" );
 
     *aFirstTarget = NULL;
     *aLastTarget  = NULL;
 
     // PROJ-2415 Gropuing Sets Clause
-    // ÌïòÏúÑ inLineViewÏùò TargetÏóêÏÑú Ìï¥ÎãπÌïòÎäî ColumnÏùÑ Ï∞æÎäîÎã§.
-    if ( ( ( aSFWGH->flag & QMV_SFWGH_GBGS_TRANSFORM_MASK )
+    // «œ¿ß inLineView¿« Targetø°º≠ «ÿ¥Á«œ¥¬ Column¿ª √£¥¬¥Ÿ.
+    if ( ( ( aSFWGH->lflag & QMV_SFWGH_GBGS_TRANSFORM_MASK )
            == QMV_SFWGH_GBGS_TRANSFORM_MIDDLE ) &&
          ( aSFWGH->from->tableRef != aTableRef ) )
     {
@@ -4044,6 +3920,48 @@ IDE_RC qmvQuerySet::makeTargetListForTableRef(
         sTableRef = aTableRef;
     }
 
+    /* TASK-7219
+     *   Implicit Order By Transform ∑Œ √ﬂ∞°µ» Target ¿Ã Shard View ª˝º∫ø°
+     *   Select * «¸≈¬∑Œ ¿Œ«ÿº≠ √÷ªÛ¿ß ∞·∞˙ø° ≥Î√‚µ… ºˆ ¿÷¥Ÿ.
+     *   «ÿ¥Á Target ¿∫ √ﬂ∞°µ» ∞Õ¿∏∑Œ ªÁøÎ¿⁄ ƒı∏Æ ≥ªø° æ¯¥¬ Target ¿Ã∞Ì
+     *   ∞·∞˙ø°º≠ ¡¶ø‹«ÿæﬂ «œπ«∑Œ, πÃ∏Æ ¿ßƒ°∏¶ ∞ÀªÁ«—¥Ÿ.
+     *
+     *   ¡÷¿««“ ¡°¿∫ Implicit Order By Transform µ» Target ªÁ¿Ãø°
+     *   ¥Ÿ∏• Transform ¿∏∑Œ ª˝º∫µ» Target ¿Ã ¿÷¿∏∏È æ»µ»¥Ÿ.
+     */
+    if ( ( aSFWGH->lflag & QMV_SFWGH_SHARD_ORDER_BY_TRANS_MASK )
+         == QMV_SFWGH_SHARD_ORDER_BY_TRANS_TRUE )
+    {
+        sChildParseTree = (qmsParseTree *)aSFWGH->from->tableRef->view->myPlan->parseTree;
+
+        for ( sChildTarget  = sChildParseTree->querySet->SFWGH->target, sCount = 0;
+              sChildTarget != NULL;
+              sChildTarget  = sChildTarget->next, sCount++ )
+        {
+            if ( ( sChildTarget->flag & QMS_TARGET_SHARD_ORDER_BY_TRANS_MASK )
+                 != QMS_TARGET_SHARD_ORDER_BY_TRANS_NONE )
+            {
+                if ( sOrderStart == ID_USHORT_MAX )
+                {
+                    sOrderStart = sCount;
+                    sOrderEnd   = sCount + 1;
+                }
+                else
+                {
+                    sOrderEnd++;
+                }
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
     sTableInfo = sTableRef->tableInfo;
 
     for (sPrevTarget = NULL,
@@ -4067,7 +3985,7 @@ IDE_RC qmvQuerySet::makeTargetListForTableRef(
         }
         
         // PROJ-2415 Grouping Sets Clause
-        if ( ( ( ( aSFWGH->flag & QMV_SFWGH_GBGS_TRANSFORM_MASK )
+        if ( ( ( ( aSFWGH->lflag & QMV_SFWGH_GBGS_TRANSFORM_MASK )
                  == QMV_SFWGH_GBGS_TRANSFORM_MIDDLE ) &&
                ( ( sColumn < sStartColumn ) || ( sColumn > sEndColumn ) ) ) &&
              ( sTableRef != aTableRef ) )
@@ -4078,7 +3996,23 @@ IDE_RC qmvQuerySet::makeTargetListForTableRef(
         {
             /* Nothing to do */
         }
-        
+
+        /* TASK-7219
+         *   √ﬂ∞°µ» Target ¿∫ ªÁøÎ¿⁄ ƒı∏Æ ≥ªø° æ¯¥¬ Target ¿Ã∞Ì
+         *   ∞·∞˙ø°º≠ ¡¶ø‹«ÿæﬂ «—¥Ÿ.
+         */
+        if ( ( ( aSFWGH->lflag & QMV_SFWGH_SHARD_ORDER_BY_TRANS_MASK )
+               == QMV_SFWGH_SHARD_ORDER_BY_TRANS_TRUE )
+               &&
+               ( ( sColumn >= sOrderStart ) && ( sColumn < sOrderEnd ) ) )
+        {
+            continue;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
         IDE_TEST(STRUCT_ALLOC(QC_QMP_MEM(aStatement),
                               qmsTarget,
                               &sCurrTarget)
@@ -4108,7 +4042,7 @@ IDE_RC qmvQuerySet::makeTargetListForTableRef(
                  != IDE_SUCCESS);
 
         // PROJ-1413
-        // view Ïª¨Îüº Ï∞∏Ï°∞Î•º Í∏∞Î°ùÌïúÎã§.
+        // view ƒ√∑≥ ¬¸¡∂∏¶ ±‚∑œ«—¥Ÿ.
         IDE_TEST( qmvQTC::addViewColumnRefListForTarget(
                       aStatement,
                       sCurrTarget->targetColumn,
@@ -4116,8 +4050,10 @@ IDE_RC qmvQuerySet::makeTargetListForTableRef(
                       sCurrTarget->targetColumn->node.column )
                   != IDE_SUCCESS );
 
-        /* BUG-37658 : meta table info Í∞Ä free Îê† Ïàò ÏûàÏúºÎØÄÎ°ú Îã§Ïùå Ìï≠Î™©ÏùÑ
-         *             alloc -> memcpy ÌïúÎã§.
+        /* TASK-7219 Shard Transformer Refactoring */
+
+        /* BUG-37658 : meta table info ∞° free µ… ºˆ ¿÷¿∏π«∑Œ ¥Ÿ¿Ω «◊∏Ò¿ª
+         *             alloc -> memcpy «—¥Ÿ.
          * - userName
          * - tableName
          * - aliasTableName
@@ -4128,33 +4064,55 @@ IDE_RC qmvQuerySet::makeTargetListForTableRef(
 
         // set user name
         sNameLen = idlOS::strlen(sTableInfo->tableOwnerName);
-        IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMP_MEM( aStatement ),
-                                          SChar,
-                                          sNameLen + 1,
-                                          &(sCurrTarget->userName.name) )
-                  != IDE_SUCCESS );
-        idlOS::memcpy( sCurrTarget->userName.name,
-                       sTableInfo->tableOwnerName,
-                       sNameLen );
-        sCurrTarget->userName.name[sNameLen] = '\0';
-        sCurrTarget->userName.size = sNameLen;
+
+        if ( sNameLen > 0 )
+        {
+            IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMP_MEM( aStatement ),
+                                              SChar,
+                                              sNameLen + 1,
+                                              &(sCurrTarget->userName.name) )
+                      != IDE_SUCCESS );
+            idlOS::memcpy( sCurrTarget->userName.name,
+                           sTableInfo->tableOwnerName,
+                           sNameLen );
+            sCurrTarget->userName.name[sNameLen] = '\0';
+            sCurrTarget->userName.size = sNameLen;
+        }
+        else
+        {
+            sCurrTarget->userName.name = NULL;
+            sCurrTarget->userName.size = QC_POS_EMPTY_SIZE;
+
+            SET_EMPTY_POSITION( sCurrTarget->targetColumn->userName );
+        }
 
         // set table name
         sNameLen = idlOS::strlen(sTableInfo->name);
-        IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMP_MEM( aStatement ),
-                                          SChar,
-                                          sNameLen + 1,
-                                          &(sCurrTarget->tableName.name) )
-                  != IDE_SUCCESS );
-        idlOS::memcpy( sCurrTarget->tableName.name,
-                       sTableInfo->name,
-                       sNameLen );
-        sCurrTarget->tableName.name[sNameLen] = '\0';
-        sCurrTarget->tableName.size = sNameLen;
 
-        sCurrTarget->targetColumn->tableName.stmtText = sCurrTarget->tableName.name;
-        sCurrTarget->targetColumn->tableName.offset   = 0;
-        sCurrTarget->targetColumn->tableName.size     = sCurrTarget->tableName.size;
+        if ( sNameLen > 0 )
+        {
+            IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMP_MEM( aStatement ),
+                                              SChar,
+                                              sNameLen + 1,
+                                              &(sCurrTarget->tableName.name) )
+                      != IDE_SUCCESS );
+            idlOS::memcpy( sCurrTarget->tableName.name,
+                           sTableInfo->name,
+                           sNameLen );
+            sCurrTarget->tableName.name[sNameLen] = '\0';
+            sCurrTarget->tableName.size = sNameLen;
+
+            sCurrTarget->targetColumn->tableName.stmtText = sCurrTarget->tableName.name;
+            sCurrTarget->targetColumn->tableName.offset   = 0;
+            sCurrTarget->targetColumn->tableName.size     = sCurrTarget->tableName.size;
+        }
+        else
+        {
+            sCurrTarget->tableName.name = NULL;
+            sCurrTarget->tableName.size = QC_POS_EMPTY_SIZE;
+
+            SET_EMPTY_POSITION( sCurrTarget->targetColumn->tableName );
+        }
 
         // set alias table name
         if ( QC_IS_NULL_NAME( sTableRef->aliasName ) == ID_TRUE )
@@ -4179,32 +4137,51 @@ IDE_RC qmvQuerySet::makeTargetListForTableRef(
 
         // set base column name
         sNameLen = idlOS::strlen(sCurrColumn->name);
-        IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMP_MEM( aStatement ),
-                                          SChar,
-                                          sNameLen + 1,
-                                          &(sCurrTarget->columnName.name) )
-                  != IDE_SUCCESS );
-        idlOS::memcpy( sCurrTarget->columnName.name,
-                       sCurrColumn->name,
-                       sNameLen );
-        sCurrTarget->columnName.name[sNameLen] = '\0';
-        sCurrTarget->columnName.size = sNameLen;
 
-        sCurrTarget->targetColumn->columnName.stmtText = sCurrTarget->columnName.name;
-        sCurrTarget->targetColumn->columnName.offset   = 0;
-        sCurrTarget->targetColumn->columnName.size     = sCurrTarget->columnName.size;
+        if ( sNameLen > 0 )
+        {
+            IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMP_MEM( aStatement ),
+                                              SChar,
+                                              sNameLen + 1,
+                                              &(sCurrTarget->columnName.name) )
+                      != IDE_SUCCESS );
+            idlOS::memcpy( sCurrTarget->columnName.name,
+                           sCurrColumn->name,
+                           sNameLen );
+            sCurrTarget->columnName.name[sNameLen] = '\0';
+            sCurrTarget->columnName.size = sNameLen;
+
+            sCurrTarget->targetColumn->columnName.stmtText = sCurrTarget->columnName.name;
+            sCurrTarget->targetColumn->columnName.offset   = 0;
+            sCurrTarget->targetColumn->columnName.size     = sCurrTarget->columnName.size;
+        }
+        else
+        {
+            sCurrTarget->columnName.name = NULL;
+            sCurrTarget->columnName.size = QC_POS_EMPTY_SIZE;
+
+            SET_EMPTY_POSITION( sCurrTarget->targetColumn->columnName );
+        }
 
         // set alias column name
-        IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMP_MEM( aStatement ),
-                                          SChar,
-                                          sCurrTarget->columnName.size + 1,
-                                          &(sCurrTarget->aliasColumnName.name) )
-                  != IDE_SUCCESS);
-        idlOS::memcpy( sCurrTarget->aliasColumnName.name,
-                       sCurrTarget->columnName.name,
-                       sCurrTarget->columnName.size );
-        sCurrTarget->aliasColumnName.name[sCurrTarget->columnName.size] = '\0';
-        sCurrTarget->aliasColumnName.size = sCurrTarget->columnName.size;
+        if ( QC_IS_NULL_NAME( sCurrTarget->columnName ) == ID_TRUE )
+        {
+            sCurrTarget->aliasColumnName.name = sCurrTarget->columnName.name;
+            sCurrTarget->aliasColumnName.size = sCurrTarget->columnName.size;
+        }
+        else
+        {
+            IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMP_MEM( aStatement ),
+                                              SChar,
+                                              sCurrTarget->columnName.size + 1,
+                                              &(sCurrTarget->aliasColumnName.name) )
+                      != IDE_SUCCESS);
+            idlOS::memcpy( sCurrTarget->aliasColumnName.name,
+                           sCurrTarget->columnName.name,
+                           sCurrTarget->columnName.size );
+            sCurrTarget->aliasColumnName.name[sCurrTarget->columnName.size] = '\0';
+            sCurrTarget->aliasColumnName.size = sCurrTarget->columnName.size;
+        }
 
         // set display name
         sNameLen = 0;
@@ -4246,7 +4223,7 @@ IDE_RC qmvQuerySet::makeTargetListForTableRef(
             /* Noting to do */
         }        
 
-        // environmentÏùò Í∏∞Î°ù
+        // environment¿« ±‚∑œ
         qcgPlan::registerPlanProperty( aStatement,
                                        PLAN_PROPERTY_SELECT_HEADER_DISPLAY );
 
@@ -4418,7 +4395,7 @@ IDE_RC qmvQuerySet::validateQmsTableRef(
     /* BUG-33691 PROJ-2188 Support pivot clause */
     if ( aTableRef->pivot != NULL )
     {
-        IDE_TEST(qmvPivotTransform::doTransform( aStatement, aTableRef )
+        IDE_TEST(qmvPivotTransform::doTransform( aStatement, aSFWGH, aTableRef )
                  != IDE_SUCCESS);
     }
     else
@@ -4446,7 +4423,7 @@ IDE_RC qmvQuerySet::validateQmsTableRef(
              == QMS_TABLE_REF_RECURSIVE_VIEW_TRUE )
         {
             // PROJ-2582 recursive with
-            // recursive viewÏù∏ Í≤ΩÏö∞
+            // recursive view¿Œ ∞ÊøÏ
             IDE_TEST( validateRecursiveView( aStatement,
                                              aSFWGH,
                                              aTableRef,
@@ -4456,7 +4433,7 @@ IDE_RC qmvQuerySet::validateQmsTableRef(
         else
         {
             // PROJ-2418
-            // ViewÍ∞Ä ÏóÜÎã§Î©¥ Lateral FlagÎ•º Ï¥àÍ∏∞ÌôîÌïúÎã§.
+            // View∞° æ¯¥Ÿ∏È Lateral Flag∏¶ √ ±‚»≠«—¥Ÿ.
             aTableRef->flag &= ~QMS_TABLE_REF_LATERAL_VIEW_MASK;
             aTableRef->flag |= QMS_TABLE_REF_LATERAL_VIEW_FALSE;
 
@@ -4470,7 +4447,7 @@ IDE_RC qmvQuerySet::validateQmsTableRef(
             }
             else
             {
-                // ÌÖåÏù¥Î∏îÏù∏ Í≤ΩÏö∞
+                // ≈◊¿Ã∫Ì¿Œ ∞ÊøÏ
                 IDE_TEST( validateTable(aStatement,
                                         aTableRef,
                                         aFlag,
@@ -4481,7 +4458,7 @@ IDE_RC qmvQuerySet::validateQmsTableRef(
     }
     else
     {
-        // Create View ÎòêÎäî Inline ViewÏù∏ Í≤ΩÏö∞
+        // Create View ∂«¥¬ Inline View¿Œ ∞ÊøÏ
         IDE_TEST(validateView( aStatement, aSFWGH, aTableRef, aIsNullableFlag )
                  != IDE_SUCCESS);
     }
@@ -4510,7 +4487,7 @@ IDE_RC qmvQuerySet::validateQmsTableRef(
     }
     
     // PROJ-1413
-    // tuple variable Îì±Î°ù
+    // tuple variable µÓ∑œ
     if ( QC_IS_NULL_NAME( (aTableRef->aliasName) ) == ID_FALSE )
     {
         IDE_TEST( qtc::registerTupleVariable( aStatement,
@@ -4523,7 +4500,7 @@ IDE_RC qmvQuerySet::validateQmsTableRef(
     }
 
     /* BUG-31570
-     * DDLÏù¥ ÎπàÎ≤àÌïú ÌôòÍ≤ΩÏóêÏÑú plan textÎ•º ÏïàÏ†ÑÌïòÍ≤å Î≥¥Ïó¨Ï£ºÎäî Î∞©Î≤ïÏù¥ ÌïÑÏöîÌïòÎã§.
+     * DDL¿Ã ∫Ûπ¯«— »Ø∞Êø°º≠ plan text∏¶ æ»¿¸«œ∞‘ ∫∏ø©¡÷¥¬ πÊπ˝¿Ã « ø‰«œ¥Ÿ.
      */
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( (QC_MAX_OBJECT_NAME_LEN + 1) *
                                              (aTableRef->tableInfo->columnCount),
@@ -4552,7 +4529,7 @@ IDE_RC qmvQuerySet::validateQmsTableRef(
     }
 
     // BUG-38983
-    // DDL Ïù¥ ÎπàÎ≤àÌïú ÌôòÍ≤ΩÏóêÏÑú plan text Ïùò userName (tableOwnerName) ÏùÑ ÏïàÏ†ÑÌïòÍ≤å Ï∂úÎ†•.
+    // DDL ¿Ã ∫Ûπ¯«— »Ø∞Êø°º≠ plan text ¿« userName (tableOwnerName) ¿ª æ»¿¸«œ∞‘ √‚∑¬.
     if ( aTableRef->tableInfo != NULL )
     {
         sNameLen = idlOS::strlen( aTableRef->tableInfo->tableOwnerName );
@@ -4765,18 +4742,18 @@ IDE_RC qmvQuerySet::validateTable(
     else
     {
         sqlInfo.setSourceInfo(aStatement, &aTableRef->tableName);
-        // ÌÖåÏù¥Î∏îÏù¥ Ï°¥Ïû¨ÌïòÏßÄ ÏïäÏùå. ÏóêÎü¨ Î∞úÏÉùÏãúÌÇ¥
+        // ≈◊¿Ã∫Ì¿Ã ¡∏¿Á«œ¡ˆ æ ¿Ω. ø°∑Ø πﬂª˝Ω√≈¥
         IDE_RAISE( ERR_NOT_EXIST_TABLE );
     }
 
     // FixedTable or PerformanceView
     if( sIsFixedTable == ID_TRUE )
     {
-        // PROJ-1350 - Plan Tree ÏûêÎèô Ïû¨Íµ¨ÏÑ±
-        // Execution ÏãúÏ†êÏóê table handleÏùò Ï†ëÍ∑ºÏùÑ ÌóàÏö©ÌïòÍ∏∞ ÏúÑÌïòÏó¨
-        // Table Meta CacheÏùò Ï†ïÎ≥¥Ïùò table handleÏ†ïÎ≥¥Î•º ÏÑ§Ï†ïÌïúÎã§.
-        // Ïù¥Îäî Table Meta CacheÏ†ïÎ≥¥Í∞Ä DDL Îì±Ïóê ÏùòÌï¥ Î≥ÄÍ≤ΩÎê† Ïàò ÏûàÍ∏∞
-        // ÎïåÎ¨∏Ïù¥Îã§.
+        // PROJ-1350 - Plan Tree ¿⁄µø ¿Á±∏º∫
+        // Execution Ω√¡°ø° table handle¿« ¡¢±Ÿ¿ª «„øÎ«œ±‚ ¿ß«œø©
+        // Table Meta Cache¿« ¡§∫∏¿« table handle¡§∫∏∏¶ º≥¡§«—¥Ÿ.
+        // ¿Ã¥¬ Table Meta Cache¡§∫∏∞° DDL µÓø° ¿««ÿ ∫Ø∞Êµ… ºˆ ¿÷±‚
+        // ∂ßπÆ¿Ã¥Ÿ.
         aTableRef->tableHandle = aTableRef->tableInfo->tableHandle;
         aTableRef->tableType   = aTableRef->tableInfo->tableType;
         aTableRef->tableFlag   = aTableRef->tableInfo->tableFlag;
@@ -4785,7 +4762,7 @@ IDE_RC qmvQuerySet::validateTable(
         QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_REF_FIXED_TABLE_MASK;
         QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_REF_FIXED_TABLE_TRUE;
 
-        // BUG-45522 fixed table ÏùÑ Í∞ÄÎ•¥ÌÇ§Îäî ÏãúÎÖ∏Î∞àÏùÄ plan cache Ïóê Îì±Î°ùÌï¥Ïïº Ìï©ÎãàÎã§.
+        // BUG-45522 fixed table ¿ª ∞°∏£≈∞¥¬ Ω√≥Îπ“¿∫ plan cache ø° µÓ∑œ«ÿæﬂ «’¥œ¥Ÿ.
         IDE_TEST( qcgPlan::registerPlanSynonym(
                       aStatement,
                       &sSynonymInfo,
@@ -4801,11 +4778,11 @@ IDE_RC qmvQuerySet::validateTable(
                       != IDE_SUCCESS );
 
             // PROJ-1436
-            // D$ tableÏù¥ ÏûàÏúºÎ©¥ plan cacheÌïòÏßÄ ÏïäÎäîÎã§.
-            // X$,V$,D$Î™®Îëê ÏßàÏùòÏ∞∏Ï°∞ Í∞ùÏ≤¥Í∞Ä DBÍ∞ùÏ≤¥Í∞Ä ÏïÑÎãàÎã§.
-            // Í∑∏Îü¨ÎÇò X$,V$Îäî Í∞ùÏ≤¥Î≥ÄÍ≤ΩÏù¥ ÏóÜÎäîÎ∞òÎ©¥,
-            // D$Îäî Í∞ùÏ≤¥Î≥ÄÍ≤ΩÏù¥ Î∞úÏÉùÌïúÎã§.
-            //Îî∞ÎùºÏÑú D$Îäî CacheÎπÑÎåÄÏÉÅÏûÖÎãàÎã§.
+            // D$ table¿Ã ¿÷¿∏∏È plan cache«œ¡ˆ æ ¥¬¥Ÿ.
+            // X$,V$,D$∏µŒ ¡˙¿«¬¸¡∂ ∞¥√º∞° DB∞¥√º∞° æ∆¥œ¥Ÿ.
+            // ±◊∑Ø≥™ X$,V$¥¬ ∞¥√º∫Ø∞Ê¿Ã æ¯¥¬π›∏È,
+            // D$¥¬ ∞¥√º∫Ø∞Ê¿Ã πﬂª˝«—¥Ÿ.
+            //µ˚∂Ûº≠ D$¥¬ Cache∫Ò¥ÎªÛ¿‘¥œ¥Ÿ.
             QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_PLAN_CACHE_IN_MASK;
             QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_PLAN_CACHE_IN_OFF;
         }
@@ -4835,22 +4812,22 @@ IDE_RC qmvQuerySet::validateTable(
             QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_ALL_FIXED_TABLE_FALSE;
         }
     }
-    else  // ÏùºÎ∞ò ÌÖåÏù¥Î∏î
+    else  // ¿œπ› ≈◊¿Ã∫Ì
     {
         // BUG-42639 Monitoring query
         QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_ALL_FIXED_TABLE_MASK;
         QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_ALL_FIXED_TABLE_FALSE;
-        // ÌÖåÏù¥Î∏îÏù¥ Ï°¥Ïû¨ÌïòÎ©¥ Ï≤òÎ¶¨Î•º Í≥ÑÏÜç ÏßÑÌñâÌï®
+        // ≈◊¿Ã∫Ì¿Ã ¡∏¿Á«œ∏È √≥∏Æ∏¶ ∞Ëº” ¡¯«‡«‘
         // BUG-34492
-        // validation lockÏù¥Î©¥ Ï∂©Î∂ÑÌïòÎã§.
+        // validation lock¿Ã∏È √Ê∫–«œ¥Ÿ.
         IDE_TEST(qcm::lockTableForDMLValidation(
                      aStatement,
                      sTableHandle,
                      aTableRef->tableSCN)
                  != IDE_SUCCESS);
 
-        // CREATE VIEW Íµ¨Î¨∏ ÏàòÌñâ Ï§ë SELECT ÏïàÏùò VIEWÍ∞Ä INVALIDÌïú ÏÉÅÌÉúÎ©¥
-        //  ÏóêÎü¨Î•º Î∞úÏÉùÏãúÌÇ®Îã§.
+        // CREATE VIEW ±∏πÆ ºˆ«‡ ¡ﬂ SELECT æ»¿« VIEW∞° INVALID«— ªÛ≈¬∏È
+        //  ø°∑Ø∏¶ πﬂª˝Ω√≈≤¥Ÿ.
         if ( ( (aFlag & QMV_VIEW_CREATION_MASK) == QMV_VIEW_CREATION_TRUE ) &&
              ( ( aTableRef->tableInfo->tableType == QCM_VIEW ) ||
                ( aTableRef->tableInfo->tableType == QCM_MVIEW_VIEW ) ) &&
@@ -4864,11 +4841,11 @@ IDE_RC qmvQuerySet::validateTable(
             // Nothing to do.
         }
 
-        // PROJ-1350 - Plan Tree ÏûêÎèô Ïû¨Íµ¨ÏÑ±
-        // Execution ÏãúÏ†êÏóê table handleÏùò Ï†ëÍ∑ºÏùÑ ÌóàÏö©ÌïòÍ∏∞ ÏúÑÌïòÏó¨
-        // Table Meta CacheÏùò Ï†ïÎ≥¥Ïùò table handleÏ†ïÎ≥¥Î•º ÏÑ§Ï†ïÌïúÎã§.
-        // Ïù¥Îäî Table Meta CacheÏ†ïÎ≥¥Í∞Ä DDL Îì±Ïóê ÏùòÌï¥ Î≥ÄÍ≤ΩÎê† Ïàò ÏûàÍ∏∞
-        // ÎïåÎ¨∏Ïù¥Îã§.
+        // PROJ-1350 - Plan Tree ¿⁄µø ¿Á±∏º∫
+        // Execution Ω√¡°ø° table handle¿« ¡¢±Ÿ¿ª «„øÎ«œ±‚ ¿ß«œø©
+        // Table Meta Cache¿« ¡§∫∏¿« table handle¡§∫∏∏¶ º≥¡§«—¥Ÿ.
+        // ¿Ã¥¬ Table Meta Cache¡§∫∏∞° DDL µÓø° ¿««ÿ ∫Ø∞Êµ… ºˆ ¿÷±‚
+        // ∂ßπÆ¿Ã¥Ÿ.
         aTableRef->tableHandle = aTableRef->tableInfo->tableHandle;
         aTableRef->tableType   = aTableRef->tableInfo->tableType;
         aTableRef->tableFlag   = aTableRef->tableInfo->tableFlag;
@@ -4876,7 +4853,8 @@ IDE_RC qmvQuerySet::validateTable(
 
         // PROJ-2646 shard analyzer enhancement
         if ( ( sdi::isShardCoordinator( aStatement ) == ID_TRUE ) ||
-             ( sdi::isRebuildCoordinator( aStatement ) == ID_TRUE ) )
+             ( sdi::isPartialCoordinator( aStatement ) == ID_TRUE ) ||
+             ( sdi::detectShardMetaChange( aStatement ) == ID_TRUE ) )
         {
             IDE_TEST( sdi::getTableInfo( aStatement,
                                          aTableRef->tableInfo,
@@ -4888,7 +4866,7 @@ IDE_RC qmvQuerySet::validateTable(
             // Nothing to do.
         }
 
-        // environmentÏùò Í∏∞Î°ù
+        // environment¿« ±‚∑œ
         IDE_TEST( qcgPlan::registerPlanTable(
                       aStatement,
                       aTableRef->tableHandle,
@@ -4897,7 +4875,7 @@ IDE_RC qmvQuerySet::validateTable(
                       aTableRef->tableInfo->name )        /* BUG-45893 */
                   != IDE_SUCCESS );
 
-        // environmentÏùò Í∏∞Î°ù
+        // environment¿« ±‚∑œ
         IDE_TEST( qcgPlan::registerPlanSynonym(
                       aStatement,
                       & sSynonymInfo,
@@ -4910,13 +4888,13 @@ IDE_RC qmvQuerySet::validateTable(
         // PROJ-1502 PARTITIONED DISK TABLE
         if ( aTableRef->partitionRef != NULL )
         {
-            // ÌååÌã∞ÏÖòÏùÑ ÏßÄÏ†ïÌïú Í≤ΩÏö∞ÏûÑ.
+            // ∆ƒ∆ºº«¿ª ¡ˆ¡§«— ∞ÊøÏ¿”.
             if ( aTableRef->tableInfo->tablePartitionType !=
                  QCM_PARTITIONED_TABLE )
             {
                 sqlInfo.setSourceInfo(aStatement,
                                       &aTableRef->tableName);
-                // ÌååÌã∞ÏÖòÎìú ÌÖåÏù¥Î∏îÏù¥ ÏïÑÎãå Í≤ΩÏö∞. ÏóêÎü¨ Î∞úÏÉùÏãúÌÇ¥
+                // ∆ƒ∆ºº«µÂ ≈◊¿Ã∫Ì¿Ã æ∆¥— ∞ÊøÏ. ø°∑Ø πﬂª˝Ω√≈¥
                 IDE_RAISE( ERR_NOT_PART_TABLE );
             }
             else
@@ -4924,7 +4902,7 @@ IDE_RC qmvQuerySet::validateTable(
                 /* nothing to do */
             }
 
-            // ÌååÌã∞ÏÖòÎìú ÌÖåÏù¥Î∏îÏù∏ Í≤ΩÏö∞ ÌååÌã∞ÏÖò Ï†ïÎ≥¥ ÏñªÏñ¥Ïò¥
+            // ∆ƒ∆ºº«µÂ ≈◊¿Ã∫Ì¿Œ ∞ÊøÏ ∆ƒ∆ºº« ¡§∫∏ æÚæÓø»
             IDE_TEST( qcmPartition::getPartitionInfo(
                           aStatement,
                           aTableRef->tableInfo->tableID,
@@ -4935,7 +4913,7 @@ IDE_RC qmvQuerySet::validateTable(
                       != IDE_SUCCESS );
 
             // BUG-34492
-            // validation lockÏù¥Î©¥ Ï∂©Î∂ÑÌïòÎã§.
+            // validation lock¿Ã∏È √Ê∫–«œ¥Ÿ.
             IDE_TEST( qmx::lockPartitionForDML( QC_SMI_STMT( aStatement ),
                                                 aTableRef->partitionRef,
                                                 SMI_TABLE_LOCK_IS )
@@ -4961,7 +4939,7 @@ IDE_RC qmvQuerySet::validateTable(
                 aTableRef->partitionRef->partitionID;
 
             // set flag
-            // ÏÑ†Ìñâ ÌîÑÎ£®ÎãùÏù¥ ÎêòÏóàÎã§Îäî flagÏÑ∏ÌåÖ.
+            // º±«‡ «¡∑Á¥◊¿Ã µ«æ˙¥Ÿ¥¬ flagºº∆√.
             aTableRef->flag &= ~QMS_TABLE_REF_PRE_PRUNING_MASK;
             aTableRef->flag |= QMS_TABLE_REF_PRE_PRUNING_TRUE;
 
@@ -4982,7 +4960,7 @@ IDE_RC qmvQuerySet::validateTable(
                       != IDE_SUCCESS );
 
             // BUG-34492
-            // validation lockÏù¥Î©¥ Ï∂©Î∂ÑÌïòÎã§.
+            // validation lock¿Ã∏È √Ê∫–«œ¥Ÿ.
             IDE_TEST( qmsIndexTable::validateAndLockIndexTableRefList( aStatement,
                                                                        aTableRef->indexTableRef,
                                                                        SMI_TABLE_LOCK_IS )
@@ -4993,20 +4971,18 @@ IDE_RC qmvQuerySet::validateTable(
             // Nothing to do.
         }
 
-        // shard tableÏùÄ shard viewÏóêÏÑúÎßå Ï∞∏Ï°∞Ìï† Ïàò ÏûàÎã§.
-        if ( ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_SHARD_TRANSFORM_MASK )
-               == QC_TMP_SHARD_TRANSFORM_ENABLE ) &&
-             ( aStatement->myPlan->parseTree->stmtShard == QC_STMT_SHARD_NONE ) &&
-             ( aStatement->spvEnv->createPkg == NULL ) &&
-             ( aStatement->spvEnv->createProc == NULL ) &&
-             ( aTableRef->mShardObjInfo != NULL ) &&
-             ( sdi::isShardCoordinator( aStatement ) == ID_TRUE ) )
+        // shard table¿∫ shard viewø°º≠∏∏ ¬¸¡∂«“ ºˆ ¿÷¥Ÿ.
+        if ( ( SDI_CHECK_QUERYSET_LIST_STATE( aStatement->mShardQuerySetList,
+                                              SDI_QUERYSET_LIST_STATE_MAIN_ANALYZE_DONE )
+               == ID_TRUE )
+             &&
+             ( aStatement->myPlan->parseTree->stmtShard == QC_STMT_SHARD_NONE )
+             &&
+             ( aTableRef->mShardObjInfo != NULL ) )
         {
-            // BUG-46498
-            if ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_RECOMPILE_VIEW_MASK )
-                  == QC_TMP_RECOMPILE_VIEW_FALSE )
+            if ( aTableRef->mShardObjInfo->mIsLocalForce == ID_FALSE )
             {
-                // shard transform ÏóêÎü¨Î•º Ï∂úÎ†•ÌïúÎã§.
+                // shard transform ø°∑Ø∏¶ √‚∑¬«—¥Ÿ.
                 IDE_TEST( qmvShardTransform::raiseInvalidShardQuery( aStatement ) != IDE_SUCCESS );
 
                 sqlInfo.setSourceInfo( aStatement,
@@ -5015,8 +4991,7 @@ IDE_RC qmvQuerySet::validateTable(
             }
             else
             {
-                // recompile view Íµ¨Î¨∏ÏùÄ ÏÉàÎ°ú ÏÉùÏÑ±ÌïòÏòÄÏúºÎØÄÎ°ú QC_STMT_SHARD_NONE Ï¥àÍ∏∞Í∞íÏù¥Îã§.
-                IDE_DASSERT( aStatement->myPlan->parseTree->stmtShard == QC_STMT_SHARD_NONE )
+                /* Nothing to do. */
             }
         }
         else
@@ -5181,7 +5156,7 @@ IDE_RC qmvQuerySet::validateView(
     qcuSqlSourceInfo    sqlInfo;
     idBool              sExist = ID_FALSE;
     idBool              sIsFixedTable = ID_FALSE;
-    volatile idBool     sIndirectRef; /* BUG-45994 - Ïª¥ÌååÏùºÎü¨ ÏµúÏ†ÅÌôî ÌöåÌîº */
+    volatile idBool     sIndirectRef; /* BUG-45994 - ƒƒ∆ƒ¿œ∑Ø √÷¿˚»≠ »∏«« */
     idBool              sIsShardView  = ID_FALSE;
     void              * sTableHandle  = NULL;
     qmsQuerySet       * sLateralViewQuerySet = NULL;
@@ -5201,7 +5176,7 @@ IDE_RC qmvQuerySet::validateView(
     sSynonymInfo.isSynonymName = ID_FALSE;
 
     sCalledByPSMFlag = aTableRef->view->calledByPSMFlag;
-    sIndirectRef     = ID_FALSE; /* BUG-45994 - Ïª¥ÌååÏùºÎü¨ ÏµúÏ†ÅÌôî ÌöåÌîº */
+    sIndirectRef     = ID_FALSE; /* BUG-45994 - ƒƒ∆ƒ¿œ∑Ø √÷¿˚»≠ »∏«« */
 
     // To Fix PR-1176
     sSessionUserID = QCG_GET_SESSION_USER_ID( aStatement );
@@ -5262,7 +5237,7 @@ IDE_RC qmvQuerySet::validateView(
             aTableRef->tableFlag   = aTableRef->tableInfo->tableFlag;
             aTableRef->tableOID    = aTableRef->tableInfo->tableOID;
 
-            // BUG-45522 fixed table ÏùÑ Í∞ÄÎ•¥ÌÇ§Îäî ÏãúÎÖ∏Î∞àÏùÄ plan cache Ïóê Îì±Î°ùÌï¥Ïïº Ìï©ÎãàÎã§.
+            // BUG-45522 fixed table ¿ª ∞°∏£≈∞¥¬ Ω√≥Îπ“¿∫ plan cache ø° µÓ∑œ«ÿæﬂ «’¥œ¥Ÿ.
             IDE_TEST( qcgPlan::registerPlanSynonym( aStatement,
                                                     &sSynonymInfo,
                                                     aTableRef->userName,
@@ -5283,14 +5258,14 @@ IDE_RC qmvQuerySet::validateView(
         else
         {
             /* BUG-42639 Monitoring query
-             * ÏùºÎ∞ò ViewÏùº Í≤ΩÏö∞ recreate Í∞Ä Îê†Ïàò ÏûàÏñ¥ÏÑú LockÏùÑ Ïû°ÏïÑÏïºÌï®ÏúºÎ°ú
-             * TransactionÏù¥ ÌïÑÏöîÌïòÎã§
+             * ¿œπ› View¿œ ∞ÊøÏ recreate ∞° µ…ºˆ ¿÷æÓº≠ Lock¿ª ¿‚æ∆æﬂ«‘¿∏∑Œ
+             * Transaction¿Ã « ø‰«œ¥Ÿ
              */
             QC_SHARED_TMPLATE(aStatement)->flag &= ~QC_TMP_ALL_FIXED_TABLE_MASK;
             QC_SHARED_TMPLATE(aStatement)->flag |= QC_TMP_ALL_FIXED_TABLE_FALSE;
 
             // BUG-34492
-            // validation lockÏù¥Î©¥ Ï∂©Î∂ÑÌïòÎã§.
+            // validation lock¿Ã∏È √Ê∫–«œ¥Ÿ.
             IDE_TEST( qcm::lockTableForDMLValidation(
                           aStatement,
                           sTableHandle,
@@ -5303,7 +5278,7 @@ IDE_RC qmvQuerySet::validateView(
             aTableRef->tableFlag   = aTableRef->tableInfo->tableFlag;
             aTableRef->tableOID    = aTableRef->tableInfo->tableOID;
 
-            // environmentÏùò Í∏∞Î°ù
+            // environment¿« ±‚∑œ
             IDE_TEST( qcgPlan::registerPlanTable( aStatement,
                                                   aTableRef->tableHandle,
                                                   aTableRef->tableSCN,
@@ -5311,7 +5286,7 @@ IDE_RC qmvQuerySet::validateView(
                                                   aTableRef->tableInfo->name )        /* BUG-45893 */
                       != IDE_SUCCESS );
                 
-            // environmentÏùò Í∏∞Î°ù
+            // environment¿« ±‚∑œ
             IDE_TEST( qcgPlan::registerPlanSynonym( aStatement,
                                                     & sSynonymInfo,
                                                     aTableRef->userName,
@@ -5331,8 +5306,8 @@ IDE_RC qmvQuerySet::validateView(
         }
     }
 
-    // PROJ-1889 INSTEAD OF TRIGGER : select Ïô∏Ïóê DMLÎèÑ Ïò¨Ïàò ÏûàÎã§.
-    // select ÏùºÍ≤ΩÏö∞Îßå forUpdateÎ•º Ìï†ÎãπÌïúÎã§.
+    // PROJ-1889 INSTEAD OF TRIGGER : select ø‹ø° DMLµµ ø√ºˆ ¿÷¥Ÿ.
+    // select ¿œ∞ÊøÏ∏∏ forUpdate∏¶ «“¥Á«—¥Ÿ.
     if (aStatement->myPlan->parseTree->stmtKind == QCI_STMT_SELECT )
     {
         // set forUpdate ptr
@@ -5347,10 +5322,13 @@ IDE_RC qmvQuerySet::validateView(
     aTableRef->view->spvEnv          = aStatement->spvEnv;
     aTableRef->view->mRandomPlanInfo = aStatement->mRandomPlanInfo;
 
+    aTableRef->view->mFlag &= ~QC_STMT_VIEW_MASK;
+    aTableRef->view->mFlag |= QC_STMT_VIEW_TRUE;
+
     /* PROJ-2197 PSM Renewal
-     * viewÏùò targetÏóê ÏûàÎäî PSM Î≥ÄÏàòÎ•º host Î≥ÄÏàòÎ°ú ÏÇ¨Ïö©ÌïòÎäî Í≤ΩÏö∞
-     * Í∞ïÏ†úÎ°ú casting ÌïòÍ∏∞ ÏúÑÌï¥ÏÑú flagÎ•º Î≥ÄÍ≤ΩÌïúÎã§.
-     * (qmvQuerySet::addCastOper ÏóêÏÑú ÏÇ¨Ïö©ÌïúÎã§.) */
+     * view¿« targetø° ¿÷¥¬ PSM ∫Øºˆ∏¶ host ∫Øºˆ∑Œ ªÁøÎ«œ¥¬ ∞ÊøÏ
+     * ∞≠¡¶∑Œ casting «œ±‚ ¿ß«ÿº≠ flag∏¶ ∫Ø∞Ê«—¥Ÿ.
+     * (qmvQuerySet::addCastOper ø°º≠ ªÁøÎ«—¥Ÿ.) */
     aTableRef->view->calledByPSMFlag = aStatement->calledByPSMFlag;
 
     if (aTableRef->tableInfo != NULL)
@@ -5368,16 +5346,20 @@ IDE_RC qmvQuerySet::validateView(
             QCG_SET_SESSION_USER_ID( aStatement, aTableRef->userID );
 
             // PROJ-1436
-            // environmentÏùò Í∏∞Î°ùÏãú Í∞ÑÏ†ë Ï∞∏Ï°∞ Í∞ùÏ≤¥Ïóê ÎåÄÌïú userÎÇò
-            // privilegeÏùò Í∏∞Î°ùÏùÑ Ï§ëÏßÄÌïúÎã§.
+            // environment¿« ±‚∑œΩ√ ∞£¡¢ ¬¸¡∂ ∞¥√ºø° ¥Î«— user≥™
+            // privilege¿« ±‚∑œ¿ª ¡ﬂ¡ˆ«—¥Ÿ.
             qcgPlan::startIndirectRefFlag( aStatement, (idBool *) & sIndirectRef );
 
             /* BUG-45994 */
             IDU_FIT_POINT_FATAL( "qmvQuerySet::validateView::__FT__::STAGE1" );
 
-            // PROJ-2646 shard analyzer
-            // shard viewÏùò ÌïòÏúÑ statementÏóêÏÑúÎäî shard tableÏù¥ Ïò¨ Ïàò ÏûàÎã§.
-            qmv::disableShardTransformInShardView( aStatement, &sIsShardView );
+            /* TASK-7219 Shard Transformer Refactoring
+             *  PROJ-2646 shard analyzer
+             *   shard view¿« «œ¿ß statementø°º≠¥¬ shard table¿Ã ø√ ºˆ ¿÷¥Ÿ.
+             */
+            IDE_TEST( sdi::setShardStmtType( aStatement,
+                                             aTableRef->view )
+                      != IDE_SUCCESS );
 
             // inline view validation
             IDE_TEST(qmv::validateSelect(aTableRef->view) != IDE_SUCCESS);
@@ -5385,8 +5367,6 @@ IDE_RC qmvQuerySet::validateView(
             // for fixing BUG-6096
             // re-set current session userID
             QCG_SET_SESSION_USER_ID( aStatement, sSessionUserID );
-
-            qmv::enableShardTransformInShardView( aStatement, sIsShardView );
 
             qcgPlan::endIndirectRefFlag( aStatement, (idBool *) & sIndirectRef );
 
@@ -5432,16 +5412,20 @@ IDE_RC qmvQuerySet::validateView(
             QCG_SET_SESSION_USER_ID( aStatement, aTableRef->userID );
 
             // PROJ-1436
-            // environmentÏùò Í∏∞Î°ùÏãú Í∞ÑÏ†ë Ï∞∏Ï°∞ Í∞ùÏ≤¥Ïóê ÎåÄÌïú userÎÇò
-            // privilegeÏùò Í∏∞Î°ùÏùÑ Ï§ëÏßÄÌïúÎã§.
+            // environment¿« ±‚∑œΩ√ ∞£¡¢ ¬¸¡∂ ∞¥√ºø° ¥Î«— user≥™
+            // privilege¿« ±‚∑œ¿ª ¡ﬂ¡ˆ«—¥Ÿ.
             qcgPlan::startIndirectRefFlag( aStatement, (idBool *) & sIndirectRef );
 
             /* BUG-45994 */
             IDU_FIT_POINT_FATAL( "qmvQuerySet::validateView::__FT__::STAGE1" );
 
-            // PROJ-2646 shard analyzer
-            // shard viewÏùò ÌïòÏúÑ statementÏóêÏÑúÎäî shard tableÏù¥ Ïò¨ Ïàò ÏûàÎã§.
-            qmv::disableShardTransformInShardView( aStatement, &sIsShardView );
+            /* TASK-7219 Shard Transformer Refactoring
+             *  PROJ-2646 shard analyzer
+             *   shard view¿« «œ¿ß statementø°º≠¥¬ shard table¿Ã ø√ ºˆ ¿÷¥Ÿ.
+             */
+            IDE_TEST( sdi::setShardStmtType( aStatement,
+                                             aTableRef->view )
+                      != IDE_SUCCESS );
 
             // inline view validation
             // BUG-34390
@@ -5468,8 +5452,6 @@ IDE_RC qmvQuerySet::validateView(
             // re-set current session userID
             QCG_SET_SESSION_USER_ID( aStatement, sSessionUserID );
 
-            qmv::enableShardTransformInShardView( aStatement, sIsShardView );
-
             qcgPlan::endIndirectRefFlag( aStatement, (idBool *) & sIndirectRef );
         }
         else
@@ -5480,7 +5462,7 @@ IDE_RC qmvQuerySet::validateView(
         }
 
         // PROJ-2418
-        // Inline ViewÍ∞Ä ÏïÑÎãàÎØÄÎ°ú Lateral FlagÎ•º Ï¥àÍ∏∞ÌôîÌïúÎã§.
+        // Inline View∞° æ∆¥œπ«∑Œ Lateral Flag∏¶ √ ±‚»≠«—¥Ÿ.
         aTableRef->flag &= ~QMS_TABLE_REF_LATERAL_VIEW_MASK;
         aTableRef->flag |= QMS_TABLE_REF_LATERAL_VIEW_FALSE;
     }
@@ -5491,25 +5473,25 @@ IDE_RC qmvQuerySet::validateView(
         //-----------------------------------------
         sQuerySet = ( ( qmsParseTree* )( aTableRef->view->myPlan->parseTree ) )->querySet;
 
-        /* insert aSFWGH == NULL Ïù¥Îã§. */
+        /* insert aSFWGH == NULL ¿Ã¥Ÿ. */
         if ( aSFWGH != NULL )
         {
             // To fix BUG-24213
-            // performance view creation flagÎ•º Ï†ÑÎã¨
-            sQuerySet->flag
+            // performance view creation flag∏¶ ¿¸¥ﬁ
+            sQuerySet->lflag
                 &= ~(QMV_PERFORMANCE_VIEW_CREATION_MASK);
-            sQuerySet->flag
-                |= (aSFWGH->flag & QMV_PERFORMANCE_VIEW_CREATION_MASK);
-            sQuerySet->flag
+            sQuerySet->lflag
+                |= (aSFWGH->lflag & QMV_PERFORMANCE_VIEW_CREATION_MASK);
+            sQuerySet->lflag
                 &= ~(QMV_VIEW_CREATION_MASK);
-            sQuerySet->flag
-                |= (aSFWGH->flag & QMV_VIEW_CREATION_MASK);
+            sQuerySet->lflag
+                |= (aSFWGH->lflag & QMV_VIEW_CREATION_MASK);
 
             // PROJ-2415 Grouping Sets Clause
-            // TransformÏóê ÏùòÌï¥ ÏÉùÏÑ±Îêú ViewÍ∞Ä DependencyÎ•º Í∞ÄÏßà Ïàò ÏûàÎèÑÎ°ù Outer QueryÎ•º ÏÑ∏ÌåÖ
-            if ( ( ( aSFWGH->flag & QMV_SFWGH_GBGS_TRANSFORM_MASK )
+            // Transformø° ¿««ÿ ª˝º∫µ» View∞° Dependency∏¶ ∞°¡˙ ºˆ ¿÷µµ∑œ Outer Query∏¶ ºº∆√
+            if ( ( ( aSFWGH->lflag & QMV_SFWGH_GBGS_TRANSFORM_MASK )
                    == QMV_SFWGH_GBGS_TRANSFORM_TOP ) ||
-                 ( ( aSFWGH->flag & QMV_SFWGH_GBGS_TRANSFORM_MASK )
+                 ( ( aSFWGH->lflag & QMV_SFWGH_GBGS_TRANSFORM_MASK )
                    == QMV_SFWGH_GBGS_TRANSFORM_MIDDLE ) )
             {
                 sQuerySet->outerSFWGH = aSFWGH;
@@ -5519,14 +5501,14 @@ IDE_RC qmvQuerySet::validateView(
                 /* Nothing to do */
             }
 
-            if ( ( ( aSFWGH->thisQuerySet->flag & QMV_QUERYSET_LATERAL_MASK )
+            if ( ( ( aSFWGH->thisQuerySet->lflag & QMV_QUERYSET_LATERAL_MASK )
                    == QMV_QUERYSET_LATERAL_TRUE ) &&
-                 ( ( aSFWGH->flag & QMV_SFWGH_GBGS_TRANSFORM_MASK )
+                 ( ( aSFWGH->lflag & QMV_SFWGH_GBGS_TRANSFORM_MASK )
                    != QMV_SFWGH_GBGS_TRANSFORM_NONE ) )
             {
                 // BUG-41573 Lateral View WITH GROUPING SETS
-                // ÏÉÅÏúÑÍ∞Ä Lateral ViewÎùºÎ©¥ GBGSÎ°ú Ïù∏Ìï¥ ÌååÏÉùÎêú Inline ViewÎäî
-                // Î™®Îëê Lateral ViewÍ∞Ä ÎêòÏñ¥Ïïº ÌïúÎã§.
+                // ªÛ¿ß∞° Lateral View∂Û∏È GBGS∑Œ ¿Œ«ÿ ∆ƒª˝µ» Inline View¥¬
+                // ∏µŒ Lateral View∞° µ«æÓæﬂ «—¥Ÿ.
                 aTableRef->flag &= ~QMS_TABLE_REF_LATERAL_VIEW_MASK;
                 aTableRef->flag |= QMS_TABLE_REF_LATERAL_VIEW_TRUE;
             }
@@ -5545,25 +5527,25 @@ IDE_RC qmvQuerySet::validateView(
                 sLateralViewQuerySet =
                     ((qmsParseTree*) aTableRef->view->myPlan->parseTree)->querySet;
 
-                // Lateral View SFWGHÏùò outerQuery / outerFrom ÏßÄÏ†ï
+                // Lateral View SFWGH¿« outerQuery / outerFrom ¡ˆ¡§
                 setLateralOuterQueryAndFrom( sLateralViewQuerySet,
                                              aTableRef,
                                              aSFWGH );
 
-                // BUG-41573 Lateral View Flag ÏßÄÏ†ï
-                sLateralViewQuerySet->flag &= ~QMV_QUERYSET_LATERAL_MASK;
-                sLateralViewQuerySet->flag |= QMV_QUERYSET_LATERAL_TRUE;
+                // BUG-41573 Lateral View Flag ¡ˆ¡§
+                sLateralViewQuerySet->lflag &= ~QMV_QUERYSET_LATERAL_MASK;
+                sLateralViewQuerySet->lflag |= QMV_QUERYSET_LATERAL_TRUE;
             }
             else
             {
                 /*******************************************************************
                  *
-                 *  INSERT ... SELECT ÏóêÏÑúÎäî ÏïÑÎûòÏôÄ Í∞ôÏù¥ ÎêúÎã§.
-                 *  - aTableRefÎäî SELECT Main Query
-                 *  - aSFWGH (TableRef Í¥ÄÏ†êÏóêÏÑúÏùò Ïô∏Î∂Ä SFWGH)Îäî NULL
+                 *  INSERT ... SELECT ø°º≠¥¬ æ∆∑°øÕ ∞∞¿Ã µ»¥Ÿ.
+                 *  - aTableRef¥¬ SELECT Main Query
+                 *  - aSFWGH (TableRef ∞¸¡°ø°º≠¿« ø‹∫Œ SFWGH)¥¬ NULL
                  *
-                 *  Í∑∏Îü¨ÎÇò SELECT Main QueryÎäî LATERAL FlagÏùÑ Í∞ÄÏßà Ïàò ÏóÜÏúºÎØÄÎ°ú
-                 *  aSFWGHÍ∞Ä NULLÏù¥Î©¥ÏÑú aTableRefÍ∞Ä LATERAL FlagÎ•º Í∞ÄÏßÄÎäî Í≤ΩÏö∞Îäî ÏóÜÎã§.
+                 *  ±◊∑Ø≥™ SELECT Main Query¥¬ LATERAL Flag¿ª ∞°¡˙ ºˆ æ¯¿∏π«∑Œ
+                 *  aSFWGH∞° NULL¿Ã∏Èº≠ aTableRef∞° LATERAL Flag∏¶ ∞°¡ˆ¥¬ ∞ÊøÏ¥¬ æ¯¥Ÿ.
                  *
                  *******************************************************************/
                 IDE_DASSERT(0);
@@ -5571,18 +5553,20 @@ IDE_RC qmvQuerySet::validateView(
         }
         else
         {
-            // Lateral ViewÍ∞Ä ÏïÑÎãå Í≤ΩÏö∞
+            // Lateral View∞° æ∆¥— ∞ÊøÏ
             // Nothing to do.
         }
 
-        // PROJ-2646 shard analyzer
-        // shard viewÏùò ÌïòÏúÑ statementÏóêÏÑúÎäî shard tableÏù¥ Ïò¨ Ïàò ÏûàÎã§.
-        qmv::disableShardTransformInShardView( aStatement, &sIsShardView );
+        /* TASK-7219 Shard Transformer Refactoring
+         *  PROJ-2646 shard analyzer
+         *   shard view¿« «œ¿ß statementø°º≠¥¬ shard table¿Ã ø√ ºˆ ¿÷¥Ÿ.
+         */
+        IDE_TEST( sdi::setShardStmtType( aStatement,
+                                         aTableRef->view )
+                  != IDE_SUCCESS );
 
         // inline view validation
         IDE_TEST(qmv::validateSelect(aTableRef->view) != IDE_SUCCESS);
-
-        qmv::enableShardTransformInShardView( aStatement, sIsShardView );
 
         /* PROJ-2641 Hierarchy Query Index */
         if ( ( ( aTableRef->flag & QMS_TABLE_REF_HIER_VIEW_MASK )
@@ -5596,7 +5580,7 @@ IDE_RC qmvQuerySet::validateView(
 
             sParseTree = (qmsParseTree*) aStatement->myPlan->parseTree;
 
-            // PROJ-2654 shard view Îäî Î∞∞Ï†úÌïúÎã§.
+            // PROJ-2654 shard view ¥¬ πË¡¶«—¥Ÿ.
             if ( sTableRef->view != NULL )
             {
                 if ( ( sTableRef->view->myPlan->parseTree->stmtShard != QC_STMT_SHARD_NONE ) &&
@@ -5614,10 +5598,10 @@ IDE_RC qmvQuerySet::validateView(
                 // Nothing to do.
             }
 
-            /* Hierarchy QueryÎäî Î¨¥Ï°∞Í±¥ select * from t1 --> select * from (
-             * select * from t1 )ÏúºÎ°ú transform Ìï¥ÏÑú Ï≤òÎ¶¨ÌïòÎäîÎç∞ ÏùºÎ∞ò ÌÖåÏù¥Î∏î Í≥º
-             * dual tableÏùº  Í≤ΩÏö∞Ïóê ÎåÄÌï¥ÏÑú transformÎêú viewÎ•º ÏóÜÏï†Í≥† ÌïòÏúÑ
-             * tableRef Î•º ÌòÑÏû¨Î°ú Î≥µÏÇ¨ÌïúÎã§
+            /* Hierarchy Query¥¬ π´¡∂∞« select * from t1 --> select * from (
+             * select * from t1 )¿∏∑Œ transform «ÿº≠ √≥∏Æ«œ¥¬µ• ¿œπ› ≈◊¿Ã∫Ì ∞˙
+             * dual table¿œ  ∞ÊøÏø° ¥Î«ÿº≠ transformµ» view∏¶ æ¯æ÷∞Ì «œ¿ß
+             * tableRef ∏¶ «ˆ¿Á∑Œ ∫πªÁ«—¥Ÿ
              */
 
             if ( ( sTableRef->remoteTable == NULL ) &&
@@ -5673,25 +5657,25 @@ IDE_RC qmvQuerySet::validateView(
             /* Nothing to do */
         }
 
-        // PROJ-2418 Lateral View ÌõÑÏ≤òÎ¶¨
+        // PROJ-2418 Lateral View »ƒ√≥∏Æ
         if ( sLateralViewQuerySet != NULL )
         {
-            // View QuerySetÏóê outerDepInfoÍ∞Ä Ï°¥Ïû¨ÌïòÎäî Í≤ΩÏö∞ÏóêÎäî
-            // lateralDepInfoÏóê outerDepInfoÎ•º ORing ÌïúÎã§.
+            // View QuerySetø° outerDepInfo∞° ¡∏¿Á«œ¥¬ ∞ÊøÏø°¥¬
+            // lateralDepInfoø° outerDepInfo∏¶ ORing «—¥Ÿ.
             IDE_TEST( qmvQTC::setLateralDependenciesLast( sLateralViewQuerySet )
                       != IDE_SUCCESS );
                       
             if ( qtc::haveDependencies( & sLateralViewQuerySet->lateralDepInfo ) == ID_FALSE )
             {
-                // LATERAL / APPLY KeywordÎäî ÏûàÏßÄÎßå Ïã§Ï†úÎ°ú Lateral ViewÎäî ÏïÑÎãå Í≤ΩÏö∞
-                // FlagÎ•º ÏõêÏÉÅ Î≥µÍµ¨ÌïúÎã§.
+                // LATERAL / APPLY Keyword¥¬ ¿÷¡ˆ∏∏ Ω«¡¶∑Œ Lateral View¥¬ æ∆¥— ∞ÊøÏ
+                // Flag∏¶ ø¯ªÛ ∫π±∏«—¥Ÿ.
                 aTableRef->flag &= ~QMS_TABLE_REF_LATERAL_VIEW_MASK;
                 aTableRef->flag |= QMS_TABLE_REF_LATERAL_VIEW_FALSE;
             }
             else
             {
-                // Ïã§Ï†ú Lateral ViewÍ∞Ä Ï†ïÏùòÎêú Í≤ΩÏö∞
-                // BUG-43705 lateral viewÎ•º simple view mergingÏùÑ ÌïòÏßÄÏïäÏúºÎ©¥ Í≤∞Í≥ºÍ∞Ä Îã§Î¶ÖÎãàÎã§.
+                // Ω«¡¶ Lateral View∞° ¡§¿«µ» ∞ÊøÏ
+                // BUG-43705 lateral view∏¶ simple view merging¿ª «œ¡ˆæ ¿∏∏È ∞·∞˙∞° ¥Ÿ∏®¥œ¥Ÿ.
                 for ( i = 0; i < sLateralViewQuerySet->lateralDepInfo.depCount; i++ )
                 {
                     sDepTupleID = sLateralViewQuerySet->lateralDepInfo.depend[i];
@@ -5701,14 +5685,14 @@ IDE_RC qmvQuerySet::validateView(
         }
         else
         {
-            // LATERAL / APPLY KeywordÍ∞Ä ÏóÜÎäî View
+            // LATERAL / APPLY Keyword∞° æ¯¥¬ View
             // Nothing to do.
         }
 
         // PROJ-2415 Grouping Sets Clause 
-        // TranformÏóê ÏùòÌï¥ ÏÉùÏÑ±Îêú ViewÏùò Outer DependencyÎ•º ÏûêÏã†Ïùò Outer DependencyÏóê OrÌïúÎã§.
+        // Tranformø° ¿««ÿ ª˝º∫µ» View¿« Outer Dependency∏¶ ¿⁄Ω≈¿« Outer Dependencyø° Or«—¥Ÿ.
         if ( ( aSFWGH != NULL ) &&
-             ( ( aSFWGH->flag & QMV_SFWGH_GBGS_TRANSFORM_MASK )
+             ( ( aSFWGH->lflag & QMV_SFWGH_GBGS_TRANSFORM_MASK )
                != QMV_SFWGH_GBGS_TRANSFORM_NONE ) )
         {
             IDE_TEST( qtc::dependencyOr( & sQuerySet->outerDepInfo,
@@ -5721,29 +5705,36 @@ IDE_RC qmvQuerySet::validateView(
             /* Nothing to do */
         }
 
-        if (aTableRef->view->myPlan->parseTree->currValSeqs != NULL)
+        /* TASK-7217 Sharded sequence
+           Shard transformø° ¿««ÿº≠ sequence∞° shard viewæ»¿∏∑Œ µÈæÓ∞°¥¬ ∞ÊøÏ¥¬ «„øÎ«—¥Ÿ. */
+        if ( (aTableRef->view->myPlan->parseTree->stmtShard != QC_STMT_SHARD_DATA) &&
+             (((qmsParseTree*)aTableRef->view->myPlan->parseTree)->isShardView == ID_FALSE) &&
+             (aTableRef->view->myPlan->mShardAnalysis == NULL) )
         {
-            sqlInfo.setSourceInfo(
-                aStatement,
-                & aTableRef->view->myPlan->parseTree->
-                currValSeqs->sequenceNode->position );
-            IDE_RAISE( ERR_USE_SEQUENCE_IN_VIEW );
-        }
+            if (aTableRef->view->myPlan->parseTree->currValSeqs != NULL)
+            {
+                sqlInfo.setSourceInfo(
+                    aStatement,
+                    & aTableRef->view->myPlan->parseTree->
+                    currValSeqs->sequenceNode->position );
+                IDE_RAISE( ERR_USE_SEQUENCE_IN_VIEW );
+            }
 
-        if (aTableRef->view->myPlan->parseTree->nextValSeqs != NULL)
-        {
-            sqlInfo.setSourceInfo(
-                aStatement,
-                & aTableRef->view->myPlan->parseTree->
-                nextValSeqs->sequenceNode->position );
-            IDE_RAISE( ERR_USE_SEQUENCE_IN_VIEW );
+            if (aTableRef->view->myPlan->parseTree->nextValSeqs != NULL)
+            {
+                sqlInfo.setSourceInfo(
+                    aStatement,
+                    & aTableRef->view->myPlan->parseTree->
+                    nextValSeqs->sequenceNode->position );
+                IDE_RAISE( ERR_USE_SEQUENCE_IN_VIEW );
+            }
         }
 
         // set USER ID
         aTableRef->userID = QCG_GET_SESSION_USER_ID(aStatement);
 
         // PROJ-2582 recursive with
-        // withÏ†àÏùò viewÏù¥Í≥† column aliasÍ∞Ä ÏûàÎäî Í≤ΩÏö∞ Ïª¨ÎüºÏù¥Î¶ÑÏùÄ column aliasÎ•º Ïù¥Ïö©ÌïúÎã§.
+        // with¿˝¿« view¿Ã∞Ì column alias∞° ¿÷¥¬ ∞ÊøÏ ƒ√∑≥¿Ã∏ß¿∫ column alias∏¶ ¿ÃøÎ«—¥Ÿ.
         if ( aTableRef->withStmt != NULL )
         {
             sColumnAlias = aTableRef->withStmt->columns;
@@ -5763,12 +5754,12 @@ IDE_RC qmvQuerySet::validateView(
                  != IDE_SUCCESS);
 
         // BUG-37136
-        aTableRef->tableHandle = aTableRef->tableInfo->tableHandle;  // NULLÏù¥Îã§
+        aTableRef->tableHandle = aTableRef->tableInfo->tableHandle;  // NULL¿Ã¥Ÿ
         aTableRef->tableType   = aTableRef->tableInfo->tableType;
         aTableRef->tableFlag   = aTableRef->tableInfo->tableFlag;
         aTableRef->tableOID    = aTableRef->tableInfo->tableOID;
 
-        // with Ï†àÏóê ÏùòÌï¥ ÏÉùÏÑ±Îêú inline Î∑∞Ïóê Í≤ΩÏö∞ Ï†úÎÑàÎ†àÏù¥Ìä∏Îêú tableIDÎ•º Ìï†ÎãπÌïúÎã§.
+        // with ¿˝ø° ¿««ÿ ª˝º∫µ» inline ∫‰ø° ∞ÊøÏ ¡¶≥ ∑π¿Ã∆Æµ» tableID∏¶ «“¥Á«—¥Ÿ.
         if ( aTableRef->withStmt != NULL )
         {
             aTableRef->tableInfo->tableID = aTableRef->withStmt->tableID;
@@ -5839,8 +5830,8 @@ IDE_RC qmvQuerySet::validateView(
     IDE_FT_EXCEPTION_BEGIN();
 
     // To Fix PR-11776
-    // View Ïóê ÎåÄÌïú Validation error Î∞úÏÉù Ïãú
-    // ÏõêÎûòÏùò User IDÎ°ú Î≥µÏõêÌï¥ Ï£ºÏñ¥Ïïº ÌïúÎã§.
+    // View ø° ¥Î«— Validation error πﬂª˝ Ω√
+    // ø¯∑°¿« User ID∑Œ ∫πø¯«ÿ ¡÷æÓæﬂ «—¥Ÿ.
     QCG_SET_SESSION_USER_ID( aStatement, sSessionUserID );
 
     qcgPlan::endIndirectRefFlag( aStatement, (idBool *) & sIndirectRef );
@@ -5861,8 +5852,8 @@ IDE_RC qmvQuerySet::validateInlineView( qcStatement * aStatement,
  *
  * Description :
  *     PROJ-1718 Subquery unnesting
- *     SubqueryÏóêÏÑú transformÎêú inline viewÎ•º ÏúÑÌï¥ Í∏∞Ï°¥ validateViewÏóêÏÑú
- *     inline viewÏóê ÎåÄÌïú logicÏùÑ Î∂ÑÎ¶¨ÌïúÎã§.
+ *     Subqueryø°º≠ transformµ» inline view∏¶ ¿ß«ÿ ±‚¡∏ validateViewø°º≠
+ *     inline viewø° ¥Î«— logic¿ª ∫–∏Æ«—¥Ÿ.
  *
  * Implementation :
  *
@@ -5928,14 +5919,14 @@ IDE_RC qmvQuerySet::validateRecursiveView( qcStatement * aStatement,
  *       union all
  *       select q1.id, '/'||q1.pid from q1, t1 where q1.pid = t1.id
  *                                      ^^
- *                                      ÌïòÏúÑ recursive view
+ *                                      «œ¿ß recursive view
  *     )
  *     select * from q1;
  *                   ^^
- *                   ÏµúÏÉÅÏúÑ recursive view
+ *                   √÷ªÛ¿ß recursive view
  *
- *    q1Ïùò i1ÏùÄ union allÏùò left subqueryÏùò target column typeÏúºÎ°ú Í≥†Ï†ïÌïòÎêò
- *    precisionÏùÄ right subqueryÏùò targetÏóê ÏùòÌï¥ Ïª§Ïßà Ïàò ÏûàÎã§.
+ *    q1¿« i1¿∫ union all¿« left subquery¿« target column type¿∏∑Œ ∞Ì¡§«œµ«
+ *    precision¿∫ right subquery¿« targetø° ¿««ÿ ƒø¡˙ ºˆ ¿÷¥Ÿ.
  *
  ***********************************************************************/
 
@@ -5953,13 +5944,13 @@ IDE_RC qmvQuerySet::validateRecursiveView( qcStatement * aStatement,
     // set USER ID
     aTableRef->userID = QCG_GET_SESSION_USER_ID(aStatement);
     
-    // withÏ†àÏùò viewÏù¥Í≥† column aliasÍ∞Ä ÏûàÎäî Í≤ΩÏö∞ Ïª¨ÎüºÏù¥Î¶ÑÏùÄ column aliasÎ•º Ïù¥Ïö©ÌïúÎã§.
+    // with¿˝¿« view¿Ã∞Ì column alias∞° ¿÷¥¬ ∞ÊøÏ ƒ√∑≥¿Ã∏ß¿∫ column alias∏¶ ¿ÃøÎ«—¥Ÿ.
     sColumnAlias = aTableRef->withStmt->columns;
 
-    // query_nameÏóê alias Ï°¥Ïû¨ Ìï¥Ïïº ÌïúÎã§.
+    // query_nameø° alias ¡∏¿Á «ÿæﬂ «—¥Ÿ.
     IDE_TEST_RAISE( sColumnAlias == NULL, ERR_NO_COLUMN_ALIAS_RECURSIVE_VIEW );
 
-    // query_name Ï§ëÎ≥µ Ï≤¥ÌÅ¨
+    // query_name ¡ﬂ∫π √º≈©
     for ( sWithClause = sParseTree->withClause;
           sWithClause != NULL;
           sWithClause = sWithClause->next )
@@ -6018,7 +6009,7 @@ IDE_RC qmvQuerySet::validateTopRecursiveView( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-2582 recursive with
- *    ÏÉÅÏúÑrecrusive view valdiate.
+ *    ªÛ¿ßrecrusive view valdiate.
  *
  * Implementation :
  * 
@@ -6027,14 +6018,14 @@ IDE_RC qmvQuerySet::validateTopRecursiveView( qcStatement * aStatement,
  *       union all
  *       select q1.id, '/'||q1.pid from q1, t1 where q1.pid = t1.id
  *                                      ^^
- *                                      ÌïòÏúÑ recursive view
+ *                                      «œ¿ß recursive view
  *     )
  *     select * from q1;
  *                   ^^
- *                   ÏµúÏÉÅÏúÑ recursive view
+ *                   √÷ªÛ¿ß recursive view
  *
- *    q1Ïùò i1ÏùÄ union allÏùò left subqueryÏùò target column typeÏúºÎ°ú Í≥†Ï†ïÌïòÎêò
- *    precisionÏùÄ right subqueryÏùò targetÏóê ÏùòÌï¥ Ïª§Ïßà Ïàò ÏûàÎã§.
+ *    q1¿« i1¿∫ union all¿« left subquery¿« target column type¿∏∑Œ ∞Ì¡§«œµ«
+ *    precision¿∫ right subquery¿« targetø° ¿««ÿ ƒø¡˙ ºˆ ¿÷¥Ÿ.
  *
  ***********************************************************************/
     
@@ -6056,15 +6047,15 @@ IDE_RC qmvQuerySet::validateTopRecursiveView( qcStatement * aStatement,
     
     sWithParseTree = (qmsParseTree *)aTableRef->withStmt->stmt->myPlan->parseTree;
     
-    // withÏ†àÏùò viewÏù¥Í≥† column aliasÍ∞Ä ÏûàÎäî Í≤ΩÏö∞ Ïª¨ÎüºÏù¥Î¶ÑÏùÄ column aliasÎ•º Ïù¥Ïö©ÌïúÎã§.
+    // with¿˝¿« view¿Ã∞Ì column alias∞° ¿÷¥¬ ∞ÊøÏ ƒ√∑≥¿Ã∏ß¿∫ column alias∏¶ ¿ÃøÎ«—¥Ÿ.
     sColumnAlias = aTableRef->withStmt->columns;
 
     //------------------------------
-    // ÏµúÏÉÅÏúÑ recursive view
-    // Î≥∏ ÏøºÎ¶¨ÏóêÏÑú ÏÇ¨Ïö©Ìï† recursiveView (parsingÎßå ÎêòÏñ¥ ÏûàÎã§.)
+    // √÷ªÛ¿ß recursive view
+    // ∫ª ƒı∏Æø°º≠ ªÁøÎ«“ recursiveView (parsing∏∏ µ«æÓ ¿÷¥Ÿ.)
     //------------------------------
         
-    // Îã§Ïãú validationÏùÑ ÏàòÌñâÌïòÍ∏∞ ÏúÑÌï¥ ÏûÑÏãú tableInfoÎ•º ÏÉùÏÑ±ÌïúÎã§.
+    // ¥ŸΩ√ validation¿ª ºˆ«‡«œ±‚ ¿ß«ÿ ¿”Ω√ tableInfo∏¶ ª˝º∫«—¥Ÿ.
     IDE_TEST( makeTableInfo( aStatement,
                              sWithParseTree->querySet,
                              sColumnAlias,
@@ -6072,28 +6063,28 @@ IDE_RC qmvQuerySet::validateTopRecursiveView( qcStatement * aStatement,
                              QS_EMPTY_OID )
               != IDE_SUCCESS );
     
-    // BUG-43768 recursive with Í∂åÌïú Ï≤¥ÌÅ¨ ÏóêÎü¨
+    // BUG-43768 recursive with ±««— √º≈© ø°∑Ø
     aTableRef->tableInfo->tableOwnerID = QCG_GET_SESSION_USER_ID(aStatement);        
 
-    // BUG-44156 ÏûÑÏãú tableInfoÏóê tableIDÏÑ§Ï†ï
+    // BUG-44156 ¿”Ω√ tableInfoø° tableIDº≥¡§
     aTableRef->tableInfo->tableID = aTableRef->withStmt->tableID;
     
     aTableRef->withStmt->tableInfo = aTableRef->tableInfo;
 
     //------------------------------
-    // Î®ºÏ†Ä recursive viewÏùò target columnÏù¥ Î∞úÏÇ∞ÌïòÎäîÏßÄ ÌòπÏùÄ
-    // ÏàòÎ†¥ÌïòÎäîÏßÄ ÏïåÏïÑÎ≥¥Í≥† tableInfoÎ•º Î≥ÄÍ≤ΩÌïúÎã§.
+    // ∏’¿˙ recursive view¿« target column¿Ã πﬂªÍ«œ¥¬¡ˆ »§¿∫
+    // ºˆ∑≈«œ¥¬¡ˆ æÀæ∆∫∏∞Ì tableInfo∏¶ ∫Ø∞Ê«—¥Ÿ.
     //------------------------------
         
     sViewParseTree = (qmsParseTree*) aTableRef->tempRecursiveView->myPlan->parseTree;
         
-    sViewParseTree->querySet->flag &= ~QMV_QUERYSET_RECURSIVE_VIEW_MASK;
-    sViewParseTree->querySet->flag |= QMV_QUERYSET_RECURSIVE_VIEW_TOP;
+    sViewParseTree->querySet->lflag &= ~QMV_QUERYSET_RECURSIVE_VIEW_MASK;
+    sViewParseTree->querySet->lflag |= QMV_QUERYSET_RECURSIVE_VIEW_TOP;
 
     IDE_TEST( qmv::validateSelect( aTableRef->tempRecursiveView )
               != IDE_SUCCESS );
-        
-    // tableInfo Ïª¨ÎüºÏùò precisionÏùÑ Î≥¥Ï†ïÌïúÎã§.
+
+    // tableInfo ƒ√∑≥¿« precision¿ª ∫∏¡§«—¥Ÿ.
     for ( sColumnInfo = aTableRef->tableInfo->columns,
               sWithTarget = sWithParseTree->querySet->target,
               sViewTarget = sViewParseTree->querySet->target;
@@ -6111,28 +6102,28 @@ IDE_RC qmvQuerySet::validateTopRecursiveView( qcStatement * aStatement,
                   != IDE_SUCCESS );
     }
 
-    // Ïù¥ÎØ∏ aTableRef->withStmt->tableInfoÏóê Îã¨Î†§ÏûàÎã§.
+    // ¿ÃπÃ aTableRef->withStmt->tableInfoø° ¥ﬁ∑¡¿÷¥Ÿ.
         
     //------------------------------
-    // Î≥ÄÍ≤ΩÎêú tableInfoÎ°ú Îã§Ïãú validationÏùÑ ÏàòÌñâÌïúÎã§.
+    // ∫Ø∞Êµ» tableInfo∑Œ ¥ŸΩ√ validation¿ª ºˆ«‡«—¥Ÿ.
     //------------------------------
         
     sViewParseTree = (qmsParseTree*) aTableRef->recursiveView->myPlan->parseTree;
         
-    sViewParseTree->querySet->flag &= ~QMV_QUERYSET_RECURSIVE_VIEW_MASK;
-    sViewParseTree->querySet->flag |= QMV_QUERYSET_RECURSIVE_VIEW_TOP;
+    sViewParseTree->querySet->lflag &= ~QMV_QUERYSET_RECURSIVE_VIEW_MASK;
+    sViewParseTree->querySet->lflag |= QMV_QUERYSET_RECURSIVE_VIEW_TOP;
 
     IDE_TEST( qmv::validateSelect( aTableRef->recursiveView )
               != IDE_SUCCESS );
         
     //------------------------------
-    // Î≥ÄÍ≤ΩÎêú tableInfoÎ°ú recursive viewÏùò leftÏôÄ rightÏùò targetÏùÑ Í≥†Ï†ïÌïúÎã§.
-    // ÏµúÎåÄ precisionÍπåÏßÄ Î∞úÏÇ∞ÌïòÎäî Í≤ΩÏö∞ castÌï®ÏàòÏóêÏÑú ÏóêÎü¨Í∞Ä Î∞úÏÉùÌïúÎã§.
+    // ∫Ø∞Êµ» tableInfo∑Œ recursive view¿« leftøÕ right¿« target¿ª ∞Ì¡§«—¥Ÿ.
+    // √÷¥Î precision±Ó¡ˆ πﬂªÍ«œ¥¬ ∞ÊøÏ cast«‘ºˆø°º≠ ø°∑Ø∞° πﬂª˝«—¥Ÿ.
     //------------------------------
 
     sPrevNode = NULL;
         
-    // left targetÏùò Í≥†Ï†ï
+    // left target¿« ∞Ì¡§
     for ( sColumnInfo = aTableRef->tableInfo->columns,
               sTarget = sViewParseTree->querySet->left->SFWGH->target;
           ( sColumnInfo != NULL ) && ( sTarget != NULL );
@@ -6141,12 +6132,12 @@ IDE_RC qmvQuerySet::validateTopRecursiveView( qcStatement * aStatement,
     {
         sTargetColumn = sTarget->targetColumn;
 
-        // conversionÏù¥ ÏóÜÎã§.
+        // conversion¿Ã æ¯¥Ÿ.
         IDE_DASSERT( sTargetColumn->node.conversion == NULL );
 
         sMtcColumn = QTC_STMT_COLUMN( aStatement, sTargetColumn );
 
-        // type,precisionÏù¥ Îã§Î•¥Îã§Î©¥ castÎ•º Î∂ôÏó¨ ÎßûÏ∂òÎã§.
+        // type,precision¿Ã ¥Ÿ∏£¥Ÿ∏È cast∏¶ ∫Ÿø© ∏¬√·¥Ÿ.
         if ( ( sMtcColumn->type.dataTypeId !=
                sColumnInfo->basicInfo->type.dataTypeId ) ||
              ( sMtcColumn->column.size !=
@@ -6167,7 +6158,7 @@ IDE_RC qmvQuerySet::validateTopRecursiveView( qcStatement * aStatement,
                 // Nothing to do.
             }
 
-            // target ÎÖ∏ÎìúÎ•º Î∞îÍæºÎã§.
+            // target ≥ÎµÂ∏¶ πŸ≤€¥Ÿ.
             sTarget->targetColumn = sNode;
 
             sPrevNode = sNode;
@@ -6180,7 +6171,7 @@ IDE_RC qmvQuerySet::validateTopRecursiveView( qcStatement * aStatement,
         
     sPrevNode = NULL;
         
-    // right targetÏùò Í≥†Ï†ï
+    // right target¿« ∞Ì¡§
     for ( sColumnInfo = aTableRef->tableInfo->columns,
               sTarget = sViewParseTree->querySet->right->SFWGH->target;
           ( sColumnInfo != NULL ) && ( sTarget != NULL );
@@ -6189,21 +6180,21 @@ IDE_RC qmvQuerySet::validateTopRecursiveView( qcStatement * aStatement,
     {
         sTargetColumn = sTarget->targetColumn;
             
-        // union allÏãú conversionÏùÑ Îã¨ÏïÑÎÜìÏïòÎã§.
+        // union allΩ√ conversion¿ª ¥ﬁæ∆≥ıæ“¥Ÿ.
         sMtcColumn =
             QTC_STMT_COLUMN( aStatement,
                              (qtcNode*) mtf::convertedNode(
                                  (mtcNode*) sTargetColumn,
                                  &QC_SHARED_TMPLATE(aStatement)->tmplate ) );
         
-        // type,precisionÏù¥ Îã§Î•¥Îã§Î©¥ castÎ•º Î∂ôÏó¨ ÎßûÏ∂òÎã§.
+        // type,precision¿Ã ¥Ÿ∏£¥Ÿ∏È cast∏¶ ∫Ÿø© ∏¬√·¥Ÿ.
         if ( ( sMtcColumn->type.dataTypeId !=
                sColumnInfo->basicInfo->type.dataTypeId ) ||
              ( sMtcColumn->column.size !=
                sColumnInfo->basicInfo->column.size ) )
         {
-            // target columnÏùò conversionÏùÑ ÏÇ≠Ï†úÌïòÍ≥†
-            // target columnÏóê ÏÉàÎ°ú castÌï®ÏàòÎ•º Î∂ôÏù∏Îã§.
+            // target column¿« conversion¿ª ªË¡¶«œ∞Ì
+            // target columnø° ªı∑Œ cast«‘ºˆ∏¶ ∫Ÿ¿Œ¥Ÿ.
             sTargetColumn->node.conversion = NULL;
                 
             IDE_TEST( addCastFuncForNode( aStatement,
@@ -6221,7 +6212,7 @@ IDE_RC qmvQuerySet::validateTopRecursiveView( qcStatement * aStatement,
                 // Nothing to do.
             }
 
-            // target ÎÖ∏ÎìúÎ•º Î∞îÍæºÎã§.
+            // target ≥ÎµÂ∏¶ πŸ≤€¥Ÿ.
             sTarget->targetColumn = sNode;
 
             sPrevNode = sNode;
@@ -6233,11 +6224,11 @@ IDE_RC qmvQuerySet::validateTopRecursiveView( qcStatement * aStatement,
     }
         
     //------------------------------
-    // Î≥ÄÍ≤ΩÎêú tableInfoÎ°ú inline view tupleÏùÑ ÏÉùÏÑ±ÌïúÎã§.
+    // ∫Ø∞Êµ» tableInfo∑Œ inline view tuple¿ª ª˝º∫«—¥Ÿ.
     //------------------------------
         
     // BUG-37136
-    aTableRef->tableHandle = aTableRef->tableInfo->tableHandle;  // NULLÏù¥Îã§
+    aTableRef->tableHandle = aTableRef->tableInfo->tableHandle;  // NULL¿Ã¥Ÿ
     aTableRef->tableType   = aTableRef->tableInfo->tableType;
     aTableRef->tableFlag   = aTableRef->tableInfo->tableFlag;
     aTableRef->tableOID    = aTableRef->tableInfo->tableOID;
@@ -6284,7 +6275,7 @@ IDE_RC qmvQuerySet::validateBottomRecursiveView( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-2582 recursive with
- *    ÌïòÏúÑ recrusive view valdiate.
+ *    «œ¿ß recrusive view valdiate.
  *    
  * Implementation :
  * 
@@ -6293,14 +6284,14 @@ IDE_RC qmvQuerySet::validateBottomRecursiveView( qcStatement * aStatement,
  *       union all
  *       select q1.id, '/'||q1.pid from q1, t1 where q1.pid = t1.id
  *                                      ^^
- *                                      ÌïòÏúÑ recursive view
+ *                                      «œ¿ß recursive view
  *     )
  *     select * from q1;
  *                   ^^
- *                   ÏµúÏÉÅÏúÑ recursive view
+ *                   √÷ªÛ¿ß recursive view
  *
- *    q1Ïùò i1ÏùÄ union allÏùò left subqueryÏùò target column typeÏúºÎ°ú Í≥†Ï†ïÌïòÎêò
- *    precisionÏùÄ right subqueryÏùò targetÏóê ÏùòÌï¥ Ïª§Ïßà Ïàò ÏûàÎã§.
+ *    q1¿« i1¿∫ union all¿« left subquery¿« target column type¿∏∑Œ ∞Ì¡§«œµ«
+ *    precision¿∫ right subquery¿« targetø° ¿««ÿ ƒø¡˙ ºˆ ¿÷¥Ÿ.
  *
  ***********************************************************************/
 
@@ -6314,23 +6305,23 @@ IDE_RC qmvQuerySet::validateBottomRecursiveView( qcStatement * aStatement,
     sWithParseTree = (qmsParseTree *)
         aTableRef->withStmt->stmt->myPlan->parseTree;
     
-    // withÏ†àÏùò viewÏù¥Í≥† column aliasÍ∞Ä ÏûàÎäî Í≤ΩÏö∞ Ïª¨ÎüºÏù¥Î¶ÑÏùÄ
-    // column aliasÎ•º Ïù¥Ïö©ÌïúÎã§.
+    // with¿˝¿« view¿Ã∞Ì column alias∞° ¿÷¥¬ ∞ÊøÏ ƒ√∑≥¿Ã∏ß¿∫
+    // column alias∏¶ ¿ÃøÎ«—¥Ÿ.
     sColumnAlias = aTableRef->withStmt->columns;
     
     //------------------------------
-    // ÌïòÏúÑ recursive view
-    // withStmt->stmtÏóêÏÑú validationÏóê ÏÇ¨Ïö©ÎêúÎã§.
+    // «œ¿ß recursive view
+    // withStmt->stmtø°º≠ validationø° ªÁøÎµ»¥Ÿ.
     //------------------------------
 
     if ( aTableRef->withStmt->tableInfo == NULL )
     {
-        // left subqueryÏóê recursive view Ïò§Î©¥ ÏïàÎê®
+        // left subqueryø° recursive view ø¿∏È æ»µ 
         IDE_TEST_RAISE( aSFWGH == sWithParseTree->querySet->left->SFWGH,
                         ERR_ORDER_RECURSIVE_VIEW );
         
-        // union allÏùò right subquery SFWGHÏóêÏÑúÎßå Í∞ÄÎä•
-        // Ïù¥Ïô∏Ïùò view, subqueryÏóêÏÑúÎäî ÏïàÎê®
+        // union all¿« right subquery SFWGHø°º≠∏∏ ∞°¥…
+        // ¿Ãø‹¿« view, subqueryø°º≠¥¬ æ»µ 
         IDE_TEST_RAISE( aSFWGH != sWithParseTree->querySet->right->SFWGH,
                         ERR_ITSELF_DIRECTLY_RECURSIVE_VIEW );
         
@@ -6342,32 +6333,32 @@ IDE_RC qmvQuerySet::validateBottomRecursiveView( qcStatement * aStatement,
                                  QS_EMPTY_OID )
                   != IDE_SUCCESS );
 
-        // BUG-43768 recursive with Í∂åÌïú Ï≤¥ÌÅ¨ ÏóêÎü¨
+        // BUG-43768 recursive with ±««— √º≈© ø°∑Ø
         aTableRef->tableInfo->tableOwnerID = QCG_GET_SESSION_USER_ID(aStatement);
 
-        // ÌïòÏúÑ tableInfoÎ•º Îã¨ÏïÑÎëîÎã§.
+        // «œ¿ß tableInfo∏¶ ¥ﬁæ∆µ–¥Ÿ.
         aTableRef->withStmt->tableInfo = aTableRef->tableInfo;
             
-        // with Ï†àÏóê ÏùòÌï¥ ÏÉùÏÑ±Îêú inline Î∑∞Ïóê Í≤ΩÏö∞ Ï†úÎÑàÎ†àÏù¥Ìä∏Îêú tableIDÎ•º Ìï†ÎãπÌïúÎã§.
+        // with ¿˝ø° ¿««ÿ ª˝º∫µ» inline ∫‰ø° ∞ÊøÏ ¡¶≥ ∑π¿Ã∆Æµ» tableID∏¶ «“¥Á«—¥Ÿ.
         aTableRef->tableInfo->tableID = aTableRef->withStmt->tableID;
     }
     else
     {
-        // right queryÏóê subqueryÎ°ú query_nameÏù¥ Ïò§Îäî Í≤ΩÏö∞Îäî
-        // Ïù¥ÎØ∏ tableInfoÎ•º ÏÉùÏÑ±Ìï¥ÏÑú withStmtÏóê Îã¨ÏïÑ ÎÜìÏùÄ ÏÉÅÌÉúÎ°ú
-        // Ïù¥Î∂ÄÎ∂ÑÏóê Îì§Ïñ¥ Ïò§Í≤å ÎêòÎäîÎç∞ isTopÏù∏ Í≤ΩÏö∞Îäî tableInfoÍ∞Ä
-        // withStmtÏóê Îã¨Î†§ ÏûàÏßÄ ÏïäÎã§.
+        // right queryø° subquery∑Œ query_name¿Ã ø¿¥¬ ∞ÊøÏ¥¬
+        // ¿ÃπÃ tableInfo∏¶ ª˝º∫«ÿº≠ withStmtø° ¥ﬁæ∆ ≥ı¿∫ ªÛ≈¬∑Œ
+        // ¿Ã∫Œ∫–ø° µÈæÓ ø¿∞‘ µ«¥¬µ• isTop¿Œ ∞ÊøÏ¥¬ tableInfo∞°
+        // withStmtø° ¥ﬁ∑¡ ¿÷¡ˆ æ ¥Ÿ.
         IDE_TEST_RAISE( aTableRef->withStmt->isTop == ID_TRUE,
                         ERR_DUPLICATE_RECURSIVE_VIEW );
 
         aTableRef->tableInfo = aTableRef->withStmt->tableInfo;
 
-        // BUG-44156 ÏûÑÏãú tableInfoÏóê tableIDÏÑ§Ï†ï
+        // BUG-44156 ¿”Ω√ tableInfoø° tableIDº≥¡§
         aTableRef->tableInfo->tableID = aTableRef->withStmt->tableID;
     }
 
     // BUG-37136
-    aTableRef->tableHandle = aTableRef->tableInfo->tableHandle;  // NULLÏù¥Îã§
+    aTableRef->tableHandle = aTableRef->tableInfo->tableHandle;  // NULL¿Ã¥Ÿ
     aTableRef->tableType   = aTableRef->tableInfo->tableType;
     aTableRef->tableFlag   = aTableRef->tableInfo->tableFlag;
     aTableRef->tableOID    = aTableRef->tableInfo->tableOID;
@@ -6399,7 +6390,7 @@ IDE_RC qmvQuerySet::validateBottomRecursiveView( qcStatement * aStatement,
                                       aIsNullableFlag )
               != IDE_SUCCESS );
 
-    // recursive view reference id Ï†ÄÏû•
+    // recursive view reference id ¿˙¿Â
     aSFWGH->recursiveViewID = aTableRef->table;
 
     return IDE_SUCCESS;
@@ -6430,42 +6421,42 @@ IDE_RC qmvQuerySet::setSameViewRef(
  *
  * Description : PROJ-1413 Simple View Merging
  *
- *     Í∏∞Ï°¥ same viewÎ•º Ï∞æÎäî Î∞©ÏãùÏùÄ querySetÏóêÏùò fromÏ†àÏóêÏÑú Ï∞æÍ±∞ÎÇò
- *     outerQuery(SFWGH)Î•º Îî∞Îùº Ïò¨ÎùºÍ∞ÄÎ©∞ fromÏ†àÏóêÏÑú Ï∞æÎäî Î∞©ÏãùÏù¥ÏóàÎã§.
- *     Ïù¥Îü∞ Î∞©ÏãùÏùÄ fromÏ†àÍ≥º subqueryÏóêÏÑú Ï∞∏Ï°∞ÌïòÎäî ÎèôÏùºÌïú viewÎßåÏùÑ
- *     Í≤ÄÏÉâÌï† Ïàò ÏûàÏùÑÎøê (querySetÎÇ¥Ïùò viewÎßåÏùÑ Í≤ÄÏÉâÌïúÎã§.)
+ *     ±‚¡∏ same view∏¶ √£¥¬ πÊΩƒ¿∫ querySetø°¿« from¿˝ø°º≠ √£∞≈≥™
+ *     outerQuery(SFWGH)∏¶ µ˚∂Û ø√∂Û∞°∏Á from¿˝ø°º≠ √£¥¬ πÊΩƒ¿Ãæ˙¥Ÿ.
+ *     ¿Ã∑± πÊΩƒ¿∫ from¿˝∞˙ subqueryø°º≠ ¬¸¡∂«œ¥¬ µø¿œ«— view∏∏¿ª
+ *     ∞Àªˆ«“ ºˆ ¿÷¿ªª” (querySet≥ª¿« view∏∏¿ª ∞Àªˆ«—¥Ÿ.)
  *
  *     ex) select * from v1 a, v1 b;
  *         select * from v1 where i1 in (select i1 from v1);
  *
- *     created view ÌòπÏùÄ inline viewÏïàÏóêÏÑú ÏÇ¨Ïö©Ìïú ÎèôÏùºÌïú viewÎÇò
- *     setÏ†àÏóê ÏÇ¨Ïö©Îêú ÎèôÏùºÌïú viewÎ•º Í≤ÄÏÉâÌï† Ïàò ÏóÜÏóàÎã§.
- *     (querySet Î∞ñÏùò viewÎ•º Í≤ÄÏÉâÌï† Ïàò ÏóÜÎã§.)
+ *     created view »§¿∫ inline viewæ»ø°º≠ ªÁøÎ«— µø¿œ«— view≥™
+ *     set¿˝ø° ªÁøÎµ» µø¿œ«— view∏¶ ∞Àªˆ«“ ºˆ æ¯æ˙¥Ÿ.
+ *     (querySet π€¿« view∏¶ ∞Àªˆ«“ ºˆ æ¯¥Ÿ.)
  *
  *     ex) select * from v1 a, (select * from v1) b;
  *         select * from v1 union select * from v1;
  *
- *     Ïù¥ Î¨∏Ï†úÎ•º Ìï¥Í≤∞ÌïòÍ∏∞ ÏúÑÌï¥ outerQueryÎ•º Îî∞ÎùºÍ∞ÄÎäî Î∞©ÏãùÏù¥ ÏïÑÎãå
- *     tableMapÏùÑ Í≤ÄÏÉâÌïòÎäî Î∞©ÏãùÏúºÎ°ú Î≥ÄÍ≤ΩÌïúÎã§.
+ *     ¿Ã πÆ¡¶∏¶ «ÿ∞·«œ±‚ ¿ß«ÿ outerQuery∏¶ µ˚∂Û∞°¥¬ πÊΩƒ¿Ã æ∆¥—
+ *     tableMap¿ª ∞Àªˆ«œ¥¬ πÊΩƒ¿∏∑Œ ∫Ø∞Ê«—¥Ÿ.
  *
- *     Í∑∏Îü¨ÎÇò Ïù¥Îü∞ Î∞©ÏãùÏùÄ Îã§ÏùåÍ≥º Í∞ôÏùÄ viewÏóê ÎåÄÌï¥ÏÑúÎèÑ ÎèôÏùºÌïú viewÎ•º
- *     Í≤ÄÏÉâÌïòÍ≥† Î∂àÌïÑÏöîÌïú materializeÍ∞Ä Î∞úÏÉùÌïòÎäî Î¨∏Ï†úÍ∞Ä ÏûàÎã§.
- *     ÌïòÏßÄÎßå Î≥∏ Ìï®ÏàòÎäî ÎèôÏùºÌïú viewÎ•º Ï∞æÎäî Í≤ÉÏù¥ÏßÄ, materializeÎ•º
- *     Í≤∞Ï†ïÌïòÎäî Í≤ÉÏùÄ ÏïÑÎãàÎØÄÎ°ú Ïù¥Îü∞ Î¨∏Ï†úÎäî optimizerÍ∞Ä ÌíÄÏñ¥Ïïº ÌïúÎã§.
+ *     ±◊∑Ø≥™ ¿Ã∑± πÊΩƒ¿∫ ¥Ÿ¿Ω∞˙ ∞∞¿∫ viewø° ¥Î«ÿº≠µµ µø¿œ«— view∏¶
+ *     ∞Àªˆ«œ∞Ì ∫“« ø‰«— materialize∞° πﬂª˝«œ¥¬ πÆ¡¶∞° ¿÷¥Ÿ.
+ *     «œ¡ˆ∏∏ ∫ª «‘ºˆ¥¬ µø¿œ«— view∏¶ √£¥¬ ∞Õ¿Ã¡ˆ, materialize∏¶
+ *     ∞·¡§«œ¥¬ ∞Õ¿∫ æ∆¥œπ«∑Œ ¿Ã∑± πÆ¡¶¥¬ optimizer∞° «ÆæÓæﬂ «—¥Ÿ.
  *
  *     ex) select * from v1 union all select * from v1;
  *
- *     Îã§ÌñâÏù∏ Í≤ÉÏùÄ viewÏóê predicateÏù¥ pushdownÎêòÎäî Í≤ΩÏö∞Îäî materializeÎ•º
- *     ÏàòÌñâÌïòÏßÄ ÏïäÏúºÎØÄÎ°ú ÌäπÎ≥ÑÌïú Í≤ΩÏö∞Î•º Ï†úÏô∏ÌïòÍ≥†Îäî ÏúÑÏôÄ Í∞ôÏùÄ ÏøºÎ¶¨Îäî
- *     ÏûêÏ£º ÏÇ¨Ïö©ÎêòÏßÄ ÏïäÏúºÎ¶¨Îùº ÏòàÏÉÅÌïúÎã§. Ïù¥Îü∞ Í≤ΩÏö∞Î•º ÌäπÎ≥ÑÌïòÍ≤å
- *     Ï∑®Í∏âÌïúÎã§Î©¥ hintÎ•º ÏÇ¨Ïö©ÌïòÎäî Í≤ÉÏù¥ ÎßûÎã§.
+ *     ¥Ÿ«‡¿Œ ∞Õ¿∫ viewø° predicate¿Ã pushdownµ«¥¬ ∞ÊøÏ¥¬ materialize∏¶
+ *     ºˆ«‡«œ¡ˆ æ ¿∏π«∑Œ ∆Ø∫∞«— ∞ÊøÏ∏¶ ¡¶ø‹«œ∞Ì¥¬ ¿ßøÕ ∞∞¿∫ ƒı∏Æ¥¬
+ *     ¿⁄¡÷ ªÁøÎµ«¡ˆ æ ¿∏∏Æ∂Û øπªÛ«—¥Ÿ. ¿Ã∑± ∞ÊøÏ∏¶ ∆Ø∫∞«œ∞‘
+ *     √Î±ﬁ«—¥Ÿ∏È hint∏¶ ªÁøÎ«œ¥¬ ∞Õ¿Ã ∏¬¥Ÿ.
  *
  *     ex) select /+ push_select_view(v1) / * from v1
  *         union all
  *         select * from v1;
  *
  *    PROJ-2582 recursive with
- *      top queryÏóê ÎåÄÌïú same view Ï≤òÎ¶¨
+ *      top queryø° ¥Î«— same view √≥∏Æ
  *
  *     ex> with test_cte ( cte_i1 ) as
  *        (    select * from t1
@@ -6487,7 +6478,7 @@ IDE_RC qmvQuerySet::setSameViewRef(
     {
         if ( aSFWGH->hierarchy != NULL )
         {
-            // BUG-37237 hierarchy queryÎäî same viewÎ•º Ï≤òÎ¶¨ÌïòÏßÄ ÏïäÎäîÎã§.
+            // BUG-37237 hierarchy query¥¬ same view∏¶ √≥∏Æ«œ¡ˆ æ ¥¬¥Ÿ.
             aTableRef->flag &= ~QMS_TABLE_REF_HIER_VIEW_MASK;
             aTableRef->flag |= QMS_TABLE_REF_HIER_VIEW_TRUE;
             
@@ -6538,12 +6529,33 @@ IDE_RC qmvQuerySet::setSameViewRef(
             }
             else
             {
+                /* TASK-7219
+                 *   qmv::parseSelect ø°º≠ qmvWith::validate ¿ª With Shard Trasnfrom ¥‹∞Ë∏¶
+                 *   ¿Ã»ƒ∑Œ ø¨±‚«œø¥∞Ì, ¿Ã Ω√¡°ø° With View ¥¬ Transform ¿Ã¿¸ ∞Õ∞˙ ¿Ã»ƒ ∞Õ¿Ã
+                 *   ¡∏¿Á«œ∞‘ µ»¥Ÿ.
+                 *
+                 *   ¿Ã∂ßø° Shard Transform µ» View¥¬ Transform ¿Ã¿¸¿« ViewøÕ Same View Ref
+                 *   √≥∏Æ«œ∏È æ»µ»¥Ÿ. qmvShardTransform::processTransformForFrom ø°º≠
+                 *   Shard Transform µ» View ø©∫Œ∏¶ sTableRef->flag ø° ≥≤∞Â¥Ÿ.
+                 *
+                 *   ø©±‚º≠ ø©∫Œ∏¶ »Æ¿Œ«œø© ¿˚¿˝«— View ∏¶ Same View Ref √≥∏Æ«œµµ∑œ ¿Øµµ«—¥Ÿ.
+                 */
+                if ( ( sTableRef->flag & QMS_TABLE_REF_SHARD_TRANSFROM_MASK )
+                     != ( aTableRef->flag & QMS_TABLE_REF_SHARD_TRANSFROM_MASK ) )
+                {
+                    continue;
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+
                 if ( ( sTableRef->view != NULL ) &&
                      ( sTableRef->tableInfo != NULL ) &&
                      ( ( sTableRef->tableInfo->tableID == aTableRef->tableInfo->tableID ) &&
-                       ( aTableRef->tableInfo->tableID > 0 ) && // withÏóêÏùòÌïú inline viewÏùº Í≤ΩÏö∞
+                       ( aTableRef->tableInfo->tableID > 0 ) && // withø°¿««— inline view¿œ ∞ÊøÏ
                        ( ( sTableRef->flag & QMS_TABLE_REF_HIER_VIEW_MASK )
-                         != QMS_TABLE_REF_HIER_VIEW_TRUE ) ) ) // hierarchyÏóê ÏÇ¨Ïö©Îêú viewÍ∞Ä ÏïÑÎãå Í≤ΩÏö∞
+                         != QMS_TABLE_REF_HIER_VIEW_TRUE ) ) ) // hierarchyø° ªÁøÎµ» view∞° æ∆¥— ∞ÊøÏ
                 {
                     if ( sTableRef->sameViewRef == NULL )
                     {
@@ -6598,18 +6610,18 @@ IDE_RC qmvQuerySet::validateQmsFromWithOnCond(
         IDE_TEST(validateQmsTableRef(aStatement,
                                      aSFWGH,
                                      aFrom->tableRef,
-                                     aSFWGH->flag,
+                                     aSFWGH->lflag,
                                      aIsNullableFlag)  // PR-13597
                  != IDE_SUCCESS);
 
-        // Table Map ÏÑ§Ï†ï
+        // Table Map º≥¡§
         QC_SHARED_TMPLATE(aStatement)->tableMap[aFrom->tableRef->table].from = aFrom;
 
-        // FROM Ï†àÏóê ÎåÄÌïú dependencies ÏÑ§Ï†ï
+        // FROM ¿˝ø° ¥Î«— dependencies º≥¡§
         qtc::dependencyClear( & aFrom->depInfo );
         qtc::dependencySet( aFrom->tableRef->table, & aFrom->depInfo );
 
-        // PROJ-1718 Semi/anti joinÍ≥º Í¥ÄÎ†®Îêú dependency Ï¥àÍ∏∞Ìôî
+        // PROJ-1718 Semi/anti join∞˙ ∞¸∑√µ» dependency √ ±‚»≠
         qtc::dependencyClear( & aFrom->semiAntiJoinDepInfo );
 
         IDE_TEST( qmsPreservedTable::addTable( aStatement,
@@ -6627,8 +6639,8 @@ IDE_RC qmvQuerySet::validateQmsFromWithOnCond(
                  ( aFrom->tableRef->mShardObjInfo != NULL ) ||
                  ( aFrom->tableRef->tableInfo->temporaryInfo.type != QCM_TEMPORARY_ON_COMMIT_NONE ) )
             {
-                aQuerySet->flag &= ~QMV_QUERYSET_RESULT_CACHE_INVALID_MASK;
-                aQuerySet->flag |= QMV_QUERYSET_RESULT_CACHE_INVALID_TRUE;
+                aQuerySet->lflag &= ~QMV_QUERYSET_RESULT_CACHE_INVALID_MASK;
+                aQuerySet->lflag |= QMV_QUERYSET_RESULT_CACHE_INVALID_TRUE;
             }
             else
             {
@@ -6642,7 +6654,7 @@ IDE_RC qmvQuerySet::validateQmsFromWithOnCond(
     }
     else // non-leaf node
     {
-        // PR-13597 Î•º ÏúÑÌï¥ÏÑú outer columnÏù∏ Í≤ΩÏö∞Ïóê Ìï¥Îãπ ÌÖåÏù¥Î∏îÏùÑ NULLABLEÎ°ú ÏÑ§Ï†ï
+        // PR-13597 ∏¶ ¿ß«ÿº≠ outer column¿Œ ∞ÊøÏø° «ÿ¥Á ≈◊¿Ã∫Ì¿ª NULLABLE∑Œ º≥¡§
         if( aFrom->joinType == QMS_INNER_JOIN )
         {
             IDE_TEST(validateQmsFromWithOnCond(aQuerySet,
@@ -6709,7 +6721,7 @@ IDE_RC qmvQuerySet::validateQmsFromWithOnCond(
         }
         else
         {
-            // Ïù¥Îü∞ Í≤ΩÏö∞Îäî ÏûàÏùÑ Ïàò ÏóÜÏùå.
+            // ¿Ã∑± ∞ÊøÏ¥¬ ¿÷¿ª ºˆ æ¯¿Ω.
         }
 
         /* PROJ-2197 PSM Renewal */
@@ -6757,7 +6769,7 @@ IDE_RC qmvQuerySet::validateQmsFromWithOnCond(
             IDE_RAISE( ERR_USE_SEQUENCE_IN_ON_JOIN_CONDITION );
         }
 
-        /* Plan PropertyÏóê Îì±Î°ù */
+        /* Plan Propertyø° µÓ∑œ */
         qcgPlan::registerPlanProperty( aStatement,
                                        PLAN_PROPERTY_QUERY_REWRITE_ENABLE );
 
@@ -6776,9 +6788,9 @@ IDE_RC qmvQuerySet::validateQmsFromWithOnCond(
             /* Nothing to do */
         }
 
-        // FROM Ï†àÏóê ÎåÄÌïú dependencies ÏÑ§Ï†ï
-        //    - Left FromÏùò depedencies Ìè¨Ìï®
-        //    - Right FromÏùò dependencies Ìè¨Ìï®
+        // FROM ¿˝ø° ¥Î«— dependencies º≥¡§
+        //    - Left From¿« depedencies ∆˜«‘
+        //    - Right From¿« dependencies ∆˜«‘
         qtc::dependencyClear( & aFrom->depInfo );
 
         IDE_TEST( qtc::dependencyOr( & aFrom->depInfo,
@@ -6790,7 +6802,7 @@ IDE_RC qmvQuerySet::validateQmsFromWithOnCond(
                                      & aFrom->depInfo )
                   != IDE_SUCCESS );
 
-        // PROJ-1718 Semi/anti joinÍ≥º Í¥ÄÎ†®Îêú dependency Ï¥àÍ∏∞Ìôî
+        // PROJ-1718 Semi/anti join∞˙ ∞¸∑√µ» dependency √ ±‚»≠
         qtc::dependencyClear( & aFrom->semiAntiJoinDepInfo );
     }
 
@@ -6871,7 +6883,11 @@ IDE_RC qmvQuerySet::makeTableInfo(
     /* PROJ-2359 Table/Partition Access Option */
     sTableInfo->accessOption = QCM_ACCESS_OPTION_READ_WRITE;
 
-    /* Í∏∞ÌÉÄ Ï†ïÎ≥¥ */
+    /* TASK-7307 DML Data Consistency in Shard */
+    sTableInfo->mIsUsable = ID_TRUE;
+    sTableInfo->mShardFlag = QCM_TABLE_SHARD_FLAG_TABLE_NONE;
+
+    /* ±‚≈∏ ¡§∫∏ */
     sTableInfo->tableOID        = SMI_NULL_OID;
     sTableInfo->tableFlag       = 0;
     sTableInfo->isDictionary    = ID_FALSE;
@@ -6933,11 +6949,11 @@ IDE_RC qmvQuerySet::makeTableInfo(
         }
 
         /* BUG-37981
-           cursor for loopÏóêÏÑú ÏÇ¨Ïö©ÎêòÎäî cursorÏùò Í≤ΩÏö∞,
-           package specÏóê ÏûàÎäî cursor Ïùº ÏàòÎèÑ ÏûàÍ∏∞ ÎïåÎ¨∏Ïóê
-           templateÏù¥ Îã§Î•º ÏàòÎèÑ ÏûàÎã§. */
+           cursor for loopø°º≠ ªÁøÎµ«¥¬ cursor¿« ∞ÊøÏ,
+           package specø° ¿÷¥¬ cursor ¿œ ºˆµµ ¿÷±‚ ∂ßπÆø°
+           template¿Ã ¥Ÿ∏¶ ºˆµµ ¿÷¥Ÿ. */
         /* BUG-44716
-         * Package ÏÉùÏÑ±Ï§ëÏóêÎäî ÏûêÏã†Ïùò OIDÎ°ú getPkgInfoÎ•º Ìò∏Ï∂úÌïòÎ©¥ ÏïàÎêúÎã§. */
+         * Package ª˝º∫¡ﬂø°¥¬ ¿⁄Ω≈¿« OID∑Œ getPkgInfo∏¶ »£√‚«œ∏È æ»µ»¥Ÿ. */
         if( (aObjectID == QS_EMPTY_OID) ||
             ((aStatement->spvEnv->createPkg != NULL) &&
              (aObjectID == aStatement->spvEnv->createPkg->pkgOID)) ) 
@@ -6958,7 +6974,7 @@ IDE_RC qmvQuerySet::makeTableInfo(
         }
 
         // BUG-35172
-        // Inline ViewÏóêÏÑú BINARY ÌÉÄÏûÖÏùò Ïª¨ÎüºÏùÑ ÏÉùÏÑ±ÌïòÎ©¥ ÏïàÎêúÎã§.
+        // Inline Viewø°º≠ BINARY ≈∏¿‘¿« ƒ√∑≥¿ª ª˝º∫«œ∏È æ»µ»¥Ÿ.
         IDE_TEST_RAISE( sTargetColumn->module->id == MTD_BINARY_ID, ERR_INVALID_TYPE );
 
         mtc::copyColumn(sCurrColumn[i].basicInfo, sTargetColumn);
@@ -6970,7 +6986,7 @@ IDE_RC qmvQuerySet::makeTableInfo(
         sCurrColumn[i].basicInfo->flag &= ~MTC_COLUMN_VIEW_COLUMN_PUSH_MASK;
 
         // PROJ-2415 Grouping Sets Clause
-        // Flag Ï†ÑÎã¨
+        // Flag ¿¸¥ﬁ
         if ( ( sTarget->targetColumn->lflag & QTC_NODE_GBGS_ORDER_BY_NODE_MASK )
              == QTC_NODE_GBGS_ORDER_BY_NODE_TRUE )
         {
@@ -6983,7 +6999,7 @@ IDE_RC qmvQuerySet::makeTableInfo(
         }
 
         // PROJ-2582 recursive with
-        // withÏ†àÏùò viewÏù¥Í≥† column aliasÍ∞Ä ÏûàÎäî Í≤ΩÏö∞ Ïª¨ÎüºÏù¥Î¶ÑÏùÄ column aliasÎ•º Ïù¥Ïö©ÌïúÎã§.
+        // with¿˝¿« view¿Ã∞Ì column alias∞° ¿÷¥¬ ∞ÊøÏ ƒ√∑≥¿Ã∏ß¿∫ column alias∏¶ ¿ÃøÎ«—¥Ÿ.
         if ( sAlias != NULL )
         {
             QC_STR_COPY( sCurrColumn[i].name, sAlias->namePos );
@@ -6995,9 +7011,24 @@ IDE_RC qmvQuerySet::makeTableInfo(
         }
         else
         {
-            if (sTarget->aliasColumnName.size == QC_POS_EMPTY_SIZE)
+            /* TASK-7219
+             *  Inline View ∞° Shard View Transform ¿∏∑Œ ∫Ø∞Êµ«¥¬ ∞ÊøÏø°
+             *   1. qmvQuerySet::makeTableInfo
+             *   2. qmvQuerySet::makeTargetListForTableRef
+             *  ¿ß «‘ºˆ¿« º¯º≠∏¶ ¡ﬂ√∏«ÿº≠ »£√‚«œ∞‘ µ«∞Ì,
+             *  2 ø°º≠ ∏ﬁ∏∏Æ «“¥Á¿∏∑Œ ª˝º∫µ» Target Name ¡§∫∏∏¶ 1π¯ø°º≠ ¿Á¿ÃøÎ«—¥Ÿ.
+             *
+             *  2 ø°º≠ aliasColumnName ¿Ã ¡∏¿Á«œ¥¯ «œ¡ˆæ ¥¯ «“¥Á«œπ«∑Œ,
+             *  1 ø°º≠ ¿Á¿ÃøÎµ… ∂ßø°¥¬ aliasColumnName.size ∑Œ ¡¶æÓ«œ¥¬ ≥ªøÎ¿Ã ¿˚¿˝«œ¡ˆ æ ¥Ÿ.
+             *
+             *  2 ø°º≠ aliasColumnName.size ∏¶ ¡∂¡§«œ¥¬ πÊæ»µµ ¿÷∞⁄¡ˆ∏∏,
+             *  πÆ¡¶∞° µ«¥¬ ∫ÒΩ¡«— ¿€æ˜¿Ã ∏π¿∏π«∑Œ,
+             *  Shard ø°º≠ ø¿¿€µø«œ¥¬ ∫Œ∫–∏∏ 1 ø°º≠ ºˆ¡§«—¥Ÿ. 
+             */
+            if ( ( sTarget->aliasColumnName.size == QC_POS_EMPTY_SIZE ) ||
+                 ( sTarget->aliasColumnName.size == 0 ) )
             {
-                // Îã§ÏùåÍ≥º Í∞ôÏùÄ Í≤ΩÏö∞ union allÏóê ÏùòÌï¥ ÏÉùÏÑ±Îêú internal columnÏùÄ null nameÏùÑ Í∞ÄÏßÑÎã§.
+                // ¥Ÿ¿Ω∞˙ ∞∞¿∫ ∞ÊøÏ union allø° ¿««ÿ ª˝º∫µ» internal column¿∫ null name¿ª ∞°¡¯¥Ÿ.
                 // select * from (select 'A' from dual union all select 'A' from dual);
                 if ( QC_IS_NULL_NAME( sTarget->targetColumn->position ) == ID_TRUE )
                 {
@@ -7009,17 +7040,17 @@ IDE_RC qmvQuerySet::makeTableInfo(
                     }
                     else
                     {
-                        // ÏïÑÎ¨¥Í≤ÉÎèÑ Ìï† Ïàò ÏóÜÎã§.
+                        // æ∆π´∞Õµµ «“ ºˆ æ¯¥Ÿ.
                         SET_EMPTY_POSITION( sPosition );
                     }
                 }
                 else
                 {
-                    // natcÏóêÏÑú ÏàòÌñâÌïòÎäî Í≤ΩÏö∞ÎèÑ Í∏∞Ï°¥ display nameÏúºÎ°ú Ï∂úÎ†•ÌïúÎã§.
+                    // natcø°º≠ ºˆ«‡«œ¥¬ ∞ÊøÏµµ ±‚¡∏ display name¿∏∑Œ √‚∑¬«—¥Ÿ.
                     if ( ( QCU_COMPAT_DISPLAY_NAME == 1 ) ||
                          ( QCU_DISPLAY_PLAN_FOR_NATC == 1 ) )
                     {
-                        // BUG-38946 Í∏∞Ï°¥ display nameÍ≥º ÎèôÏùºÌïòÍ≤å ÏÑ§Ï†ïÌï¥ÏïºÌïúÎã§.
+                        // BUG-38946 ±‚¡∏ display name∞˙ µø¿œ«œ∞‘ º≥¡§«ÿæﬂ«—¥Ÿ.
                         getDisplayName( sTarget->targetColumn, &sPosition );
                     }
                     else
@@ -7030,7 +7061,7 @@ IDE_RC qmvQuerySet::makeTableInfo(
                                                         &(sNamePosition.name))
                                  != IDE_SUCCESS);
 
-                        // OÏÇ¨ÏôÄ Ïú†ÏÇ¨ÌïòÍ≤å ÏÑ§Ï†ïÌïúÎã§.
+                        // OªÁøÕ ¿ØªÁ«œ∞‘ º≥¡§«—¥Ÿ.
                         copyDisplayName( sTarget->targetColumn,
                                          &sNamePosition );
                     
@@ -7117,12 +7148,12 @@ IDE_RC qmvQuerySet::makeTupleForInlineView(
     sMtcTemplate->rows[aTupleID].columnCount   = sTableInfo->columnCount;
     sMtcTemplate->rows[aTupleID].columnMaximum = sTableInfo->columnCount;
 
-    // ViewÎ•º ÏúÑÌï¥ ÏÉùÏÑ±Îêú TupleÏûÑÏùÑ ÌëúÏãúÌï®.
+    // View∏¶ ¿ß«ÿ ª˝º∫µ» Tuple¿”¿ª «•Ω√«‘.
     sMtcTemplate->rows[aTupleID].lflag &= ~MTC_TUPLE_VIEW_MASK;
     sMtcTemplate->rows[aTupleID].lflag |= MTC_TUPLE_VIEW_TRUE;
 
-    /* BUG-44382 clone tuple ÏÑ±Îä•Í∞úÏÑ† */
-    // Î≥µÏÇ¨Í∞Ä ÌïÑÏöîÌï®
+    /* BUG-44382 clone tuple º∫¥…∞≥º± */
+    // ∫πªÁ∞° « ø‰«‘
     qtc::setTupleColumnFlag( &(sMtcTemplate->rows[aTupleID]),
                              ID_TRUE,
                              ID_FALSE );
@@ -7160,7 +7191,7 @@ IDE_RC qmvQuerySet::makeTupleForInlineView(
         sCurrNode->node.column = sColumn;
 
         // PROJ-1362
-        // lobÏùÄ selectÏãú lob-locatorÎ°ú Î≥ÄÌôòÎêòÎØÄÎ°ú ÏûÑÏùòÎ°ú Î∞îÍøîÏ§ÄÎã§.
+        // lob¿∫ selectΩ√ lob-locator∑Œ ∫Ø»Øµ«π«∑Œ ¿”¿«∑Œ πŸ≤„¡ÿ¥Ÿ.
         if (sCurrColumn->basicInfo->module->id == MTD_BLOB_ID)
         {
             IDE_TEST(mtc::initializeColumn(
@@ -7410,7 +7441,7 @@ IDE_RC qmvQuerySet::getTargetCountFromTableRef(
 
     IDU_FIT_POINT_FATAL( "qmvQuerySet::getTargetCountFromTableRef::__FT__" );
 
-    //ÏùºÎ∞ò ÌÖåÏù¥Î∏îÏù∏ Í≤ΩÏö∞
+    //¿œπ› ≈◊¿Ã∫Ì¿Œ ∞ÊøÏ
     if (aTableRef->view == NULL)
     {
         IDE_TEST(
@@ -7462,14 +7493,14 @@ IDE_RC qmvQuerySet::getTargetCountFromTableRef(
             if( sIsFixedTable == ID_FALSE )
             {
                 // BUG-34492
-                // validation lockÏù¥Î©¥ Ï∂©Î∂ÑÌïòÎã§.
+                // validation lock¿Ã∏È √Ê∫–«œ¥Ÿ.
                 IDE_TEST( qcm::lockTableForDMLValidation(
                               aStatement,
                               sTableHandle,
                               aTableRef->tableSCN )
                           != IDE_SUCCESS );
                 
-                // environmentÏùò Í∏∞Î°ù
+                // environment¿« ±‚∑œ
                 IDE_TEST( qcgPlan::registerPlanTable(
                               aStatement,
                               sTableHandle,
@@ -7478,7 +7509,7 @@ IDE_RC qmvQuerySet::getTargetCountFromTableRef(
                               aTableRef->tableInfo->name )        /* BUG-45893 */
                           != IDE_SUCCESS );
                 
-                // environmentÏùò Í∏∞Î°ù
+                // environment¿« ±‚∑œ
                 IDE_TEST( qcgPlan::registerPlanSynonym(
                               aStatement,
                               & sSynonymInfo,
@@ -7497,7 +7528,7 @@ IDE_RC qmvQuerySet::getTargetCountFromTableRef(
             *aTargetCount = aTableRef->tableInfo->columnCount;
         }
     }
-    //ViewÏù∏ Í≤ΩÏö∞
+    //View¿Œ ∞ÊøÏ
     else
     {
         IDE_TEST(estimateTargetCount( aTableRef->view, aTargetCount)
@@ -7526,19 +7557,19 @@ IDE_RC qmvQuerySet::validatePushPredView( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : join predicateÏùÑ ÎÇ¥Î¶¥ Ïàò ÏûàÎäîÏßÄ  VIEW Ï°∞Í±¥ Í≤ÄÏÇ¨
+ * Description : join predicate¿ª ≥ª∏± ºˆ ¿÷¥¬¡ˆ  VIEW ¡∂∞« ∞ÀªÁ
  *
  * Implementation :
  *
  *    PROJ-1495
  *
- *    Ï°∞Í±¥ 1. VIEWÏóê LIMITÏ†àÏù¥ ÏóÜÍ≥† shard table Ïù¥ ÏïÑÎãàÏñ¥Ïïº Ìï®.
- *    Ï°∞Í±¥ 2. UNION ALLÎ°úÎßå Íµ¨ÏÑ±ÎêòÏñ¥Ïïº Ìï®.
- *    Ï°∞Í±¥ 3. VIEWÎ•º Íµ¨ÏÑ±ÌïòÎäî Í∞Å selectÎ¨∏Îì§ÏùÄ
- *            (1) target columnÏùÄ Î™®Îëê ÏàúÏàò Ïª¨ÎüºÏù¥Ïñ¥Ïïº ÌïúÎã§.
- *            (1) FROMÏ†àÏóê Ïò§Îäî tableÏù¥ base tableÏù¥Ïñ¥Ïïº ÌïúÎã§.
- *            (2) WHEREÏ†àÏùÄ Ïò¨ Ïàò ÏûàÏúºÎÇò,
- *                WHEREÏ†àÏóê subqueryÎäî Ïò¨ Ïàò ÏóÜÎã§.
+ *    ¡∂∞« 1. VIEWø° LIMIT¿˝¿Ã æ¯∞Ì shard table ¿Ã æ∆¥œæÓæﬂ «‘.
+ *    ¡∂∞« 2. UNION ALL∑Œ∏∏ ±∏º∫µ«æÓæﬂ «‘.
+ *    ¡∂∞« 3. VIEW∏¶ ±∏º∫«œ¥¬ ∞¢ selectπÆµÈ¿∫
+ *            (1) target column¿∫ ∏µŒ º¯ºˆ ƒ√∑≥¿ÃæÓæﬂ «—¥Ÿ.
+ *            (1) FROM¿˝ø° ø¿¥¬ table¿Ã base table¿ÃæÓæﬂ «—¥Ÿ.
+ *            (2) WHERE¿˝¿∫ ø√ ºˆ ¿÷¿∏≥™,
+ *                WHERE¿˝ø° subquery¥¬ ø√ ºˆ æ¯¥Ÿ.
  *            (3) GROUP BY              (X)
  *            (4) AGGREGATION           (X)
  *            (5) DISTINCT              (X)
@@ -7552,20 +7583,20 @@ IDE_RC qmvQuerySet::validatePushPredView( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmvQuerySet::validatePushPredView::__FT__" );
 
     //---------------------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aTableRef != NULL );
 
     //---------------------------------------------------
-    // Í∏∞Î≥∏ Ï¥àÍ∏∞Ìôî
+    // ±‚∫ª √ ±‚»≠
     //---------------------------------------------------
 
     sViewParseTree = (qmsParseTree *)aTableRef->view->myPlan->parseTree;
 
     //---------------------------------------------------
-    // Ï°∞Í±¥ Í≤ÄÏÇ¨ : LIMITÏ†àÏù¥ ÏóÜÏñ¥Ïïº Ìï®.
+    // ¡∂∞« ∞ÀªÁ : LIMIT¿˝¿Ã æ¯æÓæﬂ «‘.
     //---------------------------------------------------
 
     if ( ( sViewParseTree->limit == NULL ) &&
@@ -7573,7 +7604,7 @@ IDE_RC qmvQuerySet::validatePushPredView( qcStatement  * aStatement,
            ( sViewParseTree->common.stmtShard == QC_STMT_SHARD_META ) ) ) // PROJ-2638
     {
         //---------------------------------------------------
-        // Ï°∞Í±¥ Í≤ÄÏÇ¨ : UNION ALL
+        // ¡∂∞« ∞ÀªÁ : UNION ALL
         //---------------------------------------------------
 
         IDE_TEST( validateUnionAllQuerySet( aStatement,
@@ -7599,8 +7630,8 @@ IDE_RC qmvQuerySet::validateUnionAllQuerySet( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : VIEWÍ∞Ä ÌïòÎÇòÏùò selectÎ¨∏ ÎòêÎäî UNION ALLÎ°úÎßå Íµ¨ÏÑ±ÎêòÏóàÎäîÏßÄ Îì±Ïùò
- *               querySet Íµ¨ÏÑ±ÏöîÍ±¥ÏùÑ ÎßåÏ°±ÌïòÎäîÏßÄ Í≤ÄÏÇ¨
+ * Description : VIEW∞° «œ≥™¿« selectπÆ ∂«¥¬ UNION ALL∑Œ∏∏ ±∏º∫µ«æ˙¥¬¡ˆ µÓ¿«
+ *               querySet ±∏º∫ø‰∞«¿ª ∏∏¡∑«œ¥¬¡ˆ ∞ÀªÁ
  *
  * Implementation :
  *
@@ -7611,18 +7642,18 @@ IDE_RC qmvQuerySet::validateUnionAllQuerySet( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmvQuerySet::validateUnionAllQuerySet::__FT__" );
 
     //---------------------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aQuerySet != NULL );
 
     //---------------------------------------------------
-    // Í∏∞Î≥∏ Ï¥àÍ∏∞Ìôî
+    // ±‚∫ª √ ±‚»≠
     //---------------------------------------------------
 
     //---------------------------------------------------
-    // Ï°∞Í±¥ Í≤ÄÏÇ¨ : UNION ALL
+    // ¡∂∞« ∞ÀªÁ : UNION ALL
     //---------------------------------------------------
 
     if( *aIsValid == ID_TRUE )
@@ -7630,7 +7661,7 @@ IDE_RC qmvQuerySet::validateUnionAllQuerySet( qcStatement  * aStatement,
         if( aQuerySet->setOp == QMS_NONE )
         {
             //-------------------------------------------
-            // querySet Í≤ÄÏÇ¨
+            // querySet ∞ÀªÁ
             //-------------------------------------------
 
             IDE_TEST(
@@ -7701,17 +7732,17 @@ IDE_RC qmvQuerySet::validatePushPredHintQuerySet( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : VIEWÎ•º Íµ¨ÏÑ±ÌïòÎäî querySetÏùò Ï°∞Í±¥Í≤ÄÏÇ¨
+ * Description : VIEW∏¶ ±∏º∫«œ¥¬ querySet¿« ¡∂∞«∞ÀªÁ
  *
  * Implementation :
  *
  *    PROJ-1495
  *
- *    Ï°∞Í±¥ VIEWÎ•º Íµ¨ÏÑ±ÌïòÎäî Í∞Å selectÎ¨∏Îì§ÏùÄ
- *         (1) target columnÏùÄ Î™®Îëê ÏàúÏàò Ïª¨ÎüºÏù¥Ïñ¥Ïïº ÌïúÎã§.
- *         (2) FROMÏ†àÏóê Ïò§Îäî tableÏù¥ base tableÏù¥Ïñ¥Ïïº ÌïúÎã§.
- *         (3) WHEREÏ†àÏùÄ Ïò¨ Ïàò ÏûàÏúºÎÇò,
- *             WHEREÏ†àÏóê subqueryÎäî Ïò¨ Ïàò ÏóÜÎã§.
+ *    ¡∂∞« VIEW∏¶ ±∏º∫«œ¥¬ ∞¢ selectπÆµÈ¿∫
+ *         (1) target column¿∫ ∏µŒ º¯ºˆ ƒ√∑≥¿ÃæÓæﬂ «—¥Ÿ.
+ *         (2) FROM¿˝ø° ø¿¥¬ table¿Ã base table¿ÃæÓæﬂ «—¥Ÿ.
+ *         (3) WHERE¿˝¿∫ ø√ ºˆ ¿÷¿∏≥™,
+ *             WHERE¿˝ø° subquery¥¬ ø√ ºˆ æ¯¥Ÿ.
  *         (4) GROUP BY              (X)
  *         (5) AGGREGATION           (X)
  *         (6) DISTINCT              (X)
@@ -7724,19 +7755,19 @@ IDE_RC qmvQuerySet::validatePushPredHintQuerySet( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmvQuerySet::validatePushPredHintQuerySet::__FT__" );
 
     //---------------------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aQuerySet != NULL );
 
     //---------------------------------------------------
-    // Í∏∞Î≥∏ Ï¥àÍ∏∞Ìôî
+    // ±‚∫ª √ ±‚»≠
     //---------------------------------------------------
 
     //---------------------------------------------------
-    // Ï°∞Í±¥ Í≤ÄÏÇ¨ : target columnÏù¥ ÏàúÏàò Ïª¨ÎüºÏù∏ÏßÄ,
-    //             fromÏ†àÏùò tableÏù¥ base tableÏù∏ÏßÄ
+    // ¡∂∞« ∞ÀªÁ : target column¿Ã º¯ºˆ ƒ√∑≥¿Œ¡ˆ,
+    //             from¿˝¿« table¿Ã base table¿Œ¡ˆ
     //---------------------------------------------------
 
     if( ( aQuerySet->SFWGH->from->joinType == QMS_NO_JOIN ) &&
@@ -7763,7 +7794,7 @@ IDE_RC qmvQuerySet::validatePushPredHintQuerySet( qcStatement  * aStatement,
     }
 
     //---------------------------------------------------
-    // Ï°∞Í±¥ Í≤ÄÏÇ¨ : whereÏ†à Í≤ÄÏÇ¨
+    // ¡∂∞« ∞ÀªÁ : where¿˝ ∞ÀªÁ
     //---------------------------------------------------
 
     if( *aIsValid == ID_TRUE )
@@ -7791,7 +7822,7 @@ IDE_RC qmvQuerySet::validatePushPredHintQuerySet( qcStatement  * aStatement,
     }
 
     //---------------------------------------------------
-    // Ï°∞Í±¥ Í≤ÄÏÇ¨ :  GROUP BY              (X)
+    // ¡∂∞« ∞ÀªÁ :  GROUP BY              (X)
     //              AGGREGATION           (X)
     //              DISTINCT              (X)
     //              START WITH/CONNECT BY (X)
@@ -7858,7 +7889,7 @@ IDE_RC qmvQuerySet::changeTargetForCommunication(
     IDU_FIT_POINT_FATAL( "qmvQuerySet::changeTargetForCommunication::__FT__" );
     
     //------------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //------------------------------------------
     
     IDE_DASSERT( aStatement != NULL );
@@ -7866,11 +7897,11 @@ IDE_RC qmvQuerySet::changeTargetForCommunication(
 
     //------------------------------------------
     // BUG-20652
-    // clientÎ°úÏùò Ï†ÑÏÜ°ÏùÑ ÏúÑÌï¥ tagetÏùò geometry typeÏùÑ
-    // binary typeÏúºÎ°ú Î≥ÄÌôò
+    // client∑Œ¿« ¿¸º€¿ª ¿ß«ÿ taget¿« geometry type¿ª
+    // binary type¿∏∑Œ ∫Ø»Ø
     //------------------------------------------
 
-    // setÏ†àÏù¥ ÏûàÎì† ÏóÜÎì† Ïù¥ÎØ∏ ÏÉàÎ°úÏö¥ targetÏùÑ Íµ¨ÏÑ±ÌñàÏùå
+    // set¿˝¿Ã ¿÷µÁ æ¯µÁ ¿ÃπÃ ªı∑ŒøÓ target¿ª ±∏º∫«ﬂ¿Ω
     for ( sTarget = aQuerySet->target;
           sTarget != NULL;
           sTarget = sTarget->next )
@@ -7879,7 +7910,7 @@ IDE_RC qmvQuerySet::changeTargetForCommunication(
 
         if( aStatement->calledByPSMFlag != ID_TRUE )
         {
-            // targetÏùÄ Ìï≠ÏÉÅ typeÏù¥ Ï†ïÏùòÎêòÏñ¥ÏûàÏùå
+            // target¿∫ «◊ªÛ type¿Ã ¡§¿«µ«æÓ¿÷¿Ω
             IDE_DASSERT( MTC_NODE_IS_DEFINED_TYPE( & sTargetColumn->node )
                          == ID_TRUE );
         }
@@ -7892,13 +7923,13 @@ IDE_RC qmvQuerySet::changeTargetForCommunication(
         
         if ( sMtcColumn->module->id == MTD_GEOMETRY_ID )
         {            
-            // subqueryÍ∞Ä ÏïÑÎãàÎùºÎ©¥ targetÏùÄ Ìï≠ÏÉÅ conversionÏù¥ ÏóÜÏùå
+            // subquery∞° æ∆¥œ∂Û∏È target¿∫ «◊ªÛ conversion¿Ã æ¯¿Ω
             IDE_DASSERT( sTargetColumn->node.conversion == NULL );
             
-            // targetÏóê conversionÏù¥ ÏÉùÏÑ±ÎêòÎäî ÏòàÏô∏ÏÉÅÌô©.
-            // get_blob_locatorÏ≤òÎüº Ìï®ÏàòÎ•º Ïù¥Ïö©Ìïú Î≥ÄÌôòÎèÑ ÏÉùÍ∞ÅÌï† Ïàò ÏûàÏúºÎÇò
-            // Ïù¥ Í≤ΩÏö∞ ÎπÑÏö©Ïù¥ ÎßéÏù¥ ÎìúÎäî memcpyÎ•º ÏàòÌñâÌïòÍ≤å ÎêòÎØÄÎ°ú
-            // conversionÏùÑ Ïù¥Ïö©ÌïúÎã§.
+            // targetø° conversion¿Ã ª˝º∫µ«¥¬ øπø‹ªÛ»≤.
+            // get_blob_locator√≥∑≥ «‘ºˆ∏¶ ¿ÃøÎ«— ∫Ø»Øµµ ª˝∞¢«“ ºˆ ¿÷¿∏≥™
+            // ¿Ã ∞ÊøÏ ∫ÒøÎ¿Ã ∏π¿Ã µÂ¥¬ memcpy∏¶ ºˆ«‡«œ∞‘ µ«π«∑Œ
+            // conversion¿ª ¿ÃøÎ«—¥Ÿ.
             IDE_TEST( qtc::makeConversionNode( sTargetColumn,
                                                aStatement,
                                                QC_SHARED_TMPLATE(aStatement),
@@ -7910,7 +7941,7 @@ IDE_RC qmvQuerySet::changeTargetForCommunication(
             // Nothing to do.
         }
 
-        // ÏµúÏ¢Ö target columnÏù¥ list typeÏù¥Ïñ¥ÏÑúÎäî ÏïàÎêúÎã§.
+        // √÷¡æ target column¿Ã list type¿ÃæÓº≠¥¬ æ»µ»¥Ÿ.
         if ( sMtcColumn->module->id == MTD_LIST_ID )
         {
             sqlInfo.setSourceInfo( aStatement,
@@ -7958,7 +7989,7 @@ IDE_RC qmvQuerySet::addDecryptFunc( qcStatement  * aStatement,
         
         if( aStatement->calledByPSMFlag == ID_FALSE )
         {
-            // targetÏùÄ Ìï≠ÏÉÅ typeÏù¥ Ï†ïÏùòÎêòÏñ¥ÏûàÏùå
+            // target¿∫ «◊ªÛ type¿Ã ¡§¿«µ«æÓ¿÷¿Ω
             IDE_DASSERT( MTC_NODE_IS_DEFINED_TYPE( & sTargetColumn->node )
                          == ID_TRUE );
         }
@@ -7972,10 +8003,10 @@ IDE_RC qmvQuerySet::addDecryptFunc( qcStatement  * aStatement,
         if( (sMtcColumn->module->flag & MTD_ENCRYPT_TYPE_MASK)
             == MTD_ENCRYPT_TYPE_TRUE )
         {
-            // default policyÏùò ÏïîÌò∏ ÌÉÄÏûÖÏù¥ÎùºÎèÑ decrypt Ìï®ÏàòÎ•º ÏÉùÏÑ±ÌïòÏó¨
-            // subqueryÏùò Í≤∞Í≥ºÎäî Ìï≠ÏÉÅ ÏïîÌò∏ ÌÉÄÏûÖÏù¥ ÎÇòÏò¨ Ïàò ÏóÜÍ≤å ÌïúÎã§.
+            // default policy¿« æœ»£ ≈∏¿‘¿Ã∂Ûµµ decrypt «‘ºˆ∏¶ ª˝º∫«œø©
+            // subquery¿« ∞·∞˙¥¬ «◊ªÛ æœ»£ ≈∏¿‘¿Ã ≥™ø√ ºˆ æ¯∞‘ «—¥Ÿ.
                 
-            // decrypt Ìï®ÏàòÎ•º ÎßåÎì†Îã§.
+            // decrypt «‘ºˆ∏¶ ∏∏µÁ¥Ÿ.
             IDE_TEST( addDecryptFuncForNode( aStatement,
                                              sTargetColumn,
                                              & sNode )
@@ -7990,7 +8021,7 @@ IDE_RC qmvQuerySet::addDecryptFunc( qcStatement  * aStatement,
                 // Nothing to do.
             }
 
-            // target ÎÖ∏ÎìúÎ•º Î∞îÍæºÎã§.
+            // target ≥ÎµÂ∏¶ πŸ≤€¥Ÿ.
             sCurrTarget->targetColumn = sNode;
 
             sPrevNode = sNode;
@@ -8016,19 +8047,19 @@ IDE_RC qmvQuerySet::addDecryptFuncForNode( qcStatement  * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmvQuerySet::addDecryptFuncForNode::__FT__" );
     
-    // decrypt Ìï®ÏàòÎ•º ÎßåÎì†Îã§.
+    // decrypt «‘ºˆ∏¶ ∏∏µÁ¥Ÿ.
     IDE_TEST( qtc::makeNode( aStatement,
                              sNode,
                              & aNode->columnName,
                              & mtfDecrypt )
               != IDE_SUCCESS );
 
-    // Ìï®ÏàòÎ•º Ïó∞Í≤∞ÌïúÎã§.
+    // «‘ºˆ∏¶ ø¨∞·«—¥Ÿ.
     sNode[0]->node.arguments = (mtcNode*) aNode;
     sNode[0]->node.next = aNode->node.next;
     sNode[0]->node.arguments->next = NULL;
 
-    // Ìï®ÏàòÎßå estimateÎ•º ÏàòÌñâÌïúÎã§.
+    // «‘ºˆ∏∏ estimate∏¶ ºˆ«‡«—¥Ÿ.
     IDE_TEST( qtc::estimateNodeWithArgument( aStatement,
                                              sNode[0] )
               != IDE_SUCCESS );
@@ -8050,19 +8081,19 @@ IDE_RC qmvQuerySet::addBLobLocatorFuncForNode( qcStatement  * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmvQuerySet::addDecryptFuncForNode::__FT__" );
 
-    /* get_blob_locator Ìï®ÏàòÎ•º ÎßåÎì†Îã§. */
+    /* get_blob_locator «‘ºˆ∏¶ ∏∏µÁ¥Ÿ. */
     IDE_TEST( qtc::makeNode( aStatement,
                              sNode,
                              & aNode->columnName,
                              & mtfGetBlobLocator )
               != IDE_SUCCESS );
 
-    /* Ìï®ÏàòÎ•º Ïó∞Í≤∞ÌïúÎã§. */
+    /* «‘ºˆ∏¶ ø¨∞·«—¥Ÿ. */
     sNode[0]->node.arguments = (mtcNode*) aNode;
     sNode[0]->node.next = aNode->node.next;
     sNode[0]->node.arguments->next = NULL;
 
-    /* Ìï®ÏàòÎßå estimateÎ•º ÏàòÌñâÌïúÎã§. */
+    /* «‘ºˆ∏∏ estimate∏¶ ºˆ«‡«—¥Ÿ. */
     IDE_TEST( qtc::estimateNodeWithArgument( aStatement,
                                              sNode[0] )
               != IDE_SUCCESS );
@@ -8084,19 +8115,19 @@ IDE_RC qmvQuerySet::addCLobLocatorFuncForNode( qcStatement  * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmvQuerySet::addCLobLocatorFuncForNode::__FT__" );
 
-    /* get_clob_locator Ìï®ÏàòÎ•º ÎßåÎì†Îã§. */
+    /* get_clob_locator «‘ºˆ∏¶ ∏∏µÁ¥Ÿ. */
     IDE_TEST( qtc::makeNode( aStatement,
                              sNode,
                              & aNode->columnName,
                              & mtfGetClobLocator )
               != IDE_SUCCESS );
 
-    /* Ìï®ÏàòÎ•º Ïó∞Í≤∞ÌïúÎã§. */
+    /* «‘ºˆ∏¶ ø¨∞·«—¥Ÿ. */
     sNode[0]->node.arguments = (mtcNode*) aNode;
     sNode[0]->node.next = aNode->node.next;
     sNode[0]->node.arguments->next = NULL;
 
-    /* Ìï®ÏàòÎßå estimateÎ•º ÏàòÌñâÌïúÎã§. */
+    /* «‘ºˆ∏∏ estimate∏¶ ºˆ«‡«—¥Ÿ. */
     IDE_TEST( qtc::estimateNodeWithArgument( aStatement,
                                              sNode[0] )
               != IDE_SUCCESS );
@@ -8114,12 +8145,12 @@ IDE_RC qmvQuerySet::addCLobLocatorFuncForNode( qcStatement  * aStatement,
  * ----------------------------------------------------------------------------
  * PROJ-1789: Updatable Scrollable Cursor (a.k.a. PROWID)
  *
- * qmsTargetÏóê Îì§Ïñ¥Í∞ÄÎäî column Ï†ïÎ≥¥Î•º setting ÌïúÎã§
+ * qmsTargetø° µÈæÓ∞°¥¬ column ¡§∫∏∏¶ setting «—¥Ÿ
  *
- * Í∏∞Ï°¥Ïóê aliasNameÍ≥º displayNameÎßå setting ÌñàÎäîÎç∞
- * userName, tableName, isUpdatable Îì±Ïùò Ï†ïÎ≥¥Î•º Ï∂îÍ∞ÄÌïòÏòÄÎã§
+ * ±‚¡∏ø° aliasName∞˙ displayName∏∏ setting «ﬂ¥¬µ•
+ * userName, tableName, isUpdatable µÓ¿« ¡§∫∏∏¶ √ﬂ∞°«œø¥¥Ÿ
  *
- * Ïòà)
+ * øπ)
  *
  * SELECT C1 FROM T1
  *
@@ -8184,7 +8215,7 @@ IDE_RC qmvQuerySet::setTargetColumnInfo(qcStatement* aStatement,
     sIsBaseColumn = QTC_IS_COLUMN(aStatement, sExpression);
 
     // PROJ-1653 Outer Join Operator (+)
-    // Outer Join Operator (+) Îäî target Ï†àÏóêÎäî Ïò¨ Ïàò ÏóÜÎã§.
+    // Outer Join Operator (+) ¥¬ target ¿˝ø°¥¬ ø√ ºˆ æ¯¥Ÿ.
     if ( ( sExpression->lflag & QTC_NODE_JOIN_OPERATOR_MASK )
          == QTC_NODE_JOIN_OPERATOR_EXIST )
     {
@@ -8208,8 +8239,8 @@ IDE_RC qmvQuerySet::setTargetColumnInfo(qcStatement* aStatement,
         sFrom = QC_SHARED_TMPLATE(aStatement)->
             tableMap[(sExpression)->node.table].from;
 
-        /* BUG-37658 : meta table info Í∞Ä free Îê† Ïàò ÏûàÏúºÎØÄÎ°ú Îã§Ïùå Ìï≠Î™©ÏùÑ
-         *             alloc -> memcpy ÌïúÎã§.
+        /* BUG-37658 : meta table info ∞° free µ… ºˆ ¿÷¿∏π«∑Œ ¥Ÿ¿Ω «◊∏Ò¿ª
+         *             alloc -> memcpy «—¥Ÿ.
          * - userName
          * - tableName
          * - aliasTableName
@@ -8245,8 +8276,8 @@ IDE_RC qmvQuerySet::setTargetColumnInfo(qcStatement* aStatement,
         if ( sNamePosition->size != QC_POS_EMPTY_SIZE )
         {
             // BUG-30344
-            // plan cache check-inÏù¥ Ïã§Ìå®ÌïòÏó¨ non-cache modeÎ°ú ÏàòÌñâÎê† Îïå
-            // query textÎäî Îçî Ïù¥ÏÉÅ Ï°¥Ïû¨ÌïòÏßÄ ÏïäÏúºÎØÄÎ°ú Î≥µÏÇ¨ ÏÉùÏÑ±ÌïúÎã§.
+            // plan cache check-in¿Ã Ω«∆–«œø© non-cache mode∑Œ ºˆ«‡µ… ∂ß
+            // query text¥¬ ¥ı ¿ÃªÛ ¡∏¿Á«œ¡ˆ æ ¿∏π«∑Œ ∫πªÁ ª˝º∫«—¥Ÿ.
             IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMP_MEM(aStatement),
                                               SChar,
                                               sNamePosition->size + 1,
@@ -8271,8 +8302,8 @@ IDE_RC qmvQuerySet::setTargetColumnInfo(qcStatement* aStatement,
         if ( sNamePosition->size != QC_POS_EMPTY_SIZE )
         {
             // BUG-30344
-            // plan cache check-inÏù¥ Ïã§Ìå®ÌïòÏó¨ non-cache modeÎ°ú ÏàòÌñâÎê† Îïå
-            // query textÎäî Îçî Ïù¥ÏÉÅ Ï°¥Ïû¨ÌïòÏßÄ ÏïäÏúºÎØÄÎ°ú Î≥µÏÇ¨ ÏÉùÏÑ±ÌïúÎã§.
+            // plan cache check-in¿Ã Ω«∆–«œø© non-cache mode∑Œ ºˆ«‡µ… ∂ß
+            // query text¥¬ ¥ı ¿ÃªÛ ¡∏¿Á«œ¡ˆ æ ¿∏π«∑Œ ∫πªÁ ª˝º∫«—¥Ÿ.
             IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMP_MEM(aStatement),
                                               SChar,
                                               sNamePosition->size + 1,
@@ -8288,7 +8319,7 @@ IDE_RC qmvQuerySet::setTargetColumnInfo(qcStatement* aStatement,
         }
         else
         {
-            // alias table nameÏù¥ ÏóÜÏúºÎ©¥ Í∑∏ÎÉ• table name
+            // alias table name¿Ã æ¯¿∏∏È ±◊≥… table name
             aTarget->aliasTableName.name = aTarget->tableName.name;
             aTarget->aliasTableName.size = aTarget->tableName.size;
         }
@@ -8299,7 +8330,7 @@ IDE_RC qmvQuerySet::setTargetColumnInfo(qcStatement* aStatement,
         if ( ( sExpression->lflag & QTC_NODE_PRIOR_MASK )
              == QTC_NODE_PRIOR_EXIST )
         {
-            // 'PRIOR 'Î•º ÏïûÏóê ÎçßÎ∂ôÏù∏Îã§.
+            // 'PRIOR '∏¶ æ’ø° µ°∫Ÿ¿Œ¥Ÿ.
             IDE_TEST(STRUCT_ALLOC_WITH_SIZE(QC_QMP_MEM(aStatement),
                                             SChar,
                                             sNamePosition->size + 7,
@@ -8336,12 +8367,12 @@ IDE_RC qmvQuerySet::setTargetColumnInfo(qcStatement* aStatement,
         // set alias column name
         if ( sIsAliasExist == ID_FALSE )
         {
-            // aliasÍ∞Ä ÏóÜÏúºÎ©¥ column name
+            // alias∞° æ¯¿∏∏È column name
 
             sNamePosition = &sExpression->columnName;
             // BUG-30344
-            // plan cache check-inÏù¥ Ïã§Ìå®ÌïòÏó¨ non-cache modeÎ°ú ÏàòÌñâÎê† Îïå
-            // query textÎäî Îçî Ïù¥ÏÉÅ Ï°¥Ïû¨ÌïòÏßÄ ÏïäÏúºÎØÄÎ°ú Î≥µÏÇ¨ ÏÉùÏÑ±ÌïúÎã§.
+            // plan cache check-in¿Ã Ω«∆–«œø© non-cache mode∑Œ ºˆ«‡µ… ∂ß
+            // query text¥¬ ¥ı ¿ÃªÛ ¡∏¿Á«œ¡ˆ æ ¿∏π«∑Œ ∫πªÁ ª˝º∫«—¥Ÿ.
             IDE_TEST(STRUCT_ALLOC_WITH_SIZE(QC_QMP_MEM(aStatement),
                                             SChar,
                                             sNamePosition->size + 1,
@@ -8356,7 +8387,7 @@ IDE_RC qmvQuerySet::setTargetColumnInfo(qcStatement* aStatement,
         }
         else
         {
-            // parse Îïå Ïù¥ÎØ∏ setting ÎêòÏóàÏùå
+            // parse ∂ß ¿ÃπÃ setting µ«æ˙¿Ω
         }
 
         // set updatability
@@ -8396,12 +8427,12 @@ IDE_RC qmvQuerySet::setTargetColumnInfo(qcStatement* aStatement,
                                             &(aTarget->displayName.name))
                      != IDE_SUCCESS);
 
-            // BUG-38946 display nameÏùò ÏÑ§Ï†ï
-            // natcÏóêÏÑú ÏàòÌñâÌïòÎäî Í≤ΩÏö∞ÎèÑ Í∏∞Ï°¥ display nameÏúºÎ°ú Ï∂úÎ†•ÌïúÎã§.
+            // BUG-38946 display name¿« º≥¡§
+            // natcø°º≠ ºˆ«‡«œ¥¬ ∞ÊøÏµµ ±‚¡∏ display name¿∏∑Œ √‚∑¬«—¥Ÿ.
             if ( ( QCU_COMPAT_DISPLAY_NAME == 1 ) ||
                  ( QCU_DISPLAY_PLAN_FOR_NATC == 1 ) )
             {
-                // Í∏∞Ï°¥Í≥º Ïú†ÏÇ¨ÌïòÍ≤å ÏÑ§Ï†ïÌïúÎã§.
+                // ±‚¡∏∞˙ ¿ØªÁ«œ∞‘ º≥¡§«—¥Ÿ.
                 getDisplayName( sExpression, &sPosition );
                 
                 idlOS::strncpy(aTarget->displayName.name,
@@ -8413,7 +8444,7 @@ IDE_RC qmvQuerySet::setTargetColumnInfo(qcStatement* aStatement,
             }
             else
             {
-                // OÏÇ¨ÏôÄ Ïú†ÏÇ¨ÌïòÍ≤å ÏÑ§Ï†ïÌïúÎã§.
+                // OªÁøÕ ¿ØªÁ«œ∞‘ º≥¡§«—¥Ÿ.
                 copyDisplayName( sExpression,
                                  &(aTarget->displayName) );
             }
@@ -8443,7 +8474,7 @@ IDE_RC qmvQuerySet::setTargetColumnInfo(qcStatement* aStatement,
              * TODO:
              * BUG-33546 SELECT_HEADER_DISPLAY property does not work properly
              * 
-             * Ïù¥ bug Î•º Ìï¥Í≤∞ÌïòÎ†§Î©¥ if Ï°∞Í±¥ÏùÑ ÏïÑÎûò Ï£ºÏÑùÍ≥º Í∞ôÏù¥ ÌïòÎ©¥ ÎêúÎã§.
+             * ¿Ã bug ∏¶ «ÿ∞·«œ∑¡∏È if ¡∂∞«¿ª æ∆∑° ¡÷ºÆ∞˙ ∞∞¿Ã «œ∏È µ»¥Ÿ.
              */
 
             /*
@@ -8488,7 +8519,7 @@ IDE_RC qmvQuerySet::setTargetColumnInfo(qcStatement* aStatement,
         }
         else
         {
-            // aliasÍ∞Ä ÏûàÏúºÎ©¥ SELECT_HEADER_DISPLAY Î¨¥Ïãú
+            // alias∞° ¿÷¿∏∏È SELECT_HEADER_DISPLAY π´Ω√
             IDE_TEST(STRUCT_ALLOC_WITH_SIZE(QC_QMP_MEM(aStatement),
                                             SChar,
                                             aTarget->aliasColumnName.size + 1,
@@ -8680,7 +8711,7 @@ IDE_RC qmvQuerySet::searchHostVarAndAddCastOper( qcStatement   * aStatement,
             // host variable, terminal node
             SET_EMPTY_POSITION( sEmptyPos );
             
-            // cast operatorÎ•º ÎßåÎì†Îã§.
+            // cast operator∏¶ ∏∏µÁ¥Ÿ.
             IDE_TEST( qtc::makeNode( aStatement,
                                      sCastNode,
                                      & aNode->columnName,
@@ -8694,7 +8725,7 @@ IDE_RC qmvQuerySet::searchHostVarAndAddCastOper( qcStatement   * aStatement,
                                              0 )
                       != IDE_SUCCESS );
             
-            // columnÏ†ïÎ≥¥Î•º Ïù¥Ïö©ÌïòÏó¨ qtcNodeÎ•º ÏÉùÏÑ±ÌïúÎã§.
+            // column¡§∫∏∏¶ ¿ÃøÎ«œø© qtcNode∏¶ ª˝º∫«—¥Ÿ.
             IDE_TEST( qtc::makeProcVariable( aStatement,
                                              sTypeNode,
                                              & sEmptyPos,
@@ -8707,7 +8738,7 @@ IDE_RC qmvQuerySet::searchHostVarAndAddCastOper( qcStatement   * aStatement,
             sCastNode[0]->node.lflag &= ~MTC_NODE_COLUMN_COUNT_MASK;
             sCastNode[0]->node.lflag |= 1;
             
-            // Ìï®ÏàòÎ•º Ïó∞Í≤∞ÌïúÎã§.
+            // «‘ºˆ∏¶ ø¨∞·«—¥Ÿ.
             sCastNode[0]->node.arguments = (mtcNode*) aNode;
             sCastNode[0]->node.next = aNode->node.next;
             sCastNode[0]->node.arguments->next = NULL;
@@ -8729,7 +8760,7 @@ IDE_RC qmvQuerySet::searchHostVarAndAddCastOper( qcStatement   * aStatement,
 
 
 // BUG-38273
-// ansi Ïä§ÌÉÄÏùº inner join ÏùÑ ÏùºÎ∞ò Ïä§ÌÉÄÏùºÏùò Ï°∞Ïù∏ÏúºÎ°ú Î≥ÄÍ≤ΩÌïúÎã§.
+// ansi Ω∫≈∏¿œ inner join ¿ª ¿œπ› Ω∫≈∏¿œ¿« ¡∂¿Œ¿∏∑Œ ∫Ø∞Ê«—¥Ÿ.
 idBool qmvQuerySet::checkInnerJoin( qmsFrom * aFrom )
 {
     qmsFrom  * sFrom = aFrom;
@@ -8759,7 +8790,7 @@ idBool qmvQuerySet::checkInnerJoin( qmsFrom * aFrom )
 }
 
 // BUG-38273
-// ansi Ïä§ÌÉÄÏùº inner join ÏùÑ ÏùºÎ∞ò Ïä§ÌÉÄÏùºÏùò Ï°∞Ïù∏ÏúºÎ°ú Î≥ÄÍ≤ΩÌïúÎã§.
+// ansi Ω∫≈∏¿œ inner join ¿ª ¿œπ› Ω∫≈∏¿œ¿« ¡∂¿Œ¿∏∑Œ ∫Ø∞Ê«—¥Ÿ.
 IDE_RC qmvQuerySet::innerJoinToNoJoin( qcStatement * aStatement,
                                        qmsSFWGH    * aSFWGH,
                                        qmsFrom     * aFrom )
@@ -8796,9 +8827,9 @@ IDE_RC qmvQuerySet::innerJoinToNoJoin( qcStatement * aStatement,
     if( aSFWGH->where != NULL )
     {
         //------------------------------------------------------
-        // Í∏∞Ï°¥ where Ï†àÏóê on Ï†àÏùò ÌîÑÎ¶¨ÎîîÌÇ∑ÏùÑ Ïó∞Í≤∞ÌïúÎã§.
-        // and Ïó∞ÏÇ∞ÏûêÎ•º ÏÉùÏÑ±ÌïòÏó¨ Ïó∞Í≤∞ÌïòÎêò
-        // Í∏∞Ï°¥Ïóê and Ïó∞ÏÇ∞ÏûêÍ∞Ä ÏûàÏúºÎ©¥ and Ïó∞ÏÇ∞ÏûêÏùò Ïù∏ÏûêÎ°ú Ïó∞Í≤∞ÌïúÎã§.
+        // ±‚¡∏ where ¿˝ø° on ¿˝¿« «¡∏Æµ≈∂¿ª ø¨∞·«—¥Ÿ.
+        // and ø¨ªÍ¿⁄∏¶ ª˝º∫«œø© ø¨∞·«œµ«
+        // ±‚¡∏ø° and ø¨ªÍ¿⁄∞° ¿÷¿∏∏È and ø¨ªÍ¿⁄¿« ¿Œ¿⁄∑Œ ø¨∞·«—¥Ÿ.
         //------------------------------------------------------
         if ( aSFWGH->where->node.module != &mtfAnd )
         {
@@ -8818,7 +8849,7 @@ IDE_RC qmvQuerySet::innerJoinToNoJoin( qcStatement * aStatement,
         else
         {
             //------------------------------------------------------
-            // Í∏∞Ï°¥ and ÎÖ∏ÎìúÏùò ÎßàÏßÄÎßâÏóê Ïó∞Í≤∞ÌïúÎã§.
+            // ±‚¡∏ and ≥ÎµÂ¿« ∏∂¡ˆ∏∑ø° ø¨∞·«—¥Ÿ.
             //------------------------------------------------------
             for( sNode[0] = (qtcNode *)aSFWGH->where->node.arguments;
                  sNode[0]->node.next != NULL;
@@ -8830,13 +8861,13 @@ IDE_RC qmvQuerySet::innerJoinToNoJoin( qcStatement * aStatement,
     else
     {
         //------------------------------------------------------
-        // Í∏∞Ï°¥ where Ï†àÏù¥ ÏóÜÏùÑ Í≤ΩÏö∞ Î∞îÎ°ú Ïó∞Í≤∞ÌïúÎã§.
+        // ±‚¡∏ where ¿˝¿Ã æ¯¿ª ∞ÊøÏ πŸ∑Œ ø¨∞·«—¥Ÿ.
         //------------------------------------------------------
         aSFWGH->where = sFrom->onCondition;
     }
 
     //------------------------------------------------------
-    // left Ïùò ÎßàÏßÄÎßâÏóê right Î•º Ïó∞Í≤∞ÌïúÎã§.
+    // left ¿« ∏∂¡ˆ∏∑ø° right ∏¶ ø¨∞·«—¥Ÿ.
     //------------------------------------------------------
     for( sTempFrom = sFrom->left;
          sTempFrom->next != NULL;
@@ -8844,14 +8875,14 @@ IDE_RC qmvQuerySet::innerJoinToNoJoin( qcStatement * aStatement,
     sTempFrom->next = sFrom->right;
 
     //------------------------------------------------------
-    // right Ïùò ÎßàÏßÄÎßâÏóê Î∂ÄÎ™®Ïùò next Î•º Ïó∞Í≤∞ÌïúÎã§.
+    // right ¿« ∏∂¡ˆ∏∑ø° ∫Œ∏¿« next ∏¶ ø¨∞·«—¥Ÿ.
     //------------------------------------------------------
     for( sTempFrom = sFrom->right;
          sTempFrom->next != NULL;
          sTempFrom = sTempFrom->next );
     sTempFrom->next = sFrom->next;
 
-    // BUG-38347 fromPosition ÏùÑ Ïú†ÏßÄÌï¥ÏïºÌï®
+    // BUG-38347 fromPosition ¿ª ¿Ø¡ˆ«ÿæﬂ«‘
     SET_POSITION( sFrom->left->fromPosition, sFrom->fromPosition );
 
     idlOS::memcpy( sFrom, sFrom->left, ID_SIZEOF(qmsFrom));
@@ -8864,7 +8895,7 @@ IDE_RC qmvQuerySet::innerJoinToNoJoin( qcStatement * aStatement,
 }
 
 /* BUG-38946
- * Í∏∞Ï°¥ display nameÍ≥º ÎèôÏùºÌïòÍ≤å ÏÑ§Ï†ïÌïòÍ∏∞ ÏúÑÌïú Ìï®Ïàò
+ * ±‚¡∏ display name∞˙ µø¿œ«œ∞‘ º≥¡§«œ±‚ ¿ß«— «‘ºˆ
  *
  * select (1) from dual               --> (1)
  * select count(1) from dual          --> COUNT(1)
@@ -8883,8 +8914,8 @@ IDE_RC qmvQuerySet::innerJoinToNoJoin( qcStatement * aStatement,
  * select user1.func1(1) from dual    --> FUNC1(1)
  * select seq1.nextval from dual      --> SEQ1.NEXTVAL
  *
- * (*)Í∞ôÏùÄ Î™áÎ™á Í≤ΩÏö∞Ïóê Îî∞Îùº display nameÏù¥ Îã¨ÎùºÏßÄÎäî Î≤ÑÍ∑∏Í∞Ä ÏûàÏñ¥
- * Ìï≠ÏÉÅ displayÎêòÎäî Í≤ÉÏúºÎ°ú ÏàòÏ†ïÌïúÎã§.
+ * (*)∞∞¿∫ ∏Ó∏Ó ∞ÊøÏø° µ˚∂Û display name¿Ã ¥ﬁ∂Û¡ˆ¥¬ πˆ±◊∞° ¿÷æÓ
+ * «◊ªÛ displayµ«¥¬ ∞Õ¿∏∑Œ ºˆ¡§«—¥Ÿ.
  * select count(*) over () from dual  --> COUNT(*) over ()
  * select pkg1.func1 from dual        --> FUNC1
  * select user1.func1 from dual       --> FUNC1
@@ -8963,7 +8994,7 @@ void qmvQuerySet::getDisplayName( qtcNode        * aNode,
 }
 
 /* BUG-38946
- * OÏÇ¨ÏôÄ Ïú†ÏÇ¨ÌïòÍ≤å display nameÏùÑ ÏÑ§Ï†ïÌïòÍ∏∞ ÏúÑÌïú Ìï®Ïàò
+ * OªÁøÕ ¿ØªÁ«œ∞‘ display name¿ª º≥¡§«œ±‚ ¿ß«— «‘ºˆ
  *
  * select (1) from dual               --> (1)
  * select 'abc' from dual             --> 'ABC'
@@ -8992,7 +9023,7 @@ void qmvQuerySet::copyDisplayName( qtcNode         * aNode,
     SInt             i;
 
     // BUG-41072
-    // pseudo columnÏù∏ Í≤ΩÏö∞ columnNameÎßå ÌëúÏãúÌïúÎã§.
+    // pseudo column¿Œ ∞ÊøÏ columnName∏∏ «•Ω√«—¥Ÿ.
     if ( aNode->node.module == &qtc::columnModule )
     {
         SET_POSITION( sPosition, aNode->columnName );
@@ -9031,26 +9062,26 @@ void qmvQuerySet::setLateralOuterQueryAndFrom( qmsQuerySet * aViewQuerySet,
  *
  * Description : PROJ-2418 Cross/Outer APPLY & Lateral View
  * 
- *  Lateral ViewÏùò outerQueryÎ•º ÏÉÅÏúÑ Î†àÎ≤®Ïùò SFWGHÎ°ú ÏßÄÏ†ïÌïúÎã§.
- *  ANSI Join Tree ÎÇ¥Î∂ÄÏóê Lateral ViewÍ∞Ä Ï°¥Ïû¨ÌïòÎ©¥ outerFromÎèÑ ÏßÄÏ†ïÌïúÎã§.
+ *  Lateral View¿« outerQuery∏¶ ªÛ¿ß ∑π∫ß¿« SFWGH∑Œ ¡ˆ¡§«—¥Ÿ.
+ *  ANSI Join Tree ≥ª∫Œø° Lateral View∞° ¡∏¿Á«œ∏È outerFromµµ ¡ˆ¡§«—¥Ÿ.
  *
- *  outerQueryÎäî Lateral View (aViewQuerySet)Ïùò ÏÉÅÏúÑ SFWGHÎ•º ÎßêÌïòÍ≥†,
- *  outerFromÏùÄ Lateral ViewÍ∞Ä ÏÜçÌïú Join TreeÎ•º ÎÇòÌÉÄÎÇ∏Îã§.
- *  ÎãπÏó∞Ìûà outerQuery->from ÏùÄ outerFromÏùÑ Ìè¨Ìï®ÌïòÎ©∞, 
- *  outerFromÏù¥ Îçî ÏûëÏùÄ Î≤îÏúÑÎ•º ÎÇòÌÉÄÎÇ∏Îã§.
+ *  outerQuery¥¬ Lateral View (aViewQuerySet)¿« ªÛ¿ß SFWGH∏¶ ∏ª«œ∞Ì,
+ *  outerFrom¿∫ Lateral View∞° º”«— Join Tree∏¶ ≥™≈∏≥Ω¥Ÿ.
+ *  ¥Áø¨»˜ outerQuery->from ¿∫ outerFrom¿ª ∆˜«‘«œ∏Á, 
+ *  outerFrom¿Ã ¥ı ¿€¿∫ π¸¿ß∏¶ ≥™≈∏≥Ω¥Ÿ.
  *
- *  aViewQuerySetÏù¥ validation Îê† Îïå, Ïô∏Î∂Ä Ï∞∏Ï°∞ Ïª¨ÎüºÏùò ÏúÑÏπòÎ•º ÌååÏïÖÌï† Îïå,
+ *  aViewQuerySet¿Ã validation µ… ∂ß, ø‹∫Œ ¬¸¡∂ ƒ√∑≥¿« ¿ßƒ°∏¶ ∆ƒæ««“ ∂ß,
  *
- *   - outerFromÏù¥ Ï°¥Ïû¨ÌïòÎ©¥ outerFromÏóêÏÑúÎßå ÌÉêÏÉâÏùÑ ÏßÑÌñâÌïúÎã§.
- *   - outerFromÏù¥ Ï°¥Ïû¨ÌïòÏßÄ ÏïäÏúºÎ©¥ outerQueryÏóêÏÑúÎßå ÌÉêÏÉâÏùÑ ÏßÑÌñâÌïúÎã§.
+ *   - outerFrom¿Ã ¡∏¿Á«œ∏È outerFromø°º≠∏∏ ≈Ωªˆ¿ª ¡¯«‡«—¥Ÿ.
+ *   - outerFrom¿Ã ¡∏¿Á«œ¡ˆ æ ¿∏∏È outerQueryø°º≠∏∏ ≈Ωªˆ¿ª ¡¯«‡«—¥Ÿ.
  *
  *  =====================================================================
  *
  *  [ outerFrom? ]
- *  ANSI-Join Tree ÎÇ¥Î∂ÄÏóêÏÑú Ïô∏Î∂Ä Ï∞∏Ï°∞Ìï† Ïàò ÏûàÎäî Î≤îÏúÑÍ∞Ä outerQueryÎ≥¥Îã§
- *  Ï†úÌïúÎêòÏñ¥Ïïº ÌïòÎäîÎç∞, Ïù¥Î•º ÎÇòÌÉÄÎÇ¥Îäî Í≤ÉÏù¥ outerFromÏù¥Îã§.
+ *  ANSI-Join Tree ≥ª∫Œø°º≠ ø‹∫Œ ¬¸¡∂«“ ºˆ ¿÷¥¬ π¸¿ß∞° outerQuery∫∏¥Ÿ
+ *  ¡¶«—µ«æÓæﬂ «œ¥¬µ•, ¿Ã∏¶ ≥™≈∏≥ª¥¬ ∞Õ¿Ã outerFrom¿Ã¥Ÿ.
  *
- *  ÏòàÎ•º Îì§Ïñ¥, ON Ï†àÏóê Ïù¥Îü∞ SubqueryÍ∞Ä ÏÇ¨Ïö©ÎêúÎã§Î©¥ outerQuery/outerFrom ÏùÄ,
+ *  øπ∏¶ µÈæÓ, ON ¿˝ø° ¿Ã∑± Subquery∞° ªÁøÎµ»¥Ÿ∏È outerQuery/outerFrom ¿∫,
  *  
  *  SELECT * 
  *  FROM   T1, 
@@ -9059,40 +9090,40 @@ void qmvQuerySet::setLateralOuterQueryAndFrom( qmsQuerySet * aViewQuerySet,
  *            LEFT JOIN T5 ON T2.i2 = T5.i2;
  *
  *         [T1]                (JOIN)
- *                            Ôºè    \
- *                           Ôºè     [T5]
- *                          Ôºè  
+ *                            £Ø    \
+ *                           £Ø     [T5]
+ *                          £Ø  
  *                      (JOIN)---SubqueryFilter   
- *                     Ôºè    \
+ *                     £Ø    \
  *                 (JOIN)    [T4]
- *                Ôºè    \
+ *                £Ø    \
  *              [T2]    [T3]
  *  
- *   - SubqueryÏùò outerQuery->from = { 1, { { { 2, 3 }, 4 }, 5 } }
- *   - SubqueryÏùò outerFrom = { { 2, 3 }, 4 }
+ *   - Subquery¿« outerQuery->from = { 1, { { { 2, 3 }, 4 }, 5 } }
+ *   - Subquery¿« outerFrom = { { 2, 3 }, 4 }
  *
- *  Ïù¥ ÎêúÎã§. Îî∞ÎùºÏÑú, ÏúÑÏùò SubqueryÎäî T1.i1Ïù¥ ÏûòÎ™ª Ï∞∏Ï°∞ÎêòÍ≥† ÏûàÏúºÎØÄÎ°ú ÏóêÎü¨Î°ú Ï¢ÖÎ£å.
+ *  ¿Ã µ»¥Ÿ. µ˚∂Ûº≠, ¿ß¿« Subquery¥¬ T1.i1¿Ã ¿ﬂ∏¯ ¬¸¡∂µ«∞Ì ¿÷¿∏π«∑Œ ø°∑Ø∑Œ ¡æ∑·.
  *
- *  ÏâΩÍ≤å Ïù¥ÏïºÍ∏∞ÌïòÎ©¥, 'SubqueryÍ∞Ä ÏÜçÌïú Î∞îÎ°ú Í∑∏ Join TreeÍπåÏßÄÎßå' outerFromÏù¥ ÎêúÎã§. 
- *  ÏÉÅÏúÑ JoinÏùÄ outerFromÏù¥ Îê† Ïàò ÏóÜÎã§Îäî Í≤ÉÏù¥Îã§. (ÏòàÏ†úÏóêÏÑú, T5Îäî ÏÜçÌïòÏßÄ ÏïäÎäîÎã§)
+ *  Ω±∞‘ ¿Ãæﬂ±‚«œ∏È, 'Subquery∞° º”«— πŸ∑Œ ±◊ Join Tree±Ó¡ˆ∏∏' outerFrom¿Ã µ»¥Ÿ. 
+ *  ªÛ¿ß Join¿∫ outerFrom¿Ã µ… ºˆ æ¯¥Ÿ¥¬ ∞Õ¿Ã¥Ÿ. (øπ¡¶ø°º≠, T5¥¬ º”«œ¡ˆ æ ¥¬¥Ÿ)
  *
  *  =====================================================================
  *
- *  outerFrom Í∏∞Î≤ïÏùÑ Lateral ViewÏóêÎèÑ Í∑∏ÎåÄÎ°ú Ï†ÅÏö©Ìï¥Ïïº ÌïúÎã§.
+ *  outerFrom ±‚π˝¿ª Lateral Viewø°µµ ±◊¥Î∑Œ ¿˚øÎ«ÿæﬂ «—¥Ÿ.
  *  
- *   - Lateral ViewÍ∞Ä Îã®ÎèÖÏúºÎ°ú Ïì∞Ïù∏Îã§Î©¥, outerQueryÎ•º ÏÑ§Ï†ïÌïúÎã§.
- *   - Lateral ViewÍ∞Ä ANSI-Join Tree ÏïàÏóê Ï°¥Ïû¨ÌïúÎã§Î©¥ 
- *     'Lateral ViewÍ∞Ä ÏÜçÌïú Î∞îÎ°ú Í∑∏ Join Tree ÍπåÏßÄÎßå' outerFromÎ°ú ÏÑ§Ï†ïÌïúÎã§.
+ *   - Lateral View∞° ¥‹µ∂¿∏∑Œ æ≤¿Œ¥Ÿ∏È, outerQuery∏¶ º≥¡§«—¥Ÿ.
+ *   - Lateral View∞° ANSI-Join Tree æ»ø° ¡∏¿Á«—¥Ÿ∏È 
+ *     'Lateral View∞° º”«— πŸ∑Œ ±◊ Join Tree ±Ó¡ˆ∏∏' outerFrom∑Œ º≥¡§«—¥Ÿ.
  *
- *  (Ï∞∏Í≥†) outerQueryÎäî ÏÉÅÏúÑ outerQueryÎ•º ÌÉêÏÉâÌïòÍ∏∞ ÏúÑÌïú Ïö©ÎèÑÎ°úÎèÑ ÏÇ¨Ïö©ÎêòÎØÄÎ°ú,
- *         outerFromÎßå ÌÉêÏÉâÌïúÎã§Í≥† Ìï¥ÏÑú outerQueryÎ•º ÏßÄÏ†ïÌïòÏßÄ ÏïäÏúºÎ©¥ Ïïà ÎêúÎã§.  
+ *  (¬¸∞Ì) outerQuery¥¬ ªÛ¿ß outerQuery∏¶ ≈Ωªˆ«œ±‚ ¿ß«— øÎµµ∑Œµµ ªÁøÎµ«π«∑Œ,
+ *         outerFrom∏∏ ≈Ωªˆ«—¥Ÿ∞Ì «ÿº≠ outerQuery∏¶ ¡ˆ¡§«œ¡ˆ æ ¿∏∏È æ» µ»¥Ÿ.  
  *
  *
  * Implementation :
  *
- *  - Set OperatorÍ∞Ä Ï°¥Ïû¨ÌïòÎäî Í≤ΩÏö∞ÏóêÎäî LEFT/RIGHT Ïû¨Í∑ÄÌò∏Ï∂úÌïúÎã§.
- *  - Îã®Ïùº QuerySetÏù∏ Í≤ΩÏö∞, outerQueryÎ•º ÏÑ§Ï†ïÌïòÍ≥† outerFromÏù¥ Îê† qmsFromÏùÑ Ï∞æÎäîÎã§.
- *  - Ï∞æÏùÄ qmsFromÏùÑ outerFromÏúºÎ°ú ÏßÄÏ†ïÌïúÎã§. (Ï∞æÏùÄ Í∞íÏù¥ NULLÏùº ÏàòÎèÑ ÏûàÎã§.)
+ *  - Set Operator∞° ¡∏¿Á«œ¥¬ ∞ÊøÏø°¥¬ LEFT/RIGHT ¿Á±Õ»£√‚«—¥Ÿ.
+ *  - ¥‹¿œ QuerySet¿Œ ∞ÊøÏ, outerQuery∏¶ º≥¡§«œ∞Ì outerFrom¿Ã µ… qmsFrom¿ª √£¥¬¥Ÿ.
+ *  - √£¿∫ qmsFrom¿ª outerFrom¿∏∑Œ ¡ˆ¡§«—¥Ÿ. (√£¿∫ ∞™¿Ã NULL¿œ ºˆµµ ¿÷¥Ÿ.)
  *
  ***********************************************************************/
 
@@ -9103,14 +9134,14 @@ void qmvQuerySet::setLateralOuterQueryAndFrom( qmsQuerySet * aViewQuerySet,
 
     if ( aViewQuerySet->setOp == QMS_NONE )
     {
-        // Set OperationÏù¥ ÏóÜÎäî Í≤ΩÏö∞
+        // Set Operation¿Ã æ¯¥¬ ∞ÊøÏ
         if ( aViewQuerySet->SFWGH != NULL )
         {
-            // outerQuery ÏÑ§Ï†ï
+            // outerQuery º≥¡§
             IDE_DASSERT( aViewQuerySet->SFWGH->outerQuery == NULL );
             aViewQuerySet->SFWGH->outerQuery = aOuterSFWGH;
 
-            // outerFrom ÏÑ§Ï†ï
+            // outerFrom º≥¡§
             for ( sFrom = aOuterSFWGH->from;
                   ( sFrom != NULL ) && ( sOuterFrom == NULL );
                   sFrom = sFrom->next )
@@ -9136,7 +9167,7 @@ void qmvQuerySet::setLateralOuterQueryAndFrom( qmsQuerySet * aViewQuerySet,
     }
     else
     {
-        // Set OperationÏù∏ Í≤ΩÏö∞
+        // Set Operation¿Œ ∞ÊøÏ
         setLateralOuterQueryAndFrom( aViewQuerySet->left,  
                                      aViewTableRef, 
                                      aOuterSFWGH );
@@ -9157,23 +9188,23 @@ void qmvQuerySet::getLateralOuterFrom( qmsQuerySet  * aViewQuerySet,
  *
  * Description : PROJ-2418 Cross/Outer APPLY & Lateral View
  * 
- *  Lateral ViewÍ∞Ä ANSI Join TreeÏóê ÏÜçÌïú Í≤ΩÏö∞,
- *  Lateral ViewÍ∞Ä ÏÜçÌïú Î∞îÎ°ú Í∑∏ Join TreeÎßå Ï∞æÏïÑ outerFromÏúºÎ°ú Î∞òÌôòÌïúÎã§.
+ *  Lateral View∞° ANSI Join Treeø° º”«— ∞ÊøÏ,
+ *  Lateral View∞° º”«— πŸ∑Œ ±◊ Join Tree∏∏ √£æ∆ outerFrom¿∏∑Œ π›»Ø«—¥Ÿ.
  *
  * Implementation :
  *  
- *  Lateral ViewÎ•º ÎÇòÌÉÄÎÇ¥Îäî TableRefÍ∞Ä ÏÜçÌïú qmsFromÏù¥ 
- *  ÌòÑÏû¨ Í¥ÄÏã¨ÏùÑ ÎëêÍ≥† ÏûàÎäî qmsFromÏùò LEFT/RIGHTÏóê ÏÜçÌï¥ ÏûàÎã§Î©¥, 
- *  ÌòÑÏû¨ qmsFromÏù¥ aOuterFromÏù¥ ÎêúÎã§.
+ *  Lateral View∏¶ ≥™≈∏≥ª¥¬ TableRef∞° º”«— qmsFrom¿Ã 
+ *  «ˆ¿Á ∞¸Ω…¿ª µŒ∞Ì ¿÷¥¬ qmsFrom¿« LEFT/RIGHTø° º”«ÿ ¿÷¥Ÿ∏È, 
+ *  «ˆ¿Á qmsFrom¿Ã aOuterFrom¿Ã µ»¥Ÿ.
  *  
- *  Join TreeÎ•º ÎßåÎÇ† ÎïåÎßàÎã§ LEFT/RIGHTÏóê ÎåÄÌï¥ Ïû¨Í∑ÄÌò∏Ï∂úÌïúÎã§.
+ *  Join Tree∏¶ ∏∏≥Ø ∂ß∏∂¥Ÿ LEFT/RIGHTø° ¥Î«ÿ ¿Á±Õ»£√‚«—¥Ÿ.
  *
  ***********************************************************************/
 
     IDE_DASSERT( aFrom->left  != NULL );
     IDE_DASSERT( aFrom->right != NULL );
 
-    // LeftÏóêÏÑú ÌÉêÏÉâ
+    // Leftø°º≠ ≈Ωªˆ
     if ( aFrom->left->joinType != QMS_NO_JOIN )
     {
         getLateralOuterFrom( aViewQuerySet,
@@ -9193,7 +9224,7 @@ void qmvQuerySet::getLateralOuterFrom( qmsQuerySet  * aViewQuerySet,
         }
     }
 
-    // LeftÏóêÏÑú Ï∞æÏßÄ Î™ªÌñàÎã§Î©¥ RightÏóêÏÑú ÌÉêÏÉâ
+    // Leftø°º≠ √£¡ˆ ∏¯«ﬂ¥Ÿ∏È Rightø°º≠ ≈Ωªˆ
     if ( *aOuterFrom == NULL ) 
     {
         if ( aFrom->right->joinType != QMS_NO_JOIN )
@@ -9233,14 +9264,14 @@ IDE_RC qmvQuerySet::addCastFuncForNode( qcStatement  * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmvQuerySet::addCastFuncForNode::__FT__" );
 
-    // cast Ìï®ÏàòÎ•º ÎßåÎì†Îã§.
+    // cast «‘ºˆ∏¶ ∏∏µÁ¥Ÿ.
     IDE_TEST( qtc::makeNode( aStatement,
                              sNode,
                              & aNode->columnName,
                              & mtfCast )
               != IDE_SUCCESS );
 
-    // cast Ïù∏ÏûêÎ•º ÎßåÎì†Îã§.
+    // cast ¿Œ¿⁄∏¶ ∏∏µÁ¥Ÿ.
     IDE_TEST( qtc::makeNode( aStatement,
                              sArgNode,
                              & aNode->columnName,
@@ -9251,13 +9282,13 @@ IDE_RC qmvQuerySet::addCastFuncForNode( qcStatement  * aStatement,
 
     mtc::copyColumn( sMtcColumn, aCastType );
 
-    // Ìï®ÏàòÎ•º Ïó∞Í≤∞ÌïúÎã§.
+    // «‘ºˆ∏¶ ø¨∞·«—¥Ÿ.
     sNode[0]->node.arguments = (mtcNode*) aNode;
     sNode[0]->node.funcArguments = (mtcNode*) sArgNode[0];
     sNode[0]->node.next = aNode->node.next;
     sNode[0]->node.arguments->next = NULL;
 
-    // Ìï®ÏàòÎßå estimateÎ•º ÏàòÌñâÌïúÎã§.
+    // «‘ºˆ∏∏ estimate∏¶ ºˆ«‡«—¥Ÿ.
     IDE_TEST( qtc::estimateNodeWithArgument( aStatement,
                                              sNode[0] )
               != IDE_SUCCESS );
@@ -9397,6 +9428,94 @@ IDE_RC qmvQuerySet::searchConnectByAggr( qcStatement * aStatement,
                             sSqlInfo.getErrMessage() ));
         (void)sSqlInfo.fini();
     }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmvQuerySet::convertAnsiInnerJoin( qcStatement * aStatement,
+                                          qmsSFWGH    * aSFWGH )
+{
+    qmsFrom  * sFrom = NULL;
+    idBool     sOnlyInnerJoin = ID_FALSE;
+
+    /* TASK-7219
+     *   Shard Transform ¿∫ ªÁøÎ¿⁄¿« Query Text ±‚π›¿∏∑Œ ºˆ«‡µ«¥¬µ•,
+     *   ANSI Ω∫≈∏¿œøÕ ¿œπ› Ω∫≈∏¿œ¿« ¬˜¿Ã∞° ∏≈øÏ ≈©π«∑Œ,
+     *   «ÿ¥Á ∫Ø»Ø¿ª ºˆ«‡«œ¡ˆ æ µµ∑œ «—¥Ÿ.
+     *
+     *   ±◊∏Æ∞Ì ø¯∞›¡ˆ∑Œ Query∞° ∫∏≥ª¡ˆ∏È, ø¯∞›¡ˆø°º≠ «ÿ¥Á ∫Ø»Ø¿ª ºˆ«‡«“ ∞Õ¿∏∑Œ ±‚¥Î«—¥Ÿ.
+     */
+    IDE_TEST_CONT( ( ( aStatement->myPlan->parseTree->stmtShard != QC_STMT_SHARD_NONE )
+                     &&
+                     ( aStatement->myPlan->parseTree->stmtShard != QC_STMT_SHARD_META ) ),
+                   NORMAL_EXIT );
+
+    // BUG-38402
+    if ( QCU_OPTIMIZER_ANSI_INNER_JOIN_CONVERT == 1 )
+    {
+        // BUG-38273
+        // ansi Ω∫≈∏¿œ inner join ¿ª ¿œπ› Ω∫≈∏¿œ¿« ¡∂¿Œ¿∏∑Œ ∫Ø∞Ê«—¥Ÿ.
+        for (sFrom = aSFWGH->from; sFrom != NULL; sFrom = sFrom->next)
+        {
+            if ( sFrom->joinType == QMS_NO_JOIN )
+            {
+                sOnlyInnerJoin = ID_TRUE;
+            }
+            else if ( sFrom->joinType == QMS_INNER_JOIN )
+            {
+                sOnlyInnerJoin = checkInnerJoin( sFrom );
+            }
+            else
+            {
+                sOnlyInnerJoin = ID_FALSE;
+            }
+
+            if ( sOnlyInnerJoin == ID_FALSE )
+            {
+                break;
+            }
+            else
+            {
+                // Nothing to do.
+            }
+        }
+
+        if ( sOnlyInnerJoin == ID_TRUE )
+        {
+            qcgPlan::registerPlanProperty(
+                aStatement,
+                PLAN_PROPERTY_OPTIMIZER_ANSI_INNER_JOIN_CONVERT );
+
+            for ( sFrom = aSFWGH->from; sFrom != NULL; sFrom = sFrom->next )
+            {
+                if ( sFrom->joinType == QMS_INNER_JOIN )
+                {
+                    IDE_TEST( innerJoinToNoJoin( aStatement,
+                                                 aSFWGH,
+                                                 sFrom ) != IDE_SUCCESS);
+                }
+                else
+                {
+                    // Nothing to do.
+                }
+            }
+        }
+        else
+        {
+            // Nothing to do.
+        }
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    /* TASK-7219 */
+    IDE_EXCEPTION_CONT( NORMAL_EXIT );
+
+    return IDE_SUCCESS;
+
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;

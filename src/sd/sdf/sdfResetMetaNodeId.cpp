@@ -50,7 +50,7 @@ static IDE_RC sdfEstimate( mtcNode*        aNode,
 mtfModule sdfResetMetaNodeIdModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     sdfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -148,10 +148,21 @@ IDE_RC sdfCalculate_ResetMetaNodeId( mtcNode*     aNode,
  ***********************************************************************/
 
     qcStatement             * sStatement;
-    mtdIntegerType            sMetaNodeId;
-    sdiLocalMetaNodeInfo      sMetaNodeInfo;
+    mtdIntegerType            sShardNodeId;
+    sdiLocalMetaInfo          sLocalMetaInfo;
+    idBool                    sIsOldSessionShardMetaTouched = ID_FALSE;
 
     sStatement   = ((qcTemplate*)aTemplate)->stmt;
+
+    sStatement->mFlag &= ~QC_STMT_SHARD_META_CHANGE_MASK;
+    sStatement->mFlag |= QC_STMT_SHARD_META_CHANGE_TRUE;
+
+    /* BUG-47623 »þµå ¸ÞÅ¸ º¯°æ¿¡ ´ëÇÑ trc ·Î±×Áß commit ·Î±×¸¦ ÀÛ¼ºÇÏ±âÀü¿¡ DASSERT ·Î Á×´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù. */
+    if ( ( sStatement->session->mQPSpecific.mFlag & QC_SESSION_SHARD_META_TOUCH_MASK ) ==
+         QC_SESSION_SHARD_META_TOUCH_TRUE )
+    {
+        sIsOldSessionShardMetaTouched = ID_TRUE;
+    }
 
     // BUG-46366
     IDE_TEST_RAISE( ( QC_SMI_STMT(sStatement)->getTrans() == NULL ) ||
@@ -182,17 +193,17 @@ IDE_RC sdfCalculate_ResetMetaNodeId( mtcNode*     aNode,
         //---------------------------------
 
         // meta node id
-        sMetaNodeId = *(mtdIntegerType*)aStack[1].value;
-        IDE_TEST_RAISE( ( sMetaNodeId > ID_USHORT_MAX ) ||
-                        ( sMetaNodeId < 0 ),
+        sShardNodeId = *(mtdIntegerType*)aStack[1].value;
+        IDE_TEST_RAISE( ( sShardNodeId > ID_USHORT_MAX ) ||
+                        ( sShardNodeId < 0 ),
                         ERR_META_NODE_ID );
 
-        sMetaNodeInfo.mMetaNodeId = sMetaNodeId;
+        sLocalMetaInfo.mShardNodeId = sShardNodeId;
 
-        IDE_TEST( sdm::resetMetaNodeId( sStatement, &sMetaNodeInfo )
+        IDE_TEST( sdm::resetMetaNodeId( sStatement, &sLocalMetaInfo )
                   != IDE_SUCCESS );
 
-        sdmShardPinMgr::updateShardPinInfoOnRuntime( &sMetaNodeInfo );
+        sdmShardPinMgr::updateShardPinInfoOnRuntime( &sLocalMetaInfo );
 
     }
 
@@ -217,6 +228,16 @@ IDE_RC sdfCalculate_ResetMetaNodeId( mtcNode*     aNode,
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QRC_NO_GRANT ) );
     }
     IDE_EXCEPTION_END;
+
+    /* BUG-47623 »þµå ¸ÞÅ¸ º¯°æ¿¡ ´ëÇÑ trc ·Î±×Áß commit ·Î±×¸¦ ÀÛ¼ºÇÏ±âÀü¿¡ DASSERT ·Î Á×´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù. */
+    if ( sIsOldSessionShardMetaTouched == ID_TRUE )
+    {
+        sdi::setShardMetaTouched( sStatement->session );
+    }
+    else
+    {
+        sdi::unsetShardMetaTouched( sStatement->session );
+    }
 
     return IDE_FAILURE;
 }

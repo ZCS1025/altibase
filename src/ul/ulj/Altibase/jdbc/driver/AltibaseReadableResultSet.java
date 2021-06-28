@@ -19,14 +19,7 @@ package Altibase.jdbc.driver;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
-import java.sql.Array;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.Date;
-import java.sql.Ref;
-import java.sql.SQLException;
-import java.sql.Time;
-import java.sql.Timestamp;
+import java.sql.*;
 
 import Altibase.jdbc.driver.datatype.RowHandle;
 import Altibase.jdbc.driver.ex.Error;
@@ -35,15 +28,15 @@ import Altibase.jdbc.driver.ex.ErrorDef;
 abstract class AltibaseReadableResultSet extends AltibaseResultSet
 {
     /**
-     * Fetchí•œ ë°ì´íƒ€ì— ì ‘ê·¼í•˜ê¸° ìœ„í•œ handleì„ ì–»ëŠ”ë‹¤.
+     * FetchÇÑ µ¥ÀÌÅ¸¿¡ Á¢±ÙÇÏ±â À§ÇÑ handleÀ» ¾ò´Â´Ù.
      *
-     * @return row ë°ì´íƒ€ì— ì ‘ê·¼í•˜ê¸° ìœ„í•œ handle
+     * @return row µ¥ÀÌÅ¸¿¡ Á¢±ÙÇÏ±â À§ÇÑ handle
      */
     abstract protected RowHandle rowHandle();
 
 
 
-    // #region scrollable interface ê³µí†µ êµ¬í˜„
+    // #region scrollable interface °øÅë ±¸Çö
 
     public final boolean first() throws SQLException
     {
@@ -100,9 +93,9 @@ abstract class AltibaseReadableResultSet extends AltibaseResultSet
 
 
 
-    // #region updatable interface ê¸°ë³¸ êµ¬í˜„
-    // updatableì€ AltibaseUpdatableResultSetìœ¼ë¡œ ê°ì‹¸ì„œ ë§Œë“¤ë¯€ë¡œ,
-    // AltibaseReadableResultSetì€ ëª¨ë‘ READ_ONLYë¼ê³  ë³¸ë‹¤.
+    // #region updatable interface ±âº» ±¸Çö
+    // updatableÀº AltibaseUpdatableResultSetÀ¸·Î °¨½Î¼­ ¸¸µé¹Ç·Î,
+    // AltibaseReadableResultSetÀº ¸ğµÎ READ_ONLY¶ó°í º»´Ù.
 
     public int getConcurrency() throws SQLException
     {
@@ -180,17 +173,17 @@ abstract class AltibaseReadableResultSet extends AltibaseResultSet
         throwErrorForReadOnly();
     }
 
-    public void updateAsciiStream(int columnIndex, InputStream x, int length) throws SQLException
+    public void updateAsciiStream(int columnIndex, InputStream x, long length) throws SQLException
     {
         throwErrorForReadOnly();
     }
 
-    public void updateBinaryStream(int columnIndex, InputStream x, int length) throws SQLException
+    public void updateBinaryStream(int columnIndex, InputStream x, long length) throws SQLException
     {
         throwErrorForReadOnly();
     }
 
-    public void updateCharacterStream(int columnIndex, Reader x, int length) throws SQLException
+    public void updateCharacterStream(int columnIndex, Reader x, long length) throws SQLException
     {
         throwErrorForReadOnly();
     }
@@ -251,6 +244,34 @@ abstract class AltibaseReadableResultSet extends AltibaseResultSet
     }
 
     public void updateArray(int columnIndex, Array x) throws SQLException
+    {
+        throwErrorForReadOnly();
+    }
+
+    @Override
+    public void updateClob(int aColumnIndex, Reader aReader, long aLength) throws SQLException
+    {
+        throwErrorForReadOnly();
+    }
+
+    @Override
+    public void updateNString(int aColumnIndex, String aValue) throws SQLException
+    {
+        updateObject(aColumnIndex, aValue);
+    }
+
+    public void updateBlob(int aColumnIndex, InputStream aStream) throws SQLException
+    {
+        throwErrorForReadOnly();
+    }
+
+    public void updateBlob(String aColumnName, InputStream aStream) throws SQLException
+    {
+        throwErrorForReadOnly();
+    }
+
+    @Override
+    public void updateBlob(int aColumnIndex, InputStream aStream, long aLength) throws SQLException
     {
         throwErrorForReadOnly();
     }

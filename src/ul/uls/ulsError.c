@@ -16,7 +16,7 @@
 
 /***********************************************************************
  *
- * Spatio-Temporal Error ê´€ë¦¬ í•¨ìˆ˜
+ * Spatio-Temporal Error °ü¸® ÇÔ¼ö
  *
  ***********************************************************************/
 
@@ -59,7 +59,7 @@ static aci_client_error_factory_t *gULSClientFactory[] =
  *
  * Description:
  *
- *   Error ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ *   Error ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
  *
  * Implementation:
  *
@@ -86,7 +86,7 @@ void ulsClearError( ulsErrorMgr * aErrMgr )
  *
  * Description:
  *
- *   Error Codeë¥¼ ì„¤ì •í•œë‹¤.
+ *   Error Code¸¦ ¼³Á¤ÇÑ´Ù.
  *
  * Implementation:
  *

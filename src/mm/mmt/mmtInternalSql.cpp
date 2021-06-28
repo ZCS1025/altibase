@@ -15,8 +15,8 @@
  */
 
 /*****************************************************************************
- * Server ë‚´ì—ì„œ ì‚¬ìš©í•˜ëŠ” SQLì²˜ë¦¬ë¥¼ ë‹´ë‹¹í•œë‹¤.
- * ëª¨ë“  í•¨ìˆ˜ëŠ” callback functionì´ ëœë‹¤.
+ * Server ³»¿¡¼­ »ç¿ëÇÏ´Â SQLÃ³¸®¸¦ ´ã´çÇÑ´Ù.
+ * ¸ğµç ÇÔ¼ö´Â callback functionÀÌ µÈ´Ù.
  ****************************************************************************/
 
 #include <qci.h>
@@ -49,6 +49,18 @@ static IDE_RC fetchEnd( mmcStatement * aStatement )
     IDE_RC sRet;
     UShort sEnableResultSetCount;
 
+    /* TAKS-7219 
+     *  Cursor Close Àü¿¡
+     *  mmcStatement::makePlanTreeBeforeCloseCursor ¸¦ È£ÃâÇØ¾ß ÇÏ´Âµ¥,
+     *  ¾Æ·¡ÀÇ qci::closeCursor ¿Ü¿¡µµ 
+     *  aStatement->endFetch ¿¡¼­ qci::closeCursor ·Î
+     *  Temp Table Cursor¸¦ Close ÇÕ´Ï´Ù.
+     *  µû¶ó¼­ ¸ğµç Cursor Close ÀÌÀüÀÇ À§Ä¡·Î º¯°æÇØ¼­ È£ÃâÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù.
+     */
+    // BUG-47831 View plan of query in PSM
+    mmcStatement::makePlanTreeBeforeCloseCursor( aStatement,
+                                                 aStatement );
+
     sEnableResultSetCount = aStatement->getEnableResultSetCount();
 
     if ( aStatement->getResultSetState(MMC_RESULTSET_FIRST) !=
@@ -58,7 +70,7 @@ static IDE_RC fetchEnd( mmcStatement * aStatement )
                                   aStatement->getSmiStmt())
                  != IDE_SUCCESS);
 
-        // Fetch ê°€ëŠ¥í•œ Result Setì„ í•˜ë‚˜ ê°ì†Œ
+        // Fetch °¡´ÉÇÑ Result SetÀ» ÇÏ³ª °¨¼Ò
         sEnableResultSetCount--;
         aStatement->setEnableResultSetCount(sEnableResultSetCount);
     }
@@ -231,8 +243,8 @@ mmtInternalSql::allocStmt( void * aUserContext )
               != IDE_SUCCESS );
 
     /* BUG-43003
-     * job sessionì˜ statement ê°™ì€ ì–´ë””ì—ë„ ì†í•˜ì§€ ì•ŠëŠ”
-     * ë…ë¦½ì ì¸ statementì¸ ê²½ìš°, sessionì— ê¸°ë¡í•œë‹¤.
+     * job sessionÀÇ statement °°Àº ¾îµğ¿¡µµ ¼ÓÇÏÁö ¾Ê´Â
+     * µ¶¸³ÀûÀÎ statementÀÎ °æ¿ì, session¿¡ ±â·ÏÇÑ´Ù.
      */
     if ( sArg->dedicatedMode == ID_TRUE )
     {
@@ -308,7 +320,7 @@ mmtInternalSql::prepare( void * aUserContext )
                                  MMC_STMT_EXEC_DIRECT :
                                  MMC_STMT_EXEC_PREPARED );
 
-    /* PROJ-1381 FAC : InternalSqlì€ í•­ìƒ HOLD_ONìœ¼ë¡œ ì‹¤í–‰í•œë‹¤. */
+    /* PROJ-1381 FAC : InternalSqlÀº Ç×»ó HOLD_ONÀ¸·Î ½ÇÇàÇÑ´Ù. */
     sStatement->setCursorHold(MMC_STMT_CURSOR_HOLD_ON);
 
     // BUG-41030 Set called by PSM Flag
@@ -445,8 +457,8 @@ mmtInternalSql::paramInfoSet( void * aUserContext )
 }
 
 // BUG-19669
-// clientì—ì„œ qci::setBindColumnInfo()ë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ
-// PSMë„ ì‚¬ìš©í•˜ì§€ ì•Šë„ë¡ ìˆ˜ì •í•œë‹¤.
+// client¿¡¼­ qci::setBindColumnInfo()¸¦ »ç¿ëÇÏÁö ¾ÊÀ¸¹Ç·Î
+// PSMµµ »ç¿ëÇÏÁö ¾Êµµ·Ï ¼öÁ¤ÇÑ´Ù.
 //
 // IDE_RC
 // mmtInternalSql::columnInfoSet( void * aUserContext )
@@ -587,6 +599,7 @@ IDE_RC
 mmtInternalSql::execute( void * aUserContext )
 {
     qciSQLExecuteContext * sArg;
+    mmcSession           * sSession = NULL;
     mmcStatement         * sStatement;
     qciStatement         * sQciStmt;
     smiStatement         * sSmiStmt;
@@ -595,9 +608,14 @@ mmtInternalSql::execute( void * aUserContext )
     UShort                 sResultSetCount;
     idBool                 sBeginFetchTime = ID_FALSE;
     UInt                   sOldResultSetHWM = 0;
+    UInt                   sStmtRetryMax;
+    UInt                   sRebuildRetryMax = SDI_SHARD_RETRY_LOOP_MAX;
 
     sArg = (qciSQLExecuteContext*)aUserContext;
     sStatement = (mmcStatement*)sArg->mmStatement;
+    sSession = sStatement->getSession();
+
+    sStmtRetryMax = sSession->getShardStatementRetry();
 
     sArg->affectedRowCount = -1;
     sArg->fetchedRowCount = -1;
@@ -649,6 +667,12 @@ mmtInternalSql::execute( void * aUserContext )
             if (sStatement->execute(&sArg->affectedRowCount,
                                     &sArg->fetchedRowCount) != IDE_SUCCESS)
             {
+                IDE_TEST_RAISE( sSession->processShardRetryError( sStatement,
+                                                                  &sStmtRetryMax,
+                                                                  &sRebuildRetryMax )
+                                != IDE_SUCCESS,
+                                ExecuteFailAbort );
+
                 switch (ideGetErrorCode() & E_ACTION_MASK)
                 {
                     case E_ACTION_IGNORE:
@@ -662,7 +686,15 @@ mmtInternalSql::execute( void * aUserContext )
                         break;
 
                     case E_ACTION_REBUILD:
+                        if (sArg->isFirst == ID_TRUE )
+                        {
+                            // BUG-47707 rebuil½Ã invalid host variable error°¡ ¹ß»ıÇÕ´Ï´Ù.
+                            qciMisc::setPSMFlag( ((void*)&(sQciStmt->statement)), ID_TRUE );
+                        }
+
                         IDE_TEST(doRebuild(sStatement) != IDE_SUCCESS);
+
+                        qciMisc::setPSMFlag( ((void*)&(sQciStmt->statement)), ID_FALSE );
 
                         sRetry = ID_TRUE;
                         break;
@@ -689,8 +721,8 @@ mmtInternalSql::execute( void * aUserContext )
         sResultSetCount = qci::getResultSetCount(sStatement->getQciStmt());
         sStatement->setResultSetCount(sResultSetCount);
         sStatement->setEnableResultSetCount(sResultSetCount);
-        //fix BUG-27198 Code-Sonar  return value ignoreí•˜ì—¬, ê²°êµ­ mResultSetê°€
-        // null pointerì¼ë•Œ ì´ë¥¼ de-referenceë¥¼ í• ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+        //fix BUG-27198 Code-Sonar  return value ignoreÇÏ¿©, °á±¹ mResultSet°¡
+        // null pointerÀÏ¶§ ÀÌ¸¦ de-reference¸¦ ÇÒ¼ö ÀÖ½À´Ï´Ù.
         IDE_TEST_RAISE(sStatement->initializeResultSet(sResultSetCount) != IDE_SUCCESS,
                        RestoreResultSetValues);
 
@@ -698,7 +730,7 @@ mmtInternalSql::execute( void * aUserContext )
         if (sResultSetCount > 0)
         {
             // fix BUG-31195
-            // qci::moveNextRecord() ì‹œê°„ì„ Fetch Timeì— ì¶”ê°€
+            // qci::moveNextRecord() ½Ã°£À» Fetch Time¿¡ Ãß°¡
             sStatement->setFetchStartTime(mmtSessionManager::getBaseTime());
             /* BUG-19456 */
             sStatement->setFetchEndTime(0);
@@ -724,6 +756,12 @@ mmtInternalSql::execute( void * aUserContext )
                 IDV_SQL_OPTIME_END( sStatement->getStatistics(),
                                     IDV_OPTM_INDEX_QUERY_FETCH );
 
+                IDE_TEST_RAISE( sSession->processShardRetryError( sStatement,
+                                                                  &sStmtRetryMax,
+                                                                  &sRebuildRetryMax )
+                                != IDE_SUCCESS,
+                                MoveNextRecordFailAbort );
+
                 switch (ideGetErrorCode() & E_ACTION_MASK)
                 {
                     case E_ACTION_IGNORE:
@@ -737,7 +775,15 @@ mmtInternalSql::execute( void * aUserContext )
                         break;
 
                     case E_ACTION_REBUILD:
+                        if (sArg->isFirst == ID_TRUE )
+                        {
+                            // BUG-47707 rebuil½Ã invalid host variable error°¡ ¹ß»ıÇÕ´Ï´Ù.
+                            qciMisc::setPSMFlag( ((void*)&(sQciStmt->statement)), ID_TRUE );
+                        }
+
                         IDE_TEST(doRebuild(sStatement) != IDE_SUCCESS);
+
+                        qciMisc::setPSMFlag( ((void*)&(sQciStmt->statement)), ID_FALSE);
 
                         sRetry = ID_TRUE;
                         break;
@@ -778,8 +824,8 @@ mmtInternalSql::execute( void * aUserContext )
                         sStatement->setFetchFlag(MMC_FETCH_FLAG_CLOSE);
 
                         // Nothing to do.
-                        // resultSetì´ ìˆëŠ” ê²½ìš° bindì •ë³´ë¥¼ ì£¼ê¸° ìœ„í•´
-                        // recordê°€ ì—†ì–´ë„ statementë¥¼ ë‹«ì§€ ì•ŠëŠ”ë‹¤.
+                        // resultSetÀÌ ÀÖ´Â °æ¿ì bindÁ¤º¸¸¦ ÁÖ±â À§ÇØ
+                        // record°¡ ¾ø¾îµµ statement¸¦ ´İÁö ¾Ê´Â´Ù.
                         // IDE_TEST(doEnd(aUserContext) != IDE_SUCCESS);
                     }
                 }
@@ -797,6 +843,10 @@ mmtInternalSql::execute( void * aUserContext )
             }
             else
             {
+                // BUG-47831 View plan of query in PSM
+                mmcStatement::makePlanTreeBeforeCloseCursor( sStatement,
+                                                             sStatement );
+
                 IDE_TEST(doEnd(aUserContext) != IDE_SUCCESS);
             }
         }
@@ -885,6 +935,8 @@ mmtInternalSql::fetch( void * aUserContext )
     sArg       = (qciSQLFetchContext*)aUserContext;
     sStatement = (mmcStatement*)sArg->mmStatement;
 
+    sArg->nextRecordExist = ID_FALSE;
+
     IDE_TEST_RAISE( sStatement->getStmtState() !=
                     MMC_STMT_STATE_EXECUTED,
                     NoRows );
@@ -916,9 +968,9 @@ mmtInternalSql::fetch( void * aUserContext )
                     FetchError );
 
     /* BUG-37797 Support dequeue statement at PSM
-     * Dequeue statementëŠ” ë¬´ì¡°ê±´ 1ê±´ì˜ rowë§Œ ê°€ì ¸ì˜¤ëŠ”ë°,
-     * execute í•  ë•Œ 1ê±´ì˜ rowë¥¼ ê°€ì ¸ì™”ê¸° ë•Œë¬¸ì— moveNextRecordë¥¼ í•˜ì§€ ì•Šê³ ,
-     * nextRecordExistë¥¼ ID_FALSEë¡œ ì„¤ì •í•˜ì—¬ fetchë¥¼ ì™„ë£Œí•˜ë„ë¡ í•œë‹¤. */
+     * Dequeue statement´Â ¹«Á¶°Ç 1°ÇÀÇ row¸¸ °¡Á®¿À´Âµ¥,
+     * execute ÇÒ ¶§ 1°ÇÀÇ row¸¦ °¡Á®¿Ô±â ¶§¹®¿¡ moveNextRecord¸¦ ÇÏÁö ¾Ê°í,
+     * nextRecordExist¸¦ ID_FALSE·Î ¼³Á¤ÇÏ¿© fetch¸¦ ¿Ï·áÇÏµµ·Ï ÇÑ´Ù. */
     if( sStatement->getStmtType() != QCI_STMT_DEQUEUE )
     {
         IDE_TEST_RAISE( qci::moveNextRecord( sStatement->getQciStmt(),

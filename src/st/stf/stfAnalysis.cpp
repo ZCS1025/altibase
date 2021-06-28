@@ -19,7 +19,7 @@
  * $Id: stfAnalysis.cpp 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * Geometry ê°ì²´ ë¶„ì„ í•¨ìˆ˜ êµ¬í˜„
+ * Geometry °´Ã¼ ºĞ¼® ÇÔ¼ö ±¸Çö
  **********************************************************************/
 
 #include <idl.h>
@@ -39,6 +39,7 @@
 #include <stdPrimitive.h>
 #include <stfRelation.h>
 #include <stfAnalysis.h>
+#include <stfBasic.h>
 
 #include <stdPolyClip.h>
 
@@ -50,7 +51,7 @@ extern mtdModule mtdDouble;
 
 /***********************************************************************
  * Description:
- * ë‘ Geometry ê°ì²´ì˜ ê±°ë¦¬ ë¦¬í„´
+ * µÎ Geometry °´Ã¼ÀÇ °Å¸® ¸®ÅÏ
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -66,12 +67,12 @@ IDE_RC stfAnalysis::distance(
 
     SDouble          sDist;
     
-    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
+    // Fix BUG-15412 mtdModule.isNull »ç¿ë
     if( (stdGeometry.isNull( NULL, sValue1 )==ID_TRUE) ||
         (stdGeometry.isNull( NULL, sValue2 )==ID_TRUE) )
     {
         // To Fix PR-15270
-        // NULL ê²°ê³¼ë¥¼ ì„¤ì •í•´ì•¼ í•¨.
+        // NULL °á°ú¸¦ ¼³Á¤ÇØ¾ß ÇÔ.
         aStack[0].column->module->null( aStack[0].column,
                                         aStack[0].value );
     }
@@ -97,7 +98,7 @@ IDE_RC stfAnalysis::distance(
 
 /***********************************************************************
  * Description:
- * í•œ Geometry ê°ì²´ì˜ buffering ê°ì²´ ë¦¬í„´
+ * ÇÑ Geometry °´Ã¼ÀÇ buffering °´Ã¼ ¸®ÅÏ
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -121,7 +122,7 @@ IDE_RC stfAnalysis::buffer(
     sQcTmplate = (qcTemplate*) aTemplate;
     sQmxMem    = QC_QMX_MEM( sQcTmplate->stmt );
     
-    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
+    // Fix BUG-15412 mtdModule.isNull »ç¿ë
     if( (stdGeometry.isNull( NULL, sValue )==ID_TRUE) ||
         (mtdDouble.isNull( NULL, sDist )==ID_TRUE) )
     {
@@ -135,19 +136,19 @@ IDE_RC stfAnalysis::buffer(
 
         // BUGBUG
         // To Fix BUG-16469
-        /* BUG-33904 : ë²„í¼ ê±°ë¦¬ê°€ ìŒìˆ˜ì¸ ê²½ìš°ì—ë§Œ ì—ëŸ¬ê°€ ë°œìƒí•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤. */
+        /* BUG-33904 : ¹öÆÛ °Å¸®°¡ À½¼öÀÎ °æ¿ì¿¡¸¸ ¿¡·¯°¡ ¹ß»ıÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù. */
         IDE_TEST_RAISE( *sDist < 0, ERR_INVALID_DISTANCE );
         
         stdGeometry.null(NULL, sRet);  // Fix BUG-15504
 
-        // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
+        // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
         IDE_TEST( sQmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS);
         sStage = 1;
         
         IDE_TEST( getBuffer( sQmxMem, (stdGeometryType*)sValue, *sDist, sRet, aFence )
              != IDE_SUCCESS );
         
-        // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
+        // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
         sStage = 0;
         IDE_TEST( sQmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS);
     }
@@ -171,7 +172,7 @@ IDE_RC stfAnalysis::buffer(
 
 /***********************************************************************
  * Description:
- * ë‘ Geometry ê°ì²´ì˜ intersection ê°ì²´ ë¦¬í„´
+ * µÎ Geometry °´Ã¼ÀÇ intersection °´Ã¼ ¸®ÅÏ
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -195,7 +196,7 @@ IDE_RC stfAnalysis::intersection(
     sQcTmplate = (qcTemplate*) aTemplate;
     sQmxMem    = QC_QMX_MEM( sQcTmplate->stmt );
     
-    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
+    // Fix BUG-15412 mtdModule.isNull »ç¿ë
     if( (stdGeometry.isNull( NULL, sValue1 )==ID_TRUE) ||
         (stdGeometry.isNull( NULL, sValue2 )==ID_TRUE) )
     {
@@ -210,7 +211,7 @@ IDE_RC stfAnalysis::intersection(
 
         stdGeometry.null(NULL, sRet);  // Fix BUG-15504
 
-        // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
+        // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
         IDE_TEST( sQmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS);
         sStage = 1;
         
@@ -221,7 +222,7 @@ IDE_RC stfAnalysis::intersection(
                                    aFence )
                   != IDE_SUCCESS );
         
-        // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
+        // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
         sStage = 0;
         IDE_TEST( sQmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS);
     }
@@ -240,7 +241,7 @@ IDE_RC stfAnalysis::intersection(
 
 /***********************************************************************
  * Description:
- * ë‘ Geometry ê°ì²´ì˜ difference ê°ì²´ ë¦¬í„´
+ * µÎ Geometry °´Ã¼ÀÇ difference °´Ã¼ ¸®ÅÏ
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -264,7 +265,7 @@ IDE_RC stfAnalysis::difference(
     sQcTmplate = (qcTemplate*) aTemplate;
     sQmxMem    = QC_QMX_MEM( sQcTmplate->stmt );
     
-    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
+    // Fix BUG-15412 mtdModule.isNull »ç¿ë
     if( (stdGeometry.isNull( NULL, sValue1 )==ID_TRUE) ||
         (stdGeometry.isNull( NULL, sValue2 )==ID_TRUE) )
     {
@@ -279,7 +280,7 @@ IDE_RC stfAnalysis::difference(
 
         stdGeometry.null(NULL, sRet);  // Fix BUG-15504
 
-        // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
+        // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
         IDE_TEST( sQmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS);
         sStage = 1;
         
@@ -290,7 +291,7 @@ IDE_RC stfAnalysis::difference(
                                  aFence )
                   != IDE_SUCCESS );
         
-        // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
+        // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
         sStage = 0;
         IDE_TEST( sQmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS);
     }
@@ -312,7 +313,7 @@ IDE_RC stfAnalysis::difference(
 
 /***********************************************************************
  * Description:
- * ë‘ Geometry ê°ì²´ì˜ union ê°ì²´ ë¦¬í„´
+ * µÎ Geometry °´Ã¼ÀÇ union °´Ã¼ ¸®ÅÏ
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -336,7 +337,7 @@ IDE_RC stfAnalysis::unions(
     sQcTmplate = (qcTemplate*) aTemplate;
     sQmxMem    = QC_QMX_MEM( sQcTmplate->stmt );
     
-    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
+    // Fix BUG-15412 mtdModule.isNull »ç¿ë
     if( (stdGeometry.isNull( NULL, sValue1 )==ID_TRUE) ||
         (stdGeometry.isNull( NULL, sValue2 )==ID_TRUE) )
     {
@@ -351,7 +352,7 @@ IDE_RC stfAnalysis::unions(
 
         stdGeometry.null(NULL, sRet);  // Fix BUG-15504
 
-        // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
+        // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
         IDE_TEST( sQmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS);
         sStage = 1;
         
@@ -362,7 +363,7 @@ IDE_RC stfAnalysis::unions(
                             aFence )
                   != IDE_SUCCESS );
             
-        // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
+        // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
         sStage = 0;
         IDE_TEST( sQmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS);
     }
@@ -381,7 +382,7 @@ IDE_RC stfAnalysis::unions(
 
 /***********************************************************************
  * Description:
- * ë‘ Geometry ê°ì²´ì˜ Symmetric Difference ê°ì²´ ë¦¬í„´
+ * µÎ Geometry °´Ã¼ÀÇ Symmetric Difference °´Ã¼ ¸®ÅÏ
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -405,7 +406,7 @@ IDE_RC stfAnalysis::symDifference(
     sQcTmplate = (qcTemplate*) aTemplate;
     sQmxMem    = QC_QMX_MEM( sQcTmplate->stmt );
     
-    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
+    // Fix BUG-15412 mtdModule.isNull »ç¿ë
     if( (stdGeometry.isNull( NULL, sValue1 )==ID_TRUE) ||
         (stdGeometry.isNull( NULL, sValue2 )==ID_TRUE) )
     {
@@ -420,7 +421,7 @@ IDE_RC stfAnalysis::symDifference(
 
         stdGeometry.null(NULL, sRet);  // Fix BUG-15504
     
-        // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
+        // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
         IDE_TEST( sQmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS);
         sStage = 1;
     
@@ -431,7 +432,7 @@ IDE_RC stfAnalysis::symDifference(
                                     aFence )
                   != IDE_SUCCESS );
         
-        // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
+        // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
         sStage = 0;
         IDE_TEST( sQmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS);
     }
@@ -450,7 +451,7 @@ IDE_RC stfAnalysis::symDifference(
 
 /***********************************************************************
  * Description:
- * í•œ Geometry ê°ì²´ì˜ ConvexHull ê°ì²´ ë¦¬í„´
+ * ÇÑ Geometry °´Ã¼ÀÇ ConvexHull °´Ã¼ ¸®ÅÏ
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -473,7 +474,7 @@ IDE_RC stfAnalysis::convexHull(
     sQcTmplate = (qcTemplate*) aTemplate;
     sQmxMem    = QC_QMX_MEM( sQcTmplate->stmt );
     
-    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
+    // Fix BUG-15412 mtdModule.isNull »ç¿ë
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -486,14 +487,14 @@ IDE_RC stfAnalysis::convexHull(
 
         stdGeometry.null(NULL, sRet);  // Fix BUG-15504
     
-        // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
+        // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
         IDE_TEST( sQmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS);
         sStage = 1;
     
         IDE_TEST( getConvexHull( sQmxMem, (stdGeometryType*)sValue, sRet, aFence ) 
                     != IDE_SUCCESS );
         
-        // Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
+        // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
         sStage = 0;
         IDE_TEST( sQmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS);
     }
@@ -516,10 +517,10 @@ IDE_RC stfAnalysis::convexHull(
 
 /***********************************************************************
  * Description:
- * ë‘ Geometry ê°ì²´ì˜ ê±°ë¦¬ ë¦¬í„´
+ * µÎ Geometry °´Ã¼ÀÇ °Å¸® ¸®ÅÏ
  *
- * stdGeometryType*    aObj1(In): ê°ì²´1
- * stdGeometryType*    aObj2(In): ê°ì²´2
+ * stdGeometryType*    aObj1(In): °´Ã¼1
+ * stdGeometryType*    aObj2(In): °´Ã¼2
  * SDouble*            aResult(Out):
  **********************************************************************/
 IDE_RC stfAnalysis::getDistanceTwoObject(
@@ -541,8 +542,11 @@ IDE_RC stfAnalysis::getDistanceTwoObject(
     else
     {
         // BUG-16102
-        if ( (aObj1->header.mType!=STD_GEOCOLLECTION_2D_TYPE) &&
-              (aObj2->header.mType==STD_GEOCOLLECTION_2D_TYPE) )
+        if ( ( ( aObj1->header.mType != STD_GEOCOLLECTION_2D_EXT_TYPE ) &&
+               ( aObj1->header.mType != STD_GEOCOLLECTION_2D_TYPE ) )
+             &&
+             ( ( aObj2->header.mType == STD_GEOCOLLECTION_2D_EXT_TYPE ) ||
+               ( aObj2->header.mType == STD_GEOCOLLECTION_2D_TYPE ) ) )
         {
             // swap( sObj1, sObj2 );
             sTraceObj1 = aObj1;
@@ -552,29 +556,36 @@ IDE_RC stfAnalysis::getDistanceTwoObject(
         
         switch(aObj1->header.mType)
         {
+            case STD_POINT_2D_EXT_TYPE:
             case STD_POINT_2D_TYPE:
                 switch(aObj2->header.mType)
                 {
+                    case STD_POINT_2D_EXT_TYPE:
                     case STD_POINT_2D_TYPE:
                         sDist = getDistanceSpToSp2D( &aObj1->point2D,
                                                      &aObj2->point2D);
                         break;
+                    case STD_LINESTRING_2D_EXT_TYPE:
                     case STD_LINESTRING_2D_TYPE:
                         sDist = getDistanceSpToSl2D( &aObj1->point2D,
                                                      &aObj2->linestring2D);
                         break;
+                    case STD_POLYGON_2D_EXT_TYPE:
                     case STD_POLYGON_2D_TYPE:
                         sDist = getDistanceSpToSa2D( &aObj1->point2D,
                                                      &aObj2->polygon2D);
                         break;
+                    case STD_MULTIPOINT_2D_EXT_TYPE:
                     case STD_MULTIPOINT_2D_TYPE:
                         sDist = getDistanceSpToMp2D( &aObj1->point2D,
                                                      &aObj2->mpoint2D);
                         break;
+                    case STD_MULTILINESTRING_2D_EXT_TYPE:
                     case STD_MULTILINESTRING_2D_TYPE:
                         sDist = getDistanceSpToMl2D( &aObj1->point2D,
                                                      &aObj2->mlinestring2D);
                         break;
+                    case STD_MULTIPOLYGON_2D_EXT_TYPE:
                     case STD_MULTIPOLYGON_2D_TYPE:
                         sDist = getDistanceSpToMa2D( &aObj1->point2D,
                                                      &aObj2->mpolygon2D);
@@ -583,29 +594,36 @@ IDE_RC stfAnalysis::getDistanceTwoObject(
                         IDE_RAISE( err_incompatible_type );
                 }
                 break;
+            case STD_LINESTRING_2D_EXT_TYPE:
             case STD_LINESTRING_2D_TYPE:
                 switch(aObj2->header.mType)
                 {
+                    case STD_POINT_2D_EXT_TYPE:
                     case STD_POINT_2D_TYPE:
                         sDist = getDistanceSpToSl2D(
                             &aObj2->point2D, &aObj1->linestring2D);
                         break;
+                    case STD_LINESTRING_2D_EXT_TYPE:
                     case STD_LINESTRING_2D_TYPE:
                         sDist = getDistanceSlToSl2D(
                             &aObj1->linestring2D, &aObj2->linestring2D);
                         break;
+                    case STD_POLYGON_2D_EXT_TYPE:
                     case STD_POLYGON_2D_TYPE:
                         sDist = getDistanceSlToSa2D(
                             &aObj1->linestring2D, &aObj2->polygon2D);
                         break;
+                    case STD_MULTIPOINT_2D_EXT_TYPE:
                     case STD_MULTIPOINT_2D_TYPE:
                         sDist = getDistanceSlToMp2D(
                             &aObj1->linestring2D, &aObj2->mpoint2D);
                         break;
+                    case STD_MULTILINESTRING_2D_EXT_TYPE:
                     case STD_MULTILINESTRING_2D_TYPE:
                         sDist = getDistanceSlToMl2D(
                             &aObj1->linestring2D, &aObj2->mlinestring2D);
                         break;
+                    case STD_MULTIPOLYGON_2D_EXT_TYPE:
                     case STD_MULTIPOLYGON_2D_TYPE:
                         sDist = getDistanceSlToMa2D(
                             &aObj1->linestring2D, &aObj2->mpolygon2D);
@@ -614,29 +632,36 @@ IDE_RC stfAnalysis::getDistanceTwoObject(
                         IDE_RAISE( err_incompatible_type );
                 }
                 break;
+            case STD_POLYGON_2D_EXT_TYPE:
             case STD_POLYGON_2D_TYPE:
                 switch(aObj2->header.mType)
                 {
+                    case STD_POINT_2D_EXT_TYPE:
                     case STD_POINT_2D_TYPE:
                         sDist = getDistanceSpToSa2D(
                             &aObj2->point2D, &aObj1->polygon2D);
                         break;
+                    case STD_LINESTRING_2D_EXT_TYPE:
                     case STD_LINESTRING_2D_TYPE:
                         sDist = getDistanceSlToSa2D(
                             &aObj2->linestring2D, &aObj1->polygon2D);
                         break;
+                    case STD_POLYGON_2D_EXT_TYPE:
                     case STD_POLYGON_2D_TYPE:
                         sDist = getDistanceSaToSa2D(
                             &aObj1->polygon2D, &aObj2->polygon2D);
                         break;
+                    case STD_MULTIPOINT_2D_EXT_TYPE:
                     case STD_MULTIPOINT_2D_TYPE:
                         sDist = getDistanceSaToMp2D(
                             &aObj1->polygon2D, &aObj2->mpoint2D);
                         break;
+                    case STD_MULTILINESTRING_2D_EXT_TYPE:
                     case STD_MULTILINESTRING_2D_TYPE:
                         sDist = getDistanceSaToMl2D(
                             &aObj1->polygon2D, &aObj2->mlinestring2D);
                         break;
+                    case STD_MULTIPOLYGON_2D_EXT_TYPE:
                     case STD_MULTIPOLYGON_2D_TYPE:
                         sDist = getDistanceSaToMa2D(
                             &aObj1->polygon2D, &aObj2->mpolygon2D);
@@ -645,29 +670,36 @@ IDE_RC stfAnalysis::getDistanceTwoObject(
                         IDE_RAISE( err_incompatible_type );
                 }
                 break;
+            case STD_MULTIPOINT_2D_EXT_TYPE:
             case STD_MULTIPOINT_2D_TYPE:
                 switch(aObj2->header.mType)
                 {
+                    case STD_POINT_2D_EXT_TYPE:
                     case STD_POINT_2D_TYPE:
                         sDist = getDistanceSpToMp2D(
                             &aObj2->point2D, &aObj1->mpoint2D);
                         break;
+                    case STD_LINESTRING_2D_EXT_TYPE:
                     case STD_LINESTRING_2D_TYPE:
                         sDist = getDistanceSlToMp2D(
                             &aObj2->linestring2D, &aObj1->mpoint2D);
                         break;
+                    case STD_POLYGON_2D_EXT_TYPE:
                     case STD_POLYGON_2D_TYPE:
                         sDist = getDistanceSaToMp2D(
                             &aObj2->polygon2D, &aObj1->mpoint2D);
                         break;
+                    case STD_MULTIPOINT_2D_EXT_TYPE:
                     case STD_MULTIPOINT_2D_TYPE:
                         sDist = getDistanceMpToMp2D(
                             &aObj1->mpoint2D, &aObj2->mpoint2D);
                         break;
+                    case STD_MULTILINESTRING_2D_EXT_TYPE:
                     case STD_MULTILINESTRING_2D_TYPE:
                         sDist = getDistanceMpToMl2D(
                             &aObj1->mpoint2D, &aObj2->mlinestring2D);
                         break;
+                    case STD_MULTIPOLYGON_2D_EXT_TYPE:
                     case STD_MULTIPOLYGON_2D_TYPE:
                         sDist = getDistanceMpToMa2D(
                             &aObj1->mpoint2D, &aObj2->mpolygon2D);
@@ -676,29 +708,36 @@ IDE_RC stfAnalysis::getDistanceTwoObject(
                         IDE_RAISE( err_incompatible_type );
                 }
                 break;
+            case STD_MULTILINESTRING_2D_EXT_TYPE:
             case STD_MULTILINESTRING_2D_TYPE:
                 switch(aObj2->header.mType)
                 {
+                    case STD_POINT_2D_EXT_TYPE:
                     case STD_POINT_2D_TYPE:
                         sDist = getDistanceSpToMl2D(
                             &aObj2->point2D, &aObj1->mlinestring2D);
                         break;
+                    case STD_LINESTRING_2D_EXT_TYPE:
                     case STD_LINESTRING_2D_TYPE:
                         sDist = getDistanceSlToMl2D(
                             &aObj2->linestring2D, &aObj1->mlinestring2D);
                         break;
+                    case STD_POLYGON_2D_EXT_TYPE:
                     case STD_POLYGON_2D_TYPE:
                         sDist = getDistanceSaToMl2D(
                             &aObj2->polygon2D, &aObj1->mlinestring2D);
                         break;
+                    case STD_MULTIPOINT_2D_EXT_TYPE:
                     case STD_MULTIPOINT_2D_TYPE:
                         sDist = getDistanceMpToMl2D(
                             &aObj2->mpoint2D,&aObj1->mlinestring2D);
                         break;
+                    case STD_MULTILINESTRING_2D_EXT_TYPE:
                     case STD_MULTILINESTRING_2D_TYPE:
                         sDist = getDistanceMlToMl2D(
                             &aObj1->mlinestring2D, &aObj2->mlinestring2D);
                         break;
+                    case STD_MULTIPOLYGON_2D_EXT_TYPE:
                     case STD_MULTIPOLYGON_2D_TYPE:
                         sDist = getDistanceMlToMa2D(
                             &aObj1->mlinestring2D, &aObj2->mpolygon2D);
@@ -707,29 +746,36 @@ IDE_RC stfAnalysis::getDistanceTwoObject(
                         IDE_RAISE( err_incompatible_type );
                 }
                 break;
+            case STD_MULTIPOLYGON_2D_EXT_TYPE:
             case STD_MULTIPOLYGON_2D_TYPE:
                 switch(aObj2->header.mType)
                 {
+                    case STD_POINT_2D_EXT_TYPE:
                     case STD_POINT_2D_TYPE:
                         sDist = getDistanceSpToMa2D(
                             &aObj2->point2D, &aObj1->mpolygon2D);
                         break;
+                    case STD_LINESTRING_2D_EXT_TYPE:
                     case STD_LINESTRING_2D_TYPE:
                         sDist = getDistanceSlToMa2D(
                             &aObj2->linestring2D, &aObj1->mpolygon2D);
                         break;
+                    case STD_POLYGON_2D_EXT_TYPE:
                     case STD_POLYGON_2D_TYPE:
                         sDist = getDistanceSaToMa2D(
                             &aObj2->polygon2D, &aObj1->mpolygon2D);
                         break;
+                    case STD_MULTIPOINT_2D_EXT_TYPE:
                     case STD_MULTIPOINT_2D_TYPE:
                         sDist = getDistanceMpToMa2D(
                             &aObj2->mpoint2D, &aObj1->mpolygon2D);
                         break;
+                    case STD_MULTILINESTRING_2D_EXT_TYPE:
                     case STD_MULTILINESTRING_2D_TYPE:
                         sDist = getDistanceMlToMa2D(
                             &aObj2->mlinestring2D, &aObj1->mpolygon2D);
                         break;
+                    case STD_MULTIPOLYGON_2D_EXT_TYPE:
                     case STD_MULTIPOLYGON_2D_TYPE:
                         sDist = getDistanceMaToMa2D(
                             &aObj1->mpolygon2D, &aObj2->mpolygon2D);
@@ -739,12 +785,14 @@ IDE_RC stfAnalysis::getDistanceTwoObject(
                 }
                 break;
             // BUG-16102
+            case STD_GEOCOLLECTION_2D_EXT_TYPE:
             case STD_GEOCOLLECTION_2D_TYPE:
                 sNumObjects1 = STD_N_GEOMS( (stdGeoCollection2DType*)aObj1 );
                 sTraceObj1   = STD_FIRST_COLL2D( aObj1 );
                 sMinDist     = -1;
                 
-                if( aObj2->header.mType==STD_GEOCOLLECTION_2D_TYPE )
+                if ( ( aObj2->header.mType == STD_GEOCOLLECTION_2D_EXT_TYPE ) ||
+                     ( aObj2->header.mType == STD_GEOCOLLECTION_2D_TYPE ) )
                 {
                     sNumObjects2 = STD_N_GEOMS( (stdGeoCollection2DType*)aObj2 );
                     sMinDist     = -1;
@@ -815,10 +863,10 @@ IDE_RC stfAnalysis::getDistanceTwoObject(
 
 /***********************************************************************
  * Description:
- * ì 1ê³¼ ì 2 ì‚¬ì´ì˜ ê±°ë¦¬ ë¦¬í„´
+ * Á¡1°ú Á¡2 »çÀÌÀÇ °Å¸® ¸®ÅÏ
  *
- * const stdPoint2D* aP1(In): ì 1 
- * const stdPoint2D* aP2(In): ì 2
+ * const stdPoint2D* aP1(In): Á¡1 
+ * const stdPoint2D* aP2(In): Á¡2
  **********************************************************************/
 SDouble stfAnalysis::primDistancePToP2D(
                                 const stdPoint2D* aP1,
@@ -832,11 +880,11 @@ SDouble stfAnalysis::primDistancePToP2D(
 
 /***********************************************************************
  * Description:
- * ì  aPì™€ ì„ ë¶„ ì‚¬ì´ì˜ ê±°ë¦¬ ë¦¬í„´
+ * Á¡ aP¿Í ¼±ºĞ »çÀÌÀÇ °Å¸® ¸®ÅÏ
  *
- * const stdPoint2D* aP(In): ì 
- * const stdPoint2D* aQ1(In): ì„ ë¶„
- * const stdPoint2D* aQ2(In): ì„ ë¶„
+ * const stdPoint2D* aP(In): Á¡
+ * const stdPoint2D* aQ1(In): ¼±ºĞ
+ * const stdPoint2D* aQ2(In): ¼±ºĞ
  **********************************************************************/
 SDouble stfAnalysis::primDistancePToL2D(
                                 const stdPoint2D* aP,
@@ -883,12 +931,12 @@ SDouble stfAnalysis::primDistancePToL2D(
 
 /***********************************************************************
  * Description:
- * ì„ ë¶„1ê³¼ ì„ ë¶„2 ì‚¬ì´ì˜ ê±°ë¦¬ ë¦¬í„´
+ * ¼±ºĞ1°ú ¼±ºĞ2 »çÀÌÀÇ °Å¸® ¸®ÅÏ
  *
- * const stdPoint2D* aP1(In): ì„ ë¶„1
- * const stdPoint2D* aP2(In): ì„ ë¶„1
- * const stdPoint2D* aQ1(In): ì„ ë¶„2
- * const stdPoint2D* aQ2(In): ì„ ë¶„2
+ * const stdPoint2D* aP1(In): ¼±ºĞ1
+ * const stdPoint2D* aP2(In): ¼±ºĞ1
+ * const stdPoint2D* aQ1(In): ¼±ºĞ2
+ * const stdPoint2D* aQ2(In): ¼±ºĞ2
  **********************************************************************/
 SDouble stfAnalysis::primDistanceLToL2D(
                                 const stdPoint2D* aP1,
@@ -920,7 +968,7 @@ SDouble stfAnalysis::primDistanceLToL2D(
     }
     else
     {
-        /* ë‘ ì„ ë¶„ì´ êµì°¨í•˜ëŠ” ê²½ìš°, ë‘ ì„ ë¶„ê°„ ê±°ë¦¬ëŠ” 0 */
+        /* µÎ ¼±ºĞÀÌ ±³Â÷ÇÏ´Â °æ¿ì, µÎ ¼±ºĞ°£ °Å¸®´Â 0 */
     }
 
     return sDist;
@@ -928,10 +976,10 @@ SDouble stfAnalysis::primDistanceLToL2D(
 
 /***********************************************************************
  * Description:
- * ì ê³¼ ë§ì‚¬ì´ì˜ ê±°ë¦¬ ë¦¬í„´
+ * Á¡°ú ¸µ»çÀÌÀÇ °Å¸® ¸®ÅÏ
  *
- * const stdPoint2D*       aPt(In): ì 
- * const stdLinearRing2D*  aRing(In): ë§
+ * const stdPoint2D*       aPt(In): Á¡
+ * const stdLinearRing2D*  aRing(In): ¸µ
  **********************************************************************/
 SDouble stfAnalysis::primDistancePToR2D(
                                 const stdPoint2D*       aPt,
@@ -961,11 +1009,11 @@ SDouble stfAnalysis::primDistancePToR2D(
 
 /***********************************************************************
  * Description:
- * ì„ ë¶„ê³¼ ë§ì‚¬ì´ì˜ ê±°ë¦¬ ë¦¬í„´
+ * ¼±ºĞ°ú ¸µ»çÀÌÀÇ °Å¸® ¸®ÅÏ
  *
- * const stdPoint2D*       aP1(In): ì„ ë¶„
- * const stdPoint2D*       aP2(In): ì„ ë¶„
- * const stdLinearRing2D*  aRing(In): ë§
+ * const stdPoint2D*       aP1(In): ¼±ºĞ
+ * const stdPoint2D*       aP2(In): ¼±ºĞ
+ * const stdLinearRing2D*  aRing(In): ¸µ
  **********************************************************************/
 SDouble stfAnalysis::primDistanceLToR2D(
                                 const stdPoint2D*       aP1,
@@ -997,10 +1045,10 @@ SDouble stfAnalysis::primDistanceLToR2D(
 
 /***********************************************************************
  * Description:
- * ë§1ê³¼ ë§2ì‚¬ì´ì˜ ê±°ë¦¬ ë¦¬í„´
+ * ¸µ1°ú ¸µ2»çÀÌÀÇ °Å¸® ¸®ÅÏ
  *
- * const stdLinearRing2D*  aRing1(In): ë§1
- * const stdLinearRing2D*  aRing2(In): ë§2
+ * const stdLinearRing2D*  aRing1(In): ¸µ1
+ * const stdLinearRing2D*  aRing2(In): ¸µ2
  **********************************************************************/
 SDouble stfAnalysis::primDistanceRToR2D(
                                 const stdLinearRing2D*  aRing1,
@@ -1035,7 +1083,7 @@ SDouble stfAnalysis::primDistanceRToR2D(
 
 /***********************************************************************
  * Description:
- * ê°ì²´ì™€ ê°ì²´ ì‚¬ì´ì˜ ê±°ë¦¬
+ * °´Ã¼¿Í °´Ã¼ »çÀÌÀÇ °Å¸®
  *
  * const stdPoint2DType*    aPt(In):
  * const stdPoint2DType*    aDstPt(In):
@@ -1049,7 +1097,7 @@ SDouble stfAnalysis::getDistanceSpToSp2D(
 
 /***********************************************************************
  * Description:
- * ê°ì²´ì™€ ê°ì²´ ì‚¬ì´ì˜ ê±°ë¦¬
+ * °´Ã¼¿Í °´Ã¼ »çÀÌÀÇ °Å¸®
  *
  * const stdPoint2DType*    aPt(In):
  * const stdLineString2DType*   aDstLine(In):
@@ -1082,7 +1130,7 @@ SDouble stfAnalysis::getDistanceSpToSl2D(
 
 /***********************************************************************
  * Description:
- * ê°ì²´ì™€ ê°ì²´ ì‚¬ì´ì˜ ê±°ë¦¬
+ * °´Ã¼¿Í °´Ã¼ »çÀÌÀÇ °Å¸®
  *
  * const stdPoint2DType*    aPt(In):
  * const stdPolygon2DType*     aDstPoly(In):
@@ -1122,7 +1170,7 @@ SDouble stfAnalysis::getDistanceSpToSa2D(
 
 /***********************************************************************
  * Description:
- * ê°ì²´ì™€ ê°ì²´ ì‚¬ì´ì˜ ê±°ë¦¬
+ * °´Ã¼¿Í °´Ã¼ »çÀÌÀÇ °Å¸®
  *
  * const stdPoint2DType*    aPt(In):
  * const stdMultiPoint2DType*   aDstMPt(In):
@@ -1154,7 +1202,7 @@ SDouble stfAnalysis::getDistanceSpToMp2D(
 
 /***********************************************************************
  * Description:
- * ê°ì²´ì™€ ê°ì²´ ì‚¬ì´ì˜ ê±°ë¦¬
+ * °´Ã¼¿Í °´Ã¼ »çÀÌÀÇ °Å¸®
  *
  * const stdPoint2DType*    aPt(In):
  * const stdMultiLineString2DType* aDstMLine(In):
@@ -1186,7 +1234,7 @@ SDouble stfAnalysis::getDistanceSpToMl2D(
 
 /***********************************************************************
  * Description:
- * ê°ì²´ì™€ ê°ì²´ ì‚¬ì´ì˜ ê±°ë¦¬
+ * °´Ã¼¿Í °´Ã¼ »çÀÌÀÇ °Å¸®
  *
  * const stdPoint2DType*    aPt(In):
  * const stdMultiPolygon2DType*    aDstMPoly(In):
@@ -1221,7 +1269,7 @@ SDouble stfAnalysis::getDistanceSpToMa2D(
 
 /***********************************************************************
  * Description:
- * ê°ì²´ì™€ ê°ì²´ ì‚¬ì´ì˜ ê±°ë¦¬
+ * °´Ã¼¿Í °´Ã¼ »çÀÌÀÇ °Å¸®
  *
  * const stdLineString2DType*    aLine(In):
  * const stdLineString2DType*    aDstLine(In):
@@ -1259,7 +1307,7 @@ SDouble stfAnalysis::getDistanceSlToSl2D(
 
 /***********************************************************************
  * Description:
- * ê°ì²´ì™€ ê°ì²´ ì‚¬ì´ì˜ ê±°ë¦¬
+ * °´Ã¼¿Í °´Ã¼ »çÀÌÀÇ °Å¸®
  *
  * const stdLineString2DType*      aLine(In):
  * const stdPolygon2DType*         aDstPoly(In):
@@ -1298,7 +1346,7 @@ SDouble stfAnalysis::getDistanceSlToSa2D(
 
 /***********************************************************************
  * Description:
- * ê°ì²´ì™€ ê°ì²´ ì‚¬ì´ì˜ ê±°ë¦¬
+ * °´Ã¼¿Í °´Ã¼ »çÀÌÀÇ °Å¸®
  *
  * const stdLineString2DType*      aLine(In):
  * const stdMultiPoint2DType*      aDstMPt(In):
@@ -1329,7 +1377,7 @@ SDouble stfAnalysis::getDistanceSlToMp2D(
 
 /***********************************************************************
  * Description:
- * ê°ì²´ì™€ ê°ì²´ ì‚¬ì´ì˜ ê±°ë¦¬
+ * °´Ã¼¿Í °´Ã¼ »çÀÌÀÇ °Å¸®
  *
  * const stdLineString2DType*      aLine(In):
  * const stdMultiLineString2DType* aDstMLine(In):
@@ -1359,7 +1407,7 @@ SDouble stfAnalysis::getDistanceSlToMl2D(
 
 /***********************************************************************
  * Description:
- * ê°ì²´ì™€ ê°ì²´ ì‚¬ì´ì˜ ê±°ë¦¬
+ * °´Ã¼¿Í °´Ã¼ »çÀÌÀÇ °Å¸®
  *
  * const stdLineString2DType*      aLine(In):
  * const stdMultiPolygon2DType*    aDstMPoly(In):
@@ -1393,7 +1441,7 @@ SDouble stfAnalysis::getDistanceSlToMa2D(
 
 /***********************************************************************
  * Description:
- * ê°ì²´ì™€ ê°ì²´ ì‚¬ì´ì˜ ê±°ë¦¬
+ * °´Ã¼¿Í °´Ã¼ »çÀÌÀÇ °Å¸®
  *
  * const stdPolygon2DType*     aPoly(In):
  * const stdPolygon2DType*     aDstPoly(In):
@@ -1430,7 +1478,7 @@ SDouble stfAnalysis::getDistanceSaToSa2D(
 
 /***********************************************************************
  * Description:
- * ê°ì²´ì™€ ê°ì²´ ì‚¬ì´ì˜ ê±°ë¦¬
+ * °´Ã¼¿Í °´Ã¼ »çÀÌÀÇ °Å¸®
  *
  * const stdPolygon2DType*     aPoly(In):
  * const stdMultiPoint2DType*  aDstMPt(In):
@@ -1460,7 +1508,7 @@ SDouble stfAnalysis::getDistanceSaToMp2D(
 
 /***********************************************************************
  * Description:
- * ê°ì²´ì™€ ê°ì²´ ì‚¬ì´ì˜ ê±°ë¦¬
+ * °´Ã¼¿Í °´Ã¼ »çÀÌÀÇ °Å¸®
  *
  * const stdPolygon2DType*     aPoly(In):
  * const stdMultiLineString2DType* aDstMLine(In):
@@ -1491,7 +1539,7 @@ SDouble stfAnalysis::getDistanceSaToMl2D(
 
 /***********************************************************************
  * Description:
- * ê°ì²´ì™€ ê°ì²´ ì‚¬ì´ì˜ ê±°ë¦¬
+ * °´Ã¼¿Í °´Ã¼ »çÀÌÀÇ °Å¸®
  *
  * const stdPolygon2DType*     aPoly(In):
  * const stdMultiPolygon2DType*    aDstMPoly(In):
@@ -1525,7 +1573,7 @@ SDouble stfAnalysis::getDistanceSaToMa2D(
 
 /***********************************************************************
  * Description:
- * ê°ì²´ì™€ ê°ì²´ ì‚¬ì´ì˜ ê±°ë¦¬
+ * °´Ã¼¿Í °´Ã¼ »çÀÌÀÇ °Å¸®
  *
  * const stdMultiPoint2DType*      aMPt(In):
  * const stdMultiPoint2DType*      aDstMPt(In):
@@ -1556,7 +1604,7 @@ SDouble stfAnalysis::getDistanceMpToMp2D(
 
 /***********************************************************************
  * Description:
- * ê°ì²´ì™€ ê°ì²´ ì‚¬ì´ì˜ ê±°ë¦¬
+ * °´Ã¼¿Í °´Ã¼ »çÀÌÀÇ °Å¸®
  *
  * const stdMultiPoint2DType*      aMPt(In):
  * const stdMultiLineString2DType* aDstMLine(In):
@@ -1587,7 +1635,7 @@ SDouble stfAnalysis::getDistanceMpToMl2D(
 
 /***********************************************************************
  * Description:
- * ê°ì²´ì™€ ê°ì²´ ì‚¬ì´ì˜ ê±°ë¦¬
+ * °´Ã¼¿Í °´Ã¼ »çÀÌÀÇ °Å¸®
  *
  * const stdMultiPoint2DType*      aMPt(In):
  * const stdMultiPolygon2DType*    aDstMPoly(In):
@@ -1622,7 +1670,7 @@ SDouble stfAnalysis::getDistanceMpToMa2D(
 
 /***********************************************************************
  * Description:
- * ê°ì²´ì™€ ê°ì²´ ì‚¬ì´ì˜ ê±°ë¦¬
+ * °´Ã¼¿Í °´Ã¼ »çÀÌÀÇ °Å¸®
  *
  * const stdMultiLineString2DType* aMLine(In):
  * const stdMultiLineString2DType* aDstMLine(In):
@@ -1653,7 +1701,7 @@ SDouble stfAnalysis::getDistanceMlToMl2D(
 
 /***********************************************************************
  * Description:
- * ê°ì²´ì™€ ê°ì²´ ì‚¬ì´ì˜ ê±°ë¦¬
+ * °´Ã¼¿Í °´Ã¼ »çÀÌÀÇ °Å¸®
  *
  * const stdMultiLineString2DType* aMLine(In):
  * const stdMultiPolygon2DType*    aDstMPoly(In):
@@ -1688,7 +1736,7 @@ SDouble stfAnalysis::getDistanceMlToMa2D(
 
 /***********************************************************************
  * Description:
- * ê°ì²´ì™€ ê°ì²´ ì‚¬ì´ì˜ ê±°ë¦¬
+ * °´Ã¼¿Í °´Ã¼ »çÀÌÀÇ °Å¸®
  *
  * const stdMultiPolygon2DType*    aMPoly(In):
  * const stdMultiPolygon2DType*    aDstMPoly(In):
@@ -1723,11 +1771,11 @@ SDouble stfAnalysis::getDistanceMaToMa2D(
 
 /***********************************************************************
  * Description:
- * í•œ Geometry ê°ì²´ì˜ buffering ê°ì²´ ë¦¬í„´
+ * ÇÑ Geometry °´Ã¼ÀÇ buffering °´Ã¼ ¸®ÅÏ
  *
- * stdGeometryType*    aObj(In): Buffering í•  ê°ì²´
- * SDouble             aDist(In): Buffering í•  ê±°ë¦¬
- * stdGeometryHeader*  aRet(Out): Buffering ëœ ê°ì²´
+ * stdGeometryType*    aObj(In): Buffering ÇÒ °´Ã¼
+ * SDouble             aDist(In): Buffering ÇÒ °Å¸®
+ * stdGeometryHeader*  aRet(Out): Buffering µÈ °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getBuffer(
                     iduMemory*          aQmxMem,
@@ -1736,18 +1784,24 @@ IDE_RC stfAnalysis::getBuffer(
                     stdGeometryHeader*  aRet,
                     UInt                aFence ) // Fix Bug - 25110
 {
-    /* BUG-33904 : í˜„ì¬ Toleranceì˜ 10ë°° ì´í•˜ ì¸ ê²½ìš°ì—ëŠ” ì…ë ¥ë°›ì€ 
-     * ì§€ì˜¤ë©”íŠ¸ë¦¬ë¥¼ ë³µì‚¬í•˜ì—¬ ë¦¬í„´í•©ë‹ˆë‹¤. */ 
+    /* BUG-33904 : ÇöÀç ToleranceÀÇ 10¹è ÀÌÇÏ ÀÎ °æ¿ì¿¡´Â ÀÔ·Â¹ŞÀº 
+     * Áö¿À¸ŞÆ®¸®¸¦ º¹»çÇÏ¿© ¸®ÅÏÇÕ´Ï´Ù. */ 
     if ( aDist <= STU_CLIP_TOLERANCE * ST_BUFFER_MULTIPLIER )
     {
         switch(aObj->header.mType)
         {
             case STD_EMPTY_TYPE:
+            case STD_POINT_2D_EXT_TYPE:
             case STD_POINT_2D_TYPE:
+            case STD_LINESTRING_2D_EXT_TYPE:
             case STD_LINESTRING_2D_TYPE:
+            case STD_POLYGON_2D_EXT_TYPE:
             case STD_POLYGON_2D_TYPE:
+            case STD_MULTIPOINT_2D_EXT_TYPE:
             case STD_MULTIPOINT_2D_TYPE:
+            case STD_MULTILINESTRING_2D_EXT_TYPE:
             case STD_MULTILINESTRING_2D_TYPE:
+            case STD_MULTIPOLYGON_2D_EXT_TYPE:
             case STD_MULTIPOLYGON_2D_TYPE:
                 stdUtils::copyGeometry(aRet, (stdGeometryHeader*) aObj);
                 break;
@@ -1762,42 +1816,64 @@ IDE_RC stfAnalysis::getBuffer(
         case STD_EMPTY_TYPE: // Fix BUG-16440
             stdUtils::makeEmpty(aRet);
             break;
+        case STD_POINT_2D_EXT_TYPE:
         case STD_POINT_2D_TYPE:
-            IDE_TEST(getPointBufferObject2D(&aObj->point2D.mPoint, aDist, 
-                STD_BUFFER_PRECISION, aRet, aFence ) != IDE_SUCCESS );
+            IDE_TEST( getPointBufferObject2D( &aObj->point2D.mPoint, aDist, 
+                                              STD_BUFFER_PRECISION, aRet, aFence )
+                     != IDE_SUCCESS );
             break;
+        case STD_LINESTRING_2D_EXT_TYPE:
         case STD_LINESTRING_2D_TYPE:
-            IDE_TEST(getLinestringBufferObject2D(aQmxMem, &aObj->linestring2D, aDist, 
-                STD_BUFFER_PRECISION, aRet, aFence ) != IDE_SUCCESS );
+            IDE_TEST( getLinestringBufferObject2D( aQmxMem, &aObj->linestring2D, aDist, 
+                                                   STD_BUFFER_PRECISION, aRet, aFence )
+                     != IDE_SUCCESS );
             break;
+        case STD_POLYGON_2D_EXT_TYPE:
         case STD_POLYGON_2D_TYPE:
-            IDE_TEST(getPolygonBufferObject2D(aQmxMem,
-                                              &aObj->polygon2D,
-                                              aDist, 
-                                              STD_BUFFER_PRECISION,
-                                              aRet,
-                                              aFence) != IDE_SUCCESS );
+            IDE_TEST( getPolygonBufferObject2D( aQmxMem,
+                                                &aObj->polygon2D,
+                                                aDist, 
+                                                STD_BUFFER_PRECISION,
+                                                aRet,
+                                                aFence )
+                     != IDE_SUCCESS );
             break;
+        case STD_MULTIPOINT_2D_EXT_TYPE:
         case STD_MULTIPOINT_2D_TYPE:
-            IDE_TEST(getMultiPointBufferObject2D(aQmxMem, &aObj->mpoint2D, aDist, 
-                STD_BUFFER_PRECISION, aRet, aFence ) != IDE_SUCCESS );
+            IDE_TEST( getMultiPointBufferObject2D( aQmxMem, &aObj->mpoint2D, aDist, 
+                                                   STD_BUFFER_PRECISION, aRet, aFence )
+                     != IDE_SUCCESS );
             break;
+        case STD_MULTILINESTRING_2D_EXT_TYPE:
         case STD_MULTILINESTRING_2D_TYPE:
-            IDE_TEST(getMultiLinestringBufferObject2D(aQmxMem, &aObj->mlinestring2D, aDist, 
-                STD_BUFFER_PRECISION, aRet, aFence ) != IDE_SUCCESS );
+            IDE_TEST( getMultiLinestringBufferObject2D( aQmxMem, &aObj->mlinestring2D, aDist, 
+                                                        STD_BUFFER_PRECISION, aRet, aFence )
+                     != IDE_SUCCESS );
             break;
+        case STD_MULTIPOLYGON_2D_EXT_TYPE:
         case STD_MULTIPOLYGON_2D_TYPE:
-            IDE_TEST(getMultiPolygonBufferObject2D(aQmxMem,
-                                                   &aObj->mpolygon2D,
-                                                   aDist, 
-                                                   STD_BUFFER_PRECISION,
-                                                   aRet,
-                                                   aFence)
+            IDE_TEST( getMultiPolygonBufferObject2D( aQmxMem,
+                                                     &aObj->mpolygon2D,
+                                                     aDist, 
+                                                     STD_BUFFER_PRECISION,
+                                                     aRet,
+                                                     aFence )
                      != IDE_SUCCESS );
             break;
 
         default:
             IDE_RAISE( err_invalid_object_mType );
+        }
+
+        /* PROJ-2422 srid */
+        if ( stdUtils::isExtendedType( aObj->header.mType ) == ID_TRUE )
+        {
+            IDE_TEST( stfBasic::setSRID( aRet, aFence, aObj )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing to do. */
         }
     }
     return IDE_SUCCESS;
@@ -1814,12 +1890,12 @@ IDE_RC stfAnalysis::getBuffer(
 
 /***********************************************************************
  * Description:
- * stdPoint2D ê°ì²´ì˜ buffering ê°ì²´ ë¦¬í„´
+ * stdPoint2D °´Ã¼ÀÇ buffering °´Ã¼ ¸®ÅÏ
  *
- * const stdPoint2D*       aPt(In):         Buffering í•  ê°ì²´
- * const SDouble           aDistance(In):   Buffering í•  ê±°ë¦¬
- * const SInt              aPrecision(In):  ì›ì´ë‚˜ í˜¸ì˜ ì •í™•ë„ 
- * stdGeometryHeader*      aRet(Out):       Buffering ëœ ê°ì²´
+ * const stdPoint2D*       aPt(In):         Buffering ÇÒ °´Ã¼
+ * const SDouble           aDistance(In):   Buffering ÇÒ °Å¸®
+ * const SInt              aPrecision(In):  ¿øÀÌ³ª È£ÀÇ Á¤È®µµ 
+ * stdGeometryHeader*      aRet(Out):       Buffering µÈ °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getPointBufferObject2D( 
                     const stdPoint2D*       aPt,
@@ -1841,12 +1917,12 @@ IDE_RC stfAnalysis::getPointBufferObject2D(
 
 /***********************************************************************
  * Description:
- * stdLineString2DType ê°ì²´ì˜ buffering ê°ì²´ ë¦¬í„´
+ * stdLineString2DType °´Ã¼ÀÇ buffering °´Ã¼ ¸®ÅÏ
  *
- * const stdLineString2DType*   aPt(In):         Buffering í•  ê°ì²´
- * const SDouble                aDistance(In):   Buffering í•  ê±°ë¦¬
- * const SInt                   aPrecision(In):  ì›ì´ë‚˜ í˜¸ì˜ ì •í™•ë„ 
- * stdGeometryHeader*           aRet(Out):       Buffering ëœ ê°ì²´
+ * const stdLineString2DType*   aPt(In):         Buffering ÇÒ °´Ã¼
+ * const SDouble                aDistance(In):   Buffering ÇÒ °Å¸®
+ * const SInt                   aPrecision(In):  ¿øÀÌ³ª È£ÀÇ Á¤È®µµ 
+ * stdGeometryHeader*           aRet(Out):       Buffering µÈ °´Ã¼
  **********************************************************************/
 
 IDE_RC
@@ -1910,8 +1986,8 @@ stfAnalysis::getLinestringBufferObject2D(
         sIdx++;
     }
 
-    /* BUG-33904 : ë¼ì¸ìŠ¤íŠ¸ë§ì˜ ì‹œì‘ì ê³¼ ë ì ì´ ê°™ì€ ê²½ìš°, ë ì ì— ëŒ€í•œ ë²„í¼ í´ë¦¬ê³¤ì„ 
-     * ìƒì„±í•˜ì§€ ì•Šë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤. */
+    /* BUG-33904 : ¶óÀÎ½ºÆ®¸µÀÇ ½ÃÀÛÁ¡°ú ³¡ Á¡ÀÌ °°Àº °æ¿ì, ³¡ Á¡¿¡ ´ëÇÑ ¹öÆÛ Æú¸®°ïÀ» 
+     * »ı¼ºÇÏÁö ¾Êµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù. */
     if ( stdUtils::isSamePoints2D4Func( sPt, STD_NEXTN_PT2D(sPt,i) ) == ID_FALSE )
     {
         sSize = STD_POLY2D_SIZE + STD_RN2D_SIZE + STD_PT2D_SIZE*(aPrecision+1);
@@ -1953,12 +2029,12 @@ stfAnalysis::getLinestringBufferObject2D(
 
 /***********************************************************************
  * Description:
- * stdPolygon2DType ê°ì²´ì˜ buffering ê°ì²´ ë¦¬í„´
+ * stdPolygon2DType °´Ã¼ÀÇ buffering °´Ã¼ ¸®ÅÏ
  *
- * const stdPolygon2DType*   aPt(In):         Buffering í•  ê°ì²´
- * const SDouble             aDistance(In):   Buffering í•  ê±°ë¦¬
- * const SInt                aPrecision(In):  ì›ì´ë‚˜ í˜¸ì˜ ì •í™•ë„ 
- * stdGeometryHeader*        aRet(Out):       Buffering ëœ ê°ì²´
+ * const stdPolygon2DType*   aPt(In):         Buffering ÇÒ °´Ã¼
+ * const SDouble             aDistance(In):   Buffering ÇÒ °Å¸®
+ * const SInt                aPrecision(In):  ¿øÀÌ³ª È£ÀÇ Á¤È®µµ 
+ * stdGeometryHeader*        aRet(Out):       Buffering µÈ °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getPolygonBufferObject2D(
                     iduMemory*                  aQmxMem,
@@ -1986,7 +2062,7 @@ IDE_RC stfAnalysis::getPolygonBufferObject2D(
     sTotalSize = STD_POLY2D_SIZE + STD_RN2D_SIZE + 
                  STD_PT2D_SIZE*STD_N_POINTS(sRingRet);
     
-    if( sRingCnt > 1 )  // ë‚´ë¶€ë§ì´ ì¡´ì¬í•˜ë©´ ë‚´ë¶€ë§ ë³µì‚¬
+    if( sRingCnt > 1 )  // ³»ºÎ¸µÀÌ Á¸ÀçÇÏ¸é ³»ºÎ¸µ º¹»ç
     {
         sSize = STD_GEOM_SIZE(aPoly) - (STD_POLY2D_SIZE + STD_RN2D_SIZE + 
                                         STD_PT2D_SIZE*STD_N_POINTS(sRing1));
@@ -2000,7 +2076,7 @@ IDE_RC stfAnalysis::getPolygonBufferObject2D(
     
     sPolyRet->mSize = sTotalSize;
 
-    // invalid ê°ì²´ë¥¼ ë§Œë“¤ ìˆ˜ ìˆë‹¤.
+    // invalid °´Ã¼¸¦ ¸¸µé ¼ö ÀÖ´Ù.
     if ( stdPrimitive::validatePolygon2D( aQmxMem,
                                           sPolyRet,
                                           sTotalSize )
@@ -2027,12 +2103,12 @@ IDE_RC stfAnalysis::getPolygonBufferObject2D(
 
 /***********************************************************************
  * Description:
- * stdMultiPoint2DType ê°ì²´ì˜ buffering ê°ì²´ ë¦¬í„´
+ * stdMultiPoint2DType °´Ã¼ÀÇ buffering °´Ã¼ ¸®ÅÏ
  *
- * const stdMultiPoint2DType*   aPt(In):         Buffering í•  ê°ì²´
- * const SDouble                aDistance(In):   Buffering í•  ê±°ë¦¬
- * const SInt                   aPrecision(In):  ì›ì´ë‚˜ í˜¸ì˜ ì •í™•ë„ 
- * stdGeometryHeader*           aRet(Out):       Buffering ëœ ê°ì²´
+ * const stdMultiPoint2DType*   aPt(In):         Buffering ÇÒ °´Ã¼
+ * const SDouble                aDistance(In):   Buffering ÇÒ °Å¸®
+ * const SInt                   aPrecision(In):  ¿øÀÌ³ª È£ÀÇ Á¤È®µµ 
+ * stdGeometryHeader*           aRet(Out):       Buffering µÈ °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getMultiPointBufferObject2D(
                     iduMemory*                  aQmxMem,
@@ -2096,12 +2172,12 @@ IDE_RC stfAnalysis::getMultiPointBufferObject2D(
 
 /***********************************************************************
  * Description:
- * stdMultiLineString2DType ê°ì²´ì˜ buffering ê°ì²´ ë¦¬í„´
+ * stdMultiLineString2DType °´Ã¼ÀÇ buffering °´Ã¼ ¸®ÅÏ
  *
- * const stdMultiLineString2DType*  aPt(In):         Buffering í•  ê°ì²´
- * const SDouble                    aDistance(In):   Buffering í•  ê±°ë¦¬
- * const SInt                       aPrecision(In):  ì›ì´ë‚˜ í˜¸ì˜ ì •í™•ë„ 
- * stdGeometryHeader*               aRet(Out):       Buffering ëœ ê°ì²´
+ * const stdMultiLineString2DType*  aPt(In):         Buffering ÇÒ °´Ã¼
+ * const SDouble                    aDistance(In):   Buffering ÇÒ °Å¸®
+ * const SInt                       aPrecision(In):  ¿øÀÌ³ª È£ÀÇ Á¤È®µµ 
+ * stdGeometryHeader*               aRet(Out):       Buffering µÈ °´Ã¼
  **********************************************************************/
 
 IDE_RC
@@ -2210,12 +2286,12 @@ stfAnalysis::getMultiLinestringBufferObject2D(
 
 /***********************************************************************
  * Description:
- * stdMultiPolygon2DType ê°ì²´ì˜ buffering ê°ì²´ ë¦¬í„´
+ * stdMultiPolygon2DType °´Ã¼ÀÇ buffering °´Ã¼ ¸®ÅÏ
  *
- * const stdMultiPolygon2DType*   aPt(In):         Buffering í•  ê°ì²´
- * const SDouble                  aDistance(In):   Buffering í•  ê±°ë¦¬
- * const SInt                     aPrecision(In):  ì›ì´ë‚˜ í˜¸ì˜ ì •í™•ë„ 
- * stdGeometryHeader*             aRet(Out):       Buffering ëœ ê°ì²´
+ * const stdMultiPolygon2DType*   aPt(In):         Buffering ÇÒ °´Ã¼
+ * const SDouble                  aDistance(In):   Buffering ÇÒ °Å¸®
+ * const SInt                     aPrecision(In):  ¿øÀÌ³ª È£ÀÇ Á¤È®µµ 
+ * stdGeometryHeader*             aRet(Out):       Buffering µÈ °´Ã¼
  **********************************************************************/
 
 IDE_RC
@@ -2287,11 +2363,11 @@ stfAnalysis::getMultiPolygonBufferObject2D(
 
 /***********************************************************************
  * Description:
- * ë‘ Geometry ê°ì²´ì˜ intersection ê°ì²´ ë¦¬í„´
+ * µÎ Geometry °´Ã¼ÀÇ intersection °´Ã¼ ¸®ÅÏ
  *
- * stdGeometryType*     aObj1(In): ê°ì²´1
- * stdGeometryType*     aObj2(In): ê°ì²´2
- * stdGeometryHeader*   aRet(Out): ê²°ê³¼ ê°ì²´
+ * stdGeometryType*     aObj1(In): °´Ã¼1
+ * stdGeometryType*     aObj2(In): °´Ã¼2
+ * stdGeometryHeader*   aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getIntersection(
                     iduMemory*                  aQmxMem,
@@ -2311,19 +2387,27 @@ IDE_RC stfAnalysis::getIntersection(
     {
         switch(aObj1->header.mType)
         {
+            case STD_POINT_2D_EXT_TYPE:
             case STD_POINT_2D_TYPE:
+            case STD_MULTIPOINT_2D_EXT_TYPE:
             case STD_MULTIPOINT_2D_TYPE:
                 switch(aObj2->header.mType)
                 {
+                    case STD_POINT_2D_EXT_TYPE:
                     case STD_POINT_2D_TYPE:
+                    case STD_MULTIPOINT_2D_EXT_TYPE:
                     case STD_MULTIPOINT_2D_TYPE:
                         IDE_TEST(getIntersectionPointPoint2D(aQmxMem, aObj1, aObj2, aRet, aFence ) != IDE_SUCCESS );
                         break;
+                    case STD_LINESTRING_2D_EXT_TYPE:
                     case STD_LINESTRING_2D_TYPE:
+                    case STD_MULTILINESTRING_2D_EXT_TYPE:
                     case STD_MULTILINESTRING_2D_TYPE:
                         IDE_TEST(getIntersectionPointLine2D(aQmxMem, aObj1, aObj2, aRet, aFence ) != IDE_SUCCESS ) ;
                         break;
+                    case STD_POLYGON_2D_EXT_TYPE:
                     case STD_POLYGON_2D_TYPE:
+                    case STD_MULTIPOLYGON_2D_EXT_TYPE:
                     case STD_MULTIPOLYGON_2D_TYPE:
                         IDE_TEST(getIntersectionPointArea2D(aQmxMem, aObj1, aObj2, aRet, aFence ) != IDE_SUCCESS );
                         break;
@@ -2331,19 +2415,27 @@ IDE_RC stfAnalysis::getIntersection(
                         IDE_RAISE( err_incompatible_type );
                 }
                 break;
+            case STD_LINESTRING_2D_EXT_TYPE:
             case STD_LINESTRING_2D_TYPE:
+            case STD_MULTILINESTRING_2D_EXT_TYPE:
             case STD_MULTILINESTRING_2D_TYPE:
                 switch(aObj2->header.mType)
                 {
+                    case STD_POINT_2D_EXT_TYPE:
                     case STD_POINT_2D_TYPE:
+                    case STD_MULTIPOINT_2D_EXT_TYPE:
                     case STD_MULTIPOINT_2D_TYPE:
                         IDE_TEST (getIntersectionPointLine2D(aQmxMem, aObj2, aObj1, aRet, aFence ) != IDE_SUCCESS );
                         break;
+                    case STD_LINESTRING_2D_EXT_TYPE:
                     case STD_LINESTRING_2D_TYPE:
+                    case STD_MULTILINESTRING_2D_EXT_TYPE:
                     case STD_MULTILINESTRING_2D_TYPE:
                         IDE_TEST( getIntersectionLineLine2D(aQmxMem, aObj1, aObj2, aRet, aFence ) != IDE_SUCCESS );
                         break;
+                    case STD_POLYGON_2D_EXT_TYPE:
                     case STD_POLYGON_2D_TYPE:
+                    case STD_MULTIPOLYGON_2D_EXT_TYPE:
                     case STD_MULTIPOLYGON_2D_TYPE:
                         IDE_TEST(getIntersectionLineArea2D(aQmxMem, aObj1, aObj2, aRet, aFence ) != IDE_SUCCESS );
                         break;
@@ -2351,19 +2443,27 @@ IDE_RC stfAnalysis::getIntersection(
                         IDE_RAISE( err_incompatible_type );
                 }
                 break;
+            case STD_POLYGON_2D_EXT_TYPE:
             case STD_POLYGON_2D_TYPE:
+            case STD_MULTIPOLYGON_2D_EXT_TYPE:
             case STD_MULTIPOLYGON_2D_TYPE:
                 switch(aObj2->header.mType)
                 {
+                    case STD_POINT_2D_EXT_TYPE:
                     case STD_POINT_2D_TYPE:
+                    case STD_MULTIPOINT_2D_EXT_TYPE:
                     case STD_MULTIPOINT_2D_TYPE:
                         IDE_TEST(getIntersectionPointArea2D(aQmxMem, aObj2, aObj1, aRet, aFence ) != IDE_SUCCESS );
                         break;
+                    case STD_LINESTRING_2D_EXT_TYPE:
                     case STD_LINESTRING_2D_TYPE:
+                    case STD_MULTILINESTRING_2D_EXT_TYPE:
                     case STD_MULTILINESTRING_2D_TYPE:
                         IDE_TEST(getIntersectionLineArea2D(aQmxMem, aObj2, aObj1, aRet, aFence ) != IDE_SUCCESS );
                         break;
+                    case STD_POLYGON_2D_EXT_TYPE:
                     case STD_POLYGON_2D_TYPE:
+                    case STD_MULTIPOLYGON_2D_EXT_TYPE:
                     case STD_MULTIPOLYGON_2D_TYPE:
                         IDE_TEST(getIntersectionAreaArea2D(aQmxMem,
                                                            aObj1,
@@ -2378,6 +2478,26 @@ IDE_RC stfAnalysis::getIntersection(
                 break;
             default:
                 IDE_RAISE( err_incompatible_type );
+        }
+
+        /* PROJ-2422 srid */
+        /* ¿ŞÂÊ¿¡ ¸ÂÃß°Å³ª ¿À¸¥ÂÊ¿¡ ¸ÂÃá´Ù. */
+        if ( stdUtils::isExtendedType( aObj1->header.mType ) == ID_TRUE )
+        {
+            IDE_TEST( stfBasic::setSRID( aRet, aFence, aObj1 )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            if ( stdUtils::isExtendedType( aObj2->header.mType ) == ID_TRUE )
+            {
+                IDE_TEST( stfBasic::setSRID( aRet, aFence, aObj2 )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
         }
     }
     
@@ -2395,11 +2515,11 @@ IDE_RC stfAnalysis::getIntersection(
 
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 0ì°¨ì› ê°ì²´ì™€ 0ì°¨ì› ê°ì²´ì˜ Intersection ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 0Â÷¿ø °´Ã¼¿Í 0Â÷¿ø °´Ã¼ÀÇ Intersection °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getIntersectionPointPoint2D(
                     iduMemory*                  aQmxMem,
@@ -2487,11 +2607,11 @@ IDE_RC stfAnalysis::getIntersectionPointPoint2D(
 }
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 0ì°¨ì› ê°ì²´ì™€ 1ì°¨ì› ê°ì²´ì˜ Intersection ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 0Â÷¿ø °´Ã¼¿Í 1Â÷¿ø °´Ã¼ÀÇ Intersection °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getIntersectionPointLine2D(
                     iduMemory*                  aQmxMem,
@@ -2578,11 +2698,11 @@ IDE_RC stfAnalysis::getIntersectionPointLine2D(
 }
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 0ì°¨ì› ê°ì²´ì™€ 2ì°¨ì› ê°ì²´ì˜ Intersection ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 0Â÷¿ø °´Ã¼¿Í 2Â÷¿ø °´Ã¼ÀÇ Intersection °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getIntersectionPointArea2D(
                     iduMemory*                  aQmxMem,
@@ -2670,11 +2790,11 @@ IDE_RC stfAnalysis::getIntersectionPointArea2D(
 
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 1ì°¨ì› ê°ì²´ì™€ 1ì°¨ì› ê°ì²´ì˜ Intersection ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 1Â÷¿ø °´Ã¼¿Í 1Â÷¿ø °´Ã¼ÀÇ Intersection °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 
 IDE_RC
@@ -2819,11 +2939,11 @@ stfAnalysis::getIntersectionLineLine2D( iduMemory             * aQmxMem,
 
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 1ì°¨ì› ê°ì²´ì™€ 2ì°¨ì› ê°ì²´ì˜ Intersection ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 1Â÷¿ø °´Ã¼¿Í 2Â÷¿ø °´Ã¼ÀÇ Intersection °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getIntersectionLineArea2D(
                     iduMemory*                  aQmxMem,
@@ -2930,11 +3050,11 @@ IDE_RC stfAnalysis::getIntersectionLineArea2D(
 
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 2ì°¨ì› ê°ì²´ì™€ 2ì°¨ì› ê°ì²´ì˜ Intersection ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 2Â÷¿ø °´Ã¼¿Í 2Â÷¿ø °´Ã¼ÀÇ Intersection °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getIntersectionAreaArea2D( iduMemory*                  aQmxMem ,
                                                const stdGeometryType*      aObj1,
@@ -2970,11 +3090,11 @@ IDE_RC stfAnalysis::getIntersectionAreaArea2D( iduMemory*                  aQmxM
 
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 2ì°¨ì› ê°ì²´ì™€ 2ì°¨ì› ê°ì²´ì˜ Intersection ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 2Â÷¿ø °´Ã¼¿Í 2Â÷¿ø °´Ã¼ÀÇ Intersection °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getIntersectionAreaArea2D4Clip( iduMemory*                  aQmxMem ,
                                                     const stdGeometryType*      aObj1,
@@ -2983,8 +3103,8 @@ IDE_RC stfAnalysis::getIntersectionAreaArea2D4Clip( iduMemory*                  
                                                     UInt                        aFence )
 {
     // BUG-33436
-    // í´ë¦¬ê³¤, ë©€í‹°í´ë¦¬ê³¤ì„ êµ¬ë¶„í•˜ì§€ ì•Šì•„ë„ ë˜ê¸° ë•Œë¬¸ì— 
-    // ê°ì²´ë¥¼ ê·¸ëŒ€ë¡œ ì „ë‹¬í•œë‹¤.
+    // Æú¸®°ï, ¸ÖÆ¼Æú¸®°ïÀ» ±¸ºĞÇÏÁö ¾Ê¾Æµµ µÇ±â ¶§¹®¿¡ 
+    // °´Ã¼¸¦ ±×´ë·Î Àü´ŞÇÑ´Ù.
 
     IDE_TEST(getPolygonClipAreaArea2D( aQmxMem,
                                        (stdGeometryHeader*)aObj1,
@@ -3005,11 +3125,11 @@ IDE_RC stfAnalysis::getIntersectionAreaArea2D4Clip( iduMemory*                  
 
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 2ì°¨ì› ê°ì²´ì™€ 2ì°¨ì› ê°ì²´ì˜ Intersection ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 2Â÷¿ø °´Ã¼¿Í 2Â÷¿ø °´Ã¼ÀÇ Intersection °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getIntersectionAreaArea2D4Gpc( iduMemory*                  aQmxMem ,
                                                    const stdGeometryType*      aObj1,
@@ -3100,11 +3220,11 @@ IDE_RC stfAnalysis::getIntersectionAreaArea2D4Gpc( iduMemory*                  a
 
 /***********************************************************************
  * Description:
- * ë‘ Geometry ê°ì²´ì˜ difference ê°ì²´ ë¦¬í„´
+ * µÎ Geometry °´Ã¼ÀÇ difference °´Ã¼ ¸®ÅÏ
  *
- * stdGeometryType*     aObj1(In): ê°ì²´1
- * stdGeometryType*     aObj2(In): ê°ì²´2
- * stdGeometryHeader*   aRet(Out): ê²°ê³¼ ê°ì²´
+ * stdGeometryType*     aObj1(In): °´Ã¼1
+ * stdGeometryType*     aObj2(In): °´Ã¼2
+ * stdGeometryHeader*   aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getDifference(
                     iduMemory*                  aQmxMem,
@@ -3125,11 +3245,15 @@ IDE_RC stfAnalysis::getDifference(
     {
         switch(aObj1->header.mType)
         {
+            case STD_POINT_2D_EXT_TYPE:
             case STD_POINT_2D_TYPE:
+            case STD_MULTIPOINT_2D_EXT_TYPE:
             case STD_MULTIPOINT_2D_TYPE:
                 switch(aObj2->header.mType)
                 {
+                    case STD_POINT_2D_EXT_TYPE:
                     case STD_POINT_2D_TYPE:
+                    case STD_MULTIPOINT_2D_EXT_TYPE:
                     case STD_MULTIPOINT_2D_TYPE:
                         IDE_TEST(getDifferencePointPoint2D(aQmxMem, aObj1, aObj2, aRet, aFence ) != IDE_SUCCESS );
                         break;
@@ -3137,11 +3261,15 @@ IDE_RC stfAnalysis::getDifference(
                         IDE_RAISE( err_incompatible_type );
                 }
                 break;
+            case STD_LINESTRING_2D_EXT_TYPE:
             case STD_LINESTRING_2D_TYPE:
+            case STD_MULTILINESTRING_2D_EXT_TYPE:
             case STD_MULTILINESTRING_2D_TYPE:
                 switch(aObj2->header.mType)
                 {
+                    case STD_LINESTRING_2D_EXT_TYPE:
                     case STD_LINESTRING_2D_TYPE:
+                    case STD_MULTILINESTRING_2D_EXT_TYPE:
                     case STD_MULTILINESTRING_2D_TYPE:
                         IDE_TEST(getDifferenceLineLine2D(aQmxMem, aObj1, aObj2, aRet, aFence ) != IDE_SUCCESS );
                         break;
@@ -3149,11 +3277,15 @@ IDE_RC stfAnalysis::getDifference(
                         IDE_RAISE( err_incompatible_type );
                 }
                 break;
+            case STD_POLYGON_2D_EXT_TYPE:
             case STD_POLYGON_2D_TYPE:
+            case STD_MULTIPOLYGON_2D_EXT_TYPE:
             case STD_MULTIPOLYGON_2D_TYPE:
                 switch(aObj2->header.mType)
                 {
+                    case STD_POLYGON_2D_EXT_TYPE:
                     case STD_POLYGON_2D_TYPE:
+                    case STD_MULTIPOLYGON_2D_EXT_TYPE:
                     case STD_MULTIPOLYGON_2D_TYPE:
                         IDE_TEST(getDifferenceAreaArea2D(aQmxMem,
                                                          aObj1,
@@ -3168,6 +3300,26 @@ IDE_RC stfAnalysis::getDifference(
                 break;        
             default:
                 IDE_RAISE( err_incompatible_type );
+        }
+
+        /* PROJ-2422 srid */
+        /* ¿ŞÂÊ¿¡ ¸ÂÃß°Å³ª ¿À¸¥ÂÊ¿¡ ¸ÂÃá´Ù. */
+        if ( stdUtils::isExtendedType(aObj1->header.mType) == ID_TRUE )
+        {
+            IDE_TEST( stfBasic::setSRID( aRet, aFence, aObj1 )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            if ( stdUtils::isExtendedType(aObj2->header.mType) == ID_TRUE )
+            {
+                IDE_TEST( stfBasic::setSRID( aRet, aFence, aObj2 )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
         }
     }
     
@@ -3185,11 +3337,11 @@ IDE_RC stfAnalysis::getDifference(
 
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 0ì°¨ì› ê°ì²´ì™€ 0ì°¨ì› ê°ì²´ì˜ difference ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 0Â÷¿ø °´Ã¼¿Í 0Â÷¿ø °´Ã¼ÀÇ difference °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getDifferencePointPoint2D(
                     iduMemory*                  aQmxMem,
@@ -3285,11 +3437,11 @@ IDE_RC stfAnalysis::getDifferencePointPoint2D(
 
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 0ì°¨ì› ê°ì²´ì™€ 1ì°¨ì› ê°ì²´ì˜ difference ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 0Â÷¿ø °´Ã¼¿Í 1Â÷¿ø °´Ã¼ÀÇ difference °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getDifferencePointLine2D(
                     iduMemory*                  aQmxMem,
@@ -3386,11 +3538,11 @@ IDE_RC stfAnalysis::getDifferencePointLine2D(
 
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 0ì°¨ì› ê°ì²´ì™€ 2ì°¨ì› ê°ì²´ì˜ difference ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 0Â÷¿ø °´Ã¼¿Í 2Â÷¿ø °´Ã¼ÀÇ difference °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getDifferencePointArea2D(
                     iduMemory*                  aQmxMem,
@@ -3487,11 +3639,11 @@ IDE_RC stfAnalysis::getDifferencePointArea2D(
 
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 1ì°¨ì› ê°ì²´ì™€ 1ì°¨ì› ê°ì²´ì˜ difference ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 1Â÷¿ø °´Ã¼¿Í 1Â÷¿ø °´Ã¼ÀÇ difference °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getDifferenceLineLine2D(
                     iduMemory*                  aQmxMem,
@@ -3565,11 +3717,11 @@ IDE_RC stfAnalysis::getDifferenceLineLine2D(
 
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 2ì°¨ì› ê°ì²´ì™€ 2ì°¨ì› ê°ì²´ì˜ difference ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 2Â÷¿ø °´Ã¼¿Í 2Â÷¿ø °´Ã¼ÀÇ difference °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getDifferenceAreaArea2D(
                     iduMemory*                  aQmxMem,
@@ -3606,11 +3758,11 @@ IDE_RC stfAnalysis::getDifferenceAreaArea2D(
 
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 2ì°¨ì› ê°ì²´ì™€ 2ì°¨ì› ê°ì²´ì˜ difference ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 2Â÷¿ø °´Ã¼¿Í 2Â÷¿ø °´Ã¼ÀÇ difference °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getDifferenceAreaArea2D4Clip(
                     iduMemory*                  aQmxMem,
@@ -3620,8 +3772,8 @@ IDE_RC stfAnalysis::getDifferenceAreaArea2D4Clip(
                     UInt                        aFence ) // Fix BUG - 25110
 {
     // BUG-33436
-    // í´ë¦¬ê³¤, ë©€í‹°í´ë¦¬ê³¤ì„ êµ¬ë¶„í•˜ì§€ ì•Šì•„ë„ ë˜ê¸° ë•Œë¬¸ì— 
-    // ê°ì²´ë¥¼ ê·¸ëŒ€ë¡œ ì „ë‹¬í•œë‹¤.   
+    // Æú¸®°ï, ¸ÖÆ¼Æú¸®°ïÀ» ±¸ºĞÇÏÁö ¾Ê¾Æµµ µÇ±â ¶§¹®¿¡ 
+    // °´Ã¼¸¦ ±×´ë·Î Àü´ŞÇÑ´Ù.   
 
     IDE_TEST(getPolygonClipAreaArea2D( aQmxMem,
                                        (stdGeometryHeader*)aObj1,
@@ -3642,11 +3794,11 @@ IDE_RC stfAnalysis::getDifferenceAreaArea2D4Clip(
 
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 2ì°¨ì› ê°ì²´ì™€ 2ì°¨ì› ê°ì²´ì˜ difference ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 2Â÷¿ø °´Ã¼¿Í 2Â÷¿ø °´Ã¼ÀÇ difference °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getDifferenceAreaArea2D4Gpc(
                     iduMemory*                  aQmxMem,
@@ -3738,11 +3890,11 @@ IDE_RC stfAnalysis::getDifferenceAreaArea2D4Gpc(
 
 /***********************************************************************
  * Description:
- * ë‘ Geometry ê°ì²´ì˜ union ê°ì²´ ë¦¬í„´
+ * µÎ Geometry °´Ã¼ÀÇ union °´Ã¼ ¸®ÅÏ
  *
- * stdGeometryType*     aObj1(In): ê°ì²´1
- * stdGeometryType*     aObj2(In): ê°ì²´2
- * stdGeometryHeader*   aRet(Out): ê²°ê³¼ ê°ì²´
+ * stdGeometryType*     aObj1(In): °´Ã¼1
+ * stdGeometryType*     aObj2(In): °´Ã¼2
+ * stdGeometryHeader*   aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getUnion(
                     iduMemory*          aQmxMem,
@@ -3764,11 +3916,15 @@ IDE_RC stfAnalysis::getUnion(
     {
         switch(aObj1->header.mType)
         {
+            case STD_POINT_2D_EXT_TYPE:
             case STD_POINT_2D_TYPE:
+            case STD_MULTIPOINT_2D_EXT_TYPE:
             case STD_MULTIPOINT_2D_TYPE:
                 switch(aObj2->header.mType)
                 {
+                    case STD_POINT_2D_EXT_TYPE:
                     case STD_POINT_2D_TYPE:
+                    case STD_MULTIPOINT_2D_EXT_TYPE:
                     case STD_MULTIPOINT_2D_TYPE:
                         IDE_TEST_RAISE( getUnionPointPoint2D( aQmxMem,
                                                               aObj1,
@@ -3780,11 +3936,15 @@ IDE_RC stfAnalysis::getUnion(
                         IDE_RAISE( err_incompatible_type );
                 }
                 break;
+            case STD_LINESTRING_2D_EXT_TYPE:
             case STD_LINESTRING_2D_TYPE:
+            case STD_MULTILINESTRING_2D_EXT_TYPE:
             case STD_MULTILINESTRING_2D_TYPE:
                 switch(aObj2->header.mType)
                 {
+                    case STD_LINESTRING_2D_EXT_TYPE:
                     case STD_LINESTRING_2D_TYPE:
+                    case STD_MULTILINESTRING_2D_EXT_TYPE:
                     case STD_MULTILINESTRING_2D_TYPE:
                         IDE_TEST_RAISE( getUnionLineLine2D( aObj1,
                                                             aObj2,
@@ -3795,11 +3955,15 @@ IDE_RC stfAnalysis::getUnion(
                         IDE_RAISE( err_incompatible_type );
                 }
                 break;
+            case STD_POLYGON_2D_EXT_TYPE:
             case STD_POLYGON_2D_TYPE:
+            case STD_MULTIPOLYGON_2D_EXT_TYPE:
             case STD_MULTIPOLYGON_2D_TYPE:
                 switch(aObj2->header.mType)
                 {
+                    case STD_POLYGON_2D_EXT_TYPE:
                     case STD_POLYGON_2D_TYPE:
+                    case STD_MULTIPOLYGON_2D_EXT_TYPE:
                     case STD_MULTIPOLYGON_2D_TYPE:
                         IDE_TEST_RAISE( getUnionAreaArea2D( aQmxMem,
                                                             aObj1,
@@ -3814,6 +3978,26 @@ IDE_RC stfAnalysis::getUnion(
                 break;
             default:
                 IDE_RAISE( err_incompatible_type );
+        }
+
+        /* PROJ-2422 srid */
+        /* ¿ŞÂÊ¿¡ ¸ÂÃß°Å³ª ¿À¸¥ÂÊ¿¡ ¸ÂÃá´Ù. */
+        if ( stdUtils::isExtendedType( aObj1->header.mType ) == ID_TRUE )
+        {
+            IDE_TEST( stfBasic::setSRID( aRet, aFence, aObj1 )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            if ( stdUtils::isExtendedType( aObj2->header.mType ) == ID_TRUE )
+            {
+                IDE_TEST( stfBasic::setSRID( aRet, aFence, aObj2 )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
         }
     }
     
@@ -3836,11 +4020,11 @@ IDE_RC stfAnalysis::getUnion(
 
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 0ì°¨ì› ê°ì²´ì™€ 0ì°¨ì› ê°ì²´ì˜ union ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 0Â÷¿ø °´Ã¼¿Í 0Â÷¿ø °´Ã¼ÀÇ union °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getUnionPointPoint2D(
                     iduMemory*              aQmxMem,
@@ -3934,11 +4118,11 @@ IDE_RC stfAnalysis::getUnionPointPoint2D(
 
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 0ì°¨ì› ê°ì²´ì™€ 1ì°¨ì› ê°ì²´ì˜ union ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 0Â÷¿ø °´Ã¼¿Í 1Â÷¿ø °´Ã¼ÀÇ union °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getUnionPointLine2D(
                     iduMemory*              aQmxMem,
@@ -4048,11 +4232,11 @@ IDE_RC stfAnalysis::getUnionPointLine2D(
 
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 0ì°¨ì› ê°ì²´ì™€ 2ì°¨ì› ê°ì²´ì˜ union ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 0Â÷¿ø °´Ã¼¿Í 2Â÷¿ø °´Ã¼ÀÇ union °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getUnionPointArea2D(
                     iduMemory*                  aQmxMem,
@@ -4167,11 +4351,11 @@ IDE_RC stfAnalysis::getUnionPointArea2D(
 
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 1ì°¨ì› ê°ì²´ì™€ 1ì°¨ì› ê°ì²´ì˜ union ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 1Â÷¿ø °´Ã¼¿Í 1Â÷¿ø °´Ã¼ÀÇ union °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getUnionLineLine2D(
                     const stdGeometryType*  aObj1,
@@ -4270,11 +4454,11 @@ IDE_RC stfAnalysis::getUnionLineLine2D(
 
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 2ì°¨ì› ê°ì²´ì™€ 2ì°¨ì› ê°ì²´ì˜ union ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 2Â÷¿ø °´Ã¼¿Í 2Â÷¿ø °´Ã¼ÀÇ union °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC
 stfAnalysis::getUnionAreaArea2D( iduMemory*              aQmxMem,
@@ -4311,11 +4495,11 @@ stfAnalysis::getUnionAreaArea2D( iduMemory*              aQmxMem,
 
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 2ì°¨ì› ê°ì²´ì™€ 2ì°¨ì› ê°ì²´ì˜ union ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 2Â÷¿ø °´Ã¼¿Í 2Â÷¿ø °´Ã¼ÀÇ union °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC
 stfAnalysis::getUnionAreaArea2D4Clip( iduMemory*              aQmxMem,
@@ -4325,8 +4509,8 @@ stfAnalysis::getUnionAreaArea2D4Clip( iduMemory*              aQmxMem,
                                       UInt                    aFence )
 {
     // BUG-33436
-    // í´ë¦¬ê³¤, ë©€í‹°í´ë¦¬ê³¤ì„ êµ¬ë¶„í•˜ì§€ ì•Šì•„ë„ ë˜ê¸° ë•Œë¬¸ì— 
-    // ê°ì²´ë¥¼ ê·¸ëŒ€ë¡œ ì „ë‹¬í•œë‹¤.      
+    // Æú¸®°ï, ¸ÖÆ¼Æú¸®°ïÀ» ±¸ºĞÇÏÁö ¾Ê¾Æµµ µÇ±â ¶§¹®¿¡ 
+    // °´Ã¼¸¦ ±×´ë·Î Àü´ŞÇÑ´Ù.      
 
     IDE_TEST(getPolygonClipAreaArea2D( aQmxMem,
                                        (stdGeometryHeader*)aObj1,
@@ -4347,11 +4531,11 @@ stfAnalysis::getUnionAreaArea2D4Clip( iduMemory*              aQmxMem,
 
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 2ì°¨ì› ê°ì²´ì™€ 2ì°¨ì› ê°ì²´ì˜ union ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 2Â÷¿ø °´Ã¼¿Í 2Â÷¿ø °´Ã¼ÀÇ union °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC
 stfAnalysis::getUnionAreaArea2D4Gpc( iduMemory*              aQmxMem,
@@ -4386,11 +4570,11 @@ stfAnalysis::getUnionAreaArea2D4Gpc( iduMemory*              aQmxMem,
                     
 /***********************************************************************
  * Description:
- * 2D ì¢Œí‘œê³„ì— ìˆëŠ” ë‘ê°œì˜ ì„œë¡œ ë‹¤ë¥¸ ì°¨ì› ê°ì²´ì˜ union ê°ì²´ ë¦¬í„´
+ * 2D ÁÂÇ¥°è¿¡ ÀÖ´Â µÎ°³ÀÇ ¼­·Î ´Ù¸¥ Â÷¿ø °´Ã¼ÀÇ union °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getUnionCollection2D(
                     const stdGeometryType*  aObj1,
@@ -4464,11 +4648,11 @@ IDE_RC stfAnalysis::getUnionCollection2D(
 
 /***********************************************************************
  * Description:
- * ë‘ Geometry ê°ì²´ì˜ Symmetric Difference ê°ì²´ ë¦¬í„´
+ * µÎ Geometry °´Ã¼ÀÇ Symmetric Difference °´Ã¼ ¸®ÅÏ
  *
- * stdGeometryType*     aObj1(In): ê°ì²´1
- * stdGeometryType*     aObj2(In): ê°ì²´2
- * stdGeometryHeader*   aRet(Out): ê²°ê³¼ ê°ì²´
+ * stdGeometryType*     aObj1(In): °´Ã¼1
+ * stdGeometryType*     aObj2(In): °´Ã¼2
+ * stdGeometryHeader*   aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getSymDifference(
                     iduMemory*                  aQmxMem,
@@ -4490,11 +4674,15 @@ IDE_RC stfAnalysis::getSymDifference(
     {
         switch(aObj1->header.mType)
         {
+            case STD_POINT_2D_EXT_TYPE:
             case STD_POINT_2D_TYPE:
+            case STD_MULTIPOINT_2D_EXT_TYPE:
             case STD_MULTIPOINT_2D_TYPE:
                 switch(aObj2->header.mType)
                 {
+                    case STD_POINT_2D_EXT_TYPE:
                     case STD_POINT_2D_TYPE:
+                    case STD_MULTIPOINT_2D_EXT_TYPE:
                     case STD_MULTIPOINT_2D_TYPE:
                         IDE_TEST( getSymDifferencePointPoint2D( aQmxMem, aObj1, aObj2, aRet, aFence ) != IDE_SUCCESS);
                         break;
@@ -4502,11 +4690,15 @@ IDE_RC stfAnalysis::getSymDifference(
                         IDE_RAISE( err_incompatible_type );
                 }
                 break;
+            case STD_LINESTRING_2D_EXT_TYPE:
             case STD_LINESTRING_2D_TYPE:
+            case STD_MULTILINESTRING_2D_EXT_TYPE:
             case STD_MULTILINESTRING_2D_TYPE:
                 switch(aObj2->header.mType)
                 {
+                    case STD_LINESTRING_2D_EXT_TYPE:
                     case STD_LINESTRING_2D_TYPE:
+                    case STD_MULTILINESTRING_2D_EXT_TYPE:
                     case STD_MULTILINESTRING_2D_TYPE:
                         IDE_TEST( getSymDifferenceLineLine2D( aQmxMem, aObj1, aObj2, aRet, aFence ) != IDE_SUCCESS );
                         break;
@@ -4514,11 +4706,15 @@ IDE_RC stfAnalysis::getSymDifference(
                         IDE_RAISE( err_incompatible_type );
                 }
                 break;
+            case STD_POLYGON_2D_EXT_TYPE:
             case STD_POLYGON_2D_TYPE:
+            case STD_MULTIPOLYGON_2D_EXT_TYPE:
             case STD_MULTIPOLYGON_2D_TYPE:
                 switch(aObj2->header.mType)
                 {
+                    case STD_POLYGON_2D_EXT_TYPE:
                     case STD_POLYGON_2D_TYPE:
+                    case STD_MULTIPOLYGON_2D_EXT_TYPE:
                     case STD_MULTIPOLYGON_2D_TYPE:
                         IDE_TEST( getSymDifferenceAreaArea2D( aQmxMem, aObj1, aObj2, aRet, aFence ) != IDE_SUCCESS );
                         break;
@@ -4528,6 +4724,26 @@ IDE_RC stfAnalysis::getSymDifference(
                 break;
             default:
                 IDE_RAISE( err_incompatible_type );
+        }
+
+        /* PROJ-2422 srid */
+        /* ¿ŞÂÊ¿¡ ¸ÂÃß°Å³ª ¿À¸¥ÂÊ¿¡ ¸ÂÃá´Ù. */
+        if ( stdUtils::isExtendedType( aObj1->header.mType ) == ID_TRUE )
+        {
+            IDE_TEST( stfBasic::setSRID( aRet, aFence, aObj1 )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            if ( stdUtils::isExtendedType( aObj2->header.mType ) == ID_TRUE )
+            {
+                IDE_TEST( stfBasic::setSRID( aRet, aFence, aObj2 )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do. */
+            }
         }
     }
     
@@ -4545,11 +4761,11 @@ IDE_RC stfAnalysis::getSymDifference(
 
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 0ì°¨ì› ê°ì²´ì™€ 0ì°¨ì› ê°ì²´ì˜ Symmetric Difference ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 0Â÷¿ø °´Ã¼¿Í 0Â÷¿ø °´Ã¼ÀÇ Symmetric Difference °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getSymDifferencePointPoint2D(
                     iduMemory*                  aQmxMem,
@@ -4685,11 +4901,11 @@ IDE_RC stfAnalysis::getSymDifferencePointPoint2D(
 
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 1ì°¨ì› ê°ì²´ì™€ 1ì°¨ì› ê°ì²´ì˜ Symmetric Difference ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 1Â÷¿ø °´Ã¼¿Í 1Â÷¿ø °´Ã¼ÀÇ Symmetric Difference °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getSymDifferenceLineLine2D(
                     iduMemory*                  aQmxMem,
@@ -4781,11 +4997,11 @@ IDE_RC stfAnalysis::getSymDifferenceLineLine2D(
 
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 2ì°¨ì› ê°ì²´ì™€ 2ì°¨ì› ê°ì²´ì˜ Symmetric Difference ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 2Â÷¿ø °´Ã¼¿Í 2Â÷¿ø °´Ã¼ÀÇ Symmetric Difference °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getSymDifferenceAreaArea2D( iduMemory*                  aQmxMem,
                                                 const stdGeometryType*      aObj1,
@@ -4821,11 +5037,11 @@ IDE_RC stfAnalysis::getSymDifferenceAreaArea2D( iduMemory*                  aQmx
 
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 2ì°¨ì› ê°ì²´ì™€ 2ì°¨ì› ê°ì²´ì˜ Symmetric Difference ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 2Â÷¿ø °´Ã¼¿Í 2Â÷¿ø °´Ã¼ÀÇ Symmetric Difference °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getSymDifferenceAreaArea2D4Clip( iduMemory*                  aQmxMem,
                                                      const stdGeometryType*      aObj1,
@@ -4834,8 +5050,8 @@ IDE_RC stfAnalysis::getSymDifferenceAreaArea2D4Clip( iduMemory*                 
                                                      UInt                        aFence ) //Fix BUG - 25110
 {
     // BUG-33436
-    // í´ë¦¬ê³¤, ë©€í‹°í´ë¦¬ê³¤ì„ êµ¬ë¶„í•˜ì§€ ì•Šì•„ë„ ë˜ê¸° ë•Œë¬¸ì— 
-    // ê°ì²´ë¥¼ ê·¸ëŒ€ë¡œ ì „ë‹¬í•œë‹¤.      
+    // Æú¸®°ï, ¸ÖÆ¼Æú¸®°ïÀ» ±¸ºĞÇÏÁö ¾Ê¾Æµµ µÇ±â ¶§¹®¿¡ 
+    // °´Ã¼¸¦ ±×´ë·Î Àü´ŞÇÑ´Ù.      
     
     IDE_TEST(getPolygonClipAreaArea2D( aQmxMem,
                                        (stdGeometryHeader*)aObj1,
@@ -4856,11 +5072,11 @@ IDE_RC stfAnalysis::getSymDifferenceAreaArea2D4Clip( iduMemory*                 
 
 /***********************************************************************
  * Description:
- * 2D ê³µê°„ ì¢Œí‘œê³„ì— ìˆëŠ” 2ì°¨ì› ê°ì²´ì™€ 2ì°¨ì› ê°ì²´ì˜ Symmetric Difference ê°ì²´ ë¦¬í„´
+ * 2D °ø°£ ÁÂÇ¥°è¿¡ ÀÖ´Â 2Â÷¿ø °´Ã¼¿Í 2Â÷¿ø °´Ã¼ÀÇ Symmetric Difference °´Ã¼ ¸®ÅÏ
  *
- * const stdGeometryType*   aObj1(In): ê°ì²´1
- * const stdGeometryType*   aObj2(In): ê°ì²´2
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdGeometryType*   aObj1(In): °´Ã¼1
+ * const stdGeometryType*   aObj2(In): °´Ã¼2
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getSymDifferenceAreaArea2D4Gpc( iduMemory*                  aQmxMem,
                                                     const stdGeometryType*      aObj1,
@@ -4951,10 +5167,10 @@ IDE_RC stfAnalysis::getSymDifferenceAreaArea2D4Gpc( iduMemory*                  
 
 /***********************************************************************
  * Description:
- * í•œ Geometry ê°ì²´ì˜ ConvexHull ê°ì²´ ë¦¬í„´
+ * ÇÑ Geometry °´Ã¼ÀÇ ConvexHull °´Ã¼ ¸®ÅÏ
  *
- * stdGeometryHeader*  aObj(In): ê°ì²´
- * stdGeometryHeader*  aRet(Out): ê²°ê³¼ ê°ì²´
+ * stdGeometryHeader*  aObj(In): °´Ã¼
+ * stdGeometryHeader*  aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getConvexHull(
                     iduMemory*          aQmxMem,
@@ -4967,20 +5183,37 @@ IDE_RC stfAnalysis::getConvexHull(
     case STD_EMPTY_TYPE: // Fix BUG-16440
         stdUtils::makeEmpty(aRet);
         break;
+    case STD_POLYGON_2D_EXT_TYPE:
     case STD_POLYGON_2D_TYPE:
         IDE_TEST ( getPolygonConvexHull2D(aQmxMem, &aObj->polygon2D, aRet, aFence) != IDE_SUCCESS );
         break;
+    case STD_MULTIPOLYGON_2D_EXT_TYPE:
     case STD_MULTIPOLYGON_2D_TYPE:
         IDE_TEST ( getMultiPolygonConvexHull2D(aQmxMem, &aObj->mpolygon2D, aRet, aFence) != IDE_SUCCESS );
         break;
+    case STD_POINT_2D_EXT_TYPE:
     case STD_POINT_2D_TYPE:
+    case STD_MULTIPOINT_2D_EXT_TYPE:
     case STD_MULTIPOINT_2D_TYPE:
+    case STD_LINESTRING_2D_EXT_TYPE:
     case STD_LINESTRING_2D_TYPE:
+    case STD_MULTILINESTRING_2D_EXT_TYPE:
     case STD_MULTILINESTRING_2D_TYPE:
         stdUtils::copyGeometry(aRet, (stdGeometryHeader*)aObj);
         break;
     default:
         IDE_RAISE( err_invalid_object_mType );
+    }
+
+    /* PROJ-2422 srid */
+    if ( stdUtils::isExtendedType( aObj->header.mType ) == ID_TRUE )
+    {
+        IDE_TEST( stfBasic::setSRID( aRet, aFence, aObj )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do. */
     }
 
     return IDE_SUCCESS;
@@ -4997,10 +5230,10 @@ IDE_RC stfAnalysis::getConvexHull(
 
 /***********************************************************************
  * Description:
- * stdPolygon2DType ê°ì²´ì˜ ConvexHull ê°ì²´ ë¦¬í„´
+ * stdPolygon2DType °´Ã¼ÀÇ ConvexHull °´Ã¼ ¸®ÅÏ
  *
- * const stdPolygon2DType*  aPoly(In): ê°ì²´
- * stdGeometryHeader*       aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdPolygon2DType*  aPoly(In): °´Ã¼
+ * stdGeometryHeader*       aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getPolygonConvexHull2D(
     iduMemory*                  aQmxMem,
@@ -5023,9 +5256,9 @@ IDE_RC stfAnalysis::getPolygonConvexHull2D(
     sPolyRet = (stdPolygon2DType*)aRet;
     sRingRet = STD_FIRST_RN2D(sPolyRet);
 
-    sPolyRet->mNumRings = 1;  // Fix BUG - 28696 ConvexHullì€ ì™¸ë¶€ë§ë§Œ ì¡´ì¬ í•œë‹¤.
+    sPolyRet->mNumRings = 1;  // Fix BUG - 28696 ConvexHullÀº ¿ÜºÎ¸µ¸¸ Á¸Àç ÇÑ´Ù.
 
-    sPtCnt = primMakeConvexHull2D(sRingRet) + 1; // Fix Bug - 28696 ë§ì€ ë‹«í˜€ì•¼ í•©ë‹ˆë‹¤.
+    sPtCnt = primMakeConvexHull2D(sRingRet) + 1; // Fix Bug - 28696 ¸µÀº ´İÇô¾ß ÇÕ´Ï´Ù.
 
     sTotalSize = STD_POLY2D_SIZE + STD_RN2D_SIZE +
                  STD_PT2D_SIZE * sPtCnt;
@@ -5034,7 +5267,7 @@ IDE_RC stfAnalysis::getPolygonConvexHull2D(
 
     sPolyRet->mSize = sTotalSize;
 
-    // invalid ê°ì²´ë¥¼ ë§Œë“¤ ìˆ˜ ìˆë‹¤.
+    // invalid °´Ã¼¸¦ ¸¸µé ¼ö ÀÖ´Ù.
     if ( stdPrimitive::validatePolygon2D( aQmxMem,
                                           sPolyRet,
                                           sTotalSize )
@@ -5060,10 +5293,10 @@ IDE_RC stfAnalysis::getPolygonConvexHull2D(
 
 /***********************************************************************
  * Description:
- * stdMultiPolygon2DType ê°ì²´ì˜ ConvexHull ê°ì²´ ë¦¬í„´
+ * stdMultiPolygon2DType °´Ã¼ÀÇ ConvexHull °´Ã¼ ¸®ÅÏ
  *
- * const stdMultiPolygon2DType*     aMPoly(In): ê°ì²´
- * stdGeometryHeader*               aRet(Out): ê²°ê³¼ ê°ì²´
+ * const stdMultiPolygon2DType*     aMPoly(In): °´Ã¼
+ * stdGeometryHeader*               aRet(Out): °á°ú °´Ã¼
  **********************************************************************/
 IDE_RC stfAnalysis::getMultiPolygonConvexHull2D(
                     iduMemory*                      aQmxMem,
@@ -5097,7 +5330,7 @@ IDE_RC stfAnalysis::getMultiPolygonConvexHull2D(
     
     sMPolyRet->mSize = sTotalSize;
 
-    // invalid ê°ì²´ë¥¼ ë§Œë“¤ ìˆ˜ ìˆë‹¤.
+    // invalid °´Ã¼¸¦ ¸¸µé ¼ö ÀÖ´Ù.
     if ( stdPrimitive::validateMultiPolygon2D( aQmxMem,
                                                sMPolyRet,
                                                sTotalSize )
@@ -5254,7 +5487,7 @@ stfAnalysis::primPointBuffer2D( const stdPoint2D*           aPt,
                    aFence, size_error );
 
     // BUG-27941
-    // sin, cos ê°’ì„ ìƒìˆ˜ë¡œ ë³€ê²½í•œë‹¤.
+    // sin, cos °ªÀ» »ó¼ö·Î º¯°æÇÑ´Ù.
     sPt->mX = aPt->mX + aDistance * sCos[0];
     sPt->mY = aPt->mY + aDistance * sSin[0];
 
@@ -5266,7 +5499,7 @@ stfAnalysis::primPointBuffer2D( const stdPoint2D*           aPt,
     for(i = 1; i < STD_BUFFER_PRECISION; i++ )
     {
         // BUG-27941
-        // sin, cos ê°’ì„ ìƒìˆ˜ë¡œ ë³€ê²½í•œë‹¤.
+        // sin, cos °ªÀ» »ó¼ö·Î º¯°æÇÑ´Ù.
         STD_NEXTN_PT2D(sPt,i)->mX = aPt->mX + aDistance * sCos[i];
         STD_NEXTN_PT2D(sPt,i)->mY = aPt->mY + aDistance * sSin[i];
         IDE_TEST( stdUtils::mergeMBRFromPoint2D(aResult, sPt+i)
@@ -5310,7 +5543,7 @@ stfAnalysis::primLineBuffer2D( const stdPoint2D*           aPt1,
     if ( stdUtils::isSamePoints2D4Func( aPt1, aPt2 ) == ID_TRUE )
     {
         // BUG-33902
-        // same pointì¸ ê²½ìš° lineì´ ì•„ë‹ˆë¯€ë¡œ ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤.
+        // same pointÀÎ °æ¿ì lineÀÌ ¾Æ´Ï¹Ç·Î ¿¡·¯¸¦ ¹İÈ¯ÇÑ´Ù.
         IDE_RAISE( ERR_SAME_POINT );
     }
     else if ( aPt1->mX == aPt2->mX )
@@ -5641,11 +5874,11 @@ stfAnalysis::primUnionObjects2D( iduMemory*          aQmxMem,
 
 /***********************************************************************
  * Description:
- * í´ë¦¬ê³¤ ê°ì²´ë“¤(stdPolygon2DType, stdMultiPolygon2DType)ì„ Union ì—°ì‚°í•œë‹¤.
+ * Æú¸®°ï °´Ã¼µé(stdPolygon2DType, stdMultiPolygon2DType)À» Union ¿¬»êÇÑ´Ù.
  *
- * stdGeometryHeader** aGeoms(In): í´ë¦¬ê³¤ ê°ì²´ë“¤ì˜ í¬ì¸í„° ë°°ì—´
- * SInt                aCnt(In): í´ë¦¬ê³¤ ê°ì²´ ê°œìˆ˜
- * stdGeometryHeader*  aResult(Out): ì¶œë ¥ ê°ì²´
+ * stdGeometryHeader** aGeoms(In): Æú¸®°ï °´Ã¼µéÀÇ Æ÷ÀÎÅÍ ¹è¿­
+ * SInt                aCnt(In): Æú¸®°ï °´Ã¼ °³¼ö
+ * stdGeometryHeader*  aResult(Out): Ãâ·Â °´Ã¼
  **********************************************************************/
 IDE_RC
 stfAnalysis::primUnionObjectsPolygon2D( iduMemory*          aQmxMem,
@@ -5670,7 +5903,7 @@ stfAnalysis::primUnionObjectsPolygon2D( iduMemory*          aQmxMem,
     
     sMPolyA = NULL;
 
-    // ëª¨ë“  í´ë¦¬ê³¤ì„ ë¶„ì„í•˜ì—¬ êµì°¨í•˜ì§€ ì•ŠëŠ” í´ë¦¬ê³¤ì˜ ê·¸ë£¹ì„ ì—®ì–´ ë§í¬ë¥¼ ë§Œ
+    // ¸ğµç Æú¸®°ïÀ» ºĞ¼®ÇÏ¿© ±³Â÷ÇÏÁö ¾Ê´Â Æú¸®°ïÀÇ ±×·ìÀ» ¿«¾î ¸µÅ©¸¦ ¸¸
     for( i = 0; i < aCnt; i++ )
     {
         sCnt = stdUtils::getGeometryNum( aGeoms[i] );
@@ -5827,21 +6060,25 @@ stfAnalysis::createMultiObject2D( iduMemory*          aQmxMem,
     sObj = (stdGeometryType*)aResult;
     switch( sType ) 
     {
+    case STD_POINT_2D_EXT_TYPE :
     case STD_POINT_2D_TYPE :
         stdUtils::setType((stdGeometryHeader*)aResult,
                             STD_MULTIPOINT_2D_TYPE);
         sObj->mpoint2D.mNumObjects = sTotal;
         break;
+    case STD_LINESTRING_2D_EXT_TYPE:
     case STD_LINESTRING_2D_TYPE:
         stdUtils::setType((stdGeometryHeader*)aResult,
                             STD_MULTILINESTRING_2D_TYPE);
         sObj->mlinestring2D.mNumObjects = sTotal;
         break;
+    case STD_POLYGON_2D_EXT_TYPE:
     case STD_POLYGON_2D_TYPE:
         stdUtils::setType((stdGeometryHeader*)aResult,
                             STD_MULTIPOLYGON_2D_TYPE);
         sObj->mpolygon2D.mNumObjects = sTotal;
         break;
+    case STD_GEOCOLLECTION_2D_EXT_TYPE:
     case STD_GEOCOLLECTION_2D_TYPE:
         stdUtils::setType((stdGeometryHeader*)aResult,
                             STD_GEOCOLLECTION_2D_TYPE);
@@ -6011,7 +6248,7 @@ stfAnalysis::getPolygonFromGpc2D( iduMemory             * aQmxMem,
     aMPoly->mSize = STD_MPOLY2D_SIZE;
     aMPoly->mNumObjects = 0;
     
-    // ì™¸ë¶€ë§ ë¨¼ì € ë§í¬ë¥¼ ë§Œë“ ë‹¤.
+    // ¿ÜºÎ¸µ ¸ÕÀú ¸µÅ©¸¦ ¸¸µç´Ù.
     for( i = 0; i < sMaxR; i++ )
     {
         if( aGpcPoly->mHole[i] == 0 )
@@ -6094,7 +6331,7 @@ stfAnalysis::getPolygonFromGpc2D( iduMemory             * aQmxMem,
         }
     }
     
-    // ë‚´ë¶€ë§ì„ ë§í¬ì— ì—°ê²°í•œë‹¤.
+    // ³»ºÎ¸µÀ» ¸µÅ©¿¡ ¿¬°áÇÑ´Ù.
     for( i = 0; i < sMaxR; i++ )
     {
         if( aGpcPoly->mHole[i] != 0 )
@@ -6278,7 +6515,7 @@ stfAnalysis::allocMPolyFromObjLink2D( iduMemory*              aQmxMem,
 
 /***********************************************************************
  * Description:
- * ì…ë ¥ë˜ëŠ” í´ë¦¬ê³¤ì´ êµì°¨í•˜ì§€ ì•ŠëŠ” ë§í¬ë¥¼ ì°¾ì•„ ì¶”ê°€í•œë‹¤.
+ * ÀÔ·ÂµÇ´Â Æú¸®°ïÀÌ ±³Â÷ÇÏÁö ¾Ê´Â ¸µÅ©¸¦ Ã£¾Æ Ãß°¡ÇÑ´Ù.
  *
  * objMainLink2D*      aHeader(Out):
  * stdPolygon2DType*   aPoly(In):
@@ -6766,7 +7003,7 @@ stfAnalysis::primUnionLineLine2D( iduMemory        * aQmxMem,
         sDotC = stdUtils::dot2D( &sAB, &sAC );
         sDotD = stdUtils::dot2D( &sAB, &sAD );
         
-        if( (sDotC >= 0) && (sDotD >= 0) )    // AC,ADê°€ ABì™€ ê°™ì€ ë°©í–¥
+        if( (sDotC >= 0) && (sDotD >= 0) )    // AC,AD°¡ AB¿Í °°Àº ¹æÇâ
         {
             if( (sLenAB >= sLenAC) && (sLenAB >= sLenAD) )
             {
@@ -6815,7 +7052,7 @@ stfAnalysis::primUnionLineLine2D( iduMemory        * aQmxMem,
                 (*aRet2)->mY = aPt21->mY;
             }
         }
-        else if( (sDotC >= 0) && (sDotD < 0) )    // ACë§Œ ê°™ì€ ë°©í–¥
+        else if( (sDotC >= 0) && (sDotD < 0) )    // AC¸¸ °°Àº ¹æÇâ
         {
             if(sLenAB >= sLenAC)
             {
@@ -6839,7 +7076,7 @@ stfAnalysis::primUnionLineLine2D( iduMemory        * aQmxMem,
             (*aRet2)->mX = aPt22->mX;
             (*aRet2)->mY = aPt22->mY;
         }
-        else if( (sDotC < 0) && (sDotD >= 0) )    // ADë§Œ ê°™ì€ ë°©í–¥
+        else if( (sDotC < 0) && (sDotD >= 0) )    // AD¸¸ °°Àº ¹æÇâ
         {
             if(sLenAB >= sLenAD)
             {
@@ -7403,11 +7640,11 @@ stfAnalysis::makeLineLinkFromLine2D( iduMemory           * aQmxMem,
 
 /***********************************************************************
  * Description:
- * aLineHeaderSubjë¥¼  aLineHeaderClipë¡œ Intersection í•œë‹¤.
- * ê²°ê³¼ëŠ” aLineHeaderSubjì— ë‚¨ëŠ”ë‹¤.
+ * aLineHeaderSubj¸¦  aLineHeaderClip·Î Intersection ÇÑ´Ù.
+ * °á°ú´Â aLineHeaderSubj¿¡ ³²´Â´Ù.
  *
- * lineLink2D* aLineHeaderSubj(InOut): ì£¼ì œ ê°ì²´
- * lineLink2D* aLineHeaderClip(In):    ì—°ì‚° ê°ì²´
+ * lineLink2D* aLineHeaderSubj(InOut): ÁÖÁ¦ °´Ã¼
+ * lineLink2D* aLineHeaderClip(In):    ¿¬»ê °´Ã¼
  **********************************************************************/
 
 IDE_RC
@@ -7541,11 +7778,11 @@ stfAnalysis::makeIntersectionLineLink2D( iduMemory   * aQmxMem,
 
 /***********************************************************************
  * Description:
- * aLineHeaderSubjë¥¼  aLineHeaderClipë¡œ difference í•œë‹¤.
- * ê²°ê³¼ëŠ” aLineHeaderSubjì— ë‚¨ëŠ”ë‹¤.
+ * aLineHeaderSubj¸¦  aLineHeaderClip·Î difference ÇÑ´Ù.
+ * °á°ú´Â aLineHeaderSubj¿¡ ³²´Â´Ù.
  *
- * lineLink2D* aLineHeaderSubj(InOut): ì£¼ì œ ê°ì²´
- * lineLink2D* aLineHeaderClip(In):    ì—°ì‚° ê°ì²´
+ * lineLink2D* aLineHeaderSubj(InOut): ÁÖÁ¦ °´Ã¼
+ * lineLink2D* aLineHeaderClip(In):    ¿¬»ê °´Ã¼
  **********************************************************************/
 
 IDE_RC
@@ -7662,11 +7899,11 @@ stfAnalysis::makeDifferenceLineLink2D( iduMemory  * aQmxMem,
 
 /***********************************************************************
  * Description:
- * í¬ì¸íŠ¸ ë§í¬ì— í¬ì¸íŠ¸ë¥¼ ì¶”ê°€í•˜ëŠ” í•¨ìˆ˜
- * ì¤‘ë³µë˜ëŠ” í¬ì¸íŠ¸ê°€ ìˆìœ¼ë©´ ì…ë ¥í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ * Æ÷ÀÎÆ® ¸µÅ©¿¡ Æ÷ÀÎÆ®¸¦ Ãß°¡ÇÏ´Â ÇÔ¼ö
+ * Áßº¹µÇ´Â Æ÷ÀÎÆ®°¡ ÀÖÀ¸¸é ÀÔ·ÂÇÏÁö ¾Ê´Â´Ù.
  *
- * pointLink2D** aHeader(InOut): í¬ì¸íŠ¸ ë§í¬
- * stdPoint2D*   aPt(In):        í¬ì¸íŠ¸
+ * pointLink2D** aHeader(InOut): Æ÷ÀÎÆ® ¸µÅ©
+ * stdPoint2D*   aPt(In):        Æ÷ÀÎÆ®
  **********************************************************************/
 IDE_RC
 stfAnalysis::insertPointLink2D( iduMemory    * aQmxMem,
@@ -7832,12 +8069,12 @@ stfAnalysis::insertSortPointLink2D( iduMemory    * aQmxMem,
 
 /***********************************************************************
  * Description:
- * ë¼ì¸ ë§í¬ì— ë¼ì¸ ì„¸ê·¸ë¨¼íŠ¸ë¥¼ ì¶”ê°€í•˜ëŠ” í•¨ìˆ˜
- * ì…ë ¥ë˜ëŠ” ë¼ì¸ ì„¸ê·¸ë¨¼íŠ¸ê°€ ê¸°ì¡´ì˜ ë¼ì¸ì— í¬í•¨ë˜ê±°ë‚˜ ë³‘í•©ë˜ë©´ ID_FALSE ë¦¬í„´
+ * ¶óÀÎ ¸µÅ©¿¡ ¶óÀÎ ¼¼±×¸ÕÆ®¸¦ Ãß°¡ÇÏ´Â ÇÔ¼ö
+ * ÀÔ·ÂµÇ´Â ¶óÀÎ ¼¼±×¸ÕÆ®°¡ ±âÁ¸ÀÇ ¶óÀÎ¿¡ Æ÷ÇÔµÇ°Å³ª º´ÇÕµÇ¸é ID_FALSE ¸®ÅÏ
  *
- * lineLink2D**  aHeader,(InOut): ë¼ì¸ ë§í¬
- * stdPoint2D*   aPt1(In): ë¼ì¸ ì„¸ê·¸ë¨¼íŠ¸ì˜ í¬ì¸íŠ¸1
- * stdPoint2D*   aPt2(In): ë¼ì¸ ì„¸ê·¸ë¨¼íŠ¸ì˜ í¬ì¸íŠ¸2
+ * lineLink2D**  aHeader,(InOut): ¶óÀÎ ¸µÅ©
+ * stdPoint2D*   aPt1(In): ¶óÀÎ ¼¼±×¸ÕÆ®ÀÇ Æ÷ÀÎÆ®1
+ * stdPoint2D*   aPt2(In): ¶óÀÎ ¼¼±×¸ÕÆ®ÀÇ Æ÷ÀÎÆ®2
  **********************************************************************/
 
 IDE_RC
@@ -7970,7 +8207,7 @@ IDE_RC stfAnalysis::getPolygonClipAreaArea2D( iduMemory*               aQmxMem,
     SegmentRule         sRule[4];
     PrimInterSeg*       sResPrimInterSeg = NULL;
 
-    /* Segment ì„ íƒ ë°©ë²• ë°°ì—´ ì´ˆê¸°í™” */
+    /* Segment ¼±ÅÃ ¹æ¹ı ¹è¿­ ÃÊ±âÈ­ */
     sRule[ ST_CLIP_INTERSECT ]     = &stdPolyClip::segmentRuleIntersect;
     sRule[ ST_CLIP_UNION ]         = &stdPolyClip::segmentRuleUnion;
     sRule[ ST_CLIP_DIFFERENCE ]    = &stdPolyClip::segmentRuleDifference;
@@ -8003,7 +8240,7 @@ IDE_RC stfAnalysis::getPolygonClipAreaArea2D( iduMemory*               aQmxMem,
         {
             sMaxP        = STD_N_POINTS(sRing);
             sTotalPoint += sMaxP;
-            /* BUG-45528 ë§ì„ í¬í•¨í•œ ë©€í‹°í´ë¦¬ê³¤/í´ë¦¬ê³¤ì˜ ì—°ì‚° ì‹œì— ë©”ëª¨ë¦¬ í• ë‹¹ ì˜¤ë¥˜ê°€ ìˆìŠµë‹ˆë‹¤. */
+            /* BUG-45528 ¸µÀ» Æ÷ÇÔÇÑ ¸ÖÆ¼Æú¸®°ï/Æú¸®°ïÀÇ ¿¬»ê ½Ã¿¡ ¸Ş¸ğ¸® ÇÒ´ç ¿À·ù°¡ ÀÖ½À´Ï´Ù. */
             sRing        = STD_NEXT_RN2D(sRing);
 
         }
@@ -8025,7 +8262,7 @@ IDE_RC stfAnalysis::getPolygonClipAreaArea2D( iduMemory*               aQmxMem,
         {
             sMaxP        = STD_N_POINTS(sRing);
             sTotalPoint += sMaxP;
-            /* BUG-45528 ë§ì„ í¬í•¨í•œ ë©€í‹°í´ë¦¬ê³¤/í´ë¦¬ê³¤ì˜ ì—°ì‚° ì‹œì— ë©”ëª¨ë¦¬ í• ë‹¹ ì˜¤ë¥˜ê°€ ìˆìŠµë‹ˆë‹¤. */
+            /* BUG-45528 ¸µÀ» Æ÷ÇÔÇÑ ¸ÖÆ¼Æú¸®°ï/Æú¸®°ïÀÇ ¿¬»ê ½Ã¿¡ ¸Ş¸ğ¸® ÇÒ´ç ¿À·ù°¡ ÀÖ½À´Ï´Ù. */
             sRing        = STD_NEXT_RN2D(sRing);
 
         }
@@ -8035,10 +8272,10 @@ IDE_RC stfAnalysis::getPolygonClipAreaArea2D( iduMemory*               aQmxMem,
     }
 
     /* BUG-33634 
-     * ì—°ì‚°ì˜ ê²°ê³¼ë¡œ ìƒì„±ë˜ëŠ” í´ë¦¬ê³¤ì˜ ì¸ë±ìŠ¤ë¥¼ ì €ì¥í•˜ê¸° ìœ„í•´ì„œ 
-     * sIndexSegì˜ í¬ê¸°ë¥¼ ìˆ˜ì •í•¨. 
-     * sTempIndexSegì— í• ë‹¹í•˜ëŠ” ë¶€ë¶„ì„ ì‚­ì œí•˜ê³ ,
-     * sRingSegListì˜ í¬ê¸°ë¥¼ Ringì˜ ê°œìˆ˜ì— ë§ê²Œ ìˆ˜ì •í•¨. */
+     * ¿¬»êÀÇ °á°ú·Î »ı¼ºµÇ´Â Æú¸®°ïÀÇ ÀÎµ¦½º¸¦ ÀúÀåÇÏ±â À§ÇØ¼­ 
+     * sIndexSegÀÇ Å©±â¸¦ ¼öÁ¤ÇÔ. 
+     * sTempIndexSeg¿¡ ÇÒ´çÇÏ´Â ºÎºĞÀ» »èÁ¦ÇÏ°í,
+     * sRingSegListÀÇ Å©±â¸¦ RingÀÇ °³¼ö¿¡ ¸Â°Ô ¼öÁ¤ÇÔ. */
     IDE_TEST( aQmxMem->alloc( 3 * sTotalPoint * ID_SIZEOF(Segment*),
                               (void**) & sIndexSeg )
               != IDE_SUCCESS);
@@ -8139,14 +8376,14 @@ IDE_RC stfAnalysis::getPolygonClipAreaArea2D( iduMemory*               aQmxMem,
             
             if ( sCmpSeg->mStart.mX > sCurrSeg->mEnd.mX )
             {
-                /* ì˜ ëª» ë½‘ì€ ë†ˆì€ ì¬ì‚¬ìš©ì— ë„£ì–´ì•¼ í•œë‹¤. */
+                /* Àß ¸ø »ÌÀº ³ğÀº Àç»ç¿ë¿¡ ³Ö¾î¾ß ÇÑ´Ù. */
                 break;                
             }
             
             do
             {
                 /*
-                  ì—¬ê¸°ì„œ intersectì™€ ë°©í–¥ì— ëŒ€í•œ ê°œë…ì„ ë„£ì–´ ì³ë‚¼ìˆ˜ ìˆë‹¤.                  
+                  ¿©±â¼­ intersect¿Í ¹æÇâ¿¡ ´ëÇÑ °³³äÀ» ³Ö¾î ÃÄ³¾¼ö ÀÖ´Ù.                  
                  */
                 if ( ( sCurrNext != sCmpSeg ) && ( sCurrPrev != sCmpSeg ) )
                 {
@@ -8215,18 +8452,18 @@ IDE_RC stfAnalysis::getPolygonClipAreaArea2D( iduMemory*               aQmxMem,
                     break;                    
                 }
             
-                /* ëê¹Œì§€ ì¡°ì‚¬í•œë‹¤. */
+                /* ³¡±îÁö Á¶»çÇÑ´Ù. */
 
             }while( sCmpSeg->mStart.mX <= sCurrSeg->mEnd.mX );
         }
         
-        /* ì¬ì‚¬ìš©ì„ ì •ë¦¬ í•œë‹¤. */
+        /* Àç»ç¿ëÀ» Á¤¸® ÇÑ´Ù. */
         
         for ( i =0; i < sReuseSegCount ; i++)
         {
             sPQueue.enqueue( sTempIndexSeg++, &sOverflow);
             IDE_TEST_RAISE( sOverflow == ID_TRUE, ERR_ABORT_ENQUEUE_ERROR );
-            /* Overflow ê²€ì‚¬ */
+            /* Overflow °Ë»ç */
         }
 
         if ( sCurrSeg->mNext != NULL )
@@ -8237,7 +8474,7 @@ IDE_RC stfAnalysis::getPolygonClipAreaArea2D( iduMemory*               aQmxMem,
     }
 
     /* BUG-33436
-     * sIndexSegëŠ” xì¢Œí‘œ ìˆœìœ¼ë¡œ ì •ë ¬ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤. */
+     * sIndexSeg´Â xÁÂÇ¥ ¼øÀ¸·Î Á¤·ÄµÇ¾î ÀÖ¾î¾ß ÇÑ´Ù. */
     iduHeapSort::sort( sIndexSeg, sIndexSegTotal, 
                        ID_SIZEOF(Segment*), cmpSegment );
 
@@ -8245,7 +8482,7 @@ IDE_RC stfAnalysis::getPolygonClipAreaArea2D( iduMemory*               aQmxMem,
               != IDE_SUCCESS);
 
     /* BUG-33634
-     * ê° ë§ì˜ ë°©í–¥ì„ ì²´í¬í•´ì„œ ì˜ëª»ëœ ê²ƒì„ ìˆ˜ì •í•œë‹¤. */
+     * °¢ ¸µÀÇ ¹æÇâÀ» Ã¼Å©ÇØ¼­ Àß¸øµÈ °ÍÀ» ¼öÁ¤ÇÑ´Ù. */
     stdPolyClip::adjustRingOrientation( sRingSegList,
                                         sRingCount,
                                         sIndexSeg,
@@ -8263,8 +8500,8 @@ IDE_RC stfAnalysis::getPolygonClipAreaArea2D( iduMemory*               aQmxMem,
               != IDE_SUCCESS );
 
     /* BUG-33634 
-     * clip í•¨ìˆ˜ì—ì„œ sIndexSegì— ê²°ê³¼ë¡œ ìƒì„±ëœ í´ë¦¬ê³¤ì˜ ì¸ë±ìŠ¤ë¥¼ ì €ì¥í•œë‹¤.
-     * ê¸°ì¡´ì˜ ë‚´ìš©ì„ ìƒì–´ë²„ë¦¬ê¸° ë•Œë¬¸ì— ì£¼ì˜í•´ì•¼ í•œë‹¤. */
+     * clip ÇÔ¼ö¿¡¼­ sIndexSeg¿¡ °á°ú·Î »ı¼ºµÈ Æú¸®°ïÀÇ ÀÎµ¦½º¸¦ ÀúÀåÇÑ´Ù.
+     * ±âÁ¸ÀÇ ³»¿ëÀ» ÀÒ¾î¹ö¸®±â ¶§¹®¿¡ ÁÖÀÇÇØ¾ß ÇÑ´Ù. */
     IDE_TEST( stdPolyClip::clip( aQmxMem,
                                  sRingSegList,
                                  sRingCount,
@@ -8276,9 +8513,9 @@ IDE_RC stfAnalysis::getPolygonClipAreaArea2D( iduMemory*               aQmxMem,
                                  NULL ) != IDE_SUCCESS);
 
     /* BUG-33634 
-     * clip ê²°ê³¼ Emptyê°€ ì•„ë‹Œ ê²½ìš°ì—ëŠ” ì…€í”„í„°ì¹˜ê°€ ìˆëŠ” ì§€ í™•ì¸í•˜ê³ ,
-     * ì…€í”„í„°ì¹˜ê°€ ìˆëŠ” ë§ì„ ë¶„ë¦¬í•œë‹¤. 
-     * ì´ í›„ ê° ë§ë“¤ì„ ìˆœì„œì— ë§ê²Œ ì •ë ¬í•œë‹¤. */
+     * clip °á°ú Empty°¡ ¾Æ´Ñ °æ¿ì¿¡´Â ¼¿ÇÁÅÍÄ¡°¡ ÀÖ´Â Áö È®ÀÎÇÏ°í,
+     * ¼¿ÇÁÅÍÄ¡°¡ ÀÖ´Â ¸µÀ» ºĞ¸®ÇÑ´Ù. 
+     * ÀÌ ÈÄ °¢ ¸µµéÀ» ¼ø¼­¿¡ ¸Â°Ô Á¤·ÄÇÑ´Ù. */
     if ( sResRingList.mRingCnt > 0 )
     {
         iduHeapSort::sort( sIndexSeg, sIndexSegTotal, 

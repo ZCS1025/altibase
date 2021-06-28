@@ -16,7 +16,7 @@
 
 /***********************************************************************
  *
- * Spatio-Temporal Environment Handle ê´€ë ¨ í•¨ìˆ˜
+ * Spatio-Temporal Environment Handle °ü·Ã ÇÔ¼ö
  *
  ***********************************************************************/
 
@@ -30,7 +30,7 @@
  *
  * Description:
  *
- *   Environment Handleì„ ì´ˆê¸°í™”í•œë‹¤.
+ *   Environment HandleÀ» ÃÊ±âÈ­ÇÑ´Ù.
  *
  * Implementation:
  *
@@ -79,7 +79,7 @@ ACSRETURN ulsAllocEnv( ulsHandle ** aHandle )
  *
  * Description:
  *
- *   Environment Handleì„ ì´ˆê¸°í™”í•œë‹¤.
+ *   Environment HandleÀ» ÃÊ±âÈ­ÇÑ´Ù.
  *
  * Implementation:
  *
@@ -112,7 +112,7 @@ ACSRETURN ulsFreeEnv( ulsHandle * aHandle )
  *
  * Description:
  *
- *   Environment Handle ì— ì¡´ì¬í•˜ëŠ” Error ì •ë³´ë¥¼ íšë“í•œë‹¤.
+ *   Environment Handle ¿¡ Á¸ÀçÇÏ´Â Error Á¤º¸¸¦ È¹µæÇÑ´Ù.
  *
  * Implementation:
  *
@@ -167,7 +167,7 @@ ACSRETURN ulsGetError( ulsHandle    * aHandle,
  *
  * Description:
  *
- *   Handleì„ ì´ˆê¸°í™”í•œë‹¤.
+ *   HandleÀ» ÃÊ±âÈ­ÇÑ´Ù.
  *
  * Implementation:
  *
@@ -200,7 +200,7 @@ ACI_RC  ulsInitEnv( ulsHandle * aHandle )
  *
  * Description:
  *
- *   Handleì˜ ìœ íš¨ì„±ì„ ê²€ì‚¬í•œë‹¤.
+ *   HandleÀÇ À¯È¿¼ºÀ» °Ë»çÇÑ´Ù.
  *
  * Implementation:
  *
@@ -228,7 +228,7 @@ ACI_RC  ulsCheckEnv( ulsHandle * aHandle )
  *
  * Description:
  *
- *   Handleì— Error Codeë¥¼ ì…‹íŒ…í•œë‹¤. 
+ *   Handle¿¡ Error Code¸¦ ¼ÂÆÃÇÑ´Ù. 
  *
  * Implementation:
  *

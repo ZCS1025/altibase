@@ -16,14 +16,14 @@
  
 
 /***********************************************************************
- * $Id: qmgHierarchy.h 82490 2018-03-16 00:17:55Z donovan.seo $
+ * $Id: qmgHierarchy.h 82330 2018-02-23 00:32:59Z donovan.seo $
  *
  * Description :
- *     Hierarchy Graphë¥¼ ìœ„í•œ ì •ì˜
+ *     Hierarchy Graph¸¦ À§ÇÑ Á¤ÀÇ
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -36,24 +36,24 @@
 #include <qmoCnfMgr.h>
 
 //---------------------------------------------------
-// Hierarchy Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+// Hierarchy Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
 //---------------------------------------------------
 
 typedef struct qmgHIER
 {
-    qmgGraph graph;  // ê³µí†µ Graph ì •ë³´
+    qmgGraph graph;  // °øÅë Graph Á¤º¸
     
-    // Hierarchy Graphë¥¼ ìœ„í•œ ì •ë³´
-    qmsHierarchy     * myHierarchy;    // qmsSFWGH::hierarchyë¥¼ ê°€ë¦¬í‚´
+    // Hierarchy Graph¸¦ À§ÇÑ Á¤º¸
+    qmsHierarchy     * myHierarchy;    // qmsSFWGH::hierarchy¸¦ °¡¸®Å´
 
-    // startWith ì •ë³´
+    // startWith Á¤º¸
     qmoCNF           * startWithCNF;
     UInt               mStartWithMethodCnt;
     qmoAccessMethod  * mStartWithAccessMethod;
     qmoAccessMethod  * mSelectedStartWithMethod;
     qcmIndex         * mSelectedStartWithIdx;
 
-    // connectBy ì •ë³´
+    // connectBy Á¤º¸
     qmoCNF           * connectByCNF;
     UInt               mConnectByMethodCnt;
     qmoAccessMethod  * mConnectByAccessMethod;
@@ -62,13 +62,13 @@ typedef struct qmgHIER
 } qmgHIER;
 
 //---------------------------------------------------
-// Hierarchy Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+// Hierarchy Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
 //---------------------------------------------------
 
 class qmgHierarchy
 {
 public:
-    // Graph ì˜ ì´ˆê¸°í™”
+    // Graph ÀÇ ÃÊ±âÈ­
     static IDE_RC  init( qcStatement  * aStatement,
                          qmsQuerySet  * aQuerySet,
                          qmgGraph     * aChildGraph,
@@ -76,13 +76,13 @@ public:
                          qmsHierarchy * aHierarchy,
                          qmgGraph    ** aGraph );
 
-    // Graphì˜ ìµœì í™” ìˆ˜í–‰
+    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
     static IDE_RC  optimize( qcStatement * aStatement, qmgGraph * aGraph );
 
-    // Graphì˜ Plan Tree ìƒì„±
+    // GraphÀÇ Plan Tree »ı¼º
     static IDE_RC  makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph * aGraph );
 
-    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
+    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
     static IDE_RC  printGraph( qcStatement  * aStatement,
                                qmgGraph     * aGraph,
                                ULong          aDepth,

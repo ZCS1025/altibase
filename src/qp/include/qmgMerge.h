@@ -19,11 +19,11 @@
  * $Id: qmgMerge.h 53265 2012-05-18 00:05:06Z seo0jun $
  *
  * Description :
- *     Merge Graphë¥¼ ìœ„í•œ ì •ì˜
+ *     Merge Graph¸¦ À§ÇÑ Á¤ÀÇ
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -34,20 +34,20 @@
 #include <qmgDef.h>
 
 //---------------------------------------------------
-// Merge Graphì˜ Define ìƒìˆ˜
+// Merge GraphÀÇ Define »ó¼ö
 //---------------------------------------------------
 
 
 //---------------------------------------------------
-// Merge Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+// Merge Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
 //---------------------------------------------------
 
 typedef struct qmgMRGE
 {
-    qmgGraph             graph;    // ê³µí†µ Graph ì •ë³´
+    qmgGraph             graph;    // °øÅë Graph Á¤º¸
 
     //---------------------------------
-    // merge ê´€ë ¨ ì •ë³´
+    // merge °ü·Ã Á¤º¸
     //---------------------------------
 
     // child statements
@@ -65,25 +65,25 @@ typedef struct qmgMRGE
 } qmgMRGE;
 
 //---------------------------------------------------
-// Merge Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+// Merge Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
 //---------------------------------------------------
 
 class qmgMerge
 {
 public:
-    // Graph ì˜ ì´ˆê¸°í™”
+    // Graph ÀÇ ÃÊ±âÈ­
     static IDE_RC  init( qcStatement  * aStatement,
                          qmgGraph    ** aGraph );
 
-    // Graphì˜ ìµœì í™” ìˆ˜í–‰
+    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
     static IDE_RC  optimize( qcStatement * aStatement, qmgGraph * aGraph );
 
-    // Graphì˜ Plan Tree ìƒì„±
+    // GraphÀÇ Plan Tree »ı¼º
     static IDE_RC  makePlan( qcStatement    * aStatement,
                              const qmgGraph * aParent,
                              qmgGraph       * aGraph );
 
-    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
+    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
     static IDE_RC  printGraph( qcStatement  * aStatement,
                                qmgGraph     * aGraph,
                                ULong          aDepth,

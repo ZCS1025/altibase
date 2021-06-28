@@ -165,8 +165,6 @@ public:
     static void lock();     /* r/w */
     static void lockRead(); /* r   */
     static void unlock();
-    /* PROJ-2701 online data rebuild for shard share transaction : use of mmcTrans */
-    static void findShareTransLockNeeded( mmcSession  *aSession , mmcTransObj ** aShareTrans );
 
 private:
     static void changeTaskCount(SInt aValue);
@@ -184,8 +182,8 @@ private:
                                     UInt          sStartTime,
                                     UInt          aTimeout,
                                     UInt          aTimeoutIndex);
-    //fix BUG-24362 dequeue ëŒ€ê¸° ì„¸ì…˜ì´ closeë ë•Œ , sessionì˜ queue ì„¤ì •ì—ì„œ
-    // ë™ì‹œì„±ì— ë¬¸ì œê°€ ìˆìŒ.
+    //fix BUG-24362 dequeue ´ë±â ¼¼¼ÇÀÌ closeµÉ¶§ , sessionÀÇ queue ¼³Á¤¿¡¼­
+    // µ¿½Ã¼º¿¡ ¹®Á¦°¡ ÀÖÀ½.
     static void wakeupEnqueWaitIfNessary(mmcTask*  aTask,
                                          mmcSession * aSession);
 

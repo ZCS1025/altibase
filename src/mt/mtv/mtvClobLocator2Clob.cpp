@@ -111,7 +111,8 @@ IDE_RC mtvCalculate_ClobLocator2Clob( mtcNode*,
 
     IDE_TEST( mtc::getLobLengthLocator( sLocator,
                                         & sIsNull,
-                                        & sLobLength )
+                                        & sLobLength,
+                                        mtc::getStatistics(aTemplate) )
               != IDE_SUCCESS );
 
     if ( sIsNull == ID_TRUE )
@@ -121,47 +122,56 @@ IDE_RC mtvCalculate_ClobLocator2Clob( mtcNode*,
     }
     else
     {
-        // BUG-38842
-        // clob to varchar conversionÏãú ÏßÄÏ†ïÌïú Í∏∏Ïù¥ÎßåÌÅºÎßå Î≥ÄÌôòÌïúÎã§.
-        if ( MTU_CLOB_TO_VARCHAR_PRECISION < sLobLength )
+        /* BUG-47732  empty lob¿ª PSM ≥ª∫Œø°º≠ select «“ ∂ß ø°∑Ø πﬂª˝ */
+        if ( sLobLength <= MTD_LOB_EMPTY_LENGTH )
         {
-            sLobLength = MTU_CLOB_TO_VARCHAR_PRECISION;
-
-            // Î¨∏ÏûêÍ∞Ä Ïß§Î¶¥ Ïàò ÏûàÎã§.
-            sTruncated = ID_TRUE;
+            sClobValue = (mtdClobType*)aStack[0].value;
+            sClobValue->length = MTD_LOB_EMPTY_LENGTH;
         }
         else
         {
-            // Nothing to do.
-        }
+            // BUG-38842
+            // clob to varchar conversionΩ√ ¡ˆ¡§«— ±Ê¿Ã∏∏≈≠∏∏ ∫Ø»Ø«—¥Ÿ.
+            if ( MTU_CLOB_TO_VARCHAR_PRECISION < sLobLength )
+            {
+                sLobLength = MTU_CLOB_TO_VARCHAR_PRECISION;
 
-        IDE_TEST_RAISE( (UInt)aStack[0].column->precision < sLobLength,
-                        ERR_CONVERT );
+                // πÆ¿⁄∞° ¬©∏± ºˆ ¿÷¥Ÿ.
+                sTruncated = ID_TRUE;
+            }
+            else
+            {
+                // Nothing to do.
+            }
 
-        sClobValue = (mtdClobType*)aStack[0].value;
+            IDE_TEST_RAISE( (UInt)aStack[0].column->precision < sLobLength,
+                            ERR_CONVERT );
 
-        IDE_TEST( mtc::readLob( mtc::getStatistics( aTemplate ),// NULL, /* idvSQL* */
-                                sLocator,
-                                0,
-                                sLobLength,
-                                sClobValue->value,
-                                & sReadLength )
-                  != IDE_SUCCESS );
+            sClobValue = (mtdClobType*)aStack[0].value;
 
-        if ( sTruncated == ID_FALSE )
-        {
-            sClobValue->length = (SLong)sReadLength;
-        }
-        else
-        {
-            IDE_TEST( mtf::truncIncompletedString(
-                          sClobValue->value,
-                          sReadLength,
-                          & sSize,
-                          sLanguage )
+            IDE_TEST( mtc::readLob( mtc::getStatistics( aTemplate ), /* idvSQL* */
+                                    sLocator,
+                                    0,
+                                    sLobLength,
+                                    sClobValue->value,
+                                    & sReadLength )
                       != IDE_SUCCESS );
 
-            sClobValue->length = (UShort)sSize;
+            if ( sTruncated == ID_FALSE )
+            {
+                sClobValue->length = (SLong)sReadLength;
+            }
+            else
+            {
+                IDE_TEST( mtf::truncIncompletedString(
+                              sClobValue->value,
+                              sReadLength,
+                              & sSize,
+                              sLanguage )
+                          != IDE_SUCCESS );
+
+                sClobValue->length = (UShort)sSize;
+            }
         }
     }
 

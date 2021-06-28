@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfCharacter_length.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfCharacter_length.cpp 90192 2021-03-12 02:01:03Z jayce.park $
  **********************************************************************/
 
 #include <mte.h>
@@ -47,7 +47,7 @@ static IDE_RC mtfCharacter_lengthEstimate( mtcNode*     aNode,
 mtfModule mtfCharacter_length = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞ÏûêÍ∞Ä ÏïÑÎãò)
+    1.0,  // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄∞° æ∆¥‘)
     mtfCharacter_lengthFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -68,14 +68,14 @@ static IDE_RC mtfCharacter_lengthCalculate4MB( mtcNode*     aNode,
                                                void*        aInfo,
                                                mtcTemplate* aTemplate );
 
-/* PROJ-1530 PSM/TriggerÏóêÏÑú LOB Îç∞Ïù¥ÌÉÄ ÌÉÄÏûÖ ÏßÄÏõê */
+/* PROJ-1530 PSM/Triggerø°º≠ LOB µ•¿Ã≈∏ ≈∏¿‘ ¡ˆø¯ */
 static IDE_RC mtfCharacter_lengthCalculateClobValue( mtcNode*     aNode,
                                                      mtcStack*    aStack,
                                                      SInt         aRemain,
                                                      void*        aInfo,
                                                      mtcTemplate* aTemplate );
 
-/* PROJ-1530 PSM/TriggerÏóêÏÑú LOB Îç∞Ïù¥ÌÉÄ ÌÉÄÏûÖ ÏßÄÏõê */
+/* PROJ-1530 PSM/Triggerø°º≠ LOB µ•¿Ã≈∏ ≈∏¿‘ ¡ˆø¯ */
 static IDE_RC mtfCharacter_lengthCalculateClobValue4MB( mtcNode*     aNode,
                                                         mtcStack*    aStack,
                                                         SInt         aRemain,
@@ -120,7 +120,7 @@ const mtcExecute mtfExecute4MB = {
     mtk::extractRangeNA
 };
 
-/* PROJ-1530 PSM/TriggerÏóêÏÑú LOB Îç∞Ïù¥ÌÉÄ ÌÉÄÏûÖ ÏßÄÏõê */
+/* PROJ-1530 PSM/Triggerø°º≠ LOB µ•¿Ã≈∏ ≈∏¿‘ ¡ˆø¯ */
 const mtcExecute mtfExecuteClobValue = {
     mtf::calculateNA,
     mtf::calculateNA,
@@ -133,7 +133,7 @@ const mtcExecute mtfExecuteClobValue = {
     mtk::extractRangeNA
 };
 
-/* PROJ-1530 PSM/TriggerÏóêÏÑú LOB Îç∞Ïù¥ÌÉÄ ÌÉÄÏûÖ ÏßÄÏõê */
+/* PROJ-1530 PSM/Triggerø°º≠ LOB µ•¿Ã≈∏ ≈∏¿‘ ¡ˆø¯ */
 const mtcExecute mtfExecuteClobValue4MB = {
     mtf::calculateNA,
     mtf::calculateNA,
@@ -190,7 +190,7 @@ IDE_RC mtfCharacter_lengthEstimate( mtcNode*     aNode,
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
     // BUG-40992 FATAL when using _prowid
-    // Ïù∏ÏûêÏùò Í≤ΩÏö∞ mtcStack Ïùò column Í∞íÏùÑ Ïù¥Ïö©ÌïòÎ©¥ ÎêúÎã§.
+    // ¿Œ¿⁄¿« ∞ÊøÏ mtcStack ¿« column ∞™¿ª ¿ÃøÎ«œ∏È µ»¥Ÿ.
     sIndexColumn     = aStack[1].column;
 
     if ( aStack[1].column->module->id == MTD_CLOB_LOCATOR_ID )
@@ -239,13 +239,13 @@ IDE_RC mtfCharacter_lengthEstimate( mtcNode*     aNode,
         {
             if ( sIndexColumn->language == &mtlAscii )
             {
-                /* PROJ-1530 PSM/TriggerÏóêÏÑú LOB Îç∞Ïù¥ÌÉÄ ÌÉÄÏûÖ ÏßÄÏõê */
+                /* PROJ-1530 PSM/Triggerø°º≠ LOB µ•¿Ã≈∏ ≈∏¿‘ ¡ˆø¯ */
                 aTemplate->rows[aNode->table].execute[aNode->column] =
                     mtfExecuteClobValue;
             }
             else
             {
-                /* PROJ-1530 PSM/TriggerÏóêÏÑú LOB Îç∞Ïù¥ÌÉÄ ÌÉÄÏûÖ ÏßÄÏõê */
+                /* PROJ-1530 PSM/Triggerø°º≠ LOB µ•¿Ã≈∏ ≈∏¿‘ ¡ˆø¯ */
                 aTemplate->rows[aNode->table].execute[aNode->column] =
                     mtfExecuteClobValue4MB;
             }
@@ -311,8 +311,8 @@ IDE_RC mtfCharacter_lengthCalculate( mtcNode*     aNode,
  * Implementation :
  *    CHAR_LENGTH( char )
  *
- *    aStack[0] : ÏûÖÎ†•Îêú Î¨∏ÏûêÏó¥Ïùò Í∏∏Ïù¥ 
- *    aStack[1] : char ( ÏûÖÎ†•Îêú Î¨∏ÏûêÏó¥ )
+ *    aStack[0] : ¿‘∑¬µ» πÆ¿⁄ø≠¿« ±Ê¿Ã 
+ *    aStack[1] : char ( ¿‘∑¬µ» πÆ¿⁄ø≠ )
  *
  ***********************************************************************/
 
@@ -357,8 +357,8 @@ IDE_RC mtfCharacter_lengthCalculate4MB( mtcNode*     aNode,
  * Implementation :
  *    CHAR_LENGTH( char )
  *
- *    aStack[0] : ÏûÖÎ†•Îêú Î¨∏ÏûêÏó¥Ïùò Í∏∏Ïù¥
- *    aStack[1] : char ( ÏûÖÎ†•Îêú Î¨∏ÏûêÏó¥ )
+ *    aStack[0] : ¿‘∑¬µ» πÆ¿⁄ø≠¿« ±Ê¿Ã
+ *    aStack[1] : char ( ¿‘∑¬µ» πÆ¿⁄ø≠ )
  *
  ***********************************************************************/
 
@@ -383,8 +383,8 @@ IDE_RC mtfCharacter_lengthCalculate4MB( mtcNode*     aNode,
     else
     {
         //------------------------------------------
-        // ÏûÖÎ†•Îêú Î¨∏ÏûêÏó¥ÏùÑ Language TypeÏóê ÎßûÍ≤å Ìïú Î¨∏ÏûêÏî© ÏùΩÏñ¥
-        // Î¨∏ÏûêÏó¥ Í∏∏Ïù¥Î•º Íµ¨Ìï®
+        // ¿‘∑¬µ» πÆ¿⁄ø≠¿ª Language Typeø° ∏¬∞‘ «— πÆ¿⁄æø ¿–æÓ
+        // πÆ¿⁄ø≠ ±Ê¿Ã∏¶ ±∏«‘
         //------------------------------------------
 
         sLanguage = aStack[1].column->language;
@@ -422,8 +422,8 @@ IDE_RC mtfCharacter_lengthCalculateClobValue( mtcNode     * aNode,
  * Implementation :
  *    CHAR_LENGTH( clob )
  *
- *    aStack[0] : ÏûÖÎ†•Îêú Î¨∏ÏûêÏó¥Ïùò Í∏∏Ïù¥
- *    aStack[1] : clob ( ÏûÖÎ†•Îêú Î¨∏ÏûêÏó¥ )
+ *    aStack[0] : ¿‘∑¬µ» πÆ¿⁄ø≠¿« ±Ê¿Ã
+ *    aStack[1] : clob ( ¿‘∑¬µ» πÆ¿⁄ø≠ )
  *
  ***********************************************************************/
 
@@ -465,8 +465,8 @@ IDE_RC mtfCharacter_lengthCalculateClobValue4MB( mtcNode     * aNode,
  * Implementation :
  *    CHAR_LENGTH( clob )
  *
- *    aStack[0] : ÏûÖÎ†•Îêú Î¨∏ÏûêÏó¥Ïùò Í∏∏Ïù¥
- *    aStack[1] : clob ( ÏûÖÎ†•Îêú Î¨∏ÏûêÏó¥ )
+ *    aStack[0] : ¿‘∑¬µ» πÆ¿⁄ø≠¿« ±Ê¿Ã
+ *    aStack[1] : clob ( ¿‘∑¬µ» πÆ¿⁄ø≠ )
  *
  ***********************************************************************/
 
@@ -492,8 +492,8 @@ IDE_RC mtfCharacter_lengthCalculateClobValue4MB( mtcNode     * aNode,
     else
     {
         //------------------------------------------
-        // ÏûÖÎ†•Îêú Î¨∏ÏûêÏó¥ÏùÑ Language TypeÏóê ÎßûÍ≤å Ìïú Î¨∏ÏûêÏî© ÏùΩÏñ¥
-        // Î¨∏ÏûêÏó¥ Í∏∏Ïù¥Î•º Íµ¨Ìï®
+        // ¿‘∑¬µ» πÆ¿⁄ø≠¿ª Language Typeø° ∏¬∞‘ «— πÆ¿⁄æø ¿–æÓ
+        // πÆ¿⁄ø≠ ±Ê¿Ã∏¶ ±∏«‘
         //------------------------------------------
 
         sLanguage = aStack[1].column->language;
@@ -533,7 +533,7 @@ IDE_RC mtfCharacter_lengthCalculateXlobLocator( mtcNode*     aNode,
  * Implementation :
  *    CHAR_LENGTH( char )
  *
- *    aStack[0] : ÏûÖÎ†•Îêú Î¨∏ÏûêÏó¥Ïùò Í∏∏Ïù¥ 
+ *    aStack[0] : ¿‘∑¬µ» πÆ¿⁄ø≠¿« ±Ê¿Ã 
  *    aStack[1] : lob locator
  *
  ***********************************************************************/
@@ -553,7 +553,8 @@ IDE_RC mtfCharacter_lengthCalculateXlobLocator( mtcNode*     aNode,
     
     IDE_TEST( mtc::getLobLengthLocator( sLocator,
                                         & sIsNull,
-                                        & sLobLength )
+                                        & sLobLength,
+                                        mtc::getStatistics(aTemplate) )
               != IDE_SUCCESS );
     
     if ( sIsNull == ID_TRUE )
@@ -592,7 +593,7 @@ IDE_RC mtfCharacter_lengthCalculateXlobLocator4MB( mtcNode*     aNode,
  * Implementation :
  *    CHAR_LENGTH( char )
  *
- *    aStack[0] : ÏûÖÎ†•Îêú Î¨∏ÏûêÏó¥Ïùò Í∏∏Ïù¥ 
+ *    aStack[0] : ¿‘∑¬µ» πÆ¿⁄ø≠¿« ±Ê¿Ã 
  *    aStack[1] : lob locator
  *
  ***********************************************************************/
@@ -623,7 +624,8 @@ IDE_RC mtfCharacter_lengthCalculateXlobLocator4MB( mtcNode*     aNode,
     
     IDE_TEST( mtc::getLobLengthLocator( sLocator,
                                         & sIsNull,
-                                        & sLobLength )
+                                        & sLobLength,
+                                        mtc::getStatistics(aTemplate) )
               != IDE_SUCCESS );
     
     if ( sIsNull == ID_TRUE )
@@ -637,15 +639,15 @@ IDE_RC mtfCharacter_lengthCalculateXlobLocator4MB( mtcNode*     aNode,
         sLength = 0;        
 
         //------------------------------------------
-        // ÏûÖÎ†•Îêú Î¨∏ÏûêÏó¥ÏùÑ Language TypeÏóê ÎßûÍ≤å Ìïú Î¨∏ÏûêÏî© ÏùΩÏñ¥
-        // Î¨∏ÏûêÏó¥ Í∏∏Ïù¥Î•º Íµ¨Ìï®
+        // ¿‘∑¬µ» πÆ¿⁄ø≠¿ª Language Typeø° ∏¬∞‘ «— πÆ¿⁄æø ¿–æÓ
+        // πÆ¿⁄ø≠ ±Ê¿Ã∏¶ ±∏«‘
         //------------------------------------------
 
         sBufferOffset = 0;
         
         while ( sBufferOffset < sLobLength )
         {
-            // Î≤ÑÌçºÎ•º ÏùΩÎäîÎã§.
+            // πˆ∆€∏¶ ¿–¥¬¥Ÿ.
             if ( sBufferOffset + MTC_LOB_BUFFER_SIZE + MTL_MAX_PRECISION > sLobLength )
             {
                 sBufferMount = sLobLength - sBufferOffset;
@@ -659,7 +661,7 @@ IDE_RC mtfCharacter_lengthCalculateXlobLocator4MB( mtcNode*     aNode,
             
             //ideLog::log( IDE_QP_0, "[character_length] offset=%d", sBufferOffset );
             
-            IDE_TEST( mtc::readLob( mtc::getStatistics( aTemplate ), // NULL, /* idvSQL* */
+            IDE_TEST( mtc::readLob( mtc::getStatistics( aTemplate ), /* idvSQL* */
                                     sLocator,
                                     sBufferOffset,
                                     sBufferMount,
@@ -667,7 +669,7 @@ IDE_RC mtfCharacter_lengthCalculateXlobLocator4MB( mtcNode*     aNode,
                                     &sReadLength )
                       != IDE_SUCCESS );
 
-            // Î≤ÑÌçºÏóêÏÑú Î¨∏ÏûêÏó¥ Í∏∏Ïù¥Î•º Íµ¨ÌïúÎã§.
+            // πˆ∆€ø°º≠ πÆ¿⁄ø≠ ±Ê¿Ã∏¶ ±∏«—¥Ÿ.
             sIndex = sBuffer;
             sFence = sIndex + sBufferSize;
             sBufferFence = sIndex + sBufferMount;

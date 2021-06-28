@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: sddReq.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sddReq.h 86110 2019-09-02 04:52:04Z et16 $
  **********************************************************************/
 
 #ifndef _O_SDD_REQ_H_
@@ -41,10 +41,6 @@ class sddReqFunc
         {
             smiSetEmergency( aFlag );
         };
-        static idBool isTempTableSpaceType( smiTableSpaceType aType )
-        {
-            return smiTableSpace::isTempTableSpaceType( aType );
-        };
 
         /* smx */
         static smLSN getLstUndoNxtLSN( void * aTrans )
@@ -65,14 +61,7 @@ class sddReqFunc
         };
 
         /* sdp */
-        static IDE_RC destroySpaceCache( idvSQL            * aStatistics,
-                                         sctTableSpaceNode * aSpaceNode,
-                                         void              * aActionArg )
-        {
-            return sdpTableSpace::doActFreeSpaceCache( aStatistics,
-                                                       aSpaceNode,
-                                                       aActionArg );
-        };
+
         static IDE_RC resetTBS( idvSQL    * aStatistics,
                                 scSpaceID   aSpaceID,
                                 void      * aTrans )
@@ -81,14 +70,7 @@ class sddReqFunc
                                             aSpaceID,
                                             aTrans );
         };
-        static IDE_RC getUsedPageLimit( idvSQL    * aStatistics,
-                                        scSpaceID   aSpaceID,
-                                        ULong     * aUsedPageLimit )
-        {
-            return sdpTableSpace::getAllocPageCount( aStatistics,
-                                                     aSpaceID,
-                                                     aUsedPageLimit );
-        };
+
         static IDE_RC alterTBSOnlineCommitPending( idvSQL            * aStatistics,
                                                    sctTableSpaceNode * aTBSNode,
                                                    sctPendingOp      * aPendingOp )
@@ -315,28 +297,28 @@ class sddReqFunc
                                                      aAfterMaxSize,
                                                      aBeginLSN );
         };
-        static IDE_RC backupDiskTBS( idvSQL     * aStatistics,
-                                     scSpaceID    aTbsID,
-                                     SChar      * aBackupDir )
+        static IDE_RC backupDiskTBS( idvSQL            * aStatistics,
+                                     sddTableSpaceNode * aSpaceNode,
+                                     SChar             * aBackupDir )
         {
             return smrBackupMgr::backupDiskTBS( aStatistics,
-                                                aTbsID,
+                                                aSpaceNode,
                                                 aBackupDir );
         };
         /* PROJ-2133 incremental backup */
-        static IDE_RC incrementalBackupDiskTBS( idvSQL     * aStatistics,
-                                                scSpaceID    aTbsID,
-                                                SChar      * aBackupDir,
-                                                smriBISlot * aCommonBackupInfo )
+        static IDE_RC incrementalBackupDiskTBS( idvSQL            * aStatistics,
+                                                sddTableSpaceNode * aSpaceNode,
+                                                SChar             * aBackupDir,
+                                                smriBISlot        * aCommonBackupInfo )
         {
             return smrBackupMgr::incrementalBackupDiskTBS( aStatistics,
-                                                           aTbsID,
+                                                           aSpaceNode,
                                                            aBackupDir,
                                                            aCommonBackupInfo );
         };
-        static IDE_RC getLstLSN( smLSN * aLSN )
+        static void getLstLSN( smLSN * aLSN )
         {
-            return smrLogMgr::getLstLSN( aLSN );
+            smrLogMgr::getLstLSN( aLSN );
         };
         static IDE_RC blockCheckpoint()
         {

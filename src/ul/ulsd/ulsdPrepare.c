@@ -26,6 +26,212 @@
 
 #include <ulsd.h>
 #include <ulsdnExecute.h>
+#include <ulsdRebuild.h>
+
+static ACI_RC ulsdReadShardValue( cmiProtocolContext        * aProtocolContext,
+                                  ulnDbc                    * aDbc,
+                                  acp_uint32_t                aValueType,
+                                  acp_uint32_t                aValueLength,
+                                  ulsdValue                 * aValue )
+{
+    switch( aValueType )
+    {
+        case MTD_SMALLINT_ID:
+            ACE_DASSERT( aValueLength == 2 );
+            CMI_RD2(aProtocolContext, (acp_uint16_t*)
+                    &(aValue->mSmallintMax));
+            break;
+
+        case MTD_INTEGER_ID:
+            ACE_DASSERT( aValueLength == 4 );
+            CMI_RD4(aProtocolContext, (acp_uint32_t*)
+                    &(aValue->mIntegerMax));
+            break;
+
+        case MTD_BIGINT_ID:
+            ACE_DASSERT( aValueLength == 8 );
+            CMI_RD8(aProtocolContext, (acp_uint64_t*)
+                    &(aValue->mBigintMax));
+            break;
+
+        case MTD_CHAR_ID:
+        case MTD_VARCHAR_ID:
+            ACI_TEST_RAISE( cmiSplitRead( aProtocolContext,
+                                          aValueLength,
+                                          aValue->mCharMax.value,
+                                          aDbc->mConnTimeoutValue )
+                            != ACI_SUCCESS, CM_ERROR );
+            aValue->mCharMax.length = aValueLength;
+            break;
+
+        default:
+            ACE_ASSERT(0);
+            break;
+    }
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION( CM_ERROR )
+    {
+        return ACI_FAILURE;
+    }
+    ACI_EXCEPTION_END;
+
+    return ACI_SUCCESS;
+}
+
+static ACI_RC ulsdSkipReadShardValue( cmiProtocolContext        * aProtocolContext,
+                                      ulnDbc                    * aDbc,
+                                      acp_uint32_t                aValueType,
+                                      acp_uint32_t                aValueLength )
+{
+    switch( aValueType )
+    {
+        case MTD_SMALLINT_ID:
+            CMI_SKIP_READ_BLOCK(aProtocolContext, 2);
+            break;
+
+        case MTD_INTEGER_ID:
+            CMI_SKIP_READ_BLOCK(aProtocolContext, 4);
+            break;
+
+        case MTD_BIGINT_ID:
+            CMI_SKIP_READ_BLOCK(aProtocolContext, 8);
+            break;
+
+        case MTD_CHAR_ID:
+        case MTD_VARCHAR_ID:
+
+            ACI_TEST_RAISE( cmiSplitSkipRead( aProtocolContext,
+                                              aValueLength,
+                                              aDbc->mConnTimeoutValue )
+                            != ACI_SUCCESS, CM_ERROR );
+            break;
+
+        default:
+            ACE_ASSERT(0);
+            break;
+    }
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION( CM_ERROR )
+    {
+        return ACI_FAILURE;
+    }
+    ACI_EXCEPTION_END;
+
+    return ACI_SUCCESS;
+}
+
+
+static ACI_RC ulsdReadShardValueInfo( cmiProtocolContext    * aProtocolContext,
+                                      ulnDbc                * aDbc,
+                                      ulsdValueInfo        ** aValueInfo )
+{
+    ulsdValueInfo   * sValueInfo = NULL;
+    acp_uint8_t       sType = 0;
+    acp_uint32_t      sValueType = 0;
+    acp_uint32_t      sLength = 0;
+    acp_bool_t        sIsAlloc = ACP_FALSE;
+    acp_uint32_t      sStage = 0;
+
+    CMI_RD1( aProtocolContext, sType );
+    ACE_ASSERT( sType < 2 );
+
+    CMI_RD4( aProtocolContext, &sValueType );
+    CMI_RD4( aProtocolContext, &sLength );
+    sStage = 1;
+
+    if ( sLength <= ACI_SIZEOF( ulsdValue ) )
+    {
+        ACI_TEST( ACP_RC_NOT_SUCCESS( acpMemAlloc( (void **)&sValueInfo,
+                                                   ACI_SIZEOF(ulsdValueInfo) ) ) );
+    }
+    else
+    {
+        ACI_TEST( ACP_RC_NOT_SUCCESS( acpMemAlloc( (void **)&sValueInfo,
+                                                   ACI_SIZEOF(ulsdValueInfo) + sLength ) ) );
+    }
+    sIsAlloc = ACP_TRUE;
+
+    sValueInfo->mDataValueType = sValueType;
+
+    ACI_TEST_RAISE( ulsdReadShardValue( aProtocolContext,
+                                        aDbc,
+                                        sValueType,
+                                        sLength,
+                                        &(sValueInfo->mValue) )
+                    != ACI_SUCCESS, CM_ERROR );
+
+    sValueInfo->mType = sType;
+
+    *aValueInfo = sValueInfo;
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION( CM_ERROR )
+    {
+        (void)acpMemFree( sValueInfo );
+
+        return ACI_FAILURE;
+    }
+    ACI_EXCEPTION_END;
+
+    if ( sIsAlloc == ACP_TRUE )
+    {
+        (void)acpMemFree( sValueInfo );
+    }
+
+    switch( sStage )
+    {
+        case 1:
+            if ( ulsdSkipReadShardValue( aProtocolContext,
+                                         aDbc,
+                                         sValueType,
+                                         sLength )
+                 != ACI_SUCCESS )
+            {
+                return ACI_FAILURE;
+            }
+
+        default:
+            break;
+    }
+
+    return ACI_SUCCESS;
+}
+
+static ACI_RC ulsdSkipReadShardValueInfo( cmiProtocolContext    * aProtocolContext,
+                                          ulnDbc                * aDbc )
+{
+    acp_char_t        sType;
+    acp_uint32_t      sValueType = 0;
+    acp_uint32_t      sLength = 0;
+
+    CMI_RD1( aProtocolContext, sType );
+
+    CMI_RD4( aProtocolContext, &sValueType );
+    CMI_RD4( aProtocolContext, &sLength );
+
+    ACP_UNUSED( sType );
+
+    ACI_TEST_RAISE( ulsdSkipReadShardValue( aProtocolContext,
+                                            aDbc,
+                                            sValueType,
+                                            sLength )
+                    != ACI_SUCCESS, CM_ERROR );
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION( CM_ERROR )
+    {
+        return ACI_FAILURE;
+    }
+    ACI_EXCEPTION_END;
+
+    return ACI_SUCCESS;
+}
 
 ACI_RC ulsdCallbackAnalyzeResult(cmiProtocolContext *aProtocolContext,
                                  cmiProtocol        *aProtocol,
@@ -34,6 +240,7 @@ ACI_RC ulsdCallbackAnalyzeResult(cmiProtocolContext *aProtocolContext,
 {
     ulnFnContext          *sFnContext  = (ulnFnContext *)aUserContext;
     ulnStmt               *sStmt       = sFnContext->mHandle.mStmt;
+    ulnDbc                *sDbc        = NULL;
     acp_uint32_t           sStatementID;
     acp_uint32_t           sStatementType;
     acp_uint16_t           sParamCount;
@@ -45,24 +252,34 @@ ACI_RC ulsdCallbackAnalyzeResult(cmiProtocolContext *aProtocolContext,
     acp_uint8_t            sShardSplitMethod;
     acp_uint32_t           sShardKeyDataType;
     acp_uint32_t           sShardDefaultNodeID;
-    acp_uint16_t           sShardNodeInfoCnt;
-    acp_uint16_t           sShardNodeCnt;
+    acp_uint16_t           sShardRangeInfoCnt;
+    acp_uint16_t           sShardRangeIdx = 0;
     ulsdRangeInfo         *sShardRange;
 
     /* PROJ-2646 New shard analyzer */
-    acp_uint16_t           sShardValueCnt;
-    acp_uint16_t           sShardValueIdx;
-    acp_uint8_t            sIsCanMerge;
+    acp_uint16_t           sShardValueCnt = 0;
+    acp_uint16_t           sShardValueIdx = 0;
+    acp_uint16_t           sTryShardValueCnt = 0;
+    acp_uint8_t            sIsShardQuery;
+    ulsdValueInfo        * sShardValueInfo = NULL;
 
     /* PROJ-2655 Composite shard key */
     acp_uint8_t            sIsSubKeyExists;
     acp_uint8_t            sShardSubSplitMethod;
     acp_uint32_t           sShardSubKeyDataType;
-    acp_uint16_t           sShardSubValueCnt;
-    acp_uint16_t           sShardSubValueIdx;
+    acp_uint16_t           sShardSubValueCnt = 0;
+    acp_uint16_t           sShardSubValueIdx = 0;
+    acp_uint16_t           sTryShardSubValueCnt = 0;
+
+    acp_uint16_t           sState = 0;
+
+    /* TASK-7219 Non-shard DML */
+    acp_uint8_t            sIsPartialCoordExecNeeded;
 
     ACP_UNUSED(aProtocol);
     ACP_UNUSED(aServiceSession);
+
+    ULN_FNCONTEXT_GET_DBC( sFnContext, sDbc );
 
     SHARD_LOG("(Shard Prepare Result) Shard Prepare Result\n");
 
@@ -70,10 +287,29 @@ ACI_RC ulsdCallbackAnalyzeResult(cmiProtocolContext *aProtocolContext,
     CMI_RD4(aProtocolContext, &sStatementType);
     CMI_RD2(aProtocolContext, &sParamCount);
     CMI_RD2(aProtocolContext, &sResultSetCount);
+    CMI_RD1(aProtocolContext, sShardSplitMethod);
+    CMI_RD1(aProtocolContext, sIsPartialCoordExecNeeded); /* TASK-7219 Non-shard DML */
+    CMI_RD4(aProtocolContext, &sShardKeyDataType);
+    CMI_RD1(aProtocolContext, sIsSubKeyExists );
+    if ( sIsSubKeyExists == ACP_TRUE )
+    {
+        CMI_RD1(aProtocolContext, sShardSubSplitMethod);
+        CMI_RD4(aProtocolContext, &sShardSubKeyDataType);
+    }
+    CMI_RD4(aProtocolContext, &sShardDefaultNodeID);
+
+    CMI_RD1(aProtocolContext, sIsShardQuery);
+
+    CMI_RD2(aProtocolContext, &sShardValueCnt);
+    if ( sIsSubKeyExists == ACP_TRUE )
+    {
+        CMI_RD2(aProtocolContext, &sShardSubValueCnt);
+    }
 
     ACI_TEST_RAISE(ULN_OBJ_GET_TYPE(sStmt) != ULN_OBJ_TYPE_STMT, LABEL_MEM_MANAGE_ERR);
 
     ulnStmtFreeAllResult(sStmt);
+    ulnShardStmtFreeAllShardValueInfo( sStmt );
 
     sStmt->mIsPrepared  = ACP_TRUE;
     ulnStmtSetStatementID(sStmt, sStatementID);
@@ -105,80 +341,77 @@ ACI_RC ulsdCallbackAnalyzeResult(cmiProtocolContext *aProtocolContext,
     }
 
     /* PROJ-2598 Shard pilot(shard analyze) */
-    CMI_RD1(aProtocolContext, sShardSplitMethod);
-    CMI_RD4(aProtocolContext, &sShardKeyDataType);
-    CMI_RD4(aProtocolContext, &sShardDefaultNodeID);
-
     ulsdStmtSetShardSplitMethod( sStmt, sShardSplitMethod );
     ulsdStmtSetShardKeyDataType( sStmt, sShardKeyDataType );
+
     ulsdStmtSetShardDefaultNodeID( sStmt, sShardDefaultNodeID );
 
     SHARD_LOG("(Shard Prepare Result) shardSplitMethod : %d\n",sStmt->mShardStmtCxt.mShardSplitMethod);
     SHARD_LOG("(Shard Prepare Result) shardKeyDataType : %d\n",sStmt->mShardStmtCxt.mShardKeyDataType);
     SHARD_LOG("(Shard Prepare Result) shardDefaultNodeID : %d\n",sStmt->mShardStmtCxt.mShardDefaultNodeID);
 
+    if ( sIsSubKeyExists == ACP_TRUE )
+    {
+        ulsdStmtSetShardSubSplitMethod( sStmt, sShardSubSplitMethod );
+        ulsdStmtSetShardSubKeyDataType( sStmt, sShardSubKeyDataType );
+        ulsdStmtSetShardSubValueCnt( sStmt, sShardSubValueCnt );
+
+        SHARD_LOG("(Shard Prepare Result) shardSubSplitMethod : %d\n",sStmt->mShardStmtCxt.mShardSubSplitMethod);
+        SHARD_LOG("(Shard Prepare Result) shardSubKeyDataType : %d\n",sStmt->mShardStmtCxt.mShardSubKeyDataType);
+    }
+
+
     /* PROJ-2655 Composite shard key */
-    CMI_RD1(aProtocolContext, sIsSubKeyExists );
     ulsdStmtSetShardIsSubKeyExists( sStmt, sIsSubKeyExists );
     SHARD_LOG("(Shard Prepare Result) shardIsSubKeyExists : %d\n",sStmt->mShardStmtCxt.mShardIsSubKeyExists);
 
     /* PROJ-2646 New shard analyzer */
-    CMI_RD1(aProtocolContext, sIsCanMerge);
-    if ( sIsCanMerge == 1 )
+    if ( sIsShardQuery == 1 )
     {
-        ulsdStmtSetShardIsCanMerge( sStmt, ACP_TRUE );
+        ulsdStmtSetShardIsShardQuery( sStmt, ACP_TRUE );
     }
     else
     {
-        ulsdStmtSetShardIsCanMerge( sStmt, ACP_FALSE );
+        ulsdStmtSetShardIsShardQuery( sStmt, ACP_FALSE );
     }
 
-    CMI_RD2(aProtocolContext, &sShardValueCnt);
-    ulsdStmtSetShardValueCnt( sStmt, sShardValueCnt );
-
-    SHARD_LOG("(Shard Prepare Result) shardIsCanMerge : %d\n",sStmt->mShardStmtCxt.mShardIsCanMerge);
-    SHARD_LOG("(Shard Prepare Result) shardValueCount : %d\n",sStmt->mShardStmtCxt.mShardValueCnt);
-
-    if ( sStmt->mShardStmtCxt.mShardValueInfo != NULL )
+    /* TASK-7219 Non-shard DML */
+    if ( sIsPartialCoordExecNeeded == 1 )
     {
-        acpMemFree( sStmt->mShardStmtCxt.mShardValueInfo );
-        sStmt->mShardStmtCxt.mShardValueInfo = NULL;
+        ulsdStmtSetPartialExecType( sStmt, ULN_SHARD_PARTIAL_EXEC_TYPE_COORD );
     }
+    else if ( sIsPartialCoordExecNeeded == 2 )
+    {
+        ulsdStmtSetPartialExecType( sStmt, ULN_SHARD_PARTIAL_EXEC_TYPE_QUERY );
+    }
+    else
+    {
+        ulsdStmtSetPartialExecType( sStmt, ULN_SHARD_PARTIAL_EXEC_TYPE_NONE );
+    }
+
+    ulsdStmtSetShardValueCnt( sStmt, sShardValueCnt );
+    ulsdStmtSetShardSubValueCnt( sStmt, sShardSubValueCnt );
+
+    SHARD_LOG("(Shard Prepare Result) shardIsShardQuery : %d\n",sStmt->mShardStmtCxt.mShardIsShardQuery);
+    SHARD_LOG("(Shard Prepare Result) shardValueCount : %d\n",sStmt->mShardStmtCxt.mShardValueCnt);
 
     if ( sStmt->mShardStmtCxt.mShardValueCnt > 0 )
     {
-        ACI_TEST(ACP_RC_NOT_SUCCESS(acpMemAlloc((void **)&sStmt->mShardStmtCxt.mShardValueInfo,
-                                                ACI_SIZEOF(ulsdValueInfo) * sShardValueCnt)));
+        ACI_TEST( ACP_RC_NOT_SUCCESS( acpMemCalloc( (void **)&sStmt->mShardStmtCxt.mShardValueInfoPtrArray,
+                                                    ACI_SIZEOF(ulsdValueInfo*),
+                                                    sShardValueCnt ) ) );
 
         for ( sShardValueIdx = 0; sShardValueIdx < sShardValueCnt; sShardValueIdx++ )
         {
-            CMI_RD1(aProtocolContext, sStmt->mShardStmtCxt.mShardValueInfo[sShardValueIdx].mType);
+            sTryShardValueCnt++;
 
-            if ( sStmt->mShardStmtCxt.mShardValueInfo[sShardValueIdx].mType == 0 )
-            {
-                CMI_RD2(aProtocolContext, &( sStmt->mShardStmtCxt.mShardValueInfo[sShardValueIdx].mValue.mBindParamId));
-            }
-            else if ( sStmt->mShardStmtCxt.mShardValueInfo[sShardValueIdx].mType == 1 )
-            {
-                if ( ( sShardSplitMethod == ULN_SHARD_SPLIT_HASH ) ||
-                     ( sShardSplitMethod == ULN_SHARD_SPLIT_RANGE ) ||
-                     ( sShardSplitMethod == ULN_SHARD_SPLIT_LIST ) )  /* range shard */
-                {
-                    ulsdReadMtValue(aProtocolContext,
-                                    sShardKeyDataType,
-                                    &sStmt->mShardStmtCxt.mShardValueInfo[sShardValueIdx].mValue );
-                }
-                else
-                {
-                    ACE_ASSERT(0);
-                }
-            }
-            else
-            {
-                ACE_ASSERT(0);
-            }
+            ACI_TEST_RAISE( ulsdReadShardValueInfo( aProtocolContext,
+                                                    sDbc,
+                                                    &sShardValueInfo )
+                            != ACI_SUCCESS, CM_ERROR );
 
-            SHARD_LOG("(Shard Prepare Result) mType : %d\n", sStmt->mShardStmtCxt.mShardValueInfo[sShardValueIdx].mType);
+            SHARD_LOG("(Shard Prepare Result) mType : %d\n", sShardValueInfo->mType );
+            sStmt->mShardStmtCxt.mShardValueInfoPtrArray[sShardValueIdx] = sShardValueInfo;
         }
     }
     else
@@ -186,61 +419,29 @@ ACI_RC ulsdCallbackAnalyzeResult(cmiProtocolContext *aProtocolContext,
         /* Nothing to do. */
     }
 
-    if ( sStmt->mShardStmtCxt.mShardSubValueInfo != NULL )
-    {
-        acpMemFree( sStmt->mShardStmtCxt.mShardSubValueInfo );
-        sStmt->mShardStmtCxt.mShardSubValueInfo = NULL;
-    }
+    sState = 1;
 
     if ( sStmt->mShardStmtCxt.mShardIsSubKeyExists == ACP_TRUE )
     {
-        CMI_RD1(aProtocolContext, sShardSubSplitMethod);
-        CMI_RD4(aProtocolContext, &sShardSubKeyDataType);
-
-        ulsdStmtSetShardSubSplitMethod( sStmt, sShardSubSplitMethod );
-        ulsdStmtSetShardSubKeyDataType( sStmt, sShardSubKeyDataType );
-
-        SHARD_LOG("(Shard Prepare Result) shardSubSplitMethod : %d\n",sStmt->mShardStmtCxt.mShardSubSplitMethod);
-        SHARD_LOG("(Shard Prepare Result) shardSubKeyDataType : %d\n",sStmt->mShardStmtCxt.mShardSubKeyDataType);
-
-        CMI_RD2(aProtocolContext, &sShardSubValueCnt);
-        ulsdStmtSetShardSubValueCnt( sStmt, sShardSubValueCnt );
         SHARD_LOG("(Shard Prepare Result) shardSubValueCount : %d\n",sStmt->mShardStmtCxt.mShardSubValueCnt);
 
         if ( sStmt->mShardStmtCxt.mShardSubValueCnt > 0 )
         {
-            ACI_TEST(ACP_RC_NOT_SUCCESS(acpMemAlloc((void **)&sStmt->mShardStmtCxt.mShardSubValueInfo,
-                                                    ACI_SIZEOF(ulsdValueInfo) * sShardSubValueCnt)));
+                ACI_TEST( ACP_RC_NOT_SUCCESS( acpMemCalloc( (void **)&sStmt->mShardStmtCxt.mShardSubValueInfoPtrArray,
+                                                            ACI_SIZEOF(ulsdValueInfo*),
+                                                            sShardSubValueCnt) ) );
 
             for ( sShardSubValueIdx = 0; sShardSubValueIdx < sShardSubValueCnt; sShardSubValueIdx++ )
             {
-                CMI_RD1(aProtocolContext, sStmt->mShardStmtCxt.mShardSubValueInfo[sShardSubValueIdx].mType);
+                sTryShardSubValueCnt++;
 
-                if ( sStmt->mShardStmtCxt.mShardSubValueInfo[sShardSubValueIdx].mType == 0 )
-                {
-                    CMI_RD2(aProtocolContext, &( sStmt->mShardStmtCxt.mShardSubValueInfo[sShardSubValueIdx].mValue.mBindParamId));
-                }
-                else if ( sStmt->mShardStmtCxt.mShardSubValueInfo[sShardSubValueIdx].mType == 1 )
-                {
-                    if ( ( sShardSubSplitMethod == ULN_SHARD_SPLIT_HASH ) ||
-                         ( sShardSubSplitMethod == ULN_SHARD_SPLIT_RANGE ) ||
-                         ( sShardSubSplitMethod == ULN_SHARD_SPLIT_LIST ) )
-                    {
-                        ulsdReadMtValue(aProtocolContext,
-                                        sShardSubKeyDataType,
-                                        &sStmt->mShardStmtCxt.mShardSubValueInfo[sShardSubValueIdx].mValue );
-                    }
-                    else
-                    {
-                        ACE_ASSERT(0);
-                    }
-                }
-                else
-                {
-                    ACE_ASSERT(0);
-                }
+                ACI_TEST_RAISE( ulsdReadShardValueInfo( aProtocolContext,
+                                                        sDbc,
+                                                        &sShardValueInfo )
+                                != ACI_SUCCESS, CM_ERROR );
 
-                SHARD_LOG("(Shard Prepare Result) mType : %d\n", sStmt->mShardStmtCxt.mShardSubValueInfo[sShardSubValueIdx].mType);
+                SHARD_LOG("(Shard Prepare Result) mType : %d\n", sShardValueInfo->mType);
+                sStmt->mShardStmtCxt.mShardSubValueInfoPtrArray[sShardSubValueIdx] = sShardValueInfo;
             }
         }
         else
@@ -253,8 +454,8 @@ ACI_RC ulsdCallbackAnalyzeResult(cmiProtocolContext *aProtocolContext,
         /* Nothing to do. */
     }
 
-    CMI_RD2(aProtocolContext, &sShardNodeInfoCnt);
-    ulsdStmtSetShardRangeInfoCnt( sStmt, sShardNodeInfoCnt );
+    CMI_RD2(aProtocolContext, &sShardRangeInfoCnt);
+    ulsdStmtSetShardRangeInfoCnt( sStmt, sShardRangeInfoCnt );
     SHARD_LOG("(Shard Prepare Result) shardNodeInfoCnt : %d\n",sStmt->mShardStmtCxt.mShardRangeInfoCnt);
 
     if ( sStmt->mShardStmtCxt.mShardRangeInfo != NULL )
@@ -263,14 +464,16 @@ ACI_RC ulsdCallbackAnalyzeResult(cmiProtocolContext *aProtocolContext,
         sStmt->mShardStmtCxt.mShardRangeInfo = NULL;
     }
 
+    sState = 2;
+
     if ( sStmt->mShardStmtCxt.mShardRangeInfoCnt > 0 )
     {
         ACI_TEST(ACP_RC_NOT_SUCCESS(acpMemAlloc((void **)&sStmt->mShardStmtCxt.mShardRangeInfo,
-                                                ACI_SIZEOF(ulsdRangeInfo) * sShardNodeInfoCnt)));
+                                                ACI_SIZEOF(ulsdRangeInfo) * sShardRangeInfoCnt)));
 
-        for ( sShardNodeCnt = 0; sShardNodeCnt < sShardNodeInfoCnt; sShardNodeCnt++ )
+        for ( sShardRangeIdx = 0; sShardRangeIdx < sShardRangeInfoCnt; sShardRangeIdx++ )
         {
-            sShardRange = &(sStmt->mShardStmtCxt.mShardRangeInfo[sShardNodeCnt]);
+            sShardRange = &(sStmt->mShardStmtCxt.mShardRangeInfo[sShardRangeIdx]);
 
             if ( sShardSplitMethod == ULN_SHARD_SPLIT_HASH )  /* hash shard */
             {
@@ -291,12 +494,12 @@ ACI_RC ulsdCallbackAnalyzeResult(cmiProtocolContext *aProtocolContext,
             else if ( sShardSplitMethod == ULN_SHARD_SPLIT_CLONE )  /* clone */
             {
                 /* Nothing to do. */
-                /* Clone tableÏùÄ NodeIDÎßå Ï†ÑÎã¨Î∞õÎäîÎã§. */
+                /* Clone table¿∫ NodeID∏∏ ¿¸¥ﬁπﬁ¥¬¥Ÿ. */
             }
             else if ( sShardSplitMethod == ULN_SHARD_SPLIT_SOLO )  /* solo */
             {
                 /* Nothing to do. */
-                /* Solo tableÏùÄ NodeIDÎßå Ï†ÑÎã¨Î∞õÎäîÎã§. */
+                /* Solo table¿∫ NodeID∏∏ ¿¸¥ﬁπﬁ¥¬¥Ÿ. */
             }
             else
             {
@@ -324,12 +527,12 @@ ACI_RC ulsdCallbackAnalyzeResult(cmiProtocolContext *aProtocolContext,
                 else if ( sShardSubSplitMethod == ULN_SHARD_SPLIT_CLONE )  /* clone */
                 {
                     /* Nothing to do. */
-                    /* Clone tableÏùÄ NodeIDÎßå Ï†ÑÎã¨Î∞õÎäîÎã§. */
+                    /* Clone table¿∫ NodeID∏∏ ¿¸¥ﬁπﬁ¥¬¥Ÿ. */
                 }
                 else if ( sShardSubSplitMethod == ULN_SHARD_SPLIT_SOLO )  /* solo */
                 {
                     /* Nothing to do. */
-                    /* Solo tableÏùÄ NodeIDÎßå Ï†ÑÎã¨Î∞õÎäîÎã§. */
+                    /* Solo table¿∫ NodeID∏∏ ¿¸¥ﬁπﬁ¥¬¥Ÿ. */
                 }
                 else
                 {
@@ -344,7 +547,7 @@ ACI_RC ulsdCallbackAnalyzeResult(cmiProtocolContext *aProtocolContext,
             CMI_RD4(aProtocolContext, &(sShardRange->mShardNodeID));
 
             SHARD_LOG("(Shard Prepare Result) shardNodeId[%d] : %d\n",
-                      sShardNodeCnt, sStmt->mShardStmtCxt.mShardRangeInfo[sShardNodeCnt].mShardNodeID);
+                      sShardRangeIdx, sStmt->mShardStmtCxt.mShardRangeInfo[sShardRangeIdx].mShardNodeID);
         }
     }
     else
@@ -353,7 +556,7 @@ ACI_RC ulsdCallbackAnalyzeResult(cmiProtocolContext *aProtocolContext,
     }
 
     /* shard meta query */
-    if ( sStmt->mShardStmtCxt.mShardIsCanMerge == ACP_FALSE )
+    if ( sStmt->mShardStmtCxt.mShardIsShardQuery == ACP_FALSE )
     {
         sCoordQuery = ACP_TRUE;
     }
@@ -361,7 +564,7 @@ ACI_RC ulsdCallbackAnalyzeResult(cmiProtocolContext *aProtocolContext,
     {
         /* BUG-45640 autocommit on + global_tx + multi-shard query */
         if ( ( sStmt->mParentDbc->mAttrAutoCommit == SQL_AUTOCOMMIT_ON ) &&
-             ( sStmt->mParentDbc->mShardDbcCxt.mShardTransactionLevel == ULN_SHARD_TX_GLOBAL ) &&
+             ( ulsdIsGTx( sStmt->mParentDbc->mAttrGlobalTransactionLevel ) == ACP_TRUE ) &&
              ( sStmt->mShardStmtCxt.mShardRangeInfoCnt > 1 ) )
         {
             if ( ( sStmt->mShardStmtCxt.mShardSplitMethod == ULN_SHARD_SPLIT_HASH ) ||
@@ -440,16 +643,106 @@ ACI_RC ulsdCallbackAnalyzeResult(cmiProtocolContext *aProtocolContext,
     {
         sFnContext->mWhere = sStatePoints;
     }
+    ACI_EXCEPTION( CM_ERROR )
+    {
+        return ACI_FAILURE;
+    }
     ACI_EXCEPTION_END;
+
+    switch ( sState )
+    {
+        case 0:
+            for ( sShardValueIdx = sTryShardValueCnt; sShardValueIdx < sShardValueCnt; sShardValueIdx++ )
+            {
+                if ( ulsdSkipReadShardValueInfo( aProtocolContext, sDbc ) != ACI_SUCCESS )
+                {
+                    return ACI_FAILURE;
+                }
+            }
+
+        case 1:
+            for ( sShardSubValueIdx = sTryShardSubValueCnt; 
+                  sShardSubValueIdx < sShardSubValueCnt; 
+                  sShardSubValueIdx++ )
+            {
+                if ( ulsdSkipReadShardValueInfo( aProtocolContext, sDbc ) != ACI_SUCCESS )
+                {
+                    return ACI_FAILURE;
+                }
+            }
+
+            CMI_RD2(aProtocolContext, &sShardRangeInfoCnt);
+
+        case 2:
+            for ( sShardRangeIdx = 0; sShardRangeIdx < sShardRangeInfoCnt; sShardRangeIdx++ )
+            {
+                sShardRange = &(sStmt->mShardStmtCxt.mShardRangeInfo[sShardRangeIdx]);
+
+                if ( sShardSplitMethod == ULN_SHARD_SPLIT_HASH )
+                {
+                    CMI_SKIP_READ_BLOCK(aProtocolContext, 4);   // mShardRange.mHashMax
+                }
+                else if ( ( sShardSplitMethod == ULN_SHARD_SPLIT_RANGE ) ||
+                          ( sShardSplitMethod == ULN_SHARD_SPLIT_LIST ) )
+                {
+                    ulsdSkipReadMtValue( aProtocolContext, sShardKeyDataType );
+                }
+                else if ( ( sShardSplitMethod == ULN_SHARD_SPLIT_CLONE ) ||
+                          ( sShardSplitMethod == ULN_SHARD_SPLIT_SOLO ) )
+                {
+                    /* Nothing to do. */
+                    /* Clone, Solo table¿∫ NodeID∏∏ ¿¸¥ﬁπﬁ¥¬¥Ÿ. */
+                }
+                else
+                {
+                    ACE_ASSERT(0);
+                }
+
+                if ( sIsSubKeyExists == ACP_TRUE )
+                {
+                    if ( sShardSubSplitMethod == ULN_SHARD_SPLIT_HASH )
+                    {
+                        CMI_SKIP_READ_BLOCK(aProtocolContext, 4); // mShardSubRange.mHashMax
+                    }
+                    else if ( ( sShardSubSplitMethod == ULN_SHARD_SPLIT_RANGE ) ||
+                              ( sShardSubSplitMethod == ULN_SHARD_SPLIT_LIST ) )
+                    {
+                        ulsdSkipReadMtValue( aProtocolContext, sShardSubKeyDataType );
+                    }
+                    else if ( ( sShardSubSplitMethod == ULN_SHARD_SPLIT_CLONE ) ||
+                              ( sShardSubSplitMethod == ULN_SHARD_SPLIT_SOLO ) )
+                    {
+                        /* Nothing to do. */
+                        /* Clone, Solo table¿∫ NodeID∏∏ ¿¸¥ﬁπﬁ¥¬¥Ÿ. */
+                    }
+                    else
+                    {
+                        ACE_ASSERT(0);
+                    }
+                }
+                else
+                {
+                    /* Nothing to do. */
+                }
+                CMI_SKIP_READ_BLOCK(aProtocolContext, 4);       // mShardNodeID
+            }
+            break;
+        default:
+            ACE_ASSERT(0);
+    }
 
     return ACI_SUCCESS;
 }
 
-void ulsdSetCoordQuery(ulnStmt  *aStmt)
+void ulsdSetCoordQuery( ulnStmt  *aStmt )
 {
-    aStmt->mShardStmtCxt.mShardCoordQuery = ACP_TRUE;
+    /* BUG-46872 */
+    if ( aStmt != NULL )
+    {
+        aStmt->mShardStmtCxt.mShardCoordQuery = ACP_TRUE;
 
-    ulsdSetStmtShardModule(aStmt, &gShardModuleCOORD);
+        ulsdSetStmtShardModule(aStmt, &gShardModuleCOORD);
+    }
 }
 
 SQLRETURN ulsdAnalyze(ulnFnContext *aFnContext,
@@ -464,7 +757,7 @@ SQLRETURN ulsdAnalyze(ulnFnContext *aFnContext,
     ACI_TEST(ulnEnter(aFnContext, NULL) != ACI_SUCCESS);
     sNeedExit = ACP_TRUE;
 
-    /* ÎÑòÍ≤®ÏßÑ Í∞ùÏ≤¥Ïùò validity Ï≤¥ÌÅ¨Î•º Ìè¨Ìï®Ìïú ODBC 3.0 ÏóêÏÑú Ï†ïÏùòÌïòÎäî Í∞ÅÏ¢Ö Error Ï≤¥ÌÅ¨ */
+    /* ≥—∞‹¡¯ ∞¥√º¿« validity √º≈©∏¶ ∆˜«‘«— ODBC 3.0 ø°º≠ ¡§¿««œ¥¬ ∞¢¡æ Error √º≈© */
     ACI_TEST(ulnPrepCheckArgs(aFnContext, aStatementText, aTextLength) != ACI_SUCCESS);
 
     ACI_TEST( ulnInitializeProtocolContext(aFnContext,
@@ -537,38 +830,38 @@ SQLRETURN ulsdPrepare(ulnFnContext *aFnContext,
                       acp_sint32_t  aTextLength,
                       acp_char_t   *aAnalyzeText)
 {
-    SQLRETURN    sRet = SQL_ERROR;
+    SQLRETURN sRet = SQL_ERROR;
+    
 
     /* BUG-46100 Session SMN Update */
     aStmt->mShardStmtCxt.mShardMetaNumber = 0;
 
-    sRet = ulsdNodeStmtEnsureAllocOrgPrepareTextBuf( aFnContext,
-                                                     aStmt,
-                                                     aStatementText,
-                                                     aTextLength );
-
-    if ( sRet == SQL_SUCCESS )
+    if ( aStatementText != aStmt->mShardStmtCxt.mOrgPrepareTextBuf )
     {
+        ACI_TEST( ulsdNodeStmtEnsureAllocOrgPrepareTextBuf( aFnContext,
+                                                            aStmt,
+                                                            aStatementText,
+                                                            aTextLength )
+                  != ACP_RC_SUCCESS );
+
         /* BUG-46100 Session SMN Update */
         acpMemCpy( aStmt->mShardStmtCxt.mOrgPrepareTextBuf,
                    aStatementText,
                    aStmt->mShardStmtCxt.mOrgPrepareTextBufLen );
+    }
 
-        sRet = ulsdModulePrepare(aFnContext,
-                                 aStmt,
-                                 aStatementText,
-                                 aTextLength,
-                                 aAnalyzeText);
+    sRet = ulsdModulePrepare(aFnContext,
+                             aStmt,
+                             aStatementText,
+                             aTextLength,
+                             aAnalyzeText);
 
-        /* BUG-46100 Session SMN Update */
-        if ( SQL_SUCCEEDED( sRet ) )
-        {
-            aStmt->mShardStmtCxt.mShardMetaNumber = ulnDbcGetShardMetaNumber( aStmt->mParentDbc );
-        }
-        else
-        {
-            /* Nothing to do */
-        }
+    /* BUG-46100 Session SMN Update */
+    if ( SQL_SUCCEEDED( sRet ) )
+    {
+        aStmt->mShardStmtCxt.mShardMetaNumber = 
+            ACP_MAX( aStmt->mParentDbc->mShardDbcCxt.mSentShardMetaNumber,
+                     aStmt->mParentDbc->mShardDbcCxt.mSentRebuildShardMetaNumber );
     }
     else
     {
@@ -576,6 +869,154 @@ SQLRETURN ulsdPrepare(ulnFnContext *aFnContext,
     }
 
     return sRet;
+
+    ACI_EXCEPTION_END;
+
+    return SQL_ERROR;
+}
+
+SQLRETURN ulsdAnalyzePreapre( ulnFnContext *aFnContext,
+                              ulnStmt      *aStmt,
+                              acp_char_t   *aStatementText,
+                              acp_sint32_t  aTextLength,
+                              acp_char_t   *aAnalyzeText )
+{
+    ulnDbc      *sDbc  = NULL;
+    SQLRETURN    sRet  = SQL_ERROR;
+
+    sDbc = aStmt->mParentDbc;
+
+    /* Prepare ºˆ«‡«œ±‚ ¿¸ø°
+     * Server ¿« User session SMN ∞˙ Dbc ¿« SMN ¿Ã µø¿œ«—¡ˆ »Æ¿Œ«—¥Ÿ. 
+     * Server ¿« SMN ¿Ã ∫Ø∞Êµ«æ˙¥Ÿ∏È ( ulsdCallbackShardRebuildNoti )
+     * Target SMN ¿∏∑Œ »Æ¿Œ«“ ºˆ ¿÷¥Ÿ.
+     */
+    sRet = ulsdCheckDbcSMN( aFnContext, sDbc );
+    ACI_TEST( !SQL_SUCCEEDED( sRet ) );
+
+    /* shard module º≥¡§ */
+    if ( sDbc->mAttrGlobalTransactionLevel == ULN_GLOBAL_TX_ONE_NODE )
+    {
+        sRet = ulsdAnalyze(aFnContext,
+                           aStmt,
+                           aStatementText,
+                           aTextLength);
+        ACI_TEST(!SQL_SUCCEEDED(sRet));
+
+        /* TASK-7219 Non-shard DML */
+        ACI_TEST_RAISE( aStmt->mShardStmtCxt.mShardCoordQuery == ACP_TRUE,
+                        LABEL_SHARD_META_CANNOT_TOUCH );
+    }
+    else
+    {
+        sRet = ulsdAnalyze(aFnContext,
+                           aStmt,
+                           aStatementText,
+                           aTextLength);
+        if (!SQL_SUCCEEDED(sRet))
+        {
+            ACI_TEST( ulnDbcIsConnected( sDbc ) == ACP_FALSE );
+            ACI_TEST( aFnContext->mIsFailoverSuccess == ACP_TRUE );
+
+            ulsdSetCoordQuery(aStmt);
+
+            ULN_FNCONTEXT_SET_RC( aFnContext, SQL_SUCCESS );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    /* analyze µµ¡ﬂ ººº«¿« SMN ¿Ã ∞ªΩ≈µ… ºˆ ¿÷¥Ÿ. */
+    sRet = ulsdCheckDbcSMN( aFnContext, sDbc );
+    ACI_TEST( !SQL_SUCCEEDED( sRet ) );
+
+    sRet = ulsdPrepare(aFnContext,
+                       aStmt,
+                       aStatementText,
+                       aTextLength,
+                       aAnalyzeText);
+
+    return sRet;
+
+    ACI_EXCEPTION(LABEL_SHARD_META_CANNOT_TOUCH)
+    {
+        ulnError(aFnContext,
+                 ulERR_ABORT_SHARD_ERROR,
+                 "SQLPrepare",
+                 "Server-side query can not be performed in single-node transaction");
+        sRet  = SQL_ERROR;
+    }
+    ACI_EXCEPTION_END;
+
+    return SQL_ERROR;
+}
+
+SQLRETURN ulsdAnalyzePrepareAndRetry( ulnStmt      *aStmt,
+                                      acp_char_t   *aStatementText,
+                                      acp_sint32_t  aTextLength,
+                                      acp_char_t   *aAnalyzeText )
+{
+    ulnFnContext sFnContext;
+    SQLRETURN    sPrepareRet = SQL_ERROR;
+    acp_sint32_t sRetryMax   = 0;
+    acp_sint32_t sLoopMax    = ULSD_SHARD_RETRY_LOOP_MAX; /* For prohibit infinity loop */
+    ulsdStmtShardRetryType   sRetryType;
+
+    ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_PREPARE, aStmt, ULN_OBJ_TYPE_STMT);
+
+    /* BUG-47553 */
+    ACI_TEST( ulsdEnter( &sFnContext ) != ACI_SUCCESS );
+
+    sRetryMax = ulnDbcGetShardStatementRetry( aStmt->mParentDbc );
+
+    sPrepareRet = ulsdAnalyzePreapre( &sFnContext,
+                                      aStmt,
+                                      aStatementText,
+                                      aTextLength,
+                                      aAnalyzeText );
+
+    /* BUGBUG retrun result not matched with FNCONTEXT result */
+    ULN_FNCONTEXT_SET_RC( &sFnContext, sPrepareRet );
+
+    while ( SQL_SUCCEEDED( sPrepareRet ) == 0 )
+    {
+        ACI_TEST( (sLoopMax--) <= 0 );
+
+        ACI_TEST( ulsdProcessShardRetryError( &sFnContext,
+                                              aStmt,
+                                              &sRetryType,
+                                              &sRetryMax )
+                  != ACI_SUCCESS );
+
+        sPrepareRet = ulsdAnalyzePreapre( &sFnContext,
+                                          aStmt,
+                                          aStatementText,
+                                          aTextLength,
+                                          aAnalyzeText );
+
+        /* BUGBUG retrun result not matched with FNCONTEXT result */
+        ULN_FNCONTEXT_SET_RC( &sFnContext, sPrepareRet );
+    }
+
+    /* PROJ-2745
+     * SMN ∫Ø∞Ê¿Ã «ˆ¿Á Statement ºˆ«‡ø° øµ«‚¿ª πÃƒ°¡ˆ æ ¿∏∏È
+     * Rebuild retry error ∞° πﬂª˝«œ¡ˆ æ ∞Ì
+     * ¥ÎΩ≈ SMN ¿ª ø√∏Æ∂Û¥¬ Rebuild Noti ∑Œ ºˆΩ≈µ«æÓ
+     * ulnDbcGetTargetShardMetaNumber() ∞™¿Ã ªÛΩ¬«—¥Ÿ.
+     */
+    if ( ulsdCheckRebuildNoti( aStmt->mParentDbc ) == ACP_TRUE )
+    {
+        ulsdUpdateShardSession_Silent( aStmt->mParentDbc,
+                                       &sFnContext );
+    }
+
+    return ULN_FNCONTEXT_GET_RC( &sFnContext );
+
+    ACI_EXCEPTION_END;
+
+    return ULN_FNCONTEXT_GET_RC( &sFnContext );
 }
 
 SQLRETURN ulsdPrepareNodes(ulnFnContext *aFnContext,
@@ -599,7 +1040,7 @@ SQLRETURN ulsdPrepareNodes(ulnFnContext *aFnContext,
 
     ulsdGetShardFromDbc(aStmt->mParentDbc, &sShard);
 
-    /* mShardRangeInfoÏùò Î™®Îì† ÎÖ∏ÎìúÏóê prepareÎ•º ÏàòÌñâÌïúÎã§. */
+    /* mShardRangeInfo¿« ∏µÁ ≥ÎµÂø° prepare∏¶ ºˆ«‡«—¥Ÿ. */
     for (i = 0; i < aStmt->mShardStmtCxt.mShardRangeInfoCnt; i++)
     {
         sErrorResult = ulsdConvertNodeIdToNodeDbcIndex(
@@ -609,11 +1050,11 @@ SQLRETURN ulsdPrepareNodes(ulnFnContext *aFnContext,
                             ULN_FID_PREPARE );
         ACI_TEST( sErrorResult != SQL_SUCCESS );
 
-        /* Í∏∞Î°ù */
+        /* ±‚∑œ */
         sNodeDbcFlags[sNodeDbcIndex] = ACP_TRUE;
     }
 
-    /* default node Í∏∞Î°ù */
+    /* default node ±‚∑œ */
     if ( aStmt->mShardStmtCxt.mShardDefaultNodeID != ACP_UINT32_MAX )
     {
         sErrorResult = ulsdConvertNodeIdToNodeDbcIndex(
@@ -623,7 +1064,7 @@ SQLRETURN ulsdPrepareNodes(ulnFnContext *aFnContext,
                             ULN_FID_PREPARE );
         ACI_TEST( sErrorResult != SQL_SUCCESS );
 
-        /* Í∏∞Î°ù */
+        /* ±‚∑œ */
         sNodeDbcFlags[sNodeDbcIndex] = ACP_TRUE;
     }
     else
@@ -636,6 +1077,15 @@ SQLRETURN ulsdPrepareNodes(ulnFnContext *aFnContext,
         if (sNodeDbcFlags[i] == ACP_TRUE)
         {
             sNodeStmt = aStmt->mShardStmtCxt.mShardNodeStmt[i];
+
+            sErrorResult = ulsdCheckDbcSMN( aFnContext, sNodeStmt->mParentDbc );
+            ACI_TEST( sErrorResult != SQL_SUCCESS );
+
+            /* TASK-7219 Non-shard DML
+             * Analysis result∑Œ ∫Œ≈Õ meta statementø° ºº∆√µ» partial coord type¿ª node statement ø° ¿¸¥ﬁ«—¥Ÿ.
+             * Node statement prepare Ω√ø° prepareProtocol¿ª ≈Î«ÿ prepare mode ∑Œ data node serverø° ¿¸¥ﬁµ»¥Ÿ.
+             */
+            ulsdStmtSetPartialExecType( sNodeStmt, ulsdStmtGetPartialExecType(aStmt) );
 
             sErrorResult = ulsdPrepareAddCallback( i,
                                                    sNodeStmt,
@@ -650,27 +1100,33 @@ SQLRETURN ulsdPrepareNodes(ulnFnContext *aFnContext,
         }
     }
 
-    /* node prepare Î≥ëÎ†¨ÏàòÌñâ */
+    /* node prepare ∫¥∑ƒºˆ«‡ */
     ulsdDoCallback( sCallback );
 
     for (i = 0; i < sShard->mNodeCount; i++)
     {
         if (sNodeDbcFlags[i] == ACP_TRUE)
         {
+            sNodeStmt = aStmt->mShardStmtCxt.mShardNodeStmt[i];
+
             sNodeResult = ulsdGetResultCallback( i, sCallback, (acp_uint8_t)0 );
 
             if ( sNodeResult == SQL_SUCCESS )
             {
-                /* Nothing to do */
+                sNodeStmt->mShardStmtCxt.mShardMetaNumber = 
+                    ACP_MAX( sNodeStmt->mParentDbc->mShardDbcCxt.mSentShardMetaNumber,
+                             sNodeStmt->mParentDbc->mShardDbcCxt.mSentRebuildShardMetaNumber );
             }
             else if ( sNodeResult == SQL_SUCCESS_WITH_INFO )
             {
+                sNodeStmt->mShardStmtCxt.mShardMetaNumber = 
+                    ACP_MAX( sNodeStmt->mParentDbc->mShardDbcCxt.mSentShardMetaNumber,
+                             sNodeStmt->mParentDbc->mShardDbcCxt.mSentRebuildShardMetaNumber );
+
                 sSuccessResult = sNodeResult;
             }
             else
             {
-                sNodeStmt = aStmt->mShardStmtCxt.mShardNodeStmt[i];
-
                 ulsdNativeErrorToUlnError( aFnContext,
                                            SQL_HANDLE_STMT,
                                            (ulnObject *)sNodeStmt,
@@ -705,3 +1161,4 @@ SQLRETURN ulsdPrepareNodes(ulnFnContext *aFnContext,
 
     return sErrorResult;
 }
+

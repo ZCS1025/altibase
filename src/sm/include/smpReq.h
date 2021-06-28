@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smpReq.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smpReq.h 86389 2019-11-27 05:57:19Z donghyun $
  **********************************************************************/
 
 #ifndef _O_SMP_REQ_H_
@@ -115,13 +115,15 @@ class smpReqFunc
                               smOID     aTblOID,
                               smOID     aRecOID,
                               scSpaceID aSpaceID,
-                              UInt      aFlag )
+                              UInt      aFlag,
+                              smSCN     aSCN )
         {
             return smxTrans::addOID2Trans( aTrans,
                                            aTblOID,
                                            aRecOID,
                                            aSpaceID,
-                                           aFlag );
+                                           aFlag,
+                                           aSCN );
         };
         static IDE_RC lockItem( void        * aTrans,
                                 void        * aLockItem,

@@ -20,6 +20,7 @@
  **********************************************************************/
 
 #include <idl.h>
+#include <cm.h>
 #include <sdl.h>
 #include <sdlStatement.h>
 #include <sdSql.h>
@@ -38,7 +39,7 @@
 #endif
 
 #define SDL_CONN_STR_MAX_LEN     (512)
-#define SDL_CONN_STR             "SERVER=%s;PORT_NO=%"ID_INT32_FMT";CONNTYPE=%d;NLS_USE=%s;UID=%s;PWD=%s;APP_INFO=shard_meta;SHARD_NODE_NAME=%s;SHARD_LINKER_TYPE=0;AUTOCOMMIT=%s;EXPLAIN_PLAN=%s;SHARD_SESSION_TYPE=1"
+#define SDL_CONN_STR             "SERVER=%s;PORT_NO=%"ID_INT32_FMT";CONNTYPE=%d;NLS_USE=%s;UID=%s;PWD=%s;APP_INFO=shard_meta;SHARD_NODE_NAME=%s;SHARD_LINKER_TYPE=0;AUTOCOMMIT=%s;EXPLAIN_PLAN=%s"
 #define SDL_CONN_ALTERNATE_STR   SDL_CONN_STR";ALTERNATE_SERVERS=(%s:%"ID_INT32_FMT");SessionFailOver=on"
 
 LIBRARY_HANDLE sdl::mOdbcLibHandle = NULL;
@@ -70,6 +71,7 @@ static ODBCDescribeColEx                  SQLDescribeColEx        = NULL; // 23
 static ODBCBindParameter                  SQLBindParameter        = NULL; // 24
 static ODBCGetConnectAttr                 SQLGetConnectAttr       = NULL; // 25
 static ODBCSetConnectAttr                 SQLSetConnectAttr       = NULL; // 26
+static ODBCBindCol                        SQLBindCol              = NULL; // 27
 static ODBCGetDbcShardTargetDataNodeName  SQLGetDbcShardTargetDataNodeName  = NULL;// 31
 static ODBCGetStmtShardTargetDataNodeName SQLGetStmtShardTargetDataNodeName = NULL;// 32
 static ODBCSetDbcShardTargetDataNodeName  SQLSetDbcShardTargetDataNodeName  = NULL;// 33
@@ -88,68 +90,35 @@ static ODBCDoCallback                     SQLDoCallback           = NULL; // 45
 static ODBCGetResultCallback              SQLGetResultCallback    = NULL; // 46
 static ODBCRemoveCallback                 SQLRemoveCallback       = NULL; // 47
 static ODBCSetShardMetaNumber             SQLSetShardMetaNumber   = NULL; // 48
-static ODBCGetSMNOfDataNode               SQLGetSMNOfDataNode     = NULL; // 49
 static ODBCGetNeedFailover                SQLGetNeedFailover      = NULL; // 50
 static ODBCReconnect                      SQLReconnect            = NULL; // 51
-static ODBCGetNeedToDisconnect            SQLGetNeedToDisconnect  = NULL; // 52
 static ODBCSetSavepoint                   SQLSetSavepoint         = NULL; // 53
 static ODBCRollbackToSavepoint            SQLRollbackToSavepoint  = NULL; // 54
 static ODBCShardStmtPartialRollback       SQLShardStmtPartialRollback = NULL; // 55
+static ODBCEndPendingTranAddCallback      SQLEndPendingTranAddCallback = NULL;  // 56
+static ODBCSetFailoverSuspend             SQLSetFailoverSuspend   = NULL;  // 57
 
-#define IS_SUCCEEDED( aRET ) {\
-    ( ( aRET == SQL_SUCCESS ) || ( aRET == SQL_SUCCESS_WITH_INFO ) || ( aRet == SQL_NO_DATA ) )
+static ODBCGetLobForSd                    SQLGetLobForSd          = NULL; // 58
+static ODBCPutLobForSd                    SQLPutLobForSd          = NULL; // 59
+static ODBCGetLobLengthForSd              SQLGetLobLengthForSd    = NULL; // 60
+static ODBCFreeLobForSd                   SQLFreeLobForSd         = NULL; // 61
+static ODBCTrimLobForSd                   SQLTrimLobForSd         = NULL; // 62
 
-#define LOAD_LIBRARY(aName, aHandle)\
-        {\
-            aHandle = idlOS::dlopen( aName, RTLD_LAZY|RTLD_GLOBAL );\
-            IDE_TEST_RAISE( aHandle == NULL, errInitOdbcLibrary );\
-        }
+static ODBCLobPrepare4Write               SQLLobPrepare4Write     = NULL; // 63
+static ODBCLobWrite                       SQLLobWrite             = NULL; // 64
+static ODBCLobFinishWrite                 SQLLobFinishWrite       = NULL; // 65
 
-#define ODBC_FUNC_DEF( aType )\
-        {\
-            SQL##aType = (ODBC##aType)idlOS::dlsym( sdl::mOdbcLibHandle, STR_SQL##aType );\
-            IDE_TEST_RAISE( SQL##aType == NULL, errInitOdbcLibrary );\
-        }
+static ODBCGetScn                         SQLGetScn               = NULL; // 66
+static ODBCSetScn                         SQLSetScn               = NULL; // 67
+static ODBCSetTxFirstStmtScn              SQLSetTxFirstStmtScn    = NULL; // 68
+static ODBCSetTxFirstStmtTime             SQLSetTxFirstStmtTime   = NULL; // 69
+static ODBCSetDistLevel                   SQLSetDistLevel         = NULL; // 70
+static ODBCSetTargetShardMetaNumber       SQLSetTargetShardMetaNumber = NULL; // 71
 
-#define IDE_EXCEPTION_UNINIT_LIBRARY( aConnectionInfo, aFunctionName )\
-        IDE_EXCEPTION( UnInitializedError )\
-        {\
-            IDE_SET( ideSetErrorCode( sdERR_ABORT_UNINITIALIZED_LIBRARY, \
-                                      ( (aConnectionInfo == NULL) ? (SChar*)"" : \
-                                                                    (SChar*)aConnectionInfo->mNodeName ), \
-                                      aFunctionName ) );\
-        }
+static ODBCExecDirectAddCallback          SQLExecDirectAddCallback = NULL; // 72
 
-#define IDE_EXCEPTION_NULL_DBC( aConnectionInfo, aFunctionName )\
-        IDE_EXCEPTION( ErrorNullDbc )\
-        {\
-            IDE_SET( ideSetErrorCode( sdERR_ABORT_EXECUTE_NULL_DBC, \
-                                      ( (aConnectionInfo == NULL) ? (SChar*)"" : \
-                                                                    (SChar*)aConnectionInfo->mNodeName ), \
-                                      aFunctionName ) );\
-        }
-
-#define IDE_EXCEPTION_NULL_STMT( aConnectionInfo, aFunctionName )\
-        IDE_EXCEPTION( ErrorNullStmt )\
-        {\
-            IDE_SET( ideSetErrorCode( sdERR_ABORT_EXECUTE_NULL_STMT, \
-                                      ( (aConnectionInfo == NULL) ? (SChar*)"" : \
-                                                                    (SChar*)aConnectionInfo->mNodeName ), \
-                                      aFunctionName ) );\
-        }
-
-#define IDE_EXCEPTION_NULL_SD_STMT( aConnectionInfo, aFunctionName )\
-        IDE_EXCEPTION( ErrorNullSdStmt )\
-        {\
-            IDE_SET( ideSetErrorCode( sdERR_ABORT_EXECUTE_NULL_SD_STMT, \
-                                      ( (aConnectionInfo == NULL) ? (SChar*)"" : \
-                                                                    (SChar*)aConnectionInfo->mNodeName ), \
-                                      aFunctionName ) );\
-        }
-
-#define SET_LINK_FAILURE_FLAG( aFlagPtr, aValue )\
-        if ( aFlagPtr != NULL ){ *aFlagPtr = aValue; }\
-        else { /* Do Nothing. */ }
+static ODBCSetPartialExecType             SQLSetPartialExecType   = NULL; // 73
+static ODBCSetStmtExecSeq                 SQLSetStmtExecSeq       = NULL; // 74
 
 IDE_RC sdl::loadLibrary()
 {
@@ -222,6 +191,8 @@ IDE_RC sdl::loadLibrary()
     ODBC_FUNC_DEF( GetConnectAttr );
     /* SQLSetConnectAttr */
     ODBC_FUNC_DEF( SetConnectAttr );
+    /* SQLBindCol */
+    ODBC_FUNC_DEF( BindCol );
     /* SQLGetDbcShardTargetDataNodeName */
     ODBC_FUNC_DEF( GetDbcShardTargetDataNodeName );
     /* SQLGetStmtShardTargetDataNodeName */
@@ -258,20 +229,59 @@ IDE_RC sdl::loadLibrary()
     ODBC_FUNC_DEF( RemoveCallback );
     /* SQLSetShardMetaNumber */
     ODBC_FUNC_DEF( SetShardMetaNumber );
-    /* SQLGetSMNOfDataNode */
-    ODBC_FUNC_DEF( GetSMNOfDataNode );
     /* SQLGetNeedFailover */
     ODBC_FUNC_DEF( GetNeedFailover );
     /* SQLReconnect */
     ODBC_FUNC_DEF( Reconnect );
-    /* SQLGetNeedToDisconnect */
-    ODBC_FUNC_DEF( GetNeedToDisconnect );
     /* SQLSetSavepoint */
     ODBC_FUNC_DEF( SetSavepoint );
     /* SQLRollbackToSavepoint */
     ODBC_FUNC_DEF( RollbackToSavepoint );
     /* SQLShardStmtPartialRollback */
     ODBC_FUNC_DEF( ShardStmtPartialRollback );
+    /* SQLEndPendingTranAddCallback */
+    ODBC_FUNC_DEF( EndPendingTranAddCallback );
+    /* SQLSetFailoverSuspend */
+    ODBC_FUNC_DEF( SetFailoverSuspend );
+
+    /* SQLGetLobForSd */
+    ODBC_FUNC_DEF( GetLobForSd );
+    /* SQLPutLobForSd */
+    ODBC_FUNC_DEF( PutLobForSd );
+    /* SQLGetLobLengthForSd */
+    ODBC_FUNC_DEF( GetLobLengthForSd );
+    /* SQLFreeLobForSd */
+    ODBC_FUNC_DEF( FreeLobForSd );
+    /* SQLTrimLobForSd */
+    ODBC_FUNC_DEF( TrimLobForSd );
+
+    /* SQLLobPrepare4Write */
+    ODBC_FUNC_DEF( LobPrepare4Write );
+    /* SQLLobWrite */
+    ODBC_FUNC_DEF( LobWrite );
+    /* SQLLobFinishWrite */
+    ODBC_FUNC_DEF( LobFinishWrite );
+
+    /* SQLGetScn */
+    ODBC_FUNC_DEF( GetScn );
+    /* SQLSetScn */
+    ODBC_FUNC_DEF( SetScn );
+    /* SQLSetTxFirstStmtScn */
+    ODBC_FUNC_DEF( SetTxFirstStmtScn );
+    /* SQLSetTxFirstStmtTime */
+    ODBC_FUNC_DEF( SetTxFirstStmtTime );
+    /* SQLSetDistLevel */
+    ODBC_FUNC_DEF( SetDistLevel );
+    /* SQLSetTargetShardMetaNumber */
+    ODBC_FUNC_DEF( SetTargetShardMetaNumber );
+
+    /* SQLExecDirectAddCallback */
+    ODBC_FUNC_DEF( ExecDirectAddCallback );
+
+    /* SQLSetPartialCoordStmt */
+    ODBC_FUNC_DEF( SetPartialExecType );
+    /* SQLSetStmtExecSeq */
+    ODBC_FUNC_DEF( SetStmtExecSeq );
 
     return IDE_SUCCESS;
 
@@ -361,19 +371,19 @@ IDE_RC sdl::allocConnect( sdiConnectInfo * aConnectInfo )
  * Implementation : alloc dbc and connect to data node.
  *
  * Arguments
- *     - aUserName      : data node Ïóê ÎåÄÌïú connect user name
- *     - aPassword      : data node Ïóê ÎåÄÌïú connect password
- *     - aConnectType   : data node Ïóê ÎåÄÌïú connect type
- *     - aConnectInfo   : data nodeÏùò Ï†ëÏÜç Í≤∞Í≥º
+ *     - aUserName      : data node ø° ¥Î«— connect user name
+ *     - aPassword      : data node ø° ¥Î«— connect password
+ *     - aConnectType   : data node ø° ¥Î«— connect type
+ *     - aConnectInfo   : data node¿« ¡¢º” ∞·∞˙
  *           mNodeId
  *           mNodeName
  *           mServerIP
  *           mPortNo
  *           mDbc
- *           mLinkFailure : data node Ïóê ÎåÄÌïú link failure
+ *           mLinkFailure : data node ø° ¥Î«— link failure
  *
  * Return value
- *     - aConnectInfo->mDbc : data node Ïóê ÎåÄÌïú connection
+ *     - aConnectInfo->mDbc : data node ø° ¥Î«— connection
  *
  * Error handle
  *     - SQL_SUCCESS
@@ -386,6 +396,8 @@ IDE_RC sdl::allocConnect( sdiConnectInfo * aConnectInfo )
 
     IDE_RC            sIdeReturn = IDE_FAILURE;
     SQLRETURN         sSqlReturn = SQL_ERROR;
+    sdiClientInfo   * sClientInfo = NULL;
+    sdiConnectInfo  * sConnectInfo = NULL;
     SQLHDBC           sDbc;
     SQLHENV           sEnv;
     SQLCHAR           sConnInStr[SDL_CONN_STR_MAX_LEN];
@@ -395,14 +407,23 @@ IDE_RC sdl::allocConnect( sdiConnectInfo * aConnectInfo )
     SChar             sDBCharSet[MTL_NAME_LEN_MAX + 1];
     const mtlModule * sLanguage = mtl::mDBCharSet;
 
-    sdiNode         * sDataNode = &(aConnectInfo->mNodeInfo);
+    sdiNode         * sDataNode = NULL;
     SChar             sPassword[IDS_MAX_PASSWORD_LEN + 1];
     UInt              sLen;
     idBool            sIsShardClient = ID_FALSE;
 
     IDE_TEST_RAISE( mInitialized == ID_FALSE, UnInitializedError );
 
-    SET_LINK_FAILURE_FLAG( &aConnectInfo->mLinkFailure, ID_FALSE );
+    sConnectInfo = aConnectInfo;
+
+    SET_LINK_FAILURE_FLAG( &sConnectInfo->mLinkFailure, ID_FALSE );
+
+    sDataNode = &(sConnectInfo->mNodeInfo);
+
+    if ( sConnectInfo->mSession != NULL )
+    {
+        sClientInfo = sConnectInfo->mSession->mQPSpecific.mClientInfo;
+    }
 
     // database char set
     idlOS::strncpy( sDBCharSet,
@@ -411,8 +432,8 @@ IDE_RC sdl::allocConnect( sdiConnectInfo * aConnectInfo )
     sDBCharSet[sLanguage->names->length] = '\0';
 
     // password - simple scramble
-    sLen = idlOS::strlen( aConnectInfo->mUserPassword );
-    idlOS::memcpy( sPassword, aConnectInfo->mUserPassword, sLen + 1 );
+    sLen = idlOS::strlen( sConnectInfo->mUserPassword );
+    idlOS::memcpy( sPassword, sConnectInfo->mUserPassword, sLen + 1 );
     sdi::charXOR( sPassword, sLen );
 
     sSqlReturn = SQLAllocEnv( &sEnv ) ;
@@ -423,15 +444,41 @@ IDE_RC sdl::allocConnect( sdiConnectInfo * aConnectInfo )
     IDE_TEST_RAISE( sSqlReturn != SQL_SUCCESS, AllocDBCError );
     sState = 2;
 
-    if ( aConnectInfo->mMessageCallback.mFunction != NULL )
+    /* PROJ-2733-DistTxInfo ConnString ¥ÎΩ≈ SQLSetConnectAttr()∑Œ «œ¿⁄. */
+    sS64 = SDI_SESSION_TYPE_COORD;
+    sSqlReturn = SQLSetConnectAttr( sDbc, SDL_ALTIBASE_SHARD_SESSION_TYPE,
+                                    (SQLPOINTER)sS64, 0 );
+    IDE_TEST_RAISE( sSqlReturn != SQL_SUCCESS, SetConnectAttrError );
+
+#ifdef DEBUG
+    if ( ( sConnectInfo->mFlag & SDI_CONNECT_INITIAL_BY_NOTIFIER_MASK )
+           == SDI_CONNECT_INITIAL_BY_NOTIFIER_FALSE )
+    {
+        IDE_DASSERT( SDI_LINKER_PARAM_IS_USED( sConnectInfo ) == ID_TRUE );
+        IDE_DASSERT( sConnectInfo->mLinkerParam->param.mMessageCallback.mArgument
+                     == sConnectInfo );
+    }
+#endif
+
+    if ( SDI_LINKER_PARAM_IS_USED( sConnectInfo ) == ID_TRUE )
     {
         sSqlReturn = SQLSetConnectAttr( sDbc, SDL_ALTIBASE_MESSAGE_CALLBACK,
-                                        &(aConnectInfo->mMessageCallback), 0 );
+                                        &(sConnectInfo->mLinkerParam->param.mMessageCallback), 0 );
         IDE_TEST_RAISE( sSqlReturn != SQL_SUCCESS, SetConnectAttrError );
     }
     else
     {
         // Nothing to do
+    }
+
+    if ( sClientInfo != NULL )
+    {
+        sS64 = (SLong) sClientInfo->mTransactionLevel;
+        sSqlReturn = SQLSetConnectAttr( sDbc,
+                                        SDL_ALTIBASE_GLOBAL_TRANSACTION_LEVEL,
+                                        (SQLPOINTER)sS64,
+                                        0 );
+        IDE_TEST_RAISE( sSqlReturn != SQL_SUCCESS, SetConnectAttrError_TRANSACTION_LEVEL );
     }
 
     sConnAttrValue = sdi::getShardInternalConnAttrRetryCount();
@@ -478,45 +525,53 @@ IDE_RC sdl::allocConnect( sdiConnectInfo * aConnectInfo )
         IDE_TEST_RAISE( sSqlReturn != SQL_SUCCESS, SetConnectAttrError_LOGIN_TIMEOUT );
     }
 
-    if ( ( aConnectInfo->mFlag & SDI_CONNECT_INITIAL_BY_NOTIFIER_MASK )
-           == SDI_CONNECT_INITIAL_BY_NOTIFIER_FALSE )
-    
+    if ( sClientInfo != NULL )
     {
-        if ( aConnectInfo->mSession != NULL )
+        sSqlReturn = SQLSetConnectAttr( sDbc,
+                                        SDL_ALTIBASE_SHARD_COORD_FIX_CTRL_CALLBACK,
+                                        &sClientInfo->mShardCoordFixCtrlCtx,
+                                        0 );
+        IDE_TEST_RAISE( sSqlReturn != SQL_SUCCESS, SetConnectAttrError_SHARD_COORD_FIX_CTRL_CALLBACK );
+    }
+
+    if ( ( sConnectInfo->mFlag & SDI_CONNECT_INITIAL_BY_NOTIFIER_MASK )
+           == SDI_CONNECT_INITIAL_BY_NOTIFIER_FALSE )
+    {
+        if ( sConnectInfo->mSession != NULL )
         {
-            if ( aConnectInfo->mIsShardClient == SDI_SHARD_CLIENT_TRUE )
+            if ( sConnectInfo->mIsShardClient == SDI_SHARD_CLIENT_TRUE )
             {
                 /* shardcli is used. */
                 sIsShardClient = ID_TRUE;
 
-                aConnectInfo->mFailoverTarget
+                sConnectInfo->mFailoverTarget
                     = (sdiFailOverTarget)qci::mSessionCallback.mGetShardFailoverType(
-                            aConnectInfo->mSession->mMmSession,
+                            sConnectInfo->mSession->mMmSession,
                             sDataNode->mNodeId );
             }
             else
             {
                 /* ODBC cli is used. */
-                aConnectInfo->mFailoverTarget = SDI_FAILOVER_ALL;
+                sConnectInfo->mFailoverTarget = SDI_FAILOVER_ALL;
             }
         }
         else
         {
             /* exception case. */
             IDE_DASSERT( 0 );
-            aConnectInfo->mFailoverTarget = SDI_FAILOVER_ALL;
+            sConnectInfo->mFailoverTarget = SDI_FAILOVER_ALL;
         }
     }
     else
     {
         /* dktNotifier::notifyXaResultForShard */
-        aConnectInfo->mFailoverTarget = SDI_FAILOVER_ACTIVE_ONLY;
+        sConnectInfo->mFailoverTarget = SDI_FAILOVER_ACTIVE_ONLY;
     }
 
 
     if ( hasNodeAlternate( sDataNode ) == ID_TRUE )
     {
-        switch ( aConnectInfo->mFailoverTarget )
+        switch ( sConnectInfo->mFailoverTarget )
         {
             case SDI_FAILOVER_ACTIVE_ONLY:
                 idlOS::snprintf( (SChar*)sConnInStr,
@@ -524,13 +579,13 @@ IDE_RC sdl::allocConnect( sdiConnectInfo * aConnectInfo )
                                  SDL_CONN_STR,
                                  sDataNode->mServerIP,
                                  (SInt)sDataNode->mPortNo,
-                                 aConnectInfo->mConnectType,
+                                 sConnectInfo->mConnectType,
                                  sDBCharSet,
-                                 aConnectInfo->mUserName,
+                                 sConnectInfo->mUserName,
                                  sPassword,
                                  sDataNode->mNodeName,
-                                 ( sdi::isMetaAutoCommit( aConnectInfo ) == ID_TRUE ? "ON" : "OFF" ),
-                                 ( aConnectInfo->mPlanAttr > 0 ? "ON" : "OFF" ) );
+                                 ( sdi::isMetaAutoCommit( sConnectInfo ) == ID_TRUE ? "ON" : "OFF" ),
+                                 ( sConnectInfo->mPlanAttr > 0 ? "ON" : "OFF" ) );
                 break;
 
             case SDI_FAILOVER_ALTERNATE_ONLY:
@@ -539,13 +594,13 @@ IDE_RC sdl::allocConnect( sdiConnectInfo * aConnectInfo )
                                  SDL_CONN_STR,
                                  sDataNode->mAlternateServerIP,
                                  (SInt)sDataNode->mAlternatePortNo,
-                                 aConnectInfo->mConnectType,
+                                 sConnectInfo->mConnectType,
                                  sDBCharSet,
-                                 aConnectInfo->mUserName,
+                                 sConnectInfo->mUserName,
                                  sPassword,
                                  sDataNode->mNodeName,
-                                 ( sdi::isMetaAutoCommit( aConnectInfo ) == ID_TRUE ? "ON" : "OFF" ),
-                                 ( aConnectInfo->mPlanAttr > 0 ? "ON" : "OFF" ) );
+                                 ( sdi::isMetaAutoCommit( sConnectInfo ) == ID_TRUE ? "ON" : "OFF" ),
+                                 ( sConnectInfo->mPlanAttr > 0 ? "ON" : "OFF" ) );
                 break;
 
             case SDI_FAILOVER_ALL:
@@ -556,13 +611,13 @@ IDE_RC sdl::allocConnect( sdiConnectInfo * aConnectInfo )
                                  SDL_CONN_ALTERNATE_STR,
                                  sDataNode->mServerIP,
                                  (SInt)sDataNode->mPortNo,
-                                 aConnectInfo->mConnectType,
+                                 sConnectInfo->mConnectType,
                                  sDBCharSet,
-                                 aConnectInfo->mUserName,
+                                 sConnectInfo->mUserName,
                                  sPassword,
                                  sDataNode->mNodeName,
-                                 ( sdi::isMetaAutoCommit( aConnectInfo ) == ID_TRUE ? "ON" : "OFF" ),
-                                 ( aConnectInfo->mPlanAttr > 0 ? "ON" : "OFF" ),
+                                 ( sdi::isMetaAutoCommit( sConnectInfo ) == ID_TRUE ? "ON" : "OFF" ),
+                                 ( sConnectInfo->mPlanAttr > 0 ? "ON" : "OFF" ),
                                  sDataNode->mAlternateServerIP,
                                  (SInt)sDataNode->mAlternatePortNo );
                 break;
@@ -570,7 +625,7 @@ IDE_RC sdl::allocConnect( sdiConnectInfo * aConnectInfo )
     }
     else
     {
-        IDE_TEST_RAISE( aConnectInfo->mFailoverTarget == SDI_FAILOVER_ALTERNATE_ONLY,
+        IDE_TEST_RAISE( sConnectInfo->mFailoverTarget == SDI_FAILOVER_ALTERNATE_ONLY,
                         NodeAlternateSettingMismatch );
 
         idlOS::snprintf( (SChar*)sConnInStr,
@@ -578,21 +633,26 @@ IDE_RC sdl::allocConnect( sdiConnectInfo * aConnectInfo )
                          SDL_CONN_STR,
                          sDataNode->mServerIP,
                          (SInt)sDataNode->mPortNo,
-                         aConnectInfo->mConnectType,
+                         sConnectInfo->mConnectType,
                          sDBCharSet,
-                         aConnectInfo->mUserName,
+                         sConnectInfo->mUserName,
                          sPassword,
                          sDataNode->mNodeName,
-                         ( sdi::isMetaAutoCommit( aConnectInfo ) == ID_TRUE ? "ON" : "OFF" ),
-                         ( aConnectInfo->mPlanAttr > 0 ? "ON" : "OFF" ) );
+                         ( sdi::isMetaAutoCommit( sConnectInfo ) == ID_TRUE ? "ON" : "OFF" ),
+                         ( sConnectInfo->mPlanAttr > 0 ? "ON" : "OFF" ) );
     }
 
-    SQLSetShardPin( sDbc, aConnectInfo->mShardPin );
-    SQLSetShardMetaNumber( sDbc, aConnectInfo->mShardMetaNumber );
+    SQLSetShardPin( sDbc, sConnectInfo->mShardPin );
+
+    if ( sClientInfo != NULL )
+    {
+        SQLSetShardMetaNumber( sDbc, sClientInfo->mTargetShardMetaNumber );
+        SQLSetTargetShardMetaNumber( sDbc, sClientInfo->mTargetShardMetaNumber );
+    }
 
 
     sIdeReturn = internalConnect( sDbc,
-                                  aConnectInfo,
+                                  sConnectInfo,
                                   sConnInStr,
                                   sIsShardClient );
 
@@ -603,9 +663,9 @@ IDE_RC sdl::allocConnect( sdiConnectInfo * aConnectInfo )
     // return connection info
     //------------------------------------
 
-    aConnectInfo->mDbc = sDbc;
+    sConnectInfo->mDbc = sDbc;
 
-    IDE_TEST( getConnectedLinkFullAddress( aConnectInfo ) );
+    IDE_TEST( getConnectedLinkFullAddress( sConnectInfo ) );
 
     return IDE_SUCCESS;
 
@@ -637,40 +697,56 @@ IDE_RC sdl::allocConnect( sdiConnectInfo * aConnectInfo )
         processError( SQL_HANDLE_DBC,
                       sDbc,
                       ( (SChar*)"SQLSetConnectAttr" ),
-                      aConnectInfo,
-                      &(aConnectInfo->mLinkFailure) );
+                      sConnectInfo,
+                      &(sConnectInfo->mLinkFailure) );
+    }
+    IDE_EXCEPTION( SetConnectAttrError_TRANSACTION_LEVEL )
+    {
+        processError( SQL_HANDLE_DBC,
+                      sDbc,
+                      ( (SChar*)"SQLSetConnectAttr(ALTIBASE_GLOBAL_TRANSACTION_LEVEL)" ),
+                      sConnectInfo,
+                      &(sConnectInfo->mLinkFailure) );
     }
     IDE_EXCEPTION( SetConnectAttrError_RETRY_COUNT )
     {
         processError( SQL_HANDLE_DBC,
                       sDbc,
                       ( (SChar*)"SQLSetConnectAttr(ALTIBASE_CONNECTION_RETRY_COUNT)" ),
-                      aConnectInfo,
-                      &(aConnectInfo->mLinkFailure) );
+                      sConnectInfo,
+                      &(sConnectInfo->mLinkFailure) );
     }
     IDE_EXCEPTION( SetConnectAttrError_RETRY_DELAY )
     {
         processError( SQL_HANDLE_DBC,
                       sDbc,
                       ( (SChar*)"SQLSetConnectAttr(ALTIBASE_CONNECTION_RETRY_DELAY)" ),
-                      aConnectInfo,
-                      &(aConnectInfo->mLinkFailure) );
+                      sConnectInfo,
+                      &(sConnectInfo->mLinkFailure) );
     }
     IDE_EXCEPTION( SetConnectAttrError_CONN_TIMEOUT )
     {
         processError( SQL_HANDLE_DBC,
                       sDbc,
                       ( (SChar*)"SQLSetConnectAttr(ALTIBASE_CONNECTION_TIMEOUT)" ),
-                      aConnectInfo,
-                      &(aConnectInfo->mLinkFailure) );
+                      sConnectInfo,
+                      &(sConnectInfo->mLinkFailure) );
     }
     IDE_EXCEPTION( SetConnectAttrError_LOGIN_TIMEOUT )
     {
         processError( SQL_HANDLE_DBC,
                       sDbc,
                       ( (SChar*)"SQLSetConnectAttr(ALTIBASE_LOGIN_TIMEOUT)" ),
-                      aConnectInfo,
-                      &(aConnectInfo->mLinkFailure) );
+                      sConnectInfo,
+                      &(sConnectInfo->mLinkFailure) );
+    }
+    IDE_EXCEPTION( SetConnectAttrError_SHARD_COORD_FIX_CTRL_CALLBACK )
+    {
+        processError( SQL_HANDLE_DBC,
+                      sDbc,
+                      ( (SChar*)"SQLSetConnectAttr(ALTIBASE_SHARD_COORD_FIX_CTRL_CALLBACK)" ),
+                      sConnectInfo,
+                      &(sConnectInfo->mLinkFailure) );
     }
     IDE_EXCEPTION_END;
 
@@ -686,8 +762,8 @@ IDE_RC sdl::allocConnect( sdiConnectInfo * aConnectInfo )
             break;
     }
 
-    aConnectInfo->mDbc  = NULL;
-    aConnectInfo->mLinkFailure = ID_FALSE;
+    sConnectInfo->mDbc  = NULL;
+    sConnectInfo->mLinkFailure = ID_FALSE;
 
     return IDE_FAILURE;
 }
@@ -705,8 +781,8 @@ IDE_RC sdl::internalConnectCore( void            * aDbc,
  *
  * Arguments
  *     - aDbc           : DBC.
- *                        ÏµúÏ¥à Ï†ëÏÜç Ïãú ( Ïù¥ Ìï®ÏàòÏóê Îì§Ïñ¥Ïò§Îäî ) aConnectInfo->mDBC = NULL Ïù¥Îã§.
- *     - aConnectInfo   : data node Ï†ëÏÜç Ï†ïÎ≥¥
+ *                        √÷√  ¡¢º” Ω√ ( ¿Ã «‘ºˆø° µÈæÓø¿¥¬ ) aConnectInfo->mDBC = NULL ¿Ã¥Ÿ.
+ *     - aConnectInfo   : data node ¡¢º” ¡§∫∏
  *     - aConnectString : Connect String
  *
  * Return value
@@ -811,8 +887,8 @@ IDE_RC sdl::disconnect( sdiConnectInfo * aConnectInfo,
  * Implementation : SQLDisconnect
  *
  * Arguments
- *     - aConnectInfo   : data node Ï†ëÏÜç Ï†ïÎ≥¥
- *     - aIsLinkFailure : Link-Ïã§Ìå® Ïó¨Î∂ÄÏóê ÎåÄÌïú ÌîåÎûòÍ∑∏.
+ *     - aConnectInfo   : data node ¡¢º” ¡§∫∏
+ *     - aIsLinkFailure : Link-Ω«∆– ø©∫Œø° ¥Î«— «√∑°±◊.
  *
  * Return value
  *
@@ -860,8 +936,8 @@ IDE_RC sdl::disconnectLocal( sdiConnectInfo * aConnectInfo,
  * Implementation : SQLDisconnect
  *
  * Arguments
- *     - aConnectInfo   : data node Ï†ëÏÜç Ï†ïÎ≥¥
- *     - aIsLinkFailure : Link-Ïã§Ìå® Ïó¨Î∂ÄÏóê ÎåÄÌïú ÌîåÎûòÍ∑∏.
+ *     - aConnectInfo   : data node ¡¢º” ¡§∫∏
+ *     - aIsLinkFailure : Link-Ω«∆– ø©∫Œø° ¥Î«— «√∑°±◊.
  *
  * Return value
  *
@@ -909,8 +985,8 @@ IDE_RC sdl::freeConnect( sdiConnectInfo * aConnectInfo,
  * Implementation : SQLFreeConnect
  *
  * Arguments
- *     - aConnectInfo   : data node Ï†ëÏÜç Ï†ïÎ≥¥
- *     - aIsLinkFailure : Link-Ïã§Ìå® Ïó¨Î∂ÄÏóê ÎåÄÌïú ÌîåÎûòÍ∑∏.
+ *     - aConnectInfo   : data node ¡¢º” ¡§∫∏
+ *     - aIsLinkFailure : Link-Ω«∆– ø©∫Œø° ¥Î«— «√∑°±◊.
  *
  * Return value
  *
@@ -942,9 +1018,10 @@ IDE_RC sdl::freeConnect( sdiConnectInfo * aConnectInfo,
     return IDE_FAILURE;
 }
 
-IDE_RC sdl::allocStmt( sdiConnectInfo * aConnectInfo,
-                       sdlRemoteStmt  * aRemoteStmt,
-                       idBool         * aIsLinkFailure )
+IDE_RC sdl::allocStmt( sdiConnectInfo          * aConnectInfo,
+                       sdlRemoteStmt           * aRemoteStmt,
+                       sdiShardPartialExecType   aPartialExecType,
+                       idBool                  * aIsLinkFailure )
 {
 /***********************************************************************
  *
@@ -953,12 +1030,12 @@ IDE_RC sdl::allocStmt( sdiConnectInfo * aConnectInfo,
  * Implementation : SQLAllocStmt
  *
  * Arguments
- *  - aConnectInfo   : data node Ï†ëÏÜç Ï†ïÎ≥¥
+ *  - aConnectInfo   : data node ¡¢º” ¡§∫∏
  *  - aRemoteStmt    : SdStatement Handler
- *  - aIsLinkFailure : Link-Ïã§Ìå® Ïó¨Î∂ÄÏóê ÎåÄÌïú ÌîåÎûòÍ∑∏.
+ *  - aIsLinkFailure : Link-Ω«∆– ø©∫Œø° ¥Î«— «√∑°±◊.
  *
  * Return value
- *     - aRemoteStmt : data node Ïóê ÎåÄÌïú sdlRemoteStmt.mStmt
+ *     - aRemoteStmt : data node ø° ¥Î«— sdlRemoteStmt.mStmt
  *
  * Error handle
  *     - SQL_SUCCESS
@@ -969,6 +1046,9 @@ IDE_RC sdl::allocStmt( sdiConnectInfo * aConnectInfo,
  ***********************************************************************/
     SQLRETURN sRet  = SQL_ERROR;
     SQLHSTMT  sStmt = NULL;
+
+    /* TASK-7219 Non-shard DML */
+    SQLINTEGER sPartialExecType = aPartialExecType;
 
     SET_LINK_FAILURE_FLAG( aIsLinkFailure, ID_FALSE );
 
@@ -986,19 +1066,27 @@ IDE_RC sdl::allocStmt( sdiConnectInfo * aConnectInfo,
                             aRemoteStmt,
                             SQL_RESET_PARAMS,
                             aIsLinkFailure )
-                  != IDE_SUCCESS )
+                  != IDE_SUCCESS );
 
         IDE_TEST( freeStmt( aConnectInfo,
                             aRemoteStmt,
                             SQL_CLOSE,
                             aIsLinkFailure )
-                  != IDE_SUCCESS )
+                  != IDE_SUCCESS );
 
+        if ( aRemoteStmt->mStmt != NULL )
+        {
+            sRet = SQLSetPartialExecType( aRemoteStmt->mStmt, sPartialExecType );
+            IDE_TEST_RAISE( sRet != SQL_SUCCESS, SetPartialExecTypeErr );
+        }
     }
     else
     {
         sRet = SQLAllocHandle( SQL_HANDLE_STMT, (SQLHANDLE)aConnectInfo->mDbc, &sStmt );
         IDE_TEST_RAISE( sRet != SQL_SUCCESS, AllocHandleErr );
+
+        sRet = SQLSetPartialExecType( sStmt, sPartialExecType );
+        IDE_TEST_RAISE( sRet != SQL_SUCCESS, SetPartialExecTypeErr );
 
         aRemoteStmt->mStmt = (void*)sStmt;
         aRemoteStmt->mFreeFlag &= ~SDL_STMT_FREE_FLAG_ALLOCATED_MASK;
@@ -1019,6 +1107,14 @@ IDE_RC sdl::allocStmt( sdiConnectInfo * aConnectInfo,
                               aConnectInfo,
                               aIsLinkFailure );
     }
+    IDE_EXCEPTION( SetPartialExecTypeErr )
+    {
+        processErrorOnNested( SQL_HANDLE_DBC,
+                              aConnectInfo->mDbc,
+                              ((SChar*)"SQLSetPartialCoordStmt"),
+                              aConnectInfo,
+                              aIsLinkFailure );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -1036,12 +1132,12 @@ IDE_RC sdl::freeStmt( sdiConnectInfo * aConnectInfo,
  * Implementation : SQLFreeStmt
  *
  * Arguments
- *  - aConnectInfo   : data node Ï†ëÏÜç Ï†ïÎ≥¥
+ *  - aConnectInfo   : data node ¡¢º” ¡§∫∏
  *  - aRemoteStmt    : SdStatement Handler
  *  - aOption : SQLFreeStmt option
  *                 SQL_CLOSE
  *                 SQL_DROP
- *  - aIsLinkFailure : Link-Ïã§Ìå® Ïó¨Î∂ÄÏóê ÎåÄÌïú ÌîåÎûòÍ∑∏.
+ *  - aIsLinkFailure : Link-Ω«∆– ø©∫Œø° ¥Î«— «√∑°±◊.
  *
  * Return value
  *
@@ -1147,11 +1243,11 @@ IDE_RC sdl::addPrepareCallback( void           ** aCallback,
  * Arguments
  *  - aCallback      : Callback pointer for nested function call.
  *  - aNodeIndex     : Add Callback Index. Used to find matching resultCallback().
- *  - aConnectInfo   : data node Ï†ëÏÜç Ï†ïÎ≥¥
- *  - aRemoteStmt    : data node Ïóê ÎåÄÌïú sdlRemoteStmt
+ *  - aConnectInfo   : data node ¡¢º” ¡§∫∏
+ *  - aRemoteStmt    : data node ø° ¥Î«— sdlRemoteStmt
  *  - aQuery         : query string
  *  - aLength        : query string size
- *  - aIsLinkFailure : Link-Ïã§Ìå® Ïó¨Î∂ÄÏóê ÎåÄÌïú ÌîåÎûòÍ∑∏.
+ *  - aIsLinkFailure : Link-Ω«∆– ø©∫Œø° ¥Î«— «√∑°±◊.
  *
  * Return value
  *
@@ -1208,8 +1304,8 @@ IDE_RC sdl::getParamsCount( sdiConnectInfo * aConnectInfo,
  * Implementation : Get count of parameters.
  *
  * Arguments
- *     - aConnectInfo    [IN] : data node Ï†ëÏÜç Ï†ïÎ≥¥
- *     - aRemoteStmt     [IN] : data node Ïóê ÎåÄÌïú sdlRemoteStmt
+ *     - aConnectInfo    [IN] : data node ¡¢º” ¡§∫∏
+ *     - aRemoteStmt     [IN] : data node ø° ¥Î«— sdlRemoteStmt
  *     - aParamCount     [OUT]:
  *     - aIsLinkFailure  [OUT]:
  *
@@ -1259,6 +1355,7 @@ IDE_RC sdl::bindParam( sdiConnectInfo * aConnectInfo,
                        SInt             aBufferLen,
                        SInt             aPrecision,
                        SInt             aScale,
+                       SInt           * aIndicator,
                        idBool         * aIsLinkFailure )
 {
 /***********************************************************************
@@ -1268,8 +1365,8 @@ IDE_RC sdl::bindParam( sdiConnectInfo * aConnectInfo,
  * Implementation : SQLBindParameter
  *
  * Arguments
- *     - aConnectInfo    [IN] : data node Ï†ëÏÜç Ï†ïÎ≥¥
- *     - aRemoteStmt     [IN] : data node Ïóê ÎåÄÌïú sdlRemoteStmt
+ *     - aConnectInfo    [IN] : data node ¡¢º” ¡§∫∏
+ *     - aRemoteStmt     [IN] : data node ø° ¥Î«— sdlRemoteStmt
  *     - aParamNum       [IN] :
  *     - aInOutType      [IN] :
  *     - aValueType      [IN] :
@@ -1290,7 +1387,10 @@ IDE_RC sdl::bindParam( sdiConnectInfo * aConnectInfo,
  ***********************************************************************/
     SQLRETURN sRet = SQL_ERROR;
 
+    SQLSMALLINT sCType    = 0;
+    SQLSMALLINT sSQLType  = 0;
     SQLSMALLINT sSdlMType = 0;
+    SQLINTEGER  *sIndicator = NULL;
 
     SET_LINK_FAILURE_FLAG( aIsLinkFailure, ID_FALSE );
 
@@ -1298,23 +1398,52 @@ IDE_RC sdl::bindParam( sdiConnectInfo * aConnectInfo,
     IDE_TEST_RAISE( aRemoteStmt == NULL, ErrorNullSdStmt );
     IDE_TEST_RAISE( aRemoteStmt->mStmt == NULL, ErrorNullStmt );
 
-    sSdlMType = (SQLSMALLINT)mtdType_to_SDLMType( aValueType );
-    IDE_TEST_RAISE( ( (UShort)sSdlMType == SDL_MTYPE_MAX ),
-                    BindParameterTypeNotSupport );
+    /* PROJ-2728
+     *   mtdLobType µ•¿Ã≈Õ¥¬ SDLMType¿∏∑Œ ∫Ø»Ø«œ¡ˆ æ ∞Ì
+     *   SQL_C_CHAR, SQL_C_BINARY øÕ indicator∏¶ ¿ÃøÎ«—¥Ÿ.
+     */
+    if ( aValueType == MTD_CLOB_ID )
+    {
+        sCType = MTD_CHAR_ID;             // SQL_C_CHAR
+        sSQLType = MTD_VARCHAR_ID;        // SQL_VARCHAR
+        sIndicator = aIndicator;
+    }
+    else if ( aValueType == MTD_BLOB_ID )
+    {
+        sCType = (SShort)MTD_BINARY_ID;   // SQL_C_BINARY
+        sSQLType = (SShort)MTD_BINARY_ID; // SQL_BINARY
+        sIndicator = aIndicator;
+    }
+    else
+    {
+        sSdlMType = (SQLSMALLINT)mtdType_to_SDLMType( aValueType );
+        IDE_TEST_RAISE( ( (UShort)sSdlMType == SDL_MTYPE_MAX ),
+                        BindParameterTypeNotSupport );
+        sCType = sSdlMType;
+        sSQLType = sSdlMType;
+    }
 
     aRemoteStmt->mFreeFlag &= ~SDL_STMT_FREE_FLAG_TRY_BIND_PARAM_MASK;
     aRemoteStmt->mFreeFlag |= SDL_STMT_FREE_FLAG_TRY_BIND_PARAM_TRUE;
 
+    if ( aInOutType == CMP_DB_PARAM_OUTPUT ||
+         aInOutType == CMP_DB_PARAM_INPUT_OUTPUT ) /* BUG-48877 */
+    {
+        /* OUTPUT ¿Ã∞Ì indicator∞° ¡ˆ¡§µ«æÓ ¿÷¡ˆ æ ¿∫ ∞ÊøÏ,
+         * execute ∞·∞˙∞° æ¯¥Ÿ∏È(NO_DATA) ø°∑Ø∞° πﬂª˝«—¥Ÿ  */
+        sIndicator = aIndicator;
+    }
+
     sRet = SQLBindParameter( (SQLHSTMT    )aRemoteStmt->mStmt,
                              (SQLUSMALLINT)aParamNum,
                              (SQLSMALLINT )aInOutType,
-                             (SQLSMALLINT )sSdlMType,
-                             (SQLSMALLINT )sSdlMType,
+                             (SQLSMALLINT )sCType,
+                             (SQLSMALLINT )sSQLType,
                              (SQLULEN     )aPrecision,
                              (SQLSMALLINT )aScale,
                              (SQLPOINTER  )aParamValuePtr,
                              (SQLLEN      )aBufferLen,
-                             (SQLLEN     *)NULL );
+                             (SQLLEN     *)sIndicator );
 
     IDE_TEST_RAISE( sRet == SQL_ERROR, BindParameterErr);
 
@@ -1360,8 +1489,8 @@ IDE_RC sdl::describeCol( sdiConnectInfo * aConnectInfo,
  * Implementation : SQLDescribeCol
  *
  * Arguments
- *     - aConnectInfo   : data node Ï†ëÏÜç Ï†ïÎ≥¥
- *     - aRemoteStmt    : data node Ïóê ÎåÄÌïú sdlRemoteStmt
+ *     - aConnectInfo   : data node ¡¢º” ¡§∫∏
+ *     - aRemoteStmt    : data node ø° ¥Î«— sdlRemoteStmt
  *     - aColNo         : column position
  *
  * Return value
@@ -1418,7 +1547,9 @@ IDE_RC sdl::bindCol( sdiConnectInfo * aConnectInfo,
                      UInt             aColNo,
                      UInt             aColType,
                      UInt             aColSize,
-                     void           * aBuffer,
+                     void           * aValueBuffer,
+                     UInt             aValueBufferMaxLen,
+                     SInt           * aValueLen,
                      idBool         * aIsLinkFailure )
 {
 /***********************************************************************
@@ -1428,14 +1559,15 @@ IDE_RC sdl::bindCol( sdiConnectInfo * aConnectInfo,
  * Implementation : SQLBindCol
  *
  * Arguments
- *     - aConnectInfo   : data node Ï†ëÏÜç Ï†ïÎ≥¥
- *     - aRemoteStmt    : data node Ïóê ÎåÄÌïú sdlRemoteStmt
+ *     - aConnectInfo   : data node ¡¢º” ¡§∫∏
+ *     - aRemoteStmt    : data node ø° ¥Î«— sdlRemoteStmt
  *     - aColNo         : column position
  *     - aColtype       : column type (mtType)
  *     - aColSize       : column size (mtType)
- *
+ *     - aValueBufferMaxLen : value buffer max length
  * Return value
- *     - aBuffer : SQLFetch Ïù¥ÌõÑ Î∞òÌôòÎê† Ï£ºÏÜå
+ *     - aValueBuffer  : SQLFetch ¿Ã»ƒ π›»Øµ… ¡÷º“
+ *     - aValueLen     : value length or indicator for NULL(-1) 
  *
  * Error handle
  *     - SQL_SUCCESS
@@ -1444,23 +1576,56 @@ IDE_RC sdl::bindCol( sdiConnectInfo * aConnectInfo,
  *     - SQL_ERROR
  *
  ***********************************************************************/
-    SET_LINK_FAILURE_FLAG( aIsLinkFailure, ID_FALSE );
+    SQLRETURN sRet = SQL_ERROR;
+    SQLSMALLINT sCType    = 0;
+    SQLSMALLINT sSQLType  = 0;
 
-    /* Not used variable */
-    if ( aColNo   == 1 ) aColNo = 0;
-    if ( aColType == 1 ) aColType = 0;
-    if ( aColSize == 1 ) aColSize = 0;
-    if ( aBuffer  != NULL ) aBuffer = NULL;
+    SET_LINK_FAILURE_FLAG( aIsLinkFailure, ID_FALSE );
 
     IDE_TEST_RAISE( mInitialized == ID_FALSE, UnInitializedError );
     IDE_TEST_RAISE( aRemoteStmt == NULL, ErrorNullSdStmt );
     IDE_TEST_RAISE( aRemoteStmt->mStmt == NULL, ErrorNullStmt );
+
+    sCType = (SQLSMALLINT)mtdType_to_SQLCType( aColType );
+    IDE_TEST_RAISE( ( (UShort)sCType == SQL_UNKNOWN_TYPE ), BindColTypeNotSupport );
+    sSQLType = (SQLSMALLINT)mtdType_to_SQLType( aColType );
+    IDE_TEST_RAISE( ( (UShort)sSQLType == SQL_UNKNOWN_TYPE ), BindColTypeNotSupport );
+    IDE_TEST_RAISE( aColSize > aValueBufferMaxLen, BindColSizeMismatch);
+
+    sRet = SQLBindCol( (SQLHSTMT    )aRemoteStmt->mStmt,
+                       (SQLSMALLINT )aColNo,
+                       (SQLSMALLINT )sCType,
+                       (SQLPOINTER  )aValueBuffer,
+                       (SQLLEN      )aValueBufferMaxLen,
+                       (SQLLEN     *)aValueLen );
+
+    IDE_TEST_RAISE( sRet == SQL_ERROR, BindColErr);
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_UNINIT_LIBRARY( aConnectInfo, "bindCol" )
     IDE_EXCEPTION_NULL_SD_STMT( aConnectInfo, "bindCol" )
     IDE_EXCEPTION_NULL_STMT( aConnectInfo, "bindCol" )
+    IDE_EXCEPTION( BindColSizeMismatch )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdl::bindCol",
+                                  "Bind col size does not mismatch" ) );
+    }
+    IDE_EXCEPTION( BindColTypeNotSupport )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdl::bindCol",
+                                  "Bind col type is not supported" ) );
+    }
+    IDE_EXCEPTION( BindColErr )
+    {
+        processErrorOnNested( SQL_HANDLE_STMT,
+                              aRemoteStmt->mStmt,
+                              ((SChar*)"SQLBindCol"),
+                              aConnectInfo,
+                              aIsLinkFailure );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -1470,7 +1635,7 @@ IDE_RC sdl::execDirect( sdiConnectInfo * aConnectInfo,
                         sdlRemoteStmt  * aRemoteStmt,
                         SChar          * aQuery,
                         SInt             aQueryLen,
-                        sdiClientInfo  * aClientInfo,
+                        sdiClientInfo  * /*aClientInfo*/,
                         idBool         * aIsLinkFailure )
 {
 /***********************************************************************
@@ -1480,12 +1645,12 @@ IDE_RC sdl::execDirect( sdiConnectInfo * aConnectInfo,
  * Implementation : SQLExecDirect
  *
  * Arguments
- *     - aConnectInfo   [IN] : data node Ï†ëÏÜç Ï†ïÎ≥¥
- *     - aRemoteStmt    [IN] : data node Ïóê ÎåÄÌïú sdlRemoteStmt
+ *     - aConnectInfo   [IN] : data node ¡¢º” ¡§∫∏
+ *     - aRemoteStmt    [IN] : data node ø° ¥Î«— sdlRemoteStmt
  *     - aQuery         [IN] : Query String
  *     - aQueryLen      [IN] : Query String Length
  *     - aClientInfo    [IN/OUT] : Client Info
- *     - aIsLinkFailure [OUT]: Link-Ïã§Ìå® Ïó¨Î∂ÄÏóê ÎåÄÌïú ÌîåÎûòÍ∑∏.
+ *     - aIsLinkFailure [OUT]: Link-Ω«∆– ø©∫Œø° ¥Î«— «√∑°±◊.
  *
  * Return value
  *
@@ -1510,9 +1675,6 @@ IDE_RC sdl::execDirect( sdiConnectInfo * aConnectInfo,
 
     IDE_TEST_RAISE( sRet == SQL_ERROR, ExecDirectErr );
 
-    /* BUG-46100 Session SMN Update */
-    sdi::setNeedToDisconnect( aClientInfo, (idBool)SQLGetNeedToDisconnect( aConnectInfo->mDbc ) );
-
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_UNINIT_LIBRARY( aConnectInfo, "execDirect" )
@@ -1529,16 +1691,47 @@ IDE_RC sdl::execDirect( sdiConnectInfo * aConnectInfo,
     }
     IDE_EXCEPTION_END;
 
-    if ( aConnectInfo->mDbc != NULL )
-    {
-        /* BUG-46100 Session SMN Update */
-        sdi::setNeedToDisconnect( aClientInfo, (idBool)SQLGetNeedToDisconnect( aConnectInfo->mDbc ) );
-    }
-    else
-    {
-        /* Nothing to do */
-    }
+    return IDE_FAILURE;
+}
+IDE_RC sdl::addExecDirectCallback( void           ** aCallback,
+                                   UInt              aNodeIndex,
+                                   sdiConnectInfo *  aConnectInfo,
+                                   sdlRemoteStmt  *  aRemoteStmt,
+                                   SChar          *  aQuery,
+                                   SInt              aLength,
+                                   idBool         *  aIsLinkFailure )
+{
+    SQLRETURN  sRet = SQL_ERROR;
 
+    SET_LINK_FAILURE_FLAG( aIsLinkFailure, ID_FALSE );
+
+    IDE_TEST_RAISE( mInitialized == ID_FALSE, UnInitializedError );
+    IDE_TEST_RAISE( aRemoteStmt == NULL, ErrorNullSdStmt );
+    IDE_TEST_RAISE( aRemoteStmt->mStmt == NULL, ErrorNullStmt );
+
+    sRet = SQLExecDirectAddCallback( (SQLUINTEGER)aNodeIndex,
+                                  (SQLHANDLE)aRemoteStmt->mStmt,
+                                  (SQLCHAR*)aQuery,
+                                  (SQLINTEGER)aLength,
+                                  (SQLPOINTER **)aCallback );
+
+    IDE_TEST_RAISE( sRet == SQL_ERROR, ExecDirectErr );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    IDE_EXCEPTION_UNINIT_LIBRARY( aConnectInfo, "addExecDirectCallback" )
+    IDE_EXCEPTION_NULL_SD_STMT( aConnectInfo, "addExecDirectCallback" )
+    IDE_EXCEPTION_NULL_STMT( aConnectInfo, "addExecDirectCallback" )
+    IDE_EXCEPTION( ExecDirectErr )
+    {
+        processErrorOnNested( SQL_HANDLE_STMT,
+                              aRemoteStmt->mStmt,
+                              ((SChar*)"SQLExecDirectAddCallback"),
+                              aConnectInfo,
+                              aIsLinkFailure );
+    }
     return IDE_FAILURE;
 }
 
@@ -1644,6 +1837,50 @@ IDE_RC sdl::addPrepareTranCallback( void   ** aCallback,
     return IDE_FAILURE;
 }
 
+IDE_RC sdl::addEndPendingTranCallback( void           ** aCallback,
+                                       UInt              aNodeIndex,
+                                       sdiConnectInfo  * aConnectInfo,
+                                       ID_XID          * aXID,
+                                       idBool            aIsCommit,
+                                       idBool          * aIsLinkFailure )
+{
+    SQLRETURN  sRet = SQL_ERROR;
+    SQLSMALLINT sIsCommit;
+
+    SET_LINK_FAILURE_FLAG( aIsLinkFailure, ID_FALSE );
+
+    IDU_FIT_POINT_RAISE( "sdl::addEndPendingTranCallback::initializeFail", UnInitializedError );
+    IDE_TEST_RAISE( mInitialized == ID_FALSE, UnInitializedError );
+    IDE_TEST_RAISE( aConnectInfo->mDbc == NULL, ErrorNullDbc );
+
+    sIsCommit = ( aIsCommit == ID_TRUE ) ? SDL_TRANSACT_COMMIT : SDL_TRANSACT_ROLLBACK;
+
+    sRet = SQLEndPendingTranAddCallback( (SQLUINTEGER )aNodeIndex,
+                                         (SQLHDBC     )aConnectInfo->mDbc,
+                                         (SQLUINTEGER )ID_SIZEOF(ID_XID),
+                                         (SQLPOINTER* )aXID,
+                                         (SQLSMALLINT )sIsCommit,
+                                         (SQLPOINTER**)aCallback );
+
+    IDE_TEST_RAISE( sRet == SQL_ERROR, ExecuteErr );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_UNINIT_LIBRARY( aConnectInfo, "addEndPendingTranCallback" )
+    IDE_EXCEPTION_NULL_DBC( aConnectInfo, "addEndPendingTranCallback" )
+    IDE_EXCEPTION( ExecuteErr )
+    {
+        processErrorOnNested( SQL_HANDLE_DBC,
+                              aConnectInfo->mDbc,
+                              ((SChar*)"addEndPendingTranCallback"),
+                              aConnectInfo,
+                              aIsLinkFailure );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 IDE_RC sdl::addEndTranCallback( void          ** aCallback,
                                 UInt             aNodeIndex,
                                 sdiConnectInfo * aConnectInfo,
@@ -1707,7 +1944,7 @@ IDE_RC sdl::resultCallback( void           * aCallback,
                             UInt             aNodeIndex,
                             sdiConnectInfo * aConnectInfo,
                             idBool           aReCall,
-                            sdiClientInfo  * aClientInfo,
+                            sdiClientInfo  * /*aClientInfo*/,
                             SShort           aHandleType,
                             void           * aHandle,
                             SChar          * aFuncName,
@@ -1735,9 +1972,7 @@ IDE_RC sdl::resultCallback( void           * aCallback,
                                  (SQLCHAR)( ( aReCall == ID_TRUE ) ? 1: 0 ) );
 
     IDE_TEST_RAISE( sRet == SQL_ERROR, ExecuteErr );
-
-    /* BUG-46100 Session SMN Update */
-    sdi::setNeedToDisconnect( aClientInfo, (idBool)SQLGetNeedToDisconnect( aConnectInfo->mDbc ) );
+    IDE_TEST_RAISE( sRet == (SQLRETURN)(-1111), NotExecuted );
 
     return IDE_SUCCESS;
 
@@ -1752,17 +1987,12 @@ IDE_RC sdl::resultCallback( void           * aCallback,
                               aConnectInfo,
                               aIsLinkFailure );
     }
-    IDE_EXCEPTION_END;
-
-    if ( aConnectInfo->mDbc != NULL )
+    IDE_EXCEPTION( NotExecuted )
     {
-        /* BUG-46100 Session SMN Update */
-        sdi::setNeedToDisconnect( aClientInfo, (idBool)SQLGetNeedToDisconnect( aConnectInfo->mDbc ) );
-    }
-    else
-    {
+        /* doCallback ø°º≠ ºˆ«‡«œ¡ˆ æ ¿∫√§∑Œ ¡æ∑·µ«æ˙¥Ÿ */
         /* Nothing to do */
     }
+    IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 }
@@ -1779,6 +2009,35 @@ void sdl::removeCallback( void * aCallback )
     }
 }
 
+IDE_RC sdl::setFailoverSuspend( sdiConnectInfo         * aConnectInfo,
+                               sdiFailoverSuspendType   aSuspendOnType,
+                               UInt                     aNewErrorCode )
+{
+    SQLINTEGER sOnOff;
+
+    IDE_TEST_RAISE( mInitialized == ID_FALSE, UnInitializedError );
+    IDE_TEST_RAISE( aConnectInfo->mDbc == NULL, ErrorNullDbc );
+
+    if ( aConnectInfo->mFailoverSuspend.mSuspendType != aSuspendOnType )
+    {
+        aConnectInfo->mFailoverSuspend.mSuspendType  = aSuspendOnType;
+        aConnectInfo->mFailoverSuspend.mNewErrorCode = aNewErrorCode;
+
+        sOnOff = ( aSuspendOnType == SDI_FAILOVER_SUSPEND_NONE ) ? 0 : 1;
+        
+        SQLSetFailoverSuspend( (SQLHDBC    )aConnectInfo->mDbc,
+                               (SQLINTEGER )sOnOff );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_UNINIT_LIBRARY( aConnectInfo, "setFailoverSuspend" )
+    IDE_EXCEPTION_NULL_DBC( aConnectInfo, "setFailoverSuspend" )
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 IDE_RC sdl::fetch( sdiConnectInfo * aConnectInfo,
                    sdlRemoteStmt  * aRemoteStmt,
                    SShort         * aResult,
@@ -1791,13 +2050,13 @@ IDE_RC sdl::fetch( sdiConnectInfo * aConnectInfo,
  * Implementation : SQLFetch
  *
  * Arguments
- *     - aConnectInfo   [IN] : data node Ï†ëÏÜç Ï†ïÎ≥¥
- *     - aRemoteStmt    [IN] : data node Ïóê ÎåÄÌïú sdlRemoteStmt
- *     - aResult        [OUT]: ÏàòÌñâ Í≤∞Í≥ºÏóê ÎåÄÌïú value
- *     - aIsLinkFailure [OUT]: Link-Ïã§Ìå® Ïó¨Î∂ÄÏóê ÎåÄÌïú ÌîåÎûòÍ∑∏.
+ *     - aConnectInfo   [IN] : data node ¡¢º” ¡§∫∏
+ *     - aRemoteStmt    [IN] : data node ø° ¥Î«— sdlRemoteStmt
+ *     - aResult        [OUT]: ºˆ«‡ ∞·∞˙ø° ¥Î«— value
+ *     - aIsLinkFailure [OUT]: Link-Ω«∆– ø©∫Œø° ¥Î«— «√∑°±◊.
  *
  * Return value
- *     - aResult : ÏàòÌñâ Í≤∞Í≥ºÏóê ÎåÄÌïú value
+ *     - aResult : ºˆ«‡ ∞·∞˙ø° ¥Î«— value
  *
  * Error handle
  *     - SQL_SUCCESS
@@ -1855,12 +2114,12 @@ IDE_RC sdl::rowCount( sdiConnectInfo * aConnectInfo,
  * Implementation : SQLRowCount for DML
  *
  * Arguments
- *     - aConnectInfo   [IN] : data node Ï†ëÏÜç Ï†ïÎ≥¥
- *     - aRemoteStmt    [IN] : data node Ïóê ÎåÄÌïú sdlRemoteStmt
- *     - aNumRows       [OUT]: Î°úÏùò ÏàòÎ•º Î∞òÌôòÌïòÍ∏∞ ÏúÑÌïú Ìè¨Ïù∏ÌÑ∞
- *     - aIsLinkFailure [OUT]: Link-Ïã§Ìå® Ïó¨Î∂ÄÏóê ÎåÄÌïú ÌîåÎûòÍ∑∏.
+ *     - aConnectInfo   [IN] : data node ¡¢º” ¡§∫∏
+ *     - aRemoteStmt    [IN] : data node ø° ¥Î«— sdlRemoteStmt
+ *     - aNumRows       [OUT]: ∑Œ¿« ºˆ∏¶ π›»Ø«œ±‚ ¿ß«— ∆˜¿Œ≈Õ
+ *     - aIsLinkFailure [OUT]: Link-Ω«∆– ø©∫Œø° ¥Î«— «√∑°±◊.
  * Return value
- *     - aNumRows : DML ÏàòÌñâ Í≤∞Í≥º Ìñâ Ïàò
+ *     - aNumRows : DML ºˆ«‡ ∞·∞˙ «‡ ºˆ
  *
  * Error handle
  *     - SQL_SUCCESS
@@ -1918,14 +2177,14 @@ IDE_RC sdl::getPlan( sdiConnectInfo  * aConnectInfo,
  * Implementation : SQLGetPlan
  *
  * Arguments
- *     - aConnectInfo   [IN] : data node Ï†ëÏÜç Ï†ïÎ≥¥
- *     - aRemoteStmt    [IN] : data node Ïóê ÎåÄÌïú sdlRemoteStmt
- *     - aNodeName      [IN] : ÎÖ∏Îìú Ïù¥Î¶Ñ. ÏóêÎü¨ Ï≤òÎ¶¨ Ïö©.
- *     - aPlan          [OUT]: Plan Í≤∞Í≥º
- *     - aIsLinkFailure [OUT]: Link-Ïã§Ìå® Ïó¨Î∂ÄÏóê ÎåÄÌïú ÌîåÎûòÍ∑∏.
+ *     - aConnectInfo   [IN] : data node ¡¢º” ¡§∫∏
+ *     - aRemoteStmt    [IN] : data node ø° ¥Î«— sdlRemoteStmt
+ *     - aNodeName      [IN] : ≥ÎµÂ ¿Ã∏ß. ø°∑Ø √≥∏Æ øÎ.
+ *     - aPlan          [OUT]: Plan ∞·∞˙
+ *     - aIsLinkFailure [OUT]: Link-Ω«∆– ø©∫Œø° ¥Î«— «√∑°±◊.
  *
  * Return value
- *     - aNumRows : DML ÏàòÌñâ Í≤∞Í≥º, PLAN
+ *     - aNumRows : DML ºˆ«‡ ∞·∞˙, PLAN
  *
  * Error handle
  *     - SQL_SUCCESS
@@ -1964,21 +2223,23 @@ IDE_RC sdl::getPlan( sdiConnectInfo  * aConnectInfo,
 }
 
 IDE_RC sdl::setConnAttr( sdiConnectInfo * aConnectInfo,
-                         UShort  aAttrType,
-                         ULong   aValue,
-                         idBool *aIsLinkFailure )
+                         UShort           aAttrType,
+                         ULong            aValue,
+                         SChar          * aValueStr,                         
+                         idBool         * aIsLinkFailure )
 {
 /***********************************************************************
  *
  * Description :
  *
- * Implementation : SQLSetConnectOption.
+ * Implementation : SQLSetConnectAttr.
  *
  * Arguments
- *     - aConnectInfo   [IN] : data node Ï†ëÏÜç Ï†ïÎ≥¥
+ *     - aConnectInfo   [IN] : data node ¡¢º” ¡§∫∏
  *     - aAttyType      [IN] : Attribute Type
- *     - aValue         [IN] : Attribute's Value.
- *     - aIsLinkFailure [OUT]: Link-Ïã§Ìå® Ïó¨Î∂ÄÏóê ÎåÄÌïú ÌîåÎûòÍ∑∏.
+ *     - aValue         [IN] : Attribute's Value Number.
+ *     - aValueStr      [IN] : Attribute's Value String.
+ *     - aIsLinkFailure [OUT]: Link-Ω«∆– ø©∫Œø° ¥Î«— «√∑°±◊.
  *
  * Return value
  *     -
@@ -1995,9 +2256,23 @@ IDE_RC sdl::setConnAttr( sdiConnectInfo * aConnectInfo,
 
     SET_LINK_FAILURE_FLAG( aIsLinkFailure, ID_FALSE );
 
-    IDE_TEST_RAISE( SQLSetConnectOption( aConnectInfo->mDbc, aAttrType, aValue )
-                     != SQL_SUCCESS,
-                    SetConnectOptionErr );
+    if ( aValueStr == NULL )
+    {
+        IDE_TEST_RAISE( SQLSetConnectAttr( aConnectInfo->mDbc,
+                                           aAttrType,
+                                           (SQLPOINTER)aValue,
+                                           0 )
+                        != SQL_SUCCESS, SetConnectOptionErr );
+    }
+    else
+    {
+        IDE_TEST_RAISE( SQLSetConnectAttr( aConnectInfo->mDbc,
+                                           aAttrType,
+                                           (SQLPOINTER)aValueStr,
+                                           idlOS::strlen( aValueStr ))
+                        != SQL_SUCCESS, SetConnectOptionErr );
+    }
+    
     return IDE_SUCCESS;
     IDE_EXCEPTION_UNINIT_LIBRARY( aConnectInfo, "setConnAttr" );
     IDE_EXCEPTION_NULL_DBC( aConnectInfo, "setConnAttr" );
@@ -2005,7 +2280,7 @@ IDE_RC sdl::setConnAttr( sdiConnectInfo * aConnectInfo,
     {
         processErrorOnNested( SQL_HANDLE_DBC,
                               aConnectInfo->mDbc,
-                              ((SChar*)"SQLSetConnectOption"),
+                              ((SChar*)"SQLSetConnectAttr(Session Property)"),
                               aConnectInfo,
                               aIsLinkFailure );
     };
@@ -2026,14 +2301,14 @@ IDE_RC sdl::getConnAttr( sdiConnectInfo * aConnectInfo,
  * Implementation : SQLGetConnectOption.
  *
  * Arguments
- *     - aConnectInfo   [IN] : data node Ï†ëÏÜç Ï†ïÎ≥¥
+ *     - aConnectInfo   [IN] : data node ¡¢º” ¡§∫∏
  *     - aAttyType     [IN] : Attribute Type
  *     - aValue        [OUT]: Pointer for returned attribute's value.
- *     - aBuffLength   [IN] : aValueÏùò Í∏∏Ïù¥
- *     - aStringLength [OUT]: Î∞òÌôò Îêú Îç∞Ïù¥ÌÑ∞Ïùò Í∏∏
+ *     - aBuffLength   [IN] : aValue¿« ±Ê¿Ã
+ *     - aStringLength [OUT]: π›»Ø µ» µ•¿Ã≈Õ¿« ±Ê
  *
  * Return value
- *     - AttributeÏóê ÎåÄÌïú Í≤∞Í≥º Í∞í.
+ *     - Attributeø° ¥Î«— ∞·∞˙ ∞™.
  *
  * Error handle
  *     - SQL_SUCCESS
@@ -2148,7 +2423,7 @@ IDE_RC sdl::checkNode( sdiConnectInfo * aConnectInfo,
 }
 
 IDE_RC sdl::commit( sdiConnectInfo * aConnectInfo,
-                    sdiClientInfo  * aClientInfo,
+                    sdiClientInfo  * /*aClientInfo*/,
                     idBool         * aIsLinkFailure )
 {
 /***********************************************************************
@@ -2158,9 +2433,9 @@ IDE_RC sdl::commit( sdiConnectInfo * aConnectInfo,
  * Implementation : SQLTransact for Commit.
  *
  * Arguments
- *     - aConnectInfo   [IN] : data node Ï†ëÏÜç Ï†ïÎ≥¥
+ *     - aConnectInfo   [IN] : data node ¡¢º” ¡§∫∏
  *     - aClientInfo    [IN/OUT] : Client Info
- *     - aIsLinkFailure [OUT]: Link-Ïã§Ìå® Ïó¨Î∂ÄÏóê ÎåÄÌïú ÌîåÎûòÍ∑∏.
+ *     - aIsLinkFailure [OUT]: Link-Ω«∆– ø©∫Œø° ¥Î«— «√∑°±◊.
  *
  * Return value
  *
@@ -2183,9 +2458,6 @@ IDE_RC sdl::commit( sdiConnectInfo * aConnectInfo,
                     ( sRet != SQL_SUCCESS_WITH_INFO ),
                     TransactErr );
 
-    /* BUG-46100 Session SMN Update */
-    sdi::setNeedToDisconnect( aClientInfo, (idBool)SQLGetNeedToDisconnect( aConnectInfo->mDbc ) );
-
     return IDE_SUCCESS;
     IDE_EXCEPTION_UNINIT_LIBRARY( aConnectInfo, "commit" );
     IDE_EXCEPTION_NULL_DBC( aConnectInfo, "commit" );
@@ -2199,22 +2471,12 @@ IDE_RC sdl::commit( sdiConnectInfo * aConnectInfo,
     };
     IDE_EXCEPTION_END;
 
-    if ( aConnectInfo->mDbc != NULL )
-    {
-        /* BUG-46100 Session SMN Update */
-        sdi::setNeedToDisconnect( aClientInfo, (idBool)SQLGetNeedToDisconnect( aConnectInfo->mDbc ) );
-    }
-    else
-    {
-        /* Nothing to do */
-    }
-
     return IDE_FAILURE;
 }
 
 IDE_RC sdl::rollback( sdiConnectInfo * aConnectInfo,
                       const SChar    * aSavepoint,
-                      sdiClientInfo  * aClientInfo,
+                      sdiClientInfo  * /*aClientInfo*/,
                       idBool         * aIsLinkFailure )
 {
 /***********************************************************************
@@ -2224,10 +2486,10 @@ IDE_RC sdl::rollback( sdiConnectInfo * aConnectInfo,
  * Implementation : SQLTransact for rollback.
  *
  * Arguments
- *     - aConnectInfo   [IN] : data node Ï†ëÏÜç Ï†ïÎ≥¥
+ *     - aConnectInfo   [IN] : data node ¡¢º” ¡§∫∏
  *     - aSavePoint     [IN] : SavePoint
  *     - aClientInfo    [IN/OUT] : Client Info
- *     - aIsLinkFailure [OUT]: Link-Ïã§Ìå® Ïó¨Î∂ÄÏóê ÎåÄÌïú ÌîåÎûòÍ∑∏.
+ *     - aIsLinkFailure [OUT]: Link-Ω«∆– ø©∫Œø° ¥Î«— «√∑°±◊.
  *
  * Return value
  *
@@ -2252,9 +2514,6 @@ IDE_RC sdl::rollback( sdiConnectInfo * aConnectInfo,
         IDE_TEST_RAISE( ( sRet != SQL_SUCCESS ) &&
                         ( sRet != SQL_SUCCESS_WITH_INFO ),
                         TransactErr );
-
-        /* BUG-46100 Session SMN Update */
-        sdi::setNeedToDisconnect( aClientInfo, (idBool)SQLGetNeedToDisconnect( aConnectInfo->mDbc ) );
     }
     else
     {
@@ -2285,16 +2544,6 @@ IDE_RC sdl::rollback( sdiConnectInfo * aConnectInfo,
     }
     IDE_EXCEPTION_END;
 
-    if ( ( aSavepoint == NULL ) && ( aConnectInfo->mDbc != NULL ) )
-    {
-        /* BUG-46100 Session SMN Update */
-        sdi::setNeedToDisconnect( aClientInfo, (idBool)SQLGetNeedToDisconnect( aConnectInfo->mDbc ) );
-    }
-    else
-    {
-        /* Nothing to do */
-    }
-
     return IDE_FAILURE;
 }
 
@@ -2309,9 +2558,9 @@ IDE_RC sdl::setSavepoint( sdiConnectInfo * aConnectInfo,
  * Implementation : Set savepoint.
  *
  * Arguments
- *     - aConnectInfo   [IN] : data node Ï†ëÏÜç Ï†ïÎ≥¥
+ *     - aConnectInfo   [IN] : data node ¡¢º” ¡§∫∏
  *     - aSavepoint     [IN] : Savepoint
- *     - aIsLinkFailure [OUT]: Link-Ïã§Ìå® Ïó¨Î∂ÄÏóê ÎåÄÌïú ÌîåÎûòÍ∑∏.
+ *     - aIsLinkFailure [OUT]: Link-Ω«∆– ø©∫Œø° ¥Î«— «√∑°±◊.
  *
  * Return value
  *
@@ -2387,10 +2636,10 @@ idBool sdl::checkDbcAlive( void   * aDbc )
  * Implementation : Check dbc is alive.
  *
  * Arguments
- *     - aDbc               [IN] : data node Ïóê ÎåÄÌïú DBC
+ *     - aDbc               [IN] : data node ø° ¥Î«— DBC
  *
  * Return value
- *  - DBCÍ∞Ä ÏÇ¥ÏïÑ ÏûàÎäîÏßÄÏóê ÎåÄÌïú Í≤∞Í≥º Í∞í
+ *  - DBC∞° ªÏæ∆ ¿÷¥¬¡ˆø° ¥Î«— ∞·∞˙ ∞™
  * Error handle
  *     - SQL_SUCCESS
  *     - SQL_SUCCESS_WITH_INFO
@@ -2424,15 +2673,15 @@ IDE_RC sdl::checkNeedFailover( sdiConnectInfo * aConnectInfo,
  *
  * Description :
  *
- * Implementation : Diag Record Ïùò ÏóêÎü¨ ÏΩîÎìúÎ•º Ïù¥Ïö©ÌïòÏó¨
- *                  failover Í∞Ä ÌïÑÏöîÌïú ÏÉÅÌô©Ïù∏ÏßÄ ÌôïÏù∏ÌïúÎã§.
+ * Implementation : Diag Record ¿« ø°∑Ø ƒ⁄µÂ∏¶ ¿ÃøÎ«œø©
+ *                  failover ∞° « ø‰«— ªÛ»≤¿Œ¡ˆ »Æ¿Œ«—¥Ÿ.
  *
  * Arguments
- *     - aConnectInfo   [IN] : data node Ï†ëÏÜç Ï†ïÎ≥¥
- *     - aNeedFailover  [OUT]: failover ÌïÑÏöî Ïó¨Î∂ÄÏóê ÎåÄÌïú Í≤∞Í≥º Í∞í
+ *     - aConnectInfo   [IN] : data node ¡¢º” ¡§∫∏
+ *     - aNeedFailover  [OUT]: failover « ø‰ ø©∫Œø° ¥Î«— ∞·∞˙ ∞™
  *
  * Return value
- *  - failover ÌïÑÏöî Ïó¨Î∂ÄÏóê ÎåÄÌïú Í≤∞Í≥º Í∞í
+ *  - failover « ø‰ ø©∫Œø° ¥Î«— ∞·∞˙ ∞™
  *
  * Error handle
  *     - IDE_SUCCESS
@@ -2480,20 +2729,20 @@ idBool sdl::retryConnect( sdiConnectInfo * aConnectInfo,
  * Description :
  *
  * Implementation :
- *   STF Failover Î°úÏßÅÏùÄ ÏïÑÎûòÏôÄ Í∞ôÏù¥ ÎèôÏûëÌïúÎã§.
- *     1. Í∏∞Ï°¥ Ï†ëÏÜçÎêòÏñ¥ÏûàÎçò ÏÑúÎ≤ÑÎ°ú Ïû¨Ï†ëÏÜçÏùÑ ÏãúÎèÑÌïòÏó¨
- *     Ïû¨Ï†ëÏÜçÏùÑ Ïã§Ìå®ÌïòÍ≤å ÎêòÎ©¥
- *     2. Í∞ÄÏö©Ìïú Alternate ÏÑúÎ≤ÑÎ°ú Ï†ëÏÜçÏùÑ ÏãúÎèÑÌïúÎã§.
+ *   STF Failover ∑Œ¡˜¿∫ æ∆∑°øÕ ∞∞¿Ã µø¿€«—¥Ÿ.
+ *     1. ±‚¡∏ ¡¢º”µ«æÓ¿÷¥¯ º≠πˆ∑Œ ¿Á¡¢º”¿ª Ω√µµ«œø©
+ *     ¿Á¡¢º”¿ª Ω«∆–«œ∞‘ µ«∏È
+ *     2. ∞°øÎ«— Alternate º≠πˆ∑Œ ¡¢º”¿ª Ω√µµ«—¥Ÿ.
  *
- *   ÏúÑ Î°úÏßÅÏóêÏÑú 1Î≤àÏùò Ïû¨Ï†ëÏÜçÏùÑ ÏãúÎèÑÌïòÎäî Ìï®ÏàòÏù¥Îã§.
+ *   ¿ß ∑Œ¡˜ø°º≠ 1π¯¿« ¿Á¡¢º”¿ª Ω√µµ«œ¥¬ «‘ºˆ¿Ã¥Ÿ.
  *
  * Arguments
- *     - aConnectInfo   [IN] : data node Ï†ëÏÜç Ï†ïÎ≥¥
+ *     - aConnectInfo   [IN] : data node ¡¢º” ¡§∫∏
  *     - aHandleType    [IN] : Handle type. ( DBC, STMT )
  *     - aHandle        [IN] : Handle object.
  *
  * Return value
- *  - Ïû¨Ï†ëÏÜç ÏÑ±Í≥µ Ïó¨Î∂Ä
+ *  - ¿Á¡¢º” º∫∞¯ ø©∫Œ
  *
  * Error handle
  *     - ID_TRUE
@@ -2502,8 +2751,8 @@ idBool sdl::retryConnect( sdiConnectInfo * aConnectInfo,
  ***********************************************************************/
     IDE_TEST_CONT( mInitialized == ID_FALSE, SET_FALSE );
 
-    /* aConnectInfo->mDbc == NULL Ïù∏ Í≤ΩÏö∞Îäî ÏµúÏ¥à Ï†ëÏÜçÏù¥ÎØÄÎ°ú
-     * Ïù¥ Ìï®ÏàòÍ∞Ä ÏïÑÎãàÎùº sdl::internalConnect() Ìï®ÏàòÏóêÏÑú Ïû¨ÏãúÎèÑÎ•º ÏàòÌñâÌï¥Ïïº ÌïúÎã§.
+    /* aConnectInfo->mDbc == NULL ¿Œ ∞ÊøÏ¥¬ √÷√  ¡¢º”¿Ãπ«∑Œ
+     * ¿Ã «‘ºˆ∞° æ∆¥œ∂Û sdl::internalConnect() «‘ºˆø°º≠ ¿ÁΩ√µµ∏¶ ºˆ«‡«ÿæﬂ «—¥Ÿ.
      */
     IDE_TEST_CONT( aConnectInfo->mDbc == NULL, SET_FALSE );
 
@@ -2533,13 +2782,13 @@ IDE_RC sdl::getLinkInfo( sdiConnectInfo * aConnectInfo,
  * Implementation : Get link information for dbc.
  *
  * Arguments
- *     - aConnectInfo   [IN] : data node Ï†ëÏÜç Ï†ïÎ≥¥
- *     - aNodeName      [IN] : ÎÖ∏Îìú Ïù¥Î¶Ñ. ÏóêÎü¨ Ï≤òÎ¶¨ Ïö©.
- *     - aBuf           [OUT]: DBCÏùò ÎßÅÌÅ¨ Ï†ïÎ≥¥
- *     - aIsLinkFailure [OUT]: Link-Ïã§Ìå® Ïó¨Î∂ÄÏóê ÎåÄÌïú ÌîåÎûòÍ∑∏.
+ *     - aConnectInfo   [IN] : data node ¡¢º” ¡§∫∏
+ *     - aNodeName      [IN] : ≥ÎµÂ ¿Ã∏ß. ø°∑Ø √≥∏Æ øÎ.
+ *     - aBuf           [OUT]: DBC¿« ∏µ≈© ¡§∫∏
+ *     - aIsLinkFailure [OUT]: Link-Ω«∆– ø©∫Œø° ¥Î«— «√∑°±◊.
  *
  * Return value
- *  - DBCÏùò ÎßÅÌÅ¨ Ï†ïÎ≥¥
+ *  - DBC¿« ∏µ≈© ¡§∫∏
  * Error handle
  *     - SQL_SUCCESS
  *     - SQL_SUCCESS_WITH_INFO
@@ -2566,11 +2815,11 @@ IDE_RC sdl::isDataNode( sdiConnectInfo * aConnectInfo,
  *
  * Description :
  *
- * Implementation : DataNodeÏóê ÎåÄÌïú Ï†ïÎ≥¥Î•º Í∞ÄÏ†∏Ïò®Îã§.
+ * Implementation : DataNodeø° ¥Î«— ¡§∫∏∏¶ ∞°¡Æø¬¥Ÿ.
  *
  * Arguments
- *     - aConnectInfo   [IN] : data node Ï†ëÏÜç Ï†ïÎ≥¥
- *     - aIsDataNode   [OUT] : data_node Ïù∏ÏßÄ ÏïÑÎãåÏßÄÏóê ÎåÄÌïú ÌîåÎûòÍ∑∏
+ *     - aConnectInfo   [IN] : data node ¡¢º” ¡§∫∏
+ *     - aIsDataNode   [OUT] : data_node ¿Œ¡ˆ æ∆¥—¡ˆø° ¥Î«— «√∑°±◊
  *
  * Return value
  *  - IDE_FAILURE/IDE_SUCCESS
@@ -2600,6 +2849,53 @@ IDE_RC sdl::isDataNode( sdiConnectInfo * aConnectInfo,
     return IDE_FAILURE;
 }
 
+idBool sdl::isFatalError( SShort           aHandleType,
+                          void            *aHandle,
+                          sdiConnectInfo  *aConnectInfo )
+{
+    SQLRETURN  sSqlReturn;
+    SQLINTEGER sIsNeedFailover = 0;
+    idBool     sRet            = ID_FALSE;
+
+    if ( aConnectInfo->mDbc != NULL )
+    {
+        /*  aConnectInfo->mDbc != NULL : STF case
+         *  æÓ∂≤ ø¿∑˘∞° πﬂª˝«ﬂ¥¯∞£ø°
+         *  «—π¯ ø¨∞·µ«æ˙¥¯ Connection ¿∫ 
+         *  sdl::retryConnect «‘ºˆø°º≠ ¿Áø¨∞· «—¥Ÿ.
+         */
+        if ( checkDbcAlive( aConnectInfo->mDbc ) == ID_FALSE )
+        {
+            sRet = ID_TRUE;
+        }
+    }
+    else
+    {
+        if ( aHandleType == SQL_HANDLE_DBC )
+        {
+            /*  aConnectInfo->mDbc == NULL : Initial connect case
+             *  √÷√  ¡¢º”¿Ã Ω«∆– «— ∞ÊøÏ.
+             *  sdl::internalConnect «‘ºˆø°º≠ Connect ¿ÁΩ√µµ ºˆ«‡¿ª ¿ÃπÃ øœ∑·«ﬂ¥Ÿ.
+             *  ¿Ã∞˜ø°º≠ Connect ø°∑Ø ≈∏¿‘ø° µ˚∂Û
+             *  Link failure ø°∑Ø ƒ⁄µÂ∏¶ π›»Ø«“¡ˆ ø©∫Œ∏¶ ∞·¡§«—¥Ÿ.
+             *  øπ) Invalid password ¿Œ ∞ÊøÏ¥¬ Link failure ø°∑Ø ƒ⁄µÂ∏¶ π›»Ø«œ¡ˆ æ ¥¬¥Ÿ.
+             */
+            sSqlReturn = SQLGetNeedFailover( (SQLSMALLINT)aHandleType,
+                                             (SQLHANDLE)aHandle,
+                                             &sIsNeedFailover );
+            if ( ( sSqlReturn == SQL_SUCCESS ) && ( sIsNeedFailover == 1 ) )
+            {
+                sRet = ID_TRUE;
+            }
+        }
+        else
+        {
+            /* No DBC */
+        }
+    }
+    return sRet;
+}
+
 void sdl::processError( SShort           aHandleType,
                         void           * aHandle,
                         SChar          * aCallFncName,
@@ -2609,9 +2905,20 @@ void sdl::processError( SShort           aHandleType,
 /***********************************************************************
  *
  * Description :
- *     SQLÌï®ÏàòÎì§Ïùò ÏóêÎü¨Î•º ideErrorÎ°ú Î≥ÄÍ≤ΩÌïúÎã§. ÏùºÎã®ÏùÄ 4Í∞úÎßå
+ *     SQL«‘ºˆµÈ¿« ø°∑Ø∏¶ ideError∑Œ ∫Ø∞Ê«—¥Ÿ. ¿œ¥‹¿∫ 4∞≥∏∏
  *
  * Implementation :
+ *     TASK-7218 Handling Multi-Error for SD
+ *       - fatal¿Œ ∞ÊøÏ ø°∑Ø ∏ﬁΩ√¡ˆ∏¶ ¥©¿˚«— »ƒ,
+ *         retryConnect º∫∞¯ ø©∫Œø° µ˚∂Û æ∆∑° ¡ﬂø°º≠ «— ∞≥¿« ø°∑Ø π›»Ø
+ *           - º∫∞¯Ω√sdERR_ABORT_SHARD_LIBRARY_FAILOVER_SUCCESS
+ *           - Ω«∆–Ω√sdERR_ABORT_SHARD_LIBRARY_LINK_FAILURE_ERROR
+ *       - fatal¿Ã æ∆¥œ∏È NativeError ∞™ø° µ˚∂Û æ∆∑°øÕ ∞∞¿Ã π›»Ø
+ *           - SD_ALTIBASE_FAILOVER_SUCCESS: sdERR_ABORT_SHARD_LIBRARY_FAILOVER_SUCCESS
+ *           - ±◊ ø‹: NativeError∏¶ º≠πˆ ø°∑Ø∑Œ ∫Ø»Ø«ÿº≠ π›»Ø
+ *
+ *       - appendFootPrintToErrorMessageø°º≠
+ *         ShardClient ø©∫Œ∏¶ ∞ÀªÁ«ÿº≠ foot print √∑∞°
  *
  ***********************************************************************/
     typedef enum
@@ -2630,12 +2937,12 @@ void sdl::processError( SShort           aHandleType,
     SChar       sErrorMsg       [MAX_LAST_ERROR_MSG_LEN];
     SChar      *sErrorMsgPos    = sErrorMsg;
     SInt        sErrorMsgRemain = ID_SIZEOF(sErrorMsg);
-    SQLINTEGER  sIsNeedFailover = 0;
     idBool      sIsRetrySuccess = ID_FALSE;
     UInt        sNewErrorCode   = sdERR_ABORT_SHARD_LIBRARY_ERROR_1;
-    UInt        i               ;
+    UInt        sNumRecs        ;
 
     SChar      *sNodeNamePtr = NULL;
+    SChar      *sFirstErrorMsgPos;
 
     sdlErrorType    sErrorType = SDL_ERROR_OTHER;
 
@@ -2653,13 +2960,15 @@ void sdl::processError( SShort           aHandleType,
         IDE_TEST_RAISE( aHandle == NULL, ErrorNullDbc );
     }
 
+    /* Setting prefix for normal error message, it can be changed... */
     sErrorMsgPos[0] = '\0';
+    sFirstErrorMsgPos = sErrorMsgPos;
 
-    for ( i = 0; i < MAX_ODBC_ERROR_CNT; i++ )
+    for ( sNumRecs = 0; ; sNumRecs++ )
     {
         sSqlReturn = SQLGetDiagRec( aHandleType,
                                     aHandle,
-                                    i + 1,  // record no
+                                    sNumRecs + 1,  // record no
                                     (SQLCHAR*)sSQLSTATE,
                                     (SQLINTEGER*)&sNativeError,
                                     sMessage,
@@ -2668,6 +2977,21 @@ void sdl::processError( SShort           aHandleType,
 
         if ( ( sSqlReturn == SQL_SUCCESS ) || ( sSqlReturn == SQL_SUCCESS_WITH_INFO ) )
         {
+            if ( sNativeError == SD_ALTIBASE_FAILOVER_SUCCESS )
+            {
+                sErrorType = SDL_ERROR_FAILOVER_SUCCESS;
+            }
+            /* fatal ø©∫Œ¥¬ FAILOVER_SUCCESS∞° æ∆¥— ∞ÊøÏø° «— π¯∏∏ ∞ÀªÁ */
+            else if ( sNumRecs == 0 &&
+                      isFatalError( aHandleType, aHandle, aConnectInfo ) == ID_TRUE )
+            {
+                sErrorType = SDL_ERROR_FATAL;
+            }
+            else
+            {
+                // Nothing to do.
+            }
+
             sIntReturn = idlOS::snprintf( sErrorMsgPos,
                                           sErrorMsgRemain,
                                           "\nDiagnostic Record %"ID_UINT32_FMT"\n"
@@ -2675,69 +2999,42 @@ void sdl::processError( SShort           aHandleType,
                                           "     Message text : %s\n"
                                           "     Message len  : %"ID_UINT32_FMT"\n"
                                           "     Native error : 0x%"ID_XINT32_FMT,
-                                          i + 1, 
+                                          sNumRecs + 1, 
                                           sSQLSTATE,
                                           sMessage,
                                           (UInt)sMessageLength,
                                           sNativeError );
 
-            sErrorMsgPos += sIntReturn;
-            sErrorMsgRemain -= sIntReturn;
-
-            if ( sNativeError == SD_ALTIBASE_FAILOVER_SUCCESS )
+            if ( sErrorType == SDL_ERROR_FAILOVER_SUCCESS )
             {
-                sErrorType = SDL_ERROR_FAILOVER_SUCCESS;
                 break;
+            }
+            else if ( sErrorType == SDL_ERROR_FATAL )
+            {
+                /* ø°∑Ø ∏ﬁΩ√¡ˆ ¥©¿˚«ÿæﬂ «‘ */
+                sErrorMsgPos += sIntReturn;
+                sErrorMsgRemain -= sIntReturn;
             }
             else
             {
-                // Nothing to do.
+                addShardError( sdERR_ABORT_SHARD_LIBRARY_ERROR_1,
+                               E_SERVER_ERROR(sNativeError),
+                               sErrorMsgPos,
+                               aCallFncName,
+                               sNodeNamePtr,
+                               aConnectInfo );
             }
         }
         else
         {
-            // SQL_NO_DATAÎì±
-            break;
-        }
-    }
-
-    if ( sErrorType != SDL_ERROR_FAILOVER_SUCCESS )
-    {
-        if ( aConnectInfo->mDbc != NULL )
-        {
-            /*  aConnectInfo->mDbc != NULL : STF case
-             *  Ïñ¥Îñ§ Ïò§Î•òÍ∞Ä Î∞úÏÉùÌñàÎçòÍ∞ÑÏóê
-             *  ÌïúÎ≤à Ïó∞Í≤∞ÎêòÏóàÎçò Connection ÏùÄ 
-             *  sdl::retryConnect Ìï®ÏàòÏóêÏÑú Ïû¨Ïó∞Í≤∞ ÌïúÎã§.
-             */
-            if ( checkDbcAlive( aConnectInfo->mDbc ) == ID_FALSE )
+            // SQL_NO_DATAµÓ
+            /* SQLGetDiagRec∞° «œ≥™µµ æ¯¥Ÿ∏È fatal ∞ÀªÁ « ø‰ */
+            if ( sNumRecs == 0 &&
+                 isFatalError( aHandleType, aHandle, aConnectInfo ) == ID_TRUE )
             {
                 sErrorType = SDL_ERROR_FATAL;
             }
-        }
-        else
-        {
-            if ( aHandleType == SQL_HANDLE_DBC )
-            {
-                /*  aConnectInfo->mDbc == NULL : Initial connect case
-                 *  ÏµúÏ¥à Ï†ëÏÜçÏù¥ Ïã§Ìå® Ìïú Í≤ΩÏö∞.
-                 *  sdl::internalConnect Ìï®ÏàòÏóêÏÑú Connect Ïû¨ÏãúÎèÑ ÏàòÌñâÏùÑ Ïù¥ÎØ∏ ÏôÑÎ£åÌñàÎã§.
-                 *  Ïù¥Í≥≥ÏóêÏÑú Connect ÏóêÎü¨ ÌÉÄÏûÖÏóê Îî∞Îùº
-                 *  Link failure ÏóêÎü¨ ÏΩîÎìúÎ•º Î∞òÌôòÌï†ÏßÄ Ïó¨Î∂ÄÎ•º Í≤∞Ï†ïÌïúÎã§.
-                 *  Ïòà) Invalid password Ïù∏ Í≤ΩÏö∞Îäî Link failure ÏóêÎü¨ ÏΩîÎìúÎ•º Î∞òÌôòÌïòÏßÄ ÏïäÎäîÎã§.
-                 */
-                sSqlReturn = SQLGetNeedFailover( (SQLSMALLINT)aHandleType,
-                                                 (SQLHANDLE)aHandle,
-                                                 &sIsNeedFailover );
-                if ( ( sSqlReturn == SQL_SUCCESS ) && ( sIsNeedFailover == 1 ) )
-                {
-                    sErrorType = SDL_ERROR_FATAL;
-                }
-            }
-            else
-            {
-                /* No DBC */
-            }
+            break;
         }
     }
 
@@ -2751,39 +3048,54 @@ void sdl::processError( SShort           aHandleType,
             break;
 
         case SDL_ERROR_FATAL:
+            /* ø°∑Ø ∏ﬁΩ√¡ˆ ¿ßƒ° ¡∂¡§ */
+            sErrorMsgPos = sFirstErrorMsgPos;
+
             setTransactionBrokenByInternalConnection( aConnectInfo );
 
-            /* aConnectInfo->mDbc == NULL : Initial connect case
-             * aConnectInfo->mDbc != NULL : STF case
-             */
-            if ( aConnectInfo->mDbc != NULL )
+            if ( aConnectInfo->mFailoverSuspend.mSuspendType != SDI_FAILOVER_SUSPEND_ALL )
             {
-                switch ( aConnectInfo->mFailoverTarget )
+                /* aConnectInfo->mDbc == NULL : Initial connect case
+                 * aConnectInfo->mDbc != NULL : STF case
+                 */
+                if ( aConnectInfo->mDbc != NULL )
                 {
-                    case SDI_FAILOVER_ACTIVE_ONLY    :
-                    case SDI_FAILOVER_ALTERNATE_ONLY :
-                        sIsRetrySuccess = retryConnect( aConnectInfo,
-                                                        aHandleType,
-                                                        aHandle );
-                        break;
-
-                    case SDI_FAILOVER_ALL :
-                        if ( hasNodeAlternate( &aConnectInfo->mNodeInfo ) == ID_FALSE )
-                        {
+                    switch ( aConnectInfo->mFailoverTarget )
+                    {
+                        case SDI_FAILOVER_ACTIVE_ONLY    :
+                        case SDI_FAILOVER_ALTERNATE_ONLY :
                             sIsRetrySuccess = retryConnect( aConnectInfo,
                                                             aHandleType,
                                                             aHandle );
-                        }
-                        else
-                        {
-                            sIsRetrySuccess = ID_FALSE;
-                        }
-                        break;
+                            break;
 
-                    default:
-                        sIsRetrySuccess = ID_FALSE;
-                        IDE_DASSERT( 0 );
-                        break;
+                        case SDI_FAILOVER_ALL :
+                            if ( hasNodeAlternate( &aConnectInfo->mNodeInfo ) == ID_FALSE )
+                            {
+                                sIsRetrySuccess = retryConnect( aConnectInfo,
+                                                                aHandleType,
+                                                                aHandle );
+                            }
+                            else
+                            {
+                                if ( aConnectInfo->mFailoverSuspend.mSuspendType == SDI_FAILOVER_SUSPEND_ALLOW_RETRY )
+                                {
+                                    sIsRetrySuccess = retryConnect( aConnectInfo,
+                                                                    aHandleType,
+                                                                    aHandle );
+                                }
+                                else
+                                {
+                                    sIsRetrySuccess = ID_FALSE;
+                                }
+                            }
+                            break;
+
+                        default:
+                            sIsRetrySuccess = ID_FALSE;
+                            IDE_DASSERT( 0 );
+                            break;
+                    }
                 }
             }
 
@@ -2805,42 +3117,35 @@ void sdl::processError( SShort           aHandleType,
 
     }
 
-    /* Set additional error info for shardcli. */
-    if ( aConnectInfo->mIsShardClient == SDI_SHARD_CLIENT_TRUE )
-    {
-        sIntReturn = idlOS::snprintf( sErrorMsgPos,
-                                      sErrorMsgRemain,
-                                      "\n     Foot print   : [<<ERC-%"ID_XINT32_FMT" NODE-ID:%"ID_UINT32_FMT">>]",
-                                      E_ERROR_CODE( sNewErrorCode ),
-                                      aConnectInfo->mNodeInfo.mNodeId );
-
-        sErrorMsgPos += sIntReturn;
-        sErrorMsgRemain -= sIntReturn;
-    }
-
-
     /* Set error by new error code. */
     switch ( sNewErrorCode )
     {
         case sdERR_ABORT_SHARD_LIBRARY_FAILOVER_SUCCESS :
-            IDE_SET( ideSetErrorCode( sdERR_ABORT_SHARD_LIBRARY_FAILOVER_SUCCESS,
-                                      sNodeNamePtr,
-                                      aCallFncName,
-                                      sErrorMsg ) );
-            break;
-
         case sdERR_ABORT_SHARD_LIBRARY_LINK_FAILURE_ERROR :
-            IDE_SET( ideSetErrorCode( sdERR_ABORT_SHARD_LIBRARY_LINK_FAILURE_ERROR,
-                                      sNodeNamePtr,
-                                      aCallFncName,
-                                      sErrorMsg ) );
+            if ( aConnectInfo->mFailoverSuspend.mSuspendType != SDI_FAILOVER_SUSPEND_NONE )
+            {
+                sNewErrorCode = aConnectInfo->mFailoverSuspend.mNewErrorCode;
+            }
+
+            addShardError( sNewErrorCode,
+                           sNewErrorCode,
+                           sErrorMsgPos,
+                           aCallFncName,
+                           sNodeNamePtr,
+                           aConnectInfo );
             break;
 
         case sdERR_ABORT_SHARD_LIBRARY_ERROR_1 :
-            IDE_SET( ideSetErrorCode( sdERR_ABORT_SHARD_LIBRARY_ERROR_1,
-                                      sNodeNamePtr,
-                                      aCallFncName,
-                                      sErrorMsg ) );
+            /* SQLGetDiagRecø°º≠ π›»Øµ«¥¬ ø°∑Ø∞° «œ≥™µµ æ¯¥¬ ∞ÊøÏ */
+            if ( sNumRecs == 0 )
+            {
+                addShardError( sNewErrorCode,
+                               sNewErrorCode,
+                               sErrorMsgPos,
+                               aCallFncName,
+                               sNodeNamePtr,
+                               aConnectInfo );
+            }
             break;
 
         default:
@@ -2858,8 +3163,8 @@ void sdl::processError( SShort           aHandleType,
             ideLog::log( IDE_SD_0, "[%s] ERR-%"ID_XINT32_FMT" %s\n"
                                    "     %s\n",
                                    aCallFncName,
-                                   E_ERROR_CODE( ideGetErrorCode() ),
-                                   ideGetErrorMsg(),
+                                   E_ERROR_CODE( ideErrorCollectionLastErrorCode() ),
+                                   ideErrorCollectionLastErrorMsg(),
                                    aConnectInfo->mFullAddress );
             break;
 
@@ -2877,24 +3182,65 @@ void sdl::processError( SShort           aHandleType,
     return;
 }
 
-void sdl::appendFootPrintToErrorMessage( sdiConnectInfo * aConnectInfo )
+/*
+ * TASK-7218 Multi-Error Handling
+ */
+void sdl::addShardError( UInt             aErrorCode,
+                         UInt             aNodeErrorCode,
+                         SChar          * aErrorMessage,
+                         SChar          * aCallFncName,
+                         SChar          * aNodeName,
+                         sdiConnectInfo * aConnectInfo )
 {
+
+    IDE_SET( ideSetErrorCode( aErrorCode,
+                              aNodeName,
+                              aCallFncName,
+                              aErrorMessage ) );
+
+    /* ¿Ã ∫Œ∫–¿∫ æ¯æÓµµ µ… ∞Õ ∞∞¡ˆ∏∏, shard client¿”¿ª «•Ω√«œπ«∑Œ ¿œ¥‹ ≥≤∞‹µ“ */
+    appendFootPrintToErrorMessage( aConnectInfo,
+                                   aErrorCode,
+                                   ideGetErrorMsg() );
+
+    ideErrorCollectionAdd( aNodeErrorCode,
+                           ideGetErrorMsg(),
+                           aConnectInfo->mNodeId );
+
+    return;
+}
+
+void sdl::appendFootPrintToErrorMessage( sdiConnectInfo * aConnectInfo,
+                                         UInt             aErrorCode,
+                                         SChar          * aErrorMsgPtr )
+{
+    SInt    sIndent;
     SInt    sTextLen;
     SInt    sRemainErrorTextLen;
     SChar * sNewErrorTextPtr;
 
     if ( aConnectInfo->mIsShardClient == SDI_SHARD_CLIENT_TRUE )
     {
-        sTextLen            = idlOS::strlen( ideGetErrorMsg() );
+        sTextLen            = idlOS::strlen( aErrorMsgPtr );
         sRemainErrorTextLen = MAX_LAST_ERROR_MSG_LEN - sTextLen;
-        sNewErrorTextPtr    = ideGetErrorMsg() + sTextLen;
+        sNewErrorTextPtr    = aErrorMsgPtr + sTextLen;
 
+        /* To prevent DIFF */
+        if (aErrorCode == sdERR_ABORT_SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE)
+        {
+            sIndent = 4;
+        }
+        else
+        {
+            sIndent = 5;
+        }
         if ( sRemainErrorTextLen > 0 )
         {
             idlOS::snprintf( sNewErrorTextPtr,
                              sRemainErrorTextLen,
-                             "\n    Foot print   : [<<ERC-%"ID_XINT32_FMT" NODE-ID:%"ID_UINT32_FMT">>]",
-                             E_ERROR_CODE( ideGetErrorCode() ),
+                             "\n%*sFoot print   : [<<ERC-%"ID_XINT32_FMT" NODE-ID:%"ID_UINT32_FMT">>]",
+                             sIndent, "",
+                             E_ERROR_CODE( aErrorCode ),
                              aConnectInfo->mNodeInfo.mNodeId );
         }
         else
@@ -2915,9 +3261,13 @@ void sdl::appendResultInfoToErrorMessage( sdiConnectInfo    * aConnectInfo,
     IDE_TEST_CONT( sdi::isAffectedRowSetted( aConnectInfo ) != ID_TRUE,
                    NORMAL_EXIT );
 
+    IDE_TEST_CONT( ideErrorCollectionSize() == 0, NORMAL_EXIT );
+
     switch ( aStmtKind )
     {
         case QCI_STMT_SELECT:
+        case QCI_STMT_EXEC_FUNC:
+        case QCI_STMT_EXEC_PROC:
             IDE_CONT( NORMAL_EXIT );
         break;
 
@@ -2937,9 +3287,9 @@ void sdl::appendResultInfoToErrorMessage( sdiConnectInfo    * aConnectInfo,
             break;
     }
 
-    sTextLen            = idlOS::strlen( ideGetErrorMsg() );
+    sTextLen            = idlOS::strlen( ideErrorCollectionLastErrorMsg() );
     sRemainErrorTextLen = MAX_LAST_ERROR_MSG_LEN - sTextLen;
-    sNewErrorTextPtr    = ideGetErrorMsg() + sTextLen;
+    sNewErrorTextPtr    = ideErrorCollectionLastErrorMsg() + sTextLen;
 
     IDE_DASSERT( sTextLen > 0 );
 
@@ -3054,20 +3404,12 @@ void sdl::processErrorOnNested( SShort           aHandleType,
                                 sdiConnectInfo * aConnectInfo,
                                 idBool         * aIsLinkFailure )
 {
-    sdlNestedErrorMgr sMgr;
-
-    /* Backup current message */
-    makeIdeErrorBackup( &sMgr );
-
     /* set ide error */
     processError( aHandleType,
                   aHandle,
                   aCallFncName,
                   aConnectInfo,
                   aIsLinkFailure );
-
-    /* Packaging old and new error */
-    mergeIdeErrorWithBackup( &sMgr );
 }
 
 void sdl::clearInternalConnectResult( sdiConnectInfo * aConnectInfo )
@@ -3099,8 +3441,8 @@ IDE_RC sdl::internalConnect( void           * aDbc,
 {
     IDE_RC sConnectResult = IDE_FAILURE;
 
-    /*  internalConnectCore() Ìï®ÏàòÎäî Data nodeÎ°ú internal connect Î•º ÏãúÎèÑÌïòÍ≥†
-     *  Í∑∏Ïóê ÎåÄÌïú ÏÑ±Í≥µ/Ïã§Ìå® Í≤∞Í≥ºÏù∏ sIdeReturn Í∞íÏùÑ Î∞òÌïúÌïúÎã§.
+    /*  internalConnectCore() «‘ºˆ¥¬ Data node∑Œ internal connect ∏¶ Ω√µµ«œ∞Ì
+     *  ±◊ø° ¥Î«— º∫∞¯/Ω«∆– ∞·∞˙¿Œ sIdeReturn ∞™¿ª π›«—«—¥Ÿ.
      */
     sConnectResult = internalConnectCore( aDbc,
                                           aConnectInfo,
@@ -3109,11 +3451,11 @@ IDE_RC sdl::internalConnect( void           * aDbc,
     if ( aIsShardClient == ID_TRUE )
     {
         /*  - shardcli is used.
-         *  - internal connect Í≤∞Í≥º Í∞íÏùÑ Ïù¥Ïö©ÌïòÏó¨
-         *    Server-side failover Î•º Í≥ÑÏÜç ÏàòÌñâÌï† Í≤ÉÏù∏Í∞ÄÏóê ÎåÄÌï¥ ÌåêÎã®ÌïúÎã§.
-         *    Active/Alternate ÎÖ∏ÎìúÏóêÏÑú Ïó∞ÏÜçÎêú Failover Í∞Ä Î∞úÏÉùÌïú Í≤ΩÏö∞ 
-         *    sdERR_ABORT_SHARD_NODE_FAIL_RETRY_AVAILABLE ÏóêÎü¨ ÏΩîÎìúÎ•º ÏÑ§Ï†ïÌïòÍ≥†
-         *    IDE_FAILURE Î•º Î¶¨ÌÑ¥ÌïòÏó¨ failover Í∞Ä Ï§ëÎã®ÎêòÎèÑÎ°ù ÌïúÎã§.
+         *  - internal connect ∞·∞˙ ∞™¿ª ¿ÃøÎ«œø©
+         *    Server-side failover ∏¶ ∞Ëº” ºˆ«‡«“ ∞Õ¿Œ∞°ø° ¥Î«ÿ ∆«¥‹«—¥Ÿ.
+         *    Active/Alternate ≥ÎµÂø°º≠ ø¨º”µ» Failover ∞° πﬂª˝«— ∞ÊøÏ 
+         *    sdERR_ABORT_SHARD_NODE_FAIL_RETRY_AVAILABLE ø°∑Ø ƒ⁄µÂ∏¶ º≥¡§«œ∞Ì
+         *    IDE_FAILURE ∏¶ ∏Æ≈œ«œø© failover ∞° ¡ﬂ¥‹µ«µµ∑œ «—¥Ÿ.
          */
         if ( sConnectResult == IDE_SUCCESS )
         {
@@ -3128,9 +3470,14 @@ IDE_RC sdl::internalConnect( void           * aDbc,
             {
                 clearInternalConnectResult( aConnectInfo );
 
+                /* TASK-7218 Handling Multi-Error */
                 /* replace error code */
+                ideErrorCollectionClear();
                 IDE_SET( ideSetErrorCode( sdERR_ABORT_SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE ) );
-                appendFootPrintToErrorMessage( aConnectInfo );
+                appendFootPrintToErrorMessage( aConnectInfo,
+                        sdERR_ABORT_SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE,
+                        ideGetErrorMsg() );
+                ideErrorCollectionAdd( ideGetErrorCode(), ideGetErrorMsg(), aConnectInfo->mNodeId );
             }
         }
     }
@@ -3152,6 +3499,8 @@ idBool sdl::isInternalConnectFailoverLimited( sdiConnectInfo * aConnectInfo )
 
 inline void sdl::setTransactionBrokenByInternalConnection( sdiConnectInfo * aConnectInfo )
 {
+    smiTrans * sSmiTrans = NULL;
+
     if ( ( ( aConnectInfo->mFlag & SDI_CONNECT_USER_AUTOCOMMIT_MODE_MASK )
            == SDI_CONNECT_USER_AUTOCOMMIT_MODE_OFF ) &&
          ( ( aConnectInfo->mFlag & SDI_CONNECT_INITIAL_BY_NOTIFIER_MASK )
@@ -3159,9 +3508,16 @@ inline void sdl::setTransactionBrokenByInternalConnection( sdiConnectInfo * aCon
     {
         IDE_DASSERT( aConnectInfo->mSession->mMmSession != NULL );
 
-        (void) qdkSetTransactionBrokenOnGlobalCoordinator(
-                aConnectInfo->mDkiSession,
-                qci::mSessionCallback.mGetTrans( aConnectInfo->mSession->mMmSession )->getTransID() );
+        sSmiTrans = qci::mSessionCallback.mGetTrans( aConnectInfo->mSession->mMmSession );
+
+        IDE_DASSERT( sSmiTrans != NULL );
+
+        if ( ( sSmiTrans != NULL ) && ( sSmiTrans->getTransID() != 0 ) )
+        {
+            (void) qdkSetTransactionBrokenOnGlobalCoordinator(
+                    aConnectInfo->mDkiSession,
+                    sSmiTrans->getTransID() );
+        }
     }
 }
 
@@ -3174,6 +3530,798 @@ void sdl::setTransactionBrokenByTransactionID( idBool     aIsUserAutoCommit,
         IDE_DASSERT( aDkiSession != NULL );
         IDE_DASSERT( aTrans != NULL );
 
-        (void) qdkSetTransactionBrokenOnGlobalCoordinator( aDkiSession, aTrans->getTransID() );
+        if ( ( aTrans != NULL ) && ( aTrans->getTransID() != 0 ) )
+        {
+            (void) qdkSetTransactionBrokenOnGlobalCoordinator( aDkiSession, aTrans->getTransID() );
+        }
     }
+}
+
+/* PROJ-2728 Sharding LOB */
+IDE_RC sdl::getLob( sdiConnectInfo * aConnectInfo,
+                    sdlRemoteStmt  * aRemoteStmt,
+                    SShort           aLocatorCType,
+                    ULong            aLocator,
+                    UInt             aStartOffset,
+                    UInt             aSizeToGet,
+                    SShort           aTargetCType,
+                    void           * aBufferToStoreData,
+                    UInt             aSizeBuffer,
+                    UInt           * aSizeReadPtr,
+                    idBool         * aIsLinkFailure )
+{
+/***********************************************************************
+ *
+ * Description :
+ *
+ * Implementation :
+ *     TODO
+ *
+ * Arguments
+ *     - aConnectInfo   [IN] : data node ¡¢º” ¡§∫∏
+ *     - TODO
+ *
+ * Return value
+ *     - TODO
+ *
+ * Error handle
+ *     - TODO
+ *
+ ***********************************************************************/
+
+    SShort    sHandleType = SQL_HANDLE_DBC;
+    SQLHANDLE sHandle     = NULL;
+    SQLRETURN sRet        = SQL_ERROR;
+
+    IDE_TEST( lobEnter( aConnectInfo,
+                        aRemoteStmt,
+                        "getLob",
+                        &sHandleType,
+                        &sHandle ) != IDE_SUCCESS );
+
+    sRet = SQLGetLobForSd(sHandleType,
+                          sHandle,
+                          (SQLSMALLINT  ) aLocatorCType,
+                          (SQLUBIGINT   ) aLocator,
+                          (SQLUINTEGER  ) aStartOffset,
+                          (SQLUINTEGER  ) aSizeToGet,
+                          (SQLSMALLINT  ) aTargetCType,
+                          (SQLPOINTER   ) aBufferToStoreData,
+                          (SQLUINTEGER  ) aSizeBuffer,
+                          (SQLUINTEGER *) aSizeReadPtr);
+    IDE_TEST_RAISE( ( ( sRet != SQL_SUCCESS ) &&
+                      ( sRet != SQL_SUCCESS_WITH_INFO ) ),
+                    SqlApiError );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( SqlApiError )
+    {
+        processErrorOnNested( sHandleType,
+                              sHandle,
+                              ((SChar*)"SQLGetLobForSd"),
+                              aConnectInfo,
+                              aIsLinkFailure );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdl::lobWrite( sdiConnectInfo * aConnectInfo,
+                      sdlRemoteStmt  * aRemoteStmt,
+                      SShort           aLocatorCType,
+                      ULong            aLocator,
+                      SShort           aTargetCType,
+                      void           * aDataToPut,
+                      UInt             aSizeDataToPut,
+                      idBool         * aIsLinkFailure )
+{
+/***********************************************************************
+ *
+ * Description :
+ *
+ * Implementation :
+ *     TODO
+ *
+ * Arguments
+ *     - aConnectInfo   [IN] : data node ¡¢º” ¡§∫∏
+ *     - TODO
+ *
+ * Return value
+ *     - TODO
+ *
+ * Error handle
+ *     - TODO
+ *
+ ***********************************************************************/
+
+    SShort    sHandleType = SQL_HANDLE_DBC;
+    SQLHANDLE sHandle     = NULL;
+    SQLRETURN sRet        = SQL_ERROR;
+
+    IDE_TEST( lobEnter( aConnectInfo,
+                        aRemoteStmt,
+                        "lobWrite",
+                        &sHandleType,
+                        &sHandle ) != IDE_SUCCESS );
+
+    sRet = SQLLobWrite( sHandleType,
+                        sHandle,
+                        (SQLSMALLINT  ) aLocatorCType,
+                        (SQLUBIGINT   ) aLocator,
+                        (SQLSMALLINT  ) aTargetCType,
+                        (SQLPOINTER   ) aDataToPut,
+                        (SQLUINTEGER  ) aSizeDataToPut );
+    IDE_TEST_RAISE( ( ( sRet != SQL_SUCCESS ) &&
+                      ( sRet != SQL_SUCCESS_WITH_INFO ) ),
+                    SqlApiError );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( SqlApiError )
+    {
+        processErrorOnNested( sHandleType,
+                              sHandle,
+                              ((SChar*)"SQLLobWrite"),
+                              aConnectInfo,
+                              aIsLinkFailure );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdl::lobPrepare4Write( sdiConnectInfo * aConnectInfo,
+                              sdlRemoteStmt  * aRemoteStmt,
+                              SShort           aLocatorCType,
+                              ULong            aLocator,
+                              UInt             aStartOffset,
+                              UInt             aNewSize,
+                              idBool         * aIsLinkFailure )
+{
+/***********************************************************************
+ *
+ * Description :
+ *
+ * Implementation :
+ *     TODO
+ *
+ * Arguments
+ *     - aConnectInfo   [IN] : data node ¡¢º” ¡§∫∏
+ *     - TODO
+ *
+ * Return value
+ *     - TODO
+ *
+ * Error handle
+ *     - TODO
+ *
+ ***********************************************************************/
+
+    SShort    sHandleType = SQL_HANDLE_DBC;
+    SQLHANDLE sHandle     = NULL;
+    SQLRETURN sRet        = SQL_ERROR;
+
+    IDE_TEST( lobEnter( aConnectInfo,
+                        aRemoteStmt,
+                        "lobPrepare4Write",
+                        &sHandleType,
+                        &sHandle ) != IDE_SUCCESS );
+
+    sRet = SQLLobPrepare4Write( sHandleType,
+                                sHandle,
+                                (SQLSMALLINT  ) aLocatorCType,
+                                (SQLUBIGINT   ) aLocator,
+                                (SQLUINTEGER  ) aStartOffset,
+                                (SQLUINTEGER  ) aNewSize );
+    IDE_TEST_RAISE( ( ( sRet != SQL_SUCCESS ) &&
+                      ( sRet != SQL_SUCCESS_WITH_INFO ) ),
+                    SqlApiError );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( SqlApiError )
+    {
+        processErrorOnNested( sHandleType,
+                              sHandle,
+                              (SChar*)"SQLLobPrepare4Write",
+                              aConnectInfo,
+                              aIsLinkFailure );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdl::lobFinishWrite( sdiConnectInfo * aConnectInfo,
+                            sdlRemoteStmt  * aRemoteStmt,
+                            SShort           aLocatorCType,
+                            ULong            aLocator,
+                            idBool         * aIsLinkFailure )
+{
+/***********************************************************************
+ *
+ * Description :
+ *
+ * Implementation :
+ *     TODO
+ *
+ * Arguments
+ *     - aConnectInfo   [IN] : data node ¡¢º” ¡§∫∏
+ *     - TODO
+ *
+ * Return value
+ *     - TODO
+ *
+ * Error handle
+ *     - TODO
+ *
+ ***********************************************************************/
+
+    SShort    sHandleType = SQL_HANDLE_DBC;
+    SQLHANDLE sHandle     = NULL;
+    SQLRETURN sRet        = SQL_ERROR;
+
+    IDE_TEST( lobEnter( aConnectInfo,
+                        aRemoteStmt,
+                        "lobFinishWrite",
+                        &sHandleType,
+                        &sHandle ) != IDE_SUCCESS );
+
+    sRet = SQLLobFinishWrite( sHandleType,
+                              sHandle,
+                              (SQLSMALLINT  ) aLocatorCType,
+                              (SQLUBIGINT   ) aLocator );
+    IDE_TEST_RAISE( ( ( sRet != SQL_SUCCESS ) &&
+                      ( sRet != SQL_SUCCESS_WITH_INFO ) ),
+                    SqlApiError );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( SqlApiError )
+    {
+        processErrorOnNested( sHandleType,
+                              sHandle,
+                              (SChar*)"SQLLobFinishWrite",
+                              aConnectInfo,
+                              aIsLinkFailure );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdl::getLobLength( sdiConnectInfo * aConnectInfo,
+                          sdlRemoteStmt  * aRemoteStmt,
+                          SShort           aLocatorCType,
+                          ULong            aLocator,
+                          UInt           * aLobLengthPtr,
+                          idBool         * aIsNullLob,
+                          idBool         * aIsLinkFailure )
+{
+/***********************************************************************
+ *
+ * Description :
+ *
+ * Implementation :
+ *     TODO
+ *
+ * Arguments
+ *     - aConnectInfo   [IN] : data node ¡¢º” ¡§∫∏
+ *     - TODO
+ *
+ * Return value
+ *     - TODO
+ *
+ * Error handle
+ *     - TODO
+ *
+ ***********************************************************************/
+    SShort    sHandleType = SQL_HANDLE_DBC;
+    SQLHANDLE sHandle     = NULL;
+    SQLRETURN sRet        = SQL_ERROR;
+    UShort    sIsNullLob;
+
+    IDE_TEST( lobEnter( aConnectInfo,
+                        aRemoteStmt,
+                        "getLobLength",
+                        &sHandleType,
+                        &sHandle ) != IDE_SUCCESS );
+
+    sRet = SQLGetLobLengthForSd( sHandleType,
+                                 sHandle,
+                                 (SQLUBIGINT   ) aLocator,
+                                 (SQLSMALLINT  ) aLocatorCType,
+                                 (SQLUINTEGER *) aLobLengthPtr,
+                                 (SQLUSMALLINT *) &sIsNullLob );
+
+    IDE_TEST_RAISE( ( ( sRet != SQL_SUCCESS ) &&
+                      ( sRet != SQL_SUCCESS_WITH_INFO ) ),
+                    SqlApiError );
+
+    *aIsNullLob = (idBool)sIsNullLob;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( SqlApiError )
+    {
+        processErrorOnNested( sHandleType,
+                              sHandle,
+                              (SChar*)"SQLGetLobLengthForSd",
+                              aConnectInfo,
+                              aIsLinkFailure );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdl::freeLob( sdiConnectInfo * aConnectInfo,
+                     sdlRemoteStmt  * aRemoteStmt,
+                     ULong            aLocator,
+                     idBool         * aIsLinkFailure )
+{
+/***********************************************************************
+ *
+ * Description :
+ *
+ * Implementation :
+ *     TODO
+ *
+ * Arguments
+ *     - aConnectInfo   [IN] : data node ¡¢º” ¡§∫∏
+ *     - TODO
+ *
+ * Return value
+ *     - TODO
+ *
+ * Error handle
+ *     - TODO
+ *
+ ***********************************************************************/
+
+    SShort    sHandleType = SQL_HANDLE_DBC;
+    SQLHANDLE sHandle     = NULL;
+    SQLRETURN sRet        = SQL_ERROR;
+
+    IDE_TEST( lobEnter( aConnectInfo,
+                        aRemoteStmt,
+                        "freeLob",
+                        &sHandleType,
+                        &sHandle ) != IDE_SUCCESS );
+
+    sRet = SQLFreeLobForSd( sHandleType,
+                            sHandle,
+                            (SQLUBIGINT   ) aLocator );
+    IDE_TEST_RAISE( ( ( sRet != SQL_SUCCESS ) &&
+                      ( sRet != SQL_SUCCESS_WITH_INFO ) ),
+                    SqlApiError );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( SqlApiError )
+    {
+        processErrorOnNested( sHandleType,
+                              sHandle,
+                              (SChar*)"SQLFreeLobForSd",
+                              aConnectInfo,
+                              aIsLinkFailure );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdl::trimLob( sdiConnectInfo * aConnectInfo,
+                     sdlRemoteStmt  * aRemoteStmt,
+                     SShort           aLocatorCType,
+                     ULong            aLocator,
+                     UInt             aStartOffset,
+                     idBool         * aIsLinkFailure )
+{
+/***********************************************************************
+ *
+ * Description :
+ *
+ * Implementation :
+ *     TODO
+ *
+ * Arguments
+ *     - aConnectInfo   [IN] : data node ¡¢º” ¡§∫∏
+ *     - TODO
+ *
+ * Return value
+ *     - TODO
+ *
+ * Error handle
+ *     - TODO
+ *
+ ***********************************************************************/
+
+    SShort    sHandleType = SQL_HANDLE_DBC;
+    SQLHANDLE sHandle     = NULL;
+    SQLRETURN sRet        = SQL_ERROR;
+
+    IDE_TEST( lobEnter( aConnectInfo,
+                        aRemoteStmt,
+                        "trimLob",
+                        &sHandleType,
+                        &sHandle ) != IDE_SUCCESS );
+
+    sRet = SQLTrimLobForSd( sHandleType,
+                            sHandle,
+                            (SQLSMALLINT  ) aLocatorCType,
+                            (SQLUBIGINT   ) aLocator,
+                            (SQLUINTEGER  ) aStartOffset );
+    IDE_TEST_RAISE( ( ( sRet != SQL_SUCCESS ) &&
+                      ( sRet != SQL_SUCCESS_WITH_INFO ) ),
+                    SqlApiError );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( SqlApiError )
+    {
+        processErrorOnNested( sHandleType,
+                              sHandle,
+                              (SChar*)"SQLTrimLobForSd",
+                              aConnectInfo,
+                              aIsLinkFailure );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdl::putLob( sdiConnectInfo * aConnectInfo,
+                    sdlRemoteStmt  * aRemoteStmt,
+                    SShort           aLocatorCType,
+                    ULong            aLocator,
+                    SShort           aSourceCType,
+                    void           * aValue,
+                    SLong            aLength,
+                    idBool         * aIsLinkFailure )
+{
+/***********************************************************************
+ *
+ * Description :
+ *
+ * Implementation :
+ *     TODO
+ *
+ * Arguments
+ *     - aConnectInfo   [IN] : data node ¡¢º” ¡§∫∏
+ *     - TODO
+ *
+ * Return value
+ *     - TODO
+ *
+ * Error handle
+ *     - TODO
+ *
+ ***********************************************************************/
+    SShort    sHandleType = SQL_HANDLE_DBC;
+    SQLHANDLE sHandle     = NULL;
+    SQLRETURN sRet        = SQL_ERROR;
+    UInt      sLength;
+
+    IDE_TEST( lobEnter( aConnectInfo,
+                        aRemoteStmt,
+                        "putLob",
+                        &sHandleType,
+                        &sHandle ) != IDE_SUCCESS );
+
+    if ( MTD_LOB_IS_NULL(aLength) == ID_TRUE )
+    {
+        sLength = 0;
+    }
+    else
+    {
+        sLength = aLength;
+    }
+    sRet = SQLPutLobForSd( sHandleType,
+                           sHandle,
+                           (SQLSMALLINT  ) aLocatorCType,
+                           (SQLUBIGINT   ) aLocator,
+                           (SQLUINTEGER  ) 0,
+                           (SQLUINTEGER  ) 0,
+                           (SQLSMALLINT  ) aSourceCType,
+                           (SQLPOINTER   ) aValue,
+                           (SQLUINTEGER  ) sLength );
+    IDE_TEST_RAISE( ( ( sRet != SQL_SUCCESS ) &&
+                      ( sRet != SQL_SUCCESS_WITH_INFO ) ),
+                    SqlApiError );
+
+    (void) SQLFreeLobForSd( sHandleType,
+                        sHandle,
+                        (SQLUBIGINT ) aLocator );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( SqlApiError )
+    {
+        processErrorOnNested( sHandleType,
+                              sHandle,
+                              (SChar*)"SQLPutLobForSd",
+                              aConnectInfo,
+                              aIsLinkFailure );
+    }
+    IDE_EXCEPTION_END;
+
+    if ( sHandle != NULL )
+    {
+        (void) SQLFreeLobForSd( sHandleType,
+                                sHandle,
+                                (SQLUBIGINT ) aLocator );
+    }
+    return IDE_FAILURE;
+}
+
+IDE_RC sdl::putEmptyLob( sdiConnectInfo * aConnectInfo,
+                         sdlRemoteStmt  * aRemoteStmt,
+                         SShort           aLocatorCType,
+                         ULong            aLocator,
+                         SShort           aSourceCType,
+                         void           * aValue,
+                         idBool         * aIsLinkFailure )
+{
+/***********************************************************************
+ *
+ * Description :
+ *
+ * Implementation :
+ *     TODO
+ *
+ * Arguments
+ *     - aConnectInfo   [IN] : data node ¡¢º” ¡§∫∏
+ *     - TODO
+ *
+ * Return value
+ *     - TODO
+ *
+ * Error handle
+ *     - TODO
+ *
+ ***********************************************************************/
+
+    SShort    sHandleType = SQL_HANDLE_DBC;
+    SQLHANDLE sHandle     = NULL;
+    SQLRETURN sRet        = SQL_ERROR;
+
+    IDE_TEST( lobEnter( aConnectInfo,
+                        aRemoteStmt,
+                        "putEmptyLob",
+                        &sHandleType,
+                        &sHandle ) != IDE_SUCCESS );
+
+    sRet = SQLLobPrepare4Write( sHandleType,
+                                sHandle,
+                                (SQLSMALLINT  ) aLocatorCType,
+                                (SQLUBIGINT   ) aLocator,
+                                (SQLUINTEGER  ) 0,
+                                (SQLUINTEGER  ) 0 );
+    IDE_TEST_RAISE( ( ( sRet != SQL_SUCCESS ) &&
+                      ( sRet != SQL_SUCCESS_WITH_INFO ) ),
+                    SqlApiError );
+
+    sRet = SQLLobWrite( sHandleType,
+                        sHandle,
+                        (SQLSMALLINT  ) aLocatorCType,
+                        (SQLUBIGINT   ) aLocator,
+                        (SQLSMALLINT  ) aSourceCType,
+                        (SQLPOINTER   ) aValue,
+                        (SQLUINTEGER  ) 0 );
+    IDE_TEST_RAISE( ( ( sRet != SQL_SUCCESS ) &&
+                      ( sRet != SQL_SUCCESS_WITH_INFO ) ),
+                    SqlApiError );
+
+    sRet = SQLLobFinishWrite( sHandleType,
+                              sHandle,
+                              (SQLSMALLINT  ) aLocatorCType,
+                              (SQLUBIGINT   ) aLocator );
+    IDE_TEST_RAISE( ( ( sRet != SQL_SUCCESS ) &&
+                      ( sRet != SQL_SUCCESS_WITH_INFO ) ),
+                    SqlApiError );
+
+    (void) SQLFreeLobForSd( sHandleType,
+                            sHandle,
+                            (SQLUBIGINT ) aLocator );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( SqlApiError )
+    {
+        processErrorOnNested( sHandleType,
+                              sHandle,
+                              ((SChar*)"SQLPutEmptyLob"),
+                              aConnectInfo,
+                              aIsLinkFailure );
+    }
+    IDE_EXCEPTION_END;
+
+    if ( sHandle != NULL )
+    {
+        (void) SQLFreeLobForSd( sHandleType,
+                                sHandle,
+                               (SQLUBIGINT ) aLocator );
+    }
+    return IDE_FAILURE;
+}
+
+
+/* PROJ-2733-DistTxInfo */
+IDE_RC sdl::getSCN( sdiConnectInfo * aConnectInfo, smSCN * aSCN )
+{
+    SQLRETURN sRet = SQL_ERROR;
+
+    IDE_TEST_RAISE( mInitialized == ID_FALSE, UnInitializedError );
+    IDE_TEST_RAISE( aConnectInfo->mDbc == NULL, ErrorNullDbc );
+
+    sRet = SQLGetScn( (SQLHDBC)aConnectInfo->mDbc,
+                      (SQLUBIGINT *)aSCN );
+    IDE_TEST_RAISE( sRet != SQL_SUCCESS, ERR_SQLGetScn );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_UNINIT_LIBRARY( aConnectInfo, "getSCN" )
+    IDE_EXCEPTION_NULL_DBC( aConnectInfo, "getSCN" )
+    IDE_EXCEPTION( ERR_SQLGetScn )
+    {
+        /* BUGBUG SQL_INVALID_HANDLE¿ª ¿¸¥ﬁ«œ±‚ ¿ß«ÿº≠¥¬ processError()∏¶ ∞≥º±«ÿæﬂ «—¥Ÿ.
+                  ErrorNullDbc∑Œ ¿Œ«ÿ ∏ﬁ∏∏Æø¿ø∞¿ª ¡¶ø‹«œ∞Ì¥¬ SQL_INVALID_HANDLE∞° πﬂª˝«“ ºˆ æ¯¥Ÿ. */
+        processError( SQL_HANDLE_DBC,
+                      aConnectInfo->mDbc,
+                      (SChar*)"SQLGetScn",
+                      aConnectInfo,
+                      &(aConnectInfo->mLinkFailure) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdl::setSCN( sdiConnectInfo * aConnectInfo, smSCN * aSCN )
+{
+    SQLRETURN sRet = SQL_ERROR;
+
+    IDE_TEST_RAISE( mInitialized == ID_FALSE, UnInitializedError );
+    IDE_TEST_RAISE( aConnectInfo->mDbc == NULL, ErrorNullDbc );
+
+    sRet = SQLSetScn( (SQLHDBC)aConnectInfo->mDbc,
+                      (SQLUBIGINT *)aSCN );
+    IDE_TEST_RAISE( sRet != SQL_SUCCESS, ERR_SQLSetScn );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_UNINIT_LIBRARY( aConnectInfo, "setSCN" )
+    IDE_EXCEPTION_NULL_DBC( aConnectInfo, "setSCN" )
+    IDE_EXCEPTION( ERR_SQLSetScn )
+    {
+        processError( SQL_HANDLE_DBC,
+                      aConnectInfo->mDbc,
+                      (SChar*)"SQLSetScn",
+                      aConnectInfo,
+                      &(aConnectInfo->mLinkFailure) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdl::setTxFirstStmtSCN( sdiConnectInfo * aConnectInfo, smSCN * aTxFirstStmtSCN )
+{
+    SQLRETURN sRet = SQL_ERROR;
+
+    IDE_TEST_RAISE( mInitialized == ID_FALSE, UnInitializedError );
+    IDE_TEST_RAISE( aConnectInfo->mDbc == NULL, ErrorNullDbc );
+
+    sRet = SQLSetTxFirstStmtScn( (SQLHDBC)aConnectInfo->mDbc,
+                                 (SQLUBIGINT *)aTxFirstStmtSCN );
+    IDE_TEST_RAISE( sRet != SQL_SUCCESS, ERR_SQLSetTxFirstStmtScn );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_UNINIT_LIBRARY( aConnectInfo, "setTxFirstStmtSCN" )
+    IDE_EXCEPTION_NULL_DBC( aConnectInfo, "setTxFirstStmtSCN" )
+    IDE_EXCEPTION( ERR_SQLSetTxFirstStmtScn )
+    {
+        processError( SQL_HANDLE_DBC,
+                      aConnectInfo->mDbc,
+                      (SChar*)"SQLSetTxFirstStmtScn",
+                      aConnectInfo,
+                      &(aConnectInfo->mLinkFailure) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdl::setTxFirstStmtTime( sdiConnectInfo * aConnectInfo, SLong aTxFirstStmtTime )
+{
+    SQLRETURN sRet = SQL_ERROR;
+
+    IDE_TEST_RAISE( mInitialized == ID_FALSE, UnInitializedError );
+    IDE_TEST_RAISE( aConnectInfo->mDbc == NULL, ErrorNullDbc );
+
+    sRet = SQLSetTxFirstStmtTime( (SQLHDBC)aConnectInfo->mDbc,
+                                  (SQLBIGINT)aTxFirstStmtTime );
+    IDE_TEST_RAISE( sRet != SQL_SUCCESS, ERR_SQLSetTxFirstStmtTime );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_UNINIT_LIBRARY( aConnectInfo, "setTxFirstStmtTime" )
+    IDE_EXCEPTION_NULL_DBC( aConnectInfo, "setTxFirstStmtTime" )
+    IDE_EXCEPTION( ERR_SQLSetTxFirstStmtTime )
+    {
+        processError( SQL_HANDLE_DBC,
+                      aConnectInfo->mDbc,
+                      (SChar*)"SQLSetTxFirstStmtTime",
+                      aConnectInfo,
+                      &(aConnectInfo->mLinkFailure) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdl::setDistLevel( sdiConnectInfo * aConnectInfo, sdiDistLevel aDistLevel )
+{
+    SQLRETURN sRet = SQL_ERROR;
+
+    IDE_TEST_RAISE( mInitialized == ID_FALSE, UnInitializedError );
+    IDE_TEST_RAISE( aConnectInfo->mDbc == NULL, ErrorNullDbc );
+
+    sRet = SQLSetDistLevel( (SQLHDBC)aConnectInfo->mDbc,
+                            (SQLUSMALLINT)aDistLevel );
+    IDE_TEST_RAISE( sRet != SQL_SUCCESS, ERR_SQLSetDistLevel );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_UNINIT_LIBRARY( aConnectInfo, "setDistLevel" )
+    IDE_EXCEPTION_NULL_DBC( aConnectInfo, "setDistLevel" )
+    IDE_EXCEPTION( ERR_SQLSetDistLevel )
+    {
+        processError( SQL_HANDLE_DBC,
+                      aConnectInfo->mDbc,
+                      (SChar*)"SQLSetDistLevel",
+                      aConnectInfo,
+                      &(aConnectInfo->mLinkFailure) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdl::setTargetShardMetaNumber( sdiClientInfo * aClientInfo, sdiConnectInfo * aConnectInfo )
+{
+    IDE_TEST_RAISE( mInitialized == ID_FALSE, UnInitializedError );
+    IDE_TEST_RAISE( aConnectInfo->mDbc == NULL, ErrorNullDbc );
+
+    SQLSetTargetShardMetaNumber( aConnectInfo->mDbc,
+                                 aClientInfo->mTargetShardMetaNumber );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_UNINIT_LIBRARY( aConnectInfo, "setTargetShardMetaNumber" )
+    IDE_EXCEPTION_NULL_DBC( aConnectInfo, "setTargetShardMetaNumber" )
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdl::setStmtExecSeq( sdiConnectInfo * aConnectInfo, UInt aStmtExecSequence )
+{
+    IDE_TEST_RAISE( mInitialized == ID_FALSE, UnInitializedError );
+    IDE_TEST_RAISE( aConnectInfo->mDbc == NULL, ErrorNullDbc );
+
+    SQLSetStmtExecSeq( (SQLHDBC)aConnectInfo->mDbc,
+                       (SQLUINTEGER)aStmtExecSequence );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_UNINIT_LIBRARY( aConnectInfo, "setStmtExecSeq" )
+    IDE_EXCEPTION_NULL_DBC( aConnectInfo, "setStmtExecSeq" )
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }

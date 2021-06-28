@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: ilo.h 83627 2018-08-06 10:11:18Z lswhh $
+ * $Id: ilo.h 90308 2021-03-24 08:32:25Z donlet $
  **********************************************************************/
 
 #ifndef _O_ILO_H_
@@ -26,7 +26,6 @@
 #include <ide.h>
 #include <sqlcli.h>
 #include <ulo.h>
-#include <ulsdShardLoader.h>
 
 #include <ute.h>
 #include <uttMemory.h>
@@ -46,6 +45,9 @@
 #include <iloDownLoad.h>
 #include <iloApi.h>
 #include <utString.h>
+
+/* BUG-47652 Set file permission */
+extern UInt gFilePerm;
 
 #ifdef VC_WIN32
 inline void changeSeparator(const char *aFileName, char *aNewFileName)
@@ -67,17 +69,26 @@ inline void changeSeparator(const char *aFileName, char *aNewFileName)
 }
 #endif
 
-inline FILE *ilo_fopen(const char *aFileName, const char *aMode)
+inline FILE *ilo_fopen( const char *aFileName, const char *aMode, idBool aIsExistFilePerm )
 {
+   FILE *sFp = NULL;
+
 #ifdef VC_WIN32
     SChar aNewFileName[256];
 
     changeSeparator(aFileName, aNewFileName);
 
-    return idlOS::fopen(aNewFileName, aMode);
+    sFp = idlOS::fopen( aNewFileName, aMode );
 #else
-    return idlOS::fopen(aFileName, aMode);
+    sFp = idlOS::fopen( aFileName, aMode );
+    
+    /* BUG-47652 Set file permission */
+    if ( aIsExistFilePerm == ID_TRUE && sFp != NULL )
+    {
+        (void) idlOS::fchmod( fileno(sFp), gFilePerm );
+    }
 #endif
+    return sFp;
 }
 
 FILE* iloFileOpen( ALTIBASE_ILOADER_HANDLE  aHandle,
@@ -86,7 +97,7 @@ FILE* iloFileOpen( ALTIBASE_ILOADER_HANDLE  aHandle,
                    SChar                   *aMode,
                    eLockType                aLockType);
 
-// BUG-25421 [CodeSonar] mutex Ïùò ÏóêÎü¨Ï≤òÎ¶¨Í∞Ä ÏóÜÏäµÎãàÎã§.
+// BUG-25421 [CodeSonar] mutex ¿« ø°∑Ø√≥∏Æ∞° æ¯Ω¿¥œ¥Ÿ.
 void iloMutexLock( ALTIBASE_ILOADER_HANDLE aHandle, PDL_thread_mutex_t *aMutex);
 void iloMutexUnLock( ALTIBASE_ILOADER_HANDLE aHandle, PDL_thread_mutex_t *aMutex);
 

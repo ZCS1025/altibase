@@ -19,8 +19,8 @@
 
 /* ulpMain */
 
-// í”„ë¡œê·¸ë¨ ë„ì¤‘ ì—ëŸ¬ê°€ ë°œìƒí–ˆì„ê²½ìš° ì¤‘ê°„ fileê³¼ ê²°ê³¼ fileì„ ì œê±°í•´ ì¤˜ì•¼í•œë‹¤.
-// ìˆ˜í–‰ì½”ë“œ ë¶€ë¶„ì— ë”°ë¼ fileì œê±° ì—¬ë¶€ë¥¼ ê²°ì •í•œë‹¤.
+// ÇÁ·Î±×·¥ µµÁß ¿¡·¯°¡ ¹ß»ıÇßÀ»°æ¿ì Áß°£ file°ú °á°ú fileÀ» Á¦°ÅÇØ Áà¾ßÇÑ´Ù.
+// ¼öÇàÄÚµå ºÎºĞ¿¡ µû¶ó fileÁ¦°Å ¿©ºÎ¸¦ °áÁ¤ÇÑ´Ù.
 #define ERR_DEL_FILE_NONE     (0)
 #define ERR_DEL_TMP_FILE      (1)
 #define ERR_DEL_ALL_FILE      (2)
@@ -158,6 +158,10 @@ typedef enum
                                             GEN_WRITE_BUF_SIZE - sSLength,\
                                             "    ulpSqlstmt.hostvalue[%d].mFileopt = " STR ";\n",\
                                             __VA_ARGS__ )
+#define PRINT_mDiagType(STR, ...)   sSLength += idlOS::snprintf( sTmpStr + sSLength,\
+                                            GEN_WRITE_BUF_SIZE - sSLength,\
+                                            "    ulpSqlstmt.hostvalue[%d].mDiagType = " STR ";\n",\
+                                            __VA_ARGS__ )
 /* BUG-42357 [mm-apre] The -lines option is added to apre. (INC-31008) */
 #define PRINT_LineMacro() do\
 {\
@@ -195,7 +199,8 @@ typedef enum
     GEN_HVTYPE,
     GEN_CURSORSCROLLABLE,
     GEN_CURSORSENSITIVITY,
-    GEN_CURSORWITHHOLD
+    GEN_CURSORWITHHOLD,
+    GEN_CONDITIONNUM
 } ulpGENSQLINFO;
 
 typedef enum
@@ -234,7 +239,7 @@ typedef enum
 #define PP_ST_MACRO_IF_SKIP (-4)
 
 #define MAX_MACRO_DEFINE_NAME_LEN    (1024)
-/* BUG-30233 : #define ë‚´ìš©ì´ 5Kì´ìƒì´ë©´ apre segvë°œìƒí•¨. */
+/* BUG-30233 : #define ³»¿ëÀÌ 5KÀÌ»óÀÌ¸é apre segv¹ß»ıÇÔ. */
 #define MAX_MACRO_DEFINE_CONTENT_LEN (1024*32)
 #define MAX_MACRO_IF_EXPR_LEN        (1024*4)
 #define MAX_SKIP_MACRO_LEN           (1024*4)
@@ -262,7 +267,7 @@ typedef enum
     PP_IF_IGNORE = 0,
     PP_IF_TRUE,
     PP_IF_FALSE,
-    /* BUG-28162 : SESC_DECLARE ë¶€í™œ  */
+    /* BUG-28162 : SESC_DECLARE ºÎÈ°  */
     PP_IF_SESC_DEC
 } ulpPPifresult;
 
@@ -272,8 +277,8 @@ typedef enum
 
 /* ulpComp & ulpCompl & ulpCompy */
 
-/* BUG-28061 : preprocessingì„ë§ˆì¹˜ë©´ marco tableì„ ì´ˆê¸°í™”í•˜ê³ , *
- *             ulpComp ì—ì„œ ì¬êµ¬ì¶•í•œë‹¤.                       */
+/* BUG-28061 : preprocessingÀ»¸¶Ä¡¸é marco tableÀ» ÃÊ±âÈ­ÇÏ°í, *
+ *             ulpComp ¿¡¼­ Àç±¸ÃàÇÑ´Ù.                       */
 #define CP_ST_VOID          (-1)
 #define CP_ST_NONE          (-2)
 #define CP_ST_PARTIAL       (-3)
@@ -286,7 +291,7 @@ typedef enum
 
 #define MAX_EXPR_LEN        (1024)
 
-/* BUG-28068 : #define ë§¤í¬ë¡œì´ë¦„ í™•ì¥ì•ˆë˜ëŠ” ë¬¸ì œ */
+/* BUG-28068 : #define ¸ÅÅ©·ÎÀÌ¸§ È®Àå¾ÈµÇ´Â ¹®Á¦ */
 #define WRITESTR2BUFCOMP(STR) if( (!gDontPrint2file) && (gUlpCOMPMacroExpIndex <= 0) ) { gUlpCodeGen.ulpGenString(STR); }
 #define WRITECH2BUFCOMP(CH)   if( (!gDontPrint2file) && (gUlpCOMPMacroExpIndex <= 0) ) { gUlpCodeGen.ulpGenPutChar(CH); }
 #define WRITEUNCH2BUFCOMP()   if( (!gDontPrint2file) && (gUlpCOMPMacroExpIndex <= 0) ) { gUlpCodeGen.ulpGenUnputChar(); }
@@ -298,8 +303,8 @@ typedef enum
 #define ERR_M (3)
 #define ERR_H (4)
 
-/* BUG-28118 : system í—¤ë”íŒŒì¼ë“¤ë„ íŒŒì‹±ë¼ì•¼í•¨.                      *
-  6th. problem : Nested structure ì •ì˜ì¤‘ scopeë¥¼ ì˜ëª» ê³„ì‚°í•˜ëŠ” ë¬¸ì œ */
+/* BUG-28118 : system Çì´õÆÄÀÏµéµµ ÆÄ½ÌµÅ¾ßÇÔ.                      *
+  6th. problem : Nested structure Á¤ÀÇÁß scope¸¦ Àß¸ø °è»êÇÏ´Â ¹®Á¦ */
 #define MAX_NESTED_STRUCT_DEPTH    (100)
 
 typedef enum

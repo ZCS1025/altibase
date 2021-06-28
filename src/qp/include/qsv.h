@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsv.h 85120 2019-04-02 01:27:30Z khkwak $
+ * $Id: qsv.h 90176 2021-03-10 10:14:18Z seulki $
  **********************************************************************/
 
 #ifndef _Q_QSV_H_
@@ -31,12 +31,12 @@
 #include <qmmParseTree.h>
 
 // BUG-41243 Name-based Argument Passing
-// ÏÑ†Ïñ∏Îêú ParameterÏóê ArgumentÏùò Ï†ÑÎã¨ Ïó¨Î∂Ä / Ï†ÑÎã¨ Ïú†Ìòï
+// º±æµ» Parameterø° Argument¿« ¿¸¥ﬁ ø©∫Œ / ¿¸¥ﬁ ¿Ø«¸
 enum qsvArgPassType
 {
-    QSV_ARG_NOT_PASSED = 0,  // Ï†ÑÎã¨ÎêòÏßÄ ÏïäÏùå
-    QSV_ARG_PASS_POSITIONAL, // Parameter ÏúÑÏπòÎ°ú Ï†ÑÎã¨   (e.g.) proc1('val')
-    QSV_ARG_PASS_NAMED       // Parameter Ïù¥Î¶ÑÏúºÎ°ú Ï†ÑÎã¨ (e.g.) proc1(P1 => 'val')
+    QSV_ARG_NOT_PASSED = 0,  // ¿¸¥ﬁµ«¡ˆ æ ¿Ω
+    QSV_ARG_PASS_POSITIONAL, // Parameter ¿ßƒ°∑Œ ¿¸¥ﬁ   (e.g.) proc1('val')
+    QSV_ARG_PASS_NAMED       // Parameter ¿Ã∏ß¿∏∑Œ ¿¸¥ﬁ (e.g.) proc1(P1 => 'val')
 };
 
 typedef struct qsvArgPassInfo
@@ -56,6 +56,8 @@ public:
     static IDE_RC validateCreateProc(qcStatement * aStatement);
 
     static IDE_RC validateReplaceProc(qcStatement * aStatement);
+    
+    static IDE_RC validateReplaceProcForRecompile(qcStatement * aStatement);
 
     static IDE_RC validateCreateFunc(qcStatement * aStatement);
 
@@ -176,7 +178,7 @@ private:
         qcStatement * aStatement );
 
     // BUG-41243 Name-based Argument Passing
-    // Name-based Argument Í≤ÄÏ¶ùÏùÑ ÌïòÍ≥†, Ïò¨Î∞îÎ•∏ ÏúÑÏπòÎ°ú ArgumentÎ•º Ï°∞Ï†ï
+    // Name-based Argument ∞À¡ı¿ª «œ∞Ì, ø√πŸ∏• ¿ßƒ°∑Œ Argument∏¶ ¡∂¡§
     static IDE_RC validateNamedArguments( qcStatement     * aStatement,
                                           qtcNode         * aCallSpec,
                                           qsVariableItems * aParaDecls,

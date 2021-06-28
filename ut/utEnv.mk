@@ -1,4 +1,4 @@
-# $Id: utEnv.mk 83627 2018-08-06 10:11:18Z lswhh $
+# $Id: utEnv.mk 90308 2021-03-24 08:32:25Z donlet $
 #
 
 include $(dir $(word $(words $(MAKEFILE_LIST)), $(MAKEFILE_LIST)))../env.mk
@@ -15,7 +15,6 @@ endif
 LFLAGS += $(foreach i, $(ALTI_HOME)/lib $(MT_DIR)/lib $(QP_DIR)/lib $(SD_DIR)/lib $(RP_DIR)/lib $(SM_DIR)/lib $(ID_DIR)/lib $(UL_DIR)/lib $(UT_DIR)/util/lib, $(LDROPT)$(i))
 
 SHARDLOADERFLAGS:=$(DEFOPT)COMPILE_SHARDCLI
-SHARDLOADERFLAGS+=$(DEFOPT)COMPILE_SHARDLOADERCLI
 
 ODBCCLI_LIB = odbccli
 UTIL_LIB = altiutil

@@ -16,7 +16,7 @@
  
 
 /*******************************************************************************
- * $Id: smnpDef.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smnpDef.h 88191 2020-07-27 03:08:54Z mason.lee $
  ******************************************************************************/
 
 #ifndef _O_SMNP_DEF_H_
@@ -40,7 +40,8 @@ typedef struct smnpIterator
     UInt                flag;
 
     smiCursorProperties  * mProperties;
-    /* smiIterator ê³µí†µ ë³€ìˆ˜ ë */
+    smiStatement         * mStatement;
+    /* smiIterator °øÅë º¯¼ö ³¡ */
 
     const smiRange     * mRange;
     const smiRange     * mNxtRange;

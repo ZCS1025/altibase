@@ -109,7 +109,7 @@ public class NumericColumnTest extends AltibaseTestCase
         int sUpdateCount;
 
         sStmt = connection().prepareStatement("INSERT INTO t1 VALUES (?)");
-        sStmt.setObject(1, "1.234", Types.DECIMAL, 1); // scale ë¬´ì‹œ
+        sStmt.setObject(1, "1.234", Types.DECIMAL, 1); // scale ¹«½Ã
         sUpdateCount = sStmt.executeUpdate();
         assertEquals(1, sUpdateCount);
         assertExecuteScalar("1.234");

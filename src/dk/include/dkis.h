@@ -27,6 +27,7 @@
 
 extern IDE_RC dkisRegister( void );
 extern IDE_RC dkisRegister2PCCallback( void );
+extern IDE_RC dkisUnregister2PCCallback( void );
 
 #endif /* _O_DKIS_H_ */
 

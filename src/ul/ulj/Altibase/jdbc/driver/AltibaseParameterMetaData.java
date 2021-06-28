@@ -24,7 +24,7 @@ import java.util.Set;
 import Altibase.jdbc.driver.datatype.Column;
 import Altibase.jdbc.driver.datatype.ColumnInfo;
 
-public class AltibaseParameterMetaData implements ParameterMetaData
+public class AltibaseParameterMetaData extends WrapperAdapter implements ParameterMetaData
 {
     private List mColumns;
 

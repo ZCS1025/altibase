@@ -168,37 +168,37 @@ mtdModule mtdBigint = {
     {
         // Key Comparison
         {
-            // mt valueë“¤ ê°„ì˜ compare
+            // mt valueµé °£ÀÇ compare
             mtdBigintFixedMtdFixedMtdKeyAscComp, // Ascending Key Comparison
             mtdBigintFixedMtdFixedMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt valueë“¤ ê°„ì˜ compare
+            // mt valueµé °£ÀÇ compare
             mtdBigintMtdMtdKeyAscComp, // Ascending Key Comparison
             mtdBigintMtdMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt valueì™€ stored valueê°„ì˜ compare
+            // mt value¿Í stored value°£ÀÇ compare
             mtdBigintStoredMtdKeyAscComp, // Ascending Key Comparison
             mtdBigintStoredMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // stored valueë“¤ ê°„ì˜ compare
+            // stored valueµé °£ÀÇ compare
             mtdBigintStoredStoredKeyAscComp, // Ascending Key Comparison
             mtdBigintStoredStoredKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            /* PROJ-2433 : index Direct keyì™€ fixed mt valueë“¤ ê°„ì˜ compare */
+            /* PROJ-2433 : index Direct key¿Í fixed mt valueµé °£ÀÇ compare */
             mtdBigintFixedMtdFixedMtdKeyAscComp,
             mtdBigintFixedMtdFixedMtdKeyDescComp
         }
         ,
         {
-            /* PROJ-2433 : index Direct keyì™€ mt valueë“¤ ê°„ì˜ compare */
+            /* PROJ-2433 : index Direct key¿Í mt valueµé °£ÀÇ compare */
             mtdBigintMtdMtdKeyAscComp,
             mtdBigintMtdMtdKeyDescComp
         }
@@ -234,7 +234,7 @@ IDE_RC mtdInitialize( UInt aNo )
 { 
     IDE_TEST( mtd::initializeModule( &mtdBigint, aNo ) != IDE_SUCCESS );
     
-    // mtdColumnì˜ ì´ˆê¸°í™”
+    // mtdColumnÀÇ ÃÊ±âÈ­
     IDE_TEST( mtc::initializeColumn( & mtdColumn,
                                      & mtdBigint,
                                      0,   // arguments
@@ -256,7 +256,7 @@ IDE_RC mtdEstimate( UInt * aColumnSize,
 {
 /***********************************************************************
  *
- * Description : data type moduleì˜ semantic ê²€ì‚¬ ë° column size ì„¤ì •
+ * Description : data type moduleÀÇ semantic °Ë»ç ¹× column size ¼³Á¤
  *
  * Implementation :
  *
@@ -684,7 +684,7 @@ SInt mtdBigintStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -739,7 +739,7 @@ SInt mtdBigintStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ descending compare
+ * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ descending compare
  *
  * Implementation :
  *
@@ -794,7 +794,7 @@ SInt mtdBigintStoredStoredKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyë“¤ ê°„ì˜ ascending compare
+ * Description : Stored Keyµé °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -845,7 +845,7 @@ SInt mtdBigintStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyë“¤ ê°„ì˜ descending compare
+ * Description : Stored Keyµé °£ÀÇ descending compare
  *
  * Implementation :
  *
@@ -891,7 +891,7 @@ SInt mtdBigintStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
     return 0;
 }
 
-/* PROJ-2446 ONE SOURCE í˜¸ì¶œ ë˜ëŠ” ê³³ì´ ì—†ë‹¤ í™•ì¸ í•„ìš” */
+/* PROJ-2446 ONE SOURCE È£Ãâ µÇ´Â °÷ÀÌ ¾ø´Ù È®ÀÎ ÇÊ¿ä */
 void mtdPartialKeyAscending( ULong*           aPartialKey,
                              const mtcColumn* aColumn,
                              const void*      aRow,
@@ -919,7 +919,7 @@ void mtdPartialKeyAscending( ULong*           aPartialKey,
     }
 }
 
-/* PROJ-2446 ONE SOURCE í˜¸ì¶œ ë˜ëŠ” ê³³ì´ ì—†ë‹¤ í™•ì¸ í•„ìš” */
+/* PROJ-2446 ONE SOURCE È£Ãâ µÇ´Â °÷ÀÌ ¾ø´Ù È®ÀÎ ÇÊ¿ä */
 void mtdPartialKeyDescending( ULong*           aPartialKey,
                               const mtcColumn* aColumn,
                               const void*      aRow,
@@ -974,7 +974,7 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
 {
 /***********************************************************************
  *
- * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColum ì´ˆê¸°í™”
+ * Description : valueÀÇ semantic °Ë»ç ¹× mtcColum ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -985,9 +985,9 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
     IDE_TEST_RAISE( aValueSize != ID_SIZEOF(mtdBigintType),
                     ERR_INVALID_LENGTH );
 
-    // ì´ˆê¸°í™”ëœ aColumnì€ cannonize() ì‹œì— ì‚¬ìš©
-    // ì´ë•Œ, data type moduleì˜ precision ì •ë³´ë§Œì„ ì‚¬ìš©í•˜ë¯€ë¡œ,
-    // language ì •ë³´ ì„¤ì •í•  í•„ìš”ì—†ìŒ
+    // ÃÊ±âÈ­µÈ aColumnÀº cannonize() ½Ã¿¡ »ç¿ë
+    // ÀÌ¶§, data type moduleÀÇ precision Á¤º¸¸¸À» »ç¿ëÇÏ¹Ç·Î,
+    // language Á¤º¸ ¼³Á¤ÇÒ ÇÊ¿ä¾øÀ½
     IDE_TEST( mtc::initializeColumn( aColumn,
                                      & mtdBigint,
                                      0,   // arguments
@@ -1076,20 +1076,20 @@ IDE_RC mtdStoredValue2MtdValue( UInt              aColumnSize,
 {
 /*******************************************************************
  * PROJ-1705
- * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
- * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
+ * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
+ * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
  *******************************************************************/
 
     mtdBigintType* sBigintValue;
 
-    // ê³ ì •ê¸¸ì´ ë°ì´íƒ€ íƒ€ì…ì˜ ê²½ìš°
-    // í•˜ë‚˜ì˜ ì»¬ëŸ¼ ë°ì´íƒ€ê°€ ì—¬ëŸ¬í˜ì´ì§€ì— ë‚˜ëˆ„ì–´ ì €ì¥ë˜ëŠ” ê²½ìš°ëŠ” ì—†ë‹¤.
+    // °íÁ¤±æÀÌ µ¥ÀÌÅ¸ Å¸ÀÔÀÇ °æ¿ì
+    // ÇÏ³ªÀÇ ÄÃ·³ µ¥ÀÌÅ¸°¡ ¿©·¯ÆäÀÌÁö¿¡ ³ª´©¾î ÀúÀåµÇ´Â °æ¿ì´Â ¾ø´Ù.
 
     sBigintValue = (mtdBigintType*)aDestValue;
     
     if( aLength == 0 )
     {
-        // NULL ë°ì´íƒ€
+        // NULL µ¥ÀÌÅ¸
         *sBigintValue = mtdBigintNull;        
     }
     else
@@ -1116,7 +1116,7 @@ UInt mtdNullValueSize()
 {
 /*******************************************************************
  * PROJ-1705
- * ê° ë°ì´íƒ€íƒ€ì…ì˜ null Valueì˜ í¬ê¸° ë°˜í™˜
+ * °¢ µ¥ÀÌÅ¸Å¸ÀÔÀÇ null ValueÀÇ Å©±â ¹İÈ¯
  *******************************************************************/
 
     return mtdActualSize( NULL,

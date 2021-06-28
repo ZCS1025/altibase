@@ -95,7 +95,7 @@ ACI_RC cmpCallbackBASEHandshake(cmiProtocolContext *aProtocolContext,
     ACP_UNUSED(aUserContext);
 
     /*
-     * Module ID ê²€ì‚¬
+     * Module ID °Ë»ç
      */
     if (sSession != NULL)
     {
@@ -109,13 +109,13 @@ ACI_RC cmpCallbackBASEHandshake(cmiProtocolContext *aProtocolContext,
     }
 
     /*
-     * ì‚¬ìš©í•  Version ì„¸íŒ…
+     * »ç¿ëÇÒ Version ¼¼ÆÃ
      */
     sBaseVersion   = ACP_MIN(sArg->mBaseVersion, gCmpModuleClient[CMP_MODULE_BASE]->mVersionMax - 1);
     sModuleVersion = ACP_MIN(sArg->mModuleVersion, gCmpModuleClient[sArg->mModuleID]->mVersionMax - 1);
 
     /*
-     * Sessionì— Version ì„¸íŒ…
+     * Session¿¡ Version ¼¼ÆÃ
      */
     if (sSession != NULL)
     {

@@ -27,8 +27,6 @@
 # include <smErrorCode.h>
 # include <sdpDef.h>
 
-extern sdpExtMgmtOp gSdptbOp;
-
 extern sdpSegMgmtOp gSdpsfOp;   // FreeList      Managed Segment
 extern sdpSegMgmtOp gSdpstOp;   // TreeList      Managed Segment
 extern sdpSegMgmtOp gSdpscOp;   // CircularList  Managed Segment

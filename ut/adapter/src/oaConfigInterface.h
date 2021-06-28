@@ -146,6 +146,7 @@ typedef struct oaConfigHandleForAlti
 #define OA_ADAPTER_SKIP_ERROR_INCLUDE_FILE_NAME "dbms_skip_error_include.list"
 #define OA_ADAPTER_SKIP_ERROR_EXCLUDE_FILE_NAME "dbms_skip_error_exclude.list"
 #define OA_ADAPTER_LOGIN_SQL_FILE_NAME "oalogin.sql"
+#define OA_ADAPTER_STD_ERR_FILE_NAME "stderr.log"
 #define OA_ADAPTER_SQL_READ_BUFF_SIZE   (512 * 1024)
 #define OA_ADAPTER_SKIP_ERROR_BUFF_SIZE (32 * 1024)
 
@@ -270,6 +271,7 @@ typedef struct oaConfigHandleForJDBC
 #define OA_ADAPTER_SKIP_ERROR_INCLUDE_FILE_NAME "dbms_skip_error_include.list"
 #define OA_ADAPTER_SKIP_ERROR_EXCLUDE_FILE_NAME "dbms_skip_error_exclude.list"
 #define OA_ADAPTER_LOGIN_SQL_FILE_NAME "oalogin.sql"
+#define OA_ADAPTER_STD_ERR_FILE_NAME "stderr.log"
 #define OA_ADAPTER_SQL_READ_BUFF_SIZE   (512 * 1024)
 #define OA_ADAPTER_SKIP_ERROR_BUFF_SIZE (32 * 1024)
 
@@ -490,7 +492,7 @@ enum {
     
     OA_CONFIG_OTHER_DATABASE_JDBC_CONNECTION_URL,
 
-    OA_CONFIG_OTHER_DATABASE_JDBC_JVM_MAX_HEAP_SIZE,
+    OA_CONFIG_OTHER_DATABASE_JDBC_MAX_HEAP_SIZE,
     
     OA_CONFIG_OTHER_DATABASE_SET_USER_TO_TABLE,
     

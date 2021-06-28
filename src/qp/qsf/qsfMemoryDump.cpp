@@ -20,7 +20,7 @@
  *
  * Description :
  *     PROJ-2408 Memory Manager Renewal
- *     FILEì„ opení•˜ëŠ” í•¨ìˆ˜
+ *     FILEÀ» openÇÏ´Â ÇÔ¼ö
  *
  * Syntax :
  *    __MEMORY_ALLOCATOR_DUMP_INTERNAL(dumptarget VARCHAR, dumplevel INT);
@@ -57,7 +57,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfMemoryDumpModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -158,12 +158,12 @@ IDE_RC qsfCalculate_MemoryDump( mtcNode*     aNode,
  *     memory_dump calculate
  *
  * Implementation :
- *     1. sysdbaê°€ ì•„ë‹Œ ê²½ìš° ì˜¤ë¥˜ ë¦¬í„´.
- *     3. dumptargetì´ nullì´ë©´ ëª¨ë“  ë©”ëª¨ë¦¬ ê´€ë¦¬ìë¥¼ ë¤í”„.
- *     4. dumplevelì´ nullì´ë©´ 1. 1, 2, 3ì´ ì•„ë‹ˆë©´ ì˜¤ë¥˜.
- *     5. iduMemMgr::dumpAllMemoryì—
- *        dumptarget, dumplevel ìˆ˜í–‰
- *     6. ë¤í”„í•œ ë©”ëª¨ë¦¬ ê´€ë¦¬ìëª… ë¦¬í„´
+ *     1. sysdba°¡ ¾Æ´Ñ °æ¿ì ¿À·ù ¸®ÅÏ.
+ *     3. dumptargetÀÌ nullÀÌ¸é ¸ğµç ¸Ş¸ğ¸® °ü¸®ÀÚ¸¦ ´ıÇÁ.
+ *     4. dumplevelÀÌ nullÀÌ¸é 1. 1, 2, 3ÀÌ ¾Æ´Ï¸é ¿À·ù.
+ *     5. iduMemMgr::dumpAllMemory¿¡
+ *        dumptarget, dumplevel ¼öÇà
+ *     6. ´ıÇÁÇÑ ¸Ş¸ğ¸® °ü¸®ÀÚ¸í ¸®ÅÏ
  *
  ***********************************************************************/
     

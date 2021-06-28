@@ -30,7 +30,7 @@
 # define QCS_OK                     (0)
 
 # define QCS_IS_DEFAULT_POLICY( aColumn ) \
-    ( ( (aColumn)->policy[0] == '\0' ) ? ID_TRUE : ID_FALSE )
+    ( ( (aColumn)->mColumnAttr.mEncAttr.mPolicy[0] == '\0' ) ? ID_TRUE : ID_FALSE )
 
 # if defined(VC_WIN32) || defined(VC_WIN64)
 #  define QCS_API  __stdcall
@@ -54,7 +54,7 @@ class qcsModule
 private:
     
     //-------------------------------------------------
-    // ì•”ë³µí˜¸í™” í•¨ìˆ˜
+    // ¾Ïº¹È£È­ ÇÔ¼ö
     //-------------------------------------------------
     
     static IDE_RC encrypt( mtcEncryptInfo * aInfo,
@@ -78,7 +78,7 @@ private:
                              UShort     * aCipherSize );
     
     //--------------------------------------------------
-    // ê¸°íƒ€í•¨ìˆ˜
+    // ±âÅ¸ÇÔ¼ö
     //--------------------------------------------------
 
     static IDE_RC byteToString( UChar   * aByte,
@@ -94,7 +94,7 @@ private:
 public:
 
     //-------------------------------------------------
-    // ì´ˆê¸°í™” í•¨ìˆ˜
+    // ÃÊ±âÈ­ ÇÔ¼ö
     //-------------------------------------------------
 
     static IDE_RC initialize( void );
@@ -102,14 +102,14 @@ public:
     static IDE_RC finalize( void );
     
     //--------------------------------------------------
-    // [ë³´ì•ˆ ëª¨ë“ˆ ì´ˆê¸°í™” ìˆœì„œ]
-    // 1. openModule (ëª¨ë“ˆ open)
-    // 2. verifyModule (ëª¨ë“ˆì— ë”°ë¥¸ ì¸ì¦)
-    // 3. initializeModule (ëª¨ë“ˆì— ë”°ë¥¸ ì´ˆê¸°í™”, ECC policy ê²€ì‚¬)
+    // [º¸¾È ¸ğµâ ÃÊ±âÈ­ ¼ø¼­]
+    // 1. openModule (¸ğµâ open)
+    // 2. verifyModule (¸ğµâ¿¡ µû¸¥ ÀÎÁõ)
+    // 3. initializeModule (¸ğµâ¿¡ µû¸¥ ÃÊ±âÈ­, ECC policy °Ë»ç)
     //--------------------------------------------------
 
     //--------------------------------------------------
-    // ë³´ì•ˆ ëª¨ë“ˆì˜ ì´ˆê¸°í™” í•¨ìˆ˜
+    // º¸¾È ¸ğµâÀÇ ÃÊ±âÈ­ ÇÔ¼ö
     //--------------------------------------------------
 
     static IDE_RC openModule( SChar  * aModule,
@@ -124,7 +124,7 @@ public:
     static IDE_RC finalizeModule( void );
 
     //--------------------------------------------------
-    // ë³´ì•ˆ ëª¨ë“ˆì˜ ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
+    // º¸¾È ¸ğµâÀÇ ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
     //--------------------------------------------------
     
     static IDE_RC getModuleName( SChar  * aModuleName );
@@ -134,7 +134,7 @@ public:
     static idBool isInitialized( void );
     
     //--------------------------------------------------
-    // ë³´ì•ˆ ë©”íƒ€ ê²€ì¦ í•¨ìˆ˜
+    // º¸¾È ¸ŞÅ¸ °ËÁõ ÇÔ¼ö
     //--------------------------------------------------
 
     static IDE_RC getECCPolicyName( SChar  * aECCPolicyName );
@@ -156,7 +156,7 @@ public:
                                     idBool * aIsValid );
     
     //--------------------------------------------------
-    // ë³´ì•ˆ ëª¨ë“ˆì˜ policy ê´€ë ¨ í•¨ìˆ˜
+    // º¸¾È ¸ğµâÀÇ policy °ü·Ã ÇÔ¼ö
     //--------------------------------------------------
 
     static IDE_RC getPolicyInfo( SChar   * aPolicyName,
@@ -186,7 +186,7 @@ public:
                                      SChar  * aColumnName );
 
     //-------------------------------------------------
-    // ë³´ì•ˆ ê¶Œí•œ ì²´í¬ í•¨ìˆ˜ 
+    // º¸¾È ±ÇÇÑ Ã¼Å© ÇÔ¼ö 
     //-------------------------------------------------
     
     // BUG-26877
@@ -199,7 +199,7 @@ public:
                                           idBool               * aIsValid );
 
     //-------------------------------------------------
-    // MTì—ì„œ ì•”ë³µí˜¸í™”ì‹œ ì‚¬ìš©ë˜ëŠ” callback í•¨ìˆ˜
+    // MT¿¡¼­ ¾Ïº¹È£È­½Ã »ç¿ëµÇ´Â callback ÇÔ¼ö
     //-------------------------------------------------
     
     static IDE_RC encryptCallback( mtcEncryptInfo  * aEncryptInfo,
@@ -231,7 +231,7 @@ public:
                                       mtcECCInfo  * aInfo );
 
     //-------------------------------------------------
-    // QPì—ì„œ ì•”ë³µí˜¸í™”ì‹œ ì‚¬ìš©ë˜ëŠ” í•¨ìˆ˜
+    // QP¿¡¼­ ¾Ïº¹È£È­½Ã »ç¿ëµÇ´Â ÇÔ¼ö
     //-------------------------------------------------
     
     static IDE_RC getEncryptInfo( qcStatement          * aStatement,
@@ -239,7 +239,7 @@ public:
                                   UInt                   aColumnOrder,
                                   mtcEncryptInfo       * aEncryptInfo );
 
-    // add columnì€ tableInfoì— ì»¬ëŸ¼ì´ ì—†ìœ¼ë¯€ë¡œ column orderê°€ ì—†ë‹¤.
+    // add columnÀº tableInfo¿¡ ÄÃ·³ÀÌ ¾øÀ¸¹Ç·Î column order°¡ ¾ø´Ù.
     static IDE_RC getEncryptInfo( qcStatement          * aStatement,
                                   struct qcmTableInfo  * aTableInfo,
                                   struct qcmColumn     * aColumn,
@@ -270,7 +270,7 @@ public:
                                  void                 * aDestValue );
     
     //-------------------------------------------------
-    // í•´ì‰¬í•¨ìˆ˜
+    // ÇØ½¬ÇÔ¼ö
     //-------------------------------------------------
 
     static IDE_RC hashB64( SChar  * aHashType,

@@ -17,24 +17,22 @@
 
 package Altibase.jdbc.driver.sharding.core;
 
-import Altibase.jdbc.driver.cm.CmProtocolContextShardConnect;
-
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.Calendar;
 
 /**
- *  java.sql.CallableStatement ì¸í„°í˜ì´ìŠ¤ ì¤‘ ì¼ë¶€ë¥¼ êµ¬í˜„í•˜ë©° ë‚´ë¶€ì ìœ¼ë¡œ ì„œë²„ì‚¬ì´ë“œìš© CallableStatementë¥¼
- *  ì´ìš©í•´ ì¿¼ë¦¬ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *  java.sql.CallableStatement ÀÎÅÍÆäÀÌ½º Áß ÀÏºÎ¸¦ ±¸ÇöÇÏ¸ç ³»ºÎÀûÀ¸·Î ¼­¹ö»çÀÌµå¿ë CallableStatement¸¦
+ *  ÀÌ¿ëÇØ Äõ¸®¸¦ ¼öÇàÇÑ´Ù.
  */
 public class ServerSideShardingCallableStatement extends ServerSideShardingPreparedStatement implements InternalShardingCallableStatement
 {
     private CallableStatement mServerSideCallableStmt;
 
     public ServerSideShardingCallableStatement(CallableStatement aServerSideCallableStmt,
-                                               CmProtocolContextShardConnect aShardContextConnect)
+                                               AltibaseShardingConnection aMetaConn)
     {
-        super(aServerSideCallableStmt, aShardContextConnect);
+        super(aServerSideCallableStmt, aMetaConn);
         mServerSideCallableStmt = aServerSideCallableStmt;
     }
 

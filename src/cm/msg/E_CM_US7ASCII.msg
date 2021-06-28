@@ -40,8 +40,8 @@ SECTION = 7
 # *Action: Contact Altibase's Support Center (http://support.altibase.com).
 
 4, cmERR_ABORT_INVALID_OPERATION = Invalid operation
-# *Cause: Internal error.
-# *Action: Contact Altibase's Support Center (http://support.altibase.com).
+# *Cause: Client version is higher than Server version or internal error occurs while interpreting protocol.
+# *Action: Make sure Client version is same or lower than Server version or contact Altibase's Support Center (http://support.altibase.com).
 
 5, cmERR_ABORT_INVALID_LINK_TYPE = Invalid link type
 # *Cause: Internal error.
@@ -107,7 +107,7 @@ SECTION = 7
 # *Cause: Failed to invoke the poll() system function. This is a system call error.
 # *Action: Contact Altibase's Support Center (http://support.altibase.com).
 
-21, cmERR_ABORT_SELECT_ERROR = Failed to invoke the select() system function
+21, cmERR_ABORT_SELECT_ERROR = Failed to invoke the select() system function, socket_no=<0%d>
 # *Cause: Failed to invoke the select() system function. This is a system call error.
 # *Action: Contact Altibase's Support Center (http://support.altibase.com).
 
@@ -615,5 +615,9 @@ CM_TRC_DUMP_PACKET_HEADER = "# HeaderSign    = <%u>\n"
                             "# DataSize      = <%u>\n";
 
 CM_TRC_DUMP_PACKET_PAYLOAD = "# BLOCK PAYLOAD FROM <%u> TO <%u>";
+
+CM_TRC_COMPRESS_TYPE_ERROR = "Invalid send compress type : <%d>\n";
+
+CM_TRC_DECOMPRESS_TYPE_ERROR = "Invalid receive decompress type : <%d>\n";
 
 INTERNAL_TRACE_MESSAGE_END

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtvDouble2Interval.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtvDouble2Interval.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -132,7 +132,7 @@ IDE_RC mtvCalculate_Double2Interval( mtcNode*,
         sInterval->microsecond = (SLong)sIntegralPart;
 
         // BUG-40967
-        // ì˜¤ì°¨ ë³´ì • (ë°˜ì˜¬ë¦¼)
+        // ¿ÀÂ÷ º¸Á¤ (¹Ý¿Ã¸²)
         if ( sFractionalPart >= 0.5 )
         {
             sInterval->microsecond++;

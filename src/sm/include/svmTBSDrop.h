@@ -27,43 +27,43 @@
 
 
 /*
-  [Volatile] Drop Tablespaceì˜ êµ¬í˜„
+  [Volatile] Drop TablespaceÀÇ ±¸Çö
   
-  ì°¸ê³ > svm ëª¨ë“ˆ ì•ˆì˜ ì†ŒìŠ¤ëŠ” ë‹¤ìŒê³¼ ê°™ì´ Layeringë˜ì–´ ìˆë‹¤.
+  Âü°í> svm ¸ğµâ ¾ÈÀÇ ¼Ò½º´Â ´ÙÀ½°ú °°ÀÌ LayeringµÇ¾î ÀÖ´Ù.
   ----------------------------------------------------------------------------
-  svmTBSCreate          ; Create Tablespace êµ¬í˜„
-  svmTBSDrop            ; Drop Tablespace êµ¬í˜„
-  svmTBSAlterAutoExtend ; Alter Tablespace Auto Extend êµ¬í˜„
-  svmTBSStartupShutdown ; Startup, Shutdownì‹œì˜ Tablespaceê´€ë ¨ ì²˜ë¦¬ë¥¼ êµ¬í˜„
+  svmTBSCreate          ; Create Tablespace ±¸Çö
+  svmTBSDrop            ; Drop Tablespace ±¸Çö
+  svmTBSAlterAutoExtend ; Alter Tablespace Auto Extend ±¸Çö
+  svmTBSStartupShutdown ; Startup, Shutdown½ÃÀÇ Tablespace°ü·Ã Ã³¸®¸¦ ±¸Çö
   ----------------------------------------------------------------------------
-  svmManager       ; Tablespaceì˜ ë‚´ë¶€ êµ¬í˜„ 
-  svmFPLManager    ; Tablespace Free Page Listì˜ ë‚´ë¶€ êµ¬í˜„
-  svmExpandChunk   ; Chunkì˜ ë‚´ë¶€êµ¬ì¡° êµ¬í˜„
+  svmManager       ; TablespaceÀÇ ³»ºÎ ±¸Çö 
+  svmFPLManager    ; Tablespace Free Page ListÀÇ ³»ºÎ ±¸Çö
+  svmExpandChunk   ; ChunkÀÇ ³»ºÎ±¸Á¶ ±¸Çö
   ----------------------------------------------------------------------------
  */
 class svmTBSDrop
 {
 public :
-    // ìƒì„±ì (ì•„ë¬´ê²ƒë„ ì•ˆí•¨)
+    // »ı¼ºÀÚ (¾Æ¹«°Íµµ ¾ÈÇÔ)
     svmTBSDrop();
 
         
-    // ì‚¬ìš©ì í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ë¥¼ DROPí•œë‹¤.
+    // »ç¿ëÀÚ Å×ÀÌºí ½ºÆäÀÌ½º¸¦ DROPÇÑ´Ù.
     static IDE_RC dropTBS(void       * aTrans,
                           svmTBSNode * aTBSNode);
     
-    // ë©”ëª¨ë¦¬ í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ë¥¼ DROPí•œë‹¤.
+    // ¸Ş¸ğ¸® Å×ÀÌºí ½ºÆäÀÌ½º¸¦ DROPÇÑ´Ù.
     static IDE_RC dropTableSpace(void       * aTrans,
                                  svmTBSNode * aTBSNode );
 
-    // Tablespaceë¥¼ DROPí•œ Txê°€ Commitë˜ì—ˆì„ ë•Œ ë¶ˆë¦¬ëŠ” Pendingí•¨ìˆ˜
+    // Tablespace¸¦ DROPÇÑ Tx°¡ CommitµÇ¾úÀ» ¶§ ºÒ¸®´Â PendingÇÔ¼ö
     static IDE_RC dropTableSpacePending( idvSQL*             aStatistics,
                                          sctTableSpaceNode * aTBSNode,
                                          sctPendingOp      * aPendingOp );
 
 
 private :
-    // Tablespaceì˜ ìƒíƒœë¥¼ DROPPEDë¡œ ì„¤ì •í•˜ê³  Log Anchorì— Flush!
+    // TablespaceÀÇ »óÅÂ¸¦ DROPPED·Î ¼³Á¤ÇÏ°í Log Anchor¿¡ Flush!
     static IDE_RC flushTBSStatusDropped( sctTableSpaceNode * aSpaceNode );
 
 };

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpdTransTbl.h 84317 2018-11-12 00:39:24Z minku.kang $
+ * $Id: rpdTransTbl.h 90444 2021-04-02 10:15:58Z minku.kang $
  **********************************************************************/
 
 #ifndef _O_RPD_TRANSTBL_H_
@@ -29,21 +29,18 @@
 #include <rpdLogAnalyzer.h>
 #include <rprSNMapMgr.h>
 
-#define RPD_TRANSTBL_USE_MASK      0x00000001
-#define RPD_TRANSTBL_USE_RECEIVER  0x00000000
-#define RPD_TRANSTBL_USE_SENDER    0x00000001
-
-typedef struct rpdTrans
+typedef enum rpdTransPoolType
 {
-    smiTrans     mSmiTrans;
-    iduListNode  mNode;
-} rpdTrans;
+    RPD_TRANSTBL_USING_TRANS_POOL = 0,
+    RPD_TRANSTBL_USING_LOG_ANALYZER,
+    RPD_TRANSTBL_USING_MEMORY_ALLOC
+} rpdTransPoolType;
 
 class rpdTransEntry
 {
 public:
-    rpdTrans      * mRpdTrans;
-    rpdTrans      * mTransForConflictResolution;
+    smiTransNode  * mRpdTrans;
+    smiTransNode  * mTransForConflictResolution;
     UInt            mStatus;
     idBool          mSetPSMSavepoint;
     rpdTransEntry * mNext;
@@ -66,7 +63,7 @@ typedef struct rpdItemMetaEntry
 {
     smiTableMeta  mItemMeta;
     void         *mLogBody;
-
+    smSN          mLogSN;
     iduListNode   mNode;
 } rpdItemMetaEntry;
 
@@ -87,34 +84,38 @@ typedef struct rpdSavepointEntry
 
 typedef struct rpdTransTblNode
 {
-    SChar             *mRepName;        // Performace View ì „ìš©
+    SChar             *mRepName;        // Performace View Àü¿ë
     RP_SENDER_TYPE     mCurrentType;    // START_FLAG
     smTID              mRemoteTID;
-    smTID              mMyTID;          // Performace View ì „ìš©
+    smTID              mMyTID;          // Performace View Àü¿ë
     idBool             mBeginFlag;
     idBool             mAbortFlag;
-    idBool             mSkipLobLogFlag; /* BUG-21858 DML + LOB ì²˜ë¦¬ */
-    idBool             mSendLobLogFlag; /* BUG-24398 LOB Cursor Openì˜ Table OIDë¥¼ í™•ì¸ */
+    idBool             mSkipLobLogFlag; /* BUG-21858 DML + LOB Ã³¸® */
+    idBool             mSendLobLogFlag; /* BUG-24398 LOB Cursor OpenÀÇ Table OID¸¦ È®ÀÎ */
     smSN               mBeginSN;
-    smSN               mAbortSN;        /* Abort ìƒíƒœë¡œ ë§Œë“  XLogì˜ SN */
-    UInt               mTxListIdx;      /* Abort/Clear Transaction List ë‚´ì˜ ìœ„ì¹˜ */
+    smSN               mAbortSN;        /* Abort »óÅÂ·Î ¸¸µç XLogÀÇ SN */
+    UInt               mTxListIdx;      /* Abort/Clear Transaction List ³»ÀÇ À§Ä¡ */
     rpdLogAnalyzer    *mLogAnlz;
     rpdTransEntry      mTrans;
     rpdLOBLocEntry     mLocHead;
     rprSNMapEntry     *mSNMapEntry;     //proj-1608 recovery from replication
 
-    // PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+    // PROJ-1442 Replication Online Áß DDL Çã¿ë
     idBool             mIsDDLTrans;
     iduList            mItemMetaList;
 
     rpdDDLStmtMetaLog *mDDLStmtMetaLog;
-    // BUG-28206 ë¶ˆí•„ìš”í•œ Transaction Beginì„ ë°©ì§€
+    // BUG-28206 ºÒÇÊ¿äÇÑ Transaction BeginÀ» ¹æÁö
     iduList            mSvpList;
     rpdSavepointEntry *mPSMSvp;
     idBool             mIsSvpListSent;
 
     SInt               mParallelID;
     idBool             mIsConflict;
+    idBool             mSendBeginFlag;
+
+    smTID              mGlobalTxID;
+    smSN               mGlobalTxAckSN;
 } rpdTransTblNode;
 
 class rpdTransTbl
@@ -124,24 +125,24 @@ public:
     rpdTransTbl();
     ~rpdTransTbl();
 
-    /* ì´ˆê¸°í™” ë£¨í‹´ */
-    IDE_RC         initialize( SInt aFlag, UInt aTransactionPoolSize );
-    /* ì†Œë©¸ì */
+    /* ÃÊ±âÈ­ ·çÆ¾ */
+    IDE_RC         initialize( rpdTransPoolType aType, UInt aTransactionPoolSize );
+    /* ¼Ò¸êÀÚ */
     void           destroy();
 
-    /* ìƒˆë¡œìš´ Transactionì„ ì‹œì‘ */
+    /* »õ·Î¿î TransactionÀ» ½ÃÀÛ */
     IDE_RC insertTrans( iduMemAllocator * aAllocator,
                         smTID             aRemoteTID,
                         smSN              aBeginSN,
                         iduMemPool      * aChainedValuePool );
 
-    /* Transactionì„ ì¢…ë£Œ */
+    /* TransactionÀ» Á¾·á */
     void           removeTrans(smTID aRemoteTID);
 
-    /* ëª¨ë“  Active Transactionì„ Rollbackì‹œí‚¨ë‹¤.*/
+    /* ¸ğµç Active TransactionÀ» Rollback½ÃÅ²´Ù.*/
     void           rollbackAllATrans();
 
-    /* Active Transactionì´ ìˆëŠ”ê°€ */
+    /* Active TransactionÀÌ ÀÖ´Â°¡ */
     inline idBool  isThereATrans() 
     { 
         idBool      sRC = ID_FALSE;
@@ -158,14 +159,16 @@ public:
         return sRC;
     }
 
-    /* Beginëœ Transactionì˜ SNì¤‘ì—ì„œ ê°€ì¥ ì‘ì€ SNê°’ì„
+    /* BeginµÈ TransactionÀÇ SNÁß¿¡¼­ °¡Àå ÀÛÀº SN°ªÀ»
        return */
     void           getMinTransFirstSN( smSN * aSN );
 
-    inline idBool  isReceiver() { return ((mFlag & RPD_TRANSTBL_USE_MASK) == RPD_TRANSTBL_USE_RECEIVER) ?
-                                      ID_TRUE : ID_FALSE; }
+    inline rpdTransPoolType transPoolType() { return mTransPoolType; }
 
     inline idBool    isATrans(smTID aRemoteTID);
+    inline void      setGTrans( smTID aRemoteTID );
+    inline idBool    isGTrans( smTID aRemoteTID );
+    inline smiTransNode* getRpdTrans(smTID aRemoteTID);
     inline smiTrans* getSMITrans(smTID aRemoteTID);
     inline void      setBeginFlag(smTID aRemoteTID, idBool aIsBegin);
     inline idBool    getBeginFlag(smTID aRemoteTID);
@@ -180,7 +183,7 @@ public:
     inline void      setAbortInfo(smTID aRemoteTID, idBool aIsAbort, smSN aAbortSN);
     inline UInt      getTxListIdx(smTID aRemoteTID);
     inline void      setTxListIdx(smTID aRemoteTID, UInt aTxListIdx);
-    /* BUG-21858 DML + LOB ì²˜ë¦¬ */
+    /* BUG-21858 DML + LOB Ã³¸® */
     inline idBool    getSkipLobLogFlag(smTID aRemoteTID);
     inline void      setSkipLobLogFlag(smTID aRemoteTID, idBool aSet);
     inline smSN      getBeginSN(smTID aRemoteTID);
@@ -195,13 +198,14 @@ public:
     void             setSNMapEntry(smTID aRemoteTID, rprSNMapEntry  *aSNMapEntry);
     rprSNMapEntry*   getSNMapEntry(smTID aRemoteTID);
 
-    // PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+    // PROJ-1442 Replication Online Áß DDL Çã¿ë
     inline void      setDDLTrans(smTID aTID) { mTransTbl[getTransSlotID(aTID)].mIsDDLTrans = ID_TRUE; }
     inline idBool    isDDLTrans(smTID aTID) { return mTransTbl[getTransSlotID(aTID)].mIsDDLTrans; }
     IDE_RC           addItemMetaEntry(smTID          aTID,
                                       smiTableMeta * aItemMeta,
                                       const void   * aItemMetaLogBody,
-                                      UInt           aItemMetaLogBodySize);
+                                      UInt           aItemMetaLogBodySize,
+                                      smSN           aLogSN);
     void             getFirstItemMetaEntry(smTID               aTID,
                                            rpdItemMetaEntry ** aItemMetaEntry);
     void             removeFirstItemMetaEntry(smTID aTID);
@@ -216,7 +220,7 @@ public:
     void             getDDLStmtMetaLog( smTID aTID, rpdDDLStmtMetaLog ** aDDLStmtMetaLog );
     void             removeDDLStmtMetaLog( smTID aTID );
 
-    // BUG-28206 ë¶ˆí•„ìš”í•œ Transaction Beginì„ ë°©ì§€
+    // BUG-28206 ºÒÇÊ¿äÇÑ Transaction BeginÀ» ¹æÁö
     IDE_RC           addLastSvpEntry(smTID            aTID,
                                      smSN             aSN,
                                      rpSavepointType  aType,
@@ -245,19 +249,29 @@ public:
                                                UInt                      aParallelID,
                                                SInt                      aParallelApplyIndex );
 
-    inline rpdTrans * getTransForConflictResolution( smTID aTID );
+    inline smiTransNode * getTransForConflictResolution( smTID aTID );
     inline smiTrans * getSmiTransForConflictResolution( smTID aTID );
     inline idBool isNullTransForConflictResolution( smTID aTID );
     IDE_RC allocConflictResolutionTransNode( smTID aTID );
-    void removeTransNode( rpdTrans * aRpdTrans );
+    void removeTransNode( smiTransNode * aRpdTrans );
     idBool isSetPSMSavepoint( smTID    aTID );
+
+    void setMyTID(smTID aRemoteTID);
+
+    inline void setSendBeginFlag( smTID aTID, idBool aFlag );
+    inline idBool getSendBeginFlag( smTID aTID );
+
+    inline smTID getRemoteTID( smTID aTID );
+
+    inline void   setGlobalTxAckRecvSN( smTID aTID, smSN aSN );
+    inline smSN   getGlobalTxAckRecvSN( smTID aTID );
 
 /* Member Function */
 private:
     inline void   initTransNode(rpdTransTblNode *aHashNode);
     inline UInt   getTransSlotID(smTID aRemoteTID) { return aRemoteTID % mTblSize; }
 
-    // BUG-28206 ë¶ˆí•„ìš”í•œ Transaction Beginì„ ë°©ì§€
+    // BUG-28206 ºÒÇÊ¿äÇÑ Transaction BeginÀ» ¹æÁö
     void          removeLastImplicitSvpEntries(iduList *aSvpList);
 
     /* BUG-35153 replication receiver performance enhancement 
@@ -266,30 +280,27 @@ private:
     IDE_RC        allocTransNode();
     void          destroyTransPool();
     IDE_RC        initTransPool();
-    IDE_RC        getTransNode(rpdTrans** aRpdTrans);
+    void          initFreeTransList();
+    void          removeFreeTransList();
+    void          removeFreeTransNode( smiTransNode * aTrans );
+    IDE_RC        getTransNode(smiTransNode** aRpdTrans);
 
 /* Member Variable */
 private:
-    /* Replication Transactionì •ë³´ë¥¼ ê°€ì§„
+    /* Replication TransactionÁ¤º¸¸¦ °¡Áø
        Transaction Table */
     rpdTransTblNode     * mTransTbl;
-    /* rpdTransTblì´ Replicationì˜ Receiverì—ì„œ
-       ì‚¬ìš©í•˜ë©´
-       RPD_TRANSTBL_USE_RECEIVER
-       ì•„ë‹ˆë©´
-       RPD_TRANSTBL_USE_SENDER
-    */
-    SInt                  mFlag;
-    /* Active Transactionê°¯ìˆ˜ */
+    rpdTransPoolType      mTransPoolType;
+    /* Active Transaction°¹¼ö */
     volatile SInt         mATransCnt;
     /* Transactin Table Size */
     UInt                  mTblSize;
-    /* LFGì˜ ê°¯ìˆ˜ */
+    /* LFGÀÇ °¹¼ö */
     UInt                  mLFGCount;
     /* Last Commit SN */
     smSN                  mEndSN;
 
-    // BUG-28206 ë¶ˆí•„ìš”í•œ Transaction Beginì„ ë°©ì§€
+    // BUG-28206 ºÒÇÊ¿äÇÑ Transaction BeginÀ» ¹æÁö
     iduMemPool            mSvpPool;
     /* BUG-35153 replication receiver performance enhancement 
      * by sm transaction pre-initialize.
@@ -304,12 +315,12 @@ public:
 };
 
 /***********************************************************************
- * Description : aHashNodeê°€ Active Transactionì˜ ë…¸ë“œì´ë©´ ID_TRUE, ì•„ë‹ˆë©´
+ * Description : aHashNode°¡ Active TransactionÀÇ ³ëµåÀÌ¸é ID_TRUE, ¾Æ´Ï¸é
  *               ID_FALSE.
- *               BeginSNì€ senderë§Œ setí•˜ê³ 
- *               ì´ í•¨ìˆ˜ëŠ” sender threadë§Œ í˜¸ì¶œí•˜ë¯€ë¡œ mutexë¥¼ ì¡ì§€ ì•ŠìŒ
- *               receiverëŠ” ë‹¤ë¥¸ threadì™€ ë™ì‹œì— BeginSNì„ ì ‘ê·¼í•˜ì§€ ì•ŠìŒ
- * aHashNode  - [IN] í…ŒìŠ¤íŠ¸ë¥¼ ìˆ˜í–‰í•  rpdTransTblNode
+ *               BeginSNÀº sender¸¸ setÇÏ°í
+ *               ÀÌ ÇÔ¼ö´Â sender thread¸¸ È£ÃâÇÏ¹Ç·Î mutex¸¦ ÀâÁö ¾ÊÀ½
+ *               receiver´Â ´Ù¸¥ thread¿Í µ¿½Ã¿¡ BeginSNÀ» Á¢±ÙÇÏÁö ¾ÊÀ½
+ * aHashNode  - [IN] Å×½ºÆ®¸¦ ¼öÇàÇÒ rpdTransTblNode
  *
  **********************************************************************/
 idBool rpdTransTbl::isATransNode(rpdTransTblNode *aHashNode)
@@ -318,12 +329,12 @@ idBool rpdTransTbl::isATransNode(rpdTransTblNode *aHashNode)
 }
 
 /***********************************************************************
- * Description : aRemoteTIDê°€ ê°€ë¦¬í‚¤ëŠ” Transaction Slotì´ Active Transactionì˜
- *               ë…¸ë“œì´ë©´ ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE.
- *               BeginSNì€ senderë§Œ setí•˜ê³ 
- *               ì´ í•¨ìˆ˜ëŠ” sender threadë§Œ í˜¸ì¶œí•˜ë¯€ë¡œ mutexë¥¼ ì¡ì§€ ì•ŠìŒ
- *               receiverëŠ” ë‹¤ë¥¸ threadì™€ ë™ì‹œì— BeginSNì„ ì ‘ê·¼í•˜ì§€ ì•ŠìŒ
- * aRemoteTID  - [IN] í…ŒìŠ¤íŠ¸ë¥¼ ìˆ˜í–‰í•  Transaction ID
+ * Description : aRemoteTID°¡ °¡¸®Å°´Â Transaction SlotÀÌ Active TransactionÀÇ
+ *               ³ëµåÀÌ¸é ID_TRUE, ¾Æ´Ï¸é ID_FALSE.
+ *               BeginSNÀº sender¸¸ setÇÏ°í
+ *               ÀÌ ÇÔ¼ö´Â sender thread¸¸ È£ÃâÇÏ¹Ç·Î mutex¸¦ ÀâÁö ¾ÊÀ½
+ *               receiver´Â ´Ù¸¥ thread¿Í µ¿½Ã¿¡ BeginSNÀ» Á¢±ÙÇÏÁö ¾ÊÀ½
+ * aRemoteTID  - [IN] Å×½ºÆ®¸¦ ¼öÇàÇÒ Transaction ID
  *
  **********************************************************************/
 inline idBool rpdTransTbl::isATrans(smTID aRemoteTID)
@@ -332,11 +343,40 @@ inline idBool rpdTransTbl::isATrans(smTID aRemoteTID)
     return isATransNode( &(mTransTbl[sIndex]) );
 }
 
+inline void rpdTransTbl::setGTrans( smTID aRemoteTID )
+{
+    SInt sIndex = getTransSlotID(aRemoteTID);
+    mTransTbl[sIndex].mGlobalTxID = aRemoteTID;
+}
+
+inline idBool rpdTransTbl::isGTrans( smTID aRemoteTID )
+{
+    idBool sIsGTrans = ID_FALSE;
+    SInt   sIndex    = getTransSlotID(aRemoteTID);
+
+    if ( mTransTbl[sIndex].mGlobalTxID == aRemoteTID )
+    {
+        sIsGTrans = ID_TRUE;
+    }
+    else
+    {
+        sIsGTrans = ID_FALSE;
+    }
+
+    return sIsGTrans;
+}
+
+inline smiTransNode* rpdTransTbl::getRpdTrans(smTID aRemoteTID)
+{
+    SInt sIndex = getTransSlotID(aRemoteTID);
+    return mTransTbl[sIndex].mTrans.mRpdTrans;
+}
+
 /***********************************************************************
- * Description : aRemoteTIDì— í•´ë‹¹í•˜ëŠ” Transaction Slotì„ ì°¾ì•„ì„œ smiTransë¥¼
- *               returní•œë‹¤.
+ * Description : aRemoteTID¿¡ ÇØ´çÇÏ´Â Transaction SlotÀ» Ã£¾Æ¼­ smiTrans¸¦
+ *               returnÇÑ´Ù.
  *
- * aRemoteTID  - [IN] ì°¾ì•„ì•¼ í•  Transaction ID
+ * aRemoteTID  - [IN] Ã£¾Æ¾ß ÇÒ Transaction ID
  *
  **********************************************************************/
 inline smiTrans* rpdTransTbl::getSMITrans(smTID aRemoteTID)
@@ -345,9 +385,9 @@ inline smiTrans* rpdTransTbl::getSMITrans(smTID aRemoteTID)
     return &(mTransTbl[sIndex].mTrans.mRpdTrans->mSmiTrans);
 }
 /***********************************************************************
- * Description : aRemoteTIDì— í•´ë‹¹í•˜ëŠ” Transaction Slotì„ ì°¾ì•„ì„œ
- *               mBeginFlagì„ aIsBeginìœ¼ë¡œ í•œë‹¤.
- * aRemoteTID  - [IN] ì°¾ì•„ì•¼ í•  Transaction ID
+ * Description : aRemoteTID¿¡ ÇØ´çÇÏ´Â Transaction SlotÀ» Ã£¾Æ¼­
+ *               mBeginFlagÀ» aIsBeginÀ¸·Î ÇÑ´Ù.
+ * aRemoteTID  - [IN] Ã£¾Æ¾ß ÇÒ Transaction ID
  * aIsBegin    - [IN] Begin Flag Value.
  *
  **********************************************************************/
@@ -357,10 +397,10 @@ inline void rpdTransTbl::setBeginFlag(smTID aRemoteTID, idBool aIsBegin)
     mTransTbl[sIndex].mBeginFlag = aIsBegin;
 }
 /***********************************************************************
- * Description : aRemoteTIDì— í•´ë‹¹í•˜ëŠ” Transaction Slotì„ ì°¾ì•„ì„œ
- *               Abort Transaction ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
- *               Sender Applyì™€ Service threadê°€ Sender Infoë¥¼ í†µí•´ ê³µìœ í•œë‹¤.
- * aRemoteTID  - [IN] ì°¾ì•„ì•¼ í•  Transaction ID
+ * Description : aRemoteTID¿¡ ÇØ´çÇÏ´Â Transaction SlotÀ» Ã£¾Æ¼­
+ *               Abort Transaction Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
+ *               Sender Apply¿Í Service thread°¡ Sender Info¸¦ ÅëÇØ °øÀ¯ÇÑ´Ù.
+ * aRemoteTID  - [IN] Ã£¾Æ¾ß ÇÒ Transaction ID
  * aIsAbort    - [IN] Abort Flag Value
  * aAbortSN    - [IN] Abort SN Value
  **********************************************************************/
@@ -373,9 +413,9 @@ inline void rpdTransTbl::setAbortInfo(smTID  aRemoteTID,
     mTransTbl[sIndex].mAbortSN   = aAbortSN;
 }
 /***********************************************************************
- * Description : aRemoteTIDì— í•´ë‹¹í•˜ëŠ” Transaction Slotì„ ì°¾ì•„ì„œ
- *               mAbortFlagê°€ Setë˜ì–´ ìˆëŠ”ì§€ ë°˜í™˜í•œë‹¤.
- * aRemoteTID  - [IN] ì°¾ì•„ì•¼ í•  Transaction ID
+ * Description : aRemoteTID¿¡ ÇØ´çÇÏ´Â Transaction SlotÀ» Ã£¾Æ¼­
+ *               mAbortFlag°¡ SetµÇ¾î ÀÖ´ÂÁö ¹İÈ¯ÇÑ´Ù.
+ * aRemoteTID  - [IN] Ã£¾Æ¾ß ÇÒ Transaction ID
  **********************************************************************/
 inline idBool rpdTransTbl::getAbortFlag(smTID aRemoteTID)
 {
@@ -383,9 +423,9 @@ inline idBool rpdTransTbl::getAbortFlag(smTID aRemoteTID)
     return mTransTbl[sIndex].mAbortFlag;
 }
 /***********************************************************************
- * Description : aRemoteTIDì— í•´ë‹¹í•˜ëŠ” Transaction Slotì„ ì°¾ì•„ì„œ
- *               mAbortSNì„ ë°˜í™˜í•œë‹¤.
- * aRemoteTID  - [IN] ì°¾ì•„ì•¼ í•  Transaction ID
+ * Description : aRemoteTID¿¡ ÇØ´çÇÏ´Â Transaction SlotÀ» Ã£¾Æ¼­
+ *               mAbortSNÀ» ¹İÈ¯ÇÑ´Ù.
+ * aRemoteTID  - [IN] Ã£¾Æ¾ß ÇÒ Transaction ID
  *
  **********************************************************************/
 inline smSN rpdTransTbl::getAbortSN(smTID aRemoteTID)
@@ -394,10 +434,10 @@ inline smSN rpdTransTbl::getAbortSN(smTID aRemoteTID)
     return mTransTbl[sIndex].mAbortSN;
 }
 /***********************************************************************
- * Description : aRemoteTIDì— í•´ë‹¹í•˜ëŠ” Transaction Slotì„ ì°¾ì•„ì„œ
- *               Abort/Clear Tx List ë‚´ì˜ ìœ„ì¹˜ë¥¼ ì„¤ì •í•œë‹¤.
- * aRemoteTID  - [IN] ì°¾ì•„ì•¼ í•  Transaction ID
- * aTxListIdx  - [IN] Abort/Clear Tx List ë‚´ì˜ ìœ„ì¹˜
+ * Description : aRemoteTID¿¡ ÇØ´çÇÏ´Â Transaction SlotÀ» Ã£¾Æ¼­
+ *               Abort/Clear Tx List ³»ÀÇ À§Ä¡¸¦ ¼³Á¤ÇÑ´Ù.
+ * aRemoteTID  - [IN] Ã£¾Æ¾ß ÇÒ Transaction ID
+ * aTxListIdx  - [IN] Abort/Clear Tx List ³»ÀÇ À§Ä¡
  **********************************************************************/
 inline void rpdTransTbl::setTxListIdx(smTID aRemoteTID, UInt aTxListIdx)
 {
@@ -405,9 +445,9 @@ inline void rpdTransTbl::setTxListIdx(smTID aRemoteTID, UInt aTxListIdx)
     mTransTbl[sIndex].mTxListIdx = aTxListIdx;
 }
 /***********************************************************************
- * Description : aRemoteTIDì— í•´ë‹¹í•˜ëŠ” Transaction Slotì„ ì°¾ì•„ì„œ
- *               Abort/Clear Tx List ë‚´ì˜ ìœ„ì¹˜ë¥¼ ë°˜í™˜í•œë‹¤.
- * aRemoteTID  - [IN] ì°¾ì•„ì•¼ í•  Transaction ID
+ * Description : aRemoteTID¿¡ ÇØ´çÇÏ´Â Transaction SlotÀ» Ã£¾Æ¼­
+ *               Abort/Clear Tx List ³»ÀÇ À§Ä¡¸¦ ¹İÈ¯ÇÑ´Ù.
+ * aRemoteTID  - [IN] Ã£¾Æ¾ß ÇÒ Transaction ID
  **********************************************************************/
 inline UInt rpdTransTbl::getTxListIdx(smTID aRemoteTID)
 {
@@ -415,7 +455,7 @@ inline UInt rpdTransTbl::getTxListIdx(smTID aRemoteTID)
     return mTransTbl[sIndex].mTxListIdx;
 }
 
-/* BUG-21858 DML + LOB ì²˜ë¦¬ */
+/* BUG-21858 DML + LOB Ã³¸® */
 inline void rpdTransTbl::setSkipLobLogFlag(smTID aRemoteTID, idBool aSet)
 {
     SInt sIndex = getTransSlotID(aRemoteTID);
@@ -428,9 +468,9 @@ inline idBool rpdTransTbl::getSkipLobLogFlag(smTID aRemoteTID)
 }
 
 /***********************************************************************
- * Description : aRemoteTIDì— í•´ë‹¹í•˜ëŠ” Transaction Slotì„ ì°¾ì•„ì„œ
- *               mBeginFlagì„ return í•œë‹¤.
- * aRemoteTID  - [IN] ì°¾ì•„ì•¼ í•  Transaction ID
+ * Description : aRemoteTID¿¡ ÇØ´çÇÏ´Â Transaction SlotÀ» Ã£¾Æ¼­
+ *               mBeginFlagÀ» return ÇÑ´Ù.
+ * aRemoteTID  - [IN] Ã£¾Æ¾ß ÇÒ Transaction ID
  *
  **********************************************************************/
 inline idBool rpdTransTbl::getBeginFlag(smTID aRemoteTID)
@@ -440,9 +480,9 @@ inline idBool rpdTransTbl::getBeginFlag(smTID aRemoteTID)
 }
 
 /***********************************************************************
- * Description : aRemoteTIDì— í•´ë‹¹í•˜ëŠ” Transaction Slotì„ ì°¾ì•„ì„œ
- *               mLogAnlzì„ return í•œë‹¤.
- * aRemoteTID  - [IN] ì°¾ì•„ì•¼ í•  Transaction ID
+ * Description : aRemoteTID¿¡ ÇØ´çÇÏ´Â Transaction SlotÀ» Ã£¾Æ¼­
+ *               mLogAnlzÀ» return ÇÑ´Ù.
+ * aRemoteTID  - [IN] Ã£¾Æ¾ß ÇÒ Transaction ID
  *
  **********************************************************************/
 inline rpdLogAnalyzer* rpdTransTbl::getLogAnalyzer(smTID aRemoteTID)
@@ -452,9 +492,9 @@ inline rpdLogAnalyzer* rpdTransTbl::getLogAnalyzer(smTID aRemoteTID)
 }
 
 /***********************************************************************
- * Description : aRemoteTIDì— í•´ë‹¹í•˜ëŠ” Transaction Slotì„ ì°¾ì•„ì„œ
- *               mBeginSNì„ return í•œë‹¤.
- * aRemoteTID  - [IN] ì°¾ì•„ì•¼ í•  Transaction ID
+ * Description : aRemoteTID¿¡ ÇØ´çÇÏ´Â Transaction SlotÀ» Ã£¾Æ¼­
+ *               mBeginSNÀ» return ÇÑ´Ù.
+ * aRemoteTID  - [IN] Ã£¾Æ¾ß ÇÒ Transaction ID
  *
  **********************************************************************/
 inline smSN rpdTransTbl::getBeginSN(smTID aRemoteTID)
@@ -463,9 +503,9 @@ inline smSN rpdTransTbl::getBeginSN(smTID aRemoteTID)
     return mTransTbl[sIndex].mBeginSN;
 }
 /***********************************************************************
- * Description : aRemoteTIDì— í•´ë‹¹í•˜ëŠ” Transaction Slotì„ ì°¾ì•„ì„œ
- *               mSNMapEntryë¥¼ Set í•œë‹¤.
- * aRemoteTID  - [IN] ì°¾ì•„ì•¼ í•  Transaction ID
+ * Description : aRemoteTID¿¡ ÇØ´çÇÏ´Â Transaction SlotÀ» Ã£¾Æ¼­
+ *               mSNMapEntry¸¦ Set ÇÑ´Ù.
+ * aRemoteTID  - [IN] Ã£¾Æ¾ß ÇÒ Transaction ID
  * aIsAbort    - [IN] aSNMapEntry.
  **********************************************************************/
 inline void rpdTransTbl::setSNMapEntry(smTID aRemoteTID, rprSNMapEntry  *aSNMapEntry)
@@ -492,9 +532,9 @@ inline idBool rpdTransTbl::getSendLobLogFlag(smTID aRemoteTID)
 }
 
 /***********************************************************************
- * Description : aRemoteTIDì— í•´ë‹¹í•˜ëŠ” Transaction Slotì„ ì°¾ì•„ì„œ
- *               mIsSvpListSentë¥¼ ID_TRUEë¡œ ì„¤ì •í•œë‹¤.
- * aRemoteTID  - [IN] ì°¾ì•„ì•¼ í•  Transaction ID
+ * Description : aRemoteTID¿¡ ÇØ´çÇÏ´Â Transaction SlotÀ» Ã£¾Æ¼­
+ *               mIsSvpListSent¸¦ ID_TRUE·Î ¼³Á¤ÇÑ´Ù.
+ * aRemoteTID  - [IN] Ã£¾Æ¾ß ÇÒ Transaction ID
  *
  **********************************************************************/
 inline void rpdTransTbl::setSvpListSent(smTID aRemoteTID)
@@ -504,9 +544,9 @@ inline void rpdTransTbl::setSvpListSent(smTID aRemoteTID)
 }
 
 /***********************************************************************
- * Description : aRemoteTIDì— í•´ë‹¹í•˜ëŠ” Transaction Slotì„ ì°¾ì•„ì„œ
- *               mIsSvpListSentë¥¼ ë°˜í™˜í•œë‹¤.
- * aRemoteTID  - [IN] ì°¾ì•„ì•¼ í•  Transaction ID
+ * Description : aRemoteTID¿¡ ÇØ´çÇÏ´Â Transaction SlotÀ» Ã£¾Æ¼­
+ *               mIsSvpListSent¸¦ ¹İÈ¯ÇÑ´Ù.
+ * aRemoteTID  - [IN] Ã£¾Æ¾ß ÇÒ Transaction ID
  *
  **********************************************************************/
 inline idBool rpdTransTbl::isSvpListSent(smTID aRemoteTID)
@@ -525,7 +565,7 @@ inline idBool rpdTransTbl::getIsConflictFlag( smTID aTID )
     return mTransTbl[sIndex].mIsConflict;
 }
 
-inline rpdTrans * rpdTransTbl::getTransForConflictResolution( smTID aTID )
+inline smiTransNode * rpdTransTbl::getTransForConflictResolution( smTID aTID )
 {
     SInt sIndex = getTransSlotID( aTID );
     return mTransTbl[sIndex].mTrans.mTransForConflictResolution;
@@ -533,7 +573,7 @@ inline rpdTrans * rpdTransTbl::getTransForConflictResolution( smTID aTID )
 
 inline smiTrans * rpdTransTbl::getSmiTransForConflictResolution( smTID aTID )
 {
-    rpdTrans * sTrans = NULL;
+    smiTransNode * sTrans = NULL;
 
     sTrans =  getTransForConflictResolution( aTID );
 
@@ -542,7 +582,7 @@ inline smiTrans * rpdTransTbl::getSmiTransForConflictResolution( smTID aTID )
 
 inline idBool rpdTransTbl::isNullTransForConflictResolution( smTID aTID )
 {
-    rpdTrans * sTrans = getTransForConflictResolution( aTID );
+    smiTransNode * sTrans = getTransForConflictResolution( aTID );
 
     return ( sTrans == NULL ) ? ID_TRUE : ID_FALSE;
 }
@@ -552,6 +592,53 @@ inline idBool rpdTransTbl::isSetPSMSavepoint( smTID    aTID )
     SInt    sIndex = getTransSlotID( aTID );
 
     return mTransTbl[sIndex].mTrans.mSetPSMSavepoint;
+}
+
+inline void rpdTransTbl::setSendBeginFlag( smTID aTID, idBool aFlag )
+{
+    SInt sIndex = getTransSlotID( aTID );
+    mTransTbl[sIndex].mSendBeginFlag = aFlag;
+}
+
+inline idBool rpdTransTbl::getSendBeginFlag( smTID aTID )
+{
+    SInt sIndex = getTransSlotID( aTID );
+    return mTransTbl[sIndex].mSendBeginFlag;
+}
+
+inline smTID rpdTransTbl::getRemoteTID( smTID aTID )
+{
+    SInt sIndex = getTransSlotID( aTID );
+    return mTransTbl[sIndex].mRemoteTID;
+}
+
+inline void rpdTransTbl::setGlobalTxAckRecvSN( smTID aTID, smSN aSN )
+{
+    SInt sIndex = getTransSlotID( aTID );
+ 
+    if ( mTransTbl[sIndex].mGlobalTxID == aTID )
+    {
+        mTransTbl[sIndex].mGlobalTxAckSN = aSN;
+    }
+    else
+    {
+        /* nothing to do */
+        /* Æò¼Ò¿¡´Â ¼­ºñ½º°¡ commit À» ±â´Ù¸®±â ¶§¹®¿¡ ¿©±â ¿ÃÀÏÀÌ ¾øÁö¸¸
+         * Failback ½Ã¿¡´Â ¿©±â¿¡ ¿Ã ¼ö ÀÖ´Ù. */
+    }
+}
+
+inline smSN rpdTransTbl::getGlobalTxAckRecvSN( smTID aTID )
+{
+    SInt sIndex = getTransSlotID( aTID );
+    smSN sSN    = SM_SN_MAX;
+
+    if ( mTransTbl[sIndex].mGlobalTxID == aTID )
+    {
+        sSN =  mTransTbl[sIndex].mGlobalTxAckSN;
+    }
+
+    return sSN;
 }
 
 #endif /* _O_RPD_TRANSTBL_H_ */

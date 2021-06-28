@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfCovarSamp.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfCovarSamp.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -31,11 +31,11 @@
 /**
  * COVAR_SAMP( expr1, expr2 )
  *
- * ê³„ì‚°ì‹ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
+ * °è»ê½ÄÀº ´ÙÀ½°ú °°´Ù.
  *
  * ( SUM( expr1 * expr2 ) - SUM( expr1 ) * SUM( expr2 ) / N ) / ( N - 1 )
  *
- * N ì€ expr1 ê³¼ expr2 ê°€ ë‘˜ë‹¤ NULL ì´ ì•„ë‹Œ ê°’ì˜ countë¥¼ ë§í•œë‹¤.
+ * N Àº expr1 °ú expr2 °¡ µÑ´Ù NULL ÀÌ ¾Æ´Ñ °ªÀÇ count¸¦ ¸»ÇÑ´Ù.
  */
 extern mtfModule mtfCovarSamp;
 
@@ -61,7 +61,7 @@ static IDE_RC mtfCovarSampEstimate( mtcNode     * aNode,
 mtfModule mtfCovarSamp = {
     5 | MTC_NODE_OPERATOR_AGGREGATION | MTC_NODE_FUNCTION_WINDOWING_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfCovarSampFunctionName,
     NULL,
     mtfCovarSampInitialize,
@@ -343,10 +343,10 @@ IDE_RC mtfCovarSampAggregateDouble( mtcNode     * aNode,
                                      aTemplate )
               != IDE_SUCCESS );
 
-    // mtdDouble.isNull() ë¥¼ í˜¸ì¶œí•˜ëŠ” ëŒ€ì‹ 
-    // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•œë‹¤.
-    // aStack->valueì˜ ë°ì´í„° íƒ€ìž…ì„ ë¯¸ë¦¬ ì•Œê¸° ë•Œë¬¸ì—
-    // ì§ì ‘ null ê²€ì‚¬ë¥¼ í•˜ëŠ”ë° ìˆ˜í–‰ ì†ë„ë¥¼ ìœ„í•´ì„œì´ë‹¤.
+    // mtdDouble.isNull() ¸¦ È£ÃâÇÏ´Â ´ë½Å
+    // Á÷Á¢ null °Ë»ç¸¦ ÇÑ´Ù.
+    // aStack->valueÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀ» ¹Ì¸® ¾Ë±â ¶§¹®¿¡
+    // Á÷Á¢ null °Ë»ç¸¦ ÇÏ´Âµ¥ ¼öÇà ¼Óµµ¸¦ À§ÇØ¼­ÀÌ´Ù.
     if ( ( ( *(ULong*)(aStack[1].value) & MTD_DOUBLE_EXPONENT_MASK )
            != MTD_DOUBLE_EXPONENT_MASK ) &&
          ( ( *(ULong*)(aStack[2].value) & MTD_DOUBLE_EXPONENT_MASK )

@@ -19,10 +19,10 @@
 
 
 /**
- * ì—°ê²° ì˜µì…˜ì„ ì„¤ì •í•œë‹¤.
+ * ¿¬°á ¿É¼ÇÀ» ¼³Á¤ÇÑ´Ù.
  *
- * @param[in] aABConn ì—°ê²° í•¸ë“¤
- * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
+ * @param[in] aABConn ¿¬°á ÇÚµé
+ * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
  */
 CDBC_EXPORT
 ALTIBASE_RC altibase_set_option (ALTIBASE aABConn, ALTIBASE_OPTION aOption, const void *aValue)
@@ -41,7 +41,7 @@ ALTIBASE_RC altibase_set_option (ALTIBASE aABConn, ALTIBASE_OPTION aOption, cons
 
     switch (aOption)
     {
-        /* ìˆ˜ì¹˜ ì˜µì…˜ */
+        /* ¼öÄ¡ ¿É¼Ç */
         case ALTIBASE_AUTOCOMMIT:
         case ALTIBASE_TXN_ISOLATION:
         case ALTIBASE_CONNECTION_TIMEOUT:
@@ -50,7 +50,7 @@ ALTIBASE_RC altibase_set_option (ALTIBASE aABConn, ALTIBASE_OPTION aOption, cons
             sLen = 0;
             break;
 
-        /* ë¬¸ìì—´ ì˜µì…˜ */
+        /* ¹®ÀÚ¿­ ¿É¼Ç */
         case ALTIBASE_DATE_FORMAT:
         case ALTIBASE_NLS_USE:
         case ALTIBASE_APP_INFO:
@@ -59,7 +59,7 @@ ALTIBASE_RC altibase_set_option (ALTIBASE aABConn, ALTIBASE_OPTION aOption, cons
             sLen = SQL_NTS;
             break;
 
-        /* ì§€ì›í•˜ì§€ ì•ŠëŠ” ì˜µì…˜ */
+        /* Áö¿øÇÏÁö ¾Ê´Â ¿É¼Ç */
         default:
             CDBC_RAISE(NotSupported);
             break;
@@ -101,12 +101,12 @@ ALTIBASE_RC altibase_set_option (ALTIBASE aABConn, ALTIBASE_OPTION aOption, cons
 }
 
 /**
- * ëª…ë ¹ë¬¸ ì†ì„±ì„ ì–»ëŠ”ë‹¤.
+ * ¸í·É¹® ¼Ó¼ºÀ» ¾ò´Â´Ù.
  *
- * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
- * @param[in] aOption ëª…ë ¹ë¬¸ ì†ì„± ìœ í˜•
- * @param[in] aBuffer ëª…ë ¹ë¬¸ ì†ì„± ê°’ì„ ë‹´ì„ ë²„í¼
- * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
+ * @param[in] aABStmt ¸í·É¹® ÇÚµé
+ * @param[in] aOption ¸í·É¹® ¼Ó¼º À¯Çü
+ * @param[in] aBuffer ¸í·É¹® ¼Ó¼º °ªÀ» ´ãÀ» ¹öÆÛ
+ * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
  */
 CDBC_EXPORT
 ALTIBASE_RC altibase_stmt_get_attr (ALTIBASE_STMT            aABStmt,
@@ -131,7 +131,7 @@ ALTIBASE_RC altibase_stmt_get_attr (ALTIBASE_STMT            aABStmt,
             sLen = ACI_SIZEOF(acp_uint32_t);
             break;
 
-        /* ì§€ì›í•˜ì§€ ì•ŠëŠ” ì˜µì…˜ */
+        /* Áö¿øÇÏÁö ¾Ê´Â ¿É¼Ç */
         default:
             CDBC_RAISE(NotSupported);
             break;
@@ -172,12 +172,12 @@ ALTIBASE_RC altibase_stmt_get_attr (ALTIBASE_STMT            aABStmt,
 }
 
 /**
- * ëª…ë ¹ë¬¸ ì†ì„±ì„ ì„¤ì •í•œë‹¤.
+ * ¸í·É¹® ¼Ó¼ºÀ» ¼³Á¤ÇÑ´Ù.
  *
- * @param[in] aABStmt ëª…ë ¹ë¬¸ í•¸ë“¤
- * @param[in] aOption ëª…ë ¹ë¬¸ ì†ì„± ìœ í˜•
- * @param[in] aValue  ëª…ë ¹ë¬¸ ì†ì„± ê°’
- * @return ì„±ê³µí–ˆìœ¼ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
+ * @param[in] aABStmt ¸í·É¹® ÇÚµé
+ * @param[in] aOption ¸í·É¹® ¼Ó¼º À¯Çü
+ * @param[in] aValue  ¸í·É¹® ¼Ó¼º °ª
+ * @return ¼º°øÇßÀ¸¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
  */
 CDBC_EXPORT
 ALTIBASE_RC altibase_stmt_set_attr (ALTIBASE_STMT            aABStmt,
@@ -202,7 +202,7 @@ ALTIBASE_RC altibase_stmt_set_attr (ALTIBASE_STMT            aABStmt,
             sLen = 0;
             break;
 
-        /* ì§€ì›í•˜ì§€ ì•ŠëŠ” ì˜µì…˜ */
+        /* Áö¿øÇÏÁö ¾Ê´Â ¿É¼Ç */
         default:
             CDBC_RAISE(NotSupported);
             break;
@@ -245,11 +245,11 @@ ALTIBASE_RC altibase_stmt_set_attr (ALTIBASE_STMT            aABStmt,
 
 #if defined(SUPPORT_GET_AUTOCOMMIT)
 /**
- * ì„¤ì •ëœ ì˜¤í† ì»¤ë°‹ ëª¨ë“œë¥¼ ì–»ëŠ”ë‹¤.
+ * ¼³Á¤µÈ ¿ÀÅäÄ¿¹Ô ¸ğµå¸¦ ¾ò´Â´Ù.
  *
- * @param[in] aABConn ì—°ê²° í•¸ë“¤
- * @return ì˜¤í† ì»¤ë°‹ ëª¨ë“œ(ALTIBASE_AUTOCOMMIT_ON ë˜ëŠ” ALTIBASE_AUTOCOMMIT_OFF),
- *         ì‹¤íŒ¨í•˜ë©´ ALTIBASE_ERROR
+ * @param[in] aABConn ¿¬°á ÇÚµé
+ * @return ¿ÀÅäÄ¿¹Ô ¸ğµå(ALTIBASE_AUTOCOMMIT_ON ¶Ç´Â ALTIBASE_AUTOCOMMIT_OFF),
+ *         ½ÇÆĞÇÏ¸é ALTIBASE_ERROR
  */
 CDBC_EXPORT
 acp_sint32_t altibase_get_autocommit (ALTIBASE aABConn)
@@ -290,12 +290,12 @@ acp_sint32_t altibase_get_autocommit (ALTIBASE aABConn)
 #endif
 
 /**
- * ì˜¤í† ì»¤ë°‹ ëª¨ë“œë¥¼ ì„¤ì •í•œë‹¤.
+ * ¿ÀÅäÄ¿¹Ô ¸ğµå¸¦ ¼³Á¤ÇÑ´Ù.
  *
- * @param[in] aABConn ì—°ê²° í•¸ë“¤
- * @param[in] aMode ì˜¤í† ì»¤ë°‹ ëª¨ë“œ ì—¬ë¶€.
- *                  ALTIBASE_AUTOCOMMIT_ON ë˜ëŠ” ALTIBASE_AUTOCOMMIT_OFF
- * @return ì„±ê³µí•˜ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
+ * @param[in] aABConn ¿¬°á ÇÚµé
+ * @param[in] aMode ¿ÀÅäÄ¿¹Ô ¸ğµå ¿©ºÎ.
+ *                  ALTIBASE_AUTOCOMMIT_ON ¶Ç´Â ALTIBASE_AUTOCOMMIT_OFF
+ * @return ¼º°øÇÏ¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
  */
 CDBC_EXPORT
 ALTIBASE_RC altibase_set_autocommit (ALTIBASE aABConn, acp_sint32_t aMode)

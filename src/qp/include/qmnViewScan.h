@@ -16,23 +16,23 @@
  
 
 /***********************************************************************
- * $Id: qmnViewScan.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmnViewScan.h 85333 2019-04-26 02:34:41Z et16 $
  *
  * Description :
  *     VSCN(View SCaN) Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ Materialized Viewì— ëŒ€í•œ
- *     Selectionì„ ìˆ˜í–‰í•˜ëŠ” Nodeì´ë‹¤.
+ *     °ü°èÇü ¸ğµ¨¿¡¼­ Materialized View¿¡ ´ëÇÑ
+ *     SelectionÀ» ¼öÇàÇÏ´Â NodeÀÌ´Ù.
  *
- *     í•˜ìœ„ VMTR ë…¸ë“œì˜ ì €ì¥ ë§¤ì²´ì— ë”°ë¼ ë‹¤ë¥¸ ë™ì‘ì„ í•˜ê²Œ ë˜ë©°,
- *     Memory Temp Tableì¼ ê²½ìš° Memory Sort Temp Table ê°ì²´ì˜
- *        interfaceë¥¼ ì§ì ‘ ì‚¬ìš©í•˜ì—¬ ì ‘ê·¼í•˜ë©°,
- *     Disk Temp Tableì¼ ê²½ìš° table handleê³¼ index handleì„ ì–»ì–´
- *        ë³„ë„ì˜ Cursorë¥¼ í†µí•´ Sequetial Accessí•œë‹¤.
+ *     ÇÏÀ§ VMTR ³ëµåÀÇ ÀúÀå ¸ÅÃ¼¿¡ µû¶ó ´Ù¸¥ µ¿ÀÛÀ» ÇÏ°Ô µÇ¸ç,
+ *     Memory Temp TableÀÏ °æ¿ì Memory Sort Temp Table °´Ã¼ÀÇ
+ *        interface¸¦ Á÷Á¢ »ç¿ëÇÏ¿© Á¢±ÙÇÏ¸ç,
+ *     Disk Temp TableÀÏ °æ¿ì table handle°ú index handleÀ» ¾ò¾î
+ *        º°µµÀÇ Cursor¸¦ ÅëÇØ Sequetial AccessÇÑ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -64,7 +64,7 @@
 typedef struct qmncVSCN
 {
     //---------------------------------
-    // Code ì˜ì—­ ê³µí†µ ì •ë³´
+    // Code ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmnPlan        plan;
@@ -72,13 +72,13 @@ typedef struct qmncVSCN
     UInt           planID;
 
     //---------------------------------
-    // VSCN ê´€ë ¨ ì •ë³´
+    // VSCN °ü·Ã Á¤º¸
     //---------------------------------
 
     UShort         tupleRowID;
 
     //---------------------------------
-    // Display ê´€ë ¨ ì •ë³´
+    // Display °ü·Ã Á¤º¸
     //---------------------------------
 
     qmsNamePosition  viewOwnerName;
@@ -90,7 +90,7 @@ typedef struct qmncVSCN
 typedef struct qmndVSCN
 {
     //---------------------------------
-    // Data ì˜ì—­ ê³µí†µ ì •ë³´
+    // Data ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmndPlan             plan;
@@ -98,30 +98,30 @@ typedef struct qmndVSCN
     UInt               * flag;
 
     //---------------------------------
-    // VSCN ê´€ë ¨ ì •ë³´
+    // VSCN °ü·Ã Á¤º¸
     //---------------------------------
 
     UInt                 nullRowSize;   // Null row Size
     void               * nullRow;       // Null Row
-    scGRID               nullRID;       // Null Rowì˜ RID
+    scGRID               nullRID;       // Null RowÀÇ RID
 
     //---------------------------------
-    // Memory Temp Table ì „ìš© ì •ë³´
+    // Memory Temp Table Àü¿ë Á¤º¸
     //---------------------------------
 
     qmcdMemSortTemp    * memSortMgr;
     qmdMtrNode         * memSortRecord;
-    SLong                recordCnt;     // VMTRì˜ Record ê°œìˆ˜
-    SLong                recordPos;     // í˜„ì¬ Recrord ìœ„ì¹˜
+    SLong                recordCnt;     // VMTRÀÇ Record °³¼ö
+    SLong                recordPos;     // ÇöÀç Recrord À§Ä¡
 
     //---------------------------------
-    // Disk Temp Table ì „ìš© ì •ë³´
+    // Disk Temp Table Àü¿ë Á¤º¸
     //---------------------------------
 
     void               * tableHandle;
     void               * indexHandle;
 
-    smiTempCursor      * tempCursor;         // tempCursor
+    smiSortTempCursor  * tempCursor;         // tempCursor
 } qmndVSCN;
 
 class qmnVSCN
@@ -132,11 +132,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ìˆ˜í–‰ í•¨ìˆ˜
+    // ¼öÇà ÇÔ¼ö
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -145,7 +145,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan ì •ë³´ ì¶œë ¥
+    // Plan Á¤º¸ Ãâ·Â
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -156,27 +156,27 @@ public:
     // mapping by doIt() function pointer
     //------------------------
 
-    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨.
+    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ.
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // Memory Temp Table ì‚¬ìš© ì‹œ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
+    // Memory Temp Table »ç¿ë ½Ã ÃÖÃÊ ¼öÇà ÇÔ¼ö
     static IDE_RC doItFirstMem( qcTemplate * aTemplate,
                                 qmnPlan    * aPlan,
                                 qmcRowFlag * aFlag );
 
-    // Memory Temp Table ì‚¬ìš© ì‹œ ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
+    // Memory Temp Table »ç¿ë ½Ã ´ÙÀ½ ¼öÇà ÇÔ¼ö
     static IDE_RC doItNextMem( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // Disk Temp Table ì‚¬ìš© ì‹œ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
+    // Disk Temp Table »ç¿ë ½Ã ÃÖÃÊ ¼öÇà ÇÔ¼ö
     static IDE_RC doItFirstDisk( qcTemplate * aTemplate,
                                  qmnPlan    * aPlan,
                                  qmcRowFlag * aFlag );
 
-    // Disk Temp Table ì‚¬ìš© ì‹œ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
+    // Disk Temp Table »ç¿ë ½Ã ÃÖÃÊ ¼öÇà ÇÔ¼ö
     static IDE_RC doItNextDisk( qcTemplate * aTemplate,
                                 qmnPlan    * aPlan,
                                 qmcRowFlag * aFlag );
@@ -188,41 +188,41 @@ public:
 private:
 
     //------------------------
-    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
+    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
     //------------------------
 
-    // ìµœì´ˆ ì´ˆê¸°í™”
+    // ÃÖÃÊ ÃÊ±âÈ­
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncVSCN   * aCodePlan,
                              qmndVSCN   * aDataPlan );
 
     // PROJ-2415 Grouping Sets Clause
-    // ìµœì´ˆ ì´ˆê¸°í™” ì´í›„ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
+    // ÃÖÃÊ ÃÊ±âÈ­ ÀÌÈÄ ÃÊ±âÈ­¸¦ ¼öÇà
     static IDE_RC initForChild( qcTemplate * aTemplate,
                                 qmncVSCN   * aCodePlan,
                                 qmndVSCN   * aDataPlan );
     
-    // Tupleì„ êµ¬ì„±í•˜ëŠ” Columnì˜ offset ì¬ì¡°ì •
+    // TupleÀ» ±¸¼ºÇÏ´Â ColumnÀÇ offset ÀçÁ¶Á¤
     static IDE_RC refineOffset( qcTemplate * aTemplate,
                                 qmncVSCN   * aCodePlan,
                                 qmndVSCN   * aDataPlan );
 
-    // VMTR childë¥¼ ìˆ˜í–‰
+    // VMTR child¸¦ ¼öÇà
     static IDE_RC execChild( qcTemplate * aTemplate,
                              qmncVSCN   * aCodePlan );
 
-    // Null Rowë¥¼ íšë“.
+    // Null Row¸¦ È¹µæ.
     static IDE_RC getNullRow( qcTemplate * aTemplate,
                               qmncVSCN   * aCodePlan,
                               qmndVSCN   * aDataPlan );
 
-    // tuple set êµ¬ì„±
+    // tuple set ±¸¼º
     static IDE_RC setTupleSet( qcTemplate * aTemplate,
                                qmncVSCN   * aCodePlan,
                                qmndVSCN   * aDataPlan );
 
     //------------------------
-    // Disk ê´€ë ¨ ìˆ˜í–‰ í•¨ìˆ˜
+    // Disk °ü·Ã ¼öÇà ÇÔ¼ö
     //------------------------
 
     static IDE_RC openCursor( qmndVSCN   * aDataPlan );

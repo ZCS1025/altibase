@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsc.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsc.cpp 87536 2020-05-18 06:56:41Z khkwak $
  **********************************************************************/
 
 #include <qsc.h>
@@ -81,7 +81,7 @@ IDE_RC qsc::initialize( qmcThrMgr  ** aThrMgr,
     sConcMgr->memory = new (sMemMgr) iduVarMemList;
 
     // always returns IDE_SUCCESS.
-    // 2ë²ˆì§¸ ì¸ìžëŠ” ë©”ëª¨ë¦¬ ìµœëŒ€ í¬ê¸° ìƒëžµí•˜ë©´ ID_UINT_MAX.
+    // 2¹øÂ° ÀÎÀÚ´Â ¸Þ¸ð¸® ÃÖ´ë Å©±â »ý·«ÇÏ¸é ID_UINT_MAX.
     IDE_TEST( sConcMgr->memory->init( IDU_MEM_QSC )
               != IDE_SUCCESS );
     sStage = 6;
@@ -173,16 +173,16 @@ IDE_RC qsc::finalize( qmcThrMgr  ** aThrMgr,
     IDE_ERROR_RAISE( sThrMgr  != NULL, ERR_INVALID_CONDITION );
     IDE_ERROR_RAISE( sConcMgr != NULL, ERR_INVALID_CONDITION );
 
-    // ì‹¤íŒ¨í•˜ëŠ” ê²½ìš°ì—ëŠ” FATAL ë°œìƒí•œë‹¤.
+    // ½ÇÆÐÇÏ´Â °æ¿ì¿¡´Â FATAL ¹ß»ýÇÑ´Ù.
     IDE_TEST( sConcMgr->mutex.destroy() != IDE_SUCCESS );
 
     sThrCnt = sThrMgr->mThrCnt;
 
-    // ì‹¤íŒ¨í•˜ëŠ” ê²½ìš°ì—ëŠ” í•¨ìˆ˜ ë‚´ë¶€ì—ì„œ FATALë¡œ ì„¤ì •í•œë‹¤.
+    // ½ÇÆÐÇÏ´Â °æ¿ì¿¡´Â ÇÔ¼ö ³»ºÎ¿¡¼­ FATAL·Î ¼³Á¤ÇÑ´Ù.
     IDE_TEST( qmcThrObjFinal( sThrMgr )
               != IDE_SUCCESS );
 
-    // ì‹¤íŒ¨í•˜ëŠ” ê²½ìš°ì—ëŠ” í•¨ìˆ˜ ë‚´ë¶€ì—ì„œ FATALë¡œ ì„¤ì •í•œë‹¤.
+    // ½ÇÆÐÇÏ´Â °æ¿ì¿¡´Â ÇÔ¼ö ³»ºÎ¿¡¼­ FATAL·Î ¼³Á¤ÇÑ´Ù.
     if ( sThrCnt > 0 )
     {
         IDE_TEST( qcg::releaseConcThr( sThrCnt )
@@ -332,9 +332,11 @@ IDE_RC qsc::execute( qmcThrObj * aThrArg )
     sStatement->session->mQPSpecific.mFlag |= QC_SESSION_INTERNAL_EXEC_TRUE;
 
     IDE_TEST( qcd::prepare( sHstmt,
+                            NULL,
+                            NULL,
+                            & sStmtType,
                             sProcStr,
                             sProcStrLen,
-                            & sStmtType,
                             ID_TRUE )  // direct-execute mode
               != IDE_SUCCESS );
 
@@ -352,7 +354,7 @@ IDE_RC qsc::execute( qmcThrObj * aThrArg )
               != IDE_SUCCESS );
 
     sStage = 1;
-    /* 4. ì„±ê³µì‹œ  Commitì„ í•œë‹¤ */
+    /* 4. ¼º°ø½Ã  CommitÀ» ÇÑ´Ù */
     if ( qci::mSessionCallback.mCommit( sMmSession, ID_FALSE ) != IDE_SUCCESS )
     {
         ideLog::log( IDE_QP_0, "[FAILURE] error code 0x%05X %s",
@@ -469,9 +471,9 @@ void qsc::setError( qmcThrObj * aThrArg )
             sError->errMsg = NULL;
         }
      
-        // sProcStrì„ sConcMgr->memoryë¡œ í• ë‹¹í–ˆìœ¼ë¯€ë¡œ
-        // ë©”ëª¨ë¦¬ë¥¼ ìƒˆë¡œ í• ë‹¹í•´ì„œ copyí•˜ì§€ ì•ŠëŠ”ë‹¤.
-        // double-freeë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•´ sExecInfo->execStrì„ NULLë¡œ ë³€ê²½í•œë‹¤.
+        // sProcStrÀ» sConcMgr->memory·Î ÇÒ´çÇßÀ¸¹Ç·Î
+        // ¸Þ¸ð¸®¸¦ »õ·Î ÇÒ´çÇØ¼­ copyÇÏÁö ¾Ê´Â´Ù.
+        // double-free¸¦ ¹æÁöÇÏ±â À§ÇØ sExecInfo->execStrÀ» NULL·Î º¯°æÇÑ´Ù.
         sError->execStr    = sProcStr;
         sError->reqID      = sExecInfo->reqID;
     }

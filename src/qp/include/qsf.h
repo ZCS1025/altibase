@@ -20,7 +20,7 @@
  *
  * Description :
  *     PROJ-1371 PSM File Handling
- *     extended functionë“¤ì˜ ëª¨ìŒ
+ *     extended functionµéÀÇ ¸ğÀ½
  *
  **********************************************************************/
 

@@ -33,48 +33,48 @@ class smrArchThread : public idtBaseThread
 {
 //For Operation    
 public:
-    // ì•„ì¹´ì´ë¸Œí•  ë¡œê·¸íŒŒì¼ ë¦¬ìŠ¤íŠ¸ì— ë¡œê·¸íŒŒì¼ì„ í•˜ë‚˜ ìƒˆë¡œ ì¶”ê°€í•œë‹¤.
+    // ¾ÆÄ«ÀÌºêÇÒ ·Î±×ÆÄÀÏ ¸®½ºÆ®¿¡ ·Î±×ÆÄÀÏÀ» ÇÏ³ª »õ·Î Ãß°¡ÇÑ´Ù.
     IDE_RC addArchLogFile(UInt aLogFileNo);
     
-    // ì•„ì¹´ì´ë¸Œí•  ë¡œê·¸íŒŒì¼ ë¦¬ìŠ¤íŠ¸ì—ì„œ ë¡œê·¸íŒŒì¼ ë…¸ë“œë¥¼ í•˜ë‚˜ ì œê±°í•œë‹¤.
+    // ¾ÆÄ«ÀÌºêÇÒ ·Î±×ÆÄÀÏ ¸®½ºÆ®¿¡¼­ ·Î±×ÆÄÀÏ ³ëµå¸¦ ÇÏ³ª Á¦°ÅÇÑ´Ù.
     IDE_RC removeArchLogFile(smrArchLogFile *aLogFile);
 
-    // ì•„ì¹´ì´ë¸Œí•  ë¡œê·¸íŒŒì¼ ë¦¬ìŠ¤íŠ¸ì— ìžˆëŠ” ë¡œê·¸íŒŒì¼ë“¤ì„ ì•„ì¹´ì´ë¹™í•œë‹¤.
-    // ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œê°€ ì£¼ê¸°ì ìœ¼ë¡œ,
-    // í˜¹ì€ ìš”ì²­ì— ì˜í•´ ê¹¨ì–´ë‚˜ì„œ ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+    // ¾ÆÄ«ÀÌºêÇÒ ·Î±×ÆÄÀÏ ¸®½ºÆ®¿¡ ÀÖ´Â ·Î±×ÆÄÀÏµéÀ» ¾ÆÄ«ÀÌºùÇÑ´Ù.
+    // ¾ÆÄ«ÀÌºê ¾²·¹µå°¡ ÁÖ±âÀûÀ¸·Î,
+    // È¤Àº ¿äÃ»¿¡ ÀÇÇØ ±ú¾î³ª¼­ ¼öÇàÇÏ´Â ÇÔ¼öÀÌ´Ù.
     IDE_RC archLogFile();
 
-    // ë§ˆì§€ë§‰ìœ¼ë¡œ ì•„ì¹´ì´ë¸Œëœ íŒŒì¼ë²ˆí˜¸ë¥¼ ê°€ì ¸ì˜¨ë‹¤. 
+    // ¸¶Áö¸·À¸·Î ¾ÆÄ«ÀÌºêµÈ ÆÄÀÏ¹øÈ£¸¦ °¡Á®¿Â´Ù. 
     IDE_RC setLstArchLogFileNo(UInt    aArchLogFileNo);
-    // ë§ˆì§€ë§‰ìœ¼ë¡œ ì•„ì¹´ì´ë¸Œëœ íŒŒì¼ë²ˆí˜¸ë¥¼ ì„¤ì •í•œë‹¤.
+    // ¸¶Áö¸·À¸·Î ¾ÆÄ«ÀÌºêµÈ ÆÄÀÏ¹øÈ£¸¦ ¼³Á¤ÇÑ´Ù.
     IDE_RC getLstArchLogFileNo(UInt*   aArchLogFileNo);
 
-    // ë‹¤ìŒìœ¼ë¡œ ì•„ì¹´ì´ë¸Œí•  ë¡œê·¸íŒŒì¼ë²ˆí˜¸ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+    // ´ÙÀ½À¸·Î ¾ÆÄ«ÀÌºêÇÒ ·Î±×ÆÄÀÏ¹øÈ£¸¦ °¡Á®¿Â´Ù.
     IDE_RC getArchLFLstInfo(UInt   * aArchFstLFileNo,
                             idBool * aIsEmptyArchLFLst );
     
-    // ì•„ì¹´ì´ë¸Œí•  ë¡œê·¸íŒŒì¼ ë¦¬ìŠ¤íŠ¸ë¥¼ ëª¨ë‘ ì´ˆê¸°í™” í•œë‹¤.
+    // ¾ÆÄ«ÀÌºêÇÒ ·Î±×ÆÄÀÏ ¸®½ºÆ®¸¦ ¸ðµÎ ÃÊ±âÈ­ ÇÑ´Ù.
     IDE_RC clearArchList();
 
     virtual void run();
-    // ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œë¥¼ ì‹œìž‘ì‹œí‚¤ê³ , ì“°ë ˆë“œê°€ ì •ìƒì ìœ¼ë¡œ
-    // ì‹œìž‘ë  ë•Œê¹Œì§€ ê¸°ë‹¤ë¦°ë‹¤.
+    // ¾ÆÄ«ÀÌºê ¾²·¹µå¸¦ ½ÃÀÛ½ÃÅ°°í, ¾²·¹µå°¡ Á¤»óÀûÀ¸·Î
+    // ½ÃÀÛµÉ ¶§±îÁö ±â´Ù¸°´Ù.
     IDE_RC startThread();
     
-    // ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œë¥¼ ì¤‘ì§€í•˜ê³ , ì“°ë ˆë“œê°€ ì •ìƒì ìœ¼ë¡œ
-    // ì¤‘ì§€ë˜ì—ˆì„ ë•Œê¹Œì§€ ê¸°ë‹¤ë¦°ë‹¤.
+    // ¾ÆÄ«ÀÌºê ¾²·¹µå¸¦ ÁßÁöÇÏ°í, ¾²·¹µå°¡ Á¤»óÀûÀ¸·Î
+    // ÁßÁöµÇ¾úÀ» ¶§±îÁö ±â´Ù¸°´Ù.
     IDE_RC shutdown();
 
-    // ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œ ê°ì²´ë¥¼ ì´ˆê¸°í™” í•œë‹¤.
+    // ¾ÆÄ«ÀÌºê ¾²·¹µå °´Ã¼¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
     IDE_RC initialize( const SChar   * aArchivePath,
                        smrLogFileMgr * aLogFileMgr,
                        UInt            aLstArchFileNo);
 
-    // ì„œë²„ ìŠ¤íƒ€íŠ¸ì—… ì‹œì— ì•„ì¹´ì´ë¸Œí•  ë¡œê·¸íŒŒì¼ ë¦¬ìŠ¤íŠ¸ë¥¼ ìž¬êµ¬ì¶•í•œë‹¤.
+    // ¼­¹ö ½ºÅ¸Æ®¾÷ ½Ã¿¡ ¾ÆÄ«ÀÌºêÇÒ ·Î±×ÆÄÀÏ ¸®½ºÆ®¸¦ Àç±¸ÃàÇÑ´Ù.
     IDE_RC recoverArchiveLogList( UInt aStartNo,
                                   UInt aEndNo );
     
-    // ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œ ê°ì²´ë¥¼ í•´ì œ í•œë‹¤.
+    // ¾ÆÄ«ÀÌºê ¾²·¹µå °´Ã¼¸¦ ÇØÁ¦ ÇÑ´Ù.
     IDE_RC destroy();
     
     IDE_RC lockListMtx() { return mMtxArchList.lock( NULL ); }
@@ -83,8 +83,8 @@ public:
     IDE_RC lockThreadMtx() { return mMtxArchThread.lock( NULL ); }
     IDE_RC unlockThreadMtx() { return mMtxArchThread.unlock(); }
     
-    // ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œë¥¼ ê¹¨ì›Œì„œ
-    // í˜„ìž¬ ì•„ì¹´ì´ë¸Œ ëŒ€ìƒì¸ ë¡œê·¸íŒŒì¼ë“¤ì„ ì•„ì¹´ì´ë¸Œ ì‹œí‚¨ë‹¤.
+    // ¾ÆÄ«ÀÌºê ¾²·¹µå¸¦ ±ú¿ö¼­
+    // ÇöÀç ¾ÆÄ«ÀÌºê ´ë»óÀÎ ·Î±×ÆÄÀÏµéÀ» ¾ÆÄ«ÀÌºê ½ÃÅ²´Ù.
     IDE_RC wait4EndArchLF( UInt aToFileNo );
 
     smrArchThread();
@@ -92,31 +92,31 @@ public:
 
 //For Member
 private:
-    // ì•„ì¹´ì´ë¸Œ ë¡œê·¸ê°€ ì €ìž¥ë  ë””ë ‰í† ë¦¬
-    // Log File Groupë‹¹ í•˜ë‚˜ì˜ uniqueí•œ ì•„ì¹´ì´ë¸Œ ë””ë ‰í† ë¦¬ê°€ í•„ìš”í•˜ë‹¤.
+    // ¾ÆÄ«ÀÌºê ·Î±×°¡ ÀúÀåµÉ µð·ºÅä¸®
+    // Log File Group´ç ÇÏ³ªÀÇ uniqueÇÑ ¾ÆÄ«ÀÌºê µð·ºÅä¸®°¡ ÇÊ¿äÇÏ´Ù.
     const SChar            * mArchivePath[SM_ARCH_MULTIPLEX_PATH_CNT + 1];
-    // ì´ ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œê°€ ì•„ì¹´ì´ë¸Œí•  ë¡œê·¸íŒŒì¼ë“¤ì„ ê´€ë¦¬í•˜ëŠ” ë¡œê·¸íŒŒì¼ ê´€ë¦¬ìž
+    // ÀÌ ¾ÆÄ«ÀÌºê ¾²·¹µå°¡ ¾ÆÄ«ÀÌºêÇÒ ·Î±×ÆÄÀÏµéÀ» °ü¸®ÇÏ´Â ·Î±×ÆÄÀÏ °ü¸®ÀÚ
     smrLogFileMgr          * mLogFileMgr;
     
-    // ìž ë“¤ì–´ ìžˆëŠ” ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œë¥¼ ê¹¨ìš°ê¸°ìœ„í•œ condition value
+    // Àáµé¾î ÀÖ´Â ¾ÆÄ«ÀÌºê ¾²·¹µå¸¦ ±ú¿ì±âÀ§ÇÑ condition value
     iduCond                  mCv;
 
-    // smrArchLogFileì˜ í• ë‹¹/í•´ì œë¥¼ ë‹´ë‹¹í•  mempool
+    // smrArchLogFileÀÇ ÇÒ´ç/ÇØÁ¦¸¦ ´ã´çÇÒ mempool
     iduMemPool               mMemPool;
 
-    // ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œë¥¼ ì¤‘ì§€í•´ì•¼ í•  ì§€ì˜ ì—¬ë¶€
+    // ¾ÆÄ«ÀÌºê ¾²·¹µå¸¦ ÁßÁöÇØ¾ß ÇÒ ÁöÀÇ ¿©ºÎ
     idBool                   mFinish;
-    // ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œê°€ ë™ìž‘ì¤‘ì¸ì§€ ì—¬ë¶€
+    // ¾ÆÄ«ÀÌºê ¾²·¹µå°¡ µ¿ÀÛÁßÀÎÁö ¿©ºÎ
     idBool                   mResume;
 
-    // mLstArchFileNo ì™€ mArchFileList ì— ëŒ€í•œ ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•œ Mutex
+    // mLstArchFileNo ¿Í mArchFileList ¿¡ ´ëÇÑ µ¿½Ã¼º Á¦¾î¸¦ À§ÇÑ Mutex
     iduMutex                 mMtxArchList;
-    // ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œì˜ ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•œ Mutex
+    // ¾ÆÄ«ÀÌºê ¾²·¹µåÀÇ µ¿½Ã¼º Á¦¾î¸¦ À§ÇÑ Mutex
     iduMutex                 mMtxArchThread;
 
-    // ë§ˆì§€ë§‰ ì•„ì¹´ì´ë¸Œëœ ë¡œê·¸íŒŒì¼ë²ˆí˜¸
+    // ¸¶Áö¸· ¾ÆÄ«ÀÌºêµÈ ·Î±×ÆÄÀÏ¹øÈ£
     UInt                     mLstArchFileNo;
-    // ì•„ì¹´ì´ë¸Œí•  ë¡œê·¸íŒŒì¼ ë²ˆí˜¸ë“¤ì„ ì§€ë‹Œ ë¦¬ìŠ¤íŠ¸
+    // ¾ÆÄ«ÀÌºêÇÒ ·Î±×ÆÄÀÏ ¹øÈ£µéÀ» Áö´Ñ ¸®½ºÆ®
     smrArchLogFile           mArchFileList;
 
     UInt                     mArchivePathCnt;

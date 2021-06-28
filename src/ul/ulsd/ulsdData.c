@@ -63,29 +63,66 @@ void ulsdReadMtValue(cmiProtocolContext * aProtocolContext,
     }
 }
 
-SQLRETURN ulsdNodeBindParameter(ulsdDbc      *aShard,
-                                ulnStmt      *aStmt,
-                                acp_uint16_t  aParamNumber,
-                                acp_char_t   *aParamName,
-                                acp_sint16_t  aInputOutputType,
-                                acp_sint16_t  aValueType,
-                                acp_sint16_t  aParamType,
-                                ulvULen       aColumnSize,
-                                acp_sint16_t  aDecimalDigits,
-                                void         *aParamValuePtr,
-                                ulvSLen       aBufferLength,
-                                ulvSLen      *aStrLenOrIndPtr)
+// BUG-47129
+void ulsdSkipReadMtValue(cmiProtocolContext * aProtocolContext,
+                         acp_uint32_t         aKeyDataType )
+{
+    acp_uint16_t  sLen;
+
+    if ( aKeyDataType == MTD_SMALLINT_ID )
+    {
+        CMI_SKIP_READ_BLOCK(aProtocolContext, 2);
+    }
+    else if ( aKeyDataType == MTD_INTEGER_ID )
+    {
+        CMI_SKIP_READ_BLOCK(aProtocolContext, 4);
+    }
+    else if ( aKeyDataType == MTD_BIGINT_ID )
+    {
+        CMI_SKIP_READ_BLOCK(aProtocolContext, 8);
+    }
+    else if ( ( aKeyDataType == MTD_CHAR_ID ) ||
+              ( aKeyDataType == MTD_VARCHAR_ID ) )
+    {
+        CMI_RD2(aProtocolContext, &sLen);    // mCharMax.length 
+        CMI_SKIP_READ_BLOCK(aProtocolContext, sLen);
+    }
+    else
+    {
+        ACE_ASSERT(0);
+    }
+}
+
+SQLRETURN ulsdNodeBindParameter( ulnStmt      *aStmt,
+                                 acp_uint16_t  aParamNumber,
+                                 acp_char_t   *aParamName,
+                                 acp_sint16_t  aInputOutputType,
+                                 acp_sint16_t  aValueType,
+                                 acp_sint16_t  aParamType,
+                                 ulvULen       aColumnSize,
+                                 acp_sint16_t  aDecimalDigits,
+                                 void         *aParamValuePtr,
+                                 ulvSLen       aBufferLength,
+                                 ulvSLen      *aStrLenOrIndPtr,
+                                 ulvSLen      *aFileNameLengthArray,
+                                 acp_uint32_t *aFileOptionPtr )
 {
     acp_list_node_t       * sNode       = NULL;
     acp_list_node_t       * sNext       = NULL;
     ulsdBindParameterInfo * sObj        = NULL;
     ulsdBindParameterInfo * sNewObj     = NULL;
 
-    SQLRETURN           sRet = SQL_ERROR;
-    ulnFnContext        sFnContext;
-    acp_uint16_t        i;
+    SQLRETURN      sRet = SQL_ERROR;
+    ulnFnContext   sFnContext;
+    acp_uint16_t   i;
+    ulsdDbc      * sShard = NULL;
 
-    /* BUG-46257 shardcliì—ì„œ Node ì¶”ê°€/ì œê±° ì§€ì› */
+    ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_BINDPARAMETER, aStmt, ULN_OBJ_TYPE_STMT);
+
+    /* BUG-47553 */
+    ACI_TEST_RAISE( ulsdEnter( &sFnContext ) != ACI_SUCCESS, LABEL_ENTER_ERROR );
+
+    /* BUG-46257 shardcli¿¡¼­ Node Ãß°¡/Á¦°Å Áö¿ø */
     ACI_TEST_RAISE( acpMemAlloc( (void **) & sNewObj,
                                  ACI_SIZEOF( ulsdBindParameterInfo ) )
                     != ACP_RC_SUCCESS, LABEL_NOT_ENOUGH_MEMORY );
@@ -100,11 +137,33 @@ SQLRETURN ulsdNodeBindParameter(ulsdDbc      *aShard,
     sNewObj->mBufferLength      = aBufferLength;
     sNewObj->mStrLenOrIndPtr    = aStrLenOrIndPtr;
 
+    /* PROJ-2739 Client-side Sharding LOB
+         for BindFileToParam */
+    sNewObj->mFileNameLengthArray = aFileNameLengthArray;
+    sNewObj->mFileOptionPtr       = aFileOptionPtr;
+
     acpListInitObj( & sNewObj->mListNode, (void *)sNewObj );
 
-    for ( i = 0; i < aShard->mNodeCount; i++ )
+    ulsdGetShardFromDbc( aStmt->mParentDbc, &sShard );
+
+    for ( i = 0; i < sShard->mNodeCount; i++ )
     {
-        sRet = ulnBindParameter(aStmt->mShardStmtCxt.mShardNodeStmt[i],
+        if ( aValueType == SQL_C_FILE )
+        {
+            sRet = ulnBindFileToParam(
+                                  aStmt->mShardStmtCxt.mShardNodeStmt[i],
+                                  aParamNumber,
+                                  aParamType,
+                                  (acp_char_t **)aParamValuePtr,
+                                  aFileNameLengthArray,
+                                  aFileOptionPtr,
+                                  aBufferLength,
+                                  aStrLenOrIndPtr);
+        }
+        else
+        {
+            sRet = ulnBindParameter(
+                                aStmt->mShardStmtCxt.mShardNodeStmt[i],
                                 aParamNumber,
                                 aParamName,
                                 aInputOutputType,
@@ -115,16 +174,30 @@ SQLRETURN ulsdNodeBindParameter(ulsdDbc      *aShard,
                                 aParamValuePtr,
                                 aBufferLength,
                                 aStrLenOrIndPtr);
+        }
         ACI_TEST_RAISE(sRet != SQL_SUCCESS, LABEL_NODE_BINDPARAMETER_FAIL);
 
         SHARD_LOG("(Bind Parameter) ParamNum=%d, NodeId=%d, Server=%s:%d\n",
                   aParamNumber,
-                  aShard->mNodeInfo[i]->mNodeId,
-                  aShard->mNodeInfo[i]->mServerIP,
-                  aShard->mNodeInfo[i]->mPortNo);
+                  sShard->mNodeInfo[i]->mNodeId,
+                  sShard->mNodeInfo[i]->mServerIP,
+                  sShard->mNodeInfo[i]->mPortNo);
     }
 
-    sRet = ulnBindParameter(aStmt,
+    if ( aValueType == SQL_C_FILE )
+    {
+        sRet = ulnBindFileToParam(aStmt,
+                              aParamNumber,
+                              aParamType,
+                              (acp_char_t **)aParamValuePtr,
+                              aFileNameLengthArray,
+                              aFileOptionPtr,
+                              aBufferLength,
+                              aStrLenOrIndPtr);
+    }
+    else
+    {
+        sRet = ulnBindParameter(aStmt,
                             aParamNumber,
                             aParamName,
                             aInputOutputType,
@@ -135,11 +208,12 @@ SQLRETURN ulsdNodeBindParameter(ulsdDbc      *aShard,
                             aParamValuePtr,
                             aBufferLength,
                             aStrLenOrIndPtr);
+    }
     ACI_TEST(sRet != SQL_SUCCESS);
 
     SHARD_LOG("(Bind Parameter) ParamNum=%d, MetaStmt\n", aParamNumber);
 
-    /* BUG-46257 shardcliì—ì„œ Node ì¶”ê°€/ì œê±° ì§€ì› */
+    /* BUG-46257 shardcli¿¡¼­ Node Ãß°¡/Á¦°Å Áö¿ø */
     ACP_LIST_ITERATE_SAFE( & aStmt->mShardStmtCxt.mBindParameterList, sNode, sNext )
     {
         sObj = (ulsdBindParameterInfo *)sNode->mObj;
@@ -160,20 +234,20 @@ SQLRETURN ulsdNodeBindParameter(ulsdDbc      *aShard,
 
     return SQL_SUCCESS;
 
+    ACI_EXCEPTION( LABEL_ENTER_ERROR )
+    {
+        sRet = ULN_FNCONTEXT_GET_RC( &sFnContext );
+    }
     ACI_EXCEPTION(LABEL_NODE_BINDPARAMETER_FAIL)
     {
-        ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_BINDPARAMETER, aStmt, ULN_OBJ_TYPE_STMT);
-
         ulsdNativeErrorToUlnError(&sFnContext,
                                   SQL_HANDLE_STMT,
                                   (ulnObject *)aStmt->mShardStmtCxt.mShardNodeStmt[i],
-                                  aShard->mNodeInfo[i],
+                                  sShard->mNodeInfo[i],
                                   "Bind Parameter");
     }
     ACI_EXCEPTION( LABEL_NOT_ENOUGH_MEMORY )
     {
-        ULN_INIT_FUNCTION_CONTEXT( sFnContext, ULN_FID_BINDPARAMETER, aStmt, ULN_OBJ_TYPE_STMT );
-
         ulnError( & sFnContext,
                   ulERR_ABORT_SHARD_ERROR,
                   "NodeBindParameter",
@@ -208,17 +282,32 @@ SQLRETURN ulsdNodeBindParameterOnNode( ulnFnContext    * aFnContext,
     {
         sBind = (ulsdBindParameterInfo *)sNode->mObj;
 
-        sRet = ulnBindParameter( aDataStmt,
-                                 sBind->mParameterNumber,
-                                 NULL,
-                                 sBind->mInputOutputType,
-                                 sBind->mValueType,
-                                 sBind->mParameterType,
-                                 sBind->mColumnSize,
-                                 sBind->mDecimalDigits,
-                                 sBind->mParameterValuePtr,
-                                 sBind->mBufferLength,
-                                 sBind->mStrLenOrIndPtr );
+        if ( sBind->mValueType == SQL_C_FILE )
+        {
+            /* PROJ-2739 Client-side Sharding LOB */
+            sRet = ulnBindFileToParam( aDataStmt,
+                                       sBind->mParameterNumber,
+                                       sBind->mParameterType,
+                                       sBind->mParameterValuePtr,
+                                       sBind->mFileNameLengthArray,
+                                       sBind->mFileOptionPtr,
+                                       sBind->mBufferLength,
+                                       sBind->mStrLenOrIndPtr );
+        }
+        else
+        {
+            sRet = ulnBindParameter( aDataStmt,
+                                     sBind->mParameterNumber,
+                                     NULL,
+                                     sBind->mInputOutputType,
+                                     sBind->mValueType,
+                                     sBind->mParameterType,
+                                     sBind->mColumnSize,
+                                     sBind->mDecimalDigits,
+                                     sBind->mParameterValuePtr,
+                                     sBind->mBufferLength,
+                                     sBind->mStrLenOrIndPtr );
+        }
 
         ACI_TEST_RAISE( sRet != SQL_SUCCESS, LABEL_NODE_BINDPARAMETER_FAIL );
     }
@@ -258,7 +347,7 @@ SQLRETURN ulsdGetParamData(ulnStmt          *aStmt,
 
     if ( sUserDataPtr == NULL )
     {
-        /* staticNullë¡œ ì„¤ì •í•œë‹¤. */
+        /* staticNull·Î ¼³Á¤ÇÑ´Ù. */
         aShardKeyModule->null( NULL,
                                aShardKeyData->mValue,
                                MTD_OFFSET_USELESS );
@@ -316,10 +405,10 @@ SQLRETURN ulsdConvertParamData(ulnStmt          *aMetaStmt,
     sMetaCType = aDescRecApd->mMeta.mCTYPE;
     sMetaMType = aDescRecIpd->mMeta.mMTYPE;
 
-    /* ulnBindInfo êµ¬ì¡°ì²´ì— ì„¸íŒ…í•  ìƒˆ ê°’ë“¤ì„ ì¤€ë¹„í•œë‹¤. */
+    /* ulnBindInfo ±¸Á¶Ã¼¿¡ ¼¼ÆÃÇÒ »õ °ªµéÀ» ÁØºñÇÑ´Ù. */
     sMType = ulnBindInfoGetMTYPEtoSet(sMetaCType, sMetaMType);
 
-    /* ì›í•˜ëŠ” M typeìœ¼ë¡œ ë³€í™˜ë˜ì§€ ì•ŠëŠ” ê²½ìš° ì—ëŸ¬ë¥¼ ë°˜í™˜í•œë‹¤. */
+    /* ¿øÇÏ´Â M typeÀ¸·Î º¯È¯µÇÁö ¾Ê´Â °æ¿ì ¿¡·¯¸¦ ¹İÈ¯ÇÑ´Ù. */
     ACI_TEST_RAISE( sMType != sMetaMType,
                     LABEL_UNSUPPORTED_BIND_C_TYPE );
 
@@ -340,7 +429,7 @@ SQLRETURN ulsdConvertParamData(ulnStmt          *aMetaStmt,
 
     ulnBindCalcUserIndLenPair(aDescRecApd, 0, &sUserIndLenPair);
 
-    /* ì•„ë˜ëŠ” ulnParamProcess_DATAì—ì„œ ê°€ì ¸ì™”ë‹¤. */
+    /* ¾Æ·¡´Â ulnParamProcess_DATA¿¡¼­ °¡Á®¿Ô´Ù. */
     if (sUserIndLenPair.mLengthPtr == NULL)
     {
         if (ulnStmtGetAttrInputNTS(aMetaStmt) == ACP_TRUE)
@@ -363,7 +452,7 @@ SQLRETURN ulsdConvertParamData(ulnStmt          *aMetaStmt,
     ACE_ASSERT( sFnContext.mHandle.mStmt == aMetaStmt );
     ACE_ASSERT( aMetaStmt->mChunk.mCursor == 0 );
 
-    /* apdì˜ c_typeì„ ipdì˜ m_typeìœ¼ë¡œ ë°”ê¾¸ì–´ì•¼ í•¨ */
+    /* apdÀÇ c_typeÀ» ipdÀÇ m_typeÀ¸·Î ¹Ù²Ù¾î¾ß ÇÔ */
     ACI_TEST( sParamDataInBuildFunc( &sFnContext,
                                      aDescRecApd,
                                      aDescRecIpd,
@@ -374,7 +463,7 @@ SQLRETURN ulsdConvertParamData(ulnStmt          *aMetaStmt,
                                      &sCharSet )
               != ACI_SUCCESS );
 
-    /* mChunkì—ëŠ” cmì„ ìœ„í•´ ê¸°ë¡ë˜ì–´ endianì´ ë°”ë€Œì–´ ìˆë‹¤. */
+    /* mChunk¿¡´Â cmÀ» À§ÇØ ±â·ÏµÇ¾î endianÀÌ ¹Ù²î¾î ÀÖ´Ù. */
     switch ( sMetaMType )
     {
         case ULN_MTYPE_SMALLINT:
@@ -396,7 +485,7 @@ SQLRETURN ulsdConvertParamData(ulnStmt          *aMetaStmt,
         case ULN_MTYPE_VARCHAR:
             CM_ENDIAN_ASSIGN2((acp_uint16_t*)&(aShardKeyData->mCharValue.length),
                               (acp_uint16_t*)aMetaStmt->mChunk.mData);
-            /* ì¤€ë¹„í•œ ë²„í¼ë³´ë‹¤ í¬ë©´ ì—ëŸ¬ */
+            /* ÁØºñÇÑ ¹öÆÛº¸´Ù Å©¸é ¿¡·¯ */
             ACI_TEST_RAISE( aShardKeyData->mCharValue.length >
                             ULN_SHARD_KEY_MAX_CHAR_BUF_LEN,
                             LABEL_SHARD_KEY_DATA_OVERFLOW );
@@ -467,29 +556,29 @@ SQLRETURN ulsdGetShardKeyMtdModule(ulnStmt      *aMetaStmt,
 
     ACI_TEST_RAISE(aDescRecIpd == NULL, LABEL_NOT_BOUND);
 
-    /* BUGBUG ipdì˜ M type, mt typeì´ ê°™ì•„ì•¼ í•œë‹¤.
-     * (ì´ ê²½ìš°ì—ë§Œ ulnBindInfoGetParamDataInBuildAnyFuncì´ ì •ìƒ ë™ì‘í•œë‹¤.) */
+    /* BUGBUG ipdÀÇ M type, mt typeÀÌ °°¾Æ¾ß ÇÑ´Ù.
+     * (ÀÌ °æ¿ì¿¡¸¸ ulnBindInfoGetParamDataInBuildAnyFuncÀÌ Á¤»ó µ¿ÀÛÇÑ´Ù.) */
     if ( ulnTypeMap_MTYPE_MTD( aDescRecIpd->mMeta.mMTYPE ) ==
          aKeyDataType )
     {
-        /* ipdì˜ M type, mt typeì´ ê°™ì€ ê²½ìš° */
+        /* ipdÀÇ M type, mt typeÀÌ °°Àº °æ¿ì */
     }
     else
     {
         if ( ( aDescRecIpd->mMeta.mMTYPE == ULN_MTYPE_CHAR ) &&
              ( aKeyDataType == MTD_VARCHAR_ID ) )
         {
-            /* ipdì˜ M type, mt typeì´ ë‹¤ë¥´ì§€ë§Œ í˜¸í™˜ê°€ëŠ¥í•œ ê²½ìš°
-             * char typeì˜ pad ë¬¸ìëŠ” hashë‚˜ compareì‹œ ë¬´ì‹œë˜ë¯€ë¡œ
-             * varcharì™€ ë™ì¼ ì·¨ê¸‰í•  ìˆ˜ ìˆë‹¤.
+            /* ipdÀÇ M type, mt typeÀÌ ´Ù¸£Áö¸¸ È£È¯°¡´ÉÇÑ °æ¿ì
+             * char typeÀÇ pad ¹®ÀÚ´Â hash³ª compare½Ã ¹«½ÃµÇ¹Ç·Î
+             * varchar¿Í µ¿ÀÏ Ãë±ŞÇÒ ¼ö ÀÖ´Ù.
              */
         }
         else if ( ( aDescRecIpd->mMeta.mMTYPE == ULN_MTYPE_VARCHAR ) &&
                   ( aKeyDataType == MTD_CHAR_ID ) )
         {
-            /* ipdì˜ M type, mt typeì´ ë‹¤ë¥´ì§€ë§Œ í˜¸í™˜ê°€ëŠ¥í•œ ê²½ìš°
-             * char typeì˜ pad ë¬¸ìëŠ” hashë‚˜ compareì‹œ ë¬´ì‹œë˜ë¯€ë¡œ
-             * varcharì™€ ë™ì¼ ì·¨ê¸‰í•  ìˆ˜ ìˆë‹¤.
+            /* ipdÀÇ M type, mt typeÀÌ ´Ù¸£Áö¸¸ È£È¯°¡´ÉÇÑ °æ¿ì
+             * char typeÀÇ pad ¹®ÀÚ´Â hash³ª compare½Ã ¹«½ÃµÇ¹Ç·Î
+             * varchar¿Í µ¿ÀÏ Ãë±ŞÇÒ ¼ö ÀÖ´Ù.
              */
         }
         else
@@ -498,7 +587,7 @@ SQLRETURN ulsdGetShardKeyMtdModule(ulnStmt      *aMetaStmt,
         }
     }
 
-    /* mtdModuleì—ì„œ shard key column moduleì„ ì°¾ëŠ”ë‹¤ */
+    /* mtdModule¿¡¼­ shard key column moduleÀ» Ã£´Â´Ù */
     ACI_TEST( ulsdMtdModuleById( aMetaStmt,
                                  aModule,
                                  aKeyDataType,
@@ -602,24 +691,34 @@ SQLRETURN ulsdConvertNodeIdToNodeDbcIndex(ulnStmt          *aMetaStmt,
     return SQL_ERROR;
 }
 
-SQLRETURN ulsdNodeBindCol(ulsdDbc      *aShard,
-                          ulnStmt      *aStmt,
-                          acp_uint16_t  aColumnNumber,
-                          acp_sint16_t  aTargetType,
-                          void         *aTargetValuePtr,
-                          ulvSLen       aBufferLength,
-                          ulvSLen      *aStrLenOrIndPtr)
+SQLRETURN ulsdNodeBindCol( ulnStmt      *aStmt,
+                           acp_uint16_t  aColumnNumber,
+                           acp_sint16_t  aTargetType,
+                           void         *aTargetValuePtr,
+                           ulvSLen       aBufferLength,
+                           ulvSLen      *aStrLenOrIndPtr,
+                           ulvSLen      *aFileNameLengthArray,
+                           acp_uint32_t *aFileOptionPtr )
 {
-    acp_list_node_t   * sNode       = NULL;
-    acp_list_node_t   * sNext       = NULL;
-    ulsdBindColInfo   * sObj        = NULL;
-    ulsdBindColInfo   * sNewObj     = NULL;
+    acp_list_node_t   * sNode   = NULL;
+    acp_list_node_t   * sNext   = NULL;
+    ulsdBindColInfo   * sObj    = NULL;
+    ulsdBindColInfo   * sNewObj = NULL;
 
     SQLRETURN           sRet = SQL_ERROR;
     ulnFnContext        sFnContext;
     acp_uint16_t        i;
+    ulsdDbc           * sShard = NULL;
 
-    /* BUG-46257 shardcliì—ì„œ Node ì¶”ê°€/ì œê±° ì§€ì› */
+    ULN_INIT_FUNCTION_CONTEXT( sFnContext, ULN_FID_BINDCOL, aStmt, ULN_OBJ_TYPE_STMT );
+
+    /* BUG-47553 */
+    ACI_TEST_RAISE( ulsdEnter( &sFnContext ) != ACI_SUCCESS, LABEL_ENTER_ERROR );
+
+    /* PROJ-2598 altibase sharding */
+    ulsdGetShardFromDbc( aStmt->mParentDbc, &sShard);
+
+    /* BUG-46257 shardcli¿¡¼­ Node Ãß°¡/Á¦°Å Áö¿ø */
     ACI_TEST_RAISE( acpMemAlloc( (void **) & sNewObj,
                                  ACI_SIZEOF( ulsdBindColInfo ) )
                     != ACP_RC_SUCCESS, LABEL_NOT_ENOUGH_MEMORY );
@@ -630,36 +729,69 @@ SQLRETURN ulsdNodeBindCol(ulsdDbc      *aShard,
     sNewObj->mBufferLength   = aBufferLength;
     sNewObj->mStrLenOrIndPtr = aStrLenOrIndPtr;
 
+    /* PROJ-2739 Client-side Sharding LOB
+         for BindFileToCol */
+    sNewObj->mFileNameLengthArray = aFileNameLengthArray;
+    sNewObj->mFileOptionPtr       = aFileOptionPtr;
+
     acpListInitObj( & sNewObj->mListNode, (void *)sNewObj );
 
-    for ( i = 0; i < aShard->mNodeCount; i++ )
+    for ( i = 0; i < sShard->mNodeCount; i++ )
     {
-        sRet = ulnBindCol(aStmt->mShardStmtCxt.mShardNodeStmt[i],
+        if ( aTargetType == SQL_C_FILE )
+        {
+            sRet = ulnBindFileToCol(
+                          aStmt->mShardStmtCxt.mShardNodeStmt[i],
+                          aColumnNumber,
+                          (acp_char_t **)aTargetValuePtr,
+                          aFileNameLengthArray,
+                          aFileOptionPtr,
+                          aBufferLength,
+                          aStrLenOrIndPtr);
+        }
+        else
+        {
+            sRet = ulnBindCol(
+                          aStmt->mShardStmtCxt.mShardNodeStmt[i],
                           aColumnNumber,
                           aTargetType,
                           aTargetValuePtr,
                           aBufferLength,
                           aStrLenOrIndPtr);
+        }
         ACI_TEST_RAISE(sRet != SQL_SUCCESS, LABEL_NODE_BINDCOL_FAIL);
 
         SHARD_LOG("(Bind Col) ColNum=%d, NodeId=%d, Server=%s:%d\n",
                   aColumnNumber,
-                  aShard->mNodeInfo[i]->mNodeId,
-                  aShard->mNodeInfo[i]->mServerIP,
-                  aShard->mNodeInfo[i]->mPortNo);
+                  sShard->mNodeInfo[i]->mNodeId,
+                  sShard->mNodeInfo[i]->mServerIP,
+                  sShard->mNodeInfo[i]->mPortNo);
     }
 
-    sRet = ulnBindCol(aStmt,
-                      aColumnNumber,
-                      aTargetType,
-                      aTargetValuePtr,
-                      aBufferLength,
-                      aStrLenOrIndPtr);
+    if ( aTargetType == SQL_C_FILE )
+    {
+        sRet = ulnBindFileToCol(aStmt,
+                                aColumnNumber,
+                                (acp_char_t **)aTargetValuePtr,
+                                aFileNameLengthArray,
+                                aFileOptionPtr,
+                                aBufferLength,
+                                aStrLenOrIndPtr);
+    }
+    else
+    {
+        sRet = ulnBindCol(aStmt,
+                          aColumnNumber,
+                          aTargetType,
+                          aTargetValuePtr,
+                          aBufferLength,
+                          aStrLenOrIndPtr);
+    }
     ACI_TEST(sRet != SQL_SUCCESS);
 
     SHARD_LOG("(Bind Col) ColNum=%d, MetaStmt\n", aColumnNumber);
 
-    /* BUG-46257 shardcliì—ì„œ Node ì¶”ê°€/ì œê±° ì§€ì› */
+    /* BUG-46257 shardcli¿¡¼­ Node Ãß°¡/Á¦°Å Áö¿ø */
     ACP_LIST_ITERATE_SAFE( & aStmt->mShardStmtCxt.mBindColList, sNode, sNext )
     {
         sObj = (ulsdBindColInfo *)sNode->mObj;
@@ -680,6 +812,10 @@ SQLRETURN ulsdNodeBindCol(ulsdDbc      *aShard,
 
     return SQL_SUCCESS;
 
+    ACI_EXCEPTION( LABEL_ENTER_ERROR )
+    {
+        sRet = ULN_FNCONTEXT_GET_RC( &sFnContext );
+    }
     ACI_EXCEPTION(LABEL_NODE_BINDCOL_FAIL)
     {
         ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_BINDCOL, aStmt, ULN_OBJ_TYPE_STMT);
@@ -687,7 +823,7 @@ SQLRETURN ulsdNodeBindCol(ulsdDbc      *aShard,
         ulsdNativeErrorToUlnError(&sFnContext,
                                   SQL_HANDLE_STMT,
                                   (ulnObject *)aStmt->mShardStmtCxt.mShardNodeStmt[i],
-                                  aShard->mNodeInfo[i],
+                                  sShard->mNodeInfo[i],
                                   "Bind Col");
     }
     ACI_EXCEPTION( LABEL_NOT_ENOUGH_MEMORY )
@@ -728,12 +864,26 @@ SQLRETURN ulsdNodeBindColOnNode( ulnFnContext    * aFnContext,
     {
         sBind = (ulsdBindColInfo *)sNode->mObj;
 
-        sRet = ulnBindCol( aDataStmt,
-                           sBind->mColumnNumber,
-                           sBind->mTargetType,
-                           sBind->mTargetValuePtr,
-                           sBind->mBufferLength,
-                           sBind->mStrLenOrIndPtr );
+        if ( sBind->mTargetType == SQL_C_FILE )
+        {
+            /* PROJ-2739 Client-side Sharding LOB */
+            sRet = ulnBindFileToCol(aDataStmt,
+                                    sBind->mColumnNumber,
+                                    (acp_char_t **)sBind->mTargetValuePtr,
+                                    sBind->mFileNameLengthArray,
+                                    sBind->mFileOptionPtr,
+                                    sBind->mBufferLength,
+                                    sBind->mStrLenOrIndPtr);
+        }
+        else
+        {
+            sRet = ulnBindCol( aDataStmt,
+                               sBind->mColumnNumber,
+                               sBind->mTargetType,
+                               sBind->mTargetValuePtr,
+                               sBind->mBufferLength,
+                               sBind->mStrLenOrIndPtr );
+        }
 
         ACI_TEST_RAISE( sRet != SQL_SUCCESS, LABEL_NODE_BINDCOL_FAIL );
     }
@@ -753,7 +903,7 @@ SQLRETURN ulsdNodeBindColOnNode( ulnFnContext    * aFnContext,
     return sRet;
 }
 
-/* touch ë…¸ë“œë¥¼ ìš°ì„ ìœ¼ë¡œ ì „ ë°ì´í„° ë…¸ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë°˜í™˜í•œë‹¤. */
+/* touch ³ëµå¸¦ ¿ì¼±À¸·Î Àü µ¥ÀÌÅÍ ³ëµå ¸®½ºÆ®¸¦ ¹İÈ¯ÇÑ´Ù. */
 void ulsdGetTouchedAllNodeList(ulsdDbc      *aShard,
                                acp_uint32_t *aNodeArr,
                                acp_uint16_t *aNodeCount)

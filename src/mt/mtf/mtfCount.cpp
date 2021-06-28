@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfCount.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfCount.cpp 90192 2021-03-12 02:01:03Z jayce.park $
  **********************************************************************/
 
 #include <mte.h>
@@ -48,7 +48,7 @@ mtfModule mtfCount = {
       MTC_NODE_PRINT_FMT_MISC|
       MTC_NODE_FUNCTION_WINDOWING_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfCountFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -189,7 +189,7 @@ IDE_RC mtfCountEstimate( mtcNode*     aNode,
         }
         else
         {
-            /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
+            /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
             aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
         }
     }
@@ -247,11 +247,11 @@ IDE_RC mtfCountEstimate( mtcNode*     aNode,
             aNode->arguments = NULL;
             aNode->lflag    &= ~MTC_NODE_ARGUMENT_COUNT_MASK;
 
-            // BUG-39537 COUNT(*) ì™€ ë™ì¼í•œ flagë¡œ ì„¤ì •í•œë‹¤.
+            // BUG-39537 COUNT(*) ¿Í µ¿ÀÏÇÑ flag·Î ¼³Á¤ÇÑ´Ù.
             aNode->lflag &= ~MTC_NODE_QUANTIFIER_MASK;
             aNode->lflag |= MTC_NODE_QUANTIFIER_TRUE;
 
-            // BUG-38935 ì¸ìžê°€ ìµœì í™”ì— ì˜í•´ ì œê±°ë˜ì—ˆìŒ
+            // BUG-38935 ÀÎÀÚ°¡ ÃÖÀûÈ­¿¡ ÀÇÇØ Á¦°ÅµÇ¾úÀ½
             aNode->lflag &= ~MTC_NODE_REMOVE_ARGUMENTS_MASK;
             aNode->lflag |= MTC_NODE_REMOVE_ARGUMENTS_TRUE;
         }
@@ -391,7 +391,7 @@ IDE_RC mtfCountAggregateXlobColumn( mtcNode*     aNode,
                                                                     aTemplate )
               != IDE_SUCCESS );
 
-    // Lob Locatorë¥¼ ì–»ëŠ”ë° í•„ìš”í•œ ì»¤ì„œì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+    // Lob Locator¸¦ ¾ò´Âµ¥ ÇÊ¿äÇÑ Ä¿¼­Á¤º¸¸¦ °¡Á®¿Â´Ù.
     IDE_TEST( aTemplate->getOpenedCursor( aTemplate,
                                           sNode->table,
                                           & sCursor,
@@ -472,7 +472,8 @@ IDE_RC mtfCountAggregateXlobLocator( mtcNode*     aNode,
     
     IDE_TEST( mtc::getLobLengthLocator( sLocator,
                                         & sIsNull,
-                                        & sLength )
+                                        & sLength,
+                                        mtc::getStatistics(aTemplate) )
               != IDE_SUCCESS );
     
     if ( sIsNull == ID_TRUE )

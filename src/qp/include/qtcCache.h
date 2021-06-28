@@ -64,7 +64,8 @@
     (aCacheObj)->mState      = QTC_CACHE_STATE_BEGIN;          \
     (aCacheObj)->mRemainSize = aCacheMaxSize;                  \
     (aCacheObj)->mParamCnt   = 0;                              \
-                                                               \
+    (aCacheObj)->mHitCnt     = 0;                              \
+    (aCacheObj)->mMissCnt    = 0;                              \
     (aCacheObj)->mFlag &= ~QTC_CACHE_HASH_MASK;                \
     (aCacheObj)->mFlag |=  QTC_CACHE_HASH_ENABLE;              \
 }
@@ -91,25 +92,25 @@ typedef enum
 typedef enum
 {
     QTC_CACHE_STATE_BEGIN              = 0,
-    QTC_CACHE_STATE_COMPARE_RECORD     = 1,
-    QTC_CACHE_STATE_SEARCH_HASH_TABLE  = 2,
-    QTC_CACHE_STATE_RETURN_INVOKE      = 3,
-    QTC_CACHE_STATE_RETURN_CURR_RECORD = 4,
-    QTC_CACHE_STATE_INVOKE_MAKE_RECORD = 5,
-    QTC_CACHE_STATE_MAKE_CURR_RECORD   = 6,
-    QTC_CACHE_STATE_MAKE_HASH_TABLE    = 7,
-    QTC_CACHE_STATE_INSERT_HASH_RECORD = 8,
-    QTC_CACHE_STATE_END                = 9
+    QTC_CACHE_STATE_SEARCH_HASH_TABLE  = 1,
+    QTC_CACHE_STATE_RETURN_INVOKE      = 2,
+    QTC_CACHE_STATE_RETURN_CURR_RECORD = 3,
+    QTC_CACHE_STATE_INVOKE_MAKE_RECORD = 4,
+    QTC_CACHE_STATE_MAKE_HASH_TABLE    = 5,
+    QTC_CACHE_STATE_INSERT_HASH_RECORD = 6,
+    QTC_CACHE_STATE_END                = 7
 } qtcCacheState;
 
 typedef enum
 {
-    QTC_CACHE_TYPE_NONE                   = 0,
-    QTC_CACHE_TYPE_DETERMINISTIC_FUNCTION = 1,
-    QTC_CACHE_TYPE_SCALAR_SUBQUERY        = 2,
-    QTC_CACHE_TYPE_LIST_SUBQUERY          = 3,
-    QTC_CACHE_TYPE_EXISTS_SUBQUERY        = 4,
-    QTC_CACHE_TYPE_NOT_EXISTS_SUBQUERY    = 5
+    QTC_CACHE_TYPE_NONE                    = 0,
+    QTC_CACHE_TYPE_DETERMINISTIC_FUNCTION  = 1,
+    QTC_CACHE_TYPE_SCALAR_SUBQUERY_SURE    = 2,
+    QTC_CACHE_TYPE_SCALAR_SUBQUERY_UNKNOWN = 3,
+    QTC_CACHE_TYPE_LIST_SUBQUERY_SURE      = 4,
+    QTC_CACHE_TYPE_LIST_SUBQUERY_TWICE     = 5,
+    QTC_CACHE_TYPE_EXISTS_SUBQUERY         = 6,
+    QTC_CACHE_TYPE_NOT_EXISTS_SUBQUERY     = 7
 } qtcCacheType;
 
 typedef struct qtcCacheObj
@@ -121,6 +122,8 @@ typedef struct qtcCacheObj
     UInt            mRemainSize;    // remain size for caching
     UInt            mParamCnt;      // parameter count
     UInt            mFlag;          // flag for masking
+    UInt            mHitCnt;        // cache hit count
+    UInt            mMissCnt;       // cache miss count
 } qtcCacheObj;
 
 class qtcCache
@@ -158,11 +161,13 @@ public:
                                 mtcStack      * aStack,
                                 qtcCacheObj   * aCacheObj,
                                 UInt            aBucketCnt,
-                                qtcCacheState   aState );
+                                qtcCacheState   aState,
+                                const UInt      aSubqueryMode );
 
     static IDE_RC getCacheValue( mtcNode     * aNode,
                                  mtcStack    * aStack,
-                                 qtcCacheObj * aCacheObj );
+                                 qtcCacheObj * aCacheObj,
+                                 const UInt    aSubqueryMode );
 
 private:
 
@@ -183,24 +188,28 @@ private:
     static IDE_RC allocAndSetCurrRecord( iduMemory   * aMemory,
                                          mtcNode     * aNode,
                                          mtcStack    * aStack,
-                                         qtcCacheObj * aCacheObj );
+                                         qtcCacheObj * aCacheObj,
+                                         const UInt    aSubqueryMode );
 
     static IDE_RC resetCurrRecord( iduMemory   * aMemory,
                                    mtcNode     * aNode,
                                    mtcStack    * aStack,
-                                   qtcCacheObj * aCacheObj );
+                                   qtcCacheObj * aCacheObj,
+                                   const UInt    aSubqueryMode );
 
     static IDE_RC getKeyAndSize( mtcNode     * aNode,
                                  mtcStack    * aStack,
                                  qtcCacheObj * aCacheObj,
                                  UInt        * aKey,
                                  UInt        * aKeyDataSize,
-                                 UInt        * aValueSize );
+                                 UInt        * aValueSize,
+                                 const UInt    aSubqueryMode );
 
     static IDE_RC setKeyAndSize( mtcNode     * aNode,
                                  mtcStack    * aStack,
                                  qtcCacheObj * aCacheObj,
-                                 UInt          aKey );
+                                 UInt          aKey,
+                                 const UInt    aSubqueryMode );
 };
 
 #endif /* _O_QTC_CACHE_H_ */

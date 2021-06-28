@@ -33,8 +33,8 @@ struct iduMemChunk
 
 
 /* ------------------------------------------------
- *  Runtimeì‹œì˜ ì†ë„ë¥¼ ìœ„í•´ alloc & freeë¥¼ ê°ê°
- *  2ë²Œì”© ì¤€ë¹„í•¨. ( 1 alloc & bulk alloc)
+ *  Runtime½ÃÀÇ ¼Óµµ¸¦ À§ÇØ alloc & free¸¦ °¢°¢
+ *  2¹ú¾¿ ÁØºñÇÔ. ( 1 alloc & bulk alloc)
  * ----------------------------------------------*/
 class iduMemList
 {
@@ -57,7 +57,7 @@ public:
     IDE_RC          cralloc(void **aMem);
 
     /* 
-     *  PROJ-2065 í•œê³„ìƒí™© í…ŒìŠ¤íŠ¸
+     *  PROJ-2065 ÇÑ°è»óÈ² Å×½ºÆ®
      */
     IDE_RC          shrink(UInt * aSize);
     void            fillMemPoolInfo( struct iduMemPoolInfo * aInfo );

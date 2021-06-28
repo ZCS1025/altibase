@@ -29,7 +29,7 @@ import Altibase.jdbc.driver.AltibaseConnection;
 import Altibase.jdbc.driver.AltibaseLogicalConnection;
 
 /**
- * java.sql.Connection ì¸í„°í˜ì´ìŠ¤ë¥¼ hookingí•˜ëŠ” Proxyí´ë˜ìŠ¤
+ * java.sql.Connection ÀÎÅÍÆäÀÌ½º¸¦ hookingÇÏ´Â ProxyÅ¬·¡½º
  * 
  * @author yjpark
  *
@@ -39,8 +39,8 @@ public class ConnectionLoggingProxy extends LoggingProxy
     private static final String METHOD_PREFIX_PREPARE = "prepare";
 
     /**
-     * ê¸°ë³¸ì ì¸ ìƒì„±ì</br>
-     * uniqueidë¥¼ ìƒì„±í•œ í›„ ê°ì²´ê°€ ìƒì„±ë˜ì—ˆë‹¤ëŠ” ë¡œê·¸ë¥¼ ë‚¨ê¸´ë‹¤.
+     * ±âº»ÀûÀÎ »ı¼ºÀÚ</br>
+     * uniqueid¸¦ »ı¼ºÇÑ ÈÄ °´Ã¼°¡ »ı¼ºµÇ¾ú´Ù´Â ·Î±×¸¦ ³²±ä´Ù.
      * 
      * @param aTarget
      */
@@ -68,7 +68,7 @@ public class ConnectionLoggingProxy extends LoggingProxy
     }
     
     /**
-     * java.sql.Connection ì¸í„°í˜ì´ìŠ¤ì˜ prepareë©”ì†Œë“œê°€ í˜¸ì¶œë˜ì—ˆì„ ë•Œ í•´ë‹¹ sqlë¬¸ì„ CONFIGë ˆë²¨ë¡œ ë‚¨ê¸´ë‹¤.
+     * java.sql.Connection ÀÎÅÍÆäÀÌ½ºÀÇ prepare¸Ş¼Òµå°¡ È£ÃâµÇ¾úÀ» ¶§ ÇØ´ç sql¹®À» CONFIG·¹º§·Î ³²±ä´Ù.
      */
     public void logSql(Method aMethod, Object aResult, Object[] aArgs)
     {
@@ -115,7 +115,7 @@ public class ConnectionLoggingProxy extends LoggingProxy
             sProxyObj = aResult;
         }
         
-        // ë©”ì†Œë“œ ì‹¤í–‰ê²°ê³¼ê°€ SQLWarningì¸ ê²½ìš°ì—” í•´ë‹¹ ì •ë³´ë¥¼ WARNINGë ˆë²¨ë¡œ ì¶œë ¥í•œë‹¤.
+        // ¸Ş¼Òµå ½ÇÇà°á°ú°¡ SQLWarningÀÎ °æ¿ì¿£ ÇØ´ç Á¤º¸¸¦ WARNING·¹º§·Î Ãâ·ÂÇÑ´Ù.
         if (aResult instanceof SQLWarning)
         {
             mLogger.log(Level.WARNING, "SQLWarning : ", (SQLWarning)aResult);
@@ -125,9 +125,9 @@ public class ConnectionLoggingProxy extends LoggingProxy
     }
     
     /**
-     * ê³ ìœ í•œ ì•„ì´ë””ë¥¼ ìƒì„±í•œë‹¤.</br>
-     * AltibaseConnectionì¸ ê²½ìš°ì—ëŠ” ì„œë²„ì—ì„œ ë°›ì•„ì˜¨ ì„¸ì…˜IDë¡œ ì…‹íŒ…í•˜ê³  </br>
-     * AltibaseLogicalConnectionì¸ ê²½ìš°ì—ëŠ” ê·¸ëƒ¥ hashcodeë¥¼ ì‚¬ìš©í•œë‹¤.
+     * °íÀ¯ÇÑ ¾ÆÀÌµğ¸¦ »ı¼ºÇÑ´Ù.</br>
+     * AltibaseConnectionÀÎ °æ¿ì¿¡´Â ¼­¹ö¿¡¼­ ¹Ş¾Æ¿Â ¼¼¼ÇID·Î ¼ÂÆÃÇÏ°í </br>
+     * AltibaseLogicalConnectionÀÎ °æ¿ì¿¡´Â ±×³É hashcode¸¦ »ç¿ëÇÑ´Ù.
      * 
      * @param aTarget
      */

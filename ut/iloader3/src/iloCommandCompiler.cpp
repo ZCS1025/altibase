@@ -78,7 +78,7 @@ SInt iloCommandCompiler::GetCommandString( ALTIBASE_ILOADER_HANDLE aHandle )
     idlOS::strncpy(szBuf, in_ch, ch_cnt);
     szBuf[ch_cnt] = '\0';
 #else
-    /* BUG-29932 : [WIN] iloader ë„ noprompt ì˜µì…˜ì´ í•„ìš”í•©ë‹ˆë‹¤. */
+    /* BUG-29932 : [WIN] iloader µµ noprompt ¿É¼ÇÀÌ ÇÊ¿äÇÕ´Ï´Ù. */
     if( sHandle->mProgOption->mNoPrompt == ILO_FALSE )
     {
 #ifdef COMPILE_SHARDCLI

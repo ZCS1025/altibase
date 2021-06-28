@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smiStatement.h 85343 2019-04-30 01:50:33Z returns $
+ * $Id: smiStatement.h 90259 2021-03-19 01:22:22Z emlee $
  **********************************************************************/
 
 #ifndef _O_SMI_STATEMENT_H_
@@ -33,23 +33,32 @@ class smiStatement
     static IDE_RC checkImpSVP4Shard( smiTrans * aTrans );
     static IDE_RC abortToImpSVP4Shard( smiTrans * aTrans );
 
-    // Statementë¥¼ Begin
+    // Statement¸¦ Begin
     IDE_RC begin( idvSQL         * aStatistics,
                   smiStatement   * aParent,
-                  UInt             aFlag );
-    // Statementë¥¼ end
+                  UInt             aFlag,
+                  smSCN            aRequestSCN    = SM_SCN_INIT,
+                  smiDistTxInfo  * aDistTxInfo    = NULL,
+                  idBool           aIsPartialStmt = ID_FALSE,
+                  UInt             aStmtSeq       = 0 );
+
+    void setInfinteSCN4PartialStmt( smxTrans * sTrans,
+                                    idBool     aIsPartialStmt,
+                                    UInt       aStmtSeq );
+
+    // Statement¸¦ end
     IDE_RC end( UInt aFlag );
     IDE_RC endForce();
-    // Statementì˜ ì†ì„±ë³€ê²½(Memory Only, Disk Only, Hybrid?)
+    // StatementÀÇ ¼Ó¼ºº¯°æ(Memory Only, Disk Only, Hybrid?)
     IDE_RC resetCursorFlag( UInt aFlag );
 
-    // Statementì˜ ì¢…ë£Œì‹œ Transactionì˜ scn ë³€ê²½ */
+    // StatementÀÇ Á¾·á½Ã TransactionÀÇ scn º¯°æ */
     static void tryUptTransMemViewSCN( smiStatement* aStmt );
     static void tryUptTransDskViewSCN( smiStatement* aStmt );
     static void tryUptTransAllViewSCN( smiStatement* aStmt );
 
     inline smiTrans* getTrans( void );
-    /* BUG-46756 IPCDA Simplequery executeì—ì„œëŠ” smiStatementë¥¼ beginí•˜ì§€ ì•Šê³  smiTrans ì…‹íŒ…ì´ í•„ìš”í•¨. */
+    /* BUG-46756 IPCDA Simplequery execute¿¡¼­´Â smiStatement¸¦ beginÇÏÁö ¾Ê°í smiTrans ¼ÂÆÃÀÌ ÇÊ¿äÇÔ. */
     inline void      setTrans( smiTrans* aTrans );
     inline smSCN     getSCN();
     inline smSCN     getInfiniteSCN();
@@ -60,14 +69,18 @@ class smiStatement
     static IDE_RC setViewSCNOfAllStmt( smiStatement* aStmt );
 
     /*
-     * [BUG-24187] Rollbackë  statementëŠ” Internal CloseCurosrë¥¼
-     * ìˆ˜í–‰í•  í•„ìš”ê°€ ì—†ìŠµë‹ˆë‹¤.
+     * [BUG-24187] RollbackµÉ statement´Â Internal CloseCurosr¸¦
+     * ¼öÇàÇÒ ÇÊ¿ä°¡ ¾ø½À´Ï´Ù.
      */
     static void setSkipCursorClose( smiStatement* aStatement );
     static idBool getSkipCursorClose( smiStatement* aStatement );
 
     /* PROJ-2626 SnapshotExport */
-    void setScnForSnapshot( smSCN * aSCN );
+    void setSCNForSnapshot( smSCN * aSCN );
+
+    /* PROJ-2733
+     * Global Consistent Transaction ÀÌ ¿ä±¸ÀÚ SCNÀÌ ÀÖÀ¸¸é stmt retry ¸¦ Á¦ÇÑ ÇÏ°í ABORT ¿Ã¸² */
+    idBool isForbiddenToRetry();
 
  private:
 
@@ -86,39 +99,39 @@ class smiStatement
                                smSCN        * aTransViewSCN,
                                smSCN        * aMinViewSCN );
 
-    // DDLìˆ˜í–‰ì‹œ í˜¸ì¶œí•¨.
+    // DDL¼öÇà½Ã È£ÃâÇÔ.
     IDE_RC prepareDDL( smiTrans *aTrans );
 
-    // Statementì— Cursorì¶”ê°€.
+    // Statement¿¡ CursorÃß°¡.
     IDE_RC openCursor( smiTableCursor* aCursor,
                        idBool*         aIsSoloOpenUpdateCursor);
 
-    // Statementì—ì„œ Cursorì œê±°.
+    // Statement¿¡¼­ CursorÁ¦°Å.
     void   closeCursor( smiTableCursor* aCursor );
 
-    // friend class ì„ ì–¸
+    // friend class ¼±¾ğ
     friend class smiTable;
     friend class smiObject;
     friend class smiTrans;
     friend class smiTableCursor;
 
  public:  /* POD class type should make non-static data members as public */
-    // Statementì´ ì†í•œ Transaction
+    // StatementÀÌ ¼ÓÇÑ Transaction
     smiTrans*      mTrans;
-    // Statementì˜ Parent Statement
+    // StatementÀÇ Parent Statement
     smiStatement*  mParent;
     // Sibling Statement List
     smiStatement*  mPrev;
     smiStatement*  mNext;
 
     /* PROJ-1381 Fetch Across Commits
-     * mPrev/mNext       : ê°™ì€ TXë‚´ì˜ stmt ì—°ê²° ë¦¬ìŠ¤íŠ¸
-     * mAllPrev/mAllNext : Legacy TXë¥¼ í¬í•¨í•˜ëŠ” stmt ì—°ê²° ë¦¬ìŠ¤íŠ¸ */
+     * mPrev/mNext       : °°Àº TX³»ÀÇ stmt ¿¬°á ¸®½ºÆ®
+     * mAllPrev/mAllNext : Legacy TX¸¦ Æ÷ÇÔÇÏ´Â stmt ¿¬°á ¸®½ºÆ® */
     smiStatement*  mAllPrev;
     smiStatement*  mAllNext;
-    // Statementì˜ Update Statement List
+    // StatementÀÇ Update Statement List
     smiStatement*  mUpdate;
-    // Child Statement ê°¯ìˆ˜
+    // Child Statement °¹¼ö
     UInt           mChildStmtCnt;
     smTID          mTransID;
 
@@ -128,26 +141,26 @@ class smiStatement
     // Statemnet Cursor List
     smiTableCursor mCursors;
 
-    // Statementì˜ Viewë¥¼ ê²°ì •í•˜ëŠ” SCN
+    // StatementÀÇ View¸¦ °áÁ¤ÇÏ´Â SCN
     smSCN          mSCN;
     smSCN          mInfiniteSCN;
     /*
-      Statement ì†ì„±: SMI_STATEMENT ..., NORMAL | UNTOUCHABLE,
+      Statement ¼Ó¼º: SMI_STATEMENT ..., NORMAL | UNTOUCHABLE,
                       MEMORY_CURSOR | DISK_CURSOR | ALL_CURSOR.
     */
     UInt           mFlag;
 
-    // Statementì˜ Root Statement
+    // StatementÀÇ Root Statement
     smiStatement*  mRoot;
 
-    // Openëœ Cursorì˜ ê°¯ìˆ˜.
+    // OpenµÈ CursorÀÇ °¹¼ö.
     UInt           mOpenCursorCnt;
 
-    /* BUG-15906: non-autocommitëª¨ë“œì—ì„œ Selectì™„ë£Œí›„ IS_LOCKì´ í•´ì œë˜ë©´
-     * ì¢‹ê² ìŠµë‹ˆë‹¤.
-     * Select Statementì¼ë•Œ Lockì„ ì–´ë””ê¹Œì§€ í’€ì–´ì•¼ í• ì§€ë¥¼ ê²°ì •í•˜ê¸° ìœ„í•´
-     * Transactionì˜ Lock Slot Listì˜ ë§ˆì§€ë§‰ Slotì˜ Lock Sequence Numberë¥¼
-     * ì €ì¥í•´ ë‘”ë‹¤. */
+    /* BUG-15906: non-autocommit¸ğµå¿¡¼­ Select¿Ï·áÈÄ IS_LOCKÀÌ ÇØÁ¦µÇ¸é
+     * ÁÁ°Ú½À´Ï´Ù.
+     * Select StatementÀÏ¶§ LockÀ» ¾îµğ±îÁö Ç®¾î¾ß ÇÒÁö¸¦ °áÁ¤ÇÏ±â À§ÇØ
+     * TransactionÀÇ Lock Slot ListÀÇ ¸¶Áö¸· SlotÀÇ Lock Sequence Number¸¦
+     * ÀúÀåÇØ µĞ´Ù. */
     ULong          mLockSlotSequence;
 
     // Implicit Savepoint
@@ -157,12 +170,18 @@ class smiStatement
     UInt           mDepth;
 
     /*
-     * [BUG-24187] Rollbackë  statementëŠ” Internal CloseCurosrë¥¼
-     * ìˆ˜í–‰í•  í•„ìš”ê°€ ì—†ìŠµë‹ˆë‹¤.
+     * [BUG-24187] RollbackµÉ statement´Â Internal CloseCurosr¸¦
+     * ¼öÇàÇÒ ÇÊ¿ä°¡ ¾ø½À´Ï´Ù.
      */
     idBool         mSkipCursorClose;
 
     idvSQL        *mStatistics;
+
+    /* PROJ-2733 */
+    smSCN          mRequestSCN;
+
+    /* TASK-7219 Non-shard DML : partial stmt Ã³¸®¸¦ À§ÇØ, cursor close½Ã ÇÊ¿äÇÑ °æ¿ì¸¸ infinite SCNÀ» Áõ°¡½ÃÅ²´Ù. */
+    idBool         mIncInfiniteSCN4ClosingCursor;
 };
 
 inline smiTrans* smiStatement::getTrans( void )
@@ -196,9 +215,9 @@ inline UInt smiStatement::getDepth()
 }
 
 /***********************************************************************
- * Description : Statementê°€ CursorCloseë¥¼ Skipí• ì§€ì˜ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
+ * Description : Statement°¡ CursorClose¸¦ SkipÇÒÁöÀÇ Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
  *
- * aStatement     - [IN]  ëŒ€ìƒ Statement
+ * aStatement     - [IN]  ´ë»ó Statement
  **********************************************************************/
 inline void smiStatement::setSkipCursorClose( smiStatement* aStatement )
 {
@@ -208,9 +227,9 @@ inline void smiStatement::setSkipCursorClose( smiStatement* aStatement )
 }
 
 /***********************************************************************
- * Description : Statementì—ì„œ CursorCloseë¥¼ Skipí• ì§€ì˜ ì •ë³´ë¥¼ ì–»ì–´ê°„ë‹¤.
+ * Description : Statement¿¡¼­ CursorClose¸¦ SkipÇÒÁöÀÇ Á¤º¸¸¦ ¾ò¾î°£´Ù.
  *
- * aStatement     - [IN]  ëŒ€ìƒ Statement
+ * aStatement     - [IN]  ´ë»ó Statement
  **********************************************************************/
 inline idBool smiStatement::getSkipCursorClose( smiStatement* aStatement )
 {

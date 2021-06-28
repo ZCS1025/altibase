@@ -17,25 +17,33 @@
 package Altibase.jdbc.driver;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 /**
- * {@link AltibaseFailoverServerInfo}ë¥¼ ìœ„í•œ í´ë˜ìŠ¤.
+ * AltibaseFailoverServerInfoÀÇ ¸®½ºÆ®¸¦ Æ÷ÇÔÇÏ°í ÀÖ´Â Å¬·¡½º.<br/>
  */
-final class AltibaseFailoverServerInfoList extends ArrayList<AltibaseFailoverServerInfo>
+public final class AltibaseFailoverServerInfoList
 {
-    private static final long serialVersionUID = 8898419134711793282L;
+    // BUG-46790 Á÷Á¢ ArrayList¸¦ »ó¼ÓÇÏÁö ¾Ê°í compositionÀ¸·Î ±¸¼ºÇÑ´Ù.
+    private List<AltibaseFailoverServerInfo> mInternalList;
+    private Random                           mRandom = new Random();
+
+    public AltibaseFailoverServerInfoList()
+    {
+        mInternalList = new ArrayList<AltibaseFailoverServerInfo>();
+    }
 
     /**
-     * alternate servers string í˜•íƒœì˜ ë¬¸ìì—´ë¡œ ë³€í™˜í•œë‹¤.
+     * alternate servers string ÇüÅÂÀÇ ¹®ÀÚ¿­·Î º¯È¯ÇÑ´Ù.
      */
     @Override
     public String toString()
     {
-        StringBuffer sBuf = new StringBuffer("(");
-        for (int i = 0; i < this.size(); i++)
+        StringBuilder sBuf = new StringBuilder("(");
+        for (int i = 0; i < mInternalList.size(); i++)
         {
-            sBuf.append(get(i).toString());
+            sBuf.append(mInternalList.get(i).toString());
             if (i > 0)
             {
                 sBuf.append(',');
@@ -46,18 +54,38 @@ final class AltibaseFailoverServerInfoList extends ArrayList<AltibaseFailoverSer
         return sBuf.toString();
     }
 
-    public AltibaseFailoverServerInfo getRandom()
+    AltibaseFailoverServerInfo getRandom()
     {
-        return get(new Random().nextInt(size()));
+        return mInternalList.get(mRandom.nextInt(mInternalList.size()));
     }
 
     public boolean add(String aServer, int aPort, String aDbName)
     {
-        return this.add(new AltibaseFailoverServerInfo(aServer, aPort, aDbName));
+        return mInternalList.add(new AltibaseFailoverServerInfo(aServer, aPort, aDbName));
     }
 
     public void add(int aIndex, String aServer, int aPort, String aDbName)
     {
-        this.add(aIndex, new AltibaseFailoverServerInfo(aServer, aPort, aDbName));
+        mInternalList.add(aIndex, new AltibaseFailoverServerInfo(aServer, aPort, aDbName));
+    }
+
+    public List<AltibaseFailoverServerInfo> getList()
+    {
+        return mInternalList;
+    }
+
+    public int size()
+    {
+        return mInternalList.size();
+    }
+
+    public void add(int aIndex, AltibaseFailoverServerInfo aServerInfo)
+    {
+        mInternalList.add(aIndex, aServerInfo);
+    }
+
+    public void set(int aIndex, AltibaseFailoverServerInfo aServerInfo)
+    {
+        mInternalList.set(aIndex, aServerInfo);
     }
 }

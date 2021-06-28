@@ -79,7 +79,7 @@ SQLRETURN getQueueInfo( SChar *a_user,
     }
     else
     {
-        /* BUG-36593 소문자,공백이 포함된 이름(quoted identifier) 처리 */
+        /* BUG-36593 �ҹ���,������ ���Ե� �̸�(quoted identifier) ó�� */
         utString::makeQuotedName(sQuotedUserName, a_user, idlOS::strlen(a_user));
 
         IDE_TEST_RAISE(SQLTables(s_tblStmt,
@@ -176,7 +176,7 @@ SQLRETURN getQueueInfo( SChar *a_user,
                       s_table_name,
                       NULL );
 
-        IDE_TEST( getQueueQuery( s_user_name, s_table_name, sTBSName, &sTbsType, aTblFp )
+        IDE_TEST( getQueueQuery( s_user_name, s_table_name, aTblFp )
                                  != SQL_SUCCESS);
 
         idlOS::fprintf( stdout, "\n" );
@@ -212,197 +212,34 @@ SQLRETURN getQueueInfo( SChar *a_user,
 
 SQLRETURN getQueueQuery( SChar *a_user,
                          SChar *a_table,
-                         SChar *a_tbsname,
-                         SInt  *a_tbstype,
                          FILE  *a_crt_fp)
 {
 #define IDE_FN "getQueueQuery()"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
-    SQLHSTMT  s_colStmt = SQL_NULL_HSTMT;
-    SQLRETURN sRet;
-
-    SChar sQuotedUserName[UTM_NAME_LEN+3] = {'\0', };
-    SChar sQuotedTableName[UTM_NAME_LEN+3] = {'\0', };
-    idBool sIsStructQeueue = ID_FALSE;
-    idBool sIsFirst = ID_TRUE;
-
-    // BUG-24764 aexport create table구문에 컬럼들이 두번씩 들어감
-    SInt      s_pos;
-    SChar     s_user[UTM_NAME_LEN+1];
-    SChar     s_table[UTM_NAME_LEN+1];
-    SChar     s_col_name[UTM_NAME_LEN+1];
-    SChar     s_type_name[STR_LEN] = {'\0', };
-    SChar     s_defaultval[4001] = {'\0', };
-    SChar     s_store_type[2] = {'\0', };
-    SInt      s_precision;
-    SInt      s_scale;
-    SChar     sDdl[QUERY_LEN] = { '\0', };
-
-    SQLLEN    s_name_ind;
-    SQLLEN    s_type_ind;
-    SQLLEN    s_defval_ind;
-    SQLLEN    s_store_type_ind;
-    SQLLEN    s_prec_ind;
-    SQLLEN    s_scale_ind;
-
-    SQLSMALLINT sDataType;
-    
-    IDE_TEST_RAISE(SQLAllocStmt(m_hdbc, &s_colStmt) != SQL_SUCCESS,
-                   alloc_error);
-
-    /* BUG-36593 소문자,공백이 포함된 이름(quoted identifier) 처리 */
-    utString::makeQuotedName(sQuotedUserName, a_user, idlOS::strlen(a_user));
-    utString::makeQuotedName(sQuotedTableName, a_table, idlOS::strlen(a_table));
-    IDE_TEST_RAISE(SQLColumns(s_colStmt,
-                              NULL, 0,
-                              (SQLCHAR *)sQuotedUserName, SQL_NTS,
-                              (SQLCHAR *)sQuotedTableName, SQL_NTS,
-                              NULL, 0)
-                   != SQL_SUCCESS,col_error);
-
-    // BUG-24764 aexport create table구문에 컬럼들이 두번씩 들어감
-    IDE_TEST_RAISE(
-        SQLBindCol(s_colStmt, 2, SQL_C_CHAR, (SQLPOINTER)s_user,
-                   (SQLLEN)ID_SIZEOF(s_user), NULL)
-        != SQL_SUCCESS,col_error);        
-    IDE_TEST_RAISE(
-        SQLBindCol(s_colStmt, 3, SQL_C_CHAR, (SQLPOINTER)s_table,
-                   (SQLLEN)ID_SIZEOF(s_table), NULL)
-        != SQL_SUCCESS,col_error);    
-    IDE_TEST_RAISE(
-        SQLBindCol(s_colStmt, 4, SQL_C_CHAR,
-                   (SQLPOINTER)s_col_name, (SQLLEN)ID_SIZEOF(s_col_name),
-                   &s_name_ind)
-        != SQL_SUCCESS,col_error);
-    
-    IDE_TEST_RAISE(
-        SQLBindCol(s_colStmt, 5, SQL_C_SSHORT, (SQLPOINTER)&sDataType, 0, NULL)
-        != SQL_SUCCESS, col_error);
-    
-    IDE_TEST_RAISE(
-        SQLBindCol(s_colStmt, 6, SQL_C_CHAR, (SQLPOINTER)s_type_name,
-                   (SQLLEN)ID_SIZEOF(s_type_name), &s_type_ind)
-        != SQL_SUCCESS, col_error);
-    
-    IDE_TEST_RAISE(
-        SQLBindCol(s_colStmt, 7, SQL_C_SLONG,
-                   (SQLPOINTER)&s_precision, 0, &s_prec_ind)
-        != SQL_SUCCESS,col_error);    
-    
-    IDE_TEST_RAISE(
-        SQLBindCol(s_colStmt, 9, SQL_C_SLONG,
-                   (SQLPOINTER)&s_scale, 0, &s_scale_ind)
-        != SQL_SUCCESS, col_error);
-
-    IDE_TEST_RAISE(
-        SQLBindCol(s_colStmt, 13, SQL_C_CHAR, (SQLPOINTER)s_defaultval,
-                   (SQLLEN)ID_SIZEOF(s_defaultval), &s_defval_ind)
-        != SQL_SUCCESS, col_error);
-    
-    IDE_TEST_RAISE(
-        SQLBindCol(s_colStmt, 19, SQL_C_CHAR, (SQLPOINTER)s_store_type,
-                   (SQLLEN)ID_SIZEOF(s_store_type), &s_store_type_ind)
-        != SQL_SUCCESS, col_error);
-    
-    idlOS::snprintf( sDdl, ID_SIZEOF(sDdl), "create queue \"%s\" ", a_table );
-
-    while ((sRet = SQLFetch(s_colStmt)) != SQL_NO_DATA)
-    {
-        IDE_TEST_RAISE(sRet != SQL_SUCCESS, col_error);
-
-        // BUG-24764 aexport create table구문에 컬럼들이 두번씩 들어감
-        // 동일한 유저명, 테이블명인지 검사함
-        if((idlOS::strncmp(a_user, s_user, ID_SIZEOF(a_user)) != 0) ||
-           (idlOS::strncmp(a_table, s_table, ID_SIZEOF(a_table)) != 0))
-        {
-            continue;
-        }
-
-        if ((idlOS::strcmp(s_col_name, "MESSAGE") == 0) &&
-            (sIsStructQeueue == ID_FALSE) )
-        {
-            idlVA::appendFormat( sDdl,
-                                 ID_SIZEOF(sDdl),
-                                 "(%"ID_INT32_FMT")",
-                                 s_precision );
-        }
-
-        // struct queue인 경우 사용자 정의 컬럼은 항상 enqueue_time이후의 순서이다.
-        if (idlOS::strcmp(s_col_name, "ENQUEUE_TIME") == 0)
-        {
-            sIsStructQeueue = ID_TRUE;
-            continue;
-        }
-
-        if ( sIsStructQeueue == ID_TRUE )
-        {
-            if ( sIsFirst == ID_TRUE )
-            {
-                idlVA::appendFormat( sDdl, ID_SIZEOF(sDdl), "(\n" );
-                sIsFirst = ID_FALSE;
-            }
-            else
-            {
-                idlVA::appendFormat( sDdl, ID_SIZEOF(sDdl), ",\n" );
-            }
-            
-            s_pos = idlOS::strlen( sDdl );
-            
-            getColumnDataType(&sDataType, sDdl, &s_pos, s_col_name, s_type_name, s_precision, s_scale);
-            getColumnVariableClause( &sDataType, sDdl, &s_pos, s_store_type );
-            getColumnDefaultValue( sDdl, &s_pos, s_defaultval, &s_defval_ind );
-        }
-    } /* while */
-
-    if ( ( sIsStructQeueue == ID_TRUE ) && ( sIsFirst == ID_FALSE ) )
-    {
-        idlVA::appendFormat( sDdl, ID_SIZEOF(sDdl), "\n)" );
-    }
-
-    // BUG-46888
-    if (( *a_tbstype == SMI_MEMORY_USER_DATA ) || ( *a_tbstype == SMI_DISK_USER_DATA ))
-    {
-        s_pos = idlOS::strlen( sDdl );
-        eraseWhiteSpace( a_tbsname );
-        idlOS::sprintf( sDdl + s_pos, " tablespace  \"%s\"", a_tbsname );
-    }
-    
-    // BUG-33995 aexport have wrong free handle code
-    FreeStmt( &s_colStmt );
 
     idlOS::fprintf(a_crt_fp, "\n--############################\n");
     idlOS::fprintf(a_crt_fp, "--  \"%s\".\"%s\"  \n", a_user, a_table);
     idlOS::fprintf(a_crt_fp, "--############################\n");
     if ( gProgOption.mbExistDrop == ID_TRUE )
     {
-        // BUG-20943 drop 구문에서 user 가 명시되지 않아 drop 이 실패합니다.
+        // BUG-20943 drop �������� user �� ���õ��� �ʾ� drop �� �����մϴ�.
         idlOS::fprintf(a_crt_fp, "drop queue \"%s\".\"%s\";\n", a_user, a_table);
     }
 
+    /* BUG-47159 Using DBMS_METADATA package in aexport */
+    IDE_TEST(gMeta->getDdl(DDL, UTM_OBJ_TYPE_QUEUE, a_table, a_user)
+             != IDE_SUCCESS);
+
 #ifdef DEBUG
-    idlOS::fprintf( stderr, "%s;\n", sDdl );
+    idlOS::fprintf( stderr, "%s\n", gMeta->getDdlStr() );
 #endif
-    idlOS::fprintf( a_crt_fp, "%s;\n", sDdl );
+    idlOS::fprintf( a_crt_fp, "%s\n", gMeta->getDdlStr() );
 
     idlOS::fflush(a_crt_fp);
 
     return SQL_SUCCESS;
 
-    IDE_EXCEPTION(alloc_error);
-    {
-        utmSetErrorMsgWithHandle(SQL_HANDLE_DBC, (SQLHANDLE)m_hdbc);
-    }
-    IDE_EXCEPTION(col_error);
-    {
-        utmSetErrorMsgWithHandle(SQL_HANDLE_STMT, (SQLHANDLE)s_colStmt);
-    }
     IDE_EXCEPTION_END;
-
-    if ( s_colStmt != SQL_NULL_HSTMT )
-    {
-        // BUG-33995 aexport have wrong free handle code
-        FreeStmt( &s_colStmt );
-    }
 
     return SQL_ERROR;
 #undef IDE_FN

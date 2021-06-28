@@ -2,7 +2,7 @@
 #
 
 #===============================================================
-# configureì—ì„œ ìžë™ì ìœ¼ë¡œ ì„¤ì •ë¨
+# configure¿¡¼­ ÀÚµ¿ÀûÀ¸·Î ¼³Á¤µÊ
 #===============================================================
 
 BISON_ENV_NEEDED=no # unix don't needed
@@ -20,6 +20,7 @@ DEV_DIR=@DEV_DIR@
 TARGET_DIR=$(DEV_DIR)/target/@BUILD_MODE@
 ALTI_HOME=@ALTI_HOME@
 CORE_DIR=@CORE_DIR@
+CORE_EXT_DIR=@CORE_EXT_DIR@
 PD_DIR=@PD_DIR@
 ID_DIR=@ID_DIR@
 CM_DIR=@CM_DIR@
@@ -48,7 +49,7 @@ added_optimizer_flag=@ADDED_OPTIMIZER_FLAG@
 #only for solaris CC 5.0 above..
 compat5=@COMPAT5@
 
-# ì»´íŒŒì¼ëŸ¬ ì¢…ë¥˜
+# ÄÄÆÄÀÏ·¯ Á¾·ù
 COMPILER_NAME=@COMPILER_NAME@
 GCC_VERSION_MAJOR=@GCC_VERSION_MAJOR@
 
@@ -69,13 +70,18 @@ ALTIBASE_LIMIT_CHECK=@ALTIBASE_LIMIT_CHECK@
 
 ALTIBASE_FIT_CHECK=@ALTIBASE_FIT_CHECK@
 
-# Task-1994 ì´ˆê³ ì† Coverageì¸¡ì •ë°©ë²• ê³ ì•ˆ
+# Task-1994 ÃÊ°í¼Ó CoverageÃøÁ¤¹æ¹ý °í¾È
 ALTIBASE_ENABLE_GCOV=@ALTIBASE_ENABLE_GCOV@
 
 # TASK-6198 Samsung Smart SSD
 ALTIBASE_ENABLE_SMARTSSD=@ALTIBASE_ENABLE_SMARTSSD@
 
-# ìš´ì˜ì²´ì œ ë²„ì ¼ ë²ˆí˜¸ 
+# BUG-47816 ST_Transform ÇÔ¼ö Áö¿ø
+ST_ENABLE_PROJ4_LIBRARY=@ST_ENABLE_PROJ4_LIBRARY@
+ST_ENABLE_PROJ4_STATIC_LIBRARY=@ST_ENABLE_PROJ4_STATIC_LIBRARY@
+PROJ4_DIR=@PROJ4_DIR@
+
+# ¿î¿µÃ¼Á¦ ¹öÁ¯ ¹øÈ£ 
 OS_TARGET=@OS_TARGET@
 OS_MAJORVER=@OS_MAJORVER@
 OS_MINORVER=@OS_MINORVER@

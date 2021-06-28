@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfNext_day.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfNext_day.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -45,7 +45,7 @@ static IDE_RC mtfNext_dayEstimate( mtcNode*     aNode,
 mtfModule mtfNext_day = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfNext_dayFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -140,9 +140,9 @@ IDE_RC mtfNext_dayCalculate( mtcNode*     aNode,
  * Implementation :
  *    NEXT_DAY( date, char )
  *
- *    aStack[0] : ìž…ë ¥ëœ ë‚ ì§œ( date ) ì´í›„ì— ì•Œê³  ì‹¶ì€ ìš”ì¼( char )ì˜ ë‚ ì§œ
- *    aStack[1] : date ( ìž…ë ¥ ë‚ ì§œ )
- *    aStack[2] : char ( ì•Œê³  ì‹¶ì€ ìš”ì¼ )
+ *    aStack[0] : ÀÔ·ÂµÈ ³¯Â¥( date ) ÀÌÈÄ¿¡ ¾Ë°í ½ÍÀº ¿äÀÏ( char )ÀÇ ³¯Â¥
+ *    aStack[1] : date ( ÀÔ·Â ³¯Â¥ )
+ *    aStack[2] : char ( ¾Ë°í ½ÍÀº ¿äÀÏ )
  *
  *    ex) NEXT_DAY( codingDay, 'SUNDAY' )
  *        ==> 2005/06/07 00:00:00 2005/06/12 00:00:00
@@ -223,13 +223,13 @@ IDE_RC mtfNext_dayCalculate( mtcNode*     aNode,
                                                          &sInterval )
                   != IDE_SUCCESS );
 
-        // PROJ-1066 date ì—°ì‚°ë²”ìœ„ í™•ìž¥ì— ì˜í•´ ì£¼ì„ì²˜ë¦¬
+        // PROJ-1066 date ¿¬»ê¹üÀ§ È®Àå¿¡ ÀÇÇØ ÁÖ¼®Ã³¸®
         // BUG-11047 fix
-        // sTê°€ -1ì´ê³  errnoê°€ ì„¸íŒ…ë˜ë©´ ë²”ìœ„ë¥¼ ì´ˆê³¼í•œ ê²ƒì´ë¯€ë¡œ 
-        // ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¨ë‹¤.
+        // sT°¡ -1ÀÌ°í errno°¡ ¼¼ÆÃµÇ¸é ¹üÀ§¸¦ ÃÊ°úÇÑ °ÍÀÌ¹Ç·Î 
+        // ¿¡·¯¸¦ ¹ß»ý½ÃÅ²´Ù.
         // IDE_TEST_RAISE( sT == -1, ERR_NOT_APPLICABLE )
 
-        // ì£¼ì–´ì§„ ë‚ ì§œì˜ ìš”ì¼ì„ êµ¬í•œë‹¤.  
+        // ÁÖ¾îÁø ³¯Â¥ÀÇ ¿äÀÏÀ» ±¸ÇÑ´Ù.  
         sWday = mtc::dayOfWeek(mtdDateInterface::year(sDate),
                                mtdDateInterface::month(sDate),
                                mtdDateInterface::day(sDate) );
@@ -239,7 +239,7 @@ IDE_RC mtfNext_dayCalculate( mtcNode*     aNode,
             sInterval.second += ( sFound + 7 - sWday ) * 86400;
         }
 
-        /* BCì—ì„œ ADë¡œ ë„˜ì–´ê°€ëŠ” ê²½ìš°, MicroSecondë¥¼ ìŒìˆ˜ì—ì„œ ì–‘ìˆ˜ë¡œ ë°”ê¾¼ë‹¤. */
+        /* BC¿¡¼­ AD·Î ³Ñ¾î°¡´Â °æ¿ì, MicroSecond¸¦ À½¼ö¿¡¼­ ¾ç¼ö·Î ¹Ù²Û´Ù. */
         if ( ( sInterval.second > 0 ) && ( sInterval.microsecond < 0 ) )
         {
             sInterval.second--;

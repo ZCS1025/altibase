@@ -18,26 +18,29 @@ package Altibase.jdbc.driver.cm;
 
 import java.util.List;
 
-import Altibase.jdbc.driver.datatype.Column;
 import Altibase.jdbc.driver.datatype.RowHandle;
+import Altibase.jdbc.driver.datatype.Column;
+import Altibase.jdbc.driver.datatype.DynamicArrayRowHandle;
 import Altibase.jdbc.driver.util.DynamicArray;
 
 public class CmFetchResult extends CmStatementIdResult
 {
-    static final byte MY_OP = CmOperation.DB_OP_FETCH_RESULT;
+    public static final byte MY_OP = CmOperation.DB_OP_FETCH_RESULT;
 
-    private short        mResultSetId;
-    private int          mMaxFieldSize;
-    private int          mMaxRowCount;
-    private int          mFetchedRowCount;          // PROJ-2625
-    private int          mTotalReceivedRowCount;
-    private long         mFetchedBytes;             // PROJ-2625
-    private long         mTotalOctetLength;         // PROJ-2625
-    private RowHandle    mRowHandle;
-    private boolean      mFetchRemains;
-    private List<Column> mColumns;
-    private boolean      mBegun;
-    
+    private short            mResultSetId;
+    private int              mMaxFieldSize;
+    private long             mMaxRowCount;
+    private int              mFetchedRowCount;                      // PROJ-2625
+    private int              mTotalReceivedRowCount;
+    private long             mFetchedBytes;                         // PROJ-2625
+    private long             mTotalOctetLength;                     // PROJ-2625
+    private RowHandle        mRowHandle;
+    private boolean          mFetchRemains;
+    private List<Column>     mColumns;
+    private boolean          mBegun;
+    private boolean          mIsPrepared;                           // BUG-47460 prepared fetchÀÎÁö ¿©ºÎ
+    private boolean          mUseArrayListRowHandle;                // BUG-48380 ArrayListRowHandleÀ» »ç¿ëÇÒÁö ¿©ºÎ
+
     public CmFetchResult()
     {
         mBegun = false;
@@ -57,7 +60,7 @@ public class CmFetchResult extends CmStatementIdResult
     {
         if (mRowHandle == null)
         {
-            mRowHandle = new RowHandle();
+            mRowHandle = new DynamicArrayRowHandle();
         }
         return mRowHandle;
     }
@@ -67,13 +70,13 @@ public class CmFetchResult extends CmStatementIdResult
         mMaxFieldSize = aMaxFieldSize;
     }
     
-    void setMaxRowCount(int aMaxRowCount)
+    void setMaxRowCount(long aMaxRowCount)
     {
         mMaxRowCount = aMaxRowCount;
     }
     
     /**
-     * CMP_OP_DB_FetchV2 operation ìš”ì²­ì— ë”°ë¼ ìˆ˜ì‹ ëœ fetch row ìˆ˜ë¥¼ ë°˜í™˜í•œë‹¤.
+     * CMP_OP_DB_FetchV2 operation ¿äÃ»¿¡ µû¶ó ¼ö½ÅµÈ fetch row ¼ö¸¦ ¹İÈ¯ÇÑ´Ù.
      */
     public int getFetchedRowCount()
     {
@@ -81,7 +84,7 @@ public class CmFetchResult extends CmStatementIdResult
     }
 
     /**
-     * CMP_OP_DB_FetchV2 operation ìš”ì²­ì— ë”°ë¼ ìˆ˜ì‹ ëœ fetch byte ìˆ˜ë¥¼ ë°˜í™˜í•œë‹¤.
+     * CMP_OP_DB_FetchV2 operation ¿äÃ»¿¡ µû¶ó ¼ö½ÅµÈ fetch byte ¼ö¸¦ ¹İÈ¯ÇÑ´Ù.
      */
     public long getFetchedBytes()
     {
@@ -89,7 +92,7 @@ public class CmFetchResult extends CmStatementIdResult
     }
 
     /**
-     * SQL/CLI ì˜ SQL_DESC_OCTET_LENGTH ì— ëŒ€ì‘ë˜ëŠ” column ê¸¸ì´ë¡œì„œ, ëª¨ë“  column ì˜ ì´í•©ì„ ë°˜í™˜í•œë‹¤.
+     * SQL/CLI ÀÇ SQL_DESC_OCTET_LENGTH ¿¡ ´ëÀÀµÇ´Â column ±æÀÌ·Î¼­, ¸ğµç column ÀÇ ÃÑÇÕÀ» ¹İÈ¯ÇÑ´Ù.
      */
     public long getTotalOctetLength()
     {
@@ -98,7 +101,7 @@ public class CmFetchResult extends CmStatementIdResult
 
     public boolean fetchRemains()
     {
-        // MaxRowsë¥¼ ë„˜ì—ˆë‹¤ë©´ ë” ê°€ì ¸ì˜¬ í•„ìš”ê°€ ì—†ë‹¤.
+        // MaxRows¸¦ ³Ñ¾ú´Ù¸é ´õ °¡Á®¿Ã ÇÊ¿ä°¡ ¾ø´Ù.
         if ((mMaxRowCount > 0) && (mTotalReceivedRowCount >= mMaxRowCount))
         {
             return false;
@@ -123,7 +126,7 @@ public class CmFetchResult extends CmStatementIdResult
     }
 
     /**
-     * fetchí•  rowê°€ ë” ìˆì„ ê²½ìš°ì—ë§Œ RowHandleì˜ storeì»¤ì„œì¸ë±ìŠ¤ë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
+     * fetchÇÒ row°¡ ´õ ÀÖÀ» °æ¿ì¿¡¸¸ RowHandleÀÇ storeÄ¿¼­ÀÎµ¦½º¸¦ Áõ°¡½ÃÅ²´Ù.
      */
     void increaseStoreCursor()
     {
@@ -134,7 +137,7 @@ public class CmFetchResult extends CmStatementIdResult
     }
 
     /**
-     * fetchí•  rowê°€ ë” ìˆì„ ê²½ìš°ì—ë§Œ, fetched rows/bytes ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
+     * fetchÇÒ row°¡ ´õ ÀÖÀ» °æ¿ì¿¡¸¸, fetched rows/bytes Á¤º¸¸¦ °»½ÅÇÑ´Ù.
      */
     void updateFetchStat(long aRowSize)
     {
@@ -188,7 +191,7 @@ public class CmFetchResult extends CmStatementIdResult
 
         if (mRowHandle == null)
         {
-            mRowHandle = new RowHandle();
+            mRowHandle = new DynamicArrayRowHandle();
         }
         else
         {
@@ -196,6 +199,7 @@ public class CmFetchResult extends CmStatementIdResult
         }
 
         mRowHandle.setColumns(aColumns);
+        mRowHandle.setPrepared(mIsPrepared);
         mRowHandle.initToStore();
 
         for (Column sColumn : aColumns)
@@ -207,7 +211,7 @@ public class CmFetchResult extends CmStatementIdResult
     }
 
     /**
-     * CMP_OP_DB_FetchV2 operation ìš”ì²­í•˜ê¸° ì „ì— ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
+     * CMP_OP_DB_FetchV2 operation ¿äÃ»ÇÏ±â Àü¿¡ ÃÊ±âÈ­¸¦ ¼öÇàÇÑ´Ù.
      */
     void initFetchRequest()
     {
@@ -221,12 +225,32 @@ public class CmFetchResult extends CmStatementIdResult
     }
 
     /**
-     * ì»¬ëŸ¼ì¸ë±ìŠ¤ì— í•´ë‹¹í•˜ëŠ” DynamicArrayë¥¼ ë¦¬í„´í•œë‹¤.
-     * @param aIndex ì»¬ëŸ¼ì¸ë±ìŠ¤
-     * @return ì»¬ëŸ¼ì¸ë±ìŠ¤ì— í•´ë‹¹í•˜ëŠ” DynamicArray
+     * ÄÃ·³ÀÎµ¦½º¿¡ ÇØ´çÇÏ´Â DynamicArray¸¦ ¸®ÅÏÇÑ´Ù.
+     * @param aIndex ÄÃ·³ÀÎµ¦½º
+     * @return ÄÃ·³ÀÎµ¦½º¿¡ ÇØ´çÇÏ´Â DynamicArray
      */
     public DynamicArray getDynamicArray(int aIndex)
     {
         return mRowHandle.getDynamicArray(aIndex);
+    }
+
+    public void setPrepared(boolean aIsPrepared)
+    {
+        this.mIsPrepared = aIsPrepared;
+    }
+
+    public void setRowHandle(RowHandle aRowHandle)
+    {
+        this.mRowHandle = aRowHandle;
+    }
+
+    public void setUseArrayListRowHandle(boolean aUseArrayListRowHandle)
+    {
+        this.mUseArrayListRowHandle = aUseArrayListRowHandle;
+    }
+
+    public boolean useArrayListRowHandle()
+    {
+        return mUseArrayListRowHandle;
     }
 }

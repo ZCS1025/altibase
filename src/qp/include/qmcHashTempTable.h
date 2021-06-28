@@ -16,21 +16,21 @@
  
 
 /***********************************************************************
- * $Id: qmcHashTempTable.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmcHashTempTable.h 85333 2019-04-26 02:34:41Z et16 $
  *
  * Description :
  *   [Hash Temp Table]
  *
- *   A4ì—ì„œëŠ” Memory ë° Disk Tableì„ ëª¨ë‘ ì§€ì›í•œë‹¤.
- *   ì¤‘ê°„ ê²°ê³¼ë¥¼ ì €ìž¥í•˜ëŠ” Nodeë“¤ ì¤‘ Hashë¥¼ ì´ìš©í•œ ì¤‘ê°„ ê²°ê³¼ë¥¼ ë§Œë“œëŠ”
- *   Materialized Nodeë“¤ì€ Memory Hash Temp Table ë˜ëŠ” Disk Hash Temp
- *   Tableì„ ì‚¬ìš©í•˜ê²Œ ëœë‹¤.
+ *   A4¿¡¼­´Â Memory ¹× Disk TableÀ» ¸ðµÎ Áö¿øÇÑ´Ù.
+ *   Áß°£ °á°ú¸¦ ÀúÀåÇÏ´Â Nodeµé Áß Hash¸¦ ÀÌ¿ëÇÑ Áß°£ °á°ú¸¦ ¸¸µå´Â
+ *   Materialized NodeµéÀº Memory Hash Temp Table ¶Ç´Â Disk Hash Temp
+ *   TableÀ» »ç¿ëÇÏ°Ô µÈ´Ù.
  *
- *   ì´ ë•Œ, ê° ë…¸ë“œê°€ Memory/Disk Hash Temp Tableì— ë”°ë¼ ì„œë¡œ ë‹¤ë¥¸
- *   ë™ìž‘ì„ í•˜ì§€ ì•Šë„ë¡ í•˜ê¸° ìœ„í•˜ì—¬ ë‹¤ìŒê³¼ ê°™ì€ Hash Temp Tableì„
- *   ì´ìš©í•˜ì—¬ Transparentí•œ êµ¬í˜„ ë° ë™ìž‘ì´ ê°€ëŠ¥í•˜ë„ë¡ í•œë‹¤.
+ *   ÀÌ ¶§, °¢ ³ëµå°¡ Memory/Disk Hash Temp Table¿¡ µû¶ó ¼­·Î ´Ù¸¥
+ *   µ¿ÀÛÀ» ÇÏÁö ¾Êµµ·Ï ÇÏ±â À§ÇÏ¿© ´ÙÀ½°ú °°Àº Hash Temp TableÀ»
+ *   ÀÌ¿ëÇÏ¿© TransparentÇÑ ±¸Çö ¹× µ¿ÀÛÀÌ °¡´ÉÇÏµµ·Ï ÇÑ´Ù.
  *
- *   ì´ëŸ¬í•œ ê°œë…ì„ ë‚˜íƒ€ë‚¸ ê·¸ë¦¼ì€ ì•„ëž˜ì™€ ê°™ë‹¤.
+ *   ÀÌ·¯ÇÑ °³³äÀ» ³ªÅ¸³½ ±×¸²Àº ¾Æ·¡¿Í °°´Ù.
  *
  *                                                     -------------
  *                                                  -->[Memory Hash]
@@ -39,9 +39,9 @@
  *     ---------------     -------------------      -->[Disk Hash]
  *                                                     -----------
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -56,63 +56,63 @@
 #define QMCD_HASH_TMP_INITIALIZE                 (0x00000000)
 
 /* qmcdHashTempTable.flag                                  */
-// Hash Temp Tableì˜ ì €ìž¥ ë§¤ì²´
+// Hash Temp TableÀÇ ÀúÀå ¸ÅÃ¼
 #define QMCD_HASH_TMP_STORAGE_TYPE               (0x00000001)
 #define QMCD_HASH_TMP_STORAGE_MEMORY             (0x00000000)
 #define QMCD_HASH_TMP_STORAGE_DISK               (0x00000001)
 
 /* qmcdHashTempTable.flag                                  */
-// Distinctì˜ ì—¬ë¶€
+// DistinctÀÇ ¿©ºÎ
 #define QMCD_HASH_TMP_DISTINCT_MASK              (0x00000002)
 #define QMCD_HASH_TMP_DISTINCT_FALSE             (0x00000000)
 #define QMCD_HASH_TMP_DISTINCT_TRUE              (0x00000002)
 
 /* qmcdHashTempTable.flag                                  */
-// Primary Temp Tableì˜ ì—¬ë¶€
+// Primary Temp TableÀÇ ¿©ºÎ
 #define QMCD_HASH_TMP_PRIMARY_MASK               (0x00000004)
 #define QMCD_HASH_TMP_PRIMARY_TRUE               (0x00000000)
 #define QMCD_HASH_TMP_PRIMARY_FALSE              (0x00000004)
 
 /* qmcdHashTempTable.flag                                  */
-// Temp Tableì˜ rid fix ì—¬ë¶€
+// Temp TableÀÇ rid fix ¿©ºÎ
 #define QMCD_HASH_TMP_FIXED_RID_MASK             (0x00000008)
 #define QMCD_HASH_TMP_FIXED_RID_FALSE            (0x00000000)
 #define QMCD_HASH_TMP_FIXED_RID_TRUE             (0x00000008)
 
 /* qmcdHashTempTable.flag                                  */
 // PROJ-2553 Cache-aware Memory Hash Temp Table
-// Hash Temp Tableì˜ ì €ìž¥/íƒìƒ‰ ë°©ë²• (Bucket List / Partitioned Array)
+// Hash Temp TableÀÇ ÀúÀå/Å½»ö ¹æ¹ý (Bucket List / Partitioned Array)
 #define QMCD_HASH_TMP_HASHING_TYPE               (0x00000010)
 #define QMCD_HASH_TMP_HASHING_BUCKET             (0x00000000)
 #define QMCD_HASH_TMP_HASHING_PARTITIONED        (0x00000010)
 
-// Hash Temp Table ìžë£Œ êµ¬ì¡°
+// Hash Temp Table ÀÚ·á ±¸Á¶
 typedef struct qmcdHashTemp
 {
     UInt                  flag;
 
     qcTemplate          * mTemplate;
-    qmdMtrNode          * recordNode;       // Record êµ¬ì„± ì •ë³´
-    qmdMtrNode          * hashNode;         // Hashí•  Column ì •ë³´
-    qmdMtrNode          * aggrNode;         // Aggregation Node ì •ë³´
+    qmdMtrNode          * recordNode;       // Record ±¸¼º Á¤º¸
+    qmdMtrNode          * hashNode;         // HashÇÒ Column Á¤º¸
+    qmdMtrNode          * aggrNode;         // Aggregation Node Á¤º¸
 
-    UInt                  bucketCnt;        // Bucketê°œìˆ˜
-    UInt                  mtrRowSize;       // ì €ìž¥ Recordì˜ í¬ê¸°
-    UInt                  nullRowSize;      // ì €ìž¥ null Recordì˜ í¬ê¸°
-    qmcMemory           * memoryMgr;        // ì €ìž¥ Recordë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ ê´€ë¦¬ìž
-    iduMemory           * memory;           // Hash Tempì— ì‚¬ìš©ë˜ëŠ” Memory
+    UInt                  bucketCnt;        // Bucket°³¼ö
+    UInt                  mtrRowSize;       // ÀúÀå RecordÀÇ Å©±â
+    UInt                  nullRowSize;      // ÀúÀå null RecordÀÇ Å©±â
+    qmcMemory           * memoryMgr;        // ÀúÀå Record¸¦ À§ÇÑ ¸Þ¸ð¸® °ü¸®ÀÚ
+    iduMemory           * memory;           // Hash Temp¿¡ »ç¿ëµÇ´Â Memory
     UInt                  memoryIdx;
 
-    SChar               * nullRow;          // Memory Temp Tableì„ ìœ„í•œ Null Row
+    SChar               * nullRow;          // Memory Temp TableÀ» À§ÇÑ Null Row
 
-    UInt                  hashKey;          // Rangeê²€ìƒ‰ì„ ìœ„í•œ Hash Key
+    UInt                  hashKey;          // Range°Ë»öÀ» À§ÇÑ Hash Key
 
     qmcdMemHashTemp     * memoryTemp;       // Memory Hash Temp Table
     qmcdMemPartHashTemp * memoryPartTemp;   // PROJ-2553 Memory Partitioned Hash Temp Table
     qmcdDiskHashTemp    * diskTemp;         // Disk Hash Temp Table
 
-    idBool                existTempType;    // TEMP_TYPE ì»¬ëŸ¼ì´ ì¡´ìž¬í•˜ëŠ”ì§€
-    void                * insertRow;        // insertë¥¼ ìœ„í•œ ìž„ì‹œ ë²„í¼
+    idBool                existTempType;    // TEMP_TYPE ÄÃ·³ÀÌ Á¸ÀçÇÏ´ÂÁö
+    void                * insertRow;        // insert¸¦ À§ÇÑ ÀÓ½Ã ¹öÆÛ
 
 } qmcdHashTemp;
 
@@ -121,10 +121,10 @@ class qmcHashTemp
 public:
 
     //------------------------------------------------
-    // Hash Temp Tableì˜ ê´€ë¦¬
+    // Hash Temp TableÀÇ °ü¸®
     //------------------------------------------------
 
-    // Temp Tableì˜ ì´ˆê¸°í™”
+    // Temp TableÀÇ ÃÊ±âÈ­
     static IDE_RC      init( qmcdHashTemp * aTempTable,
                              qcTemplate   * aTemplate,
                              UInt           aMemoryIdx,
@@ -134,104 +134,104 @@ public:
                              UInt           aBucketCnt,
                              UInt           aFlag );
 
-    // Temp Tableì˜ Dataë¥¼ ì œê±°í•œë‹¤.
+    // Temp TableÀÇ Data¸¦ Á¦°ÅÇÑ´Ù.
     static IDE_RC      clear( qmcdHashTemp * aTempTable );
 
-    // Temp Tableë‚´ì˜ ëª¨ë“  Dataì˜ flagì„ ì´ˆê¸°í™”í•œë‹¤.
+    // Temp Table³»ÀÇ ¸ðµç DataÀÇ flagÀ» ÃÊ±âÈ­ÇÑ´Ù.
     static IDE_RC      clearHitFlag( qmcdHashTemp * aTempTable );
 
     //------------------------------------------------
-    // Hash Temp Tableì˜ êµ¬ì„±
+    // Hash Temp TableÀÇ ±¸¼º
     //------------------------------------------------
 
-    // Dataë¥¼ ìœ„í•œ Memory í• ë‹¹
+    // Data¸¦ À§ÇÑ Memory ÇÒ´ç
     static IDE_RC      alloc( qmcdHashTemp * aTempTable,
                               void        ** aRow );
 
-    // Non-Distinction Data ì‚½ìž…
+    // Non-Distinction Data »ðÀÔ
     static IDE_RC      addRow( qmcdHashTemp * aTempTable,
                                void         * aRow );
 
-    // Distinction Data ì‚½ìž…
+    // Distinction Data »ðÀÔ
     static IDE_RC      addDistRow( qmcdHashTemp  * aTempTable,
                                    void         ** aRow,
                                    idBool        * aResult );
 
-    // insert row ìƒì„±
+    // insert row »ý¼º
     static IDE_RC      makeTempTypeRow( qmcdHashTemp  * aTempTable,
                                         void          * aRow,
                                         void         ** aExtRow );
 
-    // Aggregation Columnì— ëŒ€í•œ Updateë¥¼ ìˆ˜í–‰
+    // Aggregation Column¿¡ ´ëÇÑ Update¸¦ ¼öÇà
     static IDE_RC      updateAggr( qmcdHashTemp * aTempTable );
 
     // To Fix PR-8415
-    // Aggregation Columnì˜ Final Update
+    // Aggregation ColumnÀÇ Final Update
     static IDE_RC      updateFiniAggr( qmcdHashTemp * aTempTable );
 
     // To Fix PR-8213
-    // Group Aggregationì—ì„œë§Œ ì‚¬ìš©ë˜ë©°, ìƒˆë¡œìš´ Groupì„ ë“±ë¡í•œë‹¤.
+    // Group Aggregation¿¡¼­¸¸ »ç¿ëµÇ¸ç, »õ·Î¿î GroupÀ» µî·ÏÇÑ´Ù.
     static IDE_RC      addNewGroup( qmcdHashTemp * aTempTable,
                                     void         * aRow );
 
     // To Fix PR-8415
-    // Disk Temp Tableì„ ì‚¬ìš©í•  ê²½ìš° Aggregationì˜ ìµœì¢… ê²°ê³¼ë¥¼
-    // ì €ìž¥í•˜ì—¬ì•¼ í•œë‹¤.  ì´ë¥¼ ìœ„í•´ ìˆœì°¨ì ìœ¼ë¡œ Groupì„ ì½ì–´
-    // ì²˜ë¦¬í•  ìˆ˜ ìžˆëŠ” ì¸í„°íŽ˜ì´ìŠ¤ë¥¼ ì œê³µí•œë‹¤.
-    // ì¼ë°˜ ìˆœì°¨ ê²€ìƒ‰ì„ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” ì´ìœ ëŠ”
-    // Aggregation ê²°ê³¼ë¥¼ Updateí•´ì•¼ í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
-    // ì²«ë²ˆì§¸ group ìˆœì°¨ ê²€ìƒ‰
+    // Disk Temp TableÀ» »ç¿ëÇÒ °æ¿ì AggregationÀÇ ÃÖÁ¾ °á°ú¸¦
+    // ÀúÀåÇÏ¿©¾ß ÇÑ´Ù.  ÀÌ¸¦ À§ÇØ ¼øÂ÷ÀûÀ¸·Î GroupÀ» ÀÐ¾î
+    // Ã³¸®ÇÒ ¼ö ÀÖ´Â ÀÎÅÍÆäÀÌ½º¸¦ Á¦°øÇÑ´Ù.
+    // ÀÏ¹Ý ¼øÂ÷ °Ë»öÀ» »ç¿ëÇÏÁö ¾Ê´Â ÀÌÀ¯´Â
+    // Aggregation °á°ú¸¦ UpdateÇØ¾ß ÇÏ±â ¶§¹®ÀÌ´Ù.
+    // Ã¹¹øÂ° group ¼øÂ÷ °Ë»ö
     static IDE_RC      getFirstGroup( qmcdHashTemp * aTempTable,
                                       void        ** aRow );
 
-    // ë‹¤ìŒ group ìˆœì°¨ ê²€ìƒ‰
-    static IDE_RC      getNextGroup( qmcdHashTemp * aTempTable,
-                                     void        ** aRow );
+    // ´ÙÀ½ group ¼øÂ÷ °Ë»ö
+    inline static IDE_RC getNextGroup( qmcdHashTemp * aTempTable,
+                                       void        ** aRow );
 
     //------------------------------------------------
-    // Hash Temp Tableì˜ ê²€ìƒ‰
+    // Hash Temp TableÀÇ °Ë»ö
     //------------------------------------------------
 
     //-------------------------
-    // ìˆœì°¨ ê²€ìƒ‰
+    // ¼øÂ÷ °Ë»ö
     //-------------------------
 
     static IDE_RC      getFirstSequence( qmcdHashTemp * aTempTable,
                                          void        ** aRow );
-    static IDE_RC      getNextSequence( qmcdHashTemp * aTempTable,
-                                        void        ** aRow );
+    inline static IDE_RC getNextSequence( qmcdHashTemp * aTempTable,
+                                          void        ** aRow );
 
     //-------------------------
-    // Range ê²€ìƒ‰
+    // Range °Ë»ö
     //-------------------------
 
-    static IDE_RC      getFirstRange( qmcdHashTemp * aTempTable,
-                                      UInt           aHashKey,
-                                      qtcNode      * aHashFilter,
-                                      void        ** aRow );
-    static IDE_RC      getNextRange( qmcdHashTemp * aTempTable,
-                                     void        ** aRow );
+    inline static IDE_RC  getFirstRange( qmcdHashTemp * aTempTable,
+                                         UInt           aHashKey,
+                                         qtcNode      * aHashFilter,
+                                         void        ** aRow );
+    inline static IDE_RC getNextRange( qmcdHashTemp * aTempTable,
+                                       void        ** aRow );
 
     //-------------------------
-    // Hit ê²€ìƒ‰
+    // Hit °Ë»ö
     //-------------------------
 
     static IDE_RC      getFirstHit( qmcdHashTemp * aTempTable,
                                     void        ** aRow );
-    static IDE_RC      getNextHit( qmcdHashTemp * aTempTable,
+    inline static IDE_RC getNextHit( qmcdHashTemp * aTempTable,
                                    void        ** aRow );
 
     //-------------------------
-    // Non-Hit ê²€ìƒ‰
+    // Non-Hit °Ë»ö
     //-------------------------
 
     static IDE_RC      getFirstNonHit( qmcdHashTemp * aTempTable,
                                        void        ** aRow );
-    static IDE_RC      getNextNonHit( qmcdHashTemp * aTempTable,
-                                      void        ** aRow );
+    inline static IDE_RC getNextNonHit( qmcdHashTemp * aTempTable,
+                                        void        ** aRow );
 
     //-------------------------
-    // Same Row And Non-Hit ê²€ìƒ‰
+    // Same Row And Non-Hit °Ë»ö
     //-------------------------
 
     static IDE_RC      getSameRowAndNonHit( qmcdHashTemp * aTempTable,
@@ -239,14 +239,14 @@ public:
                                             void        ** aResultRow );
 
     //-------------------------
-    // Null Row ê²€ìƒ‰
+    // Null Row °Ë»ö
     //-------------------------
 
     static IDE_RC      getNullRow( qmcdHashTemp * aTempTable,
                                    void        ** aRow );
     //-------------------------
     // To Fix PR-8213
-    // Same Group ê²€ìƒ‰ (Group Aggregation)ì—ì„œë§Œ ì‚¬ìš©
+    // Same Group °Ë»ö (Group Aggregation)¿¡¼­¸¸ »ç¿ë
     //-------------------------
 
     static IDE_RC      getSameGroup( qmcdHashTemp  * aTempTable,
@@ -254,14 +254,14 @@ public:
                                      void         ** aResultRow );
 
     //------------------------------------------------
-    // Hash Temp Tableì˜ ê¸°íƒ€ í•¨ìˆ˜
+    // Hash Temp TableÀÇ ±âÅ¸ ÇÔ¼ö
     //------------------------------------------------
 
-    // ê²€ìƒ‰ëœ Recordì— Hit Flag ì„¤ì •
-    static IDE_RC      setHitFlag( qmcdHashTemp * aTempTable );
+    // °Ë»öµÈ Record¿¡ Hit Flag ¼³Á¤
+    inline static IDE_RC setHitFlag( qmcdHashTemp * aTempTable );
 
-    // ê²€ìƒ‰ëœ Recordì˜ Hit Flagê°€ ì„¤ì •ë˜ì–´ ìžˆëŠ”ì§€ í™•ì¸
-    static idBool      isHitFlagged( qmcdHashTemp * aTempTable );
+    // °Ë»öµÈ RecordÀÇ Hit Flag°¡ ¼³Á¤µÇ¾î ÀÖ´ÂÁö È®ÀÎ
+    inline static idBool isHitFlagged( qmcdHashTemp * aTempTable );
 
     static IDE_RC      getDisplayInfo( qmcdHashTemp * aTempTable,
                                        ULong        * aDiskPage,
@@ -271,19 +271,431 @@ public:
 private:
 
     //------------------------------------------------
-    // ì´ˆê¸°í™”ë¥¼ ìœ„í•œ í•¨ìˆ˜
+    // ÃÊ±âÈ­¸¦ À§ÇÑ ÇÔ¼ö
     //------------------------------------------------
 
-    // Memory Temp Tableì„ ìœ„í•œ NULL ROW ìƒì„±
+    // Memory Temp TableÀ» À§ÇÑ NULL ROW »ý¼º
     static IDE_RC makeMemNullRow( qmcdHashTemp * aTempTable );
 
     //------------------------------------------------
-    // ì´ˆê¸°í™”ë¥¼ ìœ„í•œ í•¨ìˆ˜
+    // ÃÊ±âÈ­¸¦ À§ÇÑ ÇÔ¼ö
     //------------------------------------------------
 
     static IDE_RC getHashKey( qmcdHashTemp * aTempTable,
                               void         * aRow,
                               UInt         * aHashKey );
 };
+
+IDE_RC
+qmcHashTemp::getFirstRange( qmcdHashTemp * aTempTable,
+                            UInt           aHashKey,
+                            qtcNode      * aHashFilter,
+                            void        ** aRow )
+{
+/***********************************************************************
+ *
+ * Description :
+ *    Ã¹¹øÂ° Range °Ë»ö
+ *
+ * Implementation :
+ *    °Ë»öÀ» À§ÇÑ Hash Key´Â °¢ Plan Node¿¡¼­ »ý¼ºÇÏ¿© Àü´ÞÇÑ´Ù.
+ *
+ ***********************************************************************/
+
+    if ( (aTempTable->flag & QMCD_HASH_TMP_STORAGE_TYPE)
+         == QMCD_HASH_TMP_STORAGE_MEMORY )
+    {
+        //-----------------------------------------
+        // Memory Hash Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
+        //-----------------------------------------
+
+        if ( ( aTempTable->flag & QMCD_HASH_TMP_HASHING_TYPE )
+             == QMCD_HASH_TMP_HASHING_PARTITIONED )
+        {
+            IDE_TEST( qmcMemPartHash::getFirstRange( aTempTable->memoryPartTemp,
+                                                     aHashKey,
+                                                     aHashFilter,
+                                                     aRow )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            IDE_TEST( qmcMemHash::getFirstRange( aTempTable->memoryTemp,
+                                                 aHashKey,
+                                                 aHashFilter,
+                                                 aRow )
+                      != IDE_SUCCESS );
+        }
+    }
+    else
+    {
+        //-----------------------------------------
+        // Disk Hash Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
+        //-----------------------------------------
+
+        IDE_TEST( qmcDiskHash::getFirstRange( aTempTable->diskTemp,
+                                              aHashKey,
+                                              aHashFilter,
+                                              aRow )
+                  != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC
+qmcHashTemp::getNextRange( qmcdHashTemp * aTempTable,
+                           void        ** aRow )
+{
+/***********************************************************************
+ *
+ * Description :
+ *    ´ÙÀ½ Range °Ë»ö
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+    if ( (aTempTable->flag & QMCD_HASH_TMP_STORAGE_TYPE)
+         == QMCD_HASH_TMP_STORAGE_MEMORY )
+    {
+        //-----------------------------------------
+        // Memory Hash Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
+        //-----------------------------------------
+
+        if ( ( aTempTable->flag & QMCD_HASH_TMP_HASHING_TYPE )
+             == QMCD_HASH_TMP_HASHING_PARTITIONED )
+        {
+            IDE_TEST( qmcMemPartHash::getNextRange( aTempTable->memoryPartTemp,
+                                                    aRow )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            IDE_TEST( qmcMemHash::getNextRange( aTempTable->memoryTemp,
+                                                aRow )
+                      != IDE_SUCCESS );
+        }
+    }
+    else
+    {
+        //-----------------------------------------
+        // Disk Hash Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
+        //-----------------------------------------
+
+        IDE_TEST( qmcDiskHash::getNextRange( aTempTable->diskTemp,
+                                             aRow )
+                  != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+
+IDE_RC
+qmcHashTemp::getNextSequence( qmcdHashTemp * aTempTable,
+                              void        ** aRow )
+{
+/***********************************************************************
+ *
+ * Description :
+ *    ´ÙÀ½ ¼øÂ÷ °Ë»ö
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+    if ( (aTempTable->flag & QMCD_HASH_TMP_STORAGE_TYPE)
+         == QMCD_HASH_TMP_STORAGE_MEMORY )
+    {
+        //-----------------------------------------
+        // Memory Hash Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
+        //-----------------------------------------
+
+        if ( ( aTempTable->flag & QMCD_HASH_TMP_HASHING_TYPE )
+             == QMCD_HASH_TMP_HASHING_PARTITIONED )
+        {
+            IDE_TEST( qmcMemPartHash::getNextSequence( aTempTable->memoryPartTemp,
+                                                       aRow )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            IDE_TEST( qmcMemHash::getNextSequence( aTempTable->memoryTemp,
+                                                   aRow )
+                      != IDE_SUCCESS );
+        }
+    }
+    else
+    {
+        //-----------------------------------------
+        // Disk Hash Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
+        //-----------------------------------------
+
+        IDE_TEST( qmcDiskHash::getNextSequence( aTempTable->diskTemp,
+                                                aRow )
+                  != IDE_SUCCESS );
+
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC
+qmcHashTemp::getNextGroup( qmcdHashTemp * aTempTable,
+                           void        ** aRow )
+{
+/***********************************************************************
+ *
+ * Description :
+ *    ´ÙÀ½ Group ¼øÂ÷ °Ë»ö
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+    if ( (aTempTable->flag & QMCD_HASH_TMP_STORAGE_TYPE)
+         == QMCD_HASH_TMP_STORAGE_MEMORY )
+    {
+        //-----------------------------------------
+        // Memory Hash Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
+        //-----------------------------------------
+
+        // PROJ-2553 Grouping Hashing¿¡¼­´Â 
+        // Partitioned Array HashingÀ» »ç¿ëÇØ¼­´Â ¾È µÈ´Ù.
+        IDE_DASSERT( ( aTempTable->flag & QMCD_HASH_TMP_HASHING_TYPE )
+                         != QMCD_HASH_TMP_HASHING_PARTITIONED );
+
+        IDE_TEST( qmcMemHash::getNextSequence( aTempTable->memoryTemp,
+                                               aRow )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        //-----------------------------------------
+        // Disk Hash Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
+        //-----------------------------------------
+
+        IDE_TEST( qmcDiskHash::getNextGroup( aTempTable->diskTemp,
+                                             aRow )
+                  != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC
+qmcHashTemp::getNextHit( qmcdHashTemp * aTempTable,
+                         void        ** aRow )
+{
+/***********************************************************************
+ *
+ * Description :
+ *     ´ÙÀ½ Hit µÈ Row°Ë»ö
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+    if ( (aTempTable->flag & QMCD_HASH_TMP_STORAGE_TYPE)
+         == QMCD_HASH_TMP_STORAGE_MEMORY )
+    {
+        //-----------------------------------------
+        // Memory Hash Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
+        //-----------------------------------------
+
+        if ( ( aTempTable->flag & QMCD_HASH_TMP_HASHING_TYPE )
+             == QMCD_HASH_TMP_HASHING_PARTITIONED )
+        {
+            IDE_TEST( qmcMemPartHash::getNextHit( aTempTable->memoryPartTemp, aRow )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            IDE_TEST( qmcMemHash::getNextHit( aTempTable->memoryTemp, aRow )
+                      != IDE_SUCCESS );
+        }
+    }
+    else
+    {
+        //-----------------------------------------
+        // Disk Hash Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
+        //-----------------------------------------
+
+        IDE_TEST( qmcDiskHash::getNextHit( aTempTable->diskTemp, aRow )
+                  != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+
+
+
+IDE_RC
+qmcHashTemp::getNextNonHit( qmcdHashTemp * aTempTable,
+                            void        ** aRow )
+{
+/***********************************************************************
+ *
+ * Description :
+ *    ´ÙÀ½ Non-Hit Row°Ë»ö
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+    if ( (aTempTable->flag & QMCD_HASH_TMP_STORAGE_TYPE)
+         == QMCD_HASH_TMP_STORAGE_MEMORY )
+    {
+        //-----------------------------------------
+        // Memory Hash Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
+        //-----------------------------------------
+
+        if ( ( aTempTable->flag & QMCD_HASH_TMP_HASHING_TYPE )
+             == QMCD_HASH_TMP_HASHING_PARTITIONED )
+        {
+            IDE_TEST( qmcMemPartHash::getNextNonHit( aTempTable->memoryPartTemp, aRow )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            IDE_TEST( qmcMemHash::getNextNonHit( aTempTable->memoryTemp, aRow )
+                      != IDE_SUCCESS );
+        }
+    }
+    else
+    {
+        //-----------------------------------------
+        // Disk Hash Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
+        //-----------------------------------------
+
+        IDE_TEST( qmcDiskHash::getNextNonHit( aTempTable->diskTemp,
+                                              aRow )
+                  != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+
+IDE_RC
+qmcHashTemp::setHitFlag( qmcdHashTemp * aTempTable )
+{
+/***********************************************************************
+ *
+ * Description :
+ *    ÇöÀç ÀÐ¾î°£ Record¿¡ Hit FlagÀ» ¼³Á¤ÇÑ´Ù.
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+    qmcMemHashElement * sElement;
+
+    if ( (aTempTable->flag & QMCD_HASH_TMP_STORAGE_TYPE)
+         == QMCD_HASH_TMP_STORAGE_MEMORY )
+    {
+        //-----------------------------------------
+        // Memory Hash Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
+        //    1. ÇöÀç ÀÐ°í ÀÖ´Â Record¸¦ Ã£´Â´Ù.
+        //    2. ÇØ´ç Record¿¡ Hit FlagÀ» settingÇÑ´Ù.
+        //-----------------------------------------
+
+        // ÇöÀç ÀÐ°í ÀÖ´Â Record °Ë»ö
+        sElement = (qmcMemHashElement*) aTempTable->recordNode->dstTuple->row;
+
+        // ÇØ´ç Record¿¡ Hit Flag Setting
+        sElement->flag &= ~QMC_ROW_HIT_MASK;
+        sElement->flag |= QMC_ROW_HIT_TRUE;
+    }
+    else
+    {
+        //-----------------------------------------
+        // Disk Hash Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
+        //-----------------------------------------
+
+        IDE_TEST( qmcDiskHash::setHitFlag( aTempTable->diskTemp )
+                  != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+idBool qmcHashTemp::isHitFlagged( qmcdHashTemp * aTempTable )
+{
+/***********************************************************************
+ *
+ * Description  
+ *    ÇöÀç ÀÐ¾î°£ Record¿¡ Hit Flag°¡ ÀÖ´ÂÁö ÆÇ´ÜÇÑ´Ù.
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+    qmcMemHashElement * sElement;
+    idBool              sIsHitFlagged = ID_FALSE;
+
+    if ( (aTempTable->flag & QMCD_HASH_TMP_STORAGE_TYPE)
+         == QMCD_HASH_TMP_STORAGE_MEMORY )
+    {
+        //----------------------------------------------
+        // Memory Hash Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
+        //    1. ÇöÀç ÀÐ°í ÀÖ´Â Record¸¦ Ã£´Â´Ù.
+        //    2. ÇØ´ç Record¿¡ Hit Flag°¡ ÀÖ´ÂÁö ÆÇ´ÜÇÑ´Ù.
+        //----------------------------------------------
+
+        // ÇöÀç ÀÐ°í ÀÖ´Â Record °Ë»ö
+        sElement = (qmcMemHashElement*) aTempTable->recordNode->dstTuple->row;
+
+        // ÇØ´ç Record¿¡ Hit Flag°¡ ÀÖ´ÂÁö ÆÇ´Ü
+        if ( ( sElement->flag & QMC_ROW_HIT_MASK ) == QMC_ROW_HIT_TRUE )
+        {
+            sIsHitFlagged = ID_TRUE;
+        }
+        else
+        {
+            sIsHitFlagged = ID_FALSE;
+        }
+    }
+    else
+    {
+        //-----------------------------------------
+        // Disk Hash Temp TableÀ» »ç¿ëÇÏ´Â °æ¿ì
+        //-----------------------------------------
+
+        sIsHitFlagged = qmcDiskHash::isHitFlagged( aTempTable->diskTemp );
+    }
+
+    return sIsHitFlagged;
+}
 
 #endif /* _O_QMC_HASH_TMEP_TABLE_H_ */

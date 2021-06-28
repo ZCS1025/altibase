@@ -140,25 +140,25 @@ mtdModule mtdBoolean = {
         }
         ,
         {
-            // ì €ì¥ë˜ì§€ ì•ŠëŠ” typeì´ë¯€ë¡œ ì´ ë¶€ë¶„ìœ¼ë¡œ ë“¤ì–´ì˜¬ìˆ˜ ì—†ìŒ
+            // ÀúÀåµÇÁö ¾Ê´Â typeÀÌ¹Ç·Î ÀÌ ºÎºĞÀ¸·Î µé¾î¿Ã¼ö ¾øÀ½
             mtd::compareNA,
             mtd::compareNA
         }
         ,
         {
-            // ì €ì¥ë˜ì§€ ì•ŠëŠ” typeì´ë¯€ë¡œ ì´ ë¶€ë¶„ìœ¼ë¡œ ë“¤ì–´ì˜¬ìˆ˜ ì—†ìŒ
+            // ÀúÀåµÇÁö ¾Ê´Â typeÀÌ¹Ç·Î ÀÌ ºÎºĞÀ¸·Î µé¾î¿Ã¼ö ¾øÀ½
             mtd::compareNA,
             mtd::compareNA            
         }
         ,
         {
-            /* PROJ-2433 : index Direct keyì™€ fixed mt valueë“¤ ê°„ì˜ compare */
+            /* PROJ-2433 : index Direct key¿Í fixed mt valueµé °£ÀÇ compare */
             mtdBooleanMtdMtdKeyComp,
             mtdBooleanMtdMtdKeyComp
         }
         ,
         {
-            /* PROJ-2433 : index Direct keyì™€ mt valueë“¤ ê°„ì˜ compare */
+            /* PROJ-2433 : index Direct key¿Í mt valueµé °£ÀÇ compare */
             mtdBooleanMtdMtdKeyComp,
             mtdBooleanMtdMtdKeyComp
         }
@@ -187,7 +187,7 @@ mtdModule mtdBoolean = {
     mtdBooleanHeaderSize,
 
     // PROJ-2399
-    // header sizeê°€ 0ì„ìœ¼ë¡œ defaultí•¨ìˆ˜ë¥¼ ì‚¬ìš©
+    // header size°¡ 0ÀÓÀ¸·Î defaultÇÔ¼ö¸¦ »ç¿ë
     mtd::mtdStoreSizeDefault
 };
 
@@ -197,7 +197,7 @@ IDE_RC mtdInitialize( UInt aNo )
     
     // IDE_TEST( mtdEstimate( &mtdColumn, 0, 0, 0 ) != IDE_SUCCESS );
 
-    // mtdColumnì˜ ì´ˆê¸°í™”
+    // mtdColumnÀÇ ÃÊ±âÈ­
     IDE_TEST( mtc::initializeColumn( & mtdColumn,
                                      & mtdBoolean,
                                      0,   // arguments
@@ -391,7 +391,7 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
 {
 /***********************************************************************
  *
- * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColum ì´ˆê¸°í™”
+ * Description : valueÀÇ semantic °Ë»ç ¹× mtcColum ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -403,9 +403,9 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
     IDE_TEST_RAISE( aValueSize != ID_SIZEOF(mtdBooleanType),
                     ERR_INVALID_LENGTH);
 
-    // ì´ˆê¸°í™”ëœ aColumnì€ cannonize() ì‹œì— ì‚¬ìš©
-    // ì´ë•Œ, data type moduleì˜ precision ì •ë³´ë§Œì„ ì‚¬ìš©í•˜ë¯€ë¡œ,
-    // language ì •ë³´ ì„¤ì •í•  í•„ìš”ì—†ìŒ
+    // ÃÊ±âÈ­µÈ aColumnÀº cannonize() ½Ã¿¡ »ç¿ë
+    // ÀÌ¶§, data type moduleÀÇ precision Á¤º¸¸¸À» »ç¿ëÇÏ¹Ç·Î,
+    // language Á¤º¸ ¼³Á¤ÇÒ ÇÊ¿ä¾øÀ½
     IDE_TEST( mtc::initializeColumn( aColumn,
                                      & mtdBoolean,
                                      0,   // arguments
@@ -446,20 +446,20 @@ static IDE_RC mtdBooleanStoredValue2MtdValue(UInt         aColumnSize,
 {
 /*******************************************************************
  * PROJ-1705
- * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
- * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
+ * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
+ * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
  *******************************************************************/
 
     mtdBooleanType* sValue;
 
-    // ê³ ì •ê¸¸ì´ ë°ì´íƒ€ íƒ€ì…ì˜ ê²½ìš°
-    // í•˜ë‚˜ì˜ ì»¬ëŸ¼ ë°ì´íƒ€ê°€ ì—¬ëŸ¬í˜ì´ì§€ì— ë‚˜ëˆ„ì–´ ì €ì¥ë˜ëŠ” ê²½ìš°ëŠ” ì—†ë‹¤.
+    // °íÁ¤±æÀÌ µ¥ÀÌÅ¸ Å¸ÀÔÀÇ °æ¿ì
+    // ÇÏ³ªÀÇ ÄÃ·³ µ¥ÀÌÅ¸°¡ ¿©·¯ÆäÀÌÁö¿¡ ³ª´©¾î ÀúÀåµÇ´Â °æ¿ì´Â ¾ø´Ù.
 
     sValue = (mtdBooleanType*)aDestValue;
 
     if( aLength == 0 )
     {
-        // NULL ë°ì´íƒ€
+        // NULL µ¥ÀÌÅ¸
         *sValue = mtdBooleanNull;
     }
     else

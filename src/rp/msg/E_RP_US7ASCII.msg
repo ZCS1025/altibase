@@ -21,8 +21,7 @@
 # 브랜치에서 에러코드를 할당받으시면 안됩니다.
 # 반드시 main trunk에서 번호를 할당받은 후 브랜치에서 사용하셔야 합니다.
 # 의문 사항이 있으시면 AK팀 혹은 QP(품질본부)팀에 문의 부탁드립니다.
-# Last Number = 401
-
+# Last Number = 438
 
 SECTION = 6
 
@@ -2346,6 +2345,12 @@ SECTION = 6
 # *Action:
 #   - Check the role of the replication. Do not use the InfiniBand(IB).
 
+395,rpERR_ABORT_RPC_NOT_DEFAULT_SRID = Only the default SRID can be replicated.
+# *Cause: 
+#   - The SRID of the geometry column is not the default.
+# *Action: 
+#   - Check the SRID of the geometry column.
+
 396,rpERR_ABORT_RP_DDL_SYNC_WITH_PROPAGATION = The propagation option(FOR PROPAGABLE LOGGING/ FOR PROPAGATION) does not support DDL synchronization.
 # *Cause:
 #   - The propagation option(FOR PROPAGABLE LOGGING/ FOR PROPAGATION) does not support DDL synchronization.
@@ -2374,7 +2379,7 @@ SECTION = 6
 400,rpERR_ABORT_PARTITION_COUNT_MISMATCH = The partition count of the replicated table does not match [<0%s>(<1%d>):<2%s>(<3%d>)].
 # *Cause:
 #   - Replicated table partition count mismatch.
-# *Action:
+# *Action: 
 #   - Check the partition count of the replicated table.
 
 401,rpERR_ABORT_SYNC_FAILED_BY_BULK_INSERT = Replication synchronization failed by replication bulk insert.
@@ -2382,6 +2387,229 @@ SECTION = 6
 #   - Bulk insert error has been occurred while executing the received record.
 # *Action: 
 #   - Check the altibase_rp.log file.
+
+402, rpERR_ABORT_SRID_MISMATCH = The geometry SRID of the replicated table's column does not match. [<0%s>(Name:<1%s>, SRID:<2%d>):<3%s>(Name:<4%s>, SRID: <5%d>)].
+# *Cause: 
+#   - Replicated table's column geometry SRID mismatch.
+# *Action: 
+#   - Check the geometry SRID of the replicated table's column.
+
+403, rpERR_ABORT_NOT_SUPPORT_SRID_REMOTE = The geometry SRID of <0%s> table's column is not supported on the remote server;
+# *Cause: 
+#   - The remote server is a version that does not support geometry SRID.
+# *Action: 
+#   - Check the error number from the trace log for more detailed information. And contact Altibase's Support Center (http://support.altibase.com).
+
+404,rpERR_ABORT_RPC_NOT_SUPPORT_REPL_CONDITIONAL_START_AND_EAGER = SYNC CONDITIONAL and START CONDITIONAL clauses are not supported with replication eager mode. 
+# *Cause:
+#   - It's unable to execute the statement, becuase SYNC CONDITIONAL and START CONDITIONAL clauses are not supported with replication eager mode.
+# *Action:
+#   - Check the replication mode.
+
+405, rpERR_ABORT_DDL_SYNC_WITH_LOCK_UNTIL_NEXT_DDL = You cannot execute DDL for the replicated table after performing LOCK.. UNTIL NEXT DDL on REPLICATION_DDL_SYNC enable mode.
+# *Cause: 
+#   - You cannot use the property REPLICATION_DDL_SYNC enable and LOCK.. UNTIL NEX DDL statement on the replicated table.
+# *Action: 
+#   - hange the property REPLICATION_DDL_SYNC to 0(disable) or close a transaction.
+
+406, rpERR_ABORT_RPD_TOO_LONG_MUTEX_NAME = A mutex name is too long. (<0%s>)
+# *Cause:
+# - The Internal mutex name is over 64 characters.
+# *Action:
+# - Check the error number from the trace log and contact Altibase’s Support Center (http://support.altibase.com).
+
+407, rpERR_ABORT_RPD_TOO_LONG_FILE_PATH = A xlogfile full-path is too long. (<0%s>)
+# *Cause:
+# - A xlogfile full-path is over 1024 characters.
+# *Action:
+# - Modify XLOGFILE_DIR property to short full-path.
+
+408, rpERR_ABORT_RPD_FAILURE_UNLINK_FILE = Failed to delete xlogfile. [path=(<0%s>), errcode=<1%d>]
+# *Cause:
+# - The system failed to remove a file, because the file is busy.
+# *Action:
+# - Terminate unnecessary processes. 
+
+409, rpERR_ABORT_RPD_CREATER_THREAD_NOT_ALIVE = <0%s> xlogfile creater thread has beed terminated.
+# *Cause:
+# - The xlogfile creater thread has been terminated.
+# *Action:
+# - Check the error number from the trace log and contact Altibase’s Support Center (http://support.altibase.com).
+
+410, rpERR_ABORT_RPD_FLUSHER_THREAD_NOT_ALIVE = <0%s> xlogfile flusher thread has been terminated.
+# *Cause:
+# - The xlogfile flusher thread has been terminated.
+# *Action:
+# - Check the error number from the trace log and contact Altibase’s Support Center (http://support.altibase.com).
+
+411, rpERR_ABORT_RPN_UNABLE_READ_CONTEXT = Invalid read context.
+# *Cause:
+# - Internal error.
+# *Action:
+# - Check the error number from the trace log and contact Altibase’s Support Center (http://support.altibase.com).
+
+412, rpERR_ABORT_RPX_FAIL_WRITE_XLOG_IN_XLOGFILE = Failed to write xlog into xlogfile.
+# *Cause:
+# - Internal error.
+# *Action:
+# - Check the error number from the trace log and contact Altibase’s Support Center (http://support.altibase.com).
+
+413, rpERR_ABORT_RPC_CONSISTENT_MODE_MUST_HAVE_PARALLEL = syntax error : PARALLEL APPLIER Option is missing on CREATE CONSISTENT REPLICATION statement.
+# *Cause:
+# - Consistent replication should be made with parallel applier option.
+# *Action:
+# - Check the syntax of CREATE CONSISTENT REPLICATION statement.
+
+414, rpERR_ABORT_RPC_NOT_COMPATIBLE_ROLE_OPTION_IN_CONSISTENT_MODE = Unable to use the role option in consistent replication.
+# *Cause:
+# - Cannot create consistent replication with role option, except for parallel applier option.
+# *Action:
+# - Check the constraint for consistent replication.
+
+415, rpERR_ABORT_RPC_CONSISTENT_DO_NOT_HAVE_ANY_OTHER_OPTIONS = Unable to use the option in consistent replication.
+# *Cause:
+# - Unable to use any option in consistent replication, except for parallel applier option.
+# *Action:
+# - Check the constraint for consistent replication.
+
+416, rpERR_ABORT_RPC_FLUSH_XLOGFILE_STATEMENT_CAN_ONLY_RUN_IN_CONSISTENT = ALTER REPLICATION ... FLUSH FROM XLOGFILE statement can be executed only in a consistent mode replication.
+# *Cause:
+# - This statement can be executed only in a consistent mode replication.
+# *Action:
+# - Check if the replication mode is consistent or not.
+
+417, rpERR_ABORT_RPC_FAILED_FLUSH_XLOGFILE = Failed to flush xlog files.
+# *Cause:
+# - Internal error.
+# *Action:
+# - Check the error number from the trace log and contact Altibase’s Support Center (http://support.altibase.com).
+
+418, rpERR_ABORT_RPC_CANNOT_FIND_REMOTE_META = Cannot find the replication remote metadata.
+# *Cause:
+# - Xlogfile recovery receiver must have a replication remote metadata.
+#  *Action:
+# - Check if the replication has started after Altibase server startup.
+# - A replication remote metadata is generated when the replication starts after Altibase server startup.
+ 
+419, rpERR_ABORT_RPC_RECEIVER_IS_WORKING_ON_IT = Xlogfile recovery cannot run while another receiver is working on synchronization or recovery.
+# *Cause:
+# - Another receiver with same replication name is processing on synchronization or recovery.
+#  *Action:
+# - Check whether another receiver with same replication name is processing on synchronization or recovery.
+
+420, rpERR_ABORT_RP_CANNOT_FIND_XLOGFILE = Unable to find a xlogfile related with the replication name. (<0%s>)
+# *Cause:
+# - If the replication has been started once in consistent mode, the xlogfile should exist as "xlogfile_repName_fileno". But the file cannot be found.
+#  *Action:
+# - Check the replication's name and verify that the xlogfile exists in XLOGFILE_DIR.
+
+421, rpERR_ABORT_RPC_NOT_SUPPORT_FAILBACK_THIS_MODE = Failback is not supported in this replication mode.
+# *Cause:
+#   - Failback is supported only in the consistent mode.
+# *Action:
+#   - Verify whether the replication mode is the consistent mode.
+
+422, rpERR_ABORT_RPC_NOT_SUPPORT_RETRY_AND_CONSISTENT = The retry option is not supported when a replication is running in the consistent mode.
+# *Cause:
+#   - The retry option is not supported in the consistent mode.
+# *Action:
+#   - Either remove the retry option or change the replication mode.
+
+423, rpERR_IGNORE_RPX_END_OF_XLOGFILES = Reach end of xlogfiles
+# *Cause:
+#  - Reached end of xlogfiles when consistent receiver is in the read only mode. (not apply mode) 
+# *Action:
+#  - You can safely ignore this message.
+
+424, rpERR_REBUILD_RPD_MISS_MATCH_LOCK_TABLE_AND_META = The replication meta information has been changed.
+# *Cause:
+# - The replication meta information has been changed.
+# *Action:
+# - You may safely ignore this message.
+
+425, rpERR_ABORT_RP_RECEIVER_INITIALIZE_FAIL = The receiver(%s) has not started, because the replication meta information has been changed.
+# *Cause:
+# - The receiver has not started, because the replication meta has been changed.
+# *Action:
+#  - Restart the replication sender.
+
+426, rpERR_ABORT_RP_XLOG_FILE_FAILBACK_MASTER_SENDER_INITIALIZE_FAIL = Failed to perform a failback, because the replication meta information has been changed.
+# *Cause:
+# - Failed to perform a failback, because the replication meta information has been changed.
+# *Action:
+# - Retry 'ALTER REPLICATION repl_name FAILBACK';
+
+427, rpERR_ABORT_RPC_FAILOVER_ONLY_SUPPORT_SHARD_SYSTEM = Failed to perform a replication failover, because SHARD_ENABLE property is not 1.
+# *Cause:
+#   - ALTER REPLICATION ... FAILOVER statement can be executed when SHARD_ENABLE property is 1.
+# *Action:
+#   - Check if SHARD_ENABLE property is 1.
+ 
+428, rpERR_ABORT_RPC_FAILOVER_ONLY_SUPPORT_CONSISTENT_MODE = Failed to perform a replication failover, because the replication mode is not a consistent mode.
+# *Cause:
+#   - ALTER REPLICATION ... FAILOVER statement can be executed only in consistent mode.
+# *Action:
+#   - Check if the replication mode is the consistent mode.
+ 
+429, rpERR_ABORT_OFFLINE_OPTION_IS_NOT_SET = Offline option is not set.
+# *Cause:
+#   - Replication is created without the offline option.
+# *Action: 
+#   - Check the options of the replication.
+ 
+430, rpERR_ABORT_OFFLINE_META_ROLE_NOT_SUPPORT = Offline meta is supported only ANALYSIS. 
+# *Cause:
+#   - This role does not support offline meta.
+# *Action: 
+#   - Check the role of the replication.
+ 
+431, rpERR_ABORT_RPC_ROLE_NOT_SUPPORT_REPL_META_LOGGING = Meta Logging option is supported only ANALYSIS.
+# *Cause:
+#   - This role does not support the Meta Logging option.
+# *Action:
+#   - Check the options or the role of the replication.
+ 
+432, rpERR_ABORT_RP_REMOTE_META_EXIST = BUILD OFFLINE META is already run.
+# *Cause:
+#   - Remote meta already exists.
+# *Action:
+#   - run 'ALTER REPLICATION replication_name RESET OFFLINE META;'
+ 
+433, rpERR_ABORT_RP_REMOTE_META_FILE_IS_CORRUPTED = Remote meta file is corrupt. (Meta End SN : <0%ld>, Restart SN : <1%ld>)
+# *Cause:
+#   - The 'replication_name_META_NEW.bin' file is corrupt. Restart SN is more than Meta End SN of 'replication_name_META_OLD.bin' file.
+# *Action:
+#   - Run 'ALTER REPLICATION replication_name BUILD OFFLINE META AT SN(sn)' with a value less than Meta End SN.
+
+434, rpERR_ABORT_RP_ERR_REMOTE_META_NOT_BUILD_OFFLINE_META = Remote meta is not from building offline meta.
+# *Cause:
+#   - Remote meta is not from building offline meta. 
+# *Action:
+#   - Check the role of the replication.
+ 
+435, rpERR_ABORT_ERR_NO_VALID_METAFILE = There is no valid meta file.
+# *Cause: 
+#   - There is no meta file. Or it's not valid.
+# *Action: 
+#   - 'BUILD OFFLINE META' can't proceed anymore. Contact Altibase's Support Center (http://support.altibase.com).
+ 
+436, rpERR_ABORT_ERR_NO_VALID_SNFILE = There is no valid sn file.
+# *Cause: 
+#   - There is no sn file. Or it's not valid.
+# *Action: 
+#   - 'BUILD OFFLINE META' can't proceed anymore. Contact Altibase's Support Center (http://support.altibase.com).
+ 
+437, rpERR_ABORT_FAIL_TO_CREATE_DIRECTORY = Failed to create meta directory (Dir Name :<0%s> )
+# *Cause:
+#   - The specified directory could not be created.
+# *Action:
+#   - Check the directory path or permission.
+ 
+438, rpERR_ABORT_RP_OFFLINE_ALA_SENDER_PROCESS_DDL = Offline ALA Sender read DDL log.
+# *Cause:
+#   - Offline ALA Sender read DDL log.
+# *Action:
+#   - After executing DDL on the target DB, Offline Adapter should be executed again.
 
 INTERNAL_TRACE_MESSAGE_BEGIN
 
@@ -2412,6 +2640,8 @@ RP_TRC_C_FORCE_PARALLEL_APPLIER            = "[Manager] Receiver Applier [Count 
 PR_TRC_C_SPLIT_PARTITION                   = "[Manager] Replication Name: <%s> Table: <%s>.<%s> Source Partition: <%s> is split Target Partition: <%s> and Target Partition: <%s>";
 PR_TRC_C_MERGE_PARTITION                   = "[Manager] Replication Name: <%s> Table: <%s>.<%s> Source Partition: <%s> and Source Partition: <%s> are merged Target Partition: <%s>"; 
 PR_TRC_C_DROP_PARTITION                    = "[Manager] Replication Name: <%s> Table: <%s>.<%s> Partition: <%s> is dropped";
+RP_TRC_C_FAILOVER_START                    = "[Manager] Replication <%s> Failover start";
+RP_TRC_C_FAILOVER_END                      = "[Manager] Replication <%s> Failover End";
 
 ## rpcHBT
 RP_TRC_HBT_ERR_RUN_COND_TIMEDWAIT     = "[HBT] cond_timedwait() error in run()";
@@ -2524,6 +2754,8 @@ RP_TRC_R_NORMAL_STOP               = "[Receiver] Normal Stop";
 RP_TRC_R_LAST_RECEIVED_SN          = "[Receiver] RepName:<%s> is received at [Last Received SN:<%lu>]";
 RP_TRC_R_LAST_PROCESSED_SN         = "[Receiver] RepName:<%s> is processed at [Last Processed SN:<%lu>]";
 RP_TRC_R_PEER_IP_PORT_NAME         = "[Receiver] Peer IP : <%s>. Peer Port : <%d>. RepName : <%s> ";
+RP_TRC_R_CONSISTENT_RECO_RECEIVER_START = "[Consistent recovery Xlogfile Receiver] Replication <%s> Started ...";
+RP_TRC_R_CONSISTENT_FAILOVER_RECEIVER_START = "[Consistent Failover Receiver] Replication <%s> Started ...";
 
 ## rpxReceiverApply
 RP_TRC_RA_ERR_META           = "[ReceiverApply] <%s>.<%s> does not exist.";
@@ -2586,6 +2818,7 @@ RP_TRC_X_APPLIER_PROCESSED_XLOG_COUNT = "[ReceiverApplier] RepName:<%s> Index:<%
 RP_TRC_X_APPLIER_LAST_PROCESSED_SN    = "[ReceiverApplier] RepName:<%s> Index:<%d> is processed at [Last Processed SN:<%lu>]";
 
 ## rpdMeta
-RP_TRC_R_CONVERT_APPLY_MODE        = "Table( OID : <%ld>, Name : <%s>.<%s>.<%s> ) in replication( Name : <%s> ) is convert apply mode";
+RP_TRC_R_CONVERT_APPLY_SQL_MODE        = "Table( OID : <%ld>, Name : <%s>.<%s>.<%s> ) in replication( Name : <%s> ) is convert apply sql mode";
+RP_TRC_R_CONVERT_APPLY_SKIP_MODE        = "Table( OID : <%ld>, Name : <%s>.<%s>.<%s> ) in replication( Name : <%s> ) is convert apply skip mode";
 
 INTERNAL_TRACE_MESSAGE_END

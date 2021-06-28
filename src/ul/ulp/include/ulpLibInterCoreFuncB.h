@@ -88,10 +88,10 @@ ACI_RC ulpSetDateFmtCore( ulpLibConnNode *aConnNode );
 
 void ulpSetColRowSizeCore( ulpSqlstmt *aSqlstmt );
 
-/* BUG-31405 : Failoverì„±ê³µí›„ Failure of finding statement ì—ëŸ¬ ë°œìƒ. */
+/* BUG-31405 : Failover¼º°øÈÄ Failure of finding statement ¿¡·¯ ¹ß»ı. */
 void ulpSetFailoverFlag( ulpLibConnNode *aConnNode );
 
-/* BUG-25643 : apre ì—ì„œ ONERR êµ¬ë¬¸ì´ ì˜ëª» ë™ì‘í•©ë‹ˆë‹¤. */
+/* BUG-25643 : apre ¿¡¼­ ONERR ±¸¹®ÀÌ Àß¸ø µ¿ÀÛÇÕ´Ï´Ù. */
 ACI_RC ulpGetOnerrErrCodeCore( ulpLibConnNode *aConnNode,
                                ulpSqlstmt     *aSqlstmt,
                                SQLHSTMT       *aHstmt,
@@ -99,7 +99,7 @@ ACI_RC ulpGetOnerrErrCodeCore( ulpLibConnNode *aConnNode,
 
 ACI_RC ulpAdjustArraySize(ulpSqlstmt *aSqlstmt);
 
-/* BUG-45779 PSM Array Bind ê´€ë ¨ í•¨ìˆ˜ ì¶”ê°€ */
+/* BUG-45779 PSM Array Bind °ü·Ã ÇÔ¼ö Ãß°¡ */
 ACI_RC ulpPSMArrayWrite(ulpSqlstmt *aSqlstmt, ulpHostVar *aHostVar, void* aBuffer);
 
 ACI_RC ulpPSMArrayRead(ulpSqlstmt *aSqlstmt, ulpHostVar *aHostVar, void* aBuffer);

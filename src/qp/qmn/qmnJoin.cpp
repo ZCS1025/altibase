@@ -21,18 +21,18 @@
  * Description :
  *     JOIN(JOIN) Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ cartesian productë¥¼ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
- *     ë‹¤ì–‘í•œ Join Methodë“¤ì€ í•˜ìœ„ ë…¸ë“œì˜ í˜•íƒœì— ë”°ë¼ ê²°ì •ëœë‹¤.
+ *     °ü°èÇü ¸ğµ¨¿¡¼­ cartesian product¸¦ ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
+ *     ´Ù¾çÇÑ Join MethodµéÀº ÇÏÀ§ ³ëµåÀÇ ÇüÅÂ¿¡ µû¶ó °áÁ¤µÈ´Ù.
  *
- *     ë‹¤ìŒê³¼ ê°™ì€ ê¸°ëŠ¥ì„ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
+ *     ´ÙÀ½°ú °°Àº ±â´ÉÀ» À§ÇØ »ç¿ëµÈ´Ù.
  *         - Cartesian Product
- *         - Nested Loop Join ê³„ì—´
- *         - Sort-based Join ê³„ì—´
- *         - Hash-based Join ê³„ì—´
+ *         - Nested Loop Join °è¿­
+ *         - Sort-based Join °è¿­
+ *         - Hash-based Join °è¿­
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -52,7 +52,7 @@ qmnJOIN::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    JOIN ë…¸ë“œì˜ ì´ˆê¸°í™”
+ *    JOIN ³ëµåÀÇ ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -81,7 +81,7 @@ qmnJOIN::init( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // Child Planì˜ ì´ˆê¸°í™”
+    // Child PlanÀÇ ÃÊ±âÈ­
     //------------------------------------------------
 
     IDE_TEST( aPlan->left->init( aTemplate,
@@ -89,10 +89,10 @@ qmnJOIN::init( qcTemplate * aTemplate,
 
     /*
      * PROJ-2402 Parallel Table Scan
-     * parallel scan ì˜ ê²½ìš°
-     * í•„ìš”í•œìª½ì— ë¨¼ì € thread ë¥¼ ë¶„ë°°í•˜ê¸° ìœ„í•´
-     * ì˜¤ë¥¸ìª½ì— PRLQ, HASH(ë˜ëŠ” SORT) ê°€ ìˆì„ë•Œ
-     * ì˜¤ë¥¸ìª½ì„ ë¨¼ì € init í•œë‹¤.
+     * parallel scan ÀÇ °æ¿ì
+     * ÇÊ¿äÇÑÂÊ¿¡ ¸ÕÀú thread ¸¦ ºĞ¹èÇÏ±â À§ÇØ
+     * ¿À¸¥ÂÊ¿¡ PRLQ, HASH(¶Ç´Â SORT) °¡ ÀÖÀ»¶§
+     * ¿À¸¥ÂÊÀ» ¸ÕÀú init ÇÑ´Ù.
      */
     if (((aPlan->right->flag & QMN_PLAN_PRLQ_EXIST_MASK) ==
          QMN_PLAN_PRLQ_EXIST_TRUE) &&
@@ -109,7 +109,7 @@ qmnJOIN::init( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
+    // ¼öÇà ÇÔ¼ö °áÁ¤
     //------------------------------------------------
 
     switch( sCodePlan->flag & QMNC_JOIN_TYPE_MASK )
@@ -121,7 +121,7 @@ qmnJOIN::init( qcTemplate * aTemplate,
             {
                 switch ( sCodePlan->plan.flag & QMN_PLAN_JOIN_METHOD_TYPE_MASK )
                 {
-                    // BUG-43950 INVERSE_HASH ë„ doItInverse ë¥¼ ì‚¬ìš©í•œë‹¤.
+                    // BUG-43950 INVERSE_HASH µµ doItInverse ¸¦ »ç¿ëÇÑ´Ù.
                     case QMN_PLAN_JOIN_METHOD_INVERSE_HASH :
                     case QMN_PLAN_JOIN_METHOD_INVERSE_SORT :
                         sDataPlan->doIt = qmnJOIN::doItInverse;
@@ -169,10 +169,10 @@ qmnJOIN::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    JOINì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
+ *    JOINÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *    ì§€ì •ëœ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *    ÁöÁ¤µÈ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼öÇàÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -201,11 +201,11 @@ qmnJOIN::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Null Paddingì„ ìˆ˜í–‰í•œë‹¤.
+ *    Null PaddingÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *    ë³„ë„ì˜ Null Rowë¥¼ ê°€ì§€ì§€ ì•Šìœ¼ë©°,
- *    Childì— ëŒ€í•œ Null Paddingì„ ìˆ˜í–‰í•œë‹¤.
+ *    º°µµÀÇ Null Row¸¦ °¡ÁöÁö ¾ÊÀ¸¸ç,
+ *    Child¿¡ ´ëÇÑ Null PaddingÀ» ¼öÇàÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -228,7 +228,7 @@ qmnJOIN::padNull( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // Child ì— ëŒ€í•œ Null Padding
+    // Child ¿¡ ´ëÇÑ Null Padding
     //------------------------------------------------
 
     IDE_TEST( aPlan->left->padNull( aTemplate, aPlan->left )
@@ -256,7 +256,7 @@ qmnJOIN::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     JOINì˜ ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *     JOINÀÇ ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  * Implementation :
  *
@@ -273,7 +273,7 @@ qmnJOIN::printPlan( qcTemplate   * aTemplate,
     ULong i;
 
     //----------------------------
-    // Display ìœ„ì¹˜ ê²°ì •
+    // Display À§Ä¡ °áÁ¤
     //----------------------------
 
     for ( i = 0; i < aDepth; i++ )
@@ -283,7 +283,7 @@ qmnJOIN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // JOIN ë…¸ë“œ í‘œì‹œ
+    // JOIN ³ëµå Ç¥½Ã
     //----------------------------
 
     switch( sCodePlan->flag & QMNC_JOIN_TYPE_MASK )
@@ -317,17 +317,17 @@ qmnJOIN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Join Method ì¶œë ¥
+    // Join Method Ãâ·Â
     //----------------------------
     qmn::printJoinMethod( aString, sCodePlan->plan.flag );
 
     //----------------------------
-    // Cost ì¶œë ¥
+    // Cost Ãâ·Â
     //----------------------------
     qmn::printCost( aString,
                     sCodePlan->plan.qmgAllCost );
 
-    // Filter ì •ë³´ ì¶œë ¥
+    // Filter Á¤º¸ Ãâ·Â
     if ( sCodePlan->filter != NULL)
     {
         if (QCG_GET_SESSION_TRCLOG_DETAIL_PREDICATE(aTemplate->stmt) == 1)
@@ -350,7 +350,7 @@ qmnJOIN::printPlan( qcTemplate   * aTemplate,
             // Nothing To Do
         }
 
-        // Subquery ì •ë³´ ì¶œë ¥
+        // Subquery Á¤º¸ Ãâ·Â
         IDE_TEST( qmn::printSubqueryPlan( aTemplate,
                                           sCodePlan->filter,
                                           aDepth,
@@ -363,7 +363,7 @@ qmnJOIN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
+    // Operatorº° °á°ú Á¤º¸ Ãâ·Â
     //----------------------------
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
     {
@@ -379,7 +379,7 @@ qmnJOIN::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Child Planì˜ ì •ë³´ ì¶œë ¥
+    // Child PlanÀÇ Á¤º¸ Ãâ·Â
     //----------------------------
 
     IDE_TEST( aPlan->left->printPlan( aTemplate,
@@ -411,7 +411,7 @@ qmnJOIN::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨.
+ *    ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ¸é ¾ÈµÊ.
  *
  * Implementation :
  *
@@ -435,12 +435,12 @@ qmnJOIN::doItLeft( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Leftì—ì„œ í•œê±´, Rightì—ì„œ í•œê±´ ìˆ˜í–‰
+ *    Left¿¡¼­ ÇÑ°Ç, Right¿¡¼­ ÇÑ°Ç ¼öÇà
  *
  * Implementation :
- *    - Leftì—ì„œ í•œê±´ Fetchí•œ í›„ Right ì¶”ì¶œ
- *    - ì¡°ê±´ì— ë§ëŠ” Right ì—†ì„ ê²½ìš° ë‹¤ì‹œ Left ì¶”ì¶œ
- *    - Leftê°€ ì—†ì„ ë•Œê¹Œì§€ ë°˜ë³µ
+ *    - Left¿¡¼­ ÇÑ°Ç FetchÇÑ ÈÄ Right ÃßÃâ
+ *    - Á¶°Ç¿¡ ¸Â´Â Right ¾øÀ» °æ¿ì ´Ù½Ã Left ÃßÃâ
+ *    - Left°¡ ¾øÀ» ¶§±îÁö ¹İº¹
  *
  ***********************************************************************/
 
@@ -455,8 +455,8 @@ qmnJOIN::doItLeft( qcTemplate * aTemplate,
     idBool     sRetry;
 
     //-------------------------------------
-    // Leftì™€ Rightê°€ ëª¨ë‘ ìˆê±°ë‚˜,
-    // Leftê°€ ì—†ì„ ë•Œê¹Œì§€ ë°˜ë³µ ìˆ˜í–‰
+    // Left¿Í Right°¡ ¸ğµÎ ÀÖ°Å³ª,
+    // Left°¡ ¾øÀ» ¶§±îÁö ¹İº¹ ¼öÇà
     //-------------------------------------
 
     while ( ( sFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_NONE )
@@ -467,7 +467,7 @@ qmnJOIN::doItLeft( qcTemplate * aTemplate,
         if ( (*aFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
         {
             // To Fix PR-9822
-            // RightëŠ” Leftê°€ ë³€í•  ë•Œë§ˆë‹¤ ì´ˆê¸°í™”í•´ ì£¼ì–´ì•¼ í•œë‹¤.
+            // Right´Â Left°¡ º¯ÇÒ ¶§¸¶´Ù ÃÊ±âÈ­ÇØ ÁÖ¾î¾ß ÇÑ´Ù.
             IDE_TEST( aPlan->right->init( aTemplate,
                                           aPlan->right ) != IDE_SUCCESS);
 
@@ -492,17 +492,17 @@ qmnJOIN::doItLeft( qcTemplate * aTemplate,
     }
 
     //-------------------------------------
-    // ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
+    // ´ÙÀ½ ¼öÇà ÇÔ¼ö °áÁ¤
     //-------------------------------------
 
     if ( (*aFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
     {
-        // ë‹¤ìŒ ìˆ˜í–‰ ì‹œ Rightë§Œì„ ìš°ì„  ê²€ìƒ‰
+        // ´ÙÀ½ ¼öÇà ½Ã Right¸¸À» ¿ì¼± °Ë»ö
         sDataPlan->doIt = qmnJOIN::doItRight;
     }
     else
     {
-        // ë‹¤ìŒ ìˆ˜í–‰ ì‹œ Leftë¥¼ ìš°ì„  ê²€ìƒ‰
+        // ´ÙÀ½ ¼öÇà ½Ã Left¸¦ ¿ì¼± °Ë»ö
         sDataPlan->doIt = qmnJOIN::doItLeft;
     }
 
@@ -523,11 +523,11 @@ qmnJOIN::doItRight( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ê¸°ì¡´ì˜ LeftëŠ” ë‘ê³  Rightì—ì„œ í•œê±´ ìˆ˜í–‰
+ *    ±âÁ¸ÀÇ Left´Â µÎ°í Right¿¡¼­ ÇÑ°Ç ¼öÇà
  *
  * Implementation :
- *    - Rightë¥¼ ì¶”ì¶œ
- *    - ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´ Leftë¶€í„° ì¶”ì¶œí•˜ë„ë¡ í˜¸ì¶œ
+ *    - Right¸¦ ÃßÃâ
+ *    - Á¸ÀçÇÏÁö ¾Ê´Â´Ù¸é LeftºÎÅÍ ÃßÃâÇÏµµ·Ï È£Ãâ
  *
  ***********************************************************************/
 
@@ -581,8 +581,8 @@ qmnJOIN::doItSemi( qcTemplate * aTemplate,
     idBool       sRetry;
 
     //-------------------------------------
-    // Leftì™€ rightê°€ ëª¨ë‘ ìˆê±°ë‚˜,
-    // ë˜ëŠ” leftê°€ ì—†ì„ ë•Œê¹Œì§€ ë°˜ë³µ ìˆ˜í–‰
+    // Left¿Í right°¡ ¸ğµÎ ÀÖ°Å³ª,
+    // ¶Ç´Â left°¡ ¾øÀ» ¶§±îÁö ¹İº¹ ¼öÇà
     //-------------------------------------
 
     IDE_TEST( aPlan->left->doIt( aTemplate, aPlan->left, &sLeftFlag )
@@ -616,7 +616,7 @@ qmnJOIN::doItSemi( qcTemplate * aTemplate,
         }
     }
 
-    // ìµœì¢… ê²°ê³¼ëŠ” left ê²°ê³¼ì˜ ì¡´ì¬ ìœ ë¬´
+    // ÃÖÁ¾ °á°ú´Â left °á°úÀÇ Á¸Àç À¯¹«
     *aFlag &= ~QMC_ROW_DATA_MASK;
     *aFlag |= ( sLeftFlag & QMC_ROW_DATA_MASK );
 
@@ -638,8 +638,8 @@ qmnJOIN::doItAnti( qcTemplate * aTemplate,
     idBool       sRetry;
 
     //-------------------------------------
-    // Leftë§Œ ìˆê³  rightê°€ ì—†ì„ ë•Œê¹Œì§€,
-    // ë˜ëŠ” leftê°€ ì—†ì„ ë•Œê¹Œì§€ ë°˜ë³µ ìˆ˜í–‰
+    // Left¸¸ ÀÖ°í right°¡ ¾øÀ» ¶§±îÁö,
+    // ¶Ç´Â left°¡ ¾øÀ» ¶§±îÁö ¹İº¹ ¼öÇà
     //-------------------------------------
 
     IDE_TEST( aPlan->left->doIt( aTemplate, aPlan->left, &sLeftFlag )
@@ -673,7 +673,7 @@ qmnJOIN::doItAnti( qcTemplate * aTemplate,
         }
     }
 
-    // ìµœì¢… ê²°ê³¼ëŠ” left ê²°ê³¼ì˜ ì¡´ì¬ ìœ ë¬´
+    // ÃÖÁ¾ °á°ú´Â left °á°úÀÇ Á¸Àç À¯¹«
     *aFlag &= ~QMC_ROW_DATA_MASK;
     *aFlag |= ( sLeftFlag & QMC_ROW_DATA_MASK );
 
@@ -691,11 +691,11 @@ IDE_RC qmnJOIN::doItInverse( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Semi Join Inverse Sort + Anti Join Inverse (Hash + Sort) ì— ëŒ€í•œ ì²˜ë¦¬
+ *     Semi Join Inverse Sort + Anti Join Inverse (Hash + Sort) ¿¡ ´ëÇÑ Ã³¸®
  *
  * Implementation :
- *     ì¼ì¹˜í•˜ëŠ” RIGHT Recordì— Hit Flagë¥¼ ì‘ì„±í•˜ê³ ,
- *     Hit/Non-Hit ëœ RIGHT Recordë¥¼ ë°˜í™˜í•œë‹¤.
+ *     ÀÏÄ¡ÇÏ´Â RIGHT Record¿¡ Hit Flag¸¦ ÀÛ¼ºÇÏ°í,
+ *     Hit/Non-Hit µÈ RIGHT Record¸¦ ¹İÈ¯ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -708,7 +708,7 @@ IDE_RC qmnJOIN::doItInverse( qcTemplate * aTemplate,
     idBool sJudge;
 
     //------------------------------------
-    // Left Rowë¥¼ ëª¨ë‘ íƒìƒ‰
+    // Left Row¸¦ ¸ğµÎ Å½»ö
     //------------------------------------
     
     IDE_TEST( aPlan->left->doIt( aTemplate, aPlan->left, & sLeftFlag )
@@ -721,7 +721,7 @@ IDE_RC qmnJOIN::doItInverse( qcTemplate * aTemplate,
         //------------------------------------
 
         // To Fix PR-9822
-        // RightëŠ” Leftê°€ ë³€í•  ë•Œë§ˆë‹¤ ì´ˆê¸°í™”í•´ ì£¼ì–´ì•¼ í•œë‹¤.
+        // Right´Â Left°¡ º¯ÇÒ ¶§¸¶´Ù ÃÊ±âÈ­ÇØ ÁÖ¾î¾ß ÇÑ´Ù.
         IDE_TEST( aPlan->right->init( aTemplate, 
                                       aPlan->right ) != IDE_SUCCESS);
         while ( ID_TRUE )
@@ -730,7 +730,7 @@ IDE_RC qmnJOIN::doItInverse( qcTemplate * aTemplate,
                       != IDE_SUCCESS );
 
             //------------------------------------
-            // Filter ì¡°ê±´ì„ ë§Œì¡±í•  ë•Œê¹Œì§€ ë°˜ë³µ
+            // Filter Á¶°ÇÀ» ¸¸Á·ÇÒ ¶§±îÁö ¹İº¹
             //------------------------------------
 
             while ( (sRightFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
@@ -806,10 +806,10 @@ IDE_RC qmnJOIN::doItInverseHitFirst( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Semi Join Inverse Sort ì— ëŒ€í•œ ê³„ì†ëœ ì²˜ë¦¬
+ *     Semi Join Inverse Sort ¿¡ ´ëÇÑ °è¼ÓµÈ Ã³¸®
  *
  * Implementation :
- *     Hitëœ Recordë¥¼ ì²˜ìŒìœ¼ë¡œ ê²€ìƒ‰í•œë‹¤
+ *     HitµÈ Record¸¦ Ã³À½À¸·Î °Ë»öÇÑ´Ù
  *
  ***********************************************************************/
     qmncJOIN * sCodePlan = (qmncJOIN *) aPlan;
@@ -820,7 +820,7 @@ IDE_RC qmnJOIN::doItInverseHitFirst( qcTemplate * aTemplate,
                                   aPlan->right ) != IDE_SUCCESS);
     
     //------------------------------------
-    // Rightì— ëŒ€í•˜ì—¬ Hit ê²€ìƒ‰ ëª¨ë“œë¡œ ë³€ê²½
+    // Right¿¡ ´ëÇÏ¿© Hit °Ë»ö ¸ğµå·Î º¯°æ
     //------------------------------------
 
     if ( ( sCodePlan->plan.flag & QMN_PLAN_JOIN_METHOD_TYPE_MASK )
@@ -847,7 +847,7 @@ IDE_RC qmnJOIN::doItInverseHitFirst( qcTemplate * aTemplate,
     }
     else
     {
-        // ê²°ê³¼ ì—†ìŒ
+        // °á°ú ¾øÀ½
         sDataPlan->doIt = qmnJOIN::doItInverse;
     }
 
@@ -865,10 +865,10 @@ IDE_RC qmnJOIN::doItInverseHitNext( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Semi Join Inverse Sort ì— ëŒ€í•œ ê³„ì†ëœ ì²˜ë¦¬
+ *     Semi Join Inverse Sort ¿¡ ´ëÇÑ °è¼ÓµÈ Ã³¸®
  *
  * Implementation :
- *     Hitëœ Recordë¥¼ ê³„ì†í•´ì„œ ê²€ìƒ‰í•œë‹¤
+ *     HitµÈ Record¸¦ °è¼ÓÇØ¼­ °Ë»öÇÑ´Ù
  *
  ***********************************************************************/
     qmndJOIN* sDataPlan = 
@@ -882,7 +882,7 @@ IDE_RC qmnJOIN::doItInverseHitNext( qcTemplate * aTemplate,
     
     if ( ( *aFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_NONE )
     {
-        // ê²°ê³¼ ì—†ìŒ
+        // °á°ú ¾øÀ½
         sDataPlan->doIt = qmnJOIN::doItInverse;
     }
     else
@@ -904,10 +904,10 @@ IDE_RC qmnJOIN::doItInverseNonHitFirst( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Anti Join Inverse ì— ëŒ€í•œ ê³„ì†ëœ ì²˜ë¦¬
+ *     Anti Join Inverse ¿¡ ´ëÇÑ °è¼ÓµÈ Ã³¸®
  *
  * Implementation :
- *     Hitë˜ì§€ ì•Šì€ Recordë¥¼ ì²˜ìŒìœ¼ë¡œ ê²€ìƒ‰í•œë‹¤
+ *     HitµÇÁö ¾ÊÀº Record¸¦ Ã³À½À¸·Î °Ë»öÇÑ´Ù
  *
  ***********************************************************************/
     qmncJOIN * sCodePlan = (qmncJOIN *) aPlan;
@@ -918,7 +918,7 @@ IDE_RC qmnJOIN::doItInverseNonHitFirst( qcTemplate * aTemplate,
                                   aPlan->right ) != IDE_SUCCESS);
     
     //------------------------------------
-    // Rightì— ëŒ€í•˜ì—¬ Non-Hit ê²€ìƒ‰ ëª¨ë“œë¡œ ë³€ê²½
+    // Right¿¡ ´ëÇÏ¿© Non-Hit °Ë»ö ¸ğµå·Î º¯°æ
     //------------------------------------
 
     if ( ( sCodePlan->plan.flag & QMN_PLAN_JOIN_METHOD_TYPE_MASK )
@@ -945,7 +945,7 @@ IDE_RC qmnJOIN::doItInverseNonHitFirst( qcTemplate * aTemplate,
     }
     else
     {
-        // ê²°ê³¼ ì—†ìŒ
+        // °á°ú ¾øÀ½
         sDataPlan->doIt = qmnJOIN::doItInverse;
     }
 
@@ -963,10 +963,10 @@ IDE_RC qmnJOIN::doItInverseNonHitNext( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Anti Join Inverse ì— ëŒ€í•œ ê³„ì†ëœ ì²˜ë¦¬
+ *     Anti Join Inverse ¿¡ ´ëÇÑ °è¼ÓµÈ Ã³¸®
  *
  * Implementation :
- *     Hitë˜ì§€ ì•Šì€ Recordë¥¼ ê³„ì†í•´ì„œ ê²€ìƒ‰í•œë‹¤
+ *     HitµÇÁö ¾ÊÀº Record¸¦ °è¼ÓÇØ¼­ °Ë»öÇÑ´Ù
  *
  ***********************************************************************/
     qmndJOIN* sDataPlan = 
@@ -980,7 +980,7 @@ IDE_RC qmnJOIN::doItInverseNonHitNext( qcTemplate * aTemplate,
     
     if ( ( *aFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_NONE )
     {
-        // ê²°ê³¼ ì—†ìŒ
+        // °á°ú ¾øÀ½
         sDataPlan->doIt = qmnJOIN::doItInverse;
    }
     else
@@ -1039,14 +1039,14 @@ qmnJOIN::firstInit( qmncJOIN   * aCodePlan,
 /***********************************************************************
  *
  * Description :
- *    JOIN nodeì˜ Data ì˜ì—­ì˜ ë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
+ *    JOIN nodeÀÇ Data ¿µ¿ªÀÇ ¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦ ¼öÇà
  *
  * Implementation :
  *
  ***********************************************************************/
 
     //---------------------------------
-    // Hit Flag í•¨ìˆ˜ í¬ì¸í„° ê²°ì •
+    // Hit Flag ÇÔ¼ö Æ÷ÀÎÅÍ °áÁ¤
     //---------------------------------
 
     switch ( aCodePlan->plan.flag & QMN_PLAN_JOIN_METHOD_TYPE_MASK )
@@ -1067,7 +1067,7 @@ qmnJOIN::firstInit( qmncJOIN   * aCodePlan,
     }
      
     //---------------------------------
-    // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
+    // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
     //---------------------------------
 
     *aDataPlan->flag &= ~QMND_JOIN_INIT_DONE_MASK;

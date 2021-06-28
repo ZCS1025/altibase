@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQL.h 84891 2019-02-15 05:17:06Z bethy $
+ * $Id: iSQL.h 88494 2020-09-04 04:29:31Z chkim $
  **********************************************************************/
 
 #ifndef _O_ISQL_H_
@@ -25,28 +25,18 @@
 #include <idl.h>
 #include <ute.h>
 #include <isqlMacros.h>
-
-#define ENV_ISQL_PREFIX                        "ISQL_"
-#define ENV_ALTIBASE_PORT_NO                   "ALTIBASE_PORT_NO"
-#define ENV_ALTIBASE_IPCDA_PORT_NO             "ALTIBASE_IPCDA_PORT_NO"
-#define PROPERTY_PORT_NO                       "PORT_NO"
-#define PROPERTY_IPCDA_PORT_NO                 "IPCDA_PORT_NO"
-#define DEFAULT_PORT_NO                        20300
+#include <uttEnv.h>
 
 #define BAN_FILENAME                           "ISQL.ban"
 #define ISQL_PROMPT_SPACE_STR                  (SChar *)"    "
 
 #define ENV_ALTIBASE_NLS_NCHAR_LITERAL_REPLACE ALTIBASE_ENV_PREFIX"NLS_NCHAR_LITERAL_REPLACE"
 #define ENV_ALTIBASE_TIME_ZONE                 ALTIBASE_ENV_PREFIX"TIME_ZONE"
-#define ENV_ISQL_CONNECTION                    ENV_ISQL_PREFIX"CONNECTION"
-#define ENV_ISQL_EDITOR                        ENV_ISQL_PREFIX"EDITOR"
 #define ENV_ISQL_BUFFER_SIZE                   ENV_ISQL_PREFIX"BUFFER_SIZE"
+#define ENV_ISQL_EDITOR                        ENV_ISQL_PREFIX"EDITOR"
 
 /* BUG-45145 Need to enhance history */
 #define ENV_ISQL_HIST_FILE                     ENV_ISQL_PREFIX"HIST_FILE"
-
-/* BUG-41281 SSL */
-#define ENV_ALTIBASE_SSL_PORT_NO               ALTIBASE_ENV_PREFIX"SSL_PORT_NO"
 
 /* PROJ-2681 IB */
 #define ENV_ALTIBASE_IB_PORT_NO                ALTIBASE_ENV_PREFIX"IB_PORT_NO"
@@ -81,14 +71,14 @@
 #define ISQL_CONNTYPE_UNIX   2
 #define ISQL_CONNTYPE_IPC    3
 #define ISQL_CONNTYPE_SSL    6
-/* PROJ-2616 MM - Local Ï†ëÏÜç ÏÑ±Îä•Í∞úÏÑ† */
+/* PROJ-2616 MM - Local ¡¢º” º∫¥…∞≥º± */
 #define ISQL_CONNTYPE_IPCDA  7
 #define ISQL_CONNTYPE_IB     8
 
 #define WORD_LEN             256
 #define SQL_PROMPT_MAX       50  // BUG-41163
 #define PASSING_PARAM_MAX    239 // BUG-41173
-#define HELP_MSG_CNT         54
+#define HELP_MSG_CNT         55
 #define MAX_PASS_LEN         40
 #define COM_QUEUE_SIZE       21
 #define MAX_TABLE_ELEMENTS   32
@@ -114,6 +104,9 @@
 #define PROMPT_RECONNECT_ON    (0x0002)
 #define PROMPT_REFRESH_ON      (0x0003)
 
+/* BUG-47652 Set file permission */
+extern UInt             gFilePerm;
+
 enum iSQLCommandKind
 {
     NON_COM=-1, ALTER_COM=1, AUTOCOMMIT_COM=2, AUDIT_COM, DATEFORMAT_COM,
@@ -124,7 +117,7 @@ enum iSQLCommandKind
     EDIT_COM,
     EXECUTE_COM, EXEC_FUNC_COM, EXEC_HOST_COM, EXEC_PROC_COM,
     EXIT_COM, EXPLAINPLAN_COM, FOREIGNKEYS_COM,
-    CHECKCONSTRAINTS_COM /* PROJ-1107 Check Constraint ÏßÄÏõê */,
+    CHECKCONSTRAINTS_COM /* PROJ-1107 Check Constraint ¡ˆø¯ */,
     GRANT_COM, HEADING_COM, HELP_COM, HISEDIT_COM, HISRUN_COM, HISTORY_COM,
     INDEX_COM, INSERT_COM, LINESIZE_COM, LOAD_COM, LOCK_COM, MOVE_COM, MERGE_COM, NUMWIDTH_COM,
     OTHER_COM, PAGESIZE_COM,
@@ -141,6 +134,7 @@ enum iSQLCommandKind
     NUMFORMAT_COM, CLEAR_COM,
     PARTITIONS_COM, /* BUG-43516 */
     VERIFY_COM, /* BUG-43599 */
+    MULTIERROR_COM, /* BUG-47627 */
 
     PREFETCHROWS_COM, ASYNCPREFETCH_COM, /* BUG-44613 */
     
@@ -178,13 +172,14 @@ enum iSQLOptionKind
     iSQL_COLSIZE, iSQL_LINESIZE, iSQL_LOBOFFSET, iSQL_LOBSIZE, iSQL_NUMWIDTH, iSQL_PAGESIZE,
     iSQL_SHOW_ALL, iSQL_TERM, iSQL_TIMESCALE, iSQL_TIMING, iSQL_USER, iSQL_VERTICAL, // BUG-22685
     iSQL_FOREIGNKEYS, iSQL_PLANCOMMIT, iSQL_QUERYLOGGING,
-    iSQL_CHECKCONSTRAINTS /* PROJ-1107 Check Constraint ÏßÄÏõê */,
+    iSQL_CHECKCONSTRAINTS /* PROJ-1107 Check Constraint ¡ˆø¯ */,
     iSQL_FEEDBACK, iSQL_AUTOCOMMIT, iSQL_EXPLAINPLAN, iSQL_DATEFORMAT,
     iSQL_ECHO, iSQL_FULLNAME, iSQL_SQLPROMPT, iSQL_DEFINE,
     iSQL_NUMFORMAT, iSQL_CURRENCY,
     iSQL_PARTITIONS,
     iSQL_VERIFY, /* BUG-43599 */
-    iSQL_PREFETCHROWS, iSQL_ASYNCPREFETCH /* BUG-44613 */
+    iSQL_PREFETCHROWS, iSQL_ASYNCPREFETCH, /* BUG-44613 */
+    iSQL_MULTIERROR /* BUG-47627 */
 };
 
 enum iSQLTimeScale
@@ -253,17 +248,28 @@ inline void changeSeparator(const char *aFileName, char *aNewFileName)
 }
 #endif
 
-inline FILE *isql_fopen(const char *aFileName, const char *aMode)
+/* BUG-47652 Set file permission */
+inline FILE *isql_fopen( const char *aFileName, const char *aMode, const idBool aIsExistFilePerm )
 {
+    FILE *sFp = NULL;
+
 #ifdef VC_WIN32
     SChar aNewFileName[256];
 
     changeSeparator(aFileName, aNewFileName);
 
-    return idlOS::fopen(aNewFileName, aMode);
+    sFp = idlOS::fopen( aNewFileName, aMode );
 #else
-    return idlOS::fopen(aFileName, aMode);
+    sFp =  idlOS::fopen( aFileName, aMode );
+
+    /* BUG-47652 Set file permission */
+    if ( aIsExistFilePerm == ID_TRUE && sFp != NULL )
+    {
+        (void) idlOS::fchmod( fileno( sFp ), gFilePerm );
+    }
 #endif
+    
+    return sFp;
 }
 
 extern uteErrorMgr          gErrorMgr;

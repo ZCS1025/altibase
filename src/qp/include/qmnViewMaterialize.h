@@ -21,11 +21,11 @@
  * Description :
  *     VMTR(View MaTeRialization) Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ Viewì— ëŒ€í•œ Materializationì„ ìˆ˜í–‰í•˜ëŠ” Nodeì´ë‹¤.
+ *     °ü°èÇü ¸ğµ¨¿¡¼­ View¿¡ ´ëÇÑ MaterializationÀ» ¼öÇàÇÏ´Â NodeÀÌ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -61,7 +61,7 @@
 typedef struct qmncVMTR
 {
     //---------------------------------
-    // Code ì˜ì—­ ê³µí†µ ì •ë³´
+    // Code ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmnPlan        plan;
@@ -69,7 +69,7 @@ typedef struct qmncVMTR
     UInt           planID;
 
     //---------------------------------
-    // VMTR ê´€ë ¨ ì •ë³´
+    // VMTR °ü·Ã Á¤º¸
     //---------------------------------
 
     qmcMtrNode   * myNode;    
@@ -78,7 +78,7 @@ typedef struct qmncVMTR
 
     qcComponentInfo * componentInfo; // PROJ-2462 Result Cache
     //---------------------------------
-    // Data ì˜ì—­ ê´€ë ¨ ì •ë³´
+    // Data ¿µ¿ª °ü·Ã Á¤º¸
     //---------------------------------
     
     UInt           mtrNodeOffset;
@@ -87,7 +87,7 @@ typedef struct qmncVMTR
 typedef struct qmndVMTR
 {
     //---------------------------------
-    // Data ì˜ì—­ ê³µí†µ ì •ë³´
+    // Data ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmndPlan         plan;
@@ -95,11 +95,11 @@ typedef struct qmndVMTR
     UInt           * flag;      
 
     //---------------------------------
-    // VMTR ê³ ìœ  ì •ë³´
+    // VMTR °íÀ¯ Á¤º¸
     //---------------------------------
     // PROJ-2415 Grouping Sets Clause
-    mtcTuple       * myTuple;     // Tuple ìœ„ì¹˜
-    mtcTuple       * depTuple;    // Dependent Tuple ìœ„ì¹˜
+    mtcTuple       * myTuple;     // Tuple À§Ä¡
+    mtcTuple       * depTuple;    // Dependent Tuple À§Ä¡
     UInt             depValue;    // Dependent Value
     
     qmdMtrNode     * mtrNode;     
@@ -119,11 +119,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ìˆ˜í–‰ í•¨ìˆ˜(í˜¸ì¶œë˜ë©´ ì•ˆë¨)
+    // ¼öÇà ÇÔ¼ö(È£ÃâµÇ¸é ¾ÈµÊ)
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -132,7 +132,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan ì •ë³´ ì¶œë ¥
+    // Plan Á¤º¸ Ãâ·Â
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -143,7 +143,7 @@ public:
     // External Direct Call
     //------------------------
 
-    //  VSCNì—ì„œ VMTRì„ ì ‘ê·¼í•˜ê¸° ìœ„í•œ ì •ë³´ ì¶”ì¶œ
+    //  VSCN¿¡¼­ VMTRÀ» Á¢±ÙÇÏ±â À§ÇÑ Á¤º¸ ÃßÃâ
     static IDE_RC getCursorInfo( qcTemplate       * aTemplate,
                                  qmnPlan          * aPlan,
                                  void            ** aTableHandle,
@@ -151,29 +151,29 @@ public:
                                  qmcdMemSortTemp ** aMemSortTemp,
                                  qmdMtrNode      ** aMemSortRecord );
 
-    // VSCNì—ì„œ Null Rowë¥¼ íšë“í•˜ê¸° ìœ„í•´ í˜¸ì¶œ
+    // VSCN¿¡¼­ Null Row¸¦ È¹µæÇÏ±â À§ÇØ È£Ãâ
     static IDE_RC getNullRowDisk( qcTemplate       * aTemplate,
                                   qmnPlan          * aPlan,
                                   void             * aRow,
                                   scGRID           * aRowRid );
 
-    // VSCNì—ì„œ Null Rowë¥¼ íšë“í•˜ê¸° ìœ„í•´ í˜¸ì¶œ
+    // VSCN¿¡¼­ Null Row¸¦ È¹µæÇÏ±â À§ÇØ È£Ãâ
     static IDE_RC getNullRowMemory( qcTemplate *  aTemplate,
                                     qmnPlan    *  aPlan,
                                     void       ** aRow );
 
-    // VSCNì—ì„œ Row Sizeë¥¼ íšë“í•˜ê¸° ìœ„í•´ í˜¸ì¶œ
+    // VSCN¿¡¼­ Row Size¸¦ È¹µæÇÏ±â À§ÇØ È£Ãâ
     static IDE_RC getNullRowSize( qcTemplate       * aTemplate,
                                   qmnPlan          * aPlan,
                                   UInt             * aRowSize );
 
-    // VSCNì—ì„œ Tupleì„ íšë“í•˜ê¸° ìœ„í•´ í˜¸ì¶œ
+    // VSCN¿¡¼­ TupleÀ» È¹µæÇÏ±â À§ÇØ È£Ãâ
     static IDE_RC getTuple( qcTemplate       * aTemplate,
                             qmnPlan          * aPlan,
                             mtcTuple        ** aTuple );
 
     // PROJ-2582 recursive with
-    // SRECì—ì„œ mtrNodeë¥¼ íšë“í•˜ê¸° ìœ„í•´ í˜¸ì¶œ
+    // SREC¿¡¼­ mtrNode¸¦ È¹µæÇÏ±â À§ÇØ È£Ãâ
     static IDE_RC getMtrNode( qcTemplate       * aTemplate,
                               qmnPlan          * aPlan,
                               qmdMtrNode      ** aNode );
@@ -183,32 +183,32 @@ public:
     
 private:
 
-    // ìµœì´ˆ ì´ˆê¸°í™”
+    // ÃÖÃÊ ÃÊ±âÈ­
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncVMTR   * aCodePlan,
                              qmndVMTR   * aDataPlan );
 
-    // ì €ì¥ Columnì˜ ì´ˆê¸°í™”
+    // ÀúÀå ColumnÀÇ ÃÊ±âÈ­
     static IDE_RC initMtrNode( qcTemplate * aTemplate,
                                qmncVMTR   * aCodePlan,
                                qmndVMTR   * aDataPlan );
 
-    // Temp Tableì˜ ì´ˆê¸°í™”
+    // Temp TableÀÇ ÃÊ±âÈ­
     static IDE_RC initTempTable( qcTemplate * aTemplate,
                                  qmncVMTR   * aCodePlan,
                                  qmndVMTR   * aDataPlan );
 
-    // Childì˜ ìˆ˜í–‰ ê²°ê³¼ë¥¼ ì €ì¥
+    // ChildÀÇ ¼öÇà °á°ú¸¦ ÀúÀå
     static IDE_RC storeChild( qcTemplate * aTemplate,
                               qmncVMTR   * aCodePlan,
                               qmndVMTR   * aDataPlan );
 
-    // ì €ì¥ Rowë¥¼ êµ¬ì„±
+    // ÀúÀå Row¸¦ ±¸¼º
     static IDE_RC setMtrRow( qcTemplate * aTemplate,
                              qmndVMTR   * aDataPlan );
 
     // PROJ-2415 Grouping Sets Clause
-    // Dependency ê²€ì‚¬
+    // Dependency °Ë»ç
     static IDE_RC checkDependency( qcTemplate * /* aTemplate */,
                                    qmncVMTR   * /* aCodePlan */,
                                    qmndVMTR   * aDataPlan,

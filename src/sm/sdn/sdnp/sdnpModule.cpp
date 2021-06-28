@@ -16,7 +16,7 @@
  
 
 /*******************************************************************************
- * $Id: sdnpModule.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdnpModule.cpp 89495 2020-12-14 05:19:22Z emlee $
  ******************************************************************************/
 
 #include <ide.h>
@@ -42,21 +42,21 @@ static IDE_RC sdnpPrepareIteratorMem( const smnIndexModule* );
 
 static IDE_RC sdnpReleaseIteratorMem( const smnIndexModule* );
 
-static IDE_RC sdnpInit( idvSQL                * /* aStatistics */,
-                        sdnpIterator          * aIterator,
+static IDE_RC sdnpInit( sdnpIterator          * aIterator,
                         void                  * aTrans,
                         smcTableHeader        * aTable,
-                        void                  * aIndexHeader,
-                        void                  * aDumpObject,
+                        void                  * /* aIndexHeader */,
+                        void                  * /* aDumpObject */,
                         const smiRange        * aKeyRange,
-                        const smiRange        * aKeyFilter,
+                        const smiRange        * /* aKeyFilter */,
                         const smiCallBack     * aFilter,
                         UInt                    aFlag,
                         smSCN                   aSCN,
-                        smSCN                   /* aInfinite */,
-                        idBool                  aUntouchable,
+                        smSCN                   aInfinite,
+                        idBool                  /* aUntouchable */,
                         smiCursorProperties   * aProperties,
-                        const smSeekFunc     ** aSeekFunc );
+                        const smSeekFunc     ** aSeekFunc,
+                        smiStatement          * aStatement );
 
 static IDE_RC sdnpDest( sdnpIterator  * aIterator );
 
@@ -133,7 +133,6 @@ smnIndexModule sdnpModule = {
     (smTableCursorLockRowFunc) sdnpLockRow,
     (smnDeleteFunc) NULL,
     (smnFreeFunc) NULL,
-    (smnExistKeyFunc) NULL,
     (smnInsertRollbackFunc) NULL,
     (smnDeleteRollbackFunc) NULL,
     (smnAgingFunc) NULL,
@@ -651,8 +650,7 @@ static IDE_RC sdnpReleaseIteratorMem(const smnIndexModule* )
     return IDE_SUCCESS;
 }
 
-static IDE_RC sdnpInit( idvSQL                * /* aStatistics */,
-                        sdnpIterator          * aIterator,
+static IDE_RC sdnpInit( sdnpIterator          * aIterator,
                         void                  * aTrans,
                         smcTableHeader        * aTable,
                         void                  * /* aIndexHeader */,
@@ -665,7 +663,8 @@ static IDE_RC sdnpInit( idvSQL                * /* aStatistics */,
                         smSCN                   aInfinite,
                         idBool                  /* aUntouchable */,
                         smiCursorProperties   * aProperties,
-                        const smSeekFunc     **  aSeekFunc )
+                        const smSeekFunc     ** aSeekFunc, 
+                        smiStatement          * aStatement )
 {
     idvSQL            *sSQLStat;
 
@@ -683,6 +682,7 @@ static IDE_RC sdnpInit( idvSQL                * /* aStatistics */,
     aIterator->mRange           = aRange;
     aIterator->mNxtRange        = NULL;
     aIterator->mFilter          = aFilter;
+    aIterator->mStatement       = aStatement;
 
     IDE_TEST( sctTableSpaceMgr::findSpaceNodeBySpaceID(
                                         aTable->mSpaceID,
@@ -739,8 +739,8 @@ static IDE_RC sdnpBeforeFirst( sdnpIterator       * aIterator,
 
 /*********************************************************
   function description: sdnpBeforeFirstW
-  sdnpBeforeFirstë¥¼ ì ìš©í•˜ê³  smSeekFunctionì„ ì „ì§„ì‹œì¼œ
-  ë‹¤ìŒì—ëŠ” ë‹¤ë¥¸ callbackì´ ë¶ˆë¦¬ë„ë¡ í•œë‹¤.
+  sdnpBeforeFirst¸¦ Àû¿ëÇÏ°í smSeekFunctionÀ» ÀüÁø½ÃÄÑ
+  ´ÙÀ½¿¡´Â ´Ù¸¥ callbackÀÌ ºÒ¸®µµ·Ï ÇÑ´Ù.
 ***********************************************************/
 static IDE_RC sdnpBeforeFirstW( sdnpIterator*       aIterator,
                                 const smSeekFunc** aSeekFunc )
@@ -759,21 +759,21 @@ static IDE_RC sdnpBeforeFirstW( sdnpIterator*       aIterator,
 /*********************************************************
   function description: sdnpBeforeFirstR
 
-  - sdnpBeforeFirstë¥¼ ì ìš©í•˜ê³   lockAllRows4RRì„ ë¶ˆëŸ¬ì„œ,
-  filterë¥¼ ë§Œì¡±ì‹œí‚¤ëŠ”  rowì— ëŒ€í•˜ì—¬ lockì„ í‘œí˜„í•˜ëŠ” undo record
-  ë¥¼ ìƒì„±í•˜ê³  rollptrë¥¼ ì—°ê²°ì‹œí‚¨ë‹¤.
+  - sdnpBeforeFirst¸¦ Àû¿ëÇÏ°í  lockAllRows4RRÀ» ºÒ·¯¼­,
+  filter¸¦ ¸¸Á·½ÃÅ°´Â  row¿¡ ´ëÇÏ¿© lockÀ» Ç¥ÇöÇÏ´Â undo record
+  ¸¦ »ı¼ºÇÏ°í rollptr¸¦ ¿¬°á½ÃÅ²´Ù.
 
-  - sdnpBeforeFirstë¥¼ ë‹¤ì‹œ ì ìš©í•œë‹¤.
+  - sdnpBeforeFirst¸¦ ´Ù½Ã Àû¿ëÇÑ´Ù.
 
-  ë‹¤ìŒë²ˆì— í˜¸ì¶œë  ê²½ìš°ì—ëŠ”  sdnpBeforeFirstRì´ ì•„ë‹Œ
-  ë‹¤ë¥¸ í•¨ìˆ˜ê°€ ë¶ˆë¦¬ë„ë¡ smSeekFunctionì˜ offsetì„ 6ì „ì§„ì‹œí‚¨ë‹¤.
+  ´ÙÀ½¹ø¿¡ È£ÃâµÉ °æ¿ì¿¡´Â  sdnpBeforeFirstRÀÌ ¾Æ´Ñ
+  ´Ù¸¥ ÇÔ¼ö°¡ ºÒ¸®µµ·Ï smSeekFunctionÀÇ offsetÀ» 6ÀüÁø½ÃÅ²´Ù.
 ***********************************************************/
 static IDE_RC sdnpBeforeFirstRR( sdnpIterator *       aIterator,
                                  const smSeekFunc ** aSeekFunc )
 {
     IDE_TEST( sdnpBeforeFirst( aIterator, aSeekFunc ) != IDE_SUCCESS );
 
-    // select for updateë¥¼ ìœ„í•˜ì—¬ lockì„ ë‚˜íƒ€ë‚´ëŠ” undo recordë“¤ ìƒì„±.
+    // select for update¸¦ À§ÇÏ¿© lockÀ» ³ªÅ¸³»´Â undo recordµé »ı¼º.
     IDE_TEST( sdnpLockAllRows4RR( aIterator ) != IDE_SUCCESS );
 
     IDE_TEST( sdnpBeforeFirst( aIterator, aSeekFunc ) != IDE_SUCCESS );
@@ -806,14 +806,14 @@ static IDE_RC sdnpAfterLastRR( sdnpIterator *       /* aIterator */,
 }
 
 /*******************************************************************************
- * Description: ëŒ€ìƒ rowë¥¼ fetch í•´ ì˜¨ í›„, filterë¥¼ ì ìš©í•œë‹¤.
+ * Description: ´ë»ó row¸¦ fetch ÇØ ¿Â ÈÄ, filter¸¦ Àû¿ëÇÑ´Ù.
  *
  * Parameters:
- *  aIterator       - [IN]  Iteratorì˜ í¬ì¸í„°
- *  aSlot           - [IN]  fetchí•  ëŒ€ìƒ rowì˜ slot í¬ì¸í„°
- *  aRowGRID        - [IN]  fetchí•  ëŒ€ìƒ rowì˜ GRID
- *  aDestBuf        - [OUT] fetch í•´ ì˜¨ rowê°€ ì €ì¥ë  buffer
- *  aResult         - [OUT] fetch ê²°ê³¼
+ *  aIterator       - [IN]  IteratorÀÇ Æ÷ÀÎÅÍ
+ *  aSlot           - [IN]  fetchÇÒ ´ë»ó rowÀÇ slot Æ÷ÀÎÅÍ
+ *  aRowGRID        - [IN]  fetchÇÒ ´ë»ó rowÀÇ GRID
+ *  aDestBuf        - [OUT] fetch ÇØ ¿Â row°¡ ÀúÀåµÉ buffer
+ *  aResult         - [OUT] fetch °á°ú
  ******************************************************************************/
 static IDE_RC sdnpFetchAndCheckFilter( sdnpIterator * aIterator,
                                        UChar        * aSlot,
@@ -832,7 +832,7 @@ static IDE_RC sdnpFetchAndCheckFilter( sdnpIterator * aIterator,
 
     *aResult = ID_FALSE;
 
-    /* MVCC schemeì—ì„œ ë‚´ ë²„ì ¼ì— ë§ëŠ” rowë¥¼ ê°€ì ¸ì˜´. */
+    /* MVCC scheme¿¡¼­ ³» ¹öÁ¯¿¡ ¸Â´Â row¸¦ °¡Á®¿È. */
     IDE_TEST( sdcRow::fetch(
                   aIterator->mProperties->mStatistics,
                   NULL, /* aMtx */
@@ -855,10 +855,10 @@ static IDE_RC sdnpFetchAndCheckFilter( sdnpIterator * aIterator,
                   aIsPageLatchReleased )
               != IDE_SUCCESS );
 
-    // deleteëœ rowì´ê±°ë‚˜ insert ì´ì „ ë²„ì ¼ì´ë©´ skip
+    // deleteµÈ rowÀÌ°Å³ª insert ÀÌÀü ¹öÁ¯ÀÌ¸é skip
     IDE_TEST_CONT( sIsRowDeleted == ID_TRUE, skip_deleted_row );
 
-    // filterì ìš©;
+    // filterÀû¿ë;
     IDE_TEST( aIterator->mFilter->callback( aResult,
                                             aDestBuf,
                                             NULL,
@@ -878,15 +878,15 @@ static IDE_RC sdnpFetchAndCheckFilter( sdnpIterator * aIterator,
 
 /*********************************************************
  * function description: sdnpFetchNext.
- * -  beforeFirstë‚˜ ì´ì „ fetchNextê°€ ì €ì¥í•œ keymap sequence
- *    ì „ì§„ì‹œì¼œì„œ ì•„ë˜ì˜ ì‘ì—…ì„ í•œë‹¤.
- *    rowì˜ getValidVersionì„ êµ¬í•˜ê³   filterì ìš©í•œí›„, trueì´ë©´
- *    í•´ë‹¹ rowì˜ ë²„ì ¼ì„ aRowì—  copyí•˜ê³  iteratorì— ìœ„ì¹˜ë¥¼ ì €ì¥í•œë‹¤.
+ * -  beforeFirst³ª ÀÌÀü fetchNext°¡ ÀúÀåÇÑ keymap sequence
+ *    ÀüÁø½ÃÄÑ¼­ ¾Æ·¡ÀÇ ÀÛ¾÷À» ÇÑ´Ù.
+ *    rowÀÇ getValidVersionÀ» ±¸ÇÏ°í  filterÀû¿ëÇÑÈÄ, trueÀÌ¸é
+ *    ÇØ´ç rowÀÇ ¹öÁ¯À» aRow¿¡  copyÇÏ°í iterator¿¡ À§Ä¡¸¦ ÀúÀåÇÑ´Ù.
  *
  * - PR-14121
- *   lock coupling ë°©ì‹ìœ¼ë¡œ ë‹¤ìŒ í˜ì´ì§€ë¥¼ latchë¥¼ ê±¸ê³ ,
- *   í˜„ì¬ í˜ì´ì§€ë¥¼ unlatchí•œë‹¤. ì™œëƒí•˜ë©´, page list ì—°ì‚°ê³¼ì˜ deadlock
- *   ì„ íšŒí”¼í•˜ê¸° ìœ„í•¨ì´ë‹¤.
+ *   lock coupling ¹æ½ÄÀ¸·Î ´ÙÀ½ ÆäÀÌÁö¸¦ latch¸¦ °É°í,
+ *   ÇöÀç ÆäÀÌÁö¸¦ unlatchÇÑ´Ù. ¿Ö³ÄÇÏ¸é, page list ¿¬»ê°úÀÇ deadlock
+ *   À» È¸ÇÇÇÏ±â À§ÇÔÀÌ´Ù.
  ***********************************************************/
 static IDE_RC sdnpFetchNext( sdnpIterator   * aIterator,
                              const void    ** aRow )
@@ -898,8 +898,8 @@ static IDE_RC sdnpFetchNext( sdnpIterator   * aIterator,
     idBool      sIsPageLatchReleased;
     idBool      sIsFetchSuccess = ID_FALSE;
 
-    // tableì˜ ë§ˆì§€ë§‰ í˜ì´ì§€ì˜ nextì— ë„ë‹¬í–ˆê±°ë‚˜,
-    // selet .. from limit 100ë“±ìœ¼ë¡œ ì½ì–´ì•¼ í•  ê°¯ìˆ˜ë„ë‹¬í•œ ê²½ìš°ì„.
+    // tableÀÇ ¸¶Áö¸· ÆäÀÌÁöÀÇ next¿¡ µµ´ŞÇß°Å³ª,
+    // selet .. from limit 100µîÀ¸·Î ÀĞ¾î¾ß ÇÒ °¹¼öµµ´ŞÇÑ °æ¿ìÀÓ.
     if( ( aIterator->mProperties->mReadRecordCount == 0 ) ||
         ( aIterator->mNxtRange == NULL) )
     {
@@ -946,14 +946,14 @@ static IDE_RC sdnpFetchNext( sdnpIterator   * aIterator,
 
             if( sResult == ID_TRUE )
             {
-                //skipí•  ìœ„ì¹˜ê°€ ìˆëŠ” ê²½ìš°, select .. from ..limit 3,10
+                //skipÇÒ À§Ä¡°¡ ÀÖ´Â °æ¿ì, select .. from ..limit 3,10
                 if( aIterator->mProperties->mFirstReadRecordPos == 0 )
                 {
                     if( aIterator->mProperties->mReadRecordCount != 0 )
                     {
-                        //ì½ì–´ì•¼ í•  rowì˜ ê°¯ìˆ˜ ê°ì†Œ
+                        //ÀĞ¾î¾ß ÇÒ rowÀÇ °¹¼ö °¨¼Ò
                         // ex. select .. from limit 100;
-                        // replicationì—ì„œ parallel sync.
+                        // replication¿¡¼­ parallel sync.
                         aIterator->mProperties->mReadRecordCount--;
                         sIsFetchSuccess = ID_TRUE;
                         break;
@@ -988,17 +988,17 @@ static IDE_RC sdnpFetchNext( sdnpIterator   * aIterator,
 
 /*********************************************************
   function description: sdnpLockAllRows4RR
-  - select for update, repeatable readë¥¼ ìœ„í•˜ì—¬ í…Œì´ë¸”ì˜ 
-  ë°ì´íƒ€ ì²«ë²ˆì§¸ í˜ì´ì§€ë¶€í„°, ë§ˆì§€ë§‰ í˜ì´ì§€ê¹Œì§€ filterë¥¼ 
-  ë§Œì¡±ì‹œí‚¤ëŠ”  rowë“¤ì— ëŒ€í•˜ì—¬ row-level lockì„ ë‹¤ìŒê³¼ ê°™ì´ ê±´ë‹¤.
+  - select for update, repeatable read¸¦ À§ÇÏ¿© Å×ÀÌºíÀÇ 
+  µ¥ÀÌÅ¸ Ã¹¹øÂ° ÆäÀÌÁöºÎÅÍ, ¸¶Áö¸· ÆäÀÌÁö±îÁö filter¸¦ 
+  ¸¸Á·½ÃÅ°´Â  rowµé¿¡ ´ëÇÏ¿© row-level lockÀ» ´ÙÀ½°ú °°ÀÌ °Ç´Ù.
 
-   1. rowì— ëŒ€í•˜ì—¬ updateê°€ëŠ¥í•œì§€ íŒë‹¨(sdcRecord::isUpdatable).
-        >  skip flagê°€ ì˜¬ë¼ì˜¤ë©´ skip;
-        >  retryê°€ ì˜¬ë¼ì˜¤ë©´ ë‹¤ì‹œ ë°ì´íƒ€ í˜ì´ì§€ latchë¥¼ ì¡ê³ ,
-           updateê°€ëŠ¥í•œì§€ íŒë‹¨.
-        >  delete bitëœ settingëœ rowì´ë©´ skip
-   2.  filterì ìš©í•˜ì—¬ trueì´ë©´ lock record( lockì„ í‘œí˜„í•˜ëŠ”
-       undo recordìƒì„±ë° rollptr ì—°ê²°.
+   1. row¿¡ ´ëÇÏ¿© update°¡´ÉÇÑÁö ÆÇ´Ü(sdcRecord::isUpdatable).
+        >  skip flag°¡ ¿Ã¶ó¿À¸é skip;
+        >  retry°¡ ¿Ã¶ó¿À¸é ´Ù½Ã µ¥ÀÌÅ¸ ÆäÀÌÁö latch¸¦ Àâ°í,
+           update°¡´ÉÇÑÁö ÆÇ´Ü.
+        >  delete bitµÈ settingµÈ rowÀÌ¸é skip
+   2.  filterÀû¿ëÇÏ¿© trueÀÌ¸é lock record( lockÀ» Ç¥ÇöÇÏ´Â
+       undo record»ı¼º¹× rollptr ¿¬°á.
 ***********************************************************/
 static IDE_RC sdnpLockAllRows4RR( sdnpIterator* aIterator)
 {
@@ -1035,8 +1035,8 @@ static IDE_RC sdnpLockAllRows4RR( sdnpIterator* aIterator)
 
         sdrMiniTrans::setSavePoint( &sMtx, &sSvp );
 
-        /* BUG-39674 : sdnpLockRow4RRì—ì„œ ì‚¬ìš©í•˜ê¸° ìœ„í•˜ì—¬ out parameterë¡œ 
-         * pageí¬ì¸í„°ë¥¼ ì¶”ê°€í•œë‹¤. */
+        /* BUG-39674 : sdnpLockRow4RR¿¡¼­ »ç¿ëÇÏ±â À§ÇÏ¿© out parameter·Î 
+         * pageÆ÷ÀÎÅÍ¸¦ Ãß°¡ÇÑ´Ù. */
         IDE_TEST( sdnpValidateAndGetPageByGRID(
                                     aIterator->mProperties->mStatistics,
                                     &sMtx,
@@ -1051,8 +1051,8 @@ static IDE_RC sdnpLockAllRows4RR( sdnpIterator* aIterator)
 
         if( sIsValidGRID == ID_TRUE )
         {
-            /* BUG-39674 : í•¨ìˆ˜ì˜ ì¸ìë¡œ sdnpValidateAndGetPageByGRID ì—ì„œ ë°›ì€
-             * pageí¬ì¸í„°ë¥¼ ì¶”ê°€í•œë‹¤. */
+            /* BUG-39674 : ÇÔ¼öÀÇ ÀÎÀÚ·Î sdnpValidateAndGetPageByGRID ¿¡¼­ ¹ŞÀº
+             * pageÆ÷ÀÎÅÍ¸¦ Ãß°¡ÇÑ´Ù. */
             IDE_TEST( sdnpLockRow4RR( aIterator,
                                       &sMtx,
                                       &sSvp,
@@ -1115,26 +1115,20 @@ static IDE_RC sdnpLockRow4RR( sdnpIterator  * aIterator,
     idBool              sDummy;
     UInt                sState = 0;
 
-    /* BUG-39674 : [aRow/aPage]Ptr ë¡œ [sSlot/sPage]Ptrë¥¼ ì´ˆê¸°í™” í•˜ê³  sSlotSeqëŠ”
-     * sSlotSeqëŠ” SC_MAKE_SLOTNUM(aGRID)ë¡œ ì´ˆê¸°í™”í•œë‹¤. [aRow/aPage]PtrëŠ” ì´ì „ì—
-     * í˜¸ì¶œëœ sdnpValidateAndGetPageByGRIDí•¨ìˆ˜ì—ì„œ aGridë¥¼ ì´ìš©í•˜ì—¬ êµ¬í•œ slotê³¼
-     * pageì˜ pointer ì´ë‹¤.
+    /* BUG-39674 : [aRow/aPage]Ptr ·Î [sSlot/sPage]Ptr¸¦ ÃÊ±âÈ­ ÇÏ°í sSlotSeq´Â
+     * sSlotSeq´Â SC_MAKE_SLOTNUM(aGRID)·Î ÃÊ±âÈ­ÇÑ´Ù. [aRow/aPage]Ptr´Â ÀÌÀü¿¡
+     * È£ÃâµÈ sdnpValidateAndGetPageByGRIDÇÔ¼ö¿¡¼­ aGrid¸¦ ÀÌ¿ëÇÏ¿© ±¸ÇÑ slot°ú
+     * pageÀÇ pointer ÀÌ´Ù.
      */
     sSlotPtr = aRowPtr;
     sPagePtr = aPagePtr;
     sSlotSeq = SC_MAKE_SLOTNUM(aGRID);
 
-
-    //PROJ-1677 DEQUEUE
-    smiRecordLockWaitInfo  sRecordLockWaitInfo;
-
-    sRecordLockWaitInfo.mRecordLockWaitFlag = SMI_RECORD_LOCKWAIT;
-
-    IDE_ASSERT( aIterator->mProperties->mLockRowBuffer != NULL );
+    IDE_ERROR( aIterator->mProperties->mLockRowBuffer != NULL ); // BUG-47758
 
     sdrMiniTrans::makeStartInfo( aMtx, &sStartInfo );
 
-    /* MVCC schemeì—ì„œ ë‚´ ë²„ì ¼ì— ë§ëŠ” rowë¥¼ ê°€ì ¸ì˜´. */
+    /* MVCC scheme¿¡¼­ ³» ¹öÁ¯¿¡ ¸Â´Â row¸¦ °¡Á®¿È. */
     IDE_TEST( sdcRow::fetch(
                     aIterator->mProperties->mStatistics,
                     aMtx,
@@ -1146,23 +1140,23 @@ static IDE_RC sdnpLockRow4RR( sdnpIterator  * aIterator,
                     SDB_SINGLE_PAGE_READ,
                     aIterator->mProperties->mFetchColumnList,
                     SMI_FETCH_VERSION_LAST,
-                    smLayerCallback::getTSSlotSID( aIterator->mTrans ),
-                    &(aIterator->mSCN ),
-                    &(aIterator->mInfinite),
-                    NULL, /* aIndexInfo4Fetch */
-                    NULL, /* aLobInfo4Fetch */
+                    SD_NULL_SID,/* smLayerCallback::getTSSlotSID( aIterator->mTrans ) */
+                    NULL,       /* &(aIterator->mSCN ) */
+                    NULL,       /* &(aIterator->mInfinite) */
+                    NULL,       /* aIndexInfo4Fetch */
+                    NULL,       /* aLobInfo4Fetch */
                     ((smcTableHeader*)aIterator->mTable)->mRowTemplate,
                     aIterator->mProperties->mLockRowBuffer,
                     &sIsRowDeleted,
                     &sIsPageLatchReleased ) != IDE_SUCCESS );
 
     /* BUG-23319
-     * [SD] ì¸ë±ìŠ¤ Scanì‹œ sdcRow::fetch í•¨ìˆ˜ì—ì„œ Deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆìŒ. */
-    /* row fetchë¥¼ í•˜ëŠ”ì¤‘ì— next rowpieceë¡œ ì´ë™í•´ì•¼ í•˜ëŠ” ê²½ìš°,
-     * ê¸°ì¡´ pageì˜ latchë¥¼ í’€ì§€ ì•Šìœ¼ë©´ deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆë‹¤.
-     * ê·¸ë˜ì„œ page latchë¥¼ í‘¼ ë‹¤ìŒ next rowpieceë¡œ ì´ë™í•˜ëŠ”ë°,
-     * ìƒìœ„ í•¨ìˆ˜ì—ì„œëŠ” page latchë¥¼ í’€ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ output parameterë¡œ í™•ì¸í•˜ê³ 
-     * ìƒí™©ì— ë”°ë¼ ì ì ˆí•œ ì²˜ë¦¬ë¥¼ í•´ì•¼ í•œë‹¤. */
+     * [SD] ÀÎµ¦½º Scan½Ã sdcRow::fetch ÇÔ¼ö¿¡¼­ Deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖÀ½. */
+    /* row fetch¸¦ ÇÏ´ÂÁß¿¡ next rowpiece·Î ÀÌµ¿ÇØ¾ß ÇÏ´Â °æ¿ì,
+     * ±âÁ¸ pageÀÇ latch¸¦ Ç®Áö ¾ÊÀ¸¸é deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖ´Ù.
+     * ±×·¡¼­ page latch¸¦ Ç¬ ´ÙÀ½ next rowpiece·Î ÀÌµ¿ÇÏ´Âµ¥,
+     * »óÀ§ ÇÔ¼ö¿¡¼­´Â page latch¸¦ Ç®¾ú´ÂÁö ¿©ºÎ¸¦ output parameter·Î È®ÀÎÇÏ°í
+     * »óÈ²¿¡ µû¶ó ÀûÀıÇÑ Ã³¸®¸¦ ÇØ¾ß ÇÑ´Ù. */
     if( sIsPageLatchReleased == ID_TRUE )
     {
         IDE_TEST( sdbBufferMgr::getPageByPID(
@@ -1183,8 +1177,8 @@ static IDE_RC sdnpLockRow4RR( sdnpIterator  * aIterator,
         /* BUG-32010 [sm-disk-collection] 'select for update' DRDB module
          * does not consider that the slot directory shift down caused 
          * by ExtendCTS.
-         * PageLatchê°€ í’€ë¦¬ëŠ” ë™ì•ˆ CTL í™•ì¥ìœ¼ë¡œ SlotDirectoryê°€ ë‚´ë ¤ê°ˆ ìˆ˜
-         * ìˆë‹¤. */
+         * PageLatch°¡ Ç®¸®´Â µ¿¾È CTL È®ÀåÀ¸·Î SlotDirectory°¡ ³»·Á°¥ ¼ö
+         * ÀÖ´Ù. */
         sSlotDirPtr  = sdpPhyPage::getSlotDirStartPtr(sPagePtr);
        
         if( sdpSlotDirectory::isUnusedSlotEntry(sSlotDirPtr, sSlotSeq)
@@ -1200,9 +1194,9 @@ static IDE_RC sdnpLockRow4RR( sdnpIterator  * aIterator,
     }
 
     /* BUG-45188
-       ë¹ˆ ë²„í¼ë¡œ STëª¨ë“ˆ ë˜ëŠ” MTëª¨ë“ˆì„ í˜¸ì¶œí•˜ëŠ” ê²ƒì„ ë§‰ëŠ”ë‹¤.
-       sResult = ID_TRUE ë¡œ ì„¸íŒ…í•´ì„œ, sdcRow::isDeleted() == ID_TRUE ë¡œ skip í•˜ë„ë¡ í•œë‹¤.
-       ( ì—¬ê¸°ì„œ ë°”ë¡œ skip í•˜ë©´, row stampingì„ ëª»í•˜ëŠ” ê²½ìš°ê°€ ìˆì–´ì„œ ìœ„ì™€ê°™ì´ ì²˜ë¦¬í•˜ì˜€ë‹¤.) */
+       ºó ¹öÆÛ·Î ST¸ğµâ ¶Ç´Â MT¸ğµâÀ» È£ÃâÇÏ´Â °ÍÀ» ¸·´Â´Ù.
+       sResult = ID_TRUE ·Î ¼¼ÆÃÇØ¼­, sdcRow::isDeleted() == ID_TRUE ·Î skip ÇÏµµ·Ï ÇÑ´Ù.
+       ( ¿©±â¼­ ¹Ù·Î skip ÇÏ¸é, row stampingÀ» ¸øÇÏ´Â °æ¿ì°¡ ÀÖ¾î¼­ À§¿Í°°ÀÌ Ã³¸®ÇÏ¿´´Ù.) */
     if ( sIsRowDeleted == ID_TRUE )
     {
         sResult = ID_TRUE;
@@ -1223,9 +1217,9 @@ static IDE_RC sdnpLockRow4RR( sdnpIterator  * aIterator,
         /* BUG-32010 [sm-disk-collection] 'select for update' DRDB module
             * does not consider that the slot directory shift down caused 
             * by ExtendCTS.
-            * canUpdateRowPieceëŠ” Filtering ì´í›„ì— í•´ì•¼ í•œë‹¤. ê·¸ë ‡ì§€ì•Šìœ¼ë©´
-            * ì „í˜€ ìƒê´€ ì—†ëŠ” Rowì— ëŒ€í•´ ê°±ì‹  ì—¬ë¶€ë¥¼ íŒë‹¨í•˜ë‹¤ê°€ Waití•˜ê²Œ
-            * ëœë‹¤. */
+            * canUpdateRowPiece´Â Filtering ÀÌÈÄ¿¡ ÇØ¾ß ÇÑ´Ù. ±×·¸Áö¾ÊÀ¸¸é
+            * ÀüÇô »ó°ü ¾ø´Â Row¿¡ ´ëÇØ °»½Å ¿©ºÎ¸¦ ÆÇ´ÜÇÏ´Ù°¡ WaitÇÏ°Ô
+            * µÈ´Ù. */
 
         IDE_TEST( sdcRow::canUpdateRowPiece(
                                 aIterator->mProperties->mStatistics,
@@ -1239,17 +1233,13 @@ static IDE_RC sdnpLockRow4RR( sdnpIterator  * aIterator,
                                 ID_FALSE, /* aIsUptLobByAPI */
                                 (UChar**)&sSlotPtr,
                                 &sRetFlag,
-                                &sRecordLockWaitInfo,
                                 NULL, /* aCTSlotIdx */
                                 aIterator->mProperties->mLockWaitMicroSec)
                   != IDE_SUCCESS );
 
         if( sRetFlag == SDC_UPTSTATE_REBUILD_ALREADY_MODIFIED )
         {
-            IDE_TEST( sdcRow::releaseLatchForAlreadyModify( aMtx,
-                                                            aSvp )
-                      != IDE_SUCCESS );
-
+            /* ½½·Ô Á¤º¸ Ãâ·ÂÇÏ°í releaseLatch */
             IDE_RAISE( rebuild_already_modified );
         }
 
@@ -1258,22 +1248,22 @@ static IDE_RC sdnpLockRow4RR( sdnpIterator  * aIterator,
             IDE_CONT( skip_lock_row );
         }
 
-        // deleteëœ rowì´ê±°ë‚˜ insert ì´ì „ ë²„ì ¼ì´ë©´ skip
+        // deleteµÈ rowÀÌ°Å³ª insert ÀÌÀü ¹öÁ¯ÀÌ¸é skip
         if( sdcRow::isDeleted(sSlotPtr) == ID_TRUE )
         {
             IDE_CONT( skip_lock_row );
         }
 
         /*
-         * BUG-25385 disk tableì¸ ê²½ìš°, smì—ì„œ for updateë¬¸ì— ëŒ€í•œ '
-         *           scan limitì´ ì ìš©ë˜ì§€ ì•ŠìŒ. 
+         * BUG-25385 disk tableÀÎ °æ¿ì, sm¿¡¼­ for update¹®¿¡ ´ëÇÑ '
+         *           scan limitÀÌ Àû¿ëµÇÁö ¾ÊÀ½. 
          */
-        //skipí•  ìœ„ì¹˜ê°€ ìˆëŠ” ê²½ìš° ex)select .. from ..limit 3,10
+        //skipÇÒ À§Ä¡°¡ ÀÖ´Â °æ¿ì ex)select .. from ..limit 3,10
         if( aIterator->mProperties->mFirstReadRecordPos == 0 )
         {
             if( aIterator->mProperties->mReadRecordCount != 0 )
             {
-                //ì½ì–´ì•¼ í•  rowì˜ ê°¯ìˆ˜ ê°ì†Œ
+                //ÀĞ¾î¾ß ÇÒ rowÀÇ °¹¼ö °¨¼Ò
                 // ex) select .. from limit 100;
                 aIterator->mProperties->mReadRecordCount--;
             }
@@ -1283,7 +1273,7 @@ static IDE_RC sdnpLockRow4RR( sdnpIterator  * aIterator,
             aIterator->mProperties->mFirstReadRecordPos--;
         }
 
-        /* BUG-45401 : undoable ID_FALSE -> ID_TRUEë¡œ ë³€ê²½ */
+        /* BUG-45401 : undoable ID_FALSE -> ID_TRUE·Î º¯°æ */
         IDE_TEST( sdrMiniTrans::begin(
                                 aIterator->mProperties->mStatistics,
                                 &sLogMtx,
@@ -1304,24 +1294,24 @@ static IDE_RC sdnpLockRow4RR( sdnpIterator  * aIterator,
                                     &sCTSlotIdx ) != IDE_SUCCESS );
         }
 
-        /* allocCTS()ì‹œì— CTL í™•ì¥ì´ ë°œìƒí•˜ëŠ” ê²½ìš°,
-         * CTL í™•ì¥ì¤‘ì— compact page ì—°ì‚°ì´ ë°œìƒí•  ìˆ˜ ìˆë‹¤.
-         * compact page ì—°ì‚°ì´ ë°œìƒí•˜ë©´
-         * í˜ì´ì§€ë‚´ì—ì„œ slotë“¤ì˜ ìœ„ì¹˜(offset)ê°€ ë³€ê²½ë  ìˆ˜ ìˆë‹¤.
-         * ê·¸ëŸ¬ë¯€ë¡œ allocCTS() í›„ì—ëŠ” slot pointerë¥¼ ë‹¤ì‹œ êµ¬í•´ì™€ì•¼ í•œë‹¤. */
+        /* allocCTS()½Ã¿¡ CTL È®ÀåÀÌ ¹ß»ıÇÏ´Â °æ¿ì,
+         * CTL È®ÀåÁß¿¡ compact page ¿¬»êÀÌ ¹ß»ıÇÒ ¼ö ÀÖ´Ù.
+         * compact page ¿¬»êÀÌ ¹ß»ıÇÏ¸é
+         * ÆäÀÌÁö³»¿¡¼­ slotµéÀÇ À§Ä¡(offset)°¡ º¯°æµÉ ¼ö ÀÖ´Ù.
+         * ±×·¯¹Ç·Î allocCTS() ÈÄ¿¡´Â slot pointer¸¦ ´Ù½Ã ±¸ÇØ¿Í¾ß ÇÑ´Ù. */
         /* BUG-32010 [sm-disk-collection] 'select for update' DRDB module
          * does not consider that the slot directory shift down caused 
          * by ExtendCTS. 
-         * AllocCTSê°€ ì•„ë‹ˆë”ë¼ë„, canUpdateRowPieceì—°ì‚°ì— ì˜í•´ LockWait
-         * ì— ë¹ ì§ˆ ê²½ìš°ë„ PageLatchë¥¼ í’€ ìˆ˜ ìˆê³ , ì´ë™ì•ˆ CTL í™•ì¥ì´
-         * ì¼ì–´ë‚  ìˆ˜ ìˆë‹¤.*/
+         * AllocCTS°¡ ¾Æ´Ï´õ¶óµµ, canUpdateRowPiece¿¬»ê¿¡ ÀÇÇØ LockWait
+         * ¿¡ ºüÁú °æ¿ìµµ PageLatch¸¦ Ç® ¼ö ÀÖ°í, ÀÌµ¿¾È CTL È®ÀåÀÌ
+         * ÀÏ¾î³¯ ¼ö ÀÖ´Ù.*/
         sSlotDirPtr  = sdpPhyPage::getSlotDirStartPtr(sPagePtr);
         IDE_TEST( sdpSlotDirectory::getPagePtrFromSlotNum( sSlotDirPtr,
                                                            sSlotSeq,
                                                            &sSlotPtr )
                   != IDE_SUCCESS );
 
-        // lock undo recordë¥¼ ìƒì„±í•œë‹¤.
+        // lock undo record¸¦ »ı¼ºÇÑ´Ù.
         IDE_TEST( sdcRow::lock( aIterator->mProperties->mStatistics,
                                 sSlotPtr,
                                 SD_MAKE_SID_FROM_GRID(aGRID),
@@ -1347,7 +1337,62 @@ static IDE_RC sdnpLockRow4RR( sdnpIterator  * aIterator,
 
     IDE_EXCEPTION( rebuild_already_modified );
     {
-        IDE_SET( ideSetErrorCode( smERR_RETRY_Already_Modified ) );
+        if( aIterator->mStatement->isForbiddenToRetry() == ID_TRUE )
+        {
+            IDE_DASSERT( ((smxTrans*)aIterator->mTrans)->mIsGCTx == ID_TRUE );
+
+            SChar   sMsgBuf[SMI_MAX_ERR_MSG_LEN];
+            sdpCTS *sCTS;
+            smSCN   sFSCNOrCSCN;
+            UChar   sCTSlotIdx;
+            sdcRowHdrInfo   sRowHdrInfo;
+            sdcRowHdrExInfo sRowHdrExInfo;
+
+            sdcRow::getRowHdrInfo( sSlotPtr, &sRowHdrInfo );
+            sCTSlotIdx = sRowHdrInfo.mCTSlotIdx;
+
+            if ( SDC_HAS_BOUND_CTS(sCTSlotIdx) )
+            {
+                sCTS = sdcTableCTL::getCTS( sdpPhyPage::getHdr(sSlotPtr),sCTSlotIdx );
+                SM_SET_SCN( &sFSCNOrCSCN, &sCTS->mFSCNOrCSCN );
+            }
+            else
+            {
+                sdcRow::getRowHdrExInfo( sSlotPtr, &sRowHdrExInfo );
+                SM_SET_SCN( &sFSCNOrCSCN, &sRowHdrExInfo.mFSCNOrCSCN );
+            }
+
+            idlOS::snprintf( sMsgBuf,
+                             SMI_MAX_ERR_MSG_LEN,
+                             "[GRID SCAN VALIDATION(RR)] "
+                             "SpaceID:%"ID_UINT32_FMT", "
+                             "TableOID:%"ID_vULONG_FMT", "
+                             "ViewSCN:%"ID_UINT64_FMT", "
+                             "CSInfiniteSCN:%"ID_UINT64_FMT", "
+                             "CTSlotIdx:%"ID_UINT32_FMT", "
+                             "FSCNOrCSCN:%"ID_UINT64_FMT", "
+                             "InfiniteSCN:%"ID_UINT64_FMT", "
+                             "Deleted:%s ",
+                             ((smcTableHeader*)aIterator->mTable)->mSpaceID,
+                             ((smcTableHeader*)aIterator->mTable)->mSelfOID,
+                             SM_SCN_TO_LONG( aIterator->mSCN ),
+                             SM_SCN_TO_LONG( aIterator->mInfinite ),
+                             sCTSlotIdx,
+                             SM_SCN_TO_LONG( sFSCNOrCSCN ),
+                             SM_SCN_TO_LONG( sRowHdrInfo.mInfiniteSCN ),
+                             SM_SCN_IS_DELETED( sRowHdrInfo.mInfiniteSCN)?"Y":"N" );
+
+            IDE_SET( ideSetErrorCode(smERR_ABORT_StatementTooOld, sMsgBuf) );
+
+            IDE_ERRLOG( IDE_SD_19 );
+        }
+        else
+        {
+            IDE_SET( ideSetErrorCode( smERR_RETRY_Already_Modified ) );
+        }
+
+        IDE_ASSERT( sdcRow::releaseLatchForAlreadyModify( aMtx, aSvp )
+                     == IDE_SUCCESS );
     }
     IDE_EXCEPTION_END;
 
@@ -1358,9 +1403,9 @@ static IDE_RC sdnpLockRow4RR( sdnpIterator  * aIterator,
         IDE_ASSERT( sdrMiniTrans::rollback( &sLogMtx ) == IDE_SUCCESS );
     }
 
-    /* BUG-24151: [SC] Update Retry, Delete Retry, Statement Rebuild Countë¥¼
-     *            AWIë¡œ ì¶”ê°€í•´ì•¼ í•©ë‹ˆë‹¤.*/
-    if( ideGetErrorCode() == smERR_RETRY_Already_Modified)
+    /* BUG-24151: [SC] Update Retry, Delete Retry, Statement Rebuild Count¸¦
+     *            AWI·Î Ãß°¡ÇØ¾ß ÇÕ´Ï´Ù.*/
+    if( ideGetErrorCode() == smERR_RETRY_Already_Modified )
     {
         SMX_INC_SESSION_STATISTIC( sStartInfo.mTrans,
                                    IDV_STAT_INDEX_LOCKROW_RETRY_COUNT,
@@ -1385,14 +1430,14 @@ static IDE_RC sdnpFreeIterator( void * /* aIteratorMem */ )
 }
 
 /**********************************************************************
- * Description: aIteratorê°€ í˜„ì¬ ê°€ë¦¬í‚¤ê³  ìˆëŠ” Rowì— ëŒ€í•´ì„œ XLockì„
- *              íšë“í•©ë‹ˆë‹¤.
+ * Description: aIterator°¡ ÇöÀç °¡¸®Å°°í ÀÖ´Â Row¿¡ ´ëÇØ¼­ XLockÀ»
+ *              È¹µæÇÕ´Ï´Ù.
  *
  * aProperties - [IN] Index Iterator
  *
  * Related Issue:
- *   BUG-19068: smiTableCursorê°€ í˜„ì¬ê°€ë¦¬í‚¤ê³  ìˆëŠ” Rowì— ëŒ€í•´ì„œ
- *              Lockì„ ì¡ì„ìˆ˜ ì‡ëŠ” Interfaceê°€ í•„ìš”í•©ë‹ˆë‹¤.
+ *   BUG-19068: smiTableCursor°¡ ÇöÀç°¡¸®Å°°í ÀÖ´Â Row¿¡ ´ëÇØ¼­
+ *              LockÀ» ÀâÀ»¼ö ÀÕ´Â Interface°¡ ÇÊ¿äÇÕ´Ï´Ù.
  *
  *********************************************************************/
 static IDE_RC sdnpLockRow( sdnpIterator* aIterator )
@@ -1402,18 +1447,19 @@ static IDE_RC sdnpLockRow( sdnpIterator* aIterator )
                                 &(aIterator->mSCN),
                                 &(aIterator->mInfinite),
                                 ((smcTableHeader*)aIterator->mTable)->mSpaceID,
-                                SD_MAKE_RID_FROM_GRID(aIterator->mRowGRID) );
+                                SD_MAKE_RID_FROM_GRID(aIterator->mRowGRID),
+                                aIterator->mStatement->isForbiddenToRetry() );
 }
 
 /*******************************************************************************
- * Description: DRDBì— ëŒ€í•œ GRIDê°€ ìœ íš¨í•œì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜
+ * Description: DRDB¿¡ ´ëÇÑ GRID°¡ À¯È¿ÇÑÁö È®ÀÎÇÏ´Â ÇÔ¼ö
  *  
  * Parameters:        
  *  - aStatistics   [IN] idvSQL
- *  - aTableHdr     [IN] Fetch ëŒ€ìƒ tableì˜ header
- *  - aMtx          [IN] Fetch ëŒ€ìƒ pageë¥¼ getPageí•˜ì—¬ ê²€ì¦í•˜ê¸° ìœ„í•œ mtx
- *  - aGRID         [IN] ê²€ì¦ ëŒ€ìƒ GRID
- *  - aIsValidGRID  [OUT] ìœ íš¨í•œ GRIDì¸ì§€ ì—¬ë¶€ë¥¼ ë°˜í™˜
+ *  - aTableHdr     [IN] Fetch ´ë»ó tableÀÇ header
+ *  - aMtx          [IN] Fetch ´ë»ó page¸¦ getPageÇÏ¿© °ËÁõÇÏ±â À§ÇÑ mtx
+ *  - aGRID         [IN] °ËÁõ ´ë»ó GRID
+ *  - aIsValidGRID  [OUT] À¯È¿ÇÑ GRIDÀÎÁö ¿©ºÎ¸¦ ¹İÈ¯
  ******************************************************************************/
 static IDE_RC sdnpValidateAndGetPageByGRID(
                                         idvSQL              * aStatistics,
@@ -1440,22 +1486,19 @@ static IDE_RC sdnpValidateAndGetPageByGRID(
 
     *aIsValidGRID = ID_FALSE;
 
-    /* ì½ì„ ìˆ˜ ìˆëŠ” GRIDì¸ì§€ ê²€ì‚¬ */
-    IDE_TEST_CONT( SC_GRID_IS_NULL(aGRID) == ID_TRUE,
-                    error_invalid_grid );
-
-    IDE_TEST_CONT( SC_GRID_IS_WITH_SLOTNUM(aGRID) == ID_FALSE,
-                    error_invalid_grid );
+    /* ÀĞÀ» ¼ö ÀÖ´Â GRIDÀÎÁö °Ë»ç */
+    IDE_TEST_CONT( SC_GRID_IS_NULL(aGRID), error_invalid_grid );
+    IDE_TEST_CONT( SC_GRID_IS_NOT_WITH_SLOTNUM(aGRID) , error_invalid_grid );
 
     sSpaceID = SC_MAKE_SPACE(aGRID);
     sPageID  = SC_MAKE_PID(aGRID);
     sSlotNum = SC_MAKE_SLOTNUM(aGRID);
 
-    /* GRIDì™€ iteratorì˜ SpaceID ì¼ì¹˜ ê²€ì‚¬ */
+    /* GRID¿Í iteratorÀÇ SpaceID ÀÏÄ¡ °Ë»ç */
     IDE_TEST_CONT( sSpaceID != aTableHdr->mSpaceID,
                     error_invalid_grid );
 
-    /* GRIDì˜ PageIDê°€ ìœ íš¨í•œ PageID ë²”ìœ„ ì•ˆì¸ì§€ í™•ì¸ */
+    /* GRIDÀÇ PageID°¡ À¯È¿ÇÑ PageID ¹üÀ§ ¾ÈÀÎÁö È®ÀÎ */
     IDE_TEST( sddTableSpace::getDataFileNodeByPageID( aTBSNode,
                                                       sPageID,
                                                       &sFileNode,
@@ -1467,7 +1510,7 @@ static IDE_RC sdnpValidateAndGetPageByGRID(
         sdrMiniTrans::setSavePoint( aMtx, &sSvp );
     }
 
-    /* Pageë¥¼ ì½ì–´ì„œ TableOIDê°€ ì¼ì¹˜í•˜ëŠ”ì§€ í™•ì¸ */
+    /* Page¸¦ ÀĞ¾î¼­ TableOID°¡ ÀÏÄ¡ÇÏ´ÂÁö È®ÀÎ */
     IDE_TEST( sdbBufferMgr::getPageByPID( aStatistics,
                                           sSpaceID,
                                           sPageID,
@@ -1486,11 +1529,11 @@ static IDE_RC sdnpValidateAndGetPageByGRID(
     IDE_TEST_CONT( sPageHdr->mTableOID != aTableHdr->mSelfOID,
                     error_invalid_grid );
 
-    /* Data pageê°€ ë§ëŠ”ì§€ í™•ì¸ */
+    /* Data page°¡ ¸Â´ÂÁö È®ÀÎ */
     IDE_TEST_CONT( sdpPhyPage::getPageType(sPageHdr) != SDP_PAGE_DATA,
                     error_invalid_grid );
 
-    /* GRIDì˜ SlotNumì´ pageì˜ slot count ë¯¸ë§Œì¸ì§€ í™•ì¸ */ 
+    /* GRIDÀÇ SlotNumÀÌ pageÀÇ slot count ¹Ì¸¸ÀÎÁö È®ÀÎ */ 
     sSlotDir   = sdpPhyPage::getSlotDirStartPtr(sPagePtr);
     sSlotCount = sdpSlotDirectory::getCount(sSlotDir);
 
@@ -1499,7 +1542,7 @@ static IDE_RC sdnpValidateAndGetPageByGRID(
     IDE_TEST_CONT( sdpSlotDirectory::isUnusedSlotEntry(sSlotDir, sSlotNum)
                     == ID_TRUE, error_invalid_grid )
 
-    /* slot pointerë¥¼ ì–»ì–´ì„œ out parameterì— ì„¤ì •í•´ ì¤€ë‹¤. */
+    /* slot pointer¸¦ ¾ò¾î¼­ out parameter¿¡ ¼³Á¤ÇØ ÁØ´Ù. */
     IDE_TEST( sdpSlotDirectory::getPagePtrFromSlotNum( sSlotDir,
                                                        SC_MAKE_SLOTNUM(aGRID),
                                                        &sSlotPtr)
@@ -1508,13 +1551,13 @@ static IDE_RC sdnpValidateAndGetPageByGRID(
     IDE_TEST_CONT( sdcRow::isHeadRowPiece(sSlotPtr) != ID_TRUE,
                     error_invalid_grid );
 
-    /* ëª¨ë“  ê²€ì‚¬ë¥¼ í†µê³¼í•˜ì˜€ìœ¼ë¯€ë¡œ out parameterì— slot pointer í• ë‹¹í•´ì„œ ë„˜ê¹€. */
+    /* ¸ğµç °Ë»ç¸¦ Åë°úÇÏ¿´À¸¹Ç·Î out parameter¿¡ slot pointer ÇÒ´çÇØ¼­ ³Ñ±è. */
     *aRowPtr = sSlotPtr;
     *aIsValidGRID = ID_TRUE;
     
-    /* BUG-39674 : out parameterì— Page pointer í• ë‹¹í•´ì„œ ë„˜ê¹€. 
-     * ì´ í•¨ìˆ˜ ( sdnpValidateAndGetPageByGRID ) ë¥¼ í˜¸ì¶œí•˜ëŠ” í•¨ìˆ˜ì¤‘ smnpFetchNext
-     * ì—ì„œëŠ” page pointerë¥¼ ë„˜ê¸¸ í•„ìš”ê°€ ì—†ê¸° ë•Œë¬¸ì— í•´ë‹¹ ì¸ìë¥¼ NULLë¡œ ë°›ìŒ 
+    /* BUG-39674 : out parameter¿¡ Page pointer ÇÒ´çÇØ¼­ ³Ñ±è. 
+     * ÀÌ ÇÔ¼ö ( sdnpValidateAndGetPageByGRID ) ¸¦ È£ÃâÇÏ´Â ÇÔ¼öÁß smnpFetchNext
+     * ¿¡¼­´Â page pointer¸¦ ³Ñ±æ ÇÊ¿ä°¡ ¾ø±â ¶§¹®¿¡ ÇØ´ç ÀÎÀÚ¸¦ NULL·Î ¹ŞÀ½ 
      */  
     if( aPagePtr != NULL )
     {

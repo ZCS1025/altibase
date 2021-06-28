@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qmoUtil.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmoUtil.cpp 90192 2021-03-12 02:01:03Z jayce.park $
  **********************************************************************/
 
 #include <idl.h>
@@ -60,8 +60,8 @@ IDE_RC qmoUtil::printPredInPlan(qcTemplate   * aTemplate,
     IDU_FIT_POINT_FATAL( "qmoUtil::printPredInPlan::__FT__" );
 
     // To Fix PR-9044
-    // Transform ë“±ìœ¼ë¡œ ì¸í•´ Predicateì •ë³´ë¥¼ ì¶œë ¥í•  ìˆ˜ ì—†ëŠ” ê²½ìš°ê°€
-    // ìžˆìœ¼ë¯€ë¡œ, ì•„ë¬´ê²ƒë„ ì¶œë ¥í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // Transform µîÀ¸·Î ÀÎÇØ PredicateÁ¤º¸¸¦ Ãâ·ÂÇÒ ¼ö ¾ø´Â °æ¿ì°¡
+    // ÀÖÀ¸¹Ç·Î, ¾Æ¹«°Íµµ Ãâ·ÂÇÏÁö ¾Ê´Â´Ù.
 
     if ( ( aNode->node.lflag &
          ( MTC_NODE_LOGICAL_CONDITION_MASK | MTC_NODE_OPERATOR_MASK ) )
@@ -95,7 +95,7 @@ IDE_RC qmoUtil::printPredInPlan(qcTemplate   * aTemplate,
                   != IDE_SUCCESS );
             
         // PROJ-1404
-        // Transitive Predicateì¸ ê²½ìš° í‘œì‹œí•œë‹¤.
+        // Transitive PredicateÀÎ °æ¿ì Ç¥½ÃÇÑ´Ù.
         if ( (aNode->lflag & QTC_NODE_TRANS_PRED_MASK)
              == QTC_NODE_TRANS_PRED_EXIST )
         {
@@ -186,7 +186,7 @@ IDE_RC qmoUtil::unparseFrom( qcTemplate   * aTemplate,
 
                 if ( QC_IS_NAME_MATCHED( aFrom->tableRef->tableName, aFrom->tableRef->aliasName ) )
                 {
-                    // Tableì´ë¦„ê³¼ aliasê°€ ë™ì¼í•œ ê²½ìš° aliasëŠ” ì¶œë ¥í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                    // TableÀÌ¸§°ú alias°¡ µ¿ÀÏÇÑ °æ¿ì alias´Â Ãâ·ÂÇÏÁö ¾Ê´Â´Ù.
                     sUnparseAlias = ID_FALSE;
                 }
                 else
@@ -271,104 +271,112 @@ IDE_RC qmoUtil::unparsePredicate( qcTemplate   * aTemplate,
 
     IDU_FIT_POINT_FATAL( "qmoUtil::unparsePredicate::__FT__" );
 
-    switch( aNode->node.lflag & MTC_NODE_OPERATOR_MASK )
+    if ( ( aNode->node.lflag  & MTC_NODE_PUSHED_PRED_FORCE_MASK )
+         == MTC_NODE_PUSHED_PRED_FORCE_TRUE ) 
     {
-        case MTC_NODE_OPERATOR_AND:
-            if( aIsRoot == ID_FALSE )
-            {
-                iduVarStringAppend( aString, "(" );
-            }
+        iduVarStringAppend( aString, "[REMOVED]" );
+    }
+    else
+    {
+        switch( aNode->node.lflag & MTC_NODE_OPERATOR_MASK )
+        {
+            case MTC_NODE_OPERATOR_AND:
+                if( aIsRoot == ID_FALSE )
+                {
+                    iduVarStringAppend( aString, "(" );
+                }
 
-            for( sArg = aNode->node.arguments;
-                 sArg != NULL;
-                 sArg = sArg->next )
-            {
+                for( sArg = aNode->node.arguments;
+                     sArg != NULL;
+                     sArg = sArg->next )
+                {
+                    IDE_TEST( unparsePredicate( aTemplate,
+                                                aString,
+                                                (qtcNode *)sArg,
+                                                ID_FALSE )
+                              != IDE_SUCCESS );
+
+                    if( sArg->next != NULL )
+                    {
+                        iduVarStringAppend( aString, " AND " );
+                    }
+                    else
+                    {
+                        // Nothing to do.
+                    }
+                }
+
+                if( aIsRoot == ID_FALSE )
+                {
+                    iduVarStringAppend( aString, ")" );
+                }
+                break;
+            case MTC_NODE_OPERATOR_OR:
+                if( aIsRoot == ID_FALSE )
+                {
+                    iduVarStringAppend( aString, "(" );
+                }
+
+                for( sArg = aNode->node.arguments;
+                     sArg != NULL;
+                     sArg = sArg->next )
+                {
+                    IDE_TEST( unparsePredicate( aTemplate,
+                                                aString,
+                                                (qtcNode *)sArg,
+                                                ID_FALSE )
+                              != IDE_SUCCESS );
+
+                    if( sArg->next != NULL )
+                    {
+                        iduVarStringAppend( aString, " OR " );
+                    }
+                    else
+                    {
+                        // Nothing to do.
+                    }
+                }
+
+                if( aIsRoot == ID_FALSE )
+                {
+                    iduVarStringAppend( aString, ")" );
+                }
+                break;
+            case MTC_NODE_OPERATOR_NOT:
+                iduVarStringAppend( aString, "NOT " );
                 IDE_TEST( unparsePredicate( aTemplate,
                                             aString,
-                                            (qtcNode *)sArg,
+                                            (qtcNode *)aNode->node.arguments,
                                             ID_FALSE )
                           != IDE_SUCCESS );
+                break;
+            default:
+                IDE_TEST( printExpressionInPlan( aTemplate,
+                                                 aString,
+                                                 aNode,
+                                                 QMO_PRINT_UPPER_NODE_NORMAL )
+                          != IDE_SUCCESS );
 
-                if( sArg->next != NULL )
+                if ( ( aNode->node.lflag & MTC_NODE_LOGICAL_CONDITION_MASK )
+                     == MTC_NODE_LOGICAL_CONDITION_TRUE )
                 {
-                    iduVarStringAppend( aString, " AND " );
+                    for (sArg = aNode->node.arguments;
+                         sArg != NULL;
+                         sArg = sArg->next)
+                    {
+                        IDE_TEST( unparsePredicate(aTemplate,
+                                                   aString,
+                                                   (qtcNode *)sArg,
+                                                   ID_FALSE )
+                                  != IDE_SUCCESS);
+                    }
                 }
                 else
                 {
                     // Nothing to do.
                 }
-            }
-
-            if( aIsRoot == ID_FALSE )
-            {
-                iduVarStringAppend( aString, ")" );
-            }
-            break;
-        case MTC_NODE_OPERATOR_OR:
-            if( aIsRoot == ID_FALSE )
-            {
-                iduVarStringAppend( aString, "(" );
-            }
-
-            for( sArg = aNode->node.arguments;
-                 sArg != NULL;
-                 sArg = sArg->next )
-            {
-                IDE_TEST( unparsePredicate( aTemplate,
-                                               aString,
-                                               (qtcNode *)sArg,
-                                               ID_FALSE )
-                             != IDE_SUCCESS );
-
-                if( sArg->next != NULL )
-                {
-                    iduVarStringAppend( aString, " OR " );
-                }
-                else
-                {
-                    // Nothing to do.
-                }
-            }
-
-            if( aIsRoot == ID_FALSE )
-            {
-                iduVarStringAppend( aString, ")" );
-            }
-            break;
-        case MTC_NODE_OPERATOR_NOT:
-            iduVarStringAppend( aString, "NOT " );
-            IDE_TEST( unparsePredicate( aTemplate,
-                                        aString,
-                                        (qtcNode *)aNode->node.arguments,
-                                        ID_FALSE )
-                      != IDE_SUCCESS );
-            break;
-        default:
-            IDE_TEST( printExpressionInPlan( aTemplate,
-                                             aString,
-                                             aNode,
-                                             QMO_PRINT_UPPER_NODE_NORMAL )
-                      != IDE_SUCCESS );
-
-            if ( ( aNode->node.lflag & MTC_NODE_LOGICAL_CONDITION_MASK )
-                 == MTC_NODE_LOGICAL_CONDITION_TRUE )
-            {
-                for (sArg = aNode->node.arguments;
-                     sArg != NULL;
-                     sArg = sArg->next)
-                {
-                    IDE_TEST( unparsePredicate(aTemplate,
-                                               aString,
-                                               (qtcNode *)sArg,
-                                               ID_FALSE )
-                              != IDE_SUCCESS);
-                }
-            }
-            else
-            {
-                // Nothing to do.
-            }
-            break;
+                break;
+        }
     }
 
     return IDE_SUCCESS;
@@ -535,6 +543,9 @@ IDE_RC qmoUtil::unparseQuerySet( qcTemplate   * aTemplate,
                         // Not supported yet.
                         IDE_DASSERT( 0 );
                         break;
+                    default:
+                        // BUG-47620 Complie warning
+                        IDE_DASSERT( 0 );
                 }
 
                 if( sGroup->next != NULL )
@@ -564,7 +575,7 @@ IDE_RC qmoUtil::unparseQuerySet( qcTemplate   * aTemplate,
             // Nothing to do.
         }
 
-        // Subqueryì—ëŠ” ORDER BYê°€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // Subquery¿¡´Â ORDER BY°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
 
         if( aQuerySet->SFWGH->hierarchy != NULL )
         {
@@ -697,7 +708,7 @@ IDE_RC qmoUtil::unparseStatement( qcTemplate   * aTemplate,
  *
  * Description :
  *     PROJ-1718 Subquery unnesting
- *     ASTë¥¼ unparsingí•˜ì—¬ SQLêµ¬ë¬¸ì„ ìƒì„±í•œë‹¤.
+ *     AST¸¦ unparsingÇÏ¿© SQL±¸¹®À» »ý¼ºÇÑ´Ù.
  *
  * Implementation :
  *
@@ -839,55 +850,44 @@ IDE_RC qmoUtil::printExpressionInPlan(qcTemplate   * aTemplate,
 
             if ( aNode->node.module == & qtc::columnModule )
             {
-                if ( QTC_TEMPLATE_IS_COLUMN( aTemplate, aNode ) == ID_TRUE )
+                if ( ( ( aNode->lflag & QTC_NODE_OUT_REF_COLUMN_MASK )
+                       == QTC_NODE_OUT_REF_COLUMN_TRUE ) &&
+                     ( ( aTemplate->flag & QC_TMP_SHARD_OUT_REF_COL_TO_BIND_MASK )
+                       == QC_TMP_SHARD_OUT_REF_COL_TO_BIND_TRUE ) )
                 {
-                    /* PROJ-1090 Function-based Index */
-                    if ( aNode->node.orgNode != NULL )
+                    iduVarStringAppend( aString, "?" );
+                }
+                else
+                {
+                    if ( QTC_TEMPLATE_IS_COLUMN( aTemplate, aNode ) == ID_TRUE )
                     {
-                        iduVarStringAppend( aString, "[" );
-
-                        // print expression
-                        IDE_TEST( printExpressionInPlan( aTemplate,
-                                                         aString,
-                                                         (qtcNode *)aNode->node.orgNode,
-                                                         aParenthesisFlag )
-                                  != IDE_SUCCESS );
-
-                        iduVarStringAppend( aString, "]" );
-                    }
-                    else
-                    {
-                        sTableRef = aTemplate->tableMap[aNode->node.table].from->tableRef;
-
-                        if ( QC_IS_NULL_NAME( aNode->userName ) == ID_FALSE )
+                        /* PROJ-1090 Function-based Index */
+                        if ( aNode->node.orgNode != NULL )
                         {
-                            // BUG-18300
-                            IDE_DASSERT( aNode->userName.stmtText != NULL );
+                            iduVarStringAppend( aString, "[" );
 
-                            iduVarStringAppendLength(
-                                aString,
-                                aNode->userName.stmtText + aNode->userName.offset,
-                                aNode->userName.size );
+                            // print expression
+                            IDE_TEST( printExpressionInPlan( aTemplate,
+                                                             aString,
+                                                             (qtcNode *)aNode->node.orgNode,
+                                                             aParenthesisFlag )
+                                      != IDE_SUCCESS );
 
-                            iduVarStringAppend( aString,
-                                                "." );
+                            iduVarStringAppend( aString, "]" );
                         }
                         else
                         {
-                            // Nothing to do.
-                        }
+                            sTableRef = aTemplate->tableMap[aNode->node.table].from->tableRef;
 
-                        if ( QC_IS_NULL_NAME( aNode->tableName ) == ID_FALSE )
-                        {
-                            if ( QC_IS_NULL_NAME( sTableRef->aliasName ) == ID_FALSE )
+                            if ( QC_IS_NULL_NAME( aNode->userName ) == ID_FALSE )
                             {
                                 // BUG-18300
-                                IDE_DASSERT( sTableRef->aliasName.stmtText != NULL );
+                                IDE_DASSERT( aNode->userName.stmtText != NULL );
 
                                 iduVarStringAppendLength(
                                     aString,
-                                    sTableRef->aliasName.stmtText + sTableRef->aliasName.offset,
-                                    sTableRef->aliasName.size );
+                                    aNode->userName.stmtText + aNode->userName.offset,
+                                    aNode->userName.size );
 
                                 iduVarStringAppend( aString,
                                                     "." );
@@ -896,51 +896,47 @@ IDE_RC qmoUtil::printExpressionInPlan(qcTemplate   * aTemplate,
                             {
                                 // Nothing to do.
                             }
-                        }
-                        else
-                        {
-                            // Nothing to do.
-                        }
 
-                        /* BUG-31570
-                         * DDLì´ ë¹ˆë²ˆí•œ í™˜ê²½ì—ì„œ plan textë¥¼ ì•ˆì „í•˜ê²Œ ë³´ì—¬ì£¼ëŠ” ë°©ë²•ì´ í•„ìš”í•˜ë‹¤.
-                         */
-                        IDE_DASSERT( sTableRef->columnsName != NULL );
+                            if ( QC_IS_NULL_NAME( aNode->tableName ) == ID_FALSE )
+                            {
+                                if ( QC_IS_NULL_NAME( sTableRef->aliasName ) == ID_FALSE )
+                                {
+                                    // BUG-18300
+                                    IDE_DASSERT( sTableRef->aliasName.stmtText != NULL );
 
-                        iduVarStringAppend(
-                            aString,
-                            sTableRef->columnsName[aNode->node.column] );
-                    }
-                }
-                else
-                {
-                    if ( QC_IS_NULL_NAME( aNode->position ) == ID_FALSE )
-                    {
-                        // prior ì¶œë ¥
-                        if ( ( aNode->lflag & QTC_NODE_PRIOR_MASK )
-                             == QTC_NODE_PRIOR_EXIST )
-                        {
-                            iduVarStringAppend( aString,
-                                                "PRIOR " );
-                        }
-                        else
-                        {
-                            // Nothing to do.
-                        }
-                        
-                        // BUG-18300
-                        IDE_DASSERT( aNode->position.stmtText != NULL );
+                                    iduVarStringAppendLength(
+                                        aString,
+                                        sTableRef->aliasName.stmtText + sTableRef->aliasName.offset,
+                                        sTableRef->aliasName.size );
 
-                        iduVarStringAppendLength(
-                            aString,
-                            aNode->position.stmtText + aNode->position.offset,
-                            aNode->position.size );
+                                    iduVarStringAppend( aString,
+                                                        "." );
+                                }
+                                else
+                                {
+                                    // Nothing to do.
+                                }
+                            }
+                            else
+                            {
+                                // Nothing to do.
+                            }
+
+                            /* BUG-31570
+                             * DDLÀÌ ºó¹øÇÑ È¯°æ¿¡¼­ plan text¸¦ ¾ÈÀüÇÏ°Ô º¸¿©ÁÖ´Â ¹æ¹ýÀÌ ÇÊ¿äÇÏ´Ù.
+                             */
+                            IDE_DASSERT( sTableRef->columnsName != NULL );
+
+                            iduVarStringAppend(
+                                aString,
+                                sTableRef->columnsName[aNode->node.column] );
+                        }
                     }
                     else
                     {
-                        if ( QC_IS_NULL_NAME( aNode->columnName ) == ID_FALSE )
+                        if ( QC_IS_NULL_NAME( aNode->position ) == ID_FALSE )
                         {
-                            // prior ì¶œë ¥
+                            // prior Ãâ·Â
                             if ( ( aNode->lflag & QTC_NODE_PRIOR_MASK )
                                  == QTC_NODE_PRIOR_EXIST )
                             {
@@ -951,18 +947,58 @@ IDE_RC qmoUtil::printExpressionInPlan(qcTemplate   * aTemplate,
                             {
                                 // Nothing to do.
                             }
+                        
+                            // BUG-18300
+                            IDE_DASSERT( aNode->position.stmtText != NULL );
 
-                            if ( QC_IS_NULL_NAME( aNode->tableName ) == ID_FALSE )
+                            iduVarStringAppendLength(
+                                aString,
+                                aNode->position.stmtText + aNode->position.offset,
+                                aNode->position.size );
+                        }
+                        else
+                        {
+                            if ( QC_IS_NULL_NAME( aNode->columnName ) == ID_FALSE )
                             {
-                                if ( QC_IS_NULL_NAME( aNode->userName ) == ID_FALSE )
+                                // prior Ãâ·Â
+                                if ( ( aNode->lflag & QTC_NODE_PRIOR_MASK )
+                                     == QTC_NODE_PRIOR_EXIST )
                                 {
+                                    iduVarStringAppend( aString,
+                                                        "PRIOR " );
+                                }
+                                else
+                                {
+                                    // Nothing to do.
+                                }
+
+                                if ( QC_IS_NULL_NAME( aNode->tableName ) == ID_FALSE )
+                                {
+                                    if ( QC_IS_NULL_NAME( aNode->userName ) == ID_FALSE )
+                                    {
+                                        // BUG-18300
+                                        IDE_DASSERT( aNode->userName.stmtText != NULL );
+
+                                        iduVarStringAppendLength(
+                                            aString,
+                                            aNode->userName.stmtText + aNode->userName.offset,
+                                            aNode->userName.size );
+                                
+                                        iduVarStringAppend( aString,
+                                                            "." );
+                                    }
+                                    else
+                                    {
+                                        // Nothing to do.
+                                    }
+                                
                                     // BUG-18300
-                                    IDE_DASSERT( aNode->userName.stmtText != NULL );
+                                    IDE_DASSERT( aNode->tableName.stmtText != NULL );
 
                                     iduVarStringAppendLength(
                                         aString,
-                                        aNode->userName.stmtText + aNode->userName.offset,
-                                        aNode->userName.size );
+                                        aNode->tableName.stmtText + aNode->tableName.offset,
+                                        aNode->tableName.size );
                                 
                                     iduVarStringAppend( aString,
                                                         "." );
@@ -971,47 +1007,32 @@ IDE_RC qmoUtil::printExpressionInPlan(qcTemplate   * aTemplate,
                                 {
                                     // Nothing to do.
                                 }
-                                
+                            
                                 // BUG-18300
-                                IDE_DASSERT( aNode->tableName.stmtText != NULL );
+                                IDE_DASSERT( aNode->columnName.stmtText != NULL );
 
                                 iduVarStringAppendLength(
                                     aString,
-                                    aNode->tableName.stmtText + aNode->tableName.offset,
-                                    aNode->tableName.size );
-                                
-                                iduVarStringAppend( aString,
-                                                    "." );
+                                    aNode->columnName.stmtText + aNode->columnName.offset,
+                                    aNode->columnName.size );
                             }
                             else
                             {
-                                // Nothing to do.
+                                //iduVarStringAppend( aString,
+                                //                    "[" );
+                                //iduVarStringAppend( aString,
+                                //                    (const SChar *) aNode->node.module->names->string);
+                                //iduVarStringAppend( aString,
+                                //                    "]" );
                             }
-                            
-                            // BUG-18300
-                            IDE_DASSERT( aNode->columnName.stmtText != NULL );
-
-                            iduVarStringAppendLength(
-                                aString,
-                                aNode->columnName.stmtText + aNode->columnName.offset,
-                                aNode->columnName.size );
-                        }
-                        else
-                        {
-                            //iduVarStringAppend( aString,
-                            //                    "[" );
-                            //iduVarStringAppend( aString,
-                            //                    (const SChar *) aNode->node.module->names->string);
-                            //iduVarStringAppend( aString,
-                            //                    "]" );
                         }
                     }
                 }
             }
             else if ( aNode->node.module == & qtc::valueModule )
             {
-                // ìƒìˆ˜ë¡œ ë³€í™˜ë˜ê¸° ì „ì˜ ìƒìˆ˜ expressionì„ ì¶œë ¥í•œë‹¤.
-                // PROJ-1718 ë˜ëŠ” VIEW operatorê°€ ìƒì„±ëœ ê²½ìš° ì›ëž˜ expressionì„ ì¶œë ¥í•œë‹¤.
+                // »ó¼ö·Î º¯È¯µÇ±â ÀüÀÇ »ó¼ö expressionÀ» Ãâ·ÂÇÑ´Ù.
+                // PROJ-1718 ¶Ç´Â VIEW operator°¡ »ý¼ºµÈ °æ¿ì ¿ø·¡ expressionÀ» Ãâ·ÂÇÑ´Ù.
                 if ( aNode->node.orgNode != NULL )
                 {
                     IDE_DASSERT( aNode->node.orgNode != NULL );
@@ -1026,8 +1047,8 @@ IDE_RC qmoUtil::printExpressionInPlan(qcTemplate   * aTemplate,
                 else if( QTC_IS_AGGREGATE( aNode ) == ID_TRUE )
                 {
                     // PROJ-2179
-                    // Aggregate functionì´ materializeëœ í›„ value moduleë¡œ
-                    // ë³€ê²½ëœ ê²½ìš°ì—ë„ ì˜¬ë°”ë¥´ê²Œ ê²°ê³¼ë¥¼ ì¶œë ¥í•´ì£¼ë„ë¡ í•œë‹¤.
+                    // Aggregate functionÀÌ materializeµÈ ÈÄ value module·Î
+                    // º¯°æµÈ °æ¿ì¿¡µµ ¿Ã¹Ù¸£°Ô °á°ú¸¦ Ãâ·ÂÇØÁÖµµ·Ï ÇÑ´Ù.
 
                     IDE_DASSERT( aNode->columnName.stmtText != NULL );
                     
@@ -1170,7 +1191,7 @@ IDE_RC qmoUtil::printExpressionInPlan(qcTemplate   * aTemplate,
             }
             else if ( aNode->node.module == & qtc::passModule )
             {
-                // indirect nodeê°€ ì•„ë‹Œ conversionì„ ìœ„í•œ passNodeê°€ ìžˆë‹¤.
+                // indirect node°¡ ¾Æ´Ñ conversionÀ» À§ÇÑ passNode°¡ ÀÖ´Ù.
                 
                 // print expression
                 IDE_TEST( printExpressionInPlan( aTemplate,
@@ -1208,7 +1229,7 @@ IDE_RC qmoUtil::printExpressionInPlan(qcTemplate   * aTemplate,
         }
 
         // PROJ-2179
-        // Analytic functionì˜ OVERì ˆ ë° ANALYTICì ˆì„ ì¶œë ¥í•œë‹¤.
+        // Analytic functionÀÇ OVERÀý ¹× ANALYTICÀýÀ» Ãâ·ÂÇÑ´Ù.
         if ( aNode->overClause != NULL )
         {
             iduVarStringAppend( aString,
@@ -1354,7 +1375,7 @@ IDE_RC qmoUtil::printNodeFormat(qcTemplate   * aTemplate,
         iduVarStringAppend( aString,
                             "(" );
         
-        // distinct ì¶œë ¥
+        // distinct Ãâ·Â
         if ( ( aNode->node.lflag & MTC_NODE_DISTINCT_MASK )
              == MTC_NODE_DISTINCT_TRUE )
         {
@@ -1472,8 +1493,8 @@ IDE_RC qmoUtil::printNodeFormat(qcTemplate   * aTemplate,
         // left
         sArgNode = (qtcNode *)aNode->node.arguments;
 
-        // ë¹„êµì—°ì‚°ìžê°€ ì¤‘ì²©ë˜ëŠ” ê²½ìš° ê´„í˜¸ë¥¼ ì¶”ê°€í•´ì•¼ í•œë‹¤.
-        // í•˜ìœ„ ë…¸ë“œê°€ indirect nodeë‚˜ ìƒìˆ˜í™”ëœ ë…¸ë“œì¼ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ flagë¥¼ ë‚´ë¦°ë‹¤.
+        // ºñ±³¿¬»êÀÚ°¡ ÁßÃ¸µÇ´Â °æ¿ì °ýÈ£¸¦ Ãß°¡ÇØ¾ß ÇÑ´Ù.
+        // ÇÏÀ§ ³ëµå°¡ indirect node³ª »ó¼öÈ­µÈ ³ëµåÀÏ ¼ö ÀÖÀ¸¹Ç·Î flag¸¦ ³»¸°´Ù.
         // ex) (1=1) = (2=2)
         IDE_TEST( printExpressionInPlan( aTemplate,
                                          aString,
@@ -1494,7 +1515,7 @@ IDE_RC qmoUtil::printNodeFormat(qcTemplate   * aTemplate,
         // right
         sArgNode = (qtcNode *)sArgNode->node.next;
         
-        // ë¹„êµì—°ì‚°ìžê°€ ì¤‘ì²©ë˜ëŠ” ê²½ìš° ê´„í˜¸ë¥¼ ì¶”ê°€í•´ì•¼ í•œë‹¤.
+        // ºñ±³¿¬»êÀÚ°¡ ÁßÃ¸µÇ´Â °æ¿ì °ýÈ£¸¦ Ãß°¡ÇØ¾ß ÇÑ´Ù.
         IDE_TEST( printExpressionInPlan( aTemplate,
                                          aString,
                                          sArgNode,
@@ -1615,7 +1636,7 @@ IDE_RC qmoUtil::printNodeFormat(qcTemplate   * aTemplate,
             iduVarStringAppend( aString,
                                 "(" );
             
-            // distinct ì¶œë ¥
+            // distinct Ãâ·Â
             if ( ( aNode->node.lflag & MTC_NODE_DISTINCT_MASK )
                  == MTC_NODE_DISTINCT_TRUE )
             {
@@ -1827,7 +1848,7 @@ IDE_RC qmoUtil::printNodeFormat(qcTemplate   * aTemplate,
                 (aNode->node.lflag & MTC_NODE_ARGUMENT_COUNT_MASK) == 1 );
             
             // BUG-19180
-            // ìƒìœ„ ë…¸ë“œê°€ minusì´ë©´ ê´„í˜¸ë¥¼ ì¶”ê°€í•œë‹¤.
+            // »óÀ§ ³ëµå°¡ minusÀÌ¸é °ýÈ£¸¦ Ãß°¡ÇÑ´Ù.
             if ( ( aParenthesisFlag & QMO_PRINT_UPPER_NODE_MASK )
                    == QMO_PRINT_UPPER_NODE_MINUS )
             {
@@ -1869,8 +1890,8 @@ IDE_RC qmoUtil::printNodeFormat(qcTemplate   * aTemplate,
                 (aNode->node.lflag & MTC_NODE_ARGUMENT_COUNT_MASK) == 2 );
 
             // BUG-19180
-            // ìƒìœ„ ë…¸ë“œê°€ minusì´ê±°ë‚˜
-            // ìƒìœ„ ë…¸ë“œê°€ '/'ì˜ ì˜¤ë¥¸ìª½ ë…¸ë“œë©´ ê´„í˜¸ë¥¼ ì¶”ê°€í•œë‹¤.
+            // »óÀ§ ³ëµå°¡ minusÀÌ°Å³ª
+            // »óÀ§ ³ëµå°¡ '/'ÀÇ ¿À¸¥ÂÊ ³ëµå¸é °ýÈ£¸¦ Ãß°¡ÇÑ´Ù.
             if ( ( ( aParenthesisFlag & QMO_PRINT_UPPER_NODE_MASK )
                    == QMO_PRINT_UPPER_NODE_MINUS )
                  ||
@@ -1894,8 +1915,8 @@ IDE_RC qmoUtil::printNodeFormat(qcTemplate   * aTemplate,
             sArgNode = (qtcNode *)aNode->node.arguments;
 
             // BUG-19180
-            // '*'ë‚˜ '/'ì˜ ì¸ìžë¡œ '+'ë‚˜ '-'ê°€ ì˜¤ëŠ” ê²½ìš° ê´„í˜¸ë¥¼ ì¶”ê°€í•´ì•¼ í•œë‹¤.
-            // í•˜ìœ„ ë…¸ë“œê°€ indirect nodeë‚˜ ìƒìˆ˜í™”ëœ ë…¸ë“œì¼ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ flagë¥¼ ë‚´ë¦°ë‹¤.
+            // '*'³ª '/'ÀÇ ÀÎÀÚ·Î '+'³ª '-'°¡ ¿À´Â °æ¿ì °ýÈ£¸¦ Ãß°¡ÇØ¾ß ÇÑ´Ù.
+            // ÇÏÀ§ ³ëµå°¡ indirect node³ª »ó¼öÈ­µÈ ³ëµåÀÏ ¼ö ÀÖÀ¸¹Ç·Î flag¸¦ ³»¸°´Ù.
             IDE_TEST( printExpressionInPlan( aTemplate,
                                              aString,
                                              sArgNode,
@@ -1947,8 +1968,8 @@ IDE_RC qmoUtil::printNodeFormat(qcTemplate   * aTemplate,
                 (aNode->node.lflag & MTC_NODE_ARGUMENT_COUNT_MASK) == 2 );
 
             // BUG-19180
-            // ìƒìœ„ ë…¸ë“œê°€ minusì´ê±°ë‚˜
-            // ìƒìœ„ ë…¸ë“œê°€ '/'ì˜ ì˜¤ë¥¸ìª½ ë…¸ë“œë©´ ê´„í˜¸ë¥¼ ì¶”ê°€í•œë‹¤.
+            // »óÀ§ ³ëµå°¡ minusÀÌ°Å³ª
+            // »óÀ§ ³ëµå°¡ '/'ÀÇ ¿À¸¥ÂÊ ³ëµå¸é °ýÈ£¸¦ Ãß°¡ÇÑ´Ù.
             if ( ( ( aParenthesisFlag & QMO_PRINT_UPPER_NODE_MASK )
                    == QMO_PRINT_UPPER_NODE_MINUS )
                  ||
@@ -1972,8 +1993,8 @@ IDE_RC qmoUtil::printNodeFormat(qcTemplate   * aTemplate,
             sArgNode = (qtcNode *)aNode->node.arguments;
 
             // BUG-19180
-            // '*'ë‚˜ '/'ì˜ ì¸ìžë¡œ '+'ë‚˜ '-'ê°€ ì˜¤ëŠ” ê²½ìš° ê´„í˜¸ë¥¼ ì¶”ê°€í•´ì•¼ í•œë‹¤.
-            // í•˜ìœ„ ë…¸ë“œê°€ indirect nodeë‚˜ ìƒìˆ˜í™”ëœ ë…¸ë“œì¼ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ flagë¥¼ ë‚´ë¦°ë‹¤.
+            // '*'³ª '/'ÀÇ ÀÎÀÚ·Î '+'³ª '-'°¡ ¿À´Â °æ¿ì °ýÈ£¸¦ Ãß°¡ÇØ¾ß ÇÑ´Ù.
+            // ÇÏÀ§ ³ëµå°¡ indirect node³ª »ó¼öÈ­µÈ ³ëµåÀÏ ¼ö ÀÖÀ¸¹Ç·Î flag¸¦ ³»¸°´Ù.
             IDE_TEST( printExpressionInPlan( aTemplate,
                                              aString,
                                              sArgNode,
@@ -2024,9 +2045,9 @@ IDE_RC qmoUtil::printNodeFormat(qcTemplate   * aTemplate,
             IDE_DASSERT(
                 (aNode->node.lflag & MTC_NODE_ARGUMENT_COUNT_MASK) == 2 );
 
-            // ìƒìœ„ ë…¸ë“œê°€ minusì´ê±°ë‚˜
-            // ìƒìœ„ ë…¸ë“œê°€ '*','/'ì´ê±°ë‚˜
-            // ìƒìœ„ ë…¸ë“œê°€ '-'ì˜ ì˜¤ë¥¸ìª½ ë…¸ë“œë¼ë©´ ê´„í˜¸ë¥¼ ì¶”ê°€í•œë‹¤.
+            // »óÀ§ ³ëµå°¡ minusÀÌ°Å³ª
+            // »óÀ§ ³ëµå°¡ '*','/'ÀÌ°Å³ª
+            // »óÀ§ ³ëµå°¡ '-'ÀÇ ¿À¸¥ÂÊ ³ëµå¶ó¸é °ýÈ£¸¦ Ãß°¡ÇÑ´Ù.
             if ( ( ( aParenthesisFlag & QMO_PRINT_UPPER_NODE_MASK )
                    == QMO_PRINT_UPPER_NODE_MINUS )
                  ||
@@ -2112,9 +2133,9 @@ IDE_RC qmoUtil::printNodeFormat(qcTemplate   * aTemplate,
             IDE_DASSERT(
                 (aNode->node.lflag & MTC_NODE_ARGUMENT_COUNT_MASK) == 2 );
 
-            // ìƒìœ„ ë…¸ë“œê°€ minusì´ê±°ë‚˜
-            // ìƒìœ„ ë…¸ë“œê°€ '*','/'ì´ê±°ë‚˜
-            // ìƒìœ„ ë…¸ë“œê°€ '-'ì˜ ì˜¤ë¥¸ìª½ ë…¸ë“œë¼ë©´ ê´„í˜¸ë¥¼ ì¶”ê°€í•œë‹¤.
+            // »óÀ§ ³ëµå°¡ minusÀÌ°Å³ª
+            // »óÀ§ ³ëµå°¡ '*','/'ÀÌ°Å³ª
+            // »óÀ§ ³ëµå°¡ '-'ÀÇ ¿À¸¥ÂÊ ³ëµå¶ó¸é °ýÈ£¸¦ Ãß°¡ÇÑ´Ù.
             if ( ( ( aParenthesisFlag & QMO_PRINT_UPPER_NODE_MASK )
                    == QMO_PRINT_UPPER_NODE_MINUS )
                  ||

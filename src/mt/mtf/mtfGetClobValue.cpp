@@ -141,7 +141,7 @@ IDE_RC mtfGetClobValueCalculate( mtcNode*     aNode,
               != IDE_SUCCESS );
     
     // PROJ-1362
-    // Lob Locatorë¥¼ ì–»ëŠ”ë° í•„ìš”í•œ ì»¤ì„œì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+    // Lob Locator¸¦ ¾ò´Âµ¥ ÇÊ¿äÇÑ Ä¿¼­Á¤º¸¸¦ °¡Á®¿Â´Ù.
     IDE_TEST( aTemplate->getOpenedCursor( aTemplate,
                                           aNode->arguments->table,
                                           & sCursor,
@@ -189,7 +189,8 @@ IDE_RC mtfGetClobValueCalculate( mtcNode*     aNode,
 
     IDE_TEST( mtc::getLobLengthLocator( sLocator,
                                         & sIsNull,
-                                        & sLobLength )
+                                        & sLobLength,
+                                        mtc::getStatistics(aTemplate) )
               != IDE_SUCCESS );
 
     if ( sIsNull == ID_TRUE )
@@ -204,7 +205,7 @@ IDE_RC mtfGetClobValueCalculate( mtcNode*     aNode,
 
         sClobValue = (mtdClobType*)aStack[0].value;
 
-        IDE_TEST( mtc::readLob( NULL, /* idvSQL* */
+        IDE_TEST( mtc::readLob( mtc::getStatistics(aTemplate), /* idvSQL* */
                                 sLocator,
                                 0,
                                 sLobLength,

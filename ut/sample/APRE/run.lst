@@ -277,6 +277,12 @@ sCol
 NULL
 3
 4
+<SQL/ANONYMOUS BLOCK>
+------------------------------------------------------------------
+[Execute Anonymous block]
+------------------------------------------------------------------
+Success execute anonymous block 
+
 <DATE TYPE>
 ------------------------------------------------------------------
 [SQL_DATE_STRUCT]
@@ -794,6 +800,16 @@ ORDER_DATE              ENO   GNO
 
 # FETCH SUCCESS #
 I1:01-1      	I2:02-1      
+------------------------------------------------------------------
+[SQL_NUMERIC_STRUCT Insert]
+------------------------------------------------------------------
+1 rows inserted
+
+------------------------------------------------------------------
+[SQL_NUMERIC_STRUCT Select]
+------------------------------------------------------------------
+1 rows select s_gno=F111100002, s_gname=XX-101              , s_goods_location=FD0003   , s_stock=5000, s_price=123.4 
+
 <INSERT>
 ------------------------------------------------------------------
 [Scalar Host Variables]
@@ -810,4 +826,20 @@ I1:01-1      	I2:02-1
 [Structure Host Variables]
 ------------------------------------------------------------------
 1 rows inserted
+
+<DIAGNOSTICS>
+------------------------------------------------------------------
+[Scalar Array Host Variables With Insert]
+------------------------------------------------------------------
+Error : [-69720] The row already exists in a unique index.
+
+> The Number of Errors : 2
+> DiagRec(1)
+>     SQLCODE  : [-69720]
+>     SQLSTATE : [23000]
+>     MESSAGE  : [The row already exists in a unique index.]
+> DiagRec(2)
+>     SQLCODE  : [-69720]
+>     SQLSTATE : [23000]
+>     MESSAGE  : [The row already exists in a unique index.]
 

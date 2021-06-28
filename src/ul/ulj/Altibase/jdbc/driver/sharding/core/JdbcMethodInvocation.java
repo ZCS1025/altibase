@@ -25,7 +25,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 
 /**
- *  JDBC ë©”ì†Œë“œ ì½œì„ ë¦¬í”Œë ‰ì…˜ì„ ì´ìš©í•´ ì½œí•œë‹¤.
+ *  JDBC ¸Ş¼Òµå ÄİÀ» ¸®ÇÃ·º¼ÇÀ» ÀÌ¿ëÇØ ÄİÇÑ´Ù.
  *
  *  @author yjpark
  */

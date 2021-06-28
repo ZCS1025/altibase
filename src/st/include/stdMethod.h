@@ -19,8 +19,8 @@
  * $Id: stdMethod.h 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * Geometry Í∞ùÏ≤¥Î•º WKT(Well Known Text) ÎòêÎäî WKB(Well Known Binary)Î°ú
- * Ï∂úÎ†•ÌïòÎäî Î™®Îìà
+ * Geometry ∞¥√º∏¶ WKT(Well Known Text) ∂«¥¬ WKB(Well Known Binary)∑Œ
+ * √‚∑¬«œ¥¬ ∏µ‚
  **********************************************************************/
 
 #ifndef _O_STD_GEO_METHOD_H_
@@ -68,6 +68,47 @@ public:
                     UInt                       aMaxSize,
                     UInt*                      aOffset);
 
+    // PROJ-2422 srid ¡ˆø¯
+    static IDE_RC writePointEWKT2D( stdPoint2DExtType*         aPoint,
+                                    UChar*                     aBuf,
+                                    UInt                       aMaxSize,
+                                    UInt  *                    aOffset );
+    
+    static IDE_RC writeLineStringEWKT2D( stdLineString2DExtType*    aLine,
+                                         UChar*                     aBuf,
+                                         UInt                       aMaxSize,
+                                         UInt*                      aOffset );
+    
+    static IDE_RC writePolygonEWKT2D( stdPolygon2DExtType*       aPolygon,
+                                      UChar*                     aBuf,
+                                      UInt                       aMaxSize,
+                                      UInt*                      aOffset );
+    
+    static IDE_RC writeMultiPointEWKT2D( stdMultiPoint2DExtType*    aMPoint,
+                                         UChar*                     aBuf,
+                                         UInt                       aMaxSize,
+                                         UInt*                      aOffset );
+    
+    static IDE_RC writeMultiLineStringEWKT2D( stdMultiLineString2DExtType* aMLine,
+                                              UChar*                       aBuf,
+                                              UInt                         aMaxSize,
+                                              UInt*                        aOffset );
+    
+    static IDE_RC writeMultiPolygonEWKT2D( stdMultiPolygon2DExtType*  aMPolygon,
+                                           UChar*                     aBuf,
+                                           UInt                       aMaxSize,
+                                           UInt*                      aOffset );
+    
+    static IDE_RC writeGeoCollectionEWKT2D( stdGeoCollection2DExtType* aCollection,
+                                            UChar*                     aBuf,
+                                            UInt                       aMaxSize,
+                                            UInt*                      aOffset );
+
+    static IDE_RC writeSRID( SInt       aSRID,
+                             UChar*     aBuf,
+                             UInt       aMaxSize,
+                             UInt*      aOffset );
+
     /* BUG-32531 Consider for GIS EMPTY */
     static IDE_RC writeEmptyWKB2D( stdMultiPoint2DType* aMPoint,
                                    UChar*               aBuf,
@@ -109,10 +150,48 @@ public:
                     UChar*                     aBuf,
                     UInt                       aMaxSize,
                     UInt*                      aOffset);    // Fix BUG-15834
+    
+    // PROJ-2422 srid ¡ˆø¯
+    static IDE_RC writePointEWKB2D( stdPoint2DExtType*         aPoint,
+                                    UChar*                     aBuf,
+                                    UInt                       aMaxSize,
+                                    UInt*                      aOffset );    // Fix BUG-15834
+
+    static IDE_RC writeLineStringEWKB2D( stdLineString2DExtType*    aLine,
+                                         UChar*                     aBuf,
+                                         UInt                       aMaxSize,
+                                         UInt*                      aOffset );    // Fix BUG-15834
+
+    static IDE_RC writePolygonEWKB2D( stdPolygon2DExtType*       aPolygon,
+                                      UChar*                     aBuf,
+                                      UInt                       aMaxSize,
+                                      UInt*                      aOffset );    // Fix BUG-15834
+
+    static IDE_RC writeMultiPointEWKB2D( stdMultiPoint2DExtType*    aMPoint,
+                                         UChar*                     aBuf,
+                                         UInt                       aMaxSize,
+                                         UInt*                      aOffset );    // Fix BUG-15834
+
+    static IDE_RC writeMultiLineStringEWKB2D( stdMultiLineString2DExtType* aMLine,
+                                              UChar*                       aBuf,
+                                              UInt                         aMaxSize,
+                                              UInt*                        aOffset );    // Fix BUG-15834
+
+    static IDE_RC writeMultiPolygonEWKB2D( stdMultiPolygon2DExtType*  aMPolygon,
+                                           UChar*                     aBuf,
+                                           UInt                       aMaxSize,
+                                           UInt*                      aOffset );    // Fix BUG-15834
+
+    static IDE_RC writeGeoCollectionEWKB2D( stdGeoCollection2DExtType* aCollection,
+                                            UChar*                     aBuf,
+                                            UInt                       aMaxSize,
+                                            UInt*                      aOffset );    // Fix BUG-15834
+    
 private:
     // Internal For WKB Write
     static UChar *writeWKB_Char( UChar *aBuf, UChar aVal, UInt *aOffset );
     static UChar *writeWKB_UInt( UChar *aBuf, UInt aVal, UInt *aOffset );
+    static UChar *writeWKB_SInt( UChar *aBuf, SInt aVal, UInt *aOffset );
     static UChar *writeWKB_SDouble( UChar *aBuf, SDouble aVal, UInt *aOffset );
     static UChar *writeWKB_Header(  UChar * aBuf,
                                     UInt    aType,

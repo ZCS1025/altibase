@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxPJChild.cpp 84443 2018-11-27 06:21:50Z minku.kang $
+ * $Id: rpxPJChild.cpp 90170 2021-03-10 06:05:50Z lswhh $
  **********************************************************************/
 
 #include <idl.h> // to remove win32 compile warning
@@ -76,15 +76,17 @@ void rpxPJChild::destroy()
 
 IDE_RC rpxPJChild::initializeThread()
 {
-    /* Threadì˜ run()ì—ì„œë§Œ ì‚¬ìš©í•˜ëŠ” ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•œë‹¤. */
+    /* ThreadÀÇ run()¿¡¼­¸¸ »ç¿ëÇÏ´Â ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÑ´Ù. */
 
-    /* mMessengerëŠ” rpxPJChild::run()ì—ì„œë§Œ ì‚¬ìš©í•˜ë¯€ë¡œ, ì—¬ê¸°ë¡œ ì˜®ê¸´ë‹¤. */
+    /* mMessenger´Â rpxPJChild::run()¿¡¼­¸¸ »ç¿ëÇÏ¹Ç·Î, ¿©±â·Î ¿Å±ä´Ù. */
     /* 
-     * PJ Child ëŠ” Sync ëª¨ë“œì—ì„œë§Œ ë™ì‘í•˜ê¸° ë•Œë¬¸ì— Messager ì•ˆ SOCKET ì—ì„œ 
-     * Lock ì„ ì¡ì„ í•„ìš”ê°€ ì—†ë‹¤
+     * PJ Child ´Â Sync ¸ğµå¿¡¼­¸¸ µ¿ÀÛÇÏ±â ¶§¹®¿¡ Messager ¾È SOCKET ¿¡¼­ 
+     * Lock À» ÀâÀ» ÇÊ¿ä°¡ ¾ø´Ù
      */
     
-    IDE_TEST( mMessenger.initialize( mSocketType,
+    IDE_TEST( mMessenger.initialize( NULL,
+                                     RP_MESSENGER_NONE,
+                                     mSocketType,
                                      mExitFlag,
                                      &( mMeta->mReplication ),
                                      NULL,
@@ -102,7 +104,7 @@ IDE_RC rpxPJChild::initializeThread()
 
 void rpxPJChild::finalizeThread()
 {
-    mMessenger.destroy();
+    mMessenger.destroy(RPN_RELEASE_PROTOCOL_CONTEXT);
 
     return;
 }
@@ -181,7 +183,7 @@ void rpxPJChild::run()
 
     mStatus = RPX_PJ_SIGNAL_RUNNING;
 
-    /* mSyncList ëŠ” rpxPJMgr ì˜ mSyncList ì˜ í¬ì¸í„°ë¡œ rpxPJMgr ì—ì„œ ê´€ë¦¬í•œë‹¤.*/
+    /* mSyncList ´Â rpxPJMgr ÀÇ mSyncList ÀÇ Æ÷ÀÎÅÍ·Î rpxPJMgr ¿¡¼­ °ü¸®ÇÑ´Ù.*/
     if ( IDU_LIST_IS_EMPTY( mSyncList ) != ID_TRUE )
     {
         sFirstNode = getFirstNode();
@@ -232,7 +234,7 @@ void rpxPJChild::run()
 
     IDE_ERRLOG( IDE_RP_0 );
 
-    /* Linkê°€ Invalidì´ë©´ ì²˜ë¦¬í•´ì£¼ëŠ” ì½”ë“œ í•„ìš”í•¨ */
+    /* Link°¡ InvalidÀÌ¸é Ã³¸®ÇØÁÖ´Â ÄÚµå ÇÊ¿äÇÔ */
     if( sIsConnect == ID_TRUE )
     {
         mMessenger.disconnect();

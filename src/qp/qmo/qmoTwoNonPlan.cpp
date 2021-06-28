@@ -16,25 +16,25 @@
  
 
 /***********************************************************************
- * $Id: qmoTwoNonPlan.cpp 84968 2019-03-06 05:01:56Z donovan.seo $
+ * $Id: qmoTwoNonPlan.cpp 86088 2019-08-30 00:33:15Z ahra.cho $
  *
  * Description :
  *     Plan Generator
  *
- *     Two-child Non-Materialized PlanÏùÑ ÏÉùÏÑ±ÌïòÍ∏∞ ÏúÑÌïú Í¥ÄÎ¶¨ÏûêÏù¥Îã§.
+ *     Two-child Non-Materialized Plan¿ª ª˝º∫«œ±‚ ¿ß«— ∞¸∏Æ¿⁄¿Ã¥Ÿ.
  *
- *     Îã§ÏùåÍ≥º Í∞ôÏùÄ Plan NodeÏùò ÏÉùÏÑ±ÏùÑ Í¥ÄÎ¶¨ÌïúÎã§.
- *         - JOIN ÎÖ∏Îìú
- *         - MGJN ÎÖ∏Îìú
- *         - LOJN ÎÖ∏Îìú
- *         - FOJN ÎÖ∏Îìú
- *         - AOJN ÎÖ∏Îìú
- *         - CONC ÎÖ∏Îìú
- *         - BUNI ÎÖ∏Îìú
+ *     ¥Ÿ¿Ω∞˙ ∞∞¿∫ Plan Node¿« ª˝º∫¿ª ∞¸∏Æ«—¥Ÿ.
+ *         - JOIN ≥ÎµÂ
+ *         - MGJN ≥ÎµÂ
+ *         - LOJN ≥ÎµÂ
+ *         - FOJN ≥ÎµÂ
+ *         - AOJN ≥ÎµÂ
+ *         - CONC ≥ÎµÂ
+ *         - BUNI ≥ÎµÂ
  *
- * Ïö©Ïñ¥ ÏÑ§Î™Ö :
+ * øÎæÓ º≥∏Ì :
  *
- * ÏïΩÏñ¥ :
+ * æ‡æÓ :
  *
  **********************************************************************/
 
@@ -58,16 +58,16 @@ qmoTwoNonPlan::initJOIN( qcStatement   * aStatement,
 {
 /***********************************************************************
  *
- * Description : JOIN ÎÖ∏ÎìúÎ•º ÏÉùÏÑ±ÌïúÎã§
+ * Description : JOIN ≥ÎµÂ∏¶ ª˝º∫«—¥Ÿ
  *
  * Implementation :
- *     + Ï¥àÍ∏∞Ìôî ÏûëÏóÖ
- *         - qmncJOINÏùò Ìï†Îãπ Î∞è Ï¥àÍ∏∞Ìôî
- *     + Î©îÏù∏ ÏûëÏóÖ
- *     + ÎßàÎ¨¥Î¶¨ ÏûëÏóÖ
- *         - data ÏòÅÏó≠Ïùò ÌÅ¨Í∏∞ Í≥ÑÏÇ∞
- *         - dependencyÏùò Ï≤òÎ¶¨
- *         - subqueryÏùò Ï≤òÎ¶¨
+ *     + √ ±‚»≠ ¿€æ˜
+ *         - qmncJOIN¿« «“¥Á π◊ √ ±‚»≠
+ *     + ∏ﬁ¿Œ ¿€æ˜
+ *     + ∏∂π´∏Æ ¿€æ˜
+ *         - data øµø™¿« ≈©±‚ ∞ËªÍ
+ *         - dependency¿« √≥∏Æ
+ *         - subquery¿« √≥∏Æ
  *
  * TO DO
  *
@@ -79,17 +79,17 @@ qmoTwoNonPlan::initJOIN( qcStatement   * aStatement,
     IDU_FIT_POINT_FATAL( "qmoTwoNonPlan::initJOIN::__FT__" );
 
     //----------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aParent != NULL );
 
     //------------------------------------------------------------
-    // Ï¥àÍ∏∞Ìôî ÏûëÏóÖ
+    // √ ±‚»≠ ¿€æ˜
     //------------------------------------------------------------
 
-    // qmncJOINÏùò Ìï†ÎãπÎ∞è Ï¥àÍ∏∞Ìôî
+    // qmncJOIN¿« «“¥Áπ◊ √ ±‚»≠
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmncJOIN) , (void **)&sJOIN )
               != IDE_SUCCESS );
 
@@ -101,7 +101,7 @@ qmoTwoNonPlan::initJOIN( qcStatement   * aStatement,
                         sDataNodeOffset );
 
     //------------------------------------------------------------
-    // ÎßàÎ¨¥Î¶¨ ÏûëÏóÖ
+    // ∏∂π´∏Æ ¿€æ˜
     //------------------------------------------------------------
 
     IDE_TEST( qmc::pushResultDesc( aStatement,
@@ -140,7 +140,7 @@ qmoTwoNonPlan::initJOIN( qcStatement   * aStatement,
     }
 
     // BUG-43077
-    // viewÏïàÏóêÏÑú Ï∞∏Ï°∞ÌïòÎäî Ïô∏Î∂Ä Ï∞∏Ï°∞ Ïª¨ÎüºÎì§ÏùÑ Result descriptorÏóê Ï∂îÍ∞ÄÌï¥Ïïº ÌïúÎã§.
+    // viewæ»ø°º≠ ¬¸¡∂«œ¥¬ ø‹∫Œ ¬¸¡∂ ƒ√∑≥µÈ¿ª Result descriptorø° √ﬂ∞°«ÿæﬂ «—¥Ÿ.
     if( aViewQuerySet != NULL )
     {
         IDE_TEST( qmc::appendViewPredicate( aStatement,
@@ -155,7 +155,7 @@ qmoTwoNonPlan::initJOIN( qcStatement   * aStatement,
     }
 
 
-    // TODO: aFilterPredicateÏúºÎ°ú ÎåÄÏ≤¥Ìï¥Ïïº ÌïúÎã§.
+    // TODO: aFilterPredicate¿∏∑Œ ¥Î√º«ÿæﬂ «—¥Ÿ.
     IDE_TEST( qmc::appendPredicate( aStatement,
                                     aQuerySet,
                                     &sJOIN->plan.resultDesc,
@@ -185,7 +185,7 @@ qmoTwoNonPlan::makeJOIN( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoTwoNonPlan::makeJOIN::__FT__" );
 
     //----------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -199,7 +199,7 @@ qmoTwoNonPlan::makeJOIN( qcStatement  * aStatement ,
     sJOIN->plan.right   = aRightChild;
 
     //----------------------------------
-    // Flag ÏÑ§Ï†ï
+    // Flag º≥¡§
     //----------------------------------
 
     sJOIN->flag = QMN_PLAN_FLAG_CLEAR;
@@ -212,7 +212,7 @@ qmoTwoNonPlan::makeJOIN( qcStatement  * aStatement ,
     sDataNodeOffset  = idlOS::align8(aPlan->offset +
                                      ID_SIZEOF(qmndJOIN));
 
-    //data ÏòÅÏó≠Ïùò ÌÅ¨Í∏∞ Í≥ÑÏÇ∞
+    //data øµø™¿« ≈©±‚ ∞ËªÍ
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
     switch( aGraphType )
@@ -257,7 +257,7 @@ qmoTwoNonPlan::makeJOIN( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // dependency Ï≤òÎ¶¨ Î∞è subqueryÏùò Ï≤òÎ¶¨
+    // dependency √≥∏Æ π◊ subquery¿« √≥∏Æ
     //----------------------------------
 
     IDE_TEST( qmoDependency::setDependency( aStatement ,
@@ -294,8 +294,8 @@ qmoTwoNonPlan::makeJOIN( qcStatement  * aStatement ,
     sJOIN->plan.flag |= ((aRightChild->flag | aLeftChild->flag) &
                          QMN_PLAN_NODE_EXIST_MASK);
     
-    // PROJ-2551 simple query ÏµúÏ†ÅÌôî
-    // index nl joinÏù∏ Í≤ΩÏö∞ fast executeÎ•º ÏàòÌñâÌïúÎã§.
+    // PROJ-2551 simple query √÷¿˚»≠
+    // index nl join¿Œ ∞ÊøÏ fast execute∏¶ ºˆ«‡«—¥Ÿ.
     IDE_TEST( checkSimpleJOIN( aStatement, sJOIN ) != IDE_SUCCESS );
     
     return IDE_SUCCESS;
@@ -315,20 +315,20 @@ qmoTwoNonPlan::initMGJN( qcStatement   * aStatement ,
 {
 /***********************************************************************
  *
- * Description : MGJNÎÖ∏ÎìúÎ•º ÏÉùÏÑ±ÌïúÎã§
+ * Description : MGJN≥ÎµÂ∏¶ ª˝º∫«—¥Ÿ
  *
  * Implementation :
- *     + Ï¥àÍ∏∞Ìôî ÏûëÏóÖ
- *         - qmncMGJNÏùò Ìï†Îãπ Î∞è Ï¥àÍ∏∞Ìôî
- *     + Î©îÏù∏ ÏûëÏóÖ
- *         - ÌïòÏúÑ ÎÖ∏ÎìúÏóê ÎßûÎäî flagÏÑ∏ÌåÖ
- *         - MGJN ÎÖ∏ÎìúÏùò Íµ¨ÏÑ± ( ÏûÖÎ†• PredicateÎ°ú Î∂ÄÌÑ∞)
- *         - compareLetfRight Íµ¨ÏÑ± ( ÎåÄÏÜå ÎπÑÍµêÎ•º ÏúÑÌïú predicate )
- *         - storedJoinCondition Íµ¨ÏÑ± ( Ï†ÄÏû•Îêú Í≤∞Í≥ºÎ•º ÎπÑÍµê )
- *     + ÎßàÎ¨¥Î¶¨ ÏûëÏóÖ
- *         - data ÏòÅÏó≠Ïùò ÌÅ¨Í∏∞ Í≥ÑÏÇ∞
- *         - dependencyÏùò Ï≤òÎ¶¨
- *         - subqueryÏùò Ï≤òÎ¶¨
+ *     + √ ±‚»≠ ¿€æ˜
+ *         - qmncMGJN¿« «“¥Á π◊ √ ±‚»≠
+ *     + ∏ﬁ¿Œ ¿€æ˜
+ *         - «œ¿ß ≥ÎµÂø° ∏¬¥¬ flagºº∆√
+ *         - MGJN ≥ÎµÂ¿« ±∏º∫ ( ¿‘∑¬ Predicate∑Œ ∫Œ≈Õ)
+ *         - compareLetfRight ±∏º∫ ( ¥Îº“ ∫Ò±≥∏¶ ¿ß«— predicate )
+ *         - storedJoinCondition ±∏º∫ ( ¿˙¿Âµ» ∞·∞˙∏¶ ∫Ò±≥ )
+ *     + ∏∂π´∏Æ ¿€æ˜
+ *         - data øµø™¿« ≈©±‚ ∞ËªÍ
+ *         - dependency¿« √≥∏Æ
+ *         - subquery¿« √≥∏Æ
  *
  * TO DO
  *
@@ -340,15 +340,15 @@ qmoTwoNonPlan::initMGJN( qcStatement   * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoTwoNonPlan::initMGJN::__FT__" );
 
     //----------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //------------------------------------------------------------
-    // Ï¥àÍ∏∞Ìôî ÏûëÏóÖ
+    // √ ±‚»≠ ¿€æ˜
     //------------------------------------------------------------
-    // qmncMGJNÏùò Ìï†ÎãπÎ∞è Ï¥àÍ∏∞Ìôî
+    // qmncMGJN¿« «“¥Áπ◊ √ ±‚»≠
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmncMGJN) , (void **)&sMGJN )
               != IDE_SUCCESS );
 
@@ -423,7 +423,7 @@ qmoTwoNonPlan::makeMGJN( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoTwoNonPlan::makeMGJN::__FT__" );
 
     //----------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -432,7 +432,7 @@ qmoTwoNonPlan::makeMGJN( qcStatement  * aStatement ,
     IDE_DASSERT( aRightChild != NULL );
 
     //------------------------------------------------------------
-    // Ï¥àÍ∏∞Ìôî ÏûëÏóÖ
+    // √ ±‚»≠ ¿€æ˜
     //------------------------------------------------------------
     sMtcTemplate = & QC_SHARED_TMPLATE(aStatement)->tmplate;
 
@@ -446,7 +446,7 @@ qmoTwoNonPlan::makeMGJN( qcStatement  * aStatement ,
     sMGJN->mtrNodeOffset = sDataNodeOffset;
 
     //----------------------------------
-    // Flag ÏÑ§Ï†ï
+    // Flag º≥¡§
     //----------------------------------
 
     sMGJN->flag = QMN_PLAN_FLAG_CLEAR;
@@ -474,7 +474,7 @@ qmoTwoNonPlan::makeMGJN( qcStatement  * aStatement ,
     }
 
     // To Fix PR-8062
-    // Child Ï¢ÖÎ•òÏóê Îî∞Î•∏ Flag ÏÑ§Ï†ï
+    // Child ¡æ∑˘ø° µ˚∏• Flag º≥¡§
     switch ( aLeftChild->type )
     {
         case QMN_SCAN :
@@ -518,11 +518,11 @@ qmoTwoNonPlan::makeMGJN( qcStatement  * aStatement ,
     }
 
     //------------------------------------------------------------
-    // Î©îÏù∏ ÏûëÏóÖ
+    // ∏ﬁ¿Œ ¿€æ˜
     //------------------------------------------------------------
 
     //----------------------------------
-    // Flag ÏÑ§Ï†ï
+    // Flag º≥¡§
     //----------------------------------
 
     IDE_TEST( qtc::nextTable( &sTupleID , aStatement, NULL, ID_TRUE, MTC_COLUMN_NOTNULL_TRUE ) // PR-13597
@@ -532,7 +532,7 @@ qmoTwoNonPlan::makeMGJN( qcStatement  * aStatement ,
     sMtcTemplate->rows[sTupleID].lflag      |= MTC_TUPLE_STORAGE_MEMORY;
 
     //----------------------------------
-    // Join PredicateÏùò Íµ¨ÏÑ±
+    // Join Predicate¿« ±∏º∫
     //----------------------------------
 
     IDE_TEST( qmoPred::linkPredicate( aStatement ,
@@ -575,11 +575,11 @@ qmoTwoNonPlan::makeMGJN( qcStatement  * aStatement ,
     }
 
     // To Fix PR-8062
-    // Store Join Predicate, Compare Join Predicate ÏÉùÏÑ±
-    // Ï†àÏ∞®Î•º Í∞ÑÏÜåÌôîÌï®.
+    // Store Join Predicate, Compare Join Predicate ª˝º∫
+    // ¿˝¬˜∏¶ ∞£º“»≠«‘.
 
     //----------------------------------
-    // Compare Node Î∞è Column Node Ï∂îÏ∂ú
+    // Compare Node π◊ Column Node √ﬂ√‚
     //----------------------------------
 
     sCompareNode = sMGJN->mergeJoinPred;
@@ -608,7 +608,7 @@ qmoTwoNonPlan::makeMGJN( qcStatement  * aStatement ,
     sCopiedNode = *sColumnNode;
 
     //----------------------------------
-    // Ï†ÄÏû• Column Íµ¨ÏÑ±
+    // ¿˙¿Â Column ±∏º∫
     //----------------------------------
     IDE_TEST( qmg::makeColumnMtrNode( aStatement,
                                       aQuerySet,
@@ -621,7 +621,7 @@ qmoTwoNonPlan::makeMGJN( qcStatement  * aStatement ,
               != IDE_SUCCESS );
 
     // To Fix PR-8062
-    // Ï†ÄÏû• ColumnÏùÑ Ïú†ÌòïÏóê Í¥ÄÍ≥Ñ ÏóÜÏù¥ calculate ÌõÑ Î≥µÏÇ¨ÌïòÎèÑÎ°ù ÏÑ§Ï†ïÌïúÎã§.
+    // ¿˙¿Â Column¿ª ¿Ø«¸ø° ∞¸∞Ë æ¯¿Ã calculate »ƒ ∫πªÁ«œµµ∑œ º≥¡§«—¥Ÿ.
     for ( sMtrNode = sMGJN->myNode;
           sMtrNode != NULL;
           sMtrNode = sMtrNode->next )
@@ -631,7 +631,7 @@ qmoTwoNonPlan::makeMGJN( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // Stored Join Condition ÏÉùÏÑ±
+    // Stored Join Condition ª˝º∫
     //----------------------------------
 
     // fix BUG-23279
@@ -642,7 +642,7 @@ qmoTwoNonPlan::makeMGJN( qcStatement  * aStatement ,
                                        ID_TRUE )
               != IDE_SUCCESS );
 
-    // Join PredicateÏùÑ Î≥µÏÇ¨
+    // Join Predicate¿ª ∫πªÁ
     IDE_TEST( qtc::cloneQTCNodeTree( QC_QMP_MEM(aStatement),
                                      sMGJN->mergeJoinPred,
                                      &sMGJN->storedMergeJoinPred,
@@ -652,7 +652,7 @@ qmoTwoNonPlan::makeMGJN( qcStatement  * aStatement ,
                                      ID_FALSE )
               != IDE_SUCCESS );
 
-    // CompareNode Ï∂îÏ∂ú
+    // CompareNode √ﬂ√‚
     sCompareNode = sMGJN->storedMergeJoinPred;
     while ( 1 )
     {
@@ -667,7 +667,7 @@ qmoTwoNonPlan::makeMGJN( qcStatement  * aStatement ,
         }
     }
 
-    // Column ÎÖ∏ÎìúÎ•º Ï†ÄÏû• ColumnÏúºÎ°ú ÎåÄÏ≤¥
+    // Column ≥ÎµÂ∏¶ ¿˙¿Â Column¿∏∑Œ ¥Î√º
     if ( sCompareNode->indexArgument == 0 )
     {
         sColumnNode = (qtcNode*) sCompareNode->node.arguments;
@@ -681,12 +681,12 @@ qmoTwoNonPlan::makeMGJN( qcStatement  * aStatement ,
     }
 
     //----------------------------------
-    // Îì±Ìò∏ Ïó∞ÏÇ∞ÏûêÏùò Í≤ΩÏö∞Ïùò ÎåÄÏÜå ÎπÑÍµê Ìï®Ïàò Ï∂îÏ∂ú
+    // µÓ»£ ø¨ªÍ¿⁄¿« ∞ÊøÏ¿« ¥Îº“ ∫Ò±≥ «‘ºˆ √ﬂ√‚
     //----------------------------------
 
     if ( sCompareNode->node.module == & mtfEqual )
     {
-        // Join PredicateÏùÑ Î≥µÏÇ¨
+        // Join Predicate¿ª ∫πªÁ
         IDE_TEST( qtc::cloneQTCNodeTree( QC_QMP_MEM(aStatement),
                                          sMGJN->mergeJoinPred,
                                          &sMGJN->compareLeftRight,
@@ -696,7 +696,7 @@ qmoTwoNonPlan::makeMGJN( qcStatement  * aStatement ,
                                          ID_FALSE )
                   != IDE_SUCCESS );
 
-        // CompareNode Ï∂îÏ∂ú
+        // CompareNode √ﬂ√‚
         sCompareNode = sMGJN->compareLeftRight;
         while ( 1 )
         {
@@ -718,11 +718,11 @@ qmoTwoNonPlan::makeMGJN( qcStatement  * aStatement ,
             // T1.i1 = T2.i1
             //      MGJN
             //     |    |
-            //    T2    T1 Ïù∏ Í≤ΩÏö∞ÏûÑ
-            // T1.i1 <= T2.i1 ÏùÑ ÏÉùÏÑ±Ìï®.
+            //    T2    T1 ¿Œ ∞ÊøÏ¿”
+            // T1.i1 <= T2.i1 ¿ª ª˝º∫«‘.
 
             // To Fix PR-8062
-            // Ïã§Ï†ú ÎÖ∏ÎìúÎ•º ÏÉùÏÑ±ÌïòÏó¨ Ïó∞Í≤∞ Íµ¨Ï°∞Î•º Î≥ÄÍ≤ΩÏãúÌÇ¥.
+            // Ω«¡¶ ≥ÎµÂ∏¶ ª˝º∫«œø© ø¨∞· ±∏¡∂∏¶ ∫Ø∞ÊΩ√≈¥.
             IDE_TEST( qtc::makeNode( aStatement,
                                      sNewNode,
                                      & sPosition,
@@ -736,10 +736,10 @@ qmoTwoNonPlan::makeMGJN( qcStatement  * aStatement ,
             // T1.i1 = T2.i1
             //      MGJN
             //     |    |
-            //    T1    T2 Ïù∏ Í≤ΩÏö∞ÏûÑ
-            // T1.i1 >= T2.i1 ÏùÑ ÏÉùÏÑ±Ìï®.
+            //    T1    T2 ¿Œ ∞ÊøÏ¿”
+            // T1.i1 >= T2.i1 ¿ª ª˝º∫«‘.
 
-            // Ïã§Ï†ú ÎÖ∏ÎìúÎ•º ÏÉùÏÑ±ÌïòÏó¨ Ïó∞Í≤∞ Íµ¨Ï°∞Î•º Î≥ÄÍ≤ΩÏãúÌÇ¥.
+            // Ω«¡¶ ≥ÎµÂ∏¶ ª˝º∫«œø© ø¨∞· ±∏¡∂∏¶ ∫Ø∞ÊΩ√≈¥.
             IDE_TEST( qtc::makeNode( aStatement,
                                      sNewNode,
                                      & sPosition,
@@ -759,12 +759,12 @@ qmoTwoNonPlan::makeMGJN( qcStatement  * aStatement ,
     }
     else
     {
-        // ÎåÄÏÜå ÎπÑÍµê Ìï®ÏàòÎ•º ÎßåÎì§ ÌïÑÏöîÍ∞Ä ÏóÜÏùå.
+        // ¥Îº“ ∫Ò±≥ «‘ºˆ∏¶ ∏∏µÈ « ø‰∞° æ¯¿Ω.
         sMGJN->compareLeftRight = NULL;
     }
 
     //----------------------------------
-    // Tuple columnÏùò Ìï†Îãπ
+    // Tuple column¿« «“¥Á
     //----------------------------------
     sColumnCount = 0;
     for (sMtrNode = sMGJN->myNode ;
@@ -790,14 +790,14 @@ qmoTwoNonPlan::makeMGJN( qcStatement  * aStatement ,
     sMtcTemplate->rows[sTupleID].lflag |= MTC_TUPLE_PLAN_MTR_FALSE;
 
     //----------------------------------
-    // mtcColumn , mtcExecute Ï†ïÎ≥¥Ïùò Íµ¨Ï∂ï
+    // mtcColumn , mtcExecute ¡§∫∏¿« ±∏√‡
     //----------------------------------
     IDE_TEST( qmg::copyMtcColumnExecute( aStatement ,
                                          sMGJN->myNode )
               != IDE_SUCCESS);
 
     //----------------------------------
-    // PROJ-2179 calculateÍ∞Ä ÌïÑÏöîÌïú nodeÎì§Ïùò Í≤∞Í≥º ÏúÑÏπòÎ•º ÏÑ§Ï†ï
+    // PROJ-2179 calculate∞° « ø‰«— nodeµÈ¿« ∞·∞˙ ¿ßƒ°∏¶ º≥¡§
     //----------------------------------
 
     IDE_TEST( qmg::setCalcLocate( aStatement,
@@ -805,9 +805,9 @@ qmoTwoNonPlan::makeMGJN( qcStatement  * aStatement ,
               != IDE_SUCCESS );
 
     //------------------------------------------------------------
-    // ÎßàÎ¨¥Î¶¨ ÏûëÏóÖ
+    // ∏∂π´∏Æ ¿€æ˜
     //------------------------------------------------------------
-    //data ÏòÅÏó≠Ïùò ÌÅ¨Í∏∞ Í≥ÑÏÇ∞
+    //data øµø™¿« ≈©±‚ ∞ËªÍ
     for (sMtrNode = sMGJN->myNode , sColumnCount = 0 ;
          sMtrNode != NULL;
          sMtrNode = sMtrNode->next , sColumnCount++ ) ;
@@ -816,7 +816,7 @@ qmoTwoNonPlan::makeMGJN( qcStatement  * aStatement ,
         sColumnCount * idlOS::align8( ID_SIZEOF(qmdMtrNode) );
 
     //----------------------------------
-    // dependency Ï≤òÎ¶¨ Î∞è subqueryÏùò Ï≤òÎ¶¨
+    // dependency √≥∏Æ π◊ subquery¿« √≥∏Æ
     //----------------------------------
 
     // fix BUG-12282
@@ -824,7 +824,7 @@ qmoTwoNonPlan::makeMGJN( qcStatement  * aStatement ,
 
     //----------------------------------
     // PROJ-1437
-    // dependency ÏÑ§Ï†ïÏ†ÑÏóê predicateÎì§Ïùò ÏúÑÏπòÏ†ïÎ≥¥ Î≥ÄÍ≤Ω. 
+    // dependency º≥¡§¿¸ø° predicateµÈ¿« ¿ßƒ°¡§∫∏ ∫Ø∞Ê. 
     //----------------------------------
 
     IDE_TEST( qmg::changeColumnLocate( aStatement,
@@ -878,6 +878,7 @@ qmoTwoNonPlan::makeMGJN( qcStatement  * aStatement ,
 IDE_RC
 qmoTwoNonPlan::initLOJN( qcStatement   * aStatement ,
                          qmsQuerySet   * aQuerySet ,
+                         qmsQuerySet   * aViewQuerySet,
                          qtcNode       * aJoinPredicate,
                          qtcNode       * aFilter,
                          qmoPredicate  * aPredicate,
@@ -886,17 +887,17 @@ qmoTwoNonPlan::initLOJN( qcStatement   * aStatement ,
 {
 /***********************************************************************
  *
- * Description : LOJN ÎÖ∏ÎìúÎ•º ÏÉùÏÑ±ÌïúÎã§
+ * Description : LOJN ≥ÎµÂ∏¶ ª˝º∫«—¥Ÿ
  *
  * Implementation :
- *     + Ï¥àÍ∏∞Ìôî ÏûëÏóÖ
- *         - qmncLOJNÏùò Ìï†Îãπ Î∞è Ï¥àÍ∏∞Ìôî
- *     + Î©îÏù∏ ÏûëÏóÖ
- *         - aFilterPredicateÎ•º FilterÎ°ú Íµ¨ÏÑ±ÌïúÎã§
- *     + ÎßàÎ¨¥Î¶¨ ÏûëÏóÖ
- *         - data ÏòÅÏó≠Ïùò ÌÅ¨Í∏∞ Í≥ÑÏÇ∞
- *         - dependencyÏùò Ï≤òÎ¶¨
- *         - subqueryÏùò Ï≤òÎ¶¨
+ *     + √ ±‚»≠ ¿€æ˜
+ *         - qmncLOJN¿« «“¥Á π◊ √ ±‚»≠
+ *     + ∏ﬁ¿Œ ¿€æ˜
+ *         - aFilterPredicate∏¶ Filter∑Œ ±∏º∫«—¥Ÿ
+ *     + ∏∂π´∏Æ ¿€æ˜
+ *         - data øµø™¿« ≈©±‚ ∞ËªÍ
+ *         - dependency¿« √≥∏Æ
+ *         - subquery¿« √≥∏Æ
  *
  * TO DO
  *
@@ -908,16 +909,16 @@ qmoTwoNonPlan::initLOJN( qcStatement   * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoTwoNonPlan::initLOJN::__FT__" );
 
     //----------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //------------------------------------------------------------
-    // Ï¥àÍ∏∞Ìôî ÏûëÏóÖ
+    // √ ±‚»≠ ¿€æ˜
     //------------------------------------------------------------
 
-    // qmncLOJNÏùò Ìï†ÎãπÎ∞è Ï¥àÍ∏∞Ìôî
+    // qmncLOJN¿« «“¥Áπ◊ √ ±‚»≠
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmncLOJN) , (void **)&sLOJN )
               != IDE_SUCCESS );
 
@@ -935,7 +936,7 @@ qmoTwoNonPlan::initLOJN( qcStatement   * aStatement ,
                                    &sLOJN->plan.resultDesc )
               != IDE_SUCCESS );
 
-    // BUG-38513 join Ï°∞Í±¥Ï†àÎèÑ result descÏóê Ï∂îÍ∞ÄÌï¥Ï£ºÏñ¥ÏïºÌï®
+    // BUG-38513 join ¡∂∞«¿˝µµ result descø° √ﬂ∞°«ÿ¡÷æÓæﬂ«‘
     if( aJoinPredicate != NULL )
     {
         IDE_TEST( qmc::appendPredicate( aStatement,
@@ -955,6 +956,21 @@ qmoTwoNonPlan::initLOJN( qcStatement   * aStatement ,
                                         aQuerySet,
                                         &sLOJN->plan.resultDesc,
                                         aFilter )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    // BUG-47414
+    // viewæ»ø°º≠ ¬¸¡∂«œ¥¬ ø‹∫Œ ¬¸¡∂ ƒ√∑≥µÈ¿ª Result descriptorø° √ﬂ∞°«ÿæﬂ «—¥Ÿ.
+    if( aViewQuerySet != NULL )
+    {
+        IDE_TEST( qmc::appendViewPredicate( aStatement,
+                                            aViewQuerySet,
+                                            &sLOJN->plan.resultDesc,
+                                            0 )
                   != IDE_SUCCESS );
     }
     else
@@ -988,17 +1004,17 @@ qmoTwoNonPlan::makeLOJN( qcStatement  * aStatement ,
 {
 /***********************************************************************
  *
- * Description : LOJN ÎÖ∏ÎìúÎ•º ÏÉùÏÑ±ÌïúÎã§
+ * Description : LOJN ≥ÎµÂ∏¶ ª˝º∫«—¥Ÿ
  *
  * Implementation :
- *     + Ï¥àÍ∏∞Ìôî ÏûëÏóÖ
- *         - qmncLOJNÏùò Ìï†Îãπ Î∞è Ï¥àÍ∏∞Ìôî
- *     + Î©îÏù∏ ÏûëÏóÖ
- *         - aFilterPredicateÎ•º FilterÎ°ú Íµ¨ÏÑ±ÌïúÎã§
- *     + ÎßàÎ¨¥Î¶¨ ÏûëÏóÖ
- *         - data ÏòÅÏó≠Ïùò ÌÅ¨Í∏∞ Í≥ÑÏÇ∞
- *         - dependencyÏùò Ï≤òÎ¶¨
- *         - subqueryÏùò Ï≤òÎ¶¨
+ *     + √ ±‚»≠ ¿€æ˜
+ *         - qmncLOJN¿« «“¥Á π◊ √ ±‚»≠
+ *     + ∏ﬁ¿Œ ¿€æ˜
+ *         - aFilterPredicate∏¶ Filter∑Œ ±∏º∫«—¥Ÿ
+ *     + ∏∂π´∏Æ ¿€æ˜
+ *         - data øµø™¿« ≈©±‚ ∞ËªÍ
+ *         - dependency¿« √≥∏Æ
+ *         - subquery¿« √≥∏Æ
  *
  * TO DO
  *
@@ -1012,7 +1028,7 @@ qmoTwoNonPlan::makeLOJN( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoTwoNonPlan::makeLOJN::__FT__" );
 
     //----------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1020,14 +1036,14 @@ qmoTwoNonPlan::makeLOJN( qcStatement  * aStatement ,
     IDE_DASSERT( aRightChild != NULL );
 
     //------------------------------------------------------------
-    // Ï¥àÍ∏∞Ìôî ÏûëÏóÖ
+    // √ ±‚»≠ ¿€æ˜
     //------------------------------------------------------------
 
     sLOJN->plan.left    = aLeftChild;
     sLOJN->plan.right   = aRightChild;
 
     //----------------------------------
-    // Flag ÏÑ§Ï†ï
+    // Flag º≥¡§
     //----------------------------------
 
     sLOJN->flag      = QMN_PLAN_FLAG_CLEAR;
@@ -1037,7 +1053,7 @@ qmoTwoNonPlan::makeLOJN( qcStatement  * aStatement ,
     sLOJN->plan.flag       |= (aRightChild->flag & QMN_PLAN_STORAGE_MASK);
 
     //------------------------------------------------------------
-    // Î©îÏù∏ ÏûëÏóÖ
+    // ∏ﬁ¿Œ ¿€æ˜
     //------------------------------------------------------------
 
     if ( aFilter != NULL )
@@ -1055,25 +1071,25 @@ qmoTwoNonPlan::makeLOJN( qcStatement  * aStatement ,
     }
 
     //------------------------------------------------------------
-    // ÎßàÎ¨¥Î¶¨ ÏûëÏóÖ
+    // ∏∂π´∏Æ ¿€æ˜
     //------------------------------------------------------------
 
     aPlan->offset = aStatement->myPlan->sTmplate->tmplate.dataSize;
     sDataNodeOffset  = idlOS::align8(aPlan->offset +
                                      ID_SIZEOF(qmndLOJN));
 
-    //data ÏòÅÏó≠Ïùò ÌÅ¨Í∏∞ Í≥ÑÏÇ∞
+    //data øµø™¿« ≈©±‚ ∞ËªÍ
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
     //----------------------------------
-    // dependency Ï≤òÎ¶¨ Î∞è subqueryÏùò Ï≤òÎ¶¨
+    // dependency √≥∏Æ π◊ subquery¿« √≥∏Æ
     //----------------------------------
 
     sPredicate[0] =  sLOJN->filter;
 
     //----------------------------------
     // PROJ-1437
-    // dependency ÏÑ§Ï†ïÏ†ÑÏóê predicateÎì§Ïùò ÏúÑÏπòÏ†ïÎ≥¥ Î≥ÄÍ≤Ω. 
+    // dependency º≥¡§¿¸ø° predicateµÈ¿« ¿ßƒ°¡§∫∏ ∫Ø∞Ê. 
     //----------------------------------
 
     IDE_TEST( qmg::changeColumnLocate( aStatement,
@@ -1135,17 +1151,17 @@ qmoTwoNonPlan::initFOJN( qcStatement   * aStatement ,
 {
 /***********************************************************************
  *
- * Description : FOJN ÎÖ∏ÎìúÎ•º ÏÉùÏÑ±ÌïúÎã§
+ * Description : FOJN ≥ÎµÂ∏¶ ª˝º∫«—¥Ÿ
  *
  * Implementation :
- *     + Ï¥àÍ∏∞Ìôî ÏûëÏóÖ
- *         - qmncFOJNÏùò Ìï†Îãπ Î∞è Ï¥àÍ∏∞Ìôî
- *     + Î©îÏù∏ ÏûëÏóÖ
- *         - aFilterPredicateÎ•º FilterÎ°ú Íµ¨ÏÑ±ÌïúÎã§
- *     + ÎßàÎ¨¥Î¶¨ ÏûëÏóÖ
- *         - data ÏòÅÏó≠Ïùò ÌÅ¨Í∏∞ Í≥ÑÏÇ∞
- *         - dependencyÏùò Ï≤òÎ¶¨
- *         - subqueryÏùò Ï≤òÎ¶¨
+ *     + √ ±‚»≠ ¿€æ˜
+ *         - qmncFOJN¿« «“¥Á π◊ √ ±‚»≠
+ *     + ∏ﬁ¿Œ ¿€æ˜
+ *         - aFilterPredicate∏¶ Filter∑Œ ±∏º∫«—¥Ÿ
+ *     + ∏∂π´∏Æ ¿€æ˜
+ *         - data øµø™¿« ≈©±‚ ∞ËªÍ
+ *         - dependency¿« √≥∏Æ
+ *         - subquery¿« √≥∏Æ
  *
  * TO DO
  *
@@ -1157,16 +1173,16 @@ qmoTwoNonPlan::initFOJN( qcStatement   * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoTwoNonPlan::initFOJN::__FT__" );
 
     //----------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //----------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
 
     //------------------------------------------------------------
-    // Ï¥àÍ∏∞Ìôî ÏûëÏóÖ
+    // √ ±‚»≠ ¿€æ˜
     //------------------------------------------------------------
 
-    // qmncFOJNÏùò Ìï†ÎãπÎ∞è Ï¥àÍ∏∞Ìôî
+    // qmncFOJN¿« «“¥Áπ◊ √ ±‚»≠
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmncFOJN) , (void **)&sFOJN )
               != IDE_SUCCESS );
 
@@ -1186,7 +1202,7 @@ qmoTwoNonPlan::initFOJN( qcStatement   * aStatement ,
                                    &sFOJN->plan.resultDesc )
               != IDE_SUCCESS );
 
-    // BUG-38513 join Ï°∞Í±¥Ï†àÎèÑ result descÏóê Ï∂îÍ∞ÄÌï¥Ï£ºÏñ¥ÏïºÌï® 
+    // BUG-38513 join ¡∂∞«¿˝µµ result descø° √ﬂ∞°«ÿ¡÷æÓæﬂ«‘ 
     if( aJoinPredicate != NULL )
     {
         IDE_TEST( qmc::appendPredicate( aStatement,
@@ -1236,17 +1252,17 @@ qmoTwoNonPlan::makeFOJN( qcStatement  * aStatement ,
 {
 /***********************************************************************
  *
- * Description : FOJN ÎÖ∏ÎìúÎ•º ÏÉùÏÑ±ÌïúÎã§
+ * Description : FOJN ≥ÎµÂ∏¶ ª˝º∫«—¥Ÿ
  *
  * Implementation :
- *     + Ï¥àÍ∏∞Ìôî ÏûëÏóÖ
- *         - qmncFOJNÏùò Ìï†Îãπ Î∞è Ï¥àÍ∏∞Ìôî
- *     + Î©îÏù∏ ÏûëÏóÖ
- *         - aFilterPredicateÎ•º FilterÎ°ú Íµ¨ÏÑ±ÌïúÎã§
- *     + ÎßàÎ¨¥Î¶¨ ÏûëÏóÖ
- *         - data ÏòÅÏó≠Ïùò ÌÅ¨Í∏∞ Í≥ÑÏÇ∞
- *         - dependencyÏùò Ï≤òÎ¶¨
- *         - subqueryÏùò Ï≤òÎ¶¨
+ *     + √ ±‚»≠ ¿€æ˜
+ *         - qmncFOJN¿« «“¥Á π◊ √ ±‚»≠
+ *     + ∏ﬁ¿Œ ¿€æ˜
+ *         - aFilterPredicate∏¶ Filter∑Œ ±∏º∫«—¥Ÿ
+ *     + ∏∂π´∏Æ ¿€æ˜
+ *         - data øµø™¿« ≈©±‚ ∞ËªÍ
+ *         - dependency¿« √≥∏Æ
+ *         - subquery¿« √≥∏Æ
  *
  * TO DO
  *
@@ -1260,7 +1276,7 @@ qmoTwoNonPlan::makeFOJN( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoTwoNonPlan::makeFOJN::__FT__" );
 
     //----------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //----------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
@@ -1268,7 +1284,7 @@ qmoTwoNonPlan::makeFOJN( qcStatement  * aStatement ,
     IDE_FT_ASSERT( aRightChild != NULL );
 
     //------------------------------------------------------------
-    // Ï¥àÍ∏∞Ìôî ÏûëÏóÖ
+    // √ ±‚»≠ ¿€æ˜
     //------------------------------------------------------------
 
     sFOJN->plan.left    = aLeftChild;
@@ -1279,7 +1295,7 @@ qmoTwoNonPlan::makeFOJN( qcStatement  * aStatement ,
                                      ID_SIZEOF(qmndFOJN));
 
     //----------------------------------
-    // Flag ÏÑ§Ï†ï
+    // Flag º≥¡§
     //----------------------------------
 
     sFOJN->flag      = QMN_PLAN_FLAG_CLEAR;
@@ -1289,10 +1305,10 @@ qmoTwoNonPlan::makeFOJN( qcStatement  * aStatement ,
     sFOJN->plan.flag       |= (aRightChild->flag & QMN_PLAN_STORAGE_MASK);
 
     //------------------------------------------------------------
-    // Î©îÏù∏ ÏûëÏóÖ
+    // ∏ﬁ¿Œ ¿€æ˜
     //------------------------------------------------------------
 
-    //flagÏùò ÏÑ§Ï†ï
+    //flag¿« º≥¡§
     if (aRightChild->type == QMN_HASH)
     {
         sFOJN->flag &= ~QMNC_FOJN_RIGHT_CHILD_MASK;
@@ -1323,21 +1339,21 @@ qmoTwoNonPlan::makeFOJN( qcStatement  * aStatement ,
     }
 
     //------------------------------------------------------------
-    // ÎßàÎ¨¥Î¶¨ ÏûëÏóÖ
+    // ∏∂π´∏Æ ¿€æ˜
     //------------------------------------------------------------
 
-    //data ÏòÅÏó≠Ïùò ÌÅ¨Í∏∞ Í≥ÑÏÇ∞
+    //data øµø™¿« ≈©±‚ ∞ËªÍ
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
     //----------------------------------
-    // dependency Ï≤òÎ¶¨ Î∞è subqueryÏùò Ï≤òÎ¶¨
+    // dependency √≥∏Æ π◊ subquery¿« √≥∏Æ
     //----------------------------------
 
     sPredicate[0] =  sFOJN->filter;
 
     //----------------------------------
     // PROJ-1437
-    // dependency ÏÑ§Ï†ïÏ†ÑÏóê predicateÎì§Ïùò ÏúÑÏπòÏ†ïÎ≥¥ Î≥ÄÍ≤Ω. 
+    // dependency º≥¡§¿¸ø° predicateµÈ¿« ¿ßƒ°¡§∫∏ ∫Ø∞Ê. 
     //----------------------------------
 
     IDE_TEST( qmg::changeColumnLocate( aStatement,
@@ -1398,17 +1414,17 @@ qmoTwoNonPlan::initAOJN( qcStatement   * aStatement ,
 {
 /***********************************************************************
  *
- * Description : AOJN ÎÖ∏ÎìúÎ•º ÏÉùÏÑ±ÌïúÎã§
+ * Description : AOJN ≥ÎµÂ∏¶ ª˝º∫«—¥Ÿ
  *
  * Implementation :
- *     + Ï¥àÍ∏∞Ìôî ÏûëÏóÖ
- *         - qmncAOJNÏùò Ìï†Îãπ Î∞è Ï¥àÍ∏∞Ìôî
- *     + Î©îÏù∏ ÏûëÏóÖ
- *         - aFilterPredicateÎ•º FilterÎ°ú Íµ¨ÏÑ±ÌïúÎã§
- *     + ÎßàÎ¨¥Î¶¨ ÏûëÏóÖ
- *         - data ÏòÅÏó≠Ïùò ÌÅ¨Í∏∞ Í≥ÑÏÇ∞
- *         - dependencyÏùò Ï≤òÎ¶¨
- *         - subqueryÏùò Ï≤òÎ¶¨
+ *     + √ ±‚»≠ ¿€æ˜
+ *         - qmncAOJN¿« «“¥Á π◊ √ ±‚»≠
+ *     + ∏ﬁ¿Œ ¿€æ˜
+ *         - aFilterPredicate∏¶ Filter∑Œ ±∏º∫«—¥Ÿ
+ *     + ∏∂π´∏Æ ¿€æ˜
+ *         - data øµø™¿« ≈©±‚ ∞ËªÍ
+ *         - dependency¿« √≥∏Æ
+ *         - subquery¿« √≥∏Æ
  *
  * TO DO
  *
@@ -1420,16 +1436,16 @@ qmoTwoNonPlan::initAOJN( qcStatement   * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoTwoNonPlan::initAOJN::__FT__" );
 
     //----------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //------------------------------------------------------------
-    // Ï¥àÍ∏∞Ìôî ÏûëÏóÖ
+    // √ ±‚»≠ ¿€æ˜
     //------------------------------------------------------------
 
-    // qmncAOJNÏùò Ìï†ÎãπÎ∞è Ï¥àÍ∏∞Ìôî
+    // qmncAOJN¿« «“¥Áπ◊ √ ±‚»≠
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmncAOJN) , (void **)&sAOJN )
               != IDE_SUCCESS );
 
@@ -1485,17 +1501,17 @@ qmoTwoNonPlan::makeAOJN( qcStatement * aStatement ,
 {
 /***********************************************************************
  *
- * Description : AOJN ÎÖ∏ÎìúÎ•º ÏÉùÏÑ±ÌïúÎã§
+ * Description : AOJN ≥ÎµÂ∏¶ ª˝º∫«—¥Ÿ
  *
  * Implementation :
- *     + Ï¥àÍ∏∞Ìôî ÏûëÏóÖ
- *         - qmncAOJNÏùò Ìï†Îãπ Î∞è Ï¥àÍ∏∞Ìôî
- *     + Î©îÏù∏ ÏûëÏóÖ
- *         - aFilterPredicateÎ•º FilterÎ°ú Íµ¨ÏÑ±ÌïúÎã§
- *     + ÎßàÎ¨¥Î¶¨ ÏûëÏóÖ
- *         - data ÏòÅÏó≠Ïùò ÌÅ¨Í∏∞ Í≥ÑÏÇ∞
- *         - dependencyÏùò Ï≤òÎ¶¨
- *         - subqueryÏùò Ï≤òÎ¶¨
+ *     + √ ±‚»≠ ¿€æ˜
+ *         - qmncAOJN¿« «“¥Á π◊ √ ±‚»≠
+ *     + ∏ﬁ¿Œ ¿€æ˜
+ *         - aFilterPredicate∏¶ Filter∑Œ ±∏º∫«—¥Ÿ
+ *     + ∏∂π´∏Æ ¿€æ˜
+ *         - data øµø™¿« ≈©±‚ ∞ËªÍ
+ *         - dependency¿« √≥∏Æ
+ *         - subquery¿« √≥∏Æ
  *
  * TO DO
  *
@@ -1509,7 +1525,7 @@ qmoTwoNonPlan::makeAOJN( qcStatement * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoTwoNonPlan::makeAOJN::__FT__" );
 
     //----------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1517,7 +1533,7 @@ qmoTwoNonPlan::makeAOJN( qcStatement * aStatement ,
     IDE_DASSERT( aRightChild != NULL );
 
     //------------------------------------------------------------
-    // Ï¥àÍ∏∞Ìôî ÏûëÏóÖ
+    // √ ±‚»≠ ¿€æ˜
     //------------------------------------------------------------
 
     sAOJN->plan.left    = aLeftChild;
@@ -1528,7 +1544,7 @@ qmoTwoNonPlan::makeAOJN( qcStatement * aStatement ,
                                      ID_SIZEOF(qmndAOJN));
 
     //----------------------------------
-    // Flag ÏÑ§Ï†ï
+    // Flag º≥¡§
     //----------------------------------
 
     sAOJN->flag      = QMN_PLAN_FLAG_CLEAR;
@@ -1538,7 +1554,7 @@ qmoTwoNonPlan::makeAOJN( qcStatement * aStatement ,
     sAOJN->plan.flag       |= (aRightChild->flag & QMN_PLAN_STORAGE_MASK);
 
     //------------------------------------------------------------
-    // Î©îÏù∏ ÏûëÏóÖ
+    // ∏ﬁ¿Œ ¿€æ˜
     //------------------------------------------------------------
 
     if ( aFilter != NULL )
@@ -1556,21 +1572,21 @@ qmoTwoNonPlan::makeAOJN( qcStatement * aStatement ,
     }
 
     //------------------------------------------------------------
-    // ÎßàÎ¨¥Î¶¨ ÏûëÏóÖ
+    // ∏∂π´∏Æ ¿€æ˜
     //------------------------------------------------------------
 
-    //data ÏòÅÏó≠Ïùò ÌÅ¨Í∏∞ Í≥ÑÏÇ∞
+    //data øµø™¿« ≈©±‚ ∞ËªÍ
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
     //----------------------------------
-    // dependency Ï≤òÎ¶¨ Î∞è subqueryÏùò Ï≤òÎ¶¨
+    // dependency √≥∏Æ π◊ subquery¿« √≥∏Æ
     //----------------------------------
 
     sPredicate[0] =  sAOJN->filter;
 
     //----------------------------------
     // PROJ-1437
-    // dependency ÏÑ§Ï†ïÏ†ÑÏóê predicateÎì§Ïùò ÏúÑÏπòÏ†ïÎ≥¥ Î≥ÄÍ≤Ω. 
+    // dependency º≥¡§¿¸ø° predicateµÈ¿« ¿ßƒ°¡§∫∏ ∫Ø∞Ê. 
     //----------------------------------
 
     IDE_TEST( qmg::changeColumnLocate( aStatement,
@@ -1630,16 +1646,16 @@ qmoTwoNonPlan::initCONC( qcStatement  * aStatement ,
 {
 /***********************************************************************
  *
- * Description : CONC ÎÖ∏ÎìúÎ•º ÏÉùÏÑ±ÌïúÎã§
+ * Description : CONC ≥ÎµÂ∏¶ ª˝º∫«—¥Ÿ
  *
  * Implementation :
- *     + Ï¥àÍ∏∞Ìôî ÏûëÏóÖ
- *         - qmncCONCÏùò Ìï†Îãπ Î∞è Ï¥àÍ∏∞Ìôî
- *     + Î©îÏù∏ ÏûëÏóÖ
- *     + ÎßàÎ¨¥Î¶¨ ÏûëÏóÖ
- *         - data ÏòÅÏó≠Ïùò ÌÅ¨Í∏∞ Í≥ÑÏÇ∞
- *         - dependencyÏùò Ï≤òÎ¶¨
- *         - subqueryÏùò Ï≤òÎ¶¨
+ *     + √ ±‚»≠ ¿€æ˜
+ *         - qmncCONC¿« «“¥Á π◊ √ ±‚»≠
+ *     + ∏ﬁ¿Œ ¿€æ˜
+ *     + ∏∂π´∏Æ ¿€æ˜
+ *         - data øµø™¿« ≈©±‚ ∞ËªÍ
+ *         - dependency¿« √≥∏Æ
+ *         - subquery¿« √≥∏Æ
  *
  * TO DO
  *
@@ -1652,16 +1668,16 @@ qmoTwoNonPlan::initCONC( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoTwoNonPlan::initCONC::__FT__" );
 
     //----------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //------------------------------------------------------------
-    // Ï¥àÍ∏∞Ìôî ÏûëÏóÖ
+    // √ ±‚»≠ ¿€æ˜
     //------------------------------------------------------------
 
-    // qmncCONCÏùò Ìï†ÎãπÎ∞è Ï¥àÍ∏∞Ìôî
+    // qmncCONC¿« «“¥Áπ◊ √ ±‚»≠
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmncCONC) , (void **)&sCONC )
               != IDE_SUCCESS );
 
@@ -1682,8 +1698,8 @@ qmoTwoNonPlan::initCONC( qcStatement  * aStatement ,
               != IDE_SUCCESS );
 
     // BUG-38285
-    // CONCATENATION Ïù¥ÌïòÏùò Ïª¨ÎüºÏóê ÌïúÌï¥
-    // ÎèôÏùºÌïú IDÏùò TABLEÏù¥ Ïó¨Îü¨Í∞ú Ï°¥Ïû¨ÌïòÎØÄÎ°ú Ï§ëÍ∞ÑÏóê materializeÎêòÎäî Í≥≥ÏúºÎ°ú ÏúÑÏπòÎ•º Î≥ÄÍ≤ΩÌï¥ÏÑúÎäî ÏïàÎêúÎã§.
+    // CONCATENATION ¿Ã«œ¿« ƒ√∑≥ø° «—«ÿ
+    // µø¿œ«— ID¿« TABLE¿Ã ø©∑Ø∞≥ ¡∏¿Á«œπ«∑Œ ¡ﬂ∞£ø° materializeµ«¥¬ ∞˜¿∏∑Œ ¿ßƒ°∏¶ ∫Ø∞Ê«ÿº≠¥¬ æ»µ»¥Ÿ.
 
     for( sItrAttr = sCONC->plan.resultDesc;
          sItrAttr != NULL;
@@ -1717,16 +1733,16 @@ qmoTwoNonPlan::makeCONC( qcStatement  * aStatement ,
 {
 /***********************************************************************
  *
- * Description : CONC ÎÖ∏ÎìúÎ•º ÏÉùÏÑ±ÌïúÎã§
+ * Description : CONC ≥ÎµÂ∏¶ ª˝º∫«—¥Ÿ
  *
  * Implementation :
- *     + Ï¥àÍ∏∞Ìôî ÏûëÏóÖ
- *         - qmncCONCÏùò Ìï†Îãπ Î∞è Ï¥àÍ∏∞Ìôî
- *     + Î©îÏù∏ ÏûëÏóÖ
- *     + ÎßàÎ¨¥Î¶¨ ÏûëÏóÖ
- *         - data ÏòÅÏó≠Ïùò ÌÅ¨Í∏∞ Í≥ÑÏÇ∞
- *         - dependencyÏùò Ï≤òÎ¶¨
- *         - subqueryÏùò Ï≤òÎ¶¨
+ *     + √ ±‚»≠ ¿€æ˜
+ *         - qmncCONC¿« «“¥Á π◊ √ ±‚»≠
+ *     + ∏ﬁ¿Œ ¿€æ˜
+ *     + ∏∂π´∏Æ ¿€æ˜
+ *         - data øµø™¿« ≈©±‚ ∞ËªÍ
+ *         - dependency¿« √≥∏Æ
+ *         - subquery¿« √≥∏Æ
  *
  * TO DO
  *
@@ -1738,7 +1754,7 @@ qmoTwoNonPlan::makeCONC( qcStatement  * aStatement ,
     IDU_FIT_POINT_FATAL( "qmoTwoNonPlan::makeCONC::__FT__" );
 
     //----------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1746,7 +1762,7 @@ qmoTwoNonPlan::makeCONC( qcStatement  * aStatement ,
     IDE_DASSERT( aRightChild != NULL );
 
     //------------------------------------------------------------
-    // Ï¥àÍ∏∞Ìôî ÏûëÏóÖ
+    // √ ±‚»≠ ¿€æ˜
     //------------------------------------------------------------
 
     sCONC->plan.left    = aLeftChild;
@@ -1757,7 +1773,7 @@ qmoTwoNonPlan::makeCONC( qcStatement  * aStatement ,
                                      ID_SIZEOF(qmndCONC));
 
     //----------------------------------
-    // Flag ÏÑ§Ï†ï
+    // Flag º≥¡§
     //----------------------------------
 
     sCONC->flag      = QMN_PLAN_FLAG_CLEAR;
@@ -1767,14 +1783,14 @@ qmoTwoNonPlan::makeCONC( qcStatement  * aStatement ,
     sCONC->plan.flag       |= (aRightChild->flag & QMN_PLAN_STORAGE_MASK);
 
     //------------------------------------------------------------
-    // ÎßàÎ¨¥Î¶¨ ÏûëÏóÖ
+    // ∏∂π´∏Æ ¿€æ˜
     //------------------------------------------------------------
 
-    //data ÏòÅÏó≠Ïùò ÌÅ¨Í∏∞ Í≥ÑÏÇ∞
+    //data øµø™¿« ≈©±‚ ∞ËªÍ
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
     //----------------------------------
-    // dependency Ï≤òÎ¶¨ Î∞è subqueryÏùò Ï≤òÎ¶¨
+    // dependency √≥∏Æ π◊ subquery¿« √≥∏Æ
     //----------------------------------
 
     IDE_TEST( qmoDependency::setDependency( aStatement ,
@@ -1824,10 +1840,10 @@ qmoTwoNonPlan::checkSimpleJOIN( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : simple join ÎÖ∏ÎìúÏù∏ÏßÄ Í≤ÄÏÇ¨ÌïúÎã§.
+ * Description : simple join ≥ÎµÂ¿Œ¡ˆ ∞ÀªÁ«—¥Ÿ.
  *
  * Implementation :
- *     simple joinÏù∏ Í≤ΩÏö∞ fast executeÎ•º ÏàòÌñâÌïúÎã§.
+ *     simple join¿Œ ∞ÊøÏ fast execute∏¶ ºˆ«‡«—¥Ÿ.
  *
  ***********************************************************************/
 
@@ -1867,16 +1883,16 @@ IDE_RC qmoTwoNonPlan::initSREC( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-2582 recursive with
- *     SREC ÎÖ∏ÎìúÎ•º ÏÉùÏÑ±ÌïúÎã§
+ *     SREC ≥ÎµÂ∏¶ ª˝º∫«—¥Ÿ
  *
  * Implementation :
- *     + Ï¥àÍ∏∞Ìôî ÏûëÏóÖ
- *         - qmncSRECÏùò Ìï†Îãπ Î∞è Ï¥àÍ∏∞Ìôî
- *     + Î©îÏù∏ ÏûëÏóÖ
- *     + ÎßàÎ¨¥Î¶¨ ÏûëÏóÖ
- *         - data ÏòÅÏó≠Ïùò ÌÅ¨Í∏∞ Í≥ÑÏÇ∞
- *         - dependencyÏùò Ï≤òÎ¶¨
- *         - subqueryÏùò Ï≤òÎ¶¨
+ *     + √ ±‚»≠ ¿€æ˜
+ *         - qmncSREC¿« «“¥Á π◊ √ ±‚»≠
+ *     + ∏ﬁ¿Œ ¿€æ˜
+ *     + ∏∂π´∏Æ ¿€æ˜
+ *         - data øµø™¿« ≈©±‚ ∞ËªÍ
+ *         - dependency¿« √≥∏Æ
+ *         - subquery¿« √≥∏Æ
  *
  * TO DO
  *
@@ -1888,16 +1904,16 @@ IDE_RC qmoTwoNonPlan::initSREC( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoTwoNonPlan::initSREC::__FT__" );
 
     //----------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //------------------------------------------------------------
-    // Ï¥àÍ∏∞Ìôî ÏûëÏóÖ
+    // √ ±‚»≠ ¿€æ˜
     //------------------------------------------------------------
 
-    // qmncSRECÏùò Ìï†ÎãπÎ∞è Ï¥àÍ∏∞Ìôî
+    // qmncSREC¿« «“¥Áπ◊ √ ±‚»≠
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmncSREC),
                                              (void **)&sSREC )
               != IDE_SUCCESS );
@@ -1935,16 +1951,16 @@ IDE_RC qmoTwoNonPlan::makeSREC( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-2582 recursive with
- *      SREC ÎÖ∏ÎìúÎ•º ÏÉùÏÑ±ÌïúÎã§
+ *      SREC ≥ÎµÂ∏¶ ª˝º∫«—¥Ÿ
  *
  * Implementation :
- *     + Ï¥àÍ∏∞Ìôî ÏûëÏóÖ
- *         - qmncSRECÏùò Ìï†Îãπ Î∞è Ï¥àÍ∏∞Ìôî
- *     + Î©îÏù∏ ÏûëÏóÖ
- *     + ÎßàÎ¨¥Î¶¨ ÏûëÏóÖ
- *         - data ÏòÅÏó≠Ïùò ÌÅ¨Í∏∞ Í≥ÑÏÇ∞
- *         - dependencyÏùò Ï≤òÎ¶¨
- *         - subqueryÏùò Ï≤òÎ¶¨
+ *     + √ ±‚»≠ ¿€æ˜
+ *         - qmncSREC¿« «“¥Á π◊ √ ±‚»≠
+ *     + ∏ﬁ¿Œ ¿€æ˜
+ *     + ∏∂π´∏Æ ¿€æ˜
+ *         - data øµø™¿« ≈©±‚ ∞ËªÍ
+ *         - dependency¿« √≥∏Æ
+ *         - subquery¿« √≥∏Æ
  *
  * TO DO
  *
@@ -1956,7 +1972,7 @@ IDE_RC qmoTwoNonPlan::makeSREC( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoTwoNonPlan::makeSREC::__FT__" );
 
     //----------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -1965,7 +1981,7 @@ IDE_RC qmoTwoNonPlan::makeSREC( qcStatement  * aStatement,
     IDE_DASSERT( aRecursiveChild != NULL );
 
     //------------------------------------------------------------
-    // Ï¥àÍ∏∞Ìôî ÏûëÏóÖ
+    // √ ±‚»≠ ¿€æ˜
     //------------------------------------------------------------
 
     sSREC->plan.left    = aLeftChild;
@@ -1992,7 +2008,7 @@ IDE_RC qmoTwoNonPlan::makeSREC( qcStatement  * aStatement,
                                      ID_SIZEOF(qmndSREC));
 
     //----------------------------------
-    // Flag ÏÑ§Ï†ï
+    // Flag º≥¡§
     //----------------------------------
 
     sSREC->flag      = QMN_PLAN_FLAG_CLEAR;
@@ -2002,19 +2018,19 @@ IDE_RC qmoTwoNonPlan::makeSREC( qcStatement  * aStatement,
     sSREC->plan.flag       |= (aRightChild->flag & QMN_PLAN_STORAGE_MASK);
 
     //------------------------------------------------------------
-    // ÎßàÎ¨¥Î¶¨ ÏûëÏóÖ
+    // ∏∂π´∏Æ ¿€æ˜
     //------------------------------------------------------------
 
-    //data ÏòÅÏó≠Ïùò ÌÅ¨Í∏∞ Í≥ÑÏÇ∞
+    //data øµø™¿« ≈©±‚ ∞ËªÍ
     QC_SHARED_TMPLATE(aStatement)->tmplate.dataSize = sDataNodeOffset;
 
     //----------------------------------
-    // dependency Ï≤òÎ¶¨ Î∞è subqueryÏùò Ï≤òÎ¶¨
+    // dependency √≥∏Æ π◊ subquery¿« √≥∏Æ
     //----------------------------------
 
     // To Fix PR-12791
-    // PROJ-1358 Î°ú Ïù∏Ìï¥ dependency Í≤∞Ï†ï ÏïåÍ≥†Î¶¨Ï¶òÏù¥ ÏàòÏ†ïÎêòÏóàÏúºÎ©∞
-    // Query SetÏóêÏÑú ÏÑ§Ï†ïÌïú dependency Ï†ïÎ≥¥Î•º ÎàÑÏ†ÅÌï¥Ïïº Ìï®.
+    // PROJ-1358 ∑Œ ¿Œ«ÿ dependency ∞·¡§ æÀ∞Ì∏Æ¡Ú¿Ã ºˆ¡§µ«æ˙¿∏∏Á
+    // Query Setø°º≠ º≥¡§«— dependency ¡§∫∏∏¶ ¥©¿˚«ÿæﬂ «‘.
     IDE_TEST( qmoDependency::setDependency( aStatement ,
                                             aQuerySet ,
                                             & sSREC->plan ,

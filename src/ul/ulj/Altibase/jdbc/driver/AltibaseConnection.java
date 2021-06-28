@@ -20,29 +20,31 @@ import java.sql.*;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
-import java.util.BitSet;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
+import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import Altibase.jdbc.driver.cm.*;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
+import Altibase.jdbc.driver.ex.ShardError;
 import Altibase.jdbc.driver.ex.ShardFailoverIsNotAvailableException;
 import Altibase.jdbc.driver.logging.LoggingProxy;
 import Altibase.jdbc.driver.logging.TraceFlag;
 import Altibase.jdbc.driver.sharding.core.AltibaseShardingConnection;
+import Altibase.jdbc.driver.sharding.core.AltibaseShardingFailover;
+import Altibase.jdbc.driver.sharding.core.ShardConnType;
+import Altibase.jdbc.driver.sharding.core.GlobalTransactionLevel;
+import Altibase.jdbc.driver.sharding.core.DistTxInfo;
+import Altibase.jdbc.driver.sharding.util.DistTxInfoForVerify;
 import Altibase.jdbc.driver.util.*;
 
-import static Altibase.jdbc.driver.sharding.core.AltibaseShardingConnection.*;
+import static Altibase.jdbc.driver.AutoCommitMode.*;
+import static Altibase.jdbc.driver.util.AltibaseProperties.PROP_CODE_GLOBAL_TRANSACTION_LEVEL;
+import static Altibase.jdbc.driver.util.AltibaseProperties.PROP_CODE_SHARD_STATEMENT_RETRY;
 
-public final class AltibaseConnection implements Connection
+public final class AltibaseConnection extends AbstractConnection
 {
     public static final byte              EXPLAIN_PLAN_OFF                          = 0;
     public static final byte              EXPLAIN_PLAN_ON                           = 1;
@@ -50,7 +52,8 @@ public final class AltibaseConnection implements Connection
 
     private static final String           PROP_VALUE_PRIVILEGE_SYSDBA               = "sysdba";
     private static final String           PROP_VALUE_PRIVILEGE_NORMAL               = "normal";
-    private static final String           PROP_VALUE_CLIENT_TYPE                    = "NEW_JDBC";
+    // BUG-48892 jdbc 4.2 spec ºÎÅÍ´Â client_typeÀ¸·Î NEW_JDBC42¸¦ º¸³½´Ù.
+    private static final String           PROP_VALUE_CLIENT_TYPE                    = "NEW_JDBC42";
     private static final String           PROP_VALUE_NLS                            = "UTF16";
     private static final int              PROP_VALUE_HEADER_DISPLAY_MODE            = 1;
 
@@ -72,12 +75,17 @@ public final class AltibaseConnection implements Connection
 
     private static final Map              EMPTY_TYPEMAP                             = Collections.unmodifiableMap(new java.util.HashMap(0));
 
+    // PROJ-2707 jdbc 4.x spec¿¡ µû¸¥ ±ÇÇÑ ¼³Á¤
+    private static final SQLPermission    SQL_PERMISSION_NETWORK_TIMEOUT            = new SQLPermission("setNetworkTimeout");
+    private static final SQLPermission    ABORT_PERM                                = new SQLPermission("abort");
+
+    public  static final String           PROP_APPLICATION_NAME                     = "ApplicationName";
+
     private CmChannel                     mChannel;
     private CmProtocolContextConnect      mContext;
     private SQLWarning                    mWarning;
-    private boolean                       mIsClosed                                 = true;
     private LinkedList                    mStatementList                            = new LinkedList();
-    private AutoCommitMode                mAutoCommit;    // PROJ-2190 client side autocommit ëª¨ë“œê°€ ì¶”ê°€ë˜ì—ˆê¸° ë•Œë¬¸ì— enum í˜•ì‹ìœ¼ë¡œ ì„ ì–¸
+    private AutoCommitMode                mAutoCommit                               = SERVER_SIDE_AUTOCOMMIT_ON;
     private int                           mDefaultResultSetType                     = ResultSet.TYPE_FORWARD_ONLY;
     private int                           mDefaultResultSetConcurrency              = ResultSet.CONCUR_READ_ONLY;
     private int                           mDefaultResultSetHoldability              = ResultSet.CLOSE_CURSORS_AT_COMMIT;
@@ -87,6 +95,7 @@ public final class AltibaseConnection implements Connection
     private int                           mCurrentCIDSeq                            = 0;
     private Object                        mCurrentCIDSeqLock                        = new Object();
     private BitSet                        mUsedCIDSet                               = new BitSet(STMT_CID_SEQ_MAX);
+    private Properties                    mClientInfo                               = new CaseInsensitiveProperties();
     private boolean                       mNliteralReplace;
     private AltibaseDataSource            mDataSource;
     private AltibaseDatabaseMetaData      mMetaData;
@@ -103,18 +112,30 @@ public final class AltibaseConnection implements Connection
 
     // PROJ-2690 shard jdbc
     private AltibaseShardingConnection    mMetaConnection;
-    private boolean                       mIsNodeConnection;
+    private ShardConnType                 mShardConnType;
+
+    private String                        mServer;
+    private int                           mPort;
+    private boolean                       mAllowLobNullSelect;      // BUG-47639 lob columnÀÌ nullÀÏ¶§ Lob°´Ã¼°¡ ¸®ÅÏµÉ ¼ö ÀÖ´ÂÁö ¿©ºÎ
+    private boolean                       mReUseResultSet;          // BUG-48380 °°Àº PreparedStatement¿¡¼­ executeQuery¸¦ ÇßÀ» ¶§ ResultSetÀ» Àç»ç¿ëÇÒÁö ¿©ºÎ
+
+    // PROJ-2733 : To Verify DistTxInfo
+    public static final boolean           SHARD_JDBC_DISTTXINFO_VERIFY              = AltibaseEnvironmentVariables.getShardJdbcDisttxinfoVerify();
+    private DistTxInfoForVerify           mDistTxInfoForVerify;
+
+    // BUG-48892 DatabaseMetaData.getProcedures()¿¡¼­ functionÀÌ ¸®ÅÏµÉ ¼ö ÀÖ´ÂÁö ¿©ºÎ
+    private boolean                       mGetProceduresReturnFunctions;
 
     static
     {
-        // BUG-46325 LobObjectFactoryì˜ ì´ˆê¸°í™”ë¥¼ AltibaseDriverëŒ€ì‹  AltibaseConnectionì—ì„œ ìˆ˜í–‰í•œë‹¤.
+        // BUG-46325 LobObjectFactoryÀÇ ÃÊ±âÈ­¸¦ AltibaseDriver´ë½Å AltibaseConnection¿¡¼­ ¼öÇàÇÑ´Ù.
         LobObjectFactoryImpl.registerLobFactory();
     }
 
     public AltibaseConnection(Properties aProp, AltibaseDataSource aDataSource,
-                              AltibaseShardingConnection aShardConn) throws SQLException
+                              AltibaseShardingConnection aMetaConn) throws SQLException
     {
-        createConnection(aProp, aDataSource, aShardConn);
+        createConnection(aProp, aDataSource, aMetaConn);
     }
 
     AltibaseConnection(Properties aProp, AltibaseDataSource aDataSource) throws SQLException
@@ -123,59 +144,70 @@ public final class AltibaseConnection implements Connection
     }
 
     private void createConnection(Properties aProp, AltibaseDataSource aDataSource,
-                                  AltibaseShardingConnection aShardConn) throws SQLException
+                                  AltibaseShardingConnection aMetaConn) throws SQLException
     {
         if (TraceFlag.TRACE_COMPILE && TraceFlag.TRACE_ENABLED)
         {
             mLogger = Logger.getLogger(LoggingProxy.JDBC_LOGGER_DEFAULT);
         }
+        mShardConnType = ShardConnType.NONE;
         mDataSource = aDataSource;
         mChannel = new CmChannel();
         mContext = new CmProtocolContextConnect(mChannel);
+        mMetaConnection = aMetaConn;
+
+        // PROJ-2733 DistTxInfo : for natc
+        if (SHARD_JDBC_DISTTXINFO_VERIFY)
+        {    
+            mDistTxInfoForVerify = new DistTxInfoForVerify();
+        }    
+
+        // BUG-46790 aMetaConn°´Ã¼°¡ ÀÖ´Â °æ¿ì¿¡´Â shard connection ÀÌ¹Ç·Î shard connection typeÀ» ¼³Á¤ÇØ ÁØ´Ù.
+        if (aMetaConn != null)
+        {
+            mShardConnType = (aDataSource == null) ? ShardConnType.META_CONNECTION :
+                             ShardConnType.NODE_CONNECTION;
+        }
         loadProperties(aProp);
 
-        String sServer;
-        int sPort;
         if (mFailoverContext != null && mProp.useLoadBalance())
         {
             AltibaseFailoverServerInfo sServerInfo = mFailoverContext.getFailoverServerList().getRandom();
-            sServer = sServerInfo.getServer();
-            sPort   = sServerInfo.getPort();
+            mServer = sServerInfo.getServer();
+            mPort   = sServerInfo.getPort();
         }
         else
         {
-            sServer = mProp.getServer();
-            sPort   = mProp.getPort();
+            mServer = mProp.getServer();
+            mPort   = mProp.getPort();
         }
 
         try
         {
-            mChannel.open(sServer,
-                          mProp.getSockBindAddr(),
-                          sPort,
-                          mProp.getLoginTimeout(),
-                          mProp.getResponseTimeout());
+            mChannel.open(mServer, mProp.getSockBindAddr(), mPort, mProp.getLoginTimeout());
 
             handshake();
 
-            // PROJ-2690 meta connection ë˜ëŠ” node connectionì¸ ê²½ìš°ì—ëŠ” shard hankshakeë¥¼ ìˆ˜í–‰í•œë‹¤.
-            if (isShardConnection(aShardConn))
+            // BUG-46790 meta connectionÀÌ³ª node connectionÀÏ ¶§´Â shard handshake¸¦ ¼öÇàÇÑ´Ù.
+            if (aMetaConn != null)
             {
                 shardHandshake();
-                if (aShardConn != null)
+                if (aDataSource == null) // BUG-46790 meta connection ÀÎ °æ¿ì¿¡´Â channel°´Ã¼¸¦ ÁÖÀÔÇÑ´Ù.
                 {
-                    aShardConn.setChannel(mChannel);
-                    mMetaConnection = aShardConn;
+                    aMetaConn.setChannel(mChannel);
                 }
             }
 
             connect(mProp);
+
+            // BUG-47492 db login ÀÌÈÄ response_timeoutÀ» ¼³Á¤ÇÑ´Ù.
+            mChannel.setResponseTimeout(mProp.getResponseTimeout());
         }
-        catch (SQLException ex)
+        catch (SQLException aEx)
         {
-            mChannel.quiteClose();
-            checkShardFailoverIsNotAvailable(ex);
-            mWarning = AltibaseFailover.tryCTF(mFailoverContext, mWarning, ex);
+            mChannel.quietClose();
+            checkShardFailoverIsNotAvailable(aEx);
+            mWarning = AltibaseFailover.tryCTF(mFailoverContext, mWarning, aEx);
         }
         mIsClosed = false;
 
@@ -184,8 +216,8 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * node connectionì´ê³  failoverê°€ ì…‹íŒ…ë˜ì–´ ìˆì§€ ì•Šì€ ê²½ìš° í†µì‹ ì—ëŸ¬ì¼ë•Œ FailoverIsNotAvailableException
-     * ì˜ˆì™¸ë¥¼ ì˜¬ë¦°ë‹¤.
+     * node connectionÀÌ°í failover°¡ ¼ÂÆÃµÇ¾î ÀÖÁö ¾ÊÀº °æ¿ì Åë½Å¿¡·¯ÀÏ¶§ FailoverIsNotAvailableException
+     * ¿¹¿Ü¸¦ ¿Ã¸°´Ù.
      * @param aException SQLException
      * @throws ShardFailoverIsNotAvailableException Shard Failover Is Not Available Exception
      */
@@ -195,7 +227,7 @@ public final class AltibaseConnection implements Connection
                                       (mFailoverContext.getFailoverServerList().size() <= 0)) &&
             AltibaseFailover.isNeedToFailover(aException))
         {
-            CmOperation.throwShardFailoverIsNotAvailableException(getNodeName());
+            CmOperation.throwShardFailoverIsNotAvailableException(getNodeName(), getServer(), getPort());
         }
     }
 
@@ -205,14 +237,14 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * ë©”íƒ€ì»¤ë„¥ì…˜ì´ë‚˜ ë…¸ë“œì»¤ë„¥ì…˜ì¸ì§€ ì—¬ë¶€ë¥¼ ì²´í¬í•œë‹¤.
-     * @param aShardConn ìƒ¤ë“œë©”íƒ€ì»¤ë„¥ì…˜ ê°ì²´
-     * @return true ë©”íƒ€ì»¤ë„¥ì…˜ì´ë‚˜ ë…¸ë“œì»¤ë„¥ì…˜ <br>
-     *         false ì¼ë°˜ ì»¤ë„¥ì…˜
+     * ¸ŞÅ¸Ä¿³Ø¼ÇÀÌ³ª ³ëµåÄ¿³Ø¼ÇÀÎÁö ¿©ºÎ¸¦ Ã¼Å©ÇÑ´Ù.
+     * @return true ¸ŞÅ¸Ä¿³Ø¼ÇÀÌ³ª ³ëµåÄ¿³Ø¼Ç <br>
+     *         false ÀÏ¹İ Ä¿³Ø¼Ç
      */
-    private boolean isShardConnection(AltibaseShardingConnection aShardConn)
+    public boolean isShardConnection()
     {
-        return aShardConn != null || mProp.isSet(AltibaseProperties.PROP_SHARD_NODE_NAME);
+        return mShardConnType == ShardConnType.META_CONNECTION ||
+               mShardConnType == ShardConnType.NODE_CONNECTION;
     }
 
     private void loadProperties(Properties aProp) throws SQLException
@@ -223,8 +255,8 @@ public final class AltibaseConnection implements Connection
         loadDefaultValues();
 
         // PROJ-2474, PROJ-2681
-        // Regression test ë¥¼ ìœ„í•´ ALTIBASE_CONNTYPE_FORCE_FOR_TEST í™˜ê²½ë³€ìˆ˜ê°€ ì„¤ì •ë˜ì–´ ìˆë‹¤ë©´,
-        // 'conntype' í”„ë¡œí¼í‹°ë¥¼ ì´ í™˜ê²½ë³€ìˆ˜ ê°’ìœ¼ë¡œ ì¡°ì •í•œë‹¤.
+        // Regression test ¸¦ À§ÇØ ALTIBASE_CONNTYPE_FORCE_FOR_TEST È¯°æº¯¼ö°¡ ¼³Á¤µÇ¾î ÀÖ´Ù¸é,
+        // 'conntype' ÇÁ·ÎÆÛÆ¼¸¦ ÀÌ È¯°æº¯¼ö °ªÀ¸·Î Á¶Á¤ÇÑ´Ù.
         if (AltibaseEnvironmentVariables.isSet(AltibaseEnvironmentVariables.ENV_ALTIBASE_CONNTYPE_FORCE_FOR_TEST))
         {
             if (AltibaseEnvironmentVariables.getConnTypeForceForTest().equals("SSL"))
@@ -246,7 +278,7 @@ public final class AltibaseConnection implements Connection
         // This determination is only used for physical connection
         if (mProp.isPreferIPv6())
         {
-        	mChannel.setPreferredIPv6();
+            mChannel.setPreferredIPv6();
         }
 
         // PROJ-2681
@@ -279,14 +311,11 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * ì†ì„±ê°’ì´ ì…‹íŒ…ë˜ì–´ ìˆì§€ ì•Šì„ë•Œ default ì†ì„±ê°’ì„ ì ìš©ì‹œí‚¨ë‹¤.
+     * ¼Ó¼º°ªÀÌ ¼ÂÆÃµÇ¾î ÀÖÁö ¾ÊÀ»¶§ default ¼Ó¼º°ªÀ» Àû¿ë½ÃÅ²´Ù.
      */
     private void loadDefaultValues()
     {
-        /**
-         * PROJ-2681
-         * í”„ë¡œí¼í‹° ìš°ì„ ìˆœìœ„ ì ìš© : 'ssl_enable=true' -> 'conntype=SSL'
-         */
+        // PROJ-2681 ÇÁ·ÎÆÛÆ¼ ¿ì¼±¼øÀ§ Àû¿ë : 'ssl_enable=true' -> 'conntype=SSL'
         mProp.sslEnabledToConnType();
 
         if (!mProp.isSet(AltibaseProperties.PROP_SERVER))
@@ -419,7 +448,7 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * BUG-39149 handshake í”„ë¡œí† ì½œì„ ì´ìš©í•´ ì»¤ë„¥ì…˜ì´ ìœ íš¨í•œì§€ ì²´í¬í•œë‹¤.
+     * BUG-39149 handshake ÇÁ·ÎÅäÄİÀ» ÀÌ¿ëÇØ Ä¿³Ø¼ÇÀÌ À¯È¿ÇÑÁö Ã¼Å©ÇÑ´Ù.
      */
     public void ping() throws SQLException
     {
@@ -436,7 +465,7 @@ public final class AltibaseConnection implements Connection
         }
     }
 
-    private void shardHandshake() throws SQLException
+    void shardHandshake() throws SQLException
     {
         CmProtocol.shardHandshake(mContext);
         CmShardHandshakeResult sShardHandshakeResult = mContext.getShardHandshakeResult();
@@ -472,10 +501,20 @@ public final class AltibaseConnection implements Connection
         mContext.addProperty(AltibaseProperties.PROP_CODE_CLIENT_PROTOCOL_VERSION, AltibaseVersion.CM_PROTOCOL_VERSION);
         mContext.addProperty(AltibaseProperties.PROP_CODE_CLIENT_PID, (long)Thread.currentThread().hashCode());
         mContext.addProperty(AltibaseProperties.PROP_CODE_CLIENT_TYPE, PROP_VALUE_CLIENT_TYPE);
-        mContext.addProperty(AltibaseProperties.PROP_CODE_NLS, PROP_VALUE_NLS);
-        mContext.addProperty(AltibaseProperties.PROP_CODE_HEADER_DISPLAY_MODE, PROP_VALUE_HEADER_DISPLAY_MODE); // ì—†ì•¨ ìˆ˜ë„ ìˆìŒ. BUG-33625
+        
+        // BUG-46790 shard °ü·ÃµÈ ¼Ó¼º°ªÀ» ¸ÕÀú ¹öÆÛ¿¡ write ÇÑ´Ù.
+        if (mMetaConnection != null || mProp.isSet(AltibaseProperties.PROP_SHARD_NODE_NAME))
+        {
+            setShardProperties(aProp);
+        }
 
-        // ë¶€ê°€ì ì¸ í”„ë¡œí¼í‹° ì„¸íŒ…
+        mContext.addProperty(AltibaseProperties.PROP_CODE_NLS, PROP_VALUE_NLS);
+        mContext.addProperty(AltibaseProperties.PROP_CODE_HEADER_DISPLAY_MODE, PROP_VALUE_HEADER_DISPLAY_MODE); // ¾ø¾Ù ¼öµµ ÀÖÀ½. BUG-33625
+
+        /* BUG-46019 JDBC´Â Connection Àü¿¡ MESSAGE_CALLBACKÀ» µî·ÏÇÒ ¼ö ¾ø´Ù. */
+        mContext.addProperty(AltibaseProperties.PROP_CODE_MESSAGE_CALLBACK, false);
+
+        // ºÎ°¡ÀûÀÎ ÇÁ·ÎÆÛÆ¼ ¼¼ÆÃ
         setOptionalProperties(aProp);
 
         // PROJ-2331
@@ -493,7 +532,7 @@ public final class AltibaseConnection implements Connection
         {
             mLogger.log(Level.INFO, "Properties Infos : {0} ", mContext);
         }
-        CmProtocol.connect(mContext, sDBName, sUser, sPassword, sModeInt);
+        CmProtocol.connect(mContext, sDBName, sUser, sPassword, sModeInt, mShardConnType);
         
         if (mContext.getError() != null)
         {
@@ -524,12 +563,52 @@ public final class AltibaseConnection implements Connection
         {
             int sServerIsolationLevel = mContext.getIsolationLevel();
             mTxILevel = getPropIsolationLevel(sServerIsolationLevel);
+            mProp.setIsolationLevel(sServerIsolationLevel);
+        }
+        if (mContext.isSetPropertyResult(AltibaseProperties.PROP_CODE_GLOBAL_TRANSACTION_LEVEL))
+        {
+            GlobalTransactionLevel sGlobalTransactionLevel = mContext.getGlobalTransactionLevel();
+            // shardjdbc°¡ ¾Æ´Ò °æ¿ì mMetaConnectionÀÌ nullÀÏ ¼ö ÀÖ´Ù.
+            if (mMetaConnection != null)
+            {
+                mMetaConnection.setGlobalTransactionLevel(sGlobalTransactionLevel);
+            }
+            // BUGBUG : failover µî reconnect°¡ ÇÊ¿äÇÒ ¶§... ¼­¹ö¿¡¼­ ¹Ş¾Æ¿Â ÇÁ·ÎÆÛÆ¼ Á¤º¸´Â reconnect ½Ã ´Ù½Ã ¹Ş¾Æ¿À±â?
+            //          ¾Æ´Ï¸é ³ªÀÇ ¸¶Áö¸· Á¤º¸¸¦ ÀúÀåÇß´Ù°¡ connect ½Ã »ç¿ë? ±×·¸´Ù¸é ¾îµğ´Ù ÀúÀåÇÒ °ÍÀÎ°¡??
+            mProp.setProperty(AltibaseProperties.PROP_GLOBAL_TRANSACTION_LEVEL, sGlobalTransactionLevel.getValue());
+        }
+        if (mContext.isSetPropertyResult(AltibaseProperties.PROP_CODE_SHARD_STATEMENT_RETRY))
+        {
+            short sShardStatementRetry = mContext.getShardStatementRetry();
+            if (mMetaConnection != null)
+            {
+                mMetaConnection.setShardStatementRetry(sShardStatementRetry);
+            }
+            mProp.setProperty(AltibaseProperties.PROP_SHARD_STATEMENT_RETRY, sShardStatementRetry);
+        }
+        if (mContext.isSetPropertyResult(AltibaseProperties.PROP_CODE_INDOUBT_FETCH_TIMEOUT))
+        {
+            int sIndoubtFetchTimeout = mContext.getIndoubtFetchTimeout();
+            if (mMetaConnection != null)
+            {
+                mMetaConnection.setIndoubtFetchTimeout(sIndoubtFetchTimeout);
+            }
+            mProp.setProperty(AltibaseProperties.PROP_INDOUBT_FETCH_TIMEOUT, sIndoubtFetchTimeout);
+        }
+        if (mContext.isSetPropertyResult(AltibaseProperties.PROP_CODE_INDOUBT_FETCH_METHOD))
+        {
+            short sIndoubtFetchMethod = mContext.getIndoubtFetchMethod();
+            if (mMetaConnection != null)
+            {
+                mMetaConnection.setIndoubtFetchMethod(sIndoubtFetchMethod);
+            }
+            mProp.setProperty(AltibaseProperties.PROP_INDOUBT_FETCH_METHOD, sIndoubtFetchMethod);
         }
     }
 
     /* BUG-41908 Add processing the error 'mmERR_IGNORE_UNSUPPORTED_PROPERTY' in JDBC 
-     * íŠ¹ì • propertyì— ëŒ€í•´ì„œ ì„œë²„ì—ì„œ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤ëŠ” ì‘ë‹µì„ ë³´ëƒˆì„ ê²½ìš° JDBCì—ì„œë„ í•´ë‹¹ propertyì„ off í•œë‹¤. 
-     * ì¶”í›„ì— clientì™€ serverì™€ ì§€ì›í•˜ëŠ” propertyê°€ ë§ì§€ ì•Šì„ê²½ìš° ì •í™•íˆëŠ” clientë§Œ ì§€ì›í•˜ëŠ” propertyê°€ ìƒê¸¸ê²½ìš° ì•„ë˜ì™€ ê°™ì´ ì²˜ë¦¬í•œë‹¤. */
+     * Æ¯Á¤ property¿¡ ´ëÇØ¼­ ¼­¹ö¿¡¼­ Áö¿øÇÏÁö ¾Ê´Â´Ù´Â ÀÀ´äÀ» º¸³ÂÀ» °æ¿ì JDBC¿¡¼­µµ ÇØ´ç propertyÀ» off ÇÑ´Ù. 
+     * ÃßÈÄ¿¡ client¿Í server¿Í Áö¿øÇÏ´Â property°¡ ¸ÂÁö ¾ÊÀ»°æ¿ì Á¤È®È÷´Â client¸¸ Áö¿øÇÏ´Â property°¡ »ı±æ°æ¿ì ¾Æ·¡¿Í °°ÀÌ Ã³¸®ÇÑ´Ù. */
     private void setOffUnsupportedProperty(CmErrorResult aCmErrorResult) throws SQLException
     {
         CmErrorResult sCmErrorResult = aCmErrorResult;
@@ -545,8 +624,11 @@ public final class AltibaseConnection implements Connection
                     case AltibaseProperties.PROP_CODE_LOB_CACHE_THRESHOLD:
                         mProp.setProperty(AltibaseProperties.PROP_LOB_CACHE_THRESHOLD, 0);
                         break;
+                    case AltibaseProperties.PROP_CODE_MESSAGE_CALLBACK:  /* BUG-46019 */
+                        /* MessageCallbackÀº ÀÌ¹Ì ¼³Á¤µÇ¾î ÀÖ´Ù. */
+                        break;
                     default:
-                        /* ë°˜ë“œì‹œ í•„ìš”í•œ propertyì¼ ê²½ìš° ì ‘ì†ì„ í•´ì œí•œë‹¤. */
+                        /* ¹İµå½Ã ÇÊ¿äÇÑ propertyÀÏ °æ¿ì Á¢¼ÓÀ» ÇØÁ¦ÇÑ´Ù. */
                         Error.throwSQLException(ErrorDef.NOT_SUPPORTED_MANDATORY_PROPERTY);
                         break;
                 }
@@ -558,15 +640,27 @@ public final class AltibaseConnection implements Connection
     private void setOptionalProperties(AltibaseProperties aProp) throws SQLException
     {
         String sValue;
-        mAutoCommit = (aProp.isAutoCommit()) ? AutoCommitMode.SERVER_SIDE_AUTOCOMMIT_ON : AutoCommitMode.SERVER_SIDE_AUTOCOMMIT_OFF;
-        
+
+        // shardjdbc°¡ ¾Æ´Ï¾îµµ Àü¼ÛÇÑ´Ù.
+        if (aProp.isSet(AltibaseProperties.PROP_GLOBAL_TRANSACTION_LEVEL))
+        {
+            GlobalTransactionLevel sGlobalTransactionLevel = aProp.getGlobalTransactionLevel();
+            mContext.addProperty( PROP_CODE_GLOBAL_TRANSACTION_LEVEL,
+                                  sGlobalTransactionLevel.getValue() );
+            if (mMetaConnection != null)
+            {
+                mMetaConnection.setGlobalTransactionLevel(sGlobalTransactionLevel);
+            }
+        }
+
+        mAutoCommit = (aProp.isAutoCommit()) ? SERVER_SIDE_AUTOCOMMIT_ON : SERVER_SIDE_AUTOCOMMIT_OFF;
         if (aProp.isClientSideAutoCommit())
         {
             if (aProp.isAutoCommit())
             {
-                mAutoCommit = AutoCommitMode.CLIENT_SIDE_AUTOCOMMIT_ON;
+                mAutoCommit = CLIENT_SIDE_AUTOCOMMIT_ON;
             }
-            mDefaultResultSetHoldability = ResultSet.HOLD_CURSORS_OVER_COMMIT; // PROJ-2190 client side autocommitì´ í™œì„±í™” ë˜ì–´ ìˆì„ë•ŒëŠ” HOLD_CURSORë¡œ ë°”ê¿”ì¤€ë‹¤.
+            mDefaultResultSetHoldability = ResultSet.HOLD_CURSORS_OVER_COMMIT; // PROJ-2190 client side autocommitÀÌ È°¼ºÈ­ µÇ¾î ÀÖÀ»¶§´Â HOLD_CURSOR·Î ¹Ù²ãÁØ´Ù.
         }
 
         mContext.addProperty(AltibaseProperties.PROP_CODE_AUTOCOMMIT, isServerSideAutoCommit() ? true : false);
@@ -584,7 +678,7 @@ public final class AltibaseConnection implements Connection
         }
         else
         {
-            // ë””í´íŠ¸ê°€ falseì´ë¯€ë¡œ ì„œë²„ì— êµ³ì´ ì•Œë¦´ í•„ìš”ì—†ë‹¤.
+            // µğÆúÆ®°¡ falseÀÌ¹Ç·Î ¼­¹ö¿¡ ±»ÀÌ ¾Ë¸± ÇÊ¿ä¾ø´Ù.
         }
 
         setOptionalIntProperty(AltibaseProperties.PROP_CODE_MAX_STATEMENTS_PER_SESSION,
@@ -608,20 +702,26 @@ public final class AltibaseConnection implements Connection
         if (sValue != null)
         {
             mContext.addProperty(AltibaseProperties.PROP_CODE_APP_INFO, sValue);
+            // PROJ-2707 app_info jdbc ¼Ó¼ºÀÌ ÀÖÀ» °æ¿ì clientinfo ÇØ½¬¸Ê¿¡µµ ¼ÂÆÃÇØ ÁØ´Ù.
+            mClientInfo.put(PROP_APPLICATION_NAME, sValue);
+        }
+        else
+        {
+            mClientInfo.put(PROP_APPLICATION_NAME, "");
         }
 
-        /* BUG-31390 v$sessionì— ì •ë³´ ì¶œë ¥ */
+        /* BUG-31390 v$session¿¡ Á¤º¸ Ãâ·Â */
         sValue = aProp.getFailoverSource();
         if (sValue != null)
         {
             mContext.addProperty(AltibaseProperties.PROP_CODE_FAILOVER_SOURCE, sValue);
         }
 
-        if (isShardConnection(mMetaConnection))
-        {
-            // Meta ì»¤ë„¥ì…˜ì´ë‚˜ Node ì»¤ë„¥ì…˜ì¼ ê²½ìš°ì—ëŠ” shard ì†ì„±ì„ ë³´ë‚¸ë‹¤.
-            setShardProperties(aProp);
-        }
+        // BUG-47639 connect ½ÃÁ¡¿¡ lob_null_select jdbc ¼Ó¼ºÀ» Ã¼Å©ÇÑ´Ù.(±âº»°ªÀº false)
+        mAllowLobNullSelect = aProp.getBooleanProperty(AltibaseProperties.PROP_LOB_NULL_SELECT, false);
+
+        // BUG-48380 ResultSet Àç»ç¿ë ¿©ºÎ¸¦ reuse_resultset jdbc ¼Ó¼º À¸·Î ºÎÅÍ °¡Á®¿Â´Ù.
+        mReUseResultSet = aProp.getBooleanProperty(AltibaseProperties.PROP_REUSE_RESULTSET, true);
 
         setOptionalIntProperty(AltibaseProperties.PROP_CODE_IDLE_TIMEOUT,
                                aProp.getProperty(AltibaseProperties.PROP_IDLE_TIMEOUT));
@@ -640,21 +740,64 @@ public final class AltibaseConnection implements Connection
         /* BUG-39817 */
         setOptionalIsolationLevelProperty(AltibaseProperties.PROP_CODE_ISOLATION_LEVEL,
                                           aProp.getProperty(AltibaseProperties.PROP_TXI_LEVEL));
+
+        mGetProceduresReturnFunctions = aProp.getBooleanProperty(AltibaseProperties.PROP_GETPROCEDURES_RETURN_FUNCTIONS, true);
+
+        // PROJ-2733
+        if (aProp.isSet(AltibaseProperties.PROP_SHARD_STATEMENT_RETRY))
+        {
+            mContext.addProperty( AltibaseProperties.PROP_CODE_SHARD_STATEMENT_RETRY, (byte)aProp.getShardStatementRetry());
+            if (mMetaConnection != null)
+            {
+                mMetaConnection.setShardStatementRetry(aProp.getShardStatementRetry());
+            }
+        }
+        if (aProp.isSet(AltibaseProperties.PROP_INDOUBT_FETCH_TIMEOUT))
+        {
+            mContext.addProperty( AltibaseProperties.PROP_CODE_INDOUBT_FETCH_TIMEOUT, aProp.getIndoubtFetchTimeout());
+            if (mMetaConnection != null)
+            {
+                mMetaConnection.setIndoubtFetchTimeout(aProp.getIndoubtFetchTimeout());
+            }
+        }
+        if (aProp.isSet(AltibaseProperties.PROP_INDOUBT_FETCH_METHOD))
+        {
+            mContext.addProperty( AltibaseProperties.PROP_CODE_INDOUBT_FETCH_METHOD, (byte)aProp.getIndoubtFetchMethod());
+            if (mMetaConnection != null)
+            {
+                mMetaConnection.setIndoubtFetchMethod(aProp.getIndoubtFetchMethod());
+            }
+        }
     }
 
     /**
-     * ìƒ¤ë”©ê³¼ ê´€ë ¨ëœ ì†ì„±ì„ ë³´ë‚¸ë‹¤.
-     * @param aProp AltibaseProperties ê°ì²´
-     * @throws SQLException ì†ì„±ì„ ì¶”ê°€í•˜ëŠ” ë„ì¤‘ ì˜ˆì™¸ê°€ ë°œìƒí•œ ê²½ìš°
+     * »şµù°ú °ü·ÃµÈ ¼Ó¼ºÀ» º¸³½´Ù.
+     * @param aProp AltibaseProperties °´Ã¼
+     * @throws SQLException ¼Ó¼ºÀ» Ãß°¡ÇÏ´Â µµÁß ¿¹¿Ü°¡ ¹ß»ıÇÑ °æ¿ì
      */
     private void setShardProperties(AltibaseProperties aProp) throws SQLException
     {
+        /* Shard session ±¸ºĞÀ» À§ÇÑ Áß¿äÇÑ Property´Â ¸ÕÀú Àü¼ÛÇÏÀÚ.
+         * ( ULN_PROPERTY_SHARD_NODE_NAME,
+         *   ULN_PROPERTY_SHARD_SESSION_TYPE,
+         *   ULN_PROPERTY_SHARD_CLIENT,
+         *   ULN_PROPERTY_SHARD_PIN,
+         *   ULN_PROPERTY_SHARD_META_NUMBER )
+         * À§ ¼ø¼­´Â º¯°æ¿¡ ÁÖÀÇ ÇØ¾ß ÇÑ´Ù.
+         * ex) ULN_PROPERTY_SHARD_META_NUMBER ¸¦ ¼ö½ÅÇÏ¸é
+         *     ULN_PROPERTY_SHARD_SESSION_TYPE °ªÀ» ÀÌ¿ëÇØ ºĞ±âÇÑ´Ù.
+         */
+        
         String sNodeName = aProp.getShardNodeName();
         if (!StringUtils.isEmpty(sNodeName))
         {
             mContext.addProperty(AltibaseProperties.PROP_CODE_SHARD_NODE_NAME, sNodeName.toUpperCase());
-            mIsNodeConnection = true;
         }
+        
+        // BUG-47324
+        mContext.addProperty(AltibaseProperties.PROP_CODE_SHARD_SESSION_TYPE, aProp.getShardSessionType());
+        mContext.addProperty(AltibaseProperties.PROP_CODE_SHARD_CLIENT, aProp.getShardClient());
+
         long sShardPin = aProp.getShardPin();
         if (sShardPin > 0)
         {
@@ -665,12 +808,11 @@ public final class AltibaseConnection implements Connection
         {
             mContext.addProperty(AltibaseProperties.PROP_CODE_SHARD_META_NUMBER, sShardMetaNumber);
         }
-        mContext.addProperty(AltibaseProperties.PROP_CODE_SHARD_CLIENT_TYPE, DEFAULT_SHARD_CLIENT_TYPE);
     }
 
     private boolean isServerSideAutoCommit()
     {
-        return mAutoCommit == AutoCommitMode.SERVER_SIDE_AUTOCOMMIT_ON;
+        return mAutoCommit == SERVER_SIDE_AUTOCOMMIT_ON;
     }
 
     private void setOptionalIntProperty(byte aPropCode, String aPropValue) throws SQLException
@@ -787,9 +929,9 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * DB ì—°ê²° ì •ë³´ê°€ ë‹´ê¸´ Propertiesë¥¼ ì´ìš©í•´ URL stringì„ ì–»ëŠ”ë‹¤.
+     * DB ¿¬°á Á¤º¸°¡ ´ã±ä Properties¸¦ ÀÌ¿ëÇØ URL stringÀ» ¾ò´Â´Ù.
      * 
-     * @param aProps DB ì—°ê²° ì •ë³´ê°€ ë‹´ê¸´ Properties
+     * @param aProps DB ¿¬°á Á¤º¸°¡ ´ã±ä Properties
      * @return URL string
      */
     public static String getURL(Properties aProps)
@@ -911,8 +1053,8 @@ public final class AltibaseConnection implements Connection
             return;
         }
 
-        // BUGBUG ì´ê±° ê¼­ ì´ë˜ì•¼ ë˜ë‚˜? synchronized ì œê±°í•  ìˆ˜ ì—†ë‚˜?
-        // BUGBUG (1013-02-04) ë¹„ìš©ì´ ì¢€ ë“¤ê¸´ í•˜ì§€ë§Œ, rollbkack í•  ë•Œ stmt ë‚¨ì€ê±¸ í™•ì¸í•˜ë¯€ë¡œ ëª¨ë‘ close í•´ì£¼ì–´ì•¼ ì•ˆì „í•˜ë‹¤.
+        // BUGBUG ÀÌ°Å ²À ÀÌ·¡¾ß µÇ³ª? synchronized Á¦°ÅÇÒ ¼ö ¾ø³ª?
+        // BUGBUG (1013-02-04) ºñ¿ëÀÌ Á» µé±ä ÇÏÁö¸¸, rollbkack ÇÒ ¶§ stmt ³²Àº°É È®ÀÎÇÏ¹Ç·Î ¸ğµÎ close ÇØÁÖ¾î¾ß ¾ÈÀüÇÏ´Ù.
         synchronized (mStatementList)
         {
             while (!mStatementList.isEmpty())
@@ -927,9 +1069,9 @@ public final class AltibaseConnection implements Connection
 
         if (!isServerSideAutoCommit())
         {
-            // autocommitì´ ì•„ë‹Œ ê²½ìš° ê·¸ëƒ¥ disconnectë¥¼ í•´ì„œ
-            // rollback/commit ì—¬ë¶€ë¥¼ ì„œë²„ì— ë§¡ê¸°ëŠ”ê²Œ ì˜³ì€ ì •ì±…ì´ì§€ë§Œ,
-            // í•˜ìœ„ ë²„ì „ê³¼ì˜ í˜¸í™˜ì„±ì„ ìœ„í•´ rollbackì„ í˜¸ì¶œí•œë‹¤.
+            // autocommitÀÌ ¾Æ´Ñ °æ¿ì ±×³É disconnect¸¦ ÇØ¼­
+            // rollback/commit ¿©ºÎ¸¦ ¼­¹ö¿¡ ¸Ã±â´Â°Ô ¿ÇÀº Á¤Ã¥ÀÌÁö¸¸,
+            // ÇÏÀ§ ¹öÀü°úÀÇ È£È¯¼ºÀ» À§ÇØ rollbackÀ» È£ÃâÇÑ´Ù.
             rollback();
         }
 
@@ -942,16 +1084,16 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * Disconnectë¥¼ ìˆ˜í–‰í•˜ê³  CM ì—°ê²°ì„ ëëŠ”ë‹¤.
+     * Disconnect¸¦ ¼öÇàÇÏ°í CM ¿¬°áÀ» ³¡´Â´Ù.
      * 
      * @throws SQLException
      */
     void disconnect() throws SQLException
     {
-        // RESPONSE_TIMEOUT ë“±ìœ¼ë¡œ channelì´ ë‹«í˜”ë‹¤ë©´ ì¡°ìš©íˆ ë„˜ì–´ê°„ë‹¤.
+        // RESPONSE_TIMEOUT µîÀ¸·Î channelÀÌ ´İÇû´Ù¸é Á¶¿ëÈ÷ ³Ñ¾î°£´Ù.
         if (!mContext.channel().isClosed())
         {
-            if (! mIsClosed)
+            if (!mIsClosed)
             {
                 CmProtocol.disconnect(mContext);
             }
@@ -959,7 +1101,7 @@ public final class AltibaseConnection implements Connection
             {
                 mWarning = Error.processServerError(mWarning, mContext.getError());
             }
-            
+
             try
             {
                 mChannel.close();
@@ -977,8 +1119,8 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * Connectionì„ ë‹«ëŠ”ë‹¤.
-     * ì´ ë•Œ, ì˜ˆì™¸ê°€ ë°œìƒí•˜ë©´ LogWriterì— ë©”ì„¸ì§€ë¥¼ ê¸°ë¡í•œë‹¤.
+     * ConnectionÀ» ´İ´Â´Ù.
+     * ÀÌ ¶§, ¿¹¿Ü°¡ ¹ß»ıÇÏ¸é LogWriter¿¡ ¸Ş¼¼Áö¸¦ ±â·ÏÇÑ´Ù.
      */
     void quiteClose()
     {
@@ -993,7 +1135,7 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * PROJ-2109 DriverManager.setLogWriterë¡œ ì…‹íŒ…í•œ logWriterë¡œ Exceptionì„ ì¶œë ¥í•œë‹¤.
+     * PROJ-2109 DriverManager.setLogWriter·Î ¼ÂÆÃÇÑ logWriter·Î ExceptionÀ» Ãâ·ÂÇÑ´Ù.
      * @param sEx
      */
     private void logExceptionToLogWriter(Exception sEx)
@@ -1001,7 +1143,7 @@ public final class AltibaseConnection implements Connection
         PrintWriter logWriter = getLogWriter();
         if (logWriter == null)
         {
-            return; // DriverManager ë‹¨ì—ì„œ LogWriterë¥¼ ì„¤ì •í•˜ì§€ ì•Šì€ ê²½ìš° ê·¸ëƒ¥ ë¦¬í„´í•œë‹¤.
+            return; // DriverManager ´Ü¿¡¼­ LogWriter¸¦ ¼³Á¤ÇÏÁö ¾ÊÀº °æ¿ì ±×³É ¸®ÅÏÇÑ´Ù.
         }
         logWriter.print(sEx.getMessage());
     }
@@ -1009,7 +1151,7 @@ public final class AltibaseConnection implements Connection
     public void commit() throws SQLException
     {
         throwErrorForClosed();
-        // BUG-23343 JDBC specì— ë”°ë¥´ë©´ ì˜ˆì™¸ë¥¼ ë‚´ì•¼ í•˜ì§€ë§Œ, ì‚¬ìš©ì í¸ì˜ë¥¼ ìœ„í•´ ë¬´ì‹œ.
+        // BUG-23343 JDBC spec¿¡ µû¸£¸é ¿¹¿Ü¸¦ ³»¾ß ÇÏÁö¸¸, »ç¿ëÀÚ ÆíÀÇ¸¦ À§ÇØ ¹«½Ã.
         if (isServerSideAutoCommit())
         {
             return;
@@ -1018,20 +1160,89 @@ public final class AltibaseConnection implements Connection
         {
             CmProtocol.commit(mContext);
         }
-        catch (SQLException ex)
+        catch (SQLException aEx)
         {
-            AltibaseFailover.trySTF(mFailoverContext, ex);
+            AltibaseShardingFailover.tryShardFailOver(this, aEx);
         }
         if (mContext.getError() != null)
         {
-            mWarning = Error.processServerError(mWarning, mContext.getError());
-            setSMNInvalidErrorResults();
+            try
+            {
+                mWarning = Error.processServerError(mWarning, mContext.getError());
+                setSMNInvalidErrorResults();
+            }
+            finally
+            {
+                // BUG-46790 ExceptionÀÌ ¹ß»ıÇÏ´õ¶óµµ shard alignÀÛ¾÷À» ¼öÇàÇØ¾ß ÇÑ´Ù.
+                ShardError.processShardError(mMetaConnection, mContext.getError());
+            }
+        }
+    }
+
+    /* PROJ-2733
+     * library sessionÀ¸·Î DB_OP_SHARD_TRANSACTION_V3À» Àü¼ÛÇÏ±â À§ÇÑ ÇÔ¼ö
+     */
+    public void shardTransaction(boolean aIsCommit) throws SQLException
+    {
+        throwErrorForClosed();
+        // BUG-23343 JDBC spec¿¡ µû¸£¸é ¿¹¿Ü¸¦ ³»¾ß ÇÏÁö¸¸, »ç¿ëÀÚ ÆíÀÇ¸¦ À§ÇØ ¹«½Ã.
+        if (isServerSideAutoCommit())
+        {
+            return;
+        }
+        try
+        {
+            mMetaConnection.getShardProtocol().shardTransaction(mContext, aIsCommit);
+        }
+        catch (SQLException aEx)
+        {
+            AltibaseShardingFailover.tryShardFailOver(this, aEx);
+        }
+        if (mContext.getError() != null)
+        {
+            try
+            {
+                mWarning = Error.processServerError(mWarning, mContext.getError());
+                setSMNInvalidErrorResults();
+            }
+            finally
+            {
+                // BUG-46790 ExceptionÀÌ ¹ß»ıÇÏ´õ¶óµµ shard alignÀÛ¾÷À» ¼öÇàÇØ¾ß ÇÑ´Ù.
+                ShardError.processShardError(mMetaConnection, mContext.getError());
+            }
+        }
+    }
+
+    public void shardStmtPartialRollback() throws SQLException
+    {
+        throwErrorForClosed();
+
+        try
+        {
+            mMetaConnection.getShardProtocol().shardStmtPartialRollback(mContext);
+        }
+        catch (SQLException aEx)
+        {
+            AltibaseShardingFailover.tryShardFailOver(this, aEx);
+        }
+        if (mContext.getError() != null)
+        {
+            try
+            {
+                mWarning = Error.processServerError(mWarning, mContext.getError());
+                setSMNInvalidErrorResults();
+            }
+            finally
+            {
+                // BUG-46790 ExceptionÀÌ ¹ß»ıÇÏ´õ¶óµµ shard alignÀÛ¾÷À» ¼öÇàÇØ¾ß ÇÑ´Ù.
+                ShardError.processShardError(mMetaConnection, mContext.getError());
+            }
         }
     }
 
     /**
-     * SMN Invalid ì—ëŸ¬ê°€ ë„˜ì–´ì˜¨ ê²½ìš° íŒŒì‹±í•œ SMNê°’ê³¼ needToDisconnect ê°’ì„ node connection ë°
-     * meta connectionì— ì €ì¥í•œë‹¤.
+     * SMN Invalid ¿¡·¯°¡ ³Ñ¾î¿Â °æ¿ì ÆÄ½ÌÇÑ SMN°ª°ú needToDisconnect °ªÀ» node connection ¹×
+     * meta connection¿¡ ÀúÀåÇÑ´Ù.
      */
     private void setSMNInvalidErrorResults()
     {
@@ -1144,7 +1355,7 @@ public final class AltibaseConnection implements Connection
     public boolean isReadOnly() throws SQLException
     {
         throwErrorForClosed();
-        // read-only ëª¨ë“œë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // read-only ¸ğµå¸¦ Áö¿øÇÏÁö ¾Ê´Â´Ù.
         return false;
     }
 
@@ -1214,8 +1425,8 @@ public final class AltibaseConnection implements Connection
         return sStatement;
     }
 
-    // BUGBUG (2012-11-06) ì§€ì›í•˜ëŠ” ê²ƒì´ ìŠ¤í™ì—ì„œ ì„¤ëª…í•˜ëŠ”ê²ƒê³¼ ì¡°ê¸ˆ ë‹¤ë¥´ë‹¤.
-    // ìì„¸í•œ ë‚´ìš©ì€ Statement.executeUpdate(String,int) ì°¸ê³ .
+    // BUGBUG (2012-11-06) Áö¿øÇÏ´Â °ÍÀÌ ½ºÆå¿¡¼­ ¼³¸íÇÏ´Â°Í°ú Á¶±İ ´Ù¸£´Ù.
+    // ÀÚ¼¼ÇÑ ³»¿ëÀº Statement.executeUpdate(String,int) Âü°í.
     public PreparedStatement prepareStatement(String aSql, int aAutoGeneratedKeys) throws SQLException
     {
         throwErrorForClosed();
@@ -1238,8 +1449,8 @@ public final class AltibaseConnection implements Connection
         return sStatement;
     }
 
-    // BUGBUG (2012-11-06) ìŠ¤í™ê³¼ ë‹¤ë¥´ë‹¤.
-    // ìì„¸í•œ ë‚´ìš©ì€ Statement.executeUpdate(String,int[]) ì°¸ê³ .
+    // BUGBUG (2012-11-06) ½ºÆå°ú ´Ù¸£´Ù.
+    // ÀÚ¼¼ÇÑ ³»¿ëÀº Statement.executeUpdate(String,int[]) Âü°í.
     public PreparedStatement prepareStatement(String aSql, int[] aColumnIndexes) throws SQLException
     {
         throwErrorForClosed();
@@ -1254,8 +1465,8 @@ public final class AltibaseConnection implements Connection
         return sStatement;
     }
 
-    // BUGBUG (2012-11-06) ìŠ¤í™ê³¼ ë‹¤ë¥´ë‹¤.
-    // ìì„¸í•œ ë‚´ìš©ì€ Statement.executeUpdate(String,String[]) ì°¸ê³ .
+    // BUGBUG (2012-11-06) ½ºÆå°ú ´Ù¸£´Ù.
+    // ÀÚ¼¼ÇÑ ³»¿ëÀº Statement.executeUpdate(String,String[]) Âü°í.
     public PreparedStatement prepareStatement(String aSql, String[] aColumnNames) throws SQLException
     {
         throwErrorForClosed();
@@ -1287,10 +1498,10 @@ public final class AltibaseConnection implements Connection
     {
         throwErrorForClosed();
         throwErrorForInvalidSavePoint(aSavepoint);
-        // BUG-23343 JDBC specì— ë”°ë¥´ë©´ ì˜ˆì™¸ë¥¼ ë‚´ì•¼ í•˜ì§€ë§Œ, ì‚¬ìš©ì í¸ì˜ë¥¼ ìœ„í•´ ë¬´ì‹œ.
+        // BUG-23343 JDBC spec¿¡ µû¸£¸é ¿¹¿Ü¸¦ ³»¾ß ÇÏÁö¸¸, »ç¿ëÀÚ ÆíÀÇ¸¦ À§ÇØ ¹«½Ã.
         if (isServerSideAutoCommit())
         {
-        	return;
+            return;
         }
 
         ((AltibaseSavepoint)aSavepoint).releaseSavepoint();
@@ -1299,7 +1510,7 @@ public final class AltibaseConnection implements Connection
     public void rollback() throws SQLException
     {
         throwErrorForClosed();
-        // BUG-23343 JDBC specì— ë”°ë¥´ë©´ ì˜ˆì™¸ë¥¼ ë‚´ì•¼ í•˜ì§€ë§Œ, ì‚¬ìš©ì í¸ì˜ë¥¼ ìœ„í•´ ë¬´ì‹œ.
+        // BUG-23343 JDBC spec¿¡ µû¸£¸é ¿¹¿Ü¸¦ ³»¾ß ÇÏÁö¸¸, »ç¿ëÀÚ ÆíÀÇ¸¦ À§ÇØ ¹«½Ã.
         if (isServerSideAutoCommit())
         {
             return;
@@ -1309,14 +1520,22 @@ public final class AltibaseConnection implements Connection
         {
             CmProtocol.rollback(mContext);
         }
-        catch (SQLException ex)
+        catch (SQLException aEx)
         {
-            AltibaseFailover.trySTF(mFailoverContext, ex);
+            AltibaseShardingFailover.tryShardFailOver(this, aEx);
         }
         if (mContext.getError() != null)
         {
-            mWarning = Error.processServerError(mWarning, mContext.getError());
-            setSMNInvalidErrorResults();
+            try
+            {
+                mWarning = Error.processServerError(mWarning, mContext.getError());
+                setSMNInvalidErrorResults();
+            }
+            finally
+            {
+                // BUG-46790 ExceptionÀÌ ¹ß»ıÇÏ´õ¶óµµ shard alignÀÛ¾÷À» ¼öÇàÇØ¾ß ÇÑ´Ù.
+                ShardError.processShardError(mMetaConnection, mContext.getError());
+            }
         }
     }
 
@@ -1324,7 +1543,7 @@ public final class AltibaseConnection implements Connection
     {
         throwErrorForClosed();
         throwErrorForInvalidSavePoint(aSavepoint);
-        // BUG-23343 JDBC specì— ë”°ë¥´ë©´ ì˜ˆì™¸ë¥¼ ë‚´ì•¼ í•˜ì§€ë§Œ, ì‚¬ìš©ì í¸ì˜ë¥¼ ìœ„í•´ ë¬´ì‹œ.
+        // BUG-23343 JDBC spec¿¡ µû¸£¸é ¿¹¿Ü¸¦ ³»¾ß ÇÏÁö¸¸, »ç¿ëÀÚ ÆíÀÇ¸¦ À§ÇØ ¹«½Ã.
         if (isServerSideAutoCommit())
         {
             return;
@@ -1338,15 +1557,15 @@ public final class AltibaseConnection implements Connection
         throwErrorForClosed();
         if (mProp.isClientSideAutoCommit()) 
         {
-            /* PROJ-2190 ClientAutoCommitì´ í™œì„±í™” ë˜ì–´ ìˆì„ ë•ŒëŠ” ì„œë²„ë¡œ ì»¤ë°‹ì •ë³´ë¥¼ ì „ì†¡í•˜ì§€ ì•Šê³  flagê°’ë§Œ ì…‹íŒ…í•œë‹¤. */
+            /* PROJ-2190 ClientAutoCommitÀÌ È°¼ºÈ­ µÇ¾î ÀÖÀ» ¶§´Â ¼­¹ö·Î Ä¿¹ÔÁ¤º¸¸¦ Àü¼ÛÇÏÁö ¾Ê°í flag°ª¸¸ ¼ÂÆÃÇÑ´Ù. */
             
             if (!aAutoCommit)
             {
-                mAutoCommit = AutoCommitMode.SERVER_SIDE_AUTOCOMMIT_OFF;
+                mAutoCommit = SERVER_SIDE_AUTOCOMMIT_OFF;
             }
             else
             {
-                mAutoCommit = AutoCommitMode.CLIENT_SIDE_AUTOCOMMIT_ON;    
+                mAutoCommit = CLIENT_SIDE_AUTOCOMMIT_ON;
             }
             return;
         }
@@ -1356,7 +1575,7 @@ public final class AltibaseConnection implements Connection
             return;
         }
 
-        // BUGBUG specì—ì„  off ==> on ì¼ ë•Œë§Œ commitëœë‹¤ëŠ” ë§ì´ ì—†ë‹¤. ë¬´ì¡°ê±´ commit í•´ì¤˜ì•¼ í• ê¹Œ?
+        // BUGBUG spec¿¡¼± off ==> on ÀÏ ¶§¸¸ commitµÈ´Ù´Â ¸»ÀÌ ¾ø´Ù. ¹«Á¶°Ç commit ÇØÁà¾ß ÇÒ±î?
         if (isServerSideAutoCommit() == false)
         {
             commit();
@@ -1374,17 +1593,31 @@ public final class AltibaseConnection implements Connection
         }
         if (mContext.getError() != null)
         {
-            mWarning = Error.processServerError(mWarning, mContext.getError());
+            try
+            {
+                mWarning = Error.processServerError(mWarning, mContext.getError());
+            }
+            finally
+            {
+                // BUG-46790 ExceptionÀÌ ¹ß»ıÇÏ´õ¶óµµ shard alignÀÛ¾÷À» ¼öÇàÇØ¾ß ÇÑ´Ù.
+                ShardError.processShardError(mMetaConnection, mContext.getError());
+            }
         }
         
-        mAutoCommit = (aAutoCommit) ? AutoCommitMode.SERVER_SIDE_AUTOCOMMIT_ON : AutoCommitMode.SERVER_SIDE_AUTOCOMMIT_OFF;
+        mAutoCommit = (aAutoCommit) ? SERVER_SIDE_AUTOCOMMIT_ON : SERVER_SIDE_AUTOCOMMIT_OFF;
+        
+        if (mAutoCommit == SERVER_SIDE_AUTOCOMMIT_OFF)
+        {
+            mContext.initDistTxInfo();
+            setDistTxInfoForVerify();
+        }
     }
 
     public void setCatalog(String aCatalog) throws SQLException
     {
         throwErrorForClosed();
 
-        // shard connectionì¼ ê²½ìš° catalogì— shardpinì •ë³´ê°€ ìˆìœ¼ë©´ shardpinì„ ì…‹íŒ…í•œë‹¤.
+        // shard connectionÀÏ °æ¿ì catalog¿¡ shardpinÁ¤º¸°¡ ÀÖÀ¸¸é shardpinÀ» ¼ÂÆÃÇÑ´Ù.
         if (!StringUtils.isEmpty(aCatalog) && aCatalog.startsWith("shardpin:"))
         {
             int sIndex = aCatalog.indexOf("shardpin:");
@@ -1400,7 +1633,7 @@ public final class AltibaseConnection implements Connection
             return;
         }
 
-        // ì•„ë¬´ëŸ° ë™ì‘ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤. dbnameì„ ë°”ê¿€ ìˆ˜ ì—†ë‹¤.
+        // ¾Æ¹«·± µ¿ÀÛÀ» ÇÏÁö ¾Ê´Â´Ù. dbnameÀ» ¹Ù²Ü ¼ö ¾ø´Ù.
         mWarning = Error.createWarning(mWarning, ErrorDef.CANNOT_RENAME_DB_NAME);
     }
 
@@ -1416,7 +1649,7 @@ public final class AltibaseConnection implements Connection
     {
         throwErrorForClosed();
 
-        // ì•„ë¬´ëŸ° ë™ì‘ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤. read-only ëª¨ë“œë¥¼ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // ¾Æ¹«·± µ¿ÀÛÀ» ÇÏÁö ¾Ê´Â´Ù. read-only ¸ğµå¸¦ Áö¿øÇÏÁö ¾Ê´Â´Ù.
         mWarning = (aReadOnly) ? Error.createWarning(mWarning, ErrorDef.READONLY_CONNECTION_NOT_SUPPORTED) : mWarning;
     }
     
@@ -1485,7 +1718,7 @@ public final class AltibaseConnection implements Connection
     
     public boolean isClientSideAutoCommit()
     {
-        return mAutoCommit == AutoCommitMode.CLIENT_SIDE_AUTOCOMMIT_ON;
+        return mAutoCommit == CLIENT_SIDE_AUTOCOMMIT_ON;
     }
 
     protected boolean isDeferredPrepare()
@@ -1494,10 +1727,10 @@ public final class AltibaseConnection implements Connection
     }
     
     /**
-     * ì—°ê²°ëœ DBì˜ íŒ¨í‚¤ì§€ ë²„ì „ì„ ì–»ëŠ”ë‹¤.
+     * ¿¬°áµÈ DBÀÇ ÆĞÅ°Áö ¹öÀüÀ» ¾ò´Â´Ù.
      * 
-     * @return ì—°ê²°ëœ DBì˜ íŒ¨í‚¤ì§€ ë²„ì „ ë¬¸ìì—´
-     * @throws SQLException íŒ¨í‚¤ì§€ ë²„ì „ ë¬¸ìì—´ì„ ì–»ëŠ”ë° ì‹¤íŒ¨í–ˆì„ ê²½ìš°
+     * @return ¿¬°áµÈ DBÀÇ ÆĞÅ°Áö ¹öÀü ¹®ÀÚ¿­
+     * @throws SQLException ÆĞÅ°Áö ¹öÀü ¹®ÀÚ¿­À» ¾ò´Âµ¥ ½ÇÆĞÇßÀ» °æ¿ì
      */
     public String getDatabaseVersion() throws SQLException
     {
@@ -1515,7 +1748,15 @@ public final class AltibaseConnection implements Connection
             }
             if (mContext.getError() != null)
             {
-                mWarning = Error.processServerError(mWarning, mContext.getError());
+                try
+                {
+                    mWarning = Error.processServerError(mWarning, mContext.getError());
+                }
+                finally
+                {
+                    // BUG-46790 ExceptionÀÌ ¹ß»ıÇÏ´õ¶óµµ shard alignÀÛ¾÷À» ¼öÇàÇØ¾ß ÇÑ´Ù.
+                    ShardError.processShardError(mMetaConnection, mContext.getError());
+                }
             }
             mDBPkgVerStr = mContext.getPropertyResult().getProperty(AltibaseProperties.PROP_CODE_SERVER_PACKAGE_VERSION);
         }
@@ -1523,8 +1764,8 @@ public final class AltibaseConnection implements Connection
     }
 
     /*
-     * JDBC ìŠ¤í™ì— ì—†ëŠ” public ë©”ì†Œë“œë¡œì„œ ë‹¤ìŒ  ë©”ì†Œë“œë¥¼ ì œê³µí•œë‹¤.
-     * XAResultì˜ getTransactionTimeoutì„ ìœ„í•´ UTRANS_TIMEOUT ì†ì„±ì„ ì–»ê³ , ì„¸íŒ…í•˜ëŠ” ë©”ì†Œë“œë¥¼ ì œê³µí•œë‹¤.
+     * JDBC ½ºÆå¿¡ ¾ø´Â public ¸Ş¼Òµå·Î¼­ ´ÙÀ½  ¸Ş¼Òµå¸¦ Á¦°øÇÑ´Ù.
+     * XAResultÀÇ getTransactionTimeoutÀ» À§ÇØ UTRANS_TIMEOUT ¼Ó¼ºÀ» ¾ò°í, ¼¼ÆÃÇÏ´Â ¸Ş¼Òµå¸¦ Á¦°øÇÑ´Ù.
      */
     public int getTransTimeout() throws SQLException
     {
@@ -1540,7 +1781,15 @@ public final class AltibaseConnection implements Connection
         }
         if (mContext.getError() != null)
         {
-            mWarning = Error.processServerError(mWarning, mContext.getError());
+            try
+            {
+                mWarning = Error.processServerError(mWarning, mContext.getError());
+            }
+            finally
+            {
+                // BUG-46790 ExceptionÀÌ ¹ß»ıÇÏ´õ¶óµµ shard alignÀÛ¾÷À» ¼öÇàÇØ¾ß ÇÑ´Ù.
+                ShardError.processShardError(mMetaConnection, mContext.getError());
+            }
         }
         return Integer.parseInt(mContext.getPropertyResult().getProperty(AltibaseProperties.PROP_CODE_UTRANS_TIMEOUT));
     }
@@ -1568,10 +1817,10 @@ public final class AltibaseConnection implements Connection
     // #region TimeZone
 
     /**
-     * ì„œë²„ì— ì„¤ì •ëœ TimeZoneì„ ì–»ëŠ”ë‹¤.
+     * ¼­¹ö¿¡ ¼³Á¤µÈ TimeZoneÀ» ¾ò´Â´Ù.
      *
-     * @return ì„œë²„ TimeZone ê°’
-     * @throws SQLException DB TimeZoneì„ ì–»ëŠ”ë° ì‹¤íŒ¨í–ˆì„ ê²½ìš°
+     * @return ¼­¹ö TimeZone °ª
+     * @throws SQLException DB TimeZoneÀ» ¾ò´Âµ¥ ½ÇÆĞÇßÀ» °æ¿ì
      */
     public String getDbTimeZone() throws SQLException
     {
@@ -1579,7 +1828,7 @@ public final class AltibaseConnection implements Connection
 
         if (mDbTimeZone == null)
         {
-            // í”„ë¡œí† ì½œì´ ì—†ìœ¼ë‹ˆ ì¿¼ë¦¬ë¡œ ì–»ì–´ì˜¨ë‹¤.
+            // ÇÁ·ÎÅäÄİÀÌ ¾øÀ¸´Ï Äõ¸®·Î ¾ò¾î¿Â´Ù.
             ResultSet sRS = mInternalStatement.executeQuery("SELECT db_timezone() FROM DUAL");
             if (sRS.next())
             {
@@ -1591,10 +1840,10 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * Sessionì— ì„¤ì •ëœ TimeZoneì„ ì–»ëŠ”ë‹¤.
+     * Session¿¡ ¼³Á¤µÈ TimeZoneÀ» ¾ò´Â´Ù.
      *
-     * @return ì„œë²„ TimeZone ê°’
-     * @throws SQLException Session TimeZoneì„ ì–»ëŠ”ë° ì‹¤íŒ¨í–ˆì„ ê²½ìš°
+     * @return ¼­¹ö TimeZone °ª
+     * @throws SQLException Session TimeZoneÀ» ¾ò´Âµ¥ ½ÇÆĞÇßÀ» °æ¿ì
      */
     public String getSessionTimeZone() throws SQLException
     {
@@ -1602,7 +1851,7 @@ public final class AltibaseConnection implements Connection
 
         if (mSessionTimeZone == null)
         {
-            // í”„ë¡œí† ì½œì´ ì—†ìœ¼ë‹ˆ ì¿¼ë¦¬ë¡œ ì–»ì–´ì˜¨ë‹¤.
+            // ÇÁ·ÎÅäÄİÀÌ ¾øÀ¸´Ï Äõ¸®·Î ¾ò¾î¿Â´Ù.
             ResultSet sRS = mInternalStatement.executeQuery("SELECT session_timezone() FROM DUAL");
             if (sRS.next())
             {
@@ -1614,10 +1863,10 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * Session TimeZoneì„ ë°”ê¾¼ë‹¤.
+     * Session TimeZoneÀ» ¹Ù²Û´Ù.
      *
-     * @param aTimeZone ë°”ê¿€ TimeZone ê°’
-     * @throws SQLException TimeZoneì„ ë°”ê¾¸ëŠ”ë° ì‹¤íŒ¨í–ˆì„ ê²½ìš°
+     * @param aTimeZone ¹Ù²Ü TimeZone °ª
+     * @throws SQLException TimeZoneÀ» ¹Ù²Ù´Âµ¥ ½ÇÆĞÇßÀ» °æ¿ì
      */
     public void setSessionTimeZone(String aTimeZone) throws SQLException
     {
@@ -1672,15 +1921,15 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * Explain Plan Modeë¥¼ ì„¤ì •í•œë‹¤.
+     * Explain Plan Mode¸¦ ¼³Á¤ÇÑ´Ù.
      *
-     * @param aExplainPlanMode Explain Plan Mode. ë‹¤ìŒ ê°’ ì¤‘ í•˜ë‚˜:
+     * @param aExplainPlanMode Explain Plan Mode. ´ÙÀ½ °ª Áß ÇÏ³ª:
      *                         {@link #EXPLAIN_PLAN_OFF},
      *                         {@link #EXPLAIN_PLAN_ON},
      *                         {@link #EXPLAIN_PLAN_ONLY}
      *
-     * @exception IllegalArgumentException Explain Plan Modeê°€ ì˜¬ë°”ë¥´ì§€ ì•Šì„ ê²½ìš°
-     * @exception SQLException Explain Plan ì†ì„± ì„¤ì •ì— ì‹¤íŒ¨í•œ ê²½ìš°
+     * @exception IllegalArgumentException Explain Plan Mode°¡ ¿Ã¹Ù¸£Áö ¾ÊÀ» °æ¿ì
+     * @exception SQLException Explain Plan ¼Ó¼º ¼³Á¤¿¡ ½ÇÆĞÇÑ °æ¿ì
      */
     public void setExplainPlan(byte aExplainPlanMode) throws SQLException
     {
@@ -1704,17 +1953,25 @@ public final class AltibaseConnection implements Connection
         }
         if (mContext.getError() != null)
         {
-            mWarning = Error.processServerError(mWarning, mContext.getError());
+            try
+            {
+                mWarning = Error.processServerError(mWarning, mContext.getError());
+            }
+            finally
+            {
+                // BUG-46790 ExceptionÀÌ ¹ß»ıÇÏ´õ¶óµµ shard alignÀÛ¾÷À» ¼öÇàÇØ¾ß ÇÑ´Ù.
+                ShardError.processShardError(mMetaConnection, mContext.getError());
+            }
         }
         mExplainPlanMode = aExplainPlanMode;
     }
 
     /**
-     * Explain Planì„ ì‚¬ìš©í• ì§€ ì—¬ë¶€ë¥¼ ì„¤ì •í•œë‹¤.
+     * Explain PlanÀ» »ç¿ëÇÒÁö ¿©ºÎ¸¦ ¼³Á¤ÇÑ´Ù.
      *
-     * @param aUseExplainPlan ExplainPlanì„ ì‚¬ìš©í• ì§€ ì—¬ë¶€
+     * @param aUseExplainPlan ExplainPlanÀ» »ç¿ëÇÒÁö ¿©ºÎ
      *
-     * @exception SQLException Explain Plan ì†ì„± ì„¤ì •ì— ì‹¤íŒ¨í•œ ê²½ìš°
+     * @exception SQLException Explain Plan ¼Ó¼º ¼³Á¤¿¡ ½ÇÆĞÇÑ °æ¿ì
      *
      * @deprecated Replaced by {@link #setExplainPlan(byte)}
      */
@@ -1754,17 +2011,51 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * DB Message í”„ë¡œí† ì½œì„ ì²˜ë¦¬í•  ì½œë°±ì„ ë“±ë¡í•œë‹¤.
-     * @param aMessageCallback ì½œë°± ê°ì²´
+     * DB Message ÇÁ·ÎÅäÄİÀ» Ã³¸®ÇÒ Äİ¹éÀ» µî·ÏÇÑ´Ù.
+     * @param aMessageCallback Äİ¹é °´Ã¼
      */
-    public void registerMessageCallback(AltibaseMessageCallback aMessageCallback)
+    public void registerMessageCallback(AltibaseMessageCallback aMessageCallback) throws SQLException
     {
+        throwErrorForClosed();
+
+        AltibaseMessageCallback sOldMessageCallback = mChannel.getMessageCallback();
+
         mChannel.setMessageCallback(aMessageCallback);
+
+        /* BUG-46019 ÇÊ¿ä¿¡ µû¶ó ¼­¹ö¿¡ Äİ¹é µî·Ï ¿©ºÎ¸¦ Àü´ŞÇÑ´Ù. */
+        if ((sOldMessageCallback == aMessageCallback) ||
+            (sOldMessageCallback != null) && (aMessageCallback != null))
+        {
+            return;
+        }
+
+        mContext.clearProperties();
+        mContext.addProperty(AltibaseProperties.PROP_CODE_MESSAGE_CALLBACK, aMessageCallback != null);
+        try
+        {
+            CmProtocol.sendProperties(mContext);
+        }
+        catch (SQLException ex)
+        {
+            AltibaseFailover.trySTF(mFailoverContext, ex);
+        }
+        if (mContext.getError() != null)
+        {
+            try
+            {
+                mWarning = Error.processServerError(mWarning, mContext.getError());
+            }
+            finally
+            {
+                // BUG-46790 ExceptionÀÌ ¹ß»ıÇÏ´õ¶óµµ shard alignÀÛ¾÷À» ¼öÇàÇØ¾ß ÇÑ´Ù.
+                ShardError.processShardError(mMetaConnection, mContext.getError());
+            }
+        }
     }
 
     /**
-     * PROJ-2474 ê°€ëŠ¥í•œ ciphersuite ë¦¬ìŠ¤íŠ¸ë¥¼ ëŒë ¤ì¤€ë‹¤.</br>
-     * ssl_enableì´ trueì¼ë•Œë§Œ ì†Œì¼“ì„ í†µí•´ ê°’ì„ ê°€ì ¸ì˜¤ë©° ê·¸ì™¸ì—ëŠ” nullì„ ë¦¬í„´í•œë‹¤.
+     * PROJ-2474 °¡´ÉÇÑ ciphersuite ¸®½ºÆ®¸¦ µ¹·ÁÁØ´Ù.</br>
+     * ssl_enableÀÌ trueÀÏ¶§¸¸ ¼ÒÄÏÀ» ÅëÇØ °ªÀ» °¡Á®¿À¸ç ±×¿Ü¿¡´Â nullÀ» ¸®ÅÏÇÑ´Ù.
      */
     public String[] getCipherSuiteList()
     {
@@ -1777,9 +2068,9 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * STFë¥¼ ìˆ˜í–‰í•˜ê¸° ì „ì—, ë¬´íš¨í™”ëœ Statementì˜ ìƒíƒœë¥¼ ì •ë¦¬í•˜ê¸° ìœ„í•´ì„œ ìˆ˜í–‰í•œë‹¤.
+     * STF¸¦ ¼öÇàÇÏ±â Àü¿¡, ¹«È¿È­µÈ StatementÀÇ »óÅÂ¸¦ Á¤¸®ÇÏ±â À§ÇØ¼­ ¼öÇàÇÑ´Ù.
      */
-    void clearStatements4STF()
+    public void clearStatements4STF()
     {
         synchronized (mStatementList)
         {
@@ -1795,8 +2086,8 @@ public final class AltibaseConnection implements Connection
             }
             catch (SQLException sEx)
             {
-                // Statement.close4STF()ì—ì„œ ì‚¬ìš©í•˜ëŠ” ë©”ì†Œë“œì˜ ì¸í„°í˜ì´ìŠ¤ ì •ì˜ê°€
-                // SQLExceptionì„ ë˜ì§ˆ ìˆ˜ ìˆê²Œ ë˜ì–´ìˆì–´ì„œ ê·¸ë ‡ì§€ êµ¬í˜„ìƒ ì ˆëŒ€ ë‚  ì¼ì´ ì—†ë‹¤.
+                // Statement.close4STF()¿¡¼­ »ç¿ëÇÏ´Â ¸Ş¼ÒµåÀÇ ÀÎÅÍÆäÀÌ½º Á¤ÀÇ°¡
+                // SQLExceptionÀ» ´øÁú ¼ö ÀÖ°Ô µÇ¾îÀÖ¾î¼­ ±×·¸Áö ±¸Çö»ó Àı´ë ³¯ ÀÏÀÌ ¾ø´Ù.
                 Error.throwInternalError(ErrorDef.INTERNAL_ASSERTION, sEx);
             }
             mUsedCIDSet.clear();
@@ -1816,8 +2107,8 @@ public final class AltibaseConnection implements Connection
 
 
     // #region for Savepoint ID
-    // BUGBUG (2013-02-06) êµ³ì´ lockìœ¼ë¡œ ì¸í•œ ì•½ê°„ì˜ ì„±ëŠ¥ì €í•˜ë¥¼ ê°ìˆ˜í•˜ë©´ì„œ ì´ë ‡ê²Œê¹Œì§€ í•´ì•¼í•˜ë‚˜ ì‹¶ê¸°ë„ í•˜ë‹¤.
-    // oracleì€ ê·¸ ìˆœì°¨ê°’ë§Œ ë™ì‹œì— ê°€ì ¸ì˜¬ ìˆ˜ ì—†ê²Œ synchronizedí•˜ê³  ëº‘ëº‘ì´ ëŒë©° ì¬ì‚¬ìš©í•˜ê²Œ í–ˆë˜ë°.. ì©.
+    // BUGBUG (2013-02-06) ±»ÀÌ lockÀ¸·Î ÀÎÇÑ ¾à°£ÀÇ ¼º´ÉÀúÇÏ¸¦ °¨¼öÇÏ¸é¼­ ÀÌ·¸°Ô±îÁö ÇØ¾ßÇÏ³ª ½Í±âµµ ÇÏ´Ù.
+    // oracleÀº ±× ¼øÂ÷°ª¸¸ µ¿½Ã¿¡ °¡Á®¿Ã ¼ö ¾ø°Ô synchronizedÇÏ°í »±»±ÀÌ µ¹¸ç Àç»ç¿ëÇÏ°Ô Çß´øµ¥.. ÂÁ.
 
     private static final int STMT_SPID_SEQ_BIT   = 16;
     private static final int STMT_SPID_SEQ_MAX   = (1 << STMT_SPID_SEQ_BIT);
@@ -1852,14 +2143,6 @@ public final class AltibaseConnection implements Connection
         }
     }
 
-    void throwErrorForClosed() throws SQLException
-    {
-        if (mIsClosed)
-        {
-            Error.throwSQLException(ErrorDef.CLOSED_CONNECTION);            
-        }
-    }
-    
     private void throwErrorForTooManyStatements() throws SQLException
     {
         if (mStatementList.size() >= STMT_CID_SEQ_MAX)
@@ -1903,7 +2186,7 @@ public final class AltibaseConnection implements Connection
     // #endregion
 
     /**
-     * Asynchronous fetch ê¸°ëŠ¥ì´ ë™ì‘ ì¤‘ì¸ statement ë¥¼ ì €ì¥í•œë‹¤.
+     * Asynchronous fetch ±â´ÉÀÌ µ¿ÀÛ ÁßÀÎ statement ¸¦ ÀúÀåÇÑ´Ù.
      */
     protected boolean setAsyncPrefetchStatement(AltibaseStatement aStatement)
     {
@@ -1924,7 +2207,7 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * Asynchronous fetch ê¸°ëŠ¥ì´ ë™ì‘ ì¤‘ì¸ statement ë¥¼ ì €ì¥í•œë‹¤.
+     * Asynchronous fetch ±â´ÉÀÌ µ¿ÀÛ ÁßÀÎ statement ¸¦ ÀúÀåÇÑ´Ù.
      */
     protected void clearAsyncPrefetchStatement()
     {
@@ -1935,7 +2218,7 @@ public final class AltibaseConnection implements Connection
     }
 
     /**
-     * Asynchronous fetch ê¸°ëŠ¥ì´ ë™ì‘ ì¤‘ì¸ statement ë¥¼ ì–»ëŠ”ë‹¤.
+     * Asynchronous fetch ±â´ÉÀÌ µ¿ÀÛ ÁßÀÎ statement ¸¦ ¾ò´Â´Ù.
      */
     protected AltibaseStatement getAsyncPrefetchStatement()
     {
@@ -1947,7 +2230,12 @@ public final class AltibaseConnection implements Connection
 
     public boolean isNodeConnection()
     {
-        return mIsNodeConnection;
+        return mShardConnType == ShardConnType.NODE_CONNECTION;
+    }
+
+    public boolean isMetaConnection()
+    {
+        return mShardConnType == ShardConnType.META_CONNECTION;
     }
 
     public AltibaseShardingConnection getMetaConnection()
@@ -1972,14 +2260,9 @@ public final class AltibaseConnection implements Connection
         sSb.append("mIsClosed=").append(mIsClosed);
         sSb.append(", mAutoCommit=").append(mAutoCommit);
         sSb.append(", mID=").append(getSessionId());
-        sSb.append(", mIsNodeConnection=").append(mIsNodeConnection);
+        sSb.append(", mShardConnType=").append(mShardConnType);
         sSb.append('}');
         return sSb.toString();
-    }
-
-    public void setMetaConnection(AltibaseShardingConnection aShardingConnection)
-    {
-        mMetaConnection = aShardingConnection;
     }
 
     public void sendSMNProperty(long aNewSMN) throws SQLException
@@ -1992,5 +2275,265 @@ public final class AltibaseConnection implements Connection
         {
             mWarning = Error.processServerError(mWarning, mContext.getError());
         }
+    }
+
+    public String getServer()
+    {
+        return mServer;
+    }
+
+    public int getPort()
+    {
+        return mPort;
+    }
+
+    public void setClosed(boolean aClosed)
+    {
+        mIsClosed = aClosed;
+        // BUG-46790 meta connectionÀÇ close flagµµ °°ÀÌ ¼ÂÆÃÇØ ÁØ´Ù.
+        if (isMetaConnection())
+        {
+            getMetaConnection().setClosed(aClosed);
+        }
+    }
+
+    public boolean getAllowLobNullSelect()
+    {
+        return mAllowLobNullSelect;
+    }
+
+    public DistTxInfo getDistTxInfo()
+    {
+        return mContext.getDistTxInfo();
+    }
+
+    public void setDistTxInfoForVerify()
+    {
+        if (SHARD_JDBC_DISTTXINFO_VERIFY)
+        {
+            mDistTxInfoForVerify.mEnvSCN          = CmProtocolContext.getSCN();
+            mDistTxInfoForVerify.mSCN             = getDistTxInfo().getSCN();
+            mDistTxInfoForVerify.mTxFirstStmtSCN  = getDistTxInfo().getTxFirstStmtSCN();
+            mDistTxInfoForVerify.mTxFirstStmtTime = getDistTxInfo().getTxFirstStmtTime();
+            mDistTxInfoForVerify.mDistLevel       = getDistTxInfo().getDistLevel();
+        }
+    }
+
+    public DistTxInfoForVerify getDistTxInfoForVerify()
+    {
+        DistTxInfoForVerify sDistTxInfoForVerify = null;
+        
+        try
+        {
+            sDistTxInfoForVerify = (DistTxInfoForVerify)mDistTxInfoForVerify.clone();
+        }
+        catch (CloneNotSupportedException e)
+        {   
+            e.printStackTrace();
+        }   
+
+        return sDistTxInfoForVerify;
+    }
+    
+    public CmProtocolContextConnect getContext()
+    {
+        return mContext;
+    }
+
+    public boolean canReUseResultSet()
+    {
+        return mReUseResultSet;
+    }
+
+    @Override
+    public boolean isValid(int aTimeout) throws SQLException
+    {
+        if (aTimeout < 0)
+        {
+            Error.throwSQLException(ErrorDef.INVALID_ARGUMENT, "Connection.isValid() timeout", "0 ~ Integer.MAX_VALUE",
+                                    String.valueOf(aTimeout));
+        }
+        if (mIsClosed)
+        {
+            return false;
+        }
+        int sOldNetworkTimeout = getNetworkTimeout();
+        try
+        {
+            setNetworkTimeout(null, aTimeout * 1000);
+            ping();
+
+            return true;
+        }
+        catch (SQLException aEx)
+        {
+            if (TraceFlag.TRACE_COMPILE && TraceFlag.TRACE_ENABLED)
+            {
+                mLogger.log(Level.SEVERE, "Validate connection failed.", aEx);
+            }
+            mChannel.quietClose(); // PROJ-2707 ping ÇÁ·ÎÅäÄİÀÌ ½ÇÆĞÇÑ °æ¿ì ³×Æ®¿öÅ© ÀÚ¿øÀ» ÇØÁ¦ÇÑ´Ù.
+            mIsClosed = true;
+            return false;
+        }
+        finally
+        {
+            if (!mChannel.isClosed())
+            {
+                setNetworkTimeout(null, sOldNetworkTimeout);
+            }
+        }
+    }
+    
+    @Override
+    public void abort(Executor aExecutor) throws SQLException
+    {
+        SecurityManager sSecurityManager = System.getSecurityManager();
+        if (sSecurityManager != null)
+        {
+            sSecurityManager.checkPermission(ABORT_PERM);
+        }
+        if (aExecutor == null)
+        {
+            Error.throwSQLException(ErrorDef.EXECUTOR_CANNOT_BE_NULL);
+        }
+        else
+        {
+            aExecutor.execute(() -> {
+                // PROJ-2707 abort°°Àº °æ¿ì ³×Æ®¿öÅ© ÀÚ¿ø¸¸ closeÇÑ´Ù.
+                if (!mChannel.isClosed())
+                {
+                    mChannel.quietClose();
+                }
+                mIsClosed = true;
+            });
+        }
+    }
+
+    @Override
+    public void setNetworkTimeout(Executor aExecutor, int aMilliseconds) throws SQLException
+    {
+        // PROJ-2707 aExecutor´Â ±×³É ¹«½ÃÇÑ´Ù.
+        throwErrorForClosed();
+        if (aMilliseconds < 0)
+        {
+            Error.throwSQLException(ErrorDef.INVALID_ARGUMENT, "Connection.setNetworkTimeout() timeout",
+                                    "0 ~ Integer.MAX_VALUE", String.valueOf(aMilliseconds));
+        }
+        SecurityManager sSecurityManager = System.getSecurityManager();
+        if (sSecurityManager != null)
+        {
+            sSecurityManager.checkPermission(SQL_PERMISSION_NETWORK_TIMEOUT);
+        }
+
+        // PROJ-2707 response_timeoutÀº ÃÊ´ÜÀ§ÀÌ´Ù.
+        mChannel.setResponseTimeout(aMilliseconds / 1000);
+    }
+
+    @Override
+    public int getNetworkTimeout() throws SQLException
+    {
+        throwErrorForClosed();
+
+        return mChannel.getResponseTimeout() * 1000;
+    }
+
+    @Override
+    public void setClientInfo(String aName, String aValue) throws SQLClientInfoException
+    {
+        try
+        {
+            throwErrorForClosed();
+        }
+        catch (SQLException aCause)
+        {
+            /* PROJ-2707 Ä¿³Ø¼ÇÀÌ closeµÈ °æ¿ì¿¡´Â Properties°´Ã¼ ¾È¿¡ ÀÖ´Â ¸ğµç ¼Ó¼ºÀ» unknownÀ¸·Î ¹Ù²Ù°í
+               SQLClientInfoException ¿¹¿Ü¸¦ ´øÁø´Ù.  */
+            Map<String, ClientInfoStatus> sFailures = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+            sFailures.put(aName, ClientInfoStatus.REASON_UNKNOWN);
+            throw new SQLClientInfoException("This connection has been closed.", sFailures, aCause);
+        }
+        // PROJ-2707 ÇöÀç´Â Å¬¶óÀÌ¾ğÆ® ¼Ó¼º Áß ApplicationName¸¸ Áö¿øÇÑ´Ù.
+        if (PROP_APPLICATION_NAME.equalsIgnoreCase(aName))
+        {
+            if (aValue == null)
+            {
+                aValue = "";
+            }
+            final String sOldValue = mProp.getAppInfo();
+            if (aValue.equals(sOldValue))
+            {
+                return;
+            }
+            try
+            {
+                mContext.clearProperties();
+                mContext.addProperty(AltibaseProperties.PROP_CODE_APP_INFO, aValue);
+                CmProtocol.sendProperties(mContext);
+            }
+            catch (SQLException aEx)
+            {
+                Map<String, ClientInfoStatus> sFailures = new HashMap<>();
+                sFailures.put(aName, ClientInfoStatus.REASON_UNKNOWN);
+                throw new SQLClientInfoException("Failed to set ClientInfo property: " + aName, sFailures);
+            }
+            mClientInfo.put(aName, aValue);
+            mProp.setAppInfo(aValue);
+        }
+    }
+
+    @Override
+    public void setClientInfo(Properties aProperties) throws SQLClientInfoException
+    {
+        try
+        {
+            throwErrorForClosed();
+        }
+        catch (SQLException aEx)
+        {
+            /* PROJ-2707 Ä¿³Ø¼ÇÀÌ closeµÈ °æ¿ì¿¡´Â Properties°´Ã¼ ¾È¿¡ ÀÖ´Â ¸ğµç ¼Ó¼ºÀ» unknownÀ¸·Î ¹Ù²Ù°í
+               SQLClientInfoException ¿¹¿Ü¸¦ ´øÁø´Ù.  */
+            Map<String, ClientInfoStatus> sFailures = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+            for (Map.Entry<Object, Object> sEach : aProperties.entrySet())
+            {
+                sFailures.put((String)sEach.getKey(), ClientInfoStatus.REASON_UNKNOWN);
+            }
+            throw new SQLClientInfoException("This connection has been closed.", sFailures, aEx);
+        }
+        Map<String, ClientInfoStatus> sFailures = new HashMap<>();
+        try
+        {
+            if (aProperties.containsKey(PROP_APPLICATION_NAME))
+            {
+                setClientInfo(PROP_APPLICATION_NAME, aProperties.getProperty(PROP_APPLICATION_NAME, null));
+            }
+        }
+        catch (SQLClientInfoException aEx)
+        {
+            sFailures.putAll(aEx.getFailedProperties());
+        }
+
+        if (!sFailures.isEmpty())
+        {
+            throw new SQLClientInfoException("One or more ClientInfo failed.", sFailures);
+        }
+    }
+
+    @Override
+    public String getClientInfo(String aName) throws SQLException
+    {
+        throwErrorForClosed();
+
+        return mClientInfo.getProperty(aName);
+    }
+
+    @Override
+    public Properties getClientInfo() throws SQLException
+    {
+        return mClientInfo;
+    }
+
+    public boolean getProceduresReturnFunctions()
+    {
+        return mGetProceduresReturnFunctions;
     }
 }

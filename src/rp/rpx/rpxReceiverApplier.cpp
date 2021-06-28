@@ -40,7 +40,7 @@ void rpxReceiverApplier::initialize( rpxReceiver           * aReceiver,
     mAllocator = aAllocator;
     mStatus = RECV_APPLIER_STATUS_INITIALIZE;
     mStartMode = aStartMode;
-    mProcessedSN = 0;
+    mProcessedSN = SM_SN_MIN;
     mProcessedLogCount = 0;
     mIsDoneInitializeThread = ID_FALSE;
     mSNMapMgr = NULL;
@@ -227,7 +227,7 @@ void rpxReceiverApplier::releaseQueue( void )
 {    
     rpdXLog         * sXLog     = NULL;
 
-    /* Queue ì— ë‚¨ì€ ëª¨ë“  XLog ë¥¼ Receiver ì˜ FreeQueue ë¡œ ë³´ë‚¸ë‹¤. */
+    /* Queue ¿¡ ³²Àº ¸ðµç XLog ¸¦ Receiver ÀÇ FreeQueue ·Î º¸³½´Ù. */
     mQueue.read( &sXLog );
     while( sXLog != NULL )
     {
@@ -336,6 +336,7 @@ IDE_RC rpxReceiverApplier::processXLog( rpdXLog    * aXLog,
     switch( aXLog->mType )
     {
         case RP_X_COMMIT:
+        case RP_X_XA_COMMIT:
         case RP_X_ABORT:
             mReceiver->wakeupReceiverApplier();
             break;
@@ -489,7 +490,6 @@ void rpxReceiverApplier::setParallelApplyInfo( rpxReceiverParallelApplyInfo * aA
     aApplierInfo->mAbortCount = mApply.getAbortCount();
     aApplierInfo->mStatus = mStatus;
 }
-
 
 IDE_RC rpxReceiverApplier::buildRecordForReplReceiverParallelApply( void                * aHeader,
                                                                     void                * /* aDumpObj */,

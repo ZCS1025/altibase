@@ -90,7 +90,7 @@ IDE_RC qdsSynonym::validateCreateSynonym(qcStatement *aStatement)
                         &sSynonymExist )
                       != IDE_SUCCESS );
 
-            // SYNONYM ì´ ì•„ë‹Œ object
+            // SYNONYM ÀÌ ¾Æ´Ñ object
             IDE_TEST_RAISE( sSynonymExist == ID_FALSE, ERR_EXIST_OBJECT_NAME );
         }
         else
@@ -108,7 +108,7 @@ IDE_RC qdsSynonym::validateCreateSynonym(qcStatement *aStatement)
     else
     {
         // check semantics error
-        // private synonymì´ë¦„ ì¤‘ë³µ ê²€ì‚¬
+        // private synonymÀÌ¸§ Áßº¹ °Ë»ç
         IDE_TEST( checkSemanticsError( aStatement ) != IDE_SUCCESS );
         
         IDE_TEST( qdpRole::checkDDLCreateSynonymPriv( aStatement,
@@ -265,8 +265,8 @@ IDE_RC qdsSynonym::executeCreateSynonym(qcStatement *aStatement)
 
     if(QC_PUBLIC_USER_ID == sParseTree->synonymOwnerID)
     {
-        // public synonymì˜ ê²½ìš°
-        // user_idëŠ” NULLì´ë‹¤.
+        // public synonymÀÇ °æ¿ì
+        // user_id´Â NULLÀÌ´Ù.
         idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
                          "INSERT INTO SYS_SYNONYMS_ VALUES( "
                          "NULL, "
@@ -352,8 +352,8 @@ IDE_RC qdsSynonym::executeDropSynonym(qcStatement *aStatement)
 
     if(QC_PUBLIC_USER_ID == sParseTree->synonymOwnerID)
     {
-        // public synonymì˜ ê²½ìš°
-        // user_idëŠ” NULLì´ë‹¤.
+        // public synonymÀÇ °æ¿ì
+        // user_id´Â NULLÀÌ´Ù.
         idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
                          "DELETE FROM SYS_SYNONYMS_ "
                          "WHERE SYNONYM_OWNER_ID IS NULL "
@@ -417,8 +417,8 @@ IDE_RC qdsSynonym::checkSemanticsError(qcStatement *aStatement)
 {
 /***********************************************************************
  *
- * Description : private synonym ìƒì„±ì‹œ ë™ì¼í•œ aliaseë¥¼ ì°¸ì¡°í•˜ëŠ”ì§€ ê²€ì‚¬
- *               private synonymì€ ë™ì¼í•œ schemaë‚´ ê°ì²´ì´ë¦„ê³¼ ê°™ì•„ì„œëŠ” ì•ˆë¨.
+ * Description : private synonym »ı¼º½Ã µ¿ÀÏÇÑ aliase¸¦ ÂüÁ¶ÇÏ´ÂÁö °Ë»ç
+ *               private synonymÀº µ¿ÀÏÇÑ schema³» °´Ã¼ÀÌ¸§°ú °°¾Æ¼­´Â ¾ÈµÊ.
  * Implementation :
  *
  ***********************************************************************/
@@ -429,7 +429,7 @@ IDE_RC qdsSynonym::checkSemanticsError(qcStatement *aStatement)
 
     sParseTree = (qdSynonymParseTree*) (aStatement->myPlan->parseTree);
 
-    // synonym ì´ë¦„ê³¼ synonym ëŒ€ìƒ ê°ì²´ì˜ ì´ë¦„ì´ ë‹¤ë¥¸ ê²½ìš°
+    // synonym ÀÌ¸§°ú synonym ´ë»ó °´Ã¼ÀÇ ÀÌ¸§ÀÌ ´Ù¸¥ °æ¿ì
     if ( QC_IS_NAME_CASELESS_MATCHED( sParseTree->synonymName, sParseTree->objectName ) == ID_FALSE )
     {
         return IDE_SUCCESS;
@@ -549,8 +549,8 @@ IDE_RC qdsSynonym::executeRecreate( qcStatement *aStatement )
 
     if( QC_PUBLIC_USER_ID == sParseTree->synonymOwnerID )
     {
-        // public synonymì˜ ê²½ìš°
-        // user_idëŠ” NULLì´ë‹¤.
+        // public synonymÀÇ °æ¿ì
+        // user_id´Â NULLÀÌ´Ù.
         idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
                          "DELETE FROM SYS_SYNONYMS_ "
                          "WHERE SYNONYM_OWNER_ID IS NULL "
@@ -604,8 +604,8 @@ IDE_RC qdsSynonym::executeRecreate( qcStatement *aStatement )
 
     if ( QC_PUBLIC_USER_ID == sParseTree->synonymOwnerID )
     {
-        // public synonymì˜ ê²½ìš°
-        // user_idëŠ” NULLì´ë‹¤.
+        // public synonymÀÇ °æ¿ì
+        // user_id´Â NULLÀÌ´Ù.
         idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
                          "INSERT INTO SYS_SYNONYMS_ VALUES( "
                          "NULL, "

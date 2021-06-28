@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $$Id: smrArchThread.cpp 84032 2018-09-19 05:32:05Z kclee $
+ * $$Id: smrArchThread.cpp 83870 2018-09-03 04:32:39Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -40,11 +40,11 @@ smrArchThread::~smrArchThread()
     
 }
 
-// ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œ ê°ì²´ë¥¼ ì´ˆê¸°í™” í•œë‹¤.
-// aArchivePath   - [IN] ì•„ì¹´ì´ë¸Œ ë¡œê·¸ê°€ ì €ì¥ë  ë””ë ‰í† ë¦¬
-// aLogFileMgr    - [IN] ì´ ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œê°€ ì•„ì¹´ì´ë¸Œí•  ë¡œê·¸íŒŒì¼ë“¤ì„ ê´€ë¦¬í•˜ëŠ”
-//                     ë¡œê·¸íŒŒì¼ ê´€ë¦¬ì.
-// aLstArchFileNo - [IN] ë§ˆì§€ë§‰ìœ¼ë¡œ Archiveí•œ File No
+// ¾ÆÄ«ÀÌºê ¾²·¹µå °´Ã¼¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+// aArchivePath   - [IN] ¾ÆÄ«ÀÌºê ·Î±×°¡ ÀúÀåµÉ µğ·ºÅä¸®
+// aLogFileMgr    - [IN] ÀÌ ¾ÆÄ«ÀÌºê ¾²·¹µå°¡ ¾ÆÄ«ÀÌºêÇÒ ·Î±×ÆÄÀÏµéÀ» °ü¸®ÇÏ´Â
+//                     ·Î±×ÆÄÀÏ °ü¸®ÀÚ.
+// aLstArchFileNo - [IN] ¸¶Áö¸·À¸·Î ArchiveÇÑ File No
 IDE_RC smrArchThread::initialize( const SChar   * aArchivePath,
                                   smrLogFileMgr * aLogFileMgr,
                                   UInt            aLstArchFileNo)
@@ -57,14 +57,14 @@ IDE_RC smrArchThread::initialize( const SChar   * aArchivePath,
 
     /*
      * PROJ-2232 Multiplex archivelog
-     * í”„ë¡œí¼í‹°ë¡œë¶€í„° archiveë  ë””ë ‰í† ë¦¬ pathì™€ ê°¯ìˆ˜ë¥¼ ê°€ì ¸ì˜¨ë‹¤. 
+     * ÇÁ·ÎÆÛÆ¼·ÎºÎÅÍ archiveµÉ µğ·ºÅä¸® path¿Í °¹¼ö¸¦ °¡Á®¿Â´Ù. 
      */ 
     sArchiveMultiplexPath = smuProperty::getArchiveMultiplexDirPath();
     mArchivePathCnt       = smuProperty::getArchiveMultiplexCount() + 1;
 
     /* 
-     * ARCHIVE_DIR? ARCHIVE_MULTIPLEX_DIRì—ì„œ ê°€ì ¸ì˜¨ ë””ë ‰í† ë¦¬pathë¥¼
-     * mArchivePathë³€ìˆ˜ì— ì €ì¥í•œë‹¤. 
+     * ARCHIVE_DIR? ARCHIVE_MULTIPLEX_DIR¿¡¼­ °¡Á®¿Â µğ·ºÅä¸®path¸¦
+     * mArchivePathº¯¼ö¿¡ ÀúÀåÇÑ´Ù. 
      */ 
     for( sArchPathIdx = 0; 
          sArchPathIdx < mArchivePathCnt; 
@@ -162,21 +162,21 @@ IDE_RC smrArchThread::initialize( const SChar   * aArchivePath,
     
 }
 
-/* ì„œë²„ ìŠ¤íƒ€íŠ¸ì—… ì‹œì—
- * ì•„ì¹´ì´ë¸Œí•  ë¡œê·¸íŒŒì¼ ë¦¬ìŠ¤íŠ¸ë¥¼ ì¬êµ¬ì¶•í•œë‹¤.
+/* ¼­¹ö ½ºÅ¸Æ®¾÷ ½Ã¿¡
+ * ¾ÆÄ«ÀÌºêÇÒ ·Î±×ÆÄÀÏ ¸®½ºÆ®¸¦ Àç±¸ÃàÇÑ´Ù.
  *
- * aStartNo - [IN] ì•„ì¹´ì´ë¸Œ ëŒ€ìƒ ë¡œê·¸íŒŒì¼ì¸ì§€ ì²´í¬í•  ì²«ë²ˆì§¸ ë¡œê·¸íŒŒì¼ì˜ ë²ˆí˜¸
- * aEndNo   - [IN] ì•„ì¹´ì´ë¸Œ ëŒ€ìƒ ë¡œê·¸íŒŒì¼ì¸ì§€ ì²´í¬í•  ë§ˆì§€ë§‰ ë¡œê·¸íŒŒì¼ì˜ ë²ˆí˜¸
+ * aStartNo - [IN] ¾ÆÄ«ÀÌºê ´ë»ó ·Î±×ÆÄÀÏÀÎÁö Ã¼Å©ÇÒ Ã¹¹øÂ° ·Î±×ÆÄÀÏÀÇ ¹øÈ£
+ * aEndNo   - [IN] ¾ÆÄ«ÀÌºê ´ë»ó ·Î±×ÆÄÀÏÀÎÁö Ã¼Å©ÇÒ ¸¶Áö¸· ·Î±×ÆÄÀÏÀÇ ¹øÈ£
  *
- * ì•„ì¹´ì´ë¸Œí•  ë¡œê·¸íŒŒì¼ì¸ì§€ ì²´í¬í•  ëŒ€ìƒì´ ë˜ëŠ” ë¡œê·¸íŒŒì¼ë“¤ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
+ * ¾ÆÄ«ÀÌºêÇÒ ·Î±×ÆÄÀÏÀÎÁö Ã¼Å©ÇÒ ´ë»óÀÌ µÇ´Â ·Î±×ÆÄÀÏµéÀº ´ÙÀ½°ú °°´Ù.
  *
- * [ ì´ì „ì— ì •ìƒ Shutdownëœ ê²½ìš° ]
- *     aStartNo - ë§ˆì§€ë§‰ ì‚­ì œëœ (ì•„ì¹´ì´ë¸Œëœ) ë¡œê·¸íŒŒì¼ ë²ˆí˜¸
- *     aEndNo   - ë§ˆì§€ë§‰ ë¡œê·¸íŒŒì¼ ë²ˆí˜¸
+ * [ ÀÌÀü¿¡ Á¤»ó ShutdownµÈ °æ¿ì ]
+ *     aStartNo - ¸¶Áö¸· »èÁ¦µÈ (¾ÆÄ«ÀÌºêµÈ) ·Î±×ÆÄÀÏ ¹øÈ£
+ *     aEndNo   - ¸¶Áö¸· ·Î±×ÆÄÀÏ ¹øÈ£
  *
- * [ ì´ì „ì— ë¹„ì •ìƒ Shutdownëœ ê²½ìš° ]
- *     aStartNo - ë§ˆì§€ë§‰ ì‚­ì œëœ (ì•„ì¹´ì´ë¸Œëœ) ë¡œê·¸íŒŒì¼ ë²ˆí˜¸
- *     aEndNo   - Restart Recoveryì˜ RedoLSN
+ * [ ÀÌÀü¿¡ ºñÁ¤»ó ShutdownµÈ °æ¿ì ]
+ *     aStartNo - ¸¶Áö¸· »èÁ¦µÈ (¾ÆÄ«ÀÌºêµÈ) ·Î±×ÆÄÀÏ ¹øÈ£
+ *     aEndNo   - Restart RecoveryÀÇ RedoLSN
  */
 IDE_RC smrArchThread::recoverArchiveLogList( UInt aStartNo,
                                              UInt aEndNo )
@@ -194,14 +194,14 @@ IDE_RC smrArchThread::recoverArchiveLogList( UInt aStartNo,
     idBool      sCanUpdateLstArchLogFileNum = ID_TRUE;  /* BUG-39746 */
     
     /* ------------------------------------------------
-     * BUG-12246 ì„œë²„ êµ¬ë™ì‹œ ARCHIVEí•  ë¡œê·¸íŒŒì¼ì„ êµ¬í•´ì•¼í•¨
-     * 1) ì„œë²„ê°€ ë¹„ì •ìƒì¢…ë£Œí•œ ê²½ìš°
-     * lst delete logfile no ë¶€í„° recovery lsnê¹Œì§€ archive dirì„
-     * ê²€ì‚¬í•˜ì—¬ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ë¡œê·¸íŒŒì¼ë§Œ ë‹¤ì‹œ archive listì— ë“±ë¡í•œë‹¤.
-     * ê·¸ ì´í›„ëŠ” redoAll ë‹¨ê³„ì—ì„œ ë“±ë¡í•˜ë„ë¡ í•œë‹¤.
-     * 2) ì„œë²„ê°€ ì •ìƒì¢…ë£Œí•œ ê²½ìš°
-     * lst delete logfile noë¶€í„° end lsnê¹Œì§€ archive dirì„ ê²€ì‚¬í•˜ì—¬
-     * ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ë¡œê·¸íŒŒì¼ë§Œ ë‹¤ì‹œ archive listì— ë“±ë¡í•œë‹¤. 
+     * BUG-12246 ¼­¹ö ±¸µ¿½Ã ARCHIVEÇÒ ·Î±×ÆÄÀÏÀ» ±¸ÇØ¾ßÇÔ
+     * 1) ¼­¹ö°¡ ºñÁ¤»óÁ¾·áÇÑ °æ¿ì
+     * lst delete logfile no ºÎÅÍ recovery lsn±îÁö archive dirÀ»
+     * °Ë»çÇÏ¿© Á¸ÀçÇÏÁö ¾Ê´Â ·Î±×ÆÄÀÏ¸¸ ´Ù½Ã archive list¿¡ µî·ÏÇÑ´Ù.
+     * ±× ÀÌÈÄ´Â redoAll ´Ü°è¿¡¼­ µî·ÏÇÏµµ·Ï ÇÑ´Ù.
+     * 2) ¼­¹ö°¡ Á¤»óÁ¾·áÇÑ °æ¿ì
+     * lst delete logfile noºÎÅÍ end lsn±îÁö archive dirÀ» °Ë»çÇÏ¿©
+     * Á¸ÀçÇÏÁö ¾Ê´Â ·Î±×ÆÄÀÏ¸¸ ´Ù½Ã archive list¿¡ µî·ÏÇÑ´Ù. 
      * ----------------------------------------------*/
 
     IDE_ASSERT(aStartNo <= aEndNo);
@@ -244,25 +244,25 @@ IDE_RC smrArchThread::recoverArchiveLogList( UInt aStartNo,
                 sState = 0;
                 IDE_TEST(sFile.destroy() != IDE_SUCCESS);
 
-                // ì•„ì¹´ì´ë¸Œ ë¡œê·¸ ë””ë ‰í† ë¦¬ì— ë¡œê·¸ íŒŒì¼ì´ ì¡´ì¬í•  ê²½ìš°
+                // ¾ÆÄ«ÀÌºê ·Î±× µğ·ºÅä¸®¿¡ ·Î±× ÆÄÀÏÀÌ Á¸ÀçÇÒ °æ¿ì
                 if ( sFileSize == (ULong)smuProperty::getLogFileSize() )
                 {
                     IDE_DASSERT( mLstArchFileNo <= sCurFileNo );
 
                     /* BUG-39746
-                     * ê° archive Path ë§ˆë‹¤ ì‹¤ì œ ì•„ì¹´ì´ë¸Œ ëëŠ”ì§€ ê²€ì‚¬í•˜ì—¬
-                     * sAlreadyArchivedCntë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤. */
+                     * °¢ archive Path ¸¶´Ù ½ÇÁ¦ ¾ÆÄ«ÀÌºê µÆ´ÂÁö °Ë»çÇÏ¿©
+                     * sAlreadyArchivedCnt¸¦ Áõ°¡½ÃÅ²´Ù. */
                     sAlreadyArchivedCnt++;
 
                     /* BUG-39746
-                     * ëª¨ë“  ArchivePathë§ˆë‹¤ ì•„ì¹´ì´ë¸Œ ë˜ì–´ ìˆê³ ,
-                     * í˜„ ë¡œê·¸íŒŒì¼ ì´ì „ì— ëª¨ë“  íŒŒì¼ì´ 
-                     * ì•„ì¹´ì´ë¸Œí•˜ëŠ”ë° ë¬¸ì œê°€ ì—†ë‹¤ë©´,
-                     * ì¦‰, LstArchLogFileNoë¥¼ ê°±ì‹ í•´ë„ ê´œì°®ë‹¤ë©´ ì„¤ì •í•œë‹¤. */
+                     * ¸ğµç ArchivePath¸¶´Ù ¾ÆÄ«ÀÌºê µÇ¾î ÀÖ°í,
+                     * Çö ·Î±×ÆÄÀÏ ÀÌÀü¿¡ ¸ğµç ÆÄÀÏÀÌ 
+                     * ¾ÆÄ«ÀÌºêÇÏ´Âµ¥ ¹®Á¦°¡ ¾ø´Ù¸é,
+                     * Áï, LstArchLogFileNo¸¦ °»½ÅÇØµµ ±¦Âú´Ù¸é ¼³Á¤ÇÑ´Ù. */
                     if( (sAlreadyArchivedCnt == mArchivePathCnt) &&
                         (sCanUpdateLstArchLogFileNum == ID_TRUE ) )
                     {
-                        // ë§ˆì§€ë§‰ ì•„ì¹´ì´ë¸Œëœ ë¡œê·¸íŒŒì¼ë²ˆí˜¸ ì„¤ì •
+                        // ¸¶Áö¸· ¾ÆÄ«ÀÌºêµÈ ·Î±×ÆÄÀÏ¹øÈ£ ¼³Á¤
                         setLstArchLogFileNo( sCurFileNo );
                     }
                     else
@@ -272,15 +272,15 @@ IDE_RC smrArchThread::recoverArchiveLogList( UInt aStartNo,
                 }
                 else
                 {
-                    // ì‚¬ì´ì¦ˆê°€ ë‹¤ë¥´ë©´ ì•„ì¹´ì´ë¸Œ í•´ì•¼ í•¨
+                    // »çÀÌÁî°¡ ´Ù¸£¸é ¾ÆÄ«ÀÌºê ÇØ¾ß ÇÔ
                     sIsArchived = ID_FALSE;
                     break;
                 }
             }
             else
             {
-                /* í•œë²ˆì´ë¼ë„ ì•„ì¹´ì´ë¸Œ í•´ì•¼ í•  íŒŒì¼ì„ ì°¾ì•˜ë‹¤ë©´,
-                 * ë”ì´ìƒ LstArchLogFileNoë¥¼ ê°±ì‹ í•˜ì§€ ëª»í•œë‹¤. */
+                /* ÇÑ¹øÀÌ¶óµµ ¾ÆÄ«ÀÌºê ÇØ¾ß ÇÒ ÆÄÀÏÀ» Ã£¾Ò´Ù¸é,
+                 * ´õÀÌ»ó LstArchLogFileNo¸¦ °»½ÅÇÏÁö ¸øÇÑ´Ù. */
                 sCanUpdateLstArchLogFileNum = ID_FALSE;
 
                 sIsArchived = ID_FALSE;
@@ -290,15 +290,15 @@ IDE_RC smrArchThread::recoverArchiveLogList( UInt aStartNo,
 
         if( sIsArchived == ID_FALSE )
         {
-            // ì•„ì¹´ì´ë¸Œ ë¡œê·¸ ë””ë ‰í† ë¦¬ì— ë¡œê·¸íŒŒì¼ì´ ì—†ìœ¼ë©´
-            // ì•„ì¹´ì´ë¸Œ ëŒ€ìƒ ë¡œê·¸íŒŒì¼ ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€
+            // ¾ÆÄ«ÀÌºê ·Î±× µğ·ºÅä¸®¿¡ ·Î±×ÆÄÀÏÀÌ ¾øÀ¸¸é
+            // ¾ÆÄ«ÀÌºê ´ë»ó ·Î±×ÆÄÀÏ ¸®½ºÆ®¿¡ Ãß°¡
             IDE_TEST(addArchLogFile(sCurFileNo) != IDE_SUCCESS);
 
             sFileCount++;
         }
         else
         {
-            // ë§ˆì§€ë§‰ ì•„ì¹´ì´ë¸Œëœ ë¡œê·¸íŒŒì¼ë²ˆí˜¸ ì„¤ì •
+            // ¸¶Áö¸· ¾ÆÄ«ÀÌºêµÈ ·Î±×ÆÄÀÏ¹øÈ£ ¼³Á¤
             setLstArchLogFileNo( sCurFileNo );
         }
     }
@@ -329,8 +329,8 @@ IDE_RC smrArchThread::recoverArchiveLogList( UInt aStartNo,
     return IDE_FAILURE;
 }
 
-// ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œë¥¼ ì‹œì‘ì‹œí‚¤ê³ , ì“°ë ˆë“œê°€ ì •ìƒì ìœ¼ë¡œ
-// ì‹œì‘ë  ë•Œê¹Œì§€ ê¸°ë‹¤ë¦°ë‹¤.
+// ¾ÆÄ«ÀÌºê ¾²·¹µå¸¦ ½ÃÀÛ½ÃÅ°°í, ¾²·¹µå°¡ Á¤»óÀûÀ¸·Î
+// ½ÃÀÛµÉ ¶§±îÁö ±â´Ù¸°´Ù.
 IDE_RC smrArchThread::startThread()
 {
     mFinish      = ID_FALSE;
@@ -349,8 +349,8 @@ IDE_RC smrArchThread::startThread()
 }
 
 
-// ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œë¥¼ ì¤‘ì§€í•˜ê³ , ì“°ë ˆë“œê°€ ì •ìƒì ìœ¼ë¡œ
-// ì¤‘ì§€ë˜ì—ˆì„ ë•Œê¹Œì§€ ê¸°ë‹¤ë¦°ë‹¤.
+// ¾ÆÄ«ÀÌºê ¾²·¹µå¸¦ ÁßÁöÇÏ°í, ¾²·¹µå°¡ Á¤»óÀûÀ¸·Î
+// ÁßÁöµÇ¾úÀ» ¶§±îÁö ±â´Ù¸°´Ù.
 IDE_RC smrArchThread::shutdown()
 {
     
@@ -394,7 +394,7 @@ IDE_RC smrArchThread::shutdown()
     
 }
 
-// ì•„ì¹´ì´í”„ ì“°ë ˆë“œ ê°ì²´ë¥¼ í•´ì œ í•œë‹¤.
+// ¾ÆÄ«ÀÌÇÁ ¾²·¹µå °´Ã¼¸¦ ÇØÁ¦ ÇÑ´Ù.
 IDE_RC smrArchThread::destroy()
 {
     /*PROJ-2232 Multiplex archive log*/
@@ -456,7 +456,7 @@ void smrArchThread::run()
         if ( smuProperty::isRunArchiveThread() == SMU_THREAD_OFF )
         {
             // To Fix PR-14783
-            // System Threadì˜ ì‘ì—…ì„ ìˆ˜í–‰í•˜ì§€ ì•Šë„ë¡ í•œë‹¤.
+            // System ThreadÀÇ ÀÛ¾÷À» ¼öÇàÇÏÁö ¾Êµµ·Ï ÇÑ´Ù.
             continue;
         }
         else
@@ -464,26 +464,26 @@ void smrArchThread::run()
             // Go Go 
         }
 
-        if(rc != IDE_SUCCESS) // cond_waitì— ì§€ì •í•œ ì‹œê°„ì´ ì§€ë‚˜ì„œ ê¹¨ì–´ë‚œ ê²½ìš°
+        if(rc != IDE_SUCCESS) // cond_wait¿¡ ÁöÁ¤ÇÑ ½Ã°£ÀÌ Áö³ª¼­ ±ú¾î³­ °æ¿ì
         {
             IDE_TEST_RAISE(mCv.isTimedOut() != ID_TRUE, err_cond_wait);
             mResume = ID_TRUE;
         }
-        else // cond_signalì— ì˜í•´ ê¹¨ì–´ë‚œ ê²½ìš°
+        else // cond_signal¿¡ ÀÇÇØ ±ú¾î³­ °æ¿ì
         {
             if (mResume == ID_FALSE)
             {
-                // mResumeì´ ID_FALSEì´ë©´
-                // cond_waití•˜ëŠ” intervalì„ ì¬ì„¤ì •í•˜ë¼ê³  signalì„ ë‚ ë¦°ê²ƒì´ë‹¤.
+                // mResumeÀÌ ID_FALSEÀÌ¸é
+                // cond_waitÇÏ´Â intervalÀ» Àç¼³Á¤ÇÏ¶ó°í signalÀ» ³¯¸°°ÍÀÌ´Ù.
 
-                // Todo : cond_waití•˜ëŠ” intervalì„ ì¬ì„¤ì • í•˜ë„ë¡ êµ¬í˜„
+                // Todo : cond_waitÇÏ´Â intervalÀ» Àç¼³Á¤ ÇÏµµ·Ï ±¸Çö
                 continue;
             }
-            // mResumeì´ ID_TRUEì´ë©´ ì•„ì¹´ì´ë¹™ì„ ì‹¤ì‹œí•œë‹¤.
+            // mResumeÀÌ ID_TRUEÀÌ¸é ¾ÆÄ«ÀÌºùÀ» ½Ç½ÃÇÑ´Ù.
         }
 
-        // ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œê°€ ê¹¨ì–´ë‚¬ë‹¤.
-        // ì•„ì¹´ì´ë¸Œí•  ë¡œê·¸íŒŒì¼ë¦¬ìŠ¤íŠ¸ë¥¼ ë³´ê³  ì•„ì¹´ì´ë¹™ ì‹¤ì‹œ.
+        // ¾ÆÄ«ÀÌºê ¾²·¹µå°¡ ±ú¾î³µ´Ù.
+        // ¾ÆÄ«ÀÌºêÇÒ ·Î±×ÆÄÀÏ¸®½ºÆ®¸¦ º¸°í ¾ÆÄ«ÀÌºù ½Ç½Ã.
         rc = archLogFile();
         
         if ( rc != IDE_SUCCESS && errno !=0 && errno != ENOSPC )
@@ -493,10 +493,10 @@ void smrArchThread::run()
     }
 
     /* ------------------------------------------------
-     * recovery manager destroyì‹œì— archive threadê°€
-     * ì‚´ì•„ìˆìœ¼ë©´, archiveë¥¼ ìˆ˜í–‰í•˜ê³ , ì‚´ì•„ìˆì§€ ì•Šìœ¼ë©´,
-     * archive thread destroyì‹œì— archive log listë¥¼
-     * clear í•´ë²„ë¦°ë‹¤.
+     * recovery manager destroy½Ã¿¡ archive thread°¡
+     * »ì¾ÆÀÖÀ¸¸é, archive¸¦ ¼öÇàÇÏ°í, »ì¾ÆÀÖÁö ¾ÊÀ¸¸é,
+     * archive thread destroy½Ã¿¡ archive log list¸¦
+     * clear ÇØ¹ö¸°´Ù.
      * ----------------------------------------------*/   
     sState = 0;
     IDE_TEST(unlockThreadMtx() != IDE_SUCCESS);
@@ -531,8 +531,8 @@ void smrArchThread::run()
     
 }
 
-// ì•„ì¹´ì´ë¸Œí•  ë¡œê·¸íŒŒì¼ ë¦¬ìŠ¤íŠ¸ì— ìˆëŠ” ë¡œê·¸íŒŒì¼ë“¤ì„ ì•„ì¹´ì´ë¹™í•œë‹¤.
-// ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œê°€ ì£¼ê¸°ì ìœ¼ë¡œ, í˜¹ì€ ìš”ì²­ì— ì˜í•´ ê¹¨ì–´ë‚˜ì„œ ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+// ¾ÆÄ«ÀÌºêÇÒ ·Î±×ÆÄÀÏ ¸®½ºÆ®¿¡ ÀÖ´Â ·Î±×ÆÄÀÏµéÀ» ¾ÆÄ«ÀÌºùÇÑ´Ù.
+// ¾ÆÄ«ÀÌºê ¾²·¹µå°¡ ÁÖ±âÀûÀ¸·Î, È¤Àº ¿äÃ»¿¡ ÀÇÇØ ±ú¾î³ª¼­ ¼öÇàÇÏ´Â ÇÔ¼öÀÌ´Ù.
 IDE_RC smrArchThread::archLogFile()
 {
 
@@ -639,9 +639,9 @@ IDE_RC smrArchThread::archLogFile()
     
 }
 
-/* ì•„ì¹´ì´ë¸Œí•  ë¡œê·¸íŒŒì¼ ë¦¬ìŠ¤íŠ¸ì— ë¡œê·¸íŒŒì¼ì„ í•˜ë‚˜ ìƒˆë¡œ ì¶”ê°€í•œë‹¤.
+/* ¾ÆÄ«ÀÌºêÇÒ ·Î±×ÆÄÀÏ ¸®½ºÆ®¿¡ ·Î±×ÆÄÀÏÀ» ÇÏ³ª »õ·Î Ãß°¡ÇÑ´Ù.
  *
- * aLogFileNo - [IN] ìƒˆë¡œ ì•„ì¹´ì´ë¸Œ ëŒ€ìƒì— ì¶”ê°€ë  ë¡œê·¸íŒŒì¼ì˜ ë²ˆí˜¸
+ * aLogFileNo - [IN] »õ·Î ¾ÆÄ«ÀÌºê ´ë»ó¿¡ Ãß°¡µÉ ·Î±×ÆÄÀÏÀÇ ¹øÈ£
  */
 IDE_RC smrArchThread::addArchLogFile(UInt  aLogFileNo)
 {
@@ -673,7 +673,7 @@ IDE_RC smrArchThread::addArchLogFile(UInt  aLogFileNo)
     
 }
 
-// ì•„ì¹´ì´ë¸Œí•  ë¡œê·¸íŒŒì¼ ë¦¬ìŠ¤íŠ¸ì—ì„œ ë¡œê·¸íŒŒì¼ ë…¸ë“œë¥¼ í•˜ë‚˜ ì œê±°í•œë‹¤.
+// ¾ÆÄ«ÀÌºêÇÒ ·Î±×ÆÄÀÏ ¸®½ºÆ®¿¡¼­ ·Î±×ÆÄÀÏ ³ëµå¸¦ ÇÏ³ª Á¦°ÅÇÑ´Ù.
 IDE_RC smrArchThread::removeArchLogFile(smrArchLogFile   *aLogFile)
 {
 
@@ -696,7 +696,7 @@ IDE_RC smrArchThread::removeArchLogFile(smrArchLogFile   *aLogFile)
 
 }
 
-// ë§ˆì§€ë§‰ìœ¼ë¡œ ì•„ì¹´ì´ë¸Œëœ íŒŒì¼ë²ˆí˜¸ë¥¼ ì„¤ì •í•œë‹¤.
+// ¸¶Áö¸·À¸·Î ¾ÆÄ«ÀÌºêµÈ ÆÄÀÏ¹øÈ£¸¦ ¼³Á¤ÇÑ´Ù.
 IDE_RC smrArchThread::setLstArchLogFileNo(UInt  aArchLogFileNo)
 {
 
@@ -714,7 +714,7 @@ IDE_RC smrArchThread::setLstArchLogFileNo(UInt  aArchLogFileNo)
 
 }
 
-// ë§ˆì§€ë§‰ìœ¼ë¡œ ì•„ì¹´ì´ë¸Œëœ íŒŒì¼ë²ˆí˜¸ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+// ¸¶Áö¸·À¸·Î ¾ÆÄ«ÀÌºêµÈ ÆÄÀÏ¹øÈ£¸¦ °¡Á®¿Â´Ù.
 IDE_RC smrArchThread::getLstArchLogFileNo(UInt *aArchLogFileNo)
 {
     IDE_TEST(lockListMtx() != IDE_SUCCESS);
@@ -731,10 +731,10 @@ IDE_RC smrArchThread::getLstArchLogFileNo(UInt *aArchLogFileNo)
 
 }
 
-/* ë‹¤ìŒìœ¼ë¡œ ì•„ì¹´ì´ë¸Œí•  ë¡œê·¸íŒŒì¼ë²ˆí˜¸ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+/* ´ÙÀ½À¸·Î ¾ÆÄ«ÀÌºêÇÒ ·Î±×ÆÄÀÏ¹øÈ£¸¦ °¡Á®¿Â´Ù.
  *
- * aArchFstLFileNo   - [OUT] ì•„ì¹´ì´ë¸Œí•  ì²«ë²ˆì§¸ ë¡œê·¸íŒŒì¼ ë²ˆí˜¸
- * aIsEmptyArchLFLst - [OUT] ì•„ì¹´ì´ë¸Œ LogFile Listê°€ ë¹„ì—ˆìœ¼ë©´ ID_TRUEë¥¼ returní•œë‹¤.
+ * aArchFstLFileNo   - [OUT] ¾ÆÄ«ÀÌºêÇÒ Ã¹¹øÂ° ·Î±×ÆÄÀÏ ¹øÈ£
+ * aIsEmptyArchLFLst - [OUT] ¾ÆÄ«ÀÌºê LogFile List°¡ ºñ¾úÀ¸¸é ID_TRUE¸¦ returnÇÑ´Ù.
  */
 IDE_RC smrArchThread::getArchLFLstInfo(UInt   * aArchFstLFileNo,
                                        idBool * aIsEmptyArchLFLst )
@@ -753,7 +753,7 @@ IDE_RC smrArchThread::getArchLFLstInfo(UInt   * aArchFstLFileNo,
     }
     else
     {
-        /* Archive LogFile Listê°€ ë¹„ì–´ ìˆë‹¤. */
+        /* Archive LogFile List°¡ ºñ¾î ÀÖ´Ù. */
         *aArchFstLFileNo   = ID_UINT_MAX;
         *aIsEmptyArchLFLst = ID_TRUE;
     }
@@ -768,7 +768,7 @@ IDE_RC smrArchThread::getArchLFLstInfo(UInt   * aArchFstLFileNo,
 
 }
 
-// ì•„ì¹´ì´ë¸Œí•  ë¡œê·¸íŒŒì¼ ë¦¬ìŠ¤íŠ¸ë¥¼ ëª¨ë‘ ì´ˆê¸°í™” í•œë‹¤.
+// ¾ÆÄ«ÀÌºêÇÒ ·Î±×ÆÄÀÏ ¸®½ºÆ®¸¦ ¸ğµÎ ÃÊ±âÈ­ ÇÑ´Ù.
 IDE_RC smrArchThread::clearArchList()
 {
 
@@ -798,14 +798,14 @@ IDE_RC smrArchThread::clearArchList()
 
 }
 
-/* ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œë¥¼ ê¹¨ì›Œì„œ Archive LogFile Listì—ì„œ aToFileNoê¹Œì§€
- * ë¡œê·¸íŒŒì¼ë“¤ì„ ì•„ì¹´ì´ë¸Œ ì‹œí‚¨ë‹¤.
+/* ¾ÆÄ«ÀÌºê ¾²·¹µå¸¦ ±ú¿ö¼­ Archive LogFile List¿¡¼­ aToFileNo±îÁö
+ * ·Î±×ÆÄÀÏµéÀ» ¾ÆÄ«ÀÌºê ½ÃÅ²´Ù.
  *
  * caution !!:
- * ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê¸° ì „ì— ë°˜ë“œì‹œ aToFileNoê¹Œì§€ Archive LogFile List
- * ì— ì¶”ê°€í•˜ê³  ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì—¬ì•¼ í•œë‹¤.
+ * ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ±â Àü¿¡ ¹İµå½Ã aToFileNo±îÁö Archive LogFile List
+ * ¿¡ Ãß°¡ÇÏ°í ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ¿©¾ß ÇÑ´Ù.
  *
- * aToFileNo - [IN] aToFileNoê¹Œì§€ Archivingë ë•Œê¹Œì§€ ëŒ€ê¸°í•œë‹¤.
+ * aToFileNo - [IN] aToFileNo±îÁö ArchivingµÉ¶§±îÁö ´ë±âÇÑ´Ù.
  */
 IDE_RC smrArchThread::wait4EndArchLF( UInt aToFileNo )
 {
@@ -813,7 +813,7 @@ IDE_RC smrArchThread::wait4EndArchLF( UInt aToFileNo )
     UInt    sFstLFOfArchLFLst;
     idBool  sIsEmptyArchLFLst;
 
-    // ì•„ì¹´ì´ë¸Œ ì“°ë ˆë“œê°€ ì‘ì—…ì„ ì™„ë£Œí•  ë•Œê¹Œì§€ ê¸°ë‹¤ë¦°ë‹¤.
+    // ¾ÆÄ«ÀÌºê ¾²·¹µå°¡ ÀÛ¾÷À» ¿Ï·áÇÒ ¶§±îÁö ±â´Ù¸°´Ù.
     while(1)
     {
         IDE_TEST( lockThreadMtx() != IDE_SUCCESS );
@@ -821,9 +821,9 @@ IDE_RC smrArchThread::wait4EndArchLF( UInt aToFileNo )
 
         if( mResume != ID_TRUE )
         {
-            // ì•„ì¹´ì´ë¸Œ Threadê°€ ê¹¨ì–´ë‚¬ì„ ë•Œ, signalì— ì˜í•´ ê¹¨ì–´ë‚œ ê²½ìš°
-            // mResumeì´ ID_FALSEì´ë©´ cond_waití•˜ëŠ” intervalì„ ì¬ì„¤ì •í•˜ê³ 
-            // mResumeì´ ID_TRUEì´ë©´ ì•„ì¹´ì´ë¹™ì„ ì‹¤ì‹œí•œë‹¤.
+            // ¾ÆÄ«ÀÌºê Thread°¡ ±ú¾î³µÀ» ¶§, signal¿¡ ÀÇÇØ ±ú¾î³­ °æ¿ì
+            // mResumeÀÌ ID_FALSEÀÌ¸é cond_waitÇÏ´Â intervalÀ» Àç¼³Á¤ÇÏ°í
+            // mResumeÀÌ ID_TRUEÀÌ¸é ¾ÆÄ«ÀÌºùÀ» ½Ç½ÃÇÑ´Ù.
             mResume = ID_TRUE;
             IDE_TEST_RAISE( mCv.signal() != IDE_SUCCESS, err_cond_signal );
         }
@@ -840,8 +840,8 @@ IDE_RC smrArchThread::wait4EndArchLF( UInt aToFileNo )
                                     &sIsEmptyArchLFLst )
                   != IDE_SUCCESS );
 
-        /* BUG-23693: [SD] Online Backupì‹œ LogFileì„ ê°•ì œ Switchì‹œ í˜„ì¬ LogFile
-         * ê¹Œì§€ë§Œ Archivingì„ í•´ì•¼ í•©ë‹ˆë‹¤. */
+        /* BUG-23693: [SD] Online Backup½Ã LogFileÀ» °­Á¦ Switch½Ã ÇöÀç LogFile
+         * ±îÁö¸¸ ArchivingÀ» ÇØ¾ß ÇÕ´Ï´Ù. */
         if( ( sIsEmptyArchLFLst == ID_TRUE ) ||
             ( sFstLFOfArchLFLst > aToFileNo ) )
         {

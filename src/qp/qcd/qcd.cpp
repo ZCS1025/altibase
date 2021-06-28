@@ -28,7 +28,7 @@
 void
 qcd::initStmt( QCD_HSTMT * aHstmt )
 {
-    // handle statement ì´ˆê¸°í™”
+    // handle statement ÃÊ±âÈ­
     *aHstmt = NULL;
 }
 
@@ -41,7 +41,7 @@ qcd::allocStmt( qcStatement * aStatement,
  *  Description : alloc mmStatement
  *
  *  Implementation :
- *             session, parent mmStatementë¥¼ ë„˜ê²¨ì„œ mmStatementë¥¼ í• ë‹¹ë°›ìŒ
+ *             session, parent mmStatement¸¦ ³Ñ°Ü¼­ mmStatement¸¦ ÇÒ´ç¹ŞÀ½
  *
  ***********************************************************************/
 
@@ -68,16 +68,18 @@ qcd::allocStmt( qcStatement * aStatement,
 
 IDE_RC
 qcd::prepare( QCD_HSTMT     aHstmt,
+              qcStatement * aQcStmt,
+              qcStatement * aExecQcStmt,
+              qciStmtType * aStmtType,
               SChar       * aSqlString,
               UInt          aSqlStringLen,
-              qciStmtType * aStmtType,
               idBool        aExecMode )
 {
 /***********************************************************************
  *
  *  Description : prepare
  *
- *  Implementation : direct-executeëª¨ë“œë¡œ prepare(execMode = ID_TRUE)
+ *  Implementation : direct-execute¸ğµå·Î prepare(execMode = ID_TRUE)
  *
  ***********************************************************************/
 
@@ -88,6 +90,11 @@ qcd::prepare( QCD_HSTMT     aHstmt,
     sContext.sqlStringLen = aSqlStringLen;
     sContext.stmtType = QCI_STMT_MASK_MAX;
     sContext.execMode = aExecMode;
+
+    if ( (aQcStmt != NULL) && (aExecQcStmt != NULL) )
+    {
+        aExecQcStmt->spxEnv->mCallDepth = aQcStmt->spxEnv->mCallDepth;
+    }
 
     IDE_TEST( qci::mInternalSQLCallback.mPrepare( &sContext )
               != IDE_SUCCESS );
@@ -109,7 +116,7 @@ qcd::bindParamInfoSet( QCD_HSTMT      aHstmt,
 {
 /***********************************************************************
  *
- *  Description : parameter infoë¥¼ í•˜ë‚˜ bind
+ *  Description : parameter info¸¦ ÇÏ³ª bind
  *
  *  Implementation :
  *
@@ -135,31 +142,66 @@ qcd::bindParamInfoSet( QCD_HSTMT      aHstmt,
 }
 
 IDE_RC
-qcd::bindParamData( QCD_HSTMT     aHstmt,
-                    void        * aValue,
-                    UInt          aValueSize,
-                    UShort        aBindId)
+qcd::bindParamData( QCD_HSTMT      aHstmt,
+                    void         * aValue,
+                    UInt           aValueSize,
+                    UShort         aBindId,
+                    iduMemory    * aMemory,
+                    qciBindData ** aBindDataList,
+                    qsInOutType    aInOutType )
 {
 /***********************************************************************
  *
- *  Description : parameter dataë¥¼ í•˜ë‚˜ bind
+ *  Description : parameter data¸¦ ÇÏ³ª bind
  *
  *  Implementation :
+ *
+ *      BUG-47695
+ *        addBindDataList ÇÔ¼öÀÇ ±â´ÉÀ» Æ÷ÇÔÇÏµµ·Ï ¼öÁ¤ÇÔ
  *
  ***********************************************************************/
 
     qciSQLParamDataContext sContext;
+    qciBindData * sBindData;
+    qciBindData * sLastBindData;
 
     sContext.mmStatement = aHstmt;
 
-    makeBindData( &sContext.bindParamData,
-                  aValue,
-                  aValueSize,
-                  aBindId,
-                  NULL);
+    QCD_MAKE_BIND_DATA( &sContext.bindParamData,
+                        aValue,
+                        aValueSize,
+                        aBindId,
+                        NULL);
 
     IDE_TEST( qci::mInternalSQLCallback.mBindParamData( &sContext )
               != IDE_SUCCESS );
+
+    if ( (aInOutType != QS_IN) &&
+         (aBindDataList != NULL) )
+    {
+        IDE_TEST( aMemory->alloc( ID_SIZEOF(qciBindData),
+                                  (void**)&sBindData )
+                  != IDE_SUCCESS );
+
+        QCD_MAKE_BIND_DATA( sBindData,
+                            aValue,
+                            aValueSize,
+                            aBindId,
+                            NULL );
+
+        if( *aBindDataList == NULL )
+        {
+            *aBindDataList = sBindData;
+        }
+        else
+        {
+            for( sLastBindData = *aBindDataList;
+                 sLastBindData->next != NULL;
+                 sLastBindData = sLastBindData->next ) ;
+
+            sLastBindData->next = sBindData;
+        }
+    }
 
     return IDE_SUCCESS;
 
@@ -181,8 +223,8 @@ qcd::execute( QCD_HSTMT     aHstmt,
  *
  *  Description : execute
  *
- *  Implementation : executeí˜¸ì¶œ í›„ resultsetì´ ìˆëŠ”ì§€ ì—¬ë¶€, affected rowcount
- *                   ë¥¼ ì €ì¥
+ *  Implementation : executeÈ£Ãâ ÈÄ resultsetÀÌ ÀÖ´ÂÁö ¿©ºÎ, affected rowcount
+ *                   ¸¦ ÀúÀå
  *
  ***********************************************************************/
 
@@ -203,7 +245,7 @@ qcd::execute( QCD_HSTMT     aHstmt,
                   != IDE_SUCCESS );
 
     qsxEnv::copyStack( sExecQcStmt->spxEnv, aQcStmt->spxEnv );
-    // BUG-45322 execute immediateë¡œ ì¬ê·€í˜¸ì¶œì„ í•˜ë©´ ì„œë²„ê°€ ë¹„ì •ìƒ ì¢…ë£Œí•©ë‹ˆë‹¤.
+    // BUG-45322 execute immediate·Î Àç±ÍÈ£ÃâÀ» ÇÏ¸é ¼­¹ö°¡ ºñÁ¤»ó Á¾·áÇÕ´Ï´Ù.
     sExecQcStmt->spxEnv->mCallDepth = aQcStmt->spxEnv->mCallDepth;
 
     /* BUG-45678 */
@@ -234,7 +276,7 @@ qcd::execute( QCD_HSTMT     aHstmt,
 
     *aAffectedRowCount = sContext.affectedRowCount;
 
-    /* sTmplateì˜ stack ë° stmt ì›ë³µ */
+    /* sTmplateÀÇ stack ¹× stmt ¿øº¹ */
     QC_CONNECT_TEMPLATE_STACK( sTmplate,
                                sTmpStackBuffer,
                                sTmpStack,
@@ -246,7 +288,7 @@ qcd::execute( QCD_HSTMT     aHstmt,
 
     IDE_EXCEPTION_END;
 
-    /* sTmplateì˜ stack ë° stmt ì›ë³µ */
+    /* sTmplateÀÇ stack ¹× stmt ¿øº¹ */
     QC_CONNECT_TEMPLATE_STACK( sTmplate,
                                sTmpStackBuffer,
                                sTmpStack,
@@ -266,7 +308,7 @@ qcd::fetch( qcStatement * aQcStmt,
 {
 /***********************************************************************
  *
- *  Description : ë ˆì½”ë“œ í•œê±´ fetch+fetchColumn
+ *  Description : ·¹ÄÚµå ÇÑ°Ç fetch+fetchColumn
  *
  *  Implementation :
  *
@@ -300,7 +342,7 @@ qcd::fetch( qcStatement * aQcStmt,
 
     *aNextRecordExist = sContext.nextRecordExist;
 
-    /* sTmplateì˜ stack ë° stmt ì›ë³µ */
+    /* sTmplateÀÇ stack ¹× stmt ¿øº¹ */
     QC_CONNECT_TEMPLATE_STACK( sTmplate,
                                sTmpStackBuffer,
                                sTmpStack,
@@ -312,7 +354,7 @@ qcd::fetch( qcStatement * aQcStmt,
 
     IDE_EXCEPTION_END;
 
-    /* sTmplateì˜ stack ë° stmt ì›ë³µ */
+    /* sTmplateÀÇ stack ¹× stmt ¿øº¹ */
     QC_CONNECT_TEMPLATE_STACK( sTmplate,
                                sTmpStackBuffer,
                                sTmpStack,
@@ -392,21 +434,6 @@ qcd::makeBindParamInfo( qciBindParam * aBindParam,
     }
 }
 
-void
-qcd::makeBindData( qciBindData * aBindData,
-                   void        * aValue,
-                   UInt          aValueSize,
-                   UShort        aBindId,
-                   mtcColumn   * aColumn)
-{
-    aBindData->id = aBindId;
-    aBindData->name = NULL;
-    aBindData->column = aColumn;
-    aBindData->data = aValue;
-    aBindData->size = aValueSize;
-    aBindData->next = NULL;
-}
-
 IDE_RC
 qcd::addBindColumnDataList( iduMemory    * aMemory,
                             qciBindData ** aBindDataList,
@@ -424,50 +451,11 @@ qcd::addBindColumnDataList( iduMemory    * aMemory,
                               (void**)&sBindData )
               != IDE_SUCCESS );
 
-    makeBindData( sBindData,
-                  aData,
-                  0,
-                  aBindId,
-                  aColumn );
-
-    if( *aBindDataList == NULL )
-    {
-        *aBindDataList = sBindData;
-    }
-    else
-    {
-        for( sLastBindData = *aBindDataList;
-             sLastBindData->next != NULL;
-             sLastBindData = sLastBindData->next ) ;
-
-        sLastBindData->next = sBindData;
-    }
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-IDE_RC
-qcd::addBindDataList( iduMemory    * aMemory,
-                      qciBindData ** aBindDataList,
-                      void         * aData,
-                      UShort         aBindId )
-{
-    qciBindData * sBindData;
-    qciBindData * sLastBindData;
-
-    IDE_TEST( aMemory->alloc( ID_SIZEOF(qciBindData),
-                              (void**)&sBindData )
-              != IDE_SUCCESS );
-
-    makeBindData( sBindData,
-                  aData,
-                  0,
-                  aBindId,
-                  NULL);
+    QCD_MAKE_BIND_DATA( sBindData,
+                        aData,
+                        0,
+                        aBindId,
+                        aColumn );
 
     if( *aBindDataList == NULL )
     {
@@ -604,8 +592,8 @@ qcd::executeNoParent( QCD_HSTMT     aHstmt,
  *
  *  Description : execute
  *
- *  Implementation : executeí˜¸ì¶œ í›„ resultsetì´ ìˆëŠ”ì§€ ì—¬ë¶€, affected rowcount
- *                   ë¥¼ ì €ì¥
+ *  Implementation : executeÈ£Ãâ ÈÄ resultsetÀÌ ÀÖ´ÂÁö ¿©ºÎ, affected rowcount
+ *                   ¸¦ ÀúÀå
  *
  ***********************************************************************/
 
@@ -648,7 +636,7 @@ qcd::bindParamInfoSetByName( QCD_HSTMT      aHstmt,
 {
 /***********************************************************************
  *
- *  Description : parameter infoë¥¼ í•˜ë‚˜ bind
+ *  Description : parameter info¸¦ ÇÏ³ª bind
  *
  *  Implementation :
  *
@@ -681,7 +669,7 @@ qcd::bindParamDataByName( QCD_HSTMT     aHstmt,
 {
 /***********************************************************************
  *
- *  Description : parameter dataë¥¼ í•˜ë‚˜ bind
+ *  Description : parameter data¸¦ ÇÏ³ª bind
  *
  *  Implementation :
  *

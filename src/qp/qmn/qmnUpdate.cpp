@@ -1,4 +1,4 @@
-/** 
+/**
  *  Copyright (c) 1999~2017, Altibase Corp. and/or its affiliates. All rights reserved.
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -13,7 +13,6 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
- 
 
 /***********************************************************************
  * $Id: qmnUpdate.cpp 55241 2012-08-27 09:13:19Z linkedlist $
@@ -21,11 +20,11 @@
  * Description :
  *     UPTE(UPdaTE) Node
  *
- *     Í¥ÄÍ≥ÑÌòï Î™®Îç∏ÏóêÏÑú updateÎ•º ÏàòÌñâÌïòÎäî Plan Node Ïù¥Îã§.
+ *     ∞¸∞Ë«¸ ∏µ®ø°º≠ update∏¶ ºˆ«‡«œ¥¬ Plan Node ¿Ã¥Ÿ.
  *
- * Ïö©Ïñ¥ ÏÑ§Î™Ö :
+ * øÎæÓ º≥∏Ì :
  *
- * ÏïΩÏñ¥ :
+ * æ‡æÓ :
  *
  **********************************************************************/
 
@@ -50,15 +49,13 @@ qmnUPTE::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    UPTE ÎÖ∏ÎìúÏùò Ï¥àÍ∏∞Ìôî
+ *    UPTE ≥ÎµÂ¿« √ ±‚»≠
  *
  * Implementation :
  *
  ***********************************************************************/
 
-#define IDE_FN "qmnUPTE::init"
-    IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY("qmnUPTE::init"));
-
+    UInt       i = 0;
     qmncUPTE * sCodePlan = (qmncUPTE*) aPlan;
     qmndUPTE * sDataPlan =
         (qmndUPTE*) (aTemplate->tmplate.data + aPlan->offset);
@@ -67,46 +64,76 @@ qmnUPTE::init( qcTemplate * aTemplate,
     sDataPlan->doIt = qmnUPTE::doItDefault;
 
     //------------------------------------------------
-    // ÏµúÏ¥à Ï¥àÍ∏∞Ìôî ÏàòÌñâ Ïó¨Î∂Ä ÌåêÎã®
+    // √÷√  √ ±‚»≠ ºˆ«‡ ø©∫Œ ∆«¥‹
     //------------------------------------------------
 
     if ( ( *sDataPlan->flag & QMND_UPTE_INIT_DONE_MASK )
          == QMND_UPTE_INIT_DONE_FALSE )
     {
-        // ÏµúÏ¥à Ï¥àÍ∏∞Ìôî ÏàòÌñâ
-        IDE_TEST( firstInit(aTemplate, sCodePlan, sDataPlan) != IDE_SUCCESS );
+        if ( ( sCodePlan->flag & QMNC_UPTE_MULTIPLE_TABLE_MASK )
+             == QMNC_UPTE_MULTIPLE_TABLE_FALSE )
+        {
+            // √÷√  √ ±‚»≠ ºˆ«‡
+            IDE_TEST( firstInit(aTemplate, sCodePlan, sDataPlan) != IDE_SUCCESS );
 
-        //------------------------------------------------
-        // Child PlanÏùò Ï¥àÍ∏∞Ìôî
-        //------------------------------------------------
+            //------------------------------------------------
+            // Child Plan¿« √ ±‚»≠
+            //------------------------------------------------
 
-        IDE_TEST( aPlan->left->init( aTemplate,
-                                     aPlan->left ) != IDE_SUCCESS);
+            IDE_TEST( aPlan->left->init( aTemplate,
+                                         aPlan->left ) != IDE_SUCCESS);
+
+            //---------------------------------
+            // trigger row∏¶ ª˝º∫
+            //---------------------------------
+
+            // child¿« offset¿ª ¿ÃøÎ«œπ«∑Œ firstInit¿Ã ≥°≥™æﬂ offset¿ª ¿ÃøÎ«“ ºˆ ¿÷¥Ÿ.
+            IDE_TEST( allocTriggerRow(aTemplate, sCodePlan, sDataPlan)
+                      != IDE_SUCCESS );
+
+            //---------------------------------
+            // returnInto row∏¶ ª˝º∫
+            //---------------------------------
+
+            IDE_TEST( allocReturnRow(aTemplate, sCodePlan, sDataPlan)
+                      != IDE_SUCCESS );
+
+            //---------------------------------
+            // index table cursor∏¶ ª˝º∫
+            //---------------------------------
+
+            IDE_TEST( allocIndexTableCursor(aTemplate, sCodePlan, sDataPlan)
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            // √÷√  √ ±‚»≠ ºˆ«‡
+            IDE_TEST( firstInitMultiTable(aTemplate, sCodePlan, sDataPlan) != IDE_SUCCESS );
+
+            //------------------------------------------------
+            // Child Plan¿« √ ±‚»≠
+            //------------------------------------------------
+            IDE_TEST( aPlan->left->init( aTemplate,
+                                         aPlan->left ) != IDE_SUCCESS);
+
+            //---------------------------------
+            // trigger row∏¶ ª˝º∫
+            //---------------------------------
+
+            // child¿« offset¿ª ¿ÃøÎ«œπ«∑Œ firstInit¿Ã ≥°≥™æﬂ offset¿ª ¿ÃøÎ«“ ºˆ ¿÷¥Ÿ.
+            IDE_TEST( allocTriggerRowMultiTable(aTemplate, sCodePlan, sDataPlan)
+                      != IDE_SUCCESS );
+
+            //---------------------------------
+            // index table cursor∏¶ ª˝º∫
+            //---------------------------------
+
+            IDE_TEST( allocIndexTableCursorMultiTable(aTemplate, sCodePlan, sDataPlan)
+                      != IDE_SUCCESS );
+        }
 
         //---------------------------------
-        // trigger rowÎ•º ÏÉùÏÑ±
-        //---------------------------------
-
-        // childÏùò offsetÏùÑ Ïù¥Ïö©ÌïòÎØÄÎ°ú firstInitÏù¥ ÎÅùÎÇòÏïº offsetÏùÑ Ïù¥Ïö©Ìï† Ïàò ÏûàÎã§.
-        IDE_TEST( allocTriggerRow(aTemplate, sCodePlan, sDataPlan)
-                  != IDE_SUCCESS );
-
-        //---------------------------------
-        // returnInto rowÎ•º ÏÉùÏÑ±
-        //---------------------------------
-
-        IDE_TEST( allocReturnRow(aTemplate, sCodePlan, sDataPlan)
-                  != IDE_SUCCESS );
-
-        //---------------------------------
-        // index table cursorÎ•º ÏÉùÏÑ±
-        //---------------------------------
-
-        IDE_TEST( allocIndexTableCursor(aTemplate, sCodePlan, sDataPlan)
-                  != IDE_SUCCESS );
-
-        //---------------------------------
-        // Ï¥àÍ∏∞Ìôî ÏôÑÎ£åÎ•º ÌëúÍ∏∞
+        // √ ±‚»≠ øœ∑·∏¶ «•±‚
         //---------------------------------
 
         *sDataPlan->flag &= ~QMND_UPTE_INIT_DONE_MASK;
@@ -115,49 +142,68 @@ qmnUPTE::init( qcTemplate * aTemplate,
     else
     {
         //------------------------------------------------
-        // Child PlanÏùò Ï¥àÍ∏∞Ìôî
+        // Child Plan¿« √ ±‚»≠
         //------------------------------------------------
 
         IDE_TEST( aPlan->left->init( aTemplate,
                                      aPlan->left ) != IDE_SUCCESS);
 
-        //-----------------------------------
-        // init lob info
-        //-----------------------------------
-
-        if ( sDataPlan->lobInfo != NULL )
+        if ( ( sCodePlan->flag & QMNC_UPTE_MULTIPLE_TABLE_MASK )
+             == QMNC_UPTE_MULTIPLE_TABLE_FALSE )
         {
-            (void) qmx::initLobInfo( sDataPlan->lobInfo );
+            //-----------------------------------
+            // init lob info
+            //-----------------------------------
+
+            if ( sDataPlan->lobInfo != NULL )
+            {
+                (void) qmx::initLobInfo( sDataPlan->lobInfo );
+            }
+            else
+            {
+                // Nothing to do.
+            }
         }
         else
         {
-            // Nothing to do.
+            //-----------------------------------
+            // init lob info
+            //-----------------------------------
+            for ( i = 0; i < sCodePlan->mMultiTableCount; i++ )
+            {
+                (void)qmx::initLobInfo( sDataPlan->mTableArray[i].mLobInfo );
+            }
         }
     }
 
     //------------------------------------------------
-    // Í∞ÄÎ≥Ä Data Ïùò Ï¥àÍ∏∞Ìôî
+    // ∞°∫Ø Data ¿« √ ±‚»≠
     //------------------------------------------------
 
-    // Limit ÏãúÏûë Í∞úÏàòÏùò Ï¥àÍ∏∞Ìôî
+    // Limit Ω√¿€ ∞≥ºˆ¿« √ ±‚»≠
     sDataPlan->limitCurrent = 1;
 
-    // update rowGRID Ï¥àÍ∏∞Ìôî
+    // update rowGRID √ ±‚»≠
     sDataPlan->rowGRID = SC_NULL_GRID;
-    
-    //------------------------------------------------
-    // ÏàòÌñâ Ìï®Ïàò Í≤∞Ï†ï
-    //------------------------------------------------
 
-    sDataPlan->doIt = qmnUPTE::doItFirst;
+    //------------------------------------------------
+    // ºˆ«‡ «‘ºˆ ∞·¡§
+    //------------------------------------------------
+    if ( ( sCodePlan->flag & QMNC_UPTE_MULTIPLE_TABLE_MASK )
+         == QMNC_UPTE_MULTIPLE_TABLE_FALSE )
+    {
+        sDataPlan->doIt = qmnUPTE::doItFirst;
+    }
+    else
+    {
+        sDataPlan->doIt = qmnUPTE::doItFirstMultiTable;
+    }
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
-
-#undef IDE_FN
 }
 
 IDE_RC
@@ -168,10 +214,10 @@ qmnUPTE::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    UPTE Ïùò Í≥†Ïú† Í∏∞Îä•ÏùÑ ÏàòÌñâÌïúÎã§.
+ *    UPTE ¿« ∞Ì¿Ø ±‚¥…¿ª ºˆ«‡«—¥Ÿ.
  *
  * Implementation :
- *    ÏßÄÏ†ïÎêú Ìï®Ïàò Ìè¨Ïù∏ÌÑ∞Î•º ÏàòÌñâÌïúÎã§.
+ *    ¡ˆ¡§µ» «‘ºˆ ∆˜¿Œ≈Õ∏¶ ºˆ«‡«—¥Ÿ.
  *
  ***********************************************************************/
 
@@ -193,8 +239,8 @@ qmnUPTE::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    UPTE ÎÖ∏ÎìúÎäî Î≥ÑÎèÑÏùò null rowÎ•º Í∞ÄÏßÄÏßÄ ÏïäÏúºÎ©∞,
- *    ChildÏóê ÎåÄÌïòÏó¨ padNull()ÏùÑ Ìò∏Ï∂úÌïúÎã§.
+ *    UPTE ≥ÎµÂ¥¬ ∫∞µµ¿« null row∏¶ ∞°¡ˆ¡ˆ æ ¿∏∏Á,
+ *    Childø° ¥Î«œø© padNull()¿ª »£√‚«—¥Ÿ.
  *
  * Implementation :
  *
@@ -210,7 +256,7 @@ qmnUPTE::padNull( qcTemplate * aTemplate,
     if ( (aTemplate->planFlag[sCodePlan->planID] & QMND_UPTE_INIT_DONE_MASK)
          == QMND_UPTE_INIT_DONE_FALSE )
     {
-        // Ï¥àÍ∏∞ÌôîÎêòÏßÄ ÏïäÏùÄ Í≤ΩÏö∞ Ï¥àÍ∏∞Ìôî ÏàòÌñâ
+        // √ ±‚»≠µ«¡ˆ æ ¿∫ ∞ÊøÏ √ ±‚»≠ ºˆ«‡
         IDE_TEST( aPlan->init( aTemplate, aPlan ) != IDE_SUCCESS );
     }
     else
@@ -218,7 +264,7 @@ qmnUPTE::padNull( qcTemplate * aTemplate,
         // Nothing To Do
     }
 
-    // Child PlanÏóê ÎåÄÌïòÏó¨ Null PaddingÏàòÌñâ
+    // Child Planø° ¥Î«œø© Null Paddingºˆ«‡
     IDE_TEST( aPlan->left->padNull( aTemplate, aPlan->left )
               != IDE_SUCCESS );
 
@@ -241,7 +287,7 @@ qmnUPTE::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    UPTE ÎÖ∏ÎìúÏùò ÏàòÌñâ Ï†ïÎ≥¥Î•º Ï∂úÎ†•ÌïúÎã§.
+ *    UPTE ≥ÎµÂ¿« ºˆ«‡ ¡§∫∏∏¶ √‚∑¬«—¥Ÿ.
  *
  * Implementation :
  *
@@ -254,13 +300,17 @@ qmnUPTE::printPlan( qcTemplate   * aTemplate,
     qmndUPTE * sDataPlan =
         (qmndUPTE*) (aTemplate->tmplate.data + aPlan->offset);
 
-    ULong      i;
-    qmmValueNode * sValue;
+    ULong             i;
+    qmmValueNode    * sValue;
+    qmmMultiTables  * sTmp;
+    qmsNamePosition   sTableOwnerName;     // Table Owner Name
+    qmsNamePosition   sTableName;          // Table Name
+    qmsNamePosition   sAliasName;          // Alias Name
 
     sDataPlan->flag = & aTemplate->planFlag[sCodePlan->planID];
 
     //------------------------------------------------------
-    // ÏãúÏûë Ï†ïÎ≥¥Ïùò Ï∂úÎ†•
+    // Ω√¿€ ¡§∫∏¿« √‚∑¬
     //------------------------------------------------------
 
     for ( i = 0; i < aDepth; i++ )
@@ -270,102 +320,186 @@ qmnUPTE::printPlan( qcTemplate   * aTemplate,
     }
 
     //------------------------------------------------------
-    // UPTE Target Ï†ïÎ≥¥Ïùò Ï∂úÎ†•
+    // UPTE Target ¡§∫∏¿« √‚∑¬
     //------------------------------------------------------
-
-    // UPTE Ï†ïÎ≥¥Ïùò Ï∂úÎ†•
-    if ( sCodePlan->tableRef->tableType == QCM_VIEW )
+    if ( ( sCodePlan->flag & QMNC_UPTE_MULTIPLE_TABLE_MASK )
+         == QMNC_UPTE_MULTIPLE_TABLE_FALSE )
     {
-        iduVarStringAppendFormat( aString,
-                                  "UPDATE ( VIEW: " );
-    }
-    else
-    {
-        iduVarStringAppendFormat( aString,
-                                  "UPDATE ( TABLE: " );
-    }
+        // UPTE ¡§∫∏¿« √‚∑¬
+        if ( sCodePlan->tableRef->tableType == QCM_VIEW )
+        {
+            iduVarStringAppendFormat( aString,
+                                      "UPDATE ( VIEW: " );
+        }
+        else
+        {
+            iduVarStringAppendFormat( aString,
+                                      "UPDATE ( TABLE: " );
+        }
 
-    if ( ( sCodePlan->tableOwnerName.name != NULL ) &&
-         ( sCodePlan->tableOwnerName.size > 0 ) )
-    {
-        iduVarStringAppendLength( aString,
-                                  sCodePlan->tableOwnerName.name,
-                                  sCodePlan->tableOwnerName.size );
-        iduVarStringAppend( aString, "." );
-    }
-    else
-    {
-        // Nothing to do.
-    }
-
-    //----------------------------
-    // Table Name Ï∂úÎ†•
-    //----------------------------
-
-    if ( ( sCodePlan->tableName.size <= QC_MAX_OBJECT_NAME_LEN ) &&
-         ( sCodePlan->tableName.name != NULL ) &&
-         ( sCodePlan->tableName.size > 0 ) )
-    {
-        iduVarStringAppendLength( aString,
-                                  sCodePlan->tableName.name,
-                                  sCodePlan->tableName.size );
-    }
-    else
-    {
-        // Nothing to do.
-    }
-
-    //----------------------------
-    // Alias Name Ï∂úÎ†•
-    //----------------------------
-
-    if ( sCodePlan->aliasName.name != NULL &&
-         sCodePlan->aliasName.size > 0  &&
-         sCodePlan->aliasName.name != sCodePlan->tableName.name )
-    {
-        // Table Ïù¥Î¶Ñ Ï†ïÎ≥¥ÏôÄ Alias Ïù¥Î¶Ñ Ï†ïÎ≥¥Í∞Ä Îã§Î•º Í≤ΩÏö∞
-        // (alias name)
-        iduVarStringAppend( aString, " " );
-
-        if ( sCodePlan->aliasName.size <= QC_MAX_OBJECT_NAME_LEN )
+        if ( ( sCodePlan->tableOwnerName.name != NULL ) &&
+             ( sCodePlan->tableOwnerName.size > 0 ) )
         {
             iduVarStringAppendLength( aString,
-                                      sCodePlan->aliasName.name,
-                                      sCodePlan->aliasName.size );
+                                      sCodePlan->tableOwnerName.name,
+                                      sCodePlan->tableOwnerName.size );
+            iduVarStringAppend( aString, "." );
         }
         else
         {
             // Nothing to do.
         }
+
+        //----------------------------
+        // Table Name √‚∑¬
+        //----------------------------
+
+        if ( ( sCodePlan->tableName.size <= QC_MAX_OBJECT_NAME_LEN ) &&
+             ( sCodePlan->tableName.name != NULL ) &&
+             ( sCodePlan->tableName.size > 0 ) )
+        {
+            iduVarStringAppendLength( aString,
+                                      sCodePlan->tableName.name,
+                                      sCodePlan->tableName.size );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
+        //----------------------------
+        // Alias Name √‚∑¬
+        //----------------------------
+
+        if ( ( sCodePlan->aliasName.name != NULL ) &&
+             ( sCodePlan->aliasName.size > 0  ) &&
+             ( sCodePlan->aliasName.name != sCodePlan->tableName.name ) )
+        {
+            // Table ¿Ã∏ß ¡§∫∏øÕ Alias ¿Ã∏ß ¡§∫∏∞° ¥Ÿ∏¶ ∞ÊøÏ
+            // (alias name)
+            iduVarStringAppend( aString, " " );
+
+            if ( sCodePlan->aliasName.size <= QC_MAX_OBJECT_NAME_LEN )
+            {
+                iduVarStringAppendLength( aString,
+                                          sCodePlan->aliasName.name,
+                                          sCodePlan->aliasName.size );
+            }
+            else
+            {
+                // Nothing to do.
+            }
+        }
+        else
+        {
+            // Alias ¿Ã∏ß ¡§∫∏∞° æ¯∞≈≥™ Table ¿Ã∏ß ¡§∫∏∞° µø¿œ«— ∞ÊøÏ
+            // Nothing To Do
+        }
     }
     else
     {
-        // Alias Ïù¥Î¶Ñ Ï†ïÎ≥¥Í∞Ä ÏóÜÍ±∞ÎÇò Table Ïù¥Î¶Ñ Ï†ïÎ≥¥Í∞Ä ÎèôÏùºÌïú Í≤ΩÏö∞
-        // Nothing To Do
-    }
+        iduVarStringAppendFormat( aString,
+                                  "UPDATE ( " );
+        for ( sTmp = sCodePlan->mTableList; sTmp != NULL; sTmp = sTmp->mNext )
+        {
+            if ( sTmp->mTableRef->tableType == QCM_VIEW )
+            {
+                iduVarStringAppendFormat( aString,
+                                          "VIEW: " );
+            }
+            else
+            {
+                iduVarStringAppendFormat( aString,
+                                          "TABLE: " );
+            }
 
+            qmn::setDisplayInfo( sTmp->mTableRef, &sTableOwnerName, &sTableName, &sAliasName );
+
+            if ( ( sTableOwnerName.name != NULL ) &&
+                 ( sTableOwnerName.size > 0 ) )
+            {
+                iduVarStringAppendLength( aString,
+                                          sTableOwnerName.name,
+                                          sTableOwnerName.size );
+                iduVarStringAppend( aString, "." );
+            }
+            else
+            {
+                // Nothing to do.
+            }
+
+            if ( ( sTableName.size <= QC_MAX_OBJECT_NAME_LEN ) &&
+                 ( sTableName.name != NULL ) &&
+                 ( sTableName.size > 0 ) )
+            {
+                iduVarStringAppendLength( aString,
+                                          sTableName.name,
+                                          sTableName.size );
+            }
+            else
+            {
+                // Nothing to do.
+            }
+
+            //----------------------------
+            // Alias Name √‚∑¬
+            //----------------------------
+            if ( ( sAliasName.name != NULL ) &&
+                 ( sAliasName.size > 0  ) &&
+                 ( sAliasName.name != sTableName.name ) )
+            {
+                // Table ¿Ã∏ß ¡§∫∏øÕ Alias ¿Ã∏ß ¡§∫∏∞° ¥Ÿ∏¶ ∞ÊøÏ
+                // (alias name)
+                iduVarStringAppend( aString, " " );
+
+                if ( sAliasName.size <= QC_MAX_OBJECT_NAME_LEN )
+                {
+                    iduVarStringAppendLength( aString,
+                                              sAliasName.name,
+                                              sAliasName.size );
+                }
+                else
+                {
+                    // Nothing to do.
+                }
+            }
+            else
+            {
+                // Alias ¿Ã∏ß ¡§∫∏∞° æ¯∞≈≥™ Table ¿Ã∏ß ¡§∫∏∞° µø¿œ«— ∞ÊøÏ
+                // Nothing To Do
+            }
+            iduVarStringAppend( aString, " " );
+        }
+    }
     //----------------------------
-    // New line Ï∂úÎ†•
+    // New line √‚∑¬
     //----------------------------
     iduVarStringAppend( aString, " )\n" );
 
     //------------------------------------------------------
-    // BUG-38343 Set ÎÇ¥Î∂ÄÏùò Subquery Ï†ïÎ≥¥ Ï∂úÎ†•
+    // BUG-38343 Set ≥ª∫Œ¿« Subquery ¡§∫∏ √‚∑¬
     //------------------------------------------------------
 
     for ( sValue = sCodePlan->values;
           sValue != NULL;
           sValue = sValue->next)
     {
-        IDE_TEST( qmn::printSubqueryPlan( aTemplate,
-                                          sValue->value,
-                                          aDepth,
-                                          aString,
-                                          aMode ) != IDE_SUCCESS );
+        if ( sValue->value != NULL )
+        {
+            IDE_TEST( qmn::printSubqueryPlan( aTemplate,
+                                              sValue->value,
+                                              aDepth,
+                                              aString,
+                                              aMode ) != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Noting to do */
+        }
     }
 
     //------------------------------------------------------
-    // Child Plan Ï†ïÎ≥¥Ïùò Ï∂úÎ†•
+    // Child Plan ¡§∫∏¿« √‚∑¬
     //------------------------------------------------------
 
     IDE_TEST( aPlan->left->printPlan( aTemplate,
@@ -391,10 +525,10 @@ qmnUPTE::firstInit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    UPTE nodeÏùò Data ÏòÅÏó≠Ïùò Î©§Î≤ÑÏóê ÎåÄÌïú Ï¥àÍ∏∞ÌôîÎ•º ÏàòÌñâ
+ *    UPTE node¿« Data øµø™¿« ∏‚πˆø° ¥Î«— √ ±‚»≠∏¶ ºˆ«‡
  *
  * Implementation :
- *    - Data ÏòÅÏó≠Ïùò Ï£ºÏöî Î©§Î≤ÑÏóê ÎåÄÌïú Ï¥àÍ∏∞ÌôîÎ•º ÏàòÌñâ
+ *    - Data øµø™¿« ¡÷ø‰ ∏‚πˆø° ¥Î«— √ ±‚»≠∏¶ ºˆ«‡
  *
  ***********************************************************************/
 
@@ -407,42 +541,42 @@ qmnUPTE::firstInit( qcTemplate * aTemplate,
     idBool         sIsNeedRebuild = ID_FALSE;
 
     //--------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //--------------------------------
 
     //--------------------------------
-    // UPTE Í≥†Ïú† Ï†ïÎ≥¥Ïùò Ï¥àÍ∏∞Ìôî
+    // UPTE ∞Ì¿Ø ¡§∫∏¿« √ ±‚»≠
     //--------------------------------
 
     aDataPlan->insertLobInfo = NULL;
     aDataPlan->insertValues  = NULL;
     aDataPlan->checkValues   = NULL;
 
-    // Tuple SetÏ†ïÎ≥¥Ïùò Ï¥àÍ∏∞Ìôî
+    // Tuple Set¡§∫∏¿« √ ±‚»≠
     aDataPlan->updateTuple     = & aTemplate->tmplate.rows[aCodePlan->tableRef->table];
     aDataPlan->updateCursor    = NULL;
     aDataPlan->updateTupleID   = ID_USHORT_MAX;
 
-    /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
     aDataPlan->updatePartInfo = NULL;
 
-    // index table cursor Ï¥àÍ∏∞Ìôî
+    // index table cursor √ ±‚»≠
     aDataPlan->indexUpdateCursor = NULL;
     aDataPlan->indexUpdateTuple = NULL;
 
-    // set, where column list Ï¥àÍ∏∞Ìôî
+    // set, where column list √ ±‚»≠
     smiInitDMLRetryInfo( &(aDataPlan->retryInfo) );
 
     /* PROJ-2359 Table/Partition Access Option */
     aDataPlan->accessOption = QCM_ACCESS_OPTION_READ_WRITE;
 
     //--------------------------------
-    // cursorInfo ÏÉùÏÑ±
+    // cursorInfo ª˝º∫
     //--------------------------------
 
     if ( aCodePlan->insteadOfTrigger == ID_TRUE )
     {
-        // instead of triggerÎäî cursorÍ∞Ä ÌïÑÏöîÏóÜÎã§.
+        // instead of trigger¥¬ cursor∞° « ø‰æ¯¥Ÿ.
         // Nothing to do.
     }
     else
@@ -450,7 +584,7 @@ qmnUPTE::firstInit( qcTemplate * aTemplate,
         sTableInfo = aCodePlan->tableRef->tableInfo;
 
         // PROJ-2219 Row-level before update trigger
-        // Invalid Ìïú triggerÍ∞Ä ÏûàÏúºÎ©¥ compileÌïòÍ≥†, DMLÏùÑ rebuild ÌïúÎã§.
+        // Invalid «— trigger∞° ¿÷¿∏∏È compile«œ∞Ì, DML¿ª rebuild «—¥Ÿ.
         if ( sTableInfo->triggerCount > 0 )
         {
             IDE_TEST( qdnTrigger::verifyTriggers( aTemplate->stmt,
@@ -472,7 +606,7 @@ qmnUPTE::firstInit( qcTemplate * aTemplate,
     }
 
     //--------------------------------
-    // partition Í¥ÄÎ†® Ï†ïÎ≥¥Ïùò Ï¥àÍ∏∞Ìôî
+    // partition ∞¸∑√ ¡§∫∏¿« √ ±‚»≠
     //--------------------------------
 
     if ( aCodePlan->tableRef->tableInfo->lobColumnCount > 0 )
@@ -492,14 +626,15 @@ qmnUPTE::firstInit( qcTemplate * aTemplate,
     {
         case QMO_UPDATE_ROWMOVEMENT:
         {
-            // insert cursor manager Ï¥àÍ∏∞Ìôî
+            // insert cursor manager √ ±‚»≠
             IDE_TEST( aDataPlan->insertCursorMgr.initialize(
                           aTemplate->stmt->qmxMem,
                           aCodePlan->insertTableRef,
+                          ID_TRUE,
                           ID_FALSE )
                       != IDE_SUCCESS );
 
-            // lob info Ï¥àÍ∏∞Ìôî
+            // lob info √ ±‚»≠
             if ( aCodePlan->tableRef->tableInfo->lobColumnCount > 0 )
             {
                 // PROJ-1362
@@ -514,7 +649,7 @@ qmnUPTE::firstInit( qcTemplate * aTemplate,
                 aDataPlan->insertLobInfo = NULL;
             }
 
-            // insert smiValues Ï¥àÍ∏∞Ìôî
+            // insert smiValues √ ±‚»≠
             IDE_TEST( aTemplate->stmt->qmxMem->alloc(
                           aCodePlan->tableRef->tableInfo->columnCount
                           * ID_SIZEOF(smiValue),
@@ -526,7 +661,7 @@ qmnUPTE::firstInit( qcTemplate * aTemplate,
 
         case QMO_UPDATE_CHECK_ROWMOVEMENT:
         {
-            // check smiValues Ï¥àÍ∏∞Ìôî
+            // check smiValues √ ±‚»≠
             IDE_TEST( aTemplate->stmt->qmxMem->alloc(
                           aCodePlan->tableRef->tableInfo->columnCount
                           * ID_SIZEOF(smiValue),
@@ -541,7 +676,7 @@ qmnUPTE::firstInit( qcTemplate * aTemplate,
     }
 
     //--------------------------------
-    // Limitation Í¥ÄÎ†® Ï†ïÎ≥¥Ïùò Ï¥àÍ∏∞Ìôî
+    // Limitation ∞¸∑√ ¡§∫∏¿« √ ±‚»≠
     //--------------------------------
 
     if( aCodePlan->limit != NULL )
@@ -566,7 +701,7 @@ qmnUPTE::firstInit( qcTemplate * aTemplate,
         aDataPlan->limitEnd   = 0;
     }
 
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     if ( aDataPlan->limitEnd > 0 )
     {
         IDE_ASSERT( (aCodePlan->flag & QMNC_UPTE_LIMIT_MASK)
@@ -574,7 +709,7 @@ qmnUPTE::firstInit( qcTemplate * aTemplate,
     }
 
     //------------------------------------------
-    // Default ExprÏùò Row Buffer Íµ¨ÏÑ±
+    // Default Expr¿« Row Buffer ±∏º∫
     //------------------------------------------
 
     if ( aCodePlan->defaultExprColumns != NULL )
@@ -596,7 +731,7 @@ qmnUPTE::firstInit( qcTemplate * aTemplate,
         }
         else
         {
-            /* Disk TableÏùò Í≤ΩÏö∞, qmc::setRowSize()ÏóêÏÑú Ïù¥ÎØ∏ Ìï†Îãπ */
+            /* Disk Table¿« ∞ÊøÏ, qmc::setRowSize()ø°º≠ ¿ÃπÃ «“¥Á */
         }
 
         aDataPlan->defaultExprRowBuffer = aTemplate->tmplate.rows[sTableID].row;
@@ -643,14 +778,14 @@ qmnUPTE::allocCursorInfo( qcTemplate * aTemplate,
     idBool              sIsInplaceUpdate = ID_FALSE;
 
     //--------------------------------
-    // cursorInfo ÏÉùÏÑ±
+    // cursorInfo ª˝º∫
     //--------------------------------
 
     IDE_TEST( aTemplate->stmt->qmxMem->alloc( ID_SIZEOF(qmnCursorInfo),
                                               (void**)& sCursorInfo )
               != IDE_SUCCESS );
 
-    // cursorInfo Ï¥àÍ∏∞Ìôî
+    // cursorInfo √ ±‚»≠
     sCursorInfo->cursor              = NULL;
     sCursorInfo->selectedIndex       = NULL;
     sCursorInfo->selectedIndexTuple  = NULL;
@@ -676,11 +811,11 @@ qmnUPTE::allocCursorInfo( qcTemplate * aTemplate,
     sCursorInfo->stmtRetryColLst     = aCodePlan->whereColumnList;
     sCursorInfo->rowRetryColLst      = aCodePlan->setColumnList;
 
-    // cursorInfo ÏÑ§Ï†ï
+    // cursorInfo º≥¡§
     aDataPlan->updateTuple->cursorInfo = sCursorInfo;
 
     //--------------------------------
-    // partition cursorInfo ÏÉùÏÑ±
+    // partition cursorInfo ª˝º∫
     //--------------------------------
 
     if ( aCodePlan->tableRef->partitionRef != NULL )
@@ -693,7 +828,7 @@ qmnUPTE::allocCursorInfo( qcTemplate * aTemplate,
             sPartitionCount++;
         }
 
-        // cursorInfo ÏÉùÏÑ±
+        // cursorInfo ª˝º∫
         IDE_TEST( aTemplate->stmt->qmxMem->alloc(
                       sPartitionCount * ID_SIZEOF(qmnCursorInfo),
                       (void**)& sCursorInfo )
@@ -705,7 +840,7 @@ qmnUPTE::allocCursorInfo( qcTemplate * aTemplate,
               sPartitionRef = sPartitionRef->next,
                   i++, sCursorInfo++ )
         {
-            // cursorInfo Ï¥àÍ∏∞Ìôî
+            // cursorInfo √ ±‚»≠
             sCursorInfo->cursor              = NULL;
             sCursorInfo->selectedIndex       = NULL;
             sCursorInfo->selectedIndexTuple  = NULL;
@@ -717,16 +852,16 @@ qmnUPTE::allocCursorInfo( qcTemplate * aTemplate,
             sCursorInfo->inplaceUpdate       = sIsInplaceUpdate;
             sCursorInfo->lockMode            = SMI_LOCK_WRITE;
 
-            /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
+            /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
             sCursorInfo->stmtRetryColLst     = aCodePlan->wherePartColumnList[i];
             sCursorInfo->rowRetryColLst      = aCodePlan->setPartColumnList[i];
 
-            // cursorInfo ÏÑ§Ï†ï
+            // cursorInfo º≥¡§
             aTemplate->tmplate.rows[sPartitionRef->table].cursorInfo = sCursorInfo;
         }
 
         // PROJ-1624 non-partitioned index
-        // partitioned tableÏù∏ Í≤ΩÏö∞ index table cursorÏùò update column listÎ•º ÏßÄÏ†ïÌïúÎã§.
+        // partitioned table¿Œ ∞ÊøÏ index table cursor¿« update column list∏¶ ¡ˆ¡§«—¥Ÿ.
         if ( aCodePlan->tableRef->selectedIndexTable != NULL )
         {
             IDE_DASSERT( aCodePlan->tableRef->indexTableRef != NULL );
@@ -744,18 +879,18 @@ qmnUPTE::allocCursorInfo( qcTemplate * aTemplate,
 
             if ( sIndexUpdateColumnCount > 0 )
             {
-                // updateÌï† Ïª¨ÎüºÏù¥ ÏûàÎäî Í≤ΩÏö∞
+                // update«“ ƒ√∑≥¿Ã ¿÷¥¬ ∞ÊøÏ
                 sCursorInfo->updateColumnList = aDataPlan->indexUpdateColumnList;
-                // index tableÏùÄ Ìï≠ÏÉÅ update, composite ÏóÜÏùå
+                // index table¿∫ «◊ªÛ update, composite æ¯¿Ω
                 sCursorInfo->cursorType       = SMI_UPDATE_CURSOR;
 
-                // updateÌï¥ÏïºÌï®
+                // update«ÿæﬂ«‘
                 *aDataPlan->flag &= ~QMND_UPTE_SELECTED_INDEX_CURSOR_MASK;
                 *aDataPlan->flag |= QMND_UPTE_SELECTED_INDEX_CURSOR_TRUE;
             }
             else
             {
-                // updateÌï† Ïª¨ÎüºÏù¥ ÏóÜÎäî Í≤ΩÏö∞
+                // update«“ ƒ√∑≥¿Ã æ¯¥¬ ∞ÊøÏ
                 sCursorInfo->updateColumnList = NULL;
                 sCursorInfo->cursorType       = SMI_SELECT_CURSOR;
                 sCursorInfo->inplaceUpdate    = ID_FALSE;
@@ -801,14 +936,14 @@ qmnUPTE::allocTriggerRow( qcTemplate * aTemplate,
     UInt sMaxRowOffsetForInsert = 0;
 
     //---------------------------------
-    // TriggerÎ•º ÏúÑÌïú Í≥µÍ∞ÑÏùÑ ÎßàÎ†®
+    // Trigger∏¶ ¿ß«— ∞¯∞£¿ª ∏∂∑√
     //---------------------------------
 
     if ( aCodePlan->tableRef->tableInfo->triggerCount > 0 )
     {
         if ( aCodePlan->insteadOfTrigger == ID_TRUE )
         {
-            // instead of triggerÏóêÏÑúÎäî smiValuesÎ•º ÏÇ¨Ïö©ÌïúÎã§.
+            // instead of triggerø°º≠¥¬ smiValues∏¶ ªÁøÎ«—¥Ÿ.
 
             // alloc sOldRow
             IDE_TEST( aTemplate->stmt->qmxMem->alloc(
@@ -838,20 +973,32 @@ qmnUPTE::allocTriggerRow( qcTemplate * aTemplate,
                 sMaxRowOffsetForInsert = 0;
             }
 
-            // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
-            IDE_DASSERT( sMaxRowOffsetForUpdate > 0 );
+            if ( sMaxRowOffsetForUpdate > 0 )
+            {
+                // Old Row Referencing¿ª ¿ß«— ∞¯∞£ «“¥Á
+                IDE_TEST( aTemplate->stmt->qmxMem->alloc(
+                            sMaxRowOffsetForUpdate,
+                            (void**) & aDataPlan->oldRow )
+                          != IDE_SUCCESS);
+            }
+            else
+            {
+                aDataPlan->oldRow = NULL;
+            }
 
-            // Old Row ReferencingÏùÑ ÏúÑÌïú Í≥µÍ∞Ñ Ìï†Îãπ
-            IDE_TEST( aTemplate->stmt->qmxMem->alloc(
-                    sMaxRowOffsetForUpdate,
-                    (void**) & aDataPlan->oldRow )
-                != IDE_SUCCESS);
-
-            // New Row ReferencingÏùÑ ÏúÑÌïú Í≥µÍ∞Ñ Ìï†Îãπ
-            IDE_TEST( aTemplate->stmt->qmxMem->cralloc(
-                    IDL_MAX( sMaxRowOffsetForUpdate, sMaxRowOffsetForInsert ),
-                    (void**) & aDataPlan->newRow )
-                != IDE_SUCCESS);
+            sMaxRowOffsetForInsert = IDL_MAX( sMaxRowOffsetForUpdate, sMaxRowOffsetForInsert );
+            if ( sMaxRowOffsetForInsert > 0)
+            {
+                // New Row Referencing¿ª ¿ß«— ∞¯∞£ «“¥Á
+                IDE_TEST( aTemplate->stmt->qmxMem->cralloc(
+                            sMaxRowOffsetForInsert,
+                            (void**) & aDataPlan->newRow )
+                          != IDE_SUCCESS);
+            }
+            else
+            {
+                aDataPlan->newRow = NULL;
+            }
         }
 
         aDataPlan->columnsForRow = aCodePlan->tableRef->tableInfo->columns;
@@ -861,7 +1008,7 @@ qmnUPTE::allocTriggerRow( qcTemplate * aTemplate,
     }
     else
     {
-        // check constraintÏôÄ return intoÏóêÏÑúÎèÑ trigger rowÎ•º ÏÇ¨Ïö©ÌïúÎã§.
+        // check constraintøÕ return intoø°º≠µµ trigger row∏¶ ªÁøÎ«—¥Ÿ.
         if ( ( aCodePlan->checkConstrList != NULL ) ||
              ( aCodePlan->returnInto != NULL ) )
         {
@@ -877,20 +1024,32 @@ qmnUPTE::allocTriggerRow( qcTemplate * aTemplate,
                 sMaxRowOffsetForInsert = 0;
             }
 
-            // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
-            IDE_DASSERT( sMaxRowOffsetForUpdate > 0 );
+            if ( sMaxRowOffsetForUpdate > 0 )
+            {
+                // Old Row Referencing¿ª ¿ß«— ∞¯∞£ «“¥Á
+                IDE_TEST( aTemplate->stmt->qmxMem->alloc(
+                            sMaxRowOffsetForUpdate,
+                            (void**) & aDataPlan->oldRow )
+                          != IDE_SUCCESS);
+            }
+            else
+            {
+                aDataPlan->oldRow = NULL;
+            }
 
-            // Old Row ReferencingÏùÑ ÏúÑÌïú Í≥µÍ∞Ñ Ìï†Îãπ
-            IDE_TEST( aTemplate->stmt->qmxMem->alloc(
-                    sMaxRowOffsetForUpdate,
-                    (void**) & aDataPlan->oldRow )
-                != IDE_SUCCESS);
-
-            // New Row ReferencingÏùÑ ÏúÑÌïú Í≥µÍ∞Ñ Ìï†Îãπ
-            IDE_TEST( aTemplate->stmt->qmxMem->cralloc(
-                    IDL_MAX( sMaxRowOffsetForUpdate, sMaxRowOffsetForInsert ),
-                    (void**) & aDataPlan->newRow )
-                != IDE_SUCCESS);
+            sMaxRowOffsetForInsert = IDL_MAX( sMaxRowOffsetForUpdate, sMaxRowOffsetForInsert );
+            if ( sMaxRowOffsetForInsert > 0)
+            {
+                // New Row Referencing¿ª ¿ß«— ∞¯∞£ «“¥Á
+                IDE_TEST( aTemplate->stmt->qmxMem->cralloc(
+                            sMaxRowOffsetForInsert,
+                            (void**) & aDataPlan->newRow )
+                          != IDE_SUCCESS);
+            }
+            else
+            {
+                aDataPlan->newRow = NULL;
+            }
         }
         else
         {
@@ -930,7 +1089,7 @@ qmnUPTE::allocReturnRow( qcTemplate * aTemplate,
     UInt sMaxRowOffset = 0;
 
     //---------------------------------
-    // return intoÎ•º ÏúÑÌïú Í≥µÍ∞ÑÏùÑ ÎßàÎ†®
+    // return into∏¶ ¿ß«— ∞¯∞£¿ª ∏∂∑√
     //---------------------------------
 
     if ( ( aCodePlan->returnInto != NULL ) &&
@@ -939,11 +1098,18 @@ qmnUPTE::allocReturnRow( qcTemplate * aTemplate,
         sMaxRowOffset = qmx::getMaxRowOffset( &(aTemplate->tmplate),
                                               aCodePlan->tableRef );
 
-        // New Row ReferencingÏùÑ ÏúÑÌïú Í≥µÍ∞Ñ Ìï†Îãπ
-        IDE_TEST( aTemplate->stmt->qmxMem->cralloc(
-                sMaxRowOffset,
-                (void**) & aDataPlan->returnRow )
-            != IDE_SUCCESS);
+        if ( sMaxRowOffset > 0 )
+        {
+            // New Row Referencing¿ª ¿ß«— ∞¯∞£ «“¥Á
+            IDE_TEST( aTemplate->stmt->qmxMem->cralloc(
+                        sMaxRowOffset,
+                        (void**) & aDataPlan->returnRow )
+                      != IDE_SUCCESS);
+        }
+        else
+        {
+            aDataPlan->returnRow = NULL;
+        }
     }
     else
     {
@@ -976,7 +1142,7 @@ qmnUPTE::allocIndexTableCursor( qcTemplate * aTemplate,
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY("qmnUPTE::allocIndexTableCursor"));
 
     //---------------------------------
-    // index table Ï≤òÎ¶¨Î•º ÏúÑÌïú Ï†ïÎ≥¥
+    // index table √≥∏Æ∏¶ ¿ß«— ¡§∫∏
     //---------------------------------
 
     if ( aCodePlan->tableRef->indexTableRef != NULL )
@@ -1014,7 +1180,7 @@ qmnUPTE::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    Ïù¥ Ìï®ÏàòÍ∞Ä ÏàòÌñâÎêòÎ©¥ ÏïàÎê®.
+ *    ¿Ã «‘ºˆ∞° ºˆ«‡µ«∏È æ»µ .
  *
  * Implementation :
  *
@@ -1038,11 +1204,11 @@ qmnUPTE::doItFirst( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    UPTEÏùò ÏµúÏ¥à ÏàòÌñâ Ìï®Ïàò
+ *    UPTE¿« √÷√  ºˆ«‡ «‘ºˆ
  *
  * Implementation :
- *    - TableÏóê IX LockÏùÑ Í±¥Îã§.
- *    - Session Event Check (ÎπÑÏ†ïÏÉÅ Ï¢ÖÎ£å Detect)
+ *    - Tableø° IX Lock¿ª ∞«¥Ÿ.
+ *    - Session Event Check (∫Ò¡§ªÛ ¡æ∑· Detect)
  *    - Cursor Open
  *    - update one record
  *
@@ -1059,13 +1225,20 @@ qmnUPTE::doItFirst( qcTemplate * aTemplate,
     idBool     sIsTableCursorChanged;
 
     //-----------------------------------
-    // Child PlanÏùÑ ÏàòÌñâÌï®
+    // Child Plan¿ª ºˆ«‡«‘
     //-----------------------------------
 
+    /* TASK-7307 DML Data Consistency in Shard */
     // To fix PR-3921
     if ( sDataPlan->limitCurrent == sDataPlan->limitEnd )
     {
-        // Ï£ºÏñ¥ÏßÑ Limit Ï°∞Í±¥Ïóê Îã§Îã§Î•∏ Í≤ΩÏö∞
+        // ¡÷æÓ¡¯ Limit ¡∂∞«ø° ¥Ÿ¥Ÿ∏• ∞ÊøÏ
+        *aFlag = QMC_ROW_DATA_NONE;
+    }
+    else if ( ( QCG_CHECK_SHARD_DML_CONSISTENCY( aTemplate->stmt ) == ID_TRUE ) &&
+              ( sCodePlan->tableRef->tableInfo->mIsUsable == ID_FALSE ) )
+    {
+        // π´Ω√«—¥Ÿ
         *aFlag = QMC_ROW_DATA_NONE;
     }
     else
@@ -1077,13 +1250,13 @@ qmnUPTE::doItFirst( qcTemplate * aTemplate,
 
     if ( ( *aFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
     {
-        // Limit Start Ï≤òÎ¶¨
+        // Limit Start √≥∏Æ
         for ( ;
               sDataPlan->limitCurrent < sDataPlan->limitStart;
               sDataPlan->limitCurrent++ )
         {
-            // Limitation Î≤îÏúÑÏóê Îì§ÏßÄ ÏïäÎäîÎã§.
-            // Îî∞ÎùºÏÑú UpdateÏóÜÏù¥ ChildÎ•º ÏàòÌñâÌïòÍ∏∞Îßå ÌïúÎã§.
+            // Limitation π¸¿ßø° µÈ¡ˆ æ ¥¬¥Ÿ.
+            // µ˚∂Ûº≠ Updateæ¯¿Ã Child∏¶ ºˆ«‡«œ±‚∏∏ «—¥Ÿ.
             IDE_TEST( aPlan->left->doIt( aTemplate, aPlan->left, aFlag )
                       != IDE_SUCCESS );
 
@@ -1102,12 +1275,12 @@ qmnUPTE::doItFirst( qcTemplate * aTemplate,
             if ( ( sDataPlan->limitCurrent >= sDataPlan->limitStart ) &&
                  ( sDataPlan->limitCurrent < sDataPlan->limitEnd ) )
             {
-                // LimitÍ∞í Ï¶ùÍ∞Ä
+                // Limit∞™ ¡ı∞°
                 sDataPlan->limitCurrent++;
             }
             else
             {
-                // Limitation Î≤îÏúÑÎ•º Î≤óÏñ¥ÎÇú Í≤ΩÏö∞
+                // Limitation π¸¿ß∏¶ π˛æÓ≥≠ ∞ÊøÏ
                 *aFlag = QMC_ROW_DATA_NONE;
             }
         }
@@ -1226,8 +1399,8 @@ qmnUPTE::doItNext( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    UPTEÏùò Îã§Ïùå ÏàòÌñâ Ìï®Ïàò
- *    Îã§Ïùå RecordÎ•º ÏÇ≠Ï†úÌïúÎã§.
+ *    UPTE¿« ¥Ÿ¿Ω ºˆ«‡ «‘ºˆ
+ *    ¥Ÿ¿Ω Record∏¶ ªË¡¶«—¥Ÿ.
  *
  * Implementation :
  *    - update one record
@@ -1245,13 +1418,19 @@ qmnUPTE::doItNext( qcTemplate * aTemplate,
     idBool     sIsTableCursorChanged;
     
     //-----------------------------------
-    // Child PlanÏùÑ ÏàòÌñâÌï®
+    // Child Plan¿ª ºˆ«‡«‘
     //-----------------------------------
 
     // To fix PR-3921
     if ( sDataPlan->limitCurrent == sDataPlan->limitEnd )
     {
-        // Ï£ºÏñ¥ÏßÑ Limit Ï°∞Í±¥Ïóê Îã§Îã§Î•∏ Í≤ΩÏö∞
+        // ¡÷æÓ¡¯ Limit ¡∂∞«ø° ¥Ÿ¥Ÿ∏• ∞ÊøÏ
+        *aFlag = QMC_ROW_DATA_NONE;
+    }
+    else if ( ( QCG_CHECK_SHARD_DML_CONSISTENCY( aTemplate->stmt ) == ID_TRUE ) &&
+              ( sCodePlan->tableRef->tableInfo->mIsUsable == ID_FALSE ) )
+    {
+        // π´Ω√«—¥Ÿ
         *aFlag = QMC_ROW_DATA_NONE;
     }
     else
@@ -1268,12 +1447,12 @@ qmnUPTE::doItNext( qcTemplate * aTemplate,
             if ( ( sDataPlan->limitCurrent >= sDataPlan->limitStart ) &&
                  ( sDataPlan->limitCurrent < sDataPlan->limitEnd ) )
             {
-                // LimitÍ∞í Ï¶ùÍ∞Ä
+                // Limit∞™ ¡ı∞°
                 sDataPlan->limitCurrent++;
             }
             else
             {
-                // Limitation Î≤îÏúÑÎ•º Î≤óÏñ¥ÎÇú Í≤ΩÏö∞
+                // Limitation π¸¿ß∏¶ π˛æÓ≥≠ ∞ÊøÏ
                 *aFlag = QMC_ROW_DATA_NONE;
             }
         }
@@ -1382,15 +1561,15 @@ qmnUPTE::doItNext( qcTemplate * aTemplate,
         }
         else
         {
-            // recordÍ∞Ä ÏóÜÎäî Í≤ΩÏö∞
-            // Îã§Ïùå ÏàòÌñâÏùÑ ÏúÑÌï¥ ÏµúÏ¥à ÏàòÌñâ Ìï®ÏàòÎ°ú ÏÑ§Ï†ïÌï®.
+            // record∞° æ¯¥¬ ∞ÊøÏ
+            // ¥Ÿ¿Ω ºˆ«‡¿ª ¿ß«ÿ √÷√  ºˆ«‡ «‘ºˆ∑Œ º≥¡§«‘.
             sDataPlan->doIt = qmnUPTE::doItFirst;
         }
     }
     else
     {
-        // recordÍ∞Ä ÏóÜÎäî Í≤ΩÏö∞
-        // Îã§Ïùå ÏàòÌñâÏùÑ ÏúÑÌï¥ ÏµúÏ¥à ÏàòÌñâ Ìï®ÏàòÎ°ú ÏÑ§Ï†ïÌï®.
+        // record∞° æ¯¥¬ ∞ÊøÏ
+        // ¥Ÿ¿Ω ºˆ«‡¿ª ¿ß«ÿ √÷√  ºˆ«‡ «‘ºˆ∑Œ º≥¡§«‘.
         sDataPlan->doIt = qmnUPTE::doItFirst;
     }
 
@@ -1443,7 +1622,7 @@ qmnUPTE::checkTrigger( qcTemplate * aTemplate,
         }
         else
         {
-            // TriggerÎ•º ÏúÑÌïú Referencing RowÍ∞Ä ÌïÑÏöîÌïúÏßÄÎ•º Í≤ÄÏÇ¨
+            // Trigger∏¶ ¿ß«— Referencing Row∞° « ø‰«—¡ˆ∏¶ ∞ÀªÁ
             // PROJ-2219 Row-level before update trigger
             IDE_TEST( qdnTrigger::needTriggerRow(
                           aTemplate->stmt,
@@ -1497,7 +1676,7 @@ qmnUPTE::getCursor( qcTemplate * aTemplate,
  * Description :
  *
  * Implementation :
- *     ÌïòÏúÑ scanÏù¥ openÌïú cursorÎ•º ÏñªÎäîÎã§.
+ *     «œ¿ß scan¿Ã open«— cursor∏¶ æÚ¥¬¥Ÿ.
  *
  ***********************************************************************/
 
@@ -1519,7 +1698,7 @@ qmnUPTE::getCursor( qcTemplate * aTemplate,
         {
             sDataPlan->updateTupleID = sCodePlan->tableRef->table;
 
-            // cursorÎ•º ÏñªÎäîÎã§.
+            // cursor∏¶ æÚ¥¬¥Ÿ.
             sCursorInfo = (qmnCursorInfo*)
                 aTemplate->tmplate.rows[sDataPlan->updateTupleID].cursorInfo;
 
@@ -1527,7 +1706,7 @@ qmnUPTE::getCursor( qcTemplate * aTemplate,
 
             sDataPlan->updateCursor    = sCursorInfo->cursor;
 
-            /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
+            /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
             sDataPlan->updatePartInfo = sCodePlan->tableRef->tableInfo;
 
             sDataPlan->retryInfo.mIsWithoutRetry  = sCodePlan->withoutRetry;
@@ -1549,7 +1728,7 @@ qmnUPTE::getCursor( qcTemplate * aTemplate,
         {
             sDataPlan->updateTupleID = sDataPlan->updateTuple->partitionTupleID;
 
-            // partitionÏùò cursorÎ•º ÏñªÎäîÎã§.
+            // partition¿« cursor∏¶ æÚ¥¬¥Ÿ.
             sCursorInfo = (qmnCursorInfo*)
                 aTemplate->tmplate.rows[sDataPlan->updateTupleID].cursorInfo;
 
@@ -1567,7 +1746,7 @@ qmnUPTE::getCursor( qcTemplate * aTemplate,
 
             sDataPlan->updateCursor    = sCursorInfo->cursor;
 
-            /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
+            /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
             IDE_TEST( smiGetTableTempInfo( sDataPlan->updateTuple->tableHandle,
                                            (void **)&(sDataPlan->updatePartInfo) )
                       != IDE_SUCCESS );
@@ -1585,7 +1764,7 @@ qmnUPTE::getCursor( qcTemplate * aTemplate,
             /* Nothing to do */
         }
 
-        // index table cursorÎ•º ÏñªÎäîÎã§.
+        // index table cursor∏¶ æÚ¥¬¥Ÿ.
         if ( sDataPlan->indexUpdateTuple == NULL )
         {
             sCursorInfo = (qmnCursorInfo*)
@@ -1651,7 +1830,7 @@ qmnUPTE::openInsertCursor( qcTemplate * aTemplate,
          &&
          ( sCodePlan->insertTableRef != NULL ) )
     {
-        // INSERT Î•º ÏúÑÌïú Cursor Íµ¨ÏÑ±
+        // INSERT ∏¶ ¿ß«— Cursor ±∏º∫
         SMI_CURSOR_PROP_INIT_FOR_FULL_SCAN( &sCursorProperty, aTemplate->stmt->mStatistics );
 
         if ( sCodePlan->insertTableRef->tableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
@@ -1682,7 +1861,7 @@ qmnUPTE::openInsertCursor( qcTemplate * aTemplate,
         if ( sIsDiskChecked == ID_TRUE )
         {
             // PROJ-1705
-            // Ìè¨Î¶∞ÌÇ§ Ï≤¥ÌÅ¨Î•º ÏúÑÌï¥ ÏùΩÏñ¥Ïïº Ìï† Ìå®ÏπòÏª¨ÎüºÎ¶¨Ïä§Ìä∏ ÏÉùÏÑ±
+            // ∆˜∏∞≈∞ √º≈©∏¶ ¿ß«ÿ ¿–æÓæﬂ «“ ∆–ƒ°ƒ√∑≥∏ÆΩ∫∆Æ ª˝º∫
             IDE_TEST( qdbCommon::makeFetchColumnList4TupleID(
                           aTemplate,
                           sTupleID,
@@ -1789,11 +1968,11 @@ qmnUPTE::updateOneRow( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    UPTE Ïùò Í≥†Ïú† Í∏∞Îä•ÏùÑ ÏàòÌñâÌïúÎã§.
+ *    UPTE ¿« ∞Ì¿Ø ±‚¥…¿ª ºˆ«‡«—¥Ÿ.
  *
  * Implementation :
- *    - update one record ÏàòÌñâ
- *    - trigger each row ÏàòÌñâ
+ *    - update one record ºˆ«‡
+ *    - trigger each row ºˆ«‡
  *
  ***********************************************************************/
 
@@ -1818,8 +1997,8 @@ qmnUPTE::updateOneRow( qcTemplate * aTemplate,
     smiValue            sSetSmiValues[QC_MAX_COLUMN_COUNT];
     idBool              sIsDiskTableOrPartition = ID_FALSE;
 
-    /* PROJ-2464 hybrid partitioned table ÏßÄÏõê
-     * MemoryÏù∏ Í≤ΩÏö∞, newRowÏóê ÏÉàÎ°úÏö¥ Ï£ºÏÜåÎ•º Ìï†ÎãπÌïúÎã§. Îî∞ÎùºÏÑú, newRowÏóê ÏßÅÏ†ë Ï†ëÍ∑ºÌïòÏßÄ ÏïäÎäîÎã§.
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯
+     * Memory¿Œ ∞ÊøÏ, newRowø° ªı∑ŒøÓ ¡÷º“∏¶ «“¥Á«—¥Ÿ. µ˚∂Ûº≠, newRowø° ¡˜¡¢ ¡¢±Ÿ«œ¡ˆ æ ¥¬¥Ÿ.
      */
     sNewRow = sDataPlan->newRow;
 
@@ -1860,7 +2039,7 @@ qmnUPTE::updateOneRow( qcTemplate * aTemplate,
 
     if ( sDataPlan->needTriggerRow == ID_TRUE )
     {
-        // OLD ROW REFERENCINGÏùÑ ÏúÑÌïú Ï†ÄÏû•
+        // OLD ROW REFERENCING¿ª ¿ß«— ¿˙¿Â
         idlOS::memcpy( sDataPlan->oldRow,
                        sDataPlan->updateTuple->row,
                        sDataPlan->updateTuple->rowOffset );
@@ -1874,7 +2053,7 @@ qmnUPTE::updateOneRow( qcTemplate * aTemplate,
     // set next sequence
     //-----------------------------------
 
-    // Sequence Value ÌöçÎìù
+    // Sequence Value »πµÊ
     if ( sCodePlan->nextValSeqs != NULL )
     {
         IDE_TEST( qmx::readSequenceNextVals(
@@ -1894,7 +2073,7 @@ qmnUPTE::updateOneRow( qcTemplate * aTemplate,
     sSmiValues = aTemplate->insOrUptRow[ sCodePlan->valueIdx ];
     sSmiValuesValueCount = aTemplate->insOrUptRowValueCount[sCodePlan->valueIdx];
 
-    // subqueryÍ∞Ä ÏûàÏùÑÎïå smi value Ï†ïÎ≥¥ Íµ¨ÏÑ±
+    // subquery∞° ¿÷¿ª∂ß smi value ¡§∫∏ ±∏º∫
     IDE_TEST( qmx::makeSmiValueForSubquery( aTemplate,
                                             sCodePlan->tableRef->tableInfo,
                                             sCodePlan->columns,
@@ -1905,7 +2084,7 @@ qmnUPTE::updateOneRow( qcTemplate * aTemplate,
                                             sDataPlan->lobInfo )
               != IDE_SUCCESS );
 
-    // Í∞±Ïã†Ìï† smi value Ï†ïÎ≥¥ Íµ¨ÏÑ±
+    // ∞ªΩ≈«“ smi value ¡§∫∏ ±∏º∫
     IDE_TEST( qmx::makeSmiValueForUpdate( aTemplate,
                                           sCodePlan->tableRef->tableInfo,
                                           sCodePlan->columns,
@@ -1970,8 +2149,8 @@ qmnUPTE::updateOneRow( qcTemplate * aTemplate,
     // PROJ-2219 Row-level before update trigger
     if ( sDataPlan->existTrigger == ID_TRUE )
     {
-        // ÌòÑÏû¨ triggerÏóêÏÑú lob columnÏù¥ ÏûàÎäî tableÏùÄ ÏßÄÏõêÌïòÏßÄ ÏïäÏúºÎØÄÎ°ú
-        // Table cursorÎäî NULLÏùÑ ÎÑòÍ∏¥Îã§.
+        // «ˆ¿Á triggerø°º≠ lob column¿Ã ¿÷¥¬ table¿∫ ¡ˆø¯«œ¡ˆ æ ¿∏π«∑Œ
+        // Table cursor¥¬ NULL¿ª ≥—±‰¥Ÿ.
         IDE_TEST( qdnTrigger::fireTrigger(
                       aTemplate->stmt,
                       aTemplate->stmt->qmxMem,
@@ -2046,8 +2225,8 @@ qmnUPTE::updateOneRow( qcTemplate * aTemplate,
     if ( QCM_TABLE_TYPE_IS_DISK( sCodePlan->tableRef->tableInfo->tableFlag ) !=
          QCM_TABLE_TYPE_IS_DISK( sDataPlan->updatePartInfo->tableFlag ) )
     {
-        /* PROJ-2464 hybrid partitioned table ÏßÄÏõê
-         * Partitioned TableÏùÑ Í∏∞Ï§ÄÏúºÎ°ú ÎßåÎì† smiValue ArrayÎ•º Table PartitionÏóê ÎßûÍ≤å Î≥ÄÌôòÌïúÎã§.
+        /* PROJ-2464 hybrid partitioned table ¡ˆø¯
+         * Partitioned Table¿ª ±‚¡ÿ¿∏∑Œ ∏∏µÁ smiValue Array∏¶ Table Partitionø° ∏¬∞‘ ∫Ø»Ø«—¥Ÿ.
          */
         IDE_TEST( qmx::makeSmiValueWithSmiValue( sCodePlan->tableRef->tableInfo,
                                                  sDataPlan->updatePartInfo,
@@ -2068,7 +2247,7 @@ qmnUPTE::updateOneRow( qcTemplate * aTemplate,
          == QMNC_UPTE_VIEW_KEY_PRESERVED_TRUE )
     {
         // PROJ-2204 join update, delete
-        // tuple ÏõêÎ≥µÏãú cursorÎèÑ ÏõêÎ≥µÌï¥ÏïºÌïúÎã§.
+        // tuple ø¯∫πΩ√ cursorµµ ø¯∫π«ÿæﬂ«—¥Ÿ.
         if ( ( sCodePlan->flag & QMNC_UPTE_VIEW_MASK )
              == QMNC_UPTE_VIEW_TRUE )
         {
@@ -2098,7 +2277,7 @@ qmnUPTE::updateOneRow( qcTemplate * aTemplate,
 
         if ( sDataPlan->needTriggerRow == ID_TRUE )
         {
-            // OLD ROW REFERENCINGÏùÑ ÏúÑÌïú Ï†ÄÏû•
+            // OLD ROW REFERENCING¿ª ¿ß«— ¿˙¿Â
             idlOS::memcpy( sDataPlan->oldRow,
                            sDataPlan->updateTuple->row,
                            sDataPlan->updateTuple->rowOffset );
@@ -2118,7 +2297,7 @@ qmnUPTE::updateOneRow( qcTemplate * aTemplate,
             // Nothing to do.
         }
 
-        // Í∞±Ïã†Ìï† smi value Ï†ïÎ≥¥ Íµ¨ÏÑ±
+        // ∞ªΩ≈«“ smi value ¡§∫∏ ±∏º∫
         IDE_TEST( qmx::makeSmiValueForUpdate( aTemplate,
                                               sCodePlan->tableRef->tableInfo,
                                               sCodePlan->columns,
@@ -2184,8 +2363,8 @@ qmnUPTE::updateOneRow( qcTemplate * aTemplate,
         if ( QCM_TABLE_TYPE_IS_DISK( sCodePlan->tableRef->tableInfo->tableFlag ) !=
              QCM_TABLE_TYPE_IS_DISK( sDataPlan->updatePartInfo->tableFlag ) )
         {
-            /* PROJ-2464 hybrid partitioned table ÏßÄÏõê
-             * Partitioned TableÏùÑ Í∏∞Ï§ÄÏúºÎ°ú ÎßåÎì† smiValue ArrayÎ•º Table PartitionÏóê ÎßûÍ≤å Î≥ÄÌôòÌïúÎã§.
+            /* PROJ-2464 hybrid partitioned table ¡ˆø¯
+             * Partitioned Table¿ª ±‚¡ÿ¿∏∑Œ ∏∏µÁ smiValue Array∏¶ Table Partitionø° ∏¬∞‘ ∫Ø»Ø«—¥Ÿ.
              */
             IDE_TEST( qmx::makeSmiValueWithSmiValue( sCodePlan->tableRef->tableInfo,
                                                      sDataPlan->updatePartInfo,
@@ -2210,9 +2389,9 @@ qmnUPTE::updateOneRow( qcTemplate * aTemplate,
                                       sSmiValues )
               != IDE_SUCCESS );
 
-    /* PROJ-2464 hybrid partitioned table ÏßÄÏõê
-     *  Disk PartitionÏù∏ Í≤ΩÏö∞, Disk TypeÏùò Lob ColumnÏù¥ ÌïÑÏöîÌïòÎã§.
-     *  Memory/Volatile PartitionÏùò Í≤ΩÏö∞, Ìï¥Îãπ PartitionÏùò Lob ColumnÏù¥ ÌïÑÏöîÌïòÎã§.
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯
+     *  Disk Partition¿Œ ∞ÊøÏ, Disk Type¿« Lob Column¿Ã « ø‰«œ¥Ÿ.
+     *  Memory/Volatile Partition¿« ∞ÊøÏ, «ÿ¥Á Partition¿« Lob Column¿Ã « ø‰«œ¥Ÿ.
      */
     if ( ( QCM_TABLE_TYPE_IS_DISK( sCodePlan->tableRef->tableInfo->tableFlag ) !=
            QCM_TABLE_TYPE_IS_DISK( sDataPlan->updatePartInfo->tableFlag ) ) ||
@@ -2228,7 +2407,7 @@ qmnUPTE::updateOneRow( qcTemplate * aTemplate,
         /* Nothing to do */
     }
 
-    // LobÏª¨Îüº Ï≤òÎ¶¨
+    // Lobƒ√∑≥ √≥∏Æ
     IDE_TEST( qmx::copyAndOutBindLobInfo( aTemplate->stmt,
                                           sDataPlan->lobInfo,
                                           sDataPlan->updateCursor,
@@ -2244,7 +2423,7 @@ qmnUPTE::updateOneRow( qcTemplate * aTemplate,
          ( sCodePlan->checkConstrList != NULL ) ||
          ( sCodePlan->returnInto != NULL ) )
     {
-        // NEW ROWÏùò ÌöçÎìù
+        // NEW ROW¿« »πµÊ
         IDE_TEST( sDataPlan->updateCursor->getLastModifiedRow(
                       & sNewRow,
                       sDataPlan->updateTuple->rowOffset )
@@ -2255,7 +2434,7 @@ qmnUPTE::updateOneRow( qcTemplate * aTemplate,
         // Nothing to do.
     }
 
-    /* PROJ-1107 Check Constraint ÏßÄÏõê */
+    /* PROJ-1107 Check Constraint ¡ˆø¯ */
     if ( sCodePlan->checkConstrList != NULL )
     {
         sOrgRow = sDataPlan->updateTuple->row;
@@ -2280,7 +2459,7 @@ qmnUPTE::updateOneRow( qcTemplate * aTemplate,
     if ( sDataPlan->existTrigger == ID_TRUE )
     {
         // PROJ-1359 Trigger
-        // ROW GRANULARITY TRIGGERÏùò ÏàòÌñâ
+        // ROW GRANULARITY TRIGGER¿« ºˆ«‡
         IDE_TEST( qdnTrigger::fireTrigger( aTemplate->stmt,
                                            aTemplate->stmt->qmxMem,
                                            sCodePlan->tableRef->tableInfo,
@@ -2350,11 +2529,11 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    UPTE Ïùò Í≥†Ïú† Í∏∞Îä•ÏùÑ ÏàòÌñâÌïúÎã§.
+ *    UPTE ¿« ∞Ì¿Ø ±‚¥…¿ª ºˆ«‡«—¥Ÿ.
  *
  * Implementation :
- *    - update one record ÏàòÌñâ
- *    - trigger each row ÏàòÌñâ
+ *    - update one record ºˆ«‡
+ *    - trigger each row ºˆ«‡
  *
  ***********************************************************************/
 
@@ -2386,8 +2565,8 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
     smOID               sPartOID;
     qcmColumn         * sColumnsForNewRow      = NULL;
     
-    /* PROJ-2464 hybrid partitioned table ÏßÄÏõê
-     * MemoryÏù∏ Í≤ΩÏö∞, newRowÏóê ÏÉàÎ°úÏö¥ Ï£ºÏÜåÎ•º Ìï†ÎãπÌïúÎã§. Îî∞ÎùºÏÑú, newRowÏóê ÏßÅÏ†ë Ï†ëÍ∑ºÌïòÏßÄ ÏïäÎäîÎã§.
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯
+     * Memory¿Œ ∞ÊøÏ, newRowø° ªı∑ŒøÓ ¡÷º“∏¶ «“¥Á«—¥Ÿ. µ˚∂Ûº≠, newRowø° ¡˜¡¢ ¡¢±Ÿ«œ¡ˆ æ ¥¬¥Ÿ.
      */
     sNewRow = sDataPlan->newRow;
 
@@ -2438,7 +2617,7 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
 
     if ( sDataPlan->needTriggerRow == ID_TRUE )
     {
-        // OLD ROW REFERENCINGÏùÑ ÏúÑÌïú Ï†ÄÏû•
+        // OLD ROW REFERENCING¿ª ¿ß«— ¿˙¿Â
         idlOS::memcpy( sDataPlan->oldRow,
                        sDataPlan->updateTuple->row,
                        sDataPlan->updateTuple->rowOffset );
@@ -2452,7 +2631,7 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
     // set next sequence
     //-----------------------------------
 
-    // Sequence Value ÌöçÎìù
+    // Sequence Value »πµÊ
     if ( sCodePlan->nextValSeqs != NULL )
     {
         IDE_TEST( qmx::readSequenceNextVals(
@@ -2468,7 +2647,7 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
     sSmiValues = aTemplate->insOrUptRow[ sCodePlan->valueIdx ];
     sSmiValuesValueCount = aTemplate->insOrUptRowValueCount[sCodePlan->valueIdx];
 
-    // subqueryÍ∞Ä ÏûàÏùÑÎïå smi value Ï†ïÎ≥¥ Íµ¨ÏÑ±
+    // subquery∞° ¿÷¿ª∂ß smi value ¡§∫∏ ±∏º∫
     IDE_TEST( qmx::makeSmiValueForSubquery( aTemplate,
                                             sCodePlan->tableRef->tableInfo,
                                             sCodePlan->columns,
@@ -2479,7 +2658,7 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
                                             sDataPlan->lobInfo )
               != IDE_SUCCESS );
 
-    // Í∞±Ïã†Ìï† smi value Ï†ïÎ≥¥ Íµ¨ÏÑ±
+    // ∞ªΩ≈«“ smi value ¡§∫∏ ±∏º∫
     IDE_TEST( qmx::makeSmiValueForUpdate( aTemplate,
                                           sCodePlan->tableRef->tableInfo,
                                           sCodePlan->columns,
@@ -2527,8 +2706,8 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
     // PROJ-2219 Row-level before update trigger
     if ( sDataPlan->existTrigger == ID_TRUE )
     {
-        // ÌòÑÏû¨ triggerÏóêÏÑú lob columnÏù¥ ÏûàÎäî tableÏùÄ ÏßÄÏõêÌïòÏßÄ ÏïäÏúºÎØÄÎ°ú
-        // Table cursorÎäî NULLÏùÑ ÎÑòÍ∏¥Îã§.
+        // «ˆ¿Á triggerø°º≠ lob column¿Ã ¿÷¥¬ table¿∫ ¡ˆø¯«œ¡ˆ æ ¿∏π«∑Œ
+        // Table cursor¥¬ NULL¿ª ≥—±‰¥Ÿ.
         IDE_TEST( qdnTrigger::fireTrigger(
                       aTemplate->stmt,
                       aTemplate->stmt->qmxMem,
@@ -2550,7 +2729,7 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
         // Nothing to do.
     }
 
-    // row movementÏö© smi value Ï†ïÎ≥¥ Íµ¨ÏÑ±
+    // row movementøÎ smi value ¡§∫∏ ±∏º∫
     IDE_TEST( qmx::makeSmiValueForRowMovement(
                   sCodePlan->tableRef->tableInfo,
                   sCodePlan->updateColumnList,
@@ -2575,7 +2754,7 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
         IDE_CLEAR();
 
         //-----------------------------------
-        // tableRefÏóê ÏóÜÎäî partitionÏù∏ Í≤ΩÏö∞
+        // tableRefø° æ¯¥¬ partition¿Œ ∞ÊøÏ
         // insert row -> update row
         //-----------------------------------
 
@@ -2614,7 +2793,8 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
 
         /* PROJ-2359 Table/Partition Access Option */
         IDE_TEST( qmx::checkAccessOption( sSelectedPartitionInfo,
-                                          ID_TRUE /* aIsInsertion */ )
+                                          ID_TRUE, /* aIsInsertion */
+                                          QCG_CHECK_SHARD_DML_CONSISTENCY( aTemplate->stmt ) )
                   != IDE_SUCCESS );
 
         // insert row
@@ -2624,8 +2804,8 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
         if ( QCM_TABLE_TYPE_IS_DISK( sCodePlan->tableRef->tableInfo->tableFlag ) !=
              QCM_TABLE_TYPE_IS_DISK( sSelectedPartitionInfo->tableFlag ) )
         {
-            /* PROJ-2464 hybrid partitioned table ÏßÄÏõê
-             * Partitioned TableÏùÑ Í∏∞Ï§ÄÏúºÎ°ú ÎßåÎì† smiValue ArrayÎ•º Table PartitionÏóê ÎßûÍ≤å Î≥ÄÌôòÌïúÎã§.
+            /* PROJ-2464 hybrid partitioned table ¡ˆø¯
+             * Partitioned Table¿ª ±‚¡ÿ¿∏∑Œ ∏∏µÁ smiValue Array∏¶ Table Partitionø° ∏¬∞‘ ∫Ø»Ø«—¥Ÿ.
              */
             IDE_TEST( qmx::makeSmiValueWithSmiValue( sCodePlan->tableRef->tableInfo,
                                                      sSelectedPartitionInfo,
@@ -2671,7 +2851,7 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
          == QMNC_UPTE_VIEW_KEY_PRESERVED_TRUE )
         {
             // PROJ-2204 join update, delete
-            // tuple ÏõêÎ≥µÏãú cursorÎèÑ ÏõêÎ≥µÌï¥ÏïºÌïúÎã§.
+            // tuple ø¯∫πΩ√ cursorµµ ø¯∫π«ÿæﬂ«—¥Ÿ.
             if ( ( sCodePlan->flag & QMNC_UPTE_VIEW_MASK )
                  == QMNC_UPTE_VIEW_TRUE )
             {
@@ -2690,7 +2870,7 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
         IDE_TEST( sDataPlan->updateCursor->deleteRow()
                   != IDE_SUCCESS );
 
-        /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
+        /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
         IDE_TEST( sDataPlan->insertCursorMgr.getSelectedPartitionTupleID( &sPartitionTupleID )
                   != IDE_SUCCESS );
         sSelectedPartitionTuple = &(aTemplate->tmplate.rows[sPartitionTupleID]);
@@ -2699,7 +2879,7 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
              ( sCodePlan->checkConstrList != NULL ) ||
              ( sCodePlan->returnInto != NULL ) )
         {
-            // NEW ROWÏùò ÌöçÎìù
+            // NEW ROW¿« »πµÊ
             IDE_TEST( sCursor->getLastModifiedRow(
                           & sNewRow,
                           sSelectedPartitionTuple->rowOffset )
@@ -2719,20 +2899,20 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
     }
     else
     {
-        /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
+        /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
         sSelectedPartitionTuple = &(aTemplate->tmplate.rows[sSelectedPartitionRef->table]);
 
         if ( sSelectedPartitionRef->table == sDataPlan->updateTupleID )
         {
             //-----------------------------------
-            // tableRefÏóê ÏûàÍ≥† selectÌïú partitionÏù∏ Í≤ΩÏö∞
+            // tableRefø° ¿÷∞Ì select«— partition¿Œ ∞ÊøÏ
             //-----------------------------------
 
             if ( QCM_TABLE_TYPE_IS_DISK( sCodePlan->tableRef->tableInfo->tableFlag ) !=
                  QCM_TABLE_TYPE_IS_DISK( sDataPlan->updatePartInfo->tableFlag ) )
             {
-                /* PROJ-2464 hybrid partitioned table ÏßÄÏõê
-                 * Partitioned TableÏùÑ Í∏∞Ï§ÄÏúºÎ°ú ÎßåÎì† smiValue ArrayÎ•º Table PartitionÏóê ÎßûÍ≤å Î≥ÄÌôòÌïúÎã§.
+                /* PROJ-2464 hybrid partitioned table ¡ˆø¯
+                 * Partitioned Table¿ª ±‚¡ÿ¿∏∑Œ ∏∏µÁ smiValue Array∏¶ Table Partitionø° ∏¬∞‘ ∫Ø»Ø«—¥Ÿ.
                  */
                 IDE_TEST( qmx::makeSmiValueWithSmiValue( sCodePlan->tableRef->tableInfo,
                                                          sDataPlan->updatePartInfo,
@@ -2753,7 +2933,7 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
                  == QMNC_UPTE_VIEW_KEY_PRESERVED_TRUE )
             {
                 // PROJ-2204 join update, delete
-                // tuple ÏõêÎ≥µÏãú cursorÎèÑ ÏõêÎ≥µÌï¥ÏïºÌïúÎã§.
+                // tuple ø¯∫πΩ√ cursorµµ ø¯∫π«ÿæﬂ«—¥Ÿ.
                 if ( ( sCodePlan->flag & QMNC_UPTE_VIEW_MASK )
                      == QMNC_UPTE_VIEW_TRUE )
                 {
@@ -2785,9 +2965,9 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
                                                             sSmiValues )
                       != IDE_SUCCESS );
 
-            /* PROJ-2464 hybrid partitioned table ÏßÄÏõê
-             *  Disk PartitionÏù∏ Í≤ΩÏö∞, Disk TypeÏùò Lob ColumnÏù¥ ÌïÑÏöîÌïòÎã§.
-             *  Memory/Volatile PartitionÏùò Í≤ΩÏö∞, Ìï¥Îãπ PartitionÏùò Lob ColumnÏù¥ ÌïÑÏöîÌïòÎã§.
+            /* PROJ-2464 hybrid partitioned table ¡ˆø¯
+             *  Disk Partition¿Œ ∞ÊøÏ, Disk Type¿« Lob Column¿Ã « ø‰«œ¥Ÿ.
+             *  Memory/Volatile Partition¿« ∞ÊøÏ, «ÿ¥Á Partition¿« Lob Column¿Ã « ø‰«œ¥Ÿ.
              */
             if ( ( QCM_TABLE_TYPE_IS_DISK( sCodePlan->tableRef->tableInfo->tableFlag ) !=
                    QCM_TABLE_TYPE_IS_DISK( sDataPlan->updatePartInfo->tableFlag ) ) ||
@@ -2802,7 +2982,7 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
                 /* Nothing to do */
             }
 
-            // LobÏª¨Îüº Ï≤òÎ¶¨
+            // Lobƒ√∑≥ √≥∏Æ
             IDE_TEST( qmx::copyAndOutBindLobInfo( aTemplate->stmt,
                                                   sDataPlan->lobInfo,
                                                   sDataPlan->updateCursor,
@@ -2814,7 +2994,7 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
                  ( sCodePlan->checkConstrList != NULL ) ||
                  ( sCodePlan->returnInto != NULL ) )
             {
-                // NEW ROWÏùò ÌöçÎìù
+                // NEW ROW¿« »πµÊ
                 IDE_TEST( sDataPlan->updateCursor->getLastModifiedRow(
                               & sNewRow,
                               sSelectedPartitionTuple->rowOffset )
@@ -2830,13 +3010,14 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
         else
         {
             //-----------------------------------
-            // tableRefÏóê ÏûàÎäî Îã§Î•∏ partitionÏù∏ Í≤ΩÏö∞
+            // tableRefø° ¿÷¥¬ ¥Ÿ∏• partition¿Œ ∞ÊøÏ
             // insert row -> update row
             //-----------------------------------
 
             /* PROJ-2359 Table/Partition Access Option */
             IDE_TEST( qmx::checkAccessOption( sSelectedPartitionRef->partitionInfo,
-                                              ID_TRUE /* aIsInsertion */ )
+                                              ID_TRUE, /* aIsInsertion */
+                                              QCG_CHECK_SHARD_DML_CONSISTENCY( aTemplate->stmt ) )
                       != IDE_SUCCESS );
 
             /* PROJ-1090 Function-based Index */
@@ -2866,7 +3047,7 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
                 /* Nothing to do */
             }
 
-            // partitionÏùò cursorÎ•º ÏñªÎäîÎã§.
+            // partition¿« cursor∏¶ æÚ¥¬¥Ÿ.
             sCursorInfo = (qmnCursorInfo*)
                 aTemplate->tmplate.rows[sSelectedPartitionRef->table].cursorInfo;
 
@@ -2878,8 +3059,8 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
             if ( QCM_TABLE_TYPE_IS_DISK( sCodePlan->tableRef->tableInfo->tableFlag ) !=
                  QCM_TABLE_TYPE_IS_DISK( sSelectedPartitionRef->partitionInfo->tableFlag ) )
             {
-                /* PROJ-2464 hybrid partitioned table ÏßÄÏõê
-                 * Partitioned TableÏùÑ Í∏∞Ï§ÄÏúºÎ°ú ÎßåÎì† smiValue ArrayÎ•º Table PartitionÏóê ÎßûÍ≤å Î≥ÄÌôòÌïúÎã§.
+                /* PROJ-2464 hybrid partitioned table ¡ˆø¯
+                 * Partitioned Table¿ª ±‚¡ÿ¿∏∑Œ ∏∏µÁ smiValue Array∏¶ Table Partitionø° ∏¬∞‘ ∫Ø»Ø«—¥Ÿ.
                  */
                 IDE_TEST( qmx::makeSmiValueWithSmiValue( sCodePlan->tableRef->tableInfo,
                                                          sSelectedPartitionRef->partitionInfo,
@@ -2902,10 +3083,10 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
                       != IDE_SUCCESS );
 
             /* PROJ-2334 PMT
-             * ÏÑ†ÌÉùÎêú ÌååÌã∞ÏÖòÏùò Ïª¨ÎüºÏúºÎ°ú LOB ColumnÏ†ïÎ≥¥ Î≥ÄÍ≤Ω */
-            /* PROJ-2464 hybrid partitioned table ÏßÄÏõê
-             *  Disk PartitionÏù∏ Í≤ΩÏö∞, Disk TypeÏùò Lob ColumnÏù¥ ÌïÑÏöîÌïòÎã§.
-             *  Memory/Volatile PartitionÏùò Í≤ΩÏö∞, Ìï¥Îãπ PartitionÏùò Lob ColumnÏù¥ ÌïÑÏöîÌïòÎã§.
+             * º±≈√µ» ∆ƒ∆ºº«¿« ƒ√∑≥¿∏∑Œ LOB Column¡§∫∏ ∫Ø∞Ê */
+            /* PROJ-2464 hybrid partitioned table ¡ˆø¯
+             *  Disk Partition¿Œ ∞ÊøÏ, Disk Type¿« Lob Column¿Ã « ø‰«œ¥Ÿ.
+             *  Memory/Volatile Partition¿« ∞ÊøÏ, «ÿ¥Á Partition¿« Lob Column¿Ã « ø‰«œ¥Ÿ.
              */
             if ( ( QCM_TABLE_TYPE_IS_DISK( sCodePlan->tableRef->tableInfo->tableFlag ) !=
                    QCM_TABLE_TYPE_IS_DISK( sSelectedPartitionRef->partitionInfo->tableFlag ) ) ||
@@ -2942,7 +3123,7 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
                  == QMNC_UPTE_VIEW_KEY_PRESERVED_TRUE )
             {
                 // PROJ-2204 join update, delete
-                // tuple ÏõêÎ≥µÏãú cursorÎèÑ ÏõêÎ≥µÌï¥ÏïºÌïúÎã§.
+                // tuple ø¯∫πΩ√ cursorµµ ø¯∫π«ÿæﬂ«—¥Ÿ.
                 if ( ( sCodePlan->flag & QMNC_UPTE_VIEW_MASK )
                      == QMNC_UPTE_VIEW_TRUE )
                 {
@@ -2965,7 +3146,7 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
                  ( sCodePlan->checkConstrList != NULL ) ||
                  ( sCodePlan->returnInto != NULL ) )
             {
-                // NEW ROWÏùò ÌöçÎìù
+                // NEW ROW¿« »πµÊ
                 IDE_TEST( sInsertCursor->getModifiedRow(
                               & sNewRow,
                               sSelectedPartitionTuple->rowOffset,
@@ -2982,7 +3163,7 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
         }
     }
 
-    /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
     if ( ( sCodePlan->tableRef->partitionSummary->isHybridPartitionedTable == ID_TRUE ) ||
          ( sCodePlan->insertTableRef->partitionSummary->isHybridPartitionedTable == ID_TRUE ) )
     {
@@ -3000,7 +3181,7 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
     // check constraint
     //-----------------------------------
 
-    /* PROJ-1107 Check Constraint ÏßÄÏõê */
+    /* PROJ-1107 Check Constraint ¡ˆø¯ */
     if ( sCodePlan->checkConstrList != NULL )
     {
         sOrgRow = sDataPlan->updateTuple->row;
@@ -3025,7 +3206,7 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
     if ( sDataPlan->existTrigger == ID_TRUE )
     {
         // PROJ-1359 Trigger
-        // ROW GRANULARITY TRIGGERÏùò ÏàòÌñâ
+        // ROW GRANULARITY TRIGGER¿« ºˆ«‡
         IDE_TEST( qdnTrigger::fireTrigger( aTemplate->stmt,
                                            aTemplate->stmt->qmxMem,
                                            sCodePlan->tableRef->tableInfo,
@@ -3079,7 +3260,7 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
         // Nothing to do.
     }
 
-    /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
     if ( sNeedToRecoverTuple == ID_TRUE )
     {
         sNeedToRecoverTuple = ID_FALSE;
@@ -3100,7 +3281,7 @@ qmnUPTE::updateOneRowForRowmovement( qcTemplate * aTemplate,
     }
     IDE_EXCEPTION_END;
 
-    /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
     if ( sNeedToRecoverTuple == ID_TRUE )
     {
         qmx::copyMtcTupleForPartitionDML( sDataPlan->updateTuple, &sCopyTuple );
@@ -3122,11 +3303,11 @@ qmnUPTE::updateOneRowForCheckRowmovement( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    UPTE Ïùò Í≥†Ïú† Í∏∞Îä•ÏùÑ ÏàòÌñâÌïúÎã§.
+ *    UPTE ¿« ∞Ì¿Ø ±‚¥…¿ª ºˆ«‡«—¥Ÿ.
  *
  * Implementation :
- *    - update one record ÏàòÌñâ
- *    - trigger each row ÏàòÌñâ
+ *    - update one record ºˆ«‡
+ *    - trigger each row ºˆ«‡
  *
  ***********************************************************************/
 
@@ -3146,8 +3327,8 @@ qmnUPTE::updateOneRowForCheckRowmovement( qcTemplate * aTemplate,
     void              * sNewRow                = NULL;
     void              * sRow;
 
-    /* PROJ-2464 hybrid partitioned table ÏßÄÏõê
-     * MemoryÏù∏ Í≤ΩÏö∞, newRowÏóê ÏÉàÎ°úÏö¥ Ï£ºÏÜåÎ•º Ìï†ÎãπÌïúÎã§. Îî∞ÎùºÏÑú, newRowÏóê ÏßÅÏ†ë Ï†ëÍ∑ºÌïòÏßÄ ÏïäÎäîÎã§.
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯
+     * Memory¿Œ ∞ÊøÏ, newRowø° ªı∑ŒøÓ ¡÷º“∏¶ «“¥Á«—¥Ÿ. µ˚∂Ûº≠, newRowø° ¡˜¡¢ ¡¢±Ÿ«œ¡ˆ æ ¥¬¥Ÿ.
      */
     sNewRow = sDataPlan->newRow;
 
@@ -3188,7 +3369,7 @@ qmnUPTE::updateOneRowForCheckRowmovement( qcTemplate * aTemplate,
 
     if ( sDataPlan->needTriggerRow == ID_TRUE )
     {
-        // OLD ROW REFERENCINGÏùÑ ÏúÑÌïú Ï†ÄÏû•
+        // OLD ROW REFERENCING¿ª ¿ß«— ¿˙¿Â
         idlOS::memcpy( sDataPlan->oldRow,
                        sDataPlan->updateTuple->row,
                        sDataPlan->updateTuple->rowOffset );
@@ -3202,7 +3383,7 @@ qmnUPTE::updateOneRowForCheckRowmovement( qcTemplate * aTemplate,
     // set next sequence
     //-----------------------------------
 
-    // Sequence Value ÌöçÎìù
+    // Sequence Value »πµÊ
     if ( sCodePlan->nextValSeqs != NULL )
     {
         IDE_TEST( qmx::readSequenceNextVals(
@@ -3218,7 +3399,7 @@ qmnUPTE::updateOneRowForCheckRowmovement( qcTemplate * aTemplate,
     sSmiValues = aTemplate->insOrUptRow[ sCodePlan->valueIdx ];
     sSmiValuesValueCount = aTemplate->insOrUptRowValueCount[sCodePlan->valueIdx];
 
-    // subqueryÍ∞Ä ÏûàÏùÑÎïå smi value Ï†ïÎ≥¥ Íµ¨ÏÑ±
+    // subquery∞° ¿÷¿ª∂ß smi value ¡§∫∏ ±∏º∫
     IDE_TEST( qmx::makeSmiValueForSubquery( aTemplate,
                                             sCodePlan->tableRef->tableInfo,
                                             sCodePlan->columns,
@@ -3229,7 +3410,7 @@ qmnUPTE::updateOneRowForCheckRowmovement( qcTemplate * aTemplate,
                                             sDataPlan->lobInfo )
               != IDE_SUCCESS );
 
-    // Í∞±Ïã†Ìï† smi value Ï†ïÎ≥¥ Íµ¨ÏÑ±
+    // ∞ªΩ≈«“ smi value ¡§∫∏ ±∏º∫
     IDE_TEST( qmx::makeSmiValueForUpdate( aTemplate,
                                           sCodePlan->tableRef->tableInfo,
                                           sCodePlan->columns,
@@ -3280,8 +3461,8 @@ qmnUPTE::updateOneRowForCheckRowmovement( qcTemplate * aTemplate,
     // PROJ-2219 Row-level before update trigger
     if ( sDataPlan->existTrigger == ID_TRUE )
     {
-        // ÌòÑÏû¨ triggerÏóêÏÑú lob columnÏù¥ ÏûàÎäî tableÏùÄ ÏßÄÏõêÌïòÏßÄ ÏïäÏúºÎØÄÎ°ú
-        // Table cursorÎäî NULLÏùÑ ÎÑòÍ∏¥Îã§.
+        // «ˆ¿Á triggerø°º≠ lob column¿Ã ¿÷¥¬ table¿∫ ¡ˆø¯«œ¡ˆ æ ¿∏π«∑Œ
+        // Table cursor¥¬ NULL¿ª ≥—±‰¥Ÿ.
         IDE_TEST( qdnTrigger::fireTrigger(
                       aTemplate->stmt,
                       aTemplate->stmt->qmxMem,
@@ -3328,8 +3509,8 @@ qmnUPTE::updateOneRowForCheckRowmovement( qcTemplate * aTemplate,
     if ( QCM_TABLE_TYPE_IS_DISK( sCodePlan->tableRef->tableInfo->tableFlag ) !=
          QCM_TABLE_TYPE_IS_DISK( sDataPlan->updatePartInfo->tableFlag ) )
     {
-        /* PROJ-2464 hybrid partitioned table ÏßÄÏõê
-         * Partitioned TableÏùÑ Í∏∞Ï§ÄÏúºÎ°ú ÎßåÎì† smiValue ArrayÎ•º Table PartitionÏóê ÎßûÍ≤å Î≥ÄÌôòÌïúÎã§.
+        /* PROJ-2464 hybrid partitioned table ¡ˆø¯
+         * Partitioned Table¿ª ±‚¡ÿ¿∏∑Œ ∏∏µÁ smiValue Array∏¶ Table Partitionø° ∏¬∞‘ ∫Ø»Ø«—¥Ÿ.
          */
         IDE_TEST( qmx::makeSmiValueWithSmiValue( sCodePlan->tableRef->tableInfo,
                                                  sDataPlan->updatePartInfo,
@@ -3350,7 +3531,7 @@ qmnUPTE::updateOneRowForCheckRowmovement( qcTemplate * aTemplate,
          == QMNC_UPTE_VIEW_KEY_PRESERVED_TRUE )
     {
         // PROJ-2204 join update, delete
-        // tuple ÏõêÎ≥µÏãú cursorÎèÑ ÏõêÎ≥µÌï¥ÏïºÌïúÎã§.
+        // tuple ø¯∫πΩ√ cursorµµ ø¯∫π«ÿæﬂ«—¥Ÿ.
         if ( ( sCodePlan->flag & QMNC_UPTE_VIEW_MASK )
              == QMNC_UPTE_VIEW_TRUE )
         {
@@ -3378,9 +3559,9 @@ qmnUPTE::updateOneRowForCheckRowmovement( qcTemplate * aTemplate,
                                       sSmiValues )
               != IDE_SUCCESS );
 
-    /* PROJ-2464 hybrid partitioned table ÏßÄÏõê
-     *  Disk PartitionÏù∏ Í≤ΩÏö∞, Disk TypeÏùò Lob ColumnÏù¥ ÌïÑÏöîÌïòÎã§.
-     *  Memory/Volatile PartitionÏùò Í≤ΩÏö∞, Ìï¥Îãπ PartitionÏùò Lob ColumnÏù¥ ÌïÑÏöîÌïòÎã§.
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯
+     *  Disk Partition¿Œ ∞ÊøÏ, Disk Type¿« Lob Column¿Ã « ø‰«œ¥Ÿ.
+     *  Memory/Volatile Partition¿« ∞ÊøÏ, «ÿ¥Á Partition¿« Lob Column¿Ã « ø‰«œ¥Ÿ.
      */
     if ( ( QCM_TABLE_TYPE_IS_DISK( sCodePlan->tableRef->tableInfo->tableFlag ) !=
            QCM_TABLE_TYPE_IS_DISK( sDataPlan->updatePartInfo->tableFlag ) ) ||
@@ -3395,7 +3576,7 @@ qmnUPTE::updateOneRowForCheckRowmovement( qcTemplate * aTemplate,
         /* Nothing to do */
     }
 
-    // LobÏª¨Îüº Ï≤òÎ¶¨
+    // Lobƒ√∑≥ √≥∏Æ
     IDE_TEST( qmx::copyAndOutBindLobInfo( aTemplate->stmt,
                                           sDataPlan->lobInfo,
                                           sDataPlan->updateCursor,
@@ -3407,7 +3588,7 @@ qmnUPTE::updateOneRowForCheckRowmovement( qcTemplate * aTemplate,
          ( sCodePlan->checkConstrList != NULL ) ||
          ( sCodePlan->returnInto != NULL ) )
     {
-        // NEW ROWÏùò ÌöçÎìù
+        // NEW ROW¿« »πµÊ
         IDE_TEST( sDataPlan->updateCursor->getLastModifiedRow(
                       & sNewRow,
                       sDataPlan->updateTuple->rowOffset )
@@ -3422,7 +3603,7 @@ qmnUPTE::updateOneRowForCheckRowmovement( qcTemplate * aTemplate,
     // check constraint
     //-----------------------------------
 
-    /* PROJ-1107 Check Constraint ÏßÄÏõê */
+    /* PROJ-1107 Check Constraint ¡ˆø¯ */
     if ( sCodePlan->checkConstrList != NULL )
     {
         sOrgRow = sDataPlan->updateTuple->row;
@@ -3447,7 +3628,7 @@ qmnUPTE::updateOneRowForCheckRowmovement( qcTemplate * aTemplate,
     if ( sDataPlan->existTrigger == ID_TRUE )
     {
         // PROJ-1359 Trigger
-        // ROW GRANULARITY TRIGGERÏùò ÏàòÌñâ
+        // ROW GRANULARITY TRIGGER¿« ºˆ«‡
         IDE_TEST( qdnTrigger::fireTrigger( aTemplate->stmt,
                                            aTemplate->stmt->qmxMem,
                                            sCodePlan->tableRef->tableInfo,
@@ -3521,10 +3702,10 @@ qmnUPTE::fireInsteadOfTrigger( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    UPTE Ïùò Í≥†Ïú† Í∏∞Îä•ÏùÑ ÏàòÌñâÌïúÎã§.
+ *    UPTE ¿« ∞Ì¿Ø ±‚¥…¿ª ºˆ«‡«—¥Ÿ.
  *
  * Implementation :
- *    - trigger each row ÏàòÌñâ
+ *    - trigger each row ºˆ«‡
  *
  ***********************************************************************/
 
@@ -3559,8 +3740,8 @@ qmnUPTE::fireInsteadOfTrigger( qcTemplate * aTemplate,
         IDE_TEST_RAISE( sRemain < sDataPlan->updateTuple->columnCount,
                         ERR_STACK_OVERFLOW );
 
-        // UPDATEÏôÄ VIEW ÏÇ¨Ïù¥Ïóê FILT Í∞ôÏùÄ Îã§Î•∏ ÎÖ∏ÎìúÎì§Ïóê ÏùòÌï¥ stackÏù¥ Î≥ÄÍ≤ΩÎêòÏóàÏùÑ Ïàò ÏûàÏúºÎØÄÎ°ú
-        // stackÏùÑ view tupleÏùò Ïª¨ÎüºÏúºÎ°ú Ïû¨ÏÑ§Ï†ïÌïúÎã§.
+        // UPDATEøÕ VIEW ªÁ¿Ãø° FILT ∞∞¿∫ ¥Ÿ∏• ≥ÎµÂµÈø° ¿««ÿ stack¿Ã ∫Ø∞Êµ«æ˙¿ª ºˆ ¿÷¿∏π«∑Œ
+        // stack¿ª view tuple¿« ƒ√∑≥¿∏∑Œ ¿Áº≥¡§«—¥Ÿ.
         for ( i = 0, sColumn = sDataPlan->updateTuple->columns;
               i < sDataPlan->updateTuple->columnCount;
               i++, sColumn++, sStack++ )
@@ -3570,7 +3751,7 @@ qmnUPTE::fireInsteadOfTrigger( qcTemplate * aTemplate,
                 (void*)((SChar*)sDataPlan->updateTuple->row + sColumn->column.offset);
         }
 
-        /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
+        /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
         if ( sTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
         {
             if ( sDataPlan->updatePartInfo != NULL )
@@ -3593,7 +3774,7 @@ qmnUPTE::fireInsteadOfTrigger( qcTemplate * aTemplate,
                           != IDE_SUCCESS );
             }
 
-            // ÎåÄÏÉÅ PartitionÏù¥ Î™ÖÌôïÌïòÎØÄÎ°ú, ÏûëÏóÖ Í∏∞Ï§ÄÏùÑ PartitionÏúºÎ°ú ÏÑ§Ï†ïÌïúÎã§.
+            // ¥ÎªÛ Partition¿Ã ∏Ì»Æ«œπ«∑Œ, ¿€æ˜ ±‚¡ÿ¿ª Partition¿∏∑Œ º≥¡§«—¥Ÿ.
             sTableInfo = sDataPlan->updatePartInfo;
             sDataPlan->columnsForRow = sDataPlan->updatePartInfo->columns;
         }
@@ -3614,7 +3795,7 @@ qmnUPTE::fireInsteadOfTrigger( qcTemplate * aTemplate,
         // get New Row
         //-----------------------------------
 
-        // Sequence Value ÌöçÎìù
+        // Sequence Value »πµÊ
         if ( sCodePlan->nextValSeqs != NULL )
         {
             IDE_TEST( qmx::readSequenceNextVals(
@@ -3625,7 +3806,7 @@ qmnUPTE::fireInsteadOfTrigger( qcTemplate * aTemplate,
 
         sSmiValues = aTemplate->insOrUptRow[ sCodePlan->valueIdx ];
 
-        // subqueryÍ∞Ä ÏûàÏùÑÎïå smi value Ï†ïÎ≥¥ Íµ¨ÏÑ±
+        // subquery∞° ¿÷¿ª∂ß smi value ¡§∫∏ ±∏º∫
         IDE_TEST( qmx::makeSmiValueForSubquery( aTemplate,
                                                 sTableInfo,
                                                 sCodePlan->columns,
@@ -3636,7 +3817,7 @@ qmnUPTE::fireInsteadOfTrigger( qcTemplate * aTemplate,
                                                 sDataPlan->lobInfo )
                   != IDE_SUCCESS );
 
-        // Í∞±Ïã†Ìï† smi value Ï†ïÎ≥¥ Íµ¨ÏÑ±
+        // ∞ªΩ≈«“ smi value ¡§∫∏ ±∏º∫
         IDE_TEST( qmx::makeSmiValueForUpdate( aTemplate,
                                               sTableInfo,
                                               sCodePlan->columns,
@@ -3647,12 +3828,12 @@ qmnUPTE::fireInsteadOfTrigger( qcTemplate * aTemplate,
                                               sDataPlan->lobInfo )
                   != IDE_SUCCESS );
 
-        // old smiValuesÎ•º new smiValuesÎ°ú Î≥µÏÇ¨
+        // old smiValues∏¶ new smiValues∑Œ ∫πªÁ
         idlOS::memcpy( sDataPlan->newRow,
                        sDataPlan->oldRow,
                        ID_SIZEOF(smiValue) * sDataPlan->updateTuple->columnCount );
 
-        // update smiValuesÎ•º Ï†ÅÏ†àÌïú ÏúÑÏπòÏóê Î≥µÏÇ¨
+        // update smiValues∏¶ ¿˚¿˝«— ¿ßƒ°ø° ∫πªÁ
         for ( sQcmColumn = sCodePlan->columns;
               sQcmColumn != NULL;
               sQcmColumn = sQcmColumn->next, sSmiValues++ )
@@ -3680,7 +3861,7 @@ qmnUPTE::fireInsteadOfTrigger( qcTemplate * aTemplate,
     if ( sDataPlan->existTrigger == ID_TRUE )
     {
         // PROJ-1359 Trigger
-        // ROW GRANULARITY TRIGGERÏùò ÏàòÌñâ
+        // ROW GRANULARITY TRIGGER¿« ºˆ«‡
         IDE_TEST( qdnTrigger::fireTrigger( aTemplate->stmt,
                                            aTemplate->stmt->qmxMem,
                                            sCodePlan->tableRef->tableInfo,
@@ -3747,12 +3928,12 @@ qmnUPTE::checkUpdateParentRef( qcTemplate * aTemplate,
  * Description :
  *
  * Implementation :
- *     Foreign Key ReferencingÏùÑ ÏúÑÌïú
- *     Master TableÏù¥ Ï°¥Ïû¨ÌïòÎäî ÏßÄ Í≤ÄÏÇ¨
+ *     Foreign Key Referencing¿ª ¿ß«—
+ *     Master Table¿Ã ¡∏¿Á«œ¥¬ ¡ˆ ∞ÀªÁ
  *
  *     To Fix PR-10592
- *     CursorÏùò Ïò¨Î∞îÎ•∏ ÏÇ¨Ïö©ÏùÑ ÏúÑÌï¥ÏÑúÎäî MasterÏóê ÎåÄÌïú Í≤ÄÏÇ¨Î•º ÏàòÌñâÌïú ÌõÑÏóê
- *     Child TableÏóê ÎåÄÌïú Í≤ÄÏÇ¨Î•º ÏàòÌñâÌïòÏó¨Ïïº ÌïúÎã§.
+ *     Cursor¿« ø√πŸ∏• ªÁøÎ¿ª ¿ß«ÿº≠¥¬ Masterø° ¥Î«— ∞ÀªÁ∏¶ ºˆ«‡«— »ƒø°
+ *     Child Tableø° ¥Î«— ∞ÀªÁ∏¶ ºˆ«‡«œø©æﬂ «—¥Ÿ.
  *
  ***********************************************************************/
 
@@ -3772,8 +3953,8 @@ qmnUPTE::checkUpdateParentRef( qcTemplate * aTemplate,
     sDataPlan = (qmndUPTE*) ( aTemplate->tmplate.data + aPlan->offset );
 
     //------------------------------------------
-    // UPDATEÎêú Î°úÏö∞ Í≤ÄÏÉâÏùÑ ÏúÑÌï¥,
-    // Í∞±Ïã†Ïó∞ÏÇ∞Ïù¥ ÏàòÌñâÎêú Ï≤´Î≤àÏß∏ row Ïù¥Ï†Ñ ÏúÑÏπòÎ°ú cursor ÏúÑÏπò ÏÑ§Ï†ï
+    // UPDATEµ» ∑ŒøÏ ∞Àªˆ¿ª ¿ß«ÿ,
+    // ∞ªΩ≈ø¨ªÍ¿Ã ºˆ«‡µ» √ππ¯¬∞ row ¿Ã¿¸ ¿ßƒ°∑Œ cursor ¿ßƒ° º≥¡§
     //------------------------------------------
 
     if ( ( sCodePlan->parentConstraints != NULL ) &&
@@ -3806,8 +3987,8 @@ qmnUPTE::checkUpdateParentRef( qcTemplate * aTemplate,
     }
 
     //------------------------------------------
-    // INSERTÎêú Î°úÏö∞ Í≤ÄÏÉâÏùÑ ÏúÑÌï¥,
-    // Í∞±Ïã†Ïó∞ÏÇ∞Ïù¥ ÏàòÌñâÎêú Ï≤´Î≤àÏß∏ row Ïù¥Ï†Ñ ÏúÑÏπòÎ°ú cursor ÏúÑÏπò ÏÑ§Ï†ï
+    // INSERTµ» ∑ŒøÏ ∞Àªˆ¿ª ¿ß«ÿ,
+    // ∞ªΩ≈ø¨ªÍ¿Ã ºˆ«‡µ» √ππ¯¬∞ row ¿Ã¿¸ ¿ßƒ°∑Œ cursor ¿ßƒ° º≥¡§
     //------------------------------------------
 
     if ( ( sCodePlan->parentConstraints != NULL ) &&
@@ -3820,14 +4001,14 @@ qmnUPTE::checkUpdateParentRef( qcTemplate * aTemplate,
             sOrgRow = sSearchRow = sDataPlan->updateTuple->row;
 
             //------------------------------------------
-            // Ï†ÄÏû• Îß§Ï≤¥Ïóê Îî∞Î•∏ Í≥µÍ∞Ñ ÌôïÎ≥¥ Î∞è Ïª¨Îüº Ï†ïÎ≥¥ Íµ¨ÏÑ±
+            // ¿˙¿Â ∏≈√ºø° µ˚∏• ∞¯∞£ »Æ∫∏ π◊ ƒ√∑≥ ¡§∫∏ ±∏º∫
             //------------------------------------------
 
             IDE_TEST( sInsertPartCursor->cursor.beforeFirstModified( SMI_FIND_MODIFIED_NEW )
                       != IDE_SUCCESS );
             
             //------------------------------------------
-            // Î≥ÄÍ≤ΩÎêú RowÎ•º Î∞òÎ≥µÏ†ÅÏúºÎ°ú ÏùΩÏñ¥ Referecing Í≤ÄÏÇ¨Î•º Ìï®
+            // ∫Ø∞Êµ» Row∏¶ π›∫π¿˚¿∏∑Œ ¿–æÓ Referecing ∞ÀªÁ∏¶ «‘
             //------------------------------------------
             
             IDE_TEST( sInsertPartCursor->cursor.readNewRow( (const void **) & sSearchRow,
@@ -3838,11 +4019,11 @@ qmnUPTE::checkUpdateParentRef( qcTemplate * aTemplate,
 
             while ( sSearchRow != NULL )
             {
-                // Memory Ïû¨ÏÇ¨Ïö©ÏùÑ ÏúÑÌïòÏó¨ ÌòÑÏû¨ ÏúÑÏπò Í∏∞Î°ù
+                // Memory ¿ÁªÁøÎ¿ª ¿ß«œø© «ˆ¿Á ¿ßƒ° ±‚∑œ
                 IDE_TEST_RAISE( aTemplate->stmt->qmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
 
                 //------------------------------------------
-                // Master TableÏóê ÎåÄÌïú Referencing Í≤ÄÏÇ¨
+                // Master Tableø° ¥Î«— Referencing ∞ÀªÁ
                 //------------------------------------------
 
                 IDE_TEST( qdnForeignKey::checkParentRef(
@@ -3854,7 +4035,7 @@ qmnUPTE::checkUpdateParentRef( qcTemplate * aTemplate,
                               sCodePlan->updateColumnCount )
                           != IDE_SUCCESS );
 
-                // Memory Ïû¨ÏÇ¨Ïö©ÏùÑ ÏúÑÌïú Memory Ïù¥Îèô
+                // Memory ¿ÁªÁøÎ¿ª ¿ß«— Memory ¿Ãµø
                 IDE_TEST_RAISE( aTemplate->stmt->qmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
 
                 sOrgRow = sSearchRow = sDataPlan->updateTuple->row;
@@ -3900,12 +4081,12 @@ qmnUPTE::checkUpdateParentRefOnScan( qcTemplate   * aTemplate,
  * Description :
  *
  * Implementation :
- *     Foreign Key ReferencingÏùÑ ÏúÑÌïú
- *     Master TableÏù¥ Ï°¥Ïû¨ÌïòÎäî ÏßÄ Í≤ÄÏÇ¨
+ *     Foreign Key Referencing¿ª ¿ß«—
+ *     Master Table¿Ã ¡∏¿Á«œ¥¬ ¡ˆ ∞ÀªÁ
  *
  *     To Fix PR-10592
- *     CursorÏùò Ïò¨Î∞îÎ•∏ ÏÇ¨Ïö©ÏùÑ ÏúÑÌï¥ÏÑúÎäî MasterÏóê ÎåÄÌïú Í≤ÄÏÇ¨Î•º ÏàòÌñâÌïú ÌõÑÏóê
- *     Child TableÏóê ÎåÄÌïú Í≤ÄÏÇ¨Î•º ÏàòÌñâÌïòÏó¨Ïïº ÌïúÎã§.
+ *     Cursor¿« ø√πŸ∏• ªÁøÎ¿ª ¿ß«ÿº≠¥¬ Masterø° ¥Î«— ∞ÀªÁ∏¶ ºˆ«‡«— »ƒø°
+ *     Child Tableø° ¥Î«— ∞ÀªÁ∏¶ ºˆ«‡«œø©æﬂ «—¥Ÿ.
  *
  ***********************************************************************/
 
@@ -3919,8 +4100,8 @@ qmnUPTE::checkUpdateParentRefOnScan( qcTemplate   * aTemplate,
     qmnCursorInfo   * sCursorInfo;
 
     //------------------------------------------
-    // UPDATEÎêú Î°úÏö∞ Í≤ÄÏÉâÏùÑ ÏúÑÌï¥,
-    // Í∞±Ïã†Ïó∞ÏÇ∞Ïù¥ ÏàòÌñâÎêú Ï≤´Î≤àÏß∏ row Ïù¥Ï†Ñ ÏúÑÏπòÎ°ú cursor ÏúÑÏπò ÏÑ§Ï†ï
+    // UPDATEµ» ∑ŒøÏ ∞Àªˆ¿ª ¿ß«ÿ,
+    // ∞ªΩ≈ø¨ªÍ¿Ã ºˆ«‡µ» √ππ¯¬∞ row ¿Ã¿¸ ¿ßƒ°∑Œ cursor ¿ßƒ° º≥¡§
     //------------------------------------------
 
     sCursorInfo = (qmnCursorInfo*) aUpdateTuple->cursorInfo;
@@ -3929,9 +4110,9 @@ qmnUPTE::checkUpdateParentRefOnScan( qcTemplate   * aTemplate,
 
     sUpdateCursor = sCursorInfo->cursor;
 
-    // BUG-37147 sUpdateCursor Í∞Ä null Ïù∏ Í≤ΩÏö∞Í∞Ä Î∞úÏÉùÌï®
+    // BUG-37147 sUpdateCursor ∞° null ¿Œ ∞ÊøÏ∞° πﬂª˝«‘
     // PROJ-1624 non-partitioned index
-    // index table scanÏúºÎ°ú openÎêòÏßÄ ÏïäÏùÄ partitionÏù¥ Ï°¥Ïû¨ÌïúÎã§.
+    // index table scan¿∏∑Œ openµ«¡ˆ æ ¿∫ partition¿Ã ¡∏¿Á«—¥Ÿ.
     if ( sUpdateCursor != NULL )
     {
         sOrgRow = sSearchRow = aUpdateTuple->row;
@@ -3944,18 +4125,18 @@ qmnUPTE::checkUpdateParentRefOnScan( qcTemplate   * aTemplate,
                   != IDE_SUCCESS );
 
         //------------------------------------------
-        // Referencing Í≤ÄÏÇ¨Î•º ÏúÑÌï¥ ÏÇ≠Ï†úÎêú RowÎì§ÏùÑ Í≤ÄÏÉâ
+        // Referencing ∞ÀªÁ∏¶ ¿ß«ÿ ªË¡¶µ» RowµÈ¿ª ∞Àªˆ
         //------------------------------------------
 
         aUpdateTuple->row = ( sSearchRow == NULL ) ? sOrgRow : sSearchRow;
 
         while( sSearchRow != NULL )
         {
-            // Memory Ïû¨ÏÇ¨Ïö©ÏùÑ ÏúÑÌïòÏó¨ ÌòÑÏû¨ ÏúÑÏπò Í∏∞Î°ù
+            // Memory ¿ÁªÁøÎ¿ª ¿ß«œø© «ˆ¿Á ¿ßƒ° ±‚∑œ
             IDE_TEST_RAISE( aTemplate->stmt->qmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
 
             //------------------------------------------
-            // Child TableÏóê ÎåÄÌïú Referencing Í≤ÄÏÇ¨
+            // Child Tableø° ¥Î«— Referencing ∞ÀªÁ
             //------------------------------------------
 
             IDE_TEST( qdnForeignKey::checkParentRef(
@@ -3967,7 +4148,7 @@ qmnUPTE::checkUpdateParentRefOnScan( qcTemplate   * aTemplate,
                         aCodePlan->updateColumnCount )
                     != IDE_SUCCESS );
 
-            // Memory Ïû¨ÏÇ¨Ïö©ÏùÑ ÏúÑÌïú Memory Ïù¥Îèô
+            // Memory ¿ÁªÁøÎ¿ª ¿ß«— Memory ¿Ãµø
             IDE_TEST_RAISE( aTemplate->stmt->qmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
 
             sOrgRow = sSearchRow = aUpdateTuple->row;
@@ -4033,22 +4214,22 @@ qmnUPTE::checkUpdateChildRef( qcTemplate * aTemplate,
     sDataPlan = (qmndUPTE*) ( aTemplate->tmplate.data + aPlan->offset );
 
     //------------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //------------------------------------------
 
     IDE_DASSERT( aTemplate != NULL );
 
     //------------------------------------------
-    // child constraint Í≤ÄÏÇ¨
+    // child constraint ∞ÀªÁ
     //------------------------------------------
 
     if ( sCodePlan->childConstraints != NULL )
     {
-        // BUG-17940 parent keyÎ•º Í∞±Ïã†ÌïòÍ≥† child keyÎ•º Ï∞æÏùÑÎïå
-        // parent rowÏóê lockÏùÑ Ïû°ÏùÄ Ïù¥ÌõÑ viewÎ•º Î≥¥Í∏∞ÏúÑÌï¥
-        // ÏÉàÎ°úÏö¥ smiStmtÎ•º Ïù¥Ïö©ÌïúÎã§.
-        // Update cascade ÏòµÏÖòÏóê ÎåÄÎπÑÌï¥ÏÑú normalÎ°ú ÌïúÎã§.
-        // child tableÏùò ÌÉÄÏûÖÏùÑ ÌòÑÏû¨ Ïïå Ïàò ÏóÜÍ∏∞ ÎïåÎ¨∏Ïóê ALL CURSORÎ°ú ÌïúÎã§.
+        // BUG-17940 parent key∏¶ ∞ªΩ≈«œ∞Ì child key∏¶ √£¿ª∂ß
+        // parent rowø° lock¿ª ¿‚¿∫ ¿Ã»ƒ view∏¶ ∫∏±‚¿ß«ÿ
+        // ªı∑ŒøÓ smiStmt∏¶ ¿ÃøÎ«—¥Ÿ.
+        // Update cascade ø…º«ø° ¥Î∫Ò«ÿº≠ normal∑Œ «—¥Ÿ.
+        // child table¿« ≈∏¿‘¿ª «ˆ¿Á æÀ ºˆ æ¯±‚ ∂ßπÆø° ALL CURSOR∑Œ «—¥Ÿ.
         qcg::getSmiStmt( aTemplate->stmt, & sSmiStmtOrg );
 
         IDE_TEST( sSmiStmt.begin( aTemplate->stmt->mStatistics,
@@ -4129,7 +4310,7 @@ qmnUPTE::checkUpdateChildRefOnScan( qcTemplate     * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    UPDATE Íµ¨Î¨∏ ÏàòÌñâ Ïãú Child TableÏóê ÎåÄÌïú Referencing Ï†úÏïΩ Ï°∞Í±¥ÏùÑ Í≤ÄÏÇ¨
+ *    UPDATE ±∏πÆ ºˆ«‡ Ω√ Child Tableø° ¥Î«— Referencing ¡¶æ‡ ¡∂∞«¿ª ∞ÀªÁ
  *
  * Implementation :
  *
@@ -4145,15 +4326,15 @@ qmnUPTE::checkUpdateChildRefOnScan( qcTemplate     * aTemplate,
     qmnCursorInfo   * sCursorInfo;
 
     //------------------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //------------------------------------------
 
     IDE_DASSERT( aTemplate != NULL );
     IDE_DASSERT( aCodePlan->childConstraints != NULL );
 
     //------------------------------------------
-    // UPDATEÎêú Î°úÏö∞ Í≤ÄÏÉâÏùÑ ÏúÑÌï¥,
-    // Í∞±Ïã†Ïó∞ÏÇ∞Ïù¥ ÏàòÌñâÎêú Ï≤´Î≤àÏß∏ row Ïù¥Ï†Ñ ÏúÑÏπòÎ°ú cursor ÏúÑÏπò ÏÑ§Ï†ï
+    // UPDATEµ» ∑ŒøÏ ∞Àªˆ¿ª ¿ß«ÿ,
+    // ∞ªΩ≈ø¨ªÍ¿Ã ºˆ«‡µ» √ππ¯¬∞ row ¿Ã¿¸ ¿ßƒ°∑Œ cursor ¿ßƒ° º≥¡§
     //------------------------------------------
 
     sCursorInfo = (qmnCursorInfo*) aUpdateTuple->cursorInfo;
@@ -4163,14 +4344,14 @@ qmnUPTE::checkUpdateChildRefOnScan( qcTemplate     * aTemplate,
     sUpdateCursor = sCursorInfo->cursor;
 
     // PROJ-1624 non-partitioned index
-    // index table scanÏúºÎ°ú openÎêòÏßÄ ÏïäÏùÄ partitionÏù¥ Ï°¥Ïû¨ÌïúÎã§.
+    // index table scan¿∏∑Œ openµ«¡ˆ æ ¿∫ partition¿Ã ¡∏¿Á«—¥Ÿ.
     if ( sUpdateCursor != NULL )
     {
         IDE_TEST( sUpdateCursor->beforeFirstModified( SMI_FIND_MODIFIED_OLD )
                   != IDE_SUCCESS );
 
         //------------------------------------------
-        // Referencing Í≤ÄÏÇ¨Î•º ÏúÑÌï¥ ÏÇ≠Ï†úÎêú RowÎì§ÏùÑ Í≤ÄÏÉâ
+        // Referencing ∞ÀªÁ∏¶ ¿ß«ÿ ªË¡¶µ» RowµÈ¿ª ∞Àªˆ
         //------------------------------------------
 
         sOrgRow = sSearchRow = aUpdateTuple->row;
@@ -4183,11 +4364,11 @@ qmnUPTE::checkUpdateChildRefOnScan( qcTemplate     * aTemplate,
 
         while( sSearchRow != NULL )
         {
-            // Memory Ïû¨ÏÇ¨Ïö©ÏùÑ ÏúÑÌïòÏó¨ ÌòÑÏû¨ ÏúÑÏπò Í∏∞Î°ù
+            // Memory ¿ÁªÁøÎ¿ª ¿ß«œø© «ˆ¿Á ¿ßƒ° ±‚∑œ
             IDE_TEST_RAISE( aTemplate->stmt->qmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
 
             //------------------------------------------
-            // Child TableÏóê ÎåÄÌïú Referencing Í≤ÄÏÇ¨
+            // Child Tableø° ¥Î«— Referencing ∞ÀªÁ
             //------------------------------------------
 
             IDE_TEST( qdnForeignKey::checkChildRefOnUpdate(
@@ -4202,7 +4383,7 @@ qmnUPTE::checkUpdateChildRefOnScan( qcTemplate     * aTemplate,
                           aCodePlan->updateColumnCount )
                       != IDE_SUCCESS );
 
-            // Memory Ïû¨ÏÇ¨Ïö©ÏùÑ ÏúÑÌïú Memory Ïù¥Îèô
+            // Memory ¿ÁªÁøÎ¿ª ¿ß«— Memory ¿Ãµø
             IDE_TEST_RAISE( aTemplate->stmt->qmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
 
             sOrgRow = sSearchRow = aUpdateTuple->row;
@@ -4252,7 +4433,7 @@ qmnUPTE::updateIndexTableCursor( qcTemplate     * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    UPDATE Íµ¨Î¨∏ ÏàòÌñâ Ïãú index tableÏóê ÎåÄÌïú update ÏàòÌñâ
+ *    UPDATE ±∏πÆ ºˆ«‡ Ω√ index tableø° ¥Î«— update ºˆ«‡
  *
  * Implementation :
  *
@@ -4286,7 +4467,7 @@ qmnUPTE::updateIndexTableCursor( qcTemplate     * aTemplate,
                       != IDE_SUCCESS );
 
             // PROJ-2204 join update, delete
-            // tuple ÏõêÎ≥µÏãú cursorÎèÑ ÏõêÎ≥µÌï¥ÏïºÌïúÎã§.
+            // tuple ø¯∫πΩ√ cursorµµ ø¯∫π«ÿæﬂ«—¥Ÿ.
             if ( ( aCodePlan->flag & QMNC_UPTE_VIEW_MASK )
                  == QMNC_UPTE_VIEW_TRUE )
             {
@@ -4311,7 +4492,7 @@ qmnUPTE::updateIndexTableCursor( qcTemplate     * aTemplate,
             // Nothing to do.
         }
 
-        // Îã§Î•∏ index tableÎèÑ update
+        // ¥Ÿ∏• index tableµµ update
         IDE_TEST( qmsIndexTable::updateIndexTableCursors(
                       aTemplate->stmt,
                       & (aDataPlan->indexTableCursorInfo),
@@ -4349,7 +4530,7 @@ qmnUPTE::updateIndexTableCursorForRowMovement( qcTemplate     * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    UPDATE Íµ¨Î¨∏ ÏàòÌñâ Ïãú index tableÏóê ÎåÄÌïú update ÏàòÌñâ
+ *    UPDATE ±∏πÆ ºˆ«‡ Ω√ index tableø° ¥Î«— update ºˆ«‡
  *
  * Implementation :
  *
@@ -4385,7 +4566,7 @@ qmnUPTE::updateIndexTableCursorForRowMovement( qcTemplate     * aTemplate,
                       != IDE_SUCCESS );
 
             // PROJ-2204 join update, delete
-            // tuple ÏõêÎ≥µÏãú cursorÎèÑ ÏõêÎ≥µÌï¥ÏïºÌïúÎã§.
+            // tuple ø¯∫πΩ√ cursorµµ ø¯∫π«ÿæﬂ«—¥Ÿ.
             if ( ( aCodePlan->flag & QMNC_UPTE_VIEW_MASK )
                  == QMNC_UPTE_VIEW_TRUE )
             {
@@ -4410,7 +4591,7 @@ qmnUPTE::updateIndexTableCursorForRowMovement( qcTemplate     * aTemplate,
             // Nothing to do.
         }
 
-        // Îã§Î•∏ index tableÎèÑ update
+        // ¥Ÿ∏• index tableµµ update
         IDE_TEST( qmsIndexTable::updateIndexTableCursors(
                       aTemplate->stmt,
                       & (aDataPlan->indexTableCursorInfo),
@@ -4444,7 +4625,7 @@ IDE_RC qmnUPTE::getLastUpdatedRowGRID( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description : BUG-38129
- *     ÎßàÏßÄÎßâ update rowÏùò GRIDÎ•º Î∞òÌôòÌïúÎã§.
+ *     ∏∂¡ˆ∏∑ update row¿« GRID∏¶ π›»Ø«—¥Ÿ.
  *
  * Implementation :
  *
@@ -4464,11 +4645,11 @@ IDE_RC qmnUPTE::checkDuplicateUpdate( qmncUPTE   * aCodePlan,
 /***********************************************************************
  *
  * Description : BUG-39399 remove search key preserved table 
- *       join view updateÏãú Ï§ëÎ≥µ updateÏó¨Î∂Ä Ï≤¥ÌÅ¨
+ *       join view updateΩ√ ¡ﬂ∫π updateø©∫Œ √º≈©
  * Implementation :
- *    1. joinÏùò Í≤∞Í≥º nullÏù∏ÏßÄ Ï≤¥ÌÅ¨.
- *    2. cursor ÏõêÎ≥µ
- *    3. update Ï§ëÎ≥µ Ï≤¥ÌÅ¨
+ *    1. join¿« ∞·∞˙ null¿Œ¡ˆ √º≈©.
+ *    2. cursor ø¯∫π
+ *    3. update ¡ﬂ∫π √º≈©
  ***********************************************************************/
     
     scGRID            sNullRID;
@@ -4477,7 +4658,7 @@ IDE_RC qmnUPTE::checkDuplicateUpdate( qmncUPTE   * aCodePlan,
     void            * sTableHandle = NULL;
     idBool            sIsDupUpdate = ID_FALSE;
     
-    /* PROJ-2464 hybrid partitioned table ÏßÄÏõê */
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
     if ( aCodePlan->tableRef->partitionRef == NULL )
     {
         sTableType   = aCodePlan->tableRef->tableInfo->tableFlag & SMI_TABLE_TYPE_MASK;
@@ -4495,8 +4676,8 @@ IDE_RC qmnUPTE::checkDuplicateUpdate( qmncUPTE   * aCodePlan,
         SMI_MAKE_VIRTUAL_NULL_GRID( sNullRID );
             
         IDE_TEST_RAISE( SC_GRID_IS_EQUAL( sNullRID,
-                                          aDataPlan->updateTuple->rid )
-                        == ID_TRUE, ERR_MODIFY_UNABLE_RECORD );
+                                          aDataPlan->updateTuple->rid ),
+                        ERR_MODIFY_UNABLE_RECORD );
     }
     else
     {
@@ -4510,12 +4691,12 @@ IDE_RC qmnUPTE::checkDuplicateUpdate( qmncUPTE   * aCodePlan,
     }
 
     // PROJ-2204 join update, delete
-    // tuple ÏõêÎ≥µÏãú cursorÎèÑ ÏõêÎ≥µÌï¥ÏïºÌïúÎã§.
+    // tuple ø¯∫πΩ√ cursorµµ ø¯∫π«ÿæﬂ«—¥Ÿ.
     IDE_TEST( aDataPlan->updateCursor->setRowPosition( aDataPlan->updateTuple->row,
                                                        aDataPlan->updateTuple->rid )
               != IDE_SUCCESS );
         
-    /* Ï§ëÎ≥µ updateÏù∏ÏßÄ Ï≤¥ÌÅ¨ */
+    /* ¡ﬂ∫π update¿Œ¡ˆ √º≈© */
     IDE_TEST( aDataPlan->updateCursor->isUpdatedRowBySameStmt( &sIsDupUpdate )
               != IDE_SUCCESS );
 
@@ -4531,3 +4712,3630 @@ IDE_RC qmnUPTE::checkDuplicateUpdate( qmncUPTE   * aCodePlan,
 
     return IDE_FAILURE;
 }
+
+IDE_RC qmnUPTE::firstInitMultiTable( qcTemplate * aTemplate,
+                                     qmncUPTE   * aCodePlan,
+                                     qmndUPTE   * aDataPlan )
+{
+    UShort            sTableID;
+    idBool            sIsNeedRebuild = ID_FALSE;
+    qcmTableInfo    * sTableInfo = NULL;
+    qmmMultiTables  * sTmp = NULL;
+    qmnCursorInfo   * sCursorInfo = NULL;
+    qmsPartitionRef * sPartitionRef = NULL;
+    UInt              sPartitionCount;
+    UInt              sIndexUpdateColumnCount;
+    idBool            sIsInplaceUpdate = ID_FALSE;
+    qmndMultiTables * sDataTable;
+    UInt              i;
+    UInt              j;
+
+    //--------------------------------
+    // ¿˚«’º∫ ∞ÀªÁ
+    //--------------------------------
+
+    //--------------------------------
+    // UPTE ∞Ì¿Ø ¡§∫∏¿« √ ±‚»≠
+    //--------------------------------
+    aDataPlan->insertLobInfo = NULL;
+    aDataPlan->insertValues  = NULL;
+    aDataPlan->checkValues   = NULL;
+
+    // Tuple Set¡§∫∏¿« √ ±‚»≠
+    aDataPlan->updateTuple     = NULL;
+    aDataPlan->updateCursor    = NULL;
+    aDataPlan->updateTupleID   = ID_USHORT_MAX;
+
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
+    aDataPlan->updatePartInfo = NULL;
+
+    // index table cursor √ ±‚»≠
+    aDataPlan->indexUpdateCursor = NULL;
+    aDataPlan->indexUpdateTuple = NULL;
+
+    // set, where column list √ ±‚»≠
+    smiInitDMLRetryInfo( &(aDataPlan->retryInfo) );
+
+    /* PROJ-2359 Table/Partition Access Option */
+    aDataPlan->accessOption = QCM_ACCESS_OPTION_READ_WRITE;
+
+    IDU_FIT_POINT("qmnUpdate::firstInitMultiTable::alloc::mTableArray",
+                  idERR_ABORT_InsufficientMemory);
+    IDE_TEST( aTemplate->stmt->qmxMem->alloc( ID_SIZEOF(qmndMultiTables) * aCodePlan->mMultiTableCount,
+                                              (void**)&aDataPlan->mTableArray)
+              != IDE_SUCCESS );
+    //--------------------------------
+    // cursorInfo ª˝º∫
+    //--------------------------------
+
+    for ( sTmp = aCodePlan->mTableList, j = 0;
+          sTmp != NULL;
+          sTmp = sTmp->mNext, j++ )
+    {
+        QMND_UPDATE_MULTI_TABLES( &aDataPlan->mTableArray[j] );
+
+        sDataTable = &aDataPlan->mTableArray[j];
+
+        if ( sTmp->mInsteadOfTrigger == ID_TRUE )
+        {
+            // instead of trigger¥¬ cursor∞° « ø‰æ¯¥Ÿ.
+            // Nothing to do.
+        }
+        else
+        {
+            sTableInfo = sTmp->mTableRef->tableInfo;
+
+            // PROJ-2219 Row-level before update trigger
+            // Invalid «— trigger∞° ¿÷¿∏∏È compile«œ∞Ì, DML¿ª rebuild «—¥Ÿ.
+            if ( sTableInfo->triggerCount > 0 )
+            {
+                IDE_TEST( qdnTrigger::verifyTriggers( aTemplate->stmt,
+                                                      sTableInfo,
+                                                      sTmp->mUptColumnList,
+                                                      &sIsNeedRebuild )
+                          != IDE_SUCCESS );
+
+                IDE_TEST_RAISE( sIsNeedRebuild == ID_TRUE,
+                                trigger_invalid );
+            }
+            else
+            {
+                // Nothing to do.
+            }
+        }
+        IDU_FIT_POINT("qmnUpdate::firstInitMultiTable::alloc::sCursorInfo",
+                      idERR_ABORT_InsufficientMemory);
+        IDE_TEST( aTemplate->stmt->qmxMem->alloc( ID_SIZEOF(qmnCursorInfo),
+                                                  (void**)& sCursorInfo )
+                  != IDE_SUCCESS );
+
+        // cursorInfo √ ±‚»≠
+        sCursorInfo->cursor              = NULL;
+        sCursorInfo->selectedIndex       = NULL;
+        sCursorInfo->selectedIndexTuple  = NULL;
+        sCursorInfo->accessOption        = QCM_ACCESS_OPTION_READ_WRITE; /* PROJ-2359 Table/Partition Access Option */
+        sCursorInfo->updateColumnList    = sTmp->mUptColumnList;
+        sCursorInfo->cursorType          = sTmp->mCursorType;
+        if ( sTmp->mUpdateType == QMO_UPDATE_ROWMOVEMENT )
+        {
+            sCursorInfo->isRowMovementUpdate = ID_TRUE;
+        }
+        else
+        {
+            sCursorInfo->isRowMovementUpdate = ID_FALSE;
+        }
+
+        /* PROJ-2626 Snapshot Export */
+        if ( aTemplate->stmt->mInplaceUpdateDisableFlag == ID_FALSE )
+        {
+            sIsInplaceUpdate = sTmp->mInplaceUpdate;
+        }
+        else
+        {
+            /* Nothing td do */
+        }
+        sCursorInfo->inplaceUpdate = sIsInplaceUpdate;
+        sCursorInfo->lockMode            = SMI_LOCK_WRITE;
+        sCursorInfo->stmtRetryColLst     = sTmp->mWhereColumnList;
+        sCursorInfo->rowRetryColLst      = sTmp->mSetColumnList;
+
+        // cursorInfo º≥¡§
+        aTemplate->tmplate.rows[sTmp->mTableRef->table].cursorInfo = sCursorInfo;
+
+        //--------------------------------
+        // partition cursorInfo ª˝º∫
+        //--------------------------------
+        if ( sTmp->mTableRef->partitionRef != NULL )
+        {
+            sPartitionCount = 0;
+            for ( sPartitionRef = sTmp->mTableRef->partitionRef;
+                  sPartitionRef != NULL;
+                  sPartitionRef = sPartitionRef->next )
+            {
+                sPartitionCount++;
+            }
+
+            IDU_FIT_POINT("qmnUpdate::firstInitMultiTable::alloc::sCursorInfo2",
+                          idERR_ABORT_InsufficientMemory);
+            // cursorInfo ª˝º∫
+            IDE_TEST( aTemplate->stmt->qmxMem->alloc(
+                          sPartitionCount * ID_SIZEOF(qmnCursorInfo),
+                          (void**)& sCursorInfo )
+                      != IDE_SUCCESS );
+            for ( sPartitionRef = sTmp->mTableRef->partitionRef, i = 0;
+                  sPartitionRef != NULL;
+                  sPartitionRef = sPartitionRef->next, i++, sCursorInfo++ )
+            {
+                // cursorInfo √ ±‚»≠
+                sCursorInfo->cursor              = NULL;
+                sCursorInfo->selectedIndex       = NULL;
+                sCursorInfo->selectedIndexTuple  = NULL;
+                /* PROJ-2359 Table/Partition Access Option */
+                sCursorInfo->accessOption        = QCM_ACCESS_OPTION_READ_WRITE;
+                sCursorInfo->updateColumnList    = sTmp->mPartColumnList[i];
+                sCursorInfo->cursorType          = sTmp->mCursorType;
+                sCursorInfo->inplaceUpdate       = sIsInplaceUpdate;
+                sCursorInfo->lockMode            = SMI_LOCK_WRITE;
+                if ( sTmp->mUpdateType == QMO_UPDATE_ROWMOVEMENT )
+                {
+                    sCursorInfo->isRowMovementUpdate = ID_TRUE;
+                }
+                else
+                {
+                    sCursorInfo->isRowMovementUpdate = ID_FALSE;
+                }
+
+                /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
+                sCursorInfo->stmtRetryColLst     = sTmp->mWherePartColumnList[i];
+                sCursorInfo->rowRetryColLst      = sTmp->mSetPartColumnList[i];
+
+                // cursorInfo º≥¡§
+                aTemplate->tmplate.rows[sPartitionRef->table].cursorInfo = sCursorInfo;
+            }
+            // PROJ-1624 non-partitioned index
+            // partitioned table¿Œ ∞ÊøÏ index table cursor¿« update column list∏¶ ¡ˆ¡§«—¥Ÿ.
+            if ( sTmp->mTableRef->selectedIndexTable != NULL )
+            {
+                IDE_TEST_RAISE( sTmp->mTableRef->indexTableRef == NULL, UNEXPECTED );
+                sCursorInfo = (qmnCursorInfo *)aTemplate->tmplate.rows[sTmp->mTableRef->table].cursorInfo;
+
+                IDE_TEST( qmsIndexTable::makeUpdateSmiColumnList(
+                              sTmp->mColumnCount,
+                              sTmp->mColumnIDs,
+                              sTmp->mTableRef->selectedIndexTable,
+                              sCursorInfo->isRowMovementUpdate,
+                              &sIndexUpdateColumnCount,
+                              sDataTable->mIndexUpdateColumnList )
+                          != IDE_SUCCESS );
+
+                if ( sIndexUpdateColumnCount > 0 )
+                {
+                    IDU_FIT_POINT("qmnUpdate::firstInitMultiTable::alloc::updateColumnList",
+                                  idERR_ABORT_InsufficientMemory);
+                    IDE_TEST( aTemplate->stmt->qmxMem->alloc(
+                                  sIndexUpdateColumnCount * ID_SIZEOF(smiColumnList),
+                                  (void**)& sCursorInfo->updateColumnList )
+                              != IDE_SUCCESS );
+                    idlOS::memcpy( sCursorInfo->updateColumnList,
+                                   sDataTable->mIndexUpdateColumnList,
+                                   sIndexUpdateColumnCount * ID_SIZEOF(smiColumnList) );
+                    sCursorInfo->cursorType = SMI_UPDATE_CURSOR;
+
+                    // update«ÿæﬂ«‘
+                    sDataTable->mFlag &= ~QMND_UPTE_SELECTED_INDEX_CURSOR_MASK;
+                    sDataTable->mFlag |= QMND_UPTE_SELECTED_INDEX_CURSOR_TRUE;
+                }
+                else
+                {
+                    // update«“ ƒ√∑≥¿Ã æ¯¥¬ ∞ÊøÏ
+                    sCursorInfo->updateColumnList = NULL;
+                    sCursorInfo->cursorType       = SMI_SELECT_CURSOR;
+                    sCursorInfo->inplaceUpdate    = ID_FALSE;
+                    sCursorInfo->lockMode         = SMI_LOCK_READ;
+                }
+
+                sDataTable->mIndexUpdateCount = sIndexUpdateColumnCount;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        if ( sTmp->mTableRef->tableInfo->lobColumnCount > 0 )
+        {
+            // PROJ-1362
+            IDE_TEST( qmx::initializeLobInfo( aTemplate->stmt,
+                                              &sDataTable->mLobInfo,
+                                              (UShort)sTmp->mTableRef->tableInfo->lobColumnCount )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        switch ( sTmp->mUpdateType )
+        {
+            case QMO_UPDATE_ROWMOVEMENT:
+            {
+                IDE_TEST( sDataTable->mInsertCursorMgr.initialize(
+                              aTemplate->stmt->qmxMem,
+                              sTmp->mInsertTableRef,
+                              ID_TRUE,
+                              ID_FALSE )
+                          != IDE_SUCCESS );
+                // lob info √ ±‚»≠
+                if ( sTmp->mTableRef->tableInfo->lobColumnCount > 0 )
+                {
+                    // PROJ-1362
+                    IDE_TEST( qmx::initializeLobInfo(
+                                  aTemplate->stmt,
+                                  & sDataTable->mInsertLobInfo,
+                                  (UShort)sTmp->mTableRef->tableInfo->lobColumnCount )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    sDataTable->mInsertLobInfo = NULL;
+                }
+                IDU_FIT_POINT("qmnUpdate::firstInitMultiTable::alloc::mInsertValues",
+                              idERR_ABORT_InsufficientMemory);
+                // insert smiValues √ ±‚»≠
+                IDE_TEST( aTemplate->stmt->qmxMem->alloc(
+                              sTmp->mTableRef->tableInfo->columnCount
+                              * ID_SIZEOF(smiValue),
+                              (void**)& sDataTable->mInsertValues )
+                          != IDE_SUCCESS );
+                break;
+            }
+            case QMO_UPDATE_CHECK_ROWMOVEMENT:
+            {
+                IDU_FIT_POINT("qmnUpdate::firstInitMultiTable::alloc::mCheckValues",
+                              idERR_ABORT_InsufficientMemory);
+                // check smiValues √ ±‚»≠
+                IDE_TEST( aTemplate->stmt->qmxMem->alloc(
+                              sTmp->mTableRef->tableInfo->columnCount
+                              * ID_SIZEOF(smiValue),
+                              (void**)&sDataTable->mCheckValues )
+                          != IDE_SUCCESS );
+                break;
+            }
+            default:
+                break;
+        }
+
+        if ( sTmp->mDefaultColumns != NULL )
+        {
+            sTableID = sTmp->mDefaultTableRef->table;
+
+            IDE_TEST( qmc::setRowSize( aTemplate->stmt->qmxMem,
+                                       &(aTemplate->tmplate),
+                                       sTableID )
+                      != IDE_SUCCESS );
+            if ( (aTemplate->tmplate.rows[sTableID].lflag & MTC_TUPLE_STORAGE_MASK)
+                 == MTC_TUPLE_STORAGE_MEMORY )
+            {
+                IDE_TEST( aTemplate->stmt->qmxMem->alloc(
+                              aTemplate->tmplate.rows[sTableID].rowOffset,
+                              &(aTemplate->tmplate.rows[sTableID].row) )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Disk Table¿« ∞ÊøÏ, qmc::setRowSize()ø°º≠ ¿ÃπÃ «“¥Á */
+            }
+            sDataTable->mDefaultExprRowBuffer = aTemplate->tmplate.rows[sTableID].row;
+        }
+        else
+        {
+            sDataTable->mDefaultExprRowBuffer = NULL;
+        }
+    }
+
+    aDataPlan->limitStart = 1;
+    aDataPlan->limitEnd   = 0;
+    aDataPlan->needTriggerRow  = ID_FALSE;
+    aDataPlan->existTrigger = ID_FALSE;
+    aDataPlan->returnRow = NULL;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( trigger_invalid )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_REBUILD_TRIGGER_INVALID ) );
+    }
+    IDE_EXCEPTION( UNEXPECTED )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmnUpdate::firstInitMultiTable",
+                                  "indexTableRef is NULL" ));
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmnUPTE::allocIndexTableCursorMultiTable( qcTemplate * aTemplate,
+                                                 qmncUPTE   * aCodePlan,
+                                                 qmndUPTE   * aDataPlan )
+{
+    qmmMultiTables  * sTmp = NULL;
+    UInt              i;
+
+    for ( sTmp = aCodePlan->mTableList, i = 0;
+          sTmp != NULL;
+          sTmp = sTmp->mNext, i++ )
+    {
+        if ( sTmp->mTableRef->indexTableRef != NULL )
+        {
+            IDE_TEST( qmsIndexTable::initializeIndexTableCursors(
+                          aTemplate->stmt,
+                          sTmp->mTableRef->indexTableRef,
+                          sTmp->mTableRef->indexTableCount,
+                          sTmp->mTableRef->selectedIndexTable,
+                          & (aDataPlan->mTableArray[i].mIndexTableCursorInfo) )
+                      != IDE_SUCCESS );
+
+            aDataPlan->mTableArray[i].mFlag &= ~QMND_UPTE_INDEX_CURSOR_MASK;
+            aDataPlan->mTableArray[i].mFlag |= QMND_UPTE_INDEX_CURSOR_INITED;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmnUPTE::doItFirstMultiTable( qcTemplate * aTemplate,
+                                     qmnPlan    * aPlan,
+                                     qmcRowFlag * aFlag )
+{
+    qmncUPTE        * sCodePlan = (qmncUPTE*) aPlan;
+    qmndUPTE        * sDataPlan = (qmndUPTE*) (aTemplate->tmplate.data + aPlan->offset);
+    idBool            sIsSkip = ID_FALSE;
+    idBool            sSkipExist = ID_FALSE;
+    ULong             sUpdateCount = 0;
+    qmmMultiTables  * sTmp = NULL;
+    UInt              i = 0;
+
+    //-----------------------------------
+    // Child Plan¿ª ºˆ«‡«‘
+    //-----------------------------------
+    // doIt left child
+    IDE_TEST( aPlan->left->doIt( aTemplate, aPlan->left, aFlag )
+              != IDE_SUCCESS );
+
+    if ( ( *aFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
+    {
+        for ( sTmp = sCodePlan->mTableList, i = 0;
+              sTmp != NULL;
+              sTmp = sTmp->mNext, i++ )
+        {
+            // check trigger
+            IDE_TEST( checkTriggerMultiUpdate( aTemplate,
+                                               sDataPlan,
+                                               sTmp,
+                                               i )
+                      != IDE_SUCCESS );
+
+            sDataPlan->updateTuple = &aTemplate->tmplate.rows[sTmp->mTableRef->table];
+            if ( sTmp->mInsteadOfTrigger == ID_TRUE )
+            {
+                IDE_TEST( fireInsteadOfTriggerMultiUpdate( aTemplate,
+                                                           sCodePlan,
+                                                           sDataPlan,
+                                                           sTmp,
+                                                           i )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                sIsSkip = ID_FALSE;
+
+                /* PROJ-2359 Table/Partition Access Option */
+                IDE_TEST( qmx::checkAccessOption( sTmp->mTableRef->tableInfo,
+                                                  ID_FALSE /* aIsInsertion */ )
+                          != IDE_SUCCESS );
+
+                if ( sTmp->mTableRef->partitionRef != NULL )
+                {
+                    IDE_TEST( qmx::checkAccessOptionForExistentRecord(
+                                        sDataPlan->accessOption,
+                                        sDataPlan->updateTuple->tableHandle )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+
+                // get cursor
+                IDE_TEST( getCursorMultiTable( aTemplate,
+                                               sCodePlan,
+                                               sDataPlan,
+                                               sTmp,
+                                               &sIsSkip )
+                          != IDE_SUCCESS );
+
+                if ( sIsSkip == ID_FALSE )
+                {
+                    IDE_TEST( checkSkipMultiTable( aTemplate,
+                                                   sDataPlan,
+                                                   sTmp,
+                                                   &sIsSkip )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+
+                if ( sIsSkip == ID_TRUE )
+                {
+                    sSkipExist = ID_TRUE;
+                    continue;
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+
+                switch ( sTmp->mUpdateType )
+                {
+                    case QMO_UPDATE_NORMAL:
+                    {
+                        // update one record
+                        IDE_TEST( updateOneRowMultiTable( aTemplate,
+                                                          sCodePlan,
+                                                          sDataPlan,
+                                                          sTmp,
+                                                          i )
+                                  != IDE_SUCCESS );
+                        sUpdateCount++;
+                        break;
+                    }
+                    case QMO_UPDATE_ROWMOVEMENT:
+                    {
+                        // open insert cursor
+                        IDE_TEST( openInsertCursorMultiTable( aTemplate,
+                                                              sDataPlan,
+                                                              sTmp,
+                                                              i )
+                                  != IDE_SUCCESS );
+
+                        // update one record
+                        IDE_TEST( updateOneRowForRowmovementMultiTable( aTemplate,
+                                                                        sCodePlan,
+                                                                        sDataPlan,
+                                                                        sTmp,
+                                                                        i )
+                                  != IDE_SUCCESS );
+                        sUpdateCount++;
+                        break;
+                    }
+                    case QMO_UPDATE_CHECK_ROWMOVEMENT:
+                    {
+                        // update one record
+                        IDE_TEST( updateOneRowForCheckRowmovementMultiTable( aTemplate,
+                                                                             sCodePlan,
+                                                                             sDataPlan,
+                                                                             sTmp,
+                                                                             i )
+                                  != IDE_SUCCESS );
+                        sUpdateCount++;
+                        break;
+                    }
+                    case QMO_UPDATE_NO_ROWMOVEMENT:
+                    {
+                        // update one record
+                        IDE_TEST( updateOneRowMultiTable( aTemplate,
+                                                          sCodePlan,
+                                                          sDataPlan,
+                                                          sTmp,
+                                                          i )
+                                  != IDE_SUCCESS );
+                        sUpdateCount++;
+                        break;
+                    }
+                    default:
+                        IDE_RAISE( UNEXPECTED );
+                        break;
+                }
+            }
+        }
+
+        /**
+         * Multiple Update¿Ã±‚ ∂ßπÆø° do it Ω√ 1∞≥¿« row∞° æ∆¥œ∂Û ø©∑Ø∞≥¿« row∏¶
+         * æ˜µ•¿Ã∆Æ «“ ºˆµµ ¿÷∞Ì æ∆π´∞Õµµ æ «“ ºˆµµ ¿÷¥Ÿ.
+         *
+         * nuwRows¥¬ ±‚∫ª¿˚¿∏∑Œ 1∞≥∞° ¡ı∞°µ«æ˙±‚ ∂ßπÆø° skip ¿Ã æ¯¥Ÿ∏È update
+         * row -1 ∏∏≈≠ ¡ı∞°Ω√≈∞∞Ì skip¿Ã ¿÷¥Ÿ∏È update row ∞° æ¯¥¬ ∞ÊøÏøÕ
+         * 1¿Œ∞ÊøÏ ±◊∏Æ∞Ì ≥™∏”¡ˆø° ∂ß∂Û numRow∏¶ ∫Ø»≠Ω√ƒ—¡‡æﬂ«—¥Ÿ.
+         */
+        if ( sSkipExist == ID_TRUE )
+        {
+            if ( sUpdateCount < 1 )
+            {
+                aTemplate->numRows--;
+            }
+            else if ( sUpdateCount == 1 )
+            {
+                /* Nothing to do */
+            }
+            else
+            {
+                aTemplate->numRows += ( sUpdateCount - 1 );
+            }
+        }
+        else
+        {
+            aTemplate->numRows += ( sUpdateCount - 1 );
+        }
+
+        sDataPlan->doIt = doItNextMultiTable;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( UNEXPECTED )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmnUPTE::doItFirstMultiTable",
+                                  "Not support updateType" ));
+    }
+    IDE_EXCEPTION_END;
+
+    for ( i = 0; i < sCodePlan->mMultiTableCount; i++ )
+    {
+        if ( sDataPlan->mTableArray[i].mLobInfo != NULL )
+        {
+            (void)qmx::finalizeLobInfo( aTemplate->stmt, sDataPlan->mTableArray[i].mLobInfo );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    return IDE_FAILURE;
+}
+
+IDE_RC qmnUPTE::doItNextMultiTable( qcTemplate * aTemplate,
+                                    qmnPlan    * aPlan,
+                                    qmcRowFlag * aFlag )
+{
+    qmncUPTE        * sCodePlan = (qmncUPTE*) aPlan;
+    qmndUPTE        * sDataPlan = (qmndUPTE*) (aTemplate->tmplate.data + aPlan->offset);
+    idBool            sIsSkip = ID_FALSE;
+    idBool            sSkipExist = ID_FALSE;
+    qmmMultiTables  * sTmp = NULL;
+    UInt              i = 0;
+    UInt              sUpdateCount = 0;
+
+    //-----------------------------------
+    // Child Plan¿ª ºˆ«‡«‘
+    //-----------------------------------
+
+    // doIt left child
+    IDE_TEST( aPlan->left->doIt( aTemplate, aPlan->left, aFlag )
+              != IDE_SUCCESS );
+
+    if ( ( *aFlag & QMC_ROW_DATA_MASK ) == QMC_ROW_DATA_EXIST )
+    {
+        for ( sTmp = sCodePlan->mTableList, i = 0;
+              sTmp != NULL;
+              sTmp = sTmp->mNext, i++ )
+        {
+            sDataPlan->updateTuple = &aTemplate->tmplate.rows[sTmp->mTableRef->table];
+
+            if ( sTmp->mInsteadOfTrigger == ID_TRUE )
+            {
+                IDE_TEST( fireInsteadOfTriggerMultiUpdate( aTemplate,
+                                                           sCodePlan,
+                                                           sDataPlan,
+                                                           sTmp,
+                                                           i )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                sIsSkip = ID_FALSE;
+                // get cursor
+                IDE_TEST( getCursorMultiTable( aTemplate,
+                                               sCodePlan,
+                                               sDataPlan,
+                                               sTmp,
+                                               &sIsSkip )
+                          != IDE_SUCCESS );
+
+                if ( sIsSkip == ID_FALSE )
+                {
+                    IDE_TEST( checkSkipMultiTable( aTemplate,
+                                                   sDataPlan,
+                                                   sTmp,
+                                                   &sIsSkip )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+
+                if ( sIsSkip == ID_TRUE )
+                {
+                    sSkipExist = ID_TRUE;
+                    continue;
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+
+                switch ( sTmp->mUpdateType )
+                {
+                    case QMO_UPDATE_NORMAL:
+                    {
+                        // update one record
+                        IDE_TEST( updateOneRowMultiTable( aTemplate,
+                                                          sCodePlan,
+                                                          sDataPlan,
+                                                          sTmp,
+                                                          i )
+                                  != IDE_SUCCESS );
+                        sUpdateCount++;
+                        break;
+                    }
+                    case QMO_UPDATE_ROWMOVEMENT:
+                    {
+                        IDE_TEST( qmx::checkAccessOptionForExistentRecord(
+                                            sDataPlan->accessOption,
+                                            sDataPlan->updateTuple->tableHandle )
+                                  != IDE_SUCCESS );
+
+                        // open insert cursor
+                        IDE_TEST( openInsertCursorMultiTable( aTemplate,
+                                                              sDataPlan,
+                                                              sTmp,
+                                                              i )
+                                  != IDE_SUCCESS );
+
+                        // update one record
+                        IDE_TEST( updateOneRowForRowmovementMultiTable( aTemplate,
+                                                                        sCodePlan,
+                                                                        sDataPlan,
+                                                                        sTmp,
+                                                                        i )
+                                  != IDE_SUCCESS );
+                        sUpdateCount++;
+                        break;
+                    }
+                    case QMO_UPDATE_CHECK_ROWMOVEMENT:
+                    {
+                        IDE_TEST( qmx::checkAccessOptionForExistentRecord(
+                                            sDataPlan->accessOption,
+                                            sDataPlan->updateTuple->tableHandle )
+                                  != IDE_SUCCESS );
+
+                        // update one record
+                        IDE_TEST( updateOneRowForCheckRowmovementMultiTable( aTemplate,
+                                                                             sCodePlan,
+                                                                             sDataPlan,
+                                                                             sTmp,
+                                                                             i )
+                                  != IDE_SUCCESS );
+                        sUpdateCount++;
+                        break;
+                    }
+                    case QMO_UPDATE_NO_ROWMOVEMENT:
+                    {
+                        IDE_TEST( qmx::checkAccessOptionForExistentRecord(
+                                            sDataPlan->accessOption,
+                                            sDataPlan->updateTuple->tableHandle )
+                                  != IDE_SUCCESS );
+
+                        // update one record
+                        IDE_TEST( updateOneRowMultiTable( aTemplate,
+                                                          sCodePlan,
+                                                          sDataPlan,
+                                                          sTmp,
+                                                          i )
+                                  != IDE_SUCCESS );
+                        sUpdateCount++;
+                        break;
+                    }
+                    default:
+                        IDE_RAISE( UNEXPECTED );
+                        break;
+                }
+            }
+        }
+
+        /**
+         * Multiple Update¿Ã±‚ ∂ßπÆø° do it Ω√ 1∞≥¿« row∞° æ∆¥œ∂Û ø©∑Ø∞≥¿« row∏¶
+         * æ˜µ•¿Ã∆Æ «“ ºˆµµ ¿÷∞Ì æ∆π´∞Õµµ æ «“ ºˆµµ ¿÷¥Ÿ.
+         *
+         * nuwRows¥¬ ±‚∫ª¿˚¿∏∑Œ 1∞≥∞° ¡ı∞°µ«æ˙±‚ ∂ßπÆø° skip ¿Ã æ¯¥Ÿ∏È update
+         * row -1 ∏∏≈≠ ¡ı∞°Ω√≈∞∞Ì skip¿Ã ¿÷¥Ÿ∏È update row ∞° æ¯¥¬ ∞ÊøÏøÕ
+         * 1¿Œ∞ÊøÏ ±◊∏Æ∞Ì ≥™∏”¡ˆø° ∂ß∂Û numRow∏¶ ∫Ø»≠Ω√ƒ—¡‡æﬂ«—¥Ÿ.
+         */
+        if ( sSkipExist == ID_TRUE )
+        {
+            if ( sUpdateCount < 1 )
+            {
+                aTemplate->numRows--;
+            }
+            else if ( sUpdateCount == 1 )
+            {
+                /* Nothing to do */
+            }
+            else
+            {
+                aTemplate->numRows += ( sUpdateCount - 1 );
+            }
+        }
+        else
+        {
+            aTemplate->numRows += ( sUpdateCount - 1 );
+        }
+    }
+    else
+    {
+        // record∞° æ¯¥¬ ∞ÊøÏ
+        // ¥Ÿ¿Ω ºˆ«‡¿ª ¿ß«ÿ √÷√  ºˆ«‡ «‘ºˆ∑Œ º≥¡§«‘.
+        sDataPlan->doIt = qmnUPTE::doItFirstMultiTable;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( UNEXPECTED )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmnUPTE::doItNextMultiTable",
+                                  "Not support updateType" ));
+    }
+    IDE_EXCEPTION_END;
+
+    for ( i = 0; i < sCodePlan->mMultiTableCount; i++ )
+    {
+        if ( sDataPlan->mTableArray[i].mLobInfo != NULL )
+        {
+            (void)qmx::finalizeLobInfo( aTemplate->stmt, sDataPlan->mTableArray[i].mLobInfo );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    return IDE_FAILURE;
+}
+
+IDE_RC qmnUPTE::getCursorMultiTable( qcTemplate     * aTemplate,
+                                     qmncUPTE       * aCodePlan,
+                                     qmndUPTE       * aDataPlan,
+                                     qmmMultiTables * aTable,
+                                     idBool         * aIsSkip )
+{
+    qmnCursorInfo * sCursorInfo = NULL;
+    UShort          sTupleID = 0;
+    ULong           sFlag = 0;
+
+    if ( aTable->mTableRef->partitionRef == NULL )
+    {
+        if ( aDataPlan->updateTupleID != aTable->mTableRef->table )
+        {
+            aDataPlan->updateTupleID = aTable->mTableRef->table;
+
+            sCursorInfo = (qmnCursorInfo *)aTemplate->tmplate.rows[aDataPlan->updateTupleID].cursorInfo;
+
+            IDE_TEST_RAISE( sCursorInfo == NULL, ERR_NOT_FOUND );
+
+            aDataPlan->updateCursor = sCursorInfo->cursor;
+
+            aDataPlan->updatePartInfo             = aTable->mTableRef->tableInfo;
+            aDataPlan->retryInfo.mIsWithoutRetry  = aCodePlan->withoutRetry;
+            aDataPlan->retryInfo.mStmtRetryColLst = sCursorInfo->stmtRetryColLst;
+            aDataPlan->retryInfo.mRowRetryColLst  = sCursorInfo->rowRetryColLst;
+
+            /* PROJ-2359 Table/Partition Access Option */
+            aDataPlan->accessOption = sCursorInfo->accessOption;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        if ( aDataPlan->updateTupleID != aDataPlan->updateTuple->partitionTupleID )
+        {
+            sTupleID = aDataPlan->updateTupleID;
+            aDataPlan->updateTupleID = aDataPlan->updateTuple->partitionTupleID;
+
+            // partition¿« cursor∏¶ æÚ¥¬¥Ÿ.
+            sCursorInfo = (qmnCursorInfo*)
+                aTemplate->tmplate.rows[aDataPlan->updateTupleID].cursorInfo;
+
+            sFlag = aTemplate->tmplate.rows[aDataPlan->updateTupleID].lflag;
+
+            if ( ( sFlag & MTC_TUPLE_PARTITIONED_TABLE_MASK )
+                 == MTC_TUPLE_PARTITIONED_TABLE_TRUE )
+            {
+                *aIsSkip = ID_TRUE;
+                aDataPlan->updateTupleID = sTupleID;
+                IDE_RAISE( normal_exit );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+
+            IDE_TEST_RAISE( sCursorInfo == NULL, ERR_NOT_FOUND );
+
+            aDataPlan->updateCursor    = sCursorInfo->cursor;
+
+            /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
+            IDE_TEST( smiGetTableTempInfo( aDataPlan->updateTuple->tableHandle,
+                                           (void **)&(aDataPlan->updatePartInfo) )
+                      != IDE_SUCCESS );
+
+            aDataPlan->retryInfo.mIsWithoutRetry  = aCodePlan->withoutRetry;
+            aDataPlan->retryInfo.mStmtRetryColLst = sCursorInfo->stmtRetryColLst;
+            aDataPlan->retryInfo.mRowRetryColLst  = sCursorInfo->rowRetryColLst;
+
+            /* PROJ-2359 Table/Partition Access Option */
+            aDataPlan->accessOption = sCursorInfo->accessOption;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        sCursorInfo = (qmnCursorInfo*)
+            aTemplate->tmplate.rows[aTable->mTableRef->table].cursorInfo;
+
+        IDE_TEST_RAISE( sCursorInfo == NULL, ERR_NOT_FOUND );
+
+        aDataPlan->indexUpdateCursor = sCursorInfo->cursor;
+        aDataPlan->indexUpdateTuple = sCursorInfo->selectedIndexTuple;
+    }
+
+    IDE_EXCEPTION_CONT( normal_exit );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NOT_FOUND )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmnUPTE::getCursorMultiTable",
+                                  "cursor not found" ));
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+    // Update One Record
+IDE_RC qmnUPTE::updateOneRowMultiTable( qcTemplate     * aTemplate,
+                                        qmncUPTE       * aCodePlan,
+                                        qmndUPTE       * aDataPlan,
+                                        qmmMultiTables * aTable,
+                                        UInt             aIndex )
+{
+    void              * sOrgRow;
+
+    smiValue          * sSmiValues;
+    smiValue          * sSmiValuesForPartition = NULL;
+    smiValue            sValuesForPartition[QC_MAX_COLUMN_COUNT];
+    void              * sRow;
+    qmndMultiTables   * sDataTable;
+    // PROJ-1784 DML Without Retry
+    smiValue            sWhereSmiValues[QC_MAX_COLUMN_COUNT];
+    smiValue            sSetSmiValues[QC_MAX_COLUMN_COUNT];
+    idBool              sIsDiskTableOrPartition = ID_FALSE;
+
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯
+     * Memory¿Œ ∞ÊøÏ, newRowø° ªı∑ŒøÓ ¡÷º“∏¶ «“¥Á«—¥Ÿ. µ˚∂Ûº≠, newRowø° ¡˜¡¢ ¡¢±Ÿ«œ¡ˆ æ ¥¬¥Ÿ.
+     */
+    sDataTable = &aDataPlan->mTableArray[aIndex];
+
+    //-----------------------------------
+    // clear lob
+    //-----------------------------------
+    // PROJ-1362
+    if ( sDataTable->mLobInfo != NULL )
+    {
+        (void) qmx::clearLobInfo( sDataTable->mLobInfo );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    //-----------------------------------
+    // copy old row
+    //-----------------------------------
+
+    if ( sDataTable->mNeedTriggerRow == ID_TRUE )
+    {
+        // OLD ROW REFERENCING¿ª ¿ß«— ¿˙¿Â
+        idlOS::memcpy( sDataTable->mOldRow,
+                       aDataPlan->updateTuple->row,
+                       aDataPlan->updateTuple->rowOffset );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    //-----------------------------------
+    // set next sequence
+    //-----------------------------------
+
+    // Sequence Value »πµÊ
+    if ( aCodePlan->nextValSeqs != NULL )
+    {
+        IDE_TEST( qmx::readSequenceNextVals( aTemplate->stmt, aCodePlan->nextValSeqs )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    //-----------------------------------
+    // make update smiValues
+    //-----------------------------------
+
+    sSmiValues = aTemplate->insOrUptRow[ aCodePlan->valueIdx ];
+
+    // subquery∞° ¿÷¿ª∂ß smi value ¡§∫∏ ±∏º∫
+    IDE_TEST( qmx::makeSmiValueForSubqueryMultiTable( aTemplate,
+                                                      aTable->mTableRef->tableInfo,
+                                                      aTable->mColumns,
+                                                      aTable->mValues,
+                                                      aTable->mValuesPos,
+                                                      aCodePlan->subqueries,
+                                                      aTable->mCanonizedTuple,
+                                                      sSmiValues,
+                                                      aTable->mIsNull,
+                                                      sDataTable->mLobInfo )
+              != IDE_SUCCESS );
+
+    // ∞ªΩ≈«“ smi value ¡§∫∏ ±∏º∫
+    IDE_TEST( qmx::makeSmiValueForUpdate( aTemplate,
+                                          aTable->mTableRef->tableInfo,
+                                          aTable->mColumns,
+                                          aTable->mValues,
+                                          aTable->mCanonizedTuple,
+                                          sSmiValues,
+                                          aTable->mIsNull,
+                                          sDataTable->mLobInfo )
+              != IDE_SUCCESS );
+
+    //-----------------------------------
+    // Default Expr
+    //-----------------------------------
+    if ( aTable->mDefaultColumns != NULL )
+    {
+        qmsDefaultExpr::setRowBufferFromBaseColumn(
+            &(aTemplate->tmplate),
+            aTable->mTableRef->table,
+            aTable->mDefaultTableRef->table,
+            aTable->mDefaultBaseColumns,
+            sDataTable->mDefaultExprRowBuffer );
+
+        IDE_TEST( qmsDefaultExpr::setRowBufferFromSmiValueArray(
+                      &(aTemplate->tmplate),
+                      aTable->mDefaultTableRef,
+                      aTable->mColumns,
+                      sDataTable->mDefaultExprRowBuffer,
+                      sSmiValues,
+                      QCM_TABLE_TYPE_IS_DISK( aTable->mTableRef->tableInfo->tableFlag ) )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( qmsDefaultExpr::calculateDefaultExpression(
+                      aTemplate,
+                      aTable->mDefaultTableRef,
+                      aTable->mColumns,
+                      aTable->mDefaultColumns,
+                      sDataTable->mDefaultExprRowBuffer,
+                      sSmiValues,
+                      aTable->mTableRef->tableInfo->columns )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    //-----------------------------------
+    // PROJ-2334 PMT
+    // set update trigger memory variable column info
+    //-----------------------------------
+    if ( ( sDataTable->mExistTrigger == ID_TRUE ) &&
+         ( aTable->mTableRef->tableInfo->tablePartitionType == QCM_PARTITIONED_TABLE ) )
+    {
+        sDataTable->mColumnsForRow = aDataPlan->updatePartInfo->columns;
+    }
+    else
+    {
+        // Nothing To Do
+    }
+
+    // PROJ-2219 Row-level before update trigger
+    if ( sDataTable->mExistTrigger == ID_TRUE )
+    {
+        // «ˆ¿Á triggerø°º≠ lob column¿Ã ¿÷¥¬ table¿∫ ¡ˆø¯«œ¡ˆ æ ¿∏π«∑Œ
+        // Table cursor¥¬ NULL¿ª ≥—±‰¥Ÿ.
+        IDE_TEST( qdnTrigger::fireTrigger(
+                      aTemplate->stmt,
+                      aTemplate->stmt->qmxMem,
+                      aTable->mTableRef->tableInfo,
+                      QCM_TRIGGER_ACTION_EACH_ROW,
+                      QCM_TRIGGER_BEFORE,
+                      QCM_TRIGGER_EVENT_UPDATE,
+                      aTable->mUptColumnList, // UPDATE Column
+                      NULL,                        // Table Cursor
+                      SC_NULL_GRID,                // Row GRID
+                      sDataTable->mOldRow,           // OLD ROW
+                      sDataTable->mColumnsForRow,    // OLD ROW Column
+                      sSmiValues,                  // NEW ROW(value list)
+                      aTable->mColumns )           // NEW ROW Column
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    //-----------------------------------
+    // update one row
+    //-----------------------------------
+    if ( aDataPlan->retryInfo.mIsWithoutRetry == ID_TRUE )
+    {
+        if ( aTable->mTableRef->tableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
+        {
+            sIsDiskTableOrPartition = QCM_TABLE_TYPE_IS_DISK( aDataPlan->updatePartInfo->tableFlag );
+        }
+        else
+        {
+            sIsDiskTableOrPartition = QCM_TABLE_TYPE_IS_DISK( aTable->mTableRef->tableInfo->tableFlag );
+        }
+
+        if ( sIsDiskTableOrPartition == ID_TRUE )
+        {
+            IDE_TEST( qmx::setChkSmiValueList( aDataPlan->updateTuple->row,
+                                               aDataPlan->retryInfo.mStmtRetryColLst,
+                                               sWhereSmiValues,
+                                               & (aDataPlan->retryInfo.mStmtRetryValLst) )
+                      != IDE_SUCCESS );
+
+            IDE_TEST( qmx::setChkSmiValueList( aDataPlan->updateTuple->row,
+                                               aDataPlan->retryInfo.mRowRetryColLst,
+                                               sSetSmiValues,
+                                               & (aDataPlan->retryInfo.mRowRetryValLst) )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    aDataPlan->retryInfo.mIsRowRetry = ID_FALSE;
+
+    if ( QCM_TABLE_TYPE_IS_DISK( aTable->mTableRef->tableInfo->tableFlag ) !=
+         QCM_TABLE_TYPE_IS_DISK( aDataPlan->updatePartInfo->tableFlag ) )
+    {
+        /* PROJ-2464 hybrid partitioned table ¡ˆø¯
+         * Partitioned Table¿ª ±‚¡ÿ¿∏∑Œ ∏∏µÁ smiValue Array∏¶ Table Partitionø° ∏¬∞‘ ∫Ø»Ø«—¥Ÿ.
+         */
+        IDE_TEST( qmx::makeSmiValueWithSmiValue( aTable->mTableRef->tableInfo,
+                                                 aDataPlan->updatePartInfo,
+                                                 aTable->mColumns,
+                                                 aTable->mColumnCount,
+                                                 sSmiValues,
+                                                 sValuesForPartition )
+                  != IDE_SUCCESS );
+
+        sSmiValuesForPartition = sValuesForPartition;
+    }
+    else
+    {
+        sSmiValuesForPartition = sSmiValues;
+    }
+
+    while ( aDataPlan->updateCursor->updateRow( sSmiValuesForPartition,
+                                                &( aDataPlan->retryInfo ),
+                                                & sRow,
+                                                & aDataPlan->rowGRID )
+           != IDE_SUCCESS )
+    {
+        IDE_TEST( ideGetErrorCode() != smERR_RETRY_Row_Retry );
+
+        IDE_TEST( aDataPlan->updateCursor->getLastRow(
+                      (const void**) &(aDataPlan->updateTuple->row),
+                      & aDataPlan->updateTuple->rid )
+                  != IDE_SUCCESS );
+
+        if ( sDataTable->mNeedTriggerRow == ID_TRUE )
+        {
+            // OLD ROW REFERENCING¿ª ¿ß«— ¿˙¿Â
+            idlOS::memcpy( sDataTable->mOldRow,
+                           aDataPlan->updateTuple->row,
+                           aDataPlan->updateTuple->rowOffset );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
+        if ( sDataTable->mLobInfo != NULL )
+        {
+            (void) qmx::clearLobInfo( sDataTable->mLobInfo );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
+        // ∞ªΩ≈«“ smi value ¡§∫∏ ±∏º∫
+        IDE_TEST( qmx::makeSmiValueForUpdate( aTemplate,
+                                              aTable->mTableRef->tableInfo,
+                                              aTable->mColumns,
+                                              aTable->mValues,
+                                              aTable->mCanonizedTuple,
+                                              sSmiValues,
+                                              aTable->mIsNull,
+                                              sDataTable->mLobInfo )
+                  != IDE_SUCCESS );
+
+        //-----------------------------------
+        // Default Expr
+        //-----------------------------------
+
+        if ( aTable->mDefaultColumns != NULL )
+        {
+            qmsDefaultExpr::setRowBufferFromBaseColumn(
+                &(aTemplate->tmplate),
+                aTable->mTableRef->table,
+                aTable->mDefaultTableRef->table,
+                aTable->mDefaultBaseColumns,
+                sDataTable->mDefaultExprRowBuffer );
+
+            IDE_TEST( qmsDefaultExpr::setRowBufferFromSmiValueArray(
+                          &(aTemplate->tmplate),
+                          aTable->mDefaultTableRef,
+                          aTable->mColumns,
+                          sDataTable->mDefaultExprRowBuffer,
+                          sSmiValues,
+                          QCM_TABLE_TYPE_IS_DISK( aTable->mTableRef->tableInfo->tableFlag ) )
+                      != IDE_SUCCESS );
+
+            IDE_TEST( qmsDefaultExpr::calculateDefaultExpression(
+                          aTemplate,
+                          aTable->mDefaultTableRef,
+                          aTable->mColumns,
+                          aTable->mDefaultColumns,
+                          sDataTable->mDefaultExprRowBuffer,
+                          sSmiValues,
+                          aTable->mTableRef->tableInfo->columns )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        if ( sIsDiskTableOrPartition == ID_TRUE )
+        {
+            IDE_TEST( qmx::setChkSmiValueList( aDataPlan->updateTuple->row,
+                                               aDataPlan->retryInfo.mRowRetryColLst,
+                                               sSetSmiValues,
+                                               & (aDataPlan->retryInfo.mRowRetryValLst) )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
+        aDataPlan->retryInfo.mIsRowRetry = ID_TRUE;
+
+        if ( QCM_TABLE_TYPE_IS_DISK( aTable->mTableRef->tableInfo->tableFlag ) !=
+             QCM_TABLE_TYPE_IS_DISK( aDataPlan->updatePartInfo->tableFlag ) )
+        {
+            /* PROJ-2464 hybrid partitioned table ¡ˆø¯
+             * Partitioned Table¿ª ±‚¡ÿ¿∏∑Œ ∏∏µÁ smiValue Array∏¶ Table Partitionø° ∏¬∞‘ ∫Ø»Ø«—¥Ÿ.
+             */
+            IDE_TEST( qmx::makeSmiValueWithSmiValue( aTable->mTableRef->tableInfo,
+                                                     aDataPlan->updatePartInfo,
+                                                     aTable->mColumns,
+                                                     aTable->mColumnCount,
+                                                     sSmiValues,
+                                                     sValuesForPartition )
+                      != IDE_SUCCESS );
+
+            sSmiValuesForPartition = sValuesForPartition;
+        }
+        else
+        {
+            sSmiValuesForPartition = sSmiValues;
+        }
+    }
+
+    // update index table
+    IDE_TEST( updateIndexTableCursorMultiTable( aTemplate,
+                                                aDataPlan,
+                                                aTable,
+                                                aIndex,
+                                                sSmiValues )
+              != IDE_SUCCESS );
+
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯
+     *  Disk Partition¿Œ ∞ÊøÏ, Disk Type¿« Lob Column¿Ã « ø‰«œ¥Ÿ.
+     *  Memory/Volatile Partition¿« ∞ÊøÏ, «ÿ¥Á Partition¿« Lob Column¿Ã « ø‰«œ¥Ÿ.
+     */
+    if ( ( QCM_TABLE_TYPE_IS_DISK( aTable->mTableRef->tableInfo->tableFlag ) !=
+           QCM_TABLE_TYPE_IS_DISK( aDataPlan->updatePartInfo->tableFlag ) ) ||
+         ( ( aTable->mTableRef->tableInfo->tablePartitionType == QCM_PARTITIONED_TABLE ) &&
+           ( QCM_TABLE_TYPE_IS_DISK( aDataPlan->updatePartInfo->tableFlag ) != ID_TRUE ) ) )
+    {
+        IDE_TEST( qmx::changeLobColumnInfo( sDataTable->mLobInfo,
+                                            aDataPlan->updatePartInfo->columns )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    // Lobƒ√∑≥ √≥∏Æ
+    IDE_TEST( qmx::copyAndOutBindLobInfo( aTemplate->stmt,
+                                          sDataTable->mLobInfo,
+                                          aDataPlan->updateCursor,
+                                          sRow,
+                                          aDataPlan->rowGRID )
+              != IDE_SUCCESS );
+
+    //-----------------------------------
+    // check constraint
+    //-----------------------------------
+    if ( ( sDataTable->mNeedTriggerRow == ID_TRUE ) ||
+         ( aTable->mCheckConstrList != NULL ) )
+    {
+        // NEW ROW¿« »πµÊ
+        IDE_TEST( aDataPlan->updateCursor->getLastModifiedRow(
+                      &sDataTable->mNewRow,
+                      aDataPlan->updateTuple->rowOffset )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    /* PROJ-1107 Check Constraint ¡ˆø¯ */
+    if ( aTable->mCheckConstrList != NULL )
+    {
+        sOrgRow = aDataPlan->updateTuple->row;
+        aDataPlan->updateTuple->row = sDataTable->mNewRow;
+
+        IDE_TEST( qdnCheck::verifyCheckConstraintList(
+                      aTemplate,
+                      aTable->mCheckConstrList )
+                  != IDE_SUCCESS );
+
+        aDataPlan->updateTuple->row = sOrgRow;
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    //-----------------------------------
+    // update after trigger
+    //-----------------------------------
+    if ( sDataTable->mExistTrigger == ID_TRUE )
+    {
+        // PROJ-1359 Trigger
+        // ROW GRANULARITY TRIGGER¿« ºˆ«‡
+        IDE_TEST( qdnTrigger::fireTrigger( aTemplate->stmt,
+                                           aTemplate->stmt->qmxMem,
+                                           aTable->mTableRef->tableInfo,
+                                           QCM_TRIGGER_ACTION_EACH_ROW,
+                                           QCM_TRIGGER_AFTER,
+                                           QCM_TRIGGER_EVENT_UPDATE,
+                                           aTable->mUptColumnList,
+                                           aDataPlan->updateCursor,         /* Table Cursor */
+                                           aDataPlan->updateTuple->rid,     /* Row GRID */
+                                           sDataTable->mOldRow,
+                                           sDataTable->mColumnsForRow,
+                                           sDataTable->mNewRow,
+                                           sDataTable->mColumnsForRow )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    if ( ( *aDataPlan->flag & QMND_UPTE_UPDATE_MASK )
+         == QMND_UPTE_UPDATE_FALSE )
+    {
+        *aDataPlan->flag &= ~QMND_UPTE_UPDATE_MASK;
+        *aDataPlan->flag |= QMND_UPTE_UPDATE_TRUE;
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmnUPTE::checkSkipMultiTable( qcTemplate     * aTemplate,
+                                     qmndUPTE       * aDataPlan,
+                                     qmmMultiTables * aTable,
+                                     idBool         * aIsSkip )
+{
+    scGRID   sNullRID;
+    void   * sNullRow = NULL;
+    UInt     sTableType;
+    void   * sTableHandle = NULL;
+    idBool   sIsSkip = ID_FALSE;
+
+    if ( aTable->mTableRef->partitionRef == NULL )
+    {
+        sTableType   = aTable->mTableRef->tableInfo->tableFlag & SMI_TABLE_TYPE_MASK;
+        sTableHandle = aTable->mTableRef->tableHandle;
+    }
+    else
+    {
+        sTableType   = aDataPlan->updatePartInfo->tableFlag & SMI_TABLE_TYPE_MASK;
+        sTableHandle = aDataPlan->updateTuple->tableHandle;
+    }
+
+    if ( aDataPlan->updateTuple->row == NULL )
+    {
+        sIsSkip = ID_TRUE;
+        IDE_CONT( normal_exit );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    /* check null */
+    if ( sTableType == SMI_TABLE_DISK )
+    {
+        SMI_MAKE_VIRTUAL_NULL_GRID( sNullRID );
+
+        if ( SC_GRID_IS_EQUAL( sNullRID, aDataPlan->updateTuple->rid )
+             == ID_TRUE )
+        {
+            sIsSkip = ID_TRUE;
+            IDE_CONT( normal_exit );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        IDE_TEST( smiGetTableNullRow( sTableHandle,
+                                      (void **) &sNullRow,
+                                      & sNullRID )
+                  != IDE_SUCCESS );
+
+        if ( sNullRow == aDataPlan->updateTuple->row )
+        {
+            sIsSkip = ID_TRUE;
+            IDE_CONT( normal_exit );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    /* Left Outer join¿« right pad null Ω√ view¿« ∞ÊøÏø°¥¬ ¿⁄Ω≈¿« view tupleø°
+     * ¥Î«— rowø° ¥Î«ÿ pad null¿ª ºˆ«‡«—¥Ÿ.
+     * right viewø° º”«— ≈◊¿Ã∫Ì¿Ã æ˜µ•¿Ã∆Æ¿« ∞ÊøÏ right pad nullΩ√ø°¥¬ skip «ÿæﬂ «—¥Ÿ.
+     */
+    if ( aTable->mViewID > -1 )
+    {
+        if ( ( aTemplate->tmplate.rows[aTable->mViewID].lflag & MTC_TUPLE_VIEW_PADNULL_MASK )
+             == MTC_TUPLE_VIEW_PADNULL_TRUE )
+        {
+            sIsSkip = ID_TRUE;
+            IDE_CONT( normal_exit );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    // PROJ-2204 join update, delete
+    // tuple ø¯∫πΩ√ cursorµµ ø¯∫π«ÿæﬂ«—¥Ÿ.
+    IDE_TEST( aDataPlan->updateCursor->setRowPosition( aDataPlan->updateTuple->row,
+                                                       aDataPlan->updateTuple->rid )
+              != IDE_SUCCESS );
+
+    /* ¡ﬂ∫π update¿Œ¡ˆ √º≈© */
+    IDE_TEST( aDataPlan->updateCursor->isUpdatedRowBySameStmt( &sIsSkip )
+              != IDE_SUCCESS );
+
+    IDE_EXCEPTION_CONT( normal_exit );
+
+    *aIsSkip = sIsSkip;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmnUPTE::updateIndexTableCursorMultiTable( qcTemplate     * aTemplate,
+                                                  qmndUPTE       * aDataPlan,
+                                                  qmmMultiTables * aTable,
+                                                  UInt             aIndex,
+                                                  smiValue       * aUpdateValue )
+{
+    void            * sRow;
+    scGRID            sRowGRID;
+    UInt              sIndexUpdateValueCount;
+    qmndMultiTables * sDataTable;
+
+    sDataTable = &aDataPlan->mTableArray[aIndex];
+
+    // update index table
+    if ( ( sDataTable->mFlag & QMND_UPTE_INDEX_CURSOR_MASK )
+         == QMND_UPTE_INDEX_CURSOR_INITED )
+    {
+        if ( ( sDataTable->mFlag & QMND_UPTE_SELECTED_INDEX_CURSOR_MASK )
+             == QMND_UPTE_SELECTED_INDEX_CURSOR_TRUE )
+        {
+            IDE_TEST( qmsIndexTable::makeUpdateSmiValue(
+                          aTable->mColumnCount,
+                          aTable->mColumnIDs,
+                          aUpdateValue,
+                          aTable->mTableRef->selectedIndexTable,
+                          ID_FALSE,
+                          NULL,
+                          NULL,
+                          &sIndexUpdateValueCount,
+                          aDataPlan->indexUpdateValue )
+                      != IDE_SUCCESS );
+
+            // PROJ-2204 join update, delete
+            // tuple ø¯∫πΩ√ cursorµµ ø¯∫π«ÿæﬂ«—¥Ÿ.
+            if ( aTable->mTableRef->view != NULL )
+            {
+                IDE_TEST( aDataPlan->indexUpdateCursor->setRowPosition(
+                              aDataPlan->indexUpdateTuple->row,
+                              aDataPlan->indexUpdateTuple->rid )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                // Nothing to do.
+            }
+
+            IDE_TEST( aDataPlan->indexUpdateCursor->updateRow(
+                          aDataPlan->indexUpdateValue,
+                          & sRow,
+                          & sRowGRID )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+        // ¥Ÿ∏• index tableµµ update
+        IDE_TEST( qmsIndexTable::updateIndexTableCursors(
+                      aTemplate->stmt,
+                      & (sDataTable->mIndexTableCursorInfo),
+                      aTable->mColumnCount,
+                      aTable->mColumnIDs,
+                      aUpdateValue,
+                      ID_FALSE,
+                      NULL,
+                      NULL,
+                      aDataPlan->updateTuple->rid )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmnUPTE::closeCursorMultiTable( qcTemplate * aTemplate,
+                                       qmnPlan    * aPlan )
+{
+    qmncUPTE * sCodePlan = (qmncUPTE*) aPlan;
+    qmndUPTE * sDataPlan =
+        (qmndUPTE*) (aTemplate->tmplate.data + aPlan->offset);
+    UInt        i;
+
+    for ( i = 0; i < sCodePlan->mMultiTableCount; i++ )
+    {
+        if ( ( sDataPlan->mTableArray[i].mFlag & QMND_UPTE_CURSOR_MASK )
+             == QMND_UPTE_CURSOR_OPEN )
+        {
+            sDataPlan->mTableArray[i].mFlag &= ~QMND_UPTE_CURSOR_MASK;
+            sDataPlan->mTableArray[i].mFlag |= QMND_UPTE_CURSOR_CLOSED;
+
+            IDE_TEST( sDataPlan->mTableArray[i].mInsertCursorMgr.closeCursor()
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
+        if ( ( sDataPlan->mTableArray[i].mFlag & QMND_UPTE_INDEX_CURSOR_MASK )
+             == QMND_UPTE_INDEX_CURSOR_INITED )
+        {
+            sDataPlan->mTableArray[i].mFlag &= ~QMND_UPTE_INDEX_CURSOR_MASK;
+            sDataPlan->mTableArray[i].mFlag |= QMND_UPTE_INDEX_CURSOR_NONE;
+
+            IDE_TEST( qmsIndexTable::closeIndexTableCursors(
+                          & (sDataPlan->mTableArray[i].mIndexTableCursorInfo) )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    for ( i = 0; i < sCodePlan->mMultiTableCount; i++ )
+    {
+        if ( ( sDataPlan->mTableArray[i].mFlag & QMND_UPTE_CURSOR_MASK )
+             == QMND_UPTE_CURSOR_OPEN )
+        {
+            sDataPlan->mTableArray[i].mFlag &= ~QMND_UPTE_CURSOR_MASK;
+            sDataPlan->mTableArray[i].mFlag |= QMND_UPTE_CURSOR_CLOSED;
+
+            ( void )sDataPlan->mTableArray[i].mInsertCursorMgr.closeCursor();
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
+        if ( ( sDataPlan->mTableArray[i].mFlag & QMND_UPTE_INDEX_CURSOR_MASK )
+             == QMND_UPTE_INDEX_CURSOR_INITED )
+        {
+            sDataPlan->mTableArray[i].mFlag &= ~QMND_UPTE_INDEX_CURSOR_MASK;
+            sDataPlan->mTableArray[i].mFlag |= QMND_UPTE_INDEX_CURSOR_NONE;
+
+            qmsIndexTable::finalizeIndexTableCursors(
+                &(sDataPlan->mTableArray[i].mIndexTableCursorInfo));
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    return IDE_FAILURE;
+}
+
+IDE_RC qmnUPTE::allocTriggerRowMultiTable( qcTemplate * aTemplate,
+                                           qmncUPTE   * aCodePlan,
+                                           qmndUPTE   * aDataPlan )
+{
+    UInt sMaxRowOffsetForUpdate = 0;
+    UInt sMaxRowOffsetForInsert = 0;
+    UInt i                      = 0;
+    qmmMultiTables * sTmp       = NULL;
+
+    for ( sTmp = aCodePlan->mTableList, i = 0; sTmp != NULL; sTmp = sTmp->mNext, i++ )
+    {
+        //---------------------------------
+        // Trigger∏¶ ¿ß«— ∞¯∞£¿ª ∏∂∑√
+        //---------------------------------
+
+        if ( sTmp->mTableRef->tableInfo->triggerCount > 0 )
+        {
+            if ( sTmp->mInsteadOfTrigger == ID_TRUE )
+            {
+                // instead of triggerø°º≠¥¬ smiValues∏¶ ªÁøÎ«—¥Ÿ.
+
+                IDU_FIT_POINT("qmnUpdate::allocTriggerRowMultiTable::alloc::mOldRow",
+                              idERR_ABORT_InsufficientMemory);
+                // alloc sOldRow
+                IDE_TEST( aTemplate->stmt->qmxMem->alloc(
+                        ID_SIZEOF(smiValue) *
+                        sTmp->mTableRef->tableInfo->columnCount,
+                        (void**) & aDataPlan->mTableArray[i].mOldRow )
+                    != IDE_SUCCESS);
+
+                // alloc sNewRow
+                IDU_FIT_POINT("qmnUpdate::allocTriggerRowMultiTable::alloc::mNewRow",
+                              idERR_ABORT_InsufficientMemory);
+                IDE_TEST( aTemplate->stmt->qmxMem->alloc(
+                        ID_SIZEOF(smiValue) *
+                        sTmp->mTableRef->tableInfo->columnCount,
+                        (void**) & aDataPlan->mTableArray[i].mNewRow )
+                    != IDE_SUCCESS);
+            }
+            else
+            {
+                sMaxRowOffsetForUpdate = qmx::getMaxRowOffset( &(aTemplate->tmplate),
+                                                               sTmp->mTableRef );
+                if ( sTmp->mUpdateType == QMO_UPDATE_ROWMOVEMENT )
+                {
+                    sMaxRowOffsetForInsert = qmx::getMaxRowOffset( &(aTemplate->tmplate),
+                                                                   sTmp->mInsertTableRef );
+                }
+                else
+                {
+                    sMaxRowOffsetForInsert = 0;
+                }
+
+                IDU_FIT_POINT("qmnUpdate::allocTriggerRowMultiTable::alloc::mOldRow2",
+                              idERR_ABORT_InsufficientMemory);
+
+                if ( sMaxRowOffsetForUpdate > 0 )
+                {
+                    // Old Row Referencing¿ª ¿ß«— ∞¯∞£ «“¥Á
+                    IDE_TEST( aTemplate->stmt->qmxMem->alloc(
+                                sMaxRowOffsetForUpdate,
+                                (void**) & aDataPlan->mTableArray[i].mOldRow )
+                              != IDE_SUCCESS);
+                }
+                else
+                {
+                    aDataPlan->mTableArray[i].mOldRow = NULL;
+                }
+
+                IDU_FIT_POINT("qmnUpdate::allocTriggerRowMultiTable::alloc::mNewRow2",
+                              idERR_ABORT_InsufficientMemory);
+
+                sMaxRowOffsetForInsert = IDL_MAX( sMaxRowOffsetForUpdate, sMaxRowOffsetForInsert);
+                if ( sMaxRowOffsetForInsert > 0 )
+                {
+                    // New Row Referencing¿ª ¿ß«— ∞¯∞£ «“¥Á
+                    IDE_TEST( aTemplate->stmt->qmxMem->cralloc(
+                                sMaxRowOffsetForInsert,
+                                (void**) & aDataPlan->mTableArray[i].mNewRow )
+                              != IDE_SUCCESS);
+                }
+                else
+                {
+                    aDataPlan->mTableArray[i].mNewRow = NULL;
+                }
+            }
+
+            aDataPlan->mTableArray[i].mColumnsForRow = sTmp->mTableRef->tableInfo->columns;
+
+            aDataPlan->mTableArray[i].mNeedTriggerRow = ID_FALSE;
+            aDataPlan->mTableArray[i].mExistTrigger = ID_TRUE;
+        }
+        else
+        {
+            // check constraintøÕ return intoø°º≠µµ trigger row∏¶ ªÁøÎ«—¥Ÿ.
+            if ( sTmp->mCheckConstrList != NULL )
+            {
+                sMaxRowOffsetForUpdate = qmx::getMaxRowOffset( &(aTemplate->tmplate),
+                                                               sTmp->mTableRef );
+
+                if ( sTmp->mUpdateType == QMO_UPDATE_ROWMOVEMENT )
+                {
+                    sMaxRowOffsetForInsert = qmx::getMaxRowOffset( &(aTemplate->tmplate),
+                                                                   sTmp->mInsertTableRef );
+                }
+                else
+                {
+                    sMaxRowOffsetForInsert = 0;
+                }
+
+                IDU_FIT_POINT("qmnUpdate::allocTriggerRowMultiTable::alloc::mOldRow3",
+                              idERR_ABORT_InsufficientMemory);
+
+                if ( sMaxRowOffsetForUpdate > 0 )
+                {
+                    // Old Row Referencing¿ª ¿ß«— ∞¯∞£ «“¥Á
+                    IDE_TEST( aTemplate->stmt->qmxMem->alloc(
+                                sMaxRowOffsetForUpdate,
+                                (void**) & aDataPlan->mTableArray[i].mOldRow )
+                              != IDE_SUCCESS);
+                }
+                else
+                {
+                    aDataPlan->mTableArray[i].mOldRow = NULL;
+                }
+
+                IDU_FIT_POINT("qmnUpdate::allocTriggerRowMultiTable::alloc::mNewRow3",
+                              idERR_ABORT_InsufficientMemory);
+
+                sMaxRowOffsetForInsert = IDL_MAX( sMaxRowOffsetForUpdate, sMaxRowOffsetForInsert);
+                if ( sMaxRowOffsetForInsert > 0 )
+                {
+                    // New Row Referencing¿ª ¿ß«— ∞¯∞£ «“¥Á
+                    IDE_TEST( aTemplate->stmt->qmxMem->cralloc(
+                                sMaxRowOffsetForInsert,
+                                (void**) & aDataPlan->mTableArray[i].mNewRow )
+                              != IDE_SUCCESS);
+                }
+                else
+                {
+                    aDataPlan->mTableArray[i].mNewRow = NULL;
+                }
+            }
+            else
+            {
+                aDataPlan->mTableArray[i].mOldRow = NULL;
+                aDataPlan->mTableArray[i].mNewRow = NULL;
+            }
+
+            aDataPlan->mTableArray[i].mNeedTriggerRow = ID_FALSE;
+            aDataPlan->mTableArray[i].mExistTrigger = ID_FALSE;
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmnUPTE::checkTriggerMultiUpdate( qcTemplate     * aTemplate,
+                                         qmndUPTE       * aDataPlan,
+                                         qmmMultiTables * aTable,
+                                         UInt             aIndex )
+{
+
+    idBool     sNeedTriggerRow;
+
+    if ( aDataPlan->mTableArray[aIndex].mExistTrigger == ID_TRUE )
+    {
+        if ( aTable->mInsteadOfTrigger == ID_TRUE )
+        {
+            IDE_TEST( qdnTrigger::needTriggerRow( aTemplate->stmt,
+                                                  aTable->mTableRef->tableInfo,
+                                                  QCM_TRIGGER_INSTEAD_OF,
+                                                  QCM_TRIGGER_EVENT_UPDATE,
+                                                  aTable->mUptColumnList,
+                                                  &sNeedTriggerRow )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            // Trigger∏¶ ¿ß«— Referencing Row∞° « ø‰«—¡ˆ∏¶ ∞ÀªÁ
+            // PROJ-2219 Row-level before update trigger
+            IDE_TEST( qdnTrigger::needTriggerRow( aTemplate->stmt,
+                                                  aTable->mTableRef->tableInfo,
+                                                  QCM_TRIGGER_BEFORE,
+                                                  QCM_TRIGGER_EVENT_UPDATE,
+                                                  aTable->mUptColumnList,
+                                                  &sNeedTriggerRow )
+                      != IDE_SUCCESS );
+
+            if ( sNeedTriggerRow == ID_FALSE )
+            {
+                IDE_TEST( qdnTrigger::needTriggerRow( aTemplate->stmt,
+                                                      aTable->mTableRef->tableInfo,
+                                                      QCM_TRIGGER_AFTER,
+                                                      QCM_TRIGGER_EVENT_UPDATE,
+                                                      aTable->mUptColumnList,
+                                                      &sNeedTriggerRow )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                // Nothing to do.
+            }
+        }
+        aDataPlan->mTableArray[aIndex].mNeedTriggerRow = sNeedTriggerRow;
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmnUPTE::fireInsteadOfTriggerMultiUpdate( qcTemplate     * aTemplate,
+                                                 qmncUPTE       * aCodePlan,
+                                                 qmndUPTE       * aDataPlan,
+                                                 qmmMultiTables * aTable,
+                                                 UInt             aIndex )
+{
+    qcmTableInfo * sTableInfo = NULL;
+    qcmColumn    * sQcmColumn = NULL;
+    mtcColumn    * sColumn    = NULL;
+    smiValue     * sSmiValues = NULL;
+    mtcStack     * sStack     = NULL;
+    SInt           sRemain    = 0;
+    UShort         i          = 0;
+    qmndMultiTables * sDataTable = NULL;
+
+    sTableInfo = aTable->mTableRef->tableInfo;
+    sDataTable = &aDataPlan->mTableArray[aIndex];
+
+    if ( sDataTable->mNeedTriggerRow == ID_TRUE )
+    {
+        //-----------------------------------
+        // get Old Row
+        //-----------------------------------
+
+        sStack = aTemplate->tmplate.stack;
+        sRemain = aTemplate->tmplate.stackRemain;
+
+        IDE_TEST_RAISE( sRemain < aDataPlan->updateTuple->columnCount,
+                        ERR_STACK_OVERFLOW );
+
+        // UPDATEøÕ VIEW ªÁ¿Ãø° FILT ∞∞¿∫ ¥Ÿ∏• ≥ÎµÂµÈø° ¿««ÿ stack¿Ã ∫Ø∞Êµ«æ˙¿ª ºˆ ¿÷¿∏π«∑Œ
+        // stack¿ª view tuple¿« ƒ√∑≥¿∏∑Œ ¿Áº≥¡§«—¥Ÿ.
+        for ( i = 0, sColumn = aDataPlan->updateTuple->columns;
+              i < aDataPlan->updateTuple->columnCount;
+              i++, sColumn++, sStack++ )
+        {
+            sStack->column = sColumn;
+            sStack->value  =
+                (void*)((SChar*)aDataPlan->updateTuple->row + sColumn->column.offset);
+        }
+
+        /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
+        if ( sTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
+        {
+            if ( aDataPlan->updatePartInfo != NULL )
+            {
+                if ( aDataPlan->updateTuple->tableHandle != aDataPlan->updatePartInfo->tableHandle )
+                {
+                    IDE_TEST( smiGetTableTempInfo( aDataPlan->updateTuple->tableHandle,
+                                                   (void **)&(aDataPlan->updatePartInfo) )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    /* Nothing to do */
+                }
+            }
+            else
+            {
+                IDE_TEST( smiGetTableTempInfo( aDataPlan->updateTuple->tableHandle,
+                                               (void **)&(aDataPlan->updatePartInfo) )
+                          != IDE_SUCCESS );
+            }
+
+            // ¥ÎªÛ Partition¿Ã ∏Ì»Æ«œπ«∑Œ, ¿€æ˜ ±‚¡ÿ¿ª Partition¿∏∑Œ º≥¡§«—¥Ÿ.
+            sTableInfo = aDataPlan->updatePartInfo;
+            sDataTable->mColumnsForRow = aDataPlan->updatePartInfo->columns;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        IDE_TEST( qmx::makeSmiValueWithStack( sDataTable->mColumnsForRow,
+                                              aTemplate,
+                                              aTemplate->tmplate.stack,
+                                              sTableInfo,
+                                              (smiValue*) sDataTable->mOldRow,
+                                              NULL )
+                  != IDE_SUCCESS );
+
+        //-----------------------------------
+        // get New Row
+        //-----------------------------------
+
+        // Sequence Value »πµÊ
+        if ( aCodePlan->nextValSeqs != NULL )
+        {
+            IDE_TEST( qmx::readSequenceNextVals( aTemplate->stmt,
+                                                 aCodePlan->nextValSeqs )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        sSmiValues = aTemplate->insOrUptRow[ aCodePlan->valueIdx ];
+
+        // subquery∞° ¿÷¿ª∂ß smi value ¡§∫∏ ±∏º∫
+        IDE_TEST( qmx::makeSmiValueForSubqueryMultiTable( aTemplate,
+                                                          sTableInfo,
+                                                          aTable->mColumns,
+                                                          aTable->mValues,
+                                                          aTable->mValuesPos,
+                                                          aCodePlan->subqueries,
+                                                          aTable->mCanonizedTuple,
+                                                          sSmiValues,
+                                                          aTable->mIsNull,
+                                                          sDataTable->mLobInfo )
+                  != IDE_SUCCESS );
+
+        // ∞ªΩ≈«“ smi value ¡§∫∏ ±∏º∫
+        IDE_TEST( qmx::makeSmiValueForUpdate( aTemplate,
+                                              aTable->mTableRef->tableInfo,
+                                              aTable->mColumns,
+                                              aTable->mValues,
+                                              aTable->mCanonizedTuple,
+                                              sSmiValues,
+                                              aTable->mIsNull,
+                                              sDataTable->mLobInfo )
+                  != IDE_SUCCESS );
+
+        // old smiValues∏¶ new smiValues∑Œ ∫πªÁ
+        idlOS::memcpy( sDataTable->mNewRow,
+                       sDataTable->mOldRow,
+                       ID_SIZEOF(smiValue) * aDataPlan->updateTuple->columnCount );
+
+        // update smiValues∏¶ ¿˚¿˝«— ¿ßƒ°ø° ∫πªÁ
+        for ( sQcmColumn = aTable->mColumns;
+              sQcmColumn != NULL;
+              sQcmColumn = sQcmColumn->next, sSmiValues++ )
+        {
+            for ( i = 0; i < sTableInfo->columnCount; i++ )
+            {
+                if ( sQcmColumn->basicInfo->column.id ==
+                     sDataTable->mColumnsForRow[i].basicInfo->column.id )
+                {
+                    *((smiValue*)sDataTable->mNewRow + i ) = *sSmiValues;
+                    break;
+                }
+                else
+                {
+                    // Nothing to do.
+                }
+            }
+        }
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    if ( sDataTable->mExistTrigger == ID_TRUE )
+    {
+        // PROJ-1359 Trigger
+        // ROW GRANULARITY TRIGGER¿« ºˆ«‡
+        IDE_TEST( qdnTrigger::fireTrigger( aTemplate->stmt,
+                                           aTemplate->stmt->qmxMem,
+                                           sTableInfo,
+                                           QCM_TRIGGER_ACTION_EACH_ROW,
+                                           QCM_TRIGGER_INSTEAD_OF,
+                                           QCM_TRIGGER_EVENT_UPDATE,
+                                           NULL,               // UPDATE Column
+                                           NULL,               /* Table Cursor */
+                                           SC_NULL_GRID,       /* Row GRID */
+                                           sDataTable->mOldRow,
+                                           sDataTable->mColumnsForRow,
+                                           sDataTable->mNewRow,
+                                           sDataTable->mColumnsForRow )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_STACK_OVERFLOW );
+    {
+        IDE_SET(ideSetErrorCode(mtERR_ABORT_STACK_OVERFLOW));
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmnUPTE::updateOneRowForCheckRowmovementMultiTable( qcTemplate     * aTemplate,
+                                                           qmncUPTE       * aCodePlan,
+                                                           qmndUPTE       * aDataPlan,
+                                                           qmmMultiTables * aTable,
+                                                           UInt             aIndex )
+{
+    void              * sOrgRow;
+    qmsPartitionRef   * sSelectedPartitionRef;
+    smiValue          * sSmiValues;
+    smiValue          * sSmiValuesForPartition = NULL;
+    smiValue            sValuesForPartition[QC_MAX_COLUMN_COUNT];
+    void              * sRow;
+    qmndMultiTables   * sDataTable = NULL;
+
+    sDataTable = &aDataPlan->mTableArray[aIndex];
+
+    //-----------------------------------
+    // clear lob
+    //-----------------------------------
+    // PROJ-1362
+    if ( sDataTable->mLobInfo != NULL )
+    {
+        (void) qmx::clearLobInfo( sDataTable->mLobInfo );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    //-----------------------------------
+    // copy old row
+    //-----------------------------------
+    if ( sDataTable->mNeedTriggerRow == ID_TRUE )
+    {
+        // OLD ROW REFERENCING¿ª ¿ß«— ¿˙¿Â
+        idlOS::memcpy( sDataTable->mOldRow,
+                       aDataPlan->updateTuple->row,
+                       aDataPlan->updateTuple->rowOffset );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    //-----------------------------------
+    // set next sequence
+    //-----------------------------------
+    // Sequence Value »πµÊ
+    if ( aCodePlan->nextValSeqs != NULL )
+    {
+        IDE_TEST( qmx::readSequenceNextVals( aTemplate->stmt, aCodePlan->nextValSeqs )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    //-----------------------------------
+    // make update smiValues
+    //-----------------------------------
+    sSmiValues = aTemplate->insOrUptRow[ aCodePlan->valueIdx ];
+
+    // subquery∞° ¿÷¿ª∂ß smi value ¡§∫∏ ±∏º∫
+    IDE_TEST( qmx::makeSmiValueForSubqueryMultiTable( aTemplate,
+                                                      aTable->mTableRef->tableInfo,
+                                                      aTable->mColumns,
+                                                      aTable->mValues,
+                                                      aTable->mValuesPos,
+                                                      aCodePlan->subqueries,
+                                                      aTable->mCanonizedTuple,
+                                                      sSmiValues,
+                                                      aTable->mIsNull,
+                                                      sDataTable->mLobInfo )
+              != IDE_SUCCESS );
+
+    // ∞ªΩ≈«“ smi value ¡§∫∏ ±∏º∫
+    IDE_TEST( qmx::makeSmiValueForUpdate( aTemplate,
+                                          aTable->mTableRef->tableInfo,
+                                          aTable->mColumns,
+                                          aTable->mValues,
+                                          aTable->mCanonizedTuple,
+                                          sSmiValues,
+                                          aTable->mIsNull,
+                                          sDataTable->mLobInfo )
+              != IDE_SUCCESS );
+
+    //-----------------------------------
+    // Default Expr
+    //-----------------------------------
+    if ( aTable->mDefaultColumns != NULL )
+    {
+        qmsDefaultExpr::setRowBufferFromBaseColumn(
+            &(aTemplate->tmplate),
+            aTable->mTableRef->table,
+            aTable->mDefaultTableRef->table,
+            aTable->mDefaultBaseColumns,
+            sDataTable->mDefaultExprRowBuffer );
+
+        IDE_TEST( qmsDefaultExpr::setRowBufferFromSmiValueArray(
+                      &(aTemplate->tmplate),
+                      aTable->mDefaultTableRef,
+                      aTable->mColumns,
+                      sDataTable->mDefaultExprRowBuffer,
+                      sSmiValues,
+                      QCM_TABLE_TYPE_IS_DISK( aTable->mTableRef->tableInfo->tableFlag ) )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( qmsDefaultExpr::calculateDefaultExpression(
+                      aTemplate,
+                      aTable->mDefaultTableRef,
+                      aTable->mColumns,
+                      aTable->mDefaultColumns,
+                      sDataTable->mDefaultExprRowBuffer,
+                      sSmiValues,
+                      aTable->mTableRef->tableInfo->columns )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    // PROJ-2219 Row-level before update trigger
+    if ( sDataTable->mExistTrigger == ID_TRUE )
+    {
+        // «ˆ¿Á triggerø°º≠ lob column¿Ã ¿÷¥¬ table¿∫ ¡ˆø¯«œ¡ˆ æ ¿∏π«∑Œ
+        // Table cursor¥¬ NULL¿ª ≥—±‰¥Ÿ.
+        IDE_TEST( qdnTrigger::fireTrigger(
+                      aTemplate->stmt,
+                      aTemplate->stmt->qmxMem,
+                      aTable->mTableRef->tableInfo,
+                      QCM_TRIGGER_ACTION_EACH_ROW,
+                      QCM_TRIGGER_BEFORE,
+                      QCM_TRIGGER_EVENT_UPDATE,
+                      aTable->mUptColumnList, // UPDATE Column
+                      NULL,                        // Table Cursor
+                      SC_NULL_GRID,                // Row GRID
+                      sDataTable->mOldRow,           // OLD ROW
+                      sDataTable->mColumnsForRow,    // OLD ROW Column
+                      sSmiValues,                  // NEW ROW(value list)
+                      aTable->mColumns )           // NEW ROW Column
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    IDE_TEST( qmx::makeSmiValueForChkRowMovement(
+                  aTable->mUptColumnList,
+                  sSmiValues,
+                  aTable->mTableRef->tableInfo->partKeyColumns,
+                  aDataPlan->updateTuple,
+                  sDataTable->mCheckValues )
+              != IDE_SUCCESS );
+
+    IDE_TEST_RAISE( qmoPartition::partitionFilteringWithRow(
+                        aTable->mTableRef,
+                        sDataTable->mCheckValues,
+                        &sSelectedPartitionRef )
+                    != IDE_SUCCESS,
+                    ERR_NO_ROW_MOVEMENT );
+
+    IDE_TEST_RAISE( sSelectedPartitionRef->table != aDataPlan->updateTupleID,
+                    ERR_NO_ROW_MOVEMENT );
+
+    aDataPlan->retryInfo.mIsRowRetry = ID_FALSE;
+
+    if ( QCM_TABLE_TYPE_IS_DISK( aTable->mTableRef->tableInfo->tableFlag ) !=
+         QCM_TABLE_TYPE_IS_DISK( aDataPlan->updatePartInfo->tableFlag ) )
+    {
+        /* PROJ-2464 hybrid partitioned table ¡ˆø¯
+         * Partitioned Table¿ª ±‚¡ÿ¿∏∑Œ ∏∏µÁ smiValue Array∏¶ Table Partitionø° ∏¬∞‘ ∫Ø»Ø«—¥Ÿ.
+         */
+        IDE_TEST( qmx::makeSmiValueWithSmiValue( aTable->mTableRef->tableInfo,
+                                                 aDataPlan->updatePartInfo,
+                                                 aTable->mColumns,
+                                                 aTable->mColumnCount,
+                                                 sSmiValues,
+                                                 sValuesForPartition )
+                  != IDE_SUCCESS );
+
+        sSmiValuesForPartition = sValuesForPartition;
+    }
+    else
+    {
+        sSmiValuesForPartition = sSmiValues;
+    }
+
+    IDE_TEST ( aDataPlan->updateCursor->updateRow( sSmiValuesForPartition,
+                                                   NULL,
+                                                   &sRow,
+                                                   & aDataPlan->rowGRID )
+               != IDE_SUCCESS );
+
+    // update index table
+    IDE_TEST( updateIndexTableCursorMultiTable( aTemplate,
+                                                aDataPlan,
+                                                aTable,
+                                                aIndex,
+                                                sSmiValues )
+              != IDE_SUCCESS );
+
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯
+     *  Disk Partition¿Œ ∞ÊøÏ, Disk Type¿« Lob Column¿Ã « ø‰«œ¥Ÿ.
+     *  Memory/Volatile Partition¿« ∞ÊøÏ, «ÿ¥Á Partition¿« Lob Column¿Ã « ø‰«œ¥Ÿ.
+     */
+    if ( ( QCM_TABLE_TYPE_IS_DISK( aTable->mTableRef->tableInfo->tableFlag ) !=
+           QCM_TABLE_TYPE_IS_DISK( aDataPlan->updatePartInfo->tableFlag ) ) ||
+         ( ( aTable->mTableRef->tableInfo->tablePartitionType == QCM_PARTITIONED_TABLE ) &&
+           ( QCM_TABLE_TYPE_IS_DISK( aDataPlan->updatePartInfo->tableFlag ) != ID_TRUE ) ) )
+    {
+        IDE_TEST( qmx::changeLobColumnInfo( sDataTable->mLobInfo,
+                                            aDataPlan->updatePartInfo->columns )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    // Lobƒ√∑≥ √≥∏Æ
+    IDE_TEST( qmx::copyAndOutBindLobInfo( aTemplate->stmt,
+                                          sDataTable->mLobInfo,
+                                          aDataPlan->updateCursor,
+                                          sRow,
+                                          aDataPlan->rowGRID )
+              != IDE_SUCCESS );
+
+    //-----------------------------------
+    // check constraint
+    //-----------------------------------
+    if ( ( sDataTable->mNeedTriggerRow == ID_TRUE ) ||
+         ( aTable->mCheckConstrList != NULL ) )
+    {
+        // NEW ROW¿« »πµÊ
+        IDE_TEST( aDataPlan->updateCursor->getLastModifiedRow(
+                      &sDataTable->mNewRow,
+                      aDataPlan->updateTuple->rowOffset )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    /* PROJ-1107 Check Constraint ¡ˆø¯ */
+    if ( aTable->mCheckConstrList != NULL )
+    {
+        sOrgRow = aDataPlan->updateTuple->row;
+        aDataPlan->updateTuple->row = sDataTable->mNewRow;
+
+        IDE_TEST( qdnCheck::verifyCheckConstraintList(
+                      aTemplate,
+                      aTable->mCheckConstrList )
+                  != IDE_SUCCESS );
+
+        aDataPlan->updateTuple->row = sOrgRow;
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    //-----------------------------------
+    // update after trigger
+    //-----------------------------------
+    if ( sDataTable->mExistTrigger == ID_TRUE )
+    {
+        // PROJ-1359 Trigger
+        // ROW GRANULARITY TRIGGER¿« ºˆ«‡
+        IDE_TEST( qdnTrigger::fireTrigger( aTemplate->stmt,
+                                           aTemplate->stmt->qmxMem,
+                                           aTable->mTableRef->tableInfo,
+                                           QCM_TRIGGER_ACTION_EACH_ROW,
+                                           QCM_TRIGGER_AFTER,
+                                           QCM_TRIGGER_EVENT_UPDATE,
+                                           aTable->mUptColumnList,
+                                           aDataPlan->updateCursor,         /* Table Cursor */
+                                           aDataPlan->updateTuple->rid,     /* Row GRID */
+                                           sDataTable->mOldRow,
+                                           sDataTable->mColumnsForRow,
+                                           sDataTable->mNewRow,
+                                           sDataTable->mColumnsForRow )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    if ( ( *aDataPlan->flag & QMND_UPTE_UPDATE_MASK )
+         == QMND_UPTE_UPDATE_FALSE )
+    {
+        *aDataPlan->flag &= ~QMND_UPTE_UPDATE_MASK;
+        *aDataPlan->flag |= QMND_UPTE_UPDATE_TRUE;
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NO_ROW_MOVEMENT )
+    {
+        IDE_SET( ideSetErrorCode(qpERR_ABORT_QMV_INVALID_PARTITION_KEY_INSERT) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmnUPTE::openInsertCursorMultiTable( qcTemplate     * aTemplate,
+                                            qmndUPTE       * aDataPlan,
+                                            qmmMultiTables * aTable,
+                                            UInt             aIndex )
+{
+    smiCursorProperties   sCursorProperty;
+    UShort                sTupleID         = 0;
+    idBool                sIsDiskChecked   = ID_FALSE;
+    smiFetchColumnList  * sFetchColumnList = NULL;
+    qmndMultiTables     * sDataTable;
+
+    sDataTable = &aDataPlan->mTableArray[aIndex];
+
+    if ( ( ( sDataTable->mFlag & QMND_UPTE_CURSOR_MASK )
+           == QMND_UPTE_CURSOR_CLOSED ) &&
+         ( aTable->mInsertTableRef != NULL ) )
+    {
+        // INSERT ∏¶ ¿ß«— Cursor ±∏º∫
+        SMI_CURSOR_PROP_INIT_FOR_FULL_SCAN( &sCursorProperty, aTemplate->stmt->mStatistics );
+
+        if ( aTable->mInsertTableRef->tableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
+        {
+            if ( aTable->mInsertTableRef->partitionSummary->diskPartitionRef != NULL )
+            {
+                sTupleID = aTable->mInsertTableRef->partitionSummary->diskPartitionRef->table;
+                sIsDiskChecked = ID_TRUE;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        else
+        {
+            if ( QCM_TABLE_TYPE_IS_DISK( aTable->mInsertTableRef->tableInfo->tableFlag ) == ID_TRUE )
+            {
+                sTupleID = aTable->mInsertTableRef->table;
+                sIsDiskChecked = ID_TRUE;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+
+        if ( sIsDiskChecked == ID_TRUE )
+        {
+            // PROJ-1705
+            // ∆˜∏∞≈∞ √º≈©∏¶ ¿ß«ÿ ¿–æÓæﬂ «“ ∆–ƒ°ƒ√∑≥∏ÆΩ∫∆Æ ª˝º∫
+            IDE_TEST( qdbCommon::makeFetchColumnList4TupleID(
+                          aTemplate,
+                          sTupleID,
+                          sDataTable->mNeedTriggerRow,  // aIsNeedAllFetchColumn
+                          NULL,             // index
+                          ID_TRUE,          // allocSmiColumnListEx
+                          & sFetchColumnList )
+                      != IDE_SUCCESS );
+
+            sCursorProperty.mFetchColumnList = sFetchColumnList;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        IDE_TEST( sDataTable->mInsertCursorMgr.openCursor(
+                      aTemplate->stmt,
+                      SMI_LOCK_WRITE | SMI_TRAVERSE_FORWARD | SMI_PREVIOUS_DISABLE,
+                      & sCursorProperty )
+                  != IDE_SUCCESS );
+
+        sDataTable->mFlag &= ~QMND_UPTE_CURSOR_MASK;
+        sDataTable->mFlag |= QMND_UPTE_CURSOR_OPEN;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmnUPTE::updateIndexTableCursorRowMoveMultiTable( qcTemplate      * aTemplate,
+                                                         qmndUPTE        * aDataPlan,
+                                                         qmmMultiTables  * aTable,
+                                                         UInt              aIndex,
+                                                         smOID             aPartOID,
+                                                         scGRID            aRowGRID,
+                                                         smiValue        * aUpdateValue )
+{
+    smOID             sPartOID = aPartOID;
+    scGRID            sRowGRID = aRowGRID;
+    void            * sRow;
+    scGRID            sGRID;
+    UInt              sIndexUpdateValueCount;
+    qmndMultiTables * sDataTable;
+
+    sDataTable = &aDataPlan->mTableArray[aIndex];
+
+    // update index table
+    if ( ( sDataTable->mFlag & QMND_UPTE_INDEX_CURSOR_MASK )
+         == QMND_UPTE_INDEX_CURSOR_INITED )
+    {
+        if ( ( sDataTable->mFlag & QMND_UPTE_SELECTED_INDEX_CURSOR_MASK )
+             == QMND_UPTE_SELECTED_INDEX_CURSOR_TRUE )
+        {
+            IDE_TEST( qmsIndexTable::makeUpdateSmiValue(
+                          aTable->mColumnCount,
+                          aTable->mColumnIDs,
+                          aUpdateValue,
+                          aTable->mTableRef->selectedIndexTable,
+                          ID_TRUE,
+                          & sPartOID,
+                          & sRowGRID,
+                          & sIndexUpdateValueCount,
+                          aDataPlan->indexUpdateValue )
+                      != IDE_SUCCESS );
+
+            // PROJ-2204 join update, delete
+            // tuple ø¯∫πΩ√ cursorµµ ø¯∫π«ÿæﬂ«—¥Ÿ.
+            if ( aTable->mTableRef->view != NULL )
+            {
+                IDE_TEST( aDataPlan->indexUpdateCursor->setRowPosition(
+                              aDataPlan->indexUpdateTuple->row,
+                              aDataPlan->indexUpdateTuple->rid )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                // Nothing to do.
+            }
+            IDE_TEST( aDataPlan->indexUpdateCursor->updateRow(
+                          aDataPlan->indexUpdateValue,
+                          & sRow,
+                          & sGRID )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+        // ¥Ÿ∏• index tableµµ update
+        IDE_TEST( qmsIndexTable::updateIndexTableCursors(
+                      aTemplate->stmt,
+                      & (sDataTable->mIndexTableCursorInfo),
+                      aTable->mColumnCount,
+                      aTable->mColumnIDs,
+                      aUpdateValue,
+                      ID_TRUE,
+                      & sPartOID,
+                      & sRowGRID,
+                      aDataPlan->updateTuple->rid )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmnUPTE::updateOneRowForRowmovementMultiTable( qcTemplate     * aTemplate,
+                                                      qmncUPTE       * aCodePlan,
+                                                      qmndUPTE       * aDataPlan,
+                                                      qmmMultiTables * aTable,
+                                                      UInt             aIndex )
+{
+    smiTableCursor    * sInsertCursor = NULL;
+    void              * sOrgRow;
+
+    UShort              sPartitionTupleID       = 0;
+    mtcTuple          * sSelectedPartitionTuple = NULL;
+    mtcTuple            sCopyTuple;
+    idBool              sNeedToRecoverTuple     = ID_FALSE;
+
+    qmsPartitionRef   * sSelectedPartitionRef;
+    qcmTableInfo      * sSelectedPartitionInfo = NULL;
+    qmnCursorInfo     * sCursorInfo;
+    smiTableCursor    * sCursor                = NULL;
+    smiValue          * sSmiValues;
+    smiValue          * sSmiValuesForPartition = NULL;
+    smiValue            sValuesForPartition[QC_MAX_COLUMN_COUNT];
+    void              * sRow                   = NULL;
+    smOID               sPartOID;
+    qcmColumn         * sColumnsForNewRow      = NULL;
+    qmndMultiTables   * sDataTable;
+
+    sDataTable = &aDataPlan->mTableArray[aIndex];
+
+    //-----------------------------------
+    // clear lob
+    //-----------------------------------
+    // PROJ-1362
+    if ( sDataTable->mLobInfo != NULL )
+    {
+        (void) qmx::clearLobInfo( sDataTable->mLobInfo );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    if ( sDataTable->mInsertLobInfo != NULL )
+    {
+        (void) qmx::initLobInfo( sDataTable->mInsertLobInfo );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    //-----------------------------------
+    // copy old row
+    //-----------------------------------
+    if ( sDataTable->mNeedTriggerRow == ID_TRUE )
+    {
+        // OLD ROW REFERENCING¿ª ¿ß«— ¿˙¿Â
+        idlOS::memcpy( sDataTable->mOldRow,
+                       aDataPlan->updateTuple->row,
+                       aDataPlan->updateTuple->rowOffset );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    //-----------------------------------
+    // set next sequence
+    //-----------------------------------
+    // Sequence Value »πµÊ
+    if ( aCodePlan->nextValSeqs != NULL )
+    {
+        IDE_TEST( qmx::readSequenceNextVals( aTemplate->stmt, aCodePlan->nextValSeqs )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    //-----------------------------------
+    // make update smiValues
+    //-----------------------------------
+    sSmiValues = aTemplate->insOrUptRow[ aCodePlan->valueIdx ];
+
+    // subquery∞° ¿÷¿ª∂ß smi value ¡§∫∏ ±∏º∫
+    IDE_TEST( qmx::makeSmiValueForSubqueryMultiTable( aTemplate,
+                                                      aTable->mTableRef->tableInfo,
+                                                      aTable->mColumns,
+                                                      aTable->mValues,
+                                                      aTable->mValuesPos,
+                                                      aCodePlan->subqueries,
+                                                      aTable->mCanonizedTuple,
+                                                      sSmiValues,
+                                                      aTable->mIsNull,
+                                                      sDataTable->mLobInfo )
+              != IDE_SUCCESS );
+
+    // ∞ªΩ≈«“ smi value ¡§∫∏ ±∏º∫
+    IDE_TEST( qmx::makeSmiValueForUpdate( aTemplate,
+                                          aTable->mTableRef->tableInfo,
+                                          aTable->mColumns,
+                                          aTable->mValues,
+                                          aTable->mCanonizedTuple,
+                                          sSmiValues,
+                                          aTable->mIsNull,
+                                          sDataTable->mLobInfo )
+              != IDE_SUCCESS );
+
+    //-----------------------------------
+    // Default Expr
+    //-----------------------------------
+    if ( aTable->mDefaultColumns != NULL )
+    {
+        qmsDefaultExpr::setRowBufferFromBaseColumn(
+            &(aTemplate->tmplate),
+            aTable->mTableRef->table,
+            aTable->mDefaultTableRef->table,
+            aTable->mDefaultBaseColumns,
+            sDataTable->mDefaultExprRowBuffer );
+
+        IDE_TEST( qmsDefaultExpr::setRowBufferFromSmiValueArray(
+                      &(aTemplate->tmplate),
+                      aTable->mDefaultTableRef,
+                      aTable->mColumns,
+                      sDataTable->mDefaultExprRowBuffer,
+                      sSmiValues,
+                      QCM_TABLE_TYPE_IS_DISK( aTable->mTableRef->tableInfo->tableFlag ) )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( qmsDefaultExpr::calculateDefaultExpression(
+                      aTemplate,
+                      aTable->mDefaultTableRef,
+                      aTable->mColumns,
+                      aTable->mDefaultColumns,
+                      sDataTable->mDefaultExprRowBuffer,
+                      sSmiValues,
+                      aTable->mTableRef->tableInfo->columns )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    // PROJ-2219 Row-level before update trigger
+    if ( sDataTable->mExistTrigger == ID_TRUE )
+    {
+        // «ˆ¿Á triggerø°º≠ lob column¿Ã ¿÷¥¬ table¿∫ ¡ˆø¯«œ¡ˆ æ ¿∏π«∑Œ
+        // Table cursor¥¬ NULL¿ª ≥—±‰¥Ÿ.
+        IDE_TEST( qdnTrigger::fireTrigger(
+                      aTemplate->stmt,
+                      aTemplate->stmt->qmxMem,
+                      aTable->mTableRef->tableInfo,
+                      QCM_TRIGGER_ACTION_EACH_ROW,
+                      QCM_TRIGGER_BEFORE,
+                      QCM_TRIGGER_EVENT_UPDATE,
+                      aTable->mUptColumnList, // UPDATE Column
+                      NULL,                        // Table Cursor
+                      SC_NULL_GRID,                // Row GRID
+                      sDataTable->mOldRow,           // OLD ROW
+                      sDataTable->mColumnsForRow,    // OLD ROW Column
+                      sSmiValues,                  // NEW ROW(value list)
+                      aTable->mColumns )           // NEW ROW Column
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    // row movementøÎ smi value ¡§∫∏ ±∏º∫
+    IDE_TEST( qmx::makeSmiValueForRowMovement(
+                  aTable->mTableRef->tableInfo,
+                  aTable->mUptColumnList,
+                  sSmiValues,
+                  aDataPlan->updateTuple,
+                  aDataPlan->updateCursor,
+                  sDataTable->mLobInfo,
+                  sDataTable->mInsertValues,
+                  sDataTable->mInsertLobInfo )
+              != IDE_SUCCESS );
+
+    if ( qmoPartition::partitionFilteringWithRow(
+                        aTable->mTableRef,
+                        sDataTable->mInsertValues,
+                        &sSelectedPartitionRef )
+          != IDE_SUCCESS )
+    {
+        IDE_CLEAR();
+
+        //-----------------------------------
+        // tableRefø° æ¯¥¬ partition¿Œ ∞ÊøÏ
+        // insert row -> update row
+        //-----------------------------------
+
+        /* PROJ-1090 Function-based Index */
+        if ( aTable->mDefaultColumns != NULL )
+        {
+            IDE_TEST( qmsDefaultExpr::setRowBufferFromSmiValueArray(
+                          &(aTemplate->tmplate),
+                          aTable->mDefaultTableRef,
+                          aTable->mTableRef->tableInfo->columns,
+                          sDataTable->mDefaultExprRowBuffer,
+                          sDataTable->mInsertValues,
+                          QCM_TABLE_TYPE_IS_DISK( aTable->mTableRef->tableInfo->tableFlag ) )
+                      != IDE_SUCCESS );
+
+            IDE_TEST( qmsDefaultExpr::calculateDefaultExpression(
+                          aTemplate,
+                          aTable->mDefaultTableRef,
+                          NULL,
+                          aTable->mDefaultColumns,
+                          sDataTable->mDefaultExprRowBuffer,
+                          sDataTable->mInsertValues,
+                          aTable->mTableRef->tableInfo->columns )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+
+        IDE_TEST( sDataTable->mInsertCursorMgr.partitionFilteringWithRow(
+                      sDataTable->mInsertValues,
+                      sDataTable->mInsertLobInfo,
+                      &sSelectedPartitionInfo )
+                  != IDE_SUCCESS );
+
+        /* PROJ-2359 Table/Partition Access Option */
+        IDE_TEST( qmx::checkAccessOption( sSelectedPartitionInfo,
+                                          ID_TRUE, /* aIsInsertion */
+                                          QCG_CHECK_SHARD_DML_CONSISTENCY( aTemplate->stmt ) )
+                  != IDE_SUCCESS );
+
+        // insert row
+        IDE_TEST( sDataTable->mInsertCursorMgr.getCursor( &sCursor )
+                  != IDE_SUCCESS );
+
+        if ( QCM_TABLE_TYPE_IS_DISK( aTable->mTableRef->tableInfo->tableFlag ) !=
+             QCM_TABLE_TYPE_IS_DISK( sSelectedPartitionInfo->tableFlag ) )
+        {
+            /* PROJ-2464 hybrid partitioned table ¡ˆø¯
+             * Partitioned Table¿ª ±‚¡ÿ¿∏∑Œ ∏∏µÁ smiValue Array∏¶ Table Partitionø° ∏¬∞‘ ∫Ø»Ø«—¥Ÿ.
+             */
+            IDE_TEST( qmx::makeSmiValueWithSmiValue( aTable->mTableRef->tableInfo,
+                                                     sSelectedPartitionInfo,
+                                                     aTable->mTableRef->tableInfo->columns,
+                                                     aTable->mTableRef->tableInfo->columnCount,
+                                                     sDataTable->mInsertValues,
+                                                     sValuesForPartition )
+                      != IDE_SUCCESS );
+
+            sSmiValuesForPartition = sValuesForPartition;
+        }
+        else
+        {
+            sSmiValuesForPartition = sDataTable->mInsertValues;
+        }
+
+        IDE_TEST( sCursor->insertRow( sSmiValuesForPartition,
+                                      & sRow,
+                                      & aDataPlan->rowGRID )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( sDataTable->mInsertCursorMgr.getSelectedPartitionOID(
+                      & sPartOID )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( updateIndexTableCursorRowMoveMultiTable( aTemplate,
+                                                           aDataPlan,
+                                                           aTable,
+                                                           aIndex,
+                                                           sPartOID,
+                                                           aDataPlan->rowGRID,
+                                                           sSmiValues )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( qmx::copyAndOutBindLobInfo( aTemplate->stmt,
+                                              sDataTable->mInsertLobInfo,
+                                              sCursor,
+                                              sRow,
+                                              aDataPlan->rowGRID )
+                  != IDE_SUCCESS );
+        // PROJ-2204 join update, delete
+        // tuple ø¯∫πΩ√ cursorµµ ø¯∫π«ÿæﬂ«—¥Ÿ.
+        if ( aTable->mTableRef->view != NULL )
+        {
+            IDE_TEST( aDataPlan->indexUpdateCursor->setRowPosition(
+                          aDataPlan->indexUpdateTuple->row,
+                          aDataPlan->indexUpdateTuple->rid )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            // Nothing to do.
+        }
+
+        // delete row
+        IDE_TEST( aDataPlan->updateCursor->deleteRow()
+                  != IDE_SUCCESS );
+
+        /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
+        IDE_TEST( sDataTable->mInsertCursorMgr.getSelectedPartitionTupleID( &sPartitionTupleID )
+                  != IDE_SUCCESS );
+        sSelectedPartitionTuple = &(aTemplate->tmplate.rows[sPartitionTupleID]);
+
+        if ( ( sDataTable->mNeedTriggerRow == ID_TRUE ) ||
+             ( aTable->mCheckConstrList != NULL ) )
+        {
+            // NEW ROW¿« »πµÊ
+            IDE_TEST( sCursor->getLastModifiedRow(
+                          & sDataTable->mNewRow,
+                          sSelectedPartitionTuple->rowOffset )
+                      != IDE_SUCCESS );
+
+            IDE_TEST( sDataTable->mInsertCursorMgr.setColumnsForNewRow()
+                      != IDE_SUCCESS );
+
+            IDE_TEST( sDataTable->mInsertCursorMgr.getColumnsForNewRow(
+                          &sColumnsForNewRow )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
+        sSelectedPartitionTuple = &(aTemplate->tmplate.rows[sSelectedPartitionRef->table]);
+
+        if ( sSelectedPartitionRef->table == aDataPlan->updateTupleID )
+        {
+            //-----------------------------------
+            // tableRefø° ¿÷∞Ì select«— partition¿Œ ∞ÊøÏ
+            //-----------------------------------
+
+            if ( QCM_TABLE_TYPE_IS_DISK( aTable->mTableRef->tableInfo->tableFlag ) !=
+                 QCM_TABLE_TYPE_IS_DISK( aDataPlan->updatePartInfo->tableFlag ) )
+            {
+                /* PROJ-2464 hybrid partitioned table ¡ˆø¯
+                 * Partitioned Table¿ª ±‚¡ÿ¿∏∑Œ ∏∏µÁ smiValue Array∏¶ Table Partitionø° ∏¬∞‘ ∫Ø»Ø«—¥Ÿ.
+                 */
+                IDE_TEST( qmx::makeSmiValueWithSmiValue( aTable->mTableRef->tableInfo,
+                                                         aDataPlan->updatePartInfo,
+                                                         aTable->mColumns,
+                                                         aTable->mColumnCount,
+                                                         sSmiValues,
+                                                         sValuesForPartition )
+                          != IDE_SUCCESS );
+                sSmiValuesForPartition = sValuesForPartition;
+            }
+            else
+            {
+                sSmiValuesForPartition = sSmiValues;
+            }
+
+            if ( aTable->mTableRef->view != NULL )
+            {
+                IDE_TEST( aDataPlan->indexUpdateCursor->setRowPosition(
+                              aDataPlan->indexUpdateTuple->row,
+                              aDataPlan->indexUpdateTuple->rid )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                // Nothing to do.
+            }
+            IDE_TEST( aDataPlan->updateCursor->updateRow( sSmiValuesForPartition,
+                                                          NULL,
+                                                          & sRow,
+                                                          & aDataPlan->rowGRID )
+                      != IDE_SUCCESS );
+
+            sPartOID = sSelectedPartitionRef->partitionOID;
+
+            IDE_TEST( updateIndexTableCursorRowMoveMultiTable( aTemplate,
+                                                               aDataPlan,
+                                                               aTable,
+                                                               aIndex,
+                                                               sPartOID,
+                                                               aDataPlan->rowGRID,
+                                                               sSmiValues )
+                      != IDE_SUCCESS );
+
+            /* PROJ-2464 hybrid partitioned table ¡ˆø¯
+             *  Disk Partition¿Œ ∞ÊøÏ, Disk Type¿« Lob Column¿Ã « ø‰«œ¥Ÿ.
+             *  Memory/Volatile Partition¿« ∞ÊøÏ, «ÿ¥Á Partition¿« Lob Column¿Ã « ø‰«œ¥Ÿ.
+             */
+            if ( ( QCM_TABLE_TYPE_IS_DISK( aTable->mTableRef->tableInfo->tableFlag ) !=
+                   QCM_TABLE_TYPE_IS_DISK( aDataPlan->updatePartInfo->tableFlag ) ) ||
+                 ( QCM_TABLE_TYPE_IS_DISK( aDataPlan->updatePartInfo->tableFlag ) != ID_TRUE ) )
+            {
+                IDE_TEST( qmx::changeLobColumnInfo( sDataTable->mLobInfo,
+                                                    aDataPlan->updatePartInfo->columns )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+
+            // Lobƒ√∑≥ √≥∏Æ
+            IDE_TEST( qmx::copyAndOutBindLobInfo( aTemplate->stmt,
+                                                  sDataTable->mLobInfo,
+                                                  aDataPlan->updateCursor,
+                                                  sRow,
+                                                  aDataPlan->rowGRID )
+                      != IDE_SUCCESS );
+
+            if ( ( sDataTable->mNeedTriggerRow == ID_TRUE ) ||
+                 ( aTable->mCheckConstrList != NULL ) )
+            {
+                // NEW ROW¿« »πµÊ
+                IDE_TEST( aDataPlan->updateCursor->getLastModifiedRow(
+                              & sDataTable->mNewRow,
+                              sSelectedPartitionTuple->rowOffset )
+                          != IDE_SUCCESS );
+
+                sColumnsForNewRow = sSelectedPartitionRef->partitionInfo->columns;
+            }
+            else
+            {
+                // Nothing to do.
+            }
+        }
+        else
+        {
+            //-----------------------------------
+            // tableRefø° ¿÷¥¬ ¥Ÿ∏• partition¿Œ ∞ÊøÏ
+            // insert row -> update row
+            //-----------------------------------
+
+            /* PROJ-2359 Table/Partition Access Option */
+            IDE_TEST( qmx::checkAccessOption( sSelectedPartitionRef->partitionInfo,
+                                              ID_TRUE, /* aIsInsertion */
+                                              QCG_CHECK_SHARD_DML_CONSISTENCY( aTemplate->stmt ) )
+                      != IDE_SUCCESS );
+
+            /* PROJ-1090 Function-based Index */
+            if ( aTable->mDefaultColumns != NULL )
+            {
+                IDE_TEST( qmsDefaultExpr::setRowBufferFromSmiValueArray(
+                              &(aTemplate->tmplate),
+                              aTable->mDefaultTableRef,
+                              aTable->mTableRef->tableInfo->columns,
+                              sDataTable->mDefaultExprRowBuffer,
+                              sDataTable->mInsertValues,
+                              QCM_TABLE_TYPE_IS_DISK( aTable->mTableRef->tableInfo->tableFlag ) )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( qmsDefaultExpr::calculateDefaultExpression(
+                              aTemplate,
+                              aTable->mDefaultTableRef,
+                              NULL,
+                              aTable->mDefaultColumns,
+                              sDataTable->mDefaultExprRowBuffer,
+                              sDataTable->mInsertValues,
+                              aTable->mTableRef->tableInfo->columns )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+
+            // partition¿« cursor∏¶ æÚ¥¬¥Ÿ.
+            sCursorInfo = (qmnCursorInfo*)
+                aTemplate->tmplate.rows[sSelectedPartitionRef->table].cursorInfo;
+
+            IDE_TEST_RAISE( sCursorInfo == NULL, ERR_NOT_FOUND );
+
+            // insert row
+            sInsertCursor = sCursorInfo->cursor;
+
+            if ( QCM_TABLE_TYPE_IS_DISK( aTable->mTableRef->tableInfo->tableFlag ) !=
+                 QCM_TABLE_TYPE_IS_DISK( sSelectedPartitionRef->partitionInfo->tableFlag ) )
+            {
+                IDE_TEST( qmx::makeSmiValueWithSmiValue( aTable->mTableRef->tableInfo,
+                                                         sSelectedPartitionRef->partitionInfo,
+                                                         aTable->mTableRef->tableInfo->columns,
+                                                         aTable->mTableRef->tableInfo->columnCount,
+                                                         sDataTable->mInsertValues,
+                                                         sValuesForPartition )
+                          != IDE_SUCCESS );
+
+                sSmiValuesForPartition = sValuesForPartition;
+            }
+            else
+            {
+                sSmiValuesForPartition = sDataTable->mInsertValues;
+            }
+
+            IDE_TEST( sInsertCursor->insertRow( sSmiValuesForPartition,
+                                                & sRow,
+                                                & aDataPlan->rowGRID )
+                      != IDE_SUCCESS );
+            /* PROJ-2464 hybrid partitioned table ¡ˆø¯
+             *  Disk Partition¿Œ ∞ÊøÏ, Disk Type¿« Lob Column¿Ã « ø‰«œ¥Ÿ.
+             *  Memory/Volatile Partition¿« ∞ÊøÏ, «ÿ¥Á Partition¿« Lob Column¿Ã « ø‰«œ¥Ÿ.
+             */
+            if ( ( QCM_TABLE_TYPE_IS_DISK( aTable->mTableRef->tableInfo->tableFlag ) !=
+                   QCM_TABLE_TYPE_IS_DISK( sSelectedPartitionRef->partitionInfo->tableFlag ) ) ||
+                 ( QCM_TABLE_TYPE_IS_DISK( sSelectedPartitionRef->partitionInfo->tableFlag ) != ID_TRUE ) )
+            {
+                IDE_TEST( qmx::changeLobColumnInfo( sDataTable->mInsertLobInfo,
+                                                    sSelectedPartitionRef->partitionInfo->columns )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+
+            sPartOID = sSelectedPartitionRef->partitionOID;
+
+            IDE_TEST( updateIndexTableCursorRowMoveMultiTable( aTemplate,
+                                                               aDataPlan,
+                                                               aTable,
+                                                               aIndex,
+                                                               sPartOID,
+                                                               aDataPlan->rowGRID,
+                                                               sSmiValues )
+                      != IDE_SUCCESS );
+
+            IDE_TEST( qmx::copyAndOutBindLobInfo( aTemplate->stmt,
+                                                  sDataTable->mInsertLobInfo,
+                                                  sInsertCursor,
+                                                  sRow,
+                                                  aDataPlan->rowGRID )
+                      != IDE_SUCCESS );
+            // PROJ-2204 join update, delete
+            // tuple ø¯∫πΩ√ cursorµµ ø¯∫π«ÿæﬂ«—¥Ÿ.
+            if ( aTable->mTableRef->view != NULL )
+            {
+                IDE_TEST( aDataPlan->indexUpdateCursor->setRowPosition(
+                              aDataPlan->indexUpdateTuple->row,
+                              aDataPlan->indexUpdateTuple->rid )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                // Nothing to do.
+            }
+
+            // delete row
+            IDE_TEST( aDataPlan->updateCursor->deleteRow()
+                      != IDE_SUCCESS );
+
+            if ( ( sDataTable->mNeedTriggerRow == ID_TRUE ) ||
+                 ( aTable->mCheckConstrList != NULL ) )
+            {
+                // NEW ROW¿« »πµÊ
+                IDE_TEST( sInsertCursor->getModifiedRow(
+                              & sDataTable->mNewRow,
+                              sSelectedPartitionTuple->rowOffset,
+                              sRow,
+                              aDataPlan->rowGRID )
+                          != IDE_SUCCESS );
+
+                sColumnsForNewRow = sSelectedPartitionRef->partitionInfo->columns;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+    }
+
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
+    if ( ( aTable->mTableRef->partitionSummary->isHybridPartitionedTable == ID_TRUE ) ||
+         ( aTable->mInsertTableRef->partitionSummary->isHybridPartitionedTable == ID_TRUE ) )
+    {
+        qmx::copyMtcTupleForPartitionDML( &sCopyTuple, aDataPlan->updateTuple );
+        sNeedToRecoverTuple = ID_TRUE;
+
+        qmx::adjustMtcTupleForPartitionDML( aDataPlan->updateTuple, sSelectedPartitionTuple );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    //-----------------------------------
+    // check constraint
+    //-----------------------------------
+
+    /* PROJ-1107 Check Constraint ¡ˆø¯ */
+    if ( aTable->mCheckConstrList != NULL )
+    {
+        sOrgRow = aDataPlan->updateTuple->row;
+        aDataPlan->updateTuple->row = sDataTable->mNewRow;
+
+        IDE_TEST( qdnCheck::verifyCheckConstraintList(
+                      aTemplate,
+                      aTable->mCheckConstrList )
+                  != IDE_SUCCESS );
+
+        aDataPlan->updateTuple->row = sOrgRow;
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    //-----------------------------------
+    // update after trigger
+    //-----------------------------------
+    if ( sDataTable->mExistTrigger == ID_TRUE )
+    {
+        // PROJ-1359 Trigger
+        // ROW GRANULARITY TRIGGER¿« ºˆ«‡
+        IDE_TEST( qdnTrigger::fireTrigger( aTemplate->stmt,
+                                           aTemplate->stmt->qmxMem,
+                                           aTable->mTableRef->tableInfo,
+                                           QCM_TRIGGER_ACTION_EACH_ROW,
+                                           QCM_TRIGGER_AFTER,
+                                           QCM_TRIGGER_EVENT_UPDATE,
+                                           aTable->mUptColumnList,
+                                           aDataPlan->updateCursor,         /* Table Cursor */
+                                           aDataPlan->updateTuple->rid,     /* Row GRID */
+                                           sDataTable->mOldRow,
+                                           aDataPlan->updatePartInfo->columns,
+                                           sDataTable->mNewRow,
+                                           sColumnsForNewRow )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    if ( ( *aDataPlan->flag & QMND_UPTE_UPDATE_MASK )
+         == QMND_UPTE_UPDATE_FALSE )
+    {
+        *aDataPlan->flag &= ~QMND_UPTE_UPDATE_MASK;
+        *aDataPlan->flag |= QMND_UPTE_UPDATE_TRUE;
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
+    if ( sNeedToRecoverTuple == ID_TRUE )
+    {
+        sNeedToRecoverTuple = ID_FALSE;
+        qmx::copyMtcTupleForPartitionDML( aDataPlan->updateTuple, &sCopyTuple );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NOT_FOUND )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmnUPTE::updateOneRowForRowmovementMultiTable",
+                                  "cursor not found" ));
+    }
+    IDE_EXCEPTION_END;
+
+    /* PROJ-2464 hybrid partitioned table ¡ˆø¯ */
+    if ( sNeedToRecoverTuple == ID_TRUE )
+    {
+        qmx::copyMtcTupleForPartitionDML( aDataPlan->updateTuple, &sCopyTuple );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+    return IDE_FAILURE;
+}
+
+IDE_RC qmnUPTE::checkUpdateParentRefMultiTable( qcTemplate     * aTemplate,
+                                                qmnPlan        * aPlan,
+                                                qmmMultiTables * aTable,
+                                                UInt             aIndex )
+{
+    qmndUPTE            * sDataPlan;
+    iduMemoryStatus       sQmxMemStatus;
+    void                * sOrgRow;
+    void                * sSearchRow;
+    qmsPartitionRef     * sPartitionRef;
+    qmcInsertPartCursor * sInsertPartCursor;
+    qmndMultiTables     * sDataTable;
+    UInt                  i;
+
+    sDataPlan = (qmndUPTE*) ( aTemplate->tmplate.data + aPlan->offset );
+    sDataPlan->updateTuple = &aTemplate->tmplate.rows[aTable->mTableRef->table];
+    sDataTable = &sDataPlan->mTableArray[aIndex];
+
+    //------------------------------------------
+    // UPDATEµ» ∑ŒøÏ ∞Àªˆ¿ª ¿ß«ÿ,
+    // ∞ªΩ≈ø¨ªÍ¿Ã ºˆ«‡µ» √ππ¯¬∞ row ¿Ã¿¸ ¿ßƒ°∑Œ cursor ¿ßƒ° º≥¡§
+    //------------------------------------------
+    if ( aTable->mParentConst != NULL )
+    {
+        if ( aTable->mTableRef->partitionRef == NULL )
+        {
+            IDE_TEST( checkUpdateParentRefOnScanMultiTable(
+                        aTemplate,
+                        aTable,
+                        &aTemplate->tmplate.rows[aTable->mTableRef->table] )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            for ( sPartitionRef = aTable->mTableRef->partitionRef;
+                  sPartitionRef != NULL;
+                  sPartitionRef = sPartitionRef->next )
+            {
+                IDE_TEST( checkUpdateParentRefOnScanMultiTable(
+                              aTemplate,
+                              aTable,
+                              &aTemplate->tmplate.rows[sPartitionRef->table] )
+                          != IDE_SUCCESS );
+            }
+        }
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    //------------------------------------------
+    // INSERTµ» ∑ŒøÏ ∞Àªˆ¿ª ¿ß«ÿ,
+    // ∞ªΩ≈ø¨ªÍ¿Ã ºˆ«‡µ» √ππ¯¬∞ row ¿Ã¿¸ ¿ßƒ°∑Œ cursor ¿ßƒ° º≥¡§
+    //------------------------------------------
+    if ( ( aTable->mParentConst != NULL ) &&
+         ( aTable->mUpdateType == QMO_UPDATE_ROWMOVEMENT ) )
+    {
+        for ( i = 0; i < sDataTable->mInsertCursorMgr.mCursorIndexCount; i++ )
+        {
+            sInsertPartCursor = sDataTable->mInsertCursorMgr.mCursorIndex[i];
+
+            sOrgRow = sSearchRow = sDataPlan->updateTuple->row;
+
+            //------------------------------------------
+            // ¿˙¿Â ∏≈√ºø° µ˚∏• ∞¯∞£ »Æ∫∏ π◊ ƒ√∑≥ ¡§∫∏ ±∏º∫
+            //------------------------------------------
+            IDE_TEST( sInsertPartCursor->cursor.beforeFirstModified( SMI_FIND_MODIFIED_NEW )
+                      != IDE_SUCCESS );
+
+            //------------------------------------------
+            // ∫Ø∞Êµ» Row∏¶ π›∫π¿˚¿∏∑Œ ¿–æÓ Referecing ∞ÀªÁ∏¶ «‘
+            //------------------------------------------
+            IDE_TEST( sInsertPartCursor->cursor.readNewRow( (const void **) & sSearchRow,
+                                                            & sDataPlan->updateTuple->rid )
+                      != IDE_SUCCESS);
+
+            sDataPlan->updateTuple->row = ( sSearchRow == NULL ) ? sOrgRow : sSearchRow;
+
+            while ( sSearchRow != NULL )
+            {
+                // Memory ¿ÁªÁøÎ¿ª ¿ß«œø© «ˆ¿Á ¿ßƒ° ±‚∑œ
+                IDE_TEST_RAISE( aTemplate->stmt->qmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
+
+                //------------------------------------------
+                // Master Tableø° ¥Î«— Referencing ∞ÀªÁ
+                //------------------------------------------
+                IDE_TEST( qdnForeignKey::checkParentRef(
+                              aTemplate->stmt,
+                              aTable->mColumnIDs,
+                              aTable->mParentConst,
+                              sDataPlan->updateTuple,
+                              sDataPlan->updateTuple->row,
+                              aTable->mColumnCount )
+                          != IDE_SUCCESS );
+
+                // Memory ¿ÁªÁøÎ¿ª ¿ß«— Memory ¿Ãµø
+                IDE_TEST_RAISE( aTemplate->stmt->qmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
+
+                sOrgRow = sSearchRow = sDataPlan->updateTuple->row;
+
+                IDE_TEST( sInsertPartCursor->cursor.readNewRow(
+                              (const void **) &sSearchRow,
+                              & sDataPlan->updateTuple->rid )
+                          != IDE_SUCCESS);
+
+                sDataPlan->updateTuple->row = ( sSearchRow == NULL ) ? sOrgRow : sSearchRow;
+            }
+        }
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_MEM_OP )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "Unexpected errors may have occurred:"
+                     "qmnUPTE::checkUpdateParentRefMultiTable"
+                     "memory error" );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmnUPTE::checkUpdateChildRefMultiTable( qcTemplate     * aTemplate,
+                                               qmnPlan        * /*aPlan*/,
+                                               qmmMultiTables * aTable )
+{
+    qmsPartitionRef * sPartitionRef;
+    smiStatement      sSmiStmt;
+    smiStatement    * sSmiStmtOrg;
+    UInt              sStage = 0;
+
+    if ( aTable->mChildConst != NULL )
+    {
+        // BUG-17940 parent key∏¶ ∞ªΩ≈«œ∞Ì child key∏¶ √£¿ª∂ß
+        // parent rowø° lock¿ª ¿‚¿∫ ¿Ã»ƒ view∏¶ ∫∏±‚¿ß«ÿ
+        // ªı∑ŒøÓ smiStmt∏¶ ¿ÃøÎ«—¥Ÿ.
+        // Update cascade ø…º«ø° ¥Î∫Ò«ÿº≠ normal∑Œ «—¥Ÿ.
+        // child table¿« ≈∏¿‘¿ª «ˆ¿Á æÀ ºˆ æ¯±‚ ∂ßπÆø° ALL CURSOR∑Œ «—¥Ÿ.
+        qcg::getSmiStmt( aTemplate->stmt, & sSmiStmtOrg );
+
+        IDE_TEST( sSmiStmt.begin( aTemplate->stmt->mStatistics,
+                                  QC_SMI_STMT( aTemplate->stmt ),
+                                  SMI_STATEMENT_NORMAL |
+                                  SMI_STATEMENT_SELF_TRUE |
+                                  SMI_STATEMENT_ALL_CURSOR )
+                  != IDE_SUCCESS );
+        qcg::setSmiStmt( aTemplate->stmt, & sSmiStmt );
+
+        sStage = 1;
+
+        if ( aTable->mTableRef->partitionRef == NULL )
+        {
+            IDE_TEST( checkUpdateChildRefOnScanMultiTable(
+                        aTemplate,
+                        aTable,
+                        aTable->mTableRef->tableInfo,
+                        &aTemplate->tmplate.rows[aTable->mTableRef->table] )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            for ( sPartitionRef = aTable->mTableRef->partitionRef;
+                  sPartitionRef != NULL;
+                  sPartitionRef = sPartitionRef->next )
+            {
+                IDE_TEST( checkUpdateChildRefOnScanMultiTable(
+                              aTemplate,
+                              aTable,
+                              sPartitionRef->partitionInfo,
+                              &aTemplate->tmplate.rows[sPartitionRef->table] )
+                          != IDE_SUCCESS );
+            }
+        }
+
+        sStage = 0;
+
+        qcg::setSmiStmt( aTemplate->stmt, sSmiStmtOrg );
+        IDE_TEST( sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    if ( sStage == 1 )
+    {
+        qcg::setSmiStmt( aTemplate->stmt, sSmiStmtOrg );
+
+        if (sSmiStmt.end(SMI_STATEMENT_RESULT_FAILURE) != IDE_SUCCESS)
+        {
+            IDE_CALLBACK_FATAL("Check Child Key On Update smiStmt.end() failed");
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+    return IDE_FAILURE;
+}
+
+IDE_RC qmnUPTE::checkUpdateParentRefOnScanMultiTable( qcTemplate     * aTemplate,
+                                                      qmmMultiTables * aTable,
+                                                      mtcTuple       * aUpdateTuple )
+{
+    iduMemoryStatus   sQmxMemStatus;
+    void            * sOrgRow;
+    void            * sSearchRow;
+    smiTableCursor  * sUpdateCursor;
+    qmnCursorInfo   * sCursorInfo;
+
+    //------------------------------------------
+    // UPDATEµ» ∑ŒøÏ ∞Àªˆ¿ª ¿ß«ÿ,
+    // ∞ªΩ≈ø¨ªÍ¿Ã ºˆ«‡µ» √ππ¯¬∞ row ¿Ã¿¸ ¿ßƒ°∑Œ cursor ¿ßƒ° º≥¡§
+    //------------------------------------------
+
+    sCursorInfo = (qmnCursorInfo*) aUpdateTuple->cursorInfo;
+
+    IDE_TEST_RAISE( sCursorInfo == NULL, ERR_NOT_FOUND );
+
+    sUpdateCursor = sCursorInfo->cursor;
+
+    // BUG-37147 sUpdateCursor ∞° null ¿Œ ∞ÊøÏ∞° πﬂª˝«‘
+    // PROJ-1624 non-partitioned index
+    // index table scan¿∏∑Œ openµ«¡ˆ æ ¿∫ partition¿Ã ¡∏¿Á«—¥Ÿ.
+    if ( sUpdateCursor != NULL )
+    {
+        sOrgRow = sSearchRow = aUpdateTuple->row;
+
+        IDE_TEST( sUpdateCursor->beforeFirstModified( SMI_FIND_MODIFIED_NEW )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( sUpdateCursor->readNewRow( (const void**) & sSearchRow,
+                                             & aUpdateTuple->rid )
+                  != IDE_SUCCESS );
+
+        //------------------------------------------
+        // Referencing ∞ÀªÁ∏¶ ¿ß«ÿ ªË¡¶µ» RowµÈ¿ª ∞Àªˆ
+        //------------------------------------------
+
+        aUpdateTuple->row = ( sSearchRow == NULL ) ? sOrgRow : sSearchRow;
+
+        while ( sSearchRow != NULL )
+        {
+            // Memory ¿ÁªÁøÎ¿ª ¿ß«œø© «ˆ¿Á ¿ßƒ° ±‚∑œ
+            IDE_TEST_RAISE( aTemplate->stmt->qmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
+
+            //------------------------------------------
+            // Child Tableø° ¥Î«— Referencing ∞ÀªÁ
+            //------------------------------------------
+            IDE_TEST( qdnForeignKey::checkParentRef(
+                        aTemplate->stmt,
+                        aTable->mColumnIDs,
+                        aTable->mParentConst,
+                        aUpdateTuple,
+                        aUpdateTuple->row,
+                        aTable->mColumnCount )
+                    != IDE_SUCCESS );
+
+            // Memory ¿ÁªÁøÎ¿ª ¿ß«— Memory ¿Ãµø
+            IDE_TEST_RAISE( aTemplate->stmt->qmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
+
+            sOrgRow = sSearchRow = aUpdateTuple->row;
+
+            IDE_TEST( sUpdateCursor->readNewRow( (const void**) & sSearchRow,
+                                                 & aUpdateTuple->rid )
+                      != IDE_SUCCESS );
+
+            aUpdateTuple->row = ( sSearchRow == NULL ) ? sOrgRow : sSearchRow;
+        }
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_MEM_OP )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "Unexpected errors may have occurred:"
+                     "qmnUPTE::checkUpdateParentRefOnScanMultiTable"
+                     "memory error" );
+    }
+    IDE_EXCEPTION( ERR_NOT_FOUND )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmnUPTE::checkUpdateParentRefOnScanMultiTable",
+                                  "cursor not found" ));
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmnUPTE::checkUpdateChildRefOnScanMultiTable( qcTemplate     * aTemplate,
+                                                     qmmMultiTables * aTable,
+                                                     qcmTableInfo   * aTableInfo,
+                                                     mtcTuple       * aUpdateTuple )
+{
+    iduMemoryStatus   sQmxMemStatus;
+    void            * sOrgRow;
+    void            * sSearchRow;
+    smiTableCursor  * sUpdateCursor;
+    qmnCursorInfo   * sCursorInfo;
+
+    //------------------------------------------
+    // UPDATEµ» ∑ŒøÏ ∞Àªˆ¿ª ¿ß«ÿ,
+    // ∞ªΩ≈ø¨ªÍ¿Ã ºˆ«‡µ» √ππ¯¬∞ row ¿Ã¿¸ ¿ßƒ°∑Œ cursor ¿ßƒ° º≥¡§
+    //------------------------------------------
+    sCursorInfo = (qmnCursorInfo*) aUpdateTuple->cursorInfo;
+
+    IDE_TEST_RAISE( sCursorInfo == NULL, ERR_NOT_FOUND );
+
+    sUpdateCursor = sCursorInfo->cursor;
+
+    // PROJ-1624 non-partitioned index
+    // index table scan¿∏∑Œ openµ«¡ˆ æ ¿∫ partition¿Ã ¡∏¿Á«—¥Ÿ.
+    if ( sUpdateCursor != NULL )
+    {
+        IDE_TEST( sUpdateCursor->beforeFirstModified( SMI_FIND_MODIFIED_OLD )
+                  != IDE_SUCCESS );
+
+        //------------------------------------------
+        // Referencing ∞ÀªÁ∏¶ ¿ß«ÿ ªË¡¶µ» RowµÈ¿ª ∞Àªˆ
+        //------------------------------------------
+
+        sOrgRow = sSearchRow = aUpdateTuple->row;
+        IDE_TEST( sUpdateCursor->readOldRow( (const void**) & sSearchRow,
+                                             &aUpdateTuple->rid )
+                  != IDE_SUCCESS );
+
+        aUpdateTuple->row = ( sSearchRow == NULL ) ? sOrgRow : sSearchRow;
+
+        while ( sSearchRow != NULL )
+        {
+            // Memory ¿ÁªÁøÎ¿ª ¿ß«œø© «ˆ¿Á ¿ßƒ° ±‚∑œ
+            IDE_TEST_RAISE( aTemplate->stmt->qmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
+
+            //------------------------------------------
+            // Child Tableø° ¥Î«— Referencing ∞ÀªÁ
+            //------------------------------------------
+            IDE_TEST( qdnForeignKey::checkChildRefOnUpdate(
+                          aTemplate->stmt,
+                          aTable->mTableRef,
+                          aTableInfo,
+                          aTable->mColumnIDs,
+                          aTable->mChildConst,
+                          aTableInfo->tableID,
+                          aUpdateTuple,
+                          aUpdateTuple->row,
+                          aTable->mColumnCount )
+                      != IDE_SUCCESS );
+
+            // Memory ¿ÁªÁøÎ¿ª ¿ß«— Memory ¿Ãµø
+            IDE_TEST_RAISE( aTemplate->stmt->qmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS, ERR_MEM_OP );
+
+            sOrgRow = sSearchRow = aUpdateTuple->row;
+
+            IDE_TEST( sUpdateCursor->readOldRow( (const void**) & sSearchRow,
+                                                 &aUpdateTuple->rid )
+                      != IDE_SUCCESS );
+
+            aUpdateTuple->row = ( sSearchRow == NULL ) ? sOrgRow : sSearchRow;
+        }
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_MEM_OP )
+    {
+        ideLog::log( IDE_ERR_0,
+                     "Unexpected errors may have occurred:"
+                     "qmnUPTE::checkUpdateChildRefOnScanMultiTable"
+                     "memory error" );
+    }
+    IDE_EXCEPTION( ERR_NOT_FOUND )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmnUPTE::checkUpdateChildRefOnScanMultiTable",
+                                  "cursor not found" ));
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+

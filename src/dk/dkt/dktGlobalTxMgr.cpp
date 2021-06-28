@@ -19,21 +19,41 @@
  * $id$
  **********************************************************************/
 
+#include <dki.h>
 #include <dktGlobalTxMgr.h>
 #include <iduCheckLicense.h>
 #include <dksSessionMgr.h>
+#include <smiMisc.h>
 
 #define EPOCHTIME_20170101   ( 1483228800 ) /* ( ( ( ( (2017) - (1970) ) * 365 ) * 24 ) *3600 ) + a */
 
-UInt        dktGlobalTxMgr::mActiveGlobalCoordinatorCnt;
-UInt        dktGlobalTxMgr::mUniqueGlobalTxSeq;
-iduList     dktGlobalTxMgr::mGlobalCoordinatorList;
-iduMutex    dktGlobalTxMgr::mDktMutex;
+#define GLOBAL_COORDINATOR_HASH_COUNT ( 1024 ) /* BUG-48501 */
+
+iduMemPool                 dktGlobalTxMgr::mGlobalCoordinatorPool;
+SLong                      dktGlobalTxMgr::mUniqueGlobalTxSeq;
+dktGlobalCoordinatorList * dktGlobalTxMgr::mGlobalCoordinatorList;
+
+void dktGlobalTxMgr::lockRead( UInt aIdx )
+{
+    (void)mGlobalCoordinatorList[aIdx].mLatch.lockRead( NULL, NULL );
+}
+
+void dktGlobalTxMgr::lockWrite( UInt aIdx )
+{
+    (void)mGlobalCoordinatorList[aIdx].mLatch.lockWrite( NULL, NULL );
+}
+
+void dktGlobalTxMgr::unlock( UInt aIdx )
+{
+    (void)mGlobalCoordinatorList[aIdx].mLatch.unlock();
+}
+
 dktNotifier dktGlobalTxMgr::mNotifier;
 UChar       dktGlobalTxMgr::mMacAddr[ACP_SYS_MAC_ADDR_LEN];
 UInt        dktGlobalTxMgr::mInitTime = 0;
+SInt        dktGlobalTxMgr::mProcessID = 0;
 /************************************************************************
- * Description : Global transaction manager Î•º Ï¥àÍ∏∞ÌôîÌïúÎã§.
+ * Description : Global transaction manager ∏¶ √ ±‚»≠«—¥Ÿ.
  *
  ************************************************************************/
 IDE_RC  dktGlobalTxMgr::initializeStatic()
@@ -41,15 +61,48 @@ IDE_RC  dktGlobalTxMgr::initializeStatic()
     time_t sTime       = 0;
     mUniqueGlobalTxSeq = 0;
 
-    /* Global coordinator Í∞ùÏ≤¥Ïùò Í∞úÏàòÎ•º 0 ÏúºÎ°ú Ï¥àÍ∏∞Ìôî */
-    mActiveGlobalCoordinatorCnt = 0;
-    /* Global coordinator Í∞ùÏ≤¥Îì§Ïùò Í¥ÄÎ¶¨Î•º ÏúÑÌïú list Ï¥àÍ∏∞Ìôî */
-    IDU_LIST_INIT( &mGlobalCoordinatorList );
-    /* Mutex Ï¥àÍ∏∞Ìôî */
-    IDE_TEST_RAISE( mDktMutex.initialize( (SChar *)"DKT_GLOBAL_TX_MANAGER_MUTEX", 
-                                          IDU_MUTEX_KIND_POSIX, 
-                                          IDV_WAIT_INDEX_NULL )
-                    != IDE_SUCCESS, ERR_MUTEX_INIT );
+    SChar sLatchName[128];
+    UInt  sState = 0;
+    UInt  i;
+
+    IDE_TEST( mGlobalCoordinatorPool.initialize( IDU_MEM_DK,
+                                                (SChar*)"GLOBAL_COORDINATOR",
+                                                1,        /* List Count */
+                                                ID_SIZEOF( dktGlobalCoordinator ),
+                                                1024,     /* itemcount per a chunk */
+                                                IDU_AUTOFREE_CHUNK_LIMIT,
+                                                ID_TRUE,  /* Use Mutex */
+                                                IDU_MEM_POOL_DEFAULT_ALIGN_SIZE,
+                                                ID_FALSE, /* ForcePooling */
+                                                ID_TRUE,  /* GarbageCollection */
+                                                ID_TRUE,  /* HWCacheLine */
+                                                IDU_MEMPOOL_TYPE_LEGACY  /* mempool type */ )
+              != IDE_SUCCESS );
+    sState = 1;
+
+    IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_DK,
+                                       ID_SIZEOF( dktGlobalCoordinatorList ) * GLOBAL_COORDINATOR_HASH_COUNT,
+                                       (void **)&mGlobalCoordinatorList,
+                                       IDU_MEM_IMMEDIATE )
+                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_GLOBAL_COORDINATOR );
+    sState = 2;
+
+    /* Global coordinator ∞¥√ºµÈ¿« ∞¸∏Æ∏¶ ¿ß«— list √ ±‚»≠ */
+    for ( i = 0; i < GLOBAL_COORDINATOR_HASH_COUNT; i++ )
+    {
+        idlOS::snprintf( sLatchName,
+                         ID_SIZEOF(sLatchName),
+                         "DKT_GLOBAL_COORDINATOR_LIST_LATCH_%"ID_UINT32_FMT,
+                         i );
+
+        IDE_ASSERT( mGlobalCoordinatorList[i].mLatch.initialize( sLatchName )
+                    == IDE_SUCCESS );
+
+        IDU_LIST_INIT( &(mGlobalCoordinatorList[i].mHead) );
+
+        mGlobalCoordinatorList[i].mCnt = 0;
+    }
+    sState = 3;
 
     IDE_TEST( mNotifier.initialize() != IDE_SUCCESS );
 
@@ -72,12 +125,10 @@ IDE_RC  dktGlobalTxMgr::initializeStatic()
 
     mInitTime = ( sTime - EPOCHTIME_20170101 );/*sTime is always bigger*/
 
+    mProcessID = (SInt)idlOS::getpid();
+
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION( ERR_MUTEX_INIT );
-    {
-        IDE_SET( ideSetErrorCode( dkERR_FATAL_ThrMutexInit ) );
-    }
     IDE_EXCEPTION( ERR_NOTIFIER_START );
     {
         ideLog::log( DK_TRC_LOG_FORCE, DK_TRC_T_NOTIFIER_THREAD );
@@ -88,17 +139,40 @@ IDE_RC  dktGlobalTxMgr::initializeStatic()
     {
         IDE_SET( ideSetErrorCode( dkERR_ABORT_DK_INTERNAL_ERROR ) );
     }
+    IDE_EXCEPTION( ERR_MEMORY_ALLOC_GLOBAL_COORDINATOR );
+    {
+        IDE_SET( ideSetErrorCode( dkERR_ABORT_MEMORY_ALLOCATION ) );
+    }
     IDE_EXCEPTION_END;
+
+    switch ( sState )
+    {
+        case 3 :
+            for ( i = 0; i < GLOBAL_COORDINATOR_HASH_COUNT; i++ )
+            {
+                IDE_ASSERT( mGlobalCoordinatorList[i].mLatch.destroy() == IDE_SUCCESS );
+
+                IDU_LIST_INIT( &(mGlobalCoordinatorList[i].mHead) );
+            }
+        case 2 :
+            IDE_ASSERT( iduMemMgr::free(mGlobalCoordinatorList) == IDE_SUCCESS );
+        case 1 :
+            IDE_ASSERT( mGlobalCoordinatorPool.destroy() == IDE_SUCCESS );
+        default :
+            break;
+    }
 
     return IDE_FAILURE;
 }
 
 /************************************************************************
- * Description : Global transaction manager Î•º Ï†ïÎ¶¨ÌïúÎã§.
+ * Description : Global transaction manager ∏¶ ¡§∏Æ«—¥Ÿ.
  *
  ************************************************************************/
 IDE_RC  dktGlobalTxMgr::finalizeStatic()
 {
+    UInt i;
+
     if ( ( DKU_DBLINK_ENABLE == DK_ENABLE ) ||
          ( sdi::isShardEnable() == ID_TRUE ) )
     {
@@ -112,7 +186,19 @@ IDE_RC  dktGlobalTxMgr::finalizeStatic()
 
     mNotifier.finalize();
 
-    IDE_TEST( mDktMutex.destroy() != IDE_SUCCESS );
+    IDE_DASSERT( dktGlobalTxMgr::getActiveGlobalCoordinatorCnt() == 0 );
+
+    for ( i = 0; i < GLOBAL_COORDINATOR_HASH_COUNT; i++ )
+    {
+        IDE_ASSERT( mGlobalCoordinatorList[i].mLatch.destroy()
+                    == IDE_SUCCESS );
+
+        IDU_LIST_INIT( &(mGlobalCoordinatorList[i].mHead) );
+    }
+
+    IDE_ASSERT( iduMemMgr::free(mGlobalCoordinatorList) == IDE_SUCCESS );
+
+    IDE_ASSERT( mGlobalCoordinatorPool.destroy() == IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -122,11 +208,11 @@ IDE_RC  dktGlobalTxMgr::finalizeStatic()
 }
 
 /************************************************************************
- * Description : Global coordinator Í∞ùÏ≤¥Î•º ÏÉùÏÑ±ÌïúÎã§.
+ * Description : Global coordinator ∞¥√º∏¶ ª˝º∫«—¥Ÿ.
  *
- *  aSession            - [IN] Global coordinator Î•º ÏÉùÏÑ±ÌïòÎäî ÏÑ∏ÏÖòÏ†ïÎ≥¥
- *  aGlobalCoordinator  - [OUT] ÏÉùÏÑ±Îêú global coordinator Î•º Í∞ÄÎ¶¨ÌÇ§Îäî 
- *                              Ìè¨Ïù∏ÌÑ∞
+ *  aSession            - [IN] Global coordinator ∏¶ ª˝º∫«œ¥¬ ººº«¡§∫∏
+ *  aGlobalCoordinator  - [OUT] ª˝º∫µ» global coordinator ∏¶ ∞°∏Æ≈∞¥¬ 
+ *                              ∆˜¿Œ≈Õ
  ************************************************************************/
 IDE_RC  dktGlobalTxMgr::createGlobalCoordinator( dksDataSession        * aSession,
                                                  UInt                    aLocalTxId,
@@ -138,10 +224,8 @@ IDE_RC  dktGlobalTxMgr::createGlobalCoordinator( dksDataSession        * aSessio
 
     IDU_FIT_POINT_RAISE( "dktGlobalTxMgr::createGlobalCoordinator::malloc::GlobalCoordinator",
                           ERR_MEMORY_ALLOC_GLOBAL_COORDINATOR );
-    IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_DK,
-                                       ID_SIZEOF( dktGlobalCoordinator ),
-                                       (void **)&sGlobalCoordinator,
-                                       IDU_MEM_IMMEDIATE )
+
+    IDE_TEST_RAISE( mGlobalCoordinatorPool.alloc( (void**)&sGlobalCoordinator )
                     != IDE_SUCCESS, ERR_MEMORY_ALLOC_GLOBAL_COORDINATOR );
     sState = 1;
 
@@ -153,10 +237,10 @@ IDE_RC  dktGlobalTxMgr::createGlobalCoordinator( dksDataSession        * aSessio
     sGlobalCoordinator->setLocalTxId( aLocalTxId );
     sGlobalCoordinator->setGlobalTxId( sGlobalTxId );
 
-    IDE_TEST( addGlobalCoordinatorToList( sGlobalCoordinator ) != IDE_SUCCESS );
+    addGlobalCoordinatorToList( sGlobalCoordinator );
     sState = 3;
 
-    if ( sGlobalCoordinator->getAtomicTxLevel() == DKT_ADLP_TWO_PHASE_COMMIT )
+    if ( sGlobalCoordinator->isGTx() == ID_TRUE )
     {
         IDE_TEST( sGlobalCoordinator->createDtxInfo( aLocalTxId,
                                                      sGlobalCoordinator->getGlobalTxId() )
@@ -187,7 +271,7 @@ IDE_RC  dktGlobalTxMgr::createGlobalCoordinator( dksDataSession        * aSessio
             (void)sGlobalCoordinator->finalize();
             /* fall through */
         case 1:
-            (void)iduMemMgr::free( sGlobalCoordinator );
+            (void)mGlobalCoordinatorPool.memfree( sGlobalCoordinator );
             break;
         default:
             break;
@@ -195,12 +279,29 @@ IDE_RC  dktGlobalTxMgr::createGlobalCoordinator( dksDataSession        * aSessio
 
     return IDE_FAILURE;
 }
+ 
+UInt dktGlobalTxMgr::getActiveGlobalCoordinatorCnt()
+{
+    UInt sTxCnt = 0;
+    UInt i      = 0;
+
+    for ( i = 0; i < GLOBAL_COORDINATOR_HASH_COUNT; i++ )
+    {
+        lockRead(i);
+
+        sTxCnt += mGlobalCoordinatorList[i].mCnt;
+
+        unlock(i);
+    }
+
+    return sTxCnt;
+}
 
 /************************************************************************
- * Description : ÏûÖÎ†•Î∞õÏùÄ global coordinator Í∞ùÏ≤¥Î•º Ï†úÍ±∞ÌïúÎã§.
+ * Description : ¿‘∑¬πﬁ¿∫ global coordinator ∞¥√º∏¶ ¡¶∞≈«—¥Ÿ.
  *
- *  aGlobalCoordinator  - [IN] Ï†úÍ±∞Ìï† global coordinator Î•º Í∞ÄÎ¶¨ÌÇ§Îäî 
- *                             Ìè¨Ïù∏ÌÑ∞
+ *  aGlobalCoordinator  - [IN] ¡¶∞≈«“ global coordinator ∏¶ ∞°∏Æ≈∞¥¬ 
+ *                             ∆˜¿Œ≈Õ
  *
  ************************************************************************/
 void  dktGlobalTxMgr::destroyGlobalCoordinator( dktGlobalCoordinator * aGlobalCoordinator )
@@ -209,18 +310,33 @@ void  dktGlobalTxMgr::destroyGlobalCoordinator( dktGlobalCoordinator * aGlobalCo
 
     IDE_ASSERT( aGlobalCoordinator != NULL );
 
-    /* PROJ-2569 notifierÏóêÍ≤å Ïù¥Í¥ÄÌï¥ÏïºÌïòÎØÄÎ°ú,
-     *  Î©îÎ™®Î¶¨ Ìï¥Ï†úÎäî commit/rollbackÏù¥ Ïã§Ìñâ ÌõÑ ÏÑ±Í≥µ Ïó¨Î∂ÄÎ•º Î≥¥Í≥† Í∑∏Í≥≥ÏóêÏÑú ÌïúÎã§. */
+    /* PROJ-2569 notifierø°∞‘ ¿Ã∞¸«ÿæﬂ«œπ«∑Œ,
+     *  ∏ﬁ∏∏Æ «ÿ¡¶¥¬ commit/rollback¿Ã Ω««‡ »ƒ º∫∞¯ ø©∫Œ∏¶ ∫∏∞Ì ±◊∞˜ø°º≠ «—¥Ÿ. */
     if ( aGlobalCoordinator->mDtxInfo != NULL  )
     {
        if (  aGlobalCoordinator->mDtxInfo->isEmpty() != ID_TRUE ) 
        {
-            sNotifier = getNotifier();
-            sNotifier->addDtxInfo( aGlobalCoordinator->mDtxInfo );
+           sNotifier = getNotifier();
+
+           if ( aGlobalCoordinator->mDtxInfo->mIsPassivePending == ID_TRUE )
+           {
+               if ( aGlobalCoordinator->getGTxStatus() >= DKT_GTX_STATUS_PREPARE_REQUEST )
+               {
+                   sNotifier->addDtxInfo( DK_NOTIFY_NORMAL, aGlobalCoordinator->mDtxInfo );
+               }
+               else
+               {
+                   aGlobalCoordinator->removeDtxInfo();
+               }
+           }
+           else
+           {
+               sNotifier->addDtxInfo( DK_NOTIFY_NORMAL, aGlobalCoordinator->mDtxInfo );
+           }
     
-            IDE_ASSERT( aGlobalCoordinator->mCoordinatorDtxInfoMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
-            aGlobalCoordinator->mDtxInfo = NULL;
-            IDE_ASSERT( aGlobalCoordinator->mCoordinatorDtxInfoMutex.unlock() == IDE_SUCCESS );
+           IDE_ASSERT( aGlobalCoordinator->mCoordinatorDtxInfoMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
+           aGlobalCoordinator->mDtxInfo = NULL;
+           IDE_ASSERT( aGlobalCoordinator->mCoordinatorDtxInfoMutex.unlock() == IDE_SUCCESS );
         }
         else
         {
@@ -236,7 +352,7 @@ void  dktGlobalTxMgr::destroyGlobalCoordinator( dktGlobalCoordinator * aGlobalCo
     /* BUG-37487 : void */
     aGlobalCoordinator->finalize();
 
-    (void)iduMemMgr::free( aGlobalCoordinator );
+    (void)mGlobalCoordinatorPool.memfree( aGlobalCoordinator );
 
     aGlobalCoordinator = NULL;
 
@@ -244,23 +360,21 @@ void  dktGlobalTxMgr::destroyGlobalCoordinator( dktGlobalCoordinator * aGlobalCo
 }
 
 /************************************************************************
- * Description : ÌòÑÏû¨ DK ÎÇ¥ÏóêÏÑú ÏàòÌñâÎêòÍ≥† ÏûàÎäî Î™®Îì† Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖòÎì§Ïùò 
- *               Ï†ïÎ≥¥Î•º ÏñªÏñ¥Ïò®Îã§.
+ * Description : «ˆ¿Á DK ≥ªø°º≠ ºˆ«‡µ«∞Ì ¿÷¥¬ ∏µÁ ±€∑Œπ˙ ∆Æ∑£¿Ëº«µÈ¿« 
+ *               ¡§∫∏∏¶ æÚæÓø¬¥Ÿ.
  *              
- *  aInfo       - [IN] Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖòÎì§Ïùò Ï†ïÎ≥¥Î•º Îã¥ÏùÑ Î∞∞Ïó¥Ìè¨Ïù∏ÌÑ∞
+ *  aInfo       - [IN] ±€∑Œπ˙ ∆Æ∑£¿Ëº«µÈ¿« ¡§∫∏∏¶ ¥„¿ª πËø≠∆˜¿Œ≈Õ
  ************************************************************************/
 IDE_RC  dktGlobalTxMgr::getAllGlobalTransactonInfo( dktGlobalTxInfo ** aInfo, UInt * aGTxCnt )
 {
-    UInt   i      =  0;
+    UInt   i       =  0;
     UInt   sGTxCnt = 0;
+    UInt   sCnt    = 0;
     idBool sIsLock = ID_FALSE;    
 
     iduListNode           * sIterator           = NULL;
     dktGlobalCoordinator  * sGlobalCoordinator  = NULL;
     dktGlobalTxInfo       * sInfo               = NULL;
-
-    IDE_ASSERT( mDktMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
-    sIsLock = ID_TRUE;
 
     sGTxCnt = dktGlobalTxMgr::getActiveGlobalCoordinatorCnt();
 
@@ -274,36 +388,37 @@ IDE_RC  dktGlobalTxMgr::getAllGlobalTransactonInfo( dktGlobalTxInfo ** aInfo, UI
                                            IDU_MEM_IMMEDIATE )
                         != IDE_SUCCESS, ERR_MEMORY_ALLOC );
 
-        IDU_LIST_ITERATE( &mGlobalCoordinatorList, sIterator )
+        for ( i = 0; i < GLOBAL_COORDINATOR_HASH_COUNT; i++ )
         {
-            sGlobalCoordinator = (dktGlobalCoordinator *)sIterator->mObj;
+            lockRead(i);
+            sIsLock = ID_TRUE;
 
-            IDE_TEST_CONT( i == sGTxCnt, FOUND_COMPLETE );
+            IDU_LIST_ITERATE( &mGlobalCoordinatorList[i].mHead, sIterator )
+            {
+                sGlobalCoordinator = (dktGlobalCoordinator *)sIterator->mObj;
 
-            if ( sGlobalCoordinator != NULL )
-            {
-                IDE_TEST( sGlobalCoordinator->getGlobalTransactionInfo( &sInfo[i] )
-                          != IDE_SUCCESS );
-                i++;
+                IDE_TEST_CONT( sCnt == sGTxCnt, FOUND_COMPLETE );
+
+                IDE_TEST( sGlobalCoordinator->getGlobalTransactionInfo( &sInfo[sCnt] )
+                        != IDE_SUCCESS );
+                sCnt++;
             }
-            else
-            {
-                /* no more global coordinator */
-            }
+
+            sIsLock = ID_FALSE;
+            unlock(i);
         }
-    }
-    else
-    {
-        /* nothing to do */
     }
 
     IDE_EXCEPTION_CONT( FOUND_COMPLETE );
 
-    *aInfo = sInfo;
-    *aGTxCnt = sGTxCnt;
+    *aInfo   = sInfo;
+    *aGTxCnt = sCnt;
 
-    sIsLock = ID_FALSE;
-    IDE_ASSERT( mDktMutex.unlock() == IDE_SUCCESS );
+    if ( sIsLock == ID_TRUE )
+    {
+        sIsLock = ID_FALSE;
+        unlock(i);
+    }
 
     return IDE_SUCCESS;
 
@@ -326,7 +441,7 @@ IDE_RC  dktGlobalTxMgr::getAllGlobalTransactonInfo( dktGlobalTxInfo ** aInfo, UI
     if ( sIsLock == ID_TRUE )
     {
         sIsLock = ID_FALSE;
-        IDE_ASSERT( mDktMutex.unlock() == IDE_SUCCESS );
+        unlock(i);
     }
     else
     {
@@ -336,12 +451,12 @@ IDE_RC  dktGlobalTxMgr::getAllGlobalTransactonInfo( dktGlobalTxInfo ** aInfo, UI
 }
 
 /************************************************************************
- * Description : ÌòÑÏû¨ DK ÎÇ¥ÏóêÏÑú ÏàòÌñâÎêòÍ≥† ÏûàÎäî Î™®Îì† Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖòÎì§Ïùò 
- *               Ï†ïÎ≥¥Î•º ÏñªÏñ¥Ïò®Îã§.
+ * Description : «ˆ¿Á DK ≥ªø°º≠ ºˆ«‡µ«∞Ì ¿÷¥¬ ∏µÁ ±€∑Œπ˙ ∆Æ∑£¿Ëº«µÈ¿« 
+ *               ¡§∫∏∏¶ æÚæÓø¬¥Ÿ.
  *              
- *  aInfo       - [IN/OUT] Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖòÎì§Ïùò Ï†ïÎ≥¥Î•º Îã¥ÏùÑ Î∞∞Ïó¥Ìè¨Ïù∏ÌÑ∞
- *  aRTxCnt     - [IN] Caller Í∞Ä ÏöîÏ≤≠Ìïú ÏãúÏ†êÏóê Í≤∞Ï†ïÎêú remote transaction
- *                     Í∞úÏàòÎßåÌÅºÎßå Ï†ïÎ≥¥Î•º Í∞ÄÏ†∏Ïò§Í∏∞ ÏúÑÌïú ÏûÖÎ†•Í∞í
+ *  aInfo       - [IN/OUT] ±€∑Œπ˙ ∆Æ∑£¿Ëº«µÈ¿« ¡§∫∏∏¶ ¥„¿ª πËø≠∆˜¿Œ≈Õ
+ *  aRTxCnt     - [IN] Caller ∞° ø‰√ª«— Ω√¡°ø° ∞·¡§µ» remote transaction
+ *                     ∞≥ºˆ∏∏≈≠∏∏ ¡§∫∏∏¶ ∞°¡Æø¿±‚ ¿ß«— ¿‘∑¬∞™
  *
  ************************************************************************/
 IDE_RC  dktGlobalTxMgr::getAllRemoteTransactonInfo( dktRemoteTxInfo ** aInfo,
@@ -350,16 +465,13 @@ IDE_RC  dktGlobalTxMgr::getAllRemoteTransactonInfo( dktRemoteTxInfo ** aInfo,
     idBool sIsLock  = ID_FALSE;
     UInt   sInfoCnt	= 0;
     UInt   sRTxCnt  = 0;
+    UInt   i        = 0;
 
     iduListNode          * sIterator          = NULL;
     dktGlobalCoordinator * sGlobalCoordinator = NULL;
     dktRemoteTxInfo      * sInfo              = NULL;
 
-    IDE_ASSERT( mDktMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
-    sIsLock = ID_TRUE;     
-
-    IDE_TEST( dktGlobalTxMgr::getAllRemoteTransactionCountWithoutLock( &sRTxCnt )
-              != IDE_SUCCESS );
+    dktGlobalTxMgr::getAllRemoteTransactionCount( &sRTxCnt );
 
     if ( sRTxCnt > 0 )
     {
@@ -371,37 +483,38 @@ IDE_RC  dktGlobalTxMgr::getAllRemoteTransactonInfo( dktRemoteTxInfo ** aInfo,
                                            IDU_MEM_IMMEDIATE )
                         != IDE_SUCCESS, ERR_MEMORY_ALLOC );
 
-        IDU_LIST_ITERATE( &mGlobalCoordinatorList, sIterator )
+        for ( i = 0; i < GLOBAL_COORDINATOR_HASH_COUNT; i++ )
         {
-            sGlobalCoordinator = (dktGlobalCoordinator *)sIterator->mObj;
+            lockRead(i);
+            sIsLock = ID_TRUE;
 
-            IDE_TEST_CONT( sInfoCnt >= sRTxCnt, FOUND_COMPLETE );
-
-            if ( sGlobalCoordinator != NULL )
+            IDU_LIST_ITERATE( &mGlobalCoordinatorList[i].mHead, sIterator )
             {
+                sGlobalCoordinator = (dktGlobalCoordinator *)sIterator->mObj;
+
+                IDE_TEST_CONT( sInfoCnt >= sRTxCnt, FOUND_COMPLETE );
+
                 IDE_TEST( sGlobalCoordinator->getRemoteTransactionInfo( sInfo,
                                                                         sRTxCnt,
-                                                                        &sInfoCnt )
+                                                                        &sInfoCnt /* ¥©¿˚µ«¥¬∞™ */ )
                           != IDE_SUCCESS );
             }
-            else
-            {
-                /* no more global coordinator */
-            }
+
+            sIsLock = ID_FALSE;
+            unlock(i);
         }
-    }
-    else
-    {
-        /* nothing to do */
     }
 
     IDE_EXCEPTION_CONT( FOUND_COMPLETE );
 
-    *aInfo = sInfo;
+    *aInfo   = sInfo;
     *aRTxCnt = sInfoCnt;
 
-    sIsLock = ID_FALSE;
-    IDE_ASSERT( mDktMutex.unlock() == IDE_SUCCESS );
+    if ( sIsLock == ID_TRUE )
+    {
+        sIsLock = ID_FALSE;
+        unlock(i);
+    }
 
     return IDE_SUCCESS;
 
@@ -425,7 +538,7 @@ IDE_RC  dktGlobalTxMgr::getAllRemoteTransactonInfo( dktRemoteTxInfo ** aInfo,
     if ( sIsLock == ID_TRUE )
     {
         sIsLock = ID_FALSE;
-        IDE_ASSERT( mDktMutex.unlock() == IDE_SUCCESS );
+        unlock(i);
     }
     else
 	{
@@ -436,12 +549,12 @@ IDE_RC  dktGlobalTxMgr::getAllRemoteTransactonInfo( dktRemoteTxInfo ** aInfo,
 }
 
 /************************************************************************
- * Description : ÌòÑÏû¨ DK ÎÇ¥ÏóêÏÑú ÏàòÌñâÎêòÍ≥† ÏûàÎäî Î™®Îì† Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖòÎì§Ïùò 
- *               Ï†ïÎ≥¥Î•º ÏñªÏñ¥Ïò®Îã§.
+ * Description : «ˆ¿Á DK ≥ªø°º≠ ºˆ«‡µ«∞Ì ¿÷¥¬ ∏µÁ ±€∑Œπ˙ ∆Æ∑£¿Ëº«µÈ¿« 
+ *               ¡§∫∏∏¶ æÚæÓø¬¥Ÿ.
  *              
- *  aInfo       - [IN/OUT] Remote statement Îì§Ïùò Ï†ïÎ≥¥Î•º Îã¥ÏùÑ Î∞∞Ïó¥Ìè¨Ïù∏ÌÑ∞
- *  aStmtCnt    - [IN] Caller Í∞Ä ÏöîÏ≤≠Ìïú ÏãúÏ†êÏóê Í≤∞Ï†ïÎêú remote statement
- *                     Í∞úÏàòÎßåÌÅºÎßå Ï†ïÎ≥¥Î•º Í∞ÄÏ†∏Ïò§Í∏∞ ÏúÑÌïú ÏûÖÎ†•Í∞í
+ *  aInfo       - [IN/OUT] Remote statement µÈ¿« ¡§∫∏∏¶ ¥„¿ª πËø≠∆˜¿Œ≈Õ
+ *  aStmtCnt    - [IN] Caller ∞° ø‰√ª«— Ω√¡°ø° ∞·¡§µ» remote statement
+ *                     ∞≥ºˆ∏∏≈≠∏∏ ¡§∫∏∏¶ ∞°¡Æø¿±‚ ¿ß«— ¿‘∑¬∞™
  *
  ************************************************************************/
 IDE_RC  dktGlobalTxMgr::getAllRemoteStmtInfo( dktRemoteStmtInfo * aInfo,
@@ -452,35 +565,38 @@ IDE_RC  dktGlobalTxMgr::getAllRemoteStmtInfo( dktRemoteStmtInfo * aInfo,
     UInt                    sInfoCnt            = 0;
     iduListNode            *sIterator           = NULL;
     dktGlobalCoordinator   *sGlobalCoordinator  = NULL;
+    UInt                   i = 0;
 
-    IDE_ASSERT( mDktMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
-    sIsLock = ID_TRUE;
-
-    IDU_LIST_ITERATE( &mGlobalCoordinatorList, sIterator )
+    for ( i = 0; i < GLOBAL_COORDINATOR_HASH_COUNT; i++ )
     {
-        sGlobalCoordinator = (dktGlobalCoordinator *)sIterator->mObj;
+        lockRead(i);
+        sIsLock = ID_TRUE;
 
-        IDE_TEST_CONT( sInfoCnt >= sRemoteStmtCnt, FOUND_COMPLETE );
-
-        if ( sGlobalCoordinator != NULL )
+        IDU_LIST_ITERATE( &mGlobalCoordinatorList[i].mHead, sIterator )
         {
+            sGlobalCoordinator = (dktGlobalCoordinator *)sIterator->mObj;
+
+            IDE_TEST_CONT( sInfoCnt >= sRemoteStmtCnt, FOUND_COMPLETE );
+
             IDE_TEST( sGlobalCoordinator->getRemoteStmtInfo( aInfo,
                                                              sRemoteStmtCnt,
-                                                             &sInfoCnt )
+                                                             &sInfoCnt ) /* ¥©¿˚µ«¥¬ ∞™ */
                       != IDE_SUCCESS );
         }
-        else
-        {
-            /* no more global coordinator */
-        }
+
+        sIsLock = ID_FALSE;
+        unlock(i);
     }
 
     IDE_EXCEPTION_CONT( FOUND_COMPLETE );
 
-    *aStmtCnt = sInfoCnt;
+    if ( sIsLock == ID_TRUE )
+    {
+        sIsLock = ID_FALSE;
+        unlock(i);
+    }
 
-    sIsLock = ID_FALSE;
-    IDE_ASSERT( mDktMutex.unlock() == IDE_SUCCESS );
+    *aStmtCnt = sInfoCnt;
 
     return IDE_SUCCESS;
 
@@ -489,7 +605,7 @@ IDE_RC  dktGlobalTxMgr::getAllRemoteStmtInfo( dktRemoteStmtInfo * aInfo,
     if ( sIsLock == ID_TRUE )
     {
         sIsLock = ID_FALSE;
-        IDE_ASSERT( mDktMutex.unlock() == IDE_SUCCESS );
+        unlock(i);
     }
     else
     {
@@ -500,96 +616,61 @@ IDE_RC  dktGlobalTxMgr::getAllRemoteStmtInfo( dktRemoteStmtInfo * aInfo,
 }
 
 /************************************************************************
- * Description : ÌòÑÏû¨ DK ÎÇ¥ÏóêÏÑú ÏàòÌñâÎêòÍ≥† ÏûàÎäî Î™®Îì† remote transaction Ïùò 
- *               Í∞úÏàòÎ•º Íµ¨ÌïúÎã§.
+ * Description : «ˆ¿Á DK ≥ªø°º≠ ºˆ«‡µ«∞Ì ¿÷¥¬ ∏µÁ remote transaction ¿« 
+ *               ∞≥ºˆ∏¶ ±∏«—¥Ÿ.
  *              
- *  aCount       - [OUT] Î™®Îì† remote transaction Ïùò Í∞úÏàò
+ *  aCount       - [OUT] ∏µÁ remote transaction ¿« ∞≥ºˆ
  *
  ************************************************************************/
-IDE_RC  dktGlobalTxMgr::getAllRemoteTransactionCount( UInt  *aCount )
+void dktGlobalTxMgr::getAllRemoteTransactionCount( UInt  *aCount )
 {
-    UInt                    sRemoteTxCnt        = 0;
-    iduListNode            *sIterator           = NULL;
-    dktGlobalCoordinator   *sGlobalCoordinator  = NULL;
+    UInt                   sRemoteTxCnt       = 0;
+    dktGlobalCoordinator * sGlobalCoordinator = NULL;
+    UInt                   i                  = 0;
+    iduListNode          * sIterator          = NULL;
 
-    IDE_ASSERT( mDktMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
-    
-    IDU_LIST_ITERATE( &mGlobalCoordinatorList, sIterator )
+    for ( i = 0; i < GLOBAL_COORDINATOR_HASH_COUNT; i++ )
     {
-        sGlobalCoordinator = (dktGlobalCoordinator *)sIterator->mObj;
+        lockRead(i);
 
-        if ( sGlobalCoordinator != NULL )
+        IDU_LIST_ITERATE( &mGlobalCoordinatorList[i].mHead, sIterator )
         {
+            sGlobalCoordinator = (dktGlobalCoordinator *)sIterator->mObj;
             sRemoteTxCnt += sGlobalCoordinator->getRemoteTxCount();
         }
-        else
-        {
-            /* no more global coordinator */
-        }
-    }
 
-    IDE_ASSERT( mDktMutex.unlock() == IDE_SUCCESS );
-
-    *aCount = sRemoteTxCnt;
-
-    return IDE_SUCCESS;
-}
-
-IDE_RC  dktGlobalTxMgr::getAllRemoteTransactionCountWithoutLock( UInt  *aCount )
-{
-    UInt                    sRemoteTxCnt        = 0;
-    iduListNode            *sIterator           = NULL;
-    dktGlobalCoordinator   *sGlobalCoordinator  = NULL;
-
-    IDU_LIST_ITERATE( &mGlobalCoordinatorList, sIterator )
-    {
-        sGlobalCoordinator = (dktGlobalCoordinator *)sIterator->mObj;
-
-        if ( sGlobalCoordinator != NULL )
-        {
-            sRemoteTxCnt += sGlobalCoordinator->getRemoteTxCount();
-        }
-        else
-        {
-            /* no more global coordinator */
-        }
+        unlock(i);
     }
 
     *aCount = sRemoteTxCnt;
-
-    return IDE_SUCCESS;
 }
 
 /************************************************************************
- * Description : ÌòÑÏû¨ DK ÎÇ¥ÏóêÏÑú ÏàòÌñâÎêòÍ≥† ÏûàÎäî Î™®Îì† remote statement Ïùò 
- *               Í∞úÏàòÎ•º Íµ¨ÌïúÎã§.
+ * Description : «ˆ¿Á DK ≥ªø°º≠ ºˆ«‡µ«∞Ì ¿÷¥¬ ∏µÁ remote statement ¿« 
+ *               ∞≥ºˆ∏¶ ±∏«—¥Ÿ.
  *              
- *  aCount       - [OUT] Î™®Îì† remote statement Ïùò Í∞úÏàò
+ *  aCount       - [OUT] ∏µÁ remote statement ¿« ∞≥ºˆ
  *
  ************************************************************************/
-IDE_RC  dktGlobalTxMgr::getAllRemoteStmtCount( UInt *aCount )
+IDE_RC dktGlobalTxMgr::getAllRemoteStmtCount( UInt *aCount )
 {
-    UInt                    sRemoteStmtCnt      = 0;
-    iduListNode            *sIterator           = NULL;
-    dktGlobalCoordinator   *sGlobalCoordinator  = NULL;
+    UInt                   sRemoteStmtCnt     = 0;
+    dktGlobalCoordinator * sGlobalCoordinator = NULL;
+    UInt                   i                  = 0;
+    iduListNode          * sIterator          = NULL;
 
-    IDE_ASSERT( mDktMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
-
-    IDU_LIST_ITERATE( &mGlobalCoordinatorList, sIterator )
+    for ( i = 0; i < GLOBAL_COORDINATOR_HASH_COUNT; i++ )
     {
-        sGlobalCoordinator = (dktGlobalCoordinator *)sIterator->mObj;
+        lockRead(i);
 
-        if ( sGlobalCoordinator != NULL )
+        IDU_LIST_ITERATE( &mGlobalCoordinatorList[i].mHead, sIterator )
         {
+            sGlobalCoordinator = (dktGlobalCoordinator *)sIterator->mObj;
             sRemoteStmtCnt += sGlobalCoordinator->getAllRemoteStmtCount();
         }
-        else
-        {
-            /* no more global coordinator */
-        }
-    }
 
-    IDE_ASSERT( mDktMutex.unlock() == IDE_SUCCESS );
+        unlock(i);
+    }
 
     *aCount = sRemoteStmtCnt;
 
@@ -597,126 +678,138 @@ IDE_RC  dktGlobalTxMgr::getAllRemoteStmtCount( UInt *aCount )
 }
 
 /************************************************************************
- * Description : ÏûÖÎ†•Î∞õÏùÄ global coordinator Î•º Í¥ÄÎ¶¨ÎåÄÏÉÅÏúºÎ°ú Ï∂îÍ∞ÄÌïúÎã§. 
+ * Description : ¿‘∑¬πﬁ¿∫ global coordinator ∏¶ ∞¸∏Æ¥ÎªÛ¿∏∑Œ √ﬂ∞°«—¥Ÿ. 
  *              
- *  aGlobalCoordinator  - [IN] List Ïóê Ï∂îÍ∞ÄÌï† global coordinator
+ *  aGlobalCoordinator  - [IN] List ø° √ﬂ∞°«“ global coordinator
  *
  ************************************************************************/
-IDE_RC  dktGlobalTxMgr::addGlobalCoordinatorToList(
-                            dktGlobalCoordinator    *aGlobalCoordinator )
+void dktGlobalTxMgr::addGlobalCoordinatorToList( dktGlobalCoordinator * aGlobalCoordinator )
 {
-    IDE_ASSERT( mDktMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
+    UInt sIdx;
+
+    IDE_DASSERT( aGlobalCoordinator->getGlobalTxId() != DK_INIT_GTX_ID );
+    IDE_DASSERT( aGlobalCoordinator->getGlobalTxId() != 0 );
+
+    sIdx = ( aGlobalCoordinator->getGlobalTxId() % GLOBAL_COORDINATOR_HASH_COUNT );
+
+    lockWrite(sIdx);
 
     IDU_LIST_INIT_OBJ( &(aGlobalCoordinator->mNode), aGlobalCoordinator );
-    IDU_LIST_ADD_LAST( &mGlobalCoordinatorList, &(aGlobalCoordinator->mNode) );
+    IDU_LIST_ADD_LAST( &(mGlobalCoordinatorList[sIdx].mHead), &(aGlobalCoordinator->mNode) );
 
-    mActiveGlobalCoordinatorCnt++;
+    mGlobalCoordinatorList[sIdx].mCnt++;
 
-    IDE_ASSERT( mDktMutex.unlock() == IDE_SUCCESS );
-
-    return IDE_SUCCESS;
+    unlock(sIdx);
 }
 
 void dktGlobalTxMgr::removeGlobalCoordinatorFromList( dktGlobalCoordinator * aGlobalCoordinator )
 {
-    IDE_ASSERT( mDktMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
+    UInt sIdx;
+
+    IDE_DASSERT( aGlobalCoordinator->getGlobalTxId() != DK_INIT_GTX_ID );
+    IDE_DASSERT( aGlobalCoordinator->getGlobalTxId() != 0 );
+
+    sIdx = ( aGlobalCoordinator->getGlobalTxId() % GLOBAL_COORDINATOR_HASH_COUNT );
+
+    lockWrite(sIdx);
 
     IDU_LIST_REMOVE( &aGlobalCoordinator->mNode );
 
-    mActiveGlobalCoordinatorCnt--;
+    mGlobalCoordinatorList[sIdx].mCnt--;
 
-    IDE_ASSERT( mDktMutex.unlock() == IDE_SUCCESS );
-
-    return;
+    unlock(sIdx);
 }
 
 /************************************************************************
- * Description : Global transaction id Î•º ÏûÖÎ†•Î∞õÏïÑ Ìï¥Îãπ Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖòÏùÑ
- *               Í¥ÄÎ¶¨ÌïòÎäî global coordinator Î•º list ÏóêÏÑú Ï∞æÏïÑ Î∞òÌôòÌïúÎã§.
+ * Description : Global transaction id ∏¶ ¿‘∑¬πﬁæ∆ «ÿ¥Á ±€∑Œπ˙ ∆Æ∑£¿Ëº«¿ª
+ *               ∞¸∏Æ«œ¥¬ global coordinator ∏¶ list ø°º≠ √£æ∆ π›»Ø«—¥Ÿ.
  *              
  *  aGTxId      - [IN] global transaction id
- *  aGlobalCrd  - [OUT] Ìï¥Îãπ Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖòÏùÑ Í¥ÄÎ¶¨ÌïòÎäî global coordinator
+ *  aGlobalCrd  - [OUT] «ÿ¥Á ±€∑Œπ˙ ∆Æ∑£¿Ëº«¿ª ∞¸∏Æ«œ¥¬ global coordinator
  *
  ************************************************************************/
-IDE_RC  dktGlobalTxMgr::findGlobalCoordinator( UInt                  aGlobalTxId,
-                                               dktGlobalCoordinator **aGlobalCrd )
+IDE_RC dktGlobalTxMgr::findGlobalCoordinator( UInt                    aGlobalTxId,
+                                              dktGlobalCoordinator ** aGlobalCrd )
 {
     idBool                  sIsExist            = ID_FALSE;
     iduListNode            *sIterator           = NULL;
     dktGlobalCoordinator   *sGlobalCoordinator  = NULL;
 
-    if ( aGlobalTxId != DK_INIT_GTX_ID )
-    {
-        IDE_ASSERT( mDktMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
+    UInt sIdx = ( aGlobalTxId % GLOBAL_COORDINATOR_HASH_COUNT );
 
-        IDU_LIST_ITERATE( &mGlobalCoordinatorList, sIterator )
+    if ( aGlobalTxId == DK_INIT_GTX_ID )
+    {
+        *aGlobalCrd = NULL;
+
+        IDE_CONT( SKIP );
+    }
+
+    lockRead(sIdx);
+
+    IDU_LIST_ITERATE( &mGlobalCoordinatorList[sIdx].mHead, sIterator )
+    {
+        sGlobalCoordinator = (dktGlobalCoordinator *)sIterator->mObj;
+
+        if ( sGlobalCoordinator->getGlobalTxId() == aGlobalTxId )
+        {
+            sIsExist = ID_TRUE;
+            break;
+        }
+    }
+
+    unlock(sIdx);
+
+    if ( sIsExist == ID_TRUE )
+    {
+        *aGlobalCrd = sGlobalCoordinator;
+    }
+    else
+    {
+        *aGlobalCrd = NULL;
+    }
+
+    IDE_EXCEPTION_CONT( SKIP );
+
+    return IDE_SUCCESS;
+}
+
+/************************************************************************
+ * Description : Linker data session id ∏¶ ¿‘∑¬πﬁæ∆ «ÿ¥Á session ø° º”«— 
+ *               global coordinator ∏¶ list ø°º≠ √£æ∆ π›»Ø«—¥Ÿ.
+ *               => session ¡æ∑·Ω√ø° »£√‚µ»¥Ÿ. 
+ *              
+ *  aSessionId  - [IN] Linker data session id
+ *  aGlobalCrd  - [OUT] «ÿ¥Á ±€∑Œπ˙ ∆Æ∑£¿Ëº«¿ª ∞¸∏Æ«œ¥¬ global coordinator
+ *
+ ************************************************************************/
+IDE_RC dktGlobalTxMgr::findGlobalCoordinatorWithSessionId( UInt                    aSessionId,
+                                                           dktGlobalCoordinator ** aGlobalCrd )
+{
+    idBool                 sIsExist           = ID_FALSE;
+    iduListNode          * sIterator          = NULL;
+    dktGlobalCoordinator * sGlobalCoordinator = NULL;
+    UInt                   i                  = 0;
+
+    for ( i = 0; i < GLOBAL_COORDINATOR_HASH_COUNT; i++ )
+    {
+        lockRead(i);
+
+        IDU_LIST_ITERATE( &mGlobalCoordinatorList[i].mHead, sIterator )
         {
             sGlobalCoordinator = (dktGlobalCoordinator *)sIterator->mObj;
 
-            if ( sGlobalCoordinator->getGlobalTxId() == aGlobalTxId )
+            if ( sGlobalCoordinator->getCurrentSessionId() == aSessionId )
             {
                 sIsExist = ID_TRUE;
-                break;
-            }
-            else
-            {
-                /* iterate next node */
+                unlock(i);
+                IDE_CONT( FOUND_COMPLETE );
             }
         }
 
-        IDE_ASSERT( mDktMutex.unlock() == IDE_SUCCESS );
-
-        if ( sIsExist == ID_TRUE )
-        {
-            *aGlobalCrd = sGlobalCoordinator;
-        }
-        else
-        {
-            *aGlobalCrd = NULL;
-        }
-    }
-    else
-    {
-        *aGlobalCrd = NULL;
+        unlock(i);
     }
 
-    return IDE_SUCCESS;
-}
-
-/************************************************************************
- * Description : Linker data session id Î•º ÏûÖÎ†•Î∞õÏïÑ Ìï¥Îãπ session Ïóê ÏÜçÌïú 
- *               global coordinator Î•º list ÏóêÏÑú Ï∞æÏïÑ Î∞òÌôòÌïúÎã§.
- *              
- *  aSessionId  - [IN] Linker data session id
- *  aGlobalCrd  - [OUT] Ìï¥Îãπ Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖòÏùÑ Í¥ÄÎ¶¨ÌïòÎäî global coordinator
- *
- ************************************************************************/
-IDE_RC  dktGlobalTxMgr::findGlobalCoordinatorWithSessionId( 
-                                        UInt                    aSessionId, 
-                                        dktGlobalCoordinator  **aGlobalCrd )
-{
-    idBool                  sIsExist            = ID_FALSE;
-    iduListNode            *sIterator           = NULL;
-    dktGlobalCoordinator   *sGlobalCoordinator  = NULL;
-
-    IDE_ASSERT( mDktMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
-   
-    IDU_LIST_ITERATE( &mGlobalCoordinatorList, sIterator )
-    {
-        sGlobalCoordinator = (dktGlobalCoordinator *)sIterator->mObj;
-
-        if ( sGlobalCoordinator->getCurrentSessionId() == aSessionId )
-        {
-            sIsExist = ID_TRUE;
-            break;
-        }
-        else
-        {
-            /* iterate next node */
-        }
-    }
-
-    IDE_ASSERT( mDktMutex.unlock() == IDE_SUCCESS );
+    IDE_EXCEPTION_CONT( FOUND_COMPLETE );
 
     if ( sIsExist == ID_TRUE )
     {
@@ -730,64 +823,37 @@ IDE_RC  dktGlobalTxMgr::findGlobalCoordinatorWithSessionId(
     return IDE_SUCCESS;
 }
 
-void dktGlobalTxMgr::findGlobalCoordinatorByLocalTxId( UInt                    aLocalTxId,
-                                                       dktGlobalCoordinator ** aGlobalCrd )
-{
-    idBool                  sIsExist            = ID_FALSE;
-    iduListNode            *sIterator           = NULL;
-    dktGlobalCoordinator   *sGlobalCoordinator  = NULL;
-
-    IDE_ASSERT( mDktMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
-
-    IDU_LIST_ITERATE( &mGlobalCoordinatorList, sIterator )
-    {
-        sGlobalCoordinator = (dktGlobalCoordinator *)sIterator->mObj;
-
-        if ( sGlobalCoordinator->getLocalTxId() == aLocalTxId )
-        {
-            sIsExist = ID_TRUE;
-            break;
-        }
-        else
-        {
-            /* iterate next node */
-        }
-    }
-
-    IDE_ASSERT( mDktMutex.unlock() == IDE_SUCCESS );
-
-    if ( sIsExist == ID_TRUE )
-    {
-        *aGlobalCrd = sGlobalCoordinator;
-    }
-    else
-    {
-        *aGlobalCrd = NULL;
-    }
-
-    return;
-}
-
+/* GlobalTxID∏¶ ª˝º∫«œ¥¬ «‘ºˆ.
+   º≥¡§π¸¿ß: 1 ~ ( UINT_MAX -1 ) */
 UInt dktGlobalTxMgr::generateGlobalTxId()
 {
-    UInt sGlobalTxId = 0;
+    SLong sSystemGlobalTxId;
+    SLong sOld;
+    SLong sNew;
 
-    IDE_ASSERT( mDktMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
+    /* BUG-48501
+       atomic ∞¸∑√«‘ºˆ¥¬ signed ∫Øºˆ∏∏ ªÁøÎ«—¥Ÿ.
+       UInt∏¶ ¿¸√ºªÁøÎ«œ±‚ ¿ß«ÿ 64bit(signed)∏¶ ªÁøÎ«ÿº≠ ∞ËªÍ»ƒ Uint∑Œ ∫Ø»Ø«—¥Ÿ. */
 
-    mUniqueGlobalTxSeq += 1;
-    if ( mUniqueGlobalTxSeq == DK_INIT_GTX_ID )
+    while (1)
     {
-        mUniqueGlobalTxSeq = 0;
-    }
-    else
-    {
-        /*do nothing*/
-    }
-    sGlobalTxId = mUniqueGlobalTxSeq;
+        sSystemGlobalTxId = acpAtomicGet64( &mUniqueGlobalTxSeq );
 
-    IDE_ASSERT( mDktMutex.unlock() == IDE_SUCCESS );
+        sNew = ( ( ((UInt)(sSystemGlobalTxId + 1)) == DK_INIT_GTX_ID ) ?
+                 (SLong)1 : (sSystemGlobalTxId + 1) );
 
-    return sGlobalTxId;
+        sOld = acpAtomicCas64( &mUniqueGlobalTxSeq,
+                               sNew,
+                               sSystemGlobalTxId );
+
+        if ( sOld == sSystemGlobalTxId )
+        {
+            /* CAS SUCCESS */
+            break;
+        }
+    }
+
+    return (UInt)sNew;
 }
 
 smLSN dktGlobalTxMgr::getDtxMinLSN( void )
@@ -798,41 +864,39 @@ smLSN dktGlobalTxMgr::getDtxMinLSN( void )
     smLSN                  sCompareLSN;
     smLSN                * sTempLSN = NULL;
     smLSN                  sCurrentLSN;
+    UInt                   i;
 
     SMI_LSN_MAX( sCompareLSN );
     SMI_LSN_INIT( sCurrentLSN );
 
-    /* getMinLSN From Coordinator */
-    IDE_ASSERT( mDktMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
-    IDU_LIST_ITERATE( &mGlobalCoordinatorList, sIterator )
+    for ( i = 0; i < GLOBAL_COORDINATOR_HASH_COUNT; i++ )
     {
-        sGlobalCoordinator = (dktGlobalCoordinator *)sIterator->mObj;
+        lockRead(i);
 
-        IDE_ASSERT( sGlobalCoordinator->mCoordinatorDtxInfoMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
-
-        if ( sGlobalCoordinator->mDtxInfo != NULL )
+        IDU_LIST_ITERATE( &mGlobalCoordinatorList[i].mHead, sIterator )
         {
-            sTempLSN = sGlobalCoordinator->mDtxInfo->getPrepareLSN();
+            sGlobalCoordinator = (dktGlobalCoordinator *)sIterator->mObj;
 
-            if ( ( SMI_IS_LSN_INIT( *sTempLSN ) == ID_FALSE ) &&
-                 ( isGT( &sCompareLSN, sTempLSN ) == ID_TRUE ) )
+            IDE_ASSERT( sGlobalCoordinator->mCoordinatorDtxInfoMutex.lock( NULL /*idvSQL* */ )
+                        == IDE_SUCCESS );
+
+            if ( sGlobalCoordinator->mDtxInfo != NULL )
             {
-                idlOS::memcpy( &sCompareLSN,
-                               sTempLSN,
-                               ID_SIZEOF( smLSN ) );
+                sTempLSN = sGlobalCoordinator->mDtxInfo->getPrepareLSN();
+
+                if ( ( SMI_IS_LSN_INIT( *sTempLSN ) == ID_FALSE ) &&
+                     ( isGT( &sCompareLSN, sTempLSN ) == ID_TRUE ) )
+                {
+                    SM_SET_SCN( &sCompareLSN, sTempLSN );
+                }
             }
-            else
-            {
-                /* Nothing to do */
-            }
+
+            IDE_ASSERT( sGlobalCoordinator->mCoordinatorDtxInfoMutex.unlock()
+                        == IDE_SUCCESS );
         }
-        else
-        {
-            /* Nothing to do */
-        }
-        IDE_ASSERT( sGlobalCoordinator->mCoordinatorDtxInfoMutex.unlock() == IDE_SUCCESS );
+
+        unlock(i);
     }
-    IDE_ASSERT( mDktMutex.unlock() == IDE_SUCCESS );
 
     /* getMinLSN From Notifier */
     IDE_ASSERT( mNotifier.mNotifierDtxInfoMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
@@ -897,38 +961,18 @@ IDE_RC dktGlobalTxMgr::getNotifierTransactionInfo( dktNotifierTransactionInfo **
     return IDE_FAILURE;
 }
 
-UInt dktGlobalTxMgr::getDtxGlobalTxId( UInt aLocalTxId )
+IDE_RC dktGlobalTxMgr::getShardNotifierTransactionInfo( dktNotifierTransactionInfo ** aInfo,
+                                                        UInt                        * aInfoCount )
 {
-    dktGlobalCoordinator * sGlobalCoordinator = NULL;
-    UInt                          sGlobalTxId = DK_INIT_GTX_ID;
+    IDE_TEST( mNotifier.getShardNotifierTransactionInfo( aInfo,
+                                                         aInfoCount )
+              != IDE_SUCCESS );
 
-    if ( ( DKU_DBLINK_ENABLE == DK_ENABLE ) ||
-         ( sdi::isShardEnable() == ID_TRUE ) )
-    {
-        findGlobalCoordinatorByLocalTxId( aLocalTxId, &sGlobalCoordinator );
+    return IDE_SUCCESS;
 
-        if ( sGlobalCoordinator != NULL )
-        {
-            if ( sGlobalCoordinator->getAtomicTxLevel() == DKT_ADLP_TWO_PHASE_COMMIT )
-            {
-                sGlobalTxId = sGlobalCoordinator->getGlobalTxId();
-            }
-            else
-            {
-                /* Nothing to do */
-            }
-        }
-        else
-        {
-            /* Nothing to do */
-        }
-    }
-    else
-    {
-        /* Nothing to do */
-    }
+    IDE_EXCEPTION_END;
 
-    return sGlobalTxId;
+    return IDE_FAILURE;
 }
 
 IDE_RC dktGlobalTxMgr::createGlobalCoordinatorAndSetSessionTxId( dksDataSession        * aSession,

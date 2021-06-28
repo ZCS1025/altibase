@@ -77,6 +77,12 @@ logs/never_remove_log_files
 arch_logs
 !
 
+[*][*][S][*][*][0755][DIR] # directory creation
+!
+!
+xlogs
+!
+
 [*][*][S/C][*][*][0755][DIR] # directory creation
 !
 !
@@ -416,6 +422,7 @@ packages
 !
 
 ################################################################################################
+
 #
 #  SERVER SECTION
 #
@@ -606,12 +613,26 @@ dblink.conf.sample
 conf
 dblink.conf.sample
 
+#0644 ./altibase_home/conf/altibase_cli.ini.sample        ./conf/altibase_cli.ini.sample
+[*][*][S][*][*][0644][*]
+altibase_home/conf
+altibase_cli.ini.sample
+conf
+altibase_cli.ini.sample
+
 #0644 ./altibase_home/conf/altibase.properties.release   ./conf/altibase.properties.sample
 [*][^C][S][*][*][0644][*]
 altibase_home/conf
 altibase.properties.release
 conf
 altibase.properties.sample
+
+#0644 ./altibase_home/conf/altibase.properties.shard   ./conf/altibase.properties.shard
+[*][^C][S][*][*][0644][*]
+altibase_home/conf
+altibase.properties.shard
+conf
+altibase.properties.shard
 
 #0644 ./altibase_home/conf/altibase.properties.community   ./conf/altibase.properties.sample
 [*][C][S][*][*][0644][*]
@@ -1227,6 +1248,13 @@ linux-x64.so
 
 #0644 ./ut/altiMon/com.altibase.altimon/lib/linux-ppc64.so                         ./altiMon/lib/linux-ppc64.so
 [POWERPC-LINUX-*-*][*][S][*][*][0644][*]
+ut/altiMon/com.altibase.altimon/lib
+linux-ppc64.so
+altiMon/lib
+linux-ppc64.so
+
+#0644 ./ut/altiMon/com.altibase.altimon/lib/linux-ppc64.so                         ./altiMon/lib/linux-ppc64.so
+[POWERPCLE-LINUX-*-*][*][S][*][*][0644][*]
 ut/altiMon/com.altibase.altimon/lib
 linux-ppc64.so
 altiMon/lib
@@ -1868,6 +1896,13 @@ demo_mt.cpp
 sample/SQLCLI
 demo_mt.cpp  
 
+#0644 ../ut/sample/SQLCLI/demo_message.cpp               ../sample/SQLCLI/demo_message.cpp
+[*][*][*][*][*][0644][*]
+ut/sample/SQLCLI
+demo_message.cpp
+sample/SQLCLI
+demo_message.cpp
+
 #0644 ../ut/sample/SQLCLI/demo_ex1.sql                   ../sample/SQLCLI/demo_ex1.sql
 [*][*][*][*][*][0644][*]
 ut/sample/SQLCLI
@@ -2014,6 +2049,13 @@ ut/sample/SQLCLI
 demo_info2.sql  
 sample/SQLCLI
 demo_info2.sql  
+
+#0644 ../ut/sample/SQLCLI/demo_message.sql               ../sample/SQLCLI/demo_message.sql
+[*][*][*][*][*][0644][*]
+ut/sample/SQLCLI
+demo_message.sql
+sample/SQLCLI
+demo_message.sql
 
 #0644 ../ut/sample/SQLCLI/Makefile                       ../sample/SQLCLI/Makefile
 [*][*][*][*][*][0644][*]
@@ -2489,6 +2531,13 @@ delete.sc
 sample/APRE
 delete.sc   
 
+#0644 ../ut/sample/APRE/diagnostics.sc                      ../sample/APRE/diagnostics.sc
+[*][*][*][*][*][0644][*]
+ut/sample/APRE
+diagnostics.sc   
+sample/APRE
+diagnostics.sc   
+
 #0644 ../ut/sample/APRE/dynamic1.sc                      ../sample/APRE/dynamic1.sc
 [*][*][*][*][*][0644][*]
 ut/sample/APRE
@@ -2587,19 +2636,26 @@ psm2.sc
 sample/APRE
 psm2.sc   
 
-#0644 ../ut/sample/APRE/psm3.sc                          ../sample/APRE/psm2.sc
+#0644 ../ut/sample/APRE/psm3.sc                          ../sample/APRE/psm3.sc
 [*][*][*][*][*][0644][*]
 ut/sample/APRE
 psm3.sc
 sample/APRE
 psm3.sc
 
-#0644 ../ut/sample/APRE/psm4.sc                          ../sample/APRE/psm2.sc
+#0644 ../ut/sample/APRE/psm4.sc                          ../sample/APRE/psm4.sc
 [*][*][*][*][*][0644][*]
 ut/sample/APRE
 psm4.sc
 sample/APRE
 psm4.sc
+
+#0644 ../ut/sample/APRE/anon.sc                          ../sample/APRE/anon.sc
+[*][*][*][*][*][0644][*]
+ut/sample/APRE
+anon.sc
+sample/APRE
+anon.sc
 
 #0644 ../ut/sample/APRE/runtime_error_check.sc           ../sample/APRE/runtime_error_check.sc
 [*][*][*][*][*][0644][*]
@@ -2663,6 +2719,13 @@ ut/sample/APRE
 declare_stmt.sc   
 sample/APRE
 declare_stmt.sc   
+
+#0644 ../ut/sample/APRE/numeric.sc                       ../sample/APRE/numeric.sc
+[*][*][*][*][*][0644][*]
+ut/sample/APRE
+numeric.sc   
+sample/APRE
+numeric.sc   
 
 #0644 ../ut/sample/APRE/macro.sc                         ../sample/APRE/macro.sc
 [*][*][*][*][*][0644][*]
@@ -3531,6 +3594,13 @@ failoversample.cpp
 sample/SHARD/Fail-Over
 failoversample.cpp
 
+#0644 ../ut/sample/SHARD/Fail-Over/FailoverSample.java       ../sample/SHARD/Fail-Over/FailoverSample.java
+[*][*][*][*][*][0644][*]
+ut/sample/SHARD/Fail-Over
+FailoverSample.java
+sample/SHARD/Fail-Over
+FailoverSample.java
+
 ################################################################################################
 #
 #  GLOBAL KITs (only server package)
@@ -3689,12 +3759,12 @@ dk_objlist.txt
 ##
 #################################################################################################
 
-#0644 ../thirdparty/ArcGIS/geometry_columns.sql      ../thirdparty/ArcGIS/geometry_columns.sql
+#0644 ../thirdparty/ArcGIS/spatial_ref_sys.sql      ../thirdparty/ArcGIS/spatial_ref_sys.sql
 [*][*][S][*][*][0644][*]
 thirdparty/ArcGIS
-geometry_columns.sql
+spatial_ref_sys.sql
 thirdparty/ArcGIS
-geometry_columns.sql
+spatial_ref_sys.sql
 
 #0644 ../thirdparty/SmartSSD/libsdm.so ../thirdparty/SmartSSD/libsdm.so
 [*][*][S][*][*][0644][*]
@@ -3703,6 +3773,18 @@ libsdm.so
 thirdparty/SmartSSD
 libsdm.so
 
+################################################################################################
+#
+#  zookeeper
+#
+################################################################################################
+
+#0644 ./altibase_home/ZookeeperServer.tar.gz   ./ZookeeperServer.tar.gz
+[*-LINUX-*-*][*][S][*][*][0644][*]
+altibase_home/
+ZookeeperServer.tar.gz
+
+ZookeeperServer.tar.gz
 
 ################################################################################################
 #
@@ -3962,6 +4044,20 @@ utl_shard_online_rebuild.plb
 packages
 utl_shard_online_rebuild.plb
 
+#0644 ./altibase_home/packages/sys_spatial.sql      ./altibase_home/packages/sys_spatial.sql
+[*][*][S][*][*][0644][*]
+altibase_home/packages
+sys_spatial.sql
+packages
+sys_spatial.sql
+
+#0644 ./altibase_home/packages/sys_spatial.plb      ./altibase_home/packages/sys_spatial.plb
+[*][*][S][*][*][0644][*]
+altibase_home/packages
+sys_spatial.plb
+packages
+sys_spatial.plb
+
 #0644 ./altibase_home/packages/dbms_standard.sql      ./altibase_home/packages/dbms_standard.sql
 [*][*][S][*][*][0644][*]
 altibase_home/packages
@@ -4009,3 +4105,31 @@ altibase_home/packages
 dbms_sql_plan_cache.plb
 packages
 dbms_sql_plan_cache.plb
+
+#0644 ./altibase_home/packages/dbms_metadata.sql ./altibase_home/packages/dbms_metadata.sql
+[*][*][S][*][*][0644][*]
+altibase_home/packages
+dbms_metadata.sql
+packages
+dbms_metadata.sql
+
+#0644 ./altibase_home/packages/dbms_metadata.plb ./altibase_home/packages/dbms_metadata.plb
+[*][*][S][*][*][0644][*]
+altibase_home/packages
+dbms_metadata.plb
+packages
+dbms_metadata.plb
+
+#0644 ./altibase_home/packages/dbms_shard_get_diagnostics.sql ./altibase_home/packages/dbms_shard_get_diagnostics.sql
+[*][*][S][*][*][0644][*]
+altibase_home/packages
+dbms_shard_get_diagnostics.sql
+packages
+dbms_shard_get_diagnostics.sql
+
+#0644 ./altibase_home/packages/dbms_shard_get_diagnostics.plb ./altibase_home/packages/dbms_shard_get_diagnostics.plb
+[*][*][S][*][*][0644][*]
+altibase_home/packages
+dbms_shard_get_diagnostics.plb
+packages
+dbms_shard_get_diagnostics.plb

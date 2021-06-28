@@ -13,11 +13,13 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+ 
 
 /***********************************************************************
- * $Id: sdiTypes.h 83512 2018-07-18 00:47:26Z hykim $
+ * $Id: sdiTypes.h 91046 2021-06-23 06:06:13Z jake.jang $
  *
- * Description : SD Î∞è ÌÉÄ Î™®ÎìàÏóêÏÑúÎèÑ ÏÇ¨Ïö©ÌïòÎäî ÏûêÎ£åÍµ¨Ï°∞ Ï†ïÏùò
+ * Description : SD π◊ ≈∏ ∏µ‚ø°º≠µµ ªÁøÎ«œ¥¬ ¿⁄∑·±∏¡∂ ¡§¿«
+ *
  **********************************************************************/
 
 #ifndef _O_SDI_TYPES_H_
@@ -25,113 +27,191 @@
 
 #include <idTypes.h>
 
+#define SDI_NULL_SMN                           ID_ULONG(0)
+#define SDI_HASH_MAX_VALUE                     (1000)
+#define SDI_HASH_MAX_VALUE_FOR_TEST            (100)
+
+// range, list sharding¿« varchar shard key column¿« max precision
+#define SDI_RANGE_VARCHAR_MAX_PRECISION        (100)
+#define SDI_RANGE_VARCHAR_MAX_PRECISION_STR    "100"
+#define SDI_RANGE_VARCHAR_MAX_SIZE             (MTD_CHAR_TYPE_STRUCT_SIZE(SDI_RANGE_VARCHAR_MAX_PRECISION))
+
+#define SDI_NODE_MAX_COUNT                     (128)
+#define SDI_RANGE_MAX_COUNT                    (1000)
+#define SDI_VALUE_MAX_COUNT                    (1000)
+
+#define SDI_SERVER_IP_SIZE                     (64) /* IDL_IP_ADDR_MAX_LEN : 64*/
+#define SDI_SERVER_IP_SIZE_STR                 "64"
+
+#define SDI_REPLICATION_NAME_MAX_SIZE          QCI_MAX_NAME_LEN
+#define SDI_REPLICATION_NAME_MAX_SIZE_STR      QCI_MAX_NAME_LEN_STR
+#define REPL_NAME_PREFIX                       "REPL_SET"
+#define REPL_NAME_POSTFIX                      "BACKUP"
+
+#define SDI_NODE_NAME_MAX_SIZE                 (40)
+#define SDI_NODE_NAME_MAX_SIZE_STR             "40"
+#define SDI_SHARDED_DB_NAME_MAX_SIZE           (40)
+#define SDI_SHARDED_DB_NAME_MAX_SIZE_STR       "40"
+#define SDI_REPLICATION_MODE_MAX_SIZE          (10)
+#define SDI_REPLICATION_MODE_MAX_SIZE_STR      "10"
+#define SDI_CHECK_NODE_NAME_MAX_SIZE           (10)
+
+#define SDI_BACKUP_TABLE_PREFIX                "_BAK_"
+
+/* Shard Replication Mode */
+#define SDI_REP_MODE_NULL_STR                  "NULL"
+#define SDI_REP_MODE_NULL_CODE                 (0)
+#define SDI_REP_MODE_CONSISTENT_STR            "CONSISTENT"
+#define SDI_REP_MODE_CONSISTENT_CODE           (12)
+#define SDI_REP_MODE_NETWAIT_STR               "NETWAIT"
+#define SDI_REP_MODE_NETWAIT_CODE              (11)
+#define SDI_REP_MODE_NOWAIT_STR                "NOWAIT"
+#define SDI_REP_MODE_NOWAIT_CODE               (10)
+
+/* Shard replica count, k-safety max */
+#define SDI_KSAFETY_MAX                        (2)
+#define SDI_KSAFETY_STR_MAX_SIZE               (1)
+#define SDI_PARALLEL_COUNT_STR_MAX_SIZE        (9)
+
+/* Full address: NODE1:xxx.xxx.xxx.xxx:nnnn */
+#define SDI_PORT_NUM_BUFFER_SIZE               (10)
+#define SDI_FULL_SERVER_ADDRESS_SIZE           ( SDI_NODE_NAME_MAX_SIZE   \
+                                               + SDI_SERVER_IP_SIZE       \
+                                               + SDI_PORT_NUM_BUFFER_SIZE )
+
+/* PROJ-2661 */
+#define SDI_XA_RECOVER_RMID                    (0)
+#define SDI_XA_RECOVER_COUNT                   (5)
+
+/*               01234567890123456789
+ * Max ShardPIN: 255-65535-4294967295
+ */
+#define SDI_MAX_SHARD_PIN_STR_LEN              (20) /* Without Null terminated */
+#define SDI_SHARD_PIN_FORMAT_STR   "%"ID_UINT32_FMT"-%"ID_UINT32_FMT"-%"ID_UINT32_FMT
+#define SDI_SHARD_PIN_FORMAT_ARG( __SHARD_PIN ) \
+    ( __SHARD_PIN & ( (sdiShardPin)0xff       << SDI_OFFSET_VERSION      ) ) >> SDI_OFFSET_VERSION, \
+    ( __SHARD_PIN & ( (sdiShardPin)0xffff     << SDI_OFFSET_SHARD_NODE_ID ) ) >> SDI_OFFSET_SHARD_NODE_ID, \
+    ( __SHARD_PIN & ( (sdiShardPin)0xffffffff << SDI_OFFSET_SEQEUNCE     ) ) >> SDI_OFFSET_SEQEUNCE
+
+#define SDI_ODBC_CONN_ATTR_RETRY_COUNT_DEFAULT   (IDP_SHARD_INTERNAL_CONN_ATTR_RETRY_COUNT_DEFAULT)
+#define SDI_ODBC_CONN_ATTR_RETRY_DELAY_DEFAULT   (IDP_SHARD_INTERNAL_CONN_ATTR_RETRY_DELAY_DEFAULT)
+#define SDI_ODBC_CONN_ATTR_CONN_TIMEOUT_DEFAULT  (IDP_SHARD_INTERNAL_CONN_ATTR_CONNECTION_TIMEOUT_DEFAULT)
+#define SDI_ODBC_CONN_ATTR_LOGIN_TIMEOUT_DEFAULT (IDP_SHARD_INTERNAL_CONN_ATTR_LOGIN_TIMEOUT_DEFAULT)
+
+/* TASK-7219 Non-shard DML
+ *     Server-side shard execution sequence
+ *     2000000000 ~ ( 4000000000 - 1 )
+ *
+ *     Client-side shardexecution sequence
+ *     0          ~ ( 2000000000 - 1 )
+ */
+#define SDI_STMT_EXEC_SEQ_INIT (2000000000)
+#define SDI_STMT_EXEC_SEQ_MAX  (4000000000)
+
+/* TASK-7219 Shard Transformer Refactoring */
 typedef enum
 {
     /*
      * PROJ-2646 shard analyzer enhancement
-     * boolean arrayÏóê shard CAN-MERGE falseÏù∏ Ïù¥Ïú†Î•º Ï≤¥ÌÅ¨ÌïúÎã§.
+     * boolean arrayø° shard query false¿Œ ¿Ã¿Ø∏¶ √º≈©«—¥Ÿ.
      *
      * BUG-45718
-     * ReasonÏù¥ Ïó¨Îü¨Í∞ú Ïùº Îïå
-     * EnumÏùò ÏàúÎ≤àÏù¥ ÎÇÆÏùÑÏàòÎ°ù
-     * setCanNotMergeReasonErr()ÏóêÏÑú error messageÏÑ§Ï†ïÏùò Ïö∞ÏÑ†ÏàúÏúÑÍ∞Ä ÎÜíÎã§.
+     * Reason¿Ã ø©∑Ø∞≥ ¿œ ∂ß
+     * Enum¿« º¯π¯¿Ã ≥∑¿ªºˆ∑œ
+     * setNonShardQueryReasonErr()ø°º≠ error messageº≥¡§¿« øÏº±º¯¿ß∞° ≥Ù¥Ÿ.
+     * SDI_NON_SHARD_QUERY_REASONS ¿« º¯º≠øÕ µø¿œ«ÿæﬂ «—¥Ÿ.
      */
 
-    // SDI_CAN_NOT_MERGE_REASONS Ïùò ÏàúÏÑúÏôÄ ÎèôÏùºÌï¥Ïïº ÌïúÎã§.
+    // π´¡∂∞«∫Œ non-shard reason
+    SDI_SHARD_KEYWORD_EXISTS                   =  0,
+    SDI_NON_SHARD_OBJECT_EXISTS                =  1, // SHARD METAø° µÓ∑œµ«¡ˆ æ ¿∫ TABLE¿Ã ªÁøÎ µ 
+    SDI_MULTI_SHARD_INFO_EXISTS                =  2, // ∫–ªÍ ¡§¿«∞° ¥Ÿ∏• SHARD TABLEµÈ¿Ã ªÁøÎ µ 
+    SDI_HIERARCHY_EXISTS                       =  3, // CONNECT BY∞° ªÁøÎ µ 
+    SDI_LATERAL_VIEW_EXISTS                    =  4,
+    SDI_RECURSIVE_VIEW_EXISTS                  =  5,
+    SDI_PIVOT_EXISTS                           =  6,
+    SDI_CNF_NORMALIZATION_FAIL                 =  7,
 
-    SDI_NO_SHARD_OBJECT               =  0, // SHARD TABLEÏù¥ ÌïòÎÇòÎèÑ ÏóÜÏùå
-    SDI_NON_SHARD_OBJECT_EXISTS       =  1, // SHARD METAÏóê Îì±Î°ùÎêòÏßÄ ÏïäÏùÄ TABLEÏù¥ ÏÇ¨Ïö© Îê®
-    SDI_MULTI_SHARD_INFO_EXISTS       =  2, // Î∂ÑÏÇ∞ Ï†ïÏùòÍ∞Ä Îã§Î•∏ SHARD TABLEÎì§Ïù¥ ÏÇ¨Ïö© Îê®
-    SDI_MULTI_NODES_JOIN_EXISTS       =  3, // ÎÖ∏Îìú Í∞Ñ JOINÏù¥ ÌïÑÏöîÌï®
-    SDI_HIERARCHY_EXISTS              =  4, // CONNECT BYÍ∞Ä ÏÇ¨Ïö© Îê®
-    SDI_DISTINCT_EXISTS               =  5, // ÎÖ∏Îìú Í∞Ñ Ïó∞ÏÇ∞Ïù¥ ÌïÑÏöîÌïú DISTINCTÍ∞Ä ÏÇ¨Ïö© Îê®
-    SDI_GROUP_AGGREGATION_EXISTS      =  6, // ÎÖ∏Îìú Í∞Ñ Ïó∞ÏÇ∞Ïù¥ ÌïÑÏöîÌïú GROUP BYÍ∞Ä ÏÇ¨Ïö© Îê®
-    SDI_NESTED_AGGREGATION_EXISTS     =  7, // ÎÖ∏Îìú Í∞Ñ Ïó∞ÏÇ∞Ïù¥ ÌïÑÏöîÌïú GROUP BYÍ∞Ä ÏÇ¨Ïö© Îê®
-    SDI_SUBQUERY_EXISTS               =  8, // SHARD SUBQUERYÍ∞Ä ÏÇ¨Ïö© Îê®
-    SDI_ORDER_BY_EXISTS               =  9, // ÎÖ∏Îìú Í∞Ñ Ïó∞ÏÇ∞Ïù¥ ÌïÑÏöîÌïú ORDER BYÍ∞Ä ÏÇ¨Ïö© Îê®
-    SDI_LIMIT_EXISTS                  = 10, // ÎÖ∏Îìú Í∞Ñ Ïó∞ÏÇ∞Ïù¥ ÌïÑÏöîÌïú LIMITÍ∞Ä ÏÇ¨Ïö© Îê®
-    SDI_MULTI_NODES_SET_OP_EXISTS     = 11, // ÎÖ∏Îìú Í∞Ñ Ïó∞ÏÇ∞Ïù¥ ÌïÑÏöîÌïú SET operatorÍ∞Ä ÏÇ¨Ïö© Îê®
-    SDI_LOOP_EXISTS                   = 12, // ÎÖ∏Îìú Í∞Ñ Ïó∞ÏÇ∞Ïù¥ ÌïÑÏöîÌïú LOOPÍ∞Ä ÏÇ¨Ïö© Îê®
-    SDI_INVALID_OUTER_JOIN_EXISTS     = 13, // CLONE tableÏù¥ left-sideÏóêÍ≥†, HASH,RANGE,LIST tableÏù¥ right-sideÏóê Ïò§Îäî outer joinÏù¥ Ï°¥Ïû¨ÌïúÎã§.
-    SDI_INVALID_SEMI_ANTI_JOIN_EXISTS = 14, // HASH,RANGE,LIST tableÏù¥ inner(subquery table)Î°ú Ïò§Îäî semi/anti-joinÏù¥ Ï°¥Ïû¨ÌïúÎã§.
-    SDI_GROUP_BY_EXTENSION_EXISTS     = 15, // Group by extension(ROLLUP,CUBE,GROUPING SETS)Í∞Ä Ï°¥Ïû¨ÌïúÎã§.
-    SDI_INVALID_SHARD_KEY_CONDITION   = 16, // BUG-45899 
-    SDI_MULTIPLE_ROW_INSERT           = 17,
-    SDI_MULTIPLE_OBJECT_INSERT        = 18,
-    SDI_TRIGGER_EXISTS                = 19,
-    SDI_INSTEAD_OF_TRIGGER_EXISTS     = 20,
-    SDI_VIEW_EXISTS                   = 21,
-    SDI_LATERAL_VIEW_EXISTS           = 22,
-    SDI_RECURSIVE_VIEW_EXISTS         = 23,
-    SDI_PACKAGE_EXISTS                = 24,
-    SDI_PIVOT_EXISTS                  = 25,
-    SDI_UNSUPPORT_SHARD_QUERY         = 26,
-    SDI_SUB_KEY_EXISTS                = 27, // Sub-shard keyÎ•º Í∞ÄÏßÑ tableÏù¥ Ï∞∏Ï°∞ Îê®
-                                            // (Can not merge reasonÏùÄ ÏïÑÎãàÏßÄÎßå, query block Í∞Ñ Ï†ÑÎã¨Ïù¥ ÌïÑÏöîÌï¥ ÎÑ£Ïñ¥ÎëîÎã§.)
-                                            // SDI_SUB_KEY_EXISTSÍ∞Ä ÎßàÏßÄÎßâÏóê ÏôÄÏïºÌïúÎã§.
-    SDI_CAN_NOT_MERGE_REASON_MAX      = 28
-} sdiCanNotMergeReason;
+    // ¡∂∞«∫Œ non-shard reason
+    SDI_NODE_TO_NODE_JOIN_EXISTS               =  8, // ≥ÎµÂ ∞£ JOIN¿Ã « ø‰«‘
+    SDI_NODE_TO_NODE_DISTINCT_EXISTS           =  9, // ≥ÎµÂ ∞£ ø¨ªÍ¿Ã « ø‰«— DISTINCT∞° ªÁøÎ µ 
+    SDI_NODE_TO_NODE_GROUP_AGGREGATION_EXISTS  = 10, // ≥ÎµÂ ∞£ ø¨ªÍ¿Ã « ø‰«— GROUP BY∞° ªÁøÎ µ 
+    SDI_NODE_TO_NODE_NESTED_AGGREGATION_EXISTS = 11, // ≥ÎµÂ ∞£ ø¨ªÍ¿Ã « ø‰«— GROUP BY∞° ªÁøÎ µ 
+    SDI_NODE_TO_NODE_GROUP_BY_EXTENSION_EXISTS = 12, // Group by extension(ROLLUP,CUBE,GROUPING SETS)∞° ¡∏¿Á«—¥Ÿ.
+    SDI_NODE_TO_NODE_OUTER_JOIN_EXISTS         = 13, // CLONE table¿Ã left-sideø°∞Ì, HASH,RANGE,LIST table¿Ã right-sideø° ø¿¥¬ outer join¿Ã ¡∏¿Á«—¥Ÿ.
+    SDI_NODE_TO_NODE_SEMI_ANTI_JOIN_EXISTS     = 14, // HASH,RANGE,LIST table¿Ã inner(subquery table)∑Œ ø¿¥¬ semi/anti-join¿Ã ¡∏¿Á«—¥Ÿ.
+    SDI_NODE_TO_NODE_WINDOW_FUNCTION_EXISTS    = 15, // BUG-47642 ≥ÎµÂ ∞£ ø¨ªÍ¿Ã « ø‰«— window function ¿Ã ¡∏¿Á«—¥Ÿ.
+    SDI_NODE_TO_NODE_SET_OP_EXISTS             = 16, // ≥ÎµÂ ∞£ ø¨ªÍ¿Ã « ø‰«— SET operator∞° ªÁøÎ µ 
+    SDI_NODE_TO_NODE_ORDER_BY_EXISTS           = 17, // ≥ÎµÂ ∞£ ø¨ªÍ¿Ã « ø‰«— ORDER BY∞° ªÁøÎ µ 
+    SDI_NODE_TO_NODE_LIMIT_EXISTS              = 18, // ≥ÎµÂ ∞£ ø¨ªÍ¿Ã « ø‰«— LIMIT∞° ªÁøÎ µ 
+    SDI_NODE_TO_NODE_LOOP_EXISTS               = 19, // ≥ÎµÂ ∞£ ø¨ªÍ¿Ã « ø‰«— LOOP∞° ªÁøÎ µ 
+    SDI_UNSPECIFIED_SHARD_KEY_VALUE            = 20,
+    SDI_NON_SHARD_SUBQUERY_EXISTS              = 21, // SHARD SUBQUERY∞° ªÁøÎ µ 
+    SDI_NON_SHARD_GROUPING_SET_EXISTS          = 22, // Grouping Set ªÁøÎ  µ 
+    SDI_NON_SHARD_PSM_BIND_EXISTS              = 23, // PSM ∫Øºˆ¿ª ªÁøÎ  µ 
+    SDI_NON_SHARD_PSM_LOB_EXISTS               = 24, // PSM LOB ∫Øºˆ¿ª ªÁøÎ  µ 
+    SDI_UNKNOWN_REASON                         = 25,
+    SDI_NON_SHARD_QUERY_REASON_MAX             = 26
+} sdiNonShardQueryReason;
 
-#define SDI_CAN_NOT_MERGE_REASONS \
-    (SChar*)"Shard object doesn't exist",\
-    (SChar*)"Non-shard object exists",\
-    (SChar*)"Shard object info is not same",\
-    (SChar*)"Shard value doesn't exist",\
-    (SChar*)"HIERARCHY needed multiple nodes",\
-    (SChar*)"DISTINCT needed multiple nodes",\
-    (SChar*)"GROUP BY needed multiple nodes",\
-    (SChar*)"NESTED AGGREGATE FUNCTION needed multiple nodes",\
-    (SChar*)"Shard sub-query exists",\
-    (SChar*)"ORDER BY cluase exists",\
-    (SChar*)"LIMIT clause exists",\
-    (SChar*)"SET operator needed multiple nodes",\
-    (SChar*)"LOOP clause exists",\
-    (SChar*)"Invalid outer join operator exists",\
-    (SChar*)"Invalid semi/anti-join exists",\
-    (SChar*)"Invalid group by extension exists",\
-    (SChar*)"Invalid shard key condition",\
-    (SChar*)"Multiple row insert",\
-    (SChar*)"Multiple object insert",\
-    (SChar*)"Trigger exists",\
-    (SChar*)"Instead of trigger exists",\
-    (SChar*)"View exists",\
-    (SChar*)"Lateral view exists",\
-    (SChar*)"Recursive view exists",\
-    (SChar*)"Package exists",\
-    (SChar*)"Pivot exists",\
-    (SChar*)"The statement is not supported as a shard query"\
-// Ï£ºÏùò : ÎßàÏßÄÎßâ reason ÏóêÎäî ',' Î•º ÏÉùÎûµÌï† Í≤É!
+#define SDI_NON_SHARD_QUERY_REASONS            \
+    (SChar*)"Shard keyword exists.",\
+    (SChar*)"Non-shard object exists.",\
+    (SChar*)"The shard distribution information of the objects is different.",\
+    (SChar*)"CONNECT BY clause exists.",\
+    (SChar*)"LATERAL view exists.",\
+    (SChar*)"RECURSIVE WITH clause exists.",\
+    (SChar*)"PIVOT or UNPIVOT clause exists.",\
+    (SChar*)"CNF normalization was failed.",\
+    (SChar*)"Node to node join operation exists.",\
+    (SChar*)"Node to node distinction exists.",\
+    (SChar*)"Node to node aggregate operation exists.",\
+    (SChar*)"Node to node nested aggregate operation exists.",\
+    (SChar*)"Node to node grouping extension exists.",\
+    (SChar*)"Node to node outer join operation exists.",\
+    (SChar*)"Node to node semi join or anti join operation exists.",\
+    (SChar*)"Node to node windowing operation exists.", \
+    (SChar*)"Node to node set operation exists.",\
+    (SChar*)"Node to node sorting operation exists.",\
+    (SChar*)"Node to node limit operation exists.",\
+    (SChar*)"Node to node loop operation exists.",\
+    (SChar*)"Unspecified shard key value",\
+    (SChar*)"Non-shard subquery exists.",\
+    (SChar*)"Non-shard grouping set exists.",\
+    (SChar*)"Non-shard psm bind exists.",\
+    (SChar*)"Non-shard psm lob bind exists.",\
+    (SChar*)"Unsupported statement type",\
+    (SChar*)"Unexpected reason : reason max"\
+// ¡÷¿« : ∏∂¡ˆ∏∑ reason ø°¥¬ ',' ∏¶ ª˝∑´«“ ∞Õ!
 
-#define SDI_INIT_CAN_NOT_MERGE_REASON(_dst_)              \
-{                                                         \
-    _dst_[SDI_NO_SHARD_OBJECT]               = ID_FALSE;  \
-    _dst_[SDI_NON_SHARD_OBJECT_EXISTS]       = ID_FALSE;  \
-    _dst_[SDI_MULTI_SHARD_INFO_EXISTS]       = ID_FALSE;  \
-    _dst_[SDI_MULTI_NODES_JOIN_EXISTS]       = ID_FALSE;  \
-    _dst_[SDI_HIERARCHY_EXISTS]              = ID_FALSE;  \
-    _dst_[SDI_DISTINCT_EXISTS]               = ID_FALSE;  \
-    _dst_[SDI_GROUP_AGGREGATION_EXISTS]      = ID_FALSE;  \
-    _dst_[SDI_NESTED_AGGREGATION_EXISTS]     = ID_FALSE;  \
-    _dst_[SDI_SUBQUERY_EXISTS]               = ID_FALSE;  \
-    _dst_[SDI_ORDER_BY_EXISTS]               = ID_FALSE;  \
-    _dst_[SDI_LIMIT_EXISTS]                  = ID_FALSE;  \
-    _dst_[SDI_MULTI_NODES_SET_OP_EXISTS]     = ID_FALSE;  \
-    _dst_[SDI_LOOP_EXISTS]                   = ID_FALSE;  \
-    _dst_[SDI_INVALID_OUTER_JOIN_EXISTS]     = ID_FALSE;  \
-    _dst_[SDI_INVALID_SEMI_ANTI_JOIN_EXISTS] = ID_FALSE;  \
-    _dst_[SDI_GROUP_BY_EXTENSION_EXISTS]     = ID_FALSE;  \
-    _dst_[SDI_INVALID_SHARD_KEY_CONDITION]   = ID_FALSE;  \
-    _dst_[SDI_MULTIPLE_ROW_INSERT]           = ID_FALSE;  \
-    _dst_[SDI_MULTIPLE_OBJECT_INSERT]        = ID_FALSE;  \
-    _dst_[SDI_TRIGGER_EXISTS]                = ID_FALSE;  \
-    _dst_[SDI_INSTEAD_OF_TRIGGER_EXISTS]     = ID_FALSE;  \
-    _dst_[SDI_VIEW_EXISTS]                   = ID_FALSE;  \
-    _dst_[SDI_LATERAL_VIEW_EXISTS]           = ID_FALSE;  \
-    _dst_[SDI_RECURSIVE_VIEW_EXISTS]         = ID_FALSE;  \
-    _dst_[SDI_PACKAGE_EXISTS]                = ID_FALSE;  \
-    _dst_[SDI_PIVOT_EXISTS]                  = ID_FALSE;  \
-    _dst_[SDI_UNSUPPORT_SHARD_QUERY]         = ID_FALSE;  \
-    _dst_[SDI_SUB_KEY_EXISTS]                = ID_FALSE;  \
+#define SDI_INIT_NON_SHARD_QUERY_REASON(_dst_)                     \
+{                                                                  \
+    _dst_[SDI_SHARD_KEYWORD_EXISTS]                   = ID_FALSE;  \
+    _dst_[SDI_NON_SHARD_OBJECT_EXISTS]                = ID_FALSE;  \
+    _dst_[SDI_MULTI_SHARD_INFO_EXISTS]                = ID_FALSE;  \
+    _dst_[SDI_HIERARCHY_EXISTS]                       = ID_FALSE;  \
+    _dst_[SDI_LATERAL_VIEW_EXISTS]                    = ID_FALSE;  \
+    _dst_[SDI_RECURSIVE_VIEW_EXISTS]                  = ID_FALSE;  \
+    _dst_[SDI_PIVOT_EXISTS]                           = ID_FALSE;  \
+    _dst_[SDI_CNF_NORMALIZATION_FAIL]                 = ID_FALSE;  \
+    _dst_[SDI_NODE_TO_NODE_JOIN_EXISTS]               = ID_FALSE;  \
+    _dst_[SDI_NODE_TO_NODE_DISTINCT_EXISTS]           = ID_FALSE;  \
+    _dst_[SDI_NODE_TO_NODE_GROUP_AGGREGATION_EXISTS]  = ID_FALSE;  \
+    _dst_[SDI_NODE_TO_NODE_NESTED_AGGREGATION_EXISTS] = ID_FALSE;  \
+    _dst_[SDI_NODE_TO_NODE_GROUP_BY_EXTENSION_EXISTS] = ID_FALSE;  \
+    _dst_[SDI_NODE_TO_NODE_OUTER_JOIN_EXISTS]         = ID_FALSE;  \
+    _dst_[SDI_NODE_TO_NODE_SEMI_ANTI_JOIN_EXISTS]     = ID_FALSE;  \
+    _dst_[SDI_NODE_TO_NODE_WINDOW_FUNCTION_EXISTS]    = ID_FALSE;  \
+    _dst_[SDI_NODE_TO_NODE_SET_OP_EXISTS]             = ID_FALSE;  \
+    _dst_[SDI_NODE_TO_NODE_ORDER_BY_EXISTS]           = ID_FALSE;  \
+    _dst_[SDI_NODE_TO_NODE_LIMIT_EXISTS]              = ID_FALSE;  \
+    _dst_[SDI_NODE_TO_NODE_LOOP_EXISTS]               = ID_FALSE;  \
+    _dst_[SDI_UNSPECIFIED_SHARD_KEY_VALUE]            = ID_FALSE;  \
+    _dst_[SDI_NON_SHARD_SUBQUERY_EXISTS]              = ID_FALSE;  \
+    _dst_[SDI_NON_SHARD_GROUPING_SET_EXISTS]          = ID_FALSE;  \
+    _dst_[SDI_NON_SHARD_PSM_BIND_EXISTS]              = ID_FALSE;  \
+    _dst_[SDI_NON_SHARD_PSM_LOB_EXISTS]               = ID_FALSE;  \
+    _dst_[SDI_UNKNOWN_REASON]                         = ID_FALSE;  \
 }
 
 typedef enum
@@ -142,8 +222,9 @@ typedef enum
 
 typedef enum
 {
-    SDI_SESSION_TYPE_EXTERNAL = 0,
-    SDI_SESSION_TYPE_INTERNAL = 1,
+    SDI_SESSION_TYPE_USER  = 0,
+    SDI_SESSION_TYPE_COORD = 1,
+    SDI_SESSION_TYPE_LIB   = 2,
 } sdiSessionType;
 
 typedef enum
@@ -153,6 +234,24 @@ typedef enum
     SDI_QUERY_TYPE_NONSHARD = 2,
     SDI_QUERY_TYPE_MAX      = 3 
 } sdiQueryType;
+
+typedef enum
+{
+    SDI_SPLIT_NONE  = 0,
+    SDI_SPLIT_HASH  = 1,
+    SDI_SPLIT_RANGE = 2,
+    SDI_SPLIT_LIST  = 3,
+    SDI_SPLIT_CLONE = 4,
+    SDI_SPLIT_SOLO  = 5,
+    SDI_SPLIT_NODES = 100
+} sdiSplitMethod;
+
+typedef enum
+{
+    SDI_SPLIT_TYPE_NONE         = 0,
+    SDI_SPLIT_TYPE_DIST         = 1, // HASH, RANGE, LIST, (and so on...)
+    SDI_SPLIT_TYPE_NO_DIST      = 2 // CLONE, SOLO, (and so on...)
+} sdiSplitType;
 
 typedef struct sdiPrintInfo
 {
@@ -167,7 +266,117 @@ typedef struct sdiPrintInfo
     (info)->mAnalyzeCount        = 0;                            \
     (info)->mQueryType           = SDI_QUERY_TYPE_NONE;          \
     (info)->mTransformable       = ID_FALSE;                     \
-    (info)->mNonShardQueryReason = SDI_CAN_NOT_MERGE_REASON_MAX; \
+    (info)->mNonShardQueryReason = SDI_NON_SHARD_QUERY_REASON_MAX; \
 }
+
+/* PROJ-2733-DistTxInfo */
+typedef enum
+{
+    SDI_DIST_LEVEL_INIT     = 0,
+    SDI_DIST_LEVEL_SINGLE   = 1,
+    SDI_DIST_LEVEL_MULTI    = 2,
+    SDI_DIST_LEVEL_PARALLEL = 3
+} sdiDistLevel;
+
+typedef enum {
+    SDI_NON_SHARD_OBJECT                = 0,
+    SDI_SINGLE_SHARD_KEY_DIST_OBJECT    = 1,
+    SDI_COMPOSITE_SHARD_KEY_DIST_OBJECT = 2,
+    SDI_CLONE_DIST_OBJECT               = 3,
+    SDI_SOLO_DIST_OBJECT                = 4,
+} sdiShardObjectType;
+
+typedef enum
+{
+    SDI_INTERNAL_OP_NOT      = 0,
+    SDI_INTERNAL_OP_NORMAL   = 1,
+    SDI_INTERNAL_OP_FAILOVER = 2,
+    SDI_INTERNAL_OP_FAILBACK = 3,
+    SDI_INTERNAL_OP_MAX      = 4,
+} sdiInternalOperation;
+
+/* call function after transaction end */
+typedef void (*sdiZKPendingJobFunc)(ULong, ULong) ;
+
+/* TASK-7219 Shard Transformer Refactoring */
+#define SDI_ANALYSIS_FLAG_TYPE_MASK (0x0000000F)
+#define SDI_ANALYSIS_FLAG_NON_MASK  (0x00000001)
+#define SDI_ANALYSIS_FLAG_NON_FALSE (0x00000000)
+#define SDI_ANALYSIS_FLAG_NON_TRUE  (0x00000001)
+#define SDI_ANALYSIS_FLAG_TOP_MASK  (0x00000002)
+#define SDI_ANALYSIS_FLAG_TOP_FALSE (0x00000000)
+#define SDI_ANALYSIS_FLAG_TOP_TRUE  (0x00000002)
+#define SDI_ANALYSIS_FLAG_SET_MASK  (0x00000004)
+#define SDI_ANALYSIS_FLAG_SET_FALSE (0x00000000)
+#define SDI_ANALYSIS_FLAG_SET_TRUE  (0x00000004)
+#define SDI_ANALYSIS_FLAG_CUR_MASK  (0x00000008)
+#define SDI_ANALYSIS_FLAG_CUR_FALSE (0x00000000)
+#define SDI_ANALYSIS_FLAG_CUR_TRUE  (0x00000008)
+
+typedef enum
+{
+    SDI_CQ_AGGR_TRANSFORMABLE       = 0, /* Query Set ∫–ºÆ Ω√ SFWGH ∞° TransformAble ¿Œ ∞ÊøÏ, ø©∫Œ∏¶ «•Ω√ */
+    SDI_CQ_LOCAL_TABLE              = 1, /* INSERT, DELETE, UPDATE ¥ÎªÛ Table ¿Ã Local Table ¿Œ ∞ÊøÏ      */
+    SDI_ANALYSIS_CUR_QUERY_FLAG_MAX = 2  /* CURRENT QUERY SET ±Ó¡ˆ ¿¸¥ﬁ¿Ã « ø‰«— ∞ÊøÏ, ¿Ã ¿ß∑Œ √ﬂ∞°«—¥Ÿ.  */
+} sdiCurQueryFlag;
+
+typedef enum
+{
+    SDI_SQ_OUT_REF_NOT_EXISTS       = 0, /* Sub-query ∫–ºÆ Ω√ out reference column∞˙¿« shard key joining ø©∫Œ∏¶ «•Ω√ */
+    SDI_SQ_OUT_DEP_INFO             = 1, /* Query Set ∫–ºÆ Ω√ Outer Column ¿« ¡∏¿Á ø©∫Œ∏¶ «•Ω√                       */
+    SDI_SQ_NON_SHARD                = 2, /* Query Set ∫–ºÆ Ω√ SFWGH ∞° Non-shard ¿Œ ∞ÊøÏ, ø©∫Œ∏¶ «•Ω√                */
+    SDI_SQ_UNSUPPORTED              = 3, /* Shard Keyword, With Alias øπø‹ √≥∏Æ                                      */
+    SDI_ANALYSIS_SET_QUERY_FLAG_MAX = 4, /* QUERY SET BLOCK ±Ó¡ˆ ¿¸¥ﬁ¿Ã « ø‰«— ∞ÊøÏ, ¿Ã ¿ß∑Œ √ﬂ∞°«—¥Ÿ.               */
+} sdiSetQueryFlag;
+
+typedef enum
+{
+    SDI_TQ_SUB_KEY_EXISTS           = 0, /* Sub-shard key∏¶ ∞°¡¯ table¿Ã ¬¸¡∂ µ                      */
+    SDI_PARTIAL_COORD_EXEC_NEEDED   = 1, /* TASK-7219 Non-shard DML */
+    SDI_ANALYSIS_TOP_QUERY_FLAG_MAX = 2, /* TOP QUERY SET ±Ó¡ˆ ¿¸¥ﬁ¿Ã « ø‰«— ∞ÊøÏ, ¿Ã ¿ß∑Œ √ﬂ∞°«—¥Ÿ. */
+} sdiTopQueryFlag;
+
+#define SDI_INIT_ANALYSIS_CUR_QUERY_FLAG( _dst_ )  \
+{                                                  \
+    _dst_[ SDI_CQ_AGGR_TRANSFORMABLE ] = ID_FALSE; \
+    _dst_[ SDI_CQ_LOCAL_TABLE   ]      = ID_FALSE; \
+}
+
+#define SDI_INIT_ANALYSIS_SET_QUERY_FLAG( _dst_ )  \
+{                                                  \
+    _dst_[ SDI_SQ_OUT_REF_NOT_EXISTS ] = ID_FALSE; \
+    _dst_[ SDI_SQ_OUT_DEP_INFO ]       = ID_FALSE; \
+    _dst_[ SDI_SQ_NON_SHARD ]          = ID_FALSE; \
+    _dst_[ SDI_SQ_UNSUPPORTED ]        = ID_FALSE; \
+}
+
+#define SDI_INIT_ANALYSIS_TOP_QUERY_FLAG( _dst_ )  \
+{                                                  \
+    _dst_[ SDI_TQ_SUB_KEY_EXISTS ]     = ID_FALSE; \
+    _dst_[ SDI_PARTIAL_COORD_EXEC_NEEDED ]  = ID_FALSE; \
+}
+
+#define SDI_INIT_ANALYSIS_FLAG( _dst_ )                          \
+{                                                                \
+    SDI_INIT_ANALYSIS_CUR_QUERY_FLAG( ( _dst_ ).mCurQueryFlag ); \
+    SDI_INIT_ANALYSIS_SET_QUERY_FLAG( ( _dst_ ).mSetQueryFlag ); \
+    SDI_INIT_ANALYSIS_TOP_QUERY_FLAG( ( _dst_ ).mTopQueryFlag ); \
+    SDI_INIT_NON_SHARD_QUERY_REASON( ( _dst_ ).mNonShardFlag );  \
+}
+
+typedef struct sdiAnalysisFlag
+{
+    idBool mCurQueryFlag[ SDI_ANALYSIS_CUR_QUERY_FLAG_MAX ];
+    idBool mSetQueryFlag[ SDI_ANALYSIS_SET_QUERY_FLAG_MAX ];
+    idBool mTopQueryFlag[ SDI_ANALYSIS_TOP_QUERY_FLAG_MAX ];
+    idBool mNonShardFlag[ SDI_NON_SHARD_QUERY_REASON_MAX ];
+} sdiAnalysisFlag;
+
+/* TASK-7219 Non-shard DML */
+typedef enum {
+    SDI_SHARD_PARTIAL_EXEC_TYPE_NONE  = 0,
+    SDI_SHARD_PARTIAL_EXEC_TYPE_COORD = 1,
+    SDI_SHARD_PARTIAL_EXEC_TYPE_QUERY = 2
+} sdiShardPartialExecType;
 
 #endif /* _O_SDI_TYPES_H_ */

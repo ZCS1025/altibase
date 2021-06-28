@@ -17,13 +17,16 @@
 
 package Altibase.jdbc.driver.sharding.core;
 
-import java.sql.ParameterMetaData;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
+import Altibase.jdbc.driver.cm.CmProtocolContextShardStmt;
+
+import java.io.InputStream;
+import java.io.Reader;
+import java.math.BigDecimal;
+import java.sql.*;
+import java.util.Calendar;
 
 /**
- * ServerSide ÎòêÎäî ClientSideÏóêÏÑú Í≥µÌÜµÏ†ÅÏúºÎ°ú Ïã§ÌñâÎêòÎäî java.sql.PreparedStatement Ïù∏ÌÑ∞ÌéòÏù¥Ïä§ Î™®Ïùå
+ * ServerSide ∂«¥¬ ClientSideø°º≠ ∞¯≈Î¿˚¿∏∑Œ Ω««‡µ«¥¬ java.sql.PreparedStatement ¿Œ≈Õ∆‰¿ÃΩ∫ ∏¿Ω
  */
 public interface InternalShardingPreparedStatement extends InternalShardingStatement
 {
@@ -36,4 +39,30 @@ public interface InternalShardingPreparedStatement extends InternalShardingState
     ResultSetMetaData getMetaData() throws SQLException;
     ParameterMetaData getParameterMetaData() throws SQLException;
     void clearBatch() throws SQLException;
+    void rePrepare(CmProtocolContextShardStmt aShardStmtCtx) throws SQLException;
+    void setInt(int aParameterIndex, int aValue) throws SQLException;
+    void setNull(int aParameterIndex, int aSqlType) throws SQLException;
+    void setNull(int aParameterIndex, int aSqlType, String aTypeName) throws SQLException;
+    void setBoolean(int aParameterIndex, boolean aValue) throws SQLException;
+    void setByte(int aParameterIndex, byte aValue) throws SQLException;
+    void setShort(int aParameterIndex, short aValue) throws SQLException;
+    void setLong(int aParameterIndex, long aValue) throws SQLException;
+    void setFloat(int aParameterIndex, float aValue) throws SQLException;
+    void setDouble(int aParameterIndex, double aValue) throws SQLException;
+    void setBigDecimal(int aParameterIndex, BigDecimal aValue) throws SQLException;
+    void setString(int aParameterIndex, String aValue) throws SQLException;
+    void setBytes(int aParameterIndex, byte[] aValue) throws SQLException;
+    void setDate(int aParameterIndex, Date aValue) throws SQLException;
+    void setDate(int aParameterIndex, Date aValue, Calendar aCal) throws SQLException;
+    void setTime(int aParameterIndex, Time aValue) throws SQLException;
+    void setTime(int aParameterIndex, Time aValue, Calendar aCal) throws SQLException;
+    void setTimestamp(int aParameterIndex, Timestamp aValue) throws SQLException;
+    void setTimestamp(int aParameterIndex, Timestamp aValue, Calendar aCal) throws SQLException;
+    void setAsciiStream(int aParameterIndex, InputStream aValue, int aLength) throws SQLException;
+    void setBinaryStream(int aParameterIndex, InputStream aValue, int aLength) throws SQLException;
+    void setObject(int aParameterIndex, Object aValue, int aTargetSqlType, int aScale) throws SQLException;
+    void setObject(int aParameterIndex, Object aValue, int aTargetSqlType) throws SQLException;
+    void setCharacterStream(int aParameterIndex, Reader aReader, int aLength) throws SQLException;
+    void setBlob(int aParameterIndex, Blob aValue) throws SQLException;
+    void setClob(int aParameterIndex, Clob aValue) throws SQLException;
 }

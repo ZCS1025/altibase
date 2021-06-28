@@ -19,9 +19,11 @@
  * $Id: 
  **********************************************************************/
 
+#include <rpxReceiver.h>
 #include <rpsSQLExecutor.h>
 #include <rpsSmExecutor.h>
 #include <rpdConvertSQL.h>
+#include <rpdCatalog.h>
 
 IDE_RC rpsSQLExecutor::executeSQL( smiStatement   * aSmiStatement,
                                    rpdMetaItem    * aRemoteMetaItem,
@@ -176,7 +178,8 @@ IDE_RC rpsSQLExecutor::prepare( qciStatement              * aQciStatement,
 
 IDE_RC rpsSQLExecutor::setBindParamInfo( qciStatement       * aQciStatement,
                                          mtcColumn          * aColumn,
-                                         UInt                 aId )
+                                         UInt                 aId,
+                                         UInt                 aLength )
 {
     qciBindParam        sBindParam;
 
@@ -187,7 +190,17 @@ IDE_RC rpsSQLExecutor::setBindParamInfo( qciStatement       * aQciStatement,
     sBindParam.type = aColumn->type.dataTypeId;
     sBindParam.language = aColumn->type.languageId;
     sBindParam.arguments = ( aColumn->flag & MTC_COLUMN_ARGUMENT_COUNT_MASK );
-    sBindParam.precision = aColumn->precision;;
+
+    /* BUG-47458 Lob은 column->precision 값이 0이다 */
+    if ( (aColumn->column.flag & SMI_COLUMN_TYPE_MASK) == SMI_COLUMN_TYPE_LOB )
+    {
+        sBindParam.precision = aLength - RP_LOB_MTD_HEADER_SIZE;
+    }
+    else
+    {
+        sBindParam.precision = aColumn->precision;
+    }
+
     sBindParam.scale = aColumn->scale;;
     sBindParam.inoutType = 1;
     sBindParam.data = NULL;
@@ -210,6 +223,7 @@ IDE_RC rpsSQLExecutor::setBindParamInfoArray( qciStatement      * aQciStatement,
                                               smiValue          * aValueArray,
                                               UInt                aColumnCount,
                                               rpdXLog           * aXLog,
+                                              idBool              aUpdateWere,
                                               UInt                aStartId,
                                               UInt              * aEndId )
 {
@@ -239,13 +253,33 @@ IDE_RC rpsSQLExecutor::setBindParamInfoArray( qciStatement      * aQciStatement,
 
             if ( ( ( sRpdColumn->mQPFlag & QCM_COLUMN_HIDDEN_COLUMN_MASK )
                    != QCM_COLUMN_HIDDEN_COLUMN_TRUE ) &&
-                 ( sIsNullValue == ID_FALSE ) ) 
+                 ( sIsNullValue == ID_FALSE ) )
             {
-                IDE_TEST( setBindParamInfo( aQciStatement,
-                                            sColumn,
-                                            sId )
-                          != IDE_SUCCESS );
-                sId++;
+                if ( ( sColumn->column.flag & SMI_COLUMN_TYPE_MASK ) == SMI_COLUMN_TYPE_LOB )
+                {
+                    if ( aUpdateWere == ID_FALSE )
+                    {
+                        IDE_TEST( setBindParamInfo( aQciStatement,
+                                                    sColumn,
+                                                    sId,
+                                                    aValueArray[i].length )
+                                    != IDE_SUCCESS );
+                          sId++;
+                    }
+                    else
+                    {
+                        /* do nothing */
+                    }
+                }
+                else
+                {
+                    IDE_TEST( setBindParamInfo( aQciStatement,
+                                                sColumn,
+                                                sId,
+                                                aValueArray[i].length )
+                              != IDE_SUCCESS );
+                    sId++;
+                }
             }
             else
             {
@@ -286,11 +320,13 @@ IDE_RC rpsSQLExecutor::setBindParamInfoArray( qciStatement      * aQciStatement,
 }
 
 IDE_RC rpsSQLExecutor::setBindParamDataArray( qciStatement       * aQciStatement,
-                                              rpdMetaItem        * aMetaItem,
+                                              rpdMetaItem        * aRemoteMetaItem,
+                                              rpdMetaItem        * aLocalMetaItem,
                                               UInt               * aCIDArray,
                                               smiValue           * aValueArray,
                                               UInt                 aColumnCount,
                                               rpdXLog            * aXLog,
+                                              idBool               aUpdateWere,
                                               UInt                 aStartId,
                                               UInt               * aEndId )
 {
@@ -298,34 +334,60 @@ IDE_RC rpsSQLExecutor::setBindParamDataArray( qciStatement       * aQciStatement
     UInt              sCID = 0;
     UInt              i = 0;
     SChar             sErrorBuffer[RP_MAX_MSG_LEN] = { 0, };
-    rpdColumn       * sColumn = NULL;
-    idBool            sIsNullValue = ID_FALSE;
+    rpdColumn       * sRpdColumn    = NULL;
+    idBool            sIsNullValue	= ID_FALSE;
+    const void      * sTable       	= NULL;
+    mtcColumn       * sMtcColumn   	= NULL;
 
     for ( i = 0; i < aColumnCount; i++ )
     {
         sCID = aCIDArray[i] & SMI_COLUMN_ID_MASK;
         IDE_TEST_RAISE( sCID >= QCI_MAX_COLUMN_COUNT, ERR_INVALID_COLUMN_ID );
 
-        if ( aMetaItem->mIsReplCol[sCID] == ID_TRUE )
+        if ( aRemoteMetaItem->mIsReplCol[sCID] == ID_TRUE )
         {
-            sColumn = aMetaItem->getRpdColumn( sCID );
-            IDE_TEST_RAISE( sColumn == NULL, ERR_NOT_FOUND_COLUMN );
+            sRpdColumn = aRemoteMetaItem->getRpdColumn( sCID );
+            IDE_TEST_RAISE( sRpdColumn == NULL, ERR_NOT_FOUND_COLUMN );
 
-            IDE_TEST( rpdConvertSQL::isNullValue( &(sColumn->mColumn),
+            IDE_TEST( rpdConvertSQL::isNullValue( &(sRpdColumn->mColumn),
                                                   &(aValueArray[i]),
                                                   &sIsNullValue )
                       != IDE_SUCCESS );
 
-            if ( ( ( sColumn->mQPFlag & QCM_COLUMN_HIDDEN_COLUMN_MASK )
+            if ( ( ( sRpdColumn->mQPFlag & QCM_COLUMN_HIDDEN_COLUMN_MASK )
                    != QCM_COLUMN_HIDDEN_COLUMN_TRUE ) &&
                  ( sIsNullValue == ID_FALSE ) )
             {
-                IDE_TEST( qci::setBindParamData( aQciStatement,
-                                                 sId,
-                                                 (void*)aValueArray[i].value,
-                                                 aValueArray[i].length )
-                          != IDE_SUCCESS );
-                sId++;
+                sTable = smiGetTable( aLocalMetaItem->mItem.mTableOID );
+
+                sMtcColumn = (mtcColumn*)rpdCatalog::rpdGetTableColumns( sTable, sCID );
+                IDE_TEST_RAISE( sMtcColumn == NULL, ERR_NOT_FOUND_COLUMN );
+
+                if ( ( sMtcColumn->column.flag & SMI_COLUMN_TYPE_MASK ) == SMI_COLUMN_TYPE_LOB )
+                {
+                    if ( aUpdateWere == ID_FALSE )
+                    {
+                        IDE_TEST( qci::setBindParamData( aQciStatement,
+                                                         sId,
+                                                         (void*)aValueArray[i].value,
+                                                         aValueArray[i].length )
+                                  != IDE_SUCCESS );
+                        sId++;
+                    }
+                    else
+                    {
+                        /* do nothing */
+                    }
+                }
+                else
+                {
+                    IDE_TEST( qci::setBindParamData( aQciStatement,
+                                                     sId,
+                                                     (void*)aValueArray[i].value,
+                                                     aValueArray[i].length )
+                              != IDE_SUCCESS );
+                    sId++;
+                }
             }
             else
             {
@@ -389,6 +451,7 @@ IDE_RC rpsSQLExecutor::addtionalBindParamInfoforUpdate( qciStatement     * aQciS
                                      aXLog->mPKCols,
                                      aXLog->mPKColCnt,
                                      aXLog,
+                                     ID_TRUE,
                                      sId,
                                      &sId )
               != IDE_SUCCESS );
@@ -397,7 +460,8 @@ IDE_RC rpsSQLExecutor::addtionalBindParamInfoforUpdate( qciStatement     * aQciS
     {
         IDE_TEST( setBindParamInfo( aQciStatement,
                                     aLocalMetaItem->mTsFlag,
-                                    sId )
+                                    sId,
+                                    aXLog->mACols[sId].length )
                   != IDE_SUCCESS );
         sId++;
     }
@@ -418,6 +482,7 @@ IDE_RC rpsSQLExecutor::addtionalBindParamInfoforUpdate( qciStatement     * aQciS
                                              aXLog->mBCols,
                                              aXLog->mColCnt,
                                              aXLog,
+                                             ID_TRUE,
                                              sId,
                                              &sId )
                       != IDE_SUCCESS );
@@ -455,10 +520,12 @@ IDE_RC rpsSQLExecutor::addtionalBindParamDataforUpdate( qciStatement     * aQciS
 
     IDE_TEST( setBindParamDataArray( aQciStatement,
                                      aRemoteMetaItem,
+                                     aLocalMetaItem,
                                      sCIDArray,
                                      aXLog->mPKCols,
                                      aXLog->mPKColCnt,
                                      aXLog,
+                                     ID_TRUE,
                                      sId,
                                      &sId )
               != IDE_SUCCESS );
@@ -497,10 +564,12 @@ IDE_RC rpsSQLExecutor::addtionalBindParamDataforUpdate( qciStatement     * aQciS
 
             IDE_TEST( setBindParamDataArray( aQciStatement,
                                              aRemoteMetaItem,
+                                             aLocalMetaItem,
                                              sCIDArray,
                                              aXLog->mBCols,
                                              aXLog->mColCnt,
                                              aXLog,
+                                             ID_TRUE,
                                              sId,
                                              &sId )
                       != IDE_SUCCESS );
@@ -542,6 +611,7 @@ IDE_RC rpsSQLExecutor::bind( qciStatement     * aQciStatement,
                                      aXLog->mACols,
                                      aXLog->mColCnt,
                                      aXLog,
+                                     ID_FALSE,
                                      0,
                                      &sId )
               != IDE_SUCCESS );
@@ -564,10 +634,12 @@ IDE_RC rpsSQLExecutor::bind( qciStatement     * aQciStatement,
     /* ACols */
     IDE_TEST( setBindParamDataArray( aQciStatement,
                                      aRemoteMetaItem,
+                                     aLocalMetaItem,
                                      sCIDArray,
                                      aXLog->mACols,
                                      aXLog->mColCnt,
                                      aXLog,
+                                     ID_FALSE,
                                      0,
                                      &sId )
               != IDE_SUCCESS );
@@ -827,8 +899,8 @@ IDE_RC rpsSQLExecutor::execute( qciStatement            * aQciStatement,
         }
     }
 
-    sIsBegun = ID_FALSE;
     IDE_TEST( sSmiStatement.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    sIsBegun = ID_FALSE;
 
     qci::getRowCount( aQciStatement, &sAffectedRowCount, &sFetchedRowCount);
 

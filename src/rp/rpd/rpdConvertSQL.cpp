@@ -19,6 +19,7 @@
 #include <ideLog.h>
 
 #include <rpdConvertSQL.h>
+#include <rpdCatalog.h>
 
 #define UTF16_CHARSET_STR   "UTF16"
 
@@ -595,6 +596,41 @@ IDE_RC rpdConvertSQL::convertNCharType( smiValue    * aSmiValue,
     return IDE_FAILURE;
 }
 
+idBool rpdConvertSQL::isSupportDataType( UInt   aDataTypeId )
+{
+    idBool sIsSupport = ID_FALSE;
+
+    switch ( aDataTypeId )
+    {
+        case MTD_FLOAT_ID:
+        case MTD_NUMERIC_ID:
+        case MTD_DOUBLE_ID:
+        case MTD_REAL_ID:
+        case MTD_BIGINT_ID:
+        case MTD_INTEGER_ID:
+        case MTD_SMALLINT_ID:
+        case MTD_CHAR_ID :
+        case MTD_VARCHAR_ID :
+        case MTD_DATE_ID:
+        case MTD_NVARCHAR_ID:
+        case MTD_NCHAR_ID:
+        case MTD_BIT_ID :
+        case MTD_VARBIT_ID :
+        case MTD_BYTE_ID :
+        case MTD_VARBYTE_ID :
+        case MTD_NIBBLE_ID:
+
+           sIsSupport = ID_TRUE;
+           break;
+
+        default:
+           
+           sIsSupport = ID_FALSE;
+           break;
+    }
+
+    return sIsSupport;
+}
 
 IDE_RC rpdConvertSQL::convertValue( mtcColumn   * aColumn,
                                     smiValue    * aSmiValue,
@@ -825,6 +861,10 @@ IDE_RC rpdConvertSQL::getColumnClause( rpdColumn    * aColumnForSource,
     SChar           * sColumnValue = aColumnValue;
     UInt              sColumnValueLength = aColumnValueLength;
     idBool            sIsNullValue = ID_FALSE;
+    SChar             sErrorMessage[128] = { 0, };
+
+    IDE_TEST_RAISE( isSupportDataType( aColumnForSource->mColumn.type.dataTypeId ) == ID_FALSE,
+                    ERR_NOT_SUPPORT_DATA_TYPE );
 
     IDE_TEST( isNullValue( &(aColumnForSource->mColumn),
                            aSmiValue,
@@ -929,7 +969,7 @@ IDE_RC rpdConvertSQL::getColumnClause( rpdColumn    * aColumnForSource,
             /* do nothing */
         }
 
-        /* trim í•˜ê³  pad ì´í›„ì— ìœ„ì¹˜ë¥¼ ë³€ê²½ í•˜ì—¬ì•¼ í•œë‹¤ */
+        /* trim ÇÏ°í pad ÀÌÈÄ¿¡ À§Ä¡¸¦ º¯°æ ÇÏ¿©¾ß ÇÑ´Ù */
         sColumnValueLength = sColumnValueLength - idlOS::strlen( sColumnValue );
         sColumnValue = sColumnValue + idlOS::strlen( sColumnValue );
 
@@ -991,6 +1031,13 @@ IDE_RC rpdConvertSQL::getColumnClause( rpdColumn    * aColumnForSource,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_NOT_SUPPORT_DATA_TYPE )
+    {
+        idlOS::snprintf( sErrorMessage,
+                         ID_SIZEOF( sErrorMessage ),
+                         "Not Support Data Type( id : %"ID_UINT32_FMT" )", aColumnForSource->mColumn.type.dataTypeId );
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG, sErrorMessage ) );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -1343,27 +1390,35 @@ IDE_RC rpdConvertSQL::getUpdateSQL( rpdMetaItem * aMetaItemForSource,
                     sColumnForSource = aMetaItemForSource->getRpdColumn( sColumnID );
                     IDE_TEST_RAISE( sColumnForSource == NULL, ERR_META_NO_SUCH_DATA );
 
-                    IDE_TEST( isNullValue( &(sColumnForSource->mColumn),
-                                           &(aXLog->mBCols[i]),
-                                           &sIsNullValue )
-                              != IDE_SUCCESS );
-
-                    if ( sIsNullValue == ID_FALSE )
+                    if ( ( sColumnForTarget->mColumn.column.flag & SMI_COLUMN_TYPE_MASK ) != SMI_COLUMN_TYPE_LOB )
                     {
-                        idlOS::snprintf( sTempString,
-                                         sTempStringLength,
-                                         " AND %s = ?",
-                                         sColumnForTarget->mColumnName );
+                        IDE_TEST( isNullValue( &(sColumnForSource->mColumn),
+                                               &(aXLog->mBCols[i]),
+                                               &sIsNullValue )
+                                  != IDE_SUCCESS );
+
+                        if ( sIsNullValue == ID_FALSE )
+                        {
+                            idlOS::snprintf( sTempString,
+                                             sTempStringLength,
+                                             " AND %s = ?",
+                                             sColumnForTarget->mColumnName );
+                        }
+                        else
+                        {
+                            idlOS::snprintf( sTempString,
+                                             sTempStringLength,
+                                             " AND %s IS NULL",
+                                             sColumnForTarget->mColumnName );
+                        }
+                        sTempStringLength = sTempStringLength - idlOS::strlen( sTempString );
+                        sTempString = sTempString + idlOS::strlen( sTempString );
                     }
                     else
                     {
-                        idlOS::snprintf( sTempString,
-                                         sTempStringLength,
-                                         " AND %s IS NULL",
-                                         sColumnForTarget->mColumnName );
+                        /* do nothing */
                     }
-                    sTempStringLength = sTempStringLength - idlOS::strlen( sTempString );
-                    sTempString = sTempString + idlOS::strlen( sTempString );
+
                 }
                 else
                 {

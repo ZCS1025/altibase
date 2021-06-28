@@ -27,12 +27,12 @@
 #include <svpReq.h>
 
 /**********************************************************************
- * Tx's PrivatePageListì˜ FreePageë¡œë¶€í„° Slotë¥¼ í• ë‹¹í•  ìˆ˜ ìˆì„ì§€ ê²€ì‚¬í•˜ê³ 
- * ê°€ëŠ¥í•˜ë©´ í• ë‹¹í•œë‹¤.
+ * Tx's PrivatePageListÀÇ FreePage·ÎºÎÅÍ Slot¸¦ ÇÒ´çÇÒ ¼ö ÀÖÀ»Áö °Ë»çÇÏ°í
+ * °¡´ÉÇÏ¸é ÇÒ´çÇÑ´Ù.
  *
- * aTrans     : ì‘ì—…í•˜ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
- * aTableOID  : í• ë‹¹í•˜ë ¤ëŠ” í…Œì´ë¸” OID
- * aRow       : í• ë‹¹í•´ì„œ ë°˜í™˜í•˜ë ¤ëŠ” Slot í¬ì¸í„°
+ * aTrans     : ÀÛ¾÷ÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
+ * aTableOID  : ÇÒ´çÇÏ·Á´Â Å×ÀÌºí OID
+ * aRow       : ÇÒ´çÇØ¼­ ¹İÈ¯ÇÏ·Á´Â Slot Æ÷ÀÎÅÍ
  **********************************************************************/
 
 IDE_RC svpFixedPageList::tryForAllocSlotFromPrivatePageList(
@@ -90,13 +90,13 @@ IDE_RC svpFixedPageList::tryForAllocSlotFromPrivatePageList(
 }
 
 /***********************************************************************
- * FreePageListë‚˜ FreePagePoolì—ì„œ FreeSlotì„ í• ë‹¹í•  ìˆ˜ ìˆëŠ”ì§€ ì‹œë„
- * í• ë‹¹ì´ ë˜ë©´ aRowë¡œ ë°˜í™˜í•˜ê³  í• ë‹¹í•  FreeSlotì´ ì—†ë‹¤ë©´ aRowë¥¼ NULLë¡œ ë°˜í™˜
+ * FreePageList³ª FreePagePool¿¡¼­ FreeSlotÀ» ÇÒ´çÇÒ ¼ö ÀÖ´ÂÁö ½Ãµµ
+ * ÇÒ´çÀÌ µÇ¸é aRow·Î ¹İÈ¯ÇÏ°í ÇÒ´çÇÒ FreeSlotÀÌ ¾ø´Ù¸é aRow¸¦ NULL·Î ¹İÈ¯
  *
- * aTrans      : ì‘ì—…í•˜ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
- * aFixedEntry : Slotì„ í• ë‹¹í•˜ë ¤ëŠ” PageListEntry
- * aPageListID : Slotì„ í• ë‹¹í•˜ë ¤ëŠ” PageListID
- * aRow        : í• ë‹¹í•´ì„œ ë°˜í™˜í•˜ë ¤ëŠ” Slot
+ * aTrans      : ÀÛ¾÷ÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
+ * aFixedEntry : SlotÀ» ÇÒ´çÇÏ·Á´Â PageListEntry
+ * aPageListID : SlotÀ» ÇÒ´çÇÏ·Á´Â PageListID
+ * aRow        : ÇÒ´çÇØ¼­ ¹İÈ¯ÇÏ·Á´Â Slot
  ***********************************************************************/
 IDE_RC svpFixedPageList::tryForAllocSlotFromFreePageList(
     void*             aTrans,
@@ -128,25 +128,25 @@ IDE_RC svpFixedPageList::tryForAllocSlotFromFreePageList(
 
     while(1)
     {
-        // FreePageListì˜ SizeClassë¥¼ ìˆœíšŒí•˜ë©´ì„œ tryAllocSlotí•œë‹¤.
+        // FreePageListÀÇ SizeClass¸¦ ¼øÈ¸ÇÏ¸é¼­ tryAllocSlotÇÑ´Ù.
         for(sSizeClassID = 0;
             sSizeClassID < sSizeClassCount;
             sSizeClassID++)
         {
             sFreePageHeader = sFreePageList->mHead[sSizeClassID];
-            // listì˜ Headë¥¼ ê°€ì ¸ì˜¬ë•Œ lockì„ ì•ˆì¡ì€ ì´ìœ ëŠ”
-            // freeSlotì—ì„œëŠ” PageLockì¡ê³  ListLockì¡ê¸° ë•Œë¬¸ì—
-            // ì—¬ê¸°ì„œ list Lockë¨¼ì € ì¡ê³  HeadPage Lockì¡ìœ¼ë©´ ë°ë“œë½ ë°œìƒ
-            // ê·¸ë˜ì„œ ë¨¼ì € Headë¥¼ ê°€ì ¸ì™€ì„œ PageLockì¡ê³  ë‹¤ì‹œ í™•ì¸í•˜ì—¬ í•´ê²°
+            // listÀÇ Head¸¦ °¡Á®¿Ã¶§ lockÀ» ¾ÈÀâÀº ÀÌÀ¯´Â
+            // freeSlot¿¡¼­´Â PageLockÀâ°í ListLockÀâ±â ¶§¹®¿¡
+            // ¿©±â¼­ list Lock¸ÕÀú Àâ°í HeadPage LockÀâÀ¸¸é µ¥µå¶ô ¹ß»ı
+            // ±×·¡¼­ ¸ÕÀú Head¸¦ °¡Á®¿Í¼­ PageLockÀâ°í ´Ù½Ã È®ÀÎÇÏ¿© ÇØ°á
 
             while(sFreePageHeader != NULL)
             {
-                // í•´ë‹¹ Pageì— ëŒ€í•´ Slotì„ í• ë‹¹í•˜ë ¤ê³  í•˜ê³ 
-                // í• ë‹¹í•˜ê²Œë˜ë©´ í•´ë‹¹ Pageì˜ ì†ì„±ì´ ë³€ê²½ë˜ë¯€ë¡œ lockìœ¼ë¡œ ë³´í˜¸
+                // ÇØ´ç Page¿¡ ´ëÇØ SlotÀ» ÇÒ´çÇÏ·Á°í ÇÏ°í
+                // ÇÒ´çÇÏ°ÔµÇ¸é ÇØ´ç PageÀÇ ¼Ó¼ºÀÌ º¯°æµÇ¹Ç·Î lockÀ¸·Î º¸È£
                 IDE_TEST(sFreePageHeader->mMutex.lock(NULL) != IDE_SUCCESS);
                 sState = 1;
 
-                // lockì¡ê¸°ì „ì— í•´ë‹¹ Pageì— ëŒ€í•´ ë‹¤ë¥¸ Txì— ì˜í•´ ë³€ê²½ë˜ì—ˆëŠ”ì§€ ê²€ì‚¬
+                // lockÀâ±âÀü¿¡ ÇØ´ç Page¿¡ ´ëÇØ ´Ù¸¥ Tx¿¡ ÀÇÇØ º¯°æµÇ¾ú´ÂÁö °Ë»ç
                 if(sFreePageHeader->mFreeListID == aPageListID)
                 {
                     IDE_ASSERT(sFreePageHeader->mFreeSlotCount > 0);
@@ -161,8 +161,8 @@ IDE_RC svpFixedPageList::tryForAllocSlotFromFreePageList(
                                   != IDE_SUCCESS );
                     }
 
-                    // FreeSlotì„ í• ë‹¹í•œ Pageì˜ SizeClassê°€ ë³€ê²½ë˜ì—ˆëŠ”ì§€
-                    // í™•ì¸í•˜ì—¬ ì¡°ì •
+                    // FreeSlotÀ» ÇÒ´çÇÑ PageÀÇ SizeClass°¡ º¯°æµÇ¾ú´ÂÁö
+                    // È®ÀÎÇÏ¿© Á¶Á¤
                     IDE_TEST(svpFreePageList::modifyPageSizeClass(
                                  aTrans,
                                  aFixedEntry,
@@ -177,7 +177,7 @@ IDE_RC svpFixedPageList::tryForAllocSlotFromFreePageList(
                 }
                 else
                 {
-                    // í•´ë‹¹ Pageê°€ ë³€ê²½ëœ ê²ƒì´ë¼ë©´ Listì—ì„œ ë‹¤ì‹œ Headë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+                    // ÇØ´ç Page°¡ º¯°æµÈ °ÍÀÌ¶ó¸é List¿¡¼­ ´Ù½Ã Head¸¦ °¡Á®¿Â´Ù.
                     sNextFreePageHeader = sFreePageList->mHead[sSizeClassID];
                 }
 
@@ -188,8 +188,8 @@ IDE_RC svpFixedPageList::tryForAllocSlotFromFreePageList(
             }
         }
 
-        // FreePageListì—ì„œ FreeSlotì„ ì°¾ì§€ ëª»í–ˆë‹¤ë©´
-        // FreePagePoolì—ì„œ í™•ì¸í•˜ì—¬ ê°€ì ¸ì˜¨ë‹¤.
+        // FreePageList¿¡¼­ FreeSlotÀ» Ã£Áö ¸øÇß´Ù¸é
+        // FreePagePool¿¡¼­ È®ÀÎÇÏ¿© °¡Á®¿Â´Ù.
 
         IDE_TEST( svpFreePageList::tryForAllocPagesFromPool( aFixedEntry,
                                                              aPageListID,
@@ -198,7 +198,7 @@ IDE_RC svpFixedPageList::tryForAllocSlotFromFreePageList(
 
         if(sIsPageAlloced == ID_FALSE)
         {
-            // Poolì—ì„œ ëª»ê°€ì ¸ì™”ë‹¤.
+            // Pool¿¡¼­ ¸ø°¡Á®¿Ô´Ù.
             IDE_CONT(normal_case);
         }
     }
@@ -225,9 +225,9 @@ IDE_RC svpFixedPageList::tryForAllocSlotFromFreePageList(
 
 /****************************************************************************
  *
- * BUG-25179 [SMM] Full Scanì„ ìœ„í•œ í˜ì´ì§€ê°„ Scan Listê°€ í•„ìš”í•©ë‹ˆë‹¤.
+ * BUG-25179 [SMM] Full ScanÀ» À§ÇÑ ÆäÀÌÁö°£ Scan List°¡ ÇÊ¿äÇÕ´Ï´Ù.
  *
- * ì£¼ì–´ì§„ í˜ì´ì§€ë¥¼ Scan Listë¡œë¶€í„° ì œê±°í•œë‹¤.
+ * ÁÖ¾îÁø ÆäÀÌÁö¸¦ Scan List·ÎºÎÅÍ Á¦°ÅÇÑ´Ù.
  *
  ****************************************************************************/
 IDE_RC svpFixedPageList::unlinkScanList( scSpaceID          aSpaceID,
@@ -248,18 +248,18 @@ IDE_RC svpFixedPageList::unlinkScanList( scSpaceID          aSpaceID,
     IDE_DASSERT( sScanPageList->mHeadPageID != SM_NULL_PID );
     IDE_DASSERT( sScanPageList->mTailPageID != SM_NULL_PID );
 
-    sMyPCH = (svmPCH*)(svmManager::getPCH( aSpaceID,
+    sMyPCH = (svmPCH*)(smmManager::getPCH( aSpaceID,
                                            aPageID ));
     IDE_DASSERT( sMyPCH != NULL );
     IDE_DASSERT( sMyPCH->mNxtScanPID != SM_NULL_PID );
     IDE_DASSERT( sMyPCH->mPrvScanPID != SM_NULL_PID );
 
-    /* BUG-43463 Fullscan ë™ì‹œì„± ê°œì„ ,
-     * - svnnMoveNextNonBlock()ë“± ê³¼ì˜ ë™ì‹œì„± í–¥ìƒì„ ìœ„í•œ atomic ì„¸íŒ…
-     * - ëŒ€ìƒì€ modify_seq, nexp_pid, prev_pidì´ë‹¤.
-     * - modify_seqëŠ” link, unlinkì‹œì ì— ë³€ê²½ëœë‹¤.
-     * - link, unlink ì§„í–‰ ì¤‘ì—ëŠ” modify_seqê°€ í™€ìˆ˜ì´ë‹¤
-     * - ì²«ë²ˆì§¸ pageëŠ” lockì„ ì¡ê³  í™•ì¸í•˜ë¯€ë¡œ atomicìœ¼ë¡œ setí•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
+    /* BUG-43463 Fullscan µ¿½Ã¼º °³¼±,
+     * - svnnMoveNextNonBlock()µî °úÀÇ µ¿½Ã¼º Çâ»óÀ» À§ÇÑ atomic ¼¼ÆÃ
+     * - ´ë»óÀº modify_seq, nexp_pid, prev_pidÀÌ´Ù.
+     * - modify_seq´Â link, unlink½ÃÁ¡¿¡ º¯°æµÈ´Ù.
+     * - link, unlink ÁøÇà Áß¿¡´Â modify_seq°¡ È¦¼öÀÌ´Ù
+     * - Ã¹¹øÂ° page´Â lockÀ» Àâ°í È®ÀÎÇÏ¹Ç·Î atomicÀ¸·Î setÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
      * */
     SVM_PCH_SET_MODIFYING( sMyPCH );
 
@@ -269,7 +269,7 @@ IDE_RC svpFixedPageList::unlinkScanList( scSpaceID          aSpaceID,
         {
             IDE_DASSERT( sScanPageList->mTailPageID != aPageID );
             IDE_DASSERT( sMyPCH->mPrvScanPID == SM_SPECIAL_PID );
-            sNxtPCH = (svmPCH*)(svmManager::getPCH( aSpaceID,
+            sNxtPCH = (svmPCH*)(smmManager::getPCH( aSpaceID,
                                                     sMyPCH->mNxtScanPID ));
             sNxtPCH->mPrvScanPID       = sMyPCH->mPrvScanPID;
             sScanPageList->mHeadPageID = sMyPCH->mNxtScanPID;
@@ -284,12 +284,12 @@ IDE_RC svpFixedPageList::unlinkScanList( scSpaceID          aSpaceID,
     else
     {
         IDE_DASSERT( sMyPCH->mPrvScanPID != SM_SPECIAL_PID );
-        sPrvPCH = (svmPCH*)(svmManager::getPCH( aSpaceID,
+        sPrvPCH = (svmPCH*)(smmManager::getPCH( aSpaceID,
                                                 sMyPCH->mPrvScanPID ));
 
         if( sMyPCH->mNxtScanPID != SM_SPECIAL_PID )
         {
-            sNxtPCH = (svmPCH*)(svmManager::getPCH( aSpaceID,
+            sNxtPCH = (svmPCH*)(smmManager::getPCH( aSpaceID,
                                                     sMyPCH->mNxtScanPID ));
 
             idCore::acpAtomicSet32( &(sNxtPCH->mPrvScanPID),
@@ -324,9 +324,9 @@ IDE_RC svpFixedPageList::unlinkScanList( scSpaceID          aSpaceID,
 
 /****************************************************************************
  *
- * BUG-25179 [SMM] Full Scanì„ ìœ„í•œ í˜ì´ì§€ê°„ Scan Listê°€ í•„ìš”í•©ë‹ˆë‹¤.
+ * BUG-25179 [SMM] Full ScanÀ» À§ÇÑ ÆäÀÌÁö°£ Scan List°¡ ÇÊ¿äÇÕ´Ï´Ù.
  *
- * ì£¼ì–´ì§„ í˜ì´ì§€ë¥¼ Scan Listë¡œë¶€í„° ì œê±°í•œë‹¤.
+ * ÁÖ¾îÁø ÆäÀÌÁö¸¦ Scan List·ÎºÎÅÍ Á¦°ÅÇÑ´Ù.
  *
  ****************************************************************************/
 IDE_RC svpFixedPageList::linkScanList( scSpaceID          aSpaceID,
@@ -351,18 +351,18 @@ IDE_RC svpFixedPageList::linkScanList( scSpaceID          aSpaceID,
     IDE_DASSERT( (sFreePageHeader == NULL) ||
                  (sFreePageHeader->mFreeSlotCount != aFixedEntry->mSlotCount) );
 
-    sMyPCH = (svmPCH*)(svmManager::getPCH( aSpaceID,
+    sMyPCH = (svmPCH*)(smmManager::getPCH( aSpaceID,
                                            aPageID ));
     IDE_DASSERT( sMyPCH != NULL );
     IDE_DASSERT( sMyPCH->mNxtScanPID == SM_NULL_PID );
     IDE_DASSERT( sMyPCH->mPrvScanPID == SM_NULL_PID );
 
-    /* BUG-43463 Fullscan ë™ì‹œì„± ê°œì„ ,
-     * - svnnMoveNextNonBlock()ë“± ê³¼ì˜ ë™ì‹œì„± í–¥ìƒì„ ìœ„í•œ atomic ì„¸íŒ…
-     * - ëŒ€ìƒì€ modify_seq, nexp_pid, prev_pidì´ë‹¤.
-     * - modify_seqëŠ” link, unlinkì‹œì ì— ë³€ê²½ëœë‹¤.
-     * - link, unlink ì§„í–‰ ì¤‘ì—ëŠ” modify_seqê°€ í™€ìˆ˜ì´ë‹¤
-     * - ì²«ë²ˆì§¸ pageëŠ” lockì„ ì¡ê³  í™•ì¸í•˜ë¯€ë¡œ atomicìœ¼ë¡œ setí•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
+    /* BUG-43463 Fullscan µ¿½Ã¼º °³¼±,
+     * - svnnMoveNextNonBlock()µî °úÀÇ µ¿½Ã¼º Çâ»óÀ» À§ÇÑ atomic ¼¼ÆÃ
+     * - ´ë»óÀº modify_seq, nexp_pid, prev_pidÀÌ´Ù.
+     * - modify_seq´Â link, unlink½ÃÁ¡¿¡ º¯°æµÈ´Ù.
+     * - link, unlink ÁøÇà Áß¿¡´Â modify_seq°¡ È¦¼öÀÌ´Ù
+     * - Ã¹¹øÂ° page´Â lockÀ» Àâ°í È®ÀÎÇÏ¹Ç·Î atomicÀ¸·Î setÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
      * */
     SVM_PCH_SET_MODIFYING( sMyPCH );
 
@@ -377,7 +377,7 @@ IDE_RC svpFixedPageList::linkScanList( scSpaceID          aSpaceID,
     }
     else
     {
-        sTailPCH = (svmPCH*)(svmManager::getPCH( aSpaceID,
+        sTailPCH = (svmPCH*)(smmManager::getPCH( aSpaceID,
                                                  sScanPageList->mTailPageID ));
 
         idCore::acpAtomicSet32( &(sTailPCH->mNxtScanPID),
@@ -404,16 +404,16 @@ IDE_RC svpFixedPageList::linkScanList( scSpaceID          aSpaceID,
 }
 
 /***********************************************************************
- * Runtime Itemì„ NULLë¡œ ì„¤ì •í•œë‹¤.
- * DISCARD/OFFLINE Tablespaceì— ì†í•œ Tableë“¤ì— ëŒ€í•´ ìˆ˜í–‰ëœë‹¤.
+ * Runtime ItemÀ» NULL·Î ¼³Á¤ÇÑ´Ù.
+ * DISCARD/OFFLINE Tablespace¿¡ ¼ÓÇÑ Tableµé¿¡ ´ëÇØ ¼öÇàµÈ´Ù.
  *
- * aFixedEntry : ì´ˆê¸°í™”í•˜ë ¤ëŠ” PageListEntry
+ * aFixedEntry : ÃÊ±âÈ­ÇÏ·Á´Â PageListEntry
  ***********************************************************************/
 IDE_RC svpFixedPageList::setRuntimeNull( smpPageListEntry* aFixedEntry )
 {
     IDE_DASSERT( aFixedEntry != NULL );
 
-    // RuntimeEntry ì´ˆê¸°í™”
+    // RuntimeEntry ÃÊ±âÈ­
     IDE_TEST(svpFreePageList::setRuntimeNull( aFixedEntry )
              != IDE_SUCCESS);
 
@@ -425,10 +425,10 @@ IDE_RC svpFixedPageList::setRuntimeNull( smpPageListEntry* aFixedEntry )
 }
 
 /***********************************************************************
- * memory tableì˜  fixed page list entryê°€ í¬í•¨í•˜ëŠ” runtime ì •ë³´ ì´ˆê¸°í™”
+ * memory tableÀÇ  fixed page list entry°¡ Æ÷ÇÔÇÏ´Â runtime Á¤º¸ ÃÊ±âÈ­
  *
- * aTableOID   : PageListEntryê°€ ì†í•˜ëŠ” í…Œì´ë¸” OID
- * aFixedEntry : ì´ˆê¸°í™”í•˜ë ¤ëŠ” PageListEntry
+ * aTableOID   : PageListEntry°¡ ¼ÓÇÏ´Â Å×ÀÌºí OID
+ * aFixedEntry : ÃÊ±âÈ­ÇÏ·Á´Â PageListEntry
  ***********************************************************************/
 IDE_RC svpFixedPageList::initEntryAtRuntime(
     smOID                  aTableOID,
@@ -443,7 +443,7 @@ IDE_RC svpFixedPageList::initEntryAtRuntime(
     IDE_ASSERT( aTableOID == aFixedEntry->mTableOID);
     IDE_DASSERT( aAllocPageList != NULL );
 
-    // RuntimeEntry ì´ˆê¸°í™”
+    // RuntimeEntry ÃÊ±âÈ­
     IDE_TEST(svpFreePageList::initEntryAtRuntime( aFixedEntry )
              != IDE_SUCCESS);
 
@@ -489,9 +489,9 @@ IDE_RC svpFixedPageList::initEntryAtRuntime(
 }
 
 /***********************************************************************
- * memory tableì˜  fixed page list entryê°€ í¬í•¨í•˜ëŠ” runtime ì •ë³´ í•´ì œ
+ * memory tableÀÇ  fixed page list entry°¡ Æ÷ÇÔÇÏ´Â runtime Á¤º¸ ÇØÁ¦
  *
- * aFixedEntry : í•´ì œí•˜ë ¤ëŠ” PageListEntry
+ * aFixedEntry : ÇØÁ¦ÇÏ·Á´Â PageListEntry
  ***********************************************************************/
 IDE_RC svpFixedPageList::finEntryAtRuntime( smpPageListEntry* aFixedEntry )
 {
@@ -513,25 +513,25 @@ IDE_RC svpFixedPageList::finEntryAtRuntime( smpPageListEntry* aFixedEntry )
             sPageListID < SMP_PAGE_LIST_COUNT;
             sPageListID++)
         {
-            // AllocPageListì˜ Mutex í•´ì œ
+            // AllocPageListÀÇ Mutex ÇØÁ¦
             svpAllocPageList::finEntryAtRuntime(
                 &(aFixedEntry->mRuntimeEntry->mAllocPageList[sPageListID]) );
         }
 
-        // RuntimeEntry ì œê±°
+        // RuntimeEntry Á¦°Å
         IDE_TEST(svpFreePageList::finEntryAtRuntime(aFixedEntry)
                  != IDE_SUCCESS);
 
-        // svpFreePageList::finEntryAtRuntimeì—ì„œ RuntimeEntryë¥¼ NULLë¡œ ì„¸íŒ…
+        // svpFreePageList::finEntryAtRuntime¿¡¼­ RuntimeEntry¸¦ NULL·Î ¼¼ÆÃ
         IDE_ASSERT( aFixedEntry->mRuntimeEntry == NULL );
     }
     else
     {
-        /* Memory Tableì¸ ê²½ìš°ì—” aFixedEntry->mRuntimeEntryê°€ NULLì¸ ê²½ìš°
-           (OFFLINE/DISCARD)ê°€ ìˆì§€ë§Œ Volatile Tableì— ëŒ€í•´ì„œëŠ”
-           aFixedEntry->mRuntimeEntryê°€ ì´ë¯¸ NULLì¸ ê²½ìš°ëŠ” ì—†ë‹¤.
-           ë§Œì•½ aFixedEntry->mRuntimeEntryê°€ NULLì´ë¼ë©´
-           ì–´ë”˜ê°€ì— ë²„ê·¸ê°€ ìˆë‹¤ëŠ” ì˜ë¯¸ì´ë‹¤. */
+        /* Memory TableÀÎ °æ¿ì¿£ aFixedEntry->mRuntimeEntry°¡ NULLÀÎ °æ¿ì
+           (OFFLINE/DISCARD)°¡ ÀÖÁö¸¸ Volatile Table¿¡ ´ëÇØ¼­´Â
+           aFixedEntry->mRuntimeEntry°¡ ÀÌ¹Ì NULLÀÎ °æ¿ì´Â ¾ø´Ù.
+           ¸¸¾à aFixedEntry->mRuntimeEntry°¡ NULLÀÌ¶ó¸é
+           ¾îµò°¡¿¡ ¹ö±×°¡ ÀÖ´Ù´Â ÀÇ¹ÌÀÌ´Ù. */
 
         IDE_DASSERT(0);
     }
@@ -544,12 +544,12 @@ IDE_RC svpFixedPageList::finEntryAtRuntime( smpPageListEntry* aFixedEntry )
 }
 
 /***********************************************************************
- * PageListEntryë¥¼ ì™„ì „íˆ ì œê±°í•˜ê³  DBë¡œ ë°˜ë‚©í•œë‹¤.
+ * PageListEntry¸¦ ¿ÏÀüÈ÷ Á¦°ÅÇÏ°í DB·Î ¹İ³³ÇÑ´Ù.
  *
- * aTrans      : ì‘ì—…ì„ ìˆ˜í–‰í•˜ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
- * aTableOID   : ì œê±°í•  í…Œì´ë¸” OID
- * aFixedEntry : ì œê±°í•  PageListEntry
- * aDropFlag   : ì œê±°í•˜ê¸° ìœ„í•œ OP FLAG
+ * aTrans      : ÀÛ¾÷À» ¼öÇàÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
+ * aTableOID   : Á¦°ÅÇÒ Å×ÀÌºí OID
+ * aFixedEntry : Á¦°ÅÇÒ PageListEntry
+ * aDropFlag   : Á¦°ÅÇÏ±â À§ÇÑ OP FLAG
  ***********************************************************************/
 IDE_RC svpFixedPageList::freePageListToDB( void*             aTrans,
                                            scSpaceID         aSpaceID,
@@ -562,13 +562,13 @@ IDE_RC svpFixedPageList::freePageListToDB( void*             aTrans,
     IDE_DASSERT( aFixedEntry != NULL );
     IDE_ASSERT( aTableOID == aFixedEntry->mTableOID );
 
-    // [0] FreePageList ì œê±°
+    // [0] FreePageList Á¦°Å
 
     svpFreePageList::initializeFreePageListAndPool(aFixedEntry);
 
     /* ----------------------------
-     * [1] fixed page listë¥¼
-     *     svmManagerì— ë°˜í™˜í•œë‹¤.
+     * [1] fixed page list¸¦
+     *     svmManager¿¡ ¹İÈ¯ÇÑ´Ù.
      * ---------------------------*/
 
     for(sPageListID = 0;
@@ -584,7 +584,7 @@ IDE_RC svpFixedPageList::freePageListToDB( void*             aTrans,
     }
 
     //BUG-25505
-    //page list entryì˜ allocPageListê¹Œì§€ ëª¨ë‘ DBë¡œ ë°˜í™˜í–ˆìœ¼ë©´, ScanListë˜í•œ ì´ˆê¸°í™” ë˜ì–´ì•¼ í•œë‹¤.
+    //page list entryÀÇ allocPageList±îÁö ¸ğµÎ DB·Î ¹İÈ¯ÇßÀ¸¸é, ScanList¶ÇÇÑ ÃÊ±âÈ­ µÇ¾î¾ß ÇÑ´Ù.
     aFixedEntry->mRuntimeEntry->mScanPageList.mHeadPageID = SM_NULL_PID;
     aFixedEntry->mRuntimeEntry->mScanPageList.mTailPageID = SM_NULL_PID;
 
@@ -596,13 +596,13 @@ IDE_RC svpFixedPageList::freePageListToDB( void*             aTrans,
 }
 
 /***********************************************************************
- * Pageë¥¼ ì´ˆê¸°í™” í•œë‹¤.
- * Pageë‚´ì˜ ëª¨ë“  Slotë“¤ë„ ì´ˆê¸°í™”í•˜ë©° Next ë§í¬ë¥¼ êµ¬ì„±í•œë‹¤.
+ * Page¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+ * Page³»ÀÇ ¸ğµç Slotµéµµ ÃÊ±âÈ­ÇÏ¸ç Next ¸µÅ©¸¦ ±¸¼ºÇÑ´Ù.
  *
- * aSlotSize   : Pageì— ë“¤ì–´ê°€ëŠ” Slotì˜ í¬ê¸°
- * aSlotCount  : Pageë‚´ì˜ ëª¨ë“  Slot ê°¯ìˆ˜
- * aPageListID : Pageê°€ ì†í•  PageListID
- * aPage       : ì´ˆê¸°í™”í•  Page
+ * aSlotSize   : Page¿¡ µé¾î°¡´Â SlotÀÇ Å©±â
+ * aSlotCount  : Page³»ÀÇ ¸ğµç Slot °¹¼ö
+ * aPageListID : Page°¡ ¼ÓÇÒ PageListID
+ * aPage       : ÃÊ±âÈ­ÇÒ Page
  ***********************************************************************/
 void svpFixedPageList::initializePage( vULong       aSlotSize,
                                        vULong       aSlotCount,
@@ -627,7 +627,7 @@ void svpFixedPageList::initializePage( vULong       aSlotSize,
 
 
     sCurOffset = (UShort)SMP_PERS_PAGE_BODY_OFFSET;
-    // BUG-32091 MemPage BodyëŠ” í•­ìƒ 8Byte align ëœ ìƒíƒœì—¬ì•¼ í•œë‹¤.
+    // BUG-32091 MemPage Body´Â Ç×»ó 8Byte align µÈ »óÅÂ¿©¾ß ÇÑ´Ù.
     IDE_DASSERT( idlOS::align8( sCurOffset ) == sCurOffset );
     sNextFreeSlotHeader = (smpFreeSlotHeader*)((SChar*)aPage + sCurOffset);
 
@@ -653,9 +653,9 @@ void svpFixedPageList::initializePage( vULong       aSlotSize,
 }
 
 /**********************************************************************
- *  Slot Headerë¥¼ altibase_sm.logì— ë¤í”„í•œë‹¤
+ *  Slot Header¸¦ altibase_sm.log¿¡ ´ıÇÁÇÑ´Ù
  *
- *  aSlotHeader : dumpí•  slot í—¤ë”
+ *  aSlotHeader : dumpÇÒ slot Çì´õ
  **********************************************************************/
 IDE_RC svpFixedPageList::dumpSlotHeader( smpSlotHeader     * aSlotHeader )
 {
@@ -700,12 +700,12 @@ IDE_RC svpFixedPageList::dumpSlotHeader( smpSlotHeader     * aSlotHeader )
 }
 
 /***********************************************************************
- * DBì—ì„œ Pageë“¤ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
+ * DB¿¡¼­ PageµéÀ» ÇÒ´ç¹Ş´Â´Ù.
  *
- * fixed slotì„ ìœ„í•œ persistent pageë¥¼ systemìœ¼ë¡œë¶€í„° í• ë‹¹ë°›ëŠ”ë‹¤.
+ * fixed slotÀ» À§ÇÑ persistent page¸¦ systemÀ¸·ÎºÎÅÍ ÇÒ´ç¹Ş´Â´Ù.
  *
- * aTrans      : ì‘ì—…í•˜ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
- * aFixedEntry : í• ë‹¹ë°›ì„ PageListEntry
+ * aTrans      : ÀÛ¾÷ÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
+ * aFixedEntry : ÇÒ´ç¹ŞÀ» PageListEntry
  ***********************************************************************/
 IDE_RC svpFixedPageList::allocPersPages( void*             aTrans,
                                          scSpaceID         aSpaceID,
@@ -725,6 +725,7 @@ IDE_RC svpFixedPageList::allocPersPages( void*             aTrans,
     smpAllocPageListEntry*   sAllocPageList;
     smpPrivatePageListEntry* sPrivatePageList = NULL;
     svmPCH                 * sPCH;
+    UInt                     sAllocPageCnt = 0;
 
     IDE_DASSERT( aTrans != NULL );
     IDE_DASSERT( aFixedEntry != NULL );
@@ -740,9 +741,9 @@ IDE_RC svpFixedPageList::allocPersPages( void*             aTrans,
     IDE_DASSERT( sFreePagePool != NULL );
     IDE_DASSERT( sFreePageList != NULL );
 
-    // DBì—ì„œ Pageë“¤ì„ í• ë‹¹ë°›ìœ¼ë©´ FreePageListë¥¼
-    // Tx's Private Page Listì— ë¨¼ì € ë“±ë¡í•œ í›„
-    // íŠ¸ëœì­ì…˜ì´ ì¢…ë£Œë  ë•Œ í•´ë‹¹ í…Œì´ë¸”ì˜ PageListEntryì— ë“±ë¡í•˜ê²Œ ëœë‹¤.
+    // DB¿¡¼­ PageµéÀ» ÇÒ´ç¹ŞÀ¸¸é FreePageList¸¦
+    // Tx's Private Page List¿¡ ¸ÕÀú µî·ÏÇÑ ÈÄ
+    // Æ®·£Àè¼ÇÀÌ Á¾·áµÉ ¶§ ÇØ´ç Å×ÀÌºíÀÇ PageListEntry¿¡ µî·ÏÇÏ°Ô µÈ´Ù.
 
     IDE_TEST( smLayerCallback::findVolPrivatePageList( aTrans,
                                                        aFixedEntry->mTableOID,
@@ -751,30 +752,31 @@ IDE_RC svpFixedPageList::allocPersPages( void*             aTrans,
 
     if(sPrivatePageList == NULL)
     {
-        // ê¸°ì¡´ì— PrivatePageListê°€ ì—†ì—ˆë‹¤ë©´ ìƒˆë¡œ ìƒì„±í•œë‹¤.
+        // ±âÁ¸¿¡ PrivatePageList°¡ ¾ø¾ú´Ù¸é »õ·Î »ı¼ºÇÑ´Ù.
         IDE_TEST( smLayerCallback::createVolPrivatePageList( aTrans,
                                                              aFixedEntry->mTableOID,
                                                              &sPrivatePageList )
                   != IDE_SUCCESS );
     }
 
-    // DBì—ì„œ ë°›ì•„ì˜¤ê³ 
+    // DB¿¡¼­ ¹Ş¾Æ¿À°í
     IDE_TEST( svmManager::allocatePersPageList( aTrans,
                                                 aSpaceID,
                                                 SMP_ALLOCPAGECOUNT_FROMDB,
                                                 (void **)&sAllocPageHead,
-                                                (void **)&sAllocPageTail )
+                                                (void **)&sAllocPageTail,
+                                                &sAllocPageCnt )
               != IDE_SUCCESS);
 
     IDE_DASSERT( svpAllocPageList::isValidPageList(
                      aSpaceID,
                      sAllocPageHead->mHeader.mSelfPageID,
                      sAllocPageTail->mHeader.mSelfPageID,
-                     SMP_ALLOCPAGECOUNT_FROMDB )
+                     sAllocPageCnt )
                  == ID_TRUE );
     sState = 1;
 
-    // í• ë‹¹ë°›ì€ HeadPageë¥¼ PrivatePageListì— ë“±ë¡í•œë‹¤.
+    // ÇÒ´ç¹ŞÀº HeadPage¸¦ PrivatePageList¿¡ µî·ÏÇÑ´Ù.
     if( sPrivatePageList->mFixedFreePageTail == NULL )
     {
         IDE_DASSERT( sPrivatePageList->mFixedFreePageHead == NULL );
@@ -796,41 +798,41 @@ IDE_RC svpFixedPageList::allocPersPages( void*             aTrans,
         sPrevPageID = sPrivatePageList->mFixedFreePageTail->mSelfPageID;
     }
 
-    // í• ë‹¹ë°›ì€ í˜ì´ì§€ë“¤ì„ ì´ˆê¸°í™” í•œë‹¤.
+    // ÇÒ´ç¹ŞÀº ÆäÀÌÁöµéÀ» ÃÊ±âÈ­ ÇÑ´Ù.
     sNextPageID = sAllocPageHead->mHeader.mSelfPageID;
 
     while(sNextPageID != SM_NULL_PID)
     {
-        IDE_ASSERT( svmManager::getPersPagePtr( aSpaceID, 
+        IDE_ASSERT( smmManager::getPersPagePtr( aSpaceID, 
                                                 sNextPageID,
                                                 (void**)&sPagePtr )
                     == IDE_SUCCESS );
 
-        // PersPageHeader ì´ˆê¸°í™”í•˜ê³  (FreeSlotë“¤ì„ ì—°ê²°í•œë‹¤.)
+        // PersPageHeader ÃÊ±âÈ­ÇÏ°í (FreeSlotµéÀ» ¿¬°áÇÑ´Ù.)
         initializePage( aFixedEntry->mSlotSize,
                         aFixedEntry->mSlotCount,
                         sPageListID,
                         aFixedEntry->mTableOID,
                         sPagePtr );
 
-        sPCH = (svmPCH*)(svmManager::getPCH( aSpaceID,
+        sPCH = (svmPCH*)(smmManager::getPCH( aSpaceID,
                                              sPagePtr->mHeader.mSelfPageID ));
         sPCH->mNxtScanPID       = SM_NULL_PID;
         sPCH->mPrvScanPID       = SM_NULL_PID;
         sPCH->mModifySeqForScan = 0;
 
-        // FreePageHeader ì´ˆê¸°í™”í•˜ê³ 
+        // FreePageHeader ÃÊ±âÈ­ÇÏ°í
         svpFreePageList::initializeFreePageHeader(
             svpFreePageList::getFreePageHeader(aSpaceID, sPagePtr) );
 
-        // FreeSlotListë¥¼ Pageì— ë“±ë¡í•œë‹¤.
+        // FreeSlotList¸¦ Page¿¡ µî·ÏÇÑ´Ù.
         svpFreePageList::initializeFreeSlotListAtPage( aSpaceID,
                                                        aFixedEntry,
                                                        sPagePtr );
 
         sNextPageID = sPagePtr->mHeader.mNextPageID;
 
-        // FreePageHeaderë¥¼ PrivatePageList ë§í¬ë¥¼ êµ¬ì„±í•œë‹¤.
+        // FreePageHeader¸¦ PrivatePageList ¸µÅ©¸¦ ±¸¼ºÇÑ´Ù.
         svpFreePageList::addFreePageToPrivatePageList( aSpaceID,
                                                        sPagePtr->mHeader.mSelfPageID,
                                                        sPrevPageID,
@@ -841,18 +843,19 @@ IDE_RC svpFixedPageList::allocPersPages( void*             aTrans,
 
     IDE_DASSERT( sPagePtr == sAllocPageTail );
 
-    // TailPageë¥¼ PrivatePageListì— ë“±ë¡í•œë‹¤.
+    // TailPage¸¦ PrivatePageList¿¡ µî·ÏÇÑ´Ù.
     sPrivatePageList->mFixedFreePageTail =
         svpFreePageList::getFreePageHeader(aSpaceID,
                                            sAllocPageTail->mHeader.mSelfPageID);
 
-    // ì „ì²´ë¥¼ AllocPageList ë“±ë¡
+    // ÀüÃ¼¸¦ AllocPageList µî·Ï
     IDE_TEST(sAllocPageList->mMutex->lock(NULL) != IDE_SUCCESS);
 
     IDE_TEST( svpAllocPageList::addPageList( aSpaceID,
                                              sAllocPageList,
                                              sAllocPageHead,
-                                             sAllocPageTail )
+                                             sAllocPageTail,
+                                             sAllocPageCnt )
               != IDE_SUCCESS );
 
     IDE_TEST(sAllocPageList->mMutex->unlock() != IDE_SUCCESS);
@@ -866,8 +869,8 @@ IDE_RC svpFixedPageList::allocPersPages( void*             aTrans,
     switch(sState)
     {
         case 1:
-            /* rollbackì´ ì¼ì–´ë‚˜ë©´ ì•ˆëœë‹¤. ë¬´ì¡°ê±´ ì„±ê³µí•´ì•¼ í•œë‹¤. */
-            /* BUGBUG assert ë§ê³  ë‹¤ë¥¸ ì²˜ë¦¬ ë°©ì•ˆ ê³ ë ¤í•´ë³¼ ê²ƒ */
+            /* rollbackÀÌ ÀÏ¾î³ª¸é ¾ÈµÈ´Ù. ¹«Á¶°Ç ¼º°øÇØ¾ß ÇÑ´Ù. */
+            /* BUGBUG assert ¸»°í ´Ù¸¥ Ã³¸® ¹æ¾È °í·ÁÇØº¼ °Í */
             IDE_ASSERT(0);
             break;
         default:
@@ -880,197 +883,21 @@ IDE_RC svpFixedPageList::allocPersPages( void*             aTrans,
 }
 
 /***********************************************************************
- * temporary table headerë¥¼ ìœ„í•œ fixed slot í• ë‹¹
+ * fixed slotÀ» ÇÒ´çÇÑ´Ù.
  *
- * temporary table headerë¥¼ ì €ì¥í• ê²½ìš°, slot í• ë‹¹ì— ëŒ€í•œ ë¡œê¹…ì€ í•˜ì§€ ì•Šë„ë¡
- * ì²˜ë¦¬í•˜ê³ , ë‹¨, systemìœ¼ë¡œë¶€í„° persistent pageë¥¼ í• ë‹¹í•˜ëŠ” ì—°ì‚°ì— ëŒ€í•´ì„œëŠ”
- * ë¡œê¹…ì„ í•˜ë„ë¡ í•œë‹¤.
- *
- * aTableOID   : í• ë‹¹í•˜ë ¤ëŠ” í…Œì´ë¸”ì˜ OID
- * aFixedEntry : í• ë‹¹í•˜ë ¤ëŠ” PageListEntry
- * aRow        : í• ë‹¹í•´ì„œ ë°˜í™˜í•˜ë ¤ëŠ” Row í¬ì¸í„°
- * aInfinite   : SCN Infinite ê°’
- ***********************************************************************/
-IDE_RC svpFixedPageList::allocSlotForTempTableHdr( scSpaceID         aSpaceID,
-                                                   smOID             aTableOID,
-                                                   smpPageListEntry* aFixedEntry,
-                                                   SChar**           aRow,
-                                                   smSCN             aInfinite )
-{
-    SInt                sState = 0;
-    UInt                sPageListID;
-    smSCN               sInfiniteSCN;
-    smOID               sRecOID;
-    scPageID            sPageID;
-    smpFreeSlotHeader * sCurFreeSlotHeader;
-    smpSlotHeader     * sCurSlotHeader;
-    void*               sDummyTx;
-
-    IDE_DASSERT(aFixedEntry != NULL);
-
-    sPageID  = SM_NULL_PID;
-
-    IDE_ASSERT(aRow != NULL);
-    IDE_ASSERT(aTableOID == aFixedEntry->mTableOID);
-
-    // BUG-8083
-    // temp table ê´€ë ¨ statementëŠ” untouchable ì†ì„±ì´ë¯€ë¡œ
-    // ë¡œê¹…ì„ í•˜ì§€ ëª»í•œë‹¤. ê·¸ëŸ¬ë¯€ë¡œ ìƒˆë¡œìš´ txë¥¼ í• ë‹¹í•˜ì—¬
-    // RSGroupIDë¥¼ ì–»ì–´ PageListIDë¥¼ ì„ íƒí•˜ê³ ,
-    // systemìœ¼ë¡œë¶€í„° pageë¥¼ í• ë‹¹ë°›ì„ë•Œ ë¡œê¹…ì„ ì²˜ë¦¬í•˜ë„ë¡ í•œë‹¤.
-    IDE_TEST( smLayerCallback::allocTx( &sDummyTx ) != IDE_SUCCESS );
-    sState = 1;
-
-    IDE_TEST( smLayerCallback::beginTx( sDummyTx,
-                                        SMI_TRANSACTION_REPL_DEFAULT, // Replicate
-                                        NULL )     // SessionFlagPtr
-              != IDE_SUCCESS );
-    sState = 2;
-
-    smLayerCallback::allocRSGroupID( sDummyTx, &sPageListID );
-
-    while(1)
-    {
-        // 1) Tx's PrivatePageListì—ì„œ ì°¾ê¸°
-        IDE_TEST( tryForAllocSlotFromPrivatePageList( sDummyTx,
-                                                      aSpaceID,
-                                                      aTableOID,
-                                                      aFixedEntry,
-                                                      aRow )
-                  != IDE_SUCCESS );
-
-        if(*aRow != NULL)
-        {
-            break;
-        }
-
-        // 2) FreePageListì—ì„œ ì°¾ê¸°
-        IDE_TEST( tryForAllocSlotFromFreePageList( sDummyTx,
-                                                   aSpaceID,
-                                                   aFixedEntry,
-                                                   sPageListID,
-                                                   aRow )
-                  != IDE_SUCCESS );
-
-        if( *aRow != NULL)
-        {
-            break;
-        }
-
-        // 3) systemìœ¼ë¡œë¶€í„° pageë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.
-        IDE_TEST( allocPersPages( sDummyTx,
-                                  aSpaceID,
-                                  aFixedEntry )
-                  != IDE_SUCCESS );
-    }
-
-    sState = 1;
-    IDE_TEST( smLayerCallback::commitTx( sDummyTx ) != IDE_SUCCESS );
-
-    sState = 0;
-    IDE_TEST( smLayerCallback::freeTx( sDummyTx ) != IDE_SUCCESS );
-
-    IDE_ASSERT( *aRow != NULL );
-
-    /* ------------------------------------------------
-     * í• ë‹¹ëœ slot headerë¥¼ ì´ˆê¸°í™”í•œë‹¤. temporary table
-     * headerë¥¼ ì €ì¥í•˜ê¸° ìœ„í•œ slot í• ë‹¹ì‹œì—ëŠ”
-     * ë¡œê¹…ì„ í•˜ì§€ ì•Šë„ë¡ ì²˜ë¦¬í•œë‹¤. initFixedRowì™€
-     * NTAì— ëŒ€í•˜ì—¬ ë¡œê¹…í•˜ì§€ ì•ŠìŒ
-     * ----------------------------------------------*/
-    sCurFreeSlotHeader = (smpFreeSlotHeader*)(*aRow);
-    sPageID = SMP_SLOT_GET_PID((SChar *)sCurFreeSlotHeader);
-    sRecOID = SM_MAKE_OID( sPageID,
-                           SMP_SLOT_GET_OFFSET( sCurFreeSlotHeader ) );
-
-    if( SMP_SLOT_IS_USED( sCurFreeSlotHeader ) )
-    {
-        sCurSlotHeader = (smpSlotHeader*)sCurFreeSlotHeader;
-
-        ideLog::log(SM_TRC_LOG_LEVEL_MPAGE, SM_TRC_MPAGE_ALLOC_SLOT_FATAL1);
-        ideLog::log(SM_TRC_LOG_LEVEL_MPAGE, SM_TRC_MPAGE_ALLOC_SLOT_FATAL2);
-        ideLog::log(SM_TRC_LOG_LEVEL_MPAGE, SM_TRC_MPAGE_ALLOC_SLOT_FATAL3, (ULong)sPageID, (ULong)sRecOID);
-
-        dumpSlotHeader( sCurSlotHeader );
-
-        IDE_ASSERT(0);
-    }
-
-    sState = 3;
-
-    // Init header of fixed row
-    sInfiniteSCN = aInfinite;
-    SM_SET_SCN_DELETE_BIT( &sInfiniteSCN );
-
-    SM_SET_SCN( &(sCurFreeSlotHeader->mCreateSCN) , &sInfiniteSCN );
-
-    SM_SET_SCN_FREE_ROW( &(sCurFreeSlotHeader->mLimitSCN) );
-
-    SMP_SLOT_INIT_POSITION( sCurFreeSlotHeader );
-    SMP_SLOT_SET_USED( sCurFreeSlotHeader );
-
-    sState = 0;
-
-    /* insert ì—°ì‚°ì— ëŒ€í•˜ì—¬ insert count ì¦ê°€ */
-    IDE_TEST(aFixedEntry->mRuntimeEntry->mMutex.lock(NULL) != IDE_SUCCESS);
-    sState = 4;
-
-    (aFixedEntry->mRuntimeEntry->mInsRecCnt)++;
-
-    sState = 0;
-    IDE_TEST(aFixedEntry->mRuntimeEntry->mMutex.unlock() != IDE_SUCCESS);
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    IDE_PUSH();
-
-    switch (sState)
-    {
-        case 4:
-            IDE_ASSERT( aFixedEntry->mRuntimeEntry->mMutex.unlock()
-                        == IDE_SUCCESS );
-            break;
-
-        case 3:
-            break;
-
-        case 2:
-            IDE_ASSERT( smLayerCallback::abortTx(sDummyTx)
-                        == IDE_SUCCESS );
-
-        case 1:
-            IDE_ASSERT( smLayerCallback::freeTx(sDummyTx)
-                        == IDE_SUCCESS );
-            break;
-
-        default:
-            break;
-    }
-
-    IDE_POP();
-
-    return IDE_FAILURE;
-
-}
-
-/***********************************************************************
- * fixed slotì„ í• ë‹¹í•œë‹¤.
- *
- * aTrans          : ì‘ì—…í•˜ë ¤ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
- * aTableOID       : í• ë‹¹í•˜ë ¤ëŠ” í…Œì´ë¸”ì˜ OID
- * aFixedEntry     : í• ë‹¹í•˜ë ¤ëŠ” PageListEntry
- * aRow            : í• ë‹¹í•´ì„œ ë°˜í™˜í•˜ë ¤ëŠ” Row í¬ì¸í„°
+ * aTrans          : ÀÛ¾÷ÇÏ·Á´Â Æ®·£Àè¼Ç °´Ã¼
+ * aTableOID       : ÇÒ´çÇÏ·Á´Â Å×ÀÌºíÀÇ OID
+ * aFixedEntry     : ÇÒ´çÇÏ·Á´Â PageListEntry
+ * aRow            : ÇÒ´çÇØ¼­ ¹İÈ¯ÇÏ·Á´Â Row Æ÷ÀÎÅÍ
  * aInfinite       : SCN Infinite
- * aMaxRow         : ìµœëŒ€ Row ê°¯ìˆ˜
+ * aMaxRow         : ÃÖ´ë Row °¹¼ö
  * aOptFlag        :
  *           1. SMP_ALLOC_FIXEDSLOT_NONE
- *              ì–´ë–¤ì‘ì—…ë„ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *              ¾î¶²ÀÛ¾÷µµ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
  *           2. SMP_ALLOC_FIXEDSLOT_ADD_INSERTCNT
- *              Allocateë¥¼ ìš”ì²­í•˜ëŠ” Table ì˜ Record Countë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
+ *              Allocate¸¦ ¿äÃ»ÇÏ´Â Table ÀÇ Record Count¸¦ Áõ°¡½ÃÅ²´Ù.
  *           3. SMP_ALLOC_FIXEDSLOT_SET_SLOTHEADER
- *              í• ë‹¹ë°›ì€ Slotì˜ Headerë¥¼ Updateí•˜ê³  Loggingí•˜ë¼.
+ *              ÇÒ´ç¹ŞÀº SlotÀÇ Header¸¦ UpdateÇÏ°í LoggingÇÏ¶ó.
  *
  ***********************************************************************/
 IDE_RC svpFixedPageList::allocSlot( void*             aTrans,
@@ -1083,7 +910,6 @@ IDE_RC svpFixedPageList::allocSlot( void*             aTrans,
                                     ULong             aMaxRow,
                                     SInt              aOptFlag)
 {
-    SInt                sState = 0;
     UInt                sPageListID;
     smOID               sRecOID;
     ULong               sRecordCnt;
@@ -1100,18 +926,13 @@ IDE_RC svpFixedPageList::allocSlot( void*             aTrans,
     sPageID     = SM_NULL_PID;
     smLayerCallback::allocRSGroupID( aTrans, &sPageListID );
 
-    /* BUG-19573 Tableì˜ Max Rowê°€ Disableë˜ì–´ìˆìœ¼ë©´ ì´ ê°’ì„ insertì‹œì—
-     *           Checkí•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤. */
+    /* BUG-19573 TableÀÇ Max Row°¡ DisableµÇ¾îÀÖÀ¸¸é ÀÌ °ªÀ» insert½Ã¿¡
+     *           CheckÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù. */
     if( (aTableInfoPtr != NULL) && (aMaxRow != ID_ULONG_MAX) )
     {
-        IDE_TEST(aFixedEntry->mRuntimeEntry->mMutex.lock(NULL) != IDE_SUCCESS);
-        sState = 1;
-
-        sRecordCnt = aFixedEntry->mRuntimeEntry->mInsRecCnt
-            + smLayerCallback::getRecCntOfTableInfo( aTableInfoPtr );
-
-        sState = 0;
-        IDE_TEST(aFixedEntry->mRuntimeEntry->mMutex.unlock() != IDE_SUCCESS);
+        // BUG-47368: allocSlot, mutex Á¦°Å, atomic ¿¬»êÀ¸·Î º¯°æ
+        sRecordCnt = idCore::acpAtomicGet64( &(aFixedEntry->mRuntimeEntry->mInsRecCnt) );
+        sRecordCnt += smLayerCallback::getRecCntOfTableInfo( aTableInfoPtr );   
 
         IDE_TEST_RAISE((aMaxRow <= sRecordCnt) &&
                        ((aOptFlag & SMP_ALLOC_FIXEDSLOT_ADD_INSERTCNT)
@@ -1122,7 +943,7 @@ IDE_RC svpFixedPageList::allocSlot( void*             aTrans,
     /* need to alloc page from svmManager */
     while(1)
     {
-        // 1) Tx's PrivatePageListì—ì„œ ì°¾ê¸°
+        // 1) Tx's PrivatePageList¿¡¼­ Ã£±â
         IDE_TEST( tryForAllocSlotFromPrivatePageList( aTrans,
                                                       aSpaceID,
                                                       aTableOID,
@@ -1135,7 +956,7 @@ IDE_RC svpFixedPageList::allocSlot( void*             aTrans,
             break;
         }
 
-        // 2) FreePageListì—ì„œ ì°¾ê¸°
+        // 2) FreePageList¿¡¼­ Ã£±â
         IDE_TEST( tryForAllocSlotFromFreePageList( aTrans,
                                                    aSpaceID,
                                                    aFixedEntry,
@@ -1148,7 +969,7 @@ IDE_RC svpFixedPageList::allocSlot( void*             aTrans,
             break;
         }
 
-        // 3) systemìœ¼ë¡œë¶€í„° pageë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.
+        // 3) systemÀ¸·ÎºÎÅÍ page¸¦ ÇÒ´ç¹Ş´Â´Ù.
         IDE_TEST( allocPersPages( aTrans,
                                   aSpaceID,
                                   aFixedEntry )
@@ -1166,7 +987,6 @@ IDE_RC svpFixedPageList::allocSlot( void*             aTrans,
         sRecOID = SM_MAKE_OID( sPageID,
                                SMP_SLOT_GET_OFFSET( sCurFreeSlotHeader ) );
 
-        sState = 2;
         if( SMP_SLOT_IS_USED( sCurFreeSlotHeader ) )
         {
             sCurSlotHeader = (smpSlotHeader*)sCurFreeSlotHeader;
@@ -1181,33 +1001,31 @@ IDE_RC svpFixedPageList::allocSlot( void*             aTrans,
         }
 
         setAllocatedSlot( aInfinite, *aRow );
-
-        sState = 0;
     }
     else
     {
         /* BUG-14513:
-           DML(insert, update, delete)ì‹œ Alloc Slotí• ë•Œ ì—¬ê¸°ì„œ headerë¥¼ updateí•˜ì§€
-           ì•Šê³  insert, update, delete logë¥¼ ê¸°ë¡í›„ì— header updateë¥¼ ìˆ˜í–‰í•œë‹¤.
-           ê·¸ëŸ°ë° ì—¬ê¸°ì„œ slot headerì˜ tidë¥¼ settingí•˜ëŠ” ì´ìœ ëŠ” Update, Deleteì‹œ
-           ë‹¤ë¥¸ Transactionì´ ì´ë¯¸ updateë¥¼ ìˆ˜í–‰í•œ transactionì„ ê¸°ë‹¤ë¦´ë•Œ next version
-           ì˜ tidë¡œ ê¸°ë‹¤ë¦´ transactionì„ ê²°ì •í•˜ê¸° ë•Œë¬¸ì— tidë¥¼ settingí•´ì•¼í•œë‹¤.
-           ê·¸ë¦¬ê³  tidì— ëŒ€í•œ loggingì„ í•˜ì§€ ì•ŠëŠ” ì´ìœ ëŠ” free slotì˜ tidê°€ ì–´ë–¤ê°’ì´ ë˜ë”ë¼ë„
-           ë¬¸ì œê°€ ì•ˆë˜ê¸° ë•Œë¬¸ì´ë‹¤.
+           DML(insert, update, delete)½Ã Alloc SlotÇÒ¶§ ¿©±â¼­ header¸¦ updateÇÏÁö
+           ¾Ê°í insert, update, delete log¸¦ ±â·ÏÈÄ¿¡ header update¸¦ ¼öÇàÇÑ´Ù.
+           ±×·±µ¥ ¿©±â¼­ slot headerÀÇ tid¸¦ settingÇÏ´Â ÀÌÀ¯´Â Update, Delete½Ã
+           ´Ù¸¥ TransactionÀÌ ÀÌ¹Ì update¸¦ ¼öÇàÇÑ transactionÀ» ±â´Ù¸±¶§ next version
+           ÀÇ tid·Î ±â´Ù¸± transactionÀ» °áÁ¤ÇÏ±â ¶§¹®¿¡ tid¸¦ settingÇØ¾ßÇÑ´Ù.
+           ±×¸®°í tid¿¡ ´ëÇÑ loggingÀ» ÇÏÁö ¾Ê´Â ÀÌÀ¯´Â free slotÀÇ tid°¡ ¾î¶²°ªÀÌ µÇ´õ¶óµµ
+           ¹®Á¦°¡ ¾ÈµÇ±â ¶§¹®ÀÌ´Ù.
 
            BUG-14953 :
-           1. SCNì— infiniteê°’ì„ ì„¸íŒ…í•˜ì—¬ ë‹¤ë¥¸ txê°€ ê¸°ë‹¤ë¦¬ë„ë¡ í•œë‹¤.
-           2. allocë§Œ í•˜ê³  DML ë¡œê·¸ë¥¼ ì“°ê¸° ì „ì— ì£½ì€ ê²½ìš°ì— restartì‹œ
-              refineì´ ë˜ê²Œ í•˜ê¸° ìœ„í•´ SCN Delete bitë¥¼ ì„¸íŒ…í•œë‹¤.
-              DMLë¡œê¹…ì‹œì— ë‹¤ì‹œ delete bitê°€ clearëœë‹¤.
+           1. SCN¿¡ infinite°ªÀ» ¼¼ÆÃÇÏ¿© ´Ù¸¥ tx°¡ ±â´Ù¸®µµ·Ï ÇÑ´Ù.
+           2. alloc¸¸ ÇÏ°í DML ·Î±×¸¦ ¾²±â Àü¿¡ Á×Àº °æ¿ì¿¡ restart½Ã
+              refineÀÌ µÇ°Ô ÇÏ±â À§ÇØ SCN Delete bit¸¦ ¼¼ÆÃÇÑ´Ù.
+              DML·Î±ë½Ã¿¡ ´Ù½Ã delete bit°¡ clearµÈ´Ù.
 
         */
         sCurSlotHeader = (smpSlotHeader*)*aRow;
 
         SM_SET_SCN( &(sCurSlotHeader->mCreateSCN), &aInfinite );
 
-        /* svpFixedPageList::setFreeSlotì—ì„œ SCNì´ Delete Bitê°€
-           Settingë˜ì–´ ìˆëŠ”ì§€ Checkí•¨.*/
+        /* svpFixedPageList::setFreeSlot¿¡¼­ SCNÀÌ Delete Bit°¡
+           SettingµÇ¾î ÀÖ´ÂÁö CheckÇÔ.*/
         SM_SET_SCN_DELETE_BIT( &(sCurSlotHeader->mCreateSCN) );
         sCurSlotHeader->mVarOID = SM_NULL_OID;
     }
@@ -1221,44 +1039,27 @@ IDE_RC svpFixedPageList::allocSlot( void*             aTrans,
 
     IDE_EXCEPTION_END;
 
-    IDE_PUSH();
-
-    switch(sState)
-    {
-        case 1:
-            IDE_ASSERT(aFixedEntry->mRuntimeEntry->mMutex.unlock()
-                       == IDE_SUCCESS);
-            break;
-
-        case 2:
-            break;
-
-        default:
-            break;
-    }
-
-    IDE_POP();
-
     return IDE_FAILURE;
 }
 
 /***********************************************************************
- * slotì„ free í•œë‹¤.
+ * slotÀ» free ÇÑ´Ù.
  *
- * BUG-14093 Ager Txê°€ freeSlotí•œ ê²ƒì„ commitë˜ì§€ ì•Šì€ ìƒí™©ì—ì„œ
- *           ë‹¤ë¥¸ Txê°€ í• ë‹¹ë°›ì•„ ì‚¬ìš©í–ˆì„ë•Œ ì„œë²„ ì‚¬ë§ì‹œ ë¬¸ì œë°œìƒ
- *           ë”°ë¼ì„œ Ager Txê°€ Commitì´í›„ì— FreeSlotì„ FreeSlotListì— ë§¤ë‹¨ë‹¤.
+ * BUG-14093 Ager Tx°¡ freeSlotÇÑ °ÍÀ» commitµÇÁö ¾ÊÀº »óÈ²¿¡¼­
+ *           ´Ù¸¥ Tx°¡ ÇÒ´ç¹Ş¾Æ »ç¿ëÇßÀ»¶§ ¼­¹ö »ç¸Á½Ã ¹®Á¦¹ß»ı
+ *           µû¶ó¼­ Ager Tx°¡ CommitÀÌÈÄ¿¡ FreeSlotÀ» FreeSlotList¿¡ ¸Å´Ü´Ù.
  *
- * aTrans      : ì‘ì—…ì„ ìˆ˜í–‰í•˜ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
- * aFixedEntry : aRowê°€ ì†í•œ PageListEntry
- * aRow        : freeí•˜ë ¤ëŠ” slot
- * aTableType  : Temp Tableì˜ slotì¸ì§€ì— ëŒ€í•œ ì—¬ë¶€
+ * aTrans      : ÀÛ¾÷À» ¼öÇàÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
+ * aFixedEntry : aRow°¡ ¼ÓÇÑ PageListEntry
+ * aRow        : freeÇÏ·Á´Â slot
+ * aTableType  : Temp TableÀÇ slotÀÎÁö¿¡ ´ëÇÑ ¿©ºÎ
  ***********************************************************************/
 IDE_RC svpFixedPageList::freeSlot( void*             aTrans,
                                    scSpaceID         aSpaceID,
                                    smpPageListEntry* aFixedEntry,
                                    SChar*            aRow,
-                                   smpTableType      aTableType )
+                                   smpTableType      aTableType,
+                                   smSCN             aSCN )
 {
     scPageID sPageID;
     smOID    sRowOID;
@@ -1271,8 +1072,8 @@ IDE_RC svpFixedPageList::freeSlot( void*             aTrans,
 
     /* ----------------------------
      * BUG-14093
-     * freeSlotì—ì„œëŠ” slotì— ëŒ€í•œ Freeì‘ì—…ë§Œ ìˆ˜í–‰í•˜ê³ 
-     * ager Txê°€ commití•œ ì´í›„ì— addFreeSlotPendingì„ ìˆ˜í–‰í•œë‹¤.
+     * freeSlot¿¡¼­´Â slot¿¡ ´ëÇÑ FreeÀÛ¾÷¸¸ ¼öÇàÇÏ°í
+     * ager Tx°¡ commitÇÑ ÀÌÈÄ¿¡ addFreeSlotPendingÀ» ¼öÇàÇÑ´Ù.
      * ---------------------------*/
 
     (aFixedEntry->mRuntimeEntry->mDelRecCnt)++;
@@ -1291,19 +1092,20 @@ IDE_RC svpFixedPageList::freeSlot( void*             aTrans,
         sRowOID = SM_MAKE_OID( sPageID,
                                SMP_SLOT_GET_OFFSET( (smpSlotHeader*)aRow ) );
 
-        // BUG-14093 freeSlotí•˜ëŠ” agerê°€ commití•˜ê¸° ì „ì—ëŠ”
-        //           freeSlotListì— ë§¤ë‹¬ì§€ ì•Šê³  ager TXê°€
-        //           commit ì´í›„ì— ë§¤ë‹¬ë„ë¡ OIDListì— ì¶”ê°€í•œë‹¤.
+        // BUG-14093 freeSlotÇÏ´Â ager°¡ commitÇÏ±â Àü¿¡´Â
+        //           freeSlotList¿¡ ¸Å´ŞÁö ¾Ê°í ager TX°¡
+        //           commit ÀÌÈÄ¿¡ ¸Å´Şµµ·Ï OIDList¿¡ Ãß°¡ÇÑ´Ù.
         IDE_TEST( smLayerCallback::addOID( aTrans,
                                            aFixedEntry->mTableOID,
                                            sRowOID,
                                            aSpaceID,
-                                           SM_OID_TYPE_FREE_FIXED_SLOT )
+                                           SM_OID_TYPE_FREE_FIXED_SLOT,
+                                           aSCN )
                   != IDE_SUCCESS );
     }
     else
     {
-        // TEMP Tableì€ ë°”ë¡œ FreeSlotListì— ì¶”ê°€í•œë‹¤.
+        // TEMP TableÀº ¹Ù·Î FreeSlotList¿¡ Ãß°¡ÇÑ´Ù.
         IDE_TEST( addFreeSlotPending(aTrans,
                                      aSpaceID,
                                      aFixedEntry,
@@ -1320,12 +1122,12 @@ IDE_RC svpFixedPageList::freeSlot( void*             aTrans,
 
 
 /***********************************************************************
- * nextOIDallì„ ìœ„í•´ aRowì—ì„œ í•´ë‹¹ Pageë¥¼ ì°¾ì•„ì¤€ë‹¤.
+ * nextOIDallÀ» À§ÇØ aRow¿¡¼­ ÇØ´ç Page¸¦ Ã£¾ÆÁØ´Ù.
  *
- * aFixedEntry : ìˆœíšŒí•˜ë ¤ëŠ” PageListEntry
- * aRow        : í˜„ì¬ Row
- * aPage       : aRowê°€ ì†í•œ Pageë¥¼ ì°¾ì•„ì„œ ë°˜í™˜
- * aRowPtr     : aRow ë‹¤ìŒ Row í¬ì¸í„°
+ * aFixedEntry : ¼øÈ¸ÇÏ·Á´Â PageListEntry
+ * aRow        : ÇöÀç Row
+ * aPage       : aRow°¡ ¼ÓÇÑ Page¸¦ Ã£¾Æ¼­ ¹İÈ¯
+ * aRowPtr     : aRow ´ÙÀ½ Row Æ÷ÀÎÅÍ
  ***********************************************************************/
 
 inline void svpFixedPageList::initForScan( scSpaceID         aSpaceID,
@@ -1346,7 +1148,7 @@ inline void svpFixedPageList::initForScan( scSpaceID         aSpaceID,
     if(aRow != NULL)
     {
         sPageID = SMP_SLOT_GET_PID(aRow);
-        IDE_ASSERT( svmManager::getPersPagePtr( aSpaceID, 
+        IDE_ASSERT( smmManager::getPersPagePtr( aSpaceID, 
                                                 sPageID,
                                                 (void**)aPage )
                     == IDE_SUCCESS );
@@ -1358,7 +1160,7 @@ inline void svpFixedPageList::initForScan( scSpaceID         aSpaceID,
 
         if(sPageID != SM_NULL_PID)
         {
-            IDE_ASSERT( svmManager::getPersPagePtr( aSpaceID, 
+            IDE_ASSERT( smmManager::getPersPagePtr( aSpaceID, 
                                                     sPageID,
                                                     (void**)aPage )
                         == IDE_SUCCESS );
@@ -1366,21 +1168,21 @@ inline void svpFixedPageList::initForScan( scSpaceID         aSpaceID,
         }
         else
         {
-            /* Allcateëœ í˜ì´ì§€ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.*/
+            /* AllcateµÈ ÆäÀÌÁö°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.*/
         }
     }
 }
 
 /**********************************************************************
- * FreePageHeaderì—ì„œ FreeSlotì œê±°
+ * FreePageHeader¿¡¼­ FreeSlotÁ¦°Å
  *
- * aFreePageHeader : ì œê±°í•˜ë ¤ëŠ” FreePageHeader
- * aRow            : ì œê±°í•œ FreeSlotì˜ Rowí¬ì¸í„° ë°˜í™˜
+ * aFreePageHeader : Á¦°ÅÇÏ·Á´Â FreePageHeader
+ * aRow            : Á¦°ÅÇÑ FreeSlotÀÇ RowÆ÷ÀÎÅÍ ¹İÈ¯
  **********************************************************************/
 
 void svpFixedPageList::removeSlotFromFreeSlotList(
-    smpFreePageHeader* aFreePageHeader,
-    SChar**            aRow )
+                                        smpFreePageHeader* aFreePageHeader,
+                                        SChar**            aRow )
 {
     smpFreeSlotHeader* sFreeSlotHeader;
 
@@ -1398,19 +1200,19 @@ void svpFixedPageList::removeSlotFromFreeSlotList(
 
     if(sFreeSlotHeader->mNextFreeSlot == NULL)
     {
-        // Nextê°€ ì—†ë‹¤ë©´ ë§ˆì§€ë§‰ FreeSlotì´ë‹¤.
+        // Next°¡ ¾ø´Ù¸é ¸¶Áö¸· FreeSlotÀÌ´Ù.
         IDE_ASSERT(aFreePageHeader->mFreeSlotCount == 0);
 
         aFreePageHeader->mFreeSlotTail = NULL;
     }
     else
     {
-        // ë‹¤ìŒ FreeSlotì„ Headë¡œ ë“±ë¡í•œë‹¤.
+        // ´ÙÀ½ FreeSlotÀ» Head·Î µî·ÏÇÑ´Ù.
         IDE_ASSERT(aFreePageHeader->mFreeSlotCount > 0);
     }
 
         aFreePageHeader->mFreeSlotHead =
-            (SChar*)sFreeSlotHeader->mNextFreeSlot;
+                            (SChar*)sFreeSlotHeader->mNextFreeSlot;
 
     IDE_DASSERT( isValidFreeSlotList(aFreePageHeader) == ID_TRUE );
 
@@ -1418,12 +1220,12 @@ void svpFixedPageList::removeSlotFromFreeSlotList(
 }
 
 /**********************************************************************
- * FreeSlot ì •ë³´ë¥¼ ê¸°ë¡í•œë‹¤.
+ * FreeSlot Á¤º¸¸¦ ±â·ÏÇÑ´Ù.
  *
- * aTrans     : ì‘ì—…í•˜ë ¤ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
- * aPageID    : FreeSlotì¶”ê°€í•˜ë ¤ëŠ” PageID
- * aRow       : FreeSlotì˜ Row í¬ì¸í„°
- * aTableType : Tempí…Œì´ë¸”ì¸ì§€ ì—¬ë¶€
+ * aTrans     : ÀÛ¾÷ÇÏ·Á´Â Æ®·£Àè¼Ç °´Ã¼
+ * aPageID    : FreeSlotÃß°¡ÇÏ·Á´Â PageID
+ * aRow       : FreeSlotÀÇ Row Æ÷ÀÎÅÍ
+ * aTableType : TempÅ×ÀÌºíÀÎÁö ¿©ºÎ
  **********************************************************************/
 IDE_RC svpFixedPageList::setFreeSlot( void*          aTrans,
                                       scSpaceID      aSpaceID,
@@ -1458,14 +1260,14 @@ IDE_RC svpFixedPageList::setFreeSlot( void*          aTrans,
                        (SChar*)sCurSlotHeader,
                        ID_SIZEOF(smpSlotHeader) );
 
-        // slot header ì •ë¦¬
+        // slot header Á¤¸®
         SM_SET_SCN_FREE_ROW( &(sAfterSlotHeader.mCreateSCN) );
         SM_SET_SCN_FREE_ROW( &(sAfterSlotHeader.mLimitSCN) );
         SMP_SLOT_INIT_POSITION( &sAfterSlotHeader );
 
         if(aTableType == SMP_TABLE_NORMAL)
         {
-            IDE_ASSERT( svmManager::getOIDPtr( aSpaceID, 
+            IDE_ASSERT( smmManager::getOIDPtr( aSpaceID, 
                                                sRecOID,
                                                (void**)&sTmpSlotHeader )
                         == IDE_SUCCESS );
@@ -1477,7 +1279,7 @@ IDE_RC svpFixedPageList::setFreeSlot( void*          aTrans,
                      == SM_MAKE_OFFSET(sRecOID) );
         }
 
-        // BUG-14373 agerì™€ seq-iteratorì™€ì˜ ë™ì‹œì„± ì œì–´
+        // BUG-14373 ager¿Í seq-iterator¿ÍÀÇ µ¿½Ã¼º Á¦¾î
         IDE_TEST(svmManager::holdPageXLatch(aSpaceID, aPageID) != IDE_SUCCESS);
         sState = 2;
 
@@ -1517,13 +1319,13 @@ IDE_RC svpFixedPageList::setFreeSlot( void*          aTrans,
 }
 
 /**********************************************************************
- * ì‹¤ì œ FreeSlotì„ FreeSlotListì— ì¶”ê°€í•œë‹¤.
+ * ½ÇÁ¦ FreeSlotÀ» FreeSlotList¿¡ Ãß°¡ÇÑ´Ù.
  *
- * BUG-14093 Commitì´í›„ì— FreeSlotì„ ì‹¤ì œ FreeSlotListì— ë§¤ë‹¨ë‹¤.
+ * BUG-14093 CommitÀÌÈÄ¿¡ FreeSlotÀ» ½ÇÁ¦ FreeSlotList¿¡ ¸Å´Ü´Ù.
  *
- * aTrans      : ì‘ì—…í•˜ëŠ” íŠ¸ëœì­ì…˜ ê°ì²´
- * aFixedEntry : FreeSlotì´ ì†í•œ PageListEntry
- * aRow        : FreeSlotì˜ Row í¬ì¸í„°
+ * aTrans      : ÀÛ¾÷ÇÏ´Â Æ®·£Àè¼Ç °´Ã¼
+ * aFixedEntry : FreeSlotÀÌ ¼ÓÇÑ PageListEntry
+ * aRow        : FreeSlotÀÇ Row Æ÷ÀÎÅÍ
  **********************************************************************/
 IDE_RC svpFixedPageList::addFreeSlotPending( void*             aTrans,
                                              scSpaceID         aSpaceID,
@@ -1543,13 +1345,13 @@ IDE_RC svpFixedPageList::addFreeSlotPending( void*             aTrans,
     IDE_TEST(sFreePageHeader->mMutex.lock(NULL) != IDE_SUCCESS);
     sState = 1;
 
-    // PrivatePageListì—ì„œëŠ” FreeSlotë˜ì§€ ì•ŠëŠ”ë‹¤.
+    // PrivatePageList¿¡¼­´Â FreeSlotµÇÁö ¾Ê´Â´Ù.
     IDE_ASSERT(sFreePageHeader->mFreeListID != SMP_PRIVATE_PAGELISTID);
 
-    // FreeSlotì„ FreeSlotListì— ì¶”ê°€
+    // FreeSlotÀ» FreeSlotList¿¡ Ãß°¡
     addFreeSlotToFreeSlotList(sFreePageHeader, aRow);
 
-    // FreeSlotì´ ì¶”ê°€ëœ ë‹¤ìŒ SizeClassê°€ ë³€ê²½ë˜ì—ˆëŠ”ì§€ í™•ì¸í•˜ì—¬ ì¡°ì •í•œë‹¤.
+    // FreeSlotÀÌ Ãß°¡µÈ ´ÙÀ½ SizeClass°¡ º¯°æµÇ¾ú´ÂÁö È®ÀÎÇÏ¿© Á¶Á¤ÇÑ´Ù.
     IDE_TEST(svpFreePageList::modifyPageSizeClass( aTrans,
                                                    aFixedEntry,
                                                    sFreePageHeader )
@@ -1583,15 +1385,15 @@ IDE_RC svpFixedPageList::addFreeSlotPending( void*             aTrans,
 }
 
 /**********************************************************************
- * FreePageHeaderì— ìˆëŠ” FreeSlotListì— FreeSlotì¶”ê°€
+ * FreePageHeader¿¡ ÀÖ´Â FreeSlotList¿¡ FreeSlotÃß°¡
  *
- * aFreePageHeader : FreeSlotì´ ì†í•œ Pageì˜ FreePageHeader
- * aRow            : FreeSlotì˜ Row í¬ì¸í„°
+ * aFreePageHeader : FreeSlotÀÌ ¼ÓÇÑ PageÀÇ FreePageHeader
+ * aRow            : FreeSlotÀÇ Row Æ÷ÀÎÅÍ
  **********************************************************************/
 
 void svpFixedPageList::addFreeSlotToFreeSlotList(
-    smpFreePageHeader* aFreePageHeader,
-    SChar*             aRow )
+                                        smpFreePageHeader* aFreePageHeader,
+                                        SChar*             aRow )
 {
     smpFreeSlotHeader* sCurFreeSlotHeader;
     smpFreeSlotHeader* sTailFreeSlotHeader;
@@ -1609,8 +1411,8 @@ void svpFixedPageList::addFreeSlotToFreeSlotList(
     /* BUG-32386       [sm_recovery] If the ager remove the MMDB slot and the
      * checkpoint thread flush the page containing the slot at same time, the
      * server can misunderstand that the freed slot is the allocated slot. 
-     * DropFlagëŠ” ì„¤ì •ë¼ì—ˆëŠ”ë°, SCNì´ ì´ˆê¸°í™”ë˜ì§€ ì•Šì€ ê²½ìš°ê°€ ë°œìƒí•  ìˆ˜ ìˆìŒ
-     * SCNì„ ì´ˆê¸°í™” í•´ì¤Œ*/
+     * DropFlag´Â ¼³Á¤µÅ¾ú´Âµ¥, SCNÀÌ ÃÊ±âÈ­µÇÁö ¾ÊÀº °æ¿ì°¡ ¹ß»ıÇÒ ¼ö ÀÖÀ½
+     * SCNÀ» ÃÊ±âÈ­ ÇØÁÜ*/
     SM_SET_SCN_FREE_ROW( &sCurFreeSlotHeader->mCreateSCN );
     SM_SET_SCN_FREE_ROW( &sCurFreeSlotHeader->mLimitSCN );
     SMP_SLOT_INIT_POSITION( sCurFreeSlotHeader );
@@ -1636,117 +1438,49 @@ void svpFixedPageList::addFreeSlotToFreeSlotList(
 }
 
 /**********************************************************************
- * PageListì˜ ìœ íš¨í•œ ë ˆì½”ë“œ ê°¯ìˆ˜ ë°˜í™˜
+ * PageListÀÇ À¯È¿ÇÑ ·¹ÄÚµå °¹¼ö ¹İÈ¯
  *
- * aFixedEntry  : ê²€ìƒ‰í•˜ê³ ì í•˜ëŠ” PageListEntry
- * aRecordCount : ë°˜í™˜í•˜ëŠ” ë ˆì½”ë“œ ê°¯ìˆ˜
+ * aFixedEntry  : °Ë»öÇÏ°íÀÚ ÇÏ´Â PageListEntry
+ * aRecordCount : ¹İÈ¯ÇÏ´Â ·¹ÄÚµå °¹¼ö
  **********************************************************************/
-IDE_RC svpFixedPageList::getRecordCount( smpPageListEntry* aFixedEntry,
-                                         ULong*            aRecordCount )
+ULong svpFixedPageList::getRecordCount( smpPageListEntry* aFixedEntry )
 {
-    /*
-     * TASK-4690
-     * 64ë¹„íŠ¸ì—ì„œëŠ” 64ë¹„íŠ¸ ë³€ìˆ˜ë¥¼ atomicí•˜ê²Œ read/writeí•  ìˆ˜ ìˆë‹¤.
-     * ì¦‰, ì•„ë˜ mutexë¥¼ ì¡ê³  í‘¸ëŠ” ê²ƒì€ ë¶ˆí•„ìš”í•œ lockì´ë‹¤.
-     * ë”°ë¼ì„œ 64ë¹„íŠ¸ì¸ ê²½ìš°ì—” lockì„ ì¡ì§€ ì•Šë„ë¡ í•œë‹¤.
-     */
-#ifndef COMPILE_64BIT
-    UInt sState = 0;
+    ULong sRecordCount;
 
-    IDE_TEST(aFixedEntry->mRuntimeEntry->mMutex.lock(NULL) != IDE_SUCCESS);
-    sState = 1;
-#endif
-
-    *aRecordCount = aFixedEntry->mRuntimeEntry->mInsRecCnt;
-
-#ifndef COMPILE_64BIT
-    sState = 0;
-    IDE_TEST(aFixedEntry->mRuntimeEntry->mMutex.unlock() != IDE_SUCCESS);
-#endif
-
-    return IDE_SUCCESS;
-
-#ifndef COMPILE_64BIT
-    IDE_EXCEPTION_END;
-
-    if(sState == 1)
+    if( aFixedEntry->mRuntimeEntry != NULL )
     {
-        IDE_ASSERT(aFixedEntry->mRuntimeEntry->mMutex.unlock() == IDE_SUCCESS);
+        // BUG-47368: getRecordCount, mutex Á¦°Å, atomic ¿¬»êÀ¸·Î º¯°æ
+        sRecordCount = idCore::acpAtomicGet64( &(aFixedEntry->mRuntimeEntry->mInsRecCnt) );
+    }
+    else
+    {
+        sRecordCount = 0;
     }
 
-    return IDE_FAILURE;
-#endif
+    return sRecordCount;
 }
 
 /**********************************************************************
- * PageListì˜ ìœ íš¨í•œ ë ˆì½”ë“œ ê°¯ìˆ˜ ë³€ê²½
+ * PageListÀÇ À¯È¿ÇÑ ·¹ÄÚµå °¹¼ö º¯°æ
  *
- * aFixedEntry  : ê²€ìƒ‰í•˜ê³ ì í•˜ëŠ” PageListEntry
- * aRecordCount : ë ˆì½”ë“œ ê°¯ìˆ˜
+ * aFixedEntry  : °Ë»öÇÏ°íÀÚ ÇÏ´Â PageListEntry
+ * aRecordCount : ·¹ÄÚµå °¹¼ö
  **********************************************************************/
 IDE_RC svpFixedPageList::setRecordCount( smpPageListEntry* aFixedEntry,
                                          ULong             aRecordCount )
 {
-    UInt sState = 0;
-
-    IDE_TEST(aFixedEntry->mRuntimeEntry->mMutex.lock(NULL) != IDE_SUCCESS);
-    sState = 1;
-
-    aFixedEntry->mRuntimeEntry->mInsRecCnt = aRecordCount;
-
-    sState = 0;
-    IDE_TEST(aFixedEntry->mRuntimeEntry->mMutex.unlock() != IDE_SUCCESS);
+    // BUG-47368: setRecordCount, mutex Á¦°Å, atomic ¿¬»êÀ¸·Î º¯°æ 
+    (void)idCore::acpAtomicSet64( &(aFixedEntry->mRuntimeEntry->mInsRecCnt), aRecordCount );
 
     return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    if(sState == 1)
-    {
-        IDE_ASSERT(aFixedEntry->mRuntimeEntry->mMutex.unlock() == IDE_SUCCESS);
-    }
-
-    return IDE_FAILURE;
 }
 
 /**********************************************************************
- * PageListì˜ ìœ íš¨í•œ ë ˆì½”ë“œ ê°¯ìˆ˜ ë³€ê²½
+ * PageListEntry¸¦ ÃÊ±âÈ­ÇÑ´Ù.
  *
- * aFixedEntry  : ê²€ìƒ‰í•˜ê³ ì í•˜ëŠ” PageListEntry
- * aRecordCount : ë ˆì½”ë“œ ê°¯ìˆ˜
- **********************************************************************/
-IDE_RC svpFixedPageList::addRecordCount( smpPageListEntry* aFixedEntry,
-                                         ULong             aRecordCount )
-{
-    UInt sState = 0;
-
-    IDE_TEST(aFixedEntry->mRuntimeEntry->mMutex.lock(NULL) != IDE_SUCCESS);
-    sState = 1;
-
-    aFixedEntry->mRuntimeEntry->mInsRecCnt += aRecordCount;
-
-    sState = 0;
-    IDE_TEST(aFixedEntry->mRuntimeEntry->mMutex.unlock() != IDE_SUCCESS);
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    if(sState == 1)
-    {
-        IDE_ASSERT(aFixedEntry->mRuntimeEntry->mMutex.unlock() == IDE_SUCCESS);
-    }
-
-    return IDE_FAILURE;
-}
-
-
-/**********************************************************************
- * PageListEntryë¥¼ ì´ˆê¸°í™”í•œë‹¤.
- *
- * aFixedEntry : ì´ˆê¸°í™”í•˜ë ¤ëŠ” PageListEntry
- * aTableOID   : PageListEntryì˜ í…Œì´ë¸” OID
- * aSlotSize   : PageListEntryì˜ SlotSize
+ * aFixedEntry : ÃÊ±âÈ­ÇÏ·Á´Â PageListEntry
+ * aTableOID   : PageListEntryÀÇ Å×ÀÌºí OID
+ * aSlotSize   : PageListEntryÀÇ SlotSize
  **********************************************************************/
 void svpFixedPageList::initializePageListEntry( smpPageListEntry* aFixedEntry,
                                                 smOID             aTableOID,
@@ -1766,11 +1500,11 @@ void svpFixedPageList::initializePageListEntry( smpPageListEntry* aFixedEntry,
 }
 
 /**********************************************************************
- * aRowì˜ SlotHeaderë¥¼ Updateí•˜ì—¬ Allocateëœ Slotìœ¼ë¡œ ë§Œë“ ë‹¤.
+ * aRowÀÇ SlotHeader¸¦ UpdateÇÏ¿© AllocateµÈ SlotÀ¸·Î ¸¸µç´Ù.
  *
  * aTrans    : Transaction Pointer
- * aInfinite : Slot Headerì— settingí•  SCNê°’.
- * aRow      : Recordì˜ Pointer
+ * aInfinite : Slot Header¿¡ settingÇÒ SCN°ª.
+ * aRow      : RecordÀÇ Pointer
  **********************************************************************/
 void svpFixedPageList::setAllocatedSlot( smSCN  aInfinite,
                                          SChar *aRow )
@@ -1788,10 +1522,11 @@ void svpFixedPageList::setAllocatedSlot( smSCN  aInfinite,
     SMP_SLOT_SET_USED( sCurSlotHeader );
 }
 
+#ifdef DEBUG
 /**********************************************************************
- * Pageë‚´ì˜ FreeSlotListì˜ ì—°ê²°ì´ ì˜¬ë°”ë¥¸ì§€ ê²€ì‚¬í•œë‹¤.
+ * Page³»ÀÇ FreeSlotListÀÇ ¿¬°áÀÌ ¿Ã¹Ù¸¥Áö °Ë»çÇÑ´Ù.
  *
- * aFreePageHeader : ê²€ì‚¬í•˜ë ¤ëŠ” FreeSlotListê°€ ìˆëŠ” Pageì˜ FreePageHeader
+ * aFreePageHeader : °Ë»çÇÏ·Á´Â FreeSlotList°¡ ÀÖ´Â PageÀÇ FreePageHeader
  **********************************************************************/
 idBool
 svpFixedPageList::isValidFreeSlotList(smpFreePageHeader* aFreePageHeader )
@@ -1873,10 +1608,11 @@ svpFixedPageList::isValidFreeSlotList(smpFreePageHeader* aFreePageHeader )
 
     return sIsValid;
 }
+#endif
 
 /**********************************************************************
- * Description: <aSpaceID, aPageID>ì— ìˆëŠ” Record Headerë“¤ì„ altibase_boot.log
- *              ì— ì°ëŠ”ë‹¤.
+ * Description: <aSpaceID, aPageID>¿¡ ÀÖ´Â Record HeaderµéÀ» altibase_boot.log
+ *              ¿¡ Âï´Â´Ù.
  *
  * aSpaceID    - [IN] SpaceID
  * aPageID     - [IN] Page ID
@@ -1897,7 +1633,7 @@ IDE_RC svpFixedPageList::dumpFixedPage( scSpaceID         aSpaceID,
 
     IDE_ERROR( aFixedEntry != NULL );
 
-    IDE_ASSERT( svmManager::getPersPagePtr( aSpaceID,
+    IDE_ASSERT( smmManager::getPersPagePtr( aSpaceID,
                                             aPageID,
                                             (void**)&sPagePtr )
                 == IDE_SUCCESS );

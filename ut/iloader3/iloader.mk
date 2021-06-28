@@ -1,4 +1,4 @@
-# ë‹¤ìŒ íŒŒì¼ì„ ë¨¼ì € includeí•´ì•¼ í•¨:
+# ´ÙÀ½ ÆÄÀÏÀ» ¸ÕÀú includeÇØ¾ß ÇÔ:
 #     include ../utEnv.mk
 #     include iloApi_objs.mk
 

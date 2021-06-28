@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsfCloseAllConnect.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qsfCloseAllConnect.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  *
  * Description :
  *
@@ -46,7 +46,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfCloseAllConnectModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞Ïûê ÏïÑÎãò)
+    1.0,                    // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄ æ∆¥‘)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,

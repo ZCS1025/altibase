@@ -53,88 +53,88 @@ typedef struct sdbBufferPoolStatData
     ULong     mReadPages;
     ULong     mCreatePages;
     SDouble   mHitRatio;
-    /* LRU hotì—ì„œ hití•œ íšŸìˆ˜ */
+    /* LRU hot¿¡¼­ hitÇÑ È½¼ö */
     ULong     mHotHits;
     
-    /* LRU Coldì—ì„œ hití•œ íšŸìˆ˜ */
+    /* LRU Cold¿¡¼­ hitÇÑ È½¼ö */
     ULong     mColdHits;
     
-    /* prepare Listì—ì„œ hití•œ íšŸìˆ˜ */
+    /* prepare List¿¡¼­ hitÇÑ È½¼ö */
     ULong     mPrepareHits;
     
-    /* flush Listì—ì„œ hití•œ íšŸìˆ˜ */
+    /* flush List¿¡¼­ hitÇÑ È½¼ö */
     ULong     mFlushHits;
     
-    /* Delayed Flush Listì—ì„œ hití•œ íšŸìˆ˜ */
+    /* Delayed Flush List¿¡¼­ hitÇÑ È½¼ö */
     ULong     mDelayedFlushHits;
 
-    /* prepare, lru, flush listì— ì—†ì„ë•Œ hití•œ íšŸìˆ˜  */
+    /* prepare, lru, flush list¿¡ ¾øÀ»¶§ hitÇÑ È½¼ö  */
     ULong     mOtherHits;
     
-    /* prepareì—ì„œ victimì„ ì°¾ì€ íšŸìˆ˜*/
+    /* prepare¿¡¼­ victimÀ» Ã£Àº È½¼ö*/
     ULong     mPrepareVictims;
     
-    /* LRUì—ì„œ victimì„ ì°¾ì€ íšŸìˆ˜ */
+    /* LRU¿¡¼­ victimÀ» Ã£Àº È½¼ö */
     ULong     mLRUVictims;
     
-    /* LRUì—ì„œ victimì„ ì°¾ì§€ ëª»í•œ íšŸìˆ˜ */
+    /* LRU¿¡¼­ victimÀ» Ã£Áö ¸øÇÑ È½¼ö */
     ULong     mVictimFails;
     
-    /* victimì„ ì°¾ê¸° ìœ„í•´ flusherë¥¼ ê¸°ë‹¤ë¦° íšŸìˆ˜ */
+    /* victimÀ» Ã£±â À§ÇØ flusher¸¦ ±â´Ù¸° È½¼ö */
     ULong     mVictimWaits;
     
-    /* prepareListì—ì„œ ëŒ€ê¸°í•˜ë‹¤ê°€ BCBë¥¼ ì–»ì€ íšŸìˆ˜ */
+    /* prepareList¿¡¼­ ´ë±âÇÏ´Ù°¡ BCB¸¦ ¾òÀº È½¼ö */
     ULong     mPrepareAgainVictims;
     
-    /* prepareListì—ì„œ ëŒ€ê¸°í•˜ë‹¤ê°€ BCBë¥¼ ì–»ì§€ ëª»í•œ íšŸìˆ˜ */
+    /* prepareList¿¡¼­ ´ë±âÇÏ´Ù°¡ BCB¸¦ ¾òÁö ¸øÇÑ È½¼ö */
     ULong     mVictimSearchWarps;
     
-    /* LRU list search íšŸìˆ˜ */
+    /* LRU list search È½¼ö */
     ULong     mLRUSearchs;
     
-    /* LRU Listì—ì„œ victimì„ ì°¾ì„ë•Œ, ë³´í†µ í•œë²ˆì— ëª‡ê°œì˜ BCBë¥¼ searchí•˜ëŠ”ì§€
-     * í†µê³„ */
+    /* LRU List¿¡¼­ victimÀ» Ã£À»¶§, º¸Åë ÇÑ¹ø¿¡ ¸î°³ÀÇ BCB¸¦ searchÇÏ´ÂÁö
+     * Åë°è */
     UInt      mLRUSearchsAvg;
     
-    /* LRU search ë„ì¤‘ LRU Hotìœ¼ë¡œ BCBë¥¼ ë³´ë‚¸ íšŸìˆ˜ */
+    /* LRU search µµÁß LRU HotÀ¸·Î BCB¸¦ º¸³½ È½¼ö */
     ULong     mLRUToHots;
     
-    /* LRU search ë„ì¤‘ LRU Midë¡œ BCBë¥¼ ë³´ë‚¸ íšŸìˆ˜ */
+    /* LRU search µµÁß LRU Mid·Î BCB¸¦ º¸³½ È½¼ö */
     ULong     mLRUToColds;
     
-    /* LRU search ë„ì¤‘ FlushListë¡œ BCBë¥¼ ë³´ë‚¸ íšŸìˆ˜ */
+    /* LRU search µµÁß FlushList·Î BCB¸¦ º¸³½ È½¼ö */
     ULong     mLRUToFlushs;
 
-    /* LRU Hotì— ì‚½ìž…í•œ íšŸìˆ˜ */
+    /* LRU Hot¿¡ »ðÀÔÇÑ È½¼ö */
     ULong     mHotInsertions;
     
-    /* LRU Coldì— ì‚½ìž…í•œ íšŸìˆ˜ */
+    /* LRU Cold¿¡ »ðÀÔÇÑ È½¼ö */
     ULong     mColdInsertions;
 
     /* BUG-32670    [sm-disk-resource] add IO Stat information 
      * for analyzing storage performance. */
-    /* ì¼ë°˜ Readì‹œ checksum ê³„ì‚° ì‹œê°„ */
+    /* ÀÏ¹Ý Read½Ã checksum °è»ê ½Ã°£ */
     ULong     mNormalCalcChecksumTime;
 
-    /* ì¼ë°˜ Readì‹œ Storageë¡œë¶€í„° Readí•œ ì‹œê°„ */
+    /* ÀÏ¹Ý Read½Ã Storage·ÎºÎÅÍ ReadÇÑ ½Ã°£ */
     ULong     mNormalReadTime;
 
-    /* ì¼ë°˜ Readì‹œ Readí•œ Page ê°œìˆ˜  */
+    /* ÀÏ¹Ý Read½Ã ReadÇÑ Page °³¼ö  */
     ULong     mNormalReadPageCount;
 
-    /* Fullscan Readì‹œ checksum ê³„ì‚° ì‹œê°„ */
+    /* Fullscan Read½Ã checksum °è»ê ½Ã°£ */
     ULong     mMPRCalcChecksumTime;
 
-    /* Fullscan Readì‹œ Storageë¡œë¶€í„° Readí•œ ì‹œê°„ */
+    /* Fullscan Read½Ã Storage·ÎºÎÅÍ ReadÇÑ ½Ã°£ */
     ULong     mMPRReadTime;
 
-    /* Fullscan Readì‹œ Readí•œ Page ê°œìˆ˜  */
+    /* Fullscan Read½Ã ReadÇÑ Page °³¼ö  */
     ULong     mMPRReadPageCount;
 } sdbBufferPoolStatData;
 
 class sdbBufferPool;
 
-/* ê° page typeë³„ë¡œ ì •ë³´ë¥¼ ë”°ë¡œ ìœ ì§€í•˜ê¸° ìœ„í•´ í•„ìš”í•œ ìžë£Œêµ¬ì¡° */
+/* °¢ page typeº°·Î Á¤º¸¸¦ µû·Î À¯ÁöÇÏ±â À§ÇØ ÇÊ¿äÇÑ ÀÚ·á±¸Á¶ */
 typedef struct sdbPageTypeStatData
 {
     /* idvOwner */
@@ -145,36 +145,36 @@ typedef struct sdbPageTypeStatData
     ULong     mReadPages;
     ULong     mCreatePages;
     
-    /* LRU listë¡œ ë¶€í„° Victimì„ ì°¾ì€ íšŒìˆ˜ */
+    /* LRU list·Î ºÎÅÍ VictimÀ» Ã£Àº È¸¼ö */
     ULong     mVictimPagesFromLRU;     
 
-    /* Prepare listë¡œ ë¶€í„° Victimì„ ì°¾ì€ íšŒìˆ˜ */
+    /* Prepare list·Î ºÎÅÍ VictimÀ» Ã£Àº È¸¼ö */
     ULong     mVictimPagesFromPrepare; 
 
-    /* LRU listì—ì„œ Victimì„ ì°¾ì„ ë™ì•ˆ Skipëœ íŽ˜ì´ì§€ì˜ ê°œìˆ˜ */
+    /* LRU list¿¡¼­ VictimÀ» Ã£À» µ¿¾È SkipµÈ ÆäÀÌÁöÀÇ °³¼ö */
     ULong     mSkipPagesFromLRU;
     
-    /* Prepare listì—ì„œ Victimì„ ì°¾ì„ ë™ì•ˆ Skipëœ íŽ˜ì´ì§€ì˜ ê°œìˆ˜ */
+    /* Prepare list¿¡¼­ VictimÀ» Ã£À» µ¿¾È SkipµÈ ÆäÀÌÁöÀÇ °³¼ö */
     ULong     mSkipPagesFromPrepare;
     
     SDouble   mHitRatio;
 
-    /* LRU Hotì—ì„œ hití•œ íšŸìˆ˜ */
+    /* LRU Hot¿¡¼­ hitÇÑ È½¼ö */
     ULong     mHotHits;
 
-    /* LRU Coldì—ì„œ hití•œ íšŸìˆ˜ */
+    /* LRU Cold¿¡¼­ hitÇÑ È½¼ö */
     ULong     mColdHits;
 
-    /* prepare listì—ì„œ hití•œ íšŸìˆ˜ */
+    /* prepare list¿¡¼­ hitÇÑ È½¼ö */
     ULong     mPrepareHits;
 
-    /* flush listì—ì„œ hití•œ íšŸìˆ˜ */
+    /* flush list¿¡¼­ hitÇÑ È½¼ö */
     ULong     mFlushHits;
 
-    /* Delayed Flush Listì—ì„œ hití•œ íšŸìˆ˜ */
+    /* Delayed Flush List¿¡¼­ hitÇÑ È½¼ö */
     ULong     mDelayedFlushHits;
 
-    /* listì™¸ ì—ì„œ hití•œ íšŸìˆ˜ */
+    /* list¿Ü ¿¡¼­ hitÇÑ È½¼ö */
     ULong     mOtherHits;
 } sdbPageTypeStatData;
 
@@ -185,7 +185,7 @@ public:
     IDE_RC destroy();
 
     void   updateBufferPoolStat();
-    // íŽ˜ì´ì§€ íƒ€ìž…ë³„ ì •ë³´ ê°±ì‹ 
+    // ÆäÀÌÁö Å¸ÀÔº° Á¤º¸ °»½Å
     void applyFixPages( idvSQL   * aStatistics,
                         scSpaceID  aSpaceID,
                         scPageID   aPageID,
@@ -239,20 +239,20 @@ public:
                                    UInt       aPageType);
 
 
-    // find victim í†µê³„ ì •ë³´ ê°±ì‹ 
+    // find victim Åë°è Á¤º¸ °»½Å
     inline void applyPrepareVictims();
     inline void applyLRUVictims();
     inline void applyPrepareAgainVictims();
     inline void applyVictimWaits();
     inline void applyVictimSearchWarps();
 
-    // victim search í†µê³„ ì •ë³´ ê°±ì‹ 
+    // victim search Åë°è Á¤º¸ °»½Å
     inline void applyVictimSearchs();
     inline void applyVictimSearchsToHot();
     inline void applyVictimSearchsToCold();
     inline void applyVictimSearchsToFlush();
 
-    // hot, cold ì‚½ìž… ë¹„ì¤‘ ì •ë³´ ê°±ì‹ 
+    // hot, cold »ðÀÔ ºñÁß Á¤º¸ °»½Å
     inline void applyHotInsertions();
     inline void applyColdInsertions();
 
@@ -278,7 +278,7 @@ public:
                                iduFixedTableMemory *aMemory);
 
 
-    SDouble getSingleReadPerf() /* USecë‹¨ìœ„*/
+    SDouble getSingleReadPerf() /* USec´ÜÀ§*/
     {
         SDouble sRet = 0;
         if( mPoolStat.mNormalReadTime == 0 )
@@ -292,7 +292,7 @@ public:
         }
         return sRet;
     }
-    SDouble getMultiReadPerf() /* USecë‹¨ìœ„*/
+    SDouble getMultiReadPerf() /* USec´ÜÀ§*/
     {
         SDouble sRet = 0;
         if( mPoolStat.mMPRReadTime == 0 )
@@ -311,16 +311,16 @@ private:
     inline SDouble getHitRatio( ULong aGetFixPages, ULong aGetPages );
 
 private:
-    /* í†µê³„ì •ë³´ë¥¼ ìœ ì§€í•  buffer pool */
+    /* Åë°èÁ¤º¸¸¦ À¯ÁöÇÒ buffer pool */
     sdbBufferPool         *mPool;
     
-    /* buffer pool ì „ì²´ ìžë£Œêµ¬ì¡° */
+    /* buffer pool ÀüÃ¼ ÀÚ·á±¸Á¶ */
     sdbBufferPoolStatData  mPoolStat;
     
-    /* mPageTypeStat[ PageType ][ owner ].mHitRatioì™€ ê°™ì´ ì ‘ê·¼ */
+    /* mPageTypeStat[ PageType ][ owner ].mHitRatio¿Í °°ÀÌ Á¢±Ù */
     sdbPageTypeStatData  (*mPageTypeStat)[IDV_OWNER_MAX];
     
-    /* page typeê°¯ìˆ˜*/
+    /* page type°¹¼ö*/
     UInt                   mPageTypeCount;
 };
 
@@ -343,15 +343,15 @@ void sdbBufferPoolStat::applyHits(idvSQL *aStatistics,
 
     if( aPageType >= mPageTypeCount )
     {
-        /* aPageTypeì´ ì•„ì§ ì´ˆê¸°í™” ë˜ì§€ ì•Šì€ ê²½ìš°ê°€ ìžˆë‹¤.
-         * ì¦‰, hash Tableì— ì¡´ìž¬í•˜ë¯€ë¡œ, hitë¥¼ í•˜ì—¬ì„œ ë³¸ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì˜€ì—ˆê² ì§€ë§Œ,
-         * replaceë˜ëŠ” MPRì¸ ê²½ìš°ë¥¼ ìƒê°í•´ë³´ë©´,
-         * ì´ë‘˜ì€ ë¨¼ì € hashí…Œì´ë¸”ì— ì‚½ìž…ì„ í•˜ê³  ë‚œ ì´í›„ì—,
-         * ì‹¤ì œë¡œ ë°ì´í„°ë¥¼ ì½ì–´ ì˜¤ê¸° ë•Œë¬¸ì—(ì‹¤ì œ ë°ì´í„°ë¥¼ ì½ì–´ ì˜¤ê¸° ì „ê¹Œì§€ëŠ”
-         * ì–´ë–¤ typeì¸ì§€ ì•Œ ìˆ˜ ì—†ë‹¤)
-         * pageTypeì´ ì œëŒ€ë¡œ ì„¤ì •ë˜ì–´ ìžˆì§€ ì•Šì„ ìˆ˜ ìžˆë‹¤.
-         * BUGBUG: ì´ê²½ìš° undefinedPageTypeìœ¼ë¡œ ë”°ë¡œ ì„¤ì •í•´ ë†“ê³ ,
-         * ë”°ë¡œ í†µê³„ì •ë³´ë¥¼ ëª¨ì•„ë„ ì¢‹ì„ ë“¯ ì‹¶ë‹¤.
+        /* aPageTypeÀÌ ¾ÆÁ÷ ÃÊ±âÈ­ µÇÁö ¾ÊÀº °æ¿ì°¡ ÀÖ´Ù.
+         * Áï, hash Table¿¡ Á¸ÀçÇÏ¹Ç·Î, hit¸¦ ÇÏ¿©¼­ º» ÇÔ¼ö¸¦ È£ÃâÇÏ¿´¾ú°ÚÁö¸¸,
+         * replace¶Ç´Â MPRÀÎ °æ¿ì¸¦ »ý°¢ÇØº¸¸é,
+         * ÀÌµÑÀº ¸ÕÀú hashÅ×ÀÌºí¿¡ »ðÀÔÀ» ÇÏ°í ³­ ÀÌÈÄ¿¡,
+         * ½ÇÁ¦·Î µ¥ÀÌÅÍ¸¦ ÀÐ¾î ¿À±â ¶§¹®¿¡(½ÇÁ¦ µ¥ÀÌÅÍ¸¦ ÀÐ¾î ¿À±â Àü±îÁö´Â
+         * ¾î¶² typeÀÎÁö ¾Ë ¼ö ¾ø´Ù)
+         * pageTypeÀÌ Á¦´ë·Î ¼³Á¤µÇ¾î ÀÖÁö ¾ÊÀ» ¼ö ÀÖ´Ù.
+         * BUGBUG: ÀÌ°æ¿ì undefinedPageTypeÀ¸·Î µû·Î ¼³Á¤ÇØ ³õ°í,
+         * µû·Î Åë°èÁ¤º¸¸¦ ¸ð¾Æµµ ÁÁÀ» µí ½Í´Ù.
          */
         return;
     }
@@ -508,9 +508,9 @@ void sdbBufferPoolStat::applyReadByMPR( ULong  aChecksumTime,
     mPoolStat.mMPRReadPageCount    += aReadPageCount;
 }
 
-/* BUG-21307: VS6.0ì—ì„œ Compile Errorë°œìƒ.
+/* BUG-21307: VS6.0¿¡¼­ Compile Error¹ß»ý.
  *
- * ULongì´ doubleë¡œ castingì‹œ win32ì—ì„œ ì—ëŸ¬ ë°œìƒ */
+ * ULongÀÌ double·Î casting½Ã win32¿¡¼­ ¿¡·¯ ¹ß»ý */
 inline SDouble sdbBufferPoolStat::getHitRatio( ULong aGetFixPages,
                                                ULong aReadPages )
 {

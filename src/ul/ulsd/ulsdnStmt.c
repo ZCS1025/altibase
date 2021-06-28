@@ -23,6 +23,7 @@
 #include <ulnPrivate.h>
 
 #include <ulsdnStmt.h>
+#include <ulsdStmtInline.h>
 
 static ACI_RC ulsdnStmtShardStmtPartialRollbackRequest( ulnFnContext     *aFnContext,
                                                         ulnPtContext     *aPtContext )
@@ -110,15 +111,27 @@ static ACI_RC ulsdnStmtShardStmtPartialRollbackMain( ulnFnContext     *aFnContex
 
 SQLRETURN ulsdnStmtShardStmtPartialRollback( ulnDbc         * aDbc )
 {
+    ULN_FLAG(sNeedExit);
     ulnFnContext     sFnContext;
 
     ULN_INIT_FUNCTION_CONTEXT( sFnContext, ULN_FID_NONE, aDbc, ULN_OBJ_TYPE_DBC );
 
+    ACI_TEST(ulnEnter(&sFnContext, NULL) != ACI_SUCCESS);
+    ULN_FLAG_UP(sNeedExit);
+
     ACI_TEST( ulsdnStmtShardStmtPartialRollbackMain( &sFnContext, aDbc ) != ACI_SUCCESS );
+
+    ULN_FLAG_DOWN(sNeedExit);
+    ACI_TEST(ulnExit(&sFnContext) != ACI_SUCCESS);
 
     return ULN_FNCONTEXT_GET_RC(&sFnContext);
 
     ACI_EXCEPTION_END;
+
+    ULN_IS_FLAG_UP(sNeedExit)
+    {
+        ulnExit(&sFnContext);
+    }
 
     return ULN_FNCONTEXT_GET_RC(&sFnContext);
 }
@@ -134,4 +147,58 @@ ACI_RC ulsdnStmtShardStmtPartialRollbackResult( cmiProtocolContext * aProtocolCo
     ACP_UNUSED( aUserContext );
 
     return ACI_SUCCESS;
+}
+
+SQLRETURN ulsdnStmtSetPartialExecType( ulnStmt      * aStmt,
+                                       acp_sint32_t   aPartialCoordType )
+{
+    ulnFnContext sFnContext;
+    acp_bool_t   sNeedExit = ACP_FALSE;
+
+    ACI_TEST_RAISE( aStmt == NULL,
+                    LABEL_STMT_IS_INVALID );
+
+    ULN_INIT_FUNCTION_CONTEXT( sFnContext, ULN_FID_FOR_SD, aStmt, ULN_OBJ_TYPE_STMT);
+
+    /*
+     * Enter
+     */
+    ACI_TEST(ulnEnter(&sFnContext, NULL) != ACI_SUCCESS);
+    sNeedExit = ACP_TRUE;
+
+    if ( aPartialCoordType == 1 )
+    {
+        ulsdStmtSetPartialExecType( aStmt, ULN_SHARD_PARTIAL_EXEC_TYPE_COORD );
+    }
+    else if ( aPartialCoordType == 2 )
+    {
+        ulsdStmtSetPartialExecType( aStmt, ULN_SHARD_PARTIAL_EXEC_TYPE_QUERY );
+    }
+    else
+    {
+        ulsdStmtSetPartialExecType( aStmt, ULN_SHARD_PARTIAL_EXEC_TYPE_NONE );
+    }
+
+    /*
+     * Exit
+     */
+    sNeedExit = ACP_FALSE;
+    ACI_TEST(ulnExit(&sFnContext) != ACI_SUCCESS);
+    
+    return SQL_SUCCESS;
+
+    ACI_EXCEPTION ( LABEL_STMT_IS_INVALID )
+    {
+        ULN_INIT_FUNCTION_CONTEXT( sFnContext, ULN_FID_FOR_SD, aStmt, ULN_OBJ_TYPE_STMT );
+
+        ULN_FNCONTEXT_SET_RC( &sFnContext, SQL_INVALID_HANDLE );
+    }
+    ACI_EXCEPTION_END;
+
+    if(sNeedExit == ACP_TRUE)
+    {
+        ulnExit(&sFnContext);
+    }
+
+    return ULN_FNCONTEXT_GET_RC( &sFnContext );
 }

@@ -19,9 +19,9 @@ GENERATED_HDR_DIR  = $(CORE_DIR)/include
 
 DEFINES           += ACP_CFG_DL_EXPORT
 
-ALINT_SILENCES    += readline.h aclCompression.h
+ALINT_SILENCES    += readline.h aclCompression.h lz4.h aclLZ4.h 
 
-ALINT_IGNORES     += aclCompression.c
+ALINT_IGNORES     += aclCompression.c lz4.c aclLZ4.c
 
 # 
 # HERE : External libs not developed by Altibase Data Stream Dev.
@@ -31,5 +31,7 @@ ifeq ($(READLINE_SUPPORT),yes)
 INCLUDES += $(INC_OPT)$(CORE_DIR)/acl/libedit/include
 DEFINES  += ACL_READLINE_SUPPORT
 endif
+
+INCLUDES += $(INC_OPT)$(CORE_EXT_DIR)/include
 
 include $(MAKEFILES_DIR)/rule.mk

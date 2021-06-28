@@ -1,8 +1,8 @@
-# $Id: Makefile 70601 2015-04-30 01:29:54Z heesuk.shin $
+# $Id: Makefile 90822 2021-05-13 04:45:36Z kclee $
 
 include ../mtEnv.mk
 
-# NLS ì¤‘ ì˜ì–´ ì—ëŸ¬ ë©”ì‹œì§€ í™”ì¼ ì •ì˜
+# NLS Áß ¿µ¾î ¿¡·¯ ¸Þ½ÃÁö È­ÀÏ Á¤ÀÇ
 E_MT_US_MSG    = E_MT_US7ASCII.msg
 ALLMSG         = $(E_MT_US_MSG)
 
@@ -26,6 +26,7 @@ compile:  $(ALLMSB)
 $(E_MT_US_MSB) : $(E_MT_US_MSG) $(GENERRMSG)
 	$(GENERRMSG) -i $(E_MT_US_MSG) -o $(E_MT_HEADER)
 	cp -f MT_TRC_CODE.ih MT_TRC_CODE.ic $(E_MT_HEADER) ../include
+	sync
 
 $(ALLMSB): $(E_MT_US_MSB)
 	$(COPY) $^ $@

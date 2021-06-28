@@ -18,7 +18,8 @@
 #include <ulnPrivate.h>
 #include <ulnLob.h>
 
-SQLRETURN ulnGetLob(ulnStmt      *aStmt,
+SQLRETURN ulnGetLob(acp_sint16_t  aHandleType,
+                    ulnObject    *aObject,
                     acp_sint16_t  aLocatorCType,
                     acp_uint64_t  aSrcLocator,
                     acp_uint32_t  aFromPosition,
@@ -39,7 +40,7 @@ SQLRETURN ulnGetLob(ulnStmt      *aStmt,
     ulnMTypeID    sMTYPE;
     ulnCTypeID    sCTYPE;
 
-    ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_GETLOB, aStmt, ULN_OBJ_TYPE_STMT);
+    ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_GETLOB, aObject, aHandleType);
 
     /*
      * Enter
@@ -54,8 +55,8 @@ SQLRETURN ulnGetLob(ulnStmt      *aStmt,
 
     ULN_FLAG_UP(sNeedExit);
 
-    sPtContext = &(aStmt->mParentDbc->mPtContext);
-    /* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
+    sPtContext = &(sDbc->mPtContext);
+    /* BUG-44125 [mm-cli] IPCDA ¸ðµå Å×½ºÆ® Áß hang - iloader CLOB */
     ACI_TEST_RAISE(cmiGetLinkImpl(&sPtContext->mCmiPtContext) == CMI_LINK_IMPL_IPCDA,
                    IPCDANotSupport);
     /*
@@ -97,7 +98,7 @@ SQLRETURN ulnGetLob(ulnStmt      *aStmt,
     }
 
     /*
-     * ulnLob êµ¬ì¡°ì²´ ì´ˆê¸°í™”
+     * ulnLob ±¸Á¶Ã¼ ÃÊ±âÈ­
      */
 
     ulnLobInitialize(&sLob, sMTYPE);                        /* ULN_LOB_ST_INITIALIZED */
@@ -105,7 +106,7 @@ SQLRETURN ulnGetLob(ulnStmt      *aStmt,
     sLob.mState = ULN_LOB_ST_OPENED;                        /* ULN_LOB_ST_OPENED */
 
     /*
-     * ulnLobBuffer ì´ˆê¸°í™” ë° ì¤€ë¹„
+     * ulnLobBuffer ÃÊ±âÈ­ ¹× ÁØºñ
      */
 
     ulnLobBufferInitialize(&sLobBuffer,
@@ -118,17 +119,17 @@ SQLRETURN ulnGetLob(ulnStmt      *aStmt,
     sLobBuffer.mOp->mPrepare(&sFnContext, &sLobBuffer);
 
     /*
-     * ì„œë²„ì—ì„œ ë°ì´í„° ê°€ì ¸ì™€ì„œ ì‚¬ìš©ìž ë²„í¼ì— ì“°ê¸°
+     * ¼­¹ö¿¡¼­ µ¥ÀÌÅÍ °¡Á®¿Í¼­ »ç¿ëÀÚ ¹öÆÛ¿¡ ¾²±â
      */
     //fix BUG-17722
     ACI_TEST(ulnInitializeProtocolContext(&sFnContext,
-                                          &(aStmt->mParentDbc->mPtContext),
-                                          &(aStmt->mParentDbc->mSession)) != ACI_SUCCESS);
+                                          &(sDbc->mPtContext),
+                                          &(sDbc->mSession)) != ACI_SUCCESS);
 
     ULN_FLAG_UP(sNeedFinPtContext);
     //fix BUG-17722
     ACI_TEST(sLob.mOp->mGetData(&sFnContext,
-                                &(aStmt->mParentDbc->mPtContext),
+                                &(sDbc->mPtContext),
                                 &sLob,
                                 &sLobBuffer,
                                 aFromPosition,
@@ -137,11 +138,11 @@ SQLRETURN ulnGetLob(ulnStmt      *aStmt,
     ULN_FLAG_DOWN(sNeedFinPtContext);
     //fix BUG-17722
     ACI_TEST(ulnFinalizeProtocolContext(&sFnContext,
-                                        &(aStmt->mParentDbc->mPtContext))
+                                        &(sDbc->mPtContext))
                 != ACI_SUCCESS);
 
     /*
-     * ê°€ì ¸ì˜¨ ë°ì´í„°ì˜ ê¸¸ì´ ë°˜í™˜
+     * °¡Á®¿Â µ¥ÀÌÅÍÀÇ ±æÀÌ ¹ÝÈ¯
      */
 
     if (aLengthWritten != NULL)
@@ -175,7 +176,7 @@ SQLRETURN ulnGetLob(ulnStmt      *aStmt,
     }
 
     /*
-     * ulnLobBuffer ì •ë¦¬
+     * ulnLobBuffer Á¤¸®
      */
 
     sLobBuffer.mOp->mFinalize(&sFnContext, &sLobBuffer);
@@ -224,7 +225,7 @@ SQLRETURN ulnGetLob(ulnStmt      *aStmt,
     ULN_IS_FLAG_UP(sNeedFinPtContext)
     {
         //fix BUG-17722
-        ulnFinalizeProtocolContext(&sFnContext,&(aStmt->mParentDbc->mPtContext) );
+        ulnFinalizeProtocolContext(&sFnContext,&(sDbc->mPtContext) );
     }
 
     ULN_IS_FLAG_UP(sNeedExit)

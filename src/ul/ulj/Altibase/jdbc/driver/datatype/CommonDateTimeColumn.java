@@ -55,7 +55,7 @@ abstract class CommonDateTimeColumn extends AbstractColumn
     protected Calendar         mCalendar                = Calendar.getInstance();
     private Timestamp          mTimestamp               = new Timestamp(0);
     private boolean            mIsNullValueSet;
-    // BUG-46513 date_format jdbc ÏÜçÏÑ±Í∞íÏùÑ Ï†ÄÏû•ÌïòÍ∏∞ ÏúÑÌïú Î©§Î≤ÑÎ≥ÄÏàò
+    // BUG-46513 date_format jdbc º”º∫∞™¿ª ¿˙¿Â«œ±‚ ¿ß«— ∏‚πˆ∫Øºˆ
     private String             mDateFormat;
 
     CommonDateTimeColumn()
@@ -138,6 +138,20 @@ abstract class CommonDateTimeColumn extends AbstractColumn
         }
     }
 
+    public void storeTo()
+    {
+        if (isNullValueSet())
+        {
+            mValues.add(null);
+        }
+        else
+        {
+            Timestamp sTS = new Timestamp(mTimestamp.getTime());
+            sTS.setNanos(mTimestamp.getNanos());
+            mValues.add(sTS);
+        }
+    }
+
     protected void readFromSub(CmChannel aChannel) throws SQLException
     {
         Timestamp sTimestamp = readTimestamp(aChannel);
@@ -156,7 +170,6 @@ abstract class CommonDateTimeColumn extends AbstractColumn
         short sYear = aChannel.readShort();
         short sMonDayHour = aChannel.readShort();
         int sMinSecMicroSec = aChannel.readInt();
-        Calendar sCalendar = Calendar.getInstance();
         Timestamp sTimestamp = new Timestamp(0);
 
         if (isNullMtdDate(sYear, sMonDayHour, sMinSecMicroSec))
@@ -164,14 +177,15 @@ abstract class CommonDateTimeColumn extends AbstractColumn
             return null;
         }
 
-        sCalendar.set(sYear,
+        // BUG-47460 ∏≈π¯ Calendar∞¥√º∏¶ ª˝º∫«œ¡ˆ æ ∞Ì ∏‚πˆ∫Øºˆ∏¶ ¿Á»∞øÎ «—¥Ÿ.
+        mCalendar.set(sYear,
                       ((sMonDayHour & MTD_DATE_MON_MASK) >>> MTD_DATE_MON_SHIFT) - 1,
                       ((sMonDayHour & MTD_DATE_DAY_MASK) >>> MTD_DATE_DAY_SHIFT),
                       ((sMonDayHour & MTD_DATE_HOUR_MASK)),
                       ((sMinSecMicroSec & MTD_DATE_MIN_MASK) >>> MTD_DATE_MIN_SHIFT),
                       ((sMinSecMicroSec & MTD_DATE_SEC_MASK) >>> MTD_DATE_SEC_SHIFT));
         int sNanos = (sMinSecMicroSec & MTD_DATE_MSEC_MASK) * 1000;
-        sTimestamp.setTime(sCalendar.getTimeInMillis());
+        sTimestamp.setTime(mCalendar.getTimeInMillis());
         sTimestamp.setNanos(sNanos);
 
         return sTimestamp;
@@ -180,6 +194,11 @@ abstract class CommonDateTimeColumn extends AbstractColumn
     protected void readFromSub(CmChannel aChannel, DynamicArray aArray) throws SQLException
     {
         ((ObjectDynamicArray)aArray).put(readTimestamp(aChannel));
+    }
+
+    protected void readAndStoreValue(CmChannel aChannel) throws SQLException
+    {
+        mValues.add(readTimestamp(aChannel));
     }
 
     private boolean isNullMtdDate(int aYear, int aMonDayHour, long aMinSecMic)
@@ -192,6 +211,19 @@ abstract class CommonDateTimeColumn extends AbstractColumn
     protected void loadFromSub(DynamicArray aArray)
     {
         Timestamp sTS = (Timestamp)((ObjectDynamicArray) aArray).get();
+        if (sTS == null)
+        {
+            setNullValue();
+        }
+        else
+        {
+            setTime(sTS.getTime(), sTS.getNanos());
+        }
+    }
+
+    protected void loadFromSub(int aLoadIndex)
+    {
+        Timestamp sTS = (Timestamp)(mValues.get(aLoadIndex));
         if (sTS == null)
         {
             setNullValue();
@@ -261,7 +293,7 @@ abstract class CommonDateTimeColumn extends AbstractColumn
         sCal.set(Calendar.HOUR_OF_DAY, sHH);
         sCal.set(Calendar.MINUTE, sMI);
         sCal.set(Calendar.SECOND, sSS);
-        // OracleÏùÄ fractional seconds Í∞íÏùÑ ÏïàÏ§ÄÎã§.
+        // Oracle¿∫ fractional seconds ∞™¿ª æ»¡ÿ¥Ÿ.
         //sCal.set(Calendar.MILLISECOND, mTimestamp.getNanos() / 1000000);
         return new Time(sCal.getTimeInMillis());
     }

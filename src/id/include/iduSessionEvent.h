@@ -4,13 +4,15 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduSessionEvent.h 64386 2014-04-09 01:34:40Z raysiasd $
+ * $Id: iduSessionEvent.h 90266 2021-03-19 05:23:09Z returns $
  **********************************************************************/
 
 #ifndef _O_IDU_SESSION_EVENT_H_
-# define _O_IDU_SESSION_EVENTH_ 1
+#define _O_IDU_SESSION_EVENT_H_ 1
 
 #include <idv.h>
+#include <idErrorCode.h>
+#include <ideErrorMgr.h>
 
 #define IDU_SESSION_EVENT_MASK            ID_ULONG(0xFFFFFFFFFFFFFFFF)
 #define IDU_SESSION_EVENT_CLOSED          ID_ULONG(0x0000000100000000)
@@ -37,17 +39,17 @@
 
 /*----------------------------------------------------------------------
   Name:
-      iduCheckSessionEvent() -- Sessionì— ëŒ€í•œ Event ê²€ì‚¬ ì½”ë“œ
+      iduCheckSessionEvent() -- Session¿¡ ´ëÇÑ Event °Ë»ç ÄÚµå
 
   Argument:
       aFlag - Event Pointer
 
   Return:
-      IDE_RC ì„±ê³µ(No Event), ì‹¤íŒ¨(Event Occurred)
+      IDE_RC ¼º°ø(No Event), ½ÇÆĞ(Event Occurred)
 
   Description:
-      ì´ í•¨ìˆ˜ëŠ” ìƒìœ„ì—ì„œ í˜¸ì¶œí•˜ì—¬, ì„¸ì…˜ì˜ Eventë¥¼ ê°ì§€í•˜ëŠ”
-      ê²ƒìœ¼ë¡œì„œ Close, Timeout Eventë¥¼ ê²€ì¶œí•œë‹¤.
+      ÀÌ ÇÔ¼ö´Â »óÀ§¿¡¼­ È£ÃâÇÏ¿©, ¼¼¼ÇÀÇ Event¸¦ °¨ÁöÇÏ´Â
+      °ÍÀ¸·Î¼­ Close, Timeout Event¸¦ °ËÃâÇÑ´Ù.
  *--------------------------------------------------------------------*/
 
 IDE_RC iduSessionErrorFilter( ULong aFlag, UInt aCurrStmtID );

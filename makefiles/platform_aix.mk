@@ -102,8 +102,6 @@ PREP_FLAGS = -E
 DEP_FLAGS  = -qmakedep -qsyntaxonly
 DEFINES    = _POSIX_PTHREAD_SEMANTICS _REENTRANT _THREAD_SAFE
 
-CC_FLAGS   = -g
-
 CXX_FLAGS  = $(CC_FLAGS) -fno-rtti -fno-exceptions
 LD_FLAGS   = -brtl -bexpall
 LD_LIBS    = -lm

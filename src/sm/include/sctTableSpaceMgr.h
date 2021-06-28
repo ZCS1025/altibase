@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§ Í¥ÄÎ¶¨Ïûê
+ * ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫ ∞¸∏Æ¿⁄
  *
  *
  **********************************************************************/
@@ -29,11 +29,12 @@
 #define _O_SCT_TABLE_SPACE_MGR_H_ 1
 
 #include <sctDef.h>
-// BUGBUG-1548 SDDÎäî SCTÎ≥¥Îã§ Ïúó LAyerÏù¥ÎØÄÎ°ú Ïù¥ÏôÄÍ∞ôÏù¥ IncludeÌï¥ÏÑúÎäî ÏïàÎê®
+// BUGBUG-1548 SDD¥¬ SCT∫∏¥Ÿ ¿≠ LAyer¿Ãπ«∑Œ ¿ÃøÕ∞∞¿Ã Include«ÿº≠¥¬ æ»µ 
 #include <sdd.h>
 
 struct smmTBSNode;
 struct svmTBSNode;
+class smxTrans;
 
 class sctTableSpaceMgr
 {
@@ -45,7 +46,7 @@ public:
 
     static inline idBool isBackupingTBS( scSpaceID  aSpaceID );
 
-    // smiTBSLockValidTypeÏùÑ sctTBSLockValidOptÎ°ú Î≥ÄÍ≤ΩÌïòÏó¨ Î∞òÌôòÌïúÎã§.
+    // smiTBSLockValidType¿ª sctTBSLockValidOpt∑Œ ∫Ø∞Ê«œø© π›»Ø«—¥Ÿ.
     static sctTBSLockValidOpt
               getTBSLvType2Opt( smiTBSLockValidType aTBSLvType )
     {
@@ -54,137 +55,169 @@ public:
         return mTBSLockValidOpt[ aTBSLvType ];
     }
 
-    // ( Disk/Memory Í≥µÌÜµ ) Tablespace NodeÎ•º Ï¥àÍ∏∞ÌôîÌïúÎã§.
+    // ( Disk/Memory ∞¯≈Î ) Tablespace Node∏¶ √ ±‚»≠«—¥Ÿ.
     static IDE_RC initializeTBSNode(sctTableSpaceNode * aSpaceNode,
                                     smiTableSpaceAttr * aSpaceAttr );
 
-    // ( Disk/Memory Í≥µÌÜµ ) Tablespace NodeÎ•º ÌååÍ¥¥ÌïúÎã§.
+    // ( Disk/Memory ∞¯≈Î ) Tablespace Node∏¶ ∆ƒ±´«—¥Ÿ.
     static IDE_RC destroyTBSNode(sctTableSpaceNode * aSpaceNode );
 
 
-    // TablespaceÏùò Sync MutexÎ•º ÌöçÎìùÌïúÎã§.
+    // Tablespace¿« Sync Mutex∏¶ »πµÊ«—¥Ÿ.
     static IDE_RC latchSyncMutex( sctTableSpaceNode * aSpaceNode );
 
-    // TablespaceÏùò Sync MutexÎ•º ÌíÄÏñ¥Ï§ÄÎã§.
+    // Tablespace¿« Sync Mutex∏¶ «ÆæÓ¡ÿ¥Ÿ.
     static IDE_RC unlatchSyncMutex( sctTableSpaceNode * aSpaceNode );
 
-    // NEW ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§ IDÎ•º Ìï†ÎãπÌïúÎã§.
+    // NEW ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫ ID∏¶ «“¥Á«—¥Ÿ.
     static IDE_RC allocNewTableSpaceID( scSpaceID*   aNewID );
 
-    // Îã§Ïùå NEW ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§ IDÎ•º ÏÑ§Ï†ïÌïúÎã§.
+    // ¥Ÿ¿Ω NEW ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫ ID∏¶ º≥¡§«—¥Ÿ.
     static void   setNewTableSpaceID( scSpaceID aNewID )
                   { mNewTableSpaceID = aNewID; }
 
-    // Îã§Ïùå NEW ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§ IDÎ•º Î∞òÌôòÌïúÎã§.
+    // ¥Ÿ¿Ω NEW ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫ ID∏¶ π›»Ø«—¥Ÿ.
     static scSpaceID getNewTableSpaceID() { return mNewTableSpaceID; }
 
-    // Ï≤´ ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§ ÎÖ∏ÎìúÎ•º Î∞òÌôòÌïúÎã§.
-    static void getFirstSpaceNode( void  **aSpaceNode );
+    // √π ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫ ≥ÎµÂ∏¶ π›»Ø«—¥Ÿ.
+    static inline sctTableSpaceNode * getFirstSpaceNode();
 
-    // ÌòÑÏû¨ ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§Î•º Í∏∞Ï§ÄÏúºÎ°ú Îã§Ïùå ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§ ÎÖ∏ÎìúÎ•º Î∞òÌôòÌïúÎã§.
-    static void getNextSpaceNode( void   *aCurrSpaceNode,
-                                  void  **aNextSpaceNode );
+    // «ˆ¿Á ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫∏¶ ±‚¡ÿ¿∏∑Œ ¥Ÿ¿Ω ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫ ≥ÎµÂ∏¶ π›»Ø«—¥Ÿ.
+    static inline sctTableSpaceNode * getNextSpaceNode( scSpaceID aSpaceID );
 
-    static void getNextSpaceNodeIncludingDropped( void  *aCurrSpaceNode,
-                                                  void **aNextSpaceNode );
+    static inline sctTableSpaceNode *  getNextSpaceNodeIncludingDropped( scSpaceID aSpaceID );
 
-    /* TASK-4007 [SM] PBTÎ•º ÏúÑÌïú Í∏∞Îä• Ï∂îÍ∞Ä *
-     * DropÏ§ëÏù¥Í±∞ÎÇò DropÌï† Í≤ÉÏù¥Í±∞ÎÇò ÏÉùÏÑ±Ï§ëÏù∏ ÌÖåÏù¥Î∏î Ïä§ÌéòÏù¥Ïä§ Ïô∏
-     * Ïò®Ï†ÑÌïú ÌÖåÏù¥Î∏î Ïä§ÌéòÏù¥Ïä§Îßå Í∞ÄÏ†∏Ïò®Îã§*/
-    static void getNextSpaceNodeWithoutDropped( void  *aCurrSpaceNode,
-                                                void **aNextSpaceNode );
+    /* TASK-4007 [SM] PBT∏¶ ¿ß«— ±‚¥… √ﬂ∞° *
+     * Drop¡ﬂ¿Ã∞≈≥™ Drop«“ ∞Õ¿Ã∞≈≥™ ª˝º∫¡ﬂ¿Œ ≈◊¿Ã∫Ì Ω∫∆‰¿ÃΩ∫ ø‹
+     * ø¬¿¸«— ≈◊¿Ã∫Ì Ω∫∆‰¿ÃΩ∫∏∏ ∞°¡Æø¬¥Ÿ*/
+    static inline sctTableSpaceNode * getNextSpaceNodeWithoutDropped( scSpaceID aSpaceID );
 
-    // Î©îÎ™®Î¶¨ ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§Ïùò Ïó¨Î∂ÄÎ•º Î∞òÌôòÌïúÎã§.
+    // ∏ﬁ∏∏Æ ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫¿« ø©∫Œ∏¶ π›»Ø«—¥Ÿ.
     static inline idBool isMemTableSpace( scSpaceID aSpaceID );
+    static inline idBool isMemTableSpace( void * aSpaceNode );
+    static inline idBool isMemTableSpaceType( smiTableSpaceType aSpaceType );
 
-    // Volatile ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§Ïùò Ïó¨Î∂ÄÎ•º Î∞òÌôòÌïúÎã§.
+    // Volatile ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫¿« ø©∫Œ∏¶ π›»Ø«—¥Ÿ.
     static inline idBool isVolatileTableSpace( scSpaceID aSpaceID );
+    static inline idBool isVolatileTableSpace( void * aSpaceNode );
+    static inline idBool isVolatileTableSpaceType( smiTableSpaceType aSpaceType );
 
-    // ÎîîÏä§ÌÅ¨ ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§Ïùò Ïó¨Î∂ÄÎ•º Î∞òÌôòÌïúÎã§.
+    // µΩ∫≈© ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫¿« ø©∫Œ∏¶ π›»Ø«—¥Ÿ.
     static inline idBool isDiskTableSpace( scSpaceID aSpaceID );
+    static inline idBool isDiskTableSpace( void * aSpaceNode );
+    static inline idBool isDiskTableSpaceType( smiTableSpaceType aSpaceType );
 
-    // Ïñ∏Îëê ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§Ïùò Ïó¨Î∂ÄÎ•º Î∞òÌôòÌïúÎã§.
-    static idBool isUndoTableSpace( scSpaceID aSpaceID );
+    // æµŒ ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫¿« ø©∫Œ∏¶ π›»Ø«—¥Ÿ.
+    static inline idBool isUndoTableSpace( scSpaceID aSpaceID );
 
-    // ÏûÑÏãú ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§Ïùò Ïó¨Î∂ÄÎ•º Î∞òÌôòÌïúÎã§.
-    static idBool isTempTableSpace( scSpaceID aSpaceID );
+    // ¿”Ω√ ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫¿« ø©∫Œ∏¶ π›»Ø«—¥Ÿ.
+    static inline idBool isTempTableSpace( scSpaceID aSpaceID );
+    static inline idBool isTempTableSpace( void * aSpaceNode );
+    static inline idBool isTempTableSpaceType( smiTableSpaceType aSpaceType );
 
-    // ÏãúÏä§ÌÖú Î©îÎ™®Î¶¨ ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§Ïùò Ïó¨Î∂ÄÎ•º Î∞òÌôòÌïúÎã§.
-    static idBool isSystemMemTableSpace( scSpaceID aSpaceID );
+    static inline idBool isDataTableSpaceType( smiTableSpaceType  aType );
 
-    // BUG-23953
-    static inline UInt getTableSpaceType( scSpaceID      aSpaceID );
+    // Ω√Ω∫≈€ ∏ﬁ∏∏Æ ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫¿« ø©∫Œ∏¶ π›»Ø«—¥Ÿ.
+    static inline idBool isSystemMemTableSpace( scSpaceID aSpaceID );
 
-    // TBSÏùò Í¥ÄÎ¶¨ ÏòÅÏó≠ÏùÑ Î∞òÌôòÌïúÎã§. (Disk, Memory, Volatile)
-    static smiTBSLocation getTBSLocation( scSpaceID aSpaceID );
+    // TBS¿« ∞¸∏Æ øµø™¿ª π›»Ø«—¥Ÿ. (Disk, Memory, Volatile)
+    static inline smiTBSLocation getTBSLocation( scSpaceID aSpaceID );
+    static inline smiTBSLocation getTBSLocation( sctTableSpaceNode * aSpaceNode );
 
     // PRJ-1548 User Memory Tablespace
-    // ÏãúÏä§ÌÖú ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§Ïùò Ïó¨Î∂ÄÎ•º Î∞òÌôòÌïúÎã§.
-    static idBool isSystemTableSpace( scSpaceID aSpaceID );
+    // Ω√Ω∫≈€ ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫¿« ø©∫Œ∏¶ π›»Ø«—¥Ÿ.
+    static inline idBool isSystemTableSpace( scSpaceID aSpaceID );
 
     static IDE_RC dumpTableSpaceList();
 
-    // TBSIDÎ•º ÏûÖÎ†•Î∞õÏïÑ ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§Ïùò ÏÜçÏÑ±ÏùÑ Î∞òÌôòÌïúÎã§.
-    static IDE_RC getTBSAttrByID(scSpaceID          aID,
-                                 smiTableSpaceAttr* aSpaceAttr);
+    // TBSID∏¶ ¿‘∑¬πﬁæ∆ ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫¿« º”º∫¿ª π›»Ø«—¥Ÿ.
+    static IDE_RC getTBSAttrByID( idvSQL   * aStatistics,
+                                  scSpaceID          aID,
+                                  smiTableSpaceAttr* aSpaceAttr );
 
-    // Tablespace Attribute FlagÏùò PointerÎ•º Î∞òÌôòÌïúÎã§.
-    static IDE_RC getTBSAttrFlagPtrByID(scSpaceID       aID,
-                                        UInt         ** aAttrFlagPtr);
-
-    // TablespaceÏùò Attribute FlagÎ°úÎ∂ÄÌÑ∞ Î°úÍ∑∏ ÏïïÏ∂ïÏó¨Î∂ÄÎ•º ÏñªÏñ¥Ïò®Îã§
+    // Tablespace Attribute Flag¿« Pointer∏¶ π›»Ø«—¥Ÿ.
+    static IDE_RC getTBSAttrFlagByID(scSpaceID       aID,
+                                     UInt          * aAttrFlagPtr);
+    // Tablespace Attribute Flag∏¶ π›»Ø«—¥Ÿ.
+    static UInt getTBSAttrFlag( sctTableSpaceNode * aSpaceNode );
+    // Tablespace Attribute Flag∏¶ º≥¡§«—¥Ÿ.
+    static void setTBSAttrFlag( sctTableSpaceNode * aSpaceNode,
+                                UInt                aAttrFlag );
+    // Tablespace¿« Attribute Flag∑Œ∫Œ≈Õ ∑Œ±◊ æ–√‡ø©∫Œ∏¶ æÚæÓø¬¥Ÿ
     static IDE_RC getSpaceLogCompFlag( scSpaceID aSpaceID, idBool *aDoComp );
 
 
-    // TBSÎ™ÖÏùÑ ÏûÖÎ†•Î∞õÏïÑ ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§Ïùò ÏÜçÏÑ±ÏùÑ Î∞òÌôòÌïúÎã§.
+    // TBS∏Ì¿ª ¿‘∑¬πﬁæ∆ ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫¿« º”º∫¿ª π›»Ø«—¥Ÿ.
     static IDE_RC getTBSAttrByName(SChar*              aName,
                                    smiTableSpaceAttr*  aSpaceAttr);
 
 
-    // TBSÎ™ÖÏùÑ ÏûÖÎ†•Î∞õÏïÑ ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§Ïùò ÏÜçÏÑ±ÏùÑ Î∞òÌôòÌïúÎã§.
+    // TBS∏Ì¿ª ¿‘∑¬πﬁæ∆ ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫¿« º”º∫¿ª π›»Ø«—¥Ÿ.
     static IDE_RC findSpaceNodeByName(SChar* aName,
-                                      void** aSpaceNode);
+                                      void** aSpaceNode ,
+                                      idBool aLockSpace );
 
 
-    // TBSÎ™ÖÏùÑ ÏûÖÎ†•Î∞õÏïÑ ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§Í∞Ä Ï°¥Ïû¨ÌïòÎäîÏßÄ ÌôïÏù∏ÌïúÎã§.
+    // TBS∏Ì¿ª ¿‘∑¬πﬁæ∆ ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫∞° ¡∏¿Á«œ¥¬¡ˆ »Æ¿Œ«—¥Ÿ.
     static idBool checkExistSpaceNodeByName( SChar* aTableSpaceName );
 
-    // Tablespace IDÎ°ú SpaceNodeÎ•º Ï∞æÎäîÎã§.
-    // Ìï¥Îãπ TablespaceÍ∞Ä DROPÎêú Í≤ΩÏö∞ ÏóêÎü¨Î•º Î∞úÏÉùÏãúÌÇ®Îã§.
-    static IDE_RC findSpaceNodeBySpaceID(scSpaceID  aSpaceID,
-                                         void**     aSpaceNode);
+    // Tablespace ID∑Œ SpaceNode∏¶ √£¥¬¥Ÿ.
+    // «ÿ¥Á Tablespace∞° DROPµ» ∞ÊøÏ ø°∑Ø∏¶ πﬂª˝Ω√≈≤¥Ÿ.
+    static IDE_RC findSpaceNodeBySpaceID( scSpaceID  aSpaceID,
+                                          void**     aSpaceNode )
+    {
+        return findSpaceNodeBySpaceID( NULL,
+                                       aSpaceID,
+                                       aSpaceNode,
+                                       ID_FALSE );
+    };
 
-    // Tablespace IDÎ°ú SpaceNodeÎ•º Ï∞æÎäîÎã§.
-    // Î¨¥Ï°∞Í±¥ TBS Node Ìè¨Ïù∏ÌÑ∞Î•º Ï§ÄÎã§.
-    // BUG-18743: Î©îÎ™®Î¶¨ ÌéòÏù¥ÏßÄÍ∞Ä Íπ®Ï°åÏùÑ Í≤ΩÏö∞ PBTÌï† Ïàò ÏûàÎäî
-    // Î°úÏßÅÏù¥ ÌïÑÏöîÌï©ÎãàÎã§.
-    //   smmManager::isValidPageIDÏóêÏÑú ÏÇ¨Ïö©ÌïòÍ∏∞ ÏúÑÌï¥ÏÑú Ï∂îÍ∞Ä.
-    // Îã§Î•∏ Î°úÏßÅÏóêÏÑúÎäî Ïù¥ Ìï®Ïàò ÏÇ¨Ïö©Î≥¥Îã§Îäî findSpaceNodeBySpaceID ÏùÑ
-    // Í∂åÏû•Ìï©ÎãàÎã§. ÏôúÎÉêÌïòÎ©¥ Ïù¥Ìï®ÏàòÎäî ValidationÏûëÏóÖÏù¥ Ï†ÑÌòÄ ÏóÜÏäµÎãàÎã§.
-    static inline void* getSpaceNodeBySpaceID( scSpaceID  aSpaceID )
+    static IDE_RC findAndLockSpaceNodeBySpaceID( idvSQL   * aStatistics,
+                                                 scSpaceID  aSpaceID,
+                                                 void**     aSpaceNode )
+    {
+        return findSpaceNodeBySpaceID( aStatistics,
+                                       aSpaceID,
+                                       aSpaceNode,
+                                       ID_TRUE );
+    };
+
+private:
+    static IDE_RC findSpaceNodeBySpaceID( idvSQL   * aStatistics,
+                                          scSpaceID  aSpaceID,
+                                          void**     aSpaceNode,
+                                          idBool     aLockSpace );
+public:
+    // Tablespace ID∑Œ SpaceNode∏¶ √£¥¬¥Ÿ.
+    // π´¡∂∞« TBS Node ∆˜¿Œ≈Õ∏¶ ¡ÿ¥Ÿ.
+    // BUG-18743: ∏ﬁ∏∏Æ ∆‰¿Ã¡ˆ∞° ±˙¡≥¿ª ∞ÊøÏ PBT«“ ºˆ ¿÷¥¬
+    // ∑Œ¡˜¿Ã « ø‰«’¥œ¥Ÿ.
+    //   smmManager::isValidPageIDø°º≠ ªÁøÎ«œ±‚ ¿ß«ÿº≠ √ﬂ∞°.
+    // ¥Ÿ∏• ∑Œ¡˜ø°º≠¥¬ ¿Ã «‘ºˆ ªÁøÎ∫∏¥Ÿ¥¬ findSpaceNodeBySpaceID ¿ª
+    // ±«¿Â«’¥œ¥Ÿ. ø÷≥ƒ«œ∏È ¿Ã«‘ºˆ¥¬ Validation¿€æ˜¿Ã ¿¸«Ù æ¯Ω¿¥œ¥Ÿ.
+    static inline sctTableSpaceNode * getSpaceNodeBySpaceID( scSpaceID  aSpaceID )
     {
         return mSpaceNodeArray[aSpaceID];
     }
 
-    // Tablespace IDÎ°ú SpaceNodeÎ•º Ï∞æÎäîÎã§.
-    // Ìï¥Îãπ TablespaceÍ∞Ä DROPÎêú Í≤ΩÏö∞ SpaceNodeÏóê NULLÏùÑ Î¶¨ÌÑ¥ÌïúÎã§.
-    static void findSpaceNodeWithoutException(scSpaceID  aSpaceID,
-                                              void**     aSpaceNode,
-                                              idBool     aUsingTBSAttr = ID_FALSE );
+    // Tablespace ID∑Œ SpaceNode∏¶ √£¥¬¥Ÿ.
+    // «ÿ¥Á Tablespace∞° DROPµ» ∞ÊøÏ SpaceNodeø° NULL¿ª ∏Æ≈œ«—¥Ÿ.
+    static sctTableSpaceNode* findSpaceNodeWithoutException( scSpaceID  aSpaceID,
+                                                             idBool     aUsingTBSAttr = ID_FALSE );
 
 
-    // Tablespace IDÎ°ú SpaceNodeÎ•º Ï∞æÎäîÎã§.
-    // Ìï¥Îãπ TablespaceÍ∞Ä DROPÎêú Í≤ΩÏö∞ÏóêÎèÑ aSpaceNodeÏóê Ìï¥Îãπ TBSÎ•º Î¶¨ÌÑ¥.
-    static void findSpaceNodeIncludingDropped(scSpaceID  aSpaceID,
-                                              void**     aSpaceNode);
+    // Tablespace ID∑Œ SpaceNode∏¶ √£¥¬¥Ÿ.
+    // «ÿ¥Á Tablespace∞° DROPµ» ∞ÊøÏø°µµ aSpaceNodeø° «ÿ¥Á TBS∏¶ ∏Æ≈œ.
+    static sctTableSpaceNode* findSpaceNodeIncludingDropped( scSpaceID  aSpaceID )
+    {  return mSpaceNodeArray[aSpaceID]; };
 
-    // TablespaceÍ∞Ä Ï°¥Ïû¨ÌïòÎäîÏßÄ Ï≤¥ÌÅ¨ÌïúÎã§.
+    // Tablespace∞° ¡∏¿Á«œ¥¬¡ˆ √º≈©«—¥Ÿ.
     static idBool isExistingTBS( scSpaceID aSpaceID );
 
-    // TablespaceÍ∞Ä ONLINEÏÉÅÌÉúÏù∏ÏßÄ Ï≤¥ÌÅ¨ÌïúÎã§.
+    // Tablespace∞° ONLINEªÛ≈¬¿Œ¡ˆ √º≈©«—¥Ÿ.
     static idBool isOnlineTBS( scSpaceID aSpaceID );
 
-    // TablespaceÍ∞Ä Ïó¨Îü¨ StateÏ§ë ÌïòÎÇòÏùò StateÎ•º ÏßÄÎãàÎäîÏßÄ Ï≤¥ÌÅ¨ÌïúÎã§.
+    // Tablespace∞° ø©∑Ø State¡ﬂ «œ≥™¿« State∏¶ ¡ˆ¥œ¥¬¡ˆ √º≈©«—¥Ÿ.
     static idBool hasState( scSpaceID   aSpaceID,
                             sctStateSet aStateSet,
                             idBool      aUsingTBSAttr = ID_FALSE );
@@ -192,55 +225,39 @@ public:
     static idBool hasState( sctTableSpaceNode * aSpaceNode,
                             sctStateSet         aStateSet );
 
-    // TablespaceÏùò StateÏóê aStateSetÏïàÏùò StateÍ∞Ä ÌïòÎÇòÎùºÎèÑ ÏûàÎäîÏßÄ Ï≤¥ÌÅ¨ÌïúÎã§.
+    // Tablespace¿« Stateø° aStateSetæ»¿« State∞° «œ≥™∂Ûµµ ¿÷¥¬¡ˆ √º≈©«—¥Ÿ.
     static idBool isStateInSet( UInt         aTBSState,
                                 sctStateSet  aStateSet );
 
-    // TablespaceÏïàÏùò Table/IndexÎ•º OpenÌïòÍ∏∞ Ï†ÑÏóê TablespaceÍ∞Ä
-    // ÏÇ¨Ïö© Í∞ÄÎä•ÌïúÏßÄ Ï≤¥ÌÅ¨ÌïúÎã§.
+    // Tablespaceæ»¿« Table/Index∏¶ Open«œ±‚ ¿¸ø° Tablespace∞°
+    // ªÁøÎ ∞°¥…«—¡ˆ √º≈©«—¥Ÿ.
     static IDE_RC validateTBSNode( sctTableSpaceNode * aSpaceNode,
                                    sctTBSLockValidOpt  aTBSLvOpt );
 
-    // TBSÎ™ÖÏóê Ìï¥ÎãπÌïòÎäî ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§ IDÎ•º Î∞òÌôòÌïúÎã§.
-    static IDE_RC getTableSpaceIDByNameLow(SChar*     aTableSpaceName,
-                                           scSpaceID* aTableSpaceID);
-
-    static void getLock( iduMutex **aMutex ) { *aMutex = &mMutex; }
-
-    // ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§ Í¥ÄÎ¶¨ÏûêÏùò TBS ListÏóê ÎåÄÌïú ÎèôÏãúÏÑ± Ï†úÏñ¥
-    static IDE_RC lock( idvSQL * aStatistics )
-    { return mMutex.lock( aStatistics );   }
-    static IDE_RC unlock( ) { return mMutex.unlock(); }
-
-    // ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§ ÏÉùÏÑ±Ïãú Îç∞Ïù¥ÌÉÄÌååÏùº ÏÉùÏÑ±Ïóê ÎåÄÌïú ÎèôÏãúÏÑ± Ï†úÏñ¥
+    // ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫ ª˝º∫Ω√ µ•¿Ã≈∏∆ƒ¿œ ª˝º∫ø° ¥Î«— µøΩ√º∫ ¡¶æÓ
     static IDE_RC lockForCrtTBS( ) { return mMtxCrtTBS.lock( NULL ); }
     static IDE_RC unlockForCrtTBS( ) { return mMtxCrtTBS.unlock(); }
 
-    static IDE_RC lockGlobalPageCountCheckMutex()
-    { return mGlobalPageCountCheckMutex.lock( NULL );   }
-    static IDE_RC unlockGlobalPageCountCheckMutex( )
-    { return mGlobalPageCountCheckMutex.unlock(); }
-
     // PRJ-1548 User Memory Tablespace
-    // Ïû†Í∏àÏóÜÏù¥ ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§ÏôÄ Í¥ÄÎ†®Îêú SyncÏó∞ÏÇ∞Í≥º Drop Ïó∞ÏÇ∞Í∞ÑÏùò ÎèôÏãúÏÑ±
-    // Ï†úÏñ¥ÌïòÍ∏∞ ÏúÑÌï¥ Sync MutexÎ•º ÏÇ¨Ïö©ÌïúÎã§.
+    // ¿·±›æ¯¿Ã ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫øÕ ∞¸∑√µ» Syncø¨ªÍ∞˙ Drop ø¨ªÍ∞£¿« µøΩ√º∫
+    // ¡¶æÓ«œ±‚ ¿ß«ÿ Sync Mutex∏¶ ªÁøÎ«—¥Ÿ.
 
     static void addTableSpaceNode( sctTableSpaceNode *aSpaceNode );
     static void removeTableSpaceNode( sctTableSpaceNode *aSpaceNode );
 
-    // ÏÑúÎ≤ÑÍµ¨ÎèôÏãúÏóê Î™®Îì† ÏûÑÏãú ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§Î•º Reset ÌïúÎã§.
+    // º≠πˆ±∏µøΩ√ø° ∏µÁ ¿”Ω√ ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫∏¶ Reset «—¥Ÿ.
     static IDE_RC resetAllTempTBS( void *aTrans );
 
     //for PRJ-1149 added functions
-    static IDE_RC  getDataFileNodeByName(SChar*            aFileName,
-                                         sddDataFileNode** aFileNode,
-                                         scSpaceID*        aTbsID,
-                                         scPageID*         aFstPageID = NULL,
-                                         scPageID*         aLstPageID = NULL,
-                                         SChar**           aSpaceName = NULL);
+    static void getDataFileNodeByName(SChar*            aFileName,
+                                      sddDataFileNode** aFileNode,
+                                      scSpaceID*        aTbsID,
+                                      scPageID*         aFstPageID = NULL,
+                                      scPageID*         aLstPageID = NULL,
+                                      SChar**           aSpaceName = NULL);
 
 
-    // Ìä∏ÎûúÏû≠ÏÖò Ïª§Î∞ã ÏßÅÏ†ÑÏóê ÏàòÌñâÌïòÍ∏∞ ÏúÑÌïú Ïó∞ÏÇ∞ÏùÑ Îì±Î°ù
+    // ∆Æ∑£¿Ëº« ƒøπ‘ ¡˜¿¸ø° ºˆ«‡«œ±‚ ¿ß«— ø¨ªÍ¿ª µÓ∑œ
     static IDE_RC addPendingOperation( void               *aTrans,
                                        scSpaceID           aSpaceID,
                                        idBool              aIsCommit,
@@ -248,46 +265,46 @@ public:
                                        sctPendingOp      **aPendingOp = NULL );
 
 
-    // ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§ Í¥ÄÎ†® Ìä∏ÎûúÏû≠ÏÖò Commit-Pending Ïó∞ÏÇ∞ÏùÑ ÏàòÌñâÌïúÎã§.
+    // ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫ ∞¸∑√ ∆Æ∑£¿Ëº« Commit-Pending ø¨ªÍ¿ª ºˆ«‡«—¥Ÿ.
     static IDE_RC executePendingOperation( idvSQL *aStatistics,
                                            void   *aPendingOp,
                                            idBool  aIsCommit);
 
     // PRJ-1548 User Memory Tablespace
     //
-    // # Ïû†Í∏àÍ≥ÑÏ∏µÍµ¨Ï°∞Ïùò Ï°∞Ï†ï
+    // # ¿·±›∞Ë√˛±∏¡∂¿« ¡∂¡§
     //
-    // Í∏∞Ï°¥ÏóêÎäî tableÍ≥º tablespace Í∞ÑÏóê Î≥ÑÍ∞úÏùò lock hierachyÎ•º Í∞ÄÏßÄÍ≥† Ïû†Í∏àÍ¥ÄÎ¶¨Î•º ÌïòÍ≥† ÏûàÎã§.
-    // Ïù¥Îü¨Ìïú Í¥ÄÎ¶¨Íµ¨Ï°∞Îäî case by caseÎ°ú ÏÑ∏Îäî Î∂ÄÎ∂ÑÏùÑ Ï≤òÎ¶¨Ìï¥ÏïºÌïòÎäî Í≤ΩÏö∞Í∞Ä ÎßéÏù¥ Î∞úÏÉùÌï† Í≤ÉÏù¥Îã§.
-    // ÏòàÎ•ºÎì§Ïñ¥ offline Ïó∞ÏÇ∞ÏùÑ Ìï† Îïå, Í¥ÄÎ†® tableÏóê ÎåÄÌïú X Ïû†Í∏àÏùÑ ÌöçÎìùÌïòÍ∏∞Î°ú ÌïòÏòÄÏùÑ Í≤ΩÏö∞Ïóê
-    // ÏÉùÏÑ±Ï§ëÏù∏ tableÏù¥ÎÇò drop Ï§ëÏù∏ tableÏóê ÎåÄÌï¥ÏÑúÎäî Ïû†Í∏àÏ≤òÎ¶¨Î•º Ïñ¥ÎñªÍ≤å ÌïòÎäêÎÉêÎùºÎäî Î¨∏Ï†úÍ∞Ä ÏÉùÍ∏¥Îã§.
-    // ÏïÑÎßà catalog pageÏóê ÎåÄÌï¥ÏÑú Ïû†Í∏àÏùÑ ÏàòÌñâÌï¥Ïïº Ìï†ÏßÄÎèÑ Î™®Î•∏Îã§.
-    // Ïù¥Îü¨Ìïú Í≤ΩÏö∞Î•º Ï†ïÏÑùÎåÄÎ°ú ÏÉÅÏúÑ Í∞úÎÖêÏùò tablespace ÎÖ∏ÎìúÏùò Ïû†Í∏àÏùÑ ÌöçÎìùÌïòÎèÑÎ°ù ÏàòÏ†ïÌïúÎã§Î©¥
-    // Ï¢Ä Îçî Î™ÖÎ∞±ÌïòÍ≤å Ìï¥Í≤∞Ìï† Ïàò ÏûàÏùÑ Í≤ÉÏù¥Í≥†,
-    // Î≥¥Îã§ ÏïàÏ†ÑÌïú ÎåÄÏ±ÖÏù¥ ÏïÑÎãêÎü∞ÏßÄ..
+    // ±‚¡∏ø°¥¬ table∞˙ tablespace ∞£ø° ∫∞∞≥¿« lock hierachy∏¶ ∞°¡ˆ∞Ì ¿·±›∞¸∏Æ∏¶ «œ∞Ì ¿÷¥Ÿ.
+    // ¿Ã∑Ø«— ∞¸∏Æ±∏¡∂¥¬ case by case∑Œ ºº¥¬ ∫Œ∫–¿ª √≥∏Æ«ÿæﬂ«œ¥¬ ∞ÊøÏ∞° ∏π¿Ã πﬂª˝«“ ∞Õ¿Ã¥Ÿ.
+    // øπ∏¶µÈæÓ offline ø¨ªÍ¿ª «“ ∂ß, ∞¸∑√ tableø° ¥Î«— X ¿·±›¿ª »πµÊ«œ±‚∑Œ «œø¥¿ª ∞ÊøÏø°
+    // ª˝º∫¡ﬂ¿Œ table¿Ã≥™ drop ¡ﬂ¿Œ tableø° ¥Î«ÿº≠¥¬ ¿·±›√≥∏Æ∏¶ æÓ∂ª∞‘ «œ¥¿≥ƒ∂Û¥¬ πÆ¡¶∞° ª˝±‰¥Ÿ.
+    // æ∆∏∂ catalog pageø° ¥Î«ÿº≠ ¿·±›¿ª ºˆ«‡«ÿæﬂ «“¡ˆµµ ∏∏•¥Ÿ.
+    // ¿Ã∑Ø«— ∞ÊøÏ∏¶ ¡§ºÆ¥Î∑Œ ªÛ¿ß ∞≥≥‰¿« tablespace ≥ÎµÂ¿« ¿·±›¿ª »πµÊ«œµµ∑œ ºˆ¡§«—¥Ÿ∏È
+    // ¡ª ¥ı ∏ÌπÈ«œ∞‘ «ÿ∞·«“ ºˆ ¿÷¿ª ∞Õ¿Ã∞Ì,
+    // ∫∏¥Ÿ æ»¿¸«— ¥Î√•¿Ã æ∆¥“∑±¡ˆ..
     //
-    // A. TBS NODE -> CATALOG TABLE -> TABLE -> DBF NODE ÏàúÏúºÎ°ú
-    //    lock hierachyÎ•º Ï†ïÏùòÌïúÎã§.
+    // A. TBS NODE -> CATALOG TABLE -> TABLE -> DBF NODE º¯¿∏∑Œ
+    //    lock hierachy∏¶ ¡§¿««—¥Ÿ.
     //
-    // B. DML ÏàòÌñâÏãú TBS NodeÏóê ÎåÄÌï¥ÏÑúÎèÑ INTENTION LOCKÏùÑ ÏöîÏ≤≠ÌïòÎèÑÎ°ù Ï≤òÎ¶¨ÌïúÎã§.
-    // STATEMENTÏùò CURSOR Ïò§ÌîàÏãú Ï≤òÎ¶¨ÌïòÍ≥†, SAVEPOINTÎèÑ Ï≤òÎ¶¨Ìï¥ÏïºÌïúÎã§.
-    // ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§ Í¥ÄÎ†® DDLÍ≥ºÏùò ÎèôÏãúÏÑ± Ï†úÏñ¥Í∞Ä Í∞ÄÎä•ÌïòÎã§.
+    // B. DML ºˆ«‡Ω√ TBS Nodeø° ¥Î«ÿº≠µµ INTENTION LOCK¿ª ø‰√ª«œµµ∑œ √≥∏Æ«—¥Ÿ.
+    // STATEMENT¿« CURSOR ø¿«¬Ω√ √≥∏Æ«œ∞Ì, SAVEPOINTµµ √≥∏Æ«ÿæﬂ«—¥Ÿ.
+    // ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫ ∞¸∑√ DDL∞˙¿« µøΩ√º∫ ¡¶æÓ∞° ∞°¥…«œ¥Ÿ.
     //
-    // C. SYSTEM TABLESPACEÎäî dropÏù¥ Î∂àÍ∞ÄÎä•ÌïòÎØÄÎ°ú Ïû†Í∏àÏùÑ ÌöçÎìùÌïòÏßÄ ÏïäÏïÑÎèÑ ÎêúÎã§.
+    // C. SYSTEM TABLESPACE¥¬ drop¿Ã ∫“∞°¥…«œπ«∑Œ ¿·±›¿ª »πµÊ«œ¡ˆ æ æ∆µµ µ»¥Ÿ.
     //
-    // D. DDL ÏàòÌñâÏãú TBS Node ÎòêÎäî DBF NodeÏóê ÎåÄÌï¥ÏÑú Ïû†Í∏àÏùÑ ÏöîÏ≤≠ÌïòÎèÑÎ°ù Ï≤òÎ¶¨ÌïúÎã§.
-    // TABLE/INDEXÎì±Ïóê ÎåÄÌïú DDLÏóê ÎåÄÌï¥ÏÑúÎèÑ Í¥ÄÎ†® TBSÏóê Ïû†Í∏àÏùÑ ÌöçÎìùÌïòÎèÑÎ°ù ÌïúÎã§.
-    // ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§ Í¥ÄÎ†® DDLÍ≥ºÏùò ÎèôÏãúÏÑ± Ï†úÏñ¥Í∞Ä Í∞ÄÎä•ÌïòÎã§.
-    // Îã®, PSM/VIEW/SEQUENCEÎì±ÏùÄ SYSTEM_DICTIONARY_TABLESPACEÏóê ÏÉùÏÑ±ÎêòÎØÄÎ°ú Ïû†Í∏àÏùÑ
-    // ÌöçÎìùÌï† ÌïÑÏöîÎäî ÏóÜÎã§.
+    // D. DDL ºˆ«‡Ω√ TBS Node ∂«¥¬ DBF Nodeø° ¥Î«ÿº≠ ¿·±›¿ª ø‰√ª«œµµ∑œ √≥∏Æ«—¥Ÿ.
+    // TABLE/INDEXµÓø° ¥Î«— DDLø° ¥Î«ÿº≠µµ ∞¸∑√ TBSø° ¿·±›¿ª »πµÊ«œµµ∑œ «—¥Ÿ.
+    // ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫ ∞¸∑√ DDL∞˙¿« µøΩ√º∫ ¡¶æÓ∞° ∞°¥…«œ¥Ÿ.
+    // ¥‹, PSM/VIEW/SEQUENCEµÓ¿∫ SYSTEM_DICTIONARY_TABLESPACEø° ª˝º∫µ«π«∑Œ ¿·±›¿ª
+    // »πµÊ«“ « ø‰¥¬ æ¯¥Ÿ.
     //
-    // E. LOCK ÏöîÏ≤≠ ÎπÑÏö©ÏùÑ Ï§ÑÏù¥Í∏∞ ÏúÑÌï¥ÏÑú TABLE_LOCK_ENABLEÍ≥º ÎπÑÏä∑Ìïú Îß•ÎùΩÏúºÎ°ú
-    // TABLESPACE_LOCK_ENABLE Í∏∞Îä•ÏùÑ ÏßÄÏõêÌïòÏó¨, TABLESPACE DDLÏùÑ ÌóàÏö©ÌïòÎäî ÏïäÎäî Î≤îÏúÑÎÇ¥ÏóêÏÑú
-    // TBS LIST, TBS NODE, DBF NODE Ïóê ÎåÄÌïú LOCK ÏöîÏ≤≠ÏùÑ ÌïòÏßÄ Î™ªÌïòÎèÑÎ°ù Ï≤òÎ¶¨ÌïúÎã§.
+    // E. LOCK ø‰√ª ∫ÒøÎ¿ª ¡Ÿ¿Ã±‚ ¿ß«ÿº≠ TABLE_LOCK_ENABLE∞˙ ∫ÒΩ¡«— ∏∆∂Ù¿∏∑Œ
+    // TABLESPACE_LOCK_ENABLE ±‚¥…¿ª ¡ˆø¯«œø©, TABLESPACE DDL¿ª «„øÎ«œ¥¬ æ ¥¬ π¸¿ß≥ªø°º≠
+    // TBS LIST, TBS NODE, DBF NODE ø° ¥Î«— LOCK ø‰√ª¿ª «œ¡ˆ ∏¯«œµµ∑œ √≥∏Æ«—¥Ÿ.
 
 
-    // ÌÖåÏù¥Î∏îÏùò ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§Îì§Ïóê ÎåÄÌïòÏó¨ INTENTION Ïû†Í∏àÏùÑ ÌöçÎìùÌïúÎã§.
-    // smiValidateAndLockTable(), smiTable::lockTable, Ïª§ÏÑú openÏãú Ìò∏Ï∂ú
+    // ≈◊¿Ã∫Ì¿« ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫µÈø° ¥Î«œø© INTENTION ¿·±›¿ª »πµÊ«—¥Ÿ.
+    // smiValidateAndLockTable(), smiTable::lockTable, ƒøº≠ openΩ√ »£√‚
     static IDE_RC lockAndValidateTBS(
                       void                * aTrans,      /* [IN]  */
                       scSpaceID             aSpaceID,    /* [IN]  */
@@ -296,8 +313,8 @@ public:
                       idBool                aIsExclusive,/* [IN]  */
                       ULong                 aLockWaitMicroSec ); /* [IN] */
 
-    // ÌÖåÏù¥Î∏îÍ≥º Í¥ÄÎ†®Îêú ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§Îì§Ïóê ÎåÄÌïòÏó¨ INTENTION Ïû†Í∏àÏùÑ ÌöçÎìùÌïúÎã§.
-    // smiValidateAndLockTable(), smiTable::lockTable, Ïª§ÏÑú openÏãú Ìò∏Ï∂ú
+    // ≈◊¿Ã∫Ì∞˙ ∞¸∑√µ» ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫µÈø° ¥Î«œø© INTENTION ¿·±›¿ª »πµÊ«—¥Ÿ.
+    // smiValidateAndLockTable(), smiTable::lockTable, ƒøº≠ openΩ√ »£√‚
     static IDE_RC lockAndValidateRelTBSs(
                     void                 * aTrans,           /* [IN] */
                     void                 * aTable,           /* [IN] */
@@ -306,7 +323,7 @@ public:
                     idBool                 aIsExclusive,     /* [IN] */
                     ULong                  aLockWaitMicroSec ); /* [IN] */
 
-    // Tablespace NodeÏóê Ïû†Í∏à ÌöçÎìù ( Ïù∏Ïûê : Tablespace ID )
+    // Tablespace Nodeø° ¿·±› »πµÊ ( ¿Œ¿⁄ : Tablespace ID )
     static IDE_RC lockTBSNodeByID( void              * aTrans,
                                    scSpaceID           aSpaceID,
                                    idBool              aIsIntent,
@@ -316,7 +333,7 @@ public:
                                    idBool            * aLocked,
                                    sctLockHier       * aLockHier );
 
-    // Tablespace NodeÏóê Ïû†Í∏à ÌöçÎìù ( Ïù∏Ïûê : Tablespace Node )
+    // Tablespace Nodeø° ¿·±› »πµÊ ( ¿Œ¿⁄ : Tablespace Node )
     static IDE_RC lockTBSNode( void              * aTrans,
                                sctTableSpaceNode * aSpaceNode,
                                idBool              aIsIntent,
@@ -328,35 +345,35 @@ public:
 
 
 
-    // Tablespace NodeÏóê Ïû†Í∏à ÌöçÎìù ( Ïù∏Ïûê : Tablespace ID )
+    // Tablespace Nodeø° ¿·±› »πµÊ ( ¿Œ¿⁄ : Tablespace ID )
     static IDE_RC lockTBSNodeByID( void              * aTrans,
                                    scSpaceID           aSpaceID,
                                    idBool              aIsIntent,
                                    idBool              aIsExclusive,
                                    sctTBSLockValidOpt  aTBSLvOpt );
 
-    // Tablespace NodeÏóê Ïû†Í∏à ÌöçÎìù ( Ïù∏Ïûê : Tablespace Node )
+    // Tablespace Nodeø° ¿·±› »πµÊ ( ¿Œ¿⁄ : Tablespace Node )
     static IDE_RC lockTBSNode( void              * aTrans,
                                sctTableSpaceNode * aSpaceNode,
                                idBool              aIsIntent,
                                idBool              aIsExclusive,
                                sctTBSLockValidOpt  aTBSLvOpt );
 
-    // Í∞ÅÍ∞ÅÏùò TablespaceÏóê ÎåÄÌï¥ ÌäπÏ†ï ActionÏùÑ ÏàòÌñâÌïúÎã§.
+    // ∞¢∞¢¿« Tablespaceø° ¥Î«ÿ ∆Ø¡§ Action¿ª ºˆ«‡«—¥Ÿ.
     static IDE_RC doAction4EachTBS( idvSQL           * aStatistics,
                                     sctAction4TBS      aAction,
                                     void             * aActionArg,
                                     sctActionExecMode  aActionExecMode );
 
-    // DDL_LOCK_TIMEOUT ÌîÑÎ°úÌçºÌã∞Ïóê Îî∞Îùº ÎåÄÍ∏∞ÏãúÍ∞ÑÏùÑ Î∞òÌôòÌïúÎã§.
-    inline static ULong getDDLLockTimeOut();
+    // DDL_LOCK_TIMEOUT «¡∑Œ∆€∆ºø° µ˚∂Û ¥Î±‚Ω√∞£¿ª π›»Ø«—¥Ÿ.
+    static ULong getDDLLockTimeOut(smxTrans * aTrans);
 
-    /* BUG-34187 ÏúàÎèÑÏö∞ ÌôòÍ≤ΩÏóêÏÑú Ïä¨Îü¨ÏãúÏôÄ Ïó≠Ïä¨Îü¨ÏãúÎ•º ÌòºÏö©Ìï¥ÏÑú ÏÇ¨Ïö© Î∂àÍ∞ÄÎä• Ìï©ÎãàÎã§. */
+    /* BUG-34187 ¿©µµøÏ »Ø∞Êø°º≠ ΩΩ∑ØΩ√øÕ ø™ΩΩ∑ØΩ√∏¶ »•øÎ«ÿº≠ ªÁøÎ ∫“∞°¥… «’¥œ¥Ÿ. */
 #if defined(VC_WIN32)
     static void adjustFileSeparator( SChar * aPath );
 #endif
 
-    /* Í≤ΩÎ°úÏùò Ïú†Ìö®ÏÑ± Í≤ÄÏÇ¨ Î∞è ÏÉÅÎåÄÍ≤ΩÎ°úÎ•º Ï†àÎåÄÍ≤ΩÎ°ú Î∞òÌôò */
+    /* ∞Ê∑Œ¿« ¿Ø»øº∫ ∞ÀªÁ π◊ ªÛ¥Î∞Ê∑Œ∏¶ ¿˝¥Î∞Ê∑Œ π›»Ø */
     static IDE_RC makeValidABSPath( idBool         aCheckPerm,
                                     SChar*         aValidName,
                                     UInt*          aNameLength,
@@ -367,98 +384,95 @@ public:
                                UInt         * aNameLength,
                                smiTBSLocation aTBSLocation );
 
-    // PRJ-1548 User Memory TableSpace Í∞úÎÖêÎèÑÏûÖ
+    // PRJ-1548 User Memory TableSpace ∞≥≥‰µµ¿‘
 
-    // ÎîîÏä§ÌÅ¨/Î©îÎ™®Î¶¨ ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§Ïùò Î∞±ÏóÖÏÉÅÌÉúÎ•º ÏÑ§Ï†ïÌïúÎã§.
-    static IDE_RC startTableSpaceBackup( scSpaceID           aSpaceID,
-                                         sctTableSpaceNode** aSpaceNode );
+    // µΩ∫≈©/∏ﬁ∏∏Æ ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫¿« πÈæ˜ªÛ≈¬∏¶ º≥¡§«—¥Ÿ.
+    static IDE_RC startTableSpaceBackup( idvSQL            * aStatistics,
+                                         sctTableSpaceNode * aSpaceNode );
 
-    // ÎîîÏä§ÌÅ¨/Î©îÎ™®Î¶¨ ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§Ïùò Î∞±ÏóÖÏÉÅÌÉúÎ•º Ìï¥Ï†úÌïúÎã§.
-    static IDE_RC endTableSpaceBackup( scSpaceID aSpaceID );
+    // µΩ∫≈©/∏ﬁ∏∏Æ ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫¿« πÈæ˜ªÛ≈¬∏¶ «ÿ¡¶«—¥Ÿ.
+    static IDE_RC endTableSpaceBackup( idvSQL            * aStatistics,
+                                       sctTableSpaceNode * aSpaceNode );
 
-    // PRJ-1149 checkpoint Ï†ïÎ≥¥Î•º DBF ÎÖ∏ÎìúÏóê Ï†ÑÎã¨ÌïòÍ∏∞ ÏúÑÌï¥
-    // ÏÑ§Ï†ïÌïòÎäî Ìï®Ïàò.
+    // PRJ-1149 checkpoint ¡§∫∏∏¶ DBF ≥ÎµÂø° ¿¸¥ﬁ«œ±‚ ¿ß«ÿ
+    // º≥¡§«œ¥¬ «‘ºˆ.
     static void setRedoLSN4DBFileMetaHdr( smLSN* aDiskRedoLSN,
                                           smLSN* aMemRedoLSN );
 
-    // ÏµúÍ∑º Ï≤¥ÌÅ¨Ìè¨Ïù∏Ìä∏ÏóêÏÑú Í≤∞Ï†ïÎêú ÎîîÏä§ÌÅ¨ Redo LSNÏùÑ Î∞òÌôòÌïúÎã§.
+    // √÷±Ÿ √º≈©∆˜¿Œ∆Æø°º≠ ∞·¡§µ» µΩ∫≈© Redo LSN¿ª π›»Ø«—¥Ÿ.
     static smLSN* getDiskRedoLSN()  { return &mDiskRedoLSN; };
-    // ÏµúÍ∑º Ï≤¥ÌÅ¨Ìè¨Ïù∏Ìä∏ÏóêÏÑú Í≤∞Ï†ïÎêú Î©îÎ™®Î¶¨ Redo LSN Î∞∞Ïó¥ÏùÑ Î∞òÌôòÌïúÎã§.
+    // √÷±Ÿ √º≈©∆˜¿Œ∆Æø°º≠ ∞·¡§µ» ∏ﬁ∏∏Æ Redo LSN πËø≠¿ª π›»Ø«—¥Ÿ.
     static smLSN* getMemRedoLSN() { return &mMemRedoLSN; };
 
     ////////////////////////////////////////////////////////////////////
-    // Alter Tablespace Online/Offline Ïù¥ Í≥µÌÜµÏ†ÅÏúºÎ°ú ÏÇ¨Ïö©ÌïòÎäî Ìï®Ïàò
+    // Alter Tablespace Online/Offline ¿Ã ∞¯≈Î¿˚¿∏∑Œ ªÁøÎ«œ¥¬ «‘ºˆ
     ////////////////////////////////////////////////////////////////////
 
-    // Alter Tablespace Online/OfflineÏóê ÎåÄÌïú ÏóêÎü¨Ï≤òÎ¶¨Î•º ÏàòÌñâÌïúÎã§.
+    // Alter Tablespace Online/Offlineø° ¥Î«— ø°∑Ø√≥∏Æ∏¶ ºˆ«‡«—¥Ÿ.
     static IDE_RC checkError4AlterStatus( sctTableSpaceNode    * aTBSNode,
                                           smiTableSpaceState     aNewTBSState );
 
 
-    // TablespaceÏóê ÎåÄÌï¥ ÏßÑÌñâÏ§ëÏù∏ BackupÏù¥ ÏôÑÎ£åÎêòÍ∏∞Î•º Í∏∞Îã§Î¶∞ ÌõÑ,
-    // TablespaceÎ•º Î∞±ÏóÖ Î∂àÍ∞ÄÎä•Ìïú ÏÉÅÌÉúÎ°ú Î≥ÄÍ≤ΩÌïúÎã§.
-    static IDE_RC wait4BackupAndBlockBackup(
-                      sctTableSpaceNode    * aTBSNode,
-                      smiTableSpaceState     aTBSSwitchingState );
+    // Tablespaceø° ¥Î«ÿ ¡¯«‡¡ﬂ¿Œ Backup¿Ã øœ∑·µ«±‚∏¶ ±‚¥Ÿ∏∞ »ƒ,
+    // Tablespace∏¶ πÈæ˜ ∫“∞°¥…«— ªÛ≈¬∑Œ ∫Ø∞Ê«—¥Ÿ.
+    static IDE_RC wait4BackupAndBlockBackup( idvSQL           * aStatistics,
+                                             sctTableSpaceNode* aTBSNode,
+                                             smiTableSpaceState aTBSSwitchingState );
 
+    static inline void wait4Backup( void * aSpaceNode );
+    static inline void wakeup4Backup( void * aSpaceNode );
 
-    // TablespaceÎ•º DISCARDEDÏÉÅÌÉúÎ°ú Î∞îÍæ∏Í≥†, LoganchorÏóê FlushÌïúÎã§.
+    // Tablespace∏¶ DISCARDEDªÛ≈¬∑Œ πŸ≤Ÿ∞Ì, Loganchorø° Flush«—¥Ÿ.
     static IDE_RC alterTBSdiscard( sctTableSpaceNode  * aTBSNode );
 
-    // TablespaceÏùò mMaxTblDDLCommitSCNÏùÑ aCommitSCNÏúºÎ°ú Î≥ÄÍ≤ΩÌïúÎã§.
+    // Tablespace¿« mMaxTblDDLCommitSCN¿ª aCommitSCN¿∏∑Œ ∫Ø∞Ê«—¥Ÿ.
     static void updateTblDDLCommitSCN( scSpaceID aSpaceID,
                                        smSCN     aCommitSCN);
 
-    // TablespaceÏóê ÎåÄÌï¥ÏÑú aViewSCNÏúºÎ°ú Drop TablespaceÎ•º Ìï†ÏàòÏûàÎäîÏßÄÎ•º Í≤ÄÏÇ¨ÌïúÎã§.
+    // Tablespaceø° ¥Î«ÿº≠ aViewSCN¿∏∑Œ Drop Tablespace∏¶ «“ºˆ¿÷¥¬¡ˆ∏¶ ∞ÀªÁ«—¥Ÿ.
     static IDE_RC canDropByViewSCN( scSpaceID aSpaceID,
                                     smSCN     aViewSCN);
 
     static IDE_RC setMaxFDCntAllDFileOfAllDiskTBS( UInt aMaxFDCnt4File );
 
+    static void lockSpaceNode( idvSQL   * aStatistics,
+                               void     * aSpaceNode )
+    { (void)((sctTableSpaceNode*)aSpaceNode)->mMutex.lock( aStatistics ); };
+
+    static void unlockSpaceNode( void   * aSpaceNode )
+    { (void)((sctTableSpaceNode*)aSpaceNode)->mMutex.unlock( ); };
+
 private:
-    static void findNextSpaceNode( void   *aCurrSpaceNode,
-                                   void  **aNextSpaceNode,
-                                   UInt    aSkipStateSet);
+    // BUG-23953
+    static inline smiTableSpaceType getTableSpaceType( scSpaceID           aSpaceID );
 
+    static inline sctTableSpaceNode * findNextSpaceNode( scSpaceID aSpaceID,
+                                                         UInt      aSkipStateSet );
 
-    static sctTableSpaceNode **mSpaceNodeArray;
+    static sctTableSpaceNode * mSpaceNodeArray[SC_MAX_SPACE_ARRAY_SIZE]; // BUG-48513
     static scSpaceID           mNewTableSpaceID;
 
-    // ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§ ListÏóê ÎåÄÌïú ÎèôÏãúÏÑ± Ï†úÏñ¥ Î∞è ÎîîÏä§ÌÅ¨ I/OÎ•º ÏúÑÌïú
-    // Ïó¨Îü¨Í∞ÄÏßÄ ÎèôÏãúÏÑ± Ï†úÏñ¥ÌïúÎã§.
-    static iduMutex            mMutex;
 
-    // ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§ ÏÉùÏÑ±Ïãú Îç∞Ïù¥ÌÉÄÌååÏùº ÏÉùÏÑ±Ïóê ÎåÄÌïú ÎèôÏãúÏÑ± Ï†úÏñ¥
+    // ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫ ª˝º∫Ω√ µ•¿Ã≈∏∆ƒ¿œ ª˝º∫ø° ¥Î«— µøΩ√º∫ ¡¶æÓ
     static iduMutex            mMtxCrtTBS;
 
-    // Drop DBFÏôÄ AllocPageCount Ïó∞ÏÇ∞Í∞ÑÏùò ÎèôÏãúÏÑ± Ï†úÏñ¥
+    // Drop DBFøÕ AllocPageCount ø¨ªÍ∞£¿« µøΩ√º∫ ¡¶æÓ
     static iduMutex            mGlobalPageCountCheckMutex;
 
-    // PRJ-1548 ÎîîÏä§ÌÅ¨/Î©îÎ™®Î¶¨ ÌååÏùºÌó§ÎçîÏóê ÏÑ§Ï†ïÌï† Í∞ÄÏû• ÏµúÍ∑ºÏóê
-    // Î∞úÏÉùÌïú Ï≤¥ÌÅ¨Ìè¨Ïù∏Ìä∏ Ï†ïÎ≥¥
+    // PRJ-1548 µΩ∫≈©/∏ﬁ∏∏Æ ∆ƒ¿œ«Ï¥ıø° º≥¡§«“ ∞°¿Â √÷±Ÿø°
+    // πﬂª˝«— √º≈©∆˜¿Œ∆Æ ¡§∫∏
     static smLSN               mDiskRedoLSN;
     static smLSN               mMemRedoLSN;
 
-    // BUG-17285 Disk Tablespace Î•º OFFLINE/DISCARD ÌõÑ DROPÏãú ÏóêÎü¨Î∞úÏÉù
+    // BUG-17285 Disk Tablespace ∏¶ OFFLINE/DISCARD »ƒ DROPΩ√ ø°∑Øπﬂª˝
     static sctTBSLockValidOpt mTBSLockValidOpt[ SMI_TBSLV_OPER_MAXMAX ];
 };
 
-/*
-   PROJ-1548
-   DDL_LOCK_TIMEOUT ÌîÑÎ°úÌçºÌã∞Ïóê Îî∞Îùº ÎåÄÍ∏∞ÏãúÍ∞ÑÏùÑ Î∞òÌôòÌïúÎã§.
-*/
-inline ULong sctTableSpaceMgr::getDDLLockTimeOut()
-{
-    return (((smuProperty::getDDLLockTimeOut() == -1) ?
-             ID_ULONG_MAX :
-             smuProperty::getDDLLockTimeOut()*1000000) );
-}
-
 /***********************************************************************
  *
- * Description : ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§Í∞Ä Backup ÏÉÅÌÉúÏù∏ÏßÄ Ï≤¥ÌÅ¨ÌïúÎã§.
+ * Description : ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫∞° Backup ªÛ≈¬¿Œ¡ˆ √º≈©«—¥Ÿ.
  *
- * aSpaceID  - [IN] ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§ ID
+ * aSpaceID  - [IN] ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫ ID
  *
  **********************************************************************/
 inline idBool sctTableSpaceMgr::isBackupingTBS( scSpaceID  aSpaceID )
@@ -468,127 +482,215 @@ inline idBool sctTableSpaceMgr::isBackupingTBS( scSpaceID  aSpaceID )
 }
 
 /***********************************************************************
- * Description : ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§ typeÏóê Îî∞Î•∏ 3Í∞ÄÏßÄ ÌäπÏÑ±ÏùÑ Î∞òÌôòÌïúÎã§.
- * [IN]  aSpaceID : Î∂ÑÏÑùÌïòÎ†§Îäî ÌÖåÏù¥Î∏î Ïä§ÌéòÏù¥Ïä§Ïùò ID
- * [OUT] aTableSpaceType : aSpaceIDÏóê Ìï¥ÎãπÌïòÎäî ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§Í∞Ä
- *              1) ÏãúÏä§ÌÖú ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§ Ïù∏Í∞Ä?
- *              2) ÌÖúÌîÑ ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥Ïä§ Ïù∏Í∞Ä?
- *              3) Ï†ÄÏû•ÎêòÎäî ÏúÑÏπò(MEM, DISK, VOL)
- *                          Ïóê ÎåÄÌïú Ï†ïÎ≥¥Î•º Î∞òÌôòÌïúÎã§.
+ * Description : ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫ typeø° µ˚∏• 3∞°¡ˆ ∆Øº∫¿ª π›»Ø«—¥Ÿ.
+ * [IN]  aSpaceID : ∫–ºÆ«œ∑¡¥¬ ≈◊¿Ã∫Ì Ω∫∆‰¿ÃΩ∫¿« ID
+ * [OUT] aTableSpaceType : aSpaceIDø° «ÿ¥Á«œ¥¬ ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫∞°
+ *              1) Ω√Ω∫≈€ ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫ ¿Œ∞°?
+ *              2) ≈€«¡ ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫ ¿Œ∞°?
+ *              3) ¿˙¿Âµ«¥¬ ¿ßƒ°(MEM, DISK, VOL)
+ *                          ø° ¥Î«— ¡§∫∏∏¶ π›»Ø«—¥Ÿ.
  **********************************************************************/
-inline UInt sctTableSpaceMgr::getTableSpaceType( scSpaceID   aSpaceID )
+inline smiTableSpaceType sctTableSpaceMgr::getTableSpaceType( scSpaceID   aSpaceID )
 {
     sctTableSpaceNode * sSpaceNode      = NULL;
-    UInt                sTablespaceType = SMI_TBS_SYSTEM_NO |
-                                          SMI_TBS_TEMP_NO | 
-                                          SMI_TBS_LOCATION_NONE ;
 
     IDU_FIT_POINT("BUG-46450@sctTableSpaceMgr::getTableSpaceType::TablespaceType");
 
     if ( aSpaceID >= mNewTableSpaceID )
     {
-        return sTablespaceType;
+        return SMI_TABLESPACE_TYPE_MAX;
     }
     
     sSpaceNode = mSpaceNodeArray[ aSpaceID ];
 
     if ( sSpaceNode == NULL )
     {
-        return sTablespaceType;
+        return SMI_TABLESPACE_TYPE_MAX;
     }
 
-    switch ( sSpaceNode->mType )
+    return sSpaceNode->mType ;
+
+#ifdef ALTIBASE_FIT_CHECK
+    IDE_EXCEPTION_END;
+    return SMI_TABLESPACE_TYPE_MAX;
+#endif
+}
+
+/**********************************************************************
+ * Description : TBS¿« ¿˙¿Â øµø™(∏ﬁ∏∏Æ, µΩ∫≈©, ¿”Ω√)¿ª π›»Ø«—¥Ÿ.
+ *
+ *   aSpaceID - [IN] ∞¸∏Æ øµø™¿ª »Æ¿Œ«“ TBS¿« ID
+ **********************************************************************/
+smiTBSLocation sctTableSpaceMgr::getTBSLocation( sctTableSpaceNode * aSpaceNode )
+{
+    switch ( aSpaceNode->mType )
     {
         case SMI_MEMORY_SYSTEM_DICTIONARY:
-            sTablespaceType = SMI_TBS_SYSTEM_YES |
-                              SMI_TBS_TEMP_NO    |
-                              SMI_TBS_LOCATION_MEMORY;
-            break;
-
         case SMI_MEMORY_SYSTEM_DATA:
-            sTablespaceType = SMI_TBS_SYSTEM_YES |
-                              SMI_TBS_TEMP_NO    |
-                              SMI_TBS_LOCATION_MEMORY;
-            break;
-
         case SMI_MEMORY_USER_DATA:
-            sTablespaceType = SMI_TBS_SYSTEM_NO  |
-                              SMI_TBS_TEMP_NO    |
-                              SMI_TBS_LOCATION_MEMORY;
+            return SMI_TBS_MEMORY;
             break;
-
         case SMI_DISK_SYSTEM_DATA:
-            sTablespaceType = SMI_TBS_SYSTEM_YES |
-                              SMI_TBS_TEMP_NO    |
-                              SMI_TBS_LOCATION_DISK;
-            break;
-
         case SMI_DISK_USER_DATA:
-            sTablespaceType = SMI_TBS_SYSTEM_NO  |
-                              SMI_TBS_TEMP_NO    |
-                              SMI_TBS_LOCATION_DISK;
-            break;
-
         case SMI_DISK_SYSTEM_TEMP:
-            sTablespaceType = SMI_TBS_SYSTEM_YES |
-                              SMI_TBS_TEMP_YES   |
-                              SMI_TBS_LOCATION_DISK;
-            break;
-
         case SMI_DISK_USER_TEMP:
-            sTablespaceType = SMI_TBS_SYSTEM_NO  |
-                              SMI_TBS_TEMP_YES   |
-                              SMI_TBS_LOCATION_DISK;
-            break;
-
         case SMI_DISK_SYSTEM_UNDO:
-            sTablespaceType = SMI_TBS_SYSTEM_YES |
-                              SMI_TBS_TEMP_NO    |
-                              SMI_TBS_LOCATION_DISK;
+            return SMI_TBS_DISK;
             break;
-
         case SMI_VOLATILE_USER_DATA:
-            sTablespaceType = SMI_TBS_SYSTEM_NO  |
-                              SMI_TBS_TEMP_NO    |
-                              SMI_TBS_LOCATION_VOLATILE;
+            return SMI_TBS_VOLATILE;
             break;
 
         default:
             break;
     }
+    return SMI_TBS_NONE;
+}
 
-#ifdef ALTIBASE_FIT_CHECK
-    IDE_EXCEPTION_END;
-#endif
-    return sTablespaceType;
+smiTBSLocation sctTableSpaceMgr::getTBSLocation( scSpaceID aSpaceID )
+{
+    if ( aSpaceID >= mNewTableSpaceID )
+    {
+        return SMI_TBS_NONE;
+    }
+
+    if ( NULL == mSpaceNodeArray[ aSpaceID ] )
+    {
+        return SMI_TBS_NONE;
+    }
+   
+    return getTBSLocation( mSpaceNodeArray[ aSpaceID ] );
+}
+
+
+/**********************************************************************
+ * Description : Ω√Ω∫≈€ ≈◊¿Ã∫ÌΩ∫∆‰¿ÃΩ∫ ø©∫Œ π›»Ø
+ **********************************************************************/
+idBool sctTableSpaceMgr::isSystemTableSpace( scSpaceID aSpaceID )
+{
+    if (( aSpaceID == SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC  ) ||
+        ( aSpaceID == SMI_ID_TABLESPACE_SYSTEM_MEMORY_DATA ) ||
+        ( aSpaceID == SMI_ID_TABLESPACE_SYSTEM_DISK_DATA   ) ||
+        ( aSpaceID == SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO   ) ||
+        ( aSpaceID == SMI_ID_TABLESPACE_SYSTEM_DISK_TEMP   ))
+    {
+        return ID_TRUE;
+    }
+    return ID_FALSE;
+}
+
+
+/**********************************************************************
+ * Description :
+ **********************************************************************/
+idBool sctTableSpaceMgr::isSystemMemTableSpace( scSpaceID aSpaceID )
+{
+    if (( aSpaceID == SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC ) ||
+        ( aSpaceID == SMI_ID_TABLESPACE_SYSTEM_MEMORY_DATA ))
+    {
+        return ID_TRUE;
+    }
+    return ID_FALSE;
 }
 
 inline idBool sctTableSpaceMgr::isMemTableSpace( scSpaceID aSpaceID )
 {
-    UInt    sType = getTableSpaceType( aSpaceID );
+    smiTableSpaceType sType = getTableSpaceType( aSpaceID );
 
-    return ( ( sType & SMI_TBS_LOCATION_MASK ) == SMI_TBS_LOCATION_MEMORY ) ? ID_TRUE : ID_FALSE ;
+    return isMemTableSpaceType( sType ) ;
+}
+
+inline idBool sctTableSpaceMgr::isMemTableSpace( void * aSpaceNode )
+{
+    return isMemTableSpaceType( ((sctTableSpaceNode*)aSpaceNode)->mType ) ;
+}
+
+inline idBool sctTableSpaceMgr::isMemTableSpaceType( smiTableSpaceType aSpaceType )
+{
+    if (( aSpaceType == SMI_MEMORY_SYSTEM_DATA       ) ||
+        ( aSpaceType == SMI_MEMORY_SYSTEM_DICTIONARY ) ||
+        ( aSpaceType == SMI_MEMORY_USER_DATA         ))
+    {
+        return ID_TRUE;
+    }
+    return ID_FALSE ;
 }
 
 inline idBool sctTableSpaceMgr::isVolatileTableSpace( scSpaceID aSpaceID )
 {
-    UInt    sType = getTableSpaceType( aSpaceID );
+    smiTableSpaceType  sType = getTableSpaceType( aSpaceID );
+    
+    return isVolatileTableSpaceType( sType ) ;
+}
 
-    return ( ( sType & SMI_TBS_LOCATION_MASK ) == SMI_TBS_LOCATION_VOLATILE ) ? ID_TRUE : ID_FALSE ;
+inline idBool sctTableSpaceMgr::isVolatileTableSpace( void * aSpaceNode )
+{   
+    return isVolatileTableSpaceType( ((sctTableSpaceNode*)aSpaceNode)->mType ) ;
+}
+
+inline idBool sctTableSpaceMgr::isVolatileTableSpaceType( smiTableSpaceType aSpaceType )
+{
+    return ( SMI_VOLATILE_USER_DATA == aSpaceType ) ? ID_TRUE : ID_FALSE ;
 }
 
 inline idBool sctTableSpaceMgr::isDiskTableSpace( scSpaceID aSpaceID )
 {
-    UInt    sType = getTableSpaceType( aSpaceID );
+    smiTableSpaceType sType = getTableSpaceType( aSpaceID );
 
-    return ( ( sType & SMI_TBS_LOCATION_MASK ) == SMI_TBS_LOCATION_DISK ) ? ID_TRUE : ID_FALSE ; 
+    return isDiskTableSpaceType( sType ) ;
+}
+
+inline idBool sctTableSpaceMgr::isDiskTableSpace( void * aSpaceNode )
+{
+    return isDiskTableSpaceType( ((sctTableSpaceNode*)aSpaceNode)->mType ) ;
+}
+
+inline idBool sctTableSpaceMgr::isDiskTableSpaceType( smiTableSpaceType aSpaceType )
+{
+    if (( aSpaceType == SMI_DISK_SYSTEM_DATA ) ||
+        ( aSpaceType == SMI_DISK_USER_DATA   ) ||
+        ( aSpaceType == SMI_DISK_SYSTEM_TEMP ) ||
+        ( aSpaceType == SMI_DISK_USER_TEMP   ) ||
+        ( aSpaceType == SMI_DISK_SYSTEM_UNDO ))
+    {
+        return ID_TRUE;
+    }
+    return ID_FALSE ;
 }
 
 inline idBool sctTableSpaceMgr::isTempTableSpace( scSpaceID aSpaceID )
 {
-    UInt    sType = getTableSpaceType( aSpaceID );
+    smiTableSpaceType  sType = getTableSpaceType( aSpaceID );
 
-    return ( (sType & SMI_TBS_TEMP_MASK) == SMI_TBS_TEMP_YES ) ? ID_TRUE : ID_FALSE ;
+    return isTempTableSpaceType( sType ) ;
+}
+
+inline idBool sctTableSpaceMgr::isTempTableSpace( void * aSpaceNode )
+{
+    return isTempTableSpaceType( ((sctTableSpaceNode*)aSpaceNode)->mType ) ;
+}
+
+inline idBool sctTableSpaceMgr::isTempTableSpaceType( smiTableSpaceType aSpaceType )
+{
+    if (( aSpaceType == SMI_DISK_SYSTEM_TEMP ) ||
+        ( aSpaceType == SMI_DISK_USER_TEMP   ))
+    {
+        return ID_TRUE;
+    }
+    return ID_FALSE;
+}
+
+inline idBool sctTableSpaceMgr::isDataTableSpaceType( smiTableSpaceType  aSpaceType )
+{
+    if (( aSpaceType == SMI_MEMORY_SYSTEM_DATA ) ||
+        ( aSpaceType == SMI_MEMORY_USER_DATA   ) ||
+        ( aSpaceType == SMI_VOLATILE_USER_DATA ) ||
+        ( aSpaceType == SMI_DISK_SYSTEM_DATA   ) ||
+        ( aSpaceType == SMI_DISK_USER_DATA     ))
+    {
+        return ID_TRUE;
+    }
+    return ID_FALSE;
 }
 
 inline idBool sctTableSpaceMgr::isUndoTableSpace( scSpaceID aSpaceID )
@@ -596,6 +698,89 @@ inline idBool sctTableSpaceMgr::isUndoTableSpace( scSpaceID aSpaceID )
    return ( aSpaceID == SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO ) ? ID_TRUE : ID_FALSE ;
 }
 
+inline sctTableSpaceNode * sctTableSpaceMgr::getFirstSpaceNode()
+{
+    return mSpaceNodeArray[0];
+}
+
+inline sctTableSpaceNode * sctTableSpaceMgr::getNextSpaceNode( scSpaceID aSpaceID )
+{
+    return findNextSpaceNode( aSpaceID,
+                              SMI_TBS_DROPPED );
+}
+
+inline sctTableSpaceNode * sctTableSpaceMgr::getNextSpaceNodeIncludingDropped( scSpaceID aSpaceID )
+{
+    return findNextSpaceNode( aSpaceID,
+                              0/* Do Not Skip Any TBS
+                                  (Including Dropped) */ );
+}
+
+inline sctTableSpaceNode * sctTableSpaceMgr::getNextSpaceNodeWithoutDropped( scSpaceID  aSpaceID )
+{
+    return findNextSpaceNode( aSpaceID,
+                              ( SMI_TBS_DROPPED | 
+                                SMI_TBS_CREATING |
+                                SMI_TBS_DROP_PENDING )  );
+}
+
+/**********************************************************************
+ * Description : ¿‘∑¬πﬁ¿∫ TableSpace ID ¿« ¥Ÿ¿Ω ªÁøÎ∞°¥…«— TableSpace Node∏¶ π›»Ø«—¥Ÿ.
+ *
+ *   aSpaceID - [IN] ¿Ã¿¸ TBS¿« ID
+ **********************************************************************/
+inline sctTableSpaceNode * sctTableSpaceMgr::findNextSpaceNode( scSpaceID aSpaceID,
+                                                                UInt      aSkipStateSet )
+{
+    sctTableSpaceNode* sSpaceNode ;
+
+    while( ++aSpaceID < mNewTableSpaceID )
+    {
+        sSpaceNode = mSpaceNodeArray[aSpaceID];
+
+        if ( sSpaceNode != NULL )
+        {
+            if ( (sSpaceNode->mState & aSkipStateSet) == 0 )
+            {
+                IDE_DASSERT( aSpaceID == sSpaceNode->mID );
+                return sSpaceNode;
+            }
+        }
+    }
+
+    return NULL;
+}
+
+/***********************************************************************
+ * Description : TableSpace¥‹¿ß∑Œ waiting∞˙ wakeup »£√‚ «‘ºˆ
+ *
+ * FATAL ø°∑Ø¥¬ ¿Ã¿⁄∏Æø°º≠ πŸ∑Œ ¡æ∑·µ«π«∑Œ øπø‹∑Œ √≥∏Æ«œ¡ˆ æ æ∆µµ µ»¥Ÿ.
+ **********************************************************************/
+inline void sctTableSpaceMgr::wait4Backup( void * aSpaceNode )
+{
+    PDL_Time_Value sTimeValue;
+
+    sTimeValue.set( idlOS::time(NULL) +
+                    smuProperty::getDataFileBackupEndWaitInterval() );
+
+    if ( ((sctTableSpaceNode*)aSpaceNode)->mBackupCV.timedwait(
+             &(((sctTableSpaceNode*)aSpaceNode)->mMutex),
+             &sTimeValue,
+             IDU_IGNORE_TIMEDOUT ) != IDE_SUCCESS )
+    {
+        IDE_SET( ideSetErrorCode( smERR_FATAL_ThrCondWait ));
+    }
+    return;
+}
+
+inline void sctTableSpaceMgr::wakeup4Backup( void * aSpaceNode )
+{
+    if ( ((sctTableSpaceNode*)aSpaceNode)->mBackupCV.broadcast() != IDE_SUCCESS )
+    {
+        IDE_SET( ideSetErrorCode( smERR_FATAL_ThrCondSignal ));
+    }
+    return;
+}
 
 #endif // _O_SCT_TABLE_SPACE_H_
 

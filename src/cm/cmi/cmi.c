@@ -16,6 +16,7 @@
 
 #include <cmAllClient.h>
 
+#include <aclLZ4.h>
 #include <aclCompression.h>
 #include <aciVersion.h>
 
@@ -42,7 +43,7 @@ acp_sint8_t * cmnLinkPeerGetReadBlock(acp_uint32_t aChannelID);
 void cmiInitIPCDABuffer(cmiProtocolContext *aCtx);
 
 /*
- * BUG-19465 : CM_Bufferì˜ pending listë¥¼ ì œí•œ
+ * BUG-19465 : CM_BufferÀÇ pending list¸¦ Á¦ÇÑ
  */
 acp_uint32_t     gMaxPendingList;
 
@@ -70,12 +71,12 @@ static void cmiInitializeOnce( void )
 #define CMI_GET_ERROR_COUNT(aErrorFactory) (ACI_SIZEOF(aErrorFactory) / ACI_SIZEOF((aErrorFactory)[0]))
 
 /*
- * Packet Headerë¡œë¶€í„° Moduleì„ êµ¬í•œë‹¤.
+ * Packet Header·ÎºÎÅÍ ModuleÀ» ±¸ÇÑ´Ù.
  */
 static ACI_RC cmiGetModule(cmpHeader *aHeader, cmpModule **aModule)
 {
     /*
-     * Module íšë“
+     * Module È¹µæ
      */
     ACI_TEST_RAISE(aHeader->mA5.mModuleID >= CMP_MODULE_MAX, UnknownModule);
 
@@ -93,7 +94,7 @@ static ACI_RC cmiGetModule(cmpHeader *aHeader, cmpModule **aModule)
 }
 
 /*
- * ProtocolContextì— Free ëŒ€ê¸°ì¤‘ì¸ Read Blockë“¤ì„ ë°˜í™˜í•œë‹¤.
+ * ProtocolContext¿¡ Free ´ë±âÁßÀÎ Read BlockµéÀ» ¹ÝÈ¯ÇÑ´Ù.
  */
 static ACI_RC cmiFreeReadBlock(cmiProtocolContext *aProtocolContext)
 {
@@ -104,12 +105,12 @@ static ACI_RC cmiFreeReadBlock(cmiProtocolContext *aProtocolContext)
     acp_list_node_t *sNodeNext;
 
     /*
-     * Protocol Contextë¡œë¶€í„° Link íšë“
+     * Protocol Context·ÎºÎÅÍ Link È¹µæ
      */
     sLink = aProtocolContext->mLink;
 
     /*
-     * Read Block Listì˜ Blockë“¤ ë°˜í™˜
+     * Read Block ListÀÇ Blockµé ¹ÝÈ¯
      */
 
     ACP_LIST_ITERATE_SAFE(&aProtocolContext->mReadBlockList, sIterator, sNodeNext)
@@ -135,7 +136,7 @@ ACP_INLINE acp_bool_t cmiIPCDACheckLinkAndWait(cmiProtocolContext *aCtx,
 
     if ((++(*aLoopCount)) == *aMaxLoopCount)
     {
-    	aCtx->mLink->mPeerOp->mCheck(aCtx->mLink, &sLinkConState);
+        aCtx->mLink->mPeerOp->mCheck(aCtx->mLink, &sLinkConState);
         ACI_TEST(sLinkConState == ACP_TRUE);
 
         if (aMicroSleepTime == 0)
@@ -166,7 +167,7 @@ ACP_INLINE acp_bool_t cmiIPCDACheckLinkAndWait(cmiProtocolContext *aCtx,
 
     ACI_EXCEPTION_END;
 
-    /* BUG-46390 IPCDA clientì˜ mIsDisconnectëŠ” ë¬¼ë¦¬ì ì¸ ì ‘ì† ì¢…ë£Œë¥¼ ì˜ë¯¸í•¨ */
+    /* BUG-46390 IPCDA clientÀÇ mIsDisconnect´Â ¹°¸®ÀûÀÎ Á¢¼Ó Á¾·á¸¦ ÀÇ¹ÌÇÔ */
     aCtx->mIsDisconnect = ACP_TRUE;
 
     return ACP_FALSE;
@@ -189,7 +190,7 @@ ACI_RC cmiIPCDACheckReadFlag(void *aCtx, void *aBlock, acp_uint32_t aMicroSleepT
 
     ACI_TEST_RAISE(sCtx->mIsDisconnect == ACP_TRUE, err_disconnected);
 
-    /* BUG-46502 atomic í•¨ìˆ˜ ì ìš© */
+    /* BUG-46502 atomic ÇÔ¼ö Àû¿ë */
     while ( acpAtomicGet32(&sBlock->mRFlag) == CMB_IPCDA_SHM_DEACTIVATED )
     {
         ACI_TEST_RAISE(((aExpireCount > 0) && ((sTotalLoopCount++) ==  sExpireCount)), err_loop_expired);
@@ -230,7 +231,7 @@ ACP_INLINE ACI_RC cmiIPCDACheckDataCount(void                  *aCtx,
 
     ACI_TEST(aCountPtr == NULL);
 
-    /* BUG-46502 atomic í•¨ìˆ˜ ì ìš© */
+    /* BUG-46502 atomic ÇÔ¼ö Àû¿ë */
     while ( aCompValue >= (acp_uint32_t)acpAtomicGet32(aCountPtr) )
     {
         ACI_TEST_RAISE(((aExpireCount > 0) && ((sTotalLoopCount++) ==  sExpireCount)), err_loop_expired);
@@ -262,10 +263,10 @@ void cmiLinkPeerFinalizeCliReadForIPCDA(cmiProtocolContext *aCtx)
 
     if (sReadBlock != NULL)
     {
-        /* BUG-46502 operationCount ì´ˆê¸°í™” */
+        /* BUG-46502 operationCount ÃÊ±âÈ­ */
         acpAtomicSet32(&sReadBlock->mOperationCount, 0);
 
-        /* BUG-46502 atomic í•¨ìˆ˜ ì ìš© */
+        /* BUG-46502 atomic ÇÔ¼ö Àû¿ë */
         acpAtomicSet32(&sReadBlock->mRFlag, CMB_IPCDA_SHM_DEACTIVATED);
     }
 
@@ -273,7 +274,7 @@ void cmiLinkPeerFinalizeCliReadForIPCDA(cmiProtocolContext *aCtx)
 }
 
 /*
- * Blockì„ ì½ì–´ì˜¨ë‹¤.
+ * BlockÀ» ÀÐ¾î¿Â´Ù.
  */
 static ACI_RC cmiReadBlock(cmiProtocolContext *aProtocolContext, acp_time_t aTimeout)
 {
@@ -282,7 +283,7 @@ static ACI_RC cmiReadBlock(cmiProtocolContext *aProtocolContext, acp_time_t aTim
     ACI_TEST_RAISE(aProtocolContext->mIsDisconnect == ACP_TRUE, Disconnected);
 
     /*
-     * Linkë¡œë¶€í„° Blockì„ ì½ì–´ì˜´
+     * Link·ÎºÎÅÍ BlockÀ» ÀÐ¾î¿È
      */
     ACI_TEST(aProtocolContext->mLink->mPeerOp->mRecv(aProtocolContext->mLink,
                                                      &aProtocolContext->mReadBlock,
@@ -290,14 +291,14 @@ static ACI_RC cmiReadBlock(cmiProtocolContext *aProtocolContext, acp_time_t aTim
                                                      aTimeout) != ACI_SUCCESS);
 
     /*
-     * Sequence ê²€ì‚¬
+     * Sequence °Ë»ç
      */
     sCmSeqNo = CMP_HEADER_SEQ_NO(&aProtocolContext->mReadHeader);
 
     ACI_TEST_RAISE(sCmSeqNo != aProtocolContext->mCmSeqNo, InvalidProtocolSequence);
 
     /*
-     * Next Sequence ì„¸íŒ…
+     * Next Sequence ¼¼ÆÃ
      */
     if (CMP_HEADER_PROTO_END_IS_SET(&aProtocolContext->mReadHeader) == ACP_TRUE)
     {
@@ -309,13 +310,13 @@ static ACI_RC cmiReadBlock(cmiProtocolContext *aProtocolContext, acp_time_t aTim
     }
 
     /*
-     * Module íšë“
+     * Module È¹µæ
      */
     ACI_TEST(cmiGetModule(&aProtocolContext->mReadHeader,
                           &aProtocolContext->mModule) != ACI_SUCCESS);
 
     /*
-     * ReadHeaderë¡œë¶€í„° WriteHeaderì— í•„ìš”í•œ ì •ë³´ë¥¼ íšë“
+     * ReadHeader·ÎºÎÅÍ WriteHeader¿¡ ÇÊ¿äÇÑ Á¤º¸¸¦ È¹µæ
      */
     aProtocolContext->mWriteHeader.mA5.mModuleID        = aProtocolContext->mReadHeader.mA5.mModuleID;
     aProtocolContext->mWriteHeader.mA5.mModuleVersion   = aProtocolContext->mReadHeader.mA5.mModuleVersion;
@@ -338,7 +339,7 @@ static ACI_RC cmiReadBlock(cmiProtocolContext *aProtocolContext, acp_time_t aTim
 }
 
 /*
- * Blockì„ ì „ì†¡í•œë‹¤.
+ * BlockÀ» Àü¼ÛÇÑ´Ù.
  */
 static ACI_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, acp_bool_t aIsEnd)
 {
@@ -357,7 +358,7 @@ static ACI_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, acp_bool_t aIs
     cmnDispatcherImpl sImpl;
 
     /*
-     * í”„ë¡œí† ì½œ ëì´ë¼ë©´ Sequence ì¢…ë£Œ ì„¸íŒ…
+     * ÇÁ·ÎÅäÄÝ ³¡ÀÌ¶ó¸é Sequence Á¾·á ¼¼ÆÃ
      */
     if (aIsEnd == ACP_TRUE)
     {
@@ -370,7 +371,7 @@ static ACI_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, acp_bool_t aIs
                 aProtocolContext->mIsAddReadBlock = ACP_TRUE;
 
                 /*
-                 * í˜„ìž¬ Blockì„ Free ëŒ€ê¸°ë¥¼ ìœ„í•œ Read Block Listì— ì¶”ê°€
+                 * ÇöÀç BlockÀ» Free ´ë±â¸¦ À§ÇÑ Read Block List¿¡ Ãß°¡
                  */
                 acpListAppendNode(&aProtocolContext->mReadBlockList,
                                     &aProtocolContext->mReadBlock->mListNode);
@@ -382,12 +383,12 @@ static ACI_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, acp_bool_t aIs
     }
 
     /*
-     * Protocol Header ê¸°ë¡
+     * Protocol Header ±â·Ï
      */
     ACI_TEST(cmpHeaderWrite(sHeader, sBlock) != ACI_SUCCESS);
 
     /*
-     * Pending Write Blockë“¤ì„ ì „ì†¡
+     * Pending Write BlockµéÀ» Àü¼Û
      */
     ACP_LIST_ITERATE_SAFE(&aProtocolContext->mWriteBlockList, sIterator, sNodeNext)
     {
@@ -396,7 +397,7 @@ static ACI_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, acp_bool_t aIs
         sSendSuccess = ACP_TRUE;
 
         /*
-         * BUG-19465 : CM_Bufferì˜ pending listë¥¼ ì œí•œ
+         * BUG-19465 : CM_BufferÀÇ pending list¸¦ Á¦ÇÑ
          */
         while (sLink->mPeerOp->mSend(sLink, sPendingBlock) != ACI_SUCCESS)
         {
@@ -411,8 +412,8 @@ static ACI_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, acp_bool_t aIs
             }
 
             /* bug-27250 IPC linklist can be crushed.
-             * ë³€ê²½ì „: all timeout NULL, ë³€ê²½í›„: 1 msec for IPC
-             * IPCì˜ ê²½ìš° ë¬´í•œëŒ€ê¸°í•˜ë©´ ì•ˆëœë‹¤.
+             * º¯°æÀü: all timeout NULL, º¯°æÈÄ: 1 msec for IPC
+             * IPCÀÇ °æ¿ì ¹«ÇÑ´ë±âÇÏ¸é ¾ÈµÈ´Ù.
              */
             sImpl = cmnDispatcherImplForLinkImpl(((cmnLink*)sLink)->mImpl);
             if (sImpl == CMI_DISPATCHER_IMPL_IPC)
@@ -440,7 +441,7 @@ static ACI_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, acp_bool_t aIs
     }
 
     /*
-     * Pending Write Blockì´ ì—†ìœ¼ë©´ í˜„ìž¬ Block ì „ì†¡
+     * Pending Write BlockÀÌ ¾øÀ¸¸é ÇöÀç Block Àü¼Û
      */
     if (sIterator == &aProtocolContext->mWriteBlockList)
     {
@@ -459,7 +460,7 @@ static ACI_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, acp_bool_t aIs
     }
 
     /*
-     * Protocol Contextì˜ Write Block ì‚­ì œ
+     * Protocol ContextÀÇ Write Block »èÁ¦
      */
     sBlock                        = NULL;
     aProtocolContext->mWriteBlock = NULL;
@@ -472,7 +473,7 @@ static ACI_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, acp_bool_t aIs
         aProtocolContext->mWriteHeader.mA5.mCmSeqNo = 0;
 
         /*
-         * í”„ë¡œí† ì½œ ëì´ë¼ë©´ ëª¨ë“  Blockì´ ì „ì†¡ë˜ì–´ì•¼ í•¨
+         * ÇÁ·ÎÅäÄÝ ³¡ÀÌ¶ó¸é ¸ðµç BlockÀÌ Àü¼ÛµÇ¾î¾ß ÇÔ
          */
         ACP_LIST_ITERATE_SAFE(&aProtocolContext->mWriteBlockList, sIterator, sNodeNext)
         {
@@ -498,8 +499,8 @@ static ACI_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, acp_bool_t aIs
 
     /*
      * bug-27250 IPC linklist can be crushed.
-     * ëª¨ë“  ì—ëŸ¬ì— ëŒ€í•˜ì—¬ pending blockì´ ìžˆìœ¼ë©´ í•´ì œí•˜ë„ë¡ ë³€ê²½.
-     * sendfailì€ emptyë¡œ ë‚¨ê²¨ë‘ .
+     * ¸ðµç ¿¡·¯¿¡ ´ëÇÏ¿© pending blockÀÌ ÀÖÀ¸¸é ÇØÁ¦ÇÏµµ·Ï º¯°æ.
+     * sendfailÀº empty·Î ³²°ÜµÒ.
      */
     ACI_EXCEPTION(SendFail);
     {
@@ -527,7 +528,7 @@ static ACI_RC cmiWriteBlock(cmiProtocolContext *aProtocolContext, acp_bool_t aIs
 
 
 /*
- * Protocolì„ ì½ì–´ì˜¨ë‹¤.
+ * ProtocolÀ» ÀÐ¾î¿Â´Ù.
  */
 static ACI_RC cmiReadProtocolInternal(cmiProtocolContext *aProtocolContext,
                                       cmiProtocol        *aProtocol,
@@ -537,22 +538,22 @@ static ACI_RC cmiReadProtocolInternal(cmiProtocolContext *aProtocolContext,
     acp_uint8_t        sOpID;
 
     /*
-     * Operation ID ì½ìŒ
+     * Operation ID ÀÐÀ½
      */
     CMB_BLOCK_READ_BYTE1(aProtocolContext->mReadBlock, &sOpID);
 
     /*
-     * í”„ë¡œí† ì½œì„ ì²˜ìŒë¶€í„° ì½ì–´ì•¼ í•˜ëŠ” ìƒí™©
+     * ÇÁ·ÎÅäÄÝÀ» Ã³À½ºÎÅÍ ÀÐ¾î¾ß ÇÏ´Â »óÈ²
      */
     if (CMP_MARSHAL_STATE_IS_COMPLETE(aProtocolContext->mMarshalState) == ACP_TRUE)
     {
         /*
-         * Operation ID ê²€ì‚¬
+         * Operation ID °Ë»ç
          */
         ACI_TEST_RAISE(sOpID >= aProtocolContext->mModule->mOpMaxA5, InvalidOpError);
 
         /*
-         * Protocol ì´ˆê¸°í™”
+         * Protocol ÃÊ±âÈ­
          * fix BUG-17947.
          */
         ACI_TEST(cmiInitializeProtocol(aProtocol,
@@ -562,7 +563,7 @@ static ACI_RC cmiReadProtocolInternal(cmiProtocolContext *aProtocolContext,
     else
     {
         /*
-         * í”„ë¡œí† ì½œì´ ì—°ì†ë˜ëŠ” ê²½ìš° í”„ë¡œí† ì½œ OpIDê°€ ê°™ì€ì§€ ê²€ì‚¬
+         * ÇÁ·ÎÅäÄÝÀÌ ¿¬¼ÓµÇ´Â °æ¿ì ÇÁ·ÎÅäÄÝ OpID°¡ °°ÀºÁö °Ë»ç
          */
         ACI_TEST_RAISE(sOpID != aProtocol->mOpID, InvalidProtocolSequence);
     }
@@ -580,12 +581,12 @@ static ACI_RC cmiReadProtocolInternal(cmiProtocolContext *aProtocolContext,
                               &aProtocolContext->mMarshalState) != ACI_SUCCESS);
 
     /*
-     * Protocol Marshalì´ ì™„ë£Œë˜ì§€ ì•Šì•˜ìœ¼ë©´ ë‹¤ìŒ Blockì„ ê³„ì† ì½ì–´ì˜¨ í›„ ì§„í–‰
+     * Protocol MarshalÀÌ ¿Ï·áµÇÁö ¾Ê¾ÒÀ¸¸é ´ÙÀ½ BlockÀ» °è¼Ó ÀÐ¾î¿Â ÈÄ ÁøÇà
      */
     while (CMP_MARSHAL_STATE_IS_COMPLETE(aProtocolContext->mMarshalState) != ACP_TRUE)
     {
         /*
-         * í˜„ìž¬ Blockì„ Free ëŒ€ê¸°ë¥¼ ìœ„í•œ Read Block Listì— ì¶”ê°€
+         * ÇöÀç BlockÀ» Free ´ë±â¸¦ À§ÇÑ Read Block List¿¡ Ãß°¡
          */
         acpListAppendNode(&aProtocolContext->mReadBlockList,
                             &aProtocolContext->mReadBlock->mListNode);
@@ -593,12 +594,12 @@ static ACI_RC cmiReadProtocolInternal(cmiProtocolContext *aProtocolContext,
         aProtocolContext->mReadBlock = NULL;
 
         /*
-         * ë‹¤ìŒ Blockì„ ì½ì–´ì˜´
+         * ´ÙÀ½ BlockÀ» ÀÐ¾î¿È
          */
         ACI_TEST(cmiReadBlock(aProtocolContext, aTimeout) != ACI_SUCCESS);
 
         /*
-         * Blockì—ì„œ Operation ID ì½ìŒ
+         * Block¿¡¼­ Operation ID ÀÐÀ½
          */
         if (CMI_CHECK_BLOCK_FOR_READ(aProtocolContext->mReadBlock))
         {
@@ -657,7 +658,7 @@ ACI_RC cmiInitialize( acp_uint32_t  aCmMaxPendingList )
                                        (acp_char_t**)&gCmErrorFactory);
 
         /*
-         * Shared Pool ìƒì„± ë° ë“±ë¡
+         * Shared Pool »ý¼º ¹× µî·Ï
          * fix BUG-17864.
          */
         ACI_TEST(cmbPoolAlloc(&sPoolLocal, CMB_POOL_IMPL_LOCAL,CMB_BLOCK_DEFAULT_SIZE,0) != ACI_SUCCESS);
@@ -671,27 +672,27 @@ ACI_RC cmiInitialize( acp_uint32_t  aCmMaxPendingList )
         sState = 3;
         ACI_TEST(cmbPoolSetSharedPool(sPoolIPC, CMB_POOL_IMPL_IPC) != ACI_SUCCESS);
 
-        /* IPC Mutex ì´ˆê¸°í™” */
+        /* IPC Mutex ÃÊ±âÈ­ */
         ACI_TEST(cmbShmInitializeStatic() != ACI_SUCCESS);
 #else
         ACP_UNUSED(sPoolIPC);
 #endif
 
 #if !defined(CM_DISABLE_IPCDA)
-        /* IPC-DA Mutex ì´ˆê¸°í™” */
+        /* IPC-DA Mutex ÃÊ±âÈ­ */
         ACI_TEST(cmbShmIPCDAInitializeStatic() != ACI_SUCCESS);
 #endif
-        /* cmmSession ì´ˆê¸°í™” */
+        /* cmmSession ÃÊ±âÈ­ */
         ACI_TEST(cmmSessionInitializeStatic() != ACI_SUCCESS);
 
-        /* cmtVariable Piece Pool ì´ˆê¸°í™” */
+        /* cmtVariable Piece Pool ÃÊ±âÈ­ */
         ACI_TEST(cmtVariableInitializeStatic() != ACI_SUCCESS);
 
-        /* cmpModule ì´ˆê¸°í™” */
+        /* cmpModule ÃÊ±âÈ­ */
         ACI_TEST(cmpModuleInitializeStatic() != ACI_SUCCESS);
 
         /*
-         * BUG-19465 : CM_Bufferì˜ pending listë¥¼ ì œí•œ
+         * BUG-19465 : CM_BufferÀÇ pending list¸¦ Á¦ÇÑ
          */
         gMaxPendingList = aCmMaxPendingList;
 
@@ -752,17 +753,17 @@ ACI_RC cmiFinalize()
     if (gCMInitCountClient == 0)
     {
         /*
-        * cmpModule ì •ë¦¬
+        * cmpModule Á¤¸®
         */
         ACI_TEST(cmpModuleFinalizeStatic() != ACI_SUCCESS);
 
         /*
-        * cmtVariable Piece Pool í•´ì œ
+        * cmtVariable Piece Pool ÇØÁ¦
         */
         ACI_TEST(cmtVariableFinalizeStatic() != ACI_SUCCESS);
 
         /*
-        * cmmSession ì •ë¦¬
+        * cmmSession Á¤¸®
         */
         ACI_TEST(cmmSessionFinalizeStatic() != ACI_SUCCESS);
 
@@ -772,12 +773,12 @@ ACI_RC cmiFinalize()
 #if !defined(CM_DISABLE_IPC)
 
         /*
-         * IPC Mutex í•´ì œ
+         * IPC Mutex ÇØÁ¦
          */
         ACI_TEST(cmbShmFinalizeStatic() != ACI_SUCCESS);
 
         /*
-         * Shared Pool í•´ì œ
+         * Shared Pool ÇØÁ¦
          */
         ACI_TEST(cmbPoolGetSharedPool(&sPoolIPC, CMB_POOL_IMPL_IPC) != ACI_SUCCESS);
         ACI_TEST(cmbPoolFree(sPoolIPC) != ACI_SUCCESS);
@@ -817,18 +818,18 @@ void cmiDestroy()
 ACI_RC cmiSetCallback(acp_uint8_t aModuleID, acp_uint8_t aOpID, cmiCallbackFunction aCallbackFunction)
 {
     /*
-     * Module ID ê²€ì‚¬
+     * Module ID °Ë»ç
      */
     ACI_TEST_RAISE((aModuleID == CMP_MODULE_BASE) ||
                    (aModuleID >= CMP_MODULE_MAX), InvalidModule);
 
     /*
-     * Operation ID ê²€ì‚¬
+     * Operation ID °Ë»ç
      */
     ACI_TEST_RAISE(aOpID >= gCmpModuleClient[aModuleID]->mOpMax, InvalidOperation);
 
     /*
-     * Callback Function ì„¸íŒ…
+     * Callback Function ¼¼ÆÃ
      */
     if (aCallbackFunction == NULL)
     {
@@ -862,7 +863,7 @@ acp_bool_t cmiIsSupportedLinkImpl(cmiLinkImpl aLinkImpl)
 ACI_RC cmiAllocLink(cmiLink **aLink, cmiLinkType aType, cmiLinkImpl aImpl)
 {
     /*
-     * Link í• ë‹¹
+     * Link ÇÒ´ç
      */
     ACI_TEST(cmnLinkAlloc(aLink, aType, aImpl) != ACI_SUCCESS);
 
@@ -876,7 +877,7 @@ ACI_RC cmiAllocLink(cmiLink **aLink, cmiLinkType aType, cmiLinkImpl aImpl)
 ACI_RC cmiFreeLink(cmiLink *aLink)
 {
     /*
-     * Link í•´ì œ
+     * Link ÇØÁ¦
      */
     ACI_TEST(cmnLinkFree(aLink) != ACI_SUCCESS);
 
@@ -911,7 +912,7 @@ ACI_RC cmiListenLink(cmiLink *aLink, cmiListenArg *aListenArg)
     cmnLinkListen *sLink = (cmnLinkListen *)aLink;
 
     /*
-     * Listen Type ê²€ì‚¬
+     * Listen Type °Ë»ç
      */
     ACE_ASSERT(aLink->mType == CMN_LINK_TYPE_LISTEN);
 
@@ -933,7 +934,7 @@ ACI_RC cmiAcceptLink(cmiLink *aLinkListen, cmiLink **aLinkPeer)
     cmnLinkPeer   *sLinkPeer   = NULL;
 
     /*
-     * Listen Type ê²€ì‚¬
+     * Listen Type °Ë»ç
      */
     ACE_ASSERT(aLinkListen->mType == CMN_LINK_TYPE_LISTEN);
 
@@ -943,7 +944,7 @@ ACI_RC cmiAcceptLink(cmiLink *aLinkListen, cmiLink **aLinkPeer)
     ACI_TEST(sLinkListen->mListenOp->mAccept(sLinkListen, &sLinkPeer) != ACI_SUCCESS);
 
     /*
-     * acceptëœ Link ë°˜í™˜
+     * acceptµÈ Link ¹ÝÈ¯
      */
     *aLinkPeer = (cmiLink *)sLinkPeer;
 
@@ -959,7 +960,7 @@ ACI_RC cmiGetLinkInfo(cmiLink *aLink, acp_char_t *aBuf, acp_uint32_t aBufLen, cm
     cmnLinkPeer *sLink = (cmnLinkPeer *)aLink;
 
     /*
-     * Peer Type ê²€ì‚¬
+     * Peer Type °Ë»ç
      */
     ACE_ASSERT(aLink->mType == CMN_LINK_TYPE_PEER_SERVER ||
                aLink->mType == CMN_LINK_TYPE_PEER_CLIENT);
@@ -976,7 +977,7 @@ ACI_RC cmiGetLinkSndBufSize(cmiLink *aLink, acp_sint32_t *aSndBufSize)
     cmnLinkPeer *sLink = (cmnLinkPeer *)aLink;
 
     /*
-     * Peer Type ê²€ì‚¬
+     * Peer Type °Ë»ç
      */
     ACE_ASSERT(aLink->mType == CMN_LINK_TYPE_PEER_SERVER ||
                aLink->mType == CMN_LINK_TYPE_PEER_CLIENT);
@@ -1002,7 +1003,7 @@ ACI_RC cmiSetLinkSndBufSize(cmiLink *aLink, acp_sint32_t aSndBufSize)
     cmnLinkPeer *sLink = (cmnLinkPeer *)aLink;
 
     /*
-     * Peer Type ê²€ì‚¬
+     * Peer Type °Ë»ç
      */
     ACE_ASSERT(aLink->mType == CMN_LINK_TYPE_PEER_SERVER ||
                aLink->mType == CMN_LINK_TYPE_PEER_CLIENT);
@@ -1028,7 +1029,7 @@ ACI_RC cmiGetLinkRcvBufSize(cmiLink *aLink, acp_sint32_t *aRcvBufSize)
     cmnLinkPeer *sLink = (cmnLinkPeer *)aLink;
 
     /*
-     * Peer Type ê²€ì‚¬
+     * Peer Type °Ë»ç
      */
     ACE_ASSERT(aLink->mType == CMN_LINK_TYPE_PEER_SERVER ||
                aLink->mType == CMN_LINK_TYPE_PEER_CLIENT);
@@ -1054,7 +1055,7 @@ ACI_RC cmiSetLinkRcvBufSize(cmiLink *aLink, acp_sint32_t aRcvBufSize)
     cmnLinkPeer *sLink = (cmnLinkPeer *)aLink;
 
     /*
-     * Peer Type ê²€ì‚¬
+     * Peer Type °Ë»ç
      */
     ACE_ASSERT(aLink->mType == CMN_LINK_TYPE_PEER_SERVER ||
                aLink->mType == CMN_LINK_TYPE_PEER_CLIENT);
@@ -1080,13 +1081,13 @@ ACI_RC cmiCheckLink(cmiLink *aLink, acp_bool_t *aIsClosed)
     cmnLinkPeer *sLink = (cmnLinkPeer *)aLink;
 
     /*
-     * Peer Type ê²€ì‚¬
+     * Peer Type °Ë»ç
      */
     ACE_ASSERT(aLink->mType == CMN_LINK_TYPE_PEER_SERVER ||
                aLink->mType == CMN_LINK_TYPE_PEER_CLIENT);
 
     /*
-     * Connection Closed ê²€ì‚¬
+     * Connection Closed °Ë»ç
      */
     return sLink->mPeerOp->mCheck(sLink, aIsClosed);
 }
@@ -1100,7 +1101,7 @@ ACI_RC cmiShutdownLink(cmiLink *aLink, cmiDirection aDirection)
 
     /*
      * bug-28277 ipc: server stop failed when idle clis exist
-     * server stopì‹œì—ë§Œ shutdown_mode_force ë„˜ê¸°ë„ë¡ í•¨.
+     * server stop½Ã¿¡¸¸ shutdown_mode_force ³Ñ±âµµ·Ï ÇÔ.
      */
     ACI_TEST(sLink->mPeerOp->mShutdown(sLink, aDirection,
                                        CMN_SHUTDOWN_MODE_NORMAL)
@@ -1120,19 +1121,19 @@ ACI_RC cmiAddSession(cmiSession         *aSession,
 {
     ACP_UNUSED(aProtocolContext);
     /*
-     * íŒŒë¼ë¯¸í„° ë²”ìœ„ ê²€ì‚¬
+     * ÆÄ¶ó¹ÌÅÍ ¹üÀ§ °Ë»ç
      */
     ACE_ASSERT(aModuleID > CMP_MODULE_BASE);
 
     ACI_TEST_RAISE(aModuleID >= CMP_MODULE_MAX, UnknownModule);
 
     /*
-     * Session ì¶”ê°€
+     * Session Ãß°¡
      */
     ACI_TEST(cmmSessionAdd(aSession) != ACI_SUCCESS);
 
     /*
-     * Session ì´ˆê¸°í™”
+     * Session ÃÊ±âÈ­
      */
     aSession->mOwner           = aOwner;
     aSession->mBaseVersion     = CMP_VER_BASE_NONE;
@@ -1156,12 +1157,12 @@ ACI_RC cmiAddSession(cmiSession         *aSession,
 ACI_RC cmiRemoveSession(cmiSession *aSession)
 {
     /*
-     * Sessionì˜ Session IDê°€ 0ì´ë©´ ë“±ë¡ë˜ì§€ ì•Šì€ Session
+     * SessionÀÇ Session ID°¡ 0ÀÌ¸é µî·ÏµÇÁö ¾ÊÀº Session
      */
     ACI_TEST_RAISE(aSession->mSessionID == 0, SessionNotAdded);
 
     /*
-     * Session ì‚­ì œ
+     * Session »èÁ¦
      */
     ACI_TEST(cmmSessionRemove(aSession) != ACI_SUCCESS);
 
@@ -1181,12 +1182,12 @@ ACI_RC cmiSetLinkForSession(cmiSession *aSession, cmiLink *aLink)
     if (aLink != NULL)
     {
         /*
-         * Sessionì— Linkê°€ ì´ë¯¸ ë“±ë¡ëœ ìƒíƒœì—ì„œ ìƒˆë¡œìš´ Linkë¥¼ ì„¸íŒ…í•  ìˆ˜ ì—†ìŒ
+         * Session¿¡ Link°¡ ÀÌ¹Ì µî·ÏµÈ »óÅÂ¿¡¼­ »õ·Î¿î Link¸¦ ¼¼ÆÃÇÒ ¼ö ¾øÀ½
          */
         ACI_TEST_RAISE(aSession->mLink != NULL, LinkAlreadyRegistered);
 
         /*
-         * Linkê°€ Peer Typeì¸ì§€ ê²€ì‚¬
+         * Link°¡ Peer TypeÀÎÁö °Ë»ç
          */
         /*
          * BUG-28119 for RP PBT
@@ -1196,7 +1197,7 @@ ACI_RC cmiSetLinkForSession(cmiSession *aSession, cmiLink *aLink)
     }
 
     /*
-     * Sessionì— Link ì„¸íŒ…
+     * Session¿¡ Link ¼¼ÆÃ
      */
     aSession->mLink = (cmnLinkPeer *)aLink;
 
@@ -1218,7 +1219,7 @@ ACI_RC cmiSetLinkForSession(cmiSession *aSession, cmiLink *aLink)
 ACI_RC cmiGetLinkForSession(cmiSession *aSession, cmiLink **aLink)
 {
     /*
-     * Sessionì˜ Link ë°˜í™˜
+     * SessionÀÇ Link ¹ÝÈ¯
      */
     *aLink = (cmiLink *)aSession->mLink;
 
@@ -1234,7 +1235,7 @@ ACI_RC cmiGetLinkForSession(cmiSession *aSession, cmiLink **aLink)
  * aCtx         [in]      - cmiProtocolContext
  * aOrReadBlock [in]      - Real-Shared Memory which data is written.
  * aTmpBlock    [in]      - Temporary cmBlockInfo
- * aReadDataCount[in/out] - ì½ì€ ë°ì´í„°ì˜ ìœ„ì¹˜
+ * aReadDataCount[in/out] - ÀÐÀº µ¥ÀÌÅÍÀÇ À§Ä¡
  **************************************************************/
 acp_bool_t cmiIPCDAInitReadHandShakeResult(cmiProtocolContext  *aCtx,
                                            cmbBlockIPCDA      **aOrReadBlock,
@@ -1296,19 +1297,16 @@ acp_bool_t cmiIPCDAInitReadHandShakeResult(cmiProtocolContext  *aCtx,
 }
 
 acp_bool_t cmiIPCDAHandShakeResultCallback(cmiProtocolContext *aCtx,
-                                                  cmbBlockIPCDA      *aOrReadBlock,
-                                                  acp_uint32_t       *aReadDataCount)
+                                           cmbBlockIPCDA      *aOrReadBlock,
+                                           acp_uint32_t       *aReadDataCount)
 {
-    /* sModuleID + sMajorVersion + sMinorVersion + sPatchVersion + sFlags */
-    CMI_SKIP_READ_BLOCK(aCtx, 5);
-
     ACI_TEST(cmiIPCDACheckDataCount((void*)aCtx,
                                     &aOrReadBlock->mOperationCount,
                                     *aReadDataCount,
                                     0,
                                     0) == ACI_FAILURE);
 
-    (*aReadDataCount)++; /* BUG-46390 ê°€ë…ì„± ê°œì„  */
+    (*aReadDataCount)++; /* BUG-46390 °¡µ¶¼º °³¼± */
     CMI_SKIP_READ_BLOCK(aCtx, 1);    /* IPCDALastOpEnded skip */
     
     aCtx->mReadBlock = (cmbBlock*)aOrReadBlock;
@@ -1327,17 +1325,24 @@ acp_bool_t cmiIPCDAHandShakeResultCallback(cmiProtocolContext *aCtx,
 
 //===========================================================
 // proj_2160 cm_type removal
-// í•¨ìˆ˜ë¥¼ 2ê°œë¡œ ë‚˜ëˆˆ ì´ìœ :
-// cmiConnect            : DB í”„ë¡œí† ì½œìš©
-// cmiConnectWithoutData : RP í”„ë¡œí† ì½œìš© (DB_Handshake í•˜ì§€ ì•ŠìŒ)
-// RPì—ì„œëŠ” DB_Handshakeë¥¼ ì²˜ë¦¬í•˜ê¸°ê°€ ì–´ë µê³ ,
-// (BASE í”„ë¡œí† ì½œì´ ì—†ì–´ì§€ë©´ì„œ opcode ê°’ì´ DB ë‚´ì—ì„œë§Œ ìœ íš¨í•´ì§),
-// ë˜ ì•ˆí•´ë„ ë¬¸ì œê°€ ì—†ë‹¤ê³  ìƒê°ë˜ì–´ í•˜ì§€ ì•Šë„ë¡ í•œë‹¤
-// ë³„ë„ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ëŠ” ê²ƒì´  if-else ì²˜ë¦¬ ë³´ë‹¤ ë‚«ë‹¤ê³  í˜‘ì˜í•˜ì˜€ìŒ
+// ÇÔ¼ö¸¦ 2°³·Î ³ª´« ÀÌÀ¯:
+// cmiConnect            : DB ÇÁ·ÎÅäÄÝ¿ë
+// cmiConnectWithoutData : RP ÇÁ·ÎÅäÄÝ¿ë (DB_Handshake ÇÏÁö ¾ÊÀ½)
+// RP¿¡¼­´Â DB_Handshake¸¦ Ã³¸®ÇÏ±â°¡ ¾î·Æ°í,
+// (BASE ÇÁ·ÎÅäÄÝÀÌ ¾ø¾îÁö¸é¼­ opcode °ªÀÌ DB ³»¿¡¼­¸¸ À¯È¿ÇØÁü),
+// ¶Ç ¾ÈÇØµµ ¹®Á¦°¡ ¾ø´Ù°í »ý°¢µÇ¾î ÇÏÁö ¾Êµµ·Ï ÇÑ´Ù
+// º°µµ ÇÔ¼ö¸¦ »ç¿ëÇÏ´Â °ÍÀÌ  if-else Ã³¸® º¸´Ù ³´´Ù°í ÇùÀÇÇÏ¿´À½
 //===========================================================
 ACI_RC cmiConnect(cmiProtocolContext *aCtx, cmiConnectArg *aConnectArg, acp_time_t aTimeout, acp_sint32_t aOption)
 {
     acp_bool_t                 sConnectFlag      = ACP_FALSE;
+
+    acp_uint8_t                sModuleID;      /* 1: DB, 2: RP */
+    acp_uint8_t                sMajorVersion;  /* CM major ver of client */
+    acp_uint8_t                sMinorVersion;  /* CM minor ver of client */
+    acp_uint8_t                sPatchVersion;  /* CM patch ver of client */
+    acp_uint8_t                sLastOpID;      /* PROJ-2733-Protocol */
+
     acp_uint8_t                sOpID;
     acp_uint32_t               sErrIndex;
     acp_uint32_t               sErrCode;
@@ -1347,6 +1352,11 @@ ACI_RC cmiConnect(cmiProtocolContext *aCtx, cmiConnectArg *aConnectArg, acp_time
     cmbBlock                   sTmpBlock;
     acp_uint32_t               sCurReadOperationCount = 0;
     
+    ACP_UNUSED( sModuleID );
+    ACP_UNUSED( sMajorVersion );
+    ACP_UNUSED( sMinorVersion );
+    ACP_UNUSED( sPatchVersion );
+
     ACI_TEST_RAISE(aCtx->mModule->mModuleID != CMP_MODULE_DB,
                    InvalidModuleError);
 
@@ -1356,7 +1366,7 @@ ACI_RC cmiConnect(cmiProtocolContext *aCtx, cmiConnectArg *aConnectArg, acp_time
                                             aTimeout,
                                             aOption) != ACI_SUCCESS);
     sConnectFlag = ACP_TRUE;
-    // STFì¸ ê²½ìš° ë•Œë¬¸ì— ì—¬ê¸°ì„œ ë‹¤ì‹œ ì´ˆê¸°í™”ì‹œì¼œì¤˜ì•¼í•¨
+    // STFÀÎ °æ¿ì ¶§¹®¿¡ ¿©±â¼­ ´Ù½Ã ÃÊ±âÈ­½ÃÄÑÁà¾ßÇÔ
     aCtx->mWriteHeader.mA7.mCmSeqNo = 0; // send seq
     aCtx->mCmSeqNo = 0;                  // recv seq
 
@@ -1378,7 +1388,7 @@ ACI_RC cmiConnect(cmiProtocolContext *aCtx, cmiConnectArg *aConnectArg, acp_time
     CMI_WR1(aCtx, CM_MAJOR_VERSION);
     CMI_WR1(aCtx, CM_MINOR_VERSION);
     CMI_WR1(aCtx, CM_PATCH_VERSION);
-    CMI_WR1(aCtx, 0);
+    CMI_WR1(aCtx, CMP_OP_DB_MAX - 1);  /* PROJ-2733-Protocol */
 
     if (cmiGetLinkImpl(aCtx) == CMN_LINK_IMPL_IPCDA)
     {
@@ -1392,8 +1402,8 @@ ACI_RC cmiConnect(cmiProtocolContext *aCtx, cmiConnectArg *aConnectArg, acp_time
     }
 
     //fix BUG-17942 
-    // cmiRecvNext() ëŒ€ì‹ ì— cmiRecv()ë¥¼ í˜¸ì¶œí•œë‹¤
-    // DB_HandshakeResultì— ëŒ€í•œ callbackì€ ì¡´ìž¬í•˜ì§€ ì•ŠìŒ
+    // cmiRecvNext() ´ë½Å¿¡ cmiRecv()¸¦ È£ÃâÇÑ´Ù
+    // DB_HandshakeResult¿¡ ´ëÇÑ callbackÀº Á¸ÀçÇÏÁö ¾ÊÀ½
     //fix BUG-38128 (ACI_TEST_RAISE -> ACI_TEST)
     if (cmiGetLinkImpl(aCtx) != CMN_LINK_IMPL_IPCDA)
     {
@@ -1408,16 +1418,31 @@ ACI_RC cmiConnect(cmiProtocolContext *aCtx, cmiConnectArg *aConnectArg, acp_time
     }
 
     CMI_RD1(aCtx, sOpID);
-    if (sOpID != CMP_OP_DB_HandshakeResult)
+
+    /* PROJ-2733-Protocol */
+    switch (sOpID)
     {
-        if (sOpID == CMP_OP_DB_ErrorResult)
-        {
+        case CMP_OP_DB_HandshakeResult:
+            CMI_RD1(aCtx, sModuleID);
+            CMI_RD1(aCtx, sMajorVersion);
+            CMI_RD1(aCtx, sMinorVersion);
+            CMI_RD1(aCtx, sPatchVersion);
+            CMI_RD1(aCtx, sLastOpID);
+
+            if (sLastOpID != 0)
+            {
+                aCtx->mProtocol.mServerLastOpID = sLastOpID;
+            }
+            break;
+
+        case CMP_OP_DB_ErrorV3Result:
+        case CMP_OP_DB_ErrorResult:
             ACI_RAISE(HandshakeError);
-        }
-        else
-        {
+            break;
+
+        default:
             ACI_RAISE(InvalidProtocolSeqError);
-        }
+            break;
     }
 
     if (cmiGetLinkImpl(aCtx) == CMN_LINK_IMPL_IPCDA)
@@ -1432,7 +1457,7 @@ ACI_RC cmiConnect(cmiProtocolContext *aCtx, cmiConnectArg *aConnectArg, acp_time
     ACI_EXCEPTION(HandshakeError);
     {
         CMI_SKIP_READ_BLOCK(aCtx, 1); /* skip error op ID */
-        /* BUG-44556  Handshake ê³¼ì •ì¤‘ì— ë°œìƒí•œ ì—ëŸ¬ì˜ í”„ë¡œí† ì½œ í•´ì„ì´ ìž˜ëª»ë˜ì—ˆìŠµë‹ˆë‹¤.*/
+        /* BUG-44556  Handshake °úÁ¤Áß¿¡ ¹ß»ýÇÑ ¿¡·¯ÀÇ ÇÁ·ÎÅäÄÝ ÇØ¼®ÀÌ Àß¸øµÇ¾ú½À´Ï´Ù.*/
         CMI_RD4(aCtx, &sErrIndex);
         CMI_RD4(aCtx, &sErrCode);
         CMI_RD2(aCtx, &sErrMsgLen);
@@ -1443,6 +1468,18 @@ ACI_RC cmiConnect(cmiProtocolContext *aCtx, cmiConnectArg *aConnectArg, acp_time
         CMI_RCP(aCtx, sErrMsg, sErrMsgLen);
         sErrMsg[sErrMsgLen] = '\0';
         ACI_SET(aciSetErrorCodeAndMsg(sErrCode, sErrMsg));
+
+        /* PROJ-2733-Protocol */
+        switch (sOpID)
+        {
+            case CMP_OP_DB_ErrorV3Result:
+                CMI_SKIP_READ_BLOCK(aCtx, 8);
+                break;
+
+            case CMP_OP_DB_ErrorResult:
+            default:
+                break;
+        }
     }
     ACI_EXCEPTION(InvalidModuleError)
     {
@@ -1455,7 +1492,7 @@ ACI_RC cmiConnect(cmiProtocolContext *aCtx, cmiConnectArg *aConnectArg, acp_time
     ACI_EXCEPTION_END;
     {
         /*
-         * BUG-24170 [CM] cmiConnect ì‹¤íŒ¨ ì‹œ, cmiConnect ë‚´ì—ì„œ close í•´ì•¼ í•©ë‹ˆë‹¤
+         * BUG-24170 [CM] cmiConnect ½ÇÆÐ ½Ã, cmiConnect ³»¿¡¼­ close ÇØ¾ß ÇÕ´Ï´Ù
          */
         if(sConnectFlag == ACP_TRUE)
         {
@@ -1477,7 +1514,7 @@ ACI_RC cmiConnect(cmiProtocolContext *aCtx, cmiConnectArg *aConnectArg, acp_time
     return ACI_FAILURE;
 }
 
-// RP í”„ë¡œí† ì½œìš© (DB_Handshake í•˜ì§€ ì•ŠìŒ)
+// RP ÇÁ·ÎÅäÄÝ¿ë (DB_Handshake ÇÏÁö ¾ÊÀ½)
 ACI_RC cmiConnectWithoutData( cmiProtocolContext * aCtx,
                               cmiConnectArg * aConnectArg,
                               acp_time_t aTimeout,
@@ -1498,7 +1535,7 @@ ACI_RC cmiConnectWithoutData( cmiProtocolContext * aCtx,
 
     ACI_EXCEPTION_END;
     /*
-     * BUG-24170 [CM] cmiConnect ì‹¤íŒ¨ ì‹œ, cmiConnect ë‚´ì—ì„œ close í•´ì•¼ í•©ë‹ˆë‹¤
+     * BUG-24170 [CM] cmiConnect ½ÇÆÐ ½Ã, cmiConnect ³»¿¡¼­ close ÇØ¾ß ÇÕ´Ï´Ù
      */
     if(sConnectFlag == ACP_TRUE)
     {
@@ -1518,17 +1555,18 @@ ACI_RC cmiInitializeProtocol(cmiProtocol *aProtocol, cmpModule*  aModule, acp_ui
      * fix BUG-17947.
      */
     /*
-     * Operation ID ì„¸íŒ…
+     * Operation ID ¼¼ÆÃ
      */
     aProtocol->mOpID = aOperationID;
+    aProtocol->mServerLastOpID = 0;  /* PROJ-2733-Protocol Unused at A5 */
 
     /*
-     * Protocol Finalize í•¨ìˆ˜ ì„¸íŒ…
+     * Protocol Finalize ÇÔ¼ö ¼¼ÆÃ
      */
     aProtocol->mFinalizeFunction = (void *)aModule->mArgFinalizeFunction[aOperationID];
 
     /*
-     * Protocol ì´ˆê¸°í™”
+     * Protocol ÃÊ±âÈ­
      */
     if (aModule->mArgInitializeFunction[aOperationID] != cmpArgNULL)
     {
@@ -1547,8 +1585,8 @@ ACI_RC cmiInitializeProtocol(cmiProtocol *aProtocol, cmpModule*  aModule, acp_ui
     return ACI_FAILURE;
 }
 
-/*fix BUG-30041 cmiReadProtocolì—ì„œ mFinalization ì´ì´ˆê¸°í™” ë˜ê¸°ì „ì—
- ì‹¤íŒ¨í•˜ëŠ” caseì— cmiFinalizationì—ì„œ ë¹„ì •ìƒì¢…ë£Œë©ë‹ˆë‹¤.*/
+/*fix BUG-30041 cmiReadProtocol¿¡¼­ mFinalization ÀÌÃÊ±âÈ­ µÇ±âÀü¿¡
+ ½ÇÆÐÇÏ´Â case¿¡ cmiFinalization¿¡¼­ ºñÁ¤»óÁ¾·áµË´Ï´Ù.*/
 void  cmiInitializeProtocolNullFinalization(cmiProtocol *aProtocol)
 {
     aProtocol->mFinalizeFunction = (void *)cmpArgNULL;
@@ -1573,7 +1611,7 @@ ACI_RC cmiFinalizeProtocol(cmiProtocol *aProtocol)
 void cmiSetProtocolContextLink(cmiProtocolContext *aProtocolContext, cmiLink *aLink)
 {
     /*
-     * Protocol Contextì— Link ì„¸íŒ…
+     * Protocol Context¿¡ Link ¼¼ÆÃ
      */
     aProtocolContext->mLink = (cmnLinkPeer *)aLink;
 }
@@ -1587,7 +1625,7 @@ ACI_RC cmiReadProtocolAndCallback(cmiProtocolContext      *aProtocolContext,
     cmnLinkPeer          *sLink;
 
     /*
-     * ì½ì–´ì˜¨ Blockì´ í•˜ë‚˜ë„ ì—†ìœ¼ë©´ ì½ì–´ì˜´
+     * ÀÐ¾î¿Â BlockÀÌ ÇÏ³ªµµ ¾øÀ¸¸é ÀÐ¾î¿È
      */
     if (aProtocolContext->mReadBlock == NULL)
     {
@@ -1597,7 +1635,7 @@ ACI_RC cmiReadProtocolAndCallback(cmiProtocolContext      *aProtocolContext,
     while (1)
     {
         /*
-         * Protocol ì½ìŒ
+         * Protocol ÀÐÀ½
          */
         if (CMI_CHECK_BLOCK_FOR_READ(aProtocolContext->mReadBlock))
         {
@@ -1606,12 +1644,12 @@ ACI_RC cmiReadProtocolAndCallback(cmiProtocolContext      *aProtocolContext,
                                              aTimeout) != ACI_SUCCESS);
 
             /*
-             * Callback Function íšë“
+             * Callback Function È¹µæ
              */
             sCallbackFunction = aProtocolContext->mModule->mCallbackFunction[aProtocolContext->mProtocol.mOpID];
 
             /*
-             * Callback í˜¸ì¶œ
+             * Callback È£Ãâ
              */
             sRet = sCallbackFunction(aProtocolContext,
                                      &aProtocolContext->mProtocol,
@@ -1624,12 +1662,12 @@ ACI_RC cmiReadProtocolAndCallback(cmiProtocolContext      *aProtocolContext,
             ACI_TEST(cmiFinalizeProtocol(&aProtocolContext->mProtocol) != ACI_SUCCESS);
 
             /*
-             * Free Block Listì— ë‹¬ë¦° Block í•´ì œ
+             * Free Block List¿¡ ´Þ¸° Block ÇØÁ¦
              */
             ACI_TEST(cmiFreeReadBlock(aProtocolContext) != ACI_SUCCESS);
 
             /*
-             * Callback ê²°ê³¼ í™•ì¸
+             * Callback °á°ú È®ÀÎ
              */
             if (sRet != ACI_SUCCESS)
             {
@@ -1646,7 +1684,7 @@ ACI_RC cmiReadProtocolAndCallback(cmiProtocolContext      *aProtocolContext,
             if (aProtocolContext->mIsAddReadBlock == ACP_FALSE)
             {
                 /*
-                 * í˜„ìž¬ Blockì„ Free ëŒ€ê¸°ë¥¼ ìœ„í•œ Read Block Listì— ì¶”ê°€
+                 * ÇöÀç BlockÀ» Free ´ë±â¸¦ À§ÇÑ Read Block List¿¡ Ãß°¡
                  */
                 acpListAppendNode(&aProtocolContext->mReadBlockList,
                                   &aProtocolContext->mReadBlock->mListNode);
@@ -1661,7 +1699,7 @@ ACI_RC cmiReadProtocolAndCallback(cmiProtocolContext      *aProtocolContext,
                 {
                     ACI_TEST(cmiFreeReadBlock(aProtocolContext) != ACI_SUCCESS);
                     /*
-                     * Protocol Sequence ì™„ë£Œ
+                     * Protocol Sequence ¿Ï·á
                      */
 
                     sLink = aProtocolContext->mLink;
@@ -1671,7 +1709,7 @@ ACI_RC cmiReadProtocolAndCallback(cmiProtocolContext      *aProtocolContext,
                 else
                 {
                     /*
-                     * ë‹¤ìŒ Blockì„ ì½ì–´ì˜´
+                     * ´ÙÀ½ BlockÀ» ÀÐ¾î¿È
                      */
                     ACI_TEST(cmiReadBlock(aProtocolContext, aTimeout) != ACI_SUCCESS);
                 }
@@ -1697,12 +1735,12 @@ ACI_RC cmiReadProtocol(cmiProtocolContext *aProtocolContext,
     cmnLinkPeer         *sLink;
 
     /*
-     * ì´ì „ Read Protocolì´ ì •ìƒì ìœ¼ë¡œ ì™„ë£Œë˜ì—ˆì„ ê²½ìš°
+     * ÀÌÀü Read ProtocolÀÌ Á¤»óÀûÀ¸·Î ¿Ï·áµÇ¾úÀ» °æ¿ì
      */
     if (CMP_MARSHAL_STATE_IS_COMPLETE(aProtocolContext->mMarshalState) == ACP_TRUE)
     {
         /*
-         * Read Block ë°˜í™˜
+         * Read Block ¹ÝÈ¯
          */
         ACI_TEST(cmiFreeReadBlock(aProtocolContext) != ACI_SUCCESS);
 
@@ -1710,15 +1748,15 @@ ACI_RC cmiReadProtocol(cmiProtocolContext *aProtocolContext,
         sLink->mPeerOp->mResComplete(sLink);
 
         /*
-         * Protocol Finalize í•¨ìˆ˜ ì´ˆê¸°í™”
+         * Protocol Finalize ÇÔ¼ö ÃÊ±âÈ­
          *
-         * cmiReadProtocol í•¨ìˆ˜ëŠ” cmiFinalizeProtocolí˜¸ì¶œì˜ ì±…ìž„ì„ ìƒìœ„ë ˆì´ì–´ê°€ ê°€ì§
+         * cmiReadProtocol ÇÔ¼ö´Â cmiFinalizeProtocolÈ£ÃâÀÇ Ã¥ÀÓÀ» »óÀ§·¹ÀÌ¾î°¡ °¡Áü
          */
         aProtocol->mFinalizeFunction = (void *)cmpArgNULL;
     }
 
     /*
-     * ì½ì–´ì˜¨ Blockì´ í•˜ë‚˜ë„ ì—†ìœ¼ë©´ ì½ì–´ì˜´
+     * ÀÐ¾î¿Â BlockÀÌ ÇÏ³ªµµ ¾øÀ¸¸é ÀÐ¾î¿È
      */
     if (aProtocolContext->mReadBlock == NULL)
     {
@@ -1728,7 +1766,7 @@ ACI_RC cmiReadProtocol(cmiProtocolContext *aProtocolContext,
     while (1)
     {
         /*
-         * Protocol ì½ìŒ
+         * Protocol ÀÐÀ½
          */
         if (CMI_CHECK_BLOCK_FOR_READ(aProtocolContext->mReadBlock))
         {
@@ -1737,12 +1775,12 @@ ACI_RC cmiReadProtocol(cmiProtocolContext *aProtocolContext,
                                              aTimeout) != ACI_SUCCESS);
 
             /*
-             * BASE Moduleì´ë©´ Callback
+             * BASE ModuleÀÌ¸é Callback
              */
             if (aProtocolContext->mReadHeader.mA5.mModuleID == CMP_MODULE_BASE)
             {
                 /*
-                 * Callback Function íšë“
+                 * Callback Function È¹µæ
                  */
                 sCallbackFunction = aProtocolContext->mModule->mCallbackFunction[aProtocol->mOpID];
 
@@ -1796,7 +1834,7 @@ ACI_RC cmiReadProtocol(cmiProtocolContext *aProtocolContext,
     }
 
     /*
-     * í˜„ìž¬ Read Blockì„ ëê¹Œì§€ ì½ì—ˆìœ¼ë©´
+     * ÇöÀç Read BlockÀ» ³¡±îÁö ÀÐ¾úÀ¸¸é
      */
     if (!CMI_CHECK_BLOCK_FOR_READ(aProtocolContext->mReadBlock))
     {
@@ -1837,7 +1875,7 @@ ACI_RC cmiWriteProtocol(cmiProtocolContext *aProtocolContext, cmiProtocol *aProt
     cmpMarshalFunction  sMarshalFunction;
 
     /*
-     * Write Blockì´ í• ë‹¹ë˜ì–´ìžˆì§€ ì•Šìœ¼ë©´ í• ë‹¹
+     * Write BlockÀÌ ÇÒ´çµÇ¾îÀÖÁö ¾ÊÀ¸¸é ÇÒ´ç
      */
     if (aProtocolContext->mWriteBlock == NULL)
     {
@@ -1847,12 +1885,12 @@ ACI_RC cmiWriteProtocol(cmiProtocolContext *aProtocolContext, cmiProtocol *aProt
     }
 
     /*
-     * Marshal State ì´ˆê¸°í™”
+     * Marshal State ÃÊ±âÈ­
      */
     CMP_MARSHAL_STATE_INITIALIZE(sMarshalState);
 
     /*
-     * Module íšë“
+     * Module È¹µæ
      */
     if (aProtocolContext->mModule == NULL)
     {
@@ -1861,12 +1899,12 @@ ACI_RC cmiWriteProtocol(cmiProtocolContext *aProtocolContext, cmiProtocol *aProt
     }
 
     /*
-     * Operation ID ê²€ì‚¬
+     * Operation ID °Ë»ç
      */
     ACI_TEST_RAISE(aProtocol->mOpID >= aProtocolContext->mModule->mOpMaxA5, InvalidOpError);
 
     /*
-     * Marshal Function íšë“
+     * Marshal Function È¹µæ
      */
     sMarshalFunction = aProtocolContext->mModule->mWriteFunction[aProtocol->mOpID];
 
@@ -1876,7 +1914,7 @@ ACI_RC cmiWriteProtocol(cmiProtocolContext *aProtocolContext, cmiProtocol *aProt
     while (1)
     {
         /*
-         * Operation IDë¥¼ ê¸°ë¡í•˜ê³  Marshal
+         * Operation ID¸¦ ±â·ÏÇÏ°í Marshal
          */
         if (CMI_CHECK_BLOCK_FOR_WRITE(aProtocolContext->mWriteBlock))
         {
@@ -1887,7 +1925,7 @@ ACI_RC cmiWriteProtocol(cmiProtocolContext *aProtocolContext, cmiProtocol *aProt
                                       &sMarshalState) != ACI_SUCCESS);
 
             /*
-             * í”„ë¡œí† ì½œ ì“°ê¸°ê°€ ì™„ë£Œë˜ì—ˆìœ¼ë©´ Loop ì¢…ë£Œ
+             * ÇÁ·ÎÅäÄÝ ¾²±â°¡ ¿Ï·áµÇ¾úÀ¸¸é Loop Á¾·á
              */
             if (CMP_MARSHAL_STATE_IS_COMPLETE(sMarshalState) == ACP_TRUE)
             {
@@ -1896,12 +1934,12 @@ ACI_RC cmiWriteProtocol(cmiProtocolContext *aProtocolContext, cmiProtocol *aProt
         }
 
         /*
-         * ì „ì†¡
+         * Àü¼Û
          */
         ACI_TEST(cmiWriteBlock(aProtocolContext, ACP_FALSE) != ACI_SUCCESS);
 
         /*
-         * ìƒˆë¡œìš´ Block í• ë‹¹
+         * »õ·Î¿î Block ÇÒ´ç
          */
         ACI_TEST(aProtocolContext->mLink->mPeerOp->mAllocBlock(aProtocolContext->mLink,
                                                                &aProtocolContext->mWriteBlock)
@@ -1932,7 +1970,7 @@ ACI_RC cmiFlushProtocol(cmiProtocolContext *aProtocolContext, acp_bool_t aIsEnd)
     if (aProtocolContext->mWriteBlock != NULL)
     {
         /*
-         * Write Blockì´ í• ë‹¹ë˜ì–´ ìžˆìœ¼ë©´ ì „ì†¡
+         * Write BlockÀÌ ÇÒ´çµÇ¾î ÀÖÀ¸¸é Àü¼Û
          */
         ACI_TEST(cmiWriteBlock(aProtocolContext, aIsEnd) != ACI_SUCCESS);
     }
@@ -1943,7 +1981,7 @@ ACI_RC cmiFlushProtocol(cmiProtocolContext *aProtocolContext, acp_bool_t aIsEnd)
             (CMP_HEADER_PROTO_END_IS_SET(&aProtocolContext->mWriteHeader) == ACP_FALSE))
         {
             /*
-             * Sequence Endê°€ ì „ì†¡ë˜ì§€ ì•Šì•˜ìœ¼ë©´ ë¹ˆ Write Blockì„ í• ë‹¹í•˜ì—¬ ì „ì†¡
+             * Sequence End°¡ Àü¼ÛµÇÁö ¾Ê¾ÒÀ¸¸é ºó Write BlockÀ» ÇÒ´çÇÏ¿© Àü¼Û
              */
             ACI_TEST(aProtocolContext->mLink->mPeerOp->mAllocBlock(aProtocolContext->mLink,
                                                                    &aProtocolContext->mWriteBlock)
@@ -1967,10 +2005,10 @@ acp_bool_t cmiCheckInVariable(cmiProtocolContext *aProtocolContext, acp_uint32_t
     if( aProtocolContext->mWriteBlock == NULL )
     {
         /*
-         * mWriteBlockì´ nullì¼ ê²½ìš°ëŠ” í˜„ìž¬ ì•„ë¬´ê²ƒë„ ì±„ì›Œì§€ì§€ ì•Šì€ ìƒíƒœì´ê¸° ë•Œë¬¸ì—
-         * ì±„ì›Œì§€ëŠ” í”„ë¡œí† ì½œì— ë”°ë¼ì„œ sCurSizeê°€ ë‹¬ë¼ì§ˆìˆ˜ ìžˆë‹¤.
-         * ë”°ë¼ì„œ, sCurSizeë¥¼ ê°€ëŠ¥í•œ ìµœëŒ€ê°’(CMP_HEADER_SIZE)ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
-         * cmtInVariableì€ CM ìžì²´ì˜ ë‚´ë¶€ íƒ€ìž…ì´ê¸° ë•Œë¬¸ì— ìƒê´€ì—†ì„ ë“¯...
+         * mWriteBlockÀÌ nullÀÏ °æ¿ì´Â ÇöÀç ¾Æ¹«°Íµµ Ã¤¿öÁöÁö ¾ÊÀº »óÅÂÀÌ±â ¶§¹®¿¡
+         * Ã¤¿öÁö´Â ÇÁ·ÎÅäÄÝ¿¡ µû¶ó¼­ sCurSize°¡ ´Þ¶óÁú¼ö ÀÖ´Ù.
+         * µû¶ó¼­, sCurSize¸¦ °¡´ÉÇÑ ÃÖ´ë°ª(CMP_HEADER_SIZE)À¸·Î ¼³Á¤ÇÑ´Ù.
+         * cmtInVariableÀº CM ÀÚÃ¼ÀÇ ³»ºÎ Å¸ÀÔÀÌ±â ¶§¹®¿¡ »ó°ü¾øÀ» µí...
          */
         sCurSize = CMP_HEADER_SIZE;
     }
@@ -2013,10 +2051,10 @@ acp_bool_t cmiCheckInBit(cmiProtocolContext *aProtocolContext, acp_uint32_t aInB
     if( aProtocolContext->mWriteBlock == NULL )
     {
         /*
-         * mWriteBlockì´ nullì¼ ê²½ìš°ëŠ” í˜„ìž¬ ì•„ë¬´ê²ƒë„ ì±„ì›Œì§€ì§€ ì•Šì€ ìƒíƒœì´ê¸° ë•Œë¬¸ì—
-         * ì±„ì›Œì§€ëŠ” í”„ë¡œí† ì½œì— ë”°ë¼ì„œ sCurSizeê°€ ë‹¬ë¼ì§ˆìˆ˜ ìžˆë‹¤.
-         * ë”°ë¼ì„œ, sCurSizeë¥¼ ê°€ëŠ¥í•œ ìµœëŒ€ê°’(CMP_HEADER_SIZE)ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
-         * cmtInVariableì€ CM ìžì²´ì˜ ë‚´ë¶€ íƒ€ìž…ì´ê¸° ë•Œë¬¸ì— ìƒê´€ì—†ì„ ë“¯...
+         * mWriteBlockÀÌ nullÀÏ °æ¿ì´Â ÇöÀç ¾Æ¹«°Íµµ Ã¤¿öÁöÁö ¾ÊÀº »óÅÂÀÌ±â ¶§¹®¿¡
+         * Ã¤¿öÁö´Â ÇÁ·ÎÅäÄÝ¿¡ µû¶ó¼­ sCurSize°¡ ´Þ¶óÁú¼ö ÀÖ´Ù.
+         * µû¶ó¼­, sCurSize¸¦ °¡´ÉÇÑ ÃÖ´ë°ª(CMP_HEADER_SIZE)À¸·Î ¼³Á¤ÇÑ´Ù.
+         * cmtInVariableÀº CM ÀÚÃ¼ÀÇ ³»ºÎ Å¸ÀÔÀÌ±â ¶§¹®¿¡ »ó°ü¾øÀ» µí...
          */
         sCurSize = CMP_HEADER_SIZE;
     }
@@ -2039,10 +2077,10 @@ acp_bool_t cmiCheckInNibble(cmiProtocolContext *aProtocolContext, acp_uint32_t a
     if( aProtocolContext->mWriteBlock == NULL )
     {
         /*
-         * mWriteBlockì´ nullì¼ ê²½ìš°ëŠ” í˜„ìž¬ ì•„ë¬´ê²ƒë„ ì±„ì›Œì§€ì§€ ì•Šì€ ìƒíƒœì´ê¸° ë•Œë¬¸ì—
-         * ì±„ì›Œì§€ëŠ” í”„ë¡œí† ì½œì— ë”°ë¼ì„œ sCurSizeê°€ ë‹¬ë¼ì§ˆìˆ˜ ìžˆë‹¤.
-         * ë”°ë¼ì„œ, sCurSizeë¥¼ ê°€ëŠ¥í•œ ìµœëŒ€ê°’(CMP_HEADER_SIZE)ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
-         * cmtInVariableì€ CM ìžì²´ì˜ ë‚´ë¶€ íƒ€ìž…ì´ê¸° ë•Œë¬¸ì— ìƒê´€ì—†ì„ ë“¯...
+         * mWriteBlockÀÌ nullÀÏ °æ¿ì´Â ÇöÀç ¾Æ¹«°Íµµ Ã¤¿öÁöÁö ¾ÊÀº »óÅÂÀÌ±â ¶§¹®¿¡
+         * Ã¤¿öÁö´Â ÇÁ·ÎÅäÄÝ¿¡ µû¶ó¼­ sCurSize°¡ ´Þ¶óÁú¼ö ÀÖ´Ù.
+         * µû¶ó¼­, sCurSize¸¦ °¡´ÉÇÑ ÃÖ´ë°ª(CMP_HEADER_SIZE)À¸·Î ¼³Á¤ÇÑ´Ù.
+         * cmtInVariableÀº CM ÀÚÃ¼ÀÇ ³»ºÎ Å¸ÀÔÀÌ±â ¶§¹®¿¡ »ó°ü¾øÀ» µí...
          */
         sCurSize = CMP_HEADER_SIZE;
     }
@@ -2096,9 +2134,9 @@ cmiLinkImpl cmiGetLinkImpl(cmiProtocolContext *aProtocolContext)
 
 /***********************************************************
  * proj_2160 cm_type removal
- * cmbBlock í¬ì¸í„° 2ê°œë¥¼ NULLë¡œ ë§Œë“ ë‹¤
- * cmiAllocCmBlockì„ í˜¸ì¶œí•˜ê¸° ì „ì— ì´ í•¨ìˆ˜ë¥¼ ë°˜ë“œì‹œ ë¨¼ì €
- * í˜¸ì¶œí•´ì„œ cmbBlock í• ë‹¹ì´ ì œëŒ€ë¡œ ë˜ë„ë¡ í•´ì•¼ í•œë‹¤.
+ * cmbBlock Æ÷ÀÎÅÍ 2°³¸¦ NULL·Î ¸¸µç´Ù
+ * cmiAllocCmBlockÀ» È£ÃâÇÏ±â Àü¿¡ ÀÌ ÇÔ¼ö¸¦ ¹Ýµå½Ã ¸ÕÀú
+ * È£ÃâÇØ¼­ cmbBlock ÇÒ´çÀÌ Á¦´ë·Î µÇµµ·Ï ÇØ¾ß ÇÑ´Ù.
 ***********************************************************/
 ACI_RC cmiMakeCmBlockNull(cmiProtocolContext *aCtx)
 {
@@ -2113,32 +2151,32 @@ ACI_RC cmiMakeCmBlockNull(cmiProtocolContext *aCtx)
  * proj_2160 cm_type removal
  **********************************************************
  *  cmiAllocCmBlock:
- * 1. ì´ í•¨ìˆ˜ëŠ” ì˜ˆì „ì˜ cmiAddSession() ê³¼
- *  cmiInitializeProtocolContext() ë¥¼ ëŒ€ì²´í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤
- * 2. ì´ í•¨ìˆ˜ëŠ” cmiProtocolContextë¥¼ ì´ˆê¸°í™”í•˜ê³ 
- *  2ê°œì˜ cmbBlock(recv, send)ì„ í• ë‹¹í•œë‹¤.
- * 3. ì£¼ì˜í•  ì ì€ í˜¸ì¶œí•˜ê¸° ì „ì— cmbBlock í¬ì¸í„°ê°€ NULLë¡œ
- *  ì´ˆê¸°í™”ë˜ì–´ ìžˆì–´ì•¼ í•œë‹¤ëŠ” ê²ƒì´ë‹¤(cmiMakeCmBlockNull)
- * 4. A5 clientê°€ ì ‘ì†í•˜ëŠ” ê²½ìš°ì—ë„ ì„œë²„ì—ì„œëŠ” ì´ í•¨ìˆ˜ë¥¼ 
- *  ì‚¬ìš©í•˜ëŠ”ë° ë¬¸ì œê°€ ì—†ë‹¤(A7ì—ì„œ A5ë¡œ ì „í™˜ë¨)
+ * 1. ÀÌ ÇÔ¼ö´Â ¿¹ÀüÀÇ cmiAddSession() °ú
+ *  cmiInitializeProtocolContext() ¸¦ ´ëÃ¼ÇÏ´Â ÇÔ¼öÀÌ´Ù
+ * 2. ÀÌ ÇÔ¼ö´Â cmiProtocolContext¸¦ ÃÊ±âÈ­ÇÏ°í
+ *  2°³ÀÇ cmbBlock(recv, send)À» ÇÒ´çÇÑ´Ù.
+ * 3. ÁÖÀÇÇÒ Á¡Àº È£ÃâÇÏ±â Àü¿¡ cmbBlock Æ÷ÀÎÅÍ°¡ NULL·Î
+ *  ÃÊ±âÈ­µÇ¾î ÀÖ¾î¾ß ÇÑ´Ù´Â °ÍÀÌ´Ù(cmiMakeCmBlockNull)
+ * 4. A5 client°¡ Á¢¼ÓÇÏ´Â °æ¿ì¿¡µµ ¼­¹ö¿¡¼­´Â ÀÌ ÇÔ¼ö¸¦ 
+ *  »ç¿ëÇÏ´Âµ¥ ¹®Á¦°¡ ¾ø´Ù(A7¿¡¼­ A5·Î ÀüÈ¯µÊ)
  **********************************************************
- *  ë³€ê²½ì‚¬í•­:
- * 1. ì˜ˆì „ì—ëŠ” ì†¡ìˆ˜ì‹ ë§ˆë‹¤ cmbBlockì´ í• ë‹¹/í•´ì œê°€ ë˜ì—ˆëŠ”ë°,
- *  A7ë¶€í„°ëŠ” í•œë²ˆë§Œ í• ë‹¹í•œ í›„ ì—°ê²°ì´ ëŠê¸¸ë•Œê¹Œì§€
- *  ê³„ì† ìœ ì§€ë˜ë„ë¡ ë³€ê²½ë˜ì—ˆë‹¤.
- * 2. cmiProtocolContextë„ í•œë²ˆë§Œ ì´ˆê¸°í™”ë¥¼ í•´ì•¼í•œë‹¤. ì´ìœ ëŠ”
- *  íŒ¨í‚·ì¼ë ¨ë²ˆí˜¸ë¥¼ ì„¸ì…˜ë‚´ì—ì„œ ê³„ì† ìœ ì§€í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì´ë‹¤
- * 3. cmmSession êµ¬ì¡°ì²´ëŠ” ë”ì´ìƒ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤
+ *  º¯°æ»çÇ×:
+ * 1. ¿¹Àü¿¡´Â ¼Û¼ö½Å¸¶´Ù cmbBlockÀÌ ÇÒ´ç/ÇØÁ¦°¡ µÇ¾ú´Âµ¥,
+ *  A7ºÎÅÍ´Â ÇÑ¹ø¸¸ ÇÒ´çÇÑ ÈÄ ¿¬°áÀÌ ²÷±æ¶§±îÁö
+ *  °è¼Ó À¯ÁöµÇµµ·Ï º¯°æµÇ¾ú´Ù.
+ * 2. cmiProtocolContextµµ ÇÑ¹ø¸¸ ÃÊ±âÈ­¸¦ ÇØ¾ßÇÑ´Ù. ÀÌÀ¯´Â
+ *  ÆÐÅ¶ÀÏ·Ã¹øÈ£¸¦ ¼¼¼Ç³»¿¡¼­ °è¼Ó À¯ÁöÇØ¾ß ÇÏ±â ¶§¹®ÀÌ´Ù
+ * 3. cmmSession ±¸Á¶Ã¼´Â ´õÀÌ»ó »ç¿ëÇÏÁö ¾Ê´Â´Ù
  **********************************************************
- *  ì‚¬ìš©ë°©ë²•(í•¨ìˆ˜ í˜¸ì¶œ ìˆœì„œ):
- *  1. cmiMakeCmBlockNull(ctx);   : cmbBlock í¬ì¸í„° NULL ì„¸íŒ…
- *  2. cmiAllocLink(&link);       : Link êµ¬ì¡°ì²´ í• ë‹¹
- *  3. cmiAllocCmBlock(ctx, link);: cmbBlock 2ê°œ í• ë‹¹
- *  4.  connected   ...           : ì—°ê²° ì„±ê³µ
- *  5.  send/recv   ...           : cmbBlockì„ í†µí•´ ì†¡ìˆ˜ì‹ 
- *  6.  disconnected ..           : ì—°ê²° ì¢…ë£Œ
- *  7. cmiFreeCmBlock(ctx);       : cmbBlock 2ê°œ í•´ì œ
- *  8. cmiFreeLink(link);         : Link êµ¬ì¡°ì²´ í•´ì œ
+ *  »ç¿ë¹æ¹ý(ÇÔ¼ö È£Ãâ ¼ø¼­):
+ *  1. cmiMakeCmBlockNull(ctx);   : cmbBlock Æ÷ÀÎÅÍ NULL ¼¼ÆÃ
+ *  2. cmiAllocLink(&link);       : Link ±¸Á¶Ã¼ ÇÒ´ç
+ *  3. cmiAllocCmBlock(ctx, link);: cmbBlock 2°³ ÇÒ´ç
+ *  4.  connected   ...           : ¿¬°á ¼º°ø
+ *  5.  send/recv   ...           : cmbBlockÀ» ÅëÇØ ¼Û¼ö½Å
+ *  6.  disconnected ..           : ¿¬°á Á¾·á
+ *  7. cmiFreeCmBlock(ctx);       : cmbBlock 2°³ ÇØÁ¦
+ *  8. cmiFreeLink(link);         : Link ±¸Á¶Ã¼ ÇØÁ¦
 ***********************************************************/
 ACI_RC cmiAllocCmBlock(cmiProtocolContext* aCtx,
                        acp_uint8_t         aModuleID,
@@ -2165,7 +2203,7 @@ ACI_RC cmiAllocCmBlock(cmiProtocolContext* aCtx,
 
 #if defined(__CSURF__)      
     /* BUG-44539 
-       ë¶ˆí•„ìš”í•œ false alarmì„ ë°©ì§€í•˜ê¸°ìœ„í•´ì„œ í˜¸ì¶œí•œ ëª¨ë“ˆì„ ê²€ì‚¬í•œë‹¤.*/
+       ºÒÇÊ¿äÇÑ false alarmÀ» ¹æÁöÇÏ±âÀ§ÇØ¼­ È£ÃâÇÑ ¸ðµâÀ» °Ë»çÇÑ´Ù.*/
     ACI_TEST_RAISE( (cmiGetLinkImpl(aCtx) == CMN_LINK_IMPL_IPCDA)  && 
                     (aModuleID == CMI_PROTOCOL_MODULE(DB)), ContAllockBlock );
 #else 
@@ -2198,6 +2236,11 @@ ACI_RC cmiAllocCmBlock(cmiProtocolContext* aCtx,
     aCtx->mSessionCloseNeeded  = ACP_FALSE;
 
     cmiDisableCompress( aCtx );
+    /* BUG-48871 ¾ÐÃà ¹æ½Ä LZ4·Î º¯°æ ÈÄ ÀÌÁßÈ­ ÇÏÀ§ È£È¯¼º À¯Áö */
+    /* ¾ÐÃà ÇØÁ¦ ¹æ½ÄÀº default °ªÀÌ LZO */ 
+    cmiSetDecompressType( aCtx, CMI_COMPRESS_LZO );
+
+    aCtx->mProtocol.mServerLastOpID = CMP_OP_DB_LAST_OP_ID_OF_VER_7_1;  /* PROJ-2733-Protocol */
     
     return ACI_SUCCESS;
     ACI_EXCEPTION_END;
@@ -2205,9 +2248,9 @@ ACI_RC cmiAllocCmBlock(cmiProtocolContext* aCtx,
 }
 
 /***********************************************************
- * ì´ í•¨ìˆ˜ëŠ” ì„¸ì…˜ì´ ì¢…ë£Œëœí›„ì—ëŠ” ë©”ëª¨ë¦¬ ë°˜ë‚©ì„ ìœ„í•´
- * ë°˜ë“œì‹œ í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤
- * ë‚´ë¶€ì—ì„œëŠ” A7ê³¼ A5 ì„¸ì…˜ì„ ë™ì‹œì— ì²˜ë¦¬í•˜ë„ë¡ ë˜ì–´ ìžˆë‹¤
+ * ÀÌ ÇÔ¼ö´Â ¼¼¼ÇÀÌ Á¾·áµÈÈÄ¿¡´Â ¸Þ¸ð¸® ¹Ý³³À» À§ÇØ
+ * ¹Ýµå½Ã È£ÃâµÇ¾î¾ß ÇÑ´Ù
+ * ³»ºÎ¿¡¼­´Â A7°ú A5 ¼¼¼ÇÀ» µ¿½Ã¿¡ Ã³¸®ÇÏµµ·Ï µÇ¾î ÀÖ´Ù
 ***********************************************************/
 ACI_RC cmiFreeCmBlock(cmiProtocolContext* aCtx)
 {
@@ -2227,8 +2270,8 @@ ACI_RC cmiFreeCmBlock(cmiProtocolContext* aCtx)
          * if AllocLink has failed with a same DBC handle multiple times.*/
         if( aCtx->mWriteBlock != NULL )
         {
-            // timeoutìœ¼ë¡œ ì„¸ì…˜ì´ ëŠê¸¸ê²½ìš° ì—ëŸ¬ë©”ì‹œì§€ë¥¼ í¬í•¨í•œ
-            // ì‘ë‹µ ë°ì´í„°ê°€ ì•„ì§ cmBlockì— ë‚¨ì•„ ìžˆë‹¤. ì´ë¥¼ ì „ì†¡
+            // timeoutÀ¸·Î ¼¼¼ÇÀÌ ²÷±æ°æ¿ì ¿¡·¯¸Þ½ÃÁö¸¦ Æ÷ÇÔÇÑ
+            // ÀÀ´ä µ¥ÀÌÅÍ°¡ ¾ÆÁ÷ cmBlock¿¡ ³²¾Æ ÀÖ´Ù. ÀÌ¸¦ Àü¼Û
             if (aCtx->mWriteBlock->mCursor > CMP_HEADER_SIZE)
             {
                 (void)cmiSend(aCtx, ACP_TRUE);
@@ -2287,8 +2330,9 @@ ACI_RC cmiFreeCmBlock(cmiProtocolContext* aCtx)
  * CM Block except CM Packet header is compressed by using aclCompress. then
  * Original CM Block is replaced with compressed one.
  */
-static ACI_RC cmiCompressCmBlock( cmiProtocolContext * aCtx,
-                                  cmbBlock           * aBlock )
+/* BUG-48871 ¾ÐÃà ¹æ½Ä LZ4·Î º¯°æ ÈÄ ÀÌÁßÈ­ ÇÏÀ§ È£È¯¼º À¯Áö */
+static ACI_RC cmiCompressLZOCmBlock( cmiProtocolContext * aCtx,
+                                     cmbBlock           * aBlock )
 {
     acp_uint8_t sOutBuffer[
         IDU_COMPRESSION_MAX_OUTSIZE( CMB_BLOCK_DEFAULT_SIZE ) ] = { 0, };
@@ -2317,12 +2361,44 @@ static ACI_RC cmiCompressCmBlock( cmiProtocolContext * aCtx,
     return ACI_FAILURE;
 }
 
+static ACI_RC cmiCompressLZ4CmBlock( cmiProtocolContext * aCtx,
+                                     cmbBlock           * aBlock )
+{
+    acp_uint8_t  sOutBuffer[ ACL_LZ4_COMPRESSBOUND( CMB_BLOCK_DEFAULT_SIZE ) ];
+    acp_sint32_t sCompressSize = 0;
+    acp_sint32_t sMaxCompressSize = ACL_LZ4_COMPRESSBOUND( CMB_BLOCK_DEFAULT_SIZE );
+
+    /* BUG-47078 Apply LZ4 Algorithm */
+    sCompressSize = aclLZ4_compress_fast( (acp_char_t*)aBlock->mData + CMP_HEADER_SIZE,
+                                          (acp_char_t*)sOutBuffer,
+                                          aBlock->mCursor - CMP_HEADER_SIZE,
+                                          sMaxCompressSize,
+                                          aCtx->mCompressLevel );
+    ACI_TEST_RAISE( ( sCompressSize <= 0 ) ||
+                    ( sCompressSize > sMaxCompressSize),
+                    COMPRESS_ERROR );
+
+    aBlock->mCursor = CMP_HEADER_SIZE;
+    CMI_WCP( aCtx, sOutBuffer, sCompressSize );
+    
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION( COMPRESS_ERROR )
+    {
+        ACI_SET( aciSetErrorCode( cmERR_ABORT_COMPRESS_DATA_ERROR ) );
+    }
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
+}
+
 /*
  * CM Block except CM Packet header is decompressed by using aclCompress. then
  * Original CM Block is replaced with decompressed one.
  */
-static ACI_RC cmiDecompressCmBlock( cmbBlock           * aBlock,
-                                    acp_uint32_t         aDataLength )
+/* BUG-48871 ¾ÐÃà ¹æ½Ä LZ4·Î º¯°æ ÈÄ ÀÌÁßÈ­ ÇÏÀ§ È£È¯¼º À¯Áö */
+static ACI_RC cmiDecompressLZOCmBlock( cmbBlock           * aBlock,
+                                       acp_uint32_t         aDataLength )
 {
     acp_uint8_t sOutBuffer[ CMB_BLOCK_DEFAULT_SIZE ] = { 0, };
     acp_uint32_t sDecompressSize = 0;
@@ -2348,32 +2424,138 @@ static ACI_RC cmiDecompressCmBlock( cmbBlock           * aBlock,
     return ACI_FAILURE;
 }
 
+static ACI_RC cmiCompressCmBlock( cmpHeader          * aHeader,
+                                  cmiProtocolContext * aCtx,
+                                  cmbBlock           * aBlock )
+{
+    switch ( aCtx->mCompressType )
+    {
+        case CMI_COMPRESS_NONE :
+            CMP_HEADER_FLAG_CLR_COMPRESS( aHeader );
+            break;
+            
+        case CMI_COMPRESS_LZO :
+            ACI_TEST( cmiCompressLZ4CmBlock( aCtx, aBlock ) != ACI_SUCCESS );
+            CMP_HEADER_FLAG_SET_COMPRESS( aHeader );
+            break;
+            
+        case CMI_COMPRESS_LZ4 :
+            ACI_TEST( cmiCompressLZOCmBlock( aCtx, aBlock ) != ACI_SUCCESS );
+            CMP_HEADER_FLAG_SET_COMPRESS( aHeader );
+            break; 
+            
+        default :
+            ACE_DASSERT( 0 );            
+            ACI_RAISE( InvalidCompressType );
+            break;             
+    }
+    
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION( InvalidCompressType )
+    {
+        ACI_SET( aciSetErrorCode( CM_TRC_COMPRESS_TYPE_ERROR, aCtx->mCompressType ) );
+    }
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
+}
+
+static ACI_RC cmiDecompressLZ4CmBlock( cmbBlock           * aBlock,
+                                       acp_uint32_t         aDataLength )
+{
+    acp_uint8_t  sOutBuffer[ ACL_LZ4_COMPRESSBOUND( CMB_BLOCK_DEFAULT_SIZE ) ];
+    acp_sint32_t sDecompressSize = 0;
+    acp_sint32_t sMaxDecompressSize = ACL_LZ4_COMPRESSBOUND( CMB_BLOCK_DEFAULT_SIZE );
+
+    /* BUG-47078 Apply LZ4 Algorithm */
+    sDecompressSize = aclLZ4_decompress_safe( (acp_char_t*)aBlock->mData + CMP_HEADER_SIZE,
+                                              (acp_char_t*)sOutBuffer,
+                                              aDataLength,
+                                              sMaxDecompressSize );
+    ACI_TEST_RAISE( ( sDecompressSize <= 0 ) ||
+                    ( sDecompressSize > sMaxDecompressSize ),
+                    DECOMPRESS_ERROR );
+
+    acpMemCpy( aBlock->mData + CMP_HEADER_SIZE,
+               sOutBuffer,
+               sDecompressSize );
+    aBlock->mDataSize = sDecompressSize + CMP_HEADER_SIZE;
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION( DECOMPRESS_ERROR )
+    {
+        ACI_SET( aciSetErrorCode( cmERR_ABORT_DECOMPRESS_DATA_ERROR ) );
+    }
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
+}
+
+static ACI_RC cmiDecompressCmBlock( cmiProtocolContext  *aCtx,
+                                    acp_uint32_t         aDataLength )
+{
+    switch ( aCtx->mDecompressType )
+    {   
+        case CMI_COMPRESS_NONE :
+            break;
+            
+        case CMI_COMPRESS_LZO :
+            ACI_TEST( cmiDecompressLZOCmBlock( aCtx->mReadBlock,
+                                               aDataLength )
+                      != ACI_SUCCESS );
+            break;
+            
+        case CMI_COMPRESS_LZ4 :
+            ACI_TEST( cmiDecompressLZ4CmBlock( aCtx->mReadBlock,
+                                               aDataLength )
+                      != ACI_SUCCESS );
+            break;
+            
+        default :
+            ACE_DASSERT( 0 );
+            ACI_RAISE( InvalidDecompressType );
+            break;
+    }
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION( InvalidDecompressType )
+    {
+        ACI_SET( aciSetErrorCode( CM_TRC_DECOMPRESS_TYPE_ERROR, aCtx->mDecompressType ) );
+    }
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;    
+}
+
 /*************************************************************
  * proj_2160 cm_type removal
- * 1. ì´ í•¨ìˆ˜ëŠ” A7 ì´ìƒ ì „ìš©ì´ë‹¤
- * 2. íŒ¨í‚· ìˆ˜ì‹ ë° í•´ë‹¹ í”„ë¡œí† ì½œì— ëŒ€ì‘í•˜ëŠ” ì½œë°±í•¨ìˆ˜ë¥¼
- *  ìžë™ í˜¸ì¶œí•˜ê¸° ìœ„í•´ ì‚¬ìš©ë˜ëŠ” í•¨ìˆ˜ì´ë‹¤
- * 3. íŒ¨í‚· í•œê°œë¥¼ ì½ì–´ë“¤ì¸ í›„ íŒ¨í‚·ì— ì—¬ëŸ¬ê°œì˜ í”„ë¡œí† ì½œì´ ë“¤ì–´
- *  ìžˆì„ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ ë°˜ë³µë¬¸ì—ì„œ ë°˜ë³µì ìœ¼ë¡œ ì½œë°±ì„ í˜¸ì¶œí•œë‹¤
- * 4. ë°˜ë³µë¬¸ì´ ëë‚˜ëŠ” ì¡°ê±´ì€ íŒ¨í‚· ë°ì´í„°ë¥¼ ì „ë¶€ ë‹¤ ì½ì€ ê²½ìš°ì´ë‹¤
- * 5. ë¶„í•  íŒ¨í‚·ì„ ìˆ˜ì‹ í•œ ê²½ìš°(í° í”„ë¡œí† ì½œ)ëŠ” ì—¬ê¸°ì„œ ì²˜ë¦¬í•˜ì§€ ì•Šìœ¼ë©°
- *  í•´ë‹¹ í”„ë¡œí† ì½œ ì½œë°±ì•ˆì—ì„œ ë°˜ë³µë¬¸ì„ ì‚¬ìš©í•˜ì—¬ ì•Œì•„ì„œ ì²˜ë¦¬í•œë‹¤
+ * 1. ÀÌ ÇÔ¼ö´Â A7 ÀÌ»ó Àü¿ëÀÌ´Ù
+ * 2. ÆÐÅ¶ ¼ö½Å¹× ÇØ´ç ÇÁ·ÎÅäÄÝ¿¡ ´ëÀÀÇÏ´Â ÄÝ¹éÇÔ¼ö¸¦
+ *  ÀÚµ¿ È£ÃâÇÏ±â À§ÇØ »ç¿ëµÇ´Â ÇÔ¼öÀÌ´Ù
+ * 3. ÆÐÅ¶ ÇÑ°³¸¦ ÀÐ¾îµéÀÎ ÈÄ ÆÐÅ¶¿¡ ¿©·¯°³ÀÇ ÇÁ·ÎÅäÄÝÀÌ µé¾î
+ *  ÀÖÀ» ¼ö ÀÖÀ¸¹Ç·Î ¹Ýº¹¹®¿¡¼­ ¹Ýº¹ÀûÀ¸·Î ÄÝ¹éÀ» È£ÃâÇÑ´Ù
+ * 4. ¹Ýº¹¹®ÀÌ ³¡³ª´Â Á¶°ÇÀº ÆÐÅ¶ µ¥ÀÌÅÍ¸¦ ÀüºÎ ´Ù ÀÐÀº °æ¿ìÀÌ´Ù
+ * 5. ºÐÇÒ ÆÐÅ¶À» ¼ö½ÅÇÑ °æ¿ì(Å« ÇÁ·ÎÅäÄÝ)´Â ¿©±â¼­ Ã³¸®ÇÏÁö ¾ÊÀ¸¸ç
+ *  ÇØ´ç ÇÁ·ÎÅäÄÝ ÄÝ¹é¾È¿¡¼­ ¹Ýº¹¹®À» »ç¿ëÇÏ¿© ¾Ë¾Æ¼­ Ã³¸®ÇÑ´Ù
 **************************************************************
- * 6. ê·¸ë£¹ í”„ë¡œí† ì½œ (ë¶„í•  íŒ¨í‚·ì¸ë° íŒ¨í‚·ë§ˆë‹¤ ì™„ì„±ëœ í˜•íƒœë¥¼ ê°€ì§)ì¸
- *  ê²½ìš° ì½œë°± ë‚´ë¶€ì—ì„œ ë°˜ë³µë¬¸ìœ¼ë¡œ ì²˜ë¦¬í•˜ê¸°ê°€ íž˜ë“¤ê¸° ë•Œë¬¸ì—
- *  ì—¬ê¸°ì„œ gotoë¥¼ ì‚¬ìš©í•˜ì—¬ íŠ¹ë³„ì²˜ë¦¬ í•œë‹¤ (ex) ë©”ì‹œì§€ í”„ë¡œí† ì½œ)
- * 7. A5 clientê°€ ì ‘ì†í•˜ë©´ handshakeProtocolì„ í˜¸ì¶œí•˜ê²Œ ë˜ë©°
- *  í•´ë‹¹ ì½œë°±ì•ˆì—ì„œ A5 ì‘ë‹µì„ ì£¼ë©´ì„œ A5ë¡œ ì „í™˜ì´ ë˜ê²Œ ëœë‹¤
- * 8. íŒ¨í‚·ë§ˆë‹¤ ì„¸ì…˜ë‚´ ê³ ìœ ì¼ë ¨ë²ˆí˜¸(ìˆ˜ì‹ ì‹œë§ˆë‹¤ 1ì”© ì¦ê°€)ë¥¼ ë¶€ì—¬í•˜ì—¬
- *  ìž˜ëª»ë˜ê±°ë‚˜ ì¤‘ë³µëœ íŒ¨í‚·ì´ ìˆ˜ì‹ ë˜ëŠ” ê²ƒì„ ë§‰ëŠ”ë‹¤
- *  (ì°¸ê³ ë¡œ A5ì—ì„œëŠ” ë¶„í•  íŒ¨í‚·ì— ëŒ€í•´ì„œë§Œ ì¼ë ¨ë²ˆí˜¸ë¥¼ ë¶€ì—¬í–ˆì—ˆë‹¤)
- * 9. RP(ALA í¬í•¨) ëª¨ë“ˆë„ ë³¸ í•¨ìˆ˜ë¥¼ ê³µë™ ì‚¬ìš©í•œë‹¤. ë‹¤ë§Œ RPì˜ ê²½ìš°
- *  ì½œë°±êµ¬ì¡°ê°€ ì•„ë‹ˆê¸° ë•Œë¬¸ì— íŒ¨í‚· ìˆ˜ì‹ í›„ ë°”ë¡œ í•¨ìˆ˜ë¥¼ ë¹ ì ¸ë‚˜ê°„ë‹¤
- * 10. CMI_DUMP: ê°œë°œìž ë””ë²„ê¹… ìš©ë„ë¡œ ë„£ì–´ë‘ì—ˆë‹¤. ë‹¨ìˆœížˆ ìˆ˜ì‹ 
- *  í”„ë¡œí† ì½œ ì´ë¦„ê³¼ íŒ¨í‚·ê¸¸ì´ ì •ë³´ë§Œ ì¶œë ¥í•œë‹¤. ì¶”í›„ì— alter system
- *  ìœ¼ë¡œ íŒ¨í‚·ë¤í”„ë¥¼ í• ìˆ˜ ìžˆë„ë¡ ë³€ê²½í•˜ëŠ” ê²ƒë„ ì¢‹ì„ ê²ƒ ê°™ë‹¤
- * 11. ì´ í•¨ìˆ˜ëŠ” A5ì˜ cmiReadBlock + cmiReadProtocolAndCallback
- *  ì„ ëŒ€ì²´í•œë‹¤
+ * 6. ±×·ì ÇÁ·ÎÅäÄÝ (ºÐÇÒ ÆÐÅ¶ÀÎµ¥ ÆÐÅ¶¸¶´Ù ¿Ï¼ºµÈ ÇüÅÂ¸¦ °¡Áü)ÀÎ
+ *  °æ¿ì ÄÝ¹é ³»ºÎ¿¡¼­ ¹Ýº¹¹®À¸·Î Ã³¸®ÇÏ±â°¡ Èûµé±â ¶§¹®¿¡
+ *  ¿©±â¼­ goto¸¦ »ç¿ëÇÏ¿© Æ¯º°Ã³¸® ÇÑ´Ù (ex) ¸Þ½ÃÁö ÇÁ·ÎÅäÄÝ)
+ * 7. A5 client°¡ Á¢¼ÓÇÏ¸é handshakeProtocolÀ» È£ÃâÇÏ°Ô µÇ¸ç
+ *  ÇØ´ç ÄÝ¹é¾È¿¡¼­ A5 ÀÀ´äÀ» ÁÖ¸é¼­ A5·Î ÀüÈ¯ÀÌ µÇ°Ô µÈ´Ù
+ * 8. ÆÐÅ¶¸¶´Ù ¼¼¼Ç³» °íÀ¯ÀÏ·Ã¹øÈ£(¼ö½Å½Ã¸¶´Ù 1¾¿ Áõ°¡)¸¦ ºÎ¿©ÇÏ¿©
+ *  Àß¸øµÇ°Å³ª Áßº¹µÈ ÆÐÅ¶ÀÌ ¼ö½ÅµÇ´Â °ÍÀ» ¸·´Â´Ù
+ *  (Âü°í·Î A5¿¡¼­´Â ºÐÇÒ ÆÐÅ¶¿¡ ´ëÇØ¼­¸¸ ÀÏ·Ã¹øÈ£¸¦ ºÎ¿©Çß¾ú´Ù)
+ * 9. RP(ALA Æ÷ÇÔ) ¸ðµâµµ º» ÇÔ¼ö¸¦ °øµ¿ »ç¿ëÇÑ´Ù. ´Ù¸¸ RPÀÇ °æ¿ì
+ *  ÄÝ¹é±¸Á¶°¡ ¾Æ´Ï±â ¶§¹®¿¡ ÆÐÅ¶ ¼ö½ÅÈÄ ¹Ù·Î ÇÔ¼ö¸¦ ºüÁ®³ª°£´Ù
+ * 10. CMI_DUMP: °³¹ßÀÚ µð¹ö±ë ¿ëµµ·Î ³Ö¾îµÎ¾ú´Ù. ´Ü¼øÈ÷ ¼ö½Å
+ *  ÇÁ·ÎÅäÄÝ ÀÌ¸§°ú ÆÐÅ¶±æÀÌ Á¤º¸¸¸ Ãâ·ÂÇÑ´Ù. ÃßÈÄ¿¡ alter system
+ *  À¸·Î ÆÐÅ¶´ýÇÁ¸¦ ÇÒ¼ö ÀÖµµ·Ï º¯°æÇÏ´Â °Íµµ ÁÁÀ» °Í °°´Ù
+ * 11. ÀÌ ÇÔ¼ö´Â A5ÀÇ cmiReadBlock + cmiReadProtocolAndCallback
+ *  À» ´ëÃ¼ÇÑ´Ù
 *************************************************************/
 /* #define CMI_DUMP 1 */
 ACI_RC cmiRecv(cmiProtocolContext* aCtx,
@@ -2396,9 +2578,9 @@ beginToRecv:
                                          sHeader,
                                          aTimeout) != ACI_SUCCESS);
 
-    // ALAì¸ ê²½ìš° ì‚¬ìš©ìž ì„¤ì¹˜ ì‹¤ìˆ˜ë¡œ,
-    // A5 RPë¡œë¶€í„°  handshake íŒ¨í‚·ì„ ìˆ˜ì‹ í•  ìˆ˜ ìžˆë‹¤.
-    // ê·¸ëŸ° ê²½ìš°, ì‘ë‹µì—†ì´ ë°”ë¡œ ì—ëŸ¬ì²˜ë¦¬í•œë‹¤.
+    // ALAÀÎ °æ¿ì »ç¿ëÀÚ ¼³Ä¡ ½Ç¼ö·Î,
+    // A5 RP·ÎºÎÅÍ  handshake ÆÐÅ¶À» ¼ö½ÅÇÒ ¼ö ÀÖ´Ù.
+    // ±×·± °æ¿ì, ÀÀ´ä¾øÀÌ ¹Ù·Î ¿¡·¯Ã³¸®ÇÑ´Ù.
     if (aCtx->mLink->mLink.mPacketType == CMP_PACKET_TYPE_A5)
     {
         ACI_RAISE(MarshalErr);
@@ -2406,7 +2588,8 @@ beginToRecv:
 
     if ( CMP_HEADER_FLAG_COMPRESS_IS_SET( sHeader ) == ACP_TRUE )
     {
-        ACI_TEST( cmiDecompressCmBlock( aCtx->mReadBlock,
+        /* BUG-48871 ¾ÐÃà ¹æ½Ä LZ4·Î º¯°æ ÈÄ ÀÌÁßÈ­ ÇÏÀ§ È£È¯¼º À¯Áö */
+        ACI_TEST( cmiDecompressCmBlock( aCtx, 
                                         sHeader->mA7.mPayloadLength )
                   != ACI_SUCCESS );
     }
@@ -2420,8 +2603,8 @@ beginToRecv:
     printf("[%5d] recv [%5d]\n", sCmSeqNo, sHeader->mA7.mPayloadLength);
 #endif
 
-    // ëª¨ë“  íŒ¨í‚·ì€ ì„¸ì…˜ë‚´ì• ì„œ ê³ ìœ ì¼ë ¨ë²ˆí˜¸ë¥¼ ê°–ëŠ”ë‹¤.
-    // ë²”ìœ„: 0 ~ 0x7fffffff, ìµœëŒ€ê°’ì— ë‹¤ë‹¤ë¥´ë©´ 0ë¶€í„° ë‹¤ì‹œ ì‹œìž‘ëœë‹¤
+    // ¸ðµç ÆÐÅ¶Àº ¼¼¼Ç³»¾Ö¼­ °íÀ¯ÀÏ·Ã¹øÈ£¸¦ °®´Â´Ù.
+    // ¹üÀ§: 0 ~ 0x7fffffff, ÃÖ´ë°ª¿¡ ´Ù´Ù¸£¸é 0ºÎÅÍ ´Ù½Ã ½ÃÀÛµÈ´Ù
     ACI_TEST_RAISE(sCmSeqNo != aCtx->mCmSeqNo, InvalidProtocolSeqNo);
     if (aCtx->mCmSeqNo == CMP_HEADER_MAX_SEQ_NO)
     {
@@ -2432,8 +2615,8 @@ beginToRecv:
         aCtx->mCmSeqNo++;
     }
 
-    // RP(ALA) ëª¨ë“ˆì—ì„œëŠ” callbackì„ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
-    // ë”°ë¼ì„œ, RPì¸ ê²½ìš° callback í˜¸ì¶œì—†ì´ ë°”ë¡œ return í•œë‹¤.
+    // RP(ALA) ¸ðµâ¿¡¼­´Â callbackÀ» »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+    // µû¶ó¼­, RPÀÎ °æ¿ì callback È£Ãâ¾øÀÌ ¹Ù·Î return ÇÑ´Ù.
     if (aCtx->mModule->mModuleID == CMP_MODULE_RP)
     {
         ACI_RAISE(CmiRecvReturn);
@@ -2448,21 +2631,23 @@ beginToRecv:
 #endif
 
         aCtx->mSessionCloseNeeded  = ACP_FALSE;
+        aCtx->mProtocol.mOpID      = sOpID;  /* PROJ-2733-Protocol */
         sCallbackFunction = aCtx->mModule->mCallbackFunction[sOpID];
+
         sRet = sCallbackFunction(aCtx,
                                  &aCtx->mProtocol,
                                  aCtx->mOwner,
                                  aUserContext);
 
-        // dequeueì˜ ê²½ìš° IDE_CM_STOPì´ ë°˜í™˜ë  ìˆ˜ ìžˆë‹¤.
+        // dequeueÀÇ °æ¿ì IDE_CM_STOPÀÌ ¹ÝÈ¯µÉ ¼ö ÀÖ´Ù.
         ACI_TEST_RAISE(sRet != ACI_SUCCESS, CmiRecvReturn);
 
-        // ìˆ˜ì‹ í•œ íŒ¨í‚·ì— ëŒ€í•œ ëª¨ë“  í”„ë¡œí† ì½œ ì²˜ë¦¬ê°€ ëë‚œ ê²½ìš°
+        // ¼ö½ÅÇÑ ÆÐÅ¶¿¡ ´ëÇÑ ¸ðµç ÇÁ·ÎÅäÄÝ Ã³¸®°¡ ³¡³­ °æ¿ì
         if (aCtx->mReadBlock->mCursor == aCtx->mReadBlock->mDataSize)
         {
             break;
         }
-        // í”„ë¡œí† ì½œ í•´ì„ì´ ìž˜ëª»ë˜ì–´ cursorê°€ íŒ¨í‚·ì„ ë„˜ì–´ê°„ ê²½ìš°
+        // ÇÁ·ÎÅäÄÝ ÇØ¼®ÀÌ Àß¸øµÇ¾î cursor°¡ ÆÐÅ¶À» ³Ñ¾î°£ °æ¿ì
         else if (aCtx->mReadBlock->mCursor > aCtx->mReadBlock->mDataSize)
         {
             ACI_RAISE(MarshalErr);
@@ -2471,10 +2656,10 @@ beginToRecv:
         ACI_TEST_RAISE(aCtx->mIsDisconnect == ACP_TRUE, Disconnected);
     }
 
-    // special í”„ë¡œí† ì½œ ì²˜ë¦¬(Message, LobPut protocol)
-    // msgì™€ lobput í”„ë¡œí† ì½œì˜ ê²½ìš° í”„ë¡œí† ì½œ groupìœ¼ë¡œ ìˆ˜ì‹ ì´ ê°€ëŠ¥í•¨
-    // (íŒ¨í‚·ë§ˆë‹¤ ê°ê° opIDë¥¼ ê°€ì§€ë©° íŒ¨í‚·í—¤ë”ì— ì¢…ë£Œ flagê°€ 0ì´ë‹¤)
-    // ì´ë“¤ì€ ì—¬ëŸ¬ë²ˆ ìˆ˜ì‹ í•˜ë”ë¼ë„ ë§ˆì§€ë§‰ í•œë²ˆë§Œ ì‘ë‹µì†¡ì‹ í•´ì•¼ í•œë‹¤.
+    // special ÇÁ·ÎÅäÄÝ Ã³¸®(Message, LobPut protocol)
+    // msg¿Í lobput ÇÁ·ÎÅäÄÝÀÇ °æ¿ì ÇÁ·ÎÅäÄÝ groupÀ¸·Î ¼ö½ÅÀÌ °¡´ÉÇÔ
+    // (ÆÐÅ¶¸¶´Ù °¢°¢ opID¸¦ °¡Áö¸ç ÆÐÅ¶Çì´õ¿¡ Á¾·á flag°¡ 0ÀÌ´Ù)
+    // ÀÌµéÀº ¿©·¯¹ø ¼ö½ÅÇÏ´õ¶óµµ ¸¶Áö¸· ÇÑ¹ø¸¸ ÀÀ´ä¼Û½ÅÇØ¾ß ÇÑ´Ù.
     if (CMP_HEADER_PROTO_END_IS_SET(sHeader) == ACP_FALSE)
     {
         goto beginToRecv;
@@ -2508,7 +2693,7 @@ beginToRecv:
 /**************************************************************
  * PROJ-2616
  *
- * IPCDA ëª¨ë“œì—ì„œ ê³µìœ  ë©”ëª¨ë¦¬ë¡œë¶€í„° ë°ì´í„°ë¥¼ ì½ì–´ ì˜¤ëŠ” í•¨ìˆ˜.
+ * IPCDA ¸ðµå¿¡¼­ °øÀ¯ ¸Þ¸ð¸®·ÎºÎÅÍ µ¥ÀÌÅÍ¸¦ ÀÐ¾î ¿À´Â ÇÔ¼ö.
  *
  * aCtx            [in] - cmiProtocolContext
  * aUserContext    [in] - UserContext(fnContext)
@@ -2584,8 +2769,9 @@ ACI_RC cmiRecvIPCDA(cmiProtocolContext *aCtx,
         sTmpBlock.mDataSize = sOrgBlock->mBlock.mDataSize;
 
         CMI_RD1(aCtx, sOpID);
-
         ACI_TEST_RAISE( sOpID >= aCtx->mModule->mOpMax, InvalidOpError);
+
+        aCtx->mProtocol.mOpID = sOpID;  /* PROJ-2733-Protocol */
 
         if (sOpID == CMP_OP_DB_IPCDALastOpEnded)
         {
@@ -2645,9 +2831,9 @@ ACI_RC cmiRecvIPCDA(cmiProtocolContext *aCtx,
 
 /*************************************************************
  * proj_2160 cm_type removal
- * 1. ì´ í•¨ìˆ˜ëŠ” ì½œë°± ì•ˆì—ì„œ ë¶„í•  íŒ¨í‚·ì„ ì—°ì†ì ìœ¼ë¡œ ìˆ˜ì‹ í•˜ëŠ” ê²½ìš°ì—
- *  ì‚¬ìš©í•˜ê¸° ìœ„í•´ ë§Œë“¤ì–´ì¡Œë‹¤.
- * 2. cmiRecv()ì™€ì˜ ì°¨ì´ì ì€ ì½œë°±ì„ í˜¸ì¶œí•˜ëŠ” ë°˜ë³µë¬¸ì´ ì—†ë‹¤
+ * 1. ÀÌ ÇÔ¼ö´Â ÄÝ¹é ¾È¿¡¼­ ºÐÇÒ ÆÐÅ¶À» ¿¬¼ÓÀûÀ¸·Î ¼ö½ÅÇÏ´Â °æ¿ì¿¡
+ *  »ç¿ëÇÏ±â À§ÇØ ¸¸µé¾îÁ³´Ù.
+ * 2. cmiRecv()¿ÍÀÇ Â÷ÀÌÁ¡Àº ÄÝ¹éÀ» È£ÃâÇÏ´Â ¹Ýº¹¹®ÀÌ ¾ø´Ù
 *************************************************************/
 ACI_RC cmiRecvNext(cmiProtocolContext* aCtx, acp_time_t aTimeout)
 {
@@ -2668,8 +2854,8 @@ ACI_RC cmiRecvNext(cmiProtocolContext* aCtx, acp_time_t aTimeout)
     printf("[%5d] recv [%5d]\n", sCmSeqNo, sHeader->mA7.mPayloadLength);
 #endif
 
-    // ëª¨ë“  íŒ¨í‚·ì€ ì„¸ì…˜ë‚´ì• ì„œ ê³ ìœ ì¼ë ¨ë²ˆí˜¸ë¥¼ ê°–ëŠ”ë‹¤.
-    // ë²”ìœ„: 0 ~ 0x7fffffff, ìµœëŒ€ê°’ì— ë‹¤ë‹¤ë¥´ë©´ 0ë¶€í„° ë‹¤ì‹œ ì‹œìž‘ëœë‹¤
+    // ¸ðµç ÆÐÅ¶Àº ¼¼¼Ç³»¾Ö¼­ °íÀ¯ÀÏ·Ã¹øÈ£¸¦ °®´Â´Ù.
+    // ¹üÀ§: 0 ~ 0x7fffffff, ÃÖ´ë°ª¿¡ ´Ù´Ù¸£¸é 0ºÎÅÍ ´Ù½Ã ½ÃÀÛµÈ´Ù
     ACI_TEST_RAISE(sCmSeqNo != aCtx->mCmSeqNo, InvalidProtocolSeqNo);
     if (aCtx->mCmSeqNo == CMP_HEADER_MAX_SEQ_NO)
     {
@@ -2698,7 +2884,7 @@ ACI_RC cmiRecvNext(cmiProtocolContext* aCtx, acp_time_t aTimeout)
  * PROJ-2616
  * cmiInitIPCDABuffer
  *
- * í”„ë¡œí† ì½œ ì½˜í…ìŠ¤íŠ¸ì•ˆì˜ cmiBlockì„ ì´ˆê¸°í™” í•œë‹¤.
+ * ÇÁ·ÎÅäÄÝ ÄÜÅØ½ºÆ®¾ÈÀÇ cmiBlockÀ» ÃÊ±âÈ­ ÇÑ´Ù.
  *
  * aCtx[in] - cmiProtocolContext
  ********************************************************/
@@ -2737,14 +2923,14 @@ void cmiInitIPCDABuffer(cmiProtocolContext *aCtx)
 
 /*************************************************************
  * proj_2160 cm_type removal
- * 1. ì´ í•¨ìˆ˜ëŠ” A5ì˜ cmiWriteBlockì„ ëŒ€ì²´í•œë‹¤
- * 2. ì´ í•¨ìˆ˜ì—ì„œëŠ” íŒ¨í‚· í—¤ë”ë¥¼ ë§Œë“¤ì–´ íŒ¨í‚·ì„ ì†¡ì‹ í•œë‹¤ 
- * 3. A5ê³¼ ë§ˆì°¬ê°€ì§€ë¡œ pendingListë¥¼ ìœ ì§€í•œë‹¤. ì´ìœ ëŠ”
- *  Altibaseì—ì„œëŠ” ë¹„ë™ê¸° í†µì‹ ì´ ê°€ëŠ¥(ex) clientê°€ ì†¡ì‹ í•˜ê³  ìžˆëŠ”
- *  ë„ì¤‘ì¸ë°, ì„œë²„ì—ì„œëŠ” ì‘ë‹µì„ ë°”ë¡œ ìƒì„±í•˜ë©° í•œ íŒ¨í‚·ì„ ë„˜ê¸°ëŠ” ê²½ìš°
- *  ë°”ë¡œ ì†¡ì‹ ì´ ë˜ì–´ì§€ë„ë¡ ë˜ì–´ ìžˆìŒ) í•œë°, ì´ ë•Œ ì†Œì¼“ë²„í¼ê°€
- *  ê½‰ ì°¨ì„œ ì‹¤íŒ¨í•œ ê²½ìš° ë²„í¼ë§ì„ í•˜ì§€ ì•Šê³  ë¬´í•œ ëŒ€ê¸°í•˜ê²Œ ë˜ë©´
- *  ì„œë¡œë¥¼ ì• íƒ€ê²Œ ê¸°ë‹¤ë¦¬ëŠ” ìƒí™©ì´ ë²Œì–´ì§ˆìˆ˜ë„ ìžˆë‹¤
+ * 1. ÀÌ ÇÔ¼ö´Â A5ÀÇ cmiWriteBlockÀ» ´ëÃ¼ÇÑ´Ù
+ * 2. ÀÌ ÇÔ¼ö¿¡¼­´Â ÆÐÅ¶ Çì´õ¸¦ ¸¸µé¾î ÆÐÅ¶À» ¼Û½ÅÇÑ´Ù 
+ * 3. A5°ú ¸¶Âù°¡Áö·Î pendingList¸¦ À¯ÁöÇÑ´Ù. ÀÌÀ¯´Â
+ *  Altibase¿¡¼­´Â ºñµ¿±â Åë½ÅÀÌ °¡´É(ex) client°¡ ¼Û½ÅÇÏ°í ÀÖ´Â
+ *  µµÁßÀÎµ¥, ¼­¹ö¿¡¼­´Â ÀÀ´äÀ» ¹Ù·Î »ý¼ºÇÏ¸ç ÇÑ ÆÐÅ¶À» ³Ñ±â´Â °æ¿ì
+ *  ¹Ù·Î ¼Û½ÅÀÌ µÇ¾îÁöµµ·Ï µÇ¾î ÀÖÀ½) ÇÑµ¥, ÀÌ ¶§ ¼ÒÄÏ¹öÆÛ°¡
+ *  ²Ë Â÷¼­ ½ÇÆÐÇÑ °æ¿ì ¹öÆÛ¸µÀ» ÇÏÁö ¾Ê°í ¹«ÇÑ ´ë±âÇÏ°Ô µÇ¸é
+ *  ¼­·Î¸¦ ¾ÖÅ¸°Ô ±â´Ù¸®´Â »óÈ²ÀÌ ¹ú¾îÁú¼öµµ ÀÖ´Ù
 *************************************************************/
 ACI_RC cmiSend(cmiProtocolContext *aCtx, acp_bool_t aIsEnd)
 {
@@ -2775,29 +2961,24 @@ ACI_RC cmiSend(cmiProtocolContext *aCtx, acp_bool_t aIsEnd)
     {
         CMP_HEADER_CLR_PROTO_END(sHeader);
     }
+    
+    /* BUG-48871 ¾ÐÃà ¹æ½Ä LZ4·Î º¯°æ ÈÄ ÀÌÁßÈ­ ÇÏÀ§ È£È¯¼º À¯Áö */
+    ACI_TEST( cmiCompressCmBlock( sHeader, 
+                                  aCtx, 
+                                  sBlock )
+              != ACI_SUCCESS );
 
-    if ( aCtx->mCompressFlag == ACP_TRUE )
-    {
-        ACI_TEST( cmiCompressCmBlock( aCtx, sBlock ) != ACI_SUCCESS );
-    
-        CMP_HEADER_FLAG_SET_COMPRESS( sHeader );
-    }
-    else
-    {
-        CMP_HEADER_FLAG_CLR_COMPRESS( sHeader );
-    }
-    
     sBlock->mDataSize = sBlock->mCursor;
     ACI_TEST(cmpHeaderWrite(sHeader, sBlock) != ACI_SUCCESS);
 
-    // Pending Write Blockë“¤ì„ ì „ì†¡ (send previous packets)
+    // Pending Write BlockµéÀ» Àü¼Û (send previous packets)
     ACP_LIST_ITERATE_SAFE(&aCtx->mWriteBlockList, sIterator, sNodeNext)
     {
         sPendingBlock = (cmbBlock *)sIterator->mObj;
 
         sSendSuccess = ACP_TRUE;
 
-        // BUG-19465 : CM_Bufferì˜ pending listë¥¼ ì œí•œ
+        // BUG-19465 : CM_BufferÀÇ pending list¸¦ Á¦ÇÑ
         while (sLink->mPeerOp->mSend(sLink, sPendingBlock) != ACI_SUCCESS)
         {
             sSendSuccess = ACP_FALSE;
@@ -2811,8 +2992,8 @@ ACI_RC cmiSend(cmiProtocolContext *aCtx, acp_bool_t aIsEnd)
             }
 
             /* bug-27250 IPC linklist can be crushed.
-             * ë³€ê²½ì „: all timeout NULL, ë³€ê²½í›„: 1 msec for IPC
-             * IPCì˜ ê²½ìš° ë¬´í•œëŒ€ê¸°í•˜ë©´ ì•ˆëœë‹¤.
+             * º¯°æÀü: all timeout NULL, º¯°æÈÄ: 1 msec for IPC
+             * IPCÀÇ °æ¿ì ¹«ÇÑ´ë±âÇÏ¸é ¾ÈµÈ´Ù.
              */
             sImpl = cmnDispatcherImplForLinkImpl(((cmnLink*)sLink)->mImpl);
             if (sImpl == CMI_DISPATCHER_IMPL_IPC)
@@ -2858,7 +3039,7 @@ ACI_RC cmiSend(cmiProtocolContext *aCtx, acp_bool_t aIsEnd)
         sNeedToSave = ACP_TRUE;
     }
 
-    // í˜„ìž¬ blockì„ pendingList ë§¨ë’¤ì— ì €ìž¥í•´ ë‘”ë‹¤
+    // ÇöÀç blockÀ» pendingList ¸ÇµÚ¿¡ ÀúÀåÇØ µÐ´Ù
     if (sNeedToSave == ACP_TRUE)
     {
         sNewBlock = NULL;
@@ -2870,8 +3051,8 @@ ACI_RC cmiSend(cmiProtocolContext *aCtx, acp_bool_t aIsEnd)
         aCtx->mListLength++;
     }
 
-    // ëª¨ë“  íŒ¨í‚·ì€ ì„¸ì…˜ë‚´ì• ì„œ ê³ ìœ ì¼ë ¨ë²ˆí˜¸ë¥¼ ê°–ëŠ”ë‹¤.
-    // ë²”ìœ„: 0 ~ 0x7fffffff, ìµœëŒ€ê°’ì— ë‹¤ë‹¤ë¥´ë©´ 0ë¶€í„° ë‹¤ì‹œ ì‹œìž‘ëœë‹¤
+    // ¸ðµç ÆÐÅ¶Àº ¼¼¼Ç³»¾Ö¼­ °íÀ¯ÀÏ·Ã¹øÈ£¸¦ °®´Â´Ù.
+    // ¹üÀ§: 0 ~ 0x7fffffff, ÃÖ´ë°ª¿¡ ´Ù´Ù¸£¸é 0ºÎÅÍ ´Ù½Ã ½ÃÀÛµÈ´Ù
     sCmSeqNo = CMP_HEADER_SEQ_NO(sHeader);
     if (sCmSeqNo == CMP_HEADER_MAX_SEQ_NO)
     {
@@ -2884,7 +3065,7 @@ ACI_RC cmiSend(cmiProtocolContext *aCtx, acp_bool_t aIsEnd)
 
     if (aIsEnd == ACP_TRUE)
     {
-        // í”„ë¡œí† ì½œ ëì´ë¼ë©´ ëª¨ë“  Blockì´ ì „ì†¡ë˜ì–´ì•¼ í•¨
+        // ÇÁ·ÎÅäÄÝ ³¡ÀÌ¶ó¸é ¸ðµç BlockÀÌ Àü¼ÛµÇ¾î¾ß ÇÔ
         ACP_LIST_ITERATE_SAFE(&aCtx->mWriteBlockList, sIterator, sNodeNext)
         {
             sPendingBlock = (cmbBlock *)sIterator->mObj;
@@ -3036,12 +3217,16 @@ ACI_RC cmiSplitWrite( cmiProtocolContext *aCtx,
     return ACI_FAILURE;
 }
 
+/* BUG-48871 ¾ÐÃà ¹æ½Ä LZ4·Î º¯°æ ÈÄ ÀÌÁßÈ­ ÇÏÀ§ È£È¯¼º À¯Áö */
 /*
  *
  */ 
-void cmiEnableCompress( cmiProtocolContext * aCtx )
+void cmiEnableCompress( cmiProtocolContext * aCtx,
+                        acp_uint32_t         aLevel,
+                        cmiCompressType      aCompressType )
 {
-    aCtx->mCompressFlag = ACP_TRUE;
+    aCtx->mCompressLevel    = aLevel;
+    aCtx->mCompressType     = aCompressType;
 }
 
 /*
@@ -3049,5 +3234,15 @@ void cmiEnableCompress( cmiProtocolContext * aCtx )
  */ 
 void cmiDisableCompress( cmiProtocolContext * aCtx )
 {
-    aCtx->mCompressFlag = ACP_FALSE;    
+    aCtx->mCompressLevel    = 0;
+    aCtx->mCompressType     = CMI_COMPRESS_NONE;
+}
+
+/*
+ *
+ */ 
+void cmiSetDecompressType( cmiProtocolContext * aCtx,
+                           cmiCompressType      aDecompressType )
+{
+    aCtx->mDecompressType = aDecompressType;
 }

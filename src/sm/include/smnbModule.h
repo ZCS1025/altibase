@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smnbModule.h 84469 2018-11-29 06:56:05Z justin.kwon $
+ * $Id: smnbModule.h 89495 2020-12-14 05:19:22Z emlee $
  **********************************************************************/
 
 #ifndef _O_SMNB_MODULE_H_
@@ -32,6 +32,10 @@ extern smnIndexModule smnbModule;
 class smnbBTree
 {
 public:
+
+    /*************************************************/
+    /* PUBLIC FUNCTIONS                              */
+    /*************************************************/
 
     static IDE_RC prepareIteratorMem( const smnIndexModule* aModule );
 
@@ -71,8 +75,7 @@ public:
 
     static IDE_RC drop( smnIndexHeader * aIndex );
 
-    static IDE_RC init( idvSQL              * /* aStatistics */,
-                        smnbIterator        * aIterator,
+    static IDE_RC init( smnbIterator        * aIterator,
                         void                * aTrans,
                         smcTableHeader      * aTable,
                         smnIndexHeader      * aIndex,
@@ -85,28 +88,24 @@ public:
                         smSCN                 aInfinite,
                         idBool                aUntouchable,
                         smiCursorProperties * aProperties,
-                        const smSeekFunc   ** aSeekFunc );
+                        const smSeekFunc   ** aSeekFunc,
+                        smiStatement        * aStatement );
 
     static IDE_RC dest( smnbIterator * /*aIterator*/ );
 
     static IDE_RC isRowUnique( void          * aTrans,
                                smnbStatistic * aIndexStat,
-                               smSCN           aStmtSCN,
+                               smSCN           aStmtViewSCN,
                                void          * aRow,
                                smTID         * aTid,
-                               SChar        ** aExistUniqueRow );
+                               SChar        ** aExistUniqueRow,
+                               idBool          aForbiddenToRetry );
 
     static SInt compareRows( smnbStatistic      * aIndexStat,
                              const smnbColumn   * aColumns,
                              const smnbColumn   * aFence,
                              const void         * aRow1,
                              const void         * aRow2 );
-    
-    static SInt compareRowsAndPtr( smnbStatistic    * aIndexStat,
-                                   const smnbColumn * aColumns,
-                                   const smnbColumn * aFence,
-                                   const void       * aRow1,
-                                   const void       * aRow2 );
     
     static SInt compareRowsAndPtr2( smnbStatistic      * aIndexStat,
                                     const smnbColumn   * aColumns,
@@ -115,7 +114,6 @@ public:
                                     SChar              * aRow2,
                                     idBool             * aIsEqual );
 
-    /* PROJ-2433 */
     static SInt compareKeys( smnbStatistic      * aIndexStat,
                              const smnbColumn   * aColumns,
                              const smnbColumn   * aFence,
@@ -125,29 +123,231 @@ public:
                              SChar              * aRow2,
                              idBool             * aIsSuccess );
 
+    static idBool isNullColumn( smnbColumn * aColumn,
+                                smiColumn  * aSmiColumn,
+                                SChar      * aRow );
+    
+    /* BUG-30074 disk tableÀÇ unique index¿¡¼­ NULL key »èÁ¦ ½Ã/
+    *           non-unique index¿¡¼­ deleted key Ãß°¡ ½Ã
+    *           CardinalityÀÇ Á¤È®¼ºÀÌ ¸¹ÀÌ ¶³¾îÁı´Ï´Ù.
+    * Key ÀüÃ¼°¡ NullÀÎÁö È®ÀÎÇÑ´Ù. ¸ğµÎ NullÀÌ¾î¾ß ÇÑ´Ù. */
+    static idBool isNullKey( smnbHeader * aIndex,
+                             SChar      * aRow );
+
+    static IDE_RC insertRowUnique( idvSQL           * aStatistics,
+                                   void             * aTrans,
+                                   void             * aTable,
+                                   void             * aIndex,
+                                   smSCN              aInfiniteSCN,
+                                   SChar            * aRow,
+                                   SChar            * aNull,
+                                   idBool             aUniqueCheck,
+                                   smSCN              aStmtViewSCN,
+                                   void             * aRowSID,
+                                   SChar           ** aExistUniqueRow,
+                                   ULong              aInsertWaitTime,
+                                   idBool             aForbiddenToRetry );
+
+    static IDE_RC insertRow( idvSQL          * aStatistics,
+                             void            * aTrans,
+                             void            * aTable,
+                             void            * aIndex,
+                             smSCN             aInfiniteSCN,
+                             SChar           * aRow,
+                             SChar           * aNull,
+                             idBool            aUniqueCheck,
+                             smSCN             aStmtViewSCN,
+                             void            * aRowSID,
+                             SChar          ** aExistUniqueRow,
+                             ULong             aInsertWaitTime,
+                             idBool            aForbiddenToRetry );
+
+    static void merge(smnbINode* a_pLeftNode,
+                      smnbINode* a_pRightNode);
+    
+    static IDE_RC deleteNA( idvSQL*           aStatistics,
+                            void*             aTrans,
+                            void*             aIndex,
+                            SChar*            aRow,
+                            smiIterator *     aIterator,
+                            sdRID             aRowRID);
+
+    static IDE_RC freeSlot( void    * aIndex,
+                            SChar   * aRow,
+                            idBool    aIgnoreNotFoundKey,
+                            idBool  * aIsExistFreeKey );
+
+    static IDE_RC freeSlotByLeafFullScan( smnbHeader   * aIndexHeader,
+                                          SChar        * aRow );
+
+    /* BUG-32655 [sm-mem-index] The MMDB Ager must not ignore the failure of
+     * index aging. */
+    static IDE_RC checkExistKey( void   * aIndex,
+                                 SChar  * aRow );
+
+    /* TASK-4990 changing the method of collecting index statistics
+     * ¼öµ¿ Åë°èÁ¤º¸ ¼öÁı ±â´É */
+    static IDE_RC gatherStat( idvSQL         * aStatistics,
+                              void           * aTrans,
+                              SFloat           aPercentage,
+                              SInt             aDegree,
+                              smcTableHeader * aHeader,
+                              void           * aTotalTableArg,
+                              smnIndexHeader * aIndex,
+                              void           * aStats,
+                              idBool           aDynamicMode );
+
+    static IDE_RC NA( void );
+
+    static IDE_RC beforeFirst( smnbIterator*       aIterator,
+                               const smSeekFunc**  aSeekFunc );
+    //BUG-48230: beforeFirst for Queue
+    static IDE_RC beforeFirstInternalQ( smnbIterator* a_pIterator );
+    static IDE_RC beforeFirstQ( void*               aIterator);
+
+    static IDE_RC afterLast( smnbIterator*       aIterator,
+                             const smSeekFunc**  aSeekFunc );
+    
+    static IDE_RC beforeFirstU( smnbIterator*       aIterator,
+                                const smSeekFunc**  aSeekFunc );
+    
+    //BUG-48230: afterLast for Queue
+    static IDE_RC afterLastQ( void*               aIterator);
+
+    static IDE_RC afterLastU( smnbIterator*       aIterator,
+                              const smSeekFunc**  aSeekFunc );
+    
+    static IDE_RC beforeFirstR( smnbIterator*       aIterator,
+                                const smSeekFunc**  aSeekFunc );
+
+    static IDE_RC afterLastR( smnbIterator*       aIterator,
+                              const smSeekFunc**  aSeekFunc );
+    
+    static IDE_RC fetchNext( smnbIterator  * a_pIterator,
+                             const void   ** aRow );
+
+    //BUG-48230: fetchNext for Queue
+    static IDE_RC fetchNextQ( smnbIterator  * a_pIterator,
+                              const void   ** aRow );
+
+    static IDE_RC fetchPrev( smnbIterator* aIterator,
+                             const void**  aRow );
+
+    static IDE_RC fetchNextU( smnbIterator* aIterator,
+                              const void**  aRow );
+    
+    static IDE_RC fetchPrevU( smnbIterator* aIterator,
+                              const void**  aRow );
+    
+
+    static IDE_RC retraverse( idvSQL*       aStatistics,
+                              smnbIterator* aIterator,
+                              const void**  /*aRow*/ );
+
+    static inline IDE_RC initLeafNode( smnbLNode  * a_pNode,
+                                       smnbHeader * aIndexHeader,
+                                       IDU_LATCH    a_latch );
+    static inline void initInternalNode( smnbINode *a_pNode,
+                                         smnbHeader * aIndexHeader,
+                                         IDU_LATCH a_latch );
+
+    static inline void lockTree( smnbHeader * a_pIndex );
+    static inline void unlockTree( smnbHeader * a_pIndex );
+
+    /* For Make Disk Image When server is stopped normally */
+    static IDE_RC makeDiskImage(smnIndexHeader* a_pIndex,
+                                smnIndexFile*   a_pIndexFile);
+    static IDE_RC makeNodeListFromDiskImage(smcTableHeader *a_pTable,
+                                            smnIndexHeader *a_pIndex);
+
+    static IDE_RC getPosition( smnbIterator *     aIterator,
+                               smiCursorPosInfo * aPosInfo );
+    
+    static IDE_RC setPosition( smnbIterator     * aIterator,
+                               smiCursorPosInfo * aPosInfo );
+
+    static IDE_RC allocIterator( void ** aIteratorMem );
+    
+    static IDE_RC freeIterator( void * aIteratorMem);
+
+    // To Fix BUG-15670
+    // Row Pointer¸¦ ÀÌ¿ëÇÏ¿© Key ColumnÀÇ ½ÇÁ¦ Value Ptr È¹µæ
+    // To Fix BUG-24449
+    // Å° ±æÀÌ¸¦ ÀĞÀ»¶§´Â MT ÇÔ¼ö¸¦ ÀÌ¿ëÇØ¾ß ÇÑ´Ù
+    static IDE_RC getKeyValueAndSize( SChar         * aRowPtr,
+                                      smnbColumn    * aIndexColumn,
+                                      void          * aKeyValue,
+                                      UShort        * aKeySize );
+
+    static void logIndexNode( smnIndexHeader * aIndex,
+                              smnbNode       * aNode );
+    static void logIndexHeader( smnIndexHeader * aHeader );
+    static void dumpIndexHeader( smnbHeader * aHeader,
+                                 SChar      * aOutBuf,
+                                 UInt         aOutSize );
+
+    static IDE_RC makeKeyFromRow( smnbHeader   * aIndex,
+                                  SChar        * aRow,
+                                  void         * aKey );
+
+    static inline void setInternalSlot( smnbINode   * aNode,
+                                        SShort        aIdx,
+                                        smnbNode    * aChildPtr,
+                                        SChar       * aRowPtr,
+                                        void        * aKey );
+
+    static inline void getInternalSlot( smnbNode   ** aChildPtr,
+                                        SChar      ** aRowPtr,
+                                        void       ** aKey,
+                                        smnbINode   * aNode,
+                                        SShort        aIdx );
+
+    static inline void setLeafSlot( smnbLNode   * aNode,
+                                    SShort        aIdx,
+                                    SChar       * aRowPtr,
+                                    void        * aKey );
+
+    static inline void getLeafSlot( SChar      ** aRowPtr,
+                                    void       ** aKey,
+                                    smnbLNode   * aNode,
+                                    SShort        aIdx );
+
+    static inline void copyLeafSlots( smnbLNode * aDest,
+                                      SShort      aDestStartIdx,
+                                      smnbLNode * aSrc,
+                                      SShort      aSrcStartIdx,
+                                      SShort      aSrcEndIdx );
+
+    static void setNodeSplitRate( void ); /* BUG-40509 */
+
+    static UInt getNodeSplitRate( void ); /* BUG-40509 */
+
+    /* PROJ-2614 Memory Index Reorganization */
+    static IDE_RC keyReorganization( smnbHeader * aIndex );
+
+private:
+
+    /*************************************************/
+    /* PRIVATE FUNCTIONS                             */
+    /*************************************************/
+
+    static SInt compareRowsAndPtr( smnbStatistic    * aIndexStat,
+                                   const smnbColumn * aColumns,
+                                   const smnbColumn * aFence,
+                                   const void       * aRow1,
+                                   const void       * aRow2 );
+    
     static SInt compareKeyVarColumn( smnbColumn * aColumn,
                                      void       * aKey,
                                      UInt         aPartialKeySize,
                                      SChar      * aRow );
-    /* PROJ-2433 end */
 
     static SInt compareVarColumn( const smnbColumn * aColumn,
                                   const void       * aRow1,
                                   const void       * aRow2 );   
 
-    static idBool isNullColumn( smnbColumn * aColumn,
-                                smiColumn  * aSmiColumn,
-                                SChar      * aRow );
-    
     static idBool isVarNull( smnbColumn * aColumn,
                              smiColumn  * aSmiColumn,
-                             SChar      * aRow );
-    
-    /* BUG-30074 disk tableì˜ unique indexì—ì„œ NULL key ì‚­ì œ ì‹œ/
-    *           non-unique indexì—ì„œ deleted key ì¶”ê°€ ì‹œ
-    *           Cardinalityì˜ ì •í™•ì„±ì´ ë§ì´ ë–¨ì–´ì§‘ë‹ˆë‹¤.
-    * Key ì „ì²´ê°€ Nullì¸ì§€ í™•ì¸í•œë‹¤. ëª¨ë‘ Nullì´ì–´ì•¼ í•œë‹¤. */
-    static idBool isNullKey( smnbHeader * aIndex,
                              SChar      * aRow );
  
     static UInt getMaxKeyValueSize( smnIndexHeader *aIndexHeader );
@@ -161,45 +361,27 @@ public:
                                           void        * aKey,
                                           void        * a_pChild );
 
-    /* PROJ-2433 */
-    static IDE_RC findKeyInLeaf( smnbHeader   * aHeader,
-                                 smnbLNode    * aNode,
+    /* BUG-47206 : findKeyInLeaf(), findKeyInInternal() ÇÔ¼ö¸¦ ÅëÇÕÇÑ´Ù. */
+    static IDE_RC findKeyInNode( smnbHeader   * aHeader,
+                                 smnbNode     * aNode,
                                  SInt           aMinimum,
                                  SInt           aMaximum,
                                  SChar        * aRow,
                                  SInt         * aSlot );
 
-    static void findRowInLeaf( smnbHeader   * aHeader,
-                               smnbLNode    * aNode,
+    /* BUG-47206 : findRowInLeaf(), findRowInInternal() ÇÔ¼ö¸¦ ÅëÇÕÇÑ´Ù. */
+    static void findRowInNode( smnbHeader   * aHeader,
+                               smnbNode     * aNode,
                                SInt           aMinimum,
                                SInt           aMaximum,
                                SChar        * aRow,
                                SInt         * aSlot );
 
-    static IDE_RC findKeyInInternal( smnbHeader   * aHeader,
-                                     smnbINode    * aNode,
-                                     SInt           aMinimum,
-                                     SInt           aMaximum,
-                                     SChar        * aRow,
-                                     SInt         * aSlot );
-
-    static void findRowInInternal( smnbHeader   * aHeader,
-                                   smnbINode    * aNode,
-                                   SInt           aMinimum,
-                                   SInt           aMaximum,
-                                   SChar        * aRow,
-                                   SInt         * aSlot );
-
-    static IDE_RC findSlotInInternal( smnbHeader  * aHeader,
-                                      smnbINode   * aNode,
-                                      void        * aRow,
-                                      SInt        * aSlot );
-
-    static IDE_RC findSlotInLeaf( smnbHeader  * aHeader,
-                                  smnbLNode   * aNode,
+    /* BUG-47206 : findSlotInLeaf(), findSotInInternal() ÇÔ¼ö¸¦ ÅëÇÕÇÑ´Ù. */
+    static IDE_RC findSlotInNode( smnbHeader  * aHeader,
+                                  smnbNode    * aNode,
                                   void        * aRow,
                                   SInt        * aSlot );
-    /* PROJ-2433 end */
 
     static IDE_RC insertIntoLeafNode( smnbHeader      * aHeader,
                                       smnbLNode       * aLeafNode,
@@ -213,31 +395,15 @@ public:
                                      SChar           * aRow,
                                      idBool            aIsUniqueIndex );
 
-    static IDE_RC findFirst( smnbHeader        * a_pIndexHeader,
-                             const smiCallBack * a_pCallBack,
-                             SInt              * a_pDepth,
-                             smnbStack         * a_pStack );
+    static SChar* getPrvLNodeLstRow( smnbLNode * a_pLeafNode );
+    static SChar* getNxtLNodeFstRow( smnbLNode * a_pLeafNode );
 
-    static void findFstLeaf( smnbHeader         * a_pIndexHeader,
-                             const smiCallBack  * a_pCallBack,
-                             SInt               * a_pDepth,
-                             smnbStack          * a_pStack,
-                             smnbLNode         ** a_pLNode );
-
-    static inline void findFirstSlotInInternal( smnbHeader          * aHeader,
-                                                const smiCallBack   * aCallBack,
-                                                const smnbINode     * aNode,
-                                                SInt                  aMinimum,
-                                                SInt                  aMaximum,
-                                                SInt                * aSlot );
-
-    static inline void findFirstSlotInLeaf( smnbHeader          * aHeader,
+    /* BUG-47206 : findFirstSlotInLeaf(), findFirstSlotInInternal() ÇÔ¼ö¸¦ ÅëÇÕÇÑ´Ù. */
+    static inline void findFirstSlotInNode( smnbHeader          * aHeader,
                                             const smiCallBack   * aCallBack,
-                                            const smnbLNode     * aNode,
-                                            SInt                  aMinimum,
-                                            SInt                  aMaximum,
+                                            const smnbNode      * aNode,
                                             SInt                * aSlot );
-    
+
     static IDE_RC findLast( smnbHeader       * aIndexHeader,
                             const smiCallBack* a_pCallBack,
                             SInt*              a_pDepth,
@@ -283,10 +449,15 @@ public:
                                  smnbLNode       ** aTargetLeaf,
                                  SInt             * aTargetSeq );
 
-    static IDE_RC findPosition( const smnbHeader   * a_pHeader,
-                                SChar              * a_pRow,
-                                SInt               * a_pDepth,
-                                smnbStack          * a_pStack );
+    /* BUG-47206
+       µ¿ÀÏÇÑ ±â´ÉÀ» ¼öÇàÇÏ´ø findFirst(=findFstLeaf) ÇÔ¼ö¿Í findPosition ÇÔ¼ö¸¦
+       findPosition À¸·Î ÅëÇÕÇÑ´Ù. */
+    static IDE_RC findPosition( smnbHeader         * aIndexHeader,
+                                const smiCallBack  * aCallBack,
+                                SChar              * aRow,
+                                SInt               * aDepth,
+                                smnbStack          * aStack,
+                                smnbLNode         ** aLNode);
 
     static IDE_RC checkUniqueness( smnIndexHeader   * aIndexHeader,
                                    void             * a_pTrans,
@@ -296,60 +467,14 @@ public:
                                    smnbLNode        * a_pLeafNode,
                                    SInt               a_nSlotPos,
                                    SChar            * a_pRow,
-                                   smSCN              aStmtSCN,
+                                   smSCN              aStmtViewSCN,
                                    idBool             sIsTreeLatched,
                                    smTID            * a_pTransID,
                                    idBool           * sIsRetraverse,
                                    SChar           ** aExistUniqueRow,
                                    SChar           ** a_diffRow,
-                                   SInt             * a_diffSlotPos );
-
-    static IDE_RC insertRowUnique( idvSQL           * aStatistics,
-                                   void             * aTrans,
-                                   void             * aTable,
-                                   void             * aIndex,
-                                   smSCN              aInfiniteSCN,
-                                   SChar            * aRow,
-                                   SChar            * aNull,
-                                   idBool             aUniqueCheck,
-                                   smSCN              aStmtSCN,
-                                   void             * aRowSID,
-                                   SChar           ** aExistUniqueRow,
-                                   ULong              aInsertWaitTime );
-
-    static IDE_RC insertRow( idvSQL*           aStatistics,
-                             void*             aTrans,
-                             void *            aTable,
-                             void*             aIndex,
-                             smSCN             aInfiniteSCN,
-                             SChar*            aRow,
-                             SChar*            aNull,
-                             idBool            aUniqueCheck,
-                             smSCN             aStmtSCN,
-                             void*             aRowSID,
-                             SChar**           aExistUniqueRow,
-                             ULong             aInsertWaitTime );
-
-    static void merge(smnbINode* a_pLeftNode,
-                      smnbINode* a_pRightNode);
-    
-    static IDE_RC deleteNA( idvSQL*           aStatistics,
-                            void*             aTrans,
-                            void*             aIndex,
-                            SChar*            aRow,
-                            smiIterator *     aIterator,
-                            sdRID             aRowRID);
-
-    static IDE_RC freeSlot( void    * aIndex,
-                            SChar   * aRow,
-                            idBool    aIgnoreNotFoundKey,
-                            idBool  * aIsExistFreeKey );
-
-    /* BUG-32655 [sm-mem-index] The MMDB Ager must not ignore the failure of
-     * index aging. */
-    static IDE_RC existKey( void   * aIndex,
-                            SChar  * aRow,
-                            idBool * aExistKey );
+                                   SInt             * a_diffSlotPos,
+                                   idBool             aForbiddenToRetry );
 
     static void deleteSlotInLeafNode( smnbLNode*        a_pLeafNode,
                                       SChar*            a_pRow,
@@ -364,18 +489,6 @@ public:
 
     static IDE_RC deleteSlotInInternalNode( smnbINode*        a_pInternalNode,
                                             SInt              a_nSlotPos );
-
-    /* TASK-4990 changing the method of collecting index statistics
-     * ìˆ˜ë™ í†µê³„ì •ë³´ ìˆ˜ì§‘ ê¸°ëŠ¥ */
-    static IDE_RC gatherStat( idvSQL         * aStatistics,
-                              void           * aTrans,
-                              SFloat           aPercentage,
-                              SInt             aDegree,
-                              smcTableHeader * aHeader,
-                              void           * aTotalTableArg,
-                              smnIndexHeader * aIndex,
-                              void           * aStats,
-                              idBool           aDynamicMode );
 
     static IDE_RC rebuildMinMaxStat( smnIndexHeader * aPersistentIndexHeader,
                                      smnbHeader     * aRuntimeIndexHeader,
@@ -398,95 +511,24 @@ public:
                                   UInt           * aIndexHeight,
                                   smnbLNode     ** aCurNode );
 
-    static IDE_RC NA( void );
-
     static IDE_RC beforeFirstInternal( smnbIterator* a_pIterator );
     
-    static IDE_RC beforeFirst( smnbIterator*       aIterator,
-                               const smSeekFunc**  aSeekFunc );
-
-    static IDE_RC afterLast( smnbIterator*       aIterator,
-                             const smSeekFunc**  aSeekFunc );
-    
-    static IDE_RC beforeFirstU( smnbIterator*       aIterator,
-                                const smSeekFunc**  aSeekFunc );
-
-    static IDE_RC afterLastU( smnbIterator*       aIterator,
-                              const smSeekFunc**  aSeekFunc );
-    
-    static IDE_RC beforeFirstR( smnbIterator*       aIterator,
-                                const smSeekFunc**  aSeekFunc );
-
-    static IDE_RC afterLastR( smnbIterator*       aIterator,
-                              const smSeekFunc**  aSeekFunc );
-    
-    static IDE_RC fetchNext( smnbIterator  * a_pIterator,
-                             const void   ** aRow );
-
-    /* PROJ-2433 */
     static IDE_RC getNextNode( smnbIterator * aIterator,
                                idBool       * aIsRestart );
 
-    static IDE_RC fetchPrev( smnbIterator* aIterator,
-                             const void**  aRow );
-   
-    /* PROJ-2433 */
     static IDE_RC getPrevNode( smnbIterator   * aIterator,
                                idBool         * aIsRestart );
 
-    static IDE_RC fetchNextU( smnbIterator* aIterator,
-                              const void**  aRow );
-    
-    static IDE_RC fetchPrevU( smnbIterator* aIterator,
-                              const void**  aRow );
-    
     static IDE_RC fetchNextR( smnbIterator* aIterator );
 
-    static IDE_RC retraverse( idvSQL*       aStatistics,
-                              smnbIterator* aIterator,
-                              const void**  /*aRow*/ );
-
-    static inline IDE_RC initLeafNode( smnbLNode  * a_pNode,
-                                       smnbHeader * aIndexHeader,
-                                       IDU_LATCH    a_latch );
-    static inline void initInternalNode( smnbINode *a_pNode,
-                                         smnbHeader * aIndexHeader,
-                                         IDU_LATCH a_latch );
     static inline IDE_RC destroyNode( smnbNode * a_pNode );
 
-    static inline void lockTree( smnbHeader * a_pIndex );
-    static inline void unlockTree( smnbHeader * a_pIndex );
     static inline void lockNode( smnbLNode * a_pLeafNode );
     static inline void unlockNode( smnbLNode * a_pLeafNodne );
     
-    /* For Make Disk Image When server is stopped normally */
-    static IDE_RC makeDiskImage(smnIndexHeader* a_pIndex,
-                                smnIndexFile*   a_pIndexFile);
-    static IDE_RC makeNodeListFromDiskImage(smcTableHeader *a_pTable,
-                                            smnIndexHeader *a_pIndex);
+    static IDU_LATCH getLatchValueOfINode( volatile smnbINode* aNodePtr );
 
-    static inline IDU_LATCH getLatchValueOfINode( volatile smnbINode* aNodePtr );
-
-    static inline IDU_LATCH getLatchValueOfLNode( volatile smnbLNode* aNodePtr );
-
-    static IDE_RC getPosition( smnbIterator *     aIterator,
-                               smiCursorPosInfo * aPosInfo );
-    
-    static IDE_RC setPosition( smnbIterator     * aIterator,
-                               smiCursorPosInfo * aPosInfo );
-
-    static IDE_RC allocIterator( void ** aIteratorMem );
-    
-    static IDE_RC freeIterator( void * aIteratorMem);
-
-    // To Fix BUG-15670
-    // Row Pointerë¥¼ ì´ìš©í•˜ì—¬ Key Columnì˜ ì‹¤ì œ Value Ptr íšë“
-    // To Fix BUG-24449
-    // í‚¤ ê¸¸ì´ë¥¼ ì½ì„ë•ŒëŠ” MT í•¨ìˆ˜ë¥¼ ì´ìš©í•´ì•¼ í•œë‹¤
-    static IDE_RC getKeyValueAndSize( SChar         * aRowPtr,
-                                      smnbColumn    * aIndexColumn,
-                                      void          * aKeyValue,
-                                      UShort        * aKeySize );
+    static IDU_LATCH getLatchValueOfLNode( volatile smnbLNode* aNodePtr );
 
     /* TASK-4990 changing the method of collecting index statistics */
     static IDE_RC setMinMaxStat( smnIndexHeader * aCommonHeader,
@@ -501,9 +543,6 @@ public:
                                  SChar          * aOutBuf,
                                  UInt             aOutSize );
 
-    static void logIndexNode( smnIndexHeader * aIndex,
-                              smnbNode       * aNode );
-
     static IDE_RC prepareNodes( smnbHeader    * aIndexHeader,
                                 smnbStack     * aStack,
                                 SInt            aDepth,
@@ -516,21 +555,6 @@ public:
 
     static void setIndexProperties();
 
-    /* PROJ-2433 */
-    static IDE_RC makeKeyFromRow( smnbHeader   * aIndex,
-                                  SChar        * aRow,
-                                  void         * aKey );
-
-    static inline void setInternalSlot( smnbINode   * aNode,
-                                        SShort        aIdx,
-                                        smnbNode    * aChildPtr,
-                                        SChar       * aRowPtr,
-                                        void        * aKey );
-    static inline void getInternalSlot( smnbNode   ** aChildPtr,
-                                        SChar      ** aRowPtr,
-                                        void       ** aKey,
-                                        smnbINode   * aNode,
-                                        SShort        aIdx );
     static inline void copyInternalSlots( smnbINode * aDest,
                                           SShort      aDestStartIdx,
                                           smnbINode * aSrc,
@@ -540,63 +564,26 @@ public:
                                            SShort         aStartIdx,
                                            SShort         aEndIdx,
                                            SShort         aShift );
-    static inline void setLeafSlot( smnbLNode   * aNode,
-                                    SShort        aIdx,
-                                    SChar       * aRowPtr,
-                                    void        * aKey );
-    static inline void getLeafSlot( SChar      ** aRowPtr,
-                                    void       ** aKey,
-                                    smnbLNode   * aNode,
-                                    SShort        aIdx );
-    static inline void copyLeafSlots( smnbLNode * aDest,
-                                      SShort      aDestStartIdx,
-                                      smnbLNode * aSrc,
-                                      SShort      aSrcStartIdx,
-                                      SShort      aSrcEndIdx );
     static inline void shiftLeafSlots( smnbLNode    * aNode,
                                        SShort         aStartIdx,
                                        SShort         aEndIdx,
                                        SShort         aShift );
-    /* PROJ-2433 end */
-    
-    static void setNodeSplitRate( void ); /* BUG-40509 */
-    static UInt getNodeSplitRate( void ); /* BUG-40509 */
 
-    static smmSlotList  mSmnbNodePool;
-    static void*        mSmnbFreeNodeList;
-    static UInt         mNodeSize;
-    static UInt         mIteratorSize;
-    static UInt         mNodeSplitRate; /* BUG-40509 */
-
-    /* PROJ-2433
-     * direct key size default value (8) */
-    static UInt         mDefaultMaxKeySize;
-
-private:
-
-    /* PROJ-2433 */
-    static void findFirstRowInInternal( const smiCallBack   * aCallBack,
-                                        const smnbINode     * aNode,
-                                        SInt                  aMinimum,
-                                        SInt                  aMaximum,
-                                        SInt                * aSlot );
-    static void findFirstKeyInInternal( smnbHeader          * aHeader,
-                                        const smiCallBack   * aCallBack,
-                                        const smnbINode     * aNode,
-                                        SInt                  aMinimum,
-                                        SInt                  aMaximum,
-                                        SInt                * aSlot );
-    static void findFirstRowInLeaf( const smiCallBack   * aCallBack,
-                                    const smnbLNode     * aNode,
+    /* BUG-47206 : findFirstRowInLeaf(), findFirstRowInInternal() ÇÔ¼ö¸¦ ÅëÇÕÇÑ´Ù. */
+    static void findFirstRowInNode( const smiCallBack   * aCallBack,
+                                    const smnbNode      * aNode,
                                     SInt                  aMinimum,
                                     SInt                  aMaximum,
                                     SInt                * aSlot );
-    static void findFirstKeyInLeaf( smnbHeader          * aHeader,
+
+    /* BUG-47206 : findFirstKeyInLeaf(), findFirstKeyInInternal() ÇÔ¼ö¸¦ ÅëÇÕÇÑ´Ù. */
+    static void findFirstKeyInNode( smnbHeader          * aHeader,
                                     const smiCallBack   * aCallBack,
-                                    const smnbLNode     * aNode,
+                                    const smnbNode      * aNode,
                                     SInt                  aMinimum,
                                     SInt                  aMaximum,
                                     SInt                * aSlot );
+
     static void findLastRowInInternal( const smiCallBack   * aCallBack,
                                        const smnbINode     * aNode,
                                        SInt                  aMinimum,
@@ -625,13 +612,10 @@ private:
                                      const smiColumn    * aColumn,
                                      UInt                 aMtdAlign );
 
-    static inline idBool isFullKeyInLeafSlot( smnbHeader      * aIndex,
-                                              const smnbLNode * aNode,
-                                              SShort            aIdx );
-    static inline idBool isFullKeyInInternalSlot( smnbHeader      * aIndex,
-                                                  const smnbINode * aNode,
-                                                  SShort            aIdx );
-    /* PROJ-2433 end */
+    /* BUG-47206 : isFullKeyInLeafSlot(), isFullKeyInInternalSlot() ÇÔ¼ö¸¦ ÅëÇÕÇÑ´Ù. */
+    static inline idBool isFullKey( smnbHeader      * aIndex,
+                                    const smnbNode  * aNode,
+                                    SShort            aIdx );
 
     static iduMemPool   mIteratorPool;
 
@@ -663,15 +647,40 @@ private:
                                            SChar            * aSearchRow,
                                            SInt             * aSlot );
 
-public:
-    /* PROJ-2614 Memory Index Reorganization */
-    static IDE_RC keyReorganization( smnbHeader * aIndex );
-
     static inline idBool checkEnableReorgInNode( smnbLNode * aLNode,
                                                  smnbINode * aINode,
                                                  SShort      aSlotMaxCount );
 
     static void setInconsistentIndex( smnIndexHeader * aIndex );
+
+    static IDE_RC makeRootNode( smnIndexHeader * aIndex,
+                                SChar          * aRow,
+                                idBool           aIsUniqueIndex );
+
+    static IDE_RC processNodeSplit( smnIndexHeader * aIndex,
+                                    smnbStack      * aStack,
+                                    SInt             aDepth,
+                                    smnbLNode      * aCurLNode,
+                                    SChar          * aRow,
+                                    SInt             aSlotPos,
+                                    idBool           aIsUniqueIndex );
+
+    static IDE_RC processKeyRedistribution( smnIndexHeader * aIndex, 
+                                            smnbINode      * aCurINode,
+                                            smnbLNode      * aCurLNode,
+                                            idBool         * aIsTreeLatched,
+                                            idBool         * aIsNodeLatched );
+
+    static void dumpNodeLink( smnbLNode * aLNode );
+
+public:
+    static smmSlotList  mSmnbNodePool;
+    static void*        mSmnbFreeNodeList;
+    static UInt         mNodeSize;
+    static UInt         mNodeSplitRate; /* BUG-40509 */
+
+private:
+    static UInt         mIteratorSize;
 };
 
 // BUG-19249
@@ -686,11 +695,11 @@ inline UInt smnbBTree::getKeySize( UInt aKeyValueSize )
 
 /* PROJ-2433 
  *
- * internal nodeë¥¼ ì´ˆê¸°í™”í•œë‹¤
+ * internal node¸¦ ÃÊ±âÈ­ÇÑ´Ù
  *
- * - direct key indexë¥¼ ì‚¬ìš©í•˜ë”ë¼ë„ í•­ìƒ row pointer ê°€ ìˆì–´ì•¼í•œë‹¤
- *   : non-unique indexì—ì„œ ë™ì¼ keyê°€ ì—¬ëŸ¬ê°œ insertë˜ë©´, row í¬ì¸í„° ì£¼ì†Œ ìˆœì„œë¡œ ì •ë ¬í•´ ì €ì¥í•œë‹¤.
- *   : uninque indexë¼ë©´ ìƒëµí• ìˆ˜ìˆê² ì§€ë§Œ, ì–´ì°¨í”¼ index í¬ê¸°ë¥¼ ê²°ì •í•˜ëŠ”ê²ƒì€ leaf node ì´ë‹¤.
+ * - direct key index¸¦ »ç¿ëÇÏ´õ¶óµµ Ç×»ó row pointer °¡ ÀÖ¾î¾ßÇÑ´Ù
+ *   : non-unique index¿¡¼­ µ¿ÀÏ key°¡ ¿©·¯°³ insertµÇ¸é, row Æ÷ÀÎÅÍ ÁÖ¼Ò ¼ø¼­·Î Á¤·ÄÇØ ÀúÀåÇÑ´Ù.
+ *   : uninque index¶ó¸é »ı·«ÇÒ¼öÀÖ°ÚÁö¸¸, ¾îÂ÷ÇÇ index Å©±â¸¦ °áÁ¤ÇÏ´Â°ÍÀº leaf node ÀÌ´Ù.
  */
 inline void smnbBTree::initInternalNode( smnbINode  * a_pNode,
                                          smnbHeader * aIndexHeader,
@@ -713,7 +722,7 @@ inline void smnbBTree::initInternalNode( smnbINode  * a_pNode,
     a_pNode->mMaxSlotCount  = aIndexHeader->mINodeMaxSlotCount;
     a_pNode->mSlotCount     = 0;
 
-    /* í•­ìƒ row poniter ì¡´ì¬ */
+    /* Ç×»ó row poniter Á¸Àç */
     a_pNode->mRowPtrs = (SChar **)&(a_pNode->mChildPtrs[a_pNode->mMaxSlotCount]);
 
     if ( a_pNode->mKeySize == 0 )
@@ -728,7 +737,7 @@ inline void smnbBTree::initInternalNode( smnbINode  * a_pNode,
 
 /* PROJ-2433 
  *
- * leaf nodeë¥¼ ì´ˆê¸°í™”í•œë‹¤
+ * leaf node¸¦ ÃÊ±âÈ­ÇÑ´Ù
  */
 inline IDE_RC smnbBTree::initLeafNode( smnbLNode  * a_pNode,
                                        smnbHeader * aIndexHeader,
@@ -763,6 +772,8 @@ inline IDE_RC smnbBTree::initLeafNode( smnbLNode  * a_pNode,
     a_pNode->mMaxSlotCount = aIndexHeader->mLNodeMaxSlotCount;
     a_pNode->mSlotCount    = 0;
 
+    a_pNode->mRowPtrs = (SChar **)( ((SChar *)a_pNode) + ID_SIZEOF( smnbLNode ) );
+
     if ( a_pNode->mKeySize == 0 )
     {
         a_pNode->mKeys = NULL;
@@ -784,7 +795,7 @@ inline IDE_RC smnbBTree::destroyNode( smnbNode * a_pNode )
 
     IDE_DASSERT( a_pNode != NULL );
 
-    if ( (a_pNode->flag & SMNB_NODE_TYPE_MASK) == SMNB_NODE_TYPE_LEAF )
+    if ( SMNB_IS_LEAF_NODE( a_pNode ) )
     {
         s_pLeafNode = (smnbLNode*)a_pNode;
         IDE_TEST( s_pLeafNode->nodeLatch.destroy() != IDE_SUCCESS );
@@ -810,35 +821,25 @@ inline void smnbBTree::unlockTree( smnbHeader * a_pIndex )
 inline void smnbBTree::lockNode( smnbLNode * a_pLeafNode )
 {
     IDE_DASSERT( a_pLeafNode != NULL );
-    IDE_DASSERT( (a_pLeafNode->flag & SMNB_NODE_TYPE_MASK) == SMNB_NODE_TYPE_LEAF );
+    IDE_DASSERT( SMNB_IS_LEAF_NODE( a_pLeafNode ) );
     (void)a_pLeafNode->nodeLatch.lock( NULL /* idvSQL */ ); /* always IDE_SUCCESS return */
 }
 
 inline void smnbBTree::unlockNode( smnbLNode * a_pLeafNode )
 {
     IDE_DASSERT( a_pLeafNode != NULL );
-    IDE_DASSERT( (a_pLeafNode->flag & SMNB_NODE_TYPE_MASK) == SMNB_NODE_TYPE_LEAF );
+    IDE_DASSERT( SMNB_IS_LEAF_NODE( a_pLeafNode ) );
     (void)a_pLeafNode->nodeLatch.unlock(); /* always IDE_SUCCESS return */
-}
-
-inline IDU_LATCH smnbBTree::getLatchValueOfINode(volatile smnbINode* aNodePtr)
-{
-    return aNodePtr->latch;
-}
-
-inline IDU_LATCH smnbBTree::getLatchValueOfLNode(volatile smnbLNode* aNodePtr)
-{
-    return aNodePtr->latch;
 }
 
 /*********************************************************************
  * FUNCTION DESCRIPTION : smnbBTree::setInternalSlot                 *
  * ------------------------------------------------------------------*
  * PROJ-2433 Direct Key Index
- * INTERNAL NODEì˜ aIdxë²ˆì§¸ SLOTì—
- * child pointer, row pointer, direct keyë¥¼ ì„¸íŒ…í•œë‹¤.
+ * INTERNAL NODEÀÇ aIdx¹øÂ° SLOT¿¡
+ * child pointer, row pointer, direct key¸¦ ¼¼ÆÃÇÑ´Ù.
  *
- * - direct keyëŠ” memcpyê°€ ì´ë£¨ì–´ì§€ëŠ”ê²ƒì— ì£¼ì˜
+ * - direct key´Â memcpy°¡ ÀÌ·ç¾îÁö´Â°Í¿¡ ÁÖÀÇ
  *
  * aNode     - [IN]  INTERNAL NODE
  * aIdx      - [IN]  slot index
@@ -882,8 +883,8 @@ inline void smnbBTree::setInternalSlot( smnbINode   * aNode,
  * FUNCTION DESCRIPTION : smnbBTree::getInternalSlot                 *
  * ------------------------------------------------------------------*
  * PROJ-2433 Direct Key Index
- * INTERNAL NODEì˜ aIdxë²ˆì§¸ SLOTì˜
- * child pointer, row pointer, direct key pointerë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+ * INTERNAL NODEÀÇ aIdx¹øÂ° SLOTÀÇ
+ * child pointer, row pointer, direct key pointer¸¦ °¡Á®¿Â´Ù.
  *
  * aChildPtr - [OUT] child pointer
  * aRowPtr   - [OUT] row pointer
@@ -923,7 +924,7 @@ inline void smnbBTree::getInternalSlot( smnbNode ** aChildPtr,
         }
         else
         {
-            *aKey = NULL; /* ê°’ì´ì„¤ì •ì•ˆë˜ì–´ìˆëŠ”ê²½ìš°NULLë°˜í™˜*/
+            *aKey = NULL; /* °ªÀÌ¼³Á¤¾ÈµÇ¾îÀÖ´Â°æ¿ìNULL¹İÈ¯*/
         }
     }
     else
@@ -936,17 +937,17 @@ inline void smnbBTree::getInternalSlot( smnbNode ** aChildPtr,
  * FUNCTION DESCRIPTION : smnbBTree::copyInternalSlots               *
  * ------------------------------------------------------------------*
  * PROJ-2433 Direct Key Index
- * INTERNAL NODE ë‚´ì˜ íŠ¹ì •ë²”ìœ„ì˜ slotë“¤ì„ ë‹¤ë¥¸ INTERNAL NODE ë¡œ ë³µì‚¬í•œë‹¤.
+ * INTERNAL NODE ³»ÀÇ Æ¯Á¤¹üÀ§ÀÇ slotµéÀ» ´Ù¸¥ INTERNAL NODE ·Î º¹»çÇÑ´Ù.
  *
- * - aSrcì˜ aSrcSTartIdxë¶€í„° aSrcEndIdxê¹Œì§€ì˜ slotë“¤ì„
- *   aDestì˜ aDestStartIdexë¡œ ë³µì‚¬í•œë‹¤.
- * - aSrc, aDestëŠ” ë‹¤ë¥¸ NODE ì´ì–´ì•¼ í•œë‹¤.
+ * - aSrcÀÇ aSrcSTartIdxºÎÅÍ aSrcEndIdx±îÁöÀÇ slotµéÀ»
+ *   aDestÀÇ aDestStartIdex·Î º¹»çÇÑ´Ù.
+ * - aSrc, aDest´Â ´Ù¸¥ NODE ÀÌ¾î¾ß ÇÑ´Ù.
  *
- * aDest         - [IN] ëŒ€ìƒ INTERNAL NODE
- * aDestStartIdx - [IN] ëŒ€ìƒ ì‹œì‘ slot index
- * aSrc          - [IN] ì›ë³¸ INTERNAL NODE
- * aSrcStartIdx  - [IN] ë³µì‚¬í•  ì‹œì‘ slot index
- * aSrcEndIdx    - [IN] ë³µì‚¬í•  ë§ˆì§€ë§‰ slot index
+ * aDest         - [IN] ´ë»ó INTERNAL NODE
+ * aDestStartIdx - [IN] ´ë»ó ½ÃÀÛ slot index
+ * aSrc          - [IN] ¿øº» INTERNAL NODE
+ * aSrcStartIdx  - [IN] º¹»çÇÒ ½ÃÀÛ slot index
+ * aSrcEndIdx    - [IN] º¹»çÇÒ ¸¶Áö¸· slot index
  *********************************************************************/
 inline void smnbBTree::copyInternalSlots( smnbINode * aDest,
                                           SShort      aDestStartIdx,
@@ -980,15 +981,15 @@ inline void smnbBTree::copyInternalSlots( smnbINode * aDest,
  * FUNCTION DESCRIPTION : smnbBTree::shiftInternalSlots              *
  * ------------------------------------------------------------------*
  * PROJ-2433 Direct Key Index
- * INTERNAL NODE ë‚´ì—ì„œ íŠ¹ì •ë²”ìœ„ì˜ slotë“¤ì„ shift ì‹œí‚¨ë‹¤.
+ * INTERNAL NODE ³»¿¡¼­ Æ¯Á¤¹üÀ§ÀÇ slotµéÀ» shift ½ÃÅ²´Ù.
  *
- * - aShiftê°€ ì–‘ìˆ˜ì´ë©´ slotë“¤ì„ ì˜¤ë¥¸ìª½ìœ¼ë¡œ shift í•˜ê³ ,
- *   aShiftê°€ ìŒìˆ˜ì´ë©´ slotë“¤ì„ ì™¼ìª½ìœ¼ë¡œ shift í•œë‹¤.
+ * - aShift°¡ ¾ç¼öÀÌ¸é slotµéÀ» ¿À¸¥ÂÊÀ¸·Î shift ÇÏ°í,
+ *   aShift°¡ À½¼öÀÌ¸é slotµéÀ» ¿ŞÂÊÀ¸·Î shift ÇÑ´Ù.
  *
  * aNode      - [IN] INTERNAL NODE
- * aStartIdx  - [IN] shift ì‹œí‚¬ ì‹œì‘ slot index
- * aEndIdx    - [IN] shift ì‹œí‚¬ ë§ˆì§€ë§‰ slot index
- * aShift     - [IN] shiftê°’
+ * aStartIdx  - [IN] shift ½ÃÅ³ ½ÃÀÛ slot index
+ * aEndIdx    - [IN] shift ½ÃÅ³ ¸¶Áö¸· slot index
+ * aShift     - [IN] shift°ª
  *********************************************************************/
 inline void smnbBTree::shiftInternalSlots( smnbINode * aNode,
                                            SShort      aStartIdx,
@@ -1000,11 +1001,11 @@ inline void smnbBTree::shiftInternalSlots( smnbINode * aNode,
     IDE_DASSERT( aStartIdx <= aEndIdx );
 
     /* BUG-41787
-     * ê¸°ì¡´ì—ëŠ” index nodeì˜ slot ì´ë™ì‹œ memmove() í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ì˜€ëŠ”ë°
-     * slot ì´ë™ì¤‘ì— pointerë¥¼ ì°¸ì¡°í•˜ë©´ ì™„ì„±ë˜ì§€ ì•Šì€ ì£¼ì†Œê°’ì„ ì½ì–´ì„œ segment faultê°€ ë°œìƒí• ìˆ˜ìˆìŒ.
-     * ê·¸ë˜ì„œ, ì•„ë˜ì™€ ê°™ì´ forë¬¸ì„ ì‚¬ìš©í•˜ì—¬ slotì„ í•˜ë‚˜ì”© ì´ë™í•˜ë„ë¡ ìˆ˜ì •í•˜ì˜€ìŒ.
+     * ±âÁ¸¿¡´Â index nodeÀÇ slot ÀÌµ¿½Ã memmove() ÇÔ¼ö¸¦ »ç¿ëÇÏ¿´´Âµ¥
+     * slot ÀÌµ¿Áß¿¡ pointer¸¦ ÂüÁ¶ÇÏ¸é ¿Ï¼ºµÇÁö ¾ÊÀº ÁÖ¼Ò°ªÀ» ÀĞ¾î¼­ segment fault°¡ ¹ß»ıÇÒ¼öÀÖÀ½.
+     * ±×·¡¼­, ¾Æ·¡¿Í °°ÀÌ for¹®À» »ç¿ëÇÏ¿© slotÀ» ÇÏ³ª¾¿ ÀÌµ¿ÇÏµµ·Ï ¼öÁ¤ÇÏ¿´À½.
      *
-     * direct keyì˜ ê²½ìš°ëŠ” ì£¼ì†Œê°’ì´ ì•„ë‹ˆë¯€ë¡œ, ë¬¸ì œê°€ ë˜ì§€ ì•ŠìŒ */
+     * direct keyÀÇ °æ¿ì´Â ÁÖ¼Ò°ªÀÌ ¾Æ´Ï¹Ç·Î, ¹®Á¦°¡ µÇÁö ¾ÊÀ½ */
 
     if ( aShift > 0 ) 
     {
@@ -1054,10 +1055,10 @@ inline void smnbBTree::shiftInternalSlots( smnbINode * aNode,
  * FUNCTION DESCRIPTION : smnbBTree::setLeafSlot                     *
  * ------------------------------------------------------------------*
  * PROJ-2433 Direct Key Index
- * LEAF NODEì˜ aIdxë²ˆì§¸ SLOTì—
- * row pointer, direct keyë¥¼ ì„¸íŒ…í•œë‹¤.
+ * LEAF NODEÀÇ aIdx¹øÂ° SLOT¿¡
+ * row pointer, direct key¸¦ ¼¼ÆÃÇÑ´Ù.
  *
- * - direct keyëŠ” memcpyê°€ ì´ë£¨ì–´ì§€ëŠ”ê²ƒì— ì£¼ì˜
+ * - direct key´Â memcpy°¡ ÀÌ·ç¾îÁö´Â°Í¿¡ ÁÖÀÇ
  *
  * aNode     - [IN]  LEAF NODE
  * aIdx      - [IN]  slot index
@@ -1098,8 +1099,8 @@ inline void smnbBTree::setLeafSlot( smnbLNode * aNode,
  * FUNCTION DESCRIPTION : smnbBTree::getLeafSlot                     *
  * ------------------------------------------------------------------*
  * PROJ-2433 Direct Key Index
- * LEAF NODEì˜ aIdxë²ˆì§¸ SLOTì˜
- * row pointer, direct key pointerë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+ * LEAF NODEÀÇ aIdx¹øÂ° SLOTÀÇ
+ * row pointer, direct key pointer¸¦ °¡Á®¿Â´Ù.
  *
  * aRowPtr   - [OUT] row pointer
  * aKey      - [OUT] direct key pointer
@@ -1128,7 +1129,7 @@ inline void smnbBTree::getLeafSlot( SChar       ** aRowPtr,
         }
         else
         {
-            *aKey = NULL; /* ê°’ì´ì„¤ì •ì•ˆë˜ì–´ìˆëŠ”ê²½ìš°NULLë°˜í™˜*/
+            *aKey = NULL; /* °ªÀÌ¼³Á¤¾ÈµÇ¾îÀÖ´Â°æ¿ìNULL¹İÈ¯*/
         }
     }
     else
@@ -1141,17 +1142,17 @@ inline void smnbBTree::getLeafSlot( SChar       ** aRowPtr,
  * FUNCTION DESCRIPTION : smnbBTree::copyLeafSlots                   *
  * ------------------------------------------------------------------*
  * PROJ-2433 Direct Key Index
- * LEAF NODE ë‚´ì˜ íŠ¹ì •ë²”ìœ„ì˜ slotë“¤ì„ ë‹¤ë¥¸ LEAF NODE ë¡œ ë³µì‚¬í•œë‹¤.
+ * LEAF NODE ³»ÀÇ Æ¯Á¤¹üÀ§ÀÇ slotµéÀ» ´Ù¸¥ LEAF NODE ·Î º¹»çÇÑ´Ù.
  *
- * - aSrcì˜ aSrcSTartIdxë¶€í„° aSrcEndIdxê¹Œì§€ì˜ slotë“¤ì„
- *   aDestì˜ aDestStartIdexë¡œ ë³µì‚¬í•œë‹¤.
- * - aSrc, aDestëŠ” ë‹¤ë¥¸ NODE ì´ì–´ì•¼ í•œë‹¤.
+ * - aSrcÀÇ aSrcSTartIdxºÎÅÍ aSrcEndIdx±îÁöÀÇ slotµéÀ»
+ *   aDestÀÇ aDestStartIdex·Î º¹»çÇÑ´Ù.
+ * - aSrc, aDest´Â ´Ù¸¥ NODE ÀÌ¾î¾ß ÇÑ´Ù.
  *
- * aDest         - [IN] ëŒ€ìƒ LEAF NODE
- * aDestStartIdx - [IN] ëŒ€ìƒ ì‹œì‘ slot index
- * aSrc          - [IN] ì›ë³¸ LEAF NODE
- * aSrcStartIdx  - [IN] ë³µì‚¬í•  ì‹œì‘ slot index
- * aSrcEndIdx    - [IN] ë³µì‚¬í•  ë§ˆì§€ë§‰ slot index
+ * aDest         - [IN] ´ë»ó LEAF NODE
+ * aDestStartIdx - [IN] ´ë»ó ½ÃÀÛ slot index
+ * aSrc          - [IN] ¿øº» LEAF NODE
+ * aSrcStartIdx  - [IN] º¹»çÇÒ ½ÃÀÛ slot index
+ * aSrcEndIdx    - [IN] º¹»çÇÒ ¸¶Áö¸· slot index
  *********************************************************************/
 inline void smnbBTree::copyLeafSlots( smnbLNode * aDest,
                                       SShort      aDestStartIdx,
@@ -1181,15 +1182,15 @@ inline void smnbBTree::copyLeafSlots( smnbLNode * aDest,
  * FUNCTION DESCRIPTION : smnbBTree::shiftLeafSlots                  *
  * ------------------------------------------------------------------*
  * PROJ-2433 Direct Key Index
- * LEAF NODE ë‚´ì—ì„œ íŠ¹ì •ë²”ìœ„ì˜ slotë“¤ì„ shift ì‹œí‚¨ë‹¤.
+ * LEAF NODE ³»¿¡¼­ Æ¯Á¤¹üÀ§ÀÇ slotµéÀ» shift ½ÃÅ²´Ù.
  *
- * - aShiftê°€ ì–‘ìˆ˜ì´ë©´ slotë“¤ì„ ì˜¤ë¥¸ìª½ìœ¼ë¡œ shift í•˜ê³ ,
- *   aShiftê°€ ìŒìˆ˜ì´ë©´ slotë“¤ì„ ì™¼ìª½ìœ¼ë¡œ shift í•œë‹¤.
+ * - aShift°¡ ¾ç¼öÀÌ¸é slotµéÀ» ¿À¸¥ÂÊÀ¸·Î shift ÇÏ°í,
+ *   aShift°¡ À½¼öÀÌ¸é slotµéÀ» ¿ŞÂÊÀ¸·Î shift ÇÑ´Ù.
  *
  * aNode      - [IN] LEAF NODE
- * aStartIdx  - [IN] shift ì‹œí‚¬ ì‹œì‘ slot index
- * aEndIdx    - [IN] shift ì‹œí‚¬ ë§ˆì§€ë§‰ slot index
- * aShift     - [IN] shiftê°’
+ * aStartIdx  - [IN] shift ½ÃÅ³ ½ÃÀÛ slot index
+ * aEndIdx    - [IN] shift ½ÃÅ³ ¸¶Áö¸· slot index
+ * aShift     - [IN] shift°ª
  *********************************************************************/
 inline void smnbBTree::shiftLeafSlots( smnbLNode * aNode,
                                        SShort      aStartIdx,
@@ -1201,11 +1202,11 @@ inline void smnbBTree::shiftLeafSlots( smnbLNode * aNode,
     IDE_DASSERT( aStartIdx <= aEndIdx );
 
     /* BUG-41787
-     * ê¸°ì¡´ì—ëŠ” index nodeì˜ slot ì´ë™ì‹œ memmove() í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ì˜€ëŠ”ë°
-     * slot ì´ë™ì¤‘ì— pointerë¥¼ ì°¸ì¡°í•˜ë©´ ì™„ì„±ë˜ì§€ ì•Šì€ ì£¼ì†Œê°’ì„ ì½ì–´ì„œ segment faultê°€ ë°œìƒí• ìˆ˜ìˆìŒ.
-     * ê·¸ë˜ì„œ, ì•„ë˜ì™€ ê°™ì´ forë¬¸ì„ ì‚¬ìš©í•˜ì—¬ slotì„ í•˜ë‚˜ì”© ì´ë™í•˜ë„ë¡ ìˆ˜ì •í•˜ì˜€ìŒ.
+     * ±âÁ¸¿¡´Â index nodeÀÇ slot ÀÌµ¿½Ã memmove() ÇÔ¼ö¸¦ »ç¿ëÇÏ¿´´Âµ¥
+     * slot ÀÌµ¿Áß¿¡ pointer¸¦ ÂüÁ¶ÇÏ¸é ¿Ï¼ºµÇÁö ¾ÊÀº ÁÖ¼Ò°ªÀ» ÀĞ¾î¼­ segment fault°¡ ¹ß»ıÇÒ¼öÀÖÀ½.
+     * ±×·¡¼­, ¾Æ·¡¿Í °°ÀÌ for¹®À» »ç¿ëÇÏ¿© slotÀ» ÇÏ³ª¾¿ ÀÌµ¿ÇÏµµ·Ï ¼öÁ¤ÇÏ¿´À½.
      *
-     * direct keyì˜ ê²½ìš°ëŠ” ì£¼ì†Œê°’ì´ ì•„ë‹ˆë¯€ë¡œ, ë¬¸ì œê°€ ë˜ì§€ ì•ŠìŒ */
+     * direct keyÀÇ °æ¿ì´Â ÁÖ¼Ò°ªÀÌ ¾Æ´Ï¹Ç·Î, ¹®Á¦°¡ µÇÁö ¾ÊÀ½ */
 
     if ( aShift > 0 ) 
     {
@@ -1262,18 +1263,18 @@ inline UInt smnbBTree::getNodeSplitRate()
  * FUNCTION DESCRIPTION : smnbBTree::calcKeyRedistributionPosition   *
  * ------------------------------------------------------------------*
  * PROJ-2613 Key Redistribution in MRDB Index
- * í‚¤ ì¬ë¶„ë°°ê°€ ìˆ˜í–‰ë ì§€ ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
- * ìˆ˜í–‰ ì—¬ë¶€ë¥¼ íŒë‹¨í•˜ëŠ” ê¸°ì¤€ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
- *  1. MEM_INDEX_KEY_REDISTRIBUTIONì´ ì¼œì ¸ìˆìŒ(1)
- *  2. í•´ë‹¹ ì¸ë±ìŠ¤ê°€ í‚¤ ì¬ë¶„ë°° ê¸°ëŠ¥ì„ ì‚¬ìš©í•˜ë„ë¡ ì„¸íŒ…ë˜ì–´ ìˆìŒ
- *  3. í‚¤ ì¬ë¶„ë°°ê°€ ìˆ˜í–‰í•  ë…¸ë“œì˜ ì´ì›ƒ ë…¸ë“œê°€ ì¡´ì¬
- *  4. ì´ì›ƒ ë…¸ë“œê°€ í‚¤ ì¬ë¶„ë°°ê°€ ìˆ˜í–‰í•  ë…¸ë“œì™€ ë¶€ëª¨ ë…¸ë“œê°€ ê°™ìŒ
- *  5. ì´ì›ƒ ë…¸ë“œì˜ ë¹ˆ slotì´ ì¶©ë¶„íˆ ì¡´ì¬
- * ìœ„ì˜ ë‹¤ì„¯ê°€ì§€ ì¡°ê±´ì„ ëª¨ë‘ ë§Œì¡±í•  ê²½ìš°ì—ë§Œ í‚¤ ì¬ë¶„ë°°ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ * Å° ÀçºĞ¹è°¡ ¼öÇàµÉÁö ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
+ * ¼öÇà ¿©ºÎ¸¦ ÆÇ´ÜÇÏ´Â ±âÁØÀº ´ÙÀ½°ú °°´Ù.
+ *  1. MEM_INDEX_KEY_REDISTRIBUTIONÀÌ ÄÑÁ®ÀÖÀ½(1)
+ *  2. ÇØ´ç ÀÎµ¦½º°¡ Å° ÀçºĞ¹è ±â´ÉÀ» »ç¿ëÇÏµµ·Ï ¼¼ÆÃµÇ¾î ÀÖÀ½
+ *  3. Å° ÀçºĞ¹è°¡ ¼öÇàÇÒ ³ëµåÀÇ ÀÌ¿ô ³ëµå°¡ Á¸Àç
+ *  4. ÀÌ¿ô ³ëµå°¡ Å° ÀçºĞ¹è°¡ ¼öÇàÇÒ ³ëµå¿Í ºÎ¸ğ ³ëµå°¡ °°À½
+ *  5. ÀÌ¿ô ³ëµåÀÇ ºó slotÀÌ ÃæºĞÈ÷ Á¸Àç
+ * À§ÀÇ ´Ù¼¸°¡Áö Á¶°ÇÀ» ¸ğµÎ ¸¸Á·ÇÒ °æ¿ì¿¡¸¸ Å° ÀçºĞ¹è¸¦ ¼öÇàÇÑ´Ù.
  *
  * aIndex    - [IN] Index Header
- * aLNode    - [IN] í‚¤ ì¬ë¶„ë°°ë¥¼ ìˆ˜í–‰í• ì§€ íŒë‹¨í•´ì•¼ í•˜ëŠ” leaf node
- * aINode    - [IN] í‚¤ ì¬ë¶„ë°°ë¥¼ ìˆ˜í–‰í•  leaf nodeì˜ ë¶€ëª¨ ë…¸ë“œ
+ * aLNode    - [IN] Å° ÀçºĞ¹è¸¦ ¼öÇàÇÒÁö ÆÇ´ÜÇØ¾ß ÇÏ´Â leaf node
+ * aINode    - [IN] Å° ÀçºĞ¹è¸¦ ¼öÇàÇÒ leaf nodeÀÇ ºÎ¸ğ ³ëµå
  *********************************************************************/
 inline idBool smnbBTree::checkEnableKeyRedistribution( smnbHeader      * aIndex,
                                                        const smnbLNode * aLNode,
@@ -1289,8 +1290,8 @@ inline idBool smnbBTree::checkEnableKeyRedistribution( smnbHeader      * aIndex,
             {
                 if ( aLNode->nextSPtr != NULL )
                 {
-                    /* ì´ì›ƒ ë…¸ë“œì— ì¶©ë¶„í•œ ê³µê°„ì´ ìˆëŠ”ì§€ íŒë‹¨í•˜ëŠ” ê¸°ì¤€ì€
-                     * MEM_INDEX_KEY_REDISTRIBUTION_STANDARD_RATE í”„ë¡œí¼í‹°ë¥¼ ì‚¬ìš©í•œë‹¤. */
+                    /* ÀÌ¿ô ³ëµå¿¡ ÃæºĞÇÑ °ø°£ÀÌ ÀÖ´ÂÁö ÆÇ´ÜÇÏ´Â ±âÁØÀº
+                     * MEM_INDEX_KEY_REDISTRIBUTION_STANDARD_RATE ÇÁ·ÎÆÛÆ¼¸¦ »ç¿ëÇÑ´Ù. */
                     if ( ( aLNode->nextSPtr->mSlotCount ) <
                          ( ( SMNB_LEAF_SLOT_MAX_COUNT( aIndex ) *
                              smuProperty::getMemIndexKeyRedistributionStandardRate() / 100 ) ) )
@@ -1299,28 +1300,28 @@ inline idBool smnbBTree::checkEnableKeyRedistribution( smnbHeader      * aIndex,
                     }
                     else
                     {
-                        /* ì´ì›ƒ ë…¸ë“œì— ì¶©ë¶„í•œ ê³µê°„ì´ ì—†ëŠ” ê²½ìš° í‚¤ ì¬ë¶„ë°°ë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+                        /* ÀÌ¿ô ³ëµå¿¡ ÃæºĞÇÑ °ø°£ÀÌ ¾ø´Â °æ¿ì Å° ÀçºĞ¹è¸¦ ¼öÇàÇÏÁö ¾Ê´Â´Ù. */
                     }
                 }
                 else
                 {
-                    /* ì´ì›ƒ ë…¸ë“œê°€ ì—†ëŠ” ê²½ìš°ëŠ” í‚¤ ì¬ë¶„ë°°ë¥¼ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤. */
+                    /* ÀÌ¿ô ³ëµå°¡ ¾ø´Â °æ¿ì´Â Å° ÀçºĞ¹è¸¦ ¼öÇàÇÒ ¼ö ¾ø´Ù. */
                 }
             }
             else
             {
-                /* í•´ë‹¹ ë…¸ë“œê°€ ë¶€ëª¨ë…¸ë“œì˜ ë§ˆì§€ë§‰ ìì‹ì¼ ê²½ìš°ì—ëŠ” í‚¤ ì¬ë¶„ë°°ë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+                /* ÇØ´ç ³ëµå°¡ ºÎ¸ğ³ëµåÀÇ ¸¶Áö¸· ÀÚ½ÄÀÏ °æ¿ì¿¡´Â Å° ÀçºĞ¹è¸¦ ¼öÇàÇÏÁö ¾Ê´Â´Ù. */
             }
         }
         else
         {
-            /* í”„ë¡œí¼í‹°ê°€ êº¼ì ¸ ìˆë‹¤ë©´ í‚¤ ì¬ë¶„ë°°ë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+            /* ÇÁ·ÎÆÛÆ¼°¡ ²¨Á® ÀÖ´Ù¸é Å° ÀçºĞ¹è¸¦ ¼öÇàÇÏÁö ¾Ê´Â´Ù. */
         }
     }
     else
     {
-        /* ë£¨íŠ¸ ë…¸ë“œì— ê°’ì´ ì‚½ì… ë  ê²½ìš° í•´ë‹¹ ë…¸ë“œì˜ ë¶€ëª¨ ë…¸ë“œê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
-         * ì´ ê²½ìš°ëŠ” ì´ì›ƒ ë…¸ë“œë„ ì—†ê¸° ë•Œë¬¸ì— í‚¤ ì¬ë¶„ë°°ë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+        /* ·çÆ® ³ëµå¿¡ °ªÀÌ »ğÀÔ µÉ °æ¿ì ÇØ´ç ³ëµåÀÇ ºÎ¸ğ ³ëµå°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
+         * ÀÌ °æ¿ì´Â ÀÌ¿ô ³ëµåµµ ¾ø±â ¶§¹®¿¡ Å° ÀçºĞ¹è¸¦ ¼öÇàÇÏÁö ¾Ê´Â´Ù. */
     }
     return sRet;
 }
@@ -1329,13 +1330,13 @@ inline idBool smnbBTree::checkEnableKeyRedistribution( smnbHeader      * aIndex,
  * FUNCTION DESCRIPTION : smnbBTree::calcKeyRedistributionPosition   *
  * ------------------------------------------------------------------*
  * PROJ-2613 Key Redistribution in MRDB Index
- * í•´ë‹¹ ë…¸ë“œ ë‚´ í‚¤ ì¬ë¶„ë°°ê°€ ì‹œì‘ë  ìœ„ì¹˜ë¥¼ ê³„ì‚°í•œë‹¤.
- * ì›ë˜ ì´ì›ƒ ë…¸ë“œë¡œ ì´ë™ì´ ì‹œì‘ë  ìœ„ì¹˜ë¥¼ ê³„ì‚°í›„ ë¦¬í„´í•´ì•¼ í•˜ë‚˜
- * ì½”ë“œì˜ ê°„í¸ì„±ì„ ìœ„í•´ ì´ë™ì´ ì‹œì‘ë  ìœ„ì¹˜ê°€ ì•„ë‹Œ, ì´ë™ ì‹œí‚¬ slotì˜ ìˆ˜ë¥¼ ë¦¬í„´í•˜ë„ë¡ í•œë‹¤.
+ * ÇØ´ç ³ëµå ³» Å° ÀçºĞ¹è°¡ ½ÃÀÛµÉ À§Ä¡¸¦ °è»êÇÑ´Ù.
+ * ¿ø·¡ ÀÌ¿ô ³ëµå·Î ÀÌµ¿ÀÌ ½ÃÀÛµÉ À§Ä¡¸¦ °è»êÈÄ ¸®ÅÏÇØ¾ß ÇÏ³ª
+ * ÄÚµåÀÇ °£Æí¼ºÀ» À§ÇØ ÀÌµ¿ÀÌ ½ÃÀÛµÉ À§Ä¡°¡ ¾Æ´Ñ, ÀÌµ¿ ½ÃÅ³ slotÀÇ ¼ö¸¦ ¸®ÅÏÇÏµµ·Ï ÇÑ´Ù.
  *
  * aIndex         - [IN] Index Header
- * aCurSlotCount  - [IN] í‚¤ ì¬ë¶„ë°°ê°€ ìˆ˜í–‰ë  ë…¸ë“œ(src node)ì˜ slot count
- * aNxtSlotCount  - [IN] í‚¤ ì¬ë¶„ë°°ë¡œ ì´ë™ë  ë…¸ë“œ(dest node)ì˜ slot count
+ * aCurSlotCount  - [IN] Å° ÀçºĞ¹è°¡ ¼öÇàµÉ ³ëµå(src node)ÀÇ slot count
+ * aNxtSlotCount  - [IN] Å° ÀçºĞ¹è·Î ÀÌµ¿µÉ ³ëµå(dest node)ÀÇ slot count
  *********************************************************************/
 inline SInt smnbBTree::calcKeyRedistributionPosition( smnbHeader    * aIndex,
                                                       SInt            aCurSlotCount,
@@ -1352,11 +1353,11 @@ inline SInt smnbBTree::calcKeyRedistributionPosition( smnbHeader    * aIndex,
  * FUNCTION DESCRIPTION : smnbBTree::checkEnableReorgInNode          *
  * ------------------------------------------------------------------*
  * PROJ-2614 Memory Index Reorganization
- * ë‘ ë…¸ë“œê°„ í†µí•© ê°€ëŠ¥ ì—¬ë¶€ë¥¼ í™•ì¸í•˜ì—¬ ë¦¬í„´í•œë‹¤.
+ * µÎ ³ëµå°£ ÅëÇÕ °¡´É ¿©ºÎ¸¦ È®ÀÎÇÏ¿© ¸®ÅÏÇÑ´Ù.
  *
- * aLNode         - [IN] í†µí•© ê°€ëŠ¥ì„ í™•ì¸í•˜ê¸° ìœ„í•œ leaf node
- * aINode         - [IN] í†µí•© ëŒ€ìƒ leaf nodeì˜ ë¶€ëª¨ë…¸ë“œ
- * aSlotMaxCount  - [IN] ë…¸ë“œê°€ ìµœëŒ€ ê°€ì§ˆìˆ˜ ìˆëŠ” slotì˜ ìˆ˜
+ * aLNode         - [IN] ÅëÇÕ °¡´ÉÀ» È®ÀÎÇÏ±â À§ÇÑ leaf node
+ * aINode         - [IN] ÅëÇÕ ´ë»ó leaf nodeÀÇ ºÎ¸ğ³ëµå
+ * aSlotMaxCount  - [IN] ³ëµå°¡ ÃÖ´ë °¡Áú¼ö ÀÖ´Â slotÀÇ ¼ö
  *********************************************************************/
 inline idBool smnbBTree::checkEnableReorgInNode( smnbLNode * aLNode,
                                                  smnbINode * aINode,
@@ -1381,25 +1382,25 @@ inline idBool smnbBTree::checkEnableReorgInNode( smnbLNode * aLNode,
                 }
                 else
                 {
-                    /* ë‘ ë…¸ë“œë¥¼ í•©ì³¤ì„ ë•Œ í•˜ë‚˜ì˜ ë…¸ë“œì— ë“¤ì–´ê°€ì§€ ì•ŠëŠ”ë‹¤ë©´
-                     * í†µí•©ì„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤. */
+                    /* µÎ ³ëµå¸¦ ÇÕÃÆÀ» ¶§ ÇÏ³ªÀÇ ³ëµå¿¡ µé¾î°¡Áö ¾Ê´Â´Ù¸é
+                     * ÅëÇÕÀ» ¼öÇàÇÒ ¼ö ¾ø´Ù. */
                 }
             }
             else
             {
-                /* í˜„ì¬ ë…¸ë“œê°€ ë¶€ëª¨ ë…¸ë“œì˜ ë§ˆì§€ë§‰ ìì‹ì´ë¼ë©´ ë‹¤ìŒ ë…¸ë“œì™€
-                 * ë¶€ëª¨ê°€ ë‹¤ë¥´ë¯€ë¡œ í†µí•©ì„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤. */
+                /* ÇöÀç ³ëµå°¡ ºÎ¸ğ ³ëµåÀÇ ¸¶Áö¸· ÀÚ½ÄÀÌ¶ó¸é ´ÙÀ½ ³ëµå¿Í
+                 * ºÎ¸ğ°¡ ´Ù¸£¹Ç·Î ÅëÇÕÀ» ¼öÇàÇÒ ¼ö ¾ø´Ù. */
             }
         }
         else
         {
-            /* fetchNextê°€ íŠ¸ë¦¬ì˜ ë§ˆì§€ë§‰ ë…¸ë“œì—ì„œ ëŒ€ê¸° ì¤‘ì¼ ê²½ìš° ë¬¸ì œê°€ ë°œìƒí•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
-             * íŠ¸ë¦¬ì˜ ë§ˆì§€ë§‰ ë…¸ë“œì— ëŒ€í•´ì„œëŠ” í†µí•©ì„ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.*/
+            /* fetchNext°¡ Æ®¸®ÀÇ ¸¶Áö¸· ³ëµå¿¡¼­ ´ë±â ÁßÀÏ °æ¿ì ¹®Á¦°¡ ¹ß»ıÇÒ ¼ö ÀÖÀ¸¹Ç·Î
+             * Æ®¸®ÀÇ ¸¶Áö¸· ³ëµå¿¡ ´ëÇØ¼­´Â ÅëÇÕÀ» ¼öÇàÇÏÁö ¾Ê´Â´Ù.*/
         }
     }
     else
     {
-        /* ì´í›„ ë…¸ë“œê°€ ì—†ê±°ë‚˜ íŠ¸ë¦¬ì˜ ë§ˆì§€ë§‰ ë…¸ë“œë¼ë©´ í†µí•©ì„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤. */
+        /* ÀÌÈÄ ³ëµå°¡ ¾ø°Å³ª Æ®¸®ÀÇ ¸¶Áö¸· ³ëµå¶ó¸é ÅëÇÕÀ» ¼öÇàÇÒ ¼ö ¾ø´Ù. */
     }
     IDE_EXCEPTION_END;
 

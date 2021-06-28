@@ -40,7 +40,9 @@ class svcLob
 public:
     static IDE_RC open();
     
-    static IDE_RC close();
+    static IDE_RC close( idvSQL*        aStatistics,
+                         void         * aTrans,
+                         smLobViewEnv * aLobViewEnv );
     
     static IDE_RC read(idvSQL*       aStatistics,
                        void*         aTrans,
@@ -243,10 +245,10 @@ private:
 };
 
 /**********************************************************************
- * aLobDescì—ì„œ aOffsetì— í•´ë‹¹í•˜ëŠ” PCHë¥¼ ì°¾ëŠ”ë‹¤.
+ * aLobDesc¿¡¼­ aOffset¿¡ ÇØ´çÇÏ´Â PCH¸¦ Ã£´Â´Ù.
  *
  * aLobDesc      [IN] LOB Descriptor
- * aOffset       [IN] ì°¾ê³ ìí•˜ëŠ” ìœ„ì¹˜
+ * aOffset       [IN] Ã£°íÀÚÇÏ´Â À§Ä¡
  **********************************************************************/
 inline smcLPCH* svcLob::findPosition( smcLobDesc* aLobDesc,
                                       UInt        aOffset )

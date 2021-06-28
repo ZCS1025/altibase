@@ -56,7 +56,6 @@
  * - checkConnect.cpp
  * - checkIPC.cpp
  * - checkIPC2.cpp
- * - crackPurify.cpp
  * - checkCond.cpp
  * - checkEnv.cpp
  * - checkType.cpp

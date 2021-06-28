@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfHex_To_Num.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfHex_To_Num.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -43,7 +43,7 @@ static IDE_RC mtfHex_To_NumEstimate( mtcNode*     aNode,
 mtfModule mtfHex_To_Num = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfHex_To_NumFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -134,8 +134,8 @@ IDE_RC mtfHex_To_NumCalculate( mtcNode*     aNode,
  * Implementation :
  *    HEX_TO_NUM ( char )
  *
- *    aStack[0] : ì£¼ì–´ì§„ 16ì§„ìˆ˜ í˜•íƒœì˜ charë¥¼ 10ì§„ìˆ˜ë¡œ ë³€í™˜í•œ ê°’
- *    aStack[1] : char (ë¬¸ìžëŠ” 8ê°œê¹Œì§€ ì˜¬ ìˆ˜ ìžˆë‹¤.) 
+ *    aStack[0] : ÁÖ¾îÁø 16Áø¼ö ÇüÅÂÀÇ char¸¦ 10Áø¼ö·Î º¯È¯ÇÑ °ª
+ *    aStack[1] : char (¹®ÀÚ´Â 8°³±îÁö ¿Ã ¼ö ÀÖ´Ù.) 
  *
  *    ex) HEX_TO_NUM ('AF8D') ==> 44941
  *

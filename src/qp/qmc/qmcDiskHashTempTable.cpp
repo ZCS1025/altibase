@@ -16,14 +16,14 @@
  
 
 /***********************************************************************
- * $Id: qmcDiskHashTempTable.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmcDiskHashTempTable.cpp 85333 2019-04-26 02:34:41Z et16 $
  *
  * Description :
  *     Disk Hash Temp Table
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -53,17 +53,17 @@ qmcDiskHash::init( qmcdDiskHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Disk Temp Tableì„ ì´ˆê¸°í™”í•œë‹¤.
+ *    Disk Temp TableÀ» ÃÊ±âÈ­ÇÑ´Ù.
  *
  * Implementation :
- *    - Disk Temp Tableì˜ ê¸°ë³¸ ìë£Œ ì´ˆê¸°í™”
- *    - Record êµ¬ì„± ì •ë³´ì˜ ì´ˆê¸°í™”
- *    - Hashing êµ¬ì„± ì •ë³´ì˜ ì´ˆê¸°í™”
- *    - ê²€ìƒ‰ì„ ìœ„í•œ ìë£Œ êµ¬ì¡°ì˜ ì´ˆê¸°í™”
- *    - Aggregationì„ ìœ„í•œ ìë£Œ êµ¬ì¡°ì˜ ì´ˆê¸°í™”
- *    - Temp Tableì˜ ìƒì„±
- *    - Indexì˜ ìƒì„±
- *    - Insert Cursorì˜ Open
+ *    - Disk Temp TableÀÇ ±âº» ÀÚ·á ÃÊ±âÈ­
+ *    - Record ±¸¼º Á¤º¸ÀÇ ÃÊ±âÈ­
+ *    - Hashing ±¸¼º Á¤º¸ÀÇ ÃÊ±âÈ­
+ *    - °Ë»öÀ» À§ÇÑ ÀÚ·á ±¸Á¶ÀÇ ÃÊ±âÈ­
+ *    - AggregationÀ» À§ÇÑ ÀÚ·á ±¸Á¶ÀÇ ÃÊ±âÈ­
+ *    - Temp TableÀÇ »ı¼º
+ *    - IndexÀÇ »ı¼º
+ *    - Insert CursorÀÇ Open
  *
  ***********************************************************************/
 
@@ -71,27 +71,27 @@ qmcDiskHash::init( qmcdDiskHashTemp * aTempTable,
     qmdMtrNode * sNode;
     qmdMtrNode * sAggrNode;
     
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     IDE_DASSERT( aTempTable != NULL );
     IDE_DASSERT( aTemplate != NULL );
     IDE_DASSERT( aRecordNode != NULL );
     IDE_DASSERT( aHashNode != NULL );
 
     //----------------------------------------------------------------
-    // Disk Temp Table ë©¤ë²„ì˜ ì´ˆê¸°í™”
+    // Disk Temp Table ¸â¹öÀÇ ÃÊ±âÈ­
     //----------------------------------------------------------------
 
     aTempTable->flag = QMCD_DISK_HASH_TEMP_INITIALIZE;
 
     if ( aDistinct == ID_TRUE )
     {
-        // Distinct Insertionì¸ ê²½ìš°
+        // Distinct InsertionÀÎ °æ¿ì
         aTempTable->flag &= ~QMCD_DISK_HASH_INSERT_DISTINCT_MASK;
         aTempTable->flag |= QMCD_DISK_HASH_INSERT_DISTINCT_TRUE;
     }
     else
     {
-        // Non-Distinct Insertionì¸ ê²½ìš°
+        // Non-Distinct InsertionÀÎ °æ¿ì
         aTempTable->flag &= ~QMCD_DISK_HASH_INSERT_DISTINCT_MASK;
         aTempTable->flag |= QMCD_DISK_HASH_INSERT_DISTINCT_FALSE;
     }
@@ -102,14 +102,14 @@ qmcDiskHash::init( qmcdDiskHashTemp * aTempTable,
     tempSizeEstimate( aTempTable, aBucketCnt, aMtrRowSize );
 
     //-----------------------------------------
-    // Record êµ¬ì„± ì •ë³´ì˜ ì´ˆê¸°í™”
+    // Record ±¸¼º Á¤º¸ÀÇ ÃÊ±âÈ­
     //-----------------------------------------
     aTempTable->recordNode = aRecordNode;
 
-    // [Record Column ê°œìˆ˜ì˜ ê²°ì •]
-    // Record Nodeì˜ ê°œìˆ˜ë¡œ íŒë‹¨í•˜ì§€ ì•Šê³ ,
-    // Tuple Setì˜ ì •ë³´ë¡œë¶€í„° Column ê°œìˆ˜ë¥¼ íŒë‹¨í•œë‹¤.
-    // ì´ëŠ” í•˜ë‚˜ì˜ Record Nodeê°€ ì—¬ëŸ¬ ê°œì˜ Columnìœ¼ë¡œ êµ¬ì„±ë  ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤.
+    // [Record Column °³¼öÀÇ °áÁ¤]
+    // Record NodeÀÇ °³¼ö·Î ÆÇ´ÜÇÏÁö ¾Ê°í,
+    // Tuple SetÀÇ Á¤º¸·ÎºÎÅÍ Column °³¼ö¸¦ ÆÇ´ÜÇÑ´Ù.
+    // ÀÌ´Â ÇÏ³ªÀÇ Record Node°¡ ¿©·¯ °³ÀÇ ColumnÀ¸·Î ±¸¼ºµÉ ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù.
 
     IDE_DASSERT( aRecordNode->dstTuple->columnCount > 0 );
     aTempTable->recordColumnCnt = aRecordNode->dstTuple->columnCount;
@@ -118,14 +118,14 @@ qmcDiskHash::init( qmcdDiskHashTemp * aTempTable,
     aTempTable->insertValue = NULL;
 
     //---------------------------------------
-    // Hashing ì„ ìœ„í•œ ìë£Œ êµ¬ì¡°ì˜ ì´ˆê¸°í™”
+    // Hashing À» À§ÇÑ ÀÚ·á ±¸Á¶ÀÇ ÃÊ±âÈ­
     //---------------------------------------
     aTempTable->hashNode = aHashNode;
 
-    // [Hash Column ê°œìˆ˜ì˜ ê²°ì •]
-    // Record Columnê³¼ ë‹¬ë¦¬ Hash Node ì •ë³´ë¡œë¶€í„° Column ê°œìˆ˜ë¥¼ íŒë‹¨í•œë‹¤.
-    // í•˜ë‚˜ì˜ Nodeê°€ ì—¬ëŸ¬ ê°œì˜ Columnìœ¼ë¡œ êµ¬ì„±ëœë‹¤ í•˜ë”ë¼ë„
-    // Hashing ëŒ€ìƒì´ ë˜ëŠ” Columnì€ í•˜ë‚˜ì´ê¸° ë•Œë¬¸ì´ë‹¤.
+    // [Hash Column °³¼öÀÇ °áÁ¤]
+    // Record Column°ú ´Ş¸® Hash Node Á¤º¸·ÎºÎÅÍ Column °³¼ö¸¦ ÆÇ´ÜÇÑ´Ù.
+    // ÇÏ³ªÀÇ Node°¡ ¿©·¯ °³ÀÇ ColumnÀ¸·Î ±¸¼ºµÈ´Ù ÇÏ´õ¶óµµ
+    // Hashing ´ë»óÀÌ µÇ´Â ColumnÀº ÇÏ³ªÀÌ±â ¶§¹®ÀÌ´Ù.
     for ( i = 0, sNode = aTempTable->hashNode;
           sNode != NULL;
           sNode = sNode->next, i++ ) ;
@@ -135,7 +135,7 @@ qmcDiskHash::init( qmcdDiskHashTemp * aTempTable,
     aTempTable->hashKeyColumn = NULL;
 
     //---------------------------------------
-    // ê²€ìƒ‰ì„ ìœ„í•œ ìë£Œ êµ¬ì¡°ì˜ ì´ˆê¸°í™”
+    // °Ë»öÀ» À§ÇÑ ÀÚ·á ±¸Á¶ÀÇ ÃÊ±âÈ­
     //---------------------------------------
     aTempTable->searchCursor    = NULL;
     aTempTable->groupCursor     = NULL;
@@ -146,26 +146,26 @@ qmcDiskHash::init( qmcdDiskHashTemp * aTempTable,
     aTempTable->hashFilter = NULL;
 
     //---------------------------------------
-    // Aggregationì„ ìœ„í•œ ìë£Œ êµ¬ì¡°ì˜ ì´ˆê¸°í™”
+    // AggregationÀ» À§ÇÑ ÀÚ·á ±¸Á¶ÀÇ ÃÊ±âÈ­
     //---------------------------------------
 
-    // [Aggr Column ê°œìˆ˜ì˜ ê²°ì •]
-    // Aggr Columnì€ í•˜ë‚˜ì˜ Nodeê°€ ì—¬ëŸ¬ ê°œì˜ Columnìœ¼ë¡œ êµ¬ì„±ë˜ë©°
-    // ëª¨ë“  Columnì´ UPDATE ëŒ€ìƒì´ ëœë‹¤.  ë”°ë¼ì„œ, ëª¨ë“  Column
-    // ê°œìˆ˜ë¥¼ ê³„ì‚°í•˜ì—¬ì•¼ í•œë‹¤.
+    // [Aggr Column °³¼öÀÇ °áÁ¤]
+    // Aggr ColumnÀº ÇÏ³ªÀÇ Node°¡ ¿©·¯ °³ÀÇ ColumnÀ¸·Î ±¸¼ºµÇ¸ç
+    // ¸ğµç ColumnÀÌ UPDATE ´ë»óÀÌ µÈ´Ù.  µû¶ó¼­, ¸ğµç Column
+    // °³¼ö¸¦ °è»êÇÏ¿©¾ß ÇÑ´Ù.
     aTempTable->aggrNode = aAggrNode;
     for ( i = 0, sAggrNode = aTempTable->aggrNode;
           sAggrNode != NULL;
           sAggrNode = sAggrNode->next )
     {
         // To Fix PR-7994, PR-8415
-        // Source Nodeë¥¼ ì´ìš©í•˜ì—¬ Column Countë¥¼ íšë“
+        // Source Node¸¦ ÀÌ¿ëÇÏ¿© Column Count¸¦ È¹µæ
 
         // To Fix PR-12093
-        // Destine Nodeë¥¼ ì‚¬ìš©í•˜ì—¬ mtcColumnì˜ Countë¥¼ êµ¬í•˜ëŠ” ê²ƒì´ ì›ì¹™ì— ë§ìŒ
-        // ì‚¬ìš©í•˜ì§€ë„ ì•Šì„ mtcColumn ì •ë³´ë¥¼ ìœ ì§€í•˜ëŠ” ê²ƒì€ ë¶ˆí•©ë¦¬í•¨.
-        //     - Memory ê³µê°„ ë‚­ë¹„
-        //     - offset ì¡°ì • ì˜¤ë¥˜ (PR-12093)
+        // Destine Node¸¦ »ç¿ëÇÏ¿© mtcColumnÀÇ Count¸¦ ±¸ÇÏ´Â °ÍÀÌ ¿øÄ¢¿¡ ¸ÂÀ½
+        // »ç¿ëÇÏÁöµµ ¾ÊÀ» mtcColumn Á¤º¸¸¦ À¯ÁöÇÏ´Â °ÍÀº ºÒÇÕ¸®ÇÔ.
+        //     - Memory °ø°£ ³¶ºñ
+        //     - offset Á¶Á¤ ¿À·ù (PR-12093)
         i += ( sAggrNode->dstNode->node.module->lflag
                & MTC_NODE_COLUMN_COUNT_MASK);
     }
@@ -174,7 +174,7 @@ qmcDiskHash::init( qmcdDiskHashTemp * aTempTable,
     aTempTable->aggrValue = NULL;
 
     //----------------------------------------------------------------
-    // Disk Temp Table ì˜ ìƒì„±
+    // Disk Temp Table ÀÇ »ı¼º
     //----------------------------------------------------------------
     IDE_TEST( createTempTable( aTempTable ) != IDE_SUCCESS );
 
@@ -196,27 +196,19 @@ void  qmcDiskHash::tempSizeEstimate( qmcdDiskHashTemp * aTempTable,
                                      UInt               aMtrRowSize )
 {
     ULong        sTempSize;
-    ULong        sWAMapSize;
 
-    // BUG-43443 temp tableì— ëŒ€í•´ì„œ work area sizeë¥¼ estimateí•˜ëŠ” ê¸°ëŠ¥ì„ off
+    // BUG-43443 temp table¿¡ ´ëÇØ¼­ work area size¸¦ estimateÇÏ´Â ±â´ÉÀ» off
     if ( QCU_DISK_TEMP_SIZE_ESTIMATE == 1 )
     {
-        // WAMap size = ìŠ¬ë¡¯ ê°¯ìˆ˜ * ìŠ¬ë¡¯ ì‚¬ì´ì¦ˆ
-        sWAMapSize = ( smuProperty::getTempMaxPageCount() / SMI_WAEXTENT_PAGECOUNT )
-                        * SMI_WAMAP_SLOT_MAX_SIZE;
-
-        // sdtUniqueHashModule::destroy( void * aHeader ) ë¥¼ ì°¸ì¡°í•¨
+        // sdtUniqueHashModule::destroy( void * aHeader ) ¸¦ ÂüÁ¶ÇÔ
         sTempSize = (ULong)(SMI_TR_HEADER_SIZE_FULL + aMtrRowSize) * aBucketCnt * 4;
 
         sTempSize = (ULong)(sTempSize
-                        * 100.0 / (100.0 - smuProperty::getTempHashGroupRatio())
-                        * 1.2);
+                            * 100.0 / (100.0 - ( smuProperty::getTempHashGroupRatio() +
+                                                 smuProperty::getTempSubHashGroupRatio() )
+                                       * 1.2));
 
-        sTempSize = sWAMapSize + sTempSize;
-
-        sTempSize = IDL_MIN( sTempSize, smuProperty::getHashAreaSize());
-
-        aTempTable->mTempTableSize = sTempSize;
+        aTempTable->mTempTableSize = IDL_MIN( sTempSize, smuProperty::getHashAreaSize());
     }
     else
     {
@@ -231,26 +223,23 @@ qmcDiskHash::clear( qmcdDiskHashTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    í•´ë‹¹ Temp Tableì„ Truncateí•œë‹¤.
+ *    ÇØ´ç Temp TableÀ» TruncateÇÑ´Ù.
  *
  * Implementation :
- *    ì—´ë ¤ ìˆëŠ” ì»¤ì„œë¥¼ ëª¨ë‘ ë‹«ê³ , Tableì„ Truncateí•œë‹¤.
+ *    ¿­·Á ÀÖ´Â Ä¿¼­¸¦ ¸ğµÎ ´İ°í, TableÀ» TruncateÇÑ´Ù.
  *
  ***********************************************************************/
 
-    /* ì—´ë ¤ìˆëŠ” ì»¤ì„œëŠ” ë‹«ìŒ */
-    IDE_TEST( smiTempTable::closeAllCursor( aTempTable->tableHandle )
+    //-----------------------------
+    // Temp TableÀ» TruncateÇÑ´Ù.
+    //-----------------------------
+    IDE_TEST( smiHashTempTable::clear( aTempTable->tableHandle )
               != IDE_SUCCESS );
+
     aTempTable->searchCursor    = NULL;
     aTempTable->groupCursor     = NULL;
     aTempTable->groupFiniCursor = NULL;
     aTempTable->hitFlagCursor   = NULL;
-
-    //-----------------------------
-    // Temp Tableì„ Truncateí•œë‹¤.
-    //-----------------------------
-    IDE_TEST( smiTempTable::clear( aTempTable->tableHandle )
-              != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -268,20 +257,22 @@ qmcDiskHash::clearHitFlag( qmcdDiskHashTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    Temp Tableë‚´ì— ì¡´ì¬í•˜ëŠ” ëª¨ë“  Recordì˜ Hit Flagì„ ì´ˆê¸°í™”í•œë‹¤.
+ *    Temp Table³»¿¡ Á¸ÀçÇÏ´Â ¸ğµç RecordÀÇ Hit FlagÀ» ÃÊ±âÈ­ÇÑ´Ù.
  *
  * Implementation :
  *    PROJ-2201 Innovation in sorting and hashing(temp)
- *    HitFlagëŠ” ê° Rowì— ì„¤ì •ëœ HitSequenceê°’ìœ¼ë¡œ, Headerì˜ HitSequenceê°’ê³¼
- *    ê°™ìœ¼ë©´ Hitëœ ê²ƒìœ¼ë¡œ íŒë‹¨í•œë‹¤.
- *    ë”°ë¼ì„œ Headerì˜ HitSequenceë¥¼ 1 ì˜¬ë ¤ì£¼ë©´ I/Oì—†ì´ ì´ˆê¸°í™” ê°€ëŠ¥í•˜ë‹¤.
+ *    HitFlag´Â °¢ Row¿¡ ¼³Á¤µÈ HitSequence°ªÀ¸·Î, HeaderÀÇ HitSequence°ª°ú
+ *    °°À¸¸é HitµÈ °ÍÀ¸·Î ÆÇ´ÜÇÑ´Ù.
+ *    µû¶ó¼­ HeaderÀÇ HitSequence¸¦ 1 ¿Ã·ÁÁÖ¸é I/O¾øÀÌ ÃÊ±âÈ­ °¡´ÉÇÏ´Ù.
  *
  ***********************************************************************/
 
 #define IDE_FN "qmcDiskHash::clearHitFlag"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY("qmcDiskHash::clearHitFlag"));
 
-    return smiTempTable::clearHitFlag( aTempTable->tableHandle );
+    smiHashTempTable::clearHitFlag( aTempTable->tableHandle );
+
+    return IDE_SUCCESS;
 #undef IDE_FN
 }
 
@@ -293,27 +284,27 @@ qmcDiskHash::insert( qmcdDiskHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Recordë¥¼ Temp Tableì— ì‚½ì…í•œë‹¤.
+ *    Record¸¦ Temp Table¿¡ »ğÀÔÇÑ´Ù.
  *
  * Implementation :
- *    - Cursorë¥¼ ë³„ë„ë¡œ ì—´ì§€ ì•ŠëŠ”ë‹¤.  ì´ˆê¸°í™” ë˜ëŠ” Clearì‹œ Insert CursorëŠ”
- *      ì´ë¯¸ ì—´ì–´ ë†“ëŠ”ë‹¤.
- *    - Rowì˜ Hit Flagì„ Clearí•œë‹¤.
- *    - smiValueë¥¼ ì‚½ì…í•œë‹¤
- *    - Distinct Insertionì˜ ê²½ìš°, ì‚½ì…ì´ ì‹¤íŒ¨í•  ìˆ˜ ìˆë‹¤.
- *        - ì ì ˆí•œ Error Codeë¥¼ ê²€ì‚¬í•˜ì—¬ ì‚½ì…ì´ ì‹¤íŒ¨í•¨ì„ ë¦¬í„´í•œë‹¤.
+ *    - Cursor¸¦ º°µµ·Î ¿­Áö ¾Ê´Â´Ù.  ÃÊ±âÈ­ ¶Ç´Â Clear½Ã Insert Cursor´Â
+ *      ÀÌ¹Ì ¿­¾î ³õ´Â´Ù.
+ *    - RowÀÇ Hit FlagÀ» ClearÇÑ´Ù.
+ *    - smiValue¸¦ »ğÀÔÇÑ´Ù
+ *    - Distinct InsertionÀÇ °æ¿ì, »ğÀÔÀÌ ½ÇÆĞÇÒ ¼ö ÀÖ´Ù.
+ *        - ÀûÀıÇÑ Error Code¸¦ °Ë»çÇÏ¿© »ğÀÔÀÌ ½ÇÆĞÇÔÀ» ¸®ÅÏÇÑ´Ù.
  ***********************************************************************/
 
-    // PROJ-1597 Temp record size ì œì•½ ì œê±°
-    // ë§¤ rowë§ˆë‹¤ smiValueë¥¼ ì¬êµ¬ì„±í•œë‹¤.
+    // PROJ-1597 Temp record size Á¦¾à Á¦°Å
+    // ¸Å row¸¶´Ù smiValue¸¦ Àç±¸¼ºÇÑ´Ù.
     IDE_TEST( makeInsertSmiValue(aTempTable) != IDE_SUCCESS );
 
-    // Temp Tableì— Recordë¥¼ ì‚½ì…í•œë‹¤.
-    IDE_TEST( smiTempTable::insert( aTempTable->tableHandle,
-                                    aTempTable->insertValue,
-                                    aHashKey,
-                                    &aTempTable->recordNode->dstTuple->rid,
-                                    aResult )
+    // Temp Table¿¡ Record¸¦ »ğÀÔÇÑ´Ù.
+    IDE_TEST( smiHashTempTable::insert( aTempTable->tableHandle,
+                                        aTempTable->insertValue,
+                                        aHashKey,
+                                        &aTempTable->recordNode->dstTuple->rid,
+                                        aResult )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -333,26 +324,26 @@ qmcDiskHash::updateAggr( qmcdDiskHashTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    Aggregation Columnë“¤ì„  Updateí•œë‹¤.
+ *    Aggregation ColumnµéÀ»  UpdateÇÑ´Ù.
  *
  * Implementation :
- *    Group Cursorë¥¼ ì´ìš©í•˜ì—¬ Updateí•˜ë©°,
- *    Group CursorëŠ” ë°˜ë“œì‹œ Openë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
- *    Update ValueëŠ” Group Cursor Openì‹œ ìƒì„±ë˜ì—ˆê³ ,
- *    Valueì— ëŒ€í•œ pointer ì—­ì‹œ row pointerê°€ ë³€í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì—,
- *    ë³€ê²½ì‹œí‚¬ í•„ìš”ê°€ ì—†ë‹¤.
+ *    Group Cursor¸¦ ÀÌ¿ëÇÏ¿© UpdateÇÏ¸ç,
+ *    Group Cursor´Â ¹İµå½Ã OpenµÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
+ *    Update Value´Â Group Cursor Open½Ã »ı¼ºµÇ¾ú°í,
+ *    Value¿¡ ´ëÇÑ pointer ¿ª½Ã row pointer°¡ º¯ÇÏÁö ¾Ê±â ¶§¹®¿¡,
+ *    º¯°æ½ÃÅ³ ÇÊ¿ä°¡ ¾ø´Ù.
  *
  ***********************************************************************/
 
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     IDE_DASSERT( aTempTable->groupCursor != NULL );
 
-    // Aggregation Columnì„ ìœ„í•œ smiValue êµ¬ì„±
+    // Aggregation ColumnÀ» À§ÇÑ smiValue ±¸¼º
     IDE_TEST( makeAggrSmiValue( aTempTable ) != IDE_SUCCESS );
 
-    // Aggregation Columnì„ Updateí•œë‹¤.
-    IDE_TEST( smiTempTable::update( aTempTable->groupCursor, 
-                                    aTempTable->aggrValue )
+    // Aggregation ColumnÀ» UpdateÇÑ´Ù.
+    IDE_TEST( smiHashTempTable::update( aTempTable->groupCursor, 
+                                        aTempTable->aggrValue )
          != IDE_SUCCESS )
 
     return IDE_SUCCESS;
@@ -371,23 +362,23 @@ qmcDiskHash::updateFiniAggr( qmcdDiskHashTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    Aggregation Columnë“¤ì„ ìµœì¢… Updateí•œë‹¤.
+ *    Aggregation ColumnµéÀ» ÃÖÁ¾ UpdateÇÑ´Ù.
  *
  * Implementation :
- *    Search Cursorë¥¼ ì´ìš©í•˜ì—¬ Updateí•˜ë©°,
- *    Search CursorëŠ” ë°˜ë“œì‹œ Openë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
+ *    Search Cursor¸¦ ÀÌ¿ëÇÏ¿© UpdateÇÏ¸ç,
+ *    Search Cursor´Â ¹İµå½Ã OpenµÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
  *
  ***********************************************************************/
 
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     IDE_DASSERT( aTempTable->groupFiniCursor != NULL );
 
-    // Aggregation Columnì„ ìœ„í•œ smiValue êµ¬ì„±
+    // Aggregation ColumnÀ» À§ÇÑ smiValue ±¸¼º
     IDE_TEST( makeAggrSmiValue( aTempTable ) != IDE_SUCCESS );
 
-    // Aggregation Columnì„ ìµœì¢… Updateí•œë‹¤.
-    IDE_TEST( smiTempTable::update( aTempTable->groupFiniCursor, 
-                                    aTempTable->aggrValue )
+    // Aggregation ColumnÀ» ÃÖÁ¾ UpdateÇÑ´Ù.
+    IDE_TEST( smiHashTempTable::update( aTempTable->groupFiniCursor, 
+                                        aTempTable->aggrValue )
          != IDE_SUCCESS )
 
     return IDE_SUCCESS;
@@ -407,18 +398,20 @@ qmcDiskHash::setHitFlag( qmcdDiskHashTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    í˜„ì¬ Cursor ìœ„ì¹˜ì˜ Recordì˜ Hit Flagì„ Settingí•œë‹¤.
+ *    ÇöÀç Cursor À§Ä¡ÀÇ RecordÀÇ Hit FlagÀ» SettingÇÑ´Ù.
  *
  * Implementation :
- *    ê²€ìƒ‰ í›„ì—ë§Œ í˜¸ì¶œëœë‹¤.
- *    ì´ë¯¸ ê²€ìƒ‰ëœ Recordì— ëŒ€í•œ Hit Flagì„ Settingí•˜ë©´ ëœë‹¤.
+ *    °Ë»ö ÈÄ¿¡¸¸ È£ÃâµÈ´Ù.
+ *    ÀÌ¹Ì °Ë»öµÈ Record¿¡ ´ëÇÑ Hit FlagÀ» SettingÇÏ¸é µÈ´Ù.
  *
  ***********************************************************************/
 
 #define IDE_FN "qmcDiskHash::setHitFlag"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY("qmcDiskHash::setHitFlag"));
 
-    return smiTempTable::setHitFlag( aTempTable->searchCursor );
+    smiHashTempTable::setHitFlag( aTempTable->searchCursor );
+
+    return IDE_SUCCESS;
 #undef IDE_FN
 }
 
@@ -427,15 +420,15 @@ idBool qmcDiskHash::isHitFlagged( qmcdDiskHashTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    í˜„ì¬ Cursor ìœ„ì¹˜ì˜ Recordì— Hit Flagê°€ ìˆëŠ”ì§€ íŒë‹¨.
+ *    ÇöÀç Cursor À§Ä¡ÀÇ Record¿¡ Hit Flag°¡ ÀÖ´ÂÁö ÆÇ´Ü.
  *
  * Implementation :
- *    ê²€ìƒ‰ í›„ì—ë§Œ í˜¸ì¶œëœë‹¤.
- *    ì´ë¯¸ ê²€ìƒ‰ëœ Recordì— ëŒ€í•œ Hit Flag ì—¬ë¶€ë¥¼ ê²€ì‚¬í•˜ë©´ ëœë‹¤.
+ *    °Ë»ö ÈÄ¿¡¸¸ È£ÃâµÈ´Ù.
+ *    ÀÌ¹Ì °Ë»öµÈ Record¿¡ ´ëÇÑ Hit Flag ¿©ºÎ¸¦ °Ë»çÇÏ¸é µÈ´Ù.
  *
  ***********************************************************************/
 
-    return smiTempTable::isHitFlagged( aTempTable->searchCursor );
+    return smiHashTempTable::isHitFlagged( aTempTable->searchCursor );
 }
 
 IDE_RC
@@ -445,29 +438,34 @@ qmcDiskHash::getFirstGroup( qmcdDiskHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ì²«ë²ˆì§¸ Group ìˆœì°¨ ê²€ìƒ‰ì„ í•œë‹¤.
- *    Group Aggregationì˜ ìµœì¢… ì²˜ë¦¬ë¥¼ ìœ„í•œ Cursorë¥¼ ì—°ë‹¤.
- *    Groupì— ëŒ€í•œ Sequetial ê²€ìƒ‰ì„ í•˜ê²Œ ë˜ë©°,
- *    Aggregation Columnì˜ ìµœì¢… ê²°ê³¼ë¥¼ ê°±ì‹ í•˜ê¸° ìœ„í•´ ì‚¬ìš©í•œë‹¤.
+ *    Ã¹¹øÂ° Group ¼øÂ÷ °Ë»öÀ» ÇÑ´Ù.
+ *    Group AggregationÀÇ ÃÖÁ¾ Ã³¸®¸¦ À§ÇÑ Cursor¸¦ ¿¬´Ù.
+ *    Group¿¡ ´ëÇÑ Sequetial °Ë»öÀ» ÇÏ°Ô µÇ¸ç,
+ *    Aggregation ColumnÀÇ ÃÖÁ¾ °á°ú¸¦ °»½ÅÇÏ±â À§ÇØ »ç¿ëÇÑ´Ù.
  *
  * Implementation :
  *
  ***********************************************************************/
 
-    // Groupì˜ ìµœì¢… Aggregationì„ ìœ„í•œ Cursorë¥¼ ì—°ë‹¤.
-    IDE_TEST( openCursor(aTempTable, 
-                         SMI_TCFLAG_FORWARD | 
-                         SMI_TCFLAG_FULLSCAN |
-                         SMI_TCFLAG_IGNOREHIT,
-                         smiGetDefaultFilter(),        // Filter
-                         0,                            // HashValue,
-                         &aTempTable->groupFiniCursor )
-              != IDE_SUCCESS );
+    if( aTempTable->groupFiniCursor == NULL )
+    {
+        //-----------------------------------------
+        // 1. Cursor°¡ ¿­·Á ÀÖÁö ¾ÊÀº °æ¿ì
+        //-----------------------------------------
+        IDE_TEST( smiHashTempTable::allocHashCursor( aTempTable->tableHandle,
+                                                     aTempTable->aggrColumnList,   // Update ColumnÁ¤º¸
+                                                     SMI_HASH_CURSOR_FULL_SCAN,
+                                                     &aTempTable->groupFiniCursor )
+                  != IDE_SUCCESS );
+    }
 
-    // Recordë¥¼ ì–»ì–´ ì˜¨ë‹¤.
-    IDE_TEST( smiTempTable::fetch( aTempTable->groupFiniCursor,
-                                   (UChar**) aRow,
-                                   & aTempTable->recordNode->dstTuple->rid )
+    // GroupÀÇ ÃÖÁ¾ AggregationÀ» À§ÇÑ Cursor¸¦ ¿¬´Ù.
+    IDE_TEST( smiHashTempTable::openFullScanCursor( aTempTable->groupFiniCursor, 
+                                                    SMI_TCFLAG_FORWARD | 
+                                                    SMI_TCFLAG_FULLSCAN |
+                                                    SMI_TCFLAG_IGNOREHIT,
+                                                    (UChar**) aRow,
+                                                    & aTempTable->recordNode->dstTuple->rid )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -484,17 +482,17 @@ qmcDiskHash::getNextGroup( qmcdDiskHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ë‹¤ìŒ Group ìˆœì°¨ ê²€ìƒ‰ì„ í•œë‹¤.
- *    ë°˜ë“œì‹œ getFirstGroup() ì´í›„ì— í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
+ *    ´ÙÀ½ Group ¼øÂ÷ °Ë»öÀ» ÇÑ´Ù.
+ *    ¹İµå½Ã getFirstGroup() ÀÌÈÄ¿¡ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
  *
  * Implementation :
  *
  ***********************************************************************/
 
-    // Recordë¥¼ ì–»ì–´ ì˜¨ë‹¤.
-    IDE_TEST( smiTempTable::fetch( aTempTable->groupFiniCursor,
-                                   (UChar**) aRow,
-                                   & aTempTable->recordNode->dstTuple->rid )
+    // Record¸¦ ¾ò¾î ¿Â´Ù.
+    IDE_TEST( smiHashTempTable::fetchFullNext( aTempTable->groupFiniCursor,
+                                               (UChar**) aRow,
+                                               & aTempTable->recordNode->dstTuple->rid )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -511,26 +509,31 @@ qmcDiskHash::getFirstSequence( qmcdDiskHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ì²« ìˆœì°¨ ê²€ìƒ‰ì„ í•œë‹¤.
+ *    Ã¹ ¼øÂ÷ °Ë»öÀ» ÇÑ´Ù.
  *
  * Implementation :
  *
  ***********************************************************************/
 
-    // ìˆœì°¨ ê²€ìƒ‰ Cursorë¥¼ ì—°ë‹¤.
-    IDE_TEST( openCursor(aTempTable, 
-                         SMI_TCFLAG_FORWARD | 
-                         SMI_TCFLAG_FULLSCAN |
-                         SMI_TCFLAG_IGNOREHIT,
-                         smiGetDefaultFilter(),        // Filter
-                         0,                            // HashValue,
-                         &aTempTable->searchCursor )
-              != IDE_SUCCESS );
+    if( aTempTable->searchCursor == NULL )
+    {
+        //-----------------------------------------
+        // 1. Cursor°¡ ¿­·Á ÀÖÁö ¾ÊÀº °æ¿ì
+        //-----------------------------------------
+        IDE_TEST( smiHashTempTable::allocHashCursor( aTempTable->tableHandle,
+                                                     aTempTable->aggrColumnList,   // Update ColumnÁ¤º¸
+                                                     SMI_HASH_CURSOR_FULL_SCAN,
+                                                     &aTempTable->searchCursor )
+                  != IDE_SUCCESS );
+    }
 
-    // Recordë¥¼ ì–»ì–´ ì˜¨ë‹¤.
-    IDE_TEST( smiTempTable::fetch( aTempTable->searchCursor,
-                                   (UChar**) aRow,
-                                   & aTempTable->recordNode->dstTuple->rid )
+    // ¼øÂ÷ °Ë»ö Cursor¸¦ ¿¬´Ù.
+    IDE_TEST( smiHashTempTable::openFullScanCursor( aTempTable->searchCursor,
+                                                    SMI_TCFLAG_FORWARD |
+                                                    SMI_TCFLAG_FULLSCAN |
+                                                    SMI_TCFLAG_IGNOREHIT,
+                                                    (UChar**) aRow,
+                                                    & aTempTable->recordNode->dstTuple->rid )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -547,17 +550,17 @@ qmcDiskHash::getNextSequence( qmcdDiskHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ë‹¤ìŒ ìˆœì°¨ ê²€ìƒ‰ì„ í•œë‹¤.
- *    ë°˜ë“œì‹œ getFirstSequence() ì´í›„ì— í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
+ *    ´ÙÀ½ ¼øÂ÷ °Ë»öÀ» ÇÑ´Ù.
+ *    ¹İµå½Ã getFirstSequence() ÀÌÈÄ¿¡ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
  *
  * Implementation :
  *
  ***********************************************************************/
 
-    // Recordë¥¼ ì–»ì–´ ì˜¨ë‹¤.
-    IDE_TEST( smiTempTable::fetch( aTempTable->searchCursor,
-                                   (UChar**) aRow,
-                                   & aTempTable->recordNode->dstTuple->rid )
+    // Record¸¦ ¾ò¾î ¿Â´Ù.
+    IDE_TEST( smiHashTempTable::fetchFullNext( aTempTable->searchCursor,
+                                               (UChar**) aRow,
+                                               & aTempTable->recordNode->dstTuple->rid )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -576,51 +579,65 @@ qmcDiskHash::getFirstRange( qmcdDiskHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ì²«ë²ˆì§¸ Range ê²€ìƒ‰ì„ í•œë‹¤.
+ *    Ã¹¹øÂ° Range °Ë»öÀ» ÇÑ´Ù.
  *
  * Implementation :
- *    ë‹¤ìŒê³¼ ê°™ì€ ì ˆì°¨ì— ì˜í•˜ì—¬ Rangeê²€ìƒ‰ì„ ìˆ˜í–‰í•œë‹¤.
+ *    ´ÙÀ½°ú °°Àº ÀıÂ÷¿¡ ÀÇÇÏ¿© Range°Ë»öÀ» ¼öÇàÇÑ´Ù.
  *
- *    - ì£¼ì–´ì§„ Hash Valueë¥¼ ì´ìš©í•˜ì—¬ Key Rangeë¥¼ ìƒì„±í•œë‹¤.
- *    - Range Cursorë¥¼ Open í•œë‹¤.
- *    - Cursorë¥¼ ì´ìš©í•˜ì—¬ ì¡°ê±´ì— ë§ëŠ” Rowë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+ *    - ÁÖ¾îÁø Hash Value¸¦ ÀÌ¿ëÇÏ¿© Key Range¸¦ »ı¼ºÇÑ´Ù.
+ *    - Range Cursor¸¦ Open ÇÑ´Ù.
+ *    - Cursor¸¦ ÀÌ¿ëÇÏ¿© Á¶°Ç¿¡ ¸Â´Â Row¸¦ °¡Á®¿Â´Ù.
  *
  ***********************************************************************/
 
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     IDE_DASSERT( aHashFilter != NULL );
 
-    // Filter ìƒì„±
-    aTempTable->hashFilter = aHashFilter;
-    IDE_TEST( makeHashFilterCallBack( aTempTable ) != IDE_SUCCESS );
-
-    // Range Cursorë¥¼ Opení•œë‹¤.
-    IDE_TEST( openCursor(aTempTable, 
-                         SMI_TCFLAG_FORWARD | 
-                         SMI_TCFLAG_HASHSCAN |
-                         SMI_TCFLAG_IGNOREHIT,
-                         &aTempTable->filterCallBack,  // Filter
-                         aHash,                        // HashValue,
-                         &aTempTable->searchCursor )
-              != IDE_SUCCESS );
-
-    // Cursorë¥¼ ì´ìš©í•˜ì—¬ ì¡°ê±´ì— ë§ëŠ” Rowë¥¼ ê°€ì ¸ì˜¨ë‹¤.
-    IDE_TEST( smiTempTable::fetch( aTempTable->searchCursor,
-                                   (UChar**) aRow,
-                                   & aTempTable->recordNode->dstTuple->rid )
-              != IDE_SUCCESS );
-
-    // To Fix PR-8645
-    // Hash Key ê°’ì„ ê²€ì‚¬í•˜ê¸° ìœ„í•œ Filterì—ì„œ Accessê°’ì„ ì¦ê°€í•˜ì˜€ê³ ,
-    // ì´ í›„ Execution Nodeì—ì„œ ì´ë¥¼ ë‹¤ì‹œ ì¦ê°€ì‹œí‚¤ê²Œ ë¨.
-    // ë”°ë¼ì„œ, ë§ˆì§€ë§‰ í•œë²ˆì˜ ê²€ì‚¬ì— ëŒ€í•´ì„œëŠ” accessíšŒìˆ˜ë¥¼ ê°ì†Œì‹œì¼œì•¼ í•¨
-    if ( *aRow != NULL )
+    if( aTempTable->searchCursor == NULL )
     {
-        aTempTable->recordNode->dstTuple->modify--;
+        //-----------------------------------------
+        // 1. Cursor°¡ ¿­·Á ÀÖÁö ¾ÊÀº °æ¿ì
+        //-----------------------------------------
+        IDE_TEST( smiHashTempTable::allocHashCursor( aTempTable->tableHandle,
+                                                     aTempTable->aggrColumnList,   // Update ColumnÁ¤º¸
+                                                     SMI_HASH_CURSOR_HASH_SCAN,
+                                                     &aTempTable->searchCursor )
+            != IDE_SUCCESS );
+    }
+
+    if( smiHashTempTable::checkHashSlot( aTempTable->searchCursor,
+                                         aHash ) == ID_TRUE )
+    {
+        // Filter »ı¼º
+        aTempTable->hashFilter = aHashFilter;
+        IDE_TEST( makeHashFilterCallBack( aTempTable ) != IDE_SUCCESS );
+
+        // Range Cursor¸¦ OpenÇÑ´Ù.
+        IDE_TEST( smiHashTempTable::openHashCursor( aTempTable->searchCursor,
+                                                    SMI_TCFLAG_FORWARD |
+                                                    SMI_TCFLAG_HASHSCAN |
+                                                    SMI_TCFLAG_IGNOREHIT,
+                                                    &aTempTable->filterCallBack,  // Filter
+                                                    (UChar**) aRow,
+                                                    & aTempTable->recordNode->dstTuple->rid )
+                  != IDE_SUCCESS );
+
+        // To Fix PR-8645
+        // Hash Key °ªÀ» °Ë»çÇÏ±â À§ÇÑ Filter¿¡¼­ Access°ªÀ» Áõ°¡ÇÏ¿´°í,
+        // ÀÌ ÈÄ Execution Node¿¡¼­ ÀÌ¸¦ ´Ù½Ã Áõ°¡½ÃÅ°°Ô µÊ.
+        // µû¶ó¼­, ¸¶Áö¸· ÇÑ¹øÀÇ °Ë»ç¿¡ ´ëÇØ¼­´Â accessÈ¸¼ö¸¦ °¨¼Ò½ÃÄÑ¾ß ÇÔ
+        if ( *aRow != NULL )
+        {
+            aTempTable->recordNode->dstTuple->modify--;
+        }
+        else
+        {
+            // Nothing To Do
+        }
     }
     else
     {
-        // Nothing To Do
+        *aRow = NULL;
     }
 
     return IDE_SUCCESS;
@@ -637,23 +654,23 @@ qmcDiskHash::getNextRange( qmcdDiskHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ë‹¤ìŒ Range ê²€ìƒ‰ì„ í•œë‹¤.
- *    ë°˜ë“œì‹œ getFirstRange() ì´í›„ì— í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
+ *    ´ÙÀ½ Range °Ë»öÀ» ÇÑ´Ù.
+ *    ¹İµå½Ã getFirstRange() ÀÌÈÄ¿¡ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
  *
  * Implementation :
  *
  ***********************************************************************/
 
-    // Cursorë¥¼ ì´ìš©í•˜ì—¬ ì¡°ê±´ì— ë§ëŠ” Rowë¥¼ ê°€ì ¸ì˜¨ë‹¤.
-    IDE_TEST( smiTempTable::fetch( aTempTable->searchCursor,
-                                   (UChar**) aRow,
-                                   & aTempTable->recordNode->dstTuple->rid )
+    // Cursor¸¦ ÀÌ¿ëÇÏ¿© Á¶°Ç¿¡ ¸Â´Â Row¸¦ °¡Á®¿Â´Ù.
+    IDE_TEST( smiHashTempTable::fetchHashNext( aTempTable->searchCursor,
+                                               (UChar**) aRow,
+                                               & aTempTable->recordNode->dstTuple->rid )
               != IDE_SUCCESS );
 
     // To Fix PR-8645
-    // Hash Key ê°’ì„ ê²€ì‚¬í•˜ê¸° ìœ„í•œ Filterì—ì„œ Accessê°’ì„ ì¦ê°€í•˜ì˜€ê³ ,
-    // ì´ í›„ Execution Nodeì—ì„œ ì´ë¥¼ ë‹¤ì‹œ ì¦ê°€ì‹œí‚¤ê²Œ ë¨.
-    // ë”°ë¼ì„œ, ë§ˆì§€ë§‰ í•œë²ˆì˜ ê²€ì‚¬ì— ëŒ€í•´ì„œëŠ” accessíšŒìˆ˜ë¥¼ ê°ì†Œì‹œì¼œì•¼ í•¨
+    // Hash Key °ªÀ» °Ë»çÇÏ±â À§ÇÑ Filter¿¡¼­ Access°ªÀ» Áõ°¡ÇÏ¿´°í,
+    // ÀÌ ÈÄ Execution Node¿¡¼­ ÀÌ¸¦ ´Ù½Ã Áõ°¡½ÃÅ°°Ô µÊ.
+    // µû¶ó¼­, ¸¶Áö¸· ÇÑ¹øÀÇ °Ë»ç¿¡ ´ëÇØ¼­´Â accessÈ¸¼ö¸¦ °¨¼Ò½ÃÄÑ¾ß ÇÔ
     if ( *aRow != NULL )
     {
         aTempTable->recordNode->dstTuple->modify--;
@@ -677,30 +694,35 @@ qmcDiskHash::getFirstHit( qmcdDiskHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ìµœì´ˆ Hitëœ Recordë¥¼ ê²€ìƒ‰í•œë‹¤.
+ *    ÃÖÃÊ HitµÈ Record¸¦ °Ë»öÇÑ´Ù.
  *
  * Implementation :
- *    ë‹¤ìŒê³¼ ê°™ì€ ì ˆì°¨ì— ì˜í•˜ì—¬ Hit ê²€ìƒ‰ì„ ìˆ˜í–‰í•œë‹¤.
- *        - Hit Filterë¥¼ ìƒì„±í•œë‹¤.
- *        - Hitì„ ìœ„í•œ Cursorë¥¼ ì—°ë‹¤.
- *        - ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” Recordë¥¼ ì½ì–´ì˜¨ë‹¤.
+ *    ´ÙÀ½°ú °°Àº ÀıÂ÷¿¡ ÀÇÇÏ¿© Hit °Ë»öÀ» ¼öÇàÇÑ´Ù.
+ *        - Hit Filter¸¦ »ı¼ºÇÑ´Ù.
+ *        - HitÀ» À§ÇÑ Cursor¸¦ ¿¬´Ù.
+ *        - Á¶°ÇÀ» ¸¸Á·ÇÏ´Â Record¸¦ ÀĞ¾î¿Â´Ù.
  *
  ***********************************************************************/
 
-    /* HitFlagê°€ ì„¤ì •ëœ Rowë§Œ ê°€ì ¸ì˜¨ë‹¤. */
-    IDE_TEST( openCursor(aTempTable, 
-                         SMI_TCFLAG_FORWARD | 
-                         SMI_TCFLAG_FULLSCAN |
-                         SMI_TCFLAG_HIT,
-                         smiGetDefaultFilter(),        // Filter
-                         0,                            // HashValue,
-                         &aTempTable->hitFlagCursor )
-              != IDE_SUCCESS );
+    if( aTempTable->hitFlagCursor == NULL )
+    {
+        //-----------------------------------------
+        // 1. Cursor°¡ ¿­·Á ÀÖÁö ¾ÊÀº °æ¿ì
+        //-----------------------------------------
+        IDE_TEST( smiHashTempTable::allocHashCursor( aTempTable->tableHandle,
+                                                     aTempTable->aggrColumnList,   // Update ColumnÁ¤º¸
+                                                     SMI_HASH_CURSOR_FULL_SCAN,
+                                                     &aTempTable->hitFlagCursor )
+                  != IDE_SUCCESS );
+    }
 
-    // Cursorë¥¼ ì´ìš©í•˜ì—¬ ì¡°ê±´ì— ë§ëŠ” Rowë¥¼ ê°€ì ¸ì˜¨ë‹¤.
-    IDE_TEST( smiTempTable::fetch( aTempTable->hitFlagCursor,
-                                   (UChar**) aRow,
-                                   & aTempTable->recordNode->dstTuple->rid )
+    /* HitFlag°¡ ¼³Á¤µÈ Row¸¸ °¡Á®¿Â´Ù. */
+    IDE_TEST( smiHashTempTable::openFullScanCursor( aTempTable->hitFlagCursor,
+                                                    SMI_TCFLAG_FORWARD |
+                                                    SMI_TCFLAG_FULLSCAN |
+                                                    SMI_TCFLAG_HIT,
+                                                    (UChar**) aRow,
+                                                    & aTempTable->recordNode->dstTuple->rid)
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -717,16 +739,16 @@ qmcDiskHash::getNextHit( qmcdDiskHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ë‹¤ìŒ Hitëœ Recordë¥¼ ê²€ìƒ‰í•œë‹¤.
+ *    ´ÙÀ½ HitµÈ Record¸¦ °Ë»öÇÑ´Ù.
  *
  * Implementation :
  *
  ***********************************************************************/
 
-    // Cursorë¥¼ ì´ìš©í•˜ì—¬ ì¡°ê±´ì— ë§ëŠ” Rowë¥¼ ê°€ì ¸ì˜¨ë‹¤.
-    IDE_TEST( smiTempTable::fetch( aTempTable->hitFlagCursor,
-                                   (UChar**) aRow,
-                                   & aTempTable->recordNode->dstTuple->rid )
+    // Cursor¸¦ ÀÌ¿ëÇÏ¿© Á¶°Ç¿¡ ¸Â´Â Row¸¦ °¡Á®¿Â´Ù.
+    IDE_TEST( smiHashTempTable::fetchFullNext( aTempTable->hitFlagCursor,
+                                               (UChar**) aRow,
+                                               & aTempTable->recordNode->dstTuple->rid )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -744,30 +766,35 @@ qmcDiskHash::getFirstNonHit( qmcdDiskHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ìµœì´ˆ Hitë˜ì§€ ì•Šì€ Recordë¥¼ ê²€ìƒ‰í•œë‹¤.
+ *    ÃÖÃÊ HitµÇÁö ¾ÊÀº Record¸¦ °Ë»öÇÑ´Ù.
  *
  * Implementation :
- *    ë‹¤ìŒê³¼ ê°™ì€ ì ˆì°¨ì— ì˜í•˜ì—¬ NonHiit ê²€ìƒ‰ì„ ìˆ˜í–‰í•œë‹¤.
- *        - NonHit Filterë¥¼ ìƒì„±í•œë‹¤.
- *        - NonHitì„ ìœ„í•œ Cursorë¥¼ ì—°ë‹¤.
- *        - ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” Recordë¥¼ ì½ì–´ì˜¨ë‹¤.
+ *    ´ÙÀ½°ú °°Àº ÀıÂ÷¿¡ ÀÇÇÏ¿© NonHiit °Ë»öÀ» ¼öÇàÇÑ´Ù.
+ *        - NonHit Filter¸¦ »ı¼ºÇÑ´Ù.
+ *        - NonHitÀ» À§ÇÑ Cursor¸¦ ¿¬´Ù.
+ *        - Á¶°ÇÀ» ¸¸Á·ÇÏ´Â Record¸¦ ÀĞ¾î¿Â´Ù.
  *
  ***********************************************************************/
 
-    /* HitFlagê°€ ì„¤ì • ì•ˆëœ Rowë§Œ ê°€ì ¸ì˜¨ë‹¤. */
-    IDE_TEST( openCursor(aTempTable, 
-                         SMI_TCFLAG_FORWARD | 
-                         SMI_TCFLAG_FULLSCAN |
-                         SMI_TCFLAG_NOHIT,
-                         smiGetDefaultFilter(),        // Filter
-                         0,                            // HashValue,
-                         &aTempTable->hitFlagCursor )
-              != IDE_SUCCESS );
+    if( aTempTable->hitFlagCursor == NULL )
+    {
+        //-----------------------------------------
+        // 1. Cursor°¡ ¿­·Á ÀÖÁö ¾ÊÀº °æ¿ì
+        //-----------------------------------------
+        IDE_TEST( smiHashTempTable::allocHashCursor( aTempTable->tableHandle,
+                                                     aTempTable->aggrColumnList,   // Update ColumnÁ¤º¸
+                                                     SMI_HASH_CURSOR_FULL_SCAN,
+                                                     &aTempTable->hitFlagCursor )
+                  != IDE_SUCCESS );
+    }
 
-    // Cursorë¥¼ ì´ìš©í•˜ì—¬ ì¡°ê±´ì— ë§ëŠ” Rowë¥¼ ê°€ì ¸ì˜¨ë‹¤.
-    IDE_TEST( smiTempTable::fetch( aTempTable->hitFlagCursor,
-                                   (UChar**) aRow,
-                                   & aTempTable->recordNode->dstTuple->rid )
+    /* HitFlag°¡ ¼³Á¤ ¾ÈµÈ Row¸¸ °¡Á®¿Â´Ù. */
+    IDE_TEST( smiHashTempTable::openFullScanCursor( aTempTable->hitFlagCursor,
+                                                    SMI_TCFLAG_FORWARD |
+                                                    SMI_TCFLAG_FULLSCAN |
+                                                    SMI_TCFLAG_NOHIT,
+                                                    (UChar**) aRow,
+                                                    & aTempTable->recordNode->dstTuple->rid )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -784,16 +811,16 @@ qmcDiskHash::getNextNonHit( qmcdDiskHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ë‹¤ìŒ Hitë˜ì§€ ì•Šì€ Recordë¥¼ ê²€ìƒ‰í•œë‹¤.
+ *    ´ÙÀ½ HitµÇÁö ¾ÊÀº Record¸¦ °Ë»öÇÑ´Ù.
  *
  * Implementation :
  *
  ***********************************************************************/
 
-    // Cursorë¥¼ ì´ìš©í•˜ì—¬ ì¡°ê±´ì— ë§ëŠ” Rowë¥¼ ê°€ì ¸ì˜¨ë‹¤.
-    IDE_TEST( smiTempTable::fetch( aTempTable->hitFlagCursor,
-                                   (UChar**) aRow,
-                                   & aTempTable->recordNode->dstTuple->rid )
+    // Cursor¸¦ ÀÌ¿ëÇÏ¿© Á¶°Ç¿¡ ¸Â´Â Row¸¦ °¡Á®¿Â´Ù.
+    IDE_TEST( smiHashTempTable::fetchFullNext( aTempTable->hitFlagCursor,
+                                               (UChar**) aRow,
+                                               & aTempTable->recordNode->dstTuple->rid )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -812,52 +839,64 @@ qmcDiskHash::getSameRowAndNonHit( qmcdDiskHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Set Intersectionì—ì„œ ê²€ìƒ‰ì„ ìœ„í•´ ì‚¬ìš©í•˜ë©°,
- *    ì£¼ì–´ì§„ Rowì™€ ë™ì¼í•œ Hash Columnì˜ ê°’ì„ ê°–ê³ ,
- *    Hitë˜ì§€ ì•ŠëŠ” Rowë¥¼ ì°¾ê¸° ìœ„í•´ ì‚¬ìš©í•œë‹¤.
+ *    Set Intersection¿¡¼­ °Ë»öÀ» À§ÇØ »ç¿ëÇÏ¸ç,
+ *    ÁÖ¾îÁø Row¿Í µ¿ÀÏÇÑ Hash ColumnÀÇ °ªÀ» °®°í,
+ *    HitµÇÁö ¾Ê´Â Row¸¦ Ã£±â À§ÇØ »ç¿ëÇÑ´Ù.
  *
  * Implementation :
- *    ë‹¤ìŒê³¼ ê°™ì€ ì ˆì°¨ë¡œ ìˆ˜í–‰ëœë‹¤.
- *        - Range ìƒì„±
- *        - Filter ìƒì„±(ë™ì¼ Hash & NonHit)
- *        - ì›í•˜ëŠ” Record ê²€ìƒ‰ í›„ Hit Flag ê°±ì‹ 
+ *    ´ÙÀ½°ú °°Àº ÀıÂ÷·Î ¼öÇàµÈ´Ù.
+ *        - Range »ı¼º
+ *        - Filter »ı¼º(µ¿ÀÏ Hash & NonHit)
+ *        - ¿øÇÏ´Â Record °Ë»ö ÈÄ Hit Flag °»½Å
  *
  ***********************************************************************/
 
     //-----------------------------------------
-    // Hash Indexë¥¼ ìœ„í•œ Range ì„¤ì •
+    // Hash Index¸¦ À§ÇÑ Range ¼³Á¤
     //-----------------------------------------
 
     //-----------------------------------------
-    // Filter ì„¤ì •
-    //     - Non-Hit ì—¬ë¶€ ê²€ì‚¬
-    //     - ë™ì¼ Data ì—¬ë¶€ ê²€ì‚¬.
-    // ì´ë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜ë¥¼ ë”°ë¡œ êµ¬ì„±í•  ìˆ˜ ìˆìœ¼ë‚˜,
-    // CallBack Function ë§Œ ë‹¤ë¥¼ ë¿ ëª¨ë“  ì¡°ê±´ì´ ë™ì¼í•˜ë¯€ë¡œ,
-    // êµ¬í˜„ ë¶€í•˜ë¥¼ ì¤„ì´ê¸° ìœ„í•´ ì•„ë˜ì™€ ê°™ì´ ì²˜ë¦¬í•œë‹¤.
+    // Filter ¼³Á¤
+    //     - Non-Hit ¿©ºÎ °Ë»ç
+    //     - µ¿ÀÏ Data ¿©ºÎ °Ë»ç.
+    // ÀÌ¸¦ Ã³¸®ÇÏ±â À§ÇÑ ÇÔ¼ö¸¦ µû·Î ±¸¼ºÇÒ ¼ö ÀÖÀ¸³ª,
+    // CallBack Function ¸¸ ´Ù¸¦ »Ó ¸ğµç Á¶°ÇÀÌ µ¿ÀÏÇÏ¹Ç·Î,
+    // ±¸Çö ºÎÇÏ¸¦ ÁÙÀÌ±â À§ÇØ ¾Æ·¡¿Í °°ÀÌ Ã³¸®ÇÑ´Ù.
     //-----------------------------------------
 
-    // ë™ì¼ ì—¬ë¶€ ê²€ì‚¬ë¥¼ ìœ„í•œ Filter ì„¤ì •
-    IDE_TEST( makeTwoRowHashFilterCallBack( aTempTable, aRow )
-              != IDE_SUCCESS );
+    if( aTempTable->searchCursor == NULL )
+    {
+        //-----------------------------------------
+        // 1. Cursor°¡ ¿­·Á ÀÖÁö ¾ÊÀº °æ¿ì
+        //-----------------------------------------
+        IDE_TEST( smiHashTempTable::allocHashCursor( aTempTable->tableHandle,
+                                                     aTempTable->aggrColumnList,   // Update ColumnÁ¤º¸
+                                                     SMI_HASH_CURSOR_HASH_SCAN,
+                                                     &aTempTable->searchCursor )
+            != IDE_SUCCESS );
+    }
 
-    /* HitFlagê°€ ì„¤ì • ì•ˆëœ Rowë§Œ ê°€ì ¸ì˜¨ë‹¤. */
-    IDE_TEST( openCursor(aTempTable, 
-                         SMI_TCFLAG_FORWARD | 
-                         SMI_TCFLAG_HASHSCAN |
-                         SMI_TCFLAG_NOHIT,
-                         &aTempTable->filterCallBack,  // Filter
-                         aHash,                        // HashValue,
-                         &aTempTable->searchCursor )
-              != IDE_SUCCESS );
+    if( smiHashTempTable::checkHashSlot( aTempTable->searchCursor,
+                                         aHash ) == ID_TRUE )
+    {
+        // µ¿ÀÏ ¿©ºÎ °Ë»ç¸¦ À§ÇÑ Filter ¼³Á¤
+        IDE_TEST( makeTwoRowHashFilterCallBack( aTempTable, aRow )
+                  != IDE_SUCCESS );
 
-    //-----------------------------------------
-    // ë™ì¼ Record ê²€ìƒ‰ í›„ì˜ ì²˜ë¦¬
-    //-----------------------------------------
-    IDE_TEST( smiTempTable::fetch( aTempTable->searchCursor,
-                                   (UChar**) aResultRow,
-                                   & aTempTable->recordNode->dstTuple->rid )
-              != IDE_SUCCESS );
+        /* HitFlag°¡ ¼³Á¤ ¾ÈµÈ Row¸¸ °¡Á®¿Â´Ù. */
+        IDE_TEST( smiHashTempTable::openHashCursor( aTempTable->searchCursor,
+                                                    SMI_TCFLAG_FORWARD | 
+                                                    SMI_TCFLAG_HASHSCAN |
+                                                    SMI_TCFLAG_NOHIT,
+                                                    &aTempTable->filterCallBack,  // Filter
+                                                    (UChar**) aResultRow,
+                                                    & aTempTable->recordNode->dstTuple->rid )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        *aResultRow = NULL;
+    }
 
     return IDE_SUCCESS;
 
@@ -873,13 +912,13 @@ qmcDiskHash::getNullRow( qmcdDiskHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    NULL ROWë¥¼ íšë“í•œë‹¤.
+ *    NULL ROW¸¦ È¹µæÇÑ´Ù.
  *
  * Implementation :
- *    Null Rowë¥¼ íšë“í•œ ì ì´ ì—†ë‹¤ë©´, Null Rowë¥¼ íšë“
- *    ì €ì¥ëœ í•´ë‹¹ ì˜ì—­ì— Null Rowë¥¼ ë³µì‚¬í•œë‹¤.
- *    SMì˜ Null Rowë¥¼ ì €ì¥í•˜ëŠ” ì´ìœ ëŠ” ë¹ˆë²ˆí•œ í˜¸ì¶œë¡œ ì¸í•œ Disk I/Oë¥¼
- *    ë°©ì§€í•˜ê¸° ìœ„í•¨ì´ë‹¤.
+ *    Null Row¸¦ È¹µæÇÑ ÀûÀÌ ¾ø´Ù¸é, Null Row¸¦ È¹µæ
+ *    ÀúÀåµÈ ÇØ´ç ¿µ¿ª¿¡ Null Row¸¦ º¹»çÇÑ´Ù.
+ *    SMÀÇ Null Row¸¦ ÀúÀåÇÏ´Â ÀÌÀ¯´Â ºó¹øÇÑ È£Ãâ·Î ÀÎÇÑ Disk I/O¸¦
+ *    ¹æÁöÇÏ±â À§ÇÔÀÌ´Ù.
  *
  ***********************************************************************/
 
@@ -905,72 +944,85 @@ qmcDiskHash::getSameGroup( qmcdDiskHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Group Aggregationì—ì„œ ì‚¬ìš©ë˜ë©°, í˜„ì¬ Rowì™€ ë™ì¼í•œ
- *    Rowê°€ ì¡´ì¬í•˜ëŠ” ì§€ë¥¼ ê²€ì‚¬í•˜ê³ , ì¡´ì¬í•œë‹¤ë©´ ì´ë¥¼ Returní•˜ê³ ,
- *    ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´ Recordë¥¼ ì‚½ì…í•œë‹¤.
- *    ê¸°ì¡´ A3ì—ì„œì˜ Group Aggregation ì ˆì°¨ê°€ ë‹¤ìŒê³¼ ê°™ì€ë°,
- *    ì´ëŠ” Disk Temp Tableì„ ì‚¬ìš©í•  ê²½ìš° ì¹˜ëª…ì ì¸ ì„±ëŠ¥ ì•…í™•ë¥¼
- *    ê°€ì ¸ ì˜¬ ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤.
- *         A3  : Insert --> ì„±ê³µ --> Aggregation --> Update
- *                      --> ì‹¤íŒ¨ --> ê²€ìƒ‰ --> Aggregation --> Update
- *         A4  : Aggregation --> ê²€ìƒ‰ --> ì„±ê³µ --> Aggregation --> Update
- *                                    --> ì‹¤íŒ¨ --> Insert
+ *    Group Aggregation¿¡¼­ »ç¿ëµÇ¸ç, ÇöÀç Row¿Í µ¿ÀÏÇÑ
+ *    Row°¡ Á¸ÀçÇÏ´Â Áö¸¦ °Ë»çÇÏ°í, Á¸ÀçÇÑ´Ù¸é ÀÌ¸¦ ReturnÇÏ°í,
+ *    Á¸ÀçÇÏÁö ¾Ê´Â´Ù¸é Record¸¦ »ğÀÔÇÑ´Ù.
+ *    ±âÁ¸ A3¿¡¼­ÀÇ Group Aggregation ÀıÂ÷°¡ ´ÙÀ½°ú °°Àºµ¥,
+ *    ÀÌ´Â Disk Temp TableÀ» »ç¿ëÇÒ °æ¿ì Ä¡¸íÀûÀÎ ¼º´É ¾ÇÈ®¸¦
+ *    °¡Á® ¿Ã ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù.
+ *         A3  : Insert --> ¼º°ø --> Aggregation --> Update
+ *                      --> ½ÇÆĞ --> °Ë»ö --> Aggregation --> Update
+ *         A4  : Aggregation --> °Ë»ö --> ¼º°ø --> Aggregation --> Update
+ *                                    --> ½ÇÆĞ --> Insert
  *
  *    To Fix PR-8213
- *        - ê·¸ëŸ¬ë‚˜, ìœ„ì™€ ê°™ì€ ì ˆì°¨ëŠ” Memory Tableì—ì„œ ì‹¬ê°í•œ ì„±ëŠ¥
- *          ì €í•˜ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
- *          ë”°ë¼ì„œ, ë‹¤ìŒê³¼ ê°™ì€ ë°©ì‹ìœ¼ë¡œ ìˆ˜ì •í•œë‹¤.
+ *        - ±×·¯³ª, À§¿Í °°Àº ÀıÂ÷´Â Memory Table¿¡¼­ ½É°¢ÇÑ ¼º´É
+ *          ÀúÇÏ¸¦ °¡Á®¿Â´Ù.
+ *          µû¶ó¼­, ´ÙÀ½°ú °°Àº ¹æ½ÄÀ¸·Î ¼öÁ¤ÇÑ´Ù.
  *
  *    New A4 :
- *        ë™ì¼ Group ê²€ìƒ‰ -->
- *        --> ì„±ê³µ --> Aggregation --> Update
- *        --> ì‹¤íŒ¨(Memoryì˜ ê²½ìš° ì‚½ì…ë¨) --> Init, Aggregation
- *            --> Add New Group(Memoryì˜ ê²½ìš° ë³„ë„ì˜ ì‘ì—…ì„ ìˆ˜í–‰í•˜ì§€ ì•ŠìŒ)
+ *        µ¿ÀÏ Group °Ë»ö -->
+ *        --> ¼º°ø --> Aggregation --> Update
+ *        --> ½ÇÆĞ(MemoryÀÇ °æ¿ì »ğÀÔµÊ) --> Init, Aggregation
+ *            --> Add New Group(MemoryÀÇ °æ¿ì º°µµÀÇ ÀÛ¾÷À» ¼öÇàÇÏÁö ¾ÊÀ½)
  *
  * Implementation :
  *
- *    ë‹¤ìŒê³¼ ê°™ì€ ì ˆì°¨ë¡œ ê²€ìƒ‰í•œë‹¤.
- *        - ê²€ìƒ‰ì„ ìœ„í•œ Rangeì™€ Filterì˜ ìƒì„±
- *        - Group Cursorë¥¼ ì—´ê³  ì¡°ê±´ì— ë§ëŠ” Record ê²€ìƒ‰
- *            - ì¡´ì¬í•œë‹¤ë©´, ì´ë¥¼ Return
- *            - ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´, NULLì„ Return
+ *    ´ÙÀ½°ú °°Àº ÀıÂ÷·Î °Ë»öÇÑ´Ù.
+ *        - °Ë»öÀ» À§ÇÑ Range¿Í FilterÀÇ »ı¼º
+ *        - Group Cursor¸¦ ¿­°í Á¶°Ç¿¡ ¸Â´Â Record °Ë»ö
+ *            - Á¸ÀçÇÑ´Ù¸é, ÀÌ¸¦ Return
+ *            - Á¸ÀçÇÏÁö ¾Ê´Â´Ù¸é, NULLÀ» Return
  *
  ***********************************************************************/
 
-    // ì í•©ì„± ê²€ì‚¬
-    // Aggregationì´ ìˆëŠ” ê²½ìš°ì—ë§Œ ì‚¬ìš©í•˜ì—¬ì•¼ í•œë‹¤.
+    // ÀûÇÕ¼º °Ë»ç
+    // AggregationÀÌ ÀÖ´Â °æ¿ì¿¡¸¸ »ç¿ëÇÏ¿©¾ß ÇÑ´Ù.
     IDE_DASSERT( aTempTable->aggrNode != NULL );
 
-    // BUG-10662
-    // qmnGRAG::groupAggregation()í•¨ìˆ˜ë‚´ì—ì„œ ì²˜ë¦¬í•˜ê³  ìˆìŒ
-    // Recordë¥¼ ì½ì„ ê³µê°„ ì„¤ì •
-    // sOrgRow = aTempTable->recordNode->dstTuple->row;
+    if( aTempTable->groupCursor == NULL )
+    {
+        //-----------------------------------------
+        // 1. Cursor°¡ ¿­·Á ÀÖÁö ¾ÊÀº °æ¿ì
+        // Group Cursor ´Â ¿©±â¿¡¼­¸¸ open
+        //-----------------------------------------
+        IDE_TEST( smiHashTempTable::allocHashCursor( aTempTable->tableHandle,
+                                                     aTempTable->aggrColumnList,   // Update ColumnÁ¤º¸
+                                                     SMI_HASH_CURSOR_HASH_UPDATE,
+                                                     &aTempTable->groupCursor )
+                  != IDE_SUCCESS );
+    }
 
-    //-----------------------------------------
-    // Hash Indexë¥¼ ìœ„í•œ ë‘ Rowê°„ì˜ Filter ì„¤ì •
-    //-----------------------------------------
-    IDE_TEST( makeTwoRowHashFilterCallBack( aTempTable, aRow )
-              != IDE_SUCCESS );
+    if( smiHashTempTable::checkUpdateHashSlot( aTempTable->groupCursor,
+                                               aHash ) == ID_TRUE )
+    {
+        // BUG-10662
+        // qmnGRAG::groupAggregation()ÇÔ¼ö³»¿¡¼­ Ã³¸®ÇÏ°í ÀÖÀ½
+        // Record¸¦ ÀĞÀ» °ø°£ ¼³Á¤
+        // sOrgRow = aTempTable->recordNode->dstTuple->row;
 
-    //-----------------------------------------
-    // ë™ì¼ Groupì„ ì°¾ê¸° ìœ„í•œ Cursorë¥¼ ì—°ë‹¤.
-    //-----------------------------------------
-    IDE_TEST( openCursor(aTempTable, 
-                         SMI_TCFLAG_FORWARD | 
-                         SMI_TCFLAG_HASHSCAN |
-                         SMI_TCFLAG_IGNOREHIT,
-                         &aTempTable->filterCallBack,  // Filter
-                         aHash,                        // HashValue,
-                         &aTempTable->groupCursor )
-              != IDE_SUCCESS );
+        //-----------------------------------------
+        // Hash Index¸¦ À§ÇÑ µÎ Row°£ÀÇ Filter ¼³Á¤
+        //-----------------------------------------
+        IDE_TEST( makeTwoRowHashFilterCallBack( aTempTable, aRow )
+                  != IDE_SUCCESS );
 
-    //-----------------------------------------
-    // ë™ì¼ Groupì˜ ê²€ìƒ‰
-    //-----------------------------------------
-    IDE_TEST( smiTempTable::fetch( aTempTable->groupCursor,
-                                   (UChar**) aResultRow,
-                                   & aTempTable->recordNode->dstTuple->rid )
-              != IDE_SUCCESS );
+        //-----------------------------------------
+        // µ¿ÀÏ GroupÀ» Ã£±â À§ÇÑ Cursor¸¦ ¿¬´Ù.
+        //-----------------------------------------
+        IDE_TEST( smiHashTempTable::openUpdateHashCursor( aTempTable->groupCursor,
+                                                          SMI_TCFLAG_FORWARD |
+                                                          SMI_TCFLAG_HASHSCAN |
+                                                          SMI_TCFLAG_IGNOREHIT,
+                                                          &aTempTable->filterCallBack,  // Filter
+                                                          (UChar**) aResultRow,
+                                                          & aTempTable->recordNode->dstTuple->rid )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        *aResultRow = NULL;
+    }
 
     return IDE_SUCCESS;
 
@@ -987,22 +1039,21 @@ qmcDiskHash::getDisplayInfo( qmcdDiskHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    Temp Tableì´ ê´€ë¦¬í•˜ê³  ìˆëŠ” Dataì— ëŒ€í•œ í†µê³„ ì •ë³´ ì¶”ì¶œ
+ *    Temp TableÀÌ °ü¸®ÇÏ°í ÀÖ´Â Data¿¡ ´ëÇÑ Åë°è Á¤º¸ ÃßÃâ
  *
  * Implementation :
  *
  ***********************************************************************/
 
     // BUG-39644
-    // temp table create ê°€ ì‹¤íŒ¨í•´ë„
-    // MM ì—ì„œ plan text ë¥¼ ìƒì„±í•˜ê¸° ìœ„í•´ì„œ í˜¸ì¶œí• ìˆ˜ ìˆë‹¤.
+    // temp table create °¡ ½ÇÆĞÇØµµ
+    // MM ¿¡¼­ plan text ¸¦ »ı¼ºÇÏ±â À§ÇØ¼­ È£ÃâÇÒ¼ö ÀÖ´Ù.
     if ( aTempTable->tableHandle != NULL )
     {
-        IDE_TEST( smiTempTable::getDisplayInfo(
-                                aTempTable->tableHandle,
-                                aPageCount,
-                                aRecordCount )
-                  != IDE_SUCCESS );
+        smiHashTempTable::getDisplayInfo(
+                      aTempTable->tableHandle,
+                      aPageCount,
+                      aRecordCount );
     }
     else
     {
@@ -1011,10 +1062,6 @@ qmcDiskHash::getDisplayInfo( qmcdDiskHashTemp * aTempTable,
     }
 
     return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
 }
 
 IDE_RC
@@ -1023,32 +1070,32 @@ qmcDiskHash::createTempTable( qmcdDiskHashTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    Disk Temp Tableì„ ìƒì„±í•œë‹¤.
+ *    Disk Temp TableÀ» »ı¼ºÇÑ´Ù.
  *
  * Implementation :
- *    1.  Disk Temp Table ìƒì„±ì„ ìœ„í•œ ì •ë³´ êµ¬ì„±
- *        - Hit Flagì„ ìœ„í•œ ìë£Œ êµ¬ì¡° ì´ˆê¸°í™”
- *        - Insert Column List ì •ë³´ì˜ êµ¬ì„±
- *        - Aggregation Column List ì •ë³´ì˜ êµ¬ì„±
- *        - NULL ROWì˜ ìƒì„±
- *    2.  Disk Temp Table ìƒì„±
- *    3.  Temp Table Manager ì— Table Handle ë“±ë¡
+ *    1.  Disk Temp Table »ı¼ºÀ» À§ÇÑ Á¤º¸ ±¸¼º
+ *        - Hit FlagÀ» À§ÇÑ ÀÚ·á ±¸Á¶ ÃÊ±âÈ­
+ *        - Insert Column List Á¤º¸ÀÇ ±¸¼º
+ *        - Aggregation Column List Á¤º¸ÀÇ ±¸¼º
+ *        - NULL ROWÀÇ »ı¼º
+ *    2.  Disk Temp Table »ı¼º
+ *    3.  Temp Table Manager ¿¡ Table Handle µî·Ï
  *
  ***********************************************************************/
 
     UInt                   sFlag;
 
     //-------------------------------------------------
-    // 1.  Disk Temp Table ìƒì„±ì„ ìœ„í•œ ì •ë³´ êµ¬ì„±
+    // 1.  Disk Temp Table »ı¼ºÀ» À§ÇÑ Á¤º¸ ±¸¼º
     //-------------------------------------------------
 
-    // Insert Column List ì •ë³´ì˜ êµ¬ì„±
+    // Insert Column List Á¤º¸ÀÇ ±¸¼º
     IDE_TEST( setInsertColumnList( aTempTable ) != IDE_SUCCESS );
 
-    // Aggregation Column List ì •ë³´ì˜ êµ¬ì„±
+    // Aggregation Column List Á¤º¸ÀÇ ±¸¼º
     if ( aTempTable->aggrNode != NULL )
     {
-        // Aggregation ì •ë³´ê°€ ìˆë‹¤ë©´ Column Listì •ë³´ë¥¼ êµ¬ì„±
+        // Aggregation Á¤º¸°¡ ÀÖ´Ù¸é Column ListÁ¤º¸¸¦ ±¸¼º
         IDE_TEST( setAggrColumnList( aTempTable ) != IDE_SUCCESS );
     }
     else
@@ -1057,43 +1104,45 @@ qmcDiskHash::createTempTable( qmcdDiskHashTemp * aTempTable )
     }
 
     //-----------------------------------------
-    // Key ë‚´ì—ì„œì˜ Index Column ì •ë³´ì˜ êµ¬ì„±
-    // createTempTableí•˜ê¸° ìœ„í•´ì„œëŠ” key column ì •ë³´ë¥¼ ë¨¼ì € êµ¬ì¶•í•´ì•¼ í•œë‹¤.
+    // Key ³»¿¡¼­ÀÇ Index Column Á¤º¸ÀÇ ±¸¼º
+    // createTempTableÇÏ±â À§ÇØ¼­´Â key column Á¤º¸¸¦ ¸ÕÀú ±¸ÃàÇØ¾ß ÇÑ´Ù.
     //-----------------------------------------
     IDE_TEST( makeIndexColumnInfoInKEY( aTempTable ) != IDE_SUCCESS );
 
     //-------------------------------------------------
-    // 2.  Disk Temp Tableì˜ ìƒì„±
+    // 2.  Disk Temp TableÀÇ »ı¼º
     //-------------------------------------------------
-    sFlag = SMI_TTFLAG_TYPE_HASH;
-    // Uniquenessì˜ ê²°ì •
+    // UniquenessÀÇ °áÁ¤
     if ( (aTempTable->flag & QMCD_DISK_HASH_INSERT_DISTINCT_MASK)
          == QMCD_DISK_HASH_INSERT_DISTINCT_TRUE )
     {
-        // UNIQUE INDEX ìƒì„±
-        sFlag |= SMI_TTFLAG_UNIQUE;
+        // UNIQUE INDEX »ı¼º
+        sFlag = SMI_TTFLAG_UNIQUE;
+    }
+    else
+    {
+        sFlag = SMI_TTFLAG_NONE;
     }
 
-    IDE_TEST( smiTempTable::create( 
+    IDE_TEST( smiHashTempTable::create( 
                 aTempTable->mTemplate->stmt->mStatistics,
                 QCG_GET_SESSION_TEMPSPACE_ID( aTempTable->mTemplate->stmt ),
                 aTempTable->mTempTableSize, /* aWorkAreaSize */
                 QC_SMI_STMT( aTempTable->mTemplate->stmt ), // smi statement
                 sFlag,
-                aTempTable->insertColumn,        // Tableì˜ Column êµ¬ì„±
+                aTempTable->insertColumn,        // TableÀÇ Column ±¸¼º
                 aTempTable->hashKeyColumnList,   // key column list
-                0,                               // WorkGroupRatio
-                (const void**) & aTempTable->tableHandle ) // Table í•¸ë“¤
+                (const void**)& aTempTable->tableHandle ) // Table ÇÚµé
         != IDE_SUCCESS );
 
     aTempTable->recordNode->dstTuple->tableHandle = aTempTable->tableHandle;
 
     //-------------------------------------------------
-    // 3.  Table Handleì„ Temp Table Managerì— ë“±ë¡
+    // 3.  Table HandleÀ» Temp Table Manager¿¡ µî·Ï
     //-------------------------------------------------
     /* BUG-38290 
-     * Temp table manager ì˜ addTempTable í•¨ìˆ˜ëŠ” ë™ì‹œì— í˜¸ì¶œë  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ
-     * mutex ë¥¼ í†µí•œ ë™ì‹œì„± ì œì–´ë¥¼ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+     * Temp table manager ÀÇ addTempTable ÇÔ¼ö´Â µ¿½Ã¿¡ È£ÃâµÉ ¼ö ¾øÀ¸¹Ç·Î
+     * mutex ¸¦ ÅëÇÑ µ¿½Ã¼º Á¦¾î¸¦ ÇÏÁö ¾Ê´Â´Ù.
      */
     IDE_TEST(
         qmcTempTableMgr::addTempTable( aTempTable->mTemplate->stmt->qmxMem,
@@ -1102,11 +1151,11 @@ qmcDiskHash::createTempTable( qmcdDiskHashTemp * aTempTable )
         != IDE_SUCCESS );
 
     //-------------------------------------------------
-    // 4.  ì‚½ì…í•  Valueë¥¼ ë„£ì„ ê³µê°„ì„ í• ë‹¹ë°›ìŒ
+    // 4.  »ğÀÔÇÒ Value¸¦ ³ÖÀ» °ø°£À» ÇÒ´ç¹ŞÀ½
     //-------------------------------------------------
     IDE_ERROR( aTempTable->insertValue == NULL );
 
-    // Insert Value ì •ë³´ë¥¼ ìœ„í•œ ê³µê°„ì„ í• ë‹¹í•œë‹¤.
+    // Insert Value Á¤º¸¸¦ À§ÇÑ °ø°£À» ÇÒ´çÇÑ´Ù.
     IDU_LIMITPOINT("qmcDiskHash::openInsertCursor::malloc");
     IDE_TEST( aTempTable->mTemplate->stmt->qmxMem->alloc(
             ID_SIZEOF(smiValue) * (aTempTable->recordColumnCnt),
@@ -1138,20 +1187,20 @@ qmcDiskHash::setInsertColumnList( qmcdDiskHashTemp * aTempTable )
  *
  * Description :
  *
- *    Tableì˜ Column Listì •ë³´ë¥¼ êµ¬ì„±í•œë‹¤.
+ *    TableÀÇ Column ListÁ¤º¸¸¦ ±¸¼ºÇÑ´Ù.
  *
  * Implementation :
- *    - Column Listë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
- *    - Column Listì— Column ì •ë³´ì˜ ì—°ê²°
- *        - Hit Flagì„ ìœ„í•œ ì •ë³´ ì—°ê²°
- *        - ê° Column ì •ë³´ì˜ ì—°ê²°
+ *    - Column List¸¦ À§ÇÑ °ø°£ ÇÒ´ç
+ *    - Column List¿¡ Column Á¤º¸ÀÇ ¿¬°á
+ *        - Hit FlagÀ» À§ÇÑ Á¤º¸ ¿¬°á
+ *        - °¢ Column Á¤º¸ÀÇ ¿¬°á
  *
  ***********************************************************************/
 
     UInt        i;
     mtcColumn * sColumn;
 
-    // Column ê°œìˆ˜ë§Œí¼ Memory í• ë‹¹
+    // Column °³¼ö¸¸Å­ Memory ÇÒ´ç
     IDU_FIT_POINT( "qmcDiskHash::setInsertColumnList::alloc::insertColumn",
                     idERR_ABORT_InsufficientMemory );
 
@@ -1160,31 +1209,31 @@ qmcDiskHash::setInsertColumnList( qmcdDiskHashTemp * aTempTable )
             (void**) & aTempTable->insertColumn ) != IDE_SUCCESS);
 
     //-------------------------------------------
-    // ìµœì´ˆ Columnì€ Hit Flagì„ ì—°ê²°í•˜ê³ ,
-    // ì´í›„ì˜ Columnì€ Tuple Set ì •ë³´ë¥¼ ì´ìš©í•œë‹¤.
+    // ÃÖÃÊ ColumnÀº Hit FlagÀ» ¿¬°áÇÏ°í,
+    // ÀÌÈÄÀÇ ColumnÀº Tuple Set Á¤º¸¸¦ ÀÌ¿ëÇÑ´Ù.
     //-------------------------------------------
 
     // To Fix PR-7995
-    // Column IDë¥¼ ì´ˆê¸°í™”í•´ì£¼ì–´ì•¼ í•¨
-    // ê° Columnë“¤ì˜ Column ì •ë³´ ì—°ê²°
+    // Column ID¸¦ ÃÊ±âÈ­ÇØÁÖ¾î¾ß ÇÔ
+    // °¢ ColumnµéÀÇ Column Á¤º¸ ¿¬°á
     for ( i = 0, sColumn = aTempTable->recordNode->dstTuple->columns;
           i < aTempTable->recordColumnCnt;
           i++ )
     {
-        // ì´ì „ Column Listì˜ ì—°ê²° ì •ë³´ êµ¬ì„±
+        // ÀÌÀü Column ListÀÇ ¿¬°á Á¤º¸ ±¸¼º
         if( i < aTempTable->recordColumnCnt - 1 )
         {
             aTempTable->insertColumn[i].next = & aTempTable->insertColumn[i+1];
         }
         else
         {
-            /* ë§ˆì§€ë§‰ ì¹¼ëŸ¼ì´ë©´, Nullì„ ì—°ê²° */
+            /* ¸¶Áö¸· Ä®·³ÀÌ¸é, NullÀ» ¿¬°á */
             aTempTable->insertColumn[i].next = NULL;
         }
 
         // To Fix PR-7995
-        // Column IDë¥¼ ì´ˆê¸°í™”í•´ì£¼ì–´ì•¼ í•¨
-        // í˜„ì¬ Column Listì˜ Column ì •ë³´ ì—°ê²°
+        // Column ID¸¦ ÃÊ±âÈ­ÇØÁÖ¾î¾ß ÇÔ
+        // ÇöÀç Column ListÀÇ Column Á¤º¸ ¿¬°á
         sColumn[i].column.id = i;
         aTempTable->insertColumn[i].column = & sColumn[i].column;
     }
@@ -1206,13 +1255,13 @@ qmcDiskHash::setAggrColumnList( qmcdDiskHashTemp * aTempTable )
  *
  * Description :
  *
- *    Aggregation ì •ë³´ì— ëŒ€í•œ UPDATEë¥¼ ìˆ˜í–‰í•˜ê¸° ìœ„í•´
- *    Aggreagtion Column Listì •ë³´ë¥¼ êµ¬ì„±í•œë‹¤.
+ *    Aggregation Á¤º¸¿¡ ´ëÇÑ UPDATE¸¦ ¼öÇàÇÏ±â À§ÇØ
+ *    Aggreagtion Column ListÁ¤º¸¸¦ ±¸¼ºÇÑ´Ù.
  *
  * Implementation :
- *    - Column Listë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
- *    - Aggregation Nodeë¥¼ ìˆœíšŒí•˜ë©°, í•˜ë‚˜ì˜ Aggregation Nodeê°€ ê°€ì§„
- *      Columnê°œìˆ˜ë§Œí¼ Column Listë¥¼ êµ¬ì„±í•œë‹¤.
+ *    - Column List¸¦ À§ÇÑ °ø°£ ÇÒ´ç
+ *    - Aggregation Node¸¦ ¼øÈ¸ÇÏ¸ç, ÇÏ³ªÀÇ Aggregation Node°¡ °¡Áø
+ *      Column°³¼ö¸¸Å­ Column List¸¦ ±¸¼ºÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1221,10 +1270,10 @@ qmcDiskHash::setAggrColumnList( qmcdDiskHashTemp * aTempTable )
     UInt sColumnCnt;
     qmdMtrNode * sNode;
 
-    // ì í•©ì„± ê²€ì‚¬.
+    // ÀûÇÕ¼º °Ë»ç.
     IDE_DASSERT ( aTempTable->aggrColumnCnt != 0 );
 
-    // Column ê°œìˆ˜ë§Œí¼ Memory í• ë‹¹
+    // Column °³¼ö¸¸Å­ Memory ÇÒ´ç
     IDU_FIT_POINT( "qmcDiskHash::setAggrColumnList::alloc::aggrColumnList",
                     idERR_ABORT_InsufficientMemory );
 
@@ -1238,28 +1287,28 @@ qmcDiskHash::setAggrColumnList( qmcdDiskHashTemp * aTempTable )
           sNode = sNode->next )
     {
         // To Fix PR-7994, PR-8415
-        // Source Nodeë¥¼ ì´ìš©í•˜ì—¬ Column Countë¥¼ íšë“
+        // Source Node¸¦ ÀÌ¿ëÇÏ¿© Column Count¸¦ È¹µæ
 
         // To Fix PR-12093
-        // Destine Nodeë¥¼ ì‚¬ìš©í•˜ì—¬ mtcColumnì˜ Countë¥¼ êµ¬í•˜ëŠ” ê²ƒì´ ì›ì¹™ì— ë§ìŒ
-        // ì‚¬ìš©í•˜ì§€ë„ ì•Šì„ mtcColumn ì •ë³´ë¥¼ ìœ ì§€í•˜ëŠ” ê²ƒì€ ë¶ˆí•©ë¦¬í•¨.
-        //     - Memory ê³µê°„ ë‚­ë¹„
-        //     - offset ì¡°ì • ì˜¤ë¥˜ (PR-12093)
+        // Destine Node¸¦ »ç¿ëÇÏ¿© mtcColumnÀÇ Count¸¦ ±¸ÇÏ´Â °ÍÀÌ ¿øÄ¢¿¡ ¸ÂÀ½
+        // »ç¿ëÇÏÁöµµ ¾ÊÀ» mtcColumn Á¤º¸¸¦ À¯ÁöÇÏ´Â °ÍÀº ºÒÇÕ¸®ÇÔ.
+        //     - Memory °ø°£ ³¶ºñ
+        //     - offset Á¶Á¤ ¿À·ù (PR-12093)
 
         sColumnCnt =
             sNode->dstNode->node.module->lflag & MTC_NODE_COLUMN_COUNT_MASK;
 
-        // Column ê°œìˆ˜ë§Œí¼ Column List ì •ë³´ë¥¼ ì—°ê²°(8365)
+        // Column °³¼ö¸¸Å­ Column List Á¤º¸¸¦ ¿¬°á(8365)
         for ( j = 0; j < sColumnCnt; j++, i++ )
         {
-            // Column ì •ë³´ì˜ ì—°ê²°
+            // Column Á¤º¸ÀÇ ¿¬°á
             aTempTable->aggrColumnList[i].column =
                 & sNode->dstColumn[j].column;
 
-            // ABRì„ ë§‰ê¸° ìœ„í•œ ê²€ì‚¬
+            // ABRÀ» ¸·±â À§ÇÑ °Ë»ç
             if ( (i + 1) < aTempTable->aggrColumnCnt )
             {
-                // Column Listê°„ì˜ ì—°ê²° ê´€ê³„
+                // Column List°£ÀÇ ¿¬°á °ü°è
                 aTempTable->aggrColumnList[i].next =
                     & aTempTable->aggrColumnList[i+1];
             }
@@ -1270,8 +1319,8 @@ qmcDiskHash::setAggrColumnList( qmcdDiskHashTemp * aTempTable )
         }
     }
 
-    // ì í•©ì„± ê²€ì‚¬.
-    // Aggregation Columnê°œìˆ˜ë§Œí¼ Column List ì •ë³´ê°€ Settingë˜ì–´ ìˆì–´ì•¼ í•¨
+    // ÀûÇÕ¼º °Ë»ç.
+    // Aggregation Column°³¼ö¸¸Å­ Column List Á¤º¸°¡ SettingµÇ¾î ÀÖ¾î¾ß ÇÔ
     IDE_DASSERT( i == aTempTable->aggrColumnCnt );
 
     return IDE_SUCCESS;
@@ -1287,18 +1336,18 @@ qmcDiskHash::makeIndexColumnInfoInKEY( qmcdDiskHashTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    Indexìƒì„± ì‹œ Recordë‚´ì—ì„œ Index Keyë¡œ í¬í•¨ë  ì»¬ëŸ¼ì˜ ì •ë³´ë¥¼
- *    êµ¬ì„±í•œë‹¤.  Disk Indexì˜ ê²½ìš° Key ê°’ì„ ë³„ë„ë¡œ ì €ì¥í•˜ê¸° ë•Œë¬¸ì—,
- *    Index ìƒì„± ì‹œ, Recordë‚´ì—ì„œì˜ Index Key Columnì˜ ì •ë³´ì™€
- *    Keyë‚´ì—ì„œì˜ Index Key Columnì •ë³´ë¥¼ êµ¬ë¶„í•˜ì—¬ ì²˜ë¦¬í•˜ì—¬ì•¼ í•œë‹¤.
+ *    Index»ı¼º ½Ã Record³»¿¡¼­ Index Key·Î Æ÷ÇÔµÉ ÄÃ·³ÀÇ Á¤º¸¸¦
+ *    ±¸¼ºÇÑ´Ù.  Disk IndexÀÇ °æ¿ì Key °ªÀ» º°µµ·Î ÀúÀåÇÏ±â ¶§¹®¿¡,
+ *    Index »ı¼º ½Ã, Record³»¿¡¼­ÀÇ Index Key ColumnÀÇ Á¤º¸¿Í
+ *    Key³»¿¡¼­ÀÇ Index Key ColumnÁ¤º¸¸¦ ±¸ºĞÇÏ¿© Ã³¸®ÇÏ¿©¾ß ÇÑ´Ù.
  *
- *    ì¦‰, Index Columnì˜ ê²½ìš° Recordë‚´ì—ì„œì˜ offsetê³¼ Keyë‚´ì—ì„œì˜
- *    offsetì´ ë‹¤ë¥´ê²Œ ëœë‹¤.
+ *    Áï, Index ColumnÀÇ °æ¿ì Record³»¿¡¼­ÀÇ offset°ú Key³»¿¡¼­ÀÇ
+ *    offsetÀÌ ´Ù¸£°Ô µÈ´Ù.
  *
  * Implementation :
  *
- *    - Key Columnì„ ìœ„í•œ mtcColumn ì •ë³´ êµ¬ì¶•
- *    - Key Columnì„ ìœ„í•œ smiColumnList êµ¬ì¶•
+ *    - Key ColumnÀ» À§ÇÑ mtcColumn Á¤º¸ ±¸Ãà
+ *    - Key ColumnÀ» À§ÇÑ smiColumnList ±¸Ãà
  *
  ***********************************************************************/
 
@@ -1307,13 +1356,13 @@ qmcDiskHash::makeIndexColumnInfoInKEY( qmcdDiskHashTemp * aTempTable )
     qmdMtrNode    * sNode;
 
     //------------------------------------------------------------
-    // Key ë‚´ì—ì„œì˜ Index ëŒ€ìƒ Columnì˜ ì •ë³´ êµ¬ì„±
-    // í•´ë‹¹ Columnì´ Keyê°’ìœ¼ë¡œ ì €ì¥ë˜ì—ˆì„ ë•Œ,
-    // Recordë‚´ì—ì„œì˜ offset ì •ë³´ì™€ ë‹¬ë¦¬ Key ë‚´ì—ì„œì˜ offsetì •ë³´ë¡œ
-    // ë³€ê²½ë˜ì–´ì•¼ í•œë‹¤.
+    // Key ³»¿¡¼­ÀÇ Index ´ë»ó ColumnÀÇ Á¤º¸ ±¸¼º
+    // ÇØ´ç ColumnÀÌ Key°ªÀ¸·Î ÀúÀåµÇ¾úÀ» ¶§,
+    // Record³»¿¡¼­ÀÇ offset Á¤º¸¿Í ´Ş¸® Key ³»¿¡¼­ÀÇ offsetÁ¤º¸·Î
+    // º¯°æµÇ¾î¾ß ÇÑ´Ù.
     //------------------------------------------------------------
 
-    // Key Column ì •ë³´ë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
+    // Key Column Á¤º¸¸¦ À§ÇÑ °ø°£ ÇÒ´ç
     IDU_FIT_POINT( "qmcDiskHash::makeIndexColumnInfoInKEY::alloc::hashKeyColumn",
                     idERR_ABORT_InsufficientMemory );
 
@@ -1322,7 +1371,7 @@ qmcDiskHash::makeIndexColumnInfoInKEY( qmcdDiskHashTemp * aTempTable )
                         (void**) & aTempTable->hashKeyColumn ) != IDE_SUCCESS);
 
     //---------------------------------------
-    // Key Columnì˜ mtcColumn ì •ë³´ ìƒì„±
+    // Key ColumnÀÇ mtcColumn Á¤º¸ »ı¼º
     //---------------------------------------
 
     sOffset = 0;
@@ -1330,22 +1379,22 @@ qmcDiskHash::makeIndexColumnInfoInKEY( qmcdDiskHashTemp * aTempTable )
           i < aTempTable->hashColumnCnt;
           i++, sNode = sNode->next )
     {
-        // Recordë‚´ì˜ Column ì •ë³´ë¥¼ ë³µì‚¬
+        // Record³»ÀÇ Column Á¤º¸¸¦ º¹»ç
         idlOS::memcpy( & aTempTable->hashKeyColumn[i],
                        sNode->dstColumn,
                        ID_SIZEOF(mtcColumn) );
 
         // fix BUG-8763
-        // Index Columnì˜ ê²½ìš° ë‹¤ìŒ Flagì„ í‘œì‹œí•˜ì—¬ì•¼ í•¨.
+        // Index ColumnÀÇ °æ¿ì ´ÙÀ½ FlagÀ» Ç¥½ÃÇÏ¿©¾ß ÇÔ.
         aTempTable->hashKeyColumn[i].column.flag &= ~SMI_COLUMN_USAGE_MASK;
         aTempTable->hashKeyColumn[i].column.flag |= SMI_COLUMN_USAGE_INDEX;
 
-        // Offset ì¬ì¡°ì •
+        // Offset ÀçÁ¶Á¤
         if ( (aTempTable->hashKeyColumn[i].column.flag
               & SMI_COLUMN_TYPE_MASK ) == SMI_COLUMN_TYPE_FIXED )
         {
-            // Fixed Column ì¼ ê²½ìš°
-            // Data Typeì— ë§ëŠ” align ì¡°ì •
+            // Fixed Column ÀÏ °æ¿ì
+            // Data Type¿¡ ¸Â´Â align Á¶Á¤
             sOffset =
                 idlOS::align( sOffset,
                               aTempTable->hashKeyColumn[i].module->align );
@@ -1356,26 +1405,26 @@ qmcDiskHash::makeIndexColumnInfoInKEY( qmcdDiskHashTemp * aTempTable )
         else
         {
             //------------------------------------------
-            // Variable Columnì¼ ê²½ìš°
-            // Variable Column Header í¬ê¸°ê°€ ì €ì¥ë¨
-            // ì´ì— ë§ëŠ” alignì„ ìˆ˜í–‰í•´ì•¼ í•¨.
+            // Variable ColumnÀÏ °æ¿ì
+            // Variable Column Header Å©±â°¡ ÀúÀåµÊ
+            // ÀÌ¿¡ ¸Â´Â alignÀ» ¼öÇàÇØ¾ß ÇÔ.
             //------------------------------------------
             sOffset = idlOS::align( sOffset, 8 );
             aTempTable->hashKeyColumn[i].column.offset = sOffset;
             aTempTable->hashKeyColumn[i].column.value = NULL;
 
 // PROJ_1705_PEH_TODO            
-            // Fixed ì˜ì—­ ë‚´ì—ëŠ” Headerë§Œ ì €ì¥ëœë‹¤.
+            // Fixed ¿µ¿ª ³»¿¡´Â Header¸¸ ÀúÀåµÈ´Ù.
             sOffset += smiGetVariableColumnSize( SMI_TABLE_DISK );
         }
     }
 
     //---------------------------------------
-    // Key Columnì„ ìœ„í•œ smiColumnList êµ¬ì¶•
-    // ìƒìœ„ì—ì„œ êµ¬ì¶•í•œ indexKeyColumnì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ êµ¬ì¶•í•œë‹¤.
+    // Key ColumnÀ» À§ÇÑ smiColumnList ±¸Ãà
+    // »óÀ§¿¡¼­ ±¸ÃàÇÑ indexKeyColumnÁ¤º¸¸¦ ÀÌ¿ëÇÏ¿© ±¸ÃàÇÑ´Ù.
     //---------------------------------------
 
-    // Key Column Listë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹
+    // Key Column List¸¦ À§ÇÑ °ø°£ ÇÒ´ç
     IDU_FIT_POINT( "qmcDiskHash::makeIndexColumnInfoInKEY::alloc::hashKeyColumnList",
                     idERR_ABORT_InsufficientMemory );
 
@@ -1383,14 +1432,14 @@ qmcDiskHash::makeIndexColumnInfoInKEY( qmcdDiskHashTemp * aTempTable )
                         ID_SIZEOF(smiColumnList) * aTempTable->hashColumnCnt,
                         (void**) & aTempTable->hashKeyColumnList ) != IDE_SUCCESS);
 
-    // Key Column Listì˜ ì •ë³´ êµ¬ì„±
+    // Key Column ListÀÇ Á¤º¸ ±¸¼º
     for ( i = 0; i < aTempTable->hashColumnCnt; i++ )
     {
-        // ìƒìœ„ì—ì„œ êµ¬ì„±í•œ Column ì •ë³´ë¥¼ ì´ìš©
+        // »óÀ§¿¡¼­ ±¸¼ºÇÑ Column Á¤º¸¸¦ ÀÌ¿ë
         aTempTable->hashKeyColumnList[i].column =
             & aTempTable->hashKeyColumn[i].column;
 
-        // Array Bound Readë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•œ ê²€ì‚¬.
+        // Array Bound Read¸¦ ¹æÁöÇÏ±â À§ÇÑ °Ë»ç.
         if ( (i + 1) < aTempTable->hashColumnCnt )
         {
             aTempTable->hashKeyColumnList[i].next =
@@ -1409,76 +1458,19 @@ qmcDiskHash::makeIndexColumnInfoInKEY( qmcdDiskHashTemp * aTempTable )
     return IDE_FAILURE;
 }
 
-IDE_RC qmcDiskHash::openCursor( qmcdDiskHashTemp  * aTempTable,
-                                UInt                aFlag,
-                                smiCallBack       * aFilter,
-                                UInt                aHashValue,
-                                smiTempCursor    ** aTargetCursor )
-{
-/***********************************************************************
- *
- * Description :
- *    GroupFini/Group/Search/HitFlagë¥¼ ìœ„í•œ Cursorë¥¼ ì—°ë‹¤.
- *
- * Implementation :
- *    1. Cursorê°€ í•œ ë²ˆë„ Openë˜ì§€ ì•Šì€ ê²½ìš°,
- *        - Cursorì˜ Open
- *    2. Cursorê°€ ì—´ë ¤ ìˆëŠ” ê²½ìš°,
- *        - Cursorë¥¼ Restart
- *
- ***********************************************************************/
-
-    if( *aTargetCursor == NULL )
-    {
-        //-----------------------------------------
-        // 1. Cursorê°€ ì—´ë ¤ ìˆì§€ ì•Šì€ ê²½ìš°
-        //-----------------------------------------
-        IDE_TEST( smiTempTable::openCursor( 
-                aTempTable->tableHandle,
-                aFlag,
-                aTempTable->aggrColumnList,   // Update Columnì •ë³´
-                smiGetDefaultKeyRange(),      // Key Range
-                smiGetDefaultKeyRange(),      // Key Filter
-                aFilter,                      // Filter
-                aHashValue,
-                aTargetCursor )
-            != IDE_SUCCESS );
-    }
-    else
-    {
-        //-----------------------------------------
-        // 2. Cursorê°€ ì—´ë ¤ ìˆëŠ” ê²½ìš°
-        //-----------------------------------------
-        IDE_TEST( smiTempTable::restartCursor( 
-                *aTargetCursor,
-                aFlag,
-                smiGetDefaultKeyRange(),      // Key Range
-                smiGetDefaultKeyRange(),      // Key Filter
-                aFilter,                      // Filter
-                aHashValue )
-            != IDE_SUCCESS );
-    }
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
 IDE_RC
 qmcDiskHash::makeInsertSmiValue( qmcdDiskHashTemp * aTempTable )
 {
 /***********************************************************************
  *
  * Description :
- *    Insertë¥¼ ìœ„í•œ Smi Value êµ¬ì„± ì •ë³´ë¥¼ ìƒì„±í•œë‹¤.
+ *    Insert¸¦ À§ÇÑ Smi Value ±¸¼º Á¤º¸¸¦ »ı¼ºÇÑ´Ù.
  *
  * Implementation :
- *    Disk Temp Tableì˜ Recordë¥¼ ìœ„í•˜ì—¬ ìƒì„±ëœ ê³µê°„ì—ì„œ
- *    ê° Columnì˜ Value ì •ë³´ë¥¼ êµ¬ì„±í•œë‹¤.
- *    ìµœì´ˆ í•œ ë²ˆë§Œ êµ¬ì„±í•˜ë©°, ì´ëŠ” Temp Tableì´ ì‚¬ë¼ì§ˆ ë•Œê¹Œì§€
- *    ì´ë¯¸ í• ë‹¹ëœ Record ê³µê°„ì€ ì ˆëŒ€ ë³€í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì´ë‹¤.
+ *    Disk Temp TableÀÇ Record¸¦ À§ÇÏ¿© »ı¼ºµÈ °ø°£¿¡¼­
+ *    °¢ ColumnÀÇ Value Á¤º¸¸¦ ±¸¼ºÇÑ´Ù.
+ *    ÃÖÃÊ ÇÑ ¹ø¸¸ ±¸¼ºÇÏ¸ç, ÀÌ´Â Temp TableÀÌ »ç¶óÁú ¶§±îÁö
+ *    ÀÌ¹Ì ÇÒ´çµÈ Record °ø°£Àº Àı´ë º¯ÇÏÁö ¾Ê±â ¶§¹®ÀÌ´Ù.
  *
  ***********************************************************************/
 
@@ -1487,8 +1479,8 @@ qmcDiskHash::makeInsertSmiValue( qmcdDiskHashTemp * aTempTable )
 
     for ( i = 0; i < aTempTable->recordColumnCnt; i++ )
     {
-        // PROJ-1597 Temp record size ì œì•½ ì œê±°
-        // smiValueì˜ length, valueë¥¼ storing formatìœ¼ë¡œ ë°”ê¾¼ë‹¤.
+        // PROJ-1597 Temp record size Á¦¾à Á¦°Å
+        // smiValueÀÇ length, value¸¦ storing formatÀ¸·Î ¹Ù²Û´Ù.
 
         sColumn = &aTempTable->recordNode->dstTuple->columns[i];
 
@@ -1512,15 +1504,15 @@ qmcDiskHash::makeAggrSmiValue( qmcdDiskHashTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    Aggregationì˜ UPDATEë¥¼ ìœ„í•œ Smi Value êµ¬ì„± ì •ë³´ë¥¼ ìƒì„±í•œë‹¤.
+ *    AggregationÀÇ UPDATE¸¦ À§ÇÑ Smi Value ±¸¼º Á¤º¸¸¦ »ı¼ºÇÑ´Ù.
  *
  * Implementation :
- *    Disk Temp Tableì˜ Recordë¥¼ ìœ„í•˜ì—¬ ìƒì„±ëœ ê³µê°„ì—ì„œ
- *    ê° Columnì˜ Value ì •ë³´ë¥¼ êµ¬ì„±í•œë‹¤.
- *    ìµœì´ˆ í•œ ë²ˆë§Œ êµ¬ì„±í•˜ë©°, ì´ëŠ” Temp Tableì´ ì‚¬ë¼ì§ˆ ë•Œê¹Œì§€
- *    ì´ë¯¸ í• ë‹¹ëœ Record ê³µê°„ì€ ì ˆëŒ€ ë³€í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì´ë‹¤.
- *    êµ¬ì„± ì‹œ Aggregation Nodeë¡œë¶€í„° ì ‘ê·¼í•˜ì—¬ í•˜ë‚˜ì˜ ë…¸ë“œë‹¹
- *    Columnê°œìˆ˜ë§Œí¼ Valueì •ë³´ë¥¼ ì„¤ì •í•˜ì—¬ì•¼ í•œë‹¤.
+ *    Disk Temp TableÀÇ Record¸¦ À§ÇÏ¿© »ı¼ºµÈ °ø°£¿¡¼­
+ *    °¢ ColumnÀÇ Value Á¤º¸¸¦ ±¸¼ºÇÑ´Ù.
+ *    ÃÖÃÊ ÇÑ ¹ø¸¸ ±¸¼ºÇÏ¸ç, ÀÌ´Â Temp TableÀÌ »ç¶óÁú ¶§±îÁö
+ *    ÀÌ¹Ì ÇÒ´çµÈ Record °ø°£Àº Àı´ë º¯ÇÏÁö ¾Ê±â ¶§¹®ÀÌ´Ù.
+ *    ±¸¼º ½Ã Aggregation Node·ÎºÎÅÍ Á¢±ÙÇÏ¿© ÇÏ³ªÀÇ ³ëµå´ç
+ *    Column°³¼ö¸¸Å­ ValueÁ¤º¸¸¦ ¼³Á¤ÇÏ¿©¾ß ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1530,7 +1522,7 @@ qmcDiskHash::makeAggrSmiValue( qmcdDiskHashTemp * aTempTable )
     qmdMtrNode * sNode;
     mtcColumn  * sColumn;
 
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     IDE_DASSERT( aTempTable->recordNode->dstTuple->row != NULL );
 
     i = 0;
@@ -1539,19 +1531,19 @@ qmcDiskHash::makeAggrSmiValue( qmcdDiskHashTemp * aTempTable )
           sNode = sNode->next )
     {
         // To Fix PR-7994, PR-8415
-        // Source Nodeë¥¼ ì´ìš©í•˜ì—¬ Column Countë¥¼ íšë“
+        // Source Node¸¦ ÀÌ¿ëÇÏ¿© Column Count¸¦ È¹µæ
 
         // To Fix PR-12093
 
-        // Destine Nodeë¥¼ ì‚¬ìš©í•˜ì—¬ mtcColumnì˜ Countë¥¼
-        // êµ¬í•˜ëŠ” ê²ƒì´ ì›ì¹™ì— ë§ìŒ
-        // ì‚¬ìš©í•˜ì§€ë„ ì•Šì„ mtcColumn ì •ë³´ë¥¼ ìœ ì§€í•˜ëŠ” ê²ƒì€ ë¶ˆí•©ë¦¬í•¨.
-        //     - Memory ê³µê°„ ë‚­ë¹„
-        //     - offset ì¡°ì • ì˜¤ë¥˜ (PR-12093)
+        // Destine Node¸¦ »ç¿ëÇÏ¿© mtcColumnÀÇ Count¸¦
+        // ±¸ÇÏ´Â °ÍÀÌ ¿øÄ¢¿¡ ¸ÂÀ½
+        // »ç¿ëÇÏÁöµµ ¾ÊÀ» mtcColumn Á¤º¸¸¦ À¯ÁöÇÏ´Â °ÍÀº ºÒÇÕ¸®ÇÔ.
+        //     - Memory °ø°£ ³¶ºñ
+        //     - offset Á¶Á¤ ¿À·ù (PR-12093)
         sColumnCnt =
             sNode->dstNode->node.module->lflag & MTC_NODE_COLUMN_COUNT_MASK;
 
-        // Column ê°œìˆ˜ë§Œí¼ Value ì •ë³´ë¥¼ ì—°ê²°
+        // Column °³¼ö¸¸Å­ Value Á¤º¸¸¦ ¿¬°á
         for ( j = 0; j < sColumnCnt; j++, i++ )
         {
             sColumn = &sNode->dstColumn[j];
@@ -1567,8 +1559,8 @@ qmcDiskHash::makeAggrSmiValue( qmcdDiskHashTemp * aTempTable )
         }
     }
 
-    // ì í•©ì„± ê²€ì‚¬.
-    // Aggregation Columnê°œìˆ˜ë§Œí¼ Valueì •ë³´ê°€ Settingë˜ì–´ ìˆì–´ì•¼ í•¨
+    // ÀûÇÕ¼º °Ë»ç.
+    // Aggregation Column°³¼ö¸¸Å­ ValueÁ¤º¸°¡ SettingµÇ¾î ÀÖ¾î¾ß ÇÔ
     IDE_DASSERT( i == aTempTable->aggrColumnCnt );
 
     return IDE_SUCCESS;
@@ -1580,22 +1572,22 @@ qmcDiskHash::makeHashFilterCallBack( qmcdDiskHashTemp * aTempTable )
 /***********************************************************************
  *
  * Description :
- *    ì£¼ì–´ì§„ Filterë¥¼ ë§Œì¡±í•˜ëŠ” ì§€ë¥¼ ê²€ì‚¬í•˜ê¸° ìœ„í•œ Filter CallBackìƒì„±
- *    Hash Joinë“±ê³¼ ê°™ì´ ëª…ë°±íˆ Filterê°€ ì£¼ì–´ì§€ëŠ” ê²½ìš°ì— ì‚¬ìš©ëœë‹¤.
+ *    ÁÖ¾îÁø Filter¸¦ ¸¸Á·ÇÏ´Â Áö¸¦ °Ë»çÇÏ±â À§ÇÑ Filter CallBack»ı¼º
+ *    Hash Joinµî°ú °°ÀÌ ¸í¹éÈ÷ Filter°¡ ÁÖ¾îÁö´Â °æ¿ì¿¡ »ç¿ëµÈ´Ù.
  *
  * Implementation :
- *    ì£¼ì–´ì§„ Filterë¥¼ ì´ìš©í•˜ì—¬ Filter CallBackì„ ìƒì„±í•œë‹¤.
- *    ì ˆì°¨ëŠ” ì¼ë°˜ Filterì˜ ìƒì„± ì ˆì°¨ì™€ ë™ì¼í•œ ë°©ë²•ìœ¼ë¡œ êµ¬ì„±í•œë‹¤.
- *        - Call Back Dataì˜ êµ¬ì„±
- *        - CallBackì˜ êµ¬ì„±
+ *    ÁÖ¾îÁø Filter¸¦ ÀÌ¿ëÇÏ¿© Filter CallBackÀ» »ı¼ºÇÑ´Ù.
+ *    ÀıÂ÷´Â ÀÏ¹İ FilterÀÇ »ı¼º ÀıÂ÷¿Í µ¿ÀÏÇÑ ¹æ¹ıÀ¸·Î ±¸¼ºÇÑ´Ù.
+ *        - Call Back DataÀÇ ±¸¼º
+ *        - CallBackÀÇ ±¸¼º
  *
  ***********************************************************************/
 
-    //ì í•©ì„± ê²€ì‚¬
+    //ÀûÇÕ¼º °Ë»ç
     IDE_DASSERT( aTempTable->hashFilter != NULL);
 
     //-------------------------------
-    // CallBack Data ì˜ êµ¬ì„±
+    // CallBack Data ÀÇ ±¸¼º
     //-------------------------------
 
     qtc::setSmiCallBack( & aTempTable->filterCallBackData,
@@ -1604,13 +1596,13 @@ qmcDiskHash::makeHashFilterCallBack( qmcdDiskHashTemp * aTempTable )
                          aTempTable->recordNode->dstNode->node.table );
 
     //-------------------------------
-    // CallBack ì˜ êµ¬ì„±
+    // CallBack ÀÇ ±¸¼º
     //-------------------------------
 
-    // CallBack í•¨ìˆ˜ì˜ ì—°ê²°
+    // CallBack ÇÔ¼öÀÇ ¿¬°á
     aTempTable->filterCallBack.callback = qtc::smiCallBack;
 
-    // CallBack Dataì˜ Setting
+    // CallBack DataÀÇ Setting
     aTempTable->filterCallBack.data = & aTempTable->filterCallBackData;
 
     return IDE_SUCCESS;
@@ -1623,42 +1615,42 @@ qmcDiskHash::makeTwoRowHashFilterCallBack( qmcdDiskHashTemp * aTempTable,
 /***********************************************************************
  *
  * Description :
- *    ì§€ì •ëœ Recordì™€ ë™ì¼í•œ hash valueë¥¼ ê°–ëŠ” Recordë¥¼ ì°¾ê¸° ìœ„í•œ
- *    Filter CallBackì„ ìƒì„±í•œë‹¤.
+ *    ÁöÁ¤µÈ Record¿Í µ¿ÀÏÇÑ hash value¸¦ °®´Â Record¸¦ Ã£±â À§ÇÑ
+ *    Filter CallBackÀ» »ı¼ºÇÑ´Ù.
  *
  * Implementation :
- *    Rowê°„ì˜ ë™ì¼í•œ Hash Columnì— ëŒ€í•œ ë¹„êµë¥¼ í•˜ê¸° ìœ„í•˜ì—¬,
- *    ë³„ë‹¤ë¥¸ qtcNode í˜•íƒœì˜ filterê°€ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ,
- *    Hashing Columnì˜ êµ¬ì„± ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ Filtering í•´ì•¼ í•œë‹¤.
+ *    Row°£ÀÇ µ¿ÀÏÇÑ Hash Column¿¡ ´ëÇÑ ºñ±³¸¦ ÇÏ±â À§ÇÏ¿©,
+ *    º°´Ù¸¥ qtcNode ÇüÅÂÀÇ filter°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¹Ç·Î,
+ *    Hashing ColumnÀÇ ±¸¼º Á¤º¸¸¦ ÀÌ¿ëÇÏ¿© Filtering ÇØ¾ß ÇÑ´Ù.
  *
  ***********************************************************************/
 
     //-------------------------------
-    // CallBack Data ì˜ êµ¬ì„±
+    // CallBack Data ÀÇ ±¸¼º
     //-------------------------------
 
-    // CallBack Dataë¥¼ ìœ„í•œ ê¸°ë³¸ ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
-    // ì„¤ì •ëœ CallBack Dataì˜ ì •ë³´ ì¤‘ ìœ íš¨í•œ ê²ƒì€ data->tableë¿ì´ë‹¤.
+    // CallBack Data¸¦ À§ÇÑ ±âº» Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
+    // ¼³Á¤µÈ CallBack DataÀÇ Á¤º¸ Áß À¯È¿ÇÑ °ÍÀº data->table»ÓÀÌ´Ù.
     qtc::setSmiCallBack( & aTempTable->filterCallBackData,
                          aTempTable->recordNode->dstNode,
                          aTempTable->mTemplate,
                          aTempTable->recordNode->dstNode->node.table );
 
-    // ë¹„êµ ëŒ€ìƒ Rowë¥¼ ì €ì¥
+    // ºñ±³ ´ë»ó Row¸¦ ÀúÀå
     aTempTable->filterCallBackData.calculateInfo = aRow;
 
-    // Hashing Column ì •ë³´ë¥¼ ê°•ì œë¡œ Type Castingí•˜ì—¬ ì €ì¥
+    // Hashing Column Á¤º¸¸¦ °­Á¦·Î Type CastingÇÏ¿© ÀúÀå
     aTempTable->filterCallBackData.node = (mtcNode*) aTempTable->hashNode;
 
     //-------------------------------
-    // CallBack ì˜ êµ¬ì„±
+    // CallBack ÀÇ ±¸¼º
     //-------------------------------
 
-    // CallBack í•¨ìˆ˜ì˜ ì—°ê²°
+    // CallBack ÇÔ¼öÀÇ ¿¬°á
     aTempTable->filterCallBack.callback =
         qmcDiskHash::hashTwoRowRangeFilter;
 
-    // CallBack Dataì˜ Setting
+    // CallBack DataÀÇ Setting
     aTempTable->filterCallBack.data = & aTempTable->filterCallBackData;
 
     return IDE_SUCCESS;
@@ -1675,11 +1667,11 @@ qmcDiskHash::hashTwoRowRangeFilter( idBool         * aResult,
 /***********************************************************************
  *
  * Description :
- *    í˜„ì¬ Recordì™€ ë™ì¼í•œ Temp Tableë‚´ì˜ Recordë¥¼ ì°¾ê¸° ìœ„í•œ Filter
+ *    ÇöÀç Record¿Í µ¿ÀÏÇÑ Temp Table³»ÀÇ Record¸¦ Ã£±â À§ÇÑ Filter
  *
  * Implementation :
- *    ê°•ì œë¡œ Settingí•˜ì—¬ ë„˜ê¸´ CallBackDataë¥¼ ì´ìš©í•˜ì—¬
- *    Filteringì„ ìˆ˜í–‰í•¨.
+ *    °­Á¦·Î SettingÇÏ¿© ³Ñ±ä CallBackData¸¦ ÀÌ¿ëÇÏ¿©
+ *    FilteringÀ» ¼öÇàÇÔ.
  *
  ***********************************************************************/
 
@@ -1694,11 +1686,11 @@ qmcDiskHash::hashTwoRowRangeFilter( idBool         * aResult,
     sData = (qtcSmiCallBackData *) aData;
 
     //-----------------------------------------------------
-    // ìƒì„±í•˜ì—¬ ë„˜ê¸´ CallBackDataë¡œë¶€í„° í•„ìš”í•œ ì •ë³´ë¥¼ ì¶”ì¶œ
-    //     - sData->caculateInfo : ê²€ìƒ‰í•  Rowì •ë³´ë¥¼ ê¸°ë¡í•¨
+    // »ı¼ºÇÏ¿© ³Ñ±ä CallBackData·ÎºÎÅÍ ÇÊ¿äÇÑ Á¤º¸¸¦ ÃßÃâ
+    //     - sData->caculateInfo : °Ë»öÇÒ RowÁ¤º¸¸¦ ±â·ÏÇÔ
     //     - sData->node :
-    //        qmdMtrNodeì˜ hash nodeë¥¼ ê°•ì œë¡œ type castingí•˜ì—¬
-    //        ì €ì¥í•¨.
+    //        qmdMtrNodeÀÇ hash node¸¦ °­Á¦·Î type castingÇÏ¿©
+    //        ÀúÀåÇÔ.
     //-----------------------------------------------------
 
     sRow = sData->calculateInfo;
@@ -1706,7 +1698,7 @@ qmcDiskHash::hashTwoRowRangeFilter( idBool         * aResult,
 
     for(  ; sNode != NULL; sNode = sNode->next )
     {
-        // ë‘ Recordì˜ Hashing Columnì˜ ê°’ì„ ë¹„êµ
+        // µÎ RecordÀÇ Hashing ColumnÀÇ °ªÀ» ºñ±³
         sValueInfo1.column = (const mtcColumn *)sNode->func.compareColumn;
         sValueInfo1.value  = sNode->func.getRow(sNode, aRow);
         sValueInfo1.flag   = MTD_OFFSET_USE;
@@ -1718,19 +1710,19 @@ qmcDiskHash::hashTwoRowRangeFilter( idBool         * aResult,
         sResult = sNode->func.compare( &sValueInfo1, &sValueInfo2 );
         if( sResult != 0)
         {
-            // ì„œë¡œ ë‹¤ë¥¸ ê²½ìš°, ë” ì´ìƒ ë¹„êµë¥¼ í•˜ì§€ ì•ŠìŒ.
+            // ¼­·Î ´Ù¸¥ °æ¿ì, ´õ ÀÌ»ó ºñ±³¸¦ ÇÏÁö ¾ÊÀ½.
             break;
         }
     }
 
     if ( sResult == 0 )
     {
-        // ë™ì¼í•œ Recordë¥¼ ì°¾ìŒ
+        // µ¿ÀÏÇÑ Record¸¦ Ã£À½
         *aResult = ID_TRUE;
     }
     else
     {
-        // ë™ì¼í•œ Recordê°€ ì•„ë‹˜
+        // µ¿ÀÏÇÑ Record°¡ ¾Æ´Ô
         *aResult = ID_FALSE;
     }
 

@@ -16,16 +16,16 @@
  
 
 /***********************************************************************
- * $Id: qmnCountAsterisk.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qmnCountAsterisk.cpp 91019 2021-06-18 01:25:54Z donovan.seo $
  *
  * Description :
  *     CoUNT (*) Plan Node
  *
- *     Í¥ÄÍ≥ÑÌòï Î™®Îç∏ÏóêÏÑú COUNT(*)ÎßåÏùÑ Ï≤òÎ¶¨ÌïòÍ∏∞ ÏúÑÌïú ÌäπÏàòÌïú Plan Node Ïù¥Îã§.
+ *     ∞¸∞Ë«¸ ∏µ®ø°º≠ COUNT(*)∏∏¿ª √≥∏Æ«œ±‚ ¿ß«— ∆Øºˆ«— Plan Node ¿Ã¥Ÿ.
  *
- * Ïö©Ïñ¥ ÏÑ§Î™Ö :
+ * øÎæÓ º≥∏Ì :
  *
- * ÏïΩÏñ¥ :
+ * æ‡æÓ :
  *
  **********************************************************************/
 
@@ -50,7 +50,7 @@ qmnCUNT::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    CUNT ÎÖ∏ÎìúÏùò Ï¥àÍ∏∞Ìôî
+ *    CUNT ≥ÎµÂ¿« √ ±‚»≠
  *
  * Implementation :
  *
@@ -83,7 +83,7 @@ qmnCUNT::init( qcTemplate * aTemplate,
 
     if ( sDependency == ID_TRUE )
     {
-        // Count(*) Í∞íÏùÑ ÏÉàÎ°ú ÌöçÎìùÌïúÎã§.
+        // Count(*) ∞™¿ª ªı∑Œ »πµÊ«—¥Ÿ.
         IDE_TEST( getCountValue( aTemplate, sCodePlan, sDataPlan )
                   != IDE_SUCCESS );
 
@@ -95,7 +95,7 @@ qmnCUNT::init( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // ÏàòÌñâ Ìï®ÏàòÏùò Í≤∞Ï†ï
+    // ºˆ«‡ «‘ºˆ¿« ∞·¡§
     //------------------------------------------------
 
     sDataPlan->doIt = qmnCUNT::doItFirst;
@@ -115,10 +115,10 @@ qmnCUNT::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    CUNT Ïùò Í≥†Ïú† Í∏∞Îä•ÏùÑ ÏàòÌñâÌïúÎã§.
+ *    CUNT ¿« ∞Ì¿Ø ±‚¥…¿ª ºˆ«‡«—¥Ÿ.
  *
  * Implementation :
- *    ÏßÄÏ†ïÎêú Ìï®Ïàò Ìè¨Ïù∏ÌÑ∞Î•º ÏàòÌñâÌïúÎã§.
+ *    ¡ˆ¡§µ» «‘ºˆ ∆˜¿Œ≈Õ∏¶ ºˆ«‡«—¥Ÿ.
  *
  ***********************************************************************/
 
@@ -136,7 +136,7 @@ qmnCUNT::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    COUNT(*)Ïóê NULL PaddingÏùÑ ÌïúÎã§.
+ *    COUNT(*)ø° NULL Padding¿ª «—¥Ÿ.
  *
  * Implementation :
  *
@@ -148,7 +148,7 @@ qmnCUNT::padNull( qcTemplate * aTemplate,
 
     mtcColumn * sColumn;
 
-    // Ï¥àÍ∏∞ÌôîÍ∞Ä ÏàòÌñâÎêòÏßÄ ÏïäÏùÄ Í≤ΩÏö∞ Ï¥àÍ∏∞ÌôîÎ•º ÏàòÌñâ
+    // √ ±‚»≠∞° ºˆ«‡µ«¡ˆ æ ¿∫ ∞ÊøÏ √ ±‚»≠∏¶ ºˆ«‡
     if ( (aTemplate->planFlag[sCodePlan->planID] & QMND_CUNT_INIT_DONE_MASK)
          == QMND_CUNT_INIT_DONE_FALSE )
     {
@@ -159,7 +159,7 @@ qmnCUNT::padNull( qcTemplate * aTemplate,
         // Nothing To Do
     }
 
-    // COUNT(*) ÏòÅÏó≠Ïóê Null Í∞íÏùÑ ÏÑ§Ï†ïÌïúÎã§.
+    // COUNT(*) øµø™ø° Null ∞™¿ª º≥¡§«—¥Ÿ.
     sColumn = & aTemplate->tmplate.rows[sCodePlan->countNode->node.table]
         .columns[sCodePlan->countNode->node.column];
 
@@ -190,7 +190,7 @@ qmnCUNT::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    CUNT ÎÖ∏ÎìúÏùò ÏàòÌñâ Ï†ïÎ≥¥Î•º Ï∂úÎ†•ÌïúÎã§.
+ *    CUNT ≥ÎµÂ¿« ºˆ«‡ ¡§∫∏∏¶ √‚∑¬«—¥Ÿ.
  *
  * Implementation :
  *
@@ -207,7 +207,7 @@ qmnCUNT::printPlan( qcTemplate   * aTemplate,
     qcmIndex * sIndex;
 
     //----------------------------
-    // Display ÏúÑÏπò Í≤∞Ï†ï
+    // Display ¿ßƒ° ∞·¡§
     //----------------------------
 
     for ( i = 0; i < aDepth; i++ )
@@ -217,7 +217,7 @@ qmnCUNT::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Table Owner Name Ï∂úÎ†•
+    // Table Owner Name √‚∑¬
     //----------------------------
 
     iduVarStringAppend( aString,
@@ -237,7 +237,7 @@ qmnCUNT::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Table Name Ï∂úÎ†•
+    // Table Name √‚∑¬
     //----------------------------
     if ( ( sCodePlan->tableName.size <= QC_MAX_OBJECT_NAME_LEN ) &&
          ( sCodePlan->tableName.name != NULL ) &&
@@ -253,14 +253,14 @@ qmnCUNT::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Alias Name Ï∂úÎ†•
+    // Alias Name √‚∑¬
     //----------------------------
 
     if ( sCodePlan->aliasName.name != NULL &&
          sCodePlan->aliasName.size != QC_POS_EMPTY_SIZE &&
          sCodePlan->aliasName.name != sCodePlan->tableName.name )
     {
-        // Table Ïù¥Î¶Ñ Ï†ïÎ≥¥ÏôÄ Alias Ïù¥Î¶Ñ Ï†ïÎ≥¥Í∞Ä Îã§Î•º Í≤ΩÏö∞
+        // Table ¿Ã∏ß ¡§∫∏øÕ Alias ¿Ã∏ß ¡§∫∏∞° ¥Ÿ∏¶ ∞ÊøÏ
         // (alias name)
         iduVarStringAppend( aString, " " );
 
@@ -277,19 +277,19 @@ qmnCUNT::printPlan( qcTemplate   * aTemplate,
     }
     else
     {
-        // Alias Ïù¥Î¶Ñ Ï†ïÎ≥¥Í∞Ä ÏóÜÍ±∞ÎÇò Table Ïù¥Î¶Ñ Ï†ïÎ≥¥Í∞Ä ÎèôÏùºÌïú Í≤ΩÏö∞
+        // Alias ¿Ã∏ß ¡§∫∏∞° æ¯∞≈≥™ Table ¿Ã∏ß ¡§∫∏∞° µø¿œ«— ∞ÊøÏ
         // Nothing To Do
     }
 
     //----------------------------
-    // Access Method Ï∂úÎ†•
+    // Access Method √‚∑¬
     //----------------------------
 
     sIndex = sMethod->index;
 
     if ( sIndex != NULL )
     {
-        // IndexÍ∞Ä ÏÇ¨Ïö©Îêú Í≤ΩÏö∞
+        // Index∞° ªÁøÎµ» ∞ÊøÏ
         iduVarStringAppend( aString,
                             ", INDEX: " );
 
@@ -312,13 +312,13 @@ qmnCUNT::printPlan( qcTemplate   * aTemplate,
         }
         else
         {
-            // Full ScanÏù∏ Í≤ΩÏö∞
+            // Full Scan¿Œ ∞ÊøÏ
             iduVarStringAppend(aString, ", FULL SCAN");
         }
     }
 
     //----------------------------
-    // ÏàòÌñâ ÌöüÏàò Ï∂úÎ†•
+    // ºˆ«‡ »Ωºˆ √‚∑¬
     //----------------------------
 
     IDE_TEST( printAccessInfo( sCodePlan,
@@ -327,13 +327,13 @@ qmnCUNT::printPlan( qcTemplate   * aTemplate,
                                aMode ) != IDE_SUCCESS );
 
     //----------------------------
-    // Cost Ï∂úÎ†•
+    // Cost √‚∑¬
     //----------------------------
     qmn::printCost( aString,
                     sCodePlan->plan.qmgAllCost );
 
     //----------------------------
-    // Plan ID Ï∂úÎ†•
+    // Plan ID √‚∑¬
     //----------------------------
 
     if( QCU_TRCLOG_DETAIL_MTRNODE == 1 )
@@ -344,7 +344,7 @@ qmnCUNT::printPlan( qcTemplate   * aTemplate,
                                 " " );
         }
 
-        // sCodePlan Ïùò Í∞íÏùÑ Ï∂úÎ†•ÌïòÍ∏∞ÎïåÎ¨∏Ïóê qmn::printMTRinfoÏùÑ ÏÇ¨Ïö©ÌïòÏßÄ Î™ªÌïúÎã§.
+        // sCodePlan ¿« ∞™¿ª √‚∑¬«œ±‚∂ßπÆø° qmn::printMTRinfo¿ª ªÁøÎ«œ¡ˆ ∏¯«—¥Ÿ.
         iduVarStringAppendFormat( aString,
                                   "[ SELF NODE INFO, "
                                   "SELF: %"ID_INT32_FMT", "
@@ -358,7 +358,7 @@ qmnCUNT::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Predicate Ï†ïÎ≥¥Ïùò ÏÉÅÏÑ∏ Ï∂úÎ†•
+    // Predicate ¡§∫∏¿« ªÛºº √‚∑¬
     //----------------------------
 
     if (QCG_GET_SESSION_TRCLOG_DETAIL_PREDICATE(aTemplate->stmt) == 1)
@@ -374,7 +374,7 @@ qmnCUNT::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // OperatorÎ≥Ñ Í≤∞Í≥º Ï†ïÎ≥¥ Ï∂úÎ†•
+    // Operator∫∞ ∞·∞˙ ¡§∫∏ √‚∑¬
     //----------------------------
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
     {
@@ -389,7 +389,7 @@ qmnCUNT::printPlan( qcTemplate   * aTemplate,
         // Nothing to do.
     }
 
-    // SubqueryÍ∞Ä Ï°¥Ïû¨ÌïòÏßÄ ÏïäÎäîÎã§.
+    // Subquery∞° ¡∏¿Á«œ¡ˆ æ ¥¬¥Ÿ.
 
     return IDE_SUCCESS;
 
@@ -406,7 +406,7 @@ qmnCUNT::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    Ïù¥ Ìï®ÏàòÍ∞Ä ÏàòÌñâÎêòÎ©¥ ÏïàÎê®.
+ *    ¿Ã «‘ºˆ∞° ºˆ«‡µ«∏È æ»µ .
  *
  * Implementation :
  *
@@ -427,7 +427,7 @@ qmnCUNT::doItFirst( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    COUNT(*)ÏùÑ Î¶¨ÌÑ¥
+ *    COUNT(*)¿ª ∏Æ≈œ
  *
  * Implementation :
  *
@@ -469,7 +469,7 @@ qmnCUNT::doItLast( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Í≤∞Í≥º ÏóÜÏùåÏùÑ Î¶¨ÌÑ¥
+ *    ∞·∞˙ æ¯¿Ω¿ª ∏Æ≈œ
  *
  * Implementation :
  *
@@ -494,7 +494,7 @@ qmnCUNT::firstInit( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    CUNT nodeÏùò Data ÏòÅÏó≠Ïùò Î©§Î≤ÑÏóê ÎåÄÌïú Ï¥àÍ∏∞ÌôîÎ•º ÏàòÌñâ
+ *    CUNT node¿« Data øµø™¿« ∏‚πˆø° ¥Î«— √ ±‚»≠∏¶ ºˆ«‡
  *
  * Implementation :
  *
@@ -503,7 +503,7 @@ qmnCUNT::firstInit( qcTemplate * aTemplate,
     qmncScanMethod * sMethod = getScanMethod( aTemplate, aCodePlan );
 
     //--------------------------------
-    // Ï†ÅÌï©ÏÑ± Í≤ÄÏÇ¨
+    // ¿˚«’º∫ ∞ÀªÁ
     //--------------------------------
 
     IDE_DASSERT( aCodePlan->plan.left == NULL );
@@ -516,18 +516,18 @@ qmnCUNT::firstInit( qcTemplate * aTemplate,
                  sMethod->varKeyFilter == NULL );
 
     //---------------------------------
-    // CUNT Í≥†Ïú† Ï†ïÎ≥¥Ïùò Ï¥àÍ∏∞Ìôî
+    // CUNT ∞Ì¿Ø ¡§∫∏¿« √ ±‚»≠
     //---------------------------------
 
-    // Tuple ÏúÑÏπòÏùò Í≤∞Ï†ï
+    // Tuple ¿ßƒ°¿« ∞·¡§
     aDataPlan->plan.myTuple =
         & aTemplate->tmplate.rows[aCodePlan->tupleRowID];
 
-    // Dependent Tuple ÏúÑÏπòÏùò Í≤∞Ï†ï
+    // Dependent Tuple ¿ßƒ°¿« ∞·¡§
     aDataPlan->depTuple =
         & aTemplate->tmplate.rows[aCodePlan->depTupleRowID];
 
-    // Dependency Value Ï¥àÍ∏∞Ìôî
+    // Dependency Value √ ±‚»≠
     aDataPlan->depValue = 0xFFFFFFFF;
 
     idlOS::memcpy( & aDataPlan->cursorProperty,
@@ -536,22 +536,22 @@ qmnCUNT::firstInit( qcTemplate * aTemplate,
     aDataPlan->cursorProperty.mStatistics = aTemplate->stmt->mStatistics;
 
     //---------------------------------
-    // Predicate Ï¢ÖÎ•òÏùò Ï¥àÍ∏∞Ìôî
+    // Predicate ¡æ∑˘¿« √ ±‚»≠
     //---------------------------------
 
-    // Fixed Key Range ÏòÅÏó≠Ïùò Ìï†Îãπ
+    // Fixed Key Range øµø™¿« «“¥Á
     IDE_TEST( allocFixKeyRange( aTemplate, aCodePlan, aDataPlan )
               != IDE_SUCCESS );
 
-    // Fixed Key Filter ÏòÅÏó≠Ïùò Ìï†Îãπ
+    // Fixed Key Filter øµø™¿« «“¥Á
     IDE_TEST( allocFixKeyFilter( aTemplate, aCodePlan, aDataPlan )
               != IDE_SUCCESS );
 
-    // Variable Key Range ÏòÅÏó≠Ïùò Ìï†Îãπ
+    // Variable Key Range øµø™¿« «“¥Á
     IDE_TEST( allocVarKeyRange( aTemplate, aCodePlan, aDataPlan )
               != IDE_SUCCESS );
 
-    // Variable Key Filter ÏòÅÏó≠Ïùò Ìï†Îãπ
+    // Variable Key Filter øµø™¿« «“¥Á
     IDE_TEST( allocVarKeyFilter( aTemplate, aCodePlan, aDataPlan )
               != IDE_SUCCESS );
 
@@ -562,24 +562,24 @@ qmnCUNT::firstInit( qcTemplate * aTemplate,
     aDataPlan->keyFilter = NULL;
 
     //---------------------------------
-    // Disk Table Í¥ÄÎ†® Ï†ïÎ≥¥Ïùò Ï¥àÍ∏∞Ìôî
+    // Disk Table ∞¸∑√ ¡§∫∏¿« √ ±‚»≠
     //---------------------------------
 
-    // Disk TableÏùò Í≤ΩÏö∞ Memory Í≥µÍ∞ÑÏùÑ Ìï†ÎãπÌïúÎã§.
+    // Disk Table¿« ∞ÊøÏ Memory ∞¯∞£¿ª «“¥Á«—¥Ÿ.
     IDE_TEST( qmc::setRowSize( aTemplate->stmt->qmxMem,
                                & aTemplate->tmplate,
                                aCodePlan->tupleRowID )
               != IDE_SUCCESS );
 
     //---------------------------------
-    // Ï†ëÍ∑º Î∞©Î≤ï Í≤∞Ï†ï
+    // ¡¢±Ÿ πÊπ˝ ∞·¡§
     //---------------------------------
 
     // BUG-37266
-    // repeatable read Î™®ÎìúÏóêÏÑú select count(*) ÏøºÎ¶¨Ïãú ÏÑúÎ≤Ñ ÏÇ¨ÎßùÌï©ÎãàÎã§.
-    // smiStatistics::getTableStatNumRow Ìï®ÏàòÏóêÏÑú
-    // ÌòÑÏû¨ table Ìó§ÎçîÏóê Í∏∞Î°ùÎêú Î†àÏΩîÎìú Í±¥Ïàò + ÌòÑÏû¨ Ìä∏Î†åÏ†ùÏÖòÏùò Î†àÏΩîÎìú Í±¥ÏàòÎ•º Î¶¨ÌÑ¥Ìï¥Ï£ºÍ≥† ÏûàÏäµÎãàÎã§.
-    // Îî∞ÎùºÏÑú isolation levelÏùÑ Í≥†Î†§ÌïòÏßÄ ÏïäÏïÑÎèÑ Îê©ÎãàÎã§.
+    // repeatable read ∏µÂø°º≠ select count(*) ƒı∏ÆΩ√ º≠πˆ ªÁ∏¡«’¥œ¥Ÿ.
+    // smiStatistics::getTableStatNumRow «‘ºˆø°º≠
+    // «ˆ¿Á table «Ï¥ıø° ±‚∑œµ» ∑πƒ⁄µÂ ∞«ºˆ + «ˆ¿Á ∆Æ∑ª¡ßº«¿« ∑πƒ⁄µÂ ∞«ºˆ∏¶ ∏Æ≈œ«ÿ¡÷∞Ì ¿÷Ω¿¥œ¥Ÿ.
+    // µ˚∂Ûº≠ isolation level¿ª ∞Ì∑¡«œ¡ˆ æ æ∆µµ µÀ¥œ¥Ÿ.
     if ( ( (aCodePlan->flag & QMNC_CUNT_METHOD_MASK) ==
            QMNC_CUNT_METHOD_HANDLE )  )
     {
@@ -606,7 +606,7 @@ qmnCUNT::firstInit( qcTemplate * aTemplate,
     }
 
     //---------------------------------
-    // Ï¥àÍ∏∞Ìôî ÏôÑÎ£åÎ•º ÌëúÍ∏∞
+    // √ ±‚»≠ øœ∑·∏¶ «•±‚
     //---------------------------------
 
     *aDataPlan->flag &= ~QMND_CUNT_INIT_DONE_MASK;
@@ -627,10 +627,10 @@ qmnCUNT::allocFixKeyRange( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description : PROJ-1436
- *    Fixed Key RangeÎ•º ÏúÑÌïú Í≥µÍ∞ÑÏùÑ Ìï†ÎãπÎ∞õÎäîÎã§.
- *    Fixed Key RangeÎùº ÌïòÎçîÎùºÎèÑ plan Í≥µÏú†Ïóê ÏùòÌï¥ fixed key rangeÍ∞Ä
- *    Í≥µÏú†ÎêòÎØÄÎ°ú variable key rangeÏôÄ ÎßàÏ∞¨Í∞ÄÏßÄÎ°ú ÏûêÏã†ÎßåÏùò Í≥µÍ∞ÑÏóê
- *    Í≥µÏú†ÎêòÏßÄ ÏïäÏùÄ key rangeÎ•º Í∞ÄÏ†∏Ïïº ÌïúÎã§.
+ *    Fixed Key Range∏¶ ¿ß«— ∞¯∞£¿ª «“¥Áπﬁ¥¬¥Ÿ.
+ *    Fixed Key Range∂Û «œ¥ı∂Ûµµ plan ∞¯¿Øø° ¿««ÿ fixed key range∞°
+ *    ∞¯¿Øµ«π«∑Œ variable key rangeøÕ ∏∂¬˘∞°¡ˆ∑Œ ¿⁄Ω≈∏∏¿« ∞¯∞£ø°
+ *    ∞¯¿Øµ«¡ˆ æ ¿∫ key range∏¶ ∞°¡Ææﬂ «—¥Ÿ.
  *
  * Implementation :
  *
@@ -643,7 +643,7 @@ qmnCUNT::allocFixKeyRange( qcTemplate * aTemplate,
     {
         IDE_DASSERT( sMethod->index != NULL );
 
-        // Fixed Key RangeÏùò ÌÅ¨Í∏∞ Í≥ÑÏÇ∞
+        // Fixed Key Range¿« ≈©±‚ ∞ËªÍ
         IDE_TEST( qmoKeyRange::estimateKeyRange( aTemplate,
                                                  sMethod->fixKeyRange,
                                                  & aDataPlan->fixKeyRangeSize )
@@ -651,7 +651,7 @@ qmnCUNT::allocFixKeyRange( qcTemplate * aTemplate,
 
         IDE_DASSERT( aDataPlan->fixKeyRangeSize > 0 );
 
-        // Fixed Key RangeÎ•º ÏúÑÌïú Í≥µÍ∞Ñ Ìï†Îãπ
+        // Fixed Key Range∏¶ ¿ß«— ∞¯∞£ «“¥Á
         sMemory = aTemplate->stmt->qmxMem;
 
         IDU_FIT_POINT( "qmnCUNT::allocFixKeyRange::cralloc::fixKeyRangeArea",
@@ -685,10 +685,10 @@ qmnCUNT::allocFixKeyFilter( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description : PROJ-1436
- *    Fixed Key FilterÎ•º ÏúÑÌïú Í≥µÍ∞ÑÏùÑ Ìï†ÎãπÎ∞õÎäîÎã§.
- *    Fixed Key FilterÎùº ÌïòÎçîÎùºÎèÑ plan Í≥µÏú†Ïóê ÏùòÌï¥ fixed key filterÍ∞Ä
- *    Í≥µÏú†ÎêòÎØÄÎ°ú variable key filterÏôÄ ÎßàÏ∞¨Í∞ÄÏßÄÎ°ú ÏûêÏã†ÎßåÏùò Í≥µÍ∞ÑÏóê
- *    Í≥µÏú†ÎêòÏßÄ ÏïäÏùÄ key filterÎ•º Í∞ÄÏ†∏Ïïº ÌïúÎã§.
+ *    Fixed Key Filter∏¶ ¿ß«— ∞¯∞£¿ª «“¥Áπﬁ¥¬¥Ÿ.
+ *    Fixed Key Filter∂Û «œ¥ı∂Ûµµ plan ∞¯¿Øø° ¿««ÿ fixed key filter∞°
+ *    ∞¯¿Øµ«π«∑Œ variable key filterøÕ ∏∂¬˘∞°¡ˆ∑Œ ¿⁄Ω≈∏∏¿« ∞¯∞£ø°
+ *    ∞¯¿Øµ«¡ˆ æ ¿∫ key filter∏¶ ∞°¡Ææﬂ «—¥Ÿ.
  *
  * Implementation :
  *
@@ -702,7 +702,7 @@ qmnCUNT::allocFixKeyFilter( qcTemplate * aTemplate,
     {
         IDE_DASSERT( sMethod->index != NULL );
 
-        // Fixed Key FilterÏùò ÌÅ¨Í∏∞ Í≥ÑÏÇ∞
+        // Fixed Key Filter¿« ≈©±‚ ∞ËªÍ
         IDE_TEST( qmoKeyRange::estimateKeyRange( aTemplate,
                                                  sMethod->fixKeyFilter,
                                                  & aDataPlan->fixKeyFilterSize )
@@ -710,7 +710,7 @@ qmnCUNT::allocFixKeyFilter( qcTemplate * aTemplate,
 
         IDE_DASSERT( aDataPlan->fixKeyFilterSize > 0 );
 
-        // Fixed Key FilterÎ•º ÏúÑÌïú Í≥µÍ∞Ñ Ìï†Îãπ
+        // Fixed Key Filter∏¶ ¿ß«— ∞¯∞£ «“¥Á
         sMemory = aTemplate->stmt->qmxMem;
 
         IDU_FIT_POINT( "qmnCUNT::allocFixKeyFilter::cralloc::fixKeyFilterArea", 
@@ -742,7 +742,7 @@ qmnCUNT::allocVarKeyRange( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Variable Key RangeÎ•º ÏúÑÌïú Í≥µÍ∞ÑÏùÑ Ìï†ÎãπÎ∞õÎäîÎã§.
+ *    Variable Key Range∏¶ ¿ß«— ∞¯∞£¿ª «“¥Áπﬁ¥¬¥Ÿ.
  *
  * Implementation :
  *
@@ -755,7 +755,7 @@ qmnCUNT::allocVarKeyRange( qcTemplate * aTemplate,
     {
         IDE_DASSERT( sMethod->index != NULL );
 
-        // Variable Key RangeÏùò ÌÅ¨Í∏∞ Í≥ÑÏÇ∞
+        // Variable Key Range¿« ≈©±‚ ∞ËªÍ
         IDE_TEST( qmoKeyRange::estimateKeyRange( aTemplate,
                                                  sMethod->varKeyRange,
                                                  & aDataPlan->varKeyRangeSize )
@@ -763,7 +763,7 @@ qmnCUNT::allocVarKeyRange( qcTemplate * aTemplate,
 
         IDE_DASSERT( aDataPlan->varKeyRangeSize > 0 );
 
-        // Variable Key RangeÎ•º ÏúÑÌïú Í≥µÍ∞Ñ Ìï†Îãπ
+        // Variable Key Range∏¶ ¿ß«— ∞¯∞£ «“¥Á
         sMemory = aTemplate->stmt->qmxMem;
 
         IDU_FIT_POINT( "qmnCUNT::allocVarKeyRange::alloc::varKeyRangeArea",
@@ -797,7 +797,7 @@ qmnCUNT::allocVarKeyFilter( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Variable Key FilterÎ•º ÏúÑÌïú Í≥µÍ∞ÑÏùÑ Ìï†ÎãπÎ∞õÎäîÎã§.
+ *    Variable Key Filter∏¶ ¿ß«— ∞¯∞£¿ª «“¥Áπﬁ¥¬¥Ÿ.
  *
  * Implementation :
  *
@@ -812,7 +812,7 @@ qmnCUNT::allocVarKeyFilter( qcTemplate * aTemplate,
     {
         IDE_DASSERT( sMethod->index != NULL );
 
-        // Variable Key FilterÏùò ÌÅ¨Í∏∞ Í≥ÑÏÇ∞
+        // Variable Key Filter¿« ≈©±‚ ∞ËªÍ
         IDE_TEST( qmoKeyRange::estimateKeyRange( aTemplate,
                                                  sMethod->varKeyFilter,
                                                  & aDataPlan->varKeyFilterSize )
@@ -820,7 +820,7 @@ qmnCUNT::allocVarKeyFilter( qcTemplate * aTemplate,
 
         IDE_DASSERT( aDataPlan->varKeyFilterSize > 0 );
 
-        // Variable Key FilterÎ•º ÏúÑÌïú Í≥µÍ∞Ñ Ìï†Îãπ
+        // Variable Key Filter∏¶ ¿ß«— ∞¯∞£ «“¥Á
         sMemory = aTemplate->stmt->qmxMem;
 
         IDU_FIT_POINT( "qmnCUNT::allocVarKeyFilter::cralloc::varKeyFilterArea",
@@ -851,7 +851,7 @@ qmnCUNT::checkDependency( qmndCUNT   * aDataPlan,
 /***********************************************************************
  *
  * Description :
- *     Dependent TupleÏùò Î≥ÄÍ≤Ω Ïó¨Î∂ÄÎ•º Í≤ÄÏÇ¨
+ *     Dependent Tuple¿« ∫Ø∞Ê ø©∫Œ∏¶ ∞ÀªÁ
  *
  * Implementation :
  *
@@ -877,13 +877,13 @@ qmnCUNT::getCountValue( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    COUNT(*)Ïùò Í∞íÏùÑ ÌöçÎìùÌïúÎã§.
+ *    COUNT(*)¿« ∞™¿ª »πµÊ«—¥Ÿ.
  *
  * Implementation :
- *    Îã§ÏùåÍ≥º Í∞ôÏù¥ Í∑∏ Ï°∞Í±¥Ïóê Îî∞Îùº Í∞íÏùÑ ÏñªÎäî Î∞©Î≤ïÏù¥ Îã¨ÎùºÏßÑÎã§.
- *    - Constant Filter Ï°∞Í±¥Ïù¥ FALSEÏù∏ Í≤ΩÏö∞ : 0
- *    - CURSORÎ•º ÏÇ¨Ïö©ÌïòÎäî Í≤ΩÏö∞ : CursorÎ•º ÏÇ¨Ïö©
- *    - HANDLEÏùÑ ÏÇ¨Ïö©ÌïòÎäî Í≤ΩÏö∞ : HandleÏùÑ ÏÇ¨Ïö©
+ *    ¥Ÿ¿Ω∞˙ ∞∞¿Ã ±◊ ¡∂∞«ø° µ˚∂Û ∞™¿ª æÚ¥¬ πÊπ˝¿Ã ¥ﬁ∂Û¡¯¥Ÿ.
+ *    - Constant Filter ¡∂∞«¿Ã FALSE¿Œ ∞ÊøÏ : 0
+ *    - CURSOR∏¶ ªÁøÎ«œ¥¬ ∞ÊøÏ : Cursor∏¶ ªÁøÎ
+ *    - HANDLE¿ª ªÁøÎ«œ¥¬ ∞ÊøÏ : Handle¿ª ªÁøÎ
  *
  ***********************************************************************/
 
@@ -891,10 +891,16 @@ qmnCUNT::getCountValue( qcTemplate * aTemplate,
     qmncScanMethod * sMethod = getScanMethod( aTemplate, aCodePlan );
 
     //------------------------------------------------
-    // Constant FilterÎ•º ÏàòÌñâ
+    // Constant Filter∏¶ ºˆ«‡
     //------------------------------------------------
 
-    if ( sMethod->constantFilter != NULL )
+    /* TASK-7307 DML Data Consistency in Shard */
+    if ( ( QCG_CHECK_SHARD_DML_CONSISTENCY( aTemplate->stmt ) == ID_TRUE ) &&
+         ( aCodePlan->tableRef->tableInfo->mIsUsable == ID_FALSE ) )
+    {
+        sJudge = ID_FALSE;
+    }
+    else if ( sMethod->constantFilter != NULL )
     {
         IDE_TEST( qtc::judge( & sJudge,
                               sMethod->constantFilter,
@@ -932,8 +938,8 @@ qmnCUNT::getCountValue( qcTemplate * aTemplate,
     }
     else
     {
-        // Ï°∞Í±¥ÏùÑ Ìï≠ÏÉÅ ÎßåÏ°±Ìï† Ïàò ÏóÜÎã§.
-        // Îî∞ÎùºÏÑú, COUNT(*)Í∞íÏùÄ 0 Ïù¥ ÎêúÎã§.
+        // ¡∂∞«¿ª «◊ªÛ ∏∏¡∑«“ ºˆ æ¯¥Ÿ.
+        // µ˚∂Ûº≠, COUNT(*)∞™¿∫ 0 ¿Ã µ»¥Ÿ.
         aDataPlan->countValue = 0;
     }
 
@@ -952,7 +958,7 @@ qmnCUNT::getCountByHandle( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    HandleÏùÑ Ïù¥Ïö©Ìïú COUNT(*)Í∞í ÌöçÎìù
+ *    Handle¿ª ¿ÃøÎ«— COUNT(*)∞™ »πµÊ
  * Implementation :
  *
  ***********************************************************************/
@@ -963,12 +969,12 @@ qmnCUNT::getCountByHandle( qcTemplate * aTemplate,
     SLong             sCountValue = 0;
     smSCN             sBaseTableSCN;
 
-    // BUG-17483 ÌååÌã∞ÏÖò ÌÖåÏù¥Î∏î count(*) ÏßÄÏõê
-    // ÌååÌã∞ÏÖò ÌÖåÏù¥Î∏îÏùÄ QMND_CUNT_METHOD_HANDLE Î∞©ÏãùÎßå ÏßÄÏõêÌïúÎã§.
+    // BUG-17483 ∆ƒ∆ºº« ≈◊¿Ã∫Ì count(*) ¡ˆø¯
+    // ∆ƒ∆ºº« ≈◊¿Ã∫Ì¿∫ QMND_CUNT_METHOD_HANDLE πÊΩƒ∏∏ ¡ˆø¯«—¥Ÿ.
     if( aCodePlan->tableRef->tableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
-        // ÌîåÎûúÏù¥ Ï∫êÏâ¨Í∞Ä Îêú ÏÉÅÌÉúÏóêÏÑú ÏùºÎ∂Ä ÌååÌã∞ÏÖòÏù¥ drop ÎêòÏóàÏùÑÎïå rebuild Î•º ÌïòÍ∏∞ ÏúÑÌï¥ÏÑúÏù¥Îã§.
-        // PartitionÏóê IS LockÏùÑ Í±¥Îã§.
+        // «√∑£¿Ã ƒ≥Ω¨∞° µ» ªÛ≈¬ø°º≠ ¿œ∫Œ ∆ƒ∆ºº«¿Ã drop µ«æ˙¿ª∂ß rebuild ∏¶ «œ±‚ ¿ß«ÿº≠¿Ã¥Ÿ.
+        // Partitionø° IS Lock¿ª ∞«¥Ÿ.
         IDE_TEST( qcmPartition::validateAndLockPartitions( aTemplate->stmt,
                                                            aCodePlan->tableRef,
                                                            SMI_TABLE_LOCK_IS )
@@ -996,8 +1002,14 @@ qmnCUNT::getCountByHandle( qcTemplate * aTemplate,
     {
         sTableInfo = aCodePlan->tableRef->tableInfo;
 
+        /* TASK-7307 DML Data Consistency in Shard */
+        if ( ( QCG_CHECK_SHARD_DML_CONSISTENCY( aTemplate->stmt ) == ID_TRUE ) &&
+             ( sTableInfo->mIsUsable == ID_FALSE ) )
+        {
+            aDataPlan->countValue = 0;
+        }
         // PROJ-1407 Temporary Table
-        if ( qcuTemporaryObj::isTemporaryTable( sTableInfo ) == ID_TRUE )
+        else if ( qcuTemporaryObj::isTemporaryTable( sTableInfo ) == ID_TRUE )
         {
             qcuTemporaryObj::getTempTableHandle( aTemplate->stmt,
                                                  sTableInfo,
@@ -1006,7 +1018,7 @@ qmnCUNT::getCountByHandle( qcTemplate * aTemplate,
 
             if ( sTableHandle == NULL )
             {
-                /* session temp tableÏù¥ ÏïÑÏßÅ ÏÉùÏÑ±ÎêòÏßÄ ÏïäÏùÄÍ≤ΩÏö∞.*/
+                /* session temp table¿Ã æ∆¡˜ ª˝º∫µ«¡ˆ æ ¿∫∞ÊøÏ.*/
                 aDataPlan->countValue = 0;
             }
             else
@@ -1057,7 +1069,7 @@ qmnCUNT::getCountByCursor( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    CursorÎ•º Ïù¥Ïö©ÌïòÏó¨ COUNT(*)Í∞íÏùÑ Í≥ÑÏÇ∞
+ *    Cursor∏¶ ¿ÃøÎ«œø© COUNT(*)∞™¿ª ∞ËªÍ
  *
  * Implementation :
  *
@@ -1078,10 +1090,10 @@ qmnCUNT::getCountByCursor( qcTemplate * aTemplate,
         IDE_TEST(smiValidateAndLockObjects( (QC_SMI_STMT(aTemplate->stmt))->getTrans(),
                                             aCodePlan->tableRef->tableHandle,
                                             aCodePlan->tableSCN,
-                                            SMI_TBSLV_DDL_DML, // TBS Validation ÏòµÏÖò
+                                            SMI_TBSLV_DDL_DML, // TBS Validation ø…º«
                                             SMI_TABLE_LOCK_IS,
                                             ID_ULONG_MAX,
-                                            ID_FALSE ) // BUG-28752 Î™ÖÏãúÏ†Å LockÍ≥º ÎÇ¥Ïû¨Ï†Å LockÏùÑ Íµ¨Î∂ÑÌï©ÎãàÎã§.
+                                            ID_FALSE ) // BUG-28752 ∏ÌΩ√¿˚ Lock∞˙ ≥ª¿Á¿˚ Lock¿ª ±∏∫–«’¥œ¥Ÿ.
                  != IDE_SUCCESS);
     }
     else
@@ -1099,7 +1111,7 @@ qmnCUNT::getCountByCursor( qcTemplate * aTemplate,
     IDE_TEST( openCursor( aTemplate, aCodePlan, aDataPlan )
               != IDE_SUCCESS );
 
-    // CursorÎ•º Ïù¥Ïö©ÌïòÏó¨ COUNT(*)Ïùò Í∞íÏùÑ Íµ¨Ìï®
+    // Cursor∏¶ ¿ÃøÎ«œø© COUNT(*)¿« ∞™¿ª ±∏«‘
     sOrgRow = sSearchRow = aDataPlan->plan.myTuple->row;
 
     if ( ( *aDataPlan->flag & QMND_SCAN_CURSOR_MASK )
@@ -1111,7 +1123,7 @@ qmnCUNT::getCountByCursor( qcTemplate * aTemplate,
     }
     else
     {
-        /* session temp tableÏù¥ ÏïÑÏßÅ ÏÉùÏÑ±ÎêòÏßÄ ÏïäÏùÄÍ≤ΩÏö∞.*/
+        /* session temp table¿Ã æ∆¡˜ ª˝º∫µ«¡ˆ æ ¿∫∞ÊøÏ.*/
         aDataPlan->countValue = 0;
     }
 
@@ -1120,7 +1132,7 @@ qmnCUNT::getCountByCursor( qcTemplate * aTemplate,
     if ( sMethod->filter == NULL )
     {
         /* BUG-44537
-           count ÌîåÎûú ÎÖ∏ÎìúÏùò access Ï†ïÎ≥¥Í∞Ä Ïò¨Î∞îÎ•¥Í≤å ÎÇòÏò§ÏßÄ ÏïäÏäµÎãàÎã§. */
+           count «√∑£ ≥ÎµÂ¿« access ¡§∫∏∞° ø√πŸ∏£∞‘ ≥™ø¿¡ˆ æ Ω¿¥œ¥Ÿ. */
         aDataPlan->plan.myTuple->modify += aDataPlan->countValue;
     }
     else
@@ -1286,7 +1298,7 @@ IDE_RC qmnCUNT::getCountByFixedTable( qcTemplate * aTemplate,
     if ( sMethod->filter == NULL )
     {
         /* BUG-44537
-           count ÌîåÎûú ÎÖ∏ÎìúÏùò access Ï†ïÎ≥¥Í∞Ä Ïò¨Î∞îÎ•¥Í≤å ÎÇòÏò§ÏßÄ ÏïäÏäµÎãàÎã§. */
+           count «√∑£ ≥ÎµÂ¿« access ¡§∫∏∞° ø√πŸ∏£∞‘ ≥™ø¿¡ˆ æ Ω¿¥œ¥Ÿ. */
         aDataPlan->plan.myTuple->modify += aDataPlan->countValue;
     }
     else
@@ -1309,7 +1321,7 @@ qmnCUNT::makeKeyRangeAndFilter( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    CursorÎ•º Ïó¥Í∏∞ ÏúÑÌïú Key Range, Key Filter, FilterÎ•º Íµ¨ÏÑ±ÌïúÎã§.
+ *    Cursor∏¶ ø≠±‚ ¿ß«— Key Range, Key Filter, Filter∏¶ ±∏º∫«—¥Ÿ.
  *
  * Implementation :
  *
@@ -1319,38 +1331,42 @@ qmnCUNT::makeKeyRangeAndFilter( qcTemplate * aTemplate,
     qmncScanMethod * sMethod = getScanMethod( aTemplate, aCodePlan );
 
     //-------------------------------------
-    // Predicate Ï†ïÎ≥¥Ïùò Íµ¨ÏÑ±
+    // Predicate ¡§∫∏¿« ±∏º∫
     //-------------------------------------
 
     sPredicateInfo.index = sMethod->index;
     sPredicateInfo.tupleRowID = aCodePlan->tupleRowID;
 
-    // Fixed Key Range Ï†ïÎ≥¥Ïùò Íµ¨ÏÑ±
+    // Fixed Key Range ¡§∫∏¿« ±∏º∫
     sPredicateInfo.fixKeyRangeArea = aDataPlan->fixKeyRangeArea;
     sPredicateInfo.fixKeyRange = aDataPlan->fixKeyRange;
     sPredicateInfo.fixKeyRangeOrg = sMethod->fixKeyRange;
+    sPredicateInfo.fixKeyRangeSize = aDataPlan->fixKeyRangeSize;
 
-    // Variable Key Range Ï†ïÎ≥¥Ïùò Íµ¨ÏÑ±
+    // Variable Key Range ¡§∫∏¿« ±∏º∫
     sPredicateInfo.varKeyRangeArea = aDataPlan->varKeyRangeArea;
     sPredicateInfo.varKeyRange = aDataPlan->varKeyRange;
     sPredicateInfo.varKeyRangeOrg = sMethod->varKeyRange;
     sPredicateInfo.varKeyRange4FilterOrg = sMethod->varKeyRange4Filter;
+    sPredicateInfo.varKeyRangeSize = aDataPlan->varKeyRangeSize;
 
-    // Fixed Key Filter Ï†ïÎ≥¥Ïùò Íµ¨ÏÑ±
+    // Fixed Key Filter ¡§∫∏¿« ±∏º∫
     sPredicateInfo.fixKeyFilterArea = aDataPlan->fixKeyFilterArea;
     sPredicateInfo.fixKeyFilter = aDataPlan->fixKeyFilter;
     sPredicateInfo.fixKeyFilterOrg = sMethod->fixKeyFilter;
+    sPredicateInfo.fixKeyFilterSize = aDataPlan->fixKeyFilterSize;
 
-    // Variable Key Filter Ï†ïÎ≥¥Ïùò Íµ¨ÏÑ±
+    // Variable Key Filter ¡§∫∏¿« ±∏º∫
     sPredicateInfo.varKeyFilterArea = aDataPlan->varKeyFilterArea;
     sPredicateInfo.varKeyFilter = aDataPlan->varKeyFilter;
     sPredicateInfo.varKeyFilterOrg = sMethod->varKeyFilter;
     sPredicateInfo.varKeyFilter4FilterOrg = sMethod->varKeyFilter4Filter;
+    sPredicateInfo.varKeyFilterSize = aDataPlan->varKeyFilterSize;
 
-    // Not Null Key Range Ï†ïÎ≥¥Ïùò Íµ¨ÏÑ±
+    // Not Null Key Range ¡§∫∏¿« ±∏º∫
     sPredicateInfo.notNullKeyRange = NULL;
 
-    // Filter Ï†ïÎ≥¥Ïùò Íµ¨ÏÑ±
+    // Filter ¡§∫∏¿« ±∏º∫
     sPredicateInfo.filter = sMethod->filter;
 
     sPredicateInfo.filterCallBack = & aDataPlan->callBack;
@@ -1362,7 +1378,7 @@ qmnCUNT::makeKeyRangeAndFilter( qcTemplate * aTemplate,
     sPredicateInfo.mSerialExecuteData = NULL;
 
     //-------------------------------------
-    // Key Range, Key Filter, FilterÏùò ÏÉùÏÑ±
+    // Key Range, Key Filter, Filter¿« ª˝º∫
     //-------------------------------------
 
     IDE_TEST( qmn::makeKeyRangeAndFilter( aTemplate,
@@ -1387,7 +1403,7 @@ qmnCUNT::openCursor( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    CursorÎ•º Ïó∞Îã§.
+ *    Cursor∏¶ ø¨¥Ÿ.
  *
  * Implementation :
  *
@@ -1409,11 +1425,12 @@ qmnCUNT::openCursor( qcTemplate * aTemplate,
     smiRange           * sRange = NULL;
 
     //----------------------------------
-    // CursorÎ•º ÏúÑÌïú Ï†ïÎ≥¥ ÏÑ§Ï†ï
+    // Cursor∏¶ ¿ß«— ¡§∫∏ º≥¡§
     //----------------------------------
 
-    sCursorFlag = aCodePlan->lockMode |
-        SMI_TRAVERSE_FORWARD | SMI_PREVIOUS_DISABLE;
+    /* BUG-49077 */
+    sCursorFlag = aCodePlan->lockMode | SMI_TRAVERSE_FORWARD | SMI_PREVIOUS_DISABLE |
+                  SMI_TRANS_ISOLATION_IGNORE;
 
     if (sMethod->index != NULL)
     {
@@ -1425,7 +1442,7 @@ qmnCUNT::openCursor( qcTemplate * aTemplate,
     }
 
     //----------------------------------
-    // CursorÎ•º Ïó∞Îã§
+    // Cursor∏¶ ø¨¥Ÿ
     //----------------------------------
 
     if ( (*aDataPlan->flag & QMND_CUNT_CURSOR_MASK)
@@ -1445,7 +1462,7 @@ qmnCUNT::openCursor( qcTemplate * aTemplate,
             IDE_TEST_RAISE( !SM_SCN_IS_EQ( &(aCodePlan->tableRef->tableSCN), &sBaseTableSCN ),
                             ERR_TEMPORARY_TABLE_EXIST );
 
-            // Session Temp TableÏù¥ Ï°¥Ïû¨ÌïòÎäî Í≤ΩÏö∞
+            // Session Temp Table¿Ã ¡∏¿Á«œ¥¬ ∞ÊøÏ
             sTableSCN = smiGetRowSCN( sTableHandle );
 
             if ( sIndexHandle != NULL )
@@ -1454,7 +1471,7 @@ qmnCUNT::openCursor( qcTemplate * aTemplate,
                     sStmt,
                     aCodePlan->tableRef->tableInfo,
                     sMethod->index->indexId );
-                // Î∞òÎìúÏãú Ï°¥Ïû¨ÌïòÏó¨Ïïº ÌïúÎã§.
+                // π›µÂΩ√ ¡∏¿Á«œø©æﬂ «—¥Ÿ.
                 IDE_ASSERT( sIndexHandle != NULL );
             }
             else
@@ -1469,7 +1486,7 @@ qmnCUNT::openCursor( qcTemplate * aTemplate,
         }
 
         // PROJ-1705
-        // Î†àÏΩîÎìúÌå®ÏπòÏãú Î≥µÏÇ¨ÎêòÏñ¥Ïïº Ìï† Ïª¨ÎüºÏ†ïÎ≥¥ÏÉùÏÑ±
+        // ∑πƒ⁄µÂ∆–ƒ°Ω√ ∫πªÁµ«æÓæﬂ «“ ƒ√∑≥¡§∫∏ª˝º∫
         if ( ( aCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK )
              == QMN_PLAN_STORAGE_DISK )
         {
@@ -1490,10 +1507,10 @@ qmnCUNT::openCursor( qcTemplate * aTemplate,
 
         // BUG-41591
         /*
-         * SMI_CURSOR_PROP_INIT ÏùÑ ÏÇ¨Ïö©ÌïòÏßÄ ÏïäÍ≥†
-         * mIndexTypeID Îßå Îî∞Î°ú setting ÌïòÎäî Ïù¥Ïú†Îäî
-         * ÏúÑÏóêÎäî mFetchColumnList, mLockRowBuffer Î•º Î≥ÄÍ≤ΩÌïòÍ∏∞ ÎïåÎ¨∏Ïù¥Îã§.
-         * SMI_CURSOR_PROP_INIT ÏùÑ ÏÇ¨Ïö©ÌïòÎ©¥ Îã§Ïãú Îã§ Ï¥àÍ∏∞Ìôî ÎêòÎØÄÎ°ú
+         * SMI_CURSOR_PROP_INIT ¿ª ªÁøÎ«œ¡ˆ æ ∞Ì
+         * mIndexTypeID ∏∏ µ˚∑Œ setting «œ¥¬ ¿Ã¿Ø¥¬
+         * ¿ßø°¥¬ mFetchColumnList, mLockRowBuffer ∏¶ ∫Ø∞Ê«œ±‚ ∂ßπÆ¿Ã¥Ÿ.
+         * SMI_CURSOR_PROP_INIT ¿ª ªÁøÎ«œ∏È ¥ŸΩ√ ¥Ÿ √ ±‚»≠ µ«π«∑Œ
          */
         if ( sMethod->ridRange != NULL )
         {
@@ -1519,19 +1536,19 @@ qmnCUNT::openCursor( qcTemplate * aTemplate,
         aDataPlan->cursor.setDumpObject( aCodePlan->dumpObject );
 
         /* BUG-38290
-         * Cursor open ÏùÄ ÎèôÏãúÏÑ± Ï†úÏñ¥Í∞Ä ÌïÑÏöîÌïòÎã§.
-         * Cursor Îäî SM ÏóêÏÑú open Ïãú transaction ÏùÑ ÏÇ¨Ïö©ÌïòÎäîÎç∞,
-         * transaction ÏùÄ ÎèôÏãúÏÑ± Ï†úÏñ¥Í∞Ä Í≥†Î†§ÎêòÏñ¥ ÏûàÏßÄ ÏïäÏúºÎØÄÎ°ú
-         * QP ÏóêÏÑú ÎèôÏãúÏÑ± Ï†úÏñ¥Î•º Ìï¥Ïïº ÌïúÎã§.
-         * Îòê, Ïù¥ÎØ∏ open Îêú cursor Î•º cursro manager Ïóê Ï∂îÍ∞ÄÌïòÎäî
-         * addOpendCursor Ìï®ÏàòÎèÑ ÎèôÏãúÏÑ± Ï†úÏñ¥Î•º Ìï¥Ïïº ÌïúÎã§.
+         * Cursor open ¿∫ µøΩ√º∫ ¡¶æÓ∞° « ø‰«œ¥Ÿ.
+         * Cursor ¥¬ SM ø°º≠ open Ω√ transaction ¿ª ªÁøÎ«œ¥¬µ•,
+         * transaction ¿∫ µøΩ√º∫ ¡¶æÓ∞° ∞Ì∑¡µ«æÓ ¿÷¡ˆ æ ¿∏π«∑Œ
+         * QP ø°º≠ µøΩ√º∫ ¡¶æÓ∏¶ «ÿæﬂ «—¥Ÿ.
+         * ∂«, ¿ÃπÃ open µ» cursor ∏¶ cursro manager ø° √ﬂ∞°«œ¥¬
+         * addOpendCursor «‘ºˆµµ µøΩ√º∫ ¡¶æÓ∏¶ «ÿæﬂ «—¥Ÿ.
          *
-         * Ïù¥Îäî cursor open Ïù¥ SCAN Í≥º PCRD, CUNT Îì±ÏóêÏÑú ÏÇ¨Ïö©ÎêòÎäîÎç∞,
-         * ÌäπÌûà SCAN ÎÖ∏ÎìúÍ∞Ä parallel query Î°ú Ïã§Ìñâ ÏãúÏóê worker thread Ïóê
-         * ÏùòÌï¥ ÎèôÏãúÏóê Ïã§ÌñâÎê† Í∞ÄÎä•ÏÑ±Ïù¥ ÎÜíÍ∏∞ ÎïåÎ¨∏Ïù¥Îã§.
+         * ¿Ã¥¬ cursor open ¿Ã SCAN ∞˙ PCRD, CUNT µÓø°º≠ ªÁøÎµ«¥¬µ•,
+         * ∆Ø»˜ SCAN ≥ÎµÂ∞° parallel query ∑Œ Ω««‡ Ω√ø° worker thread ø°
+         * ¿««ÿ µøΩ√ø° Ω««‡µ… ∞°¥…º∫¿Ã ≥Ù±‚ ∂ßπÆ¿Ã¥Ÿ.
          *
-         * Îî∞ÎùºÏÑú ÎèôÏãúÏÑ± Ï†úÏñ¥Î•º ÏúÑÌï¥ cursor manager Ïùò mutex Î°ú ÎèôÏãúÏÑ±ÏùÑ
-         * Ï†úÏñ¥ ÌïúÎã§.
+         * µ˚∂Ûº≠ µøΩ√º∫ ¡¶æÓ∏¶ ¿ß«ÿ cursor manager ¿« mutex ∑Œ µøΩ√º∫¿ª
+         * ¡¶æÓ «—¥Ÿ.
          */
         IDE_TEST( sStmt->mCursorMutex.lock(NULL) != IDE_SUCCESS );
         sIsMutexLock = ID_TRUE;
@@ -1549,7 +1566,7 @@ qmnCUNT::openCursor( qcTemplate * aTemplate,
                                     SMI_SELECT_CURSOR,
                                     & aDataPlan->cursorProperty )
             != IDE_SUCCESS);
-        // CursorÎ•º Îì±Î°ù
+        // Cursor∏¶ µÓ∑œ
         IDE_TEST( aTemplate->cursorMgr->addOpenedCursor( sStmt->qmxMem,
                                                          aCodePlan->tupleRowID,
                                                          & aDataPlan->cursor )
@@ -1558,7 +1575,7 @@ qmnCUNT::openCursor( qcTemplate * aTemplate,
         sIsMutexLock = ID_FALSE;
         IDE_TEST( sStmt->mCursorMutex.unlock() != IDE_SUCCESS );
 
-        // CursorÍ∞Ä Ïó¥Î†∏ÏùåÏùÑ ÌëúÍ∏∞
+        // Cursor∞° ø≠∑»¿Ω¿ª «•±‚
         *aDataPlan->flag &= ~QMND_CUNT_CURSOR_MASK;
         *aDataPlan->flag |= QMND_CUNT_CURSOR_OPENED;
     }
@@ -1581,7 +1598,7 @@ qmnCUNT::openCursor( qcTemplate * aTemplate,
     }
 
     //----------------------------------
-    // ÏµúÏ¥à ÏúÑÏπòÎ°ú Ïù¥Îèô
+    // √÷√  ¿ßƒ°∑Œ ¿Ãµø
     //----------------------------------
 
     sOrgRow = aDataPlan->plan.myTuple->row;
@@ -1621,7 +1638,7 @@ qmnCUNT::printAccessInfo( qmncCUNT     * aCodePlan,
 /***********************************************************************
  *
  * Description :
- *     Access Ï†ïÎ≥¥Î•º Ï∂úÎ†•ÌïúÎã§.
+ *     Access ¡§∫∏∏¶ √‚∑¬«—¥Ÿ.
  *
  * Implementation :
  *
@@ -1639,10 +1656,10 @@ qmnCUNT::printAccessInfo( qmncCUNT     * aCodePlan,
     if ( aMode == QMN_DISPLAY_ALL )
     {
         //----------------------------
-        // explain plan = on; Ïù∏ Í≤ΩÏö∞
+        // explain plan = on; ¿Œ ∞ÊøÏ
         //----------------------------
 
-        // ÏàòÌñâ ÌöüÏàò Ï∂úÎ†•
+        // ºˆ«‡ »Ωºˆ √‚∑¬
         if ( (*aDataPlan->flag & QMND_CUNT_INIT_DONE_MASK)
              == QMND_CUNT_INIT_DONE_TRUE )
         {
@@ -1656,14 +1673,14 @@ qmnCUNT::printAccessInfo( qmncCUNT     * aCodePlan,
                                 ", ACCESS: 0" );
         }
 
-        // Disk Page Í∞úÏàò Ï∂úÎ†•
+        // Disk Page ∞≥ºˆ √‚∑¬
         if ( ( aCodePlan->plan.flag & QMN_PLAN_STORAGE_MASK )
              == QMN_PLAN_STORAGE_DISK )
         {
             if ( QCU_DISPLAY_PLAN_FOR_NATC == 0 )
             {
-                // Disk TableÏóê ÎåÄÌïú Ï†ëÍ∑ºÏù∏ Í≤ΩÏö∞ Ï∂úÎ†•
-                // SMÏúºÎ°úÎ∂ÄÌÑ∞ Disk Page CountÎ•º ÌöçÎìù
+                // Disk Tableø° ¥Î«— ¡¢±Ÿ¿Œ ∞ÊøÏ √‚∑¬
+                // SM¿∏∑Œ∫Œ≈Õ Disk Page Count∏¶ »πµÊ
                 IDE_TEST( smiGetTableBlockCount( aCodePlan->tableRef->tableInfo->tableHandle,
                                                  & sPageCount )
                           != IDE_SUCCESS );
@@ -1675,20 +1692,20 @@ qmnCUNT::printAccessInfo( qmncCUNT     * aCodePlan,
             else
             {
                 // BUG-29209
-                // DISK_PAGE_COUNT Ï†ïÎ≥¥ Î≥¥Ïó¨Ï£ºÏßÄ ÏïäÏùå
+                // DISK_PAGE_COUNT ¡§∫∏ ∫∏ø©¡÷¡ˆ æ ¿Ω
                 iduVarStringAppendFormat( aString,
                                           ", DISK_PAGE_COUNT: BLOCKED" );
             }
         }
         else
         {
-            // Memory TableÏóê ÎåÄÌïú Ï†ëÍ∑ºÏù∏ Í≤ΩÏö∞ Ï∂úÎ†•ÌïòÏßÄ ÏïäÏùå
+            // Memory Tableø° ¥Î«— ¡¢±Ÿ¿Œ ∞ÊøÏ √‚∑¬«œ¡ˆ æ ¿Ω
         }
     }
     else
     {
         //----------------------------
-        // explain plan = only; Ïù∏ Í≤ΩÏö∞
+        // explain plan = only; ¿Œ ∞ÊøÏ
         //----------------------------
 
         iduVarStringAppend( aString,
@@ -1714,7 +1731,7 @@ qmnCUNT::printPredicateInfo( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     PredicateÏùò ÏÉÅÏÑ∏ Ï†ïÎ≥¥Î•º Ï∂úÎ†•ÌïúÎã§.
+ *     Predicate¿« ªÛºº ¡§∫∏∏¶ √‚∑¬«—¥Ÿ.
  *
  * Implementation :
  *
@@ -1723,19 +1740,19 @@ qmnCUNT::printPredicateInfo( qcTemplate   * aTemplate,
 #define IDE_FN "qmnCUNT::printPredicateInfo"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
-    // Key Range Ï†ïÎ≥¥Ïùò Ï∂úÎ†•
+    // Key Range ¡§∫∏¿« √‚∑¬
     IDE_TEST( printKeyRangeInfo( aTemplate,
                                  aCodePlan,
                                  aDepth,
                                  aString ) != IDE_SUCCESS );
 
-    // Key Filter Ï†ïÎ≥¥Ïùò Ï∂úÎ†•
+    // Key Filter ¡§∫∏¿« √‚∑¬
     IDE_TEST( printKeyFilterInfo( aTemplate,
                                   aCodePlan,
                                   aDepth,
                                   aString ) != IDE_SUCCESS );
 
-    // Filter Ï†ïÎ≥¥Ïùò Ï∂úÎ†•
+    // Filter ¡§∫∏¿« √‚∑¬
     IDE_TEST( printFilterInfo( aTemplate,
                                aCodePlan,
                                aDepth,
@@ -1759,7 +1776,7 @@ qmnCUNT::printKeyRangeInfo( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Key RangeÏùò ÏÉÅÏÑ∏ Ï†ïÎ≥¥Î•º Ï∂úÎ†•ÌïúÎã§.
+ *     Key Range¿« ªÛºº ¡§∫∏∏¶ √‚∑¬«—¥Ÿ.
  *
  * Implementation :
  *
@@ -1771,7 +1788,7 @@ qmnCUNT::printKeyRangeInfo( qcTemplate   * aTemplate,
     UInt i;
     qmncScanMethod * sMethod = getScanMethod( aTemplate, aCodePlan );
 
-    // Fixed Key Range Ï∂úÎ†•
+    // Fixed Key Range √‚∑¬
     if (sMethod->fixKeyRange4Print != NULL)
     {
         for ( i = 0; i < aDepth; i++ )
@@ -1792,7 +1809,7 @@ qmnCUNT::printKeyRangeInfo( qcTemplate   * aTemplate,
         // Nothing To Do
     }
 
-    // Variable Key Range Ï∂úÎ†•
+    // Variable Key Range √‚∑¬
     if (sMethod->varKeyRange != NULL)
     {
         for ( i = 0; i < aDepth; i++ )
@@ -1857,7 +1874,7 @@ qmnCUNT::printKeyFilterInfo( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     Key FilterÏùò ÏÉÅÏÑ∏ Ï†ïÎ≥¥Î•º Ï∂úÎ†•ÌïúÎã§.
+ *     Key Filter¿« ªÛºº ¡§∫∏∏¶ √‚∑¬«—¥Ÿ.
  *
  * Implementation :
  *
@@ -1869,7 +1886,7 @@ qmnCUNT::printKeyFilterInfo( qcTemplate   * aTemplate,
     UInt i;
     qmncScanMethod * sMethod = getScanMethod( aTemplate, aCodePlan );
 
-    // Fixed Key Filter Ï∂úÎ†•
+    // Fixed Key Filter √‚∑¬
     if (sMethod->fixKeyFilter4Print != NULL)
     {
         for ( i = 0; i < aDepth; i++ )
@@ -1890,7 +1907,7 @@ qmnCUNT::printKeyFilterInfo( qcTemplate   * aTemplate,
         // Nothing To Do
     }
 
-    // Variable Key Filter Ï∂úÎ†•
+    // Variable Key Filter √‚∑¬
     if (sMethod->varKeyFilter != NULL)
     {
         for ( i = 0; i < aDepth; i++ )
@@ -1930,7 +1947,7 @@ qmnCUNT::printFilterInfo( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     FilterÏùò ÏÉÅÏÑ∏ Ï†ïÎ≥¥Î•º Ï∂úÎ†•ÌïúÎã§.
+ *     Filter¿« ªÛºº ¡§∫∏∏¶ √‚∑¬«—¥Ÿ.
  *
  * Implementation :
  *
@@ -1942,7 +1959,7 @@ qmnCUNT::printFilterInfo( qcTemplate   * aTemplate,
     UInt i;
     qmncScanMethod * sMethod = getScanMethod( aTemplate, aCodePlan );
 
-    // Constant Filter Ï∂úÎ†•
+    // Constant Filter √‚∑¬
     if (sMethod->constantFilter != NULL)
     {
         for ( i = 0; i < aDepth; i++ )
@@ -1963,7 +1980,7 @@ qmnCUNT::printFilterInfo( qcTemplate   * aTemplate,
         // Nothing To Do
     }
 
-    // Normal Filter Ï∂úÎ†•
+    // Normal Filter √‚∑¬
     if (sMethod->filter != NULL)
     {
         for ( i = 0; i < aDepth; i++ )
@@ -2033,8 +2050,8 @@ IDE_RC qmnCUNT::allocRidRange( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description : BUG-41591
- *               qmnSCAN Ïóê Ï†ÅÏö©Îêú ridRange ÏàòÌñâÎ∞©ÏãùÏùÑ qmnCUNT Ïóê Ï†ÅÏö©ÌïúÎã§.
- *               firstInit ÏóêÏÑú Ìò∏Ï∂úÎêòÏñ¥ ridRange Î•º Ìï†ÎãπÌïúÎã§.
+ *               qmnSCAN ø° ¿˚øÎµ» ridRange ºˆ«‡πÊΩƒ¿ª qmnCUNT ø° ¿˚øÎ«—¥Ÿ.
+ *               firstInit ø°º≠ »£√‚µ«æÓ ridRange ∏¶ «“¥Á«—¥Ÿ.
  *
  * Implementation :
  *
@@ -2105,8 +2122,8 @@ IDE_RC qmnCUNT::makeRidRange( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description : BUG-41591
- *               qmnSCAN Ïóê Ï†ÅÏö©Îêú ridRange ÏàòÌñâÎ∞©ÏãùÏùÑ qmnCUNT Ïóê Ï†ÅÏö©ÌïúÎã§.
- *               getCountByCursor ÏóêÏÑú Ìò∏Ï∂úÎêòÏñ¥ ridRange ÏàòÌñâÌïúÎã§.
+ *               qmnSCAN ø° ¿˚øÎµ» ridRange ºˆ«‡πÊΩƒ¿ª qmnCUNT ø° ¿˚øÎ«—¥Ÿ.
+ *               getCountByCursor ø°º≠ »£√‚µ«æÓ ridRange ºˆ«‡«—¥Ÿ.
  *
  * Implementation :
  *
@@ -2130,9 +2147,9 @@ IDE_RC qmnCUNT::makeRidRange( qcTemplate * aTemplate,
     if ( sMethod->ridRange != NULL )
     {
         /*
-         * ridRangeÎäî Îã§ÏùåÍ≥º Í∞ôÏùÄ ÌòïÏãùÏúºÎ°ú Îì§Ïñ¥Ïò¥
+         * ridRange¥¬ ¥Ÿ¿Ω∞˙ ∞∞¿∫ «¸Ωƒ¿∏∑Œ µÈæÓø»
          *
-         * Ïòà1) SELECT .. FROM .. WHERE _PROWID = 1 OR _PROWID = 2
+         * øπ1) SELECT .. FROM .. WHERE _PROWID = 1 OR _PROWID = 2
          *
          *   [OR]
          *    |
@@ -2140,7 +2157,7 @@ IDE_RC qmnCUNT::makeRidRange( qcTemplate * aTemplate,
          *    |            |
          *   [RID]--[1]   [RID]--[2]
          *
-         * Ïòà2) SELECT .. FROM .. WHERE _PROWID IN (1, 2)
+         * øπ2) SELECT .. FROM .. WHERE _PROWID IN (1, 2)
          *
          *    [OR]
          *     |
@@ -2162,16 +2179,16 @@ IDE_RC qmnCUNT::makeRidRange( qcTemplate * aTemplate,
         while ( sNode != NULL )
         {
             /*
-             * smiRange data ÎßåÎìúÎäî Î∞©Î≤ï
+             * smiRange data ∏∏µÂ¥¬ πÊπ˝
              *
-             * 1) calculate ÌïòÍ≥†
-             * 2) converted node Î°ú Î≥ÄÍ≤Ω
-             * 3) mtc::value Î°ú Í∞í Í∞ÄÏ†∏Ïò§Í∏∞
+             * 1) calculate «œ∞Ì
+             * 2) converted node ∑Œ ∫Ø∞Ê
+             * 3) mtc::value ∑Œ ∞™ ∞°¡Æø¿±‚
              *
-             * converted Îêú node Í∞Ä Î∞òÎìúÏãú bigint Ïù¥Ïñ¥Ïïº ÌïúÎã§.
-             * SM Ïù¥ Ïù∏ÏãùÌïòÎäî format Ïù¥ scGRID(=mtdBigint) Ïù¥Í∏∞ ÎïåÎ¨∏Ïù¥Îã§.
-             * conversion Ïù¥ Í∞ÄÎä•ÌïòÏßÄÎßå Í≤∞Í≥ºÍ∞Ä bigint Í∞Ä ÏïÑÎãåÍ≤ΩÏö∞Îäî
-             * rid scan Ïù¥ Î∂àÍ∞ÄÎä•ÌïòÍ≥† Ïù¥ÎØ∏ filter Î°ú Î∂ÑÎ•òÎêòÏóàÎã§.
+             * converted µ» node ∞° π›µÂΩ√ bigint ¿ÃæÓæﬂ «—¥Ÿ.
+             * SM ¿Ã ¿ŒΩƒ«œ¥¬ format ¿Ã scGRID(=mtdBigint) ¿Ã±‚ ∂ßπÆ¿Ã¥Ÿ.
+             * conversion ¿Ã ∞°¥…«œ¡ˆ∏∏ ∞·∞˙∞° bigint ∞° æ∆¥—∞ÊøÏ¥¬
+             * rid scan ¿Ã ∫“∞°¥…«œ∞Ì ¿ÃπÃ filter ∑Œ ∫–∑˘µ«æ˙¥Ÿ.
              */
 
             if ( sNode->module == &mtfEqual )
@@ -2253,7 +2270,7 @@ IDE_RC qmnCUNT::makeRidRange( qcTemplate * aTemplate,
         for ( i = 1; i < sRangeCnt; i++ )
         {
             /*
-             * BUG-41211 Ï§ëÎ≥µÎêú range Ï†úÍ±∞
+             * BUG-41211 ¡ﬂ∫πµ» range ¡¶∞≈
              */
             for ( j = 0; j <= sPrevIdx; j++ )
             {

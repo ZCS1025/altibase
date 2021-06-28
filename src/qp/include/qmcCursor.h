@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmcCursor.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmcCursor.h 88285 2020-08-05 05:49:37Z bethy $
  **********************************************************************/
 
 #ifndef _O_QMC_CURSOR_H_
@@ -41,7 +41,7 @@ private:
     qmcOpenedCursor * mTop;
     qmcOpenedCursor * mCurrent;
 
-    // BUG-40427 lob cursor 1Í∞úÎßå Î≥¥Í¥ÄÌïúÎã§
+    // BUG-40427 lob cursor 1∞≥∏∏ ∫∏∞¸«—¥Ÿ
     smLobLocator      mOpenedLob;
 
 public:
@@ -52,10 +52,10 @@ public:
                             smiTableCursor * aCursor );
     IDE_RC getOpenedCursor( UShort aTableID, smiTableCursor ** aCursor, idBool * aFound );
 
-    // BUG-40427 ÏµúÏ¥àÎ°ú OpenÌïú LOB CursorÏù∏ Í≤ΩÏö∞, qmcCursorÏóê Í∏∞Î°ù
+    // BUG-40427 √÷√ ∑Œ Open«— LOB Cursor¿Œ ∞ÊøÏ, qmcCursorø° ±‚∑œ
     IDE_RC addOpenedLobCursor( smLobLocator aLocator );
 
-    IDE_RC closeAllCursor();
+    IDE_RC closeAllCursor( idvSQL * aStatistics );
 };
 
 #endif /* _O_QMC_CURSOR_H_ */

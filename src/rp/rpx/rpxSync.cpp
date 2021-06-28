@@ -101,7 +101,7 @@ IDE_RC rpxSync::syncTable( smiStatement  *aStatement,
     if((SMI_MISC_TABLE_HEADER(sTable)->mFlag & SMI_TABLE_TYPE_MASK)
        == SMI_TABLE_DISK )
     {
-        /* PROJ-1705 Fetch Column Listë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ í• ë‹¹ */
+        /* PROJ-1705 Fetch Column List¸¦ À§ÇÑ ¸Þ¸ð¸® ÇÒ´ç */
         IDU_FIT_POINT_RAISE( "rpxSync::syncTable::malloc::FetchColumnList",
                               ERR_MEMORY_ALLOC_FETCH_COLUMN_LIST );
         IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_RP_RPX_SYNC,
@@ -110,7 +110,7 @@ IDE_RC rpxSync::syncTable( smiStatement  *aStatement,
                                          IDU_MEM_IMMEDIATE)
                        != IDE_SUCCESS, ERR_MEMORY_ALLOC_FETCH_COLUMN_LIST);
 
-        // PROJ-1705 Fetch Column List êµ¬ì„±
+        // PROJ-1705 Fetch Column List ±¸¼º
         IDE_TEST(rpxSender::makeFetchColumnList((smOID)aMetaItem->mItem.mTableOID,
                                                 sFetchColumnList)
                  != IDE_SUCCESS);
@@ -120,7 +120,7 @@ IDE_RC rpxSync::syncTable( smiStatement  *aStatement,
         /* nothing to do */
     }
 
-    // smiCursorPropertiesì— fetch Column List ì •ë³´ ì„¤ì •
+    // smiCursorProperties¿¡ fetch Column List Á¤º¸ ¼³Á¤
     sProperty.mFetchColumnList = sFetchColumnList;
 
     sCursor.initialize();
@@ -145,12 +145,12 @@ IDE_RC rpxSync::syncTable( smiStatement  *aStatement,
     if((SMI_MISC_TABLE_HEADER(sTable)->mFlag & SMI_TABLE_TYPE_MASK)
        == SMI_TABLE_DISK)
     {
-        /* ë©”ëª¨ë¦¬ í• ë‹¹ì„ ìœ„í•´ì„œ, í˜„ìž¬ ì½ì–´ì•¼ í•  Rowì˜ sizeë¥¼ ë¨¼ì € ì–»ì–´ì™€ì•¼ í•¨ */
+        /* ¸Þ¸ð¸® ÇÒ´çÀ» À§ÇØ¼­, ÇöÀç ÀÐ¾î¾ß ÇÒ RowÀÇ size¸¦ ¸ÕÀú ¾ò¾î¿Í¾ß ÇÔ */
         IDE_TEST(qciMisc::getDiskRowSize(sTable,
                                          &sRowSize)
                  != IDE_SUCCESS);
 
-        /* Rowë¥¼ ì €ìž¥í•  Memoryë¥¼ í• ë‹¹í•´ì•¼ í•¨ */
+        /* Row¸¦ ÀúÀåÇÒ Memory¸¦ ÇÒ´çÇØ¾ß ÇÔ */
         IDU_FIT_POINT_RAISE( "rpxSync::syncTable::calloc::RealRow",
                               ERR_MEMORY_ALLOC_REAL_ROW );
         IDE_TEST_RAISE(iduMemMgr::calloc(IDU_MEM_RP_RPX_SYNC,
@@ -164,7 +164,7 @@ IDE_RC rpxSync::syncTable( smiStatement  *aStatement,
     }
 
     sColCount = smiGetTableColumnCount(sTable);
-    /* mtcColumnì„ ìœ„í•œ Memoryë¥¼ í• ë‹¹í•´ì•¼ í•¨ */
+    /* mtcColumnÀ» À§ÇÑ Memory¸¦ ÇÒ´çÇØ¾ß ÇÔ */
     IDU_FIT_POINT_RAISE( "rpxSync::syncTable::calloc::MtcColumn",
                           ERR_MEMORY_ALLOC_MTC_COL );
     IDE_TEST_RAISE(iduMemMgr::calloc(IDU_MEM_RP_RPX_SYNC,
@@ -174,7 +174,7 @@ IDE_RC rpxSync::syncTable( smiStatement  *aStatement,
                                      IDU_MEM_IMMEDIATE)
                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_MTC_COL);
 
-    /* mtcColumn ì •ë³´ì˜ copyë³¸ì„ ìƒì„± */
+    /* mtcColumn Á¤º¸ÀÇ copyº»À» »ý¼º */
     IDE_TEST(qciMisc::copyMtcColumns(sTable,
                                      sMtcCol)
              != IDE_SUCCESS);
@@ -187,7 +187,7 @@ IDE_RC rpxSync::syncTable( smiStatement  *aStatement,
         {
             sColumn = sMtcCol + i;
             // To fix BUG-24356
-            // geometryì— ëŒ€í•´ì„œë§Œ bufferí• ë‹¹
+            // geometry¿¡ ´ëÇØ¼­¸¸ bufferÇÒ´ç
             if( ((sColumn->column.flag & SMI_COLUMN_TYPE_MASK)
                   == SMI_COLUMN_TYPE_VARIABLE_LARGE) &&
                 (sColumn->module->id == MTD_GEOMETRY_ID) )
@@ -220,7 +220,7 @@ IDE_RC rpxSync::syncTable( smiStatement  *aStatement,
                 sColumn = sMtcCol + i;
 
                 // To fix BUG-24356
-                // geometryì— ëŒ€í•´ì„œë§Œ value bufferí• ë‹¹
+                // geometry¿¡ ´ëÇØ¼­¸¸ value bufferÇÒ´ç
                 if ( ((sColumn->column.flag & SMI_COLUMN_TYPE_MASK)
                        == SMI_COLUMN_TYPE_VARIABLE_LARGE) &&
                      (sColumn->module->id == MTD_GEOMETRY_ID) )

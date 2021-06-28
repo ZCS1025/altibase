@@ -29,6 +29,8 @@ ACI_RC ulsdnFailoverConnectToSpecificServer( ulnFnContext *aFnContext, ulnFailov
 
 SQLRETURN ulsdnReconnect( acp_sint16_t aHandleType, ulnObject *aObject );
 
+SQLRETURN ulsdnReconnectWithoutEnter( acp_sint16_t aHandleType, ulnObject *aObject );
+
 void ulsdnRaiseShardNodeFailoverIsNotAvailableError( ulnFnContext *aFnContext );
 
 #endif // _O_ULSDN_FAILOVER_H_

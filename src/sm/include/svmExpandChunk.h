@@ -19,83 +19,83 @@
 
 
 /*
- * PROJ-1490 í˜ì´ì§€ë¦¬ìŠ¤íŠ¸ ë‹¤ì¤‘í™”ë° ë©”ëª¨ë¦¬ë°˜ë‚©
+ * PROJ-1490 ÆäÀÌÁö¸®½ºÆ® ´ÙÁßÈ­¹× ¸Ş¸ğ¸®¹İ³³
  * 
- * ë°ì´í„°ë² ì´ìŠ¤ë¥¼ í™•ì¥í•˜ëŠ” ìµœì†Œ ë‹¨ìœ„ì¸ ExpandChunkì™€ ê´€ë ¨í•œ ê¸°ëŠ¥ë“¤ì„ ì§€ë‹Œ í´ë˜ìŠ¤
+ * µ¥ÀÌÅÍº£ÀÌ½º¸¦ È®ÀåÇÏ´Â ÃÖ¼Ò ´ÜÀ§ÀÎ ExpandChunk¿Í °ü·ÃÇÑ ±â´ÉµéÀ» Áö´Ñ Å¬·¡½º
  *
- * ExpandChunkì˜ êµ¬ì¡°ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.
+ * ExpandChunkÀÇ ±¸Á¶´Â ´ÙÀ½°ú °°´Ù.
  *
- * | Free List Info Pageë“¤ | Data Page ë“¤ .... |
+ * | Free List Info Pageµé | Data Page µé .... |
  *
- * Data Pageì—ëŠ” í…Œì´ë¸”ì´ë‚˜ ì¸ë±ìŠ¤ì™€ ê°™ì´ ë°ì´í„° ì €ì¥ì„ ìœ„í•´
- * Pageë¥¼ í•„ìš”ë¡œ í•˜ëŠ” ê°ì²´ë“¤ì˜ ë°ì´í„°ê°€ ì €ì¥ëœë‹¤.
+ * Data Page¿¡´Â Å×ÀÌºíÀÌ³ª ÀÎµ¦½º¿Í °°ÀÌ µ¥ÀÌÅÍ ÀúÀåÀ» À§ÇØ
+ * Page¸¦ ÇÊ¿ä·Î ÇÏ´Â °´Ã¼µéÀÇ µ¥ÀÌÅÍ°¡ ÀúÀåµÈ´Ù.
  *
- * í•˜ë‚˜ì˜ ExpandChunkì˜ ë§¨ ì•ì—ëŠ” Free List Info Pageê°€ ì¡´ì¬í•œë‹¤.
- * Free List Info Pageì—ëŠ” Data Pageì™€ 1:1ë¡œ ë§¤í•‘ë˜ëŠ” Slotì´ ì¡´ì¬í•˜ë©°,
- * ì´ Slotì— Free Pageì˜ Next Free Pageì •ë³´ê°€ ê¸°ë¡ëœë‹¤.
- * Free List Info Pageì˜ ìˆ˜ëŠ” ExpandChunkì•ˆì— ì†í•˜ëŠ” Pageì˜ ìˆ˜ì— ë”°ë¼ ë‹¬ë¼ì§„ë‹¤.
+ * ÇÏ³ªÀÇ ExpandChunkÀÇ ¸Ç ¾Õ¿¡´Â Free List Info Page°¡ Á¸ÀçÇÑ´Ù.
+ * Free List Info Page¿¡´Â Data Page¿Í 1:1·Î ¸ÅÇÎµÇ´Â SlotÀÌ Á¸ÀçÇÏ¸ç,
+ * ÀÌ Slot¿¡ Free PageÀÇ Next Free PageÁ¤º¸°¡ ±â·ÏµÈ´Ù.
+ * Free List Info PageÀÇ ¼ö´Â ExpandChunk¾È¿¡ ¼ÓÇÏ´Â PageÀÇ ¼ö¿¡ µû¶ó ´Ş¶óÁø´Ù.
  *
- * ì˜ˆë¥¼ë“¤ì–´, í•˜ë‚˜ì˜ Free List Info Pageì— ë‘ ê°œì˜ ë°ì´í„° í˜ì´ì§€ì˜
- * Next Free Page IDì •ë³´ë¥¼ ì„¤ì •í•  ìˆ˜ ìˆëŠ” ìƒí™©ì„ ê°€ì •í•´ë³´ì.
- * í•˜ë‚˜ì˜ ExpandChunkì— 4ê°œì˜ Data Pageë¥¼ ì €ì¥í•˜ë„ë¡ ì‚¬ìš©ìê°€ Database ë¥¼ ìƒì„±í–ˆë‹¤ë©´,
- * í•˜ë‚˜ì˜ ExpandChunkëŠ” Free List Info Pageê°€ 2ê°œ, ê·¸ë¦¬ê³  Data Page ê°€ 4ê°œê°€
- * ê¸°ë¡ëœë‹¤.
+ * ¿¹¸¦µé¾î, ÇÏ³ªÀÇ Free List Info Page¿¡ µÎ °³ÀÇ µ¥ÀÌÅÍ ÆäÀÌÁöÀÇ
+ * Next Free Page IDÁ¤º¸¸¦ ¼³Á¤ÇÒ ¼ö ÀÖ´Â »óÈ²À» °¡Á¤ÇØº¸ÀÚ.
+ * ÇÏ³ªÀÇ ExpandChunk¿¡ 4°³ÀÇ Data Page¸¦ ÀúÀåÇÏµµ·Ï »ç¿ëÀÚ°¡ Database ¸¦ »ı¼ºÇß´Ù¸é,
+ * ÇÏ³ªÀÇ ExpandChunk´Â Free List Info Page°¡ 2°³, ±×¸®°í Data Page °¡ 4°³°¡
+ * ±â·ÏµÈ´Ù.
  * 
- * ì´ëŸ¬í•œ ExpandChunk ê°€ ë‘ê°œ ìˆë‹¤ë©´, Data Pageë“¤ì˜ Page IDëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.
- * ì•„ë˜ ì˜ˆì‹œì—ì„œ FLI-Page ëŠ” Free List Info Pageë¥¼ ì˜ë¯¸í•˜ê³ ,
- * D-PageëŠ” Data Pageë¥¼ ì˜ë¯¸í•œë‹¤.
+ * ÀÌ·¯ÇÑ ExpandChunk °¡ µÎ°³ ÀÖ´Ù¸é, Data PageµéÀÇ Page ID´Â ´ÙÀ½°ú °°´Ù.
+ * ¾Æ·¡ ¿¹½Ã¿¡¼­ FLI-Page ´Â Free List Info Page¸¦ ÀÇ¹ÌÇÏ°í,
+ * D-Page´Â Data Page¸¦ ÀÇ¹ÌÇÑ´Ù.
  * 
  * < ExpandChunk #0 >
  *   | FLI-Page#0 | FLI-Page#1 | D-Page#2 | D-Page#3 | D-Page#4  | D-Page#5  |
  * < ExpandChunk #1 >
  *   | FLI-Page#6 | FLI-Page#7 | D-Page#8 | D-Page#9 | D-Page#10 | D-Page#11 |
  *
- * ìœ„ì˜ ì˜ˆì—ì„œëŠ” í•˜ë‚˜ì˜ Free List Info Page ê°€
- * ë‘ Data Pageì˜ Slotì„ ê¸°ë¡í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
- * D-Page #2,3 ì˜ Next Free Page ID ëŠ” FLI-Page#0ì—,
- * D-Page #4,5 ì˜ Next Free Page ID ëŠ” FLI-Page#1ì—,
- * D-Page #8,9 ì˜ Next Free Page ID ëŠ” FLI-Page#6ì—,
- * D-Page #10,11 ì˜ Next Free Page ID ëŠ” FLI-Page#7ì— ê¸°ë¡ëœë‹¤.
+ * À§ÀÇ ¿¹¿¡¼­´Â ÇÏ³ªÀÇ Free List Info Page °¡
+ * µÎ Data PageÀÇ SlotÀ» ±â·ÏÇÒ ¼ö ÀÖÀ¸¹Ç·Î,
+ * D-Page #2,3 ÀÇ Next Free Page ID ´Â FLI-Page#0¿¡,
+ * D-Page #4,5 ÀÇ Next Free Page ID ´Â FLI-Page#1¿¡,
+ * D-Page #8,9 ÀÇ Next Free Page ID ´Â FLI-Page#6¿¡,
+ * D-Page #10,11 ÀÇ Next Free Page ID ´Â FLI-Page#7¿¡ ±â·ÏµÈ´Ù.
  *
- * [ ì°¸ê³  ]
- * ë³¸ í´ë˜ìŠ¤ì—ì„œ í•¨ìˆ˜ë‚˜ ë³€ìˆ˜ì´ë¦„ ë’¤ì— Noê°€ ë¶™ì€ ê²ƒì€,
- * 0ë¶€í„° ì‹œì‘í•˜ì—¬ 1ì”© ì¦ê°€í•˜ëŠ” ì¼ë ¨ ë²ˆí˜¸ë¡œ ê°„ì£¼í•˜ë©´ ëœë‹¤.
+ * [ Âü°í ]
+ * º» Å¬·¡½º¿¡¼­ ÇÔ¼ö³ª º¯¼öÀÌ¸§ µÚ¿¡ No°¡ ºÙÀº °ÍÀº,
+ * 0ºÎÅÍ ½ÃÀÛÇÏ¿© 1¾¿ Áõ°¡ÇÏ´Â ÀÏ·Ã ¹øÈ£·Î °£ÁÖÇÏ¸é µÈ´Ù.
  */
 
 
-// Free List Info(FLI) Page ì•ˆì˜ í•˜ë‚˜ì˜ Slotì„ í‘œí˜„í•œë‹¤.
-// FLI Pageì•ˆì˜ Slotì€ ê³§ Next Free Pageë¥¼ ì €ì¥í•˜ëŠ”ë° ì‚¬ìš©ëœë‹¤.
+// Free List Info(FLI) Page ¾ÈÀÇ ÇÏ³ªÀÇ SlotÀ» Ç¥ÇöÇÑ´Ù.
+// FLI Page¾ÈÀÇ SlotÀº °ğ Next Free Page¸¦ ÀúÀåÇÏ´Âµ¥ »ç¿ëµÈ´Ù.
 typedef struct svmFLISlot
 {
-    // ì´ Slotê³¼ 1:1 ë§¤ì¹­ë˜ëŠ” Pageê°€
-    // Database Free Pageì¸ ê²½ìš°   ==> ë‹¤ìŒ Free Pageì˜ ID
-    // Table Allocated Pageì¸ ê²½ìš° ==> SVM_FLI_ALLOCATED_PID
+    // ÀÌ Slot°ú 1:1 ¸ÅÄªµÇ´Â Page°¡
+    // Database Free PageÀÎ °æ¿ì   ==> ´ÙÀ½ Free PageÀÇ ID
+    // Table Allocated PageÀÎ °æ¿ì ==> SVM_FLI_ALLOCATED_PID
     //
-    // ì„œë²„ ê¸°ë™ì‹œ Restart Recoveryê°€ í•„ìš”í•˜ì§€ ì•Šì€ ê²½ìš°ì— í•œí•´ì„œ,
-    // Free Pageì™€ Allocated Pageë¥¼ êµ¬ë¶„í•˜ê¸° ìœ„í•œ ìš©ë„ë¡œ ì‚¬ìš©ë  ìˆ˜ ìˆë‹¤.
+    // ¼­¹ö ±âµ¿½Ã Restart Recovery°¡ ÇÊ¿äÇÏÁö ¾ÊÀº °æ¿ì¿¡ ÇÑÇØ¼­,
+    // Free Page¿Í Allocated Page¸¦ ±¸ºĞÇÏ±â À§ÇÑ ¿ëµµ·Î »ç¿ëµÉ ¼ö ÀÖ´Ù.
     scPageID mNextFreePageID;  
 } svmFLISlot ;
 
 
-// í•˜ë‚˜ì˜ Free Pageì˜ Next Free Page IDê°€ ì €ì¥ë  Slotì˜ í¬ê¸°
+// ÇÏ³ªÀÇ Free PageÀÇ Next Free Page ID°¡ ÀúÀåµÉ SlotÀÇ Å©±â
 #define SVM_FLI_SLOT_SIZE  ( ID_SIZEOF(svmFLISlot) )
 
 // Expand Chunk
 class svmExpandChunk
 {
 private:
-    // í•˜ë‚˜ì˜ Free List Info Pageì— ê¸°ë¡í•  ìˆ˜ ìˆëŠ” Slotì˜ ìˆ˜
+    // ÇÏ³ªÀÇ Free List Info Page¿¡ ±â·ÏÇÒ ¼ö ÀÖ´Â SlotÀÇ ¼ö
     static UInt  mFLISlotCount;
 
 
-    // íŠ¹ì • Data Pageê°€ ì†í•œ Expand Chunkë¥¼ ì•Œì•„ë‚¸ë‹¤.
+    // Æ¯Á¤ Data Page°¡ ¼ÓÇÑ Expand Chunk¸¦ ¾Ë¾Æ³½´Ù.
     static scPageID getExpandChunkPID( svmTBSNode * aTBSNode,
                                        scPageID     aDataPageID );
 
 
-    // í•˜ë‚˜ì˜ Expand Chunkì•ˆì—ì„œ Free List Info Pageë¥¼ ì œì™¸í•œ
-    // ë°ì´í„° í˜ì´ì§€ë“¤ì— ëŒ€í•´ ìˆœì„œëŒ€ë¡œ 0ë¶€í„° 1ì”© ì¦ê°€í•˜ëŠ” ë²ˆí˜¸ë¥¼ ë§¤ê¸´
-    // Data Page No ë¥¼ ë¦¬í„´í•œë‹¤.
+    // ÇÏ³ªÀÇ Expand Chunk¾È¿¡¼­ Free List Info Page¸¦ Á¦¿ÜÇÑ
+    // µ¥ÀÌÅÍ ÆäÀÌÁöµé¿¡ ´ëÇØ ¼ø¼­´ë·Î 0ºÎÅÍ 1¾¿ Áõ°¡ÇÏ´Â ¹øÈ£¸¦ ¸Å±ä
+    // Data Page No ¸¦ ¸®ÅÏÇÑ´Ù.
     static vULong getDataPageNoInChunk( svmTBSNode * aTBSNode,
                                         scPageID     aDataPageID );
     
@@ -105,50 +105,55 @@ public :
     ~svmExpandChunk();
     
         
-    // Expand Chunkê´€ë¦¬ìë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+    // Expand Chunk°ü¸®ÀÚ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
     static IDE_RC initialize(svmTBSNode * aTBSNode);
 
 
-    // íŠ¹ì • Data Pageì˜ Next Free Page IDë¥¼ ê¸°ë¡í•  Slotì´ ì¡´ì¬í•˜ëŠ”
-    // Free List Info Pageë¥¼ ì•Œì•„ë‚¸ë‹¤.
+    // Æ¯Á¤ Data PageÀÇ Next Free Page ID¸¦ ±â·ÏÇÒ SlotÀÌ Á¸ÀçÇÏ´Â
+    // Free List Info Page¸¦ ¾Ë¾Æ³½´Ù.
     static scPageID getFLIPageID( svmTBSNode * aTBSNode,
                                   scPageID     aDataPageID );
     
-    // FLI Page ë‚´ì—ì„œ Data Pageì™€ 1:1ë¡œ ë§¤í•‘ë˜ëŠ” Slotì˜ offsetì„ ê³„ì‚°í•œë‹¤.
+    // FLI Page ³»¿¡¼­ Data Page¿Í 1:1·Î ¸ÅÇÎµÇ´Â SlotÀÇ offsetÀ» °è»êÇÑ´Ù.
     static UInt getSlotOffsetInFLIPage( svmTBSNode * aTBSNode,
                                         scPageID     aDataPageID );
     
-    // ExpandChunkë‹¹ Pageìˆ˜ë¥¼ ì„¤ì •í•œë‹¤.
+    // ExpandChunk´ç Page¼ö¸¦ ¼³Á¤ÇÑ´Ù.
     static IDE_RC setChunkPageCnt( svmTBSNode * aTBSNode,
                                    vULong       aChunkPageCnt );
     
-    // Expand Chunkê´€ë¦¬ìë¥¼ íŒŒê´´í•œë‹¤.
+    // Expand Chunk°ü¸®ÀÚ¸¦ ÆÄ±«ÇÑ´Ù.
     static IDE_RC destroy(svmTBSNode * aTBSNode);
     
-    // Next Free Page IDë¥¼ ì„¤ì •í•œë‹¤.
-    // ì—¬ëŸ¬ íŠ¸ëœì­ì…˜ì´ ê°™ì€ Pageì˜ Next Free Page IDë¥¼
-    // ë™ì‹œì— ìˆ˜ì •ì„ ê°€í•˜ì§€ ì•Šë„ë¡ ë™ì‹œì„± ì œì–´ë¥¼ í•´ì•¼ í•œë‹¤.
+    // Next Free Page ID¸¦ ¼³Á¤ÇÑ´Ù.
+    // ¿©·¯ Æ®·£Àè¼ÇÀÌ °°Àº PageÀÇ Next Free Page ID¸¦
+    // µ¿½Ã¿¡ ¼öÁ¤À» °¡ÇÏÁö ¾Êµµ·Ï µ¿½Ã¼º Á¦¾î¸¦ ÇØ¾ß ÇÑ´Ù.
     static IDE_RC setNextFreePage( svmTBSNode * aTBSNode,
                                    scPageID     aPageID,
                                    scPageID     aNextFreePageID );
     
-    // Next Free Page IDë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+    // Next Free Page ID¸¦ °¡Á®¿Â´Ù.
     static IDE_RC getNextFreePage( svmTBSNode * aTBSNode,
                                    scPageID     aPageID,
                                    scPageID *   aNextFreePageID );
 
-    // ìµœì†Œí•œ íŠ¹ì • Pageìˆ˜ ë§Œí¼ ì €ì¥í•  ìˆ˜ ìˆëŠ” Expand Chunkì˜ ìˆ˜ë¥¼ ê³„ì‚°í•œë‹¤.
+    // ÃÖ¼ÒÇÑ Æ¯Á¤ Page¼ö ¸¸Å­ ÀúÀåÇÒ ¼ö ÀÖ´Â Expand ChunkÀÇ ¼ö¸¦ °è»êÇÑ´Ù.
     static vULong getExpandChunkCount( svmTBSNode * aTBSNode,
                                        vULong       aRequiredPageCnt );
 
-    // Data Pageì¸ì§€ì˜ ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
+    // Data PageÀÎÁöÀÇ ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
     static idBool isDataPageID( svmTBSNode * aTBSNode,
                                 scPageID     aPageID );
 
-    // í•˜ë‚˜ì˜ Chunkë‹¹ Free List Info Pageì˜ ìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.
+    // FLI PageÀÎÁöÀÇ ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
+    static idBool isFLIPageID( svmTBSNode * aTBSNode, 
+                               scPageID     aPageID );
+
+
+    // ÇÏ³ªÀÇ Chunk´ç Free List Info PageÀÇ ¼ö¸¦ ¸®ÅÏÇÑ´Ù.
     static UInt getChunkFLIPageCnt(svmTBSNode * aTBSNode);
 
-    // ë°ì´í„°ë² ì´ìŠ¤ Pageê°€ Free Pageì¸ì§€ ì—¬ë¶€ë¥¼ ë¦¬í„´í•œë‹¤.
+    // µ¥ÀÌÅÍº£ÀÌ½º Page°¡ Free PageÀÎÁö ¿©ºÎ¸¦ ¸®ÅÏÇÑ´Ù.
     static IDE_RC isFreePageID(svmTBSNode * aTBSNode,
                                scPageID     aPageID,
                                idBool *     aIsFreePage );
@@ -161,7 +166,7 @@ public :
 };
 
 
-/* í•˜ë‚˜ì˜ Chunkë‹¹ Free List Info Pageì˜ ìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.
+/* ÇÏ³ªÀÇ Chunk´ç Free List Info PageÀÇ ¼ö¸¦ ¸®ÅÏÇÑ´Ù.
  */
 inline UInt svmExpandChunk::getChunkFLIPageCnt(svmTBSNode * aTBSNode)
 {

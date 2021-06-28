@@ -16,16 +16,16 @@
  
 
 /***********************************************************************
- * $Id: sddDiskMgr.h 84383 2018-11-20 04:18:42Z emlee $
+ * $Id: sddDiskMgr.h 89217 2020-11-11 12:31:50Z et16 $
  *
  * Description :
  *
- * ë³¸ íŒŒì¼ì€ disk ê´€ë¦¬ìì— ëŒ€í•œ í—¤ë” íŒŒì¼ì´ë‹¤.
+ * º» ÆÄÀÏÀº disk °ü¸®ÀÚ¿¡ ´ëÇÑ Çì´õ ÆÄÀÏÀÌ´Ù.
  *
- * # ê°œë…
+ * # °³³ä
  *
- * tablespaceì˜ ë¦¬ìŠ¤íŠ¸ì™€ ì˜¤í”ˆëœ datafile ë“± I/Oì— í•„ìš”í•œ ì „ì²´ ì •ë³´ë¥¼ ê´€ë¦¬
- * ì´ í´ë˜ìŠ¤ëŠ” ì‹œìŠ¤í…œ ì „ì—­ì— í•˜ë‚˜ ì¡´ì¬í•œë‹¤.
+ * tablespaceÀÇ ¸®½ºÆ®¿Í ¿ÀÇÂµÈ datafile µî I/O¿¡ ÇÊ¿äÇÑ ÀüÃ¼ Á¤º¸¸¦ °ü¸®
+ * ÀÌ Å¬·¡½º´Â ½Ã½ºÅÛ Àü¿ª¿¡ ÇÏ³ª Á¸ÀçÇÑ´Ù.
  *
  **********************************************************************/
 
@@ -40,36 +40,42 @@
 #include <sctDef.h>
 #include <smriDef.h>
 #include <idCore.h>
+#include <sdpDef.h>
+#include <sdptbDef.h>
 
+struct sdptbSpaceCache;
 class sddDiskMgr
 {
 
 public:
 
-    /* ë””ìŠ¤í¬ê´€ë¦¬ì ì´ˆê¸°í™”  */
+    /* µğ½ºÅ©°ü¸®ÀÚ ÃÊ±âÈ­  */
     static IDE_RC initialize( UInt aMaxFilePageCnt );
-    /* ë””ìŠ¤í¬ê´€ë¦¬ì í•´ì œ */
+    /* µğ½ºÅ©°ü¸®ÀÚ ÇØÁ¦ */
     static IDE_RC destroy();
 
-    /* Space Cache ì„¤ì • */
+    /* Space Cache ¼³Á¤ */
     static void  setSpaceCache( scSpaceID  aSpaceID,
                                 void     * aSpaceCache );
+    static void  setSpaceCache( sddTableSpaceNode * aSpaceNode ,
+                                void              * aSpaceCache );
+    /* Space Cache ¹İÈ¯ */
+    static sdptbSpaceCache* getSpaceCache( scSpaceID  aSpaceID );
+    static sdptbSpaceCache* getSpaceCache( void*  aSpaceNode )
+    {   return (sdptbSpaceCache*)(((sddTableSpaceNode*)aSpaceNode)->mSpaceCache); };
 
-    /* Space Cache ë°˜í™˜ */
-    static void * getSpaceCache( scSpaceID  aSpaceID );
-
-    /* ë¡œê·¸ì•µì»¤ì— ì˜í•œ tablespace ë…¸ë“œ ìƒì„± ë° ì´ˆê¸°í™” */
+    /* ·Î±×¾ŞÄ¿¿¡ ÀÇÇÑ tablespace ³ëµå »ı¼º ¹× ÃÊ±âÈ­ */
     static IDE_RC loadTableSpaceNode(
                            idvSQL*            aStatistics,
                            smiTableSpaceAttr* aTableSpaceAttr,
                            UInt               aAnchorOffset );
 
-    /* ë¡œê·¸ì•µì»¤ì— ì˜í•œ datafile ë…¸ë“œìƒì„± */
+    /* ·Î±×¾ŞÄ¿¿¡ ÀÇÇÑ datafile ³ëµå»ı¼º */
     static IDE_RC loadDataFileNode( idvSQL*           aStatistics,
                                     smiDataFileAttr*  aDataFileAttr,
                                     UInt              aAnchorOffset );
 
-    /* tablespace ë…¸ë“œ ìƒì„± ë° ì´ˆê¸°í™”, datafile ë…¸ë“œ ìƒì„± */
+    /* tablespace ³ëµå »ı¼º ¹× ÃÊ±âÈ­, datafile ³ëµå »ı¼º */
     static IDE_RC createTableSpace(
                         idvSQL             * aStatistics,
                         void               * aTrans,
@@ -79,50 +85,50 @@ public:
                         smiTouchMode         aTouchMode );
 
     /* PROJ-1923
-     * tablespace ë…¸ë“œ ìƒì„± ë° ì´ˆê¸°í™”, redo ê³¼ì •ì—ì„œë§Œ ì‚¬ìš© ë¨ */
+     * tablespace ³ëµå »ı¼º ¹× ÃÊ±âÈ­, redo °úÁ¤¿¡¼­¸¸ »ç¿ë µÊ */
     static IDE_RC createTableSpace4Redo( void               * aTrans,
                                          smiTableSpaceAttr  * aTableSpaceAttr );
 
     /* PROJ-1923
-     * DBF ë…¸ë“œ ìƒì„± ë° ì´ˆê¸°í™”, redo ê³¼ì •ì—ì„œë§Œ ì‚¬ìš© ë¨ */
+     * DBF ³ëµå »ı¼º ¹× ÃÊ±âÈ­, redo °úÁ¤¿¡¼­¸¸ »ç¿ë µÊ */
     static IDE_RC createDataFile4Redo( void               * aTrans,
                                        smLSN                aCurLSN,
                                        scSpaceID            aSpaceID,
                                        smiDataFileAttr    * aDataFileAttr );
 
-    /* tablespace ì œê±° (ë…¸ë“œ ì œê±°ë§Œ í˜¹ì€ ë…¸ë“œ ë° íŒŒì¼ ì œê±°) */
+    /* tablespace Á¦°Å (³ëµå Á¦°Å¸¸ È¤Àº ³ëµå ¹× ÆÄÀÏ Á¦°Å) */
     static IDE_RC removeTableSpace( idvSQL*       aStatistics,
                                     void *        aTrans,
                                     scSpaceID     aTableSpaceID,
                                     smiTouchMode  aTouchMode );
 
-    // ëª¨ë“  ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ DBFileë“¤ì˜
-    // ë¯¸ë””ì–´ ë³µêµ¬ í•„ìš” ì—¬ë¶€ë¥¼ ì²´í¬í•œë‹¤.
+    // ¸ğµç µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½ºÀÇ DBFileµéÀÇ
+    // ¹Ìµğ¾î º¹±¸ ÇÊ¿ä ¿©ºÎ¸¦ Ã¼Å©ÇÑ´Ù.
     static IDE_RC identifyDBFilesOfAllTBS( idvSQL * aStatistics,
                                            idBool   aIsOnCheckPoint );
 
-    // Syncíƒ€ì…ì— ë”°ë¼ì„œ ëª¨ë“  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë¥¼ Syncí•œë‹¤.
+    // SyncÅ¸ÀÔ¿¡ µû¶ó¼­ ¸ğµç Å×ÀÌºí½ºÆäÀÌ½º¸¦ SyncÇÑ´Ù.
     static IDE_RC syncAllTBS( idvSQL    * aStatistics,
                               sddSyncType aSyncType );
 
-    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ Dirtyëœ ë°ì´íƒ€íŒŒì¼ì„ Syncí•œë‹¤. (WRAPPER)
+    // Å×ÀÌºí½ºÆäÀÌ½ºÀÇ DirtyµÈ µ¥ÀÌÅ¸ÆÄÀÏÀ» SyncÇÑ´Ù. (WRAPPER)
     static IDE_RC syncTBSInNormal( idvSQL    * aStatistics,
                                    scSpaceID   aSpaceID );
 
-    // ì²´í¬í¬ì¸íŠ¸ì‹œ ëª¨ë“  ë°ì´íƒ€íŒŒì¼ì— ì²´í¬í¬ì¸íŠ¸ ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
+    // Ã¼Å©Æ÷ÀÎÆ®½Ã ¸ğµç µ¥ÀÌÅ¸ÆÄÀÏ¿¡ Ã¼Å©Æ÷ÀÎÆ® Á¤º¸¸¦ °»½ÅÇÑ´Ù.
     static IDE_RC doActUpdateAllDBFHdrInChkpt(
                        idvSQL*             aStatistics,
                        sctTableSpaceNode * aSpaceNode,
                        void              * aActionArg );
 
-    // ëª¨ë“  ë°ì´íƒ€íŒŒì¼ì˜ ë©”íƒ€í—¤ë”ë¥¼ íŒë…í•˜ì—¬
-    // ë¯¸ë””ì–´ ì˜¤ë¥˜ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤.
+    // ¸ğµç µ¥ÀÌÅ¸ÆÄÀÏÀÇ ¸ŞÅ¸Çì´õ¸¦ ÆÇµ¶ÇÏ¿©
+    // ¹Ìµğ¾î ¿À·ù¿©ºÎ¸¦ È®ÀÎÇÑ´Ù.
     static IDE_RC doActIdentifyAllDBFiles(
                        idvSQL*              aStatistics,
                        sctTableSpaceNode  * aSpaceNode,
                        void               * aActionArg );
 
-    /* datafile ìƒì„± (ë…¸ë“œìƒì„±í¬í•¨) */
+    /* datafile »ı¼º (³ëµå»ı¼ºÆ÷ÇÔ) */
     static IDE_RC createDataFiles( idvSQL          * aStatistics,
                                    void*             aTrans,
                                    scSpaceID         aTableSpaceID,
@@ -137,7 +143,7 @@ public:
                                      SChar             ** sExistFileName,
                                      idBool            *  aNameExist);
 
-    /* datafile ì œê±° (ë…¸ë“œì œê±°í¬í•¨) ë˜ëŠ” datafile ë…¸ë“œë§Œ ì œê±° */
+    /* datafile Á¦°Å (³ëµåÁ¦°ÅÆ÷ÇÔ) ¶Ç´Â datafile ³ëµå¸¸ Á¦°Å */
     static IDE_RC removeDataFileFEBT( idvSQL*             aStatistics,
                                       void*               aTrans,
                                       sddTableSpaceNode * sSpaceNode,
@@ -145,13 +151,13 @@ public:
                                       smiTouchMode        aTouchMode);
     /*
        PROJ-1548
-       DROP DBFì— ëŒ€í•œ Pending ì—°ì‚° í•¨ìˆ˜
+       DROP DBF¿¡ ´ëÇÑ Pending ¿¬»ê ÇÔ¼ö
     */
     static IDE_RC removeFilePending( idvSQL            * aStatistics,
                                      sctTableSpaceNode * aSpaceNode,
                                      sctPendingOp      * aPendingOp  );
 
-    /* tablespaceì˜ datafile í¬ê¸° í™•ì¥ */
+    /* tablespaceÀÇ datafile Å©±â È®Àå */
     //PROJ-1671 Bitmap-based Tablespace And Segment Space Management
     static IDE_RC extendDataFileFEBT(
                        idvSQL      *         aStatistics,
@@ -159,18 +165,17 @@ public:
                        scSpaceID             aTableSpaceID,
                        sddDataFileNode     * aFileNode );
 
-    /* datafile ë…¸ë“œì˜ autoextend ì†ì„± ë³€ê²½ */
-    static IDE_RC alterAutoExtendFEBT(
-        idvSQL*    aStatistics,
-        void*            aTrans,
-        scSpaceID        aTableSpaceID,
-        SChar           *aDataFileName,
-        sddDataFileNode *aFileNode,
-        idBool           aAutoExtendMode,
-        ULong            aNextSize,
-        ULong            aMaxSize);
+    /* datafile ³ëµåÀÇ autoextend ¼Ó¼º º¯°æ */
+    static IDE_RC alterAutoExtendFEBT( idvSQL            * aStatistics,
+                                       void              * aTrans,
+                                       sddTableSpaceNode * aSpaceNode,
+                                       SChar             * aDataFileName,
+                                       sddDataFileNode   * aFileNode,
+                                       idBool              aAutoExtendMode,
+                                       ULong               aNextSize,
+                                       ULong               aMaxSize );
 
-    /* tablespaceì˜ datafile í¬ê¸° resize */
+    /* tablespaceÀÇ datafile Å©±â resize */
     static IDE_RC alterResizeFEBT( idvSQL          * aStatistics,
                                    void             * aTrans,
                                    scSpaceID          aTableSpaceID,
@@ -179,18 +184,17 @@ public:
                                    ULong              aSizeWanted,
                                    sddDataFileNode  * aFileNode);
 
-    /* datafile ë…¸ë“œì˜ datafile ëª… ì†ì„± ë³€ê²½ */
+    /* datafile ³ëµåÀÇ datafile ¸í ¼Ó¼º º¯°æ */
     static IDE_RC alterDataFileName( idvSQL    * aStatistics,
                                      scSpaceID   aTableSpaceID,
                                      SChar*      aOldFileName,
                                      SChar*      aNewFileName );
 
-    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì™€ ë°ì´íƒ€íŒŒì¼ì˜
-    // ì‚­ì œë¡œ ì¸í•œ í˜ì´ì§€ì˜ ìœ íš¨ì„± ì—¬ë¶€ë¥¼ ë°˜í™˜í•œë‹¤.
-    static IDE_RC isValidPageID( idvSQL*    aStatistics,
+    // Å×ÀÌºí½ºÆäÀÌ½º¿Í µ¥ÀÌÅ¸ÆÄÀÏÀÇ
+    // »èÁ¦·Î ÀÎÇÑ ÆäÀÌÁöÀÇ À¯È¿¼º ¿©ºÎ¸¦ ¹İÈ¯ÇÑ´Ù.
+    static idBool isValidPageID( idvSQL*    aStatistics,
                                  scSpaceID  aTableSpaceID,
-                                 scPageID   aPageID,
-                                 idBool*    aIsValid );
+                                 scPageID   aPageID );
 
     static IDE_RC existDataFile( idvSQL *  aStatistics,
                                  scSpaceID aID,
@@ -200,90 +204,79 @@ public:
     static IDE_RC existDataFile( SChar*    aName,
                                  idBool*   aExist);
 
-    /* page íŒë… #1 */
+    /* page ÆÇµ¶ #1 */
     static IDE_RC read( idvSQL      * aStatistics,
                         scSpaceID     aTableSpaceID,
                         scPageID      aPageID,
                         UChar       * aBuffer,
-                        UInt        * aDataFileID,
-                        smLSN       * aOnlineTBSLSN4Idx );
+                        UInt        * aDataFileID );
     // PRJ-1149.
-    static IDE_RC readPageFromDataFile( idvSQL*           aStatistics,
-                                        sddDataFileNode*  aFileNode,
-                                        scPageID          aPageID,
-                                        ULong             aPageCnt,
-                                        UChar*            aBuffer,
-                                        UInt*             aState );
+    static IDE_RC readPageFromDataFile( idvSQL           * aStatistics,
+                                        sddDataFileNode  * aFileNode,
+                                        scPageID           aPageID,
+                                        ULong              aPageCnt,
+                                        UChar            * aBuffer );
 
-    /* page íŒë… #2 */
+    static IDE_RC readvPageFromDataFile( idvSQL           * aStatistics,
+                                         sddDataFileNode  * aFileNode,
+                                         scPageID           aPageID,
+                                         iduFileIOVec     & aVec );
+    /* page ÆÇµ¶ #2 */
     static IDE_RC read( idvSQL*       aStatistics,
                         scSpaceID     aTableSpaceID,
                         scPageID      aPageID,
                         ULong         aPageCount,
                         UChar*        aBuffer );
+    /* page ÆÇµ¶ #2 */
+    static IDE_RC readv( idvSQL*        aStatistics,
+                         scSpaceID      aTableSpaceID,
+                         scPageID       aFstPageID,
+                         iduFileIOVec & aVec );
 
-    /* page ê¸°ë¡ #1 */
+    /* page ±â·Ï #1 */
     static IDE_RC write( idvSQL*       aStatistics,
                          scSpaceID     aTableSpaceID,
                          scPageID      aPageID,
                          UChar*        aBuffer );
 
-    /* page ê¸°ë¡ #2 */
-    static IDE_RC write4DPath( idvSQL*       aStatistics,
-                               scSpaceID     aTableSpaceID,
-                               scPageID      aPageID,
-                               ULong         aPageCount,
-                               UChar*        aBuffer );
-
+    /* page ±â·Ï #2 */
+    static IDE_RC writeMultiPage( idvSQL*       aStatistics,
+                                  scSpaceID     aTableSpaceID,
+                                  scPageID      aFstPID,
+                                  ULong         aPageCount,
+                                  UChar*        aBuffer );
+    /* page ±â·Ï #2 */
+    static IDE_RC writevMultiPage( idvSQL*        aStatistics,
+                                   scSpaceID      aTableSpaceID,
+                                   scPageID       aFstPID,
+                                   iduFileIOVec & aVec );
+    static IDE_RC addPageToVec( iduFileIOVec & aVec,
+                              UChar        * aPagePtr,
+                              UInt           aPageCount )
+    {
+        return aVec.add( aPagePtr, aPageCount * SD_PAGE_SIZE );
+    };
     // PR-15004
-    static IDE_RC readPageNA( idvSQL*          /* aStatistics */,
-                              sddDataFileNode* /* aFileNode */,
-                              scSpaceID        /* aSpaceID */,
-                              scPageID         /* aPageID */,
-                              ULong            /* aPageCnt */,
-                              UChar*           /* aBuffer */,
-                              UInt*            /* aState */ );
-
-    static IDE_RC writePageNA( idvSQL          * aStatistics,
-                               sddDataFileNode * aFileNode,
-                               scPageID          aFstPID,
-                               ULong             aPageCnt,
-                               UChar           * aBuffer,
-                               UInt            * aState );
 
     static IDE_RC writePage2DataFile( idvSQL          * aStatistics,
                                       sddDataFileNode * aFileNode,
-                                      scPageID          aFstPID,
-                                      ULong             aPageCnt,
-                                      UChar           * aBuffer,
-                                      UInt            * aState );
+                                      scPageID          aPageID,
+                                      UChar           * aBuffer );
+    static IDE_RC writeMultiPage2DataFile( idvSQL          * aStatistics,
+                                           sddDataFileNode * aFileNode,
+                                           scPageID          aFstPID,
+                                           ULong             aPageCnt,
+                                           UChar           * aBuffer );
+    static IDE_RC writevMultiPage2DataFile( idvSQL          * aStatistics,
+                                            sddDataFileNode * aFileNode,
+                                            scPageID          aFstPID,
+                                            iduFileIOVec    & aVec );
 
+    static IDE_RC syncFile( idvSQL *   aStatistics,
+                            scSpaceID  aSpaceID,
+                            sdFileID   aFileID );
 
-    static IDE_RC writePageInBackup(
-                         idvSQL*           aStatistics,
-                         sddDataFileNode*  aFileNode,
-                         scSpaceID         aSpaceID,
-                         scPageID          aPageID,
-                         ULong             aPageOffset,
-                         UChar*            aBuffer,
-                         UInt*             aState);
-
-    static IDE_RC writeOfflineDataFile( idvSQL          * aStatistics,
-                                        sddDataFileNode * aFileNode,
-                                        scPageID          aFstPID,
-                                        ULong             aPageCnt,
-                                        UChar           * aBuffer,
-                                        UInt            * aState );
-
-    static IDE_RC readOfflineDataFile(
-                         idvSQL*           aStatistics,
-                         sddDataFileNode* /*aFileNode*/,
-                         scPageID         /*aPageID*/,
-                         ULong            /*aPageCnt*/,
-                         UChar*           /*aBuffer*/,
-                         UInt*            /*aState*/);
-
-    /* í•´ë‹¹ tablespace ë…¸ë“œì˜ ì´ page ê°œìˆ˜ ë°˜í™˜ */
+    /* ÇØ´ç tablespace ³ëµåÀÇ ÃÑ page °³¼ö ¹İÈ¯ */
     static IDE_RC getTotalPageCountOfTBS(
                      idvSQL*          aStatistics,
                      scSpaceID        aTableSpaceID,
@@ -295,40 +288,34 @@ public:
                      UInt*      aExtentPageCout,
                      ULong*     aTotalPageCount );
 
-    /* tablespace ë…¸ë“œë¥¼ ì¶œë ¥*/
+    /* tablespace ³ëµå¸¦ Ãâ·Â*/
     static IDE_RC dumpTableSpaceNode( scSpaceID aTableSpaceID );
 
-    /* ë””ìŠ¤í¬ê´€ë¦¬ìì˜ ì˜¤í”ˆ datafile LRU ë¦¬ìŠ¤íŠ¸ë¥¼ ì¶œë ¥ */
+    /* µğ½ºÅ©°ü¸®ÀÚÀÇ ¿ÀÇÂ datafile LRU ¸®½ºÆ®¸¦ Ãâ·Â */
     static IDE_RC dumpOpenDataFileLRUList();
 
     static UInt     getMaxDataFileSize()
                     { return (mMaxDataFilePageCount); }
 
-    //for PRJ-1149 added functions
-    static IDE_RC  getDataFileIDByPageID(idvSQL*      aStatistics,
-                                         scSpaceID    aSpaceID,
-                                         scPageID     aFstPageID,
-                                         sdFileID*    aDataFileID);
-
-    // ë°ì´íƒ€íŒŒì¼ì˜ í˜ì´ì§€ êµ¬ê°„ ë°˜í™˜
+    // µ¥ÀÌÅ¸ÆÄÀÏÀÇ ÆäÀÌÁö ±¸°£ ¹İÈ¯
     static IDE_RC  getPageRangeInFileByID(idvSQL*            aStatistics,
                                           scSpaceID          aSpaceID,
                                           UInt               aFileID,
                                           scPageID         * aFstPageID,
                                           scPageID         * aLstPageID );
 
-    static IDE_RC completeFileBackup( idvSQL*            aStatistics,
-                                      sddDataFileNode*   aDataFileNode );
+    static IDE_RC prepareFileBackup( idvSQL*            aStatistics,
+                                     sddTableSpaceNode* aSpaceNode,
+                                     sddDataFileNode*   aDataFileNode );
+    static void completeFileBackup( idvSQL*            aStatistics,
+                                    sddTableSpaceNode* aSpaceNode,
+                                    sddDataFileNode*   aDataFileNode );
 
     // update tablespace info to loganchor
     static IDE_RC updateTBSInfoForChkpt();
 
-    static IDE_RC updateDataFileState(idvSQL*          aStatistics,
-                                      sddDataFileNode* aDataFileNode,
-                                      smiDataFileState aDataFileState);
-
     /* ------------------------------------------------
-     * PRJ-1149 ë¯¸ë””ì–´ë³µêµ¬ê´€ë ¨
+     * PRJ-1149 ¹Ìµğ¾îº¹±¸°ü·Ã
      * ----------------------------------------------*/
     static IDE_RC checkValidationDBFHdr(
                        idvSQL*           aStatistics,
@@ -347,57 +334,50 @@ public:
                        smLSN             * aMustRedoToLSN,
                        SChar            ** aDBFileName );
 
-    /* íŒŒì¼í—¤ë”ì •ë³´ë¥¼ íŒŒì¼ì— ê¸°ë¡ */
+    /* ÆÄÀÏÇì´õÁ¤º¸¸¦ ÆÄÀÏ¿¡ ±â·Ï */
     static IDE_RC writeDBFHdr( idvSQL*          aStatistics,
                                sddDataFileNode* aDataFile );
 
     /* call by recovery manager */
-    static IDE_RC abortBackupAllTableSpace( idvSQL*  aStatistics );
+    static void abortBackupAllTableSpace( idvSQL*  aStatistics );
 
     /* begin backup */
-    static IDE_RC abortBackupTableSpace(
-                       idvSQL*            aStatistics,
-                       sddTableSpaceNode* aSpaceNode );
+    static void abortBackupTableSpace( idvSQL*            aStatistics,
+                                       sddTableSpaceNode* aSpaceNode );
 
-    static void unsetTBSBackupState(
-                       idvSQL*            aStatistics,
-                       sddTableSpaceNode* aSpaceNode );
-
-    static IDE_RC copyDataFile( idvSQL*          aStatistics,
-                                sddDataFileNode* aDataFileNode,
-                                SChar*           aBackupFilePath );
+    static IDE_RC copyDataFile( idvSQL            * aStatistics,
+                                sddTableSpaceNode * aSpaceNode,
+                                sddDataFileNode   * aDataFileNode,
+                                SChar             * aBackupFilePath );
 
     //PROJ-2133 incremental backup
-    static IDE_RC incrementalBackup(idvSQL                 * aStatistics,                 
+    static IDE_RC incrementalBackup(idvSQL                 * aStatistics,
+                                    sddTableSpaceNode      * aSpaceNode,
                                     smriCTDataFileDescSlot * aDataFileDescSlot,
                                     sddDataFileNode        * aDataFileNode,
                                     smriBISlot             * sBackupInfo );
 
-    static void wait4BackupFileEnd();
+    // PRJ-1548 User Memory Tablespace
+    // ¼­¹ö±¸µ¿½Ã º¹±¸ÀÌÈÄ¿¡ ¸ğµç Å×ÀÌºí½ºÆäÀÌ½ºÀÇ
+    // DataFileCount¿Í TotalPageCount¸¦ °è»êÇÏ¿© ¼³Á¤ÇÑ´Ù.
+    static void calculateFileSizeOfAllTBS();
 
     // PRJ-1548 User Memory Tablespace
-    // ì„œë²„êµ¬ë™ì‹œ ë³µêµ¬ì´í›„ì— ëª¨ë“  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜
-    // DataFileCountì™€ TotalPageCountë¥¼ ê³„ì‚°í•˜ì—¬ ì„¤ì •í•œë‹¤.
-    static IDE_RC calculateFileSizeOfAllTBS( idvSQL * aStatistics );
-
-    // PRJ-1548 User Memory Tablespace
-    // ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë¥¼ ë°±ì—…í•œë‹¤.
+    // µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º¸¦ ¹é¾÷ÇÑ´Ù.
     static IDE_RC backupAllDiskTBS( idvSQL  * aStatistics,
-                                    void    * aTrans,
                                     SChar   * aBackupDir );
 
     //PROJ-2133 incremental backup
-    //ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë¥¼ incremental ë°±ì—…í•œë‹¤.
+    //µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º¸¦ incremental ¹é¾÷ÇÑ´Ù.
     static IDE_RC incrementalBackupAllDiskTBS( idvSQL     * aStatistics,
-                                               void       * aTrans,
                                                smriBISlot * aCommonBackupInfo,
                                                SChar      * aBackupDir );
 
-    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ DBF ë…¸ë“œë“¤ì˜ ë°±ì—…ì™„ë£Œì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
-    static IDE_RC endBackupDiskTBS( idvSQL*   aStatistics,
-                                    scSpaceID aSpaceID );
+    // Å×ÀÌºí½ºÆäÀÌ½ºÀÇ DBF ³ëµåµéÀÇ ¹é¾÷¿Ï·áÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+    static IDE_RC endBackupDiskTBS( idvSQL            * aStatistics,
+                                    sddTableSpaceNode * aSpaceNode );
 
-    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ë¯¸ë””ì–´ì˜¤ë¥˜ê°€ ìˆëŠ” ë°ì´íƒ€íŒŒì¼ ëª©ë¡ì„ ë§Œë“ ë‹¤.
+    // Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ¹Ìµğ¾î¿À·ù°¡ ÀÖ´Â µ¥ÀÌÅ¸ÆÄÀÏ ¸ñ·ÏÀ» ¸¸µç´Ù.
     static IDE_RC makeMediaRecoveryDBFList(
                            idvSQL            * aStatistics,
                            sctTableSpaceNode * sSpaceNode,
@@ -406,34 +386,41 @@ public:
                            smLSN             * aFromRedoLSN,
                            smLSN             * aToRedoLSN );
 
-    /* TableSapceì˜ ëª¨ë“  DataFileì˜ Max Open Countë¥¼ ë³€ê²½í•œë‹¤. */
+    /* TableSapceÀÇ ¸ğµç DataFileÀÇ Max Open Count¸¦ º¯°æÇÑ´Ù. */
     static IDE_RC  setMaxFDCnt4AllDFileOfTBS( sctTableSpaceNode* aSpaceNode,
                                               UInt               aMaxFDCnt4File );
 
-    // Restart ë‹¨ê³„ì—ì„œ Offline TBSì— ëŒ€í•œ Runtime ê°ì²´ë“¤ì„ Free
+    // Restart ´Ü°è¿¡¼­ Offline TBS¿¡ ´ëÇÑ Runtime °´Ã¼µéÀ» Free
     static IDE_RC finiOfflineTBSAction(
                       idvSQL*             aStatistics,
                       sctTableSpaceNode * aSpaceNode,
                       void              * /* aActionArg */ );
 
-    // TBSì˜ í•œ Extentì˜ í˜ì´ì§€ ê°¯ìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.
+    // TBSÀÇ ÇÑ ExtentÀÇ ÆäÀÌÁö °¹¼ö¸¦ ¸®ÅÏÇÑ´Ù.
     static inline UInt getPageCntInExt( scSpaceID aSpaceID );
 
-    //PROJ-2133 incremental backup
-    static inline UInt getCurrChangeTrackingThreadCnt()
-            { return idCore::acpAtomicGet32( &mCurrChangeTrackingThreadCnt ); }
+    /* datafile ¿­±â ¹× LRU ¸®½ºÆ®¿¡ datafile ³ëµå Ãß°¡ */
+    static IDE_RC openDataFile( idvSQL          * aStatistics,
+                                sddDataFileNode * aDataFileNode );
 
-    /* datafile ì—´ê¸° ë° LRU ë¦¬ìŠ¤íŠ¸ì— datafile ë…¸ë“œ ì¶”ê°€ */
-    static IDE_RC openDataFile( sddDataFileNode* aDataFileNode );
+    /* datafile ´İ±â ¹× LRU ¸®½ºÆ®·ÎºÎÅÍ datafile ³ëµå Á¦°Å */
+    static IDE_RC closeDataFile( idvSQL          * aStatistics,
+                                 sddDataFileNode * aDataFileNode );
 
-    /* datafile ë‹«ê¸° ë° LRU ë¦¬ìŠ¤íŠ¸ë¡œë¶€í„° datafile ë…¸ë“œ ì œê±° */
-    static IDE_RC closeDataFile( sddDataFileNode* aDataFileNode );
+    static IDE_RC closeDataFileInternal( idvSQL          * aStatistics,
+                                         sddDataFileNode * aDataFileNode  );
+
+    static inline void removeNodeList( idvSQL          * aStatistics,
+                                       sddDataFileNode * aDataFileNode );
+    static inline void addNodeList(  idvSQL          * aStatistics,
+                                     sddDataFileNode * aDataFileNode );
+    static IDE_RC checkAndOpenDataFile( sddDataFileNode*  aDataFileNode );
 
 public: // for unit test-driver
 
-    static IDE_RC openDataFile( idvSQL*   aStatistics,
-                                scSpaceID aTableSpaceID,
-                                scPageID  aPageID );
+    static IDE_RC openDataFile( idvSQL   * aStatistics,
+                                scSpaceID  aTableSpaceID,
+                                scPageID   aPageID );
 
     static IDE_RC closeDataFile( scSpaceID  aTableSpaceID,
                                  scPageID   aPageID );
@@ -442,14 +429,16 @@ public: // for unit test-driver
                               scSpaceID aTableSpaceID,
                               scPageID  aPageID );
 
-    /* datafileì— ëŒ€í•œ I/Oë¥¼ í•˜ê¸° ì „ì— datafile ë…¸ë“œë¥¼ ì˜¤í”ˆ */
-    static IDE_RC prepareIO( sddDataFileNode*  aDataFileNode );
+    /* datafile¿¡ ´ëÇÑ I/O¸¦ ÇÏ±â Àü¿¡ datafile ³ëµå¸¦ ¿ÀÇÂ */
+    static IDE_RC prepareIO( idvSQL          * aStatistics,
+                             sddDataFileNode * aDataFileNode );
 
-    /* datafileì— ëŒ€í•œ I/O ì™„ë£Œí›„ datafile ë…¸ë“œ ì„¤ì • */
-    static IDE_RC completeIO( sddDataFileNode*  aDataFileNode,
+    /* datafile¿¡ ´ëÇÑ I/O ¿Ï·áÈÄ datafile ³ëµå ¼³Á¤ */
+    static IDE_RC completeIO( idvSQL          * aStatistics,
+                              sddDataFileNode * aDataFileNode,
                               sddIOMode         aIOMode );
 
-    // Offline DBFì— ëŒ€í•œ Write ì—°ì‚° ê°€ëŠ¥ì—¬ë¶€ ì„¤ì •
+    // Offline DBF¿¡ ´ëÇÑ Write ¿¬»ê °¡´É¿©ºÎ ¼³Á¤
     static void   setEnableWriteToOfflineDBF( idBool aOnOff )
                   { mEnableWriteToOfflineDBF = aOnOff; }
 
@@ -465,67 +454,79 @@ public: // for unit test-driver
                                    const SChar   * aTitle );
 
     /* PROJ-1923
-     * private -> public ì „í™˜ */
+     * private -> public ÀüÈ¯ */
     static IDE_RC shrinkFilePending( idvSQL            * aStatistics,
                                      sctTableSpaceNode * aSpaceNode,
                                      sctPendingOp      * aPendingOp  );
 
+    static void lockCloseVictimList( idvSQL * aStatistics ) { (void)mMutexVFL.lock( aStatistics ); };
+    static void unlockCloseVictimList() { (void)mMutexVFL.unlock(); };
+
+    static void lockIncOpenFileCount( idvSQL * aStatistics ) { (void)mMutexOPC.lock( aStatistics ); };
+    static void unlockIncOpenFileCount() { (void)mMutexOPC.unlock(); };
+
+    static void lockGlobalPageCountCheckMutex( idvSQL * aStatistics )
+    { (void)mGlobalPageCountCheckMutex.lock( aStatistics );   }
+    static void unlockGlobalPageCountCheckMutex( )
+    { (void)mGlobalPageCountCheckMutex.unlock(); }
+
+    static idBool isDirectIO(){ return mIsDirectIO; };
+
+    static SChar* getFileName( scSpaceID aSpaceID,
+                               scPageID  aPageID );
+
 private:
 
     // BUG-17158
-    // Offline DBFì— ëŒ€í•œ Write ì—°ì‚° ê°€ëŠ¥ì—¬ë¶€ ë°˜í™˜
+    // Offline DBF¿¡ ´ëÇÑ Write ¿¬»ê °¡´É¿©ºÎ ¹İÈ¯
     static idBool isEnableWriteToOfflineDBF()
                   { return mEnableWriteToOfflineDBF; }
 
 
-    /* ì˜¤í”ˆëœ datafileì—ì„œ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” datafileì„ ê²€ìƒ‰ */
-    static sddDataFileNode*  findVictim();
+    /* ¿ÀÇÂµÈ datafile¿¡¼­ »ç¿ëÇÏÁö ¾Ê´Â datafileÀ» °Ë»ö */
+    static IDE_RC closeDataFileInList( idvSQL          * aStatistics,
+                                       sddDataFileNode * aDataFileNode  );
 
 public:
 
-    static UInt   mInitialCheckSum;  // ìµœì´ˆ page writeì‹œì— ì €ì¥ë˜ëŠ” checksum
+    static UInt   mInitialCheckSum;  // ÃÖÃÊ page write½Ã¿¡ ÀúÀåµÇ´Â checksum
 
 private:
 
-    // ì˜¤í”ˆëœ datafile ë…¸ë“œì˜ LRU ë¦¬ìŠ¤íŠ¸
-    static smuList     mOpenFileLRUList;
-    // ì˜¤í”ˆëœ datafile ë…¸ë“œ ê°œìˆ˜
-    static UInt        mOpenFileLRUCount;
+    // Close¸¦ À§ÇÑ Victim FileNode List Mutex
+    static iduMutex    mMutexVFL;
+
+    // OpenFileCount Áõ°¡½Ã Max°ªÀ» ³ÑÁö ¾Êµµ·Ï º¸È£ÇÏ´Â Mutex
+    static iduMutex    mMutexOPC;
+
+    // Drop DBF¿Í AllocPageCount ¿¬»ê°£ÀÇ µ¿½Ã¼º Á¦¾î
+    static iduMutex    mGlobalPageCountCheckMutex;
+
+    // ¿ÀÇÂµÈ datafile ³ëµåÀÇ LRU ¸®½ºÆ®
+    static smuList     mVictimFileList;
+    // ¿ÀÇÂµÈ datafile ³ëµå °³¼ö
+    static UInt        mOpenFileCount;
+    static UInt        mVictimListNodeCount;
 
     /* ------------------------------------------------
-     * ëª¨ë“  datafileì˜ í¬ê¸°ëŠ” maxsize(í˜ì´ì§€ê°œìˆ˜)ì´ˆê³¼í•  ìˆ˜ ì—†ë‹¤.
-     * ì´ ê°’ì€ ì„¤ì •íŒŒì¼ì— ì •ì˜ë˜ì–´ ìˆìœ¼ë©°,
-     * ë””ìŠ¤í¬ê´€ë¦¬ìì˜ ì´ˆê¸°í™”ì‹œì— í• ë‹¹ëœë‹¤.
+     * ¸ğµç datafileÀÇ Å©±â´Â maxsize(ÆäÀÌÁö°³¼ö)ÃÊ°úÇÒ ¼ö ¾ø´Ù.
+     * ÀÌ °ªÀº ¼³Á¤ÆÄÀÏ¿¡ Á¤ÀÇµÇ¾î ÀÖÀ¸¸ç,
+     * µğ½ºÅ©°ü¸®ÀÚÀÇ ÃÊ±âÈ­½Ã¿¡ ÇÒ´çµÈ´Ù.
      * ----------------------------------------------*/
 
-    // datafileì´ ê°€ì§ˆìˆ˜ ìˆëŠ” max page ê°œìˆ˜
+    // datafileÀÌ °¡Áú¼ö ÀÖ´Â max page °³¼ö
     static UInt        mMaxDataFilePageCount;
 
     /* ------------------------------------------------
-     * ì˜¤í”ˆëœ íŒŒì¼ì´ ìµœëŒ€ê°€ ë˜ì—ˆì„ ë•Œ, íŒŒì¼ì„ ì˜¤í”ˆí•  ìˆ˜
-     * ìˆì„ë•Œê¹Œì§€ ëŒ€ê¸°í•˜ê¸°ìœ„í•œ CVì´ë‹¤.
-     * ----------------------------------------------*/
-    static iduCond           mOpenFileCV;
-
-    //PRJ-1149.
-    static iduCond           mBackupCV;
-    /* ------------------------------------------------
-     * í˜„ì¬ ì˜¤í”ˆ í•  ìˆ˜ ìˆëŠ” í™”ì¼ì´ ìƒê¸°ê¸¸ ê¸°ë‹¤ë¦¬ëŠ” ìŠ¤ë ˆë“œê°€ ìˆë‹¤ëŠ” í‘œì‹œ
+     * ÇöÀç ¿ÀÇÂ ÇÒ ¼ö ÀÖ´Â È­ÀÏÀÌ »ı±â±æ ±â´Ù¸®´Â ½º·¹µå°¡ ÀÖ´Ù´Â Ç¥½Ã
      * ----------------------------------------------*/
     static UInt              mWaitThr4Open;
-    static PDL_Time_Value    mTimeValue;   // ëŒ€ê¸°ì‹œê°„ì„¤ì •
 
     // BUG-17158
-    // Offline DBFì— ëŒ€í•´ Writeë¥¼ í•´ì•¼í•˜ëŠ” ê²½ìš°
+    // Offline DBF¿¡ ´ëÇØ Write¸¦ ÇØ¾ßÇÏ´Â °æ¿ì
     static idBool            mEnableWriteToOfflineDBF;
 
-    // i/o function vector
-    static sddReadPageFunc  sddReadPageFuncs[SMI_ONLINE_OFFLINE_MAX];
-    static sddWritePageFunc sddWritePageFuncs[SMI_ONLINE_OFFLINE_MAX];
-
-    //PROJ-2133 incremental backup
-    static UInt             mCurrChangeTrackingThreadCnt;
-
+    static idBool            mIsDirectIO;
 };
 
 inline UInt sddDiskMgr::getPageCntInExt( scSpaceID aSpaceID )
@@ -535,4 +536,38 @@ inline UInt sddDiskMgr::getPageCntInExt( scSpaceID aSpaceID )
 
     return sTbsCache->mPagesPerExt;
 }
+
+/* -----------------------------------------------------------------------
+ * IOCount°¡ 0ÀÎ FileNode¸¦ Close Victim Filt List ¿¡ ¿¬°áÇÏ°Å³ª Á¦°ÅÇÑ´Ù.
+ * IOCount¸¦ È®ÀÎÇÏ´Â °Í°ú List¿¡ Ãß°¡ÇÏ´Â °ÍÀÌ °°Àº lockÀÌ ¾Æ´Ï¹Ç·Î
+ * IOCount°¡ 0 ÀÌ»óÀÎ Nodeµµ ÀÖÀ» ¼ö ÀÖ´Ù.
+ * ´Ù¸¸ IOCount°¡ 0ÀÌ¸é ¹İµå½Ã List¿¡ ¿¬°á µÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
+ * ----------------------------------------------------------------------*/
+inline void sddDiskMgr::addNodeList( idvSQL          * aStatistics,
+                                     sddDataFileNode * aDataFileNode )
+{
+    lockCloseVictimList( aStatistics );
+    if ( aDataFileNode->mNode4LRUList.mNext == NULL )
+    {
+        SMU_LIST_ADD_FIRST( &mVictimFileList,
+                            &aDataFileNode->mNode4LRUList );
+        mVictimListNodeCount++;
+    }
+    unlockCloseVictimList();
+}
+
+inline void sddDiskMgr::removeNodeList( idvSQL          * aStatistics,
+                                        sddDataFileNode * aDataFileNode )
+{
+    lockCloseVictimList( aStatistics );
+    if ( aDataFileNode->mNode4LRUList.mNext != NULL )
+    {
+        SMU_LIST_DELETE( &aDataFileNode->mNode4LRUList );
+        aDataFileNode->mNode4LRUList.mNext = NULL;
+        aDataFileNode->mNode4LRUList.mPrev = NULL;
+        mVictimListNodeCount--;
+    }
+    unlockCloseVictimList();
+}
+
 #endif // _O_SDD_DISK_MGR_H_

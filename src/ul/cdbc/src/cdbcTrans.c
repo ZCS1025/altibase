@@ -19,11 +19,11 @@
 
 
 /**
- * íŠ¸ëœì­ì…˜ì„ ì¢…ë£Œí•œë‹¤.
+ * Æ®·£Àè¼ÇÀ» Á¾·áÇÑ´Ù.
  *
- * @param[in] aABConn ì—°ê²° í•¸ë“¤
- * @param[in] aCompletionType íŠ¸ëœì­ì…˜ ì¢…ë£Œ ìœ í˜•. SQL_COMMIT ë˜ëŠ” SQL_ROLLBACK
- * @return ì„±ê³µí•˜ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
+ * @param[in] aABConn ¿¬°á ÇÚµé
+ * @param[in] aCompletionType Æ®·£Àè¼Ç Á¾·á À¯Çü. SQL_COMMIT ¶Ç´Â SQL_ROLLBACK
+ * @return ¼º°øÇÏ¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
  */
 CDBC_INLINE
 ALTIBASE_RC altibase_end_trans (ALTIBASE aABConn, SQLSMALLINT aCompletionType)
@@ -67,10 +67,10 @@ ALTIBASE_RC altibase_end_trans (ALTIBASE aABConn, SQLSMALLINT aCompletionType)
 }
 
 /**
- * íŠ¸ëœì­ì…˜ì„ commití•œë‹¤.
+ * Æ®·£Àè¼ÇÀ» commitÇÑ´Ù.
  *
- * @param[in] aABConn ì—°ê²° í•¸ë“¤
- * @return ì„±ê³µí•˜ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
+ * @param[in] aABConn ¿¬°á ÇÚµé
+ * @return ¼º°øÇÏ¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
  */
 CDBC_EXPORT
 ALTIBASE_RC altibase_commit (ALTIBASE aABConn)
@@ -91,10 +91,10 @@ ALTIBASE_RC altibase_commit (ALTIBASE aABConn)
 }
 
 /**
- * íŠ¸ëœì­ì…˜ì„ rollbackí•œë‹¤.
+ * Æ®·£Àè¼ÇÀ» rollbackÇÑ´Ù.
  *
- * @param[in] aABConn ì—°ê²° í•¸ë“¤
- * @return ì„±ê³µí•˜ë©´ ALTIBASE_SUCCESS, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ALTIBASE_ERROR
+ * @param[in] aABConn ¿¬°á ÇÚµé
+ * @return ¼º°øÇÏ¸é ALTIBASE_SUCCESS, ±×·¸Áö ¾ÊÀ¸¸é ALTIBASE_ERROR
  */
 CDBC_EXPORT
 ALTIBASE_RC altibase_rollback (ALTIBASE aABConn)

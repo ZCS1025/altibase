@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: Field.cpp 82790 2018-04-15 23:41:55Z bethy $
+ * $Id: Field.cpp 82786 2018-04-12 08:04:45Z bethy $
  ******************************************************************************/
 
 #include <utdb.h>
@@ -251,14 +251,14 @@ bool Field::comparePhysical(Field * f, idBool aUseFraction)
             sBitB = (bit_t *)(f->getValue());
 
             /*
-             * mValueLength: SQLBindColì„ í†µí•´ì„œ ë°›ì€ ê°’ì˜ ë°”ì´íŠ¸ ê¸¸ì´
-             * sBitA->mPrecision: BIT ë‹¨ìœ„ ê¸¸ì´
+             * mValueLength: SQLBindColÀ» ÅëÇØ¼­ ¹ŞÀº °ªÀÇ ¹ÙÀÌÆ® ±æÀÌ
+             * sBitA->mPrecision: BIT ´ÜÀ§ ±æÀÌ
              */
             if ( (mValueLength == f->getValueLength()) &&
                  (sBitA->mPrecision == sBitB->mPrecision) )
             {
                 /*
-                 * ë°ì´í„°ì— í•´ë‹¹í•˜ëŠ” ê¸¸ì´ë§Œí¼ë§Œ ë¹„êµ
+                 * µ¥ÀÌÅÍ¿¡ ÇØ´çÇÏ´Â ±æÀÌ¸¸Å­¸¸ ºñ±³
                  */
                 ret = idlOS::memcmp(sBitA->mData,
                                     sBitB->mData,
@@ -370,8 +370,8 @@ SInt Field::getSChar(SInt   sqlType,
     {
         case SQL_FLOAT:
         case SQL_NUMERIC:
-        case SQL_CLOB: /* clob, blobì˜ ê²½ìš° SQLBindColì— mLobLocë¥¼ */
-        case SQL_BLOB: /* ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì— mValueëŠ” í•­ìƒ emptyì´ë‹¤. */
+        case SQL_CLOB: /* clob, blobÀÇ °æ¿ì SQLBindCol¿¡ mLobLoc¸¦ */
+        case SQL_BLOB: /* »ç¿ëÇÏ±â ¶§¹®¿¡ mValue´Â Ç×»ó emptyÀÌ´Ù. */
             if ( aBuffSize < aWidth + 1 )
             {
                 sCopyLen = aBuffSize - 1;
@@ -531,7 +531,7 @@ IDE_RC Field::initialize(UShort aNo ,Row* aRow)
     mValue     = NULL;
     mType      = 0;
     mRow       = aRow;
-    //TASK-4212     auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„ 
+    //TASK-4212     auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼±
     mIsFileMode= false;
     IDE_TEST( mRow == NULL );
     return IDE_SUCCESS;
@@ -550,7 +550,7 @@ IDE_RC Field::bindColumn(SInt aType, void * )
     //mLinks = (SChar*)aLinks;
     mType  = mapType ( aType );
 
-    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
+    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
     // considering array fetch...
     if( mRow -> mArrayCount > 1 )
     {

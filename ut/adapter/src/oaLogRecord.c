@@ -272,7 +272,7 @@ void oaLogRecordDumpType(oaLogRecord *aLogRecord)
         case OA_LOG_RECORD_TYPE_INSERT:
         case OA_LOG_RECORD_TYPE_UPDATE:
         case OA_LOG_RECORD_TYPE_DELETE:
-            /* Array DMLì´ ì ìš©ë˜ì–´, ê°œë³„ì ìœ¼ë¡œ ê¸°ë¡í•œë‹¤. */
+            /* Array DMLÀÌ Àû¿ëµÇ¾î, °³º°ÀûÀ¸·Î ±â·ÏÇÑ´Ù. */
             break;
 
         case OA_LOG_RECORD_TYPE_KEEP_ALIVE :
@@ -289,7 +289,7 @@ void oaLogRecordDumpType(oaLogRecord *aLogRecord)
 }
 
 /**
- * @breif  Array DML ì¤‘ í•˜ë‚˜ë¥¼ ì¶œë ¥í•œë‹¤.
+ * @breif  Array DML Áß ÇÏ³ª¸¦ Ãâ·ÂÇÑ´Ù.
  *
  * @param  aLogRecord     Log Record Union
  * @param  aArrayDMLIndex Array DML Index

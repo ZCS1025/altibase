@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsfSendmsg.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qsfSendmsg.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <idl.h>
@@ -49,7 +49,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfSendmsgModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -113,7 +113,7 @@ IDE_RC qsfEstimate( mtcNode*     aNode,
 
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
-    // returnê°’ì€ Integer
+    // return°ªÀº Integer
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      sModule,
                                      0,
@@ -194,10 +194,10 @@ IDE_RC qsfCalculate_Sendmsg(
         sReturnValue = (mtdIntegerType*)aStack[0].value;
 
         // value range validation
-        // ipê°€ ì œëŒ€ë¡œ ë˜ì—ˆëŠ”ì§€ ê²€ì‚¬(ê¸¸ì´ëŠ” IDL_IP_ADDR_MAX_LEN ì´í•˜)
-        // portë²”ìœ„ê°€ ì œëŒ€ë¡œ ë˜ì—ˆëŠ”ì§€ ê²€ì‚¬(1025 ~ 65535)
-        // ë©”ì‹œì§€ ê¸¸ì´ê°€ <=QSF_SENDMSG_MAXì¸ì§€ ê²€ì‚¬
-        // ttlê°’ì´ 0 ~ 255ì¸ì§€ ê²€ì‚¬(ë©€í‹°ìºìŠ¤íŠ¸ ì£¼ì†Œì— ë³´ë‚¼ë•Œë§Œ ì ìš©ë¨)
+        // ip°¡ Á¦´ë·Î µÇ¾ú´ÂÁö °Ë»ç(±æÀÌ´Â IDL_IP_ADDR_MAX_LEN ÀÌÇÏ)
+        // port¹üÀ§°¡ Á¦´ë·Î µÇ¾ú´ÂÁö °Ë»ç(1025 ~ 65535)
+        // ¸Ş½ÃÁö ±æÀÌ°¡ <=QSF_SENDMSG_MAXÀÎÁö °Ë»ç
+        // ttl°ªÀÌ 0 ~ 255ÀÎÁö °Ë»ç(¸ÖÆ¼Ä³½ºÆ® ÁÖ¼Ò¿¡ º¸³¾¶§¸¸ Àû¿ëµÊ)
         IDE_TEST_RAISE( sAddrArgument->length > IDL_IP_ADDR_MAX_LEN,
                         ERR_IPADDRESS );
         IDE_TEST_RAISE( ( sPortArgument > 65535 ) ||
@@ -227,11 +227,11 @@ IDE_RC qsfCalculate_Sendmsg(
         sRet = idlOS::getaddrinfo(sAddrBuffer, sPortStr,
                                   &sHints, &sAddrInfo);
        
-        // invalid addressì¸ ê²½ìš° sRet != 0 or s
+        // invalid addressÀÎ °æ¿ì sRet != 0 or s
         IDE_TEST_RAISE( ((sRet != 0) || (sAddrInfo == NULL)) , ERR_IPADDRESS );
 
 
-        // socket ê°€ì ¸ì˜´
+        // socket °¡Á®¿È
         IDE_TEST( qcuSessionObj::getSendSocket(
                       &sSocket,
                       (qcSessionObjInfo*)(sSession->mQPSpecific.mSessionObj),
@@ -239,7 +239,7 @@ IDE_RC qsfCalculate_Sendmsg(
         
         IDE_TEST_RAISE( sSocket < 0, ERR_SOCKET );
 
-        // TTLê°’ setting
+        // TTL°ª setting
         sTTL = (UChar)sTTLArgument;
 
         if( idlOS::setsockopt( sSocket,

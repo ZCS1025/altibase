@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxReceiver.h 84479 2018-11-30 00:36:30Z minku.kang $
+ * $Id: rpxReceiver.h 90690 2021-04-23 06:52:47Z yoonhee.kim $
  **********************************************************************/
 
 #ifndef _O_RPX_RECEIVER_H_
@@ -32,6 +32,42 @@
 #include <rpsSmExecutor.h>
 #include <rpxReceiverApply.h>
 #include <rpdQueue.h>
+#include <rpxXLogTransfer.h>
+#include <rpdXLogfileMgr.h>
+
+typedef enum
+{
+    RPX_RECEIVER_READ_NETWORK = 0,
+    RPX_RECEIVER_READ_XLOGFILE,
+    RPX_RECEIVER_READ_UNSET
+} RPX_RECEIVER_READ_MODE;
+
+typedef enum RPX_RECEIVER_XLOGFILE_RECOVERY_STATUS
+{
+    RPX_XF_RECOVERY_NONE = 0,
+    RPX_XF_RECOVERY_INIT,
+    RPX_XF_RECOVERY_PROCESS,
+    RPX_XF_RECOVERY_DONE,
+    RPX_XF_RECOVERY_ERROR,
+    RPX_XF_RECOVERY_TIMEOUT,
+    RPX_XF_RECOVERY_EXIT
+} RPX_RECEIVER_XLOGFILE_RECOVERY_STATUS;
+
+typedef struct rpxReceiverReadContext
+{
+    cmiProtocolContext * mCMContext;
+    rpdXLogfileMgr     * mXLogfileContext;
+
+    RPX_RECEIVER_READ_MODE mCurrentMode;
+} rpxReceiverReadContext;
+
+#define RPX_RECEIVER_INIT_READ_CONTEXT( aCtx ) \
+do \
+{\
+    (aCtx)->mCMContext = NULL; \
+    (aCtx)->mXLogfileContext = NULL;\
+    (aCtx)->mCurrentMode = RPX_RECEIVER_READ_UNSET; \
+}while(0)
 
 struct rpxReceiverParallelApplyInfo;
 class smiStatement;
@@ -52,11 +88,13 @@ public:
     virtual ~rpxReceiver() {};
 
     IDE_RC initialize( cmiProtocolContext * aProtocolContext,
+                       smiStatement       * aStatement,
                        SChar              * aRepName,
                        rpdMeta            * aRemoteMeta,
                        rpdMeta            * aMeta,
                        rpReceiverStartMode  aStartMode,
-                       rpxReceiverErrorInfo aErrorInfo );
+                       rpxReceiverErrorInfo aErrorInfo,
+                       UInt                 aReplID );
 
     void   destroy();
 
@@ -69,9 +107,11 @@ public:
                                  rpRecvStartStatus   *aStatus,
                                  rpdVersion          *aVersion );
 
-    IDE_RC processMetaAndSendHandshakeAck( rpdMeta * aMeta );
+    IDE_RC processMetaAndSendHandshakeAck( smiTrans         * aTrans,
+                                           rpdMeta          * aMeta );
+    IDE_RC checkConditionAndSendResult( );
 
-    IDE_RC handshakeWithoutReconnect();
+    IDE_RC handshakeWithoutReconnect( rpdXLog *aXLog );
     SInt   decideFailbackStatus(rpdMeta * aPeerMeta);
 
     void run();
@@ -128,7 +168,7 @@ public:
     IDE_RC  threadJoinMutex_lock()    { return mThreadJoinMutex.lock(NULL /* idvSQL* */); }
     IDE_RC  threadJoinMutex_unlock()  { return mThreadJoinMutex.unlock();}
 
-    /* BUG-31545 ÌÜµÍ≥Ñ Ï†ïÎ≥¥Î•º ÏãúÏä§ÌÖúÏóê Î∞òÏòÅÌïúÎã§. */
+    /* BUG-31545 ≈Î∞Ë ¡§∫∏∏¶ Ω√Ω∫≈€ø° π›øµ«—¥Ÿ. */
     inline void applyStatisticsToSystem()
     {
         idvManager::applyStatisticsToSystem(&mStatSession, &mOldStatSession);
@@ -227,13 +267,16 @@ public:
         idCore::acpAtomicSet64( &mSelfExecuteDDLTransID, aTID );
     }
 
+    smTID   getSelfExecuteDDLTransID()
+    {
+        return idCore::acpAtomicGet64( &mSelfExecuteDDLTransID );
+    }
+    
     idBool isSelfExecuteDDLTrans( smTID aTID )
     {
-        smTID  sExecuteTID = SM_NULL_TID;
         idBool sResult     = ID_FALSE;
 
-        sExecuteTID = idCore::acpAtomicGet64( &mSelfExecuteDDLTransID );
-        if ( sExecuteTID == aTID )
+        if ( getSelfExecuteDDLTransID() == aTID )
         {
             sResult = ID_TRUE;
         }
@@ -241,7 +284,87 @@ public:
         return sResult;
     }
 
-private:
+    static ULong  getBaseXLogBufferSize( rpdMeta * aMeta );
+    
+    static IDE_RC checkAndConvertEndian( void    *aValue,
+                                  UInt     aDataTypeId,
+                                  UInt     aFlag );
+
+    static IDE_RC convertEndianInsert( rpdMeta * aMeta, rpdXLog *aXLog);
+
+    IDE_RC recoveryCondition( idBool aIsNeedToRebuildMeta );
+
+    IDE_RC sendAckWithTID( rpXLogAck * aAck );
+
+    ULong getReceiveDataSize( void );
+    ULong getReceiveDataCount( void );
+
+    idvSQL * getStatistics( void ) { return &mStatistics; }
+
+    /* PROJ-2725 */
+    smSN getRestartSNInParallelApplier( void );
+
+    IDE_RC createAndInitializeXLogTransfer( rpxXLogTransfer ** aXLogTransfer, rpdXLogfileMgr * aXLogfileManager );
+    void finalizeXLogTransfer();
+    void finalizeAndDestroyXLogTransfer();
+
+    rpxXLogTransfer * getXLogTransfer() { return mXLogTransfer; }
+    void setXLogTransfer( rpxXLogTransfer * aXLogTransfer ) { mXLogTransfer = aXLogTransfer; }
+
+    IDE_RC createAndInitializeXLogfileManager( smiStatement    * aStatement,
+                                               rpdXLogfileMgr ** aXLogfileManager,
+                                               smSN              aInitXSN );
+    void finalizeAndDestroyXLogfileManager();
+    UInt getMinimumUsingXLogFileNo();
+    IDE_RC findXLogfileNoByRemoteCheckpointSN( UInt * aFileNo );
+
+    rpdXLogfileMgr * getXLogfileManager() { return mXLogfileManager; }
+
+    IDE_RC startXLogTrasnsfer();
+
+    IDE_RC reqeustRestartXLogtransfer( cmiProtocolContext  );
+    UInt getCurrentFileNumberOfRead();
+
+    static IDE_RC getXLogfileLSNFromXSN( smSN aXSN, SChar * aReplName, rpXLogLSN * aXLogLSN );
+
+    /*
+     * alter replication rep_name flush from xlogfile;
+     */
+    IDE_RC processXLogInXLogFile();
+
+    smLSN getLastLSNFromXLogfiles();
+    smLSN getCurrentLSNFromXLogfiles();
+
+    void wakeupXLogTansfer();
+
+    void yiled() { idlOS::thr_yield(); }
+
+    IDE_RC  waitXlogfileRecoveryDone( idvSQL *aStatistics );
+
+    idBool checkSuccessReoveryXLogfile() { return ( mXFRecoveryStatus == RPX_XF_RECOVERY_DONE ) ? ID_TRUE:ID_FALSE; }
+    void checkAndSetXFRecoveryStatusExit( );
+
+    IDE_RC updateCurrentInfoForConsistentMode( smiStatement * aParentStatement );
+
+    IDE_RC checkMeta ( smiTrans         * aTrans,
+                       rpdMeta          * aMeta );
+
+    void decideEndianConversion( rpdMeta * aRemoteMeta );
+
+    iduList * getGlobalTxList() { return &mGlobalTxList; }
+
+    idBool    isFailoverStepEnd() { return mIsFailoverStepEnd; }
+
+    IDE_RC failbackSlaveWithXLogfiles();
+    IDE_RC readXLogfileAndMakePKList( rpdSenderInfo         * aSenderInfo,
+                                      RP_ACTION_ON_ADD_XLOG   aActionAddXLog,
+                                      iduMemPool            * aSNPool,
+                                      iduList               * aSNList );
+
+    IDE_RC addLastSyncPK( rpdSenderInfo  * aSenderInfo,
+                          rpdXLog        * aXLog );
+
+  private:
     rpdMeta           * mNewMeta;
     rpdQueue            mFreeXLogQueue;
     ULong               mApplierQueueSize;
@@ -256,9 +379,13 @@ private:
 
     smSN                mRestartSN;
 
+    smSN                mRemoteCheckpointSN;
+
     smSN                mLastReceivedSN;
 
     smTID               mSelfExecuteDDLTransID;
+
+    iduList             mGlobalTxList;
 
     IDE_RC initializeParallelApplier( UInt     aParallelApplierCount );
     void   finalizeParallelApplier( void );
@@ -269,6 +396,8 @@ private:
 
     IDE_RC runSync( void );
 
+    IDE_RC runSyncInParallelApplier();
+
     IDE_RC recvXLog( rpdXLog * aXLog, idBool * aIsEnd );
 
     void setTcpInfo();
@@ -278,16 +407,13 @@ private:
     IDE_RC convertEndianInsert(rpdXLog *aXLog);
     IDE_RC convertEndianUpdate(rpdXLog *aXLog);
     IDE_RC convertEndianPK(rpdXLog *aXLog);
-    IDE_RC checkAndConvertEndian( void    *aValue,
-                                  UInt     aDataTypeId,
-                                  UInt     aFlag );
 
     /* BUG-22703 thr_join Replace */
     idBool             mIsThreadDead;
     iduMutex           mThreadJoinMutex;
     iduCond            mThreadJoinCV;
 
-    /* BUG-31545 ÏàòÌñâÏãúÍ∞Ñ ÌÜµÍ≥ÑÏ†ïÎ≥¥, BUG-46548 Receiver Ïù¥Î≤§Ìä∏ Ï†úÏñ¥Î•º ÏúÑÌïú Statistic */
+    /* BUG-31545 ºˆ«‡Ω√∞£ ≈Î∞Ë¡§∫∏, BUG-46548 Receiver ¿Ã∫•∆Æ ¡¶æÓ∏¶ ¿ß«— Statistic */
     idvSQL             mStatistics;
     ULong              mEventFlag;
     idvSession         mStatSession;
@@ -300,8 +426,6 @@ private:
 
     IDE_RC checkOfflineReplAvailable(rpdMeta  * aMeta);
 
-    ULong  getBaseXLogBufferSize();
-
     idBool isLobColumnExist();
 
     IDE_RC buildRemoteMeta( rpdMeta * aMeta );
@@ -309,11 +433,9 @@ private:
     IDE_RC checkSelfReplication( idBool    aIsLocalReplication,
                                  rpdMeta * aMeta );
 
+    IDE_RC buildMeta( smiStatement       * aStatement,
+                      SChar              * aRepName );
     IDE_RC copyNewMeta();
-
-    IDE_RC checkMeta ( rpdMeta  * aMeta );
-
-    void decideEndianConversion( rpdMeta * aMeta );
 
     IDE_RC sendHandshakeAckWithFailbackStatus( rpdMeta * aMeta );
 
@@ -337,7 +459,6 @@ private:
     IDE_RC sendAckWhenConditionMeet( rpdXLog * aXLog );
     IDE_RC sendAckForLooseEagerCommit( rpdXLog * aXLog );
     IDE_RC sendStopAckForReplicationStop( rpdXLog * aXLog );
-    IDE_RC sendSyncAck( rpdXLog * aXLog );
 
     IDE_RC applyXLogAndSendAck( rpdXLog * aXLog );
 
@@ -367,7 +488,6 @@ private:
     IDE_RC allocRangeColumn( void );
     smSN getRestartSN( void );
 
-    smSN getRestartSNInParallelApplier( void );
     IDE_RC getLocalFlushedRemoteSNInParallelAppiler( rpdXLog        * aXLog,
                                                      smSN           * aLocalFlushedRemoteSN );
     void getLastCommitAndProcessedSNInParallelAppiler( smSN    * aLastCommitSN,
@@ -380,6 +500,7 @@ private:
                                           rpXLogAck    * aAck );
 
     IDE_RC runParallelAppiler( void );
+    IDE_RC enqueueXLog( rpdXLog * aXLog );
     IDE_RC applyXLogAndSendAckInParallelAppiler( rpdXLog * aXLog );
     IDE_RC allocRangeColumnInParallelAppiler( void );
     IDE_RC processXLogInParallelApplier( rpdXLog    * aXLog,
@@ -391,6 +512,7 @@ private:
 
     idBool isAllApplierFinish( void );
     void   waitAllApplierComplete( void );
+    void   waitAllApplierCompleteWhileFailbackSlave( void );
 	void   shutdownAllApplier( void );
 
     ULong getApplierQueueSize( ULong aBufSize, ULong aOptionSize );
@@ -399,8 +521,58 @@ private:
 
     void wakeup( void );
 
+
+    void setNetworkResourcesToXLogTransfer( void );
+    void getNetworkResourcesFromXLogTransfer( void );
+    idBool isGottenNetworkResoucesFromXLogTransfer( void );
+
+    idBool getNetworkErrorInXLogTransfer();
+
+    IDE_RC updateCurrentInfoForConsistentModeWithNewTransaction( void );
+    void updateSNsForXLogTransfer( smSN aLastProcessedSN, smSN aRestartSN );
+    void setRestartSNAndLastProcessedSN( rpxXLogTransfer * aXLogtransfer );
+
+    IDE_RC runRecoveryXlogfiles( void );
+    IDE_RC checkAndSetXFRecoveryStatusEND( RPX_RECEIVER_XLOGFILE_RECOVERY_STATUS aStatus );
+    
+    IDE_RC runFailoverUsingXLogFiles( void );
+    
+    rpxReceiverReadContext setReadContext( cmiProtocolContext * aCMContext, rpdXLogfileMgr * aXLogfileContext );
+    cmiProtocolContext * getCMReadContext( rpxReceiverReadContext * aReadContext );
+    rpdXLogfileMgr * getXLogfileReadContext( rpxReceiverReadContext * aReadContext );
+
+    void setReadNetworkMode();
+    void setReadXLogfileMode();
+
+    IDE_RC processRemainXLogInXLogfile( idBool aIsSkipStopXLog );
+
+    IDE_RC collectUnCompleteGlobalTxList( iduList * aGlobalTxList );
+    IDE_RC applyUnCompleteGlobalTxLog( iduList * aGlobalTxList );
+
+    IDE_RC createNAddGlobalTxNodeToList( ID_XID        * aXID,
+                                         smTID           aTID,
+                                         smiDtxLogType   aResultType,
+                                         iduList       * aGlobalTxList,
+                                         idBool          aIsRequestNode );
+
+    void   removeGlobalTxList( iduList * aGlobalTxList );
+    void   removeGlobalTxNode( void * aGlobalTxNode );
+
+    void * findGlobalTxNodeFromList( smTID aTID, iduList * aGlobalTxList );
+
+    idBool isAckWithTID( rpdXLog * aXLog );
+
+    void buildDummyXLogAckForConsistent( rpdXLog * aXLog, rpXLogAck * aAck );
+
+    idBool useNetworkResourceMode();
+
+    IDE_RC getInitLSN( rpXLogLSN * aInitLSN );
+
+    IDE_RC initializeXLogfileContents( void );
+    IDE_RC initializeXLogfileContents( smiStatement * aStatement );
+
 public:
-    SChar              *mRepName;
+    SChar               mRepName[QCI_MAX_OBJECT_NAME_LEN + 1];
     SChar               mMyIP[RP_IP_ADDR_LEN];
     SInt                mMyPort;
     SChar               mPeerIP[RP_IP_ADDR_LEN];
@@ -426,31 +598,34 @@ public:
     //proj-1608
     rpReceiverStartMode mStartMode;
 
+    idBool              mIsFailoverStepEnd;
     idBool              mIsRecoveryComplete;
 
     UInt                mParallelID;
 
-    /* PROJ-1915 Î¶¨ÏãúÎ≤ÑÏóêÏÑú restart snÏùÑ Î≥¥Í¥Ä mRemoteMeta->mReplication.mXSNÏóê Ìï†Îãπ
-     * PROJ-1915 Î¶¨ÏãúÎ≤ÑÏóêÏÑú MetaÎ•º Î≥¥Í¥Ä
+    /* PROJ-1915 ∏ÆΩ√πˆø°º≠ restart sn¿ª ∫∏∞¸ mRemoteMeta->mReplication.mXSNø° «“¥Á
+     * PROJ-1915 ∏ÆΩ√πˆø°º≠ Meta∏¶ ∫∏∞¸
      */
-    rpdMeta           * mRemoteMeta; //rpcExecutorÏóêÏÑú ÏßÄÏ†ï ÌïúÍ≤É
+    rpdMeta           * mRemoteMeta; //rpcExecutorø°º≠ ¡ˆ¡§ «—∞Õ
     rpxReceiverErrorInfo mErrorInfo;
 
     iduMemAllocator   * mAllocator;
     SInt                mAllocatorState;
 
-    SInt              * mTransToApplierIndex;  /* Transaction Î≥ÑÎ°ú Î∂ÑÎ∞∞Îêú Thread Index */
+    SInt              * mTransToApplierIndex;  /* Transaction ∫∞∑Œ ∫–πËµ» Thread Index */
     UInt                mTransactionTableSize;
-    /* PROJ-2453 */
-public:
-    idBool              mAckEachDML;
-public:
-    IDE_RC sendAckEager( rpXLogAck * aAck );
-    
-    ULong getReceiveDataSize( void );
-    ULong getReceiveDataCount( void );
 
-    idvSQL * getStatistics( void ) { return &mStatistics; } 
+    /* PROJ-2453 */
+    idBool              mAckEachDML;
+    
+    /* PROJ-2725 */
+    rpdXLogfileMgr  * mXLogfileManager;
+    rpxXLogTransfer * mXLogTransfer;
+    rpxReceiverReadContext mReadContext;
+
+    RPX_RECEIVER_XLOGFILE_RECOVERY_STATUS mXFRecoveryStatus;
+    iduCond             mXFRecoveryWaitCV;
+    iduMutex            mXFRecoveryWaitMutex;
 };
 
 inline IDE_RC rpxReceiver::lock()

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfChr.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfChr.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -44,7 +44,7 @@ static IDE_RC mtfChrEstimate( mtcNode*     aNode,
 mtfModule mtfChr = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfChrFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -102,7 +102,7 @@ IDE_RC mtfChrEstimate( mtcNode*     aNode,
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
 
-    // aStack[0].columnì˜ ì´ˆê¸°í™”
+    // aStack[0].columnÀÇ ÃÊ±âÈ­
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      sModule,
                                      1,
@@ -136,8 +136,8 @@ IDE_RC mtfChrCalculate( mtcNode*     aNode,
  * Implementation :
  *    CHR( n )
  *
- *    aStack[0] : ìž…ë ¥ëœ Integer Ascii Codeë¥¼ ë¬¸ìžë¡œ ë³€í™˜í•œ ê°’ 
- *    aStack[1] : n ( ìž…ë ¥ëœ Integer Ascii Code )
+ *    aStack[0] : ÀÔ·ÂµÈ Integer Ascii Code¸¦ ¹®ÀÚ·Î º¯È¯ÇÑ °ª 
+ *    aStack[1] : n ( ÀÔ·ÂµÈ Integer Ascii Code )
  *
  ***********************************************************************/
     
@@ -176,23 +176,23 @@ IDE_RC mtfChrCalculate( mtcNode*     aNode,
         // precision 1
         if( sLanguage->maxPrecision(1) == 1 )
         {
-            // 1ë°”ì´íŠ¸ì§œë¦¬ì¸ ê²½ìš°ëŠ” ì²«ìžë¦¬ë§Œ
+            // 1¹ÙÀÌÆ®Â¥¸®ÀÎ °æ¿ì´Â Ã¹ÀÚ¸®¸¸
             sResult->value[0] = sValue1;
             sResult->length = 1;
         }
         // precision 2
         else if ( sLanguage->maxPrecision(1) == 2 )
         {
-            // 2ë°”ì´íŠ¸ì§œë¦¬ì¸ ê²½ìš°ëŠ” ìˆ«ìž í¬ê¸°ì— ë”°ë¼ì„œ ë‹¤ë¦„
+            // 2¹ÙÀÌÆ®Â¥¸®ÀÎ °æ¿ì´Â ¼ýÀÚ Å©±â¿¡ µû¶ó¼­ ´Ù¸§
             if ( sLanguage->maxPrecision(1) == 2 )
             {
-                // 1ë°”ì´íŠ¸ì§œë¦¬
+                // 1¹ÙÀÌÆ®Â¥¸®
                 if( sValue2 == 0 )
                 {
                     sResult->value[0] = sValue1;
                     sResult->length = 1;
                 }
-                // 2ë°”ì´íŠ¸ì§œë¦¬
+                // 2¹ÙÀÌÆ®Â¥¸®
                 else
                 {
                     sResult->value[0] = sValue2;
@@ -203,16 +203,16 @@ IDE_RC mtfChrCalculate( mtcNode*     aNode,
         }
         else // precision 3
         {
-            // 2ë°”ì´íŠ¸ì§œë¦¬ì¼ ê°€ëŠ¥ì„±
+            // 2¹ÙÀÌÆ®Â¥¸®ÀÏ °¡´É¼º
             if( sValue3 == 0 )
             {
-                // 1ë°”ì´íŠ¸ì§œë¦¬
+                // 1¹ÙÀÌÆ®Â¥¸®
                 if( sValue2 == 0 )
                 {
                     sResult->value[0] = sValue1;
                     sResult->length = 1;
                 }
-                // 2ë°”ì´íŠ¸ì§œë¦¬
+                // 2¹ÙÀÌÆ®Â¥¸®
                 else
                 {
                     sResult->value[0] = sValue2;
@@ -222,7 +222,7 @@ IDE_RC mtfChrCalculate( mtcNode*     aNode,
             }
             else
             {
-                // 3ë°”ì´íŠ¸ì§œë¦¬
+                // 3¹ÙÀÌÆ®Â¥¸®
                 sResult->value[0] = sValue3;
                 sResult->value[1] = sValue2;
                 sResult->value[2] = sValue1;

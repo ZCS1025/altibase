@@ -20,7 +20,7 @@
  *
  * Description :
  *     TASK-4990 changing the method of collecting index statistics
- *     í•œ Tableì˜ í†µê³„ì •ë³´ë¥¼ ìˆ˜ì§‘í•œë‹¤. 
+ *     ÇÑ TableÀÇ Åë°èÁ¤º¸¸¦ ¼öÁıÇÑ´Ù. 
  *
  * Syntax :
  *    GATHER_TABLE_STATS (
@@ -62,7 +62,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfGatherTableStatsModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -185,7 +185,6 @@ IDE_RC qsfCalculate_GatherTableStats( mtcNode*     aNode,
     smiStatement         * sDummyParentStmt;
     smiStatement           sDummyStmt;
     smiTrans               sSmiTrans;
-    smSCN                  sDummySCN;
     void                 * sMmSession;
     UInt                   sSmiStmtFlag;
     UInt                   sState = 0;
@@ -231,7 +230,7 @@ IDE_RC qsfCalculate_GatherTableStats( mtcNode*     aNode,
     }
     else
     {
-        // ì´ì „ Planë“¤ì„ invalidate ì‹œí‚¬ í•„ìš”ê°€ ì—†ë‹¤.
+        // ÀÌÀü PlanµéÀ» invalidate ½ÃÅ³ ÇÊ¿ä°¡ ¾ø´Ù.
         // Nothing to do.
     }
 
@@ -254,7 +253,7 @@ IDE_RC qsfCalculate_GatherTableStats( mtcNode*     aNode,
     IDE_TEST( sDummyStmt.begin( sStatement->mStatistics, sDummyParentStmt, sSmiStmtFlag ) != IDE_SUCCESS);
     sState = 4;
 
-    /* Tableì •ë³´ íšë“ */
+    /* TableÁ¤º¸ È¹µæ */
     IDE_TEST( qcmUser::getUserID( sStatement,
                                   (SChar*)sOwnerNameValue->value,
                                   sOwnerNameValue->length,
@@ -273,7 +272,7 @@ IDE_RC qsfCalculate_GatherTableStats( mtcNode*     aNode,
     IDE_TEST( smiValidateAndLockObjects( (QC_SMI_STMT(sStatement))->getTrans(),
                                          sTableHandle,
                                          sTableSCN,
-                                         SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                         SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                          SMI_TABLE_LOCK_IX,
                                          ID_ULONG_MAX,
                                          ID_FALSE )         // BUG-28752 isExplicitLock
@@ -290,7 +289,7 @@ IDE_RC qsfCalculate_GatherTableStats( mtcNode*     aNode,
                 NULL )
             != IDE_SUCCESS );
 
-    /* Partition í•˜ë‚˜ì— ëŒ€í•´ì„œë§Œ í†µê³„ì •ë³´ íšë“ */
+    /* Partition ÇÏ³ª¿¡ ´ëÇØ¼­¸¸ Åë°èÁ¤º¸ È¹µæ */
     if( sPartitionNameValue != NULL )
     {
         IDE_TEST( qcmPartition::getPartitionInfo( 
@@ -306,7 +305,7 @@ IDE_RC qsfCalculate_GatherTableStats( mtcNode*     aNode,
         IDE_TEST( qcmPartition::validateAndLockOnePartition( sStatement,
                                                              sTableHandle,
                                                              sTableSCN,
-                                                             SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                             SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                              SMI_TABLE_LOCK_IX,
                                                              ID_ULONG_MAX )
                   != IDE_SUCCESS );
@@ -325,7 +324,7 @@ IDE_RC qsfCalculate_GatherTableStats( mtcNode*     aNode,
                 != IDE_SUCCESS );
         sState = 5;
 
-        /* Partitioned Tableì´ë©´ List ìˆœíšŒí•˜ë©´ì„œ ì „ë¶€ ìˆ˜ì§‘*/
+        /* Partitioned TableÀÌ¸é List ¼øÈ¸ÇÏ¸é¼­ ÀüºÎ ¼öÁı*/
         IDE_TEST( qcmPartition::getPartitionInfoList(
                       sStatement,
                       QC_SMI_STMT( sStatement),
@@ -336,7 +335,7 @@ IDE_RC qsfCalculate_GatherTableStats( mtcNode*     aNode,
 
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( sStatement,
                                                                   sPartInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                                   SMI_TABLE_LOCK_IX,
                                                                   ID_ULONG_MAX )
                   != IDE_SUCCESS );
@@ -400,7 +399,7 @@ IDE_RC qsfCalculate_GatherTableStats( mtcNode*     aNode,
     }
     else
     {
-        /* ê·¸ ì™¸ì˜ ê²½ìš°ëŠ” í•˜ë‚˜ë§Œ ìˆ˜ì§‘ */
+        /* ±× ¿ÜÀÇ °æ¿ì´Â ÇÏ³ª¸¸ ¼öÁı */
         IDE_TEST( smiStatistics::gatherTableStats( 
                 sStatement->mStatistics,
                 (QC_SMI_STMT(sStatement))->getTrans(),
@@ -429,7 +428,7 @@ IDE_RC qsfCalculate_GatherTableStats( mtcNode*     aNode,
     }
     else
     {
-        // ì´ì „ Planë“¤ì„ invalidate ì‹œí‚¬ í•„ìš”ê°€ ì—†ë‹¤.
+        // ÀÌÀü PlanµéÀ» invalidate ½ÃÅ³ ÇÊ¿ä°¡ ¾ø´Ù.
         // Nothing to do.
     }
 
@@ -443,7 +442,7 @@ IDE_RC qsfCalculate_GatherTableStats( mtcNode*     aNode,
 
     // transaction commit
     sState = 1;
-    IDE_TEST( sSmiTrans.commit(&sDummySCN) != IDE_SUCCESS );
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
 
     // transaction destroy
     sState = 0;

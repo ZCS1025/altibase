@@ -40,7 +40,9 @@ static qcDatabaseLinkCallback gCallback = {
     NULL,   /* mCloseShardConnection       */
     NULL,   /* mAddShardTransaction        */
     NULL,   /* mDelShardTransaction        */
-    NULL    /* mSetTransactionBrokenOnGlobalCoordinator */
+    NULL,   /* mSetTransactionBrokenOnGlobalCoordinator */
+    NULL,   /* mCheckGlobalTransactionStatus */
+    NULL    /* mAddDtxBranchTx             */
 };
 
 
@@ -396,12 +398,14 @@ void qdkCloseShardConnection( sdiConnectInfo * aDataNode )
 
 IDE_RC qdkAddShardTransaction( idvSQL         * aStatistics,
                                smTID            aTransID,
+                               sdiClientInfo  * aClientInfo,
                                sdiConnectInfo * aDataNode )
 {
     if ( gCallback.mAddShardTransaction != NULL )
     {
         IDE_TEST( gCallback.mAddShardTransaction( aStatistics,
                                                   aTransID,
+                                                  aClientInfo,
                                                   (void *)aDataNode )
                   != IDE_SUCCESS );
     }
@@ -449,3 +453,48 @@ IDE_RC qdkSetTransactionBrokenOnGlobalCoordinator( void * aDkiSession,
 
     return IDE_FAILURE;
 }
+
+IDE_RC qdkCheckGlobalTransactionStatus( void * aDataNode )
+{
+    if ( gCallback.mCheckGlobalTransactionStatus != NULL )
+    {
+        IDE_TEST(  gCallback.mCheckGlobalTransactionStatus( aDataNode ) != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qdkAddDtxBranchTx( void   * aDtxInfo,
+                          UChar    aCoordinatorType,
+                          SChar  * aNodeName,
+                          SChar  * aUserName,
+                          SChar  * aUserPassword,
+                          SChar  * aDataServerIP,
+                          UShort   aDataPortNo,
+                          UShort   aConnectType )
+{
+    if ( gCallback.mAddDtxBranchTx != NULL )
+    {
+        IDE_TEST(  gCallback.mAddDtxBranchTx( aDtxInfo,
+                                              aCoordinatorType,
+                                              aNodeName,
+                                              aUserName,
+                                              aUserPassword,
+                                              aDataServerIP,
+                                              aDataPortNo,
+                                              aConnectType )
+                   != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+
+}
+

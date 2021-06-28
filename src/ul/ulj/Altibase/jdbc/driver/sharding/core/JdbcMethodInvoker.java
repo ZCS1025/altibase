@@ -28,7 +28,7 @@ import static Altibase.jdbc.driver.sharding.util.ShardingTraceLogger.shard_log;
 
 public class JdbcMethodInvoker
 {
-    private List<JdbcMethodInvocation> mJdbcMethodInvocations = new ArrayList<JdbcMethodInvocation>();
+    private final List<JdbcMethodInvocation> mJdbcMethodInvocations = new ArrayList<>();
 
     final void recordMethodInvocation(Class<?> aTargetClass, String aMethodName, Class<?>[]
             aArgumentTypes, Object[] aArguments) throws SQLException

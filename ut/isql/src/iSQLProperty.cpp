@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLProperty.cpp 84322 2018-11-12 02:04:29Z bethy $
+ * $Id: iSQLProperty.cpp 86554 2020-01-21 05:05:40Z bethy $
  **********************************************************************/
 
 #include <iSQL.h>
@@ -47,7 +47,7 @@ iSQLProperty::iSQLProperty()
     m_Timing               = ID_FALSE;
     m_Vertical             = ID_FALSE; // BUG-22685
     m_Heading              = ID_TRUE;
-    m_ShowCheckConstraints = ID_FALSE; /* PROJ-1107 Check Constraint ì§€ì› */
+    m_ShowCheckConstraints = ID_FALSE; /* PROJ-1107 Check Constraint Áö¿ø */
     m_ShowForeignKeys      = ID_FALSE;
     m_ShowPartitions       = ID_FALSE; /* BUG-43516 */
     m_PlanCommit           = ID_FALSE;
@@ -62,7 +62,8 @@ iSQLProperty::iSQLProperty()
     mEcho                  = ID_TRUE;  /* BUG-45722 */
     mFullName              = ID_FALSE;
     m_Define               = ID_FALSE;
-    m_Verify               = ID_TRUE; /* BUG-43599 */
+    m_Verify               = ID_TRUE;  /* BUG-43599 */
+    m_MultiError           = ID_FALSE; /* BUG-47627 */
 
     /* BUG-44613 */
     m_PrefetchRows         = 0;
@@ -106,7 +107,7 @@ void iSQLProperty::clearPlanProperty()
 }
 
 /* ============================================
- * iSQL ê´€ë ¨ í™˜ê²½ë³€ìˆ˜ë¥¼ ì½ì–´ì„œ ì„¸íŒ…
+ * iSQL °ü·Ã È¯°æº¯¼ö¸¦ ÀÐ¾î¼­ ¼¼ÆÃ
  * ============================================ */
 void
 iSQLProperty::SetEnv()
@@ -182,15 +183,11 @@ SChar * iSQLProperty::GetHistFile()
 
 /* ============================================
  * Set ColSize
- * Display ë˜ëŠ” í•œ ì»¬ëŸ¼(char,varchar íƒ€ìž…ë§Œ ì ìš©)ì˜ ê¸¸ì´
+ * Display µÇ´Â ÇÑ ÄÃ·³(char,varchar Å¸ÀÔ¸¸ Àû¿ë)ÀÇ ±æÀÌ
  * ============================================ */
 void
-iSQLProperty::SetColSize( SChar * a_CommandStr,
-                          SInt    a_ColSize )
+iSQLProperty::SetColSize( SInt    a_ColSize )
 {
-    idlOS::sprintf(gSpool->m_Buf, "%s", a_CommandStr);
-    gSpool->PrintCommand();
-
     if ( (a_ColSize < 0) || (a_ColSize > 32767) )
     {
         uteSetErrorCode(&gErrorMgr, utERR_ABORT_Column_Size_Error, (UInt)0, (UInt)32767);
@@ -204,26 +201,18 @@ iSQLProperty::SetColSize( SChar * a_CommandStr,
 }
 
 void
-iSQLProperty::SetFeedback( SChar * a_CommandStr,
-                           SInt    a_Feedback )
+iSQLProperty::SetFeedback( SInt    a_Feedback )
 {
-    idlOS::sprintf(gSpool->m_Buf, "%s", a_CommandStr);
-    gSpool->PrintCommand();
-
     m_Feedback = a_Feedback;
 }
 
 /* ============================================
  * Set LineSize
- * Display ë˜ëŠ” í•œ ë¼ì¸ì˜ ê¸¸ì´
+ * Display µÇ´Â ÇÑ ¶óÀÎÀÇ ±æÀÌ
  * ============================================ */
 void
-iSQLProperty::SetLineSize( SChar * a_CommandStr,
-                           SInt    a_LineSize )
+iSQLProperty::SetLineSize( SInt    a_LineSize )
 {
-    idlOS::sprintf(gSpool->m_Buf, "%s", a_CommandStr);
-    gSpool->PrintCommand();
-
     if ( (a_LineSize < 10) || (a_LineSize > 32767) )
     {
         uteSetErrorCode(&gErrorMgr, utERR_ABORT_Line_Size_Error, (UInt)10, (UInt)32767);
@@ -239,15 +228,11 @@ iSQLProperty::SetLineSize( SChar * a_CommandStr,
 // BUG-39213 Need to support SET NUMWIDTH in isql
 /* ============================================
  * Set NumWidth
- * Display ë˜ëŠ” í•œ ì»¬ëŸ¼(numeric, decimal, float íƒ€ìž…ë§Œ ì ìš©)ì˜ ê¸¸ì´
+ * Display µÇ´Â ÇÑ ÄÃ·³(numeric, decimal, float Å¸ÀÔ¸¸ Àû¿ë)ÀÇ ±æÀÌ
  * ============================================ */
 void
-iSQLProperty::SetNumWidth( SChar * a_CommandStr,
-                           SInt    a_NumWidth )
+iSQLProperty::SetNumWidth( SInt    a_NumWidth )
 {
-    idlOS::sprintf(gSpool->m_Buf, "%s", a_CommandStr);
-    gSpool->PrintCommand();
-
     if ( (a_NumWidth < 11) || (a_NumWidth > 50) )
     {
         uteSetErrorCode(&gErrorMgr, utERR_ABORT_Num_Width_Error, (UInt)11, (UInt)50);
@@ -262,15 +247,11 @@ iSQLProperty::SetNumWidth( SChar * a_CommandStr,
 
 /* ============================================
  * Set PageSize
- * ë ˆì½”ë“œë¥¼ ëª‡ ê°œ ë‹¨ìœ„ë¡œ ë³´ì—¬ì¤„ ê²ƒì¸ê°€
+ * ·¹ÄÚµå¸¦ ¸î °³ ´ÜÀ§·Î º¸¿©ÁÙ °ÍÀÎ°¡
  * ============================================ */
 void
-iSQLProperty::SetPageSize( SChar * a_CommandStr,
-                           SInt    a_PageSize )
+iSQLProperty::SetPageSize( SInt    a_PageSize )
 {
-    idlOS::sprintf(gSpool->m_Buf, "%s", a_CommandStr);
-    gSpool->PrintCommand();
-
     if ( a_PageSize < 0 || a_PageSize > 50000 )
     {
         uteSetErrorCode(&gErrorMgr, utERR_ABORT_Page_Size_Error, (UInt)0, (UInt)50000);
@@ -286,79 +267,59 @@ iSQLProperty::SetPageSize( SChar * a_CommandStr,
 
 /* ============================================
  * Set Term
- * ì½˜ì†” í™”ë©´ìœ¼ë¡œì˜ ì¶œë ¥ì„ í•  ê²ƒì¸ê°€ ë§ ê²ƒì¸ê°€
+ * ÄÜ¼Ö È­¸éÀ¸·ÎÀÇ Ãâ·ÂÀ» ÇÒ °ÍÀÎ°¡ ¸» °ÍÀÎ°¡
  * ============================================ */
 void
-iSQLProperty::SetTerm( SChar * a_CommandStr,
-                       idBool  a_IsTerm )
+iSQLProperty::SetTerm( idBool  a_IsTerm )
 {
-    idlOS::sprintf(gSpool->m_Buf, "%s", a_CommandStr);
-    gSpool->PrintCommand();
-
     m_Term = a_IsTerm;
-    mEcho = m_Term; /* BUG-45722 term ì„¤ì •ì‹œ echo ë„ ìžë™ìœ¼ë¡œ ë³€ê²½ */
+    mEcho = m_Term; /* BUG-45722 term ¼³Á¤½Ã echo µµ ÀÚµ¿À¸·Î º¯°æ */
 }
 
 /* ============================================
  * Set Timing
- * ì¿¼ë¦¬ ìˆ˜í–‰ ì‹œê°„ì„ ë³´ì—¬ì¤„ ê²ƒì¸ê°€ ë§ ê²ƒì¸ê°€
+ * Äõ¸® ¼öÇà ½Ã°£À» º¸¿©ÁÙ °ÍÀÎ°¡ ¸» °ÍÀÎ°¡
  * ============================================ */
 void
-iSQLProperty::SetTiming( SChar * a_CommandStr,
-                         idBool  a_IsTiming )
+iSQLProperty::SetTiming( idBool  a_IsTiming )
 {
-    idlOS::sprintf(gSpool->m_Buf, "%s", a_CommandStr);
-    gSpool->PrintCommand();
-
     m_Timing = a_IsTiming;
 }
 
 // BUG-22685
 /* ============================================
  * Set Vertical
- * ì§ˆì˜ ê²°ê³¼ë¬¼ì„ ì„¸ë¡œë¡œ ë³´ì—¬ì¤„ ê²ƒì¸ê°€
+ * ÁúÀÇ °á°ú¹°À» ¼¼·Î·Î º¸¿©ÁÙ °ÍÀÎ°¡
  * ============================================ */
 void
-iSQLProperty::SetVertical( SChar * a_CommandStr,
-                           idBool  a_IsVertical )
+iSQLProperty::SetVertical( idBool  a_IsVertical )
 {
-    idlOS::sprintf(gSpool->m_Buf, "%s", a_CommandStr);
-    gSpool->PrintCommand();
-
     m_Vertical = a_IsVertical;
 }
 
 /* ============================================
  * Set Heading
- * í—¤ë”(Column Name)ë¥¼ ë³´ì—¬ì¤„ ê²ƒì¸ê°€ ë§ ê²ƒì¸ê°€
+ * Çì´õ(Column Name)¸¦ º¸¿©ÁÙ °ÍÀÎ°¡ ¸» °ÍÀÎ°¡
  * ============================================ */
 void
-iSQLProperty::SetHeading( SChar * a_CommandStr,
-                          idBool  a_IsHeading )
+iSQLProperty::SetHeading( idBool  a_IsHeading )
 {
-    idlOS::sprintf(gSpool->m_Buf, "%s", a_CommandStr);
-    gSpool->PrintCommand();
-
     m_Heading = a_IsHeading;
 }
 
 /* ============================================
  * Set TimeScale
- * ì¿¼ë¦¬ ìˆ˜í–‰ ì‹œê°„ì˜ ë‹¨ìœ„
+ * Äõ¸® ¼öÇà ½Ã°£ÀÇ ´ÜÀ§
  * ============================================ */
 void
-iSQLProperty::SetTimeScale( SChar         * a_CommandStr,
-                            iSQLTimeScale   a_Timescale )
+iSQLProperty::SetTimeScale( iSQLTimeScale   a_Timescale )
 {
-    idlOS::sprintf(gSpool->m_Buf, "%s", a_CommandStr);
-    gSpool->PrintCommand();
-
     m_TimeScale = a_Timescale;
 }
 
 /* ============================================
  * Set User
- * Connect í•  ë•Œë§ˆë‹¤ í˜„ìž¬ì˜ ìœ ì €ë¥¼ ì„¸íŒ…í•œë‹¤
+ * Connect ÇÒ ¶§¸¶´Ù ÇöÀçÀÇ À¯Àú¸¦ ¼¼ÆÃÇÑ´Ù
  * ============================================ */
 void
 iSQLProperty::SetUserName( SChar * a_UserName )
@@ -431,8 +392,8 @@ void iSQLProperty::SetPasswd(SChar * aPasswd)
 
 // ============================================
 // bug-19279 remote sysdba enable
-// conntype string(tcp/unix...)ì„ ìž¬ ì„¤ì •í•œë‹¤.(í™”ë©´ ì¶œë ¥ìš©)
-// why? sysdbaì˜ ê²½ìš° ì´ˆê¸°ê°’ê³¼ ë‹¤ë¥¼ ìˆ˜ ìžˆë‹¤.
+// conntype string(tcp/unix...)À» Àç ¼³Á¤ÇÑ´Ù.(È­¸é Ãâ·Â¿ë)
+// why? sysdbaÀÇ °æ¿ì ÃÊ±â°ª°ú ´Ù¸¦ ¼ö ÀÖ´Ù.
 void iSQLProperty::AdjustConnTypeStr(idBool aIsSysDBA, SChar* aServerName)
 {
     SInt sConnType = GetConnType(aIsSysDBA, aServerName);
@@ -506,11 +467,11 @@ SInt iSQLProperty::GetConnType(idBool aIsSysDBA, SChar* aServerName)
     }
     // =============================================================
     // bug-19279 remote sysdba enable
-    // í†µì‹  ë°©ì‹(tcp/ unix domain)ì„ ë‹¤ìŒì— ì˜í•´ ê²°ì •
+    // Åë½Å ¹æ½Ä(tcp/ unix domain)À» ´ÙÀ½¿¡ ÀÇÇØ °áÁ¤
     // windows               : tcp
     // localhost: unix domain socket
-    // ê·¸ì™¸                   : tcp socket (ipcëŠ” ëª°ë¼ìš”)
-    // why? localì¸ ê²½ìš° unix domainì´ ë” ì•ˆì •ì ì¼ê²ƒ ê°™ì•„ì„œ
+    // ±×¿Ü                   : tcp socket (ipc´Â ¸ô¶ó¿ä)
+    // why? localÀÎ °æ¿ì unix domainÀÌ ´õ ¾ÈÁ¤ÀûÀÏ°Í °°¾Æ¼­
     else
     {
 #if defined(VC_WIN32) || defined(NTO_QNX)
@@ -568,73 +529,53 @@ SInt iSQLProperty::GetConnType(idBool aIsSysDBA, SChar* aServerName)
 
 /* ============================================
  * Set CheckConstraints
- * desc ê²°ê³¼ì— Check Constraint ì •ë³´ë¥¼ ë³´ì—¬ì¤„ ê²ƒì¸ì§€
+ * desc °á°ú¿¡ Check Constraint Á¤º¸¸¦ º¸¿©ÁÙ °ÍÀÎÁö
  * ============================================ */
 void
-iSQLProperty::SetCheckConstraints( SChar  * a_CommandStr,
-                                   idBool   a_ShowCheckConstraints )
+iSQLProperty::SetCheckConstraints( idBool   a_ShowCheckConstraints )
 {
-    idlOS::sprintf( gSpool->m_Buf, "%s", a_CommandStr );
-    gSpool->PrintCommand();
-
     m_ShowCheckConstraints = a_ShowCheckConstraints;
 }
 
 /* ============================================
  * Set ForeignKeys
- * desc ê²°ê³¼ì— foreign key ì •ë³´ë¥¼ ë³´ì—¬ì¤„ ê²ƒì¸ì§€
+ * desc °á°ú¿¡ foreign key Á¤º¸¸¦ º¸¿©ÁÙ °ÍÀÎÁö
  * ============================================ */
 void
-iSQLProperty::SetForeignKeys( SChar * a_CommandStr,
-                              idBool  a_ShowForeignKeys )
+iSQLProperty::SetForeignKeys( idBool  a_ShowForeignKeys )
 {
-    idlOS::sprintf(gSpool->m_Buf, "%s", a_CommandStr);
-    gSpool->PrintCommand();
-
     m_ShowForeignKeys = a_ShowForeignKeys;
 }
 
 /* ============================================
  * BUG-43516 Set Partitions
- * desc ê²°ê³¼ì— partition ì •ë³´ë¥¼ ë³´ì—¬ì¤„ ê²ƒì¸ì§€
+ * desc °á°ú¿¡ partition Á¤º¸¸¦ º¸¿©ÁÙ °ÍÀÎÁö
  * ============================================ */
 void
-iSQLProperty::SetPartitions( SChar * a_CommandStr,
-                             idBool  a_ShowPartitions )
+iSQLProperty::SetPartitions( idBool  a_ShowPartitions )
 {
-    idlOS::sprintf(gSpool->m_Buf, "%s", a_CommandStr);
-    gSpool->PrintCommand();
-
     m_ShowPartitions = a_ShowPartitions;
 }
 
 /* ============================================
  * Set PlanCommit
- * autocommit mode false ì¸ ì„¸ì…˜ì—ì„œ explain plan ì„
- * on ë˜ëŠ” only ë¡œ í–ˆì„ ë•Œ, desc, select * From tab;
- * ê°™ì€ ëª…ë ¹ì–´ë¥¼ ì‚¬ìš©í•˜ê²Œ ë˜ë©´, ì´ì „ì— ìˆ˜í–‰ì¤‘ì¸
- * íŠ¸ëžœìž­ì…˜ì´ ì¡´ìž¬í•  ê²½ìš°ì— ì—ëŸ¬ê°€ ë°œìƒí•˜ê²Œ ëœë‹¤.
+ * autocommit mode false ÀÎ ¼¼¼Ç¿¡¼­ explain plan À»
+ * on ¶Ç´Â only ·Î ÇßÀ» ¶§, desc, select * From tab;
+ * °°Àº ¸í·É¾î¸¦ »ç¿ëÇÏ°Ô µÇ¸é, ÀÌÀü¿¡ ¼öÇàÁßÀÎ
+ * Æ®·£Àè¼ÇÀÌ Á¸ÀçÇÒ °æ¿ì¿¡ ¿¡·¯°¡ ¹ß»ýÇÏ°Ô µÈ´Ù.
  * error -> The transaction is already active.
- * ì´ë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•´ì„œ ìˆ˜í–‰ì „ì— commit ì„ ìžë™ìœ¼ë¡œ
- * ìˆ˜í–‰í•˜ë„ë¡ í•˜ëŠ” ì˜µì…˜ì„ ì¤„ ìˆ˜ ìžˆë‹¤.
+ * ÀÌ¸¦ ¹æÁöÇÏ±â À§ÇØ¼­ ¼öÇàÀü¿¡ commit À» ÀÚµ¿À¸·Î
+ * ¼öÇàÇÏµµ·Ï ÇÏ´Â ¿É¼ÇÀ» ÁÙ ¼ö ÀÖ´Ù.
  * ============================================ */
 void
-iSQLProperty::SetPlanCommit( SChar * a_CommandStr,
-                             idBool  a_Commit )
+iSQLProperty::SetPlanCommit( idBool  a_Commit )
 {
-    idlOS::sprintf(gSpool->m_Buf, "%s", a_CommandStr);
-    gSpool->PrintCommand();
-
     m_PlanCommit = a_Commit;
 }
 
 void
-iSQLProperty::SetQueryLogging( SChar * a_CommandStr,
-                               idBool  a_Logging )
+iSQLProperty::SetQueryLogging( idBool  a_Logging )
 {
-    idlOS::sprintf(gSpool->m_Buf, "%s", a_CommandStr);
-    gSpool->PrintCommand();
-
     m_QueryLogging = a_Logging;
 }
 
@@ -642,9 +583,6 @@ void
 iSQLProperty::SetExplainPlan(SChar           * aCmdStr,
                              iSQLSessionKind   aExplainPlan)
 {
-    idlOS::snprintf(gSpool->m_Buf, GetCommandLen(), "%s", aCmdStr);
-    gSpool->PrintCommand();
-
     mExplainPlan = aExplainPlan;
 
     if (idlOS::strncasecmp(aCmdStr, "ALTER", 5) == 0)
@@ -662,15 +600,11 @@ iSQLProperty::SetExplainPlan(SChar           * aCmdStr,
 }
 /* ============================================
  * Set LobSize
- * Display ë˜ëŠ” í•œ ì»¬ëŸ¼(clob íƒ€ìž…ë§Œ ì ìš©)ì˜ ê¸¸ì´
+ * Display µÇ´Â ÇÑ ÄÃ·³(clob Å¸ÀÔ¸¸ Àû¿ë)ÀÇ ±æÀÌ
  * ============================================ */
 void
-iSQLProperty::SetLobOffset( SChar * a_CommandStr,
-                            SInt    a_LobOffset )
+iSQLProperty::SetLobOffset( SInt    a_LobOffset )
 {
-    idlOS::sprintf(gSpool->m_Buf, "%s", a_CommandStr);
-    gSpool->PrintCommand();
-
     if ( (a_LobOffset < 0) || (a_LobOffset > 32767) )
     {
         uteSetErrorCode(&gErrorMgr, utERR_ABORT_Column_Size_Error, (UInt)0, (UInt)32767);
@@ -684,12 +618,8 @@ iSQLProperty::SetLobOffset( SChar * a_CommandStr,
 }
 
 void
-iSQLProperty::SetLobSize( SChar * a_CommandStr,
-                          SInt    a_LobSize )
+iSQLProperty::SetLobSize( SInt    a_LobSize )
 {
-    idlOS::sprintf(gSpool->m_Buf, "%s", a_CommandStr);
-    gSpool->PrintCommand();
-
     if ( (a_LobSize < 0) || (a_LobSize > 32767) )
     {
         uteSetErrorCode(&gErrorMgr, utERR_ABORT_Column_Size_Error, (UInt)0, (UInt)32767);
@@ -703,16 +633,12 @@ iSQLProperty::SetLobSize( SChar * a_CommandStr,
 }
 
 /* ============================================
- * í˜„ìž¬ì˜ iSQL Optionì„ ë³´ì—¬ì¤€ë‹¤.
+ * ÇöÀçÀÇ iSQL OptionÀ» º¸¿©ÁØ´Ù.
  * ============================================ */
 void
-iSQLProperty::ShowStmt( SChar          * a_CommandStr,
-                        iSQLOptionKind   a_iSQLOptionKind )
+iSQLProperty::ShowStmt( iSQLOptionKind   a_iSQLOptionKind )
 {
     SChar tmp[20];
-
-    idlOS::sprintf(gSpool->m_Buf, "%s", a_CommandStr);
-    gSpool->PrintCommand();
 
     switch(a_iSQLOptionKind)
     {
@@ -763,7 +689,7 @@ iSQLProperty::ShowStmt( SChar          * a_CommandStr,
             idlOS::sprintf(gSpool->m_Buf, "%s", (SChar*)"Vertical  : Off\n");
         gSpool->Print();
 
-        /* PROJ-1107 Check Constraint ì§€ì› */
+        /* PROJ-1107 Check Constraint Áö¿ø */
         if ( m_ShowCheckConstraints == ID_TRUE )
         {
             idlOS::sprintf( gSpool->m_Buf, "%s",
@@ -916,6 +842,17 @@ iSQLProperty::ShowStmt( SChar          * a_CommandStr,
         }
         gSpool->Print();
 
+        /* BUG-47627 SET MULTIERROR ON|OFF */
+        if ( GetMultiError() == ID_TRUE )
+        {
+            idlOS::sprintf(gSpool->m_Buf, "%s", (SChar*)"MultiError : On\n");
+        }
+        else
+        {
+          idlOS::sprintf(gSpool->m_Buf, "%s", (SChar*)"MultiError : Off\n");
+        }
+        gSpool->Print();
+
         break;
 
     case iSQL_HEADING :
@@ -985,7 +922,7 @@ iSQLProperty::ShowStmt( SChar          * a_CommandStr,
             idlOS::sprintf(gSpool->m_Buf, "%s", (SChar*)"Vertical  : Off\n");
         gSpool->Print();
         break;
-    case iSQL_CHECKCONSTRAINTS : /* PROJ-1107 Check Constraint ì§€ì› */
+    case iSQL_CHECKCONSTRAINTS : /* PROJ-1107 Check Constraint Áö¿ø */
         if ( m_ShowCheckConstraints == ID_TRUE )
         {
             idlOS::sprintf( gSpool->m_Buf, "%s",
@@ -1147,6 +1084,19 @@ iSQLProperty::ShowStmt( SChar          * a_CommandStr,
         gSpool->Print();
         break;
 
+    /* BUG-47627 SET MULTIERROR ON|OFF */
+    case iSQL_MULTIERROR:
+        if ( GetMultiError() == ID_TRUE )
+        {
+            idlOS::sprintf(gSpool->m_Buf, "%s", (SChar*)"MultiError : On\n");
+        }
+        else
+        {
+          idlOS::sprintf(gSpool->m_Buf, "%s", (SChar*)"MultiError : Off\n");
+        }
+        gSpool->Print();
+        break;
+
     default :
 	// BUG-32613 The English grammar of the iSQL message "Have no saved command." needs to be corrected.
         idlOS::sprintf(gSpool->m_Buf, "%s", (SChar*)"No information to show.\n");
@@ -1156,12 +1106,8 @@ iSQLProperty::ShowStmt( SChar          * a_CommandStr,
 }
 
 /* BUG-37772 */
-void iSQLProperty::SetEcho( SChar * aCommandStr,
-                            idBool  aIsEcho )
+void iSQLProperty::SetEcho( idBool  aIsEcho )
 {
-    idlOS::sprintf(gSpool->m_Buf, "%s", aCommandStr);
-    gSpool->PrintCommand();
-
     mEcho = aIsEcho;
 }
 
@@ -1172,16 +1118,12 @@ idBool iSQLProperty::GetEcho( void )
 
 /* ============================================
  * Set FULLNAME
- * 40 bytes ì´ìƒ ê¸¸ì´ì˜ ê°ì²´ ì´ë¦„ì„ ìž˜ë¼ì„œ ë˜ëŠ”
- * ëª¨ë‘ ë””ìŠ¤í”Œë ˆì´í•  ê²ƒì¸ì§€ ê²°ì •
+ * 40 bytes ÀÌ»ó ±æÀÌÀÇ °´Ã¼ ÀÌ¸§À» Àß¶ó¼­ ¶Ç´Â
+ * ¸ðµÎ µð½ºÇÃ·¹ÀÌÇÒ °ÍÀÎÁö °áÁ¤
  * ============================================ */
 void
-iSQLProperty::SetFullName( SChar * aCommandStr,
-                           idBool  aIsFullName )
+iSQLProperty::SetFullName( idBool  aIsFullName )
 {
-    idlOS::sprintf(gSpool->m_Buf, "%s", aCommandStr);
-    gSpool->PrintCommand();
-
     mFullName = aIsFullName;
     if (aIsFullName == ID_TRUE)
     {
@@ -1201,7 +1143,7 @@ idBool iSQLProperty::GetFullName( void )
 
 /* ============================================
  * BUG-41163: SET SQLP[ROMPT]
- * iSQL command prompt ì´ˆê¸°í™”
+ * iSQL command prompt ÃÊ±âÈ­
  * ============================================ */
 void iSQLProperty::InitSqlPrompt()
 {
@@ -1227,22 +1169,18 @@ iSQLProperty::ResetSqlPrompt()
 
 /* ============================================
  * BUG-41163: SET SQLP[ROMPT]
- * iSQL command prompt ì„¤ì •
+ * iSQL command prompt ¼³Á¤
  * ============================================ */
 void
-iSQLProperty::SetSqlPrompt( SChar * aCommandStr,
-                            SChar * aSqlPrompt )
+iSQLProperty::SetSqlPrompt( SChar * aSqlPrompt )
 {
-    idlOS::sprintf(gSpool->m_Buf, "%s", aCommandStr);
-    gSpool->PrintCommand();
-
     parseSqlPrompt(aSqlPrompt);
 }
 
 /*
- * _PRIVILEGE ë˜ëŠ” _USER ë³€ìˆ˜ê°€ í¬í•¨ëœ promptì˜ ê²½ìš°ì—ëŠ”
- * ë§¤ë²ˆ íŒŒì‹±í•˜ì§€ ì•Šê³  CONNECT ëª…ë ¹ì–´ë¥¼ ì‚¬ìš©í•  ë•Œë§Œ íŒŒì‹±í•œë‹¤.
- * ì¦‰ PROMPT_VARIABLE_ON, PROMPT_RECONNECT_ON ì´ ëª¨ë‘ ì„¤ì •ëœ ê²½ìš°ì—ë§Œ
+ * _PRIVILEGE ¶Ç´Â _USER º¯¼ö°¡ Æ÷ÇÔµÈ promptÀÇ °æ¿ì¿¡´Â
+ * ¸Å¹ø ÆÄ½ÌÇÏÁö ¾Ê°í CONNECT ¸í·É¾î¸¦ »ç¿ëÇÒ ¶§¸¸ ÆÄ½ÌÇÑ´Ù.
+ * Áï PROMPT_VARIABLE_ON, PROMPT_RECONNECT_ON ÀÌ ¸ðµÎ ¼³Á¤µÈ °æ¿ì¿¡¸¸
  */
 SChar * iSQLProperty::GetSqlPrompt( void )
 {
@@ -1258,8 +1196,8 @@ SChar * iSQLProperty::GetSqlPrompt( void )
 }
 
 /*
- * CONNECT ëª…ë ¹ì–´ê°€ ìˆ˜í–‰ëœ ê²½ìš° PROMPT_RECONNECT_ON bitë¥¼ ì„¤ì •í•˜ê¸° ìœ„í•´,
- * ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œëœë‹¤.
+ * CONNECT ¸í·É¾î°¡ ¼öÇàµÈ °æ¿ì PROMPT_RECONNECT_ON bit¸¦ ¼³Á¤ÇÏ±â À§ÇØ,
+ * ÀÌ ÇÔ¼ö°¡ È£ÃâµÈ´Ù.
  */
 void iSQLProperty::SetPromptRefreshFlag(UInt aFlag)
 {
@@ -1297,12 +1235,8 @@ iSQLProperty::parseSqlPrompt( SChar * aSqlPrompt )
  * turns substitution on/off
  * ============================================ */
 void
-iSQLProperty::SetDefine( SChar * a_CommandStr,
-                         idBool  a_IsDefine )
+iSQLProperty::SetDefine( idBool  a_IsDefine )
 {
-    idlOS::sprintf(gSpool->m_Buf, "%s", a_CommandStr);
-    gSpool->PrintCommand();
-
     m_Define = a_IsDefine;
 }
 
@@ -1456,9 +1390,6 @@ iSQLProperty::SetFormat4Char()
     SChar *sColumnName = NULL;
     isqlFmtNode *sNode = NULL;
 
-    idlOS::sprintf(gSpool->m_Buf, "%s", gCommand->GetCommandStr());
-    gSpool->PrintCommand();
-
     sFmt = gCommand->GetFormatStr();
     sSize = idlOS::atoi(sFmt + 1);
 
@@ -1561,9 +1492,6 @@ iSQLProperty::SetFormat4Num()
     UInt   sFmtLen;
     UChar  sTokenBuf[MTD_NUMBER_MAX];
     isqlFmtNode *sNode = NULL;
-
-    idlOS::sprintf(gSpool->m_Buf, "%s", gCommand->GetCommandStr());
-    gSpool->PrintCommand();
 
     IDE_TEST_RAISE( gExecuteCommand->SetNlsCurrency() != IDE_SUCCESS,
                     nls_error );
@@ -1884,9 +1812,6 @@ IDE_RC iSQLProperty::SetNumFormat()
     UInt   sFmtLen;
     UChar  sToken[MTD_NUMBER_MAX];
 
-    idlOS::sprintf(gSpool->m_Buf, "%s", gCommand->GetCommandStr());
-    gSpool->PrintCommand();
-
     IDE_TEST_RAISE( gExecuteCommand->SetNlsCurrency() != IDE_SUCCESS,
                     nls_error );
 
@@ -1953,23 +1878,15 @@ IDE_RC iSQLProperty::ClearAllFormats()
 
 /* BUG-43599 SET VERIFY ON|OFF */
 void
-iSQLProperty::SetVerify( SChar * a_CommandStr,
-                         idBool  a_IsVerify )
+iSQLProperty::SetVerify( idBool  a_IsVerify )
 {
-    idlOS::sprintf(gSpool->m_Buf, "%s", a_CommandStr);
-    gSpool->PrintCommand();
-
     m_Verify = a_IsVerify;
 }
 
 /* BUG-44613 Set PrefetchRows */
 void
-iSQLProperty::SetPrefetchRows( SChar * a_CommandStr,
-                               SInt    a_PrefetchRows )
+iSQLProperty::SetPrefetchRows( SInt    a_PrefetchRows )
 {
-    idlOS::sprintf(gSpool->m_Buf, "%s", a_CommandStr);
-    gSpool->PrintCommand();
-
     IDE_TEST_RAISE(
                 gExecuteCommand->SetPrefetchRows(a_PrefetchRows)
                 != IDE_SUCCESS, set_error );
@@ -1992,12 +1909,8 @@ iSQLProperty::SetPrefetchRows( SChar * a_CommandStr,
 
 /* BUG-44613 Set AsyncPrefetch On|Auto|Off */
 void
-iSQLProperty::SetAsyncPrefetch( SChar             *a_CommandStr,
-                                AsyncPrefetchType  a_Type )
+iSQLProperty::SetAsyncPrefetch( AsyncPrefetchType  a_Type )
 {
-    idlOS::sprintf(gSpool->m_Buf, "%s", a_CommandStr);
-    gSpool->PrintCommand();
-
     IDE_TEST_RAISE( gExecuteCommand->SetAsyncPrefetch(a_Type)
                     != IDE_SUCCESS, set_error );
 
@@ -2015,3 +1928,11 @@ iSQLProperty::SetAsyncPrefetch( SChar             *a_CommandStr,
 
     return;
 }
+
+/* BUG-47627 SET MULTIERROR ON|OFF */
+void
+iSQLProperty::SetMultiError( idBool  a_IsMultiError )
+{
+    m_MultiError = a_IsMultiError;
+}
+

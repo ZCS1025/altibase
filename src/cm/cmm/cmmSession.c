@@ -18,11 +18,11 @@
 
 
 /*
- * cmmSession ê°ì²´ë¥¼ ê´€ë¦¬í•˜ëŠ” êµ¬ì¡°
+ * cmmSession °´Ã¼¸¦ °ü¸®ÇÏ´Â ±¸Á¶
  *
- * Slot      : cmmSession ê°ì²´ í¬ì¸í„°ì™€ Next Free SessionIDë¥¼ ê°€ì§€ëŠ” êµ¬ì¡°ì²´
- * Page      : SessionSlotì„ CMM_SESSION_ID_SLOT_MAXê°œë§Œí¼ ê°€ì§€ëŠ” ë©”ëª¨ë¦¬ ë¸”ëŸ­
- * PageTable : SessionPageë¥¼ CMM_SESSION_ID_PAGE_MAXê°œë§Œí¼ ê°€ì§€ëŠ” ë©”ëª¨ë¦¬ ë¸”ëŸ­
+ * Slot      : cmmSession °´Ã¼ Æ÷ÀÎÅÍ¿Í Next Free SessionID¸¦ °¡Áö´Â ±¸Á¶Ã¼
+ * Page      : SessionSlotÀ» CMM_SESSION_ID_SLOT_MAX°³¸¸Å­ °¡Áö´Â ¸Ş¸ğ¸® ºí·°
+ * PageTable : SessionPage¸¦ CMM_SESSION_ID_PAGE_MAX°³¸¸Å­ °¡Áö´Â ¸Ş¸ğ¸® ºí·°
  *
  *   +------+      +------+------+----
  *   | Page | ---> | Slot | Slot |
@@ -80,7 +80,7 @@ static cmmSessionPageTable gPageTable;
 static ACI_RC cmmSessionAllocPage(cmmSessionPage *aPage)
 {
     /*
-     * Pageì— Slot Arrayê°€ í• ë‹¹ë˜ì–´ ìˆì§€ ì•Šìœ¼ë©´ í• ë‹¹í•˜ê³  ì´ˆê¸°í™”
+     * Page¿¡ Slot Array°¡ ÇÒ´çµÇ¾î ÀÖÁö ¾ÊÀ¸¸é ÇÒ´çÇÏ°í ÃÊ±âÈ­
      */
 
     if (aPage->mSlot == NULL)
@@ -88,7 +88,7 @@ static ACI_RC cmmSessionAllocPage(cmmSessionPage *aPage)
         acp_uint16_t sSlotID;
 
         /*
-         * Slot Array í• ë‹¹
+         * Slot Array ÇÒ´ç
          */
 
         ACI_TEST(acpMemAlloc((void **)&(aPage->mSlot),
@@ -96,7 +96,7 @@ static ACI_RC cmmSessionAllocPage(cmmSessionPage *aPage)
                  != ACP_RC_SUCCESS);
 
         /*
-         * ê° Slot ì´ˆê¸°í™”
+         * °¢ Slot ÃÊ±âÈ­
          */
 
         for (sSlotID = 0; sSlotID < CMM_SESSION_ID_SLOT_MAX; sSlotID++)
@@ -107,7 +107,7 @@ static ACI_RC cmmSessionAllocPage(cmmSessionPage *aPage)
         }
 
         /*
-         * Pageì˜ Slot ì†ì„±ê°’ ì´ˆê¸°í™”
+         * PageÀÇ Slot ¼Ó¼º°ª ÃÊ±âÈ­
          */
 
         aPage->mSlotUseCount    = 0;
@@ -122,7 +122,7 @@ static ACI_RC cmmSessionAllocPage(cmmSessionPage *aPage)
 static ACI_RC cmmSessionFreePage(cmmSessionPage *aPage)
 {
     /*
-     * Pageì— Slotì´ í•˜ë‚˜ë„ ì‚¬ìš©ë˜ê³  ìˆì§€ ì•Šìœ¼ë©´ Slot Arrayë¥¼ í•´ì œ
+     * Page¿¡ SlotÀÌ ÇÏ³ªµµ »ç¿ëµÇ°í ÀÖÁö ¾ÊÀ¸¸é Slot Array¸¦ ÇØÁ¦
      */
 
     if ((aPage->mPageID != 0) && (aPage->mSlot != NULL) && (aPage->mSlotUseCount == 0))
@@ -142,19 +142,19 @@ static ACI_RC cmmSessionFindSlot(cmmSessionPage **aPage, cmmSessionSlot **aSlot,
     acp_uint16_t sSlotID = CMM_SESSION_ID_SLOT(aSessionID);
 
     /*
-     * Page ê²€ìƒ‰
+     * Page °Ë»ö
      */
 
     *aPage = &(gPageTable.mPage[sPageID]);
 
     /*
-     * Pageì— Slot Arrayê°€ í• ë‹¹ë˜ì–´ ìˆëŠ”ì§€ ê²€ì‚¬
+     * Page¿¡ Slot Array°¡ ÇÒ´çµÇ¾î ÀÖ´ÂÁö °Ë»ç
      */
 
     ACI_TEST((*aPage)->mSlot == NULL);
 
     /*
-     * Slot ê²€ìƒ‰
+     * Slot °Ë»ö
      */
 
     *aSlot = &((*aPage)->mSlot[sSlotID]);
@@ -171,12 +171,12 @@ ACI_RC cmmSessionInitializeStatic()
     acp_uint16_t sPageID;
 
     /*
-     * cmmSessionì˜ mSessionID ë©¤ë²„ í¬ê¸°ê°€ CMM_SESSION_ID_SIZE_BITì™€ ì¼ì¹˜í•˜ëŠ”ì§€ ê²€ì‚¬
+     * cmmSessionÀÇ mSessionID ¸â¹ö Å©±â°¡ CMM_SESSION_ID_SIZE_BIT¿Í ÀÏÄ¡ÇÏ´ÂÁö °Ë»ç
      */
     ACE_ASSERT((ACI_SIZEOF(sSession.mSessionID) * 8) == CMM_SESSION_ID_SIZE_BIT);
 
     /*
-     * PageTable ì´ˆê¸°í™”
+     * PageTable ÃÊ±âÈ­
      */
 
     gPageTable.mFirstFreePageID = 0;
@@ -185,7 +185,7 @@ ACI_RC cmmSessionInitializeStatic()
              != ACP_RC_SUCCESS);
 
     /*
-     * ê° Page ì´ˆê¸°í™”
+     * °¢ Page ÃÊ±âÈ­
      */
 
     for (sPageID = 0; sPageID < CMM_SESSION_ID_PAGE_MAX; sPageID++)
@@ -198,13 +198,13 @@ ACI_RC cmmSessionInitializeStatic()
     }
 
     /*
-     * ì²«ë²ˆì§¸ Page ë¯¸ë¦¬ í• ë‹¹
+     * Ã¹¹øÂ° Page ¹Ì¸® ÇÒ´ç
      */
 
     ACI_TEST(cmmSessionAllocPage(&(gPageTable.mPage[0])) != ACI_SUCCESS);
 
     /*
-     * SessionID = 0 ì—ëŠ” Sessionì„ í• ë‹¹í•  ìˆ˜ ì—†ìŒ
+     * SessionID = 0 ¿¡´Â SessionÀ» ÇÒ´çÇÒ ¼ö ¾øÀ½
      */
 
     gPageTable.mPage[0].mSlotUseCount    = 1;
@@ -224,7 +224,7 @@ ACI_RC cmmSessionFinalizeStatic()
     acp_uint16_t sPageID;
 
     /*
-     * Pageë“¤ì˜ Slot Array ë©”ëª¨ë¦¬ë¥¼ í•´ì œ
+     * PageµéÀÇ Slot Array ¸Ş¸ğ¸®¸¦ ÇØÁ¦
      */
 
     for (sPageID = 0; sPageID < CMM_SESSION_ID_PAGE_MAX; sPageID++)
@@ -241,7 +241,7 @@ ACI_RC cmmSessionFinalizeStatic()
     }
 
     /*
-     * PageTable í•´ì œ
+     * PageTable ÇØÁ¦
      */
 
     gPageTable.mFirstFreePageID = 0;
@@ -263,59 +263,59 @@ ACI_RC cmmSessionAdd(cmmSession *aSession)
     ACE_ASSERT(acpThrMutexLock(&gPageTable.mMutex) == ACP_RC_SUCCESS);
 
     /*
-     * í• ë‹¹ê°€ëŠ¥í•œ Pageê°€ ì—†ìœ¼ë©´ ì‹¤íŒ¨
+     * ÇÒ´ç°¡´ÉÇÑ Page°¡ ¾øÀ¸¸é ½ÇÆĞ
      */
 
     ACI_TEST_RAISE(gPageTable.mFirstFreePageID == CMM_SESSION_ID_PAGE_MAX, SessionLimitReach);
 
     /*
-     * í• ë‹¹ê°€ëŠ¥í•œ Page ê²€ìƒ‰
+     * ÇÒ´ç°¡´ÉÇÑ Page °Ë»ö
      */
 
     sPageID = gPageTable.mFirstFreePageID;
     sPage   = &(gPageTable.mPage[sPageID]);
 
     /*
-     * Page ë©”ëª¨ë¦¬ í• ë‹¹
+     * Page ¸Ş¸ğ¸® ÇÒ´ç
      */
 
     ACI_TEST(cmmSessionAllocPage(sPage) != ACI_SUCCESS);
 
     /*
-     * Pageë‚´ì˜ ë¹ˆ Slot ê²€ìƒ‰
+     * Page³»ÀÇ ºó Slot °Ë»ö
      */
 
     sSlotID = sPage->mFirstFreeSlotID;
     sSlot   = &(sPage->mSlot[sSlotID]);
 
     /*
-     * Slotì´ ë¹„ì–´ìˆëŠ”ì§€ í™•ì¸
+     * SlotÀÌ ºñ¾îÀÖ´ÂÁö È®ÀÎ
      */
 
     ACE_ASSERT(sSlot->mSession == NULL);
 
     /*
-     * Session ì¶”ê°€
+     * Session Ãß°¡
      */
 
     sSlot->mSession      = aSession;
     aSession->mSessionID = CMM_SESSION_ID(sPageID, sSlotID);
 
     /*
-     * UsedSlotCount ì¦ê°€
+     * UsedSlotCount Áõ°¡
      */
 
     sPage->mSlotUseCount++;
 
     /*
-     * FreeSlot List ê°±ì‹ 
+     * FreeSlot List °»½Å
      */
 
     sPage->mFirstFreeSlotID = sSlot->mNextFreeSlotID;
     sSlot->mNextFreeSlotID  = CMM_SESSION_ID_SLOT_MAX;
 
     /*
-     * Pageê°€ fullì´ë©´ FreePage List ê°±ì‹ 
+     * Page°¡ fullÀÌ¸é FreePage List °»½Å
      */
 
     if (sPage->mFirstFreeSlotID == CMM_SESSION_ID_SLOT_MAX)
@@ -358,7 +358,7 @@ ACI_RC cmmSessionRemove(cmmSession *aSession)
     ACE_ASSERT(acpThrMutexLock(&gPageTable.mMutex) == ACP_RC_SUCCESS);
 
     /*
-     * Page ë° Slot ê²€ìƒ‰
+     * Page ¹× Slot °Ë»ö
      */
 
     ACI_TEST_RAISE(cmmSessionFindSlot(&sPage, &sSlot, aSession->mSessionID) != ACI_SUCCESS, SessionNotFound);
@@ -367,33 +367,33 @@ ACI_RC cmmSessionRemove(cmmSession *aSession)
     sSlotID = sSlot->mSlotID;
 
     /*
-     * Slotì— ì €ì¥ëœ Sessionì´ ì¼ì¹˜í•˜ëŠ”ì§€ ê²€ì‚¬
+     * Slot¿¡ ÀúÀåµÈ SessionÀÌ ÀÏÄ¡ÇÏ´ÂÁö °Ë»ç
      */
 
     ACI_TEST_RAISE(sSlot->mSession != aSession, InvalidSession);
 
     /*
-     * Session ì‚­ì œ
+     * Session »èÁ¦
      */
 
     sSlot->mSession      = NULL;
     aSession->mSessionID = 0;
 
     /*
-     * UsedSlotCount ê°ì†Œ
+     * UsedSlotCount °¨¼Ò
      */
 
     sPage->mSlotUseCount--;
 
     /*
-     * FreeSlot List ê°±ì‹ 
+     * FreeSlot List °»½Å
      */
 
     sSlot->mNextFreeSlotID  = sPage->mFirstFreeSlotID;
     sPage->mFirstFreeSlotID = sSlotID;
 
     /*
-     * Pageê°€ fullì´ì—ˆìœ¼ë©´ FreePage List ê°±ì‹ 
+     * Page°¡ fullÀÌ¾úÀ¸¸é FreePage List °»½Å
      */
 
     if (sPage->mSlotUseCount == (CMM_SESSION_ID_SLOT_MAX - 1))
@@ -402,7 +402,7 @@ ACI_RC cmmSessionRemove(cmmSession *aSession)
         gPageTable.mFirstFreePageID = sPageID;
 
         /*
-         * Next FreePageê°€ emptyì´ë©´ Page ë©”ëª¨ë¦¬ í•´ì œ
+         * Next FreePage°¡ emptyÀÌ¸é Page ¸Ş¸ğ¸® ÇØÁ¦
          */
 
         if (gPageTable.mPage[sPage->mNextFreePageID].mSlotUseCount == 0)
@@ -412,7 +412,7 @@ ACI_RC cmmSessionRemove(cmmSession *aSession)
     }
 
     /*
-     * Pageê°€ emptyì´ê³  First FreePageê°€ ì•„ë‹ˆë©´ Page ë©”ëª¨ë¦¬ í•´ì œ
+     * Page°¡ emptyÀÌ°í First FreePage°¡ ¾Æ´Ï¸é Page ¸Ş¸ğ¸® ÇØÁ¦
      */
 
     if ((sPageID != 0) && (sPage->mSlotUseCount == 0) && (gPageTable.mFirstFreePageID != sPageID))
@@ -456,19 +456,19 @@ ACI_RC cmmSessionFind(cmmSession **aSession, acp_uint16_t aSessionID)
     ACE_ASSERT(acpThrMutexLock(&gPageTable.mMutex) == ACP_RC_SUCCESS);
 
     /*
-     * Page ë° Slot ê²€ìƒ‰
+     * Page ¹× Slot °Ë»ö
      */
 
     ACI_TEST(cmmSessionFindSlot(&sPage, &sSlot, aSessionID) != ACI_SUCCESS);
 
     /*
-     * Slotì— Sessionì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
+     * Slot¿¡ SessionÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»ç
      */
 
     ACI_TEST(sSlot->mSession == NULL);
 
     /*
-     * Slotì˜ Sessionì„ ëŒë ¤ì¤Œ
+     * SlotÀÇ SessionÀ» µ¹·ÁÁÜ
      */
 
     *aSession = sSlot->mSession;

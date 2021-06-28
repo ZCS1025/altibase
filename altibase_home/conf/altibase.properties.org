@@ -20,6 +20,7 @@ LOGANCHOR_DIR =  ?/logs # LOGANCHOR_DIR2
 LOGANCHOR_DIR =  ?/logs # LOGANCHOR_DIR3
 
 LOG_DIR       =  ?/logs # LOG_DIR
+XLOGFILE_DIR = ?/xlogs
 
 # The ARCHIVE_DIR property must be specified
 # even though the database is not in archive logging mode.
@@ -341,7 +342,7 @@ OPTIMIZER_DELAYED_EXECUTION = 0   # 0: disable, 1: enable
 
 __OPTIMIZER_LIKE_INDEX_SCAN_WITH_OUTER_COLUMN_DISABLE = 0   # enable : 0 , disable : 1
 
-__OPTIMIZER_UNNEST_COMPATIBILITY = 1 # 0: disable 1: enable default: 0
+__OPTIMIZER_UNNEST_COMPATIBILITY = 0 # 0: disable 1: enable default: 0
 
 #=================================================================
 # query DDL Properties
@@ -401,7 +402,7 @@ QP_MEMORY_CHUNK_SIZE             = 65536
                                            # MAX: 4294967295 (4G)
                                            # DEFAULT: 0
 PREPARE_STMT_MEMORY_MAXIMUM = 200M
-EXECUTE_STMT_MEMORY_MAXIMUM = 1G
+EXECUTE_STMT_MEMORY_MAXIMUM = 2G
 
 #=================================================================
 # User Lock Properties
@@ -1063,18 +1064,39 @@ TABLE_LOCK_MODE = 0     # 0 : Lock table partitions ( default )
 SHARD_ENABLE = 0        # 0 : Disable Shard Meta/Analyzer/Coordinator
                         # 1 : Enable Shard Meta/Analyzer/Coordinator
 
-SD_MSGLOG_FLAG = 1      # 1: Shard Meta error logging
+GLOBAL_TRANSACTION_LEVEL = 1 # 1 : Multi-node transaction
+                             # 2 : Global transaction 
+                             # 3 : Global consistent transaction
 
-__SHARD_AGGREGATION_TRANSFORM_DISABLE = 1   # 0 : Enable aggregation transform
-                                            # 1 : Disable aggregation transform
+SHARED_TRANS_HASH_BUCKET_COUNT = 1024 # Shared transaction hash bucket count
+                                      # default: 1024
+                                      # 16~16384
 
-SHARD_ODBC_CONN_ATTR_RETRY_COUNT = 1        # min : 0 max : 1024 default : 1
-SHARD_ODBC_CONN_ATTR_RETRY_DELAY = 1        # min : 0 max : 3600 default : 1
+VERSIONING_MIN_TIME = 500 # milliseconds.
+                          # Duration to guarantee consistency for Global Consistent Transaction 
+
+INDOUBT_FETCH_TIMEOUT = 10   # seconds
+                             # default : 10
+                             # 0 ~ 86400
+
+INDOUBT_FETCH_METHOD = 1     # default : 1
+                             # 0 : skip
+                             # 1 : raise error
+
+SHARD_STATEMENT_RETRY = 1    # default : 1
+                             # 0 ~ 65535
 
 #=================================================================
 # loadbalancer logging Properties
 #=================================================================
 LB_MSGLOG_FLAG = 1        # 1: Service Thread Event Trace Log
+
+#=================================================================
+# Executor Fast Simple Query Property
+#=================================================================
+EXECUTOR_FAST_SIMPLE_QUERY = 2 # 0 : Disable fast simple query
+                               # 1 : Enable fast simple query
+                               # 2 : Enable partition fast simple query
 
 #=================================================================
 # Number Conversion Mode Properties
@@ -1083,15 +1105,22 @@ NUMBER_CONVERSION_MODE = 1      # 0: disable
                                 # 1: enable (default)
 
 #=================================================================
-# Executor Fast Simple Query Property
-#=================================================================
-EXECUTOR_FAST_SIMPLE_QUERY = 0 # 0 : Disable fast simple query
-                               # 1 : Enable fast simple query
-                               # 2 : Enable partition fast simple query
-
-#=================================================================
 # Filter Serial Exeucte Mode
 #=================================================================
-SERIAL_EXECUTE_MODE = 0  # 0: disable (default)
-                         # 1: enable
+SERIAL_EXECUTE_MODE = 1  # 0: disable
+                         # 1: enable (default)
 
+#=================================================================
+# REDUCE PARTITION PREPARE MEMORY
+#=================================================================
+__REDUCE_PARTITION_PREPARE_MEMORY = 1 # 0: disable
+                                      # 1: disk partition
+                                      # 2: stat
+                                      # 3: disk partition, stat
+
+
+#=================================================================
+# LEFT OUTER JOIN Skip Right
+#=================================================================
+__LEFT_OUTER_SKIP_RIGHT_ENABLE = 1 # 0: disable
+                                   # 1: enable

@@ -18,8 +18,8 @@ package Altibase.jdbc.driver.cm;
 
 public class CmPrepareResult extends CmStatementIdResult
 {
-    // BUG-42424 AltibasePreparedStatementì‚¬ìš©í•˜ê¸°ë•Œë¬¸ì— scopeë³€ê²½ 
-    public static final byte MY_OP = CmOperation.DB_OP_PREPARE_RESULT;
+    // BUG-42424 AltibasePreparedStatement»ç¿ëÇÏ±â¶§¹®¿¡ scopeº¯°æ 
+    public static final byte MY_OP = CmOperation.DB_OP_PREPARE_V3_RESULT;
     
     public static final int STATEMENT_TYPE_DDL               = 0x00000000;
     public static final int STATEMENT_TYPE_DML               = 0x00010000;
@@ -46,7 +46,7 @@ public class CmPrepareResult extends CmStatementIdResult
     private int     mStatementType;
     private int     mParameterCount;
     private int     mResultSetCount;
-    private boolean mIsPrepared;    // BUG-42424 ë°ì´í„°ê°€ ì„œë²„ë¡œë¶€í„° ì „ë‹¬ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤.
+    private boolean mIsPrepared;    // BUG-42424 µ¥ÀÌÅÍ°¡ ¼­¹ö·ÎºÎÅÍ Àü´ŞµÇ¾ú´ÂÁö ¿©ºÎ¸¦ ³ªÅ¸³½´Ù.
     
     public CmPrepareResult()
     {
@@ -90,6 +90,11 @@ public class CmPrepareResult extends CmStatementIdResult
             default:
                 return false;
         }
+    }
+
+    public boolean isDequeueStatement()
+    {
+        return mStatementType == STATEMENT_TYPE_DEQUEUE;
     }
 
     public boolean isInsertStatement()

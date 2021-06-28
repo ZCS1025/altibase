@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdpTableSpace.cpp 84383 2018-11-20 04:18:42Z emlee $
+ * $Id: sdpTableSpace.cpp 86110 2019-09-02 04:52:04Z et16 $
  **********************************************************************/
 
 #include <sdd.h>
@@ -29,11 +29,11 @@
 #include <sdptbExtent.h>
 
 /*
- * ëª¨ë“  ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— Space Cache í• ë‹¹ ë° ì´ˆê¸°í™”í•œë‹¤.
+ * ¸ðµç µð½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º¿¡ Space Cache ÇÒ´ç ¹× ÃÊ±âÈ­ÇÑ´Ù.
  */
 IDE_RC sdpTableSpace::initialize()
 {
-    // Space Cacheë¥¼ í• ë‹¹í•˜ê³  ì´ˆê¸°í™”í•œë‹¤.
+    // Space Cache¸¦ ÇÒ´çÇÏ°í ÃÊ±âÈ­ÇÑ´Ù.
     IDE_TEST( sctTableSpaceMgr::doAction4EachTBS(
                   NULL, /* aStatistics */
                   doActAllocSpaceCache,
@@ -42,7 +42,7 @@ IDE_RC sdpTableSpace::initialize()
               != IDE_SUCCESS );
 
     // BUG-24434
-    // sdpPageType ì´ ë³€ê²½ì´ ë˜ë©´ IDV_SM_PAGE_TYPE_MAX ê°’ë„ í™•ì¸í•´ ì¤˜ì•¼ í•©ë‹ˆë‹¤.  
+    // sdpPageType ÀÌ º¯°æÀÌ µÇ¸é IDV_SM_PAGE_TYPE_MAX °ªµµ È®ÀÎÇØ Áà¾ß ÇÕ´Ï´Ù.  
     IDE_ASSERT( IDV_SM_PAGE_TYPE_MAX == SDP_PAGE_TYPE_MAX );
 
     return IDE_SUCCESS ;
@@ -53,106 +53,30 @@ IDE_RC sdpTableSpace::initialize()
 }
 
 /*
- * ëª¨ë“  ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì˜ Space Cacheë¥¼
- * ë©”ëª¨ë¦¬ í•´ì œí•œë‹¤.
+ * ¸ðµç µð½ºÅ© Å×ÀÌºí½ºÆäÀÌ½ºÀÇ Space Cache¸¦
+ * ¸Þ¸ð¸® ÇØÁ¦ÇÑ´Ù.
  */
 IDE_RC sdpTableSpace::destroy()
 {
-    IDE_TEST( sctTableSpaceMgr::doAction4EachTBS(
-                  NULL, /* aStatistics */
-                  doActFreeSpaceCache,
-                  NULL, /* Action Argument*/
-                  SCT_ACT_MODE_NONE )
-              != IDE_SUCCESS );
-
-    return IDE_SUCCESS ;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-/***********************************************************************
- * Description : Disk Tablespaceë¥¼ Createí•œë‹¤.
- **********************************************************************/
-IDE_RC sdpTableSpace::createTBS( idvSQL            * aStatistics,
-                                 smiTableSpaceAttr * aTableSpaceAttr,
-                                 smiDataFileAttr  ** aDataFileAttr,
-                                 UInt                aDataFileAttrCount,
-                                 void*               aTrans )
-{
-    sdrMtxStartInfo   sStartInfo;
-    sdpExtMgmtOp    * sTBSMgrOp;
-
-    IDE_DASSERT( aTableSpaceAttr    != NULL );
-    IDE_DASSERT( aDataFileAttr      != NULL );
-    IDE_DASSERT( aDataFileAttrCount != 0 );
-    IDE_DASSERT( aTrans             != NULL );
-
-    sTBSMgrOp  = getTBSMgmtOP( aTableSpaceAttr->mDiskAttr.mExtMgmtType );
-
-    sStartInfo.mTrans = aTrans;
-    sStartInfo.mLogMode = SDR_MTX_LOGGING;
-
-    /* FIT/ART/sm/Design/Resource/Bugs/BUG-14900/BUG-14900.tc */
-    IDU_FIT_POINT( "1.TASK-1842@sdpTableSpace::createTBS" );
-    IDE_TEST( sTBSMgrOp->mCreateTBS( aStatistics,
-                                     &sStartInfo,
-                                     aTableSpaceAttr,
-                                     aDataFileAttr,
-                                     aDataFileAttrCount ) != IDE_SUCCESS );
-
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
+    return sctTableSpaceMgr::doAction4EachTBS(
+        NULL, /* aStatistics */
+        doActFreeSpaceCache,
+        NULL, /* Action Argument*/
+        SCT_ACT_MODE_NONE );
 }
 
 /*
- * Tablespace ì‚­ì œ
- */
-IDE_RC sdpTableSpace::dropTBS( idvSQL       *aStatistics,
-                               void*         aTrans,
-                               scSpaceID     aSpaceID,
-                               smiTouchMode  aTouchMode )
-{
-    sdpExtMgmtOp * sTBSMgrOp;
-
-    sTBSMgrOp  = getTBSMgmtOP( aSpaceID );
-
-    IDE_TEST( sTBSMgrOp->mDropTBS( aStatistics,
-                                   aTrans,
-                                   aSpaceID,
-                                   aTouchMode ) != IDE_SUCCESS );
-
-    /* FIT/ART/sm/Design/Resource/TASK-1842/DROP_TABLESPACE.tc */
-    IDU_FIT_POINT( "1.PROJ-1548@sdpTableSpace::dropTBS" );
-
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-/*
- * Tablespace ë¦¬ì…‹
+ * Tablespace ¸®¼Â
  */
 IDE_RC sdpTableSpace::resetTBS( idvSQL           *aStatistics,
                                 scSpaceID         aSpaceID,
                                 void             *aTrans )
 {
-    sdpExtMgmtOp        * sTBSMgrOp;
     sddTableSpaceNode   * sSpaceNode;
 
-    sTBSMgrOp = getTBSMgmtOP( aSpaceID );
-
-    IDE_TEST( sTBSMgrOp->mResetTBS( aStatistics,
-                                    aTrans,
-                                    aSpaceID )
+    IDE_TEST( sdptbSpaceDDL::resetTBSCore( aStatistics,
+                                           aTrans,
+                                           aSpaceID )
               != IDE_SUCCESS );
 
     IDE_ASSERT( sctTableSpaceMgr::findSpaceNodeBySpaceID( aSpaceID,
@@ -162,11 +86,7 @@ IDE_RC sdpTableSpace::resetTBS( idvSQL           *aStatistics,
 
     if( sctTableSpaceMgr::isTempTableSpace( aSpaceID ) == ID_TRUE )
     {
-        if( sTBSMgrOp->mRefineSpaceCache != NULL )
-        {
-            IDE_TEST( sTBSMgrOp->mRefineSpaceCache( sSpaceNode )
-                      != IDE_SUCCESS );
-        }
+        IDE_TEST( sdptbGroup::doRefineSpaceCacheCore( sSpaceNode ) != IDE_SUCCESS );
     }
     else
     {
@@ -182,9 +102,9 @@ IDE_RC sdpTableSpace::resetTBS( idvSQL           *aStatistics,
 
 
 /***********************************************************************
- * Description : TableSpaceì˜ extent ê³µê°„ ê´€ë¦¬ ë°©ë²•ì„ ë¦¬í„´í•œë‹¤.
+ * Description : TableSpaceÀÇ extent °ø°£ °ü¸® ¹æ¹ýÀ» ¸®ÅÏÇÑ´Ù.
  *
- *  aSpaceID - [IN] í™•ì¸í•˜ê³ ìž í•˜ëŠ” spageì˜ id
+ *  aSpaceID - [IN] È®ÀÎÇÏ°íÀÚ ÇÏ´Â spageÀÇ id
  **********************************************************************/
 smiExtMgmtType sdpTableSpace::getExtMgmtType( scSpaceID   aSpaceID )
 {
@@ -211,10 +131,10 @@ smiExtMgmtType sdpTableSpace::getExtMgmtType( scSpaceID   aSpaceID )
 
 
 /*
- * Segment ê³µê°„ê´€ë¦¬ ë°©ì‹ì€ Tablespace ê³µê°„ê´€ë¦¬ ë°©ì‹ì„ ë”°ë¥¸ë‹¤.
- * ë¬¼ë¡  ì„œë¡œ ë‹¤ë¥¸ ë°©ì‹ì„ ì¶”êµ¬í•  ìˆ˜ë„ ìžˆì§€ë§Œ, í˜„ìž¬ë¡œì¨ëŠ”
- * ë§Žì€ êµ¬ì¡°ì  í•œê³„ì ìœ¼ë¡œ ì¸í•´ì„œ Tablespace ê³µê°„ê´€ë¦¬ë°©ì‹ì´
- * ì •í•´ì§€ë©´ Segment ê³µê°„ê´€ë¦¬ ë°©ì‹ë„ ì •í•´ì§€ë„ë¡ ì²˜ë¦¬í•œë‹¤.
+ * Segment °ø°£°ü¸® ¹æ½ÄÀº Tablespace °ø°£°ü¸® ¹æ½ÄÀ» µû¸¥´Ù.
+ * ¹°·Ð ¼­·Î ´Ù¸¥ ¹æ½ÄÀ» Ãß±¸ÇÒ ¼öµµ ÀÖÁö¸¸, ÇöÀç·Î½á´Â
+ * ¸¹Àº ±¸Á¶Àû ÇÑ°èÁ¡À¸·Î ÀÎÇØ¼­ Tablespace °ø°£°ü¸®¹æ½ÄÀÌ
+ * Á¤ÇØÁö¸é Segment °ø°£°ü¸® ¹æ½Äµµ Á¤ÇØÁöµµ·Ï Ã³¸®ÇÑ´Ù.
  */
 smiSegMgmtType sdpTableSpace::getSegMgmtType( scSpaceID   aSpaceID )
 {
@@ -247,9 +167,9 @@ smiSegMgmtType sdpTableSpace::getSegMgmtType( scSpaceID   aSpaceID )
 }
 
 /***********************************************************************
- * Description : TableSpaceì˜ extent ë‹¹ pageìˆ˜ë¥¼ ë°˜í™˜í•œë‹¤.
+ * Description : TableSpaceÀÇ extent ´ç page¼ö¸¦ ¹ÝÈ¯ÇÑ´Ù.
  *
- *  aSpaceID - [IN] í™•ì¸í•˜ê³ ìž í•˜ëŠ” spageì˜ id
+ *  aSpaceID - [IN] È®ÀÎÇÏ°íÀÚ ÇÏ´Â spageÀÇ id
  **********************************************************************/
 UInt sdpTableSpace::getPagesPerExt( scSpaceID     aSpaceID )
 {
@@ -269,533 +189,114 @@ UInt sdpTableSpace::getPagesPerExt( scSpaceID     aSpaceID )
     }
 
     return sPagesPerExt;
-
 }
 
 
 
 /*
- * ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— Space Cacheë¥¼ í• ë‹¹í•˜ê³  ì´ˆê¸°í™”í•œë‹¤.
+ * µð½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º¿¡ Space Cache¸¦ ÇÒ´çÇÏ°í ÃÊ±âÈ­ÇÑ´Ù.
  */
 IDE_RC sdpTableSpace::doActAllocSpaceCache( idvSQL            * /*aStatistics*/,
                                             sctTableSpaceNode * aSpaceNode,
                                             void              * /*aActionArg*/ )
 {
     sddTableSpaceNode   * sSpaceNode;
-    sdpExtMgmtOp        * sTBSMgrOp;
 
     IDE_ASSERT( aSpaceNode != NULL );
 
-    if ( sctTableSpaceMgr::isDiskTableSpace( aSpaceNode->mID ) == ID_TRUE )
+    if ( sctTableSpaceMgr::isDiskTableSpace( aSpaceNode ) == ID_TRUE )
     {
         sSpaceNode = (sddTableSpaceNode*)aSpaceNode;
-        sTBSMgrOp  = getTBSMgmtOP( sSpaceNode );
 
-        IDE_ASSERT(sSpaceNode->mExtMgmtType == SMI_EXTENT_MGMT_BITMAP_TYPE );
-
-        IDE_TEST( sTBSMgrOp->mInitialize( aSpaceNode->mID,
-                                          sSpaceNode->mExtMgmtType,
-                                          sSpaceNode->mSegMgmtType,
-                                          sSpaceNode->mExtPageCount )
-                  != IDE_SUCCESS );
+        return sdptbGroup::allocAndInitSpaceCache( aSpaceNode->mID,
+                                                   sSpaceNode->mExtMgmtType,
+                                                   sSpaceNode->mSegMgmtType,
+                                                   sSpaceNode->mExtPageCount );
     }
 
     return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
 }
 
 /*
- * ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— Space Cacheë¥¼ í•´ì œí•œë‹¤.
+ * µð½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º¿¡ Space Cache¸¦ ÇØÁ¦ÇÑ´Ù.
  */
 IDE_RC sdpTableSpace::doActFreeSpaceCache( idvSQL            * /*aStatistics*/,
                                            sctTableSpaceNode * aSpaceNode,
                                            void              * /*aActionArg*/ )
 {
-    sdpExtMgmtOp * sTBSMgrOp;
-    sdpSpaceCacheCommon * sCache;
-
     IDE_ASSERT( aSpaceNode != NULL );
 
-    if ( sctTableSpaceMgr::isDiskTableSpace(aSpaceNode->mID) == ID_TRUE )
+    if ( sctTableSpaceMgr::isDiskTableSpace( aSpaceNode ) == ID_TRUE )
     {
-        sTBSMgrOp  = getTBSMgmtOP( (sddTableSpaceNode*)aSpaceNode );
-
-        sCache = (sdpSpaceCacheCommon *)sddDiskMgr::getSpaceCache( aSpaceNode->mID );
-        IDE_ASSERT( sCache != NULL );
-
-        // Space Cache í•´ì œ
-        IDE_TEST( sTBSMgrOp->mDestroy( aSpaceNode->mID ) != IDE_SUCCESS );
+        return sdptbGroup::destroySpaceCache( aSpaceNode );
     }
 
     return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
 }
 
 /*
- * ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì— Space Cacheë¥¼ í•´ì œí•œë‹¤.
+ * µð½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º¿¡ Space Cache¸¦ ÇØÁ¦ÇÑ´Ù.
  *
- * BUG-29941 - SDP ëª¨ë“ˆì— ë©”ëª¨ë¦¬ ëˆ„ìˆ˜ê°€ ì¡´ìž¬í•©ë‹ˆë‹¤.
- * commit pending ì—°ì‚° ìˆ˜í–‰ì‹œ ë³¸ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì—¬ tablespaceì— í• ë‹¹ëœ
- * Space Cacheë¥¼ í•´ì œí•˜ë„ë¡ í•œë‹¤.
+ * BUG-29941 - SDP ¸ðµâ¿¡ ¸Þ¸ð¸® ´©¼ö°¡ Á¸ÀçÇÕ´Ï´Ù.
+ * commit pending ¿¬»ê ¼öÇà½Ã º» ÇÔ¼ö¸¦ È£ÃâÇÏ¿© tablespace¿¡ ÇÒ´çµÈ
+ * Space Cache¸¦ ÇØÁ¦ÇÏµµ·Ï ÇÑ´Ù.
  */
 IDE_RC sdpTableSpace::freeSpaceCacheCommitPending(
                                            idvSQL            * /*aStatistics*/,
                                            sctTableSpaceNode * aSpaceNode,
                                            sctPendingOp      * /*aPendingOp*/ )
 {
-    IDE_TEST( doActFreeSpaceCache( NULL /* idvSQL */,
-                                   aSpaceNode,
-                                   NULL /* ActionArg */ ) != IDE_SUCCESS );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
+    return doActFreeSpaceCache( NULL /* idvSQL */,
+                                aSpaceNode,
+                                NULL /* ActionArg */ );
 }
 
 /* 
- * space cache ì— ë‹¤ìŒê³¼ ê°™ì€ ê°’ë“¤ì„ ì„¸íŠ¸í•œë‹¤.
- * (ë¹„íŠ¸ë§µì„ ì‚¬ìš©í•œ TBSì—ë§Œ ì‹¤í–‰ëœë‹¤.)
- *  - GGì˜ extent í• ë‹¹ê°€ëŠ¥ì—¬ë¶€ë¹„íŠ¸
- *  - TBSì˜ ê°€ìž¥í° GG id(ë¹„íŠ¸ê²€ìƒ‰ì‹œì‚¬ìš©í•¨)
- *  - extentí• ë‹¹ê³ ë ¤í•  GG IDë²ˆí˜¸.(ì²˜ìŒ startì‹œì—ëŠ” 0ìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.)
+ * space cache ¿¡ ´ÙÀ½°ú °°Àº °ªµéÀ» ¼¼Æ®ÇÑ´Ù.
+ * (ºñÆ®¸ÊÀ» »ç¿ëÇÑ TBS¿¡¸¸ ½ÇÇàµÈ´Ù.)
+ *  - GGÀÇ extent ÇÒ´ç°¡´É¿©ºÎºñÆ®
+ *  - TBSÀÇ °¡ÀåÅ« GG id(ºñÆ®°Ë»ö½Ã»ç¿ëÇÔ)
+ *  - extentÇÒ´ç°í·ÁÇÒ GG ID¹øÈ£.(Ã³À½ start½Ã¿¡´Â 0À¸·Î ÃÊ±âÈ­ÇÑ´Ù.)
  */
 IDE_RC sdpTableSpace::refineDRDBSpaceCache()
 {
-
-    IDE_TEST( sctTableSpaceMgr::doAction4EachTBS(
-                                      NULL, /* aStatistics */
-                                      doRefineSpaceCache,
-                                      NULL, /* Action Argument*/
-                                      SCT_ACT_MODE_NONE )
-              != IDE_SUCCESS );
-
-    return IDE_SUCCESS ;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
+    return sctTableSpaceMgr::doAction4EachTBS(
+        NULL, /* aStatistics */
+        doRefineSpaceCache,
+        NULL, /* Action Argument*/
+        SCT_ACT_MODE_NONE );
 }
 
-/* TBSì— ëŒ€í•´ì„œ Cache ì •ë³´ë¥¼ Refine í•œë‹¤. */
+/* TBS¿¡ ´ëÇØ¼­ Cache Á¤º¸¸¦ Refine ÇÑ´Ù.
+ * ÇÔ¼ö Æ÷ÀÎÅÍ·Î Á¸ÀçÇØ¾ß ÇÏ¹Ç·Î inline È­ µÇÁö ¾Ê´Â´Ù.*/
 IDE_RC sdpTableSpace::doRefineSpaceCache( idvSQL            * /* aStatistics*/ ,
                                           sctTableSpaceNode * aSpaceNode,
                                           void              * /*aActionArg*/ )
 {
-    sddTableSpaceNode   * sSpaceNode;
-    sdpExtMgmtOp        * sTBSMgrOp;
-
     IDE_ASSERT( aSpaceNode != NULL );
 
-    //temp tablespaceì— ëŒ€í•œ refineì€ resetì‹œì— ì‹¤ì‹œí•œë‹¤.
-    if ( ( sctTableSpaceMgr::isDiskTableSpace( aSpaceNode->mID ) == ID_TRUE ) &&
-         ( sctTableSpaceMgr::isTempTableSpace( aSpaceNode->mID ) == ID_FALSE ) )
+    //temp tablespace¿¡ ´ëÇÑ refineÀº reset½Ã¿¡ ½Ç½ÃÇÑ´Ù.
+    if ( ( sctTableSpaceMgr::isDiskTableSpace( aSpaceNode ) == ID_TRUE ) &&
+         ( sctTableSpaceMgr::isTempTableSpace( aSpaceNode ) == ID_FALSE ) )
     {
-        sSpaceNode = (sddTableSpaceNode*)aSpaceNode;
-
-            sTBSMgrOp = getTBSMgmtOP( sSpaceNode );
-
-            if( sTBSMgrOp->mRefineSpaceCache != NULL )
-            {
-                IDE_TEST( sTBSMgrOp->mRefineSpaceCache( sSpaceNode )
-                          != IDE_SUCCESS );
-            }
+        return sdptbGroup::doRefineSpaceCacheCore( (sddTableSpaceNode*)aSpaceNode );
     }
 
     return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
 }
-
-/*
- * Tablespace ë¬´íš¨í™”
- */
-IDE_RC sdpTableSpace::alterTBSdiscard( sddTableSpaceNode  * aTBSNode )
-{
-    sdpExtMgmtOp * sTBSMgrOp;
-
-    sTBSMgrOp  = getTBSMgmtOP( aTBSNode );
-
-    IDE_TEST( sTBSMgrOp->mAlterDiscard( aTBSNode ) != IDE_SUCCESS );
-
-    return IDE_SUCCESS ;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-/*
- * TableSpace Online/Offline ìƒíƒœ ë³€ê²½
- */
-IDE_RC sdpTableSpace::alterTBSStatus( idvSQL*             aStatistics,
-                                      void              * aTrans,
-                                      sddTableSpaceNode * aSpaceNode,
-                                      UInt                aState )
-{
-    sdpExtMgmtOp * sTBSMgrOp;
-
-    sTBSMgrOp  = getTBSMgmtOP( (sddTableSpaceNode*)aSpaceNode );
-
-    IDE_TEST( sTBSMgrOp->mAlterStatus( aStatistics,
-                                       aTrans,
-                                       aSpaceNode,
-                                       aState )
-              != IDE_SUCCESS );
-
-
-    return IDE_SUCCESS ;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-
-}
-
-
-/*
- * ë°ì´íƒ€íŒŒì¼ ìžë™í™•ìž¥ ëª¨ë“œ ë³€ê²½
- */
-IDE_RC sdpTableSpace::alterDataFileAutoExtend( idvSQL      *aStatistics,
-                                               void        *aTrans,
-                                               scSpaceID    aSpaceID,
-                                               SChar       *aFileName,
-                                               idBool       aAutoExtend,
-                                               ULong        aNextSize,
-                                               ULong        aMaxSize,
-                                               SChar       *aValidDataFileName)
-{
-    sdpExtMgmtOp * sTBSMgrOp;
-
-    sTBSMgrOp  = getTBSMgmtOP( aSpaceID );
-
-    IDU_FIT_POINT( "1.TASK-1842@sdpTableSpace::alterDataFileAutoExtend" );
-    IDE_TEST( sTBSMgrOp->mAlterFileAutoExtend( aStatistics,
-                                               aTrans,
-                                               aSpaceID,
-                                               aFileName,
-                                               aAutoExtend,
-                                               aNextSize,
-                                               aMaxSize,
-                                               aValidDataFileName )
-              != IDE_SUCCESS );
-
-
-    return IDE_SUCCESS ;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-/*
- * ë°ì´íƒ€íŒŒì¼ ê²½ë¡œ ë³€ê²½
- */
-IDE_RC sdpTableSpace::alterDataFileName( idvSQL      *aStatistics,
-                                         scSpaceID    aSpaceID,
-                                         SChar       *aOldName,
-                                         SChar       *aNewName )
-{
-    sdpExtMgmtOp * sTBSMgrOp;
-
-    sTBSMgrOp  = getTBSMgmtOP( aSpaceID );
-
-    IDE_TEST( sTBSMgrOp->mAlterFileName( aStatistics,
-                                         aSpaceID,
-                                         aOldName,
-                                         aNewName ) != IDE_SUCCESS );
-  
-    return IDE_SUCCESS ;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-/*
- * í•˜ë‚˜ì˜ ë°ì´íƒ€ í™”ì¼ì„ ê³µê°„ì„ ëŠ˜ë¦°ë‹¤.
- */
-IDE_RC sdpTableSpace::alterDataFileReSize( idvSQL       *aStatistics,
-                                           void         *aTrans,
-                                           scSpaceID     aSpaceID,
-                                           SChar        *aFileName,
-                                           ULong         aSizeWanted,
-                                           ULong        *aSizeChanged,
-                                           SChar        *aValidDataFileName )
-{
-    sdpExtMgmtOp * sTBSMgrOp;
-
-    sTBSMgrOp  = getTBSMgmtOP( aSpaceID );
-
-    IDU_FIT_POINT( "1.TASK-1842@dpTableSpace::alterDataFileReSize" );
-    IDE_TEST( sTBSMgrOp->mAlterFileResize( aStatistics,
-                                           aTrans,
-                                           aSpaceID,
-                                           aFileName,
-                                           aSizeWanted,
-                                           aSizeChanged,
-                                           aValidDataFileName ) != IDE_SUCCESS );
-
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-/*
- * 1ê°œ ì´ìƒì˜ ë°ì´íƒ€íŒŒì¼ ì¶”ê°€í•œë‹¤.
- */
-IDE_RC sdpTableSpace::createDataFiles( idvSQL             * aStatistics,
-                                       void               * aTrans,
-                                       scSpaceID            aSpaceID,
-                                       smiDataFileAttr   ** aDataFileAttr,
-                                       UInt                 aDataFileAttrCount )
-{
-    sdpExtMgmtOp * sTBSMgrOp;
-
-    sTBSMgrOp  = getTBSMgmtOP( aSpaceID );
-
-    IDU_FIT_POINT( "1.PROJ-1548@sdpTableSpace::createDataFiles" );
-    IDE_TEST( sTBSMgrOp->mCreateFiles( aStatistics,
-                                       aTrans,
-                                       aSpaceID,
-                                       aDataFileAttr,
-                                       aDataFileAttrCount ) != IDE_SUCCESS );
-
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-/*
- * í•˜ë‚˜ì˜ ë°ì´íƒ€ í™”ì¼ì„ ì‚­ì œí•œë‹¤.
- */
-IDE_RC sdpTableSpace::removeDataFile( idvSQL         *aStatistics,
-                                      void*           aTrans,
-                                      scSpaceID       aSpaceID,
-                                      SChar          *aFileName,
-                                      SChar          *aValidDataFileName )
-{
-    sdpExtMgmtOp * sTBSMgrOp;
-
-    sTBSMgrOp  = getTBSMgmtOP( aSpaceID );
-
-    IDE_TEST( sTBSMgrOp->mDropFile( aStatistics,
-                                    aTrans,
-                                    aSpaceID,
-                                    aFileName,
-                                    aValidDataFileName ) != IDE_SUCCESS );
-
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-/*
- * Tablespaceì˜ ìžë£Œêµ¬ì¡°ë¥¼ ë¬´ê²°ì„± ê²€ì¦í•œë‹¤.
- */
-IDE_RC sdpTableSpace::verify( idvSQL*   aStatistics,
-                              scSpaceID aSpaceID,
-                              UInt      aFlag )
-{
-    sdpExtMgmtOp * sTBSMgrOp;
-
-    sTBSMgrOp = getTBSMgmtOP( aSpaceID );
-
-    IDE_TEST( sTBSMgrOp->mVerify( aStatistics,
-                                  aSpaceID,
-                                  aFlag ) != IDE_SUCCESS );
-
-    return IDE_SUCCESS ;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-/*
- * Tablespaceì˜ ìžë£Œêµ¬ì¡°ë¥¼ ì¶œë ¥í•œë‹¤.
- */
-IDE_RC sdpTableSpace::dump( scSpaceID aSpaceID,
-                            UInt      aDumpFlag )
-{
-    sdpExtMgmtOp * sTBSMgrOp;
-
-    sTBSMgrOp  = getTBSMgmtOP( aSpaceID );
-
-    IDE_TEST( sTBSMgrOp->mDump( aSpaceID, aDumpFlag ) != IDE_SUCCESS );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-/*
- * Tablespace Offline Commit Pending
- */
-IDE_RC sdpTableSpace::alterOfflineCommitPending(
-                                              idvSQL            * aStatistics,
-                                              sctTableSpaceNode * aSpaceNode,
-                                              sctPendingOp      * aPendingOp )
-{
-    sdpExtMgmtOp * sTBSMgrOp;
-
-    sTBSMgrOp  = getTBSMgmtOP( aSpaceNode->mID );
-
-    IDE_TEST( sTBSMgrOp->mAlterOfflineCommitPending( aStatistics,
-                                                     aSpaceNode,
-                                                     aPendingOp ) 
-                  != IDE_SUCCESS );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-/*
- * Tablespace Online Commit Pending
- */
-IDE_RC sdpTableSpace::alterOnlineCommitPending(
-                                              idvSQL            * aStatistics,
-                                              sctTableSpaceNode * aSpaceNode,
-                                              sctPendingOp      * aPendingOp )
-{
-    sdpExtMgmtOp * sTBSMgrOp;
-
-    sTBSMgrOp  = getTBSMgmtOP( aSpaceNode->mID );
-
-    IDE_TEST( sTBSMgrOp->mAlterOnlineCommitPending( aStatistics,
-                                                    aSpaceNode,
-                                                    aPendingOp ) 
-                  != IDE_SUCCESS );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-IDE_RC sdpTableSpace::allocExts( idvSQL          * aStatistics,
-                                 sdrMtxStartInfo * aStartInfo,
-                                 scSpaceID         aSpaceID,
-                                 UInt              aOrgNrExts,
-                                 sdpExtDesc      * aExtSlot )
-{
-    return sdptbExtent::allocExts( aStatistics,
-                                   aStartInfo,
-                                   aSpaceID,
-                                   aOrgNrExts,
-                                   aExtSlot );
-}
-
-IDE_RC sdpTableSpace::freeExt( idvSQL       * aStatistics,
-                               sdrMtx       * aMtx,
-                               scSpaceID      aSpaceID,
-                               scPageID       aExtFstPID,
-                               UInt         * aNrDone )
-{
-    sdpExtMgmtOp * sTBSMgrOp;
-
-    sTBSMgrOp = getTBSMgmtOP( aSpaceID );
-
-    return sTBSMgrOp->mFreeExtent( aStatistics,
-                                   aMtx,
-                                   aSpaceID,
-                                   aExtFstPID,
-                                   aNrDone );
-}
-
-/* í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ì˜ ì´ ë¬¼ë¦¬ì ì¸ íŽ˜ì´ì§€ ê°œìˆ˜ ë°˜í™˜ */
-IDE_RC sdpTableSpace::getTotalPageCount( idvSQL      * aStatistics,
-                                         scSpaceID     aSpaceID,
-                                         ULong       * aTotalPageCount )
-{
-    sdpExtMgmtOp        * sTBSMgrOp;
-
-    sTBSMgrOp  = getTBSMgmtOP( aSpaceID );
-
-    IDE_TEST( sTBSMgrOp->mGetTotalPageCount( aStatistics,
-                                             aSpaceID,
-                                             aTotalPageCount )
-              != IDE_SUCCESS );
-
-    return IDE_SUCCESS ;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-/* BUG-15564 */
-IDE_RC  sdpTableSpace::getAllocPageCount( idvSQL   *aStatistics,
-                                          scSpaceID aSpaceID,
-                                          ULong*    aAllocPageCount )
-{
-    sdpExtMgmtOp        * sTBSMgrOp;
-
-    sTBSMgrOp  = getTBSMgmtOP( aSpaceID );
-
-    IDE_TEST( sTBSMgrOp->mGetAllocPageCount( aStatistics,
-                                             aSpaceID,
-                                             aAllocPageCount )
-              != IDE_SUCCESS );
-
-    return IDE_SUCCESS ;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-/***********************************************************************
- * Description: aSpaceIDì— í•´ë‹¹í•˜ëŠ” TBSì˜ Free Extent Poolì˜ Itemê°¯ìˆ˜ë¥¼ ì–»ëŠ”ë‹¤.
- *
- * aSpaceID - [IN] Tablespace ID
- ***********************************************************************/
-ULong sdpTableSpace::getCachedFreeExtCount( scSpaceID aSpaceID )
-{
-    sdpExtMgmtOp * sTBSMgrOp;
-
-    sTBSMgrOp  = getTBSMgmtOP( aSpaceID );
-
-    return sTBSMgrOp->mGetCachedFreeExtCount( aSpaceID );
-}
-
-
 
 /**********************************************************************
- * Description: tbsì— íŒŒì¼ì„ ìƒì„±í•˜ê±°ë‚˜ ì¶”ê°€í•˜ê¸°ì „ì— ê·¸ í¬ê¸°ê°€ validí•œì§€ ê²€ì‚¬í•¨.
+ * Description: tbs¿¡ ÆÄÀÏÀ» »ý¼ºÇÏ°Å³ª Ãß°¡ÇÏ±âÀü¿¡ ±× Å©±â°¡ validÇÑÁö °Ë»çÇÔ.
  *
- *     [ ê²€ì‚¬ìˆœì„œ ] (BUG-29566 í…Œì´í„° íŒŒì¼ì˜ í¬ê¸°ë¥¼ 32G ë¥¼ ì´ˆê³¼í•˜ì—¬ ì§€ì •í•´ë„
- *                            ì—ëŸ¬ë¥¼ ì¶œë ¥í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.)
- *        1. autoextend on ì¼ ê²½ìš° init size < max sizeì¸ì§€
- *        2. max size, Init size ê°€ 32G í˜¹ì€ OS Limitì„ ë„˜ì§€ ì•ŠëŠ”ì§€
- *           í˜¹ì€ ë„ˆë¬´ ìž‘ì§€ëŠ” ì•Šì€ì§€..
+ *     [ °Ë»ç¼ø¼­ ] (BUG-29566 Å×ÀÌÅÍ ÆÄÀÏÀÇ Å©±â¸¦ 32G ¸¦ ÃÊ°úÇÏ¿© ÁöÁ¤ÇØµµ
+ *                            ¿¡·¯¸¦ Ãâ·ÂÇÏÁö ¾Ê½À´Ï´Ù.)
+ *        1. autoextend on ÀÏ °æ¿ì init size < max sizeÀÎÁö
+ *        2. max size, Init size °¡ 32G È¤Àº OS LimitÀ» ³ÑÁö ¾Ê´ÂÁö
+ *           È¤Àº ³Ê¹« ÀÛÁö´Â ¾ÊÀºÁö..
  *
- * aDataFileAttr        - [IN] ë§Œë“¤ì–´ì•¼í•˜ëŠ” íŒŒì¼ë“¤ì— ëŒ€í•œ ì •ë³´
- * aDataFileAttrCount   - [IN] íŒŒì¼ê°¯ìˆ˜
- * aValidSmallSize      - [IN] íŒŒì¼ì˜ ìµœì†Œ í¬ê¸°ê²€ì‚¬ì— ì‚¬ìš©ë  ê°’
+ * aDataFileAttr        - [IN] ¸¸µé¾î¾ßÇÏ´Â ÆÄÀÏµé¿¡ ´ëÇÑ Á¤º¸
+ * aDataFileAttrCount   - [IN] ÆÄÀÏ°¹¼ö
+ * aValidSmallSize      - [IN] ÆÄÀÏÀÇ ÃÖ¼Ò Å©±â°Ë»ç¿¡ »ç¿ëµÉ °ª
  **********************************************************************/
 IDE_RC sdpTableSpace::checkPureFileSize( smiDataFileAttr ** aDataFileAttr,
                                          UInt               aDataFileAttrCount,
@@ -811,17 +312,17 @@ IDE_RC sdpTableSpace::checkPureFileSize( smiDataFileAttr ** aDataFileAttr,
         sMaxPageCnt  = aDataFileAttr[i]->mMaxSize;
 
         /*
-         * BUG-26294 [SD] tbsìƒì„±ì‹œ maxsizeê°€ initsizeë³´ë‹¤ ìž‘ì€ë°ë„ 
-         *                ì‹œìŠ¤í…œì— ë”°ë¼ ì„±ê³µí•˜ëŠ” ê²½ìš°ê°€ ìžˆìŒ. 
+         * BUG-26294 [SD] tbs»ý¼º½Ã maxsize°¡ initsizeº¸´Ù ÀÛÀºµ¥µµ 
+         *                ½Ã½ºÅÛ¿¡ µû¶ó ¼º°øÇÏ´Â °æ¿ì°¡ ÀÖÀ½. 
          */
-        // BUG-26632 [SD] Tablespaceìƒì„±ì‹œ maxsizeë¥¼ unlimited ë¡œ
-        //           ì§€ì •í•˜ë©´ ìƒì„±ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
-        // Unlimitedì´ë©´ MaxSizeê°€ 0ìœ¼ë¡œ ì§€ì •ë©ë‹ˆë‹¤.
-        // MaxSizeê°€ 0ì¼ ê²½ìš° Init Sizeì™€ ë¹„êµí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
-        // BUG-29566 ë°ì´í„° íŒŒì¼ì˜ í¬ê¸°ë¥¼ 32G ë¥¼ ì´ˆê³¼í•˜ì—¬ ì§€ì •í•´ë„
-        //           ì—ëŸ¬ë¥¼ ì¶œë ¥í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+        // BUG-26632 [SD] Tablespace»ý¼º½Ã maxsize¸¦ unlimited ·Î
+        //           ÁöÁ¤ÇÏ¸é »ý¼ºµÇÁö ¾Ê½À´Ï´Ù.
+        // UnlimitedÀÌ¸é MaxSize°¡ 0À¸·Î ÁöÁ¤µË´Ï´Ù.
+        // MaxSize°¡ 0ÀÏ °æ¿ì Init Size¿Í ºñ±³ÇÏÁö ¾Ê½À´Ï´Ù.
+        // BUG-29566 µ¥ÀÌÅÍ ÆÄÀÏÀÇ Å©±â¸¦ 32G ¸¦ ÃÊ°úÇÏ¿© ÁöÁ¤ÇØµµ
+        //           ¿¡·¯¸¦ Ãâ·ÂÇÏÁö ¾Ê½À´Ï´Ù.
         // 1. Init Size < Max Size
-        // 2. Max Size, Init Sizeê°€ í—ˆìš©ë²”ìœ„ ë‚´ì¸ì§€..
+        // 2. Max Size, Init Size°¡ Çã¿ë¹üÀ§ ³»ÀÎÁö..
         if(( aDataFileAttr[i]->mIsAutoExtend == ID_TRUE ) &&
            ( sMaxPageCnt != 0 ))
         {
@@ -855,7 +356,7 @@ IDE_RC sdpTableSpace::checkPureFileSize( smiDataFileAttr ** aDataFileAttr,
 
         /*
          * BUG-20972
-         * FELTì—ì„œëŠ” í•˜ë‚˜ì˜ extentí¬ê¸°ë³´ë‹¤ íŒŒì¼í¬ê¸°ê°€ ìž‘ì„ë•Œ ì—ëŸ¬ë¡œ ì²˜ë¦¬í•¨
+         * FELT¿¡¼­´Â ÇÏ³ªÀÇ extentÅ©±âº¸´Ù ÆÄÀÏÅ©±â°¡ ÀÛÀ»¶§ ¿¡·¯·Î Ã³¸®ÇÔ
          */
         IDE_TEST_RAISE( sInitPageCnt < aValidSmallSize ,
                         error_data_file_is_too_small );
@@ -901,3 +402,4 @@ IDE_RC sdpTableSpace::checkPureFileSize( smiDataFileAttr ** aDataFileAttr,
 
     return IDE_FAILURE;
 }
+

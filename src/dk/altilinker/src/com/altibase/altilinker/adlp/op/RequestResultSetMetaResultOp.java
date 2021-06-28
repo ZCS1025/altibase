@@ -33,7 +33,7 @@ public class RequestResultSetMetaResultOp extends ResultOperation
     public static class ColumnMeta
     {
         public String mColumnName = null;
-        public int    mColumnType = SQLType.SQL_NONE;
+        public int    mColumnType = AltibaseSQLType.SQL_NONE;
         public int    mPrecision  = 0;
         public int    mScale      = 0;
         public int    mNullable   = Nullable.Unknown;

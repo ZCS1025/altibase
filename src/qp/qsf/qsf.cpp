@@ -16,14 +16,14 @@
  
 
 /***********************************************************************
- * $Id: qsf.cpp 83637 2018-08-07 05:40:38Z khkwak $
+ * $Id: qsf.cpp 89988 2021-02-15 02:01:46Z khkwak $
  *
  * Description :
- *     ì—¬ê¸°ì—ëŠ” PSMì—ì„œ ì‚¬ìš©ë˜ëŠ” extended í•¨ìˆ˜ê°€ ì •ì˜ë˜ì–´ ìˆë‹¤.
+ *     ¿©±â¿¡´Â PSM¿¡¼­ »ç¿ëµÇ´Â extended ÇÔ¼ö°¡ Á¤ÀÇµÇ¾î ÀÖ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 #include <qsf.h>
@@ -46,8 +46,12 @@ extern mtfModule qsfRaiseAppErrModule;
 extern mtfModule qsfUserIDModule;
 extern mtfModule qsfUserNameModule;
 
+// BUG-47861 INVOKE_USER_ID, INVOKE_USER_NAME function
+extern mtfModule qsfInvokeUserIDModule;
+extern mtfModule qsfInvokeUserNameModule;
+
 // PROJ-1075
-// array type variableì˜ member functions
+// array type variableÀÇ member functions
 extern mtfModule qsfMCountModule;
 extern mtfModule qsfMDeleteModule;
 extern mtfModule qsfMExistsModule;
@@ -148,7 +152,7 @@ extern mtfModule qsfIsArrayBoundModule;
 extern mtfModule qsfIsFirstArrayBoundModule;
 extern mtfModule qsfIsLastArrayBoundModule;
 
-/* BUG-41307 User Lock ì§€ì› */
+/* BUG-41307 User Lock Áö¿ø */
 extern mtfModule qsfUserLockRequestModule;
 extern mtfModule qsfUserLockReleaseModule;
 
@@ -187,10 +191,10 @@ extern mtfModule qsfLastErrorPositionModule;
 extern mtfModule qsfFormatCallStackModule;
 extern mtfModule qsfFormatErrorBacktraceModule;
 
-/* BUG-43605 [mt] randomí•¨ìˆ˜ì˜ seed ì„¤ì •ì„ session ë‹¨ìœ„ë¡œ ë³€ê²½í•´ì•¼ í•©ë‹ˆë‹¤. */
+/* BUG-43605 [mt] randomÇÔ¼öÀÇ seed ¼³Á¤À» session ´ÜÀ§·Î º¯°æÇØ¾ß ÇÕ´Ï´Ù. */
 extern mtfModule qsfRandomModule;
 
-/* PROJ-2657 UTL_SMTP ì§€ì› */
+/* PROJ-2657 UTL_SMTP Áö¿ø */
 extern mtfModule qsfWriteRawValueModule;
 extern mtfModule qsfSendTextModule;
 extern mtfModule qsfRecvTextModule;
@@ -201,20 +205,30 @@ extern mtfModule qsfCheckConnectReplyModule;
 extern mtfModule qsfKeepPlanModule;
 extern mtfModule qsfUnkeepPlanModule;
 
+//PROJ-2689
+extern mtfModule qsfSetPrevMetaVerModule;
+extern mtfModule qsfAddUserSrsModule;
+extern mtfModule qsfDeleteUserSrsModule;
+
 // BUG-46074 Multiple trigger event
 extern mtfModule qsfInsertingModule;
 extern mtfModule qsfUpdatingModule;
 extern mtfModule qsfDeletingModule;
 
-//PROJ-2689
-extern mtfModule qsfSetPrevMetaVerModule;
+// TASK-7244 DBMS_SHARD_GET_DIAGNOSTICS package
+extern mtfModule qsfGetErrorCodeModule;
+extern mtfModule qsfGetErrorMessageModule;
+extern mtfModule qsfGetErrorCountModule;
+extern mtfModule qsfGetErrorNodeIDModule;
+extern mtfModule qsfGetErrorSeqNumModule;
+
 //-------------------------------------------------------------------
 // [qsfExtFuncModules]
-// ì„œë²„ êµ¬ë™ ì‹œ, MTì—ì„œëŠ” mtfModule(ì—°ì‚°ì ëª¨ë“ˆ)ì— ëŒ€í•œ ì´ˆê¸°í™”ë¥¼
-// ìˆ˜í–‰í•˜ê²Œ ëœë‹¤.  ì´ ë•Œ, ì„œë²„ êµ¬ë™ê³¼ í•¨ê»˜ ì´ˆê¸°í™”ë˜ì–´ì•¼ í•˜ëŠ”
-// ì™¸ë¶€ ì—°ì‚°ì ëª¨ë“ˆì„ ì—¬ê¸°ì— ë“±ë¡í•œë‹¤.
-// ë¬¼ë¡ , ì„œë²„ êµ¬ë™ê³¼ í•¨ê»˜ ì´ˆê¸°í™”ê°€ í•„ìš”í•˜ì§€ ì•Šì€ ì—°ì‚°ì ëª¨ë“ˆì€
-// ì—¬ê¸°ì— ë“±ë¡í•  í•„ìš”ê°€ ì—†ë‹¤.
+// ¼­¹ö ±¸µ¿ ½Ã, MT¿¡¼­´Â mtfModule(¿¬»êÀÚ ¸ğµâ)¿¡ ´ëÇÑ ÃÊ±âÈ­¸¦
+// ¼öÇàÇÏ°Ô µÈ´Ù.  ÀÌ ¶§, ¼­¹ö ±¸µ¿°ú ÇÔ²² ÃÊ±âÈ­µÇ¾î¾ß ÇÏ´Â
+// ¿ÜºÎ ¿¬»êÀÚ ¸ğµâÀ» ¿©±â¿¡ µî·ÏÇÑ´Ù.
+// ¹°·Ğ, ¼­¹ö ±¸µ¿°ú ÇÔ²² ÃÊ±âÈ­°¡ ÇÊ¿äÇÏÁö ¾ÊÀº ¿¬»êÀÚ ¸ğµâÀº
+// ¿©±â¿¡ µî·ÏÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
 //-------------------------------------------------------------------
 
 static SInt qsfCompareByName( const mtfNameIndex* aIndex1,
@@ -311,7 +325,7 @@ const mtfModule* qsf::extendedFunctionModules[] =
     &qsfIsConnectModule,
 // BUG-41311 table function
     &qsfTableFuncElementModule,
-/* BUG-41307 User Lock ì§€ì› */
+/* BUG-41307 User Lock Áö¿ø */
     &qsfUserLockRequestModule,
     &qsfUserLockReleaseModule,
 // BUG-41452 Array Binding Info.
@@ -347,9 +361,9 @@ const mtfModule* qsf::extendedFunctionModules[] =
     &qsfLastErrorPositionModule,
     &qsfFormatCallStackModule,
     &qsfFormatErrorBacktraceModule,
-    /* BUG-43605 [mt] randomí•¨ìˆ˜ì˜ seed ì„¤ì •ì„ session ë‹¨ìœ„ë¡œ ë³€ê²½í•´ì•¼ í•©ë‹ˆë‹¤. */
+    /* BUG-43605 [mt] randomÇÔ¼öÀÇ seed ¼³Á¤À» session ´ÜÀ§·Î º¯°æÇØ¾ß ÇÕ´Ï´Ù. */
     &qsfRandomModule,
-    /* PROJ-2657 UTL_SMTP ì§€ì› */
+    /* PROJ-2657 UTL_SMTP Áö¿ø */
     &qsfWriteRawValueModule,    
     &qsfSendTextModule,
     &qsfRecvTextModule, 
@@ -360,10 +374,21 @@ const mtfModule* qsf::extendedFunctionModules[] =
     // BUG-46137
     &qsfKeepPlanModule,
     &qsfUnkeepPlanModule,
+    &qsfAddUserSrsModule,
+    &qsfDeleteUserSrsModule,
     // BUG-46074 Multiple trigger event
     &qsfInsertingModule,
     &qsfUpdatingModule,
     &qsfDeletingModule,
+    // BUG-47861 INVOKE_USER_ID, INVOKE_USER_NAME function
+    &qsfInvokeUserIDModule,
+    &qsfInvokeUserNameModule,
+    // TASK-7244 DBMS_SHARD_GET_DIAGNOSTICS package
+    &qsfGetErrorCodeModule,
+    &qsfGetErrorMessageModule,
+    &qsfGetErrorCountModule,
+    &qsfGetErrorNodeIDModule,
+    &qsfGetErrorSeqNumModule,
     NULL
 };
 
@@ -587,7 +612,7 @@ IDE_RC qsf::getArg( mtcStack   * aStack,
     if( sIsNull == ID_TRUE )
     {
         // BUG-40119
-        // OUT ëª¨ë“œì¼ë•ŒëŠ” ê°’ì„ ì €ì¥í• ìˆ˜ ìˆëŠ” í¬ì¸í„°ë¥¼ ë¦¬í„´í•´ì£¼ì–´ì•¼ í•œë‹¤.
+        // OUT ¸ğµåÀÏ¶§´Â °ªÀ» ÀúÀåÇÒ¼ö ÀÖ´Â Æ÷ÀÎÅÍ¸¦ ¸®ÅÏÇØÁÖ¾î¾ß ÇÑ´Ù.
         if ( aInOutType == QS_OUT )
         {
             *aRetPtr = (void*)aStack[ aIdx ].value;

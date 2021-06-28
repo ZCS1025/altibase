@@ -24,7 +24,6 @@
 #include <mtcc.h>
 
 #include <ulsd.h>
-#include <ulsdConnString.h>
 
 
 /* PROJ-2638 shard native linker */
@@ -85,3 +84,4 @@ void ulsdDbcGetLinkInfo( ulnDbc       * aDbc,
         }
     }
 }
+

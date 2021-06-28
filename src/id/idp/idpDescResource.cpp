@@ -4,13 +4,13 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: idpDescResource.cpp 85332 2019-04-26 01:19:42Z ahra.cho $
+ * $Id: idpDescResource.cpp 90787 2021-05-07 00:50:48Z ahra.cho $
  *
  * Description:
  *
- * A3ì—ì„œ A4ë¡œ ì˜¤ë©´ì„œ, ìˆ˜ì •ëœ ê²ƒ.
- * 1. ë‹¨ìœ„ ë³€ê²½ : LOCK_ESCALATION_MEMORY_SIZE (Mì—ì„œ ê·¸ëƒ¥ byteë¡œ )
- *                ê·¸ëƒ¥ í¬ê¸°ë¡œ ì‚¬ìš©.  1024 * 1024 ë§Œí¼ ê³±í•˜ê¸° ì œê±°.
+ * A3¿¡¼­ A4·Î ¿À¸é¼­, ¼öÁ¤µÈ °Í.
+ * 1. ´ÜÀ§ º¯°æ : LOCK_ESCALATION_MEMORY_SIZE (M¿¡¼­ ±×³É byte·Î )
+ *                ±×³É Å©±â·Î »ç¿ë.  1024 * 1024 ¸¸Å­ °öÇÏ±â Á¦°Å.
  *
  **********************************************************************/
 
@@ -30,7 +30,7 @@
 
 // To Fix PR-12035
 // Page Size = 8K
-// í•´ë‹¹ ê°’ì€ smDef.h ì˜ SD_PAGE_SIZEì™€ ë™ì¼í•œ ê°’ì´ì–´ì•¼ í•œë‹¤.
+// ÇØ´ç °ªÀº smDef.h ÀÇ SD_PAGE_SIZE¿Í µ¿ÀÏÇÑ °ªÀÌ¾î¾ß ÇÑ´Ù.
 #if defined(SMALL_FOOTPRINT)
 #define IDP_SD_PAGE_SIZE  ( 4 * 1024 )
 #else
@@ -38,20 +38,20 @@
 #endif
 #define IDP_DRDB_DATAFILE_MAX_SIZE  ID_ULONG( 32 * 1024 * 1024 * 1024 ) // 32G
 
-// Direct I/O ìµœëŒ€ Pageí¬ê¸° = 8K
-// smDef.hì˜ SM_MAX_DIO_PAGE_SIZE ì™€ ë™ì¼í•œ ê°’ì´ì–´ì•¼ í•œë‹¤.
+// Direct I/O ÃÖ´ë PageÅ©±â = 8K
+// smDef.hÀÇ SM_MAX_DIO_PAGE_SIZE ¿Í µ¿ÀÏÇÑ °ªÀÌ¾î¾ß ÇÑ´Ù.
 #define IDP_MAX_DIO_PAGE_SIZE ( 8 * 1024 )
 
-// Memory tableì˜ page í¬ê¸°
-// SM_PAGE_SIZEì™€ ë™ì¼í•œ ê°’ì´ì–´ì•¼ í•œë‹¤.
+// Memory tableÀÇ page Å©±â
+// SM_PAGE_SIZE¿Í µ¿ÀÏÇÑ °ªÀÌ¾î¾ß ÇÑ´Ù.
 #if defined(SMALL_FOOTPRINT)
 #define IDP_SM_PAGE_SIZE  ( 4 * 1024 )
 #else
 #define IDP_SM_PAGE_SIZE  ( 32 * 1024 )
 #endif
 
-// LFG ìµœëŒ€ê°’ = 1
-// smDef.hì˜ SM_LFG_COUNTì™€ ë™ì¼í•œ ê°’ì´ì–´ì•¼ í•œë‹¤.
+// LFG ÃÖ´ë°ª = 1
+// smDef.hÀÇ SM_LFG_COUNT¿Í µ¿ÀÏÇÑ °ªÀÌ¾î¾ß ÇÑ´Ù.
 #if defined(SMALL_FOOTPRINT)
 #define IDP_MAX_LFG_COUNT 1
 #else
@@ -60,8 +60,8 @@
 #endif
 
 /* Task 6153 */
-// PAGE_LIST ìµœëŒ€ê°’ = 32
-// smDef.hì˜ SM_MAX_PAGELIST_COUNTì™€ ë™ì¼í•œ ê°’ì´ì–´ì•¼ í•œë‹¤.
+// PAGE_LIST ÃÖ´ë°ª = 32
+// smDef.hÀÇ SM_MAX_PAGELIST_COUNT¿Í µ¿ÀÏÇÑ °ªÀÌ¾î¾ß ÇÑ´Ù.
 #if defined(SMALL_FOOTPRINT)
 #define IDP_MAX_PAGE_LIST_COUNT 1
 #else
@@ -70,29 +70,29 @@
 
 
 
-// Direct I/O ìµœëŒ€ Pageí¬ê¸° = 8K
-// smDef.hì˜ SM_MAX_DIO_PAGE_SIZE ì™€ ë™ì¼í•œ ê°’ì´ì–´ì•¼ í•œë‹¤.
+// Direct I/O ÃÖ´ë PageÅ©±â = 8K
+// smDef.hÀÇ SM_MAX_DIO_PAGE_SIZE ¿Í µ¿ÀÏÇÑ °ªÀÌ¾î¾ß ÇÑ´Ù.
 #define IDP_MAX_DIO_PAGE_SIZE ( 8 * 1024 )
 
-// EXPAND_CHUNK_PAGE_COUNT í”„ë¡œí¼í‹°ì˜ ê¸°ë³¸ê°’
-// ì´ ê°’ì„ ê¸°ì¤€ìœ¼ë¡œ SHM_PAGE_COUNT_PER_KEY í”„ë¡œí¼í‹°ì˜
-// ê¸°ë³¸ê°’ë„ í•¨ê»˜ ë³€ê²½ëœë‹¤.
+// EXPAND_CHUNK_PAGE_COUNT ÇÁ·ÎÆÛÆ¼ÀÇ ±âº»°ª
+// ÀÌ °ªÀ» ±âÁØÀ¸·Î SHM_PAGE_COUNT_PER_KEY ÇÁ·ÎÆÛÆ¼ÀÇ
+// ±âº»°ªµµ ÇÔ²² º¯°æµÈ´Ù.
 #if defined(SMALL_FOOTPRINT)
 #define IDP_DEFAULT_EXPAND_CHUNK_PAGE_COUNT (32)
 #else
 #define IDP_DEFAULT_EXPAND_CHUNK_PAGE_COUNT (128)
 #endif
 
-// ìµœëŒ€ íŠ¸ëžœìž­ì…˜ ê°¯ìˆ˜
+// ÃÖ´ë Æ®·£Àè¼Ç °¹¼ö
 #define IDP_MAX_TRANSACTION_COUNT (16384) // 2^14
 
-// ìµœì†Œ íŠ¸ëžœìž­ì…˜ ê°¯ìˆ˜
-// BUG-28565 Prepared Txì˜ Undo ì´í›„ free trans list rebuild ì¤‘ ë¹„ì •ìƒ ì¢…ë£Œ
-// ìµœì†Œ transaction table sizeë¥¼ 16ìœ¼ë¡œ ì •í•¨(ê¸°ì¡´ 0)
+// ÃÖ¼Ò Æ®·£Àè¼Ç °¹¼ö
+// BUG-28565 Prepared TxÀÇ Undo ÀÌÈÄ free trans list rebuild Áß ºñÁ¤»ó Á¾·á
+// ÃÖ¼Ò transaction table size¸¦ 16À¸·Î Á¤ÇÔ(±âÁ¸ 0)
 #define IDP_MIN_TRANSACTION_COUNT (16)
 
 // LOB In Mode Max Size (BUG-30101)
-// smDef.hì˜ SM_MAX_LOB_IN_MODE_SIZEì™€ ë™ì¼í•œ ê°’ì´ì–´ì•¼ í•œë‹¤.
+// smDef.hÀÇ SM_LOB_MAX_IN_ROW_SIZE¿Í µ¿ÀÏÇÑ °ªÀÌ¾î¾ß ÇÑ´Ù.
 #define IDP_MAX_LOB_IN_ROW_SIZE (4000)
 
 /* PROJ-2109 : Remove the bottleneck of alloc/free stmts. */
@@ -145,6 +145,7 @@ static IDE_RC registDatabaseLinkProperties( void )
 
     IDP_DEF(UInt, "DK_MSGLOG_FLAG",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -155,6 +156,7 @@ static IDE_RC registDatabaseLinkProperties( void )
 
     IDP_DEF(String, "DK_MSGLOG_FILE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -166,6 +168,7 @@ static IDE_RC registDatabaseLinkProperties( void )
 
     IDP_DEF(UInt, "DK_MSGLOG_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -176,6 +179,7 @@ static IDE_RC registDatabaseLinkProperties( void )
 
     IDP_DEF(UInt, "DK_MSGLOG_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -186,6 +190,7 @@ static IDE_RC registDatabaseLinkProperties( void )
 
     IDP_DEF(UInt, "DBLINK_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -196,6 +201,7 @@ static IDE_RC registDatabaseLinkProperties( void )
 
     IDP_DEF(UInt, "DBLINK_DATA_BUFFER_BLOCK_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -206,6 +212,7 @@ static IDE_RC registDatabaseLinkProperties( void )
 
     IDP_DEF(UInt, "DBLINK_DATA_BUFFER_BLOCK_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -216,6 +223,7 @@ static IDE_RC registDatabaseLinkProperties( void )
 
     IDP_DEF(UInt, "DBLINK_DATA_BUFFER_ALLOC_RATIO",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -226,6 +234,7 @@ static IDE_RC registDatabaseLinkProperties( void )
 
     IDP_DEF(UInt, "DBLINK_GLOBAL_TRANSACTION_LEVEL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -234,8 +243,20 @@ static IDE_RC registDatabaseLinkProperties( void )
             IDP_ATTR_CK_CHECK,
             0, 2, 1);
 
+    IDP_DEF(UInt, "GLOBAL_TRANSACTION_LEVEL",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 3, 1);
+
     IDP_DEF(UInt, "DBLINK_REMOTE_STATEMENT_AUTOCOMMIT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -246,6 +267,7 @@ static IDE_RC registDatabaseLinkProperties( void )
 
     IDP_DEF(UInt, "DBLINK_ALTILINKER_CONNECT_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -256,6 +278,7 @@ static IDE_RC registDatabaseLinkProperties( void )
 
     IDP_DEF(UInt, "DBLINK_REMOTE_TABLE_BUFFER_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -266,6 +289,7 @@ static IDE_RC registDatabaseLinkProperties( void )
 
     IDP_DEF(UInt, "DBLINK_RECOVERY_MAX_LOGFILE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -282,19 +306,19 @@ static IDE_RC registDatabaseLinkProperties( void )
 }
 
 /* ------------------------------------------------------------------
- *   ì•„ëž˜ì˜ í•¨ìˆ˜ì— ë“±ë¡í•  í”„ë¡œí¼í‹°ì˜ ë°ì´íƒ€ í˜• ë° ë²”ìœ„ë¥¼ ë“±ë¡í•˜ë©´ ë¨.
- *   IDP_DEF(íƒ€ìž…, ì´ë¦„, ì†ì„±, ìµœì†Œ,ìµœëŒ€,ê¸°ë³¸ê°’) í˜•íƒœìž„.
- *   í˜„ìž¬ ì§€ì›ë˜ëŠ” ë°ì´íƒ€ íƒ€ìž…
+ *   ¾Æ·¡ÀÇ ÇÔ¼ö¿¡ µî·ÏÇÒ ÇÁ·ÎÆÛÆ¼ÀÇ µ¥ÀÌÅ¸ Çü ¹× ¹üÀ§¸¦ µî·ÏÇÏ¸é µÊ.
+ *   IDP_DEF(Å¸ÀÔ, ÀÌ¸§, ¼Ó¼º, ÃÖ¼Ò,ÃÖ´ë,±âº»°ª) ÇüÅÂÀÓ.
+ *   ÇöÀç Áö¿øµÇ´Â µ¥ÀÌÅ¸ Å¸ÀÔ
  *   UInt, SInt, ULong, SLong, String
- *   ì†ì„± : ì™¸ë¶€/ë‚´ë¶€ , ì½ê¸°ì „ìš©/ì“°ê¸°, ë‹¨ì¼ê°’/ë‹¤ìˆ˜ê°’,
- *          ê°’ë²”ìœ„ ê²€ì‚¬í—ˆìš©/ê²€ì‚¬ê±°ë¶€ , ë°ì´íƒ€ íƒ€ìž…
+ *   ¼Ó¼º : ¿ÜºÎ/³»ºÎ , ÀÐ±âÀü¿ë/¾²±â, ´ÜÀÏ°ª/´Ù¼ö°ª,
+ *          °ª¹üÀ§ °Ë»çÇã¿ë/°Ë»ç°ÅºÎ , µ¥ÀÌÅ¸ Å¸ÀÔ
  *
  *
- *   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!ê²½ê³ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
+ *   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!°æ°í!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
 
- *   idpString()ì„ ì •ì˜í•  ë•Œ NULLì„ ë„˜ê¸°ì§€ ë§ˆì‹œì˜¤. ëŒ€ì‹  ""ì„ ë„˜ê¸°ì‹œì˜¤.
+ *   idpString()À» Á¤ÀÇÇÒ ¶§ NULLÀ» ³Ñ±âÁö ¸¶½Ã¿À. ´ë½Å ""À» ³Ñ±â½Ã¿À.
 
- *   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!ê²½ê³ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
+ *   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!°æ°í!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
 
  * ----------------------------------------------------------------*/
 
@@ -302,6 +326,7 @@ static IDE_RC registDatabaseLinkProperties( void )
 IDE_RC registProperties()
 {
     UInt sLogFileAlignSize ;
+    UInt sDefaultMutexSpinCnt = 0;      //BUG-46911
 
     /* !!!!!!!!!! REGISTRATION AREA BEGIN !!!!!!!!!! */
 
@@ -310,6 +335,7 @@ IDE_RC registProperties()
     // ==================================================================
     IDP_DEF(UInt, "PORT_NO",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -322,6 +348,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "IPC_CHANNEL_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -333,6 +360,7 @@ IDE_RC registProperties()
 #if defined(ALTI_CFG_OS_LINUX)
     IDP_DEF(UInt, "IPCDA_CHANNEL_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -343,6 +371,7 @@ IDE_RC registProperties()
 #else
     IDP_DEF(UInt, "IPCDA_CHANNEL_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -355,6 +384,7 @@ IDE_RC registProperties()
     /*PROJ-2616*/
     IDP_DEF(UInt, "IPCDA_SERVER_SLEEP_TIME",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -366,6 +396,7 @@ IDE_RC registProperties()
     /*PROJ-2616*/
     IDP_DEF(UInt, "IPCDA_MESSAGEQ_MODE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -377,6 +408,7 @@ IDE_RC registProperties()
     /*PROJ-2616*/
     IDP_DEF(UInt, "IPCDA_SERVER_MESSAGEQ_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -388,6 +420,7 @@ IDE_RC registProperties()
     /*PROJ-2616*/
     IDP_DEF(UInt, "IPCDA_DATABLOCK_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -398,6 +431,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SOURCE_INFO",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -408,6 +442,7 @@ IDE_RC registProperties()
 
     IDP_DEF(String, "UNIXDOMAIN_FILEPATH",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -420,6 +455,7 @@ IDE_RC registProperties()
     /* BUG-35332 The socket files can be moved */
     IDP_DEF(String, "IPC_FILEPATH",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -431,6 +467,7 @@ IDE_RC registProperties()
 
     IDP_DEF(String, "IPCDA_FILEPATH",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -442,6 +479,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "NET_CONN_IP_STACK",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -451,13 +489,14 @@ IDE_RC registProperties()
             0, 2, 0);
 
     /*
-     * PROJ-2473 SNMP ì§€ì›
+     * PROJ-2473 SNMP Áö¿ø
      *
-     * LINUXë§Œ SNMPë¥¼ ì§€ì›í•˜ìž.
+     * LINUX¸¸ SNMP¸¦ Áö¿øÇÏÀÚ.
      */
 #if defined(ALTI_CFG_OS_LINUX)
     IDP_DEF(UInt, "SNMP_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -468,6 +507,7 @@ IDE_RC registProperties()
 #else
     IDP_DEF(UInt, "SNMP_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -479,6 +519,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SNMP_PORT_NO",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -489,6 +530,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SNMP_TRAP_PORT_NO",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -500,6 +542,7 @@ IDE_RC registProperties()
     /* milliseconds */
     IDP_DEF(UInt, "SNMP_RECV_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -511,6 +554,7 @@ IDE_RC registProperties()
     /* milliseconds */
     IDP_DEF(UInt, "SNMP_SEND_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -521,6 +565,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SNMP_MSGLOG_FLAG",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -531,6 +576,7 @@ IDE_RC registProperties()
 
     IDP_DEF(String, "SNMP_MSGLOG_FILE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -542,6 +588,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SNMP_MSGLOG_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -552,6 +599,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SNMP_MSGLOG_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -561,13 +609,14 @@ IDE_RC registProperties()
             0, ID_UINT_MAX, 10);
 
     /* 
-     * SNMP ALARM Setting - SNMP SETìœ¼ë¡œë§Œ ì„¤ì •í•  ìˆ˜ ìžˆë‹¤. ê·¸ëž˜ì„œ READONLYì´ë‹¤.
+     * SNMP ALARM Setting - SNMP SETÀ¸·Î¸¸ ¼³Á¤ÇÒ ¼ö ÀÖ´Ù. ±×·¡¼­ READONLYÀÌ´Ù.
      *
      * 0: no send alarm,
      * 1: send alarm
      */
     IDP_DEF(UInt, "SNMP_ALARM_QUERY_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -578,6 +627,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SNMP_ALARM_UTRANS_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -588,6 +638,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SNMP_ALARM_FETCH_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -598,10 +649,11 @@ IDE_RC registProperties()
 
     /* 
      * 0: no send alarm,
-     * x: xíšŒ ì—°ì†ìœ¼ë¡œ ì‹¤íŒ¨ê°€ ì¼ì–´ë‚œ ê²½ìš° 
+     * x: xÈ¸ ¿¬¼ÓÀ¸·Î ½ÇÆÐ°¡ ÀÏ¾î³­ °æ¿ì 
      */
     IDP_DEF(UInt, "SNMP_ALARM_SESSION_FAILURE_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -612,6 +664,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SHM_POLICY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -623,6 +676,7 @@ IDE_RC registProperties()
 #ifdef COMPILE_64BIT
     IDP_DEF(ULong, "SHM_MAX_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -633,6 +687,7 @@ IDE_RC registProperties()
 #else
     IDP_DEF(ULong, "SHM_MAX_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -646,6 +701,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SHM_LOGGING",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -658,6 +714,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "__USE_DUMP_CALLSTACKS",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -668,6 +725,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SHM_LOCK",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -680,6 +738,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SHM_LATCH_SPIN_LOCK_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -692,6 +751,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SHM_LATCH_YIELD_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -704,6 +764,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SHM_LATCH_MAX_YIELD_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -716,6 +777,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SHM_LATCH_SLEEP_DURATION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -728,6 +790,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "USER_PROCESS_CPU_AFFINITY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -746,6 +809,7 @@ IDE_RC registProperties()
     // hangul collation ( ksc5601, ms949 )
     IDP_DEF(UInt, "NLS_COMP",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -757,6 +821,7 @@ IDE_RC registProperties()
     // PROJ-1579 NCHAR
     IDP_DEF(UInt, "NLS_NCHAR_CONV_EXCP",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -768,6 +833,7 @@ IDE_RC registProperties()
     // PROJ-1579 NCHAR
     IDP_DEF(UInt, "NLS_NCHAR_LITERAL_REPLACE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -780,6 +846,7 @@ IDE_RC registProperties()
     // fix BUG-21266, BUG-29501
     IDP_DEF(UInt, "DEFAULT_THREAD_STACK_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -793,6 +860,7 @@ IDE_RC registProperties()
     // fix BUG-21266, BUG-29501
     IDP_DEF(UInt, "DEFAULT_THREAD_STACK_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -807,6 +875,7 @@ IDE_RC registProperties()
     // fix BUG-21547
     IDP_DEF(UInt, "USE_MEMORY_POOL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -823,6 +892,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "TRCLOG_DML_SENTENCE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_USER|
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -833,6 +903,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "TRCLOG_DETAIL_PREDICATE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_USER|
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -843,6 +914,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "TRCLOG_DETAIL_MTRNODE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_USER|
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -853,6 +925,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "TRCLOG_EXPLAIN_GRAPH",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_USER|
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -864,6 +937,7 @@ IDE_RC registProperties()
     // PROJ-2179
     IDP_DEF(UInt, "TRCLOG_RESULT_DESC",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_USER|
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -873,9 +947,10 @@ IDE_RC registProperties()
             0, 1, 0);
 
     // BUG-38192
-    // PROJ-2402 ì—ì„œ ì´ë¦„ ë³€ê²½
+    // PROJ-2402 ¿¡¼­ ÀÌ¸§ º¯°æ
     IDP_DEF(UInt, "TRCLOG_DISPLAY_CHILDREN",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -888,6 +963,7 @@ IDE_RC registProperties()
     // Min : 8, Max : 65536, Default : 128
     IDP_DEF(UInt, "QUERY_STACK_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -896,9 +972,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             8, 65536, 1024);
 
-    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
+    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
     IDP_DEF(UInt, "HOST_OPTIMIZE_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -907,10 +984,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 0);
 
-    // BUG-13068 sessionë‹¹ opení•  ìˆ˜ ìžˆëŠ” filehandleê°œìˆ˜ ì œí•œ
+    // BUG-13068 session´ç openÇÒ ¼ö ÀÖ´Â filehandle°³¼ö Á¦ÇÑ
     // Min : 0, Max : 128, Default : 16
     IDP_DEF(UInt, "PSM_FILE_OPEN_LIMIT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -923,6 +1001,7 @@ IDE_RC registProperties()
     // Min : 0, Max : 128, Default : 16
     IDP_DEF(UInt, "CONNECT_TYPE_OPEN_LIMIT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -931,10 +1010,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 128, 16);
 
-    /* BUG-41307 User Lock ì§€ì› */
+    /* BUG-41307 User Lock Áö¿ø */
     // Min : 128, Max : 10000, Default : 128
     IDP_DEF(UInt, "USER_LOCK_POOL_INIT_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -943,10 +1023,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             128, 100000, 128);
 
-    /* BUG-41307 User Lock ì§€ì› */
+    /* BUG-41307 User Lock Áö¿ø */
     // Min : 0, Max : (2^32)-1, Default : 10
     IDP_DEF(UInt, "USER_LOCK_REQUEST_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -955,10 +1036,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, ID_UINT_MAX, 10);
 
-    /* BUG-41307 User Lock ì§€ì› */
+    /* BUG-41307 User Lock Áö¿ø */
     // Min : 10, Max : 999999, Default : 10000
     IDP_DEF(UInt, "USER_LOCK_REQUEST_CHECK_INTERVAL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -967,10 +1049,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             10, 999999, 10000);
 
-    /* BUG-41307 User Lock ì§€ì› */
+    /* BUG-41307 User Lock Áö¿ø */
     // Min : 0, Max : 10000, Default : 10
     IDP_DEF(UInt, "USER_LOCK_REQUEST_LIMIT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -980,9 +1063,10 @@ IDE_RC registProperties()
             0, 10000, 10);
     
     // BUG-35713
-    // sqlë¡œ ë¶€í„° invokeë˜ëŠ” functionì—ì„œ ë°œìƒí•˜ëŠ” no_data_found ì—ëŸ¬ë¬´ì‹œ
+    // sql·Î ºÎÅÍ invokeµÇ´Â function¿¡¼­ ¹ß»ýÇÏ´Â no_data_found ¿¡·¯¹«½Ã
     IDP_DEF(UInt, "PSM_IGNORE_NO_DATA_FOUND_ERROR",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -991,10 +1075,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 0);
 
-    // PROJ-1557 varchar 32k ì§€ì›
+    // PROJ-1557 varchar 32k Áö¿ø
     // Min : 0, Max : 4000, Default : 32
     IDP_DEF(UInt, "MEMORY_VARIABLE_COLUMN_IN_ROW_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -1007,6 +1092,7 @@ IDE_RC registProperties()
     // Min : 0, Max : 4000, Default : 64
     IDP_DEF(UInt, "MEMORY_LOB_COLUMN_IN_ROW_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -1018,6 +1104,7 @@ IDE_RC registProperties()
     // PROJ-1862 Disk In Mode LOB In Row Size
     IDP_DEF(UInt, "DISK_LOB_COLUMN_IN_ROW_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -1026,9 +1113,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, IDP_MAX_LOB_IN_ROW_SIZE, 3900);
 
-    /* PROJ-1530 PSM, Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
+    /* PROJ-1530 PSM, Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
     IDP_DEF(UInt, "LOB_OBJECT_BUFFER_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -1037,9 +1125,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             32000, 104857600, 32000);
 
-    /* PROJ-1530 PSM, Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
+    /* PROJ-1530 PSM, Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
     IDP_DEF(UInt, "__INTERMEDIATE_TUPLE_LOB_OBJECT_LIMIT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1051,6 +1140,7 @@ IDE_RC registProperties()
     // BUG-18851 disable transitive predicate generation
     IDP_DEF(UInt, "__OPTIMIZER_TRANSITIVITY_DISABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1062,6 +1152,7 @@ IDE_RC registProperties()
     /* BUG-42134 Created transitivity predicate of join predicate must be reinforced. */
     IDP_DEF(UInt, "__OPTIMIZER_TRANSITIVITY_OLD_RULE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1073,6 +1164,7 @@ IDE_RC registProperties()
     // PROJ-1473
     IDP_DEF(UInt, "__OPTIMIZER_PUSH_PROJECTION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1081,9 +1173,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 1 );
 
-    // BUG-23780 TEMP_TBS_MEMORY ížŒíŠ¸ ì ìš©ì—¬ë¶€ë¥¼ propertyë¡œ ì œê³µ
+    // BUG-23780 TEMP_TBS_MEMORY ÈùÆ® Àû¿ë¿©ºÎ¸¦ property·Î Á¦°ø
     IDP_DEF(UInt, "__OPTIMIZER_DEFAULT_TEMP_TBS_TYPE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1092,9 +1185,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 2, 0 );
 
-    // BUG-38132 group byì˜ temp table ì„ ë©”ëª¨ë¦¬ë¡œ ê³ ì •í•˜ëŠ” í”„ë¡œí¼í‹°
+    // BUG-38132 group byÀÇ temp table À» ¸Þ¸ð¸®·Î °íÁ¤ÇÏ´Â ÇÁ·ÎÆÛÆ¼
     IDP_DEF(UInt, "__OPTIMIZER_FIXED_GROUP_MEMORY_TEMP",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1106,6 +1200,7 @@ IDE_RC registProperties()
     // BUG-38339 Outer Join Elimination
     IDP_DEF(UInt, "__OPTIMIZER_OUTERJOIN_ELIMINATION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1117,6 +1212,7 @@ IDE_RC registProperties()
     // PROJ-1413 Simple View Merging
     IDP_DEF(UInt, "__OPTIMIZER_SIMPLE_VIEW_MERGING_DISABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1126,9 +1222,10 @@ IDE_RC registProperties()
             0, 1, 0 );
 
     // BUG-34234
-    // targetì ˆì— ì‚¬ìš©ëœ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë¥¼ varchar typeìœ¼ë¡œ ê°•ì œ ê³ ì •í•œë‹¤.
+    // targetÀý¿¡ »ç¿ëµÈ È£½ºÆ® º¯¼ö¸¦ varchar typeÀ¸·Î °­Á¦ °íÁ¤ÇÑ´Ù.
     IDP_DEF(UInt, "COERCE_HOST_VAR_IN_SELECT_LIST_TO_VARCHAR",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -1137,10 +1234,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 32000, 0 );
 
-    // BUG-19089 FKê°€ ìžˆëŠ” ìƒíƒœì—ì„œ CREATE REPLICATION êµ¬ë¬¸ì´ ê°€ëŠ¥í•˜ë„ë¡ í•œë‹¤.
+    // BUG-19089 FK°¡ ÀÖ´Â »óÅÂ¿¡¼­ CREATE REPLICATION ±¸¹®ÀÌ °¡´ÉÇÏµµ·Ï ÇÑ´Ù.
     // Min : 0, Max : 1, Default : 0
     IDP_DEF(UInt, "CHECK_FK_IN_CREATE_REPLICATION_DISABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1150,10 +1248,11 @@ IDE_RC registProperties()
             0, 1, 0 );
 
     // BUG-29209
-    // natc testë¥¼ ìœ„í•˜ì—¬ Plan Displayì—ì„œ
-    // íŠ¹ì • ì •ë³´ë¥¼ ë³´ì—¬ì£¼ì§€ ì•Šê²Œ í•˜ëŠ” í”„ë¡œí¼í‹°
+    // natc test¸¦ À§ÇÏ¿© Plan Display¿¡¼­
+    // Æ¯Á¤ Á¤º¸¸¦ º¸¿©ÁÖÁö ¾Ê°Ô ÇÏ´Â ÇÁ·ÎÆÛÆ¼
     IDP_DEF(UInt, "__DISPLAY_PLAN_FOR_NATC",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_USER|
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1163,13 +1262,14 @@ IDE_RC registProperties()
             0, 1, 0);
 
     // BUG-34342
-    // ì‚°ìˆ ì—°ì‚° ëª¨ë“œì„ íƒ
+    // »ê¼ú¿¬»ê ¸ðµå¼±ÅÃ
     // precision mode : 0
-    // C typeê³¼ numeric typeì˜ ì—°ì‚°ì‹œ numeric typeìœ¼ë¡œ ê³„ì‚°í•œë‹¤.
+    // C type°ú numeric typeÀÇ ¿¬»ê½Ã numeric typeÀ¸·Î °è»êÇÑ´Ù.
     // performance mode : 1
-    // C typeê³¼ numeric typeì˜ ì—°ì‚°ì‹œ C typeìœ¼ë¡œ ê³„ì‚°í•œë‹¤.
+    // C type°ú numeric typeÀÇ ¿¬»ê½Ã C typeÀ¸·Î °è»êÇÑ´Ù.
     IDP_DEF(UInt, "ARITHMETIC_OPERATION_MODE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -1181,6 +1281,7 @@ IDE_RC registProperties()
     /* PROJ-1090 Function-based Index */
     IDP_DEF(UInt, "QUERY_REWRITE_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -1190,10 +1291,11 @@ IDE_RC registProperties()
             0, 1, 0);
 
     /* BUG-32101
-     * Disk tableì—ì„œ index scanì˜ costëŠ” propertyë¥¼ í†µí•´ ì¡°ì ˆí•  ìˆ˜ ìžˆë‹¤.
+     * Disk table¿¡¼­ index scanÀÇ cost´Â property¸¦ ÅëÇØ Á¶ÀýÇÒ ¼ö ÀÖ´Ù.
      */
     IDP_DEF(SInt, "OPTIMIZER_DISK_INDEX_COST_ADJ",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1205,6 +1307,7 @@ IDE_RC registProperties()
     // BUG-43736
     IDP_DEF(SInt, "OPTIMIZER_MEMORY_INDEX_COST_ADJ",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1214,10 +1317,11 @@ IDE_RC registProperties()
             1, 10000, 100);
 
     /*
-     * BUG-34441: Hash Join Costë¥¼ ì¡°ì •í•  ìˆ˜ ìžˆëŠ” í”„ë¡œí¼í‹°
+     * BUG-34441: Hash Join Cost¸¦ Á¶Á¤ÇÒ ¼ö ÀÖ´Â ÇÁ·ÎÆÛÆ¼
      */
     IDP_DEF(UInt, "OPTIMIZER_HASH_JOIN_COST_ADJ",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1227,10 +1331,11 @@ IDE_RC registProperties()
             1, 10000, 100);
 
     /* BUG-34295
-     * ANSI style join ì¤‘ inner join ì„ join ordering ëŒ€ìƒìœ¼ë¡œ
-     * ì²˜ë¦¬í•˜ì—¬ ë³´ë‹¤ ë‚˜ì€ plan ì„ ìƒì„±í•œë‹¤. */
+     * ANSI style join Áß inner join À» join ordering ´ë»óÀ¸·Î
+     * Ã³¸®ÇÏ¿© º¸´Ù ³ªÀº plan À» »ý¼ºÇÑ´Ù. */
     IDP_DEF(SInt, "OPTIMIZER_ANSI_JOIN_ORDERING",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1240,9 +1345,10 @@ IDE_RC registProperties()
             0, 1, 0);
 
     // BUG-38402
-    // ansi ìŠ¤íƒ€ì¼ inner ì¡°ì¸ë§Œ ìžˆì„ê²½ìš°ì—ëŠ” ì¼ë°˜ íƒ€ìž…ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
+    // ansi ½ºÅ¸ÀÏ inner Á¶ÀÎ¸¸ ÀÖÀ»°æ¿ì¿¡´Â ÀÏ¹Ý Å¸ÀÔÀ¸·Î º¯È¯ÇÑ´Ù.
     IDP_DEF(SInt, "__OPTIMIZER_ANSI_INNER_JOIN_CONVERT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1256,6 +1362,7 @@ IDE_RC registProperties()
     // HASH+MERGE : 10
     IDP_DEF(UInt, "__OPTIMIZER_JOIN_DISABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1265,9 +1372,10 @@ IDE_RC registProperties()
             0, 14, 8);
 
     // BUG-40492,BUG-45447
-    // iduMemPoolì˜ Slot ê°œìˆ˜ì˜ ìµœì†Œê°’ì„ ì„¤ì •í•œë‹¤.
+    // iduMemPoolÀÇ Slot °³¼öÀÇ ÃÖ¼Ò°ªÀ» ¼³Á¤ÇÑ´Ù.
     IDP_DEF( UInt, "__MEMPOOL_MINIMUM_SLOT_COUNT",
              IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -1277,10 +1385,11 @@ IDE_RC registProperties()
              2, 5000, 5 );
 
     /* BUG-34350
-     * stepAfterOptimize ë‹¨ê³„ì—ì„œ tuple ì˜ ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” ë©”ëª¨ë¦¬ë¥¼
-     * í•´ì œí•˜ê³  ìž¬í• ë‹¹í•˜ëŠ” ê³¼ì •ì„ ìƒëžµí•˜ì—¬ prepare ì‹œê°„ì„ ì¤„ì¸ë‹¤. */
+     * stepAfterOptimize ´Ü°è¿¡¼­ tuple ÀÇ »ç¿ëµÇÁö ¾Ê´Â ¸Þ¸ð¸®¸¦
+     * ÇØÁ¦ÇÏ°í ÀçÇÒ´çÇÏ´Â °úÁ¤À» »ý·«ÇÏ¿© prepare ½Ã°£À» ÁÙÀÎ´Ù. */
     IDP_DEF(SInt, "OPTIMIZER_REFINE_PREPARE_MEMORY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1290,7 +1399,7 @@ IDE_RC registProperties()
             0, 1, 1);
 
     /*   
-     * BUG-34235: in subquery keyrange tipì„ ê°€ëŠ¥í•œ ê²½ìš° í•­ìƒ ì ìš©
+     * BUG-34235: in subquery keyrange tipÀ» °¡´ÉÇÑ °æ¿ì Ç×»ó Àû¿ë
      *
      * 0: AUTO
      * 1: InSubqueryKeyRange
@@ -1298,6 +1407,7 @@ IDE_RC registProperties()
      */
     IDP_DEF(UInt, "OPTIMIZER_SUBQUERY_OPTIMIZE_METHOD",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1307,29 +1417,33 @@ IDE_RC registProperties()
             0, 2, 1);
 
     /*
-     * PROJ-2242 : eliminate common subexpression ì´ ê°€ëŠ¥í•œ ê²½ìš° í•­ìƒ ì ìš©
-     *
-     * 0 : FALSE
-     * 1 : TRUE
+     * PROJ-2242 : eliminate common subexpression ÀÌ °¡´ÉÇÑ °æ¿ì Ç×»ó Àû¿ë
+     *     
+     * 0 : CSE OFF mode
+     * 1 : CSE ON mode
+     * 2 : PATIAL CSE ON mode ( BUG-48348 )
+     *     - whereÀýÀÌ CNF·Î ¸¸µå´Â °æ¿ì CSE¸¦ ÁøÇàÇÏÁö ¾ÊÀ½
      */
     IDP_DEF(UInt, "__OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
             IDP_ATTR_RD_WRITABLE |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            0, 1, 1);
+            0, 2, 1);
 
     /*
-     * PROJ-2242 : constant filter subsumption ì´ ê°€ëŠ¥í•œ ê²½ìš° í•­ìƒ ì ìš©
+     * PROJ-2242 : constant filter subsumption ÀÌ °¡´ÉÇÑ °æ¿ì Ç×»ó Àû¿ë
      *
      * 0 : FALSE
      * 1 : TRUE
      */
     IDP_DEF(UInt, "__OPTIMIZER_CONSTANT_FILTER_SUBSUMPTION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1339,9 +1453,10 @@ IDE_RC registProperties()
             0, 1, 1);
 
     // PROJ-2242
-    // ë²„ì ¼ì„ ìž…ë ¥ë°›ì•„ì„œ ë¯¸ë¦¬ ì •ì˜ëœ í”„ë¡œí¼í‹°ë¥¼ ì¼ê´„ ë³€ê²½
+    // ¹öÁ¯À» ÀÔ·Â¹Þ¾Æ¼­ ¹Ì¸® Á¤ÀÇµÈ ÇÁ·ÎÆÛÆ¼¸¦ ÀÏ°ý º¯°æ
     IDP_DEF(String, "OPTIMIZER_FEATURE_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -1353,6 +1468,7 @@ IDE_RC registProperties()
     // BUG-38434
     IDP_DEF(UInt, "__OPTIMIZER_DNF_DISABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1364,6 +1480,7 @@ IDE_RC registProperties()
     // BUG-38416 count(column) to count(*)
     IDP_DEF(UInt, "OPTIMIZER_COUNT_COLUMN_TO_COUNT_ASTAR",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1375,6 +1492,7 @@ IDE_RC registProperties()
     // BUG-36438 LIST transformation
     IDP_DEF(UInt, "__OPTIMIZER_LIST_TRANSFORMATION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1387,6 +1505,7 @@ IDE_RC registProperties()
     // BUG-41795
     IDP_DEF(UInt, "__DA_DDL_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1399,6 +1518,7 @@ IDE_RC registProperties()
     // fix BUG-42752    
     IDP_DEF(UInt, "__OPTIMIZER_ESTIMATE_KEY_FILTER_SELECTIVITY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1410,6 +1530,7 @@ IDE_RC registProperties()
     // BUG-43059 Target subquery unnest/removal disable
     IDP_DEF(UInt, "__OPTIMIZER_TARGET_SUBQUERY_UNNEST_DISABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1420,6 +1541,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "__OPTIMIZER_TARGET_SUBQUERY_REMOVAL_DISABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1430,6 +1552,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "OPTIMIZER_DELAYED_EXECUTION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -1445,6 +1568,7 @@ IDE_RC registProperties()
     // 0 : ???? ??.
     IDP_DEF(UInt, "__QP_FAKE_STAT_TPCH_SCALE_FACTOR",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1457,6 +1581,7 @@ IDE_RC registProperties()
     // 0 : ???? ??.
     IDP_DEF(UInt, "__QP_FAKE_STAT_BUFFER_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1504,6 +1629,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "__KEY_PRESERVED_TABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1518,6 +1644,7 @@ IDE_RC registProperties()
     //----------------------------------
     IDP_DEF(UInt, "TRCLOG_SET_LOCK_TIME",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -1529,6 +1656,7 @@ IDE_RC registProperties()
     // fix BUG-33589
     IDP_DEF(UInt, "PLAN_REBUILD_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1539,6 +1667,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "DB_LOGGING_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1550,6 +1679,7 @@ IDE_RC registProperties()
     /* PROJ-2361 */
     IDP_DEF(UInt, "__OPTIMIZER_AVG_TRANSFORM_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1566,6 +1696,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "PARALLEL_QUERY_THREAD_MAX",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -1574,9 +1705,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1024, IDL_MIN(idlVA::getProcessorCount(), 1024));
 
-    /* queue ëŒ€ê¸° ì‹œê°„: ë‹¨ìœ„ëŠ” micro-sec */
+    /* queue ´ë±â ½Ã°£: ´ÜÀ§´Â micro-sec */
     IDP_DEF(UInt, "PARALLEL_QUERY_QUEUE_SLEEP_MAX",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1588,6 +1720,7 @@ IDE_RC registProperties()
     /* PRLQ queue size */
     IDP_DEF(UInt, "PARALLEL_QUERY_QUEUE_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -1599,6 +1732,7 @@ IDE_RC registProperties()
     /* PROJ-2462 Reuslt Cache */
     IDP_DEF(UInt, "RESULT_CACHE_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -1610,6 +1744,7 @@ IDE_RC registProperties()
     /* PROJ-2462 Reuslt Cache */
     IDP_DEF(UInt, "TOP_RESULT_CACHE_MODE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -1621,6 +1756,7 @@ IDE_RC registProperties()
     /* PROJ-2462 Reuslt Cache */
     IDP_DEF(ULong, "RESULT_CACHE_MEMORY_MAXIMUM",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -1634,6 +1770,7 @@ IDE_RC registProperties()
     /* PROJ-2462 Reuslt Cache */
     IDP_DEF(UInt, "TRCLOG_DETAIL_RESULTCACHE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1648,6 +1785,7 @@ IDE_RC registProperties()
      */
     IDP_DEF(UInt, "__FORCE_PARALLEL_DEGREE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1661,6 +1799,7 @@ IDE_RC registProperties()
     // Cache object max count for caching
     IDP_DEF(UInt, "__QUERY_EXECUTION_CACHE_MAX_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1672,6 +1811,7 @@ IDE_RC registProperties()
     // Cache memory max size for caching
     IDP_DEF(UInt, "__QUERY_EXECUTION_CACHE_MAX_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1683,6 +1823,7 @@ IDE_RC registProperties()
     // Hash bucket count for caching
     IDP_DEF(UInt, "__QUERY_EXECUTION_CACHE_BUCKET_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1698,6 +1839,7 @@ IDE_RC registProperties()
      */
     IDP_DEF(UInt, "__FORCE_FUNCTION_CACHE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1710,6 +1852,7 @@ IDE_RC registProperties()
     // Force subquery cache disable
     IDP_DEF(UInt, "__FORCE_SUBQUERY_CACHE_DISABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1718,20 +1861,28 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 0);
 
-    // BUG-41183 ORDER BY Elimination
+    /* ORDER BY Elimination 
+     * value| ÀÇ¹Ì
+     *   0  | OBYE off
+     *   1  | BUG-41183 targetÀý¿¡ count(*)ÀÏ ¶§ ÀÎ¶óÀÎºä¿¡ ORDER BY Á¦°Å
+     *   2  | BUG-48941 where ÀýÀÇ ¼­ºêÄõ¸® ÇÁ¸®µðÅ¶ÀÇ ÀÎ¶óÀÎºä¿¡ ORDER BY Á¦°Å
+     *   3  | 1+2
+     */
     IDP_DEF(UInt, "__OPTIMIZER_ORDER_BY_ELIMINATION_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
             IDP_ATTR_RD_WRITABLE |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            0, 1, 1);
+            0, 3, 1);
 
     // BUG-41249 DISTINCT Elimination
     IDP_DEF(UInt, "__OPTIMIZER_DISTINCT_ELIMINATION_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1743,6 +1894,7 @@ IDE_RC registProperties()
     // PROJ-2582 recursive with
     IDP_DEF(UInt, "RECURSION_LEVEL_MAXIMUM",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -1753,6 +1905,17 @@ IDE_RC registProperties()
             ID_UINT_MAX,   // max
             1000 );        // default
 
+    // PROJ-2750 LEFT OUTER SKIP RIGHT
+    IDP_DEF(UInt, "__LEFT_OUTER_SKIP_RIGHT_ENABLE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 1);
+
     //----------------------------------
     // For ST
     //----------------------------------
@@ -1761,6 +1924,7 @@ IDE_RC registProperties()
     // Min : 32000 Max : 100M, Default : 32000
     IDP_DEF(UInt, "ST_OBJECT_BUFFER_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -1776,6 +1940,7 @@ IDE_RC registProperties()
     // 2 : allow invalid object levle 2
     IDP_DEF(UInt, "ST_ALLOW_INVALID_OBJECT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1789,6 +1954,7 @@ IDE_RC registProperties()
     // 1 : use Altibase Polygon Clipper Library
     IDP_DEF(UInt, "ST_USE_CLIPPER_LIBRARY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1809,6 +1975,7 @@ IDE_RC registProperties()
     // 8 : 1e-12
     IDP_DEF(UInt, "ST_CLIP_TOLERANCE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1823,6 +1990,7 @@ IDE_RC registProperties()
     // 1 : enable
     IDP_DEF(UInt, "ST_GEOMETRY_VALIDATION_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1837,6 +2005,7 @@ IDE_RC registProperties()
     /* bug-37320 max of max_listen increased */
     IDP_DEF(UInt, "MAX_LISTEN",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -1847,6 +2016,7 @@ IDE_RC registProperties()
 
     IDP_DEF(ULong, "QP_MEMORY_CHUNK_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -1857,6 +2027,7 @@ IDE_RC registProperties()
 
     IDP_DEF(SLong, "ALLOCATION_RETRY_TIME",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1867,6 +2038,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "MEMMGR_LOG_LEVEL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1877,6 +2049,7 @@ IDE_RC registProperties()
 
     IDP_DEF(ULong, "MEMMGR_LOG_LOWERSIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1887,6 +2060,7 @@ IDE_RC registProperties()
 
     IDP_DEF(ULong, "MEMMGR_LOG_UPPERSIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1897,6 +2071,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "DA_FETCH_BUFFER_SIZE",
              IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -1907,12 +2082,13 @@ IDE_RC registProperties()
 
     //===================================================================
     // To Fix PR-13963
-    // Min: 0 (ëŒ€ìš©ëŸ‰ íž™ ì‚¬ìš© ë‚´ì—­ì„ ë¡œê¹…í•˜ì§€ ì•ŠìŒ)
+    // Min: 0 (´ë¿ë·® Èü »ç¿ë ³»¿ªÀ» ·Î±ëÇÏÁö ¾ÊÀ½)
     // Max: ID_UNIT_MAX
     // default : 0
     //===================================================================
     IDP_DEF(UInt, "INSPECTION_LARGE_HEAP_THRESHOLD",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -1925,10 +2101,11 @@ IDE_RC registProperties()
     // SM Properties
     // ==================================================================
 
-    // RECPOINT ë³µêµ¬í…ŒìŠ¤íŠ¸ í™œì„±í™” í”„ë¡œí¼í‹° PRJ-1552
-    // ë¹„í™œì„±í™” : 0, í™œì„±í™” : 1
+    // RECPOINT º¹±¸Å×½ºÆ® È°¼ºÈ­ ÇÁ·ÎÆÛÆ¼ PRJ-1552
+    // ºñÈ°¼ºÈ­ : 0, È°¼ºÈ­ : 1
     IDP_DEF(UInt, "ENABLE_RECOVERY_TEST",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1939,6 +2116,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "ART_DECREASE_VAL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -1947,39 +2125,42 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, ID_UINT_MAX, 0);
 
-    // ë°ì´íƒ€ë² ì´ìŠ¤ í™”ì¼ ì´ë¦„
+    // µ¥ÀÌÅ¸º£ÀÌ½º È­ÀÏ ÀÌ¸§
     IDP_DEF(String, "DB_NAME",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_ASCII     |
             IDP_ATTR_LC_EXTERNAL  |
             IDP_ATTR_RD_READONLY  |
             IDP_ATTR_ML_JUSTONE   |
-            IDP_ATTR_DF_DROP_DEFAULT | /* ë°˜ë“œì‹œ ìž…ë ¥í•´ì•¼ í•¨. */
+            IDP_ATTR_DF_DROP_DEFAULT | /* ¹Ýµå½Ã ÀÔ·ÂÇØ¾ß ÇÔ. */
             IDP_ATTR_CK_CHECK,
             0, IDP_MAX_PROP_DBNAME_LEN, (SChar *)"");
 
-    // ë°ì´íƒ€ íŒŒì¼ì´ ì¡´ìž¬í•˜ëŠ” ê²½ë¡œ
-    // ë°˜ë“œì‹œ 3ê°œ ì§€ì •ë˜ì–´ì•¼ í•˜ê³  ë°˜ë“œì‹œ ìž…ë ¥ ë˜ì–´ì•¼ í•¨.
-    // 2ê°œì˜ ë©”ëª¨ë¦¬ DBë¥¼ ìœ„í•œ ê²½ë¡œì™€ 1ê°œì˜ ë””ìŠ¤í¬ DBë¥¼ ìœ„í•œ ê²½ë¡œë¥¼
-    // ì§€ì •í•´ì•¼ í•œë‹¤.
+    // µ¥ÀÌÅ¸ ÆÄÀÏÀÌ Á¸ÀçÇÏ´Â °æ·Î
+    // ¹Ýµå½Ã 3°³ ÁöÁ¤µÇ¾î¾ß ÇÏ°í ¹Ýµå½Ã ÀÔ·Â µÇ¾î¾ß ÇÔ.
+    // 2°³ÀÇ ¸Þ¸ð¸® DB¸¦ À§ÇÑ °æ·Î¿Í 1°³ÀÇ µð½ºÅ© DB¸¦ À§ÇÑ °æ·Î¸¦
+    // ÁöÁ¤ÇØ¾ß ÇÑ´Ù.
     IDP_DEF(String, "MEM_DB_DIR",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
             IDP_ATTR_LC_EXTERNAL |
             IDP_ATTR_RD_READONLY |
             IDP_ATTR_ML_MULTIPLE |
-            IDP_ATTR_DF_DROP_DEFAULT | /* ë°˜ë“œì‹œ ìž…ë ¥í•´ì•¼ í•¨. */
+            IDP_ATTR_DF_DROP_DEFAULT | /* ¹Ýµå½Ã ÀÔ·ÂÇØ¾ß ÇÔ. */
             IDP_ATTR_CK_CHECK,
             0, IDP_MAX_PROP_STRING_LEN, (SChar *)"");
 
-    // DISKì˜ ë°ì´íƒ€ íŒŒì¼ì´ ì¡´ìž¬í•˜ëŠ” ê²½ë¡œ :
-    // ë³„ë„ë¡œ ë””ë ‰í† ë¦¬ë¥¼ ì§€ì •í•˜ì§€ ì•Šì„ ê²½ìš° Defaultë¡œ ì—¬ê¸°ì— ìƒê¸´ë‹¤.
+    // DISKÀÇ µ¥ÀÌÅ¸ ÆÄÀÏÀÌ Á¸ÀçÇÏ´Â °æ·Î :
+    // º°µµ·Î µð·ºÅä¸®¸¦ ÁöÁ¤ÇÏÁö ¾ÊÀ» °æ¿ì Default·Î ¿©±â¿¡ »ý±ä´Ù.
     IDP_DEF(String, "DEFAULT_DISK_DB_DIR",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -1989,10 +2170,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, IDP_MAX_PROP_STRING_LEN, (SChar *)"?"IDL_FILE_SEPARATORS"dbs");
 
-    // ë°ì´íƒ€ë² ì´ìŠ¤ë¥¼ ê°€ìƒ ë©”ëª¨ë¦¬ ê³µê°„ì— ì‚¬ìš©í•  ê²½ìš° 0ìœ¼ë¡œ,
-    // ê³µìœ ë©”ëª¨ë¦¬ ê³µê°„ì— ì‚¬ìš©í•  ê²½ìš° shared memory key ê°’ì„ ì§€ì •í•´ì•¼ í•œë‹¤.
+    // µ¥ÀÌÅ¸º£ÀÌ½º¸¦ °¡»ó ¸Þ¸ð¸® °ø°£¿¡ »ç¿ëÇÒ °æ¿ì 0À¸·Î,
+    // °øÀ¯¸Þ¸ð¸® °ø°£¿¡ »ç¿ëÇÒ °æ¿ì shared memory key °ªÀ» ÁöÁ¤ÇØ¾ß ÇÑ´Ù.
     IDP_DEF(UInt, "SHM_DB_KEY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2002,18 +2184,19 @@ IDE_RC registProperties()
             0, ID_UINT_MAX, 0);
 
     // PROJ-1548 Memory Tablespace
-    // ì‚¬ìš©ìžê°€ ê³µìœ ë©”ëª¨ë¦¬ Chunkì˜ í¬ê¸°ë¥¼ ì§€ì •í•  ìˆ˜ ìžˆë„ë¡ í•œë‹¤
+    // »ç¿ëÀÚ°¡ °øÀ¯¸Þ¸ð¸® ChunkÀÇ Å©±â¸¦ ÁöÁ¤ÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù
     /*
-      ë¬¸ì œì  : í˜„ìž¬ëŠ” ê³µìœ ë©”ëª¨ë¦¬ Chunkì˜ í¬ê¸°ê°€ DBí™•ìž¥ì˜ ê¸°ë³¸ ë‹¨ìœ„ì¸
-                EXPAND_CHUNK_PAGE_COUNTë¡œ ë˜ì–´ ìžˆë‹¤.
-                ì´ëŠ” ë¶ˆí•„ìš”í•˜ê²Œ ë§Žì€ ê³µìœ ë©”ëª¨ë¦¬ Chunkë¥¼
-                ë§Œë“¤ì–´ ë‚¼ ê°€ëŠ¥ì„±ì´ ìžˆë‹¤.
+      ¹®Á¦Á¡ : ÇöÀç´Â °øÀ¯¸Þ¸ð¸® ChunkÀÇ Å©±â°¡ DBÈ®ÀåÀÇ ±âº» ´ÜÀ§ÀÎ
+                EXPAND_CHUNK_PAGE_COUNT·Î µÇ¾î ÀÖ´Ù.
+                ÀÌ´Â ºÒÇÊ¿äÇÏ°Ô ¸¹Àº °øÀ¯¸Þ¸ð¸® Chunk¸¦
+                ¸¸µé¾î ³¾ °¡´É¼ºÀÌ ÀÖ´Ù.
 
-      í•´ê²°ì±… : ê³µìœ ë©”ëª¨ë¦¬ Chunk 1ê°œì˜ í¬ê¸°ë¥¼ ì‚¬ìš©ìžê°€ ì§€ì •í•  ìˆ˜ ìžˆë„ë¡
-                ë³„ë„ì˜ SHM_PAGE_COUNT_PER_KEY í”„ë¡œí¼í‹°ë¡œ ëº€ë‹¤.
+      ÇØ°áÃ¥ : °øÀ¯¸Þ¸ð¸® Chunk 1°³ÀÇ Å©±â¸¦ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÒ ¼ö ÀÖµµ·Ï
+                º°µµÀÇ SHM_PAGE_COUNT_PER_KEY ÇÁ·ÎÆÛÆ¼·Î »«´Ù.
     */
     IDP_DEF(UInt, "SHM_PAGE_COUNT_PER_KEY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2024,9 +2207,10 @@ IDE_RC registProperties()
             ID_UINT_MAX,
             3200 /* 100 Mbyte */ );
 
-    // FreePageListì— ìœ ì§€í•  Pageì˜ ìµœì†Œ ê°¯ìˆ˜
+    // FreePageList¿¡ À¯ÁöÇÒ PageÀÇ ÃÖ¼Ò °¹¼ö
     IDP_DEF(UInt, "MIN_PAGES_ON_TABLE_FREE_LIST",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -2035,12 +2219,13 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1, ID_UINT_MAX, 1);
 
-    // DBì—ì„œ Tableë¡œ í• ë‹¹ë°›ì•„ì˜¬ Page ê°¯ìˆ˜
-    // ê°’ì´ 0ì´ë©´
-    // FreePageListì— ìœ ì§€í•  Pageì˜ ìµœì†Œ ê°¯ìˆ˜(MIN_PAGES_ON_TABLE_FREE_LIST)ë¡œ
-    // DBì—ì„œ ê°€ì ¸ì˜¨ë‹¤.
+    // DB¿¡¼­ Table·Î ÇÒ´ç¹Þ¾Æ¿Ã Page °¹¼ö
+    // °ªÀÌ 0ÀÌ¸é
+    // FreePageList¿¡ À¯ÁöÇÒ PageÀÇ ÃÖ¼Ò °¹¼ö(MIN_PAGES_ON_TABLE_FREE_LIST)·Î
+    // DB¿¡¼­ °¡Á®¿Â´Ù.
     IDP_DEF(UInt, "TABLE_ALLOC_PAGE_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2050,10 +2235,11 @@ IDE_RC registProperties()
             0, ID_UINT_MAX, 0);
 
     /*
-     * BUG-25327 : [MDB] Free Page Size Class ê°œìˆ˜ë¥¼ Propertyí™” í•´ì•¼ í•©ë‹ˆë‹¤.
+     * BUG-25327 : [MDB] Free Page Size Class °³¼ö¸¦ PropertyÈ­ ÇØ¾ß ÇÕ´Ï´Ù.
      */
     IDP_DEF(UInt, "MEM_SIZE_CLASS_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -2064,6 +2250,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "DB_LOCK_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2074,6 +2261,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "MAX_CID_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2082,9 +2270,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1000, ID_UINT_MAX, 10000);
 
-    // FreePageListì— ìœ ì§€í•  Pageì˜ ìµœì†Œ ê°¯ìˆ˜
+    // FreePageList¿¡ À¯ÁöÇÒ PageÀÇ ÃÖ¼Ò °¹¼ö
     IDP_DEF(UInt, "TX_PRIVATE_BUCKET_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2093,9 +2282,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             2, 64, 2);
 
-    // ë¡œê·¸í™”ì¼ì˜ ê²½ë¡œ
+    // ·Î±×È­ÀÏÀÇ °æ·Î
     IDP_DEF(String, "LOG_DIR",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -2106,9 +2296,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, IDP_MAX_PROP_STRING_LEN, (SChar *)"");
 
-    // ë¡œê·¸ ì•µì»¤ í™”ì¼ì´ ì €ìž¥ë˜ëŠ” ê²½ë¡œ
+    // ·Î±× ¾ÞÄ¿ È­ÀÏÀÌ ÀúÀåµÇ´Â °æ·Î
     IDP_DEF(String, "LOGANCHOR_DIR",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -2119,9 +2310,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, IDP_MAX_PROP_STRING_LEN, (SChar *)"");
 
-    // archive ë¡œê·¸ ì €ìž¥ ë””ë ‰í† ë¦¬
+    // archive ·Î±× ÀúÀå µð·ºÅä¸®
     IDP_DEF(String, "ARCHIVE_DIR",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -2132,10 +2324,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, IDP_MAX_PROP_STRING_LEN, (SChar *)"");
 
-    // archive ë¡œê·¸ ë””ìŠ¤í¬ê°€ fullë°œìƒí•œ ê²½ìš° ì²˜ë¦¬
-    // ëŒ€ì²˜ë°©ë²•ì •ì˜
+    // archive ·Î±× µð½ºÅ©°¡ full¹ß»ýÇÑ °æ¿ì Ã³¸®
+    // ´ëÃ³¹æ¹ýÁ¤ÀÇ
     IDP_DEF(UInt, "ARCHIVE_FULL_ACTION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -2144,10 +2337,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 0);
 
-    // startupì‹œ archive thread ìžë™ start
-    // ì—¬ë¶€.
+    // startup½Ã archive thread ÀÚµ¿ start
+    // ¿©ºÎ.
     IDP_DEF(UInt, "ARCHIVE_THREAD_AUTOSTART",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -2156,21 +2350,23 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 1);
 
-    // lock ì´ íšë“ë˜ì§€ ì•Šì•˜ì„ ê²½ìš°,
-    // ì§€ì •ëœ usec ë§Œí¼ sleep í•˜ê³  ë‹¤ì‹œ retryí•œë‹¤.
-    // ë‚´ë¶€ì†ì„±
-    IDP_DEF(SLong, "LOCK_TIME_OUT",
+    // lock ÀÌ È¹µæµÇÁö ¾Ê¾ÒÀ» °æ¿ì,
+    // ÁöÁ¤µÈ usec ¸¸Å­ sleep ÇÏ°í ´Ù½Ã retryÇÑ´Ù.
+    // ³»ºÎ¼Ó¼º
+    IDP_DEF(ULong, "LOCK_TIME_OUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
             IDP_ATTR_RD_READONLY |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            0, ID_SLONG_MAX, 50);
+            0, ID_ULONG_MAX, 50);
 #if 0
     IDP_DEF(UInt, "LOCK_SELECT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2181,6 +2377,7 @@ IDE_RC registProperties()
 #endif
     IDP_DEF(UInt, "TABLE_LOCK_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -2192,6 +2389,7 @@ IDE_RC registProperties()
     /* BUG-42928 No Partition Lock */
     IDP_DEF(UInt, "TABLE_LOCK_MODE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -2202,6 +2400,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "TABLESPACE_LOCK_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -2213,6 +2412,7 @@ IDE_RC registProperties()
     // PROJ-1784 DML without retry
     IDP_DEF(UInt, "__DML_WITHOUT_RETRY_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2221,20 +2421,21 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 0);
 
-    // ë¡œê·¸íŒŒì¼ì˜ í¬ê¸°
+    // ·Î±×ÆÄÀÏÀÇ Å©±â
     // PR-14475 Group Commit
-    // Direct I/Oì‹œì— ë¡œê·¸íŒŒì¼ì„ Diskë¡œ ë‚´ë¦¬ëŠ” ê¸°ë³¸ ë‹¨ìœ„ëŠ”
-    // Direct I/O Page í¬ê¸°ì´ë‹¤.
-    // ì‚¬ìš©ìžê°€ í”„ë¡œí¼í‹° ë³€ê²½í•˜ì—¬ Direct I/O Pageí¬ê¸°ë¥¼
-    // ì–¸ì œë“ ì§€ ë³€ê²½ê°€ëŠ¥í•˜ë¯€ë¡œ  Direct I/O Pageì˜ ìµœëŒ€ í¬ê¸°ì¸
-    // 8K ë‹¨ìœ„í˜¹ì€ mmapì‹œ Alignë‹¨ìœ„ê°€ ë˜ëŠ” Virtual Pageì˜ í¬ê¸°ì¸
-    // idlOS::getpagesize()ê°’ì¤‘ í°ê°’ìœ¼ë¡œ ë¡œê·¸íŒŒì¼ í¬ê¸°ê°€ Alignë˜ë„ë¡ í•œë‹¤
+    // Direct I/O½Ã¿¡ ·Î±×ÆÄÀÏÀ» Disk·Î ³»¸®´Â ±âº» ´ÜÀ§´Â
+    // Direct I/O Page Å©±âÀÌ´Ù.
+    // »ç¿ëÀÚ°¡ ÇÁ·ÎÆÛÆ¼ º¯°æÇÏ¿© Direct I/O PageÅ©±â¸¦
+    // ¾ðÁ¦µçÁö º¯°æ°¡´ÉÇÏ¹Ç·Î  Direct I/O PageÀÇ ÃÖ´ë Å©±âÀÎ
+    // 8K ´ÜÀ§È¤Àº mmap½Ã Align´ÜÀ§°¡ µÇ´Â Virtual PageÀÇ Å©±âÀÎ
+    // idlOS::getpagesize()°ªÁß Å«°ªÀ¸·Î ·Î±×ÆÄÀÏ Å©±â°¡ AlignµÇµµ·Ï ÇÑ´Ù
     sLogFileAlignSize= (UInt)( (idlOS::getpagesize() > IDP_MAX_DIO_PAGE_SIZE) ?
                                idlOS::getpagesize():
                                IDP_MAX_DIO_PAGE_SIZE ) ;
 
     IDP_DEF(ULong, "LOG_FILE_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_AL_SET_VALUE( sLogFileAlignSize ) |
@@ -2244,11 +2445,12 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             64 * 1024, ID_ULONG_MAX, 10 * 1024 * 1024);
 
-    /* BUG-42930 LogFile Prepare Threadê°€ ë™ìž‘ ë„ì¤‘ Server Kill ì´ ì¼ì–´ë‚  ê²½ìš°
-     * LogFile Sizeê°€ 0ì¸ íŒŒì¼ì´ ìžˆì„ìˆ˜ ìžˆìŠµë‹ˆë‹¤. Server Kill Testë¥¼ ëŒ€ë¹„í•´
-     * Size 0ì¸ ë¡œê·¸íŒŒì¼ì„ ì•Œì•„ì„œ ì§€ìš°ê³  Serverë¥¼ ë„ìš¸ìˆ˜ ìžˆëŠ” Propertyë¥¼ ì œê³µí•©ë‹ˆë‹¤. */
+    /* BUG-42930 LogFile Prepare Thread°¡ µ¿ÀÛ µµÁß Server Kill ÀÌ ÀÏ¾î³¯ °æ¿ì
+     * LogFile Size°¡ 0ÀÎ ÆÄÀÏÀÌ ÀÖÀ»¼ö ÀÖ½À´Ï´Ù. Server Kill Test¸¦ ´ëºñÇØ
+     * Size 0ÀÎ ·Î±×ÆÄÀÏÀ» ¾Ë¾Æ¼­ Áö¿ì°í Server¸¦ ¶ç¿ï¼ö ÀÖ´Â Property¸¦ Á¦°øÇÕ´Ï´Ù. */
     IDP_DEF(UInt, "__ZERO_SIZE_LOG_FILE_AUTO_DELETE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2258,9 +2460,10 @@ IDE_RC registProperties()
             0, 1, 0);
 
 
-    // ì²´í¬ í¬ì¸íŠ¸ ì£¼ê¸° (ì´ˆë‹¨ìœ„)
+    // Ã¼Å© Æ÷ÀÎÆ® ÁÖ±â (ÃÊ´ÜÀ§)
     IDP_DEF(UInt, "CHECKPOINT_INTERVAL_IN_SEC",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -2268,10 +2471,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             3, IDV_MAX_TIME_INTERVAL_SEC, 6000);
 
-    // ì²´í¬ í¬ì¸íŠ¸ ì£¼ê¸°( ë¡œê·¸ í™”ì¼ì´ ìƒì„±ë˜ëŠ” íšŒìˆ˜)
-    // ì •í•´ì§„ íšŒìˆ˜ë§Œí¼ ë¡œê·¸í™”ì¼ì´ êµì²´ë˜ë©´ ì²´í¬í¬ì¸íŠ¸ë¥¼ ìˆ˜í–‰í•œë‹¤.
+    // Ã¼Å© Æ÷ÀÎÆ® ÁÖ±â( ·Î±× È­ÀÏÀÌ »ý¼ºµÇ´Â È¸¼ö)
+    // Á¤ÇØÁø È¸¼ö¸¸Å­ ·Î±×È­ÀÏÀÌ ±³Ã¼µÇ¸é Ã¼Å©Æ÷ÀÎÆ®¸¦ ¼öÇàÇÑ´Ù.
     IDP_DEF(UInt, "CHECKPOINT_INTERVAL_IN_LOG",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -2281,11 +2485,12 @@ IDE_RC registProperties()
             1, ID_UINT_MAX, 100);
 
     /* BUG-36764, BUG-40137
-     * checkpointê°€ ë°œìƒí–ˆì„ë•Œ checkpoint-flush jobì„ ìˆ˜í–‰í•  ëŒ€ìƒ.
+     * checkpoint°¡ ¹ß»ýÇßÀ»¶§ checkpoint-flush jobÀ» ¼öÇàÇÒ ´ë»ó.
      * 0: flusher
      * 1: checkpoint thread */
     IDP_DEF(UInt, "__CHECKPOINT_FLUSH_JOB_RESPONSIBILITY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2297,6 +2502,7 @@ IDE_RC registProperties()
     // PROJ-1566: Direct Path Buffer Flush Interval
     IDP_DEF(UInt, "__DIRECT_BUFFER_FLUSH_THREAD_SYNC_INTERVAL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2305,56 +2511,60 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1, IDV_MAX_TIME_INTERVAL_USEC, 100000);
 
-    // ë™ì ìœ¼ë¡œ ëŠ˜ì–´ë‚  ìˆ˜ ìžˆëŠ” DBì˜ í¬ê¸°ë¥¼ ëª…ì‹œ
+    // µ¿ÀûÀ¸·Î ´Ã¾î³¯ ¼ö ÀÖ´Â DBÀÇ Å©±â¸¦ ¸í½Ã
 #ifdef COMPILE_64BIT
     IDP_DEF(ULong, "MEM_MAX_DB_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
             IDP_ATTR_RD_READONLY |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            2*IDP_MAX_PAGE_LIST_COUNT*IDP_SM_PAGE_SIZE, // min : ìµœì†Œ EXPAND_CHUNK_PAGE_COUNT*32Kë³´ë‹¨ ì»¤ì•¼ í•œë‹¤.
+            2*IDP_MAX_PAGE_LIST_COUNT*IDP_SM_PAGE_SIZE, // min : ÃÖ¼Ò EXPAND_CHUNK_PAGE_COUNT*32Kº¸´Ü Ä¿¾ß ÇÑ´Ù.
             ID_ULONG_MAX,                           // max
             ID_ULONG(2 * 1024 * 1024 * 1024));      // default, 2G
 
     // BUG-17216
     IDP_DEF(ULong, "VOLATILE_MAX_DB_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
             IDP_ATTR_RD_READONLY |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            2*IDP_MAX_PAGE_LIST_COUNT*IDP_SM_PAGE_SIZE, // min : ìµœì†Œ EXPAND_CHUNK_PAGE_COUNT*32Kë³´ë‹¨ ì»¤ì•¼ í•œë‹¤.
+            2*IDP_MAX_PAGE_LIST_COUNT*IDP_SM_PAGE_SIZE, // min : ÃÖ¼Ò EXPAND_CHUNK_PAGE_COUNT*32Kº¸´Ü Ä¿¾ß ÇÑ´Ù.
             ID_ULONG_MAX,                         // max
             (ULong)ID_UINT_MAX  + 1);             // default
 
 #else
     IDP_DEF(ULong, "MEM_MAX_DB_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
             IDP_ATTR_RD_READONLY |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            2*IDP_MAX_PAGE_LIST_COUNT*IDP_SM_PAGE_SIZE,  // min : ìµœì†Œ EXPAND_CHUNK_PAGE_COUNT*32Kë³´ë‹¨ ì»¤ì•¼ í•œë‹¤.
+            2*IDP_MAX_PAGE_LIST_COUNT*IDP_SM_PAGE_SIZE,  // min : ÃÖ¼Ò EXPAND_CHUNK_PAGE_COUNT*32Kº¸´Ü Ä¿¾ß ÇÑ´Ù.
             (ULong)ID_UINT_MAX + 1,                // max
             ID_ULONG(2 * 1024 * 1024 * 1024));     // default, 2G
 
     // BUG-17216
     IDP_DEF(ULong, "VOLATILE_MAX_DB_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
             IDP_ATTR_RD_READONLY |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            2*IDP_MAX_PAGE_LIST_COUNT*IDP_SM_PAGE_SIZE,  // min : ìµœì†Œ EXPAND_CHUNK_PAGE_COUNT*32Kë³´ë‹¨ ì»¤ì•¼ í•œë‹¤.
+            2*IDP_MAX_PAGE_LIST_COUNT*IDP_SM_PAGE_SIZE,  // min : ÃÖ¼Ò EXPAND_CHUNK_PAGE_COUNT*32Kº¸´Ü Ä¿¾ß ÇÑ´Ù.
             (ULong)ID_UINT_MAX + 1,                // max
             (ULong)ID_UINT_MAX + 1);               // default
 
@@ -2363,27 +2573,30 @@ IDE_RC registProperties()
     /* TASK-6327 New property for disk size limit */
     IDP_DEF(ULong, "DISK_MAX_DB_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
             IDP_ATTR_RD_READONLY |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            2*IDP_MAX_LFG_COUNT*IDP_SM_PAGE_SIZE, // min : ìµœì†Œ EXPAND_CHUNK_PAGE_COUNT*32Kë³´ë‹¨ ì»¤ì•¼ í•œë‹¤.
+            2*IDP_MAX_LFG_COUNT*IDP_SM_PAGE_SIZE, // min : ÃÖ¼Ò EXPAND_CHUNK_PAGE_COUNT*32Kº¸´Ü Ä¿¾ß ÇÑ´Ù.
             ID_ULONG_MAX,                         // max
             ID_ULONG_MAX);                        // default
     /* TASK-6327 New property for license update */
     IDP_DEF(SInt, "__UPDATE_LICENSE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_LC_INTERNAL |
             IDP_ATTR_RD_WRITABLE |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             0, 1, 0);
 
-    // Memory Tablespaceì˜ ê¸°ë³¸ DB File (Checkpoint Image) í¬ê¸°
+    // Memory TablespaceÀÇ ±âº» DB File (Checkpoint Image) Å©±â
     IDP_DEF(ULong, "DEFAULT_MEM_DB_FILE_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -2394,9 +2607,10 @@ IDE_RC registProperties()
             ID_ULONG_MAX,                        // max
             IDP_DEFAULT_EXPAND_CHUNK_PAGE_COUNT * IDP_SM_PAGE_SIZE * 256);//default:1G
 
-    // ìž„ì‹œ ë°ì´íƒ€ íŽ˜ì´ì§€ë¥¼ í•œë²ˆì— í• ë‹¹í•˜ëŠ” ê°œìˆ˜
+    // ÀÓ½Ã µ¥ÀÌÅ¸ ÆäÀÌÁö¸¦ ÇÑ¹ø¿¡ ÇÒ´çÇÏ´Â °³¼ö
     IDP_DEF(UInt, "TEMP_PAGE_CHUNK_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -2405,10 +2619,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1, ID_UINT_MAX, 128);
 
-    // dirty page ë¦¬ìŠ¤íŠ¸ ìœ ì§€ë¥¼ ìœ„í•œ pre allocated pool ê°œìˆ˜
-    // ë‚´ë¶€ ì†ì„±
+    // dirty page ¸®½ºÆ® À¯Áö¸¦ À§ÇÑ pre allocated pool °³¼ö
+    // ³»ºÎ ¼Ó¼º
     IDP_DEF(UInt, "DIRTY_PAGE_POOL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2420,18 +2635,19 @@ IDE_RC registProperties()
     /*BUG-32386  [sm_recovery] If the ager remove the MMDB slot and the
      *checkpoint thread flush the page containing the slot at same time, the
      *server can misunderstand that the freed slot is the allocated slot.
-     *Agerê°€ MMDB Slotì„ í•´ì œí• ë•Œ ë™ì‹œì— Checkpoint Threadê°€ í•´ë‹¹ pageë¥¼
-     *Flushí•  ê²½ìš°, ì„œë²„ê°€ Freeëœ Slotì„ í• ë‹¹ëœ Slotì´ë¼ê³  ìž˜ëª»íŒŒì•…í•  ìˆ˜
-     *ìžˆìŠµë‹ˆë‹¤.
-     *Checkpoint Flush ì‹œì ì— ê´€í•œ ìž¬í˜„ì„ í•˜ê¸° ìœ„í•´ Hidden Property ì‚½ìž….
-     *DirtyPageFlush(DPFlush) ì¤‘ íŠ¹ì • pageì˜ ê²½ìš° íŠ¹ì • Offsetê¹Œì§€ë§Œ ê¸°ë¡,
-     *Wait í›„ ë‹¤ì‹œ ê¸°ë¡í•˜ì—¬ TornPageë¥¼ ì˜ë„ì ìœ¼ë¡œ ìƒì„±í•˜ë„ë¡ í•¨.
-     *__MEM_DPFLUSH_WAIT_TIME    = ëŒ€ê¸°ì‹œê°„(ì´ˆ). 0ì¼ ê²½ìš°, ì´ ê¸°ëŠ¥ ë™ìž‘ ì•ˆí•¨.
-     *__MEM_DPFLUSH_WAIT_SPACEID,PAGEID = TablespaceID ë° PageID. Pageë¥¼ ì§€ì •.
-     *__MEM_DPFLUSH_WAIT_OFFSET  = ì§€ì •ëœ Pageì— ì´ Offsetê¹Œì§€ ê¸°ë¡í•œ í›„
-     *                             SLEEPë§Œí¼ ëŒ€ê¸° í›„ ë’¤ìª½ offsetì„ ë³µì‚¬í•¨*/
+     *Ager°¡ MMDB SlotÀ» ÇØÁ¦ÇÒ¶§ µ¿½Ã¿¡ Checkpoint Thread°¡ ÇØ´ç page¸¦
+     *FlushÇÒ °æ¿ì, ¼­¹ö°¡ FreeµÈ SlotÀ» ÇÒ´çµÈ SlotÀÌ¶ó°í Àß¸øÆÄ¾ÇÇÒ ¼ö
+     *ÀÖ½À´Ï´Ù.
+     *Checkpoint Flush ½ÃÁ¡¿¡ °üÇÑ ÀçÇöÀ» ÇÏ±â À§ÇØ Hidden Property »ðÀÔ.
+     *DirtyPageFlush(DPFlush) Áß Æ¯Á¤ pageÀÇ °æ¿ì Æ¯Á¤ Offset±îÁö¸¸ ±â·Ï,
+     *Wait ÈÄ ´Ù½Ã ±â·ÏÇÏ¿© TornPage¸¦ ÀÇµµÀûÀ¸·Î »ý¼ºÇÏµµ·Ï ÇÔ.
+     *__MEM_DPFLUSH_WAIT_TIME    = ´ë±â½Ã°£(ÃÊ). 0ÀÏ °æ¿ì, ÀÌ ±â´É µ¿ÀÛ ¾ÈÇÔ.
+     *__MEM_DPFLUSH_WAIT_SPACEID,PAGEID = TablespaceID ¹× PageID. Page¸¦ ÁöÁ¤.
+     *__MEM_DPFLUSH_WAIT_OFFSET  = ÁöÁ¤µÈ Page¿¡ ÀÌ Offset±îÁö ±â·ÏÇÑ ÈÄ
+     *                             SLEEP¸¸Å­ ´ë±â ÈÄ µÚÂÊ offsetÀ» º¹»çÇÔ*/
     IDP_DEF(UInt, "__MEM_DPFLUSH_WAIT_TIME",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2442,6 +2658,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "__MEM_DPFLUSH_WAIT_SPACEID",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2452,6 +2669,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "__MEM_DPFLUSH_WAIT_PAGEID",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2462,6 +2680,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "__MEM_DPFLUSH_WAIT_OFFSET",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2470,10 +2689,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, ID_UINT_MAX, 0 );
 
-    // ì„œë²„ ìž¬ ì‹¤í–‰ì‹œ index rebuild ê³¼ì •ì—ì„œ ìƒì„±ë˜ëŠ”
-    // index build threadì˜ ê°œìˆ˜
+    // ¼­¹ö Àç ½ÇÇà½Ã index rebuild °úÁ¤¿¡¼­ »ý¼ºµÇ´Â
+    // index build threadÀÇ °³¼ö
     IDP_DEF(UInt, "PARALLEL_LOAD_FACTOR",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -2483,9 +2703,10 @@ IDE_RC registProperties()
             //fix BUG-19787
             1, 512, IDL_MIN(idlVA::getProcessorCount() * 2, 512));
 
-    // sdnn iterator mempoolì˜ í• ë‹¹ì‹œ memlist ê°œìˆ˜
+    // sdnn iterator mempoolÀÇ ÇÒ´ç½Ã memlist °³¼ö
     IDP_DEF(UInt, "ITERATOR_MEMORY_PARALLEL_FACTOR",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2496,11 +2717,12 @@ IDE_RC registProperties()
             ID_UINT_MAX,
             2);
 
-    // ë™ì‹œì— ìƒì„±ë  ìˆ˜ ìžˆëŠ” ìµœëŒ€ íŠ¸ëžœìž­ì…˜ ê°œìˆ˜
-    // BUG-28565 Prepared Txì˜ Undoê³¼ì •ì—ì„œ free trans list rebuild ì˜¤ë¥˜ ë°œìƒ
-    // ìµœì†Œ transaction table sizeë¥¼ 16ìœ¼ë¡œ ì •í•¨(ê¸°ì¡´ 0)
+    // µ¿½Ã¿¡ »ý¼ºµÉ ¼ö ÀÖ´Â ÃÖ´ë Æ®·£Àè¼Ç °³¼ö
+    // BUG-28565 Prepared TxÀÇ Undo°úÁ¤¿¡¼­ free trans list rebuild ¿À·ù ¹ß»ý
+    // ÃÖ¼Ò transaction table size¸¦ 16À¸·Î Á¤ÇÔ(±âÁ¸ 0)
     IDP_DEF(UInt, "TRANSACTION_TABLE_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -2509,17 +2731,22 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             IDP_MIN_TRANSACTION_COUNT, IDP_MAX_TRANSACTION_COUNT, 1024);
 
-    /* BUG-35019 TRANSACTION_TABLE_SIZEì— ë„ë‹¬í–ˆì—ˆëŠ”ì§€ trc ë¡œê·¸ì— ë‚¨ê¸´ë‹¤ */
+    /* BUG-35019 TRANSACTION_TABLE_SIZE¿¡ µµ´ÞÇß¾ú´ÂÁö trc ·Î±×¿¡ ³²±ä´Ù */
+    /* BUG-47655 0 == UInt Max , 0 Ãß°¡ÇÔ*/
     IDP_DEF(UInt, "__TRANSACTION_TABLE_FULL_TRCLOG_CYCLE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
-            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_RD_WRITABLE |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            1, ID_UINT_MAX, 100000);
+            0, ID_UINT_MAX, 100000 );
 
-    // ë¡œê·¸ ì••ì¶• ë¦¬ì†ŒìŠ¤ í’€ì— ìœ ì§€í•  ìµœì†Œí•œì˜ ë¦¬ì†ŒìŠ¤ ê°¯ìˆ˜
+    // ·Î±× ¾ÐÃà ¸®¼Ò½º Ç®¿¡ À¯ÁöÇÒ ÃÖ¼ÒÇÑÀÇ ¸®¼Ò½º °¹¼ö
     IDP_DEF(UInt, "MIN_COMPRESSION_RESOURCE_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -2528,14 +2755,15 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1, IDP_MAX_TRANSACTION_COUNT, 16);
 
-    // ë¡œê·¸ ì••ì¶• ë¦¬ì†ŒìŠ¤ í’€ì—ì„œ ë¦¬ì†ŒìŠ¤ê°€ ëª‡ ì´ˆ ì´ìƒ
-    // ì‚¬ìš©ë˜ì§€ ì•Šì„ ê²½ìš° Garbage Collectioní• ì§€?
+    // ·Î±× ¾ÐÃà ¸®¼Ò½º Ç®¿¡¼­ ¸®¼Ò½º°¡ ¸î ÃÊ ÀÌ»ó
+    // »ç¿ëµÇÁö ¾ÊÀ» °æ¿ì Garbage CollectionÇÒÁö?
     //
-    // ê¸°ë³¸ê°’ : í•œì‹œê°„ë™ì•ˆ ì‚¬ìš©ë˜ì§€ ì•Šìœ¼ë©´ ê°€ë¹„ì§€ ì½œë ‰ì…˜ ì‹¤ì‹œ.
-    // ìµœëŒ€ê°’ : ULongë³€ìˆ˜ë¡œ í‘œí˜„í•  ìˆ˜ ìžˆëŠ” Microì´ˆì˜ ìµœëŒ€ê°’ì„
-    //           ì´ˆë‹¨ìœ„ë¡œ í™˜ì‚°í•œê°’
+    // ±âº»°ª : ÇÑ½Ã°£µ¿¾È »ç¿ëµÇÁö ¾ÊÀ¸¸é °¡ºñÁö ÄÝ·º¼Ç ½Ç½Ã.
+    // ÃÖ´ë°ª : ULongº¯¼ö·Î Ç¥ÇöÇÒ ¼ö ÀÖ´Â MicroÃÊÀÇ ÃÖ´ë°ªÀ»
+    //           ÃÊ´ÜÀ§·Î È¯»êÇÑ°ª
     IDP_DEF(ULong, "COMPRESSION_RESOURCE_GC_SECOND",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -2545,14 +2773,15 @@ IDE_RC registProperties()
             1, ID_ULONG_MAX/1000000, 3600);
 
 
-    // SMì—ì„œ ì‚¬ìš©ë˜ëŠ” SCNì˜ disk write ì£¼ê¸°ë¥¼ ê²°ì •
-    // ì´ ê°’ì´ ì ì„ ê²½ìš° disk I/Oê°€ ë§Žì´ ë°œìƒí•˜ë©°,
-    // ì´ ê°’ì´ í´ ê²½ìš° ê·¸ë§Œí¼ I/Oê°€ ì ê²Œ ë°œìƒí•˜ëŠ” ëŒ€ì‹ 
-    // ì‚¬ìš©ê°€ëŠ¥í•œ SCNì˜ ìš©ëŸ‰ì´ ì¤„ì–´ë“ ë‹¤.
-    // ë‚´ë¶€ ì†ì„±
+    // SM¿¡¼­ »ç¿ëµÇ´Â SCNÀÇ disk write ÁÖ±â¸¦ °áÁ¤
+    // ÀÌ °ªÀÌ ÀûÀ» °æ¿ì disk I/O°¡ ¸¹ÀÌ ¹ß»ýÇÏ¸ç,
+    // ÀÌ °ªÀÌ Å¬ °æ¿ì ±×¸¸Å­ I/O°¡ Àû°Ô ¹ß»ýÇÏ´Â ´ë½Å
+    // »ç¿ë°¡´ÉÇÑ SCNÀÇ ¿ë·®ÀÌ ÁÙ¾îµç´Ù.
+    // ³»ºÎ ¼Ó¼º
 #if defined(ALTIBASE_PRODUCT_HDB)
     IDP_DEF(ULong, "SCN_SYNC_INTERVAL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2563,6 +2792,7 @@ IDE_RC registProperties()
 #else
     IDP_DEF(ULong, "SCN_SYNC_INTERVAL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2573,13 +2803,14 @@ IDE_RC registProperties()
             10, 2000000, 20000);
 #endif
 
-    // isolation levelì„ ì§€ì •í•œë‹¤.
+    // isolation levelÀ» ÁöÁ¤ÇÑ´Ù.
     // 0 : read committed
     // 1 : repetable read
     // 2 : serialzable
-    // ë‚´ë¶€ì†ì„±
+    // ³»ºÎ¼Ó¼º
     IDP_DEF(UInt, "ISOLATION_LEVEL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -2589,13 +2820,14 @@ IDE_RC registProperties()
             0, 2, 0);
 
     // BUG-15396
-    // Commit Write Wait Modeë¥¼ ì§€ì •í•œë‹¤.
+    // Commit Write Wait Mode¸¦ ÁöÁ¤ÇÑ´Ù.
     // 0 ( commit write no wait )
-    //   : commit ì‹œ, logë¥¼ diskì— ê¸°ë¡í• ë•Œê¹Œì§€ ê¸°ë‹¤ë¦¬ì§€ ì•ŠìŒ
+    //   : commit ½Ã, log¸¦ disk¿¡ ±â·ÏÇÒ¶§±îÁö ±â´Ù¸®Áö ¾ÊÀ½
     // 1 ( commit write wait )
-    //   : commit ì‹œ, logë¥¼ diskì— ê¸°ë¡í• ë•Œê¹Œì§€ ê¸°ë‹¤ë¦¼
+    //   : commit ½Ã, log¸¦ disk¿¡ ±â·ÏÇÒ¶§±îÁö ±â´Ù¸²
     IDP_DEF(UInt, "COMMIT_WRITE_WAIT_MODE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -2604,10 +2836,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 0);
 
-    // SHM_DB_KEY ê°’ì´ ì§€ì •ëœ ìƒíƒœì—ì„œ ì•Œí‹°ë² ì´ìŠ¤ ì‹œìž‘ì‹œ ìƒì„±ë˜ëŠ”
-    // ê³µìœ  ë©”ëª¨ë¦¬ ì²­í¬ì˜ ìµœëŒ€ í¬ê¸° ì§€ì •
+    // SHM_DB_KEY °ªÀÌ ÁöÁ¤µÈ »óÅÂ¿¡¼­ ¾ËÆ¼º£ÀÌ½º ½ÃÀÛ½Ã »ý¼ºµÇ´Â
+    // °øÀ¯ ¸Þ¸ð¸® Ã»Å©ÀÇ ÃÖ´ë Å©±â ÁöÁ¤
     IDP_DEF(ULong, "STARTUP_SHM_CHUNK_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2616,10 +2849,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1024, ID_ULONG_MAX, ID_ULONG(1 * 1024 * 1024 * 1024));
 
-    // SHM_DB_KEY ê°’ì´ ì§€ì •ëœ ìƒíƒœì—ì„œ ì•Œí‹°ë² ì´ìŠ¤ ì‹œìž‘ì‹œ ìƒì„±ë˜ëŠ”
-    // ê³µìœ  ë©”ëª¨ë¦¬ ì²­í¬ì˜ ìµœëŒ€ í¬ê¸° ì§€ì •
+    // SHM_DB_KEY °ªÀÌ ÁöÁ¤µÈ »óÅÂ¿¡¼­ ¾ËÆ¼º£ÀÌ½º ½ÃÀÛ½Ã »ý¼ºµÇ´Â
+    // °øÀ¯ ¸Þ¸ð¸® Ã»Å©ÀÇ ÃÖ´ë Å©±â ÁöÁ¤
     IDP_DEF(UInt, "SHM_STARTUP_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2631,9 +2865,10 @@ IDE_RC registProperties()
             ID_ULONG(512 * 1024 * 1024));     // 512M
 
 
-    // ê³µìœ  ë©”ëª¨ë¦¬ ì²­í¬ì˜ í¬ê¸°
+    // °øÀ¯ ¸Þ¸ð¸® Ã»Å©ÀÇ Å©±â
     IDP_DEF(UInt, "SHM_CHUNK_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2644,10 +2879,11 @@ IDE_RC registProperties()
             ID_ULONG(2 * 1024 * 1024 * 1024), // 2G
             ID_ULONG(512 * 1024 * 1024));     // 512M
 
-    // SHM_DB_KEY ê°’ì´ ì§€ì •ëœ ìƒíƒœì—ì„œ ì•Œí‹°ë² ì´ìŠ¤ ì‹œìž‘ì‹œ ìƒì„±ë˜ëŠ”
-    // ê³µìœ  ë©”ëª¨ë¦¬ ì²­í¬ì˜ Align Size
+    // SHM_DB_KEY °ªÀÌ ÁöÁ¤µÈ »óÅÂ¿¡¼­ ¾ËÆ¼º£ÀÌ½º ½ÃÀÛ½Ã »ý¼ºµÇ´Â
+    // °øÀ¯ ¸Þ¸ð¸® Ã»Å©ÀÇ Align Size
     IDP_DEF(UInt, "SHM_CHUNK_ALIGN_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2656,9 +2892,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1024, ID_ULONG(1 * 1024 * 1024 * 1024), ID_ULONG(1 * 1024 * 1024));
 
-    // ë¯¸ë¦¬ ìƒì„±í•˜ëŠ” ë¡œê·¸í™”ì¼ì˜ ê°œìˆ˜
+    // ¹Ì¸® »ý¼ºÇÏ´Â ·Î±×È­ÀÏÀÇ °³¼ö
     IDP_DEF(UInt, "PREPARE_LOG_FILE_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -2666,12 +2903,30 @@ IDE_RC registProperties()
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             0, ID_UINT_MAX, 5);
+ 
+    /* BUG-48409 ·Î±× ÆÄÀÏÀ» ¹Ì¸® »ý¼º ÇÒ ¶§ tempÆÄÀÏÀ» È°¿ëÇÒÁö ¿©ºÎ 
+     * 0 : temp ÆÄÀÏÀ» »ý¼ºÇÏÁö ¾Ê°í logfileÀ» ¹Ù·Î ¸¸µç´Ù.
+     * 1 : temp ÆÄÀÏÀ» »ý¼ºÇØ¼­ ¿ÂÀüÇÑ logfileÀÌ ¿Ï¼º µÇ¸é
+     *     rename À¸·Î logfile123 À¸·Î º¯°æÇØ¼­ µî·Ï ÇÑ´Ù. (default)
+     *     prepare µµÁß¿¡ ºñÁ¤»ó Á¾·á ÇÒ °æ¿ì ¹ß»ýÇÏ´Â
+     *     ¹Ì¿Ï¼± logfileÀ» ±¸ºÐÇÏ±â À§ÇØ¼­ Ãß°¡ÇÔ */
+    IDP_DEF(UInt, "__USE_TEMP_FOR_PREPARE_LOGFILE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 1);
 
     // BUG-15396 : log buffer type
-    // mmap(= 0) ë˜ëŠ” memory(= 1)
-    // => LFGë³„ë¡œ ì§€ì •í•˜ì—¬ì•¼ í•œë‹¤.
+    // mmap(= 0) ¶Ç´Â memory(= 1)
+    // => LFGº°·Î ÁöÁ¤ÇÏ¿©¾ß ÇÑ´Ù.
     IDP_DEF(UInt, "LOG_BUFFER_TYPE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -2680,14 +2935,15 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 0);
 
-    // ë©”ëª¨ë¦¬ DBë¡œê·¸ì¤‘ INSERT/UPDATE/DELETE LOGì— ëŒ€í•´ì„œ
-    // ë¡œê·¸ë¥¼ ê¸°ë¡í•˜ê¸° ì „ì— compressí•˜ê¸° ì‹œìž‘í•˜ëŠ” ë¡œê·¸ í¬ê¸°ì˜ ìž„ê³„ì¹˜
+    // ¸Þ¸ð¸® DB·Î±×Áß INSERT/UPDATE/DELETE LOG¿¡ ´ëÇØ¼­
+    // ·Î±×¸¦ ±â·ÏÇÏ±â Àü¿¡ compressÇÏ±â ½ÃÀÛÇÏ´Â ·Î±× Å©±âÀÇ ÀÓ°èÄ¡
     //
-    // ì´ ê°’ì´ 0ì´ë©´ ë¡œê·¸ ì••ì¶•ê¸°ëŠ¥ì„ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // ÀÌ °ªÀÌ 0ÀÌ¸é ·Î±× ¾ÐÃà±â´ÉÀ» »ç¿ëÇÏÁö ¾Ê´Â´Ù.
     //
-    // ë¡œê·¸ ë ˆì½”ë“œì˜ í¬ê¸°ê°€ ì´ ì´ìƒì´ë©´ ì••ì¶•í•˜ì—¬ ê¸°ë¡í•œë‹¤.
+    // ·Î±× ·¹ÄÚµåÀÇ Å©±â°¡ ÀÌ ÀÌ»óÀÌ¸é ¾ÐÃàÇÏ¿© ±â·ÏÇÑ´Ù.
     IDP_DEF(UInt, "MIN_LOG_RECORD_SIZE_FOR_COMPRESS",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -2699,6 +2955,7 @@ IDE_RC registProperties()
     // TASK-2398 Log Compress
     IDP_DEF(ULong, "DISK_REDO_LOG_DECOMPRESS_BUFFER_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2708,10 +2965,11 @@ IDE_RC registProperties()
             1, ID_UINT_MAX, 128 * 1024 * 1024 );
 
 
-    // ë¡œê·¸í™”ì¼ì˜ sync ì£¼ê¸°(ì´ˆ)
-    // ë‚´ë¶€ ì†ì„±
+    // ·Î±×È­ÀÏÀÇ sync ÁÖ±â(ÃÊ)
+    // ³»ºÎ ¼Ó¼º
     IDP_DEF(UInt, "SYNC_INTERVAL_SEC_",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2720,10 +2978,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, IDV_MAX_TIME_INTERVAL_SEC, 3);
 
-    // ë¡œê·¸í™”ì¼ì˜ sync ì£¼ê¸°( milli second )
-    // ë‚´ë¶€ì†ì„±
+    // ·Î±×È­ÀÏÀÇ sync ÁÖ±â( milliseconds )
+    // ³»ºÎ¼Ó¼º
     IDP_DEF(UInt, "SYNC_INTERVAL_MSEC_",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2733,9 +2992,10 @@ IDE_RC registProperties()
             0, 999999, 200);
 
     /* BUG-35392 */
-    // Uncompleted LSNì„ ê°±ì‹ í•˜ëŠ” Threadì— Intervalì„ ì„¸íŒ….
+    // Uncompleted LSNÀ» °»½ÅÇÏ´Â Thread¿¡ IntervalÀ» ¼¼ÆÃ.
     IDP_DEF(UInt, "UNCOMPLETED_LSN_CHECK_THREAD_INTERVAL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -2745,10 +3005,11 @@ IDE_RC registProperties()
             0, UINT_MAX, 1000 );
 
     /* BUG-35392 */
-    // ë¡œê·¸í™”ì¼ì˜ sync ìµœì†Œ ì£¼ê¸°( milli second )
-    // ë‚´ë¶€ì†ì„±
+    // ·Î±×È­ÀÏÀÇ sync ÃÖ¼Ò ÁÖ±â( milliseconds )
+    // ³»ºÎ¼Ó¼º
     IDP_DEF(UInt, "LFTHREAD_SYNC_WAIT_MIN",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2758,10 +3019,11 @@ IDE_RC registProperties()
             0, 999999, 1);
 
     /* BUG-35392 */
-    // ë¡œê·¸í™”ì¼ì˜ sync ìµœëŒ€ ì£¼ê¸°( milli second )
-    // ë‚´ë¶€ì†ì„±
+    // ·Î±×È­ÀÏÀÇ sync ÃÖ´ë ÁÖ±â( milliseconds )
+    // ³»ºÎ¼Ó¼º
     IDP_DEF(UInt, "LFTHREAD_SYNC_WAIT_MAX",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2771,10 +3033,11 @@ IDE_RC registProperties()
             0, ID_UINT_MAX, (1000));
 
     /* BUG-35392 */
-    // ë¡œê·¸í™”ì¼ì˜ sync ìµœì†Œ ì£¼ê¸°( milli second )
-    // ë‚´ë¶€ì†ì„±
+    // ·Î±×È­ÀÏÀÇ sync ÃÖ¼Ò ÁÖ±â( milliseconds )
+    // ³»ºÎ¼Ó¼º
     IDP_DEF(UInt, "LFG_MANAGER_SYNC_WAIT_MIN",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2784,10 +3047,11 @@ IDE_RC registProperties()
             0, 999999, 1);
 
     /* BUG-35392 */
-    // ë¡œê·¸í™”ì¼ì˜ sync ìµœëŒ€ ì£¼ê¸°( milli second )
-    // ë‚´ë¶€ì†ì„±
+    // ·Î±×È­ÀÏÀÇ sync ÃÖ´ë ÁÖ±â( milliseconds )
+    // ³»ºÎ¼Ó¼º
     IDP_DEF(UInt, "LFG_MANAGER_SYNC_WAIT_MAX",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2796,11 +3060,12 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 999999, 1000);
 
-    // ë¡œê·¸í™”ì¼ ìƒì„±ì‹œ í™”ì¼ì˜ ìƒì„± ë°©ë²• 
+    // ·Î±×È­ÀÏ »ý¼º½Ã È­ÀÏÀÇ »ý¼º ¹æ¹ý 
     // 0 : write
     // 1 : fallocate 
     IDP_DEF(UInt, "LOG_CREATE_METHOD",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -2809,13 +3074,14 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 0);
 
-    // ë¡œê·¸í™”ì¼ ìƒì„±ì‹œ í™”ì¼ì˜ ì´ˆê¸°í™”  ë°©ë²•
-    // ë‚´ë¶€ì†ì„±
-    // 0 : ë§¨ ë í•œë°”ì´íŠ¸ë§Œ ì´ˆê¸°í™”  
-    // 1 : 0 ìœ¼ë¡œ ë¡œê·¸ ì „ì²´ ì´ˆê¸°í™”
-    // 2 : randomê°’ìœ¼ë¡œ ë¡œê·¸ ì „ì²´ ì´ˆê¸°í™”
+    // ·Î±×È­ÀÏ »ý¼º½Ã È­ÀÏÀÇ ÃÊ±âÈ­  ¹æ¹ý
+    // ³»ºÎ¼Ó¼º
+    // 0 : ¸Ç ³¡ ÇÑ¹ÙÀÌÆ®¸¸ ÃÊ±âÈ­  
+    // 1 : 0 À¸·Î ·Î±× ÀüÃ¼ ÃÊ±âÈ­
+    // 2 : random°ªÀ¸·Î ·Î±× ÀüÃ¼ ÃÊ±âÈ­
     IDP_DEF(UInt, "SYNC_CREATE_",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2824,12 +3090,13 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 2, 1);
 
-    // BUG-23637 ìµœì†Œ ë””ìŠ¤í¬ ViewSCNì„ íŠ¸ëžœìž­ì…˜ë ˆë²¨ì—ì„œ Statement ë ˆë²¨ë¡œ êµ¬í•´ì•¼í•¨.
-    // SysMinViewSCNì„ ê°±ì‹ í•˜ëŠ” ì£¼ê¸°(mili-sec.)
+    // BUG-23637 ÃÖ¼Ò µð½ºÅ© ViewSCNÀ» Æ®·£Àè¼Ç·¹º§¿¡¼­ Statement ·¹º§·Î ±¸ÇØ¾ßÇÔ.
+    // SysMinViewSCNÀ» °»½ÅÇÏ´Â ÁÖ±â(mili-sec.)
     /* BUG-32944 [sm_transaction] REBUILD_MIN_VIEWSCN_INTERVAL_ - invalid
      * flag */
     IDP_DEF(UInt, "REBUILD_MIN_VIEWSCN_INTERVAL_",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2838,10 +3105,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, IDV_MAX_TIME_INTERVAL_MSEC, 100 );
 
-    // í•˜ë‚˜ì˜ OID LIST êµ¬ì¡°ì²´ì—ì„œ ì €ìž¥í•  ìˆ˜ ìžˆëŠ” OIDì˜ ê°œìˆ˜
-    // ë‚´ë¶€ ì†ì„±
+    // ÇÏ³ªÀÇ OID LIST ±¸Á¶Ã¼¿¡¼­ ÀúÀåÇÒ ¼ö ÀÖ´Â OIDÀÇ °³¼ö
+    // ³»ºÎ ¼Ó¼º
     IDP_DEF(UInt, "OID_COUNT_IN_LIST_",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2850,23 +3118,25 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, ID_UINT_MAX, 8);
 
-    // í•˜ë‚˜ì˜ TOUCH LIST êµ¬ì¡°ì²´ì—ì„œ ì €ìž¥í•  ìˆ˜ ìžˆëŠ”
-    // ê°±ì‹ ëœ íŽ˜ì´ì§€ì˜ ê°œìˆ˜
-    // ë‚´ë¶€ ì†ì„±
+    // ÇÏ³ªÀÇ TOUCH LIST ±¸Á¶Ã¼¿¡¼­ ÀúÀåÇÒ ¼ö ÀÖ´Â
+    // °»½ÅµÈ ÆäÀÌÁöÀÇ °³¼ö
+    // ³»ºÎ ¼Ó¼º
     IDP_DEF(UInt, "TRANSACTION_TOUCH_PAGE_COUNT_BY_NODE_",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
             IDP_ATTR_RD_READONLY |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            0, ID_UINT_MAX, 14 ); /* TASK-6950 : WRITABLEë¡œ ë°”ê¾¸ë©´ ì•ˆë¨. */
+            0, ID_UINT_MAX, 14 ); /* TASK-6950 : WRITABLE·Î ¹Ù²Ù¸é ¾ÈµÊ. */
 
-    // ë²„í¼í¬ê¸° ëŒ€ë¹„ íŠ¸ëžœìž­ì…˜ë‹¹ ìºì‹±í•  íŽ˜ì´ì§€ ë¹„ìœ¨
-    // ë‚´ë¶€ ì†ì„±
+    // ¹öÆÛÅ©±â ´ëºñ Æ®·£Àè¼Ç´ç Ä³½ÌÇÒ ÆäÀÌÁö ºñÀ²
+    // ³»ºÎ ¼Ó¼º
     IDP_DEF(UInt, "TRANSACTION_TOUCH_PAGE_CACHE_RATIO_",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2875,14 +3145,15 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 100, 10 );
 
-    // To Fix BUG-17371 [MMDB] Agingì´ ë°€ë¦´ê²½ìš° Systemì— ê³¼ë¶€í•˜ ë°
-    //                         Agingì´ ë°€ë¦¬ëŠ” í˜„ìƒì´ ë” ì‹¬í™”ë¨.
+    // To Fix BUG-17371 [MMDB] AgingÀÌ ¹Ð¸±°æ¿ì System¿¡ °úºÎÇÏ ¹×
+    //                         AgingÀÌ ¹Ð¸®´Â Çö»óÀÌ ´õ ½ÉÈ­µÊ.
     //
-    // => Logical Thread ì—¬ëŸ¬ê°œë¥¼ ë³‘ë ¬ë¡œ ìˆ˜í–‰í•˜ì—¬ ë¬¸ì œí•´ê²°
+    // => Logical Thread ¿©·¯°³¸¦ º´·Ä·Î ¼öÇàÇÏ¿© ¹®Á¦ÇØ°á
     //
-    // Logical Ager Threadì˜ ìµœì†Œê°¯ìˆ˜ì™€ ìµœëŒ€ê°¯ìˆ˜ë¥¼ í”„ë¡œí¼í‹°ë¡œ ì§€ì •
+    // Logical Ager ThreadÀÇ ÃÖ¼Ò°¹¼ö¿Í ÃÖ´ë°¹¼ö¸¦ ÇÁ·ÎÆÛÆ¼·Î ÁöÁ¤
     IDP_DEF(UInt, "MAX_LOGICAL_AGER_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2893,6 +3164,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "MIN_LOGICAL_AGER_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2904,6 +3176,7 @@ IDE_RC registProperties()
 #if defined(WRS_VXWORKS)
     IDP_DEF(UInt, "LOGICAL_AGER_COUNT_",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2914,6 +3187,7 @@ IDE_RC registProperties()
 #else
     IDP_DEF(UInt, "LOGICAL_AGER_COUNT_",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2926,6 +3200,7 @@ IDE_RC registProperties()
 #if defined(WRS_VXWORKS)
     IDP_DEF(UInt, "DELETE_AGER_COUNT_",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2936,6 +3211,7 @@ IDE_RC registProperties()
 #else
     IDP_DEF(UInt, "DELETE_AGER_COUNT_",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2944,12 +3220,47 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1, 99, 3);
 #endif
+
+    /* Ager ListÀÇ °¹¼ö¸¦ ÁöÁ¤ÇÏ´Â Property 
+     * default: 7
+     * min    : 1
+     * max    : 99
+     * ÇØ´ç Property´Â ¼Ò¼ö°ªÀ¸·Î ÇØ¾ß List ºÐ¹è°¡ ÀûÀýÈ÷ ÀÌ·ç¾îÁø´Ù. */
+    IDP_DEF(UInt, "__AGER_LIST_COUNT",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            1, 99, 7);
+
+    /* Delete ThreadÀÇ Parallel µ¿ÀÛÀ» ON/OFFÇÏ´Â ÇÁ·ÎÆÛÆ¼
+     * Delete ThreadÀÇ °¹¼ö´Â DELETE_AGER_COUNT_ ÇÁ·ÎÆÛÆ¼·Î Á¶ÀýÇÔ.
+     * 0 : PARALLEL µ¿ÀÛÇÏÁö ¾ÊÀ½.
+     *     __AGER_LIST_COUNT °¡ 1ÀÏ °æ¿ì 0À¸·Î ¼³Á¤½Ã Parallel µ¿ÀÛ ¾ÈÇÔ.
+     *     __AGER_LIST_COUNT °¡ 1º¸´Ù Å¬ °æ¿ì List ´ÜÀ§ Parallel·Î µ¿ÀÛ °¡´É.
+     * 1 : PARALLEL µ¿ÀÛÇÔ. 
+     */
+    IDP_DEF( UInt, "__PARALLEL_DELETE_THREAD",
+             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+             IDP_ATTR_IU_ANY |
+             IDP_ATTR_MS_ANY |
+             IDP_ATTR_LC_INTERNAL |
+             IDP_ATTR_RD_READONLY |
+             IDP_ATTR_ML_JUSTONE  |
+             IDP_ATTR_CK_CHECK,
+             0, 1, 1);
 
     // 0: serial
     // 1: parallel
-    // ë‚´ë¶€ì†ì„±
+    // ³»ºÎ¼Ó¼º
     IDP_DEF(UInt, "RESTORE_METHOD_",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2960,6 +3271,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "RESTORE_THREAD_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2971,6 +3283,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "RESTORE_AIO_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2979,10 +3292,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, ID_UINT_MAX, 0);
 
-    /* ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ ë¡œë“œì‹œ,
-       í•œë²ˆì— íŒŒì¼ì—ì„œ ë©”ëª¨ë¦¬ë¡œ ì½ì–´ë“¤ì¼ íŽ˜ì´ì§€ ìˆ˜ */
+    /* µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏ ·Îµå½Ã,
+       ÇÑ¹ø¿¡ ÆÄÀÏ¿¡¼­ ¸Þ¸ð¸®·Î ÀÐ¾îµéÀÏ ÆäÀÌÁö ¼ö */
     IDP_DEF(UInt, "RESTORE_BUFFER_PAGE_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -2993,6 +3307,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "CHECKPOINT_AIO_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3004,6 +3319,7 @@ IDE_RC registProperties()
     // To Fix BUG-9366
     IDP_DEF(UInt, "CHECKPOINT_BULK_WRITE_PAGE_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3015,6 +3331,7 @@ IDE_RC registProperties()
     // To Fix BUG-9366
     IDP_DEF(UInt, "CHECKPOINT_BULK_WRITE_SLEEP_SEC",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3026,6 +3343,7 @@ IDE_RC registProperties()
     // To Fix BUG-9366
     IDP_DEF(UInt, "CHECKPOINT_BULK_WRITE_SLEEP_USEC",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3034,13 +3352,14 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, IDV_MAX_TIME_INTERVAL_USEC, 0);
 
-    /* checkpointì‹œ flush dirty pages ê³¼ì •ì—ì„œ
-       ë°ì´íƒ€ë² ì´ìŠ¤ íŒŒì¼ syncí•˜ê¸° ìœ„í•´ writeí•´ì•¼í•˜ëŠ”
-       íŽ˜ì´ì§€ ê°œìˆ˜ ì •ì˜ ê¸°ë³¸ê°’ 100MB(3200 pages)
-       ê°’ì´ 0ì¼ ê²½ìš°ì—ëŠ” page write ìˆ˜ë¥¼ ì„¸ì§€ ì•Šê³ 
-       ëª¨ë“  pageë¥¼ ëª¨ë‘ writeí•˜ê³  ë§ˆì§€ë§‰ì— í•œë²ˆë§Œ syncí•œë‹¤.*/
+    /* checkpoint½Ã flush dirty pages °úÁ¤¿¡¼­
+       µ¥ÀÌÅ¸º£ÀÌ½º ÆÄÀÏ syncÇÏ±â À§ÇØ writeÇØ¾ßÇÏ´Â
+       ÆäÀÌÁö °³¼ö Á¤ÀÇ ±âº»°ª 100MB(3200 pages)
+       °ªÀÌ 0ÀÏ °æ¿ì¿¡´Â page write ¼ö¸¦ ¼¼Áö ¾Ê°í
+       ¸ðµç page¸¦ ¸ðµÎ writeÇÏ°í ¸¶Áö¸·¿¡ ÇÑ¹ø¸¸ syncÇÑ´Ù.*/
     IDP_DEF(UInt, "CHECKPOINT_BULK_SYNC_PAGE_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3052,6 +3371,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "CHECK_STARTUP_VERSION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3062,6 +3382,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "CHECK_STARTUP_BITMODE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3072,6 +3393,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "CHECK_STARTUP_ENDIAN",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3082,6 +3404,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "CHECK_STARTUP_LOGSIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3090,12 +3413,13 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 1);
 
-    // ì„œë²„ êµ¬ë™ì‹œ ì´ì¤‘í™”ë¥¼ ìœ„í•´ì„œ ëŒ€ìƒ í˜¸ìŠ¤íŠ¸ì™€ ì—°ê²° ì‹œ
-    // ì´ ì‹œê°„ ì´ìƒ ì‘ë‹µì´ ì—†ì„ ê²½ìš° ì—°ê²°ì„ ë” ì´ìƒ ì‹œë„í•˜ì§€ ì•Šê³ 
-    // ì§„í–‰í•œë‹¤. (ì´ˆ)
-    // ë‚´ë¶€ì†ì„±
+    // ¼­¹ö ±¸µ¿½Ã ÀÌÁßÈ­¸¦ À§ÇØ¼­ ´ë»ó È£½ºÆ®¿Í ¿¬°á ½Ã
+    // ÀÌ ½Ã°£ ÀÌ»ó ÀÀ´äÀÌ ¾øÀ» °æ¿ì ¿¬°áÀ» ´õ ÀÌ»ó ½ÃµµÇÏÁö ¾Ê°í
+    // ÁøÇàÇÑ´Ù. (ÃÊ)
+    // ³»ºÎ¼Ó¼º
     IDP_DEF(UInt, "REPLICATION_LOCK_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3104,10 +3428,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 3600, 5 /*sec*/);
 
-    /* BUG-27709 receiverì— ì˜í•œ ë°˜ì˜ì¤‘, íŠ¸ëžœìž­ì…˜ allocì´
-       ì´ ì‹œê°„ ì´ìƒì„ ëŒ€ê¸°í•˜ë©´, ì‹¤íŒ¨ì‹œí‚¤ê³  í•´ë‹¹ receiverë¥¼ ì¢…ë£Œí•œë‹¤. */
+    /* BUG-27709 receiver¿¡ ÀÇÇÑ ¹Ý¿µÁß, Æ®·£Àè¼Ç allocÀÌ
+       ÀÌ ½Ã°£ ÀÌ»óÀ» ´ë±âÇÏ¸é, ½ÇÆÐ½ÃÅ°°í ÇØ´ç receiver¸¦ Á¾·áÇÑ´Ù. */
     IDP_DEF(UInt, "__REPLICATION_TX_VICTIM_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3118,6 +3443,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "LOGFILE_PRECREATE_INTERVAL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3128,6 +3454,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "FILE_INIT_BUFFER_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3138,6 +3465,7 @@ IDE_RC registProperties()
 #if 0
     IDP_DEF(UInt, "LOG_BUFFER_LIST_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3148,6 +3476,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "LOG_BUFFER_ITEM_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3158,9 +3487,10 @@ IDE_RC registProperties()
 #endif
     // 0 : buffered IO
     // 1 : direct IO
-    // ë””ë²„ê·¸ ì†ì„±
+    // µð¹ö±× ¼Ó¼º
     IDP_DEF(UInt, "DATABASE_IO_TYPE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3169,11 +3499,12 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 0);
 
-    // Log ê¸°ë¡ì‹œ IOíƒ€ìž…
+    // Log ±â·Ï½Ã IOÅ¸ÀÔ
     // 0 : buffered IO
     // 1 : direct IO
     IDP_DEF(UInt, "LOG_IO_TYPE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3182,11 +3513,12 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 1);
 
-    /* BUG-15961: DirectIOë¥¼ ì“°ì§€ ì•ŠëŠ” System Propertyê°€ í•„ìš”í•¨*/
+    /* BUG-15961: DirectIO¸¦ ¾²Áö ¾Ê´Â System Property°¡ ÇÊ¿äÇÔ*/
     // 0 : disable
     // 1 : enable
     IDP_DEF(UInt, "DIRECT_IO_ENABLED",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3195,15 +3527,16 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 1);
 
-    /* BUG-18646: Direct Path Insertì‹œ ì—°ì†ëœ Pageì— ëŒ€í•œ Insert ì—°ì‚°ì‹œ IOë¥¼
-       Pageë‹¨ìœ„ê°€ ì•„ë‹Œ ì—¬ëŸ¬ê°œì˜ íŽ˜ì´ì§€ë¥¼ ë¬¶ì–´ì„œ í•œë²ˆì˜ IOë¡œ ìˆ˜í–‰í•˜ì—¬ì•¼ í•©ë‹ˆë‹¤. */
+    /* BUG-18646: Direct Path Insert½Ã ¿¬¼ÓµÈ Page¿¡ ´ëÇÑ Insert ¿¬»ê½Ã IO¸¦
+       Page´ÜÀ§°¡ ¾Æ´Ñ ¿©·¯°³ÀÇ ÆäÀÌÁö¸¦ ¹­¾î¼­ ÇÑ¹øÀÇ IO·Î ¼öÇàÇÏ¿©¾ß ÇÕ´Ï´Ù. */
 
-    // SD_PAGE_SIZEê°€ 8Kì¼ë•Œ ê¸°ì¤€ìœ¼ë¡œ
+    // SD_PAGE_SIZE°¡ 8KÀÏ¶§ ±âÁØÀ¸·Î
     // Default:   1M
     // Min    :   8K
     // Max    : 100M
     IDP_DEF(UInt, "BULKIO_PAGE_COUNT_FOR_DIRECT_PATH_INSERT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3212,12 +3545,13 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             128, 12800, 128);
 
-    /* Direct Path Buffer Pageê°¯ìˆ˜ë¥¼ ì§€ì • */
+    /* Direct Path Buffer Page°¹¼ö¸¦ ÁöÁ¤ */
     // Default: 1024
     // Min    : 1024
     // Max    : 2^32 - 1
     IDP_DEF(UInt, "DIRECT_PATH_BUFFER_PAGE_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3226,12 +3560,13 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1024, ID_UINT_MAX, 1024);
 
-// AIXì˜ ê²½ìš° Direct IO Pageë¥¼ 512 byteë¡œ
-// - iduFile.h ì— ê·¸ë ‡ê²Œ ì •ì˜ë˜ì–´ ìžˆì—ˆìŒ
+// AIXÀÇ °æ¿ì Direct IO Page¸¦ 512 byte·Î
+// - iduFile.h ¿¡ ±×·¸°Ô Á¤ÀÇµÇ¾î ÀÖ¾úÀ½
 #if defined(IBM_AIX)
-    // Direct I/Oì‹œ file offsetë° data sizeë¥¼ Aligní•  Pageí¬ê¸°
+    // Direct I/O½Ã file offset¹× data size¸¦ AlignÇÒ PageÅ©±â
     IDP_DEF(UInt, "DIRECT_IO_PAGE_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3239,9 +3574,10 @@ IDE_RC registProperties()
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             512, IDP_MAX_DIO_PAGE_SIZE, 512);
-#else // ê·¸ ì™¸ì˜ ê²½ìš°ëŠ” ê¸°ë³¸ê°’ì„ 4096ìœ¼ë¡œ
+#else // ±× ¿ÜÀÇ °æ¿ì´Â ±âº»°ªÀ» 4096À¸·Î
     IDP_DEF(UInt, "DIRECT_IO_PAGE_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3253,6 +3589,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "DELETE_AGER_COMMIT_INTERVAL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3262,10 +3599,11 @@ IDE_RC registProperties()
             0, ID_UINT_MAX, 100000 );
 
     // 0 : CPU count
-    // other : ì§€ì •ëœ ê°œìˆ˜
-    // ë””ë²„ê·¸ ì†ì„±
+    // other : ÁöÁ¤µÈ °³¼ö
+    // µð¹ö±× ¼Ó¼º
     IDP_DEF(UInt, "INDEX_BUILD_THREAD_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3279,6 +3617,7 @@ IDE_RC registProperties()
     // min : 0, max : ID_UINT_MAX, default : 0
     IDP_DEF(UInt, "__DISK_INDEX_BOTTOM_UP_BUILD_THRESHOLD",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3290,6 +3629,7 @@ IDE_RC registProperties()
     // min : 2, max : ID_UINT_MAX, default : 128
     IDP_DEF(UInt, "DISK_INDEX_BUILD_MERGE_PAGE_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3300,6 +3640,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "INDEX_BUILD_MIN_RECORD_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3309,13 +3650,14 @@ IDE_RC registProperties()
             0, ID_UINT_MAX, 10000);
 
     /* PROJ-1628
-       2ê°œì˜ Nodeê°€ Key redistributionì„ ìˆ˜í–‰í•œ ì´í›„ í™•ë³´ë˜ì–´ì•¼ í• 
-       Free ì˜ì—­ ë¹„ìœ¨(%). Key redistribution í›„ì— ê° ë…¸ë“œì—ì„œ
-       ì´ í”„ë¡œí¼í‹°ì— ì§€ì •ëœ í¬ê¸°ì˜ Free ì˜ì—­ì´ í™•ë³´ë˜ì§€ ì•Šìœ¼ë©´
-       splitìœ¼ë¡œ ì§„í–‰í•œë‹¤.(Hidden)
+       2°³ÀÇ Node°¡ Key redistributionÀ» ¼öÇàÇÑ ÀÌÈÄ È®º¸µÇ¾î¾ß ÇÒ
+       Free ¿µ¿ª ºñÀ²(%). Key redistribution ÈÄ¿¡ °¢ ³ëµå¿¡¼­
+       ÀÌ ÇÁ·ÎÆÛÆ¼¿¡ ÁöÁ¤µÈ Å©±âÀÇ Free ¿µ¿ªÀÌ È®º¸µÇÁö ¾ÊÀ¸¸é
+       splitÀ¸·Î ÁøÇàÇÑ´Ù.(Hidden)
      */
     IDP_DEF(UInt, "__DISK_INDEX_KEY_REDISTRIBUTION_LOW_LIMIT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3325,12 +3667,13 @@ IDE_RC registProperties()
             1, 40, 1);
 
     /* BUG-43046 
-       ë””ìŠ¤í¬ ì¸ë±ìŠ¤ê°€ ê¹¨ì ¸ì„œ sdnbBTree::traverseì—ì„œ ë¬´í•œ ë£¨í”„ë¥¼ ëŒ ê²½ìš°
-       ìµœëŒ€ traverseí•˜ëŠ” length (lengthëŠ” node í•˜ë‚˜ ë‚´ë ¤ê°ˆ ë•Œ 1ì”© ì¦ê°€í•œë‹¤.)
-       -1ì´ë©´ traverse lengthë¥¼ checkí•˜ì§€ ì•ŠëŠ”ë‹¤.
+       µð½ºÅ© ÀÎµ¦½º°¡ ±úÁ®¼­ sdnbBTree::traverse¿¡¼­ ¹«ÇÑ ·çÇÁ¸¦ µ¹ °æ¿ì
+       ÃÖ´ë traverseÇÏ´Â length (length´Â node ÇÏ³ª ³»·Á°¥ ¶§ 1¾¿ Áõ°¡ÇÑ´Ù.)
+       -1ÀÌ¸é traverse length¸¦ checkÇÏÁö ¾Ê´Â´Ù.
      */
     IDP_DEF(SLong, "__DISK_INDEX_MAX_TRAVERSE_LENGTH",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3340,12 +3683,13 @@ IDE_RC registProperties()
             -1, ID_SLONG_MAX, 1000000);
 
     /* PROJ-1628
-       Unbalanced splitì„ ìˆ˜í–‰í•  ë•Œ, ìƒˆë¡œ ìƒì„±ë˜ëŠ” Nodeê°€ ê°€ì ¸ì•¼ í•˜ëŠ”
-       Free ì˜ì—­ì˜ ë¹„ìœ¨(%). ì˜ˆë¥¼ ë“¤ì–´ 90ìœ¼ë¡œ ì§€ì •í•˜ë©´, A : Bì˜ Key ë¹„ìœ¨ì´
-       90:10ì´ ëœë‹¤ëŠ” ê²ƒì„ ì˜ë¯¸í•œë‹¤.
+       Unbalanced splitÀ» ¼öÇàÇÒ ¶§, »õ·Î »ý¼ºµÇ´Â Node°¡ °¡Á®¾ß ÇÏ´Â
+       Free ¿µ¿ªÀÇ ºñÀ²(%). ¿¹¸¦ µé¾î 90À¸·Î ÁöÁ¤ÇÏ¸é, A : BÀÇ Key ºñÀ²ÀÌ
+       90:10ÀÌ µÈ´Ù´Â °ÍÀ» ÀÇ¹ÌÇÑ´Ù.
      */
     IDP_DEF(UInt, "DISK_INDEX_UNBALANCED_SPLIT_RATE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3355,12 +3699,13 @@ IDE_RC registProperties()
             50, 99, 90);
 
     /* PROJ-1591
-       Disk RTreeì˜ Splitì„ ìˆ˜í–‰í•˜ëŠ” ë°©ì‹ì„ ê²°ì •í•œë‹¤.
-       0: ê¸°ë³¸ì ì¸ R-Tree ì•Œê³ ë¦¬ì¦˜ì˜ Split ë°©ì‹ìœ¼ë¡œ Splitì„ ìˆ˜í–‰í•œë‹¤.
-       1: R*-Tree ë°©ì‹ìœ¼ë¡œ Splitì„ ìˆ˜í–‰í•œë‹¤.
+       Disk RTreeÀÇ SplitÀ» ¼öÇàÇÏ´Â ¹æ½ÄÀ» °áÁ¤ÇÑ´Ù.
+       0: ±âº»ÀûÀÎ R-Tree ¾Ë°í¸®ÁòÀÇ Split ¹æ½ÄÀ¸·Î SplitÀ» ¼öÇàÇÑ´Ù.
+       1: R*-Tree ¹æ½ÄÀ¸·Î SplitÀ» ¼öÇàÇÑ´Ù.
      */
     IDP_DEF(UInt, "__DISK_INDEX_RTREE_SPLIT_MODE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3370,12 +3715,13 @@ IDE_RC registProperties()
             0, 1, 1);
 
     /* PROJ-1591:
-       R*-Tree ë°©ì‹ì˜ Split ëª¨ë“œì¼ ê²½ìš°ì—ë§Œ ì‚¬ìš©ë˜ëŠ” ê°’ì´ë‹¤.
-       Splitì˜ ë¶„í•  ì¶•ì„ ê²°ì •í•˜ê¸° ìœ„í•´ì„œ í‰ê°€ë  ìµœëŒ€ í‚¤ ê°¯ìˆ˜ì˜ ë¹„ìœ¨ì„
-       ê²°ì •í•œë‹¤.
+       R*-Tree ¹æ½ÄÀÇ Split ¸ðµåÀÏ °æ¿ì¿¡¸¸ »ç¿ëµÇ´Â °ªÀÌ´Ù.
+       SplitÀÇ ºÐÇÒ ÃàÀ» °áÁ¤ÇÏ±â À§ÇØ¼­ Æò°¡µÉ ÃÖ´ë Å° °¹¼öÀÇ ºñÀ²À»
+       °áÁ¤ÇÑ´Ù.
      */
     IDP_DEF(UInt, "__DISK_INDEX_RTREE_SPLIT_RATE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3388,6 +3734,7 @@ IDE_RC registProperties()
      */
     IDP_DEF(UInt, "__DISK_INDEX_RTREE_MAX_KEY_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3397,9 +3744,10 @@ IDE_RC registProperties()
             3, 500, 500);
 
     // refine parallel factor
-    // ë””ë²„ê·¸ ì†ì„±
+    // µð¹ö±× ¼Ó¼º
     IDP_DEF(UInt, "REFINE_PAGE_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3412,6 +3760,7 @@ IDE_RC registProperties()
     // 1 : enable
     IDP_DEF(UInt, "TABLE_COMPACT_AT_SHUTDOWN",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3422,9 +3771,10 @@ IDE_RC registProperties()
 
     /* BUG-33008 [sm-disk-collection] [DRDB] The migration row logic
      * generates invalid undo record.
-     * ë²„ê·¸ì— ëŒ€í•œ ì‚¬í›„ ì²˜ë¦¬ ìˆ˜í–‰ ì—¬ë¶€ */
+     * ¹ö±×¿¡ ´ëÇÑ »çÈÄ Ã³¸® ¼öÇà ¿©ºÎ */
     IDP_DEF(UInt, "__AFTER_CARE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3435,9 +3785,10 @@ IDE_RC registProperties()
 
     // 0 : disable
     // 1 : enable
-    // ë””ë²„ê·¸ ì†ì„±
+    // µð¹ö±× ¼Ó¼º
     IDP_DEF(UInt, "CHECKPOINT_ENABLED",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3446,9 +3797,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 1);
 
-    // senderê°€ ë””ìŠ¤í¬ ìƒì— ì €ìž¥ëœ ë¡œê·¸ë§Œì„ ë³´ë‚´ë„ë¡ í•  ë•Œ í™œì„±í™” ì‹œí‚¨ë‹¤.
+    // sender°¡ µð½ºÅ© »ó¿¡ ÀúÀåµÈ ·Î±×¸¸À» º¸³»µµ·Ï ÇÒ ¶§ È°¼ºÈ­ ½ÃÅ²´Ù.
     IDP_DEF(UInt, "REPLICATION_SYNC_LOG",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3459,6 +3811,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "TABLE_BACKUP_FILE_BUFFER_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3469,6 +3822,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "DEFAULT_LPCH_ALLOC_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3479,6 +3833,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "AGER_WAIT_MINIMUM",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3489,6 +3844,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "AGER_WAIT_MAXIMUM",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3498,10 +3854,11 @@ IDE_RC registProperties()
             0, ID_UINT_MAX, (1000000));
 
     /* PROJ-2268 Reuse Catalog Table Slot
-     * 0 : Catalog Table Slotì„ ìž¬ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
-     * 1 : Catalog Table Slotì„ ìž¬ì‚¬ìš©í•œë‹¤. (default) */
+     * 0 : Catalog Table SlotÀ» Àç»ç¿ëÇÏÁö ¾Ê´Â´Ù.
+     * 1 : Catalog Table SlotÀ» Àç»ç¿ëÇÑ´Ù. (default) */
     IDP_DEF( UInt, "__CATALOG_SLOT_REUSABLE",
              IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -3510,11 +3867,12 @@ IDE_RC registProperties()
              IDP_ATTR_CK_CHECK,
              0, 1, 1 );
 
-    /* TASK-6006: Index ë‹¨ìœ„ Parallel Index Rebuilding
-     * ì´ ê°’ì´ 1ì¼ ê²½ìš°ì—ëŠ” Index ë‹¨ìœ„ Parallel Index Rebuildingì„ ìˆ˜í–‰í•˜ê³ 
-     * ì´ ê°’ì´ 0ì¼ ê²½ìš° Table ë‹¨ìœ„ Parallel Index Rebuildingì„ ìˆ˜í–‰í•œë‹¤. */
+    /* TASK-6006: Index ´ÜÀ§ Parallel Index Rebuilding
+     * ÀÌ °ªÀÌ 1ÀÏ °æ¿ì¿¡´Â Index ´ÜÀ§ Parallel Index RebuildingÀ» ¼öÇàÇÏ°í
+     * ÀÌ °ªÀÌ 0ÀÏ °æ¿ì Table ´ÜÀ§ Parallel Index RebuildingÀ» ¼öÇàÇÑ´Ù. */
     IDP_DEF(SInt, "REBUILD_INDEX_PARALLEL_MODE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3524,11 +3882,12 @@ IDE_RC registProperties()
             0, 1, 1);
 
     /* BUG-40509 Change Memory Index Node Split Rate
-     * Memory Indexì—ì„œ Unbalanced splitì„ ìˆ˜í–‰í•  ë•Œ, 
-     * ìƒˆë¡œ ìƒì„±ë˜ëŠ” Nodeê°€ ê°€ì ¸ì•¼ í•˜ëŠ” Free ì˜ì—­ì˜ ë¹„ìœ¨(%). 
-     * ì˜ˆë¥¼ ë“¤ì–´ 90ìœ¼ë¡œ ì§€ì •í•˜ë©´, A : Bì˜ Key ë¹„ìœ¨ì´ 90:10ì´ ëœë‹¤ëŠ” ê²ƒì„ ì˜ë¯¸í•œë‹¤. */
+     * Memory Index¿¡¼­ Unbalanced splitÀ» ¼öÇàÇÒ ¶§, 
+     * »õ·Î »ý¼ºµÇ´Â Node°¡ °¡Á®¾ß ÇÏ´Â Free ¿µ¿ªÀÇ ºñÀ²(%). 
+     * ¿¹¸¦ µé¾î 90À¸·Î ÁöÁ¤ÇÏ¸é, A : BÀÇ Key ºñÀ²ÀÌ 90:10ÀÌ µÈ´Ù´Â °ÍÀ» ÀÇ¹ÌÇÑ´Ù. */
     IDP_DEF(UInt, "MEMORY_INDEX_UNBALANCED_SPLIT_RATE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3537,14 +3896,15 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             50, 99, 90); 
 
-// A3 -> A4ë¡œ ë°”ë€ ê²ƒ
+// A3 -> A4·Î ¹Ù²ï °Í
 
-    // ë‹¨ìœ„ ë³€ê²½ : LOCK_ESCALATION_MEMORY_SIZE (Mì—ì„œ ê·¸ëƒ¥ byteë¡œ )
-    //             ê·¸ëƒ¥ í¬ê¸°ë¡œ ì‚¬ìš©.  1024 * 1024 ë§Œí¼ ê³±í•˜ê¸° ì œê±°.
-    // BUG-18863 : LOCK_ESCALATION_MEMORY_SIZEì´ Readonlyë¡œ ë˜ì–´ìžˆìŠµë‹ˆë‹¤.
-    //             ë˜í•œ Defaultê°’ì„ 100Mìœ¼ë¡œ ë°”ê¾¸ì–´ì•¼ í•©ë‹ˆë‹¤.
+    // ´ÜÀ§ º¯°æ : LOCK_ESCALATION_MEMORY_SIZE (M¿¡¼­ ±×³É byte·Î )
+    //             ±×³É Å©±â·Î »ç¿ë.  1024 * 1024 ¸¸Å­ °öÇÏ±â Á¦°Å.
+    // BUG-18863 : LOCK_ESCALATION_MEMORY_SIZEÀÌ Readonly·Î µÇ¾îÀÖ½À´Ï´Ù.
+    //             ¶ÇÇÑ Default°ªÀ» 100MÀ¸·Î ¹Ù²Ù¾î¾ß ÇÕ´Ï´Ù.
     IDP_DEF(UInt, "LOCK_ESCALATION_MEMORY_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3553,16 +3913,17 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1000 * 1024 * 1024, 100 * 1024 * 1024 );
 
-    /* BUG-19080: Old Versionì˜ ì–‘ì´ ì¼ì •ì´ìƒ ë§Œë“¤ë©´ Transactionì„ Abortí•˜ëŠ” ê¸°ëŠ¥ì´
-     *            í•„ìš”í•©ë‹ˆë‹¤.
+    /* BUG-19080: Old VersionÀÇ ¾çÀÌ ÀÏÁ¤ÀÌ»ó ¸¸µé¸é TransactionÀ» AbortÇÏ´Â ±â´ÉÀÌ
+     *            ÇÊ¿äÇÕ´Ï´Ù.
      *
-     *       # ê¸°ë³¸ê°’: 10M
-     *       # ìµœì†Œê°’: 0 < 0ì´ë©´ ì´ PropertyëŠ” ë™ìž‘í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. >
-     *       # ìµœëŒ€ê°’: ID_ULONG_MAX
-     *       # ì†  ì„±: Session Propertyìž…ë‹ˆë‹¤.
+     *       # ±âº»°ª: 10M
+     *       # ÃÖ¼Ò°ª: 0 < 0ÀÌ¸é ÀÌ Property´Â µ¿ÀÛÇÏÁö ¾Ê½À´Ï´Ù. >
+     *       # ÃÖ´ë°ª: ID_ULONG_MAX
+     *       # ¼Ó  ¼º: Session PropertyÀÔ´Ï´Ù.
      **/
     IDP_DEF( ULong, "TRX_UPDATE_MAX_LOGSIZE",
              IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -3572,15 +3933,16 @@ IDE_RC registProperties()
              0, ID_ULONG_MAX, (10 * 1024 * 1024) );
 
     /* PROJ-2162 RestartRiskReduction
-     * Startupì‹œ MMDB Index Buildì‹œ ë™ì‹œì— ëª‡ê°œì˜ Indexë¥¼
-     * Buildí•  ê²ƒì¸ê°€.*/
+     * Startup½Ã MMDB Index Build½Ã µ¿½Ã¿¡ ¸î°³ÀÇ Index¸¦
+     * BuildÇÒ °ÍÀÎ°¡.*/
     /* BUG-32996 [sm-mem-index] The default value of
      * INDEX_REBUILD_PARALLEL_FACTOR_AT_STARTUP need to adjust */
-    /* BUG-37977 ê¸°ë³¸ ê°’ì„ ì½”ì–´ ìˆ˜ì— ë”°ë¼ ë‹¤ë¥´ê²Œ ìˆ˜ì •
-     * ì½”ì–´ìˆ˜ê°€ 4ë³´ë‹¤ í´ ê²½ìš°ì—ë„ 4ë¡œ ì œí•œí•œë‹¤.
-     * ì´ ìˆ˜ì •ì€ ì°¨í›„ smuWorkerThreadMgrê°€ ê°œì„ ë˜ë©´ ì œê±°í•  ì˜ˆì •ì´ë‹¤. */
+    /* BUG-37977 ±âº» °ªÀ» ÄÚ¾î ¼ö¿¡ µû¶ó ´Ù¸£°Ô ¼öÁ¤
+     * ÄÚ¾î¼ö°¡ 4º¸´Ù Å¬ °æ¿ì¿¡µµ 4·Î Á¦ÇÑÇÑ´Ù.
+     * ÀÌ ¼öÁ¤Àº Â÷ÈÄ smuWorkerThreadMgr°¡ °³¼±µÇ¸é Á¦°ÅÇÒ ¿¹Á¤ÀÌ´Ù. */
     IDP_DEF(UInt, "INDEX_REBUILD_PARALLEL_FACTOR_AT_STARTUP",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3591,14 +3953,15 @@ IDE_RC registProperties()
             1, 512, IDP_LIMITED_CORE_COUNT( 1, 4 ) );
 
     /* - BUG-14053
-       System ë©”ëª¨ë¦¬ ë¶€ì¡±ì‹œ Server Startì‹œ Meta Tableì˜ Indexë§Œì„
-       Createí•˜ê³  Startí•˜ëŠ” í”„ë¡œí¼í‹° ì¶”ê°€.
-       INDEX_REBUILD_AT_STARTUP = 1: Startì‹œ ëª¨ë“  Index Rebuild
-       INDEX_REBUILD_AT_STARTUP = 0: Startì‹œ Meta Tableì˜ Indexë§Œ
+       System ¸Þ¸ð¸® ºÎÁ·½Ã Server Start½Ã Meta TableÀÇ Index¸¸À»
+       CreateÇÏ°í StartÇÏ´Â ÇÁ·ÎÆÛÆ¼ Ãß°¡.
+       INDEX_REBUILD_AT_STARTUP = 1: Start½Ã ¸ðµç Index Rebuild
+       INDEX_REBUILD_AT_STARTUP = 0: Start½Ã Meta TableÀÇ Index¸¸
        Rebuild
     */
     IDP_DEF(UInt, "INDEX_REBUILD_AT_STARTUP",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3607,14 +3970,32 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 1);
 
+    /* BUG-47540: Åë°è Á¤º¸ ÀÚµ¿ ¼öÁý ±â´É¿¡¼­ ºÁ¾ß ÇÏ´Â ¾ÕµÚ °ªÀÌ ´Ù¸¥
+     * ³ëµå¿¡ °ÉÃÄÀÖÀ» ¶§ µ¿½Ã¼ºÀ» °í·ÁÇÏÁö ¾Ê°í ¼öÇàµÇ±â ¶§¹®¿¡ Á¾Á¾
+     * ÀÌ¹Ì º¯°æµÈ ¶Ç´Â º¯°æÁßÀÎ row¸¦ °Çµå¸± ¼ö ÀÖ´Ù. ÀÌ ÇÁ·ÎÆÛÆ¼¸¦ ÄÑ¸é
+     * Åë°è Á¤º¸ ÀÚµ¿ ¼öÁý Áß ÀÌ¿Í °°Àº °æ¿ì ÇØ´ç µ¥ÀÌÅ¸¿¡ ´ëÇÑ Á¢±ÙÀ»
+     * Skip ÇÑ´Ù.
+     */
+    IDP_DEF(UInt, "__SKIP_IDX_STAT_NODE_BOUND",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 1);
+
 // smi
     /* TASK-4990 changing the method of collecting index statistics
-     * 0 (Manual)       - í†µê³„ì •ë³´ ìž¬êµ¬ì¶•ì‹œì—ë§Œ ê°±ì‹ ë¨
-     * 1 (Accumulation) - Rowê°€ ë³€ê²½ë ë•Œë§ˆë‹¤ ëˆ„ì ì‹œí‚´(5.5.1 ì´í•˜ ë²„ì „)*/
+     * 0 (Manual)       - Åë°èÁ¤º¸ Àç±¸Ãà½Ã¿¡¸¸ °»½ÅµÊ
+     * 1 (Accumulation) - Row°¡ º¯°æµÉ¶§¸¶´Ù ´©Àû½ÃÅ´(5.5.1 ÀÌÇÏ ¹öÀü)*/
     /* BUG-33203 [sm_transaction] change the default value of 
      * __DBMS_STAT_METHOD, MUTEX_TYPE, and LATCH_TYPE properties */
     IDP_DEF(UInt, "__DBMS_STAT_METHOD",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3625,16 +4006,17 @@ IDE_RC registProperties()
 
     /* 
      * BUG-35163 - [sm_index] [SM] add some exception properties for __DBMS_STAT_METHOD
-     * ì•„ëž˜ 3 í”„ë¡œí¼í‹°ëŠ” __DBMS_STAT_METHOD ì„¤ì •ì— ì˜ˆì™¸ë¥¼ ë‘ê¸° ìœ„í•¨ì´ë‹¤.
+     * ¾Æ·¡ 3 ÇÁ·ÎÆÛÆ¼´Â __DBMS_STAT_METHOD ¼³Á¤¿¡ ¿¹¿Ü¸¦ µÎ±â À§ÇÔÀÌ´Ù.
      *
-     * ë§Œì•½ ì•„ëž˜ í”„ë¡œí¼í‹°ê°€ ì„¤ì •ë˜ì–´ ìžˆìœ¼ë©´ __DBMS_STAT_METHOD ì„¤ì •ì„ ë¬´ì‹œí•˜ê³ 
-     * í•´ë‹¹ í”„ë¡œí¼í‹°ì˜ ì„¤ì •ì„ ë”°ë¥´ê²Œ ëœë‹¤.
-     * ì˜ˆë¥¼ ë“¤ì–´ __DBMS_STAT_METHOD=0 ì¼ë•Œ,
-     * __DBMS_STAT_METHOD_FOR_VRDB=1 ë¡œ ì„¤ì •í•˜ë©´ Volatile TBSì— ëŒ€í•´ì„œëŠ”
-     * í†µê³„ ê°±ì‹ ì„ MANUALì´ ì•„ë‹Œ AUTOë¡œ ì²˜ë¦¬í•˜ê²Œ ëœë‹¤.
+     * ¸¸¾à ¾Æ·¡ ÇÁ·ÎÆÛÆ¼°¡ ¼³Á¤µÇ¾î ÀÖÀ¸¸é __DBMS_STAT_METHOD ¼³Á¤À» ¹«½ÃÇÏ°í
+     * ÇØ´ç ÇÁ·ÎÆÛÆ¼ÀÇ ¼³Á¤À» µû¸£°Ô µÈ´Ù.
+     * ¿¹¸¦ µé¾î __DBMS_STAT_METHOD=0 ÀÏ¶§,
+     * __DBMS_STAT_METHOD_FOR_VRDB=1 ·Î ¼³Á¤ÇÏ¸é Volatile TBS¿¡ ´ëÇØ¼­´Â
+     * Åë°è °»½ÅÀ» MANUALÀÌ ¾Æ´Ñ AUTO·Î Ã³¸®ÇÏ°Ô µÈ´Ù.
      */
     IDP_DEF(UInt, "__DBMS_STAT_METHOD_FOR_MRDB",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3645,6 +4027,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "__DBMS_STAT_METHOD_FOR_VRDB",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3655,6 +4038,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "__DBMS_STAT_METHOD_FOR_DRDB",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3664,19 +4048,20 @@ IDE_RC registProperties()
             0, 1, 0);
 
     /* TASK-4990 changing the method of collecting index statistics
-     * í†µê³„ì •ë³´ íšë“ì‹œ Sampling ìžë™ ê³„ì‚°ìš© ê¸°ì¤€ íŽ˜ì´ì§€ ê°œìˆ˜
-     * ê¸°ë³¸ì€ 131072ê°œ. ë”°ë¼ì„œ Page 131072 ì´í•˜ì˜ PageëŠ” 100% ë‹¤ ê°€ì ¸ì˜¤ê³ ,
-     * ê·¸ ì´ìƒì€ ì ê²Œ ê°€ì ¸ì™€ì„œ Sampling í•œë‹¤.
-     * ê¸°ë³¸ê°’ 131072, PAGE SIZE :8K ê¸°ì¤€ìœ¼ë¡œ Samplingí¬ê¸°ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.
+     * Åë°èÁ¤º¸ È¹µæ½Ã Sampling ÀÚµ¿ °è»ê¿ë ±âÁØ ÆäÀÌÁö °³¼ö
+     * ±âº»Àº 131072°³. µû¶ó¼­ Page 131072 ÀÌÇÏÀÇ Page´Â 100% ´Ù °¡Á®¿À°í,
+     * ±× ÀÌ»óÀº Àû°Ô °¡Á®¿Í¼­ Sampling ÇÑ´Ù.
+     * ±âº»°ª 131072, PAGE SIZE :8K ±âÁØÀ¸·Î SamplingÅ©±â´Â ´ÙÀ½°ú °°´Ù.
      * 1GB    = 100% 
      * 2GB    = 70.71%  
      * 10GB   = 31.62%
      * 100GB  = 10%
      *
-     * BUG-42832 í”„ë¡œí¼í‹°ì˜ ê¸°ë³¸ê°’ì„ 4096ìœ¼ë¡œ ë³€ê²½í•©ë‹ˆë‹¤.
+     * BUG-42832 ÇÁ·ÎÆÛÆ¼ÀÇ ±âº»°ªÀ» 4096À¸·Î º¯°æÇÕ´Ï´Ù.
      */
     IDP_DEF(UInt, "__DBMS_STAT_SAMPLING_BASE_PAGE_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3687,9 +4072,10 @@ IDE_RC registProperties()
 
 
     /* TASK-4990 changing the method of collecting index statistics
-     * í†µê³„ì •ë³´ íšë“ì‹œ Parallel ê¸°ë³¸ê°’ */
+     * Åë°èÁ¤º¸ È¹µæ½Ã Parallel ±âº»°ª */
     IDP_DEF(UInt, "__DBMS_STAT_PARALLEL_DEGREE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3699,10 +4085,11 @@ IDE_RC registProperties()
             1, ID_UINT_MAX, 1 );
 
     /* TASK-4990 changing the method of collecting index statistics
-     * Columní†µê³„ì •ë³´ ë“± ìƒˆë¡œ ë³´ê°•ëœ í†µê³„ì •ë³´ë¥¼ ìˆ˜ì§‘í• ì§€ ì—¬ë¶€
+     * ColumnÅë°èÁ¤º¸ µî »õ·Î º¸°­µÈ Åë°èÁ¤º¸¸¦ ¼öÁýÇÒÁö ¿©ºÎ
      * 0 (No) - 1 (Yes) */
     IDP_DEF(UInt, "__DBMS_STAT_GATHER_INTERNALSTAT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3712,10 +4099,11 @@ IDE_RC registProperties()
             0, 1, 1);
 
     /* TASK-4990 changing the method of collecting index statistics
-     * Row ê°œìˆ˜ê°€ ì´ì „ í†µê³„ì •ë³´ ìˆ˜ì§‘ì‹œì— N%ë¥¼ ë„˜ì–´ê°€ë©´, í†µê³„ì •ë³´ë¥¼ ìž¬ìˆ˜ì§‘í•œë‹¤.
-     * ì´ PropertyëŠ” N%ë¥¼ ì˜ë¯¸í•œë‹¤. */
+     * Row °³¼ö°¡ ÀÌÀü Åë°èÁ¤º¸ ¼öÁý½Ã¿¡ N%¸¦ ³Ñ¾î°¡¸é, Åë°èÁ¤º¸¸¦ Àç¼öÁýÇÑ´Ù.
+     * ÀÌ Property´Â N%¸¦ ÀÇ¹ÌÇÑ´Ù. */
     IDP_DEF(UInt, "__DBMS_STAT_AUTO_PERCENTAGE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3725,10 +4113,11 @@ IDE_RC registProperties()
             0, 100,  10 );
 
     /* TASK-4990 changing the method of collecting index statistics
-     * ë‹¤ìŒ ì‹œê°„(SEC)ë§Œí¼ íë¥¸ í›„ í†µê³„ì •ë³´ ìžë™ ìˆ˜ì§‘ ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
-     * 0ì´ë©´ ë™ìž‘í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+     * ´ÙÀ½ ½Ã°£(SEC)¸¸Å­ Èå¸¥ ÈÄ Åë°èÁ¤º¸ ÀÚµ¿ ¼öÁý ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
+     * 0ÀÌ¸é µ¿ÀÛÇÏÁö ¾Ê´Â´Ù. */
     IDP_DEF(UInt, "__DBMS_STAT_AUTO_INTERVAL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3738,11 +4127,12 @@ IDE_RC registProperties()
             0, IDV_MAX_TIME_INTERVAL_SEC, 0);
 
     // BUG-20789
-    // SM ì†ŒìŠ¤ì—ì„œ contentionì´ ë°œìƒí•  ìˆ˜ ìžˆëŠ” ë¶€ë¶„ì—
-    // ë‹¤ì¤‘í™”ë¥¼ í•  ê²½ìš° CPUí•˜ë‚˜ë‹¹ ëª‡ í´ë¼ì´ì–¸íŠ¸ë¥¼ ì˜ˆìƒí•  ì§€ë¥¼ ë‚˜íƒ€ë‚´ëŠ” ìƒìˆ˜
-    // SM_SCALABILITYëŠ” CPUê°œìˆ˜ ê³±í•˜ê¸° ì´ê°’ì´ë‹¤.
+    // SM ¼Ò½º¿¡¼­ contentionÀÌ ¹ß»ýÇÒ ¼ö ÀÖ´Â ºÎºÐ¿¡
+    // ´ÙÁßÈ­¸¦ ÇÒ °æ¿ì CPUÇÏ³ª´ç ¸î Å¬¶óÀÌ¾ðÆ®¸¦ ¿¹»óÇÒ Áö¸¦ ³ªÅ¸³»´Â »ó¼ö
+    // SM_SCALABILITY´Â CPU°³¼ö °öÇÏ±â ÀÌ°ªÀÌ´Ù.
     IDP_DEF(UInt, "SCALABILITY_PER_CPU",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3751,13 +4141,14 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1, 128, 2);
 
-    /* BUG-22235: CPUê°¯ìˆ˜ê°€ ë‹¤ëŸ‰ì¼ë•Œ Memoryë¥¼ ë§Žì´ ì‚¬ìš©í•˜ëŠ” ë¬¸ì œê°€ ìžˆìŠµë‹ˆë‹¤.
+    /* BUG-22235: CPU°¹¼ö°¡ ´Ù·®ÀÏ¶§ Memory¸¦ ¸¹ÀÌ »ç¿ëÇÏ´Â ¹®Á¦°¡ ÀÖ½À´Ï´Ù.
      *
-     * ë‹¤ì¤‘í™” ê°¯ìˆ˜ê°€ ì´ ê°¯ìˆ˜ë¥¼ ë„˜ì–´ê°€ë©´ ì´ ê°’ìœ¼ë¡œ ë³´ì •í•œë‹¤.
+     * ´ÙÁßÈ­ °¹¼ö°¡ ÀÌ °¹¼ö¸¦ ³Ñ¾î°¡¸é ÀÌ °ªÀ¸·Î º¸Á¤ÇÑ´Ù.
      * */
 #if defined(ALTIBASE_PRODUCT_HDB)
     IDP_DEF(UInt, "MAX_SCALABILITY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3768,6 +4159,7 @@ IDE_RC registProperties()
 #else
     IDP_DEF(UInt, "MAX_SCALABILITY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3779,10 +4171,11 @@ IDE_RC registProperties()
 
 // for sdnhTempHash
 /* --------------------------------------------------------------------
- * temp hash indexì—ì„œ ë§Œë“¤ì–´ ì§ˆìˆ˜ìžˆëŠ” ìµœëŒ€ hash table  ê°œìˆ˜ì´ë‹¤.
+ * temp hash index¿¡¼­ ¸¸µé¾î Áú¼öÀÖ´Â ÃÖ´ë hash table  °³¼öÀÌ´Ù.
  * ----------------------------------------------------------------- */
     IDP_DEF(UInt, "MAX_TEMP_HASHTABLE_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3792,11 +4185,12 @@ IDE_RC registProperties()
             1, 128, 128);
 #if 0
 // sda
-    // BUFFER POOLì˜ íŽ˜ì´ì§€ ê°œìˆ˜ì— ë¹„ë¡€í•œ TSSì˜ ê°œìˆ˜ì˜ %ê°’
-    // TSSê°œìˆ˜ë¥¼ BUFFERì˜ ëª‡%ë¡œ ì œí•œí•¨ìœ¼ë¡œì¨ undo íŽ˜ì´ì§€ì˜ ë¬´í•œ í™•ìž¥ì„ ë§‰ëŠ”ë‹¤.
-    // 0 ì¼ ê²½ìš°ì—ëŠ” TSSì˜ ê°œìˆ˜ê°€ ë¬´í•œìœ¼ë¡œ ì‚¬ìš©ê°€ëŠ¥í•˜ë‹¤.
+    // BUFFER POOLÀÇ ÆäÀÌÁö °³¼ö¿¡ ºñ·ÊÇÑ TSSÀÇ °³¼öÀÇ %°ª
+    // TSS°³¼ö¸¦ BUFFERÀÇ ¸î%·Î Á¦ÇÑÇÔÀ¸·Î½á undo ÆäÀÌÁöÀÇ ¹«ÇÑ È®ÀåÀ» ¸·´Â´Ù.
+    // 0 ÀÏ °æ¿ì¿¡´Â TSSÀÇ °³¼ö°¡ ¹«ÇÑÀ¸·Î »ç¿ë°¡´ÉÇÏ´Ù.
     IDP_DEF(UInt, "TSS_CNT_PCT_TO_BUFFER_POOL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3806,21 +4200,23 @@ IDE_RC registProperties()
             0, 100,(0));
 #endif
 //smx
-    // transaction tableì´ fullìƒí™©ì—ì„œ transactionì„ allocëª»ë°›ì„ ê²½ìš°ì—
-    // ëŒ€ê¸° í•˜ëŠ”  ì‹œê°„ micro sec.
+    // transaction tableÀÌ full»óÈ²¿¡¼­ transactionÀ» alloc¸ø¹ÞÀ» °æ¿ì¿¡
+    // ´ë±â ÇÏ´Â  ½Ã°£ micro sec.
     IDP_DEF(UInt, "TRANS_ALLOC_WAIT_TIME",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
             IDP_ATTR_RD_WRITABLE |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            1, (60000000) /* 60ì´ˆ */ , (80));
+            1, (60000000) /* 60ÃÊ */ , (80));
 
     // PROJ-1566 : Private Buffer Page
     IDP_DEF(UInt, "PRIVATE_BUFFER_PAGE_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3829,14 +4225,45 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, ID_UINT_MAX, 0);
 
-    // PROJ-1704 Disk MVCC ë¦¬ë‰´ì–¼
-    // íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ ê°œìˆ˜ ì§€ì •
-    // íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ìµœëŒ€ ê°œìˆ˜ëŠ” ì²«ë²ˆì§¸
-    // ë°ì´íƒ€íŒŒì¼ì˜ File Space Headerì— ì €ìž¥ë  ìˆ˜ ìžˆëŠ”
-    // SegHdr PIDì˜ ê°œìˆ˜ì´ë‹¤. SegHdr PID ê°€ 4 ë°”ì´íŠ¸ì´ê³ 
-    // TSSEG 512ê°œ UDSEG 512ê°œê¹Œì§€ ìƒì„±í•˜ê³  ì €ìž¥í• ìˆ˜ ìžˆìŒ.
+    // BUG-47525 GROUP COMMIT COUNT
+    // Group CommitÀÌ µ¿ÀÛÇÒ¶§ ÃÖ´ë ¸î°³±îÁö TxÀ» GroupÈ­ ÇÏ´ÂÁö °áÁ¤ÇÏ´Â Property
+    // ÃÖ´ë °ªÀÌ±â ¶§¹®¿¡ ½ÇÁ¦·Î 1°³¸¸ Group È­ µÇ´Â °æ¿ìµµ ¹ß»ýÇÑ´Ù.
+    // 0À¸·Î ¼³Á¤µÇ¾î ÀÖÀ¸¸é Group CommitÀ» Off ÇÑ´Ù.
+    // Min : 0, Max : 50, Default : 10
+    IDP_DEF(UInt, "__GROUP_COMMIT_COUNT",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 50, 10);
+
+    // BUG-47525 GROUP COMMIT LIST COUNT
+    // Group CommitÀ» À§ÇØ TxÀ» ¸ðÀ¸´Â ListÀÇ °¹¼ö
+    // Write ¿¬»êÀÌ ´À¸®±â ¶§¹®¿¡ Write¿¡ µé¾î°£ µ¿¾È
+    // TxÀ» GroupÈ­ ÇÒ List´Â ¿©·¯°³ ¿©¾ß ÇÑ´Ù. 
+    // Min : 2, Max : 50, Default : 8
+    IDP_DEF(UInt, "__GROUP_COMMIT_LIST_COUNT",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            2, 50, 8);
+
+    // PROJ-1704 Disk MVCC ¸®´º¾ó
+    // Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸® °³¼ö ÁöÁ¤
+    // Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ÃÖ´ë °³¼ö´Â Ã¹¹øÂ°
+    // µ¥ÀÌÅ¸ÆÄÀÏÀÇ File Space Header¿¡ ÀúÀåµÉ ¼ö ÀÖ´Â
+    // SegHdr PIDÀÇ °³¼öÀÌ´Ù. SegHdr PID °¡ 4 ¹ÙÀÌÆ®ÀÌ°í
+    // TSSEG 512°³ UDSEG 512°³±îÁö »ý¼ºÇÏ°í ÀúÀåÇÒ¼ö ÀÖÀ½.
     IDP_DEF(UInt, "TRANSACTION_SEGMENT_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3845,11 +4272,12 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1, 512, (256));
 
-    // íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ í…Œì´ë¸”ì´ ëª¨ë‘ ONLINEì¸ ìƒí™©ì—ì„œ
-    // íŠ¸ëžœìž­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì—”íŠ¸ë¦¬ë¥¼ í• ë‹¹ ë°›ì§€ ëª»í•  ê²½ìš°ì—
-    // ëŒ€ê¸° í•˜ëŠ” ì‹œê°„ micro sec.
+    // Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® Å×ÀÌºíÀÌ ¸ðµÎ ONLINEÀÎ »óÈ²¿¡¼­
+    // Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® ¿£Æ®¸®¸¦ ÇÒ´ç ¹ÞÁö ¸øÇÒ °æ¿ì¿¡
+    // ´ë±â ÇÏ´Â ½Ã°£ micro sec.
     IDP_DEF(UInt, "TRANSACTION_SEGMENT_ALLOC_WAIT_TIME_",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3858,9 +4286,37 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1, ID_UINT_MAX , (80));
 
+    // BUG-47365 ·Î±× ¾ÐÃà ¸®¼Ò½ºÀÇ Àç »ç¿ë ¿©ºÎ
+    // 0 : Àç»ç¿ëÇÏÁö ¾Ê°í Æ®·£Àè¼Ç Á¾·á½Ã ¹ÝÈ¯
+    // 1 : Æ®·£Àè¼Ç Á¾·á½Ã ¹ÝÈ¯ÇÏÁö ¾Ê°í Àç»ç¿ë
+    IDP_DEF(UInt, "LOG_COMP_RESOURCE_REUSE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 1);
+
+    // BUG-47365 ·Î±× ¾ÐÃà ¸®¼Ò½º Àç»ç¿ë½Ã
+    // ¹Ý³³ÇÏÁö ¾Ê°í °¡Áö°í ÀÖÀ» Size
+    IDP_DEF(UInt, "COMP_RES_TUNE_SIZE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            512, ID_UINT_MAX, (32 * 1024));
+
 #if 0
     IDP_DEF(UInt, "TRANS_KEEP_TABLE_INFO_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3872,26 +4328,28 @@ IDE_RC registProperties()
 
 #if defined(ALTIBASE_PRODUCT_XDB)
     // BUG-40960 : [sm-transation] [HDB DA] make transaction suspend sleep time tunable
-    // transactionì´ suspendë  ë•Œ, í•œ ë²ˆì— sleepí•  ì‹œê°„
+    // transactionÀÌ suspendµÉ ¶§, ÇÑ ¹ø¿¡ sleepÇÒ ½Ã°£
     IDP_DEF(UInt, "TRANS_SUSPEND_SLEEP_USEC",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
             IDP_ATTR_RD_WRITABLE |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            1, (1000000) /* 1ì´ˆ */ , (20));
+            1, (1000000) /* 1ÃÊ */ , (20));
 #endif
 
 // sdd
-    // altibase ì„œë²„ê°€ ìµœëŒ€ ì—´ìˆ˜ ìžˆëŠ” datafileì˜ ê°œìˆ˜
-    // ì´ ê°œìˆ˜ëŠ” í•­ìƒ systemì˜ ìµœëŒ€ datafileì˜ ê°œìˆ˜ë³´ë‹¤
-    // ìž‘ì•„ì•¼ í•œë‹¤. ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ systemì˜ ëª¨ë“  open í™”ì¼ì„
-    // altibaseê°€ ì „ë¶€ ì ë ¹í•˜ì—¬ ë‹¤ë¥¸ processê°€ í™”ì¼ì„ open
-    // í•  ìˆ˜ ì—†ëŠ” ìƒí™©ì´ ë°œìƒí•  ì§€ ëª¨ë¥¸ë‹¤.
+    // altibase ¼­¹ö°¡ ÃÖ´ë ¿­¼ö ÀÖ´Â datafileÀÇ °³¼ö
+    // ÀÌ °³¼ö´Â Ç×»ó systemÀÇ ÃÖ´ë datafileÀÇ °³¼öº¸´Ù
+    // ÀÛ¾Æ¾ß ÇÑ´Ù. ±×·¸Áö ¾ÊÀ¸¸é systemÀÇ ¸ðµç open È­ÀÏÀ»
+    // altibase°¡ ÀüºÎ Á¡·ÉÇÏ¿© ´Ù¸¥ process°¡ È­ÀÏÀ» open
+    // ÇÒ ¼ö ¾ø´Â »óÈ²ÀÌ ¹ß»ýÇÒ Áö ¸ð¸¥´Ù.
     IDP_DEF(UInt, "MAX_OPEN_DATAFILE_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3900,12 +4358,13 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1, ID_UINT_MAX, 200);
 
-    // ìµœëŒ€ ì—´ ìˆ˜ ìžˆëŠ” í™”ì¼ì´ ì´ë¯¸ ì—´ë ¤ ìžˆì–´
-    // í™”ì¼ì„ ì—´ ìˆ˜ ì—†ëŠ” ê²½ìš° í™”ì¼ì„ ì—´ê¸° ìœ„í•´ ëŒ€ê¸°í•˜ëŠ” ì‹œê°„
-    // ì´ ì‹œê°„ì´ ì§€ë‚˜ë©´ ë”ì´ìƒ ê¸°ë‹¤ë¦¬ì§€ ì•Šê³  ì—ëŸ¬ë¥¼ ë¦¬í„´í•œë‹¤.
-    // ì´ˆë¡œ ì§€ì •
+    // ÃÖ´ë ¿­ ¼ö ÀÖ´Â È­ÀÏÀÌ ÀÌ¹Ì ¿­·Á ÀÖ¾î
+    // È­ÀÏÀ» ¿­ ¼ö ¾ø´Â °æ¿ì È­ÀÏÀ» ¿­±â À§ÇØ ´ë±âÇÏ´Â ½Ã°£
+    // ÀÌ ½Ã°£ÀÌ Áö³ª¸é ´õÀÌ»ó ±â´Ù¸®Áö ¾Ê°í ¿¡·¯¸¦ ¸®ÅÏÇÑ´Ù.
+    // ÃÊ·Î ÁöÁ¤
     IDP_DEF(UInt, "OPEN_DATAFILE_WAIT_INTERVAL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3914,12 +4373,13 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, IDV_MAX_TIME_INTERVAL_SEC, 10);
 
-    // ë°ì´íƒ€ íŒŒì¼ backupì´ ì¢…ë£Œë˜ê¸°ê¹Œì§€ ëŒ€ê¸° ì‹œê°„(ì´ˆ) ë˜ëŠ”
-    // ë°ì´íƒ€ íŒŒì¼ backupì´ ì¢…ë£Œë˜ê³ , page image logë¥¼
-    // ë°ì´íƒ€ íŒŒì¼ì— ì ìš©í•˜ëŠ” ê²ƒì„ ëŒ€ê¸°í•˜ëŠ” ì‹œê°„(ì´ˆ)
+    // µ¥ÀÌÅ¸ ÆÄÀÏ backupÀÌ Á¾·áµÇ±â±îÁö ´ë±â ½Ã°£(ÃÊ) ¶Ç´Â
+    // µ¥ÀÌÅ¸ ÆÄÀÏ backupÀÌ Á¾·áµÇ°í, page image log¸¦
+    // µ¥ÀÌÅ¸ ÆÄÀÏ¿¡ Àû¿ëÇÏ´Â °ÍÀ» ´ë±âÇÏ´Â ½Ã°£(ÃÊ)
 
     IDP_DEF(UInt, "BACKUP_DATAFILE_END_WAIT_INTERVAL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -3928,13 +4388,14 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, IDV_MAX_TIME_INTERVAL_SEC, 8);
 
-    // ë°ì´í„° íŒŒì¼ì„ ìƒì„±í•  ë•Œ ë°ì´í„° ì´ˆê¸°í™”í•˜ëŠ” ë‹¨ìœ„
-    // ì´ ê°’ì€ íŽ˜ì´ì§€ ê°œìˆ˜ì´ë‹¤.
-    // minì€ 1ê°œ ì¦‰ 8192ë°”ì´íŠ¸ì´ê³ 
-    // maxëŠ” 1024 íŽ˜ì´ì§€ ì¦‰ 8M ì´ë©°
-    // ê¸°ë³¸ê°’ì€ 1024 íŽ˜ì´ì§€ ì¦‰ 8Mì´ë‹¤.
+    // µ¥ÀÌÅÍ ÆÄÀÏÀ» »ý¼ºÇÒ ¶§ µ¥ÀÌÅÍ ÃÊ±âÈ­ÇÏ´Â ´ÜÀ§
+    // ÀÌ °ªÀº ÆäÀÌÁö °³¼öÀÌ´Ù.
+    // minÀº 1°³ Áï 8192¹ÙÀÌÆ®ÀÌ°í
+    // max´Â 1024 ÆäÀÌÁö Áï 8M ÀÌ¸ç
+    // ±âº»°ªÀº 1024 ÆäÀÌÁö Áï 8MÀÌ´Ù.
     IDP_DEF(ULong, "DATAFILE_WRITE_UNIT_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3943,13 +4404,14 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1, 1024, 1024);
 
-    /* To Fix TASK-2688 DRDBì˜ Datafileì— ì—¬ëŸ¬ê°œì˜ FD( File Descriptor )
-     * ì—´ì–´ì„œ ê´€ë¦¬í•´ì•¼ í•¨
+    /* To Fix TASK-2688 DRDBÀÇ Datafile¿¡ ¿©·¯°³ÀÇ FD( File Descriptor )
+     * ¿­¾î¼­ °ü¸®ÇØ¾ß ÇÔ
      *
-     * í•˜ë‚˜ì˜ DRDBì˜ Data Fileë‹¹ Opení•  ìˆ˜ ìžˆëŠ” FDì˜ ìµœëŒ€ ê°¯ìˆ˜
+     * ÇÏ³ªÀÇ DRDBÀÇ Data File´ç OpenÇÒ ¼ö ÀÖ´Â FDÀÇ ÃÖ´ë °¹¼ö
      * */
     IDP_DEF(UInt, "DRDB_FD_MAX_COUNT_PER_DATAFILE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3961,11 +4423,12 @@ IDE_RC registProperties()
 #if defined(ALTIBASE_PRODUCT_HDB)
 // For sdb
 /* --------------------------------------------------------------------
- * buffer poolì˜ í¬ê¸°. íŽ˜ì´ì§€ ê°œìˆ˜ì´ë‹¤.
- * ì‹¤ì œ í¬ê¸°ëŠ” íŽ˜ì´ì§€ ê°œìˆ˜ * í•œ íŽ˜ì´ì§€ í¬ê¸°ê°€ ëœë‹¤.
+ * buffer poolÀÇ Å©±â. ÆäÀÌÁö °³¼öÀÌ´Ù.
+ * ½ÇÁ¦ Å©±â´Â ÆäÀÌÁö °³¼ö * ÇÑ ÆäÀÌÁö Å©±â°¡ µÈ´Ù.
  * ----------------------------------------------------------------- */
     IDP_DEF(UInt, "DOUBLE_WRITE_DIRECTORY_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -3976,6 +4439,7 @@ IDE_RC registProperties()
 
     IDP_DEF(String, "DOUBLE_WRITE_DIRECTORY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -3992,12 +4456,13 @@ IDE_RC registProperties()
 #if defined(ALTIBASE_PRODUCT_HDB)
 #if 0
 /* --------------------------------------------------------------------
- * DEBUG ëª¨ë“œì—ì„œ validate í•¨ìˆ˜ ìˆ˜í–‰ ì—¬ë¶€
- * ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë ë•Œ ì„±ëŠ¥ì´ ì €í•˜ë  ìˆ˜ ìžˆë‹¤.
- * 0ì¼ë•Œ ìˆ˜í–‰, 1ì¼ë•Œ ìˆ˜í–‰ì•ˆí•¨
+ * DEBUG ¸ðµå¿¡¼­ validate ÇÔ¼ö ¼öÇà ¿©ºÎ
+ * ÀÌ ÇÔ¼ö°¡ ¼öÇàµÉ¶§ ¼º´ÉÀÌ ÀúÇÏµÉ ¼ö ÀÖ´Ù.
+ * 0ÀÏ¶§ ¼öÇà, 1ÀÏ¶§ ¼öÇà¾ÈÇÔ
  * ----------------------------------------------------------------- */
     IDP_DEF(UInt, "VALIDATE_BUFFER",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -4015,6 +4480,7 @@ IDE_RC registProperties()
  * ----------------------------------------------------------------- */
     IDP_DEF( UInt, "DELAYED_FLUSH_LIST_PCT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -4025,6 +4491,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "DELAYED_FLUSH_PROTECTION_TIME_MSEC",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -4037,6 +4504,7 @@ IDE_RC registProperties()
     // PROJ-1568 begin
     IDP_DEF( UInt, "HOT_TOUCH_CNT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_CK_CHECK |
@@ -4047,16 +4515,18 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "BUFFER_VICTIM_SEARCH_INTERVAL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
             IDP_ATTR_RD_WRITABLE |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            0, IDV_MAX_TIME_INTERVAL_MSEC, 3000); // millisecond ë‹¨ìœ„ìž„
+            0, IDV_MAX_TIME_INTERVAL_MSEC, 3000); // millisecond ´ÜÀ§ÀÓ
 
     IDP_DEF(UInt, "BUFFER_VICTIM_SEARCH_PCT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -4067,6 +4537,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "HOT_LIST_PCT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -4077,6 +4548,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "BUFFER_HASH_BUCKET_DENSITY",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_CK_CHECK |
@@ -4087,6 +4559,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "BUFFER_HASH_CHAIN_LATCH_DENSITY",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_CK_CHECK |
@@ -4097,17 +4570,18 @@ IDE_RC registProperties()
 
     /* BUG-32750 [sm-disk-resource] The hash bucket numbers of BCB(Buffer
      * Control Block) are concentrated in low number. 
-     * ê¸°ì¡´ ( FID + SPACEID + FPID ) % HASHSIZE ëŠ” ê° DataFileì˜ í¬ê¸°ê°€ ìž‘ì„
-     * ê²½ìš° ì•žìª½ìœ¼ë¡œ HashValueê°€ ëª°ë¦¬ëŠ” ë‹¨ì ì´ ìžˆë‹¤. ì´ì— ë”°ë¼ ë‹¤ìŒê³¼ ê°™ì´
-     * ìˆ˜ì •í•œë‹¤
+     * ±âÁ¸ ( FID + SPACEID + FPID ) % HASHSIZE ´Â °¢ DataFileÀÇ Å©±â°¡ ÀÛÀ»
+     * °æ¿ì ¾ÕÂÊÀ¸·Î HashValue°¡ ¸ô¸®´Â ´ÜÁ¡ÀÌ ÀÖ´Ù. ÀÌ¿¡ µû¶ó ´ÙÀ½°ú °°ÀÌ
+     * ¼öÁ¤ÇÑ´Ù
      * ( ( SPACEID * PERMUTE1 +  FID ) * PERMUTE2 + PID ) % HASHSIZE
-     * PERMUTE1ì€ Tablespaceê°€ ë‹¤ë¥¼ë•Œ ê°’ì´ ì–´ëŠì •ë„ ê°„ê²©ì´ ë˜ëŠ”ê°€,
-     * PERMUTE2ëŠ” Datafile FIDê°€ ë‹¤ë¥¼ë•Œ ê°’ì´ ì–´ëŠì •ë„ ê°„ê²©ì´ ë˜ëŠ”ê°€,
-     * ìž…ë‹ˆë‹¤.
-     * PERMUTE1ì€ Tablespaceë‹¹ Datafile í‰ê·  ê°œìˆ˜ë³´ë‹¤ ì¡°ê¸ˆ ìž‘ì€ ê°’ì´ ì ë‹¹í•˜ë©°
-     * PERMUTE2ì€ Datafileë‹¹ Page í‰ê·  ê°œìˆ˜ë³´ë‹¤ ì¡°ê¸ˆ ìž‘ì€ ê°’ì´ ì ë‹¹í•©ë‹ˆë‹¤. */
+     * PERMUTE1Àº Tablespace°¡ ´Ù¸¦¶§ °ªÀÌ ¾î´ÀÁ¤µµ °£°ÝÀÌ µÇ´Â°¡,
+     * PERMUTE2´Â Datafile FID°¡ ´Ù¸¦¶§ °ªÀÌ ¾î´ÀÁ¤µµ °£°ÝÀÌ µÇ´Â°¡,
+     * ÀÔ´Ï´Ù.
+     * PERMUTE1Àº Tablespace´ç Datafile Æò±Õ °³¼öº¸´Ù Á¶±Ý ÀÛÀº °ªÀÌ Àû´çÇÏ¸ç
+     * PERMUTE2Àº Datafile´ç Page Æò±Õ °³¼öº¸´Ù Á¶±Ý ÀÛÀº °ªÀÌ Àû´çÇÕ´Ï´Ù. */
     IDP_DEF( UInt, "__BUFFER_HASH_PERMUTE1",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_CK_CHECK |
@@ -4117,6 +4591,7 @@ IDE_RC registProperties()
              1, ID_UINT_MAX, 8 );
     IDP_DEF( UInt, "__BUFFER_HASH_PERMUTE2",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_CK_CHECK |
@@ -4125,17 +4600,18 @@ IDE_RC registProperties()
              IDP_ATTR_ML_JUSTONE,
              1, ID_UINT_MAX, 65536 );
 
-    /* BUG-21964: BUFFER_FLUSHER_CNTì†ì„±ì´ Internalìž…ë‹ˆë‹¤. Externalë¡œ
-     *            ë°”ê¿”ì•¼ í•©ë‹ˆë‹¤.
+    /* BUG-21964: BUFFER_FLUSHER_CNT¼Ó¼ºÀÌ InternalÀÔ´Ï´Ù. External·Î
+     *            ¹Ù²ã¾ß ÇÕ´Ï´Ù.
      *
      *  BUFFER_FLUSH_LIST_CNT
      *  BUFFER_PREPARE_LIST_CNT
      *  BUFFER_CHECKPOINT_LIST_CNT
      *  BUFFER_LRU_LIST_CNT
-     *  BUFFER_FLUSHER_CNT ë¥¼ Externalë¡œ ë³€ê²½.
+     *  BUFFER_FLUSHER_CNT ¸¦ External·Î º¯°æ.
      *  */
     IDP_DEF( UInt, "BUFFER_LRU_LIST_CNT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_CK_CHECK |
@@ -4144,14 +4620,15 @@ IDE_RC registProperties()
              IDP_ATTR_ML_JUSTONE,
              1, 64, 7 );
 
-    /* BUG-22070: Buffer Managerì—ì„œ ë¶„ì‚°ì²˜ë¦¬ ìž‘ì—…ì´
-     * ì œëŒ€ë¡œ ì´ë£¨ì–´ì§€ì§€ ì•ŠìŠµë‹ˆë‹¤.
+    /* BUG-22070: Buffer Manager¿¡¼­ ºÐ»êÃ³¸® ÀÛ¾÷ÀÌ
+     * Á¦´ë·Î ÀÌ·ç¾îÁöÁö ¾Ê½À´Ï´Ù.
      * XXX
-     * í˜„ìž¬ ë¦¬ì†ŒìŠ¤ ë¬¸ì œë¡œ ì¼ë‹¨ ë¦¬ìŠ¤íŠ¸ ê°¯ìˆ˜ë¥¼ 1ë¡œ ì„¤ì •
-     * í•˜ì—¬ ë¬¸ì œë¥¼ í•´ê²°í•©ë‹ˆë‹¤. */
+     * ÇöÀç ¸®¼Ò½º ¹®Á¦·Î ÀÏ´Ü ¸®½ºÆ® °¹¼ö¸¦ 1·Î ¼³Á¤
+     * ÇÏ¿© ¹®Á¦¸¦ ÇØ°áÇÕ´Ï´Ù. */
 
     IDP_DEF( UInt, "BUFFER_FLUSH_LIST_CNT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_CK_CHECK |
@@ -4162,6 +4639,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "BUFFER_PREPARE_LIST_CNT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_CK_CHECK |
@@ -4172,6 +4650,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "BUFFER_CHECKPOINT_LIST_CNT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_CK_CHECK |
@@ -4182,6 +4661,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "BUFFER_FLUSHER_CNT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_CK_CHECK |
@@ -4194,6 +4674,7 @@ IDE_RC registProperties()
 #if defined(ALTIBASE_PRODUCT_HDB)
     IDP_DEF( UInt, "BUFFER_IO_BUFFER_SIZE",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_CK_CHECK |
@@ -4203,9 +4684,10 @@ IDE_RC registProperties()
              1, 256, 64 );
 
     /* BUG-36092 [sm] If ALTIBASE_BUFFER_AREA_SIZE= "8K", server can't clean
-     * BUFFER_AREA_SIZE ê°€ ë„ˆë¬´ ìž‘ìœ¼ë©´ victimì„ ì„ ì •í•˜ì§€ ëª»í•´ server startë¥¼ í•˜ì§€ ëª»í•©ë‹ˆë‹¤. */
+     * BUFFER_AREA_SIZE °¡ ³Ê¹« ÀÛÀ¸¸é victimÀ» ¼±Á¤ÇÏÁö ¸øÇØ server start¸¦ ÇÏÁö ¸øÇÕ´Ï´Ù. */
     IDP_DEF( ULong, "BUFFER_AREA_SIZE",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_CK_CHECK |
@@ -4216,6 +4698,7 @@ IDE_RC registProperties()
 
     IDP_DEF( ULong, "BUFFER_AREA_CHUNK_SIZE",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_CK_CHECK |
@@ -4223,9 +4706,25 @@ IDE_RC registProperties()
              IDP_ATTR_RD_READONLY |
              IDP_ATTR_ML_JUSTONE,
              8*1024, ID_ULONG_MAX, 32*1024*1024 );
+
+    // BUG-48042: BUFFER AREA Parallel »ý¼º ÇÁ·ÎÆÛÆ¼
+    // default °ªÀº ÇÁ·Î¼¼¼­ ¼ö / 4   
+    IDP_DEF( UInt, "__BUFFAREA_CREATE_PARALLEL_DEGREE",
+             IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
+             IDP_ATTR_IU_ANY |
+             IDP_ATTR_MS_ANY |
+             IDP_ATTR_CK_CHECK |
+             IDP_ATTR_LC_INTERNAL |
+             IDP_ATTR_RD_READONLY |
+             IDP_ATTR_ML_JUSTONE,
+             1, 512, 
+             IDL_MAX((idlVA::getProcessorCount()/4), 1));   
+
 #if 0
     IDP_DEF( UInt, "BUFFER_PINNING_COUNT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_CK_CHECK |
@@ -4236,6 +4735,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "BUFFER_PINNING_HISTORY_COUNT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_CK_CHECK |
@@ -4246,6 +4746,7 @@ IDE_RC registProperties()
 #endif
     IDP_DEF( UInt, "DEFAULT_FLUSHER_WAIT_SEC",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -4256,6 +4757,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "MAX_FLUSHER_WAIT_SEC",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -4267,6 +4769,7 @@ IDE_RC registProperties()
 
     IDP_DEF( ULong, "CHECKPOINT_FLUSH_COUNT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -4275,10 +4778,11 @@ IDE_RC registProperties()
              IDP_ATTR_CK_CHECK ,
              1, ID_ULONG_MAX, 64 );
 
-    // BUG-22857 restart recoveryì‹œ ì½ì„ LogFileìˆ˜
-    // ë°˜ëŒ€ë¡œ ë§í•˜ë©´ ë‚¨ê²¨ë‘˜ LogFileìˆ˜
+    // BUG-22857 restart recovery½Ã ÀÐÀ» LogFile¼ö
+    // ¹Ý´ë·Î ¸»ÇÏ¸é ³²°ÜµÑ LogFile¼ö
     IDP_DEF( UInt, "FAST_START_LOGFILE_TARGET",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -4287,10 +4791,11 @@ IDE_RC registProperties()
              IDP_ATTR_CK_CHECK ,
              0, ID_UINT_MAX, 100 );
 
-    // BUG-22857 restart recoveryì‹œ ì½ì„ redo pageìˆ˜
-    // ë°˜ëŒ€ë¡œ ë§í•˜ë©´ ë‚¨ê²¨ë‘˜ dirty pageìˆ˜
+    // BUG-22857 restart recovery½Ã ÀÐÀ» redo page¼ö
+    // ¹Ý´ë·Î ¸»ÇÏ¸é ³²°ÜµÑ dirty page¼ö
     IDP_DEF( ULong, "FAST_START_IO_TARGET",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -4301,6 +4806,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "LOW_PREPARE_PCT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -4311,6 +4817,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "HIGH_FLUSH_PCT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -4321,6 +4828,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "LOW_FLUSH_PCT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -4331,6 +4839,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "TOUCH_TIME_INTERVAL",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -4341,6 +4850,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "CHECKPOINT_FLUSH_MAX_WAIT_SEC",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -4351,6 +4861,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "CHECKPOINT_FLUSH_MAX_GAP",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -4361,6 +4872,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "BLOCK_ALL_TX_TIME_OUT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_CK_CHECK |
@@ -4371,6 +4883,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "DB_FILE_MULTIPAGE_READ_COUNT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_CK_CHECK |
@@ -4381,6 +4894,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "SMALL_TABLE_THRESHOLD",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_CK_CHECK |
@@ -4391,9 +4905,10 @@ IDE_RC registProperties()
 
     //proj-1568 end
 
-    // PROJ-2068 Direct-Path INSERT ì„±ëŠ¥ ê°œì„ 
+    // PROJ-2068 Direct-Path INSERT ¼º´É °³¼±
     IDP_DEF( SLong, "__DPATH_BUFF_PAGE_ALLOC_RETRY_USEC",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_CK_CHECK |
@@ -4404,6 +4919,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "__DPATH_INSERT_ENABLE",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_CK_CHECK |
@@ -4413,10 +4929,11 @@ IDE_RC registProperties()
              0, 1, 0);
 
 // sdp
-
-    // TTS í• ë‹¹ì‹œ ë‹¤ë¥¸ íŠ¸ëžœìž­ì…˜ì´ ì™„ë£Œë˜ê¸°ë¥¼ ê¸°ë‹¤ë¦¬ëŠ” ì‹œê°„ (MSec.)
+#if 0 
+    // TTS ÇÒ´ç½Ã ´Ù¸¥ Æ®·£Àè¼ÇÀÌ ¿Ï·áµÇ±â¸¦ ±â´Ù¸®´Â ½Ã°£ (MSec.)
     IDP_DEF(ULong, "TRANS_WAIT_TIME_FOR_TTS",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -4424,29 +4941,44 @@ IDE_RC registProperties()
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             10000000, ID_ULONG_MAX, 10000000);
+#endif
+
+    /* BUG-47223 : Æ®·£Àè¼ÇÀÌ ¿Ï·áµÇ±â¸¦ ±â´Ù¸®´Â ½Ã°£ (uSec.) */
+    IDP_DEF( ULong, "TRANS_WAIT_TIME",
+             IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
+             IDP_ATTR_IU_ANY |
+             IDP_ATTR_MS_ANY |
+             IDP_ATTR_LC_INTERNAL |
+             IDP_ATTR_RD_WRITABLE |
+             IDP_ATTR_ML_JUSTONE  |
+             IDP_ATTR_CK_CHECK,
+             0, ID_ULONG_MAX, ID_ULONG_MAX );
 
 /* --------------------------------------------------------------------
- * pageì˜ ì²´í¬ì„¬ì˜ ì¢…ë¥˜
- * 0 : íŽ˜ì´ì§€ ì–‘ìª½ì˜ LSNì„ pageê°€ valid í•œì§€ í™•ì¸í•˜ê¸° ìœ„í•´ ì‚¬ìš©í•œë‹¤.
- * 1 : íŽ˜ì´ì§€ ê°€ìž¥ ì•žì˜ ì²´í¬ì„¬ ê°’ì„ valid í™•ì¸ì„ ìœ„í•´ ì‚¬ìš©í•œë‹¤.
+ * pageÀÇ Ã¼Å©¼¶ÀÇ Á¾·ù
+ * 0 : ÆäÀÌÁö ¾çÂÊÀÇ LSNÀ» page°¡ valid ÇÑÁö È®ÀÎÇÏ±â À§ÇØ »ç¿ëÇÑ´Ù.
+ * 1 : ÆäÀÌÁö °¡Àå ¾ÕÀÇ Ã¼Å©¼¶ °ªÀ» valid È®ÀÎÀ» À§ÇØ »ç¿ëÇÑ´Ù.
  * ----------------------------------------------------------------- */
     IDP_DEF(UInt, "CHECKSUM_METHOD",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
-            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_RD_WRITABLE | 
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             0, 1, 0 );
 
 /* --------------------------------------------------------------------
- * FLM( Free List Management )ì˜ TableSpaceì˜ Testë¥¼ ìœ„í•´ì„œ ì¶”ê°€ë¨.
- * í•˜ë‚˜ì˜ ExteDirPageë‚´ì— ë“¤ì–´ê°€ëŠ” ExtDescì˜ ê°¯ìˆ˜ë¥¼ ì§€ì •.
+ * FLM( Free List Management )ÀÇ TableSpaceÀÇ Test¸¦ À§ÇØ¼­ Ãß°¡µÊ.
+ * ÇÏ³ªÀÇ ExteDirPage³»¿¡ µé¾î°¡´Â ExtDescÀÇ °¹¼ö¸¦ ÁöÁ¤.
  * ----------------------------------------------------------------- */
 
     IDP_DEF(UInt, "__FMS_EXTDESC_CNT_IN_EXTDIRPAGE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -4463,6 +4995,7 @@ IDE_RC registProperties()
  * ----------------------------------------------------------------- */
     IDP_DEF(UInt, "PCTFREE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -4479,6 +5012,7 @@ IDE_RC registProperties()
 ----------------------------------------------------------------- */
     IDP_DEF(UInt, "PCTUSED",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -4489,6 +5023,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "TABLE_INITRANS",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -4499,6 +5034,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "TABLE_MAXTRANS",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -4509,31 +5045,34 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "INDEX_INITRANS",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
             IDP_ATTR_RD_READONLY |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            0, 30, 8 );
+            0, 50, 8 );
 
     IDP_DEF(UInt, "INDEX_MAXTRANS",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
             IDP_ATTR_RD_READONLY |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            0, 30, 30 );
+            0, 50, 50 ); /* BUG-48064 : CTS MAX °¹¼ö¸¦ 30 -> 50°³·Î Áõ°¡½ÃÅ´ */
 
     /*
      * PROJ-1671 Bitmap Tablespace And Segment Space Management
      *
-     *   ê¸°ë³¸ ì„¸ê·¸ë¨¼íŠ¸ ì´ˆê¸° Extent ê°œìˆ˜ ì§€ì •
+     *   ±âº» ¼¼±×¸ÕÆ® ÃÊ±â Extent °³¼ö ÁöÁ¤
      */
     IDP_DEF( UInt, "DEFAULT_SEGMENT_STORAGE_INITEXTENTS",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -4543,10 +5082,11 @@ IDE_RC registProperties()
              1, ID_UINT_MAX, 1);
 
     /*
-     *   ê¸°ë³¸ ì„¸ê·¸ë¨¼íŠ¸ í™•ìž¥ Extent ê°œìˆ˜ ì§€ì •
+     *   ±âº» ¼¼±×¸ÕÆ® È®Àå Extent °³¼ö ÁöÁ¤
      */
     IDP_DEF(UInt, "DEFAULT_SEGMENT_STORAGE_NEXTEXTENTS",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -4556,10 +5096,11 @@ IDE_RC registProperties()
             1, ID_UINT_MAX, 1 );
 
     /*
-     *   ê¸°ë³¸ ì„¸ê·¸ë¨¼íŠ¸ ìµœì†Œ Extent ê°œìˆ˜ ì§€ì •
+     *   ±âº» ¼¼±×¸ÕÆ® ÃÖ¼Ò Extent °³¼ö ÁöÁ¤
      */
     IDP_DEF(UInt, "DEFAULT_SEGMENT_STORAGE_MINEXTENTS",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -4569,10 +5110,11 @@ IDE_RC registProperties()
             1, ID_UINT_MAX, 1);
 
     /*
-     *   ê¸°ë³¸ ì„¸ê·¸ë¨¼íŠ¸ ìµœëŒ€ Extent ê°œìˆ˜ ì§€ì •
+     *   ±âº» ¼¼±×¸ÕÆ® ÃÖ´ë Extent °³¼ö ÁöÁ¤
      */
     IDP_DEF(UInt, "DEFAULT_SEGMENT_STORAGE_MAXEXTENTS",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -4583,6 +5125,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "__DISK_TMS_IGNORE_HINT_PID",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -4593,6 +5136,7 @@ IDE_RC registProperties()
 
     IDP_DEF(SInt, "__DISK_TMS_MANUAL_SLOT_NO_IN_ITBMP",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -4603,6 +5147,7 @@ IDE_RC registProperties()
 
     IDP_DEF(SInt, "__DISK_TMS_MANUAL_SLOT_NO_IN_LFBMP",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -4612,10 +5157,11 @@ IDE_RC registProperties()
             -1, 1023, -1);
 
     /*
-     *   TMSì˜ It-BMPì—ì„œ ì„ íƒí•  ìµœëŒ€ Lf-BMP í›„ë³´ìˆ˜
+     *   TMSÀÇ It-BMP¿¡¼­ ¼±ÅÃÇÒ ÃÖ´ë Lf-BMP ÈÄº¸¼ö
      */
     IDP_DEF(UInt, "__DISK_TMS_CANDIDATE_LFBMP_CNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -4625,10 +5171,11 @@ IDE_RC registProperties()
             1, 1024, 10);
 
     /*
-     *   TMSì˜ Lf-BMPì—ì„œ ì„ íƒí•  ìµœëŒ€ Page í›„ë³´ìˆ˜
+     *   TMSÀÇ Lf-BMP¿¡¼­ ¼±ÅÃÇÒ ÃÖ´ë Page ÈÄº¸¼ö
      */
     IDP_DEF(UInt, "__DISK_TMS_CANDIDATE_PAGE_CNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -4639,10 +5186,11 @@ IDE_RC registProperties()
 
 
     /*
-     *   TMSì—ì„œ í•˜ë‚˜ì˜ Rt-BMPê°€ ìˆ˜ìš©í•  ìˆ˜ ìžˆëŠ” ìµœëŒ€ Slot ìˆ˜
+     *   TMS¿¡¼­ ÇÏ³ªÀÇ Rt-BMP°¡ ¼ö¿ëÇÒ ¼ö ÀÖ´Â ÃÖ´ë Slot ¼ö
      */
     IDP_DEF(UInt, "__DISK_TMS_MAX_SLOT_CNT_PER_RTBMP",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -4652,10 +5200,11 @@ IDE_RC registProperties()
             1, 65536, 960 );    /* BUG-37695 */
 
     /*
-     *   TMSì—ì„œ í•˜ë‚˜ì˜ It-BMPê°€ ìˆ˜ìš©í•  ìˆ˜ ìžˆëŠ” ìµœëŒ€ Slot ìˆ˜
+     *   TMS¿¡¼­ ÇÏ³ªÀÇ It-BMP°¡ ¼ö¿ëÇÒ ¼ö ÀÖ´Â ÃÖ´ë Slot ¼ö
      */
     IDP_DEF(UInt, "__DISK_TMS_MAX_SLOT_CNT_PER_ITBMP",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -4665,10 +5214,11 @@ IDE_RC registProperties()
             1, 65536, 1000);
 
     /*
-     *   TMSì—ì„œ í•˜ë‚˜ì˜ ExtDirê°€ ìˆ˜ìš©í•  ìˆ˜ ìžˆëŠ” ìµœëŒ€ Slot ìˆ˜
+     *   TMS¿¡¼­ ÇÏ³ªÀÇ ExtDir°¡ ¼ö¿ëÇÒ ¼ö ÀÖ´Â ÃÖ´ë Slot ¼ö
      */
     IDP_DEF(UInt, "__DISK_TMS_MAX_SLOT_CNT_PER_EXTDIR",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -4677,10 +5227,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1, 65536, 480 );    /* BUG-37695 */
 
-    /* BUG-28935 hint insertable page id arrayì˜ í¬ê¸°ë¥¼
-     * ì‚¬ìš©ìžê°€ ì§€ì • í•  ìˆ˜ ìžˆë„ë¡ propertyë¥¼ ì¶”ê°€*/
+    /* BUG-28935 hint insertable page id arrayÀÇ Å©±â¸¦
+     * »ç¿ëÀÚ°¡ ÁöÁ¤ ÇÒ ¼ö ÀÖµµ·Ï property¸¦ Ãß°¡*/
     IDP_DEF(UInt, "__DISK_TMS_HINT_PAGE_ARRAY_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -4689,13 +5240,14 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             4, 4096, 1024);
 
-    /* BUG-28935 hint insertable page id arrayë¥¼ allocí•˜ëŠ” ì‹œê¸° ê²°ì •
-     *  0 - segment cacheìƒì„±ì‹œ ê°™ì´ allocí•œë‹¤.
-     *  1 - segment cacheìƒì„±ì‹œì—ëŠ” í• ë‹¹í•˜ì§€ ì•Šê³ ,
-     *      ì´ í›„ ì²˜ìŒ insertable pageë¥¼ ì°¾ì„ ë•Œ allocí•œë‹¤. (default)
+    /* BUG-28935 hint insertable page id array¸¦ allocÇÏ´Â ½Ã±â °áÁ¤
+     *  0 - segment cache»ý¼º½Ã °°ÀÌ allocÇÑ´Ù.
+     *  1 - segment cache»ý¼º½Ã¿¡´Â ÇÒ´çÇÏÁö ¾Ê°í,
+     *      ÀÌ ÈÄ Ã³À½ insertable page¸¦ Ã£À» ¶§ allocÇÑ´Ù. (default)
      * */
     IDP_DEF(UInt, "__DISK_TMS_DELAYED_ALLOC_HINT_PAGE_ARRAY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -4706,11 +5258,12 @@ IDE_RC registProperties()
     /*
      * PROJ-1704 Disk MVCC Renewal
      *
-     * TSS ì„¸ê·¸ë¨¼íŠ¸ì˜ ExtDir íŽ˜ì´ì§€ë‹¹ ExtDesc ê°œìˆ˜ ì„¤ì •
+     * TSS ¼¼±×¸ÕÆ®ÀÇ ExtDir ÆäÀÌÁö´ç ExtDesc °³¼ö ¼³Á¤
      * 4 * 256K = 1M
      */
     IDP_DEF(UInt, "TSSEG_EXTDESC_COUNT_PER_EXTDIR",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -4720,11 +5273,12 @@ IDE_RC registProperties()
             1, 128, 4 );
 
     /*
-     * Undo ì„¸ê·¸ë¨¼íŠ¸ì˜ ExtDir íŽ˜ì´ì§€ë‹¹ ExtDesc ê°œìˆ˜ ì„¤ì •
+     * Undo ¼¼±×¸ÕÆ®ÀÇ ExtDir ÆäÀÌÁö´ç ExtDesc °³¼ö ¼³Á¤
      * 8 * 256K = 2M
      */
     IDP_DEF(UInt, "UDSEG_EXTDESC_COUNT_PER_EXTDIR",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -4734,11 +5288,12 @@ IDE_RC registProperties()
             1, 128, 8 );
 
     /*
-     * TSSEG ì„¸ê·¸ë¨¼íŠ¸ì˜ í¬ê¸°ê°€ ë‹¤ìŒ í”„ë¡œí¼í‹°ë³´ë‹¤ ë§Žì€ ê²½ìš°
-     * Shrink ì—°ì‚° ìˆ˜í–‰ ê¸°ë³¸ê°’ 6M
+     * TSSEG ¼¼±×¸ÕÆ®ÀÇ Å©±â°¡ ´ÙÀ½ ÇÁ·ÎÆÛÆ¼º¸´Ù ¸¹Àº °æ¿ì
+     * Shrink ¿¬»ê ¼öÇà ±âº»°ª 6M
      */
     IDP_DEF(UInt, "TSSEG_SIZE_SHRINK_THRESHOLD",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -4748,11 +5303,12 @@ IDE_RC registProperties()
             0, ID_UINT_MAX, (6*1024*1024) );
 
     /*
-     * UDSEG ì„¸ê·¸ë¨¼íŠ¸ì˜ í¬ê¸°ê°€ ë‹¤ìŒ í”„ë¡œí¼í‹°ë³´ë‹¤ ë§Žì€ ê²½ìš°
-     * Shrink ì—°ì‚° ìˆ˜í–‰ 6M
+     * UDSEG ¼¼±×¸ÕÆ®ÀÇ Å©±â°¡ ´ÙÀ½ ÇÁ·ÎÆÛÆ¼º¸´Ù ¸¹Àº °æ¿ì
+     * Shrink ¿¬»ê ¼öÇà 6M
      */
     IDP_DEF(UInt, "UDSEG_SIZE_SHRINK_THRESHOLD",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -4762,10 +5318,11 @@ IDE_RC registProperties()
             0, ID_UINT_MAX, (6*1024*1024) );
 
     /*
-     * UDSEG ì„¸ê·¸ë¨¼íŠ¸ì˜ Steal Operationì˜ Retry Count
+     * UDSEG ¼¼±×¸ÕÆ®ÀÇ Steal OperationÀÇ Retry Count
      */
     IDP_DEF(UInt, "RETRY_STEAL_COUNT_",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -4775,10 +5332,11 @@ IDE_RC registProperties()
             0, 512, 512 );
 
 /* --------------------------------------------------------------------
- * DW bufferë¥¼ ì‚¬ìš©í•  ê²ƒì¸ê°€ ê²°ì •í•œë‹¤.
+ * DW buffer¸¦ »ç¿ëÇÒ °ÍÀÎ°¡ °áÁ¤ÇÑ´Ù.
  * ----------------------------------------------------------------- */
     IDP_DEF(UInt, "USE_DW_BUFFER",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -4789,10 +5347,11 @@ IDE_RC registProperties()
 
     /* BUG-27776 [sm-disk-recovery] the server startup can be fail since the
      * dw file is removed after DW recovery. 
-     * Server Startupì¤‘ì—ëŠ” ARTTestê°€ ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤. ë”°ë¼ì„œ Startup ë„ì¤‘
-     * ì—¬ëŸ¬ í…ŒìŠ¤íŠ¸ê°€ ê°€ëŠ¥í•˜ë„ë¡, Hidden Propertyë¥¼ ì¶”ê°€í•©ë‹ˆë‹¤. */
+     * Server StartupÁß¿¡´Â ARTTest°¡ µÇÁö ¾Ê½À´Ï´Ù. µû¶ó¼­ Startup µµÁß
+     * ¿©·¯ Å×½ºÆ®°¡ °¡´ÉÇÏµµ·Ï, Hidden Property¸¦ Ãß°¡ÇÕ´Ï´Ù. */
     IDP_DEF(UInt, "__SM_STARTUP_TEST",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -4802,18 +5361,19 @@ IDE_RC registProperties()
             0, ID_UINT_MAX, 0 );
 
 /* --------------------------------------------------------------------
- * create DBë¥¼ ìœ„í•œ property
+ * create DB¸¦ À§ÇÑ property
  * ----------------------------------------------------------------- */
 
     /*
      * PROJ-1671 Bitmap-based Tablespace And Segment Space Management
      *
-     * ê¸°ë³¸ ì„¸ê·¸ë¨¼íŠ¸ ê³µê°„ê´€ë¦¬ ë°©ì‹ ì§€ì •
+     * ±âº» ¼¼±×¸ÕÆ® °ø°£°ü¸® ¹æ½Ä ÁöÁ¤
      * 0 : MANUAL ( FMS )
-     * 1 : AUTO   ( TMS ) ( ê¸°ë³¸ê°’ )
+     * 1 : AUTO   ( TMS ) ( ±âº»°ª )
      */
     IDP_DEF(UInt, "DEFAULT_SEGMENT_MANAGEMENT_TYPE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -4823,39 +5383,41 @@ IDE_RC registProperties()
             0, 1, 1);
 
 /* --------------------------------------------------------------------
- * í•˜ë‚˜ì˜ extent group ì—ì„œ ê´€ë¦¬í•  extentì˜ ê°¯ìˆ˜ë¥¼ ìœ„í•œ property
+ * ÇÏ³ªÀÇ extent group ¿¡¼­ °ü¸®ÇÒ extentÀÇ °¹¼ö¸¦ À§ÇÑ property
  * ----------------------------------------------------------------- */
 
     /*
      * PROJ-1671 Bitmap-based Tablespace And Segment Space Management
      *
-     * ì´ propertyëŠ” í…ŒìŠ¤íŠ¸ë¥¼ ìœ„í•˜ì—¬ë§Œ ì‚¬ìš©í•œë‹¤.
+     * ÀÌ property´Â Å×½ºÆ®¸¦ À§ÇÏ¿©¸¸ »ç¿ëÇÑ´Ù.
      */
     IDP_DEF(UInt, "DEFAULT_EXTENT_CNT_FOR_EXTENT_GROUP",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
             IDP_ATTR_RD_WRITABLE |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            0, ID_UINT_MAX , 0); //default ê°€ 0ì´ë©´ ê°€ìš©í•œ ìµœëŒ€ê°¯ìˆ˜ê°€ ì‚¬ìš©ë¨
+            0, ID_UINT_MAX , 0); //default °¡ 0ÀÌ¸é °¡¿ëÇÑ ÃÖ´ë°¹¼ö°¡ »ç¿ëµÊ
 
 /* --------------------------------------------------------------------
  * for system data tablespace
- * systemì„ ìœ„í•œ tablespace(data, temp, undo)ëŠ” ìµœì´ˆì—
- * í•˜ë‚˜ì˜ datafileë¡œ êµ¬ì„±ë˜ë©°, max sizeì„ ë„˜ì–´ì„œë©´ datafileì´ ì¶”ê°€ëœë‹¤.
- * ì•„ëž˜ì˜ tablespace ê´€ë ¨ property ì¤‘ í¬ê¸°ì™€ ê´€ë ¨ëœ ê²ƒì€ ìµœì´ˆì— ìƒì„±ë˜ëŠ”
- * datafileì˜ default ì†ì„±ì„ ì •ì˜í•œë‹¤.
+ * systemÀ» À§ÇÑ tablespace(data, temp, undo)´Â ÃÖÃÊ¿¡
+ * ÇÏ³ªÀÇ datafile·Î ±¸¼ºµÇ¸ç, max sizeÀ» ³Ñ¾î¼­¸é datafileÀÌ Ãß°¡µÈ´Ù.
+ * ¾Æ·¡ÀÇ tablespace °ü·Ã property Áß Å©±â¿Í °ü·ÃµÈ °ÍÀº ÃÖÃÊ¿¡ »ý¼ºµÇ´Â
+ * datafileÀÇ default ¼Ó¼ºÀ» Á¤ÀÇÇÑ´Ù.
  * ----------------------------------------------------------------- */
 
-    // ë‘ë²ˆì§¸ extentì˜ í¬ê¸°
+    // µÎ¹øÂ° extentÀÇ Å©±â
     // To Fix PR-12035
-    // ìµœì†Œê°’ ì¡°ê±´
+    // ÃÖ¼Ò°ª Á¶°Ç
     // >= 2 Pages
 
     IDP_DEF(ULong, "SYS_DATA_TBS_EXTENT_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -4864,10 +5426,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             (5 * IDP_SD_PAGE_SIZE), ID_ULONG_MAX, (512 * 1024));
 
-    // ë‘ë²ˆì§¸ datafileì˜ ì´ˆê¸° í¬ê¸°
+    // µÎ¹øÂ° datafileÀÇ ÃÊ±â Å©±â
     // To Fix PR-12035
     IDP_DEF(ULong, "SYS_DATA_FILE_INIT_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -4878,13 +5441,14 @@ IDE_RC registProperties()
             IDP_DRDB_DATAFILE_MAX_SIZE,
             (100 * 1024 * 1024));
 
-    // ë‘ë²ˆì§¸ data fileì˜ ìµœëŒ€ í¬ê¸°
+    // µÎ¹øÂ° data fileÀÇ ÃÖ´ë Å©±â
     // To Fix PR-12035
-    // ìµœì†Œê°’ ì¡°ê±´
+    // ÃÖ¼Ò°ª Á¶°Ç
     // >= SYS_DATA_FILE_INIT_SIZE
     // To Fix BUG-14662. set default to maximum of SInt
     IDP_DEF(ULong, "SYS_DATA_FILE_MAX_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -4897,6 +5461,7 @@ IDE_RC registProperties()
 
     IDP_DEF(ULong, "SYS_DATA_FILE_NEXT_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -4912,10 +5477,11 @@ IDE_RC registProperties()
  * ----------------------------------------------------------------- */
 
     // To Fix PR-12035
-    // ìµœì†Œê°’ ì¡°ê±´
+    // ÃÖ¼Ò°ª Á¶°Ç
     // >= 2 Pages
     IDP_DEF(ULong, "SYS_UNDO_TBS_EXTENT_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -4927,6 +5493,7 @@ IDE_RC registProperties()
     // To Fix PR-12035
     IDP_DEF(ULong, "SYS_UNDO_FILE_INIT_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -4938,11 +5505,12 @@ IDE_RC registProperties()
             (100 * 1024 * 1024));
 
     // To Fix PR-12035
-    // ìµœì†Œê°’ ì¡°ê±´
+    // ÃÖ¼Ò°ª Á¶°Ç
     // >= SYS_UNDO_FILE_INIT_SIZE
     // To Fix BUG-14662. set default to maximum of SInt
     IDP_DEF(ULong, "SYS_UNDO_FILE_MAX_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -4955,6 +5523,7 @@ IDE_RC registProperties()
 
     IDP_DEF(ULong, "SYS_UNDO_FILE_NEXT_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -4970,10 +5539,11 @@ IDE_RC registProperties()
  * ----------------------------------------------------------------- */
 
     // To Fix PR-12035
-    // ìµœì†Œê°’ ì¡°ê±´
+    // ÃÖ¼Ò°ª Á¶°Ç
     // >= 2 Pages
     IDP_DEF(ULong, "SYS_TEMP_TBS_EXTENT_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -4985,6 +5555,7 @@ IDE_RC registProperties()
     // To Fix PR-12035
     IDP_DEF(ULong, "SYS_TEMP_FILE_INIT_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -4996,11 +5567,12 @@ IDE_RC registProperties()
             (100 * 1024 * 1024));
 
     // To Fix PR-12035
-    // ìµœì†Œê°’ ì¡°ê±´
+    // ÃÖ¼Ò°ª Á¶°Ç
     // >= SYS_TEMP_FILE_INIT_SIZE
     // To Fix BUG-14662. set default to maximum of SInt
     IDP_DEF(ULong, "SYS_TEMP_FILE_MAX_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -5013,6 +5585,7 @@ IDE_RC registProperties()
 
     IDP_DEF(ULong, "SYS_TEMP_FILE_NEXT_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -5024,12 +5597,13 @@ IDE_RC registProperties()
             (1 * 1024 * 1024));
 
  /* --------------------------------------------------------------------
- * PROJ-1490 íŽ˜ì´ì§€ë¦¬ìŠ¤íŠ¸ ë‹¤ì¤‘í™” ë° ë©”ëª¨ë¦¬ ë°˜ë‚©
+ * PROJ-1490 ÆäÀÌÁö¸®½ºÆ® ´ÙÁßÈ­ ¹× ¸Þ¸ð¸® ¹Ý³³
  * ----------------------------------------------------------------- */
 
-    // ë°ì´í„°ë² ì´ìŠ¤ í™•ìž¥ì˜ ë‹¨ìœ„ì¸ Expand Chunkê°€ ê°€ì§€ëŠ” Pageì˜ ìˆ˜.
+    // µ¥ÀÌÅÍº£ÀÌ½º È®ÀåÀÇ ´ÜÀ§ÀÎ Expand Chunk°¡ °¡Áö´Â PageÀÇ ¼ö.
     IDP_DEF(UInt, "EXPAND_CHUNK_PAGE_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -5037,18 +5611,19 @@ IDE_RC registProperties()
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             2*IDP_MAX_PAGE_LIST_COUNT, /* min */
-            /* (ë³‘ë ¬í™”ëœ DB FREE LISTì— ìµœì†Œ 1ê°œ ì´ìƒ ë‚˜ëˆ ì£¼ì–´ì•¼ í•˜ê¸° ë•Œë¬¸) */
+            /* (º´·ÄÈ­µÈ DB FREE LIST¿¡ ÃÖ¼Ò 1°³ ÀÌ»ó ³ª´²ÁÖ¾î¾ß ÇÏ±â ¶§¹®) */
             ID_UINT_MAX,         /* max */
             IDP_DEFAULT_EXPAND_CHUNK_PAGE_COUNT );          /* 128 Pages */
 
-    // ë‹¤ìŒê³¼ ê°™ì€ Page Listë“¤ì„ ê°ê° ëª‡ê°œì˜ Listë¡œ ë‹¤ì¤‘í™” í•  ì§€ ê²°ì •í•œë‹¤.
+    // ´ÙÀ½°ú °°Àº Page ListµéÀ» °¢°¢ ¸î°³ÀÇ List·Î ´ÙÁßÈ­ ÇÒ Áö °áÁ¤ÇÑ´Ù.
     //
-    // ë°ì´í„°ë² ì´ìŠ¤ Free Page List
-    // í…Œì´ë¸”ì˜ Allocated Page List
-    // í…Œì´ë¸”ì˜ Free Page List
+    // µ¥ÀÌÅÍº£ÀÌ½º Free Page List
+    // Å×ÀÌºíÀÇ Allocated Page List
+    // Å×ÀÌºíÀÇ Free Page List
     //
     IDP_DEF(UInt, "PAGE_LIST_GROUP_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -5058,14 +5633,15 @@ IDE_RC registProperties()
            1, IDP_MAX_PAGE_LIST_COUNT, 1);
 
 
-    // Expand Chunkí™•ìž¥ì‹œì— Free Pageë“¤ì´ ì—¬ëŸ¬ë²ˆì— ê±¸ì³ì„œ
-    // ë‹¤ì¤‘í™”ëœ Free Page Listë¡œ ë¶„ë°°ëœë‹¤.
+    // Expand ChunkÈ®Àå½Ã¿¡ Free PageµéÀÌ ¿©·¯¹ø¿¡ °ÉÃÄ¼­
+    // ´ÙÁßÈ­µÈ Free Page List·Î ºÐ¹èµÈ´Ù.
     //
-    // ì´ ë•Œ, í•œë²ˆì— ëª‡ê°œì˜ Pageë¥¼ Free Page Listë¡œ ë¶„ë°°í• ì§€ë¥¼ ì„¤ì •í•œë‹¤.
+    // ÀÌ ¶§, ÇÑ¹ø¿¡ ¸î°³ÀÇ Page¸¦ Free Page List·Î ºÐ¹èÇÒÁö¸¦ ¼³Á¤ÇÑ´Ù.
     //
-    // default(0) : ìµœì†Œë¡œ ë¶„ë°°ë˜ê²Œ ìžë™ ê³„ì‚°
+    // default(0) : ÃÖ¼Ò·Î ºÐ¹èµÇ°Ô ÀÚµ¿ °è»ê
     IDP_DEF(UInt, "PER_LIST_DIST_PAGE_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -5074,11 +5650,12 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, ID_UINT_MAX, 0);
 
-    // Free Page Listê°€ List ë¶„í• í›„ ê°€ì ¸ì•¼ í•˜ëŠ” ìµœì†Œí•œì˜ Pageìˆ˜
-    // Free Page List ë¶„í• ì‹œì— ìµœì†Œí•œ ì´ ë§Œí¼ì˜ Pageê°€
-    // Listì— ë‚¨ì•„ ìžˆì„ ìˆ˜ ìžˆëŠ” ê²½ìš°ì—ë§Œ Free Page Listë¥¼ ë¶„í• í•œë‹¤.
+    // Free Page List°¡ List ºÐÇÒÈÄ °¡Á®¾ß ÇÏ´Â ÃÖ¼ÒÇÑÀÇ Page¼ö
+    // Free Page List ºÐÇÒ½Ã¿¡ ÃÖ¼ÒÇÑ ÀÌ ¸¸Å­ÀÇ Page°¡
+    // List¿¡ ³²¾Æ ÀÖÀ» ¼ö ÀÖ´Â °æ¿ì¿¡¸¸ Free Page List¸¦ ºÐÇÒÇÑ´Ù.
     IDP_DEF(UInt, "MIN_PAGES_ON_DB_FREE_LIST",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -5089,14 +5666,15 @@ IDE_RC registProperties()
 
 
 /* --------------------------------------------------------------------
- * userê°€ createí•˜ëŠ” data tablespaceì— ëŒ€í•œ ì†ì„±
+ * user°¡ createÇÏ´Â data tablespace¿¡ ´ëÇÑ ¼Ó¼º
  * ----------------------------------------------------------------- */
 
     // To Fix PR-12035
-    // ìµœì†Œê°’ ì¡°ê±´
+    // ÃÖ¼Ò°ª Á¶°Ç
     // >= 2 Pages
     IDP_DEF(ULong, "USER_DATA_TBS_EXTENT_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -5108,6 +5686,7 @@ IDE_RC registProperties()
     // To Fix PR-12035
     IDP_DEF(ULong, "USER_DATA_FILE_INIT_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -5119,11 +5698,12 @@ IDE_RC registProperties()
             (100 * 1024 * 1024));
 
     // To Fix PR-12035
-    // ìµœì†Œê°’ ì¡°ê±´
+    // ÃÖ¼Ò°ª Á¶°Ç
     // >= USER_DATA_FILE_INIT_SIZE
     // To Fix BUG-14662. set default to maximum of SInt
     IDP_DEF(ULong, "USER_DATA_FILE_MAX_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -5136,6 +5716,7 @@ IDE_RC registProperties()
 
     IDP_DEF(ULong, "USER_DATA_FILE_NEXT_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -5147,14 +5728,15 @@ IDE_RC registProperties()
             (1 * 1024 * 1024));
 
 /* --------------------------------------------------------------------
- * userê°€ createí•˜ëŠ” temp tablespaceì— ëŒ€í•œ ì†ì„±
+ * user°¡ createÇÏ´Â temp tablespace¿¡ ´ëÇÑ ¼Ó¼º
  * ----------------------------------------------------------------- */
 
     // To Fix PR-12035
-    // ìµœì†Œê°’ ì¡°ê±´
+    // ÃÖ¼Ò°ª Á¶°Ç
     // >= 2 Pages
     IDP_DEF(ULong, "USER_TEMP_TBS_EXTENT_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -5166,6 +5748,7 @@ IDE_RC registProperties()
     // To Fix PR-12035
     IDP_DEF(ULong, "USER_TEMP_FILE_INIT_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -5177,11 +5760,12 @@ IDE_RC registProperties()
             (100 * 1024 * 1024));
 
     // To Fix PR-12035
-    // ìµœì†Œê°’ ì¡°ê±´
+    // ÃÖ¼Ò°ª Á¶°Ç
     // >= USER_TEMP_FILE_INIT_SIZE
     // To Fix BUG-14662. set default to maximum of SInt
     IDP_DEF(ULong, "USER_TEMP_FILE_MAX_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -5194,6 +5778,7 @@ IDE_RC registProperties()
 
     IDP_DEF(ULong, "USER_TEMP_FILE_NEXT_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -5207,12 +5792,12 @@ IDE_RC registProperties()
  // sdc
 /* --------------------------------------------------------------------
  * PROJ-1595
- * Disk Index êµ¬ì¶•ì‹œ In-Memory Sorting ì˜ì—­
+ * Disk Index ±¸Ãà½Ã In-Memory Sorting ¿µ¿ª
  * ----------------------------------------------------------------- */
 
-#if defined(ALTIBASE_PRODUCT_HDB)
     IDP_DEF(ULong, "SORT_AREA_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -5226,30 +5811,104 @@ IDE_RC registProperties()
      **************************************************************/
     IDP_DEF(ULong, "HASH_AREA_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
             IDP_ATTR_RD_WRITABLE |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            (512*1024), ID_ULONG_MAX, (4 * 1024 * 1024));
+            (3 * 1024 * 1024), ID_ULONG_MAX, (4 * 1024 * 1024));
+    
+    /* WA(WorkArea)ÀÇ ÃÊ±âÈ­ ÇÑ ÃÑ Å©±â */
+    IDP_DEF(ULong, "INIT_TOTAL_WA_SIZE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, ID_ULONG_MAX, ID_ULONG_MAX);
 
-    /* WA(WorkArea)ì˜ ì´ í¬ê¸° */
+    /* WA(WorkArea)ÀÇ ÃÖ´ë ÃÑ Å©±â */
     IDP_DEF(ULong, "TOTAL_WA_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
             IDP_ATTR_RD_WRITABLE |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            (512*1024), ID_ULONG_MAX, (128 * 1024 * 1024));
+            0, ID_ULONG_MAX, (128 * 1024 * 1024));
 
-    /* TempTableìš© Sortì‹œ,  QuickSortë¡œ ë¶€ë¶„ë¶€ë¶„ì„ ì •ë ¬ í›„, ì´ë¥¼ MergeSortë¡œ
-     * í•©ì¹˜ëŠ” ì‹ìœ¼ë¡œ ë™ìž‘í•œë‹¤. ì´ë•Œ QuickSortê°€ ì •ë ¬í•  ë¶€ë¶„ì˜ í¬ê¸°ë¥¼ ì•„ëž˜
-     * Propertyë¡œ ì¡°ì ˆí•œë‹¤. */
+    IDP_DEF(UInt,  "__TEMP_CHECK_UNIQUE_FOR_UPDATE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 1);
+
+    // 8°³ÀÇ Extent, 4MB´ÜÀ§·Î ÇÒ´ç.
+    IDP_DEF(UInt, "__TEMP_MIN_INIT_WAEXTENT_COUNT",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, ID_UINT_MAX, 8 );
+
+    // create temp table ½ÃÁ¡¿¡, ¸¸¾à TOTAL_WA_EXTENT °¡ ºÎÁ·ÇÏ¸é
+    // ¸î°³¸¦ ÃÊ°úÇØ¼­ ÃÊ±âÈ­ ÇÒ´ç ÇÏ¿© ½ÃÀÛ ÇÒ °ÍÀÎÁö ¼ö¸¦ ³ªÅ¸³½´Ù.
+    // ¸¸¾à 0ÀÌ¸é, ÃÊ±âÈ­ ÇÏÁö ¾Ê°í ´ë±âÇÑ´Ù.
+    IDP_DEF(UInt, "__TEMP_OVER_INIT_WAEXTENT_COUNT",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, ID_UINT_MAX, 4 );
+
+    IDP_DEF(UInt, "__TEMP_ALLOC_WAEXTENT_COUNT",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            1, 1024, 4 );
+
+    IDP_DEF(UInt, "__TEMP_INIT_WASEGMENT_COUNT",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, ID_UINT_MAX, 8 );
+
+    /* TempTable¿ë Sort½Ã,  QuickSort·Î ºÎºÐºÎºÐÀ» Á¤·Ä ÈÄ, ÀÌ¸¦ MergeSort·Î
+     * ÇÕÄ¡´Â ½ÄÀ¸·Î µ¿ÀÛÇÑ´Ù. ÀÌ¶§ QuickSort°¡ Á¤·ÄÇÒ ºÎºÐÀÇ Å©±â¸¦ ¾Æ·¡
+     * Property·Î Á¶ÀýÇÑ´Ù. */
     IDP_DEF(UInt,  "TEMP_SORT_PARTITION_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -5258,11 +5917,12 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, ID_UINT_MAX,  4096);
 
-    /* TempTableìš© Sortì‹œ, Sortì˜ì—­ê³¼ Sortê²°ê³¼ ì €ìž¥ Groupìœ¼ë¡œ ë‚˜ë‰˜ì–´ì§„ë‹¤.
-     * ì´ì¤‘ Sortì˜ì—­ì˜ í¬ê¸°ë¥¼ ê²°ì •í•œë‹¤. (ì´ì—ë”°ë¼ ì €ìž¥ Groupì€ ë‚˜ë¨¸ì§€ë¥¼
-     * ì°¨ì§€í•œë‹¤. */
+    /* TempTable¿ë Sort½Ã, Sort¿µ¿ª°ú Sort°á°ú ÀúÀå GroupÀ¸·Î ³ª´µ¾îÁø´Ù.
+     * ÀÌÁß Sort¿µ¿ªÀÇ Å©±â¸¦ °áÁ¤ÇÑ´Ù. (ÀÌ¿¡µû¶ó ÀúÀå GroupÀº ³ª¸ÓÁö¸¦
+     * Â÷ÁöÇÑ´Ù. */
     IDP_DEF(UInt,  "TEMP_SORT_GROUP_RATIO",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -5271,62 +5931,40 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             5, 90, 80 );
 
-    /* Tempì˜ HashëŠ”, HashTableê³¼ Rowë¥¼ ì €ìž¥í•˜ëŠ” Groupìœ¼ë¡œ ë‚˜ë‰œë‹¤.
-     * ì´ë•Œ HashTableì— í•´ë‹¹í•˜ëŠ” ì˜ì—­ì´ë‹¤. */
+    /* TempÀÇ Hash´Â, Hash Slot°ú Sub Hash·Î ³ª´¶´Ù.
+     * ÀÌ¶§ Sub Hash ¿¡ ÇØ´çÇÏ´Â ¿µ¿ªÀÌ´Ù.
+     * ÀüÃ¼ HASH_AREA_SIZE¿¡ ´ëÇÑ ºñÀ²·Î ¼³Á¤ÇÏÁö¸¸
+     * ½ÇÁ¦ Å©±â´Â 512KB´ÜÀ§·Î ¼³Á¤µÈ´Ù. */
+    IDP_DEF(UInt,  "__TEMP_SUBHASH_GROUP_RATIO",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            1, 30, 4);
+
+    /* TempÀÇ Hash´Â, Hash Slot°ú Sub Hash·Î ³ª´¶´Ù.
+     * ÀÌ¶§ Sub Hash ¿¡ ÇØ´çÇÏ´Â ¿µ¿ªÀÌ´Ù.
+     * ÀüÃ¼ HASH_AREA_SIZE¿¡ ´ëÇÑ ºñÀ²·Î ¼³Á¤ÇÏÁö¸¸
+     * ½ÇÁ¦ Å©±â´Â 1MB´ÜÀ§·Î ¼³Á¤µÈ´Ù. */
     IDP_DEF(UInt,  "TEMP_HASH_GROUP_RATIO",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
             IDP_ATTR_RD_WRITABLE |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            5, 90, 20);
+            1, 90, 6 );
 
-    /* Tempì˜ ClusterHashëŠ” HashPartitionë“¤ê³¼, Partitionì— ì €ìž¥ë˜ì§€ ëª»í•œ
-     * Rowë“¤ì„ ìž ì‹œ ì €ìž¥í•˜ëŠ” ë³´ì¡° ì˜ì—­ìœ¼ë¡œ ë‚˜ë‰œë‹¤.
-     * ì´ë•Œ HashPartitionì— í•´ë‹¹í•˜ëŠ” ì˜ì—­ì´ë‹¤. */
-    IDP_DEF(UInt,  "TEMP_CLUSTER_HASH_GROUP_RATIO",
-            IDP_ATTR_SL_ALL |
-            IDP_ATTR_IU_ANY |
-            IDP_ATTR_MS_ANY |
-            IDP_ATTR_LC_INTERNAL |
-            IDP_ATTR_RD_WRITABLE |
-            IDP_ATTR_ML_JUSTONE  |
-            IDP_ATTR_CK_CHECK,
-            5, 90, 80 );
-
-    /* HashJoinë“±ì„ ìœ„í•´, ì‚¬ìš© ê°€ëŠ¥í•˜ë©´ ë¬´ì¡°ê±´ ClusterHashë¥¼ ì‚¬ìš©í•œë‹¤. */
-    IDP_DEF(UInt,  "TEMP_USE_CLUSTER_HASH",
-            IDP_ATTR_SL_ALL |
-            IDP_ATTR_IU_ANY |
-            IDP_ATTR_MS_ANY |
-            IDP_ATTR_LC_INTERNAL |
-            IDP_ATTR_RD_WRITABLE |
-            IDP_ATTR_ML_JUSTONE  |
-            IDP_ATTR_CK_CHECK,
-            0,  1, 0);
-
-    /* TempTableì´ ì‚¬ìš©í•  Diskìƒì˜ Pageê°œìˆ˜.
-     * ì¦‰ 512*1024ê°œì˜ PageëŠ” 512*1024 * 8192 = 4GBë¡œ í•˜ë‚˜ì˜ TempTableì€
-     * 4GBê¹Œì§€ í´ ìˆ˜ ìžˆë‹¤.
-     * ì´ë ‡ê²Œ ì‚¬ìš©í•œ PageëŠ” SORT_AREA_SIZE, HASH_AREA_SIZEë‚´ì— ë‹´ê²¨ì•¼ í•˜ê¸°ì—
-     * TEMP_MAX_PAGE_COUNT * 8(ExtentDescSize) / 64(ExtentPerPage) 
-     * <= {Sort(or Hash) Area Size}
-     * ê°€ ì„±ë¦½í•´ì•¼ í•œë‹¤. */
-    IDP_DEF(UInt,  "TEMP_MAX_PAGE_COUNT",
-            IDP_ATTR_SL_ALL |
-            IDP_ATTR_IU_ANY |
-            IDP_ATTR_MS_ANY |
-            IDP_ATTR_LC_EXTERNAL |
-            IDP_ATTR_RD_WRITABLE |
-            IDP_ATTR_ML_JUSTONE  |
-            IDP_ATTR_CK_CHECK,
-            (1024), ID_UINT_MAX, ( 512 * 1024));
-
-    /* WA ê°€ ë¶€ì¡±í•  ê²½ìš°, ëª‡ë²ˆ ìž¬ì‹œë„ í• ì§€ë¥¼ ê²°ì •í•œë‹¤ */
+    /* WA °¡ ºÎÁ·ÇÒ °æ¿ì, ¸î¹ø Àç½Ãµµ ÇÒÁö¸¦ °áÁ¤ÇÑ´Ù */
     IDP_DEF(UInt,  "TEMP_ALLOC_TRY_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -5335,11 +5973,12 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1, ID_UINT_MAX,  10000 );
 
-    /* íŽ˜ì´ì§€ì— ê³µê°„ì´ ë¶€ì¡±í•˜ì—¬ Rowë¥¼ ê¸°ë¡í•  ìˆ˜ ì—†ëŠ” ê²½ìš°, í•´ë‹¹ Rowê°€ ì•„ëž˜
-     * í¬ê¸°ë³´ë‹¤ í¬ë©´ ìª¼ê°œì„œ ê¸°ë¡í•˜ê³  ìž‘ìœ¼ë©´ íŽ˜ì´ì§€ì— ë¹ˆê³µê°„ì„ ë‚¨ê¸´ì²´ ë‹¤ìŒ Row
-     * ì— ì €ìž¥í•œë‹¤. */
+    /* ÆäÀÌÁö¿¡ °ø°£ÀÌ ºÎÁ·ÇÏ¿© Row¸¦ ±â·ÏÇÒ ¼ö ¾ø´Â °æ¿ì, ÇØ´ç Row°¡ ¾Æ·¡
+     * Å©±âº¸´Ù Å©¸é ÂÉ°³¼­ ±â·ÏÇÏ°í ÀÛÀ¸¸é ÆäÀÌÁö¿¡ ºó°ø°£À» ³²±äÃ¼ ´ÙÀ½ Row
+     * ¿¡ ÀúÀåÇÑ´Ù. */
     IDP_DEF(UInt,  "TEMP_ROW_SPLIT_THRESHOLD",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -5348,9 +5987,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1, 8192, 1024);
 
-    /* TempTable ì—°ì‚° ì¤‘ ë‹¤ë¥¸ ìž‘ì—…ì„ ê¸°ë‹¤ë ¤ì•¼ í• ë•Œ, ì‰¬ëŠ” ì‹œê°„ì´ë‹¤. */
+    /* TempTable ¿¬»ê Áß ´Ù¸¥ ÀÛ¾÷À» ±â´Ù·Á¾ß ÇÒ¶§, ½¬´Â ½Ã°£ÀÌ´Ù. */
     IDP_DEF(UInt, "TEMP_SLEEP_INTERVAL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -5359,43 +5999,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, ID_UINT_MAX, 1000 );
 
-    /* Tempì—°ì‚°ì„ ìœ„í•œ Flusherì˜ ê°œìˆ˜ì´ë‹¤. */
-    IDP_DEF(UInt, "TEMP_FLUSHER_COUNT",
-            IDP_ATTR_SL_ALL |
-            IDP_ATTR_IU_ANY |
-            IDP_ATTR_MS_ANY |
-            IDP_ATTR_LC_INTERNAL |
-            IDP_ATTR_RD_WRITABLE |
-            IDP_ATTR_ML_JUSTONE  |
-            IDP_ATTR_CK_CHECK,
-            2, 64, 4 );
-
-    /* Tempì—°ì‚°ì„ ìœ„í•œ Flusher Queueì˜ í¬ê¸°ì´ë‹¤. */
-    IDP_DEF(UInt, "TEMP_FLUSH_QUEUE_SIZE",
-            IDP_ATTR_SL_ALL |
-            IDP_ATTR_IU_ANY |
-            IDP_ATTR_MS_ANY |
-            IDP_ATTR_LC_INTERNAL |
-            IDP_ATTR_RD_WRITABLE |
-            IDP_ATTR_ML_JUSTONE  |
-            IDP_ATTR_CK_CHECK,
-            1, ID_UINT_MAX, 8192 );
-
-    /* Tempì—°ì‚°ì„ ìœ„í•œ Flusherê°€ í•œë²ˆì— Writeí•˜ëŠ” Pageì˜ ê°œìˆ˜ ì´ë‹¤. */
-    IDP_DEF(UInt, "TEMP_FLUSH_PAGE_COUNT",
-            IDP_ATTR_SL_ALL |
-            IDP_ATTR_IU_ANY |
-            IDP_ATTR_MS_ANY |
-            IDP_ATTR_LC_INTERNAL |
-            IDP_ATTR_RD_WRITABLE |
-            IDP_ATTR_ML_JUSTONE  |
-            IDP_ATTR_CK_CHECK,
-            1, ID_UINT_MAX, 256 );
-
-    /* Tempì—°ì‚°ì‹œ, RangeScanì„ ìœ„í•œ Indexì—ì„œ Key í•˜ë‚˜ì˜ ìµœëŒ€ í¬ê¸°ì´ë‹¤. Keyê°€
-     * ì´ë³´ë‹¤ í¬ë©´, ë‚˜ë¨¸ì§€ ë¶€ë¶„ì„ ExtraRowë¡œ ë‚˜ëˆ„ì–´ ì €ìž¥í•œë‹¤. */
+    /* Temp¿¬»ê½Ã, RangeScanÀ» À§ÇÑ Index¿¡¼­ Key ÇÏ³ªÀÇ ÃÖ´ë Å©±âÀÌ´Ù. Key°¡
+     * ÀÌº¸´Ù Å©¸é, ³ª¸ÓÁö ºÎºÐÀ» ExtraRow·Î ³ª´©¾î ÀúÀåÇÑ´Ù. */
     IDP_DEF(UInt, "TEMP_MAX_KEY_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -5404,11 +6012,12 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             64, 4096, 512 );
 
-    /* Tempì—°ì‚° ì¤‘ ê° Tempì—°ì‚°ë“¤ì˜ ì§„í–‰ì—¬ë¶€ë¥¼ ê°ì‹œí•˜ê¸° ìœ„í•œ StatsWatchArray
-     * ì˜ í¬ê¸°ì´ë‹¤. ì´ê²ƒì´ ìž‘ìœ¼ë©´ ìž¬í™œìš©ì´ ë¹¨ë¼ì ¸, ì´ì „ Tempí†µê³„ê°€ ë¹¨ë¦¬
-     * ì‚¬ë¼ì§„ë‹¤. */
+    /* Temp¿¬»ê Áß °¢ Temp¿¬»êµéÀÇ ÁøÇà¿©ºÎ¸¦ °¨½ÃÇÏ±â À§ÇÑ StatsWatchArray
+     * ÀÇ Å©±âÀÌ´Ù. ÀÌ°ÍÀÌ ÀÛÀ¸¸é ÀçÈ°¿ëÀÌ »¡¶óÁ®, ÀÌÀü TempÅë°è°¡ »¡¸®
+     * »ç¶óÁø´Ù. */
     IDP_DEF(UInt, "TEMP_STATS_WATCH_ARRAY_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -5417,10 +6026,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             10, ID_UINT_MAX, 1000 );
 
-    /* StatsWatchArrayì— ìž‘ì—…ì„ ë“±ë¡í•˜ê¸° ìœ„í•œ ê¸°ì¤€ ì‹œê°„ì´ë‹¤. ì´ ì‹œê°„ë³´ë‹¤ ì˜¤ëž˜
-     * ê±¸ë¦¬ëŠ” Tempì—°ì‚°ì€ StatsWatchArrayì— ë“±ë¡ëœë‹¤. */
+    /* StatsWatchArray¿¡ ÀÛ¾÷À» µî·ÏÇÏ±â À§ÇÑ ±âÁØ ½Ã°£ÀÌ´Ù. ÀÌ ½Ã°£º¸´Ù ¿À·¡
+     * °É¸®´Â Temp¿¬»êÀº StatsWatchArray¿¡ µî·ÏµÈ´Ù. */
     IDP_DEF(UInt, "TEMP_STATS_WATCH_TIME",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -5429,9 +6039,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, ID_UINT_MAX, 10 );
 
-    /* ë¬¸ì œë°œìƒì‹œì˜ Dumpë¥¼ ì €ìž¥í•  DIRECTORY. dumptdë¡œ ë¶„ì„ ê°€ëŠ¥í•˜ë‹¤. */
+    /* ¹®Á¦¹ß»ý½ÃÀÇ Dump¸¦ ÀúÀåÇÒ DIRECTORY. dumptd·Î ºÐ¼® °¡´ÉÇÏ´Ù. */
     IDP_DEF(String, "TEMPDUMP_DIRECTORY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -5441,9 +6052,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, IDP_MAX_PROP_STRING_LEN, (SChar *)"?"IDL_FILE_SEPARATORS"trc");
 
-    /* BUG-45403 ë¬¸ì œë°œìƒì‹œì˜ Dump ë¥¼ ì„ íƒ í• ìˆ˜ ìžˆë‹¤. */
+    /* BUG-45403 ¹®Á¦¹ß»ý½ÃÀÇ Dump ¸¦ ¼±ÅÃ ÇÒ¼ö ÀÖ´Ù. */
     IDP_DEF(UInt , "__TEMPDUMP_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -5452,9 +6064,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 0 );
 
-    /* ì˜ˆì™¸ì²˜ë¦¬ Testë¥¼ ìœ„í•˜ì—¬, ì—°ì‚°ì„ NíšŒ ìˆ˜í–‰í•˜ë©´ Abortì‹œí‚¨ë‹¤. */
+    /* ¿¹¿ÜÃ³¸® Test¸¦ À§ÇÏ¿©, ¿¬»êÀ» NÈ¸ ¼öÇàÇÏ¸é Abort½ÃÅ²´Ù. */
     IDP_DEF(UInt, "__SM_TEMP_OPER_ABORT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -5463,58 +6076,65 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, ID_UINT_MAX, 0 );
 
-    IDP_DEF( UInt, "TEMP_HASH_BUCKET_DENSITY",
-             IDP_ATTR_SL_ALL |
-             IDP_ATTR_IU_ANY |
-             IDP_ATTR_MS_ANY |
-             IDP_ATTR_CK_CHECK |
-             IDP_ATTR_LC_EXTERNAL |
-             IDP_ATTR_RD_READONLY |
-             IDP_ATTR_ML_JUSTONE,
-             1, 100, 1 );
-#endif
-
-/* --------------------------------------------------------------------
- * PROJ-1629
- * Memory Index êµ¬ì¶•ì‹œ In-Memory Sorting ì˜ì—­
- * Min = 1204, Default = 32768
- * ----------------------------------------------------------------- */
-
-    IDP_DEF(ULong, "MEMORY_INDEX_BUILD_RUN_SIZE",
+    IDP_DEF(UInt, "__WCB_CLEAN_MEMSET",
             IDP_ATTR_SL_ALL |
-            IDP_ATTR_IU_ANY |
-            IDP_ATTR_MS_ANY |
-            IDP_ATTR_LC_EXTERNAL |
-            IDP_ATTR_RD_WRITABLE |
-            IDP_ATTR_ML_JUSTONE  |
-            IDP_ATTR_CK_CHECK,
-            (1024), ID_ULONG_MAX, ( 32 * 1024));
-
-/* --------------------------------------------------------------------
- * PROJ-1629
- * Memory Index êµ¬ì¶•ì‹œ Union Merge ë‹¨ê³„ì—ì„œ mergeí•  Merge Run Count
- * Min = 1, Default = 4
- * ----------------------------------------------------------------- */
-
-    // BUG-19249 : ë‚´ë¶€ propertyë¡œ ë³€ê²½
-    IDP_DEF(ULong, "__MEMORY_INDEX_BUILD_RUN_COUNT_AT_UNION_MERGE",
-            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
             IDP_ATTR_RD_WRITABLE |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            1, ID_ULONG_MAX, 4);
+            0, 1, 0 );
+
+    IDP_DEF( UInt, "TEMP_HASH_BUCKET_DENSITY",
+             IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
+             IDP_ATTR_IU_ANY |
+             IDP_ATTR_MS_ANY |
+             IDP_ATTR_LC_EXTERNAL |
+             IDP_ATTR_RD_READONLY |
+             IDP_ATTR_ML_JUSTONE |
+             IDP_ATTR_CK_CHECK,
+             1, 100, 1 );
+
+    IDP_DEF(UInt, "__TEMP_HASH_FETCH_SUBHASH_MAX_RATIO",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            10, 99, 90 );
 
 /* --------------------------------------------------------------------
  * PROJ-1629
- * Memory Index êµ¬ì¶•ì‹œ Key Valueë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•œ Threshold
+ * Memory Index ±¸Ãà½Ã In-Memory Sorting ¿µ¿ª
+ * Min = 1204, Default = 32768
+ * ----------------------------------------------------------------- */
+
+    IDP_DEF(ULong, "MEMORY_INDEX_BUILD_RUN_SIZE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            (1024), ID_ULONG_MAX, ( 128 * 1024));
+
+/* --------------------------------------------------------------------
+ * PROJ-1629
+ * Memory Index ±¸Ãà½Ã Key Value¸¦ »ç¿ëÇÏ±â À§ÇÑ Threshold
  * Min = 0, Default = 64
  * ----------------------------------------------------------------- */
 
     IDP_DEF(ULong, "MEMORY_INDEX_BUILD_VALUE_LENGTH_THRESHOLD",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -5528,7 +6148,7 @@ IDE_RC registProperties()
  * ----------------------------------------------------------------- */
 
 /* --------------------------------------------------------------------
- * êµ¬ë™ ì‹¤íŒ¨ì‹œ, ì´ Propertyë¥¼ ì˜¬ë ¤ì„œ ì„œë²„ë¥¼ êµ¬ë™ì‹œí‚¬ ìˆ˜ ìžˆìŠµë‹ˆë‹¤.
+ * ±¸µ¿ ½ÇÆÐ½Ã, ÀÌ Property¸¦ ¿Ã·Á¼­ ¼­¹ö¸¦ ±¸µ¿½ÃÅ³ ¼ö ÀÖ½À´Ï´Ù.
  *
  * RECOVERY_NORMAL(0)    - Default
  * RECOVERY_EMERGENCY(1) - Check and Ignore inconsistent object.
@@ -5545,13 +6165,13 @@ IDE_RC registProperties()
             0, 2, 0);
 
 /* --------------------------------------------------------------------
- * êµ¬ë™ ì‹¤íŒ¨ë¡œ DBê°€ ë¹„ì •ìƒì ì¼ ê²½ìš°, DBëŠ” ìƒí™©ì´ ì•…í™”ë˜ëŠ” ê²ƒì„ ë§‰ê¸° ìœ„í•´
- * ë¹„ì •ìƒ ê°ì²´ì— ëŒ€í•œ ì ‘ê·¼ì„ ë§‰ìŠµë‹ˆë‹¤. ì´ PropertyëŠ” ê·¸ëŸ¬í•œ ì ‘ê·¼ì„ í—ˆìš©
- * í•˜ê²Œ í•˜ê³ , ìƒí™© ì•…í™”ë¥¼ ë§‰ê¸° ìœ„í•´ ë‹¤ì†Œ ëŠë¦¬ë”ë¼ë„ ì•ˆì „í•œ ì ‘ê·¼ì„ í•˜ê²Œ
- * í•©ë‹ˆë‹¤.
+ * ±¸µ¿ ½ÇÆÐ·Î DB°¡ ºñÁ¤»óÀûÀÏ °æ¿ì, DB´Â »óÈ²ÀÌ ¾ÇÈ­µÇ´Â °ÍÀ» ¸·±â À§ÇØ
+ * ºñÁ¤»ó °´Ã¼¿¡ ´ëÇÑ Á¢±ÙÀ» ¸·½À´Ï´Ù. ÀÌ Property´Â ±×·¯ÇÑ Á¢±ÙÀ» Çã¿ë
+ * ÇÏ°Ô ÇÏ°í, »óÈ² ¾ÇÈ­¸¦ ¸·±â À§ÇØ ´Ù¼Ò ´À¸®´õ¶óµµ ¾ÈÀüÇÑ Á¢±ÙÀ» ÇÏ°Ô
+ * ÇÕ´Ï´Ù.
  * 0 - Default
- * 1 - Inconsistent Pageë“±ì€ ì œì™¸í•˜ë©° ì˜¤ë¥˜ë¥¼ ë¬´ì‹œí•˜ë©° íƒìƒ‰
- * 2 - ì˜¤ë¥˜ë¥¼ ë¬´ì‹œí•˜ë©° íƒìƒ‰
+ * 1 - Inconsistent PageµîÀº Á¦¿ÜÇÏ¸ç ¿À·ù¸¦ ¹«½ÃÇÏ¸ç Å½»ö
+ * 2 - ¿À·ù¸¦ ¹«½ÃÇÏ¸ç Å½»ö
  * ----------------------------------------------------------------- */
     IDP_DEF(UInt, "__CRASH_TOLERANCE",
             IDP_ATTR_SL_PFILE |
@@ -5564,7 +6184,7 @@ IDE_RC registProperties()
             0, 2, 0);
 
 /* --------------------------------------------------------------------
- * ì•„ëž˜ ì„¸ Propertyê°€ í•˜ë‚˜ì˜ ê·¸ë£¹ìœ¼ë¡œ, í•´ë‹¹ LSNì˜ Logë¥¼ ë¬´ì‹œí•©ë‹ˆë‹¤.
+ * ¾Æ·¡ ¼¼ Property°¡ ÇÏ³ªÀÇ ±×·ìÀ¸·Î, ÇØ´ç LSNÀÇ Log¸¦ ¹«½ÃÇÕ´Ï´Ù.
  * ----------------------------------------------------------------- */
     IDP_DEF(UInt, "__SM_IGNORE_LFGID_IN_STARTUP",
             IDP_ATTR_SL_PFILE |
@@ -5597,7 +6217,7 @@ IDE_RC registProperties()
             0, ID_UINT_MAX, 0);
 
 /* --------------------------------------------------------------------
- * SpaceID * 2^32 + PageIDì˜ ê°’ì„ ì„¤ì •í•˜ë©´, í•´ë‹¹ íŽ˜ì´ì§€ë¥¼ ë¬´ì‹œí•©ë‹ˆë‹¤.
+ * SpaceID * 2^32 + PageIDÀÇ °ªÀ» ¼³Á¤ÇÏ¸é, ÇØ´ç ÆäÀÌÁö¸¦ ¹«½ÃÇÕ´Ï´Ù.
  * ----------------------------------------------------------------- */
     IDP_DEF(ULong, "__SM_IGNORE_PAGE_IN_STARTUP",
             IDP_ATTR_SL_PFILE |
@@ -5610,7 +6230,7 @@ IDE_RC registProperties()
             0, ID_ULONG_MAX, 0);
 
 /* --------------------------------------------------------------------
- * TableOIDë¥¼ ìž…ë ¥í•˜ë©´, í•´ë‹¹ Tableì„ êµ¬ë™ì‹œ ë¬´ì‹œí•©ë‹ˆë‹¤.
+ * TableOID¸¦ ÀÔ·ÂÇÏ¸é, ÇØ´ç TableÀ» ±¸µ¿½Ã ¹«½ÃÇÕ´Ï´Ù.
  * ----------------------------------------------------------------- */
     IDP_DEF(ULong, "__SM_IGNORE_TABLE_IN_STARTUP",
             IDP_ATTR_SL_PFILE |
@@ -5623,7 +6243,7 @@ IDE_RC registProperties()
             0, ID_ULONG_MAX, 0);
 
 /* --------------------------------------------------------------------
- * IndexIDë¥¼ ìž…ë ¥í•˜ë©´, í•´ë‹¹ Indexë¥¼ êµ¬ë™ì‹œ ë¬´ì‹œí•©ë‹ˆë‹¤.
+ * IndexID¸¦ ÀÔ·ÂÇÏ¸é, ÇØ´ç Index¸¦ ±¸µ¿½Ã ¹«½ÃÇÕ´Ï´Ù.
  * ----------------------------------------------------------------- */
     IDP_DEF(UInt, "__SM_IGNORE_INDEX_IN_STARTUP",
             IDP_ATTR_SL_PFILE |
@@ -5636,7 +6256,7 @@ IDE_RC registProperties()
             0, ID_UINT_MAX, 0);
 
 /* --------------------------------------------------------------------
- * RedoLogicê³¼ ServiceLogê°„ì˜ ì¼ì¹˜ì„± ë¹„êµë¥¼ í†µí•´ Bugë¥¼ ì°¾ìŠµë‹ˆë‹¤.
+ * RedoLogic°ú ServiceLog°£ÀÇ ÀÏÄ¡¼º ºñ±³¸¦ ÅëÇØ Bug¸¦ Ã£½À´Ï´Ù.
  * ----------------------------------------------------------------- */
     IDP_DEF(UInt, "__SM_ENABLE_STARTUP_BUG_DETECTOR",
             IDP_ATTR_SL_PFILE |
@@ -5649,9 +6269,9 @@ IDE_RC registProperties()
             0, 1, 0);
 
 /* --------------------------------------------------------------------
- * Minitransaction Rollbackì— ê´€í•œ í…ŒìŠ¤íŠ¸ë¥¼ í•œë‹¤.
- * ì„¤ì •ëœ ê°’ ë§Œí¼ MtxCommitì´ ì´ë£¨ì–´ì§„ í›„ Rollbackì„ ì‹œë„í•œë‹¤.
- * Debugëª¨ë“œì—ì„œë§Œ ë™ìž‘í•œë‹¤.
+ * Minitransaction Rollback¿¡ °üÇÑ Å×½ºÆ®¸¦ ÇÑ´Ù.
+ * ¼³Á¤µÈ °ª ¸¸Å­ MtxCommitÀÌ ÀÌ·ç¾îÁø ÈÄ RollbackÀ» ½ÃµµÇÑ´Ù.
+ * Debug¸ðµå¿¡¼­¸¸ µ¿ÀÛÇÑ´Ù.
  * ----------------------------------------------------------------- */
     IDP_DEF(UInt, "__SM_MTX_ROLLBACK_TEST",
             IDP_ATTR_SL_PFILE |
@@ -5668,12 +6288,12 @@ IDE_RC registProperties()
  * ----------------------------------------------------------------- */
 
 /* --------------------------------------------------------------------
- * BUG-38515 ì„œë²„ ì‹œìž‘ì‹œ SCNì„ ì²´í¬í•˜ì—¬ SCNì´ INFINITE ê°’ ì¼ ê²½ìš° ì„œë²„ë¥¼ ë©ˆì¶˜ë‹¤.  
- * ì´ í”„ë¡œí¼í‹°ëŠ” ê·¸ ìƒí™©ì—ì„œ ì„œë²„ë¥¼ ì£½ì´ì§€ ì•Šê³  ì •ë³´ë¥¼ ì¶œë ¥í•˜ê¸° ìœ„í•œ ì—­í• ì„ í•œë‹¤. 
- * ì´ ê°’ì´ 0ì¼ ê²½ìš° SCNì´ INFINITEì¼ ê²½ìš° ì„œë²„ë¥¼ ì •ì§€í•œë‹¤.
- * ì´ ê°’ì´ 1ì¼ ê²½ìš° SCNì´ INFINITEì¼ ê²½ìš°ì—ë„ ì„œë²„ë¥¼ ì£½ì´ì§€ ì•Šê³ 
- * ê´€ë ¨ ì •ë³´ë¥¼ ì¶œë ¥í•œ í›„ ê·¸ëŒ€ë¡œ ì§„í–‰í•œë‹¤.
- * BUG-41600 ê°’ì´ 2 ì¼ ê²½ìš°ë¥¼ ì¶”ê°€í•œë‹¤. SCNì´ INFINITEì¸ ê²½ìš° í…Œì´ë¸”ì„ ë³´ì •í•œë‹¤.
+ * BUG-38515 ¼­¹ö ½ÃÀÛ½Ã SCNÀ» Ã¼Å©ÇÏ¿© SCNÀÌ INFINITE °ª ÀÏ °æ¿ì ¼­¹ö¸¦ ¸ØÃá´Ù.  
+ * ÀÌ ÇÁ·ÎÆÛÆ¼´Â ±× »óÈ²¿¡¼­ ¼­¹ö¸¦ Á×ÀÌÁö ¾Ê°í Á¤º¸¸¦ Ãâ·ÂÇÏ±â À§ÇÑ ¿ªÇÒÀ» ÇÑ´Ù. 
+ * ÀÌ °ªÀÌ 0ÀÏ °æ¿ì SCNÀÌ INFINITEÀÏ °æ¿ì ¼­¹ö¸¦ Á¤ÁöÇÑ´Ù.
+ * ÀÌ °ªÀÌ 1ÀÏ °æ¿ì SCNÀÌ INFINITEÀÏ °æ¿ì¿¡µµ ¼­¹ö¸¦ Á×ÀÌÁö ¾Ê°í
+ * °ü·Ã Á¤º¸¸¦ Ãâ·ÂÇÑ ÈÄ ±×´ë·Î ÁøÇàÇÑ´Ù.
+ * BUG-41600 °ªÀÌ 2 ÀÏ °æ¿ì¸¦ Ãß°¡ÇÑ´Ù. SCNÀÌ INFINITEÀÎ °æ¿ì Å×ÀÌºíÀ» º¸Á¤ÇÑ´Ù.
  * ----------------------------------------------------------------- */
     IDP_DEF(UInt, "__SM_SKIP_CHECKSCN_IN_STARTUP",
             IDP_ATTR_SL_PFILE |
@@ -5686,13 +6306,13 @@ IDE_RC registProperties()
             0, 2, 0);
 
 /* --------------------------------------------------------------------
- * BUG-38515 __SM_SKIP_CHECKSCN_IN_STARTUP ížˆë“  í”„ë¡œí¼í‹°ë¥¼ ì‚¬ìš©ì‹œ ë¶„ì„ì„ ë•ê¸° ìœ„í•´
- * Legacy Txì— ê´€ë ¨í•˜ì—¬ addLegacyTransì™€ removeLegacyTrans í•¨ìˆ˜ì—ì„œ legacy Txê°€ 
- * ì¶”ê°€/ì œê±° ë  ë•Œë§ˆë‹¤ trc ë¡œê·¸ë¥¼ ë‚¨ê¸´ë‹¤. 
- * ë‹¨, legacy Txê°€ ë§Žì„ ê²½ìš° ì„±ëŠ¥ì— ì˜í–¥ì„ ì¤„ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ 
- * ížˆë“  í”„ë¡œí¼í‹°ë¡œ trc ë¡œê·¸ë¥¼ ë‚¨ê¸¸ì§€ ì—¬ë¶€ë¥¼ ì„ íƒí•  ìˆ˜ ìžˆë„ë¡ í•œë‹¤.
- * ì´ ê°’ì´ 0ì¼ ê²½ìš° add/remove LegacyTransì™€ ê´€ë ¨ëœ trc ë¡œê·¸ë¥¼ ë‚¨ê¸°ì§€ ì•ŠëŠ”ë‹¤.
- * ì´ ê°’ì´ 1ì¼ ê²½ìš° add/remove LegacyTransì™€ ê´€ë ¨ëœ trc ë¡œê·¸ë¥¼ ë‚¨ê¸´ë‹¤.
+ * BUG-38515 __SM_SKIP_CHECKSCN_IN_STARTUP È÷µç ÇÁ·ÎÆÛÆ¼¸¦ »ç¿ë½Ã ºÐ¼®À» µ½±â À§ÇØ
+ * Legacy Tx¿¡ °ü·ÃÇÏ¿© addLegacyTrans¿Í removeLegacyTrans ÇÔ¼ö¿¡¼­ legacy Tx°¡ 
+ * Ãß°¡/Á¦°Å µÉ ¶§¸¶´Ù trc ·Î±×¸¦ ³²±ä´Ù. 
+ * ´Ü, legacy Tx°¡ ¸¹À» °æ¿ì ¼º´É¿¡ ¿µÇâÀ» ÁÙ ¼ö ÀÖÀ¸¹Ç·Î 
+ * È÷µç ÇÁ·ÎÆÛÆ¼·Î trc ·Î±×¸¦ ³²±æÁö ¿©ºÎ¸¦ ¼±ÅÃÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
+ * ÀÌ °ªÀÌ 0ÀÏ °æ¿ì add/remove LegacyTrans¿Í °ü·ÃµÈ trc ·Î±×¸¦ ³²±âÁö ¾Ê´Â´Ù.
+ * ÀÌ °ªÀÌ 1ÀÏ °æ¿ì add/remove LegacyTrans¿Í °ü·ÃµÈ trc ·Î±×¸¦ ³²±ä´Ù.
  * ----------------------------------------------------------------- */
     IDP_DEF(UInt, "__TRCLOG_LEGACY_TX_INFO",
             IDP_ATTR_SL_PFILE |
@@ -5708,8 +6328,8 @@ IDE_RC registProperties()
  * When Recovery Fails, Turn On This Property and Skip REDO & UNDO
  * CAUTION : DATABASE WILL NOT BE CONSISTENT!!
  * Min = 0, Default = 0
- * BUG-32632 User Memory Tablesapceì—ì„œ Max sizeë¥¼ ë¬´ì‹œí•˜ëŠ” ë¹„ìƒìš© Propertyì¶”ê°€
- *           User Memory Tablespaceì˜ Max Sizeë¥¼ ë¬´ì‹œí•˜ê³  ë¬´ì¡°ê±´ í™•ìž¥
+ * BUG-32632 User Memory Tablesapce¿¡¼­ Max size¸¦ ¹«½ÃÇÏ´Â ºñ»ó¿ë PropertyÃß°¡
+ *           User Memory TablespaceÀÇ Max Size¸¦ ¹«½ÃÇÏ°í ¹«Á¶°Ç È®Àå
  * ----------------------------------------------------------------- */
     IDP_DEF(UInt, "__EMERGENCY_IGNORE_MEM_TBS_MAXSIZE",
             IDP_ATTR_SL_PFILE |
@@ -5729,6 +6349,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "MULTIPLEXING_THREAD_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -5739,6 +6360,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "MULTIPLEXING_MAX_THREAD_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -5750,6 +6372,7 @@ IDE_RC registProperties()
 #if defined(WRS_VXWORKS) || defined(VC_WINCE)
     IDP_DEF(UInt, "MULTIPLEXING_POLL_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -5760,6 +6383,7 @@ IDE_RC registProperties()
 #else
     IDP_DEF(UInt, "MULTIPLEXING_POLL_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -5771,6 +6395,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "MULTIPLEXING_CHECK_INTERVAL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -5780,9 +6405,9 @@ IDE_RC registProperties()
             100000, 10000000, 200000);
 
     /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-       service threadì˜ ì´ˆê¸° lifespan ê°’.
-       service threadê°€ ìƒì„±ë˜ìžë§ˆìž ì¢…ë£Œí•˜ëŠ”ê²ƒì„ ë°©ì§€í•˜ê¸° ìœ„í•´
-       ì´ propertyë¥¼ ë‘ì—ˆë‹¤.
+       service threadÀÇ ÃÊ±â lifespan °ª.
+       service thread°¡ »ý¼ºµÇÀÚ¸¶ÀÚ Á¾·áÇÏ´Â°ÍÀ» ¹æÁöÇÏ±â À§ÇØ
+       ÀÌ property¸¦ µÎ¾ú´Ù.
      */
     IDP_DEF(UInt, "SERVICE_THREAD_INITIAL_LIFESPAN",
             IDP_ATTR_SL_ALL      |
@@ -5792,7 +6417,7 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             30,ID_UINT_MAX , 6000);
     /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-       idle í•œ threadê°€ ê³„ì† liveí•˜ê¸° ìœ„í•œ ìµœì†Œ assigned ëœ taskê°¯ìˆ˜.
+       idle ÇÑ thread°¡ °è¼Ó liveÇÏ±â À§ÇÑ ÃÖ¼Ò assigned µÈ task°¹¼ö.
      */
     IDP_DEF(UInt, "MIN_TASK_COUNT_FOR_THREAD_LIVE",
             IDP_ATTR_SL_ALL      |
@@ -5802,8 +6427,8 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1,1024 , 1);
     /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-       a service threadì˜ busy degreeë¥¼ ì •ì˜í• ë•Œ ì‚¬ìš©ë˜ë©°,
-       a service threadê°€ busyì¼ë•Œ penaltyë¡œ ì‚¬ìš©ëœë‹¤.
+       a service threadÀÇ busy degree¸¦ Á¤ÀÇÇÒ¶§ »ç¿ëµÇ¸ç,
+       a service thread°¡ busyÀÏ¶§ penalty·Î »ç¿ëµÈ´Ù.
      */
     IDP_DEF(UInt, "BUSY_SERVICE_THREAD_PENALTY",
             IDP_ATTR_LC_INTERNAL |
@@ -5812,9 +6437,9 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1,ID_UINT_MAX ,128);
     /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-       max a idle thread ì—ì„œ min a idle threadìœ¼ë¡œ migrationí• ë•Œ
-       taskë¥¼ ìˆ˜ì‹ í•˜ëŠ” idle threadì˜ task  ë³€í™”í­ì´
-       ì´ propertyë³´ë‹¤ ì»¤ì•¼ì§€ task migrationì„ í—ˆìš©í•œë‹¤.
+       max a idle thread ¿¡¼­ min a idle threadÀ¸·Î migrationÇÒ¶§
+       task¸¦ ¼ö½ÅÇÏ´Â idle threadÀÇ task  º¯È­ÆøÀÌ
+       ÀÌ propertyº¸´Ù Ä¿¾ßÁö task migrationÀ» Çã¿ëÇÑ´Ù.
      */
     IDP_DEF(UInt, "MIN_MIGRATION_TASK_RATE",
             IDP_ATTR_LC_INTERNAL |
@@ -5824,11 +6449,11 @@ IDE_RC registProperties()
             10,100000 ,50);
 
     /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-       a idle threadì— í• ë‹¹ëœ í‰ê·  average taskê°¯ìˆ˜ê°€
-       a service threadë‹¹ í‰ê·  Taskê°¯ìˆ˜ë³´ë‹¤  í¬ê³ ,
-       ê·¸ ë¹„ìœ¨ì´ NEW_SERVICE_CREATE_RATE ì´ìƒ ë²Œì–´ì¡Œê³ ,
-       ê·¸ íŽ¸ì°¨ê°€ NEW_SERVICE_CREATE_RATE_GAP ì´ìƒ ë²Œì–´ì¡Œì„ë•Œ
-       ì¶”ê°€ì ìœ¼ë¡œ service threadë¥¼  ìƒì„±í•˜ë„ë¡ ê²°ì •í•œë‹¤.
+       a idle thread¿¡ ÇÒ´çµÈ Æò±Õ average task°¹¼ö°¡
+       a service thread´ç Æò±Õ Task°¹¼öº¸´Ù  Å©°í,
+       ±× ºñÀ²ÀÌ NEW_SERVICE_CREATE_RATE ÀÌ»ó ¹ú¾îÁ³°í,
+       ±× ÆíÂ÷°¡ NEW_SERVICE_CREATE_RATE_GAP ÀÌ»ó ¹ú¾îÁ³À»¶§
+       Ãß°¡ÀûÀ¸·Î service thread¸¦  »ý¼ºÇÏµµ·Ï °áÁ¤ÇÑ´Ù.
      */
     IDP_DEF(UInt, "NEW_SERVICE_CREATE_RATE",
             IDP_ATTR_LC_INTERNAL |
@@ -5851,10 +6476,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             100,100000 , 150);
 
-    //fix BUG-23776, XA ROLLBACKì‹œ XIDê°€ ACTIVEì¼ë•Œ ëŒ€ê¸°ì‹œê°„ì„
-    //QueryTime Outì´ ì•„ë‹ˆë¼,Propertyë¥¼ ì œê³µí•´ì•¼ í•¨.
+    //fix BUG-23776, XA ROLLBACK½Ã XID°¡ ACTIVEÀÏ¶§ ´ë±â½Ã°£À»
+    //QueryTime OutÀÌ ¾Æ´Ï¶ó,Property¸¦ Á¦°øÇØ¾ß ÇÔ.
     IDP_DEF(UInt, "XA_ROLLBACK_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -5870,6 +6496,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "QUEUE_GLOBAL_HASHTABLE_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -5880,6 +6507,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "QUEUE_SESSION_HASHTABLE_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -5891,6 +6519,7 @@ IDE_RC registProperties()
     //fix BUG-30949 A waiting time for enqueue event in transformed dedicated thread should not be infinite.
     IDP_DEF(ULong, "QUEUE_MAX_ENQ_WAIT_TIME",
                 IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
                 IDP_ATTR_IU_ANY |
                 IDP_ATTR_MS_ANY |
                 IDP_ATTR_LC_INTERNAL |
@@ -5904,6 +6533,7 @@ IDE_RC registProperties()
     // default 64M
     IDP_DEF(ULong, "SQL_PLAN_CACHE_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -5914,6 +6544,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SQL_PLAN_CACHE_BUCKET_CNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -5924,6 +6555,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SQL_PLAN_CACHE_INIT_PCB_CNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -5934,6 +6566,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SQL_PLAN_CACHE_INIT_PARENT_PCO_CNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -5944,6 +6577,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SQL_PLAN_CACHE_INIT_CHILD_PCO_CNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -5955,6 +6589,7 @@ IDE_RC registProperties()
    // fix BUG-29384,The upper bound of SQL_PLAN_CACHE_HOT_REGION_LRU_RATIO should be raised up to 100%
     IDP_DEF(UInt, "SQL_PLAN_CACHE_HOT_REGION_LRU_RATIO",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -5965,6 +6600,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SQL_PLAN_CACHE_PREPARED_EXECUTION_CONTEXT_CNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -5975,6 +6611,7 @@ IDE_RC registProperties()
     //fix BUG-31150, It needs to add  the property for frequency of  hot region LRU  list.
     IDP_DEF(UInt, "SQL_PLAN_CACHE_HOT_REGION_FREQUENCY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -5987,6 +6624,7 @@ IDE_RC registProperties()
     /* BUG-35630 Change max value to UINT_MAX */
     IDP_DEF(UInt, "SQL_PLAN_CACHE_PARENT_PCO_XLATCH_TRY_CNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -5998,6 +6636,7 @@ IDE_RC registProperties()
     /* BUG-36205 Plan Cache On/Off property for PSM */
     IDP_DEF(UInt, "SQL_PLAN_CACHE_USE_IN_PSM",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -6012,6 +6651,7 @@ IDE_RC registProperties()
     // default = 10%
     IDP_DEF(UInt, "STMTPAGETABLE_PREALLOC_RATIO",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -6024,6 +6664,7 @@ IDE_RC registProperties()
     /* maxinum count of free-list elements of the session mutexpool */
     IDP_DEF(UInt, "SESSION_MUTEXPOOL_FREE_LIST_MAXCNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -6036,6 +6677,7 @@ IDE_RC registProperties()
     /* the number of initially initialized mutex in the free-list of the session mutexpool */
     IDP_DEF(UInt, "SESSION_MUTEXPOOL_FREE_LIST_INITCNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -6047,6 +6689,7 @@ IDE_RC registProperties()
     /* These properties decide the last parameter of iduMemPool::initilize */
     IDP_DEF(UInt, "MMT_SESSION_LIST_MEMPOOL_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -6058,6 +6701,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "MMC_MUTEXPOOL_MEMPOOL_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -6069,6 +6713,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "MMC_STMTPAGETABLE_MEMPOOL_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -6081,6 +6726,7 @@ IDE_RC registProperties()
     /* PROJ-1438 Job Scheduler */
     IDP_DEF(UInt, "JOB_THREAD_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -6092,6 +6738,7 @@ IDE_RC registProperties()
     /* PROJ-1438 Job Scheduler */
     IDP_DEF(UInt, "JOB_THREAD_QUEUE_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -6103,6 +6750,7 @@ IDE_RC registProperties()
     /* PROJ-1438 Job Scheduler */
     IDP_DEF(UInt, "JOB_SCHEDULER_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -6117,6 +6765,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "MAX_CLIENT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6129,6 +6778,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "CM_DISCONN_DETECT_TIME",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6139,6 +6789,7 @@ IDE_RC registProperties()
 
     IDP_DEF(SInt, "DDL_LOCK_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6149,6 +6800,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "AUTO_COMMIT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6157,9 +6809,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 1);
 
-    /* BUG-45295 non-autocommit sessionì—ì„œ txë¥¼ ë¯¸ë¦¬ ìƒì„±í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+    /* BUG-45295 non-autocommit session¿¡¼­ tx¸¦ ¹Ì¸® »ý¼ºÇÏÁö ¾Ê´Â´Ù. */
     IDP_DEF(UInt, "TRANSACTION_START_MODE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -6168,9 +6821,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 0);
 
-    // BUG-19465 : CM_Bufferì˜ pending listë¥¼ ì œí•œ
+    // BUG-19465 : CM_BufferÀÇ pending list¸¦ Á¦ÇÑ
     IDP_DEF(UInt, "CM_BUFFER_MAX_PENDING_LIST",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6187,6 +6841,7 @@ IDE_RC registProperties()
     // PK UPDATE in Replicated table.
     IDP_DEF(UInt, "REPLICATION_UPDATE_PK",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -6197,6 +6852,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "REPLICATION_PORT_NO",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6207,6 +6863,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "REPLICATION_IB_PORT_NO",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6217,6 +6874,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "REPLICATION_IB_LATENCY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6227,6 +6885,7 @@ IDE_RC registProperties()
 
     IDP_DEF(SInt, "REPLICATION_MAX_LOGFILE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6237,6 +6896,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "REPLICATION_UPDATE_REPLACE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6247,6 +6907,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "REPLICATION_INSERT_REPLACE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6257,6 +6918,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "REPLICATION_CONNECT_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6267,6 +6929,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "REPLICATION_RECEIVE_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6277,6 +6940,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "REPLICATION_SENDER_SLEEP_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6287,6 +6951,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "REPLICATION_RECEIVER_XLOG_QUEUE_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -6297,6 +6962,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "REPLICATION_ACK_XLOG_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6307,6 +6973,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "REPLICATION_PROPAGATION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -6317,6 +6984,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "REPLICATION_HBT_DETECT_TIME",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6327,6 +6995,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "REPLICATION_HBT_DETECT_HIGHWATER_MARK",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6337,6 +7006,7 @@ IDE_RC registProperties()
 
     IDP_DEF(ULong, "REPLICATION_SYNC_TUPLE_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6347,6 +7017,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "REPLICATION_SYNC_LOCK_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6357,6 +7028,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "REPLICATION_TIMESTAMP_RESOLUTION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6368,6 +7040,7 @@ IDE_RC registProperties()
     //fix BUG-9894
     IDP_DEF(UInt, "REPLICATION_CONNECT_RECEIVE_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6378,6 +7051,7 @@ IDE_RC registProperties()
     //fix BUG-9343
     IDP_DEF(UInt, "REPLICATION_SENDER_AUTO_START",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6388,6 +7062,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "REPLICATION_SENDER_START_AFTER_GIVING_UP",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -6399,6 +7074,7 @@ IDE_RC registProperties()
     //TASK-2359
     IDP_DEF(UInt, "REPLICATION_PERFORMANCE_TEST",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -6409,6 +7085,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "REPLICATION_PREFETCH_LOGFILE_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6419,6 +7096,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "REPLICATION_SENDER_SLEEP_TIME",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6429,6 +7107,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "REPLICATION_KEEP_ALIVE_CNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6440,6 +7119,7 @@ IDE_RC registProperties()
     // deprecated
     IDP_DEF(UInt, "REPLICATION_SERVICE_WAIT_MAX_LIMIT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -6451,6 +7131,7 @@ IDE_RC registProperties()
     /*PROJ-1670 replication Log Buffer*/
     IDP_DEF(UInt, "REPLICATION_LOG_BUFFER_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6461,6 +7142,7 @@ IDE_RC registProperties()
     /*PROJ-1608 Recovery From Replication*/
     IDP_DEF(UInt, "REPLICATION_RECOVERY_MAX_TIME",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6470,6 +7152,7 @@ IDE_RC registProperties()
             0, ID_UINT_MAX, ID_UINT_MAX);
     IDP_DEF(UInt, "REPLICATION_RECOVERY_MAX_LOGFILE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6480,6 +7163,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "__REPLICATION_RECOVERY_REQUEST_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -6488,9 +7172,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 10, 5);
 
-    // PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
+    // PROJ-1442 Replication Online Áß DDL Çã¿ë
     IDP_DEF(UInt, "REPLICATION_DDL_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6501,6 +7186,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "REPLICATION_DDL_ENABLE_LEVEL",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -6512,6 +7198,7 @@ IDE_RC registProperties()
     // PROJ-1705 RP
     IDP_DEF(UInt, "REPLICATION_POOL_ELEMENT_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6523,6 +7210,7 @@ IDE_RC registProperties()
     // PROJ-1705 RP
     IDP_DEF(UInt, "REPLICATION_POOL_ELEMENT_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6533,6 +7221,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "REPLICATION_EAGER_PARALLEL_FACTOR",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6541,10 +7230,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1, IDP_REPLICATION_MAX_EAGER_PARALLEL_FACTOR, 
             IDL_MIN(IDL_MAX((idlVA::getProcessorCount()/2),1),
-                    IDP_REPLICATION_MAX_EAGER_PARALLEL_FACTOR));  // DEFAULT : CPU ê°œìˆ˜, MAX : 512
+                    IDP_REPLICATION_MAX_EAGER_PARALLEL_FACTOR));  // DEFAULT : CPU °³¼ö, MAX : 512
 
     IDP_DEF(UInt, "REPLICATION_COMMIT_WRITE_WAIT_MODE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6555,6 +7245,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "REPLICATION_SERVER_FAILBACK_MAX_TIME",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6565,6 +7256,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "__REPLICATION_FAILBACK_PK_QUEUE_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -6575,6 +7267,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "REPLICATION_FAILBACK_INCREMENTAL_SYNC",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6585,6 +7278,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "REPLICATION_MAX_LISTEN",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6595,6 +7289,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "REPLICATION_TRANSACTION_POOL_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6605,6 +7300,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "REPLICATION_STRICT_EAGER_MODE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -6615,6 +7311,7 @@ IDE_RC registProperties()
 
     IDP_DEF(SInt, "REPLICATION_EAGER_MAX_YIELD_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -6626,6 +7323,7 @@ IDE_RC registProperties()
     /* BUG-36555 */
     IDP_DEF(UInt, "REPLICATION_BEFORE_IMAGE_LOG_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6636,6 +7334,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "REPLICATION_EAGER_RECEIVER_MAX_ERROR_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6646,6 +7345,7 @@ IDE_RC registProperties()
 
     IDP_DEF(SInt, "REPLICATION_SENDER_COMPRESS_XLOG",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6654,9 +7354,21 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 0 );
 
+    IDP_DEF(SInt, "REPLICATION_SENDER_COMPRESS_XLOG_LEVEL",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            1, 1000, 1 );
+
     /* BUG-37482 */
     IDP_DEF(UInt, "REPLICATION_MAX_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6668,6 +7380,7 @@ IDE_RC registProperties()
     /* PROJ-2261 */
     IDP_DEF( UInt, "REPLICATION_THREAD_CPU_AFFINITY",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -6679,6 +7392,7 @@ IDE_RC registProperties()
     /* PROJ-2336 */
     IDP_DEF(SInt, "REPLICATION_ALLOW_DUPLICATE_HOSTS",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6690,6 +7404,7 @@ IDE_RC registProperties()
     /* BUG-38102 */
     IDP_DEF(SInt, "REPLICATION_SENDER_ENCRYPT_XLOG",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6701,6 +7416,7 @@ IDE_RC registProperties()
     /* BUG-38716 */
     IDP_DEF( UInt, "REPLICATION_SENDER_SEND_TIMEOUT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -6711,6 +7427,7 @@ IDE_RC registProperties()
 
     IDP_DEF( ULong, "REPLICATION_GAPLESS_MAX_WAIT_TIME",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -6721,6 +7438,7 @@ IDE_RC registProperties()
 
     IDP_DEF( ULong, "REPLICATION_GAPLESS_ALLOW_TIME",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -6731,6 +7449,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "REPLICATION_RECEIVER_APPLIER_QUEUE_SIZE",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -6741,6 +7460,7 @@ IDE_RC registProperties()
 
     IDP_DEF( SInt, "REPLICATION_RECEIVER_APPLIER_ASSIGN_MODE",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -6751,6 +7471,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "REPLICATION_FORCE_RECEIVER_PARALLEL_APPLY_COUNT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -6761,6 +7482,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "REPLICATION_GROUPING_TRANSACTION_MAX_COUNT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -6771,6 +7493,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "REPLICATION_GROUPING_AHEAD_READ_NEXT_LOG_FILE",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -6782,6 +7505,7 @@ IDE_RC registProperties()
     /* BUG-41246 */
     IDP_DEF( UInt, "REPLICATION_RECONNECT_MAX_COUNT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -6792,6 +7516,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "REPLICATION_SYNC_APPLY_METHOD",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -6802,6 +7527,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "REPLICATION_EAGER_KEEP_LOGFILE_COUNT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -6812,6 +7538,7 @@ IDE_RC registProperties()
    
     IDP_DEF( UInt, "REPLICATION_FORCE_SQL_APPLY_ENABLE",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -6822,6 +7549,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "REPLICATION_SQL_APPLY_ENABLE",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -6832,6 +7560,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "__REPLICATION_SET_RESTARTSN",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -6842,6 +7571,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "REPLICATION_SENDER_RETRY_COUNT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -6852,6 +7582,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "REPLICATION_ALLOW_QUEUE",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -6862,9 +7593,10 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "REPLICATION_RECEIVER_APPLIER_YIELD_COUNT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
-             IDP_ATTR_LC_INTERNAL |
+             IDP_ATTR_LC_EXTERNAL |
              IDP_ATTR_RD_WRITABLE |
              IDP_ATTR_ML_JUSTONE  |
              IDP_ATTR_CK_CHECK,
@@ -6873,6 +7605,7 @@ IDE_RC registProperties()
     // PROJ-1723
     IDP_DEF(UInt, "DDL_SUPPLEMENTAL_LOG_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6881,9 +7614,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 0);
 
-    /* PROJ-2677 DDL ë³µì œ í—ˆìš©*/
+    /* PROJ-2677 DDL º¹Á¦ Çã¿ë*/
     IDP_DEF( UInt, "REPLICATION_DDL_SYNC",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -6894,6 +7628,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "REPLICATION_DDL_SYNC_TIMEOUT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -6902,8 +7637,31 @@ IDE_RC registProperties()
              IDP_ATTR_CK_CHECK,
              0, ID_UINT_MAX, 7200 );
 
+    IDP_DEF(ULong, "REPLICATION_GAP_UNIT",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            1, ID_ULONG_MAX, 1024 * 1024 );
+
+    IDP_DEF(UInt, "REPLICATION_CHECK_SRID_IN_GEOMETRY_ENABLE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 1 );
+
     IDP_DEF(UInt, "XA_HEURISTIC_COMPLETE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6914,6 +7672,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "XA_INDOUBT_TX_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6924,6 +7683,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "OPTIMIZER_MODE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6934,6 +7694,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "PROTOCOL_DUMP", // 0 : inactive, 1 : active
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -6942,11 +7703,71 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 0);
 
+    /* PROJ-2725 Consistent Replication For Shard Cluster System */
+    /* XLOGFILEÀÌ ÀúÀåµÉ À§Ä¡ */
+    IDP_DEF(String, "XLOGFILE_DIR",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_SK_PATH     |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_ML_MULTIPLE |
+            IDP_ATTR_DF_DROP_DEFAULT |
+            IDP_ATTR_CK_CHECK,
+            0, IDP_MAX_PROP_STRING_LEN, (SChar *)"");
+
+    /* ¹Ì¸® »ý¼ºÇÒ XLOGFILEÀÇ ¼ö */
+    IDP_DEF(UInt, "XLOGFILE_PREPARE_COUNT",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            1, ID_UINT_MAX, 5);
+
+    IDP_DEF(ULong, "XLOGFILE_SIZE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_AL_SET_VALUE( sLogFileAlignSize ) |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            64 * 1024, ID_ULONG_MAX, 10 * 1024 * 1024);
+
+    IDP_DEF(UInt, "XLOGFILE_REMOVE_INTERVAL",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            3, IDV_MAX_TIME_INTERVAL_SEC, 600);
+
+    IDP_DEF(UInt, "XLOGFILE_REMOVE_INTERVAL_BY_FILE_CREATE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            1, ID_UINT_MAX, 10);
 
     // BUG-44742
-    // NORMALFORM_MAXIMUMì˜ ê¸°ë³¸ê°’ì„ 128ì—ì„œ 2048ë¡œ ë³€ê²½í•©ë‹ˆë‹¤.
+    // NORMALFORM_MAXIMUMÀÇ ±âº»°ªÀ» 128¿¡¼­ 2048·Î º¯°æÇÕ´Ï´Ù.
     IDP_DEF(UInt, "NORMALFORM_MAXIMUM",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6957,6 +7778,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "EXEC_DDL_DISABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6967,6 +7789,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SELECT_HEADER_DISPLAY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6977,6 +7800,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "LOGIN_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6987,6 +7811,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "IDLE_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -6997,6 +7822,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "QUERY_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7008,6 +7834,7 @@ IDE_RC registProperties()
     /* BUG-32885 Timeout for DDL must be distinct to query_timeout or utrans_timeout */
     IDP_DEF(UInt, "DDL_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7018,6 +7845,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "FETCH_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7028,6 +7856,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "UTRANS_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7036,9 +7865,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, ID_UINT_MAX, 3600);
     
-    // PROJ-1665 : session propertyë¡œì„œ parallel_dml_mode
+    // PROJ-1665 : session property·Î¼­ parallel_dml_mode
     IDP_DEF(UInt, "PARALLEL_DML_MODE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7049,6 +7879,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "UPDATE_IN_PLACE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7059,6 +7890,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "MEMORY_COMPACT_TIME",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7069,6 +7901,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "ADMIN_MODE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_USER|
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7080,6 +7913,7 @@ IDE_RC registProperties()
     /* PROJ-2563 */
     IDP_DEF( UInt, "__REPLICATION_USE_V6_PROTOCOL",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -7090,6 +7924,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "_STORED_PROC_MODE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7100,6 +7935,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "__SHOW_ERROR_STACK",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_USER|
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7110,6 +7946,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "TIMER_RUNNING_LEVEL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7120,6 +7957,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "TIMER_THREAD_RESOLUTION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7129,11 +7967,12 @@ IDE_RC registProperties()
             50, 10000000, 1000 );
 
     /*
-     * TASK-2356 [ì œí’ˆë¬¸ì œë¶„ì„] DRDBì˜ DML ë¬¸ì œ íŒŒì•…
-     * Altibase Wait Interface í†µê³„ì •ë³´ ìˆ˜ì§‘ ì—¬ë¶€ ì„¤ì •
+     * TASK-2356 [Á¦Ç°¹®Á¦ºÐ¼®] DRDBÀÇ DML ¹®Á¦ ÆÄ¾Ç
+     * Altibase Wait Interface Åë°èÁ¤º¸ ¼öÁý ¿©ºÎ ¼³Á¤
      */
     IDP_DEF(UInt, "TIMED_STATISTICS",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7145,6 +7984,7 @@ IDE_RC registProperties()
     /* BUG-38946 display name */
     IDP_DEF(UInt, "COMPATIBLE_DISPLAY_NAME",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7160,6 +8000,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "ALL_MSGLOG_FLUSH",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7171,6 +8012,7 @@ IDE_RC registProperties()
 
     IDP_DEF(String, "SERVER_MSGLOG_FILE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -7182,6 +8024,7 @@ IDE_RC registProperties()
 
     IDP_DEF(String, "SERVER_MSGLOG_DIR",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -7193,6 +8036,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SERVER_MSGLOG_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7203,6 +8047,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SERVER_MSGLOG_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7213,6 +8058,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SERVER_MSGLOG_FLAG",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7226,6 +8072,7 @@ IDE_RC registProperties()
      * --------------------------------------------------------------*/
     IDP_DEF(String, "QP_MSGLOG_FILE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -7237,6 +8084,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "QP_MSGLOG_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7247,6 +8095,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "QP_MSGLOG_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7255,9 +8104,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, ID_UINT_MAX, 10);
 
-    // BUG-24354  qp_msglog_flag=2, PREPARE_STMT_MEMORY_MAXIMUM = 200M ë¡œ Property ì˜ Default ê°’ ë³€ê²½
+    // BUG-24354  qp_msglog_flag=2, PREPARE_STMT_MEMORY_MAXIMUM = 200M ·Î Property ÀÇ Default °ª º¯°æ
     IDP_DEF(UInt, "QP_MSGLOG_FLAG",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7271,6 +8121,7 @@ IDE_RC registProperties()
      * --------------------------------------------------------------*/
     IDP_DEF(String, "SD_MSGLOG_FILE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -7282,6 +8133,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SD_MSGLOG_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7292,6 +8144,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SD_MSGLOG_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7302,19 +8155,21 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SD_MSGLOG_FLAG",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
             IDP_ATTR_RD_WRITABLE |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            0, ID_UINT_MAX, 1);
+            0, ID_UINT_MAX, 65537);
 
     /* ------------------------------------------------------------------
      *   SM
      * --------------------------------------------------------------*/
     IDP_DEF(String, "SM_MSGLOG_FILE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -7326,6 +8181,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SM_MSGLOG_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7336,6 +8192,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SM_MSGLOG_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7346,6 +8203,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SM_MSGLOG_FLAG",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7356,6 +8214,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SM_XLATCH_USE_SIGNAL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7372,6 +8231,7 @@ IDE_RC registProperties()
      * __DBMS_STAT_METHOD, MUTEX_TYPE, and LATCH_TYPE properties */
     IDP_DEF(UInt, "LATCH_TYPE", // 0 : posix, 1 : native
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7382,6 +8242,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "LATCH_MINSLEEP", // in microseconds
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7392,6 +8253,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "LATCH_MAXSLEEP", // in microseconds
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7402,6 +8264,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "MUTEX_SLEEPTYPE", // 0 : sleep, 1 : thryield
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7414,6 +8277,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "MUTEX_TYPE", // 0 : posix, 1 : native
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7426,6 +8290,7 @@ IDE_RC registProperties()
     // 0 = check disable, 1= check enable
     IDP_DEF(UInt, "CHECK_MUTEX_DURATION_TIME_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7434,8 +8299,20 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 0);
 
+/* BUG-46911
+ * - Linux, 24 ÄÚ¾îº¸´Ù Å¬ °æ¿ì ½ºÇÉ Ä«¿îÆ® °ªÀÌ Å©¸é 
+ * select ¼º´É ÀúÇÏ ¹ß»ý. Å×½ºÆ® °á°ú¿¡ µû¶ó 10,000À¸·Î º¯°æ  
+ */  
+#if defined(ALTI_CFG_OS_LINUX)
+    sDefaultMutexSpinCnt = ( (idlVA::getProcessorCount() > 24) ?
+                             10000 : (idlVA::getProcessorCount() - 1)*10000 );
+#else
+    sDefaultMutexSpinCnt = (idlVA::getProcessorCount() - 1)*10000;
+#endif
+
     IDP_DEF(UInt, "LATCH_SPIN_COUNT", // 0 : posix, 1 : native
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7443,11 +8320,11 @@ IDE_RC registProperties()
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             1, ID_UINT_MAX, 
-            (idlVA::getProcessorCount() > 1) ?
-            (idlVA::getProcessorCount() - 1)*10000 : 1);
+            (idlVA::getProcessorCount() > 1) ? sDefaultMutexSpinCnt : 1);
 
     IDP_DEF(UInt, "MUTEX_SPIN_COUNT", // 0 : posix, 1 : native
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7455,11 +8332,11 @@ IDE_RC registProperties()
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             1, ID_UINT_MAX, 
-            (idlVA::getProcessorCount() > 1) ?
-            (idlVA::getProcessorCount() - 1)*10000 : 1);
+            (idlVA::getProcessorCount() > 1) ? sDefaultMutexSpinCnt : 1);
 
     IDP_DEF(UInt, "NATIVE_MUTEX_SPIN_COUNT", // for IDU_MUTEX_KIND_NATIVE2
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7468,15 +8345,15 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1,
             ID_UINT_MAX,
-            (idlVA::getProcessorCount() > 1) ?
-            (idlVA::getProcessorCount() - 1)*10000 : 1); // BUG-27909
+            (idlVA::getProcessorCount() > 1) ? sDefaultMutexSpinCnt : 1);
 
-    // BUG-28856 Logging ë³‘ëª©ì œê±° ë¡œ Native3ì¶”ê°€
-    // ë†’ì€ spin countë¥¼ ê°€ì§„ native mutexì—ì„œ Loggingì„±ëŠ¥ í–¥ìƒ
-    // BUGBUG Defaultê°’ì€ ì¡°ê¸ˆ ë” í…ŒìŠ¤íŠ¸ê°€ í•„ìš”í•¨
+    // BUG-28856 Logging º´¸ñÁ¦°Å ·Î Native3Ãß°¡
+    // ³ôÀº spin count¸¦ °¡Áø native mutex¿¡¼­ Logging¼º´É Çâ»ó
+    // BUGBUG Default°ªÀº Á¶±Ý ´õ Å×½ºÆ®°¡ ÇÊ¿äÇÔ
     // for IDU_MUTEX_KIND_NATIVE_FOR_LOGGING
     IDP_DEF(UInt, "NATIVE_MUTEX_SPIN_COUNT_FOR_LOGGING",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7489,10 +8366,11 @@ IDE_RC registProperties()
             (idlVA::getProcessorCount() - 1)*100000 : 1);
 
     /* BUG-35392 */
-    // BUG-28856 logging ë³‘ëª©ì œê±°
-    // Logging ì‹œ ì‚¬ìš©í•˜ëŠ” log alloc Mutexì˜ ì¢…ë¥˜ë¥¼ ê²°ì •
+    // BUG-28856 logging º´¸ñÁ¦°Å
+    // Logging ½Ã »ç¿ëÇÏ´Â log alloc MutexÀÇ Á¾·ù¸¦ °áÁ¤
     IDP_DEF(UInt, "LOG_ALLOC_MUTEX_TYPE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7502,10 +8380,11 @@ IDE_RC registProperties()
             0, 3, 3);
 
     /* BUG-35392 */
-    // BUG-28856 logging ë³‘ëª©ì œê±°
-    // Logging ì‹œ ì‚¬ìš©í•˜ëŠ” log alloc Mutexì˜ ì¢…ë¥˜ë¥¼ ê²°ì •
+    // BUG-28856 logging º´¸ñÁ¦°Å
+    // Logging ½Ã »ç¿ëÇÏ´Â log alloc MutexÀÇ Á¾·ù¸¦ °áÁ¤
     IDP_DEF(UInt, "FAST_UNLOCK_LOG_ALLOC_MUTEX",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7516,6 +8395,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "__LOG_READ_METHOD_TYPE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7524,8 +8404,20 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 0);
 
+    IDP_DEF(UInt, "__LOG_COMPRESSION_ACCELERATION",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            1, 1000, 1);
+
     IDP_DEF(String, "DEFAULT_DATE_FORMAT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_ASCII    |
@@ -7537,6 +8429,7 @@ IDE_RC registProperties()
 
     IDP_DEF ( UInt, "__MUTEX_POOL_MAX_SIZE",
               IDP_ATTR_SL_ALL |
+              IDP_ATTR_SH_ALL |
               IDP_ATTR_IU_ANY |
               IDP_ATTR_MS_ANY |
               IDP_ATTR_LC_INTERNAL |
@@ -7547,10 +8440,11 @@ IDE_RC registProperties()
 
 #if defined(ALTIBASE_PRODUCT_XDB)
     /* TASK-4690
-     * ë©”ëª¨ë¦¬ ì¸ë±ìŠ¤ INodeì˜ ìµœëŒ€ slot ê°¯ìˆ˜.
-     * ì´ ê°’ì˜ *2 í•œ ê°’ì´ LNodeì˜ ìµœëŒ€ slot ê°¯ìˆ˜ê°€ ëœë‹¤. */
+     * ¸Þ¸ð¸® ÀÎµ¦½º INodeÀÇ ÃÖ´ë slot °¹¼ö.
+     * ÀÌ °ªÀÇ *2 ÇÑ °ªÀÌ LNodeÀÇ ÃÖ´ë slot °¹¼ö°¡ µÈ´Ù. */
     IDP_DEF(UInt, "__MEM_BTREE_MAX_SLOT_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7565,6 +8459,7 @@ IDE_RC registProperties()
      * MEMORY BTREE INDEX NODE SIZE */
     IDP_DEF(UInt, "__MEM_BTREE_NODE_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7576,9 +8471,10 @@ IDE_RC registProperties()
             4096);
 
     /* PROJ-2433
-     * MEMORY BTREE DIRECT KEY INDEX ì‚¬ìš©ì‹œ, default max key size */
+     * MEMORY BTREE DIRECT KEY INDEX »ç¿ë½Ã, default max key size */
     IDP_DEF(UInt, "__MEM_BTREE_DEFAULT_MAX_KEY_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7593,6 +8489,7 @@ IDE_RC registProperties()
      *  Force makes all memory btree index to direct key index when column created. (if possible) */
     IDP_DEF(SInt, "__FORCE_INDEX_DIRECTKEY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7608,12 +8505,13 @@ IDE_RC registProperties()
      * Force to make Persistent Index, When new memory index is created.
      *
      * BUG-41541 Disable Memory Persistent Index and Change Hidden Property
-     * 0ì¼ ê²½ìš° : persistent index ë¯¸ì‚¬ìš©(ê¸°ë³¸)
-     * 1ì¼ ê²½ìš° : persistentë¡œ ì„¸íŒ… ëœ indexë§Œ persistentë¡œ ì‚¬ìš©
-     * 2ì¼ ê²½ìš° : ëª¨ë“  indexë¥¼ persistentë¡œ ì‚¬ìš© */
+     * 0ÀÏ °æ¿ì : persistent index ¹Ì»ç¿ë(±âº»)
+     * 1ÀÏ °æ¿ì : persistent·Î ¼¼ÆÃ µÈ index¸¸ persistent·Î »ç¿ë
+     * 2ÀÏ °æ¿ì : ¸ðµç index¸¦ persistent·Î »ç¿ë */
     
     IDP_DEF(SInt, "__FORCE_INDEX_PERSISTENCE_MODE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7625,9 +8523,10 @@ IDE_RC registProperties()
             0);
 #if 0
     /* TASK-4690
-     * ì¸ë±ìŠ¤ cardinality í†µê³„ ë‹¤ì¤‘í™” */
+     * ÀÎµ¦½º cardinality Åë°è ´ÙÁßÈ­ */
     IDP_DEF(UInt, "__INDEX_STAT_PARALLEL_FACTOR",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7637,10 +8536,11 @@ IDE_RC registProperties()
             1, 512, IDL_MIN(idlVA::getProcessorCount() * 2, 512));
 #endif
     /* TASK-4690
-     * 0ì´ë©´ iduOIDMemory ë¥¼ ì‚¬ìš©í•˜ê³ ,
-     * 1ì´ë©´ iduMemPool ì„ ì‚¬ìš©í•œë‹¤. */
+     * 0ÀÌ¸é iduOIDMemory ¸¦ »ç¿ëÇÏ°í,
+     * 1ÀÌ¸é iduMemPool À» »ç¿ëÇÑ´Ù. */
     IDP_DEF(UInt, "__TX_OIDLIST_MEMPOOL_TYPE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7654,6 +8554,7 @@ IDE_RC registProperties()
      * --------------------------------------------------------------*/
     IDP_DEF(String, "RP_MSGLOG_FILE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -7665,6 +8566,7 @@ IDE_RC registProperties()
 
     IDP_DEF(String, "RP_CONFLICT_MSGLOG_FILE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -7676,6 +8578,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "RP_CONFLICT_MSGLOG_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7686,6 +8589,7 @@ IDE_RC registProperties()
 
     IDP_DEF(String, "RP_CONFLICT_MSGLOG_DIR",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -7695,9 +8599,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, IDP_MAX_PROP_STRING_LEN, (SChar *)"?"IDL_FILE_SEPARATORS"trc");
 
-    // Update Transactionì´ ëª‡ ê°œ ì´ìƒì¼ë•Œ Group Commitì„ ë™ìž‘ì‹œí‚¬ ê²ƒì¸ì§€
+    // Update TransactionÀÌ ¸î °³ ÀÌ»óÀÏ¶§ Group CommitÀ» µ¿ÀÛ½ÃÅ³ °ÍÀÎÁö
     IDP_DEF(UInt, "LFG_GROUP_COMMIT_UPDATE_TX_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7706,10 +8611,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, ID_UINT_MAX, 80);
 
-    // ê¸°ë³¸ì ìœ¼ë¡œ 1msë§ˆë‹¤ í•œë²ˆì”© Disk I/Oë¥¼ ìˆ˜í–‰
+    // ±âº»ÀûÀ¸·Î 1ms¸¶´Ù ÇÑ¹ø¾¿ Disk I/O¸¦ ¼öÇà
 #if defined(WRS_VXWORKS) || defined(VC_WINCE)
     IDP_DEF(UInt, "LFG_GROUP_COMMIT_INTERVAL_USEC",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7720,6 +8626,7 @@ IDE_RC registProperties()
 #else
     IDP_DEF(UInt, "LFG_GROUP_COMMIT_INTERVAL_USEC",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7729,10 +8636,11 @@ IDE_RC registProperties()
             0, ID_UINT_MAX, 1000);
 #endif
 
-    // ê¸°ë³¸ì ìœ¼ë¡œ 100usë§Œì— í•œë²ˆì”© ê¹¨ì–´ë‚˜ì„œ ë¡œê·¸ê°€ ì´ë¯¸ Syncë˜ì—ˆëŠ”ì§€ ì²´í¬
+    // ±âº»ÀûÀ¸·Î 100us¸¸¿¡ ÇÑ¹ø¾¿ ±ú¾î³ª¼­ ·Î±×°¡ ÀÌ¹Ì SyncµÇ¾ú´ÂÁö Ã¼Å©
 #if defined(WRS_VXWORKS) || defined(VC_WINCE)
     IDP_DEF(UInt, "LFG_GROUP_COMMIT_RETRY_USEC",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7743,6 +8651,7 @@ IDE_RC registProperties()
 #else
     IDP_DEF(UInt, "LFG_GROUP_COMMIT_RETRY_USEC",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7752,9 +8661,10 @@ IDE_RC registProperties()
             0, IDV_MAX_TIME_INTERVAL_USEC, 100);
 #endif
 
-    // Update Transactionì´ ëª‡ ê°œ ì´ìƒì¼ë•Œ Group Commitì„ ë™ìž‘ì‹œí‚¬ ê²ƒì¸ì§€
+    // Update TransactionÀÌ ¸î °³ ÀÌ»óÀÏ¶§ Group CommitÀ» µ¿ÀÛ½ÃÅ³ °ÍÀÎÁö
     IDP_DEF(UInt, "GROUP_COMMIT_UPDATE_TX_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7763,10 +8673,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, ID_UINT_MAX, 80);
 
-    // ê¸°ë³¸ì ìœ¼ë¡œ 1msë§ˆë‹¤ í•œë²ˆì”© Disk I/Oë¥¼ ìˆ˜í–‰
+    // ±âº»ÀûÀ¸·Î 1ms¸¶´Ù ÇÑ¹ø¾¿ Disk I/O¸¦ ¼öÇà
 #if defined(WRS_VXWORKS) || defined(VC_WINCE)
     IDP_DEF(UInt, "GROUP_COMMIT_INTERVAL_USEC",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7777,6 +8688,7 @@ IDE_RC registProperties()
 #else
     IDP_DEF(UInt, "GROUP_COMMIT_INTERVAL_USEC",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7786,10 +8698,11 @@ IDE_RC registProperties()
             0, ID_UINT_MAX, 1000);
 #endif
 
-    // ê¸°ë³¸ì ìœ¼ë¡œ 100usë§Œì— í•œë²ˆì”© ê¹¨ì–´ë‚˜ì„œ ë¡œê·¸ê°€ ì´ë¯¸ Syncë˜ì—ˆëŠ”ì§€ ì²´í¬
+    // ±âº»ÀûÀ¸·Î 100us¸¸¿¡ ÇÑ¹ø¾¿ ±ú¾î³ª¼­ ·Î±×°¡ ÀÌ¹Ì SyncµÇ¾ú´ÂÁö Ã¼Å©
 #if defined(WRS_VXWORKS) || defined(VC_WINCE)
     IDP_DEF(UInt, "GROUP_COMMIT_RETRY_USEC",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7800,6 +8713,7 @@ IDE_RC registProperties()
 #else
     IDP_DEF(UInt, "GROUP_COMMIT_RETRY_USEC",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7811,6 +8725,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "RP_MSGLOG_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7821,6 +8736,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "RP_MSGLOG_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7831,6 +8747,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "RP_MSGLOG_FLAG",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7841,6 +8758,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "RP_CONFLICT_MSGLOG_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7851,6 +8769,7 @@ IDE_RC registProperties()
     
     IDP_DEF(UInt, "RP_CONFLICT_MSGLOG_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7861,6 +8780,7 @@ IDE_RC registProperties()
     
     IDP_DEF(UInt, "RP_CONFLICT_MSGLOG_FLAG",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7868,24 +8788,26 @@ IDE_RC registProperties()
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             0, ID_UINT_MAX, 6);
-    
-    IDP_DEF(ULong, "REPLICATION_GAP_UNIT",
-            IDP_ATTR_SL_ALL |
-            IDP_ATTR_IU_ANY |
-            IDP_ATTR_MS_ANY |
-            IDP_ATTR_LC_EXTERNAL |
-            IDP_ATTR_RD_WRITABLE |
-            IDP_ATTR_ML_JUSTONE  |
-            IDP_ATTR_CK_CHECK,
-            1, ID_ULONG_MAX, 1024 * 1024 );
- 
+                
+    IDP_DEF( UInt, "REPLICATION_META_ITEM_COUNT_DIFF_ENABLE",
+             IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
+             IDP_ATTR_IU_ANY |
+             IDP_ATTR_MS_ANY |
+             IDP_ATTR_LC_EXTERNAL |
+             IDP_ATTR_RD_WRITABLE |
+             IDP_ATTR_ML_JUSTONE  |
+             IDP_ATTR_CK_CHECK,
+             0, 1, 0 );
+
     // ==================================================================
     // iduMemory
     // ==================================================================
 
-    // BUG-24354  qp_msglog_flag=2, PREPARE_STMT_MEMORY_MAXIMUM = 200M ë¡œ Property ì˜ Default ê°’ ë³€ê²½
+    // BUG-24354  qp_msglog_flag=2, PREPARE_STMT_MEMORY_MAXIMUM = 200M ·Î Property ÀÇ Default °ª º¯°æ
     IDP_DEF(ULong, "PREPARE_STMT_MEMORY_MAXIMUM",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7898,6 +8820,7 @@ IDE_RC registProperties()
 
     IDP_DEF(ULong, "EXECUTE_STMT_MEMORY_MAXIMUM",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -7906,13 +8829,13 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             (1024*1024),       // min : 1M
             ID_ULONG_MAX,      // max
-            (1024*1024*1024)); // default : 1G
+            ID_ULONG(2 * 1024 * 1024 * 1024));      // default, 2G
 
     // ==================================================================
     // Preallocate Memory
     // ==================================================================
     IDP_DEF(ULong, "PREALLOC_MEMORY",
-            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SL_ALL | IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7930,6 +8853,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "MEM_DELETE_THREAD",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7940,6 +8864,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "MEM_GC_THREAD",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7950,6 +8875,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "BUFFER_FLUSH_THREAD",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7960,6 +8886,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "ARCHIVE_THREAD",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7970,6 +8897,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "CHECKPOINT_THREAD",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7980,6 +8908,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "LOG_FLUSH_THREAD",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -7990,6 +8919,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "LOG_PREPARE_THREAD",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8000,6 +8930,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "LOG_PREREAD_THREAD",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8011,6 +8942,7 @@ IDE_RC registProperties()
 #ifdef ALTIBASE_ENABLE_SMARTSSD
     IDP_DEF(UInt, "SMART_SSD_LOG_RUN_GC_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8021,6 +8953,7 @@ IDE_RC registProperties()
 
     IDP_DEF(String, "SMART_SSD_LOG_DEVICE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8031,6 +8964,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SMART_SSD_GC_TIME_MILLISEC",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8043,6 +8977,7 @@ IDE_RC registProperties()
     // To verify CASE-6829
     IDP_DEF(UInt, "__SM_CHECKSUM_DISABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8054,6 +8989,7 @@ IDE_RC registProperties()
     // To verify CASE-6829
     IDP_DEF(UInt, "__SM_AGER_DISABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8065,6 +9001,7 @@ IDE_RC registProperties()
     // To verify CASE-6829
     IDP_DEF(UInt, "__SM_CHECK_DISK_INDEX_INTEGRITY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8076,6 +9013,7 @@ IDE_RC registProperties()
     // To BUG-27122
     IDP_DEF(UInt, "__SM_VERIFY_DISK_INDEX_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8087,6 +9025,7 @@ IDE_RC registProperties()
     // Index Name String MaxSize
     IDP_DEF(String, "__SM_VERIFY_DISK_INDEX_NAME",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8099,9 +9038,10 @@ IDE_RC registProperties()
      *  PROJ-2059: DB Upgrade Function
      * ----------------------------------------------*/
 
-    // DataPort Fileì„ ì €ìž¥í•  DIRECTORY
+    // DataPort FileÀ» ÀúÀåÇÒ DIRECTORY
     IDP_DEF(String, "DATAPORT_FILE_DIRECTORY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -8111,9 +9051,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, IDP_MAX_PROP_STRING_LEN, (SChar *)"?"IDL_FILE_SEPARATORS"dbs");
 
-    // DataPort Fileì˜ Block Size
+    // DataPort FileÀÇ Block Size
     IDP_DEF(UInt, "__DATAPORT_FILE_BLOCK_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8122,9 +9063,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             8192, 1024*1024*1024, 2*1024*1024 );
 
-    // DataPortê¸°ëŠ¥ ì‚¬ìš© ì‹œ Direct IO ì‚¬ìš© ì—¬ë¶€
+    // DataPort±â´É »ç¿ë ½Ã Direct IO »ç¿ë ¿©ºÎ
     IDP_DEF(UInt, "__DATAPORT_DIRECT_IO_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8133,9 +9075,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0,1,0 );
 
-    //Exportì‹œ Columnë¥¼ Chain(Blockê°„ ê±¸ì¹¨)ì—¬ë¶€ë¥¼ íŒë‹¨í•˜ëŠ” ê¸°ì¤€ê°’
+    //Export½Ã Column¸¦ Chain(Block°£ °ÉÄ§)¿©ºÎ¸¦ ÆÇ´ÜÇÏ´Â ±âÁØ°ª
     IDP_DEF(UInt, "__EXPORT_COLUMN_CHAINING_THRESHOLD",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8144,9 +9087,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             128, 8192, 128 );
 
-    //Importì‹œ Commitë‹¨ìœ„
+    //Import½Ã Commit´ÜÀ§
     IDP_DEF(UInt, "DATAPORT_IMPORT_COMMIT_UNIT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8155,9 +9099,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1,ID_UINT_MAX,10 );
 
-    //Importì‹œ Statementë‹¨ìœ„
+    //Import½Ã Statement´ÜÀ§
     IDP_DEF(UInt, "DATAPORT_IMPORT_STATEMENT_UNIT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8167,9 +9112,10 @@ IDE_RC registProperties()
             1,ID_UINT_MAX,50000 );
 
 
-    //Importì‹œ Direct-path Insert ë™ìž‘ì—¬ë¶€
+    //Import½Ã Direct-path Insert µ¿ÀÛ¿©ºÎ
     IDP_DEF(UInt, "__IMPORT_DIRECT_PATH_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8178,9 +9124,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0,1,1 );
 
-    //Importì‹œ Validation ìˆ˜í–‰ ì—¬ë¶€
+    //Import½Ã Validation ¼öÇà ¿©ºÎ
     IDP_DEF(UInt, "__IMPORT_VALIDATION_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8189,10 +9136,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0,1,1 );
 
-    // Importì‹œ SourceTableì˜ Partitionì •ë³´ì™€ ë™ì¼í• ë•Œ Filteringì„ ë¬´ì‹œ
-    // í•´ì£¼ëŠ” ê¸°ëŠ¥ ë™ìž‘ ì—¬ë¶€
+    // Import½Ã SourceTableÀÇ PartitionÁ¤º¸¿Í µ¿ÀÏÇÒ¶§ FilteringÀ» ¹«½Ã
+    // ÇØÁÖ´Â ±â´É µ¿ÀÛ ¿©ºÎ
     IDP_DEF(UInt, "__IMPORT_PARTITION_MATCH_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8206,6 +9154,7 @@ IDE_RC registProperties()
      * ----------------------------------------------*/
     IDP_DEF(UInt, "__OPTIMIZER_VIEW_TARGET_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8219,6 +9168,7 @@ IDE_RC registProperties()
      * ----------------------------------------------*/
     IDP_DEF(UInt, "QUERY_PROF_FLAG",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8229,6 +9179,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "QUERY_PROF_BUF_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8239,6 +9190,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "QUERY_PROF_BUF_FLUSH_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8249,6 +9201,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "QUERY_PROF_BUF_FULL_SKIP",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8259,6 +9212,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "QUERY_PROF_FILE_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8270,6 +9224,7 @@ IDE_RC registProperties()
     /* BUG-36806 */
     IDP_DEF(String, "QUERY_PROF_LOG_DIR",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -8281,6 +9236,7 @@ IDE_RC registProperties()
 
     IDP_DEF(String, "ACCESS_LIST",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_ASCII    |
@@ -8296,6 +9252,7 @@ IDE_RC registProperties()
     /* BUG-36807 */
     IDP_DEF(String, "AUDIT_LOG_DIR",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |    
@@ -8307,6 +9264,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "AUDIT_BUFFER_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8317,6 +9275,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "AUDIT_BUFFER_FLUSH_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8327,6 +9286,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "AUDIT_BUFFER_FULL_SKIP",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8337,6 +9297,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "AUDIT_FILE_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8378,6 +9339,7 @@ IDE_RC registProperties()
     //BUG-21122 :
     IDP_DEF(UInt, "AUTO_REMOTE_EXEC",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8389,6 +9351,7 @@ IDE_RC registProperties()
     // BUG-20129
     IDP_DEF(ULong, "__HEAP_MEM_MAX_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8407,6 +9370,7 @@ IDE_RC registProperties()
     // 3:  all query logging
     IDP_DEF(UInt, "__QUERY_LOGGING_LEVEL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8421,6 +9385,7 @@ IDE_RC registProperties()
      *  and decrease intermediate tuple count. (vs NNF) */
     IDP_DEF(SInt, "OPTIMIZER_PARTIAL_NORMALIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8432,6 +9397,7 @@ IDE_RC registProperties()
     // fix BUG-36522
     IDP_DEF(UInt, "__PSM_SHOW_ERROR_STACK",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8443,6 +9409,7 @@ IDE_RC registProperties()
     // fix BUG-36793
     IDP_DEF(UInt, "__BIND_PARAM_DEFAULT_PRECISION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8456,6 +9423,7 @@ IDE_RC registProperties()
      *  HIDDEN PROPERTY */
     IDP_DEF(SInt, "__FORCE_COMPRESSION_COLUMN",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8465,51 +9433,54 @@ IDE_RC registProperties()
             0, 1, 0);
 
     /*
-     * BUG-21487     Mutex Leak Listì¶œë ¥ì„ propertyí™” í•´ì•¼í•©ë‹ˆë‹¤.
+     * BUG-21487     Mutex Leak ListÃâ·ÂÀ» propertyÈ­ ÇØ¾ßÇÕ´Ï´Ù.
      */
 
     IDP_DEF(UInt, "SHOW_MUTEX_LEAK_LIST",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
             IDP_ATTR_RD_WRITABLE |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            0, 1, 1); //defaultëŠ” 1ë¡œì„œ ì¶œë ¥í•˜ëŠ”ê²ƒìž„.
+            0, 1, 1); //default´Â 1·Î¼­ Ãâ·ÂÇÏ´Â°ÍÀÓ.
 
-    /* PROJ-1864  Partial Write Problemì— ëŒ€í•œ ë¬¸ì œ í•´ê²°.
-     * Recoveryì—ì„œ Corrupt page ì²˜ë¦¬ ì •ì±…
+    /* PROJ-1864  Partial Write Problem¿¡ ´ëÇÑ ¹®Á¦ ÇØ°á.
+     * Recovery¿¡¼­ Corrupt page Ã³¸® Á¤Ã¥
+     * 
+     * BUG-45598: ¿î¿µÁß Corrupt page Ã³¸® Á¤Ã¥µµ Æ÷ÇÔÇÑ´Ù. 
      *
-     * BUG-45598: ìš´ì˜ì¤‘ Corrupt page ì²˜ë¦¬ ì •ì±…ë„ í¬í•¨í•œë‹¤.
+     * BUG-46182: default °ªÀ» 3¿¡¼­ 2·Î º¯°æ  
      *
-     * BUG-46182: default ê°’ì„ 3ì—ì„œ 2ë¡œ ë³€ê²½
-     *
-     * 0 - corrupt pageë¥¼ ë°œê²¬í•˜ë©´ ë¬´ì‹œí•œë‹¤.
-     *     Group Hdr pageê°€ corrupt ëœ ê²½ìš°ì—ëŠ” ì„œë²„ ì¢…ë£Œ í•œë‹¤.
-     * 1 - corrupt pageë¥¼ ë°œê²¬í•˜ë©´ ì„œë²„ë¥¼ ì¢…ë£Œí•œë‹¤.
-     * 2 - corrupt pageë¥¼ ë°œê²¬í•˜ë©´ ImgLogê°€ ìžˆì„ ê²½ìš° OverWrite í•œë‹¤.
-     *     ë‹¨ Group Hdr pageê°€ corrupt ëœ ê²½ìš°ë¥¼ ì œì™¸í•˜ê³ 
-     *     Corrupt Pageë¥¼ Overwriteí•˜ì§€ ëª»í•´ë„ ì„œë²„ ì¢…ë£Œ í•˜ì§€ ì•ŠëŠ”ë‹¤.
-     * 3 - corrupt pageë¥¼ ë°œê²¬í•˜ë©´ ImgLogë¡œ OverWrite ì‹œë„
-     *     ë³´ì •ë˜ì§€ ëª»í•œ Corrupt Pageê°€ ì¡´ìž¬í•œë‹¤ë©´ ì„œë²„ ì¢…ë£Œ.
-     *
-     * * ìš´ì˜ì¤‘: 0, 2 ABORT / 1, 3 FATAL
-     */
+     * 0 - corrupt page¸¦ ¹ß°ßÇÏ¸é ¹«½ÃÇÑ´Ù.
+     *     Group Hdr page°¡ corrupt µÈ °æ¿ì¿¡´Â ¼­¹ö Á¾·á ÇÑ´Ù.
+     * 1 - corrupt page¸¦ ¹ß°ßÇÏ¸é ¼­¹ö¸¦ Á¾·áÇÑ´Ù.
+     * 2 - corrupt page¸¦ ¹ß°ßÇÏ¸é ImgLog°¡ ÀÖÀ» °æ¿ì OverWrite ÇÑ´Ù.
+     *     ´Ü Group Hdr page°¡ corrupt µÈ °æ¿ì¸¦ Á¦¿ÜÇÏ°í
+     *     Corrupt Page¸¦ OverwriteÇÏÁö ¸øÇØµµ ¼­¹ö Á¾·á ÇÏÁö ¾Ê´Â´Ù.
+     * 3 - corrupt page¸¦ ¹ß°ßÇÏ¸é ImgLog·Î OverWrite ½Ãµµ
+     *     º¸Á¤µÇÁö ¸øÇÑ Corrupt Page°¡ Á¸ÀçÇÑ´Ù¸é ¼­¹ö Á¾·á.
+     * 
+     * * ¿î¿µÁß: 0, 2 ABORT / 1, 3 FATAL 
+     */ 
     IDP_DEF(UInt, "CORRUPT_PAGE_ERR_POLICY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
             IDP_ATTR_RD_READONLY |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            0, 3, 2);
+            0, 3, 2); 
 
     // bug-19279 remote sysdba enable + sys can kill session
     // default: 1 (on)
     IDP_DEF(UInt, "REMOTE_SYSDBA_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8518,10 +9489,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 1 );
 
-    // BUG-24993 ë„¤íŠ¸ì›Œí¬ ì—ëŸ¬ ë©”ì‹œì§€ log ì—¬ë¶€
+    // BUG-24993 ³×Æ®¿öÅ© ¿¡·¯ ¸Þ½ÃÁö log ¿©ºÎ
     // default: 1 (on)
     IDP_DEF(UInt, "NETWORK_ERROR_LOG",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8536,6 +9508,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SHARD_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_USER|
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8546,6 +9519,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "__SHARD_TEST_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_USER|
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8554,7 +9528,19 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 0 );
 
-    IDP_DEF(UInt, "__SHARD_AGGREGATION_TRANSFORM_DISABLE",
+    /* BUG-48247 */
+    IDP_DEF(UInt, "__SHARD_ALLOW_AUTO_COMMIT",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 1);
+
+    IDP_DEF(UInt, "__SHARD_LOCAL_FORCE",
             IDP_ATTR_SL_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
@@ -8562,10 +9548,23 @@ IDE_RC registProperties()
             IDP_ATTR_RD_WRITABLE |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
+            0, 1, 0 );
+
+    // BUG-47108
+    IDP_DEF(UInt, "SHARD_AGGREGATION_TRANSFORM_ENABLE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
             0, 1, 1 );
 
     IDP_DEF(UInt, "SHARD_INTERNAL_CONN_ATTR_RETRY_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_USER|
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8578,6 +9577,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SHARD_INTERNAL_CONN_ATTR_RETRY_DELAY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_USER|
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8588,9 +9588,10 @@ IDE_RC registProperties()
             IDP_SHARD_INTERNAL_CONN_ATTR_RETRY_DELAY_MAX,
             IDP_SHARD_INTERNAL_CONN_ATTR_RETRY_DELAY_DEFAULT);
 
-    /* BUG-45967 Rebuild Data ì™„ë£Œ ëŒ€ê¸° */
+    /* BUG-45967 Rebuild Data ¿Ï·á ´ë±â */
     IDP_DEF(SInt, "SHARD_REBUILD_DATA_STEP",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_USER|
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8601,6 +9602,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SHARD_INTERNAL_CONN_ATTR_CONNECTION_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_USER|
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8613,6 +9615,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SHARD_INTERNAL_CONN_ATTR_LOGIN_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_USER|
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8623,31 +9626,10 @@ IDE_RC registProperties()
             IDP_SHARD_INTERNAL_CONN_ATTR_LOGIN_TIMEOUT_MAX,
             IDP_SHARD_INTERNAL_CONN_ATTR_LOGIN_TIMEOUT_DEFAULT);
 
-    /* BUG-46100 SMN Propagation Failure Ignore */
-    IDP_DEF(UInt, "SHARD_IGNORE_SMN_PROPAGATION_FAILURE",
-            IDP_ATTR_SL_ALL |
-            IDP_ATTR_IU_ANY |
-            IDP_ATTR_MS_ANY |
-            IDP_ATTR_LC_INTERNAL |
-            IDP_ATTR_RD_WRITABLE |
-            IDP_ATTR_ML_JUSTONE  |
-            IDP_ATTR_CK_CHECK,
-            0, 1, 0);
-
-    /* BUG-46100 Session SMN Update */
-    IDP_DEF(UInt, "SHARD_ALLOW_OLD_SMN",
-            IDP_ATTR_SL_ALL |
-            IDP_ATTR_IU_ANY |
-            IDP_ATTR_MS_ANY |
-            IDP_ATTR_LC_INTERNAL |
-            IDP_ATTR_RD_WRITABLE |
-            IDP_ATTR_ML_JUSTONE  |
-            IDP_ATTR_CK_CHECK,
-            0, 1, 1);
-
     /* BUG-45899 */
     IDP_DEF(UInt, "TRCLOG_DETAIL_SHARD",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_USER|
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8657,18 +9639,9 @@ IDE_RC registProperties()
             0, 1, 0 );
 
     /* PROJ-2701 Sharding online data rebuild */
-    IDP_DEF(UInt, "SHARD_META_HISTORY_AUTO_PURGE_DISABLE",
-            IDP_ATTR_SL_ALL |
-            IDP_ATTR_IU_ANY |
-            IDP_ATTR_MS_ANY |
-            IDP_ATTR_LC_INTERNAL |
-            IDP_ATTR_RD_WRITABLE |
-            IDP_ATTR_ML_JUSTONE  |
-            IDP_ATTR_CK_CHECK,
-            0, 1, 1 );
-
     IDP_DEF(UInt, "SHARD_REBUILD_PLAN_DETAIL_FORCE_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_USER|
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8679,6 +9652,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SHARD_REBUILD_LOCK_TABLE_WITH_DML_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_USER|
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8689,6 +9663,7 @@ IDE_RC registProperties()
 
     IDP_DEF(ULong, "SHARD_META_PROPAGATION_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_USER|
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8701,6 +9676,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SHARD_TRANSFORM_STRING_LENGTH_MAX",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_USER|
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -8711,7 +9687,19 @@ IDE_RC registProperties()
             65535, /* max */
             512 ); /* default 512 bytes */
 
-    IDP_DEF(UInt, "SHARD_SMN_CACHE_APPLY_ENABLE",
+    // BUG-47817
+    IDP_DEF(UInt, "SHARD_ADMIN_MODE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_USER|
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 1);
+
+    IDP_DEF(UInt, "ZOOKEEPER_LOCK_WAIT_TIMEOUT",
             IDP_ATTR_SL_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
@@ -8719,8 +9707,49 @@ IDE_RC registProperties()
             IDP_ATTR_RD_WRITABLE |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            0, 1, 0 );
+            10,     /* min = 10sec */
+            36000,  /* max = 36000sec = 10hour */
+            3600 ); /* default 3600sec = 1hour */
 
+    IDP_DEF(UInt, "SHARD_DDL_LOCK_TIMEOUT",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 65535, 3);
+
+    IDP_DEF(UInt,  "SHARD_DDL_LOCK_TRY_COUNT",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            1, ID_UINT_MAX,  200 ); /* shard_ddl_lock_timeout default 3 sec * 200 => 600 sec, 10 min */
+
+    /* ´Ù¾çÇÑ Node Crash »óÈ²¿¡¼­ÀÇ Failback TC ÀÛ¼ºÀ» À§ÇØ
+     * FailoverForWatcherÀÇ µ¿ÀÛÀ» ON/OFF ÇÏ´Â ÇÁ·ÎÆÛÆ¼ 
+     * 0 ÀÌ¸é FailoverForWatcher°¡ µ¿ÀÛÇÏ°í 1ÀÌ¸é µ¿ÀÛÇÏÁö ¾Êµµ·Ï ÇÑ´Ù.
+     * MIN     : 0 
+     * MAX     : 1
+     * Default : 0 */
+    IDP_DEF(UInt,  "__DISABLE_FAILOVER_FOR_WATCHER",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 0 );
+    
     /* ------------------------------------------------------------------
      *   Cluster Related
      * --------------------------------------------------------------*/
@@ -8749,7 +9778,7 @@ IDE_RC registProperties()
             IDP_ATTR_IU_IDENTICAL   |
             IDP_ATTR_MS_ANY         |
             IDP_ATTR_SK_PATH        |
-            IDP_ATTR_LC_INTERNAL    |       /*í–¥í›„ Externalë¡œ ë³€ê²½í•´ì•¼í•¨ XXX*/
+            IDP_ATTR_LC_INTERNAL    |       /*ÇâÈÄ External·Î º¯°æÇØ¾ßÇÔ XXX*/
             IDP_ATTR_RD_READONLY    |
             IDP_ATTR_ML_JUSTONE     |
             IDP_ATTR_CK_CHECK,
@@ -8759,7 +9788,7 @@ IDE_RC registProperties()
             IDP_ATTR_SL_ALL         |
             IDP_ATTR_IU_IDENTICAL   |       
             IDP_ATTR_MS_ANY         |
-            IDP_ATTR_LC_INTERNAL    |       /*í–¥í›„ Externalë¡œ ë³€ê²½í•´ì•¼í•¨ XXX*/
+            IDP_ATTR_LC_INTERNAL    |       /*ÇâÈÄ External·Î º¯°æÇØ¾ßÇÔ XXX*/
             IDP_ATTR_RD_READONLY    |
             IDP_ATTR_ML_JUSTONE     |
             IDP_ATTR_CK_CHECK,
@@ -8769,7 +9798,7 @@ IDE_RC registProperties()
             IDP_ATTR_SL_SPFILE      |
             IDP_ATTR_IU_UNIQUE      |
             IDP_ATTR_MS_SHARE       |
-            IDP_ATTR_LC_INTERNAL    |       /*í–¥í›„ Externalë¡œ ë³€ê²½í•´ì•¼í•¨ XXX*/
+            IDP_ATTR_LC_INTERNAL    |       /*ÇâÈÄ External·Î º¯°æÇØ¾ßÇÔ XXX*/
             IDP_ATTR_RD_READONLY    |
             IDP_ATTR_ML_JUSTONE     |
             IDP_ATTR_CK_CHECK,
@@ -8779,7 +9808,7 @@ IDE_RC registProperties()
             IDP_ATTR_SL_SPFILE   |
             IDP_ATTR_IU_UNIQUE   |
             IDP_ATTR_MS_SHARE    |
-            IDP_ATTR_LC_INTERNAL |          /*í–¥í›„ Externalë¡œ ë³€ê²½í•´ì•¼í•¨ XXX*/
+            IDP_ATTR_LC_INTERNAL |          /*ÇâÈÄ External·Î º¯°æÇØ¾ßÇÔ XXX*/
             IDP_ATTR_RD_READONLY |
             IDP_ATTR_ML_MULTIPLE |
             IDP_ATTR_CK_CHECK,
@@ -8790,6 +9819,7 @@ IDE_RC registProperties()
      * --------------------------------------------------------------*/
     IDP_DEF(String, "XA_MSGLOG_FILE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -8801,6 +9831,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "XA_MSGLOG_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8811,6 +9842,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "XA_MSGLOG_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8822,6 +9854,7 @@ IDE_RC registProperties()
     // default: 0 = IDE_XA_1(normal print) + IDE_XA_2(xid print)
     IDP_DEF(UInt, "XA_MSGLOG_FLAG",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8837,6 +9870,7 @@ IDE_RC registProperties()
     /* BUG-45369 */
     IDP_DEF(UInt, "MM_MSGLOG_FLAG",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8847,6 +9881,7 @@ IDE_RC registProperties()
 
     IDP_DEF(String, "MM_MSGLOG_FILE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -8858,6 +9893,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "MM_MSGLOG_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8868,6 +9904,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "MM_MSGLOG_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8878,6 +9915,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "MM_SESSION_LOGGING",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8889,6 +9927,7 @@ IDE_RC registProperties()
 /* BUG-45274 */
     IDP_DEF(UInt, "LB_MSGLOG_FLAG",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8899,6 +9938,7 @@ IDE_RC registProperties()
 
     IDP_DEF(String, "LB_MSGLOG_FILE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -8910,6 +9950,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "LB_MSGLOG_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8920,6 +9961,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "LB_MSGLOG_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8934,6 +9976,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "CM_MSGLOG_FLAG",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8944,6 +9987,7 @@ IDE_RC registProperties()
 
     IDP_DEF(String, "CM_MSGLOG_FILE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -8955,6 +9999,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "CM_MSGLOG_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8965,6 +10010,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "CM_MSGLOG_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -8979,6 +10025,7 @@ IDE_RC registProperties()
 
     IDP_DEF(String, "DUMP_MSGLOG_FILE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -8990,6 +10037,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "DUMP_MSGLOG_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -9000,6 +10048,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "DUMP_MSGLOG_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -9014,6 +10063,7 @@ IDE_RC registProperties()
 
     IDP_DEF(String, "ERROR_MSGLOG_FILE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -9025,6 +10075,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "ERROR_MSGLOG_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -9035,6 +10086,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "ERROR_MSGLOG_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -9043,11 +10095,12 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, ID_UINT_MAX, 10);
 
-    // BUG-29506 TBTê°€ TBKë¡œ ì „í™˜ì‹œ ë³€ê²½ëœ offsetì„ CTSì— ë°˜ì˜í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
-    // ìž¬í˜„í•˜ê¸° ìœ„í•´ CTS í• ë‹¹ ì—¬ë¶€ë¥¼ ìž„ì˜ë¡œ ì œì–´í•˜ê¸° ìœ„í•œ PROPERTYë¥¼ ì¶”ê°€
-    // 0 : CTSí• ë‹¹ ê°€ëŠ¥í•˜ë©´ í• ë‹¹(default), 1 : CTSí• ë‹¹ ê°€ëŠ¥í•˜ë”ë¼ë„ í• ë‹¹í•˜ì§€ ì•ŠìŒ
+    // BUG-29506 TBT°¡ TBK·Î ÀüÈ¯½Ã º¯°æµÈ offsetÀ» CTS¿¡ ¹Ý¿µÇÏÁö ¾Ê½À´Ï´Ù.
+    // ÀçÇöÇÏ±â À§ÇØ CTS ÇÒ´ç ¿©ºÎ¸¦ ÀÓÀÇ·Î Á¦¾îÇÏ±â À§ÇÑ PROPERTY¸¦ Ãß°¡
+    // 0 : CTSÇÒ´ç °¡´ÉÇÏ¸é ÇÒ´ç(default), 1 : CTSÇÒ´ç °¡´ÉÇÏ´õ¶óµµ ÇÒ´çÇÏÁö ¾ÊÀ½
     IDP_DEF(UInt, "__DISABLE_TRANSACTION_BOUND_IN_CTS",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -9056,12 +10109,13 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 0);
 
-    // BUG-29839 ìž¬ì‚¬ìš©ëœ undo pageì—ì„œ ì´ì „ CTSë¥¼ ë³´ë ¤ê³  í•  ìˆ˜ ìžˆìŒ.
-    // ìž¬í˜„í•˜ê¸° ìœ„í•´ transactionì— íŠ¹ì • segment entryë¥¼ bindingí•˜ëŠ” ê¸°ëŠ¥ ì¶”ê°€
+    // BUG-29839 Àç»ç¿ëµÈ undo page¿¡¼­ ÀÌÀü CTS¸¦ º¸·Á°í ÇÒ ¼ö ÀÖÀ½.
+    // ÀçÇöÇÏ±â À§ÇØ transaction¿¡ Æ¯Á¤ segment entry¸¦ bindingÇÏ´Â ±â´É Ãß°¡
     // 512 : (maximum transaction segment count) automatic
-    //   1 : íŠ¹ì • entry idì˜ segmentì— transaction binding
+    //   1 : Æ¯Á¤ entry idÀÇ segment¿¡ transaction binding
     IDP_DEF(UInt, "__MANUAL_BINDING_TRANSACTION_SEGMENT_BY_ENTRY_ID",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -9071,9 +10125,10 @@ IDE_RC registProperties()
             0, 512, 512 );
 
     //fix BUG-30566
-    //shutdown immediateì‹œ ê¸°ë‹¤ë¦´ TIMEOUT
+    //shutdown immediate½Ã ±â´Ù¸± TIMEOUT
     IDP_DEF(UInt, "SHUTDOWN_IMMEDIATE_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -9083,10 +10138,11 @@ IDE_RC registProperties()
             0, ID_UINT_MAX, 60);
 
     // fix BUG-30731
-    // V$STATEMENT, V$SQLTEXT, V$PLANTEXT ì¡°íšŒì‹œ
-    // í•œë²ˆì— ê²€ìƒ‰í•  Statement ìˆ˜
+    // V$STATEMENT, V$SQLTEXT, V$PLANTEXT Á¶È¸½Ã
+    // ÇÑ¹ø¿¡ °Ë»öÇÒ Statement ¼ö
     IDP_DEF(UInt, "STATEMENT_LIST_PARTIAL_SCAN_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -9100,6 +10156,7 @@ IDE_RC registProperties()
      */
     IDP_DEF(UInt, "MAX_STATEMENTS_PER_SESSION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -9110,11 +10167,12 @@ IDE_RC registProperties()
             1, 65536, 1024);
 
     /*
-     * BUG-31040 set ì—°ì‚°ìœ¼ë¡œ ì¸í•´ ì´ˆëž˜ë˜ëŠ”
-     *           qmvQuerySet::validate() í•¨ìˆ˜ recursion depth ë¥¼ ì œí•œí•©ë‹ˆë‹¤.
+     * BUG-31040 set ¿¬»êÀ¸·Î ÀÎÇØ ÃÊ·¡µÇ´Â
+     *           qmvQuerySet::validate() ÇÔ¼ö recursion depth ¸¦ Á¦ÇÑÇÕ´Ï´Ù.
      */
     IDP_DEF(SInt, "__MAX_SET_OP_RECURSION_DEPTH",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -9126,13 +10184,14 @@ IDE_RC registProperties()
     /*
      * PROJ-2118 Bug Reporting
      *
-     * release modeì—ì„œë§Œ ìž‘ë™, release ì—ì„œ IDE_ERRORë¥¼
-     *   0. ì˜ˆì™¸ë¡œ ì²˜ë¦¬ í•  ê²ƒì¸ì§€         ( Release default )
-     *   1. Assertë¡œ ì²˜ë¦¬ í•  ê²ƒì¸ì§€ë¥¼ ê²°ì • ( Debug default )
+     * release mode¿¡¼­¸¸ ÀÛµ¿, release ¿¡¼­ IDE_ERROR¸¦
+     *   0. ¿¹¿Ü·Î Ã³¸® ÇÒ °ÍÀÎÁö         ( Release default )
+     *   1. Assert·Î Ã³¸® ÇÒ °ÍÀÎÁö¸¦ °áÁ¤ ( Debug default )
      */
 #if defined(DEBUG)
     IDP_DEF( UInt, "__ERROR_VALIDATION_LEVEL",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -9143,6 +10202,7 @@ IDE_RC registProperties()
 #else
     IDP_DEF( UInt, "__ERROR_VALIDATION_LEVEL",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -9160,6 +10220,7 @@ IDE_RC registProperties()
      */
     IDP_DEF(UInt, "OPTIMIZER_UNNEST_SUBQUERY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -9170,6 +10231,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "OPTIMIZER_UNNEST_COMPLEX_SUBQUERY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -9180,6 +10242,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "OPTIMIZER_UNNEST_AGGREGATION_SUBQUERY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -9204,6 +10267,7 @@ IDE_RC registProperties()
     */
     IDP_DEF(UInt, "OPTIMIZER_AUTO_STATS",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -9215,6 +10279,7 @@ IDE_RC registProperties()
     // BUG-43039 inner join push down
     IDP_DEF(UInt, "__OPTIMIZER_INNER_JOIN_PUSH_DOWN",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -9223,9 +10288,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 1);
 
-    // BUG-43068 Indexable order by ê°œì„ 
+    // BUG-43068 Indexable order by °³¼±
     IDP_DEF(UInt, "__OPTIMIZER_ORDER_PUSH_DOWN",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -9234,25 +10300,27 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 0);
 
-    // PROJ-2551 simple query ìµœì í™”
+    // PROJ-2551 simple query ÃÖÀûÈ­
     IDP_DEF(UInt, "EXECUTOR_FAST_SIMPLE_QUERY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
             IDP_ATTR_RD_WRITABLE |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            0, 2, 0);
+            0, 2, 2);
 
     /*
      * BUG-32177  The server might hang when disk is full during checkpoint.
      *
-     * checkpointë•Œë¬¸ì— ë””ìŠ¤í¬ê³µê°„ ë¶€ì¡±ìœ¼ë¡œ ë¡œê·¸íŒŒì¼ì„ ë§Œë“¤ì§€ ëª»í•˜ì—¬
-     * hangì´ ê±¸ë¦¬ëŠ” í˜„ìƒì„ "ì™„í™”"í•˜ê¸° ìœ„í•œê²ƒìž„.(internal only!)
+     * checkpoint¶§¹®¿¡ µð½ºÅ©°ø°£ ºÎÁ·À¸·Î ·Î±×ÆÄÀÏÀ» ¸¸µéÁö ¸øÇÏ¿©
+     * hangÀÌ °É¸®´Â Çö»óÀ» "¿ÏÈ­"ÇÏ±â À§ÇÑ°ÍÀÓ.(internal only!)
      */
     IDP_DEF(ULong, "__RESERVED_DISK_SIZE_FOR_LOGFILE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -9264,12 +10332,13 @@ IDE_RC registProperties()
     /*
      * PROJ-2118 Bug Reporting
      *
-     * Error Trace ê¸°ë¡ìœ¼ë¡œ ì¸í•œ ì„±ëŠ¥ í•˜ë½ì„ í•´ê²°í•˜ê¸° ìœ„í•œ Property
-     *   0. Error Trace ë¥¼ ê¸°ë¡í•˜ì§€ ì•Šê³  ì˜ˆì™¸ ì²˜ë¦¬ë§Œ í•œë‹¤.
-     *   1. Error Trace ë¥¼ ê¸°ë¡í•˜ê³  ì˜ˆì™¸ ì²˜ë¦¬ í•œë‹¤. ( default )
+     * Error Trace ±â·ÏÀ¸·Î ÀÎÇÑ ¼º´É ÇÏ¶ôÀ» ÇØ°áÇÏ±â À§ÇÑ Property
+     *   0. Error Trace ¸¦ ±â·ÏÇÏÁö ¾Ê°í ¿¹¿Ü Ã³¸®¸¸ ÇÑ´Ù.
+     *   1. Error Trace ¸¦ ±â·ÏÇÏ°í ¿¹¿Ü Ã³¸® ÇÑ´Ù. ( default )
      */
     IDP_DEF( UInt, "__WRITE_ERROR_TRACE",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -9281,12 +10350,13 @@ IDE_RC registProperties()
     /*
      * PROJ-2118 Bug Reporting
      *
-     * Pstack ê¸°ë¡ìœ¼ë¡œ ì¸í•œ ì„±ëŠ¥ í•˜ë½ì„ í•´ê²°í•˜ê¸° ìœ„í•œ Property
-     *   0. Pstack ë¥¼ ê¸°ë¡í•˜ì§€ ì•Šê³  ì˜ˆì™¸ ì²˜ë¦¬ë§Œ í•œë‹¤. ( default )
-     *   1. Pstack ë¥¼ ê¸°ë¡í•˜ê³  ì˜ˆì™¸ ì²˜ë¦¬ í•œë‹¤.
+     * Pstack ±â·ÏÀ¸·Î ÀÎÇÑ ¼º´É ÇÏ¶ôÀ» ÇØ°áÇÏ±â À§ÇÑ Property
+     *   0. Pstack ¸¦ ±â·ÏÇÏÁö ¾Ê°í ¿¹¿Ü Ã³¸®¸¸ ÇÑ´Ù. ( default )
+     *   1. Pstack ¸¦ ±â·ÏÇÏ°í ¿¹¿Ü Ã³¸® ÇÑ´Ù.
      */
     IDP_DEF( UInt, "__WRITE_PSTACK",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -9298,12 +10368,13 @@ IDE_RC registProperties()
     /*
      * PROJ-2118 Bug Reporting
      *
-     * sigaltstack()ì„ ìœ„í•œ ë²„í¼ ì‚¬ìš©ì‹œ ìŠ¤ë ˆë“œ ë³„ë¡œ ë©”ëª¨ë¦¬ê°€ ì†Œìš” ëœë‹¤.
-     *   0. sigaltstack()ì„ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
-     *   1. sigaltstack()ì„ ì‚¬ìš©í•œë‹¤. (default)
+     * sigaltstack()À» À§ÇÑ ¹öÆÛ »ç¿ë½Ã ½º·¹µå º°·Î ¸Þ¸ð¸®°¡ ¼Ò¿ä µÈ´Ù.
+     *   0. sigaltstack()À» »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+     *   1. sigaltstack()À» »ç¿ëÇÑ´Ù. (default)
      */
     IDP_DEF( UInt, "__USE_SIGALTSTACK",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -9319,6 +10390,7 @@ IDE_RC registProperties()
      */
     IDP_DEF( UInt, "__LOGFILE_COLLECT_COUNT_IN_DUMP",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -9330,15 +10402,16 @@ IDE_RC registProperties()
     /*
      * PROJ-2118 Bug Reporting
      *
-     * Log File, Log Anchor, Trace Fileë“±ì„ ìˆ˜ì§‘í•˜ì—¬
-     * ì••ì¶•íŒŒì¼ë¡œ ì €ìž¥ í• ì§€ì˜ ì—¬ë¶€,
+     * Log File, Log Anchor, Trace FileµîÀ» ¼öÁýÇÏ¿©
+     * ¾ÐÃàÆÄÀÏ·Î ÀúÀå ÇÒÁöÀÇ ¿©ºÎ,
      *
-     *   0. Dump Infoë¥¼ ìˆ˜ì§‘í•˜ì§€ ì•ŠëŠ”ë‹¤. ( debug mode default )
-     *   1. Dump Infoë¥¼ ìˆ˜ì§‘í•œë‹¤.        ( release mode default )
+     *   0. Dump Info¸¦ ¼öÁýÇÏÁö ¾Ê´Â´Ù. ( debug mode default )
+     *   1. Dump Info¸¦ ¼öÁýÇÑ´Ù.        ( release mode default )
      */
 #if defined(DEBUG)
     IDP_DEF( UInt, "COLLECT_DUMP_INFO",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -9349,6 +10422,7 @@ IDE_RC registProperties()
 #else /* release */
     IDP_DEF( UInt, "COLLECT_DUMP_INFO",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -9361,12 +10435,13 @@ IDE_RC registProperties()
     /*
      * PROJ-2118 Bug Reporting
      *
-     * Windows Mini Dump ìƒì„± ì—¬ë¶€ ê²°ì • í”„ë¡œí¼í‹°
-     *   0. Mini Dump ë¯¸ìƒì„± ( default )
-     *   1. Mini Dump ìƒì„±
+     * Windows Mini Dump »ý¼º ¿©ºÎ °áÁ¤ ÇÁ·ÎÆÛÆ¼
+     *   0. Mini Dump ¹Ì»ý¼º ( default )
+     *   1. Mini Dump »ý¼º
      */
     IDP_DEF( UInt, "__WRITE_WINDOWS_MINIDUMP",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -9378,6 +10453,7 @@ IDE_RC registProperties()
     /* BUG-36203 PSM Optimize */
     IDP_DEF(UInt, "PSM_TEMPLATE_CACHE_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -9393,6 +10469,7 @@ IDE_RC registProperties()
      */
     IDP_DEF(UInt, "MEMORY_ALLOCATOR_TYPE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -9402,6 +10479,7 @@ IDE_RC registProperties()
             0, 1, 0);
     IDP_DEF(UInt, "MEMORY_ALLOCATOR_USE_PRIVATE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -9411,6 +10489,7 @@ IDE_RC registProperties()
             0, 1, 0);
     IDP_DEF(ULong, "MEMORY_ALLOCATOR_POOLSIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -9420,6 +10499,7 @@ IDE_RC registProperties()
             256*1024, 1024*1024*1024, 16*1024*1024);
     IDP_DEF(ULong, "MEMORY_ALLOCATOR_POOLSIZE_PRIVATE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -9429,6 +10509,7 @@ IDE_RC registProperties()
             256*1024, 1024*1024, 256*1024);
     IDP_DEF(SInt, "MEMORY_ALLOCATOR_DEFAULT_SPINLOCK_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -9438,6 +10519,7 @@ IDE_RC registProperties()
             -1, ID_SINT_MAX, 1024);
     IDP_DEF(UInt, "MEMORY_ALLOCATOR_AUTO_SHRINK",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -9451,6 +10533,7 @@ IDE_RC registProperties()
      */
     IDP_DEF(UInt, "MEMORY_ALLOCATOR_MAX_INSTANCES",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -9464,6 +10547,7 @@ IDE_RC registProperties()
      */
     IDP_DEF(ULong, "MEMORY_ALLOCATOR_POOLSIZE_GLOBAL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -9477,6 +10561,7 @@ IDE_RC registProperties()
      */
     IDP_DEF(UInt, "MAX_THREAD_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -9487,6 +10572,7 @@ IDE_RC registProperties()
 
     IDP_DEF( UInt, "THREAD_REUSE_ENABLE",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -9498,9 +10584,9 @@ IDE_RC registProperties()
 /* --------------------------------------------------------------------
  * PROJ-2133 Incremental Backup
  * PROJ-2488 Incremental Backup in XDB
- * incremental backupëœ backupíŒŒì¼ë“¤ì˜ ì •ë³´ë¥¼ ìœ ì§€í•  ê¸°ê°„ì„ ì •í•œë‹¤.
- * ê°’ì€ ì¼(day)ë‹¨ìœ„ì´ë‹¤. 0ìœ¼ë¡œ ê°’ì´ ì„¤ì •ë˜ë©´ level0 ë°±ì—…ì´ ìˆ˜ìƒë˜ë©´ ë°”ë¡œ
- * ì´ì „ì— ìˆ˜í–‰ëœ ëª¨ë“  backupë“¤ì€ obsoleteí•œ backupinfoê°€ ëœë‹¤.
+ * incremental backupµÈ backupÆÄÀÏµéÀÇ Á¤º¸¸¦ À¯ÁöÇÒ ±â°£À» Á¤ÇÑ´Ù.
+ * °ªÀº ÀÏ(day)´ÜÀ§ÀÌ´Ù. 0À¸·Î °ªÀÌ ¼³Á¤µÇ¸é level0 ¹é¾÷ÀÌ ¼ö»ýµÇ¸é ¹Ù·Î
+ * ÀÌÀü¿¡ ¼öÇàµÈ ¸ðµç backupµéÀº obsoleteÇÑ backupinfo°¡ µÈ´Ù.
  * ----------------------------------------------------------------- */
     IDP_DEF(UInt, "INCREMENTAL_BACKUP_INFO_RETENTION_PERIOD",
             IDP_ATTR_SL_PFILE |
@@ -9515,9 +10601,9 @@ IDE_RC registProperties()
 /* --------------------------------------------------------------------
  * PROJ-2133 Incremental Backup
  * PROJ-2488 Incremental Backup in XDB
- * í…ŒìŠ¤íŠ¸ ëª©ì ìœ¼ë¡œ incremental backupëœ backup íŒŒì¼ë“¤ì˜ ì •ë³´ë¥¼ ìœ ì§€í•  ê¸°ê°„ì„ ì •í•œë‹¤.
- * ê°’ì€ ì´ˆ(second)ë‹¨ìœ„ì´ë‹¤. 0ìœ¼ë¡œ ê°’ì´ ì„¤ì •ë˜ë©´ level0 ë°±ì—…ì´ ìˆ˜ìƒë˜ë©´ ë°”ë¡œ
- * ì´ì „ì— ìˆ˜í–‰ëœ ëª¨ë“  backupë“¤ì€ obsoleteí•œ backupinfoê°€ ëœë‹¤.
+ * Å×½ºÆ® ¸ñÀûÀ¸·Î incremental backupµÈ backup ÆÄÀÏµéÀÇ Á¤º¸¸¦ À¯ÁöÇÒ ±â°£À» Á¤ÇÑ´Ù.
+ * °ªÀº ÃÊ(second)´ÜÀ§ÀÌ´Ù. 0À¸·Î °ªÀÌ ¼³Á¤µÇ¸é level0 ¹é¾÷ÀÌ ¼ö»ýµÇ¸é ¹Ù·Î
+ * ÀÌÀü¿¡ ¼öÇàµÈ ¸ðµç backupµéÀº obsoleteÇÑ backupinfo°¡ µÈ´Ù.
  * ----------------------------------------------------------------- */
     IDP_DEF(UInt, "__INCREMENTAL_BACKUP_INFO_RETENTION_PERIOD_FOR_TEST",
             IDP_ATTR_SL_PFILE |
@@ -9532,8 +10618,8 @@ IDE_RC registProperties()
 /* --------------------------------------------------------------------
  * PROJ-2133 Incremental Backup
  * PROJ-2488 Incremental Backup in XDB
- * Incremental chunk change trakingì„ ìˆ˜í–‰í• ë•Œ ëª‡ê°œì˜
- * íŽ˜ì´ì§€ë¥¼ ë¬¶ì–´ì„œ ì¶”ì í• ì§€ ì§€ì •í•œë‹¤. ë‹¨ìœ„ëŠ” page ë‹¨ìœ„ì´ë‹¤.
+ * Incremental chunk change trakingÀ» ¼öÇàÇÒ¶§ ¸î°³ÀÇ
+ * ÆäÀÌÁö¸¦ ¹­¾î¼­ ÃßÀûÇÒÁö ÁöÁ¤ÇÑ´Ù. ´ÜÀ§´Â page ´ÜÀ§ÀÌ´Ù.
  * ----------------------------------------------------------------- */
     IDP_DEF(UInt, "INCREMENTAL_BACKUP_CHUNK_SIZE",
             IDP_ATTR_SL_PFILE |
@@ -9548,9 +10634,9 @@ IDE_RC registProperties()
 /* --------------------------------------------------------------------
  * PROJ-2133 Incremental Backup
  * PROJ-2488 Incremental Backup in XDB
- * Incremental chunk change traking ìˆ˜í–‰ì‹œ ë³€ê²½ëœ íŽ˜ì´ì§€ì •ë³´ë¥¼ ë‚¨ê¸¸
- * í•œ bitamp blockì˜ bitmap ê³µê°„ì˜ í¬ê¸°ë¥¼ ì •í•œë‹¤.
- * ìž‘ì„ìˆ˜ë¡ changeTrackingíŒŒì¼ì˜ í™•ìž¥ì´ ìžì£¼ ë°œìƒí•œë‹¤.
+ * Incremental chunk change traking ¼öÇà½Ã º¯°æµÈ ÆäÀÌÁöÁ¤º¸¸¦ ³²±æ
+ * ÇÑ bitamp blockÀÇ bitmap °ø°£ÀÇ Å©±â¸¦ Á¤ÇÑ´Ù.
+ * ÀÛÀ»¼ö·Ï changeTrackingÆÄÀÏÀÇ È®ÀåÀÌ ÀÚÁÖ ¹ß»ýÇÑ´Ù.
  * ----------------------------------------------------------------- */
     IDP_DEF(UInt, "__INCREMENTAL_BACKUP_BMP_BLOCK_BITMAP_SIZE",
             IDP_ATTR_SL_PFILE |
@@ -9565,8 +10651,8 @@ IDE_RC registProperties()
 /* --------------------------------------------------------------------
  * PROJ-2133 Incremental Backup
  * PROJ-2488 Incremental Backup in XDB
- * Incremental chunk change traking bodyì— ì†í•œ extentì˜ ê°¯ìˆ˜ë¥¼ ì§€ì •í•œë‹¤.
- * ìž‘ì„ìˆ˜ë¡ changeTrackingíŒŒì¼ì˜ í™•ìž¥ì´ ìžì£¼ ë°œìƒí•œë‹¤.
+ * Incremental chunk change traking body¿¡ ¼ÓÇÑ extentÀÇ °¹¼ö¸¦ ÁöÁ¤ÇÑ´Ù.
+ * ÀÛÀ»¼ö·Ï changeTrackingÆÄÀÏÀÇ È®ÀåÀÌ ÀÚÁÖ ¹ß»ýÇÑ´Ù.
  * ----------------------------------------------------------------- */
     IDP_DEF(UInt, "__INCREMENTAL_BACKUP_CTBODY_EXTENT_CNT",
             IDP_ATTR_SL_PFILE |
@@ -9581,12 +10667,12 @@ IDE_RC registProperties()
 /* --------------------------------------------------------------------
  * PROJ-2133 Incremental Backup
  * PROJ-2488 Incremental Backup in XDB
- * ALTER DATABASE CHANGE BACKUP DIRECTORY â€˜directory_pathâ€™; êµ¬ë¬¸ì€
- * ì ˆëŒ€ê²½ë¡œë§Œ ìž…ë ¥ë°›ê²Œ ë˜ì–´ìžˆë‹¤. testcase ìž‘ì„±ì„ ìœ„í•´ ìƒëŒ€ê²½ë¡œë¥¼
- * ìž…ë ¥ê°€ëŠ¥í•˜ê²Œ í•œë‹¤.
+ * ALTER DATABASE CHANGE BACKUP DIRECTORY ¡®directory_path¡¯; ±¸¹®Àº
+ * Àý´ë°æ·Î¸¸ ÀÔ·Â¹Þ°Ô µÇ¾îÀÖ´Ù. testcase ÀÛ¼ºÀ» À§ÇØ »ó´ë°æ·Î¸¦
+ * ÀÔ·Â°¡´ÉÇÏ°Ô ÇÑ´Ù.
  *
- * 0: ì ˆëŒ€ê²½ë¡œ ìž…ë ¥ê°€ëŠ¥
- * 1: ìƒëŒ€ê²½ë¡œ ìž…ë ¥ê°€ëŠ¥ (smuProperty::getDefaultDiskDBDir() ë°‘ì— ê²½ë¡œìƒì„±)
+ * 0: Àý´ë°æ·Î ÀÔ·Â°¡´É
+ * 1: »ó´ë°æ·Î ÀÔ·Â°¡´É (smuProperty::getDefaultDiskDBDir() ¹Ø¿¡ °æ·Î»ý¼º)
  * ----------------------------------------------------------------- */
     IDP_DEF(UInt, "__INCREMENTAL_BACKUP_PATH_MAKE_ABS_PATH",
             IDP_ATTR_SL_PFILE |
@@ -9613,6 +10699,7 @@ IDE_RC registProperties()
     // FAILED_LOGIN_ATTEMPTS
     IDP_DEF(UInt, "FAILED_LOGIN_ATTEMPTS",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -9626,6 +10713,7 @@ IDE_RC registProperties()
      */
     IDP_DEF(UInt, "LOB_CACHE_THRESHOLD",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -9637,6 +10725,7 @@ IDE_RC registProperties()
     // PASSWORD_LOCK_TIME
     IDP_DEF(UInt, "PASSWORD_LOCK_TIME",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -9648,6 +10737,7 @@ IDE_RC registProperties()
     // PASSWORD_LIFE_TIME
     IDP_DEF(UInt, "PASSWORD_LIFE_TIME",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -9659,6 +10749,7 @@ IDE_RC registProperties()
     // PASSWORD_GRACE_TIME
     IDP_DEF(UInt, "PASSWORD_GRACE_TIME",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -9670,6 +10761,7 @@ IDE_RC registProperties()
     // PASSWORD_REUSE_MAX
     IDP_DEF(UInt, "PASSWORD_REUSE_MAX",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -9681,6 +10773,7 @@ IDE_RC registProperties()
     // PASSWORD_REUSE_TIME
     IDP_DEF(UInt, "PASSWORD_REUSE_TIME",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -9692,6 +10785,7 @@ IDE_RC registProperties()
     // PASSWORD_VERIFY_FUNCTION
     IDP_DEF(String, "PASSWORD_VERIFY_FUNCTION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -9702,6 +10796,7 @@ IDE_RC registProperties()
 
      IDP_DEF(UInt, "__SOCK_WRITE_TIMEOUT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -9715,6 +10810,7 @@ IDE_RC registProperties()
     // 1 : enable
     IDP_DEF(UInt, "SECONDARY_BUFFER_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -9726,6 +10822,7 @@ IDE_RC registProperties()
     // Min : 1, Max : 16, Default : 2
     IDP_DEF( UInt, "SECONDARY_BUFFER_FLUSHER_CNT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -9737,6 +10834,7 @@ IDE_RC registProperties()
     // Min : 0, Max : 16, Default : 0
     IDP_DEF( UInt, "__MAX_SECONDARY_CHECKPOINT_FLUSHER_CNT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -9749,6 +10847,7 @@ IDE_RC registProperties()
     // 0 : ALL  1 : Dirty  2 : Clean 
     IDP_DEF( UInt, "SECONDARY_BUFFER_TYPE",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -9760,6 +10859,7 @@ IDE_RC registProperties()
     // Min : 0, Max : 32G, Default : 0
     IDP_DEF( ULong, "SECONDARY_BUFFER_SIZE",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -9773,6 +10873,7 @@ IDE_RC registProperties()
      //  
      IDP_DEF( String, "SECONDARY_BUFFER_FILE_DIRECTORY",
               IDP_ATTR_SL_ALL |
+              IDP_ATTR_SH_ALL |
               IDP_ATTR_IU_ANY |
               IDP_ATTR_MS_ANY |
               IDP_ATTR_SK_PATH     |
@@ -9785,6 +10886,7 @@ IDE_RC registProperties()
     /* PROJ-2208 */
     IDP_DEF(String, "NLS_TERRITORY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_ASCII    |
@@ -9797,6 +10899,7 @@ IDE_RC registProperties()
     /* PROJ-2208 */
     IDP_DEF(String, "NLS_ISO_CURRENCY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_ASCII    |
@@ -9809,6 +10912,7 @@ IDE_RC registProperties()
     /* PROJ-2208 */
     IDP_DEF(String, "NLS_CURRENCY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_MULTI_BYTE |
@@ -9821,6 +10925,7 @@ IDE_RC registProperties()
     /* PROJ-2208 */
     IDP_DEF(String, "NLS_NUMERIC_CHARACTERS",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_ASCII    |
@@ -9833,6 +10938,7 @@ IDE_RC registProperties()
     /* PROJ-2209 DBTIMEZONE */
     IDP_DEF(String, "TIME_ZONE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -9841,9 +10947,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 40, (SChar *)"OS_TZ");
 
-    /* PROJ-2232 archivelog ë‹¤ì¤‘í™” ì €ìž¥ ë””ë ‰í† ë¦¬ */
+    /* PROJ-2232 archivelog ´ÙÁßÈ­ ÀúÀå µð·ºÅä¸® */
     IDP_DEF(String, "ARCHIVE_MULTIPLEX_DIR",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -9854,9 +10961,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, IDP_MAX_PROP_STRING_LEN, (SChar *)"");
 
-    /* PROJ-2232 archivelog ë‹¤ì¤‘í™” ìˆ˜*/
+    /* PROJ-2232 archivelog ´ÙÁßÈ­ ¼ö*/
     IDP_DEF(UInt, "ARCHIVE_MULTIPLEX_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -9865,9 +10973,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 10 , 0);
 
-    /* PROJ-2232 log ë‹¤ì¤‘í™” ì €ìž¥ ë””ë ‰í† ë¦¬ */
+    /* PROJ-2232 log ´ÙÁßÈ­ ÀúÀå µð·ºÅä¸® */
     IDP_DEF(String, "LOG_MULTIPLEX_DIR",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -9878,9 +10987,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, IDP_MAX_PROP_STRING_LEN, (SChar *)"");
 
-    /* PROJ-2232 log ë‹¤ì¤‘í™” ìˆ˜*/
+    /* PROJ-2232 log ´ÙÁßÈ­ ¼ö*/
     IDP_DEF(UInt, "LOG_MULTIPLEX_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -9891,12 +11001,13 @@ IDE_RC registProperties()
 
     /*
      * PROJ_2232 log multiplex
-     * logë‹¤ì¤‘í™” append Threadì˜ sleepì¡°ê±´ì„ ì§€ì •í•œë‹¤.
-     * ê°’ì´ ìž‘ìœ¼ë©´ ìžì£¼ sleepí•˜ê³  ê°’ì´ í¬ë©´ ë“œë¬¼ê²Œ sleepí•œë‹¤.
-     * ID_UINT_MAXê°’ì´ë©´ sleepí•˜ì§€ ì•ŠëŠ”ë‹¤.
+     * log´ÙÁßÈ­ append ThreadÀÇ sleepÁ¶°ÇÀ» ÁöÁ¤ÇÑ´Ù.
+     * °ªÀÌ ÀÛÀ¸¸é ÀÚÁÖ sleepÇÏ°í °ªÀÌ Å©¸é µå¹°°Ô sleepÇÑ´Ù.
+     * ID_UINT_MAX°ªÀÌ¸é sleepÇÏÁö ¾Ê´Â´Ù.
      */
     IDP_DEF(UInt, "__LOG_MULTIPLEX_THREAD_SPIN_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -9914,6 +11025,7 @@ IDE_RC registProperties()
 
      IDP_DEF(UInt, "THREAD_CPU_AFFINITY",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -9924,6 +11036,7 @@ IDE_RC registProperties()
 
      IDP_DEF(UInt, "DEDICATED_THREAD_MODE",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -9934,6 +11047,7 @@ IDE_RC registProperties()
 
      IDP_DEF(UInt, "DEDICATED_THREAD_INIT_COUNT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -9944,6 +11058,7 @@ IDE_RC registProperties()
 
      IDP_DEF(UInt, "DEDICATED_THREAD_MAX_COUNT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -9954,6 +11069,7 @@ IDE_RC registProperties()
      
      IDP_DEF(UInt, "DEDICATED_THREAD_CHECK_INTERVAL",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -9964,17 +11080,18 @@ IDE_RC registProperties()
 
      /* 
       * BUG-35179 Add property for parallel logical ager 
-      * ë™ìž‘í•˜ê³ ìžˆëŠ” logical agerì˜ ìˆ˜ê°€ ë§Žìœ¼ë©´ indexê´€ë ¨ ìž‘ì—…ì„ í•˜ëŠ” service
-      * threadë“¤ì˜ ì„±ëŠ¥ì´ ì €í•˜ëœë‹¤. ë”°ë¼ì„œ ë³‘ë ¬ë¡œ ë™ìž‘í•˜ëŠ” logical agerì˜ ìˆ˜ë¥¼
-      * ì¡°ì ˆí•´ì•¼í•œë‹¤.
-      * LOGICAL_AGER_COUNT_ í”„ë¡œí¼í‹°ë¥¼ ì´ìš©í•´ ì¡°ì ˆê°€ëŠ¥.
+      * µ¿ÀÛÇÏ°íÀÖ´Â logical agerÀÇ ¼ö°¡ ¸¹À¸¸é index°ü·Ã ÀÛ¾÷À» ÇÏ´Â service
+      * threadµéÀÇ ¼º´ÉÀÌ ÀúÇÏµÈ´Ù. µû¶ó¼­ º´·Ä·Î µ¿ÀÛÇÏ´Â logical agerÀÇ ¼ö¸¦
+      * Á¶ÀýÇØ¾ßÇÑ´Ù.
+      * LOGICAL_AGER_COUNT_ ÇÁ·ÎÆÛÆ¼¸¦ ÀÌ¿ëÇØ Á¶Àý°¡´É.
       *
-      * main trunkëŠ” parallel logical ager ê²€ì¦ì„ ìœ„í•´ ê¸°ë³¸ê°’ì„ 1ë¡œ ì„¤ì •í•œë‹¤.
+      * main trunk´Â parallel logical ager °ËÁõÀ» À§ÇØ ±âº»°ªÀ» 1·Î ¼³Á¤ÇÑ´Ù.
       * 
       */
 #if defined(ALTIBASE_PRODUCT_HDB)
      IDP_DEF(UInt, "__PARALLEL_LOGICAL_AGER",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -9985,6 +11102,7 @@ IDE_RC registProperties()
 #else
      IDP_DEF(UInt, "__PARALLEL_LOGICAL_AGER",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -9997,6 +11115,7 @@ IDE_RC registProperties()
      /* PROJ-1753 */
      IDP_DEF(UInt, "__LIKE_OP_USE_OLD_MODULE",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -10008,6 +11127,7 @@ IDE_RC registProperties()
      // bug-35371
      IDP_DEF(UInt, "XA_HASH_SIZE",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -10019,6 +11139,7 @@ IDE_RC registProperties()
      // bug-35381
      IDP_DEF(UInt, "XID_MEMPOOL_ELEMENT_COUNT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -10030,6 +11151,7 @@ IDE_RC registProperties()
      // bug-35382
      IDP_DEF(UInt, "XID_MUTEX_POOL_SIZE",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -10041,6 +11163,7 @@ IDE_RC registProperties()
     // PROJ-1685
     IDP_DEF(UInt, "EXTPROC_AGENT_CONNECT_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10051,6 +11174,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "EXTPROC_AGENT_IDLE_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10061,6 +11185,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "EXTPROC_AGENT_CALL_RETRY_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10072,6 +11197,7 @@ IDE_RC registProperties()
     // BUG-44652 Socket file path of EXTPROC AGENT could be set by property.
     IDP_DEF(String, "EXTPROC_AGENT_SOCKET_FILEPATH",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -10085,11 +11211,12 @@ IDE_RC registProperties()
 
     /* BUG-36662 Add property for archive thread to kill server when doesn't
      * exist source logfile
-     * ë¡œê·¸íŒŒì¼ archingì‹œ archive threadê°€ abortë˜ë©´ archivingí• 
-     * ë¡œê·¸íŒŒì¼ì´ ì¡´ìž¬í•˜ëŠ”ì§€ ê²€ì‚¬í•˜ê³  ì¡´ìž¬í•˜ì§€ ì•Šë‹¤ë©´ ë¹„ì •ìƒì¢…ë£Œ ì‹œí‚¨ë‹¤.
+     * ·Î±×ÆÄÀÏ arching½Ã archive thread°¡ abortµÇ¸é archivingÇÒ
+     * ·Î±×ÆÄÀÏÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÏ°í Á¸ÀçÇÏÁö ¾Ê´Ù¸é ºñÁ¤»óÁ¾·á ½ÃÅ²´Ù.
      */
      IDP_DEF( UInt, "__CHECK_LOGFILE_WHEN_ARCH_THR_ABORT",
               IDP_ATTR_SL_ALL |
+              IDP_ATTR_SH_ALL |
               IDP_ATTR_IU_ANY |
               IDP_ATTR_MS_ANY |
               IDP_ATTR_LC_INTERNAL |
@@ -10101,11 +11228,12 @@ IDE_RC registProperties()
     /* 
      * BUG-35443 Add Property for Excepting SYS_TBS_MEM_DIC size from
      * MEM_MAX_DB_SIZE
-     * SYS_TBS_MEM_DIC sizeë¥¼ MEM_MAX_DB_SIZEì™€ëŠ” ë³„ë„ë¡œ ë¶„ë¦¬í•œë‹¤.
-     * ë”°ë¼ì„œ SYS_TBS_MEM_DIC sizeê°€ ìµœëŒ€ MEM_MAX_DB_SIZEë§Œí¼ ì¦ê°€í•  ìˆ˜ ìžˆê²Œí•œë‹¤.
+     * SYS_TBS_MEM_DIC size¸¦ MEM_MAX_DB_SIZE¿Í´Â º°µµ·Î ºÐ¸®ÇÑ´Ù.
+     * µû¶ó¼­ SYS_TBS_MEM_DIC size°¡ ÃÖ´ë MEM_MAX_DB_SIZE¸¸Å­ Áõ°¡ÇÒ ¼ö ÀÖ°ÔÇÑ´Ù.
      */
     IDP_DEF(UInt, "__SEPARATE_DIC_TBS_SIZE_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -10117,6 +11245,7 @@ IDE_RC registProperties()
     // BUG-36203
     IDP_DEF(UInt, "__QUERY_HASH_STRING_LENGTH_MAX",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -10128,6 +11257,7 @@ IDE_RC registProperties()
     // BUG-37247
     IDP_DEF(UInt, "SYS_CONNECT_BY_PATH_PRECISION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10139,6 +11269,7 @@ IDE_RC registProperties()
     // BUG-37247
     IDP_DEF(UInt, "GROUP_CONCAT_PRECISION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10150,6 +11281,7 @@ IDE_RC registProperties()
     // BUG-38842
     IDP_DEF(UInt, "CLOB_TO_VARCHAR_PRECISION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -10161,6 +11293,7 @@ IDE_RC registProperties()
     // BUG-38952
     IDP_DEF(UInt, "TYPE_NULL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -10172,6 +11305,7 @@ IDE_RC registProperties()
     // BUG-41194
     IDP_DEF(UInt, "IEEE754_DOUBLE_TO_NUMERIC_FAST_CONVERSION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -10184,6 +11318,7 @@ IDE_RC registProperties()
     // rw-rw-rw(0666) : 0, rw-r-r(0644) : 1 Default : 0 (0666)
     IDP_DEF(UInt, "MSG_QUEUE_PERMISSION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10195,6 +11330,7 @@ IDE_RC registProperties()
     // BUG-37252
     IDP_DEF(UInt, "EXECUTION_PLAN_MEMORY_CHECK",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -10206,6 +11342,7 @@ IDE_RC registProperties()
     // BUG-37302
     IDP_DEF(UInt, "SQL_ERROR_INFO_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -10214,9 +11351,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1024, 1024*1024*10, 10240);
 
-    // PROJ-2362 memory temp ì €ìž¥ íš¨ìœ¨ì„± ê°œì„ 
+    // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
     IDP_DEF(UInt, "REDUCE_TEMP_MEMORY_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10225,9 +11363,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 0);
 
-    /* BUG-38254  alter table xxx ì—ì„œ hangì´ ê±¸ë¦´ìˆ˜ ìžˆìŠµë‹ˆë‹¤ */
+    /* BUG-38254  alter table xxx ¿¡¼­ hangÀÌ °É¸±¼ö ÀÖ½À´Ï´Ù */
     IDP_DEF(UInt, "__TABLE_BACKUP_TIMEOUT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -10236,9 +11375,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, IDV_MAX_TIME_INTERVAL_SEC, 600 /*sec*/);
 
-    /* BUG-38621  log ê¸°ë¡ì‹œ ìƒëŒ€ê²½ë¡œë¡œ ì €ìž¥ (Disaster Recovery í…ŒìŠ¤íŠ¸ ìš©ë„) */
+    /* BUG-38621  log ±â·Ï½Ã »ó´ë°æ·Î·Î ÀúÀå (Disaster Recovery Å×½ºÆ® ¿ëµµ) */
     IDP_DEF(UInt, "__RELATIVE_PATH_IN_LOG",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -10250,6 +11390,7 @@ IDE_RC registProperties()
     // BUG-38101
     IDP_DEF(UInt, "CASE_SENSITIVE_PASSWORD",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10279,6 +11420,7 @@ IDE_RC registProperties()
 #endif
     IDP_DEF(UInt, "CM_DISPATCHER_SOCK_POLL_TYPE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10292,6 +11434,7 @@ IDE_RC registProperties()
     // fix BUG-39754
     IDP_DEF(UInt, "__FOREIGN_KEY_LOCK_ROW",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -10303,6 +11446,7 @@ IDE_RC registProperties()
     // BUG-39679 Ericsson POC bug
     IDP_DEF(UInt, "__ENABLE_ROW_TEMPLATE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -10314,6 +11458,7 @@ IDE_RC registProperties()
     // BUG-40042 oracle outer join property
     IDP_DEF(UInt, "OUTER_JOIN_OPERATOR_TRANSFORM_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10325,6 +11470,7 @@ IDE_RC registProperties()
     /* PROJ-2451 Concurrent Execute Package */
     IDP_DEF(UInt, "CONCURRENT_EXEC_DEGREE_MAX",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10336,6 +11482,7 @@ IDE_RC registProperties()
     /* PROJ-2451 Concurrent Execute Package */
     IDP_DEF(UInt, "CONCURRENT_EXEC_DEGREE_DEFAULT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10347,6 +11494,7 @@ IDE_RC registProperties()
     /* PROJ-2451 Concurrent Execute Package */
     IDP_DEF(UInt, "CONCURRENT_EXEC_WAIT_INTERVAL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10356,14 +11504,15 @@ IDE_RC registProperties()
             10, 1000000, 100);
 
     /* BUG-40138 
-     * Flusherì—ì˜í•œ checkpoint flushëŠ” replacement flushë‚˜
-     * checkpoint threadì—ì˜í•œ checkpoint flush ë³´ë‹¤ ìš°ì„  ìš´ìœ„ê°€ ë‚®ì•„ì•¼ í•œë‹¤.
-     * ë”°ë¼ì„œ, flusherì—ì˜í•œ checkpoint flush ìˆ˜í–‰ ë„ì¤‘ ë‹¤ë¥¸ flush ìž‘ì—…ì— ëŒ€í•œ
-     * ìš”ì²­/ì¡°ê±´ì´ ìžˆëŠ”ì§€ í™•ì¸í•˜ë„ë¡ í•œë‹¤.
-     * ì˜ˆ) í”„ë¡œí¼í‹°ì˜ ê°’ì´ 10ì´ë©´, flusherì— ì˜í•œ checkpoint flushì— ì˜í•´
-           10ê°œì˜ íŽ˜ì´ì§€ê°€ flushë ë•Œë§ˆë‹¤ ì¡°ê±´ ì²´í¬ë¥¼ í•œë‹¤. */
+     * Flusher¿¡ÀÇÇÑ checkpoint flush´Â replacement flush³ª
+     * checkpoint thread¿¡ÀÇÇÑ checkpoint flush º¸´Ù ¿ì¼± ¿îÀ§°¡ ³·¾Æ¾ß ÇÑ´Ù.
+     * µû¶ó¼­, flusher¿¡ÀÇÇÑ checkpoint flush ¼öÇà µµÁß ´Ù¸¥ flush ÀÛ¾÷¿¡ ´ëÇÑ
+     * ¿äÃ»/Á¶°ÇÀÌ ÀÖ´ÂÁö È®ÀÎÇÏµµ·Ï ÇÑ´Ù.
+     * ¿¹) ÇÁ·ÎÆÛÆ¼ÀÇ °ªÀÌ 10ÀÌ¸é, flusher¿¡ ÀÇÇÑ checkpoint flush¿¡ ÀÇÇØ
+           10°³ÀÇ ÆäÀÌÁö°¡ flushµÉ¶§¸¶´Ù Á¶°Ç Ã¼Å©¸¦ ÇÑ´Ù. */
     IDP_DEF(UInt, "__FLUSHER_BUSY_CONDITION_CHECK_INTERVAL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -10375,6 +11524,7 @@ IDE_RC registProperties()
     /* BUG-41168 SSL extension */
     IDP_DEF(UInt, "TCP_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10386,6 +11536,7 @@ IDE_RC registProperties()
     /* PROJ-2474 SSL/TLS */
     IDP_DEF(UInt, "SSL_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10396,6 +11547,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SSL_CLIENT_AUTHENTICATION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10406,6 +11558,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "__SSL_VERIFY_PEER_CERTIFICATE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -10416,6 +11569,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SSL_PORT_NO",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10428,6 +11582,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "SSL_MAX_LISTEN",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10438,6 +11593,7 @@ IDE_RC registProperties()
 
     IDP_DEF(String, "SSL_CIPHER_LIST",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -10449,6 +11605,7 @@ IDE_RC registProperties()
 
     IDP_DEF(String, "SSL_CA",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -10460,6 +11617,7 @@ IDE_RC registProperties()
 
     IDP_DEF(String, "SSL_CAPATH",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -10471,6 +11629,7 @@ IDE_RC registProperties()
 
     IDP_DEF(String, "SSL_CERT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -10482,6 +11641,7 @@ IDE_RC registProperties()
 
     IDP_DEF(String, "SSL_KEY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -10493,6 +11653,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "DCI_RETRY_WAIT_TIME",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -10504,6 +11665,7 @@ IDE_RC registProperties()
     /* PROJ-2441 flashback  size byte */
     IDP_DEF(ULong, "RECYCLEBIN_MEM_MAX_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10514,6 +11676,7 @@ IDE_RC registProperties()
     
     IDP_DEF(ULong, "RECYCLEBIN_DISK_MAX_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10524,6 +11687,7 @@ IDE_RC registProperties()
     
     IDP_DEF(UInt, "RECYCLEBIN_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10534,6 +11698,7 @@ IDE_RC registProperties()
     
     IDP_DEF(UInt, "__RECYCLEBIN_FOR_NATC",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -10545,6 +11710,7 @@ IDE_RC registProperties()
     /* BUG-40790 */
     IDP_DEF(UInt, "__LOB_CURSOR_HASH_BUCKET_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -10556,6 +11722,7 @@ IDE_RC registProperties()
     /* BUG-42639 Monitoring query */
     IDP_DEF(UInt, "OPTIMIZER_PERFORMANCE_VIEW",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10564,14 +11731,29 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 1);
 
+    /* BUG-48160 fixed table¿¡¼­ table lock °É¸° tableÀ» skipÇÏ°í Ãâ·Â 
+     * 0 : lock wait (default)
+     * 1 : skip lock table
+     * 2 : small info for lock table (not support, next job)*/
+    IDP_DEF(UInt, "__SKIP_LOCKED_TABLE_AT_FIXED_TABLE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 0);
+
     /************************************************/
     /* PROJ-2553 Cache-aware Memory Hash Temp Table */
     /************************************************/
 
-    // 0 : Array-Partitioned Memory Hash Temp Tableë¥¼ ì‚¬ìš©
-    // 1 : Bucket-based Memory Hash Temp Tableì„ ì‚¬ìš©
+    // 0 : Array-Partitioned Memory Hash Temp Table¸¦ »ç¿ë
+    // 1 : Bucket-based Memory Hash Temp TableÀ» »ç¿ë
     IDP_DEF(UInt, "HASH_JOIN_MEM_TEMP_PARTITIONING_DISABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10580,12 +11762,13 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 0);
 
-    // 0 : ì‹¤ì œ ì‚½ìž…ëœ Record ê°œìˆ˜ì— ë§žì¶° Bucket ê°œìˆ˜ (=Partition ê°œìˆ˜) ê³„ì‚°
-    // 1 : Bucket ê°œìˆ˜ë¥¼ ê³„ì‚°í•˜ì§€ ì•Šê³ , ë‹¤ìŒì˜ ê°’ì„ ê·¸ëŒ€ë¡œ ì‚¬ìš©
-    //     - /*+HASH BUCKET COUNT*/ ížŒíŠ¸ë¡œ ì„¤ì •ëœ Bucket ê°œìˆ˜
-    //     - (ížŒíŠ¸ê°€ ì—†ëŠ” ê²½ìš°) QP Optimizerê°€ ì˜ˆì¸¡í•œ Bucket ê°œìˆ˜ 
+    // 0 : ½ÇÁ¦ »ðÀÔµÈ Record °³¼ö¿¡ ¸ÂÃç Bucket °³¼ö (=Partition °³¼ö) °è»ê
+    // 1 : Bucket °³¼ö¸¦ °è»êÇÏÁö ¾Ê°í, ´ÙÀ½ÀÇ °ªÀ» ±×´ë·Î »ç¿ë
+    //     - /*+HASH BUCKET COUNT*/ ÈùÆ®·Î ¼³Á¤µÈ Bucket °³¼ö
+    //     - (ÈùÆ®°¡ ¾ø´Â °æ¿ì) QP Optimizer°¡ ¿¹ÃøÇÑ Bucket °³¼ö 
     IDP_DEF(UInt, "HASH_JOIN_MEM_TEMP_AUTO_BUCKET_COUNT_DISABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10594,11 +11777,12 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 0);
 
-    // Partition ê°œìˆ˜ê°€ TLBì— í•œ ë²ˆì— ë“¤ì–´ê°ˆ ìˆ˜ ì—†ëŠ” ê²½ìš°, ë‘ ë²ˆì— ê±¸ì³ Fanout í•´ì•¼ í•œë‹¤.
-    // TLB Entryê°€ í´ ìˆ˜ë¡, ë‘ ë²ˆì— ê±¸ì³ Fanout í•˜ëŠ” ê²½ìš°ê°€ ì¤„ì–´ë“ ë‹¤.
-    // êµ¬ë™ í™˜ê²½ì˜ TLB Entry ê°œìˆ˜ë¥¼ ìž…ë ¥í•˜ë©´, ìµœì ì˜ ë°©ë²•ìœ¼ë¡œ Fanout í•˜ê²Œ ëœë‹¤.
+    // Partition °³¼ö°¡ TLB¿¡ ÇÑ ¹ø¿¡ µé¾î°¥ ¼ö ¾ø´Â °æ¿ì, µÎ ¹ø¿¡ °ÉÃÄ Fanout ÇØ¾ß ÇÑ´Ù.
+    // TLB Entry°¡ Å¬ ¼ö·Ï, µÎ ¹ø¿¡ °ÉÃÄ Fanout ÇÏ´Â °æ¿ì°¡ ÁÙ¾îµç´Ù.
+    // ±¸µ¿ È¯°æÀÇ TLB Entry °³¼ö¸¦ ÀÔ·ÂÇÏ¸é, ÃÖÀûÀÇ ¹æ¹ýÀ¸·Î Fanout ÇÏ°Ô µÈ´Ù.
     IDP_DEF(UInt, "__HASH_JOIN_MEM_TEMP_TLB_ENTRY_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -10607,11 +11791,11 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1, 1024, 64);
 
-    // 0 : Single/Double Fanoutì„ TLB_ENTRY_COUNTì— ë§žì¶° ê²°ì •í•œë‹¤.
-    // 1 : Single Fanoutë§Œ ì„ íƒí•œë‹¤.
-    // 2 : Double Fanoutë§Œ ì„ íƒí•œë‹¤.
+    // 0 : Single/Double FanoutÀ» TLB_ENTRY_COUNT¿¡ ¸ÂÃç °áÁ¤ÇÑ´Ù.
+    // 1 : Single Fanout¸¸ ¼±ÅÃÇÑ´Ù.
+    // 2 : Double Fanout¸¸ ¼±ÅÃÇÑ´Ù.
     IDP_DEF(UInt, "__FORCE_HASH_JOIN_MEM_TEMP_FANOUT_MODE",
-            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SL_ALL | IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -10623,6 +11807,7 @@ IDE_RC registProperties()
     /* PROJ-2554 */
     IDP_DEF( UInt, "ALLOC_SLOT_IN_CURRENT_PAGE",
              IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -10636,6 +11821,7 @@ IDE_RC registProperties()
     // 2 force free slot
     IDP_DEF(UInt, "__REFINE_INVALID_SLOT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -10645,10 +11831,11 @@ IDE_RC registProperties()
             0, 2, 1);
 
     // TASK-6445 use old sort (for Memory Sort Temp Table)
-    // 0 : í˜„ìž¬ ì •ë ¬ ì•Œê³ ë¦¬ì¦˜ (Timsort)
-    // 1 : ê¸°ì¡´ ì •ë ¬ ì•Œê³ ë¦¬ì¦˜ (Quicksort)
+    // 0 : ÇöÀç Á¤·Ä ¾Ë°í¸®Áò (Timsort)
+    // 1 : ±âÁ¸ Á¤·Ä ¾Ë°í¸®Áò (Quicksort)
     IDP_DEF(UInt, "__USE_OLD_SORT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -10660,6 +11847,7 @@ IDE_RC registProperties()
     // BUG-43258
     IDP_DEF(UInt, "__OPTIMIZER_INDEX_CLUSTERING_FACTOR_ADJ",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -10671,6 +11859,7 @@ IDE_RC registProperties()
     // BUG-41248 DBMS_SQL package
     IDP_DEF(UInt, "PSM_CURSOR_OPEN_LIMIT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10685,6 +11874,7 @@ IDE_RC registProperties()
      */
     IDP_DEF(String, "MISC_MSGLOG_FILE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -10696,6 +11886,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "MISC_MSGLOG_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10706,6 +11897,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "MISC_MSGLOG_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10716,6 +11908,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "MISC_MSGLOG_FLAG",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10726,6 +11919,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "TRC_ACCESS_PERMISSION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10739,6 +11933,7 @@ IDE_RC registProperties()
 
     IDP_DEF(String, "FIT_MSGLOG_FILE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -10750,6 +11945,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "FIT_MSGLOG_SIZE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10760,6 +11956,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "FIT_MSGLOG_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10779,6 +11976,7 @@ IDE_RC registProperties()
      */
     IDP_DEF(UInt, "__CORE_DUMP_ON_SIGNAL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -10789,6 +11987,7 @@ IDE_RC registProperties()
 #else
     IDP_DEF(UInt, "__CORE_DUMP_ON_SIGNAL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -10801,28 +12000,31 @@ IDE_RC registProperties()
     /* PROJ-2465 Tablespace Alteration for Table */
     IDP_DEF( UInt, "DDL_MEM_USAGE_THRESHOLD",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
              IDP_ATTR_RD_WRITABLE |
              IDP_ATTR_ML_JUSTONE  |
              IDP_ATTR_CK_CHECK,
-             50, 100, 80 );
+             50, 100, 100 );
 
     /* PROJ-2465 Tablespace Alteration for Table */
     IDP_DEF( UInt, "DDL_TBS_USAGE_THRESHOLD",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
              IDP_ATTR_RD_WRITABLE |
              IDP_ATTR_ML_JUSTONE  |
              IDP_ATTR_CK_CHECK,
-             50, 100, 80 );
+             50, 100, 100);
 
     /* PROJ-2465 Tablespace Alteration for Table */
     IDP_DEF( UInt, "ANALYZE_USAGE_MIN_ROWCOUNT",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -10832,10 +12034,11 @@ IDE_RC registProperties()
              1000, ID_UINT_MAX, 1000 );
     
     /* PROJ-2613: Key Redistribution in MRDB Index
-     * ì´ ê°’ì´ 1ì¼ ê²½ìš°ì—ëŠ” MRDB Indexì—ì„œ Indexì˜ ì„¤ì •ì— ë”°ë¼ í‚¤ ìž¬ë¶„ë°° ê¸°ëŠ¥ì„ ì‚¬ìš©í•œë‹¤.
-     * ì´ ê°’ì´ 0ì¼ ê²½ìš°ì—ëŠ” MRDB Indexì—ì„œ Indexì˜ ì„¤ì •ê³¼ ê´€ê³„ ì—†ì´ í‚¤ ìž¬ë¶„ë°° ê¸°ëŠ¥ì„ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+     * ÀÌ °ªÀÌ 1ÀÏ °æ¿ì¿¡´Â MRDB Index¿¡¼­ IndexÀÇ ¼³Á¤¿¡ µû¶ó Å° ÀçºÐ¹è ±â´ÉÀ» »ç¿ëÇÑ´Ù.
+     * ÀÌ °ªÀÌ 0ÀÏ °æ¿ì¿¡´Â MRDB Index¿¡¼­ IndexÀÇ ¼³Á¤°ú °ü°è ¾øÀÌ Å° ÀçºÐ¹è ±â´ÉÀ» »ç¿ëÇÏÁö ¾Ê´Â´Ù. */
     IDP_DEF(SInt, "MEM_INDEX_KEY_REDISTRIBUTION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10845,11 +12048,12 @@ IDE_RC registProperties()
             0, 1, 1);
 
     /* PROJ-2613: Key Redistribution in MRDB Index
-     * í‚¤ ìž¬ë¶„ë°°ê°€ ìˆ˜í–‰ë˜ê¸° ìœ„í•œ ì´ì›ƒ ë…¸ë“œì˜ ìµœì†Œ ë¹ˆê³µê°„ ë¹„ìœ¨
-     * ì˜ˆ)ì´ í”„ë¡œí¼í‹°ê°€ 30ì¼ ê²½ìš° ì´ì›ƒ ë…¸ë“œê°€ 30%ì´ìƒì˜ ë¹ˆ ê³µê°„ì´ ìžˆì„ ê²½ìš°ì—ë§Œ í‚¤ ìž¬ë¶„ë°°ë¥¼ ìˆ˜í–‰í•œë‹¤. */
+     * Å° ÀçºÐ¹è°¡ ¼öÇàµÇ±â À§ÇÑ ÀÌ¿ô ³ëµåÀÇ ÃÖ¼Ò ºó°ø°£ ºñÀ²
+     * ¿¹)ÀÌ ÇÁ·ÎÆÛÆ¼°¡ 30ÀÏ °æ¿ì ÀÌ¿ô ³ëµå°¡ 30%ÀÌ»óÀÇ ºó °ø°£ÀÌ ÀÖÀ» °æ¿ì¿¡¸¸ Å° ÀçºÐ¹è¸¦ ¼öÇàÇÑ´Ù. */
 
     IDP_DEF(SInt, "MEM_INDEX_KEY_REDISTRIBUTION_STANDARD_RATE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10860,13 +12064,14 @@ IDE_RC registProperties()
 
     /* PROJ-2586 PSM Parameters and return without precision */
     /*
-     * PSMì˜ parameterì™€ returnì˜ precisionì„ PROJ-2586 ì´ì „ ë°©ì‹ìœ¼ë¡œ ì‚¬ìš© ì§€ì›
-     * 0 : PROJ-2586 ì´ì „ ë°©ì‹
-     * 1 : PROJ-2586ì´ ì ìš©ëœ ë°©ì‹( default )
-     * 2 : í…ŒìŠ¤íŠ¸ìš©, PROJ-2586 + precisionì„ ëª…ì‹œí•˜ì—¬ë„ ë¬´ì‹œí•˜ê³  default precision ì ìš©í•˜ì—¬ ì‹¤í–‰
+     * PSMÀÇ parameter¿Í returnÀÇ precisionÀ» PROJ-2586 ÀÌÀü ¹æ½ÄÀ¸·Î »ç¿ë Áö¿ø
+     * 0 : PROJ-2586 ÀÌÀü ¹æ½Ä
+     * 1 : PROJ-2586ÀÌ Àû¿ëµÈ ¹æ½Ä( default )
+     * 2 : Å×½ºÆ®¿ë, PROJ-2586 + precisionÀ» ¸í½ÃÇÏ¿©µµ ¹«½ÃÇÏ°í default precision Àû¿ëÇÏ¿© ½ÇÇà
      */
     IDP_DEF(UInt, "PSM_PARAM_AND_RETURN_WITHOUT_PRECISION_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -10876,116 +12081,129 @@ IDE_RC registProperties()
             0, 2, 1);
 
     /*
-     * PSMì—ì„œ char type parameterì™€ returnì˜ ìµœëŒ€ precisionë¥¼ ê²°ì •í•œë‹¤.
-     * default : 32767 
+     * PSM¿¡¼­ char type parameter¿Í returnÀÇ ÃÖ´ë precision¸¦ °áÁ¤ÇÑ´Ù.
+     * BUG-46573 PSM default precisionÀ» Á¶Á¤ÇÕ´Ï´Ù.
+     * default : 32000
      * maximum : 65534 
      * minimum : 1
      */
     IDP_DEF(UInt, "PSM_CHAR_DEFAULT_PRECISION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
             IDP_ATTR_RD_READONLY |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            1, 65534, 32767);
+            1, 65534, 32000);
 
     /*
-     * PSMì—ì„œ varchar type parameterì™€ returnì˜ ìµœëŒ€ precisionë¥¼ ê²°ì •í•œë‹¤.
-     * default : 32767 
-     * maximum : 32767
+     * PSM¿¡¼­ varchar type parameter¿Í returnÀÇ ÃÖ´ë precision¸¦ °áÁ¤ÇÑ´Ù.
+     * BUG-46573 PSM default precisionÀ» Á¶Á¤ÇÕ´Ï´Ù.
+     * default : 32000
+     * maximum : 65534
      * minimum : 1
      */
     IDP_DEF(UInt, "PSM_VARCHAR_DEFAULT_PRECISION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
             IDP_ATTR_RD_READONLY |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            1, 65534, 32767);
+            1, 65534, 32000);
 
     /*
-     * PSMì—ì„œ nchar(UTF16) type parameterì™€ returnì˜ ìµœëŒ€ precisionë¥¼ ê²°ì •í•œë‹¤.
-     * default : 16383 
-     *           = ( 32766[ manualì— í‘œê¸°ëœ nchar ìµœëŒ€ precision ] *
-     *               32767 [ char typeì˜ parameter ë° returnì˜ default precision ] ) /
-     *             65534 [ manualì— í‘œê¸°ëœ char ìµœëŒ€ precision ]
+     * PSM¿¡¼­ nchar(UTF16) type parameter¿Í returnÀÇ ÃÖ´ë precision¸¦ °áÁ¤ÇÑ´Ù.
+     * BUG-46573 PSM default precisionÀ» Á¶Á¤ÇÕ´Ï´Ù.
+     * default : 16000
+     *           = ( 32766[ manual¿¡ Ç¥±âµÈ nchar ÃÖ´ë precision ] *
+     *               32767 [ char typeÀÇ parameter ¹× returnÀÇ default precision ] ) /
+     *             65534 [ manual¿¡ Ç¥±âµÈ char ÃÖ´ë precision ]
      * maximum : 32766
      * minimum : 1
      */
     IDP_DEF(UInt, "PSM_NCHAR_UTF16_DEFAULT_PRECISION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
             IDP_ATTR_RD_READONLY |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            1, 32766, 16383);
+            1, 32766, 16000);
 
     /*
-     * PSMì—ì„œ nvarchar(UTF16) type parameterì™€ returnì˜ ìµœëŒ€ precisionë¥¼ ê²°ì •í•œë‹¤.
-     * default : 16383 
-     *           = ( 32766[ manualì— í‘œê¸°ëœ nchar ìµœëŒ€ precision ] *
-     *               32767 [ char typeì˜ parameter ë° returnì˜ default precision ] ) /
-     *             65534 [ manualì— í‘œê¸°ëœ char ìµœëŒ€ precision ]
+     * PSM¿¡¼­ nvarchar(UTF16) type parameter¿Í returnÀÇ ÃÖ´ë precision¸¦ °áÁ¤ÇÑ´Ù.
+     * BUG-46573 PSM default precisionÀ» Á¶Á¤ÇÕ´Ï´Ù.
+     * default : 16000
+     *           = ( 32766[ manual¿¡ Ç¥±âµÈ nchar ÃÖ´ë precision ] *
+     *               32767 [ char typeÀÇ parameter ¹× returnÀÇ default precision ] ) /
+     *             65534 [ manual¿¡ Ç¥±âµÈ char ÃÖ´ë precision ]
      * maximum : 32766
      * minimum : 1
      */
     IDP_DEF(UInt, "PSM_NVARCHAR_UTF16_DEFAULT_PRECISION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
             IDP_ATTR_RD_READONLY |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            1, 32766, 16383);
+            1, 32766, 16000);
 
     /*
-     * PSMì—ì„œ nchar(UTF8) type parameterì™€ returnì˜ ìµœëŒ€ precisionë¥¼ ê²°ì •í•œë‹¤.
-     * default : 10921
-     *           = ( 21843[ manualì— í‘œê¸°ëœ nchar ìµœëŒ€ precision ] *
-     *               32767 [ char typeì˜ parameter ë° returnì˜ default precision ] ) /
-     *             65534 [ manualì— í‘œê¸°ëœ char ìµœëŒ€ precision ]
+     * PSM¿¡¼­ nchar(UTF8) type parameter¿Í returnÀÇ ÃÖ´ë precision¸¦ °áÁ¤ÇÑ´Ù.
+     * BUG-46573 PSM default precisionÀ» Á¶Á¤ÇÕ´Ï´Ù.
+     * default : 10666
+     *           = ( 21843[ manual¿¡ Ç¥±âµÈ nchar ÃÖ´ë precision ] *
+     *               32767 [ char typeÀÇ parameter ¹× returnÀÇ default precision ] ) /
+     *             65534 [ manual¿¡ Ç¥±âµÈ char ÃÖ´ë precision ]
      * maximum : 21843 
      * minimum : 1
      */
     IDP_DEF(UInt, "PSM_NCHAR_UTF8_DEFAULT_PRECISION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
             IDP_ATTR_RD_READONLY |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            1, 21843, 10921);
+            1, 21843, 10666);
 
     /*
-     * PSMì—ì„œ nvarchar(UTF8) type parameterì™€ returnì˜ ìµœëŒ€ precisionë¥¼ ê²°ì •í•œë‹¤.
-     * default : 10921
-     *           = ( 21843[ manualì— í‘œê¸°ëœ nchar ìµœëŒ€ precision ] *
-     *               32767 [ char typeì˜ parameter ë° returnì˜ default precision ] ) /
-     *             65534 [ manualì— í‘œê¸°ëœ char ìµœëŒ€ precision ]
+     * PSM¿¡¼­ nvarchar(UTF8) type parameter¿Í returnÀÇ ÃÖ´ë precision¸¦ °áÁ¤ÇÑ´Ù.
+     * BUG-46573 PSM default precisionÀ» Á¶Á¤ÇÕ´Ï´Ù.
+     * default : 10666
+     *           = ( 21843[ manual¿¡ Ç¥±âµÈ nchar ÃÖ´ë precision ] *
+     *               32767 [ char typeÀÇ parameter ¹× returnÀÇ default precision ] ) /
+     *             65534 [ manual¿¡ Ç¥±âµÈ char ÃÖ´ë precision ]
      * maximum : 21843 
      * minimum : 1
      */
     IDP_DEF(UInt, "PSM_NVARCHAR_UTF8_DEFAULT_PRECISION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
             IDP_ATTR_RD_READONLY |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            1, 21843, 10921);
+            1, 21843, 10666);
 
     // BUG-42322
     IDP_DEF(ULong, "__PSM_FORMAT_CALL_STACK_OID",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -10997,6 +12215,7 @@ IDE_RC registProperties()
     /* PROJ-2617 */
     IDP_DEF(UInt, "__FAULT_TOLERANCE_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -11007,6 +12226,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "__FAULT_TOLERANCE_TRACE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -11018,6 +12238,7 @@ IDE_RC registProperties()
     /* BUG-34112 */
     IDP_DEF(UInt, "__FORCE_AUTONOMOUS_TRANSACTION_PRAGMA",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -11028,6 +12249,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "__AUTONOMOUS_TRANSACTION_PRAGMA_DISABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -11038,6 +12260,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "__PSM_STATEMENT_LIST_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -11048,6 +12271,7 @@ IDE_RC registProperties()
 
     IDP_DEF(UInt, "__PSM_STATEMENT_POOL_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -11056,9 +12280,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             32, 4096, 128);
 
-    // BUG-43443 temp tableì— ëŒ€í•´ì„œ work area sizeë¥¼ estimateí•˜ëŠ” ê¸°ëŠ¥ì„ off
+    // BUG-43443 temp table¿¡ ´ëÇØ¼­ work area size¸¦ estimateÇÏ´Â ±â´ÉÀ» off
     IDP_DEF(UInt, "__DISK_TEMP_SIZE_ESTIMATE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -11070,6 +12295,7 @@ IDE_RC registProperties()
     // BUG-43421
     IDP_DEF(UInt, "__OPTIMIZER_SEMI_JOIN_TRANSITIVITY_DISABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -11081,6 +12307,7 @@ IDE_RC registProperties()
     /* BUG-43495 */
     IDP_DEF(UInt, "__OPTIMIZER_LIKE_INDEX_SCAN_WITH_OUTER_COLUMN_DISABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -11089,60 +12316,13 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 0);
 
-    /* Project 2620 */
-    IDP_DEF(UInt, "LOCK_MGR_TYPE", // 0 : Mutex, 1 : Spin
-            IDP_ATTR_SL_ALL |
-            IDP_ATTR_IU_ANY |
-            IDP_ATTR_MS_ANY |
-            IDP_ATTR_LC_EXTERNAL |
-            IDP_ATTR_RD_READONLY |
-            IDP_ATTR_ML_JUSTONE  |
-            IDP_ATTR_CK_CHECK,
-            0, 1, 0);
-    IDP_DEF(UInt, "LOCK_MGR_SPIN_COUNT", // spin count in spin mode
-            IDP_ATTR_SL_ALL |
-            IDP_ATTR_IU_ANY |
-            IDP_ATTR_MS_ANY |
-            IDP_ATTR_LC_EXTERNAL |
-            IDP_ATTR_RD_WRITABLE |
-            IDP_ATTR_ML_JUSTONE  |
-            IDP_ATTR_CK_CHECK,
-            0, 30000, 1000);
-    IDP_DEF(UInt, "LOCK_MGR_MIN_SLEEP", // min sleep interval in usec
-            IDP_ATTR_SL_ALL |
-            IDP_ATTR_IU_ANY |
-            IDP_ATTR_MS_ANY |
-            IDP_ATTR_LC_EXTERNAL |
-            IDP_ATTR_RD_WRITABLE |
-            IDP_ATTR_ML_JUSTONE  |
-            IDP_ATTR_CK_CHECK,
-            0, 1000000, 50);
-    IDP_DEF(UInt, "LOCK_MGR_MAX_SLEEP", // max sleep interval in usec
-            IDP_ATTR_SL_ALL |
-            IDP_ATTR_IU_ANY |
-            IDP_ATTR_MS_ANY |
-            IDP_ATTR_LC_EXTERNAL |
-            IDP_ATTR_RD_WRITABLE |
-            IDP_ATTR_ML_JUSTONE  |
-            IDP_ATTR_CK_CHECK,
-            0, 1000000, 1000);
-    // detect deadlock interval
-    // 0 : do not sleep
-    IDP_DEF(UInt, "LOCK_MGR_DETECTDEADLOCK_INTERVAL",
-            IDP_ATTR_SL_ALL |
-            IDP_ATTR_IU_ANY |
-            IDP_ATTR_MS_ANY |
-            IDP_ATTR_LC_EXTERNAL |
-            IDP_ATTR_RD_WRITABLE |
-            IDP_ATTR_ML_JUSTONE  |
-            IDP_ATTR_CK_CHECK,
-            0, 10, 3);
     // lock node cache enable
     // 0 : disable
     // 1 : list method with count
     // 2 : bitmap method with fixed count - 64
     IDP_DEF(UInt, "LOCK_MGR_CACHE_NODE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -11153,6 +12333,7 @@ IDE_RC registProperties()
     /* BUG-43408 LockNodeCache Count  */
     IDP_DEF(UInt, "LOCK_NODE_CACHE_COUNT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -11160,12 +12341,97 @@ IDE_RC registProperties()
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             0, 1024, 2);
+    /* PROJ-2734 */
+    IDP_DEF(UInt, "DISTRIBUTION_DEADLOCK_ENABLE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 1);
+    IDP_DEF(ULong, "DISTRIBUTION_DEADLOCK_RISK_LOW_WAIT_TIME", /* microseconds */
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, ID_ULONG_MAX, 1000000);
+    IDP_DEF(ULong, "DISTRIBUTION_DEADLOCK_RISK_MID_WAIT_TIME", /* microseconds */
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, ID_ULONG_MAX, 1000000);
+    IDP_DEF(ULong, "DISTRIBUTION_DEADLOCK_RISK_HIGH_WAIT_TIME", /* microseconds */
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, ID_ULONG_MAX, 0);
+    /* PROJ-2733 ºÐ»ê Æ®·£Àè¼Ç Á¤ÇÕ¼º */
+    IDP_DEF(ULong, "VERSIONING_MIN_TIME", /* milliseconds */
+            IDP_ATTR_SL_ALL  |
+            IDP_ATTR_SH_USER | 
+            IDP_ATTR_IU_ANY  |
+            IDP_ATTR_MS_ANY  |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 100000, 0);
+
+    /* 0     : ¹«ÇÑ´ë±â
+       INDOUBT_FETCH_TIMEOUT À» ¹«½ÃÇÏ·Á¸é ?
+          => GLOBAL_TRANSACTION_LEVELÀ» 3ÀÌ ¾Æ´Ñ °ªÀ¸·Î ¼³Á¤ÇÑ´Ù. */
+    IDP_DEF(UInt, "INDOUBT_FETCH_TIMEOUT", /* seconds */
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL | 
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            IDP_SHARD_PROPERTY_INDOUBT_FETCH_TIMEOUT_MIN, 
+            IDP_SHARD_PROPERTY_INDOUBT_FETCH_TIMEOUT_MAX, 
+            IDP_SHARD_PROPERTY_INDOUBT_FETCH_TIMEOUT_DEFAULT );
+
+    /* INDOUBT_FETCH_TIMEOUT ÀÌ ¹ß»ýÇÑ ÀÌÈÄÀÇ µ¿ÀÛ 
+        0 : skip  
+        1 : ¿¹¿Ü¹ß»ý                    */
+    IDP_DEF(UInt, "INDOUBT_FETCH_METHOD", 
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL | 
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            IDP_SHARD_PROPERTY_INDOUBT_FETCH_METHOD_MIN, 
+            IDP_SHARD_PROPERTY_INDOUBT_FETCH_METHOD_MAX, 
+            IDP_SHARD_PROPERTY_INDOUBT_FETCH_METHOD_DEFAULT );
 
     /* BUG-43737
      * 1 : SYS_TBS_MEM_DATA
      * 2 : SYS_TBS_DISK_DATA */
     IDP_DEF(UInt, "__FORCE_TABLESPACE_DEFAULT",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -11177,6 +12443,7 @@ IDE_RC registProperties()
     /* PROJ-2626 Snapshot Export */
     IDP_DEF(UInt, "SNAPSHOT_MEM_THRESHOLD",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -11188,6 +12455,7 @@ IDE_RC registProperties()
     /* PROJ-2626 Snapshot Export */
     IDP_DEF(UInt, "SNAPSHOT_DISK_UNDO_THRESHOLD",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -11199,6 +12467,7 @@ IDE_RC registProperties()
     /* PROJ-2624 ACCESS_LIST */
     IDP_DEF(String, "ACCESS_LIST_FILE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_SK_PATH     |
@@ -11211,6 +12480,7 @@ IDE_RC registProperties()
     /* TASK-6744 */
     IDP_DEF(UInt, "__PLAN_RANDOM_SEED",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -11222,6 +12492,7 @@ IDE_RC registProperties()
     /* BUG-44499 */
     IDP_DEF(UInt, "__OPTIMIZER_BUCKET_COUNT_MIN",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -11230,11 +12501,24 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             1024, 10240000, 1024);
 
-    /* BUG-43463 scanlist ì˜ lockì„ ìž¡ëŠ”ì§€ ìœ ë¬´,
-     * Memory FullScan ì‹œì— moveNext,Prevì—ì„œ lockì„ ìž¡ì§€ ì•ŠëŠ”ë‹¤.
-     * link, unlinkëŠ” ìƒê´€ì—†ìŒ(Lockì„ ìž¡ìŒ)*/
+    /* BUG-48161 */
+    IDP_DEF(UInt, "__OPTIMIZER_BUCKET_COUNT_MAX",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            1024, 102400000, 102400000);
+
+    /* BUG-43463 scanlist ÀÇ lockÀ» Àâ´ÂÁö À¯¹«,
+     * Memory FullScan ½Ã¿¡ moveNext,Prev¿¡¼­ lockÀ» ÀâÁö ¾Ê´Â´Ù.
+     * link, unlink´Â »ó°ü¾øÀ½(LockÀ» ÀâÀ½)*/
     IDP_DEF(UInt, "__SCANLIST_MOVE_NONBLOCK",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -11246,6 +12530,7 @@ IDE_RC registProperties()
     /* PROJ-2641 Hierarchy Query Index */
     IDP_DEF(UInt, "__OPTIMIZER_HIERARCHY_TRANSFORMATION",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -11257,6 +12542,7 @@ IDE_RC registProperties()
     // BUG-44692
     IDP_DEF(UInt, "BUG_44692",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -11265,9 +12551,10 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 1 );
 
-    /* BUG-44794 ì¸ë±ìŠ¤ ë¹Œë“œì‹œ ì¸ë±ìŠ¤ í†µê³„ ì •ë³´ë¥¼ ìˆ˜ì§‘í•˜ì§€ ì•ŠëŠ” ížˆë“  í”„ë¡œí¼í‹° ì¶”ê°€ */
+    /* BUG-44794 ÀÎµ¦½º ºôµå½Ã ÀÎµ¦½º Åë°è Á¤º¸¸¦ ¼öÁýÇÏÁö ¾Ê´Â È÷µç ÇÁ·ÎÆÛÆ¼ Ãß°¡ */
     IDP_DEF(UInt, "__GATHER_INDEX_STAT_ON_DDL",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -11279,6 +12566,7 @@ IDE_RC registProperties()
     // BUG-44795
     IDP_DEF(UInt, "__OPTIMIZER_DBMS_STAT_POLICY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -11287,25 +12575,32 @@ IDE_RC registProperties()
             IDP_ATTR_CK_CHECK,
             0, 1, 0 );
 
-    /* BUG-44850 Index NL , Inverse index NL ì¡°ì¸ ìµœì í™” ìˆ˜í–‰ì‹œ ë¹„ìš©ì´ ë™ì¼í•˜ë©´ primary keyë¥¼ ìš°ì„ ì ìœ¼ë¡œ ì„ íƒ.
-         0 : primary key ìš°ì„ ì ìœ¼ë¡œ ì„ íƒ (BUG-44850) + 
-             Inverse index NL ì¡°ì¸ì¼ ë•Œ index costê°€ ìž‘ì€ ì¸ë±ìŠ¤ ì„ íƒ (BUG-45169)
-         1 : ê¸°ì¡´ í”Œëžœ ë°©ì‹ê³¼ ë™ì¼ */
+    /* BUG-44850 Index NL , Inverse index NL Á¶ÀÎ ÃÖÀûÈ­ ¼öÇà½Ã ºñ¿ëÀÌ µ¿ÀÏÇÏ¸é primary key¸¦ ¿ì¼±ÀûÀ¸·Î ¼±ÅÃ.
+         0 : primary key ¿ì¼±ÀûÀ¸·Î ¼±ÅÃ (BUG-44850) +
+             Inverse index NL Á¶ÀÎÀÏ ¶§ index cost°¡ ÀÛÀº ÀÎµ¦½º ¼±ÅÃ (BUG-45169)
+         1 : ±âÁ¸ ÇÃ·£ ¹æ½Ä°ú µ¿ÀÏ
+         2 : primary key ¿ì¼±ÀûÀ¸·Î ¼±ÅÃ (BUG-44850) +
+             Inverse index NL Á¶ÀÎÀÏ ¶§ index cost°¡ ÀÛÀº ÀÎµ¦½º ¼±ÅÃ (BUG-45169) +
+             index NL Á¶ÀÎ ÀÏ¶§ index cost°¡ ÀÛÀº ÀÎµ¦½º ¼±ÅÃ + ( BUG-48327 )
+             Anti Á¶ÀÎ ÀÏ¶§ index cost°¡ ÀÛÀº ÀÎµ¦½º ¼±ÅÃ
+    */
     IDP_DEF(UInt, "__OPTIMIZER_INDEX_NL_JOIN_ACCESS_METHOD_POLICY",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
             IDP_ATTR_RD_WRITABLE |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            0, 1, 0 );
+            0, 2, 2 );
 
     /* BUG-45172 
-         0 : ë™ìž‘í•˜ì§€ ì•ŠìŒ ( ê¸°ì¡´ê³¼ ë™ì¼ )
-         1 : ë™ìž‘í•¨ */
+         0 : µ¿ÀÛÇÏÁö ¾ÊÀ½ ( ±âÁ¸°ú µ¿ÀÏ )
+         1 : µ¿ÀÛÇÔ */
     IDP_DEF(UInt, "__OPTIMIZER_SEMI_JOIN_REMOVE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -11316,7 +12611,8 @@ IDE_RC registProperties()
 
     // BUG-46154
     IDP_DEF(UInt, "__PRINT_OUT_ENABLE",
-            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SL_ALL | 
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_INTERNAL |
@@ -11329,6 +12625,7 @@ IDE_RC registProperties()
 #if defined(ALTI_CFG_OS_LINUX)
     IDP_DEF(UInt, "IB_ENABLE",
             IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -11338,7 +12635,8 @@ IDE_RC registProperties()
             0, 1, 0);
 #else /* ALTI_CFG_OS_LINUX */
     IDP_DEF(UInt, "IB_ENABLE",
-            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SL_ALL | 
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -11349,7 +12647,8 @@ IDE_RC registProperties()
 #endif /* ALTI_CFG_OS_LINUX */
 
     IDP_DEF(UInt, "IB_PORT_NO",
-            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SL_ALL | 
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -11361,7 +12660,8 @@ IDE_RC registProperties()
             20300); /* default */
 
     IDP_DEF(UInt, "IB_MAX_LISTEN",
-            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SL_ALL | 
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -11371,7 +12671,8 @@ IDE_RC registProperties()
             0, 1024, 128);
 
     IDP_DEF(UInt, "IB_LISTENER_DISABLE",
-            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SL_ALL | 
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -11381,7 +12682,8 @@ IDE_RC registProperties()
             0, 1, 0);
 
     IDP_DEF(UInt, "IB_LATENCY",
-            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SL_ALL | 
+            IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -11391,7 +12693,8 @@ IDE_RC registProperties()
             0, 1, 0);
 
     IDP_DEF(UInt, "IB_CONCHKSPIN",
-            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SL_ALL | 
+IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
@@ -11402,7 +12705,8 @@ IDE_RC registProperties()
 
     /* BUG-46267 */
     IDP_DEF( UInt, "NUMBER_CONVERSION_MODE",
-             IDP_ATTR_SL_ALL |
+             IDP_ATTR_SL_ALL | 
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -11411,43 +12715,44 @@ IDE_RC registProperties()
              IDP_ATTR_CK_CHECK,
              0, 1, 1 );
 
-    //consider requested size for EXECUTE_STMT_MEMORY_MAXIMUM 
-    IDP_DEF(UInt, "__USE_REQUESTED_SIZE_FOR_EXECUTE_STMT_MEMORY_MAXIMUM",
-            IDP_ATTR_SL_ALL |
-            IDP_ATTR_IU_ANY |
-            IDP_ATTR_MS_ANY |
-            IDP_ATTR_LC_INTERNAL |
-            IDP_ATTR_RD_WRITABLE |
-            IDP_ATTR_ML_JUSTONE  |
-            IDP_ATTR_CK_CHECK,
-            0,   /* min */
-            1,  /* max */
-            0); /* default */
-
+    /* Subquery Unnest¿¡ °üÇÑ ÇÏÀ§¹öÀü È£È¯ ÇÁ·ÎÆÛÆ¼
+        0   : »õ·Î Ãß°¡ ¶Ç´Â º¯°æµÈ SU¿¡ °üÇÑ ±â´ÉÀÌ ¸ðµÎ ¼öÇàµÈ´Ù.
+              OPTIMIZER_UNNEST_SUBQUERY = 0 ÀÏ ¶§ UNNEST hint ¿ì¼±(BUG-46544)
+               + ºÎ¸ðºí·Ï¿¡ left outer joinÀÌ ÀÖ°í 
+                 ¼­ºêÄõ¸®¿¡ Å×ÀÌºíÀÌ 1°³¸¸ »ç¿ëµÈ °æ¿ì no unnest (BUG-48336)
+        1   : BUG-46544 Àû¿ë Àü°ú µ¿ÀÏµ¿ÀÛ
+              UNNEST hintº¸´Ù "OPTIMIZER_UNNEST_SUBQUERY" Property ¿ì¼± Àû¿ë
+        2   : BUG-48336 Àû¿ë Àü°ú °°ÀÌ unnest
+        
+       ex) 3 = 1+2 ( BUG-46544, BUG-48336 ¿øº¹ )
+    */
     IDP_DEF( UInt, "__OPTIMIZER_UNNEST_COMPATIBILITY",
-             IDP_ATTR_SL_ALL |
+             IDP_ATTR_SL_ALL | 
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
              IDP_ATTR_RD_WRITABLE |
              IDP_ATTR_ML_JUSTONE  |
              IDP_ATTR_CK_CHECK,
-             0, 1, 1 );
+             0, 3, 2 );
 
     /* PROJ-2632 */
     IDP_DEF( UInt, "SERIAL_EXECUTE_MODE",
-             IDP_ATTR_SL_ALL |
+             IDP_ATTR_SL_ALL | 
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
              IDP_ATTR_RD_WRITABLE |
              IDP_ATTR_ML_JUSTONE  |
              IDP_ATTR_CK_CHECK,
-             0, 1, 0 );
+             0, 1, 1 );
 
     /* PROJ-2632 */
     IDP_DEF( UInt, "TRCLOG_DETAIL_INFORMATION",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -11458,6 +12763,7 @@ IDE_RC registProperties()
 
     IDP_DEF( ULong, "MATHEMATICS_TEMP_MEMORY_MAXIMUM",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_EXTERNAL |
@@ -11469,6 +12775,7 @@ IDE_RC registProperties()
     /* BUG-46932 */
     IDP_DEF( UInt, "__OPTIMIZER_INVERSE_JOIN_ENABLE",
              IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
              IDP_ATTR_IU_ANY |
              IDP_ATTR_MS_ANY |
              IDP_ATTR_LC_INTERNAL |
@@ -11477,8 +12784,157 @@ IDE_RC registProperties()
              IDP_ATTR_CK_CHECK,
              0, 1, 1 );
 
+    /* BUG-47648  disk partition¿¡¼­ »ç¿ëµÇ´Â prepared memory »ç¿ë·® °³¼± */
+    IDP_DEF( UInt, "__REDUCE_PARTITION_PREPARE_MEMORY",
+             IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
+             IDP_ATTR_IU_ANY |
+             IDP_ATTR_MS_ANY |
+             IDP_ATTR_LC_INTERNAL |
+             IDP_ATTR_RD_WRITABLE |
+             IDP_ATTR_ML_JUSTONE  |
+             IDP_ATTR_CK_CHECK,
+             0, 3, 1 );
+
+    IDP_DEF(UInt, "SHARED_TRANS_HASH_BUCKET_COUNT",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_USER|
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            IDP_SHARD_PROPERTY_SHARE_TRANS_HASH_BUCKET_COUNT_MIN,
+            IDP_SHARD_PROPERTY_SHARE_TRANS_HASH_BUCKET_COUNT_MAX,
+            IDP_SHARD_PROPERTY_SHARE_TRANS_HASH_BUCKET_COUNT_DEFAULT);
+
+    /* TASK-7219 */
+    IDP_DEF( UInt, "SHARD_TRANSFORM_MODE",
+             IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
+             IDP_ATTR_IU_ANY |
+             IDP_ATTR_MS_ANY |
+             IDP_ATTR_LC_EXTERNAL |
+             IDP_ATTR_RD_WRITABLE |
+             IDP_ATTR_ML_JUSTONE  |
+             IDP_ATTR_CK_CHECK,
+             0, 15, 15 );
+
+    /* BUG-47986
+     * Enable : 1
+     * Disable : 0
+     */
+    IDP_DEF( UInt, "__OPTIMIZER_OR_VALUE_INDEX",
+             IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
+             IDP_ATTR_IU_ANY |
+             IDP_ATTR_MS_ANY |
+             IDP_ATTR_LC_INTERNAL |
+             IDP_ATTR_RD_WRITABLE |
+             IDP_ATTR_ML_JUSTONE  |
+             IDP_ATTR_CK_CHECK,
+             0, 1, 1 );
+
+    IDP_DEF(UInt, "SHARD_STATEMENT_RETRY",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL|
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_EXTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            IDP_SHARD_PROPERTY_SHARD_STATEMENT_RETRY_MIN,
+            IDP_SHARD_PROPERTY_SHARD_STATEMENT_RETRY_MAX,
+            IDP_SHARD_PROPERTY_SHARD_STATEMENT_RETRY_DEFAULT);
+    
+    IDP_DEF(UInt, "__SHARD_ZOOKEEPER_TEST",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 1 );
+
+    /* BUG-48132
+     * grouping ÇÃ·£¿¡¼­ SORT ¶Ç´Â HASH ¸Þ¼Òµå ¼±ÅÃÇÏ´Â ÇÁ·ÎÆÛÆ¼
+     *   GROUP_HASH  : 1
+     *   GROUP_SORT  : 2
+     *   default     : 0  GROUP_HASH + GROUP_SORT ¸ðµÎ »ç¿ë,
+     *                    ±âÁ¸°ú µ¿ÀÏ(optimizer¿¡ ÀÇÇØ °áÁ¤) */
+    IDP_DEF( UInt, "__OPTIMIZER_PLAN_HASH_OR_SORT_METHOD",
+             IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
+             IDP_ATTR_IU_ANY |
+             IDP_ATTR_MS_ANY |
+             IDP_ATTR_LC_INTERNAL |
+             IDP_ATTR_RD_WRITABLE |
+             IDP_ATTR_ML_JUSTONE  |
+             IDP_ATTR_CK_CHECK,
+             0, 2, 0);
+
+    /* BUG-48135 NL Join Penalty °ªÀ» Á¶ÀýÇÒ¼ö ÀÖ´Â property Ãß°¡ */
+    IDP_DEF( UInt, "__OPTIMIZER_INDEX_NL_JOIN_PENALTY",
+             IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
+             IDP_ATTR_IU_ANY |
+             IDP_ATTR_MS_ANY |
+             IDP_ATTR_LC_INTERNAL |
+             IDP_ATTR_RD_WRITABLE |
+             IDP_ATTR_ML_JUSTONE  |
+             IDP_ATTR_CK_CHECK,
+             0, 20, 6);
+
+    // BUG-48120 
+    // scan cost °áÁ¤ÇÒ ¶§ »ç¿ë ¸ðµå
+    // 0 : ¹ö±× ¼öÁ¤ Àü°ú µ¿ÀÏ
+    // 1 : BUG-48120 Àû¿ë ( default )
+    //      ALL EQUAL INDEXÀÎ °æ¿ì cost °è»ê¿¡ predicate NDV¸¦ »ç¿ë
+    //      selection graphÀÇ output record count¸¦ °è»êÇÒ ¶§´Â index NDV ¸¦ »ç¿ë
+    //      ACCESS METHOD¸¦ ¼±ÅÃÇÒ ¶§
+    //      cost°¡ µ¿ÀÏÇÑ ÀÎµ¦½º°¡ ÀÖ´Â °æ¿ì ALL EQUAL INDEX¸¦ ¼±ÅÃÇÏµµ·Ï ÇÑ´Ù.
+    IDP_DEF( UInt, "__OPTIMIZER_INDEX_COST_MODE",
+             IDP_ATTR_SL_ALL |
+             IDP_ATTR_SH_ALL |
+             IDP_ATTR_IU_ANY |
+             IDP_ATTR_MS_ANY |
+             IDP_ATTR_LC_INTERNAL |
+             IDP_ATTR_RD_WRITABLE |
+             IDP_ATTR_ML_JUSTONE  |
+             IDP_ATTR_CK_CHECK,
+             0, 1, 1);
+
+    /* BUG-48594 */
+    IDP_DEF(UInt, "__SQL_PLAN_CACHE_VALID_MODE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_READONLY |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 0 );
+
+    /* BUG-48776 */
+    IDP_DEF(UInt, "__SUBQUERY_MODE",
+            IDP_ATTR_SL_ALL |
+            IDP_ATTR_SH_ALL |
+            IDP_ATTR_IU_ANY |
+            IDP_ATTR_MS_ANY |
+            IDP_ATTR_LC_INTERNAL |
+            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_ML_JUSTONE  |
+            IDP_ATTR_CK_CHECK,
+            0, 1, 1 );
+
     return IDE_SUCCESS;
-     IDE_EXCEPTION_END;
-     return IDE_FAILURE;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 

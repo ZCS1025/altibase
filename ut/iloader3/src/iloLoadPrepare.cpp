@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iloLoadPrepare.cpp 82972 2018-05-04 00:48:21Z bethy $
+ * $Id: iloLoadPrepare.cpp 90270 2021-03-21 23:20:18Z bethy $
  **********************************************************************/
 
 #include <ilo.h>
@@ -44,16 +44,16 @@ IDE_RC iloLoad::InitFiles(iloaderHandle *sHandle)
                             
     if (sLOBColExist == ILO_TRUE)
     {
-        /* ë¡œë“œ ì‹œ lob_file_size, use_separate_files ì˜µì…˜ì˜
-         * ì‚¬ìš©ì ì…ë ¥ê°’ì€ ë¬´ì‹œ. 
-         * ìœ„ì˜ ë‚´ìš©ì€ BUG-24583ì—ì„œ ë¬´ì‹œí•˜ì§€ ì•Šë„ë¡ í•¨!!!
+        /* ·Îµå ½Ã lob_file_size, use_separate_files ¿É¼ÇÀÇ
+         * »ç¿ëÀÚ ÀÔ·Â°ªÀº ¹«½Ã. 
+         * À§ÀÇ ³»¿ëÀº BUG-24583¿¡¼­ ¹«½ÃÇÏÁö ¾Êµµ·Ï ÇÔ!!!
          */
         
         m_DataFile.SetLOBOptions(m_pProgOption->mUseLOBFile,
                                  ID_ULONG(0),
                                  m_pProgOption->mUseSeparateFiles, //BUG-24583 
                                  m_pProgOption->mLOBIndicator);
-        // -lob 'use_separate_files=yes ì¼ ê²½ìš°ì— FileInfo ì €ì¥í•  ê³µê°„ í• ë‹¹                         
+        // -lob 'use_separate_files=yes ÀÏ °æ¿ì¿¡ FileInfo ÀúÀåÇÒ °ø°£ ÇÒ´ç                         
         if ( m_pProgOption->mUseSeparateFiles == ILO_TRUE )
         {
             IDE_TEST(m_DataFile.LOBFileInfoAlloc( sHandle,
@@ -71,8 +71,10 @@ IDE_RC iloLoad::InitFiles(iloaderHandle *sHandle)
 
     if (m_pProgOption->m_bExist_log)
     {
-        IDE_TEST_RAISE(m_LogFile.OpenFile(m_pProgOption->m_LogFile)
-                       != SQL_TRUE, ErrLogFileOpen);
+        /* BUG-47652 Set file permission */
+        IDE_TEST_RAISE( m_LogFile.OpenFile( m_pProgOption->m_LogFile, 
+                                            m_pProgOption->IsExistFilePerm() )
+                       != SQL_TRUE, ErrLogFileOpen );
 
         /* TASK-2657 */
         if(  m_pProgOption->mRule == csv )
@@ -83,17 +85,17 @@ IDE_RC iloLoad::InitFiles(iloaderHandle *sHandle)
         m_pTableInfo[0].GetTransTableName(sTableName, (UInt)MAX_OBJNAME_LEN);
           
         /* BUG-32114 aexport must support the import/export of partition tables.
-         * ILOADER IN/OUT TABLE NAMEì´ PARTITION ì¼ê²½ìš° PARTITION NAMEìœ¼ë¡œ ë³€ê²½ */
+         * ILOADER IN/OUT TABLE NAMEÀÌ PARTITION ÀÏ°æ¿ì PARTITION NAMEÀ¸·Î º¯°æ */
         if( sHandle->mProgOption->mPartition == ILO_TRUE )
         {
-            /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
+            /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
             idlOS::sprintf(szMsg, "<DataLoad>\nTableName : %s / %s\n",
                     sTableName,
                     sHandle->mParser.mPartitionName );
         }
         else
         {
-            /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
+            /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
             idlOS::sprintf(szMsg, "<DataLoad>\nTableName : %s\n",
                     sTableName);
         }
@@ -111,7 +113,10 @@ IDE_RC iloLoad::InitFiles(iloaderHandle *sHandle)
         {
             (void)m_BadFile.setIsCSV ( ILO_TRUE );
         }
-        IDE_TEST_RAISE(m_BadFile.OpenFile(m_pProgOption->m_BadFile) != SQL_TRUE, ErrBadFileOpen);
+        /* BUG-47652 Set file permission */
+        IDE_TEST_RAISE( m_BadFile.OpenFile( m_pProgOption->m_BadFile,
+                                            m_pProgOption->IsExistFilePerm() ) 
+                        != SQL_TRUE, ErrBadFileOpen );
 
         m_BadFile.SetTerminator( m_pProgOption->m_FieldTerm,
                                  m_pProgOption->m_RowTerm );
@@ -159,12 +164,12 @@ IDE_RC iloLoad::InitTable(iloaderHandle *sHandle)
 
     if (m_pProgOption->m_LoadMode == ILO_REPLACE)
     {
-        //Delete SQLì€ í•œë²ˆë§Œ ì‹¤í–‰í•˜ë©´ë¨...
+        //Delete SQLÀº ÇÑ¹ø¸¸ ½ÇÇàÇÏ¸éµÊ...
         IDE_TEST_RAISE(ExecuteDeleteStmt( sHandle,
                                           &m_pTableInfo[0]) 
                                           != SQL_TRUE, DeleteError);
     }
-    // BUG-25010 iloader -mode TRUNCATE ì§€ì›
+    // BUG-25010 iloader -mode TRUNCATE Áö¿ø
     else if (m_pProgOption->m_LoadMode == ILO_TRUNCATE)
     {
         IDE_TEST_RAISE(ExecuteTruncateStmt( sHandle,
@@ -173,12 +178,12 @@ IDE_RC iloLoad::InitTable(iloaderHandle *sHandle)
     }
 
     //PROJ-1760
-    //No-logging Modeë¡œ ë³€ê²½ ì²˜ë¦¬
+    //No-logging Mode·Î º¯°æ Ã³¸®
     if ( (m_pProgOption->m_bExist_direct == SQL_TRUE) &&
          (m_pProgOption->m_directLogging == SQL_FALSE) )
     {
         IDE_TEST_RAISE(GetLoggingMode(&m_pTableInfo[0]) != SQL_TRUE, GetError);
-        if( m_TableLogStatus == SQL_TRUE )  //Tableì˜ í˜„ì¬ Logging Modeì¼ ê²½ìš°, No-Logging Modeë¡œ ë³€ê²½
+        if( m_TableLogStatus == SQL_TRUE )  //TableÀÇ ÇöÀç Logging ModeÀÏ °æ¿ì, No-Logging Mode·Î º¯°æ
         {
             IDE_TEST_RAISE(ExecuteAlterStmt( sHandle,
                                              &m_pTableInfo[0],
@@ -203,7 +208,7 @@ IDE_RC iloLoad::InitTable(iloaderHandle *sHandle)
     {
         (void)m_pISPApi->EndTran(ILO_FALSE);
         // BUGBUG!
-        // GetLoggingMode() ì—ëŸ¬ì‹œ ì²˜ë¦¬...
+        // GetLoggingMode() ¿¡·¯½Ã Ã³¸®...
     
     }
     IDE_EXCEPTION(AlterError);
@@ -227,8 +232,8 @@ IDE_RC iloLoad::InitVariables(iloaderHandle *sHandle)
     SChar         sTableName[MAX_OBJNAME_LEN];
 
     /* PROJ-1714
-     * Upload Thread ê´€ë ¨ ì´ˆê¸°í™”
-     * Connection ê°ì²´ ë°°ì—´ ìƒì„± ë° Prepare, Bind  ... Etc
+     * Upload Thread °ü·Ã ÃÊ±âÈ­
+     * Connection °´Ã¼ ¹è¿­ »ı¼º ¹× Prepare, Bind  ... Etc
      */
      
     idlOS::thread_mutex_init( &(sHandle->mParallel.mLoadInsMutex) );
@@ -246,19 +251,19 @@ IDE_RC iloLoad::InitVariables(iloaderHandle *sHandle)
     mCBFrequencyCnt     =  sHandle->mProgOption->mSetRowFrequency;
 
     /* BUG-30413 
-     * ALTIBASE_ILOADER_STATISTIC_LOGì— table Name setting
+     * ALTIBASE_ILOADER_STATISTIC_LOG¿¡ table Name setting
      * */
     idlOS::memcpy( sHandle->mStatisticLog.tableName,
                    m_pTableInfo[0].GetTransTableName(sTableName,(UInt)MAX_OBJNAME_LEN),
                    ID_SIZEOF(sHandle->mStatisticLog.tableName) );
 
 
-    //BUG-24211 ì´ˆê¸°ê°’ ì„¸íŒ…
+    //BUG-24211 ÃÊ±â°ª ¼¼ÆÃ
     // BUG-24816 iloader Hang
-    // ì‹œì‘í•˜ê¸° ì „ì— ê°’ì„ ë¯¸ë¦¬ ì„¸íŒ…í•œí›„ ì“°ë ˆë“œê°€ ì¢…ë£Œí• ë•Œ ê°’ì„ -1 í•œë‹¤.
+    // ½ÃÀÛÇÏ±â Àü¿¡ °ªÀ» ¹Ì¸® ¼¼ÆÃÇÑÈÄ ¾²·¹µå°¡ Á¾·áÇÒ¶§ °ªÀ» -1 ÇÑ´Ù.
     sHandle->mParallel.mLoadThrNum = m_pProgOption->m_ParallelCount;
     
-    /* Circular Buffer ìƒì„± */
+    /* Circular Buffer »ı¼º */
     m_DataFile.InitializeCBuff(sHandle);   
     
     return IDE_SUCCESS;
@@ -268,14 +273,14 @@ IDE_RC iloLoad::InitStmts(iloaderHandle *sHandle)
 {
     SInt          i;
 
-    /* Uploading Connection ê°ì²´ ìƒì„± */
+    /* Uploading Connection °´Ã¼ »ı¼º */
     m_pISPApiUp = new iloSQLApi[m_pProgOption->m_ParallelCount];
 
     for( i = 0; i < m_pProgOption->m_ParallelCount; i++ )
     {    
         IDE_TEST(m_pISPApiUp[i].InitOption(sHandle) != IDE_SUCCESS);
         
-        //BUG-22429 iLoader ì†ŒìŠ¤ì¤‘ CopyContructorë¥¼ ì œê±°í•´ì•¼ í•¨..
+        //BUG-22429 iLoader ¼Ò½ºÁß CopyContructor¸¦ Á¦°ÅÇØ¾ß ÇÔ..
         m_pISPApiUp[i].CopyConstructure(*m_pISPApi);
         
         IDE_TEST(ConnectDBForUpload( sHandle,
@@ -297,12 +302,12 @@ IDE_RC iloLoad::InitStmts(iloaderHandle *sHandle)
                                      != IDE_SUCCESS);
         
         /* PROJ-1760
-         * Parallel Direct-Path Upload ì¼ ê²½ìš°ì—
-         * Upload Sessionë§ˆë‹¤ Parallel DML ì„¤ì •ì„ í•´ì¤˜ì•¼ í•¨..
+         * Parallel Direct-Path Upload ÀÏ °æ¿ì¿¡
+         * Upload Session¸¶´Ù Parallel DML ¼³Á¤À» ÇØÁà¾ß ÇÔ..
          */
         if (m_pProgOption->m_bExist_ioParallel == SQL_TRUE)
         {
-            //ìƒˆë¡œìš´ Connectionê°ì²´ì— CopyConstructureê°€ ìˆëŠ”ë°.. ì´ê²ƒì„ ì‹¤í–‰í•  ê²½ìš° ì—†ì–´ì§~ 
+            //»õ·Î¿î Connection°´Ã¼¿¡ CopyConstructure°¡ ÀÖ´Âµ¥.. ÀÌ°ÍÀ» ½ÇÇàÇÒ °æ¿ì ¾ø¾îÁü~ 
             IDE_TEST_RAISE(ExecuteParallelStmt( sHandle,
                                                 &m_pISPApiUp[i])
                                                 != SQL_TRUE, ParallelDmlError);
@@ -317,6 +322,14 @@ IDE_RC iloLoad::InitStmts(iloaderHandle *sHandle)
                        SetAutoCommitError); 
         IDE_TEST_RAISE(m_pISPApiUp[i].setQueryTimeOut( 0 ) != SQL_TRUE,
                        err_set_timeout);
+
+        /* TASK-7307 */
+        if (m_pProgOption->mExistTxLevel == SQL_TRUE)
+        {
+            IDE_TEST_RAISE(m_pISPApiUp[i].SetGlobalTransactionLevel(
+                               m_pProgOption->mTxLevel) != IDE_SUCCESS,
+                           SetAutoCommitError); 
+        }
     }
 
     return IDE_SUCCESS;
@@ -342,8 +355,8 @@ IDE_RC iloLoad::InitStmts(iloaderHandle *sHandle)
         
         if (m_pProgOption->m_bExist_log)
         {
-            // BUG-21640 iloaderì—ì„œ ì—ëŸ¬ë©”ì‹œì§€ë¥¼ ì•Œì•„ë³´ê¸° í¸í•˜ê²Œ ì¶œë ¥í•˜ê¸°
-            // ê¸°ì¡´ ì—ëŸ¬ë©”ì‹œì§€ì™€ ë™ì¼í•œ í˜•ì‹ìœ¼ë¡œ ì¶œë ¥í•˜ëŠ” í•¨ìˆ˜ì¶”ê°€
+            // BUG-21640 iloader¿¡¼­ ¿¡·¯¸Ş½ÃÁö¸¦ ¾Ë¾Æº¸±â ÆíÇÏ°Ô Ãâ·ÂÇÏ±â
+            // ±âÁ¸ ¿¡·¯¸Ş½ÃÁö¿Í µ¿ÀÏÇÑ Çü½ÄÀ¸·Î Ãâ·ÂÇÏ´Â ÇÔ¼öÃß°¡
             m_LogFile.PrintLogErr(sHandle->mErrorMgr);
         }
     }
@@ -381,15 +394,15 @@ IDE_RC iloLoad::RunThread(iloaderHandle *sHandle)
     IDE_RC          sReadFileThread_status;
     IDE_RC          sInsertThread_status[MAX_PARALLEL_COUNT];
 
-    /* Thread ìƒì„±. */
+    /* Thread »ı¼º. */
       
-    //BUG-22436 - ID í•¨ìˆ˜ë¡œ ë³€ê²½..
+    //BUG-22436 - ID ÇÔ¼ö·Î º¯°æ..
     sReadFileThread_status = sReadFileThread_id.launch(
         iloLoad::ReadFileToBuff_ThreadRun, sHandle);
 
     for(i = 0; i < m_pProgOption->m_ParallelCount; i++)
     {
-        //BUG-22436 - ID í•¨ìˆ˜ë¡œ ë³€ê²½..
+        //BUG-22436 - ID ÇÔ¼ö·Î º¯°æ..
         sInsertThread_status[i] = sInsertThread_id[i].launch(
             iloLoad::InsertFromBuff_ThreadRun, sHandle);
     }
@@ -404,7 +417,7 @@ IDE_RC iloLoad::RunThread(iloaderHandle *sHandle)
         }
     }
 
-    //BUG-22436 - ID í•¨ìˆ˜ë¡œ ë³€ê²½..
+    //BUG-22436 - ID ÇÔ¼ö·Î º¯°æ..
     sReadFileThread_status  = sReadFileThread_id.join();
     
     for(i = 0; i < m_pProgOption->m_ParallelCount; i++)
@@ -438,7 +451,7 @@ IDE_RC iloLoad::PrintMessages(iloaderHandle *sHandle,
     if (( !m_pProgOption->m_bExist_NST ) &&
             ( sHandle->mUseApi != SQL_TRUE ))
     {
-        // BUG-24096 : iloader ê²½ê³¼ ì‹œê°„ í‘œì‹œ
+        // BUG-24096 : iloader °æ°ú ½Ã°£ Ç¥½Ã
         a_qcuTimeCheck->showAutoScale4Wall();
     }
     
@@ -448,10 +461,10 @@ IDE_RC iloLoad::PrintMessages(iloaderHandle *sHandle,
         m_pTableInfo[0].GetTransTableName(sTableName, (UInt)MAX_OBJNAME_LEN);
 
         /* BUG-32114 aexport must support the import/export of partition tables.
-        * ILOADER IN/OUT TABLE NAMEì´ PARTITION ì¼ê²½ìš° PARTITION NAMEìœ¼ë¡œ ë³€ê²½ */
+        * ILOADER IN/OUT TABLE NAMEÀÌ PARTITION ÀÏ°æ¿ì PARTITION NAMEÀ¸·Î º¯°æ */
         if( sHandle->mProgOption->mPartition == ILO_TRUE )
         {
-            /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
+            /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
             (void)idlOS::printf("\n     Load Count  : %d(%s / %s)", 
                     mTotalCount - mErrorCount,
                     sTableName,
@@ -459,7 +472,7 @@ IDE_RC iloLoad::PrintMessages(iloaderHandle *sHandle,
         }
         else
         {
-            /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
+            /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
             (void)idlOS::printf("\n     Load Count  : %d(%s)", 
                     mTotalCount - mErrorCount,
                     sTableName);
@@ -512,7 +525,7 @@ IDE_RC iloLoad::FiniStmts(iloaderHandle * /* sHandle */)
 {
     SInt          i;
 
-    //Connection í•´ì œ
+    //Connection ÇØÁ¦
     for ( i = 0; i < m_pProgOption->m_ParallelCount; i++)
     {
         /* BUG-46048 Codesonar warning */
@@ -527,7 +540,7 @@ IDE_RC iloLoad::FiniStmts(iloaderHandle * /* sHandle */)
 
 IDE_RC iloLoad::FiniVariables(iloaderHandle *sHandle)
 {
-    //ì›í˜• ë²„í¼ ì‚­ì œ
+    //¿øÇü ¹öÆÛ »èÁ¦
     m_DataFile.FinalizeCBuff(sHandle);
 
     idlOS::thread_mutex_destroy( &(sHandle->mParallel.mLoadInsMutex) );
@@ -542,7 +555,7 @@ IDE_RC iloLoad::FiniTables(iloaderHandle *sHandle)
     SChar         sTableName[MAX_OBJNAME_LEN];
 
     //PROJ-1760
-    //Tableì˜ Logging Modeë¥¼ ì›ë˜ ìƒíƒœë¡œ ë³µêµ¬í•œë‹¤.
+    //TableÀÇ Logging Mode¸¦ ¿ø·¡ »óÅÂ·Î º¹±¸ÇÑ´Ù.
     if ( (m_pProgOption->m_bExist_direct == SQL_TRUE) &&
          (m_pProgOption->m_directLogging == SQL_FALSE) &&
          (m_TableLogStatus == SQL_TRUE) )

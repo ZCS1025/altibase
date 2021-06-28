@@ -19,11 +19,11 @@
  * $Id: qmgMerge.cpp 53774 2012-06-15 04:53:31Z eerien $
  *
  * Description :
- *     Merge Graphë¥¼ ìœ„í•œ ìˆ˜í–‰ í•¨ìˆ˜
+ *     Merge Graph¸¦ À§ÇÑ ¼öÇà ÇÔ¼ö
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -38,12 +38,12 @@ qmgMerge::init( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgMerge Graphì˜ ì´ˆê¸°í™”
+ * Description : qmgMerge GraphÀÇ ÃÊ±âÈ­
  *
  * Implementation :
- *    (1) qmgMergeì„ ìœ„í•œ ê³µê°„ í• ë‹¹
- *    (2) graph( ëª¨ë“  Graphë¥¼ ìœ„í•œ ê³µí†µ ìë£Œ êµ¬ì¡°) ì´ˆê¸°í™”
- *    (3) out ì„¤ì •
+ *    (1) qmgMergeÀ» À§ÇÑ °ø°£ ÇÒ´ç
+ *    (2) graph( ¸ğµç Graph¸¦ À§ÇÑ °øÅë ÀÚ·á ±¸Á¶) ÃÊ±âÈ­
+ *    (3) out ¼³Á¤
  *
  ***********************************************************************/
 
@@ -55,21 +55,21 @@ qmgMerge::init( qcStatement  * aStatement,
     sParseTree = (qmmMergeParseTree *)aStatement->myPlan->parseTree;
 
     //---------------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //---------------------------------------------------
-    // Merge Graphë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
+    // Merge Graph¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
     //---------------------------------------------------
 
-    // qmgMergeì„ ìœ„í•œ ê³µê°„ í• ë‹¹
+    // qmgMergeÀ» À§ÇÑ °ø°£ ÇÒ´ç
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmgMRGE ),
                                              (void**) &sMyGraph )
               != IDE_SUCCESS );
 
-    // Graph ê³µí†µ ì •ë³´ì˜ ì´ˆê¸°í™”
+    // Graph °øÅë Á¤º¸ÀÇ ÃÊ±âÈ­
     IDE_TEST( qmg::initGraph( & sMyGraph->graph ) != IDE_SUCCESS );
 
     sMyGraph->graph.type = QMG_MERGE;
@@ -79,23 +79,23 @@ qmgMerge::init( qcStatement  * aStatement,
     sMyGraph->graph.printGraph = qmgMerge::printGraph;
 
     //---------------------------------------------------
-    // Merge Graph ë§Œì„ ìœ„í•œ ì´ˆê¸°í™”
+    // Merge Graph ¸¸À» À§ÇÑ ÃÊ±âÈ­
     //---------------------------------------------------
 
-    // ìµœìƒìœ„ graphì¸ merge graphì— parse tree ì •ë³´ë¥¼ ì„¤ì •
+    // ÃÖ»óÀ§ graphÀÎ merge graph¿¡ parse tree Á¤º¸¸¦ ¼³Á¤
     sMyGraph->selectSourceStatement = sParseTree->selectSourceStatement;
     sMyGraph->selectTargetStatement = sParseTree->selectTargetStatement;
 
-    // ìµœìƒìœ„ graphì¸ merge graphì— parse tree ì •ë³´ë¥¼ ì„¤ì •
+    // ÃÖ»óÀ§ graphÀÎ merge graph¿¡ parse tree Á¤º¸¸¦ ¼³Á¤
     sMyGraph->updateStatement = sParseTree->updateStatement;
     sMyGraph->deleteStatement = sParseTree->deleteStatement;
     sMyGraph->insertStatement = sParseTree->insertStatement;
     sMyGraph->insertNoRowsStatement = sParseTree->insertNoRowsStatement;
 
-    // ìµœìƒìœ„ graphì¸ merge graphì— insert where ì •ë³´ë¥¼ ì„¤ì •
+    // ÃÖ»óÀ§ graphÀÎ merge graph¿¡ insert where Á¤º¸¸¦ ¼³Á¤
     sMyGraph->whereForInsert = sParseTree->whereForInsert;
     
-    // out ì„¤ì •
+    // out ¼³Á¤
     *aGraph = (qmgGraph *)sMyGraph;
 
     return IDE_SUCCESS;
@@ -110,12 +110,12 @@ qmgMerge::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- * Description : qmgMergeì˜ ìµœì í™”
+ * Description : qmgMergeÀÇ ÃÖÀûÈ­
  *
  * Implementation :
  *    (1) CASE 1 : MERGE...VALUE(...(subquery)...)
- *        qmoSubquery::optimizeExpr()ì˜ ìˆ˜í–‰
- *    (2) ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì •
+ *        qmoSubquery::optimizeExpr()ÀÇ ¼öÇà
+ *    (2) °øÅë ºñ¿ë Á¤º¸ ¼³Á¤
  *
  ***********************************************************************/
 
@@ -127,26 +127,26 @@ qmgMerge::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     IDU_FIT_POINT_FATAL( "qmgMerge::optimize::__FT__" );
 
     //---------------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //---------------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //---------------------------------------------------
 
     sMyGraph = (qmgMRGE*) aGraph;
 
     //---------------------------------------------------
-    // child graph ìƒì„±
+    // child graph »ı¼º
     //---------------------------------------------------
 
-    // MERGE graphëŠ” ì—¬ëŸ¬ê°œì˜ childë¥¼ ê°€ì§€ë©°
-    // ê° childì˜ ìœ„ì¹˜ëŠ” ì •í•´ì ¸ìˆë‹¤.
+    // MERGE graph´Â ¿©·¯°³ÀÇ child¸¦ °¡Áö¸ç
+    // °¢ childÀÇ À§Ä¡´Â Á¤ÇØÁ®ÀÖ´Ù.
     
-    // graph->childrenêµ¬ì¡°ì²´ì˜ ë©”ëª¨ë¦¬ í• ë‹¹.
+    // graph->children±¸Á¶Ã¼ÀÇ ¸Ş¸ğ¸® ÇÒ´ç.
     IDE_TEST( QC_QMP_MEM(aStatement)->cralloc(
                   ID_SIZEOF(qmgChildren) * QMO_MERGE_IDX_MAX,
                   (void**) &sMyGraph->graph.children )
@@ -178,7 +178,7 @@ qmgMerge::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     
     sCurrChildren->childGraph = sStatement->myPlan->graph;
 
-    // next ì—°ê²°
+    // next ¿¬°á
     sPrevChildren->next = sCurrChildren;
     sPrevChildren = sCurrChildren;
     
@@ -196,7 +196,7 @@ qmgMerge::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         
         sCurrChildren->childGraph = sStatement->myPlan->graph;
 
-        // next ì—°ê²°
+        // next ¿¬°á
         sPrevChildren->next = sCurrChildren;
         sPrevChildren = sCurrChildren;
     }
@@ -218,7 +218,7 @@ qmgMerge::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         
         sCurrChildren->childGraph = sStatement->myPlan->graph;
 
-        // next ì—°ê²°
+        // next ¿¬°á
         sPrevChildren->next = sCurrChildren;
         sPrevChildren = sCurrChildren;
     }
@@ -241,7 +241,7 @@ qmgMerge::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         
         sCurrChildren->childGraph = sStatement->myPlan->graph;
 
-        // next ì—°ê²°
+        // next ¿¬°á
         sPrevChildren->next = sCurrChildren;
         sPrevChildren = sCurrChildren;
     }
@@ -264,7 +264,7 @@ qmgMerge::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         
         sCurrChildren->childGraph = sStatement->myPlan->graph;
 
-        // next ì—°ê²°
+        // next ¿¬°á
         sPrevChildren->next = sCurrChildren;
         sPrevChildren = sCurrChildren;
     }
@@ -273,11 +273,11 @@ qmgMerge::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         // Nothing to do.
     }
 
-    // next ì—°ê²°
+    // next ¿¬°á
     sPrevChildren->next = NULL;
     
     //---------------------------------------------------
-    // ê³µí†µ ë¹„ìš© ì •ë³´ ì„¤ì •
+    // °øÅë ºñ¿ë Á¤º¸ ¼³Á¤
     //---------------------------------------------------
 
     // inputRecordCnt
@@ -303,7 +303,7 @@ qmgMerge::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     sMyGraph->graph.costInfo.totalAllCost = 0;
         
     //---------------------------------------------------
-    // Preserved Order ì„¤ì •
+    // Preserved Order ¼³Á¤
     //---------------------------------------------------
 
     sMyGraph->graph.flag &= ~QMG_PRESERVED_ORDER_MASK;
@@ -322,10 +322,10 @@ qmgMerge::makePlan( qcStatement     * aStatement,
 {
 /***********************************************************************
  *
- * Description : qmgMergeìœ¼ë¡œ ë¶€í„° Planì„ ìƒì„±í•œë‹¤.
+ * Description : qmgMergeÀ¸·Î ºÎÅÍ PlanÀ» »ı¼ºÇÑ´Ù.
  *
  * Implementation :
- *    - qmgMergeìœ¼ë¡œ ìƒì„±ê°€ëŠ¥í•œ Plan
+ *    - qmgMergeÀ¸·Î »ı¼º°¡´ÉÇÑ Plan
  *
  *           [MRGE]
  *
@@ -344,7 +344,7 @@ qmgMerge::makePlan( qcStatement     * aStatement,
     IDU_FIT_POINT_FATAL( "qmgMerge::makePlan::__FT__" );
 
     //---------------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -357,10 +357,10 @@ qmgMerge::makePlan( qcStatement     * aStatement,
     aGraph->flag |= QMG_PARALLEL_IMPOSSIBLE_TRUE;
 
     //---------------------------
-    // Planì˜ ìƒì„±
+    // PlanÀÇ »ı¼º
     //---------------------------
 
-    // ìµœìƒìœ„ planì´ë‹¤.
+    // ÃÖ»óÀ§ planÀÌ´Ù.
     IDE_DASSERT( aParent == NULL );
     
     IDE_TEST( qmoMultiNonPlan::initMRGE( aStatement ,
@@ -369,7 +369,7 @@ qmgMerge::makePlan( qcStatement     * aStatement,
     sMyGraph->graph.myPlan = sPlan;
 
     //---------------------------
-    // select source planì˜ ìƒì„±
+    // select source planÀÇ »ı¼º
     //---------------------------
 
     sStatement = sMyGraph->selectSourceStatement;
@@ -382,10 +382,10 @@ qmgMerge::makePlan( qcStatement     * aStatement,
               != IDE_SUCCESS );
     
     //---------------------------
-    // select target planì˜ ìƒì„±
+    // select target planÀÇ »ı¼º
     //---------------------------
     
-    // select target plan ë¶€í„° insert planê¹Œì§€ mergeì‹œë§ˆë‹¤ planì„ resetí•˜ê¸° ìœ„í•´ ê¸°ë¡í•œë‹¤.
+    // select target plan ºÎÅÍ insert plan±îÁö merge½Ã¸¶´Ù planÀ» resetÇÏ±â À§ÇØ ±â·ÏÇÑ´Ù.
     sResetPlanFlagStartIndex = QC_SHARED_TMPLATE(aStatement)->planCount;
     sResetExecInfoStartIndex = QC_SHARED_TMPLATE(aStatement)->tmplate.execInfoCnt;
     
@@ -399,7 +399,7 @@ qmgMerge::makePlan( qcStatement     * aStatement,
               != IDE_SUCCESS );
     
     //---------------------------
-    // update planì˜ ìƒì„±
+    // update planÀÇ »ı¼º
     //---------------------------
 
     if ( sMyGraph->updateStatement != NULL )
@@ -419,7 +419,7 @@ qmgMerge::makePlan( qcStatement     * aStatement,
     }
 
     //---------------------------
-    // delete planì˜ ìƒì„±
+    // delete planÀÇ »ı¼º
     //---------------------------
 
     if ( sMyGraph->deleteStatement != NULL )
@@ -439,7 +439,7 @@ qmgMerge::makePlan( qcStatement     * aStatement,
     }
         
     //---------------------------
-    // insert planì˜ ìƒì„±
+    // insert planÀÇ »ı¼º
     //---------------------------
 
     if ( sMyGraph->insertStatement != NULL )
@@ -454,17 +454,17 @@ qmgMerge::makePlan( qcStatement     * aStatement,
                   != IDE_SUCCESS );
 
         //------------------------------------------
-        // insert where êµ¬ë¬¸ ë‚´ì˜ Subquery ìµœì í™”
+        // insert where ±¸¹® ³»ÀÇ Subquery ÃÖÀûÈ­
         //------------------------------------------
     
         if ( sMyGraph->whereForInsert != NULL )
         {
-            // Subquery ì¡´ì¬í•  ê²½ìš° Subquery ìµœì í™”
+            // Subquery Á¸ÀçÇÒ °æ¿ì Subquery ÃÖÀûÈ­
             if ( (sMyGraph->whereForInsert->lflag & QTC_NODE_SUBQUERY_MASK )
                  == QTC_NODE_SUBQUERY_EXIST )
             {
                 // BUG-32584
-                // ëª¨ë“  ì„œë¸Œì¿¼ë¦¬ì— ëŒ€í•´ì„œ MakeGraph í•œí›„ì— MakePlanì„ í•´ì•¼ í•œë‹¤.
+                // ¸ğµç ¼­ºêÄõ¸®¿¡ ´ëÇØ¼­ MakeGraph ÇÑÈÄ¿¡ MakePlanÀ» ÇØ¾ß ÇÑ´Ù.
                 IDE_TEST( qmoSubquery::optimizeExprMakeGraph(
                               aStatement,
                               ID_UINT_MAX,
@@ -493,7 +493,7 @@ qmgMerge::makePlan( qcStatement     * aStatement,
     }
     
     //---------------------------
-    // insert empty planì˜ ìƒì„±
+    // insert empty planÀÇ »ı¼º
     //---------------------------
 
     if ( sMyGraph->insertNoRowsStatement != NULL )
@@ -516,7 +516,7 @@ qmgMerge::makePlan( qcStatement     * aStatement,
     sResetExecInfoEndIndex = QC_SHARED_TMPLATE(aStatement)->tmplate.execInfoCnt;
     
     //----------------------------
-    // MRGEì˜ ìƒì„±
+    // MRGEÀÇ »ı¼º
     //----------------------------
 
     sMRGEInfo.tableRef                =
@@ -561,7 +561,7 @@ qmgMerge::printGraph( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Graphë¥¼ êµ¬ì„±í•˜ëŠ” ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *    Graph¸¦ ±¸¼ºÇÏ´Â °øÅë Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  *
  * Implementation :
@@ -574,7 +574,7 @@ qmgMerge::printGraph( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgMerge::printGraph::__FT__" );
 
     //-----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //-----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -582,7 +582,7 @@ qmgMerge::printGraph( qcStatement  * aStatement,
     IDE_DASSERT( aString != NULL );
 
     //-----------------------------------
-    // Graphì˜ ì‹œì‘ ì¶œë ¥
+    // GraphÀÇ ½ÃÀÛ Ãâ·Â
     //-----------------------------------
 
     if ( aDepth == 0 )
@@ -597,7 +597,7 @@ qmgMerge::printGraph( qcStatement  * aStatement,
     }
 
     //-----------------------------------
-    // Graph ê³µí†µ ì •ë³´ì˜ ì¶œë ¥
+    // Graph °øÅë Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
     IDE_TEST( qmg::printGraph( aStatement,
@@ -607,12 +607,12 @@ qmgMerge::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
+    // Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
 
     //-----------------------------------
-    // Child Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
+    // Child Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
     if ( aGraph->children != NULL )
@@ -634,7 +634,7 @@ qmgMerge::printGraph( qcStatement  * aStatement,
     }
 
     //-----------------------------------
-    // Graphì˜ ë§ˆì§€ë§‰ ì¶œë ¥
+    // GraphÀÇ ¸¶Áö¸· Ãâ·Â
     //-----------------------------------
 
     if ( aDepth == 0 )

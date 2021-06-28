@@ -16,13 +16,13 @@
  
 
 /***********************************************************************
- * $Id: mtfBase64_encode.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfBase64_encode.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 /***********************************************************************
  * BASE64_ENCODE() : 
- * ì…ë ¥ë°›ì€ VARBYTEì„ BASE64 ì¸ì½”ë”©í•˜ì—¬
- * VARBYTEíƒ€ì…ìœ¼ë¡œ ë°˜í™˜í•œë‹¤.
+ * ÀÔ·Â¹ŞÀº VARBYTEÀ» BASE64 ÀÎÄÚµùÇÏ¿©
+ * VARBYTEÅ¸ÀÔÀ¸·Î ¹İÈ¯ÇÑ´Ù.
  *
  * ex) SELECT BASE64_ENCODE('AA') FROM DUAL;
  * BASE64_ENCODE_STR('AA') 
@@ -70,7 +70,7 @@ static IDE_RC mtfBase64EncodeEstimate( mtcNode     * aNode,
 mtfModule mtfBase64_encode = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfBase64EncodeFunctionName,
     NULL,
     mtf::initializeDefault,

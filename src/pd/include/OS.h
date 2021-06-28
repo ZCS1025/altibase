@@ -1497,6 +1497,9 @@ public:
   void msec (long);
   // Converts from milli-seconds format into <Time_Value> format.
 
+  void microsec (long);
+  /* Converts from micro-seconds format into <Time_Value> format. */
+
   operator timespec_t () const;
   // Returns the value of the object as a <timespec_t>.
 
@@ -3742,13 +3745,13 @@ typedef int PDL_pri_t;
 #     define RTLD_LAZY 1
 #   endif /* !RTLD_LAZY */
 
-/* BUG-17858 : WindowsÏóêÏÑú Ïª¥ÌååÏùºÏóêÎü¨ Î∞úÏÉùÌï©ÎãàÎã§.
+/* BUG-17858 : Windowsø°º≠ ƒƒ∆ƒ¿œø°∑Ø πﬂª˝«’¥œ¥Ÿ.
  *
- * WINDOWSÏóêÏÑúÎäî LoadLibraryÌï†Îïå Ïñ¥Îñ§ FlagÎèÑ ÏÇ¨Ïö©ÌïòÏßÄ ÏïäÏßÄÎßå
- * UNIXÏùò dlopenÏùÄ Îã§ÏùåÍ≥º Í∞ôÏùÄ flagÎ•º Ïù∏ÏûêÎ°ú Î∞õÏäµÎãàÎã§.
+ * WINDOWSø°º≠¥¬ LoadLibrary«“∂ß æÓ∂≤ Flagµµ ªÁøÎ«œ¡ˆ æ ¡ˆ∏∏
+ * UNIX¿« dlopen¿∫ ¥Ÿ¿Ω∞˙ ∞∞¿∫ flag∏¶ ¿Œ¿⁄∑Œ πﬁΩ¿¥œ¥Ÿ.
  * RTLD_LAZY, RTLD_NOW, RTLD_LOCAL, RTLD_GLOBAL
- * ÌïòÏó¨ WindowsÏóêÏÑúÎäî Ïù¥Í∞íÏùÑ Ï†ïÏùòÎßå ÌïòÏó¨ compile errorÍ∞Ä
- * ÎÇòÎäî Í≤ÉÏùÑ ÎßâÏïòÏäµÎãàÎã§.
+ * «œø© Windowsø°º≠¥¬ ¿Ã∞™¿ª ¡§¿«∏∏ «œø© compile error∞°
+ * ≥™¥¬ ∞Õ¿ª ∏∑æ“Ω¿¥œ¥Ÿ.
  */
 #   if !defined(RTLD_NOW)
 #     define RTLD_NOW 2
@@ -5152,9 +5155,9 @@ typedef double PDL_timer_t;
 
 # if defined (PDL_WIN32) && !defined(PDL_HAS_WINCE)
     // = typedef for the _stat data structure
-    /* BUG-18734: [Win32] Large File(> MAXDWORD)Ïóê ÎåÄÌïú fstatÌï®ÏàòÏóê ÎåÄÌïú
-     * Ìè¨ÌåÖÏù¥ ÌïÑÏöîÌï©ÎãàÎã§.
-     * _stat => __stat64Î°ú Î≥ÄÍ≤ΩÌï®.
+    /* BUG-18734: [Win32] Large File(> MAXDWORD)ø° ¥Î«— fstat«‘ºˆø° ¥Î«—
+     * ∆˜∆√¿Ã « ø‰«’¥œ¥Ÿ.
+     * _stat => __stat64∑Œ ∫Ø∞Ê«‘.
      * */
  # if (_MSC_VER <= 1200)  && !defined( COMPILE_64BIT )
      typedef struct stat PDL_stat;
@@ -6247,11 +6250,11 @@ typedef struct stack_t
                          int *optlen);
 
   /*
-  fix BUG-28834 IP Access ListÍ∞Ä ÏûòÎ™ªÎêòÏóàÎã§. 
- inet_addrÌï®ÏàòÍ∞Ä  in_addr_tÎ•º returnÌïòÎäî Îç∞
- in_addr_tÎäî unsigned intÏù¥Îã§.
- return valueÎäî BigEndianÏù¥Îã§.
- Îî∞ÎùºÏÑú return longÏùÄ ÏûòÎ™ªÎêú Í≤ÉÏù¥Îã§.
+  fix BUG-28834 IP Access List∞° ¿ﬂ∏¯µ«æ˙¥Ÿ. 
+ inet_addr«‘ºˆ∞°  in_addr_t∏¶ return«œ¥¬ µ•
+ in_addr_t¥¬ unsigned int¿Ã¥Ÿ.
+ return value¥¬ BigEndian¿Ã¥Ÿ.
+ µ˚∂Ûº≠ return long¿∫ ¿ﬂ∏¯µ» ∞Õ¿Ã¥Ÿ.
  */
   static unsigned int  inet_addr (const char *name);
   static char *inet_ntoa (const struct in_addr addr);
@@ -7656,12 +7659,12 @@ int \
 pdl_main_i
 #   else
 /*BUGBUG_NT*/
-/* AceÎùºÏù¥Î∏åÎü¨Î¶¨Î•º Ïù¥Ïö©Ìïú classÍ∞Ä globalÎ°ú Ï†ïÏùòÎêòÏñ¥ ÏûàÏúºÎ©¥
-   PDLÏ¥àÍ∏∞ÌôîÎ≥¥Îã§ Î®ºÏ†Ä PDL APIÍ∞Ä ÏÇ¨Ïö©ÎêòÍ≤å ÎêúÎã§.
-   Í∑∏Îü¨ÎØÄÎ°ú ÎßàÏ∞¨Í∞ÄÏßÄÎ°ú PDLÏ¥àÍ∏∞ÌôîÍ∞Ä Î®ºÏ†Ä ÎêòÍ≤å ÌïòÍ∏∞ ÏúÑÌï¥
-   OS.cppÏóê Ï¥àÍ∏∞Ìôî ÌÅ¥ÎûòÏä§Ïùò Ïù∏Ïä§ÌÑ¥Ïä§Î•º ÌïòÎÇò ÎßåÎìúÎäî Î∞©ÏãùÏùÑ ÏÇ¨Ïö©ÌïúÎã§.
-   Ïö∞ÏÑ† WIN32Ïóê ÎåÄÌï¥ÏÑúÎßå Ïù¥Î†áÍ≤å ÎßåÎì§Ïñ¥ÎÜìÏïòÏßÄÎßå,
-   Îã§Î•∏ Î™®Îì† ÌîåÎû´ÌèºÏóê ÎåÄÌï¥ÏÑúÎèÑ Ïù¥Î†áÍ≤å Ìï¥Ï£ºÏñ¥Ïïº Ìï† Í≤ÉÏù¥Îã§.
+/* Ace∂Û¿Ã∫Í∑Ø∏Æ∏¶ ¿ÃøÎ«— class∞° global∑Œ ¡§¿«µ«æÓ ¿÷¿∏∏È
+   PDL√ ±‚»≠∫∏¥Ÿ ∏’¿˙ PDL API∞° ªÁøÎµ«∞‘ µ»¥Ÿ.
+   ±◊∑Øπ«∑Œ ∏∂¬˘∞°¡ˆ∑Œ PDL√ ±‚»≠∞° ∏’¿˙ µ«∞‘ «œ±‚ ¿ß«ÿ
+   OS.cppø° √ ±‚»≠ ≈¨∑°Ω∫¿« ¿ŒΩ∫≈œΩ∫∏¶ «œ≥™ ∏∏µÂ¥¬ πÊΩƒ¿ª ªÁøÎ«—¥Ÿ.
+   øÏº± WIN32ø° ¥Î«ÿº≠∏∏ ¿Ã∑∏∞‘ ∏∏µÈæÓ≥ıæ“¡ˆ∏∏,
+   ¥Ÿ∏• ∏µÁ «√∑ß∆˚ø° ¥Î«ÿº≠µµ ¿Ã∑∏∞‘ «ÿ¡÷æÓæﬂ «“ ∞Õ¿Ã¥Ÿ.
 */
 #    if !defined(PDL_WIN32)
 /*BUGBUG_NT ADD*/
@@ -8274,8 +8277,8 @@ private:
 /*
  * BUG-38951 Support to choice a type of CM dispatcher on run-time
  *
- * POLLÏùÑ ÏßÄÏõêÌïòÏßÄ ÏïäÎäî ÌôòÍ≤ΩÏóêÏÑú Ïª¥ÌååÏùº ÏóêÎü¨Î•º ÌîºÌïòÍ∏∞ ÏúÑÌï¥ Ï∂îÍ∞ÄÌïòÏòÄÏúºÎ©∞
- * Ïã§Ï†ú ÏÇ¨Ïö©ÎêòÏßÄÎäî ÏïäÎäîÎã§.
+ * POLL¿ª ¡ˆø¯«œ¡ˆ æ ¥¬ »Ø∞Êø°º≠ ƒƒ∆ƒ¿œ ø°∑Ø∏¶ «««œ±‚ ¿ß«ÿ √ﬂ∞°«œø¥¿∏∏Á
+ * Ω«¡¶ ªÁøÎµ«¡ˆ¥¬ æ ¥¬¥Ÿ.
  */
 #if !defined (PDL_HAS_POLL)
 /* Data structure describing a polling request.  */
@@ -8297,8 +8300,8 @@ struct pollfd
 
 /*
  * BUG-45365 epoll porting on ID
- * EPOLLÏùÑ ÏßÄÏõêÌïòÏßÄ ÏïäÎäî ÌôòÍ≤ΩÏóêÏÑú Ïª¥ÌååÏùº ÏóêÎü¨Î•º ÌîºÌïòÍ∏∞ ÏúÑÌï¥ Ï∂îÍ∞ÄÌïòÏòÄÏúºÎ©∞
- * Ïã§Ï†ú ÏÇ¨Ïö©ÎêòÏßÄÎäî ÏïäÎäîÎã§.
+ * EPOLL¿ª ¡ˆø¯«œ¡ˆ æ ¥¬ »Ø∞Êø°º≠ ƒƒ∆ƒ¿œ ø°∑Ø∏¶ «««œ±‚ ¿ß«ÿ √ﬂ∞°«œø¥¿∏∏Á
+ * Ω«¡¶ ªÁøÎµ«¡ˆ¥¬ æ ¥¬¥Ÿ.
  * */
 #if !defined (PDL_HAS_EPOLL)
 

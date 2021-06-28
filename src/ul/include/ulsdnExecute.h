@@ -48,6 +48,12 @@ SQLRETURN ulsdExecuteForMtDataAddCallback( acp_uint32_t       aIndex,
                                            ulnStmt           *aStmt,
                                            ulsdFuncCallback **aCallback );
 
+SQLRETURN ulsdExecDirectAddCallback( acp_uint32_t       aIndex,
+                                     ulnStmt           *aStmt,
+                                     acp_char_t        *aQuery,
+                                     acp_sint32_t       aQueryLen,
+                                     ulsdFuncCallback **aCallback );
+
 SQLRETURN ulsdExecuteAddCallback( acp_uint32_t       aIndex,
                                   ulnStmt           *aStmt,
                                   ulsdFuncCallback **aCallback );
@@ -65,10 +71,33 @@ SQLRETURN ulsdPrepareTranAddCallback( acp_uint32_t       aIndex,
                                       acp_uint8_t       *aReadOnly,
                                       ulsdFuncCallback **aCallback );
 
+SQLRETURN ulsdEndPendingTranAddCallback( acp_uint32_t       aIndex,
+                                         ulnDbc            *aDbc,
+                                         acp_uint32_t       aXIDSize,
+                                         acp_uint8_t       *aXID,
+                                         acp_sint16_t       aCompletionType,
+                                         ulsdFuncCallback **aCallback );
+
 SQLRETURN ulsdEndTranAddCallback( acp_uint32_t       aIndex,
                                   ulnDbc            *aDbc,
                                   acp_sint16_t       aCompletionType,
                                   ulsdFuncCallback **aCallback );
+
+SQLRETURN ulsdShardEndTranAddCallback( acp_uint32_t       aIndex,
+                                       ulnDbc            *aDbc,
+                                       acp_sint16_t       aCompletionType,
+                                       ulsdFuncCallback **aCallback );
+
+SQLRETURN ulsdPutLobAddCallback( acp_uint32_t       aIndex,
+                                 ulnStmt           *aStmt,
+                                 acp_sint16_t       aLocatorCType,
+                                 acp_uint64_t       aLocator,
+                                 acp_uint32_t       aFromPosition,
+                                 acp_uint32_t       aForLength,
+                                 acp_sint16_t       aSourceCType,
+                                 void              *aBuffer,
+                                 acp_uint32_t       aBufferSize,
+                                 ulsdFuncCallback **aCallback );
 
 void ulsdDoCallback( ulsdFuncCallback *aCallback );
 
@@ -83,5 +112,8 @@ void ulsdRemoveCallback( ulsdFuncCallback *aCallback );
 void ulsdStmtCallback( ulnStmt *aStmt );
 
 void ulsdDbcCallback( ulnDbc *aDbc );
+
+/* BUG-46814 */
+ACI_RC ulsdVerifyFuncCallback( ulnObject *aObject, ulsdFuncCallback *aFuncCallback );
 
 #endif /* _O_ULSDN_EXECUTE_H_ */

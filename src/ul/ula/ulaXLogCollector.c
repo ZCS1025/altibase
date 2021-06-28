@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: ulaXLogCollector.c 82803 2018-04-17 00:20:32Z reznoa $
+ * $Id: ulaXLogCollector.c 88197 2020-07-27 04:41:35Z donghyun1 $
  **********************************************************************/
 
 #include <aclMem.h>
@@ -89,7 +89,7 @@ static ACI_RC ulaConvertEndianValue(acp_uint32_t  aDataType,
     {
         if (aDataType == MTD_GEOMETRY_ID)
         {
-            // GeometryÎäî MTDÏóê ÏóÜÏúºÎØÄÎ°ú, ULSÎ•º ÏÇ¨Ïö©Ìï©ÎãàÎã§.
+            // Geometry¥¬ MTDø° æ¯¿∏π«∑Œ, ULS∏¶ ªÁøÎ«’¥œ¥Ÿ.
             acpMemSet(&sHandle, 0x00, ACI_SIZEOF(ulsHandle));
             (void)ulsInitEnv(&sHandle);
             ACI_TEST_RAISE(ulsEndian(&sHandle, (stdGeometryType *) aValue)
@@ -144,7 +144,7 @@ static ACI_RC ulaConvertEndianValue(acp_uint32_t  aDataType,
 }
 
 /* 
- * ÏïÑÎûòÏôÄ Í∞ôÏùÄ Î¨∏ÏûêÏó¥ÏóêÏÑú keyÎ°ú valueÎ•º ÏñªÎäîÎã§.
+ * æ∆∑°øÕ ∞∞¿∫ πÆ¿⁄ø≠ø°º≠ key∑Œ value∏¶ æÚ¥¬¥Ÿ.
  *
  * "key1=value1;key2=value2;..."
  */
@@ -160,8 +160,8 @@ static ACI_RC ulaGetValueByKey(const acp_char_t  *aText,
     acp_sint32_t   sEqualPos;
     acp_sint32_t   sSemicolonPos;
 
-    acp_uint32_t   sKeySize;         // '\0' Ï†úÏô∏Ìïú ÌÅ¨Í∏∞
-    acp_uint32_t   sValueSize = 0;       // '\0' Ï†úÏô∏Ìïú ÌÅ¨Í∏∞
+    acp_uint32_t   sKeySize;         // '\0' ¡¶ø‹«— ≈©±‚
+    acp_uint32_t   sValueSize = 0;       // '\0' ¡¶ø‹«— ≈©±‚
 
     ACI_TEST_RAISE(aText == NULL, ERR_PARAMETER_NULL);
     ACI_TEST_RAISE(aKey == NULL, ERR_PARAMETER_NULL);
@@ -176,16 +176,16 @@ static ACI_RC ulaGetValueByKey(const acp_char_t  *aText,
 
     while (sStartPtr != NULL)
     {
-        // '='Î•º Í≤ÄÏÉâÌïúÎã§.
+        // '='∏¶ ∞Àªˆ«—¥Ÿ.
         sRc = acpCStrFindChar(sStartPtr,
                               '=',
                               &sEqualPos,
                               0,
                               ACP_CSTR_CASE_SENSITIVE);
 
-        if (ACP_RC_IS_SUCCESS(sRc)) // KeyÍ∞Ä ÏûàÏùÑ Í≤ΩÏö∞
+        if (ACP_RC_IS_SUCCESS(sRc)) // Key∞° ¿÷¿ª ∞ÊøÏ
         {
-            // ';'Î•º Í≤ÄÏÉâÌïòÏó¨ ValueÏùò Í∏∏Ïù¥Î•º ÏïåÏïÑÎÇ∏Îã§.
+            // ';'∏¶ ∞Àªˆ«œø© Value¿« ±Ê¿Ã∏¶ æÀæ∆≥Ω¥Ÿ.
             sRc = acpCStrFindChar(sStartPtr,
                                   ';',
                                   &sSemicolonPos,
@@ -202,8 +202,8 @@ static ACI_RC ulaGetValueByKey(const acp_char_t  *aText,
                 if (ACP_RC_IS_ENOENT(sRc)) // not found semicolon
                 {
                     /*
-                     * BUGBUG : ÏûÖÎ†•ÎêòÎäî ÌÖçÏä§Ìä∏Ïùò ÏÇ¨Ïù¥Ï¶àÎ•º Ïïå Î∞©Î≤ïÏù¥ ÏóÜÏñ¥
-                     *          ÎåÄÏ∂© 200 ÏúºÎ°ú
+                     * BUGBUG : ¿‘∑¬µ«¥¬ ≈ÿΩ∫∆Æ¿« ªÁ¿Ã¡Ó∏¶ æÀ πÊπ˝¿Ã æ¯æÓ
+                     *          ¥Î√Ê 200 ¿∏∑Œ
                      */
                     sValueSize = acpCStrLen(sStartPtr + sEqualPos + 1, 200);
                     *aOutNext  = NULL;
@@ -214,11 +214,11 @@ static ACI_RC ulaGetValueByKey(const acp_char_t  *aText,
                 }
             }
 
-            // KeyÍ∞Ä ÏùºÏπòÌïòÎäîÏßÄ ÌôïÏù∏ÌïúÎã§.
+            // Key∞° ¿œƒ°«œ¥¬¡ˆ »Æ¿Œ«—¥Ÿ.
             if ((sKeySize == (acp_uint32_t)sEqualPos) &&
                 (acpCStrCaseCmp(aKey, sStartPtr, sKeySize) == 0))
             {
-                // Í∏∏Ïù¥ÎßåÌÅº ValueÎ•º Î≥µÏÇ¨ÌïúÎã§.
+                // ±Ê¿Ã∏∏≈≠ Value∏¶ ∫πªÁ«—¥Ÿ.
                 ACI_TEST_RAISE(sValueSize >= aMaxValueBufferSize,
                                ERR_PARAMETER_INVALID);
                 acpMemCpy(aOutValueBuffer,
@@ -230,7 +230,7 @@ static ACI_RC ulaGetValueByKey(const acp_char_t  *aText,
         }
         else
         {
-            if (ACP_RC_IS_ENOENT(sRc)) // KeyÍ∞Ä ÏóÜÏùÑ Í≤ΩÏö∞
+            if (ACP_RC_IS_ENOENT(sRc)) // Key∞° æ¯¿ª ∞ÊøÏ
             {
                 *aOutNext = NULL;
             }
@@ -279,14 +279,14 @@ static ACI_RC ulaXLogCollectorAllocXLogMemory(ulaXLogCollector  *aCollector,
     ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_MUTEX_XLOG_POOL_LOCK);
     sXLogPoolLock = ACP_TRUE;
 
-    /* XLog PoolÏóêÏÑú XLogÎ•º ÏñªÏäµÎãàÎã§. */
+    /* XLog Poolø°º≠ XLog∏¶ æÚΩ¿¥œ¥Ÿ. */
     if (aCollector->mXLogFreeCount > 0)
     {
         sRc = aclMemPoolAlloc(&aCollector->mXLogPool, (void **)aXLog);
         ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_MEM_POOL_ALLOC);
         aCollector->mXLogFreeCount--;
 
-        // XLogÎ•º Ï¥àÍ∏∞ÌôîÌï©ÎãàÎã§.
+        // XLog∏¶ √ ±‚»≠«’¥œ¥Ÿ.
         acpMemSet(*aXLog, 0x00, ACI_SIZEOF(ulaXLog));
     }
     else
@@ -344,7 +344,7 @@ ACI_RC ulaXLogCollectorFreeXLogMemory(ulaXLogCollector *aCollector,
 
     ACI_TEST_RAISE(aXLog == NULL, ERR_PARAMETER_NULL);
 
-    /* ulaCommÏóêÏÑú Ìï†ÎãπÌïú Î©îÎ™®Î¶¨Î•º Ìï¥Ï†úÌï©ÎãàÎã§. */
+    /* ulaCommø°º≠ «“¥Á«— ∏ﬁ∏∏Æ∏¶ «ÿ¡¶«’¥œ¥Ÿ. */
     // Primary Key
     if (aXLog->mPrimaryKey.mPKColArray != NULL)
     {
@@ -485,7 +485,7 @@ ACI_RC ulaXLogCollectorFreeXLogMemory(ulaXLogCollector *aCollector,
         aXLog->mLOB.mLobPiece = NULL;
     }
 
-    /* XLog PoolÏóê Î∞òÌôòÌï©ÎãàÎã§. */
+    /* XLog Poolø° π›»Ø«’¥œ¥Ÿ. */
     sRc = acpThrMutexLock(&aCollector->mXLogPoolMutex);
     ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_MUTEX_XLOG_POOL_LOCK);
     sXLogPoolLock = ACP_TRUE;
@@ -787,7 +787,7 @@ ACI_RC ulaXLogCollectorInitialize(ulaXLogCollector  *aCollector,
     // PROJ-1663 : IMPLICIT SAVEPOINT SET
     aCollector->mRemainedXLog = NULL;
 
-    /* ACK Í¥ÄÎ†® ÏàòÏßë Ï†ïÎ≥¥ */
+    /* ACK ∞¸∑√ ºˆ¡˝ ¡§∫∏ */
     sStage = 10;
     sRc = acpThrMutexCreate(&aCollector->mAckMutex, ACP_THR_MUTEX_DEFAULT);
     ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_MUTEX_INIT);
@@ -919,7 +919,7 @@ ACI_RC ulaXLogCollectorDestroy(ulaXLogCollector *aCollector,
         sTableSize = ulaTransTblGetTableSize(&aCollector->mTransTbl);
     }
 
-    /* ACK Í¥ÄÎ†® ÏàòÏßë Ï†ïÎ≥¥ */
+    /* ACK ∞¸∑√ ºˆ¡˝ ¡§∫∏ */
     sRc = acpThrMutexDestroy(&aCollector->mAckMutex);
     ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_MUTEX_DESTROY);
     sStage = 1;
@@ -1094,7 +1094,7 @@ ACI_RC ulaXLogCollectorFinishNetwork(ulaXLogCollector *aCollector,
 
     if (sSessionValid == ACP_TRUE)
     {
-        /* Peer Link Ï¢ÖÎ£å */
+        /* Peer Link ¡æ∑· */
         ACI_TEST_RAISE(cmiShutdownLink(aCollector->mPeerLink,
                                        CMI_DIRECTION_RDWR)
                        != ACI_SUCCESS, ERR_LINK_SHUTDOWN);
@@ -1242,7 +1242,7 @@ ACI_RC ulaXLogCollectorInitializeUNIX(ulaXLogCollector *aCollector,
                       "trc",
                       '/',
                       "rp-",
-                      sName);  // XLog SenderÏùò Ïù¥Î¶ÑÏùÑ ÎåÄÎ¨∏ÏûêÎ°ú ÏßÄÏ†ï
+                      sName);  // XLog Sender¿« ¿Ã∏ß¿ª ¥ÎπÆ¿⁄∑Œ ¡ˆ¡§
 
     return ACI_SUCCESS;
 
@@ -1561,6 +1561,7 @@ ACI_RC ulaWakeupPeerSender( ulaXLogCollector * aCollector,
 
     ACI_TEST( ulaMetaSendMeta( &sProtocolContext, 
                                aCollector->mXLogSenderName,
+                               &aCollector->mMeta,
                                sFlag,
                                aErrorMgr )
               != ACI_SUCCESS );
@@ -1632,7 +1633,7 @@ ACI_RC ulaXLogCollectorHandshakeBefore(ulaXLogCollector *aCollector,
     acp_uint32_t        sTableSize;
     acp_uint32_t        sTrIndex;
 
-    /* ACK Í¥ÄÎ†® ÏàòÏßë Ï†ïÎ≥¥ Ï¥àÍ∏∞Ìôî */
+    /* ACK ∞¸∑√ ºˆ¡˝ ¡§∫∏ √ ±‚»≠ */
     aCollector->mRestartSN          = ULA_SN_NULL;
     aCollector->mLastCommitSN       = 0;    // BUG-17659
     aCollector->mLastArrivedSN      = ULA_SN_NULL;
@@ -1641,11 +1642,11 @@ ACI_RC ulaXLogCollectorHandshakeBefore(ulaXLogCollector *aCollector,
     aCollector->mStopACKArrived     = ACP_FALSE;
     aCollector->mKeepAliveArrived   = ACP_FALSE;
 
-    /* Meta Ï†ïÎ≥¥ Ï¥àÍ∏∞Ìôî */
+    /* Meta ¡§∫∏ √ ±‚»≠ */
     ulaMetaDestroy(&aCollector->mMeta);
     ulaMetaInitialize(&aCollector->mMeta);
 
-    /* XLog Queue Ï¥àÍ∏∞Ìôî */
+    /* XLog Queue √ ±‚»≠ */
     // PROJ-1663
     if (aCollector->mRemainedXLog != NULL)
     {
@@ -1669,7 +1670,7 @@ ACI_RC ulaXLogCollectorHandshakeBefore(ulaXLogCollector *aCollector,
                                          aErrorMgr)
              != ACI_SUCCESS);
 
-    /* Transaction Table Ï¥àÍ∏∞Ìôî - 1 */
+    /* Transaction Table √ ±‚»≠ - 1 */
     if (aCollector->mUseCommittedTxBuffer == ACP_TRUE)
     {
         sTableSize = ulaTransTblGetTableSize(&aCollector->mTransTbl);
@@ -1712,6 +1713,7 @@ ACI_RC ulaXLogCollectorHandshake(ulaXLogCollector *aCollector,
 
     acp_uint32_t sIndex;
     acp_char_t   sXLogSenderIP[ULA_IP_LEN] = { 0, };
+    ulaVersion   sVersion;
 
     ACI_TEST_RAISE(aCollector->mSocketType == ULA_SOCKET_TYPE_NONE,
                    ERR_SOCKET_TYPE_NONE);
@@ -1720,7 +1722,7 @@ ACI_RC ulaXLogCollectorHandshake(ulaXLogCollector *aCollector,
 
     acpMemSet(sBuffer, 0x00, ULA_ACK_MSG_LEN);
 
-    /* Í∏∞Ï°¥Ïùò Ïó∞Í≤∞ÏùÑ Ï¢ÖÎ£å */
+    /* ±‚¡∏¿« ø¨∞·¿ª ¡æ∑· */
     ACI_TEST(ulaXLogCollectorFinishNetwork(aCollector,
                                            aErrorMgr) != ACI_SUCCESS);
 
@@ -1731,7 +1733,7 @@ ACI_RC ulaXLogCollectorHandshake(ulaXLogCollector *aCollector,
     ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_MUTEX_RECEIVE_LOCK);
     sReceiveLock = ACP_TRUE;
 
-    /* Listen Link Ìï†Îãπ Î∞è ÏÑ§Ï†ï */
+    /* Listen Link «“¥Á π◊ º≥¡§ */
     if (aCollector->mSocketType == ULA_SOCKET_TYPE_TCP)
     {
         ACI_TEST_RAISE(cmiAllocLink(&sListenLink,
@@ -1771,9 +1773,9 @@ ACI_RC ulaXLogCollectorHandshake(ulaXLogCollector *aCollector,
 
         for ( sIndex = 0; sIndex < aCollector->mXLogSenderIPCount; sIndex++ )
         {
-            /* ÌûàÎì† ÌîÑÎ°úÌçºÌã∞Îùº ACI_TEST Î°ú ÏóêÎü¨Î•º ÏïåÎ†§Ï§ÄÎã§.
-             * AuthInfo Í∞Ä ÎëêÍ∞ú Ïù¥ÏÉÅÏùº Îïå ÌïòÎÇòÎùºÎèÑ Ïã§Ìå®ÌïúÎã§Î©¥
-             * Ï†ÑÏ≤¥Í∞Ä Ïã§Ìå®Ìï† Í≤ÉÏù¥Îã§. */
+            /* »˜µÁ «¡∑Œ∆€∆º∂Û ACI_TEST ∑Œ ø°∑Ø∏¶ æÀ∑¡¡ÿ¥Ÿ.
+             * AuthInfo ∞° µŒ∞≥ ¿ÃªÛ¿œ ∂ß «œ≥™∂Ûµµ Ω«∆–«—¥Ÿ∏È
+             * ¿¸√º∞° Ω«∆–«“ ∞Õ¿Ã¥Ÿ. */
             if ( ( aCollector->mXLogSenderIP[sIndex][0] != '\0' ) &&
                  ( aCollector->mXLogSenderPort[sIndex] > 0 ) )
             {
@@ -1792,7 +1794,7 @@ ACI_RC ulaXLogCollectorHandshake(ulaXLogCollector *aCollector,
         sRc = acpThrMutexUnlock( &aCollector->mAuthInfoMutex );
         ACI_TEST_RAISE( ACP_RC_NOT_SUCCESS( sRc ), ERR_MUTEX_AUTH_INFO_UNLOCK );
 
-        /* Ï†ëÏÜç ÎåÄÍ∏∞ Î∞è Peer Link ÏÉùÏÑ± */
+        /* ¡¢º” ¥Î±‚ π◊ Peer Link ª˝º∫ */
         if ( cmiWaitLink( sListenLink, sWaitTime ) == ACI_SUCCESS )
         {
             break;
@@ -1820,19 +1822,19 @@ ACI_RC ulaXLogCollectorHandshake(ulaXLogCollector *aCollector,
     aCollector->mSessionValid    = ACP_TRUE;
     aCollector->mNetworkExitFlag = ACP_FALSE;
 
-    /* Authentication Information Í≤ÄÏÇ¨ */
+    /* Authentication Information ∞ÀªÁ */
     if (aCollector->mSocketType == ULA_SOCKET_TYPE_TCP)
     {
         sRc = acpThrMutexLock(&aCollector->mAuthInfoMutex);
         ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_MUTEX_AUTH_INFO_LOCK);
         sAuthInfoLock = ACP_TRUE;
 
-        // Authentication Information ÏñªÍ∏∞
+        // Authentication Information æÚ±‚
         acpMemSet(sXLogSenderIP, 0x00, ULA_IP_LEN);
         (void)cmiGetLinkInfo(aCollector->mPeerLink, sXLogSenderIP, ULA_IP_LEN,
                              CMI_LINK_INFO_REMOTE_IP_ADDRESS);
 
-        // ÎπÑÍµê
+        // ∫Ò±≥
         for (sIndex = 0; sIndex < aCollector->mXLogSenderIPCount; sIndex++)
         {
             if (acpCStrCaseCmp(aCollector->mXLogSenderIP[sIndex],
@@ -1849,14 +1851,17 @@ ACI_RC ulaXLogCollectorHandshake(ulaXLogCollector *aCollector,
         sRc = acpThrMutexUnlock(&aCollector->mAuthInfoMutex);
         ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_MUTEX_AUTH_INFO_UNLOCK);
     }
-    /* Protocol Version Í≤ÄÏÇ¨ Î∞è Handshake ACK Ï†ÑÏÜ° */
-    ACI_TEST(ulaXLogCollectorCheckProtocol(aCollector, aErrorMgr)
+    /* Protocol Version ∞ÀªÁ π◊ Handshake ACK ¿¸º€ */
+    ACI_TEST(ulaXLogCollectorCheckProtocol(aCollector,
+                                           &sVersion,
+                                           aErrorMgr)
              != ACI_SUCCESS);
 
-    /* Meta Ï†ïÎ≥¥ ÏàòÏã† Î∞è Handshake ACK Ï†ÑÏÜ° */
+    /* Meta ¡§∫∏ ºˆΩ≈ π◊ Handshake ACK ¿¸º€ */
     ACI_TEST_RAISE(ulaMetaRecvMeta( &aCollector->mMeta,
                                     &(aCollector->mProtocolContext),
                                     aCollector->mHandshakeTimeoutSec,
+                                    sVersion,
                                     aCollector->mXLogSenderName,
                                     &sTableSize,
                                     aErrorMgr )
@@ -1879,7 +1884,7 @@ ACI_RC ulaXLogCollectorHandshake(ulaXLogCollector *aCollector,
     ACE_DASSERT(aCollector->mRemainedXLog == NULL);
     aCollector->mRemainedXLog = NULL;
 
-    /* Transaction Table Ï¥àÍ∏∞Ìôî - 2 */
+    /* Transaction Table √ ±‚»≠ - 2 */
     ACI_TEST(ulaTransTblDestroy(&aCollector->mTransTbl, aErrorMgr)
              != ACI_SUCCESS);
 
@@ -1964,7 +1969,7 @@ ACI_RC ulaXLogCollectorHandshake(ulaXLogCollector *aCollector,
     }
     ACI_EXCEPTION(ERR_META_RECEIVE)
     {
-        // Ïù¥ÎØ∏ ulaSetErrorCode() ÏàòÌñâ
+        // ¿ÃπÃ ulaSetErrorCode() ºˆ«‡
 
         (void)acpSnprintf(sBuffer, ULA_ACK_MSG_LEN, "%s",
                           ulaGetErrorMessage(aErrorMgr));
@@ -1990,7 +1995,7 @@ ACI_RC ulaXLogCollectorHandshake(ulaXLogCollector *aCollector,
         (void)cmiFreeLink(sListenLink);
     }
 
-    // Ïã§Ìå® Ïãú, Meta Ï†ïÎ≥¥ Ï¥àÍ∏∞Ìôî
+    // Ω«∆– Ω√, Meta ¡§∫∏ √ ±‚»≠
     ulaMetaDestroy(&aCollector->mMeta);
     ulaMetaInitialize(&aCollector->mMeta);
 
@@ -2007,7 +2012,7 @@ ACI_RC ulaXLogCollectorHandshake(ulaXLogCollector *aCollector,
         (void)acpThrMutexUnlock(&aCollector->mSendMutex);
     }
 
-    // Ïã§Ìå® Ïãú, Ïó∞Í≤∞ÏùÑ Ï¢ÖÎ£å
+    // Ω«∆– Ω√, ø¨∞·¿ª ¡æ∑·
     (void)ulaXLogCollectorFinishNetwork(aCollector, NULL);
 
     return ACI_FAILURE;
@@ -2071,29 +2076,29 @@ ACI_RC ulaXLogCollectorCheckRemoteVersion( cmiProtocolContext * aProtocolContext
 }
 
 ACI_RC ulaXLogCollectorCheckProtocol(ulaXLogCollector *aCollector,
+                                     ulaVersion       *aVersion,
                                      ulaErrorMgr      *aErrorMgr)
 {
-    ulaVersion  sVersion;
     acp_char_t *sInformation = NULL;
     acp_char_t  sBuffer[ULA_ACK_MSG_LEN];
     acp_bool_t  sDummy = ACP_FALSE;
 
-    /* Protocol Version ÏàòÏã† Î∞è Í≤ÄÏÇ¨ */
+    /* Protocol Version ºˆΩ≈ π◊ ∞ÀªÁ */
     ACI_TEST(ulaCommRecvVersion( &(aCollector->mProtocolContext),
-                                 &sVersion,
+                                 aVersion,
                                  &sDummy,
                                  aCollector->mHandshakeTimeoutSec,
                                  aErrorMgr )
              != ACI_SUCCESS);
 
     // Check Replication Protocol Version
-    ACI_TEST_RAISE(ULA_GET_MAJOR_VERSION(sVersion.mVersion)
+    ACI_TEST_RAISE(ULA_GET_MAJOR_VERSION(aVersion->mVersion)
                    != REPLICATION_MAJOR_VERSION, ERR_PROTOCOL);
 
-    ACI_TEST_RAISE(ULA_GET_MINOR_VERSION(sVersion.mVersion)
+    ACI_TEST_RAISE(ULA_GET_MINOR_VERSION(aVersion->mVersion)
                    != REPLICATION_MINOR_VERSION, ERR_PROTOCOL);
 
-    /* Handshake ACK Ï†ÑÏÜ° */
+    /* Handshake ACK ¿¸º€ */
     acpMemSet(sBuffer, 0x00, ULA_ACK_MSG_LEN);
     ACI_TEST(ulaCommSendHandshakeAck( &(aCollector->mProtocolContext),
                                       ULA_MSG_OK,
@@ -2189,7 +2194,7 @@ static acp_bool_t ulaXLogCollectorIsTransRelatedXLog(ulaXLogType aType)
  *  Collecting Committed Transactions
  * -----------------------------------------------------------------------------
  */
-// PROJ-1663 : BEGIN Ìå®ÌÇ∑ ÎØ∏ÏÇ¨Ïö©
+// PROJ-1663 : BEGIN ∆–≈∂ πÃªÁøÎ
 static ACI_RC ulaXLogCollectorProcessCommittedTransBegin
                                         (ulaXLogCollector *aCollector,
                                          ulaXLog          *aXLog,
@@ -2216,10 +2221,10 @@ static ACI_RC ulaXLogCollectorProcessCommittedTransBegin
     ACI_TEST(ulaXLogLinkedListPeepHead(sList, &sListXLog, aErrorMgr)
              != ACI_SUCCESS);
 
-    /* ÏàòÏßë Linked ListÏóê XLogÍ∞Ä ÏûàÏúºÎ©¥, ÏπòÎ™ÖÏ†ÅÏù∏ Ïò§Î•òÎ°ú Ï≤òÎ¶¨Ìï©ÎãàÎã§. */
+    /* ºˆ¡˝ Linked Listø° XLog∞° ¿÷¿∏∏È, ƒ°∏Ì¿˚¿Œ ø¿∑˘∑Œ √≥∏Æ«’¥œ¥Ÿ. */
     ACI_TEST_RAISE(sListXLog != NULL, ERR_XLOG_ALREADY_EXIST);
 
-    /* ÏàòÏßë Linked ListÏùò ÎßàÏßÄÎßâÏóê Ï∂îÍ∞ÄÌï©ÎãàÎã§. */
+    /* ºˆ¡˝ Linked List¿« ∏∂¡ˆ∏∑ø° √ﬂ∞°«’¥œ¥Ÿ. */
     ACI_TEST(ulaXLogLinkedListInsertToTail(sList, aXLog, aErrorMgr)
              != ACI_SUCCESS);
     *aOutNeedXLogFree = ACP_FALSE;
@@ -2277,8 +2282,8 @@ static ACI_RC ulaXLogCollectorProcessCommittedTransAbortToSP
     ACI_TEST_RAISE(aXLog == NULL, ERR_PARAMETER_NULL);
     ACI_TEST_RAISE(aOutNeedXLogFree == NULL, ERR_PARAMETER_NULL);
 
-    /* BUG-28988 ÏïûÏóêÏÑú Ìó§ÎçîÌÉÄÏûÖÏù¥ ULA_X_SP_ABORTÏûÑÏùÑ ÌôïÏù∏ÌñàÏúºÎØÄÎ°ú
-     * mSPNameÏùÄ NULLÏù¥ ÎêòÎ©¥ ÏïàÎêúÎã§.*/
+    /* BUG-28988 æ’ø°º≠ «Ï¥ı≈∏¿‘¿Ã ULA_X_SP_ABORT¿”¿ª »Æ¿Œ«ﬂ¿∏π«∑Œ
+     * mSPName¿∫ NULL¿Ã µ«∏È æ»µ»¥Ÿ.*/
     ACI_TEST_RAISE(aXLog->mSavepoint.mSPName == NULL, ERR_PARAMETER_INVALID);
 
     *aOutNeedXLogFree = ACP_TRUE;
@@ -2294,18 +2299,18 @@ static ACI_RC ulaXLogCollectorProcessCommittedTransAbortToSP
     ACI_TEST(ulaXLogLinkedListPeepHead(sList, &sListXLog, aErrorMgr)
              != ACI_SUCCESS);
 
-    //ÏûÑÏãú Î¶¨Ïä§Ìä∏ Ï¥àÍ∏∞Ìôî
+    //¿”Ω√ ∏ÆΩ∫∆Æ √ ±‚»≠
     ACI_TEST(ulaXLogLinkedListInitialize(&sTempList, ACP_FALSE, aErrorMgr)
              != ACI_SUCCESS);
     sTempListInit = ACP_TRUE;
 
     if (sListXLog != NULL)
     {
-        /* ÏàòÏßë Linked ListÏùò ÏµúÏ¥à XLog TIDÏôÄ TIDÍ∞Ä Í∞ôÏúºÎ©¥, */
+        /* ºˆ¡˝ Linked List¿« √÷√  XLog TIDøÕ TID∞° ∞∞¿∏∏È, */
         if (aXLog->mHeader.mTID == sListXLog->mHeader.mTID)
         {
-            /* ÏàòÏßë Linked ListÏùò ÎßàÏßÄÎßâÏóêÏÑú Ìï¥Îãπ SavepointÍπåÏßÄ
-             * XLogÎ•º XLog PoolÏóê Î∞òÌôòÌï©ÎãàÎã§.
+            /* ºˆ¡˝ Linked List¿« ∏∂¡ˆ∏∑ø°º≠ «ÿ¥Á Savepoint±Ó¡ˆ
+             * XLog∏¶ XLog Poolø° π›»Ø«’¥œ¥Ÿ.
              */
             if (acpCStrCaseCmp(ULA_PSM_SAVEPOINT_NAME,
                                aXLog->mSavepoint.mSPName,
@@ -2326,11 +2331,11 @@ static ACI_RC ulaXLogCollectorProcessCommittedTransAbortToSP
                     if ((sListXLog->mHeader.mType == ULA_X_IMPL_SP_SET) ||
                         (sListXLog->mHeader.mType == ULA_X_SP_SET))
                     {
-                        /* BUG-21920 : PSM ROLLBACKÏ≤òÎ¶¨Ïãú ÎßåÏïΩÏóê ÌîÑÎ°úÏãúÏ†∏ 
-                         * ÎÇ¥Î∂ÄÏóê SavepointÎì§Ïù¥ ÏûàÏùÑ Í≤ΩÏö∞ ÏßÄÏö∞ÏßÄ ÏïäÍ≥† 
-                         * ÏûÑÏãú Î¶¨Ïä§Ìä∏Ïóê Ï†ÄÏû• ÏãúÌÇ®Îã§ (ifÎ¨∏)
-                         * ÏùºÎ∞ò Explicit RollbackÏãúÏóê PSM SavepointÍ∞Ä ÏûàÏùÑÏãúÏóêÎèÑ
-                         * ÏûÑÏãú Î¶¨Ïä§Ìä∏Ïóê Ï†ÄÏû•ÏãúÌÇ®Îã§  (elseÎ¨∏)
+                        /* BUG-21920 : PSM ROLLBACK√≥∏ÆΩ√ ∏∏æ‡ø° «¡∑ŒΩ√¡Æ 
+                         * ≥ª∫Œø° SavepointµÈ¿Ã ¿÷¿ª ∞ÊøÏ ¡ˆøÏ¡ˆ æ ∞Ì 
+                         * ¿”Ω√ ∏ÆΩ∫∆Æø° ¿˙¿Â Ω√≈≤¥Ÿ (ifπÆ)
+                         * ¿œπ› Explicit RollbackΩ√ø° PSM Savepoint∞° ¿÷¿ªΩ√ø°µµ
+                         * ¿”Ω√ ∏ÆΩ∫∆Æø° ¿˙¿ÂΩ√≈≤¥Ÿ  (elseπÆ)
                          */
                         if (sPsmSvpLog == ACP_TRUE)
                         {
@@ -2338,8 +2343,8 @@ static ACI_RC ulaXLogCollectorProcessCommittedTransAbortToSP
                                                sListXLog->mSavepoint.mSPName,
                                                9) != 0)
                             {
-                                // PSM_SPÍ∞Ä ÏïÑÎãå SavepointÎäî 
-                                // ÏûÑÏãú Î¶¨Ïä§Ìä∏Ïóê Ï†ÄÏû• ÏãúÌÇ®Îã§.
+                                // PSM_SP∞° æ∆¥— Savepoint¥¬ 
+                                // ¿”Ω√ ∏ÆΩ∫∆Æø° ¿˙¿Â Ω√≈≤¥Ÿ.
                                 ACI_TEST(ulaXLogLinkedListInsertToHead
                                                                 (&sTempList,
                                                                  sListXLog,
@@ -2363,13 +2368,13 @@ static ACI_RC ulaXLogCollectorProcessCommittedTransAbortToSP
                                                aXLog->mSavepoint.mSPName,
                                                40) == 0)
                             {
-                                /* BUG-21805 : SavepointÎ°ú RollbackÏãú, 
-                                 * SavepoiintÍπåÏßÄ ÏßÄÏö∞Îäî Î¨∏Ï†ú
+                                /* BUG-21805 : Savepoint∑Œ RollbackΩ√, 
+                                 * Savepoiint±Ó¡ˆ ¡ˆøÏ¥¬ πÆ¡¶
                                  *
-                                 * SavepointÍπåÏßÄ RollbackÏãú ListÏóêÏÑú 
-                                 * Ïó≠ÏàúÏúºÎ°ú ÏßÄÏö∞ÎäîÎç∞ ÏûêÍ∏∞Í∞Ä ÏõêÌïòÎäî 
-                                 * SavepointÏùº Í≤ΩÏö∞ÏóêÎäî InsertToTailÏùÑ ÌÜµÌï¥ÏÑú
-                                 * Îã§Ïãú ListÏóê ÎÑ£Ïñ¥Ï§ÄÎã§
+                                 * Savepoint±Ó¡ˆ RollbackΩ√ Listø°º≠ 
+                                 * ø™º¯¿∏∑Œ ¡ˆøÏ¥¬µ• ¿⁄±‚∞° ø¯«œ¥¬ 
+                                 * Savepoint¿œ ∞ÊøÏø°¥¬ InsertToTail¿ª ≈Î«ÿº≠
+                                 * ¥ŸΩ√ Listø° ≥÷æÓ¡ÿ¥Ÿ
                                  */
                                 ACI_TEST(ulaXLogLinkedListInsertToTail
                                                                 (sList,
@@ -2384,8 +2389,8 @@ static ACI_RC ulaXLogCollectorProcessCommittedTransAbortToSP
                                              sListXLog->mSavepoint.mSPName,
                                              9) == 0)
                             {
-                                // PSM SaveponitÎäî ÏßÄÏö∞ÏßÄ ÏïäÍ≥† 
-                                // ÏûÑÏãú Î¶¨Ïä§Ìä∏Ïóê Ï†ÄÏû•ÌïúÎã§
+                                // PSM Saveponit¥¬ ¡ˆøÏ¡ˆ æ ∞Ì 
+                                // ¿”Ω√ ∏ÆΩ∫∆Æø° ¿˙¿Â«—¥Ÿ
                                 ACI_TEST(ulaXLogLinkedListInsertToHead
                                                                 (&sTempList,
                                                                  sListXLog,
@@ -2403,8 +2408,8 @@ static ACI_RC ulaXLogCollectorProcessCommittedTransAbortToSP
                 }
             } while (sListXLog != NULL);
 
-            /* BUG-21920 : ÏûÑÏãú Ï†ÄÏû• Î¶¨Ïä§Ìä∏Ïóê SavepointÎì§Ïù¥ ÏûàÏúºÎ©¥
-             * Í∏∞Ï°¥ Î¶¨Ïä§Ìä∏Ïùò  Îß® Îí§Ïóê Îã§Ïãú Ï†ÄÏû•
+            /* BUG-21920 : ¿”Ω√ ¿˙¿Â ∏ÆΩ∫∆Æø° SavepointµÈ¿Ã ¿÷¿∏∏È
+             * ±‚¡∏ ∏ÆΩ∫∆Æ¿«  ∏« µ⁄ø° ¥ŸΩ√ ¿˙¿Â
              */
             do
             {
@@ -2425,7 +2430,7 @@ static ACI_RC ulaXLogCollectorProcessCommittedTransAbortToSP
         }
     }
 
-    //ÏûÑÏãú Î¶¨Ïä§Ìä∏ Ìï¥Ï†ú
+    //¿”Ω√ ∏ÆΩ∫∆Æ «ÿ¡¶
     sTempListInit = ACP_FALSE;
     ACI_TEST(ulaXLogLinkedListDestroy(&sTempList, aErrorMgr) != ACI_SUCCESS);
 
@@ -2493,10 +2498,10 @@ static ACI_RC ulaXLogCollectorProcessCommittedTransAbort
 
     if (sListXLog != NULL)
     {
-        /* ÏàòÏßë Linked ListÏùò ÏµúÏ¥à XLog TIDÏôÄ TIDÍ∞Ä Í∞ôÏúºÎ©¥, */
+        /* ºˆ¡˝ Linked List¿« √÷√  XLog TIDøÕ TID∞° ∞∞¿∏∏È, */
         if (aXLog->mHeader.mTID == sListXLog->mHeader.mTID)
         {
-            /* ÏàòÏßë Linked ListÏùò Î™®Îì† XLogÎ•º XLog PoolÏóê Î∞òÌôòÌï©ÎãàÎã§. */
+            /* ºˆ¡˝ Linked List¿« ∏µÁ XLog∏¶ XLog Poolø° π›»Ø«’¥œ¥Ÿ. */
             ACI_TEST(ulaXLogCollectorFreeXLogFromLinkedList(aCollector,
                                                             sList,
                                                             aErrorMgr)
@@ -2559,10 +2564,10 @@ static ACI_RC ulaXLogCollectorProcessCommittedTransCommit
 
     if (sListXLog != NULL)
     {
-        /* ÏàòÏßë Linked ListÏùò ÏµúÏ¥à XLog TIDÏôÄ TIDÍ∞Ä Í∞ôÏúºÎ©¥, */
+        /* ºˆ¡˝ Linked List¿« √÷√  XLog TIDøÕ TID∞° ∞∞¿∏∏È, */
         if (aXLog->mHeader.mTID == sListXLog->mHeader.mTID)
         {
-            /* ÏàòÏßë Linked ListÏùò ÎßàÏßÄÎßâÏóê Ï∂îÍ∞ÄÌï©ÎãàÎã§. */
+            /* ºˆ¡˝ Linked List¿« ∏∂¡ˆ∏∑ø° √ﬂ∞°«’¥œ¥Ÿ. */
             ACI_TEST(ulaXLogLinkedListInsertToTail(sList,
                                                    aXLog,
                                                    aErrorMgr)
@@ -2580,7 +2585,7 @@ static ACI_RC ulaXLogCollectorProcessCommittedTransCommit
                 {
                     ACE_DASSERT(sListXLog->mHeader.mType != ULA_X_SP_ABORT);
 
-                    /* Savepoint Í¥ÄÎ†® XLogÎ•º XLog PoolÏóê Î∞òÌôòÌï©ÎãàÎã§. */
+                    /* Savepoint ∞¸∑√ XLog∏¶ XLog Poolø° π›»Ø«’¥œ¥Ÿ. */
                     if ((sListXLog->mHeader.mType == ULA_X_IMPL_SP_SET) ||
                         (sListXLog->mHeader.mType == ULA_X_SP_SET))
                     {
@@ -2589,7 +2594,7 @@ static ACI_RC ulaXLogCollectorProcessCommittedTransCommit
                                                                 aErrorMgr)
                                  != ACI_SUCCESS);
                     }
-                    /* ÏàòÏßë Linked ListÏùò XLogÎ•º XLog QueueÎ°ú Ïù¥ÎèôÏãúÌÇµÎãàÎã§. */
+                    /* ºˆ¡˝ Linked List¿« XLog∏¶ XLog Queue∑Œ ¿ÃµøΩ√≈µ¥œ¥Ÿ. */
                     else
                     {
                         ACI_TEST_RAISE(ulaXLogLinkedListInsertToTail
@@ -2622,7 +2627,7 @@ static ACI_RC ulaXLogCollectorProcessCommittedTransCommit
     }
     ACI_EXCEPTION(ERR_XLOG_QUEUE_INSERT2)
     {
-        // Ïù¥ÎØ∏ ulaSetErrorCode() ÏàòÌñâ
+        // ¿ÃπÃ ulaSetErrorCode() ºˆ«‡
 
         (void)ulaXLogCollectorFreeXLogMemory(aCollector, sListXLog, NULL);
     }
@@ -2665,18 +2670,18 @@ static ACI_RC ulaXLogCollectorProcessCommittedTransOthers
 
     if (sListXLog != NULL)
     {
-        /* ÏàòÏßë Linked ListÏùò ÏµúÏ¥à XLog TIDÏôÄ TIDÍ∞Ä Í∞ôÏúºÎ©¥, */
+        /* ºˆ¡˝ Linked List¿« √÷√  XLog TIDøÕ TID∞° ∞∞¿∏∏È, */
         if (aXLog->mHeader.mTID == sListXLog->mHeader.mTID)
         {
-            /* ÏàòÏßë Linked ListÏùò ÎßàÏßÄÎßâÏóê Ï∂îÍ∞ÄÌï©ÎãàÎã§. */
+            /* ºˆ¡˝ Linked List¿« ∏∂¡ˆ∏∑ø° √ﬂ∞°«’¥œ¥Ÿ. */
             ACI_TEST(ulaXLogLinkedListInsertToTail(sList, aXLog, aErrorMgr)
                            != ACI_SUCCESS);
             *aOutNeedXLogFree = ACP_FALSE;
         }
     }
-    else    // PROJ-1663 : BEGIN Ìå®ÌÇ∑ ÎØ∏ÏÇ¨Ïö© Ï≤òÎ¶¨
+    else    // PROJ-1663 : BEGIN ∆–≈∂ πÃªÁøÎ √≥∏Æ
     {
-        /* ÏàòÏßë Linked ListÏùò ÎßàÏßÄÎßâÏóê Ï∂îÍ∞ÄÌï©ÎãàÎã§. */
+        /* ºˆ¡˝ Linked List¿« ∏∂¡ˆ∏∑ø° √ﬂ∞°«’¥œ¥Ÿ. */
         ACI_TEST(ulaXLogLinkedListInsertToTail(sList, aXLog, aErrorMgr)
                  != ACI_SUCCESS);
         *aOutNeedXLogFree = ACP_FALSE;
@@ -2830,7 +2835,7 @@ ACI_RC ulaXLogCollectorReceiveXLog(ulaXLogCollector *aCollector,
 
     ACI_TEST_RAISE(aCollector->mNetworkExitFlag == ACP_TRUE, ERR_NET_INVALID);
 
-    /* XLog PoolÏóêÏÑú XLogÎ•º ÏñªÏäµÎãàÎã§. */
+    /* XLog Poolø°º≠ XLog∏¶ æÚΩ¿¥œ¥Ÿ. */
     ACI_TEST(ulaXLogCollectorAllocXLogMemory(aCollector,
                                              &sXLog,
                                              &sXLogFreeCount,
@@ -2843,7 +2848,7 @@ ACI_RC ulaXLogCollectorReceiveXLog(ulaXLogCollector *aCollector,
 
 process_next_xlog :
 
-    /* Ïù¥Ï†ÑÏóê ÏàòÏã†Ìïú XLogÎ•º Ï≤òÎ¶¨Ìï©ÎãàÎã§. */
+    /* ¿Ã¿¸ø° ºˆΩ≈«— XLog∏¶ √≥∏Æ«’¥œ¥Ÿ. */
     if (aCollector->mRemainedXLog != NULL)
     {
         sXLog         = aCollector->mRemainedXLog;
@@ -2851,7 +2856,7 @@ process_next_xlog :
 
         aCollector->mRemainedXLog = NULL;
     }
-    /* XLogÎ•º ÏàòÏã†Ìï©ÎãàÎã§. */
+    /* XLog∏¶ ºˆΩ≈«’¥œ¥Ÿ. */
     else if (ulaCommRecvXLog(&aCollector->mProtocolContext,
                              &aCollector->mNetworkExitFlag,
                              sXLog,
@@ -2867,18 +2872,18 @@ process_next_xlog :
         ACI_RAISE(ERR_NET_READ);
     }
 
-    // PROJ-1663 : IMPLICIT SAVEPOINT SET Ìå®ÌÇ∑ Ï≤òÎ¶¨
+    // PROJ-1663 : IMPLICIT SAVEPOINT SET ∆–≈∂ √≥∏Æ
     if ((sXLog->mSavepoint.mSPName != NULL) &&
         (sXLog->mHeader.mType != ULA_X_SP_SET) &&
         (sXLog->mHeader.mType != ULA_X_IMPL_SP_SET) &&
         (sXLog->mHeader.mType != ULA_X_SP_ABORT))
     {
-        // Îã§ÏùåÏóê Ï≤òÎ¶¨Ìï† XLogÎ•º ÏÑ§Ï†ïÌï©ÎãàÎã§.
+        // ¥Ÿ¿Ωø° √≥∏Æ«“ XLog∏¶ º≥¡§«’¥œ¥Ÿ.
         aCollector->mRemainedXLog = sXLog;
         sXLog                     = NULL;
         sNeedXLogFree             = ACP_FALSE;
 
-        // XLog PoolÏóêÏÑú XLogÎ•º ÏñªÏäµÎãàÎã§.
+        // XLog Poolø°º≠ XLog∏¶ æÚΩ¿¥œ¥Ÿ.
         ACI_TEST(ulaXLogCollectorAllocXLogMemory(aCollector,
                                                  &sXLog,
                                                  &sXLogFreeCount,
@@ -2889,7 +2894,7 @@ process_next_xlog :
         ACI_TEST_RAISE(sXLog == NULL, ERR_XLOG_POOL_EMPTY);
         ACE_ASSERT(sXLogFreeCount >= 0);
 
-        // SP_SET XLogÎ•º ÏÑ§Ï†ïÌï©ÎãàÎã§.
+        // SP_SET XLog∏¶ º≥¡§«’¥œ¥Ÿ.
         sXLog->mHeader.mType   = ULA_X_SP_SET;
         sXLog->mHeader.mTID    = aCollector->mRemainedXLog->mHeader.mTID;
         sXLog->mHeader.mSN     = aCollector->mRemainedXLog->mHeader.mSN;
@@ -2900,12 +2905,12 @@ process_next_xlog :
         sXLog->mSavepoint.mSPNameLen 
                         = aCollector->mRemainedXLog->mSavepoint.mSPNameLen;
 
-        // Îã§ÏùåÏóê Ï≤òÎ¶¨Ìï† XLogÏóêÏÑú IMPLICIT SAVEPOINTÎ•º Ï†úÍ±∞Ìï©ÎãàÎã§.
+        // ¥Ÿ¿Ωø° √≥∏Æ«“ XLogø°º≠ IMPLICIT SAVEPOINT∏¶ ¡¶∞≈«’¥œ¥Ÿ.
         aCollector->mRemainedXLog->mSavepoint.mSPName    = NULL;
         aCollector->mRemainedXLog->mSavepoint.mSPNameLen = 0;
     }
 
-    /* Last Arrived SNÏùÑ ÏÑ§Ï†ïÌï©ÎãàÎã§. */
+    /* Last Arrived SN¿ª º≥¡§«’¥œ¥Ÿ. */
     sRc = acpThrMutexLock(&aCollector->mAckMutex);
     ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_MUTEX_ACK_LOCK);
     sAckLock = ACP_TRUE;
@@ -2933,8 +2938,8 @@ process_next_xlog :
         /* do nothing */
     }
 
-    /* XLogÎ•º XLog QueueÎÇò ÏàòÏßë Linked ListÏóê Ï∂îÍ∞ÄÌï©ÎãàÎã§. */
-    // Committed Transaction ÎØ∏ÏàòÏßëÎ•º Ï≤òÎ¶¨Ìï©ÎãàÎã§.
+    /* XLog∏¶ XLog Queue≥™ ºˆ¡˝ Linked Listø° √ﬂ∞°«’¥œ¥Ÿ. */
+    // Committed Transaction πÃºˆ¡˝∏¶ √≥∏Æ«’¥œ¥Ÿ.
     if (aCollector->mUseCommittedTxBuffer != ACP_TRUE)
     {
         ACI_TEST(ulaXLogLinkedListInsertToTail(&aCollector->mXLogQueue,
@@ -2943,7 +2948,7 @@ process_next_xlog :
                  != ACI_SUCCESS);
         *aOutInsertXLogInQueue = ACP_TRUE;
     }
-    // Transaction Í¥ÄÎ†® XLogÍ∞Ä ÏïÑÎãå Í≤ΩÏö∞Î•º Ï≤òÎ¶¨Ìï©ÎãàÎã§.
+    // Transaction ∞¸∑√ XLog∞° æ∆¥— ∞ÊøÏ∏¶ √≥∏Æ«’¥œ¥Ÿ.
     else if (ulaXLogCollectorIsTransRelatedXLog(sXLog->mHeader.mType)
              != ACP_TRUE)
     {
@@ -2953,12 +2958,12 @@ process_next_xlog :
                        != ACI_SUCCESS);
         *aOutInsertXLogInQueue = ACP_TRUE;
     }
-    // Transaction Í¥ÄÎ†® XLogÎ•º Ï≤òÎ¶¨Ìï©ÎãàÎã§. (Committed Transaction ÏàòÏßë)
+    // Transaction ∞¸∑√ XLog∏¶ √≥∏Æ«’¥œ¥Ÿ. (Committed Transaction ºˆ¡˝)
     else
     {
         switch (sXLog->mHeader.mType)
         {
-            // PROJ-1663 : BEGIN Ìå®ÌÇ∑ ÎØ∏ÏÇ¨Ïö©
+            // PROJ-1663 : BEGIN ∆–≈∂ πÃªÁøÎ
             case ULA_X_BEGIN :
                 ACI_TEST(ulaXLogCollectorProcessCommittedTransBegin
                                                              (aCollector,
@@ -3009,8 +3014,8 @@ process_next_xlog :
                 break;
         }
 
-        // XLog QueueÎÇò ÏàòÏßë Linked ListÏóê Ï∂îÍ∞ÄÌïòÏßÄ ÏïäÏùÄ XLogÎ•º 
-        // XLog PoolÏóê Î∞òÌôòÌï©ÎãàÎã§.
+        // XLog Queue≥™ ºˆ¡˝ Linked Listø° √ﬂ∞°«œ¡ˆ æ ¿∫ XLog∏¶ 
+        // XLog Poolø° π›»Ø«’¥œ¥Ÿ.
         if (sNeedXLogFree != ACP_FALSE)
         {
             ACI_TEST(ulaXLogCollectorFreeXLogMemory(aCollector,
@@ -3068,7 +3073,7 @@ process_next_xlog :
     }
     ACI_EXCEPTION(ERR_NET_READ)
     {
-        // Ïù¥ÎØ∏ ulaSetErrorCode() ÏàòÌñâ
+        // ¿ÃπÃ ulaSetErrorCode() ºˆ«‡
 
         aCollector->mNetworkExitFlag = ACP_TRUE;
     }
@@ -3347,7 +3352,7 @@ static ACI_RC ulaXLogCollectorConvertEndian(ulaXLogCollector *aCollector,
     }
     ACI_EXCEPTION_END;
 
-    // Ïù¥ÎØ∏ ulaSetErrorCode() ÏàòÌñâ
+    // ¿ÃπÃ ulaSetErrorCode() ºˆ«‡
 
     return ACI_FAILURE;
 }
@@ -3387,9 +3392,9 @@ static ACI_RC ulaXLogCollectorDecryptValuesInsert(ulaXLogCollector *aCollector,
             (aXLog->mColumn.mAColArray[sIndex].value != NULL))
         {
             // PROJ-2002 Column Security
-            // ÏïîÌò∏ÌôîÎêú Í∞íÏùÑ Î≥µÌò∏ÌôîÌïúÎã§. Í∑∏Îü¨ÎÇò ALAÍ∞Ä Î≥¥Ïïà Î™®Îìà Ïó∞ÎèôÏùÑ
-            // ÏßÄÏõêÌïòÏßÄ ÏïäÏïÑ Î≥µÌò∏ÌôîÎ•º ÏàòÌñâÌï† Ïàò ÏóÜÎã§. ÏûÑÏãúÎ°ú
-            // ÏÇ¨Ïö©ÏûêÍ∞Ä ÏïîÌò∏ Îç∞Ïù¥ÌÑ∞Î•º Î≥º Ïàò ÏóÜÎèÑÎ°ù nullÎ°ú Î≥ÄÍ≤ΩÌïúÎã§.
+            // æœ»£»≠µ» ∞™¿ª ∫π»£»≠«—¥Ÿ. ±◊∑Ø≥™ ALA∞° ∫∏æ» ∏µ‚ ø¨µø¿ª
+            // ¡ˆø¯«œ¡ˆ æ æ∆ ∫π»£»≠∏¶ ºˆ«‡«“ ºˆ æ¯¥Ÿ. ¿”Ω√∑Œ
+            // ªÁøÎ¿⁄∞° æœ»£ µ•¿Ã≈Õ∏¶ ∫º ºˆ æ¯µµ∑œ null∑Œ ∫Ø∞Ê«—¥Ÿ.
             aXLog->mColumn.mAColArray[sIndex].length = 0;
             (void)aclMemFree( aCollector->mMemAllocator,
                               aXLog->mColumn.mAColArray[sIndex].value );
@@ -3447,9 +3452,9 @@ static ACI_RC ulaXLogCollectorDecryptValuesUpdate(ulaXLogCollector *aCollector,
             (aXLog->mPrimaryKey.mPKColArray[sIndex].value != NULL))
         {
             // PROJ-2002 Column Security
-            // ÏïîÌò∏ÌôîÎêú Í∞íÏùÑ Î≥µÌò∏ÌôîÌïúÎã§. Í∑∏Îü¨ÎÇò ALAÍ∞Ä Î≥¥Ïïà Î™®Îìà Ïó∞ÎèôÏùÑ
-            // ÏßÄÏõêÌïòÏßÄ ÏïäÏïÑ Î≥µÌò∏ÌôîÎ•º ÏàòÌñâÌï† Ïàò ÏóÜÎã§. ÏûÑÏãúÎ°ú
-            // ÏÇ¨Ïö©ÏûêÍ∞Ä ÏïîÌò∏ Îç∞Ïù¥ÌÑ∞Î•º Î≥º Ïàò ÏóÜÎèÑÎ°ù nullÎ°ú Î≥ÄÍ≤ΩÌïúÎã§.
+            // æœ»£»≠µ» ∞™¿ª ∫π»£»≠«—¥Ÿ. ±◊∑Ø≥™ ALA∞° ∫∏æ» ∏µ‚ ø¨µø¿ª
+            // ¡ˆø¯«œ¡ˆ æ æ∆ ∫π»£»≠∏¶ ºˆ«‡«“ ºˆ æ¯¥Ÿ. ¿”Ω√∑Œ
+            // ªÁøÎ¿⁄∞° æœ»£ µ•¿Ã≈Õ∏¶ ∫º ºˆ æ¯µµ∑œ null∑Œ ∫Ø∞Ê«—¥Ÿ.
             aXLog->mPrimaryKey.mPKColArray[sIndex].length = 0;
             (void)aclMemFree( aCollector->mMemAllocator,
                               aXLog->mPrimaryKey.mPKColArray[sIndex].value );
@@ -3542,9 +3547,9 @@ static ACI_RC ulaXLogCollectorDecryptValuesPK(ulaXLogCollector *aCollector,
             (aXLog->mPrimaryKey.mPKColArray[sIndex].value != NULL))
         {
             // PROJ-2002 Column Security
-            // ÏïîÌò∏ÌôîÎêú Í∞íÏùÑ Î≥µÌò∏ÌôîÌïúÎã§. Í∑∏Îü¨ÎÇò ALAÍ∞Ä Î≥¥Ïïà Î™®Îìà Ïó∞ÎèôÏùÑ
-            // ÏßÄÏõêÌïòÏßÄ ÏïäÏïÑ Î≥µÌò∏ÌôîÎ•º ÏàòÌñâÌï† Ïàò ÏóÜÎã§. ÏûÑÏãúÎ°ú
-            // ÏÇ¨Ïö©ÏûêÍ∞Ä ÏïîÌò∏ Îç∞Ïù¥ÌÑ∞Î•º Î≥º Ïàò ÏóÜÎèÑÎ°ù nullÎ°ú Î≥ÄÍ≤ΩÌïúÎã§.
+            // æœ»£»≠µ» ∞™¿ª ∫π»£»≠«—¥Ÿ. ±◊∑Ø≥™ ALA∞° ∫∏æ» ∏µ‚ ø¨µø¿ª
+            // ¡ˆø¯«œ¡ˆ æ æ∆ ∫π»£»≠∏¶ ºˆ«‡«“ ºˆ æ¯¥Ÿ. ¿”Ω√∑Œ
+            // ªÁøÎ¿⁄∞° æœ»£ µ•¿Ã≈Õ∏¶ ∫º ºˆ æ¯µµ∑œ null∑Œ ∫Ø∞Ê«—¥Ÿ.
             aXLog->mPrimaryKey.mPKColArray[sIndex].length = 0;
             (void)aclMemFree( aCollector->mMemAllocator,
                               aXLog->mPrimaryKey.mPKColArray[sIndex].value );
@@ -3619,7 +3624,7 @@ static ACI_RC ulaXLogCollectorDecryptValues(ulaXLogCollector *aCollector,
     }
     ACI_EXCEPTION_END;
 
-    // Ïù¥ÎØ∏ ulaSetErrorCode() ÏàòÌñâ
+    // ¿ÃπÃ ulaSetErrorCode() ºˆ«‡
 
     return ACI_FAILURE;
 }
@@ -3634,7 +3639,7 @@ ACI_RC ulaXLogCollectorGetXLog(ulaXLogCollector  *aCollector,
 
     ACI_TEST_RAISE(aOutXLog == NULL, ERR_PARAMETER_NULL);
 
-    /* XLog QueueÏóêÏÑú XLogÎ•º Í∫ºÎÉÖÎãàÎã§. */
+    /* XLog Queueø°º≠ XLog∏¶ ≤®≥¿¥œ¥Ÿ. */
     ACI_TEST(ulaXLogLinkedListRemoveFromHead(&aCollector->mXLogQueue,
                                              &sXLog,
                                              aErrorMgr)
@@ -3643,7 +3648,7 @@ ACI_RC ulaXLogCollectorGetXLog(ulaXLogCollector  *aCollector,
 
     if (sXLog != NULL)
     {
-        /* Endian DIFFÎ•º Ï≤òÎ¶¨Ìï©ÎãàÎã§. */
+        /* Endian DIFF∏¶ √≥∏Æ«’¥œ¥Ÿ. */
         if (ulaMetaIsEndianDiff(&aCollector->mMeta) != ACP_FALSE)
         {
             ACI_TEST(ulaXLogCollectorConvertEndian(aCollector, sXLog, aErrorMgr)
@@ -3651,14 +3656,14 @@ ACI_RC ulaXLogCollectorGetXLog(ulaXLogCollector  *aCollector,
         }
 
         // PROJ-2002 Column Security
-        // Î≥¥Ïïà Ïª¨ÎüºÏóê ÎåÄÌïòÏó¨ ÏïîÌò∏ÌôîÎêú Îç∞Ïù¥ÌÑ∞Î•º Î≥µÌò∏ÌôîÌïúÎã§.
+        // ∫∏æ» ƒ√∑≥ø° ¥Î«œø© æœ»£»≠µ» µ•¿Ã≈Õ∏¶ ∫π»£»≠«—¥Ÿ.
         ACI_TEST(ulaXLogCollectorDecryptValues(aCollector, sXLog, aErrorMgr)
                  != ACI_SUCCESS);
 
-        /* Transaction TableÏóê XLogÎ•º Î∞òÏòÅÌï©ÎãàÎã§. */
+        /* Transaction Tableø° XLog∏¶ π›øµ«’¥œ¥Ÿ. */
         switch (sXLog->mHeader.mType)
         {
-            // PROJ-1663 : BEGIN Ìå®ÌÇ∑ÏùÑ ÏïîÏãúÏ†ÅÏúºÎ°ú Ï≤òÎ¶¨
+            // PROJ-1663 : BEGIN ∆–≈∂¿ª æœΩ√¿˚¿∏∑Œ √≥∏Æ
             case ULA_X_INSERT :
             case ULA_X_UPDATE :
             case ULA_X_DELETE :
@@ -3701,7 +3706,7 @@ ACI_RC ulaXLogCollectorGetXLog(ulaXLogCollector  *aCollector,
                 break;
         }
 
-        /* ACK Í¥ÄÎ†® Ïú†ÏßÄ Ï†ïÎ≥¥Î•º ÏàòÏßëÌï©ÎãàÎã§. */
+        /* ACK ∞¸∑√ ¿Ø¡ˆ ¡§∫∏∏¶ ºˆ¡˝«’¥œ¥Ÿ. */
         sRc = acpThrMutexLock(&aCollector->mAckMutex);
         ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_MUTEX_ACK_LOCK);
         sAckLock = ACP_TRUE;
@@ -3716,7 +3721,7 @@ ACI_RC ulaXLogCollectorGetXLog(ulaXLogCollector  *aCollector,
             aCollector->mLastCommitSN = sXLog->mHeader.mSN;
         }
 
-        // Keep Alive, Replication StopÏùÑ Ï≤òÎ¶¨Ìï©ÎãàÎã§.
+        // Keep Alive, Replication Stop¿ª √≥∏Æ«’¥œ¥Ÿ.
         if (sXLog->mHeader.mType == ULA_X_KEEP_ALIVE)
         {
             aCollector->mKeepAliveArrived = ACP_TRUE;
@@ -3781,7 +3786,7 @@ ACI_RC ulaXLogCollectorSendACK(ulaXLogCollector *aCollector,
     ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_MUTEX_ACK_LOCK);
     sAckLock = ACP_TRUE;
 
-    /* ACK, STOP ACKÏùò Í≥µÌÜµ Î∂ÄÎ∂ÑÏùÑ Íµ¨ÏÑ±Ìï©ÎãàÎã§. */
+    /* ACK, STOP ACK¿« ∞¯≈Î ∫Œ∫–¿ª ±∏º∫«’¥œ¥Ÿ. */
     if ((aCollector->mStopACKArrived == ACP_TRUE) ||
         (aCollector->mKeepAliveArrived == ACP_TRUE) ||
         (aCollector->mProcessedXLogCount >= 
@@ -3789,12 +3794,12 @@ ACI_RC ulaXLogCollectorSendACK(ulaXLogCollector *aCollector,
     {
         acpMemSet(&sAck, 0x00, ACI_SIZEOF(ulaXLogAck));
 
-        // ACK TypeÏùÑ ÏßÄÏ†ïÌï©ÎãàÎã§.
+        // ACK Type¿ª ¡ˆ¡§«’¥œ¥Ÿ.
         if (aCollector->mStopACKArrived == ACP_TRUE)
         {
             sAck.mAckType = ULA_X_STOP_ACK;
 
-            // ACK Ï†ÑÏÜ° Ïù¥ÌõÑÏóê ÎÑ§Ìä∏ÏõåÌÅ¨Î•º ÏÇ¨Ïö©Ìï† Ïàò ÏóÜÏùåÏùÑ ÌëúÏãúÌï©ÎãàÎã§.
+            // ACK ¿¸º€ ¿Ã»ƒø° ≥◊∆Æøˆ≈©∏¶ ªÁøÎ«“ ºˆ æ¯¿Ω¿ª «•Ω√«’¥œ¥Ÿ.
             sNetworkExitFlag = ACP_TRUE;
         }
         else
@@ -3802,22 +3807,22 @@ ACI_RC ulaXLogCollectorSendACK(ulaXLogCollector *aCollector,
             sAck.mAckType = ULA_X_ACK;
         }
 
-        // LAZY MODEÎßå ÏßÄÏõêÌïòÎØÄÎ°ú, Abort/Clear Tx ListÎäî ÏóÜÏäµÎãàÎã§.
+        // LAZY MODE∏∏ ¡ˆø¯«œπ«∑Œ, Abort/Clear Tx List¥¬ æ¯Ω¿¥œ¥Ÿ.
         sAck.mAbortTxCount = 0;
         sAck.mClearTxCount = 0;
         sAck.mAbortTxList  = NULL;
         sAck.mClearTxList  = NULL;
 
-        // ACK Í¥ÄÎ†® SNÏùÑ ÏÑ§Ï†ïÌï©ÎãàÎã§.
+        // ACK ∞¸∑√ SN¿ª º≥¡§«’¥œ¥Ÿ.
         sAck.mRestartSN       = aCollector->mRestartSN;
         sAck.mLastCommitSN    = aCollector->mLastCommitSN;
         sAck.mLastArrivedSN   = aCollector->mLastArrivedSN;
         sAck.mLastProcessedSN = aCollector->mLastProcessedSN;
 
-        // ACK Ï†ÑÏÜ° Í∞ÄÎä•Ìï®ÏùÑ ÌëúÏãúÌï©ÎãàÎã§.
+        // ACK ¿¸º€ ∞°¥…«‘¿ª «•Ω√«’¥œ¥Ÿ.
         sSendACKFlag = ACP_TRUE;
 
-        // ACK Ï†ÑÏÜ° Ï°∞Í±¥ÏùÑ Ï¥àÍ∏∞ÌôîÌï©ÎãàÎã§.
+        // ACK ¿¸º€ ¡∂∞«¿ª √ ±‚»≠«’¥œ¥Ÿ.
         aCollector->mKeepAliveArrived   = ACP_FALSE;
         aCollector->mStopACKArrived     = ACP_FALSE;
         aCollector->mProcessedXLogCount = 0;
@@ -3827,16 +3832,16 @@ ACI_RC ulaXLogCollectorSendACK(ulaXLogCollector *aCollector,
     sRc = acpThrMutexUnlock(&aCollector->mAckMutex);
     ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_MUTEX_ACK_UNLOCK);
 
-    /* ACK Ï†ÑÏÜ° Í∞ÄÎä• Ïó¨Î∂ÄÎ•º Í≤ÄÏÇ¨ÌïòÍ≥† Ï†ÑÏÜ°Ìï©ÎãàÎã§. */
+    /* ACK ¿¸º€ ∞°¥… ø©∫Œ∏¶ ∞ÀªÁ«œ∞Ì ¿¸º€«’¥œ¥Ÿ. */
     if (sSendACKFlag == ACP_TRUE)
     {
-        // ACKÎ•º Ï†ÑÏÜ°Ìï©ÎãàÎã§.
+        // ACK∏¶ ¿¸º€«’¥œ¥Ÿ.
         ACI_TEST_RAISE(ulaCommSendAck( &(aCollector->mProtocolContext), sAck, aErrorMgr )
                        != ACI_SUCCESS, ERR_ACK_SEND);
 
         if (sNetworkExitFlag == ACP_TRUE)
         {
-            // ÎÑ§Ìä∏ÏõåÌÅ¨ Ïó∞Í≤∞Ïù¥ ÎÅäÏñ¥ÏßÑ Í≤ÉÏúºÎ°ú ÌëúÏãúÌï©ÎãàÎã§.
+            // ≥◊∆Æøˆ≈© ø¨∞·¿Ã ≤˜æÓ¡¯ ∞Õ¿∏∑Œ «•Ω√«’¥œ¥Ÿ.
             aCollector->mNetworkExitFlag = ACP_TRUE;
         }
     }
@@ -3874,7 +3879,7 @@ ACI_RC ulaXLogCollectorSendACK(ulaXLogCollector *aCollector,
     }
     ACI_EXCEPTION(ERR_ACK_SEND)
     {
-        // Ïù¥ÎØ∏ ulaSetErrorCode() ÏàòÌñâ
+        // ¿ÃπÃ ulaSetErrorCode() ºˆ«‡
 
         aCollector->mNetworkExitFlag = ACP_TRUE;
     }
@@ -3914,7 +3919,7 @@ ACI_RC ulaXLogCollectorGetXLogCollectorStatus
 
     acpMemSet(aOutXLogCollectorStatus, 0x00, ACI_SIZEOF(ulaXLogCollectorStatus));
 
-    /* ÎÑ§Ìä∏ÏõåÌÅ¨ Ï†ïÎ≥¥ ÏÑ§Ï†ï */
+    /* ≥◊∆Æøˆ≈© ¡§∫∏ º≥¡§ */
     sRc = acpThrMutexLock(&aCollector->mSendMutex);
     ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_MUTEX_SEND_LOCK);
     sSendLock = ACP_TRUE;
@@ -3978,10 +3983,10 @@ ACI_RC ulaXLogCollectorGetXLogCollectorStatus
     sRc = acpThrMutexUnlock(&aCollector->mSendMutex);
     ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_MUTEX_SEND_UNLOCK);
 
-    /* XLog Pool Ï†ïÎ≥¥ ÏÑ§Ï†ï */
+    /* XLog Pool ¡§∫∏ º≥¡§ */
     aOutXLogCollectorStatus->mXLogCountInPool = aCollector->mXLogFreeCount;
 
-    /* GAP Ï†ïÎ≥¥ ÏÑ§Ï†ï */
+    /* GAP ¡§∫∏ º≥¡§ */
     sRc = acpThrMutexLock(&aCollector->mAckMutex);
     ACI_TEST_RAISE(ACP_RC_NOT_SUCCESS(sRc), ERR_MUTEX_ACK_LOCK);
     sAckLock = ACP_TRUE;

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpsSmExecutor.h 85255 2019-04-16 08:33:27Z donghyun1 $
+ * $Id: rpsSmExecutor.h 85848 2019-07-15 07:36:08Z yoonhee.kim $
  **********************************************************************/
 
 #ifndef _O_RPS_SM_EXECUTOR_H_
@@ -50,8 +50,8 @@ public:
 public:
     rpsSmExecutor();
 
-    // PROJ-1705 readRowÎ•º ÏúÑÌïú Í≥µÍ∞Ñ Ìï†ÎãπÏùÑ ÏúÑÌïòÏó¨
-    // meta Ï†ïÎ≥¥Î•º ÎÑòÍ≤®Ï§ÄÎã§. Î†àÏΩîÎìú ÏµúÎåÄÌÅ¨Í∏∞Î°ú Ìï†ÎãπÌï®.
+    // PROJ-1705 readRow∏¶ ¿ß«— ∞¯∞£ «“¥Á¿ª ¿ß«œø©
+    // meta ¡§∫∏∏¶ ≥—∞‹¡ÿ¥Ÿ. ∑πƒ⁄µÂ √÷¥Î≈©±‚∑Œ «“¥Á«‘.
     IDE_RC initialize( idvSQL  * aOpStatistics,
                        rpdMeta * aMeta,
                        idBool    aIsConflictWhenNotEnoughSpace );
@@ -123,25 +123,26 @@ public:
                           idBool     *aIsConflict,
                           mtcColumn  *aTsFlag);
 
-    IDE_RC compareInsertImage( smiTrans    * aTrans,
-                               rpdXLog     * aXLog,
-                               rpdMetaItem * aMetaItem,
-                               smiRange    * aKeyRange,
-                               idBool      * aIsConflict,
-                               mtcColumn   * aTsFlag );
+    IDE_RC compareInsertImage( smiTrans         * aTrans,
+                               rpdXLog          * aXLog,
+                               rpdMetaItem      * aMetaItem,
+                               smiRange         * aKeyRange,
+                               idBool           * aIsConflict,
+                               mtcColumn        * aTsFlag,
+                               rpApplyFailType  * aFailType );
 
     IDE_RC compareUpdateImage(rpdXLog    *aXLog,
                               smOID       aTableOID,
                               const void *aRow,
                               idBool     *aIsConflict);
 
-    IDE_RC openLOBCursor( smiTrans    * aTrans,
-                          rpdXLog     * aXLog,
-                          rpdMetaItem * aMetaItem,
-                          smiRange    * aKeyRange,
-                          rpdTransTbl * aTransTbl,
-                          idBool      * aIsLOBOperationException,
-                          idBool      * aIsLockTimeout );
+    IDE_RC openLOBCursor( smiTrans         * aTrans,
+                          rpdXLog          * aXLog,
+                          rpdMetaItem      * aMetaItem,
+                          smiRange         * aKeyRange,
+                          rpdTransTbl      * aTransTbl,
+                          idBool           * aIsLOBOperationException,
+                          rpApplyFailType  * aFailType );
 
     IDE_RC closeLOBCursor( rpdXLog     *aXLog,
                            rpdTransTbl *aTransTbl,

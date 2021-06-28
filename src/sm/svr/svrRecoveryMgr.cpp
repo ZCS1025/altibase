@@ -21,9 +21,9 @@
 #include <svrRecoveryMgr.h>
 
 /********************************************************************************
- * Description : í•œ íŠ¸ëœì­ì…˜ì´ volatile TBSì— ëŒ€í•´ ìˆ˜í–‰í•œ ê°±ì‹  ì—°ì‚°ë“¤ì„
- *               ëª¨ë‘ undoí•œë‹¤. ê·¸ë¦¬ê³  ë¡œê¹… í¬ì¸íŠ¸ë¥¼ savepointê¹Œì§€ ë‹¹ê¸´ë‹¤.
- *               savepointLSNì´ SVR_LSN_BEFORE_FIRSTì´ë©´ total rollbackí•œë‹¤.
+ * Description : ÇÑ Æ®·£Àè¼ÇÀÌ volatile TBS¿¡ ´ëÇØ ¼öÇàÇÑ °»½Å ¿¬»êµéÀ»
+ *               ¸ğµÎ undoÇÑ´Ù. ±×¸®°í ·Î±ë Æ÷ÀÎÆ®¸¦ savepoint±îÁö ´ç±ä´Ù.
+ *               savepointLSNÀÌ SVR_LSN_BEFORE_FIRSTÀÌ¸é total rollbackÇÑ´Ù.
  ********************************************************************************/
 IDE_RC svrRecoveryMgr::undoTrans(svrLogEnv *aEnv,
                                  svrLSN     aSavepointLSN)
@@ -38,7 +38,7 @@ IDE_RC svrRecoveryMgr::undoTrans(svrLogEnv *aEnv,
         IDE_TEST(undo(aEnv, sCurLSN, &sCurLSN) != IDE_SUCCESS);
     }
 
-    /* undo í•œ ë¡œê·¸ë“¤ì€ ëª¨ë‘ ë‚ ë¦°ë‹¤. */
+    /* undo ÇÑ ·Î±×µéÀº ¸ğµÎ ³¯¸°´Ù. */
     IDE_TEST(svrLogMgr::removeLogHereafter(aEnv, sCurLSN) != IDE_SUCCESS);
 
     return IDE_SUCCESS;
@@ -49,8 +49,8 @@ IDE_RC svrRecoveryMgr::undoTrans(svrLogEnv *aEnv,
 }
 
 /********************************************************************************
- * Description : volatile tbsì— update ì—°ì‚°ì— ëŒ€í•´ undoë¥¼ ìˆ˜í–‰í•œë‹¤.
- *               í•œ ë¡œê·¸ì— êµ­í•œëœë‹¤. ê·¸ë¦¬ê³  private í•¨ìˆ˜ì´ë‹¤.
+ * Description : volatile tbs¿¡ update ¿¬»ê¿¡ ´ëÇØ undo¸¦ ¼öÇàÇÑ´Ù.
+ *               ÇÑ ·Î±×¿¡ ±¹ÇÑµÈ´Ù. ±×¸®°í private ÇÔ¼öÀÌ´Ù.
  ********************************************************************************/
 IDE_RC svrRecoveryMgr::undo(svrLogEnv *aEnv,
                             svrLSN     aLSN,

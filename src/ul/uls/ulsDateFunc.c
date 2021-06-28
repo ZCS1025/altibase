@@ -16,7 +16,7 @@
 
 /***********************************************************************
  *
- * Spatio-Temporal Date ì¡°ì‘ í•¨ìˆ˜
+ * Spatio-Temporal Date Á¶ÀÛ ÇÔ¼ö
  *
  ***********************************************************************/
 
@@ -30,7 +30,7 @@
  *
  * Description:
  *
- *   DATE ê°’ë¥¼ íšë“í•œë‹¤.
+ *   DATE °ª¸¦ È¹µæÇÑ´Ù.
  *
  * Implementation:
  *
@@ -95,7 +95,7 @@ ACSRETURN ulsGetDate( ulsHandle    * aHandle,
  *
  * Description:
  *
- *   DATE ê°’ì„ ì„¤ì •í•œë‹¤.
+ *   DATE °ªÀ» ¼³Á¤ÇÑ´Ù.
  *
  * Implementation:
  *

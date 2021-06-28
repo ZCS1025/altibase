@@ -19,10 +19,10 @@
 
 
 /**
- * PID íŒŒì¼ì„ ë§Œë“ ë‹¤.
+ * PID ÆÄÀÏÀ» ¸¸µç´Ù.
  *
- * @param[IN] aHandle í•¸ë“¤
- * @return ê²°ê³¼ ì½”ë“œ ê°’
+ * @param[IN] aHandle ÇÚµé
+ * @return °á°ú ÄÚµå °ª
  */
 CHKSVR_INTERNAL
 CHKSVR_RC checkServerPidFileCreate (CheckServerHandle *aHandle)
@@ -65,11 +65,11 @@ CHKSVR_RC checkServerPidFileCreate (CheckServerHandle *aHandle)
 }
 
 /**
- * PID íŒŒì¼ì´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
+ * PID ÆÄÀÏÀÌ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
  *
- * @param[IN] aHandle í•¸ë“¤
- * @param[IN,OUT] aExist PID íŒŒì¼ì´ ìˆìœ¼ë©´ ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE
- * @return ê²°ê³¼ ì½”ë“œ ê°’
+ * @param[IN] aHandle ÇÚµé
+ * @param[IN,OUT] aExist PID ÆÄÀÏÀÌ ÀÖÀ¸¸é ID_TRUE, ¾Æ´Ï¸é ID_FALSE
+ * @return °á°ú ÄÚµå °ª
  */
 CHKSVR_INTERNAL
 CHKSVR_RC checkServerPidFileExist (CheckServerHandle *aHandle, idBool *aExist)
@@ -85,7 +85,7 @@ CHKSVR_RC checkServerPidFileExist (CheckServerHandle *aHandle, idBool *aExist)
     sFP = idlOS::fopen(aHandle->mPidFilePath, "r");
     if (sFP == NULL)
     {
-        /* pathê°€ ì˜ëª»ëê±°ë‚˜ íŒŒì¼ì´ ì—†ì–´ì„œ ëª»ì½ì€ ê²ƒ(ENOENT)ì´ ì•„ë‹ˆë©´ ì—ëŸ¬ */
+        /* path°¡ Àß¸øµÆ°Å³ª ÆÄÀÏÀÌ ¾ø¾î¼­ ¸øÀĞÀº °Í(ENOENT)ÀÌ ¾Æ´Ï¸é ¿¡·¯ */
         IDE_TEST_RAISE(errno != ENOENT, fopen_error);
 
         *aExist = ID_FALSE;
@@ -114,11 +114,11 @@ CHKSVR_RC checkServerPidFileExist (CheckServerHandle *aHandle, idBool *aExist)
 }
 
 /**
- * PID íŒŒì¼ë¡œë¶€í„° pid ê°’ì„ ì–»ëŠ”ë‹¤.
+ * PID ÆÄÀÏ·ÎºÎÅÍ pid °ªÀ» ¾ò´Â´Ù.
  *
- * @param[IN] aHandle í•¸ë“¤
- * @param[IN,OUT] aPid ì½ì–´ë“¤ì¸ pid ê°’ì„ ë‹´ì„ í¬ì¸í„°
- * @return ê²°ê³¼ ì½”ë“œ ê°’
+ * @param[IN] aHandle ÇÚµé
+ * @param[IN,OUT] aPid ÀĞ¾îµéÀÎ pid °ªÀ» ´ãÀ» Æ÷ÀÎÅÍ
+ * @return °á°ú ÄÚµå °ª
  */
 CHKSVR_INTERNAL
 CHKSVR_RC checkServerPidFileLoad (CheckServerHandle *aHandle, pid_t *aPid)
@@ -162,10 +162,10 @@ CHKSVR_RC checkServerPidFileLoad (CheckServerHandle *aHandle, pid_t *aPid)
 }
 
 /**
- * PID íŒŒì¼ì„ ì œê±°í•œë‹¤.
+ * PID ÆÄÀÏÀ» Á¦°ÅÇÑ´Ù.
  *
- * @param[IN] aHandle í•¸ë“¤
- * @return ê²°ê³¼ ì½”ë“œ ê°’
+ * @param[IN] aHandle ÇÚµé
+ * @return °á°ú ÄÚµå °ª
  */
 CHKSVR_INTERNAL
 CHKSVR_RC checkServerPidFileRemove (CheckServerHandle *aHandle)
@@ -191,10 +191,10 @@ CHKSVR_RC checkServerPidFileRemove (CheckServerHandle *aHandle)
 }
 
 /**
- * pidì— í•´ë‹¹í•˜ëŠ” í”„ë¡œì„¸ìŠ¤ë¥¼ ì£½ì¸ë‹¤.
+ * pid¿¡ ÇØ´çÇÏ´Â ÇÁ·Î¼¼½º¸¦ Á×ÀÎ´Ù.
  *
- * @param[IN] aPid ì¢…ë£Œí•  í”„ë¡œì„¸ìŠ¤ì˜ pid
- * @return ê²°ê³¼ ì½”ë“œ ê°’
+ * @param[IN] aPid Á¾·áÇÒ ÇÁ·Î¼¼½ºÀÇ pid
+ * @return °á°ú ÄÚµå °ª
  */
 CHKSVR_INTERNAL
 CHKSVR_RC checkServerKillProcess (pid_t aPid)

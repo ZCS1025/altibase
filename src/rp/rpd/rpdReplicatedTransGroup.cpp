@@ -346,7 +346,8 @@ idBool rpdReplicatedTransGroup::isLastTransactionInFirstGroup( smTID     aTransI
 
     IDE_DASSERT( sNode != NULL );
 
-    sRC = sNode->isLastTrans( aEndSN );
+    sRC = sNode->isLastTrans( aTransID,
+                              aEndSN );
 
     return sRC;
 }
@@ -473,12 +474,13 @@ void rpdReplicatedTransGroup::getReplicatedTransGroupInfo( smTID           aTran
     if ( sHeadNextNode == sNode )
     {
         if ( sNode->isThisTransaction( aTransID,
-                    aSN ) 
+                                       aSN )
                 == ID_TRUE )
         {
             *aIsFirstGroup = ID_TRUE;
             *aGroupOperation = sNode->getOperation();
-            *aIsLastLog = sNode->isLastTrans( aSN );
+            *aIsLastLog = sNode->isLastTrans( aTransID,
+                                              aSN );
         }
         else
         {

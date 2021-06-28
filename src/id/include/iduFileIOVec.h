@@ -66,11 +66,11 @@ public:
     inline operator SInt          (void)    { return getCount(); }
 
 private:
-    /* ë°ì´í„°ë¥¼ ì €ì¥í•  í¬ì¸í„°ì™€ ê¸¸ì´ ë°°ì—´ */
+    /* µ¥ÀÌÅÍ¸¦ ÀúÀåÇÒ Æ÷ÀÎÅÍ¿Í ±æÀÌ ¹è¿­ */
     struct iovec*   mIOVec;
-    /* mIOVecì— ì„¤ì •ëœ ë°ì´í„°/ê¸¸ì´ ê°œìˆ˜ */
+    /* mIOVec¿¡ ¼³Á¤µÈ µ¥ÀÌÅÍ/±æÀÌ °³¼ö */
     SInt            mCount;
-    /* mIOVecì˜ í¬ê¸°. */
+    /* mIOVecÀÇ Å©±â. */
     SInt            mSize;
 };
 

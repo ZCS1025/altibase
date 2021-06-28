@@ -31,8 +31,8 @@ isqlVarchar::isqlVarchar()
 
 IDE_RC isqlVarchar::initBuffer()
 {
-    // BUG-24085 ì»¨ë²„ì ¼ì´ ì¼ì–´ë‚˜ì„œ ë°ì´íƒ€ê°€ ëŠ˜ì–´ë‚œ ê²½ìš° ì—ëŸ¬ê°€ ë°œìƒí•©ë‹ˆë‹¤.
-    // ì •í™•í•œ ì‚¬ì´ì¦ˆë¥¼ ì•Œê¸°ê°€ í˜ë“¤ë‹¤ ë”°ë¼ì„œ NCHAR ê³¼ ê°™ì´ ì²˜ë¦¬í•œë‹¤.
+    // BUG-24085 ÄÁ¹öÁ¯ÀÌ ÀÏ¾î³ª¼­ µ¥ÀÌÅ¸°¡ ´Ã¾î³­ °æ¿ì ¿¡·¯°¡ ¹ß»ıÇÕ´Ï´Ù.
+    // Á¤È®ÇÑ »çÀÌÁî¸¦ ¾Ë±â°¡ Èûµé´Ù µû¶ó¼­ NCHAR °ú °°ÀÌ Ã³¸®ÇÑ´Ù.
     SInt sSize = (SInt)((mPrecision + 1) * 3);
 
     mValue = (SChar *) idlOS::malloc(sSize);
@@ -89,8 +89,8 @@ SInt isqlVarchar::AppendToBuffer( SChar *aBuf, SInt *aBufLen )
     SInt  i;
 
     /* BUG-43911
-     * char, varchar, bit, bytes íƒ€ì…ì€ ë‹¤ë¥¸ íƒ€ì…ê³¼ ë‹¬ë¦¬ í•œ ì¹¸ ë” ë§ì§€ë§Œ,
-     * í•˜ìœ„ í˜¸í™˜ì„±ì„ ìœ ì§€í•˜ê¸° ìœ„í•´ ê·¸ëŒ€ë¡œ ë‘”ë‹¤. */
+     * char, varchar, bit, bytes Å¸ÀÔÀº ´Ù¸¥ Å¸ÀÔ°ú ´Ş¸® ÇÑ Ä­ ´õ ¸¹Áö¸¸,
+     * ÇÏÀ§ È£È¯¼ºÀ» À¯ÁöÇÏ±â À§ÇØ ±×´ë·Î µĞ´Ù. */
     for ( i = 0 ; i <= mDisplaySize ; i++ )
     {
         if ( mCurrLen > 0 )
@@ -99,6 +99,23 @@ SInt isqlVarchar::AppendToBuffer( SChar *aBuf, SInt *aBufLen )
                  ((aBuf[i-1] & 0x80) == 0) )
             {
                 aBuf[i] = ' ';
+            }
+            /*
+             * BUG-47325
+             *   Line breaks occur at the wrong position
+             *   when newline character included query results.
+             */
+            else if (*mCurr == '\r' && *(mCurr+1) == '\n')
+            {
+                mCurrLen = mCurrLen - 2;
+                mCurr = mCurr + 2;
+                break;
+            }
+            else if (*mCurr == '\n')
+            {
+                mCurrLen--;
+                mCurr++;
+                break;
             }
             else
             {

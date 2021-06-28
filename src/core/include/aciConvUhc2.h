@@ -29,7 +29,7 @@ ACP_EXTERN_C_BEGIN
  * Unified Hangul Code part 2
  */
 
-/* XOR ì„ í•˜ê¸° ìœ„í•œ ìž„ì˜ì˜ ê°’. íŠ¹ë³„í•œ ì˜ë¯¸ë¥¼ ë‚˜íƒ€ë‚´ì§€ ì•ŠëŠ”ë‹¤. */
+/* XOR À» ÇÏ±â À§ÇÑ ÀÓÀÇÀÇ °ª. Æ¯º°ÇÑ ÀÇ¹Ì¸¦ ³ªÅ¸³»Áö ¾Ê´Â´Ù. */
 #define UHC2_XOR_VALUE (29)
 
 ACP_EXPORT

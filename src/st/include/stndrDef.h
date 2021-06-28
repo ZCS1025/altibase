@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: stndrDef.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: stndrDef.h 89278 2020-11-19 01:41:49Z justin.kwon $
  ***********************************************************************/
 
 #ifndef _O_STNDR_DEF_H_
@@ -31,9 +31,9 @@
 
 #define STNDR_MAX_PATH_STACK_DEPTH  (256)
 
-// Key BufferëŠ” stdGeometryHeaderì™€ KeySizeë³´ë‹¤ ì»¤ì•¼ í•œë‹¤.
-//  - makeKeyValueFromRow: stdGeometryHeaderë¥¼ ì½ê¸° ìœ„í•œ í¬ê¸°ë¡œ ì‚¬ìš©
-//  - nodeAging: ì„ì‹œ Leaf Keyë¥¼ ë‹´ê¸° ìœ„í•œ í¬ê¸°ë¡œ ì‚¬ìš©
+// Key Buffer´Â stdGeometryHeader¿Í KeySizeº¸´Ù Ä¿¾ß ÇÑ´Ù.
+//  - makeKeyValueFromRow: stdGeometryHeader¸¦ ÀĞ±â À§ÇÑ Å©±â·Î »ç¿ë
+//  - nodeAging: ÀÓ½Ã Leaf Key¸¦ ´ã±â À§ÇÑ Å©±â·Î »ç¿ë
 #define STNDR_MAX_KEY_BUFFER_SIZE   ( ID_SIZEOF(stdGeometryHeader) +    \
                                       ID_SIZEOF(stndrLKeyEx) +          \
                                       ID_SIZEOF(stndrIKey) +            \
@@ -161,12 +161,10 @@ typedef struct stndrLKey
 {
     scPageID    mRowPID;
     scSlotNum   mRowSlotNum;
-    UChar       mTxInfo[2];    /* = { chainedCCTS (1bit),
-                                *     createCTS   (5bit),
-                                *     duplicated  (1bit), - unused
-                                *     chainedLCTS (1bit),
-                                *     limitCTS    (5bit),
+    UChar       mTxInfo[2];    /* = { createCTS   (6bit),
                                 *     state       (2bit),
+                                *     limitCTS    (6bit),
+                                *     duplicated  (1bit), - unused
                                 *     txBoundType (1bit) }
                                 */
     smSCN       mCreateSCN; 
@@ -211,8 +209,8 @@ typedef struct stndrLBuildKey
 typedef struct stndrIBuildKey
 {
     stndrIKey           mInternalKey;
-    SChar               mAlign[4];      /* BUG-31024: AIXì—ì„œ Paddingì´ ì•ˆë˜ëŠ” ë¬¸ì œ, ì²« ë©¤ë²„ê°€
-                                         * Doubleì´ ì•„ë‹ˆë©´ 4byte ì •ë ¬ë¨ */
+    SChar               mAlign[4];      /* BUG-31024: AIX¿¡¼­ PaddingÀÌ ¾ÈµÇ´Â ¹®Á¦, Ã¹ ¸â¹ö°¡
+                                         * DoubleÀÌ ¾Æ´Ï¸é 4byte Á¤·ÄµÊ */
     stndrCenterPoint    mCenterPoint;
 } stndrIBuildKey;
 
@@ -287,14 +285,12 @@ typedef struct stndrRunInfo
     }
 
 #define STNDR_KEYINFO_TO_LKEY( aKeyInfo, aKeyValueLength, aLKey,            \
-                               aCCCTS, aCCTS, aCSCN,                        \
-                               aCLCTS, aLCTS, aLSCN, aState, aTbType )      \
+                               aCCTS, aCSCN,                                \
+                               aLCTS, aLSCN, aState, aTbType )              \
     {                                                                           \
         ID_4_BYTE_ASSIGN( &((aLKey)->mRowPID),      &((aKeyInfo).mRowPID) );    \
         ID_2_BYTE_ASSIGN( &((aLKey)->mRowSlotNum),  &((aKeyInfo).mRowSlotNum) );\
-        STNDR_SET_CHAINED_CCTS( aLKey, aCCCTS );                                \
         STNDR_SET_CCTS_NO( aLKey, aCCTS );                                      \
-        STNDR_SET_CHAINED_LCTS( aLKey, aCLCTS );                                \
         STNDR_SET_LCTS_NO( aLKey, aLCTS );                                      \
         STNDR_SET_CSCN( aLKey, &aCSCN );                                        \
         STNDR_SET_LSCN( aLKey, &aLSCN );                                        \
@@ -320,12 +316,10 @@ typedef struct stndrRunInfo
                       &((aKeyInfo)->mRowPID),           \
                       ID_SIZEOF(scPageID)  ) == 0) )
 
-#define STNDR_GET_CHAINED_CCTS( aKey )  ((0x80 & (aKey)->mTxInfo[0]) >> 7)
-#define STNDR_GET_CHAINED_LCTS( aKey )  ((0x01 & (aKey)->mTxInfo[0]))
+#define STNDR_GET_CCTS_NO( aKey )   ((0xFC & (aKey)->mTxInfo[0]) >> 2)
+#define STNDR_GET_STATE( aKey )     ((0x03 & (aKey)->mTxInfo[0]))
+#define STNDR_GET_LCTS_NO( aKey )   ((0xFC & (aKey)->mTxInfo[1]) >> 2)
 
-#define STNDR_GET_CCTS_NO( aKey )   ((0x7C & (aKey)->mTxInfo[0]) >> 2)
-#define STNDR_GET_LCTS_NO( aKey )   ((0xF8 & (aKey)->mTxInfo[1]) >> 3)
-#define STNDR_GET_STATE( aKey )     ((0x06 & (aKey)->mTxInfo[1]) >> 1)
 #define STNDR_GET_TB_TYPE( aKey )   ((0x01 & (aKey)->mTxInfo[1]))
 
 #define STNDR_GET_TBK_CSCN( aKey, aValue )       \
@@ -367,13 +361,10 @@ typedef struct stndrRunInfo
 
 #define STNDR_LKEY_HEADER_LEN_EX    ( ID_SIZEOF(stndrLKeyEx) )
 
-#define STNDR_CHAINED_CCTS_UNMASK   ((UChar)(0x7F)) // [1000 0000] [0000 0000]
-#define STNDR_CREATE_CTS_UNMASK     ((UChar)(0x83)) // [0111 1100] [0000 0000]
-#define STNDR_CHAINED_LCTS_UNMASK   ((UChar)(0xFE)) // [0000 0001] [0000 0000]
-#define STNDR_LIMIT_CTS_UNMASK      ((UChar)(0x07)) // [0000 0000] [1111 1000]
-#define STNDR_STATE_UNMASK          ((UChar)(0xF9)) // [0000 0000] [0000 0110]
+#define STNDR_CREATE_CTS_UNMASK     ((UChar)(0x03)) // [1111 1100] [0000 0000]
+#define STNDR_STATE_UNMASK          ((UChar)(0xFC)) // [0000 0011] [0000 0000]
+#define STNDR_LIMIT_CTS_UNMASK      ((UChar)(0x03)) // [0000 0000] [1111 1100]
 #define STNDR_TB_UNMASK             ((UChar)(0xFE)) // [0000 0000] [0000 0001]
-
 
 #define STNDR_SET_CSCN( aKey, aValue ) \
     idlOS::memcpy( &((aKey)->mCreateSCN), (aValue), ID_SIZEOF(smSCN) );
@@ -381,36 +372,21 @@ typedef struct stndrRunInfo
 #define STNDR_SET_LSCN( aKey, aValue ) \
     idlOS::memcpy( &((aKey)->mLimitSCN), (aValue), ID_SIZEOF(smSCN) );
 
-#define STNDR_SET_CHAINED_CCTS( aKey, aValue )          \
-    {                                                   \
-        (aKey)->mTxInfo[0] &= STNDR_CHAINED_CCTS_UNMASK;\
-        (aKey)->mTxInfo[0] |= ((UChar)aValue << 7);     \
-    }
-
 #define STNDR_SET_CCTS_NO( aKey, aValue )               \
     {                                                   \
         (aKey)->mTxInfo[0] &= STNDR_CREATE_CTS_UNMASK;  \
         (aKey)->mTxInfo[0] |= ((UChar)aValue << 2);     \
     }
-
-#define STNDR_SET_CHAINED_LCTS( aKey, aValue )              \
-    {                                                       \
-        (aKey)->mTxInfo[0] &= STNDR_CHAINED_LCTS_UNMASK;    \
-        (aKey)->mTxInfo[0] |= (UChar)aValue;                \
+#define STNDR_SET_STATE( aKey, aValue )             \
+    {                                               \
+        (aKey)->mTxInfo[0] &= STNDR_STATE_UNMASK;   \
+        (aKey)->mTxInfo[0] |= ((UChar)aValue); \
     }
-
 #define STNDR_SET_LCTS_NO( aKey, aValue )               \
     {                                                   \
         (aKey)->mTxInfo[1] &= STNDR_LIMIT_CTS_UNMASK;   \
-        (aKey)->mTxInfo[1] |= ((UChar)aValue << 3);     \
+        (aKey)->mTxInfo[1] |= ((UChar)aValue << 2);     \
     }
-
-#define STNDR_SET_STATE( aKey, aValue )             \
-    {                                               \
-        (aKey)->mTxInfo[1] &= STNDR_STATE_UNMASK;   \
-        (aKey)->mTxInfo[1] |= ((UChar)aValue << 1); \
-    }
-
 #define STNDR_SET_TB_TYPE( aKey, aValue )       \
     {                                           \
         (aKey)->mTxInfo[1] &= STNDR_TB_UNMASK;  \
@@ -495,8 +471,8 @@ typedef struct stndrColumn
 
     UInt                          mMtdHeaderLength;
 
-    smiColumn                     mKeyColumn;       // Keyì—ì„œì˜ column info
-    smiColumn                     mVRowColumn;      // fetchëœ Rowì˜ column info
+    smiColumn                     mKeyColumn;       // Key¿¡¼­ÀÇ column info
+    smiColumn                     mVRowColumn;      // fetchµÈ RowÀÇ column info
 }stndrColumn;
 
 typedef struct stndrPageStat
@@ -568,12 +544,12 @@ typedef struct stndrHeader
     UInt                    mSmoNoAtomicA;
     UInt                    mSmoNoAtomicB;
 
-    // BUG-29743: Root Nodeì˜ Split ì—¬ë¶€ë¥¼ ì˜ëª» íŒë‹¨í•©ë‹ˆë‹¤.
+    // BUG-29743: Root NodeÀÇ Split ¿©ºÎ¸¦ Àß¸ø ÆÇ´ÜÇÕ´Ï´Ù.
     stndrVirtualRootNode    mVirtualRootNode;
     UInt                    mVirtualRootNodeAtomicA;
     UInt                    mVirtualRootNodeAtomicB;
 
-    /* ìœ„ ê°’ë“¤ì— ëŒ€í•´ Mtx Rollbackì´ ì¼ì–´ë‚¬ì„ë•Œ ë³µêµ¬í•˜ê¸° ìœ„í•œ ë°±ì—…ë³¸ */
+    /* À§ °ªµé¿¡ ´ëÇØ Mtx RollbackÀÌ ÀÏ¾î³µÀ»¶§ º¹±¸ÇÏ±â À§ÇÑ ¹é¾÷º» */
     scPageID                mRootNode4MtxRollback;
     scPageID                mEmptyNodeHead4MtxRollback;
     scPageID                mEmptyNodeTail4MtxRollback;
@@ -650,14 +626,15 @@ typedef struct stndrIterator
     smSCN       mInfinite;
     void*       mTrans;
     void*       mTable;
-    SChar*      mCurRecPtr;  // MRDB scan moduleì—ì„œë§Œ ì •ì˜í•´ì„œ ì“°ë„ë¡ ìˆ˜ì •?
+    SChar*      mCurRecPtr;  // MRDB scan module¿¡¼­¸¸ Á¤ÀÇÇØ¼­ ¾²µµ·Ï ¼öÁ¤?
     SChar*      mLstFetchRecPtr;
     scGRID      mRowGRID;
     smTID       mTID;
     UInt        mFlag;
 
     smiCursorProperties  * mProperties;
-    /* smiIterator ê³µí†µ ë³€ìˆ˜ ë */
+    smiStatement         * mStatement;
+    /* smiIterator °øÅë º¯¼ö ³¡ */
 
     void                * mIndex;
     const smiRange      * mKeyRange;

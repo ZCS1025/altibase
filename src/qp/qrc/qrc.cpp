@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qrc.cpp 84317 2018-11-12 00:39:24Z minku.kang $
+ * $Id: qrc.cpp 90824 2021-05-13 05:35:21Z minku.kang $
  **********************************************************************/
 
 #include <idl.h>
@@ -26,6 +26,12 @@
 #include <qdpPrivilege.h>
 #include <qdpRole.h>
 #include <rp.h>
+
+IDE_RC qrc::validateFailover( qcStatement * aStatement )
+{
+    return qci::mValidateReplicationCallback.mValidateFailover( aStatement ); 
+}
+    
 
 /***********************************************************************
  * VALIDATE
@@ -91,7 +97,7 @@ IDE_RC qrc::validateStart(qcStatement * aStatement)
 }
 
 /* PROJ-1915 
- * SYS_REPL_OFFLINE_DIR_ ê°€ ìžˆëŠ”ì§€ ì¡°íšŒ í•œë‹¤.
+ * SYS_REPL_OFFLINE_DIR_ °¡ ÀÖ´ÂÁö Á¶È¸ ÇÑ´Ù.
  */
 IDE_RC qrc::validateOfflineStart(qcStatement * aStatement)
 {
@@ -113,11 +119,25 @@ IDE_RC qrc::validateSyncTbl(qcStatement * aStatement)
     return qci::mValidateReplicationCallback.mValidateSyncTbl( aStatement );
 }
 
+IDE_RC qrc::validateTempSync(qcStatement * aStatement)
+{
+    return qci::mValidateReplicationCallback.mValidateTempSync( aStatement );
+}
+
 IDE_RC qrc::validateReset(qcStatement * aStatement)
 {
     return qci::mValidateReplicationCallback.mValidateReset( aStatement );
 }
 
+IDE_RC qrc::validateDeleteItemReplaceHistory(qcStatement * aStatement)
+{
+    return qci::mValidateReplicationCallback.mValidateDeleteItemReplaceHistory( aStatement );
+}
+
+IDE_RC qrc::validateFailback(qcStatement * aStatement)
+{
+    return qci::mValidateReplicationCallback.mValidateFailback( aStatement );
+}
 /***********************************************************************
  * EXECUTE
  **********************************************************************/
@@ -164,17 +184,343 @@ IDE_RC qrc::executeDrop(qcStatement * aStatement)
 
 IDE_RC qrc::executeStart(qcStatement * aStatement)
 {
-    return qci::mExecuteReplicationCallback.mExecuteStart( aStatement );
+    qriParseTree    * sParseTree    = (qriParseTree *)QC_PARSETREE(aStatement);
+    
+    smiTrans          sSmiTrans;
+    smiStatement    * sDummySmiStmt = NULL;
+    smiStatement    * sSmiStmtOrg   = NULL;
+    smiStatement      sSmiStmt;
+    SInt              sState        = 0;
+    
+    IDE_TEST( sSmiTrans.initialize() != IDE_SUCCESS );
+    sState = 1;
+    
+    IDE_TEST( sSmiTrans.begin( &sDummySmiStmt,
+                               aStatement->mStatistics,
+                               SMI_ISOLATION_CONSISTENT |
+                               SMI_TRANSACTION_NORMAL |
+                               SMI_TRANSACTION_REPL_NONE |
+                               SMI_COMMIT_WRITE_WAIT )
+              != IDE_SUCCESS );
+    sState = 2;
+    
+    IDE_TEST( sSmiStmt.begin( aStatement->mStatistics,
+                              sDummySmiStmt,
+                              SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR )
+              != IDE_SUCCESS );
+    
+    qcg::getSmiStmt( aStatement, &sSmiStmtOrg );
+    qcg::setSmiStmt( aStatement, &sSmiStmt );
+    sState = 3;
+    
+    IDE_TEST( sParseTree->common.validate( aStatement ) != IDE_SUCCESS );
+    
+    IDE_TEST(qci::mExecuteReplicationCallback.mExecuteStart( aStatement ) != IDE_SUCCESS);
+    
+    qcg::setSmiStmt( aStatement, sSmiStmtOrg );
+    
+    sState = 2;
+    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
+    sState = 1;
+
+    sState = 0;
+    IDE_TEST( sSmiTrans.destroy( aStatement->mStatistics ) != IDE_SUCCESS );
+    
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION_END;
+    IDE_PUSH();
+    switch ( sState )
+    {
+    case 3:
+        qcg::setSmiStmt( aStatement, sSmiStmtOrg );
+        
+        (void)sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+    case 2:
+        (void)sSmiTrans.rollback();
+    case 1:
+        (void)sSmiTrans.destroy( aStatement->mStatistics );
+    case 0:
+    default:
+        break;
+    }
+    IDE_POP();
+    return IDE_FAILURE;
 }
 
 IDE_RC qrc::executeQuickStart(qcStatement * aStatement)
 {
-    return qci::mExecuteReplicationCallback.mExecuteQuickStart( aStatement );
+    qriParseTree    * sParseTree    = (qriParseTree *)QC_PARSETREE(aStatement);
+    
+    smiTrans          sSmiTrans;
+    smiStatement    * sDummySmiStmt = NULL;
+    smiStatement    * sSmiStmtOrg   = NULL;
+    smiStatement      sSmiStmt;
+    SInt              sState        = 0;
+    
+    IDE_TEST( sSmiTrans.initialize() != IDE_SUCCESS );
+    sState = 1;
+    
+    IDE_TEST( sSmiTrans.begin( &sDummySmiStmt,
+                               aStatement->mStatistics,
+                               SMI_ISOLATION_CONSISTENT |
+                               SMI_TRANSACTION_NORMAL |
+                               SMI_TRANSACTION_REPL_NONE |
+                               SMI_COMMIT_WRITE_WAIT )
+              != IDE_SUCCESS );
+    sState = 2;
+    
+    IDE_TEST( sSmiStmt.begin( aStatement->mStatistics,
+                              sDummySmiStmt,
+                              SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR )
+              != IDE_SUCCESS );
+    
+    qcg::getSmiStmt( aStatement, &sSmiStmtOrg );
+    qcg::setSmiStmt( aStatement, &sSmiStmt );
+    sState = 3;
+    
+    IDE_TEST( sParseTree->common.validate( aStatement ) != IDE_SUCCESS );
+
+    IDE_TEST( qci::mExecuteReplicationCallback.mExecuteQuickStart( aStatement ) != IDE_SUCCESS );
+    
+    qcg::setSmiStmt( aStatement, sSmiStmtOrg );
+    
+    sState = 2;
+    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
+    sState = 1;
+
+    sState = 0;
+    IDE_TEST( sSmiTrans.destroy( aStatement->mStatistics ) != IDE_SUCCESS );
+    
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION_END;
+    IDE_PUSH();
+    switch ( sState )
+    {
+    case 3:
+        qcg::setSmiStmt( aStatement, sSmiStmtOrg );
+        
+        (void)sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+    case 2:
+        (void)sSmiTrans.rollback();
+    case 1:
+        (void)sSmiTrans.destroy( aStatement->mStatistics );
+    case 0:
+    default:
+        break;
+    }
+    IDE_POP();
+    return IDE_FAILURE;
 }
 
 IDE_RC qrc::executeSync(qcStatement * aStatement)
 {
-    return qci::mExecuteReplicationCallback.mExecuteSync( aStatement );
+    qriParseTree    * sParseTree    = (qriParseTree *)QC_PARSETREE(aStatement);
+    
+    smiTrans          sSmiTrans;
+    smiStatement    * sDummySmiStmt = NULL;
+    smiStatement    * sSmiStmtOrg   = NULL;
+    smiStatement      sSmiStmt;
+    SInt              sState        = 0;
+    
+    IDE_TEST( sSmiTrans.initialize() != IDE_SUCCESS );
+    sState = 1;
+    
+    IDE_TEST( sSmiTrans.begin( &sDummySmiStmt,
+                               aStatement->mStatistics,
+                               SMI_ISOLATION_CONSISTENT |
+                               SMI_TRANSACTION_NORMAL |
+                               SMI_TRANSACTION_REPL_NONE |
+                               SMI_COMMIT_WRITE_WAIT )
+              != IDE_SUCCESS );
+    sState = 2;
+    
+    IDE_TEST( sSmiStmt.begin( aStatement->mStatistics,
+                              sDummySmiStmt,
+                              SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR )
+              != IDE_SUCCESS );
+    
+    qcg::getSmiStmt( aStatement, &sSmiStmtOrg );
+    qcg::setSmiStmt( aStatement, &sSmiStmt );
+    sState = 3;
+    
+    IDE_TEST( sParseTree->common.validate( aStatement ) != IDE_SUCCESS );
+    
+    
+    IDE_TEST( qci::mExecuteReplicationCallback.mExecuteSync( aStatement ) != IDE_SUCCESS );
+    
+    qcg::setSmiStmt( aStatement, sSmiStmtOrg );
+    
+    sState = 2;
+    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
+    sState = 1;
+
+    sState = 0;
+    IDE_TEST( sSmiTrans.destroy( aStatement->mStatistics ) != IDE_SUCCESS );
+    
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION_END;
+    IDE_PUSH();
+    switch ( sState )
+    {
+    case 3:
+        qcg::setSmiStmt( aStatement, sSmiStmtOrg );
+        
+        (void)sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+    case 2:
+        (void)sSmiTrans.rollback();
+    case 1:
+        (void)sSmiTrans.destroy( aStatement->mStatistics );
+    case 0:
+    default:
+        break;
+    }
+    IDE_POP();
+    return IDE_FAILURE;
+}
+
+IDE_RC qrc::executeTempSync(qcStatement * aStatement)
+{
+    qriParseTree    * sParseTree    = (qriParseTree *)QC_PARSETREE(aStatement);
+    
+    smiTrans          sSmiTrans;
+    smiStatement    * sDummySmiStmt = NULL;
+    smiStatement    * sSmiStmtOrg   = NULL;
+    smiStatement      sSmiStmt;
+    SInt              sState        = 0;
+    
+    IDE_TEST( sSmiTrans.initialize() != IDE_SUCCESS );
+    sState = 1;
+    
+    IDE_TEST( sSmiTrans.begin( &sDummySmiStmt,
+                               aStatement->mStatistics,
+                               SMI_ISOLATION_CONSISTENT |
+                               SMI_TRANSACTION_NORMAL |
+                               SMI_TRANSACTION_REPL_NONE |
+                               SMI_COMMIT_WRITE_WAIT )
+              != IDE_SUCCESS );
+    sState = 2;
+    
+    IDE_TEST( sSmiStmt.begin( aStatement->mStatistics,
+                              sDummySmiStmt,
+                              SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR )
+              != IDE_SUCCESS );
+    
+    qcg::getSmiStmt( aStatement, &sSmiStmtOrg );
+    qcg::setSmiStmt( aStatement, &sSmiStmt );
+    sState = 3;
+    
+    IDE_TEST( sParseTree->common.validate( aStatement ) != IDE_SUCCESS );
+    
+    IDE_TEST( qci::mExecuteReplicationCallback.mExecuteTempSync( aStatement ) != IDE_SUCCESS );
+    
+    qcg::setSmiStmt( aStatement, sSmiStmtOrg );
+    
+    sState = 2;
+    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
+    sState = 1;
+    
+    sState = 0;
+    IDE_TEST( sSmiTrans.destroy( aStatement->mStatistics ) != IDE_SUCCESS );
+    
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION_END;
+    IDE_PUSH();
+    switch ( sState )
+    {
+    case 3:
+        qcg::setSmiStmt( aStatement, sSmiStmtOrg );
+        
+        (void)sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+    case 2:
+        (void)sSmiTrans.rollback();
+    case 1:
+        (void)sSmiTrans.destroy( aStatement->mStatistics );
+    case 0:
+    default:
+        break;
+    }
+    IDE_POP();
+    return IDE_FAILURE;
+}
+
+IDE_RC qrc::executeSyncCondition(qcStatement * aStatement)
+{
+    qriParseTree    * sParseTree    = (qriParseTree *)QC_PARSETREE(aStatement);
+    
+    smiTrans          sSmiTrans;
+    smiStatement    * sDummySmiStmt = NULL;
+    smiStatement    * sSmiStmtOrg   = NULL;
+    smiStatement      sSmiStmt;
+    SInt              sState        = 0;
+    
+    IDE_TEST( sSmiTrans.initialize() != IDE_SUCCESS );
+    sState = 1;
+    
+    IDE_TEST( sSmiTrans.begin( &sDummySmiStmt,
+                               aStatement->mStatistics,
+                               SMI_ISOLATION_CONSISTENT |
+                               SMI_TRANSACTION_NORMAL |
+                               SMI_TRANSACTION_REPL_NONE |
+                               SMI_COMMIT_WRITE_WAIT )
+              != IDE_SUCCESS );
+    sState = 2;
+    
+    IDE_TEST( sSmiStmt.begin( aStatement->mStatistics,
+                              sDummySmiStmt,
+                              SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR )
+              != IDE_SUCCESS );
+    
+    qcg::getSmiStmt( aStatement, &sSmiStmtOrg );
+    qcg::setSmiStmt( aStatement, &sSmiStmt );
+    sState = 3;
+    
+    IDE_TEST( sParseTree->common.validate( aStatement ) != IDE_SUCCESS );
+    
+    IDE_TEST( qci::mExecuteReplicationCallback.mExecuteSyncCondition( aStatement ) != IDE_SUCCESS );
+    
+    qcg::setSmiStmt( aStatement, sSmiStmtOrg );
+    
+    sState = 2;
+    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
+    sState = 1;
+
+    sState = 0;
+    IDE_TEST( sSmiTrans.destroy( aStatement->mStatistics ) != IDE_SUCCESS );
+    
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION_END;
+    IDE_PUSH();
+    switch ( sState )
+    {
+    case 3:
+        qcg::setSmiStmt( aStatement, sSmiStmtOrg );
+        
+        (void)sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+    case 2:
+        (void)sSmiTrans.rollback();
+    case 1:
+        (void)sSmiTrans.destroy( aStatement->mStatistics );
+    case 0:
+    default:
+        break;
+    }
+    IDE_POP();
+    return IDE_FAILURE;
 }
 
 IDE_RC qrc::executeStop(qcStatement * aStatement)
@@ -187,13 +533,8 @@ IDE_RC qrc::executeStop(qcStatement * aStatement)
     smiStatement    * sDummySmiStmt = NULL;
     smiStatement    * sSmiStmtOrg   = NULL;
     smiStatement      sSmiStmt;
-    smSCN             sDummySCN;
     SInt              sState        = 0;
 
-    /* BUG-42852 STOPê³¼ FLUSHë¥¼ DCLë¡œ ë³€í™˜í•©ë‹ˆë‹¤.
-     *  DCLì´ë¯€ë¡œ, ë”°ë¡œ Validateë¥¼ í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
-     *  ë³„ë„ì˜ Transactionìœ¼ë¡œ DCLì„ ìˆ˜í–‰í•©ë‹ˆë‹¤.
-     */
     IDE_TEST( sSmiTrans.initialize() != IDE_SUCCESS );
     sState = 1;
 
@@ -215,8 +556,8 @@ IDE_RC qrc::executeStop(qcStatement * aStatement)
     qcg::setSmiStmt( aStatement, &sSmiStmt );
     sState = 3;
 
-    // TASK-2401 Disk/Memory Logë¶„ë¦¬
-    //           LFG=2ì¼ë•Œ Trans Commitì‹œ ë¡œê·¸ í”ŒëŸ¬ì‰¬ í•˜ë„ë¡ ì„¤ì •
+    // TASK-2401 Disk/Memory LogºÐ¸®
+    //           LFG=2ÀÏ¶§ Trans Commit½Ã ·Î±× ÇÃ·¯½¬ ÇÏµµ·Ï ¼³Á¤
     IDE_TEST( sSmiTrans.setMetaTableModified() != IDE_SUCCESS );
 
     IDE_TEST( qdpRole::checkDDLReplicationPriv( aStatement ) != IDE_SUCCESS );
@@ -230,7 +571,7 @@ IDE_RC qrc::executeStop(qcStatement * aStatement)
     QC_STR_COPY( sReplName, sParseTree->replName );
 
     IDE_TEST( qci::mExecuteReplicationCallback.mExecuteStop( aStatement,
-                                                             sReplName )                                                            
+                                                             sReplName )
               != IDE_SUCCESS );
 
     qcg::setSmiStmt( aStatement, sSmiStmtOrg );
@@ -238,8 +579,8 @@ IDE_RC qrc::executeStop(qcStatement * aStatement)
     sState = 2;
     IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
 
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
     sState = 1;
-    IDE_TEST( sSmiTrans.commit( &sDummySCN ) != IDE_SUCCESS );
 
     sState = 0;
     IDE_TEST( sSmiTrans.destroy( aStatement->mStatistics ) != IDE_SUCCESS );
@@ -251,7 +592,7 @@ IDE_RC qrc::executeStop(qcStatement * aStatement)
         IDE_SET( ideSetErrorCode( rpERR_ABORT_RPC_NOT_EXIST_REPLICATION ) );
     }
     IDE_EXCEPTION_END;
-
+    IDE_PUSH();
     switch ( sState )
     {
         case 3:
@@ -266,6 +607,79 @@ IDE_RC qrc::executeStop(qcStatement * aStatement)
         default:
             break;
     }
+    IDE_POP();
+    return IDE_FAILURE;
+}
+
+IDE_RC qrc::executeFailover( qcStatement * aStatement )
+{
+    qriParseTree    * sParseTree    = (qriParseTree *)QC_PARSETREE(aStatement);
+    
+    smiTrans          sSmiTrans;
+    smiStatement    * sDummySmiStmt = NULL;
+    smiStatement    * sSmiStmtOrg   = NULL;
+    smiStatement      sSmiStmt;
+    SInt              sState        = 0;
+
+    IDE_TEST( sSmiTrans.initialize() != IDE_SUCCESS );
+    sState = 1;
+    
+    IDE_TEST( sSmiTrans.begin( &sDummySmiStmt,
+                               aStatement->mStatistics,
+                               SMI_ISOLATION_CONSISTENT |
+                               SMI_TRANSACTION_NORMAL |
+                               SMI_TRANSACTION_REPL_NONE |
+                               SMI_COMMIT_WRITE_WAIT )
+              != IDE_SUCCESS );
+    sState = 2;
+    
+    IDE_TEST( sSmiStmt.begin( aStatement->mStatistics,
+                              sDummySmiStmt,
+                              SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR )
+              != IDE_SUCCESS );
+    
+    qcg::getSmiStmt( aStatement, &sSmiStmtOrg );
+    qcg::setSmiStmt( aStatement, &sSmiStmt );
+    sState = 3;
+    
+    IDE_TEST( sParseTree->common.validate( aStatement ) != IDE_SUCCESS );
+
+    IDE_TEST( qci::mExecuteReplicationCallback.mExecuteFailover( aStatement ) 
+              != IDE_SUCCESS );
+
+    qcg::setSmiStmt( aStatement, sSmiStmtOrg );
+    
+    sState = 2;
+    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
+    sState = 1;
+
+    sState = 0;
+    IDE_TEST( sSmiTrans.destroy( aStatement->mStatistics ) != IDE_SUCCESS );
+    
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION_END;
+
+    IDE_PUSH();
+
+    switch ( sState )
+    {
+    case 3:
+        qcg::setSmiStmt( aStatement, sSmiStmtOrg );
+        
+        (void)sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+    case 2:
+        (void)sSmiTrans.rollback();
+    case 1:
+        (void)sSmiTrans.destroy( aStatement->mStatistics );
+    case 0:
+    default:
+        break;
+    }
+
+    IDE_POP();
 
     return IDE_FAILURE;
 }
@@ -281,7 +695,7 @@ IDE_RC qrc::executeFlush( qcStatement * aStatement )
  *
  * Description :
  *    To Fix PR-10590
- *    ALTER REPLICATION name FLUSH ì— ëŒ€í•œ Execution
+ *    ALTER REPLICATION name FLUSH ¿¡ ´ëÇÑ Execution
  *
  * Implementation :
  *
@@ -289,19 +703,15 @@ IDE_RC qrc::executeFlush( qcStatement * aStatement )
 
     qriParseTree    * sParseTree    = (qriParseTree *)QC_PARSETREE(aStatement);
     idBool            sIsExist      = ID_FALSE;
+    idBool            sIsConsistent = ID_FALSE;
     SChar             sReplName[QC_MAX_OBJECT_NAME_LEN + 1] = { '\0', };
 
     smiTrans          sSmiTrans;
     smiStatement    * sDummySmiStmt = NULL;
     smiStatement    * sSmiStmtOrg   = NULL;
     smiStatement      sSmiStmt;
-    smSCN             sDummySCN;
     SInt              sState        = 0;
 
-    /* BUG-42852 STOPê³¼ FLUSHë¥¼ DCLë¡œ ë³€í™˜í•©ë‹ˆë‹¤.
-     *  DCLì´ë¯€ë¡œ, ë”°ë¡œ Validateë¥¼ í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
-     *  ë³„ë„ì˜ Transactionìœ¼ë¡œ DCLì„ ìˆ˜í–‰í•©ë‹ˆë‹¤.
-     */
     IDE_TEST( sSmiTrans.initialize() != IDE_SUCCESS );
     sState = 1;
 
@@ -310,7 +720,8 @@ IDE_RC qrc::executeFlush( qcStatement * aStatement )
                                SMI_ISOLATION_CONSISTENT |
                                SMI_TRANSACTION_NORMAL |
                                SMI_TRANSACTION_REPL_NONE |
-                               SMI_COMMIT_WRITE_WAIT )
+                               SMI_COMMIT_WRITE_WAIT,
+                               SMX_NOT_REPL_TX_ID - 1 )
               != IDE_SUCCESS );
     sState = 2;
 
@@ -323,8 +734,8 @@ IDE_RC qrc::executeFlush( qcStatement * aStatement )
     qcg::setSmiStmt( aStatement, &sSmiStmt );
     sState = 3;
 
-    // TASK-2401 Disk/Memory Logë¶„ë¦¬
-    //           LFG=2ì¼ë•Œ Trans Commitì‹œ ë¡œê·¸ í”ŒëŸ¬ì‰¬ í•˜ë„ë¡ ì„¤ì •
+    // TASK-2401 Disk/Memory LogºÐ¸®
+    //           LFG=2ÀÏ¶§ Trans Commit½Ã ·Î±× ÇÃ·¯½¬ ÇÏµµ·Ï ¼³Á¤
     IDE_TEST( sSmiTrans.setMetaTableModified() != IDE_SUCCESS );
 
     IDE_TEST( qdpRole::checkDDLReplicationPriv( aStatement ) != IDE_SUCCESS );
@@ -335,9 +746,22 @@ IDE_RC qrc::executeFlush( qcStatement * aStatement )
               != IDE_SUCCESS );
     IDE_TEST_RAISE( sIsExist != ID_TRUE, ERR_NOT_EXIST_REPLICATION );
 
+    if ( sParseTree->flushOption.flushType == RP_FLUSH_XLOGFILE )
+    {
+        IDE_TEST( qci::mCatalogReplicationCallback.mIsConsistentReplication( aStatement,
+                                                                             sParseTree->replName,
+                                                                             &sIsConsistent )
+                != IDE_SUCCESS );
+        IDE_TEST_RAISE( sIsConsistent != ID_TRUE, ERR_IS_NOT_CONSISTENT_REPLICATION );
+
+    }
+
     QC_STR_COPY( sReplName, sParseTree->replName );
 
-    IDE_TEST( qci::mExecuteReplicationCallback.mExecuteFlush( &sSmiStmt,
+    sState = 2;
+    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+
+    IDE_TEST( qci::mExecuteReplicationCallback.mExecuteFlush( sDummySmiStmt,
                                                               sReplName,
                                                               &(sParseTree->flushOption),
                                                               aStatement->mStatistics )
@@ -345,11 +769,8 @@ IDE_RC qrc::executeFlush( qcStatement * aStatement )
 
     qcg::setSmiStmt( aStatement, sSmiStmtOrg );
 
-    sState = 2;
-    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
-
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
     sState = 1;
-    IDE_TEST( sSmiTrans.commit( &sDummySCN ) != IDE_SUCCESS );
 
     sState = 0;
     IDE_TEST( sSmiTrans.destroy( aStatement->mStatistics ) != IDE_SUCCESS );
@@ -360,8 +781,14 @@ IDE_RC qrc::executeFlush( qcStatement * aStatement )
     {
         IDE_SET( ideSetErrorCode( rpERR_ABORT_RPC_NOT_EXIST_REPLICATION ) );
     }
+    IDE_EXCEPTION( ERR_IS_NOT_CONSISTENT_REPLICATION )
+    {
+        //R2HA
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_INTERNAL_ARG,
+                        "Flushing xlogfiles can be execute in consistent replication mode" ) );
+    }
     IDE_EXCEPTION_END;
-
+    IDE_PUSH();
     switch ( sState )
     {
         case 3:
@@ -376,7 +803,7 @@ IDE_RC qrc::executeFlush( qcStatement * aStatement )
         default:
             break;
     }
-
+    IDE_POP();
     return IDE_FAILURE;
 }
 
@@ -408,9 +835,8 @@ IDE_RC qrc::validateAlterSetRecovery(qcStatement * aStatement)
     return qci::mValidateReplicationCallback.mValidateAlterSetRecovery( aStatement );
 }
 
-
 /* PROJ-1915 off-line replicator
- * ALTER REPLICATION replicatoin_name SET OFFLINE ENABLE WITH ê²½ë¡œ ... ê²½ë¡œ ...
+ * ALTER REPLICATION replicatoin_name SET OFFLINE ENABLE WITH °æ·Î ... °æ·Î ...
  */
 IDE_RC qrc::validateAlterSetOffline(qcStatement * aStatement)
 {
@@ -457,15 +883,170 @@ IDE_RC qrc::executeAlterSetDDLReplicate(qcStatement * aStatement)
     return qci::mExecuteReplicationCallback.mExecuteAlterSetDDLReplicate( aStatement );
 }
 
-/* PROJ-2677 DDL Synchronization */
-void qrc::setDDLReplInfo( qcStatement * aQcStatement,
-                          smOID         aTableOID,
-                          smOID         aSrcPartOID1,
-                          smOID         aSrcPartOID2 )
+IDE_RC qrc::executeDeleteItemReplaceHistory(qcStatement * aStatement)
 {
-    aQcStatement->mDDLReplInfo.mTableOID = aTableOID;
-    aQcStatement->mDDLReplInfo.mPartTableOID[0] = aSrcPartOID1;
-    aQcStatement->mDDLReplInfo.mPartTableOID[1] = aSrcPartOID2;
+    qriParseTree    * sParseTree    = (qriParseTree *)QC_PARSETREE(aStatement);
+    
+    smiTrans          sSmiTrans;
+    smiStatement    * sDummySmiStmt = NULL;
+    smiStatement    * sSmiStmtOrg   = NULL;
+    smiStatement      sSmiStmt;
+    SInt              sState        = 0;
+    
+    IDE_TEST( sSmiTrans.initialize() != IDE_SUCCESS );
+    sState = 1;
+    
+    IDE_TEST( sSmiTrans.begin( &sDummySmiStmt,
+                               aStatement->mStatistics,
+                               SMI_ISOLATION_CONSISTENT |
+                               SMI_TRANSACTION_NORMAL |
+                               SMI_TRANSACTION_REPL_NONE |
+                               SMI_COMMIT_WRITE_WAIT )
+              != IDE_SUCCESS );
+    sState = 2;
+    
+    IDE_TEST( sSmiStmt.begin( aStatement->mStatistics,
+                              sDummySmiStmt,
+                              SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR )
+              != IDE_SUCCESS );
+    
+    qcg::getSmiStmt( aStatement, &sSmiStmtOrg );
+    qcg::setSmiStmt( aStatement, &sSmiStmt );
+    sState = 3;
+    
+    IDE_TEST( sParseTree->common.validate( aStatement ) != IDE_SUCCESS );
+   
+    IDE_TEST( qci::mExecuteReplicationCallback.mExecuteDeleteItemReplaceHistory( aStatement ) != IDE_SUCCESS);
+    
+    qcg::setSmiStmt( aStatement, sSmiStmtOrg );
+    
+    sState = 2;
+    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
+    sState = 1;
+
+    sState = 0;
+    IDE_TEST( sSmiTrans.destroy( aStatement->mStatistics ) != IDE_SUCCESS );
+    
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION_END;
+
+    IDE_PUSH();
+    switch ( sState )
+    {
+        case 3:
+            qcg::setSmiStmt( aStatement, sSmiStmtOrg );
+            (void)sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+        case 2:
+            (void)sSmiTrans.rollback();
+        case 1:
+            (void)sSmiTrans.destroy( aStatement->mStatistics );
+        case 0:
+        default:
+            break;
+    }
+    IDE_POP();
+   
+    return IDE_FAILURE;
+}
+
+IDE_RC qrc::executeFailback(qcStatement * aStatement)
+{
+    qriParseTree    * sParseTree    = (qriParseTree *)QC_PARSETREE(aStatement);
+    
+    smiTrans          sSmiTrans;
+    smiStatement    * sDummySmiStmt = NULL;
+    smiStatement    * sSmiStmtOrg   = NULL;
+    smiStatement      sSmiStmt;
+    SInt              sState        = 0;
+    
+    IDE_TEST( sSmiTrans.initialize() != IDE_SUCCESS );
+    sState = 1;
+    
+    IDE_TEST( sSmiTrans.begin( &sDummySmiStmt,
+                               aStatement->mStatistics,
+                               SMI_ISOLATION_CONSISTENT |
+                               SMI_TRANSACTION_NORMAL |
+                               SMI_TRANSACTION_REPL_NONE |
+                               SMI_COMMIT_WRITE_WAIT )
+              != IDE_SUCCESS );
+    sState = 2;
+    
+    IDE_TEST( sSmiStmt.begin( aStatement->mStatistics,
+                              sDummySmiStmt,
+                              SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR )
+              != IDE_SUCCESS );
+    
+    qcg::getSmiStmt( aStatement, &sSmiStmtOrg );
+    qcg::setSmiStmt( aStatement, &sSmiStmt );
+    sState = 3;
+    
+    IDE_TEST( sParseTree->common.validate( aStatement ) != IDE_SUCCESS );
+   
+    IDE_TEST( qci::mExecuteReplicationCallback.mExecuteFailback( aStatement ) != IDE_SUCCESS);
+    
+    qcg::setSmiStmt( aStatement, sSmiStmtOrg );
+    
+    sState = 2;
+    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
+    sState = 1;
+
+    sState = 0;
+    IDE_TEST( sSmiTrans.destroy( aStatement->mStatistics ) != IDE_SUCCESS );
+    
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION_END;
+
+    IDE_PUSH();
+    switch ( sState )
+    {
+        case 3:
+            qcg::setSmiStmt( aStatement, sSmiStmtOrg );
+            (void)sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+        case 2:
+            (void)sSmiTrans.rollback();
+        case 1:
+            (void)sSmiTrans.destroy( aStatement->mStatistics );
+        case 0:
+        default:
+            break;
+    }
+    IDE_POP();
+   
+    return IDE_FAILURE;
+}
+/* PROJ-2677 DDL Synchronization */
+/* PROJ-2735 DDL Transaction */
+void qrc::setDDLSrcInfo( qcStatement * aQcStatement,
+                         idBool        aTransactionalDDLAvailable,
+                         UInt          aSrcTableOIDCount,
+                         smOID       * aSrcTableOIDArray,
+                         UInt          aSrcPartOIDCountPerTable,
+                         smOID       * aSrcPartOIDArray )
+{
+    aQcStatement->mDDLInfo.mTransactionalDDLAvailable = aTransactionalDDLAvailable;
+    aQcStatement->mDDLInfo.mSrcTableOIDCount          = aSrcTableOIDCount;
+    aQcStatement->mDDLInfo.mSrcTableOIDArray          = aSrcTableOIDArray;
+    aQcStatement->mDDLInfo.mSrcPartOIDCountPerTable   = aSrcPartOIDCountPerTable;
+    aQcStatement->mDDLInfo.mSrcPartOIDArray           = aSrcPartOIDArray;
+}
+
+void qrc::setDDLDestInfo( qcStatement * aQcStatement, 
+                          UInt          aDestTableOIDCount,
+                          smOID       * aDestTableOIDArray,
+                          UInt          aDestPartOIDCountPerTable,
+                          smOID       * aDestPartOIDArray)
+{
+    aQcStatement->mDDLInfo.mDestTableOIDCount        = aDestTableOIDCount;
+    aQcStatement->mDDLInfo.mDestTableOIDArray        = aDestTableOIDArray;
+    aQcStatement->mDDLInfo.mDestPartOIDCountPerTable = aDestPartOIDCountPerTable;
+    aQcStatement->mDDLInfo.mDestPartOIDArray         = aDestPartOIDArray;
+
 }
 
 idBool qrc::isDDLSync( qcStatement * aQcStatement )
@@ -474,7 +1055,38 @@ idBool qrc::isDDLSync( qcStatement * aQcStatement )
 
     if ( ( QCG_GET_SESSION_REPLICATION_DDL_SYNC( aQcStatement ) == 1 ) ||
          ( ( aQcStatement->session->mQPSpecific.mFlag & QC_SESSION_INTERNAL_DDL_SYNC_MASK )
-           == QC_SESSION_INTERNAL_DDL_SYNC_TRUE ) )
+           == QC_SESSION_INTERNAL_DDL_SYNC_TRUE) )
+    {
+        sResult = ID_TRUE;
+    }
+    else
+    {
+        sResult = ID_FALSE;
+    }
+
+    return sResult;
+}
+
+idBool qrc::isInternalDDL( qcStatement * aQcStatement )
+{
+    idBool sResult = ID_FALSE;
+
+    if ( ( ( aQcStatement->session->mQPSpecific.mFlag & QC_SESSION_INTERNAL_DDL_SYNC_MASK )
+         == QC_SESSION_INTERNAL_DDL_SYNC_TRUE ) ||
+         ( ( aQcStatement->session->mQPSpecific.mFlag & QC_SESSION_INTERNAL_DDL_MASK )
+           == QC_SESSION_INTERNAL_DDL_TRUE ) )
+    {
+        sResult = ID_TRUE;
+    }
+    
+    return sResult;
+}
+
+idBool qrc::isLockTableUntillNextDDL( qcStatement * aQcStatement )
+{
+    idBool sResult = ID_FALSE;
+
+    if ( QCG_GET_SESSION_LOCK_TABLE_UNTIL_NEXT_DDL( aQcStatement ) == ID_TRUE )
     {
         sResult = ID_TRUE;
     }

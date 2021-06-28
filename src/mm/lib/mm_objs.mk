@@ -16,7 +16,10 @@ MMC_SRCS = $(MM_DIR)/mmc/mmcConv.cpp                   \
            $(MM_DIR)/mmc/mmcSQLTextHash.cpp            \
            $(MM_DIR)/mmc/mmcPlanCache.cpp              \
            $(MM_DIR)/mmc/mmcPlanCacheLRUList.cpp       \
-           $(MM_DIR)/mmc/mmcEventManager.cpp
+           $(MM_DIR)/mmc/mmcEventManager.cpp           \
+           $(MM_DIR)/mmc/mmcSharedTrans.cpp            \
+           $(MM_DIR)/mmc/mmcNonSharedTrans.cpp         \
+           $(MM_DIR)/mmc/mmcTransManager.cpp
 
 MMD_SRCS = $(MM_DIR)/mmd/mmdManager.cpp                \
            $(MM_DIR)/mmd/mmdXa.cpp                     \

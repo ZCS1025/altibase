@@ -62,11 +62,14 @@ public class DbJob extends ProfileRunner{
         if (metric.isAlertOn()) {
             OutputType oType = OutputType.NONE;
             OutputType oType4Action = OutputType.NONE;
+            String sMetricValue;
+            String sAlertValue = null;
             int j = 0;
 
             List alert = null;
             while (index < result.size()) {					
-                oType = metric.getAlertLevel(Double.parseDouble((String)result.get(index)));
+                sMetricValue = (String)result.get(index);
+                oType = metric.getAlertLevel(Double.parseDouble(sMetricValue));
 
                 if (oType == OutputType.CRITICAL || oType == OutputType.WARNING) {
 
@@ -86,14 +89,16 @@ public class DbJob extends ProfileRunner{
                      * CRITICAL has the higher priority than WARNING. */
                     if (oType4Action != OutputType.CRITICAL) {
                         oType4Action = oType;
+                        sAlertValue = sMetricValue; // BUG-47437
                     }
                 }
                 j++;
                 index = index + colCnt;
             }
+            /* BUG-47437 Need to pass metric name, level, threshold, value to action script as arguments */
             if (oType4Action == OutputType.CRITICAL || oType4Action == OutputType.WARNING) {
-                metric.performActionScript(oType4Action);
-            }			
+                metric.performActionScript(oType, sAlertValue);
+            }
         }
         if (!metric.getLogging()) {
             result.clear();

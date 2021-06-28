@@ -17,17 +17,17 @@
 
 
 /***********************************************************************
- * $Id: qtc.h 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qtc.h 88800 2020-10-06 10:29:32Z hykim $
  *
  * Description :
- *     QP layerì™€ MT layerì˜ ì¤‘ê°„ì— ìœ„ì¹˜í•˜ëŠ” layerë¡œ
- *     ê°œë…ìƒ MT interface layer ì—­í• ì„ í•œë‹¤.
+ *     QP layer¿Í MT layerÀÇ Áß°£¿¡ À§Ä¡ÇÏ´Â layer·Î
+ *     °³³ä»ó MT interface layer ¿ªÇÒÀ» ÇÑ´Ù.
  *
- *     ì—¬ê¸°ì—ëŠ” QP ì „ì²´ì— ê±¸ì³ ê³µí†µì ìœ¼ë¡œ ì‚¬ìš©ë˜ëŠ” í•¨ìˆ˜ê°€ ì •ì˜ë˜ì–´ ìˆë‹¤.
+ *     ¿©±â¿¡´Â QP ÀüÃ¼¿¡ °ÉÃÄ °øÅëÀûÀ¸·Î »ç¿ëµÇ´Â ÇÔ¼ö°¡ Á¤ÀÇµÇ¾î ÀÖ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -37,20 +37,21 @@
 # include <mt.h>
 # include <qtcDef.h>
 # include <qtcRid.h>
+# include <qtcCache.h>
 # include <qmsParseTree.h>
 
 class qtc
 {
 public:
-    // Zero Dependenciesë¥¼ Globalí•˜ê²Œ ìƒì„±í•˜ì—¬
-    // í•„ìš”í•  ë•Œë§ˆë‹¤, Zero Dependenciesë¥¼ ë§Œë“¤ì§€ ì•Šë„ë¡ í•œë‹¤.
+    // Zero Dependencies¸¦ GlobalÇÏ°Ô »ı¼ºÇÏ¿©
+    // ÇÊ¿äÇÒ ¶§¸¶´Ù, Zero Dependencies¸¦ ¸¸µéÁö ¾Êµµ·Ï ÇÑ´Ù.
     static qcDepInfo         zeroDependencies;
 
     static smiCallBackFunc   rangeFuncs[];
     static mtdCompareFunc    compareFuncs[];
     
     /*************************************************************
-     * Meta Table ê´€ë¦¬ë¥¼ ìœ„í•œ interface
+     * Meta Table °ü¸®¸¦ À§ÇÑ interface
      *************************************************************/
 
     // Minimum KeyRange CallBack
@@ -138,10 +139,10 @@ public:
 private:
 
     /*************************************************************
-     * Conversion Node ìƒì„± ë° ê´€ë¦¬ë¥¼ ìœ„í•œ interface
+     * Conversion Node »ı¼º ¹× °ü¸®¸¦ À§ÇÑ interface
      *************************************************************/
 
-    // intermediate conversion nodeë¥¼ ìƒì„±
+    // intermediate conversion node¸¦ »ı¼º
     static IDE_RC initConversionNodeIntermediate( mtcNode** aConversionNode,
                                                   mtcNode*  aNode,
                                                   void*     aInfo );
@@ -159,18 +160,18 @@ private:
                                         mtcCallBack  * aCallBack );
 
     /*************************************************************
-     * Estimate ë¥¼ ìœ„í•œ ë‚´ë¶€ interface
+     * Estimate ¸¦ À§ÇÑ ³»ºÎ interface
      *************************************************************/
 
-    // Node Tree ì „ì²´ì— ëŒ€í•œ estimateë¥¼ ìˆ˜í–‰í•¨.
+    // Node Tree ÀüÃ¼¿¡ ´ëÇÑ estimate¸¦ ¼öÇàÇÔ.
     static IDE_RC estimateInternal( qtcNode*     aNode,
                                     mtcTemplate* aTemplate,
                                     mtcStack*    aStack,
                                     SInt         aRemain,
                                     mtcCallBack* aCallBack );
 
-    // PROJ-1762 analytic functionì„ ìœ„í•œ overì ˆì— ëŒ€í•œ
-    // estimateë¥¼ ìˆ˜í–‰í•¨
+    // PROJ-1762 analytic functionÀ» À§ÇÑ overÀı¿¡ ´ëÇÑ
+    // estimate¸¦ ¼öÇàÇÔ
     static IDE_RC estimate4OverClause( qtcNode*     aNode,
                                        mtcTemplate* aTemplate,
                                        mtcStack*    aStack,
@@ -181,7 +182,7 @@ private:
                                        mtcCallBack * aCallBack );
 
 
-    // í•˜ìœ„ Nodeì˜ ì •ë³´ë¥¼ ì°¸ì¡°í•˜ì—¬ ìì‹ ì˜ estimate ë¥¼ ìˆ˜í–‰í•¨.
+    // ÇÏÀ§ NodeÀÇ Á¤º¸¸¦ ÂüÁ¶ÇÏ¿© ÀÚ½ÅÀÇ estimate ¸¦ ¼öÇàÇÔ.
     static IDE_RC estimateNode( qtcNode*     aNode,
                                 mtcTemplate* aTemplate,
                                 mtcStack*    aStack,
@@ -189,23 +190,23 @@ private:
                                 mtcCallBack* aCallBack );
 
     /*************************************************************
-       TODO - estimateNode() í•¨ìˆ˜ë¥¼ private functionìœ¼ë¡œ.
-       ê°œë…ìƒ Private Functionìœ¼ë¡œ êµ¬í˜„ëœ í•¨ìˆ˜ì´ë‹¤.
-       í˜„ì¬, qtc::XXX() ì™¸ë¶€ì—ì„œë„ í˜¸ì¶œí•˜ê³  ìˆìœ¼ë©°,
-       ì´ëŠ” Error ë°œìƒì˜ ìœ„í—˜ì„±ì„ ë‚´í¬í•˜ê³  ìˆë‹¤.
-       ì´ë¯¸ ì‚¬ìš©í•˜ê³  ìˆë‹¤ë©´, ë‹¤ìŒ ë‘ í•¨ìˆ˜ ì¤‘ í•˜ë‚˜ë¥¼ ê³¨ë¼ ì¨ì•¼ í•œë‹¤.
+       TODO - estimateNode() ÇÔ¼ö¸¦ private functionÀ¸·Î.
+       °³³ä»ó Private FunctionÀ¸·Î ±¸ÇöµÈ ÇÔ¼öÀÌ´Ù.
+       ÇöÀç, qtc::XXX() ¿ÜºÎ¿¡¼­µµ È£ÃâÇÏ°í ÀÖÀ¸¸ç,
+       ÀÌ´Â Error ¹ß»ıÀÇ À§Çè¼ºÀ» ³»Æ÷ÇÏ°í ÀÖ´Ù.
+       ÀÌ¹Ì »ç¿ëÇÏ°í ÀÖ´Ù¸é, ´ÙÀ½ µÎ ÇÔ¼ö Áß ÇÏ³ª¸¦ °ñ¶ó ½á¾ß ÇÑ´Ù.
            - qtc::estimateNodeWithoutArgument()
            - qtc::estimateNodeWithArgument()
     *************************************************************/
     static IDE_RC estimateNode( qcStatement* aStatement,
                                        qtcNode*     aNode );
 
-    // Constant Expressionì¸ì§€ì˜ ê²€ì‚¬
+    // Constant ExpressionÀÎÁöÀÇ °Ë»ç
     static IDE_RC isConstExpr( qcTemplate  * aTemplate,
                                qtcNode     * aNode,
                                idBool      * aResult );
 
-    // Constant Expressionì„ ìˆ˜í–‰
+    // Constant ExpressionÀ» ¼öÇà
     static IDE_RC runConstExpr( qcStatement * aStatement,
                                 qcTemplate  * aTemplate,
                                 qtcNode     * aNode,
@@ -215,7 +216,7 @@ private:
                                 mtcCallBack * aCallBack,
                                 qtcNode    ** aResultNode );
 
-    // Constant Expressionì˜ ì‚¬ì „ ì²˜ë¦¬ë¥¼ ìœ„í•œ Constant Columnì˜ì—­ì˜ íšŒë“
+    // Constant ExpressionÀÇ »çÀü Ã³¸®¸¦ À§ÇÑ Constant Column¿µ¿ªÀÇ È¸µæ
     static IDE_RC getConstColumn( qcStatement * aStatement,
                                   qcTemplate  * aTemplate,
                                   qtcNode     * aNode );
@@ -226,7 +227,7 @@ private:
     static idBool isSameModuleByName( qtcNode * aNode1,
                                       qtcNode * aNode2 );
 
-    // BUG-28223 CASE expr WHEN .. THEN .. êµ¬ë¬¸ì˜ exprì— subquery ì‚¬ìš©ì‹œ ì—ëŸ¬ë°œìƒ 
+    // BUG-28223 CASE expr WHEN .. THEN .. ±¸¹®ÀÇ expr¿¡ subquery »ç¿ë½Ã ¿¡·¯¹ß»ı 
     static mtcNode* getCaseSubExpNode( mtcNode* aNode );
 
     // BUG-41243 Check if name-based argument passing is used
@@ -235,7 +236,7 @@ private:
 public:
 
     /*************************************************************
-     * QPë¥¼ ìœ„í•œ ì¶”ê°€ Module
+     * QP¸¦ À§ÇÑ Ãß°¡ Module
      *************************************************************/
 
     static mtfModule assignModule;
@@ -250,7 +251,7 @@ public:
     static mtfModule subqueryWrapperModule;
 
     /*************************************************************
-     * Stored Procedure ë¥¼ ìœ„í•œ ì¶”ê°€ Module
+     * Stored Procedure ¸¦ À§ÇÑ Ãß°¡ Module
      *************************************************************/
 
     static mtfModule spFunctionCallModule;
@@ -264,91 +265,91 @@ public:
     static mtfModule spSqlErrmModule;
 
     // PROJ-1075
-    // row/record/array data type ëª¨ë“ˆ ì¶”ê°€.
+    // row/record/array data type ¸ğµâ Ãß°¡.
     static mtdModule spRowTypeModule;
     static mtdModule spRecordTypeModule;
     static mtdModule spArrTypeModule;
 
     // PROJ-1386
-    // REF CURSOR type ëª¨ë“ˆ ì¶”ê°€.
+    // REF CURSOR type ¸ğµâ Ãß°¡.
     static mtdModule spRefCurTypeModule;
 
     /*************************************************************
-     * Tuple Setì˜ Tuple ì¢…ë¥˜ì— ë”°ë¥¸ Flag ì •ì˜
+     * Tuple SetÀÇ Tuple Á¾·ù¿¡ µû¸¥ Flag Á¤ÀÇ
      *************************************************************/
 
     static const ULong templateRowFlags[MTC_TUPLE_TYPE_MAXIMUM];
 
-    // BUG-44382 clone tuple ì„±ëŠ¥ê°œì„ 
+    // BUG-44382 clone tuple ¼º´É°³¼±
     static void setTupleColumnFlag( mtcTuple * aTuple,
                                     idBool     aCopyColumn,
                                     idBool     aMemsetRow );
 
     /*************************************************************
-     * Dependencies ê´€ë ¨ í•¨ìˆ˜
+     * Dependencies °ü·Ã ÇÔ¼ö
      *************************************************************/
 
     static void dependencySet( UShort aTupleID,
                                qcDepInfo * aOperand1 );
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // partitionì— ëŒ€í•œ selection graphëŠ”
-    // partition tupleì— ëŒ€í•œ dependencyë¥¼ ê°€ì§€ë„ë¡
-    // ë³€ê²½í•´ì•¼ í•œë‹¤.
+    // partition¿¡ ´ëÇÑ selection graph´Â
+    // partition tuple¿¡ ´ëÇÑ dependency¸¦ °¡Áöµµ·Ï
+    // º¯°æÇØ¾ß ÇÑ´Ù.
     static void dependencyChange( UShort aSourceTupleID,
                                   UShort aDestTupleID,
                                   qcDepInfo * aOperand1,
                                   qcDepInfo * aResult );
 
-    // dependenciesë¥¼ ì„¤ì •í•¨.
+    // dependencies¸¦ ¼³Á¤ÇÔ.
     static void dependencySetWithDep( qcDepInfo * aOperand1,
                                       qcDepInfo * aOperand2 );
 
-    // AND dependenciesë¥¼ êµ¬í•¨
+    // AND dependencies¸¦ ±¸ÇÔ
     static void dependencyAnd( qcDepInfo * aOperand1,
                                qcDepInfo * aOperand2,
                                qcDepInfo * aResult );
 
-    // OR dependenciesë¥¼ êµ¬í•¨.
+    // OR dependencies¸¦ ±¸ÇÔ.
     static IDE_RC dependencyOr( qcDepInfo * aOperand1,
                                 qcDepInfo * aOperand2,
                                 qcDepInfo * aResult );
 
     // PROJ-1413
-    // aOperand1ì—ì„œ aTupleIDì˜ dependencyë¥¼ ì œê±°
+    // aOperand1¿¡¼­ aTupleIDÀÇ dependency¸¦ Á¦°Å
     static void dependencyRemove( UShort      aTupleID,
                                   qcDepInfo * aOperand1,
                                   qcDepInfo * aResult );
     
-    // dependenciesë¥¼ ì´ˆê¸°í™”í•¨.
+    // dependencies¸¦ ÃÊ±âÈ­ÇÔ.
     static void dependencyClear( qcDepInfo * aOperand1 );
 
-    // dependenciesê°€ ë™ì¼í•œ ì§€ë¥¼ íŒë‹¨
+    // dependencies°¡ µ¿ÀÏÇÑ Áö¸¦ ÆÇ´Ü
     static idBool dependencyEqual( qcDepInfo * aOperand1,
                                    qcDepInfo * aOperand2 );
 
-    // dependenciesê°€ ì¡´ì¬í•˜ëŠ” ì§€ë¥¼ íŒë‹¨
+    // dependencies°¡ Á¸ÀçÇÏ´Â Áö¸¦ ÆÇ´Ü
     static idBool haveDependencies( qcDepInfo * aOperand1 );
 
-    // dependenciesê°€ í¬í•¨ë˜ëŠ”ì§€ì˜ ì—¬ë¶€ë¥¼ íŒë‹¨
+    // dependencies°¡ Æ÷ÇÔµÇ´ÂÁöÀÇ ¿©ºÎ¸¦ ÆÇ´Ü
     static idBool dependencyContains( qcDepInfo * aSubject,
                                       qcDepInfo * aTarget );
 
-    // MINUS dependenciesë¥¼ êµ¬í•¨
+    // MINUS dependencies¸¦ ±¸ÇÔ
     static void dependencyMinus( qcDepInfo * aOperand1,
                                  qcDepInfo * aOperand2,
                                  qcDepInfo * aResult );
 
-    // Dependenciesì— í¬í•¨ëœ Dependency ê°œìˆ˜ íšë“
+    // Dependencies¿¡ Æ÷ÇÔµÈ Dependency °³¼ö È¹µæ
     static SInt getCountBitSet( qcDepInfo * aOperand1 );
 
-    // Dependenciesì— í¬í•¨ëœ Join Operator ê°œìˆ˜ íšë“
+    // Dependencies¿¡ Æ÷ÇÔµÈ Join Operator °³¼ö È¹µæ
     static SInt getCountJoinOperator( qcDepInfo * aOperand );
 
-    // Dependenciesì— ì¡´ì¬í•˜ëŠ” ìµœì´ˆ depenencyë¥¼ íšë“í•œë‹¤.
+    // Dependencies¿¡ Á¸ÀçÇÏ´Â ÃÖÃÊ depenency¸¦ È¹µæÇÑ´Ù.
     static SInt getPosFirstBitSet( qcDepInfo * aOperand1 );
 
-    // í˜„ì¬ ìœ„ì¹˜ë¡œë¶€í„° ë‹¤ìŒì— ì¡´ì¬í•˜ëŠ” dependencyë¥¼ íšë“í•œë‹¤.
+    // ÇöÀç À§Ä¡·ÎºÎÅÍ ´ÙÀ½¿¡ Á¸ÀçÇÏ´Â dependency¸¦ È¹µæÇÑ´Ù.
     static SInt getPosNextBitSet( qcDepInfo * aOperand1,
                                   UInt   aPos );
 
@@ -356,35 +357,35 @@ public:
     static void dependencyAndJoinOperSet( UShort      aTupleID,
                                           qcDepInfo * aOperand1 );
 
-    // AND of (Dependencies & Join Oper)ë¥¼ êµ¬í•¨
+    // AND of (Dependencies & Join Oper)¸¦ ±¸ÇÔ
     static void dependencyJoinOperAnd( qcDepInfo * aOperand1,
                                        qcDepInfo * aOperand2,
                                        qcDepInfo * aResult );
 
-    // Dependencies & Join Operator Status ê°€ ëª¨ë‘ ì •í™•íˆ ë™ì¼í•œ ì§€ë¥¼ íŒë‹¨
+    // Dependencies & Join Operator Status °¡ ¸ğµÎ Á¤È®È÷ µ¿ÀÏÇÑ Áö¸¦ ÆÇ´Ü
     static idBool dependencyJoinOperEqual( qcDepInfo * aOperand1,
                                            qcDepInfo * aOperand2 );
 
-    // dep ì •ë³´ì¤‘ join operator ì˜ ìœ ë¬´ê°€ ë°˜ëŒ€ì¸ dep ë¥¼ ë¦¬í„´
+    // dep Á¤º¸Áß join operator ÀÇ À¯¹«°¡ ¹İ´ëÀÎ dep ¸¦ ¸®ÅÏ
     static void getJoinOperCounter( qcDepInfo  * aOperand1,
                                     qcDepInfo  * aOperand2 );
 
-    // í•˜ë‚˜ì˜ table ì— ëŒ€í•´ join operator ê°€ both ì¸ ê²ƒ
+    // ÇÏ³ªÀÇ table ¿¡ ´ëÇØ join operator °¡ both ÀÎ °Í
     static idBool isOneTableOuterEachOther( qcDepInfo   * aDepInfo );
 
-    // dependency table tuple id ê°’ì„ ë¦¬í„´
+    // dependency table tuple id °ªÀ» ¸®ÅÏ
     static UInt getDependTable( qcDepInfo  * aDepInfo,
                                 UInt         aIdx );
 
-    // dependency join operator ê°’ì„ ë¦¬í„´
+    // dependency join operator °ªÀ» ¸®ÅÏ
     static UChar getDependJoinOper( qcDepInfo  * aDepInfo,
                                     UInt         aIdx );
 
     /*************************************************************
-     * ê¸°íƒ€ ì§€ì› í•¨ìˆ˜
+     * ±âÅ¸ Áö¿ø ÇÔ¼ö
      *************************************************************/
 
-    // CallBack ì •ë³´ë¥¼ ì´ìš©í•œ Memory í• ë‹¹ í•¨ìˆ˜
+    // CallBack Á¤º¸¸¦ ÀÌ¿ëÇÑ Memory ÇÒ´ç ÇÔ¼ö
     static IDE_RC alloc( void* aInfo,
                          UInt  aSize,
                          void** aMemPtr);
@@ -396,11 +397,11 @@ public:
                                    UShort         * aOrgTableID,
                                    idBool*          aFound );
 
-    // BUG-40427 ìµœì´ˆë¡œ Opení•œ LOB Cursorì¸ ê²½ìš°, qmcCursorì— ê¸°ë¡
+    // BUG-40427 ÃÖÃÊ·Î OpenÇÑ LOB CursorÀÎ °æ¿ì, qmcCursor¿¡ ±â·Ï
     static IDE_RC addOpenedLobCursor( mtcTemplate  * aTemplate,
                                       smLobLocator   aLocator );
 
-    /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+    /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
     static idBool isBaseTable( mtcTemplate * aTemplate,
                                UShort        aTable );
 
@@ -409,7 +410,7 @@ public:
     //PROJ-1583 large geometry 
     static UInt   getSTObjBufSize( mtcCallBack * aCallBack );
 
-    // ìƒˆë¡œìš´ Tuple Rowë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.
+    // »õ·Î¿î Tuple Row¸¦ ÇÒ´ç¹Ş´Â´Ù.
     static IDE_RC nextRow( iduVarMemList * aMemory, //fix PROJ-1596
                            qcStatement   * aStatement,
                            qcTemplate    * aTemplate,
@@ -422,7 +423,7 @@ public:
                                         qcTemplate    * aTemplate,
                                         UInt            aSize );
 
-    // ìƒˆë¡œìš´ Columnì„ í• ë‹¹ë°›ëŠ”ë‹¤.
+    // »õ·Î¿î ColumnÀ» ÇÒ´ç¹Ş´Â´Ù.
     static IDE_RC nextColumn( iduVarMemList * aMemory, //fix PROJ-1596
                               qtcNode       * aNode,
                               qcStatement   * aStatement,
@@ -430,27 +431,27 @@ public:
                               ULong           aFlag,
                               UInt            aColumns );
 
-    // Tableì„ ìœ„í•œ ê³µê°„ì„ í• ë‹¹ë°›ëŠ”ë‹¤.
+    // TableÀ» À§ÇÑ °ø°£À» ÇÒ´ç¹Ş´Â´Ù.
     static IDE_RC nextTable( UShort          *aRow,
                              qcStatement     *aStatement,
                              qcmTableInfo    *aTableInfo,
                              idBool           aIsDiskTable,
                              UInt             aIsNullableFlag); // PR-13597
 
-    // PROJ-1358 Internal Tupleì˜ ê³µê°„ì„ í™•ì¥í•œë‹¤.
+    // PROJ-1358 Internal TupleÀÇ °ø°£À» È®ÀåÇÑ´Ù.
     static IDE_RC increaseInternalTuple ( qcStatement * aStatement,
                                           UShort        aIncreaseCount );
 
-    // PROJ-1473 Tupleë‚´ columnLocateë©¤ë²„ì— ëŒ€í•œ ì´ˆê¸°í™”
+    // PROJ-1473 Tuple³» columnLocate¸â¹ö¿¡ ´ëÇÑ ÃÊ±âÈ­
     static IDE_RC allocAndInitColumnLocateInTuple( iduVarMemList * aMemory,
                                                    mtcTemplate   * aTemplate,
                                                    UShort          aRowID );
     
     /*************************************************************
-     * Filter ì²˜ë¦¬ í•¨ìˆ˜
+     * Filter Ã³¸® ÇÔ¼ö
      *************************************************************/
 
-    // Filter ì²˜ë¦¬ë¥¼ ìœ„í•œ CallBack í•¨ìˆ˜ì˜ ê¸°ë³¸ ë‹¨ìœ„
+    // Filter Ã³¸®¸¦ À§ÇÑ CallBack ÇÔ¼öÀÇ ±âº» ´ÜÀ§
     static IDE_RC smiCallBack( idBool       * aResult,
                                const void   * aRow,
                                void         *, /* aDirectKey */
@@ -458,7 +459,7 @@ public:
                                const scGRID   aRid,
                                void         * aData );
 
-    // Filter ì²˜ë¦¬ë¥¼ ìœ„í•œ CallBackìœ¼ë¡œ CallBackì˜ AND ì²˜ë¦¬ë¥¼ ìˆ˜í–‰
+    // Filter Ã³¸®¸¦ À§ÇÑ CallBackÀ¸·Î CallBackÀÇ AND Ã³¸®¸¦ ¼öÇà
     static IDE_RC smiCallBackAnd( idBool       * aResult,
                                   const void   * aRow,
                                   void         *, /* aDirectKey */
@@ -466,42 +467,42 @@ public:
                                   const scGRID   aRid,
                                   void         * aData );
 
-    // í•˜ë‚˜ì˜ Filterë¥¼ ìœ„í•œ CallBackì •ë³´ë¥¼ êµ¬ì„±
+    // ÇÏ³ªÀÇ Filter¸¦ À§ÇÑ CallBackÁ¤º¸¸¦ ±¸¼º
     static void setSmiCallBack( qtcSmiCallBackData* aData,
                                 qtcNode*            aNode,
                                 qcTemplate*         aTemplate,
                                 UInt                aTable );
 
-    // ì—¬ëŸ¬ê°œì˜ Filter CallBackì„ ì¡°í•©
+    // ¿©·¯°³ÀÇ Filter CallBackÀ» Á¶ÇÕ
     static void setSmiCallBackAnd( qtcSmiCallBackDataAnd* aData,
                                    qtcSmiCallBackData*    aArgu1,
                                    qtcSmiCallBackData*    aArgu2,
                                    qtcSmiCallBackData*    aArgu3 );
 
     /*************************************************************
-     * STRING Value ìƒì„± í•¨ìˆ˜
+     * STRING Value »ı¼º ÇÔ¼ö
      *************************************************************/
 
-    // ì£¼ì–´ì§„ Stringìœ¼ë¡œë¶€í„° CHAR type valueë¥¼ ìƒì„±
+    // ÁÖ¾îÁø StringÀ¸·ÎºÎÅÍ CHAR type value¸¦ »ı¼º
     static void setCharValue( mtdCharType* aValue,
                               mtcColumn*   aColumn,
                               SChar*       aString );
 
-    // ì£¼ì–´ì§„ Stringìœ¼ë¡œë¶€í„° VARCHAR type valueë¥¼ ìƒì„±
+    // ÁÖ¾îÁø StringÀ¸·ÎºÎÅÍ VARCHAR type value¸¦ »ı¼º
     static void setVarcharValue( mtdCharType* aValue,
                                  mtcColumn*   aColumn,
                                  SChar*       aString,
                                  SInt         aLength );
 
     /*************************************************************
-     * Metaë¥¼ ìœ„í•œ Key Range ìƒì„± í•¨ìˆ˜
+     * Meta¸¦ À§ÇÑ Key Range »ı¼º ÇÔ¼ö
      *************************************************************/
 
-    // Meta KeyRangeë¥¼ ì´ˆê¸°í™”
+    // Meta KeyRange¸¦ ÃÊ±âÈ­
     static void initializeMetaRange( smiRange * aRange,
                                      UInt       aCompareType );
 
-    // í•œ ì»¬ëŸ¼ì— ëŒ€í•œ Meta KeyRangeë¥¼ ìƒì„±í•¨.
+    // ÇÑ ÄÃ·³¿¡ ´ëÇÑ Meta KeyRange¸¦ »ı¼ºÇÔ.
     static void setMetaRangeColumn( qtcMetaRangeColumn* aRangeColumn,
                                     const mtcColumn*    aColumnDesc,
                                     const void*         aValue,
@@ -509,7 +510,7 @@ public:
                                     UInt                aColumnIdx );
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // keyrange columnì„ ë³€ê²½í•œë‹¤.
+    // keyrange columnÀ» º¯°æÇÑ´Ù.
     static void changeMetaRangeColumn( qtcMetaRangeColumn* aRangeColumn,
                                        const mtcColumn*    aColumnDesc,
                                        UInt                aColumnIdx );
@@ -518,22 +519,22 @@ public:
                                          const mtcColumn*    aColumnDesc,
                                          UInt                aColumnIdx );
 
-    // í•œ ì»¬ëŸ¼ì— ëŒ€í•œ KeyRangeë¥¼ ì „ì²´ KeyRangeì— ì¶”ê°€í•¨.
+    // ÇÑ ÄÃ·³¿¡ ´ëÇÑ KeyRange¸¦ ÀüÃ¼ KeyRange¿¡ Ãß°¡ÇÔ.
     static void addMetaRangeColumn( smiRange*           aRange,
                                     qtcMetaRangeColumn* aRangeColumn );
 
-    // ëª¨ë“  Meta KeyRange ì™„ë£Œ í›„ ì²˜ë¦¬ë¥¼ ìˆ˜í–‰í•¨.
+    // ¸ğµç Meta KeyRange ¿Ï·á ÈÄ Ã³¸®¸¦ ¼öÇàÇÔ.
     static void fixMetaRange( smiRange* aRange );
 
     /*************************************************************
-     * Parsing ë‹¨ê³„ì—ì„œì˜ ì²˜ë¦¬
+     * Parsing ´Ü°è¿¡¼­ÀÇ Ã³¸®
      *************************************************************/
 
-    // Parsing ì™„ë£Œ í›„ì˜ ì²˜ë¦¬ë¥¼ ìˆ˜í–‰
+    // Parsing ¿Ï·á ÈÄÀÇ Ã³¸®¸¦ ¼öÇà
     static IDE_RC fixAfterParsing( qcTemplate    * aTemplate );
 
 
-    // Columnì˜ Data Type ì •ë³´ë¥¼ ì„¤ì •í•¨.
+    // ColumnÀÇ Data Type Á¤º¸¸¦ ¼³Á¤ÇÔ.
     static IDE_RC createColumn( qcStatement*    aStatement,
                                 qcNamePosition* aPosition,
                                 mtcColumn**     aColumn,
@@ -543,7 +544,7 @@ public:
                                 SInt            aScaleSign,
                                 idBool          aIsForSP );
 
-    // Columnì˜ Data Type ì •ë³´ë¥¼ ì„¤ì •í•¨(Moduleì •ë³´ëŠ” ê·¸ëŒ€ë¡œ ì´ìš©í•¨).
+    // ColumnÀÇ Data Type Á¤º¸¸¦ ¼³Á¤ÇÔ(ModuleÁ¤º¸´Â ±×´ë·Î ÀÌ¿ëÇÔ).
     static IDE_RC createColumn( qcStatement*    aStatement,
                                 mtdModule  *    aMtdModule,
                                 mtcColumn**     aColumn,
@@ -555,51 +556,56 @@ public:
     static IDE_RC createColumn4TimeStamp( qcStatement*    aStatement,
                                           mtcColumn**     aColumn );
 
-    // PROJ-2002 Column Security
-    // encrypt columnìœ¼ë¡œì˜ ë³€í™˜
-    static IDE_RC changeColumn4Encrypt( qcStatement                   * aStatement,
-                                        struct qdEncryptedColumnAttr  * aColumnAttr,
-                                        mtcColumn                     * aColumn );
+    /* PROJ-2422 srid */
+    static IDE_RC changeColumn4SRID( qcStatement             * aStatement,
+                                     struct qdExtColumnAttr  * aColumnAttr,
+                                     mtcColumn               * aColumn );
     
-    // decrypt columnìœ¼ë¡œì˜ ë³€í™˜
+    // PROJ-2002 Column Security
+    // encrypt columnÀ¸·ÎÀÇ º¯È¯
+    static IDE_RC changeColumn4Encrypt( qcStatement             * aStatement,
+                                        struct qdExtColumnAttr  * aColumnAttr,
+                                        mtcColumn               * aColumn );
+    
+    // decrypt columnÀ¸·ÎÀÇ º¯È¯
     static IDE_RC changeColumn4Decrypt( mtcColumn    * aColumn );
  
     /*  PROJ-1584 DML Return Clause */
     static IDE_RC changeColumn4Decrypt( mtcColumn    * aSrcColumn,
                                         mtcColumn    * aDestColumn );
     
-    // OR Nodeë¥¼ ìƒì„±í•¨
+    // OR Node¸¦ »ı¼ºÇÔ
     static IDE_RC addOrArgument( qcStatement* aStatement,
                                  qtcNode**    aNode,
                                  qtcNode**    aArgument1,
                                  qtcNode**    aArgument2 );
 
-    // AND Nodeë¥¼ ìƒì„±í•¨
+    // AND Node¸¦ »ı¼ºÇÔ
     static IDE_RC addAndArgument( qcStatement* aStatement,
                                   qtcNode**    aNode,
                                   qtcNode**    aArgument1,
                                   qtcNode**    aArgument2 );
 
-    // BUG-36125 LNNVLì„ ì²˜ë¦¬í•¨
+    // BUG-36125 LNNVLÀ» Ã³¸®ÇÔ
     static IDE_RC lnnvlNode( qcStatement* aStatement,
                              qtcNode*     aNode );
 
-    // NOTì„ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ í•˜ìœ„ Nodeë“¤ì˜ Counter ì—°ì‚°ìë¡œ ëŒ€ì²´í•¨.
+    // NOTÀ» Ã³¸®ÇÏ±â À§ÇØ ÇÏÀ§ NodeµéÀÇ Counter ¿¬»êÀÚ·Î ´ëÃ¼ÇÔ.
     static IDE_RC notNode( qcStatement* aStatement,
                            qtcNode**    aNode );
 
-    // PRIOR keywordë¥¼ ì²˜ë¦¬í•¨.
+    // PRIOR keyword¸¦ Ã³¸®ÇÔ.
     static IDE_RC priorNode( qcStatement* aStatement,
                              qtcNode**    aNode );
 
-    // Stringìœ¼ë¡œë¶€í„° ì—°ì‚°ìë¥¼ ìœ„í•œ Nodeë¥¼ ìƒì„±í•¨.
+    // StringÀ¸·ÎºÎÅÍ ¿¬»êÀÚ¸¦ À§ÇÑ Node¸¦ »ı¼ºÇÔ.
     static IDE_RC makeNode( qcStatement*    aStatement,
                             qtcNode**       aNode,
                             qcNamePosition* aPosition,
                             const UChar*    aOperator,
                             UInt            aOperatorLength );
 
-    // PROJ-1075 array type member functionì„ ê³ ë ¤í•œ makeNode
+    // PROJ-1075 array type member functionÀ» °í·ÁÇÑ makeNode
     static IDE_RC makeNodeForMemberFunc( qcStatement     * aStatement,
                                          qtcNode        ** aNode,
                                          qcNamePosition  * aPositionStart,
@@ -609,25 +615,25 @@ public:
                                          qcNamePosition  * aColumnNamePos,
                                          qcNamePosition  * aPkgNamePos );
 
-    // Module ì •ë³´ë¡œë¶€í„° Nodeë¥¼ ìƒì„±í•¨.
+    // Module Á¤º¸·ÎºÎÅÍ Node¸¦ »ı¼ºÇÔ.
     static IDE_RC makeNode( qcStatement*    aStatement,
                             qtcNode**       aNode,
                             qcNamePosition* aPosition,
                             mtfModule*      aModule );
 
-    // Nodeì— Argumentë¥¼ ì¶”ê°€í•¨.
+    // Node¿¡ Argument¸¦ Ãß°¡ÇÔ.
     static IDE_RC addArgument( qtcNode** aNode,
                                qtcNode** aArgument );
     
-    // Nodeì— within argumentë¥¼ ì¶”ê°€í•¨.
+    // Node¿¡ within argument¸¦ Ãß°¡ÇÔ.
     static IDE_RC addWithinArguments( qcStatement  * aStatement,
                                       qtcNode     ** aNode,
                                       qtcNode     ** aArguments );
     
-    // Quantify Expressionì„ ìœ„í•´ ìƒì„±ëœ ì‰ì—¬ Nodeë¥¼ ì œê±°í•¨
+    // Quantify ExpressionÀ» À§ÇØ »ı¼ºµÈ À×¿© Node¸¦ Á¦°ÅÇÔ
     static IDE_RC modifyQuantifiedExpression( qcStatement* aStatement,
                                               qtcNode**    aNode );
-    // Valueë¥¼ ìœ„í•œ Nodeë¥¼ ìƒì„±í•¨.
+    // Value¸¦ À§ÇÑ Node¸¦ »ı¼ºÇÔ.
     static IDE_RC makeValue( qcStatement*    aStatement,
                              qtcNode**       aNode,
                              const UChar*    aTypeName,
@@ -642,7 +648,7 @@ public:
                                  qtcNode        ** aNode,
                                  qcNamePosition  * aPosition );
 
-    // Procedure ë³€ìˆ˜ë¥¼ ìœ„í•œ Nodeë¥¼ ìƒì„±í•¨.
+    // Procedure º¯¼ö¸¦ À§ÇÑ Node¸¦ »ı¼ºÇÔ.
     static IDE_RC makeProcVariable( qcStatement*     aStatement,
                                     qtcNode**        aNode,
                                     qcNamePosition*  aPosition,
@@ -650,19 +656,19 @@ public:
                                     UInt             aProcVarOp );
 
     // To Fix PR-11391
-    // Internal Procedure ë³€ìˆ˜ë¥¼ ìœ„í•œ Nodeë¥¼ ìƒì„±í•¨.
+    // Internal Procedure º¯¼ö¸¦ À§ÇÑ Node¸¦ »ı¼ºÇÔ.
     static IDE_RC makeInternalProcVariable( qcStatement*    aStatement,
                                             qtcNode**       aNode,
                                             qcNamePosition* aPosition,
                                             mtcColumn*      aColumn,
                                             UInt            aProcVarOp );
 
-    // Host ë³€ìˆ˜ë¥¼ ìœ„í•œ Nodeë¥¼ ìƒì„±í•¨.
+    // Host º¯¼ö¸¦ À§ÇÑ Node¸¦ »ı¼ºÇÔ.
     static IDE_RC makeVariable( qcStatement*    aStatement,
                                 qtcNode**       aNode,
                                 qcNamePosition* aPosition );
 
-    // Columnì„ ìœ„í•œ Nodeë¥¼ ìƒì„±í•¨.
+    // ColumnÀ» À§ÇÑ Node¸¦ »ı¼ºÇÔ.
     static IDE_RC makeColumn( qcStatement*    aStatement,
                               qtcNode**       aNode,
                               qcNamePosition* aUserPosition,
@@ -670,41 +676,41 @@ public:
                               qcNamePosition* aColumnPosition,
                               qcNamePosition* aPkgPosition );
 
-    // Asterisk Target Columnì„ ìœ„í•œ Nodeë¥¼ ìƒì„±í•¨.
+    // Asterisk Target ColumnÀ» À§ÇÑ Node¸¦ »ı¼ºÇÔ.
     static IDE_RC makeTargetColumn( qtcNode* aNode,
                                     UShort   aTable,
                                     UShort   aColumn );
 
-    // í•´ë‹¹ Tupleì˜ ìµœëŒ€ Offsetì„ ì¬ì¡°ì •í•œë‹¤.
+    // ÇØ´ç TupleÀÇ ÃÖ´ë OffsetÀ» ÀçÁ¶Á¤ÇÑ´Ù.
     static void resetTupleOffset( mtcTemplate* aTemplate, UShort aTupleID );
 
-    // Intermediate Tupleì„ ìœ„í•œ ê³µê°„ì„ í• ë‹¹
+    // Intermediate TupleÀ» À§ÇÑ °ø°£À» ÇÒ´ç
     static IDE_RC allocIntermediateTuple( qcStatement* aStatement,
                                           mtcTemplate* aTemplate,
                                           UShort       aTupleID,
                                           SInt         aColCount );
 
-    // List Expressionì„ ìœ„í•œ ì •ë³´ë¥¼ ì¬ì¡°ì •í•œë‹¤.
+    // List ExpressionÀ» À§ÇÑ Á¤º¸¸¦ ÀçÁ¶Á¤ÇÑ´Ù.
     static IDE_RC changeNode( qcStatement*    aStatement,
                               qtcNode**       aNode,
                               qcNamePosition* aPosition,
                               qcNamePosition* aPositionEnd );
 
-    // Moduleë¡œ ë¶€í„° List Expressionì„ ìœ„í•œ ì •ë³´ë¥¼ ì¬ì¡°ì •í•œë‹¤.
+    // Module·Î ºÎÅÍ List ExpressionÀ» À§ÇÑ Á¤º¸¸¦ ÀçÁ¶Á¤ÇÑ´Ù.
     static IDE_RC changeNodeByModule( qcStatement*    aStatement,
                                       qtcNode**       aNode,
                                       mtfModule*      aModule,
                                       qcNamePosition* aPosition,
                                       qcNamePosition* aPositionEnd );
 
-    // PROJ-2533 array ë³€ìˆ˜ë¥¼ ê³ ë ¤í•œ changeNode
+    // PROJ-2533 array º¯¼ö¸¦ °í·ÁÇÑ changeNode
     static IDE_RC changeNodeForArray( qcStatement*    aStatement,
                                       qtcNode**       aNode,
                                       qcNamePosition* aPosition,
                                       qcNamePosition* aPositionEnd,
                                       idBool          aIsBracket );
 
-    // PROJ-1075 array type member functionì„ ê³ ë ¤í•œ changeNode
+    // PROJ-1075 array type member functionÀ» °í·ÁÇÑ changeNode
     static IDE_RC changeNodeForMemberFunc( qcStatement    * aStatement,
                                            qtcNode       ** aNode,
                                            qcNamePosition * aPositionStart,
@@ -714,7 +720,7 @@ public:
                                            qcNamePosition * aColumnNamePos,
                                            qcNamePosition * aPkgNamePos,
                                            idBool           aIsBracket /* PROJ-2533 */ );
-    // PROJ-2533 columnì„ ìœ„í•œ changeNode
+    // PROJ-2533 columnÀ» À§ÇÑ changeNode
     static IDE_RC changeColumn( qtcNode        ** aNode,
                                 qcNamePosition  * aPositionStart,
                                 qcNamePosition  * aPositionEnd,
@@ -735,43 +741,43 @@ public:
     // BUG-41631 RANK() Within Group Aggregation.
     static idBool canHasOverClause( qtcNode * aNode );
 
-    // BIGINT Valueë¥¼ ìƒì„±í•œë‹¤.
+    // BIGINT Value¸¦ »ı¼ºÇÑ´Ù.
     static IDE_RC getBigint( SChar*          aStmtText,
                              SLong*          aValue,
                              qcNamePosition* aPosition );
 
     /*************************************************************
-     * Validation ë‹¨ê³„ì—ì„œì˜ ì²˜ë¦¬
+     * Validation ´Ü°è¿¡¼­ÀÇ Ã³¸®
      *************************************************************/
 
-    // SETì˜ Targetë“±ì˜ í‘œí˜„ì„ ìœ„í•´ internal columnì„ ìƒì„±í•¨.
+    // SETÀÇ TargetµîÀÇ Ç¥ÇöÀ» À§ÇØ internal columnÀ» »ı¼ºÇÔ.
     static IDE_RC makeInternalColumn( qcStatement* aStatement,
                                       UShort       aTable,
                                       UShort       aColumn,
                                       qtcNode**    aNode);
 
-    // Invalid Viewì— ëŒ€í•œ ì²˜ë¦¬
+    // Invalid View¿¡ ´ëÇÑ Ã³¸®
     static void fixAfterValidationForCreateInvalidView (
         qcTemplate* aTemplate );
 
-    // Validation ì™„ë£Œ í›„ì˜ ì²˜ë¦¬
+    // Validation ¿Ï·á ÈÄÀÇ Ã³¸®
     static IDE_RC fixAfterValidation( iduVarMemList * aMemory, //fix PROJ-1596
                                       qcTemplate    * aTemplate );
 
-    // Argumentë¥¼ ê³ ë ¤í•˜ì§€ ì•Šì€ estimate ì²˜ë¦¬
+    // Argument¸¦ °í·ÁÇÏÁö ¾ÊÀº estimate Ã³¸®
     static IDE_RC estimateNodeWithoutArgument( qcStatement* aStatement,
                                                qtcNode*     aNode );
 
-    // ë°”ë¡œ í•˜ìœ„ Arguemntë§Œì„ ê³ ë ¤í•œ estimate ì²˜ë¦¬
+    // ¹Ù·Î ÇÏÀ§ Arguemnt¸¸À» °í·ÁÇÑ estimate Ã³¸®
     static IDE_RC estimateNodeWithArgument( qcStatement* aStatement,
                                             qtcNode*     aNode );
 
-    // PROJ-1718 Window functionì„ ìœ„í•œ estimate ì²˜ë¦¬
+    // PROJ-1718 Window functionÀ» À§ÇÑ estimate Ã³¸®
     static IDE_RC estimateWindowFunction( qcStatement * aStatement,
                                           qmsSFWGH    * aSFWGH,
                                           qtcNode     * aNode );
 
-    // ì „ì²´ Node Treeë¥¼ Traverseí•˜ë©° estimate ì²˜ë¦¬
+    // ÀüÃ¼ Node Tree¸¦ TraverseÇÏ¸ç estimate Ã³¸®
     static IDE_RC estimate( qtcNode*     aNode,
                             qcTemplate*  aTemplate,
                             qcStatement* aStatement,
@@ -784,23 +790,23 @@ public:
                                          qmsSFWGH    * aSFWGH,
                                          qtcNode     * aNode );
 
-    // Conversion Nodeë¥¼ ìƒì„±í•œë‹¤.
+    // Conversion Node¸¦ »ı¼ºÇÑ´Ù.
     static IDE_RC makeConversionNode( qtcNode*         aNode,
                                       qcStatement*     aStatement,
                                       qcTemplate*      aTemplate,
                                       const mtdModule* aModule );
 
-    // ORDER BY indicatorì— ëŒ€í•œ ì •ë³´ë¥¼ ì„¤ì •í•¨.
+    // ORDER BY indicator¿¡ ´ëÇÑ Á¤º¸¸¦ ¼³Á¤ÇÔ.
     static IDE_RC getSortColumnPosition( qmsSortColumns* aSortColumn,
                                          qcTemplate*     aTemplate );
 
-    // ë‘ qtcNodeê°€ ê°™ì€ expressionì„ í‘œí˜„í•˜ëŠ”ì§€ ê²€ì‚¬
+    // µÎ qtcNode°¡ °°Àº expressionÀ» Ç¥ÇöÇÏ´ÂÁö °Ë»ç
     static IDE_RC isEquivalentExpression( qcStatement     * aStatement,
                                           qtcNode         * aNode1,
                                           qtcNode         * aNode2,
                                           idBool          * aIsTrue);
 
-    // ë‘ predicateì´ ê°™ì€ predicateì¸ì§€ ê²€ì‚¬
+    // µÎ predicateÀÌ °°Àº predicateÀÎÁö °Ë»ç
     static IDE_RC isEquivalentPredicate( qcStatement * aStatement,
                                          qtcNode     * aPredicate1,
                                          qtcNode     * aPredicate2,
@@ -810,7 +816,7 @@ public:
                                                 qtcNode * aNode2,
                                                 idBool  * aIsEquivalent );
 
-    // column nodeë¥¼ stored function nodeë¡œ ë³€í™˜
+    // column node¸¦ stored function node·Î º¯È¯
     static IDE_RC changeNodeFromColumnToSP( qcStatement * aStatement,
                                             qtcNode     * aNode,
                                             mtcTemplate * aTemplate,
@@ -820,7 +826,7 @@ public:
                                             idBool      * aFindColumn );
 
     // BUG-16000
-    // Equalì—°ì‚°ì´ ê°€ëŠ¥í•œ íƒ€ì…ì¸ì§€ ê²€ì‚¬
+    // Equal¿¬»êÀÌ °¡´ÉÇÑ Å¸ÀÔÀÎÁö °Ë»ç
     static idBool isEquiValidType( qtcNode     * aNode,
                                    mtcTemplate * aTemplate );
 
@@ -828,7 +834,7 @@ public:
     static IDE_RC registerTupleVariable( qcStatement    * aStatement,
                                          qcNamePosition * aPosition );
 
-    // Constant Expressionì˜ ì‚¬ì „ ì²˜ë¦¬
+    // Constant ExpressionÀÇ »çÀü Ã³¸®
     static IDE_RC preProcessConstExpr( qcStatement * aStatement,
                                        qtcNode     * aNode,
                                        mtcTemplate * aTemplate,
@@ -836,7 +842,7 @@ public:
                                        SInt          aRemain,
                                        mtcCallBack * aCallBack );
 
-    // column ìˆ˜í–‰ ìœ„ì¹˜ ì„¤ì • ( Target, Group By, Having ... )
+    // column ¼öÇà À§Ä¡ ¼³Á¤ ( Target, Group By, Having ... )
     static IDE_RC setColumnExecutionPosition( mtcTemplate * aTemplate,
                                               qtcNode     * aNode,
                                               qmsSFWGH    * aColumnSFWGH,
@@ -851,51 +857,51 @@ public:
                               mtcColumn * aColumn2 );
     
     /*************************************************************
-     * Optimization ë‹¨ê³„ì—ì„œì˜ ì²˜ë¦¬
+     * Optimization ´Ü°è¿¡¼­ÀÇ Ã³¸®
      *************************************************************/
 
-    // Optimization ì™„ë£Œ í›„ì˜ ì²˜ë¦¬
+    // Optimization ¿Ï·á ÈÄÀÇ Ã³¸®
     static IDE_RC fixAfterOptimization( qcStatement * aStatement );
     
-    // PRIOR Nodeì˜ Table IDë¥¼ ë³€ê²½í•¨.
+    // PRIOR NodeÀÇ Table ID¸¦ º¯°æÇÔ.
     static IDE_RC priorNodeSetWithNewTuple( qcStatement* aStatement,
                                             qtcNode**    aNode,
                                             UShort       aOriginalTable,
                                             UShort       aTable );
 
-    // Assignì„ ìœ„í•œ Nodeë¥¼ ìƒì„±í•¨.
+    // AssignÀ» À§ÇÑ Node¸¦ »ı¼ºÇÔ.
     static IDE_RC makeAssign( qcStatement * aStatement,
                               qtcNode     * aNode,
                               qtcNode     * aArgument );
 
-    // Indirect ì²˜ë¦¬ë¥¼ ìœ„í•œ Nodeë¥¼ ìƒì„±í•¨.
+    // Indirect Ã³¸®¸¦ À§ÇÑ Node¸¦ »ı¼ºÇÔ.
     static IDE_RC makeIndirect( qcStatement* aStatement,
                                 qtcNode*     aNode,
                                 qtcNode*     aArgument );
 
-    // Pass Nodeë¥¼ ìƒì„±í•¨
+    // Pass Node¸¦ »ı¼ºÇÔ
     static IDE_RC makePassNode( qcStatement * aStatement,
                                 qtcNode     * aCurrentNode,
                                 qtcNode     * aArgumentNode,
                                 qtcNode    ** aPassNode );
 
-    // Constant Wrapper Nodeë¥¼ ìƒì„±í•¨.
+    // Constant Wrapper Node¸¦ »ı¼ºÇÔ.
     static IDE_RC makeConstantWrapper( qcStatement * aStatement,
                                        qtcNode     * aNode );
 
-    // Node Treeë‚´ì—ì„œ Host Constant Expressionì„ ì°¾ê³ ,
-    // ì´ì— ëŒ€í•˜ì—¬ Constant Wrapper Nodeë¥¼ ìƒì„±í•¨.
+    // Node Tree³»¿¡¼­ Host Constant ExpressionÀ» Ã£°í,
+    // ÀÌ¿¡ ´ëÇÏ¿© Constant Wrapper Node¸¦ »ı¼ºÇÔ.
     static IDE_RC optimizeHostConstExpression( qcStatement * aStatement,
                                                qtcNode     * aNode );
 
-    // Subquery Wrapper Nodeë¥¼ ìƒì„±í•¨.
+    // Subquery Wrapper Node¸¦ »ı¼ºÇÔ.
     static IDE_RC makeSubqueryWrapper( qcStatement * aStatement,
                                        qtcNode     * aSubqueryNode,
                                        qtcNode    ** aWrapperNode );
 
     // PROJ-1502 PARTITIONED DISK TABLE
-    // Node Treeë¥¼ ë³µì‚¬í•˜ë©´ì„œ partitioned tableì˜ ë…¸ë“œë¥¼
-    // partitionì˜ ë…¸ë“œë¡œ ë³€ê²½í•¨.
+    // Node Tree¸¦ º¹»çÇÏ¸é¼­ partitioned tableÀÇ ³ëµå¸¦
+    // partitionÀÇ ³ëµå·Î º¯°æÇÔ.
     static IDE_RC cloneQTCNodeTree4Partition(
         iduVarMemList * aMemory,
         qtcNode*        aSource,
@@ -904,7 +910,7 @@ public:
         UShort          aDestTable,
         idBool          aContainRootsNext );
 
-    // Node Treeë¥¼ ë³µì‚¬í•¨.
+    // Node Tree¸¦ º¹»çÇÔ.
     static IDE_RC cloneQTCNodeTree( iduVarMemList * aMemory, //fix PROJ-1596
                                     qtcNode       * aSource,
                                     qtcNode      ** aDestination,
@@ -923,14 +929,14 @@ public:
                                         qtcNode      * aSource,
                                         qtcNode     ** aDestination );
     
-    // DNF Filterë¥¼ ìœ„í•´ í•„ìš”í•œ Nodeë¥¼ ë³µì‚¬í•¨.
+    // DNF Filter¸¦ À§ÇØ ÇÊ¿äÇÑ Node¸¦ º¹»çÇÔ.
     static IDE_RC copyAndForDnfFilter( qcStatement* aStatement,
                                        qtcNode*     aSource,
                                        qtcNode**    aDestination,
                                        qtcNode**    aLast );
 
     // PROJ-1486
-    // ë‘ Nodeì˜ ìˆ˜í–‰ ê²°ê³¼ì˜ Data Typeì„ ì¼ì¹˜ì‹œí‚´
+    // µÎ NodeÀÇ ¼öÇà °á°úÀÇ Data TypeÀ» ÀÏÄ¡½ÃÅ´
     static IDE_RC makeSameDataType4TwoNode( qcStatement * aStatement,
                                             qtcNode     * aNode1,
                                             qtcNode     * aNode2 );
@@ -946,13 +952,13 @@ public:
                                            qtcNode     * aViewNode,
                                            qcmColumn   * aColumnInfo );
     
-    // templateì˜ í˜„ì¬ dataSizeê°’ì„ ì–»ì–´ì˜¤ê³  ìƒˆë¡œìš´ sizeë§Œí¼ ê°±ì‹ í•œë‹¤.
+    // templateÀÇ ÇöÀç dataSize°ªÀ» ¾ò¾î¿À°í »õ·Î¿î size¸¸Å­ °»½ÅÇÑ´Ù.
     static IDE_RC getDataOffset( qcStatement * aStatement,
                                  UInt          aSize,
                                  UInt        * aOffsetPtr );
 
-    // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
-    // qcStatementì— scan decision factorë¥¼ add, remove í•˜ëŠ” í•¨ìˆ˜ë“¤
+    // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+    // qcStatement¿¡ scan decision factor¸¦ add, remove ÇÏ´Â ÇÔ¼öµé
     static IDE_RC addSDF( qcStatement           * aStatement,
                           qmoScanDecisionFactor * aSDF );
 
@@ -960,53 +966,53 @@ public:
                              qmoScanDecisionFactor * aSDF );
 
     // PROJ-1405 ROWNUM
-    // ìˆ«ìí˜• constant valueì˜ ê°’ì„ ê°€ì ¸ì˜¨ë‹¤.
+    // ¼ıÀÚÇü constant valueÀÇ °ªÀ» °¡Á®¿Â´Ù.
     static idBool getConstPrimitiveNumberValue( qcTemplate  * aTemplate,
                                                 qtcNode     * aNode,
                                                 SLong       * aNumberValue );
 
     /*************************************************************
-     * Binding ë‹¨ê³„ì—ì„œì˜ ì²˜ë¦¬
+     * Binding ´Ü°è¿¡¼­ÀÇ Ã³¸®
      *************************************************************/
 
-    // Binding í›„ì˜ ì²˜ë¦¬ ì‘ì—…
+    // Binding ÈÄÀÇ Ã³¸® ÀÛ¾÷
     static IDE_RC setVariableTupleRowSize( qcTemplate    * aTemplate );
 
-    // aNodeê°€ ìƒìˆ˜ node treeì¸ì§€ ì•„ë‹Œì§€ ì•Œì•„ì˜¨ë‹¤. (ORDER BYìš©)
+    // aNode°¡ »ó¼ö node treeÀÎÁö ¾Æ´ÑÁö ¾Ë¾Æ¿Â´Ù. (ORDER BY¿ë)
     static idBool isConstNode4OrderBy( qtcNode * aNode );
 
     // BUG-25594
-    // aNodeê°€ ìƒìˆ˜ node treeì¸ì§€ ì•„ë‹Œì§€ ì•Œì•„ì˜¨ë‹¤. (like patternìš©)
+    // aNode°¡ »ó¼ö node treeÀÎÁö ¾Æ´ÑÁö ¾Ë¾Æ¿Â´Ù. (like pattern¿ë)
     static idBool isConstNode4LikePattern( qcStatement * aStatement,
                                            qtcNode     * aNode,
                                            qcDepInfo   * aOuterDependencies );
 
     /*************************************************************
-     * Execution ë‹¨ê³„ì—ì„œì˜ ì²˜ë¦¬
+     * Execution ´Ü°è¿¡¼­ÀÇ Ã³¸®
      *************************************************************/
 
-    // Aggregation Nodeì˜ ì´ˆê¸°í™”
+    // Aggregation NodeÀÇ ÃÊ±âÈ­
     static IDE_RC initialize( qtcNode*    aNode,
                               qcTemplate* aTemplate );
 
-    // Aggregation Nodeì˜ ì—°ì‚° ìˆ˜í–‰
+    // Aggregation NodeÀÇ ¿¬»ê ¼öÇà
     static IDE_RC aggregate( qtcNode*    aNode,
                              qcTemplate* aTemplate );
 
-    // Aggregation Nodeì˜ ì—°ì‚° ìˆ˜í–‰
+    // Aggregation NodeÀÇ ¿¬»ê ¼öÇà
     static IDE_RC aggregateWithInfo( qtcNode*    aNode,
                                      void*       aInfo,
                                      qcTemplate* aTemplate );
 
-    // Aggregation Nodeì˜ ì¢…ë£Œ ì‘ì—… ìˆ˜í–‰
+    // Aggregation NodeÀÇ Á¾·á ÀÛ¾÷ ¼öÇà
     static IDE_RC finalize( qtcNode*    aNode,
                             qcTemplate* aTemplate );
 
-    // í•´ë‹¹ Nodeì˜ ì—°ì‚°ì„ ìˆ˜í–‰
+    // ÇØ´ç NodeÀÇ ¿¬»êÀ» ¼öÇà
     static IDE_RC calculate( qtcNode*    aNode,
                              qcTemplate* aTemplate );
 
-    // í•´ë‹¹ Nodeì˜ ì—°ì‚° ê²°ê³¼ì˜ ë…¼ë¦¬ê°’ì„ íŒë‹¨
+    // ÇØ´ç NodeÀÇ ¿¬»ê °á°úÀÇ ³í¸®°ªÀ» ÆÇ´Ü
     static IDE_RC judge( idBool*     aResult,
                          qtcNode*    aNode,
                          qcTemplate* aTemplate );
@@ -1014,19 +1020,19 @@ public:
     /* PROJ-2209 DBTIMEZONE */
     static IDE_RC setDatePseudoColumn( qcTemplate * aTemplate );
 
-    // ìˆ˜í–‰ ì‹œì ì˜ System Timeì„ íšë“í•¨. fix BUG-14394
+    // ¼öÇà ½ÃÁ¡ÀÇ System TimeÀ» È¹µæÇÔ. fix BUG-14394
     static IDE_RC sysdate( mtdDateType* aDate );
 
-    // Subquery Nodeì˜ Plan ì´ˆê¸°í™”
+    // Subquery NodeÀÇ Plan ÃÊ±âÈ­
     static IDE_RC initSubquery( mtcNode*     aNode,
                                 mtcTemplate* aTemplate );
 
-    // Subquery Nodeì˜ Plan ìˆ˜í–‰
+    // Subquery NodeÀÇ Plan ¼öÇà
     static IDE_RC fetchSubquery( mtcNode*     aNode,
                                  mtcTemplate* aTemplate,
                                  idBool*      aRowExist );
 
-    // Subquery Nodeì˜ Plan ì¢…ë£Œ
+    // Subquery NodeÀÇ Plan Á¾·á
     static IDE_RC finiSubquery( mtcNode*     aNode,
                                 mtcTemplate* aTemplate );
 
@@ -1049,15 +1055,15 @@ public:
                                   qtcNode     * aNode );
     
     // BUG-15746
-    // ColumnNodeë¥¼ í†µí•´ ì¹¼ëŸ¼ ì •ë³´ë¥¼ íšë“í•˜ì—¬
-    // BindNodeì— ëŒ€ì‘ë˜ëŠ” Bind Param ì •ë³´ë¥¼ ì„¤ì •í•¨
-    // ( setDescribeParamInfo4Where()ì—ì„œ ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œ ) 
+    // ColumnNode¸¦ ÅëÇØ Ä®·³ Á¤º¸¸¦ È¹µæÇÏ¿©
+    // BindNode¿¡ ´ëÀÀµÇ´Â Bind Param Á¤º¸¸¦ ¼³Á¤ÇÔ
+    // ( setDescribeParamInfo4Where()¿¡¼­ ÀÌ ÇÔ¼ö¸¦ È£Ãâ ) 
     static IDE_RC setBindParamInfoByNode( qcStatement * aStatement,
                                           qtcNode     * aColumnNode,
                                           qtcNode     * aBindNode );
     
-    // whereì ˆì—ì„œ (ì¹¼ëŸ¼)(ë¹„êµì—°ì‚°ì)(bind) í˜•íƒœë¥¼ ì°¾ì•„
-    // bindParamInfoì— ì¹¼ëŸ¼ ì •ë³´ë¥¼ ì„¤ì •í•¨ 
+    // whereÀı¿¡¼­ (Ä®·³)(ºñ±³¿¬»êÀÚ)(bind) ÇüÅÂ¸¦ Ã£¾Æ
+    // bindParamInfo¿¡ Ä®·³ Á¤º¸¸¦ ¼³Á¤ÇÔ 
     static IDE_RC setDescribeParamInfo4Where( qcStatement * aStatement,
                                               qtcNode     * aNode );
 
@@ -1157,7 +1163,7 @@ class qtcNodeI
 {
 /***********************************************************************
  *
- * qtcNodeì— ëŒ€í•œ ê°ì¢… ì ‘ê·¼ì í•¨ìˆ˜ë“¤
+ * qtcNode¿¡ ´ëÇÑ °¢Á¾ Á¢±ÙÀÚ ÇÔ¼öµé
  *
  *      by kumdory, 2005-04-25
  ***********************************************************************/

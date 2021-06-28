@@ -39,11 +39,10 @@ PLATFORM_EXTERNAL_INCLUDES = $(CORE_INCLUDES)/external
 
 AVAILABLE_COMPILE_BIT = 32 64
 DEFAULT_COMPILE_BIT   = $(ALTI_CFG_BITTYPE)
-MCC32_FLAGS           = -g
 MLD32_FLAGS           = -L/opt/SUNWspro/lib
-MSO32_FLAGS           = -L/opt/SUNWspro/lib -G
+MSO32_FLAGS           = -L/opt/SUNWspro/lib -G 
 M64_FLAGS             = -xarch=amd64 -mt -xildoff
-MCC64_FLAGS           = +w -g
+MCC64_FLAGS           = +w 
 MLD64_FLAGS           = -L/opt/SUNWspro/lib/amd64 -L/usr/lib/amd64
 MSO64_FLAGS           = -L/opt/SUNWspro/lib/amd64 -L/usr/lib/amd64 -G
 

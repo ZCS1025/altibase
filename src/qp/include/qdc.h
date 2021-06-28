@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdc.h 82992 2018-05-08 06:30:01Z kclee $
+ * $Id: qdc.h 82630 2018-03-27 00:23:41Z kclee $
  **********************************************************************/
 #ifndef _O_QDC_H_
 #define _O_QDC_H_  1
@@ -127,7 +127,7 @@ public:
     // BUG-43533 OPTIMIZER_FEATURE_ENABLE
     static IDE_RC changeFeatureProperty4Startup( SChar * aNewValue );
 
-    /* PROJ-2624 [ê¸°ëŠ¥ì„±] MM - ìœ ì—°í•œ access_list ê´€ë¦¬ë°©ë²• ì œê³µ */
+    /* PROJ-2624 [±â´É¼º] MM - À¯¿¬ÇÑ access_list °ü¸®¹æ¹ý Á¦°ø */
     static IDE_RC reloadAccessList( qcStatement * aStatement );
 
 private:

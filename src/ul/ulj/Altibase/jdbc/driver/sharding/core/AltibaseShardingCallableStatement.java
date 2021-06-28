@@ -28,7 +28,7 @@ import java.sql.*;
 import java.util.Calendar;
 import java.util.Map;
 
-public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedStatement implements CallableStatement
+public class AltibaseShardingCallableStatement extends AbstractShardingCallableStatement
 {
     private CallableStatement                 mServerSideCstmt;
     private InternalShardingCallableStatement mInternalCstmt;
@@ -43,7 +43,7 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
             mServerSideCstmt = aConnection.getMetaConnection().prepareCall(aSql, aResultSetType,
                                                                            aResultSetConcurrency,
                                                                            aResultSetHoldability);
-            mInternalCstmt = new ServerSideShardingCallableStatement(mServerSideCstmt, mShardContextConnect);
+            mInternalCstmt = new ServerSideShardingCallableStatement(mServerSideCstmt, mMetaConn);
         }
         else
         {
@@ -59,9 +59,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void registerOutParameter(int aParameterIndex, int aSqlType) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "registerOutParameter",
-                               new Class[] {int.class, int.class},
-                               new Object[] { aParameterIndex, aSqlType});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class,
+                                                  "registerOutParameter",
+                                                  new Class[] { int.class, int.class },
+                                                  new Object[] { aParameterIndex, aSqlType });
         if (mIsCoordQuery)
         {
             mServerSideCstmt.registerOutParameter(aParameterIndex, aSqlType);
@@ -70,9 +71,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void registerOutParameter(int aParameterIndex, int aSqlType, int aScale) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "registerOutParameter",
-                               new Class[] {int.class, int.class, int.class},
-                               new Object[] { aParameterIndex, aSqlType, aScale});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class,
+                                                  "registerOutParameter",
+                                                  new Class[] {int.class, int.class, int.class},
+                                                  new Object[] { aParameterIndex, aSqlType, aScale});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.registerOutParameter(aParameterIndex, aSqlType, aScale);
@@ -81,9 +83,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void registerOutParameter(int aParameterIndex, int aSqlType, String aTypeName) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "registerOutParameter",
-                               new Class[] {int.class, int.class, String.class},
-                               new Object[] { aParameterIndex, aSqlType, aTypeName});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "registerOutParameter",
+                                                  new Class[] {int.class, int.class, String.class},
+                                                  new Object[] { aParameterIndex, aSqlType, aTypeName});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.registerOutParameter(aParameterIndex, aSqlType, aTypeName);
@@ -92,9 +95,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void registerOutParameter(String aParameterName, int aSqlType) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "registerOutParameter",
-                               new Class[] {String.class, int.class},
-                               new Object[] { aParameterName, aSqlType});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "registerOutParameter",
+                                                  new Class[] {String.class, int.class},
+                                                  new Object[] { aParameterName, aSqlType});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.registerOutParameter(aParameterName, aSqlType);
@@ -103,9 +107,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void registerOutParameter(String aParameterName, int aSqlType, int aScale) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "registerOutParameter",
-                               new Class[] {String.class, int.class, int.class},
-                               new Object[] { aParameterName, aSqlType, aScale});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "registerOutParameter",
+                                                  new Class[] {String.class, int.class, int.class},
+                                                  new Object[] { aParameterName, aSqlType, aScale});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.registerOutParameter(aParameterName, aSqlType, aScale);
@@ -114,9 +119,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void registerOutParameter(String aParameterName, int aSqlType, String aTypeName) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "registerOutParameter",
-                               new Class[] {String.class, int.class, String.class},
-                               new Object[] { aParameterName, aSqlType, aTypeName});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "registerOutParameter",
+                                                  new Class[] {String.class, int.class, String.class},
+                                                  new Object[] { aParameterName, aSqlType, aTypeName});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.registerOutParameter(aParameterName, aSqlType, aTypeName);
@@ -379,9 +385,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void setNull(String aParameterName, int aSqlType) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "setNull",
-                               new Class[] {String.class, int.class},
-                               new Object[] { aParameterName, aSqlType});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "setNull",
+                                                  new Class[] {String.class, int.class},
+                                                  new Object[] { aParameterName, aSqlType});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.setNull(aParameterName, aSqlType);
@@ -390,9 +397,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void setBoolean(String aParameterName, boolean aValue) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "setBoolean",
-                               new Class[] {String.class, boolean.class},
-                               new Object[] { aParameterName, aValue});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "setBoolean",
+                                                  new Class[] {String.class, boolean.class},
+                                                  new Object[] { aParameterName, aValue});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.setBoolean(aParameterName, aValue);
@@ -401,9 +409,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void setByte(String aParameterName, byte aValue) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "setByte",
-                               new Class[] {String.class, byte.class},
-                               new Object[] { aParameterName, aValue});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class,
+                                                  "setByte",
+                                                  new Class[] {String.class, byte.class},
+                                                  new Object[] { aParameterName, aValue});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.setByte(aParameterName, aValue);
@@ -412,9 +421,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void setShort(String aParameterName, short aValue) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "setShort",
-                               new Class[] {String.class, short.class},
-                               new Object[] { aParameterName, aValue});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "setShort",
+                                                  new Class[] { String.class, short.class },
+                                                  new Object[] { aParameterName, aValue});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.setShort(aParameterName, aValue);
@@ -423,9 +433,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void setInt(String aParameterName, int aValue) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "setInt",
-                               new Class[] {String.class, int.class},
-                               new Object[] { aParameterName, aValue});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "setInt",
+                                                  new Class[] { String.class, int.class },
+                                                  new Object[] { aParameterName, aValue});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.setInt(aParameterName, aValue);
@@ -434,9 +445,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void setLong(String aParameterName, long aValue) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "setLong",
-                               new Class[] {String.class, long.class},
-                               new Object[] { aParameterName, aValue});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "setLong",
+                                                  new Class[] { String.class, long.class },
+                                                  new Object[] { aParameterName, aValue});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.setLong(aParameterName, aValue);
@@ -445,9 +457,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void setFloat(String aParameterName, float aValue) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "setFloat",
-                               new Class[] {String.class, float.class},
-                               new Object[] { aParameterName, aValue});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "setFloat",
+                                                  new Class[] { String.class, float.class },
+                                                  new Object[] { aParameterName, aValue});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.setFloat(aParameterName, aValue);
@@ -456,9 +469,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void setDouble(String aParameterName, double aValue) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "setDouble",
-                               new Class[] {String.class, double.class},
-                               new Object[] { aParameterName, aValue});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "setDouble",
+                                                  new Class[] { String.class, double.class },
+                                                  new Object[] { aParameterName, aValue});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.setDouble(aParameterName, aValue);
@@ -467,9 +481,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void setBigDecimal(String aParameterName, BigDecimal aValue) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "setBigDecimal",
-                               new Class[] {String.class, BigDecimal.class},
-                               new Object[] { aParameterName, aValue});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "setBigDecimal",
+                                                  new Class[] { String.class, BigDecimal.class },
+                                                  new Object[] { aParameterName, aValue});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.setBigDecimal(aParameterName, aValue);
@@ -478,9 +493,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void setString(String aParameterName, String aValue) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "setString",
-                               new Class[] {String.class, String.class},
-                               new Object[] { aParameterName, aValue});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "setString",
+                                                  new Class[] { String.class, String.class },
+                                                  new Object[] { aParameterName, aValue});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.setString(aParameterName, aValue);
@@ -489,9 +505,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void setBytes(String aParameterName, byte[] aValue) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "setBytes",
-                               new Class[] {String.class, byte[].class},
-                               new Object[] { aParameterName, aValue});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "setBytes",
+                                                  new Class[] { String.class, byte[].class },
+                                                  new Object[] { aParameterName, aValue});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.setBytes(aParameterName, aValue);
@@ -500,9 +517,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void setDate(String aParameterName, Date aValue) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "setDate",
-                               new Class[] {String.class, Date.class},
-                               new Object[] { aParameterName, aValue});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "setDate",
+                                                  new Class[] { String.class, Date.class },
+                                                  new Object[] { aParameterName, aValue});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.setDate(aParameterName, aValue);
@@ -511,9 +529,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void setTime(String aParameterName, Time aValue) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "setTime",
-                               new Class[] {String.class, Time.class},
-                               new Object[] { aParameterName, aValue});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "setTime",
+                                                  new Class[] { String.class, Time.class },
+                                                  new Object[] { aParameterName, aValue});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.setTime(aParameterName, aValue);
@@ -522,9 +541,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void setTimestamp(String aParameterName, Timestamp aValue) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "setTimestamp",
-                               new Class[] {String.class, Timestamp.class},
-                               new Object[] { aParameterName, aValue});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "setTimestamp",
+                                                  new Class[] { String.class, Timestamp.class },
+                                                  new Object[] { aParameterName, aValue});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.setTimestamp(aParameterName, aValue);
@@ -533,9 +553,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void setAsciiStream(String aParameterName, InputStream aStream, int aLength) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "setAsciiStream",
-                               new Class[] {String.class, InputStream.class, int.class},
-                               new Object[] { aParameterName, aStream, aLength});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "setAsciiStream",
+                                                  new Class[] { String.class, InputStream.class, int.class },
+                                                  new Object[] { aParameterName, aStream, aLength});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.setAsciiStream(aParameterName, aStream, aLength);
@@ -544,7 +565,7 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void setBinaryStream(String aParameterName, InputStream aStream, int aLength) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "setBinaryStream",
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, "setBinaryStream",
                                new Class[] {String.class, InputStream.class, int.class},
                                new Object[] { aParameterName, aStream, aLength});
         if (mIsCoordQuery)
@@ -556,9 +577,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
     public void setObject(String aParameterName, Object aValue, int aTargetSqlType, int aScale)
             throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "setObject",
-                               new Class[] {String.class, Object.class, int.class, int.class},
-                               new Object[] { aParameterName, aValue, aTargetSqlType, aScale});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "setObject",
+                                                  new Class[] { String.class, Object.class, int.class, int.class },
+                                                  new Object[] { aParameterName, aValue, aTargetSqlType, aScale});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.setObject(aParameterName, aValue, aTargetSqlType, aScale);
@@ -567,9 +589,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void setObject(String aParameterName, Object aValue, int aTargetSqlType) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "setObject",
-                               new Class[] {String.class, Object.class, int.class},
-                               new Object[] { aParameterName, aValue, aTargetSqlType});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "setObject",
+                                                  new Class[] { String.class, Object.class, int.class },
+                                                  new Object[] { aParameterName, aValue, aTargetSqlType});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.setObject(aParameterName, aValue, aTargetSqlType);
@@ -578,9 +601,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void setObject(String aParameterName, Object aValue) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "setObject",
-                               new Class[] {String.class, Object.class},
-                               new Object[] { aParameterName, aValue});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "setObject",
+                                                  new Class[] { String.class, Object.class },
+                                                  new Object[] { aParameterName, aValue});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.setObject(aParameterName, aValue);
@@ -589,9 +613,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void setCharacterStream(String aParameterName, Reader aReader, int aLength) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "setCharacterStream",
-                               new Class[] {String.class, Reader.class, int.class},
-                               new Object[] { aParameterName, aReader, aLength});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "setCharacterStream",
+                                                  new Class[] { String.class, Reader.class, int.class },
+                                                  new Object[] { aParameterName, aReader, aLength});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.setCharacterStream(aParameterName, aReader, aLength);
@@ -600,9 +625,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void setDate(String aParameterName, Date aValue, Calendar aCal) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "setDate",
-                               new Class[] {String.class, Date.class, Calendar.class},
-                               new Object[] { aParameterName, aValue, aCal});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "setDate",
+                                                  new Class[] { String.class, Date.class, Calendar.class },
+                                                  new Object[] { aParameterName, aValue, aCal});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.setDate(aParameterName, aValue, aCal);
@@ -611,9 +637,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void setTime(String aParameterName, Time aValue, Calendar aCal) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "setTime",
-                               new Class[] {String.class, Time.class, Calendar.class},
-                               new Object[] { aParameterName, aValue, aCal});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "setTime",
+                                                  new Class[] { String.class, Time.class, Calendar.class },
+                                                  new Object[] { aParameterName, aValue, aCal});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.setTime(aParameterName, aValue, aCal);
@@ -622,9 +649,10 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void setTimestamp(String aParameterName, Timestamp aValue, Calendar aCal) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "setTimestamp",
-                               new Class[] {String.class, Timestamp.class, Calendar.class},
-                               new Object[] { aParameterName, aValue, aCal});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "setTimestamp",
+                                                  new Class[] { String.class, Timestamp.class, Calendar.class },
+                                                  new Object[] { aParameterName, aValue, aCal});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.setTimestamp(aParameterName, aValue, aCal);
@@ -633,12 +661,127 @@ public class AltibaseShardingCallableStatement extends AltibaseShardingPreparedS
 
     public void setNull(String aParameterName, int aSqlType, String aTypeName) throws SQLException
     {
-        recordMethodInvocation(CallableStatement.class, "setNull",
-                               new Class[] {String.class, int.class, String.class},
-                               new Object[] { aParameterName, aSqlType, aTypeName});
+        mJdbcMethodInvoker.recordMethodInvocation(CallableStatement.class, 
+                                                  "setNull",
+                                                  new Class[] { String.class, int.class, String.class },
+                                                  new Object[] { aParameterName, aSqlType, aTypeName});
         if (mIsCoordQuery)
         {
             mServerSideCstmt.setNull(aParameterName, aSqlType, aTypeName);
         }
+    }
+
+    @Override
+    public void setNString(String parameterName, String value) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setClob(String parameterName, Reader reader, long length) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setBlob(String parameterName, InputStream inputStream, long length) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public String getNString(int parameterIndex) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public String getNString(String parameterName) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public Reader getCharacterStream(int parameterIndex) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public Reader getCharacterStream(String parameterName) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setBlob(String parameterName, Blob x) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setClob(String parameterName, Clob x) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setAsciiStream(String parameterName, InputStream x, long length) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setBinaryStream(String parameterName, InputStream x, long length) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setCharacterStream(String parameterName, Reader reader, long length) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setAsciiStream(String parameterName, InputStream x) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setBinaryStream(String parameterName, InputStream x) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setCharacterStream(String parameterName, Reader reader) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setClob(String parameterName, Reader reader) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setBlob(String parameterName, InputStream inputStream) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public <T> T getObject(int parameterIndex, Class<T> type) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public <T> T getObject(String parameterName, Class<T> type) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
     }
 }

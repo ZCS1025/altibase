@@ -23,13 +23,13 @@
  *     ALTIBASE SHARD management function
  *
  * Syntax :
- *    SHARD_SET_SHARD_PROCEDURE( user_name VARCHAR,
- *                               proc_name VARCHAR,
- *                               split_method VARCHAR,
- *                               shard_key_parameter_name VARCHAR,
- *                               sub_split_method VARCHAR,
- *                               sub_shard_key_parameter_name VARCHAR,
- *                               default_node_name VARCHAR )
+ *    SHARD_SET_SHARD_PROCEDURE_LOCAL( user_name VARCHAR,
+ *                                     proc_name VARCHAR,
+ *                                     split_method VARCHAR,
+ *                                     shard_key_parameter_name VARCHAR,
+ *                                     sub_split_method VARCHAR,
+ *                                     sub_shard_key_parameter_name VARCHAR,
+ *                                     default_node_name VARCHAR )
  *    RETURN 0
  *
  **********************************************************************/
@@ -38,6 +38,9 @@
 #include <sdm.h>
 #include <smi.h>
 #include <qcg.h>
+#include <qcm.h>
+#include <qcmUser.h>
+#include <qcmProc.h>
 
 extern mtdModule mtdInteger;
 extern mtdModule mtdVarchar;
@@ -55,7 +58,7 @@ static IDE_RC sdfEstimate( mtcNode*        aNode,
 mtfModule sdfSetShardProcedureModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     sdfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -178,8 +181,25 @@ IDE_RC sdfCalculate_SetShardProcedure( mtcNode*     aNode,
     smiStatement              sSmiStmt;
     UInt                      sSmiStmtFlag;
     SInt                      sState = 0;
+    idBool                    sIsOldSessionShardMetaTouched = ID_FALSE;
+
+    // BUG-49047
+    UInt                      sEaction;
+    UInt                      sLatchState = 0;
+    UInt                      sUserID;
+    qsOID                     sProcOID;
+    qsxProcInfo             * sProcInfo = NULL;
 
     sStatement   = ((qcTemplate*)aTemplate)->stmt;
+
+    sStatement->mFlag &= ~QC_STMT_SHARD_META_CHANGE_MASK;
+    sStatement->mFlag |= QC_STMT_SHARD_META_CHANGE_TRUE;
+
+    if ( ( sStatement->session->mQPSpecific.mFlag & QC_SESSION_SHARD_META_TOUCH_MASK ) ==
+         QC_SESSION_SHARD_META_TOUCH_TRUE )
+    {
+        sIsOldSessionShardMetaTouched = ID_TRUE;
+    }
 
     // BUG-46366
     IDE_TEST_RAISE( ( QC_SMI_STMT(sStatement)->getTrans() == NULL ) ||
@@ -190,6 +210,15 @@ IDE_RC sdfCalculate_SetShardProcedure( mtcNode*     aNode,
     // Check Privilege
     IDE_TEST_RAISE( QCG_GET_SESSION_USER_ID(sStatement) != QCI_SYS_USER_ID,
                     ERR_NO_GRANT );
+
+    if ( SDU_SHARD_LOCAL_FORCE != 1 )
+    {
+        /* Shard Local OperationÀº internal ¿¡¼­¸¸ ¼öÇàµÇ¾î¾ß ÇÑ´Ù.  */
+        IDE_TEST_RAISE( ( QCG_GET_SESSION_IS_SHARD_INTERNAL_LOCAL_OPERATION( sStatement ) != ID_TRUE ) &&
+                        ( ( sStatement->session->mQPSpecific.mFlag & QC_SESSION_ALTER_META_MASK )
+                             != QC_SESSION_ALTER_META_ENABLE),
+                        ERR_INTERNAL_OPERATION );
+    }
 
     IDE_TEST( mtf::postfixCalculate( aNode,
                                      aStack,
@@ -237,45 +266,14 @@ IDE_RC sdfCalculate_SetShardProcedure( mtcNode*     aNode,
         sSplitMethod = (mtdCharType*)aStack[3].value;
         IDE_TEST_RAISE( sSplitMethod->length > 1,
                         ERR_INVALID_SHARD_SPLIT_METHOD_NAME );
-        if ( idlOS::strMatch( (SChar*)sSplitMethod->value, sSplitMethod->length,
-                              "H", 1 ) == 0 )
-        {
-            sSplitMethodStr[0] = 'H';
-            sSplitMethodStr[1] = '\0';
-        }
-        else if ( idlOS::strMatch( (SChar*)sSplitMethod->value, sSplitMethod->length,
-                                   "R", 1 ) == 0 )
-        {
-            sSplitMethodStr[0] = 'R';
-            sSplitMethodStr[1] = '\0';
-        }
-        else if ( idlOS::strMatch( (SChar*)sSplitMethod->value, sSplitMethod->length,
-                                   "C", 1 ) == 0 )
-        {
-            sSplitMethodStr[0] = 'C';
-            sSplitMethodStr[1] = '\0';
-        }
-        else if ( idlOS::strMatch( (SChar*)sSplitMethod->value, sSplitMethod->length,
-                                   "L", 1 ) == 0 )
-        {
-            sSplitMethodStr[0] = 'L';
-            sSplitMethodStr[1] = '\0';
-        }
-        else if ( idlOS::strMatch( (SChar*)sSplitMethod->value, sSplitMethod->length,
-                                   "S", 1 ) == 0 )
-        {
-            sSplitMethodStr[0] = 'S';
-            sSplitMethodStr[1] = '\0';
-        }
-        else
-        {
-            IDE_RAISE( ERR_INVALID_SHARD_SPLIT_METHOD_NAME );
-        }
+
+        IDE_TEST( sdi::getSplitMethodCharByStr((SChar*)sSplitMethod->value, &(sSplitMethodStr[0])) != IDE_SUCCESS );
+        sSplitMethodStr[1] = '\0';
 
         if ( ( sSplitMethodStr[0] == 'C' ) ||
              ( sSplitMethodStr[0] == 'S' ) )
         {
-            // clone ë° solo tableì€ shard keyì™€ sub split method, sub shard key ê·¸ë¦¬ê³  default nodeê°€ nullì´ì–´ì•¼ í•œë‹¤.
+            // clone ¹× solo tableÀº shard key¿Í sub split method, sub shard key ±×¸®°í default node°¡ nullÀÌ¾î¾ß ÇÑ´Ù.
             IDE_TEST_RAISE( ( ( aStack[4].column->module->isNull( aStack[4].column,
                                                                   aStack[4].value ) != ID_TRUE ) || // shard key
                               ( aStack[5].column->module->isNull( aStack[5].column,
@@ -288,7 +286,7 @@ IDE_RC sdfCalculate_SetShardProcedure( mtcNode*     aNode,
         }
         else
         {
-            // default nodeëŠ” nullì¼ ìˆ˜ ìžˆë‹¤.
+            // default node´Â nullÀÏ ¼ö ÀÖ´Ù.
             IDE_TEST_RAISE( aStack[4].column->module->isNull( aStack[4].column,
                                                               aStack[4].value ) == ID_TRUE, // shard key
                             ERR_ARGUMENT_NOT_APPLICABLE );
@@ -327,13 +325,13 @@ IDE_RC sdfCalculate_SetShardProcedure( mtcNode*     aNode,
             else if ( idlOS::strMatch( (SChar*)sSubSplitMethod->value, sSubSplitMethod->length,
                                        "C", 1 ) == 0 )
             {
-                /* Sub-shard keyì˜ split methodëŠ” cloneì¼ ìˆ˜ ì—†ë‹¤. */
+                /* Sub-shard keyÀÇ split method´Â cloneÀÏ ¼ö ¾ø´Ù. */
                 IDE_RAISE( ERR_UNSUPPORTED_SUB_SHARD_KEY_SPLIT_TYPE );
             }
             else if ( idlOS::strMatch( (SChar*)sSubSplitMethod->value, sSubSplitMethod->length,
                                        "S", 1 ) == 0 )
             {
-                /* Sub-shard keyì˜ split methodëŠ” soloì¼ ìˆ˜ ì—†ë‹¤. */
+                /* Sub-shard keyÀÇ split method´Â soloÀÏ ¼ö ¾ø´Ù. */
                 IDE_RAISE( ERR_UNSUPPORTED_SUB_SHARD_KEY_SPLIT_TYPE );
             }
             else if ( idlOS::strMatch( (SChar*)sSubSplitMethod->value, sSubSplitMethod->length,
@@ -347,7 +345,7 @@ IDE_RC sdfCalculate_SetShardProcedure( mtcNode*     aNode,
                 IDE_RAISE( ERR_INVALID_SHARD_SPLIT_METHOD_NAME );
             }
 
-            // sub-shard keyì˜ split methodê°€ nullì´ ì•„ë‹Œ ê²½ìš°ì—ëŠ” ë°˜ë“œì‹œ sub-shard keyê°€ ì„¸íŒ… ë˜ì–´ì•¼ í•œë‹¤.
+            // sub-shard keyÀÇ split method°¡ nullÀÌ ¾Æ´Ñ °æ¿ì¿¡´Â ¹Ýµå½Ã sub-shard key°¡ ¼¼ÆÃ µÇ¾î¾ß ÇÑ´Ù.
             IDE_TEST_RAISE( aStack[6].column->module->isNull( aStack[6].column,
                                                               aStack[6].value ) == ID_TRUE, // sub shard key
                             ERR_ARGUMENT_NOT_APPLICABLE );
@@ -369,7 +367,7 @@ IDE_RC sdfCalculate_SetShardProcedure( mtcNode*     aNode,
 
         if ( sSubKeyColumnName->length > 0 )
         {
-            // Shard keyì™€ sub-shard keyëŠ” ê°™ì€ columnì¼ ìˆ˜ ì—†ë‹¤.
+            // Shard key¿Í sub-shard key´Â °°Àº columnÀÏ ¼ö ¾ø´Ù.
             IDE_TEST_RAISE( idlOS::strMatch( (SChar*)sKeyColumnName->value, sKeyColumnName->length,
                                              (SChar*)sSubKeyColumnName->value, sSubKeyColumnName->length ) == 0,
                             ERR_DUPLICATED_SUB_SHARD_KEY_NAME );
@@ -384,7 +382,7 @@ IDE_RC sdfCalculate_SetShardProcedure( mtcNode*     aNode,
         // default node name
         sDefaultNodeName = (mtdCharType*)aStack[7].value;
 
-        IDE_TEST_RAISE( sDefaultNodeName->length > SDI_NODE_NAME_MAX_SIZE,
+        IDE_TEST_RAISE( sDefaultNodeName->length > SDI_CHECK_NODE_NAME_MAX_SIZE,
                         ERR_SHARD_GROUP_NAME_TOO_LONG );
         idlOS::strncpy( sDefaultNodeNameStr,
                         (SChar*)sDefaultNodeName->value,
@@ -406,20 +404,86 @@ IDE_RC sdfCalculate_SetShardProcedure( mtcNode*     aNode,
                   != IDE_SUCCESS );
         sState = 2;
 
+        IDE_TEST( qcmUser::getUserID( NULL,
+                                      QC_SMI_STMT( sStatement ),
+                                      sUserNameStr,
+                                      sUserName->length,
+                                      &sUserID )
+                  != IDE_SUCCESS );
+
+        IDE_TEST_RAISE( sUserID == QC_SYSTEM_USER_ID,
+                        ERR_SYSTEM_OBJECT );
+
+        IDE_TEST( qcmProc::getProcExistWithEmptyByNamePtr( sStatement,
+                                                           sUserID,
+                                                           sTableNameStr,
+                                                           sTableName->length,
+                                                           &sProcOID )
+                  != IDE_SUCCESS );
+
+        IDE_TEST_RAISE( sProcOID == QS_EMPTY_OID, ERR_NOT_EXIST_OBJECT );
+
+        IDE_TEST( qsxProc::latchX( sProcOID,
+                                   ID_TRUE )
+                  != IDE_SUCCESS );
+        sLatchState = 1;
+
+        IDE_TEST( qsxProc::getProcInfo( sProcOID,
+                                        &sProcInfo )
+                  != IDE_SUCCESS );
+
+        // BUG-48438
+        // A PlanTree of the procedure info is NULL when the server start with "_STORED_PROC_MODE=1".
+        if ( (sProcInfo->isValid  == ID_FALSE) &&
+             (sProcInfo->planTree == NULL) )
+        {
+            IDE_TEST( qsx::doRecompile( sStatement,
+                                        sProcOID,
+                                        sProcInfo,
+                                        ID_FALSE )
+                      != IDE_SUCCESS );
+        }
+
+        // TASK-7244 Set shard split method to PSM info
+        // BUG-48213 Fix the concurrency control problem between SET_SHARD_PROCEDURE and 'drop procedure' statement.
+        if ( qciMisc::makeProcStatusInvalidAndSetShardSplitMethodByName( sStatement,
+                                                                         sProcOID,
+                                                                         (SChar*)sSplitMethodStr )
+             != IDE_SUCCESS )
+        {
+            sEaction = (ideGetErrorCode() & E_ACTION_MASK);
+
+            // BUG-48919 SET_SHARD_PROCEDURE Áß rebuild error°¡ ¹ß»ýÇÏ¸é ¾ÈµÈ´Ù.
+            // Shard ID¸¦ °ü¸®ÇÏ´Â sequence(NEXT_SHARD_ID)°¡ Æ²¾îÁø´Ù.
+            IDE_TEST_RAISE( sEaction == E_ACTION_REBUILD, ERR_ALREADY_MODIFIED );
+
+            IDE_TEST(1);
+        }
+
         //---------------------------------
         // Insert Meta
         //---------------------------------
 
-        IDE_TEST( sdm::insertProcedure( sStatement,
-                                        (SChar*)sUserNameStr,
-                                        (SChar*)sTableNameStr,
-                                        (SChar*)sSplitMethodStr,
-                                        (SChar*)sKeyColumnNameStr,
-                                        (SChar*)sSubSplitMethodStr,
-                                        (SChar*)sSubKeyColumnNameStr,
-                                        (SChar*)sDefaultNodeNameStr,
-                                        &sRowCnt )
-                  != IDE_SUCCESS );
+        if( sdm::insertProcedure( sStatement,
+                                  (SChar*)sUserNameStr,
+                                  (SChar*)sTableNameStr,
+                                  (SChar*)sSplitMethodStr,
+                                  (SChar*)sKeyColumnNameStr,
+                                  (SChar*)sSubSplitMethodStr,
+                                  (SChar*)sSubKeyColumnNameStr,
+                                  (SChar*)sDefaultNodeNameStr,
+                                  &sRowCnt,
+                                  sProcOID,
+                                  sUserID )
+            != IDE_SUCCESS )
+        {
+            sEaction = (ideGetErrorCode() & E_ACTION_MASK);
+
+            // BUG-48919 SET_SHARD_PROCEDURE Áß rebuild error°¡ ¹ß»ýÇÏ¸é ¾ÈµÈ´Ù.
+            IDE_TEST_RAISE( sEaction == E_ACTION_REBUILD, ERR_ALREADY_MODIFIED );
+
+            IDE_TEST(1); 
+        }
 
         //---------------------------------
         // End Statement
@@ -433,12 +497,21 @@ IDE_RC sdfCalculate_SetShardProcedure( mtcNode*     aNode,
 
         IDE_TEST_RAISE( sRowCnt == 0,
                         ERR_INVALID_SHARD_NODE );
+
+        sLatchState = 0;
+        IDE_TEST( qsxProc::unlatch( sProcOID ) != IDE_SUCCESS );
     }
 
     *(mtdIntegerType*)aStack[0].value = 0;
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_INTERNAL_OPERATION )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdfCalculate_SetShardProcedure",
+                                  "SHARD_INTERNAL_LOCAL_OPERATION is not 1" ) );
+    }
     IDE_EXCEPTION( ERR_INSIDE_QUERY )
     {
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QSX_PSM_INSIDE_QUERY ) );
@@ -483,8 +556,24 @@ IDE_RC sdfCalculate_SetShardProcedure( mtcNode*     aNode,
     {
         IDE_SET( ideSetErrorCode( sdERR_ABORT_SDF_UNSUPPORTED_SUB_SHARD_KEY_SPLIT_TYPE ) );
     }
+    IDE_EXCEPTION(ERR_ALREADY_MODIFIED)
+    {
+        IDE_CLEAR();
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QCU_RESOURCE_BUSY, sTableNameStr ) );
+    }
+    IDE_EXCEPTION( ERR_SYSTEM_OBJECT )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDM_SYSTEM_OBJECT ) );
+    }
+    IDE_EXCEPTION( ERR_NOT_EXIST_OBJECT )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDI_NOT_EXIST_PROC_SQLTEXT,
+                                  sTableNameStr ) );
+    }
     IDE_EXCEPTION_END;
 
+    IDE_PUSH();
+    
     switch ( sState )
     {
         case 2:
@@ -502,5 +591,24 @@ IDE_RC sdfCalculate_SetShardProcedure( mtcNode*     aNode,
             break;
     }
 
+    if ( sIsOldSessionShardMetaTouched == ID_TRUE )
+    {
+        sdi::setShardMetaTouched( sStatement->session );
+    }
+    else
+    {
+        sdi::unsetShardMetaTouched( sStatement->session );
+    }
+
+    if ( sLatchState == 1 )
+    {
+        if ( qsxProc::unlatch( sProcOID ) != IDE_SUCCESS )
+        {
+            (void) IDE_ERRLOG(IDE_QP_1);
+        }
+    }
+
+    IDE_POP();
+    
     return IDE_FAILURE;
 }

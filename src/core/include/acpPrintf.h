@@ -357,6 +357,10 @@ ACP_EXPORT acp_rc_t acpVsnprintf(acp_char_t       *aBuffer,
                                  acp_size_t        aSize,
                                  const acp_char_t *aFormat,
                                  va_list           aArgs);
+ACP_EXPORT acp_rc_t acpSnprintfSize(acp_char_t       *aBuffer,
+                                    acp_size_t        aSize,
+                                    acp_size_t       *aWritten,
+                                    const acp_char_t *aFormat, ...);
 ACP_EXPORT acp_rc_t acpVsnprintfSize(acp_char_t       *aBuffer,
                                      acp_size_t        aSize,
                                      acp_size_t       *aWritten,

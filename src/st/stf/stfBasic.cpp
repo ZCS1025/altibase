@@ -19,8 +19,8 @@
  * $Id: stfBasic.cpp 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * Geometry ê°ì²´ì˜ ê¸°ë³¸ ì†ì„± í•¨ìˆ˜ êµ¬í˜„
- * ìƒì„¸ êµ¬í˜„ì„ í•„ìš”ë¡œ í•˜ëŠ” í•¨ìˆ˜ëŠ” stdPrimitive.cppë¥¼ ì‹¤í–‰í•œë‹¤.
+ * Geometry °´Ã¼ÀÇ ±âº» ¼Ó¼º ÇÔ¼ö ±¸Çö
+ * »ó¼¼ ±¸ÇöÀ» ÇÊ¿ä·Î ÇÏ´Â ÇÔ¼ö´Â stdPrimitive.cpp¸¦ ½ÇÇàÇÑ´Ù.
  **********************************************************************/
 
 #include <idl.h>
@@ -30,6 +30,7 @@
 #include <mtdTypes.h>
 
 #include <qc.h>
+#include <qci.h>
 
 #include <stdTypes.h>
 #include <stdUtils.h>
@@ -38,12 +39,14 @@
 #include <stdMethod.h>
 #include <stfBasic.h>
 #include <stuProperty.h>
+#include <stm.h>
 
 extern mtdModule stdGeometry;
+extern mtdModule mtdInteger;
 
 /***********************************************************************
  * Description:
- * Geometry ê°ì²´ì˜ ì°¨ì›ì„ ë¦¬í„´
+ * Geometry °´Ã¼ÀÇ Â÷¿øÀ» ¸®ÅÏ
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -57,7 +60,7 @@ IDE_RC stfBasic::dimension(
     stdGeometryHeader*  sValue = (stdGeometryHeader *)aStack[1].value;
     mtdIntegerType*     sRet = (mtdIntegerType*)aStack[0].value;
 
-    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
+    // Fix BUG-15412 mtdModule.isNull »ç¿ë
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -82,7 +85,7 @@ IDE_RC stfBasic::dimension(
 
 /***********************************************************************
  * Description:
- * Geometry ê°ì²´ì˜ íƒ€ì…ì„ ë¬¸ìì—´ë¡œ ë¦¬í„´
+ * Geometry °´Ã¼ÀÇ Å¸ÀÔÀ» ¹®ÀÚ¿­·Î ¸®ÅÏ
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -99,7 +102,7 @@ IDE_RC stfBasic::geometryType(
 
     IDE_ASSERT( sRet != NULL );
     
-    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
+    // Fix BUG-15412 mtdModule.isNull »ç¿ë
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -125,7 +128,7 @@ IDE_RC stfBasic::geometryType(
 
 /***********************************************************************
  * Description:
- * Geometry ê°ì²´ë¥¼ WKT(Well Known Text)ë¡œ ì¶œë ¥
+ * Geometry °´Ã¼¸¦ WKT(Well Known Text)·Î Ãâ·Â
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -143,7 +146,7 @@ IDE_RC stfBasic::asText(
     IDE_RC              sReturn;
     UInt                sSize = 0;
 
-    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
+    // Fix BUG-15412 mtdModule.isNull »ç¿ë
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -152,9 +155,72 @@ IDE_RC stfBasic::asText(
     else    
     {
         IDE_TEST( getText( sValue, sBuf->value, sMaxSize, &sSize, &sReturn )
-             != IDE_SUCCESS );
+                  != IDE_SUCCESS );
 
         sBuf->length = (UShort)sSize;
+
+        // BUG-48051
+        if ( sReturn != IDE_SUCCESS ) 
+        {
+            IDE_TEST( ideGetErrorCode() == stERR_ABORT_INVALID_GEOMETRY_MADEBY_GEOMFROMWKB );
+        }
+        else
+        {
+            IDE_CLEAR();
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    aStack[0].column->module->null( aStack[0].column,
+                                    aStack[0].value );
+    
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description: PROJ-2422 SRID
+ * Geometry °´Ã¼¸¦ EWKT(Extended Well Known Text)·Î Ãâ·Â
+ *
+ * mtcStack*    aStack(InOut):
+ **********************************************************************/
+IDE_RC stfBasic::asEWKT( mtcNode*     /* aNode */,
+                         mtcStack*    aStack,
+                         SInt         /* aRemain */,
+                         void*        /* aInfo */ ,
+                         mtcTemplate* /* aTemplate */ )    
+{
+    stdGeometryHeader*  sValue = (stdGeometryHeader *)aStack[1].value;
+    void*               aRow0  = aStack[0].value;
+    mtdCharType*        sBuf   = (mtdCharType*)aRow0;
+    UInt                sMaxSize = aStack[0].column->precision;    
+    IDE_RC              sReturn;
+    UInt                sSize = 0;
+
+    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    if ( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
+    {
+        aStack[0].column->module->null( aStack[0].column,
+                                        aStack[0].value );
+    }
+    else    
+    {
+        IDE_TEST( getEWKT( sValue, sBuf->value, sMaxSize, &sSize, &sReturn )
+                  != IDE_SUCCESS );
+
+        sBuf->length = (UShort)sSize;
+
+        // BUG-48051
+        if ( sReturn != IDE_SUCCESS ) 
+        {
+            IDE_TEST( ideGetErrorCode() == stERR_ABORT_INVALID_GEOMETRY_MADEBY_GEOMFROMWKB );
+        }
+        else
+        {
+            IDE_CLEAR();
+        }
     }
 
     return IDE_SUCCESS;
@@ -169,7 +235,7 @@ IDE_RC stfBasic::asText(
 
 /***********************************************************************
  * Description:
- * Geometry ê°ì²´ë¥¼ WKB(Well Known Binary)ë¡œ ì¶œë ¥
+ * Geometry °´Ã¼¸¦ WKB(Well Known Binary)·Î Ãâ·Â
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -185,8 +251,8 @@ IDE_RC stfBasic::asBinary(
     mtdBinaryType*      sBuf   = (mtdBinaryType*)aRow0;   // Fix BUG-15834
     UInt                sMaxSize = aStack[0].column->precision;    
 
-    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
-    if( stdGeometry.isNull( NULL, sValue ) == ID_TRUE)
+    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    if ( stdGeometry.isNull( NULL, sValue ) == ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
                                         aStack[0].value );
@@ -209,8 +275,48 @@ IDE_RC stfBasic::asBinary(
 }
 
 /***********************************************************************
+ * Description: PROJ-2422 SRID
+ * Geometry °´Ã¼¸¦ EWKB(Extended Well Known Binary)·Î Ãâ·Â
+ *
+ * mtcStack*    aStack(InOut):
+ **********************************************************************/
+IDE_RC stfBasic::asEWKB( mtcNode*     /* aNode */,
+                         mtcStack*    aStack,
+                         SInt         /* aRemain */,
+                         void*        /* aInfo */ ,
+                         mtcTemplate* /* aTemplate */ )    
+{
+    stdGeometryHeader*  sValue = (stdGeometryHeader *)aStack[1].value;
+    void*               aRow0  = aStack[0].value;
+    mtdBinaryType*      sBuf   = (mtdBinaryType*)aRow0;   // Fix BUG-15834
+    UInt                sMaxSize = aStack[0].column->precision;    
+
+    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    if ( stdGeometry.isNull( NULL, sValue ) == ID_TRUE )
+    {
+        aStack[0].column->module->null( aStack[0].column,
+                                        aStack[0].value );
+    }
+    else    
+    {
+        IDE_TEST( getEWKB( sValue, sBuf->mValue, sMaxSize, &sBuf->mLength )
+                  != IDE_SUCCESS );
+
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    aStack[0].column->module->null( aStack[0].column,
+                                    aStack[0].value );
+    
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
  * Description:
- * Geometry ê°ì²´ì˜ Boundaryë¥¼ Geometry ê°ì²´ë¡œ ì¶œë ¥
+ * Geometry °´Ã¼ÀÇ Boundary¸¦ Geometry °´Ã¼·Î Ãâ·Â
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -225,7 +331,7 @@ IDE_RC stfBasic::boundary(
     stdGeometryHeader*  sRet = (stdGeometryHeader*)aStack[0].value;
     UInt                sFence = aStack[0].column->precision;
 
-    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
+    // Fix BUG-15412 mtdModule.isNull »ç¿ë
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -253,7 +359,7 @@ IDE_RC stfBasic::boundary(
 
 /***********************************************************************
  * Description:
- * Geometry ê°ì²´ì˜ MBRì„ í´ë¦¬ê³¤ ê°ì²´ë¡œ ì¶œë ¥
+ * Geometry °´Ã¼ÀÇ MBRÀ» Æú¸®°ï °´Ã¼·Î Ãâ·Â
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -267,7 +373,7 @@ IDE_RC stfBasic::envelope(
     stdGeometryHeader*  sValue = (stdGeometryHeader *)aStack[1].value;
     stdGeometryHeader*  sRet = (stdGeometryHeader*)aStack[0].value;
 
-    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
+    // Fix BUG-15412 mtdModule.isNull »ç¿ë
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -292,7 +398,7 @@ IDE_RC stfBasic::envelope(
 
 /***********************************************************************
  * Description:
- * Geometry ê°ì²´ê°€ Empty ê°ì²´ì¸ì§€ íŒë³„
+ * Geometry °´Ã¼°¡ Empty °´Ã¼ÀÎÁö ÆÇº°
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -306,7 +412,7 @@ IDE_RC stfBasic::isEmpty(
     stdGeometryHeader*  sValue = (stdGeometryHeader *)aStack[1].value;
     mtdIntegerType*     sRet = (mtdIntegerType*)aStack[0].value;
 
-    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
+    // Fix BUG-15412 mtdModule.isNull »ç¿ë
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -319,12 +425,19 @@ IDE_RC stfBasic::isEmpty(
         case STD_EMPTY_TYPE :
             *sRet = 1;
             break;
+        case STD_POINT_2D_EXT_TYPE :
         case STD_POINT_2D_TYPE :
+        case STD_LINESTRING_2D_EXT_TYPE :
         case STD_LINESTRING_2D_TYPE :
+        case STD_POLYGON_2D_EXT_TYPE :
         case STD_POLYGON_2D_TYPE :
+        case STD_MULTIPOINT_2D_EXT_TYPE :
         case STD_MULTIPOINT_2D_TYPE :
+        case STD_MULTILINESTRING_2D_EXT_TYPE :
         case STD_MULTILINESTRING_2D_TYPE :
+        case STD_MULTIPOLYGON_2D_EXT_TYPE :
         case STD_MULTIPOLYGON_2D_TYPE :
+        case STD_GEOCOLLECTION_2D_EXT_TYPE :
         case STD_GEOCOLLECTION_2D_TYPE :
             *sRet = 0;
             break;
@@ -349,7 +462,7 @@ IDE_RC stfBasic::isEmpty(
 
 /***********************************************************************
  * Description:
- * Geometry ê°ì²´ê°€ Simpleí•œì§€ íŒë³„
+ * Geometry °´Ã¼°¡ SimpleÇÑÁö ÆÇº°
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -363,7 +476,7 @@ IDE_RC stfBasic::isSimple(
     stdGeometryHeader*  sValue = (stdGeometryHeader *)aStack[1].value;
     mtdIntegerType*     sRet = (mtdIntegerType*)aStack[0].value;
 
-    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
+    // Fix BUG-15412 mtdModule.isNull »ç¿ë
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -388,7 +501,7 @@ IDE_RC stfBasic::isSimple(
 
 /***********************************************************************
  * Description:
- * Geometry ê°ì²´ê°€ Validí•œì§€ íŒë³„
+ * Geometry °´Ã¼°¡ ValidÇÑÁö ÆÇº°
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -396,7 +509,7 @@ IDE_RC stfBasic::isValid(
                         mtcNode*     /* aNode */,
                         mtcStack*    aStack,
                         SInt         /* aRemain */,
-                        void*        /* aInfo */ ,
+                        idBool       aCheckSize,
                         mtcTemplate* aTemplate )
 {
     stdGeometryHeader*  sValue = (stdGeometryHeader *)aStack[1].value;
@@ -410,7 +523,7 @@ IDE_RC stfBasic::isValid(
     sQcTmplate = (qcTemplate*) aTemplate;
     sQmxMem    = QC_QMX_MEM( sQcTmplate->stmt );
     
-    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
+    // Fix BUG-15412 mtdModule.isNull »ç¿ë
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -419,25 +532,65 @@ IDE_RC stfBasic::isValid(
     else    
     {
         /* BUG-33576 
-         * IsValidëŠ” í•­ìƒ validateë¥¼ í˜¸ì¶œí•˜ì—¬ ê°ì²´ê°€ Validí•œì§€ íŒë³„í•©ë‹ˆë‹¤.
-         * í—¤ë”ì˜ mIsValidê°’ë§Œ ì½ê¸° ìœ„í•´ì„œëŠ” IsValidHeader í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•´ì•¼í•©ë‹ˆë‹¤. */
+         * IsValid´Â Ç×»ó validate¸¦ È£ÃâÇÏ¿© °´Ã¼°¡ ValidÇÑÁö ÆÇº°ÇÕ´Ï´Ù.
+         * Çì´õÀÇ mIsValid°ª¸¸ ÀĞ±â À§ÇØ¼­´Â IsValidHeader ÇÔ¼ö¸¦ »ç¿ëÇØ¾ßÇÕ´Ï´Ù. */
 
-        // Memory ì¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ì¬ ìœ„ì¹˜ ê¸°ë¡
+        // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
         IDE_TEST( sQmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS);
         sStage = 1;
 
-        if ( stdPrimitive::validate( sQmxMem,
-                                     sValue,
-                                     sValue->mSize ) == IDE_SUCCESS)
+        if ( aCheckSize == ID_FALSE )
         {
-            *sRet = 1;
+            if ( stdPrimitive::validate( sQmxMem,
+                                         sValue,
+                                         sValue->mSize ) == IDE_SUCCESS)
+            {
+                *sRet = 1;
+            }
+            else
+            {
+                *sRet = ST_INVALID;
+            }
         }
-        else
+        else      
         {
-            *sRet = ST_INVALID;
-        }
-        
-        /* Memory ì¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™ */
+            // BUG-48051
+            *(mtdIntegerType*)aStack[0].value = 1;
+            switch ( sValue->mType )
+            {
+                case STD_POLYGON_2D_TYPE:
+                case STD_POLYGON_2D_EXT_TYPE:
+                    if ( stdPrimitive::validatePolygon2DSize( sValue )
+                         != IDE_SUCCESS )
+                    {
+                        *(mtdIntegerType*)aStack[0].value = -1;
+                        IDE_CLEAR();
+                    }
+                    break;
+                case STD_MULTIPOLYGON_2D_TYPE:
+                case STD_MULTIPOLYGON_2D_EXT_TYPE:
+                    if ( stdPrimitive::validateMPolygon2DSize( sValue ) 
+                         != IDE_SUCCESS )
+                    {
+                        *(mtdIntegerType*)aStack[0].value = -1;
+                        IDE_CLEAR();
+                    }
+                    break;
+                case STD_GEOCOLLECTION_2D_TYPE:        
+                case STD_GEOCOLLECTION_2D_EXT_TYPE:        
+                    if( stdPrimitive::validateGeoColl2DSize( sValue )
+                        != IDE_SUCCESS )
+                    {
+                        *(mtdIntegerType*)aStack[0].value = -1;
+                        IDE_CLEAR();
+                    } 
+                default:
+                    // Nothing to do.
+                    break;
+            }
+        } 
+
+        /* Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿ */
         sStage = 0;
         IDE_TEST( sQmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS);
     }
@@ -457,8 +610,8 @@ IDE_RC stfBasic::isValid(
 // BUG-33576
 /***********************************************************************
  * Description:
- * Geometry ê°ì²´ê°€ Validí•œì§€ íŒë³„
- * ( Headerì˜ mIsValid ê°’ë§Œ ì°¸ì¡° )
+ * Geometry °´Ã¼°¡ ValidÇÑÁö ÆÇº°
+ * ( HeaderÀÇ mIsValid °ª¸¸ ÂüÁ¶ )
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
@@ -472,7 +625,7 @@ IDE_RC stfBasic::isValidHeader(
     stdGeometryHeader*  sValue = (stdGeometryHeader *)aStack[1].value;
     mtdIntegerType*     sRet = (mtdIntegerType*)aStack[0].value;
     
-    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
+    // Fix BUG-15412 mtdModule.isNull »ç¿ë
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -494,22 +647,21 @@ IDE_RC stfBasic::isValidHeader(
 }
 
 /***********************************************************************
- * Description:
- * Geometry ê°ì²´ì˜ SRID ë¦¬í„´
+ * Description: PROJ-2422 SRID
+ * Geometry °´Ã¼ÀÇ SRID ¸®ÅÏ
  *
  * mtcStack*    aStack(InOut):
  **********************************************************************/
-IDE_RC stfBasic::SRID(
-                        mtcNode*     /* aNode */,
-                        mtcStack*    aStack,
-                        SInt         /* aRemain */,
-                        void*        /* aInfo */ ,
-                        mtcTemplate* /* aTemplate */ )
+IDE_RC stfBasic::getSRID( mtcNode*     /* aNode */,
+                          mtcStack*    aStack,
+                          SInt         /* aRemain */,
+                          void*        /* aInfo */ ,
+                          mtcTemplate* /* aTemplate */ )
 {
     stdGeometryHeader*  sValue = (stdGeometryHeader *)aStack[1].value;
     mtdIntegerType*     sRet = (mtdIntegerType*)aStack[0].value;
 
-    // Fix BUG-15412 mtdModule.isNull ì‚¬ìš©
+    // Fix BUG-15412 mtdModule.isNull »ç¿ë
     if( stdGeometry.isNull( NULL, sValue )==ID_TRUE )
     {
         aStack[0].column->module->null( aStack[0].column,
@@ -517,30 +669,107 @@ IDE_RC stfBasic::SRID(
     }
     else    
     {
-        *sRet = -1;
-        IDE_TEST(stdUtils::isValidType( sValue->mType, ID_FALSE ) == ID_FALSE);
+        switch ( sValue->mType )
+        {
+            case STD_EMPTY_TYPE :
+            case STD_POINT_2D_TYPE :
+            case STD_LINESTRING_2D_TYPE :
+            case STD_POLYGON_2D_TYPE :
+            case STD_MULTIPOINT_2D_TYPE :
+            case STD_MULTILINESTRING_2D_TYPE :
+            case STD_MULTIPOLYGON_2D_TYPE :
+            case STD_GEOCOLLECTION_2D_TYPE :
+                *sRet = ST_SRID_UNDEFINED;
+                break;
+                
+            case STD_POINT_2D_EXT_TYPE :
+            case STD_LINESTRING_2D_EXT_TYPE :
+            case STD_POLYGON_2D_EXT_TYPE :
+            case STD_MULTIPOINT_2D_EXT_TYPE :
+            case STD_MULTILINESTRING_2D_EXT_TYPE :
+            case STD_MULTIPOLYGON_2D_EXT_TYPE :
+            case STD_GEOCOLLECTION_2D_EXT_TYPE :
+                *sRet = getSRID( sValue );
+                break;
+                
+            default :
+                IDE_RAISE( err_unsupported_object_type );
+                break;
+        }
     }
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( err_unsupported_object_type );
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_NOT_SUPPORTED_OBJECT_TYPE ) );
+    }
     IDE_EXCEPTION_END;
 
-    aStack[0].column->module->null( aStack[0].column,
-                                    aStack[0].value );
-    
-    IDE_SET(ideSetErrorCode(stERR_ABORT_NOT_SUPPORTED_OBJECT_TYPE));                                        
-    
     return IDE_FAILURE;
 }
 
-/**************************************************************************/
+/***********************************************************************
+ * Description: PROJ-2422 SRID
+ * Geometry °´Ã¼ÀÇ SRID ¸®ÅÏ
+ *
+ * mtcStack*    aStack(InOut):
+ **********************************************************************/
+SInt stfBasic::getSRID( stdGeometryHeader  * aObj )
+{
+    SInt  sSRID = ST_SRID_UNDEFINED;
+    
+    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    if ( stdGeometry.isNull( NULL, aObj ) == ID_TRUE )
+    {
+        // Nothing to do.
+    }
+    else    
+    {
+        switch ( aObj->mType )
+        {
+            case STD_POINT_2D_EXT_TYPE :
+                sSRID = ( (stdPoint2DExtType*)aObj )->mSRID;
+                break;
+                
+            case STD_LINESTRING_2D_EXT_TYPE :
+                sSRID = ( (stdLineString2DExtType*)aObj )->mSRID;
+                break;
+                
+            case STD_POLYGON_2D_EXT_TYPE :
+                sSRID = ( (stdPolygon2DExtType*)aObj )->mSRID;
+                break;
+                
+            case STD_MULTIPOINT_2D_EXT_TYPE :
+                sSRID = ( (stdMultiPoint2DExtType*)aObj )->mSRID;
+                break;
+                
+            case STD_MULTILINESTRING_2D_EXT_TYPE :
+                sSRID = ( (stdMultiLineString2DExtType*)aObj )->mSRID;
+                break;
+                
+            case STD_MULTIPOLYGON_2D_EXT_TYPE :
+                sSRID = ( (stdMultiPolygon2DExtType*)aObj )->mSRID;
+                break;
+                
+            case STD_GEOCOLLECTION_2D_EXT_TYPE :
+                sSRID = ( (stdGeoCollection2DExtType*)aObj )->mSRID;
+                break;
+                
+            default :
+                break;
+        }
+    }
+
+    return sSRID;
+}
 
 /***********************************************************************
  * Description:
- * Geometry ê°ì²´ì˜ ì°¨ì›ì„ ë¦¬í„´
+ * Geometry °´Ã¼ÀÇ Â÷¿øÀ» ¸®ÅÏ
  *
- * stdGeometryHeader*  aObj(In): Geometry ê°ì²´
- * mtdIntegerType*     aRet(Out): ì°¨ì›ê°’
+ * stdGeometryHeader*  aObj(In): Geometry °´Ã¼
+ * mtdIntegerType*     aRet(Out): Â÷¿ø°ª
  **********************************************************************/
 IDE_RC stfBasic::getDimension(
                     stdGeometryHeader*  aObj,
@@ -569,13 +798,13 @@ IDE_RC stfBasic::getDimension(
 
 /***********************************************************************
  * Description:
- * Geometry ê°ì²´ë¥¼ WKTë¡œ ì¶œë ¥
+ * Geometry °´Ã¼¸¦ WKT·Î Ãâ·Â
  *
- * stdGeometryHeader*  aObj(In): Geometry ê°ì²´
- * UChar*              aBuf(Out): ì¶œë ¥í•  ë²„í¼
- * UInt                aMaxSize(In): ë²„í¼ ì‚¬ì´ì¦ˆ
- * UInt*               aOffset(Out): WKT ê¸¸ì´
- * IDE_RC              aReturn(Out): encoding ì„±ê³µ ì—¬ë¶€
+ * stdGeometryHeader*  aObj(In): Geometry °´Ã¼
+ * UChar*              aBuf(Out): Ãâ·ÂÇÒ ¹öÆÛ
+ * UInt                aMaxSize(In): ¹öÆÛ »çÀÌÁî
+ * UInt*               aOffset(Out): WKT ±æÀÌ
+ * IDE_RC              aReturn(Out): encoding ¼º°ø ¿©ºÎ
  **********************************************************************/
 IDE_RC stfBasic::getText(
                     stdGeometryHeader*  aObj,
@@ -594,6 +823,7 @@ IDE_RC stfBasic::getText(
         idlOS::strcpy((SChar*)aBuf, (SChar*)STD_EMPTY_NAME);
         *aReturn = IDE_SUCCESS;
         break;
+    case STD_POINT_2D_EXT_TYPE :
     case STD_POINT_2D_TYPE :
         aBuf[0] = '\0';
         *aReturn = stdMethod::writePointWKT2D((stdPoint2DType*)aObj,
@@ -601,6 +831,7 @@ IDE_RC stfBasic::getText(
                                               aMaxSize,
                                               aOffset);
         break;    
+    case STD_LINESTRING_2D_EXT_TYPE :
     case STD_LINESTRING_2D_TYPE :
         aBuf[0] = '\0';
         *aReturn = stdMethod::writeLineStringWKT2D((stdLineString2DType*)aObj,
@@ -608,6 +839,7 @@ IDE_RC stfBasic::getText(
                                                    aMaxSize,
                                                    aOffset);
         break;
+    case STD_POLYGON_2D_EXT_TYPE :
     case STD_POLYGON_2D_TYPE :
         aBuf[0] = '\0';
         *aReturn = stdMethod::writePolygonWKT2D((stdPolygon2DType*)aObj,
@@ -615,6 +847,7 @@ IDE_RC stfBasic::getText(
                                                 aMaxSize,
                                                 aOffset);
         break;
+    case STD_MULTIPOINT_2D_EXT_TYPE :
     case STD_MULTIPOINT_2D_TYPE :
         aBuf[0] = '\0';
         *aReturn = stdMethod::writeMultiPointWKT2D((stdMultiPoint2DType*)aObj,
@@ -622,6 +855,7 @@ IDE_RC stfBasic::getText(
                                                    aMaxSize,
                                                    aOffset);
         break;
+    case STD_MULTILINESTRING_2D_EXT_TYPE :
     case STD_MULTILINESTRING_2D_TYPE :
         aBuf[0] = '\0';
         *aReturn = stdMethod::writeMultiLineStringWKT2D((stdMultiLineString2DType*)aObj,
@@ -630,6 +864,7 @@ IDE_RC stfBasic::getText(
                                                         aOffset);
         break;
 
+    case STD_MULTIPOLYGON_2D_EXT_TYPE :
     case STD_MULTIPOLYGON_2D_TYPE :
         aBuf[0] = '\0';
         *aReturn = stdMethod::writeMultiPolygonWKT2D((stdMultiPolygon2DType*)aObj,
@@ -637,6 +872,7 @@ IDE_RC stfBasic::getText(
                                                      aMaxSize,
                                                      aOffset);
         break;
+    case STD_GEOCOLLECTION_2D_EXT_TYPE :
     case STD_GEOCOLLECTION_2D_TYPE :
         aBuf[0] = '\0';
         *aReturn = stdMethod::writeGeoCollectionWKT2D((stdGeoCollection2DType*)aObj,
@@ -663,12 +899,12 @@ IDE_RC stfBasic::getText(
 
 /***********************************************************************
  * Description:
- * Geometry ê°ì²´ë¥¼ WKBë¡œ ì¶œë ¥
+ * Geometry °´Ã¼¸¦ WKB·Î Ãâ·Â
  *
- * stdGeometryHeader*  aObj(In): Geometry ê°ì²´
- * UChar*              aBuf(Out): ì¶œë ¥í•  ë²„í¼
- * UInt                aMaxSize(In): ë²„í¼ ì‚¬ì´ì¦ˆ
- * UInt*               aOffset(Out): WKB ê¸¸ì´
+ * stdGeometryHeader*  aObj(In): Geometry °´Ã¼
+ * UChar*              aBuf(Out): Ãâ·ÂÇÒ ¹öÆÛ
+ * UInt                aMaxSize(In): ¹öÆÛ »çÀÌÁî
+ * UInt*               aOffset(Out): WKB ±æÀÌ
  **********************************************************************/
 IDE_RC stfBasic::getBinary(
                     stdGeometryHeader*  aObj,
@@ -676,68 +912,89 @@ IDE_RC stfBasic::getBinary(
                     UInt                aMaxSize,
                     UInt*               aOffset )
 {
+    IDE_RC  sRc;
+    UInt    sErrorCode = 0;
+
     *aOffset = 0;
     switch(aObj->mType)
     {
         /* BUG-32531 Consider for GIS EMPTY */
         case STD_EMPTY_TYPE :
-			aBuf[0] = '\0';
-			stdMethod::writeEmptyWKB2D((stdMultiPoint2DType*)aObj,
-                                       aBuf,
-                                       aMaxSize,
-                                       aOffset);
-			break;
+            aBuf[0] = '\0';
+            sRc = stdMethod::writeEmptyWKB2D((stdMultiPoint2DType*)aObj,
+                                             aBuf,
+                                             aMaxSize,
+                                             aOffset);
+            break;
+        case STD_POINT_2D_EXT_TYPE :
         case STD_POINT_2D_TYPE :
             aBuf[0] = '\0';
-            stdMethod::writePointWKB2D((stdPoint2DType*)aObj,
-                                       aBuf,
-                                       aMaxSize,
-                                       aOffset);
+            sRc = stdMethod::writePointWKB2D((stdPoint2DType*)aObj,
+                                             aBuf,
+                                             aMaxSize,
+                                             aOffset);
             break;
+        case STD_LINESTRING_2D_EXT_TYPE :
         case STD_LINESTRING_2D_TYPE :
             aBuf[0] = '\0';
-            stdMethod::writeLineStringWKB2D((stdLineString2DType*)aObj,
-                                            aBuf,
-                                            aMaxSize,
-                                            aOffset);
+            sRc = stdMethod::writeLineStringWKB2D((stdLineString2DType*)aObj,
+                                                  aBuf,
+                                                  aMaxSize,
+                                                  aOffset);
             break;
+        case STD_POLYGON_2D_EXT_TYPE :
         case STD_POLYGON_2D_TYPE :
             aBuf[0] = '\0';
-            stdMethod::writePolygonWKB2D((stdPolygon2DType*)aObj,
-                                         aBuf,
-                                         aMaxSize,
-                                         aOffset);
-            break;
-        case STD_MULTIPOINT_2D_TYPE :
-            aBuf[0] = '\0';
-            stdMethod::writeMultiPointWKB2D((stdMultiPoint2DType*)aObj,
-                                            aBuf,
-                                            aMaxSize,
-                                            aOffset);
-            break;
-        case STD_MULTILINESTRING_2D_TYPE :
-            aBuf[0] = '\0';
-            stdMethod::writeMultiLineStringWKB2D((stdMultiLineString2DType*)aObj,
-                                                 aBuf,
-                                                 aMaxSize,
-                                                 aOffset);
-            break;
-        case STD_MULTIPOLYGON_2D_TYPE :
-            aBuf[0] = '\0';
-            stdMethod::writeMultiPolygonWKB2D((stdMultiPolygon2DType*)aObj,
-                                              aBuf,
-                                              aMaxSize,
-                                              aOffset);
-            break;
-        case STD_GEOCOLLECTION_2D_TYPE :
-            aBuf[0] = '\0';
-            stdMethod::writeGeoCollectionWKB2D((stdGeoCollection2DType*)aObj,
+            sRc = stdMethod::writePolygonWKB2D((stdPolygon2DType*)aObj,
                                                aBuf,
                                                aMaxSize,
                                                aOffset);
             break;
+        case STD_MULTIPOINT_2D_EXT_TYPE :
+        case STD_MULTIPOINT_2D_TYPE :
+            aBuf[0] = '\0';
+            sRc = stdMethod::writeMultiPointWKB2D((stdMultiPoint2DType*)aObj,
+                                                  aBuf,
+                                                  aMaxSize,
+                                                  aOffset);
+            break;
+        case STD_MULTILINESTRING_2D_EXT_TYPE :
+        case STD_MULTILINESTRING_2D_TYPE :
+            aBuf[0] = '\0';
+            sRc = stdMethod::writeMultiLineStringWKB2D((stdMultiLineString2DType*)aObj,
+                                                       aBuf,
+                                                       aMaxSize,
+                                                       aOffset);
+            break;
+        case STD_MULTIPOLYGON_2D_EXT_TYPE :
+        case STD_MULTIPOLYGON_2D_TYPE :
+            aBuf[0] = '\0';
+            sRc = stdMethod::writeMultiPolygonWKB2D((stdMultiPolygon2DType*)aObj,
+                                                    aBuf,
+                                                    aMaxSize,
+                                                    aOffset);
+            break;
+        case STD_GEOCOLLECTION_2D_EXT_TYPE :
+        case STD_GEOCOLLECTION_2D_TYPE :
+            aBuf[0] = '\0';
+            sRc = stdMethod::writeGeoCollectionWKB2D((stdGeoCollection2DType*)aObj,
+                                                     aBuf,
+                                                     aMaxSize,
+                                                     aOffset);
+            break;
         default :
             IDE_RAISE(err_unsupported_object_type);
+    }
+
+    // BUG-48051
+    if ( sRc != IDE_SUCCESS )
+    {
+        sErrorCode = ideGetErrorCode();
+        IDE_TEST( sErrorCode == stERR_ABORT_INVALID_GEOMETRY_MADEBY_GEOMFROMWKB );
+    }
+    else
+    {
+        IDE_CLEAR();
     }
 
     return IDE_SUCCESS;
@@ -748,17 +1005,23 @@ IDE_RC stfBasic::getBinary(
     }
     IDE_EXCEPTION_END;
 
-    IDE_SET(ideSetErrorCode(stERR_ABORT_NOT_APPLICABLE));
-
+    if ( sErrorCode != stERR_ABORT_INVALID_GEOMETRY_MADEBY_GEOMFROMWKB )
+    {
+        IDE_SET(ideSetErrorCode(stERR_ABORT_NOT_APPLICABLE));
+    }
+    else
+    {
+        // Nothing to do.
+    }
     return IDE_FAILURE;
 }
 
 /***********************************************************************
  * Description:
- * Geometry ê°ì²´ì˜ Boundaryë¥¼ Geometry ê°ì²´ë¡œ ì¶œë ¥
+ * Geometry °´Ã¼ÀÇ Boundary¸¦ Geometry °´Ã¼·Î Ãâ·Â
  *
- * stdGeometryHeader*  aObj(In): Geometry ê°ì²´
- * stdGeometryHeader*  aRet(Out): Boundary Geometry ê°ì²´
+ * stdGeometryHeader*  aObj(In): Geometry °´Ã¼
+ * stdGeometryHeader*  aRet(Out): Boundary Geometry °´Ã¼
  **********************************************************************/
 IDE_RC stfBasic::getBoundary(
                     stdGeometryHeader*  aObj,
@@ -768,28 +1031,46 @@ IDE_RC stfBasic::getBoundary(
     switch(aObj->mType)
     {
     case STD_EMPTY_TYPE :
+    case STD_POINT_2D_EXT_TYPE :
     case STD_POINT_2D_TYPE :
+    case STD_MULTIPOINT_2D_EXT_TYPE :
     case STD_MULTIPOINT_2D_TYPE :
+    case STD_GEOCOLLECTION_2D_EXT_TYPE :
     case STD_GEOCOLLECTION_2D_TYPE :
         stdUtils::makeEmpty(aRet);
         break;        
+    case STD_LINESTRING_2D_EXT_TYPE :
     case STD_LINESTRING_2D_TYPE :
         IDE_TEST(stdPrimitive::getBoundaryLine2D((stdLineString2DType*)aObj, aRet, sFence) != IDE_SUCCESS );
         break;
+    case STD_MULTILINESTRING_2D_EXT_TYPE :
     case STD_MULTILINESTRING_2D_TYPE :
         IDE_TEST(stdPrimitive::getBoundaryMLine2D((stdMultiLineString2DType*)aObj, aRet, sFence ) != IDE_SUCCESS );
         break;
+    case STD_POLYGON_2D_EXT_TYPE :
     case STD_POLYGON_2D_TYPE :
         IDE_TEST(stdPrimitive::getBoundaryPoly2D((stdPolygon2DType*)aObj, aRet, sFence ) != IDE_SUCCESS );
         break;
+    case STD_MULTIPOLYGON_2D_EXT_TYPE :
     case STD_MULTIPOLYGON_2D_TYPE :
         IDE_TEST(stdPrimitive::getBoundaryMPoly2D((stdMultiPolygon2DType*)aObj, aRet, sFence ) != IDE_SUCCESS );
         break;
-    // OGC í‘œì¤€ ì™¸ì˜ íƒ€ì… ////////////////////////////////////////////////////////
+    // OGC Ç¥ÁØ ¿ÜÀÇ Å¸ÀÔ ////////////////////////////////////////////////////////
     default :
         IDE_RAISE(err_unsupported_object_type);
     }
 
+    /* PROJ-2422 srid */
+    if ( stdUtils::isExtendedType( aObj->mType ) == ID_TRUE )
+    {
+        IDE_TEST( setSRID( aRet, sFence, aObj )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
+        
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(err_unsupported_object_type);
@@ -806,10 +1087,10 @@ IDE_RC stfBasic::getBoundary(
 
 /***********************************************************************
  * Description:
- * Geometry ê°ì²´ì˜ MBRì„ í´ë¦¬ê³¤ ê°ì²´ë¡œ ì¶œë ¥
+ * Geometry °´Ã¼ÀÇ MBRÀ» Æú¸®°ï °´Ã¼·Î Ãâ·Â
  *
- * stdGeometryHeader*  aObj(In): Geometry ê°ì²´
- * stdGeometryHeader*  aRet(Out): í´ë¦¬ê³¤ ê°ì²´
+ * stdGeometryHeader*  aObj(In): Geometry °´Ã¼
+ * stdGeometryHeader*  aRet(Out): Æú¸®°ï °´Ã¼
  **********************************************************************/
 IDE_RC stfBasic::getEnvelope(
                     stdGeometryHeader*  aObj,
@@ -820,20 +1101,38 @@ IDE_RC stfBasic::getEnvelope(
     case STD_EMPTY_TYPE :
         stdUtils::makeEmpty(aRet);
         break;  // Fix BUG-16440
+    case STD_POINT_2D_EXT_TYPE :           // Fix BUG-16096
     case STD_POINT_2D_TYPE :           // Fix BUG-16096
+    case STD_LINESTRING_2D_EXT_TYPE :
     case STD_LINESTRING_2D_TYPE :
+    case STD_POLYGON_2D_EXT_TYPE :
     case STD_POLYGON_2D_TYPE :
+    case STD_MULTIPOINT_2D_EXT_TYPE :
     case STD_MULTIPOINT_2D_TYPE :
+    case STD_MULTILINESTRING_2D_EXT_TYPE :
     case STD_MULTILINESTRING_2D_TYPE :
+    case STD_MULTIPOLYGON_2D_EXT_TYPE :
     case STD_MULTIPOLYGON_2D_TYPE :
+    case STD_GEOCOLLECTION_2D_EXT_TYPE :
     case STD_GEOCOLLECTION_2D_TYPE :
         stdPrimitive::GetEnvelope2D( aObj, aRet );
         break;
-    // OGC í‘œì¤€ ì™¸ì˜ íƒ€ì… ////////////////////////////////////////////////////////
+    // OGC Ç¥ÁØ ¿ÜÀÇ Å¸ÀÔ ////////////////////////////////////////////////////////
     default :
         IDE_RAISE(err_unsupported_object_type);
     }
 
+    /* PROJ-2422 srid */
+    if ( stdUtils::isExtendedType(aObj->mType) == ID_TRUE )
+    {
+        IDE_TEST( setSRID( aRet, ID_UINT_MAX, aObj )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
+        
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(err_unsupported_object_type);
@@ -849,10 +1148,10 @@ IDE_RC stfBasic::getEnvelope(
 
 /***********************************************************************
  * Description:
- * Geometry ê°ì²´ê°€ Simple ê°ì²´ì´ë©´ 1 ì•„ë‹ˆë©´ 0ì„ ë¦¬í„´
+ * Geometry °´Ã¼°¡ Simple °´Ã¼ÀÌ¸é 1 ¾Æ´Ï¸é 0À» ¸®ÅÏ
  *
- * stdGeometryHeader*  aObj(In): Geometry ê°ì²´
- * mtdIntegerType*     aRet(Out): ê²°ê³¼
+ * stdGeometryHeader*  aObj(In): Geometry °´Ã¼
+ * mtdIntegerType*     aRet(Out): °á°ú
  **********************************************************************/
 IDE_RC stfBasic::testSimple(
                     stdGeometryHeader*  aObj,
@@ -862,23 +1161,29 @@ IDE_RC stfBasic::testSimple(
     switch(aObj->mType)
     {
     case STD_EMPTY_TYPE :
+    case STD_POINT_2D_EXT_TYPE :
     case STD_POINT_2D_TYPE :
+    case STD_POLYGON_2D_EXT_TYPE :
     case STD_POLYGON_2D_TYPE :
+    case STD_MULTIPOLYGON_2D_EXT_TYPE : // BUG-16364
     case STD_MULTIPOLYGON_2D_TYPE : // BUG-16364
         *aRet = 1;
         break;
+    case STD_LINESTRING_2D_EXT_TYPE :
     case STD_LINESTRING_2D_TYPE :
         if(stdPrimitive::isSimpleLine2D((stdLineString2DType*)aObj)==ID_TRUE)
         {
             *aRet = 1;
         }
         break;
+    case STD_MULTIPOINT_2D_EXT_TYPE :
     case STD_MULTIPOINT_2D_TYPE :
         if(stdPrimitive::isSimpleMPoint2D((stdMultiPoint2DType*)aObj)==ID_TRUE)
         {
             *aRet = 1;
         }
         break;
+    case STD_MULTILINESTRING_2D_EXT_TYPE :
     case STD_MULTILINESTRING_2D_TYPE :
         if(stdPrimitive::isSimpleMLine2D((stdMultiLineString2DType*)aObj)
             ==ID_TRUE)
@@ -886,6 +1191,7 @@ IDE_RC stfBasic::testSimple(
             *aRet = 1;
         }
         break;
+    case STD_GEOCOLLECTION_2D_EXT_TYPE :
     case STD_GEOCOLLECTION_2D_TYPE :
         if(stdPrimitive::isSimpleCollect2D((stdGeoCollection2DType*)aObj)
             ==ID_TRUE)
@@ -1012,6 +1318,751 @@ IDE_RC stfBasic::getRectangle( mtcTemplate       * aTemplate,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description: PROJ-2422 SRID
+ * Geometry °´Ã¼¸¦ EWKT·Î Ãâ·Â
+ *
+ * stdGeometryHeader*  aObj(In): Geometry °´Ã¼
+ * UChar*              aBuf(Out): Ãâ·ÂÇÒ ¹öÆÛ
+ * UInt                aMaxSize(In): ¹öÆÛ »çÀÌÁî
+ * UInt*               aOffset(Out): WKT ±æÀÌ
+ * IDE_RC              aReturn(Out): encoding ¼º°ø ¿©ºÎ
+ **********************************************************************/
+IDE_RC stfBasic::getEWKT( stdGeometryHeader*  aObj,
+                          UChar*              aBuf,
+                          UInt                aMaxSize,
+                          UInt*               aOffset,
+                          IDE_RC*             aReturn )
+{
+    // BUG-27630
+    *aOffset = 0;
+    
+    switch ( aObj->mType )
+    {
+    case STD_EMPTY_TYPE :
+        *aOffset = STD_EMPTY_NAME_LEN;
+        idlOS::strcpy( (SChar*)aBuf, (SChar*)STD_EMPTY_NAME );
+        *aReturn = IDE_SUCCESS;
+        break;
+    case STD_POINT_2D_EXT_TYPE :
+        aBuf[0] = '\0';
+        *aReturn = stdMethod::writePointEWKT2D( (stdPoint2DExtType*)aObj,
+                                                aBuf,
+                                                aMaxSize,
+                                                aOffset );
+        break;    
+    case STD_POINT_2D_TYPE :
+        aBuf[0] = '\0';
+        (void) stdMethod::writeSRID( ST_SRID_UNDEFINED,
+                                     aBuf,
+                                     aMaxSize,
+                                     aOffset );
+        *aReturn = stdMethod::writePointWKT2D( (stdPoint2DType*)aObj,
+                                               aBuf,
+                                               aMaxSize,
+                                               aOffset );
+        break;    
+    case STD_LINESTRING_2D_EXT_TYPE :
+        aBuf[0] = '\0';
+        *aReturn = stdMethod::writeLineStringEWKT2D( (stdLineString2DExtType*)aObj,
+                                                     aBuf,
+                                                     aMaxSize,
+                                                     aOffset );
+        break;
+    case STD_LINESTRING_2D_TYPE :
+        aBuf[0] = '\0';
+        (void) stdMethod::writeSRID( ST_SRID_UNDEFINED,
+                                     aBuf,
+                                     aMaxSize,
+                                     aOffset );
+        *aReturn = stdMethod::writeLineStringWKT2D( (stdLineString2DType*)aObj,
+                                                    aBuf,
+                                                    aMaxSize,
+                                                    aOffset );
+        break;
+    case STD_POLYGON_2D_EXT_TYPE :
+        aBuf[0] = '\0';
+        *aReturn = stdMethod::writePolygonEWKT2D( (stdPolygon2DExtType*)aObj,
+                                                  aBuf,
+                                                  aMaxSize,
+                                                  aOffset );
+        break;
+    case STD_POLYGON_2D_TYPE :
+        aBuf[0] = '\0';
+        (void) stdMethod::writeSRID( ST_SRID_UNDEFINED,
+                                     aBuf,
+                                     aMaxSize,
+                                     aOffset );
+        *aReturn = stdMethod::writePolygonWKT2D( (stdPolygon2DType*)aObj,
+                                                 aBuf,
+                                                 aMaxSize,
+                                                 aOffset );
+        break;
+    case STD_MULTIPOINT_2D_EXT_TYPE :
+        aBuf[0] = '\0';
+        *aReturn = stdMethod::writeMultiPointEWKT2D( (stdMultiPoint2DExtType*)aObj,
+                                                     aBuf,
+                                                     aMaxSize,
+                                                     aOffset );
+        break;
+    case STD_MULTIPOINT_2D_TYPE :
+        aBuf[0] = '\0';
+        (void) stdMethod::writeSRID( ST_SRID_UNDEFINED,
+                                     aBuf,
+                                     aMaxSize,
+                                     aOffset );
+        *aReturn = stdMethod::writeMultiPointWKT2D( (stdMultiPoint2DType*)aObj,
+                                                    aBuf,
+                                                    aMaxSize,
+                                                    aOffset );
+        break;
+    case STD_MULTILINESTRING_2D_EXT_TYPE :
+        aBuf[0] = '\0';
+        *aReturn = stdMethod::writeMultiLineStringEWKT2D( (stdMultiLineString2DExtType*)aObj,
+                                                          aBuf,
+                                                          aMaxSize,
+                                                          aOffset );
+        break;
+    case STD_MULTILINESTRING_2D_TYPE :
+        aBuf[0] = '\0';
+        (void) stdMethod::writeSRID( ST_SRID_UNDEFINED,
+                                     aBuf,
+                                     aMaxSize,
+                                     aOffset );
+        *aReturn = stdMethod::writeMultiLineStringWKT2D( (stdMultiLineString2DType*)aObj,
+                                                         aBuf,
+                                                         aMaxSize,
+                                                         aOffset );
+        break;
+    case STD_MULTIPOLYGON_2D_EXT_TYPE :
+        aBuf[0] = '\0';
+        *aReturn = stdMethod::writeMultiPolygonEWKT2D( (stdMultiPolygon2DExtType*)aObj,
+                                                       aBuf,
+                                                       aMaxSize,
+                                                       aOffset );
+        break;
+    case STD_MULTIPOLYGON_2D_TYPE :
+        aBuf[0] = '\0';
+        (void) stdMethod::writeSRID( ST_SRID_UNDEFINED,
+                                     aBuf,
+                                     aMaxSize,
+                                     aOffset );
+        *aReturn = stdMethod::writeMultiPolygonWKT2D( (stdMultiPolygon2DType*)aObj,
+                                                      aBuf,
+                                                      aMaxSize,
+                                                      aOffset );
+        break;
+    case STD_GEOCOLLECTION_2D_EXT_TYPE :
+        aBuf[0] = '\0';
+        *aReturn = stdMethod::writeGeoCollectionEWKT2D( (stdGeoCollection2DExtType*)aObj,
+                                                        aBuf,
+                                                        aMaxSize,
+                                                        aOffset );
+        break;
+    case STD_GEOCOLLECTION_2D_TYPE :
+        aBuf[0] = '\0';
+        (void) stdMethod::writeSRID( ST_SRID_UNDEFINED,
+                                     aBuf,
+                                     aMaxSize,
+                                     aOffset );
+        *aReturn = stdMethod::writeGeoCollectionWKT2D( (stdGeoCollection2DType*)aObj,
+                                                       aBuf,
+                                                       aMaxSize,
+                                                       aOffset );
+        break;
+    default :
+        IDE_RAISE( err_unsupported_object_type );
+    }
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( err_unsupported_object_type );
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_NOT_SUPPORTED_OBJECT_TYPE ) );
+    }    
+    IDE_EXCEPTION_END;
+    
+    IDE_SET( ideSetErrorCode( stERR_ABORT_NOT_APPLICABLE ) );
+
+    return IDE_FAILURE;    
+}
+
+/***********************************************************************
+ * Description: PROJ-2422 SRID
+ * Geometry °´Ã¼¸¦ EWKB·Î Ãâ·Â
+ *
+ * stdGeometryHeader*  aObj(In): Geometry °´Ã¼
+ * UChar*              aBuf(Out): Ãâ·ÂÇÒ ¹öÆÛ
+ * UInt                aMaxSize(In): ¹öÆÛ »çÀÌÁî
+ * UInt*               aOffset(Out): WKB ±æÀÌ
+ **********************************************************************/
+IDE_RC stfBasic::getEWKB( stdGeometryHeader*  aObj,              
+                          UChar*              aBuf,
+                          UInt                aMaxSize,
+                          UInt*               aOffset )
+{
+    IDE_RC  sRc;
+    UInt    sErrorCode = 0;
+
+    switch( aObj->mType )
+    {
+        /* BUG-32531 Consider for GIS EMPTY */
+        case STD_EMPTY_TYPE :
+            *aOffset = 1;
+            aBuf[0] = '\0';
+            sRc = stdMethod::writeEmptyWKB2D( (stdMultiPoint2DType*)aObj,
+                                              aBuf,
+                                              aMaxSize,
+                                              aOffset );
+            break; 
+        case STD_POINT_2D_TYPE :
+            *aOffset = 1;
+            aBuf[0] = '\0';
+            sRc = stdMethod::writePointWKB2D( (stdPoint2DType*)aObj,
+                                              aBuf,
+                                              aMaxSize,
+                                              aOffset );
+            break;    
+        case STD_POINT_2D_EXT_TYPE :
+            *aOffset = 1;
+            aBuf[0] = '\0';
+            sRc = stdMethod::writePointEWKB2D( (stdPoint2DExtType*)aObj,
+                                               aBuf,
+                                               aMaxSize,
+                                               aOffset );
+            break;    
+        case STD_LINESTRING_2D_TYPE :
+            *aOffset = 1;
+            aBuf[0] = '\0';
+            sRc = stdMethod::writeLineStringWKB2D( (stdLineString2DType*)aObj,
+                                                   aBuf,
+                                                   aMaxSize,
+                                                   aOffset );
+            break;
+        case STD_LINESTRING_2D_EXT_TYPE :
+            *aOffset = 1;
+            aBuf[0] = '\0';
+            sRc = stdMethod::writeLineStringEWKB2D( (stdLineString2DExtType*)aObj,
+                                                    aBuf,
+                                                    aMaxSize,
+                                                    aOffset );
+            break;
+        case STD_POLYGON_2D_TYPE :
+            *aOffset = 1;
+            aBuf[0] = '\0';
+            sRc = stdMethod::writePolygonWKB2D( (stdPolygon2DType*)aObj,
+                                                aBuf,
+                                                aMaxSize,
+                                                aOffset );
+            break;
+        case STD_POLYGON_2D_EXT_TYPE :
+            *aOffset = 1;
+            aBuf[0] = '\0';
+            sRc = stdMethod::writePolygonEWKB2D( (stdPolygon2DExtType*)aObj,
+                                                 aBuf,
+                                                 aMaxSize,
+                                                 aOffset );
+            break;
+        case STD_MULTIPOINT_2D_TYPE :
+            *aOffset = 1;
+            aBuf[0] = '\0';
+            sRc = stdMethod::writeMultiPointWKB2D( (stdMultiPoint2DType*)aObj,
+                                                   aBuf,
+                                                   aMaxSize,
+                                                   aOffset );
+            break;
+        case STD_MULTIPOINT_2D_EXT_TYPE :
+            *aOffset = 1;
+            aBuf[0] = '\0';
+            sRc = stdMethod::writeMultiPointEWKB2D( (stdMultiPoint2DExtType*)aObj,
+                                                    aBuf,
+                                                    aMaxSize,
+                                                    aOffset );
+            break;
+        case STD_MULTILINESTRING_2D_TYPE :
+            *aOffset = 1;
+            aBuf[0] = '\0';
+            sRc = stdMethod::writeMultiLineStringWKB2D( (stdMultiLineString2DType*)aObj,
+                                                        aBuf,
+                                                        aMaxSize,
+                                                        aOffset );
+            break;
+        case STD_MULTILINESTRING_2D_EXT_TYPE :
+            *aOffset = 1;
+            aBuf[0] = '\0';
+            sRc = stdMethod::writeMultiLineStringEWKB2D( (stdMultiLineString2DExtType*)aObj,
+                                                         aBuf,
+                                                         aMaxSize,
+                                                         aOffset );
+            break;
+        case STD_MULTIPOLYGON_2D_TYPE :
+            *aOffset = 1;
+            aBuf[0] = '\0';
+            sRc = stdMethod::writeMultiPolygonWKB2D( (stdMultiPolygon2DType*)aObj,
+                                                     aBuf,
+                                                     aMaxSize,
+                                                     aOffset );
+            break;
+        case STD_MULTIPOLYGON_2D_EXT_TYPE :
+            *aOffset = 1;
+            aBuf[0] = '\0';
+            sRc = stdMethod::writeMultiPolygonEWKB2D( (stdMultiPolygon2DExtType*)aObj,
+                                                      aBuf,
+                                                      aMaxSize,
+                                                      aOffset );
+            break;
+        case STD_GEOCOLLECTION_2D_TYPE :
+            *aOffset = 1;
+            aBuf[0] = '\0';
+            sRc = stdMethod::writeGeoCollectionWKB2D( (stdGeoCollection2DType*)aObj,
+                                                      aBuf,
+                                                      aMaxSize,
+                                                      aOffset );
+            break;
+        case STD_GEOCOLLECTION_2D_EXT_TYPE :
+            *aOffset = 1;
+            aBuf[0] = '\0';
+            sRc = stdMethod::writeGeoCollectionEWKB2D( (stdGeoCollection2DExtType*)aObj,
+                                                       aBuf,
+                                                       aMaxSize,
+                                                       aOffset );
+            break;
+        default :
+            IDE_RAISE( err_unsupported_object_type );
+    }
+
+    // BUG-48051
+    if ( sRc != IDE_SUCCESS )
+    {
+        sErrorCode = ideGetErrorCode();
+        IDE_TEST( sErrorCode == stERR_ABORT_INVALID_GEOMETRY_MADEBY_GEOMFROMWKB );
+    }
+    else
+    {
+        IDE_CLEAR();
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( err_unsupported_object_type );
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_NOT_SUPPORTED_OBJECT_TYPE ) );
+    }    
+    IDE_EXCEPTION_END;
+
+    if ( sErrorCode != stERR_ABORT_INVALID_GEOMETRY_MADEBY_GEOMFROMWKB )
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_NOT_APPLICABLE ) );
+    }
+    else
+    {
+        //Nothing to do.
+    }
+    return IDE_FAILURE;    
+}
+
+/***********************************************************************
+ * Description: PROJ-2422 SRID
+ * Geometry °´Ã¼ÀÇ SRID ¸®ÅÏ
+ *
+ * mtcStack*    aStack(InOut):
+ **********************************************************************/
+IDE_RC stfBasic::setSRID( mtcNode*     /* aNode */,
+                          mtcStack*    aStack,
+                          SInt         /* aRemain */,
+                          void*        /* aInfo */ ,
+                          mtcTemplate* /* aTemplate */ )
+{
+    stdGeometryHeader*  sRet = (stdGeometryHeader*)aStack[0].value;
+    stdGeometryHeader*  sValue = (stdGeometryHeader*)aStack[1].value;
+    mtdIntegerType*     sSRID = (mtdIntegerType*)aStack[2].value;
+    UInt                sFence = aStack[0].column->precision;
+
+    // Fix BUG-15412 mtdModule.isNull »ç¿ë
+    if ( ( stdGeometry.isNull( NULL, sValue ) == ID_TRUE ) ||
+         ( mtdInteger.isNull( NULL, sSRID ) == ID_TRUE ) )
+    {
+        aStack[0].column->module->null( aStack[0].column,
+                                        aStack[0].value );
+    }
+    else    
+    {
+        IDE_TEST_RAISE( sFence < sValue->mSize, ERR_INVALID_LENGTH );
+
+        // copy
+        idlOS::memcpy( (void*)sRet, (void*)sValue, sValue->mSize );
+
+        IDE_TEST( setSRID( sRet, sFence, *sSRID ) != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_INVALID_LENGTH );
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_LENGTH ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description: PROJ-2422 SRID
+ * Geometry °´Ã¼ÀÇ SRID ¼³Á¤
+ **********************************************************************/
+IDE_RC stfBasic::setSRID( stdGeometryHeader  * aObj,
+                          UInt                 aFence,
+                          SInt                 aSRID )
+{
+    switch ( aObj->mType )
+    {
+        case STD_EMPTY_TYPE :
+            break;
+                
+        case STD_POINT_2D_TYPE :
+            IDE_TEST_RAISE( aFence < STD_POINT2D_EXT_SIZE, ERR_INVALID_LENGTH );
+            idlOS::memset( (UChar*)aObj + aObj->mSize,
+                           0x00,
+                           STD_POINT2D_EXT_SIZE - STD_POINT2D_SIZE );
+            aObj->mType = STD_POINT_2D_EXT_TYPE;
+            aObj->mSize = STD_POINT2D_EXT_SIZE;
+            ((stdPoint2DExtType*)aObj)->mSRID = aSRID;
+            break;
+                
+        case STD_LINESTRING_2D_TYPE :
+            IDE_DASSERT( STD_LINE2D_SIZE == STD_LINE2D_EXT_SIZE );
+            aObj->mType = STD_LINESTRING_2D_EXT_TYPE;
+            ((stdLineString2DExtType*)aObj)->mSRID = aSRID;
+            break;
+                
+        case STD_POLYGON_2D_TYPE :
+            IDE_DASSERT( STD_POLY2D_SIZE == STD_POLY2D_EXT_SIZE );
+            aObj->mType = STD_POLYGON_2D_EXT_TYPE;
+            ((stdPolygon2DExtType*)aObj)->mSRID = aSRID;
+            break;
+                
+        case STD_MULTIPOINT_2D_TYPE :
+            IDE_DASSERT( STD_MPOINT2D_SIZE == STD_MPOINT2D_EXT_SIZE );
+            aObj->mType = STD_MULTIPOINT_2D_EXT_TYPE;
+            ((stdMultiPoint2DExtType*)aObj)->mSRID = aSRID;
+            break;
+                
+        case STD_MULTILINESTRING_2D_TYPE :
+            IDE_DASSERT( STD_MLINE2D_SIZE == STD_MLINE2D_EXT_SIZE );
+            aObj->mType = STD_MULTILINESTRING_2D_EXT_TYPE;
+            ((stdMultiLineString2DExtType*)aObj)->mSRID = aSRID;
+            break;
+                
+        case STD_MULTIPOLYGON_2D_TYPE :
+            IDE_DASSERT( STD_MPOLY2D_SIZE == STD_MPOLY2D_EXT_SIZE );
+            aObj->mType = STD_MULTIPOLYGON_2D_EXT_TYPE;
+            ((stdMultiPolygon2DExtType*)aObj)->mSRID = aSRID;
+            break;
+                
+        case STD_GEOCOLLECTION_2D_TYPE :
+            IDE_DASSERT( STD_COLL2D_SIZE == STD_COLL2D_EXT_SIZE );
+            aObj->mType = STD_GEOCOLLECTION_2D_EXT_TYPE;
+            ((stdGeoCollection2DExtType*)aObj)->mSRID = aSRID;
+            break;
+                
+        case STD_POINT_2D_EXT_TYPE :
+            ((stdPoint2DExtType*)aObj)->mSRID = aSRID;
+            break;
+                
+        case STD_LINESTRING_2D_EXT_TYPE :
+            ((stdLineString2DExtType*)aObj)->mSRID = aSRID;
+            break;
+                
+        case STD_POLYGON_2D_EXT_TYPE :
+            ((stdPolygon2DExtType*)aObj)->mSRID = aSRID;
+            break;
+                
+        case STD_MULTIPOINT_2D_EXT_TYPE :
+            ((stdMultiPoint2DExtType*)aObj)->mSRID = aSRID;
+            break;
+                
+        case STD_MULTILINESTRING_2D_EXT_TYPE :
+            ((stdMultiLineString2DExtType*)aObj)->mSRID = aSRID;
+            break;
+                
+        case STD_MULTIPOLYGON_2D_EXT_TYPE :
+            ((stdMultiPolygon2DExtType*)aObj)->mSRID = aSRID;
+            break;
+                
+        case STD_GEOCOLLECTION_2D_EXT_TYPE :
+            ((stdGeoCollection2DExtType*)aObj)->mSRID = aSRID;
+            break;
+                
+        default :
+            IDE_RAISE( err_unsupported_object_type );
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_INVALID_LENGTH );
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_LENGTH ) );
+    }
+    IDE_EXCEPTION( err_unsupported_object_type );
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_NOT_SUPPORTED_OBJECT_TYPE ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description: PROJ-2422 SRID
+ * Src Geometry °´Ã¼ÀÇ SRID¸¦ Dest Geometry °´Ã¼ÀÇ SRID·Î ¼³Á¤
+ **********************************************************************/
+IDE_RC stfBasic::setSRID( stdGeometryHeader  * aDstObj,
+                          UInt                 aDstFence,
+                          stdGeometryType    * aSrcObj )
+{
+    SInt   sSRID = ST_SRID_UNDEFINED;
+    
+    switch ( aSrcObj->header.mType )
+    {
+        case STD_POINT_2D_EXT_TYPE :
+            sSRID = aSrcObj->point2DExt.mSRID;
+            break;
+                
+        case STD_LINESTRING_2D_EXT_TYPE :
+            sSRID = aSrcObj->linestring2DExt.mSRID;
+            break;
+                
+        case STD_POLYGON_2D_EXT_TYPE :
+            sSRID = aSrcObj->polygon2DExt.mSRID;
+            break;
+                
+        case STD_MULTIPOINT_2D_EXT_TYPE :
+            sSRID = aSrcObj->mpoint2DExt.mSRID;
+            break;
+                
+        case STD_MULTILINESTRING_2D_EXT_TYPE :
+            sSRID = aSrcObj->mlinestring2DExt.mSRID;
+            break;
+                
+        case STD_MULTIPOLYGON_2D_EXT_TYPE :
+            sSRID = aSrcObj->mpolygon2DExt.mSRID;
+            break;
+                
+        case STD_GEOCOLLECTION_2D_EXT_TYPE :
+            sSRID = aSrcObj->collection2DExt.mSRID;
+            break;
+                
+        default :
+            break;
+    }
+
+    // undefined srid¶óµµ ¼³Á¤ÇÑ´Ù.
+    IDE_TEST( setSRID( aDstObj, aDstFence, sSRID ) != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description: PROJ-2422 SRID
+ * Src Geometry °´Ã¼ÀÇ SRID¸¦ Dest Geometry °´Ã¼ÀÇ SRID·Î ¼³Á¤
+ **********************************************************************/
+IDE_RC stfBasic::setSRID( stdGeometryHeader  * aDstObj,
+                          UInt                 aDstFence,
+                          stdGeometryHeader  * aSrcObj )
+{
+    SInt   sSRID = ST_SRID_UNDEFINED;
+    
+    switch ( aSrcObj->mType )
+    {
+        case STD_POINT_2D_EXT_TYPE :
+            sSRID = ((stdPoint2DExtType*)aSrcObj)->mSRID;
+            break;
+                
+        case STD_LINESTRING_2D_EXT_TYPE :
+            sSRID = ((stdLineString2DExtType*)aSrcObj)->mSRID;
+            break;
+                
+        case STD_POLYGON_2D_EXT_TYPE :
+            sSRID = ((stdPolygon2DExtType*)aSrcObj)->mSRID;
+            break;
+                
+        case STD_MULTIPOINT_2D_EXT_TYPE :
+            sSRID = ((stdMultiPoint2DExtType*)aSrcObj)->mSRID;
+            break;
+                
+        case STD_MULTILINESTRING_2D_EXT_TYPE :
+            sSRID = ((stdMultiLineString2DExtType*)aSrcObj)->mSRID;
+            break;
+                
+        case STD_MULTIPOLYGON_2D_EXT_TYPE :
+            sSRID = ((stdMultiPolygon2DExtType*)aSrcObj)->mSRID;
+            break;
+                
+        case STD_GEOCOLLECTION_2D_EXT_TYPE :
+            sSRID = ((stdGeoCollection2DExtType*)aSrcObj)->mSRID;
+            break;
+                
+        default :
+            break;
+    }
+
+    // undefined srid¶óµµ ¼³Á¤ÇÑ´Ù.
+    IDE_TEST( setSRID( aDstObj, aDstFence, sSRID ) != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/***********************************************************************
+ * Description: BUG-47816 ST_Transform ÇÔ¼ö Áö¿ø
+ * ÀÔ·Â ¹ŞÀº SRID¿¡ ÇØ´çÇÏ´Â PROJ.4 ¹®ÀÚ¿­À» ¹İÈ¯
+ **********************************************************************/
+IDE_RC stfBasic::getProj4TextFromSRID ( qcStatement      * aStatement, 
+                                        mtdIntegerType   * aSRID, 
+                                        mtdCharType     ** aProj4Text )
+{
+    mtcColumn           * sSRIDColumn        = NULL;
+    mtcColumn           * sProj4TextColumn   = NULL;
+    
+    smiTableCursor        sCursor;
+    idBool                sIsCursorOpen      = ID_FALSE;
+    const void          * sRow;
+    scGRID                sRid;
+    smiCursorProperties   sCursorProperty;
+    
+    smiRange              sRange;
+    qtcMetaRangeColumn    sRangeColumn;
+
+    IDU_FIT_POINT( "stfBasic::getProj4TextFromSRID" );
+
+    sCursor.initialize();
+
+    IDE_TEST( smiGetTableColumns( gStmUserSrs,
+                                  STM_USER_SRS_SRID_COL_ORDER,
+                                  (const smiColumn **)&sSRIDColumn )
+              != IDE_SUCCESS );
+
+    IDE_TEST( smiGetTableColumns( gStmUserSrs,
+                                  STM_USER_SRS_PROJ4TEXT_COL_ORDER,
+                                  (const smiColumn **)&sProj4TextColumn )
+              != IDE_SUCCESS );
+
+    qciMisc::makeMetaRangeSingleColumn( &sRangeColumn,
+                                        (const mtcColumn *)sSRIDColumn,
+                                        (const void *)aSRID,
+                                        &sRange );
+
+    SMI_CURSOR_PROP_INIT_FOR_META_INDEX_SCAN( &sCursorProperty, QC_STATISTICS ( aStatement ) );
+
+    IDE_TEST( sCursor.open( QC_SMI_STMT( aStatement ),
+                            gStmUserSrs,
+                            gStmUserSrsIndex[STM_USER_SRS_SRID_IDX_ORDER],
+                            smiGetRowSCN( gStmUserSrs ),
+                            NULL,
+                            &sRange,
+                            smiGetDefaultKeyRange(),
+                            smiGetDefaultFilter(),
+                            QCM_META_CURSOR_FLAG,
+                            SMI_SELECT_CURSOR,
+                            &sCursorProperty ) != IDE_SUCCESS );
+    sIsCursorOpen = ID_TRUE;
+
+    IDE_TEST( sCursor.beforeFirst() != IDE_SUCCESS );
+    IDE_TEST( sCursor.readRow( &sRow, &sRid, SMI_FIND_NEXT ) != IDE_SUCCESS );
+    IDE_TEST_RAISE( sRow == NULL, ERR_UNKNOWN_SRID );
+
+    *aProj4Text = (mtdCharType *) mtc::value( sProj4TextColumn, sRow, MTD_OFFSET_USE );
+
+    sIsCursorOpen = ID_FALSE;
+    IDE_TEST( sCursor.close() != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_UNKNOWN_SRID )
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_UNKNOWN_SRID, *aSRID ) );
+    }
+
+    IDE_EXCEPTION_END;
+
+    if ( sIsCursorOpen == ID_TRUE )
+    {
+        (void) sCursor.close();
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_FAILURE;
+}
+
+IDE_RC stfBasic::changeExtTypeToBasic ( stdGeometryHeader  * aObj )
+{
+    switch ( aObj->mType )
+    {
+        case STD_POINT_2D_EXT_TYPE :
+            aObj->mType = STD_POINT_2D_TYPE;
+            aObj->mSize = STD_POINT2D_SIZE;
+            idlOS::memset( (UChar*)aObj + aObj->mSize,                             
+                           0x00,                                                   
+                           STD_POINT2D_EXT_SIZE - STD_POINT2D_SIZE );              
+            break;
+                
+        case STD_LINESTRING_2D_EXT_TYPE :
+            aObj->mType = STD_LINESTRING_2D_TYPE;
+            ((stdLineString2DExtType*)aObj)->mSRID = ST_SRID_UNDEFINED;         
+            break;
+                
+        case STD_POLYGON_2D_EXT_TYPE :
+            aObj->mType = STD_POLYGON_2D_TYPE;
+            ((stdPolygon2DExtType*)aObj)->mSRID = ST_SRID_UNDEFINED;         
+            break;
+                
+        case STD_MULTIPOINT_2D_EXT_TYPE :
+            aObj->mType = STD_MULTIPOINT_2D_TYPE;
+            ((stdMultiPoint2DExtType*)aObj)->mSRID = ST_SRID_UNDEFINED;         
+            break;
+                
+        case STD_MULTILINESTRING_2D_EXT_TYPE :
+            aObj->mType = STD_MULTILINESTRING_2D_TYPE;
+            ((stdMultiLineString2DExtType*)aObj)->mSRID = ST_SRID_UNDEFINED;         
+            break;
+                
+        case STD_MULTIPOLYGON_2D_EXT_TYPE :
+            aObj->mType = STD_MULTIPOLYGON_2D_TYPE;
+            ((stdMultiPolygon2DExtType*)aObj)->mSRID = ST_SRID_UNDEFINED;         
+            break;
+                
+        case STD_GEOCOLLECTION_2D_EXT_TYPE :
+            aObj->mType = STD_GEOCOLLECTION_2D_TYPE;
+            ((stdGeoCollection2DExtType*)aObj)->mSRID = ST_SRID_UNDEFINED;         
+            break;
+                
+        default :
+            IDE_RAISE(err_invalid_object_mType);
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(err_invalid_object_mType);
+    {
+        IDE_SET(ideSetErrorCode(stERR_ABORT_OBJECT_TYPE_NOT_APPLICABLE));
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;

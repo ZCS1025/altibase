@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qsxProc.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsxProc.cpp 90664 2021-04-21 06:14:15Z khkwak $
  **********************************************************************/
 
 #include <idl.h>
@@ -107,7 +107,7 @@ IDE_RC qsxProc::destroyProcObjectInfo(
 
     IDE_DASSERT( *aProcObjectInfo != NULL );
 
-    // iduLatch::destroyëŠ” ë°˜ë“œì‹œ ì„±ê³µí•¨.
+    // iduLatch::destroy´Â ¹Ýµå½Ã ¼º°øÇÔ.
     (void)(*aProcObjectInfo)->latchForStatus.destroy();
 
     (void)(*aProcObjectInfo)->latch.destroy();
@@ -212,6 +212,9 @@ IDE_RC qsxProc::createProcInfo(
     sProcInfo->procOID        = aProcOID;
 
     sProcInfo->isValid        = ID_FALSE;
+
+    // TASK-7244 Set shard split method to PSM info
+    sProcInfo->shardSplitMethod = SDI_SPLIT_NONE;
 
     sProcInfo->qmsMem         = NULL;
     sProcInfo->planTree       = NULL;
@@ -554,9 +557,9 @@ IDE_RC qsxProc::latchXForRecompile( qsOID          aProcOID )
  *
  * Description :
  *   BUG-18854
- *   í”„ë¡œì‹œì € ì‹¤í–‰ ì¤‘ ë°œìƒí•œ recompileì— í•œí•´ì„œ
- *   X latch ë¥¼ ìž¡ì„ ë•Œ ì‹¤íŒ¨í•˜ë©´ rebuildì—ëŸ¬ë¥¼ ì˜¬ë ¤ì„œ
- *   abort resource busyì—ëŸ¬ì™€ êµ¬ë¶„í•œë‹¤.
+ *   ÇÁ·Î½ÃÀú ½ÇÇà Áß ¹ß»ýÇÑ recompile¿¡ ÇÑÇØ¼­
+ *   X latch ¸¦ ÀâÀ» ¶§ ½ÇÆÐÇÏ¸é rebuild¿¡·¯¸¦ ¿Ã·Á¼­
+ *   abort resource busy¿¡·¯¿Í ±¸ºÐÇÑ´Ù.
  *
  *
  * Implementation :
@@ -662,7 +665,7 @@ IDE_RC qsxProc::makeStatusValid( qcStatement * aStatement,
               != IDE_SUCCESS );
     sState = 1;
 
-    // latchë¥¼ ìž¡ì•˜ë‹¤ë©´ procInfoê°€ ë°˜ë“œì‹œ ìžˆì–´ì•¼ í•œë‹¤.
+    // latch¸¦ Àâ¾Ò´Ù¸é procInfo°¡ ¹Ýµå½Ã ÀÖ¾î¾ß ÇÑ´Ù.
     IDE_ERROR( sObjInfo->procInfo != NULL );
 
     if( sObjInfo->procInfo->sessionID == QCG_GET_SESSION_ID( aStatement ) )
@@ -676,8 +679,8 @@ IDE_RC qsxProc::makeStatusValid( qcStatement * aStatement,
     }
     else
     {
-        // ë‹¤ë¥¸ session ì—ì„œ PSMì„ invalid ì‹œí‚¨ ê²½ìš°
-        // valid ìƒíƒœë¡œ ë³€ê²½í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // ´Ù¸¥ session ¿¡¼­ PSMÀ» invalid ½ÃÅ² °æ¿ì
+        // valid »óÅÂ·Î º¯°æÇÏÁö ¾Ê´Â´Ù.
     }
 
     sState = 0;
@@ -712,7 +715,7 @@ IDE_RC qsxProc::makeStatusValidTx( qcStatement * aStatement,
               != IDE_SUCCESS );
     sState = 1;
 
-    // latchë¥¼ ìž¡ì•˜ë‹¤ë©´ procInfoê°€ ë°˜ë“œì‹œ ìžˆì–´ì•¼ í•œë‹¤.
+    // latch¸¦ Àâ¾Ò´Ù¸é procInfo°¡ ¹Ýµå½Ã ÀÖ¾î¾ß ÇÑ´Ù.
     IDE_ERROR( sObjInfo->procInfo != NULL );
 
     if( sObjInfo->procInfo->sessionID == QCG_GET_SESSION_ID( aStatement ) )
@@ -726,8 +729,8 @@ IDE_RC qsxProc::makeStatusValidTx( qcStatement * aStatement,
     }
     else
     {
-        // ë‹¤ë¥¸ session ì—ì„œ PSMì„ invalid ì‹œí‚¨ ê²½ìš°
-        // valid ìƒíƒœë¡œ ë³€ê²½í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // ´Ù¸¥ session ¿¡¼­ PSMÀ» invalid ½ÃÅ² °æ¿ì
+        // valid »óÅÂ·Î º¯°æÇÏÁö ¾Ê´Â´Ù.
     }
 
     sState = 0;
@@ -752,6 +755,39 @@ IDE_RC qsxProc::makeStatusValidTx( qcStatement * aStatement,
 IDE_RC qsxProc::makeStatusInvalid( qcStatement * aStatement,
                                    qsOID         aProcOID )
 {
+    IDE_TEST( makeStatusInvalidInternal( aStatement,
+                                         aProcOID,
+                                         (SChar*)NULL )  // shard split method
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+// TASK-7244 Set shard split method to PSM info
+IDE_RC qsxProc::makeStatusInvalidAndSetShardSplitMethod ( qcStatement * aStatement,
+                                                          qsOID         aProcOID,
+                                                          SChar       * aShardSplitMethodStr )
+{
+    IDE_TEST( makeStatusInvalidInternal( aStatement,
+                                         aProcOID,
+                                         aShardSplitMethodStr )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qsxProc::makeStatusInvalidInternal( qcStatement * aStatement,
+                                           qsOID         aProcOID,
+                                           SChar       * aShardSplitMethodStr )
+{
     qsxProcObjectInfo * sObjInfo;
     UInt                sState = 0;
 
@@ -765,6 +801,41 @@ IDE_RC qsxProc::makeStatusInvalid( qcStatement * aStatement,
     sObjInfo->procInfo->isValid   = ID_FALSE;
     sObjInfo->procInfo->sessionID = QCG_GET_SESSION_ID( aStatement );
 
+    // TASK-7244 Set shard split method to PSM info
+    if ( aShardSplitMethodStr != NULL )
+    {
+        switch( aShardSplitMethodStr[0] )
+        {
+        case 'C':
+            sObjInfo->procInfo->shardSplitMethod = SDI_SPLIT_CLONE;
+            break;
+        case 'H':
+            sObjInfo->procInfo->shardSplitMethod = SDI_SPLIT_HASH;
+            break;
+        case 'L':
+            sObjInfo->procInfo->shardSplitMethod = SDI_SPLIT_LIST;
+            break;
+        case 'R':
+            sObjInfo->procInfo->shardSplitMethod = SDI_SPLIT_RANGE;
+            break;
+        case 'S':
+            sObjInfo->procInfo->shardSplitMethod = SDI_SPLIT_SOLO;
+            break;
+        // BUG-48911
+        // A shard split method in a procedure info is lost due to a related object modified.
+        case 'N':
+            sObjInfo->procInfo->shardSplitMethod = SDI_SPLIT_NONE;
+            break;
+        default:
+            IDE_RAISE( ERR_UNEXPECTED );
+            break;
+        }
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
     IDE_TEST( qcmProc::procUpdateStatus( aStatement,
                                          aProcOID,
                                          QCM_PROC_INVALID )
@@ -775,6 +846,12 @@ IDE_RC qsxProc::makeStatusInvalid( qcStatement * aStatement,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_UNEXPECTED )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qsxProc::makeStatusInvalidInternal",
+                                  "Invalid shard split method." ) );
+    }
     IDE_EXCEPTION_END;
 
     if( sState == 1 )

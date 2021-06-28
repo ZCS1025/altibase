@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qcmDatabase.cpp 82166 2018-02-01 07:26:29Z ahra.cho $
+ * $Id: qcmDatabase.cpp 88191 2020-07-27 03:08:54Z mason.lee $
  **********************************************************************/
 
 #include <idl.h>
@@ -35,10 +35,10 @@ IDE_RC qcmDatabase::getMetaVersion( smiStatement * aSmiStmt,
 /***********************************************************************
  *
  * Description :
- *    ë°ì´í„°ë² ì´ìŠ¤ ë©”íƒ€ì˜ ë²„ì „ì„ êµ¬í•œë‹¤.
+ *    µ¥ÀÌÅÍº£ÀÌ½º ¸ŞÅ¸ÀÇ ¹öÀüÀ» ±¸ÇÑ´Ù.
  *
  * Implementation :
- *    gQcmDatabase ë¡œë¶€í„° ë©”íƒ€ì˜ MajorVersion, MinorVersion ì„ êµ¬í•œë‹¤.
+ *    gQcmDatabase ·ÎºÎÅÍ ¸ŞÅ¸ÀÇ MajorVersion, MinorVersion À» ±¸ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -47,7 +47,7 @@ IDE_RC qcmDatabase::getMetaVersion( smiStatement * aSmiStmt,
     const void      * sRow;
     mtcColumn       * sMtcColumn;
 
-    scGRID            sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
+    scGRID            sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
 
     // initialize
     sCursor.initialize();
@@ -127,7 +127,7 @@ IDE_RC qcmDatabase::checkDatabase(
 /***********************************************************************
  *
  * Description :
- *     ë°ì´í„°ë² ì´ìŠ¤ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•¨
+ *     µ¥ÀÌÅÍº£ÀÌ½º°¡ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÔ
  *
  * Implementation :
  *
@@ -138,7 +138,7 @@ IDE_RC qcmDatabase::checkDatabase(
     const void      * sRow;
     mtcColumn       * sMtcColumn;
 
-    scGRID            sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
+    scGRID            sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
     mtdCharType     * sOwnerDN;
 
     // initialize
@@ -211,10 +211,10 @@ IDE_RC qcmDatabase::getMetaPrevVersion( smiStatement * aSmiStmt,
  *
  * Description :
  *    PROJ-2689 downgrade meta
- *    ë°ì´í„°ë² ì´ìŠ¤ ì´ì „ ë©”íƒ€ì˜ ë²„ì „ì„ êµ¬í•œë‹¤.
+ *    µ¥ÀÌÅÍº£ÀÌ½º ÀÌÀü ¸ŞÅ¸ÀÇ ¹öÀüÀ» ±¸ÇÑ´Ù.
  *
  * Implementation :
- *    gQcmDatabase ë¡œë¶€í„° ë©”íƒ€ì˜ PrvMajorVersion, PrevMinorVersion ì„ êµ¬í•œë‹¤.
+ *    gQcmDatabase ·ÎºÎÅÍ ¸ŞÅ¸ÀÇ PrvMajorVersion, PrevMinorVersion À» ±¸ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -223,7 +223,7 @@ IDE_RC qcmDatabase::getMetaPrevVersion( smiStatement * aSmiStmt,
     const void      * sRow;
     mtcColumn       * sMtcColumn;
 
-    scGRID            sRid; // Disk Tableì„ ìœ„í•œ Record IDentifier
+    scGRID            sRid; // Disk TableÀ» À§ÇÑ Record IDentifier
 
     // initialize
     sCursor.initialize();
@@ -343,8 +343,6 @@ IDE_RC qcmDatabase::setMetaPrevVersion( qcStatement     * aQcStmt,
     smiTrans       sSmiTrans;
     smiStatement * sDummySmiStmt = NULL;
     smiStatement   sSmiStmt;
-    //PROJ-1677 DEQ
-    smSCN          sDummySCN;
     smiStatement * sSmiStmtOrg   = NULL;
     SInt           sState        = 0;
     UInt           sSmiStmtFlag  = 0;
@@ -389,7 +387,7 @@ IDE_RC qcmDatabase::setMetaPrevVersion( qcStatement     * aQcStmt,
 
     // transaction commit
     sState = 1;
-    IDE_TEST( sSmiTrans.commit(&sDummySCN) != IDE_SUCCESS );
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
 
     // transaction destroy
     sState = 0;

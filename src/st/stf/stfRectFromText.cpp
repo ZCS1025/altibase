@@ -47,7 +47,7 @@ static IDE_RC stfRectFromTextEstimate(
 mtfModule stfRectFromText = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     stfRectFromTextFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -159,6 +159,8 @@ IDE_RC stfRectFromTextCalculate( mtcNode     * aNode,
     qcTemplate      * sQcTmplate    = NULL;
     iduMemory       * sQmxMem       = NULL;
     iduMemoryStatus   sQmxMemStatus;
+    idBool            sSRIDOption = ID_FALSE;
+    SInt              sSRID = ST_SRID_INIT;
     UInt              sStage        = 0;
 
     IDE_TEST( mtf::postfixCalculate( aNode,
@@ -181,21 +183,38 @@ IDE_RC stfRectFromTextCalculate( mtcNode     * aNode,
         sQcTmplate = (qcTemplate *)aTemplate;
         sQmxMem    = QC_QMX_MEM( sQcTmplate->stmt );
 
-        // Memory ìž¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ìž¬ ìœ„ì¹˜ ê¸°ë¡
+        // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
         IDE_TEST( sQmxMem->getStatus( &sQmxMemStatus ) != IDE_SUCCESS );
         sStage = 1;
+
+        // PROJ-2422 srid Áö¿ø
+        if ( (aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK) == 2 )
+        {
+            if ( aStack[2].column->module->isNull( aStack[2].column,
+                                                   aStack[2].value ) == ID_FALSE )
+            {
+                sSRIDOption = ID_TRUE;
+                sSRID = *(mtdIntegerType*)aStack[2].value;
+            }
+            else
+            {
+                // Nothing to do.
+            }
+        }
 
         IDE_TEST( stfWKT::rectFromText( sQmxMem,
                                         aStack[1].value,
                                         aStack[0].value,
                                         (SChar *)(aStack[0].value) + aStack[0].column->column.size,
                                         &sRC,
-                                        STU_VALIDATION_ENABLE )
+                                        STU_VALIDATION_ENABLE,
+                                        sSRIDOption,
+                                        sSRID )
                   != IDE_SUCCESS );
 
         IDE_TEST_RAISE( sRC != IDE_SUCCESS, ERR_INVALID_LITERAL );
 
-        // Memory ìž¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
+        // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
         sStage = 0;
         IDE_TEST( sQmxMem->setStatus( &sQmxMemStatus ) != IDE_SUCCESS );
     }

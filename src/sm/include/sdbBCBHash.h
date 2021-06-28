@@ -34,15 +34,15 @@
 
 /***********************************************************************
  * Description :
- *  sdbBCBHash bucketì˜ ìë£Œêµ¬ì¡°. ì‹¤ì œ hash tableì€  ì´ê²ƒë“¤ì˜ ë°°ì—´ë¡œ ë˜ì–´ìˆë‹¤.
- *  Bucketì—ëŠ” ì—°ê²° ë¦¬ìŠ¤íŠ¸ë¥¼ ì´ìš©í•´ ê°™ì€ hash keyë¥¼ ê°€ì§„ ê²ƒë“¤ì„ ì—°ê²°í•œë‹¤.
- *  ì´ê²ƒì„ hash chain ì´ë¼ê³  í•œë‹¤.
+ *  sdbBCBHash bucketÀÇ ÀÚ·á±¸Á¶. ½ÇÁ¦ hash tableÀº  ÀÌ°ÍµéÀÇ ¹è¿­·Î µÇ¾îÀÖ´Ù.
+ *  Bucket¿¡´Â ¿¬°á ¸®½ºÆ®¸¦ ÀÌ¿ëÇØ °°Àº hash key¸¦ °¡Áø °ÍµéÀ» ¿¬°áÇÑ´Ù.
+ *  ÀÌ°ÍÀ» hash chain ÀÌ¶ó°í ÇÑ´Ù.
  ***********************************************************************/
 typedef struct sdbBCBHashBucket
 {
-    /* hash chainì˜ ê¸¸ì´ */
+    /* hash chainÀÇ ±æÀÌ */
     UInt    mLength;
-    /* hash chainì˜ mBase */
+    /* hash chainÀÇ mBase */
     smuList mBase;
 
     UInt    mHashBucketNo;
@@ -59,8 +59,8 @@ public:
 
     IDE_RC  destroy();
 
-    /*í˜„ì¬ hashì˜ í¬ê¸°ë° latchë¹„ìœ¨ì„ ë³€ê²½. ë³¸ ì—°ì‚°ì´ ìˆ˜í–‰ë˜ëŠ” ë„ì¤‘ì—
-     *ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì—ì˜í•œ í˜„ì¬ hashì— ëŒ€í•œ ì ‘ê·¼ì€ í—ˆìš©.*/
+    /*ÇöÀç hashÀÇ Å©±â¹× latchºñÀ²À» º¯°æ. º» ¿¬»êÀÌ ¼öÇàµÇ´Â µµÁß¿¡
+     *´Ù¸¥ Æ®·£Àè¼Ç¿¡ÀÇÇÑ ÇöÀç hash¿¡ ´ëÇÑ Á¢±ÙÀº Çã¿ë.*/
     IDE_RC  resize( UInt aBucketCnt,
                     UInt aBucketCntPerLatch );
 
@@ -95,32 +95,32 @@ private:
 
     void moveDataToNewHash( sdbBCBHash *aNewHash );
 
-    /*ì´ í•¨ìˆ˜ ìˆ˜í–‰ì¤‘ì— íŠ¸ëœì­ì…˜ì´ hashì— ì ‘ê·¼í•˜ë©´ ì•ˆëœë‹¤.
-     *ì¦‰, ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê¸° ì „ ë°˜ë“œì‹œ BufferManagerì˜ ë˜ì¹˜ê°€ xë¡œ ì¡í˜€ ìˆì–´ì•¼ í•œë‹¤.*/
+    /*ÀÌ ÇÔ¼ö ¼öÇàÁß¿¡ Æ®·£Àè¼ÇÀÌ hash¿¡ Á¢±ÙÇÏ¸é ¾ÈµÈ´Ù.
+     *Áï, ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ±â Àü ¹İµå½Ã BufferManagerÀÇ ·¡Ä¡°¡ x·Î ÀâÇô ÀÖ¾î¾ß ÇÑ´Ù.*/
     static void exchangeHashContents( sdbBCBHash *aHash1, sdbBCBHash *aHash2 );
 
-    /* hash chains latchì˜ ê°¯ìˆ˜ */
+    /* hash chains latchÀÇ °¹¼ö */
     UInt mLatchCnt;
     
-    /* bucketì˜ ê°¯ìˆ˜, ì¦‰ mTableì˜ ë°°ì—´ì˜ size */
+    /* bucketÀÇ °¹¼ö, Áï mTableÀÇ ¹è¿­ÀÇ size */
     UInt mBucketCnt;
     
-    /* 0x000111 ì™€ ê°™ì€ í˜•íƒœë¥¼ ê°€ì§„ë‹¤.
-     * bucket index ê°’ì„ mLatchMaskì™€ &(and) ì—°ì‚°í•˜ë©´ latch indexê°€ ë‚˜ì˜¨ë‹¤.  */
+    /* 0x000111 ¿Í °°Àº ÇüÅÂ¸¦ °¡Áø´Ù.
+     * bucket index °ªÀ» mLatchMask¿Í &(and) ¿¬»êÇÏ¸é latch index°¡ ³ª¿Â´Ù.  */
     UInt mLatchMask;
     
-    /* í˜„ì¬ hash chains latchëŠ” ì„±ëŠ¥ì´ìœ ë¡œ mutexë¡œ êµ¬í˜„ë˜ì–´ ë™ì‘í•œë‹¤.
-     * ì´ hash chains latchë¥¼ ë°°ì—´í˜•íƒœë¡œ ëª¨ì•„ë†“ì€ ê²ƒì´ mMutexArrayì´ë‹¤.*/
+    /* ÇöÀç hash chains latch´Â ¼º´ÉÀÌÀ¯·Î mutex·Î ±¸ÇöµÇ¾î µ¿ÀÛÇÑ´Ù.
+     * ÀÌ hash chains latch¸¦ ¹è¿­ÇüÅÂ·Î ¸ğ¾Æ³õÀº °ÍÀÌ mMutexArrayÀÌ´Ù.*/
     iduLatch      *mMutexArray;
     
-    /* ì‹¤ì œ BCBë¥¼ ìœ ì§€í•˜ëŠ” í…Œì´ë¸”. sdbBCBHashBucketì˜ ë°°ì—´í˜•íƒœë¡œ
-     * êµ¬í˜„ë˜ì–´ ìˆë‹¤. */
+    /* ½ÇÁ¦ BCB¸¦ À¯ÁöÇÏ´Â Å×ÀÌºí. sdbBCBHashBucketÀÇ ¹è¿­ÇüÅÂ·Î
+     * ±¸ÇöµÇ¾î ÀÖ´Ù. */
     sdbBCBHashBucket *mTable;
 };
 
 /****************************************************************
  * Description:
- *      pageIDë¥¼ ì…ë ¥ìœ¼ë¡œ ë°›ì•„ì„œ keyë¥¼ ë¦¬í„´í•˜ëŠ” í•¨ìˆ˜
+ *      pageID¸¦ ÀÔ·ÂÀ¸·Î ¹Ş¾Æ¼­ key¸¦ ¸®ÅÏÇÏ´Â ÇÔ¼ö
  *
  * aSpaceID - [IN]  spaceID
  * aPID     - [IN]  pageID 
@@ -131,15 +131,15 @@ UInt sdbBCBHash::hash(scSpaceID aSpaceID,
 
     /* BUG-32750 [sm-disk-resource] The hash bucket numbers of BCB(Buffer
      * Control Block) are concentrated in low number.
-     * ê¸°ì¡´ ( FID + SPACEID + FPID ) % HASHSIZE ëŠ” ê° DataFileì˜ í¬ê¸°ê°€ ì‘ì„
-     * ê²½ìš° ì•ìª½ìœ¼ë¡œ HashValueê°€ ëª°ë¦¬ëŠ” ë‹¨ì ì´ ìˆë‹¤. ì´ì— ë”°ë¼ ë‹¤ìŒê³¼ ê°™ì´
-     * ìˆ˜ì •í•œë‹¤
+     * ±âÁ¸ ( FID + SPACEID + FPID ) % HASHSIZE ´Â °¢ DataFileÀÇ Å©±â°¡ ÀÛÀ»
+     * °æ¿ì ¾ÕÂÊÀ¸·Î HashValue°¡ ¸ô¸®´Â ´ÜÁ¡ÀÌ ÀÖ´Ù. ÀÌ¿¡ µû¶ó ´ÙÀ½°ú °°ÀÌ
+     * ¼öÁ¤ÇÑ´Ù
      * ( ( SPACEID * PERMUTE1 +  FID ) * PERMUTE2 + PID ) % HASHSIZE
-     * PERMUTE1ì€ Tablespaceê°€ ë‹¤ë¥¼ë•Œ ê°’ì´ ì–´ëŠì •ë„ ê°„ê²©ì´ ë˜ëŠ”ê°€,
-     * PERMUTE2ëŠ” Datafile FIDê°€ ë‹¤ë¥¼ë•Œ ê°’ì´ ì–´ëŠì •ë„ ê°„ê²©ì´ ë˜ëŠ”ê°€,
-     * ì…ë‹ˆë‹¤.
-     * PERMUTE1ì€ Tablespaceë‹¹ Datafile í‰ê·  ê°œìˆ˜ë³´ë‹¤ ì¡°ê¸ˆ ì‘ì€ ê°’ì´ ì ë‹¹í•˜ë©°
-     * PERMUTE2ì€ Datafileë‹¹ Page í‰ê·  ê°œìˆ˜ë³´ë‹¤ ì¡°ê¸ˆ ì‘ì€ ê°’ì´ ì ë‹¹í•©ë‹ˆë‹¤. */
+     * PERMUTE1Àº Tablespace°¡ ´Ù¸¦¶§ °ªÀÌ ¾î´ÀÁ¤µµ °£°İÀÌ µÇ´Â°¡,
+     * PERMUTE2´Â Datafile FID°¡ ´Ù¸¦¶§ °ªÀÌ ¾î´ÀÁ¤µµ °£°İÀÌ µÇ´Â°¡,
+     * ÀÔ´Ï´Ù.
+     * PERMUTE1Àº Tablespace´ç Datafile Æò±Õ °³¼öº¸´Ù Á¶±İ ÀÛÀº °ªÀÌ Àû´çÇÏ¸ç
+     * PERMUTE2Àº Datafile´ç Page Æò±Õ °³¼öº¸´Ù Á¶±İ ÀÛÀº °ªÀÌ Àû´çÇÕ´Ï´Ù. */
     return ( ( aSpaceID * smuProperty::getBufferHashPermute1()
                     + SD_MAKE_FID(aPID) )
             * smuProperty::getBufferHashPermute2() + aPID ) % mBucketCnt ;

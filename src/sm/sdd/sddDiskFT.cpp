@@ -1,4 +1,4 @@
-/** 
+ /** 
  *  Copyright (c) 1999~2017, Altibase Corp. and/or its affiliates. All rights reserved.
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -18,11 +18,12 @@
 /***********************************************************************
  * $Id$
  *
- * ÎîîÏä§ÌÅ¨ ÌÖåÏù¥Î∏îÏä§ÌéòÏù¥ Í¥ÄÎ†® Fixed Table Íµ¨ÌòÑ  
+ * µΩ∫≈© ≈◊¿Ã∫ÌΩ∫∆‰¿Ã ∞¸∑√ Fixed Table ±∏«ˆ  
  ***********************************************************************/
 
 #include <idu.h>
 #include <sddDef.h>
+#include <sdptbExtent.h>
 #include <sddDiskFT.h>
 #include <sctTableSpaceMgr.h>
 
@@ -51,6 +52,7 @@ typedef struct sddDataFileNodeInfo
     UInt      mState;
     UInt      mMaxOpenFDCnt;
     UInt      mCurOpenFDCnt;
+    idBool    mFreenessOfGG;  // BUG-47666
 } sddDataFileNodeInfo;
 
 static iduFixedTableColDesc gDataFileTableColDesc[] =
@@ -59,7 +61,7 @@ static iduFixedTableColDesc gDataFileTableColDesc[] =
         (SChar*)"ID",
         offsetof(sddDataFileNodeInfo, mID),
         IDU_FT_SIZEOF(sddDataFileNodeInfo, mID),
-        IDU_FT_TYPE_UINTEGER,
+        IDU_FT_TYPE_UINTEGER | IDU_FT_COLUMN_INDEX,  // BUG-48160
         NULL,
         0, 0,NULL // for internal use
     },
@@ -68,7 +70,7 @@ static iduFixedTableColDesc gDataFileTableColDesc[] =
         (SChar*)"NAME",
         offsetof(sddDataFileNodeInfo, mName),
         256,
-        IDU_FT_TYPE_VARCHAR | IDU_FT_TYPE_POINTER,
+        IDU_FT_TYPE_VARCHAR | IDU_FT_TYPE_POINTER | IDU_FT_COLUMN_INDEX, // BUG-48160
         NULL,
         0, 0,NULL // for internal use
     },
@@ -185,8 +187,8 @@ static iduFixedTableColDesc gDataFileTableColDesc[] =
 
     {
         (SChar*)"OPENED",
-        offsetof(sddDataFileNodeInfo, mIsOpened), // BUGBUG : 4byteÏù∏ÏßÄ ÌôïÏù∏
-        IDU_FT_SIZEOF(sddDataFileNodeInfo, mIsOpened), // BUGBUG : 4byteÏù∏ÏßÄ Ìôï,
+        offsetof(sddDataFileNodeInfo, mIsOpened), // BUGBUG : 4byte¿Œ¡ˆ »Æ¿Œ
+        IDU_FT_SIZEOF(sddDataFileNodeInfo, mIsOpened), // BUGBUG : 4byte¿Œ¡ˆ »Æ,
         IDU_FT_TYPE_UINTEGER,
         NULL,
         0, 0,NULL // for internal use
@@ -194,8 +196,8 @@ static iduFixedTableColDesc gDataFileTableColDesc[] =
 
     {
         (SChar*)"MODIFIED",
-        offsetof(sddDataFileNodeInfo, mIsModified), // BUGBUG : 4byteÏù∏ÏßÄ ÌôïÏù∏
-        IDU_FT_SIZEOF(sddDataFileNodeInfo, mIsModified), // BUGBUG : 4byteÏù∏ÏßÄ Ìôï,
+        offsetof(sddDataFileNodeInfo, mIsModified), // BUGBUG : 4byte¿Œ¡ˆ »Æ¿Œ
+        IDU_FT_SIZEOF(sddDataFileNodeInfo, mIsModified), // BUGBUG : 4byte¿Œ¡ˆ »Æ,
         IDU_FT_TYPE_UINTEGER,
         NULL,
         0, 0,NULL // for internal use
@@ -203,16 +205,16 @@ static iduFixedTableColDesc gDataFileTableColDesc[] =
 
     {
         (SChar*)"STATE",
-        offsetof(sddDataFileNodeInfo, mState), // BUGBUG : 4byteÏù∏ÏßÄ ÌôïÏù∏
-        IDU_FT_SIZEOF(sddDataFileNodeInfo, mState), // BUGBUG : 4byteÏù∏ÏßÄ Ìôï,
+        offsetof(sddDataFileNodeInfo, mState), // BUGBUG : 4byte¿Œ¡ˆ »Æ¿Œ
+        IDU_FT_SIZEOF(sddDataFileNodeInfo, mState), // BUGBUG : 4byte¿Œ¡ˆ »Æ,
         IDU_FT_TYPE_UINTEGER,
         NULL,
         0, 0,NULL // for internal use
     },
     {
         (SChar*)"MAX_OPEN_FD_COUNT",
-        offsetof(sddDataFileNodeInfo, mMaxOpenFDCnt), // BUGBUG : 4byteÏù∏ÏßÄ ÌôïÏù∏
-        IDU_FT_SIZEOF(sddDataFileNodeInfo, mMaxOpenFDCnt), // BUGBUG : 4byteÏù∏ÏßÄ Ìôï,
+        offsetof(sddDataFileNodeInfo, mMaxOpenFDCnt), // BUGBUG : 4byte¿Œ¡ˆ »Æ¿Œ
+        IDU_FT_SIZEOF(sddDataFileNodeInfo, mMaxOpenFDCnt), // BUGBUG : 4byte¿Œ¡ˆ »Æ,
         IDU_FT_TYPE_UINTEGER,
         NULL,
         0, 0,NULL // for internal use
@@ -221,6 +223,14 @@ static iduFixedTableColDesc gDataFileTableColDesc[] =
         (SChar*)"CUR_OPEN_FD_COUNT",
         offsetof(sddDataFileNodeInfo, mCurOpenFDCnt),
         IDU_FT_SIZEOF(sddDataFileNodeInfo, mCurOpenFDCnt),
+        IDU_FT_TYPE_UINTEGER,
+        NULL,
+        0, 0,NULL // for internal use
+    },
+    {
+        (SChar*)"FREENESS_OF_GG",
+        offsetof(sddDataFileNodeInfo, mFreenessOfGG),     /* BUG-47666 Freeness Bit ∏¶ »Æ¿Œ */
+        IDU_FT_SIZEOF(sddDataFileNodeInfo, mFreenessOfGG),
         IDU_FT_TYPE_UINTEGER,
         NULL,
         0, 0,NULL // for internal use
@@ -263,119 +273,119 @@ static iduFixedTableColDesc  gPageSizeTableColDesc[] =
 /* ------------------------------------------------
  *  Build Fixed Table Define for X$DATAFILES
  * ----------------------------------------------*/
-IDE_RC sddDiskFT::buildFT4DATAFILES( idvSQL		 * /* aStatistics */,
+IDE_RC sddDiskFT::buildFT4DATAFILES( idvSQL		 * aStatistics,
                                      void                * aHeader,
                                      void                * /* aDumpObj */,
                                      iduFixedTableMemory * aMemory )
 {
     sddDataFileNode     *sFileNode;
-    sddTableSpaceNode   *sNextSpaceNode;
     sddTableSpaceNode   *sCurrSpaceNode;
     UInt                 sState = 0;
     UInt                 i;
     sddDataFileNodeInfo  sDataFileNodeInfo;
-    void               * sIndexValues[1];
+    void               * sIndexValues[3];
 
     IDE_DASSERT( (ID_SIZEOF(smiDataFileState) == ID_SIZEOF(UInt)) &&
                  (ID_SIZEOF(smiDataFileMode) == ID_SIZEOF(UInt)) &&
                  (ID_SIZEOF(idBool) == ID_SIZEOF(UInt)) );
 
-    IDE_TEST( sctTableSpaceMgr::lock( NULL /* idvSQL* */ ) != IDE_SUCCESS );
-    sState = 1;
-
-    sctTableSpaceMgr::getFirstSpaceNode( (void**)&sCurrSpaceNode );
+    sCurrSpaceNode = (sddTableSpaceNode*)sctTableSpaceMgr::getFirstSpaceNode();
 
     while( sCurrSpaceNode != NULL )
     {
-        sctTableSpaceMgr::getNextSpaceNode( (void*)sCurrSpaceNode,
-                                            (void**)&sNextSpaceNode );
-
-        IDE_ASSERT( (sCurrSpaceNode->mHeader.mState & SMI_TBS_DROPPED)
-                    != SMI_TBS_DROPPED );
-
-        if( sctTableSpaceMgr::isDiskTableSpace( sCurrSpaceNode->mHeader.mID )
-            == ID_TRUE )
+        /* Disk Table Space∞° æ∆¥œ∏È ¡¶ø‹*/
+        if( sctTableSpaceMgr::isDiskTableSpace( sCurrSpaceNode ) == ID_TRUE )
         {
-            for (i=0; i < sCurrSpaceNode->mNewFileID ; i++ )
+            sctTableSpaceMgr::lockSpaceNode( aStatistics,
+                                             sCurrSpaceNode );
+            sState = 1;
+
+            /* Dropµ«æ˙¿∏∏È ¡¶ø‹ */
+            if ( (sCurrSpaceNode->mHeader.mState & SMI_TBS_DROPPED) != SMI_TBS_DROPPED )
             {
-                sFileNode = sCurrSpaceNode->mFileNodeArr[i] ;
-
-                if( sFileNode == NULL )
+                for (i=0; i < sCurrSpaceNode->mNewFileID ; i++ )
                 {
-                    continue;
+                    sFileNode = sCurrSpaceNode->mFileNodeArr[i] ;
+
+                    if( sFileNode == NULL )
+                    {
+                        continue;
+                    }
+
+                    if( SMI_FILE_STATE_IS_DROPPED( sFileNode->mState ) )
+                    {
+                        continue;
+                    }
+
+                    /* BUG-43006 FixedTable Indexing Filter
+                     * Column Index ∏¶ ªÁøÎ«ÿº≠ ¿¸√º Record∏¶ ª˝º∫«œ¡ˆæ ∞Ì
+                     * ∫Œ∫–∏∏ ª˝º∫«ÿ Filtering «—¥Ÿ.
+                     * 1. void * πËø≠ø° IDU_FT_COLUMN_INDEX ∑Œ ¡ˆ¡§µ» ƒ√∑≥ø°
+                     * «ÿ¥Á«œ¥¬ ∞™¿ª º¯º≠¥Î∑Œ ≥÷æÓ¡÷æÓæﬂ «—¥Ÿ.
+                     * 2. IDU_FT_COLUMN_INDEX¿« ƒ√∑≥ø° «ÿ¥Á«œ¥¬ ∞™¿ª ∏µŒ ≥÷
+                     * æÓ ¡÷æÓæﬂ«—¥Ÿ.
+                     */
+                    /* BUG-48160 « ≈Õ∏µ «◊∏Ò √ﬂ∞° */
+                    sIndexValues[0] = &sFileNode->mID;
+                    sIndexValues[1] = &sFileNode->mName;
+                    sIndexValues[2] = &sFileNode->mSpaceID;
+                    if ( iduFixedTable::checkKeyRange( aMemory,
+                                                       gDataFileTableColDesc,
+                                                       sIndexValues )
+                         == ID_FALSE )
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        /* Nothing to do */
+                    }
+                    sDataFileNodeInfo.mSpaceID       = sFileNode->mSpaceID;
+                    sDataFileNodeInfo.mID            = sFileNode->mID;
+                    sDataFileNodeInfo.mName          = sFileNode->mName;
+
+                    sDataFileNodeInfo.mDiskRedoLSN   =
+                        sFileNode->mDBFileHdr.mRedoLSN;
+                    sDataFileNodeInfo.mDiskCreateLSN =
+                        sFileNode->mDBFileHdr.mCreateLSN;
+
+                    sDataFileNodeInfo.mSmVersion     =
+                        sFileNode->mDBFileHdr.mSmVersion;
+
+                    sDataFileNodeInfo.mNextSize      = sFileNode->mNextSize;
+                    sDataFileNodeInfo.mMaxSize       = sFileNode->mMaxSize;
+                    sDataFileNodeInfo.mInitSize      = sFileNode->mInitSize;
+                    sDataFileNodeInfo.mCurrSize      = sFileNode->mCurrSize;
+                    sDataFileNodeInfo.mIsAutoExtend  = sFileNode->mIsAutoExtend;
+                    sDataFileNodeInfo.mIOCount       = sFileNode->mIOCount;
+                    sDataFileNodeInfo.mIsOpened      = sFileNode->mIsOpened;
+                    sDataFileNodeInfo.mIsModified    = sFileNode->mIsModified;
+                    sDataFileNodeInfo.mState         = sFileNode->mState;
+                    sDataFileNodeInfo.mMaxOpenFDCnt  = sFileNode->mFile.getMaxFDCnt();
+                    sDataFileNodeInfo.mCurOpenFDCnt  = sFileNode->mFile.getCurFDCnt();
+                    sDataFileNodeInfo.mFreenessOfGG  = sdptbExtent::getFreenessOfGG( sCurrSpaceNode,
+                                                                                     sFileNode->mID );
+
+                    /* [2] make one fixed table record */
+                    IDE_TEST(iduFixedTable::buildRecord(aHeader,
+                                                        aMemory,
+                                                        (void *)&sDataFileNodeInfo)
+                             != IDE_SUCCESS);
                 }
-
-                if( SMI_FILE_STATE_IS_DROPPED( sFileNode->mState ) )
-                {
-                    continue;
-                }
-
-                /* BUG-43006 FixedTable Indexing Filter
-                 * Column Index Î•º ÏÇ¨Ïö©Ìï¥ÏÑú Ï†ÑÏ≤¥ RecordÎ•º ÏÉùÏÑ±ÌïòÏßÄÏïäÍ≥†
-                 * Î∂ÄÎ∂ÑÎßå ÏÉùÏÑ±Ìï¥ Filtering ÌïúÎã§.
-                 * 1. void * Î∞∞Ïó¥Ïóê IDU_FT_COLUMN_INDEX Î°ú ÏßÄÏ†ïÎêú Ïª¨ÎüºÏóê
-                 * Ìï¥ÎãπÌïòÎäî Í∞íÏùÑ ÏàúÏÑúÎåÄÎ°ú ÎÑ£Ïñ¥Ï£ºÏñ¥Ïïº ÌïúÎã§.
-                 * 2. IDU_FT_COLUMN_INDEXÏùò Ïª¨ÎüºÏóê Ìï¥ÎãπÌïòÎäî Í∞íÏùÑ Î™®Îëê ÎÑ£
-                 * Ïñ¥ Ï£ºÏñ¥ÏïºÌïúÎã§.
-                 */
-                sIndexValues[0] = &sFileNode->mSpaceID;
-                if ( iduFixedTable::checkKeyRange( aMemory,
-                                                   gDataFileTableColDesc,
-                                                   sIndexValues )
-                     == ID_FALSE )
-                {
-                    continue;
-                }
-                else
-                {
-                    /* Nothing to do */
-                }
-                sDataFileNodeInfo.mSpaceID       = sFileNode->mSpaceID;
-                sDataFileNodeInfo.mID            = sFileNode->mID;
-                sDataFileNodeInfo.mName          = sFileNode->mName;
-
-                sDataFileNodeInfo.mDiskRedoLSN   =
-                    sFileNode->mDBFileHdr.mRedoLSN;
-                sDataFileNodeInfo.mDiskCreateLSN =
-                    sFileNode->mDBFileHdr.mCreateLSN;
-
-                sDataFileNodeInfo.mSmVersion     =
-                    sFileNode->mDBFileHdr.mSmVersion;
-
-                sDataFileNodeInfo.mNextSize      = sFileNode->mNextSize;
-                sDataFileNodeInfo.mMaxSize       = sFileNode->mMaxSize;
-                sDataFileNodeInfo.mInitSize      = sFileNode->mInitSize;
-                sDataFileNodeInfo.mCurrSize      = sFileNode->mCurrSize;
-                sDataFileNodeInfo.mIsAutoExtend  = sFileNode->mIsAutoExtend;
-                sDataFileNodeInfo.mIOCount       = sFileNode->mIOCount;
-                sDataFileNodeInfo.mIsOpened      = sFileNode->mIsOpened;
-                sDataFileNodeInfo.mIsModified    = sFileNode->mIsModified;
-                sDataFileNodeInfo.mState         = sFileNode->mState;
-                sDataFileNodeInfo.mMaxOpenFDCnt  = sFileNode->mFile.getMaxFDCnt();
-                sDataFileNodeInfo.mCurOpenFDCnt  = sFileNode->mFile.getCurFDCnt();
-
-                /* [2] make one fixed table record */
-                IDE_TEST(iduFixedTable::buildRecord(aHeader,
-                                                    aMemory,
-                                                    (void *)&sDataFileNodeInfo)
-                         != IDE_SUCCESS);
             }
+            sState = 0;
+            sctTableSpaceMgr::unlockSpaceNode( sCurrSpaceNode );
         }
-        sCurrSpaceNode = sNextSpaceNode;
+        sCurrSpaceNode = (sddTableSpaceNode*)sctTableSpaceMgr::getNextSpaceNode( sCurrSpaceNode->mHeader.mID );
     }
-
-    sState = 0;
-
-    IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    if ( sState != 0 )
     {
-        if (sState != 0)
-        {
-            (void)sctTableSpaceMgr::unlock();
-        }
+        sctTableSpaceMgr::unlockSpaceNode( sCurrSpaceNode );
     }
 
     return IDE_FAILURE;
@@ -448,7 +458,7 @@ static iduFixedTableColDesc gFileStatTableColDesc[] =
         (SChar*)"FILEID",
         offsetof(sddFileStatFT, mFileID),
         IDU_FT_SIZEOF(sddFileStatFT, mFileID),
-        IDU_FT_TYPE_UINTEGER,
+        IDU_FT_TYPE_UINTEGER | IDU_FT_COLUMN_INDEX,
         NULL,
         0, 0,NULL // for internal use
     },
@@ -493,7 +503,7 @@ static iduFixedTableColDesc gFileStatTableColDesc[] =
         0, 0,NULL // for internal use
     },
     // Single Block Read I/O Count
-    // ÏïåÌã∞Î≤†Ïù¥Ïä§Îäî Îã®Ïùº Block I/OÎßå ÏàòÌñâÌïúÎã§. 
+    // æÀ∆º∫£¿ÃΩ∫¥¬ ¥‹¿œ Block I/O∏∏ ºˆ«‡«—¥Ÿ. 
     {
         (SChar*)"SINGLEBLKRDS",
         offsetof(sddFileStatFT, mFileIOStat) +
@@ -533,7 +543,7 @@ static iduFixedTableColDesc gFileStatTableColDesc[] =
         NULL,
         0, 0,NULL // for internal use
     },
-    // ÌèâÍ∑† I/O Time ( milli-sec. )
+    // ∆Ú±’ I/O Time ( milli-sec. )
     {
         (SChar*)"AVGIOTIM",
         offsetof(sddFileStatFT, mAvgIOTime),
@@ -542,7 +552,7 @@ static iduFixedTableColDesc gFileStatTableColDesc[] =
         NULL,
         0, 0,NULL // for internal use
     },
-    // ÎßàÏßÄÎßâ I/O Tim e( milli-sec. )
+    // ∏∂¡ˆ∏∑ I/O Tim e( milli-sec. )
     {
         (SChar*)"LSTIOTIM",
         offsetof(sddFileStatFT, mFileIOStat) +
@@ -552,7 +562,7 @@ static iduFixedTableColDesc gFileStatTableColDesc[] =
         NULL,
         0, 0,NULL // for internal use
     }, 
-    //  ÏµúÏÜå I/O Time ( milli-sec. )
+    //  √÷º“ I/O Time ( milli-sec. )
     {
         (SChar*)"MINIOTIM",
         offsetof(sddFileStatFT, mFileIOStat) +
@@ -562,7 +572,7 @@ static iduFixedTableColDesc gFileStatTableColDesc[] =
         NULL,
         0, 0,NULL // for internal use
     },
-    //  ÏµúÎåÄ Read I/O Time ( milli-sec. )
+    //  √÷¥Î Read I/O Time ( milli-sec. )
     {
         (SChar*)"MAXIORTM",
         offsetof(sddFileStatFT, mFileIOStat) +
@@ -572,7 +582,7 @@ static iduFixedTableColDesc gFileStatTableColDesc[] =
         NULL,
         0, 0,NULL // for internal use
     },
-    //  ÏµúÎåÄ Write I/O Time ( milli-sec. )
+    //  √÷¥Î Write I/O Time ( milli-sec. )
     {
         (SChar*)"MAXIOWTM",
         offsetof(sddFileStatFT, mFileIOStat) +
@@ -597,131 +607,127 @@ static iduFixedTableColDesc gFileStatTableColDesc[] =
  *  Build Fixed Table Define for X$FILESTAT
  * ----------------------------------------------*/
 
-IDE_RC sddDiskFT::buildFT4FILESTAT( idvSQL		* /* aStatistics */,
+IDE_RC sddDiskFT::buildFT4FILESTAT( idvSQL              * aStatistics,
                                     void                * aHeader,
                                     void                * /* aDumpObj */,
                                     iduFixedTableMemory * aMemory )
 {
     sddDataFileNode   *sFileNode;
-    sddTableSpaceNode *sNextSpaceNode;
     sddTableSpaceNode *sCurrSpaceNode;
     UInt               sState = 0;
     sddFileStatFT      sFileStatFT;
     UInt               i;
-    void             * sIndexValues[2];
+    void             * sIndexValues[3];
 
     IDE_ERROR( aHeader != NULL );
     IDE_ERROR( aMemory != NULL );
 
-    IDE_TEST( sctTableSpaceMgr::lock( NULL /* idvSQL* */ )
-              != IDE_SUCCESS );
-    sState = 1;
-
-    sctTableSpaceMgr::getFirstSpaceNode( (void**)&sCurrSpaceNode );
+    sCurrSpaceNode = (sddTableSpaceNode*)sctTableSpaceMgr::getFirstSpaceNode();
 
     while ( sCurrSpaceNode != NULL )
     {
-        sctTableSpaceMgr::getNextSpaceNode( (void*)sCurrSpaceNode,
-                                            (void**)&sNextSpaceNode );
-
-        IDE_ASSERT( (sCurrSpaceNode->mHeader.mState & SMI_TBS_DROPPED)
-                    != SMI_TBS_DROPPED );
-
-        if( sctTableSpaceMgr::isDiskTableSpace( sCurrSpaceNode->mHeader.mID )
-            == ID_TRUE )
+        /* Disk Table Space∞° æ∆¥œ∏È ¡¶ø‹*/
+        if( sctTableSpaceMgr::isDiskTableSpace( sCurrSpaceNode ) == ID_TRUE )
         {
-            for (i=0; i < sCurrSpaceNode->mNewFileID ; i++ )
+            sctTableSpaceMgr::lockSpaceNode( aStatistics,
+                                             sCurrSpaceNode );
+            sState = 1;
+
+            /* lock¿‚∞Ì ¥ŸΩ√ »Æ¿Œ, Dropµ«æ˙¿∏∏È ¡¶ø‹ */
+            if ( (sCurrSpaceNode->mHeader.mState & SMI_TBS_DROPPED) != SMI_TBS_DROPPED )
             {
-                sFileNode = sCurrSpaceNode->mFileNodeArr[i] ;
-
-                if( sFileNode == NULL )
+                for (i=0; i < sCurrSpaceNode->mNewFileID ; i++ )
                 {
-                    continue;
-                }
+                    sFileNode = sCurrSpaceNode->mFileNodeArr[i] ;
 
-                if( SMI_FILE_STATE_IS_DROPPED( sFileNode->mState ) )
-                {
-                    continue;
-                }
+                    if( sFileNode == NULL )
+                    {
+                        continue;
+                    }
 
-                if ( sFileNode->mFile.getFIOStatOnOff() == IDU_FIO_STAT_OFF)
-                {
-                    continue;
-                }
+                    if( SMI_FILE_STATE_IS_DROPPED( sFileNode->mState ) )
+                    {
+                        continue;
+                    }
+
+                    if ( sFileNode->mFile.getFIOStatOnOff() == IDU_FIO_STAT_OFF)
+                    {
+                        continue;
+                    }
                 
-                /* BUG-43006 FixedTable Indexing Filter
-                 * Column Index Î•º ÏÇ¨Ïö©Ìï¥ÏÑú Ï†ÑÏ≤¥ RecordÎ•º ÏÉùÏÑ±ÌïòÏßÄÏïäÍ≥†
-                 * Î∂ÄÎ∂ÑÎßå ÏÉùÏÑ±Ìï¥ Filtering ÌïúÎã§.
-                 * 1. void * Î∞∞Ïó¥Ïóê IDU_FT_COLUMN_INDEX Î°ú ÏßÄÏ†ïÎêú Ïª¨ÎüºÏóê
-                 * Ìï¥ÎãπÌïòÎäî Í∞íÏùÑ ÏàúÏÑúÎåÄÎ°ú ÎÑ£Ïñ¥Ï£ºÏñ¥Ïïº ÌïúÎã§.
-                 * 2. IDU_FT_COLUMN_INDEXÏùò Ïª¨ÎüºÏóê Ìï¥ÎãπÌïòÎäî Í∞íÏùÑ Î™®Îëê ÎÑ£
-                 * Ïñ¥ Ï£ºÏñ¥ÏïºÌïúÎã§.
-                 */
-                sIndexValues[0] = &sFileNode->mSpaceID;
-                sIndexValues[1] = &sFileNode->mFile.mStat.mPhyBlockReadCount;
-                if ( iduFixedTable::checkKeyRange( aMemory,
-                                                   gFileStatTableColDesc,
-                                                   sIndexValues )
-                     == ID_FALSE )
-                {
-                    continue;
-                }
-                else
-                {
-                    /* Nothing to do */
-                }
+                    /* BUG-43006 FixedTable Indexing Filter
+                     * Column Index ∏¶ ªÁøÎ«ÿº≠ ¿¸√º Record∏¶ ª˝º∫«œ¡ˆæ ∞Ì
+                     * ∫Œ∫–∏∏ ª˝º∫«ÿ Filtering «—¥Ÿ.
+                     * 1. void * πËø≠ø° IDU_FT_COLUMN_INDEX ∑Œ ¡ˆ¡§µ» ƒ√∑≥ø°
+                     * «ÿ¥Á«œ¥¬ ∞™¿ª º¯º≠¥Î∑Œ ≥÷æÓ¡÷æÓæﬂ «—¥Ÿ.
+                     * 2. IDU_FT_COLUMN_INDEX¿« ƒ√∑≥ø° «ÿ¥Á«œ¥¬ ∞™¿ª ∏µŒ ≥÷
+                     * æÓ ¡÷æÓæﬂ«—¥Ÿ.
+                     */
+                    /* BUG-48160 « ≈Õ∏µ «◊∏Ò √ﬂ∞° */
+                    sIndexValues[0] = &sFileNode->mSpaceID;
+                    sIndexValues[1] = &sFileNode->mID;
+                    sIndexValues[2] = &sFileNode->mFile.mStat.mPhyBlockReadCount;
+                    if ( iduFixedTable::checkKeyRange( aMemory,
+                                                       gFileStatTableColDesc,
+                                                       sIndexValues )
+                         == ID_FALSE )
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        /* Nothing to do */
+                    }
 
-                sFileStatFT.mSpaceID    = sFileNode->mSpaceID;
-                sFileStatFT.mFileID     = sFileNode->mID;
+                    sFileStatFT.mSpaceID    = sFileNode->mSpaceID;
+                    sFileStatFT.mFileID     = sFileNode->mID;
 
-                idlOS::memcpy( &(sFileStatFT.mFileIOStat),
-                               &(sFileNode->mFile.mStat),
-                               ID_SIZEOF(iduFIOStat) );
+                    idlOS::memcpy( &(sFileStatFT.mFileIOStat),
+                                   &(sFileNode->mFile.mStat),
+                                   ID_SIZEOF(iduFIOStat) );
                 
-                // I/O ÌèâÍ∑† ÏãúÍ∞Ñ Í≥ÑÏÇ∞
-                if ( (sFileStatFT.mFileIOStat.mPhyReadCount+
-                      sFileStatFT.mFileIOStat.mPhyWriteCount) > 0 )
-                {
-                    // Ï¥ù I/O ÏàòÌñâ ÏãúÍ∞ÑÏùÑ Ï¥ù I/O ÌöåÏàòÎ°ú ÎÇòÎàÑÏñ¥ Íµ¨ÌïúÎã§. 
-                    sFileStatFT.mAvgIOTime =
-                        (sFileStatFT.mFileIOStat.mReadTime + 
-                         sFileStatFT.mFileIOStat.mWriteTime ) /
-                        (sFileStatFT.mFileIOStat.mPhyReadCount+
-                         sFileStatFT.mFileIOStat.mPhyWriteCount);
-                }
-                else
-                {
-                    sFileStatFT.mAvgIOTime = 0;
-                }
+                    // I/O ∆Ú±’ Ω√∞£ ∞ËªÍ
+                    if ( (sFileStatFT.mFileIOStat.mPhyReadCount+
+                          sFileStatFT.mFileIOStat.mPhyWriteCount) > 0 )
+                    {
+                        // √— I/O ºˆ«‡ Ω√∞£¿ª √— I/O »∏ºˆ∑Œ ≥™¥©æÓ ±∏«—¥Ÿ. 
+                        sFileStatFT.mAvgIOTime =
+                            (sFileStatFT.mFileIOStat.mReadTime + 
+                             sFileStatFT.mFileIOStat.mWriteTime ) /
+                            (sFileStatFT.mFileIOStat.mPhyReadCount+
+                             sFileStatFT.mFileIOStat.mPhyWriteCount);
+                    }
+                    else
+                    {
+                        sFileStatFT.mAvgIOTime = 0;
+                    }
 
-                 // I/O ÏµúÏÜå Time 
-                if ( sFileStatFT.mFileIOStat.mMinIOTime == ID_ULONG_MAX )
-                {
-                    sFileStatFT.mFileIOStat.mMinIOTime = 0;
+                    // I/O √÷º“ Time 
+                    if ( sFileStatFT.mFileIOStat.mMinIOTime == ID_ULONG_MAX )
+                    {
+                        sFileStatFT.mFileIOStat.mMinIOTime = 0;
+                    }
+
+                    /* [2] make one fixed table record */
+                    IDE_TEST(iduFixedTable::buildRecord(aHeader,
+                                                        aMemory,
+                                                        (void *)&sFileStatFT)
+                             != IDE_SUCCESS);
                 }
-         
-                /* [2] make one fixed table record */
-                IDE_TEST(iduFixedTable::buildRecord(aHeader,
-                                                    aMemory,
-                                                    (void *)&sFileStatFT)
-                         != IDE_SUCCESS);
             }
+            sState = 0;
+            sctTableSpaceMgr::unlockSpaceNode( sCurrSpaceNode );
         }
-        sCurrSpaceNode = sNextSpaceNode;
+        sCurrSpaceNode = (sddTableSpaceNode*)sctTableSpaceMgr::getNextSpaceNode( sCurrSpaceNode->mHeader.mID );
     }
-
-    sState = 0;
-
-    IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    if ( sState != 0 )
     {
-        if (sState != 0)
-        {
-            (void)sctTableSpaceMgr::unlock();
-        }
+        sctTableSpaceMgr::unlockSpaceNode( sCurrSpaceNode );
     }
 
     return IDE_FAILURE;

@@ -26,7 +26,8 @@
 #define GET_SYNONYM_USER_QUERY                                      \
     "SELECT a.synonym_name, a.object_owner_name, a.object_name"     \
     " FROM system_.sys_synonyms_ a, system_.sys_users_ b"           \
-    " WHERE a.synonym_owner_id = b.user_id AND b.user_name = ?"
+    " WHERE a.synonym_owner_id = b.user_id AND b.user_name = ?"     \
+    " AND a.synonym_name != 'DBMS_METADATA'"
 
 #define GET_SYNONYM_DETAIL_QUERY                                      \
     "SELECT/*+ NO_PLAN_CACHE */ b.user_name, "                        \
@@ -34,24 +35,16 @@
     " a.object_name"                                                  \
     " FROM system_.sys_synonyms_ a left outer join "                  \
     " system_.sys_users_ b"                                           \
-    " on a.synonym_owner_id = b.user_id" 
+    " on a.synonym_owner_id = b.user_id"                              \
+    " WHERE a.synonym_name != 'DBMS_METADATA'"
 
 #define GET_SEQUENCE_QUERY                                          \
     "SELECT /*+ USE_HASH(B, C) NO_PLAN_CACHE */"                    \
     "       a.user_name USER_NAME, "                                \
-    "       b.table_name SEQUENCE_NAME, "                           \
-    "       c.current_seq CURRENT_VALUE, "                          \
-    "       c.start_seq START_VALUE, "                              \
-    "       c.increment_seq INCREMENT_BY, "                         \
-    "       c.min_seq MIN_VALUE, "                                  \
-    "       c.max_seq MAX_VALUE, "                                  \
-    "       c.flag CYCLE_, "                                        \
-    "       c.sync_interval CACHE_SIZE "                            \
+    "       b.table_name SEQUENCE_NAME "                            \
     "  from system_.sys_users_ a, "                                 \
-    "       system_.sys_tables_ b, "                                \
-    "       x$seq c "                                               \
+    "       system_.sys_tables_ b "                                 \
     " where a.user_id=b.user_id  "                                  \
-    "   and b.table_oid=c.seq_oid  "                                \
     "   and a.user_name<>'SYSTEM_' "                                \
     "   and b.table_type='S' "
 
@@ -68,13 +61,9 @@
 
 /* PROJ-1438 Job Scheduler */
 #define GET_JOB_QUERY                                                \
-    "SELECT /*+ NO_PLAN_CACHE */ a.JOB_NAME, a.EXEC_QUERY, "         \
-            "TO_CHAR(a.START_TIME, 'YYYY/MM/DD HH24:MI:SS'), "       \
-            "DECODE(a.END_TIME, NULL, 'NULL', "                      \
-            "       TO_CHAR(a.END_TIME, 'YYYY/MM/DD HH24:MI:SS')), " \
-            "a.INTERVAL, a.INTERVAL_TYPE, "                          \
-            "a.IS_ENABLE, a.COMMENT "                                \
-    "FROM system_.sys_jobs_ a "
+    "SELECT JOB_NAME "                                               \
+    "FROM system_.sys_jobs_ "                                        \
+    "ORDER BY 1"
 
 SQLRETURN getSynonymUser( SChar *aUserName,
                           FILE  *aSynFp)
@@ -147,7 +136,7 @@ SQLRETURN getSynonymUser( SChar *aUserName,
 
         if ( gProgOption.mbExistDrop == ID_TRUE )
         {
-            // BUG-20943 drop êµ¬ë¬¸ì—ì„œ user ê°€ ëª…ì‹œë˜ì§€ ì•Šì•„ drop ì´ ì‹¤íŒ¨í•©ë‹ˆë‹¤.
+            // BUG-20943 drop ±¸¹®¿¡¼­ user °¡ ¸í½ÃµÇÁö ¾Ê¾Æ drop ÀÌ ½ÇÆÐÇÕ´Ï´Ù.
             idlOS::fprintf( aSynFp, "drop Synonym \"%s\".\"%s\";\n", aUserName, sSynonymName);
         }
 #ifdef DEBUG
@@ -232,7 +221,7 @@ SQLRETURN getSynonymAll( FILE *aSynFp )
     {
         IDE_TEST_RAISE( sRet != SQL_SUCCESS, user_error );
 
-        // BUG-25194 DROP ì˜µì…˜ì´ OFF ì¼ë•Œ synonym ì„ ì¶œë ¥í•˜ì§€ ì•ŠìŒ
+        // BUG-25194 DROP ¿É¼ÇÀÌ OFF ÀÏ¶§ synonym À» Ãâ·ÂÇÏÁö ¾ÊÀ½
         if (sUserNameInd != SQL_NULL_DATA)
         {
             idlOS::snprintf( sDdl,
@@ -249,7 +238,7 @@ SQLRETURN getSynonymAll( FILE *aSynFp )
 
             if ( gProgOption.mbExistDrop == ID_TRUE )
             {
-                // BUG-20943 drop êµ¬ë¬¸ì—ì„œ user ê°€ ëª…ì‹œë˜ì§€ ì•Šì•„ drop ì´ ì‹¤íŒ¨í•©ë‹ˆë‹¤.
+                // BUG-20943 drop ±¸¹®¿¡¼­ user °¡ ¸í½ÃµÇÁö ¾Ê¾Æ drop ÀÌ ½ÇÆÐÇÕ´Ï´Ù.
                 idlOS::fprintf( aSynFp, "drop Synonym \"%s\".\"%s\";\n", 
                                 sSchemaName, sSynonymName );
             }
@@ -334,20 +323,6 @@ SQLRETURN getSeqQuery( SChar *a_user,
     SChar    s_seq_name[UTM_NAME_LEN+1];
     SChar    s_passwd[STR_LEN];
 
-    SQLBIGINT s_curr_val    = 0;
-    SQLBIGINT s_start_val   = 0;
-    SQLBIGINT s_incr_val    = 0;
-    SQLBIGINT s_min_val     = 0;
-    SQLBIGINT s_max_val     = 0;
-    SInt      s_cycle       = 0;
-    SQLBIGINT s_cache_size  = 0;
-    SChar     sDdl[QUERY_LEN] = { '\0', };
-
-    SQLLEN    s_curr_val_ind= 0;
-    SLong     sTmpSLong     = 0;
-    /* BUG-18439 */
-    SLong      sIncrement   = 1;    
-
     s_puser_name[0] = '\0';
     idlOS::fprintf( stdout, "\n##### SEQUENCE #####\n" );
 
@@ -385,42 +360,11 @@ SQLRETURN getSeqQuery( SChar *a_user,
         SQLBindCol( s_seq_stmt, 2, SQL_C_CHAR, (SQLPOINTER)s_seq_name,
                     (SQLLEN)ID_SIZEOF(s_seq_name), NULL )
         != SQL_SUCCESS, seq_error );
-    IDE_TEST_RAISE(    
-        SQLBindCol( s_seq_stmt, 3, SQL_C_SBIGINT, (SQLPOINTER)&s_curr_val, 
-                    0, &s_curr_val_ind )
-        != SQL_SUCCESS, seq_error );
-    IDE_TEST_RAISE(    
-        SQLBindCol( s_seq_stmt, 4, SQL_C_SBIGINT, (SQLPOINTER)&s_start_val,
-                    0, NULL )
-        != SQL_SUCCESS, seq_error );
-    IDE_TEST_RAISE(    
-        SQLBindCol( s_seq_stmt, 5, SQL_C_SBIGINT, (SQLPOINTER)&s_incr_val, 
-                    0, NULL )
-        != SQL_SUCCESS, seq_error );
-    IDE_TEST_RAISE(    
-        SQLBindCol( s_seq_stmt, 6, SQL_C_SBIGINT, (SQLPOINTER)&s_min_val,
-                    0, NULL )
-        != SQL_SUCCESS, seq_error );
-    IDE_TEST_RAISE(    
-        SQLBindCol( s_seq_stmt, 7, SQL_C_SBIGINT, (SQLPOINTER)&s_max_val,
-                    0, NULL )
-        != SQL_SUCCESS, seq_error );
-    IDE_TEST_RAISE(    
-        SQLBindCol( s_seq_stmt, 8, SQL_C_SLONG, (SQLPOINTER)&s_cycle, 
-                    0, NULL )
-        != SQL_SUCCESS, seq_error );
-    IDE_TEST_RAISE(    
-        SQLBindCol( s_seq_stmt, 9, SQL_C_SBIGINT, (SQLPOINTER)&s_cache_size,
-                    0, NULL )
-        != SQL_SUCCESS, seq_error );    
 
     while ( ( sRet = SQLFetch(s_seq_stmt)) != SQL_NO_DATA )
     {
         IDE_TEST_RAISE( sRet != SQL_SUCCESS, seq_error );
 
-        /* BUG-18439 */
-        sIncrement = SQLBIGINT_TO_SLONG(s_incr_val);
-        
         if ( gProgOption.m_bExist_OBJECT != ID_TRUE )
         {
             if (i == 0 || idlOS::strcmp(s_user_name, s_puser_name) != 0)
@@ -433,86 +377,20 @@ SQLRETURN getSeqQuery( SChar *a_user,
 
         i++;
 
-        if (s_curr_val_ind != SQL_NULL_DATA )
-        {
-            /* BUG-18439 */
-            s_pos = idlOS::sprintf( sDdl,
-                                    "create sequence \"%s\" start with %"ID_INT64_FMT,
-                                    s_seq_name,
-                                    SQLBIGINT_TO_SLONG(s_curr_val) + sIncrement );
-        }
-        else
-        {
-            sTmpSLong = SQLBIGINT_TO_SLONG(s_start_val);
-            if ( sTmpSLong != ID_LONG(1))
-            {
-                s_pos = idlOS::sprintf( sDdl,
-                                        "create sequence \"%s\" start with %"ID_INT64_FMT,
-                                        s_seq_name,
-                                        sTmpSLong );
-            }
-            else
-            {
-                s_pos = idlOS::sprintf( sDdl,
-                                        "create sequence \"%s\"",
-                                        s_seq_name );
-            }
-        }
-
-        if ( sIncrement != ID_LONG(1))
-        {
-            s_pos += idlOS::sprintf( sDdl + s_pos,
-                                     " increment by %"ID_INT64_FMT,
-                                     sIncrement );
-        }
-        sTmpSLong = SQLBIGINT_TO_SLONG(s_min_val);
-        if ( sTmpSLong != ID_LONG(1) )
-        {
-            s_pos += idlOS::sprintf( sDdl + s_pos,
-                                     " minvalue %"ID_INT64_FMT,
-                                     sTmpSLong );
-        }
-        sTmpSLong = SQLBIGINT_TO_SLONG(s_max_val);
-        if ( sTmpSLong != ID_LONG(9223372036854775806) )
-        {
-            s_pos += idlOS::sprintf( sDdl + s_pos,
-                                     " maxvalue %"ID_INT64_FMT,
-                                     sTmpSLong );
-        }
-        // BUG-12380
-        sTmpSLong = SQLBIGINT_TO_SLONG(s_cache_size);
-        if ( sTmpSLong == ID_LONG(0) )
-        {
-            s_pos += idlOS::sprintf( sDdl + s_pos, " nocache" );
-        }
-        else if ( sTmpSLong != ID_LONG(20) )
-        {
-            s_pos += idlOS::sprintf( sDdl + s_pos,
-                                     " cache %"ID_INT64_FMT,
-                                     sTmpSLong );
-        }
-        if ( ( s_cycle & SMI_SEQUENCE_CIRCULAR_MASK ) == SMI_SEQUENCE_CIRCULAR_ENABLE )
-        {
-            s_pos += idlOS::sprintf( sDdl + s_pos, " cycle" );
-        }
-        if ( ( s_cycle & SMI_SEQUENCE_TABLE_MASK ) == SMI_SEQUENCE_TABLE_TRUE )
-        {
-            s_pos += idlOS::sprintf( sDdl + s_pos, " enable sync table" );
-        }
-
         if ( gProgOption.mbExistDrop == ID_TRUE )
         {
-            // BUG-20943 drop êµ¬ë¬¸ì—ì„œ user ê°€ ëª…ì‹œë˜ì§€ ì•Šì•„ drop ì´ ì‹¤íŒ¨í•©ë‹ˆë‹¤.
+            // BUG-20943 drop ±¸¹®¿¡¼­ user °¡ ¸í½ÃµÇÁö ¾Ê¾Æ drop ÀÌ ½ÇÆÐÇÕ´Ï´Ù.
             idlOS::fprintf( aSeqFp, "drop sequence \"%s\".\"%s\";\n", 
                             s_user_name, s_seq_name);
         }
 
-        idlOS::fprintf( aSeqFp, "%s;\n", sDdl );
-
+        /* BUG-47159 Using DBMS_METADATA package in aexport */
+        IDE_TEST(gMeta->getDdl(DDL, UTM_OBJ_TYPE_SEQUENCE, s_seq_name, s_user_name)
+                 != IDE_SUCCESS);
 #ifdef DEBUG
-        idlOS::fprintf( stderr, "\n" );
+        idlOS::fprintf( stderr, "%s\n", gMeta->getDdlStr() );
 #endif
-        idlOS::fprintf( aSeqFp, "\n" );
+        idlOS::fprintf( aSeqFp, "%s\n\n", gMeta->getDdlStr() );
 
         IDE_TEST( getObjPrivQuery( aSeqFp, UTM_SEQUENCE, 
                                    s_user_name, s_seq_name )
@@ -548,10 +426,10 @@ SQLRETURN getSeqQuery( SChar *a_user,
 #undef IDE_FN
 }
 
-/* ì–´ë””ë¡œ ê°€ì•¼ í•˜ë‚˜? */
+/* ¾îµð·Î °¡¾ß ÇÏ³ª? */
 /* BUG-22708
  *
- * Directory ê°ì²´ë¥¼ ì¶”ì¶œí•¨..
+ * Directory °´Ã¼¸¦ ÃßÃâÇÔ..
  */
 SQLRETURN getDirectoryAll( FILE *aDirFp )
 {
@@ -784,41 +662,16 @@ SQLRETURN getJobQuery( FILE * aJobFp )
     SInt i    = 0;
 
     SChar    sQuery[QUERY_LEN];
-
     SChar    sJobName[UTM_NAME_LEN+1];
-    SChar    sExecQuery[QUERY_LEN];
-    SChar    sStart[STR_LEN];
-    SChar    sEnd[STR_LEN];
-    SInt     sInterval;
-    SChar    sIntervalType[3];
     SChar    sPasswd[STR_LEN];
-    SChar    sEnable[3];
-    SChar    sComment[UTM_EXPRESSION_LEN];
-    SChar    sTemp[UTM_EXPRESSION_LEN];
-    SChar  * sChar;
     SQLLEN   sJobNameInd = 0;
-    SQLLEN   sExecInd    = 0;
-    SQLLEN   sStartInd   = 0;
-    SQLLEN   sEndInd     = 0;
-    SQLLEN   sIntervalInd = 0;
-    SQLLEN   sIntervalTypeInd = 0;
-    SQLLEN   sEnableInd = 0;
-    SQLLEN   sCommentInd = 0;
-
-    sJobName[0] = '\0';
-    sStart[0] = '\0';
-    sEnd[0] = '\0';
-    sIntervalType[0] = '\0';
-    sEnable[0] = '\0';
-    sComment[0] = '\0';
-    sTemp[0] = '\0';
 
     idlOS::fprintf( stdout, "\n##### JOB #####\n" );
 
     IDE_TEST_RAISE( SQLAllocStmt( m_hdbc, &sJobStmt ) != SQL_SUCCESS,
                     alloc_error);
 
-    idlOS::snprintf( sQuery, ID_SIZEOF(sQuery), GET_JOB_QUERY"ORDER BY 1 " );
+    idlOS::snprintf( sQuery, ID_SIZEOF(sQuery), GET_JOB_QUERY );
 
     IDE_TEST( Prepare( sQuery, sJobStmt) != SQL_SUCCESS );
 
@@ -829,65 +682,6 @@ SQLRETURN getJobQuery( FILE * aJobFp )
                     (SQLPOINTER) sJobName,
                     (SQLLEN) ID_SIZEOF(sJobName),
                     &sJobNameInd) != SQL_SUCCESS, job_error );
-
-    IDE_TEST_RAISE(
-        SQLBindCol( sJobStmt,
-                    2,
-                    SQL_C_CHAR,
-                    (SQLPOINTER) sExecQuery,
-                    (SQLLEN) ID_SIZEOF(sExecQuery),
-                    &sExecInd) != SQL_SUCCESS, job_error );
-
-    IDE_TEST_RAISE(
-        SQLBindCol( sJobStmt,
-                    3,
-                    SQL_C_CHAR,
-                    (SQLPOINTER) sStart,
-                    (SQLLEN) ID_SIZEOF(sStart),
-                    &sStartInd) != SQL_SUCCESS, job_error );
-
-
-    IDE_TEST_RAISE(
-        SQLBindCol( sJobStmt,
-                    4,
-                    SQL_C_CHAR,
-                    (SQLPOINTER) sEnd,
-                    (SQLLEN) ID_SIZEOF(sEnd),
-                    &sEndInd) != SQL_SUCCESS, job_error );
-
-    IDE_TEST_RAISE(
-        SQLBindCol( sJobStmt,
-                    5,
-                    SQL_INTEGER,
-                    (SQLPOINTER) &sInterval,
-                    0,
-                    &sIntervalInd) != SQL_SUCCESS, job_error );
-
-    IDE_TEST_RAISE(
-        SQLBindCol( sJobStmt,
-                    6,
-                    SQL_C_CHAR,
-                    (SQLPOINTER) sIntervalType,
-                    (SQLLEN) ID_SIZEOF(sIntervalType),
-                    &sIntervalTypeInd) != SQL_SUCCESS, job_error );
-
-    // BUG-41713 each job enable disable
-    IDE_TEST_RAISE(
-        SQLBindCol( sJobStmt,
-                    7,
-                    SQL_C_CHAR,
-                    (SQLPOINTER) sEnable,
-                    (SQLLEN) ID_SIZEOF(sEnable),
-                    &sEnableInd) != SQL_SUCCESS, job_error );
-
-    // BUG-41713 each job enable disable
-    IDE_TEST_RAISE(
-        SQLBindCol( sJobStmt,
-                    8,
-                    SQL_C_CHAR,
-                    (SQLPOINTER) sComment,
-                    (SQLLEN) ID_SIZEOF(sComment),
-                    &sCommentInd) != SQL_SUCCESS, job_error );
 
     IDE_TEST( Execute(sJobStmt) != SQL_SUCCESS );
 
@@ -915,76 +709,11 @@ SQLRETURN getJobQuery( FILE * aJobFp )
             /* Nothing to do */
         }
 
-        idlOS::fprintf( aJobFp, "create job \"%s\" EXEC %s "
-                                "START TO_DATE('%s', 'YYYY/MM/DD HH24:MI:SS') ",
-                                sJobName, sExecQuery, sStart );
+        /* BUG-47159 Using DBMS_METADATA package in aexport */
+        IDE_TEST(gMeta->getDdl(DDL, UTM_OBJ_TYPE_JOB, sJobName, NULL)
+                 != IDE_SUCCESS);
 
-        if ( idlOS::strncmp( sEnd, "NULL", 4 ) != 0 )
-        {
-            idlOS::fprintf( aJobFp, "END TO_DATE('%s', 'YYYY/MM/DD HH24:MI:SS') ",
-                                    sEnd );
-        }
-        else
-        {
-            /* Nothing to do */
-        }
-
-        if ( sInterval > 0 )
-        {
-            switch ( sIntervalType[0] )
-            {
-                case 'Y':
-                    idlOS::fprintf( aJobFp, "INTERVAL %"ID_INT32_FMT" YEAR ", sInterval );
-                    break;
-                case 'M':
-                    if ( sIntervalType[1] == 'M' )
-                    {
-                        idlOS::fprintf( aJobFp, "INTERVAL %"ID_INT32_FMT" MONTH ", sInterval );
-                    }
-                    else
-                    {
-                        idlOS::fprintf( aJobFp, "INTERVAL %"ID_INT32_FMT" MINUTE ", sInterval );
-                    }
-                    break;
-                case 'D':
-                    idlOS::fprintf( aJobFp, "INTERVAL %"ID_INT32_FMT" DAY ", sInterval );
-                    break;
-                case 'H':
-                    idlOS::fprintf( aJobFp, "INTERVAL %"ID_INT32_FMT" HOUR ", sInterval );
-                    break;
-                default:
-                    break;
-            }
-        }
-        else
-        {
-            /* Nothing to do */
-        }
-
-        // BUG-41713 each job enable disable
-        if ( sEnable[0] == 'T' )
-        {
-            idlOS::fprintf( aJobFp, "ENABLE " );
-        }
-        else
-        {
-            /* Nothing to do */
-        }
-
-        // BUG-41713 each job enable disable
-        if ( sCommentInd != SQL_NULL_DATA )
-        {
-            sChar = sTemp;
-            addSingleQuote( sComment, idlOS::strlen( sComment ), sChar, ID_SIZEOF(sTemp) );
-            idlOS::fprintf( aJobFp, "COMMENT '%s'",
-                                    sTemp );
-        }
-        else
-        {
-            /* Nothing to do */
-        }
-
-        idlOS::fprintf( aJobFp, ";\n" );
+        idlOS::fprintf( aJobFp, "%s\n", gMeta->getDdlStr() );
 
         i++;
     }

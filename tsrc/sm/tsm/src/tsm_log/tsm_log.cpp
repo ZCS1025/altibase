@@ -30,19 +30,19 @@ void * tsmInsertIntoTable( void */*data*/ );
 
 #define TSM_MAX_THREAD_COUNT 1024
 
-/* Test Threadì˜ ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•´ì„œ */
+/* Test ThreadÀÇ µ¿½Ã¼º Á¦¾î¸¦ À§ÇØ¼­ */
 static PDL_sema_t gThreadSema;
 
-/* ë™ì‹œì— ë¡œê·¸ Writeí•  Threadì˜ ê°¯ìˆ˜ */
+/* µ¿½Ã¿¡ ·Î±× WriteÇÒ ThreadÀÇ °¹¼ö */
 UInt gTotalThreadCount  = 0;
 
-/* ëª¨ë“  Threaê°€ writeë¥¼ ìˆ˜í–‰í•  ì´ logì˜ writeì˜ íšŸìˆ˜ */
+/* ¸ğµç Threa°¡ write¸¦ ¼öÇàÇÒ ÃÑ logÀÇ writeÀÇ È½¼ö */
 UInt gTotalLoopCount    = 0;
 
-/* ê°ê°ì˜ Threadê°€ writeí•  ë¡œê·¸ì˜ ê°¯ìˆ˜ */
+/* °¢°¢ÀÇ Thread°¡ writeÇÒ ·Î±×ÀÇ °¹¼ö */
 UInt gLoopCountOfThread = 0;
 
-/* ê°ê°ì˜ Transactionì´ Writeí•  logì˜ í¬ê¸° */
+/* °¢°¢ÀÇ TransactionÀÌ WriteÇÒ logÀÇ Å©±â */
 UInt gLogSize = 0;
 
 static SChar gTableName1[100] = "Table1";
@@ -110,7 +110,7 @@ int main(SInt argc, SChar **argv)
     IDE_ASSERT( PDL_OS::sema_init(&gThreadSema, gTotalThreadCount)
                 == 0);
 
-    /* Testì‹œì‘ */
+    /* Test½ÃÀÛ */
     for( i = 0 ; i < gTotalThreadCount; i++)
     {
         IDE_ASSERT( idlOS::thr_create( tsmWriteLog,
@@ -149,7 +149,7 @@ int main(SInt argc, SChar **argv)
            sSec,
            sTPS);
 
-    /* Testë */
+    /* Test³¡ */
     IDE_ASSERT( PDL_OS::sema_destroy(&gThreadSema) == 0);
 
     IDE_TEST(smiStartup(SMI_STARTUP_SHUTDOWN,

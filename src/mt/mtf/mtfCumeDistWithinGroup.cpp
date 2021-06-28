@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfCumeDistWithinGroup.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfCumeDistWithinGroup.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -46,7 +46,7 @@ static IDE_RC mtfCumeDistWGEstimate( mtcNode     *  aNode,
 mtfModule mtfCumeDistWithinGroup = {
     4 | MTC_NODE_OPERATOR_AGGREGATION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfCumeDistWGFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -115,13 +115,13 @@ IDE_RC mtfCumeDistWGEstimate( mtcNode     * aNode,
     IDE_TEST_RAISE( aNode->funcArguments == NULL,
                     ERR_WITHIN_GROUP_MISSING_WITHIN_GROUP );
 
-    // ì´ ì¸ì ìˆ˜
+    // ÃÑ ÀÎÀÚ ¼ö
     sCountTotal = ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK );
 
     IDE_TEST_RAISE( (sCountTotal < 2) || ( (sCountTotal % 2) != 0 ),
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
-    // within group() ì¸ì ìˆ˜ ê³„ì‚°
+    // within group() ÀÎÀÚ ¼ö °è»ê
     sCountWG = 0;
     for ( sNode = aNode->funcArguments;
           sNode != NULL;
@@ -130,7 +130,7 @@ IDE_RC mtfCumeDistWGEstimate( mtcNode     * aNode,
         sCountWG++;
     }
 
-    // cume_dist() ì˜ ì¸ì ìˆ˜ == within group() ì˜ ì¸ì ìˆ˜.
+    // cume_dist() ÀÇ ÀÎÀÚ ¼ö == within group() ÀÇ ÀÎÀÚ ¼ö.
     IDE_TEST_RAISE( (sCountWG * 2) != sCountTotal,
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
@@ -140,11 +140,11 @@ IDE_RC mtfCumeDistWGEstimate( mtcNode     * aNode,
           sIdx < sCountWG;
           sIdx++, sIdxWG++, sIdxFunc++ )
     {
-        // cume_dist(..) ì™€ Within Group(..) ì˜ ê°ê° ëŒ€ì‘ë˜ëŠ” ì¸ìì˜ ëŒ€í‘œíƒ€ì…ì„ êµ¬í•˜ì—¬ ì„¤ì •í•œë‹¤.
+        // cume_dist(..) ¿Í Within Group(..) ÀÇ °¢°¢ ´ëÀÀµÇ´Â ÀÎÀÚÀÇ ´ëÇ¥Å¸ÀÔÀ» ±¸ÇÏ¿© ¼³Á¤ÇÑ´Ù.
         if ( aStack[ sIdxFunc ].column->module->id !=
              aStack[ sIdxWG   ].column->module->id )
         {
-            // ë‹¤ë¥¸ ëª¨ë“ˆì´ë©´ ëŒ€í‘œ íƒ€ì… ëª¨ë“ˆì„ êµ¬í•œë‹¤.
+            // ´Ù¸¥ ¸ğµâÀÌ¸é ´ëÇ¥ Å¸ÀÔ ¸ğµâÀ» ±¸ÇÑ´Ù.
             IDE_TEST( mtf::getComparisonModule(
                            &sRepModule,
                            aStack[ sIdxFunc ].column->module->no,
@@ -159,7 +159,7 @@ IDE_RC mtfCumeDistWGEstimate( mtcNode     * aNode,
             sRepModule = aStack[ sIdxFunc ].column->module;
         }
 
-        // ëŒ€ì†Œ ë¹„êµ ê°€ëŠ¥ íƒ€ì…ì¸ì§€ í™•ì¸í•œë‹¤.
+        // ´ë¼Ò ºñ±³ °¡´É Å¸ÀÔÀÎÁö È®ÀÎÇÑ´Ù.
         IDE_TEST_RAISE( mtf::isGreaterLessValidType( sRepModule )
                         != ID_TRUE,
                         ERR_CONVERSION_NOT_APPLICABLE );
@@ -180,7 +180,7 @@ IDE_RC mtfCumeDistWGEstimate( mtcNode     * aNode,
 
     aTemplate->rows[ aNode->table ].execute[ aNode->column ] = mtfExecute;
 
-    // ê²°ê³¼
+    // °á°ú
     IDE_TEST( mtc::initializeColumn( aStack[ 0 ].column,
                                      & mtdDouble,
                                      0,
@@ -188,7 +188,7 @@ IDE_RC mtfCumeDistWGEstimate( mtcNode     * aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // ë“±ìˆ˜
+    // µî¼ö
     IDE_TEST( mtc::initializeColumn( aStack[ 0 ].column + 1,
                                      & mtdBigint,
                                      0,
@@ -196,7 +196,7 @@ IDE_RC mtfCumeDistWGEstimate( mtcNode     * aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // ê°™ì€ ë¡œìš° ìˆ˜
+    // °°Àº ·Î¿ì ¼ö
     IDE_TEST( mtc::initializeColumn( aStack[ 0 ].column + 2,
                                      & mtdBigint,
                                      0,
@@ -204,7 +204,7 @@ IDE_RC mtfCumeDistWGEstimate( mtcNode     * aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // ì´ ë¡œìš° ìˆ˜
+    // ÃÑ ·Î¿ì ¼ö
     IDE_TEST( mtc::initializeColumn( aStack[ 0 ].column + 3,
                                      & mtdBigint,
                                      0,
@@ -240,16 +240,16 @@ IDE_RC mtfCumeDistWGInitialize( mtcNode     * aNode,
     sColumn = aTemplate->rows[ aNode->table ].columns + aNode->column;
     sRow    = ( UChar * )aTemplate->rows[ aNode->table ].row;
     
-    // ê²°ê³¼
+    // °á°ú
     *( mtdDoubleType * )( sRow + sColumn[ 0 ].column.offset ) = 1.0;
     
-    // ë“±ìˆ˜
+    // µî¼ö
     *( mtdBigintType * )( sRow + sColumn[ 1 ].column.offset ) = 1;
 
-    // ê°™ì€ ë¡œìš° ìˆ˜
+    // °°Àº ·Î¿ì ¼ö
     *( mtdBigintType * )( sRow + sColumn[ 2 ].column.offset ) = 0;
 
-    // ì´ ë¡œìš° ìˆ˜
+    // ÃÑ ·Î¿ì ¼ö
     *( mtdBigintType * )( sRow + sColumn[ 3 ].column.offset ) = 1;
 
     return IDE_SUCCESS;
@@ -287,7 +287,7 @@ IDE_RC mtfCumeDistWGAggregate( mtcNode     * aNode,
     sSame    = ( mtdBigintType * )( sRow + sColumn[ 2 ].column.offset );
     sRows    = ( mtdBigintType * )( sRow + sColumn[ 3 ].column.offset );
 
-    // ì´ ë¡œìš° ìˆ˜ ì¦ê°€
+    // ÃÑ ·Î¿ì ¼ö Áõ°¡
     IDE_TEST_RAISE( *sRows == MTD_BIGINT_MAXIMUM,
                     ERR_VALUE_OVERFLOW );
     *sRows += 1;
@@ -388,7 +388,7 @@ IDE_RC mtfCumeDistWGAggregate( mtcNode     * aNode,
         }
     }
 
-    // ê°™ì€ ë°ì´í„°
+    // °°Àº µ¥ÀÌÅÍ
     if ( sIdxWG > sCount )
     {
         IDE_TEST_RAISE( *sSame == MTD_BIGINT_MAXIMUM,
@@ -430,7 +430,7 @@ IDE_RC mtfCumeDistWGMerge( mtcNode     * aNode,
     sSrcRow = ( UChar * )aInfo;
     sColumn = aTemplate->rows[ aNode->table ].columns + aNode->column;
 
-    // ë“±ìˆ˜
+    // µî¼ö
     sDstRank = ( mtdBigintType * )( sDstRow + sColumn[ 1 ].column.offset );
     sSrcRank = ( mtdBigintType * )( sSrcRow + sColumn[ 1 ].column.offset );
 
@@ -439,7 +439,7 @@ IDE_RC mtfCumeDistWGMerge( mtcNode     * aNode,
 
     *sDstRank += ( *sSrcRank - 1 );
 
-    // ê°™ì€ ë¡œìš° ìˆ˜
+    // °°Àº ·Î¿ì ¼ö
     sDstSame = ( mtdBigintType * )( sDstRow + sColumn[ 2 ].column.offset );
     sSrcSame = ( mtdBigintType * )( sSrcRow + sColumn[ 2 ].column.offset );
 
@@ -448,7 +448,7 @@ IDE_RC mtfCumeDistWGMerge( mtcNode     * aNode,
 
     *sDstSame += *sSrcSame;
 
-    // ì´ ë¡œìš° ìˆ˜
+    // ÃÑ ·Î¿ì ¼ö
     sDstRowsNum = ( mtdBigintType * )( sDstRow + sColumn[ 3 ].column.offset );
     sSrcRowsNum = ( mtdBigintType * )( sSrcRow + sColumn[ 3 ].column.offset );
 
@@ -493,7 +493,7 @@ IDE_RC mtfCumeDistWGFinalize( mtcNode     * aNode,
         IDE_TEST_RAISE( ( MTD_BIGINT_MAXIMUM - sRank ) < sSame,
                           ERR_VALUE_OVERFLOW );
 
-        // ê²°ê³¼ = ( ë“±ìˆ˜ + ê°™ì€ ë¡œìš°ìˆ˜ ) / ì´ ë¡œìš° ìˆ˜
+        // °á°ú = ( µî¼ö + °°Àº ·Î¿ì¼ö ) / ÃÑ ·Î¿ì ¼ö
         *sResult = ( ( mtdDoubleType )( sRank + sSame ) ) /
                    ( ( mtdDoubleType ) sTotalRows );
     }

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smcTableBackupFile.cpp 83725 2018-08-19 23:15:49Z emlee $
+ * $Id: smcTableBackupFile.cpp 83763 2018-08-22 01:58:35Z emlee $
  **********************************************************************/
 
 #include <idl.h>
@@ -431,7 +431,7 @@ IDE_RC smcTableBackupFile::write(ULong  aWhere,
                                                    smLayerCallback::setEmergency )
                           != IDE_SUCCESS );
 
-                /* ÏÉàÎ°úÏö¥ ÌååÏùº ÌÅ¨Í∏∞Î•º Ï†ïÌïúÎã§. */
+                /* ªı∑ŒøÓ ∆ƒ¿œ ≈©±‚∏¶ ¡§«—¥Ÿ. */
                 sFileSize = aWhere + aSize;
                 mFileSize = mFileSize < sFileSize ? sFileSize : mFileSize;
 

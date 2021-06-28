@@ -26,9 +26,9 @@ static ACI_RC ulnConvBinCheckTruncation(ulnFnContext *aFnContext,
                                         acp_uint16_t  aRowNumber)
 {
     /*
-     * Note : SQL_C_BINARY íƒ€ì…ì— ëŒ€í•œ 01004 ê²°ì •
-     *        ë§Œì•½, ì†ŒìŠ¤ ì‚¬ì´ì¦ˆê°€ SQL_NULL_DATA ì´ë©´ ê·¸ëƒ¥ ì„±ê³µì„ ë¦¬í„´í•˜ê³ , is truncated ëŠ”
-     *        ID_FALSE ë¡œ ì„¸íŒ…í•œë‹¤.
+     * Note : SQL_C_BINARY Å¸ÀÔ¿¡ ´ëÇÑ 01004 °áÁ¤
+     *        ¸¸¾à, ¼Ò½º »çÀÌÁî°¡ SQL_NULL_DATA ÀÌ¸é ±×³É ¼º°øÀ» ¸®ÅÏÇÏ°í, is truncated ´Â
+     *        ID_FALSE ·Î ¼¼ÆÃÇÑ´Ù.
      */
 
     ACI_TEST_RAISE(aSourceSize < 0, LABEL_INVALID_DATA_SIZE);
@@ -363,11 +363,57 @@ ACI_RC ulncNUMERIC_BINARY(ulnFnContext  *aFnContext,
                           ulnLengthPair *aLength,
                           acp_uint16_t   aRowNumber)
 {
-    return ulncBINARY_BINARY(aFnContext,
-                             aAppBuffer,
-                             aColumn,
-                             aLength,
-                             aRowNumber);
+    SQL_NUMERIC_STRUCT sNumericStruct;
+    /* BUG-47384 ulncNUMERIC_NUMERIC¸¦ È°¿ëÇÏ±â À§ÇØ¼­ ´õ¹Ì·Î ¼±¾ğÇÏ¿´À½. */
+    ulnAppBuffer  sTmpAppBuffer;
+    ulnLengthPair sTmpLength;
+
+    if (aAppBuffer->mBuffer == NULL)
+    {
+        aLength->mWritten = 0;
+    }
+    else
+    {
+        /* BUG-47384 
+         * SQL_C_BINARY && SQL_NUMERIC ¹ÙÀÎµùµÈ °æ¿ì¿¡ 
+         * cmtNumeric -> SQL_NUMERIC_STRUCT·Î º¯È¯ÇÏ¿© »ç¿ëÀÚ Buffer·Î º¹»çÇÑ´Ù.
+         * ÀÌ¶§ ulnColumn.mGDPositionÀ» È°¿ëÇÏ¿© position ÀÌµ¿À» ÀúÀåÇÑ´Ù. 
+         * ¸Å¹ø º¯È¯À» ¼öÇàÇÏ±â ¶§¹®¿¡ SQLGetData·Î µ¥ÀÌÅÍ¸¦ Àß¶ó¼­ °¡Á®¿Ã °æ¿ì 
+         * º¯È¯ÀÌ SQLGetData È£Ãâ °³¼ö ¸¸Å­ ½ÇÇàµÉ ¼ø ÀÖÁö¸¸ »ç¿ë ºóµµ°¡ ÀûÀ»°ÍÀ¸·Î º¸ÀÌ¹Ç·Î ÀÏ´ÜÀº ¹«½ÃÇÑ´Ù. (BUGBUG ÃßÈÄ °³¼±¿©Áö ÀÖÀ½) */
+        sTmpAppBuffer.mBuffer = &sNumericStruct;
+        sTmpAppBuffer.mBufferSize = sizeof(SQL_NUMERIC_STRUCT);
+        sTmpAppBuffer.mCTYPE = aAppBuffer->mCTYPE;
+
+        ACI_TEST( ulncNUMERIC_NUMERIC(aFnContext,
+                                      &sTmpAppBuffer,
+                                      aColumn,
+                                      &sTmpLength,
+                                      aRowNumber) != ACI_SUCCESS );
+
+        aLength->mWritten = ulnConvCopy(aAppBuffer->mBuffer,
+                                        aAppBuffer->mBufferSize,
+                                        sTmpAppBuffer.mBuffer + aColumn->mGDPosition,
+                                        sTmpAppBuffer.mBufferSize - aColumn->mGDPosition);
+    }
+
+    /* bug-31613: SQLGetData with SQL_C_BINARY returns a wrong len value
+     * for remained data.
+     *  mNeeded has to be adjusted as written size (GDPosition).
+     * cf) bufLen: 3,  dataLen: 10  -> retLen: 10, 7, 4, 1 */
+    aLength->mNeeded  = sTmpAppBuffer.mBufferSize - aColumn->mGDPosition;
+    aColumn->mGDPosition += aLength->mWritten;
+
+    ACI_TEST(ulnConvBinCheckTruncation(aFnContext,
+                                       aAppBuffer,
+                                       aLength->mNeeded,
+                                       aColumn->mColumnNumber,
+                                       aRowNumber) != ACI_SUCCESS);
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
 }
 
 ACI_RC ulncBLOB_BINARY(ulnFnContext  *aFnContext,
@@ -385,7 +431,7 @@ ACI_RC ulncBLOB_BINARY(ulnFnContext  *aFnContext,
     sLob = (ulnLob *)aColumn->mBuffer;
 
     /*
-     * ulnLobBuffer ì¤€ë¹„
+     * ulnLobBuffer ÁØºñ
      */
 
     ACI_TEST_RAISE(ulnLobBufferInitialize(&sLobBuffer,
@@ -399,7 +445,7 @@ ACI_RC ulncBLOB_BINARY(ulnFnContext  *aFnContext,
     ACI_TEST(sLobBuffer.mOp->mPrepare(aFnContext, &sLobBuffer) != ACI_SUCCESS);
 
     /*
-     * open LOB ë° get data
+     * open LOB ¹× get data
      */
 
     ACI_TEST(sLob->mOp->mOpen(aFnContext, sPtContext, sLob) != ACI_SUCCESS);
@@ -411,9 +457,9 @@ ACI_RC ulncBLOB_BINARY(ulnFnContext  *aFnContext,
     else
     {
         /*
-         * ulnLobGetData() í•¨ìˆ˜ê°€ í˜¸ì¶œë¨.
+         * ulnLobGetData() ÇÔ¼ö°¡ È£ÃâµÊ.
          *
-         * ë§ì´ ìˆ˜ì‹ í•´ ë´ì•¼ ì–´ì°¨í”¼ ì˜ë¦´ í…ë°, ê¼­ í•„ìš”í•œ ë§Œí¼ë§Œ ì„œë²„ë¡œ ìš”ì²­í•˜ë„ë¡ í•œë‹¤.
+         * ¸¹ÀÌ ¼ö½ÅÇØ ºÁ¾ß ¾îÂ÷ÇÇ Àß¸± ÅÙµ¥, ²À ÇÊ¿äÇÑ ¸¸Å­¸¸ ¼­¹ö·Î ¿äÃ»ÇÏµµ·Ï ÇÑ´Ù.
          */
 
         sSizeToRequest = ACP_MIN(aAppBuffer->mBufferSize, sLob->mSize - aColumn->mGDPosition);
@@ -426,9 +472,9 @@ ACI_RC ulncBLOB_BINARY(ulnFnContext  *aFnContext,
                                      sSizeToRequest) != ACI_SUCCESS);
 
         /*
-         * ì½ì–´ì™€ì„œ ì“°ì—¬ì§„ LOB ë°ì´í„°ì˜ ì‚¬ì´ì¦ˆë¥¼ ì‚¬ìš©ìì—ê²Œ ë°˜í™˜
+         * ÀĞ¾î¿Í¼­ ¾²¿©Áø LOB µ¥ÀÌÅÍÀÇ »çÀÌÁî¸¦ »ç¿ëÀÚ¿¡°Ô ¹İÈ¯
          *
-         * GetData ë¥¼ ìœ„í•œ GDPosition ì¡°ì •
+         * GetData ¸¦ À§ÇÑ GDPosition Á¶Á¤
          */
 
         aLength->mWritten     = sLob->mSizeRetrieved;
@@ -437,19 +483,19 @@ ACI_RC ulncBLOB_BINARY(ulnFnContext  *aFnContext,
     }
 
     /*
-     * ulnLobBuffer ì •ë¦¬
+     * ulnLobBuffer Á¤¸®
      */
 
     ACI_TEST(sLobBuffer.mOp->mFinalize(aFnContext, &sLobBuffer) != ACI_SUCCESS);
 
     /*
      * close LOB :
-     *      1. scrollable ì»¤ì„œì¼ ë•ŒëŠ” ì»¤ì„œê°€ ë‹«í ë•Œ.
-     *         ulnCursorClose() í•¨ìˆ˜ì—ì„œ
-     *      2. forward only ì¼ ë•Œì—ëŠ” ìºì‰¬ ë¯¸ìŠ¤ê°€ ë°œìƒí–ˆì„ ë•Œ.
-     *         ulnFetchFromCache() í•¨ìˆ˜ì—ì„œ 
+     *      1. scrollable Ä¿¼­ÀÏ ¶§´Â Ä¿¼­°¡ ´İÈú ¶§.
+     *         ulnCursorClose() ÇÔ¼ö¿¡¼­
+     *      2. forward only ÀÏ ¶§¿¡´Â Ä³½¬ ¹Ì½º°¡ ¹ß»ıÇßÀ» ¶§.
+     *         ulnFetchFromCache() ÇÔ¼ö¿¡¼­ 
      *
-     *      ulnCacheCloseLobInCurrentContents() ë¥¼ í˜¸ì¶œí•´ì„œ ì¢…ë£Œì‹œí‚´.
+     *      ulnCacheCloseLobInCurrentContents() ¸¦ È£ÃâÇØ¼­ Á¾·á½ÃÅ´.
      */
 
     ACI_TEST(ulnConvBinCheckTruncation(aFnContext,
@@ -484,7 +530,7 @@ ACI_RC ulncCLOB_BINARY(ulnFnContext  *aFnContext,
                        acp_uint16_t   aRowNumber)
 {
     /*
-     * ë³€í™˜ì—†ì´ ê·¸ëƒ¥ ë³µì‚¬í•˜ë©´ ë˜ë¯€ë¡œ
+     * º¯È¯¾øÀÌ ±×³É º¹»çÇÏ¸é µÇ¹Ç·Î
      */
     return ulncBLOB_BINARY(aFnContext,
                            aAppBuffer,

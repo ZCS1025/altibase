@@ -19,11 +19,11 @@
  * $Id: qmgUpdate.h 53265 2012-05-18 00:05:06Z seo0jun $
  *
  * Description :
- *     Update Graphë¥¼ ìœ„í•œ ì •ì˜
+ *     Update Graph¸¦ À§ÇÑ Á¤ÀÇ
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -34,20 +34,20 @@
 #include <qmgDef.h>
 
 //---------------------------------------------------
-// Update Graphì˜ Define ìƒìˆ˜
+// Update GraphÀÇ Define »ó¼ö
 //---------------------------------------------------
 
 
 //---------------------------------------------------
-// Update Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+// Update Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
 //---------------------------------------------------
 
 typedef struct qmgUPTE
 {
-    qmgGraph             graph;    // ê³µí†µ Graph ì •ë³´
+    qmgGraph             graph;    // °øÅë Graph Á¤º¸
 
     //---------------------------------
-    // update ê´€ë ¨ ì •ë³´
+    // update °ü·Ã Á¤º¸
     //---------------------------------
 
     /* PROJ-2204 JOIN UPDATE, DELETE */
@@ -69,7 +69,7 @@ typedef struct qmgUPTE
     UInt                 compressedTuple;
     mtdIsNullFunc      * isNull;
     
-    // sequence ì •ë³´
+    // sequence Á¤º¸
     qcParseSeqCaches   * nextValSeqs;
 
     // instead of trigger
@@ -78,27 +78,27 @@ typedef struct qmgUPTE
     qmoUpdateType        updateType;
 
     //---------------------------------
-    // cursor ê´€ë ¨ ì •ë³´
+    // cursor °ü·Ã Á¤º¸
     //---------------------------------
     
     smiCursorType        cursorType;
     idBool               inplaceUpdate;
     
     //---------------------------------
-    // partition ê´€ë ¨ ì •ë³´
+    // partition °ü·Ã Á¤º¸
     //---------------------------------
     
     qmsTableRef        * insertTableRef;
     idBool               isRowMovementUpdate;
     
     //---------------------------------
-    // Limitation ê´€ë ¨ ì •ë³´
+    // Limitation °ü·Ã Á¤º¸
     //---------------------------------
     
-    qmsLimit           * limit;   // limit ì •ë³´
+    qmsLimit           * limit;   // limit Á¤º¸
 
     //---------------------------------
-    // constraint ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
+    // constraint Ã³¸®¸¦ À§ÇÑ Á¤º¸
     //---------------------------------
     
     qcmParentInfo      * parentConstraints;
@@ -106,7 +106,7 @@ typedef struct qmgUPTE
     qdConstraintSpec   * checkConstrList;
 
     //---------------------------------
-    // return into ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
+    // return into Ã³¸®¸¦ À§ÇÑ Á¤º¸
     //---------------------------------
     
     /* PROJ-1584 DML Return Clause */
@@ -119,31 +119,36 @@ typedef struct qmgUPTE
     qmsTableRef        * defaultExprTableRef;
     qcmColumn          * defaultExprColumns;
     qcmColumn          * defaultExprBaseColumns;
-    
+   
+    /* PROJ-2714 Multiple Update Delete support */
+    qmmMultiTables     * mTableList;
 } qmgUPTE;
 
 //---------------------------------------------------
-// Update Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+// Update Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
 //---------------------------------------------------
 
 class qmgUpdate
 {
 public:
-    // Graph ì˜ ì´ˆê¸°í™”
+    // Graph ÀÇ ÃÊ±âÈ­
     static IDE_RC  init( qcStatement * aStatement,
                          qmsQuerySet * aQuerySet,
                          qmgGraph    * aChildGraph,
                          qmgGraph   ** aGraph );
 
-    // Graphì˜ ìµœì í™” ìˆ˜í–‰
+    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
     static IDE_RC  optimize( qcStatement * aStatement, qmgGraph * aGraph );
 
-    // Graphì˜ Plan Tree ìƒì„±
+    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
+    static IDE_RC  optimizeMultiUpdate( qcStatement * aStatement, qmgGraph * aGraph );
+
+    // GraphÀÇ Plan Tree »ı¼º
     static IDE_RC  makePlan( qcStatement    * aStatement,
                              const qmgGraph * aParent,
                              qmgGraph       * aGraph );
 
-    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
+    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
     static IDE_RC  printGraph( qcStatement  * aStatement,
                                qmgGraph     * aGraph,
                                ULong          aDepth,

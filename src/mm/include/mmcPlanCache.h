@@ -79,17 +79,17 @@ public:
     static IDE_RC    reset(void     *aStatement);
     
 
-    //parent PCOëŠ” plan cacheì— ìžˆì§€ë§Œ
-    //environmentê°€ ë§žëŠ” child PCOê°€ ì—†ëŠ” ê²½ìš°ì—
-    //child PCOì˜ ì¤‘ë³µìƒì„±ì„ ë§‰ê¸°ìœ„í•œ í•¨ìˆ˜.
+    //parent PCO´Â plan cache¿¡ ÀÖÁö¸¸
+    //environment°¡ ¸Â´Â child PCO°¡ ¾ø´Â °æ¿ì¿¡
+    //child PCOÀÇ Áßº¹»ý¼ºÀ» ¸·±âÀ§ÇÑ ÇÔ¼ö.
     static IDE_RC preventDupPlan(idvSQL* aStatistics,
                                  mmcParentPCO          *aParentPCO,
                                  mmcPCB                *aSafeGuardPCB,
                                  mmcPCB                **aNewPCB,
                                  mmcPCOLatchState *aPCOLatchState);
-    //environementê°€ ë§žëŠ” child PCOê°€ ìžˆì§€ë§Œ,
-    //planì´ validí•˜ì§€ ì•Šì•„,ìƒˆë¡œìš´ child PCOì˜
-    //ì¤‘ë³µìƒì„±ì„ ë§‰ê¸°ìœ„í•œ í•¨ìˆ˜.
+    //environement°¡ ¸Â´Â child PCO°¡ ÀÖÁö¸¸,
+    //planÀÌ validÇÏÁö ¾Ê¾Æ,»õ·Î¿î child PCOÀÇ
+    //Áßº¹»ý¼ºÀ» ¸·±âÀ§ÇÑ ÇÔ¼ö.
     static IDE_RC preventDupPlan(idvSQL                 *aStatistics,
                                  mmcStatement           *aStatement,
                                  mmcParentPCO           *aParentPCO,
@@ -175,7 +175,7 @@ private:
     static const SChar  *const       mCacheAbleText[];
 };
 
-// BUG-23098 planì´ ë³´ì˜€ë‹¤ ì•ˆë³´ì˜€ë‹¤ í•©ë‹ˆë‹¤.
+// BUG-23098 planÀÌ º¸¿´´Ù ¾Èº¸¿´´Ù ÇÕ´Ï´Ù.
 inline idBool mmcPlanCache::isEnable( mmcSession   * aSession,
                                       qciStatement * aQciStmt )
 {
@@ -197,9 +197,6 @@ inline idBool mmcPlanCache::isEnable( mmcSession   * aSession,
 
     /* BUG-45899 */
     IDE_TEST( sdi::isAnalysisInfoPrintable( &aQciStmt->statement ) == ID_TRUE );
-
-    /* PROJ-2701 Sharding online data rebuild */
-    IDE_TEST( sdi::isRebuildCoordinator( &aQciStmt->statement ) == ID_TRUE );
 
     return ID_TRUE;
 

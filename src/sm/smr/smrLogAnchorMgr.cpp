@@ -16,53 +16,53 @@
  
 
 /***********************************************************************
- * $Id: smrLogAnchorMgr.cpp 84887 2019-02-14 10:13:01Z emlee $
+ * $Id: smrLogAnchorMgr.cpp 90259 2021-03-19 01:22:22Z emlee $
  *
  * Description :
  *
- * ë³¸ íŒŒì¼ì€ loganchor ê´€ë¦¬ìì˜ êµ¬í˜„íŒŒì¼ì´ë‹¤.
+ * º» ÆÄÀÏÀº loganchor °ü¸®ÀÚÀÇ ±¸ÇöÆÄÀÏÀÌ´Ù.
  *
  * # Algorithm
  *
- * 1. ë‹¤ì¤‘ loganchorì˜ ìƒì„±
+ * 1. ´ÙÁß loganchorÀÇ »ı¼º
  *
- *  - createdbê³¼ì •ì—ì„œë§Œ ìˆ˜í–‰í•˜ë©°, hidden í”„ë¡œí¼í‹°ì—
- *    ì •ì˜ëœ ë§Œí¼ ë¡œê·¸ì•µì»¤ íŒŒì¼ì„ log DIRì— ìƒì„±
+ *  - createdb°úÁ¤¿¡¼­¸¸ ¼öÇàÇÏ¸ç, hidden ÇÁ·ÎÆÛÆ¼¿¡
+ *    Á¤ÀÇµÈ ¸¸Å­ ·Î±×¾ŞÄ¿ ÆÄÀÏÀ» log DIR¿¡ »ı¼º
  *
- * 2. loganchor ê°±ì‹  ë° í”ŒëŸ¬ì‰¬ ì²˜ë¦¬
+ * 2. loganchor °»½Å ¹× ÇÃ·¯½¬ Ã³¸®
  *
- *  - ê¸°ì¡´ì— ìˆë˜ loganchor ìë£Œì— ëŒ€í•œ ê°±ì‹ 
- *    mLogAnchorë¥¼ ì´ìš©í•˜ì—¬ mBufferì— ì €ì¥ëœ ë¡œê·¸ì•µì»¤
- *    ì •ë³´ê°€ ìˆ˜ì •ë˜ë©° tablespace ì •ë³´ëŠ” ê·¸ëŒ€ë¡œ ì‚¬ìš©
+ *  - ±âÁ¸¿¡ ÀÖ´ø loganchor ÀÚ·á¿¡ ´ëÇÑ °»½Å
+ *    mLogAnchor¸¦ ÀÌ¿ëÇÏ¿© mBuffer¿¡ ÀúÀåµÈ ·Î±×¾ŞÄ¿
+ *    Á¤º¸°¡ ¼öÁ¤µÇ¸ç tablespace Á¤º¸´Â ±×´ë·Î »ç¿ë
  *
- *  - tablespace ê´€ë ¨ DDLì´ ë°œìƒí•  ê²½ìš°
- *    mBufferë¥¼ tablespace ì •ë³´ê°€ ì €ì¥ëœ
- *    ë¶€ë¶„ë§Œ resetí•˜ê³  mLogAnchorì™€ tablespaceì •ë³´ë¥¼
- *    ë‹¤ì‹œ ê¸°ë¡
+ *  - tablespace °ü·Ã DDLÀÌ ¹ß»ıÇÒ °æ¿ì
+ *    mBuffer¸¦ tablespace Á¤º¸°¡ ÀúÀåµÈ
+ *    ºÎºĞ¸¸ resetÇÏ°í mLogAnchor¿Í tablespaceÁ¤º¸¸¦
+ *    ´Ù½Ã ±â·Ï
  *
- * 3. CheckSum ê³„ì‚° 100
+ * 3. CheckSum °è»ê 100
  *
- *   ë‹¤ìŒê³¼ ê°™ì€ ê²½ìš° (b)ì˜ì—­ì— ëŒ€í•´ foldBinaryí•œ ê²°ê³¼ì™€
- *   (c)ì˜ì—­ì— ëŒ€í•œ foldBinaryí•œ ê²°ê³¼ë¥¼ ë”í•´ì„œ ê³„ì‚°í•œë‹¤.
+ *   ´ÙÀ½°ú °°Àº °æ¿ì (b)¿µ¿ª¿¡ ´ëÇØ foldBinaryÇÑ °á°ú¿Í
+ *   (c)¿µ¿ª¿¡ ´ëÇÑ foldBinaryÇÑ °á°ú¸¦ ´õÇØ¼­ °è»êÇÑ´Ù.
  *
  *    : (b) + (c) = CheckSum
  *
- *        __mLogAnchor(ê³ ì •ê¸¸ì´)
+ *        __mLogAnchor(°íÁ¤±æÀÌ)
  *   _____|______________________
  *   | |       |                 |
  *   |_|__(b)__|________(c)______|
  *    |                     |
- *    |__ CheckSum(4bytes)  |__ tablespaceì •ë³´(ê°€ë³€ê¸¸ì´)
+ *    |__ CheckSum(4bytes)  |__ tablespaceÁ¤º¸(°¡º¯±æÀÌ)
  *
  *
- * 4.loganchorì˜ validate ê²€ì¦
+ * 4.loganchorÀÇ validate °ËÁõ
  *
- *  ê²€ì¦ë‹¨ê³„ëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤
+ *  °ËÁõ´Ü°è´Â ´ÙÀ½°ú °°´Ù
  *
- *  - ì €ì¥ëœ checksumê³¼ ë‹¤ì‹œ ê³„ì‚°í•œ checksumì„ ë¹„êµ
- *  - ìœ„ê³¼ì •ì„ ê±°ì³ì„œ corruptë˜ì§€ ì•Šì€ loganchor íŒŒì¼ë“¤ ì¤‘ì—
- *    ì €ì¥ëœ LSNì´ ê°€ì¥ í¬ê³ , UpdateAndFlush íšŸìˆ˜ê°€ ê°€ì¥ í°
- *    loganchor íŒŒì¼ ì„ ì •
+ *  - ÀúÀåµÈ checksum°ú ´Ù½Ã °è»êÇÑ checksumÀ» ºñ±³
+ *  - À§°úÁ¤À» °ÅÃÄ¼­ corruptµÇÁö ¾ÊÀº loganchor ÆÄÀÏµé Áß¿¡
+ *    ÀúÀåµÈ LSNÀÌ °¡Àå Å©°í, UpdateAndFlush È½¼ö°¡ °¡Àå Å«
+ *    loganchor ÆÄÀÏ ¼±Á¤
  *
  **********************************************************************/
 
@@ -100,23 +100,23 @@ smrLogAnchorMgr::~smrLogAnchorMgr()
 }
 
 /***********************************************************************
- * Description: ì—¬ëŸ¬ ë²Œì˜ loganchor íŒŒì¼ ìƒì„±
+ * Description: ¿©·¯ ¹úÀÇ loganchor ÆÄÀÏ »ı¼º
  *
- * createdbê³¼ì •ì—ì„œë§Œ ìˆ˜í–‰í•œë‹¤.
- * SM _LOGANCHOR_FILE_COUNT : hidden property (3ê°œ ê³ ì •)
- * ì •ì˜ë˜ì–´ ìˆëŠ” ê°œìˆ˜ë§Œí¼ loganchor íŒŒì¼ì„ ìƒì„±
+ * createdb°úÁ¤¿¡¼­¸¸ ¼öÇàÇÑ´Ù.
+ * SM _LOGANCHOR_FILE_COUNT : hidden property (3°³ °íÁ¤)
+ * Á¤ÀÇµÇ¾î ÀÖ´Â °³¼ö¸¸Å­ loganchor ÆÄÀÏÀ» »ı¼º
  *
  * + 2nd. code design
- *   - if durability level 0ì´ ì•„ë‹ˆë¼ë©´ then
- *        - SMU_LOGANCHOR_FILE_COUNT ê°œìˆ˜ë§Œí¼ì˜ loganchor íŒŒì¼ì„ ìƒì„± (only create)
- *          ë° loganchor íŒŒì¼ë“¤ì„ open í•œë‹¤.
- *        - mBufferë¥¼ SM_PAGE_SIZE í¬ê¸°ë¡œ ì´ˆê¸°í™”í•¨
- *        - dummy loganchorë¥¼ ì´ˆê¸°í™”í•œë‹¤.
- *        - mBufferë¥¼ SM_PAGE_SIZE í¬ê¸°ë¡œ ì´ˆê¸°í™”í•¨
- *        - loganchor bufferì˜ write offset ì´ˆê¸°í™” ì´í›„ì— dummy loganchorë¥¼ ê¸°ë¡
- *        - loganchor bufferë¥¼ ëª¨ë“  loganchor íŒŒì¼ì— flushí•œë‹¤.
- *        - loganchor íŒŒì¼ë“¤ì„ close í•˜ê³  í•´ì œí•œë‹¤.
- *        - mBufferë¥¼ í•´ì œí•œë‹¤.
+ *   - if durability level 0ÀÌ ¾Æ´Ï¶ó¸é then
+ *        - SMU_LOGANCHOR_FILE_COUNT °³¼ö¸¸Å­ÀÇ loganchor ÆÄÀÏÀ» »ı¼º (only create)
+ *          ¹× loganchor ÆÄÀÏµéÀ» open ÇÑ´Ù.
+ *        - mBuffer¸¦ SM_PAGE_SIZE Å©±â·Î ÃÊ±âÈ­ÇÔ
+ *        - dummy loganchor¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+ *        - mBuffer¸¦ SM_PAGE_SIZE Å©±â·Î ÃÊ±âÈ­ÇÔ
+ *        - loganchor bufferÀÇ write offset ÃÊ±âÈ­ ÀÌÈÄ¿¡ dummy loganchor¸¦ ±â·Ï
+ *        - loganchor buffer¸¦ ¸ğµç loganchor ÆÄÀÏ¿¡ flushÇÑ´Ù.
+ *        - loganchor ÆÄÀÏµéÀ» close ÇÏ°í ÇØÁ¦ÇÑ´Ù.
+ *        - mBuffer¸¦ ÇØÁ¦ÇÑ´Ù.
  *   - endif
  **********************************************************************/
 IDE_RC smrLogAnchorMgr::create()
@@ -127,8 +127,8 @@ IDE_RC smrLogAnchorMgr::create()
     SChar         sFileName[SM_MAX_FILE_NAME];
     UInt          i;
 
-    /* BUG-16214: SMì—ì„œ startup process, create db, startup service,
-     * shutdown immediateí• ë•Œ ë°œìƒí•˜ëŠ” UMRì—†ì• ê¸° */
+    /* BUG-16214: SM¿¡¼­ startup process, create db, startup service,
+     * shutdown immediateÇÒ¶§ ¹ß»ıÇÏ´Â UMR¾ø¾Ö±â */
     idlOS::memset( &sLogAnchor, 0x00, ID_SIZEOF(smrLogAnchor));
 
     /* INITIALIZE PROPERTIES */
@@ -136,12 +136,12 @@ IDE_RC smrLogAnchorMgr::create()
     IDE_TEST(checkLogAnchorDirExist() != IDE_SUCCESS );
 
     /* ------------------------------------------------
-     * ì—¬ëŸ¬ê°œì˜ loganchor íŒŒì¼ì„ ìƒì„± (only create)
+     * ¿©·¯°³ÀÇ loganchor ÆÄÀÏÀ» »ı¼º (only create)
      * ----------------------------------------------*/
     for ( sWhich = 0 ; sWhich < SM_LOGANCHOR_FILE_COUNT ; sWhich++ )
     {
         idlOS::memset( sFileName, 0x00, SM_MAX_FILE_NAME );
-        /* íŒŒì¼ëª…ì€ loganchor1 .. loganchorN í˜•íƒœë¡œ ë¶™ì„ */
+        /* ÆÄÀÏ¸íÀº loganchor1 .. loganchorN ÇüÅÂ·Î ºÙÀÓ */
         idlOS::snprintf( sFileName, SM_MAX_FILE_NAME,
                          "%s%c%s%"ID_UINT32_FMT"",
                          smuProperty::getLogAnchorDir(sWhich),
@@ -202,16 +202,16 @@ IDE_RC smrLogAnchorMgr::create()
     sLogAnchor.mNewTableSpaceID     = SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC;
     sLogAnchor.mSmVersionID         = smVersionID;
 
-    sLogAnchor.mUpdateAndFlushCount = 0; // ìƒì„±ì‹œ 0ìœ¼ë¡œ ì´ˆê¸°í™”
+    sLogAnchor.mUpdateAndFlushCount = 0; // »ı¼º½Ã 0À¸·Î ÃÊ±âÈ­
 
     for( i = 0 ; i < SMR_LOGANCHOR_RESERV_SIZE ; i++ )
     {
-        sLogAnchor.mReservArea[i] = 0;
+        sLogAnchor.mReserveArea[i] = 0;
     }
 
     /* proj-1608 recovery from replication
-     * BUG-31488, ì´ˆê¸°í™”ê°€ ë˜ì§€ ì•Šì•„ NULLë¡œ ì„¤ì •ë˜ì§€ ì•Šê³ , 0ìœ¼ë¡œ ì„¤ì •ë¨
-     * RPì—ì„œëŠ” mReplRecoveryLSNì€ ì´ˆê¸°í™” ì‹œ í•­ìƒ SM_SN_NULLë¡œ ê°€ì •í•˜ê³  ìˆìŒ..
+     * BUG-31488, ÃÊ±âÈ­°¡ µÇÁö ¾Ê¾Æ NULL·Î ¼³Á¤µÇÁö ¾Ê°í, 0À¸·Î ¼³Á¤µÊ
+     * RP¿¡¼­´Â mReplRecoveryLSNÀº ÃÊ±âÈ­ ½Ã Ç×»ó SM_SN_NULL·Î °¡Á¤ÇÏ°í ÀÖÀ½..
      */
     SM_LSN_MAX( sLogAnchor.mReplRecoveryLSN );
 
@@ -225,7 +225,7 @@ IDE_RC smrLogAnchorMgr::create()
     sLogAnchor.mBIFileAttr.mDeleteArchLogFileNo = ID_UINT_MAX;
 
     /* ------------------------------------------------
-     * mBufferë¥¼ SM_PAGE_SIZE í¬ê¸°ë¡œ ì´ˆê¸°í™”í•¨
+     * mBuffer¸¦ SM_PAGE_SIZE Å©±â·Î ÃÊ±âÈ­ÇÔ
      * ----------------------------------------------*/
     IDE_TEST( allocBuffer( SM_PAGE_SIZE ) != IDE_SUCCESS );
     sState = 1;
@@ -237,7 +237,7 @@ IDE_RC smrLogAnchorMgr::create()
               != IDE_SUCCESS );
 
     /* ------------------------------------------------
-     * ëª¨ë“  loganchor íŒŒì¼ì— flush
+     * ¸ğµç loganchor ÆÄÀÏ¿¡ flush
      * ----------------------------------------------*/
     IDE_TEST(flushAll() != IDE_SUCCESS );
 
@@ -280,8 +280,8 @@ IDE_RC smrLogAnchorMgr::create()
 /***********************************************************************
  * Description : loganchor online backup
  *
- * loganchor backupì‹œì—ëŠ” backup ë””ë ‰í† ë¦¬ì— í•œë²Œì˜ loganchor íŒŒì¼ì„ ìœ ì§€í•˜ë©°,
- * restoreì‹œì— ì—¬ëŸ¬ loganchor ë””ë ‰í† ë¦¬ì— ë³µêµ¬í•œë‹¤.
+ * loganchor backup½Ã¿¡´Â backup µğ·ºÅä¸®¿¡ ÇÑ¹úÀÇ loganchor ÆÄÀÏÀ» À¯ÁöÇÏ¸ç,
+ * restore½Ã¿¡ ¿©·¯ loganchor µğ·ºÅä¸®¿¡ º¹±¸ÇÑ´Ù.
  **********************************************************************/
 IDE_RC smrLogAnchorMgr::backup( UInt   aWhich,
                                 SChar* aBackupFilePath )
@@ -293,7 +293,7 @@ IDE_RC smrLogAnchorMgr::backup( UInt   aWhich,
     IDE_TEST(mFile[aWhich].open() != IDE_SUCCESS );
     sState = 1;
     
-    // sourceì™€ destinationì´ ë™ì¼í•˜ë©´ ì•ˆëœë‹¤.
+    // source¿Í destinationÀÌ µ¿ÀÏÇÏ¸é ¾ÈµÈ´Ù.
     IDE_TEST_RAISE( idlOS::strcmp( aBackupFilePath,
                                    mFile[aWhich].getFileName() )
                     == 0, error_self_copy );
@@ -324,7 +324,7 @@ IDE_RC smrLogAnchorMgr::backup( UInt   aWhich,
 
 /***********************************************************************
  * Description : loganchor online backup
- * PRJ-1149, log anchoríŒŒì¼ë“¤ì„ backup í•œë‹¤.
+ * PRJ-1149, log anchorÆÄÀÏµéÀ» backup ÇÑ´Ù.
  **********************************************************************/
 IDE_RC smrLogAnchorMgr::backup( idvSQL * aStatistics,
                                 SChar  * aBackupPath )
@@ -345,12 +345,12 @@ IDE_RC smrLogAnchorMgr::backup( idvSQL * aStatistics,
     {
         idlOS::memset( sBackupFilePath, 0x00, SM_MAX_FILE_NAME );
 
-        /* íŒŒì¼ëª…ì€ loganchor1 .. loganchorN í˜•íƒœë¡œ ë¶™ì„ */
+        /* ÆÄÀÏ¸íÀº loganchor1 .. loganchorN ÇüÅÂ·Î ºÙÀÓ */
         sPathLen = idlOS::strlen( aBackupPath );
 
-        // BUG-11206ì™€ ê°™ì´ sourceì™€ destinationì´ ê°™ì•„ì„œ
-        // ì›ë³¸ ë°ì´íƒ€ íŒŒì¼ì´ ìœ ì‹¤ë˜ëŠ” ê²½ìš°ë¥¼ ë§‰ê¸°ìœ„í•˜ì—¬
-        // ë‹¤ìŒê³¼ ê°™ì´ ì •í™•íˆ pathë¥¼ êµ¬ì„±í•¨.
+        // BUG-11206¿Í °°ÀÌ source¿Í destinationÀÌ °°¾Æ¼­
+        // ¿øº» µ¥ÀÌÅ¸ ÆÄÀÏÀÌ À¯½ÇµÇ´Â °æ¿ì¸¦ ¸·±âÀ§ÇÏ¿©
+        // ´ÙÀ½°ú °°ÀÌ Á¤È®È÷ path¸¦ ±¸¼ºÇÔ.
         if ( aBackupPath[sPathLen -1] == IDL_FILE_SEPARATOR )
         {
             idlOS::snprintf( sBackupFilePath, SM_MAX_FILE_NAME,
@@ -431,18 +431,18 @@ IDE_RC smrLogAnchorMgr::backup( idvSQL * aStatistics,
 /*
    PRJ-1548 User Memory Tablespace
 
-   ê¸°ëŠ¥ : Loganchor ê´€ë¦¬ì ì´ˆê¸°í™”í•˜ê¸° ì „ì— ìœ íš¨í•œ loganchor íŒŒì¼ ì„ íƒ
+   ±â´É : Loganchor °ü¸®ÀÚ ÃÊ±âÈ­ÇÏ±â Àü¿¡ À¯È¿ÇÑ loganchor ÆÄÀÏ ¼±ÅÃ
 
-   Loganchor íŒŒì¼ì„ ìˆœì„œëŒ€ë¡œ ë©”ëª¨ë¦¬ë²„í¼ì— ë¡œë”©í•˜ì—¬ checksum ê²€ì‚¬ ë°
-   Latest Update Loganchorë¥¼ ì„ íƒí•œë‹¤.
+   Loganchor ÆÄÀÏÀ» ¼ø¼­´ë·Î ¸Ş¸ğ¸®¹öÆÛ¿¡ ·ÎµùÇÏ¿© checksum °Ë»ç ¹×
+   Latest Update Loganchor¸¦ ¼±ÅÃÇÑ´Ù.
 
-   CheckSum ì˜¤ë¥˜ê°€ ê°ì§€ëœ LoganchorëŠ” Lasted Update Loganchor ì„ íƒí• ë•Œ
-   ê³ ë ¤í•˜ì§€ ì•ŠëŠ”ë‹¤. ëª¨ë‘ CheckSum ì˜¤ë¥˜ê°€ ë°œìƒí–ˆë‹¤ë©´ Exceptionì„ ë°˜í™˜í•˜ê³ ,
-   ì„œë²„êµ¬ë™ì„ ì‹¤íŒ¨í•˜ê²Œ í•œë‹¤.
+   CheckSum ¿À·ù°¡ °¨ÁöµÈ Loganchor´Â Lasted Update Loganchor ¼±ÅÃÇÒ¶§
+   °í·ÁÇÏÁö ¾Ê´Â´Ù. ¸ğµÎ CheckSum ¿À·ù°¡ ¹ß»ıÇß´Ù¸é ExceptionÀ» ¹İÈ¯ÇÏ°í,
+   ¼­¹ö±¸µ¿À» ½ÇÆĞÇÏ°Ô ÇÑ´Ù.
 
-   # Lasted Update Loganchor ì¡°ê±´
-   1. LSNì´ ê°€ì¥ í° ê²ƒ(ìµœì‹ )ì„ ì„ íƒ
-   2. ëª¨ë‘ ê°™ë‹¤ë©´ UpdateAndFlushCountë¥¼ ì‚¬ìš©í•˜ì—¬ ì„ íƒ
+   # Lasted Update Loganchor Á¶°Ç
+   1. LSNÀÌ °¡Àå Å« °Í(ÃÖ½Å)À» ¼±ÅÃ
+   2. ¸ğµÎ °°´Ù¸é UpdateAndFlushCount¸¦ »ç¿ëÇÏ¿© ¼±ÅÃ
 
 */
 IDE_RC smrLogAnchorMgr::checkAndGetValidAnchorNo(UInt*  aWhich)
@@ -469,11 +469,11 @@ IDE_RC smrLogAnchorMgr::checkAndGetValidAnchorNo(UInt*  aWhich)
     sUpdateAndFlushCount = 0;
     SM_LSN_INIT( sMaxLSN );
 
-    // ë¡œê·¸ì•µì»¤ë²„í¼ writeoffset ì´ˆê¸°í™” ì´í›„ì— ê¸°ë¡ì‹œì‘
+    // ·Î±×¾ŞÄ¿¹öÆÛ writeoffset ÃÊ±âÈ­ ÀÌÈÄ¿¡ ±â·Ï½ÃÀÛ
 
     for ( sWhich = 0 ; sWhich < SM_LOGANCHOR_FILE_COUNT ; sWhich++ )
     {
-        // íŒŒì¼ëª…ì€ loganchor1 .. loganchorN í˜•íƒœë¡œ ë¶™ì„
+        // ÆÄÀÏ¸íÀº loganchor1 .. loganchorN ÇüÅÂ·Î ºÙÀÓ
         idlOS::snprintf( sAnchorFileName, SM_MAX_FILE_NAME,
                          "%s%c%s%"ID_UINT32_FMT"",
                          smuProperty::getLogAnchorDir(sWhich),
@@ -491,13 +491,13 @@ IDE_RC smrLogAnchorMgr::checkAndGetValidAnchorNo(UInt*  aWhich)
 
         if ( sFile[sWhich].open() != IDE_SUCCESS )
         {
-            // íŒŒì¼ì´ ì˜¤í”ˆë˜ì§€ ì•Šìœ¼ë©´ ë¬´ì‹œí•˜ê³ , ë‹¤ìŒ íŒŒì¼ ì²˜ë¦¬
+            // ÆÄÀÏÀÌ ¿ÀÇÂµÇÁö ¾ÊÀ¸¸é ¹«½ÃÇÏ°í, ´ÙÀ½ ÆÄÀÏ Ã³¸®
             continue;
         }
 
         if ( sFile[sWhich].getFileSize( &sFileSize ) != IDE_SUCCESS )
         {
-            // íŒŒì¼í¬ê¸°ë¥¼ ì–»ì„ìˆ˜ ì—†ìœ¼ë©´ ë¬´ì‹œí•˜ê³ , ë‹¤ìŒ íŒŒì¼ ì²˜ë¦¬
+            // ÆÄÀÏÅ©±â¸¦ ¾òÀ»¼ö ¾øÀ¸¸é ¹«½ÃÇÏ°í, ´ÙÀ½ ÆÄÀÏ Ã³¸®
             continue;
         }
 
@@ -509,8 +509,8 @@ IDE_RC smrLogAnchorMgr::checkAndGetValidAnchorNo(UInt*  aWhich)
         
         if ( sFileSize > sAllocSize )
         {
-            // ì„ì‹œë²„í¼ë³´ë‹¤ ë¡œë”©í•  íŒŒì¼í¬ê¸°ê°€ í° ê²½ìš°ë§Œ ì„ì‹œë²„í¼ë¥¼
-            // ì¬í• ë‹¹ í•œë‹¤.
+            // ÀÓ½Ã¹öÆÛº¸´Ù ·ÎµùÇÒ ÆÄÀÏÅ©±â°¡ Å« °æ¿ì¸¸ ÀÓ½Ã¹öÆÛ¸¦
+            // ÀçÇÒ´ç ÇÑ´Ù.
 
             if ( sBuffer != NULL )
             {
@@ -533,7 +533,7 @@ IDE_RC smrLogAnchorMgr::checkAndGetValidAnchorNo(UInt*  aWhich)
                             insufficient_memory );
         }
         
-        // ì„ì‹œë²„í¼ì— ë¡œë”©
+        // ÀÓ½Ã¹öÆÛ¿¡ ·Îµù
         IDE_TEST( sFile[sWhich].read( NULL, /* idvSQL* */
                                       0,
                                       sBuffer,
@@ -542,17 +542,17 @@ IDE_RC smrLogAnchorMgr::checkAndGetValidAnchorNo(UInt*  aWhich)
 
         sLogAnchor = (smrLogAnchor*)sBuffer;
 
-        // Checksum ì˜¤ë¥˜ ê²€ì‚¬
+        // Checksum ¿À·ù °Ë»ç
         if (sLogAnchor->mCheckSum == makeCheckSum(sBuffer, sFileSize))
         {
             sFound  = ID_TRUE;
-            // Loganchorì˜ EndLSNì€ 
-            // checkpointì‹œì˜ Memory RedoLSN í˜¹ì€ Shutdownì‹œì˜ EndLSNì„. 
+            // LoganchorÀÇ EndLSNÀº 
+            // checkpoint½ÃÀÇ Memory RedoLSN È¤Àº Shutdown½ÃÀÇ EndLSNÀÓ. 
             SM_GET_LSN( sLogAnchorLSN, sLogAnchor->mMemEndLSN );
 
             if (  smrCompareLSN::isLT( &sMaxLSN, &sLogAnchorLSN ) )
             {
-                // í° LSN ì €ì¥í•˜ê³ , í•´ë‹¹ Loganchorë¥¼ ì„ íƒí•œë‹¤.
+                // Å« LSN ÀúÀåÇÏ°í, ÇØ´ç Loganchor¸¦ ¼±ÅÃÇÑ´Ù.
                 SM_GET_LSN( sMaxLSN, sLogAnchorLSN );
 
                 /* BUG-31485  [sm-disk-recovery]when the server starts,  
@@ -564,10 +564,10 @@ IDE_RC smrLogAnchorMgr::checkAndGetValidAnchorNo(UInt*  aWhich)
             }
             else
             {
-                // LSNì´ ë™ì¼í•œ ê²½ìš°ëŠ” UpdateAndFlush íšŸìˆ˜ë¥¼ ë¹„êµí•œë‹¤.
-                // STARTUP CONTROL ë‹¨ê³„ì—ì„œ DDLì— ì˜í•´ Loganchorê°€ ë³€ê²½ë ìˆ˜
-                // ìˆëŠ”ë° ì´ë•Œ, LSNì´ ëª¨ë‘ ë™ì¼í•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì— Countë¡œ
-                // ìµœì‹  Loganchorë¥¼ ì„ íƒí•œë‹¤.
+                // LSNÀÌ µ¿ÀÏÇÑ °æ¿ì´Â UpdateAndFlush È½¼ö¸¦ ºñ±³ÇÑ´Ù.
+                // STARTUP CONTROL ´Ü°è¿¡¼­ DDL¿¡ ÀÇÇØ Loganchor°¡ º¯°æµÉ¼ö
+                // ÀÖ´Âµ¥ ÀÌ¶§, LSNÀÌ ¸ğµÎ µ¿ÀÏÇÒ ¼ö ÀÖ±â ¶§¹®¿¡ Count·Î
+                // ÃÖ½Å Loganchor¸¦ ¼±ÅÃÇÑ´Ù.
                 if ( smrCompareLSN::isEQ( &sMaxLSN, &sLogAnchorLSN ) )
                 {
                     if ( sUpdateAndFlushCount < sLogAnchor->mUpdateAndFlushCount )
@@ -590,7 +590,7 @@ IDE_RC smrLogAnchorMgr::checkAndGetValidAnchorNo(UInt*  aWhich)
         }
         else
         {
-            // CheckSum ì˜¤ë¥˜ ê°ì§€..
+            // CheckSum ¿À·ù °¨Áö..
         }
     }
 
@@ -599,7 +599,7 @@ IDE_RC smrLogAnchorMgr::checkAndGetValidAnchorNo(UInt*  aWhich)
         IDE_TEST( sFile[sWhich].destroy() != IDE_SUCCESS );
     }
 
-    // ì„ì‹œë©”ëª¨ë¦¬ë²„í¼ í•´ì œ
+    // ÀÓ½Ã¸Ş¸ğ¸®¹öÆÛ ÇØÁ¦
     if ( sBuffer != NULL )
     {
         IDE_TEST( iduMemMgr::free(sBuffer) != IDE_SUCCESS );
@@ -611,7 +611,7 @@ IDE_RC smrLogAnchorMgr::checkAndGetValidAnchorNo(UInt*  aWhich)
         /* nothing to do */
     }
 
-    // ëª¨ë“  Loganchorê°€ CheckSum ì˜¤ë¥˜ê°€ ë°œìƒí•œ ê²½ìš°ì— Exception ì²˜ë¦¬
+    // ¸ğµç Loganchor°¡ CheckSum ¿À·ù°¡ ¹ß»ıÇÑ °æ¿ì¿¡ Exception Ã³¸®
     IDE_TEST_RAISE( sFound != ID_TRUE, error_invalid_loganchor_file );
 
     return IDE_SUCCESS;
@@ -642,11 +642,11 @@ IDE_RC smrLogAnchorMgr::checkAndGetValidAnchorNo(UInt*  aWhich)
 /*
   PRJ-1548 User Memory Tablespace
 
-  Loganchorì˜ ì²«ë²ˆì§¸ Node Attribute Typeì„ íŒë…í•œë‹¤.
+  LoganchorÀÇ Ã¹¹øÂ° Node Attribute TypeÀ» ÆÇµ¶ÇÑ´Ù.
 
-  [IN ] aLogAnchorFile : ì˜¤í”ˆëœ loganchor íŒŒì¼ ê°ì²´
-  [OUT] aBeginOffset   : ê°€ë³€ì˜ì—­ ì‹œì‘ ì˜¤í”„ì…‹
-  [OUT] aAttrType      : ì²«ë²ˆì§¸ Node Attribute Type
+  [IN ] aLogAnchorFile : ¿ÀÇÂµÈ loganchor ÆÄÀÏ °´Ã¼
+  [OUT] aBeginOffset   : °¡º¯¿µ¿ª ½ÃÀÛ ¿ÀÇÁ¼Â
+  [OUT] aAttrType      : Ã¹¹øÂ° Node Attribute Type
 */
 IDE_RC smrLogAnchorMgr::getFstNodeAttrType( iduFile         * aLogAnchorFile,
                                             UInt            * aBeginOffset,
@@ -661,7 +661,7 @@ IDE_RC smrLogAnchorMgr::getFstNodeAttrType( iduFile         * aLogAnchorFile,
 
     sBeginOffset = ID_SIZEOF(smrLogAnchor);
 
-    // attribute type íŒë…
+    // attribute type ÆÇµ¶
     IDE_TEST( aLogAnchorFile->read( NULL, /* idvSQL* */
                                     sBeginOffset,
                                     (SChar*)&sAttrType,
@@ -682,10 +682,10 @@ IDE_RC smrLogAnchorMgr::getFstNodeAttrType( iduFile         * aLogAnchorFile,
 /*
    PRJ-1548 User Memory Tablespace
 
-   aNextOffsetì— ì €ì¥ëœ Node Attribute íƒ€ì…ì„ íŒë…í•˜ì—¬ ë°˜í™˜í•œë‹¤.
+   aNextOffset¿¡ ÀúÀåµÈ Node Attribute Å¸ÀÔÀ» ÆÇµ¶ÇÏ¿© ¹İÈ¯ÇÑ´Ù.
 
-  [IN ] aLogAnchorFile : ì˜¤í”ˆëœ loganchor íŒŒì¼ ê°ì²´
-  [IN ] aCurrOffset    : íŒë…í•  ì˜¤í”„ì…‹
+  [IN ] aLogAnchorFile : ¿ÀÇÂµÈ loganchor ÆÄÀÏ °´Ã¼
+  [IN ] aCurrOffset    : ÆÇµ¶ÇÒ ¿ÀÇÁ¼Â
   [OUT] aAttrType      : Node Attribute Type
 */
 IDE_RC smrLogAnchorMgr::getNxtNodeAttrType( iduFile         * aLogAnchorFile,
@@ -697,7 +697,7 @@ IDE_RC smrLogAnchorMgr::getNxtNodeAttrType( iduFile         * aLogAnchorFile,
     IDE_DASSERT( aLogAnchorFile != NULL );
     IDE_DASSERT( aNextAttrType  != NULL );
 
-    // attribute type íŒë…
+    // attribute type ÆÇµ¶
     IDE_TEST( aLogAnchorFile->read( NULL, /* idvSQL* */
                                     aNextOffset,
                                     (SChar*)&sAttrType,
@@ -715,29 +715,29 @@ IDE_RC smrLogAnchorMgr::getNxtNodeAttrType( iduFile         * aLogAnchorFile,
 
 
 /***********************************************************************
- * Description : loganchor ê´€ë¦¬ì ì´ˆê¸°í™”
+ * Description : loganchor °ü¸®ÀÚ ÃÊ±âÈ­
  *
  * + 2nd. code design
- *   - mutex ì´ˆê¸°í™”í•œë‹¤.
- *   - tablespace ì†ì„± ë° datafile ì†ì„±ì„ ì €ì¥í•˜ê¸° ìœ„í•œ ìë£Œêµ¬ì¡°
- *     í• ë‹¹í•œë‹¤.
- *   - mBufferë¥¼ SM_PAGE_SIZE í¬ê¸°ë¡œ ì´ˆê¸°í™”í•œë‹¤.
- *   - if (durability level 0 ê°€ ì•„ë‹Œê²½ìš°) then
- *         - ìœ íš¨í•œ ë¡œê·¸ì•µì»¤íŒŒì¼ì„ ì„ ì •
- *         - ëª¨ë“  loganchor íŒŒì¼ì„ ì˜¤í”ˆí•œë‹¤.
- *         - loganchor íŒŒì¼ë¡œë¶€í„° smrLogAnchorë¥¼ íŒë…í•˜ì—¬
- *           loganchor ë²„í¼ì— ì €ì¥í•œë‹¤.
- *         - mLogAnchorì— assigní•œë‹¤.
+ *   - mutex ÃÊ±âÈ­ÇÑ´Ù.
+ *   - tablespace ¼Ó¼º ¹× datafile ¼Ó¼ºÀ» ÀúÀåÇÏ±â À§ÇÑ ÀÚ·á±¸Á¶
+ *     ÇÒ´çÇÑ´Ù.
+ *   - mBuffer¸¦ SM_PAGE_SIZE Å©±â·Î ÃÊ±âÈ­ÇÑ´Ù.
+ *   - if (durability level 0 °¡ ¾Æ´Ñ°æ¿ì) then
+ *         - À¯È¿ÇÑ ·Î±×¾ŞÄ¿ÆÄÀÏÀ» ¼±Á¤
+ *         - ¸ğµç loganchor ÆÄÀÏÀ» ¿ÀÇÂÇÑ´Ù.
+ *         - loganchor ÆÄÀÏ·ÎºÎÅÍ smrLogAnchor¸¦ ÆÇµ¶ÇÏ¿©
+ *           loganchor ¹öÆÛ¿¡ ÀúÀåÇÑ´Ù.
+ *         - mLogAnchor¿¡ assignÇÑ´Ù.
  *         - while ()
  *           {
- *               - tablespace ì†ì„± ì •ë³´ë¥¼ tablespace ê°œìˆ˜ë§Œí¼ íŒë…í•˜ì—¬
- *                 loganchor ë²„í¼ì— ê¸°ë¡í•œë‹¤.
- *               -  for (datafile ê°œìˆ˜ë§Œí¼)
- *                  datafile ì†ì„± ì •ë³´ë¥¼ íŒë…í•˜ì—¬ loganchor ë²„í¼ì— ê¸°ë¡í•œë‹¤.
+ *               - tablespace ¼Ó¼º Á¤º¸¸¦ tablespace °³¼ö¸¸Å­ ÆÇµ¶ÇÏ¿©
+ *                 loganchor ¹öÆÛ¿¡ ±â·ÏÇÑ´Ù.
+ *               -  for (datafile °³¼ö¸¸Å­)
+ *                  datafile ¼Ó¼º Á¤º¸¸¦ ÆÇµ¶ÇÏ¿© loganchor ¹öÆÛ¿¡ ±â·ÏÇÑ´Ù.
  *           }
- *         - ëª¨ë“  loganchor íŒŒì¼ì— ìœ íš¨í•œ loganchor ë²„í¼ë¥¼ flush í•œë‹¤.
+ *         - ¸ğµç loganchor ÆÄÀÏ¿¡ À¯È¿ÇÑ loganchor ¹öÆÛ¸¦ flush ÇÑ´Ù.
  *     else
- *         - loganchor ë²„í¼ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ *         - loganchor ¹öÆÛ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
  *     endif
  **********************************************************************/
 IDE_RC smrLogAnchorMgr::initialize()
@@ -750,7 +750,7 @@ IDE_RC smrLogAnchorMgr::initialize()
     SChar                 sAnchorFileName[SM_MAX_FILE_NAME];
     UInt                  sFileState = 0;
 
-    // LOGANCHOR_DIR í™•ì¸
+    // LOGANCHOR_DIR È®ÀÎ
     IDE_TEST( checkLogAnchorDirExist() != IDE_SUCCESS );
 
     for ( i = 0 ; i < SM_LOGANCHOR_FILE_COUNT ; i++ )
@@ -762,7 +762,7 @@ IDE_RC smrLogAnchorMgr::initialize()
                          SMR_LOGANCHOR_NAME,
                          i );
 
-        // Loganchor íŒŒì¼ ì ‘ê·¼ ê¶Œí•œ í™•ì¸
+        // Loganchor ÆÄÀÏ Á¢±Ù ±ÇÇÑ È®ÀÎ
         IDE_TEST_RAISE( idf::access(sAnchorFileName, (F_OK|W_OK|R_OK) ) != 0,
                         error_file_not_exist );
     }
@@ -781,14 +781,14 @@ IDE_RC smrLogAnchorMgr::initialize()
                    0x00,
                    ID_SIZEOF(smiDataFileAttr) );
 
-    // ë©”ëª¨ë¦¬ ë²„í¼(mBuffer)ë¥¼ SM_PAGE_SIZE í¬ê¸°ë¡œ í• ë‹¹ ë° ì´ˆê¸°í™”
+    // ¸Ş¸ğ¸® ¹öÆÛ(mBuffer)¸¦ SM_PAGE_SIZE Å©±â·Î ÇÒ´ç ¹× ÃÊ±âÈ­
     IDE_TEST( allocBuffer( SM_PAGE_SIZE ) != IDE_SUCCESS );
     sState = 1;
 
-    // ìœ íš¨í•œ loganchoríŒŒì¼ì„ ì„ ì •í•œë‹¤.
+    // À¯È¿ÇÑ loganchorÆÄÀÏÀ» ¼±Á¤ÇÑ´Ù.
     IDE_TEST( checkAndGetValidAnchorNo( &sWhich ) != IDE_SUCCESS );
 
-    // ëª¨ë“  loganchor íŒŒì¼ì„ ì˜¤í”ˆí•œë‹¤.
+    // ¸ğµç loganchor ÆÄÀÏÀ» ¿ÀÇÂÇÑ´Ù.
     for ( i = 0; i < SM_LOGANCHOR_FILE_COUNT; i++ )
     {
         idlOS::snprintf( sAnchorFileName, SM_MAX_FILE_NAME,
@@ -807,69 +807,69 @@ IDE_RC smrLogAnchorMgr::initialize()
         sFileState++;
     }
 
-    // ë©”ëª¨ë¦¬ë²„í¼ ì˜¤í”„ì…‹ ì´ˆê¸°í™”
+    // ¸Ş¸ğ¸®¹öÆÛ ¿ÀÇÁ¼Â ÃÊ±âÈ­
     initBuffer();
 
     /*
-       PRJ-1548 ê³ ì •ê¸¸ì´ ì˜ì—­ì„ ë©”ëª¨ë¦¬ ë²„í¼ì— ë¡œë”©í•˜ëŠ” ë‹¨ê³„
+       PRJ-1548 °íÁ¤±æÀÌ ¿µ¿ªÀ» ¸Ş¸ğ¸® ¹öÆÛ¿¡ ·ÎµùÇÏ´Â ´Ü°è
     */
 
     IDE_TEST( mFile[sWhich].getFileSize(&sFileSize) != IDE_SUCCESS );
 
-    // CREATE DATABASE ê³¼ì •ì¤‘ì— ê°€ë³€ì˜ì—­ì´ ì¡´ì¬í•˜ì§€ ì•Šì„ ìˆ˜ëŠ” ìˆì§€ë§Œ,
-    // ê³ ì •ì˜ì—­ì€ ì €ì¥ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
+    // CREATE DATABASE °úÁ¤Áß¿¡ °¡º¯¿µ¿ªÀÌ Á¸ÀçÇÏÁö ¾ÊÀ» ¼ö´Â ÀÖÁö¸¸,
+    // °íÁ¤¿µ¿ªÀº ÀúÀåµÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
     IDE_ASSERT ( sFileSize >= ID_SIZEOF(smrLogAnchor) );
 
-    // íŒŒì¼ë¡œ ë¶€í„° Loganchor ê³ ì •ì˜ì—­ì„ ë¡œë”©í•œë‹¤.
+    // ÆÄÀÏ·Î ºÎÅÍ Loganchor °íÁ¤¿µ¿ªÀ» ·ÎµùÇÑ´Ù.
     IDE_TEST( mFile[sWhich].read( NULL, /* idvSQL* */
                                   0,
                                   (SChar*)&sLogAnchor,
                                   ID_SIZEOF(smrLogAnchor) )
               != IDE_SUCCESS );
 
-    // ë©”ëª¨ë¦¬ ë²„í¼ì— Loganchor ê³ ì •ì—­ì˜ì„ ë¡œë”©í•œë‹¤.
+    // ¸Ş¸ğ¸® ¹öÆÛ¿¡ Loganchor °íÁ¤¿ª¿µÀ» ·ÎµùÇÑ´Ù.
     IDE_TEST( writeToBuffer( (SChar*)&sLogAnchor,
                              ID_SIZEOF(smrLogAnchor) )
               != IDE_SUCCESS );
 
     mLogAnchor = (smrLogAnchor*)mBuffer;
 
-    /* DISK REDO LSNê³¼ MEMORY REDO LSNì„ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ê´€ë¦¬ìì—
-       ì„¤ì •í•œë‹¤. Empty ë°ì´íƒ€íŒŒì¼ì„ ìƒì„±í•´ì„œ ë¯¸ë””ì–´ ë³µêµ¬ë¥¼
-       í•˜ëŠ” ê²½ìš°ì— íŒŒì¼í—¤ë”ì— ê¸°ë¡í•  ìˆ˜ ìˆë„ë¡ í•˜ê¸° ìœ„í•´ */
+    /* DISK REDO LSN°ú MEMORY REDO LSNÀ» Å×ÀÌºí½ºÆäÀÌ½º °ü¸®ÀÚ¿¡
+       ¼³Á¤ÇÑ´Ù. Empty µ¥ÀÌÅ¸ÆÄÀÏÀ» »ı¼ºÇØ¼­ ¹Ìµğ¾î º¹±¸¸¦
+       ÇÏ´Â °æ¿ì¿¡ ÆÄÀÏÇì´õ¿¡ ±â·ÏÇÒ ¼ö ÀÖµµ·Ï ÇÏ±â À§ÇØ */
     sctTableSpaceMgr::setRedoLSN4DBFileMetaHdr( &mLogAnchor->mDiskRedoLSN,
                                                 &mLogAnchor->mMemEndLSN );
 
-    // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì „ì²´ ê°¯ìˆ˜ ì„¤ì •
+    // Å×ÀÌºí½ºÆäÀÌ½º ÀüÃ¼ °¹¼ö ¼³Á¤
     sctTableSpaceMgr::setNewTableSpaceID( (scSpaceID)mLogAnchor->mNewTableSpaceID );
 
-    // [ ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ] STATEë‹¨ê³„ê¹Œì§€ ì´ˆê¸°í™”ê°€ ëœë‹¤
+    // [ ¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½º ] STATE´Ü°è±îÁö ÃÊ±âÈ­°¡ µÈ´Ù
     IDE_TEST( readAllTBSAttrs( sWhich, SMI_TBS_ATTR ) != IDE_SUCCESS );
     IDE_TEST( readAllTBSAttrs( sWhich, SMI_DBF_ATTR ) != IDE_SUCCESS );
     IDE_TEST( readAllTBSAttrs( sWhich, SMI_CHKPTPATH_ATTR ) != IDE_SUCCESS );
 
-    // [ ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ] MEDIA, PAGEë‹¨ê³„ê¹Œì§€ ì´ˆê¸°í™”ê°€ ëœë‹¤
-    //   Checkpoint Path Attributeê°€ ë¡œë“œëœ ìƒíƒœì—ì—ì„œ MEDIAë‹¨ê³„ì˜
-    //   ì´ˆê¸°í™”ê°€ ê°€ëŠ¥í•˜ë‹¤.
+    // [ ¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½º ] MEDIA, PAGE´Ü°è±îÁö ÃÊ±âÈ­°¡ µÈ´Ù
+    //   Checkpoint Path Attribute°¡ ·ÎµåµÈ »óÅÂ¿¡¿¡¼­ MEDIA´Ü°èÀÇ
+    //   ÃÊ±âÈ­°¡ °¡´ÉÇÏ´Ù.
     IDE_TEST( smmTBSStartupShutdown::initFromStatePhase4AllTBS()
               != IDE_SUCCESS );
 
-    // [ ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ]
-    //  MEDIAë‹¨ê³„ê¹Œì§€ ì´ˆê¸°í™” ëœ ìƒíƒœì—ì„œ Checkpoint Image Attributeë¥¼
-    // ë¡œë“œí•  ìˆ˜ ìˆë‹¤.
+    // [ ¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½º ]
+    //  MEDIA´Ü°è±îÁö ÃÊ±âÈ­ µÈ »óÅÂ¿¡¼­ Checkpoint Image Attribute¸¦
+    // ·ÎµåÇÒ ¼ö ÀÖ´Ù.
     //
-    // <ì´ìœ >
-    //   - MEDIAë‹¨ê³„ê¹Œì§€ ì´ˆê¸°í™”ê°€ ëœ ìƒíƒœì—ì„œ
-    //     DB File ê°ì²´ ì‚¬ìš©ì´ ê°€ëŠ¥í•˜ë‹¤
-    //   - DB Fileê°ì²´ ì‚¬ìš©ì´ ê°€ëŠ¥í•  ë•Œ
-    //     Checkpoint Image Attributeë“¤ì„ ë¡œë“œí•  ìˆ˜ ìˆë‹¤
+    // <ÀÌÀ¯>
+    //   - MEDIA´Ü°è±îÁö ÃÊ±âÈ­°¡ µÈ »óÅÂ¿¡¼­
+    //     DB File °´Ã¼ »ç¿ëÀÌ °¡´ÉÇÏ´Ù
+    //   - DB File°´Ã¼ »ç¿ëÀÌ °¡´ÉÇÒ ¶§
+    //     Checkpoint Image AttributeµéÀ» ·ÎµåÇÒ ¼ö ÀÖ´Ù
     IDE_TEST( readAllTBSAttrs( sWhich, SMI_CHKPTIMG_ATTR ) != IDE_SUCCESS );
 
-    //  [  Secondary Buffer ì´ˆê¸°í™”  ]
+    //  [  Secondary Buffer ÃÊ±âÈ­  ]
     IDE_TEST( readAllTBSAttrs( sWhich, SMI_SBUFFER_ATTR ) != IDE_SUCCESS );
 
     /* ------------------------------------------------
-     * 5. ìœ íš¨í•œ loganchor ë²„í¼ë¥¼ ëª¨ë“  anchor íŒŒì¼ì— flush í•œë‹¤.
+     * 5. À¯È¿ÇÑ loganchor ¹öÆÛ¸¦ ¸ğµç anchor ÆÄÀÏ¿¡ flush ÇÑ´Ù.
      * ----------------------------------------------*/
     IDE_TEST( readLogAnchorToBuffer( sWhich ) != IDE_SUCCESS );
     IDE_ASSERT( checkLogAnchorBuffer() == ID_TRUE );
@@ -910,14 +910,14 @@ IDE_RC smrLogAnchorMgr::initialize()
 
 
 /***********************************************************************
- * Description : loganchor ê´€ë¦¬ì í•´ì œ
+ * Description : loganchor °ü¸®ÀÚ ÇØÁ¦
  *
  * + 2nd. code design
- *   - ëª¨ë“  loganchor íŒŒì¼ì„ ë‹«ëŠ”ë‹¤
- *   - loganchor ë²„í¼ë¥¼ ë©”ëª¨ë¦¬ í•´ì œí•œë‹¤.
- *   - tablespace ì†ì„± ë° datafile ì†ì„±ì„ loganchorì—
- *     ì €ì¥í•˜ê¸° ìœ„í•œ ìë£Œêµ¬ì¡°ë¥¼ í•´ì œí•œë‹¤.
- *   - mutexë¥¼ í•´ì œí•œë‹¤.
+ *   - ¸ğµç loganchor ÆÄÀÏÀ» ´İ´Â´Ù
+ *   - loganchor ¹öÆÛ¸¦ ¸Ş¸ğ¸® ÇØÁ¦ÇÑ´Ù.
+ *   - tablespace ¼Ó¼º ¹× datafile ¼Ó¼ºÀ» loganchor¿¡
+ *     ÀúÀåÇÏ±â À§ÇÑ ÀÚ·á±¸Á¶¸¦ ÇØÁ¦ÇÑ´Ù.
+ *   - mutex¸¦ ÇØÁ¦ÇÑ´Ù.
  ***********************************************************************/
 IDE_RC smrLogAnchorMgr::destroy()
 {
@@ -946,10 +946,10 @@ IDE_RC smrLogAnchorMgr::destroy()
 
 
 /*
-    ë¡œê·¸ì•µì»¤ë¡œë¶€í„° Tablespaceì˜ íŠ¹ì • íƒ€ì…ì˜ Attributeë“¤ì„ ë¡œë“œí•œë‹¤.
+    ·Î±×¾ŞÄ¿·ÎºÎÅÍ TablespaceÀÇ Æ¯Á¤ Å¸ÀÔÀÇ AttributeµéÀ» ·ÎµåÇÑ´Ù.
 
-    [IN] aWhichAnchor    - ì—¬ëŸ¬ ë²Œì˜ Log Anchor Fileì¤‘ ì–´ë–¤ ê²ƒì¸ì§€
-    [IN] aAttrTypeToLoad - ë¡œë“œí•  Attributeì˜ ì¢…ë¥˜
+    [IN] aWhichAnchor    - ¿©·¯ ¹úÀÇ Log Anchor FileÁß ¾î¶² °ÍÀÎÁö
+    [IN] aAttrTypeToLoad - ·ÎµåÇÒ AttributeÀÇ Á¾·ù
  */
 IDE_RC smrLogAnchorMgr::readAllTBSAttrs( UInt             aWhichAnchor,
                                          smiNodeAttrType  aAttrTypeToLoad )
@@ -961,18 +961,18 @@ IDE_RC smrLogAnchorMgr::readAllTBSAttrs( UInt             aWhichAnchor,
     IDE_TEST( mFile[aWhichAnchor].getFileSize(&sFileSize) != IDE_SUCCESS );
 
     /*
-       PRJ-1548 ê°€ë³€ê¸¸ì´ ì˜ì—­ì„ ë©”ëª¨ë¦¬ ë²„í¼ì— ë¡œë”©í•˜ëŠ” ë‹¨ê³„
+       PRJ-1548 °¡º¯±æÀÌ ¿µ¿ªÀ» ¸Ş¸ğ¸® ¹öÆÛ¿¡ ·ÎµùÇÏ´Â ´Ü°è
     */
     if ( sFileSize > ID_SIZEOF(smrLogAnchor) )
     {
-        // ê°€ë³€ì˜ì—­ì˜ ì²«ë²ˆì§¸ Node Attribute Typeì„ íŒë…í•œë‹¤.
+        // °¡º¯¿µ¿ªÀÇ Ã¹¹øÂ° Node Attribute TypeÀ» ÆÇµ¶ÇÑ´Ù.
         IDE_TEST( getFstNodeAttrType( &mFile[aWhichAnchor],
                                       &sReadOffset,
                                       &sAttrType ) != IDE_SUCCESS );
         while ( 1 )
         {
-            // Log Anchorë¡œë¶€í„° ì½ì€ Attributeë¥¼
-            // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë³„ ìë£Œêµ¬ì¡°ë¡œ Loadí• ì§€ ì—¬ë¶€ë¥¼ ê²°ì •
+            // Log Anchor·ÎºÎÅÍ ÀĞÀº Attribute¸¦
+            // Å×ÀÌºí½ºÆäÀÌ½ºº° ÀÚ·á±¸Á¶·Î LoadÇÒÁö ¿©ºÎ¸¦ °áÁ¤
             if ( sAttrType == aAttrTypeToLoad )
             {
                 IDE_TEST( readAttrFromLogAnchor( SMR_AAO_LOAD_ATTR,
@@ -982,11 +982,11 @@ IDE_RC smrLogAnchorMgr::readAllTBSAttrs( UInt             aWhichAnchor,
             }
             else
             {
-                // í•´ë‹¹ Attributeë¥¼ ì½ì§€ ì•Šê³  Skipí•œë‹¤.
+                // ÇØ´ç Attribute¸¦ ÀĞÁö ¾Ê°í SkipÇÑ´Ù.
                 sReadOffset += getAttrSize( sAttrType );
             }
 
-            // EOF í™•ì¸
+            // EOF È®ÀÎ
             if ( sFileSize == ((ULong)sReadOffset) )
             {
                 break;
@@ -994,7 +994,7 @@ IDE_RC smrLogAnchorMgr::readAllTBSAttrs( UInt             aWhichAnchor,
 
             IDE_ASSERT( sFileSize > ((ULong)sReadOffset) );
 
-            // attribute type íŒë…
+            // attribute type ÆÇµ¶
             IDE_TEST( getNxtNodeAttrType( &mFile[aWhichAnchor],
                                           sReadOffset,
                                           &sAttrType ) 
@@ -1003,7 +1003,7 @@ IDE_RC smrLogAnchorMgr::readAllTBSAttrs( UInt             aWhichAnchor,
     }
     else
     {
-        // CREATE DATABASE ê³¼ì •ì¤‘ Loganchorì˜ ê³ ì •ì˜ì—­ë§Œ ì €ì¥ëœ ê²½ìš°
+        // CREATE DATABASE °úÁ¤Áß LoganchorÀÇ °íÁ¤¿µ¿ª¸¸ ÀúÀåµÈ °æ¿ì
         // nothing to do ...
     }
 
@@ -1015,12 +1015,12 @@ IDE_RC smrLogAnchorMgr::readAllTBSAttrs( UInt             aWhichAnchor,
 }
 
 /**
-   ë¡œê·¸ì•µì»¤ ë²„í¼ì— ë¡œê·¸ì•µì»¤ Attributeë“¤ì¤‘
-   Validí•œ Attributeë“¤ ë§Œë“œë¡œ ë‹¤ì‹œ ê¸°ë¡í•œë‹¤.
+   ·Î±×¾ŞÄ¿ ¹öÆÛ¿¡ ·Î±×¾ŞÄ¿ AttributeµéÁß
+   ValidÇÑ Attributeµé ¸¸µå·Î ´Ù½Ã ±â·ÏÇÑ´Ù.
 
-   DROPëœ Tablespaceì™€ ê´€ë ¨ëœ AttributeëŠ” ê¸°ë¡í•˜ì§€ ì•Šê³  ë²„ë¦°ë‹¤.
+   DROPµÈ Tablespace¿Í °ü·ÃµÈ Attribute´Â ±â·ÏÇÏÁö ¾Ê°í ¹ö¸°´Ù.
 
-   [IN] aWhichAnchor    - ì—¬ëŸ¬ ë²Œì˜ Log Anchor Fileì¤‘ ì–´ë–¤ ê²ƒì¸ì§€
+   [IN] aWhichAnchor    - ¿©·¯ ¹úÀÇ Log Anchor FileÁß ¾î¶² °ÍÀÎÁö
  */
 IDE_RC smrLogAnchorMgr::readLogAnchorToBuffer(UInt aWhichAnchor)
 {
@@ -1033,11 +1033,11 @@ IDE_RC smrLogAnchorMgr::readLogAnchorToBuffer(UInt aWhichAnchor)
     sReadOffset  = 0;
 
     /*
-       PRJ-1548 ê°€ë³€ê¸¸ì´ ì˜ì—­ì„ ë©”ëª¨ë¦¬ ë²„í¼ì— ë¡œë”©í•˜ëŠ” ë‹¨ê³„
+       PRJ-1548 °¡º¯±æÀÌ ¿µ¿ªÀ» ¸Ş¸ğ¸® ¹öÆÛ¿¡ ·ÎµùÇÏ´Â ´Ü°è
     */
     if ( sFileSize > ID_SIZEOF(smrLogAnchor) )
     {
-        // ê°€ë³€ì˜ì—­ì˜ ì²«ë²ˆì§¸ Node Attribute Typeì„ íŒë…í•œë‹¤.
+        // °¡º¯¿µ¿ªÀÇ Ã¹¹øÂ° Node Attribute TypeÀ» ÆÇµ¶ÇÑ´Ù.
         IDE_TEST( getFstNodeAttrType( &mFile[aWhichAnchor],
                                       &sReadOffset,
                                       &sAttrType ) != IDE_SUCCESS );
@@ -1048,7 +1048,7 @@ IDE_RC smrLogAnchorMgr::readLogAnchorToBuffer(UInt aWhichAnchor)
                                              aWhichAnchor,
                                              &sReadOffset ) != IDE_SUCCESS );
 
-            // EOF í™•ì¸
+            // EOF È®ÀÎ
             if ( sFileSize == ((ULong)sReadOffset) )
             {
                 break;
@@ -1056,7 +1056,7 @@ IDE_RC smrLogAnchorMgr::readLogAnchorToBuffer(UInt aWhichAnchor)
 
             IDE_ASSERT( sFileSize > ( (ULong)sReadOffset ) );
 
-            // attribute type íŒë…
+            // attribute type ÆÇµ¶
             IDE_TEST( getNxtNodeAttrType( &mFile[aWhichAnchor],
                                           sReadOffset,
                                           &sAttrType ) 
@@ -1065,7 +1065,7 @@ IDE_RC smrLogAnchorMgr::readLogAnchorToBuffer(UInt aWhichAnchor)
     }
     else
     {
-        // CREATE DATABASE ê³¼ì •ì¤‘ Loganchorì˜ ê³ ì •ì˜ì—­ë§Œ ì €ì¥ëœ ê²½ìš°
+        // CREATE DATABASE °úÁ¤Áß LoganchorÀÇ °íÁ¤¿µ¿ª¸¸ ÀúÀåµÈ °æ¿ì
         // nothing to do ...
     }
 
@@ -1078,14 +1078,14 @@ IDE_RC smrLogAnchorMgr::readLogAnchorToBuffer(UInt aWhichAnchor)
 }
 
 /***********************************************************************
- * Description : LogAnchor Fileë¡œ ë¶€í„° Attributeì†ì„±ì„ ì½ì–´ì˜¨ë‹¤.
- * aAttrOp ì†ì„±ì— ë”°ë¼ SMR_AAO_REWRITE_ATTRì´ë©´ LogAnchor Bufferì—
- * SMR_AAO_LOAD_ATTR ì´ë©´ space nodeì— ê¸°ë¡í•œë‹¤.
+ * Description : LogAnchor File·Î ºÎÅÍ Attribute¼Ó¼ºÀ» ÀĞ¾î¿Â´Ù.
+ * aAttrOp ¼Ó¼º¿¡ µû¶ó SMR_AAO_REWRITE_ATTRÀÌ¸é LogAnchor Buffer¿¡
+ * SMR_AAO_LOAD_ATTR ÀÌ¸é space node¿¡ ±â·ÏÇÑ´Ù.
  *
- *   aAttrOp      - [IN]     Attribute ê¸°ë¡ ëŒ€ìƒ (Buffer, Node)
- *   aAttrType    - [IN]     ì½ì„ Attributeì˜ ì¢…ë¥˜
- *   aWhichAnchor - [IN]     ì½ì„ logAnchor File
- *   aReadOffset  - [IN/OUT] ì½ì„ offset, ì´í›„ ë‹¤ìŒ offset ë°˜í™˜
+ *   aAttrOp      - [IN]     Attribute ±â·Ï ´ë»ó (Buffer, Node)
+ *   aAttrType    - [IN]     ÀĞÀ» AttributeÀÇ Á¾·ù
+ *   aWhichAnchor - [IN]     ÀĞÀ» logAnchor File
+ *   aReadOffset  - [IN/OUT] ÀĞÀ» offset, ÀÌÈÄ ´ÙÀ½ offset ¹İÈ¯
  **********************************************************************/
 IDE_RC smrLogAnchorMgr::readAttrFromLogAnchor( smrAnchorAttrOption aAttrOp,
                                                smiNodeAttrType     aAttrType,
@@ -1095,7 +1095,7 @@ IDE_RC smrLogAnchorMgr::readAttrFromLogAnchor( smrAnchorAttrOption aAttrOp,
     switch ( aAttrType )
     {
         case SMI_TBS_ATTR:
-            // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì´ˆê¸°í™”
+            // Å×ÀÌºí½ºÆäÀÌ½º ÃÊ±âÈ­
             IDE_TEST( initTableSpaceAttr( aWhichAnchor,
                                           aAttrOp,
                                           aReadOffset )
@@ -1103,7 +1103,7 @@ IDE_RC smrLogAnchorMgr::readAttrFromLogAnchor( smrAnchorAttrOption aAttrOp,
             break;
 
         case SMI_DBF_ATTR :
-            // ë””ìŠ¤í¬ ë°ì´íƒ€íŒŒì¼ ì´ˆê¸°í™”
+            // µğ½ºÅ© µ¥ÀÌÅ¸ÆÄÀÏ ÃÊ±âÈ­
             IDE_TEST( initDataFileAttr( aWhichAnchor,
                                         aAttrOp,
                                         aReadOffset )
@@ -1111,7 +1111,7 @@ IDE_RC smrLogAnchorMgr::readAttrFromLogAnchor( smrAnchorAttrOption aAttrOp,
             break;
 
         case SMI_CHKPTPATH_ATTR :
-            // ì²´í¬í¬ì¸íŠ¸ Path ì´ˆê¸°í™”
+            // Ã¼Å©Æ÷ÀÎÆ® Path ÃÊ±âÈ­
             IDE_TEST( initChkptPathAttr( aWhichAnchor,
                                          aAttrOp,
                                          aReadOffset )
@@ -1150,28 +1150,28 @@ IDE_RC smrLogAnchorMgr::readAttrFromLogAnchor( smrAnchorAttrOption aAttrOp,
 }
 
 /*
-  ë©”ëª¨ë¦¬/ë””ìŠ¤í¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì´ˆê¸°í™”
+  ¸Ş¸ğ¸®/µğ½ºÅ© Å×ÀÌºí½ºÆäÀÌ½º ÃÊ±âÈ­
 
-  [IN] aWhich       - ìœ íš¨í•œ ë¡œê·¸ì•µì»¤ ë²ˆí˜¸
-  [IN] aAttrOp      - Attributeì´ˆê¸°í™” ë„ì¤‘ ìˆ˜í–‰í•  ì‘ì—…
-  [IN] aReadOffset  - ë¡œê·¸ì•µì»¤ íŒŒì¼ìƒì—ì„œ í˜„ì¬ ì†ì„±ì˜ ì˜¤í”„ì…‹
-  [OUT] aReadOffset - ë¡œê·¸ì•µì»¤ íŒŒì¼ìƒì—ì„œ ë‹¤ìŒ ì†ì„± ì‹œì‘ ì˜¤í”„ì…‹
+  [IN] aWhich       - À¯È¿ÇÑ ·Î±×¾ŞÄ¿ ¹øÈ£
+  [IN] aAttrOp      - AttributeÃÊ±âÈ­ µµÁß ¼öÇàÇÒ ÀÛ¾÷
+  [IN] aReadOffset  - ·Î±×¾ŞÄ¿ ÆÄÀÏ»ó¿¡¼­ ÇöÀç ¼Ó¼ºÀÇ ¿ÀÇÁ¼Â
+  [OUT] aReadOffset - ·Î±×¾ŞÄ¿ ÆÄÀÏ»ó¿¡¼­ ´ÙÀ½ ¼Ó¼º ½ÃÀÛ ¿ÀÇÁ¼Â
 
-  [ PRJ-1548 User Memory TableSpace ê°œë…ë„ì… ]
+  [ PRJ-1548 User Memory TableSpace °³³äµµÀÔ ]
 
-   * ë””ìŠ¤í¬ì™€ ë™ì¼í•˜ê²Œ ë¯¸ë””ì–´ ë³µêµ¬ë¥¼ ì§€ì›í•˜ë ¤ë©´
-     STARTUP CONTROL ë‹¨ê³„ì—ì„œ Memory TableSpace Nodeë¥¼ ì´ˆê¸°í™”í•´ì•¼ í•œë‹¤.
+   * µğ½ºÅ©¿Í µ¿ÀÏÇÏ°Ô ¹Ìµğ¾î º¹±¸¸¦ Áö¿øÇÏ·Á¸é
+     STARTUP CONTROL ´Ü°è¿¡¼­ Memory TableSpace Node¸¦ ÃÊ±âÈ­ÇØ¾ß ÇÑ´Ù.
 
-   * ë¯¸ë””ì–´ë³µêµ¬ë¥¼ ìœ„í•œ ì§€ì›ì‚¬í•­
-     [1] Checkpoint Image Hdr ê²€ì¦ì´ ê°€ëŠ¥í•´ì•¼í•¨ ( Media Failure ê²€ì‚¬ )
-     [2] Empty Checkpoint Image ìƒì„± ê°€ëŠ¥í•´ì•¼í•¨ ( Media Recovery ê¸°ëŠ¥ )
+   * ¹Ìµğ¾îº¹±¸¸¦ À§ÇÑ Áö¿ø»çÇ×
+     [1] Checkpoint Image Hdr °ËÁõÀÌ °¡´ÉÇØ¾ßÇÔ ( Media Failure °Ë»ç )
+     [2] Empty Checkpoint Image »ı¼º °¡´ÉÇØ¾ßÇÔ ( Media Recovery ±â´É )
 
-     ëª¨ë“  Checkpoint Imageì˜ ì´ˆê¸°í™”ê°€ ì™„ë£Œë˜ì–´ì•¼ í•œë‹¤.
+     ¸ğµç Checkpoint ImageÀÇ ÃÊ±âÈ­°¡ ¿Ï·áµÇ¾î¾ß ÇÑ´Ù.
 
-     ì´ì „ì—ëŠ” prepareTBS ë‹¨ê³„ì—ì„œ ë©”ëª¨ë¦¬ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜
-     smmDatabaseFileë“¤ì„ í• ë‹¹í•˜ê³  ì´ˆê¸°í™”í•˜ì˜€ì§€ë§Œ,
+     ÀÌÀü¿¡´Â prepareTBS ´Ü°è¿¡¼­ ¸Ş¸ğ¸® Å×ÀÌºí½ºÆäÀÌ½ºÀÇ
+     smmDatabaseFileµéÀ» ÇÒ´çÇÏ°í ÃÊ±âÈ­ÇÏ¿´Áö¸¸,
 
-     ë¡œê·¸ì•µì»¤ ì´ˆê¸°í™”ì‹œì ì—ì„œ ê·¸ í•´ë‹¹ ì‘ì—…ì„ ìˆ˜í–‰í•˜ê¸°ë¡œ í•œë‹¤.
+     ·Î±×¾ŞÄ¿ ÃÊ±âÈ­½ÃÁ¡¿¡¼­ ±× ÇØ´ç ÀÛ¾÷À» ¼öÇàÇÏ±â·Î ÇÑ´Ù.
 */
 IDE_RC smrLogAnchorMgr::initTableSpaceAttr( UInt                aWhich,
                                             smrAnchorAttrOption aAttrOp,
@@ -1181,23 +1181,23 @@ IDE_RC smrLogAnchorMgr::initTableSpaceAttr( UInt                aWhich,
 
     IDE_DASSERT( aReadOffset != NULL );
 
-    // í˜„ì¬ ì†ì„±ì˜ ì˜¤í”„ì…‹ì„ ë°±ì—…í•œë‹¤.
+    // ÇöÀç ¼Ó¼ºÀÇ ¿ÀÇÁ¼ÂÀ» ¹é¾÷ÇÑ´Ù.
     sAnchorOffset = *aReadOffset;
 
-    // [1] ë¡œê·¸ì•µì»¤ë¡œë¶€í„° í˜„ì¬ ì†ì„±ì„ íŒë…í•œë‹¤.
+    // [1] ·Î±×¾ŞÄ¿·ÎºÎÅÍ ÇöÀç ¼Ó¼ºÀ» ÆÇµ¶ÇÑ´Ù.
     IDE_TEST( readTBSNodeAttr( &mFile[aWhich],
                                aReadOffset,
                                &mTableSpaceAttr )
               != IDE_SUCCESS );
 
     // PRJ-1548 User Memory Tablespace
-    // [2] ë°±ì—…ìƒíƒœê°€ ì¡´ì¬í•  ê²½ìš° ë°±ì—…ìƒíƒœë¥¼ ì—†ì•¤ë‹¤.
+    // [2] ¹é¾÷»óÅÂ°¡ Á¸ÀçÇÒ °æ¿ì ¹é¾÷»óÅÂ¸¦ ¾ø¾Ø´Ù.
     mTableSpaceAttr.mTBSStateOnLA &= ~SMI_TBS_BACKUP;
 
     if ( aAttrOp == SMR_AAO_REWRITE_ATTR )
     {
         IDE_ASSERT( mWriteOffset == sAnchorOffset );
-        // [3] ë¡œê·¸ì•µì»¤ ë©”ëª¨ë¦¬ ë²„í¼ì— ê¸°ë¡í•œë‹¤.
+        // [3] ·Î±×¾ŞÄ¿ ¸Ş¸ğ¸® ¹öÆÛ¿¡ ±â·ÏÇÑ´Ù.
         IDE_TEST( writeToBuffer( (SChar*)&mTableSpaceAttr,
                                  ID_SIZEOF( smiTableSpaceAttr ) )
                   != IDE_SUCCESS );
@@ -1209,22 +1209,22 @@ IDE_RC smrLogAnchorMgr::initTableSpaceAttr( UInt                aWhich,
 
     if ( aAttrOp == SMR_AAO_LOAD_ATTR )
     {
-        // DROPëœ ê²½ìš°ë§Œ log anchorë¡œë¶€í„° Tablespace Loadë¥¼ SKIP
+        // DROPµÈ °æ¿ì¸¸ log anchor·ÎºÎÅÍ Tablespace Load¸¦ SKIP
         //
-        // Discardëœ Tablespaceì˜ ê²½ìš° => ë¡œë“œì‹¤ì‹œ
-        //   ì¶”í›„ Dropì‹œë¥¼ ìœ„í•´ Tablespaceê´€ë ¨
-        //   ìë£Œêµ¬ì¡°ê°€ ì´ˆê¸°í™”ë˜ì–´ìˆì–´ì•¼ í•¨
+        // DiscardµÈ TablespaceÀÇ °æ¿ì => ·Îµå½Ç½Ã
+        //   ÃßÈÄ Drop½Ã¸¦ À§ÇØ Tablespace°ü·Ã
+        //   ÀÚ·á±¸Á¶°¡ ÃÊ±âÈ­µÇ¾îÀÖ¾î¾ß ÇÔ
         if ( ( mTableSpaceAttr.mTBSStateOnLA & SMI_TBS_DROPPED )
                != SMI_TBS_DROPPED )
         {
-            // í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ê°€ ì‚­ì œë˜ì§€ ì•Šì•˜ë‹¤ë©´
+            // Å×ÀÌºí½ºÆäÀÌ½º°¡ »èÁ¦µÇÁö ¾Ê¾Ò´Ù¸é
 
-            // [4] í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+            // [4] Å×ÀÌºí½ºÆäÀÌ½º¸¦ ÃÊ±âÈ­ÇÑ´Ù.
             if ( ( mTableSpaceAttr.mType == SMI_MEMORY_SYSTEM_DICTIONARY ) ||
                  ( mTableSpaceAttr.mType == SMI_MEMORY_SYSTEM_DATA )       ||
                  ( mTableSpaceAttr.mType == SMI_MEMORY_USER_DATA ) )
             {
-                // memory ë§¤ë‹ˆì €ì— tablespace Nodeë¥¼ ìƒì„±
+                // memory ¸Å´ÏÀú¿¡ tablespace Node¸¦ »ı¼º
                 IDE_TEST( smmTBSStartupShutdown::loadTableSpaceNode(
                                                               &mTableSpaceAttr,
                                                               sAnchorOffset )
@@ -1233,7 +1233,7 @@ IDE_RC smrLogAnchorMgr::initTableSpaceAttr( UInt                aWhich,
             /* PROJ-1594 Volatile TBS */
             else if ( mTableSpaceAttr.mType == SMI_VOLATILE_USER_DATA )
             {
-                // volatile ë§¤ë‹ˆì €ì— tablespace Nodeë¥¼ ìƒì„±
+                // volatile ¸Å´ÏÀú¿¡ tablespace Node¸¦ »ı¼º
                 IDE_TEST( svmTBSStartupShutdown::loadTableSpaceNode(
                                                               &mTableSpaceAttr,
                                                               sAnchorOffset )
@@ -1241,8 +1241,8 @@ IDE_RC smrLogAnchorMgr::initTableSpaceAttr( UInt                aWhich,
             }
             else
             {
-                // disk ë§¤ë‹ˆì €ì—
-                // tablespace Nodeë¥¼ ìƒì„±
+                // disk ¸Å´ÏÀú¿¡
+                // tablespace Node¸¦ »ı¼º
                 IDE_TEST( sddDiskMgr::loadTableSpaceNode( NULL, /* idvSQL* */
                                                           &mTableSpaceAttr,
                                                           sAnchorOffset )
@@ -1251,7 +1251,7 @@ IDE_RC smrLogAnchorMgr::initTableSpaceAttr( UInt                aWhich,
         }
         else
         {
-            // ì‚­ì œëœ TBSëŠ” ì´ˆê¸°í™”í•˜ì§€ì•ŠëŠ”ë‹¤.
+            // »èÁ¦µÈ TBS´Â ÃÊ±âÈ­ÇÏÁö¾Ê´Â´Ù.
         }
     }
 
@@ -1264,12 +1264,12 @@ IDE_RC smrLogAnchorMgr::initTableSpaceAttr( UInt                aWhich,
 
 
 /*
-  ë””ìŠ¤í¬ ë°ì´íƒ€íŒŒì¼ ë©”íƒ€í—¤ë” ì´ˆê¸°í™”
+  µğ½ºÅ© µ¥ÀÌÅ¸ÆÄÀÏ ¸ŞÅ¸Çì´õ ÃÊ±âÈ­
 
-  [IN] aWhich        - ìœ íš¨í•œ ë¡œê·¸ì•µì»¤ ë²ˆí˜¸
-  [IN] aAttrOp       - Attributeì´ˆê¸°í™” ë„ì¤‘ ìˆ˜í–‰í•  ì‘ì—…
-  [IN] aReadOffset   - ë¡œê·¸ì•µì»¤ íŒŒì¼ìƒì—ì„œ í˜„ì¬ ì†ì„±ì˜ ì˜¤í”„ì…‹
-  [OUT] aReadOffset  - ë¡œê·¸ì•µì»¤ íŒŒì¼ìƒì—ì„œ ë‹¤ìŒ ì†ì„± ì‹œì‘ ì˜¤í”„ì…‹
+  [IN] aWhich        - À¯È¿ÇÑ ·Î±×¾ŞÄ¿ ¹øÈ£
+  [IN] aAttrOp       - AttributeÃÊ±âÈ­ µµÁß ¼öÇàÇÒ ÀÛ¾÷
+  [IN] aReadOffset   - ·Î±×¾ŞÄ¿ ÆÄÀÏ»ó¿¡¼­ ÇöÀç ¼Ó¼ºÀÇ ¿ÀÇÁ¼Â
+  [OUT] aReadOffset  - ·Î±×¾ŞÄ¿ ÆÄÀÏ»ó¿¡¼­ ´ÙÀ½ ¼Ó¼º ½ÃÀÛ ¿ÀÇÁ¼Â
 */
 IDE_RC smrLogAnchorMgr::initDataFileAttr( UInt                aWhich,
                                           smrAnchorAttrOption aAttrOp,
@@ -1279,21 +1279,21 @@ IDE_RC smrLogAnchorMgr::initDataFileAttr( UInt                aWhich,
 
     IDE_DASSERT( aReadOffset != NULL );
 
-    // í˜„ì¬ ì†ì„±ì˜ ì˜¤í”„ì…‹ì„ ë°±ì—…í•œë‹¤.
+    // ÇöÀç ¼Ó¼ºÀÇ ¿ÀÇÁ¼ÂÀ» ¹é¾÷ÇÑ´Ù.
     sAnchorOffset = *aReadOffset;
 
-    // [1] ë¡œê·¸ì•µì»¤ë¡œë¶€í„° í˜„ì¬ ì†ì„±ì„ íŒë…í•œë‹¤.
+    // [1] ·Î±×¾ŞÄ¿·ÎºÎÅÍ ÇöÀç ¼Ó¼ºÀ» ÆÇµ¶ÇÑ´Ù.
     IDE_TEST( readDBFNodeAttr( &mFile[aWhich],
                                aReadOffset,
                                &mDataFileAttr )  != IDE_SUCCESS );
 
-    // [2] ë°±ì—…ìƒíƒœê°€ ì¡´ì¬í•  ê²½ìš° ë°±ì—…ìƒíƒœë¥¼ ì—†ì•¤ë‹¤.
+    // [2] ¹é¾÷»óÅÂ°¡ Á¸ÀçÇÒ °æ¿ì ¹é¾÷»óÅÂ¸¦ ¾ø¾Ø´Ù.
     mDataFileAttr.mState &= ~SMI_FILE_BACKUP;
 
     if ( aAttrOp == SMR_AAO_REWRITE_ATTR )
     {
         IDE_ASSERT( mWriteOffset == sAnchorOffset );
-        // [3] ë¡œê·¸ì•µì»¤ ë©”ëª¨ë¦¬ ë²„í¼ì— ê¸°ë¡í•œë‹¤.
+        // [3] ·Î±×¾ŞÄ¿ ¸Ş¸ğ¸® ¹öÆÛ¿¡ ±â·ÏÇÑ´Ù.
         IDE_TEST( writeToBuffer( (SChar*)&mDataFileAttr,
                                  ID_SIZEOF( smiDataFileAttr ) )
                   != IDE_SUCCESS );
@@ -1307,7 +1307,7 @@ IDE_RC smrLogAnchorMgr::initDataFileAttr( UInt                aWhich,
     {
         if ( SMI_FILE_STATE_IS_NOT_DROPPED( mDataFileAttr.mState ) )
         {
-            // 4.4 í•´ë‹¹ tablespace ë…¸ë“œì— datafile ë…¸ë“œë¥¼ ìƒì„±
+            // 4.4 ÇØ´ç tablespace ³ëµå¿¡ datafile ³ëµå¸¦ »ı¼º
             IDE_TEST( sddDiskMgr::loadDataFileNode( NULL, /* idvSQL* */
                                                     &mDataFileAttr,
                                                     sAnchorOffset )
@@ -1315,7 +1315,7 @@ IDE_RC smrLogAnchorMgr::initDataFileAttr( UInt                aWhich,
         }
         else
         {
-            // ì‚­ì œëœ íŒŒì¼ì€ ì´ˆê¸°í™”í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // »èÁ¦µÈ ÆÄÀÏÀº ÃÊ±âÈ­ÇÏÁö ¾Ê´Â´Ù.
         }
     }
     else
@@ -1331,12 +1331,12 @@ IDE_RC smrLogAnchorMgr::initDataFileAttr( UInt                aWhich,
 }
 
 /*
-  ë©”ëª¨ë¦¬ ì²´í¬í¬ì¸íŠ¸ PATH ì´ˆê¸°í™”
+  ¸Ş¸ğ¸® Ã¼Å©Æ÷ÀÎÆ® PATH ÃÊ±âÈ­
 
-  [IN]  aWhich       - ìœ íš¨í•œ ë¡œê·¸ì•µì»¤ ë²ˆí˜¸
-  [IN]  aAttrOp      - Attributeì´ˆê¸°í™” ë„ì¤‘ ìˆ˜í–‰í•  ì‘ì—…
-  [IN]  aReadOffset  - ë¡œê·¸ì•µì»¤ íŒŒì¼ìƒì—ì„œ í˜„ì¬ ì†ì„±ì˜ ì˜¤í”„ì…‹
-  [OUT] aReadOffset  - ë¡œê·¸ì•µì»¤ íŒŒì¼ìƒì—ì„œ ë‹¤ìŒ ì†ì„± ì‹œì‘ ì˜¤í”„ì…‹
+  [IN]  aWhich       - À¯È¿ÇÑ ·Î±×¾ŞÄ¿ ¹øÈ£
+  [IN]  aAttrOp      - AttributeÃÊ±âÈ­ µµÁß ¼öÇàÇÒ ÀÛ¾÷
+  [IN]  aReadOffset  - ·Î±×¾ŞÄ¿ ÆÄÀÏ»ó¿¡¼­ ÇöÀç ¼Ó¼ºÀÇ ¿ÀÇÁ¼Â
+  [OUT] aReadOffset  - ·Î±×¾ŞÄ¿ ÆÄÀÏ»ó¿¡¼­ ´ÙÀ½ ¼Ó¼º ½ÃÀÛ ¿ÀÇÁ¼Â
 */
 IDE_RC smrLogAnchorMgr::initChkptPathAttr( UInt                aWhich,
                                            smrAnchorAttrOption aAttrOp,
@@ -1349,10 +1349,10 @@ IDE_RC smrLogAnchorMgr::initChkptPathAttr( UInt                aWhich,
     IDE_DASSERT( aReadOffset != NULL );
 
 
-    // í˜„ì¬ ì†ì„±ì˜ ì˜¤í”„ì…‹ì„ ë°±ì—…í•œë‹¤.
+    // ÇöÀç ¼Ó¼ºÀÇ ¿ÀÇÁ¼ÂÀ» ¹é¾÷ÇÑ´Ù.
     sAnchorOffset = *aReadOffset;
 
-    // [1] ë¡œê·¸ì•µì»¤ë¡œë¶€í„° í˜„ì¬ ì†ì„±ì„ íŒë…í•œë‹¤.
+    // [1] ·Î±×¾ŞÄ¿·ÎºÎÅÍ ÇöÀç ¼Ó¼ºÀ» ÆÇµ¶ÇÑ´Ù.
     IDE_TEST( readChkptPathNodeAttr( &mFile[aWhich],
                                      aReadOffset,
                                      &mChkptPathAttr )
@@ -1373,26 +1373,24 @@ IDE_RC smrLogAnchorMgr::initChkptPathAttr( UInt                aWhich,
 
     if ( aAttrOp == SMR_AAO_LOAD_ATTR )
     {
-        sctTableSpaceMgr::findSpaceNodeIncludingDropped(
-                                                mChkptPathAttr.mSpaceID,
-                                                (void**)&sSpaceNode );
+        sSpaceNode = sctTableSpaceMgr::findSpaceNodeIncludingDropped( mChkptPathAttr.mSpaceID );
 
         if ( sSpaceNode != NULL )
         {
             if ( SMI_TBS_IS_DROPPED(sSpaceNode->mState) )
             {
-                // Drop ëœ Tablespaceì˜ ê²½ìš°
-                // Tablespace Nodeì¡°ì°¨ Addë˜ì§€ ì•Šì€ ìƒíƒœì´ë‹¤.
+                // Drop µÈ TablespaceÀÇ °æ¿ì
+                // Tablespace NodeÁ¶Â÷ AddµÇÁö ¾ÊÀº »óÅÂÀÌ´Ù.
                 //
-                // Checkpoint Path addí•˜ì§€ ì•ŠëŠ”ë‹¤
+                // Checkpoint Path addÇÏÁö ¾Ê´Â´Ù
             }
             else
             {
-                // DROP_PENDINGì˜ ìƒíƒœì¸ ê²½ìš°ì—ë„ ì—¬ê¸°ë¡œ ë¶„ê¸°ëœë‹¤.
-                // Drop Tablespace Pendingì—ì„œ ì²˜ë¦¬í•˜ì§€ ëª»í•œ ì‘ì—… ì²˜ë¦¬ë¥¼ ìœ„í•´ì„œ
-                // Checkpoint Path Nodeê°€ Tablespaceì— ë§¤ë‹¬ë ¤ì•¼ í•œë‹¤.
+                // DROP_PENDINGÀÇ »óÅÂÀÎ °æ¿ì¿¡µµ ¿©±â·Î ºĞ±âµÈ´Ù.
+                // Drop Tablespace Pending¿¡¼­ Ã³¸®ÇÏÁö ¸øÇÑ ÀÛ¾÷ Ã³¸®¸¦ À§ÇØ¼­
+                // Checkpoint Path Node°¡ Tablespace¿¡ ¸Å´Ş·Á¾ß ÇÑ´Ù.
 
-                //4.4 í•´ë‹¹ tablespace ë…¸ë“œì— Chkpt Path ë…¸ë“œë¥¼ ìƒì„±
+                //4.4 ÇØ´ç tablespace ³ëµå¿¡ Chkpt Path ³ëµå¸¦ »ı¼º
                 IDE_TEST( smmTBSStartupShutdown::createChkptPathNode(
                               (smiChkptPathAttr*)&mChkptPathAttr,
                               sAnchorOffset ) != IDE_SUCCESS );
@@ -1400,8 +1398,8 @@ IDE_RC smrLogAnchorMgr::initChkptPathAttr( UInt                aWhich,
         }
         else
         {
-            // DROPëœ Tablespaceì˜ ê²½ìš° ì•„ì˜ˆ initTablespaceAttrì—ì„œ
-            // loadì¡°ì°¨ ë˜ì§€ ì•Šì•˜ê¸° ë•Œë¬¸ì— sSpaceNodeê°€ NULLë¡œ ë‚˜ì˜¨ë‹¤.
+            // DROPµÈ TablespaceÀÇ °æ¿ì ¾Æ¿¹ initTablespaceAttr¿¡¼­
+            // loadÁ¶Â÷ µÇÁö ¾Ê¾Ò±â ¶§¹®¿¡ sSpaceNode°¡ NULL·Î ³ª¿Â´Ù.
         }
     }
     else
@@ -1417,12 +1415,12 @@ IDE_RC smrLogAnchorMgr::initChkptPathAttr( UInt                aWhich,
 }
 
 /*
-  ë©”ëª¨ë¦¬ ë°ì´íƒ€íŒŒì¼ ë©”íƒ€í—¤ë” ì´ˆê¸°í™”
+  ¸Ş¸ğ¸® µ¥ÀÌÅ¸ÆÄÀÏ ¸ŞÅ¸Çì´õ ÃÊ±âÈ­
 
-  [IN] aWhich       - ìœ íš¨í•œ ë¡œê·¸ì•µì»¤ ë²ˆí˜¸
-  [IN] aAttrOp      - Attributeì´ˆê¸°í™” ë„ì¤‘ ìˆ˜í–‰í•  ì‘ì—…
-  [IN] aReadOffset  - ë¡œê·¸ì•µì»¤ íŒŒì¼ìƒì—ì„œ í˜„ì¬ ì†ì„±ì˜ ì˜¤í”„ì…‹
-  [OUT] aReadOffset - ë¡œê·¸ì•µì»¤ íŒŒì¼ìƒì—ì„œ ë‹¤ìŒ ì†ì„± ì‹œì‘ ì˜¤í”„ì…‹
+  [IN] aWhich       - À¯È¿ÇÑ ·Î±×¾ŞÄ¿ ¹øÈ£
+  [IN] aAttrOp      - AttributeÃÊ±âÈ­ µµÁß ¼öÇàÇÒ ÀÛ¾÷
+  [IN] aReadOffset  - ·Î±×¾ŞÄ¿ ÆÄÀÏ»ó¿¡¼­ ÇöÀç ¼Ó¼ºÀÇ ¿ÀÇÁ¼Â
+  [OUT] aReadOffset - ·Î±×¾ŞÄ¿ ÆÄÀÏ»ó¿¡¼­ ´ÙÀ½ ¼Ó¼º ½ÃÀÛ ¿ÀÇÁ¼Â
 */
 IDE_RC smrLogAnchorMgr::initChkptImageAttr( UInt                aWhich,
                                             smrAnchorAttrOption aAttrOp,
@@ -1433,7 +1431,7 @@ IDE_RC smrLogAnchorMgr::initChkptImageAttr( UInt                aWhich,
 
     IDE_DASSERT( aReadOffset != NULL );
 
-    // í˜„ì¬ ì†ì„±ì˜ ì˜¤í”„ì…‹ì„ ë°±ì—…í•œë‹¤.
+    // ÇöÀç ¼Ó¼ºÀÇ ¿ÀÇÁ¼ÂÀ» ¹é¾÷ÇÑ´Ù.
     sAnchorOffset = *aReadOffset;
 
     IDE_TEST( readChkptImageAttr( &mFile[aWhich],
@@ -1452,28 +1450,26 @@ IDE_RC smrLogAnchorMgr::initChkptImageAttr( UInt                aWhich,
 
     if ( aAttrOp == SMR_AAO_LOAD_ATTR )
     {
-        sctTableSpaceMgr::findSpaceNodeIncludingDropped(
-                                                mChkptImageAttr.mSpaceID,
-                                                (void**)&sSpaceNode );
+        sSpaceNode = sctTableSpaceMgr::findSpaceNodeIncludingDropped( mChkptImageAttr.mSpaceID );
 
         if ( sSpaceNode != NULL )
         {
             if ( SMI_TBS_IS_DROPPED(sSpaceNode->mState) )
             {
-                // Drop ëœ Tablespaceì˜ ê²½ìš°
-                // Tablespace Nodeì¡°ì°¨ Addë˜ì§€ ì•Šì€ ìƒíƒœì´ë‹¤.
+                // Drop µÈ TablespaceÀÇ °æ¿ì
+                // Tablespace NodeÁ¶Â÷ AddµÇÁö ¾ÊÀº »óÅÂÀÌ´Ù.
                 //
-                // Checkpoint Imageë¥¼ addí•˜ì§€ ì•ŠëŠ”ë‹¤
+                // Checkpoint Image¸¦ addÇÏÁö ¾Ê´Â´Ù
             }
             else
             {
-                // DROP_PENDINGì˜ ìƒíƒœì¸ ê²½ìš°ì—ë„ ì—¬ê¸°ë¡œ ë¶„ê¸°ëœë‹¤.
-                // Drop Tablespace Pendingì—ì„œ ì²˜ë¦¬í•˜ì§€ ëª»í•œ ì‘ì—… ì²˜ë¦¬ë¥¼ ìœ„í•´ì„œ
-                // Checkpoint Image Nodeì˜ ì •ë³´ë¥¼ í† ëŒ€ë¡œ
-                // Tablespace Nodeì˜ ë°ì´í„°íŒŒì¼ ê°ì²´ë¥¼ ì„¤ì •í•˜ì—¬ì•¼ í•œë‹¤.
+                // DROP_PENDINGÀÇ »óÅÂÀÎ °æ¿ì¿¡µµ ¿©±â·Î ºĞ±âµÈ´Ù.
+                // Drop Tablespace Pending¿¡¼­ Ã³¸®ÇÏÁö ¸øÇÑ ÀÛ¾÷ Ã³¸®¸¦ À§ÇØ¼­
+                // Checkpoint Image NodeÀÇ Á¤º¸¸¦ Åä´ë·Î
+                // Tablespace NodeÀÇ µ¥ÀÌÅÍÆÄÀÏ °´Ã¼¸¦ ¼³Á¤ÇÏ¿©¾ß ÇÑ´Ù.
 
-                // ë¡œê·¸ì•µì»¤ë¡œë¶€í„° íŒë…ëœ ë©”ëª¨ë¦¬ ë°ì´íƒ€íŒŒì¼ ì†ì„±ì„
-                // ë©”ëª¨ë¦¬ ë°ì´íƒ€íŒŒì¼ ëŸ°íƒ€ì„í—¤ë”ì— ì„¤ì •í•œë‹¤.
+                // ·Î±×¾ŞÄ¿·ÎºÎÅÍ ÆÇµ¶µÈ ¸Ş¸ğ¸® µ¥ÀÌÅ¸ÆÄÀÏ ¼Ó¼ºÀ»
+                // ¸Ş¸ğ¸® µ¥ÀÌÅ¸ÆÄÀÏ ·±Å¸ÀÓÇì´õ¿¡ ¼³Á¤ÇÑ´Ù.
                 IDE_TEST( smmTBSStartupShutdown::initializeChkptImageAttr(
                                                           &mChkptImageAttr,
                                                           &mLogAnchor->mMemEndLSN,
@@ -1483,8 +1479,8 @@ IDE_RC smrLogAnchorMgr::initChkptImageAttr( UInt                aWhich,
         }
         else
         {
-            // DROPëœ Tablespaceì˜ ê²½ìš° ì•„ì˜ˆ initTablespaceAttrì—ì„œ
-            // loadì¡°ì°¨ ë˜ì§€ ì•Šì•˜ê¸° ë•Œë¬¸ì— sSpaceNodeê°€ NULLë¡œ ë‚˜ì˜¨ë‹¤.
+            // DROPµÈ TablespaceÀÇ °æ¿ì ¾Æ¿¹ initTablespaceAttr¿¡¼­
+            // loadÁ¶Â÷ µÇÁö ¾Ê¾Ò±â ¶§¹®¿¡ sSpaceNode°¡ NULL·Î ³ª¿Â´Ù.
         }
     }
     else
@@ -1500,12 +1496,12 @@ IDE_RC smrLogAnchorMgr::initChkptImageAttr( UInt                aWhich,
 }
 
 /***********************************************************************
-  Description :  Secondary  Buffer  íŒŒì¼
+  Description :  Secondary  Buffer  ÆÄÀÏ
 
-   [IN] aWhich        - ìœ íš¨í•œ ë¡œê·¸ì•µì»¤ ë²ˆí˜¸
-   [IN] aAttrOp       - Attributeì´ˆê¸°í™” ë„ì¤‘ ìˆ˜í–‰í•  ì‘ì—…
-   [IN] aReadOffset   - ë¡œê·¸ì•µì»¤ íŒŒì¼ìƒì—ì„œ í˜„ì¬ ì†ì„±ì˜ ì˜¤í”„ì…‹
-   [OUT] aReadOffset  - ë¡œê·¸ì•µì»¤ íŒŒì¼ìƒì—ì„œ ë‹¤ìŒ ì†ì„± ì‹œì‘ ì˜¤í”„ì…‹
+   [IN] aWhich        - À¯È¿ÇÑ ·Î±×¾ŞÄ¿ ¹øÈ£
+   [IN] aAttrOp       - AttributeÃÊ±âÈ­ µµÁß ¼öÇàÇÒ ÀÛ¾÷
+   [IN] aReadOffset   - ·Î±×¾ŞÄ¿ ÆÄÀÏ»ó¿¡¼­ ÇöÀç ¼Ó¼ºÀÇ ¿ÀÇÁ¼Â
+   [OUT] aReadOffset  - ·Î±×¾ŞÄ¿ ÆÄÀÏ»ó¿¡¼­ ´ÙÀ½ ¼Ó¼º ½ÃÀÛ ¿ÀÇÁ¼Â
  **********************************************************************/
 IDE_RC smrLogAnchorMgr::initSBufferFileAttr( UInt                aWhich,
                                              smrAnchorAttrOption aAttrOp,
@@ -1515,10 +1511,10 @@ IDE_RC smrLogAnchorMgr::initSBufferFileAttr( UInt                aWhich,
 
     IDE_DASSERT( aReadOffset != NULL );
 
-    // í˜„ì¬ ì†ì„±ì˜ ì˜¤í”„ì…‹ì„ ë°±ì—…í•œë‹¤.
+    // ÇöÀç ¼Ó¼ºÀÇ ¿ÀÇÁ¼ÂÀ» ¹é¾÷ÇÑ´Ù.
     sAnchorOffset = *aReadOffset;
 
-    // ë¡œê·¸ì•µì»¤ë¡œë¶€í„° í˜„ì¬ ì†ì„±ì„ íŒë…í•œë‹¤.
+    // ·Î±×¾ŞÄ¿·ÎºÎÅÍ ÇöÀç ¼Ó¼ºÀ» ÆÇµ¶ÇÑ´Ù.
     IDE_TEST( readSBufferFileAttr( &mFile[aWhich],
                                    aReadOffset,
                                    &mSBufferFileAttr )  
@@ -1527,7 +1523,7 @@ IDE_RC smrLogAnchorMgr::initSBufferFileAttr( UInt                aWhich,
     if ( aAttrOp == SMR_AAO_REWRITE_ATTR )
     {
         IDE_ASSERT( mWriteOffset == sAnchorOffset );
-        // ë¡œê·¸ì•µì»¤ ë©”ëª¨ë¦¬ ë²„í¼ì— ê¸°ë¡í•œë‹¤.
+        // ·Î±×¾ŞÄ¿ ¸Ş¸ğ¸® ¹öÆÛ¿¡ ±â·ÏÇÑ´Ù.
         IDE_TEST( writeToBuffer( (SChar*)&mSBufferFileAttr,
                                  ID_SIZEOF( smiSBufferFileAttr ) )
                  != IDE_SUCCESS );
@@ -1556,7 +1552,7 @@ IDE_RC smrLogAnchorMgr::initSBufferFileAttr( UInt                aWhich,
 }
 
 /***********************************************************************
- * Description : loganchorì— ì„œë²„ìƒíƒœ ì •ë³´ ë° ë¡œê¹… ì •ë³´ flush
+ * Description : loganchor¿¡ ¼­¹ö»óÅÂ Á¤º¸ ¹× ·Î±ë Á¤º¸ flush
  ***********************************************************************/
 IDE_RC smrLogAnchorMgr::updateSVRStateAndFlush( smrServerStatus   aSvrStatus,
                                                 smLSN           * aEndLSN,
@@ -1592,7 +1588,7 @@ IDE_RC smrLogAnchorMgr::updateSVRStateAndFlush( smrServerStatus   aSvrStatus,
 }
 
 /***********************************************************************
- * Description : loganchorì— ì„œë²„ìƒíƒœ ì •ë³´ flush
+ * Description : loganchor¿¡ ¼­¹ö»óÅÂ Á¤º¸ flush
  ***********************************************************************/
 IDE_RC smrLogAnchorMgr::updateSVRStateAndFlush( smrServerStatus  aSvrStatus )
 {
@@ -1626,10 +1622,10 @@ IDE_RC smrLogAnchorMgr::updateSVRStateAndFlush( smrServerStatus  aSvrStatus )
 }
 
 /***********************************************************************
- * Description : loganchorì— ì„œë²„ê°€ ì‚¬ìš©í•˜ëŠ” TXSEG Entry ê°œìˆ˜ë¥¼
- *               ì €ì¥í•œë‹¤.
+ * Description : loganchor¿¡ ¼­¹ö°¡ »ç¿ëÇÏ´Â TXSEG Entry °³¼ö¸¦
+ *               ÀúÀåÇÑ´Ù.
  *
- *               ì €ì¥ë˜ëŠ” ê°’ì€ ë³´ì •ë˜ì§€ ì•Šì€ í”„ë¡œí¼í‹°ì—ì„œ ì½ì€ ê°’ì´ë‹¤.
+ *               ÀúÀåµÇ´Â °ªÀº º¸Á¤µÇÁö ¾ÊÀº ÇÁ·ÎÆÛÆ¼¿¡¼­ ÀĞÀº °ªÀÌ´Ù.
  *
  ***********************************************************************/
 IDE_RC smrLogAnchorMgr::updateTXSEGEntryCntAndFlush( UInt aEntryCnt )
@@ -1646,7 +1642,7 @@ IDE_RC smrLogAnchorMgr::updateTXSEGEntryCntAndFlush( UInt aEntryCnt )
 
 
 /***********************************************************************
- * Description : loganchorì— ì„œë²„ìƒíƒœ ì •ë³´ flush
+ * Description : loganchor¿¡ ¼­¹ö»óÅÂ Á¤º¸ flush
  ***********************************************************************/
 IDE_RC smrLogAnchorMgr::updateArchiveAndFlush( smiArchiveMode   aArchiveMode )
 {
@@ -1676,10 +1672,10 @@ IDE_RC smrLogAnchorMgr::updateArchiveAndFlush( smiArchiveMode   aArchiveMode )
 }
 
 /*
-   Loganchorì— Disk Redo LSN ê³¼ RedoLSNì„ ê°±ì‹ í•œë‹¤ .
+   Loganchor¿¡ Disk Redo LSN °ú RedoLSNÀ» °»½ÅÇÑ´Ù .
 
-   [IN] aDiskRedoLSN   : ë””ìŠ¤í¬ ë°ì´íƒ€ë² ì´ìŠ¤ì˜ Restart Point
-   [IN] aMemRedoLSN : ë””ìŠ¤í¬ ë°ì´íƒ€ë² ì´ìŠ¤ì˜ Restart Point
+   [IN] aDiskRedoLSN   : µğ½ºÅ© µ¥ÀÌÅ¸º£ÀÌ½ºÀÇ Restart Point
+   [IN] aMemRedoLSN : µğ½ºÅ© µ¥ÀÌÅ¸º£ÀÌ½ºÀÇ Restart Point
 */
 IDE_RC smrLogAnchorMgr::updateRedoLSN( smLSN*  aDiskRedoLSN,
                                        smLSN*  aMemRedoLSN )
@@ -1733,7 +1729,7 @@ IDE_RC smrLogAnchorMgr::updateRedoLSN( smLSN*  aDiskRedoLSN,
 }
 
 /**********************************************************************
- * Description : loganchorì— Disk Redo LSN ì •ë³´ flush
+ * Description : loganchor¿¡ Disk Redo LSN Á¤º¸ flush
  **********************************************************************/
 IDE_RC smrLogAnchorMgr::updateResetLSN(smLSN*  aResetLSN)
 {
@@ -1742,17 +1738,17 @@ IDE_RC smrLogAnchorMgr::updateResetLSN(smLSN*  aResetLSN)
 
     IDE_DASSERT ( aResetLSN != NULL );
 
-    // Updateí•˜ëŠ” ê²½ìš°ëŠ” ë‹¤ìŒ 2ê°€ì§€ ê²½ìš°ì´ë‹¤.
-    // ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê¸°ì „ì— Error ì²´í¬ë¥¼ í•œë‹¤.
+    // UpdateÇÏ´Â °æ¿ì´Â ´ÙÀ½ 2°¡Áö °æ¿ìÀÌ´Ù.
+    // ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ±âÀü¿¡ Error Ã¼Å©¸¦ ÇÑ´Ù.
 
-    // (1) In-Complete Media Recovery ìˆ˜í–‰ì™„ë£Œì‹œ
+    // (1) In-Complete Media Recovery ¼öÇà¿Ï·á½Ã
 
-    // ë¶ˆì™„ì „ë³µêµ¬ì´ê¸° ë•Œë¬¸ì— ë¯¸ë””ì–´ ë³µêµ¬ë¥¼ ìˆ˜í–‰í•˜ê³ ,
-    // ê³¼ê±°ì˜ Disk Redo LSN ë³´ë‹¤ ë¯¸ë˜ì˜ ResetLog LSNì„
-    // ì„¤ì •í•œë‹¤.
+    // ºÒ¿ÏÀüº¹±¸ÀÌ±â ¶§¹®¿¡ ¹Ìµğ¾î º¹±¸¸¦ ¼öÇàÇÏ°í,
+    // °ú°ÅÀÇ Disk Redo LSN º¸´Ù ¹Ì·¡ÀÇ ResetLog LSNÀ»
+    // ¼³Á¤ÇÑ´Ù.
 
-    // (2) Meta ResetLogs ìˆ˜í–‰ì‹œ
-    // LSN MAXë¡œ Updateí•˜ê¸° ë•Œë¬¸ì—, mDiskRedoLSNë³´ë‹¤ ë¬´ì¡°ê±´ í¬ë‹¤.
+    // (2) Meta ResetLogs ¼öÇà½Ã
+    // LSN MAX·Î UpdateÇÏ±â ¶§¹®¿¡, mDiskRedoLSNº¸´Ù ¹«Á¶°Ç Å©´Ù.
 
     IDE_ASSERT( smrCompareLSN::isLT( &mLogAnchor->mDiskRedoLSN,
                                      aResetLSN )
@@ -1781,7 +1777,7 @@ IDE_RC smrLogAnchorMgr::updateResetLSN(smLSN*  aResetLSN)
 }
 
 /**********************************************************************
- * Description : loganchorì— MediaRecoveryì‹œ redoë¥¼ ì‹œì‘í•  LSN ì •ë³´ flush
+ * Description : loganchor¿¡ MediaRecovery½Ã redo¸¦ ½ÃÀÛÇÒ LSN Á¤º¸ flush
  **********************************************************************/
 IDE_RC smrLogAnchorMgr::updateMediaRecoveryLSN( smLSN * aMediaRecoveryLSN )
 {
@@ -1790,10 +1786,10 @@ IDE_RC smrLogAnchorMgr::updateMediaRecoveryLSN( smLSN * aMediaRecoveryLSN )
 
     IDE_DASSERT( aMediaRecoveryLSN != NULL );
 
-    /* aMediaRecoveryLSNì˜ ê°’ì€ checkpoint LSN(mDiskRedoLSN or mBeginChkptLSN )
-     * ë³´ë‹¤ ì‘ê±°ë‚˜ ê°™ì•„ì•¼ í•œë‹¤.
-     * ë‹¨, create databaseì‹œì—ëŠ” mDiskRedoLSNì™€ mBeginChkptLSNì€INIT ê°’ìœ¼ë¡œ
-     * ë“¤ì–´ ì˜¨ë‹¤. */
+    /* aMediaRecoveryLSNÀÇ °ªÀº checkpoint LSN(mDiskRedoLSN or mBeginChkptLSN )
+     * º¸´Ù ÀÛ°Å³ª °°¾Æ¾ß ÇÑ´Ù.
+     * ´Ü, create database½Ã¿¡´Â mDiskRedoLSN¿Í mBeginChkptLSNÀºINIT °ªÀ¸·Î
+     * µé¾î ¿Â´Ù. */
 
     if ( (SM_IS_LSN_INIT(mLogAnchor->mDiskRedoLSN) == ID_FALSE ) &&
          (SM_IS_LSN_INIT(mLogAnchor->mBeginChkptLSN) == ID_FALSE) )
@@ -1831,7 +1827,7 @@ IDE_RC smrLogAnchorMgr::updateMediaRecoveryLSN( smLSN * aMediaRecoveryLSN )
 
 
 /***********************************************************************
- * Description : loganchorì— checkpoint ì •ë³´ flush
+ * Description : loganchor¿¡ checkpoint Á¤º¸ flush
  ***********************************************************************/
 IDE_RC smrLogAnchorMgr::updateChkptAndFlush( smLSN  * aBeginChkptLSN,
                                              smLSN  * aEndChkptLSN,
@@ -1851,11 +1847,11 @@ IDE_RC smrLogAnchorMgr::updateChkptAndFlush( smLSN  * aBeginChkptLSN,
 
     SM_GET_LSN( mLogAnchor->mMemEndLSN, *aEndLSN );
 
-    /* BUG-39289 : ë§Œì•½ ì—…ë°ì´íŠ¸í•  LST(aLastFileNo)ê°€ í˜„ì¬ ë¡œê·¸ ì•µì»¤ì˜
-       LST(mLogAnchor->mLstDeleteFileNo)ì™€ ê°™ìœ¼ë©´ ì²´í¬í¬ì¸íŠ¸ì—ì„œëŠ” ë¡œê·¸ë¥¼
-       ì§€ìš°ì§€ ì•ŠëŠ”ë‹¤ëŠ” ì˜ë¯¸ì´ë‹¤. ë”°ë¼ì„œ ì—…ë°ì´íŠ¸í•  FST, LSTê°’ê³¼ ë¡œê·¸ì•µì»¤ì˜
-       FST, LSTê°’ì´ ê°™ë‹¤ëŠ” ì˜ë¯¸ì´ë¯€ë¡œ ì´ ê²½ìš°ì—ëŠ” ë¡œê·¸ì•µì»¤ì— ì—…ë°ì´íŠ¸í•˜ì§€
-       ì•ŠëŠ”ë‹¤. */
+    /* BUG-39289 : ¸¸¾à ¾÷µ¥ÀÌÆ®ÇÒ LST(aLastFileNo)°¡ ÇöÀç ·Î±× ¾ŞÄ¿ÀÇ
+       LST(mLogAnchor->mLstDeleteFileNo)¿Í °°À¸¸é Ã¼Å©Æ÷ÀÎÆ®¿¡¼­´Â ·Î±×¸¦
+       Áö¿ìÁö ¾Ê´Â´Ù´Â ÀÇ¹ÌÀÌ´Ù. µû¶ó¼­ ¾÷µ¥ÀÌÆ®ÇÒ FST, LST°ª°ú ·Î±×¾ŞÄ¿ÀÇ
+       FST, LST°ªÀÌ °°´Ù´Â ÀÇ¹ÌÀÌ¹Ç·Î ÀÌ °æ¿ì¿¡´Â ·Î±×¾ŞÄ¿¿¡ ¾÷µ¥ÀÌÆ®ÇÏÁö
+       ¾Ê´Â´Ù. */
     if ( mLogAnchor->mLstDeleteFileNo != *aLastFileNo )
     {
         mLogAnchor->mFstDeleteFileNo = *aFirstFileNo;
@@ -1885,7 +1881,7 @@ IDE_RC smrLogAnchorMgr::updateChkptAndFlush( smLSN  * aBeginChkptLSN,
 }
 
 /***********************************************************************
- * Description : Recovery From Replication(proj-1608)ì„ ìœ„í•œ LSN ì •ë³´ì„¤ì • ë° flush
+ * Description : Recovery From Replication(proj-1608)À» À§ÇÑ LSN Á¤º¸¼³Á¤ ¹× flush
  ***********************************************************************/
 IDE_RC smrLogAnchorMgr::updateReplRecoveryLSN( smLSN aReplRecoveryLSN )
 {
@@ -1916,9 +1912,9 @@ IDE_RC smrLogAnchorMgr::updateReplRecoveryLSN( smLSN aReplRecoveryLSN )
 
 /*
    PRJ-1548 User Memory Tablespace
-   ë³€ê²½ëœ í•˜ë‚˜ì˜ TBS Nodeë¥¼ Loganchorì— ë°˜ì˜í•œë‹¤.
+   º¯°æµÈ ÇÏ³ªÀÇ TBS Node¸¦ Loganchor¿¡ ¹İ¿µÇÑ´Ù.
 
-   sctTableSpaceMgr::lock()ì„ íšë“í•œ ìƒíƒœì—ì„œ í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
+   sctTableSpaceMgr::lockSpaceNode()¸¦ È¹µæÇÑ »óÅÂ¿¡¼­ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
 */
 
 IDE_RC smrLogAnchorMgr::updateTBSNodeAndFlush( sctTableSpaceNode  * aSpaceNode )
@@ -1963,9 +1959,9 @@ IDE_RC smrLogAnchorMgr::updateTBSNodeAndFlush( sctTableSpaceNode  * aSpaceNode )
 
 /*
    PRJ-1548 User Memory Tablespace
-   ë³€ê²½ëœ í•˜ë‚˜ì˜ DRDB DBF Nodeë¥¼ Loganchorì— ë°˜ì˜í•œë‹¤.
+   º¯°æµÈ ÇÏ³ªÀÇ DRDB DBF Node¸¦ Loganchor¿¡ ¹İ¿µÇÑ´Ù.
 
-   sctTableSpaceMgr::lock()ì„ íšë“í•œ ìƒíƒœì—ì„œ í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
+   SpaceNode Mutex()À» È¹µæÇÑ »óÅÂ¿¡¼­ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
 */
 
 IDE_RC smrLogAnchorMgr::updateDBFNodeAndFlush( sddDataFileNode  * aFileNode )
@@ -1978,7 +1974,7 @@ IDE_RC smrLogAnchorMgr::updateDBFNodeAndFlush( sddDataFileNode  * aFileNode )
     sState = 1;
 
     /* ------------------------------------------------
-     * 1. smrLogAnchor ë²„í¼ ê°±ì‹ 
+     * 1. smrLogAnchor ¹öÆÛ °»½Å
      * ----------------------------------------------*/
     sddDataFile::getDataFileAttr( aFileNode,
                                   &mDataFileAttr );
@@ -2011,11 +2007,11 @@ IDE_RC smrLogAnchorMgr::updateDBFNodeAndFlush( sddDataFileNode  * aFileNode )
 
 /*
    PRJ-1548 User Memory Tablespace
-   ë³€ê²½ëœ í•˜ë‚˜ì˜ Checkpint Path Nodeë¥¼ Loganchorì— ë°˜ì˜í•œë‹¤.
+   º¯°æµÈ ÇÏ³ªÀÇ Checkpint Path Node¸¦ Loganchor¿¡ ¹İ¿µÇÑ´Ù.
 
-   sctTableSpaceMgr::lock()ì„ íšë“í•œ ìƒíƒœì—ì„œ í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
+   SpaceNode Mutex()À» È¹µæÇÑ »óÅÂ¿¡¼­ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
 
-   [IN] aChkptPathNode - ë³€ê²½í•  ì²´í¬í¬ì¸íŠ¸ ê²½ë¡œ ë…¸ë“œ
+   [IN] aChkptPathNode - º¯°æÇÒ Ã¼Å©Æ÷ÀÎÆ® °æ·Î ³ëµå
 */
 
 IDE_RC smrLogAnchorMgr::updateChkptPathAttrAndFlush(
@@ -2030,7 +2026,7 @@ IDE_RC smrLogAnchorMgr::updateChkptPathAttrAndFlush(
     sState = 1;
 
     /* ------------------------------------------------
-     * 1. smrLogAnchor ë²„í¼ ê°±ì‹ 
+     * 1. smrLogAnchor ¹öÆÛ °»½Å
      * ----------------------------------------------*/
     IDE_TEST( updateToBuffer( (SChar*)& aChkptPathNode->mChkptPathAttr,
                               aChkptPathNode->mAnchorOffset,
@@ -2060,9 +2056,9 @@ IDE_RC smrLogAnchorMgr::updateChkptPathAttrAndFlush(
 
 /*
    PRJ-1548 User Memory Tablespace
-   ë³€ê²½ëœ í•˜ë‚˜ì˜ Checkpoint Path Nodeë¥¼ Loganchorì— ë°˜ì˜í•œë‹¤.
+   º¯°æµÈ ÇÏ³ªÀÇ Checkpoint Path Node¸¦ Loganchor¿¡ ¹İ¿µÇÑ´Ù.
 
-   sctTableSpaceMgr::lock()ì„ íšë“í•œ ìƒíƒœì—ì„œ í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
+   spaceNode MutexÀ» È¹µæÇÑ »óÅÂ¿¡¼­ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
 */
 
 IDE_RC smrLogAnchorMgr::updateChkptImageAttrAndFlush(
@@ -2078,7 +2074,7 @@ IDE_RC smrLogAnchorMgr::updateChkptImageAttrAndFlush(
     sState = 1;
 
     /* ------------------------------------------------
-     * 1. smrLogAnchor ë²„í¼ ê°±ì‹ 
+     * 1. smrLogAnchor ¹öÆÛ °»½Å
      * ----------------------------------------------*/
     IDE_TEST( updateToBuffer( (SChar*)aChkptImageAttr,
                               aCrtDBFileInfo->mAnchorOffset,
@@ -2109,7 +2105,7 @@ IDE_RC smrLogAnchorMgr::updateChkptImageAttrAndFlush(
 
 /*
    PROJ-2102 Fast Secondary Buffer
-   ë³€ê²½ëœ Secondary Buffer Nodeë¥¼ Loganchorì— ë°˜ì˜í•œë‹¤.
+   º¯°æµÈ Secondary Buffer Node¸¦ Loganchor¿¡ ¹İ¿µÇÑ´Ù.
 */
 
 IDE_RC smrLogAnchorMgr::updateSBufferNodeAndFlush( sdsFileNode   * aFileNode )
@@ -2122,7 +2118,7 @@ IDE_RC smrLogAnchorMgr::updateSBufferNodeAndFlush( sdsFileNode   * aFileNode )
     sState = 1;
 
     /* ------------------------------------------------
-     * 1. smrLogAnchor ë²„í¼ ê°±ì‹ 
+     * 1. smrLogAnchor ¹öÆÛ °»½Å
      * ----------------------------------------------*/
     sdsBufferMgr::getFileAttr( aFileNode,
                                &mSBufferFileAttr );
@@ -2155,7 +2151,7 @@ IDE_RC smrLogAnchorMgr::updateSBufferNodeAndFlush( sdsFileNode   * aFileNode )
 
 /******************************************************************************
  * PRJ-1548 User Memory Tablespace
- * loganchorì˜ TBS Node ì •ë³´ë¥¼ ì¶”ê°€í•˜ëŠ” í•¨ìˆ˜
+ * loganchorÀÇ TBS Node Á¤º¸¸¦ Ãß°¡ÇÏ´Â ÇÔ¼ö
  ******************************************************************************/
 IDE_RC smrLogAnchorMgr::addTBSNodeAndFlush( sctTableSpaceNode * aSpaceNode,
                                             UInt              * aAnchorOffset )
@@ -2168,32 +2164,29 @@ IDE_RC smrLogAnchorMgr::addTBSNodeAndFlush( sctTableSpaceNode * aSpaceNode,
     IDE_TEST( lock() != IDE_SUCCESS );
     sState = 1;
 
-    // New TableSpace ID ê°±ì‹ 
+    // New TableSpace ID °»½Å
     mLogAnchor->mNewTableSpaceID = sctTableSpaceMgr::getNewTableSpaceID();
 
-    /* read from disk manager */
-    if ( sctTableSpaceMgr::isDiskTableSpace( aSpaceNode->mID ) == ID_TRUE )
+    switch( sctTableSpaceMgr::getTBSLocation( aSpaceNode ) )
     {
-        sddTableSpace::getTableSpaceAttr( (sddTableSpaceNode *)aSpaceNode,
-                                          &mTableSpaceAttr );
-    }
-    else if ( sctTableSpaceMgr::isMemTableSpace( aSpaceNode->mID ) == ID_TRUE )
-    {
-        smmManager::getTableSpaceAttr( (smmTBSNode*)aSpaceNode,
-                                       &mTableSpaceAttr );
-    }
-    /* PROJ-1594 Volatile TBS */
-    else if ( sctTableSpaceMgr::isVolatileTableSpace( aSpaceNode->mID ) == ID_TRUE )
-    {
-        svmManager::getTableSpaceAttr( (svmTBSNode*)aSpaceNode,
-                                       &mTableSpaceAttr );
-    }
-    else
-    {
-        IDE_ASSERT(0);
+        case SMI_TBS_DISK:
+            sddTableSpace::getTableSpaceAttr( (sddTableSpaceNode *)aSpaceNode,
+                                              &mTableSpaceAttr );
+            break;
+        case SMI_TBS_MEMORY:
+            smmManager::getTableSpaceAttr( (smmTBSNode*)aSpaceNode,
+                                           &mTableSpaceAttr );
+            break;
+        case SMI_TBS_VOLATILE:
+            svmManager::getTableSpaceAttr( (svmTBSNode*)aSpaceNode,
+                                           &mTableSpaceAttr );
+            break;
+        default:
+            IDE_ASSERT(0);
+            break;
     }
 
-    // ê¸°ë¡í•˜ê¸° ì „ì— ë©”ëª¨ë¦¬ ë²„í¼ ì˜¤í”„ì…‹ì„ ë°˜í™˜
+    // ±â·ÏÇÏ±â Àü¿¡ ¸Ş¸ğ¸® ¹öÆÛ ¿ÀÇÁ¼ÂÀ» ¹İÈ¯
     *aAnchorOffset = mWriteOffset;
 
     /* write to loganchor buffer */
@@ -2223,7 +2216,7 @@ IDE_RC smrLogAnchorMgr::addTBSNodeAndFlush( sctTableSpaceNode * aSpaceNode,
 }
 
 /* PRJ-1548 User Memory Tablespace
- * loganchorì˜ DBF Node ì •ë³´ë¥¼ ì¶”ê°€í•˜ëŠ” í•¨ìˆ˜ */
+ * loganchorÀÇ DBF Node Á¤º¸¸¦ Ãß°¡ÇÏ´Â ÇÔ¼ö */
 IDE_RC smrLogAnchorMgr::addDBFNodeAndFlush( sddTableSpaceNode * aSpaceNode,
                                             sddDataFileNode   * aFileNode,
                                             UInt              * aAnchorOffset )
@@ -2237,7 +2230,7 @@ IDE_RC smrLogAnchorMgr::addDBFNodeAndFlush( sddTableSpaceNode * aSpaceNode,
     IDE_TEST( lock() != IDE_SUCCESS );
     sState = 1;
 
-    // TBS Attrì˜ NewFileID ê°±ì‹ 
+    // TBS AttrÀÇ NewFileID °»½Å
     sddTableSpace::getTableSpaceAttr( (sddTableSpaceNode *)aSpaceNode,
                                       &mTableSpaceAttr );
 
@@ -2246,12 +2239,12 @@ IDE_RC smrLogAnchorMgr::addDBFNodeAndFlush( sddTableSpaceNode * aSpaceNode,
                               ID_SIZEOF(smiTableSpaceAttr) )
               != IDE_SUCCESS );
 
-    // ìƒˆë¡œ ìƒì„±ëœ DBF Attr ì •ë³´ íšë“
+    // »õ·Î »ı¼ºµÈ DBF Attr Á¤º¸ È¹µæ
     sddDataFile::getDataFileAttr( (sddDataFileNode *)aFileNode,
                                   &mDataFileAttr );
 
 
-    // ê¸°ë¡í•˜ê¸° ì „ì— ë©”ëª¨ë¦¬ ë²„í¼ ì˜¤í”„ì…‹ì„ ë°˜í™˜
+    // ±â·ÏÇÏ±â Àü¿¡ ¸Ş¸ğ¸® ¹öÆÛ ¿ÀÇÁ¼ÂÀ» ¹İÈ¯
     *aAnchorOffset = mWriteOffset;
 
     /* write to loganchor buffer */
@@ -2282,7 +2275,7 @@ IDE_RC smrLogAnchorMgr::addDBFNodeAndFlush( sddTableSpaceNode * aSpaceNode,
 
 /*
    PRJ-1548 User Memory Tablespace
-    loganchorì˜ ChkptPath Node ì •ë³´ë¥¼ ì¶”ê°€í•˜ëŠ” í•¨ìˆ˜
+    loganchorÀÇ ChkptPath Node Á¤º¸¸¦ Ãß°¡ÇÏ´Â ÇÔ¼ö
 */
 IDE_RC smrLogAnchorMgr::addChkptPathNodeAndFlush( smmChkptPathNode  * aChkptPathNode,
                                                   UInt              * aAnchorOffset )
@@ -2295,7 +2288,7 @@ IDE_RC smrLogAnchorMgr::addChkptPathNodeAndFlush( smmChkptPathNode  * aChkptPath
     IDE_TEST( lock() != IDE_SUCCESS );
     sState = 1;
 
-    // ê¸°ë¡í•˜ê¸° ì „ì— ë©”ëª¨ë¦¬ ë²„í¼ ì˜¤í”„ì…‹ì„ ë°˜í™˜
+    // ±â·ÏÇÏ±â Àü¿¡ ¸Ş¸ğ¸® ¹öÆÛ ¿ÀÇÁ¼ÂÀ» ¹İÈ¯
     *aAnchorOffset = mWriteOffset;
 
     /* write to loganchor buffer */
@@ -2326,10 +2319,10 @@ IDE_RC smrLogAnchorMgr::addChkptPathNodeAndFlush( smmChkptPathNode  * aChkptPath
 
 /*
     PRJ-1548 User Memory Tablespace
-    ë©”ëª¨ë¦¬ ì²´í¬í¬ì¸íŠ¸ ì´ë¯¸ì§€ìƒì„±ì‹œ ë¡œê·¸ì•µì»¤ì— ì²´í¬í¬ì¸íŠ¸ì´ë¯¸ì§€ ì†ì„±ì„
-    ì €ì¥í•œë‹¤.
+    ¸Ş¸ğ¸® Ã¼Å©Æ÷ÀÎÆ® ÀÌ¹ÌÁö»ı¼º½Ã ·Î±×¾ŞÄ¿¿¡ Ã¼Å©Æ÷ÀÎÆ®ÀÌ¹ÌÁö ¼Ó¼ºÀ»
+    ÀúÀåÇÑ´Ù.
 
-    [IN[  aChkptImageAttr : ì²´í¬í¬ì¸íŠ¸ì´ë¯¸ì§€ì˜ ì†ì„±
+    [IN[  aChkptImageAttr : Ã¼Å©Æ÷ÀÎÆ®ÀÌ¹ÌÁöÀÇ ¼Ó¼º
 */
 IDE_RC smrLogAnchorMgr::addChkptImageAttrAndFlush(
                                             smmChkptImageAttr * aChkptImageAttr,
@@ -2347,7 +2340,7 @@ IDE_RC smrLogAnchorMgr::addChkptImageAttrAndFlush(
     IDE_TEST( lock() != IDE_SUCCESS );
     sState = 1;
 
-    // ê¸°ë¡í•˜ê¸° ì „ì— ë©”ëª¨ë¦¬ ë²„í¼ ì˜¤í”„ì…‹ì„ ë°˜í™˜
+    // ±â·ÏÇÏ±â Àü¿¡ ¸Ş¸ğ¸® ¹öÆÛ ¿ÀÇÁ¼ÂÀ» ¹İÈ¯
     *aAnchorOffset = mWriteOffset;
 
     /* write to loganchor buffer */
@@ -2376,7 +2369,7 @@ IDE_RC smrLogAnchorMgr::addChkptImageAttrAndFlush(
     return IDE_FAILURE;
 }
 
-/* Secondary Buffrer Node ì •ë³´ë¥¼ LogAnchorì— ì¶”ê°€í•œë‹¤. */
+/* Secondary Buffrer Node Á¤º¸¸¦ LogAnchor¿¡ Ãß°¡ÇÑ´Ù. */
 IDE_RC smrLogAnchorMgr::addSBufferNodeAndFlush( sdsFileNode  * aFileNode,
                                                 UInt         * aAnchorOffset )
 {
@@ -2387,11 +2380,11 @@ IDE_RC smrLogAnchorMgr::addSBufferNodeAndFlush( sdsFileNode  * aFileNode,
     IDE_TEST( lock() != IDE_SUCCESS );
     sState = 1;
 
-    // ìƒˆë¡œ ìƒì„±ëœ DBF Attr ì •ë³´ íšë“
+    // »õ·Î »ı¼ºµÈ DBF Attr Á¤º¸ È¹µæ
     sdsBufferMgr::getFileAttr( aFileNode,
                                &mSBufferFileAttr );
 
-    // ê¸°ë¡í•˜ê¸° ì „ì— ë©”ëª¨ë¦¬ ë²„í¼ ì˜¤í”„ì…‹ì„ ë°˜í™˜
+    // ±â·ÏÇÏ±â Àü¿¡ ¸Ş¸ğ¸® ¹öÆÛ ¿ÀÇÁ¼ÂÀ» ¹İÈ¯
     *aAnchorOffset = mWriteOffset;
 
      /* write to loganchor buffer */
@@ -2421,8 +2414,8 @@ IDE_RC smrLogAnchorMgr::addSBufferNodeAndFlush( sdsFileNode  * aFileNode,
 }
 
 /***********************************************************************
- * Description : checkpointì‹œ memory tablespaceì˜ Stable Noë¥¼ ê°±ì‹ í•œë‹¤.
- * checkpointì‹œì—ë§Œ í˜¸ì¶œëœë‹¤.
+ * Description : checkpoint½Ã memory tablespaceÀÇ Stable No¸¦ °»½ÅÇÑ´Ù.
+ * checkpoint½Ã¿¡¸¸ È£ÃâµÈ´Ù.
  ***********************************************************************/
 IDE_RC smrLogAnchorMgr::updateStableNoOfAllMemTBSAndFlush()
 {
@@ -2434,40 +2427,38 @@ IDE_RC smrLogAnchorMgr::updateStableNoOfAllMemTBSAndFlush()
     sState = 1;
 
     /* ------------------------------------------------
-     * 1. tablespaceì •ë³´ë¥¼ mBufferì— ê¸°ë¡
-     * ë””ìŠ¤í¬ê´€ë¦¬ìì˜ ëª¨ë“  tablespace ë…¸ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ìˆœíšŒí•˜ë©´ì„œ
-     * ìš”ì•½ì •ë³´ë¥¼ ì–»ì–´ì„œ ê¸°ë¡í•œë‹¤.
+     * 1. tablespaceÁ¤º¸¸¦ mBuffer¿¡ ±â·Ï
+     * µğ½ºÅ©°ü¸®ÀÚÀÇ ¸ğµç tablespace ³ëµå ¸®½ºÆ®¸¦ ¼øÈ¸ÇÏ¸é¼­
+     * ¿ä¾àÁ¤º¸¸¦ ¾ò¾î¼­ ±â·ÏÇÑ´Ù.
      * ----------------------------------------------*/
-    sctTableSpaceMgr::getFirstSpaceNode( (void**)&sCurrSpaceNode );
+    sCurrSpaceNode = sctTableSpaceMgr::getFirstSpaceNode();
 
     while ( sCurrSpaceNode != NULL )
     {
-        sctTableSpaceMgr::getNextSpaceNode( (void*)sCurrSpaceNode,
-                                            (void**)&sNextSpaceNode );
+        sNextSpaceNode = sctTableSpaceMgr::getNextSpaceNode( sCurrSpaceNode->mID );
 
-        // disk tablespaceëŠ” skip í•œë‹¤.
-        if ( sctTableSpaceMgr::isDiskTableSpace( sCurrSpaceNode->mID ) == ID_TRUE )
+        switch( sctTableSpaceMgr::getTBSLocation( sCurrSpaceNode ) )
         {
-            sCurrSpaceNode = sNextSpaceNode;
-            continue;
-        }
-        // volatile tablespaceëŠ” skip í•œë‹¤.
-        else if ( sctTableSpaceMgr::isVolatileTableSpace( sCurrSpaceNode->mID ) == ID_TRUE )
-        {
-            sCurrSpaceNode = sNextSpaceNode;
-            continue;
-        }
-        else
-        {
-            IDE_ERROR ( sctTableSpaceMgr::isMemTableSpace(sCurrSpaceNode->mID ) == ID_TRUE );
+            case SMI_TBS_DISK:
+            case SMI_TBS_VOLATILE:
+                {
+                    sCurrSpaceNode = sNextSpaceNode;
+                    continue;
+                }
+                break;
+            case SMI_TBS_MEMORY:
+                break;
+            default:
+                IDE_ERROR(0);
+                break;
         }
 
         IDE_TEST( sctTableSpaceMgr::latchSyncMutex( sCurrSpaceNode )
                   != IDE_SUCCESS );
         sState = 2;
 
-        // drop/discarded/executing_drop_pending/offlineëœ
-        // tablespaceëŠ” skip í•œë‹¤.
+        // drop/discarded/executing_drop_pending/offlineµÈ
+        // tablespace´Â skip ÇÑ´Ù.
         if ( sctTableSpaceMgr::hasState( sCurrSpaceNode,
                                          SCT_SS_SKIP_CHECKPOINT )
              == ID_TRUE )
@@ -2484,11 +2475,11 @@ IDE_RC smrLogAnchorMgr::updateStableNoOfAllMemTBSAndFlush()
             /* nothing to do */
         }
 
-        // memory tablespaceì— ëŒ€í•´ì„œë§Œ stable noë¥¼ ê°±ì‹ í•œë‹¤.
+        // memory tablespace¿¡ ´ëÇØ¼­¸¸ stable no¸¦ °»½ÅÇÑ´Ù.
         IDE_ASSERT( sctTableSpaceMgr::isMemTableSpace( sCurrSpaceNode->mID )
                     == ID_TRUE );
 
-        // memory tablespace nodeì— currentdbë¥¼ switch ì‹œí‚¨ë‹¤.
+        // memory tablespace node¿¡ currentdb¸¦ switch ½ÃÅ²´Ù.
         smmManager::switchCurrentDB((smmTBSNode*)sCurrSpaceNode );
 
         /* read from memory manager */
@@ -2496,10 +2487,10 @@ IDE_RC smrLogAnchorMgr::updateStableNoOfAllMemTBSAndFlush()
                                        &mTableSpaceAttr );
 
         /* update to loganchor buffer */
-        // [ì£¼ì˜] Current DBë§Œ ë³€ê²½í•œë‹¤.
-        // ì™œëƒí•˜ë©´ CheckPointì‹œ TBS ë…¸ë“œì— Lockì„ íšë“í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì—
-        // ë‹¤ë¥¸ TBS DDLê³¼ ì«‘ì´ ë‚ ìˆ˜ ìˆìœ¼ë©°, ì›í•˜ì§€ ì•Šì•˜ë˜ ë³€ê²½ì‚¬í•­ì„
-        // ë°˜ì˜í•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤.
+        // [ÁÖÀÇ] Current DB¸¸ º¯°æÇÑ´Ù.
+        // ¿Ö³ÄÇÏ¸é CheckPoint½Ã TBS ³ëµå¿¡ LockÀ» È¹µæÇÏÁö ¾Ê±â ¶§¹®¿¡
+        // ´Ù¸¥ TBS DDL°ú ÂĞÀÌ ³¯¼ö ÀÖÀ¸¸ç, ¿øÇÏÁö ¾Ê¾Ò´ø º¯°æ»çÇ×À»
+        // ¹İ¿µÇÒ ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù.
         IDE_TEST( updateToBuffer(
                           (SChar*)&(mTableSpaceAttr.mMemAttr.mCurrentDB),
                           ((smmTBSNode*)sCurrSpaceNode)->mAnchorOffset +
@@ -2546,8 +2537,8 @@ UInt smrLogAnchorMgr::getTBSAttrStartOffset()
 }
 
 /***********************************************************************
- * Description : loganchorì— tablespace ì •ë³´ Sortingí•˜ì—¬ ë‹¤ì‹œ Flush
- * Startup/Shutdown ì‹œì—ë§Œ í˜¸ì¶œëœë‹¤.
+ * Description : loganchor¿¡ tablespace Á¤º¸ SortingÇÏ¿© ´Ù½Ã Flush
+ * Startup/Shutdown ½Ã¿¡¸¸ È£ÃâµÈ´Ù.
  ***********************************************************************/
 IDE_RC smrLogAnchorMgr::updateAllTBSAndFlush()
 {
@@ -2570,31 +2561,30 @@ IDE_RC smrLogAnchorMgr::updateAllTBSAndFlush()
     sState = 1;
 
     /* ------------------------------------------------
-     * 1. smrLogAnchor ë²„í¼ ê°±ì‹ 
+     * 1. smrLogAnchor ¹öÆÛ °»½Å
      * ----------------------------------------------*/
     mLogAnchor->mNewTableSpaceID = sctTableSpaceMgr::getNewTableSpaceID();
 
     /* ------------------------------------------------
-     * TBS ì •ë³´ë¥¼ ê¸°ë¡í•  ìœ„ì¹˜ë¥¼ ì„¤ì •í•¨
+     * TBS Á¤º¸¸¦ ±â·ÏÇÒ À§Ä¡¸¦ ¼³Á¤ÇÔ
      * ----------------------------------------------*/
     mWriteOffset = getTBSAttrStartOffset();
 
     /* ------------------------------------------------
-     * 2. tablespaceì •ë³´ë¥¼ mBufferì— ê¸°ë¡
-     * ë””ìŠ¤í¬ê´€ë¦¬ìì˜ ëª¨ë“  tablespace ë…¸ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ìˆœíšŒí•˜ë©´ì„œ
-     * ìš”ì•½ì •ë³´ë¥¼ ì–»ì–´ì„œ ê¸°ë¡í•œë‹¤.
+     * 2. tablespaceÁ¤º¸¸¦ mBuffer¿¡ ±â·Ï
+     * µğ½ºÅ©°ü¸®ÀÚÀÇ ¸ğµç tablespace ³ëµå ¸®½ºÆ®¸¦ ¼øÈ¸ÇÏ¸é¼­
+     * ¿ä¾àÁ¤º¸¸¦ ¾ò¾î¼­ ±â·ÏÇÑ´Ù.
      * ----------------------------------------------*/
-    sctTableSpaceMgr::getFirstSpaceNode( (void**)&sCurrSpaceNode );
+    sCurrSpaceNode = sctTableSpaceMgr::getFirstSpaceNode();
 
     while ( sCurrSpaceNode != NULL )
     {
-        sctTableSpaceMgr::getNextSpaceNode( (void*)sCurrSpaceNode,
-                                            (void**)&sNextSpaceNode );
+        sNextSpaceNode = sctTableSpaceMgr::getNextSpaceNode( sCurrSpaceNode->mID );
 
         // PRJ-1548 User Memory Tablespace
-        // DROPPED ìƒíƒœì˜ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ë…¸ë“œëŠ” loganchorì—
-        // ì €ì¥í•˜ì§€ ì•ŠëŠ”ë‹¤. ê·¸ëŸ¬ë¯€ë¡œ, ì„œë²„êµ¬ë™ì‹œì— loganchor
-        // ì´ˆê¸°í™”ì‹œ DROPPEDì¸ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ë…¸ë“œëŠ” ì—†ë‹¤.
+        // DROPPED »óÅÂÀÇ Å×ÀÌºí½ºÆäÀÌ½º³ëµå´Â loganchor¿¡
+        // ÀúÀåÇÏÁö ¾Ê´Â´Ù. ±×·¯¹Ç·Î, ¼­¹ö±¸µ¿½Ã¿¡ loganchor
+        // ÃÊ±âÈ­½Ã DROPPEDÀÎ Å×ÀÌºí½ºÆäÀÌ½º ³ëµå´Â ¾ø´Ù.
         if( SMI_TBS_IS_DROPPED(sCurrSpaceNode->mState) )
         {
             sCurrSpaceNode = sNextSpaceNode;
@@ -2617,12 +2607,12 @@ IDE_RC smrLogAnchorMgr::updateAllTBSAndFlush()
                       != IDE_SUCCESS );
 
             /* ------------------------------------------------
-             * loganchor ë²„í¼ì— datafile attributes ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
+             * loganchor ¹öÆÛ¿¡ datafile attributes Á¤º¸¸¦ °»½ÅÇÑ´Ù.
              * ----------------------------------------------*/
 
             for ( i = 0 ; i < ((sddTableSpaceNode*)sCurrSpaceNode)->mNewFileID ; i++ )
             {
-                // ì—¬ê¸°ì„œëŠ” sFileNodeê°€ NULLì¼ê²½ìš°ëŠ” ì—†ìŒ
+                // ¿©±â¼­´Â sFileNode°¡ NULLÀÏ°æ¿ì´Â ¾øÀ½
                 sFileNode=((sddTableSpaceNode*)sCurrSpaceNode)->mFileNodeArr[i];
 
                 // alter tablespace drop datafile & restart
@@ -2636,9 +2626,9 @@ IDE_RC smrLogAnchorMgr::updateAllTBSAndFlush()
                 }
 
                 // PRJ-1548 User Memory Tablespace
-                // DROPPED ìƒíƒœì˜ ë°ì´íƒ€íŒŒì¼ë…¸ë“œëŠ” loganchorì—
-                // ì €ì¥í•˜ì§€ ì•ŠëŠ”ë‹¤. ê·¸ëŸ¬ë¯€ë¡œ, ì„œë²„êµ¬ë™ì‹œì— loganchor
-                // ì´ˆê¸°í™”ì‹œ DROPPEDì¸ ë°ì´íƒ€íŒŒì¼ ë…¸ë“œëŠ” ì—†ë‹¤.
+                // DROPPED »óÅÂÀÇ µ¥ÀÌÅ¸ÆÄÀÏ³ëµå´Â loganchor¿¡
+                // ÀúÀåÇÏÁö ¾Ê´Â´Ù. ±×·¯¹Ç·Î, ¼­¹ö±¸µ¿½Ã¿¡ loganchor
+                // ÃÊ±âÈ­½Ã DROPPEDÀÎ µ¥ÀÌÅ¸ÆÄÀÏ ³ëµå´Â ¾ø´Ù.
                 if ( SMI_FILE_STATE_IS_DROPPED( sFileNode->mState ) )
                 {
                     continue;
@@ -2674,8 +2664,8 @@ IDE_RC smrLogAnchorMgr::updateAllTBSAndFlush()
                       != IDE_SUCCESS );
 
             /* ------------------------------------------------
-             * loganchor ë²„í¼ì— checkpoint path attributes
-             * ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
+             * loganchor ¹öÆÛ¿¡ checkpoint path attributes
+             * Á¤º¸¸¦ °»½ÅÇÑ´Ù.
              * ----------------------------------------------*/
             sChkptPathBaseList = &( ((smmTBSNode*)sCurrSpaceNode)->mChkptPathBase );
             for ( sChkptPathList  = SMU_LIST_GET_FIRST(sChkptPathBaseList) ;
@@ -2694,8 +2684,8 @@ IDE_RC smrLogAnchorMgr::updateAllTBSAndFlush()
 
             }
 
-            // LstCreatedDBFileì— í¬í•¨ë˜ë”ë¼ë„ ì˜¤í”ˆì´ ì•ˆë˜ì–´ ìˆëŠ” ê²½ìš°ì—ëŠ”
-            // ì¡´ì¬í•˜ì§€ ì•Šì„ ìˆ˜ë„ ìˆë‹¤.
+            // LstCreatedDBFile¿¡ Æ÷ÇÔµÇ´õ¶óµµ ¿ÀÇÂÀÌ ¾ÈµÇ¾î ÀÖ´Â °æ¿ì¿¡´Â
+            // Á¸ÀçÇÏÁö ¾ÊÀ» ¼öµµ ÀÖ´Ù.
 
             sWhichDB = smmManager::getCurrentDB( (smmTBSNode*)sCurrSpaceNode );
 
@@ -2716,25 +2706,25 @@ IDE_RC smrLogAnchorMgr::updateAllTBSAndFlush()
 
                     IDE_ASSERT( sDatabaseFile != NULL );
 
-                    // ë§Œì•½ ë°ì´íƒ€íŒŒì¼ì´ ì˜¤í”ˆëœ ê²½ìš°ê°€ ìƒì„±ëœ ê²½ìš°ì´ë¯€ë¡œ,
-                    // ë¡œê·¸ì•µì»¤ì— ì €ì¥í•œë‹¤.
+                    // ¸¸¾à µ¥ÀÌÅ¸ÆÄÀÏÀÌ ¿ÀÇÂµÈ °æ¿ì°¡ »ı¼ºµÈ °æ¿ìÀÌ¹Ç·Î,
+                    // ·Î±×¾ŞÄ¿¿¡ ÀúÀåÇÑ´Ù.
                     IDE_ASSERT( sDatabaseFile->isOpen() == ID_TRUE );
 
-                    // ì²´í¬í¬ì¸íŠ¸ì´ë¯¸ì§€ì˜ ëŸ°íƒ€ì„ ë©”íƒ€í—¤ë”ë¥¼ ì–»ëŠ”ë‹¤.
+                    // Ã¼Å©Æ÷ÀÎÆ®ÀÌ¹ÌÁöÀÇ ·±Å¸ÀÓ ¸ŞÅ¸Çì´õ¸¦ ¾ò´Â´Ù.
                     sDatabaseFile->getChkptImageHdr( &sChkptImageHdr );
 
-                    // ì²´í¬í¬ì¸íŠ¸ì´ë¯¸ì§€ì˜ ë©”íƒ€í—¤ë”ë¥¼ ê²€ì¦í•œë‹¤.
+                    // Ã¼Å©Æ÷ÀÎÆ®ÀÌ¹ÌÁöÀÇ ¸ŞÅ¸Çì´õ¸¦ °ËÁõÇÑ´Ù.
                     IDE_ASSERT( sDatabaseFile->checkValuesOfDBFHdr( &sChkptImageHdr )
                                 == IDE_SUCCESS );
 
-                    // ë¡œê·¸ì•µì»¤ì— ì €ì¥í•˜ê¸° ìœ„í•´ ì²´í¬í¬ì¸íŠ¸ì´ë¯¸ì§€ì˜
-                    // ì†ì„±ì„ ì–»ëŠ”ë‹¤.
+                    // ·Î±×¾ŞÄ¿¿¡ ÀúÀåÇÏ±â À§ÇØ Ã¼Å©Æ÷ÀÎÆ®ÀÌ¹ÌÁöÀÇ
+                    // ¼Ó¼ºÀ» ¾ò´Â´Ù.
                     sDatabaseFile->getChkptImageAttr( (smmTBSNode*)sCurrSpaceNode,
                                                       &sChkptImageAttr );
 
-                    // ë¡œê·¸ì•µì»¤ì— ì €ì¥ëœ Chkpt Image Attributeë¼ë©´
-                    // Attributeì˜ CreateDBFileOnDisk ì¤‘ ì ì–´ë„ í•˜ë‚˜ëŠ” ID_TRUE
-                    // ê°’ì„ ê°€ì ¸ì•¼ í•œë‹¤.
+                    // ·Î±×¾ŞÄ¿¿¡ ÀúÀåµÈ Chkpt Image Attribute¶ó¸é
+                    // AttributeÀÇ CreateDBFileOnDisk Áß Àû¾îµµ ÇÏ³ª´Â ID_TRUE
+                    // °ªÀ» °¡Á®¾ß ÇÑ´Ù.
 
                     IDE_ASSERT( smmManager::isCreateDBFileAtLeastOne(
                                              sChkptImageAttr.mCreateDBFileOnDisk )
@@ -2743,14 +2733,14 @@ IDE_RC smrLogAnchorMgr::updateAllTBSAndFlush()
                 else
                 {
                     /* BUG-41689 A discarded tablespace is redone in recovery
-                     * tablespaceê°€ discardëœ ì´í›„ì— ì²´í¬í¬ì¸íŠ¸ì´ë¯¸ì§€ì— ì ‘ê·¼í•˜ë©´ ì•ˆëœë‹¤.
-                     * ë”°ë¼ì„œ, ë¡œê·¸ ì•µì»¤ ì •ë³´ì¸ SpaceNodeì˜ ì •ë³´ë¥¼ ì´ìš©í•´
-                     * sChkptImageAttr ì •ë³´ë¥¼ êµ¬ì„± í•œë‹¤. */
+                     * tablespace°¡ discardµÈ ÀÌÈÄ¿¡ Ã¼Å©Æ÷ÀÎÆ®ÀÌ¹ÌÁö¿¡ Á¢±ÙÇÏ¸é ¾ÈµÈ´Ù.
+                     * µû¶ó¼­, ·Î±× ¾ŞÄ¿ Á¤º¸ÀÎ SpaceNodeÀÇ Á¤º¸¸¦ ÀÌ¿ëÇØ
+                     * sChkptImageAttr Á¤º¸¸¦ ±¸¼º ÇÑ´Ù. */
                     sChkptImageAttr.mAttrType = SMI_CHKPTIMG_ATTR;
                     sChkptImageAttr.mSpaceID  = sCurrSpaceNode->mID;
                     sChkptImageAttr.mFileNum  = sLoop;
 
-                    /* loganchor ì—ì„œ ì½ì–´ì˜¨ chkpt imageì •ë³´ë¥¼ ê°€ì ¸ ì˜¨ë‹¤. */
+                    /* loganchor ¿¡¼­ ÀĞ¾î¿Â chkpt imageÁ¤º¸¸¦ °¡Á® ¿Â´Ù. */
                     sMemTBSNode   = (smmTBSNode*)sCurrSpaceNode;
                     sDatabaseFile = (smmDatabaseFile*)(sMemTBSNode->mDBFile[sWhichDB][sLoop]);
 
@@ -2771,10 +2761,10 @@ IDE_RC smrLogAnchorMgr::updateAllTBSAndFlush()
 
                 }
 
-                /* BUG-23763: Server Restartí›„ Memoryë‚´ì— ì¡´í•´í•˜ëŠ” TBS, File Nodeìˆœì„œì™€
-                 * LogAnchor Bufferì˜ Nodeìˆœì„œë¥¼ ë§ì¶œë•Œ MDB File Nodeì˜ Anchor Offsetì„
-                 * ê°±ì‹ í•˜ì§€ ì•Šì•„ì„œ ì°¨ìš° MDB File Nodeì˜ ì •ë³´ê°€ ê°±ì‹ ë•Œ ì´ìƒí•œ ìœ„ì¹˜ì— Writeí•˜ì—¬
-                 * Loganchorê°€ ê¹¨ì§€ëŠ” ë²„ê·¸ê°€ ìˆìŠµë‹ˆë‹¤. */
+                /* BUG-23763: Server RestartÈÄ Memory³»¿¡ Á¸ÇØÇÏ´Â TBS, File Node¼ø¼­¿Í
+                 * LogAnchor BufferÀÇ Node¼ø¼­¸¦ ¸ÂÃâ¶§ MDB File NodeÀÇ Anchor OffsetÀ»
+                 * °»½ÅÇÏÁö ¾Ê¾Æ¼­ Â÷¿ì MDB File NodeÀÇ Á¤º¸°¡ °»½Å¶§ ÀÌ»óÇÑ À§Ä¡¿¡ WriteÇÏ¿©
+                 * Loganchor°¡ ±úÁö´Â ¹ö±×°¡ ÀÖ½À´Ï´Ù. */
                 ((smmTBSNode*)sCurrSpaceNode)->mCrtDBFileInfo[sLoop].mAnchorOffset =
                     mWriteOffset;
 
@@ -2878,9 +2868,9 @@ IDE_RC smrLogAnchorMgr::updateAllSBAndFlush( )
 
 
 /***********************************************************************
- * Description : ê° Attributeì˜ êµ¬ì¡°ì²´ì˜ í¬ê¸°ë¥¼ ë°˜í™˜í•œë‹¤.
+ * Description : °¢ AttributeÀÇ ±¸Á¶Ã¼ÀÇ Å©±â¸¦ ¹İÈ¯ÇÑ´Ù.
  *
- *  aAttrType - [IN] í¬ê¸°ë¥¼ í™•ì¸í•  AttrType
+ *  aAttrType - [IN] Å©±â¸¦ È®ÀÎÇÒ AttrType
  **********************************************************************/
 UInt smrLogAnchorMgr::getAttrSize( smiNodeAttrType aAttrType )
 {
@@ -2920,11 +2910,11 @@ UInt smrLogAnchorMgr::getAttrSize( smiNodeAttrType aAttrType )
 }
 
 /***********************************************************************
- * Description : ê° TBSì˜ Attributeì™€ Anchor Offsetì„ ë°˜í™˜í•œë‹¤.
+ * Description : °¢ TBSÀÇ Attribute¿Í Anchor OffsetÀ» ¹İÈ¯ÇÑ´Ù.
  *
- *  aSpaceID      - [IN]  í™•ì¸í•  TableSpaceì˜ SpaceID
- *  aSpaceAttr    - [OUT] SpaceAttrì„ ë°˜í™˜í•œë‹¤.
- *  aAnchorOffset - [OUT] AnchorOffsetì„ ë°˜í™˜í•œë‹¤.
+ *  aSpaceID      - [IN]  È®ÀÎÇÒ TableSpaceÀÇ SpaceID
+ *  aSpaceAttr    - [OUT] SpaceAttrÀ» ¹İÈ¯ÇÑ´Ù.
+ *  aAnchorOffset - [OUT] AnchorOffsetÀ» ¹İÈ¯ÇÑ´Ù.
  **********************************************************************/
 IDE_RC smrLogAnchorMgr::getTBSAttrAndAnchorOffset( scSpaceID          aSpaceID,
                                                    smiTableSpaceAttr* aSpaceAttr,
@@ -2935,15 +2925,14 @@ IDE_RC smrLogAnchorMgr::getTBSAttrAndAnchorOffset( scSpaceID          aSpaceID,
     IDE_ASSERT( aSpaceAttr    != NULL );
     IDE_ASSERT( aAnchorOffset != NULL );
 
-    sctTableSpaceMgr::findSpaceNodeIncludingDropped( aSpaceID,
-                                                    (void**)&sSpaceNode );
+    sSpaceNode     = sctTableSpaceMgr::findSpaceNodeIncludingDropped( aSpaceID );
+    *aAnchorOffset = ID_SINT_MAX;
 
     IDE_ASSERT( sSpaceNode != NULL );
 
-
     IDU_FIT_POINT("BUG-46450@smrLogAnchorMgr::getTBSAttrAndAnchorOffset::getTBSLocation");
 
-    switch ( sctTableSpaceMgr::getTBSLocation( sSpaceNode->mID ) )
+    switch ( sctTableSpaceMgr::getTBSLocation( sSpaceNode ) )
     {
         case SMI_TBS_DISK:
             sddTableSpace::getTableSpaceAttr( (sddTableSpaceNode*)sSpaceNode,
@@ -2983,14 +2972,14 @@ IDE_RC smrLogAnchorMgr::getTBSAttrAndAnchorOffset( scSpaceID          aSpaceID,
 }
 
 /***********************************************************************
- * Description : smmChkptImageAttrì— ì €ì¥ëœ DataFileDescSlotIDë¥¼ ë°˜í™˜í•œë‹¤.
+ * Description : smmChkptImageAttr¿¡ ÀúÀåµÈ DataFileDescSlotID¸¦ ¹İÈ¯ÇÑ´Ù.
  * PROJ-2133 incremental backup
- * TODO  ì¶”ê°€ì ì¸ ê²€ì¦ ì½”ë“œ í•„ìš”?
+ * TODO  Ãß°¡ÀûÀÎ °ËÁõ ÄÚµå ÇÊ¿ä?
  *
- *  aReadOffset         - [IN]  ChkptImageAttrì´ ìœ„ì¹˜í•œ loganchor Bufferì˜
+ *  aReadOffset         - [IN]  ChkptImageAttrÀÌ À§Ä¡ÇÑ loganchor BufferÀÇ
  *                              offset
- *  aDataFileDescSlotID - [OUT] logAnchorì— ì €ì¥ëœ DataFileDescSlotIDë¥¼
- *                              ë°˜í™˜í•œë‹¤.
+ *  aDataFileDescSlotID - [OUT] logAnchor¿¡ ÀúÀåµÈ DataFileDescSlotID¸¦
+ *                              ¹İÈ¯ÇÑ´Ù.
  *
  **********************************************************************/
 IDE_RC smrLogAnchorMgr::getDataFileDescSlotIDFromChkptImageAttr( 
@@ -3014,14 +3003,14 @@ IDE_RC smrLogAnchorMgr::getDataFileDescSlotIDFromChkptImageAttr(
 }
 
 /***********************************************************************
- * Description : DBFNodeAttrì— ì €ì¥ëœ DataFileDescSlotIDë¥¼ ë°˜í™˜í•œë‹¤.
+ * Description : DBFNodeAttr¿¡ ÀúÀåµÈ DataFileDescSlotID¸¦ ¹İÈ¯ÇÑ´Ù.
  * PROJ-2133 incremental backup
- * TODO  ì¶”ê°€ì ì¸ ê²€ì¦ ì½”ë“œ í•„ìš”?
+ * TODO  Ãß°¡ÀûÀÎ °ËÁõ ÄÚµå ÇÊ¿ä?
  *
- *  aReadOffset         - [IN]  ChkptImageAttrì´ ìœ„ì¹˜í•œ loganchor Bufferì˜
+ *  aReadOffset         - [IN]  ChkptImageAttrÀÌ À§Ä¡ÇÑ loganchor BufferÀÇ
  *                              offset
- *  aDataFileDescSlotID - [OUT] logAnchorì— ì €ì¥ëœ DataFileDescSlotIDë¥¼
- *                              ë°˜í™˜í•œë‹¤.
+ *  aDataFileDescSlotID - [OUT] logAnchor¿¡ ÀúÀåµÈ DataFileDescSlotID¸¦
+ *                              ¹İÈ¯ÇÑ´Ù.
  *
  **********************************************************************/
 IDE_RC smrLogAnchorMgr::getDataFileDescSlotIDFromDBFNodeAttr( 
@@ -3045,8 +3034,8 @@ IDE_RC smrLogAnchorMgr::getDataFileDescSlotIDFromDBFNodeAttr(
 }
 
 /***********************************************************************
- * Description : log anchor bufferë¥¼ ê° nodeì™€ ë¹„êµ ì ê²€í•œë‹¤.
- *               log anchor bufferê°’ì„ ê¸°ì¤€ìœ¼ë¡œ space nodeë¥¼ í™•ì¸í•œë‹¤.
+ * Description : log anchor buffer¸¦ °¢ node¿Í ºñ±³ Á¡°ËÇÑ´Ù.
+ *               log anchor buffer°ªÀ» ±âÁØÀ¸·Î space node¸¦ È®ÀÎÇÑ´Ù.
  **********************************************************************/
 idBool smrLogAnchorMgr::checkLogAnchorBuffer()
 {
@@ -3085,9 +3074,9 @@ idBool smrLogAnchorMgr::checkLogAnchorBuffer()
                 break;
 
             case SMI_CHKPTPATH_ATTR :
-                /*   XXX ChkptPathì™€ ChkptImageí™•ì¸ì€
-                 *  ë™ì‹œì„±ì´ í™•ë³´ë˜ì§€ ì•Šì€ ë¬¸ì œë¡œ ì¸í•˜ì—¬
-                 *  ë™ì‹œì„±ì´ í™•ë³´ ë  ë•Œ ê¹Œì§€ ì¼ë‹¨ ì œì™¸í•œë‹¤. */
+                /*   XXX ChkptPath¿Í ChkptImageÈ®ÀÎÀº
+                 *  µ¿½Ã¼ºÀÌ È®º¸µÇÁö ¾ÊÀº ¹®Á¦·Î ÀÎÇÏ¿©
+                 *  µ¿½Ã¼ºÀÌ È®º¸ µÉ ¶§ ±îÁö ÀÏ´Ü Á¦¿ÜÇÑ´Ù. */
 /*
                 idlOS::memcpy( &sChkptPathAttr, sAttrPtr,
                                ID_SIZEOF(smiChkptPathAttr) );
@@ -3138,7 +3127,7 @@ idBool smrLogAnchorMgr::checkLogAnchorBuffer()
 
     if ( sAnchorOffset != mWriteOffset )
     {
-        // ë§ˆì§€ë§‰ ìœ„ì¹˜ëŠ” ë²„í¼ì˜ mWriteOffset ê°’ê³¼ ê°™ì•„ì•¼ í•œë‹¤.
+        // ¸¶Áö¸· À§Ä¡´Â ¹öÆÛÀÇ mWriteOffset °ª°ú °°¾Æ¾ß ÇÑ´Ù.
         ideLog::log( SM_TRC_LOG_LEVEL_MRECOV,
                      SM_TRC_ANCHOR_CHECK_INVALID_OFFSET,
                      sAnchorOffset,
@@ -3155,10 +3144,10 @@ idBool smrLogAnchorMgr::checkLogAnchorBuffer()
 }
 
 /***********************************************************************
- * Description : TBSì˜ Space Nodeì™€ LogAnchor Bufferë¥¼ ë¹„êµ ê²€ì‚¬í•œë‹¤.
+ * Description : TBSÀÇ Space Node¿Í LogAnchor Buffer¸¦ ºñ±³ °Ë»çÇÑ´Ù.
  *
- *  aSpaceAttrByAnchor - [IN] SpaceNodeì™€ ë¹„êµí•  LogAnchorì˜ Attribute
- *  aOffsetByAnchor    - [IN] ë¹„êµ ê²€ì‚¬í•  Attributeì˜ Buffer Offset
+ *  aSpaceAttrByAnchor - [IN] SpaceNode¿Í ºñ±³ÇÒ LogAnchorÀÇ Attribute
+ *  aOffsetByAnchor    - [IN] ºñ±³ °Ë»çÇÒ AttributeÀÇ Buffer Offset
  **********************************************************************/
 idBool smrLogAnchorMgr::checkTBSAttr( smiTableSpaceAttr* aSpaceAttrByAnchor,
                                       UInt               aOffsetByAnchor )
@@ -3175,16 +3164,16 @@ idBool smrLogAnchorMgr::checkTBSAttr( smiTableSpaceAttr* aSpaceAttrByAnchor,
 
     if ( ( sTBSState & SMI_TBS_DROPPED ) != SMI_TBS_DROPPED )
     {
-        // Dropë˜ì§€ ì•Šì•˜ë‹¤ë©´ Attrì„ ì„œë¡œ ë¹„êµí•œë‹¤.
+        // DropµÇÁö ¾Ê¾Ò´Ù¸é AttrÀ» ¼­·Î ºñ±³ÇÑ´Ù.
 
         getTBSAttrAndAnchorOffset( aSpaceAttrByAnchor->mID,
                                    &mTableSpaceAttr,
                                    &sOffsetByNode );
 
-        // SpaceNodeì— AnchorOffsetì´ ì œëŒ€ë¡œ ê¸°ë¡ ë˜ì—ˆëŠ”ì§€ í™•ì¸í•œë‹¤.
-        // ë‹¤ë§Œ space node createì‹œì—” logAnchor Fileì— flushí•œ í›„ì—
-        // SpaceNodeì— AnchorOffsetì„ ê¸°ë¡í•˜ê¸° ë•Œë¬¸ì— ì•„ì§ ê¸°ë¡ë˜ì§€
-        // ì•Šì•˜ì„ ìˆ˜ë„ ìˆë‹¤.
+        // SpaceNode¿¡ AnchorOffsetÀÌ Á¦´ë·Î ±â·Ï µÇ¾ú´ÂÁö È®ÀÎÇÑ´Ù.
+        // ´Ù¸¸ space node create½Ã¿£ logAnchor File¿¡ flushÇÑ ÈÄ¿¡
+        // SpaceNode¿¡ AnchorOffsetÀ» ±â·ÏÇÏ±â ¶§¹®¿¡ ¾ÆÁ÷ ±â·ÏµÇÁö
+        // ¾Ê¾ÒÀ» ¼öµµ ÀÖ´Ù.
         if ( ( sOffsetByNode != aOffsetByAnchor ) &&
              ( sOffsetByNode != SCT_UNSAVED_ATTRIBUTE_OFFSET ) )
         {
@@ -3197,8 +3186,8 @@ idBool smrLogAnchorMgr::checkTBSAttr( smiTableSpaceAttr* aSpaceAttrByAnchor,
             sIsValid = ID_FALSE;
         }
 
-        // offsetì´ ë‹¬ë¼ë„ ê°’ì„ í™•ì¸í•˜ê¸° ìœ„í•´ì„œ tbs attr ë‚´ìš©ì„
-        // í™•ì¸í•œë‹¤.
+        // offsetÀÌ ´Ş¶óµµ °ªÀ» È®ÀÎÇÏ±â À§ÇØ¼­ tbs attr ³»¿ëÀ»
+        // È®ÀÎÇÑ´Ù.
         if ( cmpTableSpaceAttr( &mTableSpaceAttr,
                                 aSpaceAttrByAnchor) != ID_TRUE )
         {
@@ -3211,13 +3200,11 @@ idBool smrLogAnchorMgr::checkTBSAttr( smiTableSpaceAttr* aSpaceAttrByAnchor,
     }
     else
     {
-        // ë§Œì•½ stateê°€ Dropì´ë©´ ì •ë§ë¡œ Dropë˜ì—ˆëŠ”ì§€ í™•ì¸í•œë‹¤.
+        // ¸¸¾à state°¡ DropÀÌ¸é Á¤¸»·Î DropµÇ¾ú´ÂÁö È®ÀÎÇÑ´Ù.
 
-        sctTableSpaceMgr::findSpaceNodeIncludingDropped(
-                                                aSpaceAttrByAnchor->mID,
-                                                (void**)&sSpaceNode );
+        sSpaceNode = sctTableSpaceMgr::findSpaceNodeIncludingDropped( aSpaceAttrByAnchor->mID );
 
-        // server start ì‹œ nullì¼ ìˆ˜ë„ ìˆë‹¤.
+        // server start ½Ã nullÀÏ ¼öµµ ÀÖ´Ù.
         if ( sSpaceNode != NULL )
         {
             sTBSState = sSpaceNode->mState ;
@@ -3233,10 +3220,10 @@ idBool smrLogAnchorMgr::checkTBSAttr( smiTableSpaceAttr* aSpaceAttrByAnchor,
 }
 
 /***********************************************************************
- * Description : Disk TBSì˜ File Nodeë¥¼ LogAnchor Bufferì™€ ë¹„êµ ê²€ì‚¬í•œë‹¤.
+ * Description : Disk TBSÀÇ File Node¸¦ LogAnchor Buffer¿Í ºñ±³ °Ë»çÇÑ´Ù.
  *
- *  aFileAttrByAnchor - [IN] File Nodeì™€ ë¹„êµí•  LogAnchorì˜ Attribute
- *  aOffsetByAnchor   - [IN] ë¹„êµ ê²€ì‚¬í•  Attributeì˜ Buffer Offset
+ *  aFileAttrByAnchor - [IN] File Node¿Í ºñ±³ÇÒ LogAnchorÀÇ Attribute
+ *  aOffsetByAnchor   - [IN] ºñ±³ °Ë»çÇÒ AttributeÀÇ Buffer Offset
  **********************************************************************/
 idBool smrLogAnchorMgr::checkDBFAttr( smiDataFileAttr* aFileAttrByAnchor,
                                       UInt             aOffsetByAnchor )
@@ -3254,7 +3241,7 @@ idBool smrLogAnchorMgr::checkDBFAttr( smiDataFileAttr* aFileAttrByAnchor,
     if ( SMI_FILE_STATE_IS_NOT_DROPPED( sFileAttrState ) )
     {
         //-----------------------------------------
-        // File nodeë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+        // File node¸¦ °¡Á®¿Â´Ù.
         //-----------------------------------------
 
         IDE_ASSERT( sctTableSpaceMgr::findSpaceNodeBySpaceID(
@@ -3271,7 +3258,7 @@ idBool smrLogAnchorMgr::checkDBFAttr( smiDataFileAttr* aFileAttrByAnchor,
         IDE_ASSERT( sFileNode != NULL );
 
         //-----------------------------------------
-        // offset ë° attr ê²€ì‚¬
+        // offset ¹× attr °Ë»ç
         //-----------------------------------------
 
         if ( ( sFileNode->mAnchorOffset != aOffsetByAnchor ) &&
@@ -3299,27 +3286,25 @@ idBool smrLogAnchorMgr::checkDBFAttr( smiDataFileAttr* aFileAttrByAnchor,
     else
     {
         //-----------------------------------------
-        // table spaceê°€ dropì¸ì§€ í™•ì¸.
+        // table space°¡ dropÀÎÁö È®ÀÎ.
         //-----------------------------------------
 
-        sctTableSpaceMgr::findSpaceNodeIncludingDropped(
-                                                    aFileAttrByAnchor->mSpaceID,
-                                                    (void**)&sSpaceNode );
+        sSpaceNode = (sddTableSpaceNode*)sctTableSpaceMgr::findSpaceNodeIncludingDropped( aFileAttrByAnchor->mSpaceID );
 
-        // server start ì‹œ dropì´ë©´ nullì¼ ìˆ˜ë„ ìˆë‹¤.
+        // server start ½Ã dropÀÌ¸é nullÀÏ ¼öµµ ÀÖ´Ù.
         if ( sSpaceNode != NULL )
         {
             sFileAttrState = sSpaceNode->mHeader.mState ;
 
             if ( ( sFileAttrState & SMI_TBS_DROPPED ) != SMI_TBS_DROPPED )
             {
-                // TBSê°€ dropì´ ì•„ë‹ˆë¼ë©´ file nodeê°€ dropì¸ì§€ í™•ì¸
+                // TBS°¡ dropÀÌ ¾Æ´Ï¶ó¸é file node°¡ dropÀÎÁö È®ÀÎ
 
                 IDE_ASSERT( aFileAttrByAnchor->mID < sSpaceNode->mNewFileID );
 
                 sFileNode = sSpaceNode->mFileNodeArr[ aFileAttrByAnchor->mID ];
 
-                // server start ì‹œ dropì´ë©´ nullì¼ ìˆ˜ë„ ìˆë‹¤.
+                // server start ½Ã dropÀÌ¸é nullÀÏ ¼öµµ ÀÖ´Ù.
                 if ( sFileNode != NULL )
                 {
                     sFileAttrState = sFileNode->mState ;
@@ -3346,11 +3331,11 @@ idBool smrLogAnchorMgr::checkDBFAttr( smiDataFileAttr* aFileAttrByAnchor,
 }
 
 /***********************************************************************
- * Description : LogAnchor bufferì˜ Checkpoint Path Attrì— í•´ë‹¹í•˜ëŠ”
- *               Checkpoint Path nodeê°€ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
+ * Description : LogAnchor bufferÀÇ Checkpoint Path Attr¿¡ ÇØ´çÇÏ´Â
+ *               Checkpoint Path node°¡ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
  *
- *  aCPPathAttrByAnchor - [IN] CP Path Nodeì™€ ë¹„êµí•  LogAnchorì˜ Attribute
- *  aOffsetByAnchor     - [IN] ë¹„êµ ê²€ì‚¬í•  Attributeì˜ Buffer Offset
+ *  aCPPathAttrByAnchor - [IN] CP Path Node¿Í ºñ±³ÇÒ LogAnchorÀÇ Attribute
+ *  aOffsetByAnchor     - [IN] ºñ±³ °Ë»çÇÒ AttributeÀÇ Buffer Offset
  **********************************************************************/
 idBool smrLogAnchorMgr::checkChkptPathAttr( smiChkptPathAttr* aCPPathAttrByAnchor,
                                             UInt              aOffsetByAnchor )
@@ -3365,15 +3350,13 @@ idBool smrLogAnchorMgr::checkChkptPathAttr( smiChkptPathAttr* aCPPathAttrByAncho
 
     IDE_ASSERT( aCPPathAttrByAnchor->mAttrType == SMI_CHKPTPATH_ATTR );
 
-    sctTableSpaceMgr::findSpaceNodeIncludingDropped(
-                                                aCPPathAttrByAnchor->mSpaceID,
-                                                (void**)&sSpaceNode );
+    sSpaceNode = (smmTBSNode*)sctTableSpaceMgr::findSpaceNodeIncludingDropped( aCPPathAttrByAnchor->mSpaceID );
 
-    // TBSê°€ Dropë˜ë©´ restartì‹œ loganchorì—ëŠ” ìˆìœ¼ë‚˜
-    // space nodeëŠ” nullì´ ë  ìˆ˜ë„ ìˆë‹¤.
+    // TBS°¡ DropµÇ¸é restart½Ã loganchor¿¡´Â ÀÖÀ¸³ª
+    // space node´Â nullÀÌ µÉ ¼öµµ ÀÖ´Ù.
     IDE_TEST_CONT( sSpaceNode == NULL , Skip_Attr_Compare );
 
-    // TBSë¥¼ í™•ì¸í•´ì„œ Dropì´ ì•„ë‹ ê²½ìš°ì—ë§Œ í™•ì¸
+    // TBS¸¦ È®ÀÎÇØ¼­ DropÀÌ ¾Æ´Ò °æ¿ì¿¡¸¸ È®ÀÎ
     sDropState = sSpaceNode->mHeader.mState ;
 
     IDE_TEST_CONT( SMI_TBS_IS_DROPPED(sDropState) ||
@@ -3391,7 +3374,7 @@ idBool smrLogAnchorMgr::checkChkptPathAttr( smiChkptPathAttr* aCPPathAttrByAncho
         sChkptPathNode    = (smmChkptPathNode*)sChkptPathList->mData;
         sCPPathAttrByNode = &(sChkptPathNode->mChkptPathAttr);
 
-        // ë™ì¼ì•ˆ ê°’ì„ ê°€ì§„ Path Nodeê°€ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
+        // µ¿ÀÏ¾È °ªÀ» °¡Áø Path Node°¡ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
         if ( ( sCPPathAttrByNode->mSpaceID != aCPPathAttrByAnchor->mSpaceID ) ||
              ( idlOS::strcmp( sCPPathAttrByNode->mChkptPath,
                              aCPPathAttrByAnchor->mChkptPath ) != 0 ) )
@@ -3403,10 +3386,10 @@ idBool smrLogAnchorMgr::checkChkptPathAttr( smiChkptPathAttr* aCPPathAttrByAncho
             /* nothing to do */
         }
 
-        // chkpt nodeë¥¼ ì°¾ì•˜ë‹¤
+        // chkpt node¸¦ Ã£¾Ò´Ù
         sIsValid    = ID_TRUE;
 
-        // ê°’ í—ˆìš©ë²”ìœ„ ì¡°ì‚¬
+        // °ª Çã¿ë¹üÀ§ Á¶»ç
         if ( ( sCPPathAttrByNode->mAttrType != SMI_CHKPTPATH_ATTR ) ||
              ( sCPPathAttrByNode->mSpaceID  >= SC_MAX_SPACE_COUNT ) ||
              ( idlOS::strlen(sCPPathAttrByNode->mChkptPath)
@@ -3425,7 +3408,7 @@ idBool smrLogAnchorMgr::checkChkptPathAttr( smiChkptPathAttr* aCPPathAttrByAncho
             /* nothing to do */
         }
 
-        // offsetí™•ì¸
+        // offsetÈ®ÀÎ
         if ( ( sChkptPathNode->mAnchorOffset != aOffsetByAnchor ) &&
              ( sChkptPathNode->mAnchorOffset != SCT_UNSAVED_ATTRIBUTE_OFFSET ) )
         {
@@ -3447,7 +3430,7 @@ idBool smrLogAnchorMgr::checkChkptPathAttr( smiChkptPathAttr* aCPPathAttrByAncho
 
     if ( sIsValid != ID_TRUE )
     {
-        // ê°’ì´ í‹€ë¦¬ë‹¤ë©´ Anchor ì •ë³´ ì¶œë ¥
+        // °ªÀÌ Æ²¸®´Ù¸é Anchor Á¤º¸ Ãâ·Â
         ideLog::log( SM_TRC_LOG_LEVEL_MRECOV,
                      SM_TRC_ANCHOR_CHECK_CHKPT_PATH_ATTR_INVALID,
                      aCPPathAttrByAnchor->mSpaceID,
@@ -3464,7 +3447,7 @@ idBool smrLogAnchorMgr::checkChkptPathAttr( smiChkptPathAttr* aCPPathAttrByAncho
             sChkptPathNode    = (smmChkptPathNode*)sChkptPathList->mData;
             sCPPathAttrByNode = &(sChkptPathNode->mChkptPathAttr);
 
-            // ë™ì¼í•œ ê°’ì„ ê°€ì§„ nodeê°€ ì—†ë‹¤ë©´ node ê°’ì„ ì¶œë ¥
+            // µ¿ÀÏÇÑ °ªÀ» °¡Áø node°¡ ¾ø´Ù¸é node °ªÀ» Ãâ·Â
             ideLog::log( SM_TRC_LOG_LEVEL_MRECOV,
                          SM_TRC_ANCHOR_CHECK_CHKPT_PATH_ATTR_NOT_FOUND,
                          sCPPathAttrByNode->mSpaceID,
@@ -3480,11 +3463,11 @@ idBool smrLogAnchorMgr::checkChkptPathAttr( smiChkptPathAttr* aCPPathAttrByAncho
 }
 
 /***********************************************************************
- * Description : LogAnchor bufferì˜ Checkpoint Image Attrì— í•´ë‹¹í•˜ëŠ”
- *               Checkpoint Image nodeê°€ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
+ * Description : LogAnchor bufferÀÇ Checkpoint Image Attr¿¡ ÇØ´çÇÏ´Â
+ *               Checkpoint Image node°¡ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
  *
- *  aCPImgAttrByAnchor - [IN] CP Image Nodeì™€ ë¹„êµí•  LogAnchorì˜ Attribute
- *  aOffsetByAnchor    - [IN] ë¹„êµ ê²€ì‚¬í•  Attributeì˜ Buffer Offset
+ *  aCPImgAttrByAnchor - [IN] CP Image Node¿Í ºñ±³ÇÒ LogAnchorÀÇ Attribute
+ *  aOffsetByAnchor    - [IN] ºñ±³ °Ë»çÇÒ AttributeÀÇ Buffer Offset
  **********************************************************************/
 idBool smrLogAnchorMgr::checkChkptImageAttr( smmChkptImageAttr* aCPImgAttrByAnchor,
                                              UInt               aOffsetByAnchor )
@@ -3498,15 +3481,13 @@ idBool smrLogAnchorMgr::checkChkptImageAttr( smmChkptImageAttr* aCPImgAttrByAnch
 
     IDE_ASSERT( aCPImgAttrByAnchor->mAttrType == SMI_CHKPTIMG_ATTR );
 
-    sctTableSpaceMgr::findSpaceNodeIncludingDropped(
-                                                aCPImgAttrByAnchor->mSpaceID,
-                                                (void**)&sSpaceNode );
+    sSpaceNode = (smmTBSNode*)sctTableSpaceMgr::findSpaceNodeIncludingDropped( aCPImgAttrByAnchor->mSpaceID );
 
-    // TBSê°€ Dropë˜ë©´ restartì‹œ loganchorì—ëŠ” ìˆìœ¼ë‚˜
-    // space nodeëŠ” nullì´ ë  ìˆ˜ë„ ìˆë‹¤.
+    // TBS°¡ DropµÇ¸é restart½Ã loganchor¿¡´Â ÀÖÀ¸³ª
+    // space node´Â nullÀÌ µÉ ¼öµµ ÀÖ´Ù.
     IDE_TEST_RAISE( sSpaceNode == NULL , Skip_Attr_Compare );
 
-    // TBSë¥¼ í™•ì¸í•´ì„œ Dropì´ ì•„ë‹ ê²½ìš°ì—ë§Œ í™•ì¸
+    // TBS¸¦ È®ÀÎÇØ¼­ DropÀÌ ¾Æ´Ò °æ¿ì¿¡¸¸ È®ÀÎ
 
     sDropState = sSpaceNode->mHeader.mState ;
 
@@ -3556,7 +3537,7 @@ idBool smrLogAnchorMgr::checkChkptImageAttr( smmChkptImageAttr* aCPImgAttrByAnch
                 /* nothing to do */
             }
 
-            // offsetì´ ë‹¬ë¼ë„ ë‚´ìš© í™•ì¸ì„ ìœ„í•´ ë¹„êµê²€ì‚¬í•œë‹¤.
+            // offsetÀÌ ´Ş¶óµµ ³»¿ë È®ÀÎÀ» À§ÇØ ºñ±³°Ë»çÇÑ´Ù.
             if ( cmpChkptImageAttr( &mChkptImageAttr,
                                     aCPImgAttrByAnchor ) != ID_TRUE )
             {
@@ -3571,7 +3552,7 @@ idBool smrLogAnchorMgr::checkChkptImageAttr( smmChkptImageAttr* aCPImgAttrByAnch
         {
             sIsValid = ID_FALSE;
 
-            // ë™ì¼í•œ ê°’ì„ ê°€ì§„ nodeê°€ ì—†ë‹¤ë©´ ChkptImageAttr ê°’ì„ ì¶œë ¥
+            // µ¿ÀÏÇÑ °ªÀ» °¡Áø node°¡ ¾ø´Ù¸é ChkptImageAttr °ªÀ» Ãâ·Â
             ideLog::log( SM_TRC_LOG_LEVEL_MRECOV,
                          SM_TRC_ANCHOR_CHECK_CHKPT_IMAGE_ATTR_NOT_FOUND,
                          aCPImgAttrByAnchor->mSpaceID,
@@ -3594,17 +3575,17 @@ idBool smrLogAnchorMgr::checkChkptImageAttr( smmChkptImageAttr* aCPImgAttrByAnch
 
     IDE_EXCEPTION_CONT( Skip_Attr_Compare );
 
-    /* BUG-40385 sResult ê°’ì— ë”°ë¼ Failure ë¦¬í„´ì¼ ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
-     * ìœ„ì— IDE_TEST_RAISE -> IDE_TEST_CONT ë¡œ ë³€í™˜í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+    /* BUG-40385 sResult °ª¿¡ µû¶ó Failure ¸®ÅÏÀÏ ¼ö ÀÖÀ¸¹Ç·Î,
+     * À§¿¡ IDE_TEST_RAISE -> IDE_TEST_CONT ·Î º¯È¯ÇÏÁö ¾Ê´Â´Ù. */
     return sIsValid;
 }
 
 
 /***********************************************************************
- * Description :  File Nodeë¥¼ LogAnchor Bufferì™€ ë¹„êµ ê²€ì‚¬í•œë‹¤.
+ * Description :  File Node¸¦ LogAnchor Buffer¿Í ºñ±³ °Ë»çÇÑ´Ù.
  *
- *  aFileAttrByAnchor - [IN] File Nodeì™€ ë¹„êµí•  LogAnchorì˜ Attribute
- *  aOffsetByAnchor   - [IN] ë¹„êµ ê²€ì‚¬í•  Attributeì˜ Buffer Offset
+ *  aFileAttrByAnchor - [IN] File Node¿Í ºñ±³ÇÒ LogAnchorÀÇ Attribute
+ *  aOffsetByAnchor   - [IN] ºñ±³ °Ë»çÇÒ AttributeÀÇ Buffer Offset
  **********************************************************************/
 idBool smrLogAnchorMgr::checkSBufferFileAttr( smiSBufferFileAttr* aFileAttrByAnchor,
                                               UInt                aOffsetByAnchor )
@@ -3616,7 +3597,7 @@ idBool smrLogAnchorMgr::checkSBufferFileAttr( smiSBufferFileAttr* aFileAttrByAnc
     IDE_ASSERT( aFileAttrByAnchor->mAttrType == SMI_SBUFFER_ATTR );
 
     //-----------------------------------------
-    // File nodeë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+    // File node¸¦ °¡Á®¿Â´Ù.
     //-----------------------------------------
 
     sdsBufferMgr::getFileNode ( &sFileNode );
@@ -3624,7 +3605,7 @@ idBool smrLogAnchorMgr::checkSBufferFileAttr( smiSBufferFileAttr* aFileAttrByAnc
     IDE_ASSERT( sFileNode != NULL );
 
     //-----------------------------------------
-    // offset ë° attr ê²€ì‚¬
+    // offset ¹× attr °Ë»ç
     //-----------------------------------------
 
     if ( ( sFileNode->mAnchorOffset != aOffsetByAnchor ) &&
@@ -3650,10 +3631,10 @@ idBool smrLogAnchorMgr::checkSBufferFileAttr( smiSBufferFileAttr* aFileAttrByAnc
 }
 
 /***********************************************************************
- * Description : TBS Nodeì™€ LogAnchor Bufferë¥¼ ë¹„êµí•œë‹¤.
+ * Description : TBS Node¿Í LogAnchor Buffer¸¦ ºñ±³ÇÑ´Ù.
  *
- *  aSpaceAttrByNode   - [IN] Space Nodeì—ì„œ ì¶”ì¶œí•œ Attribute
- *  aSpaceAttrByAnchor - [IN] Anchor Bufferìƒì˜ Attribute
+ *  aSpaceAttrByNode   - [IN] Space Node¿¡¼­ ÃßÃâÇÑ Attribute
+ *  aSpaceAttrByAnchor - [IN] Anchor Buffer»óÀÇ Attribute
  **********************************************************************/
 idBool smrLogAnchorMgr::cmpTableSpaceAttr( smiTableSpaceAttr* aSpaceAttrByNode,
                                            smiTableSpaceAttr* aSpaceAttrByAnchor)
@@ -3665,7 +3646,7 @@ idBool smrLogAnchorMgr::cmpTableSpaceAttr( smiTableSpaceAttr* aSpaceAttrByNode,
     IDE_DASSERT( aSpaceAttrByNode   != NULL );
     IDE_DASSERT( aSpaceAttrByAnchor != NULL );
 
-    // í—ˆìš©ë˜ëŠ” ì°¨ì´, ê²½ê³ ë§Œ ì¶œë ¥
+    // Çã¿ëµÇ´Â Â÷ÀÌ, °æ°í¸¸ Ãâ·Â
     if ( ( aSpaceAttrByAnchor->mAttrFlag     != aSpaceAttrByNode->mAttrFlag ) ||
          ( aSpaceAttrByAnchor->mTBSStateOnLA != aSpaceAttrByNode->mTBSStateOnLA ) )
     {
@@ -3676,7 +3657,7 @@ idBool smrLogAnchorMgr::cmpTableSpaceAttr( smiTableSpaceAttr* aSpaceAttrByNode,
         /* nothing to do */
     }
 
-    // í—ˆìš©ë˜ì§€ì•ŠëŠ” ì°¨ì´, ì˜¤ë¥˜ ë°˜í™˜
+    // Çã¿ëµÇÁö¾Ê´Â Â÷ÀÌ, ¿À·ù ¹İÈ¯
     if ( ( aSpaceAttrByAnchor->mAttrType != aSpaceAttrByNode->mAttrType ) ||
          ( aSpaceAttrByAnchor->mID       != aSpaceAttrByNode->mID ) ||
          ( aSpaceAttrByAnchor->mType     != aSpaceAttrByNode->mType ) )
@@ -3688,7 +3669,7 @@ idBool smrLogAnchorMgr::cmpTableSpaceAttr( smiTableSpaceAttr* aSpaceAttrByNode,
         /* nothing to do */
     }
 
-    // ê°’ì˜ í—ˆìš©ë²”ìœ„ ì´ˆê³¼, ì˜¤ë¥˜ ë°˜í™˜
+    // °ªÀÇ Çã¿ë¹üÀ§ ÃÊ°ú, ¿À·ù ¹İÈ¯
     if ( ( aSpaceAttrByNode->mAttrType   != SMI_TBS_ATTR ) ||
          ( aSpaceAttrByNode->mNameLength >  SMI_MAX_TABLESPACE_NAME_LEN ) ||
          ( aSpaceAttrByNode->mID         >= SC_MAX_SPACE_COUNT ) ||
@@ -3742,15 +3723,15 @@ idBool smrLogAnchorMgr::cmpTableSpaceAttr( smiTableSpaceAttr* aSpaceAttrByNode,
 }
 
 /***********************************************************************
- * Description : Disk TBS Nodeì™€ LogAnchor Bufferë¥¼ ë¹„êµí•œë‹¤.
+ * Description : Disk TBS Node¿Í LogAnchor Buffer¸¦ ºñ±³ÇÑ´Ù.
  *
- *  aSpaceAttrByNode   - [IN] Space Nodeì—ì„œ ì¶”ì¶œí•œ Attribute
- *  aSpaceAttrByAnchor - [IN] Anchor Bufferìƒì˜ Attribute
- *  aIsEqual           - [IN] ê³µí†µ ì˜ì—­ì˜ Space Attrì— í—ˆìš©ë˜ëŠ” ë²”ìœ„
- *                            ì•ˆì—ì„œ ì°¨ì´ê°€ ìˆë‹¤.
- *  aIsValid           - [IN/OUT] ê³µí†µ ì˜ì—­ì˜ TableSpace Attrì— ì¹˜ëª…ì ì¸
- *                                ë¬¸ì œê°€ ìˆëŠ”ì§€ ì—¬ë¶€ë¥¼ ë‚˜íƒ€ë‚´ê³  ì´í›„
- *                                ê°œë³„ ì˜ì—­ì˜ ë¹„êµ ê²°ê³¼ë¥¼ ë°˜í™˜í•œë‹¤.
+ *  aSpaceAttrByNode   - [IN] Space Node¿¡¼­ ÃßÃâÇÑ Attribute
+ *  aSpaceAttrByAnchor - [IN] Anchor Buffer»óÀÇ Attribute
+ *  aIsEqual           - [IN] °øÅë ¿µ¿ªÀÇ Space Attr¿¡ Çã¿ëµÇ´Â ¹üÀ§
+ *                            ¾È¿¡¼­ Â÷ÀÌ°¡ ÀÖ´Ù.
+ *  aIsValid           - [IN/OUT] °øÅë ¿µ¿ªÀÇ TableSpace Attr¿¡ Ä¡¸íÀûÀÎ
+ *                                ¹®Á¦°¡ ÀÖ´ÂÁö ¿©ºÎ¸¦ ³ªÅ¸³»°í ÀÌÈÄ
+ *                                °³º° ¿µ¿ªÀÇ ºñ±³ °á°ú¸¦ ¹İÈ¯ÇÑ´Ù.
  **********************************************************************/
 void smrLogAnchorMgr::cmpDiskTableSpaceAttr( smiTableSpaceAttr* aSpaceAttrByNode,
                                              smiTableSpaceAttr* aSpaceAttrByAnchor,
@@ -3766,7 +3747,7 @@ void smrLogAnchorMgr::cmpDiskTableSpaceAttr( smiTableSpaceAttr* aSpaceAttrByNode
     sDiskAttrByNode   = &aSpaceAttrByNode->mDiskAttr;
     sDiskAttrByAnchor = &aSpaceAttrByAnchor->mDiskAttr;
 
-    // í—ˆìš©ë˜ëŠ” ì°¨ì´, ê²½ê³ ë§Œ ì¶œë ¥
+    // Çã¿ëµÇ´Â Â÷ÀÌ, °æ°í¸¸ Ãâ·Â
     if ( sDiskAttrByAnchor->mNewFileID != sDiskAttrByNode->mNewFileID )
     {
         aIsEqual = ID_FALSE;
@@ -3776,7 +3757,7 @@ void smrLogAnchorMgr::cmpDiskTableSpaceAttr( smiTableSpaceAttr* aSpaceAttrByNode
         /* nothing to do */
     }
 
-    // í—ˆìš©ë˜ì§€ì•ŠëŠ” ì°¨ì´, ì˜¤ë¥˜ ë°˜í™˜
+    // Çã¿ëµÇÁö¾Ê´Â Â÷ÀÌ, ¿À·ù ¹İÈ¯
     if ( ( sDiskAttrByAnchor->mExtMgmtType  != sDiskAttrByNode->mExtMgmtType ) ||
          ( sDiskAttrByAnchor->mExtPageCount != sDiskAttrByNode->mExtPageCount ) ||
          ( sDiskAttrByAnchor->mSegMgmtType  != sDiskAttrByNode->mSegMgmtType ) ||
@@ -3791,7 +3772,7 @@ void smrLogAnchorMgr::cmpDiskTableSpaceAttr( smiTableSpaceAttr* aSpaceAttrByNode
         /* nothing to do */
     }
 
-    // ì˜¤ë¥˜ ì¶œë ¥
+    // ¿À·ù Ãâ·Â
     if ( ( aIsEqual  != ID_TRUE ) ||
          ( *aIsValid != ID_TRUE ) )
     {
@@ -3832,15 +3813,15 @@ void smrLogAnchorMgr::cmpDiskTableSpaceAttr( smiTableSpaceAttr* aSpaceAttrByNode
 }
 
 /***********************************************************************
- * Description : Memory TBS Nodeì™€ LogAnchor Bufferë¥¼ ë¹„êµí•œë‹¤.
+ * Description : Memory TBS Node¿Í LogAnchor Buffer¸¦ ºñ±³ÇÑ´Ù.
  *
- *  aSpaceAttrByNode   - [IN] Space Nodeì—ì„œ ì¶”ì¶œí•œ Attribute
- *  aSpaceAttrByAnchor - [IN] Anchor Bufferìƒì˜ Attribute
- *  aIsEqual           - [IN] ê³µí†µ ì˜ì—­ì˜ Space Attrì— í—ˆìš©ë˜ëŠ” ë²”ìœ„
- *                            ì•ˆì—ì„œ ì°¨ì´ê°€ ìˆë‹¤.
- *  aIsValid           - [IN/OUT] ê³µí†µ ì˜ì—­ì˜ TableSpace Attrì— ì¹˜ëª…ì ì¸
- *                                ë¬¸ì œê°€ ìˆëŠ”ì§€ ì—¬ë¶€ë¥¼ ë‚˜íƒ€ë‚´ê³ , ì´í›„
- *                                ê°œë³„ ì˜ì—­ì˜ ë¹„êµ ê²°ê³¼ë¥¼ ë°˜í™˜í•œë‹¤.
+ *  aSpaceAttrByNode   - [IN] Space Node¿¡¼­ ÃßÃâÇÑ Attribute
+ *  aSpaceAttrByAnchor - [IN] Anchor Buffer»óÀÇ Attribute
+ *  aIsEqual           - [IN] °øÅë ¿µ¿ªÀÇ Space Attr¿¡ Çã¿ëµÇ´Â ¹üÀ§
+ *                            ¾È¿¡¼­ Â÷ÀÌ°¡ ÀÖ´Ù.
+ *  aIsValid           - [IN/OUT] °øÅë ¿µ¿ªÀÇ TableSpace Attr¿¡ Ä¡¸íÀûÀÎ
+ *                                ¹®Á¦°¡ ÀÖ´ÂÁö ¿©ºÎ¸¦ ³ªÅ¸³»°í, ÀÌÈÄ
+ *                                °³º° ¿µ¿ªÀÇ ºñ±³ °á°ú¸¦ ¹İÈ¯ÇÑ´Ù.
  **********************************************************************/
 void smrLogAnchorMgr::cmpMemTableSpaceAttr( smiTableSpaceAttr* aSpaceAttrByNode,
                                             smiTableSpaceAttr* aSpaceAttrByAnchor,
@@ -3856,7 +3837,7 @@ void smrLogAnchorMgr::cmpMemTableSpaceAttr( smiTableSpaceAttr* aSpaceAttrByNode,
     sMemAttrByNode   = &aSpaceAttrByNode->mMemAttr;
     sMemAttrByAnchor = &aSpaceAttrByAnchor->mMemAttr;
 
-    // í—ˆìš©ë˜ëŠ” ì°¨ì´, ê²½ê³ ë§Œ ì¶œë ¥
+    // Çã¿ëµÇ´Â Â÷ÀÌ, °æ°í¸¸ Ãâ·Â
     if ( ( sMemAttrByAnchor->mIsAutoExtend   != sMemAttrByNode->mIsAutoExtend )  ||
          ( sMemAttrByAnchor->mMaxPageCount   != sMemAttrByNode->mMaxPageCount )  ||
          ( sMemAttrByAnchor->mNextPageCount  != sMemAttrByNode->mNextPageCount ) ||
@@ -3873,7 +3854,7 @@ void smrLogAnchorMgr::cmpMemTableSpaceAttr( smiTableSpaceAttr* aSpaceAttrByNode,
         /* nothing to do */
     }
 
-    // í—ˆìš©ë˜ì§€ì•ŠëŠ” ì°¨ì´, ì˜¤ë¥˜ ë°˜í™˜
+    // Çã¿ëµÇÁö¾Ê´Â Â÷ÀÌ, ¿À·ù ¹İÈ¯
     if ( ( sMemAttrByAnchor->mInitPageCount  != sMemAttrByNode->mInitPageCount ) ||
          ( ( sMemAttrByAnchor->mIsAutoExtend != ID_TRUE ) &&
            ( sMemAttrByAnchor->mIsAutoExtend != ID_FALSE ) ) )
@@ -3885,7 +3866,7 @@ void smrLogAnchorMgr::cmpMemTableSpaceAttr( smiTableSpaceAttr* aSpaceAttrByNode,
         /* nothing to do */
     }
 
-    // ì˜¤ë¥˜ ì¶œë ¥
+    // ¿À·ù Ãâ·Â
     if ( ( aIsEqual  != ID_TRUE ) ||
          ( *aIsValid != ID_TRUE ) )
     {
@@ -3940,15 +3921,15 @@ void smrLogAnchorMgr::cmpMemTableSpaceAttr( smiTableSpaceAttr* aSpaceAttrByNode,
 }
 
 /***********************************************************************
- * Description : Volatile TBS Nodeì™€ LogAnchor Bufferë¥¼ ë¹„êµí•œë‹¤.
+ * Description : Volatile TBS Node¿Í LogAnchor Buffer¸¦ ºñ±³ÇÑ´Ù.
  *
- *  aSpaceAttrByNode   - [IN] Space Nodeì—ì„œ ì¶”ì¶œí•œ Attribute
- *  aSpaceAttrByAnchor - [IN] Anchor Bufferìƒì˜ Attribute
- *  aIsEqual           - [IN] ê³µí†µ ì˜ì—­ì˜ Space Attrì— í—ˆìš©ë˜ëŠ” ë²”ìœ„
- *                            ì•ˆì—ì„œ ì°¨ì´ê°€ ìˆë‹¤.
- *  aIsValid           - [IN/OUT] ê³µí†µ ì˜ì—­ì˜ TableSpace Attrì— ì¹˜ëª…ì ì¸
- *                                ë¬¸ì œê°€ ìˆëŠ”ì§€ ì—¬ë¶€ë¥¼ ë‚˜íƒ€ë‚´ê³  ì´í›„
- *                                ê°œë³„ ì˜ì—­ì˜ ë¹„êµ ê²°ê³¼ë¥¼ ë°˜í™˜í•œë‹¤.
+ *  aSpaceAttrByNode   - [IN] Space Node¿¡¼­ ÃßÃâÇÑ Attribute
+ *  aSpaceAttrByAnchor - [IN] Anchor Buffer»óÀÇ Attribute
+ *  aIsEqual           - [IN] °øÅë ¿µ¿ªÀÇ Space Attr¿¡ Çã¿ëµÇ´Â ¹üÀ§
+ *                            ¾È¿¡¼­ Â÷ÀÌ°¡ ÀÖ´Ù.
+ *  aIsValid           - [IN/OUT] °øÅë ¿µ¿ªÀÇ TableSpace Attr¿¡ Ä¡¸íÀûÀÎ
+ *                                ¹®Á¦°¡ ÀÖ´ÂÁö ¿©ºÎ¸¦ ³ªÅ¸³»°í ÀÌÈÄ
+ *                                °³º° ¿µ¿ªÀÇ ºñ±³ °á°ú¸¦ ¹İÈ¯ÇÑ´Ù.
  **********************************************************************/
 void smrLogAnchorMgr::cmpVolTableSpaceAttr( smiTableSpaceAttr* aSpaceAttrByNode,
                                             smiTableSpaceAttr* aSpaceAttrByAnchor,
@@ -3964,7 +3945,7 @@ void smrLogAnchorMgr::cmpVolTableSpaceAttr( smiTableSpaceAttr* aSpaceAttrByNode,
     sVolAttrByNode   = &aSpaceAttrByNode->mVolAttr;
     sVolAttrByAnchor = &aSpaceAttrByAnchor->mVolAttr;
 
-    // í—ˆìš©ë˜ëŠ” ì°¨ì´, ê²½ê³ ë§Œ ì¶œë ¥
+    // Çã¿ëµÇ´Â Â÷ÀÌ, °æ°í¸¸ Ãâ·Â
     if ( ( sVolAttrByAnchor->mIsAutoExtend  != sVolAttrByNode->mIsAutoExtend ) ||
          ( sVolAttrByAnchor->mMaxPageCount  != sVolAttrByNode->mMaxPageCount ) ||
          ( sVolAttrByAnchor->mNextPageCount != sVolAttrByNode->mNextPageCount ) )
@@ -3976,7 +3957,7 @@ void smrLogAnchorMgr::cmpVolTableSpaceAttr( smiTableSpaceAttr* aSpaceAttrByNode,
         /* nothing to do */
     }
 
-    // í—ˆìš©ë˜ì§€ì•ŠëŠ” ì°¨ì´, ì˜¤ë¥˜ ë°˜í™˜
+    // Çã¿ëµÇÁö¾Ê´Â Â÷ÀÌ, ¿À·ù ¹İÈ¯
     if ( ( sVolAttrByAnchor->mInitPageCount  != sVolAttrByNode->mInitPageCount ) ||
          ( ( sVolAttrByAnchor->mIsAutoExtend != ID_TRUE ) &&
            ( sVolAttrByAnchor->mIsAutoExtend != ID_FALSE ) ) )
@@ -3988,7 +3969,7 @@ void smrLogAnchorMgr::cmpVolTableSpaceAttr( smiTableSpaceAttr* aSpaceAttrByNode,
         /* nothing to do */
     }
 
-    // ì˜¤ë¥˜ ì¶œë ¥
+    // ¿À·ù Ãâ·Â
     if ( ( aIsEqual  != ID_TRUE ) ||
          ( *aIsValid != ID_TRUE ) )
     {
@@ -4031,10 +4012,10 @@ void smrLogAnchorMgr::cmpVolTableSpaceAttr( smiTableSpaceAttr* aSpaceAttrByNode,
 }
 
 /***********************************************************************
- * Description : Disk TBSì˜ DBFile Nodeì™€ LogAnchor Bufferë¥¼ ë¹„êµí•œë‹¤.
+ * Description : Disk TBSÀÇ DBFile Node¿Í LogAnchor Buffer¸¦ ºñ±³ÇÑ´Ù.
  *
- *  aFileAttrByNode   - [IN] DBFile Nodeì—ì„œ ì¶”ì¶œí•œ Attribute
- *  aFileAttrByAnchor - [IN] Anchor Bufferìƒì˜ Attribute
+ *  aFileAttrByNode   - [IN] DBFile Node¿¡¼­ ÃßÃâÇÑ Attribute
+ *  aFileAttrByAnchor - [IN] Anchor Buffer»óÀÇ Attribute
  **********************************************************************/
 idBool smrLogAnchorMgr::cmpDataFileAttr( smiDataFileAttr*   aFileAttrByNode,
                                          smiDataFileAttr*   aFileAttrByAnchor )
@@ -4045,7 +4026,7 @@ idBool smrLogAnchorMgr::cmpDataFileAttr( smiDataFileAttr*   aFileAttrByNode,
     IDE_DASSERT( aFileAttrByNode != NULL );
     IDE_DASSERT( aFileAttrByAnchor != NULL );
 
-    // ë³€ê²½ ê°€ëŠ¥í•œê²ƒ, ì¼ì‹œì ìœ¼ë¡œ ì°¨ì´ê°€ ë‚  ìˆ˜ ìˆë‹¤. ë¡œê·¸ë§Œ ê¸°ë¡í•œë‹¤.
+    // º¯°æ °¡´ÉÇÑ°Í, ÀÏ½ÃÀûÀ¸·Î Â÷ÀÌ°¡ ³¯ ¼ö ÀÖ´Ù. ·Î±×¸¸ ±â·ÏÇÑ´Ù.
     if ( ( idlOS::strcmp(aFileAttrByAnchor->mName, aFileAttrByNode->mName) != 0 ) ||
          ( aFileAttrByAnchor->mIsAutoExtend != aFileAttrByNode->mIsAutoExtend ) ||
          ( aFileAttrByAnchor->mNameLength   != idlOS::strlen(aFileAttrByNode->mName) ) ||
@@ -4061,7 +4042,7 @@ idBool smrLogAnchorMgr::cmpDataFileAttr( smiDataFileAttr*   aFileAttrByNode,
         /* nothing to do */
     }
 
-    // ë³€ê²½ ë¶ˆ ê°€ëŠ¥í•œê²ƒ, ì°¨ì´ê°€ ë‚  ìˆ˜ ì—†ë‹¤.
+    // º¯°æ ºÒ °¡´ÉÇÑ°Í, Â÷ÀÌ°¡ ³¯ ¼ö ¾ø´Ù.
     if ( ( aFileAttrByAnchor->mAttrType   != aFileAttrByNode->mAttrType ) ||
          ( aFileAttrByAnchor->mSpaceID    != aFileAttrByNode->mSpaceID ) ||
          ( aFileAttrByAnchor->mID         != aFileAttrByNode->mID ) ||
@@ -4077,7 +4058,7 @@ idBool smrLogAnchorMgr::cmpDataFileAttr( smiDataFileAttr*   aFileAttrByNode,
         /* nothing to do */
     }
 
-    // ê°’ í—ˆìš©ë²”ìœ„ ê²€ì‚¬
+    // °ª Çã¿ë¹üÀ§ °Ë»ç
     if ( ( aFileAttrByNode->mAttrType   != SMI_DBF_ATTR ) ||
          ( aFileAttrByNode->mSpaceID    >= SC_MAX_SPACE_COUNT ) ||
          ( aFileAttrByNode->mID         >= SD_MAX_FID_COUNT ) ||
@@ -4141,11 +4122,11 @@ idBool smrLogAnchorMgr::cmpDataFileAttr( smiDataFileAttr*   aFileAttrByNode,
 }
 
 /***********************************************************************
- * Description : Memory TBSì˜ Checkpoint Image Nodeì™€
- *               LogAnchor Bufferë¥¼ ë¹„êµí•œë‹¤.
+ * Description : Memory TBSÀÇ Checkpoint Image Node¿Í
+ *               LogAnchor Buffer¸¦ ºñ±³ÇÑ´Ù.
  *
- *  aFileAttrByNode   - [IN] Checkpoint Image Nodeì—ì„œ ì¶”ì¶œí•œ Attribute
- *  aFileAttrByAnchor - [IN] Anchor Bufferìƒì˜ Attribute
+ *  aFileAttrByNode   - [IN] Checkpoint Image Node¿¡¼­ ÃßÃâÇÑ Attribute
+ *  aFileAttrByAnchor - [IN] Anchor Buffer»óÀÇ Attribute
  **********************************************************************/
 idBool smrLogAnchorMgr::cmpChkptImageAttr( smmChkptImageAttr*   aImageAttrByNode,
                                            smmChkptImageAttr*   aImageAttrByAnchor )
@@ -4153,7 +4134,7 @@ idBool smrLogAnchorMgr::cmpChkptImageAttr( smmChkptImageAttr*   aImageAttrByNode
     idBool sIsValid = ID_TRUE;
     idBool sIsEqual = ID_TRUE;
 
-    // ë³€ê²½ ê°€ëŠ¥í•œê²ƒ, ì¼ì‹œì ìœ¼ë¡œ ì°¨ì´ê°€ ë‚  ìˆ˜ ìˆë‹¤. ë¡œê·¸ë§Œ ê¸°ë¡
+    // º¯°æ °¡´ÉÇÑ°Í, ÀÏ½ÃÀûÀ¸·Î Â÷ÀÌ°¡ ³¯ ¼ö ÀÖ´Ù. ·Î±×¸¸ ±â·Ï
     if ( ( aImageAttrByAnchor->mCreateDBFileOnDisk[0]
            != aImageAttrByNode->mCreateDBFileOnDisk[0] ) ||
          ( aImageAttrByAnchor->mCreateDBFileOnDisk[1]
@@ -4163,7 +4144,7 @@ idBool smrLogAnchorMgr::cmpChkptImageAttr( smmChkptImageAttr*   aImageAttrByNode
         sIsEqual = ID_FALSE;
     }
 
-    // ë³€ê²½ ë¶ˆ ê°€ëŠ¥í•œê²ƒ, ì°¨ì´ê°€ ë‚  ìˆ˜ ì—†ë‹¤.
+    // º¯°æ ºÒ °¡´ÉÇÑ°Í, Â÷ÀÌ°¡ ³¯ ¼ö ¾ø´Ù.
     if ( ( aImageAttrByAnchor->mAttrType != aImageAttrByNode->mAttrType ) ||
          ( aImageAttrByAnchor->mSpaceID  != aImageAttrByNode->mSpaceID ) )
     {
@@ -4174,7 +4155,7 @@ idBool smrLogAnchorMgr::cmpChkptImageAttr( smmChkptImageAttr*   aImageAttrByNode
         /* nothing to do */
     }
 
-    // ê°’ í—ˆìš©ë²”ìœ„ ê²€ì‚¬
+    // °ª Çã¿ë¹üÀ§ °Ë»ç
     if ( ( aImageAttrByNode->mSpaceID  >= SC_MAX_SPACE_COUNT ) ||
          ( aImageAttrByNode->mAttrType != SMI_CHKPTIMG_ATTR )  ||
          ( ( aImageAttrByNode->mCreateDBFileOnDisk[0] != ID_TRUE ) &&
@@ -4236,10 +4217,10 @@ idBool smrLogAnchorMgr::cmpChkptImageAttr( smmChkptImageAttr*   aImageAttrByNode
 
 
 /***********************************************************************
- * Description : Secondary Bufferì˜ File Nodeì™€ LogAnchor Bufferë¥¼ ë¹„êµí•œë‹¤.
+ * Description : Secondary BufferÀÇ File Node¿Í LogAnchor Buffer¸¦ ºñ±³ÇÑ´Ù.
  *
- *  aFileAttrByNode   - [IN] DBFile Nodeì—ì„œ ì¶”ì¶œí•œ Attribute
- *  aFileAttrByAnchor - [IN] Anchor Bufferìƒì˜ Attribute
+ *  aFileAttrByNode   - [IN] DBFile Node¿¡¼­ ÃßÃâÇÑ Attribute
+ *  aFileAttrByAnchor - [IN] Anchor Buffer»óÀÇ Attribute
  **********************************************************************/
 idBool smrLogAnchorMgr::cmpSBufferFileAttr( smiSBufferFileAttr*   aFileAttrByNode,
                                             smiSBufferFileAttr*   aFileAttrByAnchor )
@@ -4307,7 +4288,7 @@ idBool smrLogAnchorMgr::cmpSBufferFileAttr( smiSBufferFileAttr*   aFileAttrByNod
 
 // fix BUG-20241
 /***********************************************************************
- * Description : loganchorì— FstDeleteFile ì •ë³´ ë³€ê²½ í›„ flush
+ * Description : loganchor¿¡ FstDeleteFile Á¤º¸ º¯°æ ÈÄ flush
  *
  ***********************************************************************/
 IDE_RC smrLogAnchorMgr::updateFstDeleteFileAndFlush()
@@ -4319,15 +4300,15 @@ IDE_RC smrLogAnchorMgr::updateFstDeleteFileAndFlush()
     IDE_TEST( lock() != IDE_SUCCESS );
     sState = 1;
 
-    /* BUG-39289 : ë¡œê·¸ì•µì»¤ì˜ delete logfile rangeê°€ N+1 ~ Nìœ¼ë¡œ ì¶œë ¥ë˜ëŠ” ë¬¸ì œ.
-       ê¸°ì¡´ì— ë¡œê·¸ì•µì»¤ì˜ FST(mFstDeleteFileNo)ë¥¼ LST(mLstDeleteFileNo)
-       ë¡œ ì—…ë°ì´íŠ¸ í•˜ë˜ ê²ƒì„ ë¡œê·¸ì•µì»¤ì˜ FSTë¥¼ LST + ì‚­ì œí•œ ë¡œê·¸ ìˆ˜ ë¡œ
-       ì—…ë°ì´íŠ¸ í•œë‹¤. ë¡œê·¸ì•µì»¤ì˜ delete logfile range ì¶œë ¥ì‹œ ì‹¤ì œ ì‚­ì œëœ
-       ë¡œê·¸ ë²”ìœ„ë¡œ ì¶œë ¥í•˜ê¸° ìœ„í•¨.*/
-    /* BUG-40323 ë¡œê·¸íŒŒì¼ì„ ì§€ìš°ì§€ ì•Šê³ , ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ë©´ ì•ˆëœë‹¤.
-     * BUG-39289 ì ìš©ìœ¼ë¡œ Fst >= Lst ê°’ì„ ê°€ì ¸ì•¼ í•˜ëŠ”ë°,
-     * ìƒˆë¡œìš´ ë¡œê·¸íŒŒì¼ì˜ ì‚­ì œ, ì¦‰ Lst ê°’ì´ ì¦ê°€í•˜ì§€ ì•Šê³  ë‹¤ì‹œ í˜¸ì¶œë˜ë©´
-     * Fst <= Lstë¡œ ìˆ˜ì •ë  ìˆ˜ ìˆë‹¤. */
+    /* BUG-39289 : ·Î±×¾ŞÄ¿ÀÇ delete logfile range°¡ N+1 ~ NÀ¸·Î Ãâ·ÂµÇ´Â ¹®Á¦.
+       ±âÁ¸¿¡ ·Î±×¾ŞÄ¿ÀÇ FST(mFstDeleteFileNo)¸¦ LST(mLstDeleteFileNo)
+       ·Î ¾÷µ¥ÀÌÆ® ÇÏ´ø °ÍÀ» ·Î±×¾ŞÄ¿ÀÇ FST¸¦ LST + »èÁ¦ÇÑ ·Î±× ¼ö ·Î
+       ¾÷µ¥ÀÌÆ® ÇÑ´Ù. ·Î±×¾ŞÄ¿ÀÇ delete logfile range Ãâ·Â½Ã ½ÇÁ¦ »èÁ¦µÈ
+       ·Î±× ¹üÀ§·Î Ãâ·ÂÇÏ±â À§ÇÔ.*/
+    /* BUG-40323 ·Î±×ÆÄÀÏÀ» Áö¿ìÁö ¾Ê°í, ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ¸é ¾ÈµÈ´Ù.
+     * BUG-39289 Àû¿ëÀ¸·Î Fst >= Lst °ªÀ» °¡Á®¾ß ÇÏ´Âµ¥,
+     * »õ·Î¿î ·Î±×ÆÄÀÏÀÇ »èÁ¦, Áï Lst °ªÀÌ Áõ°¡ÇÏÁö ¾Ê°í ´Ù½Ã È£ÃâµÇ¸é
+     * Fst <= Lst·Î ¼öÁ¤µÉ ¼ö ÀÖ´Ù. */
 
     sDelLogCnt = mLogAnchor->mLstDeleteFileNo - mLogAnchor->mFstDeleteFileNo;
 
@@ -4352,9 +4333,9 @@ IDE_RC smrLogAnchorMgr::updateFstDeleteFileAndFlush()
 }
 
 /*************************************************************************************
- * Description : ë§ˆì§€ë§‰ì— ìƒì„±ëœ ë¡œê·¸ íŒŒì¼ ë²ˆí˜¸ë¥¼ loganchorì— ì—…ë°ì´íŠ¸í•œë‹¤.(BUG-39764)
+ * Description : ¸¶Áö¸·¿¡ »ı¼ºµÈ ·Î±× ÆÄÀÏ ¹øÈ£¸¦ loganchor¿¡ ¾÷µ¥ÀÌÆ®ÇÑ´Ù.(BUG-39764)
  *               
- * [IN] aLstCrtFileNo : ë§ˆì§€ë§‰ì— ìƒì„±ëœ ë¡œê·¸ íŒŒì¼ ë²ˆí˜¸
+ * [IN] aLstCrtFileNo : ¸¶Áö¸·¿¡ »ı¼ºµÈ ·Î±× ÆÄÀÏ ¹øÈ£
  *************************************************************************************/
 IDE_RC smrLogAnchorMgr::updateLastCreatedLogFileNumAndFlush( UInt aLstCrtFileNo )
 {
@@ -4384,16 +4365,16 @@ IDE_RC smrLogAnchorMgr::updateLastCreatedLogFileNumAndFlush( UInt aLstCrtFileNo 
 }
 
 /***********************************************************************
- * Description : loganchor ë²„í¼ë¥¼ loganchor íŒŒì¼ì— flush
+ * Description : loganchor ¹öÆÛ¸¦ loganchor ÆÄÀÏ¿¡ flush
  *
- * mBufferì— ê¸°ë¡ëœ loganchorë¥¼ ëª¨ë“  loganchor íŒŒì¼ë“¤ì—
- * ëª¨ë‘ flushí•œë‹¤.
+ * mBuffer¿¡ ±â·ÏµÈ loganchor¸¦ ¸ğµç loganchor ÆÄÀÏµé¿¡
+ * ¸ğµÎ flushÇÑ´Ù.
  *
- * - flushí•  loganchorì˜ ë‚´ìš©ì´ ì¡´ì¬í•˜ëŠ” mBufferì˜
- *   checksumì„ ê³„ì‚°í•˜ì—¬ mBufferì˜ í•´ë‹¹ ë¶€ë¶„ì„ ê°±ì‹ 
- *   + MUST : checksumì„ ì œì™¸í•œ ë‚˜ë¨¸ì§€ loganchor ì •ë³´ë“¤ì€
- *            ëª¨ë‘ ì„¤ì •ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
- * - ëª¨ë“  loganchoríŒŒì¼ì— ëŒ€í•˜ì—¬ mBufferë¥¼ flush í•¨
+ * - flushÇÒ loganchorÀÇ ³»¿ëÀÌ Á¸ÀçÇÏ´Â mBufferÀÇ
+ *   checksumÀ» °è»êÇÏ¿© mBufferÀÇ ÇØ´ç ºÎºĞÀ» °»½Å
+ *   + MUST : checksumÀ» Á¦¿ÜÇÑ ³ª¸ÓÁö loganchor Á¤º¸µéÀº
+ *            ¸ğµÎ ¼³Á¤µÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
+ * - ¸ğµç loganchorÆÄÀÏ¿¡ ´ëÇÏ¿© mBuffer¸¦ flush ÇÔ
  ***********************************************************************/
 IDE_RC smrLogAnchorMgr::flushAll()
 {
@@ -4405,15 +4386,15 @@ IDE_RC smrLogAnchorMgr::flushAll()
     UInt      sState = 0;
 
     /* PROJ-2162 RestartRiskReduction
-     * DBê°€ ì •ìƒì ì¼ë•Œì—ë§Œ LogAnchorë¥¼ ê°±ì‹ í•œë‹¤. */
+     * DB°¡ Á¤»óÀûÀÏ¶§¿¡¸¸ LogAnchor¸¦ °»½ÅÇÑ´Ù. */
     if ( ( smrRecoveryMgr::getConsistency() == ID_TRUE ) || 
          ( smuProperty::getCrashTolerance() == 2 ) )
     {
-        // BUG-23136 LogAnchorBufferì™€ ê° nodeë¥¼ ë¹„êµ ê²€ì‚¬ í•˜ì—¬
-        // ì˜ëª»ëœ ê°’ì´ LogAnchor Fileì— ê¸°ë¡ë˜ëŠ” ê²ƒì„ ë°©ì§€í•œë‹¤.
-        // XXX Tablespaceì— ëŒ€í•œ ë™ì‹œì„± ì œì–´ê°€ ë³´ì¥ë˜ì§€ ì•ŠëŠ” ë¬¸ì œê°€ ìˆì–´
-        // releaseì—ì„œëŠ” ê²°ê³¼ ê¸°ë¡ë§Œ í•˜ê³  DASSERTë¡œ ì²˜ë¦¬í•œë‹¤.
-        // ì´í›„ ë™ì‹œì„± ì œì–´ê°€ ë³´ì¥ë˜ë©´ ë°”ë¡œ ASSERTí•˜ë„ë¡ ë³€ê²½í•´ì•¼ í•œë‹¤.
+        // BUG-23136 LogAnchorBuffer¿Í °¢ node¸¦ ºñ±³ °Ë»ç ÇÏ¿©
+        // Àß¸øµÈ °ªÀÌ LogAnchor File¿¡ ±â·ÏµÇ´Â °ÍÀ» ¹æÁöÇÑ´Ù.
+        // XXX Tablespace¿¡ ´ëÇÑ µ¿½Ã¼º Á¦¾î°¡ º¸ÀåµÇÁö ¾Ê´Â ¹®Á¦°¡ ÀÖ¾î
+        // release¿¡¼­´Â °á°ú ±â·Ï¸¸ ÇÏ°í DASSERT·Î Ã³¸®ÇÑ´Ù.
+        // ÀÌÈÄ µ¿½Ã¼º Á¦¾î°¡ º¸ÀåµÇ¸é ¹Ù·Î ASSERTÇÏµµ·Ï º¯°æÇØ¾ß ÇÑ´Ù.
 #ifdef DEBUG
         if ( mIsProcessPhase == ID_FALSE )
         {
@@ -4422,7 +4403,7 @@ IDE_RC smrLogAnchorMgr::flushAll()
         }
 #endif
         /* ------------------------------------------------
-         * updateAndFlushCountì™€ checksum ê³„ì‚°í•˜ì—¬ mBufferì— ì„¤ì •í•œë‹¤.
+         * updateAndFlushCount¿Í checksum °è»êÇÏ¿© mBuffer¿¡ ¼³Á¤ÇÑ´Ù.
          * ----------------------------------------------*/
         mLogAnchor->mUpdateAndFlushCount++;
         mLogAnchor->mCheckSum = makeCheckSum( mBuffer, mWriteOffset );
@@ -4432,13 +4413,13 @@ IDE_RC smrLogAnchorMgr::flushAll()
          * ---------------------------------------------------------------- */
 
         /* ------------------------------------------------
-         * ì‹¤ì œ ëª¨ë“  loganchor íŒŒì¼ì— mBufferë¥¼ ê¸°ë¡í•˜ê³  syncí•œë‹¤.
+         * ½ÇÁ¦ ¸ğµç loganchor ÆÄÀÏ¿¡ mBuffer¸¦ ±â·ÏÇÏ°í syncÇÑ´Ù.
          * ----------------------------------------------*/
         for ( i = 0 ; i < SM_LOGANCHOR_FILE_COUNT ; i++ )
         {
             /* ------------------------------------------------
-             * [BUG-24236] ìš´ì˜ì¤‘ ë¡œê·¸ ì•µì»¤ ì‚­ì œì— ëŒ€í•œ ê³ ë ¤ê°€ í•„ìš”í•©ë‹ˆë‹¤.
-             * - ë¡œê·¸ ì•µì»¤ íŒŒì¼ì´ ì‚­ì œë˜ì—ˆë‹¤ë©´ ë‹¤ì‹œ ìƒì„±í•œë‹¤.
+             * [BUG-24236] ¿î¿µÁß ·Î±× ¾ŞÄ¿ »èÁ¦¿¡ ´ëÇÑ °í·Á°¡ ÇÊ¿äÇÕ´Ï´Ù.
+             * - ·Î±× ¾ŞÄ¿ ÆÄÀÏÀÌ »èÁ¦µÇ¾ú´Ù¸é ´Ù½Ã »ı¼ºÇÑ´Ù.
              * ----------------------------------------------*/
             if ( mFile[i].open() != IDE_SUCCESS )
             {
@@ -4448,7 +4429,7 @@ IDE_RC smrLogAnchorMgr::flushAll()
                           != IDE_SUCCESS );
 
                 /* ------------------------------------------------
-                 * ê·¸ë˜ë„ ì‹¤íŒ¨í•˜ë©´ IDE_FAILURE
+                 * ±×·¡µµ ½ÇÆĞÇÏ¸é IDE_FAILURE
                  * ----------------------------------------------*/
                 IDE_TEST( mFile[i].open() != IDE_SUCCESS );
             }
@@ -4477,7 +4458,7 @@ IDE_RC smrLogAnchorMgr::flushAll()
 
             sState = 0;
             /* ------------------------------------------------
-             * [BUG-24236] ìš´ì˜ì¤‘ ë¡œê·¸ ì•µì»¤ ì‚­ì œì— ëŒ€í•œ ê³ ë ¤ê°€ í•„ìš”í•©ë‹ˆë‹¤.
+             * [BUG-24236] ¿î¿µÁß ·Î±× ¾ŞÄ¿ »èÁ¦¿¡ ´ëÇÑ °í·Á°¡ ÇÊ¿äÇÕ´Ï´Ù.
              * ----------------------------------------------*/
             IDE_ASSERT( mFile[i].close() == IDE_SUCCESS );
         }
@@ -4530,10 +4511,10 @@ IDE_RC smrLogAnchorMgr::checkLogAnchorDirExist()
 /***********************************************************************
  * Description :  read loganchor header
  *
- * [IN]  aLogAnchorFile  : ë¡œê·¸ì•µì»¤íŒŒì¼ ê°ì²´
- * [IN]  aCurOffset      : ë¡œê·¸íŒŒì¼ìƒì—ì„œ í˜„ì¬ ì†ì„±ì˜ ì˜¤í”„ì…‹
- * [OUT] aCurOffset      : ë¡œê·¸íŒŒì¼ìƒì—ì„œ ë‹¤ìŒ ì†ì„±ì˜ ì˜¤í”„ì…‹
- * [OUT] aHeader         : ë¡œê·¸ì•µì»¤ ê³ ì •ì˜ì—­
+ * [IN]  aLogAnchorFile  : ·Î±×¾ŞÄ¿ÆÄÀÏ °´Ã¼
+ * [IN]  aCurOffset      : ·Î±×ÆÄÀÏ»ó¿¡¼­ ÇöÀç ¼Ó¼ºÀÇ ¿ÀÇÁ¼Â
+ * [OUT] aCurOffset      : ·Î±×ÆÄÀÏ»ó¿¡¼­ ´ÙÀ½ ¼Ó¼ºÀÇ ¿ÀÇÁ¼Â
+ * [OUT] aHeader         : ·Î±×¾ŞÄ¿ °íÁ¤¿µ¿ª
  **********************************************************************/
 IDE_RC smrLogAnchorMgr::readLogAnchorHeader( iduFile *      aLogAnchorFile,
                                              UInt *         aCurOffset,
@@ -4560,9 +4541,9 @@ IDE_RC smrLogAnchorMgr::readLogAnchorHeader( iduFile *      aLogAnchorFile,
 /***********************************************************************
  * Description :  read one tablespace attribute
  *
- * [IN]  aLogAnchorFile  : ë¡œê·¸ì•µì»¤íŒŒì¼ ê°ì²´
- * [IN]  aCurOffset      : ë¡œê·¸íŒŒì¼ìƒì—ì„œ í˜„ì¬ ì†ì„±ì˜ ì˜¤í”„ì…‹
- * [OUT] aCurOffset      : ë¡œê·¸íŒŒì¼ìƒì—ì„œ ë‹¤ìŒ ì†ì„±ì˜ ì˜¤í”„ì…‹
+ * [IN]  aLogAnchorFile  : ·Î±×¾ŞÄ¿ÆÄÀÏ °´Ã¼
+ * [IN]  aCurOffset      : ·Î±×ÆÄÀÏ»ó¿¡¼­ ÇöÀç ¼Ó¼ºÀÇ ¿ÀÇÁ¼Â
+ * [OUT] aCurOffset      : ·Î±×ÆÄÀÏ»ó¿¡¼­ ´ÙÀ½ ¼Ó¼ºÀÇ ¿ÀÇÁ¼Â
  * [OUT] aTBSAttr        : Disk/Memory Tablespace Attribute
  **********************************************************************/
 IDE_RC smrLogAnchorMgr::readTBSNodeAttr(
@@ -4592,9 +4573,9 @@ IDE_RC smrLogAnchorMgr::readTBSNodeAttr(
 /***********************************************************************
  * Description :  read one datafile attribute
  *
- * [IN]  aLogAnchorFile  : ë¡œê·¸ì•µì»¤íŒŒì¼ ê°ì²´
- * [IN]  aCurOffset      : ë¡œê·¸íŒŒì¼ìƒì—ì„œ í˜„ì¬ ì†ì„±ì˜ ì˜¤í”„ì…‹
- * [OUT] aCurOffset      : ë¡œê·¸íŒŒì¼ìƒì—ì„œ ë‹¤ìŒ ì†ì„±ì˜ ì˜¤í”„ì…‹
+ * [IN]  aLogAnchorFile  : ·Î±×¾ŞÄ¿ÆÄÀÏ °´Ã¼
+ * [IN]  aCurOffset      : ·Î±×ÆÄÀÏ»ó¿¡¼­ ÇöÀç ¼Ó¼ºÀÇ ¿ÀÇÁ¼Â
+ * [OUT] aCurOffset      : ·Î±×ÆÄÀÏ»ó¿¡¼­ ´ÙÀ½ ¼Ó¼ºÀÇ ¿ÀÇÁ¼Â
  * [OUT] aFileAttr       : Disk Datafile Attribute
  **********************************************************************/
 IDE_RC smrLogAnchorMgr::readDBFNodeAttr(
@@ -4624,9 +4605,9 @@ IDE_RC smrLogAnchorMgr::readDBFNodeAttr(
 /***********************************************************************
  * Description :  read one checkpoint path attribute
  *
- * [IN]  aLogAnchorFile  : ë¡œê·¸ì•µì»¤íŒŒì¼ ê°ì²´
- * [IN]  aCurOffset      : ë¡œê·¸íŒŒì¼ìƒì—ì„œ í˜„ì¬ ì†ì„±ì˜ ì˜¤í”„ì…‹
- * [OUT] aCurOffset      : ë¡œê·¸íŒŒì¼ìƒì—ì„œ ë‹¤ìŒ ì†ì„±ì˜ ì˜¤í”„ì…‹
+ * [IN]  aLogAnchorFile  : ·Î±×¾ŞÄ¿ÆÄÀÏ °´Ã¼
+ * [IN]  aCurOffset      : ·Î±×ÆÄÀÏ»ó¿¡¼­ ÇöÀç ¼Ó¼ºÀÇ ¿ÀÇÁ¼Â
+ * [OUT] aCurOffset      : ·Î±×ÆÄÀÏ»ó¿¡¼­ ´ÙÀ½ ¼Ó¼ºÀÇ ¿ÀÇÁ¼Â
  * [OUT] aChkptImageAttr : Checkpoint Path Attribute
  **********************************************************************/
 IDE_RC smrLogAnchorMgr::readChkptPathNodeAttr(
@@ -4656,9 +4637,9 @@ IDE_RC smrLogAnchorMgr::readChkptPathNodeAttr(
 /***********************************************************************
  * Description :  read one checkpoint image attribute
  *
- * [IN]  aLogAnchorFile  : ë¡œê·¸ì•µì»¤íŒŒì¼ ê°ì²´
- * [IN]  aCurOffset      : ë¡œê·¸íŒŒì¼ìƒì—ì„œ í˜„ì¬ ì†ì„±ì˜ ì˜¤í”„ì…‹
- * [OUT] aCurOffset      : ë¡œê·¸íŒŒì¼ìƒì—ì„œ ë‹¤ìŒ ì†ì„±ì˜ ì˜¤í”„ì…‹
+ * [IN]  aLogAnchorFile  : ·Î±×¾ŞÄ¿ÆÄÀÏ °´Ã¼
+ * [IN]  aCurOffset      : ·Î±×ÆÄÀÏ»ó¿¡¼­ ÇöÀç ¼Ó¼ºÀÇ ¿ÀÇÁ¼Â
+ * [OUT] aCurOffset      : ·Î±×ÆÄÀÏ»ó¿¡¼­ ´ÙÀ½ ¼Ó¼ºÀÇ ¿ÀÇÁ¼Â
  * [OUT] aChkptImageAttr : Checkpoint Image Attribute
  **********************************************************************/
 IDE_RC smrLogAnchorMgr::readChkptImageAttr(
@@ -4693,9 +4674,9 @@ IDE_RC smrLogAnchorMgr::readChkptImageAttr(
 /***********************************************************************
  * Description :  read one SBufferFile attribute
  *
- * [IN]  aLogAnchorFile  : ë¡œê·¸ì•µì»¤íŒŒì¼ ê°ì²´
- * [IN]  aCurOffset      : ë¡œê·¸íŒŒì¼ìƒì—ì„œ í˜„ì¬ ì†ì„±ì˜ ì˜¤í”„ì…‹
- * [OUT] aCurOffset      : ë¡œê·¸íŒŒì¼ìƒì—ì„œ ë‹¤ìŒ ì†ì„±ì˜ ì˜¤í”„ì…‹
+ * [IN]  aLogAnchorFile  : ·Î±×¾ŞÄ¿ÆÄÀÏ °´Ã¼
+ * [IN]  aCurOffset      : ·Î±×ÆÄÀÏ»ó¿¡¼­ ÇöÀç ¼Ó¼ºÀÇ ¿ÀÇÁ¼Â
+ * [OUT] aCurOffset      : ·Î±×ÆÄÀÏ»ó¿¡¼­ ´ÙÀ½ ¼Ó¼ºÀÇ ¿ÀÇÁ¼Â
  * [OUT] aFileAttr       : Disk Datafile Attribute
  **********************************************************************/
 IDE_RC smrLogAnchorMgr::readSBufferFileAttr(
@@ -4723,7 +4704,7 @@ IDE_RC smrLogAnchorMgr::readSBufferFileAttr(
 }
 
 /***********************************************************************
- * Description : loganchor ë²„í¼ë¥¼ resizeí•¨
+ * Description : loganchor ¹öÆÛ¸¦ resizeÇÔ
  **********************************************************************/
 IDE_RC smrLogAnchorMgr::resizeBuffer( UInt aBufferSize )
 {
@@ -4752,8 +4733,8 @@ IDE_RC smrLogAnchorMgr::resizeBuffer( UInt aBufferSize )
     if ( mWriteOffset != 0 )
     {
         /* ------------------------------------------------
-         * loganchor ë²„í¼ê°€ ì‚¬ìš©ì¤‘ì¼ë•Œ ê¸°ë¡ëœ ë‚´ìš©ì„
-         * ìƒˆë¡œìš´ ë²„í¼ì— memcpy í•œë‹¤.
+         * loganchor ¹öÆÛ°¡ »ç¿ëÁßÀÏ¶§ ±â·ÏµÈ ³»¿ëÀ»
+         * »õ·Î¿î ¹öÆÛ¿¡ memcpy ÇÑ´Ù.
          * ----------------------------------------------*/
         idlOS::memcpy( sBuffer, mBuffer, mWriteOffset );
     }
@@ -4763,10 +4744,10 @@ IDE_RC smrLogAnchorMgr::resizeBuffer( UInt aBufferSize )
     }
 
     // To Fix BUG-18268
-    //     disk tablespace create/alter/drop ë„ì¤‘ checkpointí•˜ë‹¤ê°€ ì‚¬ë§
+    //     disk tablespace create/alter/drop µµÁß checkpointÇÏ´Ù°¡ »ç¸Á
     //
-    // mBufferë¥¼ í•´ì œí•˜ê¸° ì „ì— mLogAnchorê°€ ìƒˆë¡œ í• ë‹¹í•œ ë©”ëª¨ë¦¬ë¥¼
-    // ê°€ë¦¬í‚¤ë„ë¡ ìˆ˜ì •
+    // mBuffer¸¦ ÇØÁ¦ÇÏ±â Àü¿¡ mLogAnchor°¡ »õ·Î ÇÒ´çÇÑ ¸Ş¸ğ¸®¸¦
+    // °¡¸®Å°µµ·Ï ¼öÁ¤
     mLogAnchor = (smrLogAnchor*)sBuffer;
 
     IDE_ASSERT( iduMemMgr::free( mBuffer ) == IDE_SUCCESS );
@@ -4793,7 +4774,7 @@ IDE_RC smrLogAnchorMgr::resizeBuffer( UInt aBufferSize )
 }
 
 /***********************************************************************
- * Description : loganchor ë²„í¼ë¥¼ í•´ì œí•¨
+ * Description : loganchor ¹öÆÛ¸¦ ÇØÁ¦ÇÔ
  **********************************************************************/
 IDE_RC smrLogAnchorMgr::freeBuffer()
 {
@@ -4807,7 +4788,7 @@ IDE_RC smrLogAnchorMgr::freeBuffer()
 }
 
 /***********************************************************************
- * Description: loganchor ë²„í¼ì— ê¸°ë¡
+ * Description: loganchor ¹öÆÛ¿¡ ±â·Ï
  **********************************************************************/
 IDE_RC smrLogAnchorMgr::writeToBuffer( void*  aBuffer,
                                        UInt   aWriteSize )
@@ -4817,7 +4798,7 @@ IDE_RC smrLogAnchorMgr::writeToBuffer( void*  aBuffer,
     IDE_DASSERT( aBuffer != NULL );
     IDE_DASSERT( aWriteSize > 0 );
 
-    /* To fix BUG-30024 : resizeBuffer() ì—ì„œ mallocì‹¤íŒ¨ì‹œ ë¹„ì •ìƒì¢…ë£Œí•©ë‹ˆë‹¤. */
+    /* To fix BUG-30024 : resizeBuffer() ¿¡¼­ malloc½ÇÆĞ½Ã ºñÁ¤»óÁ¾·áÇÕ´Ï´Ù. */
     if ( ( mWriteOffset + aWriteSize ) >= mBufferSize )
     {
         sBufferSize = idlOS::align( (mWriteOffset + aWriteSize), SM_PAGE_SIZE);
@@ -4854,8 +4835,8 @@ IDE_RC smrLogAnchorMgr::writeToBuffer( void*  aBuffer,
 
 /*
    PRJ-1548 User Memory Tablespace
-   Loganchor ë©”ëª¨ë¦¬ë²„í¼ì˜ íŠ¹ì •ì˜¤í”„ì…‹ì—ì„œ ì£¼ì–´ì§„ ê¸¸ì´ë§Œí¼
-   UPDATE í•œë‹¤.
+   Loganchor ¸Ş¸ğ¸®¹öÆÛÀÇ Æ¯Á¤¿ÀÇÁ¼Â¿¡¼­ ÁÖ¾îÁø ±æÀÌ¸¸Å­
+   UPDATE ÇÑ´Ù.
  */
 IDE_RC smrLogAnchorMgr::updateToBuffer( void      * aBuffer,
                                         UInt        aOffset,
@@ -4865,11 +4846,11 @@ IDE_RC smrLogAnchorMgr::updateToBuffer( void      * aBuffer,
 
     IDE_ASSERT( ( aOffset + aWriteSize ) <= mWriteOffset );
 
-    // Tablespaceë‚˜ DBF Nodeë¥¼ Updateí•˜ë‹¤ê°€
-    // Log Anchorì˜ ì‹œì‘ë¶€ë¶„ì— ê¸°ë¡ë˜ëŠ” ê³ ì •ê¸¸ì´ ì˜ì—­ì˜
-    // smrLogAnchorêµ¬ì¡°ì²´ë¥¼ ë®ì–´ì“°ë©´
-    // ì‹œìŠ¤í…œì´ ì˜êµ¬ì ìœ¼ë¡œ ë³µêµ¬ê°€ ë¶ˆê°€ëŠ¥í•´ì§„ë‹¤.
-    // ASSERTë¡œ ì´ë¥¼ í™•ì¸í•œë‹¤.
+    // Tablespace³ª DBF Node¸¦ UpdateÇÏ´Ù°¡
+    // Log AnchorÀÇ ½ÃÀÛºÎºĞ¿¡ ±â·ÏµÇ´Â °íÁ¤±æÀÌ ¿µ¿ªÀÇ
+    // smrLogAnchor±¸Á¶Ã¼¸¦ µ¤¾î¾²¸é
+    // ½Ã½ºÅÛÀÌ ¿µ±¸ÀûÀ¸·Î º¹±¸°¡ ºÒ°¡´ÉÇØÁø´Ù.
+    // ASSERT·Î ÀÌ¸¦ È®ÀÎÇÑ´Ù.
     IDE_ASSERT( aOffset >= ID_SIZEOF(smrLogAnchor) );
 
     idlOS::memcpy( mBuffer + aOffset, 
@@ -4881,7 +4862,7 @@ IDE_RC smrLogAnchorMgr::updateToBuffer( void      * aBuffer,
 
 /*
    PROJ-2133 incremental backup
-   Change tracking attrì„ ê°±ì‹ í•œë‹¤.
+   Change tracking attrÀ» °»½ÅÇÑ´Ù.
  */
 IDE_RC smrLogAnchorMgr::updateCTFileAttr( SChar          * aCTFileName, 
                                           smriCTMgrState * aCTMgrState, 
@@ -4933,7 +4914,7 @@ IDE_RC smrLogAnchorMgr::updateCTFileAttr( SChar          * aCTFileName,
 
 /*
    PROJ-2133 incremental backup
-   Backup Info attrì„ ê°±ì‹ í•œë‹¤.
+   Backup Info attrÀ» °»½ÅÇÑ´Ù.
  */
 IDE_RC smrLogAnchorMgr::updateBIFileAttr( SChar          * aBIFileName, 
                                           smriBIMgrState * aBIMgrState, 
@@ -5020,7 +5001,7 @@ IDE_RC smrLogAnchorMgr::initialize4ProcessPhase()
     SChar             sAnchorFileName[SM_MAX_FILE_NAME];
     UInt              sFileState = 0;
 
-    // LOGANCHOR_DIR í™•ì¸
+    // LOGANCHOR_DIR È®ÀÎ
     IDE_TEST( checkLogAnchorDirExist() != IDE_SUCCESS );
 
     for ( i = 0 ; i < SM_LOGANCHOR_FILE_COUNT ; i++ )
@@ -5032,7 +5013,7 @@ IDE_RC smrLogAnchorMgr::initialize4ProcessPhase()
                          SMR_LOGANCHOR_NAME,
                          i );
 
-        // Loganchor íŒŒì¼ ì ‘ê·¼ ê¶Œí•œ í™•ì¸
+        // Loganchor ÆÄÀÏ Á¢±Ù ±ÇÇÑ È®ÀÎ
         IDE_TEST_RAISE( idf::access( sAnchorFileName, F_OK|W_OK|R_OK ) != 0,
                         error_file_not_exist );
     }
@@ -5051,14 +5032,14 @@ IDE_RC smrLogAnchorMgr::initialize4ProcessPhase()
                    0x00,
                    ID_SIZEOF(smiDataFileAttr) );
 
-    // ë©”ëª¨ë¦¬ ë²„í¼(mBuffer)ë¥¼ SM_PAGE_SIZE í¬ê¸°ë¡œ í• ë‹¹ ë° ì´ˆê¸°í™”
+    // ¸Ş¸ğ¸® ¹öÆÛ(mBuffer)¸¦ SM_PAGE_SIZE Å©±â·Î ÇÒ´ç ¹× ÃÊ±âÈ­
     IDE_TEST( allocBuffer( SM_PAGE_SIZE ) != IDE_SUCCESS );
     sState = 1;
 
-    // ìœ íš¨í•œ loganchoríŒŒì¼ì„ ì„ ì •í•œë‹¤.
+    // À¯È¿ÇÑ loganchorÆÄÀÏÀ» ¼±Á¤ÇÑ´Ù.
     IDE_TEST( checkAndGetValidAnchorNo( &sWhich ) != IDE_SUCCESS );
 
-    // ëª¨ë“  loganchor íŒŒì¼ì„ ì˜¤í”ˆí•œë‹¤.
+    // ¸ğµç loganchor ÆÄÀÏÀ» ¿ÀÇÂÇÑ´Ù.
     for ( i = 0 ; i < SM_LOGANCHOR_FILE_COUNT ; i++ )
     {
         idlOS::snprintf( sAnchorFileName, SM_MAX_FILE_NAME,
@@ -5077,27 +5058,27 @@ IDE_RC smrLogAnchorMgr::initialize4ProcessPhase()
         sFileState++;
     }
 
-    // ë©”ëª¨ë¦¬ë²„í¼ ì˜¤í”„ì…‹ ì´ˆê¸°í™”
+    // ¸Ş¸ğ¸®¹öÆÛ ¿ÀÇÁ¼Â ÃÊ±âÈ­
     initBuffer();
 
     /*
-       PRJ-1548 ê³ ì •ê¸¸ì´ ì˜ì—­ì„ ë©”ëª¨ë¦¬ ë²„í¼ì— ë¡œë”©í•˜ëŠ” ë‹¨ê³„
+       PRJ-1548 °íÁ¤±æÀÌ ¿µ¿ªÀ» ¸Ş¸ğ¸® ¹öÆÛ¿¡ ·ÎµùÇÏ´Â ´Ü°è
     */
 
     IDE_TEST( mFile[sWhich].getFileSize( &sFileSize ) != IDE_SUCCESS );
 
-    // CREATE DATABASE ê³¼ì •ì¤‘ì— ê°€ë³€ì˜ì—­ì´ ì¡´ì¬í•˜ì§€ ì•Šì„ ìˆ˜ëŠ” ìˆì§€ë§Œ,
-    // ê³ ì •ì˜ì—­ì€ ì €ì¥ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
+    // CREATE DATABASE °úÁ¤Áß¿¡ °¡º¯¿µ¿ªÀÌ Á¸ÀçÇÏÁö ¾ÊÀ» ¼ö´Â ÀÖÁö¸¸,
+    // °íÁ¤¿µ¿ªÀº ÀúÀåµÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
     IDE_ASSERT ( sFileSize >= ID_SIZEOF(smrLogAnchor) );
 
-    // íŒŒì¼ë¡œ ë¶€í„° Loganchor ê³ ì •ì˜ì—­ì„ ë¡œë”©í•œë‹¤.
+    // ÆÄÀÏ·Î ºÎÅÍ Loganchor °íÁ¤¿µ¿ªÀ» ·ÎµùÇÑ´Ù.
     IDE_TEST( mFile[sWhich].read( NULL, /* idvSQL* */
                                   0,
                                   (SChar*)&sLogAnchor,
                                   ID_SIZEOF(smrLogAnchor) )
              != IDE_SUCCESS );
 
-    // ë©”ëª¨ë¦¬ ë²„í¼ì— Loganchor ê³ ì •ì—­ì˜ì„ ë¡œë”©í•œë‹¤.
+    // ¸Ş¸ğ¸® ¹öÆÛ¿¡ Loganchor °íÁ¤¿ª¿µÀ» ·ÎµùÇÑ´Ù.
     IDE_TEST( writeToBuffer( (SChar*)&sLogAnchor,
                              ID_SIZEOF(smrLogAnchor) )
               != IDE_SUCCESS );
@@ -5105,7 +5086,7 @@ IDE_RC smrLogAnchorMgr::initialize4ProcessPhase()
     mLogAnchor = (smrLogAnchor*)mBuffer;
 
     /* ------------------------------------------------
-     * 5. ìœ íš¨í•œ loganchor ë²„í¼ë¥¼ ëª¨ë“  anchor íŒŒì¼ì— flush í•œë‹¤.
+     * 5. À¯È¿ÇÑ loganchor ¹öÆÛ¸¦ ¸ğµç anchor ÆÄÀÏ¿¡ flush ÇÑ´Ù.
      * ----------------------------------------------*/
     IDE_TEST( readLogAnchorToBuffer( sWhich ) != IDE_SUCCESS );
 

@@ -43,6 +43,13 @@ public:
                                           UChar           aMode );
 
     static void   finalizeStatement( sdiStatement * aSdStmt );
+
+    /* PROJ-2728 Sharding LOB */
+    static void   findRemoteStatement( sdiStatement   * aSdStmt,
+                                       UInt             aNodeId,
+                                       UInt             aRemoteStmtId,
+                                       sdlRemoteStmt ** aRemoteStmt );
+               
 };
 
 #endif  // _O_SDI_STATEMENT_MANAGER_H_

@@ -60,7 +60,7 @@ IDE_RC mmdManager::initialize()
         }
     }
 
-    //fix BUG-27218 XA Load Heurisitc Transactioní•¨ìˆ˜ ë‚´ìš©ì„ ëª…í™•íˆ í•´ì•¼ í•œë‹¤.
+    //fix BUG-27218 XA Load Heurisitc TransactionÇÔ¼ö ³»¿ëÀ» ¸íÈ®È÷ ÇØ¾ß ÇÑ´Ù.
     IDE_TEST(loadHeuristicTrans(NULL,   /* PROJ-2446 */
                                 MMD_LOAD_HEURISTIC_XIDS_AT_STARTUP, 
                                 NULL, 
@@ -100,8 +100,8 @@ void mmdManager::checkXaTimeout()
     smiCommitState  sTxState;
     //smSCN           sDummySCN;
     SInt            sSlotID = -1;
-    //fix BUG-26844 mmdXa::rollbackì´ ì¥ì‹œê°„ ì§„í–‰ë ë•Œ ì–´ë– í•œ XA callë„ ì§„í–‰í• ìˆ˜ ì—†ìŠµë‹ˆë‹¤
-    //Bug Fixë¥¼     mmdManager::checkXATimeOutì—ë„ ì ìš©í•´ì•¼ í•©ë‹ˆë‹¤.
+    //fix BUG-26844 mmdXa::rollbackÀÌ Àå½Ã°£ ÁøÇàµÉ¶§ ¾î¶°ÇÑ XA callµµ ÁøÇàÇÒ¼ö ¾ø½À´Ï´Ù
+    //Bug Fix¸¦     mmdManager::checkXATimeOut¿¡µµ Àû¿ëÇØ¾ß ÇÕ´Ï´Ù.
     UInt            sState = 0;
 
     //BUG-26163
@@ -120,25 +120,25 @@ void mmdManager::checkXaTimeout()
         IDE_ASSERT(smiXaRecover(&sSlotID, &sXid, &sTime, &sTxState) == IDE_SUCCESS);
 
         // bug-27571: klocwork warnings
-        // ë°‘ì˜ sTvSecì„ êµ¬í•˜ê¸° ì „ì— sSlotIDë¥¼ ë¨¼ì € ê²€ì‚¬í•˜ë„ë¡ ìˆœì„œ ë³€ê²½.
+        // ¹ØÀÇ sTvSecÀ» ±¸ÇÏ±â Àü¿¡ sSlotID¸¦ ¸ÕÀú °Ë»çÇÏµµ·Ï ¼ø¼­ º¯°æ.
         if (sSlotID < 0)
         {
             break;
         }
 
-        //BUG-26163  XA_INDOUBT_TX_TIMEOUT properties ë¹„ì •ìƒ ë™ì‘
+        //BUG-26163  XA_INDOUBT_TX_TIMEOUT properties ºñÁ¤»ó µ¿ÀÛ
         sNow = idlOS::gettimeofday();
         sTvSec = (UInt)sNow.sec();
 
         IDU_FIT_POINT( "mmdManager::checkXaTimeout::lock::XA_TIMEOUT" );
         
-        //BUG-26163 í˜„ì¬ ì‹œê°ì´ Preparedë¡œ ì„¸íŒ…ëœ ì‹œê°ë³´ë‹¤ í´ ê²½ìš°ì— ë¹„êµë¥¼ í•´ì•¼í•œë‹¤.
+        //BUG-26163 ÇöÀç ½Ã°¢ÀÌ Prepared·Î ¼¼ÆÃµÈ ½Ã°¢º¸´Ù Å¬ °æ¿ì¿¡ ºñ±³¸¦ ÇØ¾ßÇÑ´Ù.
         if (  ( sTxState == SMX_XA_PREPARED ) 
            && ( sTvSec > (UInt)sTime.tv_sec)
            && ( (sTvSec - (UInt)sTime.tv_sec) >= mmuProperty::getXaTimeout() ) )
         {
-            //fix BUG-26844 mmdXa::rollbackì´ ì¥ì‹œê°„ ì§„í–‰ë ë•Œ ì–´ë– í•œ XA callë„ ì§„í–‰í• ìˆ˜ ì—†ìŠµë‹ˆë‹¤
-            //Bug Fixë¥¼     mmdManager::checkXATimeOutì—ë„ ì ìš©í•´ì•¼ í•©ë‹ˆë‹¤.
+            //fix BUG-26844 mmdXa::rollbackÀÌ Àå½Ã°£ ÁøÇàµÉ¶§ ¾î¶°ÇÑ XA callµµ ÁøÇàÇÒ¼ö ¾ø½À´Ï´Ù
+            //Bug Fix¸¦     mmdManager::checkXATimeOut¿¡µµ Àû¿ëÇØ¾ß ÇÕ´Ï´Ù.
             IDE_TEST(mmdXa::fix(&sXidObj,&sXid, MMD_XA_DO_LOG) != IDE_SUCCESS);
             sState = 1;
 
@@ -146,8 +146,8 @@ void mmdManager::checkXaTimeout()
             {
                 (void)idaXaConvertXIDToString(NULL, &sXid, sXidString, XID_DATA_MAX_LEN);
                 sXidObj->lock();
-                //fix BUG-26844 mmdXa::rollbackì´ ì¥ì‹œê°„ ì§„í–‰ë ë•Œ ì–´ë– í•œ XA callë„ ì§„í–‰í• ìˆ˜ ì—†ìŠµë‹ˆë‹¤
-                //Bug Fixë¥¼     mmdManager::checkXATimeOutì—ë„ ì ìš©í•´ì•¼ í•©ë‹ˆë‹¤.
+                //fix BUG-26844 mmdXa::rollbackÀÌ Àå½Ã°£ ÁøÇàµÉ¶§ ¾î¶°ÇÑ XA callµµ ÁøÇàÇÒ¼ö ¾ø½À´Ï´Ù
+                //Bug Fix¸¦     mmdManager::checkXATimeOut¿¡µµ Àû¿ëÇØ¾ß ÇÕ´Ï´Ù.
                 sState = 2;
                 if (sXidObj->getState() == MMD_XA_STATE_PREPARED)
                 {
@@ -180,8 +180,8 @@ void mmdManager::checkXaTimeout()
                             sXidObj->rollbackTrans(NULL);
 
                             /* bug-36037: invalid xid
-                               invalid xidì˜ ê²½ìš° insertHeuri ì‹¤íŒ¨ë¥¼ í—ˆìš©í•˜ë¯€ë¡œ
-                               ìˆ˜í–‰ê²°ê³¼ ì²´í¬ ì•ˆí•¨ */
+                               invalid xidÀÇ °æ¿ì insertHeuri ½ÇÆĞ¸¦ Çã¿ëÇÏ¹Ç·Î
+                               ¼öÇà°á°ú Ã¼Å© ¾ÈÇÔ */
                             insertHeuristicTrans( NULL, /* PROJ-2446 */
                                                   &sXid, 
                                                   QCM_XA_ROLLBACKED );
@@ -193,13 +193,13 @@ void mmdManager::checkXaTimeout()
                             break;
                     }
                 }
-                //fix BUG-26844 mmdXa::rollbackì´ ì¥ì‹œê°„ ì§„í–‰ë ë•Œ ì–´ë– í•œ XA callë„ ì§„í–‰í• ìˆ˜ ì—†ìŠµë‹ˆë‹¤
-                //Bug Fixë¥¼     mmdManager::checkXATimeOutì—ë„ ì ìš©í•´ì•¼ í•©ë‹ˆë‹¤.
+                //fix BUG-26844 mmdXa::rollbackÀÌ Àå½Ã°£ ÁøÇàµÉ¶§ ¾î¶°ÇÑ XA callµµ ÁøÇàÇÒ¼ö ¾ø½À´Ï´Ù
+                //Bug Fix¸¦     mmdManager::checkXATimeOut¿¡µµ Àû¿ëÇØ¾ß ÇÕ´Ï´Ù.
                 sState = 1;
                 sXidObj->unlock();
             }//if sXidObj != NULL
-            //fix BUG-26844 mmdXa::rollbackì´ ì¥ì‹œê°„ ì§„í–‰ë ë•Œ ì–´ë– í•œ XA callë„ ì§„í–‰í• ìˆ˜ ì—†ìŠµë‹ˆë‹¤
-            //Bug Fixë¥¼     mmdManager::checkXATimeOutì—ë„ ì ìš©í•´ì•¼ í•©ë‹ˆë‹¤.
+            //fix BUG-26844 mmdXa::rollbackÀÌ Àå½Ã°£ ÁøÇàµÉ¶§ ¾î¶°ÇÑ XA callµµ ÁøÇàÇÒ¼ö ¾ø½À´Ï´Ù
+            //Bug Fix¸¦     mmdManager::checkXATimeOut¿¡µµ Àû¿ëÇØ¾ß ÇÕ´Ï´Ù.
             sState = 0;
             IDE_ASSERT(mmdXa::unFix(sXidObj,&sXid , MMD_XA_NONE) == IDE_SUCCESS);
         }//if SMX_XA_PREPARED
@@ -209,8 +209,8 @@ void mmdManager::checkXaTimeout()
     
     IDE_EXCEPTION_END;
     {
-        //fix BUG-26844 mmdXa::rollbackì´ ì¥ì‹œê°„ ì§„í–‰ë ë•Œ ì–´ë– í•œ XA callë„ ì§„í–‰í• ìˆ˜ ì—†ìŠµë‹ˆë‹¤
-        //Bug Fixë¥¼     mmdManager::checkXATimeOutì—ë„ ì ìš©í•´ì•¼ í•©ë‹ˆë‹¤.
+        //fix BUG-26844 mmdXa::rollbackÀÌ Àå½Ã°£ ÁøÇàµÉ¶§ ¾î¶°ÇÑ XA callµµ ÁøÇàÇÒ¼ö ¾ø½À´Ï´Ù
+        //Bug Fix¸¦     mmdManager::checkXATimeOut¿¡µµ Àû¿ëÇØ¾ß ÇÕ´Ï´Ù.
         switch (sState)
         {
             case 2:
@@ -224,7 +224,7 @@ void mmdManager::checkXaTimeout()
     
 }
 
- //fix BUG-27218 XA Load Heurisitc Transactioní•¨ìˆ˜ ë‚´ìš©ì„ ëª…í™•íˆ í•´ì•¼ í•œë‹¤.
+ //fix BUG-27218 XA Load Heurisitc TransactionÇÔ¼ö ³»¿ëÀ» ¸íÈ®È÷ ÇØ¾ß ÇÑ´Ù.
 IDE_RC mmdManager::loadHeuristicTrans( idvSQL                     *aStatistics, 
                                        mmdXaLoadHeuristicXidFlag  aLoadHeuristicXidFlag, 
                                        ID_XID                     **aHeuristicXids, 
@@ -236,8 +236,6 @@ IDE_RC mmdManager::loadHeuristicTrans( idvSQL                     *aStatistics,
     qcmXaHeuristicTrans *sHeuristicTrans = NULL;
     SInt                 sMaxHeuristicTrans;
     SInt                 sNumHeuristicTrans;
-    //PROJ-1677 DEQ
-    smSCN                sDummySCN;
     ID_XID               sXid;
     mmdXid              *sXidObj         = NULL;
     mmdXaState           sXidState;
@@ -282,7 +280,7 @@ IDE_RC mmdManager::loadHeuristicTrans( idvSQL                     *aStatistics,
     IDE_ASSERT(sNumHeuristicTrans == sMaxHeuristicTrans);
 
 
-    //fix BUG-27218 XA Load Heurisitc Transactioní•¨ìˆ˜ ë‚´ìš©ì„ ëª…í™•íˆ í•´ì•¼ í•œë‹¤.
+    //fix BUG-27218 XA Load Heurisitc TransactionÇÔ¼ö ³»¿ëÀ» ¸íÈ®È÷ ÇØ¾ß ÇÑ´Ù.
     if ( aLoadHeuristicXidFlag == MMD_LOAD_HEURISTIC_XIDS_AT_XA_RECOVER )
     {
         IDU_FIT_POINT_RAISE( "mmdManager::loadHeuristicTrans::malloc::HeuristicXids",
@@ -330,10 +328,10 @@ IDE_RC mmdManager::loadHeuristicTrans( idvSQL                     *aStatistics,
                     break;
             }
 
-            //fix BUG-27218 XA Load Heurisitc Transactioní•¨ìˆ˜ ë‚´ìš©ì„ ëª…í™•íˆ í•´ì•¼ í•œë‹¤.
+            //fix BUG-27218 XA Load Heurisitc TransactionÇÔ¼ö ³»¿ëÀ» ¸íÈ®È÷ ÇØ¾ß ÇÑ´Ù.
             IDE_TEST(mmdXidManager::alloc(&sXidObj, &sXid, NULL)
                     != IDE_SUCCESS);
-            // xid listì— ë‹¬ë¦¬ì „ì´ê¸°ë•Œë¬¸ì— Xid Objectì— lockì´ í•„ìš” ì—†ë‹¤.
+            // xid list¿¡ ´Ş¸®ÀüÀÌ±â¶§¹®¿¡ Xid Object¿¡ lockÀÌ ÇÊ¿ä ¾ø´Ù.
             sXidObj->setState(sXidState);
             IDE_TEST(mmdXidManager::add(sXidObj,mmdXidManager::getBucketPos(sXidObj->getXid())) != IDE_SUCCESS);
         }//for
@@ -349,7 +347,7 @@ IDE_RC mmdManager::loadHeuristicTrans( idvSQL                     *aStatistics,
     IDE_TEST(sStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
     sStage--;
 
-    IDE_TEST(sTrans.commit(&sDummySCN) != IDE_SUCCESS);
+    IDE_TEST(sTrans.commit() != IDE_SUCCESS);
     sStage--;
 
     IDE_TEST(sTrans.destroy(NULL) != IDE_SUCCESS);
@@ -391,8 +389,6 @@ IDE_RC mmdManager::insertHeuristicTrans( idvSQL             *aStatistics,
     smiTrans      sTrans;
     smiStatement  sStmt;
     smiStatement *sRootStmt;
-    //PROJ-1677 DEQ
-    smSCN          sDummySCN;
     UInt          sStage = 0;
 
     IDE_TEST( sTrans.initialize() != IDE_SUCCESS ); /* PROJ-2446 */
@@ -418,7 +414,7 @@ IDE_RC mmdManager::insertHeuristicTrans( idvSQL             *aStatistics,
     IDE_TEST(sStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
     sStage--;
 
-    IDE_TEST(sTrans.commit(&sDummySCN) != IDE_SUCCESS);
+    IDE_TEST(sTrans.commit() != IDE_SUCCESS);
     sStage--;
 
     IDE_TEST(sTrans.destroy(NULL) != IDE_SUCCESS);
@@ -449,8 +445,6 @@ IDE_RC mmdManager::removeHeuristicTrans( idvSQL     *aStatistics,
     smiStatement  sStmt;
     smiStatement *sRootStmt;
     UInt          sStage     = 0;
-    //PROJ-1677 DEQ
-    smSCN          sDummySCN;
     idBool        sIsRemoved = ID_FALSE;
 
     IDE_TEST( sTrans.initialize() != IDE_SUCCESS ); /* PROJ-2446 */
@@ -478,7 +472,7 @@ IDE_RC mmdManager::removeHeuristicTrans( idvSQL     *aStatistics,
     IDE_TEST(sStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
     sStage--;
 
-    IDE_TEST(sTrans.commit(&sDummySCN) != IDE_SUCCESS);
+    IDE_TEST(sTrans.commit() != IDE_SUCCESS);
     sStage--;
 
     IDE_TEST(sTrans.destroy(NULL) != IDE_SUCCESS);

@@ -21,8 +21,8 @@
 class mmuFixedTable
 {
 public:
-    // micro-sec. ë‹¨ìœ„ë¡œ ë°˜í™˜í•œë‹¤. 
+    // micro-sec. ´ÜÀ§·Î ¹ÝÈ¯ÇÑ´Ù. 
     static UInt buildConvertTime(idvTime *aBegin, idvTime *aEnd, UChar *aBuf);
-    // milli-sec. ë‹¨ìœ„ë¡œ ë°˜í™˜í•œë‹¤. 
+    // milli-sec. ´ÜÀ§·Î ¹ÝÈ¯ÇÑ´Ù. 
     static UInt buildConvertTimeMSEC(idvTime *aBegin, idvTime *aEnd, UChar *aBuf);
 };

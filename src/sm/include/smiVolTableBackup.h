@@ -135,25 +135,25 @@ private:
 private:
     smcTableBackupFile mFile;   //Backup File
     UChar*             mBuffer; //buffer
-    ULong              mOffset; //ì „ì²´íŒŒì¼ì—ì„œ read, write offset
-    UInt               mBufferSize; //í• ë‹¹ëœ ë²„í¼ì˜ í¬ê¸°.
-    smcTableHeader    *mTableHeader; //BackupFileì— ì €ì¥í• , ì €ì¥ëœ
-                                     //í…Œì´ë¸” í—¤ë”
+    ULong              mOffset; //ÀüÃ¼ÆÄÀÏ¿¡¼­ read, write offset
+    UInt               mBufferSize; //ÇÒ´çµÈ ¹öÆÛÀÇ Å©±â.
+    smcTableHeader    *mTableHeader; //BackupFile¿¡ ÀúÀåÇÒ, ÀúÀåµÈ
+                                     //Å×ÀÌºí Çì´õ
     smiColumn        **mArrColumn;
 };
 
 /***********************************************************************
- * Description : Fileì— ë°ì´íƒ€ë¥¼ ê¸°ë¡í•œë‹¤.
+ * Description : File¿¡ µ¥ÀÌÅ¸¸¦ ±â·ÏÇÑ´Ù.
  *
- * aBuffer - [IN] ë²„í¼ì˜ í¬ê¸°.
- * aSize   - [IN] Writeí•  ë°ì´íƒ€ì˜ í¬ê¸°.
+ * aBuffer - [IN] ¹öÆÛÀÇ Å©±â.
+ * aSize   - [IN] WriteÇÒ µ¥ÀÌÅ¸ÀÇ Å©±â.
  ***********************************************************************/
 IDE_RC smiVolTableBackup::writeToBackupFile(void *aBuffer, UInt aSize)
 {
-    /* BUG-15751: NULL Rowë¥¼ ê¸°ë¡í•˜ë‹¤ ì„œë²„ì‚¬ë§. ì™œëƒí•˜ë©´ Varcharì˜ Null Value
-       ëŠ” ê¸¸ì´ê°€ 0ì´ì–´ì„œ smcTableBackupFileì˜ writeì—ì„œ ê¸¸ì´ê°€ 0ì´ìƒì¸ê²ƒì„
-       Checkí•˜ê³  ìˆì–´ì„œ ê¸°ë¡í•  ë°ì´íƒ€ì˜ ê¸¸ì´ê°€ 0ì´ë©´ IDE_ASSERTì—ì„œ ì„œë²„ê°€
-       ì£½ìŠµë‹ˆë‹¤.*/
+    /* BUG-15751: NULL Row¸¦ ±â·ÏÇÏ´Ù ¼­¹ö»ç¸Á. ¿Ö³ÄÇÏ¸é VarcharÀÇ Null Value
+       ´Â ±æÀÌ°¡ 0ÀÌ¾î¼­ smcTableBackupFileÀÇ write¿¡¼­ ±æÀÌ°¡ 0ÀÌ»óÀÎ°ÍÀ»
+       CheckÇÏ°í ÀÖ¾î¼­ ±â·ÏÇÒ µ¥ÀÌÅ¸ÀÇ ±æÀÌ°¡ 0ÀÌ¸é IDE_ASSERT¿¡¼­ ¼­¹ö°¡
+       Á×½À´Ï´Ù.*/
     if(aSize > 0 )
     {
         while (1)
@@ -176,8 +176,8 @@ IDE_RC smiVolTableBackup::writeToBackupFile(void *aBuffer, UInt aSize)
 }
 
 /***********************************************************************
- * Description : Fileì— ë°ì´íƒ€ë¥¼ ê¸°ë¡í•˜ê¸°ìœ„í•´ Fileì„ opení•˜ê³  mOffsetì„
- *               ì´ˆê¸°í™”í•œë‹¤.
+ * Description : File¿¡ µ¥ÀÌÅ¸¸¦ ±â·ÏÇÏ±âÀ§ÇØ FileÀ» openÇÏ°í mOffsetÀ»
+ *               ÃÊ±âÈ­ÇÑ´Ù.
  *
  * aIsWrite - [IN] write: ID_TRUE, read:ID_FALSE
  ***********************************************************************/
@@ -194,7 +194,7 @@ IDE_RC smiVolTableBackup::prepareAccessFile(idBool aIsWrite)
 }
 
 /***********************************************************************
- * Description : File closeë¥¼ ìˆ˜í–‰í•œë‹¤.
+ * Description : File close¸¦ ¼öÇàÇÑ´Ù.
  ***********************************************************************/
 IDE_RC smiVolTableBackup::finishAccessFile()
 {
@@ -208,16 +208,16 @@ IDE_RC smiVolTableBackup::finishAccessFile()
 }
 
 /***********************************************************************
- * Description : aBufferSizeí¬ê¸°ë§Œí¼ì˜ ë²„í¼ë¥¼ í• ë‹¹í•œë‹¤.
+ * Description : aBufferSizeÅ©±â¸¸Å­ÀÇ ¹öÆÛ¸¦ ÇÒ´çÇÑ´Ù.
  *
- * aBufferSize - [IN] í• ë‹¹ë°›ì„ ë²„í¼ì˜ í¬ê¸°.
+ * aBufferSize - [IN] ÇÒ´ç¹ŞÀ» ¹öÆÛÀÇ Å©±â.
  ***********************************************************************/
 IDE_RC smiVolTableBackup::initBuffer(UInt aBufferSize)
 {
     IDE_ASSERT(mBuffer == NULL);
 
     //BUG-25640
-    //Variable ë˜ëŠ” Lob ì¹¼ëŸ¼ë§Œ ì¡´ì¬í•˜ë©°, ê°’ì´ Nullì¼ ê²½ìš°, Rowì˜ Valueë§Œ ì €ì¥í•˜ëŠ” mBuffer ë˜í•œ Nullì¼ ìˆ˜ ìˆë‹¤.
+    //Variable ¶Ç´Â Lob Ä®·³¸¸ Á¸ÀçÇÏ¸ç, °ªÀÌ NullÀÏ °æ¿ì, RowÀÇ Value¸¸ ÀúÀåÇÏ´Â mBuffer ¶ÇÇÑ NullÀÏ ¼ö ÀÖ´Ù.
     if( aBufferSize != 0 )
     {
         IDE_TEST(iduMemMgr::calloc(IDU_MEM_SM_SMC,
@@ -236,13 +236,13 @@ IDE_RC smiVolTableBackup::initBuffer(UInt aBufferSize)
 }
 
 /***********************************************************************
- * Description : í• ë‹¹ë°›ì€ Bufferë¥¼ Freeí•œë‹¤.
+ * Description : ÇÒ´ç¹ŞÀº Buffer¸¦ FreeÇÑ´Ù.
  *
  ***********************************************************************/
 IDE_RC smiVolTableBackup::destBuffer()
 {
     //BUG-25640
-    //Variable ë˜ëŠ” Lob ì¹¼ëŸ¼ë§Œ ì¡´ì¬í•˜ë©°, ê°’ì´ Nullì¼ ê²½ìš°, Rowì˜ Valueë§Œ ì €ì¥í•˜ëŠ” mBuffer ë˜í•œ Nullì¼ ìˆ˜ ìˆë‹¤.
+    //Variable ¶Ç´Â Lob Ä®·³¸¸ Á¸ÀçÇÏ¸ç, °ªÀÌ NullÀÏ °æ¿ì, RowÀÇ Value¸¸ ÀúÀåÇÏ´Â mBuffer ¶ÇÇÑ NullÀÏ ¼ö ÀÖ´Ù.
     if( mBuffer != NULL )
     {
         IDE_TEST(iduMemMgr::free(mBuffer) != IDE_SUCCESS);

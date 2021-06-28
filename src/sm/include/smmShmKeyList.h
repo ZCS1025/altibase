@@ -29,42 +29,42 @@
 
 
 /*
-    smmShmKeyList - DBì˜ ê³µìœ ë©”ëª¨ë¦¬ Key ë¦¬ìŠ¤íŠ¸ë¥¼ ê´€ë¦¬í•œë‹¤.
+    smmShmKeyList - DBÀÇ °øÀ¯¸Ş¸ğ¸® Key ¸®½ºÆ®¸¦ °ü¸®ÇÑ´Ù.
 
-    - ì§€ì› operation
+    - Áö¿ø operation
       - addKey
-        - ê³µìœ ë©”ëª¨ë¦¬ Keyë¥¼ Key Listì— ì¶”ê°€í•œë‹¤.
+        - °øÀ¯¸Ş¸ğ¸® Key¸¦ Key List¿¡ Ãß°¡ÇÑ´Ù.
       - removeKey
-        - Key Listì—ì„œ ê³µìœ ë©”ëª¨ë¦¬ Keyë¥¼ ì œê±°í•œë‹¤.
+        - Key List¿¡¼­ °øÀ¯¸Ş¸ğ¸® Key¸¦ Á¦°ÅÇÑ´Ù.
 */
     
 
 class smmShmKeyList 
 {
 private :
-    smuList      mKeyList;      // ê³µìœ ë©”ëª¨ë¦¬ Key List
-    iduMemPool   mListNodePool; // ê³µìœ ë©”ëª¨ë¦¬ Key Listì˜ Node Mempool
+    smuList      mKeyList;      // °øÀ¯¸Ş¸ğ¸® Key List
+    iduMemPool   mListNodePool; // °øÀ¯¸Ş¸ğ¸® Key ListÀÇ Node Mempool
 
 public :
     smmShmKeyList();
     ~smmShmKeyList();
 
-    // ê³µìœ ë©”ëª¨ë¦¬ Key Listë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+    // °øÀ¯¸Ş¸ğ¸® Key List¸¦ ÃÊ±âÈ­ÇÑ´Ù.
     IDE_RC initialize();
     
-    // ê³µìœ ë©”ëª¨ë¦¬ Key Listë¥¼ íŒŒê´´í•œë‹¤
+    // °øÀ¯¸Ş¸ğ¸® Key List¸¦ ÆÄ±«ÇÑ´Ù
     IDE_RC destroy();
     
-    // ì¬í™œìš© Keyë¥¼ ì¬í™œìš© Key Listì— ì¶”ê°€í•œë‹¤
+    // ÀçÈ°¿ë Key¸¦ ÀçÈ°¿ë Key List¿¡ Ãß°¡ÇÑ´Ù
     IDE_RC addKey(key_t aKey);
 
-    // ì¬í™œìš© Key Listì—ì„œ ì¬í™œìš© Keyë¥¼ ë¹¼ë‚¸ë‹¤.
+    // ÀçÈ°¿ë Key List¿¡¼­ ÀçÈ°¿ë Key¸¦ »©³½´Ù.
     IDE_RC removeKey(key_t * aKey);
 
-    // ê³µìœ ë©”ëª¨ë¦¬ Key Listì•ˆì˜ ëª¨ë“  Keyë¥¼ ì œê±°í•œë‹¤
+    // °øÀ¯¸Ş¸ğ¸® Key List¾ÈÀÇ ¸ğµç Key¸¦ Á¦°ÅÇÑ´Ù
     IDE_RC removeAll();
     
-    // ì¬í™œìš© Key Listê°€ ë¹„ì–´ìˆëŠ”ì§€ ì²´í¬í•œë‹¤.
+    // ÀçÈ°¿ë Key List°¡ ºñ¾îÀÖ´ÂÁö Ã¼Å©ÇÑ´Ù.
     idBool isEmpty();
 
 };

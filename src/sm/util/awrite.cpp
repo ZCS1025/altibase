@@ -11,19 +11,16 @@
 #include <fcntl.h>
 #endif
 
-#include <idl.h>
-#include <idu.h>
-#include <ideErrorMgr.h>
 #include <smDef.h>
 
 double showElapsed( struct timeval *start_time, struct timeval *end_time);
 double checkTime(struct timeval *sTime, struct timeval *eTime );
 
 /******************************************************************************
- * Description : BUG-45292 truncate í•¨ìˆ˜ë¥¼ ì´ìš©í•˜ë©´ log íŒŒì¼ ìƒì„± ì‹œê°„ì„ ë‹¨ì¶•í• ìˆ˜ ìˆì„ë“¯ í•©ë‹ˆë‹¤. 
-                 ì—ì„œ fallocate() ê°€ ë°˜ì˜ë˜ì—ˆìŠµë‹ˆë‹¤. 
-                 ê·¸ëŸ°ë° fallocate ë¥¼ ì‚¬ìš©í•˜ë©´ ì‹¤ì œ log write ê°€ ëŠë ¤ì§€ëŠ” ì¦ìƒì´ ë³´ì—¬ì„œ
-                 fallocate+mmap  / write+mmap  ì—ì„œ ì‹¤ì œ mmapì˜ ì„±ëŠ¥ì„ ë³´ê¸° ìœ„í•œ í…ŒìŠ¤íŠ¸ì¼€ì´ìŠ¤ 
+ * Description : BUG-45292 truncate ÇÔ¼ö¸¦ ÀÌ¿ëÇÏ¸é log ÆÄÀÏ »ı¼º ½Ã°£À» ´ÜÃàÇÒ¼ö ÀÖÀ»µí ÇÕ´Ï´Ù. 
+                 ¿¡¼­ fallocate() °¡ ¹İ¿µµÇ¾ú½À´Ï´Ù. 
+                 ±×·±µ¥ fallocate ¸¦ »ç¿ëÇÏ¸é ½ÇÁ¦ log write °¡ ´À·ÁÁö´Â Áõ»óÀÌ º¸¿©¼­
+                 fallocate+mmap  / write+mmap  ¿¡¼­ ½ÇÁ¦ mmapÀÇ ¼º´ÉÀ» º¸±â À§ÇÑ Å×½ºÆ®ÄÉÀÌ½º 
  ******************************************************************************/
 int main()
 {

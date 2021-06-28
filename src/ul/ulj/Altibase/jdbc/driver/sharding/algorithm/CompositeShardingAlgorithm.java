@@ -22,11 +22,11 @@ import Altibase.jdbc.driver.sharding.core.ShardSplitMethod;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Set;
 
 public interface CompositeShardingAlgorithm extends ShardingAlgorithm
 {
-    Set<DataNode> doSharding(List<PreciseShardingValue> aShardValueList,
-                             List<ShardSplitMethod> aShardSplitMethodList,
-                             DataNode aDefaultNode) throws SQLException;
+    List<DataNode> doSharding(List<Comparable<?>> aShardValueList,
+                              List<ShardSplitMethod> aShardSplitMethodList,
+                              DataNode aDefaultNode,
+                              int aShardValueCnt, int aShardSubValueCnt) throws SQLException;
 }

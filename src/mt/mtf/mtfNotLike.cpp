@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfNotLike.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfNotLike.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -238,77 +238,77 @@ extern IDE_RC mtfLikeCalculateLength4EcharMBFast( mtcNode*     aNode,
                                                   void*        aInfo,
                                                   mtcTemplate* aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 extern IDE_RC mtfLikeCalculate4ClobValue( mtcNode     * aNode,
                                           mtcStack    * aStack,
                                           SInt          aRemain,
                                           void        * aInfo,
                                           mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 extern IDE_RC mtfLikeCalculate4ClobValueMB( mtcNode     * aNode,
                                             mtcStack    * aStack,
                                             SInt          aRemain,
                                             void        * aInfo,
                                             mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 extern IDE_RC mtfLikeCalculate4ClobValueNormal( mtcNode     * aNode,
                                                 mtcStack    * aStack,
                                                 SInt          aRemain,
                                                 void        * aInfo,
                                                 mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 extern IDE_RC mtfLikeCalculate4ClobValueMBNormal( mtcNode     * aNode,
                                                   mtcStack    * aStack,
                                                   SInt          aRemain,
                                                   void        * aInfo,
                                                   mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 extern IDE_RC mtfLikeCalculate4ClobValueNormalFast( mtcNode     * aNode,
                                                     mtcStack    * aStack,
                                                     SInt          aRemain,
                                                     void        * aInfo,
                                                     mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 extern IDE_RC mtfLikeCalculateEqual4ClobValueFast( mtcNode     * aNode,
                                                    mtcStack    * aStack,
                                                    SInt          aRemain,
                                                    void        * aInfo,
                                                    mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 extern IDE_RC mtfLikeCalculateIsNotNull4ClobValueFast( mtcNode     * aNode,
                                                        mtcStack    * aStack,
                                                        SInt          aRemain,
                                                        void        * aInfo,
                                                        mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 extern IDE_RC mtfLikeCalculateLength4ClobValueFast( mtcNode     * aNode,
                                                     mtcStack    * aStack,
                                                     SInt          aRemain,
                                                     void        * aInfo,
                                                     mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 extern IDE_RC mtfLikeCalculateOnePercent4ClobValueFast( mtcNode     * aNode,
                                                         mtcStack    * aStack,
                                                         SInt          aRemain,
                                                         void        * aInfo,
                                                         mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 extern IDE_RC mtfLikeCalculate4ClobValueMBNormalFast( mtcNode     * aNode,
                                                       mtcStack    * aStack,
                                                       SInt          aRemain,
                                                       void        * aInfo,
                                                       mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 extern IDE_RC mtfLikeCalculateLength4ClobValueMBFast( mtcNode     * aNode,
                                                       mtcStack    * aStack,
                                                       SInt          aRemain,
@@ -353,7 +353,7 @@ static IDE_RC mtfNotLikeEstimateXlobLocatorFast( mtcNode*     aNode,
                                                  SInt         aRemain,
                                                  mtcCallBack* aCallBack );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 static IDE_RC mtfNotLikeEstimateClobValueFast( mtcNode     * aNode,
                                                mtcTemplate * aTemplate,
                                                mtcStack    * aStack,
@@ -580,77 +580,77 @@ static IDE_RC mtfNotLikeCalculateLength4EcharMBFast( mtcNode*     aNode,
                                                      void*        aInfo,
                                                      mtcTemplate* aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 static IDE_RC mtfNotLikeCalculate4ClobValue( mtcNode     * aNode,
                                              mtcStack    * aStack,
                                              SInt          aRemain,
                                              void        * aInfo,
                                              mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 static IDE_RC mtfNotLikeCalculate4ClobValueMB( mtcNode     * aNode,
                                                mtcStack    * aStack,
                                                SInt          aRemain,
                                                void        * aInfo,
                                                mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 static IDE_RC mtfNotLikeCalculate4ClobValueNormal( mtcNode     * aNode,
                                                    mtcStack    * aStack,
                                                    SInt          aRemain,
                                                    void        * aInfo,
                                                    mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 static IDE_RC mtfNotLikeCalculate4ClobValueMBNormal( mtcNode     * aNode,
                                                      mtcStack    * aStack,
                                                      SInt          aRemain,
                                                      void        * aInfo,
                                                      mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 IDE_RC mtfNotLikeCalculate4ClobValueNormalFast( mtcNode     * aNode,
                                                 mtcStack    * aStack,
                                                 SInt          aRemain,
                                                 void        * aInfo,
                                                 mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 IDE_RC mtfNotLikeCalculateEqual4ClobValueFast( mtcNode     * aNode,
                                                mtcStack    * aStack,
                                                SInt          aRemain,
                                                void        * aInfo,
                                                mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 IDE_RC mtfNotLikeCalculateIsNull4ClobValueFast( mtcNode     * aNode,
                                                 mtcStack    * aStack,
                                                 SInt          aRemain,
                                                 void        * aInfo,
                                                 mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 IDE_RC mtfNotLikeCalculateLength4ClobValueFast( mtcNode     * aNode,
                                                 mtcStack    * aStack,
                                                 SInt          aRemain,
                                                 void        * aInfo,
                                                 mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 IDE_RC mtfNotLikeCalculateOnePercent4ClobValueFast( mtcNode     * aNode,
                                                     mtcStack    * aStack,
                                                     SInt          aRemain,
                                                     void        * aInfo,
                                                     mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 IDE_RC mtfNotLikeCalculate4ClobValueMBNormalFast( mtcNode     * aNode,
                                                   mtcStack    * aStack,
                                                   SInt          aRemain,
                                                   void        * aInfo,
                                                   mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 IDE_RC mtfNotLikeCalculateLength4ClobValueMBFast( mtcNode     * aNode,
                                                   mtcStack    * aStack,
                                                   SInt          aRemain,
@@ -805,7 +805,7 @@ const mtcExecute mtfExecute4EcharMBNormal = {
     mtk::extractRangeNA
 };
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 const mtcExecute mtfExecute4ClobValue = {
     mtf::calculateNA,
     mtf::calculateNA,
@@ -818,7 +818,7 @@ const mtcExecute mtfExecute4ClobValue = {
     mtk::extractRangeNA
 };
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 const mtcExecute mtfExecute4ClobValueMB = {
     mtf::calculateNA,
     mtf::calculateNA,
@@ -831,7 +831,7 @@ const mtcExecute mtfExecute4ClobValueMB = {
     mtk::extractRangeNA
 };
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 const mtcExecute mtfExecute4ClobValueNormal = {
     mtf::calculateNA,
     mtf::calculateNA,
@@ -844,7 +844,7 @@ const mtcExecute mtfExecute4ClobValueNormal = {
     mtk::extractRangeNA
 };
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ì… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 const mtcExecute mtfExecute4ClobValueMBNormal = {
     mtf::calculateNA,
     mtf::calculateNA,
@@ -899,14 +899,14 @@ IDE_RC mtfNotLikeEstimate( mtcNode*     aNode,
               != IDE_SUCCESS );
 
     // BUG-40992 FATAL when using _prowid
-    // ì¸ìì˜ ê²½ìš° mtcStack ì˜ column ê°’ì„ ì´ìš©í•˜ë©´ ëœë‹¤.
+    // ÀÎÀÚÀÇ °æ¿ì mtcStack ÀÇ column °ªÀ» ÀÌ¿ëÇÏ¸é µÈ´Ù.
     sIndexColumn     = aStack[1].column;
 
     // BUG-22611
-    // switch-caseì— UInt í˜•ìœ¼ë¡œ ìŒìˆ˜ê°’ì´ ë‘ë²ˆ ì´ìƒ ì˜¤ë©´ ì„œë²„ ë¹„ì •ìƒ ì¢…ë£Œ
+    // switch-case¿¡ UInt ÇüÀ¸·Î À½¼ö°ªÀÌ µÎ¹ø ÀÌ»ó ¿À¸é ¼­¹ö ºñÁ¤»ó Á¾·á
     // ex )  case MTD_BIT_ID: ==> (UInt)-7 
     //       case MTD_VARBIT_ID: ==> (UInt)-8
-    // ë”°ë¼ì„œ SInt í˜•ìœ¼ë¡œ íƒ€ì… ìºìŠ¤íŒ… í•˜ë„ë¡ ìˆ˜ì •í•¨ 
+    // µû¶ó¼­ SInt ÇüÀ¸·Î Å¸ÀÔ Ä³½ºÆÃ ÇÏµµ·Ï ¼öÁ¤ÇÔ 
     sModuleId = (SInt)sIndexColumn->module->id;
 
     switch ( sModuleId )
@@ -957,7 +957,7 @@ IDE_RC mtfNotLikeEstimate( mtcNode*     aNode,
             else
             {
                 // PROJ-1755
-                // format stringì— ë”°ë¥¸ ìµœì  í•¨ìˆ˜ë¥¼ ì—°ê²°í•œë‹¤.
+                // format string¿¡ µû¸¥ ÃÖÀû ÇÔ¼ö¸¦ ¿¬°áÇÑ´Ù.
                 IDE_TEST( mtfNotLikeEstimateXlobLocatorFast( aNode,
                                                              aTemplate,
                                                              aStack,
@@ -1018,7 +1018,7 @@ IDE_RC mtfNotLikeEstimate( mtcNode*     aNode,
                 else
                 {
                     // PROJ-1755
-                    // format stringì— ë”°ë¥¸ ìµœì  í•¨ìˆ˜ë¥¼ ì—°ê²°í•œë‹¤.
+                    // format string¿¡ µû¸¥ ÃÖÀû ÇÔ¼ö¸¦ ¿¬°áÇÑ´Ù.
                     IDE_TEST( mtfNotLikeEstimateXlobLocatorFast( aNode,
                                                                  aTemplate,
                                                                  aStack,
@@ -1073,7 +1073,7 @@ IDE_RC mtfNotLikeEstimate( mtcNode*     aNode,
                 else
                 {
                     // PROJ-1755
-                    // format stringì— ë”°ë¥¸ ìµœì  í•¨ìˆ˜ë¥¼ ì—°ê²°í•œë‹¤.
+                    // format string¿¡ µû¸¥ ÃÖÀû ÇÔ¼ö¸¦ ¿¬°áÇÑ´Ù.
                     IDE_TEST( mtfNotLikeEstimateClobValueFast( aNode,
                                                                aTemplate,
                                                                aStack,
@@ -1119,7 +1119,7 @@ IDE_RC mtfNotLikeEstimate( mtcNode*     aNode,
             else
             {
                 // PROJ-1755
-                // format stringì— ë”°ë¥¸ ìµœì  í•¨ìˆ˜ë¥¼ ì—°ê²°í•œë‹¤.
+                // format string¿¡ µû¸¥ ÃÖÀû ÇÔ¼ö¸¦ ¿¬°áÇÑ´Ù.
                 IDE_TEST( mtfNotLikeEstimateBitFast( aNode,
                                                      aTemplate,
                                                      aStack,
@@ -1141,7 +1141,7 @@ IDE_RC mtfNotLikeEstimate( mtcNode*     aNode,
                           != IDE_SUCCESS );
                 sModules[1] = sModules[0];
 
-                // escape ë¬¸ìëŠ” ì›ë³¸ íƒ€ì…ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
+                // escape ¹®ÀÚ´Â ¿øº» Å¸ÀÔÀ¸·Î º¯È¯ÇÑ´Ù.
                 if ( sModules[0] == &mtdEchar )
                 {
                     sModules[2] = &mtdChar;
@@ -1190,7 +1190,7 @@ IDE_RC mtfNotLikeEstimate( mtcNode*     aNode,
             }            
             else
             {
-                // format stringì— ë”°ë¥¸ ìµœì  í•¨ìˆ˜ë¥¼ ì—°ê²°í•œë‹¤.
+                // format string¿¡ µû¸¥ ÃÖÀû ÇÔ¼ö¸¦ ¿¬°áÇÑ´Ù.
                 IDE_TEST( mtfNotLikeEstimateEcharFast( aNode,
                                                        aTemplate,
                                                        aStack,
@@ -1252,7 +1252,7 @@ IDE_RC mtfNotLikeEstimate( mtcNode*     aNode,
             else
             {
                 // PROJ-1755
-                // format stringì— ë”°ë¥¸ ìµœì  í•¨ìˆ˜ë¥¼ ì—°ê²°í•œë‹¤.
+                // format string¿¡ µû¸¥ ÃÖÀû ÇÔ¼ö¸¦ ¿¬°áÇÑ´Ù.
                 IDE_TEST( mtfNotLikeEstimateCharFast( aNode,
                                                       aTemplate,
                                                       aStack,
@@ -1270,7 +1270,7 @@ IDE_RC mtfNotLikeEstimate( mtcNode*     aNode,
     }
     else
     {
-        // BUG-37057 íŒ¨í„´ì˜ ê¸¸ì´ëŠ” ë¬¸ìì—´ì˜ ê¸¸ì´ë¥¼ ë„˜ì–´ê°ˆìˆ˜ ì—†ë‹¤.
+        // BUG-37057 ÆĞÅÏÀÇ ±æÀÌ´Â ¹®ÀÚ¿­ÀÇ ±æÀÌ¸¦ ³Ñ¾î°¥¼ö ¾ø´Ù.
         sFormatInfo = (mtcLikeFormatInfo*)
                     aTemplate->rows[aNode->table].execute[aNode->column].calculateInfo;
 
@@ -1301,7 +1301,7 @@ IDE_RC mtfNotLikeEstimate( mtcNode*     aNode,
     {
         if( sEscapeNode == NULL )
         {
-            // formatì´ ìƒìˆ˜ì´ê³  esacpeë¬¸ìê°€ ì—†ëŠ” ê²½ìš°
+            // formatÀÌ »ó¼öÀÌ°í esacpe¹®ÀÚ°¡ ¾ø´Â °æ¿ì
 
             aNode->lflag &= ~MTC_NODE_REESTIMATE_MASK;
             aNode->lflag |= MTC_NODE_REESTIMATE_TRUE;
@@ -1315,21 +1315,21 @@ IDE_RC mtfNotLikeEstimate( mtcNode*     aNode,
                   ( ( aTemplate->rows[sEscapeNode->table].lflag & MTC_TUPLE_TYPE_MASK )
                     == MTC_TUPLE_TYPE_INTERMEDIATE ) ) )
             {
-                // formatì´ ìƒìˆ˜ì´ê³  escapeë¬¸ìë„ ìƒìˆ˜ì¸ ê²½ìš°
+                // formatÀÌ »ó¼öÀÌ°í escape¹®ÀÚµµ »ó¼öÀÎ °æ¿ì
 
                 aNode->lflag &= ~MTC_NODE_REESTIMATE_MASK;
                 aNode->lflag |= MTC_NODE_REESTIMATE_TRUE;
             }
             else
             {
-                // formatì´ ìƒìˆ˜ì´ê³  escapeë¬¸ìê°€ ë³€ìˆ˜ì¸ ê²½ìš°
+                // formatÀÌ »ó¼öÀÌ°í escape¹®ÀÚ°¡ º¯¼öÀÎ °æ¿ì
 
                 aNode->lflag &= ~MTC_NODE_REESTIMATE_MASK;
                 aNode->lflag |= MTC_NODE_REESTIMATE_FALSE;
             }
         }
             
-        // BUG-38070 undef typeìœ¼ë¡œ re-estimateí•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // BUG-38070 undef typeÀ¸·Î re-estimateÇÏÁö ¾Ê´Â´Ù.
         if ( ( aTemplate->variableRow != ID_USHORT_MAX ) &&
              ( ( aNode->lflag & MTC_NODE_BIND_MASK ) == MTC_NODE_BIND_EXIST ) )
         {
@@ -1351,7 +1351,7 @@ IDE_RC mtfNotLikeEstimate( mtcNode*     aNode,
     }
     else
     {
-        // formatì´ ë³€ìˆ˜ì¸ ê²½ìš°
+        // formatÀÌ º¯¼öÀÎ °æ¿ì
 
         aNode->lflag &= ~MTC_NODE_REESTIMATE_MASK;
         aNode->lflag |= MTC_NODE_REESTIMATE_FALSE;
@@ -1381,7 +1381,7 @@ IDE_RC mtfNotLikeEstimateCharFast( mtcNode*     aNode,
     UShort              sFormatLen;    
 
     // BUG-40992 FATAL when using _prowid
-    // ì¸ìì˜ ê²½ìš° mtcStack ì˜ column ê°’ì„ ì´ìš©í•˜ë©´ ëœë‹¤.
+    // ÀÎÀÚÀÇ °æ¿ì mtcStack ÀÇ column °ªÀ» ÀÌ¿ëÇÏ¸é µÈ´Ù.
     sIndexColumn     = aStack[1].column;
 
     if ( mtfLikeFormatInfo( aNode, aTemplate, aStack, & sFormatInfo, & sFormatLen, aCallBack ) == IDE_SUCCESS )
@@ -1629,7 +1629,7 @@ IDE_RC mtfNotLikeEstimateXlobLocatorFast( mtcNode*     aNode,
     UShort              sFormatLen;    
 
     // BUG-40992 FATAL when using _prowid
-    // ì¸ìì˜ ê²½ìš° mtcStack ì˜ column ê°’ì„ ì´ìš©í•˜ë©´ ëœë‹¤.
+    // ÀÎÀÚÀÇ °æ¿ì mtcStack ÀÇ column °ªÀ» ÀÌ¿ëÇÏ¸é µÈ´Ù.
     sIndexColumn     = aStack[1].column;
 
     if ( mtfLikeFormatInfo( aNode, aTemplate, aStack, & sFormatInfo, & sFormatLen, aCallBack ) == IDE_SUCCESS )
@@ -1771,7 +1771,7 @@ IDE_RC mtfNotLikeEstimateEcharFast( mtcNode*     aNode,
     UShort              sFormatLen;    
 
     // BUG-40992 FATAL when using _prowid
-    // ì¸ìì˜ ê²½ìš° mtcStack ì˜ column ê°’ì„ ì´ìš©í•˜ë©´ ëœë‹¤.
+    // ÀÎÀÚÀÇ °æ¿ì mtcStack ÀÇ column °ªÀ» ÀÌ¿ëÇÏ¸é µÈ´Ù.
     sIndexColumn     = aStack[1].column;
 
     if ( mtfLikeFormatInfo( aNode, aTemplate, aStack, & sFormatInfo, & sFormatLen, aCallBack ) == IDE_SUCCESS )
@@ -2854,7 +2854,7 @@ IDE_RC mtfNotLikeEstimateClobValueFast( mtcNode     * aNode,
     UShort              sFormatLen;
 
     // BUG-40992 FATAL when using _prowid
-    // ì¸ìì˜ ê²½ìš° mtcStack ì˜ column ê°’ì„ ì´ìš©í•˜ë©´ ëœë‹¤.
+    // ÀÎÀÚÀÇ °æ¿ì mtcStack ÀÇ column °ªÀ» ÀÌ¿ëÇÏ¸é µÈ´Ù.
     sIndexColumn     = aStack[1].column;
 
     if ( mtfLikeFormatInfo( aNode, aTemplate, aStack, & sFormatInfo, & sFormatLen, aCallBack ) == IDE_SUCCESS )

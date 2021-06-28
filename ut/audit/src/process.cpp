@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: process.cpp 81253 2017-10-10 06:12:54Z bethy $
+ * $Id: process.cpp 88614 2020-09-17 05:15:36Z chkim $
  ******************************************************************************/
 #include <uto.h>
 
@@ -44,6 +44,20 @@ IDE_RC utScanner::logWritePK(Row * row)
     ++_fetch;
 
     return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/* BUG-48134 Print MOSO EQ record to log file optionallay */
+IDE_RC utScanner::log_equal()
+{
+    idlOS::fprintf(flog, "MOSO[%d,%d]->EQ",
+            mSelectA->rows(),
+            mSelectB->rows());
+
+    return logWritePK(mRowA);
 
     IDE_EXCEPTION_END;
 

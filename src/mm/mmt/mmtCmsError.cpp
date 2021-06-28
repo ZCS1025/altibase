@@ -18,30 +18,270 @@
 #include <mmErrorCode.h>
 #include <mmtServiceThread.h>
 #include <mmuProperty.h>
+#include <mmcSession.h>
+#include <sdi.h>
 
 IDE_RC mmtServiceThread::answerErrorResult(cmiProtocolContext *aProtocolContext,
                                            UChar               aOperationID,
-                                           UInt                aErrorIndex)
+                                           UInt                aErrorIndex,
+                                           mmcSession         *aSession,
+                                           UChar               aExecuteOption)
+{
+    UInt                 sErrorCode;
+
+    sErrorCode = ideGetErrorCode();
+
+    if ( ( ( sErrorCode & E_MODULE_MASK ) == E_MODULE_SD ) &&
+         ( ideErrorCollectionSize() > 0 ) )
+    {
+        return answerShardErrorResult( aProtocolContext,
+                                       aOperationID,
+                                       aErrorIndex,
+                                       aSession,
+                                       aExecuteOption );
+    }
+    else
+    {
+        return answerNormalErrorResult( aProtocolContext,
+                                        aOperationID,
+                                        aErrorIndex,
+                                        aSession );
+    }
+}
+
+IDE_RC mmtServiceThread::answerMultiErrorResult(cmiProtocolContext *aProtocolContext,
+                                                UChar               aOperationID,
+                                                UInt                aErrorIndex,
+                                                smSCN               aSCN,
+                                                mmcSession         *aSession)
+{
+    UShort                 sErrorMsgLen;
+    UInt                   sErrorCode;
+    UInt                   sNodeId = ID_UINT_MAX; // TASK-7218 Multiple Error
+    SChar                 *sErrorMsg;
+
+#if !defined(DEBUG)
+    ACP_UNUSED( aSession );
+#endif
+
+    sErrorCode = sdi::getMultiErrorCode();
+
+    if ((sErrorCode & E_ACTION_MASK) != E_ACTION_IGNORE)
+    {
+#ifdef DEBUG
+        /* PROJ-2733-DistTxInfo GCTXÀÎ °æ¿ì¿¡¸¸ ¿¡·¯°¡ ¹ß»ıÇÒ ¼ö ÀÖ´Ù. */
+        if ( E_ERROR_CODE(sErrorCode) == E_ERROR_CODE(smERR_ABORT_StatementTooOld) )
+        {
+            IDE_DASSERT( ( aSession != NULL ) && ( aSession->isGCTx() == ID_TRUE ) );
+        }
+#endif
+        sErrorMsg = sdi::getMultiErrorMsg();
+        sErrorMsgLen = idlOS::strlen( sErrorMsg );
+
+        /* IPCDA´Â CMI_WRITE_CHECK*¿¡¼­ CMP_OP_DB_ErrorResult °ø°£À» È®º¸ÇÏ¹Ç·Î
+           ¿©±â¿¡¼­´Â CMI_WRITE_CHECK_WITH_IPCDA_FOR_ERROR¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù.
+           CMP_OP_DB_ErrorResultV?°¡ Ãß°¡µÇ´Â °æ¿ì CMI_IPCDA_REMAIN_PROTOCOL_SIZEµµ
+           ¹İµå½Ã º¯°æÇØ¾ß ÇÑ´Ù. (cmi.h) */
+        CMI_WRITE_CHECK_WITH_IPCDA_FOR_ERROR(aProtocolContext,
+                                             12 + sErrorMsgLen + 12,
+                                             12 + sErrorMsgLen + 12);
+
+        CMI_WOP(aProtocolContext, CMP_OP_DB_ErrorV3Result);
+        CMI_WR1(aProtocolContext, aOperationID);
+        CMI_WR4(aProtocolContext, &aErrorIndex);
+        CMI_WR4(aProtocolContext, &sErrorCode);
+        CMI_WR2(aProtocolContext, &sErrorMsgLen);
+        CMI_WCP(aProtocolContext, sErrorMsg, sErrorMsgLen);
+        CMI_WR8(aProtocolContext, &aSCN);
+        CMI_WR4(aProtocolContext, &sNodeId);
+
+        /*PROJ-2616*/
+        MMT_IPCDA_INCREASE_DATA_COUNT(aProtocolContext);
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/* TASK-7218 Handling Multi-Error for SD */
+IDE_RC mmtServiceThread::answerShardErrorResult(cmiProtocolContext *aProtocolContext,
+                                                UChar               aOperationID,
+                                                UInt                aErrorIndex,
+                                                mmcSession         *aSession,
+                                                UChar               aExecuteOption)
+{
+    UShort                 sErrorMsgLen;
+    UInt                   sErrorCode;
+    UInt                   sNodeId = 0;
+    SChar                 *sErrorMsg;
+    smSCN                  sSCN;
+
+    SM_INIT_SCN(&sSCN);
+
+    if ( ( aSession != NULL ) && ( aSession->isGCTx() == ID_TRUE ) )
+    {
+        aSession->getLastSystemSCN( aOperationID, &sSCN );
+
+        #if defined(DEBUG)
+        if ( SM_SCN_IS_NOT_INIT( sSCN ) )
+        {
+            ideLog::log(IDE_SD_18, "= [%s] answerShardErrorResult, SCN : %"ID_UINT64_FMT,
+                        aSession->getSessionTypeString(),
+                        sSCN);
+        }
+        #endif
+    }
+
+    // proj_2160 cm_type removal
+    // Áß°£¿¡ ¸¶¼£¿¡·¯°¡ ¹ß»ıÇÑ °æ¿ì ¼¼¼ÇÀ» ²÷µµ·Ï ÇÑ´Ù.
+    // ÀÌ ¶§, ErrorResult Àü¹®À» ¾Æ¿¹ º¸³»Áö ¸»¾Æ¾ß ÇÏ´Â °æ¿ìµµ ÀÖ´Ù.
+    IDE_TEST_RAISE(aProtocolContext->mSessionCloseNeeded == ID_TRUE,
+                   SessionClosed);
+
+    /* TASK-7218 Multi-Error Handling 2nd
+     *   Á¶°ÇÀÌ ¸Â´Â °æ¿ì Mutiple Error¸¦ ¸ÕÀú º¸³½´Ù */
+    if ( (aProtocolContext->mProtocol.mClientLastOpID >= CMP_OP_DB_ErrorV3Result) &&
+         (MMT_NEED_TO_SEND_MULTIPLE_ERROR(aSession, aExecuteOption) == ID_TRUE) )
+    {
+        IDE_TEST(answerMultiErrorResult(aProtocolContext,
+                                        aOperationID,
+                                        aErrorIndex,
+                                        sSCN,
+                                        aSession)
+                 != IDE_SUCCESS);
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    while ( (sErrorMsg = ideErrorCollectionFirstErrorMsg()) != NULL )
+    {
+        sErrorMsgLen = idlOS::strlen( sErrorMsg );
+        sErrorCode = ideErrorCollectionFirstErrorCode();
+        sNodeId = ideErrorCollectionFirstErrorNodeId();
+
+        if ((sErrorCode & E_ACTION_MASK) != E_ACTION_IGNORE)
+        {
+#ifdef DEBUG
+            /* PROJ-2733-DistTxInfo GCTXÀÎ °æ¿ì¿¡¸¸ ¿¡·¯°¡ ¹ß»ıÇÒ ¼ö ÀÖ´Ù. */
+            if ( E_ERROR_CODE(sErrorCode) == E_ERROR_CODE(smERR_ABORT_StatementTooOld) )
+            {
+                IDE_DASSERT( ( aSession != NULL ) && ( aSession->isGCTx() == ID_TRUE ) );
+            }
+#endif
+        }
+        else
+        {
+            sErrorMsg = NULL;
+            sErrorMsgLen = 0;
+        }
+
+        /* PROJ-2733-Protocol */
+        if (aProtocolContext->mProtocol.mClientLastOpID >= CMP_OP_DB_ErrorV3Result)
+        {
+            /* IPCDA´Â CMI_WRITE_CHECK*¿¡¼­ CMP_OP_DB_ErrorResult °ø°£À» È®º¸ÇÏ¹Ç·Î
+               ¿©±â¿¡¼­´Â CMI_WRITE_CHECK_WITH_IPCDA_FOR_ERROR¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù.
+               CMP_OP_DB_ErrorResultV?°¡ Ãß°¡µÇ´Â °æ¿ì CMI_IPCDA_REMAIN_PROTOCOL_SIZEµµ
+               ¹İµå½Ã º¯°æÇØ¾ß ÇÑ´Ù. (cmi.h) */
+            CMI_WRITE_CHECK_WITH_IPCDA_FOR_ERROR(aProtocolContext, 12 + sErrorMsgLen + 12, 12 + sErrorMsgLen + 12);
+
+            CMI_WOP(aProtocolContext, CMP_OP_DB_ErrorV3Result);
+            CMI_WR1(aProtocolContext, aOperationID);
+            CMI_WR4(aProtocolContext, &aErrorIndex);
+            CMI_WR4(aProtocolContext, &sErrorCode);
+            CMI_WR2(aProtocolContext, &sErrorMsgLen);
+            CMI_WCP(aProtocolContext, sErrorMsg, sErrorMsgLen);
+            CMI_WR8(aProtocolContext, &sSCN);
+            CMI_WR4(aProtocolContext, &sNodeId);
+        }
+        else
+        {
+            CMI_WRITE_CHECK_WITH_IPCDA_FOR_ERROR(aProtocolContext, 12 + sErrorMsgLen, 12 + sErrorMsgLen);
+
+            CMI_WOP(aProtocolContext, CMP_OP_DB_ErrorResult);
+            CMI_WR1(aProtocolContext, aOperationID);
+            CMI_WR4(aProtocolContext, &aErrorIndex);
+            CMI_WR4(aProtocolContext, &sErrorCode);
+            CMI_WR2(aProtocolContext, &sErrorMsgLen);
+            CMI_WCP(aProtocolContext, sErrorMsg, sErrorMsgLen);
+        }
+
+        /*PROJ-2616*/
+        MMT_IPCDA_INCREASE_DATA_COUNT(aProtocolContext);
+
+        ideErrorCollectionRemoveFirst();
+    }
+
+    ideErrorCollectionClear();
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(SessionClosed);
+
+    IDE_EXCEPTION_END;
+
+    ideErrorCollectionClear();
+
+    return IDE_FAILURE;
+}
+
+IDE_RC mmtServiceThread::answerNormalErrorResult(cmiProtocolContext *aProtocolContext,
+                                                 UChar               aOperationID,
+                                                 UInt                aErrorIndex,
+                                                 mmcSession         *aSession)
 {
     UInt                 sErrorCode;
     ideErrorMgr         *sErrorMgr  = ideGetErrorMgr();
     SChar               *sErrorMsg;
     SChar                sMessage[4096];
     UShort               sErrorMsgLen;
+    smSCN                sSCN;
+    UInt                 sNodeId = 0;
 
     IDE_TEST_RAISE(mErrorFlag == ID_TRUE, ErrorAlreadySent);
 
     // proj_2160 cm_type removal
-    // ì¤‘ê°„ì— ë§ˆìƒ¬ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš° ì„¸ì…˜ì„ ëŠë„ë¡ í•œë‹¤.
-    // ì´ ë•Œ, ErrorResult ì „ë¬¸ì„ ì•„ì˜ˆ ë³´ë‚´ì§€ ë§ì•„ì•¼ í•˜ëŠ” ê²½ìš°ë„ ìˆë‹¤.
+    // Áß°£¿¡ ¸¶¼£¿¡·¯°¡ ¹ß»ıÇÑ °æ¿ì ¼¼¼ÇÀ» ²÷µµ·Ï ÇÑ´Ù.
+    // ÀÌ ¶§, ErrorResult Àü¹®À» ¾Æ¿¹ º¸³»Áö ¸»¾Æ¾ß ÇÏ´Â °æ¿ìµµ ÀÖ´Ù.
     IDE_TEST_RAISE(aProtocolContext->mSessionCloseNeeded == ID_TRUE,
                    SessionClosed);
 
     //fix [BUG-27123 : mm/NEW] [5.3.3 release Code-Sonar] mm Ignore return values series 2
     sErrorCode = ideGetErrorCode();
+    SM_INIT_SCN(&sSCN);
 
     if ((sErrorCode & E_ACTION_MASK) != E_ACTION_IGNORE)
     {
+#ifdef DEBUG
+        /* PROJ-2733-DistTxInfo GCTXÀÎ °æ¿ì¿¡¸¸ ¿¡·¯°¡ ¹ß»ıÇÒ ¼ö ÀÖ´Ù. */
+        if ( E_ERROR_CODE(sErrorCode) == E_ERROR_CODE(smERR_ABORT_StatementTooOld) )
+        {
+            IDE_DASSERT( ( aSession != NULL ) && ( aSession->isGCTx() == ID_TRUE ) );
+        }
+#endif
+
+        if ( ( aSession != NULL ) && ( aSession->isGCTx() == ID_TRUE ) )
+        {
+            aSession->getLastSystemSCN( aOperationID, &sSCN );
+
+            #if defined(DEBUG)
+            if ( SM_SCN_IS_NOT_INIT( sSCN ) )
+            {
+                ideLog::log(IDE_SD_18, "= [%s] answerNormalErrorResult, SCN : %"ID_UINT64_FMT,
+                            aSession->getSessionTypeString(),
+                            sSCN);
+            }
+            #endif
+        }
+
         if ((iduProperty::getSourceInfo() & IDE_SOURCE_INFO_CLIENT) == 0)
         {
             sErrorMsg = ideGetErrorMsg(sErrorCode);
@@ -72,28 +312,40 @@ IDE_RC mmtServiceThread::answerErrorResult(cmiProtocolContext *aProtocolContext,
         sErrorMsgLen = 0;
     }
 
-    /* BUG-44705 IPCDAì¼ ê²½ìš° CMI_WRITE_CHECKì—ì„œ error msg sizeë¥¼ í™•ë³´í•˜ê¸° ë•Œë¬¸ì—
-     * error msg ì „ì†¡ì‹œì—ëŠ” ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤. */
-    if (cmiGetLinkImpl(aProtocolContext) == CMI_LINK_IMPL_IPCDA)
+    /* PROJ-2733-Protocol ÇÏÀ§È£È¯¼ºÀ» À§ÇØ Å¬¶óÀÌ¾ğÆ®°¡ Áö¿øÇÏ´Â ErrorResult ¹öÀüÀ» º¸³»¾ß ÇÑ´Ù. */
+    if (aProtocolContext->mProtocol.mClientLastOpID >= CMP_OP_DB_ErrorV3Result)
     {
-        IDE_TEST( (aProtocolContext->mWriteBlock->mCursor + 12 + sErrorMsgLen) >= (aProtocolContext->mWriteBlock->mBlockSize) );
+        /* IPCDA´Â CMI_WRITE_CHECK*¿¡¼­ CMP_OP_DB_ErrorResult °ø°£À» È®º¸ÇÏ¹Ç·Î
+            ¿©±â¿¡¼­´Â CMI_WRITE_CHECK_WITH_IPCDA_FOR_ERROR¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù.
+            CMP_OP_DB_ErrorResultV?°¡ Ãß°¡µÇ´Â °æ¿ì CMI_IPCDA_REMAIN_PROTOCOL_SIZEµµ
+            ¹İµå½Ã º¯°æÇØ¾ß ÇÑ´Ù. (cmi.h) */
+        CMI_WRITE_CHECK_WITH_IPCDA_FOR_ERROR(aProtocolContext, 12 + sErrorMsgLen + 12, 12 + sErrorMsgLen + 12);
+
+        CMI_WOP(aProtocolContext, CMP_OP_DB_ErrorV3Result);
+        CMI_WR1(aProtocolContext, aOperationID);
+        CMI_WR4(aProtocolContext, &aErrorIndex);
+        CMI_WR4(aProtocolContext, &sErrorCode);
+        CMI_WR2(aProtocolContext, &sErrorMsgLen);
+        CMI_WCP(aProtocolContext, sErrorMsg, sErrorMsgLen);
+        CMI_WR8(aProtocolContext, &sSCN);
+        CMI_WR4(aProtocolContext, &sNodeId);
     }
     else
     {
-        CMI_WRITE_CHECK(aProtocolContext, 12 + sErrorMsgLen);
+        CMI_WRITE_CHECK_WITH_IPCDA_FOR_ERROR(aProtocolContext, 12 + sErrorMsgLen, 12 + sErrorMsgLen);
+
+        CMI_WOP(aProtocolContext, CMP_OP_DB_ErrorResult);
+        CMI_WR1(aProtocolContext, aOperationID);
+        CMI_WR4(aProtocolContext, &aErrorIndex);
+        CMI_WR4(aProtocolContext, &sErrorCode);
+        CMI_WR2(aProtocolContext, &sErrorMsgLen);
+        CMI_WCP(aProtocolContext, sErrorMsg, sErrorMsgLen);
     }
 
-    CMI_WOP(aProtocolContext, CMP_OP_DB_ErrorResult);
-    CMI_WR1(aProtocolContext, aOperationID);
-    CMI_WR4(aProtocolContext, &aErrorIndex);
-    CMI_WR4(aProtocolContext, &sErrorCode);
-    CMI_WR2(aProtocolContext, &sErrorMsgLen);
-    CMI_WCP(aProtocolContext, sErrorMsg, sErrorMsgLen);
-
 #ifdef DEBUG
-    /* BUG-44705 IPCDAì—ì„œëŠ” buffer sizeì˜ í•œê³„ë¡œ ì¸í•´ì„œ ì—ëŸ¬ë©”ì„¸ì§€ë¥¼ ë³´ë‚¼ buffer
-     * sizeë¥¼ ë¯¸ë¦¬ í™•ë³´í•´ì•¼ í•œë‹¤, ë”°ë¼ì„œ Stack error ì¶œë ¥ì„ ìœ„í•œ buffer í• ë‹¹í•˜ê¸°ëŠ” í˜ë“¤ë‹¤.
-     * ë”°ë¼ì„œ IPCDAì—ì„œëŠ” ë³¸ ê¸°ëŠ¥ì€ ì œì™¸í•œë‹¤. */
+    /* BUG-44705 IPCDA¿¡¼­´Â buffer sizeÀÇ ÇÑ°è·Î ÀÎÇØ¼­ ¿¡·¯¸Ş¼¼Áö¸¦ º¸³¾ buffer
+     * size¸¦ ¹Ì¸® È®º¸ÇØ¾ß ÇÑ´Ù, µû¶ó¼­ Stack error Ãâ·ÂÀ» À§ÇÑ buffer ÇÒ´çÇÏ±â´Â Èûµé´Ù.
+     * µû¶ó¼­ IPCDA¿¡¼­´Â º» ±â´ÉÀº Á¦¿ÜÇÑ´Ù. */
     if (((sErrorCode & E_ACTION_MASK) != E_ACTION_IGNORE) &&
         (mmuProperty::getShowErrorStack() == 1) &&
         (cmiGetLinkImpl(aProtocolContext) != CMI_LINK_IMPL_IPCDA))
@@ -159,12 +411,12 @@ IDE_RC mmtServiceThread::answerErrorResult(cmiProtocolContext *aProtocolContext,
     {
         case idERR_ABORT_Session_Closed:
         case idERR_ABORT_Session_Disconnected:
-        // ì†¡ìˆ˜ì‹  í•¨ìˆ˜ì—ì„œ ì—ëŸ¬ê°€ ë°œìƒí•˜ì—¬ ë°”ë¡œ í™•ì¸ëœ ê²½ìš°
+        // ¼Û¼ö½Å ÇÔ¼ö¿¡¼­ ¿¡·¯°¡ ¹ß»ıÇÏ¿© ¹Ù·Î È®ÀÎµÈ °æ¿ì
         case cmERR_ABORT_CONNECTION_CLOSED:
             IDE_RAISE(SessionClosed);
             break;
         case mmERR_ABORT_IPCDA_MESSAGE_TOO_LONG:
-            /* BUG-44705 IPCDAì—ì„œ buffer limit errorê°€ clientë¡œ ë‘ë²ˆ ì „ì†¡ë˜ì§€ ì•Šë„ë¡ í•œë‹¤. */
+            /* BUG-44705 IPCDA¿¡¼­ buffer limit error°¡ client·Î µÎ¹ø Àü¼ÛµÇÁö ¾Êµµ·Ï ÇÑ´Ù. */
             mErrorFlag = ID_TRUE;
             break;
         default:

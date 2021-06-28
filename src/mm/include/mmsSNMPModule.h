@@ -36,7 +36,7 @@
     UInt         aLength       
 
 /*
- * PROJ-2473 SNMP μ§€μ›
+ * PROJ-2473 SNMP ΑφΏψ
  */
 
 class mmsSNMPModule

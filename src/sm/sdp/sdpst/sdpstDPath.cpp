@@ -19,8 +19,8 @@
  *
  * $Id: sdpstDPath.cpp 27229 2008-07-23 17:37:19Z newdaily $
  *
- * ë³¸ íŒŒì¼ì€ Treelist Managed Segmentì˜ Direct-Path Insert ê´€ë ¨ STATIC
- * ì¸í„°íŽ˜ì´ìŠ¤ë¥¼ ê´€ë¦¬í•œë‹¤. 
+ * º» ÆÄÀÏÀº Treelist Managed SegmentÀÇ Direct-Path Insert °ü·Ã STATIC
+ * ÀÎÅÍÆäÀÌ½º¸¦ °ü¸®ÇÑ´Ù. 
  *
  ***********************************************************************/
 
@@ -45,17 +45,17 @@
 # include <sdpstCache.h>
 
 /***********************************************************************
- * Description : [ INTERFACE ] DIRECT-PATH INSERTë¥¼ ìœ„í•œ Append ë°©ì‹ì˜
- *               Page í• ë‹¹ ì—°ì‚°
+ * Description : [ INTERFACE ] DIRECT-PATH INSERT¸¦ À§ÇÑ Append ¹æ½ÄÀÇ
+ *               Page ÇÒ´ç ¿¬»ê
  *
- * aStatistics      - [IN] í†µê³„ ì •ë³´
+ * aStatistics      - [IN] Åë°è Á¤º¸
  * aMtx             - [IN] Mini Transaction Pointer
  * aSpaceID         - [IN] TableSpace ID
  * aSegHandle       - [IN] Segment Handle
- * aPrvAllocExtRID  - [IN] ì´ì „ì— Pageë¥¼ í• ë‹¹ë°›ì•˜ë˜ Extent RID
- * aPrvAllocPageID  - [IN] ì´ì „ì— í• ë‹¹ë°›ì€ PageID
- * aAllocExtRID     - [OUT] ìƒˆë¡œìš´ Pageê°€ í• ë‹¹ëœ Extent RID
- * aAllocPID        - [OUT] ìƒˆë¡­ê²Œ í• ë‹¹ë°›ì€ PageID
+ * aPrvAllocExtRID  - [IN] ÀÌÀü¿¡ Page¸¦ ÇÒ´ç¹Þ¾Ò´ø Extent RID
+ * aPrvAllocPageID  - [IN] ÀÌÀü¿¡ ÇÒ´ç¹ÞÀº PageID
+ * aAllocExtRID     - [OUT] »õ·Î¿î Page°¡ ÇÒ´çµÈ Extent RID
+ * aAllocPID        - [OUT] »õ·Ó°Ô ÇÒ´ç¹ÞÀº PageID
  ***********************************************************************/
 IDE_RC sdpstDPath::allocNewPage4Append(
                             idvSQL              * aStatistics,
@@ -145,8 +145,8 @@ IDE_RC sdpstDPath::allocNewPage4Append(
 }
 
 /***********************************************************************
- * Description : Direct-Path ì—°ì‚°ì—ì„œ Slotë“¤ì˜ MFNLì„ FULLë¡œ í•œêº¼ë²ˆì—
- *               ë³€ê²½í•œë‹¤.
+ * Description : Direct-Path ¿¬»ê¿¡¼­ SlotµéÀÇ MFNLÀ» FULL·Î ÇÑ²¨¹ø¿¡
+ *               º¯°æÇÑ´Ù.
  ***********************************************************************/
 IDE_RC sdpstDPath::updateMFNLToFull4DPath( idvSQL             * aStatistics,
                                            sdrMtxStartInfo    * aStartInfo,
@@ -190,7 +190,7 @@ IDE_RC sdpstDPath::updateMFNLToFull4DPath( idvSQL             * aStatistics,
     IDE_TEST( sdrMiniTrans::setDirtyPage( &sMtx, sPagePtr )
               != IDE_SUCCESS );
 
-    /* rootì—ì„œì˜ bitmap ë³€ê²½ì— ëŒ€í•œ Rollbackì—°ì‚°ì„ ìœ„í•´ì„œ ì—¬ê¸°ì„œ NTAë¥¼ ì„¤ì • */
+    /* root¿¡¼­ÀÇ bitmap º¯°æ¿¡ ´ëÇÑ Rollback¿¬»êÀ» À§ÇØ¼­ ¿©±â¼­ NTA¸¦ ¼³Á¤ */
     sNTA = smLayerCallback::getLstUndoNxtLSN( aStartInfo->mTrans );
 
     sArrData[0] = sPageID;
@@ -201,7 +201,7 @@ IDE_RC sdpstDPath::updateMFNLToFull4DPath( idvSQL             * aStatistics,
 
     sPageCnt = aToSlotNo - aFmSlotNo + 1;
 
-    /* ë§ˆì§€ë§‰ slotì„ ì œì™¸í•œ ë‚˜ë¨¸ì§€ slotì˜ MFNL ê°±ì‹  */
+    /* ¸¶Áö¸· slotÀ» Á¦¿ÜÇÑ ³ª¸ÓÁö slotÀÇ MFNL °»½Å */
     if ( sPageCnt - 1 > 0 )
     {
         IDE_ASSERT( aToSlotNo > aFmSlotNo );
@@ -218,7 +218,7 @@ IDE_RC sdpstDPath::updateMFNLToFull4DPath( idvSQL             * aStatistics,
                   != IDE_SUCCESS );
     }
 
-    /* ë§ˆì§€ë§‰ slotì— ëŒ€í•œ MFNL ê°±ì‹  */
+    /* ¸¶Áö¸· slot¿¡ ´ëÇÑ MFNL °»½Å */
     IDE_TEST( sdpstBMP::logAndUpdateMFNL( &sMtx,
                                           aBMPHdr,
                                           aToSlotNo,
@@ -293,8 +293,8 @@ IDE_RC sdpstDPath::reformatPage4DPath( idvSQL           *aStatistics,
         IDE_CONT( skip_reformat_page );
     }
 
-    /* í˜„ Extent ì—ì„œ ë§ˆì§€ë§‰ìœ¼ë¡œ í• ë‹¹ëœ íŽ˜ì´ì§€ê°€ ìžˆë‹¤ë©´
-     * í•´ë‹¹ íŽ˜ì´ì§€ ë‹¤ìŒ íŽ˜ì´ì§€ë¶€í„° reformat í•œë‹¤. */
+    /* Çö Extent ¿¡¼­ ¸¶Áö¸·À¸·Î ÇÒ´çµÈ ÆäÀÌÁö°¡ ÀÖ´Ù¸é
+     * ÇØ´ç ÆäÀÌÁö ´ÙÀ½ ÆäÀÌÁöºÎÅÍ reformat ÇÑ´Ù. */
     IDE_TEST( sdpstAllocPage::formatDataPagesInExt(
                                             aStatistics,
                                             aStartInfo,
@@ -305,7 +305,7 @@ IDE_RC sdpstDPath::reformatPage4DPath( idvSQL           *aStatistics,
                                             aLstPID + 1 ) != IDE_SUCCESS );
 
 
-    /* ë‹¤ìŒ Extentë¥¼ ê°€ì ¸ì˜¨ë‹¤. */
+    /* ´ÙÀ½ Extent¸¦ °¡Á®¿Â´Ù. */
     IDE_TEST( sdpstExtDir::getNxtExtRID( aStatistics,
                                          aSpaceID,
                                          aSegHandle->mSegPID,
@@ -313,13 +313,13 @@ IDE_RC sdpstDPath::reformatPage4DPath( idvSQL           *aStatistics,
                                          &sNxtExtRID ) != IDE_SUCCESS );
 
     /* 
-     * reformatí•œ Extentë¥¼ ê´€ë¦¬í•˜ëŠ” LfBMPì— ì†í•œ ë‹¤ë¥¸ Extent ë˜í•œ
-     * reformatí•œë‹¤.
-     * Extentì—ëŠ” í•´ë‹¹ Extentë¥¼ ê´€ë¦¬í•˜ê³  ìžˆëŠ” LfBMPì— ëŒ€í•œ ì •ë³´ê°€
-     * mExtMgmtLfBMPì— ë‹´ê²¨ìžˆë‹¤.
-     * Next Extentë¥¼ ê³„ì† ë”°ë¼ê°€ë©´ì„œ ë§¨ ì²˜ìŒ ë”°ì˜¨ ExtMgmtLfBMP ê°’ê³¼ ë™ì¼í•œ 
-     * mExtMgmtLfBMPë¥¼ ê°–ëŠ” Extentë¥¼ ë§Œë‚˜ë©´ ì²«ë²ˆì§¸ Extentì™€ ë™ì¼í•œ LfBMPì—
-     * ì†í•œë‹¤ í•  ìˆ˜ ìžˆê¸° ë•Œë¬¸ì— reformat í•œë‹¤.
+     * reformatÇÑ Extent¸¦ °ü¸®ÇÏ´Â LfBMP¿¡ ¼ÓÇÑ ´Ù¸¥ Extent ¶ÇÇÑ
+     * reformatÇÑ´Ù.
+     * Extent¿¡´Â ÇØ´ç Extent¸¦ °ü¸®ÇÏ°í ÀÖ´Â LfBMP¿¡ ´ëÇÑ Á¤º¸°¡
+     * mExtMgmtLfBMP¿¡ ´ã°ÜÀÖ´Ù.
+     * Next Extent¸¦ °è¼Ó µû¶ó°¡¸é¼­ ¸Ç Ã³À½ µû¿Â ExtMgmtLfBMP °ª°ú µ¿ÀÏÇÑ 
+     * mExtMgmtLfBMP¸¦ °®´Â Extent¸¦ ¸¸³ª¸é Ã¹¹øÂ° Extent¿Í µ¿ÀÏÇÑ LfBMP¿¡
+     * ¼ÓÇÑ´Ù ÇÒ ¼ö ÀÖ±â ¶§¹®¿¡ reformat ÇÑ´Ù.
      */
     if ( sNxtExtRID != SD_NULL_RID )
     {
@@ -353,7 +353,7 @@ IDE_RC sdpstDPath::reformatPage4DPath( idvSQL           *aStatistics,
 
 
 /***********************************************************************
- * Description : mergeëœ Segmentì˜ HWM ë° MFNLì„ ì¡°ì •í•œë‹¤.
+ * Description : mergeµÈ SegmentÀÇ HWM ¹× MFNLÀ» Á¶Á¤ÇÑ´Ù.
  ***********************************************************************/
 IDE_RC  sdpstDPath::updateWMInfo4DPath(
                                       idvSQL           *aStatistics,
@@ -394,8 +394,8 @@ IDE_RC  sdpstDPath::updateWMInfo4DPath(
     IDE_ASSERT( sSegPID != SD_NULL_PID );
 
 
-    /* Serial Direct-Path Insertì‹œì—ëŠ” HWMë¥¼ ì˜®ê¸°ê¸°ì „ì—
-     * mergeëœ ì˜ì—­ì˜ bitmapì„ ë³€ê²½í•œë‹¤. */
+    /* Serial Direct-Path Insert½Ã¿¡´Â HWM¸¦ ¿Å±â±âÀü¿¡
+     * mergeµÈ ¿µ¿ªÀÇ bitmapÀ» º¯°æÇÑ´Ù. */
     IDE_TEST( sdpstDPath::updateBMPUntilHWM( aStatistics,
                                              aSpaceID,
                                              sSegPID,
@@ -403,7 +403,7 @@ IDE_RC  sdpstDPath::updateWMInfo4DPath(
                                              aLstPID,
                                              aStartInfo ) != IDE_SUCCESS );
 
-    /* ë§ˆì§€ë§‰ ExtDescì„ ì–»ì–´ì™€ ë§ˆì§€ë§‰ PIDë¥¼ ê³„ì‚°í•œë‹¤. */
+    /* ¸¶Áö¸· ExtDescÀ» ¾ò¾î¿Í ¸¶Áö¸· PID¸¦ °è»êÇÑ´Ù. */
     IDE_TEST( sdbBufferMgr::getPageByRID( aStatistics,
                                           aSpaceID,
                                           aLstAllocExtRID,
@@ -423,7 +423,7 @@ IDE_RC  sdpstDPath::updateWMInfo4DPath(
                                    sdpstExtDir::getHdrPtr( sPagePtr ),
                                    SD_MAKE_OFFSET( aLstAllocExtRID ) );
 
-    /* ê²€ì¦ */
+    /* °ËÁõ */
     if ( (sLstExtDirPID != SD_MAKE_PID( aLstAllocExtRID ) ) ||
          (sLstSlotNoInExtDir > sdpstExtDir::getHdrPtr(sPagePtr)->mExtCnt - 1) )
     {
@@ -447,7 +447,7 @@ IDE_RC  sdpstDPath::updateWMInfo4DPath(
     IDE_TEST( sdbBufferMgr::releasePage( aStatistics, (UChar*)sLstExtDesc )
               != IDE_SUCCESS );
 
-    /* ë§ˆì§€ë§‰ ìœ„ì¹˜ì— ëŒ€í•œ Stackì„ ìƒì„±í•œë‹¤. */
+    /* ¸¶Áö¸· À§Ä¡¿¡ ´ëÇÑ StackÀ» »ý¼ºÇÑ´Ù. */
     sdpstStackMgr::initialize( &sNewHWMStack );
     IDE_TEST( sdpstAllocPage::makeOrderedStackFromDataPage(
                                          aStatistics,
@@ -458,7 +458,7 @@ IDE_RC  sdpstDPath::updateWMInfo4DPath(
 
     sNTA = smLayerCallback::getLstUndoNxtLSN( aStartInfo->mTrans );
 
-    /* ë§ˆì§€ë§‰ í• ë‹¹ëœ íŽ˜ì´ì§€ ì •ë³´ì™€ HWMì„ ê°±ì‹ í•œë‹¤. */
+    /* ¸¶Áö¸· ÇÒ´çµÈ ÆäÀÌÁö Á¤º¸¿Í HWMÀ» °»½ÅÇÑ´Ù. */
     IDE_TEST( sdrMiniTrans::begin( aStatistics,
                                    &sMtx,
                                    aStartInfo,
@@ -466,8 +466,8 @@ IDE_RC  sdpstDPath::updateWMInfo4DPath(
                                    SM_DLOG_ATTR_DEFAULT ) != IDE_SUCCESS );
     sState = 1;
 
-    /* ë§ˆì§€ë§‰ í• ë‹¹ëœ íŽ˜ì´ì§€ ì •ë³´ ê°±ì‹ 
-     * ë§ˆì§€ë§‰ alloc pageëŠ” ë§ˆì§€ë§‰ìœ¼ë¡œ DPath Insertëœ íŽ˜ì´ì§€ì´ë‹¤. */
+    /* ¸¶Áö¸· ÇÒ´çµÈ ÆäÀÌÁö Á¤º¸ °»½Å
+     * ¸¶Áö¸· alloc page´Â ¸¶Áö¸·À¸·Î DPath InsertµÈ ÆäÀÌÁöÀÌ´Ù. */
     IDE_TEST( sdbBufferMgr::getPageByPID( aStatistics,
                                           aSpaceID,
                                           aLstPID,
@@ -486,7 +486,7 @@ IDE_RC  sdpstDPath::updateWMInfo4DPath(
                                  sdpPhyPage::getSeqNo(
                                      sdpPhyPage::getHdr(sPagePtr) ) );
 
-    /* Segment Header ì™€ Segment Cacheì— HWM ê°±ì‹  */
+    /* Segment Header ¿Í Segment Cache¿¡ HWM °»½Å */
     IDE_TEST( sdbBufferMgr::getPageByPID( aStatistics,
                                           aSpaceID,
                                           sSegPID,
@@ -501,7 +501,7 @@ IDE_RC  sdpstDPath::updateWMInfo4DPath(
 
     sSegHdr = sdpstSH::getHdrPtr( sPagePtr );
 
-    /* ì´ì „ HWMì„ ìž„ì‹œë¡œ ì €ìž¥í•œë‹¤. */
+    /* ÀÌÀü HWMÀ» ÀÓ½Ã·Î ÀúÀåÇÑ´Ù. */
     calcExtInfo2ExtRID( sSegPID,
                         sPagePtr,
                         sSegHdr->mHWM.mExtDirPID,
@@ -523,9 +523,9 @@ IDE_RC  sdpstDPath::updateWMInfo4DPath(
     sSegCache->mHWM = sSegHdr->mHWM;
     sdpstCache::unlockHWM( sSegCache );
 
-    /* BUG-29203 [SM] DPath Insert ì¤‘, HWM ì—…ë°ì´íŠ¸ ì§í›„ ì„œë²„ KILL í–ˆì„ ë•Œ
-     *           restart recovery ì¤‘ ASSERTë¡œ ë¹„ì •ìƒ ì¢…ë£Œ
-     * rollbackí•˜ê¸° ìœ„í•œ logical undo logë¥¼ ê¸°ë¡í•œë‹¤. */
+    /* BUG-29203 [SM] DPath Insert Áß, HWM ¾÷µ¥ÀÌÆ® Á÷ÈÄ ¼­¹ö KILL ÇßÀ» ¶§
+     *           restart recovery Áß ASSERT·Î ºñÁ¤»ó Á¾·á
+     * rollbackÇÏ±â À§ÇÑ logical undo log¸¦ ±â·ÏÇÑ´Ù. */
     sdrMiniTrans::setNTA( &sMtx,
                           aSpaceID,
                           SDR_OP_SDPST_UPDATE_WMINFO_4DPATH,
@@ -549,7 +549,7 @@ IDE_RC  sdpstDPath::updateWMInfo4DPath(
 }
 
 /***********************************************************************
- * Description : mergeëœ ì˜ì—­ì˜ bitmapì„ ë³€ê²½í•œë‹¤.
+ * Description : mergeµÈ ¿µ¿ªÀÇ bitmapÀ» º¯°æÇÑ´Ù.
  ***********************************************************************/
 IDE_RC sdpstDPath::updateBMPUntilHWM( idvSQL           * aStatistics,
                                       scSpaceID          aSpaceID,
@@ -572,7 +572,7 @@ IDE_RC sdpstDPath::updateBMPUntilHWM( idvSQL           * aStatistics,
     IDE_ASSERT( aLstAllocPIDOfFM != SD_NULL_RID );
     IDE_ASSERT( aStartInfo       != NULL );
 
-    /* ê¸°ì¡´ ì²«ë²ˆì§¸ë¡œ í• ë‹¹í–ˆë˜ íŽ˜ì´ì§€ì˜ Stack ìƒì„±í•œë‹¤. */
+    /* ±âÁ¸ Ã¹¹øÂ°·Î ÇÒ´çÇß´ø ÆäÀÌÁöÀÇ Stack »ý¼ºÇÑ´Ù. */
     sdpstStackMgr::initialize( &sFstPageStack );
     IDE_TEST( sdpstAllocPage::makeOrderedStackFromDataPage(
                                          aStatistics,
@@ -581,7 +581,7 @@ IDE_RC sdpstDPath::updateBMPUntilHWM( idvSQL           * aStatistics,
                                          aFstAllocPIDOfFM,
                                          &sFstPageStack ) != IDE_SUCCESS );
 
-    /* ë§ˆì§€ë§‰ ìƒì„±í–ˆë˜ íŽ˜ì´ì§€ì— ëŒ€í•œ Stack ì„ ìƒì„±í•œë‹¤. */
+    /* ¸¶Áö¸· »ý¼ºÇß´ø ÆäÀÌÁö¿¡ ´ëÇÑ Stack À» »ý¼ºÇÑ´Ù. */
     sdpstStackMgr::initialize( &sLstPageStack );
     IDE_TEST( sdpstAllocPage::makeOrderedStackFromDataPage(
                                          aStatistics,
@@ -590,8 +590,8 @@ IDE_RC sdpstDPath::updateBMPUntilHWM( idvSQL           * aStatistics,
                                          aLstAllocPIDOfFM,
                                          &sLstPageStack ) != IDE_SUCCESS );
 
-    /* Appendë¥¼ ìœ„í•´ì„œ ìƒˆë¡œ í• ë‹¹ëœ íŽ˜ì´ì§€ê°€ ì—†ì„ ë•ŒëŠ” ë³¸ í•¨ìˆ˜ë¥¼
-     * í˜¸ì¶œí•˜ì§€ ì•ŠëŠ”ë‹¤. */
+    /* Append¸¦ À§ÇØ¼­ »õ·Î ÇÒ´çµÈ ÆäÀÌÁö°¡ ¾øÀ» ¶§´Â º» ÇÔ¼ö¸¦
+     * È£ÃâÇÏÁö ¾Ê´Â´Ù. */
     if ( sdpstStackMgr::compareStackPos( &sLstPageStack,
                                          &sFstPageStack ) < 0 )
     {
@@ -603,46 +603,46 @@ IDE_RC sdpstDPath::updateBMPUntilHWM( idvSQL           * aStatistics,
     }
 
     /*
-     * ë‹¤ìŒì€ íŽ˜ì´ì§€ bitmap ë³€ê²½í•˜ëŠ” ì•Œê³ ë¦¬ì¦˜ì´ë‹¤.
+     * ´ÙÀ½Àº ÆäÀÌÁö bitmap º¯°æÇÏ´Â ¾Ë°í¸®ÁòÀÌ´Ù.
      *
      * A-update.
-     * ë§Œì•½, ë§ˆì§€ë§‰ íŽ˜ì´ì§€ë¶€í„° ì‹œìž‘í–ˆë‹¤ë©´, ë‹¤ìŒ leafë¥¼ ì°¾ëŠ”ë‹¤. => B-move
-     * ë™ì¼í•œ leafì— New HHWMê°€ ì—†ë‹¤ë©´, ë§ˆì§€ë§‰ íŽ˜ì´ì§€ê¹Œì§€ data íŽ˜ì´ì§€ë§Œ
-     * ëª¨ë‘ Fullìƒíƒœë¡œ ë³€ê²½í•œë‹¤. ê·¸ í›„ ë‹¤ìŒ leafë¥¼ ì°¾ëŠ”ë‹¤. => B-move
-     * í•˜ì§€ë§Œ, New HHWMê°€ ìžˆë‹¤ë©´ New HHWMê¹Œì§€ Fullìƒíƒœë¡œ ë³€ê²½í•˜ê³ ,
-     * ìƒìœ„ë¡œ ì˜¬ë¼ê°„ë‹¤. => B-move
+     * ¸¸¾à, ¸¶Áö¸· ÆäÀÌÁöºÎÅÍ ½ÃÀÛÇß´Ù¸é, ´ÙÀ½ leaf¸¦ Ã£´Â´Ù. => B-move
+     * µ¿ÀÏÇÑ leaf¿¡ New HHWM°¡ ¾ø´Ù¸é, ¸¶Áö¸· ÆäÀÌÁö±îÁö data ÆäÀÌÁö¸¸
+     * ¸ðµÎ Full»óÅÂ·Î º¯°æÇÑ´Ù. ±× ÈÄ ´ÙÀ½ leaf¸¦ Ã£´Â´Ù. => B-move
+     * ÇÏÁö¸¸, New HHWM°¡ ÀÖ´Ù¸é New HHWM±îÁö Full»óÅÂ·Î º¯°æÇÏ°í,
+     * »óÀ§·Î ¿Ã¶ó°£´Ù. => B-move
      *
      * B-move.
-     * ë™ì¼í•œ internalì— ë‹¤ìŒ leafê°€ New HHWMì´ê±°ë‚˜ ê·¸ë ‡ì§€ ì•Šê±°ë‚˜
-     * ë‹¤ìŒ leafë¡œ ì§„í–‰í•œë‹¤. => A-update
+     * µ¿ÀÏÇÑ internal¿¡ ´ÙÀ½ leaf°¡ New HHWMÀÌ°Å³ª ±×·¸Áö ¾Ê°Å³ª
+     * ´ÙÀ½ leaf·Î ÁøÇàÇÑ´Ù. => A-update
      *
      * B-update.
-     * New HHWM ì´ë©´ í•´ë‹¹ lf slotì„ ì£¼ì–´ì§„ MFNLë¡œ ë³€ê²½í•˜ê³ ,
-     * ìƒìœ„ë¡œ ì§„í–‰í•œë‹¤. => C-move
-     * ë§Œì•½, ë‹¤ìŒ leafê°€ ì—†ë‹¤ë©´, lfslotë“¤ì˜ MFNLì„ FULLë¡œ ë³€ê²½í•˜ê³ ,
-     * ìƒìœ„ë¡œ ì§„í–‰í•œë‹¤. => C-move
+     * New HHWM ÀÌ¸é ÇØ´ç lf slotÀ» ÁÖ¾îÁø MFNL·Î º¯°æÇÏ°í,
+     * »óÀ§·Î ÁøÇàÇÑ´Ù. => C-move
+     * ¸¸¾à, ´ÙÀ½ leaf°¡ ¾ø´Ù¸é, lfslotµéÀÇ MFNLÀ» FULL·Î º¯°æÇÏ°í,
+     * »óÀ§·Î ÁøÇàÇÑ´Ù. => C-move
      *
      * C-move.
-     * ë™ì¼í•œ rootì— ë‹¤ìŒ internalì´ New HHWMì´ê±°ë‚˜ ê·¸ë ‡ì§€ ì•Šê±°ë‚˜
-     * ë‹¤ìŒ internalë¡œ ì§„í–‰í•œë‹¤. => B-move
+     * µ¿ÀÏÇÑ root¿¡ ´ÙÀ½ internalÀÌ New HHWMÀÌ°Å³ª ±×·¸Áö ¾Ê°Å³ª
+     * ´ÙÀ½ internal·Î ÁøÇàÇÑ´Ù. => B-move
      *
      * C-update.
-     * New HHWMì´ë©´ itslotì˜ MFNLì„ ì£¼ì–´ì§„ MFNLë¡œ ë³€ê²½í•˜ê³ 
-     * ì—°ì‚°ì„ ì™„ë£Œí•œë‹¤. => end
-     * ë§Œì•½, ë‹¤ìŒ internalì´ ì—†ë‹¤ë©´ itslotë“¤ì˜ MFNLì„ FULLë¡œ ë³€ê²½í•˜ê³ ,
-     * ë‹¤ìŒ rootë¡œ ì´ë™í•œë‹¤. => C-move
+     * New HHWMÀÌ¸é itslotÀÇ MFNLÀ» ÁÖ¾îÁø MFNL·Î º¯°æÇÏ°í
+     * ¿¬»êÀ» ¿Ï·áÇÑ´Ù. => end
+     * ¸¸¾à, ´ÙÀ½ internalÀÌ ¾ø´Ù¸é itslotµéÀÇ MFNLÀ» FULL·Î º¯°æÇÏ°í,
+     * ´ÙÀ½ root·Î ÀÌµ¿ÇÑ´Ù. => C-move
      */
 
-    /* LeafBMP ë° InternalBMPì— ëŒ€í•œ SlotNumber.
-     * ì´í›„ BMPì˜ MFNLì„ ê°±ì‹ í• ë•Œ, ì–´ë””ì„œ ë¶€í„° ê°±ì‹ í•´ì•¼ í• ì§€ë¥¼ Traverse
-     * í•˜ëŠ” ë™ì•ˆ ë³´ê´€í•œë‹¤. */
+    /* LeafBMP ¹× InternalBMP¿¡ ´ëÇÑ SlotNumber.
+     * ÀÌÈÄ BMPÀÇ MFNLÀ» °»½ÅÇÒ¶§, ¾îµð¼­ ºÎÅÍ °»½ÅÇØ¾ß ÇÒÁö¸¦ Traverse
+     * ÇÏ´Â µ¿¾È º¸°üÇÑ´Ù. */
     sLfFstSlotNo = SDPST_INVALID_SLOTNO;
     sItFstSlotNo = SDPST_INVALID_SLOTNO;
     sIsFinish    = ID_FALSE;
 
     sCurStack   = &sFstPageStack;
 
-    /* Lf-BMPì—ì„œ ì‹œìž‘í•˜ë¯€ë¡œ ì´ì „ depthë¥¼ It-BMPë¡œ ì„¤ì •í•´ ë†“ëŠ”ë‹¤. */
+    /* Lf-BMP¿¡¼­ ½ÃÀÛÇÏ¹Ç·Î ÀÌÀü depth¸¦ It-BMP·Î ¼³Á¤ÇØ ³õ´Â´Ù. */
     sPrvDepth   = SDPST_ITBMP;
     if ( sdpstStackMgr::getDepth( sCurStack ) != SDPST_LFBMP )
     {
@@ -676,15 +676,15 @@ IDE_RC sdpstDPath::updateBMPUntilHWM( idvSQL           * aStatistics,
                                                 &sIsFinish,
                                                 &sNewMFNL ) != IDE_SUCCESS );
 
-        /* ì¢…ë£Œ ì¡°ê±´ */
+        /* Á¾·á Á¶°Ç */
         if ( (sDepth == SDPST_RTBMP) && (sIsFinish == ID_TRUE) )
         {
             break;
         }
     }
 
-    /* ì´ ê°’ë“¤ì€ MFNLì„ ìˆ˜ì •í•  í•„ìš”ê°€ ìžˆì„ë•Œ ì„¤ì •ëœë‹¤. ë”°ë¼ì„œ INVALID_SLOTNO, ì¦‰
-     * -1ì´ ì•„ë‹Œ ë‹¤ë¥¸ ê°’ì¼ ê²½ìš°, ìˆ˜ì •í•  í•„ìš”ê°€ ìžˆëŠ”ë° ìˆ˜ì •ì„ ì•ˆí•œ ê²½ìš°ê°€ ëœë‹¤*/
+    /* ÀÌ °ªµéÀº MFNLÀ» ¼öÁ¤ÇÒ ÇÊ¿ä°¡ ÀÖÀ»¶§ ¼³Á¤µÈ´Ù. µû¶ó¼­ INVALID_SLOTNO, Áï
+     * -1ÀÌ ¾Æ´Ñ ´Ù¸¥ °ªÀÏ °æ¿ì, ¼öÁ¤ÇÒ ÇÊ¿ä°¡ ÀÖ´Âµ¥ ¼öÁ¤À» ¾ÈÇÑ °æ¿ì°¡ µÈ´Ù*/
     if( ( sLfFstSlotNo != SDPST_INVALID_SLOTNO ) ||
         ( sItFstSlotNo != SDPST_INVALID_SLOTNO ) )
     {
@@ -711,7 +711,7 @@ IDE_RC sdpstDPath::updateBMPUntilHWM( idvSQL           * aStatistics,
 
 
 /***********************************************************************
- * Description : Direct-Path ì—°ì‚°ì—ì„œ í• ë‹¹ëœ íŽ˜ì´ì§€ bitmapì„ update í•œë‹¤.
+ * Description : Direct-Path ¿¬»ê¿¡¼­ ÇÒ´çµÈ ÆäÀÌÁö bitmapÀ» update ÇÑ´Ù.
  ***********************************************************************/
 IDE_RC sdpstDPath::updateBMPUntilHWMInLfBMP(
                                        idvSQL            * aStatistics,
@@ -750,7 +750,7 @@ IDE_RC sdpstDPath::updateBMPUntilHWMInLfBMP(
     IDE_ASSERT( aIsFinish  != NULL );
     IDE_ASSERT( *aPrvDepth == SDPST_ITBMP);
 
-    /* Lf-BMPì—ì„œ HWMì„ ë§Œë‚˜ê¸° ì „ê¹Œì§€ëŠ” ê³„ì† ë‹¤ìŒ ë‹¨ê³„ë¡œ ì§„í–‰í•œë‹¤. */
+    /* Lf-BMP¿¡¼­ HWMÀ» ¸¸³ª±â Àü±îÁö´Â °è¼Ó ´ÙÀ½ ´Ü°è·Î ÁøÇàÇÑ´Ù. */
     sIsFinish  = ID_FALSE;
 
     IDE_TEST( sdrMiniTrans::begin( aStatistics,
@@ -761,7 +761,7 @@ IDE_RC sdpstDPath::updateBMPUntilHWMInLfBMP(
               != IDE_SUCCESS );
     sState = 1;
 
-    // HWMê°€ ê°™ì€ leaf íŽ˜ì´ì§€ì— ìžˆëŠ”ê°€?
+    // HWM°¡ °°Àº leaf ÆäÀÌÁö¿¡ ÀÖ´Â°¡?
     sDist = sdpstBMP::mBMPOps[SDPST_LFBMP]->mGetDistInDepth(
                            sdpstStackMgr::getAllPos(aHWMStack),
                            sdpstStackMgr::getAllPos(aCurStack) );
@@ -792,33 +792,33 @@ IDE_RC sdpstDPath::updateBMPUntilHWMInLfBMP(
 
     if ( sdpstLfBMP::isLstPBSNo( sPagePtr, sCurPos.mIndex ) == ID_TRUE )
     {
-        // ë§ˆì§€ë§‰ íŽ˜ì´ì§€ë¼ë©´ ë‹¤ìŒ leafë¡œ ì´ë™í•´ì•¼í•œë‹¤. í•˜ì§€ë§Œ, New HHWM
-        // ë¼ë©´, GoNextê°€ ID_FALSEë¡œ ì„¤ì •ë˜ì–´ ìƒìœ„ë¡œ ì˜¬ë¼ê°€ì•¼í•œë‹¤.
-        // ì•„ëž˜ë¶€ë¶„ì—ì„œ ì²˜ë¦¬í•œë‹¤.
+        // ¸¶Áö¸· ÆäÀÌÁö¶ó¸é ´ÙÀ½ leaf·Î ÀÌµ¿ÇØ¾ßÇÑ´Ù. ÇÏÁö¸¸, New HHWM
+        // ¶ó¸é, GoNext°¡ ID_FALSE·Î ¼³Á¤µÇ¾î »óÀ§·Î ¿Ã¶ó°¡¾ßÇÑ´Ù.
+        // ¾Æ·¡ºÎºÐ¿¡¼­ Ã³¸®ÇÑ´Ù.
         *aNewMFNL = sLfBMPHdr->mBMPHdr.mMFNL;
     }
 
-    /* ë³€ê²½í•  êµ¬ê°„ì„ ì°¾ëŠ”ë‹¤. */
+    /* º¯°æÇÒ ±¸°£À» Ã£´Â´Ù. */
     sFmPBSNo = sCurPos.mIndex;
     if ( sDist == SDPST_FAR_AWAY_OFF )
     {
-        // HHWMì™€ ë™ì¼í•œ íŽ˜ì´ì§€ê°€ ì•„ë‹Œê²½ìš° leaf bmpíŽ˜ì´ì§€ì˜ ë§ˆì§€ë§‰ê¹Œì§€
-        // ê²€ì‚¬í•œë‹¤.
+        // HHWM¿Í µ¿ÀÏÇÑ ÆäÀÌÁö°¡ ¾Æ´Ñ°æ¿ì leaf bmpÆäÀÌÁöÀÇ ¸¶Áö¸·±îÁö
+        // °Ë»çÇÑ´Ù.
         sToPBSNo = sLfBMPHdr->mTotPageCnt - 1;
     }
     else
     {
-        // HWMì™€ ë™ì¼í•œ íŽ˜ì´ì§€ì¸ ê²½ìš° HWMê¹Œì§€ë§Œ íƒìƒ‰í•œë‹¤.
+        // HWM¿Í µ¿ÀÏÇÑ ÆäÀÌÁöÀÎ °æ¿ì HWM±îÁö¸¸ Å½»öÇÑ´Ù.
         sHwmPos  = sdpstStackMgr::getSeekPos( aHWMStack, SDPST_LFBMP );
         sToPBSNo = sHwmPos.mIndex;
 
-        // HHWMë¥¼ ë§Œë‚¬ê¸° ë•Œë¬¸ì— ì—°ì‚°ì„ rootì—ì„œ ì™„ë£Œì‹œì¼œì•¼í•œë‹¤.
+        // HHWM¸¦ ¸¸³µ±â ¶§¹®¿¡ ¿¬»êÀ» root¿¡¼­ ¿Ï·á½ÃÄÑ¾ßÇÑ´Ù.
         sIsFinish = ID_TRUE;
     }
 
     sPageCnt = sToPBSNo - sFmPBSNo + 1;
 
-    /* Lf-BMP ì˜ì—­ì„ ë²—ì–´ë‚œ ê²½ìš°ì—ëŠ” PBSë¥¼ ë³€ê²½í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+    /* Lf-BMP ¿µ¿ªÀ» ¹þ¾î³­ °æ¿ì¿¡´Â PBS¸¦ º¯°æÇÏÁö ¾Ê´Â´Ù. */
     if ( sPageCnt == 0 )
     {
         IDE_CONT( leave_update_bmp_in_lfbmp );
@@ -828,11 +828,11 @@ IDE_RC sdpstDPath::updateBMPUntilHWMInLfBMP(
         IDE_ASSERT( sPageCnt > 0 );
     }
 
-    /* leafì—ì„œì˜ bitmap ë³€ê²½ì— ëŒ€í•œ Rollback ì—°ì‚°ì„ ìœ„í•´ì„œ ì—¬ê¸°ì„œ
-     * NTAë¥¼ ì„¤ì •í•œë‹¤. */
+    /* leaf¿¡¼­ÀÇ bitmap º¯°æ¿¡ ´ëÇÑ Rollback ¿¬»êÀ» À§ÇØ¼­ ¿©±â¼­
+     * NTA¸¦ ¼³Á¤ÇÑ´Ù. */
     sNTA = smLayerCallback::getLstUndoNxtLSN( aStartInfo->mTrans );
 
-    /* from -> to ê¹Œì§€ PBS ê°±ì‹  */
+    /* from -> to ±îÁö PBS °»½Å */
     sdpstLfBMP::updatePBS( sdpstLfBMP::getMapPtr(sLfBMPHdr),
                                       sFmPBSNo,
                                       (sdpstPBS)(SDPST_BITSET_PAGETP_DATA |
@@ -852,7 +852,7 @@ IDE_RC sdpstDPath::updateBMPUntilHWMInLfBMP(
 
 
 
-    /* Lf-BMP íŽ˜ì´ì§€ì˜ MFNL Tableê³¼ ëŒ€í‘œ MFNLì„ ê°±ì‹ í•œë‹¤. */
+    /* Lf-BMP ÆäÀÌÁöÀÇ MFNL Table°ú ´ëÇ¥ MFNLÀ» °»½ÅÇÑ´Ù. */
     IDE_TEST( sdpstBMP::logAndUpdateMFNL(
                                     &sMtx,
                                     sdpstLfBMP::getBMPHdrPtr(sLfBMPHdr),
@@ -901,8 +901,8 @@ IDE_RC sdpstDPath::updateBMPUntilHWMInLfBMP(
 }
 
 /***********************************************************************
- * Description : Direct-Path ì—°ì‚°ì—ì„œ í• ë‹¹ëœ íŽ˜ì´ì§€ Bitmapë“¤ì„
- *               ê°±ì‹ í•œë‹¤.
+ * Description : Direct-Path ¿¬»ê¿¡¼­ ÇÒ´çµÈ ÆäÀÌÁö BitmapµéÀ»
+ *               °»½ÅÇÑ´Ù.
  ***********************************************************************/
 IDE_RC sdpstDPath::updateBMPUntilHWMInRtAndItBMP(
                                        idvSQL            * aStatistics,
@@ -947,12 +947,12 @@ IDE_RC sdpstDPath::updateBMPUntilHWMInRtAndItBMP(
     sIsUpdateMFNL = ID_FALSE;
     sCurDepth     = sdpstStackMgr::getDepth( aCurStack );
 
-    /* HWM ì´ ë™ì¼ It-BMPì— ì¡´ìž¬í•˜ëŠ”ê°€? */
+    /* HWM ÀÌ µ¿ÀÏ It-BMP¿¡ Á¸ÀçÇÏ´Â°¡? */
     sDist = sdpstBMP::mBMPOps[sCurDepth]->mGetDistInDepth(
                            sdpstStackMgr::getAllPos(aHWMStack),
                            sdpstStackMgr::getAllPos(aCurStack) );
 
-    /* ë‚´ë ¤ì˜¬ë•ŒëŠ” sDist > 0, ì˜¬ë¼ì˜¬ë•ŒëŠ” sDist >= 0 */
+    /* ³»·Á¿Ã¶§´Â sDist > 0, ¿Ã¶ó¿Ã¶§´Â sDist >= 0 */
     if ( sDist < 0 )
     {
         sdpstStackMgr::dump( aHWMStack );
@@ -971,8 +971,8 @@ IDE_RC sdpstDPath::updateBMPUntilHWMInRtAndItBMP(
 
     /* BUG-32164 [sm-disk-page] If Table Segment is expanded to 12gb by
      * Direct-path insert operation, Server fatal
-     * í˜„ìž¬ê°€ RootBMPì´ë©´ internalSlotNumberë¥¼ ì‚¬ìš©í•˜ê³ ,
-     * í˜„ìž¬ê°€ InternalBMPì´ë©´ LeafSlotNumberë¥¼ ì‚¬ìš©í•œë‹¤. */
+     * ÇöÀç°¡ RootBMPÀÌ¸é internalSlotNumber¸¦ »ç¿ëÇÏ°í,
+     * ÇöÀç°¡ InternalBMPÀÌ¸é LeafSlotNumber¸¦ »ç¿ëÇÑ´Ù. */
     if( sCurDepth == SDPST_ITBMP )
     {
         sFmSlotNo = aFmLfSlotNo;
@@ -1001,14 +1001,14 @@ IDE_RC sdpstDPath::updateBMPUntilHWMInRtAndItBMP(
 
     sIsLstSlot = sdpstBMP::isLstSlotNo( sPagePtr, sCurPos.mIndex );
 
-    // [1] Bitmap ë³€ê²½ì—¬ë¶€ë¥¼ ì¡°ì‚¬í•œë‹¤.
-    // [1-1] Bitmapì„ ë³€ê²½í•´ì•¼í•  ë§ˆì§€ë§‰ ToSlotIdxë¥¼ êµ¬í•œë‹¤.
+    // [1] Bitmap º¯°æ¿©ºÎ¸¦ Á¶»çÇÑ´Ù.
+    // [1-1] BitmapÀ» º¯°æÇØ¾ßÇÒ ¸¶Áö¸· ToSlotIdx¸¦ ±¸ÇÑ´Ù.
     if ( SDPST_BMP_CHILD_TYPE( sCurDepth ) == *aPrvDepth )
     {
-        // * leafì—ì„œ ì˜¬ë¼ì˜¨ ê²½ìš° *
-        // í˜„ìž¬ slotì´ ë§ˆì§€ë§‰ì´ê±°ë‚˜ New HHWMë¼ë©´
-        // í˜„ìž¬ internal bmpì˜ ë³€ê²½í•˜ì§€ ì•Šì•˜ë˜ lf slotë“¤ì— ëŒ€í•´ì„œ
-        // í•œë²ˆì— mfnl ë³€ê²½ì„ ìˆ˜í–‰í•œë‹¤.
+        // * leaf¿¡¼­ ¿Ã¶ó¿Â °æ¿ì *
+        // ÇöÀç slotÀÌ ¸¶Áö¸·ÀÌ°Å³ª New HHWM¶ó¸é
+        // ÇöÀç internal bmpÀÇ º¯°æÇÏÁö ¾Ê¾Ò´ø lf slotµé¿¡ ´ëÇØ¼­
+        // ÇÑ¹ø¿¡ mfnl º¯°æÀ» ¼öÇàÇÑ´Ù.
 
         /*    |
          * +-----+-+-+-+-+  +-----+-+-+-+
@@ -1017,13 +1017,13 @@ IDE_RC sdpstDPath::updateBMPUntilHWMInRtAndItBMP(
          *        | | | |          | | | 
          *  <-Case2-2-> |          <Case1>
          *        <Case2-1>
-         * ê° IBMPì˜ ë§ˆì§€ë§‰ Slotì„ ê°±ì‹ í•˜ëŠ” ê²½ìš°ë¼ë©´, MFNL ê°±ì‹ */
+         * °¢ IBMPÀÇ ¸¶Áö¸· SlotÀ» °»½ÅÇÏ´Â °æ¿ì¶ó¸é, MFNL °»½Å*/
 
         if ( sDist == 0 )
         {
             /* CASE 1 */
-            // leafì—ì„œ New HHWMê¹Œì§€ bitmapì„ ë³€ê²½í•˜ê³  ì˜¬ë¼ê°€ëŠ” ì¤‘ì´ë‹¤.
-            // ë”ì´ìƒ nextë¡œ ê°€ì§€ ì•ŠëŠ”ë‹¤.
+            // leaf¿¡¼­ New HHWM±îÁö bitmapÀ» º¯°æÇÏ°í ¿Ã¶ó°¡´Â ÁßÀÌ´Ù.
+            // ´õÀÌ»ó next·Î °¡Áö ¾Ê´Â´Ù.
             IDE_ASSERT( *aIsFinish == ID_TRUE );
 
             sIsUpdateMFNL = ID_TRUE;
@@ -1033,52 +1033,52 @@ IDE_RC sdpstDPath::updateBMPUntilHWMInRtAndItBMP(
             if ( sIsLstSlot == ID_TRUE )
             {
                 /* CASE 2-1 */
-                // ë§ˆì§€ë§‰ Slotì´ë©´ aFmLfSlotIdx ë¶€í„° ëê¹Œì§€
-                // Fullë¡œ ë³€ê²½í•œë‹¤.
+                // ¸¶Áö¸· SlotÀÌ¸é aFmLfSlotIdx ºÎÅÍ ³¡±îÁö
+                // Full·Î º¯°æÇÑ´Ù.
                 IDE_ASSERT( sCurPos.mIndex == sBMPHdr->mSlotCnt - 1  );
                 sIsUpdateMFNL = ID_TRUE;
             }
             else
             {
                 /* CASE 2-2 */
-                // Leafì—ì„œ ì˜¬ë¼ì™”ëŠ”ë° ë§ˆì§€ë§‰ì´ ì•„ë‹ˆë©´
-                // ë‹¤ìŒ leafë¡œ ë‚´ë ¤ê°„ë‹¤.
+                // Leaf¿¡¼­ ¿Ã¶ó¿Ô´Âµ¥ ¸¶Áö¸·ÀÌ ¾Æ´Ï¸é
+                // ´ÙÀ½ leaf·Î ³»·Á°£´Ù.
                 sIsUpdateMFNL = ID_FALSE;
             }
         }
     }
     else
     {
-        /* ìƒìœ„ BMPì—ì„œ ë‚´ë ¤ì˜¤ëŠ” ê²ƒì´ë¼ë©´ ë¬´ì¡°ê±´ ë‚´ë ¤ê°„ë‹¤. */
+        /* »óÀ§ BMP¿¡¼­ ³»·Á¿À´Â °ÍÀÌ¶ó¸é ¹«Á¶°Ç ³»·Á°£´Ù. */
     }
 
-    // [1-2] Bitmap ë³€ê²½ ì‹œìž‘ì„ ì„¤ì •í•œë‹¤.
+    // [1-2] Bitmap º¯°æ ½ÃÀÛÀ» ¼³Á¤ÇÑ´Ù.
     if ( *sFmSlotNo == SDPST_INVALID_SLOTNO )
     {
-        // rootì—ì„œ ì²˜ìŒ ë‚´ë ¤ì˜¨ ê²½ìš° í˜¹ì€
-        // leafì—ì„œ ì˜¬ë¼ì˜¤ëŠ” ì¤‘ì—ëŠ” bitmap ë³€ê²½ì‹œìž‘ LfBMP slotì˜
-        // ìˆœë²ˆì„ ì„¤ì •í•œë‹¤.
-        // ë§Œì•½, ì´ë¯¸ ì´ì „ HWMê°€ í¬í•¨ëœ LfBMP ë¶€í„° pageBitmapì„
-        // ì¤‘ë³µì„¤ì •í•˜ì—¬ë„ ë¬¸ì œëŠ” ì—†ë‹¤.
+        // root¿¡¼­ Ã³À½ ³»·Á¿Â °æ¿ì È¤Àº
+        // leaf¿¡¼­ ¿Ã¶ó¿À´Â Áß¿¡´Â bitmap º¯°æ½ÃÀÛ LfBMP slotÀÇ
+        // ¼ø¹øÀ» ¼³Á¤ÇÑ´Ù.
+        // ¸¸¾à, ÀÌ¹Ì ÀÌÀü HWM°¡ Æ÷ÇÔµÈ LfBMP ºÎÅÍ pageBitmapÀ»
+        // Áßº¹¼³Á¤ÇÏ¿©µµ ¹®Á¦´Â ¾ø´Ù.
         *sFmSlotNo = sCurPos.mIndex;
     }
 
-    // [1-3] ì´ì „ì´ RtBMP ì´ë˜ LfBMPì´ë˜ MFNLì´ FULLì•„ ì•„ë‹Œê²½ìš°
+    // [1-3] ÀÌÀüÀÌ RtBMP ÀÌ´ø LfBMPÀÌ´ø MFNLÀÌ FULL¾Æ ¾Æ´Ñ°æ¿ì
     if ( *aNewMFNL != SDPST_MFNL_FUL )
     {
         if( *aPrvDepth == SDPST_BMP_CHILD_TYPE( sCurDepth ) )
         {
-            // leafì˜ mfnlì´ fullì´ ì•„ë‹Œ ê²½ìš°ì—ëŠ” ë°”ë¡œ lfslotì˜
-            // mfnlì„ ë³€ê²½í•œë‹¤.
+            // leafÀÇ mfnlÀÌ fullÀÌ ¾Æ´Ñ °æ¿ì¿¡´Â ¹Ù·Î lfslotÀÇ
+            // mfnlÀ» º¯°æÇÑ´Ù.
             sIsUpdateMFNL = ID_TRUE;
         }
     }
     else
     {
-        // ì´ì „ì´ RtBMP ì´ë˜ LfBMPì´ë˜ MFNLì´ FULLì¸ ê²½ìš°
+        // ÀÌÀüÀÌ RtBMP ÀÌ´ø LfBMPÀÌ´ø MFNLÀÌ FULLÀÎ °æ¿ì
     }
 
-    // [3] Bitmapì„ ë³€ê²½í•œë‹¤.
+    // [3] BitmapÀ» º¯°æÇÑ´Ù.
     if ( sIsUpdateMFNL == ID_TRUE )
     {
         sdrMiniTrans::makeStartInfo( &sMtx, &sStartInfo );
@@ -1093,7 +1093,7 @@ IDE_RC sdpstDPath::updateBMPUntilHWMInRtAndItBMP(
                                     sToSlotNo,
                                     aNewMFNL ) != IDE_SUCCESS );
 
-        // updateë¥¼ í•˜ì˜€ê¸° ë•Œë¬¸ì— sFmSlotNoë¥¼ ì´ˆê¸°í™”í•´ì¤€ë‹¤.
+        // update¸¦ ÇÏ¿´±â ¶§¹®¿¡ sFmSlotNo¸¦ ÃÊ±âÈ­ÇØÁØ´Ù.
         *sFmSlotNo = SDPST_INVALID_SLOTNO;
     }
 
@@ -1119,9 +1119,9 @@ IDE_RC sdpstDPath::updateBMPUntilHWMInRtAndItBMP(
 
     if ( sGoDown == ID_TRUE )
     {
-        /* í•˜ìœ„ BMPì—ì„œ ì˜¬ë¼ì˜¨ ê²½ìš° ë‹¤ìŒ í•˜ìœ„ BMPë¡œ ë‚´ë ¤ê°€ì•¼ í•œë‹¤.
-         * (ë‹¤ìŒ Slotìœ¼ë¡œ ì´ë™)
-         * ìƒìœ„ BMPì—ì„œ ë‚´ë ¤ì˜¨ ê²½ìš° ê·¸ëƒ¥ ë°”ë¡œ ë‚´ë ¤ê°„ë‹¤. */
+        /* ÇÏÀ§ BMP¿¡¼­ ¿Ã¶ó¿Â °æ¿ì ´ÙÀ½ ÇÏÀ§ BMP·Î ³»·Á°¡¾ß ÇÑ´Ù.
+         * (´ÙÀ½ SlotÀ¸·Î ÀÌµ¿)
+         * »óÀ§ BMP¿¡¼­ ³»·Á¿Â °æ¿ì ±×³É ¹Ù·Î ³»·Á°£´Ù. */
         if ( *aPrvDepth == SDPST_BMP_CHILD_TYPE( sCurDepth ) )
         {
             sNxtSlotNo = sCurPos.mIndex + 1;
@@ -1157,8 +1157,8 @@ IDE_RC sdpstDPath::updateBMPUntilHWMInRtAndItBMP(
 
 
 /***********************************************************************
- * Description : Direct-Path ì—°ì‚°ì—ì„œ í• ë‹¹ëœ íŽ˜ì´ì§€ Bitmapë“¤ì„
- *               ê°±ì‹ í•˜ê¸° ìœ„í•´, ë‹¤ìŒ BMPë¥¼ pushí•˜ì—¬ ë„˜ê²¨ì¤€ë‹¤.
+ * Description : Direct-Path ¿¬»ê¿¡¼­ ÇÒ´çµÈ ÆäÀÌÁö BitmapµéÀ»
+ *               °»½ÅÇÏ±â À§ÇØ, ´ÙÀ½ BMP¸¦ pushÇÏ¿© ³Ñ°ÜÁØ´Ù.
  ***********************************************************************/
 IDE_RC sdpstDPath::updateBMPUntilHWMInVtBMP(
                                        idvSQL            * aStatistics,
@@ -1184,18 +1184,18 @@ IDE_RC sdpstDPath::updateBMPUntilHWMInVtBMP(
     IDE_ASSERT( aCurStack != NULL );
     IDE_ASSERT( aPrvDepth != NULL );
 
-    /* VirtualBMPëŠ” ì‹¤ì œí•˜ì§€ ì•ŠëŠ” BMPë¡œ Rootì˜ ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚¤ê¸° ìœ„í•´ ì¡´ìž¬í•œë‹¤. ì¦‰
-     * VirtualBMPì˜ 0ë²ˆ Slotì€ ì²«ë²ˆì§¸ RootBMP, 1ë²ˆ Slotì€ ë‹¤ìŒ RootBMPë¥¼
-     * ì˜ë¯¸í•œë‹¤. ë”°ë¼ì„œ VirtualBMPëŠ” BMPë¥¼ ê°±ì‹ (MFNL ìˆ˜ì •)ì„ í•˜ì§€ ì•Šì•„ë„ ë˜ë©°,
-     * ì˜¤ë¡œì§€ ë‹¤ìŒë²ˆ Rootë§Œ íƒìƒ‰í•˜ë©´ ëœë‹¤.
-     * ì´ë•Œ ë‹¤ìŒë²ˆ RootëŠ” ì²«ë²ˆì§¸ Rootê°€ ì¡´ìž¬í•˜ëŠ” SegmentPageë¡œë¶€í„° NextRootë¥¼
-     * ì°¾ì•„ íƒìƒ‰í•˜ë©´ ëœë‹¤. */
+    /* VirtualBMP´Â ½ÇÁ¦ÇÏÁö ¾Ê´Â BMP·Î RootÀÇ À§Ä¡¸¦ °¡¸®Å°±â À§ÇØ Á¸ÀçÇÑ´Ù. Áï
+     * VirtualBMPÀÇ 0¹ø SlotÀº Ã¹¹øÂ° RootBMP, 1¹ø SlotÀº ´ÙÀ½ RootBMP¸¦
+     * ÀÇ¹ÌÇÑ´Ù. µû¶ó¼­ VirtualBMP´Â BMP¸¦ °»½Å(MFNL ¼öÁ¤)À» ÇÏÁö ¾Ê¾Æµµ µÇ¸ç,
+     * ¿À·ÎÁö ´ÙÀ½¹ø Root¸¸ Å½»öÇÏ¸é µÈ´Ù.
+     * ÀÌ¶§ ´ÙÀ½¹ø Root´Â Ã¹¹øÂ° Root°¡ Á¸ÀçÇÏ´Â SegmentPage·ÎºÎÅÍ NextRoot¸¦
+     * Ã£¾Æ Å½»öÇÏ¸é µÈ´Ù. */
 
-    /* ìµœì´ˆì˜ RootëŠ” ë¬´ì¡°ê±´ SegmentPageì— ìžˆë‹¤. */
+    /* ÃÖÃÊÀÇ Root´Â ¹«Á¶°Ç SegmentPage¿¡ ÀÖ´Ù. */
     sCurRtBMP = aSegPID;
     IDE_ASSERT( sCurRtBMP != SD_NULL_PID );
 
-    /* ë‹¤ìŒë²ˆ Rootë¥¼ í–¥í•´ íƒìƒ‰  */
+    /* ´ÙÀ½¹ø Root¸¦ ÇâÇØ Å½»ö  */
     sCurPos   = sdpstStackMgr::getCurrPos( aCurStack );
     sNxtSlotNo = sCurPos.mIndex + 1;
 
@@ -1219,7 +1219,7 @@ IDE_RC sdpstDPath::updateBMPUntilHWMInVtBMP(
         IDE_TEST( sdbBufferMgr::releasePage( aStatistics, (UChar*)sPagePtr )
                   != IDE_SUCCESS );
 
-        /* NxtSlotNoê°€ ì‹¤ì œ Rootê°œìˆ˜ë³´ë‹¤ í´ ê²½ìš° */
+        /* NxtSlotNo°¡ ½ÇÁ¦ Root°³¼öº¸´Ù Å¬ °æ¿ì */
         if( sCurRtBMP == SC_NULL_PID )
         {
             ideLog::log( IDE_SERVER_0, 
@@ -1238,14 +1238,14 @@ IDE_RC sdpstDPath::updateBMPUntilHWMInVtBMP(
         }
     }
 
-    /* ë‹¤ìŒ Slotì„ ê°€ë¦¬í‚¤ë„ë¡ ì¡°ì •í•œë‹¤. */
+    /* ´ÙÀ½ SlotÀ» °¡¸®Å°µµ·Ï Á¶Á¤ÇÑ´Ù. */
     sdpstStackMgr::setCurrPos( aCurStack,
                                sCurPos.mNodePID,
                                sNxtSlotNo );
 
     sdpstStackMgr::push(
         aCurStack,
-        sCurRtBMP,   /* ë‹¤ìŒë²ˆ Bmp */
+        sCurRtBMP,   /* ´ÙÀ½¹ø Bmp */
         0 );         /* Slot Number */
 
     *aPrvDepth = SDPST_VIRTBMP;

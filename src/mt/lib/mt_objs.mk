@@ -1,4 +1,4 @@
-# $Id: mt_objs.mk 85090 2019-03-28 01:15:28Z andrew.shin $
+# $Id: mt_objs.mk 84991 2019-03-11 09:21:00Z andrew.shin $
 
 MTC_SRCS = $(MT_DIR)/mtc/mtc.cpp
 

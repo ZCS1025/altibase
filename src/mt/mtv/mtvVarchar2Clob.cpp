@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtvVarchar2Clob.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtvVarchar2Clob.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -108,7 +108,7 @@ IDE_RC mtvCalculate_Varchar2Clob( mtcNode*,
     }
     else
     {
-        /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
+        /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
         IDE_TEST_RAISE( aStack[0].column->precision < (SInt)((mtdCharType *)aStack[1].value)->length,
                         ERR_CONVERT );
 

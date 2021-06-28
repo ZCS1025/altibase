@@ -21,15 +21,15 @@
  * Description :
  *     HSDS(HaSh DiStinct) Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ hash-based distinction ì—°ì‚°ì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     °ü°èÇü ¸ğµ¨¿¡¼­ hash-based distinction ¿¬»êÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
  *
- *     ë‹¤ìŒê³¼ ê°™ì€ ê¸°ëŠ¥ì„ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
+ *     ´ÙÀ½°ú °°Àº ±â´ÉÀ» À§ÇØ »ç¿ëµÈ´Ù.
  *         - Hash-based Distinction
  *         - Set Union
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -46,10 +46,10 @@
 //-----------------
 
 // qmncHSDS.flag
-// HSDS ë…¸ë“œê°€ Top Queryì—ì„œ ì‚¬ìš©ë˜ëŠ”ì§€ì˜ ì—¬ë¶€
-// Top Queryì—ì„œ ì‚¬ìš©ë  ê²½ìš° ì¦‰ì‹œ ê²°ê³¼ë¥¼ ìƒì„±í•  ìˆ˜ ìˆëŠ” ë°˜ë©´,
-// Subqueryë‚˜ Viewë‚´ì— ì¡´ì¬í•˜ëŠ” ê²½ìš°ëŠ” ëª¨ë“  ê²°ê³¼ë¥¼ ìƒì„±í•œ í›„
-// ì²˜ë¦¬í•˜ì—¬ì•¼ í•œë‹¤.
+// HSDS ³ëµå°¡ Top Query¿¡¼­ »ç¿ëµÇ´ÂÁöÀÇ ¿©ºÎ
+// Top Query¿¡¼­ »ç¿ëµÉ °æ¿ì Áï½Ã °á°ú¸¦ »ı¼ºÇÒ ¼ö ÀÖ´Â ¹İ¸é,
+// Subquery³ª View³»¿¡ Á¸ÀçÇÏ´Â °æ¿ì´Â ¸ğµç °á°ú¸¦ »ı¼ºÇÑ ÈÄ
+// Ã³¸®ÇÏ¿©¾ß ÇÑ´Ù.
 #define QMNC_HSDS_IN_TOP_MASK                (0x00000001)
 #define QMNC_HSDS_IN_TOP_TRUE                (0x00000000)
 #define QMNC_HSDS_IN_TOP_FALSE               (0x00000001)
@@ -78,7 +78,7 @@
 typedef struct qmncHSDS
 {
     //---------------------------------
-    // Code ì˜ì—­ ê³µí†µ ì •ë³´
+    // Code ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmnPlan        plan;
@@ -86,28 +86,28 @@ typedef struct qmncHSDS
     UInt           planID;
 
     //---------------------------------
-    // HASH ê³ ìœ  ì •ë³´
+    // HASH °íÀ¯ Á¤º¸
     //---------------------------------
 
     UShort         baseTableCount;  // PROJ-1473    
-    qmcMtrNode   * myNode;          // ì €ì¥ Columnì˜ ì •ë³´
+    qmcMtrNode   * myNode;          // ÀúÀå ColumnÀÇ Á¤º¸
     UShort         depTupleRowID;   // Dependent Tuple ID
 
-    UInt           bucketCnt;       // Hash Bucketì˜ ê°œìˆ˜
+    UInt           bucketCnt;       // Hash BucketÀÇ °³¼ö
 
     qcComponentInfo * componentInfo; // PROJ-2462 Result Cache
     //---------------------------------
-    // Data ì˜ì—­ ì •ë³´
+    // Data ¿µ¿ª Á¤º¸
     //---------------------------------
 
-    UInt           mtrNodeOffset;   // ì €ì¥ Columnì˜ ìœ„ì¹˜
+    UInt           mtrNodeOffset;   // ÀúÀå ColumnÀÇ À§Ä¡
     
 } qmncHSDS;
 
 typedef struct qmndHSDS
 {
     //---------------------------------
-    // Data ì˜ì—­ ê³µí†µ ì •ë³´
+    // Data ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmndPlan            plan;
@@ -115,15 +115,15 @@ typedef struct qmndHSDS
     UInt              * flag;        
 
     //---------------------------------
-    // HSDS ê³ ìœ  ì •ë³´
+    // HSDS °íÀ¯ Á¤º¸
     //---------------------------------
     
-    UInt                mtrRowSize;  // ì €ì¥ Rowì˜ í¬ê¸°
+    UInt                mtrRowSize;  // ÀúÀå RowÀÇ Å©±â
     
-    qmdMtrNode        * mtrNode;     // ì €ì¥ Columnì˜ ì •ë³´
-    qmdMtrNode        * hashNode;    // Hashing Columnì˜ ìœ„ì¹˜
+    qmdMtrNode        * mtrNode;     // ÀúÀå ColumnÀÇ Á¤º¸
+    qmdMtrNode        * hashNode;    // Hashing ColumnÀÇ À§Ä¡
 
-    mtcTuple          * depTuple;    // Dependent Tupleì˜ ìœ„ì¹˜
+    mtcTuple          * depTuple;    // Dependent TupleÀÇ À§Ä¡
     UInt                depValue;    // Dependent Value
     
     qmcdHashTemp      * hashMgr;     // Hash Temp Table
@@ -140,11 +140,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ìˆ˜í–‰ í•¨ìˆ˜
+    // ¼öÇà ÇÔ¼ö
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -153,7 +153,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan ì •ë³´ ì¶œë ¥
+    // Plan Á¤º¸ Ãâ·Â
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -164,22 +164,22 @@ public:
     // mapping by doIt() function pointer
     //------------------------
     
-    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨
+    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // Top Queryì—ì„œ ì‚¬ìš©ë  ê²½ìš°ì˜ í˜¸ì¶œ í•¨ìˆ˜
+    // Top Query¿¡¼­ »ç¿ëµÉ °æ¿ìÀÇ È£Ãâ ÇÔ¼ö
     static IDE_RC doItDependent( qcTemplate * aTemplate,
                                  qmnPlan    * aPlan,
                                  qmcRowFlag * aFlag );
 
-    // Subquery ë‚´ì—ì„œ ì‚¬ìš©ë  ê²½ìš°ì˜ ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
+    // Subquery ³»¿¡¼­ »ç¿ëµÉ °æ¿ìÀÇ ÃÖÃÊ ¼öÇà ÇÔ¼ö
     static IDE_RC doItFirstIndependent( qcTemplate * aTemplate,
                                         qmnPlan    * aPlan,
                                         qmcRowFlag * aFlag );
 
-    // Subquery ë‚´ì—ì„œ ì‚¬ìš©ë  ê²½ìš°ì˜ ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
+    // Subquery ³»¿¡¼­ »ç¿ëµÉ °æ¿ìÀÇ ´ÙÀ½ ¼öÇà ÇÔ¼ö
     static IDE_RC doItNextIndependent( qcTemplate * aTemplate,
                                        qmnPlan    * aPlan,
                                        qmcRowFlag * aFlag );
@@ -187,46 +187,46 @@ public:
 private:
 
     //-----------------------------
-    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
+    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
     //-----------------------------
     
-    // ìµœì´ˆ ì´ˆê¸°í™”
+    // ÃÖÃÊ ÃÊ±âÈ­
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncHSDS   * aCodePlan,
                              qmndHSDS   * aDataPlan );
 
-    // ì €ì¥ Columnì˜ ì´ˆê¸°í™”
+    // ÀúÀå ColumnÀÇ ÃÊ±âÈ­
     static IDE_RC initMtrNode( qcTemplate * aTemplate,
                                qmncHSDS   * aCodePlan,
                                qmndHSDS   * aDataPlan );
 
-    // Hashing Columnì˜ ì‹œì‘ ìœ„ì¹˜
+    // Hashing ColumnÀÇ ½ÃÀÛ À§Ä¡
     static IDE_RC initHashNode( qmndHSDS   * aDataPlan );
 
-    // Temp Table ì´ˆê¸°í™”
+    // Temp Table ÃÊ±âÈ­
     static IDE_RC initTempTable( qcTemplate * aTemplate,
                                  qmncHSDS   * aCodePlan,
                                  qmndHSDS   * aDataPlan );
 
-    // Dependent Tupleì˜ ë³€ê²½ ì—¬ë¶€ ê²€ì‚¬
+    // Dependent TupleÀÇ º¯°æ ¿©ºÎ °Ë»ç
     static IDE_RC checkDependency( qcTemplate * aTemplate,
                                    qmncHSDS   * aCodePlan,
                                    qmndHSDS   * aDataPlan,
                                    idBool     * aDependent );
 
     //-----------------------------
-    // ì €ì¥ ê´€ë ¨ í•¨ìˆ˜
+    // ÀúÀå °ü·Ã ÇÔ¼ö
     //-----------------------------
 
-    // ì €ì¥ Rowì˜ êµ¬ì„±
+    // ÀúÀå RowÀÇ ±¸¼º
     static IDE_RC setMtrRow( qcTemplate * aTemplate,
                              qmndHSDS   * aDataPlan );
 
     //-----------------------------
-    // ìˆ˜í–‰ ê´€ë ¨ í•¨ìˆ˜
+    // ¼öÇà °ü·Ã ÇÔ¼ö
     //-----------------------------
 
-    // ê²€ìƒ‰ëœ Rowë¥¼ ì´ìš©í•œ Tuple Setì˜ ë³µì›
+    // °Ë»öµÈ Row¸¦ ÀÌ¿ëÇÑ Tuple SetÀÇ º¹¿ø
     static IDE_RC setTupleSet( qcTemplate * aTemplate,
                                qmndHSDS   * aDataPlan );
 };

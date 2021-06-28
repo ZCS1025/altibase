@@ -27,14 +27,52 @@ public class ShardingTraceLogger
 {
     private static final String LOGGER_NAME  = ShardingTraceLogger.class.getName();
     private static final String LOGFILE_NAME = "shardjdbc.trc";
-    private static Logger       mLogger;
+    private static final Logger mLogger      = Logger.getLogger(LOGGER_NAME);;
 
     public static final int DEFAULT_LOG_FILE_SIZE = 15242880;
     public static final int DEFALUT_LOG_FILE_ROTATE_CNT = 5;
 
     static
     {
-        mLogger = Logger.getLogger(LOGGER_NAME);
+        mLogger.setLevel(Level.OFF);
+
+        String sLogLevelStr = RuntimeEnvironmentVariables.getVariable("SHARD_JDBC_TRCLOG_LEVEL", "OFF").toUpperCase();
+        // BUG-47775 샤드 로그레벨 프로퍼티가 셋팅 되어 있을 때만 logger 객체를 초기화 한다.
+        if (!"OFF".equals(sLogLevelStr))
+        {
+            initializeLogger(sLogLevelStr);
+        }
+    }
+
+    private static void initializeLogger(String aLogLevelStr)
+    {
+        try
+        {
+            Level sCurrentLevel = Level.parse(aLogLevelStr);
+            mLogger.setLevel(sCurrentLevel);
+
+            Handler sHandler = new FileHandler(getLogFilePath(), DEFAULT_LOG_FILE_SIZE, DEFALUT_LOG_FILE_ROTATE_CNT, true);
+            sHandler.setFormatter(new ShardSingleLineFormatter());
+            mLogger.addHandler(sHandler);
+
+            // decide whether or not this logger prints its output to stderr.
+            // default: false (not printed to stderr)
+            String sLogStderr = RuntimeEnvironmentVariables.getVariable("SHARD_JDBC_TRCLOG_PRINT_STDERR", "FALSE").toUpperCase();
+            if (sLogStderr.equals("FALSE"))
+            {
+                mLogger.setUseParentHandlers(false);
+            }
+        }
+        catch (Exception aEx)
+        {
+            // BUG-47775 초기화중 예외가 발생한 경우 에러메세지를 찍고 레벨을 OFF로 설정한다.
+            System.err.println("Exception thrown : " + aEx.getMessage());
+            mLogger.setLevel(Level.OFF);
+        }
+    }
+
+    private static String getLogFilePath()
+    {
         String sAltibaseHomePath = AltibaseEnvironmentVariables.getAltibaseHome();
         String sLogFilePath;
 
@@ -54,30 +92,7 @@ public class ShardingTraceLogger
             sLogFilePath = LOGFILE_NAME;
         }
 
-        try
-        {
-            Handler sHandler = new FileHandler(sLogFilePath, DEFAULT_LOG_FILE_SIZE,
-                                               DEFALUT_LOG_FILE_ROTATE_CNT, true);
-            sHandler.setFormatter(new ShardSingleLineFormatter());
-            mLogger.addHandler(sHandler);
-            String sLogLevelStr = RuntimeEnvironmentVariables.getVariable("SHARD_JDBC_TRCLOG_LEVEL",
-                                                                          "OFF").toUpperCase();
-            Level sCurrentLevel = Level.parse(sLogLevelStr);
-            mLogger.setLevel(sCurrentLevel);
-        }
-        catch (Exception aException)
-        {
-            aException.printStackTrace();
-        }
-
-        // decide whether or not this logger prints its output to stderr.
-        // default: false (not printed to stderr)
-        String sLogStderr = RuntimeEnvironmentVariables.getVariable("SHARD_JDBC_TRCLOG_PRINT_STDERR",
-                                                                    "FALSE").toUpperCase();
-        if (sLogStderr.equals("FALSE"))
-        {
-            mLogger.setUseParentHandlers(false);
-        }
+        return sLogFilePath;
     }
 
     public static void shard_log(Level aLevel, String aLog, Exception aException)

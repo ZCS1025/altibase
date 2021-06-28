@@ -65,7 +65,7 @@ static IDE_RC sdfSetValue( SChar          * aCondition,
 mtfModule sdfShardConditionModule = {
     4|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE|MTC_NODE_EAT_NULL_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     sdfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -106,7 +106,7 @@ IDE_RC sdfEstimate( mtcNode*     aNode,
                     MTC_NODE_QUANTIFIER_TRUE,
                     ERR_NOT_AGGREGATION );
 
-    // ì²«ë²ˆì§¸ ì¸ìžëŠ” ì»¬ëŸ¼ì´ì–´ì•¼ í•œë‹¤.
+    // Ã¹¹øÂ° ÀÎÀÚ´Â ÄÃ·³ÀÌ¾î¾ß ÇÑ´Ù.
     //IDE_TEST_RAISE(
     //    ( ( aTemplate->rows[aNode->arguments->table].lflag & MTC_TUPLE_VIEW_MASK )
     //      == MTC_TUPLE_VIEW_TRUE ) ||
@@ -129,7 +129,7 @@ IDE_RC sdfEstimate( mtcNode*     aNode,
     }
     else if ( sArgCount == 3 )
     {
-        // ë‘ë²ˆì§¸ ì¸ìžë„ ì»¬ëŸ¼ì´ì–´ì•¼ í•œë‹¤.
+        // µÎ¹øÂ° ÀÎÀÚµµ ÄÃ·³ÀÌ¾î¾ß ÇÑ´Ù.
         //IDE_TEST_RAISE(
         //    ( ( aTemplate->rows[aNode->arguments->next->table].lflag & MTC_TUPLE_VIEW_MASK )
         //      == MTC_TUPLE_VIEW_TRUE ) ||
@@ -174,14 +174,15 @@ IDE_RC sdfEstimate( mtcNode*     aNode,
     /* BUG-45718
      * ( ID_SIZEOF(sdiRange) * SDI_RANGE_MAX_COUNT ) +
      * ( ID_SIZEOF(sdiValueInfo) * 2 )
-     * ì¶”ê°€
+     * Ãß°¡
      */
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                      & mtdBinary,
                                      1,
                                      ID_SIZEOF(sdiAnalyzeInfo) +
                                      ( ID_SIZEOF(sdiRange) * SDI_RANGE_MAX_COUNT ) +
-                                     ( ID_SIZEOF(sdiValueInfo) * 2 ) +
+                                     ( ID_SIZEOF(sdiValueInfo*) + ID_SIZEOF(sdiValueInfo) ) + // sdiValueInfo->mValuePtrArray
+                                     ( ID_SIZEOF(sdiValueInfo*) + ID_SIZEOF(sdiValueInfo) ) + // sdiValueInfo->mSubValuePtrArray
                                      ID_SIZEOF(sdiNodeInfo),
                                      0 )
               != IDE_SUCCESS );
@@ -202,7 +203,7 @@ IDE_RC sdfEstimate( mtcNode*     aNode,
 
     aTemplate->rows[aNode->table].execute[aNode->column] = sdfExecute;
 
-    /* BUG-44740 mtfRegExpression ìž¬ì‚¬ìš©ì„ ìœ„í•´ Tuple Rowë¥¼ ì´ˆê¸°í™”í•œë‹¤. */
+    /* BUG-44740 mtfRegExpression Àç»ç¿ëÀ» À§ÇØ Tuple Row¸¦ ÃÊ±âÈ­ÇÑ´Ù. */
     aTemplate->rows[aNode->table].lflag &= ~MTC_TUPLE_ROW_MEMSET_MASK;
     aTemplate->rows[aNode->table].lflag |= MTC_TUPLE_ROW_MEMSET_TRUE;
 
@@ -252,7 +253,9 @@ IDE_RC sdfCalculate_ShardCondition( mtcNode*     aNode,
     sdiAnalyzeInfo   * sAnalyzeInfo;
     sdiRange         * sRanges;
     sdiValueInfo     * sValue;
+    sdiValueInfo    ** sValuePtr = NULL;
     sdiValueInfo     * sSubValue;
+    sdiValueInfo    ** sSubValuePtr = NULL;
     sdiNodeInfo      * sNodeInfo;
     sdiNode          * sNode;
     mtdBinaryType    * sParserBuffer;
@@ -308,20 +311,34 @@ IDE_RC sdfCalculate_ShardCondition( mtcNode*     aNode,
         /* BUG-45718 */
         sRanges = (sdiRange*)(sBinary->mValue + ID_SIZEOF(sdiAnalyzeInfo));
         sAnalyzeInfo->mRangeInfo.mRanges = sRanges;
+
         sValue = (sdiValueInfo*)(sBinary->mValue +
                                  ID_SIZEOF(sdiAnalyzeInfo) +
                                  (ID_SIZEOF(sdiRange) * SDI_RANGE_MAX_COUNT));
-        sAnalyzeInfo->mValue = sValue;
+        sValuePtr = (sdiValueInfo**)(sBinary->mValue +
+                                     ID_SIZEOF(sdiAnalyzeInfo) +
+                                     (ID_SIZEOF(sdiRange) * SDI_RANGE_MAX_COUNT) +
+                                     ID_SIZEOF(sdiValueInfo));
+        *sValuePtr = sValue;
+        sAnalyzeInfo->mValuePtrArray = sValuePtr;
+
         sSubValue = (sdiValueInfo*)(sBinary->mValue +
                                     ID_SIZEOF(sdiAnalyzeInfo) +
                                     (ID_SIZEOF(sdiRange) * SDI_RANGE_MAX_COUNT) +
-                                    ID_SIZEOF(sdiValueInfo));
-        sAnalyzeInfo->mSubValue = sSubValue;
+                                    ID_SIZEOF(sdiValueInfo) + ID_SIZEOF(sdiValueInfo*));
+        sSubValuePtr = (sdiValueInfo**)(sBinary->mValue +
+                                        ID_SIZEOF(sdiAnalyzeInfo) +
+                                        (ID_SIZEOF(sdiRange) * SDI_RANGE_MAX_COUNT) +
+                                        ID_SIZEOF(sdiValueInfo) + ID_SIZEOF(sdiValueInfo*) +
+                                        ID_SIZEOF(sdiValueInfo));
+        *sSubValuePtr = sSubValue;
+        sAnalyzeInfo->mSubValuePtrArray = sSubValuePtr;
 
         sNodeInfo = (sdiNodeInfo*)(sBinary->mValue +
                                    ID_SIZEOF(sdiAnalyzeInfo) +
                                    (ID_SIZEOF(sdiRange) * SDI_RANGE_MAX_COUNT) +
-                                   (ID_SIZEOF(sdiValueInfo) * 2));
+                                   (ID_SIZEOF(sdiValueInfo) * 2) +
+                                   (ID_SIZEOF(sdiValueInfo*) * 2) );
 
         sParserBuffer = (mtdBinaryType*)
             ((UChar*)aTemplate->rows[aNode->table].row + sColumn[2].column.offset);
@@ -409,16 +426,18 @@ IDE_RC sdfCalculate_ShardCondition( mtcNode*     aNode,
         // set column value
         //---------------------------------------
 
-        sAnalyzeInfo->mValueCount = 1;
-        sAnalyzeInfo->mValue[0].mType = 0;  // column
-        sAnalyzeInfo->mValue[0].mValue.mBindParamId = aNode->arguments->column;
+        sAnalyzeInfo->mValuePtrCount = 1;
+        sAnalyzeInfo->mValuePtrArray[0]->mType = SDI_VALUE_INFO_HOST_VAR;  // column
+        sAnalyzeInfo->mValuePtrArray[0]->mDataValueType = MTD_SMALLINT_ID;
+        sAnalyzeInfo->mValuePtrArray[0]->mValue.mBindParamId = aNode->arguments->column;
         sKeyTuple = &(aTemplate->rows[aNode->arguments->table]);
 
         if ( sArgCount == 3 )
         {
-            sAnalyzeInfo->mSubValueCount = 1;
-            sAnalyzeInfo->mSubValue[0].mType = 0;  // column
-            sAnalyzeInfo->mSubValue[0].mValue.mBindParamId = aNode->arguments->next->column;
+            sAnalyzeInfo->mSubValuePtrCount = 1;
+            sAnalyzeInfo->mSubValuePtrArray[0]->mType = SDI_VALUE_INFO_HOST_VAR;  // column
+            sAnalyzeInfo->mSubValuePtrArray[0]->mDataValueType = MTD_SMALLINT_ID;
+            sAnalyzeInfo->mSubValuePtrArray[0]->mValue.mBindParamId = aNode->arguments->next->column;
             sSubKeyTuple = &(aTemplate->rows[aNode->arguments->next->table]);
         }
         else
@@ -445,7 +464,7 @@ IDE_RC sdfCalculate_ShardCondition( mtcNode*     aNode,
              ( sIsAllNodeExec == ID_FALSE ) )
         {
             sResult->length = 5;
-            idlOS::memcpy( sResult->value, "$$N/A", 5 );
+            idlOS::memcpy( sResult->value, SDM_NA_STR, SDM_NA_STR_SIZE );
         }
         else
         {
@@ -466,7 +485,7 @@ IDE_RC sdfCalculate_ShardCondition( mtcNode*     aNode,
             else
             {
                 if ( ( sExecDefaultNode == ID_TRUE ) &&
-                     ( sAnalyzeInfo->mDefaultNodeId != ID_UINT_MAX ) )
+                     ( sAnalyzeInfo->mDefaultNodeId != SDI_NODE_NULL_ID ) )
                 {
                     sNodeId = sAnalyzeInfo->mDefaultNodeId;
                     IDE_DASSERT( sNodeId < sNodeInfo->mCount );
@@ -480,7 +499,7 @@ IDE_RC sdfCalculate_ShardCondition( mtcNode*     aNode,
                 else
                 {
                     sResult->length = 5;
-                    idlOS::memcpy( sResult->value, "$$N/A", 5 );
+                    idlOS::memcpy( sResult->value, SDM_NA_STR, SDM_NA_STR_SIZE );
                 }
             }
         }
@@ -511,15 +530,15 @@ IDE_RC sdfConvertObjectToAnalyzeInfo( SChar           * aCondition,
     SInt           sKeyCount = 0;  // not defined
     SChar        * sErrMsg   = (SChar*)"";
 
-    // ì´ˆê¸°í™”
-    aAnalyzeInfo->mIsCanMerge       = ID_TRUE;
+    // ÃÊ±âÈ­
+    aAnalyzeInfo->mIsShardQuery     = ID_TRUE;
     aAnalyzeInfo->mSplitMethod      = SDI_SPLIT_NONE;
     aAnalyzeInfo->mKeyDataType      = aKeyModule->id;
     aAnalyzeInfo->mSubKeyExists     = ID_FALSE;
-    aAnalyzeInfo->mSubValueCount    = 0;
+    aAnalyzeInfo->mSubValuePtrCount = 0;
     aAnalyzeInfo->mSubSplitMethod   = SDI_SPLIT_NONE;
     aAnalyzeInfo->mSubKeyDataType   = ID_UINT_MAX;
-    aAnalyzeInfo->mDefaultNodeId    = ID_UINT_MAX;
+    aAnalyzeInfo->mDefaultNodeId    = SDI_NODE_NULL_ID;
     aAnalyzeInfo->mRangeInfo.mCount = 0;
 
     if ( aSubKeyModule != NULL )
@@ -913,7 +932,7 @@ IDE_RC sdfFindAndAddDataNode( SChar        * aCondition,
         sNodeId = aNodeInfo->mCount;
 
         sErrMsg = (SChar*)"node name is too long";
-        IDE_TEST_RAISE( aString->mSize > SDI_NODE_NAME_MAX_SIZE, ERR_CONVERT );
+        IDE_TEST_RAISE( aString->mSize > SDI_CHECK_NODE_NAME_MAX_SIZE, ERR_CONVERT );
 
         // init
         sNode->mNodeId = sNodeId;

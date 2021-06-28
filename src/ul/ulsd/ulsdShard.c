@@ -91,18 +91,18 @@ void ulsdShardDestroy(ulnDbc *aDbc)
     aDbc->mShardDbcCxt.mParentDbc = NULL;
     aDbc->mShardDbcCxt.mNodeInfo  = NULL;
 
-    /* BUG-46257 shardcliì—ì„œ Node ì¶”ê°€/ì œê±° ì§€ì› */
-    if ( aDbc->mShardDbcCxt.mNodeBaseConnString != NULL )
+    /* BUG-46257 shardcli¿¡¼­ Node Ãß°¡/Á¦°Å Áö¿ø */
+    if ( aDbc->mShardDbcCxt.mOrgConnString != NULL )
     {
-        acpMemFree( (void *)aDbc->mShardDbcCxt.mNodeBaseConnString );
-        aDbc->mShardDbcCxt.mNodeBaseConnString = NULL;
+        acpMemFree( (void *)aDbc->mShardDbcCxt.mOrgConnString );
+        aDbc->mShardDbcCxt.mOrgConnString = NULL;
     }
     else
     {
         /* Nothing to do */
     }
 
-    /* BUG-46257 shardcliì—ì„œ Node ì¶”ê°€/ì œê±° ì§€ì› */
+    /* BUG-46257 shardcli¿¡¼­ Node Ãß°¡/Á¦°Å Áö¿ø */
     ACP_LIST_ITERATE_SAFE( & aDbc->mShardDbcCxt.mConnectAttrList, sNode, sNext )
     {
         sObj = (ulsdConnectAttrInfo *)sNode->mObj;
@@ -177,4 +177,96 @@ void ulsdGetShardFromDbc(ulnDbc       *aDbc,
                          ulsdDbc     **aShard)
 {
     (*aShard) = aDbc->mShardDbcCxt.mShardDbc;
+}
+
+ACI_RC ulsdEnter( ulnFnContext *aFnContext )
+{
+    ulnDbc * sDbc = NULL;
+
+    /* BUG-47542 */
+    ACI_TEST_RAISE( aFnContext->mHandle.mObj == NULL, LABEL_INVALID_HANDLE );
+
+    /* BUG-47553 */
+    ACI_TEST_RAISE( aFnContext->mObjType != aFnContext->mHandle.mObj->mType, LABEL_INVALID_HANDLE );
+
+    ACI_TEST_RAISE( ulnClearDiagnosticInfoFromObject( aFnContext->mHandle.mObj ) != ACI_SUCCESS,
+                    LABEL_MEM_MAN_ERR );
+
+    /* BUG-46875 */
+    ACI_TEST_RAISE( ( aFnContext->mFuncID == ULN_FID_FETCHSCROLL    ) ||
+                    ( aFnContext->mFuncID == ULN_FID_PUTDATA        ) ||
+                    ( aFnContext->mFuncID == ULN_FID_PARAMDATA      ) ||
+                    ( aFnContext->mFuncID == ULN_FID_GETFUNCTIONS   ) ||
+                    ( aFnContext->mFuncID == ULN_FID_SETPOS         ) ||
+                    ( aFnContext->mFuncID == ULN_FID_BULKOPERATIONS ) ||
+                    ( aFnContext->mFuncID == ULN_FID_CANCEL         ) ||
+                    ( aFnContext->mFuncID == ULN_FID_GETDESCREC     ),
+                    LABEL_NOT_SUPPORT_ERR );
+
+    /* BUG-47552 */
+    if ( ( aFnContext->mFuncID == ULN_FID_EXECUTE     ) ||
+         ( aFnContext->mFuncID == ULN_FID_FETCH       ) ||
+         ( aFnContext->mFuncID == ULN_FID_ROWCOUNT    ) ||
+         ( aFnContext->mFuncID == ULN_FID_MORERESULTS )
+#ifdef COMPILE_SHARDCLI
+         ||
+         ( aFnContext->mFuncID == ULN_FID_GETLOB       ) ||
+         ( aFnContext->mFuncID == ULN_FID_GETLOBLENGTH ) ||
+         ( aFnContext->mFuncID == ULN_FID_PUTLOB       ) ||
+         ( aFnContext->mFuncID == ULN_FID_TRIMLOB      ) ||
+         ( aFnContext->mFuncID == ULN_FID_FREELOB      )
+#endif
+         )
+    {
+        if ( aFnContext->mObjType == ULN_OBJ_TYPE_STMT )
+        {
+            ACI_TEST_RAISE( ulsdModuleGetPreparedStmt( (ulnStmt*)(aFnContext->mHandle.mObj) ) == NULL,
+                            LABEL_FUNC_SEQ_ERR );
+        }
+    }
+
+    switch ( aFnContext->mFuncID )
+    {
+        case ULN_FID_EXECDIRECT     :
+        case ULN_FID_EXECUTE        :
+        case ULN_FID_FETCH          :
+        case ULN_FID_FETCHSCROLL    :
+        case ULN_FID_EXTENDEDFETCH  :
+            ULN_FNCONTEXT_GET_DBC( aFnContext, sDbc );
+
+            ACI_TEST_RAISE( sDbc == NULL, LABEL_INVALID_HANDLE );
+
+            ACI_TEST_RAISE( ulnDbcGet2PcCommitState( sDbc ) == ULSD_2PC_COMMIT_FAIL,
+                            LABAL_NEED_ROLLBACK );
+            break;
+
+        default:
+            break;
+    }
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION( LABEL_INVALID_HANDLE )
+    {
+        ulnError( aFnContext, ulERR_ABORT_INVALID_HANDLE );
+    }
+    ACI_EXCEPTION( LABEL_NOT_SUPPORT_ERR )
+    {
+        ulnError( aFnContext, ulERR_ABORT_SHARD_UNSUPPORTED_FUNCTION, "SQL function");
+    }
+    ACI_EXCEPTION( LABEL_MEM_MAN_ERR )
+    {
+        ulnError( aFnContext, ulERR_FATAL_MEMORY_MANAGEMENT_ERROR, "ulsdEnter" );
+    }
+    ACI_EXCEPTION( LABEL_FUNC_SEQ_ERR )
+    {
+        ulnError( aFnContext, ulERR_ABORT_FUNCTION_SEQUENCE_ERR );
+    }
+    ACI_EXCEPTION( LABAL_NEED_ROLLBACK )
+    {
+        ulnError( aFnContext, ulERR_ABORT_NEED_ROLLBACK );
+    }
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
 }

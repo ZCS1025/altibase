@@ -45,6 +45,8 @@ IDE_RC dkivRegisterPerformaceView( void )
     IDE_TEST( dkivRegisterDblinkRemoteTransactionInfo() != IDE_SUCCESS );
 
     IDE_TEST( dkivRegisterDblinkNotifierTransactionInfo() != IDE_SUCCESS );
+    
+    IDE_TEST( dkivRegisterDblinkShardNotifierTransactionInfo() != IDE_SUCCESS );
 
     IDE_TEST( dkivRegisterDblinkRemoteStatementInfo() != IDE_SUCCESS );
     

@@ -32,22 +32,22 @@
 
 /**********************************************************************
  *
- * Description : íŽ˜ì´ì§€ ì˜ì—­ì— Touched Transaction Layer ì´ˆê¸°í™”
+ * Description : ÆäÀÌÁö ¿µ¿ª¿¡ Touched Transaction Layer ÃÊ±âÈ­
  *
- * Touche Transaction Slotì„ ì €ìž¥í•˜ëŠ” ì˜ì—­ì„ ê´€ë¦¬í•œë‹¤.
- * ê¸°íƒ€ êµ¬ì²´ì ì¸ ë™ìž‘ì€ ê° CTL êµ¬í˜„ëª¨ë“ˆì—ì„œ ê´€ë¦¬í•˜ë©°,
- * ë³¸ ëª¨ë“ˆì—ì„œëŠ” ë¬¼ë¦¬ì ì¸ ì˜ì—­ì— ëŒ€í•œ ì²˜ë¦¬ë§Œì„ ê´€ë¦¬í•œë‹¤.
+ * Touche Transaction SlotÀ» ÀúÀåÇÏ´Â ¿µ¿ªÀ» °ü¸®ÇÑ´Ù.
+ * ±âÅ¸ ±¸Ã¼ÀûÀÎ µ¿ÀÛÀº °¢ CTL ±¸Çö¸ðµâ¿¡¼­ °ü¸®ÇÏ¸ç,
+ * º» ¸ðµâ¿¡¼­´Â ¹°¸®ÀûÀÎ ¿µ¿ª¿¡ ´ëÇÑ Ã³¸®¸¸À» °ü¸®ÇÑ´Ù.
  *
- * íŽ˜ì´ì§€ êµ¬ì¡°ìƒì—ì„œ ë³´ë©´ CTL ì˜ì—­ì€ Logical Header ë‹¤ìŒì— ìœ„ì¹˜í•œë‹¤.
- * CTL ì˜ì—­ì€ ìžë™í™•ìž¥ì´ ê°€ëŠ¥í•œ ì˜ì—­ì´ë‹¤.
+ * ÆäÀÌÁö ±¸Á¶»ó¿¡¼­ º¸¸é CTL ¿µ¿ªÀº Logical Header ´ÙÀ½¿¡ À§Ä¡ÇÑ´Ù.
+ * CTL ¿µ¿ªÀº ÀÚµ¿È®ÀåÀÌ °¡´ÉÇÑ ¿µ¿ªÀÌ´Ù.
  *
- * Logical Header ë‹¤ìŒì— ìœ„ì¹˜í•˜ê¸° ë•Œë¬¸ì— 8ë°”ì´íŠ¸ Align ë˜ë©°,
- * Header ë¶€ë¶„ë„ 8 ë°”ì´íŠ¸ Align ì‹œí‚¨ë‹¤.
+ * Logical Header ´ÙÀ½¿¡ À§Ä¡ÇÏ±â ¶§¹®¿¡ 8¹ÙÀÌÆ® Align µÇ¸ç,
+ * Header ºÎºÐµµ 8 ¹ÙÀÌÆ® Align ½ÃÅ²´Ù.
  *
- * aStatistics - [IN] í†µê³„ì •ë³´
- * aPageHdrPtr - [IN] íŽ˜ì´ì§€ í—¤ë” ì‹œìž‘ í¬ì¸í„°
- * aInitTrans  - [IN] íŽ˜ì´ì§€ë‚´ì˜ CTS ì´ˆê¸° ê°œìˆ˜
- * aMaxTrans   - [IN] íŽ˜ì´ì§€ë‚´ì˜ CTS ìµœëŒ€ ê°œìˆ˜
+ * aStatistics - [IN] Åë°èÁ¤º¸
+ * aPageHdrPtr - [IN] ÆäÀÌÁö Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
+ * aInitTrans  - [IN] ÆäÀÌÁö³»ÀÇ CTS ÃÊ±â °³¼ö
+ * aMaxTrans   - [IN] ÆäÀÌÁö³»ÀÇ CTS ÃÖ´ë °³¼ö
  *
  **********************************************************************/
 IDE_RC sdcTableCTL::logAndInit( sdrMtx         * aMtx,
@@ -88,18 +88,18 @@ IDE_RC sdcTableCTL::logAndInit( sdrMtx         * aMtx,
 
 /***********************************************************************
  *
- * Description : Touched Transaction Layer ì´ˆê¸°í™”
+ * Description : Touched Transaction Layer ÃÊ±âÈ­
  *
- * íŽ˜ì´ì§€ì˜ Touched Transaction Layerë¥¼ ì´ˆê¸°í™”í•˜ë©´ì„œ
- * sdpPhyPageHdrì˜ FreeSize ë° ê°ì¢… Offsetì„ ì„¤ì •í•œë‹¤.
+ * ÆäÀÌÁöÀÇ Touched Transaction Layer¸¦ ÃÊ±âÈ­ÇÏ¸é¼­
+ * sdpPhyPageHdrÀÇ FreeSize ¹× °¢Á¾ OffsetÀ» ¼³Á¤ÇÑ´Ù.
  *
- * Physical Pageì— ì´ˆê¸° CTS ê°œìˆ˜ë§Œí¼ CTL í™•ìž¥ì„ ìš”ì²­í•œë‹¤.
+ * Physical Page¿¡ ÃÊ±â CTS °³¼ö¸¸Å­ CTL È®ÀåÀ» ¿äÃ»ÇÑ´Ù.
  *
- * ìµœëŒ€ CTS ê°œìˆ˜ëŠ” íŽ˜ì´ì§€ ìƒì„±ì‹œì ì— ê²°ì •ë˜ì–´ì§„ë‹¤.
+ * ÃÖ´ë CTS °³¼ö´Â ÆäÀÌÁö »ý¼º½ÃÁ¡¿¡ °áÁ¤µÇ¾îÁø´Ù.
  *
- * aPageHdrPtr - [IN] íŽ˜ì´ì§€ í—¤ë” ì‹œìž‘ í¬ì¸í„°
- * aInitTrans  - [IN] íŽ˜ì´ì§€ë‚´ì˜ CTS ì´ˆê¸° ê°œìˆ˜
- * aMaxTrans   - [IN] íŽ˜ì´ì§€ë‚´ì˜ CTS ìµœëŒ€ ê°œìˆ˜
+ * aPageHdrPtr - [IN] ÆäÀÌÁö Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
+ * aInitTrans  - [IN] ÆäÀÌÁö³»ÀÇ CTS ÃÊ±â °³¼ö
+ * aMaxTrans   - [IN] ÆäÀÌÁö³»ÀÇ CTS ÃÖ´ë °³¼ö
  *
  ***********************************************************************/
 void sdcTableCTL::init( sdpPhyPageHdr   * aPageHdrPtr,
@@ -126,9 +126,9 @@ void sdcTableCTL::init( sdpPhyPageHdr   * aPageHdrPtr,
     sCTL->mRowBindCTSCnt = 0;
 
     /*
-     * aSCN4Agingì€ Self-Agingì´ ê°€ëŠ¥í•œ SCNì„ ë‚˜íƒ€ë‚´ë©°, í™•ì‹¤í•˜ê²Œ
-     * Self-Agingì„ í•  ìˆ˜ ìžˆëŠ” Row Piece ë“¤ì´ ì¡´ìž¬í•˜ì§€ ì•Šê±°ë‚˜ ëª‡ê°œë‚˜
-     * ì¡´ìž¬í•  ì§€ ëª¨ë¥´ëŠ” ê²½ìš°ì—ëŠ” ë¬´í•œëŒ€ê°’ì„ ê°€ì§„ë‹¤.
+     * aSCN4AgingÀº Self-AgingÀÌ °¡´ÉÇÑ SCNÀ» ³ªÅ¸³»¸ç, È®½ÇÇÏ°Ô
+     * Self-AgingÀ» ÇÒ ¼ö ÀÖ´Â Row Piece µéÀÌ Á¸ÀçÇÏÁö ¾Ê°Å³ª ¸î°³³ª
+     * Á¸ÀçÇÒ Áö ¸ð¸£´Â °æ¿ì¿¡´Â ¹«ÇÑ´ë°ªÀ» °¡Áø´Ù.
      */
     SM_SET_SCN_INFINITE( &(sCTL->mSCN4Aging) );
 
@@ -137,30 +137,30 @@ void sdcTableCTL::init( sdpPhyPageHdr   * aPageHdrPtr,
        IDE_ASSERT( extend( aPageHdrPtr, aInitTrans, &sCTSlotIdx, &sTrySuccess ) 
                    == IDE_SUCCESS);
 
-       /* íŽ˜ì´ì§€ ìƒì„±ì‹œì˜ CTL í™•ìž¥ì€ ë°˜ë“œì‹œ ì„±ê³µí•œë‹¤. ì™œëƒí•˜ë©´ ë¹ˆê³µê°„ì´ ë§Žìœ¼ë‹ˆê¹Œ */
+       /* ÆäÀÌÁö »ý¼º½ÃÀÇ CTL È®ÀåÀº ¹Ýµå½Ã ¼º°øÇÑ´Ù. ¿Ö³ÄÇÏ¸é ºó°ø°£ÀÌ ¸¹À¸´Ï±î */
        IDE_ASSERT( sTrySuccess == ID_TRUE );
     }
 }
 
 
 /**********************************************************************
- * Description : íŽ˜ì´ì§€ ì˜ì—­ì— Touched Transaction Layer ì´ˆê¸°í™”
+ * Description : ÆäÀÌÁö ¿µ¿ª¿¡ Touched Transaction Layer ÃÊ±âÈ­
  *
- * Touche Transaction Slotì„ ì €ìž¥í•˜ëŠ” ì˜ì—­ì„ ê´€ë¦¬í•œë‹¤.
- * ê¸°íƒ€ êµ¬ì²´ì ì¸ ë™ìž‘ì€ ê° CTL êµ¬í˜„ëª¨ë“ˆì—ì„œ ê´€ë¦¬í•˜ë©°,
- * ë³¸ ëª¨ë“ˆì—ì„œëŠ” ë¬¼ë¦¬ì ì¸ ì˜ì—­ì— ëŒ€í•œ ì²˜ë¦¬ë§Œì„ ê´€ë¦¬í•œë‹¤.
+ * Touche Transaction SlotÀ» ÀúÀåÇÏ´Â ¿µ¿ªÀ» °ü¸®ÇÑ´Ù.
+ * ±âÅ¸ ±¸Ã¼ÀûÀÎ µ¿ÀÛÀº °¢ CTL ±¸Çö¸ðµâ¿¡¼­ °ü¸®ÇÏ¸ç,
+ * º» ¸ðµâ¿¡¼­´Â ¹°¸®ÀûÀÎ ¿µ¿ª¿¡ ´ëÇÑ Ã³¸®¸¸À» °ü¸®ÇÑ´Ù.
 
- * íŽ˜ì´ì§€ êµ¬ì¡°ìƒì—ì„œ ë³´ë©´ CTL ì˜ì—­ì€ Logical Header ë‹¤ìŒì— ìœ„ì¹˜í•œë‹¤.
- * CTL ì˜ì—­ì€ ìžë™í™•ìž¥ì´ ê°€ëŠ¥í•œ ì˜ì—­ì´ë‹¤.
+ * ÆäÀÌÁö ±¸Á¶»ó¿¡¼­ º¸¸é CTL ¿µ¿ªÀº Logical Header ´ÙÀ½¿¡ À§Ä¡ÇÑ´Ù.
+ * CTL ¿µ¿ªÀº ÀÚµ¿È®ÀåÀÌ °¡´ÉÇÑ ¿µ¿ªÀÌ´Ù.
  *
- * Logical Header ë‹¤ìŒì— ìœ„ì¹˜í•˜ê¸° ë•Œë¬¸ì— 8ë°”ì´íŠ¸ Align ë˜ë©°,
- * Header ë¶€ë¶„ë„ 8 ë°”ì´íŠ¸ Align ì‹œí‚¨ë‹¤.
+ * Logical Header ´ÙÀ½¿¡ À§Ä¡ÇÏ±â ¶§¹®¿¡ 8¹ÙÀÌÆ® Align µÇ¸ç,
+ * Header ºÎºÐµµ 8 ¹ÙÀÌÆ® Align ½ÃÅ²´Ù.
  *
- * aStatistics    - [IN]  í†µê³„ì •ë³´
- * aMtx           - [IN]  mtx í¬ì¸í„°
- * aExtendSlotCnt - [IN]  í™•ìž¥í•  CTS ê°œìˆ˜
- * aCTSlotIdx     - [OUT] í™•ìž¥ëœ ìœ„ì¹˜ì˜ CTS ë²ˆí˜¸
- * aTrySuccess    - [OUT] í™•ìž¥ì„±ê³µì—¬ë¶€
+ * aStatistics    - [IN]  Åë°èÁ¤º¸
+ * aMtx           - [IN]  mtx Æ÷ÀÎÅÍ
+ * aExtendSlotCnt - [IN]  È®ÀåÇÒ CTS °³¼ö
+ * aCTSlotIdx     - [OUT] È®ÀåµÈ À§Ä¡ÀÇ CTS ¹øÈ£
+ * aTrySuccess    - [OUT] È®Àå¼º°ø¿©ºÎ
  *
  **********************************************************************/
 IDE_RC sdcTableCTL::logAndExtend( sdrMtx         * aMtx,
@@ -213,18 +213,18 @@ IDE_RC sdcTableCTL::logAndExtend( sdrMtx         * aMtx,
 
 /***********************************************************************
  *
- * Description : Touched Transaction Layer í™•ìž¥
+ * Description : Touched Transaction Layer È®Àå
  *
- * Data íŽ˜ì´ì§€ì˜ ì£¼ì–´ì§„ ê°œìˆ˜ë§Œí¼ CTSë¥¼ í™•ìž¥í•œë‹¤. ë§Œì•½ í™•ìž¥í•  ê°œìˆ˜ê°€ Max CTS ê°œìˆ˜ì—
- * Align ë˜ì§€ ì•ŠëŠ” ê²½ìš°ëŠ” ì‹¤íŒ¨í•  ìˆ˜ë„ ìžˆë‹¤. ì˜ˆë¥¼ë“¤ì–´ í˜„ìž¬ 119ê°œê°€ ìžˆëŠ”ë° 2ê°œë¥¼ ë”
- * í™•ìž¥í•´ì•¼í•˜ëŠ” ê²½ìš° max 120ê°œë¼ë©´ Errorê°€ ë°œìƒí•œë‹¤.
- * ( ì°¸ê³ ë¡œ IndexëŠ” 2ê°œì”© ì¦ê°€í•˜ê³ , Data íŽ˜ì´ì§€ëŠ” 1ê°œì”© ì¦ê°€í•œë‹¤.)
- * Data Pageì—ì„œëŠ” ì €ëŸ° ê²½ìš° ì‹¤íŒ¨í•  ì¼ì€ ì—†ë‹¤.
+ * Data ÆäÀÌÁöÀÇ ÁÖ¾îÁø °³¼ö¸¸Å­ CTS¸¦ È®ÀåÇÑ´Ù. ¸¸¾à È®ÀåÇÒ °³¼ö°¡ Max CTS °³¼ö¿¡
+ * Align µÇÁö ¾Ê´Â °æ¿ì´Â ½ÇÆÐÇÒ ¼öµµ ÀÖ´Ù. ¿¹¸¦µé¾î ÇöÀç 119°³°¡ ÀÖ´Âµ¥ 2°³¸¦ ´õ
+ * È®ÀåÇØ¾ßÇÏ´Â °æ¿ì max 120°³¶ó¸é Error°¡ ¹ß»ýÇÑ´Ù.
+ * ( Âü°í·Î Index´Â 2°³¾¿ Áõ°¡ÇÏ°í, Data ÆäÀÌÁö´Â 1°³¾¿ Áõ°¡ÇÑ´Ù.)
+ * Data Page¿¡¼­´Â Àú·± °æ¿ì ½ÇÆÐÇÒ ÀÏÀº ¾ø´Ù.
  *
- * aPageHdrPtr     - [IN]  Data íŽ˜ì´ì§€ í—¤ë”
- * aExtendSlotCnt  - [IN]  í™•ìž¥í•  CTS ê°œìˆ˜
- * aCTSlotIdx      - [OUT] í™•ìž¥ëœ ìœ„ì¹˜ì˜ CTS ë²ˆí˜¸
- * aTrySuccess     - [OUT] í™•ìž¥ì„±ê³µì—¬ë¶€
+ * aPageHdrPtr     - [IN]  Data ÆäÀÌÁö Çì´õ
+ * aExtendSlotCnt  - [IN]  È®ÀåÇÒ CTS °³¼ö
+ * aCTSlotIdx      - [OUT] È®ÀåµÈ À§Ä¡ÀÇ CTS ¹øÈ£
+ * aTrySuccess     - [OUT] È®Àå¼º°ø¿©ºÎ
  *
  ***********************************************************************/
 IDE_RC sdcTableCTL::extend( sdpPhyPageHdr   * aPageHdrPtr,
@@ -260,13 +260,13 @@ IDE_RC sdcTableCTL::extend( sdpPhyPageHdr   * aPageHdrPtr,
                 sCTS->mTSSPageID     = SD_NULL_PID;
                 sCTS->mTSSlotNum     = 0;
                 sCTS->mFSCredit      = 0;
-                /* í™•ìž¥ì´í›„ë¡œ í•œë²ˆë„ í• ë‹¹ëœì ì´ ì—†ëŠ” ìƒíƒœ */
+                /* È®ÀåÀÌÈÄ·Î ÇÑ¹øµµ ÇÒ´çµÈÀûÀÌ ¾ø´Â »óÅÂ */
                 sCTS->mStat          = SDP_CTS_STAT_NUL;
                 sCTS->mRefCnt        = 0;
                 sCTS->mRefRowSlotNum[0] = SC_NULL_SLOTNUM;
                 sCTS->mRefRowSlotNum[1] = SC_NULL_SLOTNUM;
 
-                /* í• ë‹¹ë˜ì§€ ì•Šì€ ê²½ìš°ì—ëŠ” mFSCNOrCSCNì€ 0ìœ¼ë¡œ ì´ˆê¸°í™”í•´ì¤€ë‹¤. */
+                /* ÇÒ´çµÇÁö ¾ÊÀº °æ¿ì¿¡´Â mFSCNOrCSCNÀº 0À¸·Î ÃÊ±âÈ­ÇØÁØ´Ù. */
                 SM_INIT_SCN( &sCTS->mFSCNOrCSCN );
 
                 sCTS++;
@@ -293,19 +293,19 @@ IDE_RC sdcTableCTL::extend( sdpPhyPageHdr   * aPageHdrPtr,
 
 /***********************************************************************
  *
- * Description : CTS í• ë‹¹ ë° Set Dirty ( Wrapper-Function )
+ * Description : CTS ÇÒ´ç ¹× Set Dirty ( Wrapper-Function )
  *
- * ë³„ë„ì˜ mtxë¡œ ë¡œê¹…ì„ ìˆ˜í–‰í•˜ë©´ì„œ, íŽ˜ì´ì§€ì— ê°€ìš©í•œ CTSë¥¼ í• ë‹¹í•œë‹¤.
- * ì˜ˆë¥¼ë“¤ì–´ FixMtxë¡œ ë¡œê¹…ì´ ë˜ì–´ ìžˆëŠ”ê²½ìš°ì—ëŠ” ë°ì´íƒ€ íŽ˜ì´ì§€ì— ëŒ€í•œ Latchë¥¼ í•´ì œí–ˆë‹¤ê°€
- * ë‹¤ì‹œ ìž¡ì„ ìˆ˜ ì—†ìœ¼ë¯€ë¡œ ë³„ë„ì˜ Mtxë¡œ ì²˜ë¦¬í•œë‹¤.
- * ì´ì™€ ë‹¤ë¥¸ ê²½ìš°ëŠ” Data íŽ˜ì´ì§€ì˜ ìƒì„±ê³¼ í•¨ê»˜ CTSë¥¼ í• ë‹¹í•˜ëŠ” ê²½ìš°ì¸ë°, ì´ ê²½ìš°ëŠ”
- * ë³„ë„ì˜ Mtxë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+ * º°µµÀÇ mtx·Î ·Î±ëÀ» ¼öÇàÇÏ¸é¼­, ÆäÀÌÁö¿¡ °¡¿ëÇÑ CTS¸¦ ÇÒ´çÇÑ´Ù.
+ * ¿¹¸¦µé¾î FixMtx·Î ·Î±ëÀÌ µÇ¾î ÀÖ´Â°æ¿ì¿¡´Â µ¥ÀÌÅ¸ ÆäÀÌÁö¿¡ ´ëÇÑ Latch¸¦ ÇØÁ¦Çß´Ù°¡
+ * ´Ù½Ã ÀâÀ» ¼ö ¾øÀ¸¹Ç·Î º°µµÀÇ Mtx·Î Ã³¸®ÇÑ´Ù.
+ * ÀÌ¿Í ´Ù¸¥ °æ¿ì´Â Data ÆäÀÌÁöÀÇ »ý¼º°ú ÇÔ²² CTS¸¦ ÇÒ´çÇÏ´Â °æ¿ìÀÎµ¥, ÀÌ °æ¿ì´Â
+ * º°µµÀÇ Mtx¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù.
  *
- * aStatistics         - [IN]  í†µê³„ì •ë³´
- * aFixMtx             - [IN]  ë°ì´íƒ€íŽ˜ì´ì§€ì— X-Latchë¥¼ íšë“í•œ mtx í¬ì¸í„°
- * aStartInfo          - [IN]  ë³„ë„ì˜ Loggingìš© Mtxë¥¼ ìœ„í•œ mtx ì‹œìž‘ì •ë³´
- * aPageHdrPtr         - [IN]  ë°ì´íƒ€íŽ˜ì´ì§€ í—¤ë” ì‹œìž‘ í¬ì¸í„°
- * aCTSlotIdx          - [OUT] í• ë‹¹ëœ CTS ë²ˆí˜¸
+ * aStatistics         - [IN]  Åë°èÁ¤º¸
+ * aFixMtx             - [IN]  µ¥ÀÌÅ¸ÆäÀÌÁö¿¡ X-Latch¸¦ È¹µæÇÑ mtx Æ÷ÀÎÅÍ
+ * aStartInfo          - [IN]  º°µµÀÇ Logging¿ë Mtx¸¦ À§ÇÑ mtx ½ÃÀÛÁ¤º¸
+ * aPageHdrPtr         - [IN]  µ¥ÀÌÅ¸ÆäÀÌÁö Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
+ * aCTSlotIdx          - [OUT] ÇÒ´çµÈ CTS ¹øÈ£
  *
  ***********************************************************************/
 IDE_RC sdcTableCTL::allocCTSAndSetDirty( idvSQL          * aStatistics,
@@ -354,34 +354,34 @@ IDE_RC sdcTableCTL::allocCTSAndSetDirty( idvSQL          * aStatistics,
 
 /***********************************************************************
  *
- * Description : CTS í• ë‹¹
+ * Description : CTS ÇÒ´ç
  *
- * íŽ˜ì´ì§€ë‚´ì˜ CTSëŠ” ìµœëŒ€ CTS ê°œìˆ˜ê¹Œì§€ í™•ìž¥ì´ ê°€ëŠ¥í•˜ì§€ë§Œ ì–´ì¨Œê±°ë‚˜ ìœ í•œí•œ ìžì›ì´ë‹¤.
- * CTS í• ë‹¹ ì•Œê³ ë¦¬ì¦˜ì€ ìµœëŒ€í•œ í™•ìž¥ì„ ìžìž¬í•˜ëŠ” ë°©ë²•ì„ ì„ íƒí•˜ë©´, ìµœëŒ€í•œ ì´ˆê¸°í™”ë˜ì—ˆë˜
- * CTSë¥¼ ì–´ë–»ê²Œë“  ìž¬ì‚¬ìš©í• ê²ƒì„ ê³ ë¯¼í•œë‹¤.
+ * ÆäÀÌÁö³»ÀÇ CTS´Â ÃÖ´ë CTS °³¼ö±îÁö È®ÀåÀÌ °¡´ÉÇÏÁö¸¸ ¾îÂ·°Å³ª À¯ÇÑÇÑ ÀÚ¿øÀÌ´Ù.
+ * CTS ÇÒ´ç ¾Ë°í¸®ÁòÀº ÃÖ´ëÇÑ È®ÀåÀ» ÀÚÀçÇÏ´Â ¹æ¹ýÀ» ¼±ÅÃÇÏ¸é, ÃÖ´ëÇÑ ÃÊ±âÈ­µÇ¾ú´ø
+ * CTS¸¦ ¾î¶»°Ôµç Àç»ç¿ëÇÒ°ÍÀ» °í¹ÎÇÑ´Ù.
  *
- * ë‹¤ìŒê³¼ ê°™ì€ ìš°ì„ ìˆœìœ„ë¡œ CTSë¥¼ í• ë‹¹í•œë‹¤.
+ * ´ÙÀ½°ú °°Àº ¿ì¼±¼øÀ§·Î CTS¸¦ ÇÒ´çÇÑ´Ù.
  *
- * 1. CTS TimeStamping ë˜ì–´ ìžˆëŠ” CTSë¥¼ Row TimeStampingì„
- *    ìˆ˜í–‰í•˜ê³ , CTSë¥¼ ìž¬ì‚¬ìš©ê°€ëŠ¥í•˜ê²Œ í•œë‹¤
- *    ì ì–´ë„ í•œë²ˆ TotCTSCnt ê°œìˆ˜ë§Œí¼ ëª¨ë‘ í™•ì¸í•œë‹¤. ì¤‘ê°„ì— í• ë‹¹ê°€ëŠ¥í•˜ë‹¤ê³  í™•ì¸ê³¼ì •ì„
- *    ë©ˆì¶”ì§€ëŠ” ì•ŠëŠ”ë‹¤.
- *    Delayed Row Stamping í™•ì¸ê³¼ì •ì„ ìˆ˜í–‰í•  CTSë“¤ì„ Cache í•´ë‘”ë‹¤.
- *    ì•”íŠ¼ ëª¨ë‘ í™•ì¸í›„ì— Row Stampingëœ ì œì¼ ìž‘ì€ ë²ˆí˜¸ë¥¼ ê°€ì§„ CTSë¥¼ í• ë‹¹í•œë‹¤.
+ * 1. CTS TimeStamping µÇ¾î ÀÖ´Â CTS¸¦ Row TimeStampingÀ»
+ *    ¼öÇàÇÏ°í, CTS¸¦ Àç»ç¿ë°¡´ÉÇÏ°Ô ÇÑ´Ù
+ *    Àû¾îµµ ÇÑ¹ø TotCTSCnt °³¼ö¸¸Å­ ¸ðµÎ È®ÀÎÇÑ´Ù. Áß°£¿¡ ÇÒ´ç°¡´ÉÇÏ´Ù°í È®ÀÎ°úÁ¤À»
+ *    ¸ØÃßÁö´Â ¾Ê´Â´Ù.
+ *    Delayed Row Stamping È®ÀÎ°úÁ¤À» ¼öÇàÇÒ CTSµéÀ» Cache ÇØµÐ´Ù.
+ *    ¾ÏÆ° ¸ðµÎ È®ÀÎÈÄ¿¡ Row StampingµÈ Á¦ÀÏ ÀÛÀº ¹øÈ£¸¦ °¡Áø CTS¸¦ ÇÒ´çÇÑ´Ù.
  *
- * 2. Delayed Row Stampingìœ¼ë¡œ í™•ì¸í•´ë³¼ CTSë“¤ì„ í™•ì¸í•˜ì—¬
- *    1ê°œë§Œì´ë¼ë„ í• ë‹¹ê°€ëŠ¥í•˜ë‹¤ë©´ í™•ì¸ê³¼ì •ì„ ì¢…ë£Œí•˜ê³  í• ë‹¹í•œë‹¤.
+ * 2. Delayed Row StampingÀ¸·Î È®ÀÎÇØº¼ CTSµéÀ» È®ÀÎÇÏ¿©
+ *    1°³¸¸ÀÌ¶óµµ ÇÒ´ç°¡´ÉÇÏ´Ù¸é È®ÀÎ°úÁ¤À» Á¾·áÇÏ°í ÇÒ´çÇÑ´Ù.
  *
- * 3. ì´ë¯¸ ì´ˆê¸°í™”ëœ NULL ìƒíƒœì˜ CTSê°€ ì¡´ìž¬í•˜ë‹¤ë©´, í• ë‹¹í•œë‹¤.
+ * 3. ÀÌ¹Ì ÃÊ±âÈ­µÈ NULL »óÅÂÀÇ CTS°¡ Á¸ÀçÇÏ´Ù¸é, ÇÒ´çÇÑ´Ù.
  *
- * 4. CTLì„ í™•ìž¥ì„ í†µí•´ì„œ ìƒˆë¡­ê²Œ ì´ˆê¸°í™”ëœ CTSë¥¼ í• ë‹¹í•´ê°„ë‹¤.
+ * 4. CTLÀ» È®ÀåÀ» ÅëÇØ¼­ »õ·Ó°Ô ÃÊ±âÈ­µÈ CTS¸¦ ÇÒ´çÇØ°£´Ù.
  *
- * aStatistics         - [IN]  í†µê³„ì •ë³´
- * aFixMtx             - [IN]  íŽ˜ì´ì§€ë¥¼ X-Latchë¡œ fixí•œ Mtx
- * aLogMtx             - [IN]  Loggingì„ ìœ„í•œ Mtx
+ * aStatistics         - [IN]  Åë°èÁ¤º¸
+ * aFixMtx             - [IN]  ÆäÀÌÁö¸¦ X-Latch·Î fixÇÑ Mtx
+ * aLogMtx             - [IN]  LoggingÀ» À§ÇÑ Mtx
  * aPageReadMode       - [IN]  page read mode(SPR or MPR)
- * aPageHdrPtr         - [IN]  ë°ì´íƒ€íŽ˜ì´ì§€ í—¤ë” ì‹œìž‘ í¬ì¸í„°
- * aCTSlotIdx          - [OUT] í• ë‹¹ëœ CTS ë²ˆí˜¸
+ * aPageHdrPtr         - [IN]  µ¥ÀÌÅ¸ÆäÀÌÁö Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
+ * aCTSlotIdx          - [OUT] ÇÒ´çµÈ CTS ¹øÈ£
  *
  ***********************************************************************/
 IDE_RC sdcTableCTL::allocCTS( idvSQL          * aStatistics,
@@ -422,8 +422,8 @@ IDE_RC sdcTableCTL::allocCTS( idvSQL          * aStatistics,
     IDE_TEST_CONT( sTotCnt == 0, cont_skip_allocate_cts );
 
     /*
-     * 1. CTS TimeStamping ë˜ì–´ ìžˆëŠ” CTSë¥¼ Row TimeStampingì„
-     *    ìˆ˜í–‰í•˜ê³ , CTSë¥¼ ìž¬ì‚¬ìš©ê°€ëŠ¥í•˜ê²Œ í•œë‹¤.
+     * 1. CTS TimeStamping µÇ¾î ÀÖ´Â CTS¸¦ Row TimeStampingÀ»
+     *    ¼öÇàÇÏ°í, CTS¸¦ Àç»ç¿ë°¡´ÉÇÏ°Ô ÇÑ´Ù.
      */
     for( sCTSIdx = 0, sActCTSCnt = 0; sCTSIdx < sTotCnt; sCTSIdx++ )
     {
@@ -436,7 +436,7 @@ IDE_RC sdcTableCTL::allocCTS( idvSQL          * aStatistics,
                             &sFstDskViewSCN,
                             sCTS ) == ID_TRUE )
             {
-                // 'A'ìƒíƒœì¸ ê²½ìš° ìžì‹ ì´ ì´ë¯¸ ë°”ì¸ë”©í•œ CTSë¥¼ ì°¾ìœ¼ë©´ ë°”ë¡œ í• ë‹¹í•œë‹¤.
+                // 'A'»óÅÂÀÎ °æ¿ì ÀÚ½ÅÀÌ ÀÌ¹Ì ¹ÙÀÎµùÇÑ CTS¸¦ Ã£À¸¸é ¹Ù·Î ÇÒ´çÇÑ´Ù.
                 sAllocCTSIdx = sCTSIdx;
                 break;
             }
@@ -448,8 +448,8 @@ IDE_RC sdcTableCTL::allocCTS( idvSQL          * aStatistics,
             // 'R', 'T', 'N', 'O'
             if ( hasState( sCTS->mStat, SDP_CTS_STAT_NUL ) == ID_TRUE )
             {
-                // ì´í›„ë¡œ ëª¨ë‘ NUL ìƒíƒœì¼ ê²ƒì´ê¸° ë•Œë¬¸ì— ì—¬ê¸°ì„œ
-                // CTS í™•ì¸ê³¼ì •ì„ ì™„ë£Œí•œë‹¤.
+                // ÀÌÈÄ·Î ¸ðµÎ NUL »óÅÂÀÏ °ÍÀÌ±â ¶§¹®¿¡ ¿©±â¼­
+                // CTS È®ÀÎ°úÁ¤À» ¿Ï·áÇÑ´Ù.
                 sFstNullCTSIdx = sCTSIdx;
                 break;
             }
@@ -469,10 +469,10 @@ IDE_RC sdcTableCTL::allocCTS( idvSQL          * aStatistics,
             }
             else
             {
-                // 'R', 'O' ìƒíƒœë§Œ ê°€ëŠ¥í•˜ë‹¤
+                // 'R', 'O' »óÅÂ¸¸ °¡´ÉÇÏ´Ù
             }
 
-            // RTS ëœ CTS ì¤‘ ê°€ìž¥ ìž‘ì€ CTSë¥¼ ì„ íƒí•œë‹¤.
+            // RTS µÈ CTS Áß °¡Àå ÀÛÀº CTS¸¦ ¼±ÅÃÇÑ´Ù.
             if ( sAllocCTSIdx == SDP_CTS_IDX_NULL )
             {
                 sAllocCTSIdx = sCTSIdx;
@@ -484,7 +484,7 @@ IDE_RC sdcTableCTL::allocCTS( idvSQL          * aStatistics,
                     cont_success_allocate_cts );
 
     /*
-     * 2. Delayed Row TimeStampingì„ ì‹œë„í•´ë³¼ CTSê°€ ì¡´ìž¬í•˜ëŠ” ê²½ìš°
+     * 2. Delayed Row TimeStampingÀ» ½ÃµµÇØº¼ CTS°¡ Á¸ÀçÇÏ´Â °æ¿ì
      */
     for( sCTSIdx = 0; sCTSIdx < sActCTSCnt; sCTSIdx++ )
     {
@@ -493,17 +493,17 @@ IDE_RC sdcTableCTL::allocCTS( idvSQL          * aStatistics,
         IDE_ERROR( hasState( sCTS->mStat, SDP_CTS_STAT_ACT )
                     == ID_TRUE );
 
-        // 'A' -> 'R' ìƒíƒœë¡œ ë³€ê²½ì‹œë„
+        // 'A' -> 'R' »óÅÂ·Î º¯°æ½Ãµµ
         IDE_TEST( logAndRunDelayedRowStamping(
-                      aStatistics,
-                      aLogMtx,
-                      sArrActCTSIdx[ sCTSIdx ],
-                      (void*)sCTS,
-                      aPageReadMode,
-                      &sWait4TransID,
-                      &sRowCommitSCN ) != IDE_SUCCESS );
+                                  aStatistics,
+                                  aLogMtx,
+                                  sArrActCTSIdx[ sCTSIdx ],
+                                  (void*)sCTS,
+                                  aPageReadMode,
+                                  &sWait4TransID,  
+                                  &sRowCommitSCN ) != IDE_SUCCESS );
 
-        // Row TimeStampingì´ ì™„ë£Œë˜ì—ˆìœ¼ë¯€ë¡œ í• ë‹¹
+        // Row TimeStampingÀÌ ¿Ï·áµÇ¾úÀ¸¹Ç·Î ÇÒ´ç
         if ( hasState( sCTS->mStat, SDP_CTS_STAT_RTS ) == ID_TRUE )
         {
             sAllocCTSIdx    = sArrActCTSIdx[ sCTSIdx ];
@@ -516,7 +516,7 @@ IDE_RC sdcTableCTL::allocCTS( idvSQL          * aStatistics,
                     cont_success_allocate_cts );
 
     /*
-     * 3. ì •ë§ë¡œ ìž¬ì‚¬ìš©í•  ê²ƒì´ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´ NULL ìƒíƒœì˜ CTSë¥¼ ì‚¬ìš©í•œë‹¤.
+     * 3. Á¤¸»·Î Àç»ç¿ëÇÒ °ÍÀÌ Á¸ÀçÇÏÁö ¾Ê´Â´Ù¸é NULL »óÅÂÀÇ CTS¸¦ »ç¿ëÇÑ´Ù.
      */
     if ( sFstNullCTSIdx != SDP_CTS_IDX_NULL )
     {
@@ -527,10 +527,10 @@ IDE_RC sdcTableCTL::allocCTS( idvSQL          * aStatistics,
     }
 
     /*
-     * 4. CTL í™•ìž¥ì„ í†µí•˜ì—¬ CTSë¥¼ í™•ë³´í•œë‹¤.
+     * 4. CTL È®ÀåÀ» ÅëÇÏ¿© CTS¸¦ È®º¸ÇÑ´Ù.
      *
-     *    CTSë¥¼ ëª¨ë‘ ê²€ìƒ‰í•˜ê³ ë„ ê°€ìš©í•œ CTSê°€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´,
-     *    CTL ì˜ì—­ì„ í™•ìž¥í•œë‹¤.
+     *    CTS¸¦ ¸ðµÎ °Ë»öÇÏ°íµµ °¡¿ëÇÑ CTS°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù¸é,
+     *    CTL ¿µ¿ªÀ» È®ÀåÇÑ´Ù.
      */
     IDE_TEST( logAndExtend( aLogMtx,
                             aPageHdrPtr,
@@ -545,15 +545,15 @@ IDE_RC sdcTableCTL::allocCTS( idvSQL          * aStatistics,
 
     IDE_EXCEPTION_CONT( cont_success_allocate_cts );
 
-    /* To Fix BUG-23241 [F1-valgrind] Insertì‹œ AllocCTSê³¼ì •ì—ì„œ
-     * RowTimeStamping í•œ í›„ SetDirtyPageë¥¼ ìˆ˜í–‰í•˜ì§€ ì•Šì•„
-     * ì„œë²„ë¹„ì •ìƒì¢…ë£Œì‹œ êµ¬ë™ì‹¤íŒ¨
-     * Pageë¥¼ ë³€ê²½í•˜ê³  SetDirtyPageë¥¼ í•˜ì§€ ì•Šìœ¼ë©´, ë¡œê·¸LSNì´
-     * BCBì— ë°˜ì˜ë˜ì§€ ì•Šì•„ì„œ PageLSNì´ ì„¤ì •ë˜ì§€ ì•ŠëŠ”ë‹¤.
-     * insert ì‹œì—ëŠ” aFixMtx == NULL ì´ë©°, Loggingìš© aLogMtxë¥¼ ë³„ë„ë¡œ
-     * ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì— setDirtyPageë¥¼ í•´ì£¼ì–´ì•¼ í•œë‹¤.
-     * í•˜ì§€ë§Œ, ê·¸ì™¸ ì—°ì‚° update/delete ì—ì„œëŠ” aFixMtx == aLogMtxì´ë©°,
-     * x-latchë¥¼ íšë“í•˜ê³  ë‚´ë ¤ì˜¤ê¸° ë•Œë¬¸ì— setdirtyë¥¼ í•´ì¤„ í•„ìš”ì—†ë‹¤ */
+    /* To Fix BUG-23241 [F1-valgrind] Insert½Ã AllocCTS°úÁ¤¿¡¼­
+     * RowTimeStamping ÇÑ ÈÄ SetDirtyPage¸¦ ¼öÇàÇÏÁö ¾Ê¾Æ
+     * ¼­¹öºñÁ¤»óÁ¾·á½Ã ±¸µ¿½ÇÆÐ
+     * Page¸¦ º¯°æÇÏ°í SetDirtyPage¸¦ ÇÏÁö ¾ÊÀ¸¸é, ·Î±×LSNÀÌ
+     * BCB¿¡ ¹Ý¿µµÇÁö ¾Ê¾Æ¼­ PageLSNÀÌ ¼³Á¤µÇÁö ¾Ê´Â´Ù.
+     * insert ½Ã¿¡´Â aFixMtx == NULL ÀÌ¸ç, Logging¿ë aLogMtx¸¦ º°µµ·Î
+     * »ç¿ëÇÏ±â ¶§¹®¿¡ setDirtyPage¸¦ ÇØÁÖ¾î¾ß ÇÑ´Ù.
+     * ÇÏÁö¸¸, ±×¿Ü ¿¬»ê update/delete ¿¡¼­´Â aFixMtx == aLogMtxÀÌ¸ç,
+     * x-latch¸¦ È¹µæÇÏ°í ³»·Á¿À±â ¶§¹®¿¡ setdirty¸¦ ÇØÁÙ ÇÊ¿ä¾ø´Ù */
     if ( (sIsNeedSetDirty == ID_TRUE) && (aFixMtx != aLogMtx) )
     {
         IDE_TEST( sdrMiniTrans::setDirtyPage( aLogMtx, (UChar*)aPageHdrPtr )
@@ -580,22 +580,23 @@ IDE_RC sdcTableCTL::allocCTS( idvSQL          * aStatistics,
 
 /***********************************************************************
  *
- * Description : ìžì‹ ì´ ë°”ì¸ë”©í•œ CTSì¸ì§€ íŒë‹¨í•œë‹¤.
+ * Description : ÀÚ½ÅÀÌ ¹ÙÀÎµùÇÑ CTSÀÎÁö ÆÇ´ÜÇÑ´Ù.
  *
- * ë‹¤ìŒê³¼ ê°™ì´ CTSì— ê¸°ë¡ëœ TSSlotSIDì™€ TransBSCNì„ ê³ ë ¤í•˜ì—¬ íŠ¸ëžœìž­ì…˜ ìžì‹ ì´
- * ë°”ì¸ë”©í•œ CTSì¸ì§€ë¥¼ ì •í™•í•˜ê²Œ íŒë‹¨í•  ìˆ˜ ìžˆë‹¤.
+ * ´ÙÀ½°ú °°ÀÌ CTS¿¡ ±â·ÏµÈ TSSlotSID¿Í TransBSCNÀ» °í·ÁÇÏ¿© Æ®·£Àè¼Ç ÀÚ½ÅÀÌ
+ * ¹ÙÀÎµùÇÑ CTSÀÎÁö¸¦ Á¤È®ÇÏ°Ô ÆÇ´ÜÇÒ ¼ö ÀÖ´Ù.
  *
- * ì¼ë‹¨ ë™ì¼í•œ íŠ¸ëžœìž­ì…˜ì´ë¼ë©´ TSSlotSIDëŠ” ë™ì¼í•´ì•¼í•˜ì§€ë§Œ, TSSëŠ” ìž¬ì‚¬ìš©ì´ ê°€ëŠ¥í•˜ê¸° ë•Œë¬¸ì—
- * ë‹¤ë¥¸ íŠ¸ëžœìž­ì…˜ ê°„ì—ë„ ë™ì¼í• ìˆ˜ ìžˆë‹¤.
- * ê·¸ëž˜ì„œ CTSë¥¼ ë°”ì¸ë”©í•œ íŠ¸ëžœìž­ì…˜ì˜ TransBSCNì´ í˜„ìž¬ íŠ¸ëžœìž­ì…˜ê³¼ ë™ì¼í•œê²ƒë„ ë¹„êµí•´ì•¼í•˜ëŠ”ë°
- * ì´ê²ƒì€ TransBSCNì´ ê°™ì€ ê²½ìš°ì—ëŠ” TSS ìž¬ì‚¬ìš©ë˜ì§€ ì•Šì•˜ë‹¤ëŠ” ê²ƒì„ ë³´ìž¥í•´ì£¼ê¸° ë•Œë¬¸ì´ë‹¤.
+ * ÀÏ´Ü µ¿ÀÏÇÑ Æ®·£Àè¼ÇÀÌ¶ó¸é TSSlotSID´Â µ¿ÀÏÇØ¾ßÇÏÁö¸¸, TSS´Â Àç»ç¿ëÀÌ °¡´ÉÇÏ±â ¶§¹®¿¡
+ * ´Ù¸¥ Æ®·£Àè¼Ç °£¿¡µµ µ¿ÀÏÇÒ¼ö ÀÖ´Ù.
+ * ±×·¡¼­ CTS¸¦ ¹ÙÀÎµùÇÑ Æ®·£Àè¼ÇÀÇ TransBSCNÀÌ ÇöÀç Æ®·£Àè¼Ç°ú µ¿ÀÏÇÑ°Íµµ ºñ±³ÇØ¾ßÇÏ´Âµ¥
+ * ÀÌ°ÍÀº TransBSCNÀÌ °°Àº °æ¿ì¿¡´Â TSS Àç»ç¿ëµÇÁö ¾Ê¾Ò´Ù´Â °ÍÀ» º¸ÀåÇØÁÖ±â ¶§¹®ÀÌ´Ù.
  *
- * aTransTSSlotSID - [IN] CTSì— ê¸°ë¡ëœ TSSlotSID
- * aTransBSCN      - [IN] CTSì— ê¸°ë¡ëœ ë°”ì¸ë”©í•œ íŠ¸ëžœìž­ì…˜ì˜ Begin SCN í¬ì¸í„°
- * aPagePtr        - [IN] ë°ì´íƒ€ íŽ˜ì´ì§€ì˜ í—¤ë” ì‹œìž‘ í¬ì¸í„°
- * aCTSlotIdx      - [IN] ëŒ€ìƒ CTSlot ë²ˆí˜¸
+ * aTransTSSlotSID - [IN] CTS¿¡ ±â·ÏµÈ TSSlotSID
+ * aTransBSCN      - [IN] CTS¿¡ ±â·ÏµÈ ¹ÙÀÎµùÇÑ Æ®·£Àè¼ÇÀÇ Begin SCN Æ÷ÀÎÅÍ
+ * aPagePtr        - [IN] µ¥ÀÌÅ¸ ÆäÀÌÁöÀÇ Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
+ * aCTSlotIdx      - [IN] ´ë»ó CTSlot ¹øÈ£
  *
  ***********************************************************************/
+#if 0 // not used
 idBool sdcTableCTL::isMyTrans( sdSID         * aTransTSSlotSID,
                                smSCN         * aTransBSCN,
                                sdpPhyPageHdr * aPagePtr,
@@ -616,13 +617,14 @@ idBool sdcTableCTL::isMyTrans( sdSID         * aTransTSSlotSID,
 
     return ID_FALSE;
 }
+#endif
 
 /***********************************************************************
  *
- * Description : ìžì‹ ì´ ë°”ì¸ë”©í•œ CTSì¸ì§€ íŒë‹¨í•œë‹¤.
+ * Description : ÀÚ½ÅÀÌ ¹ÙÀÎµùÇÑ CTSÀÎÁö ÆÇ´ÜÇÑ´Ù.
  *
- * ìœ„ì˜ sdcTableCTL::isMyTrans() í•¨ìˆ˜ì™€ëŠ”
- * ë§¤ê°œë³€ìˆ˜ë¡œ CTS index ëŒ€ì‹  CTS pointerë¥¼ ë°›ëŠ” ê²ƒë§Œ ìœ ì¼í•˜ê²Œ ë‹¤ë¥´ë‹¤. 
+ * À§ÀÇ sdcTableCTL::isMyTrans() ÇÔ¼ö¿Í´Â
+ * ¸Å°³º¯¼ö·Î CTS index ´ë½Å CTS pointer¸¦ ¹Þ´Â °Í¸¸ À¯ÀÏÇÏ°Ô ´Ù¸£´Ù. 
  *
  ***********************************************************************/
 idBool sdcTableCTL::isMyTrans( sdSID         * aTransTSSlotSID,
@@ -651,23 +653,23 @@ idBool sdcTableCTL::isMyTrans( sdSID         * aTransTSSlotSID,
 
 /***********************************************************************
  *
- * Description : íŠ¸ëžœìž­ì…˜ ì •ë³´ë¥¼ CTSì— ê¸°ë¡í•˜ê±°ë‚˜ Rowì— ë°”ì¸ë”©í•œë‹¤.
+ * Description : Æ®·£Àè¼Ç Á¤º¸¸¦ CTS¿¡ ±â·ÏÇÏ°Å³ª Row¿¡ ¹ÙÀÎµùÇÑ´Ù.
  *
- * ê°±ì‹ í•  íŽ˜ì´ì§€ì—ì„œ CTSë¥¼ í• ë‹¹í•œ ê²½ìš°ì—ëŠ” CTSì— íŠ¸ëžœìž­ì…˜ ì •ë³´ë¥¼ ë°”ì¸ë”©í•˜ê³ ,
- * í• ë‹¹ë°›ì§€ ëª»í•œ ê²½ìš°ì—ëŠ” RowPieceë‚´ì— CTS ì •ë³´ë¥¼ ê¸°ë¡í•œë‹¤.
+ * °»½ÅÇÒ ÆäÀÌÁö¿¡¼­ CTS¸¦ ÇÒ´çÇÑ °æ¿ì¿¡´Â CTS¿¡ Æ®·£Àè¼Ç Á¤º¸¸¦ ¹ÙÀÎµùÇÏ°í,
+ * ÇÒ´ç¹ÞÁö ¸øÇÑ °æ¿ì¿¡´Â RowPiece³»¿¡ CTS Á¤º¸¸¦ ±â·ÏÇÑ´Ù.
  *
  *
- * aStatistics         - [IN]  í†µê³„ì •ë³´
- * aMtx                - [IN]  Mtx í¬ì¸í„°
- * aSpaceID            - [IN]  ë°ì´íƒ€íŽ˜ì´ì§€ê°€ ì†Œì†ëœ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ID
- * aRowPiecePtr        - [IN]  ê°±ì‹ í•  RowPiece ì˜ í¬ì¸í„°
- * aRowCTSlotIdx       - [IN]  Row Pieceì˜ CTS ë²ˆí˜¸ (ì´ë¯¸ ë°”ì¸ë”©ëœ Rowì¼ìˆ˜ë„ ìžˆê³ 
- *                                             ê·¸ë ‡ì§€ ì•Šì„ ìˆ˜ë„ ìžˆë‹¤. )
- * aAllocCTSlotIdx     - [IN]  íŠ¸ëžœìž­ì…˜ì´ ê°±ì‹ ì„ ìœ„í•´ í• ë‹¹í•œ CTS ë²ˆí˜¸
- * aRowSlotNum         - [IN]  CTSì— Cachingí•  RowPiece SlotEntry ë²ˆí˜¸
- * aFSCreditSize       - [IN]  íŽ˜ì´ì§€ì— ì˜ˆì•½í•  Free Space Credit í¬ê¸°
- * aIncDelRowCnt       - [IN]  Delete ì—°ì‚°ì„ ìœ„í•œ ë°”ì¸ë”©ì¸ ê²½ìš° TRUE,
- *                             Delete Row ê°œìˆ˜ë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
+ * aStatistics         - [IN]  Åë°èÁ¤º¸
+ * aMtx                - [IN]  Mtx Æ÷ÀÎÅÍ
+ * aSpaceID            - [IN]  µ¥ÀÌÅ¸ÆäÀÌÁö°¡ ¼Ò¼ÓµÈ Å×ÀÌºí½ºÆäÀÌ½º ID
+ * aRowPiecePtr        - [IN]  °»½ÅÇÒ RowPiece ÀÇ Æ÷ÀÎÅÍ
+ * aRowCTSlotIdx       - [IN]  Row PieceÀÇ CTS ¹øÈ£ (ÀÌ¹Ì ¹ÙÀÎµùµÈ RowÀÏ¼öµµ ÀÖ°í
+ *                                             ±×·¸Áö ¾ÊÀ» ¼öµµ ÀÖ´Ù. )
+ * aAllocCTSlotIdx     - [IN]  Æ®·£Àè¼ÇÀÌ °»½ÅÀ» À§ÇØ ÇÒ´çÇÑ CTS ¹øÈ£
+ * aRowSlotNum         - [IN]  CTS¿¡ CachingÇÒ RowPiece SlotEntry ¹øÈ£
+ * aFSCreditSize       - [IN]  ÆäÀÌÁö¿¡ ¿¹¾àÇÒ Free Space Credit Å©±â
+ * aIncDelRowCnt       - [IN]  Delete ¿¬»êÀ» À§ÇÑ ¹ÙÀÎµùÀÎ °æ¿ì TRUE,
+ *                             Delete Row °³¼ö¸¦ Áõ°¡½ÃÅ²´Ù.
  **********************************************************************/
 IDE_RC sdcTableCTL::bind( sdrMtx               * aMtx,
                           scSpaceID              aSpaceID,
@@ -719,7 +721,7 @@ IDE_RC sdcTableCTL::bind( sdrMtx               * aMtx,
     {
         IDE_ERROR( sNewCTSlotIdx  == SDP_CTS_IDX_NULL );
         IDE_ERROR( (sOldCTSlotIdx == SDP_CTS_IDX_NULL) ||
-                    (sOldCTSlotIdx == SDP_CTS_IDX_UNLK) );
+                   (sOldCTSlotIdx == SDP_CTS_IDX_UNLK) );
 
         IDE_TEST( logAndBindRow( aMtx,
                                  aNewSlotPtr,
@@ -737,17 +739,17 @@ IDE_RC sdcTableCTL::bind( sdrMtx               * aMtx,
 
 /***********************************************************************
  *
- * Description : CTSë¥¼ ì–¸ë°”ì¸ë”©í•˜ê±°ë‚˜ í˜¹ì€ RowPieceì˜ CTS ì •ë³´ë¥¼ ì–¸ë°”ì¸ë”©í•œë‹¤.
+ * Description : CTS¸¦ ¾ð¹ÙÀÎµùÇÏ°Å³ª È¤Àº RowPieceÀÇ CTS Á¤º¸¸¦ ¾ð¹ÙÀÎµùÇÑ´Ù.
  *
- * aMtx              - [IN] Mtx í¬ì¸í„°
- * aRowPieceBfrUndo  - [IN] ì–¸ë°”ì¸ë”©í•  RowPieceì˜ í¬ì¸í„°
- * aCTSlotIdxBfrUndo - [IN] ì–¸ë‘í•˜ê¸° ì „ì— Row Piece í—¤ë”ì˜ CTS ë²ˆí˜¸
- * aCTSlotIdxAftUndo - [IN] ì–¸ë‘í•œ í›„ì— Row Piece í—¤ë”ì˜ CTS ë²ˆí˜¸
- *                          ì¤‘ë³µ ê°±ì‹ ì´ ëœê²½ìš°ëŠ” ì–¸ë‘í•˜ê¸°ì „ì´ë‚˜ í›„ë‚˜ CTS ë²ˆí˜¸ê°€
- *                          ë™ì¼í•˜ë©´, ê·¸ë ‡ì§€ ì•Šë‹¤ë©´ SDP_CTS_IDX_UNLK ì´ì–´ì•¼ í•œë‹¤.
- * aFSCreditSize     - [IN] íŽ˜ì´ì§€ì— ì˜ˆì•½í•  Free Space Credit í¬ê¸°
- * aDecDelRowCnt     - [IN] Delete ì—°ì‚°ì„ ìœ„í•œ ì–¸ë°”ì¸ë”©ì¸ ê²½ìš° TRUE,
- *                          Delete Row ê°œìˆ˜ë¥¼ ê°ì†Œì‹œí‚¨ë‹¤.
+ * aMtx              - [IN] Mtx Æ÷ÀÎÅÍ
+ * aRowPieceBfrUndo  - [IN] ¾ð¹ÙÀÎµùÇÒ RowPieceÀÇ Æ÷ÀÎÅÍ
+ * aCTSlotIdxBfrUndo - [IN] ¾ðµÎÇÏ±â Àü¿¡ Row Piece Çì´õÀÇ CTS ¹øÈ£
+ * aCTSlotIdxAftUndo - [IN] ¾ðµÎÇÑ ÈÄ¿¡ Row Piece Çì´õÀÇ CTS ¹øÈ£
+ *                          Áßº¹ °»½ÅÀÌ µÈ°æ¿ì´Â ¾ðµÎÇÏ±âÀüÀÌ³ª ÈÄ³ª CTS ¹øÈ£°¡
+ *                          µ¿ÀÏÇÏ¸é, ±×·¸Áö ¾Ê´Ù¸é SDP_CTS_IDX_UNLK ÀÌ¾î¾ß ÇÑ´Ù.
+ * aFSCreditSize     - [IN] ÆäÀÌÁö¿¡ ¿¹¾àÇÒ Free Space Credit Å©±â
+ * aDecDelRowCnt     - [IN] Delete ¿¬»êÀ» À§ÇÑ ¾ð¹ÙÀÎµùÀÎ °æ¿ì TRUE,
+ *                          Delete Row °³¼ö¸¦ °¨¼Ò½ÃÅ²´Ù.
  *
  ***********************************************************************/
 IDE_RC sdcTableCTL::unbind( sdrMtx         * aMtx,
@@ -767,8 +769,8 @@ IDE_RC sdcTableCTL::unbind( sdrMtx         * aMtx,
 
     if ( SDC_HAS_BOUND_CTS(sCTSlotIdxBfrUndo) )
     {
-        /* íŽ˜ì´ì§€ì—ì„œ CTSë¥¼ í• ë‹¹ë°›ì€ ê²½ìš°ì—ëŠ” RowHdrì˜ CTSIdxëŠ”
-         * Undo ì´ì „ì—ëŠ” 0~125 ë²”ìœ„ì˜ ìœ íš¨í•œ ê°’ë§Œ ì˜¬ìˆ˜ ìžˆë‹¤. */
+        /* ÆäÀÌÁö¿¡¼­ CTS¸¦ ÇÒ´ç¹ÞÀº °æ¿ì¿¡´Â RowHdrÀÇ CTSIdx´Â
+         * Undo ÀÌÀü¿¡´Â 0~125 ¹üÀ§ÀÇ À¯È¿ÇÑ °ª¸¸ ¿Ã¼ö ÀÖ´Ù. */
         IDE_TEST( logAndUnbindCTS( aMtx,
                                    sdpPhyPage::getHdr(aRowPieceBfrUndo),
                                    sCTSlotIdxBfrUndo,
@@ -781,7 +783,7 @@ IDE_RC sdcTableCTL::unbind( sdrMtx         * aMtx,
     {
         IDE_ERROR( sCTSlotIdxBfrUndo  == SDP_CTS_IDX_NULL );
         IDE_ERROR( (sCTSlotIdxAftUndo == SDP_CTS_IDX_NULL) ||
-                    (sCTSlotIdxAftUndo == SDP_CTS_IDX_UNLK) );
+                   (sCTSlotIdxAftUndo == SDP_CTS_IDX_UNLK) );
 
         IDE_TEST( logAndUnbindRow( aMtx,
                                    aRowPieceBfrUndo,
@@ -800,30 +802,30 @@ IDE_RC sdcTableCTL::unbind( sdrMtx         * aMtx,
 
 /***********************************************************************
  *
- * Description : CTSì— ë°”ì¸ë”©í•œë‹¤.
+ * Description : CTS¿¡ ¹ÙÀÎµùÇÑ´Ù.
  *
- * ë°ì´íƒ€íŽ˜ì´ì§€ì—ì„œ ë™ì¼í•œ íŠ¸ëžœìž­ì…˜ì´ ê°±ì‹ í•œ RowPieceë“¤ì€ í•˜ë‚˜ì˜ CTSì—ë§Œ ë°”ì¸ë”© ë 
- * ìˆ˜ ìžˆìœ¼ë©°, ê°ê° ì„œë¡œ ë‹¤ë¥¸ Row Pieceë¥¼ ê°±ì‹ í•˜ëŠ” ê²½ìš°ì—ëŠ” CTSì˜ RefCntë¥¼ ì¦ê°€ì‹œí‚¤ëŠ”
- * ê²ƒë§Œìœ¼ë¡œ ë°”ì¸ë”©ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤. ë§Œì¼ ë™ì¼í•œ Row Pieceë¥¼ ì¤‘ë³µ ê°±ì‹ í•œ ê²½ìš°ì—ëŠ” RefCnt
- * ë¥¼ ì¦ê°€ì‹œí‚¤ì§€ ì•ŠëŠ”ë‹¤.
- * ë§Œì•½ RefCntë¥¼ ê°±ì‹ í• ë•Œë§ˆë‹¤ ì¦ê°€ì‹œí‚¨ë‹¤ë©´ ì¤‘ë³µ Row Pieceì— ëŒ€í•´ì„œ ìˆ˜ë§Œë²ˆ ê°±ì‹ ë˜ëŠ”
- * ê²½ìš°ì— 2ë°”ì´íŠ¸ì¸ RefCntë¡œ ì¶©ë¶„í•˜ì§€ ì•Šì„ ê²ƒì´ë‹¤.
+ * µ¥ÀÌÅ¸ÆäÀÌÁö¿¡¼­ µ¿ÀÏÇÑ Æ®·£Àè¼ÇÀÌ °»½ÅÇÑ RowPieceµéÀº ÇÏ³ªÀÇ CTS¿¡¸¸ ¹ÙÀÎµù µÉ
+ * ¼ö ÀÖÀ¸¸ç, °¢°¢ ¼­·Î ´Ù¸¥ Row Piece¸¦ °»½ÅÇÏ´Â °æ¿ì¿¡´Â CTSÀÇ RefCnt¸¦ Áõ°¡½ÃÅ°´Â
+ * °Í¸¸À¸·Î ¹ÙÀÎµù¿¬»êÀ» ¼öÇàÇÑ´Ù. ¸¸ÀÏ µ¿ÀÏÇÑ Row Piece¸¦ Áßº¹ °»½ÅÇÑ °æ¿ì¿¡´Â RefCnt
+ * ¸¦ Áõ°¡½ÃÅ°Áö ¾Ê´Â´Ù.
+ * ¸¸¾à RefCnt¸¦ °»½ÅÇÒ¶§¸¶´Ù Áõ°¡½ÃÅ²´Ù¸é Áßº¹ Row Piece¿¡ ´ëÇØ¼­ ¼ö¸¸¹ø °»½ÅµÇ´Â
+ * °æ¿ì¿¡ 2¹ÙÀÌÆ®ÀÎ RefCnt·Î ÃæºÐÇÏÁö ¾ÊÀ» °ÍÀÌ´Ù.
  *
- * ë˜í•œ ë°”ì¸ë”©ê³¼ì •ì—ì„œ í•¨ê»˜ ì²˜ë¦¬í•˜ëŠ” ê²ƒì´ 2ê°€ì§€ê°€ ìžˆëŠ” ê°±ì‹ ì—°ì‚°ì— ì˜í•´ ì˜ˆì•½ë˜ì–´ì•¼ í• 
- * Free Space Creditì— ëŒ€í•œ ì²˜ë¦¬ì™€ Deleteëœ Rowì˜ ê°œìˆ˜ë“±ì´ ê·¸ê²ƒì´ë‹¤.
- * ì´ëŠ” ë³„ë„ì˜ ë¡œê¹…ìœ¼ë¡œ ë°”ì¸ë”© í•¨ìˆ˜ì•ˆì—ì„œ ì²˜ë¦¬ëœë‹¤.
+ * ¶ÇÇÑ ¹ÙÀÎµù°úÁ¤¿¡¼­ ÇÔ²² Ã³¸®ÇÏ´Â °ÍÀÌ 2°¡Áö°¡ ÀÖ´Â °»½Å¿¬»ê¿¡ ÀÇÇØ ¿¹¾àµÇ¾î¾ß ÇÒ
+ * Free Space Credit¿¡ ´ëÇÑ Ã³¸®¿Í DeleteµÈ RowÀÇ °³¼öµîÀÌ ±×°ÍÀÌ´Ù.
+ * ÀÌ´Â º°µµÀÇ ·Î±ëÀ¸·Î ¹ÙÀÎµù ÇÔ¼ö¾È¿¡¼­ Ã³¸®µÈ´Ù.
  *
- * aStatistics      - [IN] í†µê³„ì •ë³´
- * aMtx             - [IN] Mtx í¬ì¸í„°
- * aSpaceID         - [IN] ë°ì´íƒ€íŽ˜ì´ì§€ê°€ ì†Œì†ëœ í…Œì´ë¸”ìŠ¤íŽ˜ì´ìŠ¤ ID
- * aPageHdrPtr      - [IN] ë°ì´íƒ€íŽ˜ì´ì§€ì˜ í—¤ë” ì‹œìž‘ í¬ì¸í„°
- * aOldCTSlotIdx    - [IN] Row Pieceì˜ CTS ë²ˆí˜¸ (ì´ë¯¸ ë°”ì¸ë”©ëœ Rowì¼ìˆ˜ë„ ìžˆê³ 
- *                                             ê·¸ë ‡ì§€ ì•Šì„ ìˆ˜ë„ ìžˆë‹¤. )
- * aNewCTSlotIdx    - [IN] íŠ¸ëžœìž­ì…˜ì´ ê°±ì‹ ì„ ìœ„í•´ í• ë‹¹í•œ CTS ë²ˆí˜¸
- * aRowSlotNum      - [IN] CTSì— Cachingí•  RowPiece SlotEntry ë²ˆí˜¸
- * aNewFSCreditSize - [IN] íŽ˜ì´ì§€ì— ì˜ˆì•½í•  Free Space Credit í¬ê¸°
- * aIncDelRowCnt    - [IN] Delete ì—°ì‚°ì„ ìœ„í•œ ë°”ì¸ë”©ì¸ ê²½ìš° TRUE,
- *                         Delete Row ê°œìˆ˜ë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
+ * aStatistics      - [IN] Åë°èÁ¤º¸
+ * aMtx             - [IN] Mtx Æ÷ÀÎÅÍ
+ * aSpaceID         - [IN] µ¥ÀÌÅ¸ÆäÀÌÁö°¡ ¼Ò¼ÓµÈ Å×ÀÌºí½ºÆäÀÌ½º ID
+ * aPageHdrPtr      - [IN] µ¥ÀÌÅ¸ÆäÀÌÁöÀÇ Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
+ * aOldCTSlotIdx    - [IN] Row PieceÀÇ CTS ¹øÈ£ (ÀÌ¹Ì ¹ÙÀÎµùµÈ RowÀÏ¼öµµ ÀÖ°í
+ *                                             ±×·¸Áö ¾ÊÀ» ¼öµµ ÀÖ´Ù. )
+ * aNewCTSlotIdx    - [IN] Æ®·£Àè¼ÇÀÌ °»½ÅÀ» À§ÇØ ÇÒ´çÇÑ CTS ¹øÈ£
+ * aRowSlotNum      - [IN] CTS¿¡ CachingÇÒ RowPiece SlotEntry ¹øÈ£
+ * aNewFSCreditSize - [IN] ÆäÀÌÁö¿¡ ¿¹¾àÇÒ Free Space Credit Å©±â
+ * aIncDelRowCnt    - [IN] Delete ¿¬»êÀ» À§ÇÑ ¹ÙÀÎµùÀÎ °æ¿ì TRUE,
+ *                         Delete Row °³¼ö¸¦ Áõ°¡½ÃÅ²´Ù.
  *
  ***********************************************************************/
 IDE_RC sdcTableCTL::logAndBindCTS( sdrMtx         * aMtx,
@@ -858,7 +860,7 @@ IDE_RC sdcTableCTL::logAndBindCTS( sdrMtx         * aMtx,
 
     if ( sIsActiveCTS == ID_FALSE )
     {
-        // í•´ë‹¹ íŽ˜ì´ì§€ì—ì„œ íŠ¸ëžœìž­ì…˜ì´ ì²˜ìŒìœ¼ë¡œ CTSë¥¼ ë°”ì¸ë”©í•˜ëŠ” ê²½ìš°ì´ë‹¤.
+        // ÇØ´ç ÆäÀÌÁö¿¡¼­ Æ®·£Àè¼ÇÀÌ Ã³À½À¸·Î CTS¸¦ ¹ÙÀÎµùÇÏ´Â °æ¿ìÀÌ´Ù.
         sLogSize += (ID_SIZEOF(smSCN) + ID_SIZEOF(sdSID));
 
         sFstDskViewSCN  = smxTrans::getFstDskViewSCN( aMtx->mTrans );
@@ -871,8 +873,8 @@ IDE_RC sdcTableCTL::logAndBindCTS( sdrMtx         * aMtx,
     }
     else
     {
-        /* CTSê°€ ì´ë¯¸ íŠ¸ëžœìž­ì…˜ì— ë°”ì¸ë”© ëœ ê²½ìš°ì—ëŠ”
-           RefCnt, FSCreditì™€ DeleteCntë§Œ ì¦ê°€ì‹œí‚¨ë‹¤. */
+        /* CTS°¡ ÀÌ¹Ì Æ®·£Àè¼Ç¿¡ ¹ÙÀÎµù µÈ °æ¿ì¿¡´Â
+           RefCnt, FSCredit¿Í DeleteCnt¸¸ Áõ°¡½ÃÅ²´Ù. */
     }
 
 /*
@@ -950,15 +952,15 @@ IDE_RC sdcTableCTL::logAndBindCTS( sdrMtx         * aMtx,
 
 /***********************************************************************
  *
- * Description : Rowì— ë°”ì¸ë”©í•œë‹¤.
+ * Description : Row¿¡ ¹ÙÀÎµùÇÑ´Ù.
  *
  * Parameters:
- *  aStatistics           - [IN] í†µê³„ì •ë³´
- *  aMtx                  - [IN] Mtx í¬ì¸í„°
- *  aNewSlotPtr           - [IN] ìƒˆë¡œìš´ Rowpiece í¬ì¸í„°
- *  aFSCreditSizeToWrite  - [IN] ì´ë²ˆì— ê°±ì‹ ìœ¼ë¡œ ì¸í•´ ì˜ˆì•½í•´ì•¼í•  FSCreditSize
- *  aIncDelRowCnt         - [IN] Delete ì—°ì‚°ì„ ìœ„í•œ ë°”ì¸ë”©ì¸ ê²½ìš° TRUE,
- *                               Delete Row ê°œìˆ˜ë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
+ *  aStatistics           - [IN] Åë°èÁ¤º¸
+ *  aMtx                  - [IN] Mtx Æ÷ÀÎÅÍ
+ *  aNewSlotPtr           - [IN] »õ·Î¿î Rowpiece Æ÷ÀÎÅÍ
+ *  aFSCreditSizeToWrite  - [IN] ÀÌ¹ø¿¡ °»½ÅÀ¸·Î ÀÎÇØ ¿¹¾àÇØ¾ßÇÒ FSCreditSize
+ *  aIncDelRowCnt         - [IN] Delete ¿¬»êÀ» À§ÇÑ ¹ÙÀÎµùÀÎ °æ¿ì TRUE,
+ *                               Delete Row °³¼ö¸¦ Áõ°¡½ÃÅ²´Ù.
  *
  ***********************************************************************/
 IDE_RC sdcTableCTL::logAndBindRow( sdrMtx           * aMtx,
@@ -1024,21 +1026,21 @@ IDE_RC sdcTableCTL::logAndBindRow( sdrMtx           * aMtx,
 
 /***********************************************************************
  *
- * Description : íŠ¸ëžœìž­ì…˜ì´ Rowë¥¼ CTSì— ë°”ì¸ë”©í•œë‹¤.
+ * Description : Æ®·£Àè¼ÇÀÌ Row¸¦ CTS¿¡ ¹ÙÀÎµùÇÑ´Ù.
  *
- * ì‹¤ì œë¡œ Row Piece í—¤ë”ì— CTS ë²ˆí˜¸ë¥¼ ê¸°ë¡í•˜ëŠ” ê²ƒìœ¼ë¡œ ë°”ì¸ë”©ìž‘ì—…ì´ ìˆ˜í–‰ë˜ì–´ì•¼ í•˜ì§€ë§Œ,
- * CTS ë°”ì¸ë”© í•¨ìˆ˜ í˜¸ì¶œ ì´í›„ì— sdcRow::writeRowHdr() í•¨ìˆ˜ë¥¼ í†µí•´ì„œ ë°”ì¸ë”©ëœ CTS
- * ë²ˆí˜¸ë¥¼ Rowì— ê¸°ë¡í•œë‹¤. ì¦‰, ë³¸ í•¨ìˆ˜ì—ì„œëŠ” CTSì— ëŒ€í•œ ë°”ì¸ë”© ì—°ì‚°ë§Œ ìˆ˜í–‰í•œë‹¤.
+ * ½ÇÁ¦·Î Row Piece Çì´õ¿¡ CTS ¹øÈ£¸¦ ±â·ÏÇÏ´Â °ÍÀ¸·Î ¹ÙÀÎµùÀÛ¾÷ÀÌ ¼öÇàµÇ¾î¾ß ÇÏÁö¸¸,
+ * CTS ¹ÙÀÎµù ÇÔ¼ö È£Ãâ ÀÌÈÄ¿¡ sdcRow::writeRowHdr() ÇÔ¼ö¸¦ ÅëÇØ¼­ ¹ÙÀÎµùµÈ CTS
+ * ¹øÈ£¸¦ Row¿¡ ±â·ÏÇÑ´Ù. Áï, º» ÇÔ¼ö¿¡¼­´Â CTS¿¡ ´ëÇÑ ¹ÙÀÎµù ¿¬»ê¸¸ ¼öÇàÇÑ´Ù.
  *
- * aPageHdrPtr       - [IN] ë°ì´íƒ€íŽ˜ì´ì§€ í—¤ë” ì‹œìž‘ í¬ì¸í„°
- * aOldCTSlotIdx     - [IN] ì´ì „ì— ë°”ì¸ë”©ëœ CTS ë²ˆí˜¸
- * aNewCTSlotIdx     - [IN] ë°”ì¸ë”©í•  CTS ë²ˆí˜¸
- * aRowSlotNum       - [IN] CTSì— Cachingí•  RowPiece SlotEntry ë²ˆí˜¸
- * aFstDskViewSCN    - [IN] íŠ¸ëžœìž­ì…˜ì˜ ì²«ë²ˆì§¸ Disk Stmtì˜ ViewSCN
- * aTSSlotSID        - [IN] ë°”ì¸ë”©í•  íŠ¸ëžœìž­ì…˜ì˜ TSSlot SID
- * aNewFSCreditSize  - [IN] íŽ˜ì´ì§€ì— ì˜ˆì•½í•  Free Space Credit í¬ê¸°
- * aIncDelRowCnt     - [IN] Delete ì—°ì‚°ì„ ìœ„í•œ ë°”ì¸ë”©ì¸ ê²½ìš° TRUE,
- *                          Delete Row ê°œìˆ˜ë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
+ * aPageHdrPtr       - [IN] µ¥ÀÌÅ¸ÆäÀÌÁö Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
+ * aOldCTSlotIdx     - [IN] ÀÌÀü¿¡ ¹ÙÀÎµùµÈ CTS ¹øÈ£
+ * aNewCTSlotIdx     - [IN] ¹ÙÀÎµùÇÒ CTS ¹øÈ£
+ * aRowSlotNum       - [IN] CTS¿¡ CachingÇÒ RowPiece SlotEntry ¹øÈ£
+ * aFstDskViewSCN    - [IN] Æ®·£Àè¼ÇÀÇ Ã¹¹øÂ° Disk StmtÀÇ ViewSCN
+ * aTSSlotSID        - [IN] ¹ÙÀÎµùÇÒ Æ®·£Àè¼ÇÀÇ TSSlot SID
+ * aNewFSCreditSize  - [IN] ÆäÀÌÁö¿¡ ¿¹¾àÇÒ Free Space Credit Å©±â
+ * aIncDelRowCnt     - [IN] Delete ¿¬»êÀ» À§ÇÑ ¹ÙÀÎµùÀÎ °æ¿ì TRUE,
+ *                          Delete Row °³¼ö¸¦ Áõ°¡½ÃÅ²´Ù.
  *
  ***********************************************************************/
 IDE_RC sdcTableCTL::bindCTS4REDO( sdpPhyPageHdr * aPageHdrPtr,
@@ -1060,20 +1062,20 @@ IDE_RC sdcTableCTL::bindCTS4REDO( sdpPhyPageHdr * aPageHdrPtr,
     sCTL = getCTL( aPageHdrPtr );
     sCTS = getCTS( aPageHdrPtr, aNewCTSlotIdx );
 
-    // ì´ë¯¸ CTSì— ë°”ì¸ë”©ëœ Rowë¥¼ ë‹¤ì‹œ ê°±ì‹ í•˜ëŠ” ê²½ìš°ì—ëŠ”
-    // CTSë¥¼ ë°”ì¸ë”© í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // ÀÌ¹Ì CTS¿¡ ¹ÙÀÎµùµÈ Row¸¦ ´Ù½Ã °»½ÅÇÏ´Â °æ¿ì¿¡´Â
+    // CTS¸¦ ¹ÙÀÎµù ÇÏÁö ¾Ê´Â´Ù.
     IDE_TEST_CONT( aOldCTSlotIdx == aNewCTSlotIdx,
                     cont_already_bound );
 
     if( hasState( sCTS->mStat, SDP_CTS_STAT_ACT ) == ID_TRUE )
     {
-        // ì´ë¯¸ ë°”ì¸ë”©ë˜ì–´ ìžˆëŠ” ê²½ìš°ì—ëŠ” RefCntë§Œ ì¦ê°€ì‹œí‚¨ë‹¤.
+        // ÀÌ¹Ì ¹ÙÀÎµùµÇ¾î ÀÖ´Â °æ¿ì¿¡´Â RefCnt¸¸ Áõ°¡½ÃÅ²´Ù.
         sRefCnt = sCTS->mRefCnt;
         sRefCnt++;
     }
     else
     {
-        // í•´ë‹¹ íŽ˜ì´ì§€ì—ì„œ ìµœì´ˆ ë°”ì¸ë”©ì¸ ê²½ìš°
+        // ÇØ´ç ÆäÀÌÁö¿¡¼­ ÃÖÃÊ ¹ÙÀÎµùÀÎ °æ¿ì
 
         // 'N', 'R', 'O'
         IDE_ERROR( hasState( sCTS->mStat, SDP_CTS_SS_FREE )
@@ -1089,17 +1091,17 @@ IDE_RC sdcTableCTL::bindCTS4REDO( sdpPhyPageHdr * aPageHdrPtr,
         sCTS->mRefRowSlotNum[0] = SC_NULL_SLOTNUM;
         sCTS->mRefRowSlotNum[1] = SC_NULL_SLOTNUM;
 
-        /* ë°”ì¸ë”© CTS ê°œìˆ˜ëŠ” ìµœì´ˆ ë°”ì¸ë”©ë ë•Œ ì¦ê°€ì‹œí‚¤ê³ , íŠ¸ëžœìž­ì…˜ì´ ë¡¤ë°±ì´
-         * ë°œìƒí•˜ì—¬ íŽ˜ì´ì§€ë‚´ì—ì„œì˜ ë§ˆì§€ë§‰ ì–¸ë°”ì¸ë”©ì„ ìˆ˜í–‰í• ë•Œ ê°ì†Œì‹œí‚¨ë‹¤.
-         * ì»¤ë°‹ëœ ê²½ìš°ì— Row Stampingì´ ë°œìƒí•˜ëŠ” ê²½ìš°ì—ë„ ê°ì†Œëœë‹¤. */
+        /* ¹ÙÀÎµù CTS °³¼ö´Â ÃÖÃÊ ¹ÙÀÎµùµÉ¶§ Áõ°¡½ÃÅ°°í, Æ®·£Àè¼ÇÀÌ ·Ñ¹éÀÌ
+         * ¹ß»ýÇÏ¿© ÆäÀÌÁö³»¿¡¼­ÀÇ ¸¶Áö¸· ¾ð¹ÙÀÎµùÀ» ¼öÇàÇÒ¶§ °¨¼Ò½ÃÅ²´Ù.
+         * Ä¿¹ÔµÈ °æ¿ì¿¡ Row StampingÀÌ ¹ß»ýÇÏ´Â °æ¿ì¿¡µµ °¨¼ÒµÈ´Ù. */
         incBindCTSCntOfCTL( sCTL );
     }
 
-    /* Row Pieceì— ëŒ€í•œ Slot Entry ë²ˆí˜¸ëŠ” 2ê°œì •ë„ë§Œ Cacheí•œë‹¤.
-     * ê³¼ì—° í•œíŽ˜ì´ì§€ë‹¹ ì¼ë°˜ì ìœ¼ë¡œ 2ê°œì˜ Row Pieceì •ë„ë§Œ ê°±ì‹ í•˜ëŠ” ê²ƒì´
-     * ì¼ë°˜ì ì¸ê°€?? ì— ëŒ€í•œ ì˜í˜¹ì´ ì œê¸°ë˜ì§€ë§Œ, 2ê°œ ì´í•˜ì¼ ê²½ìš°ê°€ ìžˆë‹¤ë©´
-     * Row Stampingì‹œì— Slot Directoryë¥¼ FullScaní•˜ëŠ” ê²½ìš°ê°€ ì œê±°ë˜ë¯€ë¡œ
-     * ì´ëŸ¬í•œ ìžë£Œêµ¬ì¡°ê°€ ì„¤ê³„ë˜ì—ˆë‹¤. ì°¸ê³ ë¡œ ì˜¤ë¼í´ì—ëŠ” ì—†ëŠ” ìžë£Œêµ¬ì¡°ì´ë‹¤. */
+    /* Row Piece¿¡ ´ëÇÑ Slot Entry ¹øÈ£´Â 2°³Á¤µµ¸¸ CacheÇÑ´Ù.
+     * °ú¿¬ ÇÑÆäÀÌÁö´ç ÀÏ¹ÝÀûÀ¸·Î 2°³ÀÇ Row PieceÁ¤µµ¸¸ °»½ÅÇÏ´Â °ÍÀÌ
+     * ÀÏ¹ÝÀûÀÎ°¡?? ¿¡ ´ëÇÑ ÀÇÈ¤ÀÌ Á¦±âµÇÁö¸¸, 2°³ ÀÌÇÏÀÏ °æ¿ì°¡ ÀÖ´Ù¸é
+     * Row Stamping½Ã¿¡ Slot Directory¸¦ FullScanÇÏ´Â °æ¿ì°¡ Á¦°ÅµÇ¹Ç·Î
+     * ÀÌ·¯ÇÑ ÀÚ·á±¸Á¶°¡ ¼³°èµÇ¾ú´Ù. Âü°í·Î ¿À¶óÅ¬¿¡´Â ¾ø´Â ÀÚ·á±¸Á¶ÀÌ´Ù. */
     if ( sRefCnt <= SDP_CACHE_SLOT_CNT )
     {
         sCTS->mRefRowSlotNum[ sRefCnt-1 ] = aRowSlotNum;
@@ -1128,14 +1130,14 @@ IDE_RC sdcTableCTL::bindCTS4REDO( sdpPhyPageHdr * aPageHdrPtr,
 
 /***********************************************************************
  *
- * Description : íŠ¸ëžœìž­ì…˜ì´ Rowì— ë°”ì¸ë”©í•œë‹¤.
+ * Description : Æ®·£Àè¼ÇÀÌ Row¿¡ ¹ÙÀÎµùÇÑ´Ù.
  *
- * aNewSlotPtr               - [IN] Reallocí•œ ìƒˆë¡œìš´ RowPieceì˜ í¬ì¸í„°
- * aTSSlotSID                - [IN] ë°”ì¸ë”©í•  íŠ¸ëžœìž­ì…˜ì˜ TSSlot SID
- * aFstDskViewSCN            - [IN] íŠ¸ëžœìž­ì…˜ì˜ ì²«ë²ˆì§¸ Disk Stmtì˜ ViewSCN
- * aFSCreditSizeToWrite      - [IN] RowExCTSInfoì— ëˆ„ì ëœ FSCreditSize
- * aIncDelRowCnt             - [IN] Delete ì—°ì‚°ì„ ìœ„í•œ ë°”ì¸ë”©ì¸ ê²½ìš° TRUE,
- *                                  Delete Row ê°œìˆ˜ë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
+ * aNewSlotPtr               - [IN] ReallocÇÑ »õ·Î¿î RowPieceÀÇ Æ÷ÀÎÅÍ
+ * aTSSlotSID                - [IN] ¹ÙÀÎµùÇÒ Æ®·£Àè¼ÇÀÇ TSSlot SID
+ * aFstDskViewSCN            - [IN] Æ®·£Àè¼ÇÀÇ Ã¹¹øÂ° Disk StmtÀÇ ViewSCN
+ * aFSCreditSizeToWrite      - [IN] RowExCTSInfo¿¡ ´©ÀûµÈ FSCreditSize
+ * aIncDelRowCnt             - [IN] Delete ¿¬»êÀ» À§ÇÑ ¹ÙÀÎµùÀÎ °æ¿ì TRUE,
+ *                                  Delete Row °³¼ö¸¦ Áõ°¡½ÃÅ²´Ù.
  *
  ***********************************************************************/
 IDE_RC sdcTableCTL::bindRow4REDO( UChar      * aNewSlotPtr,
@@ -1175,20 +1177,20 @@ IDE_RC sdcTableCTL::bindRow4REDO( UChar      * aNewSlotPtr,
 
 /***********************************************************************
  *
- * Description : CTS ì–¸ë°©ì´ë”©
+ * Description : CTS ¾ð¹æÀÌµù
  *
- * íŠ¸ëžœìž­ì…˜ì´ ë¡¤ë°±ì´ ë˜ë©´ ë°”ì¸ë”©í•œ CTSë¥¼ ì–¸ë°”ì¸ë”©í•˜ë©´ì„œ ë°ì´íƒ€íŽ˜ì´ì§€ì— ê°±ì‹ í–ˆë˜
- * Row Pieceì— ëŒ€í•œ Undoë¥¼ ìˆ˜í–‰í•œë‹¤.
+ * Æ®·£Àè¼ÇÀÌ ·Ñ¹éÀÌ µÇ¸é ¹ÙÀÎµùÇÑ CTS¸¦ ¾ð¹ÙÀÎµùÇÏ¸é¼­ µ¥ÀÌÅ¸ÆäÀÌÁö¿¡ °»½ÅÇß´ø
+ * Row Piece¿¡ ´ëÇÑ Undo¸¦ ¼öÇàÇÑ´Ù.
  *
- * aMtx              - [IN] Mtx í¬ì¸í„°
- * aPageHdrPtr       - [IN] ë°ì´íƒ€íŽ˜ì´ì§€ì˜ í—¤ë” ì‹œìž‘ í¬ì¸í„°
- * aCTSlotIdxBfrUndo - [IN] ì–¸ë‘í•˜ê¸° ì „ì— Row Piece í—¤ë”ì˜ CTS ë²ˆí˜¸
- * aCTSlotIdxAftUndo - [IN] ì–¸ë‘í•œ í›„ì— Row Piece í—¤ë”ì˜ CTS ë²ˆí˜¸
- *                          ì¤‘ë³µ ê°±ì‹ ì´ ëœê²½ìš°ëŠ” ì–¸ë‘í•˜ê¸°ì „ì´ë‚˜ í›„ë‚˜ CTS ë²ˆí˜¸ê°€
- *                          ë™ì¼í•˜ë©´, ê·¸ë ‡ì§€ ì•Šë‹¤ë©´ SDP_CTS_IDX_UNLK ì´ì–´ì•¼ í•œë‹¤.
- * aFSCreditSize     - [IN] íŽ˜ì´ì§€ì— ì˜ˆì•½í•  Free Space Credit í¬ê¸°
- * aDecDelRowCnt     - [IN] Delete ì—°ì‚°ì„ ìœ„í•œ ì–¸ë°”ì¸ë”©ì¸ ê²½ìš° TRUE,
- *                          Delete Row ê°œìˆ˜ë¥¼ ê°ì†Œì‹œí‚¨ë‹¤.
+ * aMtx              - [IN] Mtx Æ÷ÀÎÅÍ
+ * aPageHdrPtr       - [IN] µ¥ÀÌÅ¸ÆäÀÌÁöÀÇ Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
+ * aCTSlotIdxBfrUndo - [IN] ¾ðµÎÇÏ±â Àü¿¡ Row Piece Çì´õÀÇ CTS ¹øÈ£
+ * aCTSlotIdxAftUndo - [IN] ¾ðµÎÇÑ ÈÄ¿¡ Row Piece Çì´õÀÇ CTS ¹øÈ£
+ *                          Áßº¹ °»½ÅÀÌ µÈ°æ¿ì´Â ¾ðµÎÇÏ±âÀüÀÌ³ª ÈÄ³ª CTS ¹øÈ£°¡
+ *                          µ¿ÀÏÇÏ¸é, ±×·¸Áö ¾Ê´Ù¸é SDP_CTS_IDX_UNLK ÀÌ¾î¾ß ÇÑ´Ù.
+ * aFSCreditSize     - [IN] ÆäÀÌÁö¿¡ ¿¹¾àÇÒ Free Space Credit Å©±â
+ * aDecDelRowCnt     - [IN] Delete ¿¬»êÀ» À§ÇÑ ¾ð¹ÙÀÎµùÀÎ °æ¿ì TRUE,
+ *                          Delete Row °³¼ö¸¦ °¨¼Ò½ÃÅ²´Ù.
  *
  ***********************************************************************/
 IDE_RC sdcTableCTL::logAndUnbindCTS( sdrMtx        * aMtx,
@@ -1247,17 +1249,17 @@ IDE_RC sdcTableCTL::logAndUnbindCTS( sdrMtx        * aMtx,
 
 /***********************************************************************
  *
- * Description : íŠ¸ëžœìž­ì…˜ì´ CTSë¥¼ Rowë¡œë¶€í„° ì–¸ë°”ì¸ë”© í•œë‹¤.
+ * Description : Æ®·£Àè¼ÇÀÌ CTS¸¦ Row·ÎºÎÅÍ ¾ð¹ÙÀÎµù ÇÑ´Ù.
  *
- * ì¤‘ë³µ ê°±ì‹ ì— ëŒ€í•œ Undoê°€ ì•„ë‹Œê²½ìš°ì—ëŠ” CTS ë°”ì¸ë”©ì‹œ ì¦ê°€ì‹œì¼°ë˜ RefCntë¥¼
- * ê°ì†Œì‹œí‚¨ë‹¤. ë˜í•œ ë°”ì¸ë”©ì‹œ CTSì— ì˜ˆì•½í•´ë‘ì—ˆë˜ Free Space Creditê°€ ì¡´ìž¬í•œë‹¤ë©´,
- * CTSì˜ ëˆ„ì  FSCë¡œë¶€í„° í•´ë‹¹ íŠ¸ëžœìž­ì…˜ì˜ ì–¸ë‘ê³¼ì •ì—ì„œ ë³µì›í–ˆë˜ Free Space Credit
- * ë§Œí¼ ë¹¼ì¤€ë‹¤.
+ * Áßº¹ °»½Å¿¡ ´ëÇÑ Undo°¡ ¾Æ´Ñ°æ¿ì¿¡´Â CTS ¹ÙÀÎµù½Ã Áõ°¡½ÃÄ×´ø RefCnt¸¦
+ * °¨¼Ò½ÃÅ²´Ù. ¶ÇÇÑ ¹ÙÀÎµù½Ã CTS¿¡ ¿¹¾àÇØµÎ¾ú´ø Free Space Credit°¡ Á¸ÀçÇÑ´Ù¸é,
+ * CTSÀÇ ´©Àû FSC·ÎºÎÅÍ ÇØ´ç Æ®·£Àè¼ÇÀÇ ¾ðµÎ°úÁ¤¿¡¼­ º¹¿øÇß´ø Free Space Credit
+ * ¸¸Å­ »©ÁØ´Ù.
  *
- * aPageHdrPtr       - [IN] ë°ì´íƒ€íŽ˜ì´ì§€ì˜ í—¤ë” ì‹œìž‘ í¬ì¸í„°
- * aCTSlotIdxBfrUndo - [IN] ì–¸ë‘í•˜ê¸° ì „ì— Row Piece í—¤ë”ì˜ CTS ë²ˆí˜¸
- * aCTSlotIdxAftUndo - [IN] ì–¸ë‘í•œ í›„ì— Row Piece í—¤ë”ì˜ CTS ë²ˆí˜¸
- * aFSCreditSize     - [IN] íŽ˜ì´ì§€ì— ì˜ˆì•½í•  Free Space Credit í¬ê¸°
+ * aPageHdrPtr       - [IN] µ¥ÀÌÅ¸ÆäÀÌÁöÀÇ Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
+ * aCTSlotIdxBfrUndo - [IN] ¾ðµÎÇÏ±â Àü¿¡ Row Piece Çì´õÀÇ CTS ¹øÈ£
+ * aCTSlotIdxAftUndo - [IN] ¾ðµÎÇÑ ÈÄ¿¡ Row Piece Çì´õÀÇ CTS ¹øÈ£
+ * aFSCreditSize     - [IN] ÆäÀÌÁö¿¡ ¿¹¾àÇÒ Free Space Credit Å©±â
  *
  ***********************************************************************/
 IDE_RC sdcTableCTL::unbindCTS4REDO( sdpPhyPageHdr   * aPageHdrPtr,
@@ -1278,20 +1280,20 @@ IDE_RC sdcTableCTL::unbindCTS4REDO( sdpPhyPageHdr   * aPageHdrPtr,
     IDE_ERROR( sCTS->mRefCnt > 0 );
     IDE_ERROR( hasState( sCTS->mStat, SDP_CTS_STAT_ACT ) == ID_TRUE );
 
-    // Undoê°€ ë˜ì–´ì„œ ì´ì „ Row Pieceê°€ ë‹¤ë¥¸ íŠ¸ëžœìž­ì…˜ì— ì˜í•´ Commitëœ
-    // ê²½ìš°ì—ëŠ” RefCntë¥¼ ê°ì†Œì‹œí‚¨ë‹¤.
+    // Undo°¡ µÇ¾î¼­ ÀÌÀü Row Piece°¡ ´Ù¸¥ Æ®·£Àè¼Ç¿¡ ÀÇÇØ CommitµÈ
+    // °æ¿ì¿¡´Â RefCnt¸¦ °¨¼Ò½ÃÅ²´Ù.
     if( aCTSlotIdxAftUndo != aCTSlotIdxBfrUndo )
     {
-        // BUG-27718 5.3.3 Dog Food] ì œì¼ì €ì¶•ì€í–‰ BMTì‹œë‚˜ë¦¬ì˜¤ì—ì„œ startupì‹¤íŒ¨
+        // BUG-27718 5.3.3 Dog Food] Á¦ÀÏÀúÃàÀºÇà BMT½Ã³ª¸®¿À¿¡¼­ startup½ÇÆÐ
         IDE_ERROR( (aCTSlotIdxAftUndo == SDP_CTS_IDX_UNLK) ||
-                    (aCTSlotIdxAftUndo == SDP_CTS_IDX_NULL) );
+                   (aCTSlotIdxAftUndo == SDP_CTS_IDX_NULL) );
         sCTS->mRefCnt--;
     }
     else
     {
-        // ê·¸ë ‡ì§€ ì•Šì€ ê²½ìš°ëŠ” ìžì‹ ì´ ë™ì¼í•œ Row Pieceë¥¼ ì¤‘ë³µ ê°±ì‹ í•œ
-        // ê²ƒì´ì—¬ì„œ RefCntë¥¼ ì¦ê°€ì‹œí‚¤ì§€ ì•Šì•˜ìœ¼ë¯€ë¡œ,ê°ì†Œì‹œí‚¤ì§€ë„
-        // ì•ŠëŠ”ë‹¤. ë‹¨, FSCreditëŠ” ê°ì†Œì‹œì¼œì•¼í•œë‹¤.
+        // ±×·¸Áö ¾ÊÀº °æ¿ì´Â ÀÚ½ÅÀÌ µ¿ÀÏÇÑ Row Piece¸¦ Áßº¹ °»½ÅÇÑ
+        // °ÍÀÌ¿©¼­ RefCnt¸¦ Áõ°¡½ÃÅ°Áö ¾Ê¾ÒÀ¸¹Ç·Î,°¨¼Ò½ÃÅ°Áöµµ
+        // ¾Ê´Â´Ù. ´Ü, FSCredit´Â °¨¼Ò½ÃÄÑ¾ßÇÑ´Ù.
         IDE_ERROR( aCTSlotIdxAftUndo != SDP_CTS_IDX_UNLK );
     }
 
@@ -1323,14 +1325,14 @@ IDE_RC sdcTableCTL::unbindCTS4REDO( sdpPhyPageHdr   * aPageHdrPtr,
  *
  * Description : Unbind Row
  *
- * íŠ¸ëžœìž­ì…˜ì´ ë¡¤ë°±ì´ ë˜ë©´ ë°”ì¸ë”©í•œ CTSë¥¼ ì–¸ë°”ì¸ë”©í•˜ë©´ì„œ ë°ì´íƒ€íŽ˜ì´ì§€ì— ê°±ì‹ í–ˆë˜
- * Row Pieceì— ëŒ€í•œ Undoë¥¼ ìˆ˜í–‰í•œë‹¤.
+ * Æ®·£Àè¼ÇÀÌ ·Ñ¹éÀÌ µÇ¸é ¹ÙÀÎµùÇÑ CTS¸¦ ¾ð¹ÙÀÎµùÇÏ¸é¼­ µ¥ÀÌÅ¸ÆäÀÌÁö¿¡ °»½ÅÇß´ø
+ * Row Piece¿¡ ´ëÇÑ Undo¸¦ ¼öÇàÇÑ´Ù.
  *
- * aMtx              - [IN] Mtx í¬ì¸í„°
- * aRowPieceBfrUndo  - [IN] ë°ì´íƒ€íŽ˜ì´ì§€ì˜ í—¤ë” ì‹œìž‘ í¬ì¸í„°
- * aFSCreditSize     - [IN] íŽ˜ì´ì§€ì— ì˜ˆì•½í•  Free Space Credit í¬ê¸°
- * aDecDelRowCnt     - [IN] Delete ì—°ì‚°ì„ ìœ„í•œ ì–¸ë°”ì¸ë”©ì¸ ê²½ìš° TRUE,
- *                          Delete Row ê°œìˆ˜ë¥¼ ê°ì†Œì‹œí‚¨ë‹¤.
+ * aMtx              - [IN] Mtx Æ÷ÀÎÅÍ
+ * aRowPieceBfrUndo  - [IN] µ¥ÀÌÅ¸ÆäÀÌÁöÀÇ Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
+ * aFSCreditSize     - [IN] ÆäÀÌÁö¿¡ ¿¹¾àÇÒ Free Space Credit Å©±â
+ * aDecDelRowCnt     - [IN] Delete ¿¬»êÀ» À§ÇÑ ¾ð¹ÙÀÎµùÀÎ °æ¿ì TRUE,
+ *                          Delete Row °³¼ö¸¦ °¨¼Ò½ÃÅ²´Ù.
  *
  ***********************************************************************/
 IDE_RC sdcTableCTL::logAndUnbindRow( sdrMtx      * aMtx,
@@ -1373,12 +1375,12 @@ IDE_RC sdcTableCTL::logAndUnbindRow( sdrMtx      * aMtx,
 
 /***********************************************************************
  *
- * Description : Row bound CTSë¥¼ unboundí•œë‹¤.
+ * Description : Row bound CTS¸¦ unboundÇÑ´Ù.
  *
- * aRowPieceBfrUndo  - [IN] ë°ì´íƒ€íŽ˜ì´ì§€ì˜ í—¤ë” ì‹œìž‘ í¬ì¸í„°
- * aCTSlotIdxBfrUndo - [IN] ì–¸ë‘í•˜ê¸° ì „ì— Row Piece í—¤ë”ì˜ CTS ë²ˆí˜¸
- * aCTSlotIdxAftUndo - [IN] ì–¸ë‘í•œ í›„ì— Row Piece í—¤ë”ì˜ CTS ë²ˆí˜¸
- * aFSCreditSize     - [IN] íŽ˜ì´ì§€ì— ì˜ˆì•½í•  Free Space Credit í¬ê¸°
+ * aRowPieceBfrUndo  - [IN] µ¥ÀÌÅ¸ÆäÀÌÁöÀÇ Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
+ * aCTSlotIdxBfrUndo - [IN] ¾ðµÎÇÏ±â Àü¿¡ Row Piece Çì´õÀÇ CTS ¹øÈ£
+ * aCTSlotIdxAftUndo - [IN] ¾ðµÎÇÑ ÈÄ¿¡ Row Piece Çì´õÀÇ CTS ¹øÈ£
+ * aFSCreditSize     - [IN] ÆäÀÌÁö¿¡ ¿¹¾àÇÒ Free Space Credit Å©±â
  *
  ***********************************************************************/
 IDE_RC sdcTableCTL::unbindRow4REDO( UChar     * aRowPieceBfrUndo,
@@ -1428,19 +1430,19 @@ IDE_RC sdcTableCTL::unbindRow4REDO( UChar     * aRowPieceBfrUndo,
 
 /*********************************************************************
  *
- * Description : Pageì— ëŒ€í•˜ì—¬ Fast CTS TimeStamping ìˆ˜í–‰
+ * Description : Page¿¡ ´ëÇÏ¿© Fast CTS TimeStamping ¼öÇà
  *
- * íŠ¸ëžœìž­ì…˜ ì»¤ë°‹ê³¼ì •ì—ì„œ No-Logging ëª¨ë“œë¡œ CTSì— íŠ¸ëžœìž­ì…˜ì˜ CommitSCNì„
- * ì„¤ì •í•œë‹¤. íŠ¸ëžœìž­ì…˜ì´ ë°©ë¬¸í–ˆë˜ íŽ˜ì´ì§€ì— ëŒ€í•´ì„œ ìž¬ë°©ë¬¸ì„ í•˜ëŠ” ê²ƒì¸ë°,
- * ë§Œì•½ Partial Rollbackë“±ìœ¼ë¡œ ì¸í•´ì„œ ë°©ë¬¸í–ˆë˜ íŽ˜ì´ì§€ì— ìžì‹ ì— í•´ë‹¹í•˜ëŠ”
- * CTSê°€ ì—†ì„ ìˆ˜ë„ ìžˆìœ¼ë¯€ë¡œ ë°˜ë“œì‹œ ìžì‹ ì˜ CTSì¸ì§€ì—¬ë¶€ë¥¼ íŒë‹¨í•œ í›„ Stampingì„
- * ìˆ˜í–‰í•œë‹¤.
+ * Æ®·£Àè¼Ç Ä¿¹Ô°úÁ¤¿¡¼­ No-Logging ¸ðµå·Î CTS¿¡ Æ®·£Àè¼ÇÀÇ CommitSCNÀ»
+ * ¼³Á¤ÇÑ´Ù. Æ®·£Àè¼ÇÀÌ ¹æ¹®Çß´ø ÆäÀÌÁö¿¡ ´ëÇØ¼­ Àç¹æ¹®À» ÇÏ´Â °ÍÀÎµ¥,
+ * ¸¸¾à Partial RollbackµîÀ¸·Î ÀÎÇØ¼­ ¹æ¹®Çß´ø ÆäÀÌÁö¿¡ ÀÚ½Å¿¡ ÇØ´çÇÏ´Â
+ * CTS°¡ ¾øÀ» ¼öµµ ÀÖÀ¸¹Ç·Î ¹Ýµå½Ã ÀÚ½ÅÀÇ CTSÀÎÁö¿©ºÎ¸¦ ÆÇ´ÜÇÑ ÈÄ StampingÀ»
+ * ¼öÇàÇÑ´Ù.
  *
- * aTransTSSlotSID- [IN] íŠ¸ëžœìž­ì…˜ì˜ TSSlotSID ì˜ í¬ì¸í„°
- * aFstDskViewSCN - [IN] íŠ¸ëžœìž­ì…˜ì˜ ì²«ë²ˆì§¸ Disk Stmtì˜ ViewSCN
- * aPagePtr       - [IN] íŽ˜ì´ì§€ í—¤ë” ì‹œìž‘ í¬ì¸í„°
- * aCTSlotIdx     - [IN] íŠ¸ëžœìž­ì…˜ì´ DMLì—°ì‚°ìœ¼ë¡œ ë°©ë¬¸í–ˆì„ë•Œ ë°”ì¸ë”©í–ˆë˜ CTS ë²ˆí˜¸
- * aCommitSCN     - [IN] íŠ¸ëžœìž­ì…˜ì´ í• ë‹¹í•œ CommitSCNì˜ í¬ì¸í„°
+ * aTransTSSlotSID- [IN] Æ®·£Àè¼ÇÀÇ TSSlotSID ÀÇ Æ÷ÀÎÅÍ
+ * aFstDskViewSCN - [IN] Æ®·£Àè¼ÇÀÇ Ã¹¹øÂ° Disk StmtÀÇ ViewSCN
+ * aPagePtr       - [IN] ÆäÀÌÁö Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
+ * aCTSlotIdx     - [IN] Æ®·£Àè¼ÇÀÌ DML¿¬»êÀ¸·Î ¹æ¹®ÇßÀ»¶§ ¹ÙÀÎµùÇß´ø CTS ¹øÈ£
+ * aCommitSCN     - [IN] Æ®·£Àè¼ÇÀÌ ÇÒ´çÇÑ CommitSCNÀÇ Æ÷ÀÎÅÍ
  *
  *********************************************************************/
 IDE_RC sdcTableCTL::runFastStamping( sdSID         * aTransTSSlotSID,
@@ -1453,10 +1455,10 @@ IDE_RC sdcTableCTL::runFastStamping( sdSID         * aTransTSSlotSID,
 
     sCTS = getCTS( (sdpPhyPageHdr*)aPagePtr, aCTSlotIdx );
 
-    IDE_ERROR( !SM_SCN_IS_INIT( *aCommitSCN ) );
+    IDE_ERROR( SM_SCN_IS_NOT_INIT( *aCommitSCN ) );
 
-    /* ìžì‹ ì´ ë°”ì¸ë”©í–ˆë˜ CTSëŠ” ACT ìƒíƒœì´ë‹¤. ë¬¼ë¡  ë‹¤ë¥¸ íŠ¸ëžœìž­ì…˜ì´ ì‚¬ìš©ì¤‘ì´ë¼ë„
-     * ACT ìƒíƒœì´ë¯€ë¡œ ìžì‹ ì˜ ê²ƒì¸ì§€ ë°˜ë“œì‹œ í™•ì¸í•œë‹¤. */
+    /* ÀÚ½ÅÀÌ ¹ÙÀÎµùÇß´ø CTS´Â ACT »óÅÂÀÌ´Ù. ¹°·Ð ´Ù¸¥ Æ®·£Àè¼ÇÀÌ »ç¿ëÁßÀÌ¶óµµ
+     * ACT »óÅÂÀÌ¹Ç·Î ÀÚ½ÅÀÇ °ÍÀÎÁö ¹Ýµå½Ã È®ÀÎÇÑ´Ù. */
     if( hasState( sCTS->mStat, SDP_CTS_STAT_ACT ) == ID_TRUE )
     {
         if( isMyTrans( aTransTSSlotSID,
@@ -1469,9 +1471,9 @@ IDE_RC sdcTableCTL::runFastStamping( sdSID         * aTransTSSlotSID,
     }
     else
     {
-        // ACTê°€ ì•„ë‹Œê²½ìš°ëŠ” ìžì‹ ì´ ë°”ì¸ë”©í–ˆë‹¤ê°€ Partial Rollbackìœ¼ë¡œ ì¸í•´
-        // ì–¸ë°”ì¸ë”©í•œ í›„ì— ROL ìƒíƒœë¡œ ë‚¨ì•„ ìžˆê±°ë‚˜, ë‹¤ë¥¸ íŠ¸ëžœìž­ì…˜ì´ ì‚¬ìš©í›„
-        // Stampingì„ ìˆ˜í–‰í•œ ê²½ìš°ì´ë‹¤.
+        // ACT°¡ ¾Æ´Ñ°æ¿ì´Â ÀÚ½ÅÀÌ ¹ÙÀÎµùÇß´Ù°¡ Partial RollbackÀ¸·Î ÀÎÇØ
+        // ¾ð¹ÙÀÎµùÇÑ ÈÄ¿¡ ROL »óÅÂ·Î ³²¾Æ ÀÖ°Å³ª, ´Ù¸¥ Æ®·£Àè¼ÇÀÌ »ç¿ëÈÄ
+        // StampingÀ» ¼öÇàÇÑ °æ¿ìÀÌ´Ù.
     }
 
     return IDE_SUCCESS;
@@ -1483,18 +1485,18 @@ IDE_RC sdcTableCTL::runFastStamping( sdSID         * aTransTSSlotSID,
 
 /*********************************************************************
  *
- * Description : DRDBRedo Valdationì„ ìœ„í•´ FastStampingì„ ì‹œë„í•©ë‹ˆë‹¤.
+ * Description : DRDBRedo ValdationÀ» À§ÇØ FastStampingÀ» ½ÃµµÇÕ´Ï´Ù.
  *
- * 1) Stampingì„ í–ˆëŠëƒ í•˜ì§€ ì•Šì•˜ëŠëƒì— ë”°ë¼ SCNì´ ë‹¤ë¥¼ ìˆ˜ ìžˆê¸° ë•Œë¬¸ì´ë‹ˆë‹¤.
- * 2) Stamping ë˜ì—ˆì–´ë„ ë‹¤ì‹œ Stampingì„ ì‹œë„í•©ë‹ˆë‹¤. TSSê°€ ì™„ì „ížˆ ìž¬í™œìš©
- *    ë˜ì–´ CommitSCNì´ 0ì¼ ìˆ˜ë„ ìžˆê¸° ë•Œë¬¸ìž…ë‹ˆë‹¤.
- * 3) ë‘ íŽ˜ì´ì§€ë¥¼ ë™ì‹œì— Stampingí•©ë‹ˆë‹¤. ë‘ë²ˆì— ê±¸ì³ Stampingí•˜ë©´
- *    getCommitSCNì˜ íƒ€ì´ë°ì— ë”°ë¼, í•œìª½ì€ Stamping ë˜ë©´ì„œ ë‹¤ë¥¸ í•œìª½ì€
- *    Stamping ì•ˆë  ìˆ˜ë„ ìžˆê¸° ë•Œë¬¸ìž…ë‹ˆë‹¤.
+ * 1) StampingÀ» Çß´À³Ä ÇÏÁö ¾Ê¾Ò´À³Ä¿¡ µû¶ó SCNÀÌ ´Ù¸¦ ¼ö ÀÖ±â ¶§¹®ÀÌ´Ï´Ù.
+ * 2) Stamping µÇ¾ú¾îµµ ´Ù½Ã StampingÀ» ½ÃµµÇÕ´Ï´Ù. TSS°¡ ¿ÏÀüÈ÷ ÀçÈ°¿ë
+ *    µÇ¾î CommitSCNÀÌ 0ÀÏ ¼öµµ ÀÖ±â ¶§¹®ÀÔ´Ï´Ù.
+ * 3) µÎ ÆäÀÌÁö¸¦ µ¿½Ã¿¡ StampingÇÕ´Ï´Ù. µÎ¹ø¿¡ °ÉÃÄ StampingÇÏ¸é
+ *    getCommitSCNÀÇ Å¸ÀÌ¹Ö¿¡ µû¶ó, ÇÑÂÊÀº Stamping µÇ¸é¼­ ´Ù¸¥ ÇÑÂÊÀº
+ *    Stamping ¾ÈµÉ ¼öµµ ÀÖ±â ¶§¹®ÀÔ´Ï´Ù.
  *
- * aStatistics    - [IN] Dummyí†µê³„ì •ë³´
- * aPagePtr1      - [IN] íŽ˜ì´ì§€ í—¤ë” ì‹œìž‘ í¬ì¸í„°
- * aPagePtr2      - [IN] íŽ˜ì´ì§€ í—¤ë” ì‹œìž‘ í¬ì¸í„°
+ * aStatistics    - [IN] DummyÅë°èÁ¤º¸
+ * aPagePtr1      - [IN] ÆäÀÌÁö Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
+ * aPagePtr2      - [IN] ÆäÀÌÁö Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
  *
  *********************************************************************/
 IDE_RC sdcTableCTL::stampingAll4RedoValidation( 
@@ -1506,7 +1508,7 @@ IDE_RC sdcTableCTL::stampingAll4RedoValidation(
     sdpCTS          * sCTS1;
     sdpCTL          * sCTL2;
     sdpCTS          * sCTS2;
-    smTID             sWaitTID;
+    smTID             sDummyTID4Wait;
     UInt              sTotCTSCnt;
     UChar             sIdx;
     sdSID             sTSSlotSID;
@@ -1520,7 +1522,7 @@ IDE_RC sdcTableCTL::stampingAll4RedoValidation(
     sdcRowHdrExInfo   sRowHdrExInfo;
  
     /************************************************************************
-     * CTSBoundChangeInfoì— ëŒ€í•´ FastStamping ì‹œë„
+     * CTSBoundChangeInfo¿¡ ´ëÇØ FastStamping ½Ãµµ
      ***********************************************************************/
     sCTL1                = getCTL( (sdpPhyPageHdr*)aPagePtr1);
     sCTL2                = getCTL( (sdpPhyPageHdr*)aPagePtr2);
@@ -1533,9 +1535,9 @@ IDE_RC sdcTableCTL::stampingAll4RedoValidation(
         sCTS1  = getCTS( sCTL1, sIdx );
         sCTS2  = getCTS( sCTL2, sIdx );
 
-        /* Stamping ëœ ìƒíƒœë¼ë„, ë‹¤ì‹œ Stampnigì„ í•©ë‹ˆë‹¤.
-         * ì™œëƒí•˜ë©´ TSSê°€ ì™„ì „ížˆ ìž¬í™œìš©ë˜ì–´ CommtSCNì´ 0ì¸ ìƒíƒœì¼ ìˆ˜ë„
-         * ìžˆê¸° ë•Œë¬¸ìž…ë‹ˆë‹¤. */
+        /* Stamping µÈ »óÅÂ¶óµµ, ´Ù½Ã StampnigÀ» ÇÕ´Ï´Ù.
+         * ¿Ö³ÄÇÏ¸é TSS°¡ ¿ÏÀüÈ÷ ÀçÈ°¿ëµÇ¾î CommtSCNÀÌ 0ÀÎ »óÅÂÀÏ ¼öµµ
+         * ÀÖ±â ¶§¹®ÀÔ´Ï´Ù. */
         if( ( hasState( sCTS1->mStat, SDP_CTS_STAT_ACT ) == ID_TRUE ) ||
             ( hasState( sCTS1->mStat, SDP_CTS_STAT_CTS ) == ID_TRUE ) )
         {
@@ -1548,9 +1550,11 @@ IDE_RC sdcTableCTL::stampingAll4RedoValidation(
                        SD_MAKE_SID( sCTS2->mTSSPageID, sCTS2->mTSSlotNum ) );
 
             IDE_TEST( sdcTSSegment::getCommitSCN( aStatistics,
+                                                  NULL,        /* aTrans */
                                                   sTSSlotSID,
                                                   &(sCTS1->mFSCNOrCSCN),
-                                                  &sWaitTID,
+                                                  SM_SCN_INIT, /* aStmtViewSCN */
+                                                  &sDummyTID4Wait,
                                                   &sRowCommitSCN )
                       != IDE_SUCCESS );
 
@@ -1562,15 +1566,15 @@ IDE_RC sdcTableCTL::stampingAll4RedoValidation(
                 SM_SET_SCN( &(sCTS2->mFSCNOrCSCN), &sRowCommitSCN );
                 sCTS2->mStat  = SDP_CTS_STAT_CTS;
             }
-            /* ì›ëž˜ ì“°ë ˆê¸°ê°’ì´ ë“¤ì–´ê°€ë„ ë¬´ë°©í•˜ë‹¤. í•˜ì§€ë§Œ RedoValidationì—ì„œëŠ”
-             * ë¬´ì˜ë¯¸í•œ Diffê°€ ìƒê¸´ë‹¤. */
+            /* ¿ø·¡ ¾²·¹±â°ªÀÌ µé¾î°¡µµ ¹«¹æÇÏ´Ù. ÇÏÁö¸¸ RedoValidation¿¡¼­´Â
+             * ¹«ÀÇ¹ÌÇÑ Diff°¡ »ý±ä´Ù. */
             sCTS1->mAlign = 0;
             sCTS2->mAlign = 0;
         }
         else
         {
-            /* RowTimeStampingë“± ìž¬í™œìš© ê°€ëŠ¥í•œ ìƒíƒœë©´ ë¶ˆí•„ìš”í•œ diffë¥¼ ì—†ì• ê¸°
-             * ìœ„í•´ ì´ˆê¸°í™” í•œë‹¤. */
+            /* RowTimeStampingµî ÀçÈ°¿ë °¡´ÉÇÑ »óÅÂ¸é ºÒÇÊ¿äÇÑ diff¸¦ ¾ø¾Ö±â
+             * À§ÇØ ÃÊ±âÈ­ ÇÑ´Ù. */
             idlOS::memset( sCTS1, 0, ID_SIZEOF( sdpCTS ) );
             sCTS1->mStat          = SDP_CTS_STAT_NUL;
 
@@ -1580,7 +1584,7 @@ IDE_RC sdcTableCTL::stampingAll4RedoValidation(
     }
 
     /************************************************************************
-     * RowBoundChangeInfoì— ëŒ€í•´ Stampingì„ ì‹œë„í•œë‹¤.
+     * RowBoundChangeInfo¿¡ ´ëÇØ StampingÀ» ½ÃµµÇÑ´Ù.
      ***********************************************************************/
     sSlotDirPtr1 = sdpPhyPage::getSlotDirStartPtr(aPagePtr1);
     sTotSlotCnt = sdpSlotDirectory::getCount(sSlotDirPtr1);
@@ -1588,8 +1592,8 @@ IDE_RC sdcTableCTL::stampingAll4RedoValidation(
 
     IDE_TEST( sTotSlotCnt != sdpSlotDirectory::getCount( sSlotDirPtr2 ) );
 
-    /* Transaction ì •ë³´ê°€ Rowì— bound ë˜ì—ˆì„ ê²½ìš°ë¥¼ ê³ ë ¤í•˜ì—¬ ëª¨ë“  Slotì„
-     * ëŒë©´ì„œ Stampingì„ ìˆ˜í–‰í•œë‹¤. */
+    /* Transaction Á¤º¸°¡ Row¿¡ bound µÇ¾úÀ» °æ¿ì¸¦ °í·ÁÇÏ¿© ¸ðµç SlotÀ»
+     * µ¹¸é¼­ StampingÀ» ¼öÇàÇÑ´Ù. */
     for( sSlotIdx = 0; sSlotIdx < sTotSlotCnt; sSlotIdx++ )
     {
         if( sdpSlotDirectory::isUnusedSlotEntry(sSlotDirPtr1, sSlotIdx)
@@ -1607,7 +1611,7 @@ IDE_RC sdcTableCTL::stampingAll4RedoValidation(
                                  SDC_ROWHDR_CTSLOTIDX,
                                  sCTSlotIdx );
 
-        /* BoundRowì´ë©´ */
+        /* BoundRowÀÌ¸é */
         if( !SDC_HAS_BOUND_CTS(sCTSlotIdx) )
         {
             sdcRow::getRowHdrExInfo( sSlotPtr, &sRowHdrExInfo );
@@ -1615,30 +1619,32 @@ IDE_RC sdcTableCTL::stampingAll4RedoValidation(
             sTSSlotSID    = SD_MAKE_SID( sRowHdrExInfo.mTSSPageID,
                                          sRowHdrExInfo.mTSSlotNum );
 
-            /* Stamping ëœ ìƒíƒœë¼ë„, ë‹¤ì‹œ Stampnigì„ í•©ë‹ˆë‹¤.
-             * ì™œëƒí•˜ë©´ TSSê°€ ì™„ì „ížˆ ìž¬í™œìš©ë˜ì–´ CommtSCNì´ 0ì¸ ìƒíƒœì¼ ìˆ˜ë„
-             * ìžˆê¸° ë•Œë¬¸ìž…ë‹ˆë‹¤. 
-             * ë‹¤ë§Œ TSSê°€ Nullì¸ ê²ƒì€ ì´ë¯¸ RowStampingë„ ëœê²ƒì´ê¸° ë•Œë¬¸ì—
-             * ë¬´ì‹œí•©ë‹ˆë‹¤. */
+            /* Stamping µÈ »óÅÂ¶óµµ, ´Ù½Ã StampnigÀ» ÇÕ´Ï´Ù.
+             * ¿Ö³ÄÇÏ¸é TSS°¡ ¿ÏÀüÈ÷ ÀçÈ°¿ëµÇ¾î CommtSCNÀÌ 0ÀÎ »óÅÂÀÏ ¼öµµ
+             * ÀÖ±â ¶§¹®ÀÔ´Ï´Ù. 
+             * ´Ù¸¸ TSS°¡ NullÀÎ °ÍÀº ÀÌ¹Ì RowStampingµµ µÈ°ÍÀÌ±â ¶§¹®¿¡
+             * ¹«½ÃÇÕ´Ï´Ù. */
             //if( SDC_CTS_SCN_IS_NOT_COMMITTED( sRowHdrExInfo.mFSCNOrCSCN) )
             if( sTSSlotSID != SD_NULL_SID )
             {
                 IDE_TEST( sdcTSSegment::getCommitSCN( 
                                                     aStatistics,
+                                                    NULL,        /* aTrans */
                                                     sTSSlotSID,
                                                     &sRowHdrExInfo.mFSCNOrCSCN,
-                                                    &sWaitTID,
+                                                    SM_SCN_INIT, /* aStmtViewSCN */
+                                                    &sDummyTID4Wait,
                                                     &sRowCommitSCN )
                           != IDE_SUCCESS );
 
                 if ( SM_SCN_IS_NOT_INFINITE(sRowCommitSCN) )
                 {
-                    /* Page1ì— ëŒ€í•´ */
+                    /* Page1¿¡ ´ëÇØ */
                     SDC_SET_ROWHDR_FIELD( sSlotPtr,
                                           SDC_ROWHDR_FSCNORCSCN,
                                           &sRowCommitSCN );
 
-                    /* Page2ì— ëŒ€í•´ */
+                    /* Page2¿¡ ´ëÇØ */
                     IDE_TEST( sdpSlotDirectory::getPagePtrFromSlotNum( 
                                                                 sSlotDirPtr2,
                                                                 sSlotIdx,
@@ -1663,29 +1669,34 @@ IDE_RC sdcTableCTL::stampingAll4RedoValidation(
 
 /*********************************************************************
  *
- * Description : Delayed CTS TimeStamping ìˆ˜í–‰
+ * Description : Delayed CTS TimeStamping ¼öÇà
  *
- * Delayed Row TimeStampingì€ Rowì˜ GetValidVersionì´ë‚˜ canUpdateRowPiece
- * ì—°ì‚°ê³¼ì •ì—ì„œ Rowì˜ CommitSCNì„ ì•Œê³ ìž í• ë•Œ ìˆ˜í–‰ëœë‹¤.
- * ë³¸ ì—°ì‚°ì€ Rowì™€ ì—°ê´€ëœ ì¼ë°˜ì ìœ¼ë¡œ TSSì— ë°©ë¬¸í•˜ì—¬ í•´ë‹¹ Rowë¥¼ ê°±ì‹ í•œ íŠ¸ëžœìž­ì…˜ì˜
- * ìƒíƒœë¥¼ ë³´ê³  ì™„ë£Œê°€ ëœ ê²½ìš°ì— No-Logging ëª¨ë“œë¡œ CTS TimeStampingì„
- * ìˆ˜í–‰í•œë‹¤. Delayedì˜ ì˜ë¯¸ëŠ” ê°±ì‹ íŠ¸ëžœìž­ì…˜ì´ ì§ì ‘ ì»¤ë°‹ê³¼ì •ì—ì„œ ìˆ˜í–‰í•œ
- * CTS TimeStampingì´ ì•„ë‹ˆë¼, ì´ í›„ì˜ ë‹¤ë¥¸ íŠ¸ëžœìž­ì…˜ì— ì˜í•´ì„œ ì§€ì—°ë˜ì–´ TimeStamping
- * ì´ ëœë‹¤ëŠ” ê²ƒì´ë‹¤.
+ * Delayed Row TimeStampingÀº RowÀÇ GetValidVersionÀÌ³ª canUpdateRowPiece
+ * ¿¬»ê°úÁ¤¿¡¼­ RowÀÇ CommitSCNÀ» ¾Ë°íÀÚ ÇÒ¶§ ¼öÇàµÈ´Ù.
+ * º» ¿¬»êÀº Row¿Í ¿¬°üµÈ ÀÏ¹ÝÀûÀ¸·Î TSS¿¡ ¹æ¹®ÇÏ¿© ÇØ´ç Row¸¦ °»½ÅÇÑ Æ®·£Àè¼ÇÀÇ
+ * »óÅÂ¸¦ º¸°í ¿Ï·á°¡ µÈ °æ¿ì¿¡ No-Logging ¸ðµå·Î CTS TimeStampingÀ»
+ * ¼öÇàÇÑ´Ù. DelayedÀÇ ÀÇ¹Ì´Â °»½ÅÆ®·£Àè¼ÇÀÌ Á÷Á¢ Ä¿¹Ô°úÁ¤¿¡¼­ ¼öÇàÇÑ
+ * CTS TimeStampingÀÌ ¾Æ´Ï¶ó, ÀÌ ÈÄÀÇ ´Ù¸¥ Æ®·£Àè¼Ç¿¡ ÀÇÇØ¼­ Áö¿¬µÇ¾î TimeStamping
+ * ÀÌ µÈ´Ù´Â °ÍÀÌ´Ù.
  *
- * aStatistics    - [IN] í†µê³„ì •ë³´
- * aCTS           - [IN] CTS í¬ì¸í„°
+ * aStatistics    - [IN] Åë°èÁ¤º¸
+ * aTrans         - [IN] ÀÚ½ÅÀÇ TXÀÇ Æ÷ÀÎÅÍ
+ * aCTSlotIdx     - [IN]
+ * aObjPtr        - [IN] CTS Æ÷ÀÎÅÍ È¤Àº RowPiece Æ÷ÀÎÅÍ
  * aPageReadMode  - [IN] page read mode(SPR or MPR)
- * aTrySuccess    - [OUT] Delayed CTS TimeStampingì˜ ì„±ê³µì—¬ë¶€
- * aWait4TransID  - [OUT] ëŒ€ê¸°í•´ì•¼í•  ëŒ€ìƒ íŠ¸ëžœìž­ì…˜ì˜ ID
- * aRowCommitSCN  - [OUT] ëŒ€ìƒ íŠ¸ëžœìž­ì…˜ì˜ CommitSCN
- * aFSCreditSize  - [OUT] CTSì˜ ëˆ„ì  FSCreditSize
+ * aStmtViewSCN   - [IN] ¿Ã¹Ù¸¥ ¹öÀüÀÇ row¸¦ ÀÐ±â À§ÇÑ Statement viewscn
+ * aTrySuccess    - [OUT] Delayed CTS TimeStampingÀÇ ¼º°ø¿©ºÎ
+ * aWait4TransID  - [OUT] ´ë±âÇØ¾ßÇÒ ´ë»ó Æ®·£Àè¼ÇÀÇ ID
+ * aRowCommitSCN  - [OUT] ´ë»ó Æ®·£Àè¼ÇÀÇ CommitSCN
+ * aFSCreditSize  - [OUT] CTSÀÇ ´©Àû FSCreditSize
  *
  *********************************************************************/
 IDE_RC sdcTableCTL::runDelayedStamping( idvSQL           * aStatistics,
+                                        void             * aTrans,
                                         UChar              aCTSlotIdx,
                                         void             * aObjPtr,
                                         sdbPageReadMode    aPageReadMode,
+                                        smSCN              aStmtViewSCN,
                                         idBool           * aTrySuccess,
                                         smTID            * aWait4TransID,
                                         smSCN            * aRowCommitSCN,
@@ -1700,8 +1711,10 @@ IDE_RC sdcTableCTL::runDelayedStamping( idvSQL           * aStatistics,
     if ( SDC_HAS_BOUND_CTS(aCTSlotIdx) )
     {
         IDE_TEST( runDelayedStampingOnCTS( aStatistics,
+                                           aTrans,
                                            (sdpCTS*)aObjPtr,
                                            aPageReadMode,
+                                           aStmtViewSCN,
                                            aTrySuccess,
                                            aWait4TransID,
                                            aRowCommitSCN,
@@ -1713,8 +1726,10 @@ IDE_RC sdcTableCTL::runDelayedStamping( idvSQL           * aStatistics,
         IDE_ERROR( aCTSlotIdx == SDP_CTS_IDX_NULL );
 
         IDE_TEST( runDelayedStampingOnRow( aStatistics,
+                                           aTrans,
                                            (UChar*)aObjPtr,
                                            aPageReadMode,
+                                           aStmtViewSCN,
                                            aTrySuccess,
                                            aWait4TransID,
                                            aRowCommitSCN,
@@ -1731,19 +1746,21 @@ IDE_RC sdcTableCTL::runDelayedStamping( idvSQL           * aStatistics,
 
 
 /*********************************************************************
- * Description : ëŒ€ìƒ íŽ˜ì´ì§€ì˜ ëª¨ë“  slotë“¤ì— ëŒ€í•˜ì—¬ Delayed TimeStampingì„
- *               ìˆ˜í–‰í•œë‹¤.
+ * Description : ´ë»ó ÆäÀÌÁöÀÇ ¸ðµç slotµé¿¡ ´ëÇÏ¿© Delayed TimeStampingÀ»
+ *               ¼öÇàÇÑ´Ù.
  *
- * aStatistics         - [IN] í†µê³„ì •ë³´
- * aTrans              - [IN] ìžì‹ ì˜ TXì˜ í¬ì¸í„°
- * aPageptr            - [IN] íŽ˜ì´ì§€ ì‹œìž‘ í¬ì¸í„°
+ * BUG-48353 : ÀÌ ÇÔ¼ö´Â Stamping ¶Ç´Â Ä³½¬ ÆäÀÌÁö¸¦ ¸¸µé¶§¸¸ »ç¿ëÇÑ´Ù.
+ *             µû¶ó¼­ Pending Wait¸¦ ÇÏÁö¾Ê´Â´Ù.
+ *
+ * aStatistics         - [IN] Åë°èÁ¤º¸
+ * aTrans              - [IN] ÀÚ½ÅÀÇ TXÀÇ Æ÷ÀÎÅÍ
+ * aPageptr            - [IN] ÆäÀÌÁö ½ÃÀÛ Æ÷ÀÎÅÍ
  * aPageReadMode       - [IN] page read mode(SPR or MPR)
  *********************************************************************/
-IDE_RC sdcTableCTL::runDelayedStampingAll(
-                         idvSQL          * aStatistics,
-                         void            * aTrans,
-                         UChar           * aPagePtr,
-                         sdbPageReadMode   aPageReadMode )
+IDE_RC sdcTableCTL::runDelayedStampingAll( idvSQL          * aStatistics,
+                                           void            * aTrans,
+                                           UChar           * aPagePtr,
+                                           sdbPageReadMode   aPageReadMode )
 {
     smSCN       sMyFstDskViewSCN;
     sdSID       sMyTSSlotSID;
@@ -1756,7 +1773,7 @@ IDE_RC sdcTableCTL::runDelayedStampingAll(
     smSCN       sRowCSCN;
     smSCN       sFstDskViewSCN;
     idBool      sTrySuccess;
-    smTID       sWaitTID;
+    smTID       sDummyTID4Wait;
     sdpCTL    * sCTL;
     UInt        sTotCTSCnt;
     UChar       sIdx;
@@ -1764,7 +1781,7 @@ IDE_RC sdcTableCTL::runDelayedStampingAll(
 
     IDE_ERROR( aPagePtr != NULL );
 
-    /* CTSBoundChangeInfoì— ëŒ€í•´ Stampingì„ ë¨¼ì € ì‹œë„í•œë‹¤. */
+    /* CTSBoundChangeInfo¿¡ ´ëÇØ StampingÀ» ¸ÕÀú ½ÃµµÇÑ´Ù. */
     sCTL                 = getCTL( (sdpPhyPageHdr*)aPagePtr );
     sTotCTSCnt           = sCTL->mTotCTSCnt;
     for( sIdx = 0; sIdx < sTotCTSCnt; sIdx++ )
@@ -1773,10 +1790,12 @@ IDE_RC sdcTableCTL::runDelayedStampingAll(
         if( hasState( sCTS->mStat, SDP_CTS_STAT_ACT ) == ID_TRUE )
         {
             IDE_TEST( runDelayedStampingOnCTS( aStatistics,
+                                               NULL,
                                                sCTS,
                                                aPageReadMode,
+                                               SM_SCN_INIT,
                                                &sTrySuccess,
-                                               &sWaitTID,
+                                               &sDummyTID4Wait,
                                                &sRowCSCN,
                                                &sFSCreditSize )
                       != IDE_SUCCESS );
@@ -1784,18 +1803,18 @@ IDE_RC sdcTableCTL::runDelayedStampingAll(
     }
 
     /* TASK-6105 
-     * Row Bind CTSê°€ ì¡´ìž¬í• ë•Œë§Œ Rowì— boundëœ Transactionì •ë³´ë¥¼ Stampingí•œë‹¤ */
+     * Row Bind CTS°¡ Á¸ÀçÇÒ¶§¸¸ Row¿¡ boundµÈ TransactionÁ¤º¸¸¦ StampingÇÑ´Ù */
     if ( sCTL->mRowBindCTSCnt != 0)
     {
-        /* RowBoundChangeInfoì— ëŒ€í•´ Stampingì„ ì‹œë„í•œë‹¤. */
+        /* RowBoundChangeInfo¿¡ ´ëÇØ StampingÀ» ½ÃµµÇÑ´Ù. */
         sSlotDirPtr = sdpPhyPage::getSlotDirStartPtr(aPagePtr);
         sTotSlotCnt = sdpSlotDirectory::getCount(sSlotDirPtr);
 
         sMyFstDskViewSCN  = smxTrans::getFstDskViewSCN( aTrans );
         sMyTSSlotSID = smxTrans::getTSSlotSID( aTrans );
 
-        /* Transaction ì •ë³´ê°€ Rowì— bound ë˜ì—ˆì„ ê²½ìš°ë¥¼ ê³ ë ¤í•˜ì—¬ ëª¨ë“  Slotì„
-         * ëŒë©´ì„œ Stampingì„ ìˆ˜í–‰í•œë‹¤. */
+        /* Transaction Á¤º¸°¡ Row¿¡ bound µÇ¾úÀ» °æ¿ì¸¦ °í·ÁÇÏ¿© ¸ðµç SlotÀ»
+         * µ¹¸é¼­ StampingÀ» ¼öÇàÇÑ´Ù. */
         for ( sSlotIdx = 0; sSlotIdx < sTotSlotCnt; sSlotIdx++ )
         {
             if( sdpSlotDirectory::isUnusedSlotEntry(sSlotDirPtr, sSlotIdx)
@@ -1824,10 +1843,12 @@ IDE_RC sdcTableCTL::runDelayedStampingAll(
  
                 {
                     IDE_TEST( runDelayedStampingOnRow( aStatistics,
+                                                       NULL,
                                                        sSlotPtr,
                                                        aPageReadMode,
+                                                       SM_SCN_INIT,
                                                        &sTrySuccess,
-                                                       &sWaitTID,
+                                                       &sDummyTID4Wait,
                                                        &sRowCSCN,
                                                        &sFSCreditSize )
                               != IDE_SUCCESS );
@@ -1845,28 +1866,32 @@ IDE_RC sdcTableCTL::runDelayedStampingAll(
 
 /*********************************************************************
  *
- * Description : Delayed CTS TimeStamping ìˆ˜í–‰
+ * Description : Delayed CTS TimeStamping ¼öÇà
  *
- * Delayed Row TimeStampingì€ Rowì˜ GetValidVersionì´ë‚˜ canUpdateRowPiece
- * ì—°ì‚°ê³¼ì •ì—ì„œ Rowì˜ CommitSCNì„ ì•Œê³ ìž í• ë•Œ ìˆ˜í–‰ëœë‹¤.
- * ë³¸ ì—°ì‚°ì€ Rowì™€ ì—°ê´€ëœ ì¼ë°˜ì ìœ¼ë¡œ TSSì— ë°©ë¬¸í•˜ì—¬ í•´ë‹¹ Rowë¥¼ ê°±ì‹ í•œ íŠ¸ëžœìž­ì…˜ì˜
- * ìƒíƒœë¥¼ ë³´ê³  ì™„ë£Œê°€ ëœ ê²½ìš°ì— No-Logging ëª¨ë“œë¡œ CTS TimeStampingì„
- * ìˆ˜í–‰í•œë‹¤. Delayedì˜ ì˜ë¯¸ëŠ” ê°±ì‹ íŠ¸ëžœìž­ì…˜ì´ ì§ì ‘ ì»¤ë°‹ê³¼ì •ì—ì„œ ìˆ˜í–‰í•œ
- * CTS TimeStampingì´ ì•„ë‹ˆë¼, ì´ í›„ì˜ ë‹¤ë¥¸ íŠ¸ëžœìž­ì…˜ì— ì˜í•´ì„œ ì§€ì—°ë˜ì–´ TimeStamping
- * ì´ ëœë‹¤ëŠ” ê²ƒì´ë‹¤.
+ * Delayed Row TimeStampingÀº RowÀÇ GetValidVersionÀÌ³ª canUpdateRowPiece
+ * ¿¬»ê°úÁ¤¿¡¼­ RowÀÇ CommitSCNÀ» ¾Ë°íÀÚ ÇÒ¶§ ¼öÇàµÈ´Ù.
+ * º» ¿¬»êÀº Row¿Í ¿¬°üµÈ ÀÏ¹ÝÀûÀ¸·Î TSS¿¡ ¹æ¹®ÇÏ¿© ÇØ´ç Row¸¦ °»½ÅÇÑ Æ®·£Àè¼ÇÀÇ
+ * »óÅÂ¸¦ º¸°í ¿Ï·á°¡ µÈ °æ¿ì¿¡ No-Logging ¸ðµå·Î CTS TimeStampingÀ»
+ * ¼öÇàÇÑ´Ù. DelayedÀÇ ÀÇ¹Ì´Â °»½ÅÆ®·£Àè¼ÇÀÌ Á÷Á¢ Ä¿¹Ô°úÁ¤¿¡¼­ ¼öÇàÇÑ
+ * CTS TimeStampingÀÌ ¾Æ´Ï¶ó, ÀÌ ÈÄÀÇ ´Ù¸¥ Æ®·£Àè¼Ç¿¡ ÀÇÇØ¼­ Áö¿¬µÇ¾î TimeStamping
+ * ÀÌ µÈ´Ù´Â °ÍÀÌ´Ù.
  *
- * aStatistics    - [IN] í†µê³„ì •ë³´
- * aCTS           - [IN] CTS í¬ì¸í„°
+ * aStatistics    - [IN] Åë°èÁ¤º¸
+ * aTrans         - [IN] ÀÚ½ÅÀÇ TXÀÇ Æ÷ÀÎÅÍ
+ * aCTS           - [IN] CTS Æ÷ÀÎÅÍ
  * aPageReadMode  - [IN] page read mode(SPR or MPR)
- * aTrySuccess    - [OUT] Delayed CTS TimeStampingì˜ ì„±ê³µì—¬ë¶€
- * aWait4TransID  - [OUT] ëŒ€ê¸°í•´ì•¼í•  ëŒ€ìƒ íŠ¸ëžœìž­ì…˜ì˜ ID
- * aRowCommitSCN  - [OUT] ëŒ€ìƒ íŠ¸ëžœìž­ì…˜ì˜ CommitSCN
- * aFSCreditSize  - [OUT] CTSì˜ ëˆ„ì  FSCreditSize
+ * aStmtViewSCN   - [IN] ¿Ã¹Ù¸¥ ¹öÀüÀÇ row¸¦ ÀÐ±â À§ÇÑ Statement viewscn
+ * aTrySuccess    - [OUT] Delayed CTS TimeStampingÀÇ ¼º°ø¿©ºÎ
+ * aWait4TransID  - [OUT] ´ë±âÇØ¾ßÇÒ ´ë»ó Æ®·£Àè¼ÇÀÇ ID
+ * aRowCommitSCN  - [OUT] ´ë»ó Æ®·£Àè¼ÇÀÇ CommitSCN
+ * aFSCreditSize  - [OUT] CTSÀÇ ´©Àû FSCreditSize
  *
  *********************************************************************/
 IDE_RC sdcTableCTL::runDelayedStampingOnCTS( idvSQL           * aStatistics,
+                                             void             * aTrans,
                                              sdpCTS           * aCTS,
                                              sdbPageReadMode    aPageReadMode,
+                                             smSCN              aStmtViewSCN,
                                              idBool           * aTrySuccess,
                                              smTID            * aWait4TransID,
                                              smSCN            * aRowCommitSCN,
@@ -1882,8 +1907,10 @@ IDE_RC sdcTableCTL::runDelayedStampingOnCTS( idvSQL           * aStatistics,
     IDE_ERROR( SDC_CTS_SCN_IS_NOT_COMMITTED(aCTS->mFSCNOrCSCN) );
 
     IDE_TEST( sdcTSSegment::getCommitSCN( aStatistics,
+                                          aTrans,
                                           sTSSlotSID,
                                           &(aCTS->mFSCNOrCSCN),
+                                          aStmtViewSCN,
                                           aWait4TransID,
                                           aRowCommitSCN )
               != IDE_SUCCESS );
@@ -1893,10 +1920,10 @@ IDE_RC sdcTableCTL::runDelayedStampingOnCTS( idvSQL           * aStatistics,
         sPageHdr = sdpPhyPage::getPageStartPtr( aCTS );
 
         /*
-         * GetValidVersion ì—°ì‚°ì‹œì—ëŠ” íŽ˜ì´ì§€ì— S-latch ê°€ íšë“
-         * ë˜ì–´ ìžˆëŠ” ê²½ìš°ì—ëŠ” X-latchë¡œ ì¡°ì •í•´ì¤€ë‹¤.
-         * (ë‚´ë¶€ì ìœ¼ë¡œ í’€ê³ ,ë‹¤ì‹œ ìž¡ëŠ”ë‹¤, ë‹¨, ë‚˜ ìžì‹ ë§Œ íŽ˜ì´ì§€ì— latchë¥¼
-         * íšë“í•œ ê²½ìš°ì— í•œí•´ì„œì´ë‹¤. )
+         * GetValidVersion ¿¬»ê½Ã¿¡´Â ÆäÀÌÁö¿¡ S-latch °¡ È¹µæ
+         * µÇ¾î ÀÖ´Â °æ¿ì¿¡´Â X-latch·Î Á¶Á¤ÇØÁØ´Ù.
+         * (³»ºÎÀûÀ¸·Î Ç®°í,´Ù½Ã Àâ´Â´Ù, ´Ü, ³ª ÀÚ½Å¸¸ ÆäÀÌÁö¿¡ latch¸¦
+         * È¹µæÇÑ °æ¿ì¿¡ ÇÑÇØ¼­ÀÌ´Ù. )
          */
         sdbBufferMgr::tryEscalateLatchPage( aStatistics,
                                             sPageHdr,
@@ -1931,28 +1958,32 @@ IDE_RC sdcTableCTL::runDelayedStampingOnCTS( idvSQL           * aStatistics,
 
 /*********************************************************************
  *
- * Description : Delayed Row TimeStamping ìˆ˜í–‰
+ * Description : Delayed Row TimeStamping ¼öÇà
  *
- * Delayed Row TimeStampingì€ Rowì˜ GetValidVersionì´ë‚˜ canUpdateRowPiece
- * ì—°ì‚°ê³¼ì •ì—ì„œ Rowì˜ CommitSCNì„ ì•Œê³ ìž í• ë•Œ ìˆ˜í–‰ëœë‹¤.
- * ë³¸ ì—°ì‚°ì€ Rowì™€ ì—°ê´€ëœ ì¼ë°˜ì ìœ¼ë¡œ TSSì— ë°©ë¬¸í•˜ì—¬ í•´ë‹¹ Rowë¥¼ ê°±ì‹ í•œ íŠ¸ëžœìž­ì…˜ì˜
- * ìƒíƒœë¥¼ ë³´ê³  ì™„ë£Œê°€ ëœ ê²½ìš°ì— No-Logging ëª¨ë“œë¡œ CTS TimeStampingì„
- * ìˆ˜í–‰í•œë‹¤. Delayedì˜ ì˜ë¯¸ëŠ” ê°±ì‹ íŠ¸ëžœìž­ì…˜ì´ ì§ì ‘ ì»¤ë°‹ê³¼ì •ì—ì„œ ìˆ˜í–‰í•œ
- * CTS TimeStampingì´ ì•„ë‹ˆë¼, ì´ í›„ì˜ ë‹¤ë¥¸ íŠ¸ëžœìž­ì…˜ì— ì˜í•´ì„œ ì§€ì—°ë˜ì–´ TimeStamping
- * ì´ ëœë‹¤ëŠ” ê²ƒì´ë‹¤.
+ * Delayed Row TimeStampingÀº RowÀÇ GetValidVersionÀÌ³ª canUpdateRowPiece
+ * ¿¬»ê°úÁ¤¿¡¼­ RowÀÇ CommitSCNÀ» ¾Ë°íÀÚ ÇÒ¶§ ¼öÇàµÈ´Ù.
+ * º» ¿¬»êÀº Row¿Í ¿¬°üµÈ ÀÏ¹ÝÀûÀ¸·Î TSS¿¡ ¹æ¹®ÇÏ¿© ÇØ´ç Row¸¦ °»½ÅÇÑ Æ®·£Àè¼ÇÀÇ
+ * »óÅÂ¸¦ º¸°í ¿Ï·á°¡ µÈ °æ¿ì¿¡ No-Logging ¸ðµå·Î CTS TimeStampingÀ»
+ * ¼öÇàÇÑ´Ù. DelayedÀÇ ÀÇ¹Ì´Â °»½ÅÆ®·£Àè¼ÇÀÌ Á÷Á¢ Ä¿¹Ô°úÁ¤¿¡¼­ ¼öÇàÇÑ
+ * CTS TimeStampingÀÌ ¾Æ´Ï¶ó, ÀÌ ÈÄÀÇ ´Ù¸¥ Æ®·£Àè¼Ç¿¡ ÀÇÇØ¼­ Áö¿¬µÇ¾î TimeStamping
+ * ÀÌ µÈ´Ù´Â °ÍÀÌ´Ù.
  *
- * aStatistics    - [IN] í†µê³„ì •ë³´
+ * aStatistics    - [IN] Åë°èÁ¤º¸
+ * aTrans         - [IN] ÀÚ½ÅÀÇ TXÀÇ Æ÷ÀÎÅÍ
  * aRowSlotPtr    - [IN] RowSlotPtr
  * aPageReadMode  - [IN] page read mode(SPR or MPR)
- * aTrySuccess    - [OUT] Delayed CTS TimeStampingì˜ ì„±ê³µì—¬ë¶€
- * aWait4TransID  - [OUT] ëŒ€ê¸°í•´ì•¼í•  ëŒ€ìƒ íŠ¸ëžœìž­ì…˜ì˜ ID
- * aRowCommitSCN  - [OUT] ëŒ€ìƒ íŠ¸ëžœìž­ì…˜ì˜ CommitSCN
- * aFSCreditSize  - [OUT] RowPieceì˜ Extra ì¤‘ ëˆ„ì  FSCreditSize
+ * aStmtViewSCN   - [IN] ¿Ã¹Ù¸¥ ¹öÀüÀÇ row¸¦ ÀÐ±â À§ÇÑ Statement viewscn
+ * aTrySuccess    - [OUT] Delayed CTS TimeStampingÀÇ ¼º°ø¿©ºÎ
+ * aWait4TransID  - [OUT] ´ë±âÇØ¾ßÇÒ ´ë»ó Æ®·£Àè¼ÇÀÇ ID
+ * aRowCommitSCN  - [OUT] ´ë»ó Æ®·£Àè¼ÇÀÇ CommitSCN
+ * aFSCreditSize  - [OUT] RowPieceÀÇ Extra Áß ´©Àû FSCreditSize
  *
  *********************************************************************/
 IDE_RC sdcTableCTL::runDelayedStampingOnRow( idvSQL           * aStatistics,
+                                             void             * aTrans,
                                              UChar            * aRowSlotPtr,
                                              sdbPageReadMode    aPageReadMode,
+                                             smSCN              aStmtViewSCN,
                                              idBool           * aTrySuccess,
                                              smTID            * aWait4TransID,
                                              smSCN            * aRowCommitSCN,
@@ -1972,13 +2003,17 @@ IDE_RC sdcTableCTL::runDelayedStampingOnRow( idvSQL           * aStatistics,
 
     sdcRow::getRowHdrExInfo( aRowSlotPtr, &sRowHdrExInfo );
 
+    IDE_DASSERT( SDC_CTS_SCN_IS_NOT_COMMITTED(sRowHdrExInfo.mFSCNOrCSCN) );
+
     *aFSCreditSize = sRowHdrExInfo.mFSCredit;
     sTSSlotSID     = SD_MAKE_SID( sRowHdrExInfo.mTSSPageID,
                                   sRowHdrExInfo.mTSSlotNum );
 
     IDE_TEST( sdcTSSegment::getCommitSCN( aStatistics,
+                                          aTrans,
                                           sTSSlotSID,
                                           &sRowHdrExInfo.mFSCNOrCSCN,
+                                          aStmtViewSCN,
                                           aWait4TransID,
                                           aRowCommitSCN )
               != IDE_SUCCESS );
@@ -1988,10 +2023,10 @@ IDE_RC sdcTableCTL::runDelayedStampingOnRow( idvSQL           * aStatistics,
         sPageHdr = sdpPhyPage::getPageStartPtr( aRowSlotPtr );
 
         /*
-         * GetValidVersion ì—°ì‚°ì‹œì—ëŠ” íŽ˜ì´ì§€ì— S-latch ê°€ íšë“
-         * ë˜ì–´ ìžˆëŠ” ê²½ìš°ì—ëŠ” X-latchë¡œ ì¡°ì •í•´ì¤€ë‹¤.
-         * (ë‚´ë¶€ì ìœ¼ë¡œ í’€ê³ ,ë‹¤ì‹œ ìž¡ëŠ”ë‹¤, ë‹¨, ë‚˜ ìžì‹ ë§Œ íŽ˜ì´ì§€ì— latchë¥¼
-         * íšë“í•œ ê²½ìš°ì— í•œí•´ì„œì´ë‹¤. )
+         * GetValidVersion ¿¬»ê½Ã¿¡´Â ÆäÀÌÁö¿¡ S-latch °¡ È¹µæ
+         * µÇ¾î ÀÖ´Â °æ¿ì¿¡´Â X-latch·Î Á¶Á¤ÇØÁØ´Ù.
+         * (³»ºÎÀûÀ¸·Î Ç®°í,´Ù½Ã Àâ´Â´Ù, ´Ü, ³ª ÀÚ½Å¸¸ ÆäÀÌÁö¿¡ latch¸¦
+         * È¹µæÇÑ °æ¿ì¿¡ ÇÑÇØ¼­ÀÌ´Ù. )
          */
         sdbBufferMgr::tryEscalateLatchPage( aStatistics,
                                             sPageHdr,
@@ -2031,19 +2066,19 @@ IDE_RC sdcTableCTL::runDelayedStampingOnRow( idvSQL           * aStatistics,
 
 /*********************************************************************
  *
- * Description : Delayed Row TimeStamping ë° ë¡œê¹… ìˆ˜í–‰
+ * Description : Delayed Row TimeStamping ¹× ·Î±ë ¼öÇà
  *
- * CTSê°€ Active ìƒíƒœì¸ ê²½ìš°ì— CTSë¥¼ ì†Œìœ í•œ íŠ¸ëžœìž­ì…˜ì´ ì»¤ë°‹ì„ í–ˆë‹¤ë©´
- * CommitSCNì„ íŒë…í•˜ì—¬ CTSì— Nologgingìœ¼ë¡œ ì„¤ì •í•˜ê³ 
- * (Delayed CTS TimeStamping) Row TimeStampingì„ ìˆ˜í–‰í•œë‹¤.
+ * CTS°¡ Active »óÅÂÀÎ °æ¿ì¿¡ CTS¸¦ ¼ÒÀ¯ÇÑ Æ®·£Àè¼ÇÀÌ Ä¿¹ÔÀ» Çß´Ù¸é
+ * CommitSCNÀ» ÆÇµ¶ÇÏ¿© CTS¿¡ NologgingÀ¸·Î ¼³Á¤ÇÏ°í
+ * (Delayed CTS TimeStamping) Row TimeStampingÀ» ¼öÇàÇÑ´Ù.
  *
- * aStatistics    - [IN] í†µê³„ì •ë³´
- * aMtx           - [IN] Mtx í¬ì¸í„°
- * aCTSlotIdx     - [IN] TimeStampingí•  CTS ë²ˆí˜¸
- * aObjPtr        - [IN] CTS í¬ì¸í„° í˜¹ì€ RowPiece í¬ì¸í„°
+ * aStatistics    - [IN] Åë°èÁ¤º¸
+ * aMtx           - [IN] Mtx Æ÷ÀÎÅÍ
+ * aCTSlotIdx     - [IN] TimeStampingÇÒ CTS ¹øÈ£
+ * aObjPtr        - [IN] CTS Æ÷ÀÎÅÍ È¤Àº RowPiece Æ÷ÀÎÅÍ
  * aPageReadMode  - [IN] page read mode(SPR or MPR)
- * aWait4TransID  - [OUT] ëŒ€ê¸°í•´ì•¼í•  ëŒ€ìƒ íŠ¸ëžœìž­ì…˜ì˜ ID
- * aRowCommitSCN  - [OUT] ëŒ€ìƒ íŠ¸ëžœìž­ì…˜ì˜ CommitSCN
+ * aWait4TransID  - [OUT] ´ë±âÇØ¾ßÇÒ ´ë»ó Æ®·£Àè¼ÇÀÇ ID
+ * aRowCommitSCN  - [OUT] ´ë»ó Æ®·£Àè¼ÇÀÇ CommitSCN
  *
  *********************************************************************/
 IDE_RC sdcTableCTL::logAndRunDelayedRowStamping(
@@ -2062,9 +2097,11 @@ IDE_RC sdcTableCTL::logAndRunDelayedRowStamping(
     IDE_ERROR( aObjPtr != NULL );
 
     IDE_TEST( runDelayedStamping( aStatistics,
+                                  NULL,        /* aTrans */
                                   aCTSlotIdx,
                                   aObjPtr,
                                   aPageReadMode,
+                                  SM_SCN_INIT, /* aStmtViewSCN */
                                   &sTrySuccess,
                                   aWait4TransID,
                                   aRowCommitSCN,
@@ -2090,18 +2127,18 @@ IDE_RC sdcTableCTL::logAndRunDelayedRowStamping(
 
 /*********************************************************************
  *
- * Description : Row TimeStamping ë° ë¡œê¹… ìˆ˜í–‰
+ * Description : Row TimeStamping ¹× ·Î±ë ¼öÇà
  *
- * Row TimeStampingì€ CTS TimeStampingì´ ë˜ì–´ ìžˆë‹¤ëŠ” ì „ì œí•˜ì— Logging ëª¨ë“œë¡œ
- * ìˆ˜í–‰ëœë‹¤. Rowì™€ CTSì˜ ì—°ê²°ê´€ê³„ë¥¼ ì •ë¦¬í•˜ë©´ì„œ, CTSì— ê¸°ë¡ëœ CommitSCNì„
- * RowPiece í—¤ë”ì— ê¸°ë¡í•˜ëŠ” ì¼ë ¨ì˜ ìž‘ì—…ì„ Row TimeStampingì´ë¼ê³  í•œë‹¤.
+ * Row TimeStampingÀº CTS TimeStampingÀÌ µÇ¾î ÀÖ´Ù´Â ÀüÁ¦ÇÏ¿¡ Logging ¸ðµå·Î
+ * ¼öÇàµÈ´Ù. Row¿Í CTSÀÇ ¿¬°á°ü°è¸¦ Á¤¸®ÇÏ¸é¼­, CTS¿¡ ±â·ÏµÈ CommitSCNÀ»
+ * RowPiece Çì´õ¿¡ ±â·ÏÇÏ´Â ÀÏ·ÃÀÇ ÀÛ¾÷À» Row TimeStampingÀÌ¶ó°í ÇÑ´Ù.
  *
- * aStatistics    - [IN] í†µê³„ì •ë³´
- * aMtx           - [IN] Mtx í¬ì¸í„°
- * aCTSlotIdx     - [IN] TimeStampingí•  CTS ë²ˆí˜¸
- * aObjPtr        - [IN] CTS í¬ì¸í„° í˜¹ì€ RowSlotPtr
- * aFSCreditSize  - [IN] ëˆ„ì ëœ FSCreditSize
- * aCommitSCN     - [IN] Stampingí•  CommitSCN
+ * aStatistics    - [IN] Åë°èÁ¤º¸
+ * aMtx           - [IN] Mtx Æ÷ÀÎÅÍ
+ * aCTSlotIdx     - [IN] TimeStampingÇÒ CTS ¹øÈ£
+ * aObjPtr        - [IN] CTS Æ÷ÀÎÅÍ È¤Àº RowSlotPtr
+ * aFSCreditSize  - [IN] ´©ÀûµÈ FSCreditSize
+ * aCommitSCN     - [IN] StampingÇÒ CommitSCN
  *
  *********************************************************************/
 IDE_RC sdcTableCTL::logAndRunRowStamping( sdrMtx       * aMtx,
@@ -2122,7 +2159,7 @@ IDE_RC sdcTableCTL::logAndRunRowStamping( sdrMtx       * aMtx,
                   != IDE_SUCCESS );
     }
 
-    /* Loggingì„ í–ˆìœ¼ë©´, setDirtyë¥¼ ë¬´ì¡°ê±´ í•´ì•¼ í•¨. */
+    /* LoggingÀ» ÇßÀ¸¸é, setDirty¸¦ ¹«Á¶°Ç ÇØ¾ß ÇÔ. */
     IDE_TEST( sdrMiniTrans::setDirtyPage( aMtx, (UChar*)aObjPtr )
               != IDE_SUCCESS );
 
@@ -2135,6 +2172,8 @@ IDE_RC sdcTableCTL::logAndRunRowStamping( sdrMtx       * aMtx,
     }
     else
     {
+        IDE_DASSERT( aCTSlotIdx == SDP_CTS_IDX_NULL );
+
         IDE_TEST( runRowStampingOnRow( (UChar*)aObjPtr, 
                                        aCTSlotIdx, 
                                        aCommitSCN )
@@ -2168,21 +2207,21 @@ IDE_RC sdcTableCTL::logAndRunRowStamping( sdrMtx       * aMtx,
 
 /*********************************************************************
  *
- * Description : Row TimeStamping ìˆ˜í–‰
+ * Description : Row TimeStamping ¼öÇà
  *
- * TimeStampingì„ ìˆ˜í–‰í•  CTSì™€ ì—°ê²°ëœ ëª¨ë“  Rowì— ëŒ€í•´ì„œ ì—°ê²°ê´€ê³„ë¥¼ ì •ë¦¬í•˜ê³ ,
- * CommitSCNì„ RowPiece í—¤ë”ì— ì„¤ì •í•œë‹¤. ì¼ë°˜ì ìœ¼ë¡œ CTSì™€ ì—°ê²°ëœ RowPieceì˜
- * ê°œìˆ˜ê°€ 3ê°œì´ìƒì´ë©´ SlotDirectoryë¥¼ ìˆœì°¨ê²€ìƒ‰í•˜ì—¬ ê´€ë ¨ RowPieceë¥¼ ì°¾ì•„ì•¼í•˜ë©°,
- * ê·¸ë ‡ì§€ 2ê°œì´í•˜ì¸ê²½ìš°ì—ëŠ” Cacheëœ Slot Entry ë²ˆí˜¸ë¥¼ í†µí•´ì„œ ë°”ë¡œ ì°¾ì•„ê°„ë‹¤.
+ * TimeStampingÀ» ¼öÇàÇÒ CTS¿Í ¿¬°áµÈ ¸ðµç Row¿¡ ´ëÇØ¼­ ¿¬°á°ü°è¸¦ Á¤¸®ÇÏ°í,
+ * CommitSCNÀ» RowPiece Çì´õ¿¡ ¼³Á¤ÇÑ´Ù. ÀÏ¹ÝÀûÀ¸·Î CTS¿Í ¿¬°áµÈ RowPieceÀÇ
+ * °³¼ö°¡ 3°³ÀÌ»óÀÌ¸é SlotDirectory¸¦ ¼øÂ÷°Ë»öÇÏ¿© °ü·Ã RowPiece¸¦ Ã£¾Æ¾ßÇÏ¸ç,
+ * 2°³(SDP_CACHE_SLOT_CNT)ÀÌÇÏÀÎ°æ¿ì¿¡´Â CacheµÈ Slot Entry ¹øÈ£¸¦ ÅëÇØ¼­ ¹Ù·Î Ã£¾Æ°£´Ù.
  *
- * ë§Œì•½ Rowê°€ Deleteê°€ ë˜ì—ˆë‹¤ë©´, CommitSCNì— Delete Bitì„ ì„¤ì •í•˜ì—¬ RowPiece
- * í—¤ë”ì— ê¸°ë¡í•˜ë©°, í•´ë‹¹ íŽ˜ì´ì§€ì— ë°”ì¸ë”©ëœ CTSì˜ ê°œìˆ˜ëŠ” í•˜ë‚˜ê°€ ê°ì†Œí•˜ê²Œ ëœë‹¤.
+ * ¸¸¾à Row°¡ Delete°¡ µÇ¾ú´Ù¸é, CommitSCN¿¡ Delete BitÀ» ¼³Á¤ÇÏ¿© RowPiece
+ * Çì´õ¿¡ ±â·ÏÇÏ¸ç, ÇØ´ç ÆäÀÌÁö¿¡ ¹ÙÀÎµùµÈ CTSÀÇ °³¼ö´Â ÇÏ³ª°¡ °¨¼ÒÇÏ°Ô µÈ´Ù.
  *
- * Row TimeStampingëœ CTSì˜ ìƒíƒœëŠ” 'R'(RTS)ì´ë‹¤
+ * Row TimeStampingµÈ CTSÀÇ »óÅÂ´Â 'R'(RTS)ÀÌ´Ù
  *
- * aCTS           - [IN] CTS í¬ì¸í„°
- * aCTSlotIdx     - [IN] TimeStampingí•  CTS ë²ˆí˜¸
- * aCommitSCN     - [IN] RowPiece í—¤ë”ì— ì„¤ì •í•  CommitSCN í¬ì¸í„°
+ * aCTS           - [IN] CTS Æ÷ÀÎÅÍ
+ * aCTSlotIdx     - [IN] TimeStampingÇÒ CTS ¹øÈ£
+ * aCommitSCN     - [IN] RowPiece Çì´õ¿¡ ¼³Á¤ÇÒ CommitSCN Æ÷ÀÎÅÍ
  *
  *********************************************************************/
 IDE_RC sdcTableCTL::runRowStampingOnCTS( sdpCTS     * aCTS,
@@ -2227,8 +2266,8 @@ IDE_RC sdcTableCTL::runRowStampingOnCTS( sdpCTS     * aCTS,
         {
             sSlotSeq = i;
 
-            if( sdpSlotDirectory::isUnusedSlotEntry(
-                    sSlotDirPtr, sSlotSeq ) == ID_TRUE )
+            if( sdpSlotDirectory::isUnusedSlotEntry( sSlotDirPtr, sSlotSeq ) 
+                == ID_TRUE )
             {
                 continue;
             }
@@ -2287,11 +2326,11 @@ IDE_RC sdcTableCTL::runRowStampingOnCTS( sdpCTS     * aCTS,
 
 /*********************************************************************
  *
- * Description : RowExCTSì— ëŒ€í•œ Row TimeStamping ìˆ˜í–‰
+ * Description : RowExCTS¿¡ ´ëÇÑ Row TimeStamping ¼öÇà
  *
- * aSlotPtr       - [IN] RowSlot í¬ì¸í„°
- * aCTSlotIdx     - [IN] TimeStampingí•  CTS ë²ˆí˜¸
- * aCommitSCN     - [IN] RowPiece í—¤ë”ì— ì„¤ì •í•  CommitSCN í¬ì¸í„°
+ * aSlotPtr       - [IN] RowSlot Æ÷ÀÎÅÍ
+ * aCTSlotIdx     - [IN] TimeStampingÇÒ CTS ¹øÈ£
+ * aCommitSCN     - [IN] RowPiece Çì´õ¿¡ ¼³Á¤ÇÒ CommitSCN Æ÷ÀÎÅÍ
  *
  *********************************************************************/
 IDE_RC sdcTableCTL::runRowStampingOnRow( UChar      * aSlotPtr,
@@ -2327,19 +2366,19 @@ IDE_RC sdcTableCTL::runRowStampingOnRow( UChar      * aSlotPtr,
 
 /***********************************************************************
  *  
- * Description : ë°ì´íƒ€íŽ˜ì´ì§€ì— ì˜ˆì•½í•´ë‘ì—ˆë˜ Free Space Credit ë°˜í™˜
+ * Description : µ¥ÀÌÅ¸ÆäÀÌÁö¿¡ ¿¹¾àÇØµÎ¾ú´ø Free Space Credit ¹ÝÈ¯
  *
- * íŠ¸ëžœìž­ì…˜ì´ ì»¤ë°‹ëœ ê²½ìš°ì´ê±°ë‚˜ ë¡¤ë°±í•˜ëŠ” ê²½ìš° ì˜ˆì•½í•´ë‘ì—ˆë˜ Free Space Creditë¥¼
- * ë°˜í™˜í•œë‹¤. ì»¤ë°‹í•œ ê²½ìš°ì—ëŠ” ë°˜í™˜ëœ ê³µê°„ì´ ê°€ìš©ê³µê°„ìœ¼ë¡œì¨ ë‹¤ë¥¸ íŠ¸ëžœìž­ì…˜ì´ ì‚¬ìš©í• 
- ìˆ˜               
- * ìžˆê²Œë˜ë©°, ë¡¤ë°±í•œ ê²½ìš°ì—ëŠ” ë°˜í™˜ëœ ê³µê°„ì´ ìžì‹ ì´ ë¡¤ë°±í• ë•Œ í•„ìš”í•œ ê°€ìš©ê³µê°„ìœ¼ë¡œ
- * ì‚¬ìš©ëœë‹¤.                  
- * ì¦‰, ë°ì´íƒ€ì— ëŒ€í•œ ê°±ì‹ ìœ¼ë¡œ ì¸í•´ì„œ ì´ì „ RowPiece í¬ê¸°ë³´ë‹¤ ë” ìž‘ê²Œ ê°±ì‹ ë˜ëŠ” ê²½>ìš°ì—
- * Free Space Creditê°€ ì˜ˆì•½ì´ ëœë‹¤.
+ * Æ®·£Àè¼ÇÀÌ Ä¿¹ÔµÈ °æ¿ìÀÌ°Å³ª ·Ñ¹éÇÏ´Â °æ¿ì ¿¹¾àÇØµÎ¾ú´ø Free Space Credit¸¦
+ * ¹ÝÈ¯ÇÑ´Ù. Ä¿¹ÔÇÑ °æ¿ì¿¡´Â ¹ÝÈ¯µÈ °ø°£ÀÌ °¡¿ë°ø°£À¸·Î½á ´Ù¸¥ Æ®·£Àè¼ÇÀÌ »ç¿ëÇÒ
+ ¼ö               
+ * ÀÖ°ÔµÇ¸ç, ·Ñ¹éÇÑ °æ¿ì¿¡´Â ¹ÝÈ¯µÈ °ø°£ÀÌ ÀÚ½ÅÀÌ ·Ñ¹éÇÒ¶§ ÇÊ¿äÇÑ °¡¿ë°ø°£À¸·Î
+ * »ç¿ëµÈ´Ù.                  
+ * Áï, µ¥ÀÌÅ¸¿¡ ´ëÇÑ °»½ÅÀ¸·Î ÀÎÇØ¼­ ÀÌÀü RowPiece Å©±âº¸´Ù ´õ ÀÛ°Ô °»½ÅµÇ´Â °æ>¿ì¿¡
+ * Free Space Credit°¡ ¿¹¾àÀÌ µÈ´Ù.
  *  
- * aMtx          - [IN] Mtx í¬ì¸í„°
- * aPageHdrPtr   - [IN] íŽ˜ì´ì§€ í—¤ë” ì‹œìž‘ í¬ì¸í„°
- * aRestoreSize  - [IN] íŽ˜ì´ì§€ì— ë°˜í™˜í•  ê°€ìš©ê³µê°„ì˜ í¬ê¸° (FreeSpaceCredit)
+ * aMtx          - [IN] Mtx Æ÷ÀÎÅÍ
+ * aPageHdrPtr   - [IN] ÆäÀÌÁö Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
+ * aRestoreSize  - [IN] ÆäÀÌÁö¿¡ ¹ÝÈ¯ÇÒ °¡¿ë°ø°£ÀÇ Å©±â (FreeSpaceCredit)
  *  
  **********************************************************************/
 IDE_RC sdcTableCTL::restoreFSCredit( sdrMtx         * aMtx,
@@ -2369,17 +2408,17 @@ IDE_RC sdcTableCTL::restoreFSCredit( sdrMtx         * aMtx,
 
 /***********************************************************************
  *
- * Description : ë°ì´íƒ€íŽ˜ì´ì§€ì— ì˜ˆì•½í•´ë‘ì—ˆë˜ Free Space Credit ë°˜í™˜
+ * Description : µ¥ÀÌÅ¸ÆäÀÌÁö¿¡ ¿¹¾àÇØµÎ¾ú´ø Free Space Credit ¹ÝÈ¯
  *
- * íŠ¸ëžœìž­ì…˜ì´ ì»¤ë°‹ëœ ê²½ìš°ì´ê±°ë‚˜ ë¡¤ë°±í•˜ëŠ” ê²½ìš° ì˜ˆì•½í•´ë‘ì—ˆë˜ Free Space Creditë¥¼
- * ë°˜í™˜í•œë‹¤. ì»¤ë°‹í•œ ê²½ìš°ì—ëŠ” ë°˜í™˜ëœ ê³µê°„ì´ ê°€ìš©ê³µê°„ìœ¼ë¡œì¨ ë‹¤ë¥¸ íŠ¸ëžœìž­ì…˜ì´ ì‚¬ìš©í•  ìˆ˜
- * ìžˆê²Œë˜ë©°, ë¡¤ë°±í•œ ê²½ìš°ì—ëŠ” ë°˜í™˜ëœ ê³µê°„ì´ ìžì‹ ì´ ë¡¤ë°±í• ë•Œ í•„ìš”í•œ ê°€ìš©ê³µê°„ìœ¼ë¡œ
- * ì‚¬ìš©ëœë‹¤.
- * ì¦‰, ë°ì´íƒ€ì— ëŒ€í•œ ê°±ì‹ ìœ¼ë¡œ ì¸í•´ì„œ ì´ì „ RowPiece í¬ê¸°ë³´ë‹¤ ë” ìž‘ê²Œ ê°±ì‹ ë˜ëŠ” ê²½ìš°ì—
- * Free Space Creditê°€ ì˜ˆì•½ì´ ëœë‹¤.
+ * Æ®·£Àè¼ÇÀÌ Ä¿¹ÔµÈ °æ¿ìÀÌ°Å³ª ·Ñ¹éÇÏ´Â °æ¿ì ¿¹¾àÇØµÎ¾ú´ø Free Space Credit¸¦
+ * ¹ÝÈ¯ÇÑ´Ù. Ä¿¹ÔÇÑ °æ¿ì¿¡´Â ¹ÝÈ¯µÈ °ø°£ÀÌ °¡¿ë°ø°£À¸·Î½á ´Ù¸¥ Æ®·£Àè¼ÇÀÌ »ç¿ëÇÒ ¼ö
+ * ÀÖ°ÔµÇ¸ç, ·Ñ¹éÇÑ °æ¿ì¿¡´Â ¹ÝÈ¯µÈ °ø°£ÀÌ ÀÚ½ÅÀÌ ·Ñ¹éÇÒ¶§ ÇÊ¿äÇÑ °¡¿ë°ø°£À¸·Î
+ * »ç¿ëµÈ´Ù.
+ * Áï, µ¥ÀÌÅ¸¿¡ ´ëÇÑ °»½ÅÀ¸·Î ÀÎÇØ¼­ ÀÌÀü RowPiece Å©±âº¸´Ù ´õ ÀÛ°Ô °»½ÅµÇ´Â °æ¿ì¿¡
+ * Free Space Credit°¡ ¿¹¾àÀÌ µÈ´Ù.
  *
- * aPageHdrPtr   - [IN] íŽ˜ì´ì§€ í—¤ë” ì‹œìž‘ í¬ì¸í„°
- * aRestoreSize  - [IN] íŽ˜ì´ì§€ì— ë°˜í™˜í•  ê°€ìš©ê³µê°„ì˜ í¬ê¸° (FreeSpaceCredit)
+ * aPageHdrPtr   - [IN] ÆäÀÌÁö Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
+ * aRestoreSize  - [IN] ÆäÀÌÁö¿¡ ¹ÝÈ¯ÇÒ °¡¿ë°ø°£ÀÇ Å©±â (FreeSpaceCredit)
  *
  **********************************************************************/
 IDE_RC sdcTableCTL::restoreFSCredit( sdpPhyPageHdr  * aPageHdrPtr,
@@ -2406,19 +2445,23 @@ IDE_RC sdcTableCTL::restoreFSCredit( sdpPhyPageHdr  * aPageHdrPtr,
 
 /***********************************************************************
  *
- * Description : Target Row Pieceì— ëŒ€í•œ Row Stampingì„ ë°˜ë“œì‹œ ìˆ˜í–‰
+ * Description : Target Row Piece¿¡ ´ëÇÑ Row StampingÀ» ¹Ýµå½Ã ¼öÇà
  *
- * Head RowPieceì˜ ê²½ìš°ì—ëŠ” CanUpdateRowPiece ê³¼ì •ì—ì„œ ë°˜ë“œì‹œ Row Stampingì´
- * ì™„ë£Œëœ í›„ í•´ë‹¹ Rowì— ëŒ€í•œ ê°±ì‹ ì—°ì‚°ì´ ìˆ˜í–‰ë¨ì„ ë³´ìž¥í•˜ì§€ë§Œ, Head RowPieceê°€ ì•„ë‹Œ
- * ê²½ìš°ì— ëŒ€í•´ì„œëŠ” CanUpdateRowPiece ë‹¨ê³„ê°€ ìƒëžµë˜ê¸° ë•Œë¬¸ì— (ì™œëƒí•˜ë©´, Head
- * RowPieceì— ëŒ€í•´ì„œ í•œë²ˆë§Œ ìˆ˜í–‰í•˜ë©´ ë˜ê¸° ë•Œë¬¸ì´ë‹¤) Row Stampingì„ í•´ì£¼ê¸° ìœ„í•´
- * í•´ë‹¹ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
+ * Head RowPieceÀÇ °æ¿ì¿¡´Â CanUpdateRowPiece °úÁ¤¿¡¼­ ¹Ýµå½Ã Row StampingÀÌ
+ * ¿Ï·áµÈ ÈÄ ÇØ´ç Row¿¡ ´ëÇÑ °»½Å¿¬»êÀÌ ¼öÇàµÊÀ» º¸ÀåÇÏÁö¸¸, Head RowPiece°¡ ¾Æ´Ñ
+ * °æ¿ì¿¡ ´ëÇØ¼­´Â CanUpdateRowPiece ´Ü°è°¡ »ý·«µÇ±â ¶§¹®¿¡ (¿Ö³ÄÇÏ¸é, Head
+ * RowPiece¿¡ ´ëÇØ¼­ ÇÑ¹ø¸¸ ¼öÇàÇÏ¸é µÇ±â ¶§¹®ÀÌ´Ù) Row StampingÀ» ÇØÁÖ±â À§ÇØ
+ * ÇØ´ç ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
  *
- * ì´ë¯¸ Row Stampingì´ ì™„ë£Œëœ RowPieceì¸ ê²½ìš°ì—ëŠ” IDE_SUCCESSë¥´ ë°˜í™˜í•˜ë©´ ëœë‹¤.
+ * ÀÌ¹Ì Row StampingÀÌ ¿Ï·áµÈ RowPieceÀÎ °æ¿ì¿¡´Â IDE_SUCCESS ¸¦ ¹ÝÈ¯ÇÏ¸é µÈ´Ù.
  *
- * aStatistics   - [IN] í†µê³„ì •ë³´
- * aStartInfo    - [IN] Mtx StartInfo í¬ì¸í„°
- * aTargetRow    - [IN] Row TimeStampingì„ ìˆ˜í–‰í•  ëŒ€ìƒ RowPiece í¬ì¸í„°
+ * BUG-48353 : ÀÌ ÇÔ¼ö´Âhead piece ¸¦ Á¦¿ÜÇÑ piece ÀÏ¶§ È£ÃâµÇ´Â ÇÔ¼öÀÌ´Ù.
+ *             µû¶ó¼­ ¿©±â¼­ Pending Wait°¡ ¹ß»ýÇÒ ¼ö ¾ø´Ù.
+ *             (¿Ö³ÄÇÏ¸é head piece Ã³¸®½Ã ÀÌ¹Ì Pending Wait ÇßÀ»°ÍÀÌ±â ¶§¹®ÀÌ´Ù.)
+ *
+ * aStatistics   - [IN] Åë°èÁ¤º¸
+ * aStartInfo    - [IN] Mtx StartInfo Æ÷ÀÎÅÍ
+ * aTargetRow    - [IN] Row TimeStampingÀ» ¼öÇàÇÒ ´ë»ó RowPiece Æ÷ÀÎÅÍ
  * aPageReadMode - [IN] page read mode(SPR or MPR)
  *
  **********************************************************************/
@@ -2442,21 +2485,24 @@ IDE_RC sdcTableCTL::checkAndMakeSureRowStamping(
 
     IDE_ERROR( sdcRow::isHeadRowPiece( aTargetRow ) == ID_FALSE );
 
+    SDC_GET_ROWHDR_1B_FIELD(aTargetRow, SDC_ROWHDR_CTSLOTIDX, sCTSlotIdx);
+    sCTSlotIdx = SDC_UNMASK_CTSLOTIDX(sCTSlotIdx);
+
+    IDE_TEST_CONT( sCTSlotIdx == SDP_CTS_IDX_UNLK,
+                   already_row_stamping );
+
     getChangedTransInfo( aTargetRow,
                          &sCTSlotIdx,
                          &sObjPtr,
                          &sFSCreditSize,
                          &sRowCommitSCN );
 
-    IDE_TEST_CONT( sCTSlotIdx == SDP_CTS_IDX_UNLK,
-                    already_row_stamping );
-
     sPageHdr = sdpPhyPage::getHdr( aTargetRow );
 
-    /* BUG-24906 DMLì¤‘ UndoRec ê¸°ë¡í•˜ë‹¤ UNDOTBS ê³µê°„ë¶€ì¡±í•˜ë©´ ì„œë²„ì‚¬ë§ !!
-     * ë³¸ í•¨ìˆ˜ì—ì„œ ë³„ë„ì˜ Mtxë¡œ Loggingì„ ìˆ˜í–‰í•˜ëŠ” ê²ƒì€ í•´ë‹¹ Update/Delete
-     * ì—°ì‚°ì— ëŒ€í•œ UndoRec ê¸°ë¡í• ë•Œ mtx ê°€ Rollbackì´ ë ìˆ˜ ì—†ëŠ” Logicalí•œ
-     * ì—°ì‚°ì´ê¸° ë•Œë¬¸ì´ë‹¤. */
+    /* BUG-24906 DMLÁß UndoRec ±â·ÏÇÏ´Ù UNDOTBS °ø°£ºÎÁ·ÇÏ¸é ¼­¹ö»ç¸Á !!
+     * º» ÇÔ¼ö¿¡¼­ º°µµÀÇ Mtx·Î LoggingÀ» ¼öÇàÇÏ´Â °ÍÀº ÇØ´ç Update/Delete
+     * ¿¬»ê¿¡ ´ëÇÑ UndoRec ±â·ÏÇÒ¶§ mtx °¡ RollbackÀÌ µÉ¼ö ¾ø´Â LogicalÇÑ
+     * ¿¬»êÀÌ±â ¶§¹®ÀÌ´Ù. */
     IDE_TEST( sdrMiniTrans::begin( aStatistics,
                                    &sMtx,
                                    aStartInfo,
@@ -2477,13 +2523,13 @@ IDE_RC sdcTableCTL::checkAndMakeSureRowStamping(
                                         &sFstDskViewSCN ) == ID_FALSE )
         {
             IDE_TEST( logAndRunDelayedRowStamping(
-                          aStatistics,
-                          &sMtx,
-                          sCTSlotIdx,
-                          sObjPtr,
-                          aPageReadMode,
-                          &sWait4TransID,
-                          &sRowCommitSCN ) != IDE_SUCCESS );
+                                      aStatistics,
+                                      &sMtx,
+                                      sCTSlotIdx,
+                                      sObjPtr,
+                                      aPageReadMode,
+                                      &sWait4TransID, 
+                                      &sRowCommitSCN ) != IDE_SUCCESS );
         }
     }
     else
@@ -2520,13 +2566,13 @@ IDE_RC sdcTableCTL::checkAndMakeSureRowStamping(
 
 /***********************************************************************
  *
- * Description : RowPieceë¡œë¶€í„° CommitSCNì„ ë°˜í™˜í•œë‹¤.
+ * Description : RowPiece·ÎºÎÅÍ CommitSCNÀ» ¹ÝÈ¯ÇÑ´Ù.
  *
- * aTargetRowPtr  - [IN]  MSCNOrCSCNì„ ì•Œê³  ì‹¶ì€ TargetRow í¬ì¸í„°
+ * aTargetRowPtr  - [IN]  MSCNOrCSCNÀ» ¾Ë°í ½ÍÀº TargetRow Æ÷ÀÎÅÍ
  * aCTSlotIdx     - [OUT] CTSlotIdx
  * aObjPtr        - [OUT] Object Ptr
  * aFSCreditSize  - [OUT] FSCreditSize
- * aMSCNOrCSCN    - [OUT] íŒë…ëœ MSCNOrCSCN
+ * aMSCNOrCSCN    - [OUT] ÆÇµ¶µÈ MSCNOrCSCN
  *
  **********************************************************************/
 void sdcTableCTL::getChangedTransInfo( UChar   * aTargetRow,
@@ -2548,9 +2594,12 @@ void sdcTableCTL::getChangedTransInfo( UChar   * aTargetRow,
                              sCTSlotIdx );
 
     sCTSlotIdx = SDC_UNMASK_CTSLOTIDX(sCTSlotIdx);
-
+    
+    // SDP_CTS_IDX_UNLK °¡ ¾Æ´Ñ°É È®ÀÎÇÏ°í ¿ÔÁö¸¸ 
+    // µð¹ö±×¿¡¼­¸¸ Á×ÀÌÀÚ.         
+    IDE_DASSERT( sCTSlotIdx != SDP_CTS_IDX_UNLK );
     IDE_TEST_CONT( sCTSlotIdx == SDP_CTS_IDX_UNLK,
-                    cont_has_finished );
+                   cont_has_finished );
 
     if ( SDC_HAS_BOUND_CTS(sCTSlotIdx) )
     {
@@ -2587,17 +2636,22 @@ void sdcTableCTL::getChangedTransInfo( UChar   * aTargetRow,
 
 
 /***********************************************************************
- * Description : TSSë¡œë¶€í„° CommitSCNì„ ë°˜í™˜í•œë‹¤.
+ * Description : TSS·ÎºÎÅÍ CommitSCNÀ» ¹ÝÈ¯ÇÑ´Ù.
  *
- * aCTSlotIdx       - [IN]  Target Rowì˜ CTSlotIdx
- * aObjPtr          - [IN]  Target Rowì˜ CTS ë˜ëŠ” Row Slotì˜ í¬ì¸í„°
- * aTID4Wait        - [IN]  ë§Œì•½ TXê°€ Active ìƒíƒœì¸ ê²½ìš° í•´ë‹¹ TXì˜ TID
- * aCommitSCN       - [OUT] TXì˜ CommitSCNì´ë‚˜ Unbound CommitSCN í˜¹ì€ TSSë¥¼
- *                          ì†Œìœ í•œ TXì˜ BeginSCNì¼ìˆ˜ ìžˆë‹¤.
+ * aStatistics      - [IN]  Åë°èÁ¤º¸
+ * aTrans           - [IN]  ÀÚ½ÅÀÇ TXÀÇ Æ÷ÀÎÅÍ
+ * aCTSlotIdx       - [IN]  Target RowÀÇ CTSlotIdx
+ * aObjPtr          - [IN]  Target RowÀÇ CTS ¶Ç´Â Row SlotÀÇ Æ÷ÀÎÅÍ
+ * aStmtViewSCN     - [IN]  ¿Ã¹Ù¸¥ ¹öÀüÀÇ row¸¦ ÀÐ±â À§ÇÑ Statement viewscn
+ * aTID4Wait        - [OUT] ¸¸¾à TSS¸¦ ¼ÒÀ¯ÇÑ TX°¡ Active »óÅÂÀÎ °æ¿ì ÇØ´ç TXÀÇ TID
+ * aCommitSCN       - [OUT] TXÀÇ CommitSCNÀÌ³ª Unbound CommitSCN È¤Àº TSS¸¦
+ *                          ¼ÒÀ¯ÇÑ TXÀÇ BeginSCNÀÏ¼ö ÀÖ´Ù.
  **********************************************************************/
 IDE_RC sdcTableCTL::getCommitSCN( idvSQL   * aStatistics,
+                                  void     * aTrans,
                                   UChar      aCTSlotIdx,
                                   void     * aObjPtr,
+                                  smSCN      aStmtViewSCN,
                                   smTID    * aTID4Wait,
                                   smSCN    * aCommitSCN )
 {
@@ -2610,7 +2664,7 @@ IDE_RC sdcTableCTL::getCommitSCN( idvSQL   * aStatistics,
     IDE_ERROR( aTID4Wait       != NULL );
     IDE_ERROR( aCommitSCN      != NULL );
 
-    /* CTSì— Transaction ì •ë³´ê°€ bound ë˜ì–´ ìžˆëŠ” ê²½ìš° */
+    /* CTS¿¡ Transaction Á¤º¸°¡ bound µÇ¾î ÀÖ´Â °æ¿ì */
     if( SDC_HAS_BOUND_CTS(aCTSlotIdx) )
     {
         sCTS = (sdpCTS*)aObjPtr;
@@ -2619,13 +2673,15 @@ IDE_RC sdcTableCTL::getCommitSCN( idvSQL   * aStatistics,
         IDE_ERROR( SDC_CTS_SCN_IS_NOT_COMMITTED(sCTS->mFSCNOrCSCN) );
 
         IDE_TEST( sdcTSSegment::getCommitSCN( aStatistics,
+                                              aTrans,
                                               sTSSlotSID,
                                               &(sCTS->mFSCNOrCSCN),
+                                              aStmtViewSCN,
                                               aTID4Wait,
                                               aCommitSCN )
                   != IDE_SUCCESS );
     }
-    else /* Rowì— Transaction ì •ë³´ê°€ bound ë˜ì–´ ìžˆëŠ” ê²½ìš° */
+    else /* Row¿¡ Transaction Á¤º¸°¡ bound µÇ¾î ÀÖ´Â °æ¿ì */
     {
         IDE_ERROR( aCTSlotIdx == SDP_CTS_IDX_NULL );
 
@@ -2635,8 +2691,10 @@ IDE_RC sdcTableCTL::getCommitSCN( idvSQL   * aStatistics,
                                   sRowHdrExInfo.mTSSlotNum );
 
         IDE_TEST( sdcTSSegment::getCommitSCN( aStatistics,
+                                              aTrans,
                                               sTSSlotSID,
                                               &sRowHdrExInfo.mFSCNOrCSCN,
+                                              aStmtViewSCN,
                                               aTID4Wait,
                                               aCommitSCN )
                   != IDE_SUCCESS );
@@ -2653,13 +2711,12 @@ IDE_RC sdcTableCTL::getCommitSCN( idvSQL   * aStatistics,
 
 /***********************************************************************
  *
- * Description : ë°ì´íƒ€íŽ˜ì´ì§€ì˜ Deleteëœ RowPiece ëŒ€í•œ SelfAging ë° ë¡œê¹… ìˆ˜í–‰
+ * Description : µ¥ÀÌÅ¸ÆäÀÌÁöÀÇ DeleteµÈ RowPiece ´ëÇÑ SelfAging ¹× ·Î±ë ¼öÇà
  *
- * aStatistics  - [IN] í†µê³„ì •ë³´
- * aStartInfo   - [IN] ë¡œê¹…ì„ ìœ„í•œ Mtx ì‹œìž‘ì •ë³´
- * aPageHdrPtr  - [IN] íŽ˜ì´ì§€ í—¤ë” ì‹œìž‘ í¬ì¸í„°
- * aSCNtoAging  - [IN] ê°€ìž¥ ì˜¤ëžœëœ SSCNìœ¼ë¡œ Self-Agingì˜ ê¸°ì¤€ì´ ë˜ëŠ” SSCN
- *
+ * aStatistics  - [IN] Åë°èÁ¤º¸
+ * aStartInfo   - [IN] ·Î±ëÀ» À§ÇÑ Mtx ½ÃÀÛÁ¤º¸
+ * aPageHdrPtr  - [IN] ÆäÀÌÁö Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
+ * aSCNtoAging  - [IN] °¡Àå ¿À·£µÈ SSCNÀ¸·Î Self-AgingÀÇ ±âÁØÀÌ µÇ´Â SSCN -> SysMinDskViewSCN
  **********************************************************************/
 IDE_RC sdcTableCTL::logAndRunSelfAging( idvSQL          * aStatistics,
                                         sdrMtxStartInfo * aStartInfo,
@@ -2667,7 +2724,7 @@ IDE_RC sdcTableCTL::logAndRunSelfAging( idvSQL          * aStatistics,
                                         smSCN           * aSCNtoAging )
 {
     sdrMtx   sLogMtx;
-    UInt     sState = 0;
+    UInt     sState      = 0;
     UShort   sAgedRowCnt = 0;
 
     IDE_ERROR( aStartInfo  != NULL );
@@ -2693,12 +2750,12 @@ IDE_RC sdcTableCTL::logAndRunSelfAging( idvSQL          * aStatistics,
                   != IDE_SUCCESS );
     }
 
-    /* Loggingì„ í–ˆìœ¼ë©´, setDirtyë¥¼ ë¬´ì¡°ê±´ í•´ì•¼ í•¨. */
+    /* LoggingÀ» ÇßÀ¸¸é, setDirty¸¦ ¹«Á¶°Ç ÇØ¾ß ÇÔ. */
 
     /* BUG-31508 [sm-disk-collection]does not set dirty page
      *           when executing self aging in DRDB.
-     * AgedRow, ì¦‰ FreeSlotëœ Recordê°€ ì¡´ìž¬í•  ê²½ìš° ë°˜ë“œì‹œ dirtyì‹œì¼œì•¼í•¨.
-     * ê·¸ë ‡ì§€ ì•Šì„ ê²½ìš°, FreeSlotëœ Recordë“¤ì´ Diskì— ì €ìž¥ ì•ˆë¨*/
+     * AgedRow, Áï FreeSlotµÈ Record°¡ Á¸ÀçÇÒ °æ¿ì ¹Ýµå½Ã dirty½ÃÄÑ¾ßÇÔ.
+     * ±×·¸Áö ¾ÊÀ» °æ¿ì, FreeSlotµÈ RecordµéÀÌ Disk¿¡ ÀúÀå ¾ÈµÊ*/
     IDE_TEST( sdrMiniTrans::setDirtyPage( &sLogMtx,
                                           (UChar*)aPageHdrPtr )
               != IDE_SUCCESS );
@@ -2727,23 +2784,23 @@ IDE_RC sdcTableCTL::logAndRunSelfAging( idvSQL          * aStatistics,
 
 /***********************************************************************
  *
- * Description : ë°ì´íƒ€íŽ˜ì´ì§€ì˜ Deleteëœ RowPiece ëŒ€í•œ SelfAging ìˆ˜í–‰
+ * Description : µ¥ÀÌÅ¸ÆäÀÌÁöÀÇ DeleteµÈ RowPiece ´ëÇÑ SelfAging ¼öÇà
  *
- * ë°ì´íƒ€íŽ˜ì´ì§€ì—ì„œëŠ” Deleted ì»¤ë°‹ëœ Rowë“¤ë„ ì–´ëŠì •ë„ ë°ì´íƒ€íŽ˜ì´ì§€ì— ë‚´ë²„ë ¤ë‘”ë‹¤.
- * ì´ëŠ” RowPiece ë‹¨ìœ„ Consistent Readë¥¼ ì§€ì›í•˜ê¸° ìœ„í•œ ê²ƒì¸ë° ë§Œì•½, Deleteëœ
- * Rowì˜ ì´ì „ ë²„ì „ ì¦‰ Deleteë˜ê¸° ì „ RowPieceë¥¼ ë´ì•¼í•˜ëŠ” Statementê°€ ì¡´ìž¬í•  ê²½ìš°
- * Deleteëœ Rowì˜ UndoSIDë¥¼ ê°€ì§€ê³  ì´ì „ë²„ì „ì„ ìƒì„±í•´ì•¼í•œë‹¤. ê·¸ë ‡ê¸° ë•Œë¬¸ì—
- * ê·¸ RowPieceì˜ ì‚­ì œë˜ê¸° ì´ì „ë²„ì „ì„ ë³¼ ê°€ëŠ¥ì„±ì´ ìžˆëŠ” ì´ëŸ¬í•œ Statement ë“¤ì´ ëª¨ë‘
- * ì™„ë£Œë˜ê¸° ì „ê¹Œì§€ëŠ” Deleteëœ RowPieceë¥¼ ë°ì´íƒ€íŽ˜ì´ì§€ì—ì„œ ì œê±°í•´ì„œëŠ” ì•ˆëœë‹¤.
+ * µ¥ÀÌÅ¸ÆäÀÌÁö¿¡¼­´Â Deleted Ä¿¹ÔµÈ Rowµéµµ ¾î´ÀÁ¤µµ µ¥ÀÌÅ¸ÆäÀÌÁö¿¡ ³»¹ö·ÁµÐ´Ù.
+ * ÀÌ´Â RowPiece ´ÜÀ§ Consistent Read¸¦ Áö¿øÇÏ±â À§ÇÑ °ÍÀÎµ¥ ¸¸¾à, DeleteµÈ
+ * RowÀÇ ÀÌÀü ¹öÀü Áï DeleteµÇ±â Àü RowPiece¸¦ ºÁ¾ßÇÏ´Â Statement°¡ Á¸ÀçÇÒ °æ¿ì
+ * DeleteµÈ RowÀÇ UndoSID¸¦ °¡Áö°í ÀÌÀü¹öÀüÀ» »ý¼ºÇØ¾ßÇÑ´Ù. ±×·¸±â ¶§¹®¿¡
+ * ±× RowPieceÀÇ »èÁ¦µÇ±â ÀÌÀü¹öÀüÀ» º¼ °¡´É¼ºÀÌ ÀÖ´Â ÀÌ·¯ÇÑ Statement µéÀÌ ¸ðµÎ
+ * ¿Ï·áµÇ±â Àü±îÁö´Â DeleteµÈ RowPiece¸¦ µ¥ÀÌÅ¸ÆäÀÌÁö¿¡¼­ Á¦°ÅÇØ¼­´Â ¾ÈµÈ´Ù.
  *
- * ì¦‰, Self-Agingì€ ë³¼ ê°€ëŠ¥ì„±ì´ ìžˆëŠ” Statementê°€ ëª¨ë‘ ì—†ì–´ì§„ RowPieceë“¤ì„ íŽ˜ì´ì§€
- * ê°€ìš©ê³µê°„ìœ¼ë¡œ ëª¨ë‘ ë°˜í™˜í•˜ëŠ” ì¼ë ¨ì˜ ìž‘ì—…ì„ ì˜ë¯¸í•œë‹¤.
+ * Áï, Self-AgingÀº º¼ °¡´É¼ºÀÌ ÀÖ´Â Statement°¡ ¸ðµÎ ¾ø¾îÁø RowPieceµéÀ» ÆäÀÌÁö
+ * °¡¿ë°ø°£À¸·Î ¸ðµÎ ¹ÝÈ¯ÇÏ´Â ÀÏ·ÃÀÇ ÀÛ¾÷À» ÀÇ¹ÌÇÑ´Ù.
  *
- * Self-Agingì„ í•˜ê¸° ìœ„í•´ì„œëŠ” SlotDirectoryë¥¼ ìˆœì°¨ ê²€ìƒ‰í•˜ë©´ì„œ ì§„í–‰í•˜ëŠ”ë°, ì´ë•Œ ë‹¤ìŒ
- * Self-Agingì— ëŒ€ìƒì´ ë˜ëŠ” RowPiece ê°œìˆ˜ëŠ” ìµœëŒ€ CommitSCNì„ êµ¬í•˜ê¸°ë„ í•œë‹¤.
+ * Self-AgingÀ» ÇÏ±â À§ÇØ¼­´Â SlotDirectory¸¦ ¼øÂ÷ °Ë»öÇÏ¸é¼­ ÁøÇàÇÏ´Âµ¥, ÀÌ¶§ ´ÙÀ½
+ * Self-Aging¿¡ ´ë»óÀÌ µÇ´Â RowPiece °³¼ö´Â ÃÖ´ë CommitSCNÀ» ±¸ÇÏ±âµµ ÇÑ´Ù.
  *
- * aPageHdrPtr     - [IN] íŽ˜ì´ì§€ í—¤ë” ì‹œìž‘ í¬ì¸í„°
- * aSCNtoAging  - [IN] ê°€ìž¥ ì˜¤ëžœëœ SSCNìœ¼ë¡œ Self-Agingì˜ ê¸°ì¤€ì´ ë˜ëŠ” SSCN
+ * aPageHdrPtr  - [IN] ÆäÀÌÁö Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
+ * aSCNtoAging  - [IN] °¡Àå ¿À·£µÈ SSCNÀ¸·Î Self-AgingÀÇ ±âÁØÀÌ µÇ´Â SSCN -> SysMinDskViewSCN
  *
  **********************************************************************/
 IDE_RC sdcTableCTL::runSelfAging( sdpPhyPageHdr * aPageHdrPtr,
@@ -2830,7 +2887,7 @@ IDE_RC sdcTableCTL::runSelfAging( sdpPhyPageHdr * aPageHdrPtr,
 
     if ( sNewAgingDelRowCnt > 0 )
     {
-        IDE_ASSERT( !SM_SCN_IS_INIT( sNewSCNtoAging ) );
+        IDE_ASSERT( SM_SCN_IS_NOT_INIT( sNewSCNtoAging ) );
         SM_SET_SCN( &(sCTL->mSCN4Aging), &sNewSCNtoAging );
     }
     else
@@ -2853,26 +2910,26 @@ IDE_RC sdcTableCTL::runSelfAging( sdpPhyPageHdr * aPageHdrPtr,
 
 /***********************************************************************
  *
- * Description : ë°ì´íƒ€íŽ˜ì´ì§€ì— ëŒ€í•´ì„œ SelfAging ê°€ëŠ¥ì—¬ë¶€ íŒë‹¨ ë° SelfAging ìˆ˜í–‰
+ * Description : µ¥ÀÌÅ¸ÆäÀÌÁö¿¡ ´ëÇØ¼­ SelfAging °¡´É¿©ºÎ ÆÇ´Ü ¹× SelfAging ¼öÇà
  *
- * ì¼ë‹¨ ë§¤ë²ˆ íŽ˜ì´ì§€ë¥¼ Self-Agingì„ ìœ„í•´ì„œ ì ‘ê·¼í•  ë•Œë§ˆë‹¤ SlotDirectoryë¥¼ ìˆœì°¨ê²€ìƒ‰ì„
- * í•˜ëŠ” ê²ƒì€ ë¹„ìš©ì´í¬ê¸° ë•Œë¬¸ì— ì–´ëŠì •ë„ ë°”ë¡œ íŒë‹¨í•  ìˆ˜ ìžˆëŠ” ì •ë³´ë¥¼ ê¸°ë°˜ìœ¼ë¡œ íŒë‹¨í•œë‹¤.
- * ì˜ˆë¥¼ë“¤ì–´, Deleteëœ RowPieceì˜ ê°œìˆ˜(ëª¨ë‘ Self-AgingëŒ€ìƒì¼ ìˆ˜ë„ ê·¸ë ‡ì§€ ì•Šì„ìˆ˜ë„
- * ìžˆë‹¤ )ë¼ë“ ì§€, Self-Aging í•  ìˆ˜ ìžˆëŠ” RowPiece ì˜ ê°œìˆ˜ ë° ìµœëŒ€ CommitSCNë“±ì„
- * ë³´ê³  íŒë‹¨í•œë‹¤.
+ * ÀÏ´Ü ¸Å¹ø ÆäÀÌÁö¸¦ Self-AgingÀ» À§ÇØ¼­ Á¢±ÙÇÒ ¶§¸¶´Ù SlotDirectory¸¦ ¼øÂ÷°Ë»öÀ»
+ * ÇÏ´Â °ÍÀº ºñ¿ëÀÌÅ©±â ¶§¹®¿¡ ¾î´ÀÁ¤µµ ¹Ù·Î ÆÇ´ÜÇÒ ¼ö ÀÖ´Â Á¤º¸¸¦ ±â¹ÝÀ¸·Î ÆÇ´ÜÇÑ´Ù.
+ * ¿¹¸¦µé¾î, DeleteµÈ RowPieceÀÇ °³¼ö(¸ðµÎ Self-Aging´ë»óÀÏ ¼öµµ ±×·¸Áö ¾ÊÀ»¼öµµ
+ * ÀÖ´Ù )¶óµçÁö, Self-Aging ÇÒ ¼ö ÀÖ´Â RowPiece ÀÇ °³¼ö ¹× ÃÖ´ë CommitSCNµîÀ»
+ * º¸°í ÆÇ´ÜÇÑ´Ù.
  *
- * í•œë²ˆ SelfAingì„ ìˆ˜í–‰í–ˆë‹¤ë©´ í•œë²ˆë” í˜„ìž¬ì˜ Self-Agingì— ëŒ€í•œ ìƒíƒœë¥¼ í™•ì¸í•˜ì—¬ ë°˜í™˜í•œë‹¤.
+ * ÇÑ¹ø SelfAingÀ» ¼öÇàÇß´Ù¸é ÇÑ¹ø´õ ÇöÀçÀÇ Self-Aging¿¡ ´ëÇÑ »óÅÂ¸¦ È®ÀÎÇÏ¿© ¹ÝÈ¯ÇÑ´Ù.
  *
- * aStatistics  - [IN] í†µê³„ì •ë³´
- * aStartInfo   - [IN] ë¡œê¹…ì„ ìœ„í•œ Mtx ì‹œìž‘ì •ë³´
- * aPageHdrPtr     - [IN] íŽ˜ì´ì§€ í—¤ë” ì‹œìž‘ í¬ì¸í„°
- * aCheckFlag   - [OUT] íŽ˜ì´ì§€ì˜ ìµœì¢… Self-Aging ìƒíƒœ
+ * aStatistics  - [IN] Åë°èÁ¤º¸
+ * aStartInfo   - [IN] ·Î±ëÀ» À§ÇÑ Mtx ½ÃÀÛÁ¤º¸
+ * aPageHdrPtr  - [IN] ÆäÀÌÁö Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
+ * aCheckFlag   - [OUT] ÆäÀÌÁöÀÇ ÃÖÁ¾ Self-Aging »óÅÂ
  *
  **********************************************************************/
 IDE_RC sdcTableCTL::checkAndRunSelfAging( idvSQL           * aStatistics,
-                                         sdrMtxStartInfo  * aStartInfo,
-                                         sdpPhyPageHdr    * aPageHdrPtr,
-                                         sdpSelfAgingFlag * aCheckFlag )
+                                          sdrMtxStartInfo  * aStartInfo,
+                                          sdpPhyPageHdr    * aPageHdrPtr,
+                                          sdpSelfAgingFlag * aCheckFlag )
 {
     sdpSelfAgingFlag sCheckFlag;
     smSCN            sSCNtoAging;
@@ -2881,7 +2938,7 @@ IDE_RC sdcTableCTL::checkAndRunSelfAging( idvSQL           * aStatistics,
     IDE_ERROR( aPageHdrPtr   != NULL );
     IDE_ERROR( aCheckFlag != NULL );
 
-    smxTransMgr::getSysMinDskViewSCN( &sSCNtoAging );
+    SMX_GET_MIN_DISK_VIEW( &sSCNtoAging );
     sCheckFlag = canAgingBySelf( aPageHdrPtr, &sSCNtoAging );
 
     if ( (sCheckFlag == SDP_SA_FLAG_CHECK_AND_AGING) ||
@@ -2890,7 +2947,7 @@ IDE_RC sdcTableCTL::checkAndRunSelfAging( idvSQL           * aStatistics,
         IDE_TEST( logAndRunSelfAging( aStatistics,
                                       aStartInfo,
                                       aPageHdrPtr,
-                                      &sSCNtoAging ) /* xxxx isDoaging*/
+                                      &sSCNtoAging )/* xxxx isDoaging*/
                   != IDE_SUCCESS );
 
         sCheckFlag = canAgingBySelf( aPageHdrPtr, &sSCNtoAging );
@@ -2907,10 +2964,10 @@ IDE_RC sdcTableCTL::checkAndRunSelfAging( idvSQL           * aStatistics,
 
 /***********************************************************************
  *
- * Description : ë°ì´íƒ€íŽ˜ì´ì§€ì˜ Self-Aging ê°€ëŠ¥ ì—¬ë¶€ íŒë‹¨
+ * Description : µ¥ÀÌÅ¸ÆäÀÌÁöÀÇ Self-Aging °¡´É ¿©ºÎ ÆÇ´Ü
  *
- * aPageHdrPtr     - [IN] íŽ˜ì´ì§€ í—¤ë” ì‹œìž‘ í¬ì¸í„°
- * aSCNtoAging  - [IN] ê°€ìž¥ ì˜¤ëžœëœ SSCNìœ¼ë¡œ Self-Agingì˜ ê¸°ì¤€ì´ ë˜ëŠ” SSCN
+ * aPageHdrPtr     - [IN] ÆäÀÌÁö Çì´õ ½ÃÀÛ Æ÷ÀÎÅÍ
+ * aSCNtoAging  - [IN] °¡Àå ¿À·£µÈ SSCNÀ¸·Î Self-AgingÀÇ ±âÁØÀÌ µÇ´Â SSCN
  *
  ***********************************************************************/
 sdpSelfAgingFlag sdcTableCTL::canAgingBySelf(
@@ -2954,22 +3011,20 @@ sdpSelfAgingFlag sdcTableCTL::canAgingBySelf(
  *
  * Description : Row TimeStamping For ALTER TABLE AGING
  *
- * ALTER TABLE <<TABLEëª…>> AGING; êµ¬ë¬¸ìœ¼ë¡œ ì‚¬ìš©ìžê°€ Row TimeStapingì„
- * ëª…ì‹œì ìœ¼ë¡œ í•  ìˆ˜ ìžˆê²Œ í•œë‹¤.
+ * ALTER TABLE <<TABLE¸í>> AGING; ±¸¹®À¸·Î »ç¿ëÀÚ°¡ Row TimeStapingÀ»
+ * ¸í½ÃÀûÀ¸·Î ÇÒ ¼ö ÀÖ°Ô ÇÑ´Ù.
  *
- * aStatistics         - [IN] í†µê³„ì •ë³´
+ * aStatistics         - [IN] Åë°èÁ¤º¸
  * aStartInfo          - [IN] mtx start info
- * aPageptr            - [IN] íŽ˜ì´ì§€ ì‹œìž‘ í¬ì¸í„°
+ * aPageptr            - [IN] ÆäÀÌÁö ½ÃÀÛ Æ÷ÀÎÅÍ
  * aPageReadMode       - [IN] page read mode(SPR or MPR)
- * aStampingSuccessCnt - [OUT] Stamping ì„±ê³µ ê°œìˆ˜
  *
  *********************************************************************/
 IDE_RC sdcTableCTL::runRowStampingAll(
                        idvSQL          * aStatistics,
                        sdrMtxStartInfo * aStartInfo,
                        UChar           * aPagePtr,
-                       sdbPageReadMode   aPageReadMode,
-                       UInt            * aStampingSuccessCnt )
+                       sdbPageReadMode   aPageReadMode )
 {
     sdrMtx     sMtx;
     sdpCTL   * sCTL;
@@ -2982,18 +3037,15 @@ IDE_RC sdcTableCTL::runRowStampingAll(
     UInt       sStampingSuccessCnt = 0;
 
     IDE_ERROR( aPagePtr != NULL );
-    IDE_ERROR( aStampingSuccessCnt != NULL );
-
-    sStampingSuccessCnt = *aStampingSuccessCnt;
 
     sCTL = getCTL( (sdpPhyPageHdr*)aPagePtr );
 
-    /* Pageì— Row Stampingí•  ëŒ€ìƒ CTSê°€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´
-     * IDE_SUCCESSë¥¼ ë°˜í™˜í•˜ê³  ì™„ë£Œí•œë‹¤. */
+    /* Page¿¡ Row StampingÇÒ ´ë»ó CTS°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù¸é
+     * IDE_SUCCESS¸¦ ¹ÝÈ¯ÇÏ°í ¿Ï·áÇÑ´Ù. */
     IDE_TEST_CONT( sCTL->mBindCTSCnt == 0, skip_soft_stamping );
 
-    /* S-latchê°€ íšë“ë˜ ë“¤ì–´ì˜¤ê¸° ë•Œë¬¸ì— X-latchë¡œ ì „í™˜í•´ì¤„ìˆ˜ ìžˆë‹¤ë©´ ì „í™˜í•œë‹¤.
-     * ì „í™˜ ëª»í•œ ê²½ìš°ëŠ” IDE_SUCCESSë¥¼ ë°˜í™˜í•˜ê³  ì™„ë£Œí•œë‹¤. */
+    /* S-latch°¡ È¹µæµÇ µé¾î¿À±â ¶§¹®¿¡ X-latch·Î ÀüÈ¯ÇØÁÙ¼ö ÀÖ´Ù¸é ÀüÈ¯ÇÑ´Ù.
+     * ÀüÈ¯ ¸øÇÑ °æ¿ì´Â IDE_SUCCESS¸¦ ¹ÝÈ¯ÇÏ°í ¿Ï·áÇÑ´Ù. */
     sdbBufferMgr::tryEscalateLatchPage( aStatistics,
                                         aPagePtr,
                                         aPageReadMode,
@@ -3009,8 +3061,7 @@ IDE_RC sdcTableCTL::runRowStampingAll(
               != IDE_SUCCESS );
     sState = 1;
 
-    sTotCTSCnt          = sCTL->mTotCTSCnt;
-    sStampingSuccessCnt = 0;
+    sTotCTSCnt = sCTL->mTotCTSCnt;
 
     for ( sIdx = 0; sIdx < sTotCTSCnt; sIdx++ )
     {
@@ -3041,8 +3092,6 @@ IDE_RC sdcTableCTL::runRowStampingAll(
 
     IDE_EXCEPTION_CONT( skip_soft_stamping );
 
-    *aStampingSuccessCnt = sStampingSuccessCnt;
-
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -3052,19 +3101,17 @@ IDE_RC sdcTableCTL::runRowStampingAll(
         IDE_ASSERT( sdrMiniTrans::rollback(&sMtx) == IDE_SUCCESS );
     }
 
-    *aStampingSuccessCnt = sStampingSuccessCnt;
-
     return IDE_FAILURE;
 }
 
 /***********************************************************************
  *
- * Description : CTLì˜ Deleteëœ Rowì¤‘ì— ìž ì •ì ì¸ Self-Aging ëŒ€ìƒ
- *               Row Piece ê°œìˆ˜ë¥¼ ê³ ë ¤í•˜ì—¬ ëŒ€ëžµì ì¸ Agingí• 
- *               ì´ ê°€ìš©ê³µê°„ í¬ê¸° ë°˜í™˜
+ * Description : CTLÀÇ DeleteµÈ RowÁß¿¡ ÀáÁ¤ÀûÀÎ Self-Aging ´ë»ó
+ *               Row Piece °³¼ö¸¦ °í·ÁÇÏ¿© ´ë·«ÀûÀÎ AgingÇÒ
+ *               ÃÑ °¡¿ë°ø°£ Å©±â ¹ÝÈ¯
  *
- * aMtx         - [IN] Mtx í¬ì¸í„°
- * aPageHdrPtr  - [IN] íŽ˜ì´ì§€ í—¤ë” í¬ì¸í„°
+ * aMtx         - [IN] Mtx Æ÷ÀÎÅÍ
+ * aPageHdrPtr  - [IN] ÆäÀÌÁö Çì´õ Æ÷ÀÎÅÍ
  *
  ***********************************************************************/
 UInt sdcTableCTL::getTotAgingSize( sdpPhyPageHdr * aPageHdrPtr )
@@ -3078,7 +3125,7 @@ UInt sdcTableCTL::getTotAgingSize( sdpPhyPageHdr * aPageHdrPtr )
 
 /***********************************************************************
  *
- * Description : CTLå ì™ì˜™å ì™ì˜™å ì‹¸ë¸ì˜™å ì™ì˜™ å ì™ì˜™ CTS å ì™ì˜™å ì™ì˜™ å ì™ì˜™í™˜
+ * Description : CTLï¿½ï¿½ï¿½ï¿½ï¿½Îºï¿½ï¿½ï¿½ ï¿½ï¿½ CTS ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
  ***********************************************************************/
 UInt sdcTableCTL::getCountOfCTS( sdpPhyPageHdr * aPageHdr )
 {
@@ -3087,12 +3134,12 @@ UInt sdcTableCTL::getCountOfCTS( sdpPhyPageHdr * aPageHdr )
 
 
 /***********************************************************************
- * TASK-4007 [SM]PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
- * Description : pageë¥¼ Dumpí•˜ì—¬ tableì˜ ctlì„ ì¶œë ¥í•œë‹¤.
+ * TASK-4007 [SM]PBT¸¦ À§ÇÑ ±â´É Ãß°¡
+ * Description : page¸¦ DumpÇÏ¿© tableÀÇ ctlÀ» Ãâ·ÂÇÑ´Ù.
  *
- * BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ë‚´ì—ì„œ
- * local Arrayì˜ ptrë¥¼ ë°˜í™˜í•˜ê³  ìžˆìŠµë‹ˆë‹¤.
- * Local ArrayëŒ€ì‹  OutBufë¥¼ ë°›ì•„ ë¦¬í„´í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤.
+ * BUG-28379 [SD] sdnbBTree::dumpNodeHdr( UChar *aPage ) ³»¿¡¼­
+ * local ArrayÀÇ ptr¸¦ ¹ÝÈ¯ÇÏ°í ÀÖ½À´Ï´Ù.
+ * Local Array´ë½Å OutBuf¸¦ ¹Þ¾Æ ¸®ÅÏÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù.
  ***********************************************************************/
 IDE_RC sdcTableCTL::dump( UChar *aPage ,
                           SChar *aOutBuf ,

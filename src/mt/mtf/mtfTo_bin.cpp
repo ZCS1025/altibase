@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfTo_bin.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfTo_bin.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -43,7 +43,7 @@ static IDE_RC mtfTo_binEstimate( mtcNode*     aNode,
 mtfModule mtfTo_bin = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfTo_binFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -136,8 +136,8 @@ IDE_RC mtfTo_binCalculate( mtcNode*     aNode,
  * Implementation :
  *    TO_BIN( integer )
  *
- *    aStack[0] : ì£¼ì–´ì§„ integerë¥¼ 2ì§„ìˆ˜ í˜•íƒœë¡œ ë³€í™˜í•œ ê°’
- *    aStack[1] : integer ê°’
+ *    aStack[0] : ÁÖ¾îÁø integer¸¦ 2Áø¼ö ÇüÅÂ·Î º¯È¯ÇÑ °ª
+ *    aStack[1] : integer °ª
  *
  *    ex) TO_BIN(1000) ==> 1111101000
  *

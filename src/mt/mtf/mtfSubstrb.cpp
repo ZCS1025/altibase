@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfSubstrb.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfSubstrb.cpp 90192 2021-03-12 02:01:03Z jayce.park $
  **********************************************************************/
 
 #include <mte.h>
@@ -48,7 +48,7 @@ static IDE_RC mtfSubstrbEstimate( mtcNode*     aNode,
 mtfModule mtfSubstrb = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfSubstrbFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -80,14 +80,14 @@ IDE_RC mtfSubstrbCalculateXlobLocator3( mtcNode*     aNode,
                                         void*        aInfo,
                                         mtcTemplate* aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 static IDE_RC mtfSubstringCalculateClobValue2( mtcNode     * aNode,
                                                mtcStack    * aStack,
                                                SInt          aRemain,
                                                void        * aInfo,
                                                mtcTemplate * aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 static IDE_RC mtfSubstringCalculateClobValue3( mtcNode     * aNode,
                                                mtcStack    * aStack,
                                                SInt          aRemain,
@@ -142,7 +142,7 @@ const mtcExecute mtfExecuteXlobLocator3 = {
     mtk::extractRangeNA
 };
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 const mtcExecute mtfExecuteClobValue2 = {
     mtf::calculateNA,
     mtf::calculateNA,
@@ -155,7 +155,7 @@ const mtcExecute mtfExecuteClobValue2 = {
     mtk::extractRangeNA
 };
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 const mtcExecute mtfExecuteClobValue3 = {
     mtf::calculateNA,
     mtf::calculateNA,
@@ -212,9 +212,9 @@ IDE_RC mtfSubstrbEstimate( mtcNode*     aNode,
         }
 
         // fix BUG-25560
-        // precisonì„ clobì˜ ìµœëŒ€ í¬ê¸°ë¡œ ì„¤ì •
-        /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì›
-         * Lob LocatorëŠ” VARCHARë¡œ ê°€ëŠ¥í•œ ìµœëŒ€ í¬ê¸°ë¡œ ì„¤ì •
+        // precisonÀ» clobÀÇ ÃÖ´ë Å©±â·Î ¼³Á¤
+        /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø
+         * Lob Locator´Â VARCHAR·Î °¡´ÉÇÑ ÃÖ´ë Å©±â·Î ¼³Á¤
          */
         sPrecision = MTD_VARCHAR_PRECISION_MAXIMUM;
     }
@@ -247,9 +247,9 @@ IDE_RC mtfSubstrbEstimate( mtcNode*     aNode,
             }
 
             // fix BUG-25560
-            // precisonì„ clobì˜ ìµœëŒ€ í¬ê¸°ë¡œ ì„¤ì •
-            /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì›
-             * Lob Columnì´ë©´ VARCHARë¡œ ê°€ëŠ¥í•œ ìµœëŒ€ í¬ê¸°ë¡œ ì„¤ì •í•œë‹¤.
+            // precisonÀ» clobÀÇ ÃÖ´ë Å©±â·Î ¼³Á¤
+            /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø
+             * Lob ColumnÀÌ¸é VARCHAR·Î °¡´ÉÇÑ ÃÖ´ë Å©±â·Î ¼³Á¤ÇÑ´Ù.
              */
             sPrecision = MTD_VARCHAR_PRECISION_MAXIMUM;
         }
@@ -277,9 +277,9 @@ IDE_RC mtfSubstrbEstimate( mtcNode*     aNode,
             }
 
             // fix BUG-25560
-            // precisonì„ clobì˜ ìµœëŒ€ í¬ê¸°ë¡œ ì„¤ì •
-            /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì›
-             * Lob Valueì´ë©´ VARCHARì˜ ìµœëŒ€ í¬ê¸°ì™€ Lob Valueì˜ í¬ê¸° ì¤‘ ìž‘ì€ ê²ƒìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+            // precisonÀ» clobÀÇ ÃÖ´ë Å©±â·Î ¼³Á¤
+            /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø
+             * Lob ValueÀÌ¸é VARCHARÀÇ ÃÖ´ë Å©±â¿Í Lob ValueÀÇ Å©±â Áß ÀÛÀº °ÍÀ¸·Î ¼³Á¤ÇÑ´Ù.
              */
             sPrecision = IDL_MIN( MTD_VARCHAR_PRECISION_MAXIMUM,
                                   aStack[1].column->precision );
@@ -667,7 +667,8 @@ IDE_RC mtfSubstrbCalculateXlobLocator2( mtcNode*     aNode,
     
     IDE_TEST( mtc::getLobLengthLocator( sLocator,
                                         & sIsNull,
-                                        & sLobLength )
+                                        & sLobLength,
+                                        mtc::getStatistics(aTemplate) )
               != IDE_SUCCESS );
     
     if ( (sIsNull == ID_TRUE) ||
@@ -727,7 +728,7 @@ IDE_RC mtfSubstrbCalculateXlobLocator2( mtcNode*     aNode,
                     sBufferSize  = MTC_LOB_BUFFER_SIZE;
                 }
 
-                IDE_TEST( mtc::readLob( mtc::getStatistics( aTemplate ),// NULL, /* idvSQL* */
+                IDE_TEST( mtc::readLob( mtc::getStatistics( aTemplate ), /* idvSQL* */
                                         sLocator,
                                         sBufferOffset,
                                         sBufferMount,
@@ -782,7 +783,7 @@ IDE_RC mtfSubstrbCalculateXlobLocator2( mtcNode*     aNode,
 
             if ( sLength > 0 )
             {
-                IDE_TEST( mtc::readLob( mtc::getStatistics( aTemplate ),//  NULL, /* idvSQL* */
+                IDE_TEST( mtc::readLob( mtc::getStatistics( aTemplate ), /* idvSQL* */
                                         sLocator,
                                         sStart + sAdjustSourceStart,
                                         sLength,
@@ -847,7 +848,8 @@ IDE_RC mtfSubstrbCalculateXlobLocator3( mtcNode*     aNode,
     
     IDE_TEST( mtc::getLobLengthLocator( sLocator,
                                         & sIsNull,
-                                        & sLobLength )
+                                        & sLobLength,
+                                        mtc::getStatistics(aTemplate) )
               != IDE_SUCCESS );
     
     if ( (sIsNull == ID_TRUE) ||
@@ -912,7 +914,7 @@ IDE_RC mtfSubstrbCalculateXlobLocator3( mtcNode*     aNode,
                     sBufferSize  = MTC_LOB_BUFFER_SIZE;
                 }
 
-                IDE_TEST( mtc::readLob( NULL, /* idvSQL* */
+                IDE_TEST( mtc::readLob( mtc::getStatistics(aTemplate), /* idvSQL* */
                                         sLocator,
                                         sBufferOffset,
                                         sBufferMount,
@@ -960,7 +962,7 @@ IDE_RC mtfSubstrbCalculateXlobLocator3( mtcNode*     aNode,
             // BUG-37527
             if ( sLength > 0 )
             {
-                IDE_TEST( mtc::readLob( NULL, /* idvSQL* */
+                IDE_TEST( mtc::readLob( mtc::getStatistics(aTemplate), /* idvSQL* */
                                         sLocator,
                                         sStart + sAdjustSourceStart,
                                         sLength,

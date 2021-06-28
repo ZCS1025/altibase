@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qsxUtil.h 83113 2018-05-29 02:04:30Z ahra.cho $
+ * $Id: qsxUtil.h 83112 2018-05-29 02:04:03Z ahra.cho $
  **********************************************************************/
 
 #ifndef _O_QSX_UTIL_H_
@@ -50,8 +50,8 @@ class qsxUtil
         idBool         aCopyRef );
 
     // BUG-11192 date_format session property
-    // mtv::executeConvert()ì‹œ mtcTemplateì´ í•„ìš”í•¨
-    // aDestTemplate ì¸ìž ì¶”ê°€.
+    // mtv::executeConvert()½Ã mtcTemplateÀÌ ÇÊ¿äÇÔ
+    // aDestTemplate ÀÎÀÚ Ãß°¡.
     // by kumdory, 2005-04-08
     static IDE_RC assignValue (
         iduMemory    * aMemory,
@@ -64,9 +64,9 @@ class qsxUtil
         idBool         aCopyRef );
 
     // PROJ-1075 assignValue
-    // record/row/arrayíƒ€ìž…ì— ëŒ€í•´ ë¶„ë¥˜í•˜ì—¬ assign.
-    // ë‚˜ë¨¸ì§€ primitiveíƒ€ìž…ì— ëŒ€í•œ ì—°ì‚°ì€
-    // assignPrimitiveValueë¥¼ ë‚´ë¶€ì ìœ¼ë¡œ í˜¸ì¶œí•¨.
+    // record/row/arrayÅ¸ÀÔ¿¡ ´ëÇØ ºÐ·ùÇÏ¿© assign.
+    // ³ª¸ÓÁö primitiveÅ¸ÀÔ¿¡ ´ëÇÑ ¿¬»êÀº
+    // assignPrimitiveValue¸¦ ³»ºÎÀûÀ¸·Î È£ÃâÇÔ.
     static IDE_RC assignValue (
         iduMemory    * aMemory,
         mtcColumn    * aSourceColumn,
@@ -76,7 +76,7 @@ class qsxUtil
         mtcTemplate  * aDestTemplate,
         idBool         aCopyRef );
 
-    // PROJ-1075 rowtypeì— ëŒ€í•œ assign
+    // PROJ-1075 rowtype¿¡ ´ëÇÑ assign
     static IDE_RC assignRowValue (
         iduMemory    * aMemory,
         mtcColumn    * aSourceColumn,
@@ -86,8 +86,8 @@ class qsxUtil
         mtcTemplate  * aDestTemplate,
         idBool         aCopyRef );
 
-    // PROJ-1075 rowtypeì— ëŒ€í•œ assign.
-    // cursor fetchì‹œì— ì‚¬ìš©ë¨.
+    // PROJ-1075 rowtype¿¡ ´ëÇÑ assign.
+    // cursor fetch½Ã¿¡ »ç¿ëµÊ.
     static IDE_RC assignRowValueFromStack(
         iduMemory    * aMemory,
         mtcStack     * aSourceStack,
@@ -96,17 +96,17 @@ class qsxUtil
         qcTemplate   * aDestTemplate,
         UInt           aTargetCount );
 
-    // PROJ-1075 arraytypeì— ëŒ€í•œ assign
+    // PROJ-1075 arraytype¿¡ ´ëÇÑ assign
     static IDE_RC assignArrayValue (
         void         * aSourceValue,
         void         * aDestValue,
         mtcTemplate  * aDestTemplate );
 
     // BUG-11192 date_format session property
-    // mtv::executeConvert()ì‹œ mtcTemplateì´ í•„ìš”í•¨
-    // aDestTemplate ì¸ìž ì¶”ê°€.
+    // mtv::executeConvert()½Ã mtcTemplateÀÌ ÇÊ¿äÇÔ
+    // aDestTemplate ÀÎÀÚ Ãß°¡.
     // by kumdory, 2005-04-08
-    // PROJ-1075 assignValue->assignPrimitiveValueë¡œ í•¨ìˆ˜ì´ë¦„ ë³€ê²½.
+    // PROJ-1075 assignValue->assignPrimitiveValue·Î ÇÔ¼öÀÌ¸§ º¯°æ.
     static IDE_RC assignPrimitiveValue (
         iduMemory    * aMemory,
         mtcColumn    * aSourceColumn,

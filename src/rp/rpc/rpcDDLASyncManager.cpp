@@ -38,13 +38,13 @@ IDE_RC rpcDDLASyncManager::ddlASynchronization( rpxSender * aSender,
 
     RP_LABEL( NORMAL_EXIT );
 
-    aSender->resume();
+    aSender->resumeApply();
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 
-    aSender->resume();
+    aSender->resumeApply();
 
     IDE_ERRLOG( IDE_RP_0 );
 
@@ -66,7 +66,7 @@ IDE_RC rpcDDLASyncManager::ddlASyncStart( rpxSender * aSender )
         IDE_CONT( NORMAL_EXIT );
     }
 
-    while( aSender->isSuspended() != ID_TRUE )
+    while( aSender->isSuspendedApply() != ID_TRUE )
     {
         IDE_TEST_CONT( aSender->checkInterrupt() != RP_INTR_NONE, NORMAL_EXIT );
         idlOS::thr_yield();
@@ -434,7 +434,6 @@ IDE_RC rpcDDLASyncManager::runDDLNMetaRebuild( rpxReceiver * aReceiver,
                                                smSN          aLastRemoteDDLXSN,
                                                idBool      * aDoSendAck )
 {
-    smSCN          sDummySCN;
     smiTrans       sDDLTrans;
     smiStatement * sRootStmt = NULL;
     UInt           sStage    = 0;
@@ -473,7 +472,6 @@ IDE_RC rpcDDLASyncManager::runDDLNMetaRebuild( rpxReceiver * aReceiver,
 
     sStage = 3;
     IDE_TEST ( rpcDDLSyncManager::runDDL( sDDLTrans.getStatistics(),
-                                          &sDDLTrans,
                                           aDDLStmt,
                                           aUserName,
                                           &sStatement )
@@ -485,7 +483,7 @@ IDE_RC rpcDDLASyncManager::runDDLNMetaRebuild( rpxReceiver * aReceiver,
 
     IDE_TEST( aReceiver->metaRebuild( &sDDLTrans ) != IDE_SUCCESS );
 
-    IDE_TEST_RAISE( sDDLTrans.commit( &sDummySCN ) != IDE_SUCCESS, ERR_TRANS_COMMIT );
+    IDE_TEST_RAISE( sDDLTrans.commit() != IDE_SUCCESS, ERR_TRANS_COMMIT );
     sStage = 1;
     ideLog::log( IDE_RP_0, "[DDLASyncManager] DDL <%s> commit success", aDDLStmt );
 
@@ -524,8 +522,8 @@ IDE_RC rpcDDLASyncManager::runDDLNMetaRebuild( rpxReceiver * aReceiver,
             }
             else
             {
-                /* Meta Rebuild Ïã§Ìå®ÏãúÏóêÎäî DDL ÏùÄ Commit ÌïòÍ≥† Receiver Î•º ÎÇ¥Î†§ Meta Î•º ÏµúÏã†ÏúºÎ°ú Ïú†ÏßÄ */
-                if ( sDDLTrans.commit( &sDummySCN ) == IDE_SUCCESS )
+                /* Meta Rebuild Ω«∆–Ω√ø°¥¬ DDL ¿∫ Commit «œ∞Ì Receiver ∏¶ ≥ª∑¡ Meta ∏¶ √÷Ω≈¿∏∑Œ ¿Ø¡ˆ */
+                if ( sDDLTrans.commit() == IDE_SUCCESS )
                 {
                     ideLog::log( IDE_RP_0, "[DDLASyncManager] DDL <%s> commit success", aDDLStmt );
                     *aDoSendAck = ID_FALSE;

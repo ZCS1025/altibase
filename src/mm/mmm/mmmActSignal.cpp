@@ -170,6 +170,33 @@ const static iduSignalDef gSignals[] =
     }
 };
 
+/* BUG-48201 */
+#ifdef ALTI_CFG_OS_AIX
+static idBool mmmIsUnset_SA_RESETHAND(UInt i)              
+{
+    idBool sVersion;
+    idBool sSigNum;
+    SInt   sRet;
+    struct utsname  sUts={0,};
+
+    sSigNum  = (idBool)((gSignals[i].mNo ==  SIGABRT) || (gSignals[i].mNo ==  SIGIOT));
+    sRet     = idlOS::uname(&sUts);
+
+    if( sRet >= 0 ) //success
+    {
+	//only AIX 7.2 just for now. 
+    	sVersion = (idBool)((idlOS::strcmp(sUts.version,"7") == 0) && 
+                            (idlOS::strcmp(sUts.release,"2") == 0));
+    }	
+    else
+    {	
+        sVersion = ID_FALSE;
+    }
+
+    return (idBool)((sSigNum == ID_TRUE) && (sVersion == ID_TRUE));	
+}
+#endif
+
 #if defined(DEBUG)
 static idBool gCoreDumpOnSignal = ID_FALSE;
 #endif
@@ -270,6 +297,9 @@ IDL_EXTERN_C void mmmSignalHandler(int          aSigNum,
 #if defined(DEBUG)
         if (gCoreDumpOnSignal == ID_TRUE)
         {
+            /*[BUG-45987]
+              to avoid leaving double callstacks on trc log.*/
+            signal(SIGABRT,SIG_DFL); 
             idlOS::abort();
         }
         else
@@ -302,7 +332,7 @@ static idBool mmmCanFaultTolerate(SInt        aSigNum,
 }
 
 /* ------------------------------------------------------------
- *   altibase Signal handler ìˆ˜í–‰
+ *   altibase Signal handler ¼öÇà
  * ---------------------------------------------------------- */
 // called by SIGINT In Debug Mode
 IDL_EXTERN_C void mmmExitHandler(SInt aSignal, siginfo_t*, void*)
@@ -357,6 +387,18 @@ static IDE_RC mmmPhaseActionSignal(mmmPhase         /*aPhase*/,
             sAction.sa_sigaction = (sHandler*)gSignals[i].mFunc;
             sAction.sa_sigaction = (sHandler*)gSignals[i].mFunc;
             sAction.sa_flags     =            gSignals[i].mFlags;
+#ifdef ALTI_CFG_OS_AIX
+   	    /* 
+             * BUG-48201 
+             *   if (SIGABRT or SIGIOT ) && AIX 7.2 , unset.
+             *   Otherwise,let it be.
+             */
+	    if( mmmIsUnset_SA_RESETHAND(i) == ID_TRUE )              
+	    {	
+            	sAction.sa_flags &= ~SA_RESETHAND; 
+		// ideLog::log(IDE_SERVER_0,"[DEBUG] unset SA_RESETHAND"); //just for test
+            }
+#endif
             IDE_TEST_RAISE(idlOS::sigaction(gSignals[i].mNo, &sAction, NULL) < 0,
                            sigaction_error);
         }

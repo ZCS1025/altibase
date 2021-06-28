@@ -29,7 +29,7 @@ SInt ulpPPifstackMgr::ulpIfgetIndex()
 }
 
 
-// #elif, #endif, #else ì¡°ê±´ ë¬¸ì— ëŒ€í•œ ì‚¬ìš© ë¬¸ë²• ê²€ì‚¬.
+// #elif, #endif, #else Á¶°Ç ¹®¿¡ ´ëÇÑ »ç¿ë ¹®¹ý °Ë»ç.
 idBool ulpPPifstackMgr::ulpIfCheckGrammar( ulpPPiftype aIftype )
 {
 
@@ -57,7 +57,7 @@ idBool ulpPPifstackMgr::ulpIfCheckGrammar( ulpPPiftype aIftype )
 }
 
 
-// #endif ë¥¼ ë§Œë‚¬ì„ê²½ìš°, #if, #ifdef í˜¹ì€ #ifndef ê¹Œì§€ pop í•œë‹¤.
+// #endif ¸¦ ¸¸³µÀ»°æ¿ì, #if, #ifdef È¤Àº #ifndef ±îÁö pop ÇÑ´Ù.
 idBool ulpPPifstackMgr::ulpIfpop4endif()
 {
     idBool sBreak;
@@ -79,7 +79,7 @@ idBool ulpPPifstackMgr::ulpIfpop4endif()
             case PP_IFDEF:
                 //idlOS::printf("#pop n:%d, t:%d, s:%d\n", 
                 //              mIndex, mIfstack[ mIndex ].mType, mIfstack[ mIndex ].mSkip);
-                /* BUG-28162 : SESC_DECLARE ë¶€í™œ  */
+                /* BUG-28162 : SESC_DECLARE ºÎÈ°  */
                 sSescDEC = mIfstack[ mIndex ].mSescDEC;
                 mIndex--;
                 sBreak = ID_TRUE;
@@ -115,7 +115,7 @@ IDE_RC ulpPPifstackMgr::ulpIfpush( ulpPPiftype aIftype, ulpPPifresult aVal )
     }
     mIndex++;
     mIfstack[ mIndex ].mType = aIftype;
-    /* BUG-28162 : SESC_DECLARE ë¶€í™œ  */
+    /* BUG-28162 : SESC_DECLARE ºÎÈ°  */
     if( aVal != PP_IF_SESC_DEC )
     {
         mIfstack[ mIndex ].mVal     = aVal;
@@ -123,7 +123,7 @@ IDE_RC ulpPPifstackMgr::ulpIfpush( ulpPPiftype aIftype, ulpPPifresult aVal )
     }
     else
     {
-        // #ifdef SESC_DECLARE ê°€ì˜¤ë©´ ë¬´ì¡°ê±´ ì°¸ì´ë‹¤.
+        // #ifdef SESC_DECLARE °¡¿À¸é ¹«Á¶°Ç ÂüÀÌ´Ù.
         mIfstack[ mIndex ].mVal     = PP_IF_TRUE;
         mIfstack[ mIndex ].mSescDEC = ID_TRUE;
     }
@@ -132,7 +132,7 @@ IDE_RC ulpPPifstackMgr::ulpIfpush( ulpPPiftype aIftype, ulpPPifresult aVal )
 }
 
 
-// í•´ë‹¹ macro ì¡°ê±´ë¬¸ì„ ê·¸ëƒ¥ skipí•´ë„ ë˜ëŠ”ì§€ ê²€ì‚¬í•˜ê¸°ìœ„í•´ ì´ì „ìƒíƒœê°’ì„ ë¦¬í„´í•´ì¤€ë‹¤.
+// ÇØ´ç macro Á¶°Ç¹®À» ±×³É skipÇØµµ µÇ´ÂÁö °Ë»çÇÏ±âÀ§ÇØ ÀÌÀü»óÅÂ°ªÀ» ¸®ÅÏÇØÁØ´Ù.
 ulpPPifresult ulpPPifstackMgr::ulpPrevIfStatus()
 {
     if( mIndex > IFSTACKINITINDEX )
@@ -145,33 +145,33 @@ ulpPPifresult ulpPPifstackMgr::ulpPrevIfStatus()
     }
 }
 
-/* BUG-27961 : preprocessorì˜ ì¤‘ì²© #ifì²˜ë¦¬ì‹œ #endif ë‹¤ìŒì†ŒìŠ¤ ë¬´ì¡°ê±´ ì¶œë ¥í•˜ëŠ” ë²„ê·¸  */
-// preprocessorê°€ #endif ë¥¼ ë§ˆì¹œí›„ ë‹¤ìŒì—ì˜¤ëŠ” ì½”ë“œë“¤ì„
-// íŒŒì¼ë¡œ ì¶œë ¥ì„ í•´ì•¼í•˜ëŠ”ì§€ ê·¸ëƒ¥ skipí•´ì•¼í•˜ëŠ”ì§€ë¥¼ ê²°ì •í•´ì¤Œ.
+/* BUG-27961 : preprocessorÀÇ ÁßÃ¸ #ifÃ³¸®½Ã #endif ´ÙÀ½¼Ò½º ¹«Á¶°Ç Ãâ·ÂÇÏ´Â ¹ö±×  */
+// preprocessor°¡ #endif ¸¦ ¸¶Ä£ÈÄ ´ÙÀ½¿¡¿À´Â ÄÚµåµéÀ»
+// ÆÄÀÏ·Î Ãâ·ÂÀ» ÇØ¾ßÇÏ´ÂÁö ±×³É skipÇØ¾ßÇÏ´ÂÁö¸¦ °áÁ¤ÇØÁÜ.
 idBool ulpPPifstackMgr::ulpIfneedSkip4Endif()
 {
     idBool sRes;
 
     if( mIndex < 0 )
     {
-        // ì•„ëž˜ì˜ ê²½ìš°ì— í•´ë‹¹ë¨.
+        // ¾Æ·¡ÀÇ °æ¿ì¿¡ ÇØ´çµÊ.
         // #if ...
         // ...
         // #endif
-        // ... ì—¬ê¸° ë¶€í„°ëŠ” íŒŒì¼ë¡œ ì¶œë ¥ í•´ì•¼í•¨. <<< ì´ ì¡°ê±´ìž„.
+        // ... ¿©±â ºÎÅÍ´Â ÆÄÀÏ·Î Ãâ·Â ÇØ¾ßÇÔ. <<< ÀÌ Á¶°ÇÀÓ.
         sRes = ID_FALSE;
     }
     else
     {
         if( (mIndex == 0) && (mIfstack[ mIndex ].mVal == PP_IF_TRUE) )
         {
-            // ì•„ëž˜ì˜ ê²½ìš°ì— í•´ë‹¹ë¨.
+            // ¾Æ·¡ÀÇ °æ¿ì¿¡ ÇØ´çµÊ.
             // #if 1
             // ...
             //   #if ...
             //   ...
             //   #endif
-            // ... ì—¬ê¸° ë¶€í„°ëŠ” íŒŒì¼ë¡œ ì¶œë ¥ í•´ì•¼í•¨. <<< ì´ ì¡°ê±´ìž„.
+            // ... ¿©±â ºÎÅÍ´Â ÆÄÀÏ·Î Ãâ·Â ÇØ¾ßÇÔ. <<< ÀÌ Á¶°ÇÀÓ.
             // #endif
             sRes = ID_FALSE;
         }
@@ -181,7 +181,7 @@ idBool ulpPPifstackMgr::ulpIfneedSkip4Endif()
                 (mIfstack[ mIndex ].mVal     == PP_IF_TRUE) &&
                 (mIfstack[ mIndex - 1 ].mVal == PP_IF_FALSE) )
             {
-                // ì•„ëž˜ì˜ ê²½ìš°ì— í•´ë‹¹ë¨.
+                // ¾Æ·¡ÀÇ °æ¿ì¿¡ ÇØ´çµÊ.
                 // #if 0
                 // ...
                 // #else
@@ -189,7 +189,7 @@ idBool ulpPPifstackMgr::ulpIfneedSkip4Endif()
                 //   #if ...
                 //   ...
                 //   #endif
-                // ... ì—¬ê¸° ë¶€í„°ëŠ” íŒŒì¼ë¡œ ì¶œë ¥ í•´ì•¼í•¨. <<< ì´ ì¡°ê±´ìž„.
+                // ... ¿©±â ºÎÅÍ´Â ÆÄÀÏ·Î Ãâ·Â ÇØ¾ßÇÔ. <<< ÀÌ Á¶°ÇÀÓ.
                 // #endif
                 sRes = ID_FALSE;
             }
@@ -199,21 +199,21 @@ idBool ulpPPifstackMgr::ulpIfneedSkip4Endif()
                     (mIfstack[ mIndex ].mVal     == PP_IF_TRUE) &&
                     (mIfstack[ mIndex - 1 ].mVal == PP_IF_TRUE) )
                 {
-                    // ì•„ëž˜ì˜ ê²½ìš°ì— í•´ë‹¹ë¨.
+                    // ¾Æ·¡ÀÇ °æ¿ì¿¡ ÇØ´çµÊ.
                     //#if 1
                     // #if 1
                     // ...
                     //   #if ...
                     //   ...
                     //   #endif
-                    // ... ì—¬ê¸° ë¶€í„°ëŠ” íŒŒì¼ë¡œ ì¶œë ¥ í•´ì•¼í•¨. <<< ì´ ì¡°ê±´ìž„.
+                    // ... ¿©±â ºÎÅÍ´Â ÆÄÀÏ·Î Ãâ·Â ÇØ¾ßÇÔ. <<< ÀÌ Á¶°ÇÀÓ.
                     // #endif
                     //#endif
                     sRes = ID_FALSE;
                 }
                 else
                 {
-                    // ë‚˜ë¨¸ì§€ ê²½ìš°ì—ëŠ” ë¬´ì‹œë¨.
+                    // ³ª¸ÓÁö °æ¿ì¿¡´Â ¹«½ÃµÊ.
                     sRes = ID_TRUE;
                 }
             }

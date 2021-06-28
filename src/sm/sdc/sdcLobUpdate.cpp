@@ -110,7 +110,7 @@ IDE_RC sdcLobUpdate::redo_SDR_SDC_LOB_INSERT_INTERNAL_KEY( SChar       * aData,
     sKeyArray = (sdcLobIKey*)sdcLob::getLobDataLayerStartPtr(aPagePtr);
 
     IDE_ERROR( sdpPhyPage::getPageType(
-                   (sdpPhyPageHdr*)sdpPhyPage::getPageStartPtr(aPagePtr))
+                     (sdpPhyPageHdr*)sdpPhyPage::getPageStartPtr(aPagePtr))
                == SDP_PAGE_LOB_INDEX );
     IDE_ERROR( sNodeHdr->mKeyCnt == sKeySeq );
 
@@ -156,7 +156,7 @@ IDE_RC sdcLobUpdate::redo_SDR_SDC_LOB_FREE_INTERNAL_KEY( SChar       * aData,
     sKeyArray = (sdcLobIKey*)sdcLob::getLobDataLayerStartPtr(aPagePtr);
 
     IDE_ERROR( sdpPhyPage::getPageType(
-                   (sdpPhyPageHdr*)sdpPhyPage::getPageStartPtr(aPagePtr))
+                     (sdpPhyPageHdr*)sdpPhyPage::getPageStartPtr(aPagePtr))
                == SDP_PAGE_LOB_INDEX );
     IDE_ERROR( sNodeHdr->mKeyCnt > 0 );
     IDE_ERROR( (sNodeHdr->mKeyCnt-1) == sKeySeq );
@@ -204,7 +204,7 @@ IDE_RC sdcLobUpdate::redo_SDR_SDC_LOB_FREE_LEAF_KEY( SChar       * aData,
     sKeyArray = (sdcLobLKey*)sdcLob::getLobDataLayerStartPtr(aPagePtr);
 
     IDE_ERROR( sdpPhyPage::getPageType(
-                   (sdpPhyPageHdr*)sdpPhyPage::getPageStartPtr(aPagePtr))
+                     (sdpPhyPageHdr*)sdpPhyPage::getPageStartPtr(aPagePtr))
                == SDP_PAGE_LOB_INDEX );
     IDE_ERROR( sNodeHdr->mKeyCnt > 0 );
     IDE_ERROR( (sNodeHdr->mKeyCnt-1) == sKeySeq );
@@ -283,8 +283,7 @@ IDE_RC sdcLobUpdate::redo_SDR_SDC_LOB_WRITE_PIECE4DML( SChar       * aData,
     IDE_ERROR( aData != NULL );
     IDE_ERROR( aPagePtr != NULL );
 
-    sNodeHdr = (sdcLobNodeHdr*)
-        sdpPhyPage::getLogicalHdrStartPtr(aPagePtr);
+    sNodeHdr = (sdcLobNodeHdr*)sdpPhyPage::getLogicalHdrStartPtr(aPagePtr);
 
     sLobDataLayerStartPtr = sdcLob::getLobDataLayerStartPtr(aPagePtr);
 
@@ -341,8 +340,7 @@ IDE_RC sdcLobUpdate::redoLobWritePiece( SChar   * aData,
     IDE_ERROR( aData != NULL );
     IDE_ERROR( aPagePtr != NULL );
 
-    sNodeHdr = (sdcLobNodeHdr*)
-        sdpPhyPage::getLogicalHdrStartPtr(aPagePtr);
+    sNodeHdr = (sdcLobNodeHdr*)sdpPhyPage::getLogicalHdrStartPtr(aPagePtr);
 
     sLobDataLayerStartPtr = sdcLob::getLobDataLayerStartPtr(aPagePtr);
 
@@ -368,11 +366,10 @@ IDE_RC sdcLobUpdate::redoLobWritePiece( SChar   * aData,
                    "aLength : %"ID_UINT32_FMT,
                    aLength );
 
-    IDE_TEST( sdcLob::getWritePageOffsetAndSize(
-                  sOffset,
-                  sAmount,
-                  &sWriteOffset,
-                  &sDummySize )
+    IDE_TEST( sdcLob::getWritePageOffsetAndSize( sOffset,
+                                                 sAmount,
+                                                 &sWriteOffset,
+                                                 &sDummySize )
               != IDE_SUCCESS );
 
     IDE_ERROR( (sWriteOffset + sWriteSize) <= SDC_LOB_PAGE_BODY_SIZE );
@@ -443,12 +440,12 @@ IDE_RC sdcLobUpdate::redo_SDR_SDC_LOB_ADD_PAGE_TO_AGINGLIST( SChar       * aData
  * undo type:  SDR_SDC_LOB_ADD_PAGE_TO_AGINGLIST
  ***********************************************************************/
 IDE_RC sdcLobUpdate::undo_SDR_SDC_LOB_ADD_PAGE_TO_AGINGLIST(
-    idvSQL   * aStatistics,
-    void     * aTrans,
-    sdrMtx   * aMtx,
-    scGRID     aGRID,
-    SChar    * aLogPtr,
-    UInt       aSize )
+                                                    idvSQL   * aStatistics,
+                                                    void     * aTrans,
+                                                    sdrMtx   * aMtx,
+                                                    scGRID     aGRID,
+                                                    SChar    * aLogPtr,
+                                                    UInt       aSize )
 {
     sdcLobNodeHdr       * sNodeHdr;
     idBool                sIsSuccess;
@@ -465,78 +462,80 @@ IDE_RC sdcLobUpdate::undo_SDR_SDC_LOB_ADD_PAGE_TO_AGINGLIST(
                               ID_SIZEOF(scGRID) ),
                    "aSize : %"ID_UINT32_FMT,
                    aSize );
+    
+    //BUG-48460: NTA로그 중 discard TBS접근 가능한 로그에 TBS 체크 추가
+    if( sctTableSpaceMgr::hasState(aGRID.mSpaceID,
+                                   SCT_SS_SKIP_UNDO) == ID_FALSE )
+    {    
+        sTSSlotSID = SD_NULL_SID;
+        SM_SET_SCN_INFINITE( &sFstDskViewSCN );
 
-    sTSSlotSID = SD_NULL_SID;
-    SM_SET_SCN_INFINITE( &sFstDskViewSCN );
+        idlOS::memcpy( &sMetaGRID,
+                       aLogPtr + ID_SIZEOF(sdSID) + ID_SIZEOF(smSCN),
+                       ID_SIZEOF(scGRID) );
 
-    idlOS::memcpy( &sMetaGRID,
-                   aLogPtr + ID_SIZEOF(sdSID) + ID_SIZEOF(smSCN),
-                   ID_SIZEOF(scGRID) );
+        IDE_TEST( sdbBufferMgr::getPageByPID( aStatistics,
+                                              sMetaGRID.mSpaceID,
+                                              sMetaGRID.mPageID,
+                                              SDB_X_LATCH,
+                                              SDB_WAIT_NORMAL,
+                                              SDB_SINGLE_PAGE_READ,
+                                              aMtx,
+                                              &sLobSegMetaPage,
+                                              NULL,
+                                              NULL )
+                  != IDE_SUCCESS);
 
-    IDE_TEST( sdbBufferMgr::getPageByPID( aStatistics,
-                                          sMetaGRID.mSpaceID,
-                                          sMetaGRID.mPageID,
-                                          SDB_X_LATCH,
-                                          SDB_WAIT_NORMAL,
-                                          SDB_SINGLE_PAGE_READ,
-                                          aMtx,
-                                          &sLobSegMetaPage,
-                                          NULL,
-                                          NULL )
-              != IDE_SUCCESS);
+        sLobMeta = (sdcLobMeta*)sdpPhyPage::getLogicalHdrStartPtr( sLobSegMetaPage );
 
-    sLobMeta = (sdcLobMeta*)
-        sdpPhyPage::getLogicalHdrStartPtr( sLobSegMetaPage );
+        IDE_TEST( sdbBufferMgr::getPageByPID( aStatistics,
+                                              aGRID.mSpaceID,
+                                              aGRID.mPageID,
+                                              SDB_X_LATCH,
+                                              SDB_WAIT_NORMAL,
+                                              SDB_SINGLE_PAGE_READ,
+                                              aMtx,
+                                              (UChar**)&sPage,
+                                              &sIsSuccess,
+                                              NULL )
+                  != IDE_SUCCESS );
 
-    IDE_TEST( sdbBufferMgr::getPageByPID( aStatistics,
-                                          aGRID.mSpaceID,
-                                          aGRID.mPageID,
-                                          SDB_X_LATCH,
-                                          SDB_WAIT_NORMAL,
-                                          SDB_SINGLE_PAGE_READ,
-                                          aMtx,
-                                          (UChar**)&sPage,
-                                          &sIsSuccess,
-                                          NULL )
-              != IDE_SUCCESS );
+        sNodeHdr = (sdcLobNodeHdr*)sdpPhyPage::getLogicalHdrStartPtr((UChar*)sPage);
 
-    sNodeHdr = (sdcLobNodeHdr*)
-        sdpPhyPage::getLogicalHdrStartPtr((UChar*)sPage);
+        IDE_TEST( sdpDblPIDList::removeNode( aStatistics,
+                                             &sLobMeta->mAgingListBase,
+                                             &sPage->mListNode,
+                                             aMtx )
+                  != IDE_SUCCESS );
 
-    IDE_TEST( sdpDblPIDList::removeNode(
-                  aStatistics,
-                  &sLobMeta->mAgingListBase,
-                  &sPage->mListNode,
-                  aMtx)
-              != IDE_SUCCESS );
+        IDE_TEST( sdpDblPIDList::setNxtOfNode(&sPage->mListNode,
+                                              SD_NULL_PID,
+                                              aMtx)
+                  != IDE_SUCCESS );
 
-    IDE_TEST( sdpDblPIDList::setNxtOfNode(&sPage->mListNode,
-                           SD_NULL_PID,
-                           aMtx)
-              != IDE_SUCCESS );
+        IDE_TEST( sdpDblPIDList::setPrvOfNode(&sPage->mListNode,
+                                              SD_NULL_PID,
+                                              aMtx)
+                  != IDE_SUCCESS );
 
-    IDE_TEST( sdpDblPIDList::setPrvOfNode(&sPage->mListNode,
-                           SD_NULL_PID,
-                           aMtx)
-              != IDE_SUCCESS );
+        IDE_TEST( sdrMiniTrans::writeNBytes( aMtx,
+                                             (UChar*)&sNodeHdr->mTSSlotSID,
+                                             (void*)&sTSSlotSID,
+                                             ID_SIZEOF(sTSSlotSID) )
+                  != IDE_SUCCESS );
 
-    IDE_TEST( sdrMiniTrans::writeNBytes( aMtx,
-                                         (UChar*)&sNodeHdr->mTSSlotSID,
-                                         (void*)&sTSSlotSID,
-                                         ID_SIZEOF(sTSSlotSID) )
-              != IDE_SUCCESS );
+        IDE_TEST( sdrMiniTrans::writeNBytes( aMtx,
+                                             (UChar*)&sNodeHdr->mFstDskViewSCN,
+                                             (void*)&sFstDskViewSCN,
+                                             ID_SIZEOF(sFstDskViewSCN) )
+                  != IDE_SUCCESS );
 
-    IDE_TEST( sdrMiniTrans::writeNBytes( aMtx,
-                                         (UChar*)&sNodeHdr->mFstDskViewSCN,
-                                         (void*)&sFstDskViewSCN,
-                                         ID_SIZEOF(sFstDskViewSCN) )
-              != IDE_SUCCESS );
-
-    IDE_TEST( sdrMiniTrans::writeNBytes( aMtx,
-                                         (UChar*)&sNodeHdr->mLobPageState,
-                                         (void*)&sLobPageState,
-                                         ID_SIZEOF(sLobPageState) )
-              != IDE_SUCCESS );
+        IDE_TEST( sdrMiniTrans::writeNBytes( aMtx,
+                                             (UChar*)&sNodeHdr->mLobPageState,
+                                             (void*)&sLobPageState,
+                                             ID_SIZEOF(sLobPageState) )
+                  != IDE_SUCCESS );
+    }
 
     return IDE_SUCCESS;
 
@@ -556,18 +555,17 @@ IDE_RC sdcLobUpdate::undo_SDR_SDC_LOB_ADD_PAGE_TO_AGINGLIST(
  * undo type:  SDR_OP_SDC_LOB_APPEND_LEAFNODE
  ***********************************************************************/
 IDE_RC sdcLobUpdate::undo_SDR_SDC_LOB_APPEND_LEAFNODE(
-    idvSQL    * aStatistics,
-    sdrMtx    * aMtx,
-    scSpaceID   aSpaceID,
-    scPageID    aRootNodePID,
-    scPageID    aLeafNodePID )
+                                                idvSQL    * aStatistics,
+                                                sdrMtx    * aMtx,
+                                                scSpaceID   aSpaceID,
+                                                scPageID    aRootNodePID,
+                                                scPageID    aLeafNodePID )
 {
-    IDE_TEST( sdcLob::appendLeafNodeRollback(
-                  aStatistics,
-                  aMtx,
-                  aSpaceID,
-                  aRootNodePID,
-                  aLeafNodePID)
+    IDE_TEST( sdcLob::appendLeafNodeRollback( aStatistics,
+                                              aMtx,
+                                              aSpaceID,
+                                              aRootNodePID,
+                                              aLeafNodePID)
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -612,7 +610,7 @@ IDE_RC sdcLobUpdate::redo_SDR_SDC_LOB_INSERT_LEAF_KEY( SChar       * aData,
     sKeyArray = (sdcLobLKey*)sdcLob::getLobDataLayerStartPtr(aPagePtr);
 
     IDE_ERROR( sdpPhyPage::getPageType(
-                   (sdpPhyPageHdr*)sdpPhyPage::getPageStartPtr(aPagePtr))
+                     (sdpPhyPageHdr*)sdpPhyPage::getPageStartPtr(aPagePtr))
                == SDP_PAGE_LOB_INDEX );
     IDE_ERROR( sNodeHdr->mKeyCnt == sKeySeq );
 
@@ -647,52 +645,51 @@ IDE_RC sdcLobUpdate::undo_SDR_SDC_LOB_INSERT_LEAF_KEY( idvSQL  * aStatistics,
     sdcLobLKey      * sKeyArray;
     UInt              i;
 
-    ID_READ_VALUE( aLogPtr,
-                   &sLogHdr,
-                   ID_SIZEOF(sdrLogHdr) );
-    
-    ID_READ_VALUE( aLogPtr + ID_SIZEOF(sdrLogHdr),
-                   &sKeySeq,
-                   ID_SIZEOF(SShort) );
-
-    IDE_TEST( sdrMiniTrans::begin( aStatistics,
-                                   &sMtx,
-                                   smxTransMgr::getTransByTID(aTransID),
-                                   SDR_MTX_LOGGING,
-                                   ID_FALSE, /*MtxUndoable(PROJ-2162)*/
-                                   SM_DLOG_ATTR_DEFAULT )
-              != IDE_SUCCESS );
-    sState = 1;
-
-    IDE_TEST( sdbBufferMgr::getPageByPID(aStatistics,
-                                         aRecGRID.mSpaceID,
-                                         aRecGRID.mPageID,
-                                         SDB_X_LATCH,
-                                         SDB_WAIT_NORMAL,
-                                         SDB_SINGLE_PAGE_READ,
-                                         &sMtx,
-                                         &sLeafNode,
-                                         NULL,
-                                         NULL)
-              != IDE_SUCCESS );
-
+    //BUG-48460: TBS 상태 체크 위치 조정
     if( sctTableSpaceMgr::hasState(aRecGRID.mSpaceID,
                                    SCT_SS_SKIP_UNDO) == ID_FALSE )
     {
+        ID_READ_VALUE( aLogPtr,
+                       &sLogHdr,
+                       ID_SIZEOF(sdrLogHdr) );
+
+        ID_READ_VALUE( aLogPtr + ID_SIZEOF(sdrLogHdr),
+                       &sKeySeq,
+                       ID_SIZEOF(SShort) );
+
+        IDE_TEST( sdrMiniTrans::begin( aStatistics,
+                                       &sMtx,
+                                       smxTransMgr::getTransByTID(aTransID),
+                                       SDR_MTX_LOGGING,
+                                       ID_FALSE, /*MtxUndoable(PROJ-2162)*/
+                                       SM_DLOG_ATTR_DEFAULT )
+                  != IDE_SUCCESS );
+        sState = 1;
+
+        IDE_TEST( sdbBufferMgr::getPageByPID(aStatistics,
+                                             aRecGRID.mSpaceID,
+                                             aRecGRID.mPageID,
+                                             SDB_X_LATCH,
+                                             SDB_WAIT_NORMAL,
+                                             SDB_SINGLE_PAGE_READ,
+                                             &sMtx,
+                                             &sLeafNode,
+                                             NULL,
+                                             NULL)
+                  != IDE_SUCCESS );
+
         if( sdpPhyPage::isConsistentPage(sLeafNode) == ID_TRUE )
         {
-            sNodeHdr  = (sdcLobNodeHdr*)
-                sdpPhyPage::getLogicalHdrStartPtr(sLeafNode);
+            sNodeHdr  = (sdcLobNodeHdr*)sdpPhyPage::getLogicalHdrStartPtr(sLeafNode);
 
-            sKeyArray = (sdcLobLKey*)
-                sdcLob::getLobDataLayerStartPtr(sLeafNode);
+            sKeyArray = (sdcLobLKey*)sdcLob::getLobDataLayerStartPtr(sLeafNode);
 
             IDE_ERROR( sdpPhyPage::getPageType(
-                           (sdpPhyPageHdr*)sdpPhyPage::getPageStartPtr(sLeafNode))
+                          (sdpPhyPageHdr*)sdpPhyPage::getPageStartPtr(sLeafNode))
                        == SDP_PAGE_LOB_INDEX );
             IDE_ERROR( sNodeHdr->mKeyCnt > 0 );
             IDE_ERROR( (sNodeHdr->mKeyCnt-1) == sKeySeq );
-            
+
             sLKey = &sKeyArray[sKeySeq];
 
             sNodeHdr->mKeyCnt--;
@@ -702,18 +699,18 @@ IDE_RC sdcLobUpdate::undo_SDR_SDC_LOB_INSERT_LEAF_KEY( idvSQL  * aStatistics,
                 sLKey->mEntry[i] = SD_NULL_PID;
             }
 
-            IDE_TEST( sdcLob::writeLobInsertLeafKeyCLR(
-                          &sMtx,
-                          (UChar*)sLKey,
-                          sKeySeq)
-                      != IDE_SUCCESS );
+            IDE_TEST( sdcLob::writeLobInsertLeafKeyCLR( &sMtx,
+                                                        (UChar*)sLKey,
+                                                        sKeySeq)
+                       != IDE_SUCCESS );
 
             (void)sdrMiniTrans::setCLR( &sMtx, aPrevLSN );
         }
-    }
 
-    sState = 0;
-    IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
+
+        sState = 0;
+        IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
+    }
     
     return IDE_SUCCESS;
 
@@ -724,13 +721,12 @@ IDE_RC sdcLobUpdate::undo_SDR_SDC_LOB_INSERT_LEAF_KEY( idvSQL  * aStatistics,
         IDE_ASSERT( sdrMiniTrans::rollback(&sMtx) == IDE_SUCCESS );
     }
 
-    smrRecoveryMgr::prepareRTOIForUndoFailure( 
-        smxTransMgr::getTransByTID(aTransID),
-        SMR_RTOI_TYPE_DISKPAGE,
-        aOID, /* aTableOID */
-        0,    /* aIndexID */
-        aRecGRID.mSpaceID, 
-        aRecGRID.mPageID );
+    smrRecoveryMgr::prepareRTOIForUndoFailure( smxTransMgr::getTransByTID(aTransID),
+                                               SMR_RTOI_TYPE_DISKPAGE,
+                                               aOID, /* aTableOID */
+                                               0,    /* aIndexID */
+                                               aRecGRID.mSpaceID, 
+                                               aRecGRID.mPageID );
 
     return IDE_FAILURE;
 }
@@ -769,7 +765,7 @@ IDE_RC sdcLobUpdate::redo_SDR_SDC_LOB_UPDATE_LEAF_KEY( SChar       * aData,
     sKeyArray = (sdcLobLKey*)sdcLob::getLobDataLayerStartPtr(aSlotPtr);
 
     IDE_ERROR( sdpPhyPage::getPageType(
-                   (sdpPhyPageHdr*)sdpPhyPage::getPageStartPtr(sNodeHdr))
+                     (sdpPhyPageHdr*)sdpPhyPage::getPageStartPtr(sNodeHdr))
                == SDP_PAGE_LOB_INDEX );
     IDE_ERROR( sNodeHdr->mKeyCnt > 0 );
     IDE_ERROR( sNodeHdr->mKeyCnt > sKeySeq );
@@ -806,71 +802,68 @@ IDE_RC sdcLobUpdate::undo_SDR_SDC_LOB_UPDATE_LEAF_KEY( idvSQL  * aStatistics,
     sdcLobLKey      * sKeyArray;
     idBool            sDummy;
 
-    ID_READ_VALUE( aLogPtr,
-                   &sLogHdr,
-                   ID_SIZEOF(sdrLogHdr) );
-    
-    ID_READ_VALUE( aLogPtr + ID_SIZEOF(sdrLogHdr),
-                   &sKeySeq,
-                   ID_SIZEOF(SShort) );
-
-    ID_READ_VALUE( aLogPtr + ID_SIZEOF(sdrLogHdr) + ID_SIZEOF(SShort),
-                   &sLKey,
-                   ID_SIZEOF(sdcLobLKey) );
-
-    IDE_TEST( sdrMiniTrans::begin( aStatistics,
-                                   &sMtx,
-                                   smxTransMgr::getTransByTID(aTransID),
-                                   SDR_MTX_LOGGING,
-                                   ID_FALSE, /*MtxUndoable(PROJ-2162)*/
-                                   SM_DLOG_ATTR_DEFAULT )
-              != IDE_SUCCESS );
-    sState = 1;
-
-    IDE_TEST( sdbBufferMgr::getPageByPID(aStatistics,
-                                         aRecGRID.mSpaceID,
-                                         aRecGRID.mPageID,
-                                         SDB_X_LATCH,
-                                         SDB_WAIT_NORMAL,
-                                         SDB_SINGLE_PAGE_READ,
-                                         &sMtx,
-                                         &sLeafNode,
-                                         NULL,
-                                         NULL)
-              != IDE_SUCCESS );
-
+    //BUG-48460: TBS 상태 체크 위치 조정
     if( sctTableSpaceMgr::hasState(aRecGRID.mSpaceID,
                                    SCT_SS_SKIP_UNDO) == ID_FALSE )
     {
+        ID_READ_VALUE( aLogPtr,
+                       &sLogHdr,
+                       ID_SIZEOF(sdrLogHdr) );
+
+        ID_READ_VALUE( aLogPtr + ID_SIZEOF(sdrLogHdr),
+                       &sKeySeq,
+                       ID_SIZEOF(SShort) );
+
+        ID_READ_VALUE( aLogPtr + ID_SIZEOF(sdrLogHdr) + ID_SIZEOF(SShort),
+                       &sLKey,
+                       ID_SIZEOF(sdcLobLKey) );
+
+        IDE_TEST( sdrMiniTrans::begin( aStatistics,
+                                       &sMtx,
+                                       smxTransMgr::getTransByTID(aTransID),
+                                       SDR_MTX_LOGGING,
+                                       ID_FALSE, /*MtxUndoable(PROJ-2162)*/
+                                       SM_DLOG_ATTR_DEFAULT )
+                  != IDE_SUCCESS );
+        sState = 1;
+
+        IDE_TEST( sdbBufferMgr::getPageByPID(aStatistics,
+                                             aRecGRID.mSpaceID,
+                                             aRecGRID.mPageID,
+                                             SDB_X_LATCH,
+                                             SDB_WAIT_NORMAL,
+                                             SDB_SINGLE_PAGE_READ,
+                                             &sMtx,
+                                             &sLeafNode,
+                                             NULL,
+                                             NULL)
+                  != IDE_SUCCESS );
+
         if( sdpPhyPage::isConsistentPage(sLeafNode) == ID_TRUE )
         {
             IDE_ERROR( sLKey.mUndoSID != SD_NULL_SID );
 
-            IDE_TEST( sdbBufferMgr::getPageBySID(
-                                      aStatistics,
-                                      SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO,
-                                      sLKey.mUndoSID,
-                                      SDB_X_LATCH,
-                                      SDB_WAIT_NORMAL,
-                                      NULL,
-                                      (UChar**)&sUndoRecHdr,
-                                      &sDummy)
+            IDE_TEST( sdbBufferMgr::getPageBySID( aStatistics,
+                                                  SMI_ID_TABLESPACE_SYSTEM_DISK_UNDO,
+                                                  sLKey.mUndoSID,
+                                                  SDB_X_LATCH,
+                                                  SDB_WAIT_NORMAL,
+                                                  NULL,
+                                                  (UChar**)&sUndoRecHdr,
+                                                  &sDummy )
                       != IDE_SUCCESS );
             sState = 2;
 
-            sUndoRecBodyPtr =
-                sdcUndoRecord::getUndoRecBodyStartPtr(sUndoRecHdr);
+            sUndoRecBodyPtr = sdcUndoRecord::getUndoRecBodyStartPtr(sUndoRecHdr);
 
             idlOS::memcpy( &sOldLKey, sUndoRecBodyPtr, ID_SIZEOF(sdcLobLKey) );
 
-            sNodeHdr  = (sdcLobNodeHdr*)
-                sdpPhyPage::getLogicalHdrStartPtr(sLeafNode);
-            
-            sKeyArray = (sdcLobLKey*)
-                sdcLob::getLobDataLayerStartPtr((UChar*)sNodeHdr);
+            sNodeHdr  = (sdcLobNodeHdr*)sdpPhyPage::getLogicalHdrStartPtr(sLeafNode);
+
+            sKeyArray = (sdcLobLKey*)sdcLob::getLobDataLayerStartPtr((UChar*)sNodeHdr);
 
             IDE_ERROR( sdpPhyPage::getPageType(
-                           (sdpPhyPageHdr*)sdpPhyPage::getPageStartPtr(sLeafNode))
+                          (sdpPhyPageHdr*)sdpPhyPage::getPageStartPtr(sLeafNode))
                        == SDP_PAGE_LOB_INDEX );
             IDE_ERROR( sNodeHdr->mKeyCnt > 0 );
             IDE_ERROR( sNodeHdr->mKeyCnt > sKeySeq );
@@ -879,11 +872,10 @@ IDE_RC sdcLobUpdate::undo_SDR_SDC_LOB_UPDATE_LEAF_KEY( idvSQL  * aStatistics,
                            &sOldLKey,
                            ID_SIZEOF(sdcLobLKey) );
 
-            IDE_TEST( sdcLob::writeLobUpdateLeafKeyCLR(
-                                                      &sMtx,
-                                                      (UChar*)&sKeyArray[sKeySeq],
-                                                      sKeySeq,
-                                                      &sOldLKey)
+            IDE_TEST( sdcLob::writeLobUpdateLeafKeyCLR( &sMtx,
+                                                        (UChar*)&sKeyArray[sKeySeq],
+                                                        sKeySeq,
+                                                        &sOldLKey )
                       != IDE_SUCCESS );
 
             (void)sdrMiniTrans::setCLR( &sMtx, aPrevLSN );
@@ -893,15 +885,14 @@ IDE_RC sdcLobUpdate::undo_SDR_SDC_LOB_UPDATE_LEAF_KEY( idvSQL  * aStatistics,
                                                 sUndoRecHdr)
                       != IDE_SUCCESS );
         }
+
+        sState = 0;
+        IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
     }
 
-    sState = 0;
-    IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
-    
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
-
     
     switch( sState )
     {
@@ -914,13 +905,12 @@ IDE_RC sdcLobUpdate::undo_SDR_SDC_LOB_UPDATE_LEAF_KEY( idvSQL  * aStatistics,
                         == IDE_SUCCESS );
     }
 
-    smrRecoveryMgr::prepareRTOIForUndoFailure( 
-        smxTransMgr::getTransByTID(aTransID),
-        SMR_RTOI_TYPE_DISKPAGE,
-        aOID, /* aTableOID */
-        0,    /* aIndexID */
-        aRecGRID.mSpaceID, 
-        aRecGRID.mPageID );
+    smrRecoveryMgr::prepareRTOIForUndoFailure( smxTransMgr::getTransByTID(aTransID),
+                                               SMR_RTOI_TYPE_DISKPAGE,
+                                               aOID, /* aTableOID */
+                                               0,    /* aIndexID */
+                                               aRecGRID.mSpaceID, 
+                                               aRecGRID.mPageID );
 
     return IDE_FAILURE;
 }
@@ -964,7 +954,7 @@ IDE_RC sdcLobUpdate::redo_SDR_SDC_LOB_OVERWRITE_LEAF_KEY( SChar       * aData,
     sKeyArray = (sdcLobLKey*)sdcLob::getLobDataLayerStartPtr(aSlotPtr);
 
     IDE_ERROR( sdpPhyPage::getPageType(
-                   (sdpPhyPageHdr*)sdpPhyPage::getPageStartPtr(sNodeHdr))
+                     (sdpPhyPageHdr*)sdpPhyPage::getPageStartPtr(sNodeHdr))
                == SDP_PAGE_LOB_INDEX );
     IDE_ERROR( sNodeHdr->mKeyCnt > 0 );
     IDE_ERROR( sNodeHdr->mKeyCnt > sKeySeq );
@@ -998,62 +988,62 @@ IDE_RC sdcLobUpdate::undo_SDR_SDC_LOB_OVERWRITE_LEAF_KEY( idvSQL  * aStatistics,
     sdcLobNodeHdr   * sNodeHdr;
     sdcLobLKey      * sKeyArray;
 
-    ID_READ_VALUE( aLogPtr,
-                   &sLogHdr,
-                   ID_SIZEOF(sdrLogHdr) );
-    
-    ID_READ_VALUE( aLogPtr +
-                   ID_SIZEOF(sdrLogHdr),
-                   &sKeySeq,
-                   ID_SIZEOF(SShort) );
-
-    ID_READ_VALUE( aLogPtr +
-                   ID_SIZEOF(sdrLogHdr) +
-                   ID_SIZEOF(SShort),
-                   &sOldLKey,
-                   ID_SIZEOF(sdcLobLKey) );
-
-    ID_READ_VALUE( aLogPtr +
-                   ID_SIZEOF(sdrLogHdr) +
-                   ID_SIZEOF(SShort) +
-                   ID_SIZEOF(sdcLobLKey),
-                   &sNewLKey,
-                   ID_SIZEOF(sdcLobLKey) );
-
-    IDE_TEST( sdrMiniTrans::begin( aStatistics,
-                                   &sMtx,
-                                   smxTransMgr::getTransByTID(aTransID),
-                                   SDR_MTX_LOGGING,
-                                   ID_FALSE, /*MtxUndoable(PROJ-2162)*/
-                                   SM_DLOG_ATTR_DEFAULT )
-              != IDE_SUCCESS );
-    sState = 1;
-
-    IDE_TEST( sdbBufferMgr::getPageByPID(aStatistics,
-                                         aRecGRID.mSpaceID,
-                                         aRecGRID.mPageID,
-                                         SDB_X_LATCH,
-                                         SDB_WAIT_NORMAL,
-                                         SDB_SINGLE_PAGE_READ,
-                                         &sMtx,
-                                         &sLeafNode,
-                                         NULL,
-                                         NULL)
-              != IDE_SUCCESS );
-
+    //BUG-48460: TBS 상태 체크 위치 조정
     if( sctTableSpaceMgr::hasState(aRecGRID.mSpaceID,
                                    SCT_SS_SKIP_UNDO) == ID_FALSE )
     {
+
+        ID_READ_VALUE( aLogPtr,
+                       &sLogHdr,
+                       ID_SIZEOF(sdrLogHdr) );
+
+        ID_READ_VALUE( aLogPtr +
+                       ID_SIZEOF(sdrLogHdr),
+                       &sKeySeq,
+                       ID_SIZEOF(SShort) );
+
+        ID_READ_VALUE( aLogPtr +
+                       ID_SIZEOF(sdrLogHdr) +
+                       ID_SIZEOF(SShort),
+                       &sOldLKey,
+                       ID_SIZEOF(sdcLobLKey) );
+
+        ID_READ_VALUE( aLogPtr +
+                       ID_SIZEOF(sdrLogHdr) +
+                       ID_SIZEOF(SShort) +
+                       ID_SIZEOF(sdcLobLKey),
+                       &sNewLKey,
+                       ID_SIZEOF(sdcLobLKey) );
+
+        IDE_TEST( sdrMiniTrans::begin( aStatistics,
+                                       &sMtx,
+                                       smxTransMgr::getTransByTID(aTransID),
+                                       SDR_MTX_LOGGING,
+                                       ID_FALSE, /*MtxUndoable(PROJ-2162)*/
+                                       SM_DLOG_ATTR_DEFAULT )
+                  != IDE_SUCCESS );
+        sState = 1;
+
+        IDE_TEST( sdbBufferMgr::getPageByPID(aStatistics,
+                                             aRecGRID.mSpaceID,
+                                             aRecGRID.mPageID,
+                                             SDB_X_LATCH,
+                                             SDB_WAIT_NORMAL,
+                                             SDB_SINGLE_PAGE_READ,
+                                             &sMtx,
+                                             &sLeafNode,
+                                             NULL,
+                                             NULL)
+                  != IDE_SUCCESS );
+
         if( sdpPhyPage::isConsistentPage(sLeafNode) == ID_TRUE )
         {
-            sNodeHdr  = (sdcLobNodeHdr*)
-                sdpPhyPage::getLogicalHdrStartPtr(sLeafNode);
+            sNodeHdr  = (sdcLobNodeHdr*)sdpPhyPage::getLogicalHdrStartPtr(sLeafNode);
 
-            sKeyArray = (sdcLobLKey*)
-                sdcLob::getLobDataLayerStartPtr((UChar*)sNodeHdr);
+            sKeyArray = (sdcLobLKey*)sdcLob::getLobDataLayerStartPtr((UChar*)sNodeHdr);
 
             IDE_ERROR( sdpPhyPage::getPageType(
-                           (sdpPhyPageHdr*)sdpPhyPage::getPageStartPtr(sLeafNode))
+                          (sdpPhyPageHdr*)sdpPhyPage::getPageStartPtr(sLeafNode))
                        == SDP_PAGE_LOB_INDEX );
             IDE_ERROR( sNodeHdr->mKeyCnt > 0 );
             IDE_ERROR( sNodeHdr->mKeyCnt > sKeySeq );
@@ -1062,21 +1052,20 @@ IDE_RC sdcLobUpdate::undo_SDR_SDC_LOB_OVERWRITE_LEAF_KEY( idvSQL  * aStatistics,
                            &sOldLKey,
                            ID_SIZEOF(sdcLobLKey) );
 
-            IDE_TEST( sdcLob::writeLobOverwriteLeafKeyCLR(
-                          &sMtx,
-                          (UChar*)&sKeyArray[sKeySeq],
-                          sKeySeq,
-                          &sNewLKey,
-                          &sOldLKey)
+            IDE_TEST( sdcLob::writeLobOverwriteLeafKeyCLR( &sMtx,
+                                                           (UChar*)&sKeyArray[sKeySeq],
+                                                           sKeySeq,
+                                                           &sNewLKey,
+                                                           &sOldLKey )
                       != IDE_SUCCESS );
 
             (void)sdrMiniTrans::setCLR( &sMtx, aPrevLSN );
         }
+
+        sState = 0;
+        IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
     }
 
-    sState = 0;
-    IDE_TEST( sdrMiniTrans::commit(&sMtx) != IDE_SUCCESS );
-    
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -1089,13 +1078,12 @@ IDE_RC sdcLobUpdate::undo_SDR_SDC_LOB_OVERWRITE_LEAF_KEY( idvSQL  * aStatistics,
                         == IDE_SUCCESS );
     }
 
-    smrRecoveryMgr::prepareRTOIForUndoFailure( 
-        smxTransMgr::getTransByTID(aTransID),
-        SMR_RTOI_TYPE_DISKPAGE,
-        aOID, /* aTableOID */
-        0,    /* aIndexID */
-        aRecGRID.mSpaceID, 
-        aRecGRID.mPageID );
+    smrRecoveryMgr::prepareRTOIForUndoFailure( smxTransMgr::getTransByTID(aTransID),
+                                               SMR_RTOI_TYPE_DISKPAGE,
+                                               aOID, /* aTableOID */
+                                               0,    /* aIndexID */
+                                               aRecGRID.mSpaceID, 
+                                               aRecGRID.mPageID );
 
     return IDE_FAILURE;
 }

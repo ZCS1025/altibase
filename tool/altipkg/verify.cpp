@@ -57,7 +57,7 @@ void doVerification()
         
         if (idlOS::fgets(sBuffer, ID_SIZEOF(sBuffer), sReportFP) == NULL)
         {
-            // í™”ì¼ì˜ ëê¹Œì§€ ì½ìŒ
+            // È­ÀÏÀÇ ³¡±îÁö ÀĞÀ½
             break;
         }
         eraseWhiteSpace(sBuffer);
@@ -68,28 +68,28 @@ void doVerification()
         }
         
         /* ------------------------------------------------
-         * 1. í™”ì¼ëª…ì¼ ê²½ìš° 
+         * 1. È­ÀÏ¸íÀÏ °æ¿ì 
          * ----------------------------------------------*/
         idlOS::fprintf(stdout, "verificatoin => %s ", sBuffer);
         
         /* ------------------------------------------------
-         *  2. í™”ì¼í¬ê¸° 
+         *  2. È­ÀÏÅ©±â 
          * ----------------------------------------------*/
         if (idlOS::fgets(sSize, ID_SIZEOF(sSize), sReportFP) == NULL)
         {
-            // í™”ì¼ì˜ ëê¹Œì§€ ì½ìŒ
+            // È­ÀÏÀÇ ³¡±îÁö ÀĞÀ½
             break;
         }
         eraseWhiteSpace(sBuffer);
 
-        // altibase package fileì˜ ê²½ìš° ë¬´ì‹œí•¨.
+        // altibase package fileÀÇ °æ¿ì ¹«½ÃÇÔ.
         if (idlOS::strcmp(sPkgBin, sBuffer) == 0)
         {
             idlOS::fprintf(stdout, " ..ok \n");
             continue; // size check skip;
         }
         /* ------------------------------------------------
-         *  3. Verification ìˆ˜í–‰ 
+         *  3. Verification ¼öÇà 
          * ----------------------------------------------*/
 
         // - Existence test 

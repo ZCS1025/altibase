@@ -32,7 +32,7 @@ static acp_sint32_t       gUlnInitCount;
 ACP_EXTERN_C_BEGIN
 
 // bug-26661: nls_use not applied to nls module for ut
-// UTì—ì„œ ì‚¬ìš©í•  ë³€ê²½ê°€ëŠ¥í•œ nls module ì „ì—­ í¬ì¸í„° ì •ì˜
+// UT¿¡¼­ »ç¿ëÇÒ º¯°æ°¡´ÉÇÑ nls module Àü¿ª Æ÷ÀÎÅÍ Á¤ÀÇ
 
 mtlModule* gNlsModuleForUT = NULL;
 
@@ -48,9 +48,9 @@ ACP_EXTERN_C_END
 /*
  * ulnInitializeDBProtocolCallbackFunctions.
  *
- * í†µì‹ ëª¨ë“ˆì˜ ì½œë°± í•¨ìˆ˜ë“¤ì„ ì„¸íŒ…í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
- * ENV ë¥¼ í• ë‹¹í•  ë•Œ í•œë²ˆë§Œ í•´ ì£¼ë©´ ëœë‹¤.
- * cmiInitialize() ë¥¼ í˜¸ì¶œí•˜ë©´ì„œ í•¨ê»˜ í˜¸ì¶œí•´ì„œ ì„¸íŒ…í•˜ë©´ ì´ìƒì ì´ê² ë‹¤.
+ * Åë½Å¸ğµâÀÇ Äİ¹é ÇÔ¼öµéÀ» ¼¼ÆÃÇÏ´Â ÇÔ¼öÀÌ´Ù.
+ * ENV ¸¦ ÇÒ´çÇÒ ¶§ ÇÑ¹ø¸¸ ÇØ ÁÖ¸é µÈ´Ù.
+ * cmiInitialize() ¸¦ È£ÃâÇÏ¸é¼­ ÇÔ²² È£ÃâÇØ¼­ ¼¼ÆÃÇÏ¸é ÀÌ»óÀûÀÌ°Ú´Ù.
  */
 
 static ACI_RC ulnInitializeDBProtocolCallbackFunctions(void)
@@ -66,14 +66,18 @@ static ACI_RC ulnInitializeDBProtocolCallbackFunctions(void)
      * ERROR
      */
 
+    /* PROJ-2733-Protocol Handshake ÀÌÀü¿¡ ¿¡·¯°¡ ¹ß»ıÇÒ ¼ö ÀÖÀ¸¹Ç·Î ErrorResult´Â À¯ÁöÇÑ´Ù. */
     ACI_TEST(cmiSetCallback(CMI_PROTOCOL(DB, ErrorResult),
+                            ulnCallbackErrorResult) != ACI_SUCCESS);
+
+    ACI_TEST(cmiSetCallback(CMI_PROTOCOL(DB, ErrorV3Result),
                             ulnCallbackErrorResult) != ACI_SUCCESS);
 
     /*
      * PREPARE
      */
 
-    ACI_TEST(cmiSetCallback(CMI_PROTOCOL(DB, PrepareResult),
+    ACI_TEST(cmiSetCallback(CMI_PROTOCOL(DB, PrepareV3Result),  /* BUG-48775 */
                             ulnCallbackPrepareResult) != ACI_SUCCESS);
 
     /*
@@ -103,12 +107,16 @@ static ACI_RC ulnInitializeDBProtocolCallbackFunctions(void)
     ACI_TEST(cmiSetCallback(CMI_PROTOCOL(DB, ParamDataOutList),
                             ulnCallbackParamDataOutList) != ACI_SUCCESS);
 
-    ACI_TEST(cmiSetCallback(CMI_PROTOCOL(DB, ParamDataInListV2Result),
+    ACI_TEST(cmiSetCallback(CMI_PROTOCOL(DB, ParamDataInListV3Result),  /* PROJ-2733-Protocol */
                             ulnCallbackParamDataInListResult) != ACI_SUCCESS);
 
     /*
      * CONNECT / DISCONNECT
      */
+
+    /* BUG-38496 Notify users when their password expiry date is approaching */
+    ACI_TEST(cmiSetCallback(CMI_PROTOCOL(DB, ConnectV3Result),  /* PROJ-2733-Protocol */
+                            ulnCallbackDBConnectResult) != ACI_SUCCESS);
 
     ACI_TEST(cmiSetCallback(CMI_PROTOCOL(DB, DisconnectResult),
                             ulnCallbackDisconnectResult) != ACI_SUCCESS);
@@ -117,7 +125,7 @@ static ACI_RC ulnInitializeDBProtocolCallbackFunctions(void)
      * PROPERTY SET
      */
 
-    ACI_TEST(cmiSetCallback(CMI_PROTOCOL(DB, PropertySetResult),
+    ACI_TEST(cmiSetCallback(CMI_PROTOCOL(DB, PropertySetV3Result),  /* PROJ-2733-Protocol */
                             ulnCallbackDBPropertySetResult) != ACI_SUCCESS);
 
     /*
@@ -147,7 +155,7 @@ static ACI_RC ulnInitializeDBProtocolCallbackFunctions(void)
      * EXECUTE
      */
 
-    ACI_TEST(cmiSetCallback(CMI_PROTOCOL(DB, ExecuteV2Result),
+    ACI_TEST(cmiSetCallback(CMI_PROTOCOL(DB, ExecuteV3Result),  /* PROJ-2733-Protocol */
                             ulnCallbackExecuteResult) != ACI_SUCCESS);
 
     /*
@@ -168,7 +176,7 @@ static ACI_RC ulnInitializeDBProtocolCallbackFunctions(void)
      * LOB
      */
 
-    ACI_TEST(cmiSetCallback(CMI_PROTOCOL(DB, LobGetSizeResult),
+    ACI_TEST(cmiSetCallback(CMI_PROTOCOL(DB, LobGetSizeV3Result),
                             ulnCallbackLobGetSizeResult) != ACI_SUCCESS);
 
     ACI_TEST(cmiSetCallback(CMI_PROTOCOL(DB, LobPutBeginResult),
@@ -211,15 +219,11 @@ static ACI_RC ulnInitializeDBProtocolCallbackFunctions(void)
     ACI_TEST(cmiSetCallback(CMI_PROTOCOL(DB, CancelResult),
                             ulnCallbackCancelResult) != ACI_SUCCESS);
 
-    /* BUG-38496 Notify users when their password expiry date is approaching */
-    ACI_TEST(cmiSetCallback(CMI_PROTOCOL(DB, ConnectExResult),
-                            ulnCallbackDBConnectExResult) != ACI_SUCCESS);
-
     /* BUG-45411 client-side global transaction */
-    ACI_TEST(cmiSetCallback(CMI_PROTOCOL(DB, ShardPrepareResult),
+    ACI_TEST(cmiSetCallback(CMI_PROTOCOL(DB, ShardPrepareV3Result),
                             ulsdCallbackShardPrepareResult) != ACI_SUCCESS);
 
-    ACI_TEST(cmiSetCallback(CMI_PROTOCOL(DB, ShardEndPendingTxResult),
+    ACI_TEST(cmiSetCallback(CMI_PROTOCOL(DB, ShardEndPendingTxV3Result),
                             ulsdCallbackShardEndPendingTxResult) != ACI_SUCCESS);
 
     /* BUG-46785 Shard statement partial rollback */
@@ -256,15 +260,15 @@ ACI_RC ulnInitialize()
     {
         ACI_TEST(cmiInitialize(ACP_UINT32_MAX) != ACI_SUCCESS);
 
-        // BUG-20859 ì˜ëª»ëœ NLS_USE ë¥¼ ì‚¬ìš©ì‹œ í´ë¼ì´ì–¸íŠ¸ê°€ ì£½ìŠµë‹ˆë‹¤.
-        // ulnDbcInitialize ì—ì„œ í™˜ê²½ë³€ìˆ˜ë¥¼ ì½ì–´ì„œ ë‹¤ì‹œ ì„¸íŒ…í•˜ê¸° ë•Œë¬¸ì— ë¬¸ì œê°€ ì—†ë‹¤.
+        // BUG-20859 Àß¸øµÈ NLS_USE ¸¦ »ç¿ë½Ã Å¬¶óÀÌ¾ğÆ®°¡ Á×½À´Ï´Ù.
+        // ulnDbcInitialize ¿¡¼­ È¯°æº¯¼ö¸¦ ÀĞ¾î¼­ ´Ù½Ã ¼¼ÆÃÇÏ±â ¶§¹®¿¡ ¹®Á¦°¡ ¾ø´Ù.
         ACI_TEST(mtlInitialize(sDefaultNls, ACP_TRUE ) != ACI_SUCCESS);
 
         // bug-26661: nls_use not applied to ul nls module
-        // UTì—ì„œëŠ” ìœ„ì˜ mtl::defModuleì„ ì‚¬ìš©ì•ˆí•˜ê³  ëŒ€ì‹ 
-        // gNlsModuleForUTë¥¼ ì‚¬ìš©í•  ê²ƒì´ë‹¤.
-        // ìµœì´ˆì— gNlsModuleForUTê°€ NULL ì´ë¯€ë¡œ ì¼ë‹¨
-        // US7ASCII ëª¨ë“ˆì´ë¼ë„ ì„¸íŒ…ì„ í•´ì•¼ í•œë‹¤.
+        // UT¿¡¼­´Â À§ÀÇ mtl::defModuleÀ» »ç¿ë¾ÈÇÏ°í ´ë½Å
+        // gNlsModuleForUT¸¦ »ç¿ëÇÒ °ÍÀÌ´Ù.
+        // ÃÖÃÊ¿¡ gNlsModuleForUT°¡ NULL ÀÌ¹Ç·Î ÀÏ´Ü
+        // US7ASCII ¸ğµâÀÌ¶óµµ ¼¼ÆÃÀ» ÇØ¾ß ÇÑ´Ù.
         ACI_TEST(mtlModuleByName((const mtlModule **)&gNlsModuleForUT,
                                  sDefaultNls,
                                  strlen(sDefaultNls))
@@ -275,8 +279,8 @@ ACI_RC ulnInitialize()
         ACI_TEST(ulnInitializeDBProtocolCallbackFunctions() != ACI_SUCCESS);
 
         /* bug-35142 cli trace log
-           trace level, file ì§€ì •ê³¼ latch ìƒì„±.
-           ì„±ëŠ¥ìƒì˜ ì´ìœ ë¡œ levelì€ ìµœì´ˆì— í•œë²ˆë§Œ ì •í•œë‹¤ */
+           trace level, file ÁöÁ¤°ú latch »ı¼º.
+           ¼º´É»óÀÇ ÀÌÀ¯·Î levelÀº ÃÖÃÊ¿¡ ÇÑ¹ø¸¸ Á¤ÇÑ´Ù */
         ulnInitTraceLog();
 
         /* PROJ-2625 Semi-async Prefetch, Prefetch Auto-tuning */
@@ -346,9 +350,9 @@ void ulnDestroy()
     cmiDestroy();
 }
 
-/*fix BUG-25597 APREì—ì„œ AIXí”Œë«í¼ í„±ì‹œë„ ì—°ë™ë¬¸ì œë¥¼ í•´ê²°í•´ì•¼ í•©ë‹ˆë‹¤.
-APREì˜ ulpConnMgrì´ˆê¸°í™”ì „ì— ì´ë¯¸ Xa Openëœ Connectionì„
-APREì— Loadingí•˜ëŠ” í•¨ìˆ˜.
+/*fix BUG-25597 APRE¿¡¼­ AIXÇÃ·§Æû ÅÎ½Ãµµ ¿¬µ¿¹®Á¦¸¦ ÇØ°áÇØ¾ß ÇÕ´Ï´Ù.
+APREÀÇ ulpConnMgrÃÊ±âÈ­Àü¿¡ ÀÌ¹Ì Xa OpenµÈ ConnectionÀ»
+APRE¿¡ LoadingÇÏ´Â ÇÔ¼ö.
 */
 
 void ulnLoadOpenedXaConnections2APRE()

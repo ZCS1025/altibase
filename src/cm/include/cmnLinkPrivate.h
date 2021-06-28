@@ -121,7 +121,7 @@ UInt   cmnLinkPeerSizeIB(void);
 
 #define USE_DISCONN_CHECK
 
-#define USE_NEW_UNDO_SEMA    1   /* ìƒˆë¡œìš´ UNDO Semaphore operation ì´ìš© : PR-2476*/
+#define USE_NEW_UNDO_SEMA    1   /* »õ·Î¿î UNDO Semaphore operation ÀÌ¿ë : PR-2476*/
 #define NEW_UNDO_SEMA_VALUE 10
 
 typedef struct cmnLinkDescIPC
@@ -137,18 +137,18 @@ typedef struct cmnLinkDescIPC
     SInt               mChannelID;
     struct semid_ds    mSemInfo;
 
-    UInt               mTicketNum;  // BUG-32398 íƒ€ì„ìŠ¤íƒ¬í”„ì—ì„œ í‹°ì¼“ë²ˆí˜¸ë¡œ ë³€ê²½
+    UInt               mTicketNum;  // BUG-32398 Å¸ÀÓ½ºÅÆÇÁ¿¡¼­ Æ¼ÄÏ¹øÈ£·Î º¯°æ
 
     /*
      * BUG-12909
-     * closeì‹œ mHandleì— PDL_INVALID_SOCKETì„ ì„¸íŒ…í•˜ëŠ” ëŒ€ì‹ 
-     * ì´ í”Œë˜ê·¸ë¥¼ ì‚¬ìš©í•œë‹¤.
+     * close½Ã mHandle¿¡ PDL_INVALID_SOCKETÀ» ¼¼ÆÃÇÏ´Â ´ë½Å
+     * ÀÌ ÇÃ·¡±×¸¦ »ç¿ëÇÑ´Ù.
      */
     idBool             mConnectFlag;
 
     /*
-     * HandShakeê°€ ì‹¤íŒ¨í•  ê²½ìš° ê·¸ëƒ¥ close()í•˜ë©´ ì—ëŸ¬ ë°œìƒí•˜ê¸°ì—
-     * ìƒíƒœë¥¼ ì €ì¥í•˜ê³ , I/Oë¥¼ ìˆ˜í–‰í•  ë•Œ í•„ìš”ì¡°ì¹˜ë¥¼ í•¨.
+     * HandShake°¡ ½ÇÆĞÇÒ °æ¿ì ±×³É close()ÇÏ¸é ¿¡·¯ ¹ß»ıÇÏ±â¿¡
+     * »óÅÂ¸¦ ÀúÀåÇÏ°í, I/O¸¦ ¼öÇàÇÒ ¶§ ÇÊ¿äÁ¶Ä¡¸¦ ÇÔ.
      */
     idBool             mHandShakeFlag;
 
@@ -175,7 +175,7 @@ typedef struct cmnLinkDescIPC
     struct sembuf      mOpSignSendToCli[1];  // in Server only
 
     // bug-27250 free Buf list can be crushed when client killed
-    // í° í”„ë¡œí† ì½œì— ëŒ€í•œ ë‹¤ìŒ íŒ¨í‚· ì†¡ì‹  ì‹ í˜¸ ì œì–´ìš© semaphore
+    // Å« ÇÁ·ÎÅäÄİ¿¡ ´ëÇÑ ´ÙÀ½ ÆĞÅ¶ ¼Û½Å ½ÅÈ£ Á¦¾î¿ë semaphore
     // IPC_SEM_SENDMORE_TO_SVR (4) : controlled by server
     struct sembuf      mOpInitSendMoreToSvr[1];  // in Server
     struct sembuf      mOpCheckSendMoreToSvr[1]; // in Client
@@ -214,18 +214,18 @@ typedef struct cmnLinkDescIPCDA
     SInt               mChannelID;
     struct semid_ds    mSemInfo;
 
-    UInt               mTicketNum;  /* BUG-32398 íƒ€ì„ìŠ¤íƒ¬í”„ì—ì„œ í‹°ì¼“ë²ˆí˜¸ë¡œ ë³€ê²½ */
+    UInt               mTicketNum;  /* BUG-32398 Å¸ÀÓ½ºÅÆÇÁ¿¡¼­ Æ¼ÄÏ¹øÈ£·Î º¯°æ */
 
     /*
      * BUG-12909
-     * closeì‹œ mHandleì— PDL_INVALID_SOCKETì„ ì„¸íŒ…í•˜ëŠ” ëŒ€ì‹ 
-     * ì´ í”Œë˜ê·¸ë¥¼ ì‚¬ìš©í•œë‹¤.
+     * close½Ã mHandle¿¡ PDL_INVALID_SOCKETÀ» ¼¼ÆÃÇÏ´Â ´ë½Å
+     * ÀÌ ÇÃ·¡±×¸¦ »ç¿ëÇÑ´Ù.
      */
     idBool             mConnectFlag;
 
     /*
-     * HandShakeê°€ ì‹¤íŒ¨í•  ê²½ìš° ê·¸ëƒ¥ close()í•˜ë©´ ì—ëŸ¬ ë°œìƒí•˜ê¸°ì—
-     * ìƒíƒœë¥¼ ì €ì¥í•˜ê³ , I/Oë¥¼ ìˆ˜í–‰í•  ë•Œ í•„ìš”ì¡°ì¹˜ë¥¼ í•¨.
+     * HandShake°¡ ½ÇÆĞÇÒ °æ¿ì ±×³É close()ÇÏ¸é ¿¡·¯ ¹ß»ıÇÏ±â¿¡
+     * »óÅÂ¸¦ ÀúÀåÇÏ°í, I/O¸¦ ¼öÇàÇÒ ¶§ ÇÊ¿äÁ¶Ä¡¸¦ ÇÔ.
      */
     idBool             mHandShakeFlag;
 

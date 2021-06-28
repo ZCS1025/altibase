@@ -38,14 +38,14 @@ IDE_RC qdcDir::validateCreate( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *     create directoryì— ëŒ€í•œ validation
+ *     create directory¿¡ ´ëÇÑ validation
  *
  * Implementation :
- *     1. replaceë¼ë©´ directoryê°€ ì´ë¯¸ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
- *     1.1 directoryê°€ ì—†ë‹¤ë©´ replaceë¥¼ FALSEë¡œ ì„¸íŒ…
- *     2. replaceê°€ ì•„ë‹ˆë¼ë©´ directoryê°€ ì´ë¯¸ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
- *     2.1 directoryê°€ ì´ë¯¸ ì¡´ì¬í•œë‹¤ë©´ ì—ëŸ¬
- *     3. ê¶Œí•œ ê²€ì‚¬
+ *     1. replace¶ó¸é directory°¡ ÀÌ¹Ì Á¸ÀçÇÏ´ÂÁö °Ë»ç
+ *     1.1 directory°¡ ¾ø´Ù¸é replace¸¦ FALSE·Î ¼¼ÆÃ
+ *     2. replace°¡ ¾Æ´Ï¶ó¸é directory°¡ ÀÌ¹Ì Á¸ÀçÇÏ´ÂÁö °Ë»ç
+ *     2.1 directory°¡ ÀÌ¹Ì Á¸ÀçÇÑ´Ù¸é ¿¡·¯
+ *     3. ±ÇÇÑ °Ë»ç
  *
  ***********************************************************************/
 #define IDE_FN "qdcDir::validateCreate"
@@ -72,7 +72,7 @@ IDE_RC qdcDir::validateCreate( qcStatement * aStatement )
     {    
         if( sExist == ID_TRUE )
         {
-            // replaceì˜ ê²½ìš° ê°™ì€ userì¼ ë•Œë§Œ ê°€ëŠ¥?
+            // replaceÀÇ °æ¿ì °°Àº userÀÏ ¶§¸¸ °¡´É?
         }
         else
         {
@@ -84,7 +84,7 @@ IDE_RC qdcDir::validateCreate( qcStatement * aStatement )
         IDE_TEST_RAISE( sExist == ID_TRUE, ERR_EXISTS_DIRECTORY );
     }
 
-    // ê¶Œí•œ ê²€ì‚¬í•´ì•¼ í•¨
+    // ±ÇÇÑ °Ë»çÇØ¾ß ÇÔ
     IDE_TEST( qdpRole::checkDDLCreateDirectoryPriv( aStatement )
               != IDE_SUCCESS );
 
@@ -106,11 +106,11 @@ IDE_RC qdcDir::executeCreate( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *     create /replace directoryì˜ execution
+ *     create /replace directoryÀÇ execution
  *
  * Implementation :
- *     1. qcmDirectory::addMetaInfoí•¨ìˆ˜ í˜¸ì¶œ
- *     2. ìƒì„±ìì˜ ê¶Œí•œì„ ì‚­ì œí•˜ê³  ìƒˆë¡œ ë¶€ì—¬
+ *     1. qcmDirectory::addMetaInfoÇÔ¼ö È£Ãâ
+ *     2. »ı¼ºÀÚÀÇ ±ÇÇÑÀ» »èÁ¦ÇÏ°í »õ·Î ºÎ¿©
  *
  *
  ***********************************************************************/
@@ -125,7 +125,7 @@ IDE_RC qdcDir::executeCreate( qcStatement * aStatement )
     
     sParseTree = (qdDirectoryParseTree *)aStatement->myPlan->parseTree;
 
-    // To fix BUG-13035 ìƒì„± userëŠ” ë¬´ì¡°ê±´ sysê°€ ëœë‹¤.
+    // To fix BUG-13035 »ı¼º user´Â ¹«Á¶°Ç sys°¡ µÈ´Ù.
     IDE_TEST( qcmDirectory::addMetaInfo( aStatement,
                                          QC_SYS_USER_ID,
                                          sParseTree->directoryName,
@@ -135,7 +135,7 @@ IDE_RC qdcDir::executeCreate( qcStatement * aStatement )
 
     if( sParseTree->userID != QC_SYS_USER_ID )
     {
-        // directory ì •ë³´ë¥¼ ê°€ì ¸ì˜´
+        // directory Á¤º¸¸¦ °¡Á®¿È
         IDE_TEST( qcmDirectory::getDirectory(
                              aStatement,
                              sParseTree->directoryName,
@@ -150,8 +150,8 @@ IDE_RC qdcDir::executeCreate( qcStatement * aStatement )
                                     &sSqlStr)
         != IDE_SUCCESS);
 
-        // with grant optionì´ ìˆìœ¼ë©´ ì‚­ì œ
-        // ë˜ëŠ” grantorê°€ sysì´ë©´ ì‚­ì œ
+        // with grant optionÀÌ ÀÖÀ¸¸é »èÁ¦
+        // ¶Ç´Â grantor°¡ sysÀÌ¸é »èÁ¦
         // delete from sys_grant_objects_ where
         //     ( objid = X and objtype = X and userid = X and grantee = X )
         //       and ( grantor = SYS or with_grant_option = 1 );
@@ -175,9 +175,9 @@ IDE_RC qdcDir::executeCreate( qcStatement * aStatement )
                                     sSqlStr,
                                     & sRowCnt ) != IDE_SUCCESS);
 
-        // ê¶Œí•œ ë¶€ì—¬
-        // insert into sys_grant_objects_ values( ..read ê¶Œí•œ + with grant option );
-        // insert into sys_grant_objects_ values( ..write ê¶Œí•œ + with grant option );
+        // ±ÇÇÑ ºÎ¿©
+        // insert into sys_grant_objects_ values( ..read ±ÇÇÑ + with grant option );
+        // insert into sys_grant_objects_ values( ..write ±ÇÇÑ + with grant option );
 
         idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
                          "INSERT INTO SYS_GRANT_OBJECT_ VALUES ( "
@@ -223,8 +223,8 @@ IDE_RC qdcDir::executeCreate( qcStatement * aStatement )
     }
     else
     {
-        // SYSìœ ì €ê°€ ìƒì„±í•œ ë””ë ‰í† ë¦¬ì— ëŒ€í•´ì„œëŠ” ê¶Œí•œì„ ë¶€ì—¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
-        // SYSìì‹ ì´ OWNERì´ê¸° ë•Œë¬¸ì´ë‹¤.
+        // SYSÀ¯Àú°¡ »ı¼ºÇÑ µğ·ºÅä¸®¿¡ ´ëÇØ¼­´Â ±ÇÇÑÀ» ºÎ¿©ÇÏÁö ¾Ê´Â´Ù.
+        // SYSÀÚ½ÅÀÌ OWNERÀÌ±â ¶§¹®ÀÌ´Ù.
         // Nothing to do.
     }
     
@@ -242,12 +242,12 @@ IDE_RC qdcDir::validateDrop( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *     drop directoryì˜ validation
+ *     drop directoryÀÇ validation
  *
  * Implementation :
- *     1. directoryê°€ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´ ì—ëŸ¬
- *     2. ê¶Œí•œ ê²€ì‚¬
- *     3. directory OIDì„¸íŒ…
+ *     1. directory°¡ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é ¿¡·¯
+ *     2. ±ÇÇÑ °Ë»ç
+ *     3. directory OID¼¼ÆÃ
  *
  ***********************************************************************/
 #define IDE_FN "qdcDir::validateDrop"
@@ -307,11 +307,11 @@ IDE_RC qdcDir::executeDrop( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *     drop directoryì˜ execution
+ *     drop directoryÀÇ execution
  *
  * Implementation :
- *     1. qcmDirectory::delMetaInfoByDirectoryNameí•¨ìˆ˜ í˜¸ì¶œ
- *     2. ê´€ë ¨ ê¶Œí•œ ì‚­ì œ
+ *     1. qcmDirectory::delMetaInfoByDirectoryNameÇÔ¼ö È£Ãâ
+ *     2. °ü·Ã ±ÇÇÑ »èÁ¦
  *
  ***********************************************************************/
 #define IDE_FN "qdcDir::executeDrop"

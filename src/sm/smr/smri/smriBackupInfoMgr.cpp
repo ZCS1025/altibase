@@ -44,10 +44,10 @@ IDE_RC smriBackupInfoMgr::initializeStatic()
     idBool sFileState  = ID_FALSE;
     idBool sMutexState = ID_FALSE;
 
-    /*BIíŒŒì¼ í—¤ë”*/
+    /*BIÆÄÀÏ Çì´õ*/
     idlOS::memset( &mBIFileHdr, 0x00, ID_SIZEOF( smriBIFileHdr) );
 
-    /*BI slotë©”ëª¨ë¦¬ ê³µê°„ì— ëŒ€í•œ í¬ì¸í„°*/
+    /*BI slot¸Ş¸ğ¸® °ø°£¿¡ ´ëÇÑ Æ÷ÀÎÅÍ*/
     mBISlotArea = NULL;
 
     mIsBISlotAreaLoaded = ID_FALSE;
@@ -110,7 +110,7 @@ IDE_RC smriBackupInfoMgr::destroyStatic()
     return IDE_FAILURE;
 }
 /***********************************************************************
- * backupinfo managerë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ * backupinfo manager¸¦ ÃÊ±âÈ­ÇÑ´Ù.
  * 
  **********************************************************************/
 IDE_RC smriBackupInfoMgr::begin()
@@ -123,7 +123,7 @@ IDE_RC smriBackupInfoMgr::begin()
     ULong               sFileSize        = 0;
     UInt                sValidationState = 0;
 
-    /* logAnchorì—ì„œ íŒŒì¼ì´ë¦„ì„ ê°€ì ¸ì˜¨ë‹¤. */
+    /* logAnchor¿¡¼­ ÆÄÀÏÀÌ¸§À» °¡Á®¿Â´Ù. */
     sFileName = smrRecoveryMgr::getBIFileName();
 
     IDE_TEST_RAISE( idf::access( sFileName, F_OK ) != 0,
@@ -154,8 +154,8 @@ IDE_RC smriBackupInfoMgr::begin()
     IDE_TEST( mFile.close() != IDE_SUCCESS );
 
     /* 
-     * logAnchorì—ì„œ BackupLSNì„ ê°€ì ¸ì™€ backup infoíŒŒì¼ì— ì €ì¥ëœ LSNê³¼
-     * ë¹„êµí•œë‹¤.
+     * logAnchor¿¡¼­ BackupLSNÀ» °¡Á®¿Í backup infoÆÄÀÏ¿¡ ÀúÀåµÈ LSN°ú
+     * ºñ±³ÇÑ´Ù.
      */
     sLastBackupLSN = smrRecoveryMgr::getBIFileLastBackupLSNFromLogAnchor();
 
@@ -179,7 +179,7 @@ IDE_RC smriBackupInfoMgr::begin()
 
     mBISlotArea = NULL;
 
-    /* backupInfo slot ê²€ì¦ */
+    /* backupInfo slot °ËÁõ */
     IDE_TEST_RAISE( loadBISlotArea() != IDE_SUCCESS, 
                     error_invalid_backup_info_file );
     sValidationState = 1;
@@ -187,7 +187,7 @@ IDE_RC smriBackupInfoMgr::begin()
     sValidationState = 0;
     IDE_TEST( unloadBISlotArea() != IDE_SUCCESS );
     
-    /* logAnchorì— backup info mangerì˜ ìƒíƒœë¥¼ ê°±ì‹ í•œë‹¤. */
+    /* logAnchor¿¡ backup info mangerÀÇ »óÅÂ¸¦ °»½ÅÇÑ´Ù. */
     sBIMgrState = SMRI_BI_MGR_INITIALIZED;
     IDE_TEST( smrRecoveryMgr::updateBIFileAttrToLogAnchor( 
                                                     NULL,  //aFileName
@@ -233,7 +233,7 @@ IDE_RC smriBackupInfoMgr::begin()
 }
 
 /***********************************************************************
- * backupinfo managerë¥¼ íŒŒê´´í•œë‹¤.
+ * backupinfo manager¸¦ ÆÄ±«ÇÑ´Ù.
  * 
  **********************************************************************/
 IDE_RC smriBackupInfoMgr::end()
@@ -272,7 +272,7 @@ IDE_RC smriBackupInfoMgr::end()
 }
 
 /***********************************************************************
- * backupinfo íŒŒì¼ì„ ìƒì„±í•œë‹¤.
+ * backupinfo ÆÄÀÏÀ» »ı¼ºÇÑ´Ù.
  * 
  *
  **********************************************************************/
@@ -286,11 +286,11 @@ IDE_RC smriBackupInfoMgr::createBIFile()
     SChar               sInitBackupDir[SM_MAX_FILE_NAME] = "\0";
     UInt                sDeleteArchLogFileNo;
 
-    /* BUG-41521: logAnchorì—ì„œ íŒŒì¼ì´ë¦„ì„ ê°€ì ¸ì˜¨ë‹¤. */
-    /* BUG-42338: BI file nameì€ "backupinfo" ë¼ëŠ” ê³ ì •ëœ ì´ë¦„ì„ ì‚¬ìš©í•œë‹¤.
-     * ê·¸ëŸ¬ë‚˜ createBIFile() í•¨ìˆ˜ë¥¼ ì´ìš©í•  ë•Œë§ˆë‹¤ log anchor ì •ë³´ì— ë‹¤ì‹œ copy í•˜ëŠ”ë°,
-     * ì´ë•Œ ì´ë¯¸ ë™ì¼í•œ ì •ë³´ë¥¼ ê°€ì§€ê³  ìˆìœ¼ë¯€ë¡œ ë©”ëª¨ë¦¬ì˜ overlap warningì´ ë°œìƒí•œë‹¤.
-     * ì´ë¥¼ í•´ê²°í•˜ê¸° ìœ„í•´ backupinfo íŒŒì¼ì˜ ê²½ë¡œë¥¼ ê°€ì§€ëŠ” ë³€ìˆ˜ë¥¼ ë§Œë“¤ì–´ì„œ ì „ë‹¬í•œë‹¤. */
+    /* BUG-41521: logAnchor¿¡¼­ ÆÄÀÏÀÌ¸§À» °¡Á®¿Â´Ù. */
+    /* BUG-42338: BI file nameÀº "backupinfo" ¶ó´Â °íÁ¤µÈ ÀÌ¸§À» »ç¿ëÇÑ´Ù.
+     * ±×·¯³ª createBIFile() ÇÔ¼ö¸¦ ÀÌ¿ëÇÒ ¶§¸¶´Ù log anchor Á¤º¸¿¡ ´Ù½Ã copy ÇÏ´Âµ¥,
+     * ÀÌ¶§ ÀÌ¹Ì µ¿ÀÏÇÑ Á¤º¸¸¦ °¡Áö°í ÀÖÀ¸¹Ç·Î ¸Ş¸ğ¸®ÀÇ overlap warningÀÌ ¹ß»ıÇÑ´Ù.
+     * ÀÌ¸¦ ÇØ°áÇÏ±â À§ÇØ backupinfo ÆÄÀÏÀÇ °æ·Î¸¦ °¡Áö´Â º¯¼ö¸¦ ¸¸µé¾î¼­ Àü´ŞÇÑ´Ù. */
     idlOS::strncpy( sFileName, 
                     smrRecoveryMgr::getBIFileName(), 
                     SM_MAX_FILE_NAME );
@@ -298,7 +298,7 @@ IDE_RC smriBackupInfoMgr::createBIFile()
 
     if ( idf::access( sFileName, F_OK ) == 0 )
     {
-        /* backup slotì˜ì—­ì´ validí•œì§€ ê²€ì‚¬í•œë‹¤. */
+        /* backup slot¿µ¿ªÀÌ validÇÑÁö °Ë»çÇÑ´Ù. */
         IDE_TEST_RAISE( begin() != IDE_SUCCESS, 
                         error_invalid_backup_info_file );
         sValidationState = 1;
@@ -308,7 +308,7 @@ IDE_RC smriBackupInfoMgr::createBIFile()
     }
     else
     {
-        /* BUG-41521: íŒŒì¼ ì´ë¦„ ì„¤ì • */
+        /* BUG-41521: ÆÄÀÏ ÀÌ¸§ ¼³Á¤ */
         idlOS::snprintf( sFileName,
                          SM_MAX_FILE_NAME,
                          "%s%c%s",
@@ -388,7 +388,7 @@ IDE_RC smriBackupInfoMgr::createBIFile()
 }
 
 /***********************************************************************
- * backupinfo file hdrë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ * backupinfo file hdr¸¦ ÃÊ±âÈ­ÇÑ´Ù.
  * 
  *
  **********************************************************************/
@@ -410,7 +410,7 @@ void smriBackupInfoMgr::initBIFileHdr()
 }
 
 /***********************************************************************
- * backupinfo fileì„ ì‚­ì œí•œë‹¤.
+ * backupinfo fileÀ» »èÁ¦ÇÑ´Ù.
  * 
  *
  **********************************************************************/
@@ -434,16 +434,16 @@ IDE_RC smriBackupInfoMgr::removeBIFile()
     IDE_TEST_RAISE( sAnchorMgr->getBIMgrState() == SMRI_BI_MGR_FILE_REMOVED,
                     err_backup_info_state);     
 
-    /*CTMgrì´ í™œì„±í™” ëœ ìƒíƒœì—ì„œëŠ” BIFileì„ ì‚­ì œí• ìˆ˜ ì—†ë‹¤. */
+    /*CTMgrÀÌ È°¼ºÈ­ µÈ »óÅÂ¿¡¼­´Â BIFileÀ» »èÁ¦ÇÒ¼ö ¾ø´Ù. */
     IDE_TEST_RAISE( sAnchorMgr->getCTMgrState() == SMRI_CT_MGR_ENABLED,
                     err_change_tracking_state);     
 
-    /* BUG-41552: sFileNameë¥¼ log anchorë¡œë¶€í„° ë³µì‚¬í•´ì„œ ê°€ì ¸ì™€ì•¼ í•¨ */
+    /* BUG-41552: sFileName¸¦ log anchor·ÎºÎÅÍ º¹»çÇØ¼­ °¡Á®¿Í¾ß ÇÔ */
     idlOS::strncpy( sFileName, 
                     sAnchorMgr->getBIFileName(), 
                     SM_MAX_FILE_NAME );
 
-    /* logAnchorì— backup infoíŒŒì¼ ìƒíƒœ ê°±ì‹  */
+    /* logAnchor¿¡ backup infoÆÄÀÏ »óÅÂ °»½Å */
     SM_LSN_INIT( sLastBackupLSN );
 
     sBIMgrState = SMRI_BI_MGR_FILE_REMOVED;
@@ -454,7 +454,7 @@ IDE_RC smriBackupInfoMgr::removeBIFile()
                                             &sDeleteArchLogFileNo )                   
               != IDE_SUCCESS );
 
-    /* íŒŒì¼ì„ ì‚­ì œ í•œë‹¤. */
+    /* ÆÄÀÏÀ» »èÁ¦ ÇÑ´Ù. */
     if ( idf::access( sFileName, F_OK ) == 0 )
     {
         IDE_TEST( idf::unlink( sFileName ) != IDE_SUCCESS );
@@ -489,7 +489,7 @@ IDE_RC smriBackupInfoMgr::removeBIFile()
 }
 
 /***********************************************************************
- * backupinfoì˜ slotë“¤ì„ ë©”ëª¨ë¦¬ë¡œ ì½ì–´ë“¤ì¸ë‹¤.
+ * backupinfoÀÇ slotµéÀ» ¸Ş¸ğ¸®·Î ÀĞ¾îµéÀÎ´Ù.
  * 
  *
  **********************************************************************/
@@ -572,7 +572,7 @@ IDE_RC smriBackupInfoMgr::loadBISlotArea()
 }
 
 /***********************************************************************
- * backupinfoì˜ slotì— í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤.
+ * backupinfoÀÇ slot¿¡ ÇÒ´çµÈ ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÑ´Ù.
  * 
  *
  **********************************************************************/
@@ -600,9 +600,9 @@ IDE_RC smriBackupInfoMgr::unloadBISlotArea()
 }
 
 /***********************************************************************
- * backupinfo slotì„ backupinfoíŒŒì¼ì˜ ëì— appendí•˜ì—¬ ê¸°ë¡í•œë‹¤.
+ * backupinfo slotÀ» backupinfoÆÄÀÏÀÇ ³¡¿¡ appendÇÏ¿© ±â·ÏÇÑ´Ù.
  * 
- * aBISlot      - [IN] íŒŒì¼ì— appendí•  BISlot 
+ * aBISlot      - [IN] ÆÄÀÏ¿¡ appendÇÒ BISlot 
  *
  **********************************************************************/
 IDE_RC smriBackupInfoMgr::appendBISlot( smriBISlot * aBISlot )
@@ -656,7 +656,7 @@ IDE_RC smriBackupInfoMgr::appendBISlot( smriBISlot * aBISlot )
 }
 
 /***********************************************************************
- * ìœ íš¨ê¸°ê°„ì´ ì§€ë‚œ incremental backupíŒŒì¼ê³¼ backupinfo slotì„ ì‚­ì œí•œë‹¤.
+ * À¯È¿±â°£ÀÌ Áö³­ incremental backupÆÄÀÏ°ú backupinfo slotÀ» »èÁ¦ÇÑ´Ù.
  * 
  *
  **********************************************************************/
@@ -724,7 +724,7 @@ IDE_RC smriBackupInfoMgr::removeObsoleteBISlots()
             {
                 /* 
                  * nothing to do 
-                 * backup dirì´ ì´ë¯¸ ì§€ì›Œì§„ ìƒíƒœ 
+                 * backup dirÀÌ ÀÌ¹Ì Áö¿öÁø »óÅÂ 
                  */
             }
         }
@@ -732,8 +732,8 @@ IDE_RC smriBackupInfoMgr::removeObsoleteBISlots()
 
     /*
      * BUG-41550
-     * mBISlotCnt ê°’ì€ ìœ íš¨ê¸°ê°„ì´ ì§€ë‚œ BI Slotì„ ì œê±°í•œ ë‹¤ìŒì— 
-     * sValidBISlotIdx ë§Œí¼ ì¤„ì—¬ì¤€ë‹¤.
+     * mBISlotCnt °ªÀº À¯È¿±â°£ÀÌ Áö³­ BI SlotÀ» Á¦°ÅÇÑ ´ÙÀ½¿¡ 
+     * sValidBISlotIdx ¸¸Å­ ÁÙ¿©ÁØ´Ù.
      */
     mBIFileHdr.mBISlotCnt -= sValidBISlotIdx;
 
@@ -768,9 +768,9 @@ IDE_RC smriBackupInfoMgr::removeObsoleteBISlots()
 }
 
 /***********************************************************************
- * ìœ ì§€ ê¸°ê°„ì´ ì§€ë‚˜ì§€ ì•Šì€ ì²«ë²ˆì§¸ BISlotì˜ Idxë¥¼ êµ¬í•œë‹¤.
+ * À¯Áö ±â°£ÀÌ Áö³ªÁö ¾ÊÀº Ã¹¹øÂ° BISlotÀÇ Idx¸¦ ±¸ÇÑ´Ù.
  * 
- * aValidBISlotIdx      - [OUT] ìœ íš¨í•œ ì²«ë²ˆì§¸ BISlot Idx
+ * aValidBISlotIdx      - [OUT] À¯È¿ÇÑ Ã¹¹øÂ° BISlot Idx
  *
  **********************************************************************/
 IDE_RC smriBackupInfoMgr::getValidBISlotIdx( UInt * aValidBISlotIdx )
@@ -790,9 +790,9 @@ IDE_RC smriBackupInfoMgr::getValidBISlotIdx( UInt * aValidBISlotIdx )
     
     if ( smuProperty::getBackupInfoRetentionPeriodForTest() != 0 )
     {
-        /* Hidden propertyì¸ 
-         * í…ŒìŠ¤íŠ¸ìš© backup info retention periodì— ê°’ì´ ìˆì„ ê²½ìš°, 
-         * ê°€ì ¸ì™€ì„œ í…ŒìŠ¤íŠ¸ ìš©ë„ë¡œ ì‚¬ìš© */
+        /* Hidden propertyÀÎ 
+         * Å×½ºÆ®¿ë backup info retention period¿¡ °ªÀÌ ÀÖÀ» °æ¿ì, 
+         * °¡Á®¿Í¼­ Å×½ºÆ® ¿ëµµ·Î »ç¿ë */
         sRetentionPeriod = smuProperty::getBackupInfoRetentionPeriodForTest();
     }
     else
@@ -822,8 +822,8 @@ IDE_RC smriBackupInfoMgr::getValidBISlotIdx( UInt * aValidBISlotIdx )
                 {
                     /*
                      * BUG-41550
-                     * ë§ˆì§€ë§‰ìœ¼ë¡œ backupì„ ìˆ˜í–‰í•œ ì‹œê°„ì´ 
-                     * retention period ë³´ë‹¤ ì‘ì€ ê²½ìš° BI slot indexë¥¼ ë°˜í™˜
+                     * ¸¶Áö¸·À¸·Î backupÀ» ¼öÇàÇÑ ½Ã°£ÀÌ 
+                     * retention period º¸´Ù ÀÛÀº °æ¿ì BI slot index¸¦ ¹İÈ¯
                      */
                     break;
                 }
@@ -841,9 +841,9 @@ IDE_RC smriBackupInfoMgr::getValidBISlotIdx( UInt * aValidBISlotIdx )
 }
 
 /***********************************************************************
- * ìœ ì§€ê¸°ê°„ì´ ì§€ë‚œ BISlotì˜ BackupíŒŒì¼ì„ ì‚­ì œí•œë‹¤.
+ * À¯Áö±â°£ÀÌ Áö³­ BISlotÀÇ BackupÆÄÀÏÀ» »èÁ¦ÇÑ´Ù.
  * 
- * aBackupFileName      - [IN] ì‚­ì œí•  ë°±ì—…íŒŒì¼ì´ë¦„
+ * aBackupFileName      - [IN] »èÁ¦ÇÒ ¹é¾÷ÆÄÀÏÀÌ¸§
  *
  **********************************************************************/
 IDE_RC smriBackupInfoMgr::removeBackupFile( SChar * aBackupFileName )
@@ -867,13 +867,13 @@ IDE_RC smriBackupInfoMgr::removeBackupFile( SChar * aBackupFileName )
 }
 
 /***********************************************************************
- * backupinfo slotì— ë“±ë¡ë˜ì§€ ì•Šì€ ë°±ì—…íŒŒì¼ë“¤ì— ëŒ€í•œ ì²˜ë¦¬ë¥¼ ìˆ˜í–‰í•œë‹¤.
- * (loganchoríŒŒì¼, backupinfoíŒŒì¼, tablebackupíŒŒì¼)
+ * backupinfo slot¿¡ µî·ÏµÇÁö ¾ÊÀº ¹é¾÷ÆÄÀÏµé¿¡ ´ëÇÑ Ã³¸®¸¦ ¼öÇàÇÑ´Ù.
+ * (loganchorÆÄÀÏ, backupinfoÆÄÀÏ, tablebackupÆÄÀÏ)
  * 
- * aBackupPath      - [IN] backupíŒŒì¼ì´ ì¡´ì¬í•˜ëŠ” ê²½ë¡œ
- * aDestPath        - [IN] backupíŒŒì¼ ì´ë™ ì‹œ ì´ë™ ì‹œí‚¬ ê²½ë¡œ 
- * aFile            - [IN] backupíŒŒì¼ 
- * aIsMove          - [IN] backupíŒŒì¼ì„ ì´ë™ì‹œí‚¬ê±´ì§€ ì‚­ì œí• ê²ƒì¸ì§€ì— ëŒ€í•œ ì •ë³´
+ * aBackupPath      - [IN] backupÆÄÀÏÀÌ Á¸ÀçÇÏ´Â °æ·Î
+ * aDestPath        - [IN] backupÆÄÀÏ ÀÌµ¿ ½Ã ÀÌµ¿ ½ÃÅ³ °æ·Î 
+ * aFile            - [IN] backupÆÄÀÏ 
+ * aIsMove          - [IN] backupÆÄÀÏÀ» ÀÌµ¿½ÃÅ³°ÇÁö »èÁ¦ÇÒ°ÍÀÎÁö¿¡ ´ëÇÑ Á¤º¸
  *
  **********************************************************************/
 IDE_RC smriBackupInfoMgr::processRestBackupFile( SChar   * aBackupPath,
@@ -997,11 +997,11 @@ IDE_RC smriBackupInfoMgr::processRestBackupFile( SChar   * aBackupPath,
 }
 
 /***********************************************************************
- * BIíŒŒì¼ì„ flushí•œë‹¤. ê¸°ë³¸ì ìœ¼ë¡œ BIFileHdrì„ flush í•˜ë©° 
- * í•„ìš”í•œê²½ìš° BISlotAreaë„ flushí•œë‹¤.
+ * BIÆÄÀÏÀ» flushÇÑ´Ù. ±âº»ÀûÀ¸·Î BIFileHdrÀ» flush ÇÏ¸ç 
+ * ÇÊ¿äÇÑ°æ¿ì BISlotAreaµµ flushÇÑ´Ù.
  * 
- * aValidBISlotIdx      - [IN] ìœ íš¨í•œ ì²«ë²ˆì§¸ BISlot Idx
- * aLastBackupLSN       - [IN] ë§ˆì§€ë§‰ì— ìˆ˜í–‰ëœ backupLSN
+ * aValidBISlotIdx      - [IN] À¯È¿ÇÑ Ã¹¹øÂ° BISlot Idx
+ * aLastBackupLSN       - [IN] ¸¶Áö¸·¿¡ ¼öÇàµÈ backupLSN
  *
  **********************************************************************/
 IDE_RC smriBackupInfoMgr::flushBIFile( UInt aValidBISlotIdx, 
@@ -1064,10 +1064,10 @@ IDE_RC smriBackupInfoMgr::flushBIFile( UInt aValidBISlotIdx,
 }
 
 /***********************************************************************
- * timeê¸°ë°˜ ë¶ˆì™„ì „ ë³µêµ¬ì¼ë•Œ í•´ë‹¹ ì‹œê°„ì— í•´ë‹¹í•˜ëŠ” BISlotIdxë¥¼ êµ¬í•œë‹¤.
+ * time±â¹İ ºÒ¿ÏÀü º¹±¸ÀÏ¶§ ÇØ´ç ½Ã°£¿¡ ÇØ´çÇÏ´Â BISlotIdx¸¦ ±¸ÇÑ´Ù.
  * 
- * aUntilTime                   - [IN] timeê¸°ë°˜ ë¶ˆì™„ì „ ë³µêµ¬ ì‹œê°„
- * aTargetBackupTagSlotIdx      - [IN] aUntilTimeì— í•´ë‹¹í•˜ëŠ” BISlotì˜ Idx
+ * aUntilTime                   - [IN] time±â¹İ ºÒ¿ÏÀü º¹±¸ ½Ã°£
+ * aTargetBackupTagSlotIdx      - [IN] aUntilTime¿¡ ÇØ´çÇÏ´Â BISlotÀÇ Idx
  *
  **********************************************************************/
 IDE_RC smriBackupInfoMgr::findBISlotIdxUsingTime( UInt    aUntilTime,
@@ -1086,7 +1086,7 @@ IDE_RC smriBackupInfoMgr::findBISlotIdxUsingTime( UInt    aUntilTime,
     IDE_TEST_RAISE( aUntilTime <= sBISlot->mEndBackupTime,
                     error_invalid_restore_time );
 
-    /* ì—­ë°©í–¥ ê²€ìƒ‰ */
+    /* ¿ª¹æÇâ °Ë»ö */
     for( sBISlotIdx = mBIFileHdr.mBISlotCnt - 1; 
          sBISlotIdx != SMRI_BI_INVALID_SLOT_IDX; 
          sBISlotIdx-- )
@@ -1116,14 +1116,14 @@ IDE_RC smriBackupInfoMgr::findBISlotIdxUsingTime( UInt    aUntilTime,
 }
 
 /***********************************************************************
- * ë³µì›í•´ì•¼í•  BISlotIdxë¥¼ êµ¬í•œë‹¤.
+ * º¹¿øÇØ¾ßÇÒ BISlotIdx¸¦ ±¸ÇÑ´Ù.
  * 
- * aUntilBackupTag              - [IN] BackupTagê¸°ë°˜ ë¶ˆì™„ì „ë³µêµ¬ Backup tag ì´ë¦„
- * aStartScanBISlotIdx          - [IN] scanì„ ì‹œì‘í•  backupinfo slotì˜ idx
- * aSearchUntilBackupTag        - [IN] backupTagê²€ìƒ‰ì„ ìˆ˜í–‰í• ì§€ì— ëŒ€í•œ ì •ë³´
- * aRestoreTarget               - [IN] restoreëŒ€ìƒ(database or tablespace)
- * aSpaceID                     - [IN] ê²€ìƒ‰í•  tablespace ID
- * aRestoreBISlotIdx            - [OUT] ë³µì›ì„ ì‹œì‘í•´ì•¼í•  ì²«ë²ˆì§¸ BISlotIdx
+ * aUntilBackupTag              - [IN] BackupTag±â¹İ ºÒ¿ÏÀüº¹±¸ Backup tag ÀÌ¸§
+ * aStartScanBISlotIdx          - [IN] scanÀ» ½ÃÀÛÇÒ backupinfo slotÀÇ idx
+ * aSearchUntilBackupTag        - [IN] backupTag°Ë»öÀ» ¼öÇàÇÒÁö¿¡ ´ëÇÑ Á¤º¸
+ * aRestoreTarget               - [IN] restore´ë»ó(database or tablespace)
+ * aSpaceID                     - [IN] °Ë»öÇÒ tablespace ID
+ * aRestoreBISlotIdx            - [OUT] º¹¿øÀ» ½ÃÀÛÇØ¾ßÇÒ Ã¹¹øÂ° BISlotIdx
  *
  **********************************************************************/
 IDE_RC smriBackupInfoMgr::getRestoreTargetSlotIdx( 
@@ -1148,8 +1148,8 @@ IDE_RC smriBackupInfoMgr::getRestoreTargetSlotIdx(
     {
         IDE_TEST( getBISlot( sBISlotIdx, &sCurrBISlot ) != IDE_SUCCESS );
     
-        /* backup tagê¸°ë°˜ ë³µì› ì¼ ê²½ìš°
-         * aUntilBackupTagì™€ ì¼ì¹˜í•˜ëŠ” backupinfo slotì„ ì°¾ëŠ”ë‹¤.*/
+        /* backup tag±â¹İ º¹¿ø ÀÏ °æ¿ì
+         * aUntilBackupTag¿Í ÀÏÄ¡ÇÏ´Â backupinfo slotÀ» Ã£´Â´Ù.*/
         if ( aSearchUntilBackupTag == ID_TRUE )
         {
             IDE_DASSERT( aUntilBackupTag != NULL );
@@ -1165,22 +1165,22 @@ IDE_RC smriBackupInfoMgr::getRestoreTargetSlotIdx(
         else
         {
             /* BUG-37371 
-             * backup tagê¸°ë°˜ ë³µì›ì´ ì•„ë‹ˆê±°ë‚˜ aUntilBackupTagì™€ì¼ì¹˜í•˜ëŠ”
-             * backupinfo slotì„ ì°¾ì€ ê²½ìš° ë³µì›ì„ ì‹œì‘í•  backup info slotì„
-             * ì°¾ëŠ”ë‹¤.*/
+             * backup tag±â¹İ º¹¿øÀÌ ¾Æ´Ï°Å³ª aUntilBackupTag¿ÍÀÏÄ¡ÇÏ´Â
+             * backupinfo slotÀ» Ã£Àº °æ¿ì º¹¿øÀ» ½ÃÀÛÇÒ backup info slotÀ»
+             * Ã£´Â´Ù.*/
             if ( aRestoreTarget == SMRI_BI_BACKUP_TARGET_DATABASE )
             {
-                /* ë³µì›ëŒ€ìƒì€ Level0 ë°±ì—…ì´ë©° database ë°±ì—…ì´ì–´ì•¼í•œë‹¤. */
+                /* º¹¿ø´ë»óÀº Level0 ¹é¾÷ÀÌ¸ç database ¹é¾÷ÀÌ¾î¾ßÇÑ´Ù. */
                 if ( (sCurrBISlot->mBackupTarget == SMRI_BI_BACKUP_TARGET_DATABASE) &&
                      (sCurrBISlot->mBackupLevel  == SMI_BACKUP_LEVEL_0) )
                 {
-                    /* sBISlotIdxê°€ 0ì¼ê²½ìš° sBISlotIdx - 1ì€ UINT_MAXê°€ ëœë‹¤ ì´ëŠ” 
-                     * SMRI_BI_INVALID_SLOT_IDXê°€ ë¨ìœ¼ë¡œ sPrevBISlotì— NULLì´
-                     * ì„¸íŒ…ë˜ì–´ ë°˜í™˜ëœë‹¤.  */  
+                    /* sBISlotIdx°¡ 0ÀÏ°æ¿ì sBISlotIdx - 1Àº UINT_MAX°¡ µÈ´Ù ÀÌ´Â 
+                     * SMRI_BI_INVALID_SLOT_IDX°¡ µÊÀ¸·Î sPrevBISlot¿¡ NULLÀÌ
+                     * ¼¼ÆÃµÇ¾î ¹İÈ¯µÈ´Ù.  */  
                     IDE_TEST( getBISlot( sBISlotIdx - 1, &sPrevBISlot ) != IDE_SUCCESS );
 
-                    /* ë³µì›í•˜ë ¤ëŠ” databaseë°±ì—…ì¤‘ ì²«ë²ˆì§¸ backup info slotì„
-                     * ì°¾ëŠ”ë‹¤ */
+                    /* º¹¿øÇÏ·Á´Â database¹é¾÷Áß Ã¹¹øÂ° backup info slotÀ»
+                     * Ã£´Â´Ù */
                     if ( ( ( sPrevBISlot != NULL )                            &&
                            ( ( idlOS::strcmp( sPrevBISlot->mBackupTag, 
                                               sCurrBISlot->mBackupTag )) != 0 ) ) ||
@@ -1195,7 +1195,7 @@ IDE_RC smriBackupInfoMgr::getRestoreTargetSlotIdx(
             }
             else
             {
-                // level 0 or 1ë¡œ full ë°±ì—…ëœ backupinfo slotì„ ì°¾ì•„ tablespaceë¥¼ ë³µì›
+                // level 0 or 1·Î full ¹é¾÷µÈ backupinfo slotÀ» Ã£¾Æ tablespace¸¦ º¹¿ø
                 if ( ( (sCurrBISlot->mBackupType & SMI_BACKUP_TYPE_FULL) != 0 ) &&
                      ( sCurrBISlot->mSpaceID == aSpaceID ) )
                 {
@@ -1216,14 +1216,14 @@ IDE_RC smriBackupInfoMgr::getRestoreTargetSlotIdx(
 }
 
 /***********************************************************************
- * restoreë¥¼ ìˆ˜í–‰í•  BISlotì˜ ë²”ìœ„ë¥¼ êµ¬í•œë‹¤.
+ * restore¸¦ ¼öÇàÇÒ BISlotÀÇ ¹üÀ§¸¦ ±¸ÇÑ´Ù.
  * 
- * aScanStartBISlotIdx          - [IN] restore scanì„ ì‹œì‘í•  BISlotIdx
- * aRestoreType                 - [IN] ë³µì› íƒ€ì…
- * aUltilTime                   - [IN] timeê¸°ë°˜ ë¶ˆì™„ì „ ë³µêµ¬ ì‹œê°„
- * aUntilBackupTag              - [IN] backupTagê¸°ë°˜ ë¶ˆì™„ì „ ë³µêµ¬ tagì´ë¦„
- * aRestoreStartBISlotIdx       - [OUT] ë³µì›ì„ ì‹œì‘í•  BISltoIdx
- * aRestoreEndBISlotIdx         - [OUT] ë³µì›ì„ ëë‚¼ BISlotIdx
+ * aScanStartBISlotIdx          - [IN] restore scanÀ» ½ÃÀÛÇÒ BISlotIdx
+ * aRestoreType                 - [IN] º¹¿ø Å¸ÀÔ
+ * aUltilTime                   - [IN] time±â¹İ ºÒ¿ÏÀü º¹±¸ ½Ã°£
+ * aUntilBackupTag              - [IN] backupTag±â¹İ ºÒ¿ÏÀü º¹±¸ tagÀÌ¸§
+ * aRestoreStartBISlotIdx       - [OUT] º¹¿øÀ» ½ÃÀÛÇÒ BISltoIdx
+ * aRestoreEndBISlotIdx         - [OUT] º¹¿øÀ» ³¡³¾ BISlotIdx
  *
  **********************************************************************/
 IDE_RC smriBackupInfoMgr::calcRestoreBISlotRange4Level1( 
@@ -1266,7 +1266,7 @@ IDE_RC smriBackupInfoMgr::calcRestoreBISlotRange4Level1(
         IDE_TEST( getBISlot( sBISlotIdx, &sCurrBISlot ) != IDE_SUCCESS );
         IDE_TEST( getBISlot( sBISlotIdx - 1, &sPrevBISlot ) != IDE_SUCCESS );
 
-        /* backup tagê¸°ë°˜ ë¶ˆì™„ì „ ë³µêµ¬ */
+        /* backup tag±â¹İ ºÒ¿ÏÀü º¹±¸ */
         if ( aRestoreType == SMI_RESTORE_UNTILTAG )
         {
             if ( ( sIsFindEndBackupTag == ID_FALSE ) &&
@@ -1291,7 +1291,7 @@ IDE_RC smriBackupInfoMgr::calcRestoreBISlotRange4Level1(
             /* nothing to do */
         }
 
-        /* ì‹œê°„ ê¸°ë°˜ ë¶ˆì™„ì „ ë³µêµ¬ */
+        /* ½Ã°£ ±â¹İ ºÒ¿ÏÀü º¹±¸ */
         if ( aRestoreType == SMI_RESTORE_UNTILTIME )
         {
             if ( sCurrBISlot->mEndBackupTime > aUntilTime )
@@ -1308,7 +1308,7 @@ IDE_RC smriBackupInfoMgr::calcRestoreBISlotRange4Level1(
             /* nothing to do */
         }
 
-        /* Cumulative ë°±ì—… slotìœ„ì¹˜ ì €ì¥ */
+        /* Cumulative ¹é¾÷ slotÀ§Ä¡ ÀúÀå */
         if ( ( ( sCurrBISlot->mBackupType & SMI_BACKUP_TYPE_CUMULATIVE ) != 0) &&
              ( sCurrBISlot->mBackupTarget == SMRI_BI_BACKUP_TARGET_DATABASE ) &&
              ( idlOS::strcmp( sCurrBISlot->mBackupTag, 
@@ -1325,9 +1325,9 @@ IDE_RC smriBackupInfoMgr::calcRestoreBISlotRange4Level1(
         }
     }
 
-    if ( sIsFindCumulativeBackup == ID_TRUE ) /* cumulative backupì´ ìˆëŠ”ê²½ìš° */
+    if ( sIsFindCumulativeBackup == ID_TRUE ) /* cumulative backupÀÌ ÀÖ´Â°æ¿ì */
     {
-        /* ë¶ˆì™„ì „ ë³µêµ¬ì´ë©´ì„œ ë§ˆì§€ë§‰ì— ê²€ìƒ‰í•œ ë°±ì—…ì´ cumulative backupì¼ ê²½ìš°*/
+        /* ºÒ¿ÏÀü º¹±¸ÀÌ¸é¼­ ¸¶Áö¸·¿¡ °Ë»öÇÑ ¹é¾÷ÀÌ cumulative backupÀÏ °æ¿ì*/
         if ( ( sBISlotIdx < ( mBIFileHdr.mBISlotCnt - 1 ) ) &&
              ( idlOS::strcmp( sCurrBISlot->mBackupTag, 
                               sCumulativeBISlot->mBackupTag ) == 0 ) )
@@ -1341,12 +1341,12 @@ IDE_RC smriBackupInfoMgr::calcRestoreBISlotRange4Level1(
                 *aRestoreStartBISlotIdx = aScanStartBISlotIdx;
             }
         }
-        else /* ì™„ì „ë³µêµ¬ or ë§ˆì§€ë§‰ì— ê²€ìƒ‰í•œ ë°±ì—…ì´ cumulative backupì´ ì•„ë‹ ê²½ìš° */
+        else /* ¿ÏÀüº¹±¸ or ¸¶Áö¸·¿¡ °Ë»öÇÑ ¹é¾÷ÀÌ cumulative backupÀÌ ¾Æ´Ò °æ¿ì */
         {
             *aRestoreStartBISlotIdx = sCurrCumulativeBISlotIdx;
         }
     }
-    else /* cumulative backupì´ ì—†ëŠ”ê²½ìš° */
+    else /* cumulative backupÀÌ ¾ø´Â°æ¿ì */
     {
         *aRestoreStartBISlotIdx = aScanStartBISlotIdx;
     }
@@ -1361,9 +1361,9 @@ IDE_RC smriBackupInfoMgr::calcRestoreBISlotRange4Level1(
 }
 
 /***********************************************************************
- * BIíŒŒì¼ì„ ë°±ì—…í•œë‹¤.
+ * BIÆÄÀÏÀ» ¹é¾÷ÇÑ´Ù.
  * 
- * aBackupPath          - [IN] ë°±ì—…í•  path
+ * aBackupPath          - [IN] ¹é¾÷ÇÒ path
  *
  **********************************************************************/
 IDE_RC smriBackupInfoMgr::backup( SChar * aBackupPath )
@@ -1404,11 +1404,11 @@ IDE_RC smriBackupInfoMgr::backup( SChar * aBackupPath )
 }
 
 /***********************************************************************
- * incremental backup íŒŒì¼ì„ ì§€ì •ëœ ìœ„ì¹˜ë¡œ ì´ë™ì‹œí‚¨ë‹¤.
+ * incremental backup ÆÄÀÏÀ» ÁöÁ¤µÈ À§Ä¡·Î ÀÌµ¿½ÃÅ²´Ù.
  * 
- * aMovePath    - [IN] íŒŒì¼ì„ ì´ë™ì‹œí‚¬ path
- * aWithFile    - [IN] backupinfo slotì˜ ê²½ë¡œë§Œ ë³€ê²½ì‹œí‚¬ì§€ 
- *                     íŒŒì¼ë„ í•¨ê»˜ ì´ë™ì‹œí‚¬ì§€ íŒë‹¨
+ * aMovePath    - [IN] ÆÄÀÏÀ» ÀÌµ¿½ÃÅ³ path
+ * aWithFile    - [IN] backupinfo slotÀÇ °æ·Î¸¸ º¯°æ½ÃÅ³Áö 
+ *                     ÆÄÀÏµµ ÇÔ²² ÀÌµ¿½ÃÅ³Áö ÆÇ´Ü
  *
  **********************************************************************/
 IDE_RC smriBackupInfoMgr::moveIncrementalBackupFiles( SChar * aMovePath, 
@@ -1452,7 +1452,7 @@ IDE_RC smriBackupInfoMgr::moveIncrementalBackupFiles( SChar * aMovePath,
         {
             sMovePathLen = idlOS::strlen(aMovePath);
  
-            /* Dest íŒŒì¼ì˜ ê²½ë¡œë¥¼ êµ¬í•¨ */
+            /* Dest ÆÄÀÏÀÇ °æ·Î¸¦ ±¸ÇÔ */
             if ( aMovePath[ sMovePathLen - 1 ] == IDL_FILE_SEPARATOR )
             {
                 idlOS::snprintf( sDestBackupFilePath, 
@@ -1473,7 +1473,7 @@ IDE_RC smriBackupInfoMgr::moveIncrementalBackupFiles( SChar * aMovePath,
                                  IDL_FILE_SEPARATOR );                
             }
             
-            /* Src íŒŒì¼ì˜ ê²½ë¡œë¥¼ êµ¬í•¨ */ 
+            /* Src ÆÄÀÏÀÇ °æ·Î¸¦ ±¸ÇÔ */ 
             idlOS::snprintf( sSrcBackupFilePath,
                              SMRI_BI_MAX_BACKUP_FILE_NAME_LEN, 
                              "%s",
@@ -1488,7 +1488,7 @@ IDE_RC smriBackupInfoMgr::moveIncrementalBackupFiles( SChar * aMovePath,
 
             if ( idlOS::strcmp( sSrcBackupFilePath, sDestBackupFilePath ) == 0 )
             {
-                /* ì´ë™ì‹œí‚¬ ë°±ì—…íŒŒì¼ì˜ ìœ„ì¹˜ê°€ ì›ë˜ì˜ ìœ„ì¹˜ì™€ ë™ì¼í•˜ë‹¤. */
+                /* ÀÌµ¿½ÃÅ³ ¹é¾÷ÆÄÀÏÀÇ À§Ä¡°¡ ¿ø·¡ÀÇ À§Ä¡¿Í µ¿ÀÏÇÏ´Ù. */
                 continue;
             }
         }
@@ -1497,7 +1497,7 @@ IDE_RC smriBackupInfoMgr::moveIncrementalBackupFiles( SChar * aMovePath,
             /* nothing to do */
         }
 
-        /* ì´ë™ì‹œí‚¬ ë°±ì—…íŒŒì¼ì˜ ì´ë¦„ì„ êµ¬í•œë‹¤. */
+        /* ÀÌµ¿½ÃÅ³ ¹é¾÷ÆÄÀÏÀÇ ÀÌ¸§À» ±¸ÇÑ´Ù. */
         sBackupFileName = idlOS::strrchr( sCurrBISlot->mBackupFileName,
                                           IDL_FILE_SEPARATOR );        
         sBackupFileName = sBackupFileName + 1;
@@ -1506,7 +1506,7 @@ IDE_RC smriBackupInfoMgr::moveIncrementalBackupFiles( SChar * aMovePath,
         {
             if ( idlOS::strcmp( sBeforeBISlotBackupTagName, sCurrBISlot->mBackupTag ) != 0 )
             {
-                /* TAGì´ë¦„ì„ ê°€ì§„ dirìƒì„± */
+                /* TAGÀÌ¸§À» °¡Áø dir»ı¼º */
                 if ( idf::access( sDestBackupFilePath, F_OK ) != 0 )
                 {
                     IDE_TEST_RAISE( idlOS::mkdir( sDestBackupFilePath,  
@@ -1515,7 +1515,7 @@ IDE_RC smriBackupInfoMgr::moveIncrementalBackupFiles( SChar * aMovePath,
                 }
                 else
                 {
-                    /* ì´ë™í•  destë””ë ‰í† ë¦¬ê°€ ì´ë¯¸ ì¡´ì¬í•˜ëŠ”ê²½ìš° */
+                    /* ÀÌµ¿ÇÒ destµğ·ºÅä¸®°¡ ÀÌ¹Ì Á¸ÀçÇÏ´Â°æ¿ì */
                     IDE_RAISE( error_path_is_already_exist );
                 }
             }
@@ -1524,7 +1524,7 @@ IDE_RC smriBackupInfoMgr::moveIncrementalBackupFiles( SChar * aMovePath,
                 /* nothing to do */
             }
 
-            /* incremental backup file ì´ë™ */
+            /* incremental backup file ÀÌµ¿ */
             IDE_TEST( moveFile( sSrcBackupFilePath, 
                                 sDestBackupFilePath, 
                                 sBackupFileName, 
@@ -1563,14 +1563,14 @@ IDE_RC smriBackupInfoMgr::moveIncrementalBackupFiles( SChar * aMovePath,
             /* nothing to do */
         }
 
-        /* DestFileì´ë¦„ ì„¤ì • */
+        /* DestFileÀÌ¸§ ¼³Á¤ */
         idlOS::snprintf( sDestBackupFileName, 
                          SMRI_BI_MAX_BACKUP_FILE_NAME_LEN, 
                          "%s%s",
                          sDestBackupFilePath,                    
                          sBackupFileName );
 
-        /* backupinfo slotì˜ ë°±ì—…íŒŒì¼ ì´ë¦„ ê°±ì‹  */
+        /* backupinfo slotÀÇ ¹é¾÷ÆÄÀÏ ÀÌ¸§ °»½Å */
         idlOS::strncpy( sCurrBISlot->mBackupFileName, 
                         sDestBackupFileName,
                         SMRI_BI_MAX_BACKUP_FILE_NAME_LEN );
@@ -1620,11 +1620,11 @@ IDE_RC smriBackupInfoMgr::moveIncrementalBackupFiles( SChar * aMovePath,
 }
 
 /***********************************************************************
- * backupëœ íŒŒì¼ë“¤ì„ ì´ë™ì‹œí‚¨ë‹¤.
+ * backupµÈ ÆÄÀÏµéÀ» ÀÌµ¿½ÃÅ²´Ù.
  * 
- * aSrcFilePath     - [IN] ì›ë³¸ íŒŒì¼ path
- * aDestFilePath    - [IN] ìƒì„±ë  íŒŒì¼ path
- * aFileName        - [IN] íŒŒì¼ ì´ë¦„
+ * aSrcFilePath     - [IN] ¿øº» ÆÄÀÏ path
+ * aDestFilePath    - [IN] »ı¼ºµÉ ÆÄÀÏ path
+ * aFileName        - [IN] ÆÄÀÏ ÀÌ¸§
  * aFile            - [IN]
  *
  **********************************************************************/
@@ -1685,10 +1685,10 @@ IDE_RC smriBackupInfoMgr::moveFile( SChar   * aSrcFilePath,
 }
 
 /***********************************************************************
- * BISlotIdxì— í•´ë‹¹í•˜ëŠ” BISlotì„ ê°€ì ¸ì˜¨ë‹¤.
+ * BISlotIdx¿¡ ÇØ´çÇÏ´Â BISlotÀ» °¡Á®¿Â´Ù.
  * 
- * aBISlotIdx       - [IN] ê°€ì ¸ì˜¬ BISlotì˜ Idx
- * aBISlot          - [OUT] aBISlotë°˜í™˜
+ * aBISlotIdx       - [IN] °¡Á®¿Ã BISlotÀÇ Idx
+ * aBISlot          - [OUT] aBISlot¹İÈ¯
  *
  **********************************************************************/
 IDE_RC smriBackupInfoMgr::getBISlot( UInt aBISlotIdx, smriBISlot ** aBISlot )
@@ -1719,10 +1719,10 @@ IDE_RC smriBackupInfoMgr::getBISlot( UInt aBISlotIdx, smriBISlot ** aBISlot )
 }
 
 /***********************************************************************
- * BIë¥¼ backupíŒŒì¼ í—¤ë”ì— ì €ì¥í•œë‹¤.
+ * BI¸¦ backupÆÄÀÏ Çì´õ¿¡ ÀúÀåÇÑ´Ù.
  * 
- * aBackupFileHdrBISlot     - [IN] ë°±ì—…íŒŒì¼í—¤ë”ì˜ BISlot
- * aBISlot                  - [IN] aBISlotë°˜í™˜
+ * aBackupFileHdrBISlot     - [IN] ¹é¾÷ÆÄÀÏÇì´õÀÇ BISlot
+ * aBISlot                  - [IN] aBISlot¹İÈ¯
  *
  **********************************************************************/
 void smriBackupInfoMgr::setBI2BackupFileHdr( smriBISlot * aBackupFileHdrBISlot,
@@ -1737,9 +1737,9 @@ void smriBackupInfoMgr::setBI2BackupFileHdr( smriBISlot * aBackupFileHdrBISlot,
 }
 
 /***********************************************************************
- * ë³µì›ëœ ë°ì´í„°íŒŒì¼ í—¤ë”ì— ì¡´ì¬í•˜ëŠ” BIì •ë³´ë¥¼ ì‚­ì œí•œë‹¤.
+ * º¹¿øµÈ µ¥ÀÌÅÍÆÄÀÏ Çì´õ¿¡ Á¸ÀçÇÏ´Â BIÁ¤º¸¸¦ »èÁ¦ÇÑ´Ù.
  *
- * aBackupFileHdrBISlot     - [IN] ë°±ì—…íŒŒì¼í—¤ë”ì˜ BISlot
+ * aBackupFileHdrBISlot     - [IN] ¹é¾÷ÆÄÀÏÇì´õÀÇ BISlot
  *
  **********************************************************************/
 void smriBackupInfoMgr::clearDataFileHdrBI( smriBISlot * aDataFileHdrBI )
@@ -1752,7 +1752,7 @@ void smriBackupInfoMgr::clearDataFileHdrBI( smriBISlot * aDataFileHdrBI )
 }
 
 /***********************************************************************
- * BIFileHdrë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+ * BIFileHdr¸¦ °¡Á®¿Â´Ù.
  *
  * aBIFileHdr     - [OUT]
  *
@@ -1772,11 +1772,11 @@ IDE_RC smriBackupInfoMgr::getBIFileHdr( smriBIFileHdr ** aBIFileHdr )
 }
 
 /***********************************************************************
- * Pathì´ë¦„ì´ ì ˆëŒ€ê²½ë¡œì¸ì§€ë¥¼ íŒë‹¨í•œë‹¤.
- * sctTableSpaceMgr::makeValidABSPathí•¨ìˆ˜ ì°¸ê³ í•˜ì—¬ ì‘ì„±
+ * PathÀÌ¸§ÀÌ Àı´ë°æ·ÎÀÎÁö¸¦ ÆÇ´ÜÇÑ´Ù.
+ * sctTableSpaceMgr::makeValidABSPathÇÔ¼ö Âü°íÇÏ¿© ÀÛ¼º
  *
- * aCheckPerm   - [IN] ë””ë ‰í† ë¦¬ì—ëŒ€í•œ ê¶Œí•œ ê²€ì‚¬ ì—¬ë¶€
- * aPathName    - [IN] ë””ë ‰í† ë¦¬ ê²½ë¡œ
+ * aCheckPerm   - [IN] µğ·ºÅä¸®¿¡´ëÇÑ ±ÇÇÑ °Ë»ç ¿©ºÎ
+ * aPathName    - [IN] µğ·ºÅä¸® °æ·Î
  *
  **********************************************************************/
 IDE_RC smriBackupInfoMgr::isValidABSPath( idBool aCheckPerm, 
@@ -1798,7 +1798,7 @@ IDE_RC smriBackupInfoMgr::isValidABSPath( idBool aCheckPerm,
                     error_filename_is_null_string );
 
     /* ------------------------------------------------
-     * datafile ì´ë¦„ì— ëŒ€í•œ ì‹œìŠ¤í…œ ì˜ˆì•½ì–´ ê²€ì‚¬
+     * datafile ÀÌ¸§¿¡ ´ëÇÑ ½Ã½ºÅÛ ¿¹¾à¾î °Ë»ç
      * ----------------------------------------------*/
 #if defined(VC_WIN32)
     SInt  sIterator;
@@ -1816,8 +1816,8 @@ IDE_RC smriBackupInfoMgr::isValidABSPath( idBool aCheckPerm,
     IDE_TEST_RAISE( sPtr != &aPathName[0], error_invalid_filepath_abs );
 #else
     /* BUG-38278 invalid datafile path at windows server
-     * ìœˆë„ìš°ì¦ˆ í™˜ê²½ì—ì„œ '/' ë‚˜ '\' ë¡œ ì‹œì‘ë˜ëŠ”
-     * ê²½ë¡œ ì…ë ¥ì€ ì˜¤ë¥˜ë¡œ ì²˜ë¦¬í•œë‹¤. */
+     * À©µµ¿ìÁî È¯°æ¿¡¼­ '/' ³ª '\' ·Î ½ÃÀÛµÇ´Â
+     * °æ·Î ÀÔ·ÂÀº ¿À·ù·Î Ã³¸®ÇÑ´Ù. */
     IDE_TEST_RAISE( sPtr == &aPathName[0], error_invalid_filepath_abs );
 
     IDE_TEST_RAISE( ( (aPathName[1] == ':') && (sPtr != &aPathName[2]) ) ||
@@ -1826,15 +1826,15 @@ IDE_RC smriBackupInfoMgr::isValidABSPath( idBool aCheckPerm,
 #endif 
 
     /* ------------------------------------------------
-     * ì˜ë¬¸ì, ìˆ«ì + '/'ëŠ” í—ˆìš©í•˜ê³  ê·¸ì™¸ ë¬¸ìëŠ” í—ˆìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
-     * (ì ˆëŒ€ê²½ë¡œì„)
+     * ¿µ¹®ÀÚ, ¼ıÀÚ + '/'´Â Çã¿ëÇÏ°í ±×¿Ü ¹®ÀÚ´Â Çã¿ëÇÏÁö ¾Ê´Â´Ù.
+     * (Àı´ë°æ·ÎÀÓ)
      * ----------------------------------------------*/
     for (i = 0; i < sPathNameLen; i++)
     {
         if (smuUtility::isAlNum(aPathName[i]) != ID_TRUE)
         {
-            /* BUG-16283: Windowsì—ì„œ Altibase Homeì´ '(', ')' ê°€ ë“¤ì–´ê°ˆ
-               ê²½ìš° DB ìƒì„±ì‹œ ì˜¤ë¥˜ê°€ ë°œìƒí•©ë‹ˆë‹¤. */
+            /* BUG-16283: Windows¿¡¼­ Altibase HomeÀÌ '(', ')' °¡ µé¾î°¥
+               °æ¿ì DB »ı¼º½Ã ¿À·ù°¡ ¹ß»ıÇÕ´Ï´Ù. */
             IDE_TEST_RAISE( (aPathName[i] != IDL_FILE_SEPARATOR) &&
                             (aPathName[i] != '-') &&
                             (aPathName[i] != '_') &&
@@ -1859,7 +1859,7 @@ IDE_RC smriBackupInfoMgr::isValidABSPath( idBool aCheckPerm,
         }
     }
 
-    // [BUG-29812] dirì´ ì¡´ì¬í•˜ëŠ” í™•ì¸í•œë‹¤.
+    // [BUG-29812] dirÀÌ Á¸ÀçÇÏ´Â È®ÀÎÇÑ´Ù.
     if ( aCheckPerm == ID_TRUE ) 
     {
         // fix BUG-19977
@@ -1917,13 +1917,13 @@ IDE_RC smriBackupInfoMgr::isValidABSPath( idBool aCheckPerm,
 
     return IDE_FAILURE;
 #else
-    // Windows CEì—ì„œëŠ” íŒŒì¼ì˜ ì ˆëŒ€ê²½ë¡œê°€ C:ë¡œ ì‹œì‘í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // Windows CE¿¡¼­´Â ÆÄÀÏÀÇ Àı´ë°æ·Î°¡ C:·Î ½ÃÀÛÇÏÁö ¾Ê´Â´Ù.
     return IDE_SUCCESS;
 #endif
 }
 
 /***********************************************************************
- * BI file Hdrì˜ checkumì„ ê²€ì‚¬í•œë‹¤.
+ * BI file HdrÀÇ checkumÀ» °Ë»çÇÑ´Ù.
  *
  *
  **********************************************************************/
@@ -1957,7 +1957,7 @@ IDE_RC smriBackupInfoMgr::checkBIFileHdrCheckSum()
 }
 
 /***********************************************************************
- * BI file Hdrì˜ checkumì„ ê³„ì‚°í•˜ê³  ì €ì¥í•œë‹¤.
+ * BI file HdrÀÇ checkumÀ» °è»êÇÏ°í ÀúÀåÇÑ´Ù.
  *
  *
  **********************************************************************/
@@ -1980,7 +1980,7 @@ void smriBackupInfoMgr::setBIFileHdrCheckSum()
 }
 
 /***********************************************************************
- * BISlotì˜ checkumì„ ê²€ì‚¬í•œë‹¤.
+ * BISlotÀÇ checkumÀ» °Ë»çÇÑ´Ù.
  *
  *
  **********************************************************************/
@@ -2016,7 +2016,7 @@ IDE_RC smriBackupInfoMgr::checkBISlotCheckSum( smriBISlot * aBISlot )
 }
 
 /***********************************************************************
- * BISlotì˜ checkumì„ ê³„ì‚°í•˜ê³  ì €ì¥í•œë‹¤.
+ * BISlotÀÇ checkumÀ» °è»êÇÏ°í ÀúÀåÇÑ´Ù.
  *
  *
  **********************************************************************/
@@ -2041,7 +2041,7 @@ void smriBackupInfoMgr::setBISlotCheckSum( smriBISlot * aBISlot )
 }
 
 /***********************************************************************
- * BIFileì„ ë°±ì—… ì´ì „ìƒíƒœë¡œ rollback í•œë‹¤.
+ * BIFileÀ» ¹é¾÷ ÀÌÀü»óÅÂ·Î rollback ÇÑ´Ù.
  *
  *
  **********************************************************************/
@@ -2098,7 +2098,7 @@ IDE_RC smriBackupInfoMgr::rollbackBIFile( UInt aBackupBISlotCnt )
 }
 
 /***********************************************************************
- * ë°±ì—… ë„ì¤‘ ì‹¤íŒ¨í•œ incremental backup pathë¥¼ ì‚­ì œí•œë‹¤.
+ * ¹é¾÷ µµÁß ½ÇÆĞÇÑ incremental backup path¸¦ »èÁ¦ÇÑ´Ù.
  *
  *
  **********************************************************************/
@@ -2118,7 +2118,7 @@ IDE_RC smriBackupInfoMgr::removeBackupDir( SChar * aIncrementalBackupPath )
     {
         /* 
          * nothing to do 
-         * backup dirì´ ì´ë¯¸ ì§€ì›Œì§„ ìƒíƒœ 
+         * backup dirÀÌ ÀÌ¹Ì Áö¿öÁø »óÅÂ 
          */
     }
 
@@ -2132,9 +2132,9 @@ IDE_RC smriBackupInfoMgr::removeBackupDir( SChar * aIncrementalBackupPath )
 }
 
 /***********************************************************************
- * MemBaseì— ì €ì¥ëœ DBNameê³¼ BIFileì— ì €ì¥ëœ DBNameì„ ë¹„êµí•œë‹¤.
+ * MemBase¿¡ ÀúÀåµÈ DBName°ú BIFile¿¡ ÀúÀåµÈ DBNameÀ» ºñ±³ÇÑ´Ù.
  *
- * aDBName    - [IN] MemBaseì— ì €ì¥ëœ DBName
+ * aDBName    - [IN] MemBase¿¡ ÀúÀåµÈ DBName
  *
  **********************************************************************/
 IDE_RC smriBackupInfoMgr::checkDBName( SChar * aDBName )

@@ -16,7 +16,7 @@
  
 
 /*******************************************************************************
- * $Id: smnnMetaModule.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smnnMetaModule.cpp 86324 2019-11-01 09:11:29Z et16 $
  ******************************************************************************/
 
 #include <ide.h>
@@ -36,8 +36,8 @@ smnIndexModule smnnMetaModule = {
     SMN_RANGE_DISABLE|SMN_DIMENSION_DISABLE,
     ID_SIZEOF( smnnIterator ),
 
-    /* smnnModuleì˜ ì´ˆê¸°í™” ë° íŒŒê´´ ì‘ì—…ê³¼ ì¤‘ë³µìœ¼ë¡œ ì´ˆê¸°í™” ë° íŒŒê´´ë¥¼ ìˆ˜í–‰í•˜ì§€
-     * ì•Šë„ë¡, smnMemoryFunc í•¨ìˆ˜ì— smnnMetaAA í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ë‹¬ì•„ë†“ëŠ”ë‹¤. */
+    /* smnnModuleÀÇ ÃÊ±âÈ­ ¹× ÆÄ±« ÀÛ¾÷°ú Áßº¹À¸·Î ÃÊ±âÈ­ ¹× ÆÄ±«¸¦ ¼öÇàÇÏÁö
+     * ¾Êµµ·Ï, smnMemoryFunc ÇÔ¼ö¿¡ smnnMetaAA ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ´Ş¾Æ³õ´Â´Ù. */
     (smnMemoryFunc) smnnMetaAA,
     (smnMemoryFunc) smnnMetaAA,
     (smnMemoryFunc) NULL,
@@ -47,7 +47,6 @@ smnIndexModule smnnMetaModule = {
     (smTableCursorLockRowFunc)  smnManager::lockRow,
     (smnDeleteFunc)       NULL,
     (smnFreeFunc)         NULL,
-    (smnExistKeyFunc)          NULL,
     (smnInsertRollbackFunc)    NULL,
     (smnDeleteRollbackFunc)    NULL,
     (smnAgingFunc)             NULL,

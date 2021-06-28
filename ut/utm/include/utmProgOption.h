@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: utmProgOption.h 80542 2017-07-19 08:01:20Z daramix $
+ * $Id: utmProgOption.h 89611 2020-12-22 23:23:39Z chkim $
  **********************************************************************/
 
 #ifndef _O_UTMPROGOPTION_H_
@@ -23,6 +23,8 @@
 
 #define WORD_LEN 256
 #define OBJECT_LEN 1024
+
+#include<uttEnv.h>
 
 class utmProgOption
 {
@@ -33,8 +35,9 @@ public:
     IDE_RC ParsingCommandLine(SInt argc, SChar **argv);
     void   ReadProgOptionInteractive();
 
-    // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
-    void   ReadEnvironment();
+    /* BUG-47652 Set file permission */
+    // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
+    IDE_RC ReadEnvironment();
     void   ReadServerProperties();
 
     SChar *GetServerName()    { return m_ServerName; }
@@ -42,7 +45,7 @@ public:
     SChar *GetUserNameInSQL() { return mUserNameInSQL; }
     SChar *GetPassword()      { return m_Password; }
     SInt   GetPortNum()       { return m_PortNum; }
-    // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
+    // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
     SChar *GetNLS()           { return mNLS; }
 
     idBool IsBad()            { return m_bExist_BAD; }
@@ -66,6 +69,9 @@ public:
     SChar * GetSslVerify()   { return mSslVerify; }
     void    getSslProperties(utmPropertyMgr *aPropMgr);
     void    setSslConnectStr();
+   
+    /* BUG-47652 Set file permission */
+    idBool  IsExistFilePerm(){ return mbExistFilePerm; }
 
 private:
     idBool  m_bExist_U;
@@ -79,7 +85,7 @@ private:
     SChar   m_Password[WORD_LEN];
     SInt    m_PortNum;
     SChar   m_ServerName[WORD_LEN];
-    // BUG-25450 in,outì˜ ì„œë²„ë¥¼ ë‹¤ë¥´ê²Œ ì§€ì •í•  ìˆ˜ ìˆëŠ” ê¸°ëŠ¥ ì¶”ê°€ ìš”ì²­
+    // BUG-25450 in,outÀÇ ¼­¹ö¸¦ ´Ù¸£°Ô ÁöÁ¤ÇÒ ¼ö ÀÖ´Â ±â´É Ãß°¡ ¿äÃ»
     SInt    m_TPortNum;
     SChar   m_TServerName[WORD_LEN];
     SChar   m_ObjectName[OBJECT_LEN];
@@ -88,8 +94,8 @@ private:
 
 public:
     idBool  m_bExist_PORT;
-    // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
-    // ì˜µì…˜ìœ¼ë¡œ ì„¤ì •í–ˆì„ë•Œë§Œ ìŠ¤í¬ë¦½íŠ¸ì— -port ì˜µì…˜ ì¶œë ¥
+    // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
+    // ¿É¼ÇÀ¸·Î ¼³Á¤ÇßÀ»¶§¸¸ ½ºÅ©¸³Æ®¿¡ -port ¿É¼Ç Ãâ·Â
     idBool  m_bIsOpt_PORT;
     idBool  mbExistOper;
     idBool  mbExistTwoPhaseScript;
@@ -99,8 +105,8 @@ public:
     idBool  mbExistDrop;
     idBool  mbExistUserPasswd;
     idBool  mbExistNLS;
-    // aexport.properties file ì— run script name ì´ ëª…ì‹œ
-    // ë˜ì–´ ìˆëŠ”ì§€ ì²´í¬
+    // aexport.properties file ¿¡ run script name ÀÌ ¸í½Ã
+    // µÇ¾î ÀÖ´ÂÁö Ã¼Å©
     idBool  mbExistScriptIsql;      // run_is.sh
     idBool  mbExistScriptIsqlCon;   // run_is_con.sh
     idBool  mbExistScriptIsqlIndex; // run_is_index.sh
@@ -115,7 +121,7 @@ public:
     idBool  mbExistIloRTerm;
     idBool  mbEqualScriptIsql;
     idBool  mbExistViewForce;
-    // BUG-25450 in,outì˜ ì„œë²„ë¥¼ ë‹¤ë¥´ê²Œ ì§€ì •í•  ìˆ˜ ìˆëŠ” ê¸°ëŠ¥ ì¶”ê°€ ìš”ì²­
+    // BUG-25450 in,outÀÇ ¼­¹ö¸¦ ´Ù¸£°Ô ÁöÁ¤ÇÒ ¼ö ÀÖ´Â ±â´É Ãß°¡ ¿äÃ»
     idBool  m_bExist_TServer;
     idBool  m_bExist_TPORT;
     idBool  m_bExist_OBJECT;
@@ -188,6 +194,12 @@ public:
     /* BUG-44187 Support -async_prefetch option of iLoader */
     idBool   mbExistIloAsyncPrefetch;
     SChar    mAsyncPrefetchType[5];
+
+    /* BUG-47652 Set file permission */
+    idBool   mbExistFilePerm;
+
+    /* BUG-48358 GeomFormat WKB */
+    idBool   mbExistGeomFormat;
 };
 
 #endif // _O_UTMPROGOPTION_H_

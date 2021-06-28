@@ -21,18 +21,18 @@
  * Description :
  *     JOIN(JOIN) Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ cartesian productë¥¼ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
- *     ë‹¤ì–‘í•œ Join Methodë“¤ì€ í•˜ìœ„ ë…¸ë“œì˜ í˜•íƒœì— ë”°ë¼ ê²°ì •ëœë‹¤.
+ *     °ü°èÇü ¸ğµ¨¿¡¼­ cartesian product¸¦ ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
+ *     ´Ù¾çÇÑ Join MethodµéÀº ÇÏÀ§ ³ëµåÀÇ ÇüÅÂ¿¡ µû¶ó °áÁ¤µÈ´Ù.
  *
- *     ë‹¤ìŒê³¼ ê°™ì€ ê¸°ëŠ¥ì„ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
+ *     ´ÙÀ½°ú °°Àº ±â´ÉÀ» À§ÇØ »ç¿ëµÈ´Ù.
  *         - Cartesian Product
- *         - Nested Loop Join ê³„ì—´
- *         - Sort-based Join ê³„ì—´
- *         - Hash-based Join ê³„ì—´
+ *         - Nested Loop Join °è¿­
+ *         - Sort-based Join °è¿­
+ *         - Hash-based Join °è¿­
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -53,7 +53,7 @@
 
 // qmncJOIN.flag
 // PROJ-1718 Subquery unnesting
-// Joinì˜ ì¢…ë¥˜
+// JoinÀÇ Á¾·ù
 #define QMNC_JOIN_TYPE_MASK                (0x00000003)
 #define QMNC_JOIN_TYPE_INNER               (0x00000000)
 #define QMNC_JOIN_TYPE_SEMI                (0x00000001)
@@ -69,7 +69,7 @@
 typedef struct qmncJOIN
 {
     //---------------------------------
-    // Code ì˜ì—­ ê³µí†µ ì •ë³´
+    // Code ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmnPlan        plan;
@@ -77,7 +77,7 @@ typedef struct qmncJOIN
     UInt           planID;
     qtcNode      * filter;
 
-    // PROJ-2551 simple query ìµœì í™”
+    // PROJ-2551 simple query ÃÖÀûÈ­
     idBool         isSimple;
     
 } qmncJOIN;
@@ -85,7 +85,7 @@ typedef struct qmncJOIN
 typedef struct qmndJOIN
 {
     //---------------------------------
-    // Data ì˜ì—­ ê³µí†µ ì •ë³´
+    // Data ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmndPlan            plan;
@@ -93,11 +93,11 @@ typedef struct qmndJOIN
     UInt              * flag;
 
     //---------------------------------
-    // JOIN ê³ ìœ  ì •ë³´
+    // JOIN °íÀ¯ Á¤º¸
     //---------------------------------
 
-    setHitFlagFunc      setHitFlag;    // Child(HASH)ì— ë”°ë¥¸ í•¨ìˆ˜
-    isHitFlaggedFunc    isHitFlagged;  // Child(HASH)ì— ë”°ë¥¸ í•¨ìˆ˜
+    setHitFlagFunc      setHitFlag;    // Child(HASH)¿¡ µû¸¥ ÇÔ¼ö
+    isHitFlaggedFunc    isHitFlagged;  // Child(HASH)¿¡ µû¸¥ ÇÔ¼ö
 
 } qmndJOIN;
 
@@ -109,11 +109,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ìˆ˜í–‰ í•¨ìˆ˜
+    // ¼öÇà ÇÔ¼ö
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -122,7 +122,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan ì •ë³´ ì¶œë ¥
+    // Plan Á¤º¸ Ãâ·Â
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -135,19 +135,19 @@ private:
     // mapping by doIt() function pointer
     //------------------------
 
-    // í˜¸ì¶œë˜ë©´ ì•ˆë¨
+    // È£ÃâµÇ¸é ¾ÈµÊ
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
     // Inner join, Semi join (Inverse Index NL)
-    // Leftì—ì„œ í•œê±´, Rightì—ì„œ í•œê±´ ìˆ˜í–‰
+    // Left¿¡¼­ ÇÑ°Ç, Right¿¡¼­ ÇÑ°Ç ¼öÇà
     static IDE_RC doItLeft( qcTemplate * aTemplate,
                             qmnPlan    * aPlan,
                             qmcRowFlag * aFlag );
 
     // Inner join, Semi join (Inverse Index NL)
-    // ê¸°ì¡´ì˜ LeftëŠ” ë‘ê³  Rightì—ì„œ í•œê±´ ìˆ˜í–‰
+    // ±âÁ¸ÀÇ Left´Â µÎ°í Right¿¡¼­ ÇÑ°Ç ¼öÇà
     static IDE_RC doItRight( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              qmcRowFlag * aFlag );
@@ -193,10 +193,10 @@ private:
                                idBool     * aRetry );
 
     //------------------------
-    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
+    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
     //------------------------
 
-    // ìµœì´ˆ ì´ˆê¸°í™”
+    // ÃÖÃÊ ÃÊ±âÈ­
     static IDE_RC firstInit( qmncJOIN   * aCodePlan,
                              qmndJOIN   * aDataPlan );
 

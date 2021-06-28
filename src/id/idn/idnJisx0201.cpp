@@ -28,7 +28,7 @@ SInt convertMbToWc4Jisx0201( void   * aSrc,
 /***********************************************************************
  *
  * Description :
- *      (EUCJP, SHIFT-JIS) ==> UTF16BE ì—ì„œ ì‚¬ìš©ë˜ëŠ” ë³€í™˜
+ *      (EUCJP, SHIFT-JIS) ==> UTF16BE ¿¡¼­ »ç¿ëµÇ´Â º¯È¯
  *
  * Implementation :
  *
@@ -82,7 +82,7 @@ SInt convertWcToMb4Jisx0201( void   * aSrc,
 /***********************************************************************
  *
  * Description :
- *      (EUCJP, SHIFT-JIS) <== UTF16 ì—ì„œ ì‚¬ìš©ë˜ëŠ” ë³€í™˜
+ *      (EUCJP, SHIFT-JIS) <== UTF16 ¿¡¼­ »ç¿ëµÇ´Â º¯È¯
  *
  * Implementation :
  *

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smmDirtyPageList.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smmDirtyPageList.cpp 90083 2021-02-26 00:58:48Z et16 $
  **********************************************************************/
 
 #include <idl.h>
@@ -80,18 +80,17 @@ IDE_RC smmDirtyPageList::destroy()
     return IDE_FAILURE;
 }
 
-// mutex ìž¡ì€ ì´í›„ì— í˜¸ì¶œë˜ì–´ì•¼ í•¨.
+// mutex ÀâÀº ÀÌÈÄ¿¡ È£ÃâµÇ¾î¾ß ÇÔ.
 // called by DirtyPageMgr directly
 IDE_RC smmDirtyPageList::addDirtyPage(scPageID a_page_no)
 {
-
     smmDirtyPage *sDirtyPage;
 
     /* smmDirtyPageList_addDirtyPage_alloc_DirtyPage.tc */
     IDU_FIT_POINT("smmDirtyPageList::addDirtyPage::alloc::DirtyPage");
-    IDE_TEST(m_memList.alloc((void **)&sDirtyPage) != IDE_SUCCESS);
-    sDirtyPage->m_pch          = smmManager::getPCH(mSpaceID, a_page_no);
-    sDirtyPage->m_pch->m_dirty = ID_TRUE;
+    IDE_TEST(m_memList.alloc((void **)&sDirtyPage) != IDE_SUCCESS);    
+    sDirtyPage->m_pch  = smmManager::getPCHSlot(mSpaceID, a_page_no);
+    ((smmPCH*)(sDirtyPage->m_pch->mPCH))->m_dirty = ID_TRUE;
 
     // link to list 
     sDirtyPage->m_next = m_head;
@@ -119,7 +118,7 @@ IDE_RC smmDirtyPageList::open()
     return IDE_FAILURE;
 }
 
-IDE_RC smmDirtyPageList::read(smmPCH **a_pch)
+IDE_RC smmDirtyPageList::read( smPCSlot **a_pch )
 {
     
     IDE_ASSERT(m_opened == ID_TRUE);
@@ -144,6 +143,7 @@ IDE_RC smmDirtyPageList::read(smmPCH **a_pch)
     return IDE_FAILURE;
 }
 
+
 IDE_RC smmDirtyPageList::close()
 {
 
@@ -162,16 +162,19 @@ IDE_RC smmDirtyPageList::close()
 IDE_RC smmDirtyPageList::clear()
 {
 
-    smmPCH *sPCHPtr;
+    smPCSlot *sPCHSlotPtr;
+    smmPCH      *sPCHPtr;
 
     while(1)
     {
-        IDE_TEST( read(&sPCHPtr) != IDE_SUCCESS );
-
-        if (sPCHPtr == NULL)
+        IDE_TEST( read(&sPCHSlotPtr) != IDE_SUCCESS );
+        
+        if (sPCHSlotPtr == NULL)
         {
             break;
         }
+        sPCHPtr = (smmPCH*)sPCHSlotPtr->mPCH;
+        IDE_ASSERT( sPCHPtr != NULL );
 
         sPCHPtr->m_dirty = ID_FALSE;
     }

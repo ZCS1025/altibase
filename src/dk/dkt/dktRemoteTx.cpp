@@ -33,10 +33,10 @@ IDE_RC dktRemoteTx::initialize( UInt            aSessionId,
 	idBool sIsMutexInit = ID_FALSE;
     
 	/* BUG-44672 
-     * Performance View ì¡°íšŒí• ë•Œ RemoteStatement ì˜ ì¶”ê°€ ì‚­ì œì‹œ PV ë¥¼ ì¡°íšŒí•˜ë©´ ë™ì‹œì„± ë¬¸ì œê°€ ìƒê¸´ë‹¤.
-     * ì´ë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•œ Lock ìœ¼ë¡œ ì¼ë°˜ DK ë„ì¤‘ findRemoteStatement ì™€ ê°™ì€ í•¨ìˆ˜ëŠ”
-     * ê°™ì€ DK ì„¸ì…˜ì—ì„œë§Œ ë“¤ì–´ì˜¤ë¯€ë¡œ ë™ì‹œì„±ì— ë¬¸ì œê°€ ì—†ìœ¼ë¯€ë¡œ  
-     * RemoteStatment Add ì™€ Remove ë¥¼ ì œì™¸í•˜ê³ ëŠ” Lock ì„ ì¡ì§€ ì•ŠëŠ”ë‹¤. */
+     * Performance View Á¶È¸ÇÒ¶§ RemoteStatement ÀÇ Ãß°¡ »èÁ¦½Ã PV ¸¦ Á¶È¸ÇÏ¸é µ¿½Ã¼º ¹®Á¦°¡ »ı±ä´Ù.
+     * ÀÌ¸¦ ¹æÁöÇÏ±â À§ÇÑ Lock À¸·Î ÀÏ¹İ DK µµÁß findRemoteStatement ¿Í °°Àº ÇÔ¼ö´Â
+     * °°Àº DK ¼¼¼Ç¿¡¼­¸¸ µé¾î¿À¹Ç·Î µ¿½Ã¼º¿¡ ¹®Á¦°¡ ¾øÀ¸¹Ç·Î  
+     * RemoteStatment Add ¿Í Remove ¸¦ Á¦¿ÜÇÏ°í´Â Lock À» ÀâÁö ¾Ê´Â´Ù. */
     IDE_TEST_RAISE( mDktRStmtMutex.initialize( (SChar *)"DKT_REMOTE_STATMENT_MUTEX",
                                                IDU_MUTEX_KIND_POSIX,
                                                IDV_WAIT_INDEX_NULL )
@@ -64,10 +64,10 @@ IDE_RC dktRemoteTx::initialize( UInt            aSessionId,
     mLinkerType             = aLinkerType;
     mDataNode               = aDataNode;
 
-    /* Remote statement ì˜ ê´€ë¦¬ë¥¼ ìœ„í•œ list ì´ˆê¸°í™” */
+    /* Remote statement ÀÇ °ü¸®¸¦ À§ÇÑ list ÃÊ±âÈ­ */
     IDU_LIST_INIT( &mRemoteStmtList );
 
-    /* Savepoint ì˜ ê´€ë¦¬ë¥¼ ìœ„í•œ list ì´ˆê¸°í™” */
+    /* Savepoint ÀÇ °ü¸®¸¦ À§ÇÑ list ÃÊ±âÈ­ */
     IDU_LIST_INIT( &mSavepointList );
 
     idlOS::memset( (void*)&mXID, 0x00, ID_SIZEOF(ID_XID) );
@@ -96,10 +96,10 @@ IDE_RC dktRemoteTx::initialize( UInt            aSessionId,
 /* >> BUG-37487 : void */
 void dktRemoteTx::finalize()
 {
-    /* Remote statement list ì •ë¦¬ */
+    /* Remote statement list Á¤¸® */
     destroyAllRemoteStmt();
 
-    /* Savepoint list ì •ë¦¬ */
+    /* Savepoint list Á¤¸® */
     deleteAllSavepoint();
 
     (void)mDktRStmtMutex.destroy();
@@ -107,9 +107,9 @@ void dktRemoteTx::finalize()
 /* << BUG-37487 : void */
 
 /************************************************************************
- * Description : Remote statement list ë¥¼ ì •ë¦¬í•œë‹¤.
+ * Description : Remote statement list ¸¦ Á¤¸®ÇÑ´Ù.
  *
- *  BUG-37487 : return ê°’ì„ IDE_RC --> void ë¡œ ë³€ê²½.
+ *  BUG-37487 : return °ªÀ» IDE_RC --> void ·Î º¯°æ.
  *
  ************************************************************************/
 void dktRemoteTx::destroyAllRemoteStmt()
@@ -145,7 +145,7 @@ void dktRemoteTx::destroyAllRemoteStmt()
     }
     else
     {
-        /* success ë¡œ ê°„ì£¼ */
+        /* success ·Î °£ÁÖ */
     }
 
     IDE_ASSERT( mDktRStmtMutex.unlock() == IDE_SUCCESS );
@@ -154,9 +154,9 @@ void dktRemoteTx::destroyAllRemoteStmt()
 }
 
 /************************************************************************
- * Description : Savepoint list ë¥¼ ì •ë¦¬í•œë‹¤.
+ * Description : Savepoint list ¸¦ Á¤¸®ÇÑ´Ù.
  *
- *  BUG-37487 : return ê°’ì„ IDE_RC --> void ë¡œ ë³€ê²½.
+ *  BUG-37487 : return °ªÀ» IDE_RC --> void ·Î º¯°æ.
  *
  ************************************************************************/
 void dktRemoteTx::deleteAllSavepoint()
@@ -177,18 +177,18 @@ void dktRemoteTx::deleteAllSavepoint()
     }
     else
     {
-        /* success ë¡œ ê°„ì£¼ */
+        /* success ·Î °£ÁÖ */
     }
 }
 
 /************************************************************************
- * Description : ìƒˆë¡œìš´ remote statement ë¥¼ í•˜ë‚˜ ìƒì„±í•˜ì—¬ ì´ˆê¸°í™”í•´ì¤€ ë’¤
- *               list (mRemoteStmtList) ì— ì¶”ê°€í•œë‹¤.
+ * Description : »õ·Î¿î remote statement ¸¦ ÇÏ³ª »ı¼ºÇÏ¿© ÃÊ±âÈ­ÇØÁØ µÚ
+ *               list (mRemoteStmtList) ¿¡ Ãß°¡ÇÑ´Ù.
  *
  *  aQcStatement    - [IN] qcStatement
- *  aStmtType       - [IN] ìƒì„±í•  remote statement ì˜ íƒ€ì…
- *  aStmtStr        - [IN] ì›ê²©ì„œë²„ì—ì„œ ìˆ˜í–‰í•  êµ¬ë¬¸
- *  aRemoteStmt     - [OUT] ìƒì„±í•œ remote statement ê°ì²´
+ *  aStmtType       - [IN] »ı¼ºÇÒ remote statement ÀÇ Å¸ÀÔ
+ *  aStmtStr        - [IN] ¿ø°İ¼­¹ö¿¡¼­ ¼öÇàÇÒ ±¸¹®
+ *  aRemoteStmt     - [OUT] »ı¼ºÇÑ remote statement °´Ã¼
  *
  ************************************************************************/
 IDE_RC  dktRemoteTx::createRemoteStmt( UInt             aStmtType, 
@@ -250,12 +250,12 @@ IDE_RC  dktRemoteTx::createRemoteStmt( UInt             aStmtType,
 }
 
 /************************************************************************
- * Description : í•´ë‹¹í•˜ëŠ” remote statement ë¥¼ remote statement list 
- *               ë¡œë¶€í„° ì œê±°í•œë‹¤.
+ * Description : ÇØ´çÇÏ´Â remote statement ¸¦ remote statement list 
+ *               ·ÎºÎÅÍ Á¦°ÅÇÑ´Ù.
  *
- *  aRemoteStmt -[IN] ì œê±°í•  remote statement ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„° 
+ *  aRemoteStmt -[IN] Á¦°ÅÇÒ remote statement ¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ 
  *
- *  BUG-37487 : return ê°’ì„ IDE_RC --> void ë¡œ ë³€ê²½.
+ *  BUG-37487 : return °ªÀ» IDE_RC --> void ·Î º¯°æ.
  *
  ************************************************************************/
 void dktRemoteTx::destroyRemoteStmt( dktRemoteStmt   *aRemoteStmt )
@@ -281,10 +281,10 @@ void dktRemoteTx::destroyRemoteStmt( dktRemoteStmt   *aRemoteStmt )
 }
 
 /************************************************************************
- * Description : ì…ë ¥ë°›ì€ id ë¥¼ ê°–ëŠ” remote statement ë¥¼ ì°¾ëŠ”ë‹¤.
- * Return      : ì°¾ì€ remote statement ê°ì²´, ì—†ìœ¼ë©´ NULL
+ * Description : ÀÔ·Â¹ŞÀº id ¸¦ °®´Â remote statement ¸¦ Ã£´Â´Ù.
+ * Return      : Ã£Àº remote statement °´Ã¼, ¾øÀ¸¸é NULL
  *
- *  aRemoteStmtId  - [IN] ì°¾ì„ remote statement id
+ *  aRemoteStmtId  - [IN] Ã£À» remote statement id
  *
  ************************************************************************/
 dktRemoteStmt*  dktRemoteTx::findRemoteStmt( SLong  aRemoteStmtId )
@@ -312,8 +312,8 @@ dktRemoteStmt*  dktRemoteTx::findRemoteStmt( SLong  aRemoteStmtId )
 }
 
 /************************************************************************
- * Description : ì´ remote transaction ì— ìˆ˜í–‰ì¤‘ì¸ remote statement ê°€ 
- *               ì—†ëŠ”ì§€ í™•ì¸í•œë‹¤. 
+ * Description : ÀÌ remote transaction ¿¡ ¼öÇàÁßÀÎ remote statement °¡ 
+ *               ¾ø´ÂÁö È®ÀÎÇÑ´Ù. 
  *
  ************************************************************************/
 idBool  dktRemoteTx::isEmptyRemoteTx() 
@@ -333,9 +333,9 @@ idBool  dktRemoteTx::isEmptyRemoteTx()
 }
 
 /************************************************************************
- * Description : Remote transaction ì— savepoint ë¥¼ ì„¤ì •í•œë‹¤.
+ * Description : Remote transaction ¿¡ savepoint ¸¦ ¼³Á¤ÇÑ´Ù.
  *
- *  aSavepointName  - [IN] ì„¤ì •í•  savepoint name 
+ *  aSavepointName  - [IN] ¼³Á¤ÇÒ savepoint name 
  ************************************************************************/
 IDE_RC  dktRemoteTx::setSavepoint( const SChar  *aSavepointName )
 {
@@ -380,10 +380,10 @@ IDE_RC  dktRemoteTx::setSavepoint( const SChar  *aSavepointName )
 }
 
 /************************************************************************
- * Description : ì…ë ¥ë°›ì€ ì´ë¦„ê³¼ ë™ì¼í•œ savepoint ê°€ list ì— ì¡´ì¬í•˜ëŠ”ì§€ 
- *               ê²€ì‚¬í•˜ì—¬ ë°˜í™˜í•œë‹¤.
+ * Description : ÀÔ·Â¹ŞÀº ÀÌ¸§°ú µ¿ÀÏÇÑ savepoint °¡ list ¿¡ Á¸ÀçÇÏ´ÂÁö 
+ *               °Ë»çÇÏ¿© ¹İÈ¯ÇÑ´Ù.
  *
- *  aSavepointName  - [IN] ì°¾ì„ savepoint name 
+ *  aSavepointName  - [IN] Ã£À» savepoint name 
  *
  ************************************************************************/
 dktSavepoint *  dktRemoteTx::findSavepoint( const SChar *aSavepointName )
@@ -403,7 +403,8 @@ dktSavepoint *  dktRemoteTx::findSavepoint( const SChar *aSavepointName )
         }
         else
         {
-            /* iterate next */
+            /* iterate next or NULL return */
+            sSavepoint = NULL;
         }
     }
 
@@ -411,14 +412,14 @@ dktSavepoint *  dktRemoteTx::findSavepoint( const SChar *aSavepointName )
 }
 
 /************************************************************************
- * Description : Savepoint ë¥¼ list ì—ì„œ ì œê±°í•œë‹¤.
+ * Description : Savepoint ¸¦ list ¿¡¼­ Á¦°ÅÇÑ´Ù.
  *
- *  aSavepointName  - [IN] ì œê±°í•  savepoint name 
+ *  aSavepointName  - [IN] Á¦°ÅÇÒ savepoint name 
  *
- *  BUG-37487 : return ê°’ì„ IDE_RC --> void ë¡œ ë³€ê²½.
+ *  BUG-37487 : return °ªÀ» IDE_RC --> void ·Î º¯°æ.
  *
- *  BUG-37512 : ì›ë˜ ê¸°ëŠ¥ì€ removeAllNextSavepoint í•¨ìˆ˜ê°€ ìˆ˜í–‰í•˜ê³ 
- *              ì´ í•¨ìˆ˜ëŠ” ì…ë ¥ë°›ì€ savepoint ë§Œ ì œê±°í•˜ëŠ” í•¨ìˆ˜ë¡œ ë³€ê²½.
+ *  BUG-37512 : ¿ø·¡ ±â´ÉÀº removeAllNextSavepoint ÇÔ¼ö°¡ ¼öÇàÇÏ°í
+ *              ÀÌ ÇÔ¼ö´Â ÀÔ·Â¹ŞÀº savepoint ¸¸ Á¦°ÅÇÏ´Â ÇÔ¼ö·Î º¯°æ.
  *
  ************************************************************************/
 void    dktRemoteTx::removeSavepoint( const SChar   *aSavepointName )
@@ -441,12 +442,12 @@ void    dktRemoteTx::removeSavepoint( const SChar   *aSavepointName )
 }
 
 /************************************************************************
- * Description : ì…ë ¥ë°›ì€ savepoint ì´í›„ì— ì°íŒ ëª¨ë“  savepoint ë¥¼ list 
- *               ì—ì„œ ì œê±°í•œë‹¤.
+ * Description : ÀÔ·Â¹ŞÀº savepoint ÀÌÈÄ¿¡ ÂïÈù ¸ğµç savepoint ¸¦ list 
+ *               ¿¡¼­ Á¦°ÅÇÑ´Ù.
  *
  *  aSavepointName  - [IN] savepoint name 
  *
- *  BUG-37512 : ì‹ ì„¤.
+ *  BUG-37512 : ½Å¼³.
  *
  ************************************************************************/
 void    dktRemoteTx::removeAllNextSavepoint( const SChar    *aSavepointName )
@@ -454,6 +455,7 @@ void    dktRemoteTx::removeAllNextSavepoint( const SChar    *aSavepointName )
     iduList          sRemoveList;
     iduListNode     *sIterator        = NULL;
     iduListNode     *sNextNode        = NULL;
+    iduListNode     *sNextSavepointNode = NULL;
     dktSavepoint    *sSavepoint       = NULL;
     dktSavepoint    *sRemoveSavepoint = NULL;
 
@@ -464,7 +466,8 @@ void    dktRemoteTx::removeAllNextSavepoint( const SChar    *aSavepointName )
     if ( sSavepoint != NULL )
     {
         IDU_LIST_INIT( &sRemoveList );
-        IDU_LIST_SPLIT_LIST( &mSavepointList, (iduListNode *)(&sSavepoint->mNode)->mNext, &sRemoveList );
+        sNextSavepointNode = (iduListNode *)(&sSavepoint->mNode)->mNext;
+        IDU_LIST_SPLIT_LIST( &mSavepointList, sNextSavepointNode, &sRemoveList );
 
         IDU_LIST_ITERATE_SAFE( &sRemoveList, sIterator, sNextNode )
         {
@@ -481,10 +484,10 @@ void    dktRemoteTx::removeAllNextSavepoint( const SChar    *aSavepointName )
 }
 
 /************************************************************************
- * Description : ì´ Remote transaction ì˜ ì •ë³´ë¥¼ ì–»ì–´ì˜¨ë‹¤. 
+ * Description : ÀÌ Remote transaction ÀÇ Á¤º¸¸¦ ¾ò¾î¿Â´Ù. 
  *
- *  aInfo       - [IN] ì´ remote transaction ì˜ ì •ë³´ë¥¼ ë‹´ì•„ì¤„ êµ¬ì¡°ì²´ë¥¼ 
- *                     ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°
+ *  aInfo       - [IN] ÀÌ remote transaction ÀÇ Á¤º¸¸¦ ´ã¾ÆÁÙ ±¸Á¶Ã¼¸¦ 
+ *                     °¡¸®Å°´Â Æ÷ÀÎÅÍ
  *
  ************************************************************************/
 IDE_RC  dktRemoteTx::getRemoteTxInfo( dktRemoteTxInfo   *aInfo )
@@ -505,12 +508,12 @@ IDE_RC  dktRemoteTx::getRemoteTxInfo( dktRemoteTxInfo   *aInfo )
 }
 
 /************************************************************************
- * Description : ì´ remote transaction ì— ì†í•œ ëª¨ë“  remote statement ì˜ 
- *               ì •ë³´ë¥¼ ì–»ì–´ë‚¸ë‹¤.
+ * Description : ÀÌ remote transaction ¿¡ ¼ÓÇÑ ¸ğµç remote statement ÀÇ 
+ *               Á¤º¸¸¦ ¾ò¾î³½´Ù.
  *
- *  aInfo           - [IN/OUT] Remote statement ì •ë³´ê°€ ë‹´ê¸¸ ë°°ì—´ í¬ì¸í„°
- *  aRemainedCnt    - [OUT] ë‚¨ì•„ìˆëŠ” remote statement ê°¯ìˆ˜
- *  aInfoCnt        - [OUT] ë°°ì—´ì— ë‹´ê¸´ remote statement ì •ë³´ì˜ ê°¯ìˆ˜
+ *  aInfo           - [IN/OUT] Remote statement Á¤º¸°¡ ´ã±æ ¹è¿­ Æ÷ÀÎÅÍ
+ *  aRemainedCnt    - [OUT] ³²¾ÆÀÖ´Â remote statement °¹¼ö
+ *  aInfoCnt        - [OUT] ¹è¿­¿¡ ´ã±ä remote statement Á¤º¸ÀÇ °¹¼ö
  *  
  ************************************************************************/
 IDE_RC  dktRemoteTx::getRemoteStmtInfo( dktRemoteStmtInfo    *aInfo,
@@ -569,9 +572,9 @@ IDE_RC  dktRemoteTx::getRemoteStmtInfo( dktRemoteStmtInfo    *aInfo,
 }
 
 /************************************************************************
- * Description : Remote statement id ë¥¼ ìƒì„±í•˜ì—¬ ë°˜í™˜í•œë‹¤. 
+ * Description : Remote statement id ¸¦ »ı¼ºÇÏ¿© ¹İÈ¯ÇÑ´Ù. 
  *
- * Return      : ìƒì„±í•œ remote statement id 
+ * Return      : »ı¼ºÇÑ remote statement id 
  *
  ************************************************************************/
 SLong   dktRemoteTx::generateRemoteStmtId()

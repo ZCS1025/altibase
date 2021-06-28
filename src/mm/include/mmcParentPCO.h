@@ -95,7 +95,7 @@ private:
     UInt         mBucket;
     // PROJ-2408
     iduLatch  mPrepareLatch;
-    // Stringì—ì„œ hashí•¨ìˆ˜ë¥¼ ì ìš©í•´ì„œ ë‚˜ì˜¨ê²°ê³¼.
+    // String¿¡¼­ hashÇÔ¼ö¸¦ Àû¿ëÇØ¼­ ³ª¿Â°á°ú.
     vULong       mHashKeyVal;
 
     iduList      mUsedChildLst;

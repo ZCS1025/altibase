@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smnReq.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smnReq.h 89337 2020-11-24 01:54:53Z jiwon.kim $
  **********************************************************************/
 
 #ifndef _O_SMN_REQ_H_
@@ -183,10 +183,12 @@ class smnReqFunc
 
         static IDE_RC waitForTrans( void    * aTrans,
                                     smTID     aWaitTransID,
+                                    scSpaceID aSpaceID,
                                     ULong     aLockWaitTime )
         {
             return smxTransMgr::waitForTrans( aTrans,
                                               aWaitTransID,
+                                              aSpaceID,
                                               aLockWaitTime );
         };
 
@@ -236,6 +238,11 @@ class smnReqFunc
             return smlLockMgr::lockTableModeIS( aTrans, aLockItem );
         };
 
+        static IDE_RC lockTableModeIS4FixedTable(void *aTrans,void  *aLockItem)
+        {
+            return smlLockMgr::lockTableModeIS4FixedTable( aTrans, aLockItem );
+        };
+
         /* sma */
         static void addNodes2LogicalAger( void      * aFreeNodeList,
                                           smnNode   * aNodes )
@@ -254,7 +261,19 @@ class smnReqFunc
         {
             return sctTableSpaceMgr::isVolatileTableSpace( aSpaceID );
         };
-
+        
+        static IDE_RC addOID( void *    aTrans,
+                              smOID     aTblOID,
+                              smOID     aRecOID,
+                              scSpaceID aSpaceID,
+                              UInt      aFlag )
+        {
+            return smxTrans::addOID2Trans( aTrans,
+                                           aTblOID,
+                                           aRecOID,
+                                           aSpaceID,
+                                           aFlag );
+        };
 };
 
 #define smLayerCallback   smnReqFunc

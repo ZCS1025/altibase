@@ -59,7 +59,7 @@ public class AltibaseXAResource implements XAResource
         mContext = new CmProtocolContextXA(aConnection.channel(), hashCode());
     }
     
-    void xaOpen() throws SQLException
+    public void xaOpen() throws SQLException
     {
         mConnection.setRelatedXAResource(this);
         try
@@ -296,11 +296,11 @@ public class AltibaseXAResource implements XAResource
     }
 
     /**
-     * opení•œ ìƒíƒœì¸ì§€ í™•ì¸í•œë‹¤.
+     * openÇÑ »óÅÂÀÎÁö È®ÀÎÇÑ´Ù.
      *
-     * @return opení–ˆìœ¼ë©´ <tt>true</tt>, ì•„ë‹ˆë©´ <tt>false</tt>
+     * @return openÇßÀ¸¸é <tt>true</tt>, ¾Æ´Ï¸é <tt>false</tt>
      */
-    boolean isOpen()
+    public boolean isOpen()
     {
         return mIsOpen;
     }

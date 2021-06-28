@@ -16,14 +16,14 @@
  
 
 /***********************************************************************
- * $Id: qsfConnectByRoot.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qsfConnectByRoot.cpp 89835 2021-01-22 10:10:02Z andrew.shin $
  *
  * CONNECT_BY_ROOT ( ColumName )
- *  ÏßÄÏ†ïÎêú Ïª¨ÎüºÏùò HierarchyÏóêÏÑú Î†àÎ≤® 1Ïù∏ Root NodeÏùò Í∞íÏùÑ Î≥¥Ïó¨Ï§ÄÎã§.
- *  Column_NameÏóê Ìï≠ÏÉÅ ÏàúÏàò Ïª¨ÎüºÎßå Ïò¨ Ïàò ÏûàÎã§.
- *  CONNECT BY Íµ¨Î¨∏Ïù¥ Ìï≠ÏÉÅ ÎÇòÏôÄÏïºÌïúÎã§.
- *  sSFWGH->hierStack Ïùò Pseudo ColumnÏóê Hierarchy QueryÏùò Stack
- *  Ìè¨Ïù∏ÌÑ∞Í∞Ä ÏûàÎã§. Ïù¥Î•º ÌÜµÌï¥ÏÑú Root NodeÏùò RowÎ•º ÏñªÎäîÎã§.
+ *  ¡ˆ¡§µ» ƒ√∑≥¿« Hierarchyø°º≠ ∑π∫ß 1¿Œ Root Node¿« ∞™¿ª ∫∏ø©¡ÿ¥Ÿ.
+ *  Column_Nameø° «◊ªÛ º¯ºˆ ƒ√∑≥∏∏ ø√ ºˆ ¿÷¥Ÿ.
+ *  CONNECT BY ±∏πÆ¿Ã «◊ªÛ ≥™øÕæﬂ«—¥Ÿ.
+ *  sSFWGH->hierStack ¿« Pseudo Columnø° Hierarchy Query¿« Stack
+ *  ∆˜¿Œ≈Õ∞° ¿÷¥Ÿ. ¿Ã∏¶ ≈Î«ÿº≠ Root Node¿« Row∏¶ æÚ¥¬¥Ÿ.
  ***********************************************************************/
 
 #include <qsf.h>
@@ -101,8 +101,8 @@ static IDE_RC qsfConnectByRootEstimate( mtcNode     * aNode,
     /* BUG-39284 The sys_connect_by_path function with Aggregate
      * function is not correct.
      */
-    sSFWGH->flag &= ~QMV_SFWGH_CONNECT_BY_FUNC_MASK;
-    sSFWGH->flag |= QMV_SFWGH_CONNECT_BY_FUNC_TRUE;
+    sSFWGH->lflag &= ~QMV_SFWGH_CONNECT_BY_FUNC_MASK;
+    sSFWGH->lflag |= QMV_SFWGH_CONNECT_BY_FUNC_TRUE;
 
     IDE_TEST_RAISE( aRemain < 2, ERR_STACK_OVERFLOW );
     IDE_TEST_RAISE( sSFWGH            == NULL, ERR_NO_HIERARCHY );
@@ -188,9 +188,9 @@ IDE_RC qsfConnectByRootCalculate( mtcNode     * aNode,
     sOrgColumns = aTemplate->rows[sStack->myRowID].columns;
     sOrgRow = aTemplate->rows[sStack->myRowID].row;
     
-    // PROJ-2362 memory temp Ï†ÄÏû• Ìö®Ïú®ÏÑ± Í∞úÏÑ†
+    // PROJ-2362 memory temp ¿˙¿Â »ø¿≤º∫ ∞≥º±
     /* PROJ-2641 Hierarchy Query Index
-     * TableÏóê ÎåÄÌïú Hierarchy queryÎäî baseMTRÏù¥ NULL Ïù¥Îã§.
+     * Tableø° ¥Î«— Hierarchy query¥¬ baseMTR¿Ã NULL ¿Ã¥Ÿ.
      */
     if ( ( QCU_REDUCE_TEMP_MEMORY_ENABLE == 1 ) &&
          ( sStack->baseMTR != NULL ) )
@@ -214,7 +214,7 @@ IDE_RC qsfConnectByRootCalculate( mtcNode     * aNode,
         }
         
         /* BUG-40027
-         * temp typeÏù¥ ÏûàÏúºÎØÄÎ°ú columnÏ†ïÎ≥¥ÍπåÏßÄ Î≥ÄÍ≤ΩÌï¥Ïïº ÌïúÎã§.
+         * temp type¿Ã ¿÷¿∏π«∑Œ column¡§∫∏±Ó¡ˆ ∫Ø∞Ê«ÿæﬂ «—¥Ÿ.
          */
         aTemplate->rows[sStack->myRowID].columns =
             aTemplate->rows[sStack->baseRowID].columns;
@@ -225,16 +225,16 @@ IDE_RC qsfConnectByRootCalculate( mtcNode     * aNode,
     }
 
     /* BUG-39848
-     * argumentsÏóê Ïô∏Î∂Ä Ï∞∏Ï°∞Ïª¨ÎüºÏù¥ ÏûàÎäî subqueryÍ∞Ä ÏûàÍ≥†, storeÎêòÎäî Í≤ΩÏö∞
-     * connect byÎ•º referenceÌïòÍ≥† ÏûàÍ∏∞ÎïåÎ¨∏Ïóê modify countÎ•º Î≥ÄÍ≤ΩÌï¥ÏïºÌïúÎã§.
+     * argumentsø° ø‹∫Œ ¬¸¡∂ƒ√∑≥¿Ã ¿÷¥¬ subquery∞° ¿÷∞Ì, storeµ«¥¬ ∞ÊøÏ
+     * connect by∏¶ reference«œ∞Ì ¿÷±‚∂ßπÆø° modify count∏¶ ∫Ø∞Ê«ÿæﬂ«—¥Ÿ.
      */
     aTemplate->rows[sStack->myRowID].row = sItem->rowPtr;
     aTemplate->rows[sStack->myRowID].modify++;
 
     if ( sStack->myRowID != sStack->baseRowID )
     {
-        /* BUG-39611 baseTupleÏóê row PointerÎ•º Ï†ÄÏû•ÌõÑ argumentsÏóê
-         * ÎåÄÌïú calculate Î•º ÏàòÌñâÌïúÎã§.
+        /* BUG-39611 baseTupleø° row Pointer∏¶ ¿˙¿Â»ƒ argumentsø°
+         * ¥Î«— calculate ∏¶ ºˆ«‡«—¥Ÿ.
          */
         aTemplate->rows[sStack->baseRowID].row = sItem->rowPtr;
         aTemplate->rows[sStack->baseRowID].modify++;

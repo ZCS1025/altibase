@@ -16,18 +16,17 @@
  
 
 /*****************************************************************************
- * $Id: smuVersion.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smuVersion.cpp 85721 2019-06-25 06:08:07Z jiwon.kim $
  ****************************************************************************/
 
-#include <idl.h>
 #include <iduCheckLicense.h>
 #include <idu.h>
 #include <smuVersion.h>
 /* ------------------------------------------------------------------------------
  *
- *           VERSIONì„ ì•„ëž˜ì˜ ë§¤í¬ë¡œì—ì„œ ìˆ˜ì •í•˜ê¸° ë°”ëžŒ.
+ *           VERSIONÀ» ¾Æ·¡ÀÇ ¸ÅÅ©·Î¿¡¼­ ¼öÁ¤ÇÏ±â ¹Ù¶÷.
  *
- *  -> example)  ë²„ì ¼ì´ 9.2.123ì¼ ê²½ìš°
+ *  -> example)  ¹öÁ¯ÀÌ 9.2.123ÀÏ °æ¿ì
  *
  *               #define SM_ALTIBASE_MAJOR_VERSION    (9)
  *               #define SM_ALTIBASE_MINOR_VERSION    (2)
@@ -48,10 +47,11 @@
 // PROJ-1557 32K memmory varchar
 // PROJ-1362 LOB
 // PROJ-1923, BUG-37022
-#define SM_MINOR_VERSION   (5)
+#define SM_MINOR_VERSION   (7)
+// BUG-46854 
 #define SM_PATCH_LEVEL     (1)
 // PRJ-1497
-const SChar *smVersionString = SM_VERSION_STRING(6, 5, 1);
+const SChar *smVersionString = SM_VERSION_STRING(6, 7, 1);
 
 #if defined(SPARC_SOLARIS) && (OS_MAJORVER == 2) && (OS_MINORVER == 5)
 UInt __SM_MAJOR_VERSION__  = MKHEX2(SM_MAJOR_VERSION) << 24;

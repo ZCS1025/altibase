@@ -294,7 +294,6 @@ IDE_RC rpcDDLSyncManager::ddlSyncBeginInternal( idvSQL              * aStatistic
 
 IDE_RC rpcDDLSyncManager::ddlSyncEndInternal( smiTrans * aDDLTrans )
 {
-    smSCN   sDummySCN;
     SChar   sErrMsg[RP_MAX_MSG_LEN + 1] = { 0, };
     rpcDDLSyncInfo * sDDLSyncInfo = NULL;
 
@@ -311,7 +310,7 @@ IDE_RC rpcDDLSyncManager::ddlSyncEndInternal( smiTrans * aDDLTrans )
     IDE_TEST( processDDLSyncMsg( sDDLSyncInfo, RP_DDL_SYNC_COMMIT_MSG ) != IDE_SUCCESS );
 
     IDU_FIT_POINT_RAISE( "rpcDDLSyncManager::ddlSyncEndInternal::commit:aDDLTrans", ERR_TRANS_COMMIT );
-    IDE_TEST_RAISE( aDDLTrans->commit( &sDummySCN ) != IDE_SUCCESS, ERR_TRANS_COMMIT );
+    IDE_TEST_RAISE( aDDLTrans->commit() != IDE_SUCCESS, ERR_TRANS_COMMIT );
     ideLog::log( IDE_RP_0, "[DDLSyncManager] DDL commit on replicated transaction" );
 
     IDE_TEST( processDDLSyncMsgAck( sDDLSyncInfo, 
@@ -348,6 +347,23 @@ IDE_RC rpcDDLSyncManager::ddlSyncEndInternal( smiTrans * aDDLTrans )
 IDE_RC rpcDDLSyncManager::ddlSyncEndCommon( smiTrans * aDDLTrans, rpcDDLSyncInfo * aDDLSyncInfo )
 {
     SChar   sErrMsg[RP_MAX_MSG_LEN + 1] = { 0, };
+    qciTableInfo * sNewTableInfo        = NULL;
+
+    IDE_TEST( getTableInfo( aDDLTrans->getStatistics(),
+                            aDDLTrans,
+                            aDDLSyncInfo->mDDLTableInfo.mTableName,
+                            aDDLSyncInfo->mDDLTableInfo.mUserName,
+                            ID_ULONG_MAX,
+                            &sNewTableInfo )
+              != IDE_SUCCESS );
+
+    IDE_TEST( aDDLTrans->setExpSvpForBackupDDLTargetTableInfo( SM_OID_NULL,
+                                                               0,
+                                                               NULL,
+                                                               sNewTableInfo->tableOID,
+                                                               0,
+                                                               NULL )
+              != IDE_SUCCESS );
 
     IDE_TEST( setSkipUpdateXSN( aDDLSyncInfo, ID_FALSE ) != IDE_SUCCESS );
 
@@ -357,8 +373,6 @@ IDE_RC rpcDDLSyncManager::ddlSyncEndCommon( smiTrans * aDDLTrans, rpcDDLSyncInfo
 
         IDE_TEST( buildReceiverNewMeta( aDDLTrans, aDDLSyncInfo ) != IDE_SUCCESS );
     }
-
-    IDE_TEST( touchTableInfo( aDDLTrans, aDDLSyncInfo ) != IDE_SUCCESS );
 
     IDE_TEST( processDDLSyncMsgAck( aDDLSyncInfo, 
                                     RP_DDL_SYNC_EXECUTE_RESULT_MSG,
@@ -426,17 +440,6 @@ void rpcDDLSyncManager::destroyDDLSyncInfo( rpcDDLSyncInfo * aDDLSyncInfo )
         /* nothing to do */
     }
 
-    if ( aDDLSyncInfo->mDDLTableInfo.mOldTableInfo != NULL )
-    {
-        (void)qciMisc::destroyQcmTableInfo( aDDLSyncInfo->mDDLTableInfo.mOldTableInfo );
-
-        aDDLSyncInfo->mDDLTableInfo.mOldTableInfo = NULL;
-    }
-    else
-    {
-        /* nothing to do */
-    }
-
     if ( IDU_LIST_IS_EMPTY( &( aDDLSyncInfo->mDDLReplInfoList ) ) != ID_TRUE )
     {
         destroyDDLReplInfoList( aDDLSyncInfo );
@@ -454,10 +457,13 @@ IDE_RC rpcDDLSyncManager::setDDLSyncInfoAndTableAccessReadOnly( qciStatement   *
     const void     * sTable       = NULL;
     qciTableInfo   * sTableInfo   = NULL;
     smSCN            sSCN;
-    smOID            sTableOID    = qciMisc::getDDLReplTableOID( aQciStatement );
-    smiStatement   * sRootStmt    = NULL;
+    /* PROJ-2735 DDL Transaction ÀÇ ¿µÇâÀ¸·Î TableOID ¸¦ TableOID Array ·Î º¯°æÇÏ¿´´Ù.
+     * DDL Sync ¿¡¼­´Â SrcTableOID °¡ 2°³ ÀÌ»óÀÌ µÉ ¼ö ¾øÀ¸¹Ç·Î Ã¹¹øÂ° °ª¸¸ °¡Á®¿Â´Ù. */
+    UInt             sTempOIdCount = 0;
+    smOID          * sTempTableOID = qciMisc::getDDLSrcTableOIDArray( aQciStatement, &sTempOIdCount );
+    smOID            sTableOID     = sTempTableOID[0];
+    smiStatement   * sRootStmt     = NULL;
     smiTrans       * sBeginTrans;
-    smSCN            sDummySCN;
     SChar            sErrMsg[RP_MAX_MSG_LEN + 1] = { 0, };
 
     IDU_FIT_POINT_RAISE( "rpcDDLSyncManager::setDDLSyncInfoAndTableAccessReadOnly::begin::sBeginTrans", 
@@ -479,7 +485,7 @@ IDE_RC rpcDDLSyncManager::setDDLSyncInfoAndTableAccessReadOnly( qciStatement   *
                                          sSCN,
                                          SMI_TBSLV_DDL_DML,
                                          SMI_TABLE_LOCK_IS,
-                                         ID_ULONG_MAX,
+                                         smiGetDDLLockTimeOut(sBeginTrans),
                                          ID_FALSE )
               != IDE_SUCCESS );
 
@@ -492,7 +498,7 @@ IDE_RC rpcDDLSyncManager::setDDLSyncInfoAndTableAccessReadOnly( qciStatement   *
 
     IDE_TEST( processDDLSyncMsg( aDDLSyncInfo, RP_DDL_SYNC_BEGIN_MSG ) != IDE_SUCCESS );
 
-    /* Gap ì„ ì œê±°í•˜ê¸° ìœ„í•˜ì—¬ Table Access Option ì„ Read Only ë¡œ ë³€ê²½í•œë‹¤. */
+    /* Gap À» Á¦°ÅÇÏ±â À§ÇÏ¿© Table Access Option À» Read Only ·Î º¯°æÇÑ´Ù. */
     IDE_TEST( setTableAccessOption( sBeginTrans,
                                     &( aDDLSyncInfo->mDDLTableInfo ), 
                                     QCI_ACCESS_OPTION_READ_ONLY ) 
@@ -500,8 +506,7 @@ IDE_RC rpcDDLSyncManager::setDDLSyncInfoAndTableAccessReadOnly( qciStatement   *
 
     IDU_FIT_POINT_RAISE( "rpcDDLSyncManager::setDDLSyncInfoAndTableAccessReadOnly::commit::sBeginTrans", 
                          ERR_TRANS_COMMIT );
-    IDE_TEST_RAISE( mResourceMgr->smiTransCommit( sBeginTrans,
-                                                  &sDummySCN )
+    IDE_TEST_RAISE( mResourceMgr->smiTransCommit( sBeginTrans )
                     != IDE_SUCCESS, ERR_TRANS_COMMIT );
 
     IDE_TEST( processDDLSyncMsgAck( aDDLSyncInfo, 
@@ -541,7 +546,6 @@ IDE_RC rpcDDLSyncManager::setDDLSyncInfoAndTableAccessReadOnlyInternal( idvSQL  
 {
     smiTrans       * sBeginTrans  = NULL;
     smiStatement   * sRootStmt    = NULL;
-    smSCN            sDummySCN;
 
     IDU_FIT_POINT_RAISE( "rpcDDLSyncManager::setDDLSyncInfoAndTableAccessReadOnlyInternal::begin::sBeginTrans", 
                          ERR_TRANS_BEGIN );
@@ -572,7 +576,7 @@ IDE_RC rpcDDLSyncManager::setDDLSyncInfoAndTableAccessReadOnlyInternal( idvSQL  
 
     IDU_FIT_POINT_RAISE( "rpcDDLSyncManager::setDDLSyncInfoAndTableAccessReadOnlyInternal::commit::sBeginTrans", 
                          ERR_TRANS_BEGIN );
-    IDE_TEST_RAISE( mResourceMgr->smiTransCommit( sBeginTrans, &sDummySCN ) 
+    IDE_TEST_RAISE( mResourceMgr->smiTransCommit( sBeginTrans ) 
                     != IDE_SUCCESS, ERR_TRANS_COMMIT );    
 
     IDE_TEST( processDDLSyncMsgAck( aDDLSyncInfo, 
@@ -667,10 +671,17 @@ IDE_RC rpcDDLSyncManager::setDDLSyncRollbackInfoAndTableAccessRecoverCommon( smi
 
     IDE_TEST( ddlSyncTableLock( aDDLTrans, 
                                 aDDLSyncInfo,
-                                ID_ULONG_MAX ) 
+                                smiGetDDLLockTimeOut(aDDLTrans) )
+       
               != IDE_SUCCESS );
 
-    IDE_TEST( storeTableInfo( aDDLTrans, &( aDDLSyncInfo->mDDLTableInfo ) ) != IDE_SUCCESS );
+    IDE_TEST( aDDLTrans->setExpSvpForBackupDDLTargetTableInfo( aDDLSyncInfo->mDDLTableInfo.mTableOID, 
+                                                               0,
+                                                               NULL,
+                                                               SM_OID_NULL,
+                                                               0,
+                                                               NULL ) 
+              != IDE_SUCCESS );
 
     IDE_TEST( setTableAccessOption( aDDLTrans,
                                     &( aDDLSyncInfo->mDDLTableInfo ), 
@@ -757,8 +768,10 @@ IDE_RC rpcDDLSyncManager::readyDDLSyncCommon( cmiProtocolContext * aProtocolCont
                                               SChar              * aRepName,
                                               UInt                 aRepCount )
 {
-    IDE_TEST_RAISE( qciMisc::existGlobalNonPartitionedIndice( aTableInfo ) == ID_TRUE, 
-                    ERR_NOT_SUPPORT_GLOBAL_NON_PARTITION_INDEX );
+    IDE_TEST( qciMisc::checkRollbackAbleDDLEnable( aTrans, 
+                                                   aTableInfo->tableOID,
+                                                   ID_TRUE )
+              != IDE_SUCCESS );
 
     IDE_TEST( setDDLSyncInfo( aTrans,
                               aDDLSyncInfo,
@@ -777,10 +790,6 @@ IDE_RC rpcDDLSyncManager::readyDDLSyncCommon( cmiProtocolContext * aProtocolCont
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION( ERR_NOT_SUPPORT_GLOBAL_NON_PARTITION_INDEX );
-    {
-        IDE_SET( ideSetErrorCode( rpERR_ABORT_RP_DDL_SYNC_NOT_SUPPORT_GLOBAL_NON_PARTITION_INDEX ) );
-    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -791,21 +800,24 @@ IDE_RC rpcDDLSyncManager::readyDDLSync( qciStatement   * aQciStatement,
                                         qciTableInfo   * aTableInfo,
                                         rpcDDLSyncInfo * aDDLSyncInfo )
 {
-    smOID * sDDLSyncPartTableOIDs  = qciMisc::getDDLReplPartTableOID( aQciStatement );
     UInt    sDDLSyncPartInfoCount  = 0;
-    SChar   sDDLSyncPartInfoNames[RP_DDL_SYNC_PART_OID_COUNT][QC_MAX_OBJECT_NAME_LEN + 1];
+    smOID * sDDLSyncPartTableOIDs  = qciMisc::getDDLSrcPartTableOIDArray( aQciStatement, &sDDLSyncPartInfoCount );
+    SChar   sDDLSyncPartInfoNames[RP_DDL_INFO_PART_OID_COUNT][QC_MAX_OBJECT_NAME_LEN + 1];
 
-    IDE_TEST_RAISE( QCI_STMTTEXTLEN( aQciStatement ) > RP_DDL_SQL_BUFFER_MAX + 1, ERR_SQL_LENGTH );
+    IDE_TEST_RAISE( QCI_STMTTEXTLEN( aQciStatement ) > RP_DDL_SQL_BUFFER_MAX, ERR_SQL_LENGTH );
 
     idlOS::memset( sDDLSyncPartInfoNames, 
                    0, 
-                   ID_SIZEOF(SChar) * RP_DDL_SYNC_PART_OID_COUNT * QC_MAX_OBJECT_NAME_LEN + 1 );
+                   ID_SIZEOF(SChar) * RP_DDL_INFO_PART_OID_COUNT * QC_MAX_OBJECT_NAME_LEN + 1 );
 
-    IDE_TEST( getPartitionNamesByOID( aTrans,
-                                      sDDLSyncPartTableOIDs,
-                                      &sDDLSyncPartInfoCount,
-                                      sDDLSyncPartInfoNames )
-              != IDE_SUCCESS );
+    if ( sDDLSyncPartTableOIDs != NULL )
+    {
+        IDE_TEST( getPartitionNamesByOID( aTrans,
+                                          sDDLSyncPartTableOIDs,
+                                          sDDLSyncPartInfoCount,
+                                          sDDLSyncPartInfoNames )
+                  != IDE_SUCCESS );
+    }
 
     IDE_TEST( readyDDLSyncCommon( NULL,
                                   aTrans,
@@ -853,11 +865,11 @@ IDE_RC rpcDDLSyncManager::readyDDLSyncInternal( cmiProtocolContext  * aProtocolC
     SChar  sUserName[QC_MAX_OBJECT_NAME_LEN + 1 ]   = { 0, };
     SChar  sTableName[QC_MAX_OBJECT_NAME_LEN + 1 ]  = { 0, };
     UInt   sDDLSyncPartInfoCount = 0;
-    SChar  sDDLSyncPartInfoNames[RP_DDL_SYNC_PART_OID_COUNT][QC_MAX_OBJECT_NAME_LEN + 1];
+    SChar  sDDLSyncPartInfoNames[RP_DDL_INFO_PART_OID_COUNT][QC_MAX_OBJECT_NAME_LEN + 1];
 
     idlOS::memset( sDDLSyncPartInfoNames, 
                    0, 
-                   ID_SIZEOF(SChar) * RP_DDL_SYNC_PART_OID_COUNT * QC_MAX_OBJECT_NAME_LEN + 1 );
+                   ID_SIZEOF(SChar) * RP_DDL_INFO_PART_OID_COUNT * QC_MAX_OBJECT_NAME_LEN + 1 );
 
     sDoSendAck = ID_TRUE;
     IDE_TEST( recvDDLSyncInfo( aProtocolContext,
@@ -876,7 +888,7 @@ IDE_RC rpcDDLSyncManager::readyDDLSyncInternal( cmiProtocolContext  * aProtocolC
                             aTrans,
                             sTableName, 
                             sUserName,
-                            ID_ULONG_MAX,
+                            smiGetDDLLockTimeOut(aTrans),
                             &sTableInfo )
               != IDE_SUCCESS );
 
@@ -932,6 +944,7 @@ IDE_RC rpcDDLSyncManager::buildReceiverNewMeta( smiTrans * aTrans, rpcDDLSyncInf
     rpcDDLReplInfo * sInfo  = NULL;
 
     smiStatement * sStatement         = NULL;
+    idBool         sIsBegin           = ID_FALSE;
 
     IDE_DASSERT( aDDLSyncInfo != NULL );
     IDE_DASSERT( IDU_LIST_IS_EMPTY( &( aDDLSyncInfo->mDDLReplInfoList ) ) != ID_TRUE );
@@ -945,10 +958,12 @@ IDE_RC rpcDDLSyncManager::buildReceiverNewMeta( smiTrans * aTrans, rpcDDLSyncInf
                                               aTrans->getStatement(),
                                               SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR ) 
                   != IDE_SUCCESS );
+        sIsBegin = ID_TRUE;
 
         IDE_TEST( rpcManager::buildReceiverNewMeta( sStatement, sInfo->mRepName ) != IDE_SUCCESS );
 
         IDE_TEST( mResourceMgr->smiStmtEnd( sStatement, SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+        sIsBegin = ID_FALSE;
     }
 
     ideLog::log( IDE_RP_0, "[DDLSyncManager] Create receiver new meta success" );
@@ -957,260 +972,22 @@ IDE_RC rpcDDLSyncManager::buildReceiverNewMeta( smiTrans * aTrans, rpcDDLSyncInf
 
     IDE_EXCEPTION_END;
 
+    IDE_PUSH();
+
+    if ( sIsBegin == ID_TRUE )
+    {
+        (void)mResourceMgr->smiStmtEnd( sStatement, SMI_STATEMENT_RESULT_FAILURE );
+    }
+    
+    IDE_POP();
+
     ideLog::log( IDE_RP_0, "[DDLSyncManager] Create receiver new meta failure" );
 
     return IDE_FAILURE;
 }
 
-IDE_RC rpcDDLSyncManager::storeTableInfo( smiTrans * aTrans, rpcDDLTableInfo * aDDLTableInfo )
-{
-    const void        * sTable         = NULL;
-    qciTableInfo      * sNewTableInfo  = NULL;
-    smiStatement      * sStatement     = NULL;
-    qciTableInfo      * sOldTableInfo  = NULL;
-
-    IDE_TEST( mResourceMgr->smiStmtBegin( &sStatement,
-                                          aTrans->getStatistics(),
-                                          aTrans->getStatement(),
-                                          SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR ) != IDE_SUCCESS );
-
-    sTable = smiGetTable( aDDLTableInfo->mTableOID );
-    sOldTableInfo = (qciTableInfo *)rpdCatalog::rpdGetTableTempInfo( sTable );
- 
-    IDU_FIT_POINT( "rpcDDLSyncManager::storeTableInfo::makeAndSetQcmTableInfo::sNewTableInfo", 
-                   idERR_ABORT_InsufficientMemory );
-    IDE_TEST( qciMisc::makeAndSetQcmTableInfo( sStatement,
-                                               aDDLTableInfo->mTableID,
-                                               aDDLTableInfo->mTableOID ) 
-              != IDE_SUCCESS);
-    aDDLTableInfo->mOldTableInfo = sOldTableInfo; 
-
-    sNewTableInfo = (qciTableInfo *)rpdCatalog::rpdGetTableTempInfo( sTable );
-
-    if ( sNewTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
-    {
-        IDE_TEST( storePartitionTableInfo( sStatement,
-                                           sNewTableInfo,
-                                           &( aDDLTableInfo->mPartInfoList ) )
-                  != IDE_SUCCESS );
-    }
-    else
-    {
-        /* nothing to do */
-    }
-
-    IDE_TEST( mResourceMgr->smiStmtEnd( sStatement, SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
-    
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-IDE_RC rpcDDLSyncManager::storePartitionTableInfo( smiStatement * aStatement, 
-                                                   qciTableInfo * aNewTableInfo,
-                                                   iduList      * aPartInfoList )
-{
-    const void        * sTable         = NULL;
-    iduListNode       * sNode          = NULL;
-    rpcDDLTableInfo   * sPartInfo      = NULL;
-    qciTableInfo      * sOldTableInfo  = NULL;
-
-    IDU_LIST_ITERATE( aPartInfoList, sNode )
-    {
-        sPartInfo = (rpcDDLTableInfo*)sNode->mObj;
-
-        sTable = smiGetTable( sPartInfo->mTableOID );
-        sOldTableInfo = (qciTableInfo *)rpdCatalog::rpdGetTableTempInfo( sTable );
-
-        IDU_FIT_POINT( "rpcDDLSyncManager::storePartitionTableInfo::makeAndSetQcmPartitionInfo::aNewTableInfo", 
-                       idERR_ABORT_InsufficientMemory );
-        IDE_TEST( qciMisc::makeAndSetQcmPartitionInfo( aStatement,
-                                                       sPartInfo->mTableID,
-                                                       sPartInfo->mTableOID,
-                                                       aNewTableInfo ) 
-                  != IDE_SUCCESS );
-
-        sPartInfo->mOldTableInfo = sOldTableInfo;
-        sOldTableInfo = NULL;
-    }
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-void rpcDDLSyncManager::restoreTableInfo( smiTrans * aTrans, rpcDDLTableInfo * aDDLTableInfo )
-{
-    iduListNode     * sNode      = NULL;
-    rpcDDLTableInfo * sPartInfo  = NULL;
-
-    if ( aDDLTableInfo->mOldTableInfo != NULL )
-    {
-        destroyNewTableInfo( aTrans, aDDLTableInfo );
-
-        IDU_LIST_ITERATE( &( aDDLTableInfo->mPartInfoList ), sNode )
-        {
-            sPartInfo = (rpcDDLTableInfo*)sNode->mObj;
-
-            if ( sPartInfo->mOldTableInfo != NULL )
-            {
-                qciMisc::restoreTempInfoForPartition( aDDLTableInfo->mOldTableInfo,
-                                                      sPartInfo->mOldTableInfo );
-                sPartInfo->mOldTableInfo = NULL;
-            }
-        }
-
-        qciMisc::restoreTempInfo( aDDLTableInfo->mOldTableInfo,
-                                  /* BUGBUG partitionList ë¥¼ ë°›ì§€ë§Œ ìœ„ì—ì„œ partition ì„ ì§ì ‘ ì •ë¦¬í•˜ë¯€ë¡œ NULL ë¡œ í•œë‹¤. */
-                                  NULL,  
-                                  NULL );
-        aDDLTableInfo->mOldTableInfo = NULL;
-    }
-}
-
-void rpcDDLSyncManager::restorePartitionTableInfo( iduList * aPartInfoList )
-{
-    iduListNode     * sNode         = NULL;
-    rpcDDLTableInfo * sPartInfo     = NULL;
-    qciTableInfo    * sNewPartInfo  = NULL;
-    const void       * sTable       = NULL;
-
-    IDU_LIST_ITERATE( aPartInfoList, sNode )
-    {
-        sPartInfo = (rpcDDLTableInfo*)sNode->mObj;
-
-        sTable = smiGetTable( sPartInfo->mTableOID );
-        sNewPartInfo = (qciTableInfo *)rpdCatalog::rpdGetTableTempInfo( sTable );
-
-        (void)qciMisc::destroyQcmPartitionInfo( sNewPartInfo );
-        sNewPartInfo = NULL;
-
-        smiSetTableTempInfo( sPartInfo->mOldTableInfo->tableHandle,
-                             (void*)sPartInfo->mOldTableInfo );
-        sPartInfo->mOldTableInfo = NULL;
-    }
-}
-
-void rpcDDLSyncManager::destroyNewTableInfo( smiTrans * aTrans, rpcDDLTableInfo * aDDLTableInfo )
-{
-    qciTableInfo * sNewTableInfo = NULL;
-
-    if ( IDU_LIST_IS_EMPTY( &( aDDLTableInfo->mPartInfoList ) ) != ID_TRUE )
-    {
-        destroyNewPartTableInfo( aTrans, aDDLTableInfo->mTableID, &( aDDLTableInfo->mPartInfoList ) );
-    }
-
-    if ( getTableInfo( NULL, /* statistics */
-                       aTrans,
-                       aDDLTableInfo->mTableName, 
-                       aDDLTableInfo->mUserName,
-                       ID_ULONG_MAX,
-                       &sNewTableInfo )
-         == IDE_SUCCESS )
-    {
-        (void)qciMisc::destroyQcmTableInfo( sNewTableInfo );
-        sNewTableInfo = NULL;
-    }
-    else
-    {
-        IDE_ERRLOG( IDE_RP_0 );
-    }
-}
-
-/*
- * 1. qciMisc::getPartitionInfoList() í˜¸ì¶œí•˜ì—¬ aTableIDì˜ íŒŒí‹°ì…˜ë“œ í…Œì´ë¸” ë¦¬ìŠ¤íŠ¸ë¥¼ ì–»ì–´ì˜¨ë‹¤. (DDLí›„ì— í˜„ìž¬ ì •ë³´ìž„)
- * 2. ìƒìœ„ì—ì„œ ë¯¸ë¦¬ ì €ìž¥í•´ë†¨ë˜ ê¸°ì¡´ íŒŒí‹°ì…˜ ë¦¬ìŠ¤íŠ¸ì¸ aDDLSyncPartInfoListì™€ ë£¨í”„ë¥¼ ëŒë©´ì„œ ë¹„êµí•œë‹¤. (DDLì „ ë°±ì—… ë³¸)
- * 3. ë‘ ë¦¬ìŠ¤íŠ¸ì—ì„œ tableOIDê°€ ê°™ì€ ê²½ìš° mOldTableInfoê°€ NULLì´ ì•„ë‹ˆë©´ DDL ìˆ˜í–‰í•œ í…Œì´ë¸” ìž„ìœ¼ë¡œ destoryí•œë‹¤.
- * 4. aDDLSyncPartInfoList ìˆœíšŒê°€ ëë‚¬ëŠ”ë° ëª»ì°¾ì•˜ìœ¼ë©´ ìƒˆë¡œ ìƒì„±ëœ íŒŒí‹°ì…˜ í…Œì´ë¸”ì´ë¯€ë¡œ destory í•œë‹¤.
- * */
-void rpcDDLSyncManager::destroyNewPartTableInfo( smiTrans      * aTrans, 
-                                                 UInt            aTableID, 
-                                                 iduList       * aDDLSyncPartInfoList )
-{
-    idBool         sIsFind            = ID_FALSE;
-    smiStatement * sSmiStatement      = NULL;
-    qciStatement * sQciStatement      = NULL;
-
-    iduListNode          * sNode                  = NULL;
-    rpcDDLTableInfo      * sOldPartInfo           = NULL;
-    qciTableInfo         * sNewPartInfo           = NULL;
-    qciPartitionInfoList * sTablePartInfoList     = NULL;
-    qciPartitionInfoList * sTempTablePartInfoList = NULL;
-
-
-    IDE_TEST( mResourceMgr->qciInitializeStatement( &sQciStatement, NULL ) != IDE_SUCCESS );
-
-    IDE_TEST( mResourceMgr->smiStmtBegin( &sSmiStatement, 
-                                          NULL,
-                                          aTrans->getStatement(),
-                                          SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR ) != IDE_SUCCESS );
-
-    qciMisc::setSmiStmt( sQciStatement, sSmiStatement );
-
-    IDE_TEST( qciMisc::getPartitionInfoList( &( sQciStatement->statement ),
-                                             sSmiStatement,
-                                             ( iduMemory * )QCI_QMX_MEM( &( sQciStatement->statement ) ),
-                                             aTableID,
-                                             &sTablePartInfoList )
-              != IDE_SUCCESS );
-
-    for ( sTempTablePartInfoList = sTablePartInfoList;
-          sTempTablePartInfoList != NULL;
-          sTempTablePartInfoList = sTempTablePartInfoList->next )
-    {        
-        sNewPartInfo = sTempTablePartInfoList->partitionInfo;
-
-        IDU_LIST_ITERATE( aDDLSyncPartInfoList , sNode )
-        {
-            sOldPartInfo = (rpcDDLTableInfo*)sNode->mObj;
-
-            if ( sNewPartInfo->tableOID == sOldPartInfo->mTableOID )
-            {
-                if ( sOldPartInfo->mOldTableInfo != NULL )
-                {
-                    (void)qciMisc::destroyQcmPartitionInfo( sNewPartInfo );
-                }
-                else
-                {
-                    // comment 
-                }
-                sIsFind = ID_TRUE;
-                break;
-            }
-            sOldPartInfo = NULL;
-        }
-
-        if ( sIsFind == ID_FALSE )
-        {
-            (void)qciMisc::destroyQcmPartitionInfo( sNewPartInfo );
-        }
-        
-        sIsFind = ID_FALSE;
-        sNewPartInfo = NULL;
-    }
-
-    IDE_TEST( mResourceMgr->smiStmtEnd( sSmiStatement, SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
-
-    IDE_TEST( mResourceMgr->qciFinalizeStatement( sQciStatement ) != IDE_SUCCESS );
-
-    return;
-
-    IDE_EXCEPTION_END;
-
-    IDE_ERRLOG( IDE_RP_0 );
-
-    return;
-}
-
-
 IDE_RC rpcDDLSyncManager::ddlSyncRollback( smiTrans * aDDLTrans, rpcDDLSyncInfo * aDDLSyncInfo )
 {
-
-    restoreTableInfo( aDDLTrans, &( aDDLSyncInfo->mDDLTableInfo ) );
 
     if ( aDDLTrans->isBegin() == ID_TRUE )
     {
@@ -1328,6 +1105,7 @@ IDE_RC rpcDDLSyncManager::connect( rpcDDLReplInfo * aInfo, cmiProtocolContext **
     cmiProtocolContext * sProtocolContext        = NULL;
     PDL_Time_Value       sConnWaitTime;
     rpdReplications      sDummyRepl;
+    UInt                 sDummyMsgLen            = 0;
 
     idlOS::memset( &sConnectArg, 0, ID_SIZEOF(cmiConnectArg) );
 
@@ -1382,14 +1160,15 @@ IDE_RC rpcDDLSyncManager::connect( rpcDDLReplInfo * aInfo, cmiProtocolContext **
                                      SO_REUSEADDR )
               != IDE_SUCCESS );
 
-    /* BUG-46528 V6Protocol. DDLSync ëŠ” V6 Protocol ì„ ì§€ì›í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì— í•­ìƒ Unset ì‹œí‚¨ë‹¤.  */
+    /* BUG-46528 V6Protocol. DDLSync ´Â V6 Protocol À» Áö¿øÇÏÁö ¾Ê±â ¶§¹®¿¡ Ç×»ó Unset ½ÃÅ²´Ù.  */
     idlOS::memset( &sDummyRepl, 0, ID_SIZEOF(rpdReplications) );
     sDummyRepl.mOptions = sDummyRepl.mOptions | RP_OPTION_V6_PROTOCOL_UNSET;
     IDE_TEST( rpcManager::checkRemoteNormalReplVersion( sProtocolContext, 
                                                         aInfo->mDDLSyncExitFlag,
                                                         &sDummyRepl,
                                                         &sResult, 
-                                                        sBuffer )
+                                                        sBuffer,
+                                                        &sDummyMsgLen )
               != IDE_SUCCESS );
 
     switch( sResult )
@@ -1529,7 +1308,6 @@ void rpcDDLSyncManager::setDDLTableInfo( rpcDDLTableInfo * aDDLTableInfo,
                     QC_MAX_OBJECT_NAME_LEN + 1 );
 
     aDDLTableInfo->mPartInfoCount = aTablePartInfoCount;
-    aDDLTableInfo->mOldTableInfo = NULL;
     aDDLTableInfo->mIsDDLSyncTable = ID_FALSE;
 
     if ( IDU_LIST_IS_EMPTY( aDDLSyncPartInfoList ) != ID_TRUE )
@@ -1696,6 +1474,7 @@ IDE_RC rpcDDLSyncManager::checkAlreadyDDLSync( smiTrans * aTrans, rpcDDLSyncInfo
     UInt              sMsgBufferLen = 0;
     SChar             sMsgBuffer[RP_MAX_MSG_LEN + 1] = { 0, };
     smiTableCursor  * sCursor       = NULL;
+    idBool            sIsBegin      = ID_FALSE;
 
     IDE_DASSERT( aDDLSyncInfo != NULL );
     IDE_DASSERT( IDU_LIST_IS_EMPTY( &( aDDLSyncInfo->mDDLReplInfoList ) ) != ID_TRUE );
@@ -1706,6 +1485,7 @@ IDE_RC rpcDDLSyncManager::checkAlreadyDDLSync( smiTrans * aTrans, rpcDDLSyncInfo
                                           SMI_STATEMENT_NORMAL |
                                           SMI_STATEMENT_MEMORY_CURSOR )
               != IDE_SUCCESS );
+    sIsBegin = ID_TRUE;
     
     IDE_TEST_RAISE( mResourceMgr->rpCalloc( ID_SIZEOF( smiTableCursor ),
                                             (void**)&sCursor )
@@ -1730,7 +1510,8 @@ IDE_RC rpcDDLSyncManager::checkAlreadyDDLSync( smiTrans * aTrans, rpcDDLSyncInfo
                                                          sReplication.mRepName,
                                                          sReplItems,
                                                          sReplication.mItemCount,
-                                                         sCursor )
+                                                         sCursor,
+                                                         ID_FALSE )
                   != IDE_SUCCESS );
         
         for ( sItemIndex = 0; sItemIndex < sReplication.mItemCount; sItemIndex++ )
@@ -1741,6 +1522,7 @@ IDE_RC rpcDDLSyncManager::checkAlreadyDDLSync( smiTrans * aTrans, rpcDDLSyncInfo
     }
 
     IDE_TEST( mResourceMgr->smiStmtEnd( sSmiStmt, SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    sIsBegin = ID_FALSE;
 
     return IDE_SUCCESS;
 
@@ -1787,6 +1569,15 @@ IDE_RC rpcDDLSyncManager::checkAlreadyDDLSync( smiTrans * aTrans, rpcDDLSyncInfo
     }
 
     IDE_EXCEPTION_END;
+
+    IDE_PUSH();
+
+    if ( sIsBegin == ID_TRUE )
+    {
+        (void)mResourceMgr->smiStmtEnd( sSmiStmt, SMI_STATEMENT_RESULT_FAILURE );
+    }
+
+    IDE_POP();
 
     return IDE_FAILURE;
 }
@@ -1874,7 +1665,6 @@ IDE_RC rpcDDLSyncManager::recoverTableAccessOption( idvSQL * aStatistics, rpcDDL
 {
     smiTrans     * sTrans = NULL;
     smiStatement * sRootStatement  = NULL;
-    smSCN          sDummySCN;
 
 
     IDU_FIT_POINT_RAISE( "rpcDDLSyncManager::recoverTableAccessOption::begin::sTrans", ERR_TRANS_BEGIN );
@@ -1893,7 +1683,7 @@ IDE_RC rpcDDLSyncManager::recoverTableAccessOption( idvSQL * aStatistics, rpcDDL
               != IDE_SUCCESS );
 
     IDU_FIT_POINT_RAISE( "rpcDDLSyncManager::recoverTableAccessOption::commit::sTrans", ERR_TRANS_COMMIT );
-    IDE_TEST_RAISE( mResourceMgr->smiTransCommit( sTrans, &sDummySCN ) != IDE_SUCCESS, ERR_TRANS_COMMIT );
+    IDE_TEST_RAISE( mResourceMgr->smiTransCommit( sTrans ) != IDE_SUCCESS, ERR_TRANS_COMMIT );
 
     ideLog::log( IDE_RP_0, "[DDLSyncManager] Table access option recover success" );
 
@@ -1925,6 +1715,7 @@ IDE_RC rpcDDLSyncManager::runAccessTable( smiTrans        * aTrans,
     smiStatement * sStatement;
     SChar         sBuffer[1024] = { 0, };
     const SChar * sAccessOption = NULL;
+    idBool        sIsBegin      = ID_FALSE;
 
     switch( aAccessOption )
     {
@@ -1962,24 +1753,35 @@ IDE_RC rpcDDLSyncManager::runAccessTable( smiTrans        * aTrans,
                                           aTrans->getStatistics(),
                                           aTrans->getStatement(),
                                           SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR ) != IDE_SUCCESS );
+    sIsBegin = ID_TRUE;
 
-    IDE_TEST( qciMisc::runDDLforDDLSync( aTrans->getStatistics(),
-                                         sStatement,
-                                         aUserID,
-                                         sBuffer )
+    IDE_TEST( qciMisc::runDDLforInternal( aTrans->getStatistics(),
+                                          sStatement,
+                                          aUserID,
+                                          QCI_SESSION_INTERNAL_DDL_TRUE,
+                                          sBuffer )
               != IDE_SUCCESS );
 
     IDE_TEST( mResourceMgr->smiStmtEnd( sStatement, SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    sIsBegin = ID_FALSE;
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 
+    IDE_PUSH();
+
+    if ( sIsBegin == ID_TRUE )
+    {
+        (void)mResourceMgr->smiStmtEnd( sStatement, SMI_STATEMENT_RESULT_FAILURE );
+    }
+
+    IDE_POP();
+
     return IDE_FAILURE;
 }
 
 IDE_RC rpcDDLSyncManager::runDDL( idvSQL   * aStatistics,
-                                  smiTrans * aTrans, 
                                   SChar    * aSql,
                                   SChar    * aUserName,
                                   smiStatement * aSmiStmt )
@@ -1988,12 +1790,11 @@ IDE_RC rpcDDLSyncManager::runDDL( idvSQL   * aStatistics,
 
     IDE_TEST( qciMisc::getUserIdByName( aUserName, &sUserID ) != IDE_SUCCESS );
    
-    IDE_TEST( aTrans->writeDDLLog() != IDE_SUCCESS );
-
-    IDE_TEST( qciMisc::runDDLforDDLSync( aStatistics,
-                                         aSmiStmt,
-                                         sUserID,
-                                         aSql )
+    IDE_TEST( qciMisc::runDDLforInternal( aStatistics,
+                                          aSmiStmt,
+                                          sUserID,
+                                          QCI_SESSION_INTERNAL_DDL_SYNC_TRUE,
+                                          aSql )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -2033,11 +1834,6 @@ IDE_RC rpcDDLSyncManager::rebuildStatement( qciStatement * aQciStatement )
     sPlanCacheContext.mSharedPlanMemory    = NULL;
     sPlanCacheContext.mPrepPrivateTemplate = NULL;
 
-    idlOS::strncpy( sSql,
-                    QCI_STMTTEXT( aQciStatement ), 
-                    RP_DDL_SQL_BUFFER_MAX );
-    sSql[RP_DDL_SQL_BUFFER_MAX] = '\0';
-
     if ( sSqlLen > RP_DDL_SQL_BUFFER_MAX )
     {
         sSqlLen = RP_DDL_SQL_BUFFER_MAX;
@@ -2046,6 +1842,11 @@ IDE_RC rpcDDLSyncManager::rebuildStatement( qciStatement * aQciStatement )
     {
         /* nothing to do */
     }
+
+    idlOS::strncpy( sSql,
+                    QCI_STMTTEXT( aQciStatement ), 
+                    sSqlLen + 1 );
+    sSql[sSqlLen] = '\0';
 
     IDU_FIT_POINT("rpcDDLSyncManager::rebuildStatement::_FT_");
 
@@ -2163,7 +1964,7 @@ IDE_RC rpcDDLSyncManager::recvDDLSyncInfo( cmiProtocolContext   * aProtocolConte
                                         aRepName,
                                         aUserName,
                                         aTableName,
-                                        RP_DDL_SYNC_PART_OID_COUNT,
+                                        RP_DDL_INFO_PART_OID_COUNT,
                                         aDDLSyncPartInfoCount,
                                         QC_MAX_OBJECT_NAME_LEN,
                                         aDDLSyncPartInfoNames,
@@ -2572,16 +2373,15 @@ IDE_RC rpcDDLSyncManager::ddlSyncTableLock( smiTrans       * aTrans,
 
 IDE_RC rpcDDLSyncManager::getPartitionNamesByOID( smiTrans * aTrans,
                                                   smOID    * aPartTableOIDs,
-                                                  UInt     * aDDLSyncPartInfoCount,
+                                                  UInt       aDDLSyncPartInfoCount,
                                                   SChar      aDDLSyncPartInfoNames[][QC_MAX_OBJECT_NAME_LEN + 1] )
 {
     UInt           i                     = 0;
-    UInt           sDDLSyncPartInfoCount = 0;
     const void   * sTable                = NULL;
     qciTableInfo * sTableInfo            = NULL;
     smSCN          sSCN;
 
-    for ( i = 0; i < RP_DDL_SYNC_PART_OID_COUNT; i++ )
+    for ( i = 0; i < aDDLSyncPartInfoCount; i++ )
     {
         if ( aPartTableOIDs[i] != SM_OID_NULL )
         {
@@ -2593,9 +2393,7 @@ IDE_RC rpcDDLSyncManager::getPartitionNamesByOID( smiTrans * aTrans,
                                                  sSCN,
                                                  SMI_TBSLV_DDL_DML,
                                                  SMI_TABLE_LOCK_IS,
-                                                 ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                                   ID_ULONG_MAX :
-                                                   smiGetDDLLockTimeOut()*1000000 ),
+                                                 smiGetDDLLockTimeOut(aTrans),
                                                  ID_FALSE )
                       != IDE_SUCCESS );
 
@@ -2604,16 +2402,12 @@ IDE_RC rpcDDLSyncManager::getPartitionNamesByOID( smiTrans * aTrans,
             idlOS::strncpy( aDDLSyncPartInfoNames[i], 
                             sTableInfo->name, 
                             QC_MAX_OBJECT_NAME_LEN + 1 );
-
-            sDDLSyncPartInfoCount += 1;
         }
         else
         {
             aDDLSyncPartInfoNames[i][0] = '\0';
         }
     }
-
-    *aDDLSyncPartInfoCount = sDDLSyncPartInfoCount;
 
     return IDE_SUCCESS;
 
@@ -2629,6 +2423,8 @@ IDE_RC rpcDDLSyncManager::getDDLSyncPartInfoList( smiTrans * aTrans,
                                                   SChar      aDDLSyncPartInfoNames[][QC_MAX_OBJECT_NAME_LEN + 1],
                                                   iduList  * aDDLSyncPartInfoList )
 {
+    idBool         sIsInit               = ID_FALSE;
+    idBool         sIsBegin              = ID_FALSE;
     UInt           sTablePartInfoCount   = 0;
     idBool         sIsDDLSyncPartition   = ID_FALSE;
     qciTableInfo * sTableInfo            = NULL;
@@ -2641,11 +2437,13 @@ IDE_RC rpcDDLSyncManager::getDDLSyncPartInfoList( smiTrans * aTrans,
     IDU_LIST_INIT( &sDDLSyncPartInfoList );
 
     IDE_TEST( mResourceMgr->qciInitializeStatement( &sQciStatement, NULL ) != IDE_SUCCESS );
+    sIsInit = ID_TRUE;
 
     IDE_TEST( mResourceMgr->smiStmtBegin( &sStatement,
                                           aTrans->getStatistics(),
                                           aTrans->getStatement(),
                                           SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR ) != IDE_SUCCESS );
+    sIsBegin = ID_TRUE;
 
     qciMisc::setSmiStmt( sQciStatement, sStatement );
 
@@ -2658,11 +2456,9 @@ IDE_RC rpcDDLSyncManager::getDDLSyncPartInfoList( smiTrans * aTrans,
 
     IDE_TEST( qciMisc::validateAndLockPartitionInfoList( sQciStatement,
                                                          sTablePartInfoList,
-                                                         SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                         SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                          SMI_TABLE_LOCK_IS,
-                                                         ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                                           ID_ULONG_MAX :
-                                                           smiGetDDLLockTimeOut() * 1000000 ) )
+                                                         smiGetDDLLockTimeOut(QCI_SMI_STMT(&(sQciStatement->statement))->getTrans()))
               != IDE_SUCCESS );
       
     for ( sTempTablePartInfoList = sTablePartInfoList;
@@ -2672,7 +2468,7 @@ IDE_RC rpcDDLSyncManager::getDDLSyncPartInfoList( smiTrans * aTrans,
         sTableInfo = sTempTablePartInfoList->partitionInfo; 
         sIsDDLSyncPartition = isDDLSyncPartition( sTableInfo, 
                                                   aDDLSyncPartInfoCount,
-                                                  aDDLSyncPartInfoNames ); 
+                                                  aDDLSyncPartInfoNames );
 
         IDE_TEST( addDDLTableInfo( sTableInfo->name,
                                    sTableInfo->partitionID,
@@ -2686,7 +2482,9 @@ IDE_RC rpcDDLSyncManager::getDDLSyncPartInfoList( smiTrans * aTrans,
     }
 
     IDE_TEST( mResourceMgr->smiStmtEnd( sStatement, SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    sIsBegin = ID_FALSE;
 
+    sIsInit = ID_FALSE;
     IDE_TEST( mResourceMgr->qciFinalizeStatement( sQciStatement ) != IDE_SUCCESS );
 
     *aTablePartInfoCount = sTablePartInfoCount;
@@ -2695,6 +2493,20 @@ IDE_RC rpcDDLSyncManager::getDDLSyncPartInfoList( smiTrans * aTrans,
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    IDE_PUSH();
+    
+    if ( sIsBegin == ID_TRUE )
+    {
+        (void)mResourceMgr->smiStmtEnd( sStatement, SMI_STATEMENT_RESULT_FAILURE );
+    }
+
+    if ( sIsInit == ID_TRUE )
+    {
+        (void)mResourceMgr->qciFinalizeStatement( sQciStatement );
+    }
+    
+    IDE_POP();
 
     return IDE_FAILURE;
 }
@@ -2755,7 +2567,6 @@ IDE_RC rpcDDLSyncManager::addDDLTableInfo( SChar           * aName,
     sDDLTableInfo->mTableOID = aTableOID;
     sDDLTableInfo->mAccessOption = aAccessOption;
     sDDLTableInfo->mIsDDLSyncTable = aIsDDLSyncTable;
-    sDDLTableInfo->mOldTableInfo = NULL;
 
     idlOS::strncpy( sDDLTableInfo->mTableName, 
                     aName, 
@@ -2789,16 +2600,6 @@ void rpcDDLSyncManager::freePartInfoList( iduList * aPartInfoList )
         sInfo = (rpcDDLTableInfo*)sNode->mObj;
 
         IDU_LIST_REMOVE( &( sInfo->mNode ) );
-
-        if ( sInfo->mOldTableInfo != NULL )
-        {
-            (void)qciMisc::destroyQcmPartitionInfo( sInfo->mOldTableInfo );
-            sInfo->mOldTableInfo = NULL;
-        }
-        else
-        {
-            /* nothing to do */
-        }
     }
 }
 
@@ -2813,7 +2614,7 @@ IDE_RC rpcDDLSyncManager::createAndAddDDLReplInfoList( cmiProtocolContext * aPro
     SInt              i             = 0;
     SInt              sReplCount    = 0;
     rpdReplications * sReplications = NULL;
-
+    idBool            sIsBegin      = ID_FALSE;
     IDE_ASSERT( aDDLSyncInfo != NULL );
     IDE_TEST( mResourceMgr->smiStmtBegin( &sSmiStmt,
                                           aTrans->getStatistics(),
@@ -2821,6 +2622,7 @@ IDE_RC rpcDDLSyncManager::createAndAddDDLReplInfoList( cmiProtocolContext * aPro
                                           SMI_STATEMENT_NORMAL |
                                           SMI_STATEMENT_MEMORY_CURSOR )
               != IDE_SUCCESS );
+    sIsBegin = ID_TRUE;
 
     IDU_FIT_POINT_RAISE( "rpcDDLSyncManager::createAndAddDDLReplInfoList::calloc::sReplications",
                          ERR_CALLOC_REPLICATIONS );
@@ -2844,6 +2646,7 @@ IDE_RC rpcDDLSyncManager::createAndAddDDLReplInfoList( cmiProtocolContext * aPro
     }
     else
     {
+        IDE_ASSERT( aRepName != NULL );
         IDE_TEST( rpdCatalog::selectReplWithCursor( sSmiStmt,
                                                     aRepName,
                                                     sReplications,
@@ -2871,9 +2674,9 @@ IDE_RC rpcDDLSyncManager::createAndAddDDLReplInfoList( cmiProtocolContext * aPro
     IDE_TEST_RAISE( IDU_LIST_IS_EMPTY( &( aDDLSyncInfo->mDDLReplInfoList ) ) == ID_TRUE, 
                     ERR_ADD_REPL_INFO_LIST );
 
-
     IDE_TEST( mResourceMgr->smiStmtEnd( sSmiStmt, 
                                         SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    sIsBegin = ID_FALSE;
 
     return IDE_SUCCESS;
 
@@ -2896,6 +2699,15 @@ IDE_RC rpcDDLSyncManager::createAndAddDDLReplInfoList( cmiProtocolContext * aPro
     }
 
     IDE_EXCEPTION_END;
+
+    IDE_PUSH();
+    
+    if ( sIsBegin == ID_TRUE )
+    {
+        (void)mResourceMgr->smiStmtEnd( sSmiStmt, SMI_STATEMENT_RESULT_FAILURE );
+    }
+
+    IDE_POP();
 
     return IDE_FAILURE;
 }
@@ -2922,7 +2734,8 @@ IDE_RC rpcDDLSyncManager::createAndAddDDLReplInfo( cmiProtocolContext * aProtoco
                                                      aReplications->mRepName,
                                                      sReplMetaItems,
                                                      aReplications->mItemCount,
-                                                     sCursor )
+                                                     sCursor,
+                                                     ID_FALSE )
               != IDE_SUCCESS );
 
     IDE_TEST( checkAndAddReplInfo( aSmiStmt->getTrans()->getStatistics(),
@@ -3022,11 +2835,15 @@ IDE_RC rpcDDLSyncManager::checkAndAddReplInfo( idvSQL             * aStatistics,
                                               &sLastUsedHostNo )
                  != IDE_SUCCESS);
 
-        IDE_TEST( addDDLReplInfo( aStatistics,
-                                  aProtocolContext,
-                                  aDDLSyncInfo,
-                                  &sReplHosts[sLastUsedHostNo] )
-                  != IDE_SUCCESS );
+        if ( duplicateDDLReplInfo( aDDLSyncInfo,
+                                   &sReplHosts[sLastUsedHostNo] ) == ID_FALSE )
+        {
+            IDE_TEST( addDDLReplInfo( aStatistics,
+                                      aProtocolContext,
+                                      aDDLSyncInfo,
+                                      &sReplHosts[sLastUsedHostNo] )
+                      != IDE_SUCCESS );
+        }
     }
     else
     {
@@ -3053,7 +2870,7 @@ IDE_RC rpcDDLSyncManager::addDDLReplInfo( idvSQL             * aStatistics,
                                           rpcDDLSyncInfo     * aDDLSyncInfo, 
                                           rpdReplHosts       * aReplHosts )
 {
-    rpcDDLReplInfo * sDDLReplInfo = NULL;
+    rpcDDLReplInfo * sDDLReplInfo   = NULL;
 
     IDU_FIT_POINT_RAISE( "rpcDDLSyncManager::addDDLReplInfo::calloc::sDDLReplInfo", ERR_CALLOC );
     IDE_TEST_RAISE( mResourceMgr->rpCalloc( ID_SIZEOF( rpcDDLReplInfo ), (void**)&sDDLReplInfo ) 
@@ -3117,8 +2934,8 @@ void rpcDDLSyncManager::destroyDDLReplInfoList( rpcDDLSyncInfo * aDDLSyncInfo )
 
         if ( aDDLSyncInfo->mDDLSyncInfoType != RP_MASTER_DDL )
         {
-            /* DDL_REPLICATED íƒ€ìž…ì€ ProtocolContext ë¥¼ Executor ë¡œë¶€í„° ë°›ì•˜ìœ¼ë¯€ë¡œ
-             * ì´ì— ëŒ€í•œ ê´€ë¦¬ëŠ” Executor ì—ê²Œ ë§¡ê¸´ë‹¤. */
+            /* DDL_REPLICATED Å¸ÀÔÀº ProtocolContext ¸¦ Executor ·ÎºÎÅÍ ¹Þ¾ÒÀ¸¹Ç·Î
+             * ÀÌ¿¡ ´ëÇÑ °ü¸®´Â Executor ¿¡°Ô ¸Ã±ä´Ù. */
             sInfo->mProtocolContext = NULL;
         }
         else
@@ -3379,17 +3196,21 @@ IDE_RC rpcDDLSyncManager::getTableInfo( idvSQL        * aStatistics,
     void         * sTable     = NULL;
     qciTableInfo * sTableInfo = NULL;
     smSCN          sSCN       = SM_SCN_INIT;
+    idBool         sIsInit    = ID_FALSE;
+    idBool         sIsBegin   = ID_FALSE;
     smiStatement * sSmiStatement = NULL;
     qciStatement * sQciStatement = NULL;
 
     IDE_TEST( mResourceMgr->qciInitializeStatement( &sQciStatement, 
                                                     aTrans->getStatistics() ) 
               != IDE_SUCCESS );
+    sIsInit = ID_TRUE;
 
     IDE_TEST( mResourceMgr->smiStmtBegin( &sSmiStatement,
                                           aStatistics,
                                           aTrans->getStatement(),
                                           SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR ) != IDE_SUCCESS );
+    sIsBegin = ID_TRUE;
 
     qciMisc::setSmiStmt( sQciStatement, sSmiStatement );
 
@@ -3420,7 +3241,9 @@ IDE_RC rpcDDLSyncManager::getTableInfo( idvSQL        * aStatistics,
 
     IDE_TEST( mResourceMgr->smiStmtEnd( sSmiStatement, 
                                         SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    sIsBegin = ID_FALSE;
 
+    sIsInit = ID_FALSE;
     IDE_TEST( mResourceMgr->qciFinalizeStatement( sQciStatement ) 
               != IDE_SUCCESS );
 
@@ -3430,89 +3253,19 @@ IDE_RC rpcDDLSyncManager::getTableInfo( idvSQL        * aStatistics,
 
     IDE_EXCEPTION_END;
 
-    return IDE_FAILURE;
-}
+    IDE_PUSH();
 
-IDE_RC rpcDDLSyncManager::touchTableInfo( smiTrans * aTrans, rpcDDLSyncInfo * aDDLSyncInfo )
-{
-    smiStatement * sStatement    = NULL;
-    qciTableInfo * sNewTableInfo = NULL;
-
-    IDU_FIT_POINT("rpcDDLSyncManager::touchTableInfo::_FT_");
-    IDE_TEST ( getTableInfo( aTrans->getStatistics(),
-                             aTrans,
-                             aDDLSyncInfo->mDDLTableInfo.mTableName,
-                             aDDLSyncInfo->mDDLTableInfo.mUserName,
-                             ID_ULONG_MAX,
-                             &sNewTableInfo )
-               != IDE_SUCCESS );
-
-    IDE_TEST( mResourceMgr->smiStmtBegin( &sStatement,
-                                          aTrans->getStatistics(),
-                                          aTrans->getStatement(),
-                                          SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR )
-              != IDE_SUCCESS );
-
-    IDE_TEST( smiTable::touchTable( sStatement,
-                                    sNewTableInfo->tableHandle,
-                                    SMI_TBSLV_DDL_DML )
-              != IDE_SUCCESS);
-
-    if ( IDU_LIST_IS_EMPTY( &( aDDLSyncInfo->mDDLTableInfo.mPartInfoList ) ) != ID_TRUE )
+    if ( sIsBegin == ID_TRUE )
     {
-        IDE_TEST( touchPartitionInfo( sStatement, aDDLSyncInfo->mDDLTableInfo.mTableID ) 
-                  != IDE_SUCCESS );
-    }
-    else
-    {
-        /* noting to do */
+        (void)mResourceMgr->smiStmtEnd( sSmiStatement, SMI_STATEMENT_RESULT_FAILURE );
     }
 
-    IDE_TEST( mResourceMgr->smiStmtEnd( sStatement, SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-IDE_RC rpcDDLSyncManager::touchPartitionInfo( smiStatement * aSmiStatement, UInt aTableID )
-{
-    qciStatement         * sQciStatement          = NULL;
-    qciTableInfo         * sNewPartInfo           = NULL;
-    qciPartitionInfoList * sTablePartInfoList     = NULL;
-    qciPartitionInfoList * sTempTablePartInfoList = NULL;
-
-    IDE_TEST( mResourceMgr->qciInitializeStatement( &sQciStatement, NULL ) != IDE_SUCCESS );
-
-    qciMisc::setSmiStmt( sQciStatement, aSmiStatement );
-
-    IDE_TEST( qciMisc::getPartitionInfoList( &( sQciStatement->statement ),
-                                             aSmiStatement,
-                                             ( iduMemory * )QCI_QMX_MEM( &( sQciStatement->statement ) ),
-                                             aTableID,
-                                             &sTablePartInfoList )
-              != IDE_SUCCESS );
-
-    for ( sTempTablePartInfoList = sTablePartInfoList;
-          sTempTablePartInfoList != NULL;
-          sTempTablePartInfoList = sTempTablePartInfoList->next )
+    if ( sIsInit == ID_TRUE )
     {
-        sNewPartInfo = sTempTablePartInfoList->partitionInfo;
-        IDE_TEST( smiTable::touchTable( aSmiStatement,
-                                        sNewPartInfo->tableHandle,
-                                        SMI_TBSLV_DDL_DML )
-                  != IDE_SUCCESS);
-
-        sNewPartInfo = NULL;
+        (void)mResourceMgr->qciFinalizeStatement( sQciStatement );
     }
-
-    IDE_TEST( mResourceMgr->qciFinalizeStatement( sQciStatement ) != IDE_SUCCESS );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
+    
+    IDE_POP();
 
     return IDE_FAILURE;
 }
@@ -3556,3 +3309,26 @@ void rpcDDLSyncManager::destroyProtocolContext( cmiProtocolContext * aProtocolCo
     }
 }
 
+idBool rpcDDLSyncManager::duplicateDDLReplInfo( rpcDDLSyncInfo     * aDDLSyncInfo, 
+                                                rpdReplHosts       * aReplHosts )
+{
+    rpcDDLReplInfo * sInfo          = NULL;   
+    iduListNode    * sNode          = NULL;
+    idBool           sIsExist       = ID_FALSE;
+  
+    IDU_LIST_ITERATE( &( aDDLSyncInfo->mDDLReplInfoList ), sNode )
+    {
+        sInfo = (rpcDDLReplInfo*)sNode->mObj;
+        
+        if ( ( (UInt)sInfo->mPortNo == aReplHosts->mPortNo ) &&
+             ( idlOS::strncmp( sInfo->mHostIp,
+                               aReplHosts->mHostIp,
+                               QC_MAX_IP_LEN ) == 0 ) )
+        {
+            sIsExist = ID_TRUE;
+            break;
+        }        
+    }
+    
+    return sIsExist;
+}

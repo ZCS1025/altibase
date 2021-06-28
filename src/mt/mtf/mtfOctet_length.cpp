@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfOctet_length.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfOctet_length.cpp 90192 2021-03-12 02:01:03Z jayce.park $
  **********************************************************************/
 
 #include <mte.h>
@@ -44,7 +44,7 @@ static IDE_RC mtfOctet_lengthEstimate( mtcNode*     aNode,
 mtfModule mtfOctet_length = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfOctet_lengthFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -58,7 +58,7 @@ IDE_RC mtfOctet_lengthCalculate( mtcNode*     aNode,
                                  void*        aInfo,
                                  mtcTemplate* aTemplate );
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 IDE_RC mtfOctet_lengthCalculateXlobValue( mtcNode     * aNode,
                                           mtcStack    * aStack,
                                           SInt          aRemain,
@@ -83,7 +83,7 @@ const mtcExecute mtfExecute = {
     mtk::extractRangeNA
 };
 
-/* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
+/* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
 const mtcExecute mtfExecuteXlobValue = {
     mtf::calculateNA,
     mtf::calculateNA,
@@ -153,7 +153,7 @@ IDE_RC mtfOctet_lengthEstimate( mtcNode*     aNode,
         }
         else
         {
-            /* PROJ-1530 PSM/Triggerì—ì„œ LOB ë°ì´íƒ€ íƒ€ìž… ì§€ì› */
+            /* PROJ-1530 PSM/Trigger¿¡¼­ LOB µ¥ÀÌÅ¸ Å¸ÀÔ Áö¿ø */
             aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecuteXlobValue;
         }
     }
@@ -278,7 +278,8 @@ IDE_RC mtfOctet_lengthCalculateXlobLocator( mtcNode*     aNode,
     
     IDE_TEST( mtc::getLobLengthLocator( sLocator,
                                         & sIsNull,
-                                        & sLength )
+                                        & sLength,
+                                        mtc::getStatistics(aTemplate) )
               != IDE_SUCCESS );
     
     if ( sIsNull == ID_TRUE )

@@ -61,7 +61,7 @@ public:
         qsProcStmts * aProcStmts);
 
     // PROJ-1335, To fix BUG-12475
-    // gotoëŠ” optimize ë‹¨ê³„ì—ì„œ validationí•¨.
+    // goto´Â optimize ´Ü°è¿¡¼­ validationÇÔ.
     static IDE_RC optimizeGoto(
         qcStatement * aStatement,
         qsProcStmts * aProcStmts);

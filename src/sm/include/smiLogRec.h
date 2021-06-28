@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smiLogRec.h 84317 2018-11-12 00:39:24Z minku.kang $
+ * $Id: smiLogRec.h 90444 2021-04-02 10:15:58Z minku.kang $
  **********************************************************************/
 
 #ifndef _O_SMI_LOG_REC_H_
@@ -65,11 +65,11 @@ typedef smrDummyLog smiDummyLog;
 
 typedef struct smiLogUnion
 {
-    /* smiReadLogByOrderì—ì„œ ì½ì€ Log Headerë¥¼ ê°€ë¦¬í‚¨ë‹¤.*/
+    /* smiReadLogByOrder¿¡¼­ ÀĞÀº Log Header¸¦ °¡¸®Å²´Ù.*/
     smiLogHdr    *mCommon;
 
-    /* ì•„ë˜ MemberëŠ” smiLogHdrë¥¼ ì œì™¸í•œ ë‚˜ë¨¸ì§€ ë¶€ë¶„ë§Œ
-       logfileì—ì„œ ì½ì–´ì„œ ë³µì‚¬í•œë‹¤. smiLogRec::readFrom ì°¸ì¡°ë°”ëŒ..*/
+    /* ¾Æ·¡ Member´Â smiLogHdr¸¦ Á¦¿ÜÇÑ ³ª¸ÓÁö ºÎºĞ¸¸
+       logfile¿¡¼­ ÀĞ¾î¼­ º¹»çÇÑ´Ù. smiLogRec::readFrom ÂüÁ¶¹Ù¶÷..*/
     union
     {
         smrUpdateLog    mMemUpdate;
@@ -77,16 +77,18 @@ typedef struct smiLogUnion
         smrLobLog       mLob;
         smrTableMetaLog mTableMetaLog;  // Tabe Meta Log Record
         smrDDLStmtMeta  mDDLStmtMeta;
+        smrTransCommitLog mCommitLog;
+        smrXaLog          mXaLog;
     };
 } smiLogUnion;
 
 // PROJ-1705
 typedef struct smiChainedValue
 {
-    smiValue          mColumn;      // columnì˜ valueì™€ lengthë¥¼ ì €ì¥
-    SChar             mAllocMethod; // memory í• ë‹¹ë°›ì€ ë°©ì‹
-    smiChainedValue * mLink;        // pool elementë³´ë‹¤ ì»¬ëŸ¼ì˜ valueê°€ í° ê²½ìš°,
-                                    // ì—¬ëŸ¬ elementë¥¼ listë¡œ ì—°ê²°í•˜ì—¬ ì‚¬ìš©í•œë‹¤.
+    smiValue          mColumn;      // columnÀÇ value¿Í length¸¦ ÀúÀå
+    SChar             mAllocMethod; // memory ÇÒ´ç¹ŞÀº ¹æ½Ä
+    smiChainedValue * mLink;        // pool elementº¸´Ù ÄÃ·³ÀÇ value°¡ Å« °æ¿ì,
+                                    // ¿©·¯ element¸¦ list·Î ¿¬°áÇÏ¿© »ç¿ëÇÑ´Ù.
 } smiChainedValue;
 
 typedef enum
@@ -94,16 +96,21 @@ typedef enum
     SMI_LT_NULL = 0,
     SMI_LT_TRANS_COMMIT,         // transaction commit
     SMI_LT_TRANS_ABORT,          // transaction abort
-    SMI_LT_TRANS_PREABORT,       // transaction abortí•˜ê¸° ì§ì „ì˜ log
-    SMI_LT_SAVEPOINT_SET,        // savepoint ì„¤ì •
-    SMI_LT_SAVEPOINT_ABORT,      // savepoint ì² íšŒ
+    SMI_LT_TRANS_PREABORT,       // transaction abortÇÏ±â Á÷ÀüÀÇ log
+    SMI_LT_SAVEPOINT_SET,        // savepoint ¼³Á¤
+    SMI_LT_SAVEPOINT_ABORT,      // savepoint Ã¶È¸
     SMI_LT_FILE_END,
-    SMI_LT_MEMORY_CHANGE,        // memoryì˜ update ë¡œê·¸
-    SMI_LT_DISK_CHANGE,          // diskì˜ update ë¡œê·¸
-    SMI_LT_LOB_FOR_REPL,         // LOB operation ë¡œê·¸
-    SMI_LT_DDL,                  // DDL Transaction
+    SMI_LT_MEMORY_CHANGE,        // memoryÀÇ update ·Î±×
+    SMI_LT_DISK_CHANGE,          // diskÀÇ update ·Î±×
+    SMI_LT_LOB_FOR_REPL,         // LOB operation ·Î±×
+    SMI_LT_DDL = 10,             // DDL Transaction
     SMI_LT_TABLE_META,           // Table Meta
-    SMI_LT_DDL_QUERY_STRING      // DDL Statement
+    SMI_LT_DDL_QUERY_STRING,     // DDL Statement
+    SMI_LT_TRANS_GROUPCOMMIT,
+    SMI_LT_XA_START_REQ,         /* PROJ-2747 Global Tx Consistency */
+    SMI_LT_XA_PREPARE_REQ,
+    SMI_LT_XA_PREPARE,
+    SMI_LT_XA_END 
 } smiLogType;
 
 // PROJ-1723
@@ -163,8 +170,8 @@ typedef enum
 
 /* For MVCC
  *
- *     Before Image : Senderê°€ ì½ì–´ì„œ ë³´ë‚´ëŠ” ë¡œê·¸ì— ëŒ€í•´ì„œë§Œ ê¸°ë¡ëœë‹¤.
- *                    ê°ê°ì˜ Updateë˜ëŠ” Columnì— ëŒ€í•´ì„œ
+ *     Before Image : Sender°¡ ÀĞ¾î¼­ º¸³»´Â ·Î±×¿¡ ´ëÇØ¼­¸¸ ±â·ÏµÈ´Ù.
+ *                    °¢°¢ÀÇ UpdateµÇ´Â Column¿¡ ´ëÇØ¼­
  *        Fixed Column : Column ID | SIZE | DATA
  *        Var   Column :
  *            1. SMC_VC_LOG_WRITE_TYPE_BEFORIMG & SMP_VCDESC_MODE_OUT
@@ -173,18 +180,18 @@ typedef enum
  *            2. SMC_VC_LOG_WRITE_TYPE_BEFORIMG & SMP_VCDESC_MODE_IN
  *               - Column ID(UInt) | Length(UInt) | Value
  *
- *     After  Image: Headerë¥¼ ì œì™¸í•œ Fixed Row ì „ì²´ì™€ Variable Columnì—
- *                   ëŒ€í•œ Logë¥¼ ê¸°ë¡.
+ *     After  Image: Header¸¦ Á¦¿ÜÇÑ Fixed Row ÀüÃ¼¿Í Variable Column¿¡
+ *                   ´ëÇÑ Log¸¦ ±â·Ï.
  *        Fixed Column :
  *                   Fixed Row Size(UShort) + Fixed Row Data
  *
  *        Var/LOB Column :
  *            1. SMC_VC_LOG_WRITE_TYPE_AFTERIMG & SMP_VCDESC_MODE_OUT
- *               - Column ID(UInt) | Length(UInt) | Value | OID count(UInt) | OID ... ë“¤
+ *               - Column ID(UInt) | Length(UInt) | Value | OID count(UInt) | OID ... µé
  *
  *            2. SMC_VC_LOG_WRITE_TYPE_AFTERIMG & SMP_VCDESC_MODE_IN
- *               - Fixed Row ë¡œê·¸ì— ë°ì´íƒ€ê°€ ì €ì¥ë˜ì–´ ìˆê¸°ë•Œë¬¸ì—
- *                 ë¡œê¹…í•  í•„ìš”ê°€ ì—†ë‹¤.
+ *               - Fixed Row ·Î±×¿¡ µ¥ÀÌÅ¸°¡ ÀúÀåµÇ¾î ÀÖ±â¶§¹®¿¡
+ *                 ·Î±ëÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
  */
 /* Before Image, After Image VC Column */
 #define SMI_LOGREC_MV_COLUMN_CID_OFFSET    ( 0 )
@@ -199,37 +206,41 @@ typedef enum
 
 
 /* For Update Inplace Log
- *      Befor  Image: ê°ê°ì˜ Updateë˜ëŠ” Columnì— ëŒ€í•´ì„œ
+ *      Befor  Image: °¢°¢ÀÇ UpdateµÇ´Â Column¿¡ ´ëÇØ¼­
  *         Fixed Column : Flag(SChar) | Offset(UInt)  |ColumnID(UInt) | SIZE(UInt)
  *                        | Value
  *
  *         Var   Column : Flag(SChar) | Offset(UInt) | ColumnID(UInt) | SIZE(UInt)
  *               SMP_VCDESC_MODE_OUT:
- *                        | Value | OID ë“¤...
+ *                        | Value | OID µé...
  *               SMP_VCDESC_MODE_IN:
  *                        | Value
  *
- *      After  Image: ê°ê°ì˜ Updateë˜ëŠ” Columnì— ëŒ€í•´ì„œ
+ *      After  Image: °¢°¢ÀÇ UpdateµÇ´Â Column¿¡ ´ëÇØ¼­
  *         Fixed Column : Flag(SChar) | Offset(UInt) | ColumnID(UInt) | SIZE(UInt)
  *                        | Value
  *
  *         Var   Column : Flag(SChar) | Offset(UInt) | ColumnID(UInt) | SIZE(UInt)
  *               SMP_VCDESC_MODE_OUT:
- *                        | Value | OID ë“¤...
+ *                        | Value | OID µé...
  *               SMP_VCDESC_MODE_IN:
  *                        | Value
  */
+#if 0 //not used
 #define SMI_LOGREC_UI_COLUMN_FLAG_OFFSET  ( 0 )
 #define SMI_LOGREC_UI_COLUMN_CID_OFFSET   ( ID_SIZEOF(SChar)/*Flag*/ + ID_SIZEOF(UInt)/*Offset*/ )
 #define SMI_LOGREC_UI_COLUMN_SIZE_OFFSET  ( SMI_LOGREC_UI_COLUMN_CID_OFFSET + ID_SIZEOF(UInt)/*Column ID*/ )
 #define SMI_LOGREC_UI_COLUMN_DATA_OFFSET  ( SMI_LOGREC_UI_COLUMN_SIZE_OFFSET + ID_SIZEOF(UInt)/*Size*/ )
+#endif 
 
+#if 0  //not used
 #define SMI_LOGREC_READ_VALUE(aPtr, aRet, aSize)                \
     IDE_DASSERT((aPtr) != NULL);                                \
     IDE_DASSERT((aRet) != NULL);                                \
     IDE_DASSERT((aSize) > 0);                                   \
     IDE_DASSERT( ID_SIZEOF(*(aRet)) == (aSize) );               \
     idlOS::memcpy( (void*)(aRet), (void*)(aPtr), (aSize) )
+#endif
 
 #define SMI_LOGREC_READ_AND_MOVE_PTR(aPtr, aRet, aSize)         \
     IDE_DASSERT( ID_SIZEOF(*(aPtr)) == 1 );                     \
@@ -263,7 +274,7 @@ public :
     {
         reset();
 
-        /* DML Log Record ë¶„ì„ ì •ë³´ ì´ˆê¸°í™” */
+        /* DML Log Record ºĞ¼® Á¤º¸ ÃÊ±âÈ­ */
         mMeta                 = aMeta;
         mGetTable             = NULL;
         mGetColumnCount       = NULL;
@@ -287,9 +298,9 @@ public :
         mBytesRead       = 0;
     }
 
-    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
-     * DML Log Record ë¶„ì„ì„ ìœ„í•œ Callback í•¨ìˆ˜ ì„¤ì •
-     * íŠ¹ì • ì‹œì ì˜ DMLì€ RPì—ì„œ ë³´ê´€í•˜ê³  ìˆëŠ” í•´ë‹¹ Metaë¡œ ë¶„ì„í•´ì•¼ í•œë‹¤.
+    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
+     * DML Log Record ºĞ¼®À» À§ÇÑ Callback ÇÔ¼ö ¼³Á¤
+     * Æ¯Á¤ ½ÃÁ¡ÀÇ DMLÀº RP¿¡¼­ º¸°üÇÏ°í ÀÖ´Â ÇØ´ç Meta·Î ºĞ¼®ÇØ¾ß ÇÑ´Ù.
      */
     inline void setCallbackFunction(smGetTbl4ReplFunc       aGetTable,
                                     smGetColumnCnt4ReplFunc aGetColumnCount,
@@ -356,6 +367,37 @@ public :
         return sValue;
     };
 
+    /* BUG-47525 Group Commit */
+    static inline UInt getGroupCommitCnt( SChar* aLogPtr )
+    {
+        UInt sGCCnt;
+        UInt sOffset = SMR_LOG_GROUP_COMMIT_GROUPCNT_OFFSET;
+        idlOS::memcpy(&sGCCnt, aLogPtr + sOffset, ID_SIZEOF(UInt));
+        return sGCCnt;
+    };
+
+    static inline smTID getNthTIDFromGroupCommit( SChar* aLogPtr , UInt aNumber )
+    {
+        smTID sTID;
+        UInt sOffset;
+        sOffset = SMR_LOGREC_SIZE( smrTransGroupCommitLog ) + ( ID_SIZEOF( smTID ) * aNumber * 2 );
+        idlOS::memcpy(&sTID, aLogPtr + sOffset, ID_SIZEOF(smTID));
+        return sTID;
+    };
+
+#if 0
+    static inline smTID getNthGlobalTIDFromGroupCommit( SChar* aLogPtr , UInt aNumber )
+    {
+        smTID sGlobalTID;
+        UInt sOffset;
+        sOffset = SMR_LOGREC_SIZE( smrTransGroupCommitLog ) + 
+                  ( ID_SIZEOF( smTID ) * aNumber * 2 ) + 
+                  ID_SIZEOF( smTID );
+        idlOS::memcpy(&sGlobalTID, aLogPtr + sOffset, ID_SIZEOF(smTID));
+        return sGlobalTID;
+    };
+#endif
+
     inline smiLogType getType()
     {
         return mLogType;
@@ -412,7 +454,7 @@ public :
         return mLogUnion.mMemUpdate.mType;
     };
 
-    // Table Meta Log Record ë¶„ì„ì„ ìœ„í•œ ê¸°ë³¸ ì •ë³´ë¥¼ ì œê³µ
+    // Table Meta Log Record ºĞ¼®À» À§ÇÑ ±âº» Á¤º¸¸¦ Á¦°ø
     UInt           getTblMetaLogBodySize();
     void         * getTblMetaLogBodyPtr();
     smiTableMeta * getTblMeta();
@@ -420,6 +462,16 @@ public :
     UInt             getDDLStmtMetaLogBodySize();
     void           * getDDLStmtMetaLogBodyPtr();
     smiDDLStmtMeta * getDDLStmtMeta();
+
+    inline ID_XID  * getXID()
+    {
+        return &(mLogUnion.mXaLog.mXID);
+    }
+
+    inline smSCN * getGlobalCommitSCN()
+    {
+        return &(mLogUnion.mCommitLog.mCommitSCN);
+    }
 
     inline iduMemPool * getChainedValuePool()
     {
@@ -739,21 +791,21 @@ public :
                                    UInt            * aCIDArray,            // column id Array
                                    smiValue        * aColValueArray,       // column value Array
                                    smiChainedValue * aChainedColValueArray,// chained column value Array
-                                   UInt            * aChainedValueTotalLen,// chained column value ì˜ ì „ì²´ ê¸¸ì´
-                                   UInt            * aAnalyzedValueLen,    // í˜„ì¬ê¹Œì§€ chained valueì˜ ë¶„ì„ëœ ê¸¸ì´
-                                   UShort          * aAnalyzedColCnt );    // ì§€ê¸ˆê¹Œì§€ ë¶„ì„ëœ ì»¬ëŸ¼ìˆ˜
+                                   UInt            * aChainedValueTotalLen,// chained column value ÀÇ ÀüÃ¼ ±æÀÌ
+                                   UInt            * aAnalyzedValueLen,    // ÇöÀç±îÁö chained valueÀÇ ºĞ¼®µÈ ±æÀÌ
+                                   UShort          * aAnalyzedColCnt );    // Áö±İ±îÁö ºĞ¼®µÈ ÄÃ·³¼ö
 
     static IDE_RC analyzeColumnValue( iduMemAllocator  * aAllocator,
                                       smiLogRec        * aLogRec,                // smiLogRec
-                                      SChar           ** aAnalyzePtr,            // í˜„ì¬ ì½ê³  ìˆëŠ” ì§€ì 
+                                      SChar           ** aAnalyzePtr,            // ÇöÀç ÀĞ°í ÀÖ´Â ÁöÁ¡
                                       UInt             * aCIDArray,              // column id Array
                                       smiValue         * aColValueArray,         // column value Array
                                       smiChainedValue  * aChainedColValueArray,  // chained column value Array
-                                      UInt             * aChainedValueTotalLen,  // chained column value ì˜ ì „ì²´ ê¸¸ì´
-                                      UInt             * aAnalyzedValueLen,      // í˜„ì¬ê¹Œì§€ chained valueì˜ ë¶„ì„ëœ ê¸¸ì´
-                                      UShort             aColumnCountInRowPiece, // row pieceë‚´ ì»¬ëŸ¼ ìˆ˜
+                                      UInt             * aChainedValueTotalLen,  // chained column value ÀÇ ÀüÃ¼ ±æÀÌ
+                                      UInt             * aAnalyzedValueLen,      // ÇöÀç±îÁö chained valueÀÇ ºĞ¼®µÈ ±æÀÌ
+                                      UShort             aColumnCountInRowPiece, // row piece³» ÄÃ·³ ¼ö
                                       SChar              aRowHdrFlag,            // row header flag
-                                      UShort           * aAnalyzedColCnt );      // ì§€ê¸ˆê¹Œì§€ ë¶„ì„ëœ ì»¬ëŸ¼ìˆ˜
+                                      UShort           * aAnalyzedColCnt );      // Áö±İ±îÁö ºĞ¼®µÈ ÄÃ·³¼ö
 
     static IDE_RC copyAfterImage( iduMemAllocator  * aAllocator,
                                   const smiColumn  * aColumn,
@@ -833,14 +885,18 @@ public :
     /* PROJ-2453 */
     static inline idBool isBeginLogFromHdr( smiLogHdr *aLogHead );
     static inline smTID  getTransIDFromLogHdr( smiLogHdr   * aLogHead );
+/* not used
     static smiLogType    getLogTypeFromLogHdr( smiLogHdr   * aLogHead );
-    
+*/    
+
     static inline idBool isDummyLog(smiLogHdr* aLogHdr);
 
     static void dumpLogHead( smiLogHdr * aLogHead, 
                              UInt aChkFlag, 
                              ideLogModule aModule, 
                              UInt aLevel );
+
+    static     idBool isNeedDecompressFromHdr( smiLogHdr * aLogHead );
 
     /* PROJ-2397 */
     static     IDE_RC analyzeInsertLogAfterImageDictionary( smiLogRec *aLogRec,
@@ -856,40 +912,40 @@ public :
                                                   idBool     *aDoWait );
 private:
 
-    // ì‹¤ì œ ë¡œê·¸ê°€ ìœ„ì¹˜í•œ LSNê°’
+    // ½ÇÁ¦ ·Î±×°¡ À§Ä¡ÇÑ LSN°ª
     smLSN               mRecordLSN;
 
-    // ë¡œê·¸ ë ˆì½”ë“œì˜ ì¢…ë¥˜
+    // ·Î±× ·¹ÄÚµåÀÇ Á¾·ù
     smiLogType          mLogType;
-    // ë¡œê·¸ ë ˆì½”ë“œì˜ ì„¸ë¶€ íƒ€ì…
+    // ·Î±× ·¹ÄÚµåÀÇ ¼¼ºÎ Å¸ÀÔ
     smiChangeLogType    mChangeType;
-    // ë¡œê·¸ê°€ ê°€ë¦¬í‚¤ëŠ” ë ˆì½”ë“œì˜ GRID
+    // ·Î±×°¡ °¡¸®Å°´Â ·¹ÄÚµåÀÇ GRID
     scGRID              mRecordGRID;
 
-    // [PROJ-1705] row piece ë‚´ì—ì„œ ì‹¤ì œ Updateê°€ ë°œìƒí•œ column ìˆ˜
+    // [PROJ-1705] row piece ³»¿¡¼­ ½ÇÁ¦ Update°¡ ¹ß»ıÇÑ column ¼ö
     UShort              mUpdateColCntInRowPiece;
 
     // QCI_MAX_COLUMN_COUNT = SMI_COLUMN_ID_MAXIMUM
 
-    // [PROJ-1705] row piece ë‚´ì—ì„œ columnì˜ ìœ„ì¹˜. ë°°ì—´ì— ìˆœì°¨ì ìœ¼ë¡œ ë“¤ì–´ê°„ë‹¤.
-    UShort              mColumnSequence[SMI_COLUMN_ID_MAXIMUM]; // ì´ˆê¸°í™” ì—†ì´ ì‚¬ìš©
-    // [PROJ-1705] row piece ë‚´ì—ì„œ column idì •ë³´. ë°°ì—´ì˜ seqìœ„ì¹˜ì— ë“¤ì–´ê°„ë‹¤.
-    UInt                mColumnId[SMI_COLUMN_ID_MAXIMUM];      // ì´ˆê¸°í™” ì—†ì´ ì‚¬ìš©
-    // [PROJ-1705] row ì—ì„œ í•´ë‹¹ columnì˜ ì´ ê¸¸ì´ ì •ë³´. ë°°ì—´ì˜ seqìœ„ì¹˜ì— ë“¤ì–´ê°„ë‹¤.
-    SInt                mColumnTotalLen[SMI_COLUMN_ID_MAXIMUM]; // ì´ˆê¸°í™” ì—†ì´ ì‚¬ìš©
+    // [PROJ-1705] row piece ³»¿¡¼­ columnÀÇ À§Ä¡. ¹è¿­¿¡ ¼øÂ÷ÀûÀ¸·Î µé¾î°£´Ù.
+    UShort              mColumnSequence[SMI_COLUMN_ID_MAXIMUM]; // ÃÊ±âÈ­ ¾øÀÌ »ç¿ë
+    // [PROJ-1705] row piece ³»¿¡¼­ column idÁ¤º¸. ¹è¿­ÀÇ seqÀ§Ä¡¿¡ µé¾î°£´Ù.
+    UInt                mColumnId[SMI_COLUMN_ID_MAXIMUM];      // ÃÊ±âÈ­ ¾øÀÌ »ç¿ë
+    // [PROJ-1705] row ¿¡¼­ ÇØ´ç columnÀÇ ÃÑ ±æÀÌ Á¤º¸. ¹è¿­ÀÇ seqÀ§Ä¡¿¡ µé¾î°£´Ù.
+    SInt                mColumnTotalLen[SMI_COLUMN_ID_MAXIMUM]; // ÃÊ±âÈ­ ¾øÀÌ »ç¿ë
 
-    // Disk Update ë¡œê·¸ì—ì„œ updateê°€ ë°œìƒí•œ LOB column ìˆ˜
+    // Disk Update ·Î±×¿¡¼­ update°¡ ¹ß»ıÇÑ LOB column ¼ö
     UInt                mLobColumnCnt;       // PROJ-1705
-    // Primary Key ì˜ì—­ì˜ í¬ê¸° : Update/Deleteì—ì„œ ì‚¬ìš©
+    // Primary Key ¿µ¿ªÀÇ Å©±â : Update/Delete¿¡¼­ »ç¿ë
     UInt                mPrimaryKeySize;
 
-    // ë°”ì´ë„ˆë¦¬ í˜•íƒœì˜ ë¡œê·¸ ë ˆì½”ë“œ í¬ì¸í„°
+    // ¹ÙÀÌ³Ê¸® ÇüÅÂÀÇ ·Î±× ·¹ÄÚµå Æ÷ÀÎÅÍ
     SChar*              mLogPtr;
-    // ë¡œê·¸ ë ˆì½”ë“œ ë‚´ì—ì„œ Primary Keyì˜ ì‹œì‘ í¬ì¸í„°
+    // ·Î±× ·¹ÄÚµå ³»¿¡¼­ Primary KeyÀÇ ½ÃÀÛ Æ÷ÀÎÅÍ
     SChar*              mPrimaryKeyPtr;
-    // ë¶„ì„ì„ ì‹œì‘í•  ë¡œê·¸ ë ˆì½”ë“œ ì‹œì‘ í¬ì¸í„°
+    // ºĞ¼®À» ½ÃÀÛÇÒ ·Î±× ·¹ÄÚµå ½ÃÀÛ Æ÷ÀÎÅÍ
     SChar*              mAnalyzeStartPtr;
-    // í˜„ì¬ ë¡œê·¸ ë ˆì½”ë“œë¥¼ ì½ì–´ë“¤ì¸ ê¸¸ì´
+    // ÇöÀç ·Î±× ·¹ÄÚµå¸¦ ÀĞ¾îµéÀÎ ±æÀÌ
     UInt                mBytesRead;
 
     // common header
@@ -897,7 +953,7 @@ private:
 
     //static smiAnalyzeLogFunc  mAnalyzeLogFunc[SMI_CHANGE_MAXMAX+1];
 
-    // DML Log Record ë¶„ì„ì„ ìœ„í•´ í•„ìš”í•œ ì •ë³´
+    // DML Log Record ºĞ¼®À» À§ÇØ ÇÊ¿äÇÑ Á¤º¸
     const void              * mMeta;
     smGetTbl4ReplFunc         mGetTable;
     smGetColumnCnt4ReplFunc   mGetColumnCount;
@@ -919,7 +975,7 @@ inline idBool smiLogRec::needNormalReplicate()
     idBool sIsNeedNormalReplicate = ID_FALSE;
     UInt   sLogHdrFlag            = smrLogHeadI::getFlag(mLogUnion.mCommon);
 
-    /* BUG-37931 dummy log ê°€ ì•„ë‹ ë•Œë§Œ rep ëŒ€ìƒì´ ëœë‹¤. */
+    /* BUG-37931 dummy log °¡ ¾Æ´Ò ¶§¸¸ rep ´ë»óÀÌ µÈ´Ù. */
     if( (sLogHdrFlag & SMR_LOG_DUMMY_LOG_MASK) != SMR_LOG_DUMMY_LOG_OK )
     {
         if( (sLogHdrFlag & SMR_LOG_TYPE_MASK) == SMR_LOG_TYPE_NORMAL )
@@ -944,7 +1000,7 @@ inline idBool smiLogRec::needReplRecovery()
     idBool sIsNeedReplRecovery  = ID_FALSE;
     UInt   sLogHdrFlag          = smrLogHeadI::getFlag(mLogUnion.mCommon);
 
-    /* BUG-37931 dummy log ê°€ ì•„ë‹ ë•Œë§Œ rep ëŒ€ìƒì´ ëœë‹¤. */
+    /* BUG-37931 dummy log °¡ ¾Æ´Ò ¶§¸¸ rep ´ë»óÀÌ µÈ´Ù. */
     if( (sLogHdrFlag & SMR_LOG_DUMMY_LOG_MASK) != SMR_LOG_DUMMY_LOG_OK )
     {
         if( (sLogHdrFlag & SMR_LOG_TYPE_MASK) == SMR_LOG_TYPE_REPL_RECOVERY )
@@ -1003,12 +1059,12 @@ inline idBool smiLogRec::checkSavePointFlag()
 }
 
 /***********************************************************************
- * Description : Insert, Update(MVCC)ì˜ After Imageë¡œê·¸ë¡œ ë¶€í„°
- *               aColumnì˜ smVCDescë¥¼ êµ¬í•œë‹¤.
+ * Description : Insert, Update(MVCC)ÀÇ After Image·Î±×·Î ºÎÅÍ
+ *               aColumnÀÇ smVCDesc¸¦ ±¸ÇÑ´Ù.
  *
  * aColumn   - [IN]: Column Dsscriptor
- * aAfterImg - [IN]: Insert, Update(MVCC)ì˜ After Image Log Ptr
- * aVCDesc   - [OUT] : Variable Column Descriptorê°€ ë¦¬í„´ë¨.
+ * aAfterImg - [IN]: Insert, Update(MVCC)ÀÇ After Image Log Ptr
+ * aVCDesc   - [OUT] : Variable Column Descriptor°¡ ¸®ÅÏµÊ.
   ***********************************************************************/
 inline void smiLogRec::getVCDescInAftImg(const smiColumn *aColumn,
                                          SChar           *aAfterImg,
@@ -1023,15 +1079,15 @@ inline void smiLogRec::getVCDescInAftImg(const smiColumn *aColumn,
 }
 
 /***********************************************************************
- * Description : Replicationì´ ë³´ë‚¼ Update Inplace Logì˜ After Imageì—
- *               ëŠ” ê°ê° Update ëœ columnë‹¨ìœ„ë¡œ Logê°€ ê¸°ë¡ë˜ì–´ ìˆë‹¤.
- *               ì—¬ê¸°ì„œëŠ” ë¡œê·¸ì— ê¸°ë¡ëœ ê°ê°ì˜ Columnì˜ flag, Sizeë¡œ
- *               Columnì„ ìœ„í•´ ê¸°ë¡ëœ logì˜ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
+ * Description : ReplicationÀÌ º¸³¾ Update Inplace LogÀÇ After Image¿¡
+ *               ´Â °¢°¢ Update µÈ column´ÜÀ§·Î Log°¡ ±â·ÏµÇ¾î ÀÖ´Ù.
+ *               ¿©±â¼­´Â ·Î±×¿¡ ±â·ÏµÈ °¢°¢ÀÇ ColumnÀÇ flag, Size·Î
+ *               ColumnÀ» À§ÇØ ±â·ÏµÈ logÀÇ Å©±â¸¦ ±¸ÇÑ´Ù.
  *
  * aFlag  - [IN]: SM_VCDESC_MODE(2st bit) | SMI_COLUMN_TYPE (1st bit)
  * aSize  - [IN]: Column Size
  *
- *      After  Image: ê°ê°ì˜ Updateë˜ëŠ” Columnì— ëŒ€í•´ì„œ
+ *      After  Image: °¢°¢ÀÇ UpdateµÇ´Â Column¿¡ ´ëÇØ¼­
  *         Fixed Column : Flag(SChar) | Offset(UInt)  |
  *                        ColumnID(UInt) | SIZE(UInt) | Value
  *
@@ -1063,15 +1119,15 @@ inline UInt smiLogRec::getPartLogSizeOfUIAfterImg(SChar aFlag,
 }
 
 /***********************************************************************
- * Description : Replicationì´ ë³´ë‚¼ Update Inplace Logì˜ Before Imageì—
- *               ëŠ” ê°ê° Update ëœ columnë‹¨ìœ„ë¡œ Logê°€ ê¸°ë¡ë˜ì–´ ìˆë‹¤.
- *               ì—¬ê¸°ì„œëŠ” ë¡œê·¸ì— ê¸°ë¡ëœ ê°ê°ì˜ Columnì˜ flag, Sizeë¡œ
- *               Columnì„ ìœ„í•´ ê¸°ë¡ëœ logì˜ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
+ * Description : ReplicationÀÌ º¸³¾ Update Inplace LogÀÇ Before Image¿¡
+ *               ´Â °¢°¢ Update µÈ column´ÜÀ§·Î Log°¡ ±â·ÏµÇ¾î ÀÖ´Ù.
+ *               ¿©±â¼­´Â ·Î±×¿¡ ±â·ÏµÈ °¢°¢ÀÇ ColumnÀÇ flag, Size·Î
+ *               ColumnÀ» À§ÇØ ±â·ÏµÈ logÀÇ Å©±â¸¦ ±¸ÇÑ´Ù.
  *
  * aFlag  - [IN]: SM_VCDESC_MODE(2st bit) | SMI_COLUMN_TYPE (1st bit)
  * aSize  - [IN]: Column Size
  *
- *      Before Image: ê°ê°ì˜ Updateë˜ëŠ” Columnì— ëŒ€í•´ì„œ
+ *      Before Image: °¢°¢ÀÇ UpdateµÇ´Â Column¿¡ ´ëÇØ¼­
  *         Fixed Column : Flag(SChar) | Offset(UInt) | ColumnID(UInt) | SIZE(UInt)
  *                        | Value
  *
@@ -1103,10 +1159,10 @@ inline UInt smiLogRec::getPartLogSizeOfUIBeForImg(SChar aFlag,
 }
 
 /***********************************************************************
- * Description : Variable Columnì˜ ê¸¸ì´ê°€ aSizeì¼ ê²½ìš° ì´ Variable Columnì„
- *               ì €ì¥í•˜ê¸° ìœ„í•´ í•„ìš”í•œ Variable Column Pieceì˜ ê°¯ìˆ˜ë¥¼ êµ¬í•œë‹¤.
+ * Description : Variable ColumnÀÇ ±æÀÌ°¡ aSizeÀÏ °æ¿ì ÀÌ Variable ColumnÀ»
+ *               ÀúÀåÇÏ±â À§ÇØ ÇÊ¿äÇÑ Variable Column PieceÀÇ °¹¼ö¸¦ ±¸ÇÑ´Ù.
  *
- * aSize : Variable Columnì˜ ê¸¸ì´
+ * aSize : Variable ColumnÀÇ ±æÀÌ
  *
  ***********************************************************************/
 inline UInt smiLogRec::getVCPieceCnt(UInt aSize)
@@ -1176,4 +1232,19 @@ inline idBool smiLogRec::isBeginLogFromHdr( smiLogHdr * aLogHead )
 {
     return smrRecoveryMgr::isBeginLog( (smrLogHead*)aLogHead );
 }
+
+inline idBool smiLogRec::isNeedDecompressFromHdr( smiLogHdr * aLogHead )
+{
+    idBool sIsNeedDecompress = ID_FALSE;
+    UInt   sLogHdrFlag       = smrLogHeadI::getFlag( (smrLogHead*)aLogHead );
+
+    if ( ( ( sLogHdrFlag & SMR_LOG_BEGINTRANS_MASK ) == SMR_LOG_BEGINTRANS_OK )  ||
+         ( ( sLogHdrFlag & SMR_LOG_SAVEPOINT_MASK ) == SMR_LOG_SAVEPOINT_OK ) )
+    {
+        sIsNeedDecompress = ID_TRUE;
+    }
+
+    return sIsNeedDecompress;
+}
+
 #endif /* _O_SMI_LOG_REC_H_ */

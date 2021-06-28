@@ -1,5 +1,5 @@
 #
-# $Id: qp_objs.mk 83637 2018-08-07 05:40:38Z khkwak $
+# $Id: qp_objs.mk 89988 2021-02-15 02:01:46Z khkwak $
 #
 
 QCI_SRCS = $(QP_DIR)/qci/qci.cpp  \
@@ -211,7 +211,8 @@ QMN_SRCS = $(QP_DIR)/qmn/qmn.cpp \
 QMX_SRCS = $(QP_DIR)/qmx/qmx.cpp \
            $(QP_DIR)/qmx/qmxSessionCache.cpp \
            $(QP_DIR)/qmx/qmxSimple.cpp \
-           $(QP_DIR)/qmx/qmxResultCache.cpp
+           $(QP_DIR)/qmx/qmxResultCache.cpp \
+           $(QP_DIR)/qmx/qmxShard.cpp
 
 QMR_SRCS = $(QP_DIR)/qmr/qmr.cpp
 
@@ -373,9 +374,18 @@ QSF_SRCS = $(QP_DIR)/qsf/qsf.cpp \
            $(QP_DIR)/qsf/qsfSetPrevMetaVersion.cpp \
            $(QP_DIR)/qsf/dbms_sql_plan_cache/qsfKeepPlan.cpp \
            $(QP_DIR)/qsf/dbms_sql_plan_cache/qsfUnkeepPlan.cpp \
-           $(QP_DIR)/qsf/dbms_standard/qsfInserting.cpp \
-           $(QP_DIR)/qsf/dbms_standard/qsfUpdating.cpp \
-           $(QP_DIR)/qsf/dbms_standard/qsfDeleting.cpp
+           $(QP_DIR)/qsf/qsfAddUserSrs.cpp \
+           $(QP_DIR)/qsf/qsfDeleteUserSrs.cpp \
+		   $(QP_DIR)/qsf/dbms_standard/qsfInserting.cpp \
+		   $(QP_DIR)/qsf/dbms_standard/qsfUpdating.cpp \
+		   $(QP_DIR)/qsf/dbms_standard/qsfDeleting.cpp \
+           $(QP_DIR)/qsf/qsfInvokeUserID.cpp \
+           $(QP_DIR)/qsf/qsfInvokeUserName.cpp \
+           $(QP_DIR)/qsf/dbms_shard_get_diagnostics/qsfGetErrorCode.cpp \
+           $(QP_DIR)/qsf/dbms_shard_get_diagnostics/qsfGetErrorMessage.cpp \
+           $(QP_DIR)/qsf/dbms_shard_get_diagnostics/qsfGetErrorCount.cpp \
+           $(QP_DIR)/qsf/dbms_shard_get_diagnostics/qsfGetErrorNodeID.cpp \
+           $(QP_DIR)/qsf/dbms_shard_get_diagnostics/qsfGetErrorSeqNo.cpp
 
 QSV_SRCS = $(QP_DIR)/qsv/qsv.cpp \
            $(QP_DIR)/qsv/qsvProcStmts.cpp \
@@ -392,20 +402,21 @@ QSO_SRCS = $(QP_DIR)/qso/qso.cpp \
 
 QDQ_SRCS = $(QP_DIR)/qdq/qdq.cpp
 
-QSX_SRCS = $(QP_DIR)/qsx/qsx.cpp             \
-           $(QP_DIR)/qsx/qsxProc.cpp         \
-           $(QP_DIR)/qsx/qsxPkg.cpp          \
-           $(QP_DIR)/qsx/qsxRelatedProc.cpp  \
-           $(QP_DIR)/qsx/qsxTemplatePool.cpp \
-           $(QP_DIR)/qsx/qsxEnv.cpp          \
-           $(QP_DIR)/qsx/qsxExecutor.cpp     \
-           $(QP_DIR)/qsx/qsxUtil.cpp         \
-           $(QP_DIR)/qsx/qsxCursor.cpp       \
-           $(QP_DIR)/qsx/qsxArray.cpp        \
-           $(QP_DIR)/qsx/qsxAvl.cpp          \
-           $(QP_DIR)/qsx/qsxRefCursor.cpp    \
-           $(QP_DIR)/qsx/qsxExtProc.cpp      \
-           $(QP_DIR)/qsx/qsxTemplateCache.cpp
+QSX_SRCS = $(QP_DIR)/qsx/qsx.cpp              \
+           $(QP_DIR)/qsx/qsxProc.cpp          \
+           $(QP_DIR)/qsx/qsxPkg.cpp           \
+           $(QP_DIR)/qsx/qsxRelatedProc.cpp   \
+           $(QP_DIR)/qsx/qsxTemplatePool.cpp  \
+           $(QP_DIR)/qsx/qsxEnv.cpp           \
+           $(QP_DIR)/qsx/qsxExecutor.cpp      \
+           $(QP_DIR)/qsx/qsxUtil.cpp          \
+           $(QP_DIR)/qsx/qsxCursor.cpp        \
+           $(QP_DIR)/qsx/qsxArray.cpp         \
+           $(QP_DIR)/qsx/qsxAvl.cpp           \
+           $(QP_DIR)/qsx/qsxRefCursor.cpp     \
+           $(QP_DIR)/qsx/qsxExtProc.cpp       \
+           $(QP_DIR)/qsx/qsxTemplateCache.cpp \
+           $(QP_DIR)/qsx/qsxLibrary.cpp
 
 QSS_SRCS = $(QP_DIR)/qss/qss.cpp
 
@@ -443,6 +454,7 @@ QCS_SRCS = $(QP_DIR)/qcs/qcs.cpp             \
            $(QP_DIR)/qcs/qcsDAmo.cpp         \
            $(QP_DIR)/qcs/qcsCubeOne.cpp
 
+QDSD_SRCS = $(QP_DIR)/qdsd/qdsd.cpp
 
 QP_SRCS = $(QCI_SRCS) $(QCG_SRCS) $(QCP_SRCS) $(QCC_SRCS) $(QCM_SRCS) $(QCU_SRCS) \
           $(QCD_SRCS) $(QMS_SRCS) $(QMR_SRCS) \
@@ -451,7 +463,7 @@ QP_SRCS = $(QCI_SRCS) $(QCG_SRCS) $(QCP_SRCS) $(QCC_SRCS) $(QCM_SRCS) $(QCU_SRCS
           $(QMV_SRCS) $(QMO_SRCS) $(QMG_SRCS) $(QMN_SRCS) $(QMX_SRCS) \
           $(QSF_SRCS) $(QSV_SRCS) $(QSO_SRCS) $(QSX_SRCS) $(QSS_SRCS) $(QSC_SRCS) \
           $(QDP_SRCS) $(QDT_SRCS) $(QDK_SRCS) \
-          $(QTC_SRCS) $(QRC_SRCS) $(QDQ_SRCS) $(QCS_SRCS) 
+          $(QTC_SRCS) $(QRC_SRCS) $(QDQ_SRCS) $(QCS_SRCS) $(QDSD_SRCS)
 
 QP_OBJS = $(QP_SRCS:$(DEV_DIR)/%.cpp=$(TARGET_DIR)/%.$(OBJEXT))
 QP_SHOBJS = $(QP_SRCS:$(DEV_DIR)/%.cpp=$(TARGET_DIR)/%_shobj.$(OBJEXT))

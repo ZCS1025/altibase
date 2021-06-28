@@ -67,7 +67,7 @@ static IDE_RC xaOpTransactionA5(cmiProtocolContext   *aProtocolContext,
     sXid.bqual_length = aArg->mBQUALLength;
 
     /* bug-36037: invalid xid
-       invalid xid ê´€ë ¨ ì„œë²„ìª½ ê²€ì‚¬ì½”ë“œ ì¶”ê°€ */
+       invalid xid °ü·Ã ¼­¹öÂÊ °Ë»çÄÚµå Ãß°¡ */
     if ((sXid.gtrid_length <= (vSLong) 0)               ||
         (sXid.gtrid_length >  (vSLong) ID_MAXGTRIDSIZE) ||
         (sXid.bqual_length <= (vSLong) 0)               ||
@@ -77,14 +77,14 @@ static IDE_RC xaOpTransactionA5(cmiProtocolContext   *aProtocolContext,
     }
 
     sDataLen = cmtVariableGetSize(&(aArg->mData));
-    IDE_TEST_RAISE(sDataLen > ID_XIDDATASIZE, InvalidXidDataSize);
+    IDE_TEST_RAISE(sDataLen > ID_MAXXIDDATASIZE, InvalidXidDataSize);
     
     IDE_TEST(cmtVariableGetData(&(aArg->mData), (UChar *)&(sXid.data), sDataLen)
              != IDE_SUCCESS);
     /* BUG-20726 */
     idlOS::memset(&(sXid.data[sXid.gtrid_length+sXid.bqual_length]),
                   0x00,
-                  ID_XIDDATASIZE-sXid.gtrid_length-sXid.bqual_length);
+                  ID_MAXXIDDATASIZE-sXid.gtrid_length-sXid.bqual_length);
 
     aXaFunc(aXaContext, &sXid);
 
@@ -352,7 +352,7 @@ IDE_RC mmtServiceThread::xaTransactionProtocolA5(cmiProtocolContext *aProtocolCo
     IDE_EXCEPTION_END;
 
     /* bug-36037: invalid xid
-       invalid xidì˜ ê²½ìš° clientë¡œ ì—ëŸ¬ì‘ë‹µì„ ë¨¼ì €ì£¼ê³  ëŠëŠ”ë‹¤ */
+       invalid xidÀÇ °æ¿ì client·Î ¿¡·¯ÀÀ´äÀ» ¸ÕÀúÁÖ°í ²÷´Â´Ù */
     if (sXaContext.mReturnValue != XA_OK )
     {
         sThread->answerErrorResultA5(aProtocolContext,

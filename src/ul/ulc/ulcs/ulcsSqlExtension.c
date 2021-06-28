@@ -25,7 +25,7 @@
 
 /*
  * ======================
- * LOB ê³¼ ê´€ë ¨ëœ í•¨ìˆ˜ë“¤.
+ * LOB °ú °ü·ÃµÈ ÇÔ¼öµé.
  * ======================
  */
 
@@ -70,14 +70,31 @@ SQLRETURN SQL_API SQLGetLobLength(SQLHSTMT     aHandle,
                                   SQLSMALLINT  aLocatorCType,
                                   SQLUINTEGER *aLobLengthPtr)
 {
+    acp_uint16_t sIsNull;
     // acp_uint64_t sLobLocator;
 
     // sLobLocator = ulnTypeConvertUBIGINTtoacp_uint64_t(aLocator);
 
-    return ulnGetLobLength((ulnStmt *)aHandle,
+    return ulnGetLobLength(SQL_HANDLE_STMT,
+                           (ulnObject *)aHandle,
                            (acp_uint64_t   )aLocator,
                            (acp_sint16_t  )aLocatorCType,
-                           (acp_uint32_t   *)aLobLengthPtr);
+                           (acp_uint32_t   *)aLobLengthPtr,
+                           &sIsNull);
+}
+
+SQLRETURN SQL_API SQLGetLobLength2(SQLHSTMT      aHandle,
+                                   SQLUBIGINT    aLocator,
+                                   SQLSMALLINT   aLocatorCType,
+                                   SQLUINTEGER  *aLobLengthPtr,
+                                   SQLUSMALLINT *aIsNull)
+{
+    return ulnGetLobLength(SQL_HANDLE_STMT,
+                           (ulnObject    *)aHandle,
+                           (acp_uint64_t  )aLocator,
+                           (acp_sint16_t  )aLocatorCType,
+                           (acp_uint32_t *)aLobLengthPtr,
+                           (acp_uint16_t *)aIsNull);
 }
 
 SQLRETURN SQL_API SQLPutLob(SQLHSTMT    aHandle,
@@ -93,7 +110,8 @@ SQLRETURN SQL_API SQLPutLob(SQLHSTMT    aHandle,
 
     // sLobLocator = ulnTypeConvertUBIGINTtoacp_uint64_t(aLocator);
 
-    return ulnPutLob((ulnStmt *)aHandle,
+    return ulnPutLob(SQL_HANDLE_STMT,
+                     (ulnObject *)aHandle,
                      (acp_sint16_t)aLocatorCType,
                      (acp_uint64_t )aLocator,
                      (acp_uint32_t  )aStartOffset,
@@ -117,7 +135,8 @@ SQLRETURN SQL_API SQLGetLob(SQLHSTMT     aHandle,
 
     // sLobLocator = ulnTypeConvertUBIGINTtoacp_uint64_t(aLocator);
 
-    return ulnGetLob((ulnStmt *)aHandle,
+    return ulnGetLob(SQL_HANDLE_STMT,
+                     (ulnObject *)aHandle,
                      (acp_sint16_t)aLocatorCType,
                      (acp_uint64_t )aLocator,
                      (acp_uint32_t  )aStartOffset,
@@ -134,20 +153,23 @@ SQLRETURN SQL_API SQLFreeLob(SQLHSTMT aHandle, SQLUBIGINT aLocator)
 
     // sLobLocator = ulnTypeConvertUBIGINTtoacp_uint64_t(aLocator);
 
-    return ulnFreeLob((ulnStmt *)aHandle, aLocator);
+    return ulnFreeLob(SQL_HANDLE_STMT,
+                      (ulnObject *)aHandle,
+                      aLocator);
 }
 
 /* 
  * PROJ-2047 Strengthening LOB - Added Interfaces
  *
- * ì§€ì •í•œ Offsetë¶€í„° LOB ë°ì´í„°ë¥¼ ì‚­ì œí•œë‹¤.
+ * ÁöÁ¤ÇÑ OffsetºÎÅÍ LOB µ¥ÀÌÅÍ¸¦ »èÁ¦ÇÑ´Ù.
  */
 SQLRETURN SQL_API SQLTrimLob(SQLHSTMT     aHandle,
                              SQLSMALLINT  aLocatorCType,
                              SQLUBIGINT   aLocator,
                              SQLUINTEGER  aStartOffset)
 {
-    return ulnTrimLob((ulnStmt *)aHandle,
+    return ulnTrimLob(SQL_HANDLE_STMT,
+                      (ulnObject *)aHandle,
                       (acp_sint16_t)aLocatorCType,
                       (acp_uint64_t)aLocator,
                       (acp_uint32_t)aStartOffset);
@@ -156,7 +178,7 @@ SQLRETURN SQL_API SQLTrimLob(SQLHSTMT     aHandle,
 
 /*
  * ===============================
- * ë¹„í‘œì¤€ì´ì§€ë§Œ, í•„ìš”í•œ í•¨ìˆ˜ë“¤
+ * ºñÇ¥ÁØÀÌÁö¸¸, ÇÊ¿äÇÑ ÇÔ¼öµé
  * ===============================
  */
 
@@ -181,11 +203,11 @@ void  SQL_API   SQLDumpDataSourceFromName(SQLCHAR *aDataSourceName)
 /* 
  * PROJ-1721 Name-based Binding
  *
- * í•¨ìˆ˜ ì´ë¦„ì— Betaë¥¼ ë¶™ì¸ ê±´ ì¶”í›„ CLIì—ì„œ ì•„ë˜ í•¨ìˆ˜ê°€ ì •ì‹ìœ¼ë¡œ ì¶”ê°€ë 
- * ê°€ëŠ¥ì„±ì„ ì—¼ë‘í–ˆê¸° ë•Œë¬¸ì´ë©° SQLBindParameterByNameì€ ì˜ˆì•½í•´ ë‘”ë‹¤.
- * í˜„ì¬ ADO.net ë“œë¼ì´ë²„ì—ì„œë§Œ í˜¸ì¶œëœë‹¤.
+ * ÇÔ¼ö ÀÌ¸§¿¡ Beta¸¦ ºÙÀÎ °Ç ÃßÈÄ CLI¿¡¼­ ¾Æ·¡ ÇÔ¼ö°¡ Á¤½ÄÀ¸·Î Ãß°¡µÉ
+ * °¡´É¼ºÀ» ¿°µÎÇß±â ¶§¹®ÀÌ¸ç SQLBindParameterByNameÀº ¿¹¾àÇØ µĞ´Ù.
+ * ÇöÀç ADO.net µå¶óÀÌ¹ö¿¡¼­¸¸ È£ÃâµÈ´Ù.
  *
- * @ParameterName : NULLì´ ì•„ë‹Œ ê²½ìš° '\0' ë¬¸ìë¡œ ë°˜ë“œì‹œ ëë‚˜ì•¼ í•œë‹¤.
+ * @ParameterName : NULLÀÌ ¾Æ´Ñ °æ¿ì '\0' ¹®ÀÚ·Î ¹İµå½Ã ³¡³ª¾ß ÇÑ´Ù.
  */
 #if (ODBCVER >= 0x0300)
 SQLRETURN SQL_API SQLBindParameterByNameBeta(SQLHSTMT     StatementHandle,
@@ -219,12 +241,12 @@ SQLRETURN SQL_API SQLBindParameterByNameBeta(SQLHSTMT     StatementHandle,
 /* 
  * PROJ-1721 Name-based Binding
  *
- * CLIì—ì„œ Name-based Bindingì„ ì§€ì›í•˜ë©´ ì´ í•¨ìˆ˜ëŠ” ë¶ˆí•„ìš”í•˜ë‹¤.
- * í˜„ì¬ ADO.net ë“œë¼ì´ë²„ì—ì„œë§Œ í˜¸ì¶œë˜ë©° ADO.net ë“œë¼ì´ë²„ ì™¸ì—ì„œ
- * í˜¸ì¶œëœ ê²½ìš° Statementë¥¼ ë¶ˆí•„ìš”í•˜ê²Œ ë¶„ì„í•˜ì§€ ì•Šê¸° ìœ„í•´ ì¶”ê°€í•œë‹¤.
+ * CLI¿¡¼­ Name-based BindingÀ» Áö¿øÇÏ¸é ÀÌ ÇÔ¼ö´Â ºÒÇÊ¿äÇÏ´Ù.
+ * ÇöÀç ADO.net µå¶óÀÌ¹ö¿¡¼­¸¸ È£ÃâµÇ¸ç ADO.net µå¶óÀÌ¹ö ¿Ü¿¡¼­
+ * È£ÃâµÈ °æ¿ì Statement¸¦ ºÒÇÊ¿äÇÏ°Ô ºĞ¼®ÇÏÁö ¾Ê±â À§ÇØ Ãß°¡ÇÑ´Ù.
  *
- * @AnalyzeText : NULLì´ ì•„ë‹Œ ê²½ìš° '\0' ë¬¸ìë¡œ ë°˜ë“œì‹œ ëë‚˜ì•¼ í•œë‹¤.
- *                NULLì´ë©´ StatementTextë¥¼ ë¶„ì„í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ * @AnalyzeText : NULLÀÌ ¾Æ´Ñ °æ¿ì '\0' ¹®ÀÚ·Î ¹İµå½Ã ³¡³ª¾ß ÇÑ´Ù.
+ *                NULLÀÌ¸é StatementText¸¦ ºĞ¼®ÇÏÁö ¾Ê´Â´Ù.
  */
 SQLRETURN SQL_API SQLPrepareByName(SQLHSTMT   StatementHandle,
                                    SQLCHAR   *StatementText,

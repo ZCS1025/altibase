@@ -44,7 +44,7 @@ static IDE_RC mtfUnistrEstimate( mtcNode*     aNode,
 mtfModule mtfUnistr = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfUnistrFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -88,7 +88,7 @@ IDE_RC mtfUnistrEstimate( mtcNode*     aNode,
 
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
-    // NCHAR íƒ€ìž…ì„ ì¸ìžë¡œ ë°›ì„ ìˆ˜ ì—†ë‹¤.
+    // NCHAR Å¸ÀÔÀ» ÀÎÀÚ·Î ¹ÞÀ» ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( (aStack[1].column->module->id == MTD_NCHAR_ID) || 
                     (aStack[1].column->module->id == MTD_NVARCHAR_ID),
                     ERR_CONVERSION_NOT_APPLICABLE );
@@ -107,7 +107,7 @@ IDE_RC mtfUnistrEstimate( mtcNode*     aNode,
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
 
-    // ë‚´ì…”ë„ ìºë¦­í„°ê°€ UTF8ì´ë©´ *2, UTF16ì´ë©´ ì¸ìžì˜ precisionë³´ë‹¤ ìž‘ë‹¤.
+    // ³»¼Å³Î Ä³¸¯ÅÍ°¡ UTF8ÀÌ¸é *2, UTF16ÀÌ¸é ÀÎÀÚÀÇ precisionº¸´Ù ÀÛ´Ù.
     if( mtl::mNationalCharSet->id == MTL_UTF8_ID )
     {
         sPrecision = aStack[1].column->precision * 2;
@@ -153,11 +153,11 @@ IDE_RC mtfUnistrCalculate( mtcNode*     aNode,
  * Implementation :
  *    UNISTR( char )
  *
- *    aStack[0] : ìœ ë‹ˆì½”ë“œ í¬ì¸íŠ¸ì¼ ê²½ìš°, ë‚´ì…”ë„ ìºë¦­í„°ì— ë§žê²Œ ë³€í™˜í•˜ì—¬ 
- *                í•´ë‹¹ ë¬¸ìžë¥¼ ë°˜í™˜í•œë‹¤.
- *    aStack[1] : char ( ì£¼ì–´ì§„ ë¬¸ìžì—´ )
+ *    aStack[0] : À¯´ÏÄÚµå Æ÷ÀÎÆ®ÀÏ °æ¿ì, ³»¼Å³Î Ä³¸¯ÅÍ¿¡ ¸Â°Ô º¯È¯ÇÏ¿© 
+ *                ÇØ´ç ¹®ÀÚ¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ *    aStack[1] : char ( ÁÖ¾îÁø ¹®ÀÚ¿­ )
  *
- *    ex) UNISTR( 'AB\C548CD' ) ==> result : ABì•ˆCD
+ *    ex) UNISTR( 'AB\C548CD' ) ==> result : AB¾ÈCD
  *
  ***********************************************************************/
     

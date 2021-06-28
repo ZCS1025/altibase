@@ -24,21 +24,21 @@
 #include <cmplrs/atom.inst.h>
 
 /* ------------------------------------------------
- *  csInterfaceì˜ Inteface List
+ *  csInterfaceÀÇ Inteface List
  * 
  *  - csInit(int argc, long, long, long)
  *     - cache capacity  ( ...k)
  *     - cache line size (16, 32, 64, 128)
  *     - cache associate ways (1, 2, 4, 8)
  * 
- *  - csFinal()      : ì¢…ë£Œí™”
+ *  - csFinal()      : Á¾·áÈ­
  *
  *  - csReference(address, writeflag, filename, procname, line); 
  *
- *  - cs_cache_clear() : profile ë‚´ìš©ì„ ì§€ì›€. 
- *  - cs_cache_start() : profile ì‹œì‘
- *  - cs_cache_stop()  : profile ì¤‘ì§€
- *  - cs_cache_save()  : profile ì €ì¥
+ *  - cs_cache_clear() : profile ³»¿ëÀ» Áö¿ò. 
+ *  - cs_cache_start() : profile ½ÃÀÛ
+ *  - cs_cache_stop()  : profile ÁßÁö
+ *  - cs_cache_save()  : profile ÀúÀå
  *  - cs_cache_prefetch()  : prefetch simulating..
  *
  * ----------------------------------------------*/

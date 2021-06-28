@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfDecodeSum.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfDecodeSum.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -54,7 +54,7 @@ static IDE_RC mtfDecodeSumEstimate( mtcNode*     aNode,
 mtfModule mtfDecodeSum = {
     2|MTC_NODE_OPERATOR_AGGREGATION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfDecodeSumFunctionName,
     NULL,
     mtfDecodeSumInitialize,
@@ -190,19 +190,19 @@ static const mtcExecute mtfDecodeSumExecuteBigint = {
 
 typedef struct mtfDecodeSumInfo
 {
-    // ì²«ë²ˆì§¸ ì¸ìž
+    // Ã¹¹øÂ° ÀÎÀÚ
     mtcExecute   * sSumColumnExecute;
     mtcNode      * sSumColumnNode;
 
-    // ë‘ë²ˆì§¸ ì¸ìž
+    // µÎ¹øÂ° ÀÎÀÚ
     mtcExecute   * sExprExecute;
     mtcNode      * sExprNode;
 
-    // ì„¸ë²ˆì§¸ ì¸ìž
+    // ¼¼¹øÂ° ÀÎÀÚ
     mtcExecute   * sSearchExecute;
     mtcNode      * sSearchNode;
 
-    // return ì¸ìž
+    // return ÀÎÀÚ
     mtcColumn    * sReturnColumn;
     void         * sReturnValue;
     idBool         sIsNull;
@@ -245,7 +245,7 @@ IDE_RC mtfDecodeSumEstimate( mtcNode*     aNode,
 
     sFence = aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK;
 
-    // 1 í˜¹ì€ 3ê°œì˜ ì¸ìž
+    // 1 È¤Àº 3°³ÀÇ ÀÎÀÚ
     IDE_TEST_RAISE( (sFence != 1) && (sFence != 3),
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
@@ -407,7 +407,7 @@ IDE_RC mtfDecodeSumEstimateFloat( mtcNode*     aNode,
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeSumExecuteFloat;
 
-    // sum ê²°ê³¼ë¥¼ ì €ìž¥í•¨
+    // sum °á°ú¸¦ ÀúÀåÇÔ
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      & mtdFloat,
                                      0,
@@ -415,7 +415,7 @@ IDE_RC mtfDecodeSumEstimateFloat( mtcNode*     aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // sum info ì •ë³´ë¥¼ mtdBinaryì— ì €ìž¥
+    // sum info Á¤º¸¸¦ mtdBinary¿¡ ÀúÀå
     sBinaryPrecision = ID_SIZEOF(mtfDecodeSumInfo);
 
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
@@ -467,11 +467,11 @@ IDE_RC mtfDecodeSumInitializeFloat( mtcNode*     aNode,
     sInfo = (mtfDecodeSumInfo*)(sValue->mValue);
 
     //-----------------------------
-    // sum info ì´ˆê¸°í™”
+    // sum info ÃÊ±âÈ­
     //-----------------------------
 
     sArgNode[0] = aNode->arguments;
-    // sum column ì„¤ì •
+    // sum column ¼³Á¤
     sInfo->sSumColumnExecute = aTemplate->rows[sArgNode[0]->table].execute + sArgNode[0]->column;
     sInfo->sSumColumnNode    = sArgNode[0];
 
@@ -480,10 +480,10 @@ IDE_RC mtfDecodeSumInitializeFloat( mtcNode*     aNode,
         sArgNode[1] = sArgNode[0]->next;
         sArgNode[2] = sArgNode[1]->next;
 
-        // expression column ì„¤ì •
+        // expression column ¼³Á¤
         sInfo->sExprExecute = aTemplate->rows[sArgNode[1]->table].execute + sArgNode[1]->column;
         sInfo->sExprNode    = sArgNode[1];
-        // search value ì„¤ì •
+        // search value ¼³Á¤
         sInfo->sSearchExecute = aTemplate->rows[sArgNode[2]->table].execute + sArgNode[2]->column;
         sInfo->sSearchNode    = sArgNode[2];
     }
@@ -495,13 +495,13 @@ IDE_RC mtfDecodeSumInitializeFloat( mtcNode*     aNode,
         sInfo->sSearchExecute = NULL;
         sInfo->sSearchNode    = NULL;
     }
-    // return column ì„¤ì •
+    // return column ¼³Á¤
     sInfo->sReturnColumn = aTemplate->rows[aNode->table].columns + aNode->column;
     sInfo->sReturnValue  = (void *)
         ((UChar*) aTemplate->rows[aNode->table].row + sInfo->sReturnColumn->column.offset);
     sInfo->sIsNull = ID_TRUE;
     //-----------------------------
-    // sum ê²°ê³¼ë¥¼ ì´ˆê¸°í™”
+    // sum °á°ú¸¦ ÃÊ±âÈ­
     //-----------------------------
     sFloat = (mtdNumericType*) sInfo->sReturnValue;
     sFloat->length       = 1;
@@ -548,7 +548,7 @@ IDE_RC mtfDecodeSumAggregateFloat( mtcNode*     aNode,
     {
         IDE_TEST_RAISE( aRemain < 2, ERR_STACK_OVERFLOW );
 
-        // ë‘ë²ˆì§¸ ì¸ìž
+        // µÎ¹øÂ° ÀÎÀÚ
         IDE_TEST( sInfo->sExprExecute->calculate( sInfo->sExprNode,
                                                   aStack,
                                                   aRemain,
@@ -566,7 +566,7 @@ IDE_RC mtfDecodeSumAggregateFloat( mtcNode*     aNode,
                       != IDE_SUCCESS );
         }
 
-        // ì„¸ë²ˆì§¸ ì¸ìž
+        // ¼¼¹øÂ° ÀÎÀÚ
         IDE_TEST( sInfo->sSearchExecute->calculate( sInfo->sSearchNode,
                                                     aStack + 1,
                                                     aRemain - 1,
@@ -584,7 +584,7 @@ IDE_RC mtfDecodeSumAggregateFloat( mtcNode*     aNode,
                       != IDE_SUCCESS );
         }
 
-        // decode ì—°ì‚°ìˆ˜í–‰
+        // decode ¿¬»ê¼öÇà
         if ( aStack[0].column->module != &mtdList )
         {
             IDE_DASSERT( aStack[0].column->module == aStack[1].column->module );
@@ -607,7 +607,7 @@ IDE_RC mtfDecodeSumAggregateFloat( mtcNode*     aNode,
                 sValueInfo2.value  = aStack[1].value;
                 sValueInfo2.flag   = MTD_OFFSET_USELESS;
 
-                // ë‘ë²ˆì§¸ ì¸ìžì™€ ì„¸ë²ˆì§¸ ì¸ìžì˜ ë¹„êµ
+                // µÎ¹øÂ° ÀÎÀÚ¿Í ¼¼¹øÂ° ÀÎÀÚÀÇ ºñ±³
 
                 sCompare = sModule->logicalCompare[MTD_COMPARE_ASCENDING]( &sValueInfo1,
                                                                            &sValueInfo2 );
@@ -661,7 +661,7 @@ IDE_RC mtfDecodeSumAggregateFloat( mtcNode*     aNode,
 
     if ( sCompare == 0 )
     {
-        // ì²«ë²ˆì§¸ ì¸ìž
+        // Ã¹¹øÂ° ÀÎÀÚ
         IDE_TEST( sInfo->sSumColumnExecute->calculate( sInfo->sSumColumnNode,
                                                        aStack,
                                                        aRemain,
@@ -907,7 +907,7 @@ IDE_RC mtfDecodeSumEstimateDouble( mtcNode*     aNode,
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeSumExecuteDouble;
 
-    // sum ê²°ê³¼ë¥¼ ì €ìž¥í•¨
+    // sum °á°ú¸¦ ÀúÀåÇÔ
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      & mtdDouble,
                                      0,
@@ -915,7 +915,7 @@ IDE_RC mtfDecodeSumEstimateDouble( mtcNode*     aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // sum info ì •ë³´ë¥¼ mtdBinaryì— ì €ìž¥
+    // sum info Á¤º¸¸¦ mtdBinary¿¡ ÀúÀå
     sBinaryPrecision = ID_SIZEOF(mtfDecodeSumInfo);
 
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
@@ -965,11 +965,11 @@ IDE_RC mtfDecodeSumInitializeDouble( mtcNode*     aNode,
     sInfo = (mtfDecodeSumInfo*)(sValue->mValue);
 
     //-----------------------------
-    // sum info ì´ˆê¸°í™”
+    // sum info ÃÊ±âÈ­
     //-----------------------------
     sArgNode[0] = aNode->arguments;
 
-    // sum column ì„¤ì •
+    // sum column ¼³Á¤
     sInfo->sSumColumnExecute = aTemplate->rows[sArgNode[0]->table].execute + sArgNode[0]->column;
     sInfo->sSumColumnNode    = sArgNode[0];
 
@@ -978,11 +978,11 @@ IDE_RC mtfDecodeSumInitializeDouble( mtcNode*     aNode,
         sArgNode[1] = sArgNode[0]->next;
         sArgNode[2] = sArgNode[1]->next;
 
-        // expression column ì„¤ì •
+        // expression column ¼³Á¤
         sInfo->sExprExecute = aTemplate->rows[sArgNode[1]->table].execute + sArgNode[1]->column;
         sInfo->sExprNode    = sArgNode[1];
 
-        // search value ì„¤ì •
+        // search value ¼³Á¤
         sInfo->sSearchExecute = aTemplate->rows[sArgNode[2]->table].execute + sArgNode[2]->column;
         sInfo->sSearchNode    = sArgNode[2];
     }
@@ -995,14 +995,14 @@ IDE_RC mtfDecodeSumInitializeDouble( mtcNode*     aNode,
         sInfo->sSearchNode    = NULL;
     }
 
-    // return column ì„¤ì •
+    // return column ¼³Á¤
     sInfo->sReturnColumn = aTemplate->rows[aNode->table].columns + aNode->column;
     sInfo->sReturnValue  = (void *)
         ((UChar*) aTemplate->rows[aNode->table].row + sInfo->sReturnColumn->column.offset);
     sInfo->sIsNull = ID_TRUE;
 
     //-----------------------------
-    // sum ê²°ê³¼ë¥¼ ì´ˆê¸°í™”
+    // sum °á°ú¸¦ ÃÊ±âÈ­
     //-----------------------------
 
     *(mtdDoubleType*)(sInfo->sReturnValue) = 0;
@@ -1043,7 +1043,7 @@ IDE_RC mtfDecodeSumAggregateDouble( mtcNode*     aNode,
     {
         IDE_TEST_RAISE( aRemain < 2, ERR_STACK_OVERFLOW );
 
-        // ë‘ë²ˆì§¸ ì¸ìž
+        // µÎ¹øÂ° ÀÎÀÚ
         IDE_TEST( sInfo->sExprExecute->calculate( sInfo->sExprNode,
                                                   aStack,
                                                   aRemain,
@@ -1061,7 +1061,7 @@ IDE_RC mtfDecodeSumAggregateDouble( mtcNode*     aNode,
                       != IDE_SUCCESS );
         }
 
-        // ì„¸ë²ˆì§¸ ì¸ìž
+        // ¼¼¹øÂ° ÀÎÀÚ
         IDE_TEST( sInfo->sSearchExecute->calculate( sInfo->sSearchNode,
                                                     aStack + 1,
                                                     aRemain - 1,
@@ -1079,7 +1079,7 @@ IDE_RC mtfDecodeSumAggregateDouble( mtcNode*     aNode,
                       != IDE_SUCCESS );
         }
 
-        // decode ì—°ì‚°ìˆ˜í–‰
+        // decode ¿¬»ê¼öÇà
         if ( aStack[0].column->module != &mtdList )
         {
             IDE_DASSERT( aStack[0].column->module == aStack[1].column->module );
@@ -1102,7 +1102,7 @@ IDE_RC mtfDecodeSumAggregateDouble( mtcNode*     aNode,
                 sValueInfo2.column = aStack[1].column;
                 sValueInfo2.value  = aStack[1].value;
                 sValueInfo2.flag   = MTD_OFFSET_USELESS;
-                // ë‘ë²ˆì§¸ ì¸ìžì™€ ì„¸ë²ˆì§¸ ì¸ìžì˜ ë¹„êµ
+                // µÎ¹øÂ° ÀÎÀÚ¿Í ¼¼¹øÂ° ÀÎÀÚÀÇ ºñ±³
                 sCompare = sModule->logicalCompare[MTD_COMPARE_ASCENDING]( &sValueInfo1,
                                                                            &sValueInfo2 );
             }
@@ -1155,7 +1155,7 @@ IDE_RC mtfDecodeSumAggregateDouble( mtcNode*     aNode,
 
     if ( sCompare == 0 )
     {
-        // ì²«ë²ˆì§¸ ì¸ìž
+        // Ã¹¹øÂ° ÀÎÀÚ
         IDE_TEST( sInfo->sSumColumnExecute->calculate( sInfo->sSumColumnNode,
                                                        aStack,
                                                        aRemain,
@@ -1376,7 +1376,7 @@ IDE_RC mtfDecodeSumEstimateBigint( mtcNode*     aNode,
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeSumExecuteBigint;
 
-    // sum ê²°ê³¼ë¥¼ ì €ìž¥í•¨
+    // sum °á°ú¸¦ ÀúÀåÇÔ
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      & mtdBigint,
                                      0,
@@ -1384,7 +1384,7 @@ IDE_RC mtfDecodeSumEstimateBigint( mtcNode*     aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // sum info ì •ë³´ë¥¼ mtdBinaryì— ì €ìž¥
+    // sum info Á¤º¸¸¦ mtdBinary¿¡ ÀúÀå
     sBinaryPrecision = ID_SIZEOF(mtfDecodeSumInfo);
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                      & mtdBinary,
@@ -1432,12 +1432,12 @@ IDE_RC mtfDecodeSumInitializeBigint( mtcNode*     aNode,
     sInfo = (mtfDecodeSumInfo*)(sValue->mValue);
 
     //-----------------------------
-    // sum info ì´ˆê¸°í™”
+    // sum info ÃÊ±âÈ­
     //-----------------------------
 
     sArgNode[0] = aNode->arguments;
 
-    // sum column ì„¤ì •
+    // sum column ¼³Á¤
     sInfo->sSumColumnExecute = aTemplate->rows[sArgNode[0]->table].execute + sArgNode[0]->column;
     sInfo->sSumColumnNode    = sArgNode[0];
 
@@ -1446,11 +1446,11 @@ IDE_RC mtfDecodeSumInitializeBigint( mtcNode*     aNode,
         sArgNode[1] = sArgNode[0]->next;
         sArgNode[2] = sArgNode[1]->next;
 
-        // expression column ì„¤ì •
+        // expression column ¼³Á¤
         sInfo->sExprExecute = aTemplate->rows[sArgNode[1]->table].execute + sArgNode[1]->column;
         sInfo->sExprNode    = sArgNode[1];
 
-        // search value ì„¤ì •
+        // search value ¼³Á¤
         sInfo->sSearchExecute = aTemplate->rows[sArgNode[2]->table].execute + sArgNode[2]->column;
         sInfo->sSearchNode    = sArgNode[2];
     }
@@ -1463,14 +1463,14 @@ IDE_RC mtfDecodeSumInitializeBigint( mtcNode*     aNode,
         sInfo->sSearchNode    = NULL;
     }
 
-    // return column ì„¤ì •
+    // return column ¼³Á¤
     sInfo->sReturnColumn = aTemplate->rows[aNode->table].columns + aNode->column;
     sInfo->sReturnValue  = (void *)
         ((UChar*) aTemplate->rows[aNode->table].row + sInfo->sReturnColumn->column.offset);
     sInfo->sIsNull = ID_TRUE;
 
     //-----------------------------
-    // sum ê²°ê³¼ë¥¼ ì´ˆê¸°í™”
+    // sum °á°ú¸¦ ÃÊ±âÈ­
     //-----------------------------
 
     *(mtdBigintType*)(sInfo->sReturnValue) = 0;
@@ -1511,7 +1511,7 @@ IDE_RC mtfDecodeSumAggregateBigint( mtcNode*     aNode,
     {
         IDE_TEST_RAISE( aRemain < 2, ERR_STACK_OVERFLOW );
 
-        // ë‘ë²ˆì§¸ ì¸ìž
+        // µÎ¹øÂ° ÀÎÀÚ
         IDE_TEST( sInfo->sExprExecute->calculate( sInfo->sExprNode,
                                                   aStack,
                                                   aRemain,
@@ -1529,7 +1529,7 @@ IDE_RC mtfDecodeSumAggregateBigint( mtcNode*     aNode,
                       != IDE_SUCCESS );
         }
 
-        // ì„¸ë²ˆì§¸ ì¸ìž
+        // ¼¼¹øÂ° ÀÎÀÚ
         IDE_TEST( sInfo->sSearchExecute->calculate( sInfo->sSearchNode,
                                                     aStack + 1,
                                                     aRemain - 1,
@@ -1546,7 +1546,7 @@ IDE_RC mtfDecodeSumAggregateBigint( mtcNode*     aNode,
                       != IDE_SUCCESS );
         }
 
-        // decode ì—°ì‚°ìˆ˜í–‰
+        // decode ¿¬»ê¼öÇà
         if ( aStack[0].column->module != &mtdList )
         {
             IDE_DASSERT( aStack[0].column->module == aStack[1].column->module );
@@ -1570,7 +1570,7 @@ IDE_RC mtfDecodeSumAggregateBigint( mtcNode*     aNode,
                 sValueInfo2.value  = aStack[1].value;
                 sValueInfo2.flag   = MTD_OFFSET_USELESS;
 
-                // ë‘ë²ˆì§¸ ì¸ìžì™€ ì„¸ë²ˆì§¸ ì¸ìžì˜ ë¹„êµ
+                // µÎ¹øÂ° ÀÎÀÚ¿Í ¼¼¹øÂ° ÀÎÀÚÀÇ ºñ±³
                 sCompare = sModule->logicalCompare[MTD_COMPARE_ASCENDING]( &sValueInfo1,
                                                                            &sValueInfo2 );
             }
@@ -1623,7 +1623,7 @@ IDE_RC mtfDecodeSumAggregateBigint( mtcNode*     aNode,
 
     if ( sCompare == 0 )
     {
-        // ì²«ë²ˆì§¸ ì¸ìž
+        // Ã¹¹øÂ° ÀÎÀÚ
         IDE_TEST( sInfo->sSumColumnExecute->calculate( sInfo->sSumColumnNode,
                                                        aStack,
                                                        aRemain,

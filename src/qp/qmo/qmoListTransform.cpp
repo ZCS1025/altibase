@@ -24,7 +24,7 @@
  *     (t1.i1, t1.i2) != (t2.i1, t2.i2) => t1.i1!=t2.i1 OR t2.i1!=t2.i2
  *     (t1.i1, t2.i1) != (1,1)          => t1.i1!=1 OR t2.i1!=1
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
  *****************************************************************************/
 
@@ -46,10 +46,10 @@ IDE_RC qmoListTransform::doTransform( qcStatement * aStatement,
 {
 /******************************************************************************
  *
- * Description : qmsQuerySet ì˜ ëª¨ë“  ì¡°ê±´ì ˆì— ëŒ€í•´ ìˆ˜í–‰
+ * Description : qmsQuerySet ÀÇ ¸ğµç Á¶°ÇÀı¿¡ ´ëÇØ ¼öÇà
  *
- * Implementation : QCU_OPTIMIZER_LIST_TRANSFORMATION property ë¡œ ë™ì‘í•˜ë©°
- *                  ë‹¤ìŒ í•­ëª©ì— ëŒ€í•´ ë³€í™˜
+ * Implementation : QCU_OPTIMIZER_LIST_TRANSFORMATION property ·Î µ¿ÀÛÇÏ¸ç
+ *                  ´ÙÀ½ Ç×¸ñ¿¡ ´ëÇØ º¯È¯
  *
  *               - for from tree
  *               - for where clause predicate
@@ -60,14 +60,14 @@ IDE_RC qmoListTransform::doTransform( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoListTransform::doTransform::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aQuerySet  != NULL );
 
     //--------------------------------------
-    // ì¡°ê±´ì ˆì— ëŒ€í•œ ë³€í™˜ í•¨ìˆ˜ í˜¸ì¶œ
+    // Á¶°ÇÀı¿¡ ´ëÇÑ º¯È¯ ÇÔ¼ö È£Ãâ
     //--------------------------------------
 
     if ( QCU_OPTIMIZER_LIST_TRANSFORMATION == 1 )
@@ -102,7 +102,7 @@ IDE_RC qmoListTransform::doTransform( qcStatement * aStatement,
         // Nothing to do.
     }
 
-    // environmentì˜ ê¸°ë¡
+    // environmentÀÇ ±â·Ï
     qcgPlan::registerPlanProperty( aStatement,
                                    PLAN_PROPERTY_OPTIMIZER_LIST_TRANSFORMATION );
 
@@ -118,23 +118,23 @@ IDE_RC qmoListTransform::doTransform4From( qcStatement * aStatement,
 {
 /******************************************************************************
  *
- * Description : From ì ˆì— ëŒ€í•œ ìˆ˜í–‰
+ * Description : From Àı¿¡ ´ëÇÑ ¼öÇà
  *
- * Implementation : From tree ìˆœíšŒ
+ * Implementation : From tree ¼øÈ¸
  *
  ******************************************************************************/
 
     IDU_FIT_POINT_FATAL( "qmoListTransform::doTransform4From::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aFrom      != NULL );
 
     //--------------------------------------
-    // FROM tree ìˆœíšŒ
+    // FROM tree ¼øÈ¸
     //--------------------------------------
 
     if ( aFrom->joinType != QMS_NO_JOIN ) // INNER, OUTER JOIN
@@ -153,7 +153,7 @@ IDE_RC qmoListTransform::doTransform4From( qcStatement * aStatement,
     }
     else
     {
-        // QMS_NO_JOIN ì¼ ê²½ìš° onCondition ì€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // QMS_NO_JOIN ÀÏ °æ¿ì onCondition Àº Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
         // Nothing to do.
     }
 
@@ -169,11 +169,11 @@ IDE_RC qmoListTransform::listTransform( qcStatement  * aStatement,
 {
 /******************************************************************************
  *
- * Description : LIST ë³€í™˜ì„ ìˆ˜í–‰í•œë‹¤.
+ * Description : LIST º¯È¯À» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
  *
- *     Logical operator ì´í•˜ì˜ [NOT] EQUAL ì—°ì‚°ìì— í•œí•´ ìˆ˜í–‰ëœë‹¤.
+ *     Logical operator ÀÌÇÏÀÇ [NOT] EQUAL ¿¬»êÀÚ¿¡ ÇÑÇØ ¼öÇàµÈ´Ù.
  *
  *     [Before] AND/OR(sParent)
  *               |
@@ -200,14 +200,14 @@ IDE_RC qmoListTransform::listTransform( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoListTransform::listTransform::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aNode      != NULL );
 
     //--------------------------------------
-    // ë…¸ë“œ ìˆœíšŒí•˜ë©´ì„œ ë³€í™˜
+    // ³ëµå ¼øÈ¸ÇÏ¸é¼­ º¯È¯
     //--------------------------------------
 
     if ( *aNode != NULL )
@@ -215,14 +215,14 @@ IDE_RC qmoListTransform::listTransform( qcStatement  * aStatement,
         if ( ( ( (*aNode)->node.lflag & MTC_NODE_OPERATOR_MASK ) == MTC_NODE_OPERATOR_OR ) ||
              ( ( (*aNode)->node.lflag & MTC_NODE_OPERATOR_MASK ) == MTC_NODE_OPERATOR_AND ) )
         {
-            // Logical operator ì´ë©´ argument ì˜ next ìˆœíšŒ
+            // Logical operator ÀÌ¸é argument ÀÇ next ¼øÈ¸
             for ( sPrev = NULL, sTarget = (qtcNode **)&((*aNode)->node.arguments);
                   *sTarget != NULL;
                   sPrev = *sTarget, sTarget = (qtcNode **)&((*sTarget)->node.next) )
             {
                 IDE_TEST( listTransform( aStatement, sTarget ) != IDE_SUCCESS );
 
-                // Target ì´ ë³€ê²½ë˜ì—ˆì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì—°ê²°ê´€ê³„ ë³µêµ¬
+                // Target ÀÌ º¯°æµÇ¾úÀ» ¼ö ÀÖÀ¸¹Ç·Î ¿¬°á°ü°è º¹±¸
                 if ( sPrev == NULL )
                 {
                     (*aNode)->node.arguments = (mtcNode *)(*sTarget);
@@ -235,7 +235,7 @@ IDE_RC qmoListTransform::listTransform( qcStatement  * aStatement,
         }
         else
         {
-            // Logical operator ì•„ë‹ˆë©´ ë³€í™˜
+            // Logical operator ¾Æ´Ï¸é º¯È¯
             sTarget = aNode;
 
             IDE_TEST( makePredicateList( aStatement,
@@ -243,7 +243,7 @@ IDE_RC qmoListTransform::listTransform( qcStatement  * aStatement,
                                          &sNewPred )
                       != IDE_SUCCESS );
 
-            // ì—°ê²°ê´€ê³„ ë³µêµ¬
+            // ¿¬°á°ü°è º¹±¸
             if ( sNewPred != NULL )
             {
                 *aNode = sNewPred;
@@ -272,7 +272,7 @@ IDE_RC qmoListTransform::makePredicateList( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : Compare predicate ìœ¼ë¡œë¶€í„° predicate list ë¥¼ ìƒì„±í•œë‹¤.
+ * Description : Compare predicate À¸·ÎºÎÅÍ predicate list ¸¦ »ı¼ºÇÑ´Ù.
  *
  * Implementation :
  *
@@ -318,7 +318,7 @@ IDE_RC qmoListTransform::makePredicateList( qcStatement  * aStatement,
     {
         sCompareNext = aCompareNode->node.next;
 
-        // Predicate list ìƒì„±
+        // Predicate list »ı¼º
         for ( sLeftArg  = aCompareNode->node.arguments->arguments,
               sRightArg = aCompareNode->node.arguments->next->arguments;
               ( sLeftArg != NULL ) && ( sRightArg != NULL );
@@ -327,7 +327,7 @@ IDE_RC qmoListTransform::makePredicateList( qcStatement  * aStatement,
             sLeftArgNext  = sLeftArg->next;
             sRightArgNext = sRightArg->next;
 
-            // Predicate ìƒì„±
+            // Predicate »ı¼º
             IDE_TEST( makePredicate( aStatement,
                                      aCompareNode,
                                      (qtcNode*)sLeftArg,
@@ -335,7 +335,7 @@ IDE_RC qmoListTransform::makePredicateList( qcStatement  * aStatement,
                                      &sNewNode )
                       != IDE_SUCCESS );
 
-            // ìƒì„±ëœ predicateì„ ì—°ê²°í•œë‹¤.
+            // »ı¼ºµÈ predicateÀ» ¿¬°áÇÑ´Ù.
             if ( sFirst == NULL )
             {
                 sFirst = sLast = sNewNode;
@@ -347,7 +347,7 @@ IDE_RC qmoListTransform::makePredicateList( qcStatement  * aStatement,
             }
         }
 
-        // Logical operator ìƒì„±
+        // Logical operator »ı¼º
         SET_EMPTY_POSITION( sEmptyPosition );
 
         IDE_TEST( qtc::makeNode( aStatement,
@@ -385,16 +385,16 @@ IDE_RC qmoListTransform::checkCondition( qtcNode     * aNode,
 {
 /******************************************************************************
  *
- * Description : ë³€í™˜ ê°€ëŠ¥í•œ ì¡°ê±´ì— ëŒ€í•œ ê²°ê³¼ë¥¼ ë°˜í™˜í•œë‹¤.
+ * Description : º¯È¯ °¡´ÉÇÑ Á¶°Ç¿¡ ´ëÇÑ °á°ú¸¦ ¹İÈ¯ÇÑ´Ù.
  *
- * Implementation : ë³€í™˜ ê°€ëŠ¥í•œ ì¡°ê±´ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
+ * Implementation : º¯È¯ °¡´ÉÇÑ Á¶°ÇÀº ´ÙÀ½°ú °°´Ù.
  *
- *             - ORACLE style outer mask ì¡´ì¬í•˜ì§€ ì•Šì•„ì•¼ í•¨
- *             - Subquery ë¥¼ í¬í•¨í•˜ì§€ ì•Šì•„ì•¼ í•¨
- *             - [NOT] EQUAL ì—°ì‚°ì
- *             - ì¸ìëŠ” ëª¨ë‘ LIST ì—°ì‚°ì
- *             - Predicate dependency ê°€ QMO_LIST_TRANSFORM_DEPENDENCY_COUNT ì´ìƒ
- *             - LIST ì¸ìì˜ ê°¯ìˆ˜ëŠ” QMO_LIST_TRANSFORM_ARGUMENTS_COUNT ì´í•˜ì¼ ê²½ìš°
+ *             - ORACLE style outer mask Á¸ÀçÇÏÁö ¾Ê¾Æ¾ß ÇÔ
+ *             - Subquery ¸¦ Æ÷ÇÔÇÏÁö ¾Ê¾Æ¾ß ÇÔ
+ *             - [NOT] EQUAL ¿¬»êÀÚ
+ *             - ÀÎÀÚ´Â ¸ğµÎ LIST ¿¬»êÀÚ
+ *             - Predicate dependency °¡ QMO_LIST_TRANSFORM_DEPENDENCY_COUNT ÀÌ»ó
+ *             - LIST ÀÎÀÚÀÇ °¹¼ö´Â QMO_LIST_TRANSFORM_ARGUMENTS_COUNT ÀÌÇÏÀÏ °æ¿ì
  *
  *             ex) (t1.i1, t1.i2) = (t2.i1, t2.i2)
  *                 (t1.i1, t2.i2) = (t3.i1, t3.i2)
@@ -411,13 +411,13 @@ IDE_RC qmoListTransform::checkCondition( qtcNode     * aNode,
     IDU_FIT_POINT_FATAL( "qmoListTransform::checkCondition::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aNode      != NULL );
 
     //--------------------------------------
-    // ì¡°ê±´ ê²€ì‚¬
+    // Á¶°Ç °Ë»ç
     //--------------------------------------
 
     IDE_TEST( qmoCSETransform::doCheckOuter( aNode,
@@ -468,7 +468,7 @@ IDE_RC qmoListTransform::makePredicate( qcStatement  * aStatement,
 {
 /***********************************************************************
  *
- * Description : í•˜ë‚˜ì˜ predicate ì„ ìƒì„±í•œë‹¤.
+ * Description : ÇÏ³ªÀÇ predicate À» »ı¼ºÇÑ´Ù.
  *
  * Implementation :
  *

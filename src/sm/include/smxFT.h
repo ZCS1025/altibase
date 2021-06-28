@@ -40,6 +40,18 @@ public:
                                       void                *aDumpObj,
                                       iduFixedTableMemory *aMemory);
 
+    /* X$TIME_SCN */
+    static IDE_RC buildRecordForTimeSCNList( idvSQL              * /*aStatistics*/,
+                                             void                * aHeader,
+                                             void                * /* aDumpObj */,
+                                             iduFixedTableMemory * aMemory );
+
+    /* X$PENDING_WAIT */
+    static IDE_RC buildRecordForPendingWait( idvSQL              * /*aStatistics*/,
+                                             void                * aHeader,
+                                             void                * /* aDumpObj */,
+                                             iduFixedTableMemory * aMemory );
+
     // X$TRANSACTIONS
     static IDE_RC buildRecordForTxList(idvSQL              * /*aStatistics*/,
                                        void                *aHeader,

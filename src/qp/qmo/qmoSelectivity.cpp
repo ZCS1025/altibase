@@ -20,16 +20,16 @@
  *
  * Description : Selectivity Manager
  *
- *        - Unit predicate ì— ëŒ€í•œ selectivity ê³„ì‚°
- *        - qmoPredicate ì— ëŒ€í•œ selectivity ê³„ì‚°
- *        - qmoPredicate list ì— ëŒ€í•œ í†µí•© selectivity ê³„ì‚°
- *        - qmoPredicate wrapper list ì— ëŒ€í•œ í†µí•© selectivity ê³„ì‚°
- *        - ê° graph ì— ëŒ€í•œ selectivity ê³„ì‚°
- *        - ê° graph ì— ëŒ€í•œ output record count ê³„ì‚°
+ *        - Unit predicate ¿¡ ´ëÇÑ selectivity °è»ê
+ *        - qmoPredicate ¿¡ ´ëÇÑ selectivity °è»ê
+ *        - qmoPredicate list ¿¡ ´ëÇÑ ÅëÇÕ selectivity °è»ê
+ *        - qmoPredicate wrapper list ¿¡ ´ëÇÑ ÅëÇÕ selectivity °è»ê
+ *        - °¢ graph ¿¡ ´ëÇÑ selectivity °è»ê
+ *        - °¢ graph ¿¡ ´ëÇÑ output record count °è»ê
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -76,15 +76,15 @@ qmoSelectivity::setMySelectivity( qcStatement   * aStatement,
 {
 /******************************************************************************
  *
- * Description : JOIN graph ì œì™¸í•œ qmoPredicate.mySelectivity ê³„ì‚°
+ * Description : JOIN graph Á¦¿ÜÇÑ qmoPredicate.mySelectivity °è»ê
  *
- * Implementation : ë‹¨ìœ„ predicate ì— ëŒ€í•œ unit selectivity ë¥¼ íšë“í•˜ì—¬
- *                  qmoPredicate.mySelectivity ì— ì„¸íŒ…
+ * Implementation : ´ÜÀ§ predicate ¿¡ ´ëÇÑ unit selectivity ¸¦ È¹µæÇÏ¿©
+ *                  qmoPredicate.mySelectivity ¿¡ ¼¼ÆÃ
  *
- *     1. qmoPredicate ì´ ë³µìˆ˜ ê°œì˜ unit predicate ë¡œ êµ¬ì„±ë˜ì—ˆì„ ê²½ìš°
+ *     1. qmoPredicate ÀÌ º¹¼ö °³ÀÇ unit predicate ·Î ±¸¼ºµÇ¾úÀ» °æ¿ì
  *        ex) i1=1 or i1<1, t1.i1>=3 or t1.i2<=5
- *        S = 1-PRODUCT(1-USn)  (OR ì˜ í™•ë¥ ê³„ì‚°ì‹)
- *     2. qmoPredicate ì´ í•œ ê°œì˜ unit predicate ë¡œ êµ¬ì„±ë˜ì—ˆì„ ê²½ìš°
+ *        S = 1-PRODUCT(1-USn)  (OR ÀÇ È®·ü°è»ê½Ä)
+ *     2. qmoPredicate ÀÌ ÇÑ °³ÀÇ unit predicate ·Î ±¸¼ºµÇ¾úÀ» °æ¿ì
  *        ex) i1=1, t1.i1>=t1.i2
  *        S = US(unit selectivity)
  *
@@ -98,7 +98,7 @@ qmoSelectivity::setMySelectivity( qcStatement   * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::setMySelectivity::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -106,7 +106,7 @@ qmoSelectivity::setMySelectivity( qcStatement   * aStatement,
     IDE_DASSERT( aPredicate != NULL );
 
     //--------------------------------------
-    // Selectivity ê³„ì‚°
+    // Selectivity °è»ê
     //--------------------------------------
 
     sIsDNF = ID_FALSE;
@@ -124,8 +124,8 @@ qmoSelectivity::setMySelectivity( qcStatement   * aStatement,
 
     if( sCompareNode->node.next != NULL && sIsDNF == ID_FALSE )
     {
-        // 1. OR í•˜ìœ„ì— ë¹„êµì—°ì‚°ìê°€ ì—¬ëŸ¬ê°œ ìˆëŠ” ê²½ìš°,
-        //    OR ë…¼ë¦¬ì—°ì‚°ìì— ëŒ€í•œ selectivity ê³„ì‚°.
+        // 1. OR ÇÏÀ§¿¡ ºñ±³¿¬»êÀÚ°¡ ¿©·¯°³ ÀÖ´Â °æ¿ì,
+        //    OR ³í¸®¿¬»êÀÚ¿¡ ´ëÇÑ selectivity °è»ê.
         //    1 - (1-a)(1-b).....
         // ex) i1=1 or i1<1, t1.i1>=3 or t1.i2<=5
 
@@ -150,7 +150,7 @@ qmoSelectivity::setMySelectivity( qcStatement   * aStatement,
     }
     else
     {
-        // 2. OR ë…¸ë“œ í•˜ìœ„ì— ë¹„êµì—°ì‚°ìê°€ í•˜ë‚˜ë§Œ ì¡´ì¬
+        // 2. OR ³ëµå ÇÏÀ§¿¡ ºñ±³¿¬»êÀÚ°¡ ÇÏ³ª¸¸ Á¸Àç
         //    ex) i1=1, t1.i1>=t1.i2
 
         IDE_TEST( getUnitSelectivity( QC_SHARED_TMPLATE(aStatement),
@@ -184,21 +184,21 @@ qmoSelectivity::setTotalSelectivity( qcStatement   * aStatement,
 {
 /******************************************************************************
  *
- * Description : qmoPredicate list ì— ëŒ€í•œ ì¬ë°°ì¹˜ê°€ ì™„ë£Œëœ í›„
- *               qmoPredicate.id ë³„(ë™ì¼ ì»¬ëŸ¼)ë¡œ more list ì— ëŒ€í•´
- *               qmoPredicate.totalSelectivity(ì´í•˜ TS) ì„¤ì •
+ * Description : qmoPredicate list ¿¡ ´ëÇÑ Àç¹èÄ¡°¡ ¿Ï·áµÈ ÈÄ
+ *               qmoPredicate.id º°(µ¿ÀÏ ÄÃ·³)·Î more list ¿¡ ´ëÇØ
+ *               qmoPredicate.totalSelectivity(ÀÌÇÏ TS) ¼³Á¤
  *
- *   PROJ-1446 : more list ë¥¼ ëŒ€ìƒìœ¼ë¡œ í•œ qmoPredicate ì¤‘ í•˜ë‚˜ë¼ë„
- *               QMO_PRED_HOST_OPTIMIZE_TRUE (í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë¥¼ í¬í•¨) ì´ë©´
- *               more list ì˜ ì²«ë²ˆì§¸ predicate ì— QMO_PRED_HEAD_HOST_OPTIMIZE_TRUE
- *               ì„¸íŒ… (Listë‚˜ non indexableì¼ ê²½ìš° í˜¸ìŠ¤íŠ¸ ìµœì í™” ì—¬ë¶€ê°€ ì—†ìŒ)
+ *   PROJ-1446 : more list ¸¦ ´ë»óÀ¸·Î ÇÑ qmoPredicate Áß ÇÏ³ª¶óµµ
+ *               QMO_PRED_HOST_OPTIMIZE_TRUE (È£½ºÆ® º¯¼ö¸¦ Æ÷ÇÔ) ÀÌ¸é
+ *               more list ÀÇ Ã¹¹øÂ° predicate ¿¡ QMO_PRED_HEAD_HOST_OPTIMIZE_TRUE
+ *               ¼¼ÆÃ (List³ª non indexableÀÏ °æ¿ì È£½ºÆ® ÃÖÀûÈ­ ¿©ºÎ°¡ ¾øÀ½)
  *
  * Implementation :
  *
- *     1. LIST ë˜ëŠ” non-indexable : S = PRODUCT(MS)
+ *     1. LIST ¶Ç´Â non-indexable : S = PRODUCT(MS)
  *     2. Indexable
- *        => more list ì˜ ì²«ë²ˆì§¸ predicate ì— QMO_PRED_HEAD_HOST_OPTIMIZE_TRUE ì„¸íŒ…
- *     2.1. 2ê°œì˜ qmoPredicate : S = integrate selectivity
+ *        => more list ÀÇ Ã¹¹øÂ° predicate ¿¡ QMO_PRED_HEAD_HOST_OPTIMIZE_TRUE ¼¼ÆÃ
+ *     2.1. 2°³ÀÇ qmoPredicate : S = integrate selectivity
  *     2.2. Etc : S = PRODUCT(MS)
  *
  *****************************************************************************/
@@ -210,7 +210,7 @@ qmoSelectivity::setTotalSelectivity( qcStatement   * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::setTotalSelectivity::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -218,7 +218,7 @@ qmoSelectivity::setTotalSelectivity( qcStatement   * aStatement,
     IDE_DASSERT( aPredicate != NULL );
 
     //--------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //--------------------------------------
 
     sTotalSelectivity = 1;
@@ -228,7 +228,7 @@ qmoSelectivity::setTotalSelectivity( qcStatement   * aStatement,
     sPredicate->flag |= QMO_PRED_HEAD_HOST_OPTIMIZE_FALSE;
 
     //--------------------------------------
-    // ì»¬ëŸ¼ë³„ ëŒ€í‘œ selectivity ê³„ì‚°
+    // ÄÃ·³º° ´ëÇ¥ selectivity °è»ê
     //--------------------------------------
 
     if( sPredicate->id == QMO_COLUMNID_NON_INDEXABLE ||
@@ -244,11 +244,11 @@ qmoSelectivity::setTotalSelectivity( qcStatement   * aStatement,
     else
     {
         //--------------------------------------
-        // PROJ-1446 : Host variable ì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
-        // more list ë¥¼ ëŒ€ìƒìœ¼ë¡œ í•œ qmoPredicate ì¤‘ í•˜ë‚˜ë¼ë„
-        // QMO_PRED_HOST_OPTIMIZE_TRUE (í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë¥¼ í¬í•¨) ì´ë©´
-        // more list ì˜ ì²«ë²ˆì§¸ predicate ì— QMO_PRED_HEAD_HOST_OPTIMIZE_TRUE ì„¸íŒ…
-        // (Listë‚˜ non indexableì¼ ê²½ìš° í˜¸ìŠ¤íŠ¸ ìµœì í™” ì—¬ë¶€ê°€ ì—†ìŒ)
+        // PROJ-1446 : Host variable À» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+        // more list ¸¦ ´ë»óÀ¸·Î ÇÑ qmoPredicate Áß ÇÏ³ª¶óµµ
+        // QMO_PRED_HOST_OPTIMIZE_TRUE (È£½ºÆ® º¯¼ö¸¦ Æ÷ÇÔ) ÀÌ¸é
+        // more list ÀÇ Ã¹¹øÂ° predicate ¿¡ QMO_PRED_HEAD_HOST_OPTIMIZE_TRUE ¼¼ÆÃ
+        // (List³ª non indexableÀÏ °æ¿ì È£½ºÆ® ÃÖÀûÈ­ ¿©ºÎ°¡ ¾øÀ½)
         //--------------------------------------
 
         sMorePredicate = sPredicate;
@@ -288,7 +288,7 @@ qmoSelectivity::setTotalSelectivity( qcStatement   * aStatement,
         }
     }
 
-    // ì²«ë²ˆì§¸ qmoPredicateì— total selectivity ì €ì¥
+    // Ã¹¹øÂ° qmoPredicate¿¡ total selectivity ÀúÀå
     aPredicate->totalSelectivity = sTotalSelectivity;
 
     IDE_DASSERT_MSG( sTotalSelectivity >= 0 && sTotalSelectivity <= 1,
@@ -310,18 +310,18 @@ qmoSelectivity::recalculateSelectivity( qcTemplate    * aTemplate,
 {
 /******************************************************************************
  *
- * Description : Execution ë‹¨ê³„(host ë³€ìˆ˜ì— ê°’ì´ ë°”ì¸ë”©ëœ í›„)ì—ì„œ
- *               qmo::optimizeForHost í˜¸ì¶œì‹œ scan method ì¬êµ¬ì¶•ì„ ìœ„í•´
- *               qmoPredicate ê´€ë ¨í•œ selectivity ë¥¼ ì¬ê³„ì‚°í•˜ê³  Offset ì—
- *               totalSelectivity ë¥¼ ì¬ì„¤ì •í•œë‹¤.
+ * Description : Execution ´Ü°è(host º¯¼ö¿¡ °ªÀÌ ¹ÙÀÎµùµÈ ÈÄ)¿¡¼­
+ *               qmo::optimizeForHost È£Ãâ½Ã scan method Àç±¸ÃàÀ» À§ÇØ
+ *               qmoPredicate °ü·ÃÇÑ selectivity ¸¦ Àç°è»êÇÏ°í Offset ¿¡
+ *               totalSelectivity ¸¦ Àç¼³Á¤ÇÑ´Ù.
  *
  * Implementation :
  *
- *            1. í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë¥¼ í¬í•¨í•˜ëŠ” qmoPredicate more list
- *               - setMySelectivityOffset ê³„ì‚°
- *               - setTotalSelectivityOffset ê³„ì‚°
- *            2. í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë¥¼ í¬í•¨í•˜ì§€ ì•ŠëŠ” qmoPredicate
- *               - ë‹¤ì‹œ êµ¬í•  í•„ìš” ì—†ìŒ
+ *            1. È£½ºÆ® º¯¼ö¸¦ Æ÷ÇÔÇÏ´Â qmoPredicate more list
+ *               - setMySelectivityOffset °è»ê
+ *               - setTotalSelectivityOffset °è»ê
+ *            2. È£½ºÆ® º¯¼ö¸¦ Æ÷ÇÔÇÏÁö ¾Ê´Â qmoPredicate
+ *               - ´Ù½Ã ±¸ÇÒ ÇÊ¿ä ¾øÀ½
  *
  *****************************************************************************/
  
@@ -331,7 +331,7 @@ qmoSelectivity::recalculateSelectivity( qcTemplate    * aTemplate,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::recalculateSelectivity::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aTemplate  != NULL );
@@ -340,7 +340,7 @@ qmoSelectivity::recalculateSelectivity( qcTemplate    * aTemplate,
     IDE_DASSERT( aPredicate != NULL );
 
     //--------------------------------------
-    // Selectivity ê³„ì‚°
+    // Selectivity °è»ê
     //--------------------------------------
 
     sNextPredicate = aPredicate;
@@ -368,8 +368,8 @@ qmoSelectivity::recalculateSelectivity( qcTemplate    * aTemplate,
         }
         else
         {
-            // more list ì „ì²´ê°€ í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë¥¼ ê°€ì§€ê³  ìˆì§€ ì•Šìœ¼ë¯€ë¡œ
-            // total selectivityë¥¼ ë‹¤ì‹œ êµ¬í•  í•„ìš”ê°€ ì—†ë‹¤.
+            // more list ÀüÃ¼°¡ È£½ºÆ® º¯¼ö¸¦ °¡Áö°í ÀÖÁö ¾ÊÀ¸¹Ç·Î
+            // total selectivity¸¦ ´Ù½Ã ±¸ÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
             // Nothing to do.
         }
 
@@ -401,7 +401,7 @@ qmoSelectivity::getSelectivity4KeyRange( qcTemplate      * aTemplate,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::getSelectivity4KeyRange::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aTemplate    != NULL );
@@ -427,13 +427,13 @@ qmoSelectivity::getSelectivity4KeyRange( qcTemplate      * aTemplate,
 
         if( sCompareNode->node.next != NULL )
         {
-            // or ì¡°ê±´ì´ ì—¬ëŸ¬ê°œ ë¶‡ì–´ ìˆëŠ” ê²½ìš°
+            // or Á¶°ÇÀÌ ¿©·¯°³ ºÑ¾î ÀÖ´Â °æ¿ì
             break;
         }
 
         if( sCompareNode->node.module != &mtfEqual )
         {
-            // mtfEqual ì´ì™¸ì— ë‹¤ë¥¸ ì¡°ê±´ì´ ë¶‡ì€ ê²½ìš°
+            // mtfEqual ÀÌ¿Ü¿¡ ´Ù¸¥ Á¶°ÇÀÌ ºÑÀº °æ¿ì
             break;
         }
     }
@@ -441,7 +441,24 @@ qmoSelectivity::getSelectivity4KeyRange( qcTemplate      * aTemplate,
     if( aStatInfo->isValidStat == ID_TRUE &&
         aIdxCardInfo->index->keyColCount == sPredCnt )
     {
-        sSelectivity = 1 / aIdxCardInfo->KeyNDV;
+        // BUG-48120
+        if ( (QCU_OPTIMIZER_INDEX_COST_MODE & QMG_OPTI_INDEX_COST_MODE_1_MASK) == 1 )
+        {
+            aIdxCardInfo->flag &= ~QMO_STAT_CARD_ALL_EQUAL_IDX_MASK;
+            aIdxCardInfo->flag |= QMO_STAT_CARD_ALL_EQUAL_IDX_TRUE;
+
+            // scan method ºñ±³¸¦ À§ÇÑ cost¿¡¼­´Â pred selectivity·Î ÇÑ´Ù.
+            IDE_TEST( getSelectivity4PredWrapper( aTemplate,
+                                                  aKeyRange,
+                                                  &sSelectivity,
+                                                  aInExecutionTime )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            // BUG-48210 ÀÌÀü°ú µ¿ÀÏÇÏ°Ô
+            sSelectivity = 1 / aIdxCardInfo->KeyNDV;
+        }
     }
     else
     {
@@ -473,18 +490,18 @@ qmoSelectivity::getSelectivity4PredWrapper( qcTemplate      * aTemplate,
 {
 /******************************************************************************
  *
- * Description : qmoPredWrapper list ì— ëŒ€í•œ í†µí•© selecltivity ë°˜í™˜
- *               (qmgSelection ì˜ access method ì— ëŒ€í•œ selectivity ê³„ì‚°ì‹œ í˜¸ì¶œ)
+ * Description : qmoPredWrapper list ¿¡ ´ëÇÑ ÅëÇÕ selecltivity ¹İÈ¯
+ *               (qmgSelection ÀÇ access method ¿¡ ´ëÇÑ selectivity °è»ê½Ã È£Ãâ)
  *
  * Implementation : S = PRODUCT( Predicate selectivity for wrapper list )
  *
- *           1. qmoPredWrapper list ê°€ NULL ì´ë©´
+ *           1. qmoPredWrapper list °¡ NULL ÀÌ¸é
  *              Predicate selectivity = 1
  *
- *           2. qmoPredWrapper list ê°€ NULL ì´ ì•„ë‹ˆë©´
- *           2.1. qmoPredicate ì´ LIST í˜•íƒœì´ë©´
+ *           2. qmoPredWrapper list °¡ NULL ÀÌ ¾Æ´Ï¸é
+ *           2.1. qmoPredicate ÀÌ LIST ÇüÅÂÀÌ¸é
  *                Predicate selectivity = MS(mySelectivity)
- *           2.2  qmoPredicate ì´ LIST í˜•íƒœê°€ ì•„ë‹ˆë©´
+ *           2.2  qmoPredicate ÀÌ LIST ÇüÅÂ°¡ ¾Æ´Ï¸é
  *                Predicate selectivity = TS(totalSelectivity)
  *
  *****************************************************************************/
@@ -495,14 +512,14 @@ qmoSelectivity::getSelectivity4PredWrapper( qcTemplate      * aTemplate,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::getSelectivity4PredWrapper::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aTemplate != NULL );
     IDE_DASSERT( aSelectivity != NULL );
 
     //--------------------------------------
-    // Selectivity ê³„ì‚°
+    // Selectivity °è»ê
     //--------------------------------------
 
     sSelectivity = 1;
@@ -544,17 +561,17 @@ qmoSelectivity::getTotalSelectivity4PredList( qcStatement  * aStatement,
 {
 /******************************************************************************
  *
- * Description : qmgSelection, qmgHierarchy graph ì˜ qmoPredicate list ì— ëŒ€í•œ
- *               í†µí•© selecltivity ë°˜í™˜
+ * Description : qmgSelection, qmgHierarchy graph ÀÇ qmoPredicate list ¿¡ ´ëÇÑ
+ *               ÅëÇÕ selecltivity ¹İÈ¯
  *
  * Implementation : S = PRODUCT( totalSelectivity for qmoPredicate list )
  *
- *       cf) aInExecutionTime (qmo::optimizeForHost ì°¸ì¡°)
+ *       cf) aInExecutionTime (qmo::optimizeForHost ÂüÁ¶)
  *           (aStatement->myPlan->scanDecisionFactors == NULL)
  *        1. qmgSelection
  *         - Prepare time : ID_FALSE
  *         - Execution time : ID_FALSE
- *        2. qmgHierarchy : í•­ìƒ ID_FALSE
+ *        2. qmgHierarchy : Ç×»ó ID_FALSE
  *
  *****************************************************************************/
 
@@ -565,7 +582,7 @@ qmoSelectivity::getTotalSelectivity4PredList( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::getTotalSelectivity4PredList::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement   != NULL );
@@ -610,35 +627,35 @@ qmoSelectivity::setMySelectivity4Join( qcStatement  * aStatement,
 {
 /******************************************************************************
  *
- * Description : Join predicate list ì— ëŒ€í•´ qmoPredicate.mySelectivity ê³„ì‚°
+ * Description : Join predicate list ¿¡ ´ëÇØ qmoPredicate.mySelectivity °è»ê
  *
- * Implementation : join selectivity ê³„ì‚° ë°
- *                  ë‹¤ìŒ ì¸ë±ìŠ¤ ì‚¬ìš©ê°€ëŠ¥ ì—¬ë¶€ ì„¤ì •(QMO_PRED_NEXT_KEY_USABLE_MASK)
+ * Implementation : join selectivity °è»ê ¹×
+ *                  ´ÙÀ½ ÀÎµ¦½º »ç¿ë°¡´É ¿©ºÎ ¼³Á¤(QMO_PRED_NEXT_KEY_USABLE_MASK)
  *
- *     1. aIsSetNext ê°€ TRUE ì¼ ê²½ìš° : qmoPredicate list ì „ì²´ì— ëŒ€í•´ ìˆ˜í–‰
- *     => join predicate ìœ¼ë¡œ ì´ë¯¸ ë¶„ë¥˜
+ *     1. aIsSetNext °¡ TRUE ÀÏ °æ¿ì : qmoPredicate list ÀüÃ¼¿¡ ´ëÇØ ¼öÇà
+ *     => join predicate À¸·Î ÀÌ¹Ì ºĞ·ù
  *
- *     1.1. qmoPredicate ì´ ë³µìˆ˜ ê°œì˜ unit predicate ë¡œ êµ¬ì„±ë˜ì—ˆì„ ê²½ìš°
+ *     1.1. qmoPredicate ÀÌ º¹¼ö °³ÀÇ unit predicate ·Î ±¸¼ºµÇ¾úÀ» °æ¿ì
  *          ex) t1.i1=t2.i1 or t1.i2=t2.i2, t1.i1>t2.i1 or t1.i2<t2.i2
- *          S = 1-PRODUCT(1-US)n    (OR í™•ë¥ ê³„ì‚°ì‹)
+ *          S = 1-PRODUCT(1-US)n    (OR È®·ü°è»ê½Ä)
  *
- *     1.2. qmoPredicate ì´ í•œ ê°œì˜ unit predicate ë¡œ êµ¬ì„±ë˜ì—ˆì„ ê²½ìš°
+ *     1.2. qmoPredicate ÀÌ ÇÑ °³ÀÇ unit predicate ·Î ±¸¼ºµÇ¾úÀ» °æ¿ì
  *          ex) t1.i1=t2.i1, t1.i1>t2.i1, t1.i2<t2.i2+1
  *          S = US (unit selectivity)
  *
- *     2. aIsSetNext ê°€ FALSE ì¼ ê²½ìš° : qmoPredicate í•˜ë‚˜ì— ëŒ€í•´ ìˆ˜í–‰
- *     => Join order ê²°ì •ì‹œ graph::optimize ìˆ˜í–‰ì „ì´ë¼ predicate ë¶„ë¥˜ê°€ ë¶ˆì™„ì „,
- *        ì´ ë•Œ child graph ì™€ ê° qmoPredicate ì˜ dependency ë¥¼ ë¹„êµí•˜ì—¬
- *        join ê´€ë ¨ predicateì¼ ë•Œë„ ë³¸ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
- *        ì´ ë•ŒëŠ” í•˜ë‚˜ì˜ qmoPredicat ì— ëŒ€í•œ mySelectiity ë§Œ êµ¬í•œë‹¤.
+ *     2. aIsSetNext °¡ FALSE ÀÏ °æ¿ì : qmoPredicate ÇÏ³ª¿¡ ´ëÇØ ¼öÇà
+ *     => Join order °áÁ¤½Ã graph::optimize ¼öÇàÀüÀÌ¶ó predicate ºĞ·ù°¡ ºÒ¿ÏÀü,
+ *        ÀÌ ¶§ child graph ¿Í °¢ qmoPredicate ÀÇ dependency ¸¦ ºñ±³ÇÏ¿©
+ *        join °ü·Ã predicateÀÏ ¶§µµ º» ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+ *        ÀÌ ¶§´Â ÇÏ³ªÀÇ qmoPredicat ¿¡ ´ëÇÑ mySelectiity ¸¸ ±¸ÇÑ´Ù.
  *
- *        < mySelectivity ê³„ì‚° ì‹œì  >
- *     1. baseGraph ì˜ ê²½ìš° optimize ê³¼ì •ì—ì„œ ìµœì´ˆë¡œ ê³„ì‚°
- *     2. qmoCnfMgr::joinOrdering ì„ í†µí•´ ìƒì„±ëœ qmgJOIN.graph ì˜ ê²½ìš°
- *      - ì¼ë¶€ qmoPredicate.mySelectivity ê°€ ì¼ì°¨ì ìœ¼ë¡œ ê³„ì‚°ë˜ê³ 
- *        (ordered hintì ìš©ì‹œ join groupì— predicateì—°ê²°ì„ í•˜ì§€ ì•Šê¸° ë•Œë¬¸)
- *      - qmgJoin::optimize ë¥¼ í†µí•´ ê´€ë ¨ predicate ì´ í™•ì •ì ìœ¼ë¡œ
- *        ì¬ë°°ì¹˜ ëœ í›„ ì œëŒ€ë¡œ ê³„ì‚°ëœë‹¤.
+ *        < mySelectivity °è»ê ½ÃÁ¡ >
+ *     1. baseGraph ÀÇ °æ¿ì optimize °úÁ¤¿¡¼­ ÃÖÃÊ·Î °è»ê
+ *     2. qmoCnfMgr::joinOrdering À» ÅëÇØ »ı¼ºµÈ qmgJOIN.graph ÀÇ °æ¿ì
+ *      - ÀÏºÎ qmoPredicate.mySelectivity °¡ ÀÏÂ÷ÀûÀ¸·Î °è»êµÇ°í
+ *        (ordered hintÀû¿ë½Ã join group¿¡ predicate¿¬°áÀ» ÇÏÁö ¾Ê±â ¶§¹®)
+ *      - qmgJoin::optimize ¸¦ ÅëÇØ °ü·Ã predicate ÀÌ È®Á¤ÀûÀ¸·Î
+ *        Àç¹èÄ¡ µÈ ÈÄ Á¦´ë·Î °è»êµÈ´Ù.
  *
  *****************************************************************************/
 
@@ -653,14 +670,14 @@ qmoSelectivity::setMySelectivity4Join( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::setMySelectivity4Join::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
 
     //--------------------------------------
-    // Selectivity ê³„ì‚°
-    // ë‹¤ìŒì¸ë±ìŠ¤ ì‚¬ìš©ê°€ëŠ¥ì—¬ë¶€ ì„¤ì •
+    // Selectivity °è»ê
+    // ´ÙÀ½ÀÎµ¦½º »ç¿ë°¡´É¿©ºÎ ¼³Á¤
     //--------------------------------------
 
     sIsUsableNextKey = ID_TRUE;
@@ -685,8 +702,8 @@ qmoSelectivity::setMySelectivity4Join( qcStatement  * aStatement,
 
         if( sCompareNode->node.next != NULL && sIsDNF == ID_FALSE )
         {
-            // 1.1. OR í•˜ìœ„ì— ë¹„êµì—°ì‚°ìê°€ ì—¬ëŸ¬ê°œ ìˆëŠ” ê²½ìš°,
-            //      OR ë…¼ë¦¬ì—°ì‚°ìì— ëŒ€í•œ selectivity ê³„ì‚°.
+            // 1.1. OR ÇÏÀ§¿¡ ºñ±³¿¬»êÀÚ°¡ ¿©·¯°³ ÀÖ´Â °æ¿ì,
+            //      OR ³í¸®¿¬»êÀÚ¿¡ ´ëÇÑ selectivity °è»ê.
             //      1 - (1-a)(1-b).....
             // ex) t1.i1=t2.i1 or t1.i2=t2.i2, t1.i1>t2.i1 or t1.i2<t2.i2
 
@@ -717,7 +734,7 @@ qmoSelectivity::setMySelectivity4Join( qcStatement  * aStatement,
         }
         else
         {
-            // 1.2. OR ë…¸ë“œ í•˜ìœ„ì— ë¹„êµì—°ì‚°ìê°€ í•˜ë‚˜ë§Œ ì¡´ì¬
+            // 1.2. OR ³ëµå ÇÏÀ§¿¡ ºñ±³¿¬»êÀÚ°¡ ÇÏ³ª¸¸ Á¸Àç
             // ex) t1.i1=t2.i1, t1.i1>t2.i1, t1.i2<t2.i2+1
 
             IDE_TEST( getUnitSelectivity4Join( aStatement,
@@ -748,7 +765,7 @@ qmoSelectivity::setMySelectivity4Join( qcStatement  * aStatement,
         if ( aIsSetNext == ID_FALSE )
         {
             // To Fix BUG-10542
-            // 2. Predicate list ê°€ ì•„ë‹Œ í•˜ë‚˜ì˜ qmoPredicate ì— ëŒ€í•´ì„œë§Œ êµ¬í•¨
+            // 2. Predicate list °¡ ¾Æ´Ñ ÇÏ³ªÀÇ qmoPredicate ¿¡ ´ëÇØ¼­¸¸ ±¸ÇÔ
             break;
         }
         else
@@ -773,22 +790,22 @@ qmoSelectivity::setMySelectivity4OneTable( qcStatement  * aStatement,
 {
 /******************************************************************************
  *
- * Description : Outer join ì˜ onConditionCNF->oneTablePredicate ì— ëŒ€í•œ
- *               qmoPredicate.mySelectivity ê³„ì‚°
+ * Description : Outer join ÀÇ onConditionCNF->oneTablePredicate ¿¡ ´ëÇÑ
+ *               qmoPredicate.mySelectivity °è»ê
  *
  * Implementation :
  *
- *          Child graph ì˜ depInfo ë¥¼ ê³ ë ¤í•˜ì—¬
- *       1. í•˜ìœ„ ë…¸ë“œ ì—­ì‹œ join graph ì¼ ê²½ìš° setMySelectivity4Join ìˆ˜í–‰
- *       2. ê·¸ ì™¸ setMySelectivity ìˆ˜í–‰
+ *          Child graph ÀÇ depInfo ¸¦ °í·ÁÇÏ¿©
+ *       1. ÇÏÀ§ ³ëµå ¿ª½Ã join graph ÀÏ °æ¿ì setMySelectivity4Join ¼öÇà
+ *       2. ±× ¿Ü setMySelectivity ¼öÇà
  *
- *          < mySelectivity ê³„ì‚° ì‹œì  >
- *       1. baseGraph ì˜ ê²½ìš° optimize ê³¼ì •ì—ì„œ ìµœì´ˆë¡œ ê³„ì‚°
- *       2. qmoCnfMgr::joinOrdering ì„ í†µí•´ ìƒì„±ëœ qmgJOIN.graph ì˜ ê²½ìš°
- *        - ì¼ë¶€ qmoPredicate.mySelectivity ê°€ ì¼ì°¨ì ìœ¼ë¡œ ê³„ì‚°ë˜ê³ 
- *          (ordered hintì ìš©ì‹œ join groupì— predicateì—°ê²°ì„ í•˜ì§€ ì•Šê¸° ë•Œë¬¸)
- *        - qmgJoin::optimize ë¥¼ í†µí•´ ê´€ë ¨ predicate ì´ í™•ì •ì ìœ¼ë¡œ
- *          ì¬ë°°ì¹˜ ëœ í›„ ì œëŒ€ë¡œ ê³„ì‚°ëœë‹¤.
+ *          < mySelectivity °è»ê ½ÃÁ¡ >
+ *       1. baseGraph ÀÇ °æ¿ì optimize °úÁ¤¿¡¼­ ÃÖÃÊ·Î °è»ê
+ *       2. qmoCnfMgr::joinOrdering À» ÅëÇØ »ı¼ºµÈ qmgJOIN.graph ÀÇ °æ¿ì
+ *        - ÀÏºÎ qmoPredicate.mySelectivity °¡ ÀÏÂ÷ÀûÀ¸·Î °è»êµÇ°í
+ *          (ordered hintÀû¿ë½Ã join group¿¡ predicate¿¬°áÀ» ÇÏÁö ¾Ê±â ¶§¹®)
+ *        - qmgJoin::optimize ¸¦ ÅëÇØ °ü·Ã predicate ÀÌ È®Á¤ÀûÀ¸·Î
+ *          Àç¹èÄ¡ µÈ ÈÄ Á¦´ë·Î °è»êµÈ´Ù.
  *
  *****************************************************************************/
 
@@ -798,7 +815,7 @@ qmoSelectivity::setMySelectivity4OneTable( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::setMySelectivity4OneTable::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement  != NULL );
@@ -806,7 +823,7 @@ qmoSelectivity::setMySelectivity4OneTable( qcStatement  * aStatement,
     IDE_DASSERT( aRightGraph != NULL );
 
     //--------------------------------------
-    // mySelectivity ê³„ì‚°
+    // mySelectivity °è»ê
     //--------------------------------------
 
     sOneTablePred = aOneTablePred;
@@ -822,10 +839,10 @@ qmoSelectivity::setMySelectivity4OneTable( qcStatement  * aStatement,
 
         //------------------------------------------
         // To Fix BUG-10542
-        // outer join ê³„ì—´ í•˜ìœ„ê°€ outer joinì¼ ê²½ìš°,
-        // outer joinì¸ í•˜ìœ„ graphì˜ one table predicateì˜ selectivityëŠ”
-        // join predicate ì´ê¸° ë•Œë¬¸ì— join selectivity êµ¬í•˜ëŠ” í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•´ì„œ
-        // selectivityë¥¼ êµ¬í•´ì•¼ í•¨
+        // outer join °è¿­ ÇÏÀ§°¡ outer joinÀÏ °æ¿ì,
+        // outer joinÀÎ ÇÏÀ§ graphÀÇ one table predicateÀÇ selectivity´Â
+        // join predicate ÀÌ±â ¶§¹®¿¡ join selectivity ±¸ÇÏ´Â ÇÔ¼ö¸¦ »ç¿ëÇØ¼­
+        // selectivity¸¦ ±¸ÇØ¾ß ÇÔ
         //------------------------------------------
 
         if ( qtc::dependencyEqual( & sDependencies,
@@ -887,22 +904,22 @@ qmoSelectivity::setJoinSelectivity( qcStatement  * aStatement,
 {
 /******************************************************************************
  *
- * Description : qmgJoin, qmgSemiJoin, qmgAntiJoin ì— ëŒ€í•œ selectivity ê³„ì‚°
- *               (WHERE clause, ON clause ëª¨ë‘ ê³ ë ¤ëœ ìƒíƒœ)
+ * Description : qmgJoin, qmgSemiJoin, qmgAntiJoin ¿¡ ´ëÇÑ selectivity °è»ê
+ *               (WHERE clause, ON clause ¸ğµÎ °í·ÁµÈ »óÅÂ)
  *
  * Implementation :
  *
- *       1. Join graph ê´€ë ¨ mySelectivity ê³„ì‚°
- *       2. graph->myPredicate list ì— ëŒ€í•œ í†µí•© selectivity íšë“
+ *       1. Join graph °ü·Ã mySelectivity °è»ê
+ *       2. graph->myPredicate list ¿¡ ´ëÇÑ ÅëÇÕ selectivity È¹µæ
  *            S = PRODUCT( mySelectivity for graph->myPredicate)
  *
- *      cf) mySelectivity ê³„ì‚° ì‹œì 
- *       1. baseGraph ì˜ ê²½ìš° optimize ê³¼ì •ì—ì„œ ìµœì´ˆë¡œ ê³„ì‚°
- *       2. qmoCnfMgr::joinOrdering ì„ í†µí•´ ìƒì„±ëœ qmgJOIN.graph ì˜ ê²½ìš°
- *        - ì¼ë¶€ qmoPredicate.mySelectivity ê°€ ì¼ì°¨ì ìœ¼ë¡œ ê³„ì‚°ë˜ê³ 
- *          (ordered hintì ìš©ì‹œ join groupì— predicateì—°ê²°ì„ í•˜ì§€ ì•Šê¸° ë•Œë¬¸)
- *        - qmgJoin::optimize ë¥¼ í†µí•´ ê´€ë ¨ predicate ì´ í™•ì •ì ìœ¼ë¡œ
- *          ì¬ë°°ì¹˜ ëœ í›„ ì œëŒ€ë¡œ ê³„ì‚°ëœë‹¤.
+ *      cf) mySelectivity °è»ê ½ÃÁ¡
+ *       1. baseGraph ÀÇ °æ¿ì optimize °úÁ¤¿¡¼­ ÃÖÃÊ·Î °è»ê
+ *       2. qmoCnfMgr::joinOrdering À» ÅëÇØ »ı¼ºµÈ qmgJOIN.graph ÀÇ °æ¿ì
+ *        - ÀÏºÎ qmoPredicate.mySelectivity °¡ ÀÏÂ÷ÀûÀ¸·Î °è»êµÇ°í
+ *          (ordered hintÀû¿ë½Ã join group¿¡ predicate¿¬°áÀ» ÇÏÁö ¾Ê±â ¶§¹®)
+ *        - qmgJoin::optimize ¸¦ ÅëÇØ °ü·Ã predicate ÀÌ È®Á¤ÀûÀ¸·Î
+ *          Àç¹èÄ¡ µÈ ÈÄ Á¦´ë·Î °è»êµÈ´Ù.
  *
  *****************************************************************************/
 
@@ -911,7 +928,7 @@ qmoSelectivity::setJoinSelectivity( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::setJoinSelectivity::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement   != NULL );
@@ -919,7 +936,7 @@ qmoSelectivity::setJoinSelectivity( qcStatement  * aStatement,
     IDE_DASSERT( aSelectivity != NULL );
 
     //--------------------------------------
-    // 1. mySelectivity ê³„ì‚°
+    // 1. mySelectivity °è»ê
     //--------------------------------------
 
     IDE_TEST( setMySelectivity4Join( aStatement,
@@ -929,7 +946,7 @@ qmoSelectivity::setJoinSelectivity( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //--------------------------------------
-    // 2. í†µí•© selectivity ê³„ì‚°
+    // 2. ÅëÇÕ selectivity °è»ê
     //--------------------------------------
 
     switch( aGraph->type )
@@ -987,12 +1004,12 @@ qmoSelectivity::setOuterJoinSelectivity( qcStatement  * aStatement,
 {
 /******************************************************************************
  *
- * Description : qmgLOJN, qmgFOJN ì— ëŒ€í•œ selectivity ê³„ì‚°
+ * Description : qmgLOJN, qmgFOJN ¿¡ ´ëÇÑ selectivity °è»ê
  *
  * Implementation :
  *
- *     1. Predicate list ì— ëŒ€í•œ mySelectivity ì„¸íŒ…
- *     2. Selectivity ê³„ì‚° : S = PRODUCT(MS for on clause)
+ *     1. Predicate list ¿¡ ´ëÇÑ mySelectivity ¼¼ÆÃ
+ *     2. Selectivity °è»ê : S = PRODUCT(MS for on clause)
  *
  *****************************************************************************/
 
@@ -1002,7 +1019,7 @@ qmoSelectivity::setOuterJoinSelectivity( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::setOuterJoinSelectivity::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement    != NULL );
@@ -1012,24 +1029,24 @@ qmoSelectivity::setOuterJoinSelectivity( qcStatement  * aStatement,
     IDE_DASSERT( aSelectivity  != NULL );
 
     //--------------------------------------
-    // mySelectivity ì„¸íŒ…
+    // mySelectivity ¼¼ÆÃ
     //--------------------------------------
 
-    // WHERE ì ˆì˜ join predicate ì— ëŒ€í•œ mySelectivity
+    // WHERE ÀıÀÇ join predicate ¿¡ ´ëÇÑ mySelectivity
     IDE_TEST( setMySelectivity4Join( aStatement,
                                      aGraph,
                                      aWherePred,
                                      ID_TRUE )
               != IDE_SUCCESS );
 
-    // ON ì ˆì˜ join predicate ì— ëŒ€í•œ mySelectivity
+    // ON ÀıÀÇ join predicate ¿¡ ´ëÇÑ mySelectivity
     IDE_TEST( setMySelectivity4Join( aStatement,
                                      aGraph,
                                      aOnJoinPred,
                                      ID_TRUE )
               != IDE_SUCCESS );
 
-    // ON ì ˆì˜ one table predicate ì— ëŒ€í•œ mySelectivity
+    // ON ÀıÀÇ one table predicate ¿¡ ´ëÇÑ mySelectivity
     IDE_TEST( setMySelectivity4OneTable( aStatement,
                                          aGraph->left,
                                          aGraph->right,
@@ -1037,15 +1054,15 @@ qmoSelectivity::setOuterJoinSelectivity( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //--------------------------------------
-    // Selectivity ê³„ì‚°
+    // Selectivity °è»ê
     //--------------------------------------
 
-    // ON ì ˆì— ëŒ€í•œ join selectivity íšë“
+    // ON Àı¿¡ ´ëÇÑ join selectivity È¹µæ
     IDE_TEST( getMySelectivity4PredList( aOnJoinPred,
                                          & sOnJoinSelectivity )
               != IDE_SUCCESS );
 
-    // ON ì ˆì— ëŒ€í•œ one table predicate selectivity íšë“
+    // ON Àı¿¡ ´ëÇÑ one table predicate selectivity È¹µæ
     IDE_TEST( getMySelectivity4PredList( aOneTablePred,
                                          & sOneTableSelectivity )
               != IDE_SUCCESS );
@@ -1072,12 +1089,12 @@ qmoSelectivity::setLeftOuterOutputCnt( qcStatement  * aStatement,
 {
 /******************************************************************************
  *
- * Description : qmgLeftOuter ì— ëŒ€í•œ output record count ê³„ì‚°
+ * Description : qmgLeftOuter ¿¡ ´ëÇÑ output record count °è»ê
  *
- * Implementation : ê³„ì‚°ì‹ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
+ * Implementation : °è»ê½ÄÀº ´ÙÀ½°ú °°´Ù.
  *
- *    Output record count = Selectivity(where ì ˆ) * Input record count
- *                        = Selectivity(where ì ˆ)
+ *    Output record count = Selectivity(where Àı) * Input record count
+ *                        = Selectivity(where Àı)
  *                          * ( LeftAntiCnt(left anti join for on clause)
  *                            + OnJoinCnt(join for on clause) )
  *
@@ -1104,7 +1121,7 @@ qmoSelectivity::setLeftOuterOutputCnt( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::setLeftOuterOutputCnt::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement       != NULL );
@@ -1114,25 +1131,25 @@ qmoSelectivity::setLeftOuterOutputCnt( qcStatement  * aStatement,
     IDE_DASSERT( aRightOutputCnt > 0 );
 
     //--------------------------------------
-    // Selectivity ê³„ì‚°
+    // Selectivity °è»ê
     //--------------------------------------
 
-    // WHERE ì ˆì— ëŒ€í•œ join selectivity íšë“
+    // WHERE Àı¿¡ ´ëÇÑ join selectivity È¹µæ
     IDE_TEST( getMySelectivity4PredList( aWherePred,
                                          & sWhereSelectivity )
               != IDE_SUCCESS );
 
-    // ON ì ˆì— ëŒ€í•œ join selectivity íšë“
+    // ON Àı¿¡ ´ëÇÑ join selectivity È¹µæ
     IDE_TEST( getMySelectivity4PredList( aOnJoinPred,
                                          & sOnJoinSelectivity )
               != IDE_SUCCESS );
 
-    // ON ì ˆì— ëŒ€í•œ one table predicate selectivity íšë“
+    // ON Àı¿¡ ´ëÇÑ one table predicate selectivity È¹µæ
     IDE_TEST( getMySelectivity4PredList( aOneTablePred,
                                          & sOneTableSelectivity )
               != IDE_SUCCESS );
 
-    // ON ì ˆì— ëŒ€í•œ left anti selectivity íšë“
+    // ON Àı¿¡ ´ëÇÑ left anti selectivity È¹µæ
     IDE_TEST( getAntiJoinSelectivity( aStatement,
                                       aGraph,
                                       aLeftDepInfo,
@@ -1143,7 +1160,7 @@ qmoSelectivity::setLeftOuterOutputCnt( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //--------------------------------------
-    // Output record count ê³„ì‚°
+    // Output record count °è»ê
     //--------------------------------------
 
     sLeftAntiCnt = aLeftOutputCnt * sLeftAntiSelectivity;
@@ -1152,7 +1169,7 @@ qmoSelectivity::setLeftOuterOutputCnt( qcStatement  * aStatement,
 
     sOutputRecordCnt = sWhereSelectivity * ( sLeftAntiCnt + sOnJoinCnt );
 
-    // Output count ë³´ì •
+    // Output count º¸Á¤
     *aOutputRecordCnt = ( sOutputRecordCnt < 1 ) ? 1: sOutputRecordCnt;
 
     return IDE_SUCCESS;
@@ -1175,12 +1192,12 @@ qmoSelectivity::setFullOuterOutputCnt( qcStatement  * aStatement,
 {
 /******************************************************************************
  *
- * Description : qmgFullOuter ì— ëŒ€í•œ output record count ê³„ì‚°
+ * Description : qmgFullOuter ¿¡ ´ëÇÑ output record count °è»ê
  *
- * Implementation : ê³„ì‚°ì‹ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
+ * Implementation : °è»ê½ÄÀº ´ÙÀ½°ú °°´Ù.
  *
- *    Output record count = Selectivity(where ì ˆ) * Input record count
- *                        = Selectivity(where ì ˆ)
+ *    Output record count = Selectivity(where Àı) * Input record count
+ *                        = Selectivity(where Àı)
  *                          * ( LeftAntiCnt(left anti join for on clause)
  *                            + RightAntiCnt(right anti join for on clause)
  *                            + OnJoinCnt(join for on clause) )
@@ -1214,7 +1231,7 @@ qmoSelectivity::setFullOuterOutputCnt( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::setFullOuterOutputCnt::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement       != NULL );
@@ -1224,25 +1241,25 @@ qmoSelectivity::setFullOuterOutputCnt( qcStatement  * aStatement,
     IDE_DASSERT( aRightOutputCnt > 0 );
 
     //--------------------------------------
-    // Selectivity ê³„ì‚°
+    // Selectivity °è»ê
     //--------------------------------------
 
-    // WHERE ì ˆì— ëŒ€í•œ join selectivity íšë“
+    // WHERE Àı¿¡ ´ëÇÑ join selectivity È¹µæ
     IDE_TEST( getMySelectivity4PredList( aWherePred,
                                          & sWhereSelectivity )
               != IDE_SUCCESS );
 
-    // ON ì ˆì— ëŒ€í•œ join selectivity íšë“
+    // ON Àı¿¡ ´ëÇÑ join selectivity È¹µæ
     IDE_TEST( getMySelectivity4PredList( aOnJoinPred,
                                          & sOnJoinSelectivity )
               != IDE_SUCCESS );
 
-    // ON ì ˆì— ëŒ€í•œ one table predicate selectivity íšë“
+    // ON Àı¿¡ ´ëÇÑ one table predicate selectivity È¹µæ
     IDE_TEST( getMySelectivity4PredList( aOneTablePred,
                                          & sOneTableSelectivity )
               != IDE_SUCCESS );
 
-    // ON ì ˆì— ëŒ€í•œ left anti selectivity íšë“
+    // ON Àı¿¡ ´ëÇÑ left anti selectivity È¹µæ
     IDE_TEST( getAntiJoinSelectivity( aStatement,
                                       aGraph,
                                       aLeftDepInfo,
@@ -1252,7 +1269,7 @@ qmoSelectivity::setFullOuterOutputCnt( qcStatement  * aStatement,
                                       & sLeftAntiSelectivity )
               != IDE_SUCCESS );
 
-    // ON ì ˆì— ëŒ€í•œ right anti selectivity íšë“
+    // ON Àı¿¡ ´ëÇÑ right anti selectivity È¹µæ
     IDE_TEST( getAntiJoinSelectivity( aStatement,
                                       aGraph,
                                       aLeftDepInfo,
@@ -1263,7 +1280,7 @@ qmoSelectivity::setFullOuterOutputCnt( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //--------------------------------------
-    // Output record count ê³„ì‚°
+    // Output record count °è»ê
     //--------------------------------------
 
     sLeftAntiCnt = aLeftOutputCnt * sLeftAntiSelectivity;
@@ -1274,7 +1291,7 @@ qmoSelectivity::setFullOuterOutputCnt( qcStatement  * aStatement,
     sOutputRecordCnt =
         ( sLeftAntiCnt + sRightAntiCnt + sOnJoinCnt ) * sWhereSelectivity;
 
-    // Output count ë³´ì •
+    // Output count º¸Á¤
     *aOutputRecordCnt = ( sOutputRecordCnt < 1 ) ? 1: sOutputRecordCnt;
 
     return IDE_SUCCESS;
@@ -1294,11 +1311,11 @@ qmoSelectivity::setJoinOrderFactor( qcStatement  * aStatement,
 {
 /******************************************************************************
  *
- * Description : Join ordering ì„ ìœ„í•œ JoinSize ì™€ JoinOrderFactor ê³„ì‚°
+ * Description : Join ordering À» À§ÇÑ JoinSize ¿Í JoinOrderFactor °è»ê
  *
  * Implementation :
  *
- *    (1) getSelectivity4JoinOrder ë¥¼ í†µí•œ selectivity íšë“
+ *    (1) getSelectivity4JoinOrder ¸¦ ÅëÇÑ selectivity È¹µæ
  *    (2) JoinSize
  *        - SCAN or PARTITION : [left output] * [right output] * Selectivity
  *        - Etc (join) : [left input] * [right input] * Selectivity
@@ -1306,8 +1323,8 @@ qmoSelectivity::setJoinOrderFactor( qcStatement  * aStatement,
  *        - SCAN or PARTITION : JoinSize / ( [left input] + [right input] )
  *        - Etc (join) : JoinSize / ( [left output] + [right output] )
  *
- *    cf) Outer join ì˜ ê²½ìš° ON ì ˆì˜ join predicate ë§Œ ê³ ë ¤
- *        => ON ì ˆì˜ one table predicate ì€ ì œì™¸
+ *    cf) Outer join ÀÇ °æ¿ì ON ÀıÀÇ join predicate ¸¸ °í·Á
+ *        => ON ÀıÀÇ one table predicate Àº Á¦¿Ü
  *
  *****************************************************************************/
 
@@ -1323,7 +1340,7 @@ qmoSelectivity::setJoinOrderFactor( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::setJoinOrderFactor::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement       != NULL );
@@ -1332,7 +1349,7 @@ qmoSelectivity::setJoinOrderFactor( qcStatement  * aStatement,
     IDE_DASSERT( aJoinSize        != NULL );
 
     //------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //------------------------------------------
 
     sLeft  = aJoinGraph->left;
@@ -1340,7 +1357,7 @@ qmoSelectivity::setJoinOrderFactor( qcStatement  * aStatement,
     sSelectivity = 1.0;
 
     //------------------------------------------
-    // Join Predicateì˜ selectivity ê³„ì‚°
+    // Join PredicateÀÇ selectivity °è»ê
     //------------------------------------------
 
     // To Fix PR-8266
@@ -1358,7 +1375,7 @@ qmoSelectivity::setJoinOrderFactor( qcStatement  * aStatement,
     }
 
     //------------------------------------------
-    // JoinSize ê³„ì‚°
+    // JoinSize °è»ê
     //------------------------------------------
     switch ( sLeft->type )
     {
@@ -1450,17 +1467,17 @@ qmoSelectivity::setJoinOrderFactor( qcStatement  * aStatement,
             }
             break;
         default:
-            // Inner join ì‹œ
+            // Inner join ½Ã
             break;
     }
 
 
     // To Fix PR-8005
-    // 0ì´ ë˜ëŠ” ê²ƒì„ ë°©ì§€í•˜ì—¬ì•¼ í•¨
+    // 0ÀÌ µÇ´Â °ÍÀ» ¹æÁöÇÏ¿©¾ß ÇÔ
     sJoinSize = ( sJoinSize < 1 ) ? 1 : sJoinSize;
 
     //------------------------------------------
-    // JoinOrderFactor ê³„ì‚°
+    // JoinOrderFactor °è»ê
     //------------------------------------------
     sJoinOrderFactor = sJoinSize / ( sLeftOutput + sRightOutput );
 
@@ -1489,17 +1506,17 @@ qmoSelectivity::setHierarchySelectivity( qcStatement  * aStatement,
 {
 /******************************************************************************
  *
- * Description : qmgHierarchy ì— ëŒ€í•œ selectivity ê³„ì‚°
+ * Description : qmgHierarchy ¿¡ ´ëÇÑ selectivity °è»ê
  *
  * Implementation :
  *
- *     1. ê° ì¡°ê±´ì ˆì— ëŒ€í•œ selectivity íšë“
+ *     1. °¢ Á¶°ÇÀı¿¡ ´ëÇÑ selectivity È¹µæ
  *     1.1. whereSelectivity = PRODUCT(selectivity for where clause)
- *          (where predicate ì€ qmgSelection ìœ¼ë¡œ push ë˜ì§€ ì•ŠìŒ)
+ *          (where predicate Àº qmgSelection À¸·Î push µÇÁö ¾ÊÀ½)
  *     1.2. connectBySelectivity = PRODUCT(selectivity for connect by clause)
  *     1.3. startWithSelectivity = PRODUCT(selectivity for start with clause)
  *
- *     2. qmgHierarchy selectivity íšë“
+ *     2. qmgHierarchy selectivity È¹µæ
  *        S = whereSelectivity * connectBySelectivity * startWithSelectivity
  *
  *****************************************************************************/
@@ -1512,7 +1529,7 @@ qmoSelectivity::setHierarchySelectivity( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::setHierarchySelectivity::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement    != NULL );
@@ -1520,7 +1537,7 @@ qmoSelectivity::setHierarchySelectivity( qcStatement  * aStatement,
     IDE_DASSERT( aSelectivity  != NULL );
 
     //--------------------------------------
-    // Selectivity ê³„ì‚°
+    // Selectivity °è»ê
     //--------------------------------------
 
     IDE_TEST( getTotalSelectivity4PredList( aStatement,
@@ -1574,19 +1591,19 @@ qmoSelectivity::setCountingSelectivity( qmoPredicate * aStopkeyPred,
 {
 /******************************************************************************
  *
- * Description : qmgCounting ì— ëŒ€í•œ selectivity ê³„ì‚°
+ * Description : qmgCounting ¿¡ ´ëÇÑ selectivity °è»ê
  *
  * Implementation :
  *
- *     1. stopkeyPredicate ì¡´ì¬
- *      - OR ìµœìƒìœ„ë…¸ë“œë¥¼ ê°–ëŠ” unit predicate ìœ¼ë¡œ êµ¬ì„±(CNF)
+ *     1. stopkeyPredicate Á¸Àç
+ *      - OR ÃÖ»óÀ§³ëµå¸¦ °®´Â unit predicate À¸·Î ±¸¼º(CNF)
  *      - rownum = 1
- *      - rownum lessthan(<, <=, >, >=) ìƒìˆ˜,í˜¸ìŠ¤íŠ¸ë³€ìˆ˜
- *     1.1. stopkeyPredicate ì— í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ê°€ ì¡´ì¬ (mtfEqual ë¶ˆê°€)
+ *      - rownum lessthan(<, <=, >, >=) »ó¼ö,È£½ºÆ®º¯¼ö
+ *     1.1. stopkeyPredicate ¿¡ È£½ºÆ® º¯¼ö°¡ Á¸Àç (mtfEqual ºÒ°¡)
  *          S = Default selectivity for opearator
- *     1.2. stopkeyPredicate ì— í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ ì—†ìŒ
+ *     1.2. stopkeyPredicate ¿¡ È£½ºÆ® º¯¼ö ¾øÀ½
  *          S = MIN( stopRecordCount, InputRecordCount ) / InputRecordCount
- *     2. stopkeyPredicate ì´ NULL : S = 1
+ *     2. stopkeyPredicate ÀÌ NULL : S = 1
  *
  *****************************************************************************/
 
@@ -1597,14 +1614,14 @@ qmoSelectivity::setCountingSelectivity( qmoPredicate * aStopkeyPred,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::setCountingSelectivity::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aSelectivity != NULL );
     IDE_DASSERT( aInputRecordCnt > 0  );
 
     //--------------------------------------
-    // Selectivity ê³„ì‚°
+    // Selectivity °è»ê
     //--------------------------------------
 
     sStopkeyPred = aStopkeyPred;
@@ -1614,7 +1631,7 @@ qmoSelectivity::setCountingSelectivity( qmoPredicate * aStopkeyPred,
 
         sCompareNode = (qtcNode *)sStopkeyPred->node->node.arguments;
 
-        // -2 ì´í•˜ì¼ ìˆ˜ ì—†ë‹¤.
+        // -2 ÀÌÇÏÀÏ ¼ö ¾ø´Ù.
         IDE_DASSERT( aStopRecordCnt >= -1 );
         IDE_DASSERT( ( sStopkeyPred->node->node.lflag & MTC_NODE_OPERATOR_MASK )
                      == MTC_NODE_OPERATOR_OR )
@@ -1626,8 +1643,8 @@ qmoSelectivity::setCountingSelectivity( qmoPredicate * aStopkeyPred,
 
         if( aStopRecordCnt == -1 )
         {
-            // host ë³€ìˆ˜ ì¡´ì¬
-            // ex) rownum = :a ëŠ” stopkeyPredicate ìœ¼ë¡œ ë¶„ë¥˜ë˜ì§€ ì•ŠìŒ
+            // host º¯¼ö Á¸Àç
+            // ex) rownum = :a ´Â stopkeyPredicate À¸·Î ºĞ·ùµÇÁö ¾ÊÀ½
             IDE_DASSERT( sCompareNode->node.module != &mtfEqual );
 
             sSelectivity = sCompareNode->node.module->selectivity;
@@ -1661,21 +1678,21 @@ qmoSelectivity::setCountingOutputCnt( qmoPredicate * aStopkeyPred,
 {
 /******************************************************************************
  *
- * Description : qmgCounting ì— ëŒ€í•œ outputRecordCnt ê³„ì‚°
+ * Description : qmgCounting ¿¡ ´ëÇÑ outputRecordCnt °è»ê
  *
  * Implementation :
  *
- *     1. stopkeyPredicate ì¡´ì¬
- *      - OR ìµœìƒìœ„ë…¸ë“œë¥¼ ê°–ëŠ” unit predicate ìœ¼ë¡œ êµ¬ì„±(CNF)
+ *     1. stopkeyPredicate Á¸Àç
+ *      - OR ÃÖ»óÀ§³ëµå¸¦ °®´Â unit predicate À¸·Î ±¸¼º(CNF)
  *      - rownum = 1
- *      - rownum lessthan(<, <=, >, >=) ìƒìˆ˜,í˜¸ìŠ¤íŠ¸ë³€ìˆ˜
- *     1.1. stopkeyPredicate ì— í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ê°€ ì¡´ì¬ (mtfEqual ë¶ˆê°€)
+ *      - rownum lessthan(<, <=, >, >=) »ó¼ö,È£½ºÆ®º¯¼ö
+ *     1.1. stopkeyPredicate ¿¡ È£½ºÆ® º¯¼ö°¡ Á¸Àç (mtfEqual ºÒ°¡)
  *          outputRecordCnt = InputRecordCount
- *     1.2. stopkeyPredicate ì— í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ ì—†ìŒ
+ *     1.2. stopkeyPredicate ¿¡ È£½ºÆ® º¯¼ö ¾øÀ½
  *          outputRecordCnt = MIN( stopRecordCount, InputRecordCount )
- *     2. stopkeyPredicate ì´ NULL
+ *     2. stopkeyPredicate ÀÌ NULL
  *        outputRecordCnt = InputRecordCount
- *     3. outputRecordCnt ë³´ì •
+ *     3. outputRecordCnt º¸Á¤
  *
  *****************************************************************************/
 
@@ -1684,29 +1701,29 @@ qmoSelectivity::setCountingOutputCnt( qmoPredicate * aStopkeyPred,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::setCountingOutputCnt::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aOutputRecordCnt != NULL );
     IDE_DASSERT( aInputRecordCnt  > 0 );
 
     //--------------------------------------
-    // Output count ê³„ì‚°
+    // Output count °è»ê
     //--------------------------------------
 
     if( aStopkeyPred != NULL )
     {
-        // -2 ì´í•˜ì¼ ìˆ˜ ì—†ë‹¤.
+        // -2 ÀÌÇÏÀÏ ¼ö ¾ø´Ù.
         IDE_DASSERT( aStopRecordCnt >= -1 );
 
         if( aStopRecordCnt == -1 )
         {
-            // host ë³€ìˆ˜ ì¡´ì¬
+            // host º¯¼ö Á¸Àç
             sOutputRecordCnt = aInputRecordCnt;
         }
         else
         {
-            // host ë³€ìˆ˜ ì—†ìŒ
+            // host º¯¼ö ¾øÀ½
             sOutputRecordCnt = IDL_MIN( aInputRecordCnt, (SDouble)aStopRecordCnt );
         }
     }
@@ -1715,7 +1732,7 @@ qmoSelectivity::setCountingOutputCnt( qmoPredicate * aStopkeyPred,
         sOutputRecordCnt = aInputRecordCnt;
     }
 
-    // outputRecordCnt ìµœì†Œê°’ ë³´ì •
+    // outputRecordCnt ÃÖ¼Ò°ª º¸Á¤
     *aOutputRecordCnt = ( sOutputRecordCnt < 1 ) ? 1 : sOutputRecordCnt;
 
     return IDE_SUCCESS;
@@ -1729,20 +1746,20 @@ qmoSelectivity::setProjectionSelectivity( qmsLimit * aLimit,
 {
 /******************************************************************************
  *
- * Description : qmgProjection ì— ëŒ€í•œ selectivity ê³„ì‚°
+ * Description : qmgProjection ¿¡ ´ëÇÑ selectivity °è»ê
  *
  * Implementation :
  *
- *       1. LIMIT ì ˆ ì¡´ì¬
- *       1.1. start, count ëª¨ë‘ fixed value
+ *       1. LIMIT Àı Á¸Àç
+ *       1.1. start, count ¸ğµÎ fixed value
  *          - start > inputRecordCnt : S = 0
  *          - start == inputRecordCnt : S = 1 / inputRecordCnt
  *          - inputRecordCnt - start + 1 >= count : S = count / inputRecordCnt
  *          - Etc : S = (inputRecordCnt - start + 1) / inputRecordCnt
  *i                   = 1 - ( (start-1) / inputRecordCnt )
- *       1.2. start, count í•˜ë‚˜ë¼ë„ variable value : mtfLessThan.selectivity
+ *       1.2. start, count ÇÏ³ª¶óµµ variable value : mtfLessThan.selectivity
  *
- *       2. LIMIT ì ˆ ì—†ìŒ : S = 1
+ *       2. LIMIT Àı ¾øÀ½ : S = 1
  *
  *****************************************************************************/
 
@@ -1753,26 +1770,26 @@ qmoSelectivity::setProjectionSelectivity( qmsLimit * aLimit,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::setProjectionSelectivity::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aSelectivity != NULL );
     IDE_DASSERT( aInputRecordCnt > 0  );
 
     //--------------------------------------
-    // Limit ì„ ë°˜ì˜í•œ selectivity ê³„ì‚°
+    // Limit À» ¹İ¿µÇÑ selectivity °è»ê
     //--------------------------------------
 
     if( aLimit != NULL )
     {
-        // 1. LIMIT ì ˆ ì¡´ì¬
+        // 1. LIMIT Àı Á¸Àç
 
         if ( ( qmsLimitI::hasHostBind( qmsLimitI::getStart( aLimit ) )
                == ID_FALSE ) &&
              ( qmsLimitI::hasHostBind( qmsLimitI::getCount( aLimit ) )
                == ID_FALSE ) )
         {
-            // 1.1. start, count ëª¨ë‘ fixed value
+            // 1.1. start, count ¸ğµÎ fixed value
             // BUGBUG : ULong->SDouble
             sLimitStart = ID_ULTODB(qmsLimitI::getStartConstant(aLimit));
             sLimitCount = ID_ULTODB(qmsLimitI::getCountConstant(aLimit));
@@ -1799,13 +1816,13 @@ qmoSelectivity::setProjectionSelectivity( qmsLimit * aLimit,
         }
         else
         {
-            // 1.2. start, count í•˜ë‚˜ë¼ë„ variable value
+            // 1.2. start, count ÇÏ³ª¶óµµ variable value
             sSelectivity = mtfLessThan.selectivity;
         }
     }
     else
     {
-        // 2. LIMIT ì ˆ ì—†ìŒ
+        // 2. LIMIT Àı ¾øÀ½
         sSelectivity = 1;
     }
 
@@ -1827,7 +1844,7 @@ qmoSelectivity::setGroupingSelectivity( qmgGraph     * aGraph,
 {
 /******************************************************************************
  *
- * Description : qmgGrouping ì— ëŒ€í•œ selectivity ê³„ì‚°
+ * Description : qmgGrouping ¿¡ ´ëÇÑ selectivity °è»ê
  *
  * Implementation :
  *
@@ -1839,10 +1856,10 @@ qmoSelectivity::setGroupingSelectivity( qmgGraph     * aGraph,
  *       2.2. QMG_GROP_OPT_TIP_NONE (default) or
  *            QMG_GROP_OPT_TIP_INDEXABLE_GROUPBY or
  *            QMG_GROP_OPT_TIP_INDEXABLE_DISTINCTAGG
- *          - HAVING ì ˆ ì¡´ì¬ : S = PRODUCT(DS for HAVING clause)
- *            having Predicateì˜ selectivity ê³„ì‚° í•¨ìˆ˜ êµ¬í˜„ë˜ì§€ ì•Šì•˜ìŒ
- *            ë”°ë¼ì„œ compare nodeì˜ default selectivityë¡œ ì„¤ì •í•¨
- *          - ê·¸ ì™¸ : S = 1
+ *          - HAVING Àı Á¸Àç : S = PRODUCT(DS for HAVING clause)
+ *            having PredicateÀÇ selectivity °è»ê ÇÔ¼ö ±¸ÇöµÇÁö ¾Ê¾ÒÀ½
+ *            µû¶ó¼­ compare nodeÀÇ default selectivity·Î ¼³Á¤ÇÔ
+ *          - ±× ¿Ü : S = 1
  *       2.3. QMS_GROUPBY_ROLLUP :
  *            S = QMO_SELECTIVITY_ROLLUP_FACTOR (0.75)
  *       2.4. QMS_GROUPBY_CUBE or
@@ -1856,7 +1873,7 @@ qmoSelectivity::setGroupingSelectivity( qmgGraph     * aGraph,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::setGroupingSelectivity::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aGraph       != NULL );
@@ -1864,14 +1881,14 @@ qmoSelectivity::setGroupingSelectivity( qmgGraph     * aGraph,
     IDE_DASSERT( aInputRecordCnt > 0  );
 
     //--------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //--------------------------------------
 
     sHavingPred = aHavingPred;
 
     // BUG-38132
-    // HAVING ì ˆì˜ ê²½ìš° grouping ì„ ê±°ì¹œí›„ ì²˜ë¦¬í•˜ê¸° ë•Œë¬¸ì—
-    // selectivity ë¥¼ ë‚®ì¶”ì–´ì•¼ í•œë‹¤.
+    // HAVING ÀıÀÇ °æ¿ì grouping À» °ÅÄ£ÈÄ Ã³¸®ÇÏ±â ¶§¹®¿¡
+    // selectivity ¸¦ ³·Ãß¾î¾ß ÇÑ´Ù.
     if ( sHavingPred != NULL )
     {
         sSelectivity = QMO_SELECTIVITY_UNKNOWN;
@@ -1882,7 +1899,7 @@ qmoSelectivity::setGroupingSelectivity( qmgGraph     * aGraph,
     }
 
     //--------------------------------------
-    // Selectivity ê³„ì‚°
+    // Selectivity °è»ê
     //--------------------------------------
 
     if( ( aGraph->flag & QMG_GROP_TYPE_MASK ) == QMG_GROP_TYPE_NESTED )
@@ -1903,8 +1920,8 @@ qmoSelectivity::setGroupingSelectivity( qmgGraph     * aGraph,
             case QMG_GROP_OPT_TIP_INDEXABLE_DISTINCTAGG:
                 while( sHavingPred != NULL )
                 {
-                    // having ì ˆ selectivity ê³„ì‚°
-                    // qmgGrouping::init ì—ì„œ having ì ˆì€ CNF ë¡œ normalize
+                    // having Àı selectivity °è»ê
+                    // qmgGrouping::init ¿¡¼­ having ÀıÀº CNF ·Î normalize
 
                     sSelectivity
                         *= sHavingPred->node->node.arguments->module->selectivity;
@@ -1947,11 +1964,11 @@ qmoSelectivity::setGroupingOutputCnt( qcStatement      * aStatement,
 {
 /******************************************************************************
  *
- * Description : qmgGrouping ì— ëŒ€í•œ outputRecordCnt ê³„ì‚°
+ * Description : qmgGrouping ¿¡ ´ëÇÑ outputRecordCnt °è»ê
  *
- * Implementation : outputRecordCnt íšë“
+ * Implementation : outputRecordCnt È¹µæ
  *
- *       1. groupBy ì ˆì´ NULL ì•„ë‹ˆê³ 
+ *       1. groupBy ÀıÀÌ NULL ¾Æ´Ï°í
  *       1.1. QMG_GROP_TYPE_NESTED
  *            outputRecordCnt = inputRecordCnt * selectivity
  *       1.2  QMG_GROP_OPT_TIP_COUNT_STAR or
@@ -1960,9 +1977,9 @@ qmoSelectivity::setGroupingOutputCnt( qcStatement      * aStatement,
  *       1.3. QMG_GROP_OPT_TIP_NONE (default) or
  *            QMG_GROP_OPT_TIP_INDEXABLE_GROUPBY or
  *            QMG_GROP_OPT_TIP_INDEXABLE_DISTINCTAGG
- *          - inputRecordCnt ë³´ì •
- *            group by ì»¬ëŸ¼ì´ ëª¨ë‘ one column list ì´ê³ 
- *            group by ë¥¼ êµ¬ì„±í•˜ëŠ” ëª¨ë“  table ì— ëŒ€í•´ í†µê³„ì •ë³´ ìˆ˜ì§‘ :
+ *          - inputRecordCnt º¸Á¤
+ *            group by ÄÃ·³ÀÌ ¸ğµÎ one column list ÀÌ°í
+ *            group by ¸¦ ±¸¼ºÇÏ´Â ¸ğµç table ¿¡ ´ëÇØ Åë°èÁ¤º¸ ¼öÁı :
  *            inputRecordCnt = MIN( inputRecordCnt, PRODUCT(columnNDV) )
  *          - outputRecordCnt = inputRecordCnt * selectivity
  *       1.4. QMS_GROUPBY_ROLLUP
@@ -1971,8 +1988,8 @@ qmoSelectivity::setGroupingOutputCnt( qcStatement      * aStatement,
  *       1.5. QMS_GROUPBY_CUBE or
  *            QMS_GROUPBY_GROUPING_SETS
  *            outputRecordCnt = inputRecordCnt
- *       2. groupBy ì ˆì´ NULL : outputRecordCnt = 1
- *       3. outputRecordCnt ìµœì†Œê°’ ë³´ì •
+ *       2. groupBy ÀıÀÌ NULL : outputRecordCnt = 1
+ *       3. outputRecordCnt ÃÖ¼Ò°ª º¸Á¤
  *
  *****************************************************************************/
 
@@ -1988,7 +2005,7 @@ qmoSelectivity::setGroupingOutputCnt( qcStatement      * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::setGroupingOutputCnt::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement       != NULL );
@@ -1997,7 +2014,7 @@ qmoSelectivity::setGroupingOutputCnt( qcStatement      * aStatement,
     IDE_DASSERT( aInputRecordCnt > 0 );
 
     //--------------------------------------
-    // outputRecordCnt ê³„ì‚°
+    // outputRecordCnt °è»ê
     //--------------------------------------
 
     sColumnNDV = 1;
@@ -2023,8 +2040,8 @@ qmoSelectivity::setGroupingOutputCnt( qcStatement      * aStatement,
                 case QMG_GROP_OPT_TIP_INDEXABLE_GROUPBY:
                 case QMG_GROP_OPT_TIP_INDEXABLE_DISTINCTAGG:
 
-                    // BUG-38444 grouping ê·¸ë˜í”„ì˜ output record countê°€ ì˜ëª» ê³„ì‚°ë¨
-                    // qmsConcatElement êµ¬ì¡°ì²´ì˜ next ë¥¼ ë”°ë¼ê°€ì•¼í•¨
+                    // BUG-38444 grouping ±×·¡ÇÁÀÇ output record count°¡ Àß¸ø °è»êµÊ
+                    // qmsConcatElement ±¸Á¶Ã¼ÀÇ next ¸¦ µû¶ó°¡¾ßÇÔ
                     for ( sGroupBy = aGroupBy;
                           sGroupBy != NULL;
                           sGroupBy = sGroupBy->next )
@@ -2039,13 +2056,13 @@ qmoSelectivity::setGroupingOutputCnt( qcStatement      * aStatement,
 
                             if( sStatInfo->isValidStat == ID_TRUE )
                             {
-                                // group by ì»¬ëŸ¼ì´ ëª¨ë‘ one column list
+                                // group by ÄÃ·³ÀÌ ¸ğµÎ one column list
                                 sColCardInfo = sStatInfo->colCardInfo;
                                 sColumnNDV  *= sColCardInfo[sNode->node.column].columnNDV;
                             }
                             else
                             {
-                                // group by ì»¬ëŸ¼ì´ ëª¨ë‘ one column list
+                                // group by ÄÃ·³ÀÌ ¸ğµÎ one column list
                                 sColCardInfo = sStatInfo->colCardInfo;
                                 sColumnNDV   = sColCardInfo[sNode->node.column].columnNDV;
                             }
@@ -2057,7 +2074,7 @@ qmoSelectivity::setGroupingOutputCnt( qcStatement      * aStatement,
                         }
                     }
 
-                    // inputRecordCnt ë³´ì •
+                    // inputRecordCnt º¸Á¤
                     if ( sAllColumn == ID_TRUE )
                     {
                         sInputRecordCnt = IDL_MIN( aInputRecordCnt, sColumnNDV );
@@ -2092,7 +2109,7 @@ qmoSelectivity::setGroupingOutputCnt( qcStatement      * aStatement,
         sOutputRecordCnt = 1;
     }
 
-    // outputRecordCnt ìµœì†Œê°’ ë³´ì •
+    // outputRecordCnt ÃÖ¼Ò°ª º¸Á¤
     *aOutputRecordCnt = ( sOutputRecordCnt < 1 ) ? 1 : sOutputRecordCnt;
 
     return IDE_SUCCESS;
@@ -2107,17 +2124,17 @@ qmoSelectivity::setDistinctionOutputCnt( qcStatement * aStatement,
 {
 /******************************************************************************
  *
- * Description : qmgDistinction ì— ëŒ€í•œ outputRecordCnt ê³„ì‚°
+ * Description : qmgDistinction ¿¡ ´ëÇÑ outputRecordCnt °è»ê
  *
  * Implementation :
  *
- *      1. outputRecordCnt íšë“
- *      1.1. target ì„ êµ¬ì„±í•˜ëŠ” ëª¨ë“  table ì— ëŒ€í•´ í†µê³„ì •ë³´ ìˆ˜ì§‘ì´ê³ 
- *           target ì»¬ëŸ¼ì´ ëª¨ë‘ one column list ì´ê³ 
- *           prowid pseudo column ì´ ì•„ë‹ˆë©´ :
+ *      1. outputRecordCnt È¹µæ
+ *      1.1. target À» ±¸¼ºÇÏ´Â ¸ğµç table ¿¡ ´ëÇØ Åë°èÁ¤º¸ ¼öÁıÀÌ°í
+ *           target ÄÃ·³ÀÌ ¸ğµÎ one column list ÀÌ°í
+ *           prowid pseudo column ÀÌ ¾Æ´Ï¸é :
  *           outputRecordCnt = MIN( inputRecordCnt, PRODUCT(columnNDV) )
- *      1.2. ê·¸ ì™¸ : outputRecordCnt = inputRecordCnt
- *      2. outputRecordCnt ìµœì†Œê°’ ë³´ì •
+ *      1.2. ±× ¿Ü : outputRecordCnt = inputRecordCnt
+ *      2. outputRecordCnt ÃÖ¼Ò°ª º¸Á¤
  *
  *****************************************************************************/
 
@@ -2132,7 +2149,7 @@ qmoSelectivity::setDistinctionOutputCnt( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::setDistinctionOutputCnt::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement       != NULL );
@@ -2141,7 +2158,7 @@ qmoSelectivity::setDistinctionOutputCnt( qcStatement * aStatement,
     IDE_DASSERT( aInputRecordCnt > 0 );
 
     //--------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //--------------------------------------
 
     sColumnNDV = 1;
@@ -2149,10 +2166,10 @@ qmoSelectivity::setDistinctionOutputCnt( qcStatement * aStatement,
     sTarget = aTarget;
 
     //--------------------------------------
-    // outputRecordCnt ê³„ì‚°
+    // outputRecordCnt °è»ê
     //--------------------------------------
 
-    // 1. outputRecordCnt íšë“
+    // 1. outputRecordCnt È¹µæ
     while( sTarget != NULL )
     {
         sNode = sTarget->targetColumn;
@@ -2167,12 +2184,12 @@ qmoSelectivity::setDistinctionOutputCnt( qcStatement * aStatement,
             // Nothing to do.
         }
 
-        // prowid pseudo column ì´ ì˜¬ ìˆ˜ ì—†ìŒ
+        // prowid pseudo column ÀÌ ¿Ã ¼ö ¾øÀ½
         IDE_DASSERT( sNode->node.column != MTC_RID_COLUMN_ID );
 
         if( QTC_IS_COLUMN( aStatement, sNode ) == ID_TRUE )
         {
-            // target ì»¬ëŸ¼ì´ ëª¨ë‘ one column list
+            // target ÄÃ·³ÀÌ ¸ğµÎ one column list
             sStatInfo = QC_SHARED_TMPLATE(aStatement)->
                         tableMap[sNode->node.table].
                         from->tableRef->statInfo;
@@ -2206,7 +2223,7 @@ qmoSelectivity::setDistinctionOutputCnt( qcStatement * aStatement,
         sOutputRecordCnt = aInputRecordCnt;
     }
 
-    // 2. outputRecordCnt ìµœì†Œê°’ ë³´ì •
+    // 2. outputRecordCnt ÃÖ¼Ò°ª º¸Á¤
     *aOutputRecordCnt = ( sOutputRecordCnt < 1 ) ? 1 : sOutputRecordCnt;
 
     return IDE_SUCCESS;
@@ -2221,11 +2238,11 @@ qmoSelectivity::setSetOutputCnt( qmsSetOpType   aSetOpType,
 {
 /******************************************************************************
  *
- * Description : qmgSet ì— ëŒ€í•œ outputRecordCnt ê³„ì‚°
+ * Description : qmgSet ¿¡ ´ëÇÑ outputRecordCnt °è»ê
  *
  * Implementation :
  *
- *     1. outputRecordCnt íšë“
+ *     1. outputRecordCnt È¹µæ
  *     1.1. QMS_UNION_ALL
  *          outputRecordCnt = left outputRecordCnt + right outputRecordCnt
  *     1.2. QMS_UNION
@@ -2233,16 +2250,16 @@ qmoSelectivity::setSetOutputCnt( qmsSetOpType   aSetOpType,
  *     1.3. Etc ( QMS_MINUS, QMS_INTERSECT )
  *          outputRecordCnt = left outputRecordCnt / 2
  *
- *     2. outputRecordCnt ìµœì†Œê°’ ë³´ì •
+ *     2. outputRecordCnt ÃÖ¼Ò°ª º¸Á¤
  *
- *    cf) 1.2, 1.3 ì— í•œí•´ outputRecordCnt ë³´ì • idea
- *        target ì„ êµ¬ì„±í•˜ëŠ” ëª¨ë“  table ì— ëŒ€í•´ í†µê³„ì •ë³´ ìˆ˜ì§‘ì´ê³ 
- *        target ì»¬ëŸ¼ì´ ëª¨ë‘ one column list ì´ë©´
- *        (SET ì˜ ê²½ìš° prowid pseudo column ì€ target ì— ì˜¬ ìˆ˜ ì—†ìŒ) :
+ *    cf) 1.2, 1.3 ¿¡ ÇÑÇØ outputRecordCnt º¸Á¤ idea
+ *        target À» ±¸¼ºÇÏ´Â ¸ğµç table ¿¡ ´ëÇØ Åë°èÁ¤º¸ ¼öÁıÀÌ°í
+ *        target ÄÃ·³ÀÌ ¸ğµÎ one column list ÀÌ¸é
+ *        (SET ÀÇ °æ¿ì prowid pseudo column Àº target ¿¡ ¿Ã ¼ö ¾øÀ½) :
  *        outputRecordCnt = MIN( outputRecordCnt, PRODUCT(columnNDV) )
- *     => validation ê³¼ì •ì—ì„œ tuple ì„ í• ë‹¹ë°›ì•„ target ì„ ìƒˆë¡œ ìƒì„±
- *        tablemap[table].from ì´ NULL ì´ ë˜ì–´
- *        one column list ë° statInfo íšë“ ë¶ˆê°€
+ *     => validation °úÁ¤¿¡¼­ tuple À» ÇÒ´ç¹Ş¾Æ target À» »õ·Î »ı¼º
+ *        tablemap[table].from ÀÌ NULL ÀÌ µÇ¾î
+ *        one column list ¹× statInfo È¹µæ ºÒ°¡
  *
  *****************************************************************************/
 
@@ -2251,7 +2268,7 @@ qmoSelectivity::setSetOutputCnt( qmsSetOpType   aSetOpType,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::setSetOutputCnt::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aOutputRecordCnt != NULL );
@@ -2259,10 +2276,10 @@ qmoSelectivity::setSetOutputCnt( qmsSetOpType   aSetOpType,
     IDE_DASSERT( aRightOutputRecordCnt > 0 );
 
     //--------------------------------------
-    // outputRecordCnt ê³„ì‚°
+    // outputRecordCnt °è»ê
     //--------------------------------------
 
-    // 1. outputRecordCnt íšë“
+    // 1. outputRecordCnt È¹µæ
     switch( aSetOpType )
     {
         case QMS_UNION_ALL:
@@ -2281,7 +2298,7 @@ qmoSelectivity::setSetOutputCnt( qmsSetOpType   aSetOpType,
             break;
     }
 
-    // 2. outputRecordCnt ìµœì†Œê°’ ë³´ì •
+    // 2. outputRecordCnt ÃÖ¼Ò°ª º¸Á¤
     *aOutputRecordCnt = ( sOutputRecordCnt < 1 ) ? 1 : sOutputRecordCnt;
 
     return IDE_SUCCESS;
@@ -2296,10 +2313,10 @@ qmoSelectivity::setMySelectivityOffset( qcTemplate    * aTemplate,
 {
 /******************************************************************************
  *
- * Description : Execution ë‹¨ê³„(host ë³€ìˆ˜ì— ê°’ì´ ë°”ì¸ë”©ëœ í›„)ì—ì„œ
- *               qmo::optimizeForHost í˜¸ì¶œì‹œ scan method ì¬êµ¬ì¶•ì„ ìœ„í•´
- *               template->data + qmoPredicate.mySelectivityOffset ì—
- *               mySelectivity ë¥¼ ì¬ì„¤ì •í•œë‹¤.
+ * Description : Execution ´Ü°è(host º¯¼ö¿¡ °ªÀÌ ¹ÙÀÎµùµÈ ÈÄ)¿¡¼­
+ *               qmo::optimizeForHost È£Ãâ½Ã scan method Àç±¸ÃàÀ» À§ÇØ
+ *               template->data + qmoPredicate.mySelectivityOffset ¿¡
+ *               mySelectivity ¸¦ Àç¼³Á¤ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -2319,11 +2336,11 @@ qmoSelectivity::setMySelectivityOffset( qcTemplate    * aTemplate,
     IDE_DASSERT( aPredicate  != NULL );
 
     //--------------------------------------
-    // Selectivity ê³„ì‚°
+    // Selectivity °è»ê
     //--------------------------------------
 
-    // ì´ í•¨ìˆ˜ëŠ” host ë³€ìˆ˜ê°€ ì¡´ì¬í•˜ëŠ” more listì˜ predicate ë“¤ì— ëŒ€í•´ì„œë§Œ
-    // í˜¸ì¶œëœë‹¤. ë”°ë¼ì„œ indexable columnì´ì–´ì•¼ í•œë‹¤.
+    // ÀÌ ÇÔ¼ö´Â host º¯¼ö°¡ Á¸ÀçÇÏ´Â more listÀÇ predicate µé¿¡ ´ëÇØ¼­¸¸
+    // È£ÃâµÈ´Ù. µû¶ó¼­ indexable columnÀÌ¾î¾ß ÇÑ´Ù.
 
     if( ( aPredicate->flag & QMO_PRED_HOST_OPTIMIZE_MASK )
         == QMO_PRED_HOST_OPTIMIZE_TRUE )
@@ -2337,23 +2354,23 @@ qmoSelectivity::setMySelectivityOffset( qcTemplate    * aTemplate,
         if( ( aPredicate->node->node.lflag & MTC_NODE_LOGICAL_CONDITION_MASK )
             == MTC_NODE_LOGICAL_CONDITION_TRUE )
         {
-            // CNFì¸ ê²½ìš°
+            // CNFÀÎ °æ¿ì
             sCompareNode = (qtcNode *)(aPredicate->node->node.arguments);
         }
         else
         {
-            // DNFì¸ ê²½ìš°
+            // DNFÀÎ °æ¿ì
             sCompareNode = aPredicate->node;
             sIsDNF = ID_TRUE;
         }
 
         if( sCompareNode->node.next != NULL && sIsDNF == ID_FALSE )
         {
-            // CNFì´ë©´ì„œ OR í•˜ìœ„ì— ë¹„êµì—°ì‚°ìê°€ ì—¬ëŸ¬ê°œ ìˆëŠ” ê²½ìš°,
-            // OR ë…¼ë¦¬ì—°ì‚°ìì— ëŒ€í•œ selectivity ê³„ì‚°.
+            // CNFÀÌ¸é¼­ OR ÇÏÀ§¿¡ ºñ±³¿¬»êÀÚ°¡ ¿©·¯°³ ÀÖ´Â °æ¿ì,
+            // OR ³í¸®¿¬»êÀÚ¿¡ ´ëÇÑ selectivity °è»ê.
             // 1 - (1-a)(1-b).....
 
-            // DNF ëŠ” node->nextê°€ ì¡´ì¬í•  ìˆ˜ ìˆìŒ.
+            // DNF ´Â node->next°¡ Á¸ÀçÇÒ ¼ö ÀÖÀ½.
 
             *sSelectivity = 1;
 
@@ -2377,7 +2394,7 @@ qmoSelectivity::setMySelectivityOffset( qcTemplate    * aTemplate,
         }
         else
         {
-            // DNF ë˜ëŠ” CNF ë¡œ ë¹„êµ ì—°ì‚°ìê°€ í•˜ë‚˜ë§Œ ìˆëŠ” ê²½ìš°
+            // DNF ¶Ç´Â CNF ·Î ºñ±³ ¿¬»êÀÚ°¡ ÇÏ³ª¸¸ ÀÖ´Â °æ¿ì
             IDE_TEST( getUnitSelectivity( aTemplate,
                                           aStatInfo,
                                           aDepInfo,
@@ -2391,8 +2408,8 @@ qmoSelectivity::setMySelectivityOffset( qcTemplate    * aTemplate,
     }
     else
     {
-        // Host ë³€ìˆ˜ë¥¼ ê°€ì§€ê³  ìˆì§€ ì•Šìœ¼ë¯€ë¡œ prepare ì‹œì ì—ì„œ êµ¬í•œ
-        // predicate->mySelectivityë¥¼ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•œë‹¤.
+        // Host º¯¼ö¸¦ °¡Áö°í ÀÖÁö ¾ÊÀ¸¹Ç·Î prepare ½ÃÁ¡¿¡¼­ ±¸ÇÑ
+        // predicate->mySelectivity¸¦ ±×´ë·Î »ç¿ëÇÑ´Ù.
         // Nothing to do.
     }
 
@@ -2411,17 +2428,17 @@ qmoSelectivity::getMySelectivity( qcTemplate   * aTemplate,
 {
 /******************************************************************************
  *
- * Description : PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
- *               aInExecutionTime ì„ ì¸ìë¡œ ë°›ëŠ” í•¨ìˆ˜ë“¤ì—ì„œ
- *               qmoPredicate ì— ëŒ€í•œ mySelectivity ë¥¼ ì–»ì–´ì˜¬ ë•Œ ì´ìš©í•œë‹¤.
+ * Description : PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+ *               aInExecutionTime À» ÀÎÀÚ·Î ¹Ş´Â ÇÔ¼öµé¿¡¼­
+ *               qmoPredicate ¿¡ ´ëÇÑ mySelectivity ¸¦ ¾ò¾î¿Ã ¶§ ÀÌ¿ëÇÑ´Ù.
  *
  * Implementation :
  *
- *     1. Execution ë‹¨ê³„(host ë³€ìˆ˜ì— ê°’ì´ ë°”ì¸ë”©ëœ í›„)ì—ì„œ
- *        qmo::optimizeForHost ì— ì˜í•œ í˜¸ì¶œì´ê³  QMO_PRED_HOST_OPTIMIZE_TRUE ì´ë©´
- *        template->data + qmoPredicate.mySelectivityOffset ì— ì„¤ì •ëœ ê°’ì„ ë°˜í™˜
- *     2. ê·¸ ì™¸ì˜ ê²½ìš°
- *        qmoPredicate.mySelectivity ë¥¼ ë°˜í™˜
+ *     1. Execution ´Ü°è(host º¯¼ö¿¡ °ªÀÌ ¹ÙÀÎµùµÈ ÈÄ)¿¡¼­
+ *        qmo::optimizeForHost ¿¡ ÀÇÇÑ È£ÃâÀÌ°í QMO_PRED_HOST_OPTIMIZE_TRUE ÀÌ¸é
+ *        template->data + qmoPredicate.mySelectivityOffset ¿¡ ¼³Á¤µÈ °ªÀ» ¹İÈ¯
+ *     2. ±× ¿ÜÀÇ °æ¿ì
+ *        qmoPredicate.mySelectivity ¸¦ ¹İÈ¯
  *
  *****************************************************************************/
 
@@ -2429,7 +2446,7 @@ qmoSelectivity::getMySelectivity( qcTemplate   * aTemplate,
     SDouble  sSelectivity;
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aTemplate  != NULL );
@@ -2458,16 +2475,16 @@ qmoSelectivity::setTotalSelectivityOffset( qcTemplate    * aTemplate,
 {
 /******************************************************************************
  *
- * Description : Execution ë‹¨ê³„(host ë³€ìˆ˜ì— ê°’ì´ ë°”ì¸ë”©ëœ í›„)ì—ì„œ
- *               qmo::optimizeForHost í˜¸ì¶œì‹œ scan method ì¬êµ¬ì¶•ì„ ìœ„í•´
- *               template->data + qmoPredicate.totalSelectivityOffset ì—
- *               totalSelectivity ë¥¼ ì¬ì„¤ì •í•œë‹¤.
+ * Description : Execution ´Ü°è(host º¯¼ö¿¡ °ªÀÌ ¹ÙÀÎµùµÈ ÈÄ)¿¡¼­
+ *               qmo::optimizeForHost È£Ãâ½Ã scan method Àç±¸ÃàÀ» À§ÇØ
+ *               template->data + qmoPredicate.totalSelectivityOffset ¿¡
+ *               totalSelectivity ¸¦ Àç¼³Á¤ÇÑ´Ù.
  *
  * Implementation :
  *
- *     1. í†µí•© selectivity ë¥¼ êµ¬í•  ìˆ˜ ìˆëŠ” ì¡°ê±´ : getIntegrateMySelectivity
- *        => setTotalSelectivity ìˆ˜í–‰ ë‹¹ì‹œ QMO_PRED_HEAD_HOST_OPT_TOTAL_TRUE ì„¸íŒ…
- *     2. í†µí•© selectivity ë¥¼ êµ¬í•  ìˆ˜ ì—†ëŠ” ì¡°ê±´ : PRODUCT( getMySelectivity )
+ *     1. ÅëÇÕ selectivity ¸¦ ±¸ÇÒ ¼ö ÀÖ´Â Á¶°Ç : getIntegrateMySelectivity
+ *        => setTotalSelectivity ¼öÇà ´ç½Ã QMO_PRED_HEAD_HOST_OPT_TOTAL_TRUE ¼¼ÆÃ
+ *     2. ÅëÇÕ selectivity ¸¦ ±¸ÇÒ ¼ö ¾ø´Â Á¶°Ç : PRODUCT( getMySelectivity )
  *
  *****************************************************************************/
 
@@ -2479,7 +2496,7 @@ qmoSelectivity::setTotalSelectivityOffset( qcTemplate    * aTemplate,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::setTotalSelectivityOffset::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aTemplate  != NULL );
@@ -2489,7 +2506,7 @@ qmoSelectivity::setTotalSelectivityOffset( qcTemplate    * aTemplate,
                  == QMO_PRED_HEAD_HOST_OPTIMIZE_TRUE );
 
     //--------------------------------------
-    // í†µí•© selectivity ê³„ì‚°
+    // ÅëÇÕ selectivity °è»ê
     //--------------------------------------
 
     sData = aTemplate->tmplate.data;
@@ -2498,7 +2515,7 @@ qmoSelectivity::setTotalSelectivityOffset( qcTemplate    * aTemplate,
     if( ( aPredicate->flag & QMO_PRED_HEAD_HOST_OPT_TOTAL_MASK )
         == QMO_PRED_HEAD_HOST_OPT_TOTAL_TRUE )
     {
-        // í†µí•© selectivity ë¥¼ êµ¬í•  ìˆ˜ ìˆëŠ” ì¡°ê±´
+        // ÅëÇÕ selectivity ¸¦ ±¸ÇÒ ¼ö ÀÖ´Â Á¶°Ç
         IDE_TEST( getIntegrateMySelectivity( aTemplate,
                                              aStatInfo,
                                              aPredicate,
@@ -2508,7 +2525,7 @@ qmoSelectivity::setTotalSelectivityOffset( qcTemplate    * aTemplate,
     }
     else
     {
-        // í†µí•© selectivity ë¥¼ êµ¬í•  ìˆ˜ ì—†ëŠ” ì¡°ê±´
+        // ÅëÇÕ selectivity ¸¦ ±¸ÇÒ ¼ö ¾ø´Â Á¶°Ç
         sTempSelectivity = 1;
         sMorePredicate = aPredicate;
 
@@ -2542,17 +2559,17 @@ qmoSelectivity::getTotalSelectivity( qcTemplate   * aTemplate,
 {
 /******************************************************************************
  *
- * Description : PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
- *               aInExecutionTime ì„ ì¸ìë¡œ ë°›ëŠ” í•¨ìˆ˜ë“¤ì—ì„œ
- *               qmoPredicate ì— ëŒ€í•œ totalSelectivity ë¥¼ ì–»ì–´ì˜¬ ë•Œ ì´ìš©í•œë‹¤.
+ * Description : PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+ *               aInExecutionTime À» ÀÎÀÚ·Î ¹Ş´Â ÇÔ¼öµé¿¡¼­
+ *               qmoPredicate ¿¡ ´ëÇÑ totalSelectivity ¸¦ ¾ò¾î¿Ã ¶§ ÀÌ¿ëÇÑ´Ù.
  *
  * Implementation :
  *
- *     1. Execution ë‹¨ê³„(host ë³€ìˆ˜ì— ê°’ì´ ë°”ì¸ë”©ëœ í›„)ì—ì„œ
- *        qmo::optimizeForHost ì— ì˜í•œ í˜¸ì¶œì´ê³  QMO_PRED_HOST_OPTIMIZE_TRUE ì´ë©´
- *        template->data + qmoPredicate.totalSelectivityOffset ì— ì„¤ì •ëœ ê°’ì„ ë°˜í™˜
- *     2. ê·¸ ì™¸ì˜ ê²½ìš°
- *        qmoPredicate.totalSelectivity ë¥¼ ë°˜í™˜
+ *     1. Execution ´Ü°è(host º¯¼ö¿¡ °ªÀÌ ¹ÙÀÎµùµÈ ÈÄ)¿¡¼­
+ *        qmo::optimizeForHost ¿¡ ÀÇÇÑ È£ÃâÀÌ°í QMO_PRED_HOST_OPTIMIZE_TRUE ÀÌ¸é
+ *        template->data + qmoPredicate.totalSelectivityOffset ¿¡ ¼³Á¤µÈ °ªÀ» ¹İÈ¯
+ *     2. ±× ¿ÜÀÇ °æ¿ì
+ *        qmoPredicate.totalSelectivity ¸¦ ¹İÈ¯
  *
  *****************************************************************************/
 
@@ -2560,7 +2577,7 @@ qmoSelectivity::getTotalSelectivity( qcTemplate   * aTemplate,
     SDouble  sSelectivity;
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aTemplate  != NULL );
@@ -2591,43 +2608,43 @@ qmoSelectivity::getIntegrateMySelectivity( qcTemplate    * aTemplate,
 {
 /******************************************************************************
  *
- * Description : More list ê°€ 2ê°œì¸ indexable qmoPredicate ì— ëŒ€í•´
- *               Integrate ê°€ëŠ¥í•œ ê²½ìš° MIN-MAX selectivity ì ìš©í•˜ì—¬
- *               total selectivity ë¥¼ ê³„ì‚°í•œë‹¤.
+ * Description : More list °¡ 2°³ÀÎ indexable qmoPredicate ¿¡ ´ëÇØ
+ *               Integrate °¡´ÉÇÑ °æ¿ì MIN-MAX selectivity Àû¿ëÇÏ¿©
+ *               total selectivity ¸¦ °è»êÇÑ´Ù.
  *
  * Implementation :
  *
- *     1. Integrate ëŒ€ìƒ ê²€ì¶œ
- *        => PROJ-2242 ì™€ ê´€ë ¨í•˜ì—¬ filter subsumption ì´ ìˆ˜í–‰ë˜ì—ˆë‹¤ëŠ” ê°€ì •
- *     1.1. ê° qmoPredicate ì˜ arguments(unit predicate) ê°¯ìˆ˜ê°€ 1ê°œ
- *     1.2. ê° qmoPredicate ì˜ operator ëŠ” (>, >=, <, <=) ì— í•´ë‹¹
- *     1.3. ê° qmoPredicate ì˜ operator ëŠ” ê°ê° ë‹¤ë¥¸ ë°©í–¥ì„±
+ *     1. Integrate ´ë»ó °ËÃâ
+ *        => PROJ-2242 ¿Í °ü·ÃÇÏ¿© filter subsumption ÀÌ ¼öÇàµÇ¾ú´Ù´Â °¡Á¤
+ *     1.1. °¢ qmoPredicate ÀÇ arguments(unit predicate) °¹¼ö°¡ 1°³
+ *     1.2. °¢ qmoPredicate ÀÇ operator ´Â (>, >=, <, <=) ¿¡ ÇØ´ç
+ *     1.3. °¢ qmoPredicate ÀÇ operator ´Â °¢°¢ ´Ù¸¥ ¹æÇâ¼º
  *     1.4. Column (QMO_STAT_MINMAX_COLUMN_SET_FALSE)
  *          ex) FROM ( SELECT ( SELECT T2.I1 FROM T2 LIMIT 1 )A FROM T1 )V1
  *              WHERE V1.A > 1;
  *     1.5. Execution time
- *     1.6. column ë…¸ë“œëŠ” MTD_SELECTIVITY_ENABLE
- *     1.7. value ë…¸ë“œëŠ” fixed variable í˜•íƒœ
- *       => 1.1~7 ì¡°ê±´ ë§Œì¡±ì‹œ QMO_PRED_HEAD_HOST_OPT_TOTAL_MASK ì„¸íŒ…
- *     1.8. column ë…¸ë“œëŠ” MTD_GROUP_MISC ê°€ ì•„ë‹Œ ê²ƒ
+ *     1.6. column ³ëµå´Â MTD_SELECTIVITY_ENABLE
+ *     1.7. value ³ëµå´Â fixed variable ÇüÅÂ
+ *       => 1.1~7 Á¶°Ç ¸¸Á·½Ã QMO_PRED_HEAD_HOST_OPT_TOTAL_MASK ¼¼ÆÃ
+ *     1.8. column ³ëµå´Â MTD_GROUP_MISC °¡ ¾Æ´Ñ °Í
  *          ex) MTD_GROUP_NUMBER, MTD_GROUP_TEXT, MTD_GROUP_DATE, MTD_GROUP_INTERVAL
- *     1.9. column ë…¸ë“œì™€ value ë…¸ë“œëŠ” ê°™ì€ group
- *     1.10. í†µê³„ì •ë³´ ìˆ˜ì§‘
+ *     1.9. column ³ëµå¿Í value ³ëµå´Â °°Àº group
+ *     1.10. Åë°èÁ¤º¸ ¼öÁı
  *
- *     2. Integrate selectivity ê³„ì‚°
- *     2.1. Integrate ëŒ€ìƒ : S = MIN-MAX selectivity
- *          => ë‹«íŒ ë²”ìœ„ì— ëŒ€í•œ ë³´ì •
+ *     2. Integrate selectivity °è»ê
+ *     2.1. Integrate ´ë»ó : S = MIN-MAX selectivity
+ *          => ´İÈù ¹üÀ§¿¡ ´ëÇÑ º¸Á¤
  *     2.2 Etc : S = PRODUCT( MS )
  *
- *     cf) MIN-MAX selectivity : ë‘ê°œì˜ predicateì—ì„œ max/min value nodeë¥¼ ì°¾ëŠ”ë‹¤.
- *       (1) >, >= ì´ë©´,
- *         - indexArgument = 0 : min value ( ì˜ˆ: i1>5 )
- *         - indexArgument = 1 : max value ( ì˜ˆ: 5>i1 )
- *       (2) <, <= ì´ë©´,
- *         - indexArgument = 0 : max value ( ì˜ˆ: i1<1 )
- *         - indexArgument = 1 : min value ( ì˜ˆ: 1<i1 )
- *       (3) (1),(2)ì˜ ìˆ˜í–‰ê²°ê³¼,
- *         - min/max value nodeê°€ ëª¨ë‘ ì¡´ì¬í•˜ë©´, í†µí•© selectivity ë¥¼ êµ¬í•¨
+ *     cf) MIN-MAX selectivity : µÎ°³ÀÇ predicate¿¡¼­ max/min value node¸¦ Ã£´Â´Ù.
+ *       (1) >, >= ÀÌ¸é,
+ *         - indexArgument = 0 : min value ( ¿¹: i1>5 )
+ *         - indexArgument = 1 : max value ( ¿¹: 5>i1 )
+ *       (2) <, <= ÀÌ¸é,
+ *         - indexArgument = 0 : max value ( ¿¹: i1<1 )
+ *         - indexArgument = 1 : min value ( ¿¹: 1<i1 )
+ *       (3) (1),(2)ÀÇ ¼öÇà°á°ú,
+ *         - min/max value node°¡ ¸ğµÎ Á¸ÀçÇÏ¸é, ÅëÇÕ selectivity ¸¦ ±¸ÇÔ
  *
  *****************************************************************************/
 
@@ -2655,7 +2672,7 @@ qmoSelectivity::getIntegrateMySelectivity( qcTemplate    * aTemplate,
 
     SDouble           sColumnNDV;
     SDouble           sSelectivity;
-    // sBoundForm : min/max bound í˜•íƒœ
+    // sBoundForm : min/max bound ÇüÅÂ
     // 0:   open,   open ( x <  i1 <  y )
     // 1:   open, closed ( x <  i1 <= y )
     //    closed,   open ( x <= i1 <  y )
@@ -2666,7 +2683,7 @@ qmoSelectivity::getIntegrateMySelectivity( qcTemplate    * aTemplate,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::getIntegrateMySelectivity::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aTemplate    != NULL );
@@ -2677,7 +2694,7 @@ qmoSelectivity::getIntegrateMySelectivity( qcTemplate    * aTemplate,
                  aPredicate->more->more == NULL );
 
     //--------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //--------------------------------------
 
     sPredicate = aPredicate;
@@ -2686,7 +2703,7 @@ qmoSelectivity::getIntegrateMySelectivity( qcTemplate    * aTemplate,
     sIsIntegrate = ID_TRUE;
 
     //--------------------------------------
-    // 1. Integrate ëŒ€ìƒ ê²€ì¶œ
+    // 1. Integrate ´ë»ó °ËÃâ
     //--------------------------------------
 
     sMorePredicate = sPredicate;
@@ -2707,8 +2724,8 @@ qmoSelectivity::getIntegrateMySelectivity( qcTemplate    * aTemplate,
             // Nothing To Do
         }
 
-        // 1.1. ê° qmoPredicate ì˜ arguments(unit predicate) ê°¯ìˆ˜ê°€ 1ê°œ
-        // => compare node ì¶”ì¶œ
+        // 1.1. °¢ qmoPredicate ÀÇ arguments(unit predicate) °¹¼ö°¡ 1°³
+        // => compare node ÃßÃâ
 
         if( ( sMorePredicate->node->node.lflag & MTC_NODE_LOGICAL_CONDITION_MASK )
             == MTC_NODE_LOGICAL_CONDITION_TRUE )
@@ -2717,9 +2734,9 @@ qmoSelectivity::getIntegrateMySelectivity( qcTemplate    * aTemplate,
 
             if( sCompareNode->node.next != NULL )
             {
-                // OR ë…¸ë“œ í•˜ìœ„ì— ë¹„êµì—°ì‚°ìê°€ ë‘ê°œì´ìƒ ì¡´ì¬í•˜ëŠ” ê²½ìš°,
-                // í†µí•© selectivityë¥¼ êµ¬í•  ìˆ˜ ì—†ë‹¤.
-                // ì˜ˆ: i1>1 or i1<2
+                // OR ³ëµå ÇÏÀ§¿¡ ºñ±³¿¬»êÀÚ°¡ µÎ°³ÀÌ»ó Á¸ÀçÇÏ´Â °æ¿ì,
+                // ÅëÇÕ selectivity¸¦ ±¸ÇÒ ¼ö ¾ø´Ù.
+                // ¿¹: i1>1 or i1<2
                 sIsIntegrate = ID_FALSE;
                 break;
             }
@@ -2734,14 +2751,14 @@ qmoSelectivity::getIntegrateMySelectivity( qcTemplate    * aTemplate,
             sCompareNode = sMorePredicate->node;
         }
         
-        // 1.2. ê° qmoPredicate ì˜ operator ëŠ” (>, >=, <, <=) ì— í•´ë‹¹
-        // => column node, min/max value node íšë“
+        // 1.2. °¢ qmoPredicate ÀÇ operator ´Â (>, >=, <, <=) ¿¡ ÇØ´ç
+        // => column node, min/max value node È¹µæ
 
         switch( sCompareNode->node.module->lflag & MTC_NODE_OPERATOR_MASK )
         {
             case( MTC_NODE_OPERATOR_GREATER_EQUAL ) :
                 // >=
-                sBoundForm++;        // ë‹«íŒ ì •ë„ ê³„ì‚°
+                sBoundForm++;        // ´İÈù Á¤µµ °è»ê
                 /* fall through */
             case( MTC_NODE_OPERATOR_GREATER ) :
                 // >
@@ -2759,7 +2776,7 @@ qmoSelectivity::getIntegrateMySelectivity( qcTemplate    * aTemplate,
                 break;
             case( MTC_NODE_OPERATOR_LESS_EQUAL ) :
                 // <=
-                sBoundForm++;        // ë‹«íŒ ì •ë„ ê³„ì‚°
+                sBoundForm++;        // ´İÈù Á¤µµ °è»ê
                 /* fall through */
             case( MTC_NODE_OPERATOR_LESS ) :
                 // <
@@ -2776,7 +2793,7 @@ qmoSelectivity::getIntegrateMySelectivity( qcTemplate    * aTemplate,
                 }
                 break;
             default :
-                // (>, >=, <, <=) ì´ ì™¸ì˜ operator
+                // (>, >=, <, <=) ÀÌ ¿ÜÀÇ operator
                 sIsIntegrate = ID_FALSE;
                 break;
         }
@@ -2784,7 +2801,7 @@ qmoSelectivity::getIntegrateMySelectivity( qcTemplate    * aTemplate,
         sMorePredicate = sMorePredicate->more;
     }
 
-    // 1.3. ê° qmoPredicate ì˜ operator ëŠ” ê°ê° ë‹¤ë¥¸ ë°©í–¥ì„±
+    // 1.3. °¢ qmoPredicate ÀÇ operator ´Â °¢°¢ ´Ù¸¥ ¹æÇâ¼º
 
     sIsIntegrate = ( sMinValueNode != NULL && sMaxValueNode != NULL ) ?
                    ID_TRUE: ID_FALSE;
@@ -2796,11 +2813,11 @@ qmoSelectivity::getIntegrateMySelectivity( qcTemplate    * aTemplate,
     if( sIsIntegrate == ID_TRUE )
     {
         // BUG-16265
-        // viewì˜ targetì´ subqueryì¸ ê²½ìš° ì‹¤ì œ columnì •ë³´ëŠ” ìˆì§€ë§Œ
-        // subquery nodeì˜ moduleì— mtdNull module ì´ ë‹¬ë¦¬ê³ 
-        // MTD_SELECTIVITY_DISABLE ì´ë¯€ë¡œ í†µê³„ì •ë³´ë¥¼ ì €ì¥í•˜ì§€ ì•ŠëŠ”ë‹¤.
-        // ì´ëŸ° ê²½ìš° colCardInfoì˜ flagë¡œ í†µê³„ì •ë³´ê°€ ìˆëŠ”ì§€ íŒë‹¨í•˜ê³ ,
-        // ì—†ìœ¼ë©´ defaultë¡œ ê³„ì‚°ëœë‹¤.
+        // viewÀÇ targetÀÌ subqueryÀÎ °æ¿ì ½ÇÁ¦ columnÁ¤º¸´Â ÀÖÁö¸¸
+        // subquery nodeÀÇ module¿¡ mtdNull module ÀÌ ´Ş¸®°í
+        // MTD_SELECTIVITY_DISABLE ÀÌ¹Ç·Î Åë°èÁ¤º¸¸¦ ÀúÀåÇÏÁö ¾Ê´Â´Ù.
+        // ÀÌ·± °æ¿ì colCardInfoÀÇ flag·Î Åë°èÁ¤º¸°¡ ÀÖ´ÂÁö ÆÇ´ÜÇÏ°í,
+        // ¾øÀ¸¸é default·Î °è»êµÈ´Ù.
 
         if( ( sColCardInfo[sColumnNode->node.column].flag &
               QMO_STAT_MINMAX_COLUMN_SET_MASK )
@@ -2822,12 +2839,12 @@ qmoSelectivity::getIntegrateMySelectivity( qcTemplate    * aTemplate,
     {
         //--------------------------------------
         // 1.5. Execution time
-        // 1.6. column ë…¸ë“œëŠ” MTD_SELECTIVITY_ENABLE
-        // 1.7. value ë…¸ë“œëŠ” fixed variable í˜•íƒœ
-        //   => 1.1~7 ì¡°ê±´ ë§Œì¡±ì‹œ QMO_PRED_HEAD_HOST_OPT_TOTAL_MASK ì„¸íŒ…
-        // 1.8. column ë…¸ë“œëŠ” MTD_GROUP_MISC ê°€ ì•„ë‹Œ ê²ƒ
-        // 1.9. column ë…¸ë“œì™€ value ë…¸ë“œëŠ” ê°™ì€ group
-        // 1.10. í†µê³„ì •ë³´ ìˆ˜ì§‘
+        // 1.6. column ³ëµå´Â MTD_SELECTIVITY_ENABLE
+        // 1.7. value ³ëµå´Â fixed variable ÇüÅÂ
+        //   => 1.1~7 Á¶°Ç ¸¸Á·½Ã QMO_PRED_HEAD_HOST_OPT_TOTAL_MASK ¼¼ÆÃ
+        // 1.8. column ³ëµå´Â MTD_GROUP_MISC °¡ ¾Æ´Ñ °Í
+        // 1.9. column ³ëµå¿Í value ³ëµå´Â °°Àº group
+        // 1.10. Åë°èÁ¤º¸ ¼öÁı
         //--------------------------------------
 
         IDE_DASSERT( sColumnNode != NULL );
@@ -2837,18 +2854,18 @@ qmoSelectivity::getIntegrateMySelectivity( qcTemplate    * aTemplate,
                            columns[sColumnNode->node.column] );
 
         //--------------------------------------------
-        // ë‹¤ìŒ ì„¸ê°€ì§€ ê²½ìš°ëŠ”,
-        // í†µí•© selectivityë¥¼ ê³„ì‚°í•  ìˆ˜ ì—†ëŠ” ê²½ìš°ì´ë¯€ë¡œ,
-        // ë‘ê°œ predicateì˜ selectivityë¥¼ ê³±í•œë‹¤.
-        // (1) predicateì´ variableë¡œ ë¶„ë¥˜ë˜ëŠ” ê²½ìš°
-        // (2) í•´ë‹¹ ì»¬ëŸ¼ì˜ min/max valueê°€ ì—†ëŠ” ê²½ìš°
-        // (3) ë‚ ì§œ, ìˆ«ìí˜• ì´ì™¸ì˜ dataTypeì¸ ê²½ìš°
+        // ´ÙÀ½ ¼¼°¡Áö °æ¿ì´Â,
+        // ÅëÇÕ selectivity¸¦ °è»êÇÒ ¼ö ¾ø´Â °æ¿ìÀÌ¹Ç·Î,
+        // µÎ°³ predicateÀÇ selectivity¸¦ °öÇÑ´Ù.
+        // (1) predicateÀÌ variable·Î ºĞ·ùµÇ´Â °æ¿ì
+        // (2) ÇØ´ç ÄÃ·³ÀÇ min/max value°¡ ¾ø´Â °æ¿ì
+        // (3) ³¯Â¥, ¼ıÀÚÇü ÀÌ¿ÜÀÇ dataTypeÀÎ °æ¿ì
         // BUG-38758
-        // (4) deterministic functionì€ fixed predicateì´ì§€ë§Œ ê³„ì‚°í•  ìˆ˜ ì—†ë‹¤.
+        // (4) deterministic functionÀº fixed predicateÀÌÁö¸¸ °è»êÇÒ ¼ö ¾ø´Ù.
         //--------------------------------------------
         // fix BUG-13708
-        // ë™ì¼ì»¬ëŸ¼ë¦¬ìŠ¤íŠ¸ì— ì—°ê²°ëœ ë‘ê°œì˜ predicateì— ëŒ€í•´ ëª¨ë‘
-        // í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
+        // µ¿ÀÏÄÃ·³¸®½ºÆ®¿¡ ¿¬°áµÈ µÎ°³ÀÇ predicate¿¡ ´ëÇØ ¸ğµÎ
+        // È£½ºÆ® º¯¼ö°¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç
 
         if( ( ( aInExecutionTime == ID_FALSE ) &&
               ( QMO_PRED_IS_VARIABLE( aPredicate ) == ID_TRUE ||
@@ -2866,12 +2883,12 @@ qmoSelectivity::getIntegrateMySelectivity( qcTemplate    * aTemplate,
         {
             sIsIntegrate = ID_FALSE;
 
-            // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
-            // í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ë¥¼ í¬í•¨í•˜ê³  í†µí•© selectivityë¥¼ êµ¬í•´ì•¼ í•˜ëŠ” ê²½ìš°
-            // aPredicateì˜ flagì— ì •ë³´ë¥¼ í‘œì‹œí•´ë‘”ë‹¤.
-            // ì´ ì •ë³´ëŠ” execution timeì— total selectivityë¥¼ ë‹¤ì‹œ êµ¬í•  ë•Œ
-            // í†µí•© selectivityë¥¼ êµ¬í•  ìˆ˜ ìˆëŠ”ì§€ì˜ ì—¬ë¶€ë¥¼
-            // ì‰½ê²Œ ì•Œì•„ì˜¤ê¸° ìœ„í•´ì„œì´ë‹¤.
+            // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+            // È£½ºÆ® º¯¼ö¸¦ Æ÷ÇÔÇÏ°í ÅëÇÕ selectivity¸¦ ±¸ÇØ¾ß ÇÏ´Â °æ¿ì
+            // aPredicateÀÇ flag¿¡ Á¤º¸¸¦ Ç¥½ÃÇØµĞ´Ù.
+            // ÀÌ Á¤º¸´Â execution time¿¡ total selectivity¸¦ ´Ù½Ã ±¸ÇÒ ¶§
+            // ÅëÇÕ selectivity¸¦ ±¸ÇÒ ¼ö ÀÖ´ÂÁöÀÇ ¿©ºÎ¸¦
+            // ½±°Ô ¾Ë¾Æ¿À±â À§ÇØ¼­ÀÌ´Ù.
 
             if( ( aPredicate->flag & QMO_PRED_HEAD_HOST_OPTIMIZE_MASK )
                 == QMO_PRED_HEAD_HOST_OPTIMIZE_TRUE )
@@ -2889,7 +2906,7 @@ qmoSelectivity::getIntegrateMySelectivity( qcTemplate    * aTemplate,
         {
             sColumnType = ( sColumnColumn->module->flag & MTD_GROUP_MASK );
 
-            // minValue, maxValue íšë“
+            // minValue, maxValue È¹µæ
 
             IDE_TEST( qtc::calculate( sMinValueNode, aTemplate )
                       != IDE_SUCCESS );
@@ -2922,7 +2939,7 @@ qmoSelectivity::getIntegrateMySelectivity( qcTemplate    * aTemplate,
     }
 
     //--------------------------------------
-    // 2. Integrate selectivity ê³„ì‚°
+    // 2. Integrate selectivity °è»ê
     //--------------------------------------
 
     if( sIsIntegrate == ID_TRUE )
@@ -2936,23 +2953,23 @@ qmoSelectivity::getIntegrateMySelectivity( qcTemplate    * aTemplate,
             (void *)(sColCardInfo[sColumnNode->node.column].minValue);
 
         //--------------------------------------
-        // ë™ì¼ ì»¬ëŸ¼ì— ëŒ€í•œ í†µí•© selectivityë¥¼ ê³„ì‚°í•œë‹¤.
-        // (1) ì»¬ëŸ¼ì´ date typeì¸ ê²½ìš°,
-        //     : í•´ë‹¹ ì»¬ëŸ¼ì˜ mtdModule ì‚¬ìš©
-        // (2) ì»¬ëŸ¼ì´ ìˆ«ìí˜•ê³„ì—´ì¸  ê²½ìš°,
-        //     : valueì˜ ê°’ì´ ëª¨ë‘ ë‹¤ë¥¸ data typeì¼ ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
-        //       double typeìœ¼ë¡œ ë³€í™˜í•˜ê³ ,
-        //       ì´ ë³€í™˜ëœ ê°’ìœ¼ë¡œ mtdDouble.moduleì„ ì‚¬ìš©í•´ì„œ selectivityë¥¼ êµ¬í•¨.
+        // µ¿ÀÏ ÄÃ·³¿¡ ´ëÇÑ ÅëÇÕ selectivity¸¦ °è»êÇÑ´Ù.
+        // (1) ÄÃ·³ÀÌ date typeÀÎ °æ¿ì,
+        //     : ÇØ´ç ÄÃ·³ÀÇ mtdModule »ç¿ë
+        // (2) ÄÃ·³ÀÌ ¼ıÀÚÇü°è¿­ÀÎ  °æ¿ì,
+        //     : valueÀÇ °ªÀÌ ¸ğµÎ ´Ù¸¥ data typeÀÏ ¼ö ÀÖÀ¸¹Ç·Î,
+        //       double typeÀ¸·Î º¯È¯ÇÏ°í,
+        //       ÀÌ º¯È¯µÈ °ªÀ¸·Î mtdDouble.moduleÀ» »ç¿ëÇØ¼­ selectivity¸¦ ±¸ÇÔ.
         //--------------------------------------
 
         if ( sColumnType == MTD_GROUP_NUMBER )
         {
             // PROJ-1364
-            // ìˆ«ìí˜• ê³„ì—´ì¸ ê²½ìš°
-            // ë™ì¼ê³„ì—´ì˜ ì¸ë±ìŠ¤ ì‚¬ìš©ìœ¼ë¡œ ì¸í•´
-            // ë‘ ë¹„êµëŒ€ìƒì˜ data typeì´ í‹€ë¦´ ìˆ˜ ìˆìœ¼ë¯€ë¡œ
-            // doubleë¡œ ë³€í™˜í•´ì„œ, selectivityë¥¼ êµ¬í•œë‹¤.
-            // ì˜ˆ) smallint_col > 3 and smallint_col < numeric'9'
+            // ¼ıÀÚÇü °è¿­ÀÎ °æ¿ì
+            // µ¿ÀÏ°è¿­ÀÇ ÀÎµ¦½º »ç¿ëÀ¸·Î ÀÎÇØ
+            // µÎ ºñ±³´ë»óÀÇ data typeÀÌ Æ²¸± ¼ö ÀÖÀ¸¹Ç·Î
+            // double·Î º¯È¯ÇØ¼­, selectivity¸¦ ±¸ÇÑ´Ù.
+            // ¿¹) smallint_col > 3 and smallint_col < numeric'9'
             // integrateSelectivity()
 
             IDE_TEST ( getConvertToDoubleValue( sColumnColumn,
@@ -2978,7 +2995,7 @@ qmoSelectivity::getIntegrateMySelectivity( qcTemplate    * aTemplate,
         else
         {
             // PROJ-1484
-            // ìˆ«ìí˜•ì´ ì•„ë‹Œ ê²½ìš° (ë¬¸ìì—´ ì„ íƒë„ ì¶”ì • ì¶”ê°€)
+            // ¼ıÀÚÇüÀÌ ¾Æ´Ñ °æ¿ì (¹®ÀÚ¿­ ¼±ÅÃµµ ÃßÁ¤ Ãß°¡)
             // ex) DATE, CHAR(n), VARCHAR(n)
 
             sSelectivity = sColumnColumn->module->selectivity(
@@ -3029,18 +3046,18 @@ qmoSelectivity::getUnitSelectivity( qcTemplate    * aTemplate,
 {
 /******************************************************************************
  *
- * Description : JOIN ì„ ì œì™¸í•œ unit predicate ì˜ unit selectivity ë°˜í™˜
+ * Description : JOIN À» Á¦¿ÜÇÑ unit predicate ÀÇ unit selectivity ¹İÈ¯
  *
  * Implementation :
  *
- *     1. =, != (<>) : getEqualSelectivity ìˆ˜í–‰
- *     2. IS NULL, IS NOT NULL : getIsNullSelectivity ìˆ˜í–‰
+ *     1. =, != (<>) : getEqualSelectivity ¼öÇà
+ *     2. IS NULL, IS NOT NULL : getIsNullSelectivity ¼öÇà
  *     3. >, >=, <, <=, BETWEEN, NOT BETWEEN :
- *        getGreaterLessBeetweenSelectivity ìˆ˜í–‰
- *     4. LIKE, NOT LIKE : getLikeSelectivity ìˆ˜í–‰
- *     5. IN, NOT IN : getInSelectivity ìˆ˜í–‰
- *     6. EQUALS : getEqualsSelectivity ìˆ˜í–‰
- *     7. LNNVL : getLnnvlSelectivity ìˆ˜í–‰
+ *        getGreaterLessBeetweenSelectivity ¼öÇà
+ *     4. LIKE, NOT LIKE : getLikeSelectivity ¼öÇà
+ *     5. IN, NOT IN : getInSelectivity ¼öÇà
+ *     6. EQUALS : getEqualsSelectivity ¼öÇà
+ *     7. LNNVL : getLnnvlSelectivity ¼öÇà
  *     8. Etc : default selectivity
  *
  *****************************************************************************/
@@ -3050,7 +3067,7 @@ qmoSelectivity::getUnitSelectivity( qcTemplate    * aTemplate,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::getUnitSelectivity::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aTemplate    != NULL );
@@ -3061,7 +3078,7 @@ qmoSelectivity::getUnitSelectivity( qcTemplate    * aTemplate,
     IDE_DASSERT( aSelectivity != NULL );
 
     // BUG-41748
-    // BUG-42283 host variable predicate ì— ëŒ€í•œ selectivity ëŠ” default selectivity ë¥¼ ì‚¬ìš©í•œë‹¤.
+    // BUG-42283 host variable predicate ¿¡ ´ëÇÑ selectivity ´Â default selectivity ¸¦ »ç¿ëÇÑ´Ù.
     // (ex) WHERE i1 = :a AND i2 = :a OR :a is null
     //                                   ^^^^^^^^^^
     if ( ( ( aCompareNode->lflag & QTC_NODE_COLUMN_RID_MASK ) == QTC_NODE_COLUMN_RID_EXIST ) ||
@@ -3072,7 +3089,7 @@ qmoSelectivity::getUnitSelectivity( qcTemplate    * aTemplate,
     else
     {
         //--------------------------------------
-        // Unit selectivity ê³„ì‚°
+        // Unit selectivity °è»ê
         //--------------------------------------
 
         if( ( aCompareNode->node.module == &mtfEqual ) ||
@@ -3178,9 +3195,9 @@ qmoSelectivity::getUnitSelectivity( qcTemplate    * aTemplate,
         else
         {
             //---------------------------------------
-            // {>,>=,<,<=}ANY, {>,>=,<,<=}ALL ì¸ ê²½ìš°
-            // qtc::hostConstantWrapperModule ì¸ ê²½ìš° ( BUG-39036 )
-            // default selectivity ë¡œ ê³„ì‚°
+            // {>,>=,<,<=}ANY, {>,>=,<,<=}ALL ÀÎ °æ¿ì
+            // qtc::hostConstantWrapperModule ÀÎ °æ¿ì ( BUG-39036 )
+            // default selectivity ·Î °è»ê
             //---------------------------------------
             sSelectivity = aCompareNode->node.module->selectivity;
         }
@@ -3206,21 +3223,21 @@ qmoSelectivity::getEqualSelectivity( qcTemplate    * aTemplate,
 {
 /******************************************************************************
  *
- * Description : =, !=(<>) ì— ëŒ€í•œ unit selectivity ë°˜í™˜ (one table)
+ * Description : =, !=(<>) ¿¡ ´ëÇÑ unit selectivity ¹İÈ¯ (one table)
  *
  * Implementation :
  *
  *   1. Indexable predicate
- *   => !=, one side column LIST ëŠ” non-indexable ì´ì§€ë§Œ
- *      selectivity íšë“ì´ ê°€ëŠ¥í•˜ë¯€ë¡œ indexable ì˜ selectivityë¡œ ê³„ì‚°
+ *   => !=, one side column LIST ´Â non-indexable ÀÌÁö¸¸
+ *      selectivity È¹µæÀÌ °¡´ÉÇÏ¹Ç·Î indexable ÀÇ selectivity·Î °è»ê
  *      ex) (i1, i2) != (1,1)
- *   1.1. í†µê³„ì •ë³´ ìˆ˜ì§‘
+ *   1.1. Åë°èÁ¤º¸ ¼öÁı
  *      - column LIST : S = PRODUCT(1/NDVn)
  *        ex) (t1.i1,t1.i2)=(select t2.i1, t2.i2 from t2)
  *            (i1,i2)=(1,2), (i1,i2)=((1,2)), (i1,i2)=(1,:a), (i1,i2)=(:a,:a)
  *      - one column : S = 1/NDV
  *        ex) t1.i1=(select t2.i1 from t2), i1=1, i1=(1), i1=:a
- *   1.2. í†µê³„ì •ë³´ ë¯¸ìˆ˜ì§‘
+ *   1.2. Åë°èÁ¤º¸ ¹Ì¼öÁı
  *      - column LIST : S = PRODUCT(DSn)
  *      - one column : S = DS
  *
@@ -3228,8 +3245,8 @@ qmoSelectivity::getEqualSelectivity( qcTemplate    * aTemplate,
  *   2.1. column LIST : S = PRODUCT(DSn)
  *        ex) (i1,1)=(1,1), (i1,i2)=(1,'1'), (i1,1)=(1,:a), (i1,1)=(1,i2)
  *            (t1.i1,1)=(select i1, i2 from t2)
- *   2.2. Etc (ì–‘ìª½ ëª¨ë‘ LIST í˜•íƒœê°€ ì•„ë‹˜)
- *     => í†µê³„ì •ë³´ ìˆ˜ì§‘ (1/NDV), í†µê³„ì •ë³´ ë¯¸ìˆ˜ì§‘ (DS)
+ *   2.2. Etc (¾çÂÊ ¸ğµÎ LIST ÇüÅÂ°¡ ¾Æ´Ô)
+ *     => Åë°èÁ¤º¸ ¼öÁı (1/NDV), Åë°èÁ¤º¸ ¹Ì¼öÁı (DS)
  *      - OneColumn and OneColumn : S = MIN( 1/leftNDV, 1/rightNDV )
  *        ex) i1=i2, i1=i1
  *      - OneColumn and Etc : S = MIN( 1/columnNDV , DS )
@@ -3237,7 +3254,7 @@ qmoSelectivity::getEqualSelectivity( qcTemplate    * aTemplate,
  *      - Etc and Etc : S = DS
  *        ex) i1+1=i2+1, i1+i2=1
  *
- *   3. !=(<>) ë³´ì •
+ *   3. !=(<>) º¸Á¤
  *
  *****************************************************************************/
 
@@ -3255,7 +3272,7 @@ qmoSelectivity::getEqualSelectivity( qcTemplate    * aTemplate,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::getEqualSelectivity::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aTemplate    != NULL );
@@ -3268,7 +3285,7 @@ qmoSelectivity::getEqualSelectivity( qcTemplate    * aTemplate,
     IDE_DASSERT( aSelectivity != NULL );
 
     //--------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //--------------------------------------
 
     sSelectivity = 1;
@@ -3276,10 +3293,10 @@ qmoSelectivity::getEqualSelectivity( qcTemplate    * aTemplate,
     sColCardInfo = aStatInfo->colCardInfo;
 
     //--------------------------------------
-    // Selectivity ê³„ì‚°
+    // Selectivity °è»ê
     //--------------------------------------
 
-    // column ë…¸ë“œ íšë“
+    // column ³ëµå È¹µæ
     if( aCompareNode->indexArgument == 0 )
     {
         sColumnNode = (qtcNode *)(aCompareNode->node.arguments);
@@ -3290,8 +3307,8 @@ qmoSelectivity::getEqualSelectivity( qcTemplate    * aTemplate,
     }
 
     // BUG-7814 : (i1, i2) != (1,2)
-    // - != operator ë¥¼ ì‚¬ìš©í•œ column LIST í˜•íƒœëŠ” non-indexable ë¡œ ë¶„ë¥˜
-    // - PROJ-2242 : default selectivity íšŒí”¼ë¥¼ ìœ„í•´ indexable ì²˜ëŸ¼ ì²˜ë¦¬
+    // - != operator ¸¦ »ç¿ëÇÑ column LIST ÇüÅÂ´Â non-indexable ·Î ºĞ·ù
+    // - PROJ-2242 : default selectivity È¸ÇÇ¸¦ À§ÇØ indexable Ã³·³ Ã³¸®
 
     if( ( aCompareNode->node.module == &mtfNotEqual ) &&
         ( sColumnNode->node.lflag & MTC_NODE_OPERATOR_MASK )
@@ -3315,7 +3332,7 @@ qmoSelectivity::getEqualSelectivity( qcTemplate    * aTemplate,
 
         if( aStatInfo->isValidStat == ID_TRUE )
         {
-            // 1.1. í†µê³„ì •ë³´ ìˆ˜ì§‘
+            // 1.1. Åë°èÁ¤º¸ ¼öÁı
 
             if( ( sColumnNode->node.lflag & MTC_NODE_OPERATOR_MASK )
                 == MTC_NODE_OPERATOR_LIST )
@@ -3337,14 +3354,14 @@ qmoSelectivity::getEqualSelectivity( qcTemplate    * aTemplate,
             }
             else
             {
-                // BUG-40074 ìƒìˆ˜ê°’ë„ indexable ì¼ìˆ˜ ìˆë‹¤.
+                // BUG-40074 »ó¼ö°ªµµ indexable ÀÏ¼ö ÀÖ´Ù.
                 // - const value
                 sSelectivity = sDefaultSelectivity;
             }
         }
         else
         {
-            // 1.2. í†µê³„ì •ë³´ ë¯¸ìˆ˜ì§‘
+            // 1.2. Åë°èÁ¤º¸ ¹Ì¼öÁı
 
             if( ( sColumnNode->node.lflag & MTC_NODE_OPERATOR_MASK )
                 == MTC_NODE_OPERATOR_LIST )
@@ -3372,7 +3389,7 @@ qmoSelectivity::getEqualSelectivity( qcTemplate    * aTemplate,
         if( ( sColumnNode->node.lflag & MTC_NODE_OPERATOR_MASK )
             == MTC_NODE_OPERATOR_LIST )
         {
-            // 2.1. Column LIST í˜•íƒœ
+            // 2.1. Column LIST ÇüÅÂ
 
             sColumn = (qtcNode *)(sColumnNode->node.arguments);
 
@@ -3384,7 +3401,7 @@ qmoSelectivity::getEqualSelectivity( qcTemplate    * aTemplate,
         }
         else
         {
-            // 2.2. ì–‘ìª½ ëª¨ë‘ LIST í˜•íƒœê°€ ì•„ë‹˜
+            // 2.2. ¾çÂÊ ¸ğµÎ LIST ÇüÅÂ°¡ ¾Æ´Ô
 
             // - OneColumn and OneColumn : S = MIN( 1/leftNDV, 1/rightNDV )
             // - OneColumn and Etc : S = MIN( 1/columnNDV , DS )
@@ -3395,8 +3412,8 @@ qmoSelectivity::getEqualSelectivity( qcTemplate    * aTemplate,
 
 
             // PR-20753 :
-            // one column ì´ê³  outer columnì´ ì•„ë‹Œê²½ìš°ì—
-            // ë‘ operandì— ëŒ€í•œ columnNDV ë¥¼ êµ¬í•œë‹¤.
+            // one column ÀÌ°í outer columnÀÌ ¾Æ´Ñ°æ¿ì¿¡
+            // µÎ operand¿¡ ´ëÇÑ columnNDV ¸¦ ±¸ÇÑ´Ù.
 
             if( ( QTC_TEMPLATE_IS_COLUMN( aTemplate, sLeftNode ) == ID_TRUE ) &&
                 ( qtc::dependencyContains( aDepInfo,
@@ -3428,9 +3445,24 @@ qmoSelectivity::getEqualSelectivity( qcTemplate    * aTemplate,
         }
     }
 
-    // NOT EQUAL selectivity
-    sSelectivity = ( aCompareNode->node.module == &mtfNotEqual ) ?
-                   1 - sSelectivity: sSelectivity;
+    /* BUG-47702 <> ¿¬»êÀÚ°¡ ÀÖÀ» °æ¿ì Selectivity°¡ 1ÀÎ INDEX¿¡ ´ëÇÑ Àß¸øµÈ  index ¼±ÅÃ ¿À·ù
+     * NOT EQUAL ÀÇ Selectivity °¡ 1 ÀÎ°æ¿ì Áï ¸ğµÎ °°Àº °ªÀÎ°æ¿ì selectivity¸¦ 1·Î ÁØ´Ù.
+     */
+    if ( aCompareNode->node.module == &mtfNotEqual )
+    {
+        if ( sSelectivity < 1 )
+        {
+            sSelectivity = 1 - sSelectivity;
+        }
+        else
+        {
+            sSelectivity = 1;
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
     *aSelectivity = sSelectivity;
 
@@ -3455,19 +3487,19 @@ qmoSelectivity::getIsNullSelectivity( qcTemplate    * aTemplate,
 {
 /******************************************************************************
  *
- * Description : IS NULL, IS NOT NULL ì— ëŒ€í•œ unit selectivity ë°˜í™˜
+ * Description : IS NULL, IS NOT NULL ¿¡ ´ëÇÑ unit selectivity ¹İÈ¯
  *
- * Implementation : í†µê³„ì •ë³´ê°€ ì—†ì„ ê²½ìš° operator ì˜ DS(default selectivity),
- *                  í†µê³„ì •ë³´ê°€ ìˆì„ ê²½ìš° ì•„ë˜ ì‹ì„ ë”°ë¥¸ë‹¤.
+ * Implementation : Åë°èÁ¤º¸°¡ ¾øÀ» °æ¿ì operator ÀÇ DS(default selectivity),
+ *                  Åë°èÁ¤º¸°¡ ÀÖÀ» °æ¿ì ¾Æ·¡ ½ÄÀ» µû¸¥´Ù.
  *
- *     1. í†µê³„ì •ë³´ ë¯¸ìˆ˜ì§‘ ë˜ëŠ” Non-indexable predicate : S = DS
+ *     1. Åë°èÁ¤º¸ ¹Ì¼öÁı ¶Ç´Â Non-indexable predicate : S = DS
  *        ex) i1+1 IS NULL, i1+i2 IS NULL
- *     2. í†µê³„ì •ë³´ ìˆ˜ì§‘ì´ê³  Indexable predicate
+ *     2. Åë°èÁ¤º¸ ¼öÁıÀÌ°í Indexable predicate
  *        ex) i1 IS NULL
- *     2.1. NULL value count ê°€ 0 ì´ ì•„ë‹ˆë©´ : S = NULL valueCnt / totalRecordCnt
- *     2.2. NULL value count ê°€ 0 ì´ë©´
- *        - NOT NULL constraint ì´ë©´ : S = 0
- *        - NOT NULL constraint ì•„ë‹ˆë©´ : S = 1 / columnNDV
+ *     2.1. NULL value count °¡ 0 ÀÌ ¾Æ´Ï¸é : S = NULL valueCnt / totalRecordCnt
+ *     2.2. NULL value count °¡ 0 ÀÌ¸é
+ *        - NOT NULL constraint ÀÌ¸é : S = 0
+ *        - NOT NULL constraint ¾Æ´Ï¸é : S = 1 / columnNDV
  *
  *****************************************************************************/
 
@@ -3480,7 +3512,7 @@ qmoSelectivity::getIsNullSelectivity( qcTemplate    * aTemplate,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::getIsNullSelectivity::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aTemplate    != NULL );
@@ -3492,18 +3524,18 @@ qmoSelectivity::getIsNullSelectivity( qcTemplate    * aTemplate,
     IDE_DASSERT( aSelectivity != NULL );
 
     //--------------------------------------
-    // Selectivity ê³„ì‚°
+    // Selectivity °è»ê
     //--------------------------------------
 
     if( ( aStatInfo->isValidStat == ID_FALSE ) ||
         ( aPredicate->id == QMO_COLUMNID_NON_INDEXABLE ) )
     {
-        // 1. í†µê³„ì •ë³´ ë¯¸ìˆ˜ì§‘ ë˜ëŠ” Non-indexable predicate
+        // 1. Åë°èÁ¤º¸ ¹Ì¼öÁı ¶Ç´Â Non-indexable predicate
         sSelectivity = aCompareNode->node.module->selectivity;
     }
     else
     {
-        // 2. í†µê³„ì •ë³´ ìˆ˜ì§‘ì´ê³  Indexable predicate
+        // 2. Åë°èÁ¤º¸ ¼öÁıÀÌ°í Indexable predicate
         sColumnNode = (qtcNode *)(aCompareNode->node.arguments);
         sNullValueCnt =
             aStatInfo->colCardInfo[sColumnNode->node.column].nullValueCount;
@@ -3515,11 +3547,11 @@ qmoSelectivity::getIsNullSelectivity( qcTemplate    * aTemplate,
                            columns[sColumnNode->node.column] );
 
         sSelectivity = ( sNullValueCnt > 0 ) ?
-                       ( sNullValueCnt / sTotalRecordCnt ): // NULL value ì¡´ì¬
+                       ( sNullValueCnt / sTotalRecordCnt ): // NULL value Á¸Àç
                        ( ( sColumnColumn->flag & MTC_COLUMN_NOTNULL_MASK )
-                         == MTC_COLUMN_NOTNULL_TRUE ) ?     // NULL value ë¯¸ì¡´ì¬
-                       0:                       // NOT NULL constraints ì¼ ê²½ìš°
-                       ( 1 / sTotalRecordCnt ); // NOT NULL constraints ì•„ë‹ ê²½ìš°
+                         == MTC_COLUMN_NOTNULL_TRUE ) ?     // NULL value ¹ÌÁ¸Àç
+                       0:                       // NOT NULL constraints ÀÏ °æ¿ì
+                       ( 1 / sTotalRecordCnt ); // NOT NULL constraints ¾Æ´Ò °æ¿ì
 
         // IS NOT NULL selectivity
         sSelectivity = ( aCompareNode->node.module == &mtfIsNotNull ) ?
@@ -3547,40 +3579,40 @@ qmoSelectivity::getGreaterLessBeetweenSelectivity(
 {
 /******************************************************************************
  *
- * Description : >, >=, <, <=, BETWEEN, NOT BETWEEN ì— ëŒ€í•œ unit selectivity ê³„ì‚°
- *               QMO_PRED_HOST_OPTIMIZE_TRUE ì„¸íŒ…
- *               - Indexable predicate ì´ê³  (one column)
- *               - Variable value (prepare time) ì´ê³ 
- *               - QMO_PRED_IS_DYNAMIC_OPTIMIZABLE ì´ê³ 
+ * Description : >, >=, <, <=, BETWEEN, NOT BETWEEN ¿¡ ´ëÇÑ unit selectivity °è»ê
+ *               QMO_PRED_HOST_OPTIMIZE_TRUE ¼¼ÆÃ
+ *               - Indexable predicate ÀÌ°í (one column)
+ *               - Variable value (prepare time) ÀÌ°í
+ *               - QMO_PRED_IS_DYNAMIC_OPTIMIZABLE ÀÌ°í
  *               - MTD_SELECTIVITY_ENABLE column
  *
- *           cf) Quantifier operator ì—ëŠ” operand ë¡œ LIST í˜•íƒœê°€ ì˜¬ ìˆ˜ ì—†ë‹¤.
+ *           cf) Quantifier operator ¿¡´Â operand ·Î LIST ÇüÅÂ°¡ ¿Ã ¼ö ¾ø´Ù.
  *
- * Implementation : ì•„ë˜ 1~2 ì— ëŒ€í•´ default selectivity ì ìš©
- *                  ì•„ë˜ 3 ì— ëŒ€í•´ Min-Max selectivity ì ìš©
+ * Implementation : ¾Æ·¡ 1~2 ¿¡ ´ëÇØ default selectivity Àû¿ë
+ *                  ¾Æ·¡ 3 ¿¡ ´ëÇØ Min-Max selectivity Àû¿ë
  *
- *   1. Indexable predicate ì´ê³  (one column)
- *      MTD_SELECTIVITY_ENABLE column ì´ê³ 
- *      Fixed value ë˜ëŠ” variable value(execution time) ë¥¼ ëŒ€ìƒìœ¼ë¡œ
- *   1.1. Value (ì™¸ë¶€ ì»¬ëŸ¼ ì°¸ì¡°)
+ *   1. Indexable predicate ÀÌ°í (one column)
+ *      MTD_SELECTIVITY_ENABLE column ÀÌ°í
+ *      Fixed value ¶Ç´Â variable value(execution time) ¸¦ ´ë»óÀ¸·Î
+ *   1.1. Value (¿ÜºÎ ÄÃ·³ ÂüÁ¶)
  *        ex) from t1 where exists (select i1 from t2 where i1 <= t1.i1)
- *                                                              |_ ì´ ë¶€ë¶„
+ *                                                              |_ ÀÌ ºÎºĞ
  *   1.2. Column (QMO_STAT_MINMAX_COLUMN_SET_FALSE)
  *        ex) FROM ( SELECT ( SELECT T2.I1 FROM T2 LIMIT 1 )A FROM T1 )V1
  *            WHERE V1.A > 1;
  *   1.3. Column (MTD_GROUP_MISC)
- *        ex) columnType ì´ TEXT, NUMBER, DATE, INTERVAL group ì— ì†í•˜ì§€ ì•ŠìŒ
+ *        ex) columnType ÀÌ TEXT, NUMBER, DATE, INTERVAL group ¿¡ ¼ÓÇÏÁö ¾ÊÀ½
  *   1.4. Column and Value (columnType != valueType)
- *   1.5. í†µê³„ì •ë³´ ë¯¸ìˆ˜ì§‘
+ *   1.5. Åë°èÁ¤º¸ ¹Ì¼öÁı
  *
- *   2. Non-indexable predicate ë˜ëŠ”
- *      MTD_SELECTIVITY_DISABLE column ë˜ëŠ”
+ *   2. Non-indexable predicate ¶Ç´Â
+ *      MTD_SELECTIVITY_DISABLE column ¶Ç´Â
  *      Variable value (prepare time) 
  *      ex) 1 BETWEEN i1 AND 2, i1+i2 >= 1
- *          i1 BETWEEN 1 AND 2, i1 >= 1 (i1 ì´ ì—°ì‚°ë¶ˆê°€ íƒ€ì…)
+ *          i1 BETWEEN 1 AND 2, i1 >= 1 (i1 ÀÌ ¿¬»êºÒ°¡ Å¸ÀÔ)
  *          i1 BETWEEN :a AND 2, i1 >= :a (prepare time)
  *
- *   3. Etc (ìœ„ ì¡°ê±´ ì´ì™¸)
+ *   3. Etc (À§ Á¶°Ç ÀÌ¿Ü)
  *      ex) i1>1, i1<1, i1>=1, i1<=1, i1 BETWEEN 1 AND 2
  *
  *****************************************************************************/
@@ -3598,7 +3630,7 @@ qmoSelectivity::getGreaterLessBeetweenSelectivity(
     IDU_FIT_POINT_FATAL( "qmoSelectivity::getGreaterLessBeetweenSelectivity::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aTemplate    != NULL );
@@ -3614,13 +3646,13 @@ qmoSelectivity::getGreaterLessBeetweenSelectivity(
     IDE_DASSERT( aSelectivity != NULL );
 
     //---------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //---------------------------------------
 
     sIsDefaultSelectivity = ID_FALSE;
     sColCardInfo = aStatInfo->colCardInfo;
 
-    // column nodeì™€ value node íšë“
+    // column node¿Í value node È¹µæ
     if( aCompareNode->indexArgument == 0 )
     {
         sColumnNode = (qtcNode *)(aCompareNode->node.arguments);
@@ -3639,10 +3671,10 @@ qmoSelectivity::getGreaterLessBeetweenSelectivity(
     sColumnType = ( sColumnColumn->module->flag & MTD_GROUP_MASK );
 
     //--------------------------------------
-    // QMO_PRED_HOST_OPTIMIZE_TRUE ì„¸íŒ…
+    // QMO_PRED_HOST_OPTIMIZE_TRUE ¼¼ÆÃ
     //--------------------------------------
 
-    // BUG-43065 ì™¸ë¶€ ì°¸ì¡° ì»¬ëŸ¼ì´ ìˆì„ë•ŒëŠ” host ë³€ìˆ˜ ìµœì í™”ë¥¼ í•˜ë©´ ì•ˆë¨
+    // BUG-43065 ¿ÜºÎ ÂüÁ¶ ÄÃ·³ÀÌ ÀÖÀ»¶§´Â host º¯¼ö ÃÖÀûÈ­¸¦ ÇÏ¸é ¾ÈµÊ
     if( ( aPredicate->id != QMO_COLUMNID_NON_INDEXABLE ) &&
         ( aInExecutionTime == ID_FALSE ) &&
         ( QMO_PRED_IS_VARIABLE( aPredicate ) == ID_TRUE ) &&
@@ -3651,12 +3683,12 @@ qmoSelectivity::getGreaterLessBeetweenSelectivity(
           != MTD_SELECTIVITY_DISABLE ) &&
         ( qtc::haveDependencies( &sValueNode->depInfo ) == ID_FALSE ) )
     {
-        // Indexable predicate ì´ê³  (one column)
-        // Variable value (prepare time) ì´ê³ 
-        // QMO_PRED_IS_DYNAMIC_OPTIMIZABLE ì´ê³ 
+        // Indexable predicate ÀÌ°í (one column)
+        // Variable value (prepare time) ÀÌ°í
+        // QMO_PRED_IS_DYNAMIC_OPTIMIZABLE ÀÌ°í
         // MTD_SELECTIVITY_ENABLE column
 
-        // qmoPredicate->flagì— host optimization flagë¥¼ ì„¸íŒ…í•œë‹¤.
+        // qmoPredicate->flag¿¡ host optimization flag¸¦ ¼¼ÆÃÇÑ´Ù.
         aPredicate->flag &= ~QMO_PRED_HOST_OPTIMIZE_MASK;
         aPredicate->flag |= QMO_PRED_HOST_OPTIMIZE_TRUE;
     }
@@ -3666,7 +3698,7 @@ qmoSelectivity::getGreaterLessBeetweenSelectivity(
     }
 
     //--------------------------------------
-    // Default selectivity ì ìš© ëŒ€ìƒ ì¶”ì¶œ
+    // Default selectivity Àû¿ë ´ë»ó ÃßÃâ
     //--------------------------------------
 
     if( ( aPredicate->id != QMO_COLUMNID_NON_INDEXABLE ) &&
@@ -3676,35 +3708,35 @@ qmoSelectivity::getGreaterLessBeetweenSelectivity(
           != MTD_SELECTIVITY_DISABLE ) &&
         ( qtc::haveDependencies( &sValueNode->depInfo ) == ID_FALSE ) )
     {
-        // 1. Indexable predicate ì´ê³  (one column)
-        //    MTD_SELECTIVITY_ENABLE column ì´ê³ 
-        //    Fixed value ë˜ëŠ” variable value(execution time)
+        // 1. Indexable predicate ÀÌ°í (one column)
+        //    MTD_SELECTIVITY_ENABLE column ÀÌ°í
+        //    Fixed value ¶Ç´Â variable value(execution time)
 
-        // BUG-32415 : BETWEEN/NOT BETWEENê³¼ ê°™ì´ ì¸ìê°€ 2ê°œì¸ ê²½ìš° ê³ ë ¤
+        // BUG-32415 : BETWEEN/NOT BETWEEN°ú °°ÀÌ ÀÎÀÚ°¡ 2°³ÀÎ °æ¿ì °í·Á
 
         sValue = sValueNode;
         while( sValue != NULL )
         {
-            // BUG-30401 : Selectivity ë¥¼ êµ¬í•  ìˆ˜ ìˆëŠ” ì¡°ê±´ì¸ì§€ í™•ì¸í•œë‹¤.
-            // Dependencyê°€ zeroë¼ë©´ bind ë³€ìˆ˜ ë˜ëŠ” ìƒìˆ˜ì´ë¯€ë¡œ
-            // selectivityë¥¼ êµ¬í•  ìˆ˜ ìˆë‹¤.
+            // BUG-30401 : Selectivity ¸¦ ±¸ÇÒ ¼ö ÀÖ´Â Á¶°ÇÀÎÁö È®ÀÎÇÑ´Ù.
+            // Dependency°¡ zero¶ó¸é bind º¯¼ö ¶Ç´Â »ó¼öÀÌ¹Ç·Î
+            // selectivity¸¦ ±¸ÇÒ ¼ö ÀÖ´Ù.
 
             if( qtc::dependencyEqual( &sValue->depInfo,
                                       &qtc::zeroDependencies ) == ID_TRUE )
             {
-                // sValueNode ê°€ Bind ë³€ìˆ˜ë‚˜ ìƒìˆ˜ì¸ ê²½ìš°
+                // sValueNode °¡ Bind º¯¼ö³ª »ó¼öÀÎ °æ¿ì
                 // Nothing to do.
             }
             else
             {
-                // 1.1. Value (ì™¸ë¶€ ì»¬ëŸ¼ ì°¸ì¡°)
+                // 1.1. Value (¿ÜºÎ ÄÃ·³ ÂüÁ¶)
                 // ex) from t1 where exists 
                 //     (select i1 from t2 where i1 between t1.i1 and 1)
                 //                                        ^^^^^
                 // ex) from t1 
                 //     where exists (select i1 from t2 where i1 >= t1.i1)
                 //                                                 ^^^^^
-                // ex) hierarchical query ì˜ WHERE ì ˆì— ì“°ì¸ê²½ìš° (view êµ¬ì„±)
+                // ex) hierarchical query ÀÇ WHERE Àı¿¡ ¾²ÀÎ°æ¿ì (view ±¸¼º)
                 //     from t1 where i1>1 connect by i1=i2
                 //                   ^^
 
@@ -3717,11 +3749,11 @@ qmoSelectivity::getGreaterLessBeetweenSelectivity(
         if( sIsDefaultSelectivity == ID_FALSE )
         {
             // BUG-16265
-            // viewì˜ targetì´ subqueryì¸ ê²½ìš° ì‹¤ì œ columnì •ë³´ëŠ” ìˆì§€ë§Œ
-            // subquery nodeì˜ moduleì— mtdNull module ì´ ë‹¬ë¦¬ê³ 
-            // MTD_SELECTIVITY_DISABLE ì´ë¯€ë¡œ í†µê³„ì •ë³´ë¥¼ ì €ì¥í•˜ì§€ ì•ŠëŠ”ë‹¤.
-            // ì´ëŸ° ê²½ìš° colCardInfoì˜ flagë¡œ í†µê³„ì •ë³´ê°€ ìˆëŠ”ì§€ íŒë‹¨í•˜ê³ ,
-            // ì—†ìœ¼ë©´ defaultë¡œ ê³„ì‚°ëœë‹¤.
+            // viewÀÇ targetÀÌ subqueryÀÎ °æ¿ì ½ÇÁ¦ columnÁ¤º¸´Â ÀÖÁö¸¸
+            // subquery nodeÀÇ module¿¡ mtdNull module ÀÌ ´Ş¸®°í
+            // MTD_SELECTIVITY_DISABLE ÀÌ¹Ç·Î Åë°èÁ¤º¸¸¦ ÀúÀåÇÏÁö ¾Ê´Â´Ù.
+            // ÀÌ·± °æ¿ì colCardInfoÀÇ flag·Î Åë°èÁ¤º¸°¡ ÀÖ´ÂÁö ÆÇ´ÜÇÏ°í,
+            // ¾øÀ¸¸é default·Î °è»êµÈ´Ù.
 
             if( ( sColCardInfo[sColumnNode->node.column].flag &
                   QMO_STAT_MINMAX_COLUMN_SET_MASK )
@@ -3735,11 +3767,11 @@ qmoSelectivity::getGreaterLessBeetweenSelectivity(
             }
             else
             {
-                // PROJ-2242 : default selectivity ë³´ì •ì„ íšŒí”¼í•˜ê¸° ìœ„í•´
-                //             getMinMaxSelectivity ì—ì„œ ì˜®ê¹€
+                // PROJ-2242 : default selectivity º¸Á¤À» È¸ÇÇÇÏ±â À§ÇØ
+                //             getMinMaxSelectivity ¿¡¼­ ¿Å±è
 
                 // BUG-22064
-                // non-indexableí•˜ê²Œ bindí•˜ëŠ” ê²½ìš° default selectivityë¥¼ ì‚¬ìš©
+                // non-indexableÇÏ°Ô bindÇÏ´Â °æ¿ì default selectivity¸¦ »ç¿ë
 
                 if( sColumnType == MTD_GROUP_MISC )
                 {
@@ -3751,13 +3783,13 @@ qmoSelectivity::getGreaterLessBeetweenSelectivity(
                 {
                     // 1.4. Column and Value (columnType != valueType)
 
-                    // BUG-32415 : BETWEEN/NOT BETWEENê³¼ ê°™ì´ ì¸ìê°€ 2ê°œì¸ ê²½ìš° ê³ ë ¤
+                    // BUG-32415 : BETWEEN/NOT BETWEEN°ú °°ÀÌ ÀÎÀÚ°¡ 2°³ÀÎ °æ¿ì °í·Á
                     sValue = sValueNode;
                     while( sValue != NULL )
                     {
                         // BUG-38758
-                        // deterministic functionì€ fixed predicateì´ì§€ë§Œ
-                        // optimizeë‹¨ê³„ì—ì„œ ê³„ì‚°í•  ìˆ˜ ì—†ë‹¤.
+                        // deterministic functionÀº fixed predicateÀÌÁö¸¸
+                        // optimize´Ü°è¿¡¼­ °è»êÇÒ ¼ö ¾ø´Ù.
                         if ( ( (sValue->lflag & QTC_NODE_PROC_FUNCTION_MASK)
                                == QTC_NODE_PROC_FUNCTION_TRUE ) &&
                              ( (sValue->lflag & QTC_NODE_PROC_FUNC_DETERMINISTIC_MASK)
@@ -3797,25 +3829,25 @@ qmoSelectivity::getGreaterLessBeetweenSelectivity(
     }
     else
     {
-        // 2. Non-indexable predicate ë˜ëŠ”
-        //    MTD_SELECTIVITY_DISABLE column ë˜ëŠ”
+        // 2. Non-indexable predicate ¶Ç´Â
+        //    MTD_SELECTIVITY_DISABLE column ¶Ç´Â
         //    Variable value
-        //    - (1) predicateì´ variableë¡œ ë¶„ë¥˜ë˜ëŠ” ê²½ìš°,
-        //    - (2) í•´ë‹¹ ì»¬ëŸ¼ì˜ min/max valueê°€ ì—†ëŠ” ê²½ìš°
-        // => selectivityë¥¼ ê³„ì‚°í•  ìˆ˜ ì—†ëŠ” ê²½ìš°ë¡œ default selectivity
+        //    - (1) predicateÀÌ variable·Î ºĞ·ùµÇ´Â °æ¿ì,
+        //    - (2) ÇØ´ç ÄÃ·³ÀÇ min/max value°¡ ¾ø´Â °æ¿ì
+        // => selectivity¸¦ °è»êÇÒ ¼ö ¾ø´Â °æ¿ì·Î default selectivity
 
         sIsDefaultSelectivity = ID_TRUE;
     }
 
     //--------------------------------------
-    // Selectivity ê³„ì‚°
+    // Selectivity °è»ê
     //--------------------------------------
 
     if( ( aStatInfo->isValidStat == ID_TRUE ) &&
         ( sIsDefaultSelectivity == ID_FALSE ) )
     {
-        // Selectivityë¥¼ êµ¬í•  ìˆ˜ ìˆëŠ” ê²½ìš°ë¡œ,
-        // MIN/MAXë¥¼ ì´ìš©í•œ selectivityë¥¼ êµ¬í•œë‹¤.
+        // Selectivity¸¦ ±¸ÇÒ ¼ö ÀÖ´Â °æ¿ì·Î,
+        // MIN/MAX¸¦ ÀÌ¿ëÇÑ selectivity¸¦ ±¸ÇÑ´Ù.
 
         IDE_TEST( getMinMaxSelectivity( aTemplate,
                                         aStatInfo,
@@ -3854,15 +3886,15 @@ qmoSelectivity::getMinMaxSelectivity( qcTemplate    * aTemplate,
 {
 /******************************************************************************
  *
- * Description : MIN, MAX ë¥¼ ì´ìš©í•œ selectivity ë°˜í™˜
- *               MTD_SELECTIVITY_ENABLE ì´ê³  MTD_GROUP_MISC ê°€ ì•„ë‹Œ
- *               ì•„ë˜ì™€ ê°™ì€ íƒ€ì…ì— í•œí•´ ë³¸ í•¨ìˆ˜ê°€ ìˆ˜í–‰ëœë‹¤.
+ * Description : MIN, MAX ¸¦ ÀÌ¿ëÇÑ selectivity ¹İÈ¯
+ *               MTD_SELECTIVITY_ENABLE ÀÌ°í MTD_GROUP_MISC °¡ ¾Æ´Ñ
+ *               ¾Æ·¡¿Í °°Àº Å¸ÀÔ¿¡ ÇÑÇØ º» ÇÔ¼ö°¡ ¼öÇàµÈ´Ù.
  *             - MTD_GROUP_TEXT : mtdVarchar, mtdChar, mtdNVarchar, mtdNChar,
  *             - MTD_GROUP_DATE : mtdDate
  *             - MTD_GROUP_NUMBER : mtdInteger, mtdDouble, mtdBigint,
  *                                  mtdReal, mtdSmallint, mtdFloat
  *
- *     ë¶€ë“±í˜¸ ì—°ì‚°ìì˜ selectivity ê³„ì‚°
+ *     ºÎµîÈ£ ¿¬»êÀÚÀÇ selectivity °è»ê
  *
  *     1. i1 > N
  *        . selectivity = ( MAX - N ) / ( MAX - MIN )
@@ -3871,21 +3903,21 @@ qmoSelectivity::getMinMaxSelectivity( qcTemplate    * aTemplate,
  *        . selectivity = ( N - MIN ) / ( MAX - MIN )
  *
  *     3. BETWEEN
- *        betweenì˜ ê²½ìš°ëŠ” max/min valueë¥¼ ì°¾ê³ , valueì˜ ì í•©ì„±ê¹Œì§€
- *        ê²€ì‚¬í•˜ê¸° ìœ„í•´ì„œëŠ”, ê° ë°ì´í„° íƒ€ì…ë³„ë¡œ ê³ ë ¤ë˜ì–´ì•¼ í•˜ë¯€ë¡œ
- *        êµ¬í˜„ì˜ ë³µì¡ë„ê°€ ë†’ì•„ì§€ê¸° ë•Œë¬¸ì—, min/max valueë¥¼ ë‹¤ìŒê³¼ ê°™ì´
- *        ì§€ì •í•œë‹¤. [valueì— ëŒ€í•œ ì í•©ì„± ê²€ì‚¬ëŠ” mtì—ì„œ selectivity
- *        ê³„ì‚° ë„ì¤‘ì— detectë˜ê³ , ì´ ê²½ìš°, default selectivityë¥¼ ë°˜í™˜í•œë‹¤.]
+ *        betweenÀÇ °æ¿ì´Â max/min value¸¦ Ã£°í, valueÀÇ ÀûÇÕ¼º±îÁö
+ *        °Ë»çÇÏ±â À§ÇØ¼­´Â, °¢ µ¥ÀÌÅÍ Å¸ÀÔº°·Î °í·ÁµÇ¾î¾ß ÇÏ¹Ç·Î
+ *        ±¸ÇöÀÇ º¹Àâµµ°¡ ³ô¾ÆÁö±â ¶§¹®¿¡, min/max value¸¦ ´ÙÀ½°ú °°ÀÌ
+ *        ÁöÁ¤ÇÑ´Ù. [value¿¡ ´ëÇÑ ÀûÇÕ¼º °Ë»ç´Â mt¿¡¼­ selectivity
+ *        °è»ê µµÁß¿¡ detectµÇ°í, ÀÌ °æ¿ì, default selectivity¸¦ ¹İÈ¯ÇÑ´Ù.]
  *
  *        i1 between A(min value) and B(max value)
  *        . selectivity = ( max value - min value ) / ( MAX - MIN )
  *
  * Implementation :
  *
- *     1. columnê³¼ const valueë…¸ë“œë¥¼ ì°¾ëŠ”ë‹¤.
- *     2. columnì˜ mtdModule->selectivity() í•¨ìˆ˜ë¥¼ ì´ìš©í•œë‹¤.
- *        mtì—ì„œëŠ” ë‚ ì§œí˜•ê³¼ ìˆ«ìí˜•ì— ëŒ€í•´ì„œ ê·¸ dataTypeì— ë§ëŠ”
- *        selectivity ê³„ì‚° í•¨ìˆ˜[mtdModule->selectivity]ë¥¼ ì œê³µí•œë‹¤.
+ *     1. column°ú const value³ëµå¸¦ Ã£´Â´Ù.
+ *     2. columnÀÇ mtdModule->selectivity() ÇÔ¼ö¸¦ ÀÌ¿ëÇÑ´Ù.
+ *        mt¿¡¼­´Â ³¯Â¥Çü°ú ¼ıÀÚÇü¿¡ ´ëÇØ¼­ ±× dataType¿¡ ¸Â´Â
+ *        selectivity °è»ê ÇÔ¼ö[mtdModule->selectivity]¸¦ Á¦°øÇÑ´Ù.
  *
  *****************************************************************************/
 
@@ -3910,7 +3942,7 @@ qmoSelectivity::getMinMaxSelectivity( qcTemplate    * aTemplate,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::getMinMaxSelectivity::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aTemplate    != NULL );
@@ -3922,7 +3954,7 @@ qmoSelectivity::getMinMaxSelectivity( qcTemplate    * aTemplate,
     IDE_DASSERT( aStatInfo->isValidStat == ID_TRUE );
 
     //--------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //--------------------------------------
 
     sColCardInfo    = aStatInfo->colCardInfo;
@@ -3944,7 +3976,7 @@ qmoSelectivity::getMinMaxSelectivity( qcTemplate    * aTemplate,
             // >, >=
             if( aCompareNode->indexArgument == 0 )
             {
-                // ì˜ˆ: i1>1, i1>=1
+                // ¿¹: i1>1, i1>=1
                 sMaxValue = sColumnMaxValue;
                 sMaxValueColumn = sColumnColumn;
 
@@ -3955,7 +3987,7 @@ qmoSelectivity::getMinMaxSelectivity( qcTemplate    * aTemplate,
             }
             else
             {
-                // ì˜ˆ: 1>i1, 1>=i1
+                // ¿¹: 1>i1, 1>=i1
                 IDE_TEST( qtc::calculate( aValueNode, aTemplate )
                           != IDE_SUCCESS );
                 sMaxValue = aTemplate->tmplate.stack->value;
@@ -3971,7 +4003,7 @@ qmoSelectivity::getMinMaxSelectivity( qcTemplate    * aTemplate,
             // <, <=
             if( aCompareNode->indexArgument == 0 )
             {
-                // ì˜ˆ: i1<1, i1<=1
+                // ¿¹: i1<1, i1<=1
                 IDE_TEST( qtc::calculate( aValueNode, aTemplate )
                           != IDE_SUCCESS );
                 sMaxValue = aTemplate->tmplate.stack->value;
@@ -3982,7 +4014,7 @@ qmoSelectivity::getMinMaxSelectivity( qcTemplate    * aTemplate,
             }
             else
             {
-                // ì˜ˆ: 1<i1, 1<=i1
+                // ¿¹: 1<i1, 1<=i1
                 sMaxValue = sColumnMaxValue;
                 sMaxValueColumn = sColumnColumn;
 
@@ -3995,7 +4027,7 @@ qmoSelectivity::getMinMaxSelectivity( qcTemplate    * aTemplate,
         case( MTC_NODE_OPERATOR_RANGED ) :
         case( MTC_NODE_OPERATOR_NOT_RANGED ) :
             // BETWEEN, NOT BETWEEN
-            // ì˜ˆ: between A(min value) AND B(max value)
+            // ¿¹: between A(min value) AND B(max value)
             IDE_TEST( qtc::calculate( aValueNode,
                                       aTemplate ) != IDE_SUCCESS );
             sMinValue = aTemplate->tmplate.stack->value;
@@ -4012,7 +4044,7 @@ qmoSelectivity::getMinMaxSelectivity( qcTemplate    * aTemplate,
             IDE_RAISE( ERR_INVALID_NODE_OPERATOR );
     }
 
-    // ë³´ì •ì¸ì íšë“
+    // º¸Á¤ÀÎÀÚ È¹µæ
     sBoundForm = ( aCompareNode->node.module == &mtfLessEqual ||
                    aCompareNode->node.module == &mtfGreaterEqual ) ?
                  ( 1 / sColumnNDV ):
@@ -4021,18 +4053,18 @@ qmoSelectivity::getMinMaxSelectivity( qcTemplate    * aTemplate,
                  ( 2 / sColumnNDV ): 0;
 
     //--------------------------------------
-    // MIN/MAXë¥¼ ì´ìš©í•œ selectivity ê³„ì‚°
+    // MIN/MAX¸¦ ÀÌ¿ëÇÑ selectivity °è»ê
     //--------------------------------------
 
     // BUG-17791
     if( sColumnType == MTD_GROUP_NUMBER )
     {
         // PROJ-1364
-        // ìˆ«ìí˜• ê³„ì—´ì¸ ê²½ìš°
-        // ë™ì¼ê³„ì—´ì˜ ì¸ë±ìŠ¤ ì‚¬ìš©ìœ¼ë¡œ ì¸í•´
-        // ë‘ ë¹„êµëŒ€ìƒì˜ data typeì´ í‹€ë¦´ ìˆ˜ ìˆìœ¼ë¯€ë¡œ
-        // doubleë¡œ ë³€í™˜í•´ì„œ, selectivityë¥¼ êµ¬í•œë‹¤.
-        // ì˜ˆ) smallint_col > 3.5
+        // ¼ıÀÚÇü °è¿­ÀÎ °æ¿ì
+        // µ¿ÀÏ°è¿­ÀÇ ÀÎµ¦½º »ç¿ëÀ¸·Î ÀÎÇØ
+        // µÎ ºñ±³´ë»óÀÇ data typeÀÌ Æ²¸± ¼ö ÀÖÀ¸¹Ç·Î
+        // double·Î º¯È¯ÇØ¼­, selectivity¸¦ ±¸ÇÑ´Ù.
+        // ¿¹) smallint_col > 3.5
 
         IDE_TEST ( getConvertToDoubleValue( sColumnColumn,
                                             sMaxValueColumn,
@@ -4057,7 +4089,7 @@ qmoSelectivity::getMinMaxSelectivity( qcTemplate    * aTemplate,
     else
     {
         // PROJ-1484
-        // ìˆ«ìí˜•ì´ ì•„ë‹Œ ê²½ìš° (ë¬¸ìì—´ ì„ íƒë„ ì¶”ì • ì¶”ê°€)
+        // ¼ıÀÚÇüÀÌ ¾Æ´Ñ °æ¿ì (¹®ÀÚ¿­ ¼±ÅÃµµ ÃßÁ¤ Ãß°¡)
         // ex) DATE, CHAR(n), VARCHAR(n)
 
         sSelectivity = sColumnColumn->module->selectivity( sColumnMaxValue,
@@ -4108,9 +4140,9 @@ qmoSelectivity::getConvertToDoubleValue( mtcColumn     * aColumnColumn,
 {
 /***********************************************************************
  *
- * Description : NUMBER group ì˜ double í˜• ë³€í™˜ê°’ ë°˜í™˜
+ * Description : NUMBER group ÀÇ double Çü º¯È¯°ª ¹İÈ¯
  *
- * Implementation : double typeìœ¼ë¡œì˜ conversion ìˆ˜í–‰
+ * Implementation : double typeÀ¸·ÎÀÇ conversion ¼öÇà
  *
  ***********************************************************************/
 
@@ -4122,7 +4154,7 @@ qmoSelectivity::getConvertToDoubleValue( mtcColumn     * aColumnColumn,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::getConvertToDoubleValue::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aColumnColumn         != NULL );
@@ -4138,16 +4170,16 @@ qmoSelectivity::getConvertToDoubleValue( mtcColumn     * aColumnColumn,
     IDE_DASSERT( aDoubleMinValue       != NULL );
 
     //--------------------------------------
-    // Double í˜• ë³€í™˜
+    // Double Çü º¯È¯
     //--------------------------------------
 
     // PROJ-1364
-    // ìˆ«ìí˜• ê³„ì—´ì¸ ê²½ìš°
-    // ë™ì¼ê³„ì—´ì˜ ì¸ë±ìŠ¤ ì‚¬ìš©ìœ¼ë¡œ ì¸í•´
-    // ë‘ ë¹„êµëŒ€ìƒì˜ data typeì´ í‹€ë¦´ ìˆ˜ ìˆìœ¼ë¯€ë¡œ
-    // doubleë¡œ ë³€í™˜í•´ì„œ, selectivityë¥¼ êµ¬í•œë‹¤.
-    // ì˜ˆ) smallint_col < numeric'9'
-    // ì˜ˆ) smallint_col > 3 and smallint_col < numeric'9'
+    // ¼ıÀÚÇü °è¿­ÀÎ °æ¿ì
+    // µ¿ÀÏ°è¿­ÀÇ ÀÎµ¦½º »ç¿ëÀ¸·Î ÀÎÇØ
+    // µÎ ºñ±³´ë»óÀÇ data typeÀÌ Æ²¸± ¼ö ÀÖÀ¸¹Ç·Î
+    // double·Î º¯È¯ÇØ¼­, selectivity¸¦ ±¸ÇÑ´Ù.
+    // ¿¹) smallint_col < numeric'9'
+    // ¿¹) smallint_col > 3 and smallint_col < numeric'9'
 
     sColumnMaxInfo.column = aColumnColumn;
     sColumnMaxInfo.value  = aColumnMaxValue;
@@ -4191,33 +4223,33 @@ qmoSelectivity::getLikeSelectivity( qcTemplate    * aTemplate,
 {
 /******************************************************************************
  *
- * Description : LIKE ì— ëŒ€í•œ unit selectivity ê³„ì‚°í•˜ê³ 
- *               QMO_PRED_HOST_OPTIMIZE_TRUE ì„¸íŒ…
- *               - QMO_PRED_IS_DYNAMIC_OPTIMIZABLE ì´ê³ 
- *               - Indexable predicate ì´ê³  (one column)
- *               - Variable value (prepare time) ì´ê³ 
+ * Description : LIKE ¿¡ ´ëÇÑ unit selectivity °è»êÇÏ°í
+ *               QMO_PRED_HOST_OPTIMIZE_TRUE ¼¼ÆÃ
+ *               - QMO_PRED_IS_DYNAMIC_OPTIMIZABLE ÀÌ°í
+ *               - Indexable predicate ÀÌ°í (one column)
+ *               - Variable value (prepare time) ÀÌ°í
  *               - MTD_SELECTIVITY_ENABLE column
  *
- *   cf) NOT LIKE ëŠ” MTC_NODE_INDEX_UNUSABLE ë¡œ í•­ìƒ QMO_COLUMNID_NON_INDEXABLE
+ *   cf) NOT LIKE ´Â MTC_NODE_INDEX_UNUSABLE ·Î Ç×»ó QMO_COLUMNID_NON_INDEXABLE
  *
  * Implementation :
  *
- *   1. í†µê³„ì •ë³´ ìˆ˜ì§‘ì´ê³ 
- *      Indexable predicate (one column and value) ì´ê³ 
- *      Fixed value ë˜ëŠ” variable value (execution time) ì´ê³ 
+ *   1. Åë°èÁ¤º¸ ¼öÁıÀÌ°í
+ *      Indexable predicate (one column and value) ÀÌ°í
+ *      Fixed value ¶Ç´Â variable value (execution time) ÀÌ°í
  *      MTD_SELECTIVITY_ENABLE column
  *   1.1. Exact match : S = 1 / columnNDV
  *        ex) i1 LIKE 'ab'
  *   1.2. Prefix or Pattern match) : S = DS
  *        ex) Prefix match : i1 LIKE 'ab%', i1 LIKE 'ab%d', i1 LIKE 'ab%d%'
- *            Pattern match : i1 LIKE '%ab' (ì‹¤ì œ non-indexable ë¡œ ì²˜ë¦¬)
+ *            Pattern match : i1 LIKE '%ab' (½ÇÁ¦ non-indexable ·Î Ã³¸®)
  *
- *   2. í†µê³„ì •ë³´ ë¯¸ìˆ˜ì§‘ ë˜ëŠ”
- *      Non-indexable predicate ë˜ëŠ”
- *      Variable value (prepare time) ë˜ëŠ”
+ *   2. Åë°èÁ¤º¸ ¹Ì¼öÁı ¶Ç´Â
+ *      Non-indexable predicate ¶Ç´Â
+ *      Variable value (prepare time) ¶Ç´Â
  *      MTD_SELECTIVITY_DISABLE column : S = DS
  *      ex) t1.i1 LIKE t2.i2, i1 LIKE (select 'a' from t2),
- *          i1 LIKE '1%' (i1 ì´ ì—°ì‚°ë¶ˆê°€ íƒ€ì…),
+ *          i1 LIKE '1%' (i1 ÀÌ ¿¬»êºÒ°¡ Å¸ÀÔ),
  *          i1 LIKE :a (prepare time)
  *
  *****************************************************************************/
@@ -4238,7 +4270,7 @@ qmoSelectivity::getLikeSelectivity( qcTemplate    * aTemplate,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::getLikeSelectivity::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aTemplate    != NULL );
@@ -4250,13 +4282,13 @@ qmoSelectivity::getLikeSelectivity( qcTemplate    * aTemplate,
     IDE_DASSERT( aSelectivity != NULL );
 
     //--------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //--------------------------------------
 
     sColCardInfo = aStatInfo->colCardInfo;
     sDefaultSelectivity = aCompareNode->node.module->selectivity;
 
-    // column nodeì™€ value node íšë“
+    // column node¿Í value node È¹µæ
     if( aCompareNode->indexArgument == 0 )
     {
         sColumnNode = (qtcNode *)(aCompareNode->node.arguments);
@@ -4273,10 +4305,10 @@ qmoSelectivity::getLikeSelectivity( qcTemplate    * aTemplate,
                        columns[sColumnNode->node.column] );
 
     //--------------------------------------
-    // QMO_PRED_HOST_OPTIMIZE_TRUE ì„¸íŒ…
+    // QMO_PRED_HOST_OPTIMIZE_TRUE ¼¼ÆÃ
     //--------------------------------------
 
-    // BUG-43065 ì™¸ë¶€ ì°¸ì¡° ì»¬ëŸ¼ì´ ìˆì„ë•ŒëŠ” host ë³€ìˆ˜ ìµœì í™”ë¥¼ í•˜ë©´ ì•ˆë¨
+    // BUG-43065 ¿ÜºÎ ÂüÁ¶ ÄÃ·³ÀÌ ÀÖÀ»¶§´Â host º¯¼ö ÃÖÀûÈ­¸¦ ÇÏ¸é ¾ÈµÊ
     if( ( QMO_PRED_IS_DYNAMIC_OPTIMIZABLE( aPredicate ) == ID_TRUE ) &&
         ( aPredicate->id != QMO_COLUMNID_NON_INDEXABLE ) &&
         ( aInExecutionTime == ID_FALSE ) &&
@@ -4285,7 +4317,7 @@ qmoSelectivity::getLikeSelectivity( qcTemplate    * aTemplate,
           != MTD_SELECTIVITY_DISABLE ) &&
         ( qtc::haveDependencies( &sValueNode->depInfo ) == ID_FALSE ) )
     {
-        // qmoPredicate->flagì— host optimization flagë¥¼ ì„¸íŒ…í•œë‹¤.
+        // qmoPredicate->flag¿¡ host optimization flag¸¦ ¼¼ÆÃÇÑ´Ù.
         aPredicate->flag &= ~QMO_PRED_HOST_OPTIMIZE_MASK;
         aPredicate->flag |= QMO_PRED_HOST_OPTIMIZE_TRUE;
     }
@@ -4295,7 +4327,7 @@ qmoSelectivity::getLikeSelectivity( qcTemplate    * aTemplate,
     }
 
     //--------------------------------------
-    // Selectivity ê³„ì‚°
+    // Selectivity °è»ê
     //--------------------------------------
 
     if( ( aStatInfo->isValidStat == ID_TRUE ) &&
@@ -4306,15 +4338,15 @@ qmoSelectivity::getLikeSelectivity( qcTemplate    * aTemplate,
           != MTD_SELECTIVITY_DISABLE ) &&
         ( qtc::haveDependencies( &sValueNode->depInfo ) == ID_FALSE ) )
     {
-        // NOT LIKE ëŠ” MTC_NODE_INDEX_UNUSABLE ë¡œ QMO_COLUMNID_NON_INDEXABLE
+        // NOT LIKE ´Â MTC_NODE_INDEX_UNUSABLE ·Î QMO_COLUMNID_NON_INDEXABLE
         IDE_DASSERT( aCompareNode->node.module == &mtfLike );
 
-        // 1. í†µê³„ì •ë³´ ìˆ˜ì§‘ì´ê³ 
-        //    Indexable predicate ì´ê³ 
-        //    Fixed value ë˜ëŠ” Variable value (execution time) ì´ê³ 
+        // 1. Åë°èÁ¤º¸ ¼öÁıÀÌ°í
+        //    Indexable predicate ÀÌ°í
+        //    Fixed value ¶Ç´Â Variable value (execution time) ÀÌ°í
         //    MTD_SELECTIVITY_ENABLE column
 
-        // LIKE predicate ì˜ íŒ¨í„´ ë¬¸ìì—´ íšë“
+        // LIKE predicate ÀÇ ÆĞÅÏ ¹®ÀÚ¿­ È¹µæ
         IDE_TEST( qtc::calculate( sValueNode, aTemplate ) != IDE_SUCCESS );
 
         sPattern = (mtdCharType*)aTemplate->tmplate.stack->value;
@@ -4328,17 +4360,17 @@ qmoSelectivity::getLikeSelectivity( qcTemplate    * aTemplate,
         }
         else
         {
-            // escape ë¬¸ìê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
+            // escape ¹®ÀÚ°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
             sEscape = &sEscapeEmpty;
         }
 
-        // Prefix key length íšë“
+        // Prefix key length È¹µæ
         IDE_TEST( getLikeKeyLength( (const mtdCharType*) sPattern,
                                     (const mtdCharType*) sEscape,
                                     & sKeyLength )
                   != IDE_SUCCESS );
 
-        // Prefix key length ë¥¼ ì´ìš©í•˜ì—¬ match type íŒë‹¨
+        // Prefix key length ¸¦ ÀÌ¿ëÇÏ¿© match type ÆÇ´Ü
         if( sKeyLength != 0 && sKeyLength == sPattern->length )
         {
             // 1.1. Exact match
@@ -4347,7 +4379,7 @@ qmoSelectivity::getLikeSelectivity( qcTemplate    * aTemplate,
         }
         else
         {
-            // 1.2. Pattern match(sKeyLength == 0) : ì‚¬ì‹¤ìƒ non-indexable
+            // 1.2. Pattern match(sKeyLength == 0) : »ç½Ç»ó non-indexable
             //      Prefix match(sKeyLength != sPattern->length)
 
             sSelectivity = sDefaultSelectivity;
@@ -4355,11 +4387,11 @@ qmoSelectivity::getLikeSelectivity( qcTemplate    * aTemplate,
     }
     else
     {
-        // 2. í†µê³„ì •ë³´ ë¯¸ìˆ˜ì§‘ ë˜ëŠ”
-        //    Non-indexable predicate ë˜ëŠ”
-        //    Variable value (prepare time) ë˜ëŠ”
+        // 2. Åë°èÁ¤º¸ ¹Ì¼öÁı ¶Ç´Â
+        //    Non-indexable predicate ¶Ç´Â
+        //    Variable value (prepare time) ¶Ç´Â
         //    MTD_SELECTIVITY_DISABLE column
-        //    (ë²”ìœ„ ê°’ì— ëŒ€í•œ ì„ íƒë„ë¥¼ ì¶”ì •í•  ìˆ˜ ì—†ëŠ” data type)
+        //    (¹üÀ§ °ª¿¡ ´ëÇÑ ¼±ÅÃµµ¸¦ ÃßÁ¤ÇÒ ¼ö ¾ø´Â data type)
 
         sSelectivity = sDefaultSelectivity;
     }
@@ -4384,28 +4416,28 @@ qmoSelectivity::getLikeKeyLength( const mtdCharType   * aSource,
                                   UShort              * aKeyLength )
 {
 /******************************************************************************
- * Name: getLikeKeyLength() -- LIKE KEYì˜ prefix keyì˜ ê¸¸ì´ë¥¼ ì–»ì–´ì˜´
+ * Name: getLikeKeyLength() -- LIKE KEYÀÇ prefix keyÀÇ ±æÀÌ¸¦ ¾ò¾î¿È
  *
  * Arguments:
- * aSource: LIKEì ˆì˜ ë§¤ì¹­ ë¬¸ìì—´
- * aEscape: escape ë¬¸ì
- * aKeyLen: prefix keyì˜ ê¸¸ì´ (output)
+ * aSource: LIKEÀıÀÇ ¸ÅÄª ¹®ÀÚ¿­
+ * aEscape: escape ¹®ÀÚ
+ * aKeyLen: prefix keyÀÇ ±æÀÌ (output)
  *
  * Description:
- * i1 LIKE 'K%' ë˜ëŠ” i1 LIKE 'K_' ì—ì„œ
- * Kì˜ ê¸¸ì´ë¥¼ ì–»ì–´ ì˜¤ëŠ” í•¨ìˆ˜
+ * i1 LIKE 'K%' ¶Ç´Â i1 LIKE 'K_' ¿¡¼­
+ * KÀÇ ±æÀÌ¸¦ ¾ò¾î ¿À´Â ÇÔ¼ö
  *
  * 1) exact   match:  aKeyLen == aSource->length
  * 2) prefix  match:  aKeyLen <  aSource->length &&
  * aKeyLen != 0
  * 3) pattern match:  aKeyLen == 0
  *
- * ì´ í•¨ìˆ˜ëŠ” ì„ íƒë„ë¥¼ ì¶”ì •í•˜ê¸° ìœ„í•´ LIKEì ˆì˜ ë§¤ì¹­ ì¢…ë¥˜ë¥¼ íŒŒì•…í•œë‹¤.
- * ë”°ë¼ì„œ ë©€í‹° ë°”ì´íŠ¸ ë¬¸ìì…‹(ì˜ˆ:í•œê¸€)ì„ ê³ ë ¤í•˜ì—¬ í‚¤ì˜ ê¸¸ì´ë¥¼ íŒŒì•…í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ * ÀÌ ÇÔ¼ö´Â ¼±ÅÃµµ¸¦ ÃßÁ¤ÇÏ±â À§ÇØ LIKEÀıÀÇ ¸ÅÄª Á¾·ù¸¦ ÆÄ¾ÇÇÑ´Ù.
+ * µû¶ó¼­ ¸ÖÆ¼ ¹ÙÀÌÆ® ¹®ÀÚ¼Â(¿¹:ÇÑ±Û)À» °í·ÁÇÏ¿© Å°ÀÇ ±æÀÌ¸¦ ÆÄ¾ÇÇÏÁö ¾Ê´Â´Ù.
  *
  *****************************************************************************/
 
-    UChar       sEscape;     // escape ë¬¸ì
+    UChar       sEscape;     // escape ¹®ÀÚ
     idBool      sNullEscape;
     UShort      sIdx;        // loop counter
 
@@ -4415,21 +4447,21 @@ qmoSelectivity::getLikeKeyLength( const mtdCharType   * aSource,
     IDE_DASSERT( aSource    != NULL );
     IDE_DASSERT( aEscape    != NULL );
 
-    // escape ë¬¸ì ì„¤ì •
+    // escape ¹®ÀÚ ¼³Á¤
     if( aEscape->length < 1 )
     {
-        // escape ë¬¸ìê°€ ì„¤ì •ë˜ì–´ ìˆì§€ ì•Šì€ ê²½ìš°
+        // escape ¹®ÀÚ°¡ ¼³Á¤µÇ¾î ÀÖÁö ¾ÊÀº °æ¿ì
         sNullEscape = ID_TRUE;
     }
     else if( aEscape->length == 1 )
     {
-        // escape ë¬¸ì í• ë‹¹
+        // escape ¹®ÀÚ ÇÒ´ç
         sEscape = *(aEscape->value);
         sNullEscape = ID_FALSE;
     }
     else
     {
-        // escape ë¬¸ìì˜ ê¸¸ì´ê°€ 1ì„ ë„˜ìœ¼ë©´ ì•ˆëœë‹¤.
+        // escape ¹®ÀÚÀÇ ±æÀÌ°¡ 1À» ³ÑÀ¸¸é ¾ÈµÈ´Ù.
         IDE_RAISE( ERR_INVALID_ESCAPE );
     }
 
@@ -4440,11 +4472,11 @@ qmoSelectivity::getLikeKeyLength( const mtdCharType   * aSource,
         if( (sNullEscape == ID_FALSE) && (aSource->value[sIdx] == sEscape) )
         {
             // To Fix PR-13004
-            // ABR ë°©ì§€ë¥¼ ìœ„í•˜ì—¬ ì¦ê°€ì‹œí‚¨ í›„ ê²€ì‚¬í•˜ì—¬ì•¼ í•¨
+            // ABR ¹æÁö¸¦ À§ÇÏ¿© Áõ°¡½ÃÅ² ÈÄ °Ë»çÇÏ¿©¾ß ÇÔ
             sIdx++;
 
-            // escape ë¬¸ìì¸ ê²½ìš°,
-            // escape ë‹¤ìŒ ë¬¸ìê°€ '%','_' ë¬¸ìì¸ì§€ ê²€ì‚¬
+            // escape ¹®ÀÚÀÎ °æ¿ì,
+            // escape ´ÙÀ½ ¹®ÀÚ°¡ '%','_' ¹®ÀÚÀÎÁö °Ë»ç
             IDE_TEST_RAISE( sIdx >= aSource->length, ERR_INVALID_LITERAL );
 
             // To Fix BUG-12578
@@ -4456,12 +4488,12 @@ qmoSelectivity::getLikeKeyLength( const mtdCharType   * aSource,
         else if( aSource->value[sIdx] == (UShort)'%' ||
                  aSource->value[sIdx] == (UShort)'_' )
         {
-            // íŠ¹ìˆ˜ë¬¸ìì¸ ê²½ìš°
+            // Æ¯¼ö¹®ÀÚÀÎ °æ¿ì
             break;
         }
         else
         {
-            // ì¼ë°˜ ë¬¸ìì¸ ê²½ìš°
+            // ÀÏ¹İ ¹®ÀÚÀÎ °æ¿ì
         }
         sIdx++;
     }
@@ -4495,34 +4527,34 @@ qmoSelectivity::getInSelectivity( qcTemplate    * aTemplate,
 {
 /******************************************************************************
  *
- * Description : IN(=ANY), NOT IN(!=ALL) ì— ëŒ€í•œ unit selectivity ë¥¼ ê³„ì‚°í•˜ê³ 
- *               Indexable IN operator ì— í•œí•´
- *               QMO_PRED_INSUBQUERY_MASK (subquery keyRange ì •ë³´) ì„¤ì •
+ * Description : IN(=ANY), NOT IN(!=ALL) ¿¡ ´ëÇÑ unit selectivity ¸¦ °è»êÇÏ°í
+ *               Indexable IN operator ¿¡ ÇÑÇØ
+ *               QMO_PRED_INSUBQUERY_MASK (subquery keyRange Á¤º¸) ¼³Á¤
  *
- * Implementation : Selectivity ê³„ì‚°ì‹
+ * Implementation : Selectivity °è»ê½Ä
  *
- *     1. í†µê³„ì •ë³´ ìˆ˜ì§‘ì´ê³  Indexable predicate ì´ê³  LIST, Subquery value í˜•íƒœ
+ *     1. Åë°èÁ¤º¸ ¼öÁıÀÌ°í Indexable predicate ÀÌ°í LIST, Subquery value ÇüÅÂ
  *        ex) i1 IN (1,2), (i1,i2) IN ((1,1)), (i1,i2) IN ((1,1),(2,2))
  *            i1 IN (select i1 from t2), (i1,i2) IN (select i1,i2 from t2)
- *     => NOT IN, one side column LIST ëŠ” non-indexable ì´ì§€ë§Œ
- *        selectivity íšë“ì´ ê°€ëŠ¥í•˜ë¯€ë¡œ indexable selectivity ê³„ì‚°ì‹ ì ìš©
+ *     => NOT IN, one side column LIST ´Â non-indexable ÀÌÁö¸¸
+ *        selectivity È¹µæÀÌ °¡´ÉÇÏ¹Ç·Î indexable selectivity °è»ê½Ä Àû¿ë
  *        ex) (i1, i2) NOT IN ((1,1))
- *      - ColumnLIST ì— ëŒ€í•œ AND í™•ë¥  ê³„ì‚°ì‹ (n : column number)
+ *      - ColumnLIST ¿¡ ´ëÇÑ AND È®·ü °è»ê½Ä (n : column number)
  *        S(AND) = 1 / columnNDV = 1 / PRODUCT( columnNDVn )
- *      - ValueLIST ì— ëŒ€í•œ OR í™•ë¥  ê³„ì‚°ì‹ (m : value number)
+ *      - ValueLIST ¿¡ ´ëÇÑ OR È®·ü °è»ê½Ä (m : value number)
  *        S(OR) = 1 - PRODUCTm( 1 - S(AND) )
  *              = 1 - PRODUCTm( 1 - ( 1/columnNDVn ) )
  *
- *     2. í†µê³„ì •ë³´ ë¯¸ìˆ˜ì§‘ ë˜ëŠ” Non-indexable predicate
+ *     2. Åë°èÁ¤º¸ ¹Ì¼öÁı ¶Ç´Â Non-indexable predicate
  *        S = PRODUCT( DSn )
  *        ex) i1 IN (i2,2), i1+1 IN (1,2), (i1,1) IN ((1,1), (2,1))
- *     => DS ë¥¼ ì‚¬ìš©í•˜ë©´ value list ì˜ ì¸ììˆ˜ê°€ ì¦ê°€í• ìˆ˜ë¡ 1 ë¡œ ìˆ˜ë ´
- *     => ì•„ë˜ì™€ ê°™ì€ ì´ìœ ë¡œ PRODUCT( DSn ) ì„ ì±„íƒ
+ *     => DS ¸¦ »ç¿ëÇÏ¸é value list ÀÇ ÀÎÀÚ¼ö°¡ Áõ°¡ÇÒ¼ö·Ï 1 ·Î ¼ö·Å
+ *     => ¾Æ·¡¿Í °°Àº ÀÌÀ¯·Î PRODUCT( DSn ) À» Ã¤ÅÃ
  *        Selectivity[i1 IN (1,2)] >
  *        Selectivity[(i1 IN (1,2)) AND (i2 IN (1,2))] >
  *        Selectivity[(i1, i2) IN ((1,1), (2,2))]
  * 
- *     3. NOT IN ë³´ì •
+ *     3. NOT IN º¸Á¤
  *
  *****************************************************************************/
 
@@ -4540,7 +4572,7 @@ qmoSelectivity::getInSelectivity( qcTemplate    * aTemplate,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::getInSelectivity::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aTemplate    != NULL );
@@ -4553,14 +4585,14 @@ qmoSelectivity::getInSelectivity( qcTemplate    * aTemplate,
     IDE_DASSERT( aSelectivity != NULL );
 
     //--------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //--------------------------------------
 
     sColumnNDV = 1;
     sSelectivity = 1;
     sDefaultSelectivity = mtfEqualAny.selectivity;
 
-    // column nodeì™€ value node íšë“
+    // column node¿Í value node È¹µæ
     if( aCompareNode->indexArgument == 0 )
     {
         sColumnNode = (qtcNode *)(aCompareNode->node.arguments);
@@ -4573,11 +4605,11 @@ qmoSelectivity::getInSelectivity( qcTemplate    * aTemplate,
     }
 
     //--------------------------------------
-    // IN subquery keyRange ì •ë³´ ì„¤ì •.
+    // IN subquery keyRange Á¤º¸ ¼³Á¤.
     //--------------------------------------
-    // indexable predicateì¸ ê²½ìš°,
-    // OR ë…¸ë“œ í•˜ìœ„ì— ë¹„êµì—°ì‚°ìê°€ ì—¬ëŸ¬ê°œ ìˆëŠ” ê²½ìš°,
-    // subqueryê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    // indexable predicateÀÎ °æ¿ì,
+    // OR ³ëµå ÇÏÀ§¿¡ ºñ±³¿¬»êÀÚ°¡ ¿©·¯°³ ÀÖ´Â °æ¿ì,
+    // subquery°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
 
     if( ( aPredicate->id != QMO_COLUMNID_NON_INDEXABLE ) &&
         ( aCompareNode->node.module == &mtfEqualAny ) )
@@ -4600,12 +4632,12 @@ qmoSelectivity::getInSelectivity( qcTemplate    * aTemplate,
     }
 
     //--------------------------------------
-    // Selectivity ê³„ì‚°
+    // Selectivity °è»ê
     //--------------------------------------
 
     // BUG-7814 : (i1, i2) NOT IN ((1,2))
-    // - NOT IN operator ë¥¼ ì‚¬ìš©í•œ column LIST í˜•íƒœëŠ” non-indexable ë¡œ ë¶„ë¥˜
-    // - PROJ-2242 : default selectivity íšŒí”¼ë¥¼ ìœ„í•´ indexable ì²˜ëŸ¼ ì²˜ë¦¬
+    // - NOT IN operator ¸¦ »ç¿ëÇÑ column LIST ÇüÅÂ´Â non-indexable ·Î ºĞ·ù
+    // - PROJ-2242 : default selectivity È¸ÇÇ¸¦ À§ÇØ indexable Ã³·³ Ã³¸®
 
     if( ( aCompareNode->node.module == &mtfNotEqualAll ) &&
         ( sColumnNode->node.lflag & MTC_NODE_OPERATOR_MASK )
@@ -4629,13 +4661,13 @@ qmoSelectivity::getInSelectivity( qcTemplate    * aTemplate,
         if ( ( sValueNode->node.lflag & MTC_NODE_OPERATOR_MASK )
             == MTC_NODE_OPERATOR_LIST )
         {
-            // 1. í†µê³„ì •ë³´ ìˆ˜ì§‘ ì´ê³ 
-            //    Indexable predicate (NOT IN one side column LIST í¬í•¨)
-            //    LIST value í˜•íƒœ
+            // 1. Åë°èÁ¤º¸ ¼öÁı ÀÌ°í
+            //    Indexable predicate (NOT IN one side column LIST Æ÷ÇÔ)
+            //    LIST value ÇüÅÂ
             // ex) (i1,i2) IN ((1,1),(2,2)) -> (i1=1 AND i2=1) OR (i1=2 AND i2=2)
-            // => Column LIST ì— ëŒ€í•œ AND í™•ë¥ ì‹, Value LIST ì— ëŒ€í•œ OR í™•ë¥ ì‹
+            // => Column LIST ¿¡ ´ëÇÑ AND È®·ü½Ä, Value LIST ¿¡ ´ëÇÑ OR È®·ü½Ä
  
-            // columnNDV íšë“ (AND í™•ë¥ ì‹)
+            // columnNDV È¹µæ (AND È®·ü½Ä)
             sColCardInfo = aStatInfo->colCardInfo;
  
             if ( ( sColumnNode->node.lflag & MTC_NODE_OPERATOR_MASK )
@@ -4656,7 +4688,7 @@ qmoSelectivity::getInSelectivity( qcTemplate    * aTemplate,
                 sColumnNDV = sColCardInfo[sColumnNode->node.column].columnNDV;
             }
  
-            // selectivity íšë“ (OR í™•ë¥ ì‹)
+            // selectivity È¹µæ (OR È®·ü½Ä)
             sValue = (qtcNode *)(sValueNode->node.arguments);
  
             while ( sValue != NULL )
@@ -4670,7 +4702,7 @@ qmoSelectivity::getInSelectivity( qcTemplate    * aTemplate,
         else if ( ( sValueNode->node.lflag & MTC_NODE_OPERATOR_MASK )
             == MTC_NODE_OPERATOR_SUBQUERY )
         {
-            // columnNDV íšë“ (AND í™•ë¥ ì‹)
+            // columnNDV È¹µæ (AND È®·ü½Ä)
             sColCardInfo = aStatInfo->colCardInfo;
  
             if ( ( sColumnNode->node.lflag & MTC_NODE_OPERATOR_MASK )
@@ -4691,7 +4723,7 @@ qmoSelectivity::getInSelectivity( qcTemplate    * aTemplate,
                 sColumnNDV = sColCardInfo[sColumnNode->node.column].columnNDV;
             }
 
-            // selectivity íšë“ (OR í™•ë¥ ì‹)
+            // selectivity È¹µæ (OR È®·ü½Ä)
             sValueCount = DOUBLE_TO_UINT64( sValueNode->subquery->myPlan->graph->costInfo.outputRecordCnt );
 
             while ( sValueCount != 0 )
@@ -4709,9 +4741,9 @@ qmoSelectivity::getInSelectivity( qcTemplate    * aTemplate,
     }
     else
     {
-        // 2. í†µê³„ì •ë³´ ë¯¸ìˆ˜ì§‘ ë˜ëŠ”
-        //    Non-indexable predicate (NOT IN one side column LIST ì œì™¸)
-        // => Column LIST ì— ëŒ€í•œ AND í™•ë¥ ì‹
+        // 2. Åë°èÁ¤º¸ ¹Ì¼öÁı ¶Ç´Â
+        //    Non-indexable predicate (NOT IN one side column LIST Á¦¿Ü)
+        // => Column LIST ¿¡ ´ëÇÑ AND È®·ü½Ä
 
         if ( ( sColumnNode->node.lflag & MTC_NODE_OPERATOR_MASK )
             == MTC_NODE_OPERATOR_LIST )
@@ -4731,8 +4763,24 @@ qmoSelectivity::getInSelectivity( qcTemplate    * aTemplate,
     }
 
     // NOT IN (!=ALL) selectivity
-    sSelectivity = ( aCompareNode->node.module == &mtfNotEqualAll ) ?
-                   ( 1 - sSelectivity ): sSelectivity;
+    /* BUG-47702 <> ¿¬»êÀÚ°¡ ÀÖÀ» °æ¿ì Selectivity°¡ 1ÀÎ INDEX¿¡ ´ëÇÑ Àß¸øµÈ  index ¼±ÅÃ ¿À·ù
+     * NOT EQUAL ÀÇ Selectivity °¡ 1 ÀÎ°æ¿ì Áï ¸ğµÎ °°Àº °ªÀÎ°æ¿ì selectivity¸¦ 1·Î ÁØ´Ù.
+     */
+    if ( aCompareNode->node.module == &mtfNotEqualAll )
+    {
+        if ( sSelectivity < 1 )
+        {
+            sSelectivity = 1 - sSelectivity;
+        }
+        else
+        {
+            sSelectivity = 1;
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
     *aSelectivity = sSelectivity;
 
@@ -4755,15 +4803,15 @@ qmoSelectivity::getEqualsSelectivity( qmoStatistics * aStatInfo,
 {
 /******************************************************************************
  *
- * Description : EQUALS, NOT EQUALS ì— ëŒ€í•œ unit selectivity ë°˜í™˜
- *           cf) NOT EQUALS ëŠ” MTC_NODE_INDEX_UNUSABLE ë¡œ
- *               í•­ìƒ QMO_COLUMNID_NON_INDEXABLE
+ * Description : EQUALS, NOT EQUALS ¿¡ ´ëÇÑ unit selectivity ¹İÈ¯
+ *           cf) NOT EQUALS ´Â MTC_NODE_INDEX_UNUSABLE ·Î
+ *               Ç×»ó QMO_COLUMNID_NON_INDEXABLE
  *
  * Implementation :
  *
- *      1. í†µê³„ì •ë³´ ë¯¸ìˆ˜ì§‘ ë˜ëŠ” Non-indexable predicate : S = DS
+ *      1. Åë°èÁ¤º¸ ¹Ì¼öÁı ¶Ç´Â Non-indexable predicate : S = DS
  *         ex) where EQUALS(TB1.F2, TB1.F2)  --> (TB1.F2 : GEOMETRY type)
- *      2. í†µê³„ì •ë³´ ìˆ˜ì§‘ì´ê³  Indexable predicate : S = 1 / columnNDV
+ *      2. Åë°èÁ¤º¸ ¼öÁıÀÌ°í Indexable predicate : S = 1 / columnNDV
  *         ex) where EQUALS(TB1.F2, GEOMETRY'POINT(3 3))
  *
  *****************************************************************************/
@@ -4775,7 +4823,7 @@ qmoSelectivity::getEqualsSelectivity( qmoStatistics * aStatInfo,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::getEqualsSelectivity::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatInfo    != NULL );
@@ -4786,21 +4834,21 @@ qmoSelectivity::getEqualsSelectivity( qmoStatistics * aStatInfo,
     IDE_DASSERT( aSelectivity != NULL );
 
     //--------------------------------------
-    // Selectivity ê³„ì‚°
+    // Selectivity °è»ê
     //--------------------------------------
 
     if( ( aStatInfo->isValidStat == ID_FALSE ) ||
         ( aPredicate->id == QMO_COLUMNID_NON_INDEXABLE ) )
     {
-        // 1. í†µê³„ì •ë³´ ë¯¸ìˆ˜ì§‘ ë˜ëŠ” Non-indexable predicate
+        // 1. Åë°èÁ¤º¸ ¹Ì¼öÁı ¶Ç´Â Non-indexable predicate
         sSelectivity = aCompareNode->node.module->selectivity;
     }
     else
     {
-        // 2. í†µê³„ì •ë³´ ìˆ˜ì§‘ì´ê³  Indexable predicate
+        // 2. Åë°èÁ¤º¸ ¼öÁıÀÌ°í Indexable predicate
         IDE_DASSERT( aCompareNode->node.module == &stfEquals );
 
-        // column nodeì™€ value node íšë“
+        // column node¿Í value node È¹µæ
         if( aCompareNode->indexArgument == 0 )
         {
             sColumnNode = (qtcNode *)(aCompareNode->node.arguments);
@@ -4838,14 +4886,14 @@ qmoSelectivity::getLnnvlSelectivity( qcTemplate    * aTemplate,
 {
 /******************************************************************************
  *
- * Description : LNNVL ì˜ unit selectivity ë°˜í™˜ (one table)
+ * Description : LNNVL ÀÇ unit selectivity ¹İÈ¯ (one table)
  *
  * Implementation :
  *
- *       LNNVL operator ì˜ ì¸ì í˜•íƒœì— ë”°ë¼ ë‹¤ìŒê³¼ ê°™ì´ ìˆ˜í–‰í•œë‹¤.
+ *       LNNVL operator ÀÇ ÀÎÀÚ ÇüÅÂ¿¡ µû¶ó ´ÙÀ½°ú °°ÀÌ ¼öÇàÇÑ´Ù.
  *
  *       1. OR, AND (not normal form) : S = DS
- *       2. ì¤‘ì²©ëœ LNNVL : S = 1 - S(LNNVL)
+ *       2. ÁßÃ¸µÈ LNNVL : S = 1 - S(LNNVL)
  *       3. Compare predicate (only one) : S = 1 - S(one predicate)
  *
  *****************************************************************************/
@@ -4856,7 +4904,7 @@ qmoSelectivity::getLnnvlSelectivity( qcTemplate    * aTemplate,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::getLnnvlSelectivity::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aTemplate    != NULL );
@@ -4875,7 +4923,7 @@ qmoSelectivity::getLnnvlSelectivity( qcTemplate    * aTemplate,
 
     if( sNode->node.module == &mtfLnnvl )
     {
-        // ì¤‘ì²©ëœ LNNVL
+        // ÁßÃ¸µÈ LNNVL
         IDE_TEST( getLnnvlSelectivity( aTemplate,
                                        aStatInfo,
                                        aDepInfo,
@@ -4925,10 +4973,10 @@ SDouble qmoSelectivity::getEnhanceSelectivity4Join( qcStatement  * aStatement,
 {
 /******************************************************************************
  *
- * Description : BUG-37918 join selectivity ê°œì„ 
+ * Description : BUG-37918 join selectivity °³¼±
  *
- * Implementation : ë‹¨ìˆœí•˜ê²Œ ê·¸ë˜í”„ì˜ output ë³´ë‹¤ NDV ê°€ í° ê²½ìš°ì—ëŠ”
- *                  output ì„ ëŒ€ì‹  ì‚¬ìš©í•˜ë„ë¡ í•©ë‹ˆë‹¤.
+ * Implementation : ´Ü¼øÇÏ°Ô ±×·¡ÇÁÀÇ output º¸´Ù NDV °¡ Å« °æ¿ì¿¡´Â
+ *                  output À» ´ë½Å »ç¿ëÇÏµµ·Ï ÇÕ´Ï´Ù.
  *
  *
  *****************************************************************************/
@@ -4957,7 +5005,7 @@ SDouble qmoSelectivity::getEnhanceSelectivity4Join( qcStatement  * aStatement,
         }
         else
         {
-            // ì™¸ë¶€ ì°¸ì¡° ì»¬ëŸ¼ì¸ ê²½ìš°
+            // ¿ÜºÎ ÂüÁ¶ ÄÃ·³ÀÎ °æ¿ì
             sGraph = NULL;
         }
 
@@ -4994,22 +5042,22 @@ qmoSelectivity::getUnitSelectivity4Join( qcStatement  * aStatement,
 {
 /******************************************************************************
  *
- * Description : qmgJoin ê´€ë ¨ qmoPredicate ì˜ unit predicate ì— ëŒ€í•´
- *               unit selectivity ë¥¼ ê³„ì‚°í•˜ê³ 
- *               (=) operator ì— í•œí•´ ë‹¤ìŒì¸ë±ìŠ¤ ì‚¬ìš©ê°€ëŠ¥ì—¬ë¶€ ë°˜í™˜
+ * Description : qmgJoin °ü·Ã qmoPredicate ÀÇ unit predicate ¿¡ ´ëÇØ
+ *               unit selectivity ¸¦ °è»êÇÏ°í
+ *               (=) operator ¿¡ ÇÑÇØ ´ÙÀ½ÀÎµ¦½º »ç¿ë°¡´É¿©ºÎ ¹İÈ¯
  *
  * Implementation :
  *
  *        1. =, != operator
  *        1.1. One column & one column : S = 1 / max( NDV(L), NDV(R) )
  *             ex) t1.i1=t2.i1
- *           - ì–‘ ìª½ ì»¬ëŸ¼ í†µê³„ì •ë³´ ìˆìœ¼ë©´ : S = min( 1/NDV(L), 1/NDV(R) )
- *           - í•œ ìª½ ì»¬ëŸ¼ í†µê³„ì •ë³´ ìˆìœ¼ë©´ : S = min( 1/NDV, DS )
- *           - ì–‘ ìª½ ì»¬ëŸ¼ í†µê³„ì •ë³´ ì—†ìœ¼ë©´ : S = DS
+ *           - ¾ç ÂÊ ÄÃ·³ Åë°èÁ¤º¸ ÀÖÀ¸¸é : S = min( 1/NDV(L), 1/NDV(R) )
+ *           - ÇÑ ÂÊ ÄÃ·³ Åë°èÁ¤º¸ ÀÖÀ¸¸é : S = min( 1/NDV, DS )
+ *           - ¾ç ÂÊ ÄÃ·³ Åë°èÁ¤º¸ ¾øÀ¸¸é : S = DS
  *        1.2. One column & Etc
- *             ex) t1.i1=t2.i1+1, 1=t1.i1 or t2.i1=1 ì—ì„œ ê° unit predicate
- *           - ì»¬ëŸ¼ í†µê³„ì •ë³´ ìˆìœ¼ë©´ : S = min( 1/NDV, DS )
- *           - ì»¬ëŸ¼ í†µê³„ì •ë³´ ì—†ìœ¼ë©´ : S = DS
+ *             ex) t1.i1=t2.i1+1, 1=t1.i1 or t2.i1=1 ¿¡¼­ °¢ unit predicate
+ *           - ÄÃ·³ Åë°èÁ¤º¸ ÀÖÀ¸¸é : S = min( 1/NDV, DS )
+ *           - ÄÃ·³ Åë°èÁ¤º¸ ¾øÀ¸¸é : S = DS
  *             ex) t1.i1=t2.i1
  *        1.3. Etc & Etc : S = DS
  *             ex) t1.i1+t2.i1=1
@@ -5032,7 +5080,7 @@ qmoSelectivity::getUnitSelectivity4Join( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::getUnitSelectivity4Join::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement   != NULL );
@@ -5041,7 +5089,7 @@ qmoSelectivity::getUnitSelectivity4Join( qcStatement  * aStatement,
     IDE_DASSERT( aSelectivity != NULL );
 
     //--------------------------------------
-    // Selectivity ê³„ì‚°
+    // Selectivity °è»ê
     //--------------------------------------
 
     // BUG-41876
@@ -5054,7 +5102,7 @@ qmoSelectivity::getUnitSelectivity4Join( qcStatement  * aStatement,
         if( ( aCompareNode->node.module == &mtfEqual ) ||
             ( aCompareNode->node.module == &mtfNotEqual ) )
         {
-            // 1. =, <> operator ì— í•œí•´ ë‹¤ìŒê³¼ ê°™ì´ ê³„ì‚°
+            // 1. =, <> operator ¿¡ ÇÑÇØ ´ÙÀ½°ú °°ÀÌ °è»ê
 
             sSelectivity = mtfEqual.selectivity;
 
@@ -5139,8 +5187,8 @@ qmoSelectivity::getMySelectivity4PredList( qmoPredicate  * aPredList,
 {
 /******************************************************************************
  *
- * Description : Join ê´€ë ¨ graph ì˜ qmoPredicate list ì— ëŒ€í•´
- *               í†µí•©ëœ mySelecltivity ë¥¼ ë°˜í™˜í•œë‹¤.
+ * Description : Join °ü·Ã graph ÀÇ qmoPredicate list ¿¡ ´ëÇØ
+ *               ÅëÇÕµÈ mySelecltivity ¸¦ ¹İÈ¯ÇÑ´Ù.
  *
  * Implementation : S = PRODUCT( mySelectivity for qmoPredicate list )
  *
@@ -5152,13 +5200,13 @@ qmoSelectivity::getMySelectivity4PredList( qmoPredicate  * aPredList,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::getMySelectivity4PredList::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aSelectivity != NULL );
     
     //--------------------------------------
-    // Selectivity ê³„ì‚°
+    // Selectivity °è»ê
     //--------------------------------------
 
     sSelectivity = 1;
@@ -5167,7 +5215,7 @@ qmoSelectivity::getMySelectivity4PredList( qmoPredicate  * aPredList,
     while( sPredicate != NULL )
     {
         // BUG-37778 disk hash temp table size estimate
-        // tpc-H Q20 ì—ì„œ ë„ˆë¬´ ì‘ì€ join selectivity ê°€ ê³„ì‚°ë¨
+        // tpc-H Q20 ¿¡¼­ ³Ê¹« ÀÛÀº join selectivity °¡ °è»êµÊ
         sSelectivity = IDL_MIN( sSelectivity, sPredicate->mySelectivity);
         // sSelectivity *= sPredicate->mySelectivity;
 
@@ -5195,23 +5243,23 @@ qmoSelectivity::getSemiJoinSelectivity( qcStatement   * aStatement,
 {
 /******************************************************************************
  *
- * Description : qmoPredicate list ë˜ëŠ” qmoPredicate ì— ëŒ€í•œ
- *               semi join selectivity ë¥¼ ë°˜í™˜
+ * Description : qmoPredicate list ¶Ç´Â qmoPredicate ¿¡ ´ëÇÑ
+ *               semi join selectivity ¸¦ ¹İÈ¯
  *
  * Implementation : 
  *
- *     1. aIsSetNext ê°€ TRUE ì¼ ê²½ìš° qmoPredicate list ì „ì²´ì— ëŒ€í•´ ìˆ˜í–‰
+ *     1. aIsSetNext °¡ TRUE ÀÏ °æ¿ì qmoPredicate list ÀüÃ¼¿¡ ´ëÇØ ¼öÇà
  *        Selectivity = PRODUCT( MS semi join for qmoPredicate )
  *
- *     1.1. qmoPredicate ì´ ë³µìˆ˜ ê°œì˜ unit predicate ë¡œ êµ¬ì„±ë˜ì—ˆì„ ê²½ìš°
+ *     1.1. qmoPredicate ÀÌ º¹¼ö °³ÀÇ unit predicate ·Î ±¸¼ºµÇ¾úÀ» °æ¿ì
  *          ex) t1.i1=t2.i1 or t1.i2=t2.i2, t1.i1>t2.i1 or t1.i2<t2.i2
- *          MS(mySelectivity) = 1-PRODUCT(1-US)n    (OR í™•ë¥ ê³„ì‚°ì‹)
+ *          MS(mySelectivity) = 1-PRODUCT(1-US)n    (OR È®·ü°è»ê½Ä)
  *
- *     1.2. qmoPredicate ì´ í•œ ê°œì˜ unit predicate ë¡œ êµ¬ì„±ë˜ì—ˆì„ ê²½ìš°
+ *     1.2. qmoPredicate ÀÌ ÇÑ °³ÀÇ unit predicate ·Î ±¸¼ºµÇ¾úÀ» °æ¿ì
  *          ex) t1.i1=t2.i1, t1.i1>t2.i1, t1.i2<t2.i2+1
  *          MS(mySelectivity) = US (unit semi join selectivity)
  *
- *     2. aIsSetNext ê°€ FALSE ì¼ ê²½ìš° qmoPredicate í•˜ë‚˜ì— ëŒ€í•´ ìˆ˜í–‰
+ *     2. aIsSetNext °¡ FALSE ÀÏ °æ¿ì qmoPredicate ÇÏ³ª¿¡ ´ëÇØ ¼öÇà
  *        Selectivity = semi join MySelectivity for qmoPredicate
  *                    = US (unit semi join selectivity)
  *
@@ -5227,7 +5275,7 @@ qmoSelectivity::getSemiJoinSelectivity( qcStatement   * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::getSemiJoinSelectivity::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement   != NULL );
@@ -5235,7 +5283,7 @@ qmoSelectivity::getSemiJoinSelectivity( qcStatement   * aStatement,
     IDE_DASSERT( aSelectivity != NULL );
 
     //--------------------------------------
-    // Selectivity ê³„ì‚°
+    // Selectivity °è»ê
     //--------------------------------------
 
     sSelectivity = 1;
@@ -5257,12 +5305,12 @@ qmoSelectivity::getSemiJoinSelectivity( qcStatement   * aStatement,
         }
 
         //--------------------------------------
-        // Semi join my selectivity íšë“
+        // Semi join my selectivity È¹µæ
         //--------------------------------------
         if( sCompareNode->node.next != NULL && sIsDNF == ID_FALSE )
         {
-            // 1.1. OR í•˜ìœ„ì— ë¹„êµì—°ì‚°ìê°€ ì—¬ëŸ¬ê°œ ìˆëŠ” ê²½ìš°,
-            //      OR ë…¼ë¦¬ì—°ì‚°ìì— ëŒ€í•œ selectivity ê³„ì‚°.
+            // 1.1. OR ÇÏÀ§¿¡ ºñ±³¿¬»êÀÚ°¡ ¿©·¯°³ ÀÖ´Â °æ¿ì,
+            //      OR ³í¸®¿¬»êÀÚ¿¡ ´ëÇÑ selectivity °è»ê.
             //      1 - (1-a)(1-b).....
             // ex) t1.i1=t2.i1 or t1.i2=t2.i2, t1.i1>t2.i1 or t1.i2<t2.i2
 
@@ -5286,7 +5334,7 @@ qmoSelectivity::getSemiJoinSelectivity( qcStatement   * aStatement,
         }
         else
         {
-            // 1.2. OR ë…¸ë“œ í•˜ìœ„ì— ë¹„êµì—°ì‚°ìê°€ í•˜ë‚˜ë§Œ ì¡´ì¬
+            // 1.2. OR ³ëµå ÇÏÀ§¿¡ ºñ±³¿¬»êÀÚ°¡ ÇÏ³ª¸¸ Á¸Àç
             // ex) t1.i1=t2.i1, t1.i1>t2.i1, t1.i2<t2.i2+1
 
             IDE_TEST( getUnitSelectivity4Semi( aStatement,
@@ -5306,7 +5354,7 @@ qmoSelectivity::getSemiJoinSelectivity( qcStatement   * aStatement,
 
         if (aIsSetNext == ID_FALSE)
         {
-            // 2. Predicate list ê°€ ì•„ë‹Œ í•˜ë‚˜ì˜ qmoPredicate ì— ëŒ€í•´ì„œë§Œ êµ¬í•¨
+            // 2. Predicate list °¡ ¾Æ´Ñ ÇÏ³ªÀÇ qmoPredicate ¿¡ ´ëÇØ¼­¸¸ ±¸ÇÔ
             break;
         }
         else
@@ -5340,23 +5388,23 @@ qmoSelectivity::getAntiJoinSelectivity( qcStatement   * aStatement,
 {
 /******************************************************************************
  *
- * Description : qmoPredicate list ë˜ëŠ” qmoPredicate ì— ëŒ€í•œ
- *               anti join selectivity ë¥¼ ë°˜í™˜
+ * Description : qmoPredicate list ¶Ç´Â qmoPredicate ¿¡ ´ëÇÑ
+ *               anti join selectivity ¸¦ ¹İÈ¯
  *
  * Implementation : 
  *
- *     1. aIsSetNext ê°€ TRUE ì¼ ê²½ìš° qmoPredicate list ì „ì²´ì— ëŒ€í•´ ìˆ˜í–‰
+ *     1. aIsSetNext °¡ TRUE ÀÏ °æ¿ì qmoPredicate list ÀüÃ¼¿¡ ´ëÇØ ¼öÇà
  *        Selectivity = PRODUCT( MS anti join for qmoPredicate )
  *
- *     1.1. qmoPredicate ì´ ë³µìˆ˜ ê°œì˜ unit predicate ë¡œ êµ¬ì„±ë˜ì—ˆì„ ê²½ìš°
+ *     1.1. qmoPredicate ÀÌ º¹¼ö °³ÀÇ unit predicate ·Î ±¸¼ºµÇ¾úÀ» °æ¿ì
  *          ex) t1.i1=t2.i1 or t1.i2=t2.i2, t1.i1>t2.i1 or t1.i2<t2.i2
- *          MS(mySelectivity) = 1-PRODUCT(1-US)n    (OR í™•ë¥ ê³„ì‚°ì‹)
+ *          MS(mySelectivity) = 1-PRODUCT(1-US)n    (OR È®·ü°è»ê½Ä)
  *
- *     1.2. qmoPredicate ì´ í•œ ê°œì˜ unit predicate ë¡œ êµ¬ì„±ë˜ì—ˆì„ ê²½ìš°
+ *     1.2. qmoPredicate ÀÌ ÇÑ °³ÀÇ unit predicate ·Î ±¸¼ºµÇ¾úÀ» °æ¿ì
  *          ex) t1.i1=t2.i1, t1.i1>t2.i1, t1.i2<t2.i2+1
  *          MS(mySelectivity) = US (unit anti join selectivity)
  *
- *     2. aIsSetNext ê°€ FALSE ì¼ ê²½ìš° qmoPredicate í•˜ë‚˜ì— ëŒ€í•´ ìˆ˜í–‰
+ *     2. aIsSetNext °¡ FALSE ÀÏ °æ¿ì qmoPredicate ÇÏ³ª¿¡ ´ëÇØ ¼öÇà
  *        Selectivity = anti join MySelectivity for qmoPredicate
  *                    = US (unit anti join selectivity)
  *
@@ -5372,7 +5420,7 @@ qmoSelectivity::getAntiJoinSelectivity( qcStatement   * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::getAntiJoinSelectivity::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement   != NULL );
@@ -5380,7 +5428,7 @@ qmoSelectivity::getAntiJoinSelectivity( qcStatement   * aStatement,
     IDE_DASSERT( aSelectivity != NULL );
 
     //--------------------------------------
-    // Selectivity ê³„ì‚°
+    // Selectivity °è»ê
     //--------------------------------------
 
     sSelectivity = 1;
@@ -5402,12 +5450,12 @@ qmoSelectivity::getAntiJoinSelectivity( qcStatement   * aStatement,
         }
 
         //--------------------------------------
-        // Anti join my selectivity íšë“
+        // Anti join my selectivity È¹µæ
         //--------------------------------------
         if( sCompareNode->node.next != NULL && sIsDNF == ID_FALSE )
         {
-            // 1.1. OR í•˜ìœ„ì— ë¹„êµì—°ì‚°ìê°€ ì—¬ëŸ¬ê°œ ìˆëŠ” ê²½ìš°,
-            //      OR ë…¼ë¦¬ì—°ì‚°ìì— ëŒ€í•œ selectivity ê³„ì‚°.
+            // 1.1. OR ÇÏÀ§¿¡ ºñ±³¿¬»êÀÚ°¡ ¿©·¯°³ ÀÖ´Â °æ¿ì,
+            //      OR ³í¸®¿¬»êÀÚ¿¡ ´ëÇÑ selectivity °è»ê.
             //      1 - (1-a)(1-b).....
             // ex) t1.i1=t2.i1 or t1.i2=t2.i2, t1.i1>t2.i1 or t1.i2<t2.i2
 
@@ -5431,7 +5479,7 @@ qmoSelectivity::getAntiJoinSelectivity( qcStatement   * aStatement,
         }
         else
         {
-            // 1.2. OR ë…¸ë“œ í•˜ìœ„ì— ë¹„êµì—°ì‚°ìê°€ í•˜ë‚˜ë§Œ ì¡´ì¬
+            // 1.2. OR ³ëµå ÇÏÀ§¿¡ ºñ±³¿¬»êÀÚ°¡ ÇÏ³ª¸¸ Á¸Àç
             // ex) t1.i1=t2.i1, t1.i1>t2.i1, t1.i2<t2.i2+1
 
             IDE_TEST( getUnitSelectivity4Anti( aStatement,
@@ -5451,7 +5499,7 @@ qmoSelectivity::getAntiJoinSelectivity( qcStatement   * aStatement,
 
         if (aIsSetNext == ID_FALSE)
         {
-            // 2. Predicate list ê°€ ì•„ë‹Œ í•˜ë‚˜ì˜ qmoPredicate ì— ëŒ€í•´ì„œë§Œ êµ¬í•¨
+            // 2. Predicate list °¡ ¾Æ´Ñ ÇÏ³ªÀÇ qmoPredicate ¿¡ ´ëÇØ¼­¸¸ ±¸ÇÔ
             break;
         }
         else
@@ -5484,19 +5532,19 @@ qmoSelectivity::getUnitSelectivity4Anti( qcStatement  * aStatement,
 {
 /******************************************************************************
  *
- * Description : Join ê´€ë ¨ qmoPredicate ì˜ í•˜ìœ„ unit predicate ì— ëŒ€í•´
- *               unit anti join selectivity ë°˜í™˜
+ * Description : Join °ü·Ã qmoPredicate ÀÇ ÇÏÀ§ unit predicate ¿¡ ´ëÇØ
+ *               unit anti join selectivity ¹İÈ¯
  *
- * Implementation : ê³„ì‚°ì‹ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
+ * Implementation : °è»ê½ÄÀº ´ÙÀ½°ú °°´Ù.
  *
- *        1. One column = One column í˜•íƒœ
+ *        1. One column = One column ÇüÅÂ
  *           ex) t1.i1=t2.i1
- *        1.1. ì–‘ ìª½ ì»¬ëŸ¼ í†µê³„ì •ë³´ ëª¨ë‘ ìˆìœ¼ë©´ : S = 1 - Semi join selectivity
- *        1.2. ì–‘ ìª½ ì»¬ëŸ¼ í†µê³„ì •ë³´ í•˜ë‚˜ë¼ë„ ì—†ìœ¼ë©´ : S = Defalut selectivity
+ *        1.1. ¾ç ÂÊ ÄÃ·³ Åë°èÁ¤º¸ ¸ğµÎ ÀÖÀ¸¸é : S = 1 - Semi join selectivity
+ *        1.2. ¾ç ÂÊ ÄÃ·³ Åë°èÁ¤º¸ ÇÏ³ª¶óµµ ¾øÀ¸¸é : S = Defalut selectivity
  *
  *        2. Etc : S = Defalut selectivity
  *           ex) t1.i1 > t2.i1, t1.i1=t2.i1+1,
- *               1=t1.i1 or t2.i1=1 ì—ì„œ ê° unit predicate
+ *               1=t1.i1 or t2.i1=1 ¿¡¼­ °¢ unit predicate
  *
  *****************************************************************************/
 
@@ -5509,7 +5557,7 @@ qmoSelectivity::getUnitSelectivity4Anti( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::getUnitSelectivity4Anti::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement   != NULL );
@@ -5521,7 +5569,7 @@ qmoSelectivity::getUnitSelectivity4Anti( qcStatement  * aStatement,
     IDE_DASSERT( ( aCompareNode->lflag & QTC_NODE_COLUMN_RID_MASK ) == QTC_NODE_COLUMN_RID_ABSENT );
 
     //--------------------------------------
-    // Unit selectivity ê³„ì‚°
+    // Unit selectivity °è»ê
     //--------------------------------------
 
     sLeftNode = (qtcNode *)(aCompareNode->node.arguments);
@@ -5531,7 +5579,7 @@ qmoSelectivity::getUnitSelectivity4Anti( qcStatement  * aStatement,
         ( QTC_IS_COLUMN( aStatement, sLeftNode ) == ID_TRUE ) &&
         ( QTC_IS_COLUMN( aStatement, sRightNode ) == ID_TRUE ) )
     {
-        // 1. One column = One column í˜•íƒœ : t1.i1=t2.i1
+        // 1. One column = One column ÇüÅÂ : t1.i1=t2.i1
 
         sLeftStatInfo =
             QC_SHARED_TMPLATE(aStatement)->tableMap[sLeftNode->node.table].
@@ -5544,7 +5592,7 @@ qmoSelectivity::getUnitSelectivity4Anti( qcStatement  * aStatement,
         if( ( sLeftStatInfo->isValidStat == ID_TRUE ) &&
             ( sRightStatInfo->isValidStat == ID_TRUE ) )
         {
-            // 1.1. ì–‘ ìª½ ì»¬ëŸ¼ í†µê³„ì •ë³´ ëª¨ë‘ ìˆìœ¼ë©´
+            // 1.1. ¾ç ÂÊ ÄÃ·³ Åë°èÁ¤º¸ ¸ğµÎ ÀÖÀ¸¸é
             IDE_TEST( getUnitSelectivity4Semi( aStatement,
                                                aGraph,
                                                aLeftDepInfo,
@@ -5557,14 +5605,14 @@ qmoSelectivity::getUnitSelectivity4Anti( qcStatement  * aStatement,
         }
         else
         {
-            // 1.2. ì–‘ ìª½ ì»¬ëŸ¼ í†µê³„ì •ë³´ í•˜ë‚˜ë¼ë„ ì—†ìœ¼ë©´
+            // 1.2. ¾ç ÂÊ ÄÃ·³ Åë°èÁ¤º¸ ÇÏ³ª¶óµµ ¾øÀ¸¸é
             sSelectivity = aCompareNode->node.module->selectivity;
         }
     }
     else
     {
         // 2. Etc : t1.i1 > t2.i1, t1.i1=t2.i1+1,
-        //          1=t1.i1 or t2.i1=1 ì—ì„œ ê° unit predicate
+        //          1=t1.i1 or t2.i1=1 ¿¡¼­ °¢ unit predicate
         sSelectivity = aCompareNode->node.module->selectivity;
     }
 
@@ -5591,22 +5639,22 @@ qmoSelectivity::getUnitSelectivity4Semi( qcStatement  * aStatement,
 {
 /******************************************************************************
  *
- * Description : Join ê´€ë ¨ qmoPredicate ì˜ í•˜ìœ„ unit predicate ì— ëŒ€í•´
- *               unit semi join selectivity ë°˜í™˜
+ * Description : Join °ü·Ã qmoPredicate ÀÇ ÇÏÀ§ unit predicate ¿¡ ´ëÇØ
+ *               unit semi join selectivity ¹İÈ¯
  *
  * Implementation :
  *
- *   1. One column = One column í˜•íƒœ
+ *   1. One column = One column ÇüÅÂ
  *      ex) t1.i1=t2.i1
- *   1.1. ì–‘ ìª½ ì»¬ëŸ¼ í†µê³„ì •ë³´ ëª¨ë‘ ìˆìœ¼ë©´
+ *   1.1. ¾ç ÂÊ ÄÃ·³ Åë°èÁ¤º¸ ¸ğµÎ ÀÖÀ¸¸é
  *      - Left semi join selectivity = Right NDV / MAX( Left NDV, Right NDV )
  *      - Right semi join selectivity = Left NDV / MAX( Left NDV, Right NDV )
- *   1.2. ì–‘ ìª½ ì»¬ëŸ¼ í†µê³„ì •ë³´ í•˜ë‚˜ë¼ë„ ì—†ìœ¼ë©´
+ *   1.2. ¾ç ÂÊ ÄÃ·³ Åë°èÁ¤º¸ ÇÏ³ª¶óµµ ¾øÀ¸¸é
  *        Semi join selectivity = Defalut selectivity
  *
  *   2. Etc : Semi join selectivity = Default selectivity
  *      ex) t1.i1 > t2.i1, t1.i1=t2.i1+1,
- *          1=t1.i1 or t2.i1=1 ì—ì„œ ê° unit predicate
+ *          1=t1.i1 or t2.i1=1 ¿¡¼­ °¢ unit predicate
  *
  *****************************************************************************/
 
@@ -5622,7 +5670,7 @@ qmoSelectivity::getUnitSelectivity4Semi( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::getUnitSelectivity4Semi::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aStatement   != NULL );
@@ -5634,7 +5682,7 @@ qmoSelectivity::getUnitSelectivity4Semi( qcStatement  * aStatement,
     IDE_DASSERT( ( aCompareNode->lflag & QTC_NODE_COLUMN_RID_MASK ) == QTC_NODE_COLUMN_RID_ABSENT );
 
     //--------------------------------------
-    // Unit selectivity ê³„ì‚°
+    // Unit selectivity °è»ê
     //--------------------------------------
 
     sLeftNode = (qtcNode *)(aCompareNode->node.arguments);
@@ -5644,7 +5692,7 @@ qmoSelectivity::getUnitSelectivity4Semi( qcStatement  * aStatement,
         ( QTC_IS_COLUMN( aStatement, sLeftNode ) == ID_TRUE ) &&
         ( QTC_IS_COLUMN( aStatement, sRightNode ) == ID_TRUE ) )
     {
-        // 1. One column = One column í˜•íƒœ : t1.i1=t2.i1
+        // 1. One column = One column ÇüÅÂ : t1.i1=t2.i1
 
         if ( qtc::dependencyContains( aLeftDepInfo,
                                       & sLeftNode->depInfo ) == ID_TRUE )
@@ -5657,7 +5705,7 @@ qmoSelectivity::getUnitSelectivity4Semi( qcStatement  * aStatement,
             sRightNode = (qtcNode *)(aCompareNode->node.arguments);
         }
 
-        // í†µê³„ì •ë³´ íšë“
+        // Åë°èÁ¤º¸ È¹µæ
         sLeftStatInfo =
             QC_SHARED_TMPLATE(aStatement)->tableMap[sLeftNode->node.table].
             from->tableRef->statInfo;
@@ -5669,7 +5717,7 @@ qmoSelectivity::getUnitSelectivity4Semi( qcStatement  * aStatement,
         if( ( sLeftStatInfo->isValidStat == ID_TRUE ) &&
             ( sRightStatInfo->isValidStat == ID_TRUE ) )
         {
-            // 1.1. ì–‘ ìª½ ì»¬ëŸ¼ í†µê³„ì •ë³´ ëª¨ë‘ ìˆìœ¼ë©´
+            // 1.1. ¾ç ÂÊ ÄÃ·³ Åë°èÁ¤º¸ ¸ğµÎ ÀÖÀ¸¸é
 
             sLeftSelectivity = getEnhanceSelectivity4Join(
                                         aStatement,
@@ -5698,14 +5746,14 @@ qmoSelectivity::getUnitSelectivity4Semi( qcStatement  * aStatement,
         }
         else
         {
-            // 1.2. ì–‘ ìª½ ì»¬ëŸ¼ í†µê³„ì •ë³´ í•˜ë‚˜ë¼ë„ ì—†ìœ¼ë©´
+            // 1.2. ¾ç ÂÊ ÄÃ·³ Åë°èÁ¤º¸ ÇÏ³ª¶óµµ ¾øÀ¸¸é
             sSelectivity = aCompareNode->node.module->selectivity;
         }
     }
     else
     {
         // 2. Etc : t1.i1 > t2.i1, t1.i1=t2.i1+1,
-        //          1=t1.i1 or t2.i1=1 ì—ì„œ ê° unit predicate
+        //          1=t1.i1 or t2.i1=1 ¿¡¼­ °¢ unit predicate
         sSelectivity = aCompareNode->node.module->selectivity;
     }
 
@@ -5727,22 +5775,22 @@ qmoSelectivity::getSelectivity4JoinOrder( qcStatement  * aStatement,
 {
 /******************************************************************************
  *
- * Description : Join ordering ì— ì‚¬ìš©ë˜ëŠ” joinOrderFactor ë¥¼ êµ¬í•˜ê¸° ìœ„í•œ
- *               join selectivity ë°˜í™˜
+ * Description : Join ordering ¿¡ »ç¿ëµÇ´Â joinOrderFactor ¸¦ ±¸ÇÏ±â À§ÇÑ
+ *               join selectivity ¹İÈ¯
  *
  * Implementation :
  *
- *       - Join ordering ì˜ ëŒ€ìƒì€ ìµœì í™” ì´ì „ì´ë¯€ë¡œ predicate ë¯¸êµ¬ë¶„ ìƒíƒœ
- *       - Join ordering ì˜ ëŒ€ìƒì€ ëª¨ë‘ qmgJoin ì´ì–´ì•¼ í•˜ë‚˜
- *         joinOrderFactor ë¥¼ êµ¬í•˜ëŠ” ê³¼ì •ì—ì„œ ìì‹ ë…¸ë“œê°€ outer join ì¼ ê²½ìš°
- *         ìì‹ ë…¸ë“œì˜ joinOrderFactor ë¥¼ ì´ìš©í•˜ë¯€ë¡œ
- *         PROJ-2242 ë°˜ì˜ì „ ê¸°ì¡´ì½”ë“œë¥¼ ìœ ì§€í•œë‹¤.
- *         => join ordering ê°œì„ ì‹œ ê³ ë ¤í•˜ëŠ” ê²ƒì´ ì¢‹ì„ ë“¯ í•©ë‹ˆë‹¤.
+ *       - Join ordering ÀÇ ´ë»óÀº ÃÖÀûÈ­ ÀÌÀüÀÌ¹Ç·Î predicate ¹Ì±¸ºĞ »óÅÂ
+ *       - Join ordering ÀÇ ´ë»óÀº ¸ğµÎ qmgJoin ÀÌ¾î¾ß ÇÏ³ª
+ *         joinOrderFactor ¸¦ ±¸ÇÏ´Â °úÁ¤¿¡¼­ ÀÚ½Ä ³ëµå°¡ outer join ÀÏ °æ¿ì
+ *         ÀÚ½Ä ³ëµåÀÇ joinOrderFactor ¸¦ ÀÌ¿ëÇÏ¹Ç·Î
+ *         PROJ-2242 ¹İ¿µÀü ±âÁ¸ÄÚµå¸¦ À¯ÁöÇÑ´Ù.
+ *         => join ordering °³¼±½Ã °í·ÁÇÏ´Â °ÍÀÌ ÁÁÀ» µí ÇÕ´Ï´Ù.
  *
- *       1. Join selectivity íšë“
+ *       1. Join selectivity È¹µæ
  *          S = PRODUCT( qmoPredicate.mySelectivity for current graph depinfo )
- *       2. Join selectivity ë³´ì •
- *          child graph ê°€ SELECTION, PARTITION ì¼ ê²½ìš°ì— í•œí•¨
+ *       2. Join selectivity º¸Á¤
+ *          child graph °¡ SELECTION, PARTITION ÀÏ °æ¿ì¿¡ ÇÑÇÔ
  *
  *****************************************************************************/
 
@@ -5761,7 +5809,7 @@ qmoSelectivity::getSelectivity4JoinOrder( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::getSelectivity4JoinOrder::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -5769,7 +5817,7 @@ qmoSelectivity::getSelectivity4JoinOrder( qcStatement  * aStatement,
     IDE_DASSERT( aJoinPred  != NULL );
 
     //------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //------------------------------------------
 
     sJoinPred  = aJoinPred;
@@ -5780,14 +5828,14 @@ qmoSelectivity::getSelectivity4JoinOrder( qcStatement  * aStatement,
     sOneTableSelectivity = 1;
 
     //------------------------------------------
-    // Selectivity ê³„ì‚°
-    // - qmgJOIN.graph ì˜ ìµœì í™” ì´ì „ì´ë¯€ë¡œ predicate ë¯¸êµ¬ë¶„ ìƒíƒœ
+    // Selectivity °è»ê
+    // - qmgJOIN.graph ÀÇ ÃÖÀûÈ­ ÀÌÀüÀÌ¹Ç·Î predicate ¹Ì±¸ºĞ »óÅÂ
     //------------------------------------------
 
     while( sJoinPred != NULL )
     {
         // To Fix PR-8005
-        // Join Predicateì˜ Dependenciesë¥¼ ë„˜ê²¨ì•¼ í•¨.
+        // Join PredicateÀÇ Dependencies¸¦ ³Ñ°Ü¾ß ÇÔ.
         IDE_TEST( qmo::currentJoinDependencies4JoinOrder( aJoinGraph,
                                                           & sJoinPred->node->depInfo,
                                                           & sIsCurrent )
@@ -5795,7 +5843,7 @@ qmoSelectivity::getSelectivity4JoinOrder( qcStatement  * aStatement,
 
         if ( sIsCurrent == ID_TRUE )
         {
-            // í˜„ì¬ Join Graphì˜ join predicateì¸ ê²½ìš°
+            // ÇöÀç Join GraphÀÇ join predicateÀÎ °æ¿ì
             sJoinSelectivity *= sJoinPred->mySelectivity;
         }
         else
@@ -5807,10 +5855,10 @@ qmoSelectivity::getSelectivity4JoinOrder( qcStatement  * aStatement,
     }
 
     //------------------------------------------
-    // Selectivity ë³´ì •
+    // Selectivity º¸Á¤
     //------------------------------------------
     // PROJ-1502 PARTITIONED DISK TABLE
-    // partitioned tableì— ëŒ€í•œ selectivityë„ ë³´ì •.
+    // partitioned table¿¡ ´ëÇÑ selectivityµµ º¸Á¤.
 
     if ( ( aJoinGraph->left->type == QMG_SELECTION ) ||
          ( aJoinGraph->left->type == QMG_PARTITION ) )
@@ -5895,8 +5943,8 @@ qmoSelectivity::getSelectivity4JoinOrder( qcStatement  * aStatement,
     }
 
     //------------------------------------------
-    // Left Outer Joinê³¼ Full Outer Joinì¸ ê²½ìš°,
-    // on Condition CNFì˜ one table predicateë„ ê³±í•´ì•¼ í•¨
+    // Left Outer Join°ú Full Outer JoinÀÎ °æ¿ì,
+    // on Condition CNFÀÇ one table predicateµµ °öÇØ¾ß ÇÔ
     //------------------------------------------
 
     switch( aJoinGraph->type )
@@ -5917,7 +5965,7 @@ qmoSelectivity::getSelectivity4JoinOrder( qcStatement  * aStatement,
             break;
     }
 
-    // ON ì ˆì— ëŒ€í•œ one table predicate selectivity íšë“
+    // ON Àı¿¡ ´ëÇÑ one table predicate selectivity È¹µæ
     IDE_TEST( getMySelectivity4PredList( sOneTablePred,
                                          & sOneTableSelectivity )
               != IDE_SUCCESS );
@@ -5944,21 +5992,21 @@ qmoSelectivity::getReviseSelectivity4JoinOrder(
 {
 /***********************************************************************
  *
- * Description : Join ordering ì— ì‚¬ìš©ë˜ëŠ” joinOrderFactor ë¥¼ êµ¬í•˜ê¸° ìœ„í•œ
- *               join selectivity ì˜ ë³´ì •ê°’ ë°˜í™˜
+ * Description : Join ordering ¿¡ »ç¿ëµÇ´Â joinOrderFactor ¸¦ ±¸ÇÏ±â À§ÇÑ
+ *               join selectivity ÀÇ º¸Á¤°ª ¹İÈ¯
  *
  * Implementation :
- *    (1) Selectivity ë³´ì • ì—¬ë¶€ ê²€ì‚¬
- *        A. Composite Indexì¸ ê²½ìš°
- *        B. Indexì˜ ê° ì¹¼ëŸ¼ì´ Predicateì— ëª¨ë‘ ì¡´ì¬í•˜ê³  ê·¸ predicateì´ ë“±í˜¸ì¸
- *           ê²½ìš°
- *    (2) Selectivity ë³´ì •
- *        A. ê° Join Predicateì— ëŒ€í•˜ì—¬ ë‹¤ìŒì„ ìˆ˜í–‰í•œë‹¤.
- *           - ë³´ì •ì´ í•„ìš”í•œ ì¹¼ëŸ¼ì¸ ê²½ìš° : nothing to do
- *           - ë³´ì •ì´ í•„ìš”ì—†ëŠ” ì¹¼ëŸ¼ì¸ ê²½ìš°
- *             sSelectivity = sSelectivity * í˜„ì¬ Predicateì˜ selectivity
- *        C. ë³´ì •ì´ í•„ìš”í•œ ì¹¼ëŸ¼ì´ í•˜ë‚˜ë¼ë„ ì¡´ì¬í•œ ê²½ìš°
- *           sSelectivity = sSelectivity * (1/composite indexì˜ cardinality)
+ *    (1) Selectivity º¸Á¤ ¿©ºÎ °Ë»ç
+ *        A. Composite IndexÀÎ °æ¿ì
+ *        B. IndexÀÇ °¢ Ä®·³ÀÌ Predicate¿¡ ¸ğµÎ Á¸ÀçÇÏ°í ±× predicateÀÌ µîÈ£ÀÎ
+ *           °æ¿ì
+ *    (2) Selectivity º¸Á¤
+ *        A. °¢ Join Predicate¿¡ ´ëÇÏ¿© ´ÙÀ½À» ¼öÇàÇÑ´Ù.
+ *           - º¸Á¤ÀÌ ÇÊ¿äÇÑ Ä®·³ÀÎ °æ¿ì : nothing to do
+ *           - º¸Á¤ÀÌ ÇÊ¿ä¾ø´Â Ä®·³ÀÎ °æ¿ì
+ *             sSelectivity = sSelectivity * ÇöÀç PredicateÀÇ selectivity
+ *        C. º¸Á¤ÀÌ ÇÊ¿äÇÑ Ä®·³ÀÌ ÇÏ³ª¶óµµ Á¸ÀçÇÑ °æ¿ì
+ *           sSelectivity = sSelectivity * (1/composite indexÀÇ cardinality)
  *
  ***********************************************************************/
 
@@ -5977,17 +6025,17 @@ qmoSelectivity::getReviseSelectivity4JoinOrder(
     IDU_FIT_POINT_FATAL( "qmoSelectivity::getReviseSelectivity4JoinOrder::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement    != NULL );
     IDE_DASSERT( aJoinGraph    != NULL );
-    IDE_DASSERT( aChildDepInfo != NULL ); // ë³´ì • ëŒ€ìƒ qmgSelection or qmgPartition
+    IDE_DASSERT( aChildDepInfo != NULL ); // º¸Á¤ ´ë»ó qmgSelection or qmgPartition
     IDE_DASSERT( aIdxCardInfo  != NULL );
     IDE_DASSERT( aPredicate    != NULL );
 
     //------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //------------------------------------------
 
     sKeyCols           = aIdxCardInfo->index->keyColumns;
@@ -5997,7 +6045,7 @@ qmoSelectivity::getReviseSelectivity4JoinOrder(
     sIsCurrent         = ID_FALSE;
 
     //------------------------------------------
-    // Join Predicate ì´ˆê¸°í™”
+    // Join Predicate ÃÊ±âÈ­
     //------------------------------------------
 
     for ( sCurPred = aPredicate; sCurPred != NULL; sCurPred = sCurPred->next )
@@ -6007,20 +6055,20 @@ qmoSelectivity::getReviseSelectivity4JoinOrder(
 
 
     //------------------------------------------
-    // Selectivity ë³´ì • ì—¬ë¶€ ê²€ì‚¬
+    // Selectivity º¸Á¤ ¿©ºÎ °Ë»ç
     //------------------------------------------
 
     if ( sKeyColCnt >= 2 )
     {
         //------------------------------------------
-        // Composite Index ì¸ ê²½ìš°
+        // Composite Index ÀÎ °æ¿ì
         //------------------------------------------
 
         for ( i = 0; i < sKeyColCnt; i++ )
         {
             //------------------------------------------
-            // Indexì˜ ê° ì¹¼ëŸ¼ì´ Predicateì— ì¡´ì¬í•˜ê³ ,
-            // ê·¸ Predicateì´ ë“±í˜¸ì¸ì§€ ê²€ì‚¬
+            // IndexÀÇ °¢ Ä®·³ÀÌ Predicate¿¡ Á¸ÀçÇÏ°í,
+            // ±× PredicateÀÌ µîÈ£ÀÎÁö °Ë»ç
             //------------------------------------------
 
             sExistCommonID = ID_FALSE;
@@ -6038,13 +6086,13 @@ qmoSelectivity::getReviseSelectivity4JoinOrder(
 
                 if ( sIsCurrent == ID_FALSE )
                 {
-                    // í˜„ì¬ predicateì´ í•´ë‹¹ Joinì˜ join predicateì´ ì•„ë‹ˆë©´
-                    // selectivity ê³„ì‚°ì— í¬í•¨ì‹œí‚¤ì§€ ì•ŠìŒ
-                    // ë”°ë¼ì„œ, nothing to do
+                    // ÇöÀç predicateÀÌ ÇØ´ç JoinÀÇ join predicateÀÌ ¾Æ´Ï¸é
+                    // selectivity °è»ê¿¡ Æ÷ÇÔ½ÃÅ°Áö ¾ÊÀ½
+                    // µû¶ó¼­, nothing to do
                 }
                 else
                 {
-                    // í˜„ì¬ qmgJoinì˜ joinPredicateì˜ columnID
+                    // ÇöÀç qmgJoinÀÇ joinPredicateÀÇ columnID
                     IDE_TEST( qmoPred::setColumnIDToJoinPred( aStatement,
                                                               sCurPred,
                                                               aChildDepInfo )
@@ -6054,40 +6102,40 @@ qmoSelectivity::getReviseSelectivity4JoinOrder(
 
                     if ( sIdxKeyColID == sColumnID )
                     {
-                        // í˜„ ì¹¼ëŸ¼ IDì™€ ë™ì¼
+                        // Çö Ä®·³ ID¿Í µ¿ÀÏ
                         IDE_TEST( isEqualPredicate( sCurPred,
                                                     & sIsEqualPredicate )
                                   != IDE_SUCCESS );
 
                         if ( sIsEqualPredicate == ID_TRUE )
                         {
-                            // Predicateì´ ë“±í˜¸
+                            // PredicateÀÌ µîÈ£
                             sExistCommonID = ID_TRUE;
                             sCurPred->flag &= ~QMO_PRED_USABLE_COMP_IDX_MASK;
                             sCurPred->flag |= QMO_PRED_USABLE_COMP_IDX_TRUE;
                         }
                         else
                         {
-                            // Predicateì´ ë“±í˜¸ê°€ ì•„ë‹˜ : nothing to do
+                            // PredicateÀÌ µîÈ£°¡ ¾Æ´Ô : nothing to do
                         }
                     }
                     else
                     {
-                        // í˜„ ì¹¼ëŸ¼ IDì™€ í‹€ë¦¼ : nothing to do
+                        // Çö Ä®·³ ID¿Í Æ²¸² : nothing to do
                     }
                 }
             }
             if ( sExistCommonID == ID_TRUE )
             {
-                // ì¸ë±ìŠ¤ì˜ í˜„ì¬ ì¹¼ëŸ¼ê³¼ ë™ì¼í•œ columnì´ join predicateì—
-                // ì¡´ì¬í•˜ë©´, ë‹¤ìŒ ì¹¼ëŸ¼ìœ¼ë¡œ ì§„í–‰
+                // ÀÎµ¦½ºÀÇ ÇöÀç Ä®·³°ú µ¿ÀÏÇÑ columnÀÌ join predicate¿¡
+                // Á¸ÀçÇÏ¸é, ´ÙÀ½ Ä®·³À¸·Î ÁøÇà
             }
             else
             {
-                // Predicate ë“¤ ì¤‘ì—ì„œ ì¸ë±ìŠ¤ì˜ í˜„ì¬ columnê³¼ ë™ì¼í•œ ì¹¼ëŸ¼ì„
-                // ê°€ì§€ëŠ” ë“±í˜¸ Predicateì´ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´ composite indexì˜
-                // ëª¨ë“  columnì— ëŒ€í•˜ì—¬ Predicateì´ ìˆëŠ” ê²½ìš°ë¼ëŠ” ì¡°ê±´ì„
-                // ìœ„ë°°í•˜ë¯€ë¡œ Selectivity ë³´ì •í•  ìˆ˜ ì—†ìŒ
+                // Predicate µé Áß¿¡¼­ ÀÎµ¦½ºÀÇ ÇöÀç column°ú µ¿ÀÏÇÑ Ä®·³À»
+                // °¡Áö´Â µîÈ£ PredicateÀÌ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é composite indexÀÇ
+                // ¸ğµç column¿¡ ´ëÇÏ¿© PredicateÀÌ ÀÖ´Â °æ¿ì¶ó´Â Á¶°ÇÀ»
+                // À§¹èÇÏ¹Ç·Î Selectivity º¸Á¤ÇÒ ¼ö ¾øÀ½
                 sIsRevise = ID_FALSE;
                 break;
             }
@@ -6096,18 +6144,18 @@ qmoSelectivity::getReviseSelectivity4JoinOrder(
     else
     {
         //------------------------------------------
-        // Composite Index ê°€ ì•„ë‹Œ ê²½ìš° : selectivity ë³´ì • í•„ìš”ì—†ìŒ
+        // Composite Index °¡ ¾Æ´Ñ °æ¿ì : selectivity º¸Á¤ ÇÊ¿ä¾øÀ½
         //------------------------------------------
     }
 
 
     //------------------------------------------
-    // ë³´ì • ì—¬ë¶€ì— ë”°ë¥¸ Selectivity ê³„ì‚°
+    // º¸Á¤ ¿©ºÎ¿¡ µû¸¥ Selectivity °è»ê
     //------------------------------------------
 
     if ( sIsRevise == ID_TRUE )
     {
-        // Selectivity ë³´ì • í•„ìš”í•¨
+        // Selectivity º¸Á¤ ÇÊ¿äÇÔ
         for ( sCurPred  = aPredicate;
               sCurPred != NULL;
               sCurPred  = sCurPred->next )
@@ -6131,16 +6179,16 @@ qmoSelectivity::getReviseSelectivity4JoinOrder(
             }
             else
             {
-                // í˜„ì¬ predicateì´ í•´ë‹¹ Joinì˜ join predicateì´ ì•„ë‹ˆë©´
-                // selectivity ê³„ì‚°ì— í¬í•¨ì‹œí‚¤ì§€ ì•ŠìŒ
-                // ë”°ë¼ì„œ, nothing to do
+                // ÇöÀç predicateÀÌ ÇØ´ç JoinÀÇ join predicateÀÌ ¾Æ´Ï¸é
+                // selectivity °è»ê¿¡ Æ÷ÇÔ½ÃÅ°Áö ¾ÊÀ½
+                // µû¶ó¼­, nothing to do
             }
         }
         sSelectivity *= ( 1 / aIdxCardInfo->KeyNDV);
     }
     else
     {
-        // Selectivity ë³´ì • í•„ìš” ì—†ìŒ : nothing to do
+        // Selectivity º¸Á¤ ÇÊ¿ä ¾øÀ½ : nothing to do
     }
 
     *aSelectivity = sSelectivity;
@@ -6163,11 +6211,11 @@ qmoSelectivity::isEqualPredicate( qmoPredicate * aPredicate,
 {
 /***********************************************************************
  *
- * Description : = Predicate ì¸ì§€ ê²€ì‚¬
+ * Description : = Predicate ÀÎÁö °Ë»ç
  *
  * Implementation :
- *    (1) OR Predicate ê²€ì‚¬
- *    (2) OR Predicateì´ ì•„ë‹Œ ê²½ìš°, = Predicate ê²€ì‚¬
+ *    (1) OR Predicate °Ë»ç
+ *    (2) OR PredicateÀÌ ¾Æ´Ñ °æ¿ì, = Predicate °Ë»ç
  *
  *     ex )
  *         < OR Predicate >
@@ -6197,7 +6245,7 @@ qmoSelectivity::isEqualPredicate( qmoPredicate * aPredicate,
     sIsOrPredicate = ID_FALSE;
     sNode = &aPredicate->node->node;
 
-    // Or Predicateì¸ì§€ ê²€ì‚¬
+    // Or PredicateÀÎÁö °Ë»ç
     if ( ( sNode->lflag & MTC_NODE_OPERATOR_MASK ) == MTC_NODE_OPERATOR_OR )
     {
         if ( sNode->arguments->next == NULL )
@@ -6241,13 +6289,13 @@ IDE_RC qmoSelectivity::setSetRecursiveOutputCnt( SDouble   aLeftOutputRecordCnt,
 /******************************************************************************
  *
  * Description : PROJ-2582 recursvie with
- *      qmgSetRecursive ì— ëŒ€í•œ outputRecordCnt ê³„ì‚°
+ *      qmgSetRecursive ¿¡ ´ëÇÑ outputRecordCnt °è»ê
  *
  * Implementation :
  *
- *     1. outputRecordCnt íšë“
- *         left outputRecordCntëŠ” ë ˆì½”ë“œ ê°œìˆ˜ ë§Œí¼ ìŒ“ì¸ë‹¤.
- *         right outputRecordCntëŠ” leftì˜ ë ˆì½”ë“œ ê°œìˆ˜ ë§Œí¼ recursive í•˜ê²Œ ìˆ˜í–‰ ëœë‹¤.
+ *     1. outputRecordCnt È¹µæ
+ *         left outputRecordCnt´Â ·¹ÄÚµå °³¼ö ¸¸Å­ ½×ÀÎ´Ù.
+ *         right outputRecordCnt´Â leftÀÇ ·¹ÄÚµå °³¼ö ¸¸Å­ recursive ÇÏ°Ô ¼öÇà µÈ´Ù.
  *
  *         recursive selectivity = T(R) / T(L) = S
  *
@@ -6255,7 +6303,7 @@ IDE_RC qmoSelectivity::setSetRecursiveOutputCnt( SDouble   aLeftOutputRecordCnt,
  *                             = T(L) + S * T(L) + S^2 * T(L) + S^3 * T(L) + ...
  *                             = T(L) * T(L) / ( T(L) - T(R) )
  *
- *     2. outputRecordCnt ìµœì†Œê°’ ë³´ì •
+ *     2. outputRecordCnt ÃÖ¼Ò°ª º¸Á¤
  *
  *****************************************************************************/
 
@@ -6266,7 +6314,7 @@ IDE_RC qmoSelectivity::setSetRecursiveOutputCnt( SDouble   aLeftOutputRecordCnt,
     IDU_FIT_POINT_FATAL( "qmoSelectivity::setSetRecursiveOutputCnt::__FT__" );
 
     //--------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //--------------------------------------
 
     IDE_DASSERT( aOutputRecordCnt != NULL );
@@ -6274,15 +6322,15 @@ IDE_RC qmoSelectivity::setSetRecursiveOutputCnt( SDouble   aLeftOutputRecordCnt,
     IDE_DASSERT( aRightOutputRecordCnt > 0 );
 
     //--------------------------------------
-    // LeftOutputRecordCnt, RightOutputRecordCnt ë³´ì •
+    // LeftOutputRecordCnt, RightOutputRecordCnt º¸Á¤
     //--------------------------------------
 
     sLeftOutputRecordCnt  = aLeftOutputRecordCnt;
     sRightOutputRecordCnt = aRightOutputRecordCnt;
 
-    // Rì´ ë” í° ê²½ìš°ëŠ” ë¬´í•œë°˜ë³µí•˜ëŠ” ê²½ìš°ë¡œ ë³´ê³ 
-    // Rì´ ë” ì‘ì€ ê²½ìš°ì— ëŒ€í•´ì„œë§Œ ì˜ˆì¸¡í•˜ë„ë¡ í•œë‹¤.
-    // Rì´ ë” ì‘ë„ë¡ ë³´ì •í•˜ì—¬ ì˜ˆì¸¡í•œë‹¤.
+    // RÀÌ ´õ Å« °æ¿ì´Â ¹«ÇÑ¹İº¹ÇÏ´Â °æ¿ì·Î º¸°í
+    // RÀÌ ´õ ÀÛÀº °æ¿ì¿¡ ´ëÇØ¼­¸¸ ¿¹ÃøÇÏµµ·Ï ÇÑ´Ù.
+    // RÀÌ ´õ ÀÛµµ·Ï º¸Á¤ÇÏ¿© ¿¹ÃøÇÑ´Ù.
     if ( sLeftOutputRecordCnt <= sRightOutputRecordCnt )
     {
         sRightOutputRecordCnt = sLeftOutputRecordCnt * 0.9;
@@ -6293,14 +6341,14 @@ IDE_RC qmoSelectivity::setSetRecursiveOutputCnt( SDouble   aLeftOutputRecordCnt,
     }
     
     //--------------------------------------
-    // outputRecordCnt ê³„ì‚°
+    // outputRecordCnt °è»ê
     //--------------------------------------
     
-    // 1. outputRecordCnt íšë“
+    // 1. outputRecordCnt È¹µæ
     sOutputRecordCnt = sLeftOutputRecordCnt * sLeftOutputRecordCnt /
         ( sLeftOutputRecordCnt - sRightOutputRecordCnt );
 
-    // 2. outputRecordCnt ìµœì†Œê°’ ë³´ì •
+    // 2. outputRecordCnt ÃÖ¼Ò°ª º¸Á¤
     if ( sOutputRecordCnt < 1 )
     {
         *aOutputRecordCnt = 1;

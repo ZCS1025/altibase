@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smmDirtyPageMgr.cpp 84383 2018-11-20 04:18:42Z emlee $
+ * $Id: smmDirtyPageMgr.cpp 90085 2021-02-26 02:14:29Z et16 $
  **********************************************************************/
 
 #include <idl.h>
@@ -68,7 +68,7 @@ IDE_RC smmDirtyPageMgr::initialize(scSpaceID aSpaceID , SInt a_listCount)
 }
 
 /*
-    ëª¨ë“  Dirty Page Listë“¤ë¡œë¶€í„° Dirty Pageë“¤ì„ ì œê±°í•œë‹¤.
+    ¸ğµç Dirty Page Listµé·ÎºÎÅÍ Dirty PageµéÀ» Á¦°ÅÇÑ´Ù.
  */
 IDE_RC smmDirtyPageMgr::removeAllDirtyPages()
 {
@@ -129,7 +129,7 @@ IDE_RC smmDirtyPageMgr::lockDirtyPageList(smmDirtyPageList **a_list)
             {
                 s_break = ID_TRUE; 
                 sMutexDist = i + 1;
-                break; // íƒˆì¶œ! lockì„ ì¡ìŒ
+                break; // Å»Ãâ! lockÀ» ÀâÀ½
             }
         }
         sStart = 0;
@@ -144,9 +144,9 @@ IDE_RC smmDirtyPageMgr::lockDirtyPageList(smmDirtyPageList **a_list)
 }
 
 /*
- * Dirty Page ë¦¬ìŠ¤íŠ¸ì— ë³€ê²½ëœ Pageë¥¼ ì¶”ê°€í•œë‹¤.
+ * Dirty Page ¸®½ºÆ®¿¡ º¯°æµÈ Page¸¦ Ãß°¡ÇÑ´Ù.
  *
- * aPageID [IN] Dirty Pageë¡œ ì¶”ê°€í•  Pageì˜ ID
+ * aPageID [IN] Dirty Page·Î Ãß°¡ÇÒ PageÀÇ ID
  */
 IDE_RC smmDirtyPageMgr::insDirtyPage( scPageID aPageID )
 {
@@ -154,13 +154,16 @@ IDE_RC smmDirtyPageMgr::insDirtyPage( scPageID aPageID )
 
     smmPCH      *sPCH;
 
-    IDE_DASSERT( smmManager::isValidSpaceID( mSpaceID ) == ID_TRUE );
     IDE_DASSERT( sctTableSpaceMgr::isMemTableSpace( mSpaceID ) == ID_TRUE );
     IDE_DASSERT( smmManager::isValidPageID( mSpaceID, aPageID ) == ID_TRUE );
     
-    IDL_MEM_BARRIER; 
+    IDL_MEM_BARRIER;
+#ifdef DEBUG
+    smPCSlot *sPCSlot = smmManager::getPCHSlot( mSpaceID, aPageID );
+    sPCH              = (smmPCH*)sPCSlot->mPCH;
+#else
     sPCH = smmManager::getPCH( mSpaceID, aPageID );
-    
+#endif    
     //IDE_DASSERT( sPCH->m_page != NULL );
     
     /*
@@ -170,33 +173,33 @@ IDE_RC smmDirtyPageMgr::insDirtyPage( scPageID aPageID )
       [tx2] Free Page#1
       === CHECKPOINT ===
       server dead..
-      restart redo.. -> Page#1ì˜ PIDê°’ì´ ì œëŒ€ë¡œ ëœê°’ì„ì„ ë³´ì¥ëª»í•¨
+      restart redo.. -> Page#1ÀÇ PID°ªÀÌ Á¦´ë·Î µÈ°ªÀÓÀ» º¸Àå¸øÇÔ
       
       ------------------------------------------------------------
       
-      Pageì•ˆì˜ PIDëŠ” smm ë‹¨ì—ì„œ í…Œì´ë¸”ë¡œ Pageë¥¼ í• ë‹¹í•  ë•Œ ì„¤ì •ëœë‹¤.
+      Page¾ÈÀÇ PID´Â smm ´Ü¿¡¼­ Å×ÀÌºí·Î Page¸¦ ÇÒ´çÇÒ ¶§ ¼³Á¤µÈ´Ù.
       
-      ë§Œì•½ í˜ì´ì§€ê°€ í• ë‹¹ë˜ì—ˆë‹¤ê°€ DROP TABLEë¬¸ì— ì˜í•´ DBë¡œ ë°˜ë‚©ë˜ê³ ,
-      Checkpointê°€ ë°œìƒí•˜ë©´,í•´ë‹¹ PageëŠ” Free Pageì´ì–´ì„œ, Page ë©”ëª¨ë¦¬ì¡°ì°¨
-      ì—†ê¸° ë•Œë¬¸ì—, Diskë¡œ ë‚´ë ¤ê°€ì§€ ì•Šê²Œ ëœë‹¤.
+      ¸¸¾à ÆäÀÌÁö°¡ ÇÒ´çµÇ¾ú´Ù°¡ DROP TABLE¹®¿¡ ÀÇÇØ DB·Î ¹İ³³µÇ°í,
+      Checkpoint°¡ ¹ß»ıÇÏ¸é,ÇØ´ç Page´Â Free PageÀÌ¾î¼­, Page ¸Ş¸ğ¸®Á¶Â÷
+      ¾ø±â ¶§¹®¿¡, Disk·Î ³»·Á°¡Áö ¾Ê°Ô µÈ´Ù.
       
-      ì´ë•Œ,Page#1ì„ í• ë‹¹í•œ íŠ¸ëœì­ì…˜ tx1ì´ commití•œ íŠ¸ëœì­ì…˜ì´ë¼ë©´,
-      Redoì‹œì— tx1ì´ ê¸°ë¡í•œ logë“¤ì€ redoëŒ€ìƒìœ¼ë¡œ í¸ì…ë˜ì§€ ì•Šìœ¼ë©°,
-      Alloc Page#1ì— ëŒ€í•œ REDOê°€ ì‹¤í–‰ë˜ì§€ ì•Šê²Œ ëœë‹¤.
+      ÀÌ¶§,Page#1À» ÇÒ´çÇÑ Æ®·£Àè¼Ç tx1ÀÌ commitÇÑ Æ®·£Àè¼ÇÀÌ¶ó¸é,
+      Redo½Ã¿¡ tx1ÀÌ ±â·ÏÇÑ logµéÀº redo´ë»óÀ¸·Î ÆíÀÔµÇÁö ¾ÊÀ¸¸ç,
+      Alloc Page#1¿¡ ´ëÇÑ REDO°¡ ½ÇÇàµÇÁö ¾Ê°Ô µÈ´Ù.
       
-      ê·¸ë¦¬ê³  Page#1ì˜ ë‚´ìš©ì„ ë³€ê²½í•œ íŠ¸ëœì­ì…˜ tx2ê°€ redoë˜ë©´ì„œ
-      Page#1ì„ Dirty Pageë¡œ ì¶”ê°€í•˜ê²Œ ë  ê²½ìš°,
-      Page#1ì˜ PIDê°€ ì—‰ëš±í•œ ê°’ìœ¼ë¡œ ë˜ì–´ ìˆì„ ìˆ˜ ìˆë‹¤.
+      ±×¸®°í Page#1ÀÇ ³»¿ëÀ» º¯°æÇÑ Æ®·£Àè¼Ç tx2°¡ redoµÇ¸é¼­
+      Page#1À» Dirty Page·Î Ãß°¡ÇÏ°Ô µÉ °æ¿ì,
+      Page#1ÀÇ PID°¡ ¾û¶×ÇÑ °ªÀ¸·Î µÇ¾î ÀÖÀ» ¼ö ÀÖ´Ù.
       
-      ê·¸ëŸ¬ë‚˜, Redoê°€ ë‹¤ ëë‚œ ìƒí™©ì—ì„œëŠ” Page#1ì´ Freeë˜ê¸° ë•Œë¬¸ì—
-      ì—¬ê¸°ì— ë”ì´ìƒ ì ‘ê·¼í•  ì¼ì´ ì—†ë‹¤.
+      ±×·¯³ª, Redo°¡ ´Ù ³¡³­ »óÈ²¿¡¼­´Â Page#1ÀÌ FreeµÇ±â ¶§¹®¿¡
+      ¿©±â¿¡ ´õÀÌ»ó Á¢±ÙÇÒ ÀÏÀÌ ¾ø´Ù.
       
     */
-    // Restart Recoveryì¤‘ì—ëŠ” Page ë©”ëª¨ë¦¬ ì•ˆì˜ PIDê°’ì„ ë³´ì¥ ëª»í•œë‹¤.
+    // Restart RecoveryÁß¿¡´Â Page ¸Ş¸ğ¸® ¾ÈÀÇ PID°ªÀ» º¸Àå ¸øÇÑ´Ù.
 #ifdef DEBUG
     if ( smLayerCallback::isRestartRecoveryPhase() == ID_FALSE ) 
     {
-        IDE_DASSERT( smLayerCallback::getPersPageID( sPCH->m_page )
+        IDE_DASSERT( smLayerCallback::getPersPageID( sPCSlot->mPagePtr )
                      == aPageID );
     }
 #endif    
@@ -226,13 +229,13 @@ IDE_RC smmDirtyPageMgr::insDirtyPage( scPageID aPageID )
 }
 
 /***********************************************************************
-    ì—¬ëŸ¬ Tablespaceì— ëŒ€í•œ ì—°ì‚°ì„ ê´€ë¦¬í•˜ëŠ” ì¸í„°í˜ì´ìŠ¤
-    Refactoringì„ í†µí•´ ì¶”í›„ ë³„ë„ì˜ Classë¡œ ë¹¼ë„ë¡ í•œë‹¤.
+    ¿©·¯ Tablespace¿¡ ´ëÇÑ ¿¬»êÀ» °ü¸®ÇÏ´Â ÀÎÅÍÆäÀÌ½º
+    RefactoringÀ» ÅëÇØ ÃßÈÄ º°µµÀÇ Class·Î »©µµ·Ï ÇÑ´Ù.
  ***********************************************************************/
 
 
 /*
-    Dirty Pageê´€ë¦¬ìë¥¼ ìƒì„±í•œë‹¤.
+    Dirty Page°ü¸®ÀÚ¸¦ »ı¼ºÇÑ´Ù.
  */
 IDE_RC smmDirtyPageMgr::initializeStatic()
 {
@@ -242,7 +245,7 @@ IDE_RC smmDirtyPageMgr::initializeStatic()
 }
 
 /*
-    Dirty Pageê´€ë¦¬ìë¥¼ íŒŒê´´í•œë‹¤.
+    Dirty Page°ü¸®ÀÚ¸¦ ÆÄ±«ÇÑ´Ù.
  */
 
 IDE_RC smmDirtyPageMgr::destroyStatic()
@@ -253,10 +256,10 @@ IDE_RC smmDirtyPageMgr::destroyStatic()
 
 
 /*
- * íŠ¹ì • Tablespaceì˜ Dirty Page ë¦¬ìŠ¤íŠ¸ì— ë³€ê²½ëœ Pageë¥¼ ì¶”ê°€í•œë‹¤.
+ * Æ¯Á¤ TablespaceÀÇ Dirty Page ¸®½ºÆ®¿¡ º¯°æµÈ Page¸¦ Ãß°¡ÇÑ´Ù.
  *
- * aSpaceID [IN] Dirty Pageê°€ ì†í•œ Tablespaceì˜ ID
- * aPageID  [IN] Dirty Pageë¡œ ì¶”ê°€í•  Pageì˜ ID
+ * aSpaceID [IN] Dirty Page°¡ ¼ÓÇÑ TablespaceÀÇ ID
+ * aPageID  [IN] Dirty Page·Î Ãß°¡ÇÒ PageÀÇ ID
  */
 IDE_RC smmDirtyPageMgr::insDirtyPage( scSpaceID aSpaceID, scPageID aPageID )
 {
@@ -264,7 +267,7 @@ IDE_RC smmDirtyPageMgr::insDirtyPage( scSpaceID aSpaceID, scPageID aPageID )
 
     IDE_TEST( findDPMgr(aSpaceID, &sDPMgr ) != IDE_SUCCESS );
 
-    // í•´ë‹¹ Tablespaceì˜ Dirty Pageê´€ë¦¬ìê°€ ì—†ì–´ì„œëŠ” ì•ˆëœë‹¤.
+    // ÇØ´ç TablespaceÀÇ Dirty Page°ü¸®ÀÚ°¡ ¾ø¾î¼­´Â ¾ÈµÈ´Ù.
     IDE_ASSERT( sDPMgr != NULL );
 
     IDE_TEST( sDPMgr->insDirtyPage( aPageID ) != IDE_SUCCESS );
@@ -287,9 +290,9 @@ IDE_RC smmDirtyPageMgr::insDirtyPage(scSpaceID aSpaceID, void * a_new_page)
 }
 
 /*
-    íŠ¹ì • Tablespaceë¥¼ ìœ„í•œ Dirty Pageê´€ë¦¬ìë¥¼ ìƒì„±í•œë‹¤.
+    Æ¯Á¤ Tablespace¸¦ À§ÇÑ Dirty Page°ü¸®ÀÚ¸¦ »ı¼ºÇÑ´Ù.
 
-    [IN] aSpaceID - ìƒì„±í•˜ê³ ì í•˜ëŠ” Dirty Pageê´€ë¦¬ìê°€ ì†í•œ Tablespaceì˜ ID
+    [IN] aSpaceID - »ı¼ºÇÏ°íÀÚ ÇÏ´Â Dirty Page°ü¸®ÀÚ°¡ ¼ÓÇÑ TablespaceÀÇ ID
  */
 IDE_RC smmDirtyPageMgr::createDPMgr(smmTBSNode * aTBSNode )
 {
@@ -326,11 +329,11 @@ IDE_RC smmDirtyPageMgr::createDPMgr(smmTBSNode * aTBSNode )
 }
 
 /*
-   íŠ¹ì • Tablespaceë¥¼ ìœ„í•œ Dirty Pageê´€ë¦¬ìë¥¼ ì°¾ì•„ë‚¸ë‹¤.
-   ì•„ì§ Dirty Page ê´€ë¦¬ìê°€ ìƒì„±ë˜ì§€ ì•Šì€ ê²½ìš° NULLì´ ë¦¬í„´ëœë‹¤.
+   Æ¯Á¤ Tablespace¸¦ À§ÇÑ Dirty Page°ü¸®ÀÚ¸¦ Ã£¾Æ³½´Ù.
+   ¾ÆÁ÷ Dirty Page °ü¸®ÀÚ°¡ »ı¼ºµÇÁö ¾ÊÀº °æ¿ì NULLÀÌ ¸®ÅÏµÈ´Ù.
    
-   [IN]  aSpaceID - ì°¾ê³ ì í•˜ëŠ” DirtyPageê´€ë¦¬ìê°€ ì†í•œ Tablespaceì˜ ID
-   [OUT] aDPMgr   - ì°¾ì•„ë‚¸ Dirty Page ê´€ë¦¬ì
+   [IN]  aSpaceID - Ã£°íÀÚ ÇÏ´Â DirtyPage°ü¸®ÀÚ°¡ ¼ÓÇÑ TablespaceÀÇ ID
+   [OUT] aDPMgr   - Ã£¾Æ³½ Dirty Page °ü¸®ÀÚ
 */
 
 IDE_RC smmDirtyPageMgr::findDPMgr( scSpaceID aSpaceID,
@@ -354,9 +357,9 @@ IDE_RC smmDirtyPageMgr::findDPMgr( scSpaceID aSpaceID,
 
 
 /*
-    íŠ¹ì • Tablespaceì˜ Dirty Pageê´€ë¦¬ìë¥¼ ì œê±°í•œë‹¤.
+    Æ¯Á¤ TablespaceÀÇ Dirty Page°ü¸®ÀÚ¸¦ Á¦°ÅÇÑ´Ù.
 
-    [IN] aSpaceID - ì œê±°í•˜ê³ ì í•˜ëŠ” Dirty Pageê´€ë¦¬ìê°€ ì†í•œ Tablespace ID
+    [IN] aSpaceID - Á¦°ÅÇÏ°íÀÚ ÇÏ´Â Dirty Page°ü¸®ÀÚ°¡ ¼ÓÇÑ Tablespace ID
  */
 IDE_RC smmDirtyPageMgr::removeDPMgr( smmTBSNode * aTBSNode )
 {

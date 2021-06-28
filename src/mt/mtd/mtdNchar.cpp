@@ -174,7 +174,7 @@ mtdModule mtdNchar = {
     MTD_DATA_STORE_DIVISIBLE_TRUE|  // PROJ-1705
     MTD_DATA_STORE_MTDVALUE_FALSE|  // PROJ-1705
     MTD_PSM_TYPE_ENABLE, // PROJ-1904
-    0, // mtd::modifyNls4MtdModuleÏãúÏóê Í≤∞Ï†ïÎê®
+    0, // mtd::modifyNls4MtdModuleΩ√ø° ∞·¡§µ 
     0,
     0,
     (void*)&mtdNcharNull,
@@ -194,37 +194,37 @@ mtdModule mtdNchar = {
     {
         // Key Comparison
         {
-            // mt valueÎì§ Í∞ÑÏùò compare
+            // mt valueµÈ ∞£¿« compare
             mtdNcharFixedMtdFixedMtdKeyAscComp, // Ascending Key Comparison
             mtdNcharFixedMtdFixedMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt valueÎì§ Í∞ÑÏùò compare
+            // mt valueµÈ ∞£¿« compare
             mtdNcharMtdMtdKeyAscComp, // Ascending Key Comparison
             mtdNcharMtdMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt valueÏôÄ stored valueÍ∞ÑÏùò compare
+            // mt valueøÕ stored value∞£¿« compare
             mtdNcharStoredMtdKeyAscComp, // Ascending Key Comparison
             mtdNcharStoredMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // stored valueÎì§ Í∞ÑÏùò compare
+            // stored valueµÈ ∞£¿« compare
             mtdNcharStoredStoredKeyAscComp, // Ascending Key Comparison
             mtdNcharStoredStoredKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            /* PROJ-2433 : index Direct keyÏôÄ fixed mt valueÎì§ Í∞ÑÏùò compare */
+            /* PROJ-2433 : index Direct keyøÕ fixed mt valueµÈ ∞£¿« compare */
             mtdNcharIndexKeyFixedMtdKeyAscComp,
             mtdNcharIndexKeyFixedMtdKeyDescComp
         }
         ,
         {
-            /* PROJ-2433 : index Direct keyÏôÄ mt valueÎì§ Í∞ÑÏùò compare */
+            /* PROJ-2433 : index Direct keyøÕ mt valueµÈ ∞£¿« compare */
             mtdNcharIndexKeyMtdKeyAscComp,
             mtdNcharIndexKeyMtdKeyDescComp
         }
@@ -261,7 +261,7 @@ IDE_RC mtdInitialize( UInt aNo )
     IDE_TEST( mtd::initializeModule( &mtdNchar, aNo )
               != IDE_SUCCESS );
     
-    // mtdColumnÏùò Ï¥àÍ∏∞Ìôî
+    // mtdColumn¿« √ ±‚»≠
     IDE_TEST( mtc::initializeColumn( & mtdColumn,
                                      & mtdNchar,
                                      0,   // arguments
@@ -341,8 +341,8 @@ IDE_RC mtdValue( mtcTemplate* aTemplate,
  * Description : PROJ-1579 NCHAR
  *
  * Implementation :
- *      NCHAR Î¶¨ÌÑ∞Îü¥, Ïú†ÎãàÏΩîÎìú Î¶¨ÌÑ∞Îü¥, ÏùºÎ∞ò Î¶¨ÌÑ∞Îü¥Ïù∏ÏßÄÏóê Îî∞Îùº
- *      Îã§Î•¥Í≤å valueÎ•º Íµ¨ÌïúÎã§.
+ *      NCHAR ∏Æ≈Õ∑≤, ¿Ø¥œƒ⁄µÂ ∏Æ≈Õ∑≤, ¿œπ› ∏Æ≈Õ∑≤¿Œ¡ˆø° µ˚∂Û
+ *      ¥Ÿ∏£∞‘ value∏¶ ±∏«—¥Ÿ.
  *
  ***********************************************************************/
 
@@ -370,18 +370,18 @@ IDE_RC mtdValue( mtcTemplate* aTemplate,
     *aResult = IDE_SUCCESS;
 
     // -------------------------------------------------------------------
-    // N'Ïïà'Í≥º Í∞ôÏù¥ NCHAR Î¶¨ÌÑ∞Îü¥ÏùÑ ÏÇ¨Ïö©Ìïú Í≤ΩÏö∞,
-    // NLS_NCHAR_LITERAL_REPLACEÍ∞Ä TRUEÏùº Í≤ΩÏö∞ÏóêÎäî ÏÑúÎ≤ÑÎ°ú
-    // ÌÅ¥ÎùºÏù¥Ïñ∏Ìä∏ Ï∫êÎ¶≠ÌÑ∞ ÏÖãÏù¥ Í∑∏ÎåÄÎ°ú Ï†ÑÏÜ°ÎêúÎã§.
+    // N'æ»'∞˙ ∞∞¿Ã NCHAR ∏Æ≈Õ∑≤¿ª ªÁøÎ«— ∞ÊøÏ,
+    // NLS_NCHAR_LITERAL_REPLACE∞° TRUE¿œ ∞ÊøÏø°¥¬ º≠πˆ∑Œ
+    // ≈¨∂Û¿Ãæ∆Æ ƒ≥∏Ø≈Õ º¬¿Ã ±◊¥Î∑Œ ¿¸º€µ»¥Ÿ.
     //
-    // Îî∞ÎùºÏÑú ÌÅ¥ÎùºÏù¥Ïñ∏Ìä∏Í∞Ä Ï†ÑÏÜ°Ìï¥Ï§Ä ÌôòÍ≤Ω Î≥ÄÏàòÎ•º Î≥¥Í≥† SrcCharSetÏùÑ Í≤∞Ï†ïÌïúÎã§.
-    // 1. TRUE:  ÌÅ¥ÎùºÏù¥Ïñ∏Ìä∏ Ï∫êÎ¶≠ÌÑ∞ ÏÖã   =>  ÎÇ¥ÏÖîÎÑê Ï∫êÎ¶≠ÌÑ∞ ÏÖã
-    // 2. FALSE: Îç∞Ïù¥ÌÑ∞Î≤†Ïù¥Ïä§ Ï∫êÎ¶≠ÌÑ∞ ÏÖã =>  ÎÇ¥ÏÖîÎÑê Ï∫êÎ¶≠ÌÑ∞ ÏÖã
+    // µ˚∂Ûº≠ ≈¨∂Û¿Ãæ∆Æ∞° ¿¸º€«ÿ¡ÿ »Ø∞Ê ∫Øºˆ∏¶ ∫∏∞Ì SrcCharSet¿ª ∞·¡§«—¥Ÿ.
+    // 1. TRUE:  ≈¨∂Û¿Ãæ∆Æ ƒ≥∏Ø≈Õ º¬   =>  ≥ªº≈≥Œ ƒ≥∏Ø≈Õ º¬
+    // 2. FALSE: µ•¿Ã≈Õ∫£¿ÃΩ∫ ƒ≥∏Ø≈Õ º¬ =>  ≥ªº≈≥Œ ƒ≥∏Ø≈Õ º¬
     //
-    // ÌååÏã± Îã®Í≥ÑÏóêÏÑú Ïù¥ ÌôòÍ≤Ω Î≥ÄÏàòÍ∞Ä TRUEÏùº Í≤ΩÏö∞ÏóêÎßå NCHAR Î¶¨ÌÑ∞Îü¥Î°ú Ï≤òÎ¶¨ÎêòÎØÄÎ°ú
-    // Ïó¨Í∏∞ÏÑú ÌôòÍ≤Ω Î≥ÄÏàòÎ•º Îã§Ïãú Ï≤¥ÌÅ¨Ìï† ÌïÑÏöîÎäî ÏóÜÎã§.
+    // ∆ƒΩÃ ¥‹∞Ëø°º≠ ¿Ã »Ø∞Ê ∫Øºˆ∞° TRUE¿œ ∞ÊøÏø°∏∏ NCHAR ∏Æ≈Õ∑≤∑Œ √≥∏Æµ«π«∑Œ
+    // ø©±‚º≠ »Ø∞Ê ∫Øºˆ∏¶ ¥ŸΩ√ √º≈©«“ « ø‰¥¬ æ¯¥Ÿ.
     // 
-    // aTemplate->nlsUseÎäî ÌÅ¥ÎùºÏù¥Ïñ∏Ìä∏ Ï∫êÎ¶≠ÌÑ∞ ÏÖãÏù¥Îã§.(ALTIBASE_NLS_USE)
+    // aTemplate->nlsUse¥¬ ≈¨∂Û¿Ãæ∆Æ ƒ≥∏Ø≈Õ º¬¿Ã¥Ÿ.(ALTIBASE_NLS_USE)
     // -------------------------------------------------------------------
 
     sColLanguage = aColumn->language;
@@ -402,8 +402,8 @@ IDE_RC mtdValue( mtcTemplate* aTemplate,
     }
 
     // To fix BUG-13444
-    // tokenFenceÏôÄ RowFenceÎäî Î≥ÑÍ∞úÏùò Í≤ÄÏÇ¨Í≥ºÏ†ïÏù¥ÎØÄÎ°ú,
-    // Î®ºÏ†Ä RowFenceÍ≤ÄÏÇ¨ ÌõÑ TokenFenceÍ≤ÄÏÇ¨Î•º Ìï¥Ïïº ÌïúÎã§.
+    // tokenFenceøÕ RowFence¥¬ ∫∞∞≥¿« ∞ÀªÁ∞˙¡§¿Ãπ«∑Œ,
+    // ∏’¿˙ RowFence∞ÀªÁ »ƒ TokenFence∞ÀªÁ∏¶ «ÿæﬂ «—¥Ÿ.
     sIterator = sValue->value;
     sFence    = (UChar*)aValue + aValueSize;
 
@@ -517,7 +517,7 @@ IDE_RC mtdValue( mtcTemplate* aTemplate,
     {
         sValue->length     = sIterator - sValue->value;
 
-        // precision, scale Ïû¨ ÏÑ§Ï†ï ÌõÑ, estimateÎ°ú semantic Í≤ÄÏÇ¨
+        // precision, scale ¿Á º≥¡§ »ƒ, estimate∑Œ semantic ∞ÀªÁ
         aColumn->flag      = 1;
 
         aColumn->precision = sValue->length != 0 ? sNcharCnt : 1;
@@ -568,7 +568,7 @@ static IDE_RC mtdGetPrecision( const mtcColumn * aColumn,
     sLanguage = aColumn->language;
 
     // --------------------------
-    // ValueÏùò Î¨∏Ïûê Í∞úÏàò
+    // Value¿« πÆ¿⁄ ∞≥ºˆ
     // --------------------------
     
     sValueIndex = (UChar*) sValue->value;
@@ -624,7 +624,7 @@ SInt mtdNcharLogicalAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd ÌÉÄÏûÖÏùò KeyÎì§ Í∞ÑÏùò ascending compare
+ * Description : Mtd ≈∏¿‘¿« KeyµÈ ∞£¿« ascending compare
  *
  * Implementation :
  *
@@ -639,7 +639,7 @@ SInt mtdNcharLogicalAscComp( mtdValueInfo * aValueInfo1,
     SInt                 sCompared;
     const UChar        * sIterator;
     const UChar        * sFence;
-
+    idBool               sExist;
     //---------
     // value1
     //---------
@@ -668,42 +668,68 @@ SInt mtdNcharLogicalAscComp( mtdValueInfo * aValueInfo1,
             {
                 return sCompared;
             }
-
             if( mtl::mNationalCharSet->id == MTL_UTF16_ID )
             {
+                sExist = ID_FALSE;
                 for( sIterator = sValue1 + sLength2,
                          sFence = sValue1 + sLength1;
                      sIterator < sFence - 1;
                      sIterator += MTL_UTF16_PRECISION )
                 {
-                    // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                    // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                     if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                     {
-                        return 1;
-                    }
-                    else
-                    {
-                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        if ( sExist == ID_FALSE )
                         {
                             return 1;
                         }
                         else
                         {
-                            // Nothing to do.
+                            return -1;
+                        }
+                    }
+                    else
+                    {
+                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            if ( sExist == ID_FALSE )
+                            {
+                                return 1;
+                            }
+                            else
+                            {
+                                return -1;
+                            }
+                        }
+                        else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            sExist = ID_TRUE;
                         }
                     }
                 }
             }
             else
             {
+                sExist = ID_FALSE;
                 for( sIterator = sValue1 + sLength2,
                          sFence = sValue1 + sLength1;
                      sIterator < sFence;
                      sIterator++ )
                 {
-                    if( *sIterator > 0x20 )
+                    if ( *sIterator > 0x20 )
                     {
-                        return 1;
+                        if ( sExist == ID_FALSE )
+                        {
+                            return 1;
+                        }
+                        else
+                        {
+                            return -1;
+                        }
+                    }
+                    else if ( *sIterator < 0x20 )
+                    {
+                        sExist = ID_TRUE;
                     }
                 }
             }
@@ -717,38 +743,65 @@ SInt mtdNcharLogicalAscComp( mtdValueInfo * aValueInfo1,
 
         if( mtl::mNationalCharSet->id == MTL_UTF16_ID )
         {
+            sExist = ID_FALSE;
             for( sIterator = sValue2 + sLength1,
                      sFence = sValue2 + sLength2;
                  sIterator < sFence - 1;
                  sIterator += MTL_UTF16_PRECISION )
             {
-                // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                 if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                 {
-                    return -1;
-                }
-                else
-                {
-                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    if ( sExist == ID_FALSE )
                     {
                         return -1;
                     }
                     else
                     {
-                        // Nothing to do.
+                        return 1;
+                    }
+                }
+                else
+                {
+                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        if ( sExist == ID_FALSE )
+                        {
+                            return -1;
+                        }
+                        else
+                        {
+                            return 1;
+                        }
+                    }
+                    else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        sExist = ID_TRUE;
                     }
                 }
             }
         }
         else
         {
+            sExist = ID_FALSE;
             for( sIterator = sValue2 + sLength1, sFence = sValue2 + sLength2;
                  sIterator < sFence;
                  sIterator++ )
             {
-                if( *sIterator > 0x20 )
+                if ( *sIterator > 0x20 )
                 {
-                    return -1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return -1;
+                    }
+                    else
+                    {
+                        return 1;
+                    }
+                }
+                else if ( *sIterator < 0x20 )
+                {
+                    sExist = ID_TRUE;
                 }
             }
         }
@@ -771,7 +824,7 @@ SInt mtdNcharLogicalDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd ÌÉÄÏûÖÏùò KeyÎì§ Í∞ÑÏùò descending compare
+ * Description : Mtd ≈∏¿‘¿« KeyµÈ ∞£¿« descending compare
  *
  * Implementation :
  *
@@ -786,7 +839,7 @@ SInt mtdNcharLogicalDescComp( mtdValueInfo * aValueInfo1,
     SInt                 sCompared;
     const UChar*         sIterator;
     const UChar*         sFence;
-
+    idBool               sExist;
     //---------
     // value1
     //---------
@@ -818,39 +871,66 @@ SInt mtdNcharLogicalDescComp( mtdValueInfo * aValueInfo1,
 
             if( mtl::mNationalCharSet->id == MTL_UTF16_ID )
             {
+                sExist = ID_FALSE;
                 for( sIterator = sValue2 + sLength1,
                          sFence = sValue2 + sLength2;
                      sIterator < sFence - 1;
                      sIterator += MTL_UTF16_PRECISION )
                 {
-                    // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                    // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                     if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                     {
-                        return 1;
-                    }
-                    else
-                    {
-                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        if ( sExist == ID_FALSE )
                         {
                             return 1;
                         }
                         else
                         {
-                            // Nothing to do.
+                            return -1;
+                        }
+                    }
+                    else
+                    {
+                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            if ( sExist == ID_FALSE )
+                            {
+                                return 1;
+                            }
+                            else
+                            {
+                                return -1;
+                            }
+                        }
+                        else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            sExist = ID_TRUE;
                         }
                     }
                 }
             }
             else
             {
+                sExist = ID_FALSE;
                 for( sIterator = sValue2 + sLength1,
                          sFence = sValue2 + sLength2;
                      sIterator < sFence;
                      sIterator++ )
                 {
-                    if( *sIterator > 0x20 )
+                    if ( *sIterator > 0x20 )
                     {
-                        return 1;
+                        if ( sExist == ID_FALSE )
+                        {
+                            return 1;
+                        }
+                        else
+                        {
+                            return -1;
+                        }
+                    }
+                    else if ( *sIterator < 0x20 )
+                    {
+                        sExist = ID_TRUE;
                     }
                 }
             }
@@ -864,37 +944,64 @@ SInt mtdNcharLogicalDescComp( mtdValueInfo * aValueInfo1,
 
         if( mtl::mNationalCharSet->id == MTL_UTF16_ID )
         {
+            sExist = ID_FALSE;
             for( sIterator = sValue1 + sLength2, sFence = sValue1 + sLength1;
                  sIterator < sFence - 1;
                  sIterator += MTL_UTF16_PRECISION )
             {
-                // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                 if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                 {
-                    return -1;
-                }
-                else
-                {
-                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    if ( sExist == ID_FALSE )
                     {
                         return -1;
                     }
                     else
                     {
-                        // Nothing to do.
+                        return 1;
+                    }
+                }
+                else
+                {
+                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        if ( sExist == ID_FALSE )
+                        {
+                            return -1;
+                        }
+                        else
+                        {
+                            return 1;
+                        }
+                    }
+                    else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        sExist = ID_TRUE;
                     }
                 }
             }
         }
         else
         {
+            sExist = ID_FALSE;
             for( sIterator = sValue1 + sLength2, sFence = sValue1 + sLength1;
                  sIterator < sFence;
                  sIterator++ )
             {
-                if( *sIterator > 0x20 )
+                if ( *sIterator > 0x20 )
                 {
-                    return -1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return -1;
+                    }
+                    else
+                    {
+                        return 1;
+                    }
+                }
+                else if ( *sIterator < 0x20 )
+                {
+                    sExist = ID_TRUE;
                 }
             }
         }
@@ -917,7 +1024,7 @@ SInt mtdNcharFixedMtdFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd ÌÉÄÏûÖÏùò KeyÎì§ Í∞ÑÏùò ascending compare
+ * Description : Mtd ≈∏¿‘¿« KeyµÈ ∞£¿« ascending compare
  *
  * Implementation :
  *
@@ -932,7 +1039,7 @@ SInt mtdNcharFixedMtdFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
     SInt                 sCompared;
     const UChar        * sIterator;
     const UChar        * sFence;
-
+    idBool               sExist;
     //---------
     // value1
     //---------
@@ -964,39 +1071,66 @@ SInt mtdNcharFixedMtdFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 
             if( mtl::mNationalCharSet->id == MTL_UTF16_ID )
             {
+                sExist = ID_FALSE;
                 for( sIterator = sValue1 + sLength2,
                          sFence = sValue1 + sLength1;
                      sIterator < sFence - 1;
                      sIterator += MTL_UTF16_PRECISION )
                 {
-                    // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                    // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                     if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                     {
-                        return 1;
-                    }
-                    else
-                    {
-                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        if ( sExist == ID_FALSE )
                         {
                             return 1;
                         }
                         else
                         {
-                            // Nothing to do.
+                            return -1;
+                        }
+                    }
+                    else
+                    {
+                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            if ( sExist == ID_FALSE )
+                            {
+                                return 1;
+                            }
+                            else
+                            {
+                                return -1;
+                            }
+                        }
+                        else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            sExist = ID_TRUE;
                         }
                     }
                 }
             }
             else
             {
+                sExist = ID_FALSE;
                 for( sIterator = sValue1 + sLength2,
                          sFence = sValue1 + sLength1;
                      sIterator < sFence;
                      sIterator++ )
                 {
-                    if( *sIterator > 0x20 )
+                    if ( *sIterator > 0x20 )
                     {
-                        return 1;
+                        if ( sExist == ID_FALSE )
+                        {
+                            return 1;
+                        }
+                        else
+                        {
+                            return -1;
+                        }
+                    }
+                    else if ( *sIterator < 0x20 )
+                    {
+                        sExist = ID_TRUE;
                     }
                 }
             }
@@ -1010,38 +1144,65 @@ SInt mtdNcharFixedMtdFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 
         if( mtl::mNationalCharSet->id == MTL_UTF16_ID )
         {
+            sExist = ID_FALSE;
             for( sIterator = sValue2 + sLength1,
                      sFence = sValue2 + sLength2;
                  sIterator < sFence - 1;
                  sIterator += MTL_UTF16_PRECISION )
             {
-                // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                 if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                 {
-                    return -1;
-                }
-                else
-                {
-                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    if ( sExist == ID_FALSE )
                     {
                         return -1;
                     }
                     else
                     {
-                        // Nothing to do.
+                        return 1;
+                    }
+                }
+                else
+                {
+                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        if ( sExist == ID_FALSE )
+                        {
+                            return -1;
+                        }
+                        else
+                        {
+                            return 1;
+                        }
+                    }
+                    else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        sExist = ID_TRUE;
                     }
                 }
             }
         }
         else
         {
+            sExist = ID_FALSE;
             for( sIterator = sValue2 + sLength1, sFence = sValue2 + sLength2;
                  sIterator < sFence;
                  sIterator++ )
             {
-                if( *sIterator > 0x20 )
+                if ( *sIterator > 0x20 )
                 {
-                    return -1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return -1;
+                    }
+                    else
+                    {
+                        return 1;
+                    }
+                }
+                else if ( *sIterator < 0x20 )
+                {
+                    sExist = ID_TRUE;
                 }
             }
         }
@@ -1064,7 +1225,7 @@ SInt mtdNcharFixedMtdFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd ÌÉÄÏûÖÏùò KeyÎì§ Í∞ÑÏùò descending compare
+ * Description : Mtd ≈∏¿‘¿« KeyµÈ ∞£¿« descending compare
  *
  * Implementation :
  *
@@ -1079,7 +1240,7 @@ SInt mtdNcharFixedMtdFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
     SInt                 sCompared;
     const UChar*         sIterator;
     const UChar*         sFence;
-
+    idBool               sExist;
     //---------
     // value1
     //---------
@@ -1111,39 +1272,66 @@ SInt mtdNcharFixedMtdFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 
             if( mtl::mNationalCharSet->id == MTL_UTF16_ID )
             {
+                sExist = ID_FALSE;
                 for( sIterator = sValue2 + sLength1,
                          sFence = sValue2 + sLength2;
                      sIterator < sFence - 1;
                      sIterator += MTL_UTF16_PRECISION )
                 {
-                    // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                    // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                     if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                     {
-                        return 1;
-                    }
-                    else
-                    {
-                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        if ( sExist == ID_FALSE )
                         {
                             return 1;
                         }
                         else
                         {
-                            // Nothing to do.
+                            return -1;
+                        }
+                    }
+                    else
+                    {
+                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            if ( sExist == ID_FALSE )
+                            {
+                                return 1;
+                            }
+                            else
+                            {
+                                return -1;
+                            }
+                        }
+                        else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            sExist = ID_TRUE;
                         }
                     }
                 }
             }
             else
             {
+                sExist = ID_FALSE;
                 for( sIterator = sValue2 + sLength1,
                          sFence = sValue2 + sLength2;
                      sIterator < sFence;
                      sIterator++ )
                 {
-                    if( *sIterator > 0x20 )
+                    if ( *sIterator > 0x20 )
                     {
-                        return 1;
+                        if ( sExist == ID_FALSE )
+                        {
+                            return 1;
+                        }
+                        else
+                        {
+                            return -1;
+                        }
+                    }
+                    else if ( *sIterator < 0x20 )
+                    {
+                        sExist = ID_TRUE;
                     }
                 }
             }
@@ -1157,37 +1345,64 @@ SInt mtdNcharFixedMtdFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 
         if( mtl::mNationalCharSet->id == MTL_UTF16_ID )
         {
+            sExist = ID_FALSE;
             for( sIterator = sValue1 + sLength2, sFence = sValue1 + sLength1;
                  sIterator < sFence - 1;
                  sIterator += MTL_UTF16_PRECISION )
             {
-                // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                 if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                 {
-                    return -1;
-                }
-                else
-                {
-                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    if ( sExist == ID_FALSE )
                     {
                         return -1;
                     }
                     else
                     {
-                        // Nothing to do.
+                        return 1;
+                    }
+                }
+                else
+                {
+                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        if ( sExist == ID_FALSE )
+                        {
+                            return -1;
+                        }
+                        else
+                        {
+                            return 1;
+                        }
+                    }
+                    else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        sExist = ID_TRUE;
                     }
                 }
             }
         }
         else
         {
+            sExist = ID_FALSE;
             for( sIterator = sValue1 + sLength2, sFence = sValue1 + sLength1;
                  sIterator < sFence;
                  sIterator++ )
             {
-                if( *sIterator > 0x20 )
+                if ( *sIterator > 0x20 )
                 {
-                    return -1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return -1;
+                    }
+                    else
+                    {
+                        return 1;
+                    }
+                }
+                else if ( *sIterator < 0x20 )
+                {
+                    sExist = ID_TRUE;
                 }
             }
         }
@@ -1210,7 +1425,7 @@ SInt mtdNcharMtdMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd ÌÉÄÏûÖÏùò KeyÎì§ Í∞ÑÏùò ascending compare
+ * Description : Mtd ≈∏¿‘¿« KeyµÈ ∞£¿« ascending compare
  *
  * Implementation :
  *
@@ -1225,7 +1440,7 @@ SInt mtdNcharMtdMtdKeyAscComp( mtdValueInfo * aValueInfo1,
     SInt                 sCompared;
     const UChar        * sIterator;
     const UChar        * sFence;
-
+    idBool               sExist;
     //---------
     // value1
     //---------
@@ -1267,39 +1482,66 @@ SInt mtdNcharMtdMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 
             if( mtl::mNationalCharSet->id == MTL_UTF16_ID )
             {
+                sExist = ID_FALSE;
                 for( sIterator = sValue1 + sLength2,
                          sFence = sValue1 + sLength1;
                      sIterator < sFence - 1;
                      sIterator += MTL_UTF16_PRECISION )
                 {
-                    // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                    // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                     if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                     {
-                        return 1;
-                    }
-                    else
-                    {
-                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        if ( sExist == ID_FALSE )
                         {
                             return 1;
                         }
                         else
                         {
-                            // Nothing to do.
+                            return -1;
+                        }
+                    }
+                    else
+                    {
+                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            if ( sExist == ID_FALSE )
+                            {
+                                return 1;
+                            }
+                            else
+                            {
+                                return -1;
+                            }
+                        }
+                        else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            sExist = ID_TRUE;
                         }
                     }
                 }
             }
             else
             {
+                sExist = ID_FALSE;
                 for( sIterator = sValue1 + sLength2,
                          sFence = sValue1 + sLength1;
                      sIterator < sFence;
                      sIterator++ )
                 {
-                    if( *sIterator > 0x20 )
+                    if ( *sIterator > 0x20 )
                     {
-                        return 1;
+                        if ( sExist == ID_FALSE )
+                        {
+                            return 1;
+                        }
+                        else
+                        {
+                            return -1;
+                        }
+                    }
+                    else if ( *sIterator < 0x20 )
+                    {
+                        sExist = ID_TRUE;
                     }
                 }
             }
@@ -1313,38 +1555,65 @@ SInt mtdNcharMtdMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 
         if( mtl::mNationalCharSet->id == MTL_UTF16_ID )
         {
+            sExist = ID_FALSE;
             for( sIterator = sValue2 + sLength1,
                      sFence = sValue2 + sLength2;
                  sIterator < sFence - 1;
                  sIterator += MTL_UTF16_PRECISION )
             {
-                // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                 if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                 {
-                    return -1;
-                }
-                else
-                {
-                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    if ( sExist == ID_FALSE )
                     {
                         return -1;
                     }
                     else
                     {
-                        // Nothing to do.
+                        return 1;
+                    }
+                }
+                else
+                {
+                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        if ( sExist == ID_FALSE )
+                        {
+                            return -1;
+                        }
+                        else
+                        {
+                            return 1;
+                        }
+                    }
+                    else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        sExist = ID_TRUE;
                     }
                 }
             }
         }
         else
         {
+            sExist = ID_FALSE;
             for( sIterator = sValue2 + sLength1, sFence = sValue2 + sLength2;
                  sIterator < sFence;
                  sIterator++ )
             {
-                if( *sIterator > 0x20 )
+                if ( *sIterator > 0x20 )
                 {
-                    return -1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return -1;
+                    }
+                    else
+                    {
+                        return 1;
+                    }
+                }
+                else if ( *sIterator < 0x20 )
+                {
+                    sExist = ID_TRUE;
                 }
             }
         }
@@ -1367,7 +1636,7 @@ SInt mtdNcharMtdMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd ÌÉÄÏûÖÏùò KeyÎì§ Í∞ÑÏùò descending compare
+ * Description : Mtd ≈∏¿‘¿« KeyµÈ ∞£¿« descending compare
  *
  * Implementation :
  *
@@ -1382,7 +1651,7 @@ SInt mtdNcharMtdMtdKeyDescComp( mtdValueInfo * aValueInfo1,
     SInt                 sCompared;
     const UChar*         sIterator;
     const UChar*         sFence;
-
+    idBool               sExist;
     //---------
     // value1
     //---------
@@ -1424,39 +1693,66 @@ SInt mtdNcharMtdMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 
             if( mtl::mNationalCharSet->id == MTL_UTF16_ID )
             {
+                sExist = ID_FALSE;
                 for( sIterator = sValue2 + sLength1,
                          sFence = sValue2 + sLength2;
                      sIterator < sFence - 1;
                      sIterator += MTL_UTF16_PRECISION )
                 {
-                    // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                    // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                     if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                     {
-                        return 1;
-                    }
-                    else
-                    {
-                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        if ( sExist == ID_FALSE )
                         {
                             return 1;
                         }
                         else
                         {
-                            // Nothing to do.
+                            return -1;
+                        }
+                    }
+                    else
+                    {
+                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            if ( sExist == ID_FALSE )
+                            {
+                                return 1;
+                            }
+                            else
+                            {
+                                return -1;
+                            }
+                        }
+                        else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            sExist = ID_TRUE;
                         }
                     }
                 }
             }
             else
             {
+                sExist = ID_FALSE;
                 for( sIterator = sValue2 + sLength1,
                          sFence = sValue2 + sLength2;
                      sIterator < sFence;
                      sIterator++ )
                 {
-                    if( *sIterator > 0x20 )
+                    if ( *sIterator > 0x20 )
                     {
-                        return 1;
+                        if ( sExist == ID_FALSE )
+                        {
+                            return 1;
+                        }
+                        else
+                        {
+                            return -1;
+                        }
+                    }
+                    else if ( *sIterator < 0x20 )
+                    {
+                        sExist = ID_TRUE;
                     }
                 }
             }
@@ -1470,37 +1766,64 @@ SInt mtdNcharMtdMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 
         if( mtl::mNationalCharSet->id == MTL_UTF16_ID )
         {
+            sExist = ID_FALSE;
             for( sIterator = sValue1 + sLength2, sFence = sValue1 + sLength1;
                  sIterator < sFence - 1;
                  sIterator += MTL_UTF16_PRECISION )
             {
-                // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                 if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                 {
-                    return -1;
-                }
-                else
-                {
-                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    if ( sExist == ID_FALSE )
                     {
                         return -1;
                     }
                     else
                     {
-                        // Nothing to do.
+                        return 1;
+                    }
+                }
+                else
+                {
+                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        if ( sExist == ID_FALSE )
+                        {
+                            return -1;
+                        }
+                        else
+                        {
+                            return 1;
+                        }
+                    }
+                    else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        sExist = ID_TRUE;
                     }
                 }
             }
         }
         else
         {
+            sExist = ID_FALSE;
             for( sIterator = sValue1 + sLength2, sFence = sValue1 + sLength1;
                  sIterator < sFence;
                  sIterator++ )
             {
-                if( *sIterator > 0x20 )
+                if ( *sIterator > 0x20 )
                 {
-                    return -1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return -1;
+                    }
+                    else
+                    {
+                        return 1;
+                    }
+                }
+                else if ( *sIterator < 0x20 )
+                {
+                    sExist = ID_TRUE;
                 }
             }
         }
@@ -1523,7 +1846,7 @@ SInt mtdNcharStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd ÌÉÄÏûÖÏùò KeyÏôÄ Stored Key Í∞ÑÏùò ascending compare
+ * Description : Mtd ≈∏¿‘¿« KeyøÕ Stored Key ∞£¿« ascending compare
  *
  * Implementation :
  *
@@ -1539,13 +1862,13 @@ SInt mtdNcharStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
     const UChar        * sIterator;
     const UChar        * sFence;
     UInt                 sDummy;
-
+    idBool               sExist;
     //---------
     // value1
     //---------    
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // Dictionary compression columnÏù∏ Í≤ΩÏö∞ store typeÏùÑmt typeÏúºÎ°ú
-    // Î≥ÄÌôòÌï¥ÏÑú Ïã§Ï†ú Îç∞Ïù¥ÌÑ∞Î•º Í∞ÄÏ†∏Ïò®Îã§.
+    // Dictionary compression column¿Œ ∞ÊøÏ store type¿ªmt type¿∏∑Œ
+    // ∫Ø»Ø«ÿº≠ Ω«¡¶ µ•¿Ã≈Õ∏¶ ∞°¡Æø¬¥Ÿ.
     if ( (((smiColumn*)aValueInfo1->column)->flag & SMI_COLUMN_COMPRESSION_MASK) !=
          SMI_COLUMN_COMPRESSION_TRUE )
     {
@@ -1594,39 +1917,66 @@ SInt mtdNcharStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 
             if( mtl::mNationalCharSet->id == MTL_UTF16_ID )
             {
+                sExist = ID_FALSE;
                 for( sIterator = sValue1 + sLength2,
                          sFence = sValue1 + sLength1;
                      sIterator < sFence - 1;
                      sIterator += MTL_UTF16_PRECISION )
                 {
-                    // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                    // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                     if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                     {
-                        return 1;
-                    }
-                    else
-                    {
-                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        if ( sExist == ID_FALSE )
                         {
                             return 1;
                         }
                         else
                         {
-                            // Nothing to do.
+                            return -1;
+                        }
+                    }
+                    else
+                    {
+                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            if ( sExist == ID_FALSE )
+                            {
+                                return 1;
+                            }
+                            else
+                            {
+                                return -1;
+                            }
+                        }
+                        else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            sExist = ID_TRUE;
                         }
                     }
                 }
             }
             else
             {
+                sExist = ID_FALSE;
                 for( sIterator = sValue1 + sLength2,
                          sFence = sValue1 + sLength1;
                      sIterator < sFence;
                      sIterator++ )
                 {
-                    if( *sIterator > 0x20 )
+                    if ( *sIterator > 0x20 )
                     {
-                        return 1;
+                        if ( sExist == ID_FALSE )
+                        {
+                            return 1;
+                        }
+                        else
+                        {
+                            return -1;
+                        }
+                    }
+                    else if ( *sIterator < 0x20 )
+                    {
+                        sExist = ID_TRUE;
                     }
                 }
             }
@@ -1640,38 +1990,65 @@ SInt mtdNcharStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 
         if( mtl::mNationalCharSet->id == MTL_UTF16_ID )
         {
+            sExist = ID_FALSE;
             for( sIterator = sValue2 + sLength1,
                      sFence = sValue2 + sLength2;
                  sIterator < sFence - 1;
                  sIterator += MTL_UTF16_PRECISION )
             {
-                // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                 if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                 {
-                    return -1;
-                }
-                else
-                {
-                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    if ( sExist == ID_FALSE )
                     {
                         return -1;
                     }
                     else
                     {
-                        // Nothing to do.
+                        return 1;
+                    }
+                }
+                else
+                {
+                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        if ( sExist == ID_FALSE )
+                        {
+                            return -1;
+                        }
+                        else
+                        {
+                            return 1;
+                        }
+                    }
+                    else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        sExist = ID_TRUE;
                     }
                 }
             }
         }
         else
         {
+            sExist = ID_FALSE;
             for( sIterator = sValue2 + sLength1, sFence = sValue2 + sLength2;
                  sIterator < sFence;
                  sIterator++ )
             {
-                if( *sIterator > 0x20 )
+                if ( *sIterator > 0x20 )
                 {
-                    return -1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return -1;
+                    }
+                    else
+                    {
+                        return 1;
+                    }
+                }
+                else if ( *sIterator < 0x20 )
+                {
+                    sExist = ID_TRUE;
                 }
             }
         }
@@ -1694,7 +2071,7 @@ SInt mtdNcharStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd ÌÉÄÏûÖÏùò KeyÏôÄ Stored Key Í∞ÑÏùò descending compare
+ * Description : Mtd ≈∏¿‘¿« KeyøÕ Stored Key ∞£¿« descending compare
  *
  * Implementation :
  *
@@ -1710,13 +2087,13 @@ SInt mtdNcharStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
     const UChar        * sIterator;
     const UChar        * sFence;
     UInt                 sDummy;
-
+    idBool               sExist;
     //---------
     // value1
     //---------    
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // Dictionary compression columnÏù∏ Í≤ΩÏö∞ store typeÏùÑmt typeÏúºÎ°ú
-    // Î≥ÄÌôòÌï¥ÏÑú Ïã§Ï†ú Îç∞Ïù¥ÌÑ∞Î•º Í∞ÄÏ†∏Ïò®Îã§.
+    // Dictionary compression column¿Œ ∞ÊøÏ store type¿ªmt type¿∏∑Œ
+    // ∫Ø»Ø«ÿº≠ Ω«¡¶ µ•¿Ã≈Õ∏¶ ∞°¡Æø¬¥Ÿ.
     if ( (((smiColumn*)aValueInfo1->column)->flag & SMI_COLUMN_COMPRESSION_MASK) !=
          SMI_COLUMN_COMPRESSION_TRUE )
     {
@@ -1765,39 +2142,66 @@ SInt mtdNcharStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 
             if( mtl::mNationalCharSet->id == MTL_UTF16_ID )
             {
+                sExist = ID_FALSE;
                 for( sIterator = sValue2 + sLength1,
                          sFence = sValue2 + sLength2;
                      sIterator < sFence - 1;
                      sIterator += MTL_UTF16_PRECISION )
                 {
-                    // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                    // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                     if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                     {
-                        return 1;
-                    }
-                    else
-                    {
-                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        if ( sExist == ID_FALSE )
                         {
                             return 1;
                         }
                         else
                         {
-                            // Nothing to do.
+                            return -1;
+                        }
+                    }
+                    else
+                    {
+                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            if ( sExist == ID_FALSE )
+                            {
+                                return 1;
+                            }
+                            else
+                            {
+                                return -1;
+                            }
+                        }
+                        else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            sExist = ID_TRUE;
                         }
                     }
                 }
             }
             else
             {
+                sExist = ID_FALSE;
                 for( sIterator = sValue2 + sLength1,
                          sFence = sValue2 + sLength2;
                      sIterator < sFence;
                      sIterator++ )
                 {
-                    if( *sIterator > 0x20 )
+                    if ( *sIterator > 0x20 )
                     {
-                        return 1;
+                        if ( sExist == ID_FALSE )
+                        {
+                            return 1;
+                        }
+                        else
+                        {
+                            return -1;
+                        }
+                    }
+                    else if ( *sIterator < 0x20 )
+                    {
+                        sExist = ID_TRUE;
                     }
                 }
             }
@@ -1811,37 +2215,64 @@ SInt mtdNcharStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 
         if( mtl::mNationalCharSet->id == MTL_UTF16_ID )
         {
+            sExist = ID_FALSE;
             for( sIterator = sValue1 + sLength2, sFence = sValue1 + sLength1;
                  sIterator < sFence - 1;
                  sIterator += MTL_UTF16_PRECISION )
             {
-                // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                 if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                 {
-                    return -1;
-                }
-                else
-                {
-                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    if ( sExist == ID_FALSE )
                     {
                         return -1;
                     }
                     else
                     {
-                        // Nothing to do.
+                        return 1;
+                    }
+                }
+                else
+                {
+                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        if ( sExist == ID_FALSE )
+                        {
+                            return -1;
+                        }
+                        else
+                        {
+                            return 1;
+                        }
+                    }
+                    else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        sExist = ID_TRUE;
                     }
                 }
             }
         }
         else
         {
+            sExist = ID_FALSE;
             for( sIterator = sValue1 + sLength2, sFence = sValue1 + sLength1;
                  sIterator < sFence;
                  sIterator++ )
             {
-                if( *sIterator > 0x20 )
+                if ( *sIterator > 0x20 )
                 {
-                    return -1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return -1;
+                    }
+                    else
+                    {
+                        return 1;
+                    }
+                }
+                else if ( *sIterator < 0x20 )
+                {
+                    sExist = ID_TRUE;
                 }
             }
         }
@@ -1864,7 +2295,7 @@ SInt mtdNcharStoredStoredKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored KeyÎì§ Í∞ÑÏùò ascending compare
+ * Description : Stored KeyµÈ ∞£¿« ascending compare
  *
  * Implementation :
  *
@@ -1880,13 +2311,13 @@ SInt mtdNcharStoredStoredKeyAscComp( mtdValueInfo * aValueInfo1,
     const UChar        * sIterator;
     const UChar        * sFence;
     UInt                 sDummy;
-
+    idBool               sExist;
     //---------
     // value1
     //---------    
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // Dictionary compression columnÏù∏ Í≤ΩÏö∞ store typeÏùÑmt typeÏúºÎ°ú
-    // Î≥ÄÌôòÌï¥ÏÑú Ïã§Ï†ú Îç∞Ïù¥ÌÑ∞Î•º Í∞ÄÏ†∏Ïò®Îã§.
+    // Dictionary compression column¿Œ ∞ÊøÏ store type¿ªmt type¿∏∑Œ
+    // ∫Ø»Ø«ÿº≠ Ω«¡¶ µ•¿Ã≈Õ∏¶ ∞°¡Æø¬¥Ÿ.
     if ( (((smiColumn*)aValueInfo1->column)->flag & SMI_COLUMN_COMPRESSION_MASK) !=
          SMI_COLUMN_COMPRESSION_TRUE )
     {
@@ -1945,39 +2376,66 @@ SInt mtdNcharStoredStoredKeyAscComp( mtdValueInfo * aValueInfo1,
 
             if( mtl::mNationalCharSet->id == MTL_UTF16_ID )
             {
+                sExist = ID_FALSE;
                 for( sIterator = sValue1 + sLength2,
                          sFence = sValue1 + sLength1;
                      sIterator < sFence - 1;
                      sIterator += MTL_UTF16_PRECISION )
                 {
-                    // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                    // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                     if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                     {
-                        return 1;
-                    }
-                    else
-                    {
-                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        if ( sExist == ID_FALSE )
                         {
                             return 1;
                         }
                         else
                         {
-                            // Nothing to do.
+                            return -1;
+                        }
+                    }
+                    else
+                    {
+                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            if ( sExist == ID_FALSE )
+                            {
+                                return 1;
+                            }
+                            else
+                            {
+                                return -1;
+                            }
+                        }
+                        else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            sExist = ID_TRUE;
                         }
                     }
                 }
             }
             else
             {
+                sExist = ID_FALSE;
                 for( sIterator = sValue1 + sLength2,
                          sFence = sValue1 + sLength1;
                      sIterator < sFence;
                      sIterator++ )
                 {
-                    if( *sIterator > 0x20 )
+                    if ( *sIterator > 0x20 )
                     {
-                        return 1;
+                        if ( sExist == ID_FALSE )
+                        {
+                            return 1;
+                        }
+                        else
+                        {
+                            return -1;
+                        }
+                    }
+                    else if ( *sIterator < 0x20 )
+                    {
+                        sExist = ID_TRUE;
                     }
                 }
             }
@@ -1991,38 +2449,65 @@ SInt mtdNcharStoredStoredKeyAscComp( mtdValueInfo * aValueInfo1,
 
         if( mtl::mNationalCharSet->id == MTL_UTF16_ID )
         {
+            sExist = ID_FALSE;
             for( sIterator = sValue2 + sLength1,
                      sFence = sValue2 + sLength2;
                  sIterator < sFence - 1;
                  sIterator += MTL_UTF16_PRECISION )
             {
-                // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                 if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                 {
-                    return -1;
-                }
-                else
-                {
-                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    if ( sExist == ID_FALSE )
                     {
                         return -1;
                     }
                     else
                     {
-                        // Nothing to do.
+                        return 1;
+                    }
+                }
+                else
+                {
+                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        if ( sExist == ID_FALSE )
+                        {
+                            return -1;
+                        }
+                        else
+                        {
+                            return 1;
+                        }
+                    }
+                    else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        sExist = ID_TRUE;
                     }
                 }
             }
         }
         else
         {
+            sExist = ID_FALSE;
             for( sIterator = sValue2 + sLength1, sFence = sValue2 + sLength2;
                  sIterator < sFence;
                  sIterator++ )
             {
-                if( *sIterator > 0x20 )
+                if ( *sIterator > 0x20 )
                 {
-                    return -1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return -1;
+                    }
+                    else
+                    {
+                        return 1;
+                    }
+                }
+                else if ( *sIterator < 0x20 )
+                {
+                    sExist = ID_TRUE;
                 }
             }
         }
@@ -2045,7 +2530,7 @@ SInt mtdNcharStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored KeyÎì§ Í∞ÑÏùò descending compare
+ * Description : Stored KeyµÈ ∞£¿« descending compare
  *
  * Implementation :
  *
@@ -2061,13 +2546,13 @@ SInt mtdNcharStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
     const UChar        * sIterator;
     const UChar        * sFence;
     UInt                 sDummy;
-
+    idBool               sExist;
     //---------
     // value1
     //---------    
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // Dictionary compression columnÏù∏ Í≤ΩÏö∞ store typeÏùÑmt typeÏúºÎ°ú
-    // Î≥ÄÌôòÌï¥ÏÑú Ïã§Ï†ú Îç∞Ïù¥ÌÑ∞Î•º Í∞ÄÏ†∏Ïò®Îã§.
+    // Dictionary compression column¿Œ ∞ÊøÏ store type¿ªmt type¿∏∑Œ
+    // ∫Ø»Ø«ÿº≠ Ω«¡¶ µ•¿Ã≈Õ∏¶ ∞°¡Æø¬¥Ÿ.
     if ( (((smiColumn*)aValueInfo1->column)->flag & SMI_COLUMN_COMPRESSION_MASK) !=
          SMI_COLUMN_COMPRESSION_TRUE )
     {
@@ -2092,8 +2577,8 @@ SInt mtdNcharStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
     // value1
     //---------    
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // Dictionary compression columnÏù∏ Í≤ΩÏö∞ store typeÏùÑmt typeÏúºÎ°ú
-    // Î≥ÄÌôòÌï¥ÏÑú Ïã§Ï†ú Îç∞Ïù¥ÌÑ∞Î•º Í∞ÄÏ†∏Ïò®Îã§.
+    // Dictionary compression column¿Œ ∞ÊøÏ store type¿ªmt type¿∏∑Œ
+    // ∫Ø»Ø«ÿº≠ Ω«¡¶ µ•¿Ã≈Õ∏¶ ∞°¡Æø¬¥Ÿ.
     if ( (((smiColumn*)aValueInfo2->column)->flag & SMI_COLUMN_COMPRESSION_MASK) !=
          SMI_COLUMN_COMPRESSION_TRUE )
     {
@@ -2129,39 +2614,66 @@ SInt mtdNcharStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
 
             if( mtl::mNationalCharSet->id == MTL_UTF16_ID )
             {
+                sExist = ID_FALSE;
                 for( sIterator = sValue2 + sLength1,
                          sFence = sValue2 + sLength2;
                      sIterator < sFence - 1;
                      sIterator += MTL_UTF16_PRECISION )
                 {
-                    // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                    // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                     if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                     {
-                        return 1;
-                    }
-                    else
-                    {
-                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        if ( sExist == ID_FALSE )
                         {
                             return 1;
                         }
                         else
                         {
-                            // Nothing to do.
+                            return -1;
+                        }
+                    }
+                    else
+                    {
+                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            if ( sExist == ID_FALSE )
+                            {
+                                return 1;
+                            }
+                            else
+                            {
+                                return -1;
+                            }
+                        }
+                        else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            sExist = ID_TRUE;
                         }
                     }
                 }
             }
             else
             {
+                sExist = ID_FALSE;
                 for( sIterator = sValue2 + sLength1,
                          sFence = sValue2 + sLength2;
                      sIterator < sFence;
                      sIterator++ )
                 {
-                    if( *sIterator > 0x20 )
+                    if ( *sIterator > 0x20 )
                     {
-                        return 1;
+                        if ( sExist == ID_FALSE )
+                        {
+                            return 1;
+                        }
+                        else
+                        {
+                            return -1;
+                        }
+                    }
+                    else if ( *sIterator < 0x20 )
+                    {
+                        sExist = ID_TRUE;
                     }
                 }
             }
@@ -2175,37 +2687,64 @@ SInt mtdNcharStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
 
         if( mtl::mNationalCharSet->id == MTL_UTF16_ID )
         {
+            sExist = ID_FALSE;
             for( sIterator = sValue1 + sLength2, sFence = sValue1 + sLength1;
                  sIterator < sFence - 1;
                  sIterator += MTL_UTF16_PRECISION )
             {
-                // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                 if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                 {
-                    return -1;
-                }
-                else
-                {
-                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    if ( sExist == ID_FALSE )
                     {
                         return -1;
                     }
                     else
                     {
-                        // Nothing to do.
+                        return 1;
+                    }
+                }
+                else
+                {
+                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        if ( sExist == ID_FALSE )
+                        {
+                            return -1;
+                        }
+                        else
+                        {
+                            return 1;
+                        }
+                    }
+                    else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        sExist = ID_TRUE;
                     }
                 }
             }
         }
         else
         {
+            sExist = ID_FALSE;
             for( sIterator = sValue1 + sLength2, sFence = sValue1 + sLength1;
                  sIterator < sFence;
                  sIterator++ )
             {
-                if( *sIterator > 0x20 )
+                if ( *sIterator > 0x20 )
                 {
-                    return -1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return -1;
+                    }
+                    else
+                    {
+                        return 1;
+                    }
+                }
+                else if ( *sIterator < 0x20 )
+                {
+                    sExist = ID_TRUE;
                 }
             }
         }
@@ -2224,8 +2763,8 @@ SInt mtdNcharStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
 }
 
 /* PROJ-2433
- * Direct key IndexÏùò direct keyÏôÄ mtdÏùò compare Ìï®Ïàò
- * - partial direct keyÎ•º Ï≤òÎ¶¨ÌïòÎäîÎ∂ÄÎ∂Ñ Ï∂îÍ∞Ä */
+ * Direct key Index¿« direct keyøÕ mtd¿« compare «‘ºˆ
+ * - partial direct key∏¶ √≥∏Æ«œ¥¬∫Œ∫– √ﬂ∞° */
 SInt mtdNcharIndexKeyFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
                                          mtdValueInfo * aValueInfo2 )
 {
@@ -2239,7 +2778,7 @@ SInt mtdNcharIndexKeyFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
     const UChar        * sIterator;
     const UChar        * sFence;
     UInt                 sDirectKeyPartialSize;
-
+    idBool               sExist;
     //---------
     // value1
     //---------
@@ -2254,19 +2793,19 @@ SInt mtdNcharIndexKeyFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 
     /*
      * PROJ-2433 Direct Key Index
-     * Partial Direct Key Ï≤òÎ¶¨
+     * Partial Direct Key √≥∏Æ
      * 
-     * - Direct KeyÍ∞Ä partial direct keyÏù∏ Í≤ΩÏö∞
-     *   partialÎêú Í∏∏Ïù¥ÎßåÌÅºÎßå ÎπÑÍµêÌïòÎèÑÎ°ù lengthÎ•º ÏàòÏ†ïÌïúÎã§
+     * - Direct Key∞° partial direct key¿Œ ∞ÊøÏ
+     *   partialµ» ±Ê¿Ã∏∏≈≠∏∏ ∫Ò±≥«œµµ∑œ length∏¶ ºˆ¡§«—¥Ÿ
      */ 
     if ( ( aValueInfo1->flag & MTD_PARTIAL_KEY_MASK ) == MTD_PARTIAL_KEY_ON )
     {
         sDirectKeyPartialSize = aValueInfo1->length;
 
-        /* partail key Ïù¥Î©¥ */
+        /* partail key ¿Ã∏È */
         if ( sDirectKeyPartialSize != 0 )
         {
-            /* direct key Í∏∏Ïù¥Î≥¥Ï†ï*/
+            /* direct key ±Ê¿Ã∫∏¡§*/
             if ( ( sLength1 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength1 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -2276,7 +2815,7 @@ SInt mtdNcharIndexKeyFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
                 /* nothing todo */
             }
 
-            /* search key ÎèÑ partial Í∏∏Ïù¥ÎßåÌÅº Î≥¥Ï†ï*/
+            /* search key µµ partial ±Ê¿Ã∏∏≈≠ ∫∏¡§*/
             if ( ( sLength2 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength2 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -2321,31 +2860,47 @@ SInt mtdNcharIndexKeyFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 
             if ( mtl::mNationalCharSet->id == MTL_UTF16_ID )
             {
+                sExist = ID_FALSE;
                 for ( sIterator = ( sValue1 + sLength2 ),
                       sFence = ( sValue1 + sLength1 ) ;
                       ( sIterator < ( sFence - 1 ) ) ;
                       sIterator += MTL_UTF16_PRECISION )
                 {
-                    // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                    // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                     if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                     {
-                        return 1;
-                    }
-                    else
-                    {
-                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        if ( sExist == ID_FALSE )
                         {
                             return 1;
                         }
                         else
                         {
-                            // Nothing to do.
+                            return -1;
+                        }
+                    }
+                    else
+                    {
+                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            if ( sExist == ID_FALSE )
+                            {
+                                return 1;
+                            }
+                            else
+                            {
+                                return -1;
+                            }
+                        }
+                        else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            sExist = ID_TRUE;
                         }
                     }
                 }
             }
             else
             {
+                sExist = ID_FALSE;
                 for ( sIterator = ( sValue1 + sLength2 ),
                       sFence = ( sValue1 + sLength1 ) ;
                       ( sIterator < sFence ) ;
@@ -2353,11 +2908,18 @@ SInt mtdNcharIndexKeyFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
                 {
                     if ( *sIterator > 0x20 )
                     {
-                        return 1;
+                        if ( sExist == ID_FALSE )
+                        {
+                            return 1;
+                        }
+                        else
+                        {
+                            return -1;
+                        }
                     }
-                    else
+                    else if ( *sIterator < 0x20 )
                     {
-                        /* nothing todo */
+                        sExist = ID_TRUE;
                     }
                 }
             }
@@ -2381,42 +2943,65 @@ SInt mtdNcharIndexKeyFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 
         if ( mtl::mNationalCharSet->id == MTL_UTF16_ID )
         {
+            sExist = ID_FALSE;
             for ( sIterator = ( sValue2 + sLength1 ),
                   sFence = ( sValue2 + sLength2 ) ;
                   ( sIterator < ( sFence - 1 ) ) ;
                   sIterator += MTL_UTF16_PRECISION )
             {
-                // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                 if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                 {
-                    return -1;
-                }
-                else
-                {
-                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    if ( sExist == ID_FALSE )
                     {
                         return -1;
                     }
                     else
                     {
-                        // Nothing to do.
+                        return 1;
+                    }
+                }
+                else
+                {
+                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        if ( sExist == ID_FALSE )
+                        {
+                            return -1;
+                        }
+                        else
+                        {
+                            return 1;
+                        }
+                    }
+                    else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        sExist = ID_TRUE;
                     }
                 }
             }
         }
         else
         {
+            sExist = ID_FALSE;
             for ( sIterator = ( sValue2 + sLength1 ), sFence = ( sValue2 + sLength2 ) ;
                   ( sIterator < sFence ) ;
                   sIterator++ )
             {
                 if ( *sIterator > 0x20 )
                 {
-                    return -1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return -1;
+                    }
+                    else
+                    {
+                        return 1;
+                    }
                 }
-                else
+                else if ( *sIterator < 0x20 )
                 {
-                    /* nothing todo */
+                    sExist = ID_TRUE;
                 }
             }
         }
@@ -2459,7 +3044,7 @@ SInt mtdNcharIndexKeyFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
     const UChar*         sIterator;
     const UChar*         sFence;
     UInt                 sDirectKeyPartialSize;
-
+    idBool               sExist;
     //---------
     // value1
     //---------
@@ -2474,19 +3059,19 @@ SInt mtdNcharIndexKeyFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 
     /*
      * PROJ-2433 Direct Key Index
-     * Partial Direct Key Ï≤òÎ¶¨
+     * Partial Direct Key √≥∏Æ
      * 
-     * - Direct KeyÍ∞Ä partial direct keyÏù∏ Í≤ΩÏö∞
-     *   partialÎêú Í∏∏Ïù¥ÎßåÌÅºÎßå ÎπÑÍµêÌïòÎèÑÎ°ù lengthÎ•º ÏàòÏ†ïÌïúÎã§
+     * - Direct Key∞° partial direct key¿Œ ∞ÊøÏ
+     *   partialµ» ±Ê¿Ã∏∏≈≠∏∏ ∫Ò±≥«œµµ∑œ length∏¶ ºˆ¡§«—¥Ÿ
      */ 
     if ( ( aValueInfo1->flag & MTD_PARTIAL_KEY_MASK ) == MTD_PARTIAL_KEY_ON )
     {
         sDirectKeyPartialSize = aValueInfo1->length;
 
-        /* partail key Ïù¥Î©¥ */
+        /* partail key ¿Ã∏È */
         if ( sDirectKeyPartialSize != 0 )
         {
-            /* direct key Í∏∏Ïù¥Î≥¥Ï†ï*/
+            /* direct key ±Ê¿Ã∫∏¡§*/
             if ( ( sLength1 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength1 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -2496,7 +3081,7 @@ SInt mtdNcharIndexKeyFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
                 /* nothing todo */
             }
 
-            /* search key ÎèÑ partial Í∏∏Ïù¥ÎßåÌÅº Î≥¥Ï†ï*/
+            /* search key µµ partial ±Ê¿Ã∏∏≈≠ ∫∏¡§*/
             if ( ( sLength2 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength2 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -2541,31 +3126,47 @@ SInt mtdNcharIndexKeyFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 
             if ( mtl::mNationalCharSet->id == MTL_UTF16_ID )
             {
+                sExist = ID_FALSE;
                 for ( sIterator = ( sValue2 + sLength1 ),
                       sFence = ( sValue2 + sLength2 ) ;
                       ( sIterator < ( sFence - 1 ) ) ;
                       sIterator += MTL_UTF16_PRECISION )
                 {
-                    // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                    // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                     if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                     {
-                        return 1;
-                    }
-                    else
-                    {
-                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        if ( sExist == ID_FALSE )
                         {
                             return 1;
                         }
                         else
                         {
-                            // Nothing to do.
+                            return -1;
+                        }
+                    }
+                    else
+                    {
+                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            if ( sExist == ID_FALSE )
+                            {
+                                return 1;
+                            }
+                            else
+                            {
+                                return -1;
+                            }
+                        }
+                        else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            sExist = ID_TRUE;
                         }
                     }
                 }
             }
             else
             {
+                sExist = ID_FALSE;
                 for ( sIterator = ( sValue2 + sLength1 ),
                       sFence = ( sValue2 + sLength2 ) ;
                       ( sIterator < sFence ) ;
@@ -2573,11 +3174,18 @@ SInt mtdNcharIndexKeyFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
                 {
                     if ( *sIterator > 0x20 )
                     {
-                        return 1;
+                        if ( sExist == ID_FALSE )
+                        {
+                            return 1;
+                        }
+                        else
+                        {
+                            return -1;
+                        }
                     }
-                    else
+                    else if ( *sIterator < 0x20 )
                     {
-                        /* nothing todo */
+                        sExist = ID_TRUE;
                     }
                 }
             }
@@ -2597,41 +3205,64 @@ SInt mtdNcharIndexKeyFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 
         if ( mtl::mNationalCharSet->id == MTL_UTF16_ID )
         {
+            sExist = ID_FALSE;
             for ( sIterator = ( sValue1 + sLength2 ), sFence = ( sValue1 + sLength1 ) ;
                   ( sIterator < ( sFence - 1 ) ) ;
                   sIterator += MTL_UTF16_PRECISION )
             {
-                // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                 if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                 {
-                    return -1;
-                }
-                else
-                {
-                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    if ( sExist == ID_FALSE )
                     {
                         return -1;
                     }
                     else
                     {
-                        // Nothing to do.
+                        return 1;
+                    }
+                }
+                else
+                {
+                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        if ( sExist == ID_FALSE )
+                        {
+                            return -1;
+                        }
+                        else
+                        {
+                            return 1;
+                        }
+                    }
+                    else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        sExist = ID_TRUE;
                     }
                 }
             }
         }
         else
         {
+            sExist = ID_FALSE;
             for ( sIterator = ( sValue1 + sLength2 ), sFence = ( sValue1 + sLength1 ) ;
                   ( sIterator < sFence ) ;
                   sIterator++ )
             {
                 if ( *sIterator > 0x20 )
                 {
-                    return -1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return -1;
+                    }
+                    else
+                    {
+                        return 1;
+                    }
                 }
-                else
+                else if ( *sIterator < 0x20 )
                 {
-                    /* nothing todo */
+                    sExist = ID_TRUE;
                 }
             }
         }
@@ -2674,7 +3305,7 @@ SInt mtdNcharIndexKeyMtdKeyAscComp( mtdValueInfo * aValueInfo1,
     const UChar        * sIterator;
     const UChar        * sFence;
     UInt                 sDirectKeyPartialSize;
-
+    idBool               sExist;
     //---------
     // value1
     //---------
@@ -2697,19 +3328,19 @@ SInt mtdNcharIndexKeyMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 
     /*
      * PROJ-2433 Direct Key Index
-     * Partial Direct Key Ï≤òÎ¶¨
+     * Partial Direct Key √≥∏Æ
      * 
-     * - Direct KeyÍ∞Ä partial direct keyÏù∏ Í≤ΩÏö∞
-     *   partialÎêú Í∏∏Ïù¥ÎßåÌÅºÎßå ÎπÑÍµêÌïòÎèÑÎ°ù lengthÎ•º ÏàòÏ†ïÌïúÎã§
+     * - Direct Key∞° partial direct key¿Œ ∞ÊøÏ
+     *   partialµ» ±Ê¿Ã∏∏≈≠∏∏ ∫Ò±≥«œµµ∑œ length∏¶ ºˆ¡§«—¥Ÿ
      */ 
     if ( ( aValueInfo1->flag & MTD_PARTIAL_KEY_MASK ) == MTD_PARTIAL_KEY_ON )
     {
         sDirectKeyPartialSize = aValueInfo1->length;
 
-        /* partail key Ïù¥Î©¥ */
+        /* partail key ¿Ã∏È */
         if ( sDirectKeyPartialSize != 0 )
         {
-            /* direct key Í∏∏Ïù¥Î≥¥Ï†ï*/
+            /* direct key ±Ê¿Ã∫∏¡§*/
             if ( ( sLength1 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength1 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -2719,7 +3350,7 @@ SInt mtdNcharIndexKeyMtdKeyAscComp( mtdValueInfo * aValueInfo1,
                 /* nothing todo */
             }
 
-            /* search key ÎèÑ partial Í∏∏Ïù¥ÎßåÌÅº Î≥¥Ï†ï*/
+            /* search key µµ partial ±Ê¿Ã∏∏≈≠ ∫∏¡§*/
             if ( ( sLength2 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength2 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -2764,31 +3395,47 @@ SInt mtdNcharIndexKeyMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 
             if ( mtl::mNationalCharSet->id == MTL_UTF16_ID )
             {
+                sExist = ID_FALSE;
                 for ( sIterator = ( sValue1 + sLength2 ),
                       sFence = ( sValue1 + sLength1 ) ;
                       ( sIterator < ( sFence - 1 ) ) ;
                       sIterator += MTL_UTF16_PRECISION )
                 {
-                    // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                    // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                     if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                     {
-                        return 1;
-                    }
-                    else
-                    {
-                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        if ( sExist == ID_FALSE )
                         {
                             return 1;
                         }
                         else
                         {
-                            // Nothing to do.
+                            return -1;
+                        }
+                    }
+                    else
+                    {
+                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            if ( sExist == ID_FALSE )
+                            {
+                                return 1;
+                            }
+                            else
+                            {
+                                return -1;
+                            }
+                        }
+                        else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            sExist = ID_TRUE;
                         }
                     }
                 }
             }
             else
             {
+                sExist = ID_FALSE;
                 for ( sIterator = ( sValue1 + sLength2 ),
                       sFence = ( sValue1 + sLength1 ) ;
                       ( sIterator < sFence ) ;
@@ -2796,11 +3443,18 @@ SInt mtdNcharIndexKeyMtdKeyAscComp( mtdValueInfo * aValueInfo1,
                 {
                     if ( *sIterator > 0x20 )
                     {
-                        return 1;
+                        if ( sExist == ID_FALSE )
+                        {
+                            return 1;
+                        }
+                        else
+                        {
+                            return -1;
+                        }
                     }
-                    else
+                    else if ( *sIterator < 0x20 )
                     {
-                        /* nothing todo */
+                        sExist = ID_TRUE;
                     }
                 }
             }
@@ -2820,42 +3474,65 @@ SInt mtdNcharIndexKeyMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 
         if ( mtl::mNationalCharSet->id == MTL_UTF16_ID )
         {
+            sExist = ID_FALSE;
             for ( sIterator = ( sValue2 + sLength1 ),
                   sFence = ( sValue2 + sLength2 ) ;
                   ( sIterator < ( sFence - 1 ) ) ;
                   sIterator += MTL_UTF16_PRECISION )
             {
-                // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                 if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                 {
-                    return -1;
-                }
-                else
-                {
-                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    if ( sExist == ID_FALSE )
                     {
                         return -1;
                     }
                     else
                     {
-                        // Nothing to do.
+                        return 1;
+                    }
+                }
+                else
+                {
+                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        if ( sExist == ID_FALSE )
+                        {
+                            return -1;
+                        }
+                        else
+                        {
+                            return 1;
+                        }
+                    }
+                    else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        sExist = ID_TRUE;
                     }
                 }
             }
         }
         else
         {
+            sExist = ID_FALSE;
             for ( sIterator = ( sValue2 + sLength1 ), sFence = ( sValue2 + sLength2 ) ;
                   ( sIterator < sFence ) ;
                   sIterator++ )
             {
                 if ( *sIterator > 0x20 )
                 {
-                    return -1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return -1;
+                    }
+                    else
+                    {
+                        return 1;
+                    }
                 }
-                else
+                else if ( *sIterator < 0x20 )
                 {
-                    /* nothing todo */
+                    sExist = ID_TRUE;
                 }
             }
         }
@@ -2898,7 +3575,7 @@ SInt mtdNcharIndexKeyMtdKeyDescComp( mtdValueInfo * aValueInfo1,
     const UChar*         sIterator;
     const UChar*         sFence;
     UInt                 sDirectKeyPartialSize;
-
+    idBool               sExist;
     //---------
     // value1
     //---------
@@ -2921,19 +3598,19 @@ SInt mtdNcharIndexKeyMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 
     /*
      * PROJ-2433 Direct Key Index
-     * Partial Direct Key Ï≤òÎ¶¨
+     * Partial Direct Key √≥∏Æ
      * 
-     * - Direct KeyÍ∞Ä partial direct keyÏù∏ Í≤ΩÏö∞
-     *   partialÎêú Í∏∏Ïù¥ÎßåÌÅºÎßå ÎπÑÍµêÌïòÎèÑÎ°ù lengthÎ•º ÏàòÏ†ïÌïúÎã§
+     * - Direct Key∞° partial direct key¿Œ ∞ÊøÏ
+     *   partialµ» ±Ê¿Ã∏∏≈≠∏∏ ∫Ò±≥«œµµ∑œ length∏¶ ºˆ¡§«—¥Ÿ
      */ 
     if ( ( aValueInfo1->flag & MTD_PARTIAL_KEY_MASK ) == MTD_PARTIAL_KEY_ON )
     {
         sDirectKeyPartialSize = aValueInfo1->length;
 
-        /* partail key Ïù¥Î©¥ */
+        /* partail key ¿Ã∏È */
         if ( sDirectKeyPartialSize != 0 )
         {
-            /* direct key Í∏∏Ïù¥Î≥¥Ï†ï*/
+            /* direct key ±Ê¿Ã∫∏¡§*/
             if ( ( sLength1 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength1 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -2943,7 +3620,7 @@ SInt mtdNcharIndexKeyMtdKeyDescComp( mtdValueInfo * aValueInfo1,
                 /* nothing todo */
             }
 
-            /* search key ÎèÑ partial Í∏∏Ïù¥ÎßåÌÅº Î≥¥Ï†ï*/
+            /* search key µµ partial ±Ê¿Ã∏∏≈≠ ∫∏¡§*/
             if ( ( sLength2 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength2 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -2988,31 +3665,47 @@ SInt mtdNcharIndexKeyMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 
             if ( mtl::mNationalCharSet->id == MTL_UTF16_ID )
             {
+                sExist = ID_FALSE;
                 for ( sIterator = ( sValue2 + sLength1 ),
                       sFence = ( sValue2 + sLength2 ) ;
                       ( sIterator < ( sFence - 1 ) ) ;
                       sIterator += MTL_UTF16_PRECISION )
                 {
-                    // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                    // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                     if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                     {
-                        return 1;
-                    }
-                    else
-                    {
-                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        if ( sExist == ID_FALSE )
                         {
                             return 1;
                         }
                         else
                         {
-                            // Nothing to do.
+                            return -1;
+                        }
+                    }
+                    else
+                    {
+                        if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            if ( sExist == ID_FALSE )
+                            {
+                                return 1;
+                            }
+                            else
+                            {
+                                return -1;
+                            }
+                        }
+                        else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                        {
+                            sExist = ID_TRUE;
                         }
                     }
                 }
             }
             else
             {
+                sExist = ID_FALSE;
                 for ( sIterator = ( sValue2 + sLength1 ),
                       sFence = ( sValue2 + sLength2 ) ;
                       ( sIterator < sFence ) ;
@@ -3020,11 +3713,18 @@ SInt mtdNcharIndexKeyMtdKeyDescComp( mtdValueInfo * aValueInfo1,
                 {
                     if ( *sIterator > 0x20 )
                     {
-                        return 1;
+                        if ( sExist == ID_FALSE )
+                        {
+                            return 1;
+                        }
+                        else
+                        {
+                            return -1;
+                        }
                     }
-                    else
+                    else if ( *sIterator < 0x20 )
                     {
-                        /* nothing todo */
+                        sExist = ID_TRUE;
                     }
                 }
             }
@@ -3044,41 +3744,64 @@ SInt mtdNcharIndexKeyMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 
         if ( mtl::mNationalCharSet->id == MTL_UTF16_ID )
         {
+            sExist = ID_FALSE;
             for ( sIterator = ( sValue1 + sLength2 ), sFence = ( sValue1 + sLength1 ) ;
                   sIterator < ( sFence - 1 ) ;
                   sIterator += MTL_UTF16_PRECISION )
             {
-                // BUG-41209 UTF16BE spaceÎäî { 0x00 0x20 }Ïù¥Îã§.
+                // BUG-41209 UTF16BE space¥¬ { 0x00 0x20 }¿Ã¥Ÿ.
                 if ( *sIterator > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][0] )
                 {
-                    return -1;
-                }
-                else
-                {
-                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    if ( sExist == ID_FALSE )
                     {
                         return -1;
                     }
                     else
                     {
-                        // Nothing to do.
+                        return 1;
+                    }
+                }
+                else
+                {
+                    if ( *(sIterator + 1) > mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        if ( sExist == ID_FALSE )
+                        {
+                            return -1;
+                        }
+                        else
+                        {
+                            return 1;
+                        }
+                    }
+                    else if ( *(sIterator + 1) < mtl::mNationalCharSet->specialCharSet[MTL_SP_IDX][1] )
+                    {
+                        sExist = ID_TRUE;
                     }
                 }
             }
         }
         else
         {
+            sExist = ID_FALSE;
             for ( sIterator = ( sValue1 + sLength2 ), sFence = ( sValue1 + sLength1 ) ;
                   ( sIterator < sFence ) ;
                   sIterator++ )
             {
                 if ( *sIterator > 0x20 )
                 {
-                    return -1;
+                    if ( sExist == ID_FALSE )
+                    {
+                        return -1;
+                    }
+                    else
+                    {
+                        return 1;
+                    }
                 }
-                else
+                else if ( *sIterator < 0x20 )
                 {
-                    /* nothing todo */
+                    sExist = ID_TRUE;
                 }
             }
         }
@@ -3124,7 +3847,7 @@ static IDE_RC mtdCanonize( const mtcColumn * aCanon,
     //sCanonBytePrecision = sLanguage->maxPrecision(aCanon->precision);
 
     // --------------------------
-    // ValueÏùò Î¨∏Ïûê Í∞úÏàò
+    // Value¿« πÆ¿⁄ ∞≥ºˆ
     // --------------------------
     sValueIndex = sValue->value;
     sValueFence = sValueIndex + sValue->length;
@@ -3213,7 +3936,7 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
 {
 /***********************************************************************
  *
- * Description : valueÏùò semantic Í≤ÄÏÇ¨ Î∞è mtcColum Ï¥àÍ∏∞Ìôî
+ * Description : value¿« semantic ∞ÀªÁ π◊ mtcColum √ ±‚»≠
  *
  * Implementation :
  *
@@ -3226,9 +3949,9 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
     IDE_TEST_RAISE( sCharVal->length + ID_SIZEOF(UShort) != aValueSize,
                     ERR_INVALID_LENGTH );
 
-    // Ï¥àÍ∏∞ÌôîÎêú aColumnÏùÄ cannonize() ÏãúÏóê ÏÇ¨Ïö©
-    // Ïù¥Îïå, data type moduleÏùò precision Ï†ïÎ≥¥ÎßåÏùÑ ÏÇ¨Ïö©ÌïòÎØÄÎ°ú,
-    // language Ï†ïÎ≥¥ ÏÑ§Ï†ïÌï† ÌïÑÏöîÏóÜÏùå
+    // √ ±‚»≠µ» aColumn¿∫ cannonize() Ω√ø° ªÁøÎ
+    // ¿Ã∂ß, data type module¿« precision ¡§∫∏∏∏¿ª ªÁøÎ«œπ«∑Œ,
+    // language ¡§∫∏ º≥¡§«“ « ø‰æ¯¿Ω
     IDE_TEST( mtc::initializeColumn( aColumn,
                                      & mtdNchar,
                                      1,                // arguments
@@ -3269,7 +3992,7 @@ IDE_RC mtdValueFromOracle( mtcColumn*  aColumn,
         aOracleLength = 0;
     }
 
-    // aColumnÏùò Ï¥àÍ∏∞Ìôî
+    // aColumn¿« √ ±‚»≠
     IDE_TEST( mtc::initializeColumn( aColumn,
                                      & mtdNchar,
                                      1,
@@ -3311,8 +4034,8 @@ static IDE_RC mtdStoredValue2MtdValue( UInt              aColumnSize,
 {
 /*******************************************************************
  * PROJ-1705
- * ÎîîÏä§ÌÅ¨ÌÖåÏù¥Î∏îÏª¨ÎüºÏùò Îç∞Ïù¥ÌÉÄÎ•º
- * qp Î†àÏΩîÎìúÏ≤òÎ¶¨ÏòÅÏó≠Ïùò Ìï¥Îãπ Ïª¨ÎüºÏúÑÏπòÏóê Î≥µÏÇ¨
+ * µΩ∫≈©≈◊¿Ã∫Ìƒ√∑≥¿« µ•¿Ã≈∏∏¶
+ * qp ∑πƒ⁄µÂ√≥∏Æøµø™¿« «ÿ¥Á ƒ√∑≥¿ßƒ°ø° ∫πªÁ
  *******************************************************************/
 
     mtdNcharType* sNcharValue;
@@ -3321,7 +4044,7 @@ static IDE_RC mtdStoredValue2MtdValue( UInt              aColumnSize,
     
     if( ( aDestValueOffset == 0 ) && ( aLength == 0 ) )
     {
-        // NULL Îç∞Ïù¥ÌÉÄ
+        // NULL µ•¿Ã≈∏
         sNcharValue->length = 0;
     }
     else
@@ -3348,9 +4071,9 @@ UInt mtdNullValueSize()
 {
 /*******************************************************************
  * PROJ-1705
- * Í∞Å Îç∞Ïù¥ÌÉÄÌÉÄÏûÖÏùò null ValueÏùò ÌÅ¨Í∏∞ Î∞òÌôò
- * Ïòà ) mtdNcharType ( UShort length; UChar value[1] ) ÏóêÏÑú
- *      lengthÌÉÄÏûÖÏù∏ UShortÏùò ÌÅ¨Í∏∞Î•º Î∞òÌôò
+ * ∞¢ µ•¿Ã≈∏≈∏¿‘¿« null Value¿« ≈©±‚ π›»Ø
+ * øπ ) mtdNcharType ( UShort length; UChar value[1] ) ø°º≠
+ *      length≈∏¿‘¿Œ UShort¿« ≈©±‚∏¶ π›»Ø
  *******************************************************************/
     return mtdActualSize( NULL, &mtdNcharNull );
 }
@@ -3359,10 +4082,10 @@ static UInt mtdHeaderSize()
 {
 /***********************************************************************
  * PROJ-1705
- * lengthÎ•º Í∞ÄÏßÄÎäî Îç∞Ïù¥ÌÉÄÌÉÄÏûÖÏùò length Ï†ïÎ≥¥Î•º Ï†ÄÏû•ÌïòÎäî Î≥ÄÏàòÏùò ÌÅ¨Í∏∞ Î∞òÌôò
- * Ïòà ) mtdNcharType ( UShort length; UChar value[1] ) ÏóêÏÑú
- *      lengthÌÉÄÏûÖÏù∏ UShortÏùò ÌÅ¨Í∏∞Î•º Î∞òÌôò
- *  integerÏôÄ Í∞ôÏùÄ Í≥†Ï†ïÍ∏∏Ïù¥ Îç∞Ïù¥ÌÉÄÌÉÄÏûÖÏùÄ 0 Î∞òÌôò
+ * length∏¶ ∞°¡ˆ¥¬ µ•¿Ã≈∏≈∏¿‘¿« length ¡§∫∏∏¶ ¿˙¿Â«œ¥¬ ∫Øºˆ¿« ≈©±‚ π›»Ø
+ * øπ ) mtdNcharType ( UShort length; UChar value[1] ) ø°º≠
+ *      length≈∏¿‘¿Œ UShort¿« ≈©±‚∏¶ π›»Ø
+ *  integerøÕ ∞∞¿∫ ∞Ì¡§±Ê¿Ã µ•¿Ã≈∏≈∏¿‘¿∫ 0 π›»Ø
  **********************************************************************/
 
     return ID_SIZEOF(UShort);
@@ -3377,7 +4100,7 @@ IDE_RC mtdNcharInterface::toNchar( mtcStack         * aStack,
 /***********************************************************************
  *
  * Description : 
- *      CHAR ÌÉÄÏûÖÏùÑ NCHAR ÌÉÄÏûÖÏúºÎ°ú Î≥ÄÌôòÌïòÎäî Ìï®Ïàò
+ *      CHAR ≈∏¿‘¿ª NCHAR ≈∏¿‘¿∏∑Œ ∫Ø»Ø«œ¥¬ «‘ºˆ
 
  * Implementation :
  *
@@ -3395,7 +4118,7 @@ IDE_RC mtdNcharInterface::toNchar( mtcStack         * aStack,
     SInt             sDestRemain = 0;
     SInt             sTempRemain = 0;
 
-    // Î≥ÄÌôò Í≤∞Í≥ºÏùò ÌÅ¨Í∏∞Î•º Ï≤¥ÌÅ¨ÌïòÍ∏∞ ÏúÑÌï®
+    // ∫Ø»Ø ∞·∞˙¿« ≈©±‚∏¶ √º≈©«œ±‚ ¿ß«‘
     sDestRemain = aDestCharSet->maxPrecision(aStack[0].column->precision);
 
     sSourceIndex = aSource->value;
@@ -3411,7 +4134,7 @@ IDE_RC mtdNcharInterface::toNchar( mtcStack         * aStack,
         sIdnDestCharSet = mtl::getIdnCharSet( aDestCharSet );
 
         //-----------------------------------------
-        // Ï∫êÎ¶≠ÌÑ∞ ÏÖã Î≥ÄÌôò
+        // ƒ≥∏Ø≈Õ º¬ ∫Ø»Ø
         //-----------------------------------------
         while( sSourceIndex < sSourceFence )
         {
@@ -3480,7 +4203,7 @@ IDE_RC mtdNcharInterface::toNchar( mtcStack         * aStack,
 /***********************************************************************
  *
  * Description : 
- *      CHAR ÌÉÄÏûÖÏùÑ NCHAR ÌÉÄÏûÖÏúºÎ°ú Î≥ÄÌôòÌïòÎäî Ìï®Ïàò
+ *      CHAR ≈∏¿‘¿ª NCHAR ≈∏¿‘¿∏∑Œ ∫Ø»Ø«œ¥¬ «‘ºˆ
 
  * Implementation :
  *
@@ -3498,7 +4221,7 @@ IDE_RC mtdNcharInterface::toNchar( mtcStack         * aStack,
     SInt             sDestRemain = 0;
     SInt             sTempRemain = 0;
     
-    // Î≥ÄÌôò Í≤∞Í≥ºÏùò ÌÅ¨Í∏∞Î•º Ï≤¥ÌÅ¨ÌïòÍ∏∞ ÏúÑÌï®
+    // ∫Ø»Ø ∞·∞˙¿« ≈©±‚∏¶ √º≈©«œ±‚ ¿ß«‘
     sDestRemain = aDestCharSet->maxPrecision(aStack[0].column->precision);
 
     sSourceIndex = aSource;
@@ -3514,7 +4237,7 @@ IDE_RC mtdNcharInterface::toNchar( mtcStack         * aStack,
         sIdnDestCharSet = mtl::getIdnCharSet( aDestCharSet );
 
         //-----------------------------------------
-        // Ï∫êÎ¶≠ÌÑ∞ ÏÖã Î≥ÄÌôò
+        // ƒ≥∏Ø≈Õ º¬ ∫Ø»Ø
         //-----------------------------------------
         while( sSourceIndex < sSourceFence )
         {
@@ -3581,7 +4304,7 @@ IDE_RC mtdNcharInterface::toChar( mtcStack         * aStack,
 /***********************************************************************
  *
  * Description :
- *      NCHAR ÌÉÄÏûÖÏùÑ CHAR ÌÉÄÏûÖÏúºÎ°ú Î≥ÄÌôòÌïòÎäî Ìï®Ïàò
+ *      NCHAR ≈∏¿‘¿ª CHAR ≈∏¿‘¿∏∑Œ ∫Ø»Ø«œ¥¬ «‘ºˆ
 
  * Implementation :
  *
@@ -3599,7 +4322,7 @@ IDE_RC mtdNcharInterface::toChar( mtcStack         * aStack,
     SInt             sTempRemain = 0;
     UShort           sSourceLen;
 
-    // Î≥ÄÌôò Í≤∞Í≥ºÏùò ÌÅ¨Í∏∞Î•º Ï≤¥ÌÅ¨ÌïòÍ∏∞ ÏúÑÌï®
+    // ∫Ø»Ø ∞·∞˙¿« ≈©±‚∏¶ √º≈©«œ±‚ ¿ß«‘
     sDestRemain = aStack[0].column->precision;
 
     sSourceIndex = aSource->value;
@@ -3616,7 +4339,7 @@ IDE_RC mtdNcharInterface::toChar( mtcStack         * aStack,
         sIdnDestCharSet = mtl::getIdnCharSet( aDestCharSet );
 
         //-----------------------------------------
-        // Ï∫êÎ¶≠ÌÑ∞ ÏÖã Î≥ÄÌôò
+        // ƒ≥∏Ø≈Õ º¬ ∫Ø»Ø
         //-----------------------------------------
         while( sSourceIndex < sSourceFence )
         {
@@ -3676,7 +4399,7 @@ IDE_RC mtdNcharInterface::toChar( mtcStack         * aStack,
 /***********************************************************************
  *
  * Description :
- *      NCHAR ÌÉÄÏûÖÏùÑ CHAR ÌÉÄÏûÖÏúºÎ°ú Î≥ÄÌôòÌïòÎäî Ìï®Ïàò
+ *      NCHAR ≈∏¿‘¿ª CHAR ≈∏¿‘¿∏∑Œ ∫Ø»Ø«œ¥¬ «‘ºˆ
 
  * Implementation :
  *
@@ -3694,7 +4417,7 @@ IDE_RC mtdNcharInterface::toChar( mtcStack         * aStack,
     SInt             sTempRemain = 0;
     UShort           sSourceLen;
 
-    // Î≥ÄÌôò Í≤∞Í≥ºÏùò ÌÅ¨Í∏∞Î•º Ï≤¥ÌÅ¨ÌïòÍ∏∞ ÏúÑÌï®
+    // ∫Ø»Ø ∞·∞˙¿« ≈©±‚∏¶ √º≈©«œ±‚ ¿ß«‘
     sDestRemain = aStack[0].column->precision;
 
     sSourceIndex = aSource->value;
@@ -3711,7 +4434,7 @@ IDE_RC mtdNcharInterface::toChar( mtcStack         * aStack,
         sIdnDestCharSet = mtl::getIdnCharSet( aDestCharSet );
 
         //-----------------------------------------
-        // Ï∫êÎ¶≠ÌÑ∞ ÏÖã Î≥ÄÌôò
+        // ƒ≥∏Ø≈Õ º¬ ∫Ø»Ø
         //-----------------------------------------
         while( sSourceLen-- > 0 )
         {
@@ -3770,7 +4493,7 @@ IDE_RC mtdNcharInterface::toNchar( SInt               aPrecision,
 /***********************************************************************
  *
  * Description : 
- *      CHAR ÌÉÄÏûÖÏùÑ NCHAR ÌÉÄÏûÖÏúºÎ°ú Î≥ÄÌôòÌïòÎäî Ìï®Ïàò
+ *      CHAR ≈∏¿‘¿ª NCHAR ≈∏¿‘¿∏∑Œ ∫Ø»Ø«œ¥¬ «‘ºˆ
  *      PROJ-2632
  *
  * Implementation :
@@ -3803,7 +4526,7 @@ IDE_RC mtdNcharInterface::toNchar( SInt               aPrecision,
         sIdnDestCharSet = mtl::getIdnCharSet( aDestCharSet );
 
         //-----------------------------------------
-        // Ï∫êÎ¶≠ÌÑ∞ ÏÖã Î≥ÄÌôò
+        // ƒ≥∏Ø≈Õ º¬ ∫Ø»Ø
         //-----------------------------------------
         while( sSourceIndex < sSourceFence )
         {
@@ -3871,7 +4594,7 @@ IDE_RC mtdNcharInterface::toChar( SInt               aPrecision,
 /***********************************************************************
  *
  * Description :
- *      NCHAR ÌÉÄÏûÖÏùÑ CHAR ÌÉÄÏûÖÏúºÎ°ú Î≥ÄÌôòÌïòÎäî Ìï®Ïàò
+ *      NCHAR ≈∏¿‘¿ª CHAR ≈∏¿‘¿∏∑Œ ∫Ø»Ø«œ¥¬ «‘ºˆ
  *      PROJ-2632
  *
  * Implementation :
@@ -3905,7 +4628,7 @@ IDE_RC mtdNcharInterface::toChar( SInt               aPrecision,
         sIdnDestCharSet = mtl::getIdnCharSet( aDestCharSet );
 
         //-----------------------------------------
-        // Ï∫êÎ¶≠ÌÑ∞ ÏÖã Î≥ÄÌôò
+        // ƒ≥∏Ø≈Õ º¬ ∫Ø»Ø
         //-----------------------------------------
         while( sSourceIndex < sSourceFence )
         {
@@ -3969,9 +4692,9 @@ IDE_RC mtdNcharInterface::toNchar4UnicodeLiteral(
  * Description :
  *
  *      PROJ-1579 NCHAR
- *      U ÌÉÄÏûÖ Î¨∏ÏûêÏó¥ÏùÑ NCHAR ÌÉÄÏûÖÏúºÎ°ú Î≥ÄÍ≤ΩÌïúÎã§.
- *      U ÌÉÄÏûÖ Î¨∏ÏûêÏó¥ÏóêÎäî Îç∞Ïù¥ÌÑ∞Î≤†Ïù¥Ïä§ Ï∫êÎ¶≠ÌÑ∞ ÏÖãÍ≥º '\'Î°ú ÏãúÏûëÌïòÎäî
- *      Ïú†ÎãàÏΩîÎìú Ìè¨Ïù∏Ìä∏Í∞Ä Ïò¨ Ïàò ÏûàÎã§.
+ *      U ≈∏¿‘ πÆ¿⁄ø≠¿ª NCHAR ≈∏¿‘¿∏∑Œ ∫Ø∞Ê«—¥Ÿ.
+ *      U ≈∏¿‘ πÆ¿⁄ø≠ø°¥¬ µ•¿Ã≈Õ∫£¿ÃΩ∫ ƒ≥∏Ø≈Õ º¬∞˙ '\'∑Œ Ω√¿€«œ¥¬
+ *      ¿Ø¥œƒ⁄µÂ ∆˜¿Œ∆Æ∞° ø√ ºˆ ¿÷¥Ÿ.
  *
  *
  * Implementation :
@@ -3998,10 +4721,10 @@ IDE_RC mtdNcharInterface::toNchar4UnicodeLiteral(
     sIdnResultCharSet = mtl::getIdnCharSet( aResultCharSet );
     sIdnU16CharSet    = mtl::getIdnCharSet( sU16CharSet );
 
-    // Ï∫êÎ¶≠ÌÑ∞ ÏÖã Î≥ÄÌôò Ïãú ÏÇ¨Ïö©ÌïòÎäî Î≤ÑÌçºÏùò Í∏∏Ïù¥
+    // ƒ≥∏Ø≈Õ º¬ ∫Ø»Ø Ω√ ªÁøÎ«œ¥¬ πˆ∆€¿« ±Ê¿Ã
     sDestRemain = aResultFence - *aResultValue;
 
-    // ÏÜåÏä§Ïùò Í∏∏Ïù¥
+    // º“Ω∫¿« ±Ê¿Ã
     sSrcRemain = aSourceFence - aSourceIndex;
 
     sTempSourceIndex = aSourceIndex;
@@ -4051,7 +4774,7 @@ IDE_RC mtdNcharInterface::toNchar4UnicodeLiteral(
         {
             sTempSourceIndex = aSourceIndex;
 
-            // 16ÏßÑÏàò Î¨∏Ïûê 4Í∞úÎ•º ÏùΩÎäîÎã§.
+            // 16¡¯ºˆ πÆ¿⁄ 4∞≥∏¶ ¿–¥¬¥Ÿ.
             for( i = 0; i < 4; i++ )
             {
                 IDE_TEST_RAISE( aSourceCharSet->nextCharPtr( & aSourceIndex, aSourceFence )
@@ -4060,7 +4783,7 @@ IDE_RC mtdNcharInterface::toNchar4UnicodeLiteral(
 
             (void)aSourceCharSet->nextCharPtr( & sTempSourceIndex, aSourceFence );
             
-            // UTF16 Í∞íÏùÑ sNibbleValueÏóê Î∞õÏïÑÏò®Îã§.
+            // UTF16 ∞™¿ª sNibbleValueø° πﬁæ∆ø¬¥Ÿ.
             IDE_TEST_RAISE( mtc::makeNibble( sNibbleValue,
                                              0,
                                              sTempSourceIndex,
@@ -4072,7 +4795,7 @@ IDE_RC mtdNcharInterface::toNchar4UnicodeLiteral(
 
             if( aResultCharSet->id != MTL_UTF16_ID )
             {
-                // UTF16 Ï∫êÎ¶≠ÌÑ∞ ÏÖã => ÎÇ¥ÏÖîÎÑê Ï∫êÎ¶≠ÌÑ∞ ÏÖãÏúºÎ°ú Î≥ÄÌôòÌïúÎã§.
+                // UTF16 ƒ≥∏Ø≈Õ º¬ => ≥ªº≈≥Œ ƒ≥∏Ø≈Õ º¬¿∏∑Œ ∫Ø»Ø«—¥Ÿ.
                 IDE_TEST( convertCharSet( sIdnU16CharSet,
                                           sIdnResultCharSet,
                                           sNibbleValue,
@@ -4096,7 +4819,7 @@ IDE_RC mtdNcharInterface::toNchar4UnicodeLiteral(
 
             if( sIdnSourceCharSet != sIdnResultCharSet )
             {
-                // DB Ï∫êÎ¶≠ÌÑ∞ ÏÖã => ÎÇ¥ÏÖîÎÑê Ï∫êÎ¶≠ÌÑ∞ ÏÖãÏúºÎ°ú Î≥ÄÌôòÌïúÎã§.
+                // DB ƒ≥∏Ø≈Õ º¬ => ≥ªº≈≥Œ ƒ≥∏Ø≈Õ º¬¿∏∑Œ ∫Ø»Ø«—¥Ÿ.
                 IDE_TEST( convertCharSet( sIdnSourceCharSet,
                                           sIdnResultCharSet,
                                           aSourceIndex,
@@ -4106,7 +4829,7 @@ IDE_RC mtdNcharInterface::toNchar4UnicodeLiteral(
                                           MTU_NLS_NCHAR_CONV_EXCP )
                           != IDE_SUCCESS );
             }
-            // Îç∞Ïù¥ÌÑ∞ Î≤†Ïù¥Ïä§ Ï∫êÎ¶≠ÌÑ∞ ÏÖã = ÎÇ¥ÏÖîÎÑê Ï∫êÎ¶≠ÌÑ∞ ÏÖã = UTF8
+            // µ•¿Ã≈Õ ∫£¿ÃΩ∫ ƒ≥∏Ø≈Õ º¬ = ≥ªº≈≥Œ ƒ≥∏Ø≈Õ º¬ = UTF8
             else
             {
                 sTempSourceIndex = aSourceIndex;
@@ -4159,9 +4882,9 @@ static UInt mtdStoreSize( const smiColumn * /*aColumn*/ )
 {
 /***********************************************************************
  * PROJ-2399 row tmaplate 
- * smÏóê Ï†ÄÏû•ÎêòÎäî Îç∞Ïù¥ÌÑ∞Ïùò ÌÅ¨Í∏∞Î•º Î∞òÌôòÌïúÎã§.
- * variable ÌÉÄÏûÖÏùò Îç∞Ïù¥ÌÑ∞ ÌÉÄÏûÖÏùÄ ID_UINT_MAXÎ•º Î∞òÌôò
- * mtheaderÍ∞Ä smÏóê Ï†ÄÏû•ÎêúÍ≤ΩÏö∞Í∞Ä ÏïÑÎãàÎ©¥ mtheaderÌÅ¨Í∏∞Î•º ÎπºÏÑú Î∞òÌôò
+ * smø° ¿˙¿Âµ«¥¬ µ•¿Ã≈Õ¿« ≈©±‚∏¶ π›»Ø«—¥Ÿ.
+ * variable ≈∏¿‘¿« µ•¿Ã≈Õ ≈∏¿‘¿∫ ID_UINT_MAX∏¶ π›»Ø
+ * mtheader∞° smø° ¿˙¿Âµ»∞ÊøÏ∞° æ∆¥œ∏È mtheader≈©±‚∏¶ ª©º≠ π›»Ø
  **********************************************************************/
 
     return ID_UINT_MAX;

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smiTableCursor.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smiTableCursor.h 89495 2020-12-14 05:19:22Z emlee $
  **********************************************************************/
 
 #ifndef _O_SMI_TABLE_CURSOR_H_
@@ -30,12 +30,12 @@
 # include <smxTableInfoMgr.h>
 
 /* FOR A4 : smiTableSpecificFuncs
- *    ë³¸ êµ¬ì¡°ì²´ëŠ” Disk Tableê³¼ Disk Temp Table,Memory Tableì—ì„œ
- *    ì„œë¡œ ë‹¤ë¥¸ ë™ì‘ì„ í•˜ëŠ”
- *    ì»¤ì„œ í•¨ìˆ˜ë“¤ì„ êµ¬ë³„í•˜ì—¬ ë¯¸ë¦¬ í•¨ìˆ˜í¬ì¸í„°ë¥¼ ì„¸íŒ…í•´ ë†“ê³  ì‚¬ìš©í•¨ìœ¼ë¡œì¨
- *    ëŸ°íƒ€ì…ì‹œì— Table íƒ€ì…ì— ëŒ€í•œ ë¹„êµë¥¼ ë§‰ê³ ì í•¨ì´ë‹¤.
- *    ì—¬ê¸°ì— ì—†ëŠ” restart, insertRow, deleteRow í•¨ìˆ˜ëŠ”
- *    Memory Tableê³¼ Disk Tableì—ì„œ ë™ì¼í•˜ê²Œ ë™ì‘í•œë‹¤.
+ *    º» ±¸Á¶Ã¼´Â Disk Table°ú Disk Temp Table,Memory Table¿¡¼­
+ *    ¼­·Î ´Ù¸¥ µ¿ÀÛÀ» ÇÏ´Â
+ *    Ä¿¼­ ÇÔ¼öµéÀ» ±¸º°ÇÏ¿© ¹Ì¸® ÇÔ¼öÆ÷ÀÎÅÍ¸¦ ¼¼ÆÃÇØ ³õ°í »ç¿ëÇÔÀ¸·Î½á
+ *    ·±Å¸ÀÔ½Ã¿¡ Table Å¸ÀÔ¿¡ ´ëÇÑ ºñ±³¸¦ ¸·°íÀÚ ÇÔÀÌ´Ù.
+ *    ¿©±â¿¡ ¾ø´Â restart, insertRow, deleteRow ÇÔ¼ö´Â
+ *    Memory Table°ú Disk Table¿¡¼­ µ¿ÀÏÇÏ°Ô µ¿ÀÛÇÑ´Ù.
  */
 typedef struct tagTableSpecificFuncs
 {
@@ -87,9 +87,9 @@ typedef IDE_RC (*smiGetRemoteTableNullRowFunc)( smiTableCursor  * aCursor,
                                                 void           ** aRow,
                                                 scGRID          * aGRID );
 
-/* Disk, Memory, Temp Tableì— ëŒ€í•œ ê³µìš© Interfaceì¸ ê´€ê³„ë¡œ
-   ê°ê°ì˜ Tableì— ëŒ€í•œ ì—°ì‚°ìë¥¼ Function Pointerë¡œ Cursor Openì‹œ
-   ê²°ì •í•´ì¤€ë‹¤.*/
+/* Disk, Memory, Temp Table¿¡ ´ëÇÑ °ø¿ë InterfaceÀÎ °ü°è·Î
+   °¢°¢ÀÇ Table¿¡ ´ëÇÑ ¿¬»êÀÚ¸¦ Function Pointer·Î Cursor Open½Ã
+   °áÁ¤ÇØÁØ´Ù.*/
 
 class smiTableCursor
 {
@@ -98,11 +98,11 @@ class smiTableCursor
 
  public:
     /* For Statement */
-    // ì´ Cursorê°€ ì†í•´ ìˆëŠ” Statementì˜ Cursorì˜ Linked List
+    // ÀÌ Cursor°¡ ¼ÓÇØ ÀÖ´Â StatementÀÇ CursorÀÇ Linked List
     smiTableCursor*          mPrev;
     smiTableCursor*          mNext;
 
-    // Cursorê°€ ì½ì–´ì•¼ í•  Viewë¥¼ ê²°ì •í•˜ëŠ” SCN
+    // Cursor°¡ ÀĞ¾î¾ß ÇÒ View¸¦ °áÁ¤ÇÏ´Â SCN
     smSCN                    mSCN;
     // Infinite
     smSCN                    mInfinite;
@@ -110,12 +110,12 @@ class smiTableCursor
  
     //----------------------------------------
     // PROJ-1509
-    // mFstUndoRecSID : cursor open ì‹œ, next undo recordì˜ SID ì €ì¥
+    // mFstUndoRecSID : cursor open ½Ã, next undo recordÀÇ SID ÀúÀå
     //
-    // mCurUndoRecSID    : readOldRow() ë˜ëŠ” readNewRow() ìˆ˜í–‰ ì‹œ,
-    //                     í˜„ì¬ undo recordì˜ SID ì €ì¥
+    // mCurUndoRecSID    : readOldRow() ¶Ç´Â readNewRow() ¼öÇà ½Ã,
+    //                     ÇöÀç undo recordÀÇ SID ÀúÀå
     //
-    // mLstUndoPID : cursor close ì‹œ, ë§ˆì§€ë§‰ undo recordì˜ SID ì €ì¥
+    // mLstUndoPID : cursor close ½Ã, ¸¶Áö¸· undo recordÀÇ SID ÀúÀå
     //----------------------------------------
     sdSID                       mFstUndoRecSID;
     sdSID                       mCurUndoRecSID;
@@ -125,7 +125,7 @@ class smiTableCursor
     sdRID                       mCurUndoExtRID;
     sdRID                       mLstUndoExtRID;
 
-    // Transactionì˜ All Cursorì˜ Double Linked Listë¥¼ êµ¬ì„±.
+    // TransactionÀÇ All CursorÀÇ Double Linked List¸¦ ±¸¼º.
     smiTableCursor*          mAllPrev;
     smiTableCursor*          mAllNext;
 
@@ -135,15 +135,15 @@ class smiTableCursor
     UInt                     mTransFlag;
 
  public:
-    // Cursorê°€ ì†í•´ ìˆëŠ” Statement ID
-    smiStatement*            mStatement;
-    // Cursorê°€ Opení•œ Table Header
+    // Cursor°¡ ¼ÓÇØ ÀÖ´Â Statement
+    smiStatement           * mStatement;
+    // Cursor°¡ OpenÇÑ Table Header
     void*                    mTable;
-    // PROJ-1618 Online Dump: DUMP TABLEì˜ Object
+    // PROJ-1618 Online Dump: DUMP TABLEÀÇ Object
     void*                    mDumpObject;
-    // Cursorê°€ Indexë¥¼ ì´ìš©í•  ê²½ìš° Index Header Pointerë¥¼ ê°€ë¦¬í‚´ ì•„ë‹ˆë©´ NULL
+    // Cursor°¡ Index¸¦ ÀÌ¿ëÇÒ °æ¿ì Index Header Pointer¸¦ °¡¸®Å´ ¾Æ´Ï¸é NULL
     void*                    mIndex;
-    // Interatorê´€ë ¨ Memory í• ë‹¹ ë° ì´ˆê¸°í™” Routineì´ ê°ê°ì˜ Index Moduleì— ìˆìŒ.
+    // Interator°ü·Ã Memory ÇÒ´ç ¹× ÃÊ±âÈ­ RoutineÀÌ °¢°¢ÀÇ Index Module¿¡ ÀÖÀ½.
     void*                    mIndexModule;
     // Iterator Pointer
     smiIterator*             mIterator;
@@ -151,26 +151,26 @@ class smiTableCursor
     /* BUG-43408, BUG-45368 */
     ULong                    mIteratorBuffer[ SMI_ITERATOR_SIZE / ID_SIZEOF(ULong) ];
 
-    // Updateì‹œ Updateë˜ëŠ” Column Pointer
+    // Update½Ã UpdateµÇ´Â Column Pointer
     const smiColumnList*     mColumns;
 
     // SMI_LOCK_ ... + SMI_TRAVERSE ... + SMI_PREVIOUS_ ...
     UInt                     mFlag;
-    // Tableì— ê±¸ë ¤ìˆëŠ” Lock Mode
+    // Table¿¡ °É·ÁÀÖ´Â Lock Mode
     smlLockMode              mLockMode;
     // if mUntouchable == TRUE, ReadOnly, else Write.
     idBool                   mUntouchable;
-    // if mUntouchable == FALSE and í˜„ì¬ Statementì˜ Cursorì¤‘ì— ê°™ì€
-    // Tableì— ëŒ€í•´ opení•œ Cursorê°€ ìˆì„ ê²½ìš°, mIsSoloCursor = ID_FALSE,
+    // if mUntouchable == FALSE and ÇöÀç StatementÀÇ CursorÁß¿¡ °°Àº
+    // Table¿¡ ´ëÇØ openÇÑ Cursor°¡ ÀÖÀ» °æ¿ì, mIsSoloCursor = ID_FALSE,
     // else mIsSoloCursor = ID_TRUE
     idBool                   mIsSoloCursor;
     // SMI_.._CURSOR (SELECT, INSERT, UPDATE, DELETE)
     UInt                     mCursorType;
 
-    /* BUG-21866: Disk Tableì— Insertì‹œ Insert Undo Recoë¥¼ ê¸°ë¡í•˜ì§€ ë§ì.
+    /* BUG-21866: Disk Table¿¡ Insert½Ã Insert Undo Reco¸¦ ±â·ÏÇÏÁö ¸»ÀÚ.
      *
-     * ID_FALSEì´ë©´ Insertì‹œ Undo Recì„ ê¸°ë¡í•˜ì§€ ì•ŠëŠ”ë‹¤. Trigerë‚˜ Foreign Key
-     * ê°€ ì—†ëŠ” ê²½ìš°ëŠ” Insert Undo Recì´ ë¶ˆí•„ìš”í•˜ë‹¤.
+     * ID_FALSEÀÌ¸é Insert½Ã Undo RecÀ» ±â·ÏÇÏÁö ¾Ê´Â´Ù. Triger³ª Foreign Key
+     * °¡ ¾ø´Â °æ¿ì´Â Insert Undo RecÀÌ ºÒÇÊ¿äÇÏ´Ù.
      * */
     idBool                   mNeedUndoRec;
 
@@ -178,23 +178,23 @@ class smiTableCursor
     smiCursorProperties      mOrgCursorProp;
     smiCursorProperties      mCursorProp;
     smiTableSpecificFuncs    mOps;
-    //PROJ-1677 DEQUEUE
-    smiRecordLockWaitInfo    mRecordLockWaitInfo;
+
+    idBool                   mIsDequeue;
 
     //----------------------------------------
     // PROJ-1509
-    // mFstOidNode  : íŠ¸ëœì­ì…˜ì˜ oid list ì¤‘ì—ì„œ cursor open ë‹¹ì‹œ ë§ˆì§€ë§‰
+    // mFstOidNode  : Æ®·£Àè¼ÇÀÇ oid list Áß¿¡¼­ cursor open ´ç½Ã ¸¶Áö¸·
     //                oid node
-    // mFstOidCount : íŠ¸ëœì­ì…˜ì˜ oid list ì¤‘ì—ì„œ cursor open ë‹¹ì‹œ ë§ˆì§€ë§‰
-    //                oid nodeì˜ ë§ˆì§€ë§‰ oid record ìœ„ì¹˜
-    // mCurOidNode  : readOldRow() ë˜ëŠ” readNewRow() ìˆ˜í–‰ ì‹œ,
-    //                í˜„ì¬ oid node ìœ„ì¹˜
-    // mCurOidIndex : readOldRow() ë˜ëŠ” readNewRow() ìˆ˜í–‰ ì‹œ,
-    //                í˜„ì¬ oid node ìœ„ì¹˜ì˜ oid record ìœ„ì¹˜
-    // mLstOidNode  : íŠ¸ëœì­ì…˜ì˜ oid list ì¤‘ì—ì„œ cursor close ë‹¹ì‹œ ë§ˆì§€ë§‰
-    //                oid node ìœ„ì¹˜
-    // mLstOidCount : íŠ¸ëœì­ì…˜ì˜ oid list ì¤‘ì—ì„œ cursor close ë‹¹ì‹œ ë§ˆì§€ë§‰
-    //                oid nodeì˜ ë§ˆì§€ë§‰ record ìœ„ì¹˜
+    // mFstOidCount : Æ®·£Àè¼ÇÀÇ oid list Áß¿¡¼­ cursor open ´ç½Ã ¸¶Áö¸·
+    //                oid nodeÀÇ ¸¶Áö¸· oid record À§Ä¡
+    // mCurOidNode  : readOldRow() ¶Ç´Â readNewRow() ¼öÇà ½Ã,
+    //                ÇöÀç oid node À§Ä¡
+    // mCurOidIndex : readOldRow() ¶Ç´Â readNewRow() ¼öÇà ½Ã,
+    //                ÇöÀç oid node À§Ä¡ÀÇ oid record À§Ä¡
+    // mLstOidNode  : Æ®·£Àè¼ÇÀÇ oid list Áß¿¡¼­ cursor close ´ç½Ã ¸¶Áö¸·
+    //                oid node À§Ä¡
+    // mLstOidCount : Æ®·£Àè¼ÇÀÇ oid list Áß¿¡¼­ cursor close ´ç½Ã ¸¶Áö¸·
+    //                oid nodeÀÇ ¸¶Áö¸· record À§Ä¡
     //----------------------------------------
     void*                    mFstOidNode;
     UInt                     mFstOidCount;
@@ -203,10 +203,10 @@ class smiTableCursor
     void*                    mLstOidNode;
     UInt                     mLstOidCount;
     /*
-      Openì‹œ Transactionì˜ OID Listì˜ ë§ˆì§€ë§‰ ìœ„ì¹˜ë¥¼ ê°€ë¦¬í‚´.
+      Open½Ã TransactionÀÇ OID ListÀÇ ¸¶Áö¸· À§Ä¡¸¦ °¡¸®Å´.
       ex)
       Trans->1 Node (1,2,3) , 2 Node (1,2,3), 3 Node (1, 2).
-      ì´ë©´ mOidNode = 3Node, mOidCount = 2ê°€ ëœë‹¤.
+      ÀÌ¸é mOidNode = 3Node, mOidCount = 2°¡ µÈ´Ù.
     void*                    mOidNode;
     UInt                     mOidCount;
     */
@@ -214,7 +214,7 @@ class smiTableCursor
     // Seek Function Pointer (FetchNext, FetchPrev)
     smSeekFunc              mSeek[2];
     
-    // mTableì— ëŒ€í•œ ì—°ì‚°ì(Disk, Memory, Temp Table)
+    // mTable¿¡ ´ëÇÑ ¿¬»êÀÚ(Disk, Memory, Temp Table)
     smTableCursorInsertFunc  mInsert;
     smTableCursorUpdateFunc  mUpdate;
     smTableCursorRemoveFunc  mRemove;
@@ -226,23 +226,23 @@ class smiTableCursor
     ULong                   mCheckUniqueIdxBit;
     SChar                 * mUpdateInplaceEscalationPoint;
 
-    /* Table Info: í˜„ì¬ ì´ Cursorê°€ Tableì— ëŒ€í•´ Insert, Deletí•œ Record ê°¯ìˆ˜
+    /* Table Info: ÇöÀç ÀÌ Cursor°¡ Table¿¡ ´ëÇØ Insert, DeletÇÑ Record °¹¼ö
        : PRJ-1496 */
     smxTableInfo*            mTableInfo;
 
-    // Member ì´ˆê¸°í™”
+    // Member ÃÊ±âÈ­
     void init( void );
 
     // PROJ-2068
     void                   * mDPathSegInfo;
 
-    // ë§ˆì§€ë§‰ì— Insertëœ Row Info
+    // ¸¶Áö¸·¿¡ InsertµÈ Row Info
     scGRID                   mLstInsRowGRID;
     SChar                  * mLstInsRowPtr;
 
 public:
 
-    /* ì‚­ì œë  í•¨ìˆ˜ ì…ë‹ˆë‹¤. ì‚¬ìš©ì„ ê¸ˆì§€í•©ë‹ˆë‹¤.       */
+    /* »èÁ¦µÉ ÇÔ¼ö ÀÔ´Ï´Ù. »ç¿ëÀ» ±İÁöÇÕ´Ï´Ù.       */
     idBool isOpened( void ) { return ID_TRUE; }
 
     void initialize();
@@ -252,9 +252,9 @@ public:
    /****************************************/
 
     /* For A4 :
-       ì¸ìë¥¼ ì¤„ì´ê¸° ìœ„í•´ Iteratorê´€ë ¨ ì¸ìë¥¼ ì—†ì• ê³  ë‚´ë¶€ì ìœ¼ë¡œ ìƒì„±í•˜ë©°
-       ì»¤ì„œê´€ë ¨ ì—¬ëŸ¬ Propertyë“¤ì„ í•˜ë‚˜ì˜ êµ¬ì¡°ì²´(smiCursorProperties)ë¡œ
-       ë¬¶ì–´ì„œ ì „ë‹¬í•¨
+       ÀÎÀÚ¸¦ ÁÙÀÌ±â À§ÇØ Iterator°ü·Ã ÀÎÀÚ¸¦ ¾ø¾Ö°í ³»ºÎÀûÀ¸·Î »ı¼ºÇÏ¸ç
+       Ä¿¼­°ü·Ã ¿©·¯ PropertyµéÀ» ÇÏ³ªÀÇ ±¸Á¶Ã¼(smiCursorProperties)·Î
+       ¹­¾î¼­ Àü´ŞÇÔ
     */
     IDE_RC open( smiStatement*        aStatement,
                  const void*          aTable,
@@ -267,32 +267,31 @@ public:
                  UInt                 aFlag,
                  smiCursorType        aCursorType,
                  smiCursorProperties* aProperties,
-                 //PROJ-1677 DEQUEUE
-                 smiRecordLockWaitFlag aRecordLockWaitFlag = SMI_RECORD_LOCKWAIT);
+                 idBool               aIsDequeue = ID_FALSE );
     /*
-      Cursorë¥¼ ì‹œì‘ìœ„ì¹˜ë¡œ ë‹¤ì‹œ ì˜®ê¸´ë‹¤.
-      ë‚´ë¶€ì ìœ¼ë¡œ Iteratorë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+      Cursor¸¦ ½ÃÀÛÀ§Ä¡·Î ´Ù½Ã ¿Å±ä´Ù.
+      ³»ºÎÀûÀ¸·Î Iterator¸¦ ÃÊ±âÈ­ÇÑ´Ù.
     */
     IDE_RC restart( const smiRange*      aKeyRange,
                     const smiRange*      aKeyFilter,
                     const smiCallBack*   aRowFilter );
-    // Cursorë¥¼ Closeí•œë‹¤.
+    // Cursor¸¦ CloseÇÑ´Ù.
     IDE_RC close( void );
 
-    /* Cursorì˜ Key Rangeì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” ì²«ë²ˆì§¸ Rowì˜ ë°”ë¡œì „ ìœ„ì¹˜ë¡œ
-       Iteratorë¥¼ Move.*/
+    /* CursorÀÇ Key RangeÁ¶°ÇÀ» ¸¸Á·ÇÏ´Â Ã¹¹øÂ° RowÀÇ ¹Ù·ÎÀü À§Ä¡·Î
+       Iterator¸¦ Move.*/
     IDE_RC beforeFirst( void );
 
-    /* Cursorì˜ Key Rangeì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” ë§ˆì§€ë§‰ Rowì˜ ë°”ë¡œ ë‹¤ìŒ ìœ„ì¹˜ë¡œ
-       Iteratorë¥¼ Move.*/
+    /* CursorÀÇ Key RangeÁ¶°ÇÀ» ¸¸Á·ÇÏ´Â ¸¶Áö¸· RowÀÇ ¹Ù·Î ´ÙÀ½ À§Ä¡·Î
+       Iterator¸¦ Move.*/
     IDE_RC afterLast( void );
 
     /* FOR A4 : readRow
-       Disk Tableì˜ tupleì— ëŒ€í•œ idë¥¼ ì§€ì›í•´ì£¼ê¸° ìœ„í•´ RIDë¥¼ ê°™ì´ ë°˜í™˜
+       Disk TableÀÇ tuple¿¡ ´ëÇÑ id¸¦ Áö¿øÇØÁÖ±â À§ÇØ RID¸¦ °°ÀÌ ¹İÈ¯
     */
 
-    /* Cursorì˜ Iteratorë¥¼ aFlagì˜ ê°’ì— ë”°ë¼ì„œ ì´ë™ì‹œí‚¤ë©´ì„œ ì›í•˜ëŠ”
-       Rowë¥¼ ì½ì–´ì˜¨ë‹¤.*/
+    /* CursorÀÇ Iterator¸¦ aFlagÀÇ °ª¿¡ µû¶ó¼­ ÀÌµ¿½ÃÅ°¸é¼­ ¿øÇÏ´Â
+       Row¸¦ ÀĞ¾î¿Â´Ù.*/
     IDE_RC readRow( const void  ** aRow,
                     scGRID       * aGRID,
                     UInt           aFlag /* SMI_FIND ... */ );
@@ -303,7 +302,7 @@ public:
     IDE_RC setRowPosition( void   * aRow,
                            scGRID   aRowGRID );
 
-    // Cursorì˜ Rangeì¡°ê±´ê³¼ Filterì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” ëª¨ë“  Rowì˜ ê°¯ìˆ˜ë¥¼ êµ¬í•œë‹¤.
+    // CursorÀÇ RangeÁ¶°Ç°ú FilterÁ¶°ÇÀ» ¸¸Á·ÇÏ´Â ¸ğµç RowÀÇ °¹¼ö¸¦ ±¸ÇÑ´Ù.
     IDE_RC countRow( const void ** aRow,
                      SLong *       aRowCount );
 
@@ -313,7 +312,7 @@ public:
 
     scGRID getLastInsertedRID( );
 
-    // í˜„ì¬ Cursorê°€ ê°€ë¦¬í‚¤ëŠ” Rowë¥¼ updateí•œë‹¤.
+    // ÇöÀç Cursor°¡ °¡¸®Å°´Â Row¸¦ updateÇÑ´Ù.
     IDE_RC updateRow( const smiValue        * aValueList,
                       const smiDMLRetryInfo * aRetryInfo );
 
@@ -343,7 +342,7 @@ public:
     }
 
 
-    // í˜„ì¬ Cursorê°€ ê°€ë¦¬í‚¤ëŠ” Rowë¥¼ Deleteí•œë‹¤.
+    // ÇöÀç Cursor°¡ °¡¸®Å°´Â Row¸¦ DeleteÇÑ´Ù.
     IDE_RC deleteRow( const smiDMLRetryInfo * aRetryInfo );
 
     IDE_RC deleteRow()
@@ -351,9 +350,7 @@ public:
         return deleteRow( NULL );
     };
 
-    //PROJ-1677 DEQUEUE
-    inline UChar getRecordLockWaitStatus();
-    // í˜„ì¬ Cursorê°€ ê°€ë¦¬í‚¤ëŠ” Rowì— ëŒ€í•´ì„œ Lockì„ ì¡ëŠ”ë‹¤.
+    // ÇöÀç Cursor°¡ °¡¸®Å°´Â Row¿¡ ´ëÇØ¼­ LockÀ» Àâ´Â´Ù.
     IDE_RC lockRow();
 
     IDE_RC doCommonJobs4Open( smiStatement*        aStatement,
@@ -388,13 +385,13 @@ public:
     IDE_RC readNewRow( const void ** aRow,
                        scGRID      * aRowGRID );
 
-    // PROJ-1618 Online Dump: Dump Tableì˜ Objectë¥¼ ì„¤ì •í•œë‹¤.
+    // PROJ-1618 Online Dump: Dump TableÀÇ Object¸¦ ¼³Á¤ÇÑ´Ù.
     void   setDumpObject( void * aDumpObject );
 
     IDE_RC getTableNullRow( void ** aRow, scGRID * aRid );
 
-    // TASK-2398 Disk/Memory Logë¶„ë¦¬
-    // Hybrid Transaction ê²€ì‚¬ ì‹¤ì‹œ
+    // TASK-2398 Disk/Memory LogºĞ¸®
+    // Hybrid Transaction °Ë»ç ½Ç½Ã
     IDE_RC checkHybridTrans( UInt             aTableType,
                              smiCursorType    aCursorType );
 
@@ -574,23 +571,6 @@ public:
     static IDE_RC setRemoteQueryCallback( smiTableSpecificFuncs * aFuncs,
                                           smiGetRemoteTableNullRowFunc aGetNullRowFunc );
 
-/****************************************************/
-/* For A4 : Temporary Disk Table Specific Functions */
-/****************************************************/
-    static IDE_RC openTempDRDB( smiTableCursor *     aCursor,
-                                const void*          aTable,
-                                smSCN                aSCN,
-                                const smiRange*      aKeyRange,
-                                const smiRange*      aKeyFilter,
-                                const smiCallBack*   aRowFilter,
-                                smlLockNode *        aCurLockNodePtr,
-                                smlLockSlot *        aCurLockSlotPtr );
-
-    static IDE_RC closeTempDRDB( smiTableCursor * aCursor );
-
-    static IDE_RC updateRowTempDRDB( smiTableCursor * aCursor,
-                                     const smiValue * aValueList );
-
     static const smiRange * getDefaultKeyRange( );
 
     static const smiCallBack * getDefaultFilter( );
@@ -654,7 +634,7 @@ private:
 
     /* BUG-31993 [sm_interface] The server does not reset Iterator 
      *           ViewSCN after building index for Temp Table
-     * ViewSCNì´ Statement/TableCursor/Iteratorê°„ì— ë™ì¼í•œì§€ í‰ê°€í•œë‹¤. */
+     * ViewSCNÀÌ Statement/TableCursor/Iterator°£¿¡ µ¿ÀÏÇÑÁö Æò°¡ÇÑ´Ù. */
     inline IDE_RC checkVisibilityConsistency();
 
     inline void prepareRetryInfo( const smiDMLRetryInfo ** aRetryInfo )
@@ -679,9 +659,9 @@ private:
 };
 
 /***********************************************************************
- * Description : Cursorì˜ í˜„ì¬ ìœ„ì¹˜ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+ * Description : CursorÀÇ ÇöÀç À§Ä¡¸¦ °¡Á®¿Â´Ù.
  *
- * aPosInfo - [OUT] Cursorì˜ í˜„ì¬ ìœ„ì¹˜ë¥¼ ë„˜ê²¨ë°›ëŠ” ì¸ì.
+ * aPosInfo - [OUT] CursorÀÇ ÇöÀç À§Ä¡¸¦ ³Ñ°Ü¹Ş´Â ÀÎÀÚ.
  **********************************************************************/
 inline IDE_RC smiTableCursor::getCurPos( smiCursorPosInfo * aPosInfo )
 {
@@ -694,9 +674,9 @@ inline IDE_RC smiTableCursor::getCurPos( smiCursorPosInfo * aPosInfo )
 }
 
 /***********************************************************************
- * Description : Cursorì˜ í˜„ì¬ ìœ„ì¹˜ë¥¼ aPosInfoê°€ ê°€ë¦¬í‚¤ëŠ” ìœ„ì¹˜ë¡œ ì˜®ê¸´ë‹¤.
+ * Description : CursorÀÇ ÇöÀç À§Ä¡¸¦ aPosInfo°¡ °¡¸®Å°´Â À§Ä¡·Î ¿Å±ä´Ù.
  *
- * aPosInfo - [IN] Cursorì˜ ìƒˆë¡œìš´ ìœ„ì¹˜
+ * aPosInfo - [IN] CursorÀÇ »õ·Î¿î À§Ä¡
  **********************************************************************/
 inline IDE_RC smiTableCursor::setCurPos( smiCursorPosInfo * aPosInfo )
 {
@@ -712,8 +692,8 @@ inline IDE_RC smiTableCursor::setCurPos( smiCursorPosInfo * aPosInfo )
  *
  *    PROJ-1618 Online Dump
  *
- *    Dump Tableì„ ìœ„í•œ Table Cursorì¸ ê²½ìš°ì— ì‚¬ìš©í•˜ë©°
- *    Dump Object ì •ë³´ë¥¼ ì„¤ì •í•œë‹¤.
+ *    Dump TableÀ» À§ÇÑ Table CursorÀÎ °æ¿ì¿¡ »ç¿ëÇÏ¸ç
+ *    Dump Object Á¤º¸¸¦ ¼³Á¤ÇÑ´Ù.
  *
  **********************************************************************/
 
@@ -722,15 +702,10 @@ smiTableCursor::setDumpObject( void * aDumpObject )
 {
     mDumpObject = aDumpObject;
 }
-//PROJ-1677 DEQUEUE
-inline UChar smiTableCursor::getRecordLockWaitStatus()
-{
-   return mRecordLockWaitInfo.mRecordLockWaitStatus;
-}
 
 /***********************************************************************
  * PROJ-1655
- * Description : table cursorì˜ table headerë¥¼ ë°˜í™˜í•œë‹¤.
+ * Description : table cursorÀÇ table header¸¦ ¹İÈ¯ÇÑ´Ù.
  *
  **********************************************************************/
 inline void * smiTableCursor::getTableHeaderFromCursor( void * aCursor )

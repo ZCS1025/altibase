@@ -9,9 +9,9 @@ include ./env.mk
 #
 ###################################################################
 
-DIRS=$(CORE_DIR) $(PD_DIR) $(ID_DIR) $(CM_DIR) $(SM_DIR) $(MT_DIR) $(RP_DIR) $(QP_DIR) $(SD_DIR) $(DK_DIR) $(MM_DIR) $(UL_DIR) $(UT_DIR) $(TOOL_DIR) $(ST_DIR) $(ID_DIR)/util $(QP_DIR)/util
+DIRS=$(CORE_DIR) $(PD_DIR) $(ID_DIR) $(CM_DIR) $(SM_DIR) $(MT_DIR) $(QP_DIR) $(SD_DIR) $(DK_DIR) $(RP_DIR) $(MM_DIR) $(UL_DIR) $(UT_DIR) $(TOOL_DIR) $(ST_DIR) $(ID_DIR)/util $(QP_DIR)/util $(RP_DIR)/util
 
-SODIRS=$(PD_DIR) $(ID_DIR) $(CM_DIR) $(SM_DIR) $(MT_DIR) $(RP_DIR) $(QP_DIR) $(SD_DIR) $(ST_DIR) $(DK_DIR) $(MM_DIR)
+SODIRS=$(PD_DIR) $(ID_DIR) $(CM_DIR) $(SM_DIR) $(MT_DIR) $(QP_DIR) $(SD_DIR) $(DK_DIR) $(RP_DIR) $(ST_DIR) $(MM_DIR)
 
 CLIDIRS=$(CORE_DIR) $(PD_DIR) $(ID_DIR) $(CM_DIR) $(MT_DIR) $(UL_DIR) $(TOOL_DIR) $(ST_DIR)
 
@@ -19,7 +19,7 @@ CLIDIRS=$(CORE_DIR) $(PD_DIR) $(ID_DIR) $(CM_DIR) $(MT_DIR) $(UL_DIR) $(TOOL_DIR
 #  TASK-3873
 #  CodeSonar Build
 # -------------------------------------------------------------------
-DIRS_CODESONAR_SERVER=$(CORE_DIR) $(PD_DIR) $(ID_DIR) $(CM_DIR) $(SM_DIR) $(MT_DIR) $(RP_DIR) $(QP_DIR) $(SD_DIR) $(ST_DIR) $(DK_DIR) $(MM_DIR)
+DIRS_CODESONAR_SERVER=$(CORE_DIR) $(PD_DIR) $(ID_DIR) $(CM_DIR) $(SM_DIR) $(MT_DIR) $(QP_DIR) $(SD_DIR) $(ST_DIR) $(DK_DIR) $(RP_DIR) $(MM_DIR)
 
 DIRS_CODESONAR_SM=$(CORE_DIR) $(PD_DIR) $(ID_DIR) $(SM_DIR)
 
@@ -297,7 +297,7 @@ sure_shared:
 	$(Q) $(MAKE) $(S) build_all
 	#$(Q) make $(S) a3_test
 
-# Task-1994 Ï¥àÍ≥†ÏÜç CoverageÏ∏°Ï†ïÎ∞©Î≤ï Í≥†Ïïà
+# Task-1994 √ ∞Ìº” Coverage√¯¡§πÊπ˝ ∞Ìæ»
 suregcov:
 	cd $(DEV_DIR); $(CONFIGURE)  --enable-gcc --enable-gcov --with-build_mode=debug
 	$(MAKE) build_all
@@ -442,6 +442,7 @@ build: alemon
 	$(MAKE) $(S) makemsg
 	$(MAKE) $(S) $(DIRS) SUBDIR_TARGET=$(S)
 	$(MAKE) -C $(SM_DIR)/util all_after
+	$(MAKE) -C $(ID_DIR)/util 
 # Link shared libs after all other modules bulid
 # Build shared libs only if unittesting enabled.
 ifeq ($(DO_UNITTEST), yes)
@@ -507,7 +508,7 @@ build_codesonar_server:
 #
 # BUILD FOR ATAF
 #
-# ATAF buildÎ•º ÏúÑÌï¥ÏÑú altibaseÎ•º ÏµúÏÜåÌïúÏúºÎ°ú ÎπåÎìúÌïúÎã§.
+# ATAF build∏¶ ¿ß«ÿº≠ altibase∏¶ √÷º“«—¿∏∑Œ ∫ÙµÂ«—¥Ÿ.
 ###################################################################
 
 build_ataf:
@@ -553,8 +554,8 @@ endif
 	-cd $(MT_DIR)/mtd; $(MAKE) mtddl.o
 	-cd $(QP_DIR)/msg; $(MAKE)
 	-cd $(SD_DIR)/msg; $(MAKE)
-	-cd $(RP_DIR)/msg; $(MAKE)
 	-cd $(DK_DIR)/msg; $(MAKE)
+	-cd $(RP_DIR)/msg; $(MAKE)
 	-cd $(MM_DIR)/msg; $(MAKE)
 	-cd $(UL_DIR)/msg; $(MAKE)
 	-cd $(UL_DIR)/lib; $(MAKE) odbccli_shared
@@ -578,6 +579,7 @@ MSG_TARGET_DIR =    \
 	$(CM_DIR)/msg  \
 	$(SM_DIR)/msg  \
 	$(MT_DIR)/msg  \
+	$(DK_DIR)/msg  \
 	$(RP_DIR)/msg  \
 	$(QP_DIR)/msg  \
 	$(SD_DIR)/msg  \
@@ -585,7 +587,6 @@ MSG_TARGET_DIR =    \
 	$(MM_DIR)/msg  \
 	$(UL_DIR)/msg  \
 	$(UT_DIR)/msg  \
-	$(DK_DIR)/msg  \
 
 .PHONY: $(MSG_TARGET_DIR)
 
@@ -677,17 +678,28 @@ PKG_PLATFORM_INFO=$(ALTI_CFG_OS)-$(ALTI_CFG_CPU)-$(ALTI_CFG_BITTYPE)bit-$(BUILD_
 PKG_REVISION_INFO=$(shell LC_ALL=C svn info | grep Revision)
 PKG_REVISION_NUM=$(shell echo $(PKG_REVISION_INFO) | awk -F' ' '{print $$2}')
 
-UNOFFICIAL_SERVER_DIST_NAME="altibase-server-$(PKG_FULL_VERSION_INFO)-$(ALTI_CFG_OS)-$(ALTI_CFG_CPU)-$(ALTI_CFG_BITTYPE)bit-UNOFFICIAL-R$(PKG_REVISION_NUM)"
+ifeq "$(USE_HEAPMIN)" "no"
+  UNOFFICIAL_SERVER_DIST_NAME="altibase-server-$(PKG_FULL_VERSION_INFO)-$(ALTI_CFG_OS)-$(ALTI_CFG_CPU)-$(ALTI_CFG_BITTYPE)bit-UNOFFICIAL-R$(PKG_REVISION_NUM)_noheapmin"
+  RELEASE_SERVER_DIST_NAME="altibase-server-$(PKG_VERSION_INFO).$(PKG_TAGSET_NAME)-$(PKG_PLATFORM_INFO)_noheapmin"
+  DIAGNOSTIC_SERVER_DIST_NAME="altibase-server-$(PKG_FULL_VERSION_INFO)-$(ALTI_CFG_OS)-$(ALTI_CFG_CPU)-$(ALTI_CFG_BITTYPE)bit-DIAGNOSTIC-R$(PKG_REVISION_NUM)_noheapmin"
+  OFFICIAL_SERVER_DIST_NAME="altibase-server-$(PKG_FULL_VERSION_INFO)-$(ALTI_CFG_OS)-$(ALTI_CFG_CPU)-$(ALTI_CFG_BITTYPE)bit-$(BUILD_MODE)_noheapmin"
+  TAR_SERVER_DIST_NAME="altibase-server-$(PKG_VERSION_INFO).$(PKG_TAGSET_NAME).$(PKG_TAG_NAME)-$(PKG_PLATFORM_INFO)_noheapmin"
+  COMMUNITY_SERVER_DIST_NAME="altibase-CE-server-$(PKG_FULL_VERSION_INFO)-$(ALTI_CFG_OS)-$(ALTI_CFG_CPU)-$(ALTI_CFG_BITTYPE)bit-$(BUILD_MODE)_noheapmin"
+  OPEN_SERVER_DIST_NAME="altibase-OE-server-$(PKG_FULL_VERSION_INFO)-$(ALTI_CFG_OS)-$(ALTI_CFG_CPU)-$(ALTI_CFG_BITTYPE)bit-$(BUILD_MODE)_noheapmin"
+else
+  UNOFFICIAL_SERVER_DIST_NAME="altibase-server-$(PKG_FULL_VERSION_INFO)-$(ALTI_CFG_OS)-$(ALTI_CFG_CPU)-$(ALTI_CFG_BITTYPE)bit-UNOFFICIAL-R$(PKG_REVISION_NUM)"
+  RELEASE_SERVER_DIST_NAME="altibase-server-$(PKG_VERSION_INFO).$(PKG_TAGSET_NAME)-$(PKG_PLATFORM_INFO)"
+  DIAGNOSTIC_SERVER_DIST_NAME="altibase-server-$(PKG_FULL_VERSION_INFO)-$(ALTI_CFG_OS)-$(ALTI_CFG_CPU)-$(ALTI_CFG_BITTYPE)bit-DIAGNOSTIC-R$(PKG_REVISION_NUM)"
+  OFFICIAL_SERVER_DIST_NAME="altibase-server-$(PKG_FULL_VERSION_INFO)-$(ALTI_CFG_OS)-$(ALTI_CFG_CPU)-$(ALTI_CFG_BITTYPE)bit-$(BUILD_MODE)"
+  TAR_SERVER_DIST_NAME="altibase-server-$(PKG_VERSION_INFO).$(PKG_TAGSET_NAME).$(PKG_TAG_NAME)-$(PKG_PLATFORM_INFO)"
+  COMMUNITY_SERVER_DIST_NAME="altibase-CE-server-$(PKG_FULL_VERSION_INFO)-$(ALTI_CFG_OS)-$(ALTI_CFG_CPU)-$(ALTI_CFG_BITTYPE)bit-$(BUILD_MODE)"
+  OPEN_SERVER_DIST_NAME="altibase-OE-server-$(PKG_FULL_VERSION_INFO)-$(ALTI_CFG_OS)-$(ALTI_CFG_CPU)-$(ALTI_CFG_BITTYPE)bit-$(BUILD_MODE)"
+endif
+
 UNOFFICIAL_CLIENT_DIST_NAME="altibase-client-$(PKG_FULL_VERSION_INFO)-$(ALTI_CFG_OS)-$(ALTI_CFG_CPU)-$(ALTI_CFG_BITTYPE)bit-UNOFFICIAL-R$(PKG_REVISION_NUM)"
-RELEASE_SERVER_DIST_NAME="altibase-server-$(PKG_VERSION_INFO).$(PKG_TAGSET_NAME)-$(PKG_PLATFORM_INFO)"
 RELEASE_CLIENT_DIST_NAME="altibase-client-$(PKG_VERSION_INFO).$(PKG_TAGSET_NAME)-$(PKG_PLATFORM_INFO)"
-DIAGNOSTIC_SERVER_DIST_NAME="altibase-server-$(PKG_FULL_VERSION_INFO)-$(ALTI_CFG_OS)-$(ALTI_CFG_CPU)-$(ALTI_CFG_BITTYPE)bit-DIAGNOSTIC-R$(PKG_REVISION_NUM)"
 DIAGNOSTIC_CLIENT_DIST_NAME="altibase-client-$(PKG_FULL_VERSION_INFO)-$(ALTI_CFG_OS)-$(ALTI_CFG_CPU)-$(ALTI_CFG_BITTYPE)bit-DIAGNOSTIC-R$(PKG_REVISION_NUM)"
-OFFICIAL_SERVER_DIST_NAME="altibase-server-$(PKG_FULL_VERSION_INFO)-$(ALTI_CFG_OS)-$(ALTI_CFG_CPU)-$(ALTI_CFG_BITTYPE)bit-$(BUILD_MODE)"
 OFFICIAL_CLIENT_DIST_NAME="altibase-client-$(PKG_FULL_VERSION_INFO)-$(ALTI_CFG_OS)-$(ALTI_CFG_CPU)-$(ALTI_CFG_BITTYPE)bit-$(BUILD_MODE)"
-TAR_SERVER_DIST_NAME="altibase-server-$(PKG_VERSION_INFO).$(PKG_TAGSET_NAME).$(PKG_TAG_NAME)-$(PKG_PLATFORM_INFO)"
-COMMUNITY_SERVER_DIST_NAME="altibase-CE-server-$(PKG_FULL_VERSION_INFO)-$(ALTI_CFG_OS)-$(ALTI_CFG_CPU)-$(ALTI_CFG_BITTYPE)bit-$(BUILD_MODE)"
-OPEN_SERVER_DIST_NAME="altibase-OE-server-$(PKG_FULL_VERSION_INFO)-$(ALTI_CFG_OS)-$(ALTI_CFG_CPU)-$(ALTI_CFG_BITTYPE)bit-$(BUILD_MODE)"
 ODBC_DIST_NAME="altibase-ODBC-$(PKG_FULL_VERSION_INFO)-$(ALTI_CFG_OS)-$(ALTI_CFG_CPU)-$(ALTI_CFG_BITTYPE)bit-$(BUILD_MODE)"
 
 RELEASE_SERVER_DIST_NAME_PATCH=$(RELEASE_SERVER_DIST_NAME)-patch_$(FROM_PKG_TAGSET_NAME)_$(FROM_PKG_TAG_NAME)_$(PKG_TAGSET_NAME)_$(PKG_TAG_NAME)

@@ -372,10 +372,10 @@ ace_rc_t initializeJDBCApplier( oaContext                 * aContext,
     
     ACE_TEST( oaJDBCApplierConnect( aContext, sApplierHandle ) != ACE_RC_SUCCESS );
     sStage = 2;
-    
-    ACE_TEST( oaJDBCExecuteLogInSql(aContext, sApplierHandle) != ACE_RC_SUCCESS );
-    
+
     ACE_TEST( oaJDBCInitializeSkipErrorList(aContext, sApplierHandle) != ACE_RC_SUCCESS );
+
+    ACE_TEST( oaJDBCExecuteLogInSql(aContext, sApplierHandle) != ACE_RC_SUCCESS );
 
     *aJDBCApplierHandle = sApplierHandle;
  
@@ -800,7 +800,7 @@ static ace_rc_t applyInsertLogRecord( oaContext           * aContext,
     
     return ACE_RC_SUCCESS;
      
-    // BUG-46551 611ì´í•˜ jdbcDriverì—ì„œëŠ” exceptionì‹œ ë‚´ë¶€ì ìœ¼ë¡œ clearBatchë¥¼ í•´ì£¼ì§€ ì•ŠìŒ
+    // BUG-46551 611ÀÌÇÏ jdbcDriver¿¡¼­´Â exception½Ã ³»ºÎÀûÀ¸·Î clearBatch¸¦ ÇØÁÖÁö ¾ÊÀ½
     ACE_EXCEPTION( ERR_EXECUTE_BATCH_EXCEPTION )
     {
         oaJNIPreparedStmtClearBatch( aContext,
@@ -1292,9 +1292,9 @@ static ace_rc_t applyAbortLogRecord( oaContext           * aContext,
 }
 
 /**
- * @breif  Log Record Listë¥¼ JDBCë¥¼ ì´ìš©í•˜ì—¬ ë°˜ì˜í•œë‹¤.
+ * @breif  Log Record List¸¦ JDBC¸¦ ÀÌ¿ëÇÏ¿© ¹İ¿µÇÑ´Ù.
  *
- *         ì‹¤íŒ¨ ì‹œì—ë„ ë¡œê·¸ë§Œ ë‚¨ê¸°ê³  ê³„ì† ì§„í–‰í•˜ë¯€ë¡œ, ê²°ê³¼ë¥¼ ë°˜í™˜í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *         ½ÇÆĞ ½Ã¿¡µµ ·Î±×¸¸ ³²±â°í °è¼Ó ÁøÇàÇÏ¹Ç·Î, °á°ú¸¦ ¹İÈ¯ÇÏÁö ¾Ê´Â´Ù.
  *
  * @param  aContext       Context
  * @param  aHandle        ALtibase Applier Handle
@@ -1311,7 +1311,6 @@ ace_rc_t oaJDBCApplierApplyLogRecordList( oaContext           * aContext,
     
     oaLogSN       sProcessedLogSN  = 0;
     oaLogRecord * sLogRecord       = NULL;
-    acp_bool_t    sIsSkipList      = ACP_FALSE;
 
     ACP_LIST_ITERATE( aLogRecordList, sIterator )
     {
@@ -1321,7 +1320,7 @@ ace_rc_t oaJDBCApplierApplyLogRecordList( oaContext           * aContext,
 
         oaJDBCInitializeDMLResultArray( aHandle->mDMLResultArray, aHandle->mBatchDMLMaxSize );
         
-        sIsSkipList      = ACP_FALSE;
+        aHandle->mJNIInterfaceHandle.mIsSkipList = ACP_FALSE;
 
         while ( oaJDBCApplierApplyLogRecord( aContext,
                                               aHandle,
@@ -1330,11 +1329,11 @@ ace_rc_t oaJDBCApplierApplyLogRecordList( oaContext           * aContext,
         {
             if ( aPrevLastProcessedSN >= sLogRecord->mCommon.mSN )
             {
-                /* ë§Œì•½ ì´ì „ ì ‘ì†ë•Œ Apply í–ˆë˜ Log ë¼ë©´ Error ì— ëŒ€í•´ì„œ ì¬ì‹œë„ í•˜ì§€ ì•Šê³  ë„˜ì–´ê°„ë‹¤. 
-                 * ì´ì „ì— Insert ê°€ Apply ë˜ìˆëŠ” ìƒíƒœì—ì„œ ì—ëŸ¬ë¡œ ì¸í•´ Restart í•œ ìƒí™©ì¼ ë•Œ
-                 * ê°™ì€ Log ì— ëŒ€í•´ Insert ê°€ ë°œìƒí•˜ë©´ Unique key ì—ëŸ¬ê°€ ì§€ì†ì ìœ¼ë¡œ ë°œìƒí•  ê²ƒì´ê³  
-                 * ì´ë¥¼ ë¬´ì‹œí•˜ì§€ ì•Šìœ¼ë©´ ê³„ì† ì˜¤ë¥˜ë¡œ ì¢…ë£Œë  ê²ƒì´ë‹¤.
-                 * ë”°ë¼ì„œ ì´ì „ì— ì´ë¯¸ Apply ê°€ ì™„ë£Œëœ ë¡œê·¸ì— ëŒ€í•´ì„œ ë°œìƒí•˜ëŠ” ì—ëŸ¬ëŠ” ë¬´ì‹œí•´ì•¼ í•œë‹¤. */
+                /* ¸¸¾à ÀÌÀü Á¢¼Ó¶§ Apply Çß´ø Log ¶ó¸é Error ¿¡ ´ëÇØ¼­ Àç½Ãµµ ÇÏÁö ¾Ê°í ³Ñ¾î°£´Ù. 
+                 * ÀÌÀü¿¡ Insert °¡ Apply µÇÀÖ´Â »óÅÂ¿¡¼­ ¿¡·¯·Î ÀÎÇØ Restart ÇÑ »óÈ²ÀÏ ¶§
+                 * °°Àº Log ¿¡ ´ëÇØ Insert °¡ ¹ß»ıÇÏ¸é Unique key ¿¡·¯°¡ Áö¼ÓÀûÀ¸·Î ¹ß»ıÇÒ °ÍÀÌ°í 
+                 * ÀÌ¸¦ ¹«½ÃÇÏÁö ¾ÊÀ¸¸é °è¼Ó ¿À·ù·Î Á¾·áµÉ °ÍÀÌ´Ù.
+                 * µû¶ó¼­ ÀÌÀü¿¡ ÀÌ¹Ì Apply °¡ ¿Ï·áµÈ ·Î±×¿¡ ´ëÇØ¼­ ¹ß»ıÇÏ´Â ¿¡·¯´Â ¹«½ÃÇØ¾ß ÇÑ´Ù. */
 
                 break;
             }
@@ -1361,15 +1360,16 @@ ace_rc_t oaJDBCApplierApplyLogRecordList( oaContext           * aContext,
                     (void)applyAbortLogRecord( aContext, aHandle );
                 }
 
-                sIsSkipList = oaJNIIsSkipList( &(aHandle->mJNIInterfaceHandle) );
                 ACE_TEST_RAISE( ( aHandle->mSkipError == 0 ) &&
-                                ( sIsSkipList == ACP_FALSE ),
+                                ( aHandle->mJNIInterfaceHandle.mIsSkipList == ACP_FALSE ),
                                 ERR_RETRY_END );
                 ACE_TEST_RAISE( ( aHandle->mSkipError == 1 ) &&
-                                ( sIsSkipList == ACP_TRUE  ),
+                                ( aHandle->mJNIInterfaceHandle.mIsSkipList == ACP_TRUE  ),
                                 ERR_RETRY_END );
                 break;
             }
+            
+            aHandle->mJNIInterfaceHandle.mIsSkipList = ACP_FALSE;
         }
 
         sProcessedLogSN = sLogRecord->mCommon.mSN;
@@ -1383,7 +1383,7 @@ ace_rc_t oaJDBCApplierApplyLogRecordList( oaContext           * aContext,
 
     ACE_EXCEPTION( ERR_RETRY_END )
     {        
-        /* applyAbortLogRecord ëŠ” ë‘ë²ˆ ì‹¤í–‰ ë  ìˆ˜ ìˆëŠ”ë° ë‘ë²ˆ ì‹¤í–‰ë˜ì–´ë„ ë¬¸ì œê°€ ë°œìƒí•˜ì§€ ì•ŠëŠ”ë‹¤. */
+        /* applyAbortLogRecord ´Â µÎ¹ø ½ÇÇà µÉ ¼ö ÀÖ´Âµ¥ µÎ¹ø ½ÇÇàµÇ¾îµµ ¹®Á¦°¡ ¹ß»ıÇÏÁö ¾Ê´Â´Ù. */
         oaLogMessage( OAM_MSG_DUMP_LOG, "LogRecord apply aborted" );
         (void)applyAbortLogRecord( aContext, aHandle );
 
@@ -1701,7 +1701,6 @@ ace_rc_t oaJDBCExecuteLogInSql( oaContext * aContext, oaJDBCApplierHandle * aHan
     
     return ACE_RC_FAILURE;
 }
-
 
 static ace_rc_t readSkipErrorList( oaContext           * aContext,
                                    acp_std_file_t      * aFile,

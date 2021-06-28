@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfNotEqualAll.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfNotEqualAll.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -55,7 +55,7 @@ mtfModule mtfNotEqualAll = {
         MTC_NODE_GROUP_ALL|
         MTC_NODE_PRINT_FMT_INFIX,
     // ~(MTC_NODE_INDEX_MASK),
-    ~0,        // A4ì—ì„œëŠ” Node Transformì— ì˜í•´ ì¸ë±ìŠ¤ ì‚¬ìš©í•  ìˆ˜ ìˆìŒ
+    ~0,        // A4¿¡¼­´Â Node Transform¿¡ ÀÇÇØ ÀÎµ¦½º »ç¿ëÇÒ ¼ö ÀÖÀ½
     2.0/3.0,  // TODO : default selectivity 
     mtfNotEqualAllFunctionName,
     &mtfEqualAny,

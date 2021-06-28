@@ -110,7 +110,7 @@ IDE_RC sdiFailoverTypeStorage::setClientConnectionStatus( UInt aNodeId, UChar aD
         IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
                                   "sdiFailoverTypeStorage::setClientConnectionStatus",
                                   "Invalid destination values" ) );
-        ideLog::log( IDE_SD_0, "[%s] ERR-%"ID_XINT32_FMT" %s\n"
+        ideLog::log( IDE_SD_5, "[SHARD_FAILOVER_ERROR] [%s] ERR-%"ID_XINT32_FMT" %s\n"
                                "     Invalid value = %"ID_INT32_FMT"\n",
                                "sdiFailoverTypeStorage::setClientConnectionStatus",
                                E_ERROR_CODE( ideGetErrorCode() ),
@@ -123,7 +123,7 @@ IDE_RC sdiFailoverTypeStorage::setClientConnectionStatus( UInt aNodeId, UChar aD
         IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
                                   "sdiFailoverTypeStorage::setClientConnectionStatus",
                                   "Destination storage overflow" ) );
-        ideLog::log( IDE_SD_0, "[%s] ERR-%"ID_XINT32_FMT" %s\n"
+        ideLog::log( IDE_SD_5, "[SHARD_FAILOVER_ERROR] [%s] ERR-%"ID_XINT32_FMT" %s\n"
                                "     NODE_ID = %"ID_INT32_FMT", DST = %"ID_INT32_FMT"\n",
                                "sdiFailoverTypeStorage::setClientConnectionStatus",
                                E_ERROR_CODE( ideGetErrorCode() ),

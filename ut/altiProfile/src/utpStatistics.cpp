@@ -41,10 +41,10 @@ utpHashmap*      utpStatistics::mMainMap    = NULL;
 
 /* Description:
  *
- * 1. ì¸ìë¡œ ë°›ì€ íŒŒì¼ ê°ê°ì— ëŒ€í•´ 5ë²ˆ ìˆ˜í–‰
- * 2. í•œ ë¸”ëŸ­ì”© ì½ì–´ì„œ IDV_PROF_TYPE_STMTì¸ ê²½ìš°ì—ë§Œ
- *    statement ì •ë³´ ì¶”ì¶œ
- * 3. ê²°ê³¼ ì¶œë ¥
+ * 1. ÀÎÀÚ·Î ¹ŞÀº ÆÄÀÏ °¢°¢¿¡ ´ëÇØ 5¹ø ¼öÇà
+ * 2. ÇÑ ºí·°¾¿ ÀĞ¾î¼­ IDV_PROF_TYPE_STMTÀÎ °æ¿ì¿¡¸¸
+ *    statement Á¤º¸ ÃßÃâ
+ * 3. °á°ú Ãâ·Â
  */
 IDE_RC utpStatistics::run(SInt             aArgc,
                           SChar**          aArgv,
@@ -58,10 +58,10 @@ IDE_RC utpStatistics::run(SInt             aArgc,
     IDE_TEST(initialize(aArgc, aArgv, aCmdType, aOutFormat)
              != IDE_SUCCESS);
 
-    /* 1. ì¸ìë¡œ ë°›ì€ íŒŒì¼ ê°ê°ì— ëŒ€í•´ 5ë²ˆ ìˆ˜í–‰ */
+    /* 1. ÀÎÀÚ·Î ¹ŞÀº ÆÄÀÏ °¢°¢¿¡ ´ëÇØ 5¹ø ¼öÇà */
     for (i = 0; i < aArgc; i++)
     {
-        /* ì‹œì‘ ë©”ì‹œì§€ ì¶œë ¥ */
+        /* ½ÃÀÛ ¸Ş½ÃÁö Ãâ·Â */
         idlOS::fprintf(stderr, FMT_PROCESSING, aArgv[i]);
         loadBar(0, 100, 20);
 
@@ -76,8 +76,8 @@ IDE_RC utpStatistics::run(SInt             aArgc,
             utpProfile::getHeader(&mHandle, &sHeader);
             utpProfile::getBody(&mHandle, &sBody);
 
-            /* 2. í•œ ë¸”ëŸ­ì”© ì½ì–´ì„œ IDV_PROF_TYPE_STMTì¸ ê²½ìš°ì—ë§Œ
-             *    statement ì •ë³´ ì¶”ì¶œ 
+            /* 2. ÇÑ ºí·°¾¿ ÀĞ¾î¼­ IDV_PROF_TYPE_STMTÀÎ °æ¿ì¿¡¸¸
+             *    statement Á¤º¸ ÃßÃâ 
              */
             if (sHeader->mType == IDV_PROF_TYPE_STMT)
             {
@@ -93,7 +93,7 @@ IDE_RC utpStatistics::run(SInt             aArgc,
         loadBar(100, 100, 20);
     }
 
-    /* 3. ê²°ê³¼ ì¶œë ¥: */
+    /* 3. °á°ú Ãâ·Â: */
     IDE_TEST(writeResult() != IDE_SUCCESS);
 
     finalize();
@@ -111,9 +111,9 @@ IDE_RC utpStatistics::run(SInt             aArgc,
 
 /* Description:
  *
- * 1. íŒŒì¼ ì¡´ì¬ ì—¬ë¶€ í™•ì¸
- * 2. hash ìƒì„±
- * 3. profile íŒŒì¼ ì½ê¸°ìš© ë²„í¼ ìƒì„±
+ * 1. ÆÄÀÏ Á¸Àç ¿©ºÎ È®ÀÎ
+ * 2. hash »ı¼º
+ * 3. profile ÆÄÀÏ ÀĞ±â¿ë ¹öÆÛ »ı¼º
  */
 IDE_RC utpStatistics::initialize(SInt             aArgc,
                                  SChar**          aArgv,
@@ -133,14 +133,14 @@ IDE_RC utpStatistics::initialize(SInt             aArgc,
         mTextOut = ID_TRUE;
     }
 
-    /* 1. íŒŒì¼ ì¡´ì¬ ì—¬ë¶€ í™•ì¸ */
+    /* 1. ÆÄÀÏ Á¸Àç ¿©ºÎ È®ÀÎ */
     for (i = 0; i < aArgc; i++)
     {
         IDE_TEST_RAISE(idlOS::access(aArgv[i], F_OK) != 0,
                        err_file_not_found);
     }
 
-    /* 2. hash ìƒì„± */
+    /* 2. hash »ı¼º */
     if (mCmdType == UTP_CMD_STAT_SESSION)
     {
         IDE_TEST(utpHash::create(&mMainMap,
@@ -156,7 +156,7 @@ IDE_RC utpStatistics::initialize(SInt             aArgc,
                  != IDE_SUCCESS);
     }
     
-    /* 3. profile íŒŒì¼ ì½ê¸°ìš© ë²„í¼ ìƒì„± */
+    /* 3. profile ÆÄÀÏ ÀĞ±â¿ë ¹öÆÛ »ı¼º */
     IDE_TEST(utpProfile::initialize(&mHandle) != IDE_SUCCESS);
 
     return IDE_SUCCESS;
@@ -173,18 +173,18 @@ IDE_RC utpStatistics::initialize(SInt             aArgc,
 
 /* Description:
  *
- * 1. profile íŒŒì¼ ì½ê¸°ìš© ë²„í¼ í•´ì œ
- * 2. hashmapì— putí•œ ê°’ì˜ ë©”ëª¨ë¦¬ í•´ì œ
- * 3. hash í•´ì œ
+ * 1. profile ÆÄÀÏ ÀĞ±â¿ë ¹öÆÛ ÇØÁ¦
+ * 2. hashmap¿¡ putÇÑ °ªÀÇ ¸Ş¸ğ¸® ÇØÁ¦
+ * 3. hash ÇØÁ¦
  */
 IDE_RC utpStatistics::finalize()
 {
-    /* 1. profile íŒŒì¼ ì½ê¸°ìš© ë²„í¼ í•´ì œ */
+    /* 1. profile ÆÄÀÏ ÀĞ±â¿ë ¹öÆÛ ÇØÁ¦ */
     utpProfile::finalize(&mHandle);
 
     IDE_TEST_CONT(mMainMap == NULL, empty_hash);
 
-    /* 2. hashmapì— putí•œ ê°’ì˜ ë©”ëª¨ë¦¬ í•´ì œ */
+    /* 2. hashmap¿¡ putÇÑ °ªÀÇ ¸Ş¸ğ¸® ÇØÁ¦ */
     if (mCmdType == UTP_CMD_STAT_SESSION)
     {
         utpHash::traverse(mMainMap, freeSessHashNode, NULL);
@@ -194,7 +194,7 @@ IDE_RC utpStatistics::finalize()
         utpHash::traverse(mMainMap, freeStatHashNode, NULL);
     }
 
-    /* 3. hash í•´ì œ */
+    /* 3. hash ÇØÁ¦ */
     utpHash::destroy(mMainMap);
 
     mMainMap = NULL;
@@ -206,7 +206,7 @@ IDE_RC utpStatistics::finalize()
 
 /* Description:
  *
- * hashì— ì¶”ê°€í•˜ê¸° ìœ„í•´ í• ë‹¹í•œ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤.
+ * hash¿¡ Ãß°¡ÇÏ±â À§ÇØ ÇÒ´çÇÑ ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÑ´Ù.
  */
 IDE_RC utpStatistics::freeSessHashNode(void* /* aItem */,
                                        void* aNodeData)
@@ -222,7 +222,7 @@ IDE_RC utpStatistics::freeSessHashNode(void* /* aItem */,
 
 /* Description:
  *
- * hashì— ì¶”ê°€í•˜ê¸° ìœ„í•´ í• ë‹¹í•œ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤.
+ * hash¿¡ Ãß°¡ÇÏ±â À§ÇØ ÇÒ´çÇÑ ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÑ´Ù.
  */
 IDE_RC utpStatistics::freeStatHashNode(void* /* aItem */,
                                        void* aNodeData)
@@ -237,9 +237,9 @@ IDE_RC utpStatistics::freeStatHashNode(void* /* aItem */,
 
 /* Description:
  *
- * statement ì •ë³´ ì¤‘ì—ì„œ ìˆ˜í–‰ ì‹œê°„, ì„±ê³µ ì—¬ë¶€, ì¿¼ë¦¬ë¬¸ì„ ì¶”ì¶œí•œë‹¤.
- * hashì—ì„œ í•´ë‹¹ ì¿¼ë¦¬ë¬¸ì„ ì°¾ì•„ì„œ ìˆìœ¼ë©´ ì—…ë°ì´íŠ¸í•˜ê³ ,
- * ì—†ìœ¼ë©´ hashì— ì¶”ê°€í•œë‹¤.
+ * statement Á¤º¸ Áß¿¡¼­ ¼öÇà ½Ã°£, ¼º°ø ¿©ºÎ, Äõ¸®¹®À» ÃßÃâÇÑ´Ù.
+ * hash¿¡¼­ ÇØ´ç Äõ¸®¹®À» Ã£¾Æ¼­ ÀÖÀ¸¸é ¾÷µ¥ÀÌÆ®ÇÏ°í,
+ * ¾øÀ¸¸é hash¿¡ Ãß°¡ÇÑ´Ù.
  */
 void utpStatistics::getStmtInfo(void *aBody)
 {
@@ -263,7 +263,7 @@ void utpStatistics::getStmtInfo(void *aBody)
     sQueryBuffer = (SChar *)idlOS::malloc(sQueryLen + 1);
     IDE_TEST_RAISE(sQueryBuffer == NULL, err_memory);
 
-    /* ì§„í–‰ë¥  í‘œì‹œ */
+    /* ÁøÇà·ü Ç¥½Ã */
     idlOS::fstat(mHandle.mFP, &sProgressBuf);
     loadBar(mHandle.mOffset, sProgressBuf.st_size, 20);
 
@@ -336,8 +336,8 @@ IDE_RC utpStatistics::updateHashData(idvProfStmtInfo *aStmtInfo,
                             sStatValue,
                             sTotalTime);
 
-            /* ì´ë¯¸ hashmapì— ìˆìœ¼ë©´, ì¿¼ë¦¬ë¥¼ ìœ„í•´ í• ë‹¹í•œ ë©”ëª¨ë¦¬ëŠ”
-             * ë”ì´ìƒ í•„ìš” ì—†ê¸° ë•Œë¬¸ì— í•´ì œí•œë‹¤
+            /* ÀÌ¹Ì hashmap¿¡ ÀÖÀ¸¸é, Äõ¸®¸¦ À§ÇØ ÇÒ´çÇÑ ¸Ş¸ğ¸®´Â
+             * ´õÀÌ»ó ÇÊ¿ä ¾ø±â ¶§¹®¿¡ ÇØÁ¦ÇÑ´Ù
              */
             idlOS::free(aQuery);
         }
@@ -359,13 +359,13 @@ IDE_RC utpStatistics::updateHashData(idvProfStmtInfo *aStmtInfo,
 
 /* Description:
  *
- * hashì— ë™ì¼í•œ ì¿¼ë¦¬ë¬¸ì´ ìˆëŠ” ê²½ìš°, ì•„ë˜ ê°’ì„ ì—…ë°ì´íŠ¸í•œë‹¤.
- * ì‹¤í–‰ íšŸìˆ˜(mCount)
- * ì´ ìˆ˜í–‰ ì‹œê°„(mTotalTime)
- * ìµœì†Œ ìˆ˜í–‰ ì‹œê°„(mMinTime)
- * ìµœëŒ€ ìˆ˜í–‰ ì‹œê°„(mMaxTime)
- * ì„±ê³µ íšŸìˆ˜(mSucc)
- * ì‹¤íŒ¨ íšŸìˆ˜(mFail)
+ * hash¿¡ µ¿ÀÏÇÑ Äõ¸®¹®ÀÌ ÀÖ´Â °æ¿ì, ¾Æ·¡ °ªÀ» ¾÷µ¥ÀÌÆ®ÇÑ´Ù.
+ * ½ÇÇà È½¼ö(mCount)
+ * ÃÑ ¼öÇà ½Ã°£(mTotalTime)
+ * ÃÖ¼Ò ¼öÇà ½Ã°£(mMinTime)
+ * ÃÖ´ë ¼öÇà ½Ã°£(mMaxTime)
+ * ¼º°ø È½¼ö(mSucc)
+ * ½ÇÆĞ È½¼ö(mFail)
  */
 void utpStatistics::updateQueryData(UInt      aExecFlag,
                                     profStat *aStatValue,
@@ -394,7 +394,7 @@ void utpStatistics::updateQueryData(UInt      aExecFlag,
 
 /* Description:
  *
- * hashì— ë™ì¼í•œ ì¿¼ë¦¬ë¬¸ì´ ì—†ëŠ” ê²½ìš°, ìƒˆë¡œìš´ ê°’ì„ hashì— ì¶”ê°€í•œë‹¤.
+ * hash¿¡ µ¿ÀÏÇÑ Äõ¸®¹®ÀÌ ¾ø´Â °æ¿ì, »õ·Î¿î °ªÀ» hash¿¡ Ãß°¡ÇÑ´Ù.
  */
 IDE_RC utpStatistics::insertQueryData(utpHashmap *aQueryMap,
                                       UInt        aSessID,
@@ -433,7 +433,7 @@ IDE_RC utpStatistics::insertQueryData(utpHashmap *aQueryMap,
 
 /* Description:
  *
- * hash ì— ì €ì¥í•œ í†µê³„ê°’ì„ ì¶œë ¥í•œë‹¤.
+ * hash ¿¡ ÀúÀåÇÑ Åë°è°ªÀ» Ãâ·ÂÇÑ´Ù.
  */
 IDE_RC utpStatistics::writeResult()
 {
@@ -490,7 +490,7 @@ void utpStatistics::writeStat()
 
 /* Description:
  *
- * Session hashì˜ ê° ë…¸ë“œì—ì„œ total time ê¸°ì¤€ìœ¼ë¡œ sorting.
+ * Session hashÀÇ °¢ ³ëµå¿¡¼­ total time ±âÁØÀ¸·Î sorting.
  */
 IDE_RC utpStatistics::sortSessHashNode(void* /* aItem */,
                                        void* aNodeData)
@@ -504,7 +504,7 @@ IDE_RC utpStatistics::sortSessHashNode(void* /* aItem */,
 
 /* Description:
  *
- * ì¶œë ¥ íŒŒì¼ì˜ ì´ë¦„ì„ ì •í•˜ê³ , íŒŒì¼ì„ ì—°ë‹¤.
+ * Ãâ·Â ÆÄÀÏÀÇ ÀÌ¸§À» Á¤ÇÏ°í, ÆÄÀÏÀ» ¿¬´Ù.
  */
 IDE_RC utpStatistics::setOutfile()
 {
@@ -515,7 +515,7 @@ IDE_RC utpStatistics::setOutfile()
     idlOS::umask(0);
     sClock = idlOS::time(NULL); // second
 
-    /* íŒŒì¼ ì´ë¦„ ìƒì„± */
+    /* ÆÄÀÏ ÀÌ¸§ »ı¼º */
     idlOS::snprintf(sFilePrefix, ID_SIZEOF(sFilePrefix),
             "alti-prof-stat-%"ID_UINT32_FMT,
             sClock);
@@ -612,8 +612,8 @@ void utpStatistics::writeNodeInText(void* aItem, void* aNodeData)
     sAvg = (sStat->mTotalTime / 1000000.) /
            (double)(sStat->mCount - sStat->mFail);
 
-    /* ì¿¼ë¦¬ ìŠ¤íŠ¸ë§ì´ í•œ ë¼ì¸ì— ì¶œë ¥ë˜ë„ë¡ line feed ë¬¸ìë¥¼ 
-     * ê³µë°±ìœ¼ë¡œ ì¹˜í™˜
+    /* Äõ¸® ½ºÆ®¸µÀÌ ÇÑ ¶óÀÎ¿¡ Ãâ·ÂµÇµµ·Ï line feed ¹®ÀÚ¸¦ 
+     * °ø¹éÀ¸·Î Ä¡È¯
      */
     sLen = idlOS::strlen((char *)sQuery);
     for (i = 0; i < sLen; i++)
@@ -679,7 +679,7 @@ IDE_RC utpStatistics::sortAndWriteHash(utpHashmap *aHashmap)
         }
     }
 
-    /* ì¿¼ë¦¬ ì „ì²´ì˜ ê°¯ìˆ˜, ìˆ˜í–‰ ì‹œê°„ í‰ê· , ìˆ˜í–‰ ì‹œê°„ í•©ê³„ ì¶œë ¥ */
+    /* Äõ¸® ÀüÃ¼ÀÇ °¹¼ö, ¼öÇà ½Ã°£ Æò±Õ, ¼öÇà ½Ã°£ ÇÕ°è Ãâ·Â */
     if (mTextOut == ID_TRUE)
     {
         idlOS::fprintf(mTextFp, HORI_LINE"\n");
@@ -721,7 +721,7 @@ IDE_RC utpStatistics::sortAndWriteHash(utpHashmap *aHashmap)
 }
 
 /* 
- * TOTAL desc, COUNT desc ë¡œ ì •ë ¬
+ * TOTAL desc, COUNT desc ·Î Á¤·Ä
  */
 SInt utpStatistics::compareHashNode(const void* aLeft,
                                     const void* aRight)

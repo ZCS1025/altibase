@@ -27,9 +27,9 @@
 # include <smpFT.h>
 # include <sdcDef.h>
 
-/* TASK-4007 [SM] PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€ 
+/* TASK-4007 [SM] PBT¸¦ À§ÇÑ ±â´É Ãß°¡ 
  *
- * Page dumpë¥¼ ìœ„í•œ fixed table ì •ì˜*/
+ * Page dump¸¦ À§ÇÑ fixed table Á¤ÀÇ*/
 
 //----------------------------------------
 // D$DISK_DB_PAGE
@@ -78,13 +78,13 @@ typedef struct sdpSegmentPerfV
     UInt         mSpaceID;             /* TBS ID */
     ULong        mTableOID;            /* Table OID */
     ULong        mObjectID;            /* Object ID */
-    scPageID     mSegPID;              /* ì„¸ê·¸ë¨¼íŠ¸ í˜ì´ì§€ PID */
+    scPageID     mSegPID;              /* ¼¼±×¸ÕÆ® ÆäÀÌÁö PID */
     sdpSegType   mSegmentType;         /* Segment Type */
-    UInt         mState;               /* Segment í• ë‹¹ì—¬ë¶€ */
-    ULong        mExtentTotalCnt;      /* Extent ì´ ê°œìˆ˜ */
+    UInt         mState;               /* Segment ÇÒ´ç¿©ºÎ */
+    ULong        mExtentTotalCnt;      /* Extent ÃÑ °³¼ö */
 
-    /* BUG-31372: ì„¸ê·¸ë¨¼íŠ¸ ì‹¤ì‚¬ìš©ì–‘ ì •ë³´ë¥¼ ì¡°íšŒí•  ë°©ë²•ì´ í•„ìš”í•©ë‹ˆë‹¤. */
-    ULong        mUsedTotalSize;       /* ì„¸ê·¸ë¨¼íŠ¸ ì‚¬ìš©ì–‘ */
+    /* BUG-31372: ¼¼±×¸ÕÆ® ½Ç»ç¿ë¾ç Á¤º¸¸¦ Á¶È¸ÇÒ ¹æ¹ıÀÌ ÇÊ¿äÇÕ´Ï´Ù. */
+    ULong        mUsedTotalSize;       /* ¼¼±×¸ÕÆ® »ç¿ë¾ç */
 } sdpSegmentPerfV;
 
 class sdpFT
@@ -93,7 +93,7 @@ public:
 
     //------------------------------------------
     // D$DISK_DB_PAGE
-    // ReadPage( Fix + latch )í•œ í›„ Binaryë¥¼ ë°”ë¡œ Dumpí•œë‹¤.
+    // ReadPage( Fix + latch )ÇÑ ÈÄ Binary¸¦ ¹Ù·Î DumpÇÑ´Ù.
     //------------------------------------------
     static IDE_RC buildRecordDiskDBPageDump(idvSQL              * /*aStatistics*/,
                                             void                *aHeader,
@@ -102,7 +102,7 @@ public:
 
     //------------------------------------------
     // D$DISK_DB_PHYPAGEHDR,
-    // PhysicalPageHdrë¥¼ Dumpí•œë‹¤.
+    // PhysicalPageHdr¸¦ DumpÇÑ´Ù.
     //------------------------------------------
     static IDE_RC buildRecordDiskDBPhyPageHdrDump(idvSQL              * /*aStatistics*/,
                                                   void                *aHeader,

@@ -16,11 +16,11 @@
  
 
 /***********************************************************************
- * $Id: sdnUpdate.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdnUpdate.h 88414 2020-08-25 04:45:02Z justin.kwon $
  *
  * Description :
  * 
- * Î≥∏ ÌååÏùºÏùÄ index Í¥ÄÎ†® redo Ìï®ÏàòÏóê ÎåÄÌïú Ìó§ÎçîÌååÏùºÏù¥Îã§.
+ * ∫ª ∆ƒ¿œ¿∫ index ∞¸∑√ redo «‘ºˆø° ¥Î«— «Ï¥ı∆ƒ¿œ¿Ã¥Ÿ.
  *
  **********************************************************************/
 
@@ -105,20 +105,6 @@ public:
                                                    sdrRedoInfo * /* aRedoInfo */,
                                                    sdrMtx      * /* aMtx */ );
 
-    /* type:  SDR_SDN_MAKE_CHAINED_KEYS */
-    static IDE_RC redo_SDR_SDN_MAKE_CHAINED_KEYS( SChar       * aLogPtr,
-                                                  UInt          aSize,
-                                                  UChar       * aRecPtr,
-                                                  sdrRedoInfo * /* aRedoInfo */,
-                                                  sdrMtx      * /* aMtx */ );
-    
-    /* type:  SDR_SDN_MAKE_UNCHAINED_KEYS */
-    static IDE_RC redo_SDR_SDN_MAKE_UNCHAINED_KEYS( SChar       * aLogPtr,
-                                                    UInt          aSize,
-                                                    UChar       * aRecPtr,
-                                                    sdrRedoInfo * /* aRedoInfo */,
-                                                    sdrMtx      * /* aMtx */ );
-    
     /* type:  SDR_SDN_KEY_STAMPING */
     static IDE_RC redo_SDR_SDN_KEY_STAMPING( SChar       * aLogPtr,
                                              UInt          aSize,

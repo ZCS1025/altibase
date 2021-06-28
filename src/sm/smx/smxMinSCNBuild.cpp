@@ -19,13 +19,8 @@
  * $Id$
  **********************************************************************/
 
-# include <idl.h>
-# include <ide.h>
-# include <idu.h>
-# include <idp.h>
 # include <smErrorCode.h>
 # include <smuProperty.h>
-
 # include <smxTransMgr.h>
 # include <smxMinSCNBuild.h>
 
@@ -39,13 +34,39 @@ smxMinSCNBuild::~smxMinSCNBuild()
 
 }
 
+ULong smxMinSCNBuild::mVersioningMinTime;
+
 /**********************************************************************
  *
- * Description : Threadë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ * Description : Thread¸¦ ÃÊ±âÈ­ÇÑ´Ù.
  *
  **********************************************************************/
 IDE_RC smxMinSCNBuild::initialize()
 {
+    /* PROJ-2733
+       TIME-SCN ¸®½ºÆ®¸¦ ÃÖ´ë »çÀÌÁî·Î Á¤ÇÑ´Ù. 
+
+       - REBUILD_MIN_VIEWSCN_INTERVAL_ÀÌ 1ms ·Î Àâ´Â´Ù¸é, ÃÊ´ç 1000°³ÀÇ TIME-SCNÀ» ±â·ÏÇÏ°Ô µÈ´Ù. 
+       - VERSIONING_MIN_TIMEÀÇ ÃÖ´ë°ªÀº 100sec ÀÌ´Ù. 
+       => ÃÖ´ëÅ©±â´Â 1,000 * 100 = 100,000 (+2 ¿©À¯) À¸·Î Á¤ÇÑ´Ù.
+     */
+    mTimeSCNListMaxCnt = ( 1000 /* ÇÁ·ÎÆÛÆ¼ REBUILD_MIN_VIEWSCN_INTERVAL_ ÀÌ ÃÊ´ç 1000°³ */ 
+                           * 100 /* ÇÁ·ÎÆÛÆ¼ VERSIONING_MIN_TIME ÃÖ´ë°ª 100 sec */
+                           + 2 /* ¿©À¯·Î 2°³¸¦ ´õ ÁØ´Ù. */ );
+
+    IDE_TEST( iduMemMgr::malloc( IDU_MEM_SM_SMX,
+                                 mTimeSCNListMaxCnt * ID_SIZEOF( smxTimeSCNNode ),
+                                 (void**)&mTimeSCNList ) != IDE_SUCCESS );
+
+    clearTimeSCNList();
+
+    SM_SET_SCN_INFINITE( &mTimeSCN );
+    SM_SET_SCN_INFINITE( &mAccessSCN );
+    SM_SET_SCN_INFINITE( &mAgingMemViewSCN );
+    SM_SET_SCN_INFINITE( &mAgingDskViewSCN );
+
+    mVersioningMinTime  = smuProperty::getVersioningMinTime(); /* milli sec */
+
     mFinish = ID_FALSE;
     mResume = ID_FALSE;
 
@@ -54,7 +75,7 @@ IDE_RC smxMinSCNBuild::initialize()
     // BUG-24885 wrong delayed stamping
     SM_INIT_SCN( &mSysMinDskFstViewSCN );
 
-    // BUG-26881 ìž˜ëª»ëœ CTS stampingìœ¼ë¡œ accesí•  ìˆ˜ ì—†ëŠ” rowë¥¼ ì ‘ê·¼í•¨
+    // BUG-26881 Àß¸øµÈ CTS stampingÀ¸·Î accesÇÒ ¼ö ¾ø´Â row¸¦ Á¢±ÙÇÔ
     SM_INIT_SCN( &mSysMinOldestFstViewSCN );
 
     IDE_TEST( mMutex.initialize((SChar*)"TRANSACTION_MINVIEWSCN_BUILDER",
@@ -79,7 +100,7 @@ IDE_RC smxMinSCNBuild::initialize()
 
 /**********************************************************************
  *
- * Description : Threadë¥¼ í•´ì œí•œë‹¤.
+ * Description : Thread¸¦ ÇØÁ¦ÇÑ´Ù.
  *
  **********************************************************************/
 IDE_RC smxMinSCNBuild::destroy()
@@ -87,6 +108,9 @@ IDE_RC smxMinSCNBuild::destroy()
     IDE_TEST_RAISE( mCV.destroy() != IDE_SUCCESS, err_cond_destroy );
 
     IDE_TEST( mMutex.destroy() != IDE_SUCCESS );
+
+    IDE_ASSERT( iduMemMgr::free( mTimeSCNList )
+                == IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -101,11 +125,18 @@ IDE_RC smxMinSCNBuild::destroy()
 
 /**********************************************************************
  *
- * Description : Threadë¥¼ êµ¬ë™í•œë‹¤.
+ * Description : Thread¸¦ ±¸µ¿ÇÑ´Ù.
  *
  **********************************************************************/
 IDE_RC smxMinSCNBuild::startThread()
 {
+    /* PROJ-2733
+     * dbÀÇ startSCN º¸´Ù Å« SCN À¸·Î Á¢±ÙÀ» Á¦ÇÑÇÑ´Ù. */
+    if ( isActiveVersioningMinTime() == ID_TRUE )
+    {
+        setGlobalConsistentSCN();
+    }
+
     IDE_TEST(start() != IDE_SUCCESS);
 
     IDE_TEST(waitToStart(0) != IDE_SUCCESS);
@@ -119,7 +150,7 @@ IDE_RC smxMinSCNBuild::startThread()
 
 /**********************************************************************
  *
- * Description : Threadë¥¼ ì¢…ë£Œí•œë‹¤.
+ * Description : Thread¸¦ Á¾·áÇÑ´Ù.
  *
  **********************************************************************/
 IDE_RC smxMinSCNBuild::shutdown()
@@ -166,10 +197,10 @@ IDE_RC smxMinSCNBuild::shutdown()
 
 /**********************************************************************
  *
- * Description : Threadì˜ Main Jobì„ ìˆ˜í–‰í•œë‹¤.
+ * Description : ThreadÀÇ Main JobÀ» ¼öÇàÇÑ´Ù.
  *
- * UPDATE_MIN_VIEWSCN_INTERVAL_ í”„ë¡œí¼í‹°ì— ì§€ì •í•œ ì‹œê°„ë§ˆë‹¤ ì“°ë ˆë“œëŠ”
- * Minimum Disk ViewSCNì„ êµ¬í•˜ì—¬ ê°±ì‹ í•œë‹¤.
+ * UPDATE_MIN_VIEWSCN_INTERVAL_ ÇÁ·ÎÆÛÆ¼¿¡ ÁöÁ¤ÇÑ ½Ã°£¸¶´Ù ¾²·¹µå´Â
+ * Minimum Disk ViewSCNÀ» ±¸ÇÏ¿© °»½ÅÇÑ´Ù.
  *
  **********************************************************************/
 void smxMinSCNBuild::run()
@@ -193,28 +224,34 @@ restart :
 
     while( 1 )
     {
-        // BUG-28819 REBUILD_MIN_VIEWSCN_INTERVAL_ì„ 0ìœ¼ë¡œ ìœ ì§€í•˜ê³  restartí•˜ë©´
-        // SysMinOldestFstViewSCNì´ ê°±ì‹ ë˜ì§€ ì•Šê³  ì´ˆê¸°ê°’ ëŒ€ë¡œ 0ì´ ìœ ì§€ë˜ì–´ì„œ
-        // ë³¼ìˆ˜ ì—†ëŠ” pageë¥¼ ë³´ê²Œ ë˜ì–´ Systemì´ ë¹„ì •ìƒ ì¢…ë£Œí•©ë‹ˆë‹¤.
-        // Inservalì´ 0ì´ë”ë¼ë„ ì²˜ìŒ í•œë²ˆì€ ê° ê°’ë“¤ì„ êµ¬í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤.
+        // BUG-28819 REBUILD_MIN_VIEWSCN_INTERVAL_À» 0À¸·Î À¯ÁöÇÏ°í restartÇÏ¸é
+        // SysMinOldestFstViewSCNÀÌ °»½ÅµÇÁö ¾Ê°í ÃÊ±â°ª ´ë·Î 0ÀÌ À¯ÁöµÇ¾î¼­
+        // º¼¼ö ¾ø´Â page¸¦ º¸°Ô µÇ¾î SystemÀÌ ºñÁ¤»ó Á¾·áÇÕ´Ï´Ù.
+        // InservalÀÌ 0ÀÌ´õ¶óµµ Ã³À½ ÇÑ¹øÀº °¢ °ªµéÀ» ±¸ÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù.
         if( mResume == ID_TRUE )
         {
-            // Timeì´ ë‹¤ ëœ ê²½ìš°ì—ëŠ” ë‹¤ìŒ ê°’ë“¤ì„ êµ¬í•˜ê³ 
-            // Inservalì´ ê°±ì‹  ëœ ê²½ìš°ì—ëŠ” êµ¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+            if ( isActiveVersioningMinTime() == ID_TRUE )
+            {
+                /* PROJ-2733
+                   SHARDING ENABLE½Ã¿¡¸¸ TimeSCN, AccessSCN, AgingViewSCN À» °»½ÅÇÑ´Ù. */
+                setGlobalConsistentSCN();
+            }
+
+            // TimeÀÌ ´Ù µÈ °æ¿ì¿¡´Â ´ÙÀ½ °ªµéÀ» ±¸ÇÏ°í
+            // InservalÀÌ °»½Å µÈ °æ¿ì¿¡´Â ±¸ÇÏÁö ¾Ê½À´Ï´Ù.
 
             // BUG-24885 wrong delayed stamping
-            // ëª¨ë“  active íŠ¸ëžœìž­ì…˜ë“¤ì˜ minimum disk FstSCNì„ êµ¬í•˜ë„ë¡ ì¶”ê°€
-            smxTransMgr::getDskSCNsofAll(
-                &sSysMinDskViewSCN,
-                &sSysMinDskFstViewSCN,
-                &sSysMinOldestFstViewSCN );  // BUG-26881
+            // ¸ðµç active Æ®·£Àè¼ÇµéÀÇ minimum disk FstSCNÀ» ±¸ÇÏµµ·Ï Ãß°¡
+            smxTransMgr::getDskSCNsofAll( &sSysMinDskViewSCN,
+                                          &sSysMinDskFstViewSCN,    
+                                          &sSysMinOldestFstViewSCN );  // BUG-26881
 
             // BUG-24885 wrong delayed stamping
             // set the minimum disk FstSCN
             SM_SET_SCN( &mSysMinDskViewSCN, &sSysMinDskViewSCN );
             SM_SET_SCN( &mSysMinDskFstViewSCN, &sSysMinDskFstViewSCN );
 
-            // BUG-26881 ìž˜ëª»ëœ CTS stampingìœ¼ë¡œ accesí•  ìˆ˜ ì—†ëŠ” rowë¥¼ ì ‘ê·¼í•¨
+            // BUG-26881 Àß¸øµÈ CTS stampingÀ¸·Î accesÇÒ ¼ö ¾ø´Â row¸¦ Á¢±ÙÇÔ
             SM_SET_SCN( &mSysMinOldestFstViewSCN, &sSysMinOldestFstViewSCN );
         }
 
@@ -285,12 +322,12 @@ restart :
 
 /**********************************************************************
  *
- * Description : ALTER SYSTEM êµ¬ë¬¸ìœ¼ë¡œ ì‚¬ìš©ìžê°€ Disk Minimum View SCNì„ ê°±ì‹ í•œë‹¤.
+ * Description : ALTER SYSTEM ±¸¹®À¸·Î »ç¿ëÀÚ°¡ Disk Minimum View SCNÀ» °»½ÅÇÑ´Ù.
  *
  *               ALTER SYSTEM REBUILD MIN_VIEWSCN;
  *
- *               Rebuild ëª…ë ¹ì´ë¯€ë¡œ í•¨ìˆ˜ ì™„ë£Œ ì‹œì ì—ëŠ” Disk Min View SCNì´
- *               êµ¬í•´ì ¸ ìžˆì–´ì•¼ í•œë‹¤. Thread ìž‘ì—…ì— ë§ê¸°ì§€ ì•Šê³  ì§ì ‘ êµ¬í•œë‹¤.
+ *               Rebuild ¸í·ÉÀÌ¹Ç·Î ÇÔ¼ö ¿Ï·á ½ÃÁ¡¿¡´Â Disk Min View SCNÀÌ
+ *               ±¸ÇØÁ® ÀÖ¾î¾ß ÇÑ´Ù. Thread ÀÛ¾÷¿¡ ¸º±âÁö ¾Ê°í Á÷Á¢ ±¸ÇÑ´Ù.
  *
  * aStatistics  - [IN] statistics
  *
@@ -305,12 +342,18 @@ IDE_RC smxMinSCNBuild::resumeAndWait( idvSQL  * aStatistics )
     lock( aStatistics );
     sState = 1;
 
+    if ( isActiveVersioningMinTime() == ID_TRUE )
+    {
+        /* PROJ-2733
+           SHARDING ENABLE½Ã¿¡¸¸ TimeSCN, AccessSCN, AgingViewSCN À» °»½ÅÇÑ´Ù. */
+        setGlobalConsistentSCN();
+    }
+
     // BUG-24885 wrong delayed stamping
-    // ëª¨ë“  active íŠ¸ëžœìž­ì…˜ë“¤ì˜ minimum disk FstSCNì„ êµ¬í•˜ë„ë¡ ì¶”ê°€
-    smxTransMgr::getDskSCNsofAll(
-        &sSysMinDskViewSCN,
-        &sSysMinDskFstViewSCN,
-        &sSysMinOldestFstViewSCN );  // BUG-26881
+    // ¸ðµç active Æ®·£Àè¼ÇµéÀÇ minimum disk FstSCNÀ» ±¸ÇÏµµ·Ï Ãß°¡
+    smxTransMgr::getDskSCNsofAll( &sSysMinDskViewSCN,
+                                  &sSysMinDskFstViewSCN,        
+                                  &sSysMinOldestFstViewSCN );  // BUG-26881
 
     // BUG-24885 wrong delayed stamping
     // set the minimum disk FstSCN
@@ -319,7 +362,7 @@ IDE_RC smxMinSCNBuild::resumeAndWait( idvSQL  * aStatistics )
 
     IDU_FIT_POINT( "1.BUG-32650@smxMinSCNBuild::resumeAndWait" );
 
-    // BUG-26881 ìž˜ëª»ëœ CTS stampingìœ¼ë¡œ accesí•  ìˆ˜ ì—†ëŠ” rowë¥¼ ì ‘ê·¼í•¨
+    // BUG-26881 Àß¸øµÈ CTS stampingÀ¸·Î accesÇÒ ¼ö ¾ø´Â row¸¦ Á¢±ÙÇÔ
     SM_SET_SCN( &mSysMinOldestFstViewSCN, &sSysMinOldestFstViewSCN );
 
     IDE_TEST( clearInterval() != IDE_SUCCESS );
@@ -347,10 +390,10 @@ IDE_RC smxMinSCNBuild::resumeAndWait( idvSQL  * aStatistics )
 
 /**********************************************************************
  *
- * Description : MinDskViewSCN ê°±ì‹ ì£¼ê¸°ë¥¼ ë³€ê²½í•œë‹¤.
+ * Description : MinDskViewSCN °»½ÅÁÖ±â¸¦ º¯°æÇÑ´Ù.
  *
- * ALTER SYSTEM SET UPDATE_MIN_VIEWSCN_INTERVAL_ .. êµ¬ë¬¸ìœ¼ë¡œ
- * ì‚¬ìš©ìžê°€ Minimum Disk View SCNì„ ê°±ì‹ ì£¼ê¸°ë¥¼ ë³€ê²½í•œë‹¤.
+ * ALTER SYSTEM SET UPDATE_MIN_VIEWSCN_INTERVAL_ .. ±¸¹®À¸·Î
+ * »ç¿ëÀÚ°¡ Minimum Disk View SCNÀ» °»½ÅÁÖ±â¸¦ º¯°æÇÑ´Ù.
  *
  **********************************************************************/
 IDE_RC smxMinSCNBuild::resetInterval()
@@ -379,11 +422,100 @@ IDE_RC smxMinSCNBuild::resetInterval()
     return IDE_FAILURE;
 }
 
+/**********************************************************************
+ *
+ * PROJ-2733 ºÐ»ê Æ®·£Àè¼Ç Á¤ÇÕ¼º
+ *
+ * Description : versioning min time À» º¯°æÇÑ´Ù.
+ *
+ * ALTER SYSTEM SET VERSIONING_MIN_TIME  ±¸¹®À¸·Î
+ * »ç¿ëÀÚ°¡ versioning min timeÀ» º¯°æÇÑ´Ù.
+ *
+ * smuProperty::mVersioningMinTime °ªÀÌ º¯°æµÈÈÄ, ÀÌÇÔ¼ö°¡ È£ÃâµÈ´Ù.
+ * VERSIONING_MIN_TIME = 0 Àº accessSCN, agingViewSCNÀ» ´õÀÌ»ó ±¸ÇÏÁö¾Ê°í,
+ * sytem (view) scn À» »ç¿ëÇÑ´Ù´Â ÀÇ¹ÌÀÌ´Ù.
+ *
+ **********************************************************************/
+IDE_RC smxMinSCNBuild::resetVersioningMinTime()
+{
+    SInt   sState = 0;
+    ULong sOldVersioningMinTime;
+    ULong sNewVersioningMinTime;
 
+    lock( NULL /* idvSQL* */ );
+    sState = 1;
+
+    if ( smuProperty::getShardEnable() == ID_FALSE )
+    {
+        IDE_CONT( SKIP_VERSIONING_MIN_TIME_RESET );
+    }
+
+    sOldVersioningMinTime = mVersioningMinTime;
+
+    sNewVersioningMinTime = smuProperty::getVersioningMinTime(); /* milli sec */
+
+    if ( ( sOldVersioningMinTime == 0 ) &&
+         ( sNewVersioningMinTime > 0 ) )
+    {
+        /* 1. ÀÛµ¿ ½ÃÀÛ */
+
+        /* ÀÌÀü ÀÛµ¿½Ã ³²¾ÆÀÖÀ»¼öÀÖ´Â TIME-SCN LIST¸¦ Á¤¸®ÇÑ´Ù. */
+        ID_SERIAL_BEGIN( clearTimeSCNList() );
+        ID_SERIAL_END(   setGlobalConsistentSCN() );
+    }
+    else if ( ( sOldVersioningMinTime > 0 ) &&
+              ( sNewVersioningMinTime == 0 ) )
+    {
+        /* 2.  ÀÛµ¿ Á¤Áö */
+
+        /* AccessSCN, AgingViewSCN ¼¼ÆÃ ¼ø¼­´Â ÁöÄÑÁ®¾ß ÇÑ´Ù. */
+        ID_SERIAL_BEGIN( SM_SET_SCN_INFINITE( &mTimeSCN ) );  
+        ID_SERIAL_EXEC(  SM_SET_SCN_INFINITE( &mAccessSCN ), 1 ); 
+        ID_SERIAL_EXEC(  SM_SET_SCN_INFINITE( &mAgingMemViewSCN ), 2 ); 
+        ID_SERIAL_END(   SM_SET_SCN_INFINITE( &mAgingDskViewSCN ) ); 
+    }
+
+    mVersioningMinTime = sNewVersioningMinTime;
+
+    IDE_EXCEPTION_CONT( SKIP_VERSIONING_MIN_TIME_RESET );
+
+    IDE_TEST( clearInterval() != IDE_SUCCESS );
+
+    sState = 0;
+    unlock();
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    if ( sState != 0 )
+    {
+        unlock();
+    }
+
+    return IDE_FAILURE;
+}
+
+/* TIME-SCN LIST¸¦ clearÇÑ´Ù. */
+void smxMinSCNBuild::clearTimeSCNList()
+{
+    SInt i;
+
+    mTimeSCNListLastIdx = -1;
+    mTimeSCNListBaseIdx = -1;
+
+    for ( i = 0;
+          i < mTimeSCNListMaxCnt;
+          i++ )
+    {
+        mTimeSCNList[i].mTime.initialize();
+        SM_INIT_SCN( &(mTimeSCNList[i].mSCN) );
+    }
+}
 
 /**********************************************************************
  *
- * Description : ì“°ë ˆë“œì˜ í˜„ìž¬ Intervalì„ ì´ˆê¸°í™”í•œë‹¤.
+ * Description : ¾²·¹µåÀÇ ÇöÀç IntervalÀ» ÃÊ±âÈ­ÇÑ´Ù.
  *
  **********************************************************************/
 IDE_RC smxMinSCNBuild::clearInterval()
@@ -401,3 +533,236 @@ IDE_RC smxMinSCNBuild::clearInterval()
 
     return IDE_FAILURE;
 }
+
+/**********************************************************************
+ PROJ-2733 ºÐ»ê Æ®·£Àè¼Ç Á¤ÇÕ¼º :  TIME-SCN ¸®½ºÆ®¿¡ ÃÖ½ÅÁ¤º¸¸¦ Ãß°¡ÇÑ´Ù.
+
+ TIME-SCN ¸®½ºÆ®´Â °íÁ¤µÈ Å©±âÀÇ ARRAY·Î index 0,1,2, ... ¼ø¼­·Î ±â·ÏµÇ¸ç,
+ ¸ðµÎ »ç¿ëÇÒ °æ¿ì index 0 ºÎÅÍ µ¤¿©¾²¿©Áø´Ù.
+ ¸¶Áö¸·¿¡ ±â·ÏÇÑ index À§Ä¡´Â mTimeSCNListLastIdx¿¡ ±â·ÏµÈ´Ù.
+ **********************************************************************/
+void smxMinSCNBuild::addTimeSCNList()
+{
+    SInt sLastIdx;
+
+    sLastIdx = mTimeSCNListLastIdx;
+
+    sLastIdx = ( (sLastIdx + 1) % mTimeSCNListMaxCnt );
+
+    mTimeSCNList[sLastIdx].mTime = idlOS::gettimeofday();
+    mTimeSCNList[sLastIdx].mSCN  = smmDatabase::getLstSystemSCN();
+
+    mTimeSCNListLastIdx = sLastIdx;
+}
+
+/**********************************************************************
+ PROJ-2733 ºÐ»ê Æ®·£Àè¼Ç Á¤ÇÕ¼º : ÇöÀç½Ã°£À» ¹ÙÅÁÀ¸·Î TIME SCNÀ» ±¸ÇÑ´Ù.
+
+ ÇöÀç½Ã°£¿¡¼­ ÇÁ·ÎÆÛÆ¼VERSIONING_MIN_TIME(µðÆúÆ® 6ÃÊ)¸¦ »« ½Ã°£À»
+ TIME-SCN ¸®½ºÆ®¿¡¼­ Ã£¾Æ ±×°Í¿¡ ¸ÅÄªµÇ´Â SCNÀ» TIME SCNÀ¸·Î ±¸ÇÑ´Ù.
+ ¸ÅÄªµÇ´Â ½Ã°£ÀÌ ¾ø´Ù¸é °¡Àå °¡±î¿î ¿¾½Ã°£À¸·Î ±¸ÇÑ´Ù.
+ 
+ ex) TIME-SCN ¸®½ºÆ®¿¡ ±â·ÏµÈ ½Ã°£ÀÌ
+     1, 2, 3, 4, 5, 6, 7, 8 ÀÌ°í ÇöÀç½Ã°£ÀÌ 8.5¶ó¸é,
+
+     8.5 - 6(ÇÁ·ÎÆÛÆ¼ µðÆúÆ®) = 2.5 
+     2.5¿¡ °¡Àå °¡±î¿î ¿¾½Ã°£ 2°¡ ¼±ÅÃµÈ´Ù.
+ **********************************************************************/
+void smxMinSCNBuild::setTimeSCN()
+{
+    SInt           sIdx;
+    smSCN          sSCN;
+#ifdef DEBUG
+    smSCN          sOldTimeSCN;
+#endif
+    smSCN          sNewTimeSCN;
+    PDL_Time_Value sOldTime;
+    PDL_Time_Value sNewTime;
+    PDL_Time_Value sTime;
+    PDL_Time_Value sAddTime;
+    PDL_Time_Value sCurTime;
+
+    /* addTimeSCNList()ÀÌ È£ÃâµÇ¾î,
+       TIME-SCN LIST¿¡ Àû¾îµµ ÇÏ³ªÀÇ itemÀÌ ÀÖÀ½À» º¸ÀåÇÑ´Ù. */
+    addTimeSCNList();
+
+    IDE_DASSERT( mTimeSCNListLastIdx >= 0 );
+
+    sIdx     = mTimeSCNListLastIdx;
+    sCurTime = idlOS::gettimeofday();
+
+    sAddTime.msec( mVersioningMinTime ); /* milli sec */
+
+    /* °¡Àå ÃÖ±Ù½Ã°£ºÎÅÍ ¿ªÀ¸·Î °Ë»öÇÑ´Ù. */
+    while ( 1 )
+    {
+        sTime = mTimeSCNList[sIdx].mTime;
+        sSCN  = mTimeSCNList[sIdx].mSCN;
+
+        if ( SM_SCN_IS_INIT( sSCN ) )
+        {
+            /* ÃÊ±âÈ­µÈ °ªÀÌ¸é Á÷Àü°ÍÀ» ¼±ÅÃÇÑ´Ù. */
+            sIdx = ( (sIdx + 1) % mTimeSCNListMaxCnt );
+            break;      
+        }
+
+        if ( ( sTime + sAddTime ) <= sCurTime )
+        {
+            /* found */
+            break;
+        }
+
+        sIdx = ( ( sIdx == 0 )
+                 ? ( mTimeSCNListMaxCnt - 1 ) : ( sIdx - 1 ) );
+
+        if ( sIdx == mTimeSCNListLastIdx )
+        {
+            /* °Ë»öÀÌ ³¡³µ´Âµ¥, ÀûÀýÇÑ TIME SCNÀ» Ã£Áö¸øÇß´Ù.
+               LIST¿¡¼­ °¡Àå ¿À·¡µÈ °ªÀ¸·Î TIME SCNÀ» ¼³Á¤ÇÑ´Ù. */
+            sIdx = ( (sIdx + 1) % mTimeSCNListMaxCnt );
+            break;      
+        }
+    }
+
+#ifdef DEBUG
+    getTimeSCN( &sOldTimeSCN );
+#endif
+    sOldTime.initialize(); /* 0, 0 */
+    if ( mTimeSCNListBaseIdx > 0 )
+    {
+        sOldTime = mTimeSCNList[mTimeSCNListBaseIdx].mTime;
+    }
+
+    sNewTimeSCN = mTimeSCNList[sIdx].mSCN;
+    sNewTime = mTimeSCNList[sIdx].mTime;
+
+    /* set */
+    if ( mTimeSCNListBaseIdx != sIdx )
+    {
+        if ( sOldTime < sNewTime )
+        {
+#ifdef DEBUG
+            if ( SM_SCN_IS_NOT_INFINITE( sOldTimeSCN ) )
+            {
+                IDE_ASSERT( SM_SCN_IS_LE( &sOldTimeSCN, &sNewTimeSCN ) );
+            }
+#endif
+            SM_SET_SCN( &mTimeSCN, &sNewTimeSCN );
+            mTimeSCNListBaseIdx = sIdx;
+        }
+    }
+}
+
+/* min view¿Í TIME SCNÀ¸·Î AgingViewSCNÀ» ±¸ÇÑ´Ù. */
+void smxMinSCNBuild::setAgingMemViewSCN()
+{
+    smSCN sNewAgingMemViewSCN;
+    smTID sDummyTID;
+
+    /* ³»ºÎ¿¡¼­ TIME SCN°ú ºñ±³ÇÑ´Ù. */
+    smxTransMgr::getMinMemViewSCNofAll( &sNewAgingMemViewSCN,
+                                        &sDummyTID,
+                                        ID_TRUE /* TIME_SCNÀ» ÃÊ±â°ªÀ¸·Î min view¸¦ ±¸ÇÑ´Ù. */ );
+
+    /* AgingViewSCN Àº °è¼Ó Áõ°¡ÇÑ´Ù */
+    if ( SM_SCN_IS_INFINITE( mAgingMemViewSCN ) ||
+         SM_SCN_IS_LT( &mAgingMemViewSCN, &sNewAgingMemViewSCN ) )
+    {
+        SM_SET_SCN( &mAgingMemViewSCN, &sNewAgingMemViewSCN );
+    }
+}
+
+/* dsk min view, TIME SCN Áß ÀÛÀº °ªÀ¸·Î AgingViewSCNÀ» ±¸ÇÑ´Ù. 
+   smxMinSCNBuild::run() ¿¡¼­ È£ÃâµÈ´Ù. 
+   AccessSCN ¼³Á¤º¸´Ù ´Ê°Ô ¼³Á¤µÇ¾î¾ß ÇÑ´Ù. 
+ */
+void smxMinSCNBuild::setAgingDskViewSCN()
+{
+    smSCN sTimeSCN; 
+    smSCN sSysMinDskViewSCN;
+    smSCN sNewAgingDskViewSCN;
+
+
+    getTimeSCN( &sTimeSCN );
+    IDE_DASSERT( SM_SCN_IS_EQ( &sTimeSCN,&mAccessSCN ) );
+    SM_SET_SCN_VIEW_BIT( &sTimeSCN );
+
+    /* ³»ºÎ¿¡¼­ TIME SCN°ú ºñ±³ ¾È Çß´Ù */
+    /* BUGBUG - Çö½ÃÁ¡Àº ÇÑ ÁÖ±âÀü mSysMinDskFstViewSCN ÀÌ±äÇÔ. 
+                aging ¹Ð¸®¸é ¿©±âµµ ºÁ¾ßÇÔ */
+    getMinDskViewSCN( &sSysMinDskViewSCN );
+
+    sNewAgingDskViewSCN = SM_SCN_IS_LT(&sTimeSCN,&sSysMinDskViewSCN) ? sTimeSCN : sSysMinDskViewSCN;
+
+    IDE_DASSERT( SM_SCN_IS_NOT_INFINITE( sNewAgingDskViewSCN ) );
+
+    /* AgingViewSCN Àº °è¼Ó Áõ°¡ÇÑ´Ù */
+    if ( SM_SCN_IS_INFINITE( mAgingDskViewSCN ) ||
+         SM_SCN_IS_LT( &mAgingDskViewSCN, &sNewAgingDskViewSCN ) )
+    {
+        SM_SET_SCN( &mAgingDskViewSCN, &sNewAgingDskViewSCN );
+    }
+}
+
+/* TimeSCNÀ¸·Î AccessSCNÀ» ¼³Á¤ÇÑ´Ù. */
+void smxMinSCNBuild::setAccessSCN()
+{
+    smSCN sOldAccessSCN;
+    smSCN sNewAccessSCN;
+
+    getAccessSCN( &sOldAccessSCN );
+
+    getTimeSCN( &sNewAccessSCN );
+
+    /* AccessSCN Àº °è¼Ó Áõ°¡ÇÑ´Ù */
+    if ( SM_SCN_IS_INFINITE( sOldAccessSCN ) ||
+         SM_SCN_IS_LT( &sOldAccessSCN, &sNewAccessSCN ) )
+    {
+        SM_SET_SCN( &mAccessSCN, &sNewAccessSCN );
+    }
+}
+
+/* TimeSCN/AccessSCN/AgingViewSCN À» ÇöÀç system scn À¸·Î Àç¼³Á¤ÇÑ´Ù.
+   Replica SCNÀ» ¼³Á¤ÇÒ¶§ »ç¿ëµÈ´Ù.
+   ¿ÜºÎ ÀÎÅÍÆäÀÌ½º¿¡¼­ È£ÃâµÈ´Ù. */
+void smxMinSCNBuild::setGlobalConsistentSCNAsSystemSCN()
+{
+    lock( NULL );
+
+    if ( isActiveVersioningMinTime() == ID_FALSE )
+    {
+        IDE_CONT( SKIP_ACCESS_SCN_SET );
+    }
+
+    ID_SERIAL_BEGIN( clearTimeSCNList() );
+    ID_SERIAL_END(   setGlobalConsistentSCN() );
+
+    IDE_EXCEPTION_CONT( SKIP_ACCESS_SCN_SET );
+
+    unlock();
+}
+
+void smxMinSCNBuild::setGlobalConsistentSCN()
+{
+    /* AccessSCN°ú AgingViewSCNÀÌ ¿ªÀüµÇ´Â °ÍÀ» ¸·±âÀ§ÇØ ¼ø¼­°¡ ÁöÄÑÁ®¾ß ÇÑ´Ù.
+
+       AccessSCNÀÌ ¸ÕÀú Áõ°¡ÇÏ°í, AgingViewSCN ÀÌ Áõ°¡ÇØ¾ßÇÑ´Ù.
+       MUST BE ( AccessSCN >= AgingViewSCN )
+
+       ¹Ý·Ê
+     
+       0. AgingViewSCNÀÌ °»½ÅµÊ.
+       1. TX¿¡ AgingViewSCNº¸´Ù ÀÛÀº fstMinView°¡ ¼¼ÆÃµÈ´Ù.
+          ( ÀÌÈÄºÎÅÍ AgingViewSCN¿¡ ¿µÇâ )
+       2. AccessSCN°úfstMinView Ã¼Å©ÇÏÁö¸¸, Åë°ú
+         => ¹®Á¦¹ß»ý: AgingÀÌ µÇ¾î¹ö·È´Âµ¥ ÀÛÀºfstMinView·Î ºÁ¹ö¸².
+       3. AccessSCN°»½ÅµÊ.
+
+       À§°°ÀÌ ¹ß»ýÇÏÁö¾ÊÀ¸·Á¸é AccessSCNÀÌ AgingViewSCNº¸´Ù ¸ÕÀú °»½ÅµÇ¾î¾ß ÇÔ.
+     */
+    ID_SERIAL_BEGIN( setTimeSCN() );  
+    ID_SERIAL_EXEC(  setAccessSCN(), 1 ); 
+    ID_SERIAL_EXEC(  setAgingMemViewSCN(), 2 ); 
+    ID_SERIAL_END(   setAgingDskViewSCN() ); 
+}
+

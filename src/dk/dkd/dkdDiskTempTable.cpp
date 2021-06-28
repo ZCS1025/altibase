@@ -27,7 +27,7 @@
 
 #include <mtc.h>
 #ifndef ALTIBASE_PRODUCT_XDB
-#include <smiTempTable.h>
+#include <smiSortTempTable.h>
 #endif
 
 #include <dkdDiskTempTable.h>
@@ -43,7 +43,7 @@ struct dkdDiskTempTable
     
     smiValue * mSmiValueRow;
 #ifndef ALTIBASE_PRODUCT_XDB    
-    smiTempCursor * mCursor;
+    smiSortTempCursor * mCursor;
 #endif
 };
 
@@ -221,16 +221,16 @@ IDE_RC dkdDiskTempTableCreate( void * aQcStatement,
     IDE_TEST( qciMisc::getSmiStatement( aQcStatement, &sStatement )
               != IDE_SUCCESS );
     
-    IDE_TEST( smiTempTable::create( 
+    IDE_TEST( smiSortTempTable::create( 
                   NULL,
                   sSpaceId,
                   0, /* aWorkAreaSize */
                   sStatement,
-                  SMI_TTFLAG_TYPE_SORT | SMI_TTFLAG_RANGESCAN, /* SORT Temp Table  */
-                  sHandle->mSmiColumnList,         // Tableì˜ Column êµ¬ì„±
+                  SMI_TTFLAG_RANGESCAN,            /* SORT Temp Table  */
+                  sHandle->mSmiColumnList,         // TableÀÇ Column ±¸¼º
                   sHandle->mSmiColumnList,         // key column list
                   0,                               // WorkGroupRatio
-                (const void **) &sHandle->mTable ) // Table í•¸ë“¤
+                (const void **) &sHandle->mTable ) // Table ÇÚµé
         != IDE_SUCCESS );
     
     *aHandle = sHandle;
@@ -265,7 +265,7 @@ IDE_RC dkdDiskTempTableDrop( dkdDiskTempTableHandle * aHandle )
     
     return IDE_FAILURE;
 #else
-    IDE_TEST( smiTempTable::drop( aHandle->mTable )
+    IDE_TEST( smiSortTempTable::drop( aHandle->mTable )
               != IDE_SUCCESS );
 
     dkdTempTableFreeHandle( aHandle );
@@ -290,8 +290,6 @@ IDE_RC dkdDiskTempTableInsertRow( dkdDiskTempTableHandle * aHandle,
     
     return IDE_FAILURE;
 #else
-    scGRID sDummyGRID;
-    idBool sDummyResult;
     UInt i;
     
     for ( i = 0; i < aHandle->mColumnCount; i++ )
@@ -305,11 +303,8 @@ IDE_RC dkdDiskTempTableInsertRow( dkdDiskTempTableHandle * aHandle,
                 aHandle->mSmiValueRow[i].value );
     }
     
-    IDE_TEST( smiTempTable::insert( aHandle->mTable,
-                                    aHandle->mSmiValueRow,
-                                    0, /*HashValue */
-                                    &sDummyGRID,
-                                    &sDummyResult )
+    IDE_TEST( smiSortTempTable::insert( aHandle->mTable,
+                                        aHandle->mSmiValueRow )
               != IDE_SUCCESS );
     
     return IDE_SUCCESS;
@@ -334,14 +329,13 @@ IDE_RC dkdDiskTempTableOpenCursor( dkdDiskTempTableHandle * aHandle )
 
     sFlag = SMI_TCFLAG_FORWARD | SMI_TCFLAG_ORDEREDSCAN | SMI_TCFLAG_IGNOREHIT;
 
-    IDE_TEST( smiTempTable::openCursor( 
+    IDE_TEST( smiSortTempTable::openCursor( 
                   aHandle->mTable,
                   sFlag,
-                  NULL,  // Update Columnì •ë³´
+                  NULL,  // Update ColumnÁ¤º¸
                   smiGetDefaultKeyRange(),
                   smiGetDefaultKeyRange(),
                   smiGetDefaultFilter(),
-                  0,                            // HashValue
                   &(aHandle->mCursor) )
               != IDE_SUCCESS );
     
@@ -367,13 +361,12 @@ IDE_RC dkdDiskTempTableRestartCursor( dkdDiskTempTableHandle * aHandle )
 
     sFlag = SMI_TCFLAG_FORWARD | SMI_TCFLAG_ORDEREDSCAN | SMI_TCFLAG_IGNOREHIT;
     
-    IDE_TEST( smiTempTable::restartCursor( 
+    IDE_TEST( smiSortTempTable::restartCursor( 
                   aHandle->mCursor,
                   sFlag,
                   smiGetDefaultKeyRange(),
                   smiGetDefaultKeyRange(),
-                  smiGetDefaultFilter(),
-                  0 )
+                  smiGetDefaultFilter() )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -398,9 +391,9 @@ IDE_RC dkdDiskTempTableFetchRow( dkdDiskTempTableHandle * aHandle,
 #else
     scGRID sDummyGRID;
     
-    IDE_TEST( smiTempTable::fetch( aHandle->mCursor,
-                                   (UChar **)aRow,
-                                   &sDummyGRID )
+    IDE_TEST( smiSortTempTable::fetch( aHandle->mCursor,
+                                       (UChar **)aRow,
+                                       &sDummyGRID )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;

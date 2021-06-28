@@ -28,51 +28,51 @@ struct ulnDescRec
     ulnDesc           *mParentDesc;
 
     acp_uint16_t       mIndex;
-    ulnBindInfo        mBindInfo;             /* ì„œë²„ë¡œ ì „ì†¡í•  BIND (COLUMN/PARAM) INFO
-                                                 ë§¤ë²ˆì˜ execute ë§ˆë‹¤ BIND INFO ë¥¼ ë§Œë“¤ì–´ì„œ ì´ì „ì˜ ê²ƒê³¼
-                                                 ë¹„êµí•´ì„œ ì°¨ì´ê°€ ë‚˜ë©´ ìž¬ì „ì†¡ í•´ì•¼ í•œë‹¤.
-                                                 íŠ¹ížˆ CHAR, BINARY íƒ€ìž…ê³¼ ê°™ì€ variable length ë°ì´í„°ì—ì„œ
-                                                 í•„ìš”í•˜ë‹¤. SQL_NTS ë•Œë¬¸ì´ë‹¤. */
+    ulnBindInfo        mBindInfo;             /* ¼­¹ö·Î Àü¼ÛÇÒ BIND (COLUMN/PARAM) INFO
+                                                 ¸Å¹øÀÇ execute ¸¶´Ù BIND INFO ¸¦ ¸¸µé¾î¼­ ÀÌÀüÀÇ °Í°ú
+                                                 ºñ±³ÇØ¼­ Â÷ÀÌ°¡ ³ª¸é ÀçÀü¼Û ÇØ¾ß ÇÑ´Ù.
+                                                 Æ¯È÷ CHAR, BINARY Å¸ÀÔ°ú °°Àº variable length µ¥ÀÌÅÍ¿¡¼­
+                                                 ÇÊ¿äÇÏ´Ù. SQL_NTS ¶§¹®ÀÌ´Ù. */
 
     ulnMeta            mMeta;
     ulnParamInOutType  mInOutType;            /* SShort SQL_DESC_PARAMETER_TYPE ipd(rw).
-                                                 íŒŒë¼ë¯¸í„°ê°€ IN / OUT / INOUT ì¸ì§€ì˜ êµ¬ë¶„ìž. */
+                                                 ÆÄ¶ó¹ÌÅÍ°¡ IN / OUT / INOUT ÀÎÁöÀÇ ±¸ºÐÀÚ. */
 
-    ulnPDContext       mPDContext;            /* SQLPutData() ë¥¼ ìœ„í•œ êµ¬ì¡°ì²´ */
+    ulnPDContext       mPDContext;            /* SQLPutData() ¸¦ À§ÇÑ ±¸Á¶Ã¼ */
 
-    uluArray          *mLobArray;             /* LOB ì»¬ëŸ¼ì¼ ê²½ìš° LOB ì— ê´€í•œ ì •ë³´ë¥¼ ì €ìž¥í•˜ê¸° ìœ„í•œ ë°°ì—´.
-                                                 IPD ì—ì„œë§Œ ì“°ì¸ë‹¤. LOB fetch ì˜ ê²½ìš°ëŠ” ìºì‰¬ì— ulnLob êµ¬ì¡°ì²´ê°€
-                                                 ì €ìž¥ëœë‹¤. */
+    uluArray          *mLobArray;             /* LOB ÄÃ·³ÀÏ °æ¿ì LOB ¿¡ °üÇÑ Á¤º¸¸¦ ÀúÀåÇÏ±â À§ÇÑ ¹è¿­.
+                                                 IPD ¿¡¼­¸¸ ¾²ÀÎ´Ù. LOB fetch ÀÇ °æ¿ì´Â Ä³½¬¿¡ ulnLob ±¸Á¶Ã¼°¡
+                                                 ÀúÀåµÈ´Ù. */
 
-    acp_uint32_t       mOutParamBufferSize;   /* output param ë²„í¼ì˜ ì‚¬ì´ì¦ˆ. 
-                                                 ulnColumn ì˜ í¬ê¸°ëŠ”ì œì™¸í•œ í¬ê¸°. ì‹¤ ë°ì´í„°ì˜ í¬ê¸° */
-    ulnColumn         *mOutParamBuffer;       /* output param ì˜ ê²½ìš° ì„œë²„ì—ì„œ ìˆ˜ì‹ ëœ param data out ì„
-                                                 ì»¨ë²„ì ¼ì„ ìœ„í•´ ìž„ì‹œë¡œ ì €ìž¥í•´ ë‘˜ ulnColumn ì„ ìœ„í•œ ë²„í¼ */
+    acp_uint32_t       mOutParamBufferSize;   /* output param ¹öÆÛÀÇ »çÀÌÁî. 
+                                                 ulnColumn ÀÇ Å©±â´ÂÁ¦¿ÜÇÑ Å©±â. ½Ç µ¥ÀÌÅÍÀÇ Å©±â */
+    ulnColumn         *mOutParamBuffer;       /* output param ÀÇ °æ¿ì ¼­¹ö¿¡¼­ ¼ö½ÅµÈ param data out À»
+                                                 ÄÁ¹öÁ¯À» À§ÇØ ÀÓ½Ã·Î ÀúÀåÇØ µÑ ulnColumn À» À§ÇÑ ¹öÆÛ */
 
     void              *mDataPtr;              /* SQL_DESC_DATA_PTR ard apd(rw).
-                                                 Note í•­ìƒ SQL_ATTR_PARAM_BIND_OFFSET_PTR ì˜ ê°’ì„ ë”í•´ì„œ
-                                                 ê³„ì‚°í•´ì•¼ í•œë‹¤. */
+                                                 Note Ç×»ó SQL_ATTR_PARAM_BIND_OFFSET_PTR ÀÇ °ªÀ» ´õÇØ¼­
+                                                 °è»êÇØ¾ß ÇÑ´Ù. */
 
-    acp_uint32_t      *mFileOptionsPtr;       /* SQLBindFileToCol() ì´ë‚˜ SQLBindFileToParam() í•¨ìˆ˜ì— ì „ë‹¬
-                                                 ë˜ì–´ì§€ëŠ” file options ë°°ì—´ì„ ê°€ë¦¬í‚¤ê¸° ìœ„í•´ì„œ ì‚¬ìš©ë¨.
-                                                 ìƒê¸° ë‘ í•¨ìˆ˜ ì™¸ì—ëŠ” ì‚¬ìš©ë˜ì§€ ì•ŠìŒ */
+    acp_uint32_t      *mFileOptionsPtr;       /* SQLBindFileToCol() ÀÌ³ª SQLBindFileToParam() ÇÔ¼ö¿¡ Àü´Þ
+                                                 µÇ¾îÁö´Â file options ¹è¿­À» °¡¸®Å°±â À§ÇØ¼­ »ç¿ëµÊ.
+                                                 »ó±â µÎ ÇÔ¼ö ¿Ü¿¡´Â »ç¿ëµÇÁö ¾ÊÀ½ */
 
     /*
-     * BUGBUG : octet length ì™€ octet length ptr ì •í™•í•œ êµ¬ë¶„!
+     * BUGBUG : octet length ¿Í octet length ptr Á¤È®ÇÑ ±¸ºÐ!
      */
     ulvSLen           *mOctetLengthPtr;       /* SQL_DESC_OCTET_LENGTH_PTR
-                                                 Note í•­ìƒ SQL_ATTR_PARAM_BIND_OFFSET_PTR ì˜ ê°’ì„ ë”í•´ì„œ
-                                                 ê³„ì‚°í•´ì•¼ í•œë‹¤. */
+                                                 Note Ç×»ó SQL_ATTR_PARAM_BIND_OFFSET_PTR ÀÇ °ªÀ» ´õÇØ¼­
+                                                 °è»êÇØ¾ß ÇÑ´Ù. */
 
     ulvSLen           *mIndicatorPtr;         /* SQL_DESC_INDICATOR_PTR ard apd(rw).
-                                                 Note í•­ìƒ SQL_ATTR_PARAM_BIND_OFFSET_PTR ì˜ ê°’ì„ ë”í•´ì„œ
-                                                 ê³„ì‚°í•´ì•¼ í•œë‹¤. */
+                                                 Note Ç×»ó SQL_ATTR_PARAM_BIND_OFFSET_PTR ÀÇ °ªÀ» ´õÇØ¼­
+                                                 °è»êÇØ¾ß ÇÑ´Ù. */
 
     /*
-     * BUGBUG : ì•„ëž˜ì˜ ë©¤ë²„ë“¤ì€ M$ ODBC ì˜ SQLSetDescField() í•¨ìˆ˜ì˜ ì„¤ëª…ì— ë‚˜ì™€ ìžˆëŠ” ê²ƒë“¤ì´ë‹¤.
-     *          ê·¸ëŸ¬ë‚˜ í•˜ë„ ë³µìž¡-_-ë‹¤ë‹¨í•´ì„œ ì¼ë‹¨ ë©¤ë²„ ë³€ìˆ˜ë§Œ ë‘ê³  ì‚¬ìš©í•˜ì§€ ì•Šê¸°ë¡œ ê²°ì •í–ˆë‹¤.
+     * BUGBUG : ¾Æ·¡ÀÇ ¸â¹öµéÀº M$ ODBC ÀÇ SQLSetDescField() ÇÔ¼öÀÇ ¼³¸í¿¡ ³ª¿Í ÀÖ´Â °ÍµéÀÌ´Ù.
+     *          ±×·¯³ª ÇÏµµ º¹Àâ-_-´Ù´ÜÇØ¼­ ÀÏ´Ü ¸â¹ö º¯¼ö¸¸ µÎ°í »ç¿ëÇÏÁö ¾Ê±â·Î °áÁ¤Çß´Ù.
      *
-     * ì—¬ê¸° ì´í›„ì˜ ê²ƒë“¤ì€ ëª¨ë¥´ê² ë‹¤. ë°°ì§¸ë¼.
+     * ¿©±â ÀÌÈÄÀÇ °ÍµéÀº ¸ð¸£°Ú´Ù. ¹èÂ°¶ó.
      */
 
     acp_sint32_t       mAutoUniqueValue;      /* SQL_DESC_AUTO_UNIQUE_VALUE ird(r) */
@@ -102,13 +102,18 @@ struct ulnDescRec
 
     /* PROJ-2616 */
     /*******************************************************************
-     * ì‹¬í”Œ ì¿¼ë¦¬ì˜ ê²½ìš°, íŒ¨ì¹˜ì‹œì— DBì— ì €ìž¥ëœ ë°ì´í„° ë¸”ë¡ì´ í†µì§¸ë¡œ
-     * ë³µì‚¬ëœë‹¤.
+     * ½ÉÇÃ Äõ¸®ÀÇ °æ¿ì, ÆÐÄ¡½Ã¿¡ DB¿¡ ÀúÀåµÈ µ¥ÀÌÅÍ ºí·ÏÀÌ ÅëÂ°·Î
+     * º¹»çµÈ´Ù.
      * Data Row = |Data1 MaxByte|Data2 MaxByte| ... |DataN MaxByte]
-     * ULì€ ë°ì´í„° ë¡œìš° ë°›ì•„ì„œ mMaxByteSizeì— ë”°ë¼ì„œ, ì»¬ëŸ¼ì„ ë¶„ë¦¬í•˜ì—¬
-     * ì‚¬ìš©ìžì—ê²Œ ë°ì´í„°ë¥¼ ì €ìž¥í•œë‹¤.
+     * ULÀº µ¥ÀÌÅÍ ·Î¿ì ¹Þ¾Æ¼­ mMaxByteSize¿¡ µû¶ó¼­, ÄÃ·³À» ºÐ¸®ÇÏ¿©
+     * »ç¿ëÀÚ¿¡°Ô µ¥ÀÌÅÍ¸¦ ÀúÀåÇÑ´Ù.
      *******************************************************************/
     acp_uint32_t       mMaxByteSize;
+
+    /* PROJ-2739 Client-side Sharding LOB
+     *   locator OutBindÀÎ °æ¿ì ShardLocator¸¦ »ý¼ºÇÏ¿© ÀÓ½Ã º¸°ü.
+     *   ½ÇÇà ³ëµå°¡ ¿©·µÀÏ °æ¿ì °øÀ¯ÇÏ±â À§ÇØ¼­... */
+    void              *mShardLocator;
 };
 
 /*
@@ -195,9 +200,9 @@ ACP_INLINE void ulnDescRecSetUnnamed(ulnDescRec *aDescRec, acp_sint16_t aUnnamed
 ACP_INLINE acp_sint16_t ulnDescRecGetSearchable(ulnDescRec *aDescRec)
 {
     /*
-     * BUGBUG : ì²˜ìŒ ì´ ì†ì„±ì„ ì°¾ëŠ” í•¨ìˆ˜ê°€ í˜¸ì¶œ ë  ë•Œ ì„œë²„ë¡œ ë°ì´í„° íƒ€ìž…ì— ëŒ€í•œ ë©”íƒ€ë¥¼ ì¡°íšŒí•´ì„œ
-     *          ì„¸íŒ…í•´ì•¼ í•œë‹¤.
-     *          ê·¸ëŸ¬ë‚˜, ì§€ê¸ˆì€ ì¼ë‹¨, ULN_MTYPE ì— ë”°ë¼ì„œ ê³ ì •ì‹œì¼œì„œ ë„£ì–´ë‘ë„ë¡ í•˜ìž.
+     * BUGBUG : Ã³À½ ÀÌ ¼Ó¼ºÀ» Ã£´Â ÇÔ¼ö°¡ È£Ãâ µÉ ¶§ ¼­¹ö·Î µ¥ÀÌÅÍ Å¸ÀÔ¿¡ ´ëÇÑ ¸ÞÅ¸¸¦ Á¶È¸ÇØ¼­
+     *          ¼¼ÆÃÇØ¾ß ÇÑ´Ù.
+     *          ±×·¯³ª, Áö±ÝÀº ÀÏ´Ü, ULN_MTYPE ¿¡ µû¶ó¼­ °íÁ¤½ÃÄÑ¼­ ³Ö¾îµÎµµ·Ï ÇÏÀÚ.
      */
     return aDescRec->mSearchable;
 }
@@ -247,14 +252,14 @@ void        ulnDescRecSetName(ulnDescRec *aRecord, acp_char_t *aName);
 acp_char_t *ulnDescRecGetName(ulnDescRec *aRecord);
 
 /*
- * ulnDescRec::mLobArray ê´€ë ¨ í•¨ìˆ˜ë“¤
+ * ulnDescRec::mLobArray °ü·Ã ÇÔ¼öµé
  */
 void     ulnDescRecInitLobArray(ulnDescRec *aDescRec);
 ACI_RC   ulnDescRecArrangeLobArray(ulnDescRec *aImpDescRec, acp_uint32_t aArrayCount);
 ulnLob  *ulnDescRecGetLobElement(ulnDescRec *aDescRec, acp_uint32_t aRowNumber);
 
 /*
- * output parameter ì˜ conversion ì„ ìœ„í•œ ë²„í¼ì™€ ê´€ë ¨ëœ í•¨ìˆ˜ë“¤
+ * output parameter ÀÇ conversion À» À§ÇÑ ¹öÆÛ¿Í °ü·ÃµÈ ÇÔ¼öµé
  */
 
 void   ulnDescRecInitOutParamBuffer(ulnDescRec *aDescRec);
@@ -278,5 +283,16 @@ void ulnDescRecSetTableName(ulnDescRec *aRecord, acp_char_t *aTableName, acp_siz
 void ulnDescRecSetBaseTableName(ulnDescRec *aRecord, acp_char_t *aBaseTableName, acp_size_t aBaseTableNameLen);
 void ulnDescRecSetSchemaName(ulnDescRec *aRecord, acp_char_t *aSchemaName, acp_size_t aSchemaNameLen);
 void ulnDescRecSetCatalogName(ulnDescRec *aRecord, acp_char_t *aCatalogName, acp_size_t aCatalogNameLen);
+
+/* PROJ-2739 Client-side Sharding LOB */
+ACP_INLINE void ulnDescRecSetShardLobLocator(ulnDescRec *aDescRec, void *aShardLocator)
+{
+    aDescRec->mShardLocator = aShardLocator;
+}
+
+ACP_INLINE void *ulnDescRecGetShardLobLocator(ulnDescRec *aDescRec)
+{
+    return aDescRec->mShardLocator;
+}
 
 #endif /* _O_ULN_DESC_REC_H_ */

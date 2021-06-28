@@ -28,8 +28,8 @@
 #include <stmFixedTable.h>
 
 // PROJ-1726 performance view definition
-// st/sti/sti.cpp ì™€ qp/qcm/qcmPerformanceView.cpp ë‘ êµ°ë°ì—ì„œ
-// ì‚¬ìš©ë˜ë¯€ë¡œ í•œ ì½”ë“œë¡œ ê´€ë¦¬í•˜ê¸° ìœ„í•˜ì—¬ #define ìœ¼ë¡œ ì •ì˜í•¨.
+// st/sti/sti.cpp ¿Í qp/qcm/qcmPerformanceView.cpp µÎ ±ºµ¥¿¡¼­
+// »ç¿ëµÇ¹Ç·Î ÇÑ ÄÚµå·Î °ü¸®ÇÏ±â À§ÇÏ¿© #define À¸·Î Á¤ÀÇÇÔ.
 #define ST_PERFORMANCE_VIEWS \
     (SChar*)"CREATE VIEW V$MEM_RTREE_HEADER "\
                "(INDEX_NAME, INDEX_ID, TABLE_TBS_ID,"\
@@ -48,26 +48,8 @@
                "TOTAL_PAGE_COUNT, TOTAL_NODE_COUNT, FREE_NODE_COUNT,"\
                "USED_NODE_COUNT, "\
                "NODE_SIZE, TOTAL_ALLOC_REQ, TOTAL_FREE_REQ, FREE_REQ_COUNT "\
-            "FROM X$MEM_RTREE_NODEPOOL",\
-\
-    (SChar*)"CREATE VIEW V$ST_LINEAR_UNIT "\
-                "(UNIT, NAME, VALUE) "\
-            "AS SELECT "\
-                "UNIT, UNIT_NAME, CONVERSION_FACTOR "\
-            "FROM X$ST_LINEAR_UNIT",\
-\
-    (SChar*)"CREATE VIEW V$ST_AREA_UNIT "\
-                "(UNIT, NAME, VALUE) "\
-            "AS SELECT "\
-                "UNIT, UNIT_NAME, CONVERSION_FACTOR "\
-            "FROM X$ST_AREA_UNIT",\
-\
-    (SChar*)"CREATE VIEW V$ST_ANGULAR_UNIT "\
-                "(UNIT, NAME, VALUE) "\
-            "AS SELECT "\
-                "UNIT, UNIT_NAME, CONVERSION_FACTOR "\
-            "FROM X$ST_ANGULAR_UNIT"
-// ì£¼ì˜ : ë§ˆì§€ë§‰ performance view ì—ëŠ” ',' ë¥¼ ìƒëžµí•  ê²ƒ!
+            "FROM X$MEM_RTREE_NODEPOOL"
+// ÁÖÀÇ : ¸¶Áö¸· performance view ¿¡´Â ',' ¸¦ »ý·«ÇÒ °Í!
 
 class sti
 {
@@ -86,8 +68,8 @@ public:
     static IDE_RC initSystemTables( void );
 
     // Proj-2059 DB Upgrade
-    // Geometryíƒ€ìž… í™•ì¸ì„ ìœ„í•´ Toolì—ì„œ Insertê°€ëŠ¥í•œ Textí˜•íƒœë¡œ ì¶œë ¥í• 
-    // ìˆ˜ ìžˆì–´ì•¼ í•©ë‹ˆë‹¤.
+    // GeometryÅ¸ÀÔ È®ÀÎÀ» À§ÇØ Tool¿¡¼­ Insert°¡´ÉÇÑ TextÇüÅÂ·Î Ãâ·ÂÇÒ
+    // ¼ö ÀÖ¾î¾ß ÇÕ´Ï´Ù.
     static IDE_RC getTextFromGeometry(
                     void*               aObj,
                     UChar*              aBuf,

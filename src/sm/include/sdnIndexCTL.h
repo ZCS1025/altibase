@@ -58,14 +58,11 @@ public:
     static idBool canAllocCTS( sdpPhyPageHdr * aSrcPage,
                                UChar           aNeedCount );
 
-    static IDE_RC bindCTS( idvSQL           * aStatistics,
-                           sdrMtx           * aMtx,
+    static IDE_RC bindCTS( sdrMtx           * aMtx,
                            scSpaceID          aSpaceID,
                            sdpPhyPageHdr    * aPage,
                            UChar              aCTSlotNum,
-                           UShort             aKeyOffset,
-                           sdnCallbackFuncs * aCallbackFunc,
-                           UChar            * aContext );
+                           UShort             aKeyOffset );
 
     static IDE_RC bindCTS( sdrMtx        * aMtx,
                            scSpaceID       aSpaceID,
@@ -74,13 +71,6 @@ public:
                            UChar           aSrcCTSlotNum,
                            sdpPhyPageHdr * aDstPage,
                            UChar           aDstCTSlotNum );
-
-    static IDE_RC bindChainedCTS( sdrMtx        * aMtx,
-                                  scSpaceID       aSpaceID,
-                                  sdpPhyPageHdr * aSrcPage,
-                                  UChar           aSrcCTSlotNum,
-                                  sdpPhyPageHdr * aDstPage,
-                                  UChar           aDstCTSlotNum );
 
     static IDE_RC freeCTS( sdrMtx        * aMtx,
                            sdpPhyPageHdr * aPage,
@@ -102,14 +92,14 @@ public:
                                               UChar  * aPage1,
                                               UChar  * aPage2 );
 
-
     static IDE_RC delayedStamping( idvSQL          * aStatistics,
-                                   sdpPhyPageHdr   * aPage,
-                                   UChar             aSlotNum,
+                                   void            * aTrans,
+                                   sdnCTS          * aCTS,
                                    sdbPageReadMode   aPageReadMode,
+                                   smSCN             aStmtViewSCN,
                                    smSCN           * aCommitSCN,
                                    idBool          * aSuccess );
-
+ 
     static sdnCTL* getCTL( sdpPhyPageHdr  * aPage );
 
     static sdnCTS* getCTS( sdnCTL  * aCTL,
@@ -131,23 +121,16 @@ public:
     static smSCN getCommitSCN( sdnCTS  * aCTS );
 
     static IDE_RC getCommitSCN( idvSQL           * aStatistics,
+                                void             * aTrans, 
                                 sdpPhyPageHdr    * aPage,
                                 sdbPageReadMode    aPageReadMode,
-                                smSCN            * aStmtSCN,
                                 UChar              aCTSlotNum,
-                                UChar              aChained,
-                                sdnCallbackFuncs * aCallbackFunc,
-                                UChar            * aContext,
-                                idBool             aIsCreateSCN,
+                                smSCN              aStmtViewSCN,
                                 smSCN            * aCommitSCN );
 
-    static IDE_RC unbindCTS( idvSQL           * aStatistics,
-                             sdrMtx           * aMtx,
+    static IDE_RC unbindCTS( sdrMtx           * aMtx,
                              sdpPhyPageHdr    * aPage,
                              UChar              aTSSlotNum,
-                             sdnCallbackFuncs * aCallbackFunc,
-                             UChar            * aContext,
-                             idBool             aDoUnchaining,
                              UShort             aKeyOffset );
 
     static idBool isMyTransaction( void          * aTrans,
@@ -174,100 +157,41 @@ public:
                            UChar           aSlotNum,
                            UShort          aKeyOffset );
 
-    // BUG-29506 TBTÍ∞Ä TBKÎ°ú Ï†ÑÌôòÏãú offsetÏùÑ CTSÏóê Î∞òÏòÅÌïòÏßÄ ÏïäÏäµÎãàÎã§.
+    // BUG-29506 TBT∞° TBK∑Œ ¿¸»ØΩ√ offset¿ª CTSø° π›øµ«œ¡ˆ æ Ω¿¥œ¥Ÿ.
     static IDE_RC updateRefKey( sdrMtx        * aMtx,
                                 sdpPhyPageHdr * aPage,
                                 UChar           aSlotNum,
                                 UShort          aOldKeyOffset,
                                 UShort          aNewKeyOffset );
 
-    static UShort getRefKeyCount( sdpPhyPageHdr * aPage,
-                                  UChar           aSlotNum );
-
     static void cleanAllRefInfo( sdpPhyPageHdr * aPage );
 
     static void cleanRefInfo( sdpPhyPageHdr * aPage,
                               UChar           aCTSlotNum );
-#if 0
-    static IDE_RC getVictimTrans( idvSQL        * aStatistics,
-                                  sdpPhyPageHdr * aPage,
-                                  smTID         * aTransID );
-#endif
+
     static IDE_RC logFreeCTS( sdrMtx        * aMtx,
                               sdpPhyPageHdr * aPage,
                               UChar           aSlotNum );
 
-    static idBool hasChainedCTS( sdpPhyPageHdr * aPage,
-                                 UChar           aCTSlotNum );
-
-    static idBool hasChainedCTS( sdnCTS * aCTS );
-
     static UShort getCTLayerSize( UChar * aPage );
 
-    static IDE_RC wait4Trans( void   * aTrans,
-                              smTID    aWait4TID );
-
-    /*TASK-4007 [SM] PBTÎ•º ÏúÑÌïú Í∏∞Îä• Ï∂îÍ∞Ä - dumpddfÏ†ïÏÉÅÌôî
-     *Index CTLÏùÑ DumpÌïòÏó¨ Î≥¥Ïó¨Ï§ÄÎã§*/
+    /*TASK-4007 [SM] PBT∏¶ ¿ß«— ±‚¥… √ﬂ∞° - dumpddf¡§ªÛ»≠
+     *Index CTL¿ª Dump«œø© ∫∏ø©¡ÿ¥Ÿ*/
     static IDE_RC dump ( UChar *sPage ,
                          SChar *aOutBuf ,
                          UInt   aOutSize );
 
-    // BUG-28711 SM PBT Î≥¥Í∞ï
+    // BUG-28711 SM PBT ∫∏∞≠
     static void dumpIndexNode( sdpPhyPageHdr * aNode );
 
     static smSCN getCommitSCN( sdpPhyPageHdr * aPage,
                                UChar           aSlotNum );
 
-    static IDE_RC unchainingCTS( idvSQL           * aStatistics,
-                                 sdrMtx           * aMtx,
-                                 sdpPhyPageHdr    * aPage,
-                                 sdnCTS           * aCTS,
-                                 UChar              aCTSlotNum,
-                                 sdnCallbackFuncs * aCallbackFunc,
-                                 UChar            * aContext );
 private:
-    static IDE_RC delayedStamping( idvSQL          * aStatistics,
-                                   sdnCTS          * aCTS,
-                                   sdbPageReadMode   aPageReadMode,
-                                   smSCN           * aCommitSCN,
-                                   idBool          * aSuccess );
-
     static UChar getUsedCount( sdnCTL  * aCTL );
 
     static void setCTSlotState( sdnCTS * aCTS,
                                 UChar    aState );
-
-    static IDE_RC getCommitSCNfromUndo( idvSQL           * aStatistics,
-                                        sdpPhyPageHdr    * aPage,
-                                        sdnCTS           * aCTS,
-                                        UChar              aCTSlotNum,
-                                        smSCN            * aStmtSCN,
-                                        sdnCallbackFuncs * aCallbackFunc,
-                                        UChar            * aContext,
-                                        idBool             aIsCreateSCN,
-                                        smSCN            * aCommitSCN );
-
-    static IDE_RC makeChainedCTS( idvSQL           * aStatistics,
-                                  sdrMtx           * aMtx,
-                                  sdpPhyPageHdr    * aPage,
-                                  UChar              aCTSlotNum,
-                                  sdnCallbackFuncs * aCallbackFunc,
-                                  UChar            * aContext,
-                                  sdSID            * aUndoSID );
-
-    static IDE_RC getChainedCTS( idvSQL           * aStatistics,
-                                 sdrMtx           * aMtx,
-                                 sdpPhyPageHdr    * aPage,
-                                 sdnCallbackFuncs * aCallbackFunc,
-                                 UChar            * aContext,
-                                 smSCN            * aCommitSCN,
-                                 UChar              aCTSlotNum,
-                                 idBool             aTryHardKeyStamping,
-                                 sdnCTS           * aCTS,
-                                 UChar            * aKeyList,
-                                 UShort           * aKeyListSize,
-                                 idBool           * aIsReusedUndoRec );
 };
 
 inline void sdnIndexCTL::dumpIndexNode( sdpPhyPageHdr *aNode )

@@ -67,11 +67,10 @@ ACI_RC cmnOpensslInitialize(cmnOpenssl **aOpenssl)
     *(void**)&sOpenssl->mFuncs.TLSv1_client_method = acpDlSym(&sOpenssl->mSslHandle, "TLSv1_client_method");
     ACI_TEST_RAISE(sOpenssl->mFuncs.TLSv1_client_method == NULL, ERR_DLSYM_LIBSSL);
 
-#if (DEBUG && (OPENSSL_VERSION_NUMBER >= 0x00909000L))  /* BUG-45407 */
+#if (DEBUG)  /* BUG-47037 OPENSSL_VERSION_NUMBER >= 0x00909000L */
     /* This function can be null depending on the library version
      * and is used only for debugging. */
     *(void**)&sOpenssl->mFuncs.SSL_CTX_set_info_callback = acpDlSym(&sOpenssl->mSslHandle, "SSL_CTX_set_info_callback");
-    ACI_TEST_RAISE(sOpenssl->mFuncs.SSL_CTX_set_info_callback == NULL, ERR_DLSYM_LIBSSL);
 #endif
 
     *(void**)&sOpenssl->mFuncs.SSL_CTX_use_certificate_file = acpDlSym(&sOpenssl->mSslHandle, "SSL_CTX_use_certificate_file");
@@ -177,10 +176,8 @@ ACI_RC cmnOpensslInitialize(cmnOpenssl **aOpenssl)
     *(void**)&sOpenssl->mFuncs.CRYPTO_num_locks = acpDlSym(&sOpenssl->mCryptoHandle, "CRYPTO_num_locks");
     ACI_TEST_RAISE(sOpenssl->mFuncs.CRYPTO_num_locks == NULL, ERR_DLSYM_LIBCRYPTO);
 
-#if (OPENSSL_VERSION_NUMBER >= 0x1000200fL)
+    /* BUG-47037 OPENSSL_VERSION_NUMBER >= 0x1000200fL */
     *(void**)&sOpenssl->mFuncs.SSL_COMP_free_compression_methods = acpDlSym(&sOpenssl->mSslHandle, "SSL_COMP_free_compression_methods");
-    ACI_TEST_RAISE(sOpenssl->mFuncs.SSL_COMP_free_compression_methods == NULL, ERR_DLSYM_LIBSSL);
-#endif  
 
     /* BUG-41166 SSL multi platform */
     *(void**)&sOpenssl->mFuncs.ERR_error_string = acpDlSym(&sOpenssl->mSslHandle, "ERR_error_string");
@@ -295,10 +292,11 @@ static ACI_RC cmnOpensslCleanUpLibrary(cmnOpenssl *aOpenssl)
 {
     ACI_TEST(aOpenssl == NULL);
 
-#if (OPENSSL_VERSION_NUMBER >= 0x1000200fL)
-    /* Release the internal table of compression methods built internally */
-    aOpenssl->mFuncs.SSL_COMP_free_compression_methods();
-#endif
+    if (aOpenssl->mFuncs.SSL_COMP_free_compression_methods != NULL)  /* BUG-47037 */
+    {
+        /* Release the internal table of compression methods built internally */
+        aOpenssl->mFuncs.SSL_COMP_free_compression_methods();
+    }
 
     /* Exit the FIPS mode of operation */
     if (aOpenssl->mFuncs.FIPS_mode_set != NULL) /* BUG-44362 */

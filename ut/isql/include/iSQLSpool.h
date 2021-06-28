@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLSpool.h 82438 2018-03-11 23:49:11Z bethy $
+ * $Id: iSQLSpool.h 83502 2018-07-17 00:27:52Z bethy $
  **********************************************************************/
 
 #ifndef _O_ISQLSPOOL_H_
@@ -36,8 +36,7 @@ public:
     void   Print();
     void   PrintPrompt();
     void   PrintOutFile();
-    void   PrintCommand();
-    void   PrintCommand2(idBool aDisplayOut, idBool aSpoolOut);
+    void   PrintCommand(idBool aDisplayOut, idBool aSpoolOut);
     void   PrintWithDouble(SInt *aPos);
     void   PrintWithFloat(SInt *aPos);
     void   Resize(UInt aSize);

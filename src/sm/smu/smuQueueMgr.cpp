@@ -19,10 +19,6 @@
  * $Id: smuQueueMgr.h
  **********************************************************************/
 
-#include <idu.h>
-#include <idl.h>
-#include <ideErrorMgr.h>
-#include <idErrorCode.h>
 #include <smuQueueMgr.h>
 
 smuQueueMgr::smuQueueMgr()

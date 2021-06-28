@@ -58,7 +58,7 @@ typedef struct sdcColumnDescSet
 #define SDC_LOG_UNDO_INFO_LAYER_MAX_SIZE    \
     ( SDC_UNDOREC_HDR_MAX_SIZE + ID_SIZEOF(scGRID) )
 
-// UPDATE_ROW_PIECE Î°úÍ∑∏Í∞Ä Update Info LayerÍ∞Ä Í∞ÄÏû• ÌÅ¨Îã§.
+// UPDATE_ROW_PIECE ∑Œ±◊∞° Update Info Layer∞° ∞°¿Â ≈©¥Ÿ.
 // opcode(1)
 // size(2)
 // colcount(2)
@@ -124,29 +124,29 @@ typedef struct sdcColumnDescSet
 #define SDC_ROWHDR_FLAG_NULLROW    SDC_ROWHDR_FLAG_NO_CHAINING_ROW
 
 /*
- * ###   FSC ÌîåÎûòÍ∑∏   ###
+ * ###   FSC «√∑°±◊   ###
  *
- * DML Ïó∞ÏÇ∞Ï§ëÏóêÎäî ÎãπÏó∞Ìûà FSCÎ•º reserve Ìï¥Ïïº ÌïúÎã§.
- * Í∑∏Îü¨Î©¥ redoÎÇò undoÏãúÏóêÎäî Ïñ¥ÎñªÍ≤å Ìï¥Ïïº ÌïòÎÇò?
+ * DML ø¨ªÍ¡ﬂø°¥¬ ¥Áø¨»˜ FSC∏¶ reserve «ÿæﬂ «—¥Ÿ.
+ * ±◊∑Ø∏È redo≥™ undoΩ√ø°¥¬ æÓ∂ª∞‘ «ÿæﬂ «œ≥™?
  *
- * redoÎäî DML Ïó∞ÏÇ∞ÏùÑ Îã§Ïãú ÏàòÌñâÌïòÎäî Í≤ÉÏù¥ÎØÄÎ°ú,
- * DML Ïó∞ÏÇ∞Ìï†ÎïåÏôÄ ÎèôÏùºÌïòÍ≤å FSCÎ•º reserve Ìï¥Ïïº ÌïúÎã§.
+ * redo¥¬ DML ø¨ªÍ¿ª ¥ŸΩ√ ºˆ«‡«œ¥¬ ∞Õ¿Ãπ«∑Œ,
+ * DML ø¨ªÍ«“∂ßøÕ µø¿œ«œ∞‘ FSC∏¶ reserve «ÿæﬂ «—¥Ÿ.
  *
- * Î∞òÎ©¥ undoÏãúÏóêÎäî FSCÎ•º reserveÌïòÎ©¥ ÏïàÎêúÎã§.
- * ÏôúÎÇòÌïòÎ©¥ FSCÎäî DML Ïó∞ÏÇ∞ÏùÑ undoÏãúÌÇ¨ÎïåÎ•º ÎåÄÎπÑÌï¥ÏÑú
- * Í≥µÍ∞ÑÏùÑ ÏòàÏïΩÌï¥ÎëêÎäî Í≤ÉÏù¥ÎØÄÎ°ú,
- * undoÏãúÏóêÎäî Ïù¥Ï†ÑÏóê reserveÌï¥Îëî FSCÎ•º
- * ÌéòÏù¥ÏßÄÏóê ÎêòÎèåÎ†§(restore)Ï£ºÏñ¥Ïïº ÌïòÍ≥†,
- * undoÏãúÏóê Îòê Îã§Ïãú FSCÎ•º reserveÌïòÎ†§Í≥† Ìï¥ÏÑúÎäî ÏïàÎêúÎã§.
+ * π›∏È undoΩ√ø°¥¬ FSC∏¶ reserve«œ∏È æ»µ»¥Ÿ.
+ * ø÷≥™«œ∏È FSC¥¬ DML ø¨ªÍ¿ª undoΩ√≈≥∂ß∏¶ ¥Î∫Ò«ÿº≠
+ * ∞¯∞£¿ª øπæ‡«ÿµŒ¥¬ ∞Õ¿Ãπ«∑Œ,
+ * undoΩ√ø°¥¬ ¿Ã¿¸ø° reserve«ÿµ– FSC∏¶
+ * ∆‰¿Ã¡ˆø° µ«µπ∑¡(restore)¡÷æÓæﬂ «œ∞Ì,
+ * undoΩ√ø° ∂« ¥ŸΩ√ FSC∏¶ reserve«œ∑¡∞Ì «ÿº≠¥¬ æ»µ»¥Ÿ.
  *
- * clrÏùÄ undoÏóê ÎåÄÌïú redoÏù¥ÎØÄÎ°ú undoÎïåÏôÄ ÎèôÏùºÌïòÍ≤å
- * FSCÎ•º reserveÌïòÎ©¥ ÏïàÎêúÎã§.
+ * clr¿∫ undoø° ¥Î«— redo¿Ãπ«∑Œ undo∂ßøÕ µø¿œ«œ∞‘
+ * FSC∏¶ reserve«œ∏È æ»µ»¥Ÿ.
  *
- * Ïù¥ ÏÑ∏Í∞ÄÏßÄ Í≤ΩÏö∞Î•º Íµ¨Î∂ÑÌïòÏó¨
- * FSC reserve Ï≤òÎ¶¨Î•º Ìï¥Ïïº ÌïòÎäîÎç∞,
- * ÎÇò(upinel9)Îäî Î°úÍ∑∏Î•º Í∏∞Î°ùÌï†Îïå FSC reserve Ïó¨Î∂ÄÎ•º ÌîåÎûòÍ∑∏Î°ú ÎÇ®Í≤®ÏÑú,
- * redoÎÇò undoÏãúÏóêÎäî Ïù¥ ÌîåÎûòÍ∑∏Îßå Î≥¥Í≥†
- * reallocSlot()ÏùÑ ÌïòÎèÑÎ°ù ÏÑ§Í≥ÑÌïòÏòÄÎã§.
+ * ¿Ã ºº∞°¡ˆ ∞ÊøÏ∏¶ ±∏∫–«œø©
+ * FSC reserve √≥∏Æ∏¶ «ÿæﬂ «œ¥¬µ•,
+ * ≥™(upinel9)¥¬ ∑Œ±◊∏¶ ±‚∑œ«“∂ß FSC reserve ø©∫Œ∏¶ «√∑°±◊∑Œ ≥≤∞‹º≠,
+ * redo≥™ undoΩ√ø°¥¬ ¿Ã «√∑°±◊∏∏ ∫∏∞Ì
+ * reallocSlot()¿ª «œµµ∑œ º≥∞Ë«œø¥¥Ÿ.
  *
  * redo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_TRUE
  * undo     : SDC_UPDATE_LOG_FLAG_RESERVE_FREESPACE_CREDIT_FALSE
@@ -165,18 +165,18 @@ typedef struct sdcColumnDescSet
 #define SDC_UPDATE_LOG_FLAG_LOCK_TYPE_IMPLICIT    (0x00)
 
 /*
- * PROJ-1704 Disk MVCC Î¶¨Îâ¥Ïñº
+ * PROJ-1704 Disk MVCC ∏Æ¥∫æÛ
  *
  * Row-Based Read Consitency
  *
- * Row Piece Î≥ÄÍ≤ΩÏù¥ÌõÑ Îã§Î•∏ Ìä∏ÎûúÏû≠ÏÖòÏù¥ PageÏóê Ï†ëÍ∑ºÌï† Îïå ÏàòÌñâÌïòÎäî
- * Row Time-Stamping ÌôòÍ≤ΩÌïòÏóêÏÑú Í∞Å Row PieceÎì§Ïóê ÎåÄÌï¥ÏÑú CommitSCN
- * Ï†ïÎ≥¥Î•º ÏÑ§Ï†ïÌïòÏó¨ Read-Only ÌòπÏùÄ Update Ìä∏ÎûúÏû≠ÏÖòÏù¥ Row PieceÏùò ÌåêÎèÖ
- * Î∞è Í∞±Ïã† Ïó¨Î∂ÄÎ•º ÏµúÎåÄÌïú Î∞îÎ°ú ÌåêÎã®Ìï† Ïàò ÏûàÎèÑÎ°ù ÌïúÎã§.
- * Row Piece ÏôÄ Í¥ÄÎ†®Îêú Undo RecordÏùò SID(UndoSID)Î•º Ï†ÄÏû•ÌïòÏó¨
- * Row Piece Í∏∞Î∞òÏúºÎ°ú Ïù¥Ï†Ñ Row Piece VersionÏùÑ ÏÉùÏÑ±Ìï† Ïàò ÏûàÎèÑÎ°ù ÌïúÎã§
+ * Row Piece ∫Ø∞Ê¿Ã»ƒ ¥Ÿ∏• ∆Æ∑£¿Ëº«¿Ã Pageø° ¡¢±Ÿ«“ ∂ß ºˆ«‡«œ¥¬
+ * Row Time-Stamping »Ø∞Ê«œø°º≠ ∞¢ Row PieceµÈø° ¥Î«ÿº≠ CommitSCN
+ * ¡§∫∏∏¶ º≥¡§«œø© Read-Only »§¿∫ Update ∆Æ∑£¿Ëº«¿Ã Row Piece¿« ∆«µ∂
+ * π◊ ∞ªΩ≈ ø©∫Œ∏¶ √÷¥Î«— πŸ∑Œ ∆«¥‹«“ ºˆ ¿÷µµ∑œ «—¥Ÿ.
+ * Row Piece øÕ ∞¸∑√µ» Undo Record¿« SID(UndoSID)∏¶ ¿˙¿Â«œø©
+ * Row Piece ±‚π›¿∏∑Œ ¿Ã¿¸ Row Piece Version¿ª ª˝º∫«“ ºˆ ¿÷µµ∑œ «—¥Ÿ
  *
- * @ Row Piece Header (+RowHdrEx) ÏûêÎ£åÍµ¨Ï°∞
+ * @ Row Piece Header (+RowHdrEx) ¿⁄∑·±∏¡∂
  * ______________________________________________________________
  * | CTSLOTIDX | InfiniteSCN | URID.mPageID | URID.mUndoSlotNum |
  * |___________|_____________|______________|___________________|
@@ -185,37 +185,37 @@ typedef struct sdcColumnDescSet
  * (RowHdrEx)  |TSSPID   |TSSlotNum |FSCredit |FSCNOrCSCN |
  *             |_________|__________|_________|___________|
  *
- * Row Piece Header ÌÅ¨Í∏∞Îäî 34BytesÏù¥Îã§.
+ * Row Piece Header ≈©±‚¥¬ 34Bytes¿Ã¥Ÿ.
  *
  * (1) CTSLOTIDX
- *     Í∞±Ïã†ÏùÑ ÏúÑÌïú Ìä∏ÎûúÏû≠ÏÖòÏùÄ ÌéòÏù¥ÏßÄÎ°úÎ∂ÄÌÑ∞ CTSÎ•º Ìï†Îãπ Î∞õÏùÄ ÌõÑÏóê RowÎ•º
- *     Î≥ÄÍ≤ΩÌï† Ïàò ÏûàÎã§. Ìï†ÎãπÎ∞õÏùÄ CTSÎ•º Row PieceÏóê Î∞îÏù∏Îî©Ìï†Îïå CTSlot
- *     NumberÎ•º Í∏∞Î°ùÌïúÎã§.
+ *     ∞ªΩ≈¿ª ¿ß«— ∆Æ∑£¿Ëº«¿∫ ∆‰¿Ã¡ˆ∑Œ∫Œ≈Õ CTS∏¶ «“¥Á πﬁ¿∫ »ƒø° Row∏¶
+ *     ∫Ø∞Ê«“ ºˆ ¿÷¥Ÿ. «“¥Áπﬁ¿∫ CTS∏¶ Row Pieceø° πŸ¿Œµ˘«“∂ß CTSlot
+ *     Number∏¶ ±‚∑œ«—¥Ÿ.
  *
  * (2) InfiniteSCN
- *     Row Piece Î≥ÄÍ≤ΩÏãúÏ†êÏùò InfiniteSCNÏùÑ Í∏∞Î°ùÌïúÎã§.
+ *     Row Piece ∫Ø∞ÊΩ√¡°¿« InfiniteSCN¿ª ±‚∑œ«—¥Ÿ.
  *
  * (3) UndoSID
- *     Row PieceÏùò Î≥ÄÍ≤ΩÏóê ÎåÄÌïú ÎßàÏßÄÎßâ Undo RecordÏùò PageÏôÄ SlotNum Ïù¥Îã§.
- *     Read-Only Ìä∏ÎûúÏû≠ÏÖòÏùÄ Row PieceÏùò UndoSIDÎ•º Îî∞ÎùºÏÑú Undo RecordÏóê
- *     Ï†ëÍ∑ºÌïòÏó¨ Ïù¥Ï†Ñ Row PieceÏùò VersionÏùÑ ÏÉùÏÑ±Ìï† Ïàò ÏûàÎã§.
+ *     Row Piece¿« ∫Ø∞Êø° ¥Î«— ∏∂¡ˆ∏∑ Undo Record¿« PageøÕ SlotNum ¿Ã¥Ÿ.
+ *     Read-Only ∆Æ∑£¿Ëº«¿∫ Row Piece¿« UndoSID∏¶ µ˚∂Ûº≠ Undo Recordø°
+ *     ¡¢±Ÿ«œø© ¿Ã¿¸ Row Piece¿« Version¿ª ª˝º∫«“ ºˆ ¿÷¥Ÿ.
  *
  * (4) FLAG
- *     Row PieceÏùò Íµ¨ÏÑ±Ï†ïÎ≥¥Î•º ÎÇòÌÉÄÎÇ∏Îã§. 'H','F','L','P','N'Ïùò ÎπÑÌä∏Í∞íÏúºÎ°ú
- *     Íµ¨ÏÑ±ÎêúÎã§.
+ *     Row Piece¿« ±∏º∫¡§∫∏∏¶ ≥™≈∏≥Ω¥Ÿ. 'H','F','L','P','N'¿« ∫Ò∆Æ∞™¿∏∑Œ
+ *     ±∏º∫µ»¥Ÿ.
  *
  * (5) COLCNT
- *     Row Piece Í∞Ä Ï†ÄÏû•ÌïòÍ≥† ÏûàÎäî Column Í∞úÏàòÏù¥Îã§.
+ *     Row Piece ∞° ¿˙¿Â«œ∞Ì ¿÷¥¬ Column ∞≥ºˆ¿Ã¥Ÿ.
  *
- * (9) FSCNOrCSCNÏùÄ row binding CTIÏùò Í≤ΩÏö∞ CTSÏóê Ìï¥ÎãπÌïòÎäî Ï†ïÎ≥¥Î•º Í∏∞Î°ùÌïòÍ≥†,
- *     commit Ïù¥ÌõÑÏóêÎäî CommitSCNÏùÑ ÏÑ§Ï†ïÌïúÎã§.
+ * (9) FSCNOrCSCN¿∫ row binding CTI¿« ∞ÊøÏ CTSø° «ÿ¥Á«œ¥¬ ¡§∫∏∏¶ ±‚∑œ«œ∞Ì,
+ *     commit ¿Ã»ƒø°¥¬ CommitSCN¿ª º≥¡§«—¥Ÿ.
  *
- * (6) ~ (9) ÍπåÏßÄÎäî Row Î∞îÏù∏Îî©Îêú Í≤ΩÏö∞Îßå Ïú†Ìö®ÌïòÎã§. Ï¶â, RowPiece ÎÇ¥Ïóê CTS
- * Ï†ïÎ≥¥Î•º Ï†ÄÏû•ÌïòÍ∏∞ ÏúÑÌïú ÏûêÎ£åÍµ¨Ï°∞Ïù¥Î©∞, Î™®Îì† RowPieceÍ∞Ä Í∞ÄÏßÄÍ≥† ÏûàÎã§.
+ * (6) ~ (9) ±Ó¡ˆ¥¬ Row πŸ¿Œµ˘µ» ∞ÊøÏ∏∏ ¿Ø»ø«œ¥Ÿ. ¡Ô, RowPiece ≥ªø° CTS
+ * ¡§∫∏∏¶ ¿˙¿Â«œ±‚ ¿ß«— ¿⁄∑·±∏¡∂¿Ã∏Á, ∏µÁ RowPiece∞° ∞°¡ˆ∞Ì ¿÷¥Ÿ.
  *
  */
 
-// Row Piece HeaderÏùò Í∞Å Íµ¨ÏÑ±ÏöîÏÜåÏóê ÎåÄÌïú Offset Ï†ïÏùò
+// Row Piece Header¿« ∞¢ ±∏º∫ø‰º“ø° ¥Î«— Offset ¡§¿«
 #define SDC_ROWHDR_CTSLOTIDX_SIZE      ( ID_SIZEOF(UChar) )
 #define SDC_ROWHDR_INFINITESCN_SIZE    ( ID_SIZEOF(smSCN) )
 #define SDC_ROWHDR_UNDOPAGEID_SIZE     ( ID_SIZEOF(scPageID) )
@@ -238,7 +238,7 @@ typedef struct sdcColumnDescSet
                                          SDC_ROWHDR_FSCREDIT_SIZE   + \
                                          SDC_ROWHDR_FSCNORCSCN_SIZE )
 
-// Row Piece HeaderÏùò Í∞Å Íµ¨ÏÑ±ÏöîÏÜåÏóê ÎåÄÌïú Size Ï†ïÏùò
+// Row Piece Header¿« ∞¢ ±∏º∫ø‰º“ø° ¥Î«— Size ¡§¿«
 #define SDC_ROWHDR_CTSLOTIDX_OFFSET    (0)
 #define SDC_ROWHDR_INFINITESCN_OFFSET  ( SDC_ROWHDR_CTSLOTIDX_OFFSET +  \
                                          SDC_ROWHDR_CTSLOTIDX_SIZE )
@@ -265,9 +265,6 @@ typedef struct sdcColumnDescSet
 
 #define SDC_ROW_NEXT_SNUM_OFFSET    ( SDC_ROW_NEXT_PID_OFFSET + \
                                       ID_SIZEOF(scPageID) )
-
-#define SDC_ROW_NEXT_PID_SIZE       ( ID_SIZEOF(scPageID) )
-#define SDC_ROW_NEXT_SNUM_SIZE      ( ID_SIZEOF(scSlotNum))
 
 #define SDC_ROWHDR_FIELD_OFFSET(aField)    \
     (aField ## _OFFSET)
@@ -339,8 +336,8 @@ typedef struct sdcColumnDescSet
         == SMI_COLUMN_TYPE_LOB )                                \
       ? ID_TRUE : ID_FALSE )
 
-// BUG-31134 Insert Undo Record logÏóê Ï∂îÍ∞ÄÎêòÎäî RP InfoÎäî
-//           Before ImageÎ•º Í∏∞Ï§ÄÏúºÎ°ú ÏûëÏÑ±ÎêòÏñ¥Ïïº Ìï©ÎãàÎã§.
+// BUG-31134 Insert Undo Record logø° √ﬂ∞°µ«¥¬ RP Info¥¬
+//           Before Image∏¶ ±‚¡ÿ¿∏∑Œ ¿€º∫µ«æÓæﬂ «’¥œ¥Ÿ.
 // ( Is Update ) && (( Redo && New is In Mode ) || ( Undo && Old is In Mode ))
 #define SDC_IS_IN_MODE_UPDATE_COLUMN( aColumnInfo, aIsUndoRec )               \
     ((((aColumnInfo)->mColumn != NULL ) &&                                    \
@@ -437,9 +434,9 @@ typedef struct sdcColumnDescSet
       ( aRetryInfo->mRowRetryColLst.mCurColumn != NULL ) )
 
 /* PROJ-1784 DML without retry
- * Disk tableÏö© Retry Info
- * ÌïòÎÇòÏùò column listÎßå ÌôïÏù∏ÌïúÎã§
- * Ïó¨Îü¨ pageÏóê Í±∏Ïπú rowÎ•º ÎπÑÍµêÌïòÍ∏∞ ÏúÑÌï¥ ÏÇ¨Ïö© */
+ * Disk tableøÎ Retry Info
+ * «œ≥™¿« column list∏∏ »Æ¿Œ«—¥Ÿ
+ * ø©∑Ø pageø° ∞…ƒ£ row∏¶ ∫Ò±≥«œ±‚ ¿ß«ÿ ªÁøÎ */
 typedef struct sdcRetryCompColumns
 {
     const smiColumnList * mCurColumn;
@@ -449,7 +446,7 @@ typedef struct sdcRetryCompColumns
 }sdcRetryColumns;
 
 /* PROJ-1784 DML without retry
- * Disk tableÏö© Retry Info */
+ * Disk tableøÎ Retry Info */
 typedef struct sdcRetryInfo
 {
     const smiDMLRetryInfo * mRetryInfo;
@@ -471,14 +468,14 @@ class sdcRow
 {
 public:
 
-    static IDE_RC insert( idvSQL            *aStatistics,
-                          void              *aTrans,
-                          void              *aTableInfoPtr,
-                          void              *aTableHeader,
+    static IDE_RC insert( idvSQL           * aStatistics,
+                          void             * aTrans,
+                          void             * aTableInfoPtr,
+                          void             * aTableHeader,
                           smSCN              aCSInfiniteSCN,
                           SChar            **, //aRetRow
-                          scGRID            *aRowGRID,
-                          const smiValue    *aValueList,
+                          scGRID           * aRowGRID,
+                          const smiValue   * aValueList,
                           UInt               aFlag );
 
    // PROJ-1566
@@ -492,7 +489,7 @@ public:
 
     static IDE_RC update( idvSQL                * aStatistics,
                           void                  * aTrans,
-                          smSCN                   aStmtSCN,
+                          smSCN                   aStmtViewSCN,
                           void                  * aTableInfoPtr,
                           void                  * aTableHeader,
                           SChar                 *,//aOldRow,
@@ -504,19 +501,20 @@ public:
                           const smiDMLRetryInfo * aDMLRetryInfo,
                           smSCN                   aCSInfiniteSCN,
                           sdcColInOutMode       * aValueModeList,
-                          ULong                 * aModifyIdxBit);
+                          ULong                 * aModifyIdxBit,
+                          idBool                  aForbiddenToRetry );
 
     static IDE_RC remove( idvSQL               * aStatistics,
                           void                 * aTrans,
-                          smSCN                  aStmtSCN,
+                          smSCN                  aStmtViewSCN,
                           void                 * aTableInfoPtr,
                           void                 * aTableHeader,
                           SChar                * /* aRow */,
                           scGRID                 aSlotGRID,
                           smSCN                  aCSInfiniteSCN,
-                          const smiDMLRetryInfo* aDMLRetryInfo,
-                          //PROJ-1677 DEQUEUE
-                          smiRecordLockWaitInfo* aRecordLockWaitInfo );
+                          const smiDMLRetryInfo *aDMLRetryInfo,
+                          idBool                 aIsDequeue, 
+                          idBool                 aForbiddenToRetry );
 
     static IDE_RC fetch( idvSQL                      *aStatistics,
                          sdrMtx                      *aMtx,
@@ -690,12 +688,11 @@ public:
                    scSpaceID              aSpaceID,
                    sdSID                  aSlotSID,
                    sdbPageReadMode        aPageReadMode,
-                   smSCN                 *aStmtSCN,
+                   smSCN                 *aStmtViewSCN,
                    smSCN                 *aCSInfiniteSCN,
                    idBool                 aIsUptLobByAPI,
                    UChar                **aTargetRow,
                    sdcUpdateState        *aUptState,
-                   smiRecordLockWaitInfo *aRecordLockWaitInfo,
                    UChar                 *aNewCTSlotIdx,
                    /* BUG-31359 
                     * SELECT ... FOR UPDATE NOWAIT command on disk table
@@ -710,7 +707,7 @@ public:
                               UChar             * aTargetRow,
                               sdRID               aMyTSSlotRID,
                               sdbPageReadMode     aPageReadMode,
-                              smSCN             * aStmtSCN,
+                              smSCN             * aStmtViewSCN,
                               smSCN             * aCSInfiniteSCN,
                               idBool              aIsUptLobByAPI,
                               sdcUpdateState    * aRetFlag,
@@ -723,6 +720,8 @@ public:
                                               void           * aTrans,
                                               scSpaceID        aSpaceID,
                                               sdSID            aNextRowPieceSID,
+                                              idBool           aForbiddenToRetry,
+                                              smSCN            aStmtViewSCN,
                                               sdcRetryInfo   * aRetryInfo );
 
     static IDE_RC checkRetry( void         * aTrans,
@@ -730,6 +729,8 @@ public:
                               sdrSavePoint * aSP,
                               UChar        * aRowSlotPtr,
                               UInt           aRowFlag,
+                              idBool         aForbiddenToRetry,
+                              smSCN          aStmtViewSCN,
                               sdcRetryInfo * aRetryInfo,
                               UShort         aColCount );
 
@@ -897,7 +898,7 @@ public:
     /* BUG-39507 */
     static IDE_RC isUpdatedRowBySameStmt( idvSQL           * aStatistics,
                                           void             * aTrans,
-                                          smSCN              aStmtSCN,
+                                          smSCN              aStmtViewSCN,
                                           void             * aTableHeader,
                                           scGRID             aSlotGRID,
                                           smSCN              aCSInfiniteSCN,
@@ -907,7 +908,7 @@ public:
     static IDE_RC isUpdatedRowPieceBySameStmt( idvSQL          *aStatistics,
                                                void            *aTrans,
                                                void            *aTableHeader,
-                                               smSCN           *aStmtSCN,
+                                               smSCN           *aStmtViewSCN,
                                                smSCN           *aCSInfiniteSCN,
                                                sdSID            aCurrRowPieceSID,
                                                idBool          *aIsUpdatedRowBySameStmt );
@@ -916,7 +917,7 @@ public:
                                   void                *aTrans,
                                   void                *aTableInfoPtr,
                                   void                *aTableHeader,
-                                  smSCN               *aStmtSCN,
+                                  smSCN               *aStmtViewSCN,
                                   smSCN               *aCSInfiniteSCN,
                                   const smiColumnList *aColList,
                                   const smiValue      *aValueList,
@@ -925,6 +926,7 @@ public:
                                   sdSID                aCurrRowPieceSID,
                                   idBool               aReplicate,
                                   sdcColInOutMode     *aValueModeList,
+                                  idBool               aForbiddenToRetry,
                                   sdcPKInfo           *aPKInfo,
                                   sdcRowUpdateStatus  *aUpdateStatus,
                                   sdSID               *aNextRowPieceSID,
@@ -1103,20 +1105,20 @@ public:
                                     UChar                 **aNewSlotPtr );
 
     static IDE_RC writeChangeRowPieceLinkRedoUndoLog(
-        UChar          *aSlotPtr,
-        scGRID          aSlotGRID,
-        sdrMtx         *aMtx,
-        sdSID           aNextRowPieceSID );
+                                    UChar          *aSlotPtr,
+                                    scGRID          aSlotGRID,
+                                    sdrMtx         *aMtx,
+                                    sdSID           aNextRowPieceSID );
 
     static IDE_RC undo_CHANGE_ROW_PIECE_LINK( 
-                       sdrMtx            *aMtx,
-                       UChar             *aLogPtr,
-                       UChar             *aSlotPtr,
-                       sdSID              aSlotSID,
-                       sdcOperToMakeRowVer aOper4RowPiece,
-                       UChar             *aRowBuf4MVCC,
-                       UChar            **aNewSlotPtr4Undo,
-                       SShort            *aFSCreditSize );
+                                   sdrMtx            *aMtx,
+                                   UChar             *aLogPtr,
+                                   UChar             *aSlotPtr,
+                                   sdSID              aSlotSID,
+                                   sdcOperToMakeRowVer aOper4RowPiece,
+                                   UChar             *aRowBuf4MVCC,
+                                   UChar            **aNewSlotPtr4Undo,
+                                   SShort            *aFSCreditSize );
 
     static IDE_RC writeChangeRowPieceLinkCLR(
                              const UChar             *aUndoRecHdr,
@@ -1168,11 +1170,11 @@ public:
                                   void                  *aTrans,
                                   void                  *aTableHeader,
                                   sdSID                  aSlotSID,
-                                  smSCN                 *aStmtSCN,
+                                  smSCN                 *aStmtViewSCN,
                                   smSCN                 *aCSInfiniteSCN,
                                   sdcRetryInfo          *aDMLRetryInfo,
-                                  smiRecordLockWaitInfo *aRecordLockWaitInfo,
                                   idBool                 aReplicate,
+                                  idBool                 aForbiddenToRetry,
                                   sdcPKInfo             *aPKInfo,
                                   UShort                *aFstColumnSeq,
                                   idBool                *aSkipFlag,
@@ -1192,24 +1194,24 @@ public:
     static idBool existLOBCol( sdcRetryInfo  * aRetryInfo );
 
     static IDE_RC fetchRowPiece(
-                            idvSQL                      *aStatistics,
-                            void                        *aTrans,
+                            idvSQL                     * aStatistics,
+                            void                       * aTrans,
                             scSpaceID                    aTableSpaceID,
-                            UChar                       *aCurrSlotPtr,
+                            UChar                      * aCurrSlotPtr,
                             idBool                       aIsPersSlot,
-                            const smiFetchColumnList    *aFetchColumnList,
+                            const smiFetchColumnList   * aFetchColumnList,
                             smFetchVersion               aFetchVersion,
                             sdSID                        aMyTSSlotSID,
                             sdbPageReadMode              aPageReadMode,
-                            const smSCN                 *aMyStmtSCN,
-                            const smSCN                 *aInfiniteSCN,
-                            sdcIndexInfo4Fetch          *aIndexInfo4Fetch,
-                            sdcLobInfo4Fetch            *aLobInfo4Fetch,
-                            smcRowTemplate              *aRowTemplate,
-                            sdcRowFetchStatus           *aFetchStatus,
-                            UChar                       *aDestRowBuf,
-                            idBool                      *aIsRowDeleted,
-                            sdSID                       *aNextRowPieceSID,
+                            const smSCN                * aMyStmtSCN,
+                            const smSCN                * aInfiniteSCN,
+                            sdcIndexInfo4Fetch         * aIndexInfo4Fetch,
+                            sdcLobInfo4Fetch           * aLobInfo4Fetch,
+                            smcRowTemplate             * aRowTemplate,
+                            sdcRowFetchStatus          * aFetchStatus,
+                            UChar                      * aDestRowBuf,
+                            idBool                     * aIsRowDeleted,
+                            sdSID                      * aNextRowPieceSID,
                             idBool                       aIsSkipAssert = ID_FALSE );
 
     static IDE_RC doFetch( UChar               * aColPiecePtr,
@@ -1416,12 +1418,11 @@ public:
 #ifdef DEBUG
     static idBool validateSmiValue( const smiValue  *aValueList,
                                     UInt             aCount );
-#endif
-    static idBool validateSmiColumnList(
-                      const smiColumnList   *aColumnList );
 
-    static idBool validateSmiFetchColumnList(
-                      const smiFetchColumnList   *aFetchColumnList );
+    static idBool validateSmiColumnList( const smiColumnList   *aColumnList );
+
+    static idBool validateSmiFetchColumnList( const smiFetchColumnList   *aFetchColumnList );
+#endif
 
     static idBool validateRowFlag( UChar    aRowFlag,
                                    UChar    aNextRowFlag );
@@ -1430,25 +1431,25 @@ public:
                                           UChar    aNextRowFlag );
 
     static idBool validateRowFlagBackward( UChar   aRowFlag,
-                                           UChar    aNextRowFlag );
+                                           UChar   aNextRowFlag );
 
     static idBool validateInsertInfo( sdcRowPieceInsertInfo * aInsertInfo,
                                       UShort                  aColCount,
                                       UShort                  aFstColumnSeq );
 
-    static IDE_RC getValidVersion( idvSQL               *aStatistics,
-                                   UChar                *aSlotPtr,
+    static IDE_RC getValidVersion( idvSQL              * aStatistics,
+                                   UChar               * aSlotPtr,
                                    idBool                aIsPersSlot,
                                    smFetchVersion        aFetchVersion,
                                    sdSID                 aMyTSSlotSID,
                                    sdbPageReadMode       aPageReadMode,
-                                   const smSCN          *aMyViewSCN,
-                                   const smSCN          *aCSInfiniteSCN,
-                                   void                 *aTrans,
-                                   sdcLobInfo4Fetch     *aLobInfo4Fetch,
-                                   idBool               *aDoMakeOldVersion,
-                                   sdSID                *aUndoSID,
-                                   UChar                *aRowBuf);
+                                   const smSCN         * aMyViewSCN,
+                                   const smSCN         * aCSInfiniteSCN,
+                                   void                * aTrans,
+                                   sdcLobInfo4Fetch    * aLobInfo4Fetch,
+                                   idBool              * aDoMakeOldVersion,
+                                   sdSID               * aUndoSID,
+                                   UChar               * aRowBuf);
 
     static IDE_RC makeOldVersionWithFix( idvSQL         *aStatistics,
                                          sdSID           aUndoSID,
@@ -1530,8 +1531,8 @@ public:
                                  smrContType     aContType );
     
 
-    //TASK-4007 [SM]PBTÎ•º ÏúÑÌïú Í∏∞Îä• Ï∂îÍ∞Ä
-    //PageÎ°úÎ∂ÄÌÑ∞ RowÎ•º DumpÌïòÏó¨ Î≥¥Ïó¨Ï§ÄÎã§.
+    //TASK-4007 [SM]PBT∏¶ ¿ß«— ±‚¥… √ﬂ∞°
+    //Page∑Œ∫Œ≈Õ Row∏¶ Dump«œø© ∫∏ø©¡ÿ¥Ÿ.
     static IDE_RC dump( UChar *aPage ,
                         SChar *aOutBuf ,
                         UInt   aOutSize );
@@ -1561,7 +1562,7 @@ public:
     /* 
      * BUG-37529 [sm-disk-collection] [DRDB] The change row piece logic
      * generates invalid undo record.
-     * GRIDÎ•º Ïù¥Ïö©Ìï¥ slotÏùò Ìè¨Ïù∏ÌÑ∞Î•º Íµ¨ÌïúÎã§.
+     * GRID∏¶ ¿ÃøÎ«ÿ slot¿« ∆˜¿Œ≈Õ∏¶ ±∏«—¥Ÿ.
      */
     static IDE_RC getSlotPtr( sdrMtx  * aMtx,
                               scGRID    aSlotGRID,
@@ -1576,7 +1577,7 @@ public:
                                                 aMtx,
                                                 SC_MAKE_SPACE( aSlotGRID ),
                                                 SC_MAKE_PID( aSlotGRID ) );
-        /* ÏúÑÏ™Ω Ìï®ÏàòÏóêÏÑú Ïù¥ÎØ∏ GetPageÌïú PageÏó¨Ïïº Ìï® */
+        /* ¿ß¬  «‘ºˆø°º≠ ¿ÃπÃ GetPage«— Pageø©æﬂ «‘ */
         IDE_ASSERT( sPagePtr != NULL );
 
         sSlotDirPtr = sdpPhyPage::getSlotDirStartPtr( sPagePtr );
@@ -1646,8 +1647,8 @@ public:
 
         sColLen = ((UShort)*aColStartPtr + SDC_SMALL_COLUMN_LEN_STORE_SIZE);
 
-        /* sPrefixÏùò Í∞íÏù¥ SDC_LOB_DESC_COLUMN_PREFIX <253> Î≥¥Îã§ ÏûëÏúºÎ©¥ ÏùºÎ∞ò 
-           small columnÏù¥Îã§ */
+        /* sPrefix¿« ∞™¿Ã SDC_LOB_DESC_COLUMN_PREFIX <253> ∫∏¥Ÿ ¿€¿∏∏È ¿œπ› 
+           small column¿Ã¥Ÿ */
         if ( (UShort)*aColStartPtr < SDC_LOB_DESC_COLUMN_PREFIX )
         {
             return sColLen;
@@ -1671,11 +1672,11 @@ public:
 
 
 /***********************************************************************
- * Description : Column PieceÎ•º ÏùΩÏñ¥Ïò®Îã§.
+ * Description : Column Piece∏¶ ¿–æÓø¬¥Ÿ.
  *
- *   aColPtr    - [IN]  ÏùΩÏùÑ Column PieceÏùò Ptr
- *   aColLen    - [OUT] Column PieceÏùò ÌÅ¨Í∏∞
- *   aIsLobDesc - [OUT] LOB DescriptorÏù∏ÏßÄ Ïó¨Î∂ÄÎ•º Î∞òÌôò
+ *   aColPtr    - [IN]  ¿–¿ª Column Piece¿« Ptr
+ *   aColLen    - [OUT] Column Piece¿« ≈©±‚
+ *   aIsLobDesc - [OUT] LOB Descriptor¿Œ¡ˆ ø©∫Œ∏¶ π›»Ø
  **********************************************************************/
 inline UChar* sdcRow::getColPiece( const UChar      * aColPtr,
                                    UInt             * aColLen,
@@ -1701,7 +1702,7 @@ inline UChar* sdcRow::getColPiece( const UChar      * aColPtr,
 /***********************************************************************
  * Description : get ColPieceLen And Column Prefix
  *
- *   aColPtr - [IN]  Í∏∏Ïù¥Î•º ÌôïÏù∏Ìï† Column PieceÏùò Ptr
+ *   aColPtr - [IN]  ±Ê¿Ã∏¶ »Æ¿Œ«“ Column Piece¿« Ptr
  *   aPrefix - [OUT] Column Prefix
  **********************************************************************/
 inline void sdcRow::getColPieceInfo( const UChar     * aColPtr,

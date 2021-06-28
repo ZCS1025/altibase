@@ -19,8 +19,8 @@
  * $Id: stfBasic.h 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * Geometry Í∞ùÏ≤¥Ïùò Í∏∞Î≥∏ ÏÜçÏÑ± Ìï®Ïàò
- * ÏÉÅÏÑ∏ Íµ¨ÌòÑÏùÑ ÌïÑÏöîÎ°ú ÌïòÎäî Ìï®ÏàòÎäî stdPrimitive.cppÎ•º Ïã§ÌñâÌïúÎã§.
+ * Geometry ∞¥√º¿« ±‚∫ª º”º∫ «‘ºˆ
+ * ªÛºº ±∏«ˆ¿ª « ø‰∑Œ «œ¥¬ «‘ºˆ¥¬ stdPrimitive.cpp∏¶ Ω««‡«—¥Ÿ.
  **********************************************************************/
 
 #ifndef _O_STF_BASIC_H_
@@ -29,6 +29,7 @@
 #include <idTypes.h>
 #include <mtcDef.h>
 #include <stdTypes.h>
+#include <qtcDef.h>
 
 class stfBasic
 {
@@ -55,12 +56,26 @@ public:
                     void*        aInfo,
                     mtcTemplate* aTemplate );
 
+    /* PROJ-2422 SRID */
+    static IDE_RC asEWKT( mtcNode*     aNode,
+                          mtcStack*    aStack,
+                          SInt         aRemain,
+                          void*        aInfo,
+                          mtcTemplate* aTemplate );
+
     static IDE_RC asBinary(
                     mtcNode*     aNode,
                     mtcStack*    aStack,
                     SInt         aRemain,
                     void*        aInfo,
                     mtcTemplate* aTemplate );
+
+    /* PROJ-2422 SRID */
+    static IDE_RC asEWKB( mtcNode*     aNode,
+                          mtcStack*    aStack,
+                          SInt         aRemain,
+                          void*        aInfo,
+                          mtcTemplate* aTemplate );
 
     static IDE_RC boundary(
                     mtcNode*     aNode,
@@ -94,7 +109,7 @@ public:
                     mtcNode*     aNode,
                     mtcStack*    aStack,
                     SInt         aRemain,
-                    void*        aInfo,
+                    idBool       aCheckSize, /* BUG-48051 */
                     mtcTemplate* aTemplate);
 
     // BUG-33576
@@ -105,14 +120,44 @@ public:
                     void*        aInfo,
                     mtcTemplate* aTemplate);
 
-    static IDE_RC SRID(         // stmÏóê Ï°¥Ïû¨ÌïòÎäî SRSÏùò IDÎ•º Í∞ÄÏ†∏Ïò®Îã§.
-                    mtcNode*     aNode,
-                    mtcStack*    aStack,
-                    SInt         aRemain,
-                    void*        aInfo,
-                    mtcTemplate* aTemplate );
+    /* PROJ-2422 SRID */
+    // stmø° ¡∏¿Á«œ¥¬ SRS¿« ID∏¶ ∞°¡Æø¬¥Ÿ.
+    static IDE_RC getSRID( mtcNode*     aNode,
+                           mtcStack*    aStack,
+                           SInt         aRemain,
+                           void*        aInfo,
+                           mtcTemplate* aTemplate );
 
+    /* PROJ-2422 SRID */
+    static SInt getSRID( stdGeometryHeader  * aObj );
+    
+    /* PROJ-2422 SRID */
+    static IDE_RC setSRID( mtcNode*     aNode,
+                           mtcStack*    aStack,
+                           SInt         aRemain,
+                           void*        aInfo,
+                           mtcTemplate* aTemplate );
+    
+    /* PROJ-2422 SRID */
+    static IDE_RC setSRID( stdGeometryHeader  * aObj,
+                           UInt                 aFence,
+                           SInt                 aSRID );
 
+    /* PROJ-2422 SRID */
+    static IDE_RC setSRID( stdGeometryHeader  * aDstObj,
+                           UInt                 aDstFence,
+                           stdGeometryType    * aSrcObj );
+    
+    /* PROJ-2422 SRID */
+    static IDE_RC setSRID( stdGeometryHeader  * aDstObj,
+                           UInt                 aDstFence,
+                           stdGeometryHeader  * aSrcObj );
+
+    /* BUG-47816 ST_Transform «‘ºˆ ¡ˆø¯ */
+    static IDE_RC getProj4TextFromSRID ( qcStatement      * aStatement, 
+                                         mtdIntegerType   * aSRID, 
+                                         mtdCharType     ** aProj4Text );
+    
 /**************************************************************************/
     static IDE_RC getDimension(
                     stdGeometryHeader*  aObj,
@@ -125,11 +170,24 @@ public:
                     UInt*               aOffset,
                     IDE_RC*             aReturn);
                     
+    /* PROJ-2422 SRID */
+    static IDE_RC getEWKT( stdGeometryHeader*  aObj,              
+                           UChar*              aBuf,
+                           UInt                aMaxSize,
+                           UInt*               aOffset,
+                           IDE_RC*             aReturn );
+                    
     static IDE_RC getBinary(
                     stdGeometryHeader*  aObj,              
                     UChar*              aBuf,
                     UInt                aMaxSize,
                     UInt*               aOffset );  // Fix BUG-15834
+
+    /* PROJ-2422 SRID */
+    static IDE_RC getEWKB( stdGeometryHeader*  aObj,              
+                           UChar*              aBuf,
+                           UInt                aMaxSize,
+                           UInt*               aOffset );
 
     static IDE_RC getBoundary(
                     stdGeometryHeader*  aObj,
@@ -144,13 +202,15 @@ public:
                     stdGeometryHeader*  aObj,
                     mtdIntegerType*     aRet );
 
-    /* BUG-45645 ST_Reverse, ST_MakeEnvelope Ìï®Ïàò ÏßÄÏõê */
+    /* BUG-45645 ST_Reverse, ST_MakeEnvelope «‘ºˆ ¡ˆø¯ */
     static IDE_RC getRectangle( mtcTemplate       * aTemplate,
                                 mtdDoubleType       aX1,
                                 mtdDoubleType       aY1,
                                 mtdDoubleType       aX2,
                                 mtdDoubleType       aY2,
                                 stdGeometryHeader * aRet );
+
+    static IDE_RC changeExtTypeToBasic( stdGeometryHeader  * aObj );    
 };
 
 #endif /* _O_STF_BASIC_H_ */

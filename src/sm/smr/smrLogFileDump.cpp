@@ -19,24 +19,15 @@
  * $Id: smrLogFileDump.cpp 22903 2007-08-08 01:53:38Z newdaily $
  **********************************************************************/
 
-#include <idl.h>
-#include <ide.h>
-#include <idu.h>
 #include <smErrorCode.h>
 #include <smu.h>
 #include <smm.h>
 #include <sct.h>
-#include <smrDef.h>
-#include <smrLogFileMgr.h>
-#include <smrLogMgr.h>
-#include <smrLogFile.h>
-#include <smrLogComp.h>
+#include <smr.h>
 #include <smrReq.h>
-#include <smrLogHeadI.h>
-#include <smrLogFileDump.h>
 
-// BUG-28581 dumplfì—ì„œ Log ê°œìˆ˜ ê³„ì‚°ì„ ìœ„í•œ sizeof ë‹¨ìœ„ê°€ ì˜ëª»ë˜ì–´ ìˆìŠµë‹ˆë‹¤.
-// smrLogTypeëŠ” UCharì´ê¸° ë•Œë¬¸ì— UChar MAXë§Œí¼ Arrayë¥¼ ìƒì„±í•´ì•¼ í•©ë‹ˆë‹¤.
+// BUG-28581 dumplf¿¡¼­ Log °³¼ö °è»êÀ» À§ÇÑ sizeof ´ÜÀ§°¡ Àß¸øµÇ¾î ÀÖ½À´Ï´Ù.
+// smrLogType´Â UCharÀÌ±â ¶§¹®¿¡ UChar MAX¸¸Å­ Array¸¦ »ı¼ºÇØ¾ß ÇÕ´Ï´Ù.
 SChar smrLogFileDump::mStrLogType[ ID_UCHAR_MAX ][100];
 
 SChar smrLogFileDump::mStrOPType[SMR_OP_MAX+1][100]  = {
@@ -126,7 +117,7 @@ SChar smrLogFileDump::mStrTBSUptType[SCT_UPDATE_MAXMAX_TYPE+1][64] = {
 };
 
 /*
-    Staticë©¤ë²„ ì´ˆê¸°í™”
+    Static¸â¹ö ÃÊ±âÈ­
  */
 IDE_RC smrLogFileDump::initializeStatic()
 {
@@ -141,6 +132,9 @@ IDE_RC smrLogFileDump::initializeStatic()
     idlOS::strcpy( mStrLogType[SMR_LT_CHKPT_END],
                    "SMR_LT_CHKPT_END" );
 
+    /* Transaction */
+    idlOS::strcpy( mStrLogType[SMR_LT_MEMTRANS_GROUPCOMMIT],
+                   "SMR_LT_MEMTRANS_GROUPCOMMIT" );
     idlOS::strcpy( mStrLogType[SMR_LT_MEMTRANS_COMMIT],
                    "SMR_LT_MEMTRANS_COMMIT" );
     idlOS::strcpy( mStrLogType[SMR_LT_MEMTRANS_ABORT],
@@ -180,11 +174,11 @@ IDE_RC smrLogFileDump::initializeStatic()
     idlOS::strcpy( mStrLogType[SMR_LT_FILE_END],
                    "SMR_LT_FILE_END" );
 
-    // DDL Transactionì„ì„ í‘œì‹œí•˜ëŠ” Log Record
+    // DDL TransactionÀÓÀ» Ç¥½ÃÇÏ´Â Log Record
     idlOS::strcpy( mStrLogType[SMR_LT_DDL],
                    "SMR_LT_DDL" );
 
-    /* DRDB ë¡œê·¸ íƒ€ì… */
+    /* DRDB ·Î±× Å¸ÀÔ */
     idlOS::strcpy( mStrLogType[SMR_DLT_REDOONLY],
                    "SMR_DLT_REDOONLY" );
     idlOS::strcpy( mStrLogType[SMR_DLT_UNDOABLE],
@@ -199,7 +193,8 @@ IDE_RC smrLogFileDump::initializeStatic()
                    "SMR_LT_XA_PREPARE_REQ" );
     idlOS::strcpy( mStrLogType[SMR_LT_XA_END],
                    "SMR_LT_XA_END" );
-
+    idlOS::strcpy( mStrLogType[SMR_LT_XA_START_REQ],
+                   "SMR_LT_XA_START_REQ" );
 
     /* Init Log Type Table */
     idlOS::strcpy( mStrUpdateType[SMR_PHYSICAL],
@@ -442,10 +437,6 @@ IDE_RC smrLogFileDump::initializeStatic()
 
     idlOS::strcpy( mStrDiskLogType[SDR_SDN_COMPACT_INDEX_PAGE],
                    "SDR_SDN_COMPACT_INDEX_PAGE" );
-    idlOS::strcpy( mStrDiskLogType[SDR_SDN_MAKE_CHAINED_KEYS],
-                   "SDR_SDN_MAKE_CHAINED_KEYS" );
-    idlOS::strcpy( mStrDiskLogType[SDR_SDN_MAKE_UNCHAINED_KEYS],
-                   "SDR_SDN_MAKE_UNCHAINED_KEYS" );
     idlOS::strcpy( mStrDiskLogType[SDR_SDN_KEY_STAMPING],
                    "SDR_SDN_KEY_STAMPING" );
     idlOS::strcpy( mStrDiskLogType[SDR_SDN_INIT_CTL],
@@ -501,10 +492,6 @@ IDE_RC smrLogFileDump::initializeStatic()
                    "SDR_STNDR_FREE_KEYS" );
     idlOS::strcpy( mStrDiskLogType[SDR_STNDR_COMPACT_INDEX_PAGE],
                    "SDR_STNDR_COMPACT_INDEX_PAGE" );
-    idlOS::strcpy( mStrDiskLogType[SDR_STNDR_MAKE_CHAINED_KEYS],
-                   "SDR_STNDR_MAKE_CHAINED_KEYS" );
-    idlOS::strcpy( mStrDiskLogType[SDR_STNDR_MAKE_UNCHAINED_KEYS],
-                   "SDR_STNDR_MAKE_UNCHAINED_KEYS" );
     idlOS::strcpy( mStrDiskLogType[SDR_STNDR_KEY_STAMPING],
                    "SDR_STNDR_KEY_STAMPING" );
 
@@ -537,9 +524,9 @@ IDE_RC smrLogFileDump::initializeStatic()
 }
 
 /*
-    Staticë©¤ë²„ íŒŒê´´
-    - initializeStaticê³¼ ì§ì„ ë§ì¶”ê¸° ìœ„í•´ ë§Œë“¤ì–´ë‘ .
-    - í˜„ì¬ ì•„ë¬´ëŸ°ì¼ë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    Static¸â¹ö ÆÄ±«
+    - initializeStatic°ú Â¦À» ¸ÂÃß±â À§ÇØ ¸¸µé¾îµÒ.
+    - ÇöÀç ¾Æ¹«·±ÀÏµµ ÇÏÁö ¾Ê´Â´Ù.
  */
 IDE_RC smrLogFileDump::destroyStatic()
 {
@@ -700,7 +687,8 @@ IDE_RC smrLogFileDump::dumpLog( idBool      * aEOF )
     mNextOffset += sLogSizeAtDisk;
 
     if ( ( smrLogHeadI::getSize(&mLogHead) == 0 ) ||
-         ( smrLogHeadI::getType(&mLogHead) == SMR_LT_FILE_END ) )
+         ( smrLogHeadI::getType(&mLogHead) == SMR_LT_FILE_END ) ||
+         ( smrLogHeadI::getType(&mLogHead) == SMR_LT_NULL ) ) // BUG-47754
     {
         (*aEOF) = ID_TRUE;
     }
@@ -712,10 +700,10 @@ IDE_RC smrLogFileDump::dumpLog( idBool      * aEOF )
     return IDE_FAILURE;
 }
 
-/* Log File Headerë¡œë¶€í„° File Beginë¡œê·¸ë¥¼ ì–»ì–´ë‚¸ë‹¤
+/* Log File Header·ÎºÎÅÍ File Begin·Î±×¸¦ ¾ò¾î³½´Ù
 
-   [IN] aFileBeginLog - File Begin Log ( íŒŒì¼ì˜ í—¤ë”ì™€ ê°™ìŒ )
-   [IN] aFileNo       - íŒŒì¼ì˜ ë²ˆí˜¸
+   [IN] aFileBeginLog - File Begin Log ( ÆÄÀÏÀÇ Çì´õ¿Í °°À½ )
+   [IN] aFileNo       - ÆÄÀÏÀÇ ¹øÈ£
  */
 IDE_RC smrLogFileDump::getFileNo( SChar * aFileBeginLog,
                                   UInt  * aFileNo )
@@ -723,7 +711,7 @@ IDE_RC smrLogFileDump::getFileNo( SChar * aFileBeginLog,
     IDE_DASSERT( aFileBeginLog != NULL );
     IDE_DASSERT( aFileNo != NULL );
 
-    // ì²«ë²ˆì§¸ ë¡œê·¸ëŠ” File Begin Logì´ë©°, ì••ì¶•í•˜ì§€ ì•Šì€ì±„ë¡œ ì €ì¥ë¨
+    // Ã¹¹øÂ° ·Î±×´Â File Begin LogÀÌ¸ç, ¾ĞÃàÇÏÁö ¾ÊÀºÃ¤·Î ÀúÀåµÊ
     IDE_ASSERT( smrLogComp::isCompressedLog( aFileBeginLog )
                 == ID_FALSE );
 
@@ -732,16 +720,16 @@ IDE_RC smrLogFileDump::getFileNo( SChar * aFileBeginLog,
     return IDE_SUCCESS;
 }
 
-/* ë¡œê·¸ë©”ëª¨ë¦¬ì˜ íŠ¹ì • Offsetì—ì„œ ë¡œê·¸ ë ˆì½”ë“œë¥¼ ì½ì–´ì˜¨ë‹¤.
-   ì••ì¶•ëœ ë¡œê·¸ì˜ ê²½ìš°, ë¡œê·¸ ì••ì¶•í•´ì œë¥¼ ìˆ˜í–‰í•œë‹¤.
+/* ·Î±×¸Ş¸ğ¸®ÀÇ Æ¯Á¤ Offset¿¡¼­ ·Î±× ·¹ÄÚµå¸¦ ÀĞ¾î¿Â´Ù.
+   ¾ĞÃàµÈ ·Î±×ÀÇ °æ¿ì, ·Î±× ¾ĞÃàÇØÁ¦¸¦ ¼öÇàÇÑ´Ù.
 
-   [IN] aDecompBufferHandle - ì••ì¶• í•´ì œ ë²„í¼ì˜ í•¸ë“¤
-   [IN] aFileBuffer         - ë¡œê·¸ íŒŒì¼ì„ ì½ì„ë•Œ ì„ì‹œì ìœ¼ë¡œ ì“°ì´ëŠ” ë²„í¼
-   [IN] aFileNo             - ë¡œê·¸ íŒŒì¼ì˜ ë²ˆí˜¸
-   [IN] aLogOffset          - ë¡œê·¸ë¥¼ ì½ì–´ì˜¬ ì˜¤í”„ì…‹
-   [OUT] aRawLogHead        - ë¡œê·¸ì˜ Head
-   [OUT] aRawLogPtr         - ì½ì–´ë‚¸ ë¡œê·¸ (ì••ì¶•í•´ì œëœ ë¡œê·¸)
-   [OUT] aLogSizeAtDisk     - íŒŒì¼ì—ì„œ ì½ì–´ë‚¸ ë¡œê·¸ ë°ì´í„°ì˜ ì–‘
+   [IN] aDecompBufferHandle - ¾ĞÃà ÇØÁ¦ ¹öÆÛÀÇ ÇÚµé
+   [IN] aFileBuffer         - ·Î±× ÆÄÀÏÀ» ÀĞÀ»¶§ ÀÓ½ÃÀûÀ¸·Î ¾²ÀÌ´Â ¹öÆÛ
+   [IN] aFileNo             - ·Î±× ÆÄÀÏÀÇ ¹øÈ£
+   [IN] aLogOffset          - ·Î±×¸¦ ÀĞ¾î¿Ã ¿ÀÇÁ¼Â
+   [OUT] aRawLogHead        - ·Î±×ÀÇ Head
+   [OUT] aRawLogPtr         - ÀĞ¾î³½ ·Î±× (¾ĞÃàÇØÁ¦µÈ ·Î±×)
+   [OUT] aLogSizeAtDisk     - ÆÄÀÏ¿¡¼­ ÀĞ¾î³½ ·Î±× µ¥ÀÌÅÍÀÇ ¾ç
 */
 
 IDE_RC smrLogFileDump::readLog( iduMemoryHandle    * aDecompBufferHandle,
@@ -766,7 +754,7 @@ IDE_RC smrLogFileDump::readLog( iduMemoryHandle    * aDecompBufferHandle,
 
     *aIsCompressed = smrLogComp::isCompressedLog( sRawOrCompLog );
 
-    // File Noì™€ Offsetìœ¼ë¡œë¶€í„° Magicê°’ ê³„ì‚°
+    // File No¿Í OffsetÀ¸·ÎºÎÅÍ Magic°ª °è»ê
     sValidLogMagic = smrLogFile::makeMagicNumber( aFileNo,
                                                   aLogOffset );
 
@@ -785,4 +773,143 @@ IDE_RC smrLogFileDump::readLog( iduMemoryHandle    * aDecompBufferHandle,
     return IDE_FAILURE;
 }
 
+IDE_RC smrLogFileDump::dumpPrepareReqBranchTx( SChar * aBranchTxStr, UInt aSize )
+{
+    UInt           sBranchTxSize = 0;
+    UInt           sBranchTxCount = 0;
+    SChar        * sBuffer = NULL;
+    UChar          sLen = 0;
+    SChar          sLinkerType = 0;
+    UChar          sCoordinatorType = 0;
+    SChar        * sTargetName = NULL;
+    SChar        * sNodeName = NULL;
+    SChar        * sDataServerIP = NULL;
+    UShort         sDataPortNo = 0;
+    UShort         sConnectType = 0;
+    ID_XID         sXID;
+    UChar          sXidLen;
+    UInt           i;
+    UInt           sShardBranchCounter = 0;
+    UChar          sXidString[SMR_XID_DATA_MAX_LEN];
+
+    sBuffer = aBranchTxStr;
+
+    /* ±æÀÌ 4byte */
+    ID_4_BYTE_ASSIGN( &sBranchTxSize, sBuffer );
+    sBuffer += 4;
+
+    IDE_TEST_RAISE( sBranchTxSize != aSize, ERR_INVALID_BRANCH_TX_INFO );
+
+    /* °¹¼ö 4byte */
+    ID_4_BYTE_ASSIGN( &sBranchTxCount, sBuffer );
+    sBuffer += 4;
+
+    idlOS::printf( "BranchTx Count: %"ID_UINT32_FMT"\n", sBranchTxCount );
+
+    for ( i = 0; i < sBranchTxCount; i++ )
+    {
+        idlOS::printf("[ %"ID_UINT32_FMT" ] ", i );
+
+        /* XID ±æÀÌ 1byte */
+        ID_1_BYTE_ASSIGN( &sXidLen, sBuffer );
+        sBuffer += 1;
+
+        /* XID */
+        idlOS::memcpy( &sXID, sBuffer, sXidLen );
+        sBuffer += sXidLen;
+        (void)idaXaConvertXIDToString(NULL, &sXID, sXidString, SMR_XID_DATA_MAX_LEN);
+        idlOS::printf( "XID: %s, ", sXidString );
+
+        /* linker type 1byte */
+        ID_1_BYTE_ASSIGN( &sLinkerType, sBuffer );
+        sBuffer += 1;
+
+        idlOS::printf( "LinkerType: %c, ", sLinkerType );
+
+        if ( sLinkerType == 'D' )
+        {
+            /* target name string */
+            ID_1_BYTE_ASSIGN( &sLen, sBuffer );
+            sBuffer += 1;
+            sTargetName = (SChar*)sBuffer;
+            sBuffer += sLen;
+
+            idlOS::printf( "TargetName: %s\n", sTargetName );
+        }
+        else
+        {
+            IDE_TEST_RAISE( sLinkerType != 'S', ERR_INVALID_BRANCH_TX_INFO );
+
+            if ( sShardBranchCounter == 0 )
+            {
+                /* XID ±æÀÌ 1byte */
+                ID_1_BYTE_ASSIGN( &sXidLen, sBuffer );
+                sBuffer += 1;
+
+                /* XID */
+                idlOS::memcpy( &sXID, sBuffer, sXidLen );
+                sBuffer += sXidLen;
+
+                (void)idaXaConvertXIDToString(NULL, &sXID, sXidString, SMR_XID_DATA_MAX_LEN);
+                idlOS::printf( "FromXID: %s, ", sXidString );
+            }
+            ++sShardBranchCounter;
+
+            /* node type 1byte */
+            ID_1_BYTE_ASSIGN( &sCoordinatorType, sBuffer );
+            sBuffer += 1;
+            idlOS::printf( "CoordinatorType: %"ID_UINT32_FMT", ", sCoordinatorType ); /* sdiCoordinatorType */
+
+            /* node name string */
+            ID_1_BYTE_ASSIGN( &sLen, sBuffer );
+            sBuffer += 1;
+            sNodeName = (SChar*)sBuffer;
+            sBuffer += sLen;
+
+            idlOS::printf( "NodeName: %s, ", sNodeName );
+
+            /* user name string */
+            ID_1_BYTE_ASSIGN( &sLen, sBuffer );
+            sBuffer += 1;
+            //sUserName = (SChar*)sBuffer;
+            sBuffer += sLen;
+
+            /* user password string */
+            ID_1_BYTE_ASSIGN( &sLen, sBuffer );
+            sBuffer += 1;
+            //sUserPassword = (SChar*)sBuffer;
+            sBuffer += sLen;
+
+            /* ip string */
+            ID_1_BYTE_ASSIGN( &sLen, sBuffer );
+            sBuffer += 1;
+            sDataServerIP = (SChar*)sBuffer;
+            sBuffer += sLen;
+
+            idlOS::printf( "IP: %s, ", sDataServerIP );
+
+            /* port no 2byte */
+            ID_2_BYTE_ASSIGN( &sDataPortNo, sBuffer );
+            sBuffer += 2;
+
+            idlOS::printf( "PORT: %"ID_UINT32_FMT", ", sDataPortNo );
+
+            /* connect type 2byte */
+            ID_2_BYTE_ASSIGN( &sConnectType, sBuffer );
+            sBuffer += 2;
+
+            idlOS::printf( "ConnnectType: %"ID_UINT32_FMT"\n", sConnectType ); /* sdiInternalNodeConnectType */
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_INVALID_BRANCH_TX_INFO )
+    {
+        idlOS::printf( " BranchTx Parsing ERROR...\n" );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
 

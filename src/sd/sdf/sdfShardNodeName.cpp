@@ -26,7 +26,7 @@ static IDE_RC sdfEstimate( mtcNode*     aNode,
 mtfModule sdfShardNodeName = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     sdfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -116,7 +116,7 @@ IDE_RC sdfCalculate_ShardNodeName( mtcNode*     aNode,
     {
         sResult->length = idlOS::strlen( sNodeName );
 
-        IDE_DASSERT( sResult->length <= SDI_NODE_NAME_MAX_SIZE );
+        IDE_DASSERT( sResult->length <= SDI_CHECK_NODE_NAME_MAX_SIZE );
     }
     else
     {

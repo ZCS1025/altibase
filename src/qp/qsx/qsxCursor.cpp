@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qsxCursor.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qsxCursor.cpp 87536 2020-05-18 06:56:41Z khkwak $
  **********************************************************************/
 
 /*
@@ -148,7 +148,9 @@ IDE_RC qsxCursor::open ( qsxCursorInfo   * aCurInfo,
     qcStatement     * sExecQcStmt   = NULL;
     qsCursors       * sCursor       = NULL;
     qsxStmtList     * sStmtList     = aQcStmt->spvEnv->mStmtList;
+    qsxStmtList2    * sStmtList2    = aQcStmt->spvEnv->mStmtList2;
     UInt              sStage        = 0;
+    UInt              sPoolCount    = 0; 
 
     // BUG-37961
     IDE_DASSERT( aCurInfo->mCursor != NULL );
@@ -179,13 +181,13 @@ IDE_RC qsxCursor::open ( qsxCursorInfo   * aCurInfo,
     if ( aIsDefiner == ID_TRUE )
     { 
         /* BUG-38164
-           BUG-38164 ì´ì „ aExecInfo->mUserIDë¥¼ sessionì˜ userIDì— ì„¤ì •í•´ì£¼ì—ˆë‹¤.
-           package ì§€ì› ì´ì „ì—ëŠ” ë‹¤ë¥¸ PSMê°ì²´ì— ì„ ì–¸ëœ cursorë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ì—ˆìœ¼ë‚˜,
-           package ì§€ì› í›„ì—ëŠ” ë‹¤ë¥¸ PSMê°ì²´(package)ì— ì„ ì–¸ëœ cursorë¥¼ ì‚¬ìš© ê°€ëŠ¥í•˜ë‹¤.
-           ë”°ë¼ì„œ, ê°ì²´ë¥¼ ìƒì„±í•œ userIDë¥¼ ì„¸ì…˜ì— ì„¤ì •í•´ì£¼ë©´,
-           ë‹¤ë¥¸ packageì˜ ì„ ì–¸ëœ cursorë¥¼ ì°¸ì¡° í•  ê²½ìš°, cursor ì„ ì–¸ ì‹œ ì°¸ì¡°í•œ tableì„ ì°¾ì§€ ëª» í•˜ê±°ë‚˜,
-           ê°ì²´ë¥¼ ìƒì„±í•œ ìœ ì €ê°€ ì†Œìœ í•œ ë™ì¼í•œ ì´ë¦„ì„ ê°€ì§„ tableì— ì ‘ê·¼í•˜ì—¬ ìž˜ëª»ëœ ê²°ê³¼ê°€ ë‚˜ì˜¤ê²Œ ëœë‹¤.
-           ê·¸ë ‡ê²Œ ë•Œë¬¸ì—, cursorì˜ ê²½ìš°, cursorë¥¼ í¬í•¨í•˜ê³  ìžˆëŠ” packageì˜ userIDë¥¼ ë„˜ê²¨ì¤˜ì•¼ í•œë‹¤. */
+           BUG-38164 ÀÌÀü aExecInfo->mUserID¸¦ sessionÀÇ userID¿¡ ¼³Á¤ÇØÁÖ¾ú´Ù.
+           package Áö¿ø ÀÌÀü¿¡´Â ´Ù¸¥ PSM°´Ã¼¿¡ ¼±¾ðµÈ cursor¸¦ »ç¿ëÇÒ ¼ö ¾ø¾úÀ¸³ª,
+           package Áö¿ø ÈÄ¿¡´Â ´Ù¸¥ PSM°´Ã¼(package)¿¡ ¼±¾ðµÈ cursor¸¦ »ç¿ë °¡´ÉÇÏ´Ù.
+           µû¶ó¼­, °´Ã¼¸¦ »ý¼ºÇÑ userID¸¦ ¼¼¼Ç¿¡ ¼³Á¤ÇØÁÖ¸é,
+           ´Ù¸¥ packageÀÇ ¼±¾ðµÈ cursor¸¦ ÂüÁ¶ ÇÒ °æ¿ì, cursor ¼±¾ð ½Ã ÂüÁ¶ÇÑ tableÀ» Ã£Áö ¸ø ÇÏ°Å³ª,
+           °´Ã¼¸¦ »ý¼ºÇÑ À¯Àú°¡ ¼ÒÀ¯ÇÑ µ¿ÀÏÇÑ ÀÌ¸§À» °¡Áø table¿¡ Á¢±ÙÇÏ¿© Àß¸øµÈ °á°ú°¡ ³ª¿À°Ô µÈ´Ù.
+           ±×·¸°Ô ¶§¹®¿¡, cursorÀÇ °æ¿ì, cursor¸¦ Æ÷ÇÔÇÏ°í ÀÖ´Â packageÀÇ userID¸¦ ³Ñ°ÜÁà¾ß ÇÑ´Ù. */
         QCG_SET_SESSION_USER_ID( aQcStmt,
                                  sCursor->userID );
     }
@@ -197,25 +199,53 @@ IDE_RC qsxCursor::open ( qsxCursorInfo   * aCurInfo,
     if( aCurInfo->hStmt == NULL )
     {
         // BUG-38767
-        if ( aQcStmt->spvEnv->mStmtList != NULL )
+        if ( ( sStmtList != NULL ) || ( sStmtList2 != NULL ) )
         {
             IDE_ERROR( aSqlIdx != ID_UINT_MAX );
 
-            if ( QSX_STMT_LIST_IS_UNUSED( sStmtList->mStmtPoolStatus, aSqlIdx )
-                 == ID_TRUE )
+            sPoolCount = aQcStmt->session->mQPSpecific.mStmtListInfo.mStmtPoolCount;
+
+            IDU_FIT_POINT_RAISE( "qsxCursor::open::is_unused", err_sql_index );
+            IDE_TEST_RAISE( aSqlIdx >= sPoolCount, err_sql_index );
+
+            if ( sStmtList != NULL )
             {
-                // stmt alloc
-                IDE_TEST( qcd::allocStmt( aQcStmt,
-                                          &aCurInfo->hStmt )
-                          != IDE_SUCCESS );
+                if ( QSX_STMT_LIST_IS_UNUSED( sStmtList->mStmtPoolStatus, aSqlIdx )
+                     == ID_TRUE )
+                {
+                    // stmt alloc
+                    IDE_TEST( qcd::allocStmt( aQcStmt,
+                                              &aCurInfo->hStmt )
+                              != IDE_SUCCESS );
 
-                QSX_CURSOR_SET_NEED_STMT_FREE_TRUE( aCurInfo );
+                    QSX_CURSOR_SET_NEED_STMT_FREE_TRUE( aCurInfo );
 
-                sStmtList->mStmtPool[aSqlIdx] = aCurInfo->hStmt;
+                    sStmtList->mStmtPool[aSqlIdx] = aCurInfo->hStmt;
+                }
+                else
+                {
+                    aCurInfo->hStmt = (void*)sStmtList->mStmtPool[aSqlIdx];
+                }
             }
-            else
+
+            if ( sStmtList2 != NULL )
             {
-                aCurInfo->hStmt = (void*)sStmtList->mStmtPool[aSqlIdx];
+                if ( QSX_STMT_LIST_IS_UNUSED( sStmtList2->mStmtPoolStatus, aSqlIdx )
+                     == ID_TRUE )
+                {
+                    // stmt alloc
+                    IDE_TEST( qcd::allocStmt( aQcStmt,
+                                              &aCurInfo->hStmt )
+                              != IDE_SUCCESS );
+
+                    QSX_CURSOR_SET_NEED_STMT_FREE_TRUE( aCurInfo );
+
+                    sStmtList2->mStmtPool[aSqlIdx] = aCurInfo->hStmt;
+                }
+                else
+                {
+                    aCurInfo->hStmt = (void*)sStmtList2->mStmtPool[aSqlIdx];
+                }
             }
         }
         else
@@ -251,7 +281,7 @@ IDE_RC qsxCursor::open ( qsxCursorInfo   * aCurInfo,
         {
             sParaVar = (qsVariables*)sOpenParam;
 
-            /* cursorì˜ parameterëŠ” IN Typeë§Œ ì˜¬ ìˆ˜ ìžˆë‹¤. */
+            /* cursorÀÇ parameter´Â IN Type¸¸ ¿Ã ¼ö ÀÖ´Ù. */
             IDE_TEST( qsxUtil::calculateAndAssign ( QC_QMX_MEM( aQcStmt ),
                                                     sOpenArg,
                                                     QC_PRIVATE_TMPLATE(aQcStmt),
@@ -264,20 +294,20 @@ IDE_RC qsxCursor::open ( qsxCursorInfo   * aCurInfo,
 
     // BUG-38767
     /* PROJ-2197 PSM Renewal
-     * 1. mmStmtì—ì„œ qcStmtë¥¼ ì–»ì–´ì™€ì„œ
-     * 2. callDepthë¥¼ ì„¤ì •í•œë‹¤.
-     * qcdë¥¼ í†µí•´ ì‹¤í–‰í•˜ë©´ qcStmtì˜ ìƒì†ê´€ê³„ê°€ ì—†ê¸° ë•Œë¬¸ì—
-     * stack overflowë¡œ serverê°€ ë¹„ì •ìƒ ì¢…ë£Œí•  ìˆ˜ ìžˆë‹¤. */
+     * 1. mmStmt¿¡¼­ qcStmt¸¦ ¾ò¾î¿Í¼­
+     * 2. callDepth¸¦ ¼³Á¤ÇÑ´Ù.
+     * qcd¸¦ ÅëÇØ ½ÇÇàÇÏ¸é qcStmtÀÇ »ó¼Ó°ü°è°¡ ¾ø±â ¶§¹®¿¡
+     * stack overflow·Î server°¡ ºñÁ¤»ó Á¾·áÇÒ ¼ö ÀÖ´Ù. */
     IDE_TEST( qcd::getQcStmt( aCurInfo->hStmt,
                               &sExecQcStmt )
               != IDE_SUCCESS );
 
-    sExecQcStmt->spxEnv->mCallDepth = aQcStmt->spxEnv->mCallDepth;
-
     IDE_TEST( qcd::prepare( aCurInfo->hStmt,
+                            aQcStmt,
+                            sExecQcStmt,
+                            &sStmtType,
                             sCursor->mCursorSql->sqlText,
                             sCursor->mCursorSql->sqlTextLen,
-                            &sStmtType,
                             ID_TRUE )
               != IDE_SUCCESS );
 
@@ -287,11 +317,23 @@ IDE_RC qsxCursor::open ( qsxCursorInfo   * aCurInfo,
                     err_not_query );
 
     // BUG-43158 Enhance statement list caching in PSM
-    if ( ( aQcStmt->spvEnv->mStmtList != NULL ) &&
+    if ( ( ( sStmtList != NULL ) || ( sStmtList2 != NULL ) ) &&
          ( QSX_CURSOR_IS_NEED_STMT_FREE( aCurInfo ) == ID_TRUE ) )
     {
+        IDU_FIT_POINT_RAISE( "qsxCursor::open::set_used", err_sql_index );
+        IDE_TEST_RAISE( aSqlIdx >= sPoolCount, err_sql_index );
+
         QSX_CURSOR_SET_NEED_STMT_FREE_FALSE( aCurInfo );
-        QSX_STMT_LIST_SET_USED( sStmtList->mStmtPoolStatus, aSqlIdx );
+
+        if ( sStmtList != NULL )
+        {
+            QSX_STMT_LIST_SET_USED( sStmtList->mStmtPoolStatus, aSqlIdx );
+        }
+
+        if ( sStmtList2 != NULL )
+        {
+            QSX_STMT_LIST_SET_USED( sStmtList2->mStmtPoolStatus, aSqlIdx );
+        }
     }
     else
     {
@@ -333,35 +375,17 @@ IDE_RC qsxCursor::open ( qsxCursorInfo   * aCurInfo,
             sMtcColumn,
             sValue );
 
-        switch( sUsingParam->inOutType )
-        {
-            case QS_IN:
-            case QS_INOUT:
-                {
-                    IDE_TEST( qcd::bindParamData( aCurInfo->hStmt,
-                                                  sValue,
-                                                  sValueSize,
-                                                  sBindParamId )
-                              != IDE_SUCCESS );
-                }
-                break;
-
-            case QS_OUT:
-                break;
-
-            default:
-                IDE_DASSERT(0);
-                break;
-        }
+        IDE_TEST( qcd::bindParamData( aCurInfo->hStmt,
+                                      sValue,
+                                      sValueSize,
+                                      sBindParamId,
+                                      aQcStmt->qmxMem,
+                                      NULL,
+                                      sUsingParam->inOutType )
+                  != IDE_SUCCESS );
 
         sBindParamId++;
     }
-
-    /* PROJ-2197 PSM Renewal
-     * prepare ì´í›„ì— stmtë¥¼ ì´ˆê¸°í™”í•˜ë¯€ë¡œ
-     * executeì „ì— call depthë¥¼ ë‹¤ì‹œ ë³€ê²½í•œë‹¤. */
-    sExecQcStmt->spxEnv->mCallDepth = aQcStmt->spxEnv->mCallDepth;
-    sExecQcStmt->spxEnv->mFlag      = aQcStmt->spxEnv->mFlag;
 
     IDE_TEST( qcd::execute( aCurInfo->hStmt,
                             aQcStmt,
@@ -385,7 +409,7 @@ IDE_RC qsxCursor::open ( qsxCursorInfo   * aCurInfo,
     QSX_CURSOR_SET_OPEN_TRUE( aCurInfo );
 
     // BUG-34331
-    // Cursorë¥¼ opení•˜ë©´ mCursorsInUseì— ì¶”ê°€í•œë‹¤.
+    // Cursor¸¦ openÇÏ¸é mCursorsInUse¿¡ Ãß°¡ÇÑ´Ù.
     QSX_ENV_ADD_CURSORS_IN_USE( QC_QSX_ENV(aQcStmt), aCurInfo );
 
     /* PROJ-2586 PSM Parameters and return without precision */
@@ -431,6 +455,11 @@ IDE_RC qsxCursor::open ( qsxCursorInfo   * aCurInfo,
     IDE_EXCEPTION(err_not_query);
     {
         IDE_SET(ideSetErrorCode(qpERR_ABORT_QSX_NOT_QUERY));
+    }
+    IDE_EXCEPTION(err_sql_index)
+    {
+        IDE_SET(ideSetErrorCode( qpERR_ABORT_QSX_INTERNAL_SERVER_ERROR_ARG,
+                                 "[qsxCursor::open_sql_index_is_wrong]"));
     }
     IDE_EXCEPTION_END;
 
@@ -496,7 +525,7 @@ IDE_RC qsxCursor::close( qsxCursorInfo * aCurInfo,
     sCurrCurInfo = QSX_ENV_CURSORS_IN_USE( sQsxEnv );
 
     // BUG-34331
-    // Cursorë¥¼ closeí•˜ë©´ mCursorsInUseì—ì„œ ì œê±°í•œë‹¤.
+    // Cursor¸¦ closeÇÏ¸é mCursorsInUse¿¡¼­ Á¦°ÅÇÑ´Ù.
     while( sCurrCurInfo != NULL )
     {
         if( sCurrCurInfo == aCurInfo )
@@ -510,8 +539,8 @@ IDE_RC qsxCursor::close( qsxCursorInfo * aCurInfo,
                 QSX_ENV_CURSORS_IN_USE( sQsxEnv ) = aCurInfo->mNext;
             }
 
-            // mCursorsInUseFenceìœ„ì¹˜ì˜ cursorë¥¼ ë‹«ìœ¼ë©´
-            // mCursorsInUseFenceë¥¼ ë‹¤ìŒ cursorë¡œ ë³€ê²½í•¨.
+            // mCursorsInUseFenceÀ§Ä¡ÀÇ cursor¸¦ ´ÝÀ¸¸é
+            // mCursorsInUseFence¸¦ ´ÙÀ½ cursor·Î º¯°æÇÔ.
             if( sQsxEnv->mCursorsInUseFence == aCurInfo )
             {
                 sQsxEnv->mCursorsInUseFence = aCurInfo->mNext;
@@ -654,7 +683,7 @@ IDE_RC qsxCursor::fetchInto (qsxCursorInfo   * aCurInfo,
         sBindColumnId = 0;
         sBindColumnDataList = NULL;
 
-        // bindColumnDataListìƒì„±
+        // bindColumnDataList»ý¼º
         IDE_DASSERT( aIntoVarNodes->intoNodes != NULL );
 
         sMtcColumn = QTC_TMPL_COLUMN( QC_PRIVATE_TMPLATE(aQcStmt),
@@ -716,8 +745,8 @@ IDE_RC qsxCursor::fetchInto (qsxCursorInfo   * aCurInfo,
 
         if ( sRowCount == 0 )
         {
-            // rowtypeì˜ ë‚´ë¶€ì ì¸ columnê°œìˆ˜ì™€ intoì— ëª…ì‹œëœ column ê°œìˆ˜ê°€
-            // ë™ì¼í•œì§€ í™•ì¸
+            // rowtypeÀÇ ³»ºÎÀûÀÎ column°³¼ö¿Í into¿¡ ¸í½ÃµÈ column °³¼ö°¡
+            // µ¿ÀÏÇÑÁö È®ÀÎ
             IDE_TEST( qcd::checkBindColumnCount( aCurInfo->hStmt,
                                                  sBindColumnId )
                       != IDE_SUCCESS );

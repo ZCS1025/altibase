@@ -16,28 +16,21 @@
  
 
 /***********************************************************************
- * $Id: smrUTransQueue.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smrUTransQueue.cpp 82426 2018-03-09 05:12:27Z emlee $
  **********************************************************************/
 
-#include <idl.h>
-#include <idu.h>
-#include <ideErrorMgr.h>
 #include <smErrorCode.h>
 #include <smDef.h>
-#include <smrDef.h>
-#include <smrUTransQueue.h>
+#include <smr.h>
 #include <smrReq.h>
-#include <smrLogMgr.h>
-#include <smrCompareLSN.h>
-#include <smrLogHeadI.h>
 
 /*
-  Transaction ê°ì²´ë¥¼ iduPriorityQueueì— ì‚½ì…í•˜ì—¬ Transactionì˜
-  mLstUndoLSNìœ¼ë¡œ Sortingí•œë‹¤. ê·¸ë¦¬ê³  removeí˜¸ì¶œì‹œ ê°€ì¥ í°
-  mLstUndoLSNì„ ê°€ì§„ Transactionê°ì²´ë¥¼ returní•´ì¤€ë‹¤.
-  ì´ í´ë˜ìŠ¤ëŠ” restart recoveryì˜ undoì‹œ Active Transactionì¤‘
-  ê°€ì¥ í° mLstUndoLSNì— í•´ë‹¹í•˜ëŠ” Logë¶€í„° Undoí•˜ê¸° ìœ„í•´
-  ë§Œë“¤ì–´ì¡Œë‹¤.
+  Transaction °´Ã¼¸¦ iduPriorityQueue¿¡ »ğÀÔÇÏ¿© TransactionÀÇ
+  mLstUndoLSNÀ¸·Î SortingÇÑ´Ù. ±×¸®°í removeÈ£Ãâ½Ã °¡Àå Å«
+  mLstUndoLSNÀ» °¡Áø Transaction°´Ã¼¸¦ returnÇØÁØ´Ù.
+  ÀÌ Å¬·¡½º´Â restart recoveryÀÇ undo½Ã Active TransactionÁß
+  °¡Àå Å« mLstUndoLSN¿¡ ÇØ´çÇÏ´Â LogºÎÅÍ UndoÇÏ±â À§ÇØ
+  ¸¸µé¾îÁ³´Ù.
 */
 smrUTransQueue::smrUTransQueue()
 {
@@ -48,9 +41,9 @@ smrUTransQueue::~smrUTransQueue()
 }
 
 /***********************************************************************
- * Description : smrUTransQueueë¥¼ ì´ˆê¸°í™”í•œë‹¤. 
+ * Description : smrUTransQueue¸¦ ÃÊ±âÈ­ÇÑ´Ù. 
  *
- * aTransCount   - [IN[ Active Transaction ê°¯ìˆ˜
+ * aTransCount   - [IN[ Active Transaction °¹¼ö
  **********************************************************************/
 IDE_RC smrUTransQueue::initialize(SInt aTransCount)
 {
@@ -81,7 +74,7 @@ IDE_RC smrUTransQueue::initialize(SInt aTransCount)
 }
 
 /***********************************************************************
- * Description : smrUTransQueueë¥¼ í•´ì œ. 
+ * Description : smrUTransQueue¸¦ ÇØÁ¦. 
  *
  **********************************************************************/
 IDE_RC smrUTransQueue::destroy()
@@ -100,10 +93,10 @@ IDE_RC smrUTransQueue::destroy()
 }
 
 /***********************************************************************
- * Description : Transactionê°ì²´ë¥¼ iduPriorityQueueì— ì‚½ì…í•œë‹¤. undoì „ì—
- *               UTransQueueë¥¼ ë§Œë“¤ê¸° ìœ„í•´ ì‚¬ìš©í•œë‹¤.
+ * Description : Transaction°´Ã¼¸¦ iduPriorityQueue¿¡ »ğÀÔÇÑ´Ù. undoÀü¿¡
+ *               UTransQueue¸¦ ¸¸µé±â À§ÇØ »ç¿ëÇÑ´Ù.
  *
- * aTrans  - [IN] smxTransê°ì²´
+ * aTrans  - [IN] smxTrans°´Ã¼
  **********************************************************************/
 IDE_RC smrUTransQueue::insertActiveTrans(void * aTrans)
 {
@@ -122,7 +115,7 @@ IDE_RC smrUTransQueue::insertActiveTrans(void * aTrans)
     sLSN = smLayerCallback::getLstUndoNxtLSN( aTrans );
     smLayerCallback::setCurUndoNxtLSN( aTrans, &sLSN );
 
-    // íŠ¸ëœì­ì…˜ì˜ ë¡œê·¸ ì••ì¶•/ì••ì¶•í•´ì œ ë¦¬ì†ŒìŠ¤ë¥¼ ê°€ì ¸ì˜¨ë‹¤ 
+    // Æ®·£Àè¼ÇÀÇ ·Î±× ¾ĞÃà/¾ĞÃàÇØÁ¦ ¸®¼Ò½º¸¦ °¡Á®¿Â´Ù 
     IDE_TEST( smLayerCallback::getTransCompRes( aTrans, &sCompRes )
               != IDE_SUCCESS );
     
@@ -140,7 +133,7 @@ IDE_RC smrUTransQueue::insertActiveTrans(void * aTrans)
     IDE_ASSERT(mArrUndoTransInfo[mCurUndoTransCount].mIsValid
                == ID_TRUE);
 
-    //PQueueì— ì£¼ì†Œê°’ì„ ì €ì¥í•˜ê¸° ìœ„í•´ì„œëŠ” ì´ëŸ°ì‹ìœ¼ë¡œ í•´ì•¼ í•œë‹¤.
+    //PQueue¿¡ ÁÖ¼Ò°ªÀ» ÀúÀåÇÏ±â À§ÇØ¼­´Â ÀÌ·±½ÄÀ¸·Î ÇØ¾ß ÇÑ´Ù.
     sQueueData = (void*)&(mArrUndoTransInfo[mCurUndoTransCount]);
     mPQueueTransInfo.enqueue(&sQueueData, &sOverflow);
     IDE_ASSERT( sOverflow == ID_FALSE);
@@ -155,7 +148,7 @@ IDE_RC smrUTransQueue::insertActiveTrans(void * aTrans)
 }
 
 /***********************************************************************
- * Description : Transactionê°ì²´ë¥¼ iduPriorityQueueì— ì‚½ì…í•œë‹¤.
+ * Description : Transaction°´Ã¼¸¦ iduPriorityQueue¿¡ »ğÀÔÇÑ´Ù.
  *
  * aUTransInfo  - [IN] smrUndoTransInfo 
  **********************************************************************/
@@ -170,7 +163,7 @@ IDE_RC smrUTransQueue::insert(smrUndoTransInfo    * aUTransInfo)
     
     sLSN = smLayerCallback::getCurUndoNxtLSN( aUTransInfo->mTrans );
 
-    // íŠ¸ëœì­ì…˜ì˜ ë¡œê·¸ ì••ì¶•/ì••ì¶•í•´ì œ ë¦¬ì†ŒìŠ¤ë¥¼ ê°€ì ¸ì˜¨ë‹¤ 
+    // Æ®·£Àè¼ÇÀÇ ·Î±× ¾ĞÃà/¾ĞÃàÇØÁ¦ ¸®¼Ò½º¸¦ °¡Á®¿Â´Ù 
     IDE_TEST( smLayerCallback::getTransCompRes( aUTransInfo->mTrans, &sCompRes )
               != IDE_SUCCESS );
     
@@ -198,8 +191,8 @@ IDE_RC smrUTransQueue::insert(smrUndoTransInfo    * aUTransInfo)
 }
 
 /***********************************************************************
- * Description : Transactionê°ì²´ë¥¼ iduPriorityQueueì—ì„œ ê°€ì¥ í° mLstUndoNxtLSN
- *               ì„ ê°€ì§„ Transactionì„ êº¼ë‚¸ë‹¤.
+ * Description : Transaction°´Ã¼¸¦ iduPriorityQueue¿¡¼­ °¡Àå Å« mLstUndoNxtLSN
+ *               À» °¡Áø TransactionÀ» ²¨³½´Ù.
  *
  **********************************************************************/
 smrUndoTransInfo* smrUTransQueue::remove()
@@ -223,9 +216,9 @@ smrUndoTransInfo* smrUTransQueue::remove()
 }
 
 /***********************************************************************
- * Description : iduPriorityQueueì—ì„œ ì‚½ì…ëœ ê°ì²´ë“¤ì— ëŒ€í•´ì„œ compareí• ë•Œ
- * ì‚¬ìš©í•˜ëŠ” Callback functionì´ë‹¤. ì—¬ê¸°ì„œëŠ” Transactionê°ì²´ë“¤ì˜
- * UndoNxtLSNìœ¼ë¡œ  ë¹„êµí•˜ê³  ìˆë‹¤.
+ * Description : iduPriorityQueue¿¡¼­ »ğÀÔµÈ °´Ã¼µé¿¡ ´ëÇØ¼­ compareÇÒ¶§
+ * »ç¿ëÇÏ´Â Callback functionÀÌ´Ù. ¿©±â¼­´Â Transaction°´Ã¼µéÀÇ
+ * UndoNxtLSNÀ¸·Î  ºñ±³ÇÏ°í ÀÖ´Ù.
  *
  **********************************************************************/
 SInt smrUTransQueue::compare(const void *arg1,const void *arg2)

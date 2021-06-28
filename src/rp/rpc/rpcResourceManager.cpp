@@ -66,7 +66,7 @@ IDE_RC rpcResourceManager::smiStmtBegin( smiStatement   ** aStmt,
                                          UInt              aFlag )
 {
     /*
-     *  alloc, list ì¶”ê°€, begin()
+     *  alloc, list Ãß°¡, begin()
      */
     rpcSmiStmt  *sStmtInfo = NULL;
 
@@ -95,7 +95,7 @@ IDE_RC rpcResourceManager::smiStmtBegin( smiStatement   ** aStmt,
 IDE_RC rpcResourceManager::smiStmtEnd( smiStatement * aStmt, UInt aFlag )
 {
     /*
-     *  end(), list ì œê±°
+     *  end(), list Á¦°Å
      */
     rpcSmiStmt  * sStmtInfo = NULL;
     iduListNode * sCurNode = NULL;
@@ -122,7 +122,7 @@ IDE_RC rpcResourceManager::smiStmtEnd( smiStatement * aStmt, UInt aFlag )
     return IDE_FAILURE;
 
 }
-void rpcResourceManager::smiStmtEndAll()  // ì „ë¶€ fail
+void rpcResourceManager::smiStmtEndAll()  // ÀüºÎ fail
 {
     rpcSmiStmt  * sStmtInfo = NULL;
     iduListNode * sCurNode = NULL;
@@ -265,14 +265,14 @@ IDE_RC rpcResourceManager::smiTransBegin( smiTrans     ** aTrans,
 
 }
 
-IDE_RC rpcResourceManager::smiTransCommit( smiTrans *aTrans, smSCN * aCommitSCN )
+IDE_RC rpcResourceManager::smiTransCommit( smiTrans *aTrans )
 {
     rpcSmiTrans * sTransInfo = NULL;
     iduListNode * sCurNode = NULL;
     iduListNode * sNextNode = NULL;
 
     IDU_FIT_POINT( "rpcResourceManager::smiTransCommit::commit::aTrans" );
-    IDE_TEST( aTrans->commit( aCommitSCN ) != IDE_SUCCESS );
+    IDE_TEST( aTrans->commit() != IDE_SUCCESS );
 
     if( aTrans->destroy( NULL ) != IDE_SUCCESS )
     {
@@ -335,6 +335,7 @@ IDE_RC rpcResourceManager::rpMalloc( ULong aSize, void **aBuffer )
 
 IDE_RC rpcResourceManager::rpCalloc( ULong aSize, void **aBuffer )
 {
+    IDE_DASSERT(aSize != 0);
     IDU_FIT_POINT( "rpcResourceManager::rpMalloc::cralloc::aBuffer" );
     IDE_TEST( mMemory.cralloc( aSize, aBuffer ) != IDE_SUCCESS );
 
@@ -357,16 +358,6 @@ IDE_RC rpcResourceManager::rpFreeAll()
 void rpcResourceManager::ddlSyncException( rpcDDLSyncManager    * aDDLSyncMgr,
                                            smiTrans             * aDDLTrans )
 {
-    /*
-     * 1. table info restore (partition table)
-     * 2. smiStatement close (table cursor)
-     * 3. qciStatement finalize
-     * 4. smiTrans rollback
-     * 5. resource of list remove
-     * 6. Mutex/Latch unlock
-     * 7. Memory free
-     */
-
     rpcDDLSyncManager * sDDLSyncMgr = NULL;
     rpcDDLSyncInfo    * sDDLSyncInfo = mDDLSyncInfo;
     rpcDDLReplInfo    * sDDLReplInfo = NULL;

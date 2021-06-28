@@ -21,7 +21,7 @@ public class DataSourceTest extends TestCase
         Connection sConn2 = sPConn.getConnection();
         Connection sConn2pc = ((AltibaseLogicalConnection)sConn2).mPhysicalConnection;
         Connection sConn3 = sPConn.getConnection();
-        // ìƒˆë¡œìš´ logical connectionì„ ì–»ìœ¼ë©´ ì´ì „ê²ƒì€ closed
+        // »õ·Î¿î logical connectionÀ» ¾òÀ¸¸é ÀÌÀü°ÍÀº closed
         try
         {
             sConn2.createStatement();
@@ -34,7 +34,7 @@ public class DataSourceTest extends TestCase
         Statement sStmt3 = sConn3.createStatement();
         sStmt3.close();
 
-        // physical connectionì€ ë™ì¼
+        // physical connectionÀº µ¿ÀÏ
         assertEquals(sConn2pc,((AltibaseLogicalConnection)sConn3).mPhysicalConnection);
 
         sPConn.close();

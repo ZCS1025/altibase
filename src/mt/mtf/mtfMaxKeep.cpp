@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfMaxKeep.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfMaxKeep.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -47,7 +47,7 @@ static IDE_RC mtfMaxKeepEstimate( mtcNode     * aNode,
 mtfModule mtfMaxKeep = {
     2 | MTC_NODE_OPERATOR_AGGREGATION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfMaxKeepFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -104,7 +104,7 @@ IDE_RC mtfMaxKeepEstimate( mtcNode     * aNode,
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
     // PROJ-2002 Column Security
-    // miní•¨ìˆ˜ì™€ ê°™ë‹¤.
+    // minÇÔ¼ö¿Í °°´Ù.
     aNode->baseTable  = aNode->arguments->baseTable;
     aNode->baseColumn = aNode->arguments->baseColumn;
 
@@ -117,7 +117,7 @@ IDE_RC mtfMaxKeepEstimate( mtcNode     * aNode,
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
 
     // BUG-23102
-    // mtcColumnìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
+    // mtcColumnÀ¸·Î ÃÊ±âÈ­ÇÑ´Ù.
     mtc::initializeColumn( aStack[0].column, aStack[1].column );
 
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
@@ -127,7 +127,7 @@ IDE_RC mtfMaxKeepEstimate( mtcNode     * aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    // funcData ì‚¬ìš©
+    // funcData »ç¿ë
     aNode->info = aTemplate->funcDataCnt;
     aTemplate->funcDataCnt++;
 
@@ -171,7 +171,7 @@ IDE_RC mtfMaxKeepInitialize( mtcNode     * aNode,
     sBinary = (mtdBinaryType*)((UChar*)aTemplate->rows[aNode->table].row +
                                sColumn[1].column.offset);
 
-    // ìµœì´ˆ ë“±ë¡
+    // ÃÖÃÊ µî·Ï
     if ( aTemplate->funcData[aNode->info] == NULL )
     {
         IDE_TEST( mtf::allocFuncDataMemory( &sMemoryMgr )
@@ -189,7 +189,7 @@ IDE_RC mtfMaxKeepInitialize( mtcNode     * aNode,
                                                     sMemoryMgr )
                   != IDE_SUCCESS );
 
-        // ë“±ë¡
+        // µî·Ï
         aTemplate->funcData[aNode->info] = sFuncData;
     }
     else
@@ -291,7 +291,7 @@ IDE_RC mtfMaxKeepAggregate( mtcNode     * aNode,
         }
         else if ( sAction == MTF_KEEP_ACTION_AGGR )
         {
-            // NULLì„ ë¹„êµ ëŒ€ìƒì—ì„œ ì œì™¸í•˜ê¸° ìœ„í•˜ì—¬ Descending Key Compareë¥¼ ì‚¬ìš©í•¨.
+            // NULLÀ» ºñ±³ ´ë»ó¿¡¼­ Á¦¿ÜÇÏ±â À§ÇÏ¿© Descending Key Compare¸¦ »ç¿ëÇÔ.
             sValueInfo1.column = aStack[0].column;
             sValueInfo1.value  = aStack[0].value;
             sValueInfo1.flag   = MTD_OFFSET_USELESS;

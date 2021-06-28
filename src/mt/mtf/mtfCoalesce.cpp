@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfCoalesce.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfCoalesce.cpp 86354 2019-11-13 23:41:36Z donovan.seo $
  **********************************************************************/
 
 #include <mte.h>
@@ -52,9 +52,9 @@ static IDE_RC mtfCoalesceEstimate( mtcNode     * aNode,
                                    mtcCallBack * aCallBack );
 
 mtfModule mtfCoalesce = {
-    1 | MTC_NODE_OPERATOR_FUNCTION,
+    1 | MTC_NODE_OPERATOR_FUNCTION | MTC_NODE_EAT_NULL_TRUE,
     ~( MTC_NODE_INDEX_MASK ),
-    1.0, /* default selectivity ( ÎπÑÍµê Ïó∞ÏÇ∞ÏûêÍ∞Ä ÏïÑÎãò ) */
+    1.0, /* default selectivity ( ∫Ò±≥ ø¨ªÍ¿⁄∞° æ∆¥‘ ) */
     mtfCoalesceName,
     NULL,
     mtf::initializeDefault,

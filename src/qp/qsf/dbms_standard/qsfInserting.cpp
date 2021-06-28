@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsfInserting.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qsfInserting.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <qsf.h>
@@ -45,7 +45,7 @@ IDE_RC qsfInsertingCalculate(mtcNode*     aNode,
 mtfModule qsfInsertingModule = {
     1|MTC_NODE_OPERATOR_FUNCTION|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,  // default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞ÏûêÍ∞Ä ÏïÑÎãò)
+    1.0,  // default selectivity (∫Ò±≥ ø¨ªÍ¿⁄∞° æ∆¥‘)
     qsfInsertingFunctionName,
     NULL,
     mtf::initializeDefault,

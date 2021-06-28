@@ -35,6 +35,8 @@ is -f schema/schema.sql
 is -f schema/schema.sql
 ./psm4 | tee -a run.out                         
 is -f schema/schema.sql
+./anon | tee -a run.out                         
+is -f schema/schema.sql
 ./date | tee -a run.out   
 is -f schema/schema.sql
 ./varchar | tee -a run.out   
@@ -65,9 +67,13 @@ is -f schema/schema.sql
 is -f schema/schema.sql
 ./declare_stmt | tee -a run.out
 is -f schema/schema.sql
+./numeric | tee -a run.out
+is -f schema/schema.sql
 ./cparsefull | tee -a run.out
 is -f schema/schema.sql
 ./macro | tee -a run.out
+is -f schema/schema.sql
+./diagnostics | tee -a run.out
 
 is -f drop_schema.sql
 make clean

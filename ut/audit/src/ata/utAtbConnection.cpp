@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: utAtbConnection.cpp 80540 2017-07-19 08:00:50Z daramix $
+ * $Id: utAtbConnection.cpp 86150 2019-09-10 06:40:44Z bethy $
  ******************************************************************************/
 
 #include <uto.h>
@@ -488,6 +488,8 @@ dba_t utAtbConnection::getDbType(void)
 
 SInt utAtbConnection::checkState(SInt status, SQLHSTMT aStmt)
 {
+    SChar sErrMsg[BUF_LEN];
+
     switch(status)
     {
         case SQL_SUCCESS:
@@ -506,19 +508,23 @@ SInt utAtbConnection::checkState(SInt status, SQLHSTMT aStmt)
                 SQLINTEGER errNo;
                 SQLSMALLINT msgLength;
                 if(SQLError(envhp, dbchp, aStmt, NULL, (SQLINTEGER *)&errNo,
-                            (SQLCHAR *)_error, (SQLSMALLINT)_errorSize,
+                            (SQLCHAR *)sErrMsg, (SQLSMALLINT)BUF_LEN,
                             (SQLSMALLINT *)&msgLength ) == SQL_SUCCESS)
                 {
 #ifdef DEBUG
                     idlOS::fprintf(stderr,"[ERROR:%"ID_INT32_FMT"] %s\n", errNo, _error);
 #endif
                     status = errNo;
+                    /* BUG-47434 ø°∑Ø∏¶ √‚∑¬«“ ∂ß ø°∑Ø ƒ⁄µÂµµ ∆˜«‘«ÿæﬂ «’¥œ¥Ÿ */
+                    idlOS::snprintf(_error, _errorSize,
+                                    "[ERR-%05"ID_XINT32_FMT" : %s] From %s\n",
+                                    errNo, sErrMsg, getServerType());
                 }
                 else
                 {
                     idlOS::sprintf(_error,"SQLCLI  SQLError FAILURE!\n");
 
-                    status = 1; // ÏóêÎü¨Í∞Ä Î∞úÏÉù ÌñàÎã§Îäî Í≤ÉÎßåÏùÑ ÏùòÎØ∏
+                    status = 1; // ø°∑Ø∞° πﬂª˝ «ﬂ¥Ÿ¥¬ ∞Õ∏∏¿ª ¿«πÃ
                     idlOS::snprintf(_error, _errorSize,
                                     "Unable to retrieve error information from CLI driver");
                 }

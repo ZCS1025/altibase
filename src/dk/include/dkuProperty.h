@@ -42,7 +42,7 @@ public:
 
 #define DKU_DBLINK_DATA_BUFFER_ALLOC_RATIO ( dkuProperty::getDblinkDataBufferAllocRatio() )
 
-#define DKU_DBLINK_GLOBAL_TRANSACTION_LEVEL ( dkuProperty::getDblinkGlobalTransactionLevel() )
+#define DKU_GLOBAL_TRANSACTION_LEVEL ( dkuProperty::getGlobalTransactionLevel() )
 
 #define DKU_DBLINK_REMOTE_STATEMENT_AUTOCOMMIT  ( dkuProperty::getDblinkRemoteStatementAutoCommit() )
 
@@ -66,7 +66,7 @@ public:
 
     static UInt getDblinkDataBufferAllocRatio( void );
 
-    static UInt getDblinkGlobalTransactionLevel( void );
+    static UInt getGlobalTransactionLevel( void );
 
     static UInt getDblinkRemoteStatementAutoCommit( void );
 
@@ -86,7 +86,7 @@ private:
 
     static UInt mDblinkDataBufferAllocRatio;
 
-    static UInt mDblinkGlobalTransactionLevel;
+    static UInt mGlobalTransactionLevel;
 
     static UInt mDblinkRemoteStatementAutoCommit;
 
@@ -96,11 +96,11 @@ private:
 
     static UInt mDblinkRecoveryMaxLogfile;
 
-    static IDE_RC notifyDBLINK_GLOBAL_TRANSACTION_LEVEL( idvSQL* /* aStatistics */,
-                                                         SChar *aName,
-                                                         void  *aOldValue,
-                                                         void  *aNewValue,
-                                                         void  *aArg );
+    static IDE_RC notifyGLOBAL_TRANSACTION_LEVEL( idvSQL* /* aStatistics */,
+                                                  SChar *aName,
+                                                  void  *aOldValue,
+                                                  void  *aNewValue,
+                                                  void  *aArg );
 
     static IDE_RC notifyDBLINK_REMOTE_STATEMENT_AUTOCOMMIT( idvSQL* /* aStatistics */,
                                                             SChar *aName,

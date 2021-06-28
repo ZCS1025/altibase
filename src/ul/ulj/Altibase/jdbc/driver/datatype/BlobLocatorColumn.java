@@ -133,6 +133,11 @@ public class BlobLocatorColumn extends LobLocatorColumn
         ((ObjectDynamicArray)aArray).put(readLocatorInfo(aChannel));
     }
 
+    protected void readAndStoreValue(CmChannel aChannel) throws SQLException
+    {
+        mValues.add(readLocatorInfo(aChannel));
+    }
+
     void storeToLobArray(DynamicArray aArray) throws BatchUpdateException
     {
         Object sTarget = ((ObjectDynamicArray)aArray).get();
@@ -154,9 +159,22 @@ public class BlobLocatorColumn extends LobLocatorColumn
         ((ObjectDynamicArray)aArray).put(new LocatorInfo(mLocatorId, mLength, mLobCache));
     }
 
+    public void storeTo()
+    {
+        mValues.add(new LocatorInfo(mLocatorId, mLength, mLobCache));
+    }
+
     protected void loadFromSub(DynamicArray aArray)
     {
         LocatorInfo sLocatorInfo = (LocatorInfo)((ObjectDynamicArray)aArray).get();
+        mLocatorId = sLocatorInfo.mLocatorId;
+        mLength = sLocatorInfo.mLobLength;
+        mLobCache = sLocatorInfo.mLobCache;
+    }
+
+    protected void loadFromSub(int aLoadIndex)
+    {
+        LocatorInfo sLocatorInfo = (LocatorInfo)(mValues.get(aLoadIndex));
         mLocatorId = sLocatorInfo.mLocatorId;
         mLength = sLocatorInfo.mLobLength;
         mLobCache = sLocatorInfo.mLobCache;

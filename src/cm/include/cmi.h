@@ -73,6 +73,19 @@
 /* PROJ-2625 Semi-async Prefetch, Prefetch Auto-tuning */
 #define CMI_LINK_INFO_TCP_KERNEL_STAT       CMN_LINK_INFO_TCP_KERNEL_STAT
 
+/* PROJ-2733-Protocol cmpDefDB.h */
+#define CMI_IS_CONNECT_GROUP                CMP_IS_CONNECT_GROUP
+#define CMI_IS_PROPERTY_SET_GROUP           CMP_IS_PROPERTY_SET_GROUP
+#define CMI_IS_PROPERTY_GET_GROUP           CMP_IS_PROPERTY_GET_GROUP
+#define CMI_IS_PARAM_DATA_IN_LIST_GROUP     CMP_IS_PARAM_DATA_IN_LIST_GROUP
+#define CMI_IS_EXECUTE_GROUP                CMP_IS_EXECUTE_GROUP
+#define CMI_IS_FETCH_GROUP                  CMP_IS_FETCH_GROUP
+#define CMI_IS_TRANSACTION_GROUP            CMP_IS_TRANSACTION_GROUP
+#define CMI_IS_SHARD_TRANSACTION_GROUP      CMP_IS_SHARD_TRANSACTION_GROUP
+#define CMI_IS_SHARD_PREPARE_GROUP          CMP_IS_SHARD_PREPARE_GROUP
+#define CMI_IS_SHARD_END_PENDING_GROUP      CMP_IS_SHARD_END_PENDING_GROUP
+#define CMI_IS_PREPARE_GROUP                CMP_IS_PREPARE_GROUP
+
 #ifndef SO_NONE
 #define SO_NONE 0
 #endif
@@ -86,15 +99,19 @@
 #define CMI_IPCDA_MESSAGEQ_MAX_MESSAGE   10
 /* Size of a message queue segment */
 #define CMI_IPCDA_MESSAGEQ_MESSAGE_SIZE  1
-/* serverì˜ ì‘ë‹µì´ ì „ì†¡ë˜ì—ˆìŒì„ message queueë¡œ ì•Œë¦°ë‹¤. */
+/* serverÀÇ ÀÀ´äÀÌ Àü¼ÛµÇ¾úÀ½À» message queue·Î ¾Ë¸°´Ù. */
 #define CMI_IPCDA_MESSAGEQ_NOTIFY    1
 #endif
 
-/* BUG-44705 ì—ëŸ¬ ë°œìƒì‹œ clientë¡œ ì „ì†¡í•˜ëŠ” ì—ëŸ¬ í”„ë¡œí† ì½œì˜ ì‚¬ì´ì¦ˆ
- * IPCDAì—ì„œëŠ” bufferì‚¬ì´ì¦ˆê°€ ì •í•´ì ¸ ìžˆê¸° ë•Œë¬¸ì— clientì˜ ìš”ì²­ì— ë”°ë¥¸ ì‘ë‹µ ì²˜ë¦¬ì‹œ
- * ì—ëŸ¬ê°€ ë°œìƒí•  ê²½ìš°ë¥¼ ëŒ€ë¹„í•´ ì—ëŸ¬ ë©”ì„¸ì§€ë¥¼ ì „ì†¡í•  sizeë¥¼ ë¯¸ë¦¬ í™•ë³´í•´ì•¼ í•œë‹¤.
+/* BUG-44705 ¿¡·¯ ¹ß»ý½Ã client·Î Àü¼ÛÇÏ´Â ¿¡·¯ ÇÁ·ÎÅäÄÝÀÇ »çÀÌÁî
+ * IPCDA¿¡¼­´Â buffer»çÀÌÁî°¡ Á¤ÇØÁ® ÀÖ±â ¶§¹®¿¡ clientÀÇ ¿äÃ»¿¡ µû¸¥ ÀÀ´ä Ã³¸®½Ã
+ * ¿¡·¯°¡ ¹ß»ýÇÒ °æ¿ì¸¦ ´ëºñÇØ ¿¡·¯ ¸Þ¼¼Áö¸¦ Àü¼ÛÇÒ size¸¦ ¹Ì¸® È®º¸ÇØ¾ß ÇÑ´Ù.
  * CMP_OP_DB_ErrorResult + error_msg_max_size + CMP_OP_DB_IPCDALastOpEnded*/
-#define CMI_IPCDA_REMAIN_PROTOCOL_SIZE (12 + MAX_ERROR_MSG_LEN + 1)
+
+/* PROJ-2733-Protocol CMP_OP_DB_ErrorV3Result¿¡ SCN Ãß°¡·Î ÀÎÇØ 8byte Áõ°¡
+                      ErrorResult, ErrorResultV3, ErrorResultV?(Future)Áß ÃÖ´ë »çÀÌÁî°¡
+                      À¯ÁöµÇ¾î¾ß ÇÑ´Ù. Ã¼Å© ½ÃÁ¡¿¡´Â ErrorResultÀÇ Á¤È®ÇÑ ¹öÀüÀ» ¸ð¸£±â ¶§¹® */
+#define CMI_IPCDA_REMAIN_PROTOCOL_SIZE (12 + MAX_ERROR_MSG_LEN + 8 + 1)
 
 /*
  * cmn Types
@@ -147,12 +164,21 @@ typedef IDE_RC (*cmiCallbackSetExecute)(void* ,void*);
         aArg = CMI_PROTOCOL_GET_ARG(aProtocol, aModule, aOp);                   \
     } while (0)
 
-/* BUG-44124 ipcda ëª¨ë“œ ì‚¬ìš© ì¤‘ hang - iloader ì»¬ëŸ¼ì´ ë§Žì€ í…Œì´ë¸” */
+/* BUG-44124 ipcda ¸ðµå »ç¿ë Áß hang - iloader ÄÃ·³ÀÌ ¸¹Àº Å×ÀÌºí */
 typedef enum cmiWriteCheckState
 {
     CMI_WRITE_CHECK_ACTIVATED   = 1,
     CMI_WRITE_CHECK_DEACTIVATED = 2
 } cmiWriteCheckState;
+
+/* BUG-48871 ¾ÐÃà ¹æ½Ä LZ4·Î º¯°æ ÈÄ ÀÌÁßÈ­ ÇÏÀ§ È£È¯¼º À¯Áö  */
+typedef enum cmiCompressType
+{
+    CMI_COMPRESS_NONE       = 0,
+    CMI_COMPRESS_LZO        = 1,
+    CMI_COMPRESS_LZ4        = 2,
+    CMI_COMPRESS_MAX        
+} cmiCompressType;
 
 /*
  * cmiProtocolContext
@@ -176,7 +202,7 @@ typedef struct cmiProtocolContext
 
     iduList                       mReadBlockList;
     iduList                       mWriteBlockList;
-    // BUG-19465 : CM_Bufferì˜ pending listë¥¼ ì œí•œ
+    // BUG-19465 : CM_BufferÀÇ pending list¸¦ Á¦ÇÑ
     UInt                          mListLength; /* BUG-44468 [cm] codesonar warning in CM */
 
     UInt                          mCmSeqNo;
@@ -187,9 +213,15 @@ typedef struct cmiProtocolContext
     void                         *mOwner;
     idBool                        mSessionCloseNeeded;
 
-    /* PROJ-2296 */
-    idBool                        mCompressFlag;
-
+    /* BUG-47078 */
+    UInt                          mCompressLevel;
+    /* BUG-48871 ¾ÐÃà ¹æ½Ä LZ4·Î º¯°æ ÈÄ ÀÌÁßÈ­ ÇÏÀ§ È£È¯¼º À¯Áö  */
+    /* send½Ã ¾ÐÃàÀ» ÇÏÁö ¾Ê¾Æ CompressTypeÀÌ NONEÀÌ¾îµµ »ó´ë°¡ ¾ÐÃàÀ» ÇØ¼­ º¸³¾ °æ¿ì */ 
+    /* recv½Ã¿¡´Â ¾î¶² Å¸ÀÔÀ¸·Î ¾ÐÃàÀ» Ç®¾î¾ß µÉÁö ¼³Á¤µÇ¾î ÀÖ¾î¾ß ÇÏ±â ¶§¹®¿¡ */
+    /* CompressType°ú DecompressTypeÀ» º°µµ·Î »ç¿ëÇÕ´Ï´Ù. */
+    cmiCompressType               mCompressType;
+    cmiCompressType               mDecompressType;
+    
     /* BUG-38102 */
     idBool                        mEncryptFlag;
 
@@ -199,7 +231,7 @@ typedef struct cmiProtocolContext
     cmbBlockSimpleQueryFetchIPCDA mSimpleQueryFetchIPCDAWriteBlock;
     acp_uint32_t                  mIPDASpinMaxCount;
     
-    /* BUG-45184 network ì „ì†¡ sizeì™€ count í™•ì¸ (RP Viewì—ì„œ í™•ì¸ìš©ë„) */
+    /* BUG-45184 network Àü¼Û size¿Í count È®ÀÎ (RP View¿¡¼­ È®ÀÎ¿ëµµ) */
     ULong               mSendDataSize;
     ULong               mReceiveDataSize;    
     ULong               mSendDataCount;
@@ -210,7 +242,7 @@ typedef struct cmiProtocolContext
  * Initialization
  */
 
-// BUG-19465 : CM_Bufferì˜ pending listë¥¼ ì œí•œ
+// BUG-19465 : CM_BufferÀÇ pending list¸¦ Á¦ÇÑ
 IDE_RC cmiInitialize( UInt aCmMaxPendingList = ID_UINT_MAX );
 IDE_RC cmiFinalize();
 
@@ -333,8 +365,8 @@ IDE_RC cmiConnectWithoutData(cmiProtocolContext *aCtx, cmiConnectArg *aConnectAr
  */
 //fix BUG-17947.
 IDE_RC cmiInitializeProtocol(cmiProtocol *aProtocol,cmpModule*  aModule, UChar aOperationID);
-/*fix BUG-30041 cmiReadProtocolì—ì„œ mFinalization ì´ì´ˆê¸°í™” ë˜ê¸°ì „ì—
- ì‹¤íŒ¨í•˜ëŠ” caseì— cmiFinalizationì—ì„œ ë¹„ì •ìƒì¢…ë£Œë©ë‹ˆë‹¤.*/
+/*fix BUG-30041 cmiReadProtocol¿¡¼­ mFinalization ÀÌÃÊ±âÈ­ µÇ±âÀü¿¡
+ ½ÇÆÐÇÏ´Â case¿¡ cmiFinalization¿¡¼­ ºñÁ¤»óÁ¾·áµË´Ï´Ù.*/
 void  cmiInitializeProtocolNullFinalization(cmiProtocol *aProtocol);
 
 IDE_RC cmiFinalizeProtocol(cmiProtocol *aProtocol);
@@ -505,16 +537,37 @@ static inline void cmEndianAssign8( ULong* aDst,  ULong* aSrc)
     CM_ENDIAN_ASSIGN8(aDst, aSrc);
 }
 
-/* PROJ-2677 peek ë¸”ëŸ­ì˜ ì»¤ì„œë¥¼ ì˜®ê¸°ì§€ ì•Šê³  ì½ì–´ ì˜¤ê¸°ë§Œ í•œë‹¤. */
-#define CMI_PEEK1(aCtx, aDst)                                                                  \
-    do                                                                                         \
-    {                                                                                          \
-        IDE_DASSERT( ID_SIZEOF(aDst) == 1 );                                                   \
-        CM_ENDIAN_ASSIGN1((aDst), *((aCtx)->mReadBlock->mData + (aCtx)->mReadBlock->mCursor)); \
+/* PROJ-2677 peek ºí·°ÀÇ Ä¿¼­¸¦ ¿Å±âÁö ¾Ê°í ÀÐ¾î ¿À±â¸¸ ÇÑ´Ù. */
+#define CMI_PEEK1(aCtx, aDst, aPos)                                                                   \
+    do                                                                                                \
+    {                                                                                                 \
+        IDE_DASSERT( ID_SIZEOF(aDst) == 1 );                                                          \
+        CM_ENDIAN_ASSIGN1((aDst), *((aCtx)->mReadBlock->mData + (aCtx)->mReadBlock->mCursor + aPos)); \
+    } while (0)
+
+#define CMI_PEEK2(aCtx, aDst, aPos)                                                                   \
+    do                                                                                                \
+    {                                                                                                 \
+        IDE_DASSERT( ID_SIZEOF(*aDst) == 2 );                                                         \
+        cmEndianAssign2((aDst), (UShort *)((aCtx)->mReadBlock->mData + (aCtx)->mReadBlock->mCursor + aPos)); \
+    } while (0)
+
+#define CMI_PEEK4(aCtx, aDst, aPos)                                                                   \
+    do                                                                                                \
+    {                                                                                                 \
+        IDE_DASSERT( ID_SIZEOF(*aDst) == 4 );                                                         \
+        cmEndianAssign4((aDst), (UInt *)((aCtx)->mReadBlock->mData + (aCtx)->mReadBlock->mCursor + aPos)); \
+    } while (0)
+
+#define CMI_PEEK8(aCtx, aDst, aPos)                                                                   \
+    do                                                                                                \
+    {                                                                                                 \
+        IDE_DASSERT( ID_SIZEOF(*aDst) == 8 );                                                         \
+        cmEndianAssign8((aDst), (ULong *)((aCtx)->mReadBlock->mData + (aCtx)->mReadBlock->mCursor + aPos)); \
     } while (0)
 
 /* read */
-/* ë¸”ëŸ­ì— ì§ì ‘ ë°ì´íƒ€ë¥¼ ì½ê³ , ì“°ê¸° ìœ„í•´ì„œ ì‚¬ìš©ëœë‹¤. Align ì„ ë§žì¶”ì§€ ì•Šê³  1ë°”ì´íŠ¸ì”© ë³µì‚¬í•œë‹¤. */
+/* ºí·°¿¡ Á÷Á¢ µ¥ÀÌÅ¸¸¦ ÀÐ°í, ¾²±â À§ÇØ¼­ »ç¿ëµÈ´Ù. Align À» ¸ÂÃßÁö ¾Ê°í 1¹ÙÀÌÆ®¾¿ º¹»çÇÑ´Ù. */
 #define CMI_RD1(aCtx, aDst)                                                                    \
     do                                                                                         \
     {                                                                                          \
@@ -569,7 +622,7 @@ static inline void cmEndianAssign8( ULong* aDst,  ULong* aSrc)
 #define CMI_WR1(aCtx, aSrc)                                                                      \
     do                                                                                           \
     {                                                                                            \
-        /* ë‘ë²ˆì§¸ ì¸ìžì— ìˆ«ìžìƒìˆ˜ê°€ ë„˜ì–´ì˜¤ëŠ” ê²½ìš°ê°€ ìžˆì–´ì„œ UCHAR_MAXê²€ì‚¬ë¥¼ í•œë‹¤.*/               \
+        /* µÎ¹øÂ° ÀÎÀÚ¿¡ ¼ýÀÚ»ó¼ö°¡ ³Ñ¾î¿À´Â °æ¿ì°¡ ÀÖ¾î¼­ UCHAR_MAX°Ë»ç¸¦ ÇÑ´Ù.*/               \
         IDE_DASSERT( (ID_SIZEOF(aSrc) == 1) || (aSrc <= UCHAR_MAX) );                            \
         CM_ENDIAN_ASSIGN1(*((aCtx)->mWriteBlock->mData + (aCtx)->mWriteBlock->mCursor), (aSrc)); \
         (aCtx)->mWriteBlock->mCursor += 1;                                                       \
@@ -611,9 +664,9 @@ static inline void cmEndianAssign8( ULong* aDst,  ULong* aSrc)
     } while (0)
 
 /* BUGBUG
- * aCtx->mWriteBlock->mDataê°€ alignì´ ì´ë¯¸ ë§žì¶°ì ¸ ìžˆë‹¤ë©´
- * aCtx->mWriteBlock->mCursor = (vULong)idlOS::align8((vULong)aCtx->mWriteBlock->mCursor)ë¡œ ê°„ë‹¨ížˆ ë³€ê²½í• ìˆ˜ ìžˆë‹¤.
- * ì¶”í›„ í™•ì¸í•˜ì—¬ ì§„í–‰ */
+ * aCtx->mWriteBlock->mData°¡ alignÀÌ ÀÌ¹Ì ¸ÂÃçÁ® ÀÖ´Ù¸é
+ * aCtx->mWriteBlock->mCursor = (vULong)idlOS::align8((vULong)aCtx->mWriteBlock->mCursor)·Î °£´ÜÈ÷ º¯°æÇÒ¼ö ÀÖ´Ù.
+ * ÃßÈÄ È®ÀÎÇÏ¿© ÁøÇà */
 #define CMI_WRITE_ALIGN8(aCtx)                                                   \
     ((aCtx)->mWriteBlock->mCursor) +=                                            \
         (vULong)idlOS::align8((vULong)((aCtx)->mWriteBlock->mData +              \
@@ -622,9 +675,9 @@ static inline void cmEndianAssign8( ULong* aDst,  ULong* aSrc)
         (aCtx)->mWriteBlock->mCursor)
 
 /* BUG-44705 CMI_WRITE_CHECK
- * aLen ì˜ ê¸¸ì´ë§Œí¼ì˜ ë°ì´íƒ€ë¥¼ 1ê°œì˜ ë¸”ë½ì— ë„£ì„ìˆ˜ ìžˆëŠ”ì§€ ì²´í¬í•œë‹¤.
- * í”„ë¡œí† ì½œì´ ë¶„í• ë˜ì§€ ì•ŠëŠ” ì˜ì—­ì„ ë³´ìž¥í•˜ê¸° ìœ„í•´ì„œ ì‚¬ìš©ëœë‹¤.
- * IPCDAì˜ ê²½ìš° ì—ëŸ¬ë©”ì„¸ì§€ë¥¼ ì „ì†¡í•  ìµœì†Œí•œì˜ ì—¬ìœ ë¥¼ ë‚¨ê¸´ë‹¤*/
+ * aLen ÀÇ ±æÀÌ¸¸Å­ÀÇ µ¥ÀÌÅ¸¸¦ 1°³ÀÇ ºí¶ô¿¡ ³ÖÀ»¼ö ÀÖ´ÂÁö Ã¼Å©ÇÑ´Ù.
+ * ÇÁ·ÎÅäÄÝÀÌ ºÐÇÒµÇÁö ¾Ê´Â ¿µ¿ªÀ» º¸ÀåÇÏ±â À§ÇØ¼­ »ç¿ëµÈ´Ù.
+ * IPCDAÀÇ °æ¿ì ¿¡·¯¸Þ¼¼Áö¸¦ Àü¼ÛÇÒ ÃÖ¼ÒÇÑÀÇ ¿©À¯¸¦ ³²±ä´Ù*/
 #define CMI_WRITE_CHECK(aCtx, aLen)                                                       \
     do                                                                                    \
     {                                                                                     \
@@ -643,12 +696,12 @@ static inline void cmEndianAssign8( ULong* aDst,  ULong* aSrc)
         }                                                                                 \
     } while (0)
 
-/* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
+/* BUG-44125 [mm-cli] IPCDA ¸ðµå Å×½ºÆ® Áß hang - iloader CLOB */
 /* CMI_WRITE_CHECK_WITH_IPCDA
- * aLen ì˜ ê¸¸ì´ë§Œí¼ì˜ ë°ì´íƒ€ë¥¼ 1ê°œì˜ ë¸”ë½ì— ë„£ì„ìˆ˜ ìžˆëŠ”ì§€ ì²´í¬í•œë‹¤.
- * í”„ë¡œí† ì½œì´ ë¶„í• ë˜ì§€ ì•ŠëŠ” ì˜ì—­ì„ ë³´ìž¥í•˜ê¸° ìœ„í•´ì„œ ì‚¬ìš©ëœë‹¤.
- * IPCDAì¼ê²½ìš° sizeê°€ ë‹¤ë¥¸ê²½ìš°ê°€ ì¡´ìž¬í•˜ê¸° ë•Œë¬¸ì— ì¶”ê°€ ì¸ìžë¥¼ ë°›ì•„ì„œ ì²˜ë¦¬í•œë‹¤.
- * IPCDAì˜ ê²½ìš° ì—ëŸ¬ë©”ì„¸ì§€ë¥¼ ì „ì†¡í•  ìµœì†Œí•œì˜ ì—¬ìœ ë¥¼ ë‚¨ê¸´ë‹¤*/
+ * aLen ÀÇ ±æÀÌ¸¸Å­ÀÇ µ¥ÀÌÅ¸¸¦ 1°³ÀÇ ºí¶ô¿¡ ³ÖÀ»¼ö ÀÖ´ÂÁö Ã¼Å©ÇÑ´Ù.
+ * ÇÁ·ÎÅäÄÝÀÌ ºÐÇÒµÇÁö ¾Ê´Â ¿µ¿ªÀ» º¸ÀåÇÏ±â À§ÇØ¼­ »ç¿ëµÈ´Ù.
+ * IPCDAÀÏ°æ¿ì size°¡ ´Ù¸¥°æ¿ì°¡ Á¸ÀçÇÏ±â ¶§¹®¿¡ Ãß°¡ ÀÎÀÚ¸¦ ¹Þ¾Æ¼­ Ã³¸®ÇÑ´Ù.
+ * IPCDAÀÇ °æ¿ì ¿¡·¯¸Þ¼¼Áö¸¦ Àü¼ÛÇÒ ÃÖ¼ÒÇÑÀÇ ¿©À¯¸¦ ³²±ä´Ù*/
 #define CMI_WRITE_CHECK_WITH_IPCDA(aCtx, aLen, aLenIPCDA)                                 \
     do                                                                                    \
     {                                                                                     \
@@ -664,6 +717,27 @@ static inline void cmEndianAssign8( ULong* aDst,  ULong* aSrc)
         {                                                                                 \
             IDE_TEST(((aCtx)->mWriteBlock->mCursor + (aLenIPCDA)) >                       \
             (CMB_BLOCK_DEFAULT_SIZE - CMI_IPCDA_REMAIN_PROTOCOL_SIZE));                   \
+        }                                                                                 \
+    } while (0)
+
+
+/* PROJ-2733-Protocol IPCDA´Â CMI_WRITE_CHECK*¿¡¼­ ¿¡·¯¸Þ½ÃÁö °ø°£À» È®º¸ÇÏ¹Ç·Î
+                      AnswerErrorResult¿¡¼­ »ç¿ëÇÒ CMI_WRITE_CHECK_WITH_IPCDA_FOR_ERROR¸¦ Ãß°¡ */
+#define CMI_WRITE_CHECK_WITH_IPCDA_FOR_ERROR(aCtx, aLen, aLenIPCDA)                       \
+    do                                                                                    \
+    {                                                                                     \
+        if (aCtx->mLink->mLink.mImpl != CMN_LINK_IMPL_IPCDA)                              \
+        {                                                                                 \
+            IDE_TEST((aLen) > CMB_BLOCK_DEFAULT_SIZE - CMP_HEADER_SIZE);                  \
+            if ((aCtx)->mWriteBlock->mCursor + (aLen) > CMB_BLOCK_DEFAULT_SIZE)           \
+            {                                                                             \
+                IDE_TEST(cmiSend((aCtx), ID_FALSE) != IDE_SUCCESS);                       \
+            }                                                                             \
+        }                                                                                 \
+        else                                                                              \
+        {                                                                                 \
+            IDE_TEST(((aCtx)->mWriteBlock->mCursor + (aLenIPCDA)) >=                      \
+                      (aCtx)->mWriteBlock->mBlockSize)                                    \
         }                                                                                 \
     } while (0)
 
@@ -685,9 +759,12 @@ static inline void cmEndianAssign8( ULong* aDst,  ULong* aSrc)
 #define CMI_SET_CURSOR(aCtx , aPos) \
         (((aCtx)->mWriteBlock->mCursor) = (aPos))
 
-/* BUG-44125 [mm-cli] IPCDA ëª¨ë“œ í…ŒìŠ¤íŠ¸ ì¤‘ hang - iloader CLOB */
+/* BUG-44125 [mm-cli] IPCDA ¸ðµå Å×½ºÆ® Áß hang - iloader CLOB */
 #define CMI_GET_CURSOR(aCtx) \
         ((aCtx)->mWriteBlock->mCursor)
+
+#define CMI_GET_CURRENT_POSITION_IN_READ_BLOCK( aCtx ) \
+        (UChar *)(((aCtx)->mReadBlock->mData) + ((aCtx)->mReadBlock->mCursor))
 
 /*********************************************************/
 // proj_2160 cm_type removal
@@ -710,8 +787,8 @@ IDE_RC cmiAllocCmBlockForA5( cmiProtocolContext* aCtx,
                              void*               aOwner,
                              idBool              aResendBlock = ID_FALSE );
 /* 
- * PROJ-2704 ì´ì¤‘í™” DDL ë³µì œ ë¹„ì •ìƒ ì¢…ë£Œ ê·¹ë³µ 
- * cmiProtocolContextì— cmBlockì„ í• ë‹¹ í–ˆëŠ”ì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜ ì¶”ê°€ */
+ * PROJ-2704 ÀÌÁßÈ­ DDL º¹Á¦ ºñÁ¤»ó Á¾·á ±Øº¹ 
+ * cmiProtocolContext¿¡ cmBlockÀ» ÇÒ´ç Çß´ÂÁö È®ÀÎÇÏ´Â ÇÔ¼ö Ãß°¡ */
 inline idBool cmiIsAllocCmBlock( cmiProtocolContext* aCtx )
 {
     return ( aCtx->mReadBlock != NULL ) ? ID_TRUE : ID_FALSE;
@@ -775,8 +852,13 @@ cmnLinkImpl cmiGetLinkImpl(cmiLink *aLink);
 
 IDE_RC cmiSetCallbackSetExecute(cmiCallbackSetExecute aCallback);
 
-void cmiEnableCompress( cmiProtocolContext * aCtx );
+/* BUG-48871 ¾ÐÃà ¹æ½Ä LZ4·Î º¯°æ ÈÄ ÀÌÁßÈ­ ÇÏÀ§ È£È¯¼º À¯Áö  */
+void cmiEnableCompress( cmiProtocolContext * aCtx, 
+                        UInt                 aLevel,
+                        cmiCompressType      aCompressType );
 void cmiDisableCompress( cmiProtocolContext * aCtx );
+void cmiSetDecompressType( cmiProtocolContext * aCtx,
+                           cmiCompressType      aDecompressType );
 
 /* BUG-38102 */
 void cmiEnableEncrypt( cmiProtocolContext * aCtx );
@@ -786,12 +868,12 @@ void cmiLinkSetPacketTypeA5( cmiLink *aLink );
 
 /**************************************************
  * PROJ-2616
- * IPCDAëŠ” cmiSplitReadë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ * IPCDA´Â cmiSplitRead¸¦ »ç¿ëÇÏÁö ¾Ê´Â´Ù.
  *
  * aCtx[in]      - cmiProtocolContext
- * aReadSize[in] - acp_uint64_t ì½ì„ ë°ì´í„° ì‚¬ì´ì¦ˆ
- * aBuffer1[in]  - acp_uint8_t  ë°ì´í„°ì˜ ì €ìž¥ëœ ì£¼ì†Œë¥¼ ì°¸ì¡°í•œë‹¤.
- * aBuffer2[in]  - acp_uint8_t  ë°ì´í„°ê°€ copyëœë‹¤.
+ * aReadSize[in] - acp_uint64_t ÀÐÀ» µ¥ÀÌÅÍ »çÀÌÁî
+ * aBuffer1[in]  - acp_uint8_t  µ¥ÀÌÅÍÀÇ ÀúÀåµÈ ÁÖ¼Ò¸¦ ÂüÁ¶ÇÑ´Ù.
+ * aBuffer2[in]  - acp_uint8_t  µ¥ÀÌÅÍ°¡ copyµÈ´Ù.
  **************************************************/
 inline IDE_RC cmiSplitReadIPCDA( cmiProtocolContext  *aCtx,
                                  ULong                aReadSize,
@@ -827,11 +909,11 @@ inline IDE_RC cmiSplitReadIPCDA( cmiProtocolContext  *aCtx,
 inline void cmiIPCDAIncDataCount(cmiProtocolContext * aCtx)
 {
     cmbBlockIPCDA *sWriteBlock = (cmbBlockIPCDA*)aCtx->mWriteBlock;
-    /*BUG-44275 "IPCDA select test ì—ì„œ fetch ì´ìƒ"
-     * mDataSize, mOperationCount ê°’ì„ ë³´ìž¥í•˜ê¸° ìœ„í•˜ì—¬
-     * mem barrier ìœ„ì¹˜ ì¡°ì • */
+    /*BUG-44275 "IPCDA select test ¿¡¼­ fetch ÀÌ»ó"
+     * mDataSize, mOperationCount °ªÀ» º¸ÀåÇÏ±â À§ÇÏ¿©
+     * mem barrier À§Ä¡ Á¶Á¤ */
     sWriteBlock->mBlock.mDataSize = sWriteBlock->mBlock.mCursor;
-    /* BUG-46502 atomic í•¨ìˆ˜ ì ìš© atomicì— mem_barrierê°€ í¬í•¨ë˜ì–´ ìžˆë‹¤.*/
+    /* BUG-46502 atomic ÇÔ¼ö Àû¿ë atomic¿¡ mem_barrier°¡ Æ÷ÇÔµÇ¾î ÀÖ´Ù.*/
     acpAtomicInc32(&(sWriteBlock->mOperationCount));
 }
 #endif

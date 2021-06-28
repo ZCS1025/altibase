@@ -37,7 +37,7 @@ ACI_RC ulsdParamProcess_DATAs_ShardCore( ulnFnContext * aFnContext,
                                          acp_uint32_t   aRowNumber,
                                          void         * aUserDataPtr );
 
-/* ì‚¬ìš©ì ë°ì´í„° íƒ€ì…ì´ MTíƒ€ì…ì¸ì§€ë¥¼ í™•ì¸í•œë‹¤.*/
+/* »ç¿ëÀÚ µ¥ÀÌÅÍ Å¸ÀÔÀÌ MTÅ¸ÀÔÀÎÁö¸¦ È®ÀÎÇÑ´Ù.*/
 ACP_INLINE acp_bool_t ulsdIsInputMTData( acp_sint16_t aType )
 {
     acp_bool_t sRet = ACP_FALSE;
@@ -55,7 +55,7 @@ ACP_INLINE acp_bool_t ulsdIsInputMTData( acp_sint16_t aType )
 }
 
 /* PROJ-2638 shard native linker                      */
-/* ì‚¬ìš©ì ì»¬ëŸ¼ì˜ ë°ì´í„° MTíƒ€ì…ì´ Fixed_Precisionì¸ì§€ë¥¼ í™•ì¸í•œë‹¤. */
+/* »ç¿ëÀÚ ÄÃ·³ÀÇ µ¥ÀÌÅÍ MTÅ¸ÀÔÀÌ Fixed_PrecisionÀÎÁö¸¦ È®ÀÎÇÑ´Ù. */
 ACP_INLINE acp_bool_t ulsdIsFixedPrecision( acp_uint32_t aUlnMtType )
 {
     acp_bool_t sRet = ACP_FALSE;
@@ -78,25 +78,25 @@ ACP_INLINE acp_bool_t ulsdIsFixedPrecision( acp_uint32_t aUlnMtType )
 
 /***************************************************
  * PROJ-2638 shard native linker
- * SQL_C_DEFAULT ë¡œ ë°”ì¸ë”©ì‹œ ì–´ë–¤ íƒ€ì…ì„ ê°€ì •í•´ì•¼ í•˜ëŠ”ì§€ ê²°ì •í•˜ëŠ” í•¨ìˆ˜.
+ * SQL_C_DEFAULT ·Î ¹ÙÀÎµù½Ã ¾î¶² Å¸ÀÔÀ» °¡Á¤ÇØ¾ß ÇÏ´ÂÁö °áÁ¤ÇÏ´Â ÇÔ¼ö.
  ***************************************************/
 ulnCTypeID ulsdTypeGetDefault_UserType( ulnMTypeID aMTYPE );
 
 /***************************************************
  * PROJ-2638 shard native linker
- * ì‚¬ìš©ì ë°ì´í„°ì˜ MTYPEì— í•´ë‹¹í•˜ëŠ” CTYPEì„ ë°˜í™˜í•œë‹¤.
- * ulnBindParamApdPartê³¼ ulnBindParamBodyì—ì„œ í˜¸ì¶œ ëœë‹¤.
+ * »ç¿ëÀÚ µ¥ÀÌÅÍÀÇ MTYPE¿¡ ÇØ´çÇÏ´Â CTYPEÀ» ¹İÈ¯ÇÑ´Ù.
+ * ulnBindParamApdPart°ú ulnBindParamBody¿¡¼­ È£Ãâ µÈ´Ù.
  *
- * ulnBindParamBodyì—ì„œì˜ ì‚¬ìš© ì˜ˆ :
+ * ulnBindParamBody¿¡¼­ÀÇ »ç¿ë ¿¹ :
  *  sMTYPE = aParamType - ULSD_INPUT_RAW_MTYPE_NULL;
  *  sCTYPE = ulsdTypeMap_MTYPE_CTYPE(sMTYPE);
  ***************************************************/
 ulnCTypeID ulsdTypeMap_MTYPE_CTYPE( acp_sint16_t aMTYPE );
 
 /* PROJ-2638 shard native linker */
-/* ì„œë²„ì—ì„œ ë°˜í™˜ëœ ë°ì´í„°ë¥¼ MT íƒ€ì… ê·¸ëŒ€ë¡œ SDLì— ë„˜ê¸°ê¸° ìœ„í•´ì„œ
- * ì‚¬ìš© ëœë‹¤.
- * ulsdCacheRowCopyToUserBufferShardCoreì—ì„œ í˜¸ì¶œ ëœë‹¤.
+/* ¼­¹ö¿¡¼­ ¹İÈ¯µÈ µ¥ÀÌÅÍ¸¦ MT Å¸ÀÔ ±×´ë·Î SDL¿¡ ³Ñ±â±â À§ÇØ¼­
+ * »ç¿ë µÈ´Ù.
+ * ulsdCacheRowCopyToUserBufferShardCore¿¡¼­ È£Ãâ µÈ´Ù.
  */
 ACI_RC ulsdDataCopyFromMT(ulnFnContext * aFnContext,
                           acp_uint8_t  * aSrc,
@@ -106,9 +106,9 @@ ACI_RC ulsdDataCopyFromMT(ulnFnContext * aFnContext,
                           acp_uint32_t   aMaxLen);
 
 /* PROJ-2638 shard native linker */
-/* ì„œë²„ì—ì„œ ë°˜í™˜ëœ ë°ì´í„°ë¥¼ MT íƒ€ì… ê·¸ëŒ€ë¡œ SDLì— ë„˜ê¸°ê¸° ìœ„í•´ì„œ
- * ì‚¬ìš© ëœë‹¤.
- * ulsdCacheRowCopyToUserBufferì—ì„œ í˜¸ì¶œ ëœë‹¤.
+/* ¼­¹ö¿¡¼­ ¹İÈ¯µÈ µ¥ÀÌÅÍ¸¦ MT Å¸ÀÔ ±×´ë·Î SDL¿¡ ³Ñ±â±â À§ÇØ¼­
+ * »ç¿ë µÈ´Ù.
+ * ulsdCacheRowCopyToUserBuffer¿¡¼­ È£Ãâ µÈ´Ù.
  */
 ACI_RC ulsdCacheRowCopyToUserBufferShardCore( ulnFnContext * aFnContext,
                                               ulnStmt      * aStmt,

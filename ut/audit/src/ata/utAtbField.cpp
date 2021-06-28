@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: utAtbField.cpp 82790 2018-04-15 23:41:55Z bethy $
+ * $Id: utAtbField.cpp 82786 2018-04-12 08:04:45Z bethy $
  ******************************************************************************/
 
 #include <utAtb.h>
@@ -34,7 +34,7 @@ IDE_RC utAtbField::initialize(UShort aNo ,utAtbRow * aRow)
     displaySize =0;
     sqlType     =0;
     realSqlType =0;
-    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
+    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
     mValueInd   = NULL;
     mLob        = NULL; // BUG-45909
 
@@ -135,7 +135,7 @@ IDE_RC utAtbField::initialize(UShort aNo ,utAtbRow * aRow)
 
             /*
              * BUG-45958 Need to support BIT/VARBIT type
-             *   mWidth: SQLBindColì— ì‚¬ìš©ë  ë²„í¼ í• ë‹¹ì‹œ í•„ìš”í•œ í¬ê¸°
+             *   mWidth: SQLBindCol¿¡ »ç¿ëµÉ ¹öÆÛ ÇÒ´ç½Ã ÇÊ¿äÇÑ Å©±â
              */
             case SQL_BIT  :
             case SQL_VARBIT  :
@@ -154,7 +154,7 @@ IDE_RC utAtbField::initialize(UShort aNo ,utAtbRow * aRow)
 
 IDE_RC utAtbField::finalize( )
 {
-    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
+    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
     if ( mValueInd  != NULL )
     {
         idlOS::free(mValueInd);
@@ -181,14 +181,14 @@ IDE_RC utAtbField::bindColumn(SInt aSqlType,void * aLinks)
         mWidth ++;
     }
 
-    // indicator ë°°ì—´ free
+    // indicator ¹è¿­ free
     if ( mValueInd != NULL )
     {
         idlOS::free( mValueInd );
         mValueInd = NULL;
     }
 
-    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
+    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
     if ( mIsFileMode == true)
     {
         switch( aSqlType )

@@ -19,11 +19,11 @@
  * $Id: qmgDistinction.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     Distinction Graphë¥¼ ìœ„í•œ ì •ì˜
+ *     Distinction Graph¸¦ À§ÇÑ Á¤ÀÇ
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -34,7 +34,7 @@
 #include <qmgDef.h>
 
 //---------------------------------------------------
-// Distinction Graphì˜ Define ìƒìˆ˜
+// Distinction GraphÀÇ Define »ó¼ö
 //---------------------------------------------------
 
 // qmgDIST.graph.flag
@@ -44,38 +44,38 @@
 
 
 //---------------------------------------------------
-// Distinction Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+// Distinction Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
 //---------------------------------------------------
 
 typedef struct qmgDIST
 {
-    qmgGraph    graph;         // ê³µí†µ Graph ì •ë³´
+    qmgGraph    graph;         // °øÅë Graph Á¤º¸
     
-    // hash based Distinctionìœ¼ë¡œ ê²°ì •ëœ ê²½ìš°ì— ì„¤ì •
+    // hash based DistinctionÀ¸·Î °áÁ¤µÈ °æ¿ì¿¡ ¼³Á¤
     UInt        hashBucketCnt; 
     
 } qmgDIST;
 
 //---------------------------------------------------
-// Distinction Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+// Distinction Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
 //---------------------------------------------------
 
 class qmgDistinction
 {
 public:
-    // Graph ì˜ ì´ˆê¸°í™”
+    // Graph ÀÇ ÃÊ±âÈ­
     static IDE_RC  init( qcStatement * aStatement,
                          qmsQuerySet * aQuerySet,
                          qmgGraph    * aChildGraph, 
                          qmgGraph   ** aGraph );
 
-    // Graphì˜ ìµœì í™” ìˆ˜í–‰
+    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
     static IDE_RC  optimize( qcStatement * aStatement, qmgGraph * aGraph );
 
-    // Graphì˜ Plan Tree ìƒì„±
+    // GraphÀÇ Plan Tree »ı¼º
     static IDE_RC  makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph * aGraph );
 
-    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
+    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
     static IDE_RC  printGraph( qcStatement  * aStatement,
                                qmgGraph     * aGraph,
                                ULong          aDepth,
@@ -90,18 +90,18 @@ private:
     static IDE_RC  makeHashDistinction( qcStatement * aStatement,
                                         qmgDIST     * aMyGraph );
 
-    // DISTINCT Target  ì»¬ëŸ¼ ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬Order ìë£Œ êµ¬ì¡°ë¥¼ êµ¬ì¶•í•œë‹¤.
+    // DISTINCT Target  ÄÃ·³ Á¤º¸¸¦ ÀÌ¿ëÇÏ¿©Order ÀÚ·á ±¸Á¶¸¦ ±¸ÃàÇÑ´Ù.
     static IDE_RC makeTargetOrder( qcStatement        * aStatement,
                                    qmsTarget          * aDistTarget,
                                    qmgPreservedOrder ** aNewTargetOrder );
                                   
-    // indexable group by ìµœì í™”
+    // indexable group by ÃÖÀûÈ­
     static IDE_RC indexableDistinct( qcStatement      * aStatement,
                                      qmgGraph         * aGraph,
                                      qmsTarget        * aDistTarget,
                                      idBool           * aIndexableDistinct );
 
-    // Preserved Order ë°©ì‹ì„ ì‚¬ìš©í•˜ì˜€ì„ ê²½ìš°ì˜ ë¹„ìš© ê³„ì‚°
+    // Preserved Order ¹æ½ÄÀ» »ç¿ëÇÏ¿´À» °æ¿ìÀÇ ºñ¿ë °è»ê
     static IDE_RC getCostByPrevOrder( qcStatement      * aStatement,
                                       qmgDIST          * aDistGraph,
                                       SDouble          * aAccessCost,

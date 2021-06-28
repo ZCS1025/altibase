@@ -21,18 +21,18 @@
  * Description :
  *     BUNI(Bag Union) Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ Bag Unionì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     °ü°èÇü ¸ðµ¨¿¡¼­ Bag UnionÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
  *  
- *     ë‹¤ìŒê³¼ ê°™ì€ ê¸°ëŠ¥ì„ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
+ *     ´ÙÀ½°ú °°Àº ±â´ÉÀ» À§ÇØ »ç¿ëµÈ´Ù.
  *         - Bag Union
  *         - Set Union
  *
- *     Left Childì— ëŒ€í•œ Dataì™€ Right Childì— ëŒ€í•œ Dataë¥¼
- *     ëª¨ë‘ ë¦¬í„´í•œë‹¤.
+ *     Left Child¿¡ ´ëÇÑ Data¿Í Right Child¿¡ ´ëÇÑ Data¸¦
+ *     ¸ðµÎ ¸®ÅÏÇÑ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -49,7 +49,7 @@ qmnCONC::init( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    CONC ë…¸ë“œì˜ ì´ˆê¸°í™”
+ *    CONC ³ëµåÀÇ ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -78,16 +78,16 @@ qmnCONC::init( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // Child Planì˜ ì´ˆê¸°í™”
+    // Child PlanÀÇ ÃÊ±âÈ­
     //------------------------------------------------
 
     IDE_TEST( aPlan->left->init( aTemplate, 
                                  aPlan->left ) != IDE_SUCCESS);
 
-    // Right Childì— ëŒ€í•œ ì´ˆê¸°í™”ëŠ” í•„ìš” ì‹œì ì— ìˆ˜í–‰í•œë‹¤.
+    // Right Child¿¡ ´ëÇÑ ÃÊ±âÈ­´Â ÇÊ¿ä ½ÃÁ¡¿¡ ¼öÇàÇÑ´Ù.
     
     //------------------------------------------------
-    // ìˆ˜í–‰ í•¨ìˆ˜ ê²°ì •
+    // ¼öÇà ÇÔ¼ö °áÁ¤
     //------------------------------------------------
 
     sDataPlan->doIt = qmnCONC::doItLeft;
@@ -110,10 +110,10 @@ qmnCONC::doIt( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    CONCì˜ ê³ ìœ  ê¸°ëŠ¥ì„ ìˆ˜í–‰í•œë‹¤.
+ *    CONCÀÇ °íÀ¯ ±â´ÉÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *    ì§€ì •ëœ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ *    ÁöÁ¤µÈ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼öÇàÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -142,13 +142,13 @@ qmnCONC::padNull( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Null Paddingì„ ìˆ˜í–‰í•œë‹¤.
+ *    Null PaddingÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
- *    ë³„ë„ì˜ Null Rowë¥¼ ê°€ì§€ì§€ ì•Šìœ¼ë©°,
- *    Childì— ëŒ€í•œ Null Paddingì„ ìˆ˜í–‰í•œë‹¤.
- *    ì¼ë°˜ Two-Child Planê³¼ ë‹¬ë¦¬ Leftì™€ Rightê°€ ë™ì¼í•œ êµ¬ì¡°ë¥¼
- *    ê°€ì§€ë¯€ë¡œ Leftì— ëŒ€í•œ Null Paddingë§Œì„ ìˆ˜í–‰í•œë‹¤.
+ *    º°µµÀÇ Null Row¸¦ °¡ÁöÁö ¾ÊÀ¸¸ç,
+ *    Child¿¡ ´ëÇÑ Null PaddingÀ» ¼öÇàÇÑ´Ù.
+ *    ÀÏ¹Ý Two-Child Plan°ú ´Þ¸® Left¿Í Right°¡ µ¿ÀÏÇÑ ±¸Á¶¸¦
+ *    °¡Áö¹Ç·Î Left¿¡ ´ëÇÑ Null Padding¸¸À» ¼öÇàÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -171,7 +171,7 @@ qmnCONC::padNull( qcTemplate * aTemplate,
     }
 
     //------------------------------------------------
-    // Child ì— ëŒ€í•œ Null Padding
+    // Child ¿¡ ´ëÇÑ Null Padding
     //------------------------------------------------
     
     IDE_TEST( aPlan->left->padNull( aTemplate, aPlan->left )
@@ -196,7 +196,7 @@ qmnCONC::printPlan( qcTemplate   * aTemplate,
 /***********************************************************************
  *
  * Description :
- *     ìˆ˜í–‰ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤
+ *     ¼öÇà Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù
  *
  * Implementation :
  *
@@ -213,7 +213,7 @@ qmnCONC::printPlan( qcTemplate   * aTemplate,
     ULong  i;
 
     //----------------------------
-    // Display ìœ„ì¹˜ ê²°ì •
+    // Display À§Ä¡ °áÁ¤
     //----------------------------
     
     for ( i = 0; i < aDepth; i++ )
@@ -223,14 +223,14 @@ qmnCONC::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // CONC ë…¸ë“œ í‘œì‹œ
+    // CONC ³ëµå Ç¥½Ã
     //----------------------------
 
     iduVarStringAppend( aString,
                         "CONCATENATION \n" );
 
     //----------------------------
-    // Operatorë³„ ê²°ê³¼ ì •ë³´ ì¶œë ¥
+    // Operatorº° °á°ú Á¤º¸ Ãâ·Â
     //----------------------------
     if ( QCU_TRCLOG_RESULT_DESC == 1 )
     {
@@ -246,7 +246,7 @@ qmnCONC::printPlan( qcTemplate   * aTemplate,
     }
 
     //----------------------------
-    // Child Planì˜ ì •ë³´ ì¶œë ¥
+    // Child PlanÀÇ Á¤º¸ Ãâ·Â
     //----------------------------
     
     IDE_TEST( aPlan->left->printPlan( aTemplate,
@@ -278,7 +278,7 @@ qmnCONC::doItDefault( qcTemplate * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ì´ í•¨ìˆ˜ê°€ ìˆ˜í–‰ë˜ë©´ ì•ˆë¨.
+ *    ÀÌ ÇÔ¼ö°¡ ¼öÇàµÇ¸é ¾ÈµÊ.
  *
  * Implementation :
  *
@@ -302,7 +302,7 @@ qmnCONC::doItLeft( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Left Childë¡œë¶€í„° Rowë¥¼ íšë“í•œë‹¤.
+ *    Left Child·ÎºÎÅÍ Row¸¦ È¹µæÇÑ´Ù.
  *
  * Implementation :
  *
@@ -324,7 +324,7 @@ qmnCONC::doItLeft( qcTemplate * aTemplate,
 
     if ( (*aFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_NONE )
     {
-        // Rowê°€ ì¡´ìž¬í•˜ì§€ ì•Šì„ ê²½ìš° Right Childì— ëŒ€í•œ ì²˜ë¦¬ë¥¼ ìˆ˜í–‰
+        // Row°¡ Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì Right Child¿¡ ´ëÇÑ Ã³¸®¸¦ ¼öÇà
         
         sDataPlan->doIt = qmnCONC::doItRight;
         IDE_TEST( aPlan->right->init( aTemplate, aPlan->right ) 
@@ -355,7 +355,7 @@ qmnCONC::doItRight( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Right Childë¡œë¶€í„° Rowë¥¼ íšë“í•œë‹¤.
+ *    Right Child·ÎºÎÅÍ Row¸¦ È¹µæÇÑ´Ù.
  *
  * Implementation :
  *
@@ -401,7 +401,7 @@ qmnCONC::firstInit( qmndCONC   * aDataPlan )
 /***********************************************************************
  *
  * Description :
- *    Data ì˜ì—­ì— ëŒ€í•œ ì´ˆê¸°í™”
+ *    Data ¿µ¿ª¿¡ ´ëÇÑ ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -411,7 +411,7 @@ qmnCONC::firstInit( qmndCONC   * aDataPlan )
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
     //---------------------------------
-    // ì´ˆê¸°í™” ì™„ë£Œë¥¼ í‘œê¸°
+    // ÃÊ±âÈ­ ¿Ï·á¸¦ Ç¥±â
     //---------------------------------
 
     *aDataPlan->flag &= ~QMND_CONC_INIT_DONE_MASK;

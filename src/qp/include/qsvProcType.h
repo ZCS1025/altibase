@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsvProcType.h 83113 2018-05-29 02:04:30Z ahra.cho $
+ * $Id: qsvProcType.h 83112 2018-05-29 02:04:03Z ahra.cho $
  **********************************************************************/
 
 #ifndef _Q_QSV_PROC_TYPE_H_
@@ -29,14 +29,14 @@ class qsvProcType
 {
 public:
     // PROJ-1075
-    // type ì„ ì–¸ë¬¸ì„ validation
+    // type ¼±¾ğ¹®À» validation
     static IDE_RC validateTypeDeclare( qcStatement    * aStatement,
                                        qsTypes        * aType,
                                        qcNamePosition * aTypeName,
                                        idBool           aIsTriggerVariable );
 
-    // PROJ-1075 local typeê²€ìƒ‰, typeset type ê²€ìƒ‰.
-    // ì°¾ì§€ ëª»í•˜ë©´ ì—ëŸ¬ë¥¼ ë¦¬í„´í•¨.
+    // PROJ-1075 local type°Ë»ö, typeset type °Ë»ö.
+    // Ã£Áö ¸øÇÏ¸é ¿¡·¯¸¦ ¸®ÅÏÇÔ.
     static IDE_RC checkTypes(
         qcStatement     * aStatement,
         qsVariableItems * aVariableItem,
@@ -45,7 +45,7 @@ public:
         qcNamePosition  * aTypeName,
         qsTypes        ** aType );
 
-    // PROJ-1075 Local Type ê²€ìƒ‰
+    // PROJ-1075 Local Type °Ë»ö
     static IDE_RC searchLocalTypes(
         qcStatement     * aStatement,
         qsVariableItems * aLocalVariableItems,
@@ -54,7 +54,7 @@ public:
         idBool          * aIsFound,
         qsTypes        ** aType );
 
-    // PROJ-1075 typesetì—ì„œ type ê²€ìƒ‰
+    // PROJ-1075 typeset¿¡¼­ type °Ë»ö
     static IDE_RC searchTypesFromTypeSet(
         qcStatement     * aStatement,
         qcNamePosition  * aUserName,
@@ -63,8 +63,8 @@ public:
         idBool          * aIsFound,
         qsTypes        ** aType );
 
-    // PROJ-1075 rowtype ìƒì„±
-    // allocì€ í•¨ìˆ˜ ì•ˆì—ì„œ í•´ì¤Œ.
+    // PROJ-1075 rowtype »ı¼º
+    // allocÀº ÇÔ¼ö ¾È¿¡¼­ ÇØÁÜ.
     static IDE_RC makeRowType( qcStatement     * aStatement,
                                qcmTableInfo    * aTableInfo,
                                qcNamePosition  * aTypeName,
@@ -94,7 +94,7 @@ public:
                                       qsTypes        ** aType );
 
     /* BUG-41720
-       ë™ì¼ packageì— ì„ ì–¸ëœ array typeì„ return valueì— ì‚¬ìš© ê°€ëŠ¥í•´ì•¼ í•œë‹¤. */
+       µ¿ÀÏ package¿¡ ¼±¾ğµÈ array typeÀ» return value¿¡ »ç¿ë °¡´ÉÇØ¾ß ÇÑ´Ù. */
     static IDE_RC searchPkgLocalTypes( qcStatement     * aStatement,
                                        qsVariableItems * aVariableItem,
                                        qcNamePosition  * aTypeName,

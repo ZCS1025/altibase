@@ -20,7 +20,7 @@
  *
  * Description :
  *
- * Backup ê´€ë ¨ Dump
+ * Backup °ü·Ã Dump
  *
  * X$ARCHIVE
  * X$STABLE_MEM_DATAFILES
@@ -44,9 +44,9 @@ typedef struct smrArchiveInfo
     idBool         mArchThrRunning;
     const SChar*   mArchDest;
     UInt           mNextLogFile2Archive;
-    /* Archive Directoryì—ì„œ ê°€ì¥ ì‘ì€ Logfile No */
+    /* Archive Directory¿¡¼­ °¡Àå ÀÛÀº Logfile No */
     UInt           mOldestActiveLogFile;
-    /* í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ Logfile No */
+    /* ÇöÀç »ç¿ëÁßÀÎ Logfile No */
     UInt           mCurrentLogFile;
 } smrArchiveInfo;
 
@@ -61,22 +61,22 @@ typedef struct smrStableMemDataFile
 //added for LFG Fixed Table
 typedef struct smrLFGInfo
 {
-    // í˜„ì¬ logë¥¼ ê¸°ë¡í•˜ê¸° ìœ„í•´ ì‚¬ìš©í•˜ëŠ” logfile No
+    // ÇöÀç log¸¦ ±â·ÏÇÏ±â À§ÇØ »ç¿ëÇÏ´Â logfile No
     UInt          mCurWriteLFNo;
 
-    // í˜„ì¬ logfileì—ì„œ ë‹¤ìŒ logê°€ ê¸°ë¡ë  ìœ„ì¹˜
+    // ÇöÀç logfile¿¡¼­ ´ÙÀ½ log°¡ ±â·ÏµÉ À§Ä¡
     UInt          mCurOffset;
 
-    // í˜„ì¬ Openëœ LogFileì˜ ê°¯ìˆ˜
+    // ÇöÀç OpenµÈ LogFileÀÇ °¹¼ö
     UInt          mLFOpenCnt;
 
     // Log Prepare Count
     UInt          mLFPrepareCnt;
 
-    // log switch ë°œìƒì‹œ wait eventê°€ ë°œìƒí•œ íšŸìˆ˜
+    // log switch ¹ß»ı½Ã wait event°¡ ¹ß»ıÇÑ È½¼ö
     UInt          mLFPrepareWaitCnt;
 
-    // ë§ˆì§€ë§‰ìœ¼ë¡œ prepareëœ logfile No
+    // ¸¶Áö¸·À¸·Î prepareµÈ logfile No
     UInt          mLstPrepareLFNo;
 
     smLSN         mEndLSN;
@@ -84,18 +84,18 @@ typedef struct smrLFGInfo
     UInt          mLstDeleteFileNo;
     smLSN         mResetLSN;
 
-    // Update Transactionì˜ ìˆ˜
+    // Update TransactionÀÇ ¼ö
     UInt          mUpdateTxCount;
 
-    // Group Commit í†µê³„ì¹˜
-    // Commití•˜ë ¤ëŠ” íŠ¸ëœì­ì…˜ë“¤ì´ Logê°€ Flushë˜ê¸°ë¥¼ ê¸°ë‹¤ë¦° íšŸìˆ˜
+    // Group Commit Åë°èÄ¡
+    // CommitÇÏ·Á´Â Æ®·£Àè¼ÇµéÀÌ Log°¡ FlushµÇ±â¸¦ ±â´Ù¸° È½¼ö
     UInt          mGCWaitCount;
 
-    // Commití•˜ë ¤ëŠ” íŠ¸ëœì­ì…˜ë“¤ì´ Flushí•˜ë ¤ëŠ” Logì˜ ìœ„ì¹˜ê°€
-    // ì´ë¯¸ Logê°€ Flushëœ ê²ƒìœ¼ë¡œ íŒëª…ë˜ì–´ ë¹ ì ¸ë‚˜ê°„ íšŸìˆ˜
+    // CommitÇÏ·Á´Â Æ®·£Àè¼ÇµéÀÌ FlushÇÏ·Á´Â LogÀÇ À§Ä¡°¡
+    // ÀÌ¹Ì Log°¡ FlushµÈ °ÍÀ¸·Î ÆÇ¸íµÇ¾î ºüÁ®³ª°£ È½¼ö
     UInt          mGCAlreadySyncCount;
 
-    // Commití•˜ë ¤ëŠ” íŠ¸ëœì­ì…˜ë“¤ì´ ì‹¤ì œë¡œ Log ë¥¼ Flushí•œ íšŸìˆ˜
+    // CommitÇÏ·Á´Â Æ®·£Àè¼ÇµéÀÌ ½ÇÁ¦·Î Log ¸¦ FlushÇÑ È½¼ö
     UInt          mGCRealSyncCount;
 } smrLFGInfo;
 

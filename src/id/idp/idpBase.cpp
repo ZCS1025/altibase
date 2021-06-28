@@ -4,18 +4,18 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: idpBase.cpp 76072 2016-06-30 06:11:50Z khkwak $
+ * $Id: idpBase.cpp 87064 2020-03-30 04:21:12Z jake.jang $
  *
  * Description:
  *
- * ì´ í´ë˜ìŠ¤ëŠ” í”„ë¡œí¼í‹° ì†ì„±ì˜ ë‹¤ì–‘í•œ ë°ì´íƒ€ íƒ€ì…ì— ëŒ€í•œ
- * ë² ì´ìŠ¤ í´ë˜ìŠ¤ì´ë‹¤.
- * ì´ í´ë˜ìŠ¤ì—ì„œëŠ” pure virtual í•¨ìˆ˜ë¥¼ ëª‡ê°€ì§€ ì¤€ë¹„í•´ ë†“ê³  ìˆìœ¼ë©°,
- * ë§Œì¼ ìƒˆë¡œìš´ ë°ì´íƒ€ íƒ€ì…ì˜ í”„ë¡œí¼í‹°ê°€ ì¶”ê°€ë  ê²½ìš°ì—ëŠ”
- * ê·¸ íƒ€ì…ì— ë§ëŠ” ìƒì† í´ë˜ìŠ¤ë¥¼ ë§Œë“¤ì–´ì„œ ë“±ë¡í•˜ë©´ ëœë‹¤.
+ * ÀÌ Å¬·¡½º´Â ÇÁ·ÎÆÛÆ¼ ¼Ó¼ºÀÇ ´Ù¾çÇÑ µ¥ÀÌÅ¸ Å¸ÀÔ¿¡ ´ëÇÑ
+ * º£ÀÌ½º Å¬·¡½ºÀÌ´Ù.
+ * ÀÌ Å¬·¡½º¿¡¼­´Â pure virtual ÇÔ¼ö¸¦ ¸î°¡Áö ÁØºñÇØ ³õ°í ÀÖÀ¸¸ç,
+ * ¸¸ÀÏ »õ·Î¿î µ¥ÀÌÅ¸ Å¸ÀÔÀÇ ÇÁ·ÎÆÛÆ¼°¡ Ãß°¡µÉ °æ¿ì¿¡´Â
+ * ±× Å¸ÀÔ¿¡ ¸Â´Â »ó¼Ó Å¬·¡½º¸¦ ¸¸µé¾î¼­ µî·ÏÇÏ¸é µÈ´Ù.
  *
- * idp.cppì˜ í•¨ìˆ˜ë¥¼ ì°¸ì¡°í•˜ëŠ” ê²ƒì„ ëŒ€ì‹ í•˜ê³ ,
- * ì´ í´ë˜ìŠ¤ì˜ methodì— ëŒ€í•œ ì£¼ì„ì€ ìƒëµí•œë‹¤.
+ * idp.cppÀÇ ÇÔ¼ö¸¦ ÂüÁ¶ÇÏ´Â °ÍÀ» ´ë½ÅÇÏ°í,
+ * ÀÌ Å¬·¡½ºÀÇ method¿¡ ´ëÇÑ ÁÖ¼®Àº »ı·«ÇÑ´Ù.
  *
  **********************************************************************/
 #include <idl.h>
@@ -80,9 +80,9 @@ IDE_RC idpBase::checkRange(void * aValue)
 /******************************************************************************************
 *
 * Description :
-*  Memovery Valueì— ê°’ì„ ë³µì œí•˜ì—¬ ì‚½ì…í•œë‹¤.
+*  Memovery Value¿¡ °ªÀ» º¹Á¦ÇÏ¿© »ğÀÔÇÑ´Ù.
 *
-* void           *aValue,      - [IN]  ì‚½ì…í•˜ë ¤ê³ í•˜ëŠ” ê°’ì˜ í¬ì¸í„° (íƒ€ì…ë³„ Raw Format)
+* void           *aValue,      - [IN]  »ğÀÔÇÏ·Á°íÇÏ´Â °ªÀÇ Æ÷ÀÎÅÍ (Å¸ÀÔº° Raw Format)
 *******************************************************************************************/ 
 IDE_RC idpBase::insertMemoryRawValue(void *aValue) /* called by build() */
 {
@@ -136,11 +136,11 @@ IDE_RC idpBase::insertMemoryRawValue(void *aValue) /* called by build() */
 /******************************************************************************************
 *
 * Description :
-*  aSrcë¡œ ë“¤ì–´ì˜¨ value source ìœ„ì¹˜ì— ìŠ¤íŠ¸ë§ í˜•íƒœì˜ aValueë¥¼ ìì‹ ì˜ íƒ€ì…ìœ¼ë¡œ ë³€í™˜í•˜ê³ , 
-*  ê°’ì„ ë³µì œí•˜ì—¬ ì‚½ì…í•œë‹¤.
+*  aSrc·Î µé¾î¿Â value source À§Ä¡¿¡ ½ºÆ®¸µ ÇüÅÂÀÇ aValue¸¦ ÀÚ½ÅÀÇ Å¸ÀÔÀ¸·Î º¯È¯ÇÏ°í, 
+*  °ªÀ» º¹Á¦ÇÏ¿© »ğÀÔÇÑ´Ù.
 *
-*  SChar         *aValue,   - [IN] ì‚½ì…í•˜ë ¤ê³ í•˜ëŠ” ê°’ì˜ í¬ì¸í„° (String Format)
-*  idpValueSource aSrc      - [IN] ê°’ì„ ì‚½ì…í•  Source ìœ„ì¹˜
+*  SChar         *aValue,   - [IN] »ğÀÔÇÏ·Á°íÇÏ´Â °ªÀÇ Æ÷ÀÎÅÍ (String Format)
+*  idpValueSource aSrc      - [IN] °ªÀ» »ğÀÔÇÒ Source À§Ä¡
 *                                  (default/env/pfile/spfile by asterisk, spfile by sid)
 *******************************************************************************************/ 
 IDE_RC idpBase::insertBySrc(SChar *aValue, idpValueSource aSrc) 
@@ -249,11 +249,11 @@ IDE_RC idpBase::insertBySrc(SChar *aValue, idpValueSource aSrc)
 /******************************************************************************************
 *
 * Description :
-*  aSrcë¡œ ë“¤ì–´ì˜¨ value source ìœ„ì¹˜ì— Raw í˜•íƒœì˜ aValue 
-*  ê°’ì„ ë³µì œí•˜ì—¬ ì‚½ì…í•œë‹¤.
+*  aSrc·Î µé¾î¿Â value source À§Ä¡¿¡ Raw ÇüÅÂÀÇ aValue 
+*  °ªÀ» º¹Á¦ÇÏ¿© »ğÀÔÇÑ´Ù.
 *
-*  SChar         *aValue,   - [IN] ì‚½ì…í•˜ë ¤ê³ í•˜ëŠ” ê°’ì˜ í¬ì¸í„° (íƒ€ì…ë³„ Raw Format)
-*  idpValueSource aSrc      - [IN] ê°’ì„ ì‚½ì…í•  Source ìœ„ì¹˜
+*  SChar         *aValue,   - [IN] »ğÀÔÇÏ·Á°íÇÏ´Â °ªÀÇ Æ÷ÀÎÅÍ (Å¸ÀÔº° Raw Format)
+*  idpValueSource aSrc      - [IN] °ªÀ» »ğÀÔÇÒ Source À§Ä¡
 *                                  (default/env/pfile/spfile by asterisk, spfile by sid)
 *******************************************************************************************/ 
 IDE_RC idpBase::insertRawBySrc(void *aValue, idpValueSource aSrc) 
@@ -368,7 +368,7 @@ IDE_RC idpBase::read(void *aOut, UInt aNum)
 
     IDE_TEST_RAISE(mMemVal.mCount == 0, not_initialized);
 
-    // ì¹´ìš´íŠ¸ê°€ í‹€ë¦° ê²½ìš°.
+    // Ä«¿îÆ®°¡ Æ²¸° °æ¿ì.
     IDE_TEST_RAISE(aNum >= mMemVal.mCount, no_exist_error);
 
     idlOS::memcpy(aOut, mMemVal.mVal[aNum], getSize(mMemVal.mVal[aNum]));
@@ -405,7 +405,7 @@ IDE_RC idpBase::readBySrc(void *aOut, idpValueSource aSrc, UInt aNum)
 
     IDE_TEST_RAISE(mSrcValArr[aSrc].mCount == 0, not_initialized);
 
-    // ì¹´ìš´íŠ¸ê°€ í‹€ë¦° ê²½ìš°.
+    // Ä«¿îÆ®°¡ Æ²¸° °æ¿ì.
     IDE_TEST_RAISE(aNum >= mSrcValArr[aSrc].mCount , no_exist_error);
 
     idlOS::memcpy(aOut, mSrcValArr[aSrc].mVal[aNum], getSize(mSrcValArr[aSrc].mVal[aNum]));
@@ -441,14 +441,14 @@ IDE_RC idpBase::readPtr(void **aOut, UInt aNum)
 
     IDE_TEST_RAISE(mMemVal.mCount == 0, not_initialized);
 
-    // ì¹´ìš´íŠ¸ê°€ í‹€ë¦° ê²½ìš°.
+    // Ä«¿îÆ®°¡ Æ²¸° °æ¿ì.
     IDE_TEST_RAISE(aNum >= mMemVal.mCount, no_exist_error);
 
-    // ë³€ê²½ ê°€ëŠ¥í•œ ê²½ìš° ê²€ì‚¬
+    // º¯°æ °¡´ÉÇÑ °æ¿ì °Ë»ç
     //IDE_TEST_RAISE( (mAttr & IDP_ATTR_RD_MASK) == IDP_ATTR_RD_WRITABLE,
     //                cant_read_error);
 
-    // Stringì˜ ê²½ìš°ë§Œ ë¦¬í„´í•¨.
+    // StringÀÇ °æ¿ì¸¸ ¸®ÅÏÇÔ.
     IDE_TEST_RAISE( (mAttr & IDP_ATTR_TP_MASK) != IDP_ATTR_TP_String,
                     cant_read_error);
 
@@ -485,14 +485,14 @@ IDE_RC idpBase::readPtr(void **aOut, UInt aNum)
 /******************************************************************************************
 *
 * Description :
-* íŠ¹ì • sourceì˜ ìœ„ì¹˜ì— ì €ì¥ëœ ê°’ì˜ í¬ì¸í„°ë¥¼ ì–»ëŠ”ë‹¤.
-* ê·¸ ê°’ì€ ë”ë¸” í¬ì¸í„° í˜•íƒœì´ë©°, í˜¸ì¶œìê°€ ì ì ˆí•œ ë°ì´í„° íƒ€ì…ìœ¼ë¡œ ë³€ê²½í•´ì„œ
-* ì‚¬ìš©í•´ì•¼ í•œë‹¤.
-* ëŒ€ìƒ í”„ë¡œí¼í‹°ê°€, String íƒ€ì…ì¼ ê²½ìš°ì—ë§Œ ìœ íš¨í•˜ë‹¤.
+* Æ¯Á¤ sourceÀÇ À§Ä¡¿¡ ÀúÀåµÈ °ªÀÇ Æ÷ÀÎÅÍ¸¦ ¾ò´Â´Ù.
+* ±× °ªÀº ´õºí Æ÷ÀÎÅÍ ÇüÅÂÀÌ¸ç, È£ÃâÀÚ°¡ ÀûÀıÇÑ µ¥ÀÌÅÍ Å¸ÀÔÀ¸·Î º¯°æÇØ¼­
+* »ç¿ëÇØ¾ß ÇÑ´Ù.
+* ´ë»ó ÇÁ·ÎÆÛÆ¼°¡, String Å¸ÀÔÀÏ °æ¿ì¿¡¸¸ À¯È¿ÇÏ´Ù.
 *
-* UInt           aNum,      - [IN]  í”„ë¡œí¼í‹°ì— ì €ì¥ëœ n ë²ˆì§¸ ê°’ì„ ì˜ë¯¸í•˜ëŠ” ì¸ë±ìŠ¤  
-* idpValueSource aSrc,      - [IN]  ì–´ë–¤ ì„¤ì • ë°©ë²•ì— ì˜í•´ì„œ ì„¤ì •ëœ ê°’ì¸ì§€ë¥¼ ë‚˜íƒ€ë‚´ëŠ” Value Source                                   
-* void         **aOut,      - [OUT] ê²°ê³¼ ê°’ì˜ í¬ì¸í„°
+* UInt           aNum,      - [IN]  ÇÁ·ÎÆÛÆ¼¿¡ ÀúÀåµÈ n ¹øÂ° °ªÀ» ÀÇ¹ÌÇÏ´Â ÀÎµ¦½º  
+* idpValueSource aSrc,      - [IN]  ¾î¶² ¼³Á¤ ¹æ¹ı¿¡ ÀÇÇØ¼­ ¼³Á¤µÈ °ªÀÎÁö¸¦ ³ªÅ¸³»´Â Value Source                                   
+* void         **aOut,      - [OUT] °á°ú °ªÀÇ Æ÷ÀÎÅÍ
 *******************************************************************************************/ 
 IDE_RC idpBase::readPtrBySrc (UInt aNum, idpValueSource aSrc, void **aOut)
 {
@@ -503,14 +503,14 @@ IDE_RC idpBase::readPtrBySrc (UInt aNum, idpValueSource aSrc, void **aOut)
 
     IDE_TEST_RAISE(mSrcValArr[aSrc].mCount == 0, not_initialized);
 
-    // ì¹´ìš´íŠ¸ê°€ í‹€ë¦° ê²½ìš°.
+    // Ä«¿îÆ®°¡ Æ²¸° °æ¿ì.
     IDE_TEST_RAISE(aNum >= mSrcValArr[aSrc].mCount , no_exist_error);
 
-    // ë³€ê²½ ê°€ëŠ¥í•œ ê²½ìš° ê²€ì‚¬
+    // º¯°æ °¡´ÉÇÑ °æ¿ì °Ë»ç
     //IDE_TEST_RAISE( (mAttr & IDP_ATTR_RD_MASK) == IDP_ATTR_RD_WRITABLE,
     //                cant_read_error);
 
-    // Stringì˜ ê²½ìš°ë§Œ ë¦¬í„´í•¨.
+    // StringÀÇ °æ¿ì¸¸ ¸®ÅÏÇÔ.
     IDE_TEST_RAISE( (mAttr & IDP_ATTR_TP_MASK) != IDP_ATTR_TP_String,
                     cant_read_error);
 
@@ -547,18 +547,18 @@ IDE_RC idpBase::readPtrBySrc (UInt aNum, idpValueSource aSrc, void **aOut)
 /******************************************************************************************
 *
 * Description :
-*  idpì—ì„œë§Œ ì‚¬ìš©í•˜ê¸° ìœ„í•œ í•¨ìˆ˜ì´ë©°, ë‚´ë¶€ì ìœ¼ë¡œ lockì„ ì•ˆì¡ê¸° ë•Œë¬¸ì—, 
-*  ë‹¤ë¥¸ ëª¨ë“ˆì—ì„œëŠ” ì´ í•¨ìˆ˜ë¥¼ í†µí•´ì„œ ê°’ì„ ê°€ì ¸ê°€ë©´ ì•ˆëœë‹¤. 
-*  aNum ë²ˆì§¸ ê°’ì„ ë°˜í™˜í•œë‹¤. 
+*  idp¿¡¼­¸¸ »ç¿ëÇÏ±â À§ÇÑ ÇÔ¼öÀÌ¸ç, ³»ºÎÀûÀ¸·Î lockÀ» ¾ÈÀâ±â ¶§¹®¿¡, 
+*  ´Ù¸¥ ¸ğµâ¿¡¼­´Â ÀÌ ÇÔ¼ö¸¦ ÅëÇØ¼­ °ªÀ» °¡Á®°¡¸é ¾ÈµÈ´Ù. 
+*  aNum ¹øÂ° °ªÀ» ¹İÈ¯ÇÑ´Ù. 
 *
-*  UInt       aNum   - [IN] ëª‡ ë²ˆì§¸ ê°’ì¸ì§€ ë‚˜íƒ€ë‚´ëŠ” index
-*  void     **aOut   - [OUT] ë°˜í™˜ë˜ëŠ” ê°’
+*  UInt       aNum   - [IN] ¸î ¹øÂ° °ªÀÎÁö ³ªÅ¸³»´Â index
+*  void     **aOut   - [OUT] ¹İÈ¯µÇ´Â °ª
 *******************************************************************************************/ 
 IDE_RC idpBase::readPtr4Internal(UInt aNum, void **aOut)
 {
     IDE_TEST_RAISE(mMemVal.mCount == 0, not_initialized);
     
-    // ì¹´ìš´íŠ¸ê°€ í‹€ë¦° ê²½ìš°.
+    // Ä«¿îÆ®°¡ Æ²¸° °æ¿ì.
     IDE_TEST_RAISE(aNum >= mMemVal.mCount, err_no_exist);
    
     *aOut= mMemVal.mVal[aNum];
@@ -587,7 +587,7 @@ IDE_RC idpBase::readPtr4Internal(UInt aNum, void **aOut)
 IDE_RC idpBase::update4Startup(idvSQL *aStatistics, SChar *aIn, UInt aNum, void *aArg)
 {
     // BUG-43533
-    // Property file, í™˜ê²½ë³€ìˆ˜ ë“±ì— ë“±ë¡í•˜ì§€ ì•Šì€ propertyë§Œ ë³€ê²½í•œë‹¤.
+    // Property file, È¯°æº¯¼ö µî¿¡ µî·ÏÇÏÁö ¾ÊÀº property¸¸ º¯°æÇÑ´Ù.
     if ( (mSrcValArr[IDP_VALUE_FROM_PFILE].mCount == 0) &&
          (mSrcValArr[IDP_VALUE_FROM_ENV].mCount == 0) &&
          (mSrcValArr[IDP_VALUE_FROM_SPFILE_BY_ASTERISK].mCount == 0) &&
@@ -618,10 +618,10 @@ IDE_RC idpBase::update(idvSQL *aStatistics, SChar *aIn, UInt aNum, void *aArg)
     IDE_ASSERT( idlOS::thread_mutex_lock(&mMutex) == 0);
     sLocked = ID_TRUE;
 
-    // ì¹´ìš´íŠ¸ ê²€ì‚¬
+    // Ä«¿îÆ® °Ë»ç
     IDE_TEST_RAISE(aNum >= mMemVal.mCount, no_exist_error);
 
-    // ë³€ê²½ ë¶ˆê°€ëŠ¥í•œ ê²½ìš° ê²€ì‚¬
+    // º¯°æ ºÒ°¡´ÉÇÑ °æ¿ì °Ë»ç
     IDE_TEST_RAISE( (mAttr & IDP_ATTR_RD_MASK) == IDP_ATTR_RD_READONLY,
                     cant_modify_error);
 
@@ -645,9 +645,9 @@ IDE_RC idpBase::update(idvSQL *aStatistics, SChar *aIn, UInt aNum, void *aArg)
     IDE_TEST( mUpdateBefore(aStatistics, getName(), sOldValue, sValue, aArg)
               != IDE_SUCCESS);
 
-    /* ê¸°ì¡´ ë©”ëª¨ë¦¬ í•´ì œ & Set */
+    /* ±âÁ¸ ¸Ş¸ğ¸® ÇØÁ¦ & Set */
     mMemVal.mVal[aNum] = sValue;
-    /* í”„ë¡œí¼í‹° ê°’ì„ ë°”ê¾¸ì—ˆë‹¤ê³  í‘œì‹œí•˜ê³  ì—ëŸ¬ë°œìƒì‹œ ì›ë˜ê°’ìœ¼ë¡œ ì›ë³µí•œë‹¤. */
+    /* ÇÁ·ÎÆÛÆ¼ °ªÀ» ¹Ù²Ù¾ú´Ù°í Ç¥½ÃÇÏ°í ¿¡·¯¹ß»ı½Ã ¿ø·¡°ªÀ¸·Î ¿øº¹ÇÑ´Ù. */
     sUpdateValue = 1;
 
     IDE_TEST( mUpdateAfter(aStatistics, getName(), sOldValue, sValue, aArg)
@@ -670,11 +670,11 @@ IDE_RC idpBase::update(idvSQL *aStatistics, SChar *aIn, UInt aNum, void *aArg)
     }
     IDE_EXCEPTION_END;
 
-    /* BUG-17763: idpBase::update()ì—ì„œ FMRì„ ìœ ë°œì‹œí‚¤ê³  ìˆìŠµë‹ˆë‹¤.
+    /* BUG-17763: idpBase::update()¿¡¼­ FMRÀ» À¯¹ß½ÃÅ°°í ÀÖ½À´Ï´Ù.
      *
-     * ì´ì „ì— ì›ë˜ê°’ì„ ì—ëŸ¬ë°œìƒì‹œ Freeì‹œì¼œì„œ ë¬¸ì œê°€ ë˜ì—ˆìŠµë‹ˆë‹¤.
-     * Freeì‹œí‚¤ê³  ì•Šê³ 
-     * ì—ëŸ¬ë°œìƒì‹œ í”„ë¡œí¼í‹° ê°’ì„ ì›ë˜ ê°’ìœ¼ë¡œ ì›ë³µí•´ì•¼ í•©ë‹ˆë‹¤. */
+     * ÀÌÀü¿¡ ¿ø·¡°ªÀ» ¿¡·¯¹ß»ı½Ã Free½ÃÄÑ¼­ ¹®Á¦°¡ µÇ¾ú½À´Ï´Ù.
+     * Free½ÃÅ°°í ¾Ê°í
+     * ¿¡·¯¹ß»ı½Ã ÇÁ·ÎÆÛÆ¼ °ªÀ» ¿ø·¡ °ªÀ¸·Î ¿øº¹ÇØ¾ß ÇÕ´Ï´Ù. */
     if( sUpdateValue ==  1 )
     {
         mMemVal.mVal[aNum] = sOldValue;
@@ -703,10 +703,10 @@ IDE_RC idpBase::updateForce(SChar *aIn, UInt aNum, void *aArg)
     IDE_ASSERT( idlOS::thread_mutex_lock(&mMutex) == 0);
     sLocked = ID_TRUE;
 
-    // ì¹´ìš´íŠ¸ ê²€ì‚¬
+    // Ä«¿îÆ® °Ë»ç
     IDE_TEST_RAISE(aNum >= mMemVal.mCount, no_exist_error);
 
-    /* ë³€ê²½ ë¶ˆê°€ëŠ¥í•œ ê²½ìš°ë¥¼ ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    /* º¯°æ ºÒ°¡´ÉÇÑ °æ¿ì¸¦ °Ë»çÇÏÁö ¾Ê´Â´Ù.
     IDE_TEST_RAISE( (mAttr & IDP_ATTR_RD_MASK) == IDP_ATTR_RD_READONLY,
                     cant_modify_error);
                     */
@@ -731,9 +731,9 @@ IDE_RC idpBase::updateForce(SChar *aIn, UInt aNum, void *aArg)
     IDE_TEST( mUpdateBefore(NULL, getName(), sOldValue, sValue, aArg)
               != IDE_SUCCESS);
 
-    /* ê¸°ì¡´ ë©”ëª¨ë¦¬ í•´ì œ & Set */
+    /* ±âÁ¸ ¸Ş¸ğ¸® ÇØÁ¦ & Set */
     mMemVal.mVal[aNum] = sValue;
-    /* í”„ë¡œí¼í‹° ê°’ì„ ë°”ê¾¸ì—ˆë‹¤ê³  í‘œì‹œí•˜ê³  ì—ëŸ¬ë°œìƒì‹œ ì›ë˜ê°’ìœ¼ë¡œ ì›ë³µí•œë‹¤. */
+    /* ÇÁ·ÎÆÛÆ¼ °ªÀ» ¹Ù²Ù¾ú´Ù°í Ç¥½ÃÇÏ°í ¿¡·¯¹ß»ı½Ã ¿ø·¡°ªÀ¸·Î ¿øº¹ÇÑ´Ù. */
     sUpdateValue = 1;
 
     IDE_TEST( mUpdateAfter(NULL, getName(), sOldValue, sValue, aArg)
@@ -746,7 +746,7 @@ IDE_RC idpBase::updateForce(SChar *aIn, UInt aNum, void *aArg)
 
     return IDE_SUCCESS;
 
-    /* ë³€ê²½ ë¶ˆê°€ëŠ¥í•œ ê²½ìš°ë¥¼ ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    /* º¯°æ ºÒ°¡´ÉÇÑ °æ¿ì¸¦ °Ë»çÇÏÁö ¾Ê´Â´Ù.
     IDE_EXCEPTION(cant_modify_error);
     {
         IDE_SET(ideSetErrorCode(idERR_ABORT_idp_ReadOnlyEntry, getName()));
@@ -758,11 +758,11 @@ IDE_RC idpBase::updateForce(SChar *aIn, UInt aNum, void *aArg)
     }
     IDE_EXCEPTION_END;
 
-    /* BUG-17763: idpBase::update()ì—ì„œ FMRì„ ìœ ë°œì‹œí‚¤ê³  ìˆìŠµë‹ˆë‹¤.
+    /* BUG-17763: idpBase::update()¿¡¼­ FMRÀ» À¯¹ß½ÃÅ°°í ÀÖ½À´Ï´Ù.
      *
-     * ì´ì „ì— ì›ë˜ê°’ì„ ì—ëŸ¬ë°œìƒì‹œ Freeì‹œì¼œì„œ ë¬¸ì œê°€ ë˜ì—ˆìŠµë‹ˆë‹¤.
-     * Freeì‹œí‚¤ê³  ì•Šê³ 
-     * ì—ëŸ¬ë°œìƒì‹œ í”„ë¡œí¼í‹° ê°’ì„ ì›ë˜ ê°’ìœ¼ë¡œ ì›ë³µí•´ì•¼ í•©ë‹ˆë‹¤. */
+     * ÀÌÀü¿¡ ¿ø·¡°ªÀ» ¿¡·¯¹ß»ı½Ã Free½ÃÄÑ¼­ ¹®Á¦°¡ µÇ¾ú½À´Ï´Ù.
+     * Free½ÃÅ°°í ¾Ê°í
+     * ¿¡·¯¹ß»ı½Ã ÇÁ·ÎÆÛÆ¼ °ªÀ» ¿ø·¡ °ªÀ¸·Î ¿øº¹ÇØ¾ß ÇÕ´Ï´Ù. */
     if( sUpdateValue ==  1 )
     {
         mMemVal.mVal[aNum] = sOldValue;
@@ -782,22 +782,35 @@ IDE_RC idpBase::updateForce(SChar *aIn, UInt aNum, void *aArg)
 }
 
 /**************************************************************************
- * Description: aInì— í•´ë‹¹í•˜ëŠ” ê°’ì´ Propertyì˜ Min, Maxì‚¬ì´ì— ìˆëŠ”ì§€ ì¡°ì‚¬í•œë‹¤.
- *
- * aIn - [IN] Input Value
+ * Description:
+ *     1.aIn¿¡ ÇØ´çÇÏ´Â °ªÀÌ PropertyÀÇ Min, Max»çÀÌ¿¡ ÀÖ´ÂÁö Á¶»çÇÑ´Ù.
+ *     2.aIsSystem¿¡ ÇØ´çÇÏ´Â PropertyÀÇ ¼Ó¼º Ã¼Å©
+ *           SYSTEM, SESSION PROPERTY µ¿ÀÏÇÏ°Ô Ã¼Å©ÇÏ±â ¶§¹®¿¡ µÎ ¼Ó¼ºÀÌ
+ *           ´Ù¸¥ °æ¿ì ±¸ºĞÇÏ¿© Ã³¸®
+ *           ex> DATE_FORMAT, TIME_ZONE
+ *     3.SHARD USER, LIBRARY, COORDINATION SESSION Property attribute±¸ºĞ
+ * aIn       - [IN] Input Value
+ * aIsSystem - [IN] System property 
  *************************************************************************/
-IDE_RC idpBase::validate( SChar *aIn )
+IDE_RC idpBase::validate( SChar * aIn,
+                          idBool  aIsSystem )
 {
-    void *sValue    = NULL;
-
-    idBool sLocked = ID_FALSE;
+    void  * sValue    = NULL;
+    idBool  sLocked   = ID_FALSE;
 
     IDE_ASSERT( idlOS::thread_mutex_lock(&mMutex) == 0);
     sLocked = ID_TRUE;
 
-    // ë³€ê²½ ë¶ˆê°€ëŠ¥í•œ ê²½ìš° ê²€ì‚¬
-    IDE_TEST_RAISE( (mAttr & IDP_ATTR_RD_MASK) == IDP_ATTR_RD_READONLY,
-                    cant_modify_error);
+    if ( aIsSystem == ID_TRUE )
+    {
+        // º¯°æ ºÒ°¡´ÉÇÑ °æ¿ì °Ë»ç
+        IDE_TEST_RAISE( (mAttr & IDP_ATTR_RD_MASK) == IDP_ATTR_RD_READONLY,
+                        cant_modify_error);
+    }
+    else
+    {
+        // nothing to do
+    }
 
     IDE_TEST(convertFromString(aIn, &sValue) != IDE_SUCCESS);
 
@@ -836,23 +849,50 @@ IDE_RC idpBase::validate( SChar *aIn )
     return IDE_FAILURE;
 }
 
+// PROJ-2727
+IDE_RC idpBase::getPropertyAttribute( UInt * aOut )
+{
+    IDE_ASSERT( idlOS::thread_mutex_lock(&mMutex) == 0);
+        
+    if (( mAttr & IDP_ATTR_SH_MASK ) == IDP_ATTR_SH_ALL )
+    {
+        *aOut = IDP_ATTR_SHARD_ALL;
+    }
+    else if (( mAttr & IDP_ATTR_SH_MASK ) == IDP_ATTR_SH_USER )
+    {
+        *aOut = IDP_ATTR_SHARD_USER;
+    }
+    else if (( mAttr & IDP_ATTR_SH_MASK ) == IDP_ATTR_SH_COORD )
+    {
+        *aOut = IDP_ATTR_SHARD_COORD;
+    }
+    else
+    {
+        *aOut = IDP_ATTR_SHARD_LIB;
+    }
+    
+    IDE_ASSERT( idlOS::thread_mutex_unlock(&mMutex) == 0);
+
+    return IDE_SUCCESS;
+}
+
 IDE_RC idpBase::verifyInsertedValues()
 {
     UInt i;
     UInt sMultiple;
 
-    // [1] Check Multiple Value Consistency, ì„¤ì •ëœ ê°’ì´ ì •í™•íˆ nê°œì—¬ì•¼í•˜ëŠ” ê°’ í™•ì¸
+    // [1] Check Multiple Value Consistency, ¼³Á¤µÈ °ªÀÌ Á¤È®È÷ n°³¿©¾ßÇÏ´Â °ª È®ÀÎ
     sMultiple = mAttr & IDP_ATTR_ML_MASK;
 
     if ( (sMultiple != IDP_ATTR_ML_JUSTONE) &&
          (sMultiple != IDP_ATTR_ML_MULTIPLE)
        ) 
     {
-        /* ê³ ì • ê°¯ìˆ˜ì— ëŒ€í•œ ê²€ì‚¬ ìš”ë§ */
+        /* °íÁ¤ °¹¼ö¿¡ ´ëÇÑ °Ë»ç ¿ä¸Á */
 
         UInt sCurCount;
 
-        sCurCount = (UInt)IDP_ATTR_ML_COUNT(mAttr); /* ì„¤ì •ëœ ê°¯ìˆ˜ */
+        sCurCount = (UInt)IDP_ATTR_ML_COUNT(mAttr); /* ¼³Á¤µÈ °¹¼ö */
 
         IDE_TEST_RAISE(sCurCount != mMemVal.mCount, multiple_count_error);
 
@@ -880,9 +920,9 @@ IDE_RC idpBase::verifyInsertedValues()
 }
 
 /*
- * ë””ìŠ¤í¬ë¦½í„°ê°€ ë“±ë¡ëœ ì´í›„ í˜¸ì¶œë¨.
- * ì´ í•¨ìˆ˜ì—ì„  ì‹¤ì œë¡œ ê°’ì´ Confë¡œ ë¶€í„° ì…ë ¥ë˜ê¸° ì „ê¹Œì§€ì˜
- * ì„ í–‰ ì‘ì—…ì´ ì´ë£¨ì–´ì ¸ì•¼ í•¨.
+ * µğ½ºÅ©¸³ÅÍ°¡ µî·ÏµÈ ÀÌÈÄ È£ÃâµÊ.
+ * ÀÌ ÇÔ¼ö¿¡¼± ½ÇÁ¦·Î °ªÀÌ Conf·Î ºÎÅÍ ÀÔ·ÂµÇ±â Àü±îÁöÀÇ
+ * ¼±Çà ÀÛ¾÷ÀÌ ÀÌ·ç¾îÁ®¾ß ÇÔ.
  */
 
 void idpBase::registCallback()
@@ -931,9 +971,9 @@ void idpBase::registCallback()
         else
         {
             /* ------------------------------------------------
-             *  í™˜ê²½ë³€ìˆ˜ í”„ë¡œí¼í‹°ì˜ ê°’ ìŠ¤íŠ¸ë§ì´
-             *  Data Typeì´ ë§ì§€ ì•Šì•„ ì‹¤íŒ¨í•  ê²½ìš°ì—ëŠ”
-             *  Default Valueë¥¼ ê·¸ëŒ€ë¡œ ì“´ë‹¤.
+             *  È¯°æº¯¼ö ÇÁ·ÎÆÛÆ¼ÀÇ °ª ½ºÆ®¸µÀÌ
+             *  Data TypeÀÌ ¸ÂÁö ¾Ê¾Æ ½ÇÆĞÇÒ °æ¿ì¿¡´Â
+             *  Default Value¸¦ ±×´ë·Î ¾´´Ù.
              * ----------------------------------------------*/
             ideLog::log(IDE_SERVER_0, ID_TRC_PROPERTY_TYPE_INVALID, sEnvName, sEnvValue);
         }

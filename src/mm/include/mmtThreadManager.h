@@ -179,8 +179,8 @@ private:
                                     mmtServiceThread  *aIdleThread);
 
     /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase
-       load balance functionì˜ ê°€ë…ì„±ì„ ë†’ì´ê¸° ìœ„í•˜ì—¬
-       ì¶”ê°€ëœ í•¨ìˆ˜ë“¤ì…ë‹ˆë‹¤.
+       load balance functionÀÇ °¡µ¶¼ºÀ» ³ôÀÌ±â À§ÇÏ¿©
+       Ãß°¡µÈ ÇÔ¼öµéÀÔ´Ï´Ù.
     */
 
     static idBool  needToCreateThr(UInt  aSumOfTaskCnt,

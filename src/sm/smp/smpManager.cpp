@@ -101,13 +101,13 @@ UInt smpManager::getSlotSize()
 }
 
 /**********************************************************************
- * aPageListEntryì˜ ì²« PageIDë¥¼ ë°˜í™˜
+ * aPageListEntryÀÇ Ã¹ PageID¸¦ ¹İÈ¯
  *
- * aPageListEntryì˜ AllocPageListê°€ ë‹¤ì¤‘í™”ë˜ì–´ ìˆê¸° ë•Œë¬¸ì—
- * 0ë²ˆì§¸ ë¦¬ìŠ¤íŠ¸ì˜ Headê°€ NULLì´ë”ë¼ë„ 1ë²ˆì§¸ ë¦¬ìŠ¤íŠ¸ì˜ Headê°€ NULLì´ ì•„ë‹ˆë¼ë©´
- * ì²« PageIDëŠ” 1ë²ˆì§¸ ë¦¬ìŠ¤íŠ¸ì˜ Headê°€ ëœë‹¤.
+ * aPageListEntryÀÇ AllocPageList°¡ ´ÙÁßÈ­µÇ¾î ÀÖ±â ¶§¹®¿¡
+ * 0¹øÂ° ¸®½ºÆ®ÀÇ Head°¡ NULLÀÌ´õ¶óµµ 1¹øÂ° ¸®½ºÆ®ÀÇ Head°¡ NULLÀÌ ¾Æ´Ï¶ó¸é
+ * Ã¹ PageID´Â 1¹øÂ° ¸®½ºÆ®ÀÇ Head°¡ µÈ´Ù.
  *
- * aPageListEntry : íƒìƒ‰í•˜ë ¤ëŠ” PageListEntry
+ * aPageListEntry : Å½»öÇÏ·Á´Â PageListEntry
  **********************************************************************/
 
 scPageID smpManager::getFirstAllocPageID(smpPageListEntry* aPageListEntry)
@@ -119,12 +119,12 @@ scPageID smpManager::getFirstAllocPageID(smpPageListEntry* aPageListEntry)
 }
 
 /**********************************************************************
- * aPageListEntryì˜ ë§ˆì§€ë§‰ PageIDë¥¼ ë°˜í™˜
+ * aPageListEntryÀÇ ¸¶Áö¸· PageID¸¦ ¹İÈ¯
  *
- * ë‹¤ì¤‘í™”ë˜ì–´ ìˆëŠ” AllocPageListì—ì„œ NULLì´ ì•„ë‹Œ ê°€ì¥ ë’¤ì— ìˆëŠ” Tailì´
- * aPageListEntryì˜ ë§ˆì§€ë§‰ PageIDê°€ ëœë‹¤.
+ * ´ÙÁßÈ­µÇ¾î ÀÖ´Â AllocPageList¿¡¼­ NULLÀÌ ¾Æ´Ñ °¡Àå µÚ¿¡ ÀÖ´Â TailÀÌ
+ * aPageListEntryÀÇ ¸¶Áö¸· PageID°¡ µÈ´Ù.
  *
- * aPageListEntry : íƒìƒ‰í•˜ë ¤ëŠ” PageListEntry
+ * aPageListEntry : Å½»öÇÏ·Á´Â PageListEntry
  **********************************************************************/
 
 scPageID smpManager::getLastAllocPageID(smpPageListEntry* aPageListEntry)
@@ -136,13 +136,13 @@ scPageID smpManager::getLastAllocPageID(smpPageListEntry* aPageListEntry)
 }
 
 /**********************************************************************
- * aPageListEntryì—ì„œ aPageID ì´ì „ PageID
+ * aPageListEntry¿¡¼­ aPageID ÀÌÀü PageID
  *
- * ë‹¤ì¤‘í™”ë˜ì–´ìˆëŠ” AllocPageListì—ì„œ aPageIDê°€ Headë¼ë©´
- * aPageIDì˜ ì´ì „ PageëŠ” ì´ì „ ë¦¬ìŠ¤íŠ¸ì˜ Tailì´ ëœë‹¤.
+ * ´ÙÁßÈ­µÇ¾îÀÖ´Â AllocPageList¿¡¼­ aPageID°¡ Head¶ó¸é
+ * aPageIDÀÇ ÀÌÀü Page´Â ÀÌÀü ¸®½ºÆ®ÀÇ TailÀÌ µÈ´Ù.
  *
- * aPageListEntry : íƒìƒ‰í•˜ë ¤ëŠ” PageListEntry
- * aPageID        : íƒìƒ‰í•˜ë ¤ëŠ” PageID
+ * aPageListEntry : Å½»öÇÏ·Á´Â PageListEntry
+ * aPageID        : Å½»öÇÏ·Á´Â PageID
  **********************************************************************/
 
 scPageID smpManager::getPrevAllocPageID(scSpaceID         aSpaceID,
@@ -158,13 +158,13 @@ scPageID smpManager::getPrevAllocPageID(scSpaceID         aSpaceID,
 }
 
 /**********************************************************************
- * aPageListEntryì—ì„œ aPageID ë‹¤ìŒ PageID
+ * aPageListEntry¿¡¼­ aPageID ´ÙÀ½ PageID
  *
- * ë‹¤ì¤‘í™”ë˜ì–´ìˆëŠ” AllocPageListì—ì„œ aPageIDê°€ Tailì´ë¼ë©´
- * aPageIDì˜ ë‹¤ìŒ PageëŠ” ë‹¤ìŒ ë¦¬ìŠ¤íŠ¸ì˜ Headê°€ ëœë‹¤.
+ * ´ÙÁßÈ­µÇ¾îÀÖ´Â AllocPageList¿¡¼­ aPageID°¡ TailÀÌ¶ó¸é
+ * aPageIDÀÇ ´ÙÀ½ Page´Â ´ÙÀ½ ¸®½ºÆ®ÀÇ Head°¡ µÈ´Ù.
  * 
- * aPageListEntry : íƒìƒ‰í•˜ë ¤ëŠ” PageListEntry
- * aPageID        : íƒìƒ‰í•˜ë ¤ëŠ” PageID
+ * aPageListEntry : Å½»öÇÏ·Á´Â PageListEntry
+ * aPageID        : Å½»öÇÏ·Á´Â PageID
  **********************************************************************/
 
 scPageID smpManager::getNextAllocPageID(scSpaceID         aSpaceID,
@@ -181,9 +181,9 @@ scPageID smpManager::getNextAllocPageID(scSpaceID         aSpaceID,
 
 /**********************************************************************
  *
- * Scan Listìƒì˜ ì²«ë²ˆì§¸ í˜ì´ì§€ë¥¼ ë¦¬í„´í•œë‹¤.
+ * Scan List»óÀÇ Ã¹¹øÂ° ÆäÀÌÁö¸¦ ¸®ÅÏÇÑ´Ù.
  *
- * aPageListEntry : íƒìƒ‰í•˜ë ¤ëŠ” PageListEntry
+ * aPageListEntry : Å½»öÇÏ·Á´Â PageListEntry
  * 
  **********************************************************************/
 scPageID smpManager::getFirstScanPageID(smpPageListEntry* aPageListEntry)
@@ -195,9 +195,9 @@ scPageID smpManager::getFirstScanPageID(smpPageListEntry* aPageListEntry)
 
 /**********************************************************************
  *
- * Scan Listìƒì˜ ë§ˆì§€ë§‰ í˜ì´ì§€ë¥¼ ë¦¬í„´í•œë‹¤.
+ * Scan List»óÀÇ ¸¶Áö¸· ÆäÀÌÁö¸¦ ¸®ÅÏÇÑ´Ù.
  *
- * aPageListEntry : íƒìƒ‰í•˜ë ¤ëŠ” PageListEntry
+ * aPageListEntry : Å½»öÇÏ·Á´Â PageListEntry
  * 
  **********************************************************************/
 scPageID smpManager::getLastScanPageID(smpPageListEntry* aPageListEntry)
@@ -209,10 +209,10 @@ scPageID smpManager::getLastScanPageID(smpPageListEntry* aPageListEntry)
 
 /**********************************************************************
  * 
- * í˜„ì¬ í˜ì´ì§€ë¡œë¶€í„° ì´ì „ í˜ì´ì§€ë¥¼ ë¦¬í„´í•œë‹¤.
+ * ÇöÀç ÆäÀÌÁö·ÎºÎÅÍ ÀÌÀü ÆäÀÌÁö¸¦ ¸®ÅÏÇÑ´Ù.
  *
- * aSpaceID : Scan Listê°€ ì†í•œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì•„ì´ë””
- * aPageID  : í˜„ì¬ í˜ì´ì§€ ì•„ì´ë””
+ * aSpaceID : Scan List°¡ ¼ÓÇÑ Å×ÀÌºí½ºÆäÀÌ½º ¾ÆÀÌµğ
+ * aPageID  : ÇöÀç ÆäÀÌÁö ¾ÆÀÌµğ
  * 
  **********************************************************************/
 scPageID smpManager::getPrevScanPageID(scSpaceID         aSpaceID,
@@ -229,10 +229,10 @@ scPageID smpManager::getPrevScanPageID(scSpaceID         aSpaceID,
 
 /**********************************************************************
  * 
- * í˜„ì¬ í˜ì´ì§€ë¡œë¶€í„° ë‹¤ìŒ í˜ì´ì§€ë¥¼ ë¦¬í„´í•œë‹¤.
+ * ÇöÀç ÆäÀÌÁö·ÎºÎÅÍ ´ÙÀ½ ÆäÀÌÁö¸¦ ¸®ÅÏÇÑ´Ù.
  * 
- * aSpaceID : Scan Listê°€ ì†í•œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì•„ì´ë””
- * aPageID  : í˜„ì¬ í˜ì´ì§€ ì•„ì´ë””
+ * aSpaceID : Scan List°¡ ¼ÓÇÑ Å×ÀÌºí½ºÆäÀÌ½º ¾ÆÀÌµğ
+ * aPageID  : ÇöÀç ÆäÀÌÁö ¾ÆÀÌµğ
  * 
  **********************************************************************/
 scPageID smpManager::getNextScanPageID(scSpaceID         aSpaceID,
@@ -249,10 +249,10 @@ scPageID smpManager::getNextScanPageID(scSpaceID         aSpaceID,
 
 /**********************************************************************
  * 
- * í˜„ì¬ í˜ì´ì§€ì˜ Modify Sequenceë¥¼ ë¦¬í„´í•œë‹¤.
+ * ÇöÀç ÆäÀÌÁöÀÇ Modify Sequence¸¦ ¸®ÅÏÇÑ´Ù.
  * 
- * aSpaceID : Scan Listê°€ ì†í•œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì•„ì´ë””
- * aPageID  : í˜„ì¬ í˜ì´ì§€ ì•„ì´ë””
+ * aSpaceID : Scan List°¡ ¼ÓÇÑ Å×ÀÌºí½ºÆäÀÌ½º ¾ÆÀÌµğ
+ * aPageID  : ÇöÀç ÆäÀÌÁö ¾ÆÀÌµğ
  * 
  **********************************************************************/
 scPageID smpManager::getModifySeqForScan(scSpaceID         aSpaceID,
@@ -270,13 +270,13 @@ scPageID smpManager::getModifySeqForScan(scSpaceID         aSpaceID,
 
 /**********************************************************************
  * 
- * í˜„ì¬ í˜ì´ì§€ì˜ Next & Previous Linkê°€ íŒŒë¼ë¯¸í„°ë¡œ ë“¤ì–´ì˜¨ ê°’ë“¤ê³¼
- * ë™ì¼í•œì§€ ê²€ì‚¬í•œë‹¤.
+ * ÇöÀç ÆäÀÌÁöÀÇ Next & Previous Link°¡ ÆÄ¶ó¹ÌÅÍ·Î µé¾î¿Â °ªµé°ú
+ * µ¿ÀÏÇÑÁö °Ë»çÇÑ´Ù.
  * 
- * aSpaceID : Scan Listê°€ ì†í•œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì•„ì´ë””
- * aPageID  : í˜„ì¬ í˜ì´ì§€ ì•„ì´ë””
- * aPrevPID : í˜„ì¬ í˜ì´ì§€ì˜ ì´ì „ í˜ì´ì§€ ì•„ì´ë””
- * aNextPID : í˜„ì¬ í˜ì´ì§€ì˜ ì´í›„ í˜ì´ì§€ ì•„ì´ë””
+ * aSpaceID : Scan List°¡ ¼ÓÇÑ Å×ÀÌºí½ºÆäÀÌ½º ¾ÆÀÌµğ
+ * aPageID  : ÇöÀç ÆäÀÌÁö ¾ÆÀÌµğ
+ * aPrevPID : ÇöÀç ÆäÀÌÁöÀÇ ÀÌÀü ÆäÀÌÁö ¾ÆÀÌµğ
+ * aNextPID : ÇöÀç ÆäÀÌÁöÀÇ ÀÌÈÄ ÆäÀÌÁö ¾ÆÀÌµğ
  * 
  **********************************************************************/
 idBool smpManager::validateScanList( scSpaceID  aSpaceID,
@@ -299,12 +299,12 @@ idBool smpManager::validateScanList( scSpaceID  aSpaceID,
 }
 
 /**********************************************************************
- * aAllocPageList ì •ë³´ ë°˜í™˜
+ * aAllocPageList Á¤º¸ ¹İÈ¯
  *
- * aAllocPageList : íƒìƒ‰í•˜ë ¤ëŠ” AllocPageList
- * aPageCount     : aAllocPageListì˜ PageCount
- * aHeadPID       : aAllocPageListì˜ Head PID
- * aTailPID       : aAllocPageListì˜ Tail PID
+ * aAllocPageList : Å½»öÇÏ·Á´Â AllocPageList
+ * aPageCount     : aAllocPageListÀÇ PageCount
+ * aHeadPID       : aAllocPageListÀÇ Head PID
+ * aTailPID       : aAllocPageListÀÇ Tail PID
  **********************************************************************/
 
 void smpManager::getAllocPageListInfo(void*     aAllocPageList,
@@ -327,9 +327,9 @@ void smpManager::getAllocPageListInfo(void*     aAllocPageList,
 }
 
 /**********************************************************************
- * PageListì— ë‹¬ë¦° ëª¨ë“  AllocPage ê°¯ìˆ˜ë¥¼ ë¦¬í„´
+ * PageList¿¡ ´Ş¸° ¸ğµç AllocPage °¹¼ö¸¦ ¸®ÅÏ
  *
- * aPageListEntry : íƒìƒ‰í•˜ë ¤ëŠ” PageListEntry
+ * aPageListEntry : Å½»öÇÏ·Á´Â PageListEntry
  **********************************************************************/
 vULong smpManager::getAllocPageCount(smpPageListEntry* aPageListEntry)
 {
@@ -369,7 +369,7 @@ IDE_RC smpManager::setPersPageInconsistency( scSpaceID   aSpaceID,
                                           (void**)&sMemPagePtr )
               != IDE_SUCCESS );
 
-    /* ì˜ëª»ëœ í˜ì´ì§€ì— ëŒ€í•œ ì •ë³´ë¥¼ ê¸°ë¡í•¨ */
+    /* Àß¸øµÈ ÆäÀÌÁö¿¡ ´ëÇÑ Á¤º¸¸¦ ±â·ÏÇÔ */
     ideLog::logMem( IDE_DUMP_0,
                     (UChar*)sMemPagePtr,
                     SM_PAGE_SIZE,

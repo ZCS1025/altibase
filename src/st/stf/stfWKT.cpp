@@ -19,8 +19,8 @@
  * $Id: stfWKT.cpp 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * WKT(Well Known Text)Î°úÎ∂ÄÌÑ∞ Geometry Í∞ùÏ≤¥ ÏÉùÏÑ±ÌïòÎäî Ìï®Ïàò
- * ÏÉÅÏÑ∏ Íµ¨ÌòÑÏùÄ stdParsing.cpp Ïóê ÏûàÎã§.
+ * WKT(Well Known Text)∑Œ∫Œ≈Õ Geometry ∞¥√º ª˝º∫«œ¥¬ «‘ºˆ
+ * ªÛºº ±∏«ˆ¿∫ stdParsing.cpp ø° ¿÷¥Ÿ.
  **********************************************************************/
 
 #include <idl.h>
@@ -33,11 +33,11 @@
 
 /***********************************************************************
  * Description:
- * WKTÎ°úÎ∂ÄÌÑ∞ Geometry Í∞ùÏ≤¥Î•º ÏùΩÏñ¥ Îì§Ïù∏Îã§.
+ * WKT∑Œ∫Œ≈Õ Geometry ∞¥√º∏¶ ¿–æÓ µÈ¿Œ¥Ÿ.
  *
- * void*    aWKT(In): ÏùΩÏñ¥ Îì§Ïùº Î≤ÑÌçº
- * void*    aBuf(Out): Ï∂úÎ†•Ìï† Î≤ÑÌçº
- * void*    aFence(In): Ï∂úÎ†•Ìï† Î≤ÑÌçº ÌéúÏä§
+ * void*    aWKT(In): ¿–æÓ µÈ¿œ πˆ∆€
+ * void*    aBuf(Out): √‚∑¬«“ πˆ∆€
+ * void*    aFence(In): √‚∑¬«“ πˆ∆€ ∆ÊΩ∫
  * IDE_RC*  aResult(Out): Error code
  **********************************************************************/
 IDE_RC stfWKT::geomFromText( iduMemory*   aQmxMem,
@@ -45,27 +45,31 @@ IDE_RC stfWKT::geomFromText( iduMemory*   aQmxMem,
                              void*        aBuf,
                              void*        aFence,
                              IDE_RC*      aResult,
-                             UInt         aValidateOption )
+                             UInt         aValidateOption,
+                             idBool       aSRIDOption,
+                             SInt         aSRID )
 {
     UChar*  sWKT = ((mtdCharType*)aWKT)->value;
     UInt    sWKTLength = ((mtdCharType*)aWKT)->length;
    
-    return stdParsing::stdValue(aQmxMem,
-                                sWKT,
-                                sWKTLength,
-                                aBuf,
-                                aFence,
-                                aResult,
-                                aValidateOption);
+    return stdParsing::stdValue( aQmxMem,
+                                 sWKT,
+                                 sWKTLength,
+                                 aBuf,
+                                 aFence,
+                                 aResult,
+                                 aValidateOption,
+                                 aSRIDOption,
+                                 aSRID );
 }
 
 /***********************************************************************
  * Description:
- * WKTÎ°úÎ∂ÄÌÑ∞ Ìè¨Ïù∏Ìä∏ Í∞ùÏ≤¥Î•º ÏùΩÏñ¥ Îì§Ïù∏Îã§.
+ * WKT∑Œ∫Œ≈Õ ∆˜¿Œ∆Æ ∞¥√º∏¶ ¿–æÓ µÈ¿Œ¥Ÿ.
  *
- * void*    aWKT(In): ÏùΩÏñ¥ Îì§Ïùº Î≤ÑÌçº
- * void*    aBuf(Out): Ï∂úÎ†•Ìï† Î≤ÑÌçº
- * void*    aFence(In): Ï∂úÎ†•Ìï† Î≤ÑÌçº ÌéúÏä§
+ * void*    aWKT(In): ¿–æÓ µÈ¿œ πˆ∆€
+ * void*    aBuf(Out): √‚∑¬«“ πˆ∆€
+ * void*    aFence(In): √‚∑¬«“ πˆ∆€ ∆ÊΩ∫
  * IDE_RC*  aResult(Out): Error code
  **********************************************************************/
 IDE_RC stfWKT::pointFromText( iduMemory*   aQmxMem,
@@ -73,7 +77,9 @@ IDE_RC stfWKT::pointFromText( iduMemory*   aQmxMem,
                               void*        aBuf,
                               void*        aFence,
                               IDE_RC*      aResult,
-                              UInt         aValidateOption )               
+                              UInt         aValidateOption,
+                              idBool       aSRIDOption,
+                              SInt         aSRID )
 {
     UChar*  sWKT = ((mtdCharType*)aWKT)->value;
     UInt    sWKTLength = ((mtdCharType*)aWKT)->length;
@@ -81,18 +87,30 @@ IDE_RC stfWKT::pointFromText( iduMemory*   aQmxMem,
     UChar*  sPtr = sWKT;
     UChar*  sWKTFence = sWKT + sWKTLength;
     
-    IDE_TEST_RAISE(stdParsing::skipSpace(&sPtr, sWKTFence) != IDE_SUCCESS,
-                   err_parsing);
-    IDE_TEST_RAISE(idlOS::strncasecmp((SChar*)sPtr, STD_POINT_NAME, 
-                                      STD_POINT_NAME_LEN) != 0, err_object_type);
+    IDE_TEST_RAISE( stdParsing::skipSpace( &sPtr, sWKTFence ) != IDE_SUCCESS,
+                    err_parsing );
+    
+    if ( sPtr != sWKTFence )
+    {
+        IDE_TEST_RAISE( sPtr + STD_POINT_NAME_LEN >= sWKTFence, err_object_type );
+        IDE_TEST_RAISE( idlOS::strncasecmp( (SChar*)sPtr, STD_POINT_NAME, 
+                                            STD_POINT_NAME_LEN ) != 0,
+                        err_object_type );
+    }
+    else
+    {
+        // null object¿Œ ∞ÊøÏ
+    }
    
-    return stdParsing::stdValue(aQmxMem,
-                                sWKT,
-                                sWKTLength,
-                                aBuf,
-                                aFence,
-                                aResult,
-                                aValidateOption);
+    return stdParsing::stdValue( aQmxMem,
+                                 sWKT,
+                                 sWKTLength,
+                                 aBuf,
+                                 aFence,
+                                 aResult,
+                                 aValidateOption,
+                                 aSRIDOption,
+                                 aSRID );
     
     IDE_EXCEPTION(err_parsing);
     {
@@ -110,11 +128,11 @@ IDE_RC stfWKT::pointFromText( iduMemory*   aQmxMem,
 
 /***********************************************************************
  * Description:
- * WKTÎ°úÎ∂ÄÌÑ∞ ÎùºÏù∏ Í∞ùÏ≤¥Î•º ÏùΩÏñ¥ Îì§Ïù∏Îã§.
+ * WKT∑Œ∫Œ≈Õ ∂Û¿Œ ∞¥√º∏¶ ¿–æÓ µÈ¿Œ¥Ÿ.
  *
- * void*    aWKT(In): ÏùΩÏñ¥ Îì§Ïùº Î≤ÑÌçº
- * void*    aBuf(Out): Ï∂úÎ†•Ìï† Î≤ÑÌçº
- * void*    aFence(In): Ï∂úÎ†•Ìï† Î≤ÑÌçº ÌéúÏä§
+ * void*    aWKT(In): ¿–æÓ µÈ¿œ πˆ∆€
+ * void*    aBuf(Out): √‚∑¬«“ πˆ∆€
+ * void*    aFence(In): √‚∑¬«“ πˆ∆€ ∆ÊΩ∫
  * IDE_RC*  aResult(Out): Error code
  **********************************************************************/
 IDE_RC stfWKT::lineFromText( iduMemory*   aQmxMem,
@@ -122,8 +140,9 @@ IDE_RC stfWKT::lineFromText( iduMemory*   aQmxMem,
                              void*        aBuf,
                              void*        aFence,
                              IDE_RC*      aResult,
-                             UInt         aValidateOption )     
-                  
+                             UInt         aValidateOption,
+                             idBool       aSRIDOption,
+                             SInt         aSRID )
 {
     UChar*  sWKT = ((mtdCharType*)aWKT)->value;
     UInt    sWKTLength = ((mtdCharType*)aWKT)->length;
@@ -131,18 +150,30 @@ IDE_RC stfWKT::lineFromText( iduMemory*   aQmxMem,
     UChar*  sPtr = sWKT;
     UChar*  sWKTFence = sWKT + sWKTLength;
     
-    IDE_TEST_RAISE(stdParsing::skipSpace(&sPtr, sWKTFence) != IDE_SUCCESS,
-                   err_parsing);
-    IDE_TEST_RAISE(idlOS::strncasecmp((SChar*)sPtr, STD_LINESTRING_NAME, 
-                                      STD_LINESTRING_NAME_LEN) != 0, err_object_type);
+    IDE_TEST_RAISE( stdParsing::skipSpace( &sPtr, sWKTFence ) != IDE_SUCCESS,
+                    err_parsing );
+    
+    if ( sPtr != sWKTFence )
+    {
+        IDE_TEST_RAISE( sPtr + STD_LINESTRING_NAME_LEN >= sWKTFence, err_object_type );
+        IDE_TEST_RAISE( idlOS::strncasecmp( (SChar*)sPtr, STD_LINESTRING_NAME, 
+                                            STD_LINESTRING_NAME_LEN ) != 0,
+                        err_object_type );
+    }
+    else
+    {
+        // null object¿Œ ∞ÊøÏ
+    }
    
-    return stdParsing::stdValue(aQmxMem,
-                                sWKT,
-                                sWKTLength,
-                                aBuf,
-                                aFence,
-                                aResult,
-                                aValidateOption);
+    return stdParsing::stdValue( aQmxMem,
+                                 sWKT,
+                                 sWKTLength,
+                                 aBuf,
+                                 aFence,
+                                 aResult,
+                                 aValidateOption,
+                                 aSRIDOption,
+                                 aSRID );
     
     IDE_EXCEPTION(err_parsing);
     {
@@ -160,11 +191,11 @@ IDE_RC stfWKT::lineFromText( iduMemory*   aQmxMem,
 
 /***********************************************************************
  * Description:
- * WKTÎ°úÎ∂ÄÌÑ∞ Ìè¥Î¶¨Í≥§ Í∞ùÏ≤¥Î•º ÏùΩÏñ¥ Îì§Ïù∏Îã§.
+ * WKT∑Œ∫Œ≈Õ ∆˙∏Æ∞Ô ∞¥√º∏¶ ¿–æÓ µÈ¿Œ¥Ÿ.
  *
- * void*    aWKT(In): ÏùΩÏñ¥ Îì§Ïùº Î≤ÑÌçº
- * void*    aBuf(Out): Ï∂úÎ†•Ìï† Î≤ÑÌçº
- * void*    aFence(In): Ï∂úÎ†•Ìï† Î≤ÑÌçº ÌéúÏä§
+ * void*    aWKT(In): ¿–æÓ µÈ¿œ πˆ∆€
+ * void*    aBuf(Out): √‚∑¬«“ πˆ∆€
+ * void*    aFence(In): √‚∑¬«“ πˆ∆€ ∆ÊΩ∫
  * IDE_RC*  aResult(Out): Error code
  **********************************************************************/
 IDE_RC stfWKT::polyFromText( iduMemory*   aQmxMem,
@@ -172,8 +203,9 @@ IDE_RC stfWKT::polyFromText( iduMemory*   aQmxMem,
                              void*        aBuf,
                              void*        aFence,
                              IDE_RC*      aResult,
-                             UInt         aValidateOption )     
-                         
+                             UInt         aValidateOption,
+                             idBool       aSRIDOption,
+                             SInt         aSRID )
 {
     UChar*  sWKT = ((mtdCharType*)aWKT)->value;
     UInt    sWKTLength = ((mtdCharType*)aWKT)->length;
@@ -183,16 +215,28 @@ IDE_RC stfWKT::polyFromText( iduMemory*   aQmxMem,
     
     IDE_TEST_RAISE(stdParsing::skipSpace(&sPtr, sWKTFence) != IDE_SUCCESS,
                    err_parsing);
-    IDE_TEST_RAISE(idlOS::strncasecmp((SChar*)sPtr, STD_POLYGON_NAME, 
-                                      STD_POLYGON_NAME_LEN) != 0, err_object_type);
+    
+    if ( sPtr != sWKTFence )
+    {
+        IDE_TEST_RAISE( sPtr + STD_POLYGON_NAME_LEN >= sWKTFence, err_object_type );
+        IDE_TEST_RAISE( idlOS::strncasecmp( (SChar*)sPtr, STD_POLYGON_NAME, 
+                                            STD_POLYGON_NAME_LEN ) != 0,
+                       err_object_type );
+    }
+    else
+    {
+        // null object¿Œ ∞ÊøÏ
+    }
    
-    return stdParsing::stdValue(aQmxMem,
-                                sWKT,
-                                sWKTLength,
-                                aBuf,
-                                aFence,
-                                aResult,
-                                aValidateOption);
+    return stdParsing::stdValue( aQmxMem,
+                                 sWKT,
+                                 sWKTLength,
+                                 aBuf,
+                                 aFence,
+                                 aResult,
+                                 aValidateOption,
+                                 aSRIDOption,
+                                 aSRID );
     
     IDE_EXCEPTION(err_parsing);
     {
@@ -210,11 +254,11 @@ IDE_RC stfWKT::polyFromText( iduMemory*   aQmxMem,
 
 /***********************************************************************
  * Description:
- *  WKTÎ°úÎ∂ÄÌÑ∞ RECTANGLE Í∞ùÏ≤¥Î•º ÏùΩÏñ¥ Îì§Ïù∏Îã§.
+ *  WKT∑Œ∫Œ≈Õ RECTANGLE ∞¥√º∏¶ ¿–æÓ µÈ¿Œ¥Ÿ.
  *
- *  void   * aWKT(In)     : ÏùΩÏñ¥ Îì§Ïùº Î≤ÑÌçº
- *  void   * aBuf(Out)    : Ï∂úÎ†•Ìï† Î≤ÑÌçº
- *  void   * aFence(In)   : Ï∂úÎ†•Ìï† Î≤ÑÌçº ÌéúÏä§
+ *  void   * aWKT(In)     : ¿–æÓ µÈ¿œ πˆ∆€
+ *  void   * aBuf(Out)    : √‚∑¬«“ πˆ∆€
+ *  void   * aFence(In)   : √‚∑¬«“ πˆ∆€ ∆ÊΩ∫
  *  IDE_RC * aResult(Out) : Error code
  **********************************************************************/
 IDE_RC stfWKT::rectFromText( iduMemory  * aQmxMem,
@@ -222,7 +266,9 @@ IDE_RC stfWKT::rectFromText( iduMemory  * aQmxMem,
                              void       * aBuf,
                              void       * aFence,
                              IDE_RC     * aResult,
-                             UInt         aValidateOption )
+                             UInt         aValidateOption,
+                             idBool       aSRIDOption,
+                             SInt         aSRID )
 {
     UChar * sWKT       = ((mtdCharType *)aWKT)->value;
     UInt    sWKTLength = ((mtdCharType *)aWKT)->length;
@@ -232,10 +278,18 @@ IDE_RC stfWKT::rectFromText( iduMemory  * aQmxMem,
 
     IDE_TEST_RAISE( stdParsing::skipSpace( &sPtr, sWKTFence ) != IDE_SUCCESS,
                     ERR_PARSING );
-    IDE_TEST_RAISE( idlOS::strncasecmp( (SChar *)sPtr,
-                                        STD_RECTANGLE_NAME,
-                                        STD_RECTANGLE_NAME_LEN ) != 0,
-                    ERR_OBJECT_TYPE );
+    
+    if ( sPtr != sWKTFence )
+    {
+        IDE_TEST_RAISE( sPtr + STD_RECTANGLE_NAME_LEN >= sWKTFence, ERR_OBJECT_TYPE );
+        IDE_TEST_RAISE( idlOS::strncasecmp( (SChar*)sPtr, STD_RECTANGLE_NAME, 
+                                            STD_RECTANGLE_NAME_LEN ) != 0,
+                        ERR_OBJECT_TYPE );
+    }
+    else
+    {
+        // null object¿Œ ∞ÊøÏ
+    }
 
     return stdParsing::stdValue( aQmxMem,
                                  sWKT,
@@ -243,7 +297,9 @@ IDE_RC stfWKT::rectFromText( iduMemory  * aQmxMem,
                                  aBuf,
                                  aFence,
                                  aResult,
-                                 aValidateOption );
+                                 aValidateOption,
+                                 aSRIDOption,
+                                 aSRID );
 
     IDE_EXCEPTION( ERR_PARSING );
     {
@@ -260,11 +316,11 @@ IDE_RC stfWKT::rectFromText( iduMemory  * aQmxMem,
 
 /***********************************************************************
  * Description:
- * WKTÎ°úÎ∂ÄÌÑ∞ Î©ÄÌã∞Ìè¨Ïù∏Ìä∏ Í∞ùÏ≤¥Î•º ÏùΩÏñ¥ Îì§Ïù∏Îã§.
+ * WKT∑Œ∫Œ≈Õ ∏÷∆º∆˜¿Œ∆Æ ∞¥√º∏¶ ¿–æÓ µÈ¿Œ¥Ÿ.
  *
- * void*    aWKT(In): ÏùΩÏñ¥ Îì§Ïùº Î≤ÑÌçº
- * void*    aBuf(Out): Ï∂úÎ†•Ìï† Î≤ÑÌçº
- * void*    aFence(In): Ï∂úÎ†•Ìï† Î≤ÑÌçº ÌéúÏä§
+ * void*    aWKT(In): ¿–æÓ µÈ¿œ πˆ∆€
+ * void*    aBuf(Out): √‚∑¬«“ πˆ∆€
+ * void*    aFence(In): √‚∑¬«“ πˆ∆€ ∆ÊΩ∫
  * IDE_RC*  aResult(Out): Error code
  **********************************************************************/
 IDE_RC stfWKT::mpointFromText( iduMemory*   aQmxMem,
@@ -272,8 +328,9 @@ IDE_RC stfWKT::mpointFromText( iduMemory*   aQmxMem,
                                void*        aBuf,
                                void*        aFence,
                                IDE_RC*      aResult,
-                               UInt         aValidateOption )     
-                               
+                               UInt         aValidateOption,
+                               idBool       aSRIDOption,
+                               SInt         aSRID )
 {
     UChar*  sWKT = ((mtdCharType*)aWKT)->value;
     UInt    sWKTLength = ((mtdCharType*)aWKT)->length;
@@ -283,24 +340,36 @@ IDE_RC stfWKT::mpointFromText( iduMemory*   aQmxMem,
     
     IDE_TEST_RAISE(stdParsing::skipSpace(&sPtr, sWKTFence) != IDE_SUCCESS,
                    err_parsing);
-    IDE_TEST_RAISE(idlOS::strncasecmp((SChar*)sPtr, STD_MULTIPOINT_NAME, 
-                                      STD_MULTIPOINT_NAME_LEN) != 0, err_object_type);
-   
-    return stdParsing::stdValue(aQmxMem,
-                                sWKT,
-                                sWKTLength,
-                                aBuf,
-                                aFence,
-                                aResult,
-                                aValidateOption);
     
-    IDE_EXCEPTION(err_parsing);
+    if ( sPtr != sWKTFence )
     {
-        IDE_SET(ideSetErrorCode(stERR_ABORT_INVALID_WKT));
+        IDE_TEST_RAISE( sPtr + STD_MULTIPOINT_NAME_LEN >= sWKTFence, err_object_type );
+        IDE_TEST_RAISE( idlOS::strncasecmp( (SChar*)sPtr, STD_MULTIPOINT_NAME, 
+                                            STD_MULTIPOINT_NAME_LEN ) != 0,
+                       err_object_type );
     }
-    IDE_EXCEPTION(err_object_type);
+    else
     {
-        IDE_SET(ideSetErrorCode(stERR_ABORT_OBJECT_TYPE_NOT_APPLICABLE));
+        // null object¿Œ ∞ÊøÏ
+    }
+        
+    return stdParsing::stdValue( aQmxMem,
+                                 sWKT,
+                                 sWKTLength,
+                                 aBuf,
+                                 aFence,
+                                 aResult,
+                                 aValidateOption,
+                                 aSRIDOption,
+                                 aSRID );
+    
+    IDE_EXCEPTION( err_parsing );
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_INVALID_WKT ) );
+    }
+    IDE_EXCEPTION( err_object_type );
+    {
+        IDE_SET( ideSetErrorCode( stERR_ABORT_OBJECT_TYPE_NOT_APPLICABLE ) );
     }
     
     IDE_EXCEPTION_END;
@@ -310,11 +379,11 @@ IDE_RC stfWKT::mpointFromText( iduMemory*   aQmxMem,
 
 /***********************************************************************
  * Description:
- * WKTÎ°úÎ∂ÄÌÑ∞ Î©ÄÌã∞ÎùºÏù∏ Í∞ùÏ≤¥Î•º ÏùΩÏñ¥ Îì§Ïù∏Îã§.
+ * WKT∑Œ∫Œ≈Õ ∏÷∆º∂Û¿Œ ∞¥√º∏¶ ¿–æÓ µÈ¿Œ¥Ÿ.
  *
- * void*    aWKT(In): ÏùΩÏñ¥ Îì§Ïùº Î≤ÑÌçº
- * void*    aBuf(Out): Ï∂úÎ†•Ìï† Î≤ÑÌçº
- * void*    aFence(In): Ï∂úÎ†•Ìï† Î≤ÑÌçº ÌéúÏä§
+ * void*    aWKT(In): ¿–æÓ µÈ¿œ πˆ∆€
+ * void*    aBuf(Out): √‚∑¬«“ πˆ∆€
+ * void*    aFence(In): √‚∑¬«“ πˆ∆€ ∆ÊΩ∫
  * IDE_RC*  aResult(Out): Error code
  **********************************************************************/
 IDE_RC stfWKT::mlineFromText( iduMemory*   aQmxMem,
@@ -322,8 +391,9 @@ IDE_RC stfWKT::mlineFromText( iduMemory*   aQmxMem,
                               void*        aBuf,
                               void*        aFence,
                               IDE_RC*      aResult,
-                              UInt         aValidateOption )     
-                              
+                              UInt         aValidateOption,
+                              idBool       aSRIDOption,
+                              SInt         aSRID )
 {
     UChar*  sWKT = ((mtdCharType*)aWKT)->value;
     UInt    sWKTLength = ((mtdCharType*)aWKT)->length;
@@ -333,16 +403,28 @@ IDE_RC stfWKT::mlineFromText( iduMemory*   aQmxMem,
     
     IDE_TEST_RAISE(stdParsing::skipSpace(&sPtr, sWKTFence) != IDE_SUCCESS,
                    err_parsing);
-    IDE_TEST_RAISE(idlOS::strncasecmp((SChar*)sPtr, STD_MULTILINESTRING_NAME,
-                                      STD_MULTILINESTRING_NAME_LEN) != 0, err_object_type);
+    
+    if ( sPtr != sWKTFence )
+    {
+        IDE_TEST_RAISE( sPtr + STD_MULTILINESTRING_NAME_LEN >= sWKTFence, err_object_type );
+        IDE_TEST_RAISE( idlOS::strncasecmp( (SChar*)sPtr, STD_MULTILINESTRING_NAME,
+                                            STD_MULTILINESTRING_NAME_LEN ) != 0,
+                       err_object_type );
+    }
+    else
+    {
+        // null object¿Œ ∞ÊøÏ
+    }
    
-    return stdParsing::stdValue(aQmxMem,
-                                sWKT,
-                                sWKTLength,
-                                aBuf,
-                                aFence,
-                                aResult,
-                                aValidateOption);
+    return stdParsing::stdValue( aQmxMem,
+                                 sWKT,
+                                 sWKTLength,
+                                 aBuf,
+                                 aFence,
+                                 aResult,
+                                 aValidateOption,
+                                 aSRIDOption,
+                                 aSRID );
     
     IDE_EXCEPTION(err_parsing);
     {
@@ -360,11 +442,11 @@ IDE_RC stfWKT::mlineFromText( iduMemory*   aQmxMem,
 
 /***********************************************************************
  * Description:
- * WKTÎ°úÎ∂ÄÌÑ∞ Î©ÄÌã∞Ìè¥Î¶¨Í≥§ Í∞ùÏ≤¥Î•º ÏùΩÏñ¥ Îì§Ïù∏Îã§.
+ * WKT∑Œ∫Œ≈Õ ∏÷∆º∆˙∏Æ∞Ô ∞¥√º∏¶ ¿–æÓ µÈ¿Œ¥Ÿ.
  *
- * void*    aWKT(In): ÏùΩÏñ¥ Îì§Ïùº Î≤ÑÌçº
- * void*    aBuf(Out): Ï∂úÎ†•Ìï† Î≤ÑÌçº
- * void*    aFence(In): Ï∂úÎ†•Ìï† Î≤ÑÌçº ÌéúÏä§
+ * void*    aWKT(In): ¿–æÓ µÈ¿œ πˆ∆€
+ * void*    aBuf(Out): √‚∑¬«“ πˆ∆€
+ * void*    aFence(In): √‚∑¬«“ πˆ∆€ ∆ÊΩ∫
  * IDE_RC*  aResult(Out): Error code
  **********************************************************************/
 IDE_RC stfWKT::mpolyFromText( iduMemory*   aQmxMem,
@@ -372,8 +454,9 @@ IDE_RC stfWKT::mpolyFromText( iduMemory*   aQmxMem,
                               void*        aBuf,
                               void*        aFence,
                               IDE_RC*      aResult,
-                              UInt         aValidateOption )     
-                       
+                              UInt         aValidateOption,
+                              idBool       aSRIDOption,
+                              SInt         aSRID )
 {
     UChar*  sWKT = ((mtdCharType*)aWKT)->value;
     UInt    sWKTLength = ((mtdCharType*)aWKT)->length;
@@ -383,16 +466,28 @@ IDE_RC stfWKT::mpolyFromText( iduMemory*   aQmxMem,
     
     IDE_TEST_RAISE(stdParsing::skipSpace(&sPtr, sWKTFence) != IDE_SUCCESS,
                    err_parsing);
-    IDE_TEST_RAISE(idlOS::strncasecmp((SChar*)sPtr, STD_MULTIPOLYGON_NAME, 
-                                      STD_MULTIPOLYGON_NAME_LEN) != 0, err_object_type);
+    
+    if ( sPtr != sWKTFence )
+    {
+        IDE_TEST_RAISE( sPtr + STD_MULTIPOLYGON_NAME_LEN >= sWKTFence, err_object_type );
+        IDE_TEST_RAISE( idlOS::strncasecmp( (SChar*)sPtr, STD_MULTIPOLYGON_NAME, 
+                                            STD_MULTIPOLYGON_NAME_LEN ) != 0,
+                       err_object_type );
+    }
+    else
+    {
+        // null object¿Œ ∞ÊøÏ
+    }
    
-    return stdParsing::stdValue(aQmxMem,
-                                sWKT,
-                                sWKTLength,
-                                aBuf,
-                                aFence,
-                                aResult,
-                                aValidateOption);
+    return stdParsing::stdValue( aQmxMem,
+                                 sWKT,
+                                 sWKTLength,
+                                 aBuf,
+                                 aFence,
+                                 aResult,
+                                 aValidateOption,
+                                 aSRIDOption,
+                                 aSRID );
     
     IDE_EXCEPTION(err_parsing);
     {
@@ -410,11 +505,11 @@ IDE_RC stfWKT::mpolyFromText( iduMemory*   aQmxMem,
 
 /***********************************************************************
  * Description:
- * WKTÎ°úÎ∂ÄÌÑ∞ ÏΩúÎ†âÏÖò Í∞ùÏ≤¥Î•º ÏùΩÏñ¥ Îì§Ïù∏Îã§.
+ * WKT∑Œ∫Œ≈Õ ƒ›∑∫º« ∞¥√º∏¶ ¿–æÓ µÈ¿Œ¥Ÿ.
  *
- * void*    aWKT(In): ÏùΩÏñ¥ Îì§Ïùº Î≤ÑÌçº
- * void*    aBuf(Out): Ï∂úÎ†•Ìï† Î≤ÑÌçº
- * void*    aFence(In): Ï∂úÎ†•Ìï† Î≤ÑÌçº ÌéúÏä§
+ * void*    aWKT(In): ¿–æÓ µÈ¿œ πˆ∆€
+ * void*    aBuf(Out): √‚∑¬«“ πˆ∆€
+ * void*    aFence(In): √‚∑¬«“ πˆ∆€ ∆ÊΩ∫
  * IDE_RC*  aResult(Out): Error code
  **********************************************************************/
 IDE_RC stfWKT::geoCollFromText( iduMemory*   aQmxMem,
@@ -422,8 +517,9 @@ IDE_RC stfWKT::geoCollFromText( iduMemory*   aQmxMem,
                                 void*        aBuf,
                                 void*        aFence,
                                 IDE_RC*      aResult,
-                                UInt         aValidateOption )     
-                  
+                                UInt         aValidateOption,
+                                idBool       aSRIDOption,
+                                SInt         aSRID )
 {
     UChar*  sWKT = ((mtdCharType*)aWKT)->value;
     UInt    sWKTLength = ((mtdCharType*)aWKT)->length;
@@ -433,16 +529,28 @@ IDE_RC stfWKT::geoCollFromText( iduMemory*   aQmxMem,
     
     IDE_TEST_RAISE(stdParsing::skipSpace(&sPtr, sWKTFence) != IDE_SUCCESS,
                    err_parsing);
-    IDE_TEST_RAISE(idlOS::strncasecmp((SChar*)sPtr, STD_GEOCOLLECTION_NAME,
-                                      STD_GEOCOLLECTION_NAME_LEN) != 0, err_object_type);
+
+    if ( sPtr != sWKTFence )
+    {
+        IDE_TEST_RAISE( sPtr + STD_GEOCOLLECTION_NAME_LEN >= sWKTFence, err_object_type );
+        IDE_TEST_RAISE( idlOS::strncasecmp( (SChar*)sPtr, STD_GEOCOLLECTION_NAME,
+                                            STD_GEOCOLLECTION_NAME_LEN ) != 0,
+                       err_object_type );
+    }
+    else
+    {
+        // null object¿Œ ∞ÊøÏ
+    }
    
-    return stdParsing::stdValue(aQmxMem,
-                                sWKT,
-                                sWKTLength,
-                                aBuf,
-                                aFence,
-                                aResult,
-                                aValidateOption);
+    return stdParsing::stdValue( aQmxMem,
+                                 sWKT,
+                                 sWKTLength,
+                                 aBuf,
+                                 aFence,
+                                 aResult,
+                                 aValidateOption,
+                                 aSRIDOption,
+                                 aSRID );
     
     IDE_EXCEPTION(err_parsing);
     {

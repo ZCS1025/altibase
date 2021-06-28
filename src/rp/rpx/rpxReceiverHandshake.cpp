@@ -16,13 +16,16 @@
  
 
 /***********************************************************************
- * $Id: rpxReceiverHandshake.cpp 85321 2019-04-25 04:58:40Z donghyun1 $
+ * $Id: rpxReceiverHandshake.cpp 90266 2021-03-19 05:23:09Z returns $
  **********************************************************************/
 
 #include <idl.h>
 #include <ide.h>
 
 #include <smi.h>
+#include <smiTrans.h>
+#include <smiStatement.h>
+
 #include <rpDef.h>
 #include <rpuProperty.h>
 #include <rpcManager.h>
@@ -65,6 +68,8 @@ IDE_RC rpxReceiver::checkProtocol( cmiProtocolContext *aProtocolContext,
                         != REPLICATION_MINOR_VERSION_HDB_V6, ERR_PROTOCOL );
     }
 
+    IDU_FIT_POINT( "rpxReceiver::checkProtocol::rpnComm::sendHandshakeAck" );
+
     idlOS::memset(sBuffer, 0, RP_ACK_MSG_LEN);
     IDE_TEST_RAISE( rpnComm::sendHandshakeAck( aProtocolContext,
                                                aExitFlag,
@@ -82,7 +87,7 @@ IDE_RC rpxReceiver::checkProtocol( cmiProtocolContext *aProtocolContext,
     IDE_EXCEPTION( ERR_READ );
     {
         // To fix BUG-4726
-        // HBT Í≤ÄÏ∂ú ÏÇ¨Ïã§Ïóê ÎåÄÌï¥ÏÑú Ï¢ÄÎçî Í≤ÄÏ¶ù Î∞è Í≥†ÎØº ÌïÑÏöîÌï®... „Ö°„Öú
+        // HBT ∞À√‚ ªÁΩ«ø° ¥Î«ÿº≠ ¡ª¥ı ∞À¡ı π◊ ∞ÌπŒ « ø‰«‘... §—§Ã
         if(ideGetErrorCode() == cmERR_ABORT_CONNECTION_CLOSED)
         {
             *aStatus = RP_START_RECV_HBT_OCCURRED;
@@ -150,15 +155,31 @@ IDE_RC rpxReceiver::checkProtocol( cmiProtocolContext *aProtocolContext,
 }
 
 /***********************************************************************
- * Description : NetworkÎ•º Ï¢ÖÎ£åÌïòÏßÄ ÏïäÍ≥† HandshakeÎ•º ÏàòÌñâÌïúÎã§.
+ * Description : Network∏¶ ¡æ∑·«œ¡ˆ æ ∞Ì Handshake∏¶ ºˆ«‡«—¥Ÿ.
  *
  ***********************************************************************/
-IDE_RC rpxReceiver::handshakeWithoutReconnect()
+IDE_RC rpxReceiver::handshakeWithoutReconnect( rpdXLog *aXLog )
 {
     rpRecvStartStatus sStatus;
     rpdMeta           sMeta;
     rpdVersion        sVersion = { 0 };
     idBool            sDummyFlag;
+    rpXLogAck         sAck;
+    smiTrans          sTrans;
+    smiStatement    * sRootStatement = NULL;
+    UInt              sStage = 0;
+    idBool            sIsTxBegin = ID_FALSE;
+
+    idBool sIsGotNetworkResources = ID_FALSE;
+
+    if( mMeta.getReplMode() == RP_CONSISTENT_MODE )
+    {
+        if ( isGottenNetworkResoucesFromXLogTransfer() == ID_FALSE )
+        {
+            getNetworkResourcesFromXLogTransfer();
+            sIsGotNetworkResources = ID_TRUE;
+        }
+    }
 
     sMeta.initialize();
 
@@ -174,10 +195,47 @@ IDE_RC rpxReceiver::handshakeWithoutReconnect()
                                     RPU_REPLICATION_RECEIVE_TIMEOUT,
                                     &sDummyFlag )
                     != IDE_SUCCESS, ERR_NETWORK );
-    
-    IDE_TEST( processMetaAndSendHandshakeAck( &sMeta ) != IDE_SUCCESS );
+
+    IDE_TEST( sTrans.initialize() != IDE_SUCCESS );
+    sStage = 1;
+
+    IDE_TEST( sTrans.begin( &sRootStatement,
+                            &mStatistics,
+                            SMI_TRANSACTION_NORMAL |
+                            SMI_TRANSACTION_REPL_REPLICATED |
+                            SMI_COMMIT_WRITE_NOWAIT |
+                            (UInt)RPU_ISOLATION_LEVEL,
+                            RP_UNUSED_RECEIVER_INDEX )
+              != IDE_SUCCESS );
+    sIsTxBegin = ID_TRUE;
+    sStage = 2;
+
+    IDE_TEST( processMetaAndSendHandshakeAck( &sTrans,
+                                              &sMeta ) 
+              != IDE_SUCCESS );
+
+    sStage = 1;
+    IDE_TEST( sTrans.commit() != IDE_SUCCESS )
+    sIsTxBegin = ID_FALSE;
+
+    sStage = 0;
+    IDE_TEST( sTrans.destroy(NULL) != IDE_SUCCESS );
 
     sMeta.finalize();
+
+    if( mMeta.getReplMode() == RP_CONSISTENT_MODE )
+    {
+        buildDummyXLogAckForConsistent( aXLog, &sAck);
+        IDE_TEST( sendAckWithTID( &sAck) != IDE_SUCCESS );
+    }
+
+    if( sIsGotNetworkResources == ID_TRUE )
+    {
+        setNetworkResourcesToXLogTransfer();
+        sIsGotNetworkResources = ID_FALSE;
+
+        wakeupXLogTansfer();
+    }
 
     return IDE_SUCCESS;
 
@@ -187,7 +245,34 @@ IDE_RC rpxReceiver::handshakeWithoutReconnect()
     }
     IDE_EXCEPTION_END;
 
+    IDE_PUSH();
+
+    switch ( sStage )
+    {
+        case 2:
+            IDE_ASSERT( sTrans.rollback() == IDE_SUCCESS );
+            sIsTxBegin = ID_FALSE;
+        case 1:
+            if ( sIsTxBegin == ID_TRUE )
+            {
+                IDE_ASSERT( sTrans.rollback() == IDE_SUCCESS );
+                sIsTxBegin = ID_FALSE;
+            }
+            (void)sTrans.destroy( NULL );
+        default:
+            break;
+    }
+
     sMeta.finalize();
+
+    if( sIsGotNetworkResources == ID_TRUE )
+    {
+        setNetworkResourcesToXLogTransfer();
+
+        wakeupXLogTansfer();
+    }
+
+    IDE_POP();
 
     return IDE_FAILURE;
 }

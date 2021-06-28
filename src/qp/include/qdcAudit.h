@@ -36,7 +36,7 @@
 #define QDC_AUDIT_MAX_PATH_LEN (1024)
 
 //===========================================================
-// Auditì„ ìœ„í•œ Parse Tree
+// AuditÀ» À§ÇÑ Parse Tree
 //===========================================================
 
 // Example )
@@ -61,20 +61,20 @@ typedef struct qdcAuditOperation
 typedef struct qdcAuditParseTree
 {
     //---------------------------------------------
-    // Parsing ì •ë³´
+    // Parsing Á¤º¸
     //---------------------------------------------
 
     qcParseTree                common;
 
-    // user ì •ë³´ì™€ object ì •ë³´
+    // user Á¤º¸¿Í object Á¤º¸
     qcNamePosition             userName;
     qcNamePosition             objectName;
 
-    // operation ì •ë³´
+    // operation Á¤º¸
     qdcAuditOperation        * operations;
     
     //---------------------------------------------
-    // Validation ì •ë³´
+    // Validation Á¤º¸
     //---------------------------------------------
 
     UInt                       userID;
@@ -95,7 +95,7 @@ typedef struct qdcAuditParseTree
 }
 
 //===========================================================
-// NoAuditì„ ìœ„í•œ Parse Tree
+// NoAuditÀ» À§ÇÑ Parse Tree
 //===========================================================
 
 // Example )
@@ -105,20 +105,20 @@ typedef struct qdcAuditParseTree
 typedef struct qdcNoAuditParseTree
 {
     //---------------------------------------------
-    // Parsing ì •ë³´
+    // Parsing Á¤º¸
     //---------------------------------------------
 
     qcParseTree                common;
 
-    // object ì •ë³´
+    // object Á¤º¸
     qcNamePosition             userName;
     qcNamePosition             objectName;
 
-    // operation ì •ë³´
+    // operation Á¤º¸
     qdcAuditOperation        * operations;
     
     //---------------------------------------------
-    // Validation ì •ë³´
+    // Validation Á¤º¸
     //---------------------------------------------
 
     UInt                       userID;
@@ -129,20 +129,20 @@ typedef struct qdcNoAuditParseTree
 typedef struct qdcDelAuditParseTree
 {
     //---------------------------------------------
-    // Parsing ì •ë³´
+    // Parsing Á¤º¸
     //---------------------------------------------
 
     qcParseTree                common;
 
-    // object ì •ë³´
+    // object Á¤º¸
     qcNamePosition             userName;
     qcNamePosition             objectName;
 
-    // operation ì •ë³´
+    // operation Á¤º¸
     qdcAuditOperation        * operations;
     
     //---------------------------------------------
-    // Validation ì •ë³´
+    // Validation Á¤º¸
     //---------------------------------------------
 
     UInt                       userID;
@@ -156,32 +156,32 @@ typedef struct qdcDelAuditParseTree
 }
 
 //=========================================================
-// Auditì„ ìœ„í•œ
+// AuditÀ» À§ÇÑ
 //=========================================================
 
 class qdcAudit
 {
 public:
     //----------------------------------------------
-    // Auditì„ ìœ„í•œ í•¨ìˆ˜
+    // AuditÀ» À§ÇÑ ÇÔ¼ö
     //----------------------------------------------
 
     static IDE_RC auditOption( qcStatement * aStatement );
 
     //----------------------------------------------
-    // NoAuditì„ ìœ„í•œ í•¨ìˆ˜
+    // NoAuditÀ» À§ÇÑ ÇÔ¼ö
     //----------------------------------------------
 
     static IDE_RC noAuditOption( qcStatement * aStatement );
 
     //----------------------------------------------
-    // DelAuditì„ ìœ„í•œ í•¨ìˆ˜ - BUG-39074
+    // DelAuditÀ» À§ÇÑ ÇÔ¼ö - BUG-39074
     //----------------------------------------------
 
     static IDE_RC delAuditOption( qcStatement * aStatement );
     
     //----------------------------------------------
-    // Audit Controlì„ ìœ„í•œ í•¨ìˆ˜
+    // Audit ControlÀ» À§ÇÑ ÇÔ¼ö
     //----------------------------------------------
 
     static IDE_RC start( qcStatement * aStatement );
@@ -189,7 +189,7 @@ public:
     static IDE_RC reload( qcStatement * aStatement );
     
     //----------------------------------------------
-    // Audit Referenced Objectë¥¼ ìœ„í•œ í•¨ìˆ˜
+    // Audit Referenced Object¸¦ À§ÇÑ ÇÔ¼ö
     //----------------------------------------------
     
     static IDE_RC setAllRefObjects( qcStatement * aStatement );
@@ -202,7 +202,7 @@ public:
 private:
 
     //----------------------------------------------
-    // Auditì„ ìœ„í•œ í•¨ìˆ˜
+    // AuditÀ» À§ÇÑ ÇÔ¼ö
     //----------------------------------------------
 
 };

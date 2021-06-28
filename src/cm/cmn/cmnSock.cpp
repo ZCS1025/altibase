@@ -60,11 +60,13 @@ static IDE_RC cmnSockCheckIOCTL(PDL_SOCKET aHandle, idBool *aIsClosed)
     IDE_EXCEPTION(InvalidHandle);
     {
         errno = EBADF;
-        IDE_SET(ideSetErrorCode(cmERR_ABORT_SELECT_ERROR));
+        /* BUG-47714 ¿¡·¯ ¸Þ¼¼Áö¿¡ sock number Ãß°¡ */
+        IDE_SET(ideSetErrorCode(cmERR_ABORT_SELECT_ERROR, aHandle));
     }
     IDE_EXCEPTION(SelectError);
     {
-        IDE_SET(ideSetErrorCode(cmERR_ABORT_SELECT_ERROR));
+        /* BUG-47714 ¿¡·¯ ¸Þ¼¼Áö¿¡ sock number Ãß°¡ */
+        IDE_SET(ideSetErrorCode(cmERR_ABORT_SELECT_ERROR, aHandle));
     }
     IDE_EXCEPTION_END;
 
@@ -185,12 +187,12 @@ IDE_RC cmnSockRecv(cmbBlock       *aBlock,
     ssize_t sSize;
 
     /*
-     * aSize ì´ìƒ aBlockìœ¼ë¡œ ë°ì´í„° ì½ìŒ
+     * aSize ÀÌ»ó aBlockÀ¸·Î µ¥ÀÌÅÍ ÀÐÀ½
      */
     while (aBlock->mDataSize < aSize)
     {
         /*
-         * Dispatcherë¥¼ ì´ìš©í•˜ì—¬ Timeout ë§Œí¼ ëŒ€ê¸°
+         * Dispatcher¸¦ ÀÌ¿ëÇÏ¿© Timeout ¸¸Å­ ´ë±â
          */
         if (aTimeout != NULL)
         {
@@ -200,7 +202,7 @@ IDE_RC cmnSockRecv(cmbBlock       *aBlock,
         }
 
         /*
-         * Socketìœ¼ë¡œë¶€í„° ì½ìŒ
+         * SocketÀ¸·ÎºÎÅÍ ÀÐÀ½
          */
         sSize = idlVA::recv_i(aHandle,
                               aBlock->mData + aBlock->mDataSize,
@@ -273,7 +275,7 @@ IDE_RC cmnSockSend(cmbBlock       *aBlock,
     while (aBlock->mCursor < aBlock->mDataSize)
     {
         /*
-         * Dispatcherë¥¼ ì´ìš©í•˜ì—¬ Timeout ë§Œí¼ ëŒ€ê¸°
+         * Dispatcher¸¦ ÀÌ¿ëÇÏ¿© Timeout ¸¸Å­ ´ë±â
          */
         if (aTimeout != NULL)
         {
@@ -283,7 +285,7 @@ IDE_RC cmnSockSend(cmbBlock       *aBlock,
         }
 
         /*
-         * socketìœ¼ë¡œ ë°ì´í„° ì”€
+         * socketÀ¸·Î µ¥ÀÌÅÍ ¾¸
          */
         sSize = idlVA::send_i(aHandle,
                               aBlock->mData + aBlock->mCursor,

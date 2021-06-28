@@ -25,53 +25,18 @@
 
 /* BUG-39658 Aexport should support 'FOR ANALYSIS' syntax. */
 /* BUG-39661 Aexport should support 'OPTIONS' syntax. */
-/* BUG-45236 Local Replication ì§€ì› */
+/* BUG-45236 Local Replication Áö¿ø */
 #define GET_REPLOBJ_QUERY                                            \
     "select /*+ NO_PLAN_CACHE */ distinct "                          \
-    "       a.REPLICATION_NAME, "                                    \
-    "       b.REPL_MODE, "                                           \
-    "       b.ROLE, "                                                \
-    "       b.OPTIONS, "                                             \
-    "       b.PARALLEL_APPLIER_COUNT, "                              \
-    "       b.PEER_REPLICATION_NAME "                                \
-    "from SYSTEM_.SYS_REPL_HOSTS_ a, SYSTEM_.SYS_REPLICATIONS_ b "   \
-    "where a.REPLICATION_NAME = b.REPLICATION_NAME "                 \
-    "order by a.REPLICATION_NAME "                                   \
-
-/* BUG-46209 IB support on Replication */
-#define GET_IP_PORT_QUERY                                            \
-    "select /*+ NO_PLAN_CACHE */ a.HOST_IP, a.PORT_NO, a.CONN_TYPE, a.IB_LATENCY " \
-    "from SYSTEM_.SYS_REPL_HOSTS_ a, SYSTEM_.SYS_REPLICATIONS_ b "   \
-    "where a.REPLICATION_NAME = b.REPLICATION_NAME "                 \
-          "and a.REPLICATION_NAME = ? "                              \
-    "order by a.HOST_IP, a.PORT_NO "                                 \
-
-/* BUG-39661 Aexport should support 'OPTIONS' syntax. */
-#define GET_OFFLINE_LOG_PATH_QUERY                                   \
-    "select PATH "                                                   \
-    "from SYSTEM_.SYS_REPL_OFFLINE_DIR_ "                            \
-    "where REPLICATION_NAME = ? "                                    \
-    "order by PATH "
-
-// BUG-23990 partition table ì— ëŒ€í•œ ì´ì¤‘í™” ì‹œ aexport ì—ì„œ ì´ì¤‘í™” ìƒì„±êµ¬ë¬¸ì´ ìž˜ëª»ë‚˜ì˜´
-// ì¤‘ë³µë˜ì–´ ë‚˜ì˜¤ëŠ”ê²ƒì„ DISTINCT êµ¬ë¬¸ìœ¼ë¡œ ì œê±°í•¨
-#define GET_REPLITEM_QUERY                                                  \
-    "select /*+ NO_PLAN_CACHE */ distinct LOCAL_USER_NAME, "                \
-           "LOCAL_TABLE_NAME, LOCAL_PARTITION_NAME, REMOTE_USER_NAME, "     \
-           "REMOTE_TABLE_NAME, REMOTE_PARTITION_NAME, REPLICATION_UNIT "    \
-    "from SYSTEM_.SYS_REPL_ITEMS_ "                                         \
-    "where REPLICATION_NAME = ? "                                           \
-    "order by LOCAL_USER_NAME, LOCAL_TABLE_NAME, LOCAL_PARTITION_NAME, "    \
-             "REMOTE_USER_NAME, REMOTE_TABLE_NAME, REMOTE_PARTITION_NAME, " \
-             "REPLICATION_UNIT "
+    "       REPLICATION_NAME "                                       \
+    "from SYSTEM_.SYS_REPLICATIONS_  "                               \
+    "order by REPLICATION_NAME "
 
 #define GET_DBLINK_SYS_QUERY                                        \
     "SELECT "                                                       \
     " us.USER_NAME, "                                               \
     " lk.LINK_NAME, "                                               \
-    " lk.REMOTE_USER_ID, "                                          \
-    " lk.USER_MODE, "                                               \
-    " lk.TARGET_NAME "                                              \
+    " lk.USER_MODE  "                                               \
     "FROM SYSTEM_.SYS_DATABASE_LINKS_ lk "                          \
     "     LEFT OUTER JOIN "                                         \
     "     SYSTEM_.SYS_USERS_ us "                                   \
@@ -82,15 +47,12 @@
     "SELECT "                                                       \
     " us.USER_NAME, "                                               \
     " lk.LINK_NAME, "                                               \
-    " lk.REMOTE_USER_ID, "                                          \
-    " lk.USER_MODE, "                                               \
-    " lk.TARGET_NAME "                                              \
+    " lk.USER_MODE  "                                               \
     "FROM SYSTEM_.SYS_DATABASE_LINKS_ lk,"                          \
     "     SYSTEM_.SYS_USERS_ us "                                   \
     "WHERE lk.USER_ID = us.USER_ID "                                \
     "      AND us.USER_NAME = ? "                                   \
     "ORDER BY 1,2 "
-
 
 SQLRETURN getReplQuery( FILE *aReplFp )
 {
@@ -102,11 +64,6 @@ SQLRETURN getReplQuery( FILE *aReplFp )
     SQLLEN    sRepInd                   = 0;
 
     SChar     sRepName[UTM_NAME_LEN + 1] = {'\0',};
-    SChar     sPeerRepName[UTM_NAME_LEN + 1] = {'\0',};
-    SInt      sRepMode                   = 0;
-    SInt      sRepRole                   = 0;
-    SInt      sRepOption                 = 0;
-    SInt      sParallelApplierCnt        = 0;
     
     idlOS::fprintf(stdout, "\n##### REPLICATION #####\n");
 
@@ -125,50 +82,6 @@ SQLRETURN getReplQuery( FILE *aReplFp )
                     &sRepInd ) != SQL_SUCCESS, stmt_error );
    
     IDE_TEST_RAISE(
-        SQLBindCol( sResultStmt,
-                    2,
-                    SQL_C_SLONG,
-                    (SQLPOINTER)&sRepMode,
-                    0,
-                    &sRepInd ) != SQL_SUCCESS, stmt_error );
-
-    /* BUG-39658 Aexport should support 'FOR ANALYSIS' syntax. */
-    IDE_TEST_RAISE(
-        SQLBindCol( sResultStmt,
-                    3,
-                    SQL_C_SLONG,
-                    (SQLPOINTER)&sRepRole,
-                    0,
-                    &sRepInd ) != SQL_SUCCESS, stmt_error );
-
-    /* BUG-39661 Aexport should support 'OPTIONS' syntax. */
-    IDE_TEST_RAISE(
-        SQLBindCol( sResultStmt,
-                    4,
-                    SQL_C_SLONG,
-                    (SQLPOINTER)&sRepOption,
-                    0,
-                    &sRepInd ) != SQL_SUCCESS, stmt_error );
-
-    /* BUG-41270 More 'OPTIONS' must be supported. */
-    IDE_TEST_RAISE(
-        SQLBindCol( sResultStmt,
-                    5,
-                    SQL_C_SLONG,
-                    (SQLPOINTER)&sParallelApplierCnt,
-                    0,
-                    &sRepInd ) != SQL_SUCCESS, stmt_error );
-
-    /* BUG-45236 Local Replication ì§€ì› */
-    IDE_TEST_RAISE(
-        SQLBindCol( sResultStmt,
-                    6,
-                    SQL_C_CHAR,
-                    (SQLPOINTER)sPeerRepName,
-                    (SQLLEN)ID_SIZEOF(sPeerRepName),
-                    &sRepInd ) != SQL_SUCCESS, stmt_error );
-
-    IDE_TEST_RAISE(
         SQLExecDirect( sResultStmt,
                        (SQLCHAR *)sQuery,
                        SQL_NTS ) != SQL_SUCCESS, stmt_error );
@@ -181,120 +94,14 @@ SQLRETURN getReplQuery( FILE *aReplFp )
         if ( gProgOption.mbExistDrop == ID_TRUE )
         {
             idlOS::fprintf( aReplFp,
-                            "\ndrop replication \"%s\";\n", 
+                            "\ndrop replication \"%s\";\n\n", 
                             sRepName );
         }
 
-        // print 'CREATE' sql query
-        /*
-         * BUG-39417 Aexport does not consider replication mode
-         * when it exports an replication object
-         */
-        idlOS::fprintf( aReplFp, "\ncreate " );
-
-        if ( sRepMode == 2 )
-        {
-            idlOS::fprintf( aReplFp, "eager " );
-        }
-
-        idlOS::fprintf( aReplFp, "replication \"%s\" ", sRepName );
-
-        /* BUG-39658 Aexport should support 'FOR ANALYSIS' syntax. */
-        /* BUG-46157 PROPAGATION ê¸°ëŠ¥ ì§€ì› */
-        // default : 0, 1 : Log Analyzer, 2 : Propagable Logging, 3 : Propagation, 4 : Log Analysis Propagation 
-        switch ( sRepRole )
-        {
-            case 1 :
-                idlOS::fprintf( aReplFp, "for analysis " );
-                break;
-            
-            case 2 :
-                idlOS::fprintf( aReplFp, "for propagable logging " );
-                break;
-            
-            case 3 :
-                idlOS::fprintf( aReplFp, "for propagation " );
-                break;
-            
-            case 4 :            
-                idlOS::fprintf( aReplFp, "for analysis propagation " );
-                break;
-            
-            case 0 : 
-            default :
-                break;
-        }
-
-        /* BUG-39661 Aexport should support 'OPTIONS' syntax. */
-        // default 0, 1 : RECOVERY OPTION, 2 : OFFLINE OPTION
-        if ( sRepOption == 0 )
-        {
-            // Do Nothing
-        }
-        else
-        {
-            idlOS::fprintf( aReplFp, "options\n" );
-        }
-        if ( ( sRepOption & RP_OPTION_V6_PROTOCOL_MASK ) == RP_OPTION_V6_PROTOCOL_SET )
-        {
-            /* BUG-46528 Apply __REPLICATION_USE_V6_PROTOCOL to each replication. */
-            idlOS::fprintf( aReplFp, "v6_protocol\n" );
-        }
-
-        /* BUG-41270 More replication options must be supported
-         *     and multiple options can be set.
-         *     So, bit flags and bit masks must be used for checking sRepOption value. 
-         * more options => 4: GAPLESS OPTIONS, 8: PARALLEL APPLY, 16: TRANSACTION GROUPING */
-        if ( (sRepOption & RP_OPTION_RECOVERY_MASK) == RP_OPTION_RECOVERY_SET )
-        {
-            idlOS::fprintf( aReplFp, "recovery\n" );
-        }
-        if ( (sRepOption & RP_OPTION_OFFLINE_MASK) == RP_OPTION_OFFLINE_SET )
-        {
-            idlOS::fprintf( aReplFp, "offline " );
-
-            IDE_TEST( getReplOfflineLogPaths( aReplFp, 
-                                              sRepName ) != SQL_SUCCESS );
-            idlOS::fprintf( aReplFp, "\n" );
-        }
-        if ( (sRepOption & RP_OPTION_GAPLESS_MASK) == RP_OPTION_GAPLESS_SET )
-        {
-            idlOS::fprintf( aReplFp, "gapless\n" );
-        }
-        if ( (sRepOption & RP_OPTION_PARALLEL_RECEIVER_APPLY_MASK) == RP_OPTION_PARALLEL_RECEIVER_APPLY_SET )
-        {
-            idlOS::fprintf( aReplFp, "parallel %"ID_UINT32_FMT"\n", sParallelApplierCnt );
-        }
-        if ( (sRepOption & RP_OPTION_GROUPING_MASK) == RP_OPTION_GROUPING_SET )
-        {
-            idlOS::fprintf( aReplFp, "grouping\n" );
-        }
-        if ( (sRepOption & RP_OPTION_DDL_REPLICATE_MASK) == RP_OPTION_DDL_REPLICATE_SET )
-        {
-            /* BUG-46252 Partition Merge / Split DDL synchronization support */
-            idlOS::fprintf( aReplFp, "ddl_replicate\n" );
-        }
-
-        /* BUG-45236 Local Replication ì§€ì›
-         *  OPTIONS 32: LOCAL
-         */
-        if ( ( sRepOption & RP_OPTION_LOCAL_MASK ) == RP_OPTION_LOCAL_SET )
-        {
-            idlOS::fprintf( aReplFp, "local \"%s\"\n", sPeerRepName );
-        }
-        else
-        {
-            /* Nothing to do */
-        }
-
-        idlOS::fprintf( aReplFp, "with " );
-
-        IDE_TEST( getReplWithClause( aReplFp,
-                                     sRepName ) != SQL_SUCCESS );
-        IDE_TEST( getReplFromClause( aReplFp,
-                                     sRepName ) != SQL_SUCCESS );
-
-        idlOS::fprintf( aReplFp,";\n");
+        /* BUG-47159 Using DBMS_METADATA package in aexport */
+        IDE_TEST(gMeta->getDdl(DDL, UTM_OBJ_TYPE_REPLICATION,
+                 sRepName, (SChar*)NULL) != IDE_SUCCESS);
+        idlOS::fprintf( aReplFp, "%s\n", gMeta->getDdlStr() );
     }
     
     // BUG-33995 aexport have wrong free handle code
@@ -324,410 +131,11 @@ SQLRETURN getReplQuery( FILE *aReplFp )
 #undef IDE_FN
 }
 
-SQLRETURN getReplWithClause( FILE   *aReplFp,
-                             SChar  *aRepName )
-{
-#define IDE_FN "getReplWithClause()"
-    SQLHSTMT  sResultStmt               = SQL_NULL_HSTMT;
-    SQLRETURN sRet;
-    
-    SChar     sQuery[QUERY_LEN];
-
-    SChar     sHostIP[STR_LEN + 1]      = {'\0',};
-    SInt      sPortNo                   = 0;
-    SChar     sConnType[STR_LEN + 1]    = {'\0',};
-    SChar     sIBLatency[STR_LEN + 1]   = {'\0',};
-    
-
-    IDE_TEST_RAISE(
-        SQLAllocStmt( m_hdbc,
-                      &sResultStmt ) != SQL_SUCCESS, alloc_error );
-
-    idlOS::sprintf( sQuery, GET_IP_PORT_QUERY );
-
-    IDE_TEST_RAISE(
-        SQLPrepare( sResultStmt,
-                    (SQLCHAR *)sQuery,
-                    SQL_NTS ) != SQL_SUCCESS, stmt_error );
-    IDE_TEST_RAISE(
-        SQLBindParameter( sResultStmt,
-                          1,
-                          SQL_PARAM_INPUT,
-                          SQL_C_CHAR,
-                          SQL_VARCHAR,
-                          UTM_NAME_LEN,
-                          0,
-                          aRepName,
-                          UTM_NAME_LEN+1,
-                          NULL ) != SQL_SUCCESS, stmt_error );
-    IDE_TEST_RAISE(    
-        SQLBindCol( sResultStmt,
-                    1,
-                    SQL_C_CHAR,
-                    (SQLPOINTER)sHostIP,
-                    (SQLLEN)ID_SIZEOF(sHostIP),
-                    NULL ) != SQL_SUCCESS, stmt_error );
-    IDE_TEST_RAISE(    
-        SQLBindCol( sResultStmt,
-                    2,
-                    SQL_C_SLONG,
-                    (SQLPOINTER)&sPortNo,
-                    0,
-                    NULL ) != SQL_SUCCESS, stmt_error );
-
-    /* BUG-46209 IB support on Replication */
-    IDE_TEST_RAISE(    
-        SQLBindCol( sResultStmt,
-                    3, 
-                    SQL_C_CHAR,
-                    (SQLPOINTER)sConnType,
-                    (SQLLEN)ID_SIZEOF(sConnType),
-                    NULL ) != SQL_SUCCESS, stmt_error );
-
-    IDE_TEST_RAISE(    
-        SQLBindCol( sResultStmt,
-                    4,
-                    SQL_C_CHAR,
-                    (SQLPOINTER)sIBLatency,
-                    (SQLLEN)ID_SIZEOF(sIBLatency),
-                    NULL ) != SQL_SUCCESS, stmt_error );
-
-    IDE_TEST_RAISE( SQLExecute(sResultStmt) != SQL_SUCCESS,
-                    stmt_error );
-        
-    while ( ( sRet = SQLFetch(sResultStmt) ) != SQL_NO_DATA )
-    {
-        IDE_TEST_RAISE( sRet != SQL_SUCCESS, stmt_error );
-
-        /* BUG-46209 IB support on Replication */
-        if( idlOS::strcasecmp(sConnType, "TCP") == 0 )
-        {
-            idlOS::fprintf( aReplFp, "'%s', %"ID_INT32_FMT" \n", sHostIP, sPortNo );
-        }
-        /* BUG-39658 Aexport should support 'FOR ANALYSIS' syntax. */
-        else if( idlOS::strcasecmp(sConnType, "UNIX_DOMAIN") == 0 )
-        {
-            idlOS::fprintf( aReplFp, "UNIX_DOMAIN " );
-        }
-        else if( idlOS::strcasecmp(sConnType, "IB") == 0 )
-        {
-            idlOS::fprintf( aReplFp, "'%s', %"ID_INT32_FMT" USING %s %s \n", 
-                            sHostIP, sPortNo, sConnType, sIBLatency );
-        }
-        else
-        {
-            /* Do nothing */
-        }
-    }
-
-    FreeStmt( &sResultStmt );
-
-    idlOS::fflush( aReplFp );
-
-    return SQL_SUCCESS;
-
-    IDE_EXCEPTION(alloc_error);
-    {
-        utmSetErrorMsgWithHandle(SQL_HANDLE_DBC, (SQLHANDLE)m_hdbc);
-    }
-    IDE_EXCEPTION( stmt_error );
-    {
-        utmSetErrorMsgWithHandle(SQL_HANDLE_STMT, (SQLHANDLE)sResultStmt);
-    }
-    IDE_EXCEPTION_END;
-
-    if ( sResultStmt != SQL_NULL_HSTMT )
-    {
-        FreeStmt( &sResultStmt );
-    }
-
-    return SQL_ERROR;
-#undef IDE_FN
-}
-
-SQLRETURN getReplFromClause( FILE   *aReplFp,
-                             SChar  *aRepName )
-{
-#define IDE_FN "getReplFromClause()"
-    SQLHSTMT  sResultStmt               = SQL_NULL_HSTMT;
-    SQLRETURN sRet;
-
-    SChar     sQuery[QUERY_LEN];
-
-    SChar     sLocalUser[UTM_NAME_LEN + 1]   = {'\0',};
-    SChar     sLocalTbl[UTM_NAME_LEN + 1]    = {'\0',};
-    SChar     sLocalPart[UTM_NAME_LEN + 1]   = {'\0',};
-    SChar     sRemoteUser[UTM_NAME_LEN + 1]  = {'\0',};
-    SChar     sRemoteTbl[UTM_NAME_LEN + 1]   = {'\0',};
-    SChar     sRemotePart[UTM_NAME_LEN + 1]  = {'\0',};
-    SChar     sReplicationUnit[2]       = {'\0',};
-
-    SQLLEN    sLocalUserInd       = SQL_NTS;
-    SQLLEN    sLocalTblInd        = SQL_NTS;
-    SQLLEN    sLocalPartInd       = SQL_NTS;
-    SQLLEN    sRemoteUserInd      = SQL_NTS;
-    SQLLEN    sRemoteTblInd       = SQL_NTS;
-    SQLLEN    sRemotePartInd      = SQL_NTS;
-    SQLLEN    sReplicationUnitInd = SQL_NTS;
-
-    SChar     sLocalPrevTbl[UTM_NAME_LEN + 1] = {'\0',};
-
-    idBool    sIsNeedNewLine = ID_FALSE;
-
-IDE_TEST_RAISE(
-        SQLAllocStmt( m_hdbc,
-                      &sResultStmt ) != SQL_SUCCESS, alloc_error );
-
-    idlOS::sprintf( sQuery, GET_REPLITEM_QUERY );
-
-    IDE_TEST_RAISE(
-        SQLPrepare( sResultStmt,
-                    (SQLCHAR *)sQuery,
-                    SQL_NTS ) != SQL_SUCCESS, stmt_error );
-    IDE_TEST_RAISE(
-        SQLBindParameter( sResultStmt,
-                          1,
-                          SQL_PARAM_INPUT,
-                          SQL_C_CHAR,
-                          SQL_VARCHAR,
-                          UTM_NAME_LEN,
-                          0,
-                          aRepName,
-                          UTM_NAME_LEN+1,
-                          NULL ) != SQL_SUCCESS, stmt_error );
-    IDE_TEST_RAISE(
-        SQLBindCol( sResultStmt,
-                    1,
-                    SQL_C_CHAR,
-                    (SQLPOINTER)sLocalUser,
-                    (SQLLEN)ID_SIZEOF(sLocalUser),
-                    &sLocalUserInd) != SQL_SUCCESS, stmt_error );
-    IDE_TEST_RAISE(        
-        SQLBindCol( sResultStmt,
-                    2,
-                    SQL_C_CHAR,
-                    (SQLPOINTER)sLocalTbl,
-                    (SQLLEN)ID_SIZEOF(sLocalTbl),
-                    &sLocalTblInd) != SQL_SUCCESS, stmt_error );
-    IDE_TEST_RAISE(
-        SQLBindCol( sResultStmt,
-                    3,
-                    SQL_C_CHAR,
-                    (SQLPOINTER)sLocalPart,
-                    (SQLLEN)ID_SIZEOF(sLocalPart),
-                    &sLocalPartInd) != SQL_SUCCESS, stmt_error );
-    IDE_TEST_RAISE(    
-        SQLBindCol( sResultStmt,
-                    4,
-                    SQL_C_CHAR,
-                    (SQLPOINTER)sRemoteUser,
-                    (SQLLEN)ID_SIZEOF(sRemoteUser),
-                    &sRemoteUserInd) != SQL_SUCCESS, stmt_error );
-    IDE_TEST_RAISE(    
-        SQLBindCol( sResultStmt,
-                    5,
-                    SQL_C_CHAR,
-                    (SQLPOINTER)sRemoteTbl,
-                    (SQLLEN)ID_SIZEOF(sRemoteTbl),
-                    &sRemoteTblInd ) != SQL_SUCCESS, stmt_error );
-    IDE_TEST_RAISE(
-        SQLBindCol( sResultStmt,
-                    6,
-                    SQL_C_CHAR,
-                    (SQLPOINTER)sRemotePart,
-                    (SQLLEN)ID_SIZEOF(sRemotePart),
-                    &sRemotePartInd ) != SQL_SUCCESS, stmt_error );
-    IDE_TEST_RAISE(
-        SQLBindCol( sResultStmt,
-                    7,
-                    SQL_C_CHAR,
-                    (SQLPOINTER)sReplicationUnit,
-                    (SQLLEN)ID_SIZEOF(sReplicationUnit),
-                    &sReplicationUnitInd ) != SQL_SUCCESS, stmt_error );
-
-
-    IDE_TEST_RAISE( SQLExecute(sResultStmt) != SQL_SUCCESS,
-                    stmt_error );
-        
-    while ( ( sRet = SQLFetch(sResultStmt) ) != SQL_NO_DATA )
-    {
-        IDE_TEST_RAISE( sRet != SQL_SUCCESS, stmt_error );
-
-        if ( ( sIsNeedNewLine == ID_TRUE ) &&
-             ( idlOS::strncmp( sLocalTbl, sLocalPrevTbl, (UTM_NAME_LEN + 1) ) != 0 ) )
-        {
-            idlOS::fprintf( aReplFp,",\n");
-
-            sIsNeedNewLine = ID_FALSE;
-        }
-
-        /* BUG-40249 ë°˜ë“œì‹œ í•„ìš”í•œ ì½”ë“œëŠ” ì•„ë‹˜.. */
-        if (sLocalPartInd == SQL_NULL_DATA)
-        {
-            sLocalPart[0]    = '\0';
-        }
-        if (sRemotePartInd == SQL_NULL_DATA)
-        {
-            sRemotePart[0]  = '\0';
-        }
-
-        if ( sReplicationUnit[0] == 'T' )
-        {
-            if ( ( sLocalPartInd > 0 ) && ( sRemotePartInd > 0 ) )
-            {
-                if ( idlOS::strncmp( sLocalTbl, sLocalPrevTbl, (UTM_NAME_LEN + 1) ) != 0 )
-                {
-                    idlOS::fprintf( aReplFp,
-                                    "from \"%s\".\"%s\" to \"%s\".\"%s\"",
-                                    sLocalUser, sLocalTbl,
-                                    sRemoteUser, sRemoteTbl);
-
-                    sIsNeedNewLine = ID_TRUE;
-
-                    idlOS::strncpy( sLocalPrevTbl, sLocalTbl, (UTM_NAME_LEN + 1) );
-
-                }
-                else
-                {
-                    /* Nothing to do */
-                }
-
-            }
-            else
-            {
-                idlOS::fprintf( aReplFp,
-                                "from \"%s\".\"%s\" to \"%s\".\"%s\"",
-                                sLocalUser, sLocalTbl,
-                                sRemoteUser, sRemoteTbl);
-                    
-                sIsNeedNewLine = ID_TRUE;
-            }
-        }
-        else
-        {
-            idlOS::fprintf( aReplFp,
-                            "from \"%s\".\"%s\" partition \"%s\" to \"%s\".\"%s\" partition \"%s\"",
-                             sLocalUser, sLocalTbl, sLocalPart,
-                             sRemoteUser, sRemoteTbl, sRemotePart );
-            
-            sIsNeedNewLine = ID_TRUE;
-        }
-    }
-
-    FreeStmt( &sResultStmt );
-
-    idlOS::fflush( aReplFp );
-
-    return SQL_SUCCESS;
-
-    IDE_EXCEPTION(alloc_error);
-    {
-        utmSetErrorMsgWithHandle(SQL_HANDLE_DBC, (SQLHANDLE)m_hdbc);
-    }
-    IDE_EXCEPTION( stmt_error );
-    {
-        utmSetErrorMsgWithHandle(SQL_HANDLE_STMT, (SQLHANDLE)sResultStmt);
-    }
-    IDE_EXCEPTION_END;
-
-    if ( sResultStmt != SQL_NULL_HSTMT )
-    {
-        FreeStmt( &sResultStmt );
-    }
-
-    return SQL_ERROR;
-#undef IDE_FN
-}
-
-/* BUG-39661 Aexport should support 'OPTIONS' syntax. */
-SQLRETURN getReplOfflineLogPaths( FILE   *aReplFp,
-                                  SChar  *aRepName )
-{
-#define IDE_FN "getReplOfflineLogPaths()"
-    SQLHSTMT  sResultStmt        = SQL_NULL_HSTMT;
-    SQLRETURN sRet;
-
-    SChar     sQuery[QUERY_LEN];
-    SChar     sPath[MSG_LEN + 1] = {'\0',};
-    SShort    sTempIterVar       = 0;
-
-    IDE_TEST_RAISE(
-        SQLAllocStmt( m_hdbc,
-                      &sResultStmt ) != SQL_SUCCESS, alloc_error );
-
-    idlOS::sprintf( sQuery, GET_OFFLINE_LOG_PATH_QUERY );
-
-    IDE_TEST_RAISE(
-        SQLPrepare( sResultStmt,
-                    (SQLCHAR *)sQuery,
-                    SQL_NTS ) != SQL_SUCCESS, stmt_error );
-    IDE_TEST_RAISE(
-        SQLBindParameter( sResultStmt,
-                          1,
-                          SQL_PARAM_INPUT,
-                          SQL_C_CHAR,
-                          SQL_VARCHAR,
-                          UTM_NAME_LEN,
-                          0,
-                          aRepName,
-                          UTM_NAME_LEN+1,
-                          NULL ) != SQL_SUCCESS, stmt_error );
-    IDE_TEST_RAISE(    
-        SQLBindCol( sResultStmt,
-                    1,
-                    SQL_C_CHAR,
-                    (SQLPOINTER)sPath,
-                    (SQLLEN)ID_SIZEOF(sPath),
-                    NULL ) != SQL_SUCCESS, stmt_error );
-
-    IDE_TEST_RAISE( SQLExecute(sResultStmt) != SQL_SUCCESS,
-                    fetch_path_error );
-
-    while( (sRet = SQLFetch(sResultStmt)) != SQL_NO_DATA )
-    {
-        if( sTempIterVar != 0 )
-        {
-            idlOS::fprintf( aReplFp, "," );
-        }
-
-        idlOS::fprintf( aReplFp, "'%s' ", sPath );
-        ++sTempIterVar;
-    }
-
-    FreeStmt( &sResultStmt );
-
-    idlOS::fflush( aReplFp );
-
-    return SQL_SUCCESS;
-
-    IDE_EXCEPTION( alloc_error );
-    {
-        utmSetErrorMsgWithHandle(SQL_HANDLE_DBC, (SQLHANDLE)m_hdbc);
-    }
-    IDE_EXCEPTION( stmt_error );
-    {
-        utmSetErrorMsgWithHandle(SQL_HANDLE_STMT, (SQLHANDLE)sResultStmt);
-    }
-    IDE_EXCEPTION( fetch_path_error );
-    {
-        uteSetErrorCode(&gErrorMgr, utERR_ABORT_Repl_Offline_Log_Path_Fetch_Error, aRepName);
-    }
-    IDE_EXCEPTION_END;
-
-    if ( sResultStmt != SQL_NULL_HSTMT )
-    {
-        FreeStmt( &sResultStmt );
-    }
-
-    return SQL_ERROR;
-#undef IDE_FN
-}
-
 /***************************************************
  * Description: BUG-37050
- * ëª¨ë“  DB linkì˜ ë©”íƒ€ë°ì´í„°ë¥¼ ì¡°íšŒ, 
- * ê·¸ ë°ì´í„°ë¥¼ ì¡°í•©í•˜ì—¬ create DB link DDLì„ ìƒì„±í•œë‹¤.
- * ìƒì„±í•œ DDLë¬¸ì„ íŒŒì¼ì— ê¸°ìž…í•œë‹¤.
+ * ¸ðµç DB linkÀÇ ¸ÞÅ¸µ¥ÀÌÅÍ¸¦ Á¶È¸, 
+ * ±× µ¥ÀÌÅÍ¸¦ Á¶ÇÕÇÏ¿© create DB link DDLÀ» »ý¼ºÇÑ´Ù.
+ * »ý¼ºÇÑ DDL¹®À» ÆÄÀÏ¿¡ ±âÀÔÇÑ´Ù.
  * 
  *   a_user  (IN): string of UserID 
  *   aLinkFp (IN): file pointer of ALL_CRT_LINK.sql
@@ -740,27 +148,21 @@ SQLRETURN getDBLinkQuery( SChar *a_user, FILE  *aLinkFp )
 
     SChar     sOwnerName[UTM_NAME_LEN + 1]  = { 0, };
     SChar     sLinkName[UTM_NAME_LEN + 1]   = { 0, };
-    SChar     sTargetName[UTM_NAME_LEN + 1] = { 0, };
-    SChar     sRemoteUser[UTM_NAME_LEN + 1] = { 0, };
     SInt      sUserMode = 0;
     UInt      sState    = 1;
 
     SQLLEN    sOwnerNameInd    = 0;
     SQLLEN    sLinkNameInd     = 0;
-    SQLLEN    sTargetNameInd   = 0;
-    SQLLEN    sRemoteUserInd   = 0;
     SChar     sPasswd[STR_LEN]            = { 0, };
     SChar     sPrevName[UTM_NAME_LEN + 1] = { 0, };
     
-    SChar     sDdl[QUERY_LEN] = { '\0', };
-
     IDE_TEST_RAISE( SQLAllocStmt( m_hdbc, &sDblinkStmt )
                                   != SQL_SUCCESS, alloc_error);
     sState = 1;
 
     idlOS::fprintf(stdout, "\n##### DATABASE LINK #####\n");
 
-    /* ìœ ì €ê°€ SYSê°€ ì•„ë‹ë•ŒëŠ” í•´ë‹¹ ìœ ì €ì˜ ì •ë³´ë§Œ ê°€ì ¸ì˜¨ë‹¤. */
+    /* À¯Àú°¡ SYS°¡ ¾Æ´Ò¶§´Â ÇØ´ç À¯ÀúÀÇ Á¤º¸¸¸ °¡Á®¿Â´Ù. */
     if( idlOS::strcasecmp( a_user, (SChar*)UTM_STR_SYS ) != 0 )
     {
         idlOS::sprintf( sQuery, GET_DBLINK_QUERY );
@@ -805,27 +207,11 @@ SQLRETURN getDBLinkQuery( SChar *a_user, FILE  *aLinkFp )
 
     IDE_TEST_RAISE( SQLBindCol( sDblinkStmt, 
                                 3, 
-                                SQL_C_CHAR, 
-                                (SQLPOINTER)sRemoteUser,
-                                (SQLLEN)ID_SIZEOF(sRemoteUser), 
-                                &sRemoteUserInd ) 
-                    != SQL_SUCCESS, execute_error);
-
-    IDE_TEST_RAISE( SQLBindCol( sDblinkStmt, 
-                                4, 
                                 SQL_C_LONG, 
                                 (SQLPOINTER)&sUserMode,
                                 0, 
                                 NULL ) 
                    != SQL_SUCCESS, execute_error);
-
-    IDE_TEST_RAISE( SQLBindCol( sDblinkStmt, 
-                                5, 
-                                SQL_C_CHAR, 
-                                (SQLPOINTER)sTargetName,
-                                (SQLLEN)ID_SIZEOF(sTargetName), 
-                                &sTargetNameInd ) 
-                    != SQL_SUCCESS, execute_error);
 
     IDE_TEST( Execute( sDblinkStmt ) != SQL_SUCCESS );
 
@@ -833,21 +219,12 @@ SQLRETURN getDBLinkQuery( SChar *a_user, FILE  *aLinkFp )
     {
         IDE_TEST_RAISE( sRet != SQL_SUCCESS, execute_error );
 
-        idlOS::sprintf( sDdl,
-                        "create %s database link \"%s\"\n"
-                        "    connect to %s identified by /* passwd required */\n"
-                        "    using  \"%s\";",
-                        (sUserMode == 0) ? "public" : "private",
-                        sLinkName,
-                        idlOS::strlen( sRemoteUser ) == 0 ? "/* user ID required */" : sRemoteUser,
-                        sTargetName );
-
         // When OwnerNameInd is -1, sOwnerName is NULL.
         // It means that this database link is created with public mode.
         // Therefore, That 'sys' user create public database links.
         // Although some links have been be created by not 'sys' user,
         // database links that does not have ownership should be created by 'sys'.
-        if( sOwnerNameInd == -1 )
+        if( sOwnerNameInd == SQL_NULL_DATA )
         {
             idlOS::strcpy( sOwnerName, (SChar*)UTM_STR_SYS );
         }
@@ -871,10 +248,21 @@ SQLRETURN getDBLinkQuery( SChar *a_user, FILE  *aLinkFp )
                             sLinkName );
         }
 
+        /* BUG-47159 Using DBMS_METADATA package in aexport */
+        if( sOwnerNameInd == SQL_NULL_DATA )
+        {
+            IDE_TEST(gMeta->getDdl(DDL, UTM_OBJ_TYPE_DB_LINK,
+                     sLinkName, (SChar *)"PUBLIC") != IDE_SUCCESS);
+        }
+        else
+        {
+            IDE_TEST(gMeta->getDdl(DDL, UTM_OBJ_TYPE_DB_LINK,
+                     sLinkName, sOwnerName) != IDE_SUCCESS);
+        }
 #ifdef DEBUG
-    idlOS::fprintf( stderr, "%s\n", sDdl );
+        idlOS::fprintf( stderr, "%s\n", gMeta->getDdlStr() );
 #endif
-        idlOS::fprintf( aLinkFp, "%s\n\n", sDdl );
+        idlOS::fprintf( aLinkFp, "%s\n\n", gMeta->getDdlStr() );
 
         idlOS::fflush( aLinkFp );
     }

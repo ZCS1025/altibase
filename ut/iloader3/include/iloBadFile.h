@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iloBadFile.h 80545 2017-07-19 08:05:23Z daramix $
+ * $Id: iloBadFile.h 88494 2020-09-04 04:29:31Z chkim $
  **********************************************************************/
 
 #ifndef _O_ILO_BADFILE_H
@@ -28,7 +28,8 @@ public:
 
     void SetTerminator( SChar *szFiledTerm, SChar *szRowTerm );
 
-    SInt OpenFile( SChar *szFileName );
+    /* BUG-47652 Set file permission */
+    SInt OpenFile( SChar *szFileName, idBool aIsExistFilePerm );
 
     SInt CloseFile();
 

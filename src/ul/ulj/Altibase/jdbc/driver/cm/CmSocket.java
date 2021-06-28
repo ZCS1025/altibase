@@ -29,8 +29,7 @@ public interface CmSocket
 
     void open(SocketAddress aSockAddr,
               String        aBindAddr,
-              int           aLoginTimeout,
-              int           aResponseTimeout) throws SQLException;
+              int           aLoginTimeout) throws SQLException;
 
     void close() throws IOException;
 
@@ -43,4 +42,6 @@ public interface CmSocket
     void setSockRcvBufSize(int aSockRcvBufSize) throws IOException;
 
     int getSocketFD() throws SQLException;
+
+    void setResponseTimeout(int aResponseTimeout) throws SQLException;
 }

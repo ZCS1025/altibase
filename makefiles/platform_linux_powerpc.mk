@@ -176,7 +176,7 @@ DEP_CMD_CXX		= $(CXX) $(DEP_FLAGS) $(CC_FLAGS) $(addprefix $(DEF_OPT),$(DEFINES)
 #DEFINES    =  _POSIX_THREAD_SAFE_FUNCTIONS _REENTRANT _THREAD_SAFE
 DEFINES    =  
 
-CC_FLAGS   = -g -W -Wall
+CC_FLAGS   = -W -Wall
 
 ifeq ($(ALTI_CFG_OS),AIX)
  #if it is a nil, DEFAULT_COMPILE_BIT is 64

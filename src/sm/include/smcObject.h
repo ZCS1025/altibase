@@ -16,16 +16,15 @@
  
 
 /***********************************************************************
- * $Id: smcObject.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smcObject.h 88191 2020-07-27 03:08:54Z mason.lee $
  *
- * ë³¸ íŒŒì¼ì€ smcObjectì— ëŒ€í•œ í—¤ë” íŒŒì¼ì´ë‹¤.
+ * º» ÆÄÀÏÀº smcObject¿¡ ´ëÇÑ Çì´õ ÆÄÀÏÀÌ´Ù.
  * 
  **********************************************************************/
 
 #ifndef _O_SMC_OBJECT_H_
 #define _O_SMC_OBJECT_H_ 1
 
-#include <iduSync.h>
 
 #include <smDef.h>
 #include <smcDef.h>

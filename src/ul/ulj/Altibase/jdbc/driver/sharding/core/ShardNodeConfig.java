@@ -20,7 +20,7 @@ package Altibase.jdbc.driver.sharding.core;
 import java.util.*;
 
 /**
- * ìƒ¤ë“œ ë°ì´í„°ë…¸ë“œ êµ¬ì„±ì •ë³´ë¥¼ ë‚˜íƒ€ë‚´ëŠ” ê°ì²´.
+ * »şµå µ¥ÀÌÅÍ³ëµå ±¸¼ºÁ¤º¸¸¦ ³ªÅ¸³»´Â °´Ã¼.
  */
 public class ShardNodeConfig
 {
@@ -89,13 +89,22 @@ public class ShardNodeConfig
         List<DataNode> sResult = new ArrayList<DataNode>();
         for (DataNode sEach : mDataNodes)
         {
-            if (sEach.isTouched() && sEach.hasNoErrorOnExecute())
+            if (sEach.isTouched())
             {
                 sResult.add(sEach);
             }
         }
 
         return sResult;
+    }
+
+    void setTouchedToAllNodes()
+    {
+        for (DataNode sEach : mDataNodes)
+        {
+            sEach.setTouched(true);
+        }
+
     }
 
     public void setDataNodes(List<DataNode> aDataNodes)

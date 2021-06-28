@@ -30,6 +30,7 @@
 #include <qdbComment.h>
 #include <qdbCopySwap.h>
 #include <qmoPartition.h>
+#include <sdi.h>
 
 IDE_RC qdbCopySwap::validateCreateTableFromTableSchema( qcStatement * aStatement )
 {
@@ -40,27 +41,27 @@ IDE_RC qdbCopySwap::validateCreateTableFromTableSchema( qcStatement * aStatement
  *      CREATE TABLE [user_name.]target_table_name
  *          FROM TABLE SCHEMA [user_name.]source_table_name
  *          USING PREFIX name_prefix;
- *      êµ¬ë¬¸ì˜ Validation
+ *      ±¸¹®ÀÇ Validation
  *
  * Implementation :
  *
- *  1. Target Table Nameì„ ê²€ì‚¬í•œë‹¤.
- *      - X$, D$, V$ë¡œ ì‹œì‘í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
- *      - Table Name ì¤‘ë³µì´ ì—†ì–´ì•¼ í•œë‹¤.
+ *  1. Target Table NameÀ» °Ë»çÇÑ´Ù.
+ *      - X$, D$, V$·Î ½ÃÀÛÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
+ *      - Table Name Áßº¹ÀÌ ¾ø¾î¾ß ÇÑ´Ù.
  *
- *  2. Table ìƒì„± ê¶Œí•œì„ ê²€ì‚¬í•œë‹¤.
+ *  2. Table »ı¼º ±ÇÇÑÀ» °Ë»çÇÑ´Ù.
  *
- *  3. Targetì´ Temporary Tableì¸ì§€ ê²€ì‚¬í•œë‹¤.
- *      - ì‚¬ìš©ìê°€ TEMPORARY ì˜µì…˜ì„ ì§€ì •í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
+ *  3. TargetÀÌ Temporary TableÀÎÁö °Ë»çÇÑ´Ù.
+ *      - »ç¿ëÀÚ°¡ TEMPORARY ¿É¼ÇÀ» ÁöÁ¤ÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
  *
- *  4. Target Table Ownerì™€ Source Table Ownerê°€ ê°™ì•„ì•¼ í•œë‹¤.
+ *  4. Target Table Owner¿Í Source Table Owner°¡ °°¾Æ¾ß ÇÑ´Ù.
  *
- *  5. Source Table Nameìœ¼ë¡œ Table Infoë¥¼ ì–»ê³ , IS Lockì„ ì¡ëŠ”ë‹¤.
- *      - Partitioned Tableì´ë©´, Partition Infoë¥¼ ì–»ê³ , IS Lockì„ ì¡ëŠ”ë‹¤.
- *      - Partitioned Tableì´ë©´, Non-Partitioned Index Infoë¥¼ ì–»ê³ , IS Lockì„ ì¡ëŠ”ë‹¤.
+ *  5. Source Table NameÀ¸·Î Table Info¸¦ ¾ò°í, IS LockÀ» Àâ´Â´Ù.
+ *      - Partitioned TableÀÌ¸é, Partition Info¸¦ ¾ò°í, IS LockÀ» Àâ´Â´Ù.
+ *      - Partitioned TableÀÌ¸é, Non-Partitioned Index Info¸¦ ¾ò°í, IS LockÀ» Àâ´Â´Ù.
  *
- *  6. Sourceê°€ ì¼ë°˜ Tableì¸ì§€ ê²€ì‚¬í•œë‹¤.
- *      - TABLE_TYPE = 'T', TEMPORARY = 'N', HIDDEN = 'N' ì´ì–´ì•¼ í•œë‹¤. (SYS_TABLES_)
+ *  6. Source°¡ ÀÏ¹İ TableÀÎÁö °Ë»çÇÑ´Ù.
+ *      - TABLE_TYPE = 'T', TEMPORARY = 'N', HIDDEN = 'N' ÀÌ¾î¾ß ÇÑ´Ù. (SYS_TABLES_)
  *
  ***********************************************************************/
 
@@ -81,9 +82,9 @@ IDE_RC qdbCopySwap::validateCreateTableFromTableSchema( qcStatement * aStatement
               != IDE_SUCCESS );
     QD_SET_INIT_PART_TABLE_LIST( sParseTree->mSourcePartTable );
 
-    /* 1. Target Table Nameì„ ê²€ì‚¬í•œë‹¤.
-     *  - X$, D$, V$ë¡œ ì‹œì‘í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
-     *  - Table Name ì¤‘ë³µì´ ì—†ì–´ì•¼ í•œë‹¤.
+    /* 1. Target Table NameÀ» °Ë»çÇÑ´Ù.
+     *  - X$, D$, V$·Î ½ÃÀÛÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
+     *  - Table Name Áßº¹ÀÌ ¾ø¾î¾ß ÇÑ´Ù.
      */
     if ( qdbCommon::containDollarInName( & sParseTree->tableName ) == ID_TRUE )
     {
@@ -108,19 +109,19 @@ IDE_RC qdbCopySwap::validateCreateTableFromTableSchema( qcStatement * aStatement
 
     IDE_TEST_RAISE( sExist == ID_TRUE, ERR_EXIST_OBJECT_NAME );
 
-    /* 2. Table ìƒì„± ê¶Œí•œì„ ê²€ì‚¬í•œë‹¤. */
+    /* 2. Table »ı¼º ±ÇÇÑÀ» °Ë»çÇÑ´Ù. */
     IDE_TEST( qdpRole::checkDDLCreateTablePriv( aStatement,
                                                 sParseTree->userID )
               != IDE_SUCCESS );
 
-    /* 3. Targetì´ Temporary Tableì¸ì§€ ê²€ì‚¬í•œë‹¤.
-     *  - ì‚¬ìš©ìê°€ TEMPORARY ì˜µì…˜ì„ ì§€ì •í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
+    /* 3. TargetÀÌ Temporary TableÀÎÁö °Ë»çÇÑ´Ù.
+     *  - »ç¿ëÀÚ°¡ TEMPORARY ¿É¼ÇÀ» ÁöÁ¤ÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
      */
     IDE_TEST_RAISE( ( sParseTree->flag & QDT_CREATE_TEMPORARY_MASK )
                                       == QDT_CREATE_TEMPORARY_TRUE,
                     ERR_NOT_SUPPORTED_TEMPORARY_TABLE_FEATURE );
 
-    /* 4. Target Table Ownerì™€ Source Table Ownerê°€ ê°™ì•„ì•¼ í•œë‹¤. */
+    /* 4. Target Table Owner¿Í Source Table Owner°¡ °°¾Æ¾ß ÇÑ´Ù. */
     IDE_TEST( qdbCommon::checkTableInfo( aStatement,
                                          sParseTree->mSourceUserName,
                                          sParseTree->mSourceTableName,
@@ -132,9 +133,9 @@ IDE_RC qdbCopySwap::validateCreateTableFromTableSchema( qcStatement * aStatement
 
     IDE_TEST_RAISE( sSourceUserID != sParseTree->userID, ERR_DIFFERENT_TABLE_OWNER );
 
-    /* 5. Source Table Nameìœ¼ë¡œ Table Infoë¥¼ ì–»ê³ , IS Lockì„ ì¡ëŠ”ë‹¤.
-     *  - Partitioned Tableì´ë©´, Partition Infoë¥¼ ì–»ê³ , IS Lockì„ ì¡ëŠ”ë‹¤.
-     *  - Partitioned Tableì´ë©´, Non-Partitioned Index Infoë¥¼ ì–»ê³ , IS Lockì„ ì¡ëŠ”ë‹¤.
+    /* 5. Source Table NameÀ¸·Î Table Info¸¦ ¾ò°í, IS LockÀ» Àâ´Â´Ù.
+     *  - Partitioned TableÀÌ¸é, Partition Info¸¦ ¾ò°í, IS LockÀ» Àâ´Â´Ù.
+     *  - Partitioned TableÀÌ¸é, Non-Partitioned Index Info¸¦ ¾ò°í, IS LockÀ» Àâ´Â´Ù.
      */
     IDE_TEST( qcm::lockTableForDDLValidation( aStatement,
                                               sParseTree->mSourcePartTable->mTableHandle,
@@ -161,13 +162,23 @@ IDE_RC qdbCopySwap::validateCreateTableFromTableSchema( qcStatement * aStatement
         /* Nothing to do */
     }
 
-    /* 6. Sourceê°€ ì¼ë°˜ Tableì¸ì§€ ê²€ì‚¬í•œë‹¤.
-     *  - TABLE_TYPE = 'T', TEMPORARY = 'N', HIDDEN = 'N' ì´ì–´ì•¼ í•œë‹¤. (SYS_TABLES_)
+    /* 6. Source°¡ ÀÏ¹İ TableÀÎÁö °Ë»çÇÑ´Ù.
+     *  - TABLE_TYPE = 'T', TEMPORARY = 'N', HIDDEN = 'N' ÀÌ¾î¾ß ÇÑ´Ù. (SYS_TABLES_)
      */
     IDE_TEST( checkNormalUserTable( aStatement,
                                     sTableInfo,
                                     sParseTree->mSourceTableName )
               != IDE_SUCCESS );
+
+    if (  QCG_GET_SESSION_IS_NEED_DDL_INFO( aStatement ) == ID_TRUE )
+    {
+        qrc::setDDLSrcInfo( aStatement,
+                            ID_TRUE,
+                            0,
+                            NULL,
+                            0,
+                            NULL );
+    }
 
     return IDE_SUCCESS;
 
@@ -204,36 +215,36 @@ IDE_RC qdbCopySwap::executeCreateTableFromTableSchema( qcStatement * aStatement 
  *      CREATE TABLE [user_name.]target_table_name
  *          FROM TABLE SCHEMA [user_name.]source_table_name
  *          USING PREFIX name_prefix;
- *      êµ¬ë¬¸ì˜ Execution
+ *      ±¸¹®ÀÇ Execution
  *
  * Implementation :
  *
- *  1. Sourceì˜ Tableì— IS Lockì„ ì¡ëŠ”ë‹¤.
- *      - Partitioned Tableì´ë©´, Partitionì— IS Lockì„ ì¡ëŠ”ë‹¤.
- *      - Partitioned Tableì´ë©´, Non-Partitioned Indexì— IS Lockì„ ì¡ëŠ”ë‹¤.
+ *  1. SourceÀÇ Table¿¡ IS LockÀ» Àâ´Â´Ù.
+ *      - Partitioned TableÀÌ¸é, Partition¿¡ IS LockÀ» Àâ´Â´Ù.
+ *      - Partitioned TableÀÌ¸é, Non-Partitioned Index¿¡ IS LockÀ» Àâ´Â´Ù.
  *
- *  2. Next Table IDë¥¼ ì–»ëŠ”ë‹¤.
+ *  2. Next Table ID¸¦ ¾ò´Â´Ù.
  *
- *  3. Targetì˜ Column Arrayë¥¼ êµ¬ì„±í•œë‹¤.
- *      - Column ì •ë³´ë¥¼ Sourceì—ì„œ ë³µì‚¬í•œë‹¤.
- *      - Next Table IDë¥¼ ì´ìš©í•˜ì—¬ Column IDë¥¼ ê²°ì •í•œë‹¤. (Column ID = Table ID * 1024 + Column Order)
- *      - Hidden Columnì´ë©´ Function-based Indexì˜ Columnì´ë¯€ë¡œ, Hidden Column Nameì„ ë³€ê²½í•œë‹¤.
- *          - Hidden Column Nameì— Prefixë¥¼ ë¶™ì¸ë‹¤.
+ *  3. TargetÀÇ Column Array¸¦ ±¸¼ºÇÑ´Ù.
+ *      - Column Á¤º¸¸¦ Source¿¡¼­ º¹»çÇÑ´Ù.
+ *      - Next Table ID¸¦ ÀÌ¿ëÇÏ¿© Column ID¸¦ °áÁ¤ÇÑ´Ù. (Column ID = Table ID * 1024 + Column Order)
+ *      - Hidden ColumnÀÌ¸é Function-based IndexÀÇ ColumnÀÌ¹Ç·Î, Hidden Column NameÀ» º¯°æÇÑ´Ù.
+ *          - Hidden Column Name¿¡ Prefix¸¦ ºÙÀÎ´Ù.
  *              - Hidden Column Name = Index Name + $ + IDX + Number
  *
- *  4. Non-Partitioned Tableì´ë©´, Dictionary Tableê³¼ Dictionary Table Info Listë¥¼ ìƒì„±í•œë‹¤.
- *      - Dictionary Tableì„ ìƒì„±í•œë‹¤. (SM, Meta Table, Meta Cache)
- *      - Target Tableì˜ Columnì— Dictionary Table OIDë¥¼ ì„¤ì •í•œë‹¤.
- *      - Dictionary Table Info Listì— Dictionary Table Infoë¥¼ ì¶”ê°€í•œë‹¤.
+ *  4. Non-Partitioned TableÀÌ¸é, Dictionary Table°ú Dictionary Table Info List¸¦ »ı¼ºÇÑ´Ù.
+ *      - Dictionary TableÀ» »ı¼ºÇÑ´Ù. (SM, Meta Table, Meta Cache)
+ *      - Target TableÀÇ Column¿¡ Dictionary Table OID¸¦ ¼³Á¤ÇÑ´Ù.
+ *      - Dictionary Table Info List¿¡ Dictionary Table Info¸¦ Ãß°¡ÇÑ´Ù.
  *      - Call : qcmDictionary::createDictionaryTable()
  *
- *  5. Target Tableì„ ìƒì„±í•œë‹¤. (SM, Meta Table, Meta Cache)
- *      - Source Tableì˜ Table Optionì„ ì‚¬ìš©í•˜ì—¬, Target Tableì„ ìƒì„±í•œë‹¤. (SM)
- *      - Meta Tableì— Target Table ì •ë³´ë¥¼ ì¶”ê°€í•œë‹¤. (Meta Table)
+ *  5. Target TableÀ» »ı¼ºÇÑ´Ù. (SM, Meta Table, Meta Cache)
+ *      - Source TableÀÇ Table OptionÀ» »ç¿ëÇÏ¿©, Target TableÀ» »ı¼ºÇÑ´Ù. (SM)
+ *      - Meta Table¿¡ Target Table Á¤º¸¸¦ Ãß°¡ÇÑ´Ù. (Meta Table)
  *          - SYS_TABLES_
- *              - SMì—ì„œ ì–»ì€ Table OIDê°€ SYS_TABLES_ì— í•„ìš”í•˜ë‹¤.
- *              - REPLICATION_COUNT, REPLICATION_RECOVERY_COUNTëŠ” ì´ˆê¸°í™”í•œë‹¤.
- *              - LAST_DDL_TIMEì„ ì´ˆê¸°í™”í•œë‹¤. (SYSDATE)
+ *              - SM¿¡¼­ ¾òÀº Table OID°¡ SYS_TABLES_¿¡ ÇÊ¿äÇÏ´Ù.
+ *              - REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT´Â ÃÊ±âÈ­ÇÑ´Ù.
+ *              - LAST_DDL_TIMEÀ» ÃÊ±âÈ­ÇÑ´Ù. (SYSDATE)
  *          - SYS_COLUMNS_
  *          - SYS_ENCRYPTED_COLUMNS_
  *          - SYS_LOBS_
@@ -241,108 +252,108 @@ IDE_RC qdbCopySwap::executeCreateTableFromTableSchema( qcStatement * aStatement 
  *              - Call : qdbCommon::insertCompressionTableSpecIntoMeta()
  *          - SYS_PART_TABLES_
  *          - SYS_PART_KEY_COLUMNS_
- *      - Table Infoë¥¼ ìƒì„±í•˜ê³ , SMì— ë“±ë¡í•œë‹¤. (Meta Cache)
- *      - Table Infoë¥¼ ì–»ëŠ”ë‹¤.
+ *      - Table Info¸¦ »ı¼ºÇÏ°í, SM¿¡ µî·ÏÇÑ´Ù. (Meta Cache)
+ *      - Table Info¸¦ ¾ò´Â´Ù.
  *
- *  6. Partitioned Tableì´ë©´, Partitionì„ ìƒì„±í•œë‹¤.
- *      - Partitionì„ ìƒì„±í•œë‹¤.
- *          - Next Table Partition IDë¥¼ ì–»ëŠ”ë‹¤.
- *          - Partitionì„ ìƒì„±í•œë‹¤. (SM)
- *          - Meta Tableì— Target Partition ì •ë³´ë¥¼ ì¶”ê°€í•œë‹¤. (Meta Table)
+ *  6. Partitioned TableÀÌ¸é, PartitionÀ» »ı¼ºÇÑ´Ù.
+ *      - PartitionÀ» »ı¼ºÇÑ´Ù.
+ *          - Next Table Partition ID¸¦ ¾ò´Â´Ù.
+ *          - PartitionÀ» »ı¼ºÇÑ´Ù. (SM)
+ *          - Meta Table¿¡ Target Partition Á¤º¸¸¦ Ãß°¡ÇÑ´Ù. (Meta Table)
  *              - SYS_TABLE_PARTITIONS_
- *                  - SMì—ì„œ ì–»ì€ Partition OIDê°€ SYS_TABLE_PARTITIONS_ì— í•„ìš”í•˜ë‹¤.
- *                  - REPLICATION_COUNT, REPLICATION_RECOVERY_COUNTëŠ” ì´ˆê¸°í™”í•œë‹¤.
+ *                  - SM¿¡¼­ ¾òÀº Partition OID°¡ SYS_TABLE_PARTITIONS_¿¡ ÇÊ¿äÇÏ´Ù.
+ *                  - REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT´Â ÃÊ±âÈ­ÇÑ´Ù.
  *              - SYS_PART_LOBS_
- *      - Partition Infoë¥¼ ìƒì„±í•˜ê³ , SMì— ë“±ë¡í•œë‹¤. (Meta Cache)
- *      - Partition Infoë¥¼ ì–»ëŠ”ë‹¤.
+ *      - Partition Info¸¦ »ı¼ºÇÏ°í, SM¿¡ µî·ÏÇÑ´Ù. (Meta Cache)
+ *      - Partition Info¸¦ ¾ò´Â´Ù.
  *
- *  7. Target Tableì— Constraintë¥¼ ìƒì„±í•œë‹¤.
- *      - Next Constraint IDë¥¼ ì–»ëŠ”ë‹¤.
- *      - CONSTRAINT_NAMEì— ì‚¬ìš©ìê°€ ì§€ì •í•œ Prefixë¥¼ ë¶™ì—¬ì„œ CONSTRAINT_NAMEì„ ìƒì„±í•œë‹¤.
- *          - ìƒì„±í•œ CONSTRAINT_NAMEì´ Uniqueí•œì§€ í™•ì¸í•´ì•¼ í•œë‹¤.
- *              - CONSTRAINT_NAMEì€ Unique Indexì˜ Columnì´ ì•„ë‹ˆë‹¤. ì½”ë“œë¡œ Uniqueë¥¼ ê²€ì‚¬í•œë‹¤.
- *      - Meta Tableì— Target Tableì˜ Constraint ì •ë³´ë¥¼ ì¶”ê°€í•œë‹¤. (Meta Table)
+ *  7. Target Table¿¡ Constraint¸¦ »ı¼ºÇÑ´Ù.
+ *      - Next Constraint ID¸¦ ¾ò´Â´Ù.
+ *      - CONSTRAINT_NAME¿¡ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Prefix¸¦ ºÙ¿©¼­ CONSTRAINT_NAMEÀ» »ı¼ºÇÑ´Ù.
+ *          - »ı¼ºÇÑ CONSTRAINT_NAMEÀÌ UniqueÇÑÁö È®ÀÎÇØ¾ß ÇÑ´Ù.
+ *              - CONSTRAINT_NAMEÀº Unique IndexÀÇ ColumnÀÌ ¾Æ´Ï´Ù. ÄÚµå·Î Unique¸¦ °Ë»çÇÑ´Ù.
+ *      - Meta Table¿¡ Target TableÀÇ Constraint Á¤º¸¸¦ Ãß°¡ÇÑ´Ù. (Meta Table)
  *          - SYS_CONSTRAINTS_
- *              - Primary Key, Unique, Local Uniqueì¸ ê²½ìš°, Index IDê°€ SYS_CONSTRAINTS_ì— í•„ìš”í•˜ë‹¤.
+ *              - Primary Key, Unique, Local UniqueÀÎ °æ¿ì, Index ID°¡ SYS_CONSTRAINTS_¿¡ ÇÊ¿äÇÏ´Ù.
  *          - SYS_CONSTRAINT_COLUMNS_
  *          - SYS_CONSTRAINT_RELATED_
  *
- *  8. Target Tableì— Indexë¥¼ ìƒì„±í•œë‹¤.
- *      - Source Tableì˜ Index ì •ë³´ë¥¼ ì‚¬ìš©í•˜ì—¬, Target Tableì˜ Indexë¥¼ ìƒì„±í•œë‹¤. (SM)
- *          - Next Index IDë¥¼ ì–»ëŠ”ë‹¤.
- *          - INDEX_NAMEì— ì‚¬ìš©ìê°€ ì§€ì •í•œ Prefixë¥¼ ë¶™ì—¬ì„œ INDEX_NAMEì„ ìƒì„±í•œë‹¤.
- *          - Target Tableì˜ Table Handleì´ í•„ìš”í•˜ë‹¤.
- *      - Meta Tableì— Target Tableì˜ Index ì •ë³´ë¥¼ ì¶”ê°€í•œë‹¤. (Meta Table)
+ *  8. Target Table¿¡ Index¸¦ »ı¼ºÇÑ´Ù.
+ *      - Source TableÀÇ Index Á¤º¸¸¦ »ç¿ëÇÏ¿©, Target TableÀÇ Index¸¦ »ı¼ºÇÑ´Ù. (SM)
+ *          - Next Index ID¸¦ ¾ò´Â´Ù.
+ *          - INDEX_NAME¿¡ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Prefix¸¦ ºÙ¿©¼­ INDEX_NAMEÀ» »ı¼ºÇÑ´Ù.
+ *          - Target TableÀÇ Table HandleÀÌ ÇÊ¿äÇÏ´Ù.
+ *      - Meta Table¿¡ Target TableÀÇ Index Á¤º¸¸¦ Ãß°¡ÇÑ´Ù. (Meta Table)
  *          - SYS_INDICES_
- *              - INDEX_TABLE_IDëŠ” 0ìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
- *              - LAST_DDL_TIMEì„ ì´ˆê¸°í™”í•œë‹¤. (SYSDATE)
+ *              - INDEX_TABLE_ID´Â 0À¸·Î ÃÊ±âÈ­ÇÑ´Ù.
+ *              - LAST_DDL_TIMEÀ» ÃÊ±âÈ­ÇÑ´Ù. (SYSDATE)
  *          - SYS_INDEX_COLUMNS_
  *          - SYS_INDEX_RELATED_
  *
- *      - Partitioned Tableì´ë©´, Local Index ë˜ëŠ” Non-Partitioned Indexë¥¼ ìƒì„±í•œë‹¤.
- *          - Local Indexë¥¼ ìƒì„±í•œë‹¤.
- *              - Local Indexë¥¼ ìƒì„±í•œë‹¤. (SM)
- *              - Meta Tableì— Target Partition ì •ë³´ë¥¼ ì¶”ê°€í•œë‹¤. (Meta Table)
+ *      - Partitioned TableÀÌ¸é, Local Index ¶Ç´Â Non-Partitioned Index¸¦ »ı¼ºÇÑ´Ù.
+ *          - Local Index¸¦ »ı¼ºÇÑ´Ù.
+ *              - Local Index¸¦ »ı¼ºÇÑ´Ù. (SM)
+ *              - Meta Table¿¡ Target Partition Á¤º¸¸¦ Ãß°¡ÇÑ´Ù. (Meta Table)
  *                  - SYS_PART_INDICES_
  *                  - SYS_INDEX_PARTITIONS_
  *
- *          - Non-Partitioned Indexë¥¼ ìƒì„±í•œë‹¤.
- *              - INDEX_NAMEìœ¼ë¡œ Index Table Name, Key Index Name, Rid Index Nameì„ ê²°ì •í•œë‹¤.
+ *          - Non-Partitioned Index¸¦ »ı¼ºÇÑ´Ù.
+ *              - INDEX_NAMEÀ¸·Î Index Table Name, Key Index Name, Rid Index NameÀ» °áÁ¤ÇÑ´Ù.
  *                  - Call : qdx::checkIndexTableName()
- *              - Non-Partitioned Indexë¥¼ ìƒì„±í•œë‹¤.
- *                  - Index Tableì„ ìƒì„±í•œë‹¤. (SM, Meta Table, Meta Cache)
- *                  - Index Tableì˜ Indexë¥¼ ìƒì„±í•œë‹¤. (SM, Meta Table)
- *                  - Index Table Infoë¥¼ ë‹¤ì‹œ ì–»ëŠ”ë‹¤. (Meta Cache)
+ *              - Non-Partitioned Index¸¦ »ı¼ºÇÑ´Ù.
+ *                  - Index TableÀ» »ı¼ºÇÑ´Ù. (SM, Meta Table, Meta Cache)
+ *                  - Index TableÀÇ Index¸¦ »ı¼ºÇÑ´Ù. (SM, Meta Table)
+ *                  - Index Table Info¸¦ ´Ù½Ã ¾ò´Â´Ù. (Meta Cache)
  *                  - Call : qdx::createIndexTable(), qdx::createIndexTableIndices()
- *              - Index Table IDë¥¼ ê°±ì‹ í•œë‹¤. (SYS_INDICES_.INDEX_TABLE_ID)
+ *              - Index Table ID¸¦ °»½ÅÇÑ´Ù. (SYS_INDICES_.INDEX_TABLE_ID)
  *                  - Call : qdx::updateIndexSpecFromMeta()
  *
- *  9. Target Tableì— Triggerë¥¼ ìƒì„±í•œë‹¤.
- *      - Source Tableì˜ Trigger ì •ë³´ë¥¼ ì‚¬ìš©í•˜ì—¬, Target Tableì˜ Triggerë¥¼ ìƒì„±í•œë‹¤. (SM)
- *          - TRIGGER_NAMEì— ì‚¬ìš©ìê°€ ì§€ì •í•œ Prefixë¥¼ ë¶™ì—¬ì„œ TRIGGER_NAMEì„ ìƒì„±í•œë‹¤.
- *          - Trigger Stringsì— ìƒì„±í•œ TRIGGER_NAMEê³¼ Target Table Nameì„ ì ìš©í•œë‹¤.
- *      - Meta Tableì— Target Tableì˜ Trigger ì •ë³´ë¥¼ ì¶”ê°€í•œë‹¤. (Meta Table)
+ *  9. Target Table¿¡ Trigger¸¦ »ı¼ºÇÑ´Ù.
+ *      - Source TableÀÇ Trigger Á¤º¸¸¦ »ç¿ëÇÏ¿©, Target TableÀÇ Trigger¸¦ »ı¼ºÇÑ´Ù. (SM)
+ *          - TRIGGER_NAME¿¡ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Prefix¸¦ ºÙ¿©¼­ TRIGGER_NAMEÀ» »ı¼ºÇÑ´Ù.
+ *          - Trigger Strings¿¡ »ı¼ºÇÑ TRIGGER_NAME°ú Target Table NameÀ» Àû¿ëÇÑ´Ù.
+ *      - Meta Table¿¡ Target TableÀÇ Trigger Á¤º¸¸¦ Ãß°¡ÇÑ´Ù. (Meta Table)
  *          - SYS_TRIGGERS_
- *              - ìƒì„±í•œ TRIGGER_NAMEì„ ì‚¬ìš©í•œë‹¤.
- *              - SMì—ì„œ ì–»ì€ Trigger OIDê°€ SYS_TRIGGERS_ì— í•„ìš”í•˜ë‹¤.
- *              - ë³€ê²½í•œ Trigger Stringìœ¼ë¡œ SUBSTRING_CNT, STRING_LENGTHë¥¼ ë§Œë“¤ì–´ì•¼ í•œë‹¤.
- *              - LAST_DDL_TIMEì„ ì´ˆê¸°í™”í•œë‹¤. (SYSDATE)
+ *              - »ı¼ºÇÑ TRIGGER_NAMEÀ» »ç¿ëÇÑ´Ù.
+ *              - SM¿¡¼­ ¾òÀº Trigger OID°¡ SYS_TRIGGERS_¿¡ ÇÊ¿äÇÏ´Ù.
+ *              - º¯°æÇÑ Trigger StringÀ¸·Î SUBSTRING_CNT, STRING_LENGTH¸¦ ¸¸µé¾î¾ß ÇÑ´Ù.
+ *              - LAST_DDL_TIMEÀ» ÃÊ±âÈ­ÇÑ´Ù. (SYSDATE)
  *          - SYS_TRIGGER_STRINGS_
- *              - ê°±ì‹ í•œ Trigger Stringsì„ ì˜ë¼ ë„£ëŠ”ë‹¤.
+ *              - °»½ÅÇÑ Trigger StringsÀ» Àß¶ó ³Ö´Â´Ù.
  *          - SYS_TRIGGER_UPDATE_COLUMNS_
-                - ìƒˆë¡œìš´ TABLE_IDë¥¼ ì´ìš©í•˜ì—¬ COLUMN_IDë¥¼ ë§Œë“¤ì–´ì•¼ í•œë‹¤.
+                - »õ·Î¿î TABLE_ID¸¦ ÀÌ¿ëÇÏ¿© COLUMN_ID¸¦ ¸¸µé¾î¾ß ÇÑ´Ù.
  *          - SYS_TRIGGER_DML_TABLES_
  *
- *  10. Target Table Infoì™€ Target Partition Info Listë¥¼ ë‹¤ì‹œ ì–»ëŠ”ë‹¤.
- *      - Table Infoë¥¼ ì œê±°í•œë‹¤.
- *      - Table Infoë¥¼ ìƒì„±í•˜ê³ , SMì— ë“±ë¡í•œë‹¤.
- *      - Table Infoë¥¼ ì–»ëŠ”ë‹¤.
- *      - Partition Info Listë¥¼ ì œê±°í•œë‹¤.
- *      - Partition Info Listë¥¼ ìƒì„±í•˜ê³ , SMì— ë“±ë¡í•œë‹¤.
- *      - Partition Info Listë¥¼ ì–»ëŠ”ë‹¤.
+ *  10. Target Table Info¿Í Target Partition Info List¸¦ ´Ù½Ã ¾ò´Â´Ù.
+ *      - Table Info¸¦ Á¦°ÅÇÑ´Ù.
+ *      - Table Info¸¦ »ı¼ºÇÏ°í, SM¿¡ µî·ÏÇÑ´Ù.
+ *      - Table Info¸¦ ¾ò´Â´Ù.
+ *      - Partition Info List¸¦ Á¦°ÅÇÑ´Ù.
+ *      - Partition Info List¸¦ »ı¼ºÇÏ°í, SM¿¡ µî·ÏÇÑ´Ù.
+ *      - Partition Info List¸¦ ¾ò´Â´Ù.
  *
- *  11. Commentë¥¼ ë³µì‚¬í•œë‹¤. (Meta Table)
+ *  11. Comment¸¦ º¹»çÇÑ´Ù. (Meta Table)
  *      - SYS_COMMENTS_
- *          - TABLE_NAMEì„ Target Table Nameìœ¼ë¡œ ì§€ì •í•œë‹¤.
- *          - Hidden Columnì´ë©´ Function-based Indexì˜ Columnì´ë¯€ë¡œ, Hidden Column Nameì„ ë³€ê²½í•œë‹¤.
- *              - Hidden Column Nameì— Prefixë¥¼ ë¶™ì¸ë‹¤.
+ *          - TABLE_NAMEÀ» Target Table NameÀ¸·Î ÁöÁ¤ÇÑ´Ù.
+ *          - Hidden ColumnÀÌ¸é Function-based IndexÀÇ ColumnÀÌ¹Ç·Î, Hidden Column NameÀ» º¯°æÇÑ´Ù.
+ *              - Hidden Column Name¿¡ Prefix¸¦ ºÙÀÎ´Ù.
  *                  - Hidden Column Name = Index Name + $ + IDX + Number
- *          - ë‚˜ë¨¸ì§€ëŠ” ê·¸ëŒ€ë¡œ ë³µì‚¬í•œë‹¤.
+ *          - ³ª¸ÓÁö´Â ±×´ë·Î º¹»çÇÑ´Ù.
  *
- *  12. Viewì— ëŒ€í•´ Recompile & Set Validë¥¼ ìˆ˜í–‰í•œë‹¤.
- *      - RELATED_USER_ID = User ID, RELATED_OBJECT_NAME = Table Name, RELATED_OBJECT_TYPE = 2 ì¸ ê²½ìš°ì— í•´ë‹¹í•œë‹¤.
+ *  12. View¿¡ ´ëÇØ Recompile & Set Valid¸¦ ¼öÇàÇÑ´Ù.
+ *      - RELATED_USER_ID = User ID, RELATED_OBJECT_NAME = Table Name, RELATED_OBJECT_TYPE = 2 ÀÎ °æ¿ì¿¡ ÇØ´çÇÑ´Ù.
  *        (SYS_VIEW_RELATED_)
  *      - Call : qcmView::recompileAndSetValidViewOfRelated()
  *
- *  13. DDL_SUPPLEMENTAL_LOG_ENABLEì´ 1ì¸ ê²½ìš°, Supplemental Logë¥¼ ê¸°ë¡í•œë‹¤.
- *      - DDL Statement Textë¥¼ ê¸°ë¡í•œë‹¤.
+ *  13. DDL_SUPPLEMENTAL_LOG_ENABLEÀÌ 1ÀÎ °æ¿ì, Supplemental Log¸¦ ±â·ÏÇÑ´Ù.
+ *      - DDL Statement Text¸¦ ±â·ÏÇÑ´Ù.
  *          - Call : qciMisc::writeDDLStmtTextLog()
- *      - Table Meta Log Recordë¥¼ ê¸°ë¡í•œë‹¤.
+ *      - Table Meta Log Record¸¦ ±â·ÏÇÑ´Ù.
  *          - Call : qci::mManageReplicationCallback.mWriteTableMetaLog()
  *
- *  14. Encrypted Columnì„ ë³´ì•ˆ ëª¨ë“ˆì— ë“±ë¡í•œë‹¤.
- *      - ë³´ì•ˆ ì»¬ëŸ¼ ìƒì„± ì‹œ, ë³´ì•ˆ ëª¨ë“ˆì— Table Owner Name, Table Name, Column Name, Policy Nameì„ ë“±ë¡í•œë‹¤.
- *      - ì˜ˆì™¸ ì²˜ë¦¬ë¥¼ í•˜ì§€ ì•Šê¸° ìœ„í•´, ë§ˆì§€ë§‰ì— ìˆ˜í–‰í•œë‹¤.
+ *  14. Encrypted ColumnÀ» º¸¾È ¸ğµâ¿¡ µî·ÏÇÑ´Ù.
+ *      - º¸¾È ÄÃ·³ »ı¼º ½Ã, º¸¾È ¸ğµâ¿¡ Table Owner Name, Table Name, Column Name, Policy NameÀ» µî·ÏÇÑ´Ù.
+ *      - ¿¹¿Ü Ã³¸®¸¦ ÇÏÁö ¾Ê±â À§ÇØ, ¸¶Áö¸·¿¡ ¼öÇàÇÑ´Ù.
  *      - Call : qcsModule::setColumnPolicy()
  *
  ***********************************************************************/
@@ -374,13 +385,15 @@ IDE_RC qdbCopySwap::executeCreateTableFromTableSchema( qcStatement * aStatement 
     UInt                      sPartitionCount       = 0;
     UInt                      sPartIndicesCount     = 0;
     UInt                      i                     = 0;
+    qcmIndex                * sTempIndex		    = NULL;
+    UInt                      sShardFlag            = 0;
 
     sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;
     SMI_INIT_SCN( & sSCN );
 
-    /* 1. Sourceì˜ Tableì— IS Lockì„ ì¡ëŠ”ë‹¤.
-     *  - Partitioned Tableì´ë©´, Partitionì— IS Lockì„ ì¡ëŠ”ë‹¤.
-     *  - Partitioned Tableì´ë©´, Non-Partitioned Indexì— IS Lockì„ ì¡ëŠ”ë‹¤.
+    /* 1. SourceÀÇ Table¿¡ IS LockÀ» Àâ´Â´Ù.
+     *  - Partitioned TableÀÌ¸é, Partition¿¡ IS LockÀ» Àâ´Â´Ù.
+     *  - Partitioned TableÀÌ¸é, Non-Partitioned Index¿¡ IS LockÀ» Àâ´Â´Ù.
      */
     IDE_TEST( qcm::validateAndLockTable( aStatement,
                                          sParseTree->mSourcePartTable->mTableHandle,
@@ -394,22 +407,18 @@ IDE_RC qdbCopySwap::executeCreateTableFromTableSchema( qcStatement * aStatement 
     {
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                   sParseTree->mSourcePartTable->mPartInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                                   SMI_TABLE_LOCK_IS,
-                                                                  ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                                                    ID_ULONG_MAX :
-                                                                    smiGetDDLLockTimeOut() * 1000000 ) )
+                                                                  smiGetDDLLockTimeOut((QC_SMI_STMT(aStatement))->getTrans()))
                   != IDE_SUCCESS );
 
         sSourcePartInfoList = sParseTree->mSourcePartTable->mPartInfoList;
 
         IDE_TEST( qdx::validateAndLockIndexTableList( aStatement,
                                                       sParseTree->mSourcePartTable->mIndexTableList,
-                                                      SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                      SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                       SMI_TABLE_LOCK_IS,
-                                                      ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                                        ID_ULONG_MAX :
-                                                        smiGetDDLLockTimeOut() * 1000000 ) )
+                                                      smiGetDDLLockTimeOut((QC_SMI_STMT(aStatement))->getTrans()))
                   != IDE_SUCCESS );
 
         sSourceIndexTableList = sParseTree->mSourcePartTable->mIndexTableList;
@@ -421,7 +430,7 @@ IDE_RC qdbCopySwap::executeCreateTableFromTableSchema( qcStatement * aStatement 
         sIsPartitioned = ID_FALSE;
     }
 
-    // Constraint, Index ìƒì„±ì„ ìœ„í•œ ì¤€ë¹„
+    // Constraint, Index »ı¼ºÀ» À§ÇÑ ÁØºñ
     for ( sPartitionInfo = sSourcePartInfoList;
           sPartitionInfo != NULL;
           sPartitionInfo = sPartitionInfo->next )
@@ -429,7 +438,7 @@ IDE_RC qdbCopySwap::executeCreateTableFromTableSchema( qcStatement * aStatement 
         sPartitionCount++;
     }
 
-    // Constraint, Index ìƒì„±ì„ ìœ„í•œ ì¤€ë¹„
+    // Constraint, Index »ı¼ºÀ» À§ÇÑ ÁØºñ
     if ( sSourceTableInfo->indexCount > 0 )
     {
         IDU_FIT_POINT( "qdbCopySwap::executeCreateTableFromTableSchema::alloc::sTableIndices",
@@ -489,20 +498,20 @@ IDE_RC qdbCopySwap::executeCreateTableFromTableSchema( qcStatement * aStatement 
         /* Nothing to do */
     }
 
-    /* 2. Next Table IDë¥¼ ì–»ëŠ”ë‹¤. */
+    /* 2. Next Table ID¸¦ ¾ò´Â´Ù. */
     IDE_TEST( qcm::getNextTableID( aStatement, & sTableID ) != IDE_SUCCESS );
 
-    /* 3. Targetì˜ Column Arrayë¥¼ êµ¬ì„±í•œë‹¤.
-     *  - Column ì •ë³´ë¥¼ Sourceì—ì„œ ë³µì‚¬í•œë‹¤.
-     *  - Next Table IDë¥¼ ì´ìš©í•˜ì—¬ Column IDë¥¼ ê²°ì •í•œë‹¤. (Column ID = Table ID * 1024 + Column Order)
-     *  - Hidden Columnì´ë©´ Function-based Indexì˜ Columnì´ë¯€ë¡œ, Hidden Column Nameì„ ë³€ê²½í•œë‹¤.
-     *      - Hidden Column Nameì— Prefixë¥¼ ë¶™ì¸ë‹¤.
+    /* 3. TargetÀÇ Column Array¸¦ ±¸¼ºÇÑ´Ù.
+     *  - Column Á¤º¸¸¦ Source¿¡¼­ º¹»çÇÑ´Ù.
+     *  - Next Table ID¸¦ ÀÌ¿ëÇÏ¿© Column ID¸¦ °áÁ¤ÇÑ´Ù. (Column ID = Table ID * 1024 + Column Order)
+     *  - Hidden ColumnÀÌ¸é Function-based IndexÀÇ ColumnÀÌ¹Ç·Î, Hidden Column NameÀ» º¯°æÇÑ´Ù.
+     *      - Hidden Column Name¿¡ Prefix¸¦ ºÙÀÎ´Ù.
      *          - Hidden Column Name = Index Name + $ + IDX + Number
      */
-    // ì•„ë˜ì—ì„œ Target Tableì„ ìƒì„±í•  ë•Œ, qdbCommon::createTableOnSM()ì—ì„œ Column ì •ë³´ë¡œ qcmColumnì„ ìš”êµ¬í•œë‹¤.
+    // ¾Æ·¡¿¡¼­ Target TableÀ» »ı¼ºÇÒ ¶§, qdbCommon::createTableOnSM()¿¡¼­ Column Á¤º¸·Î qcmColumnÀ» ¿ä±¸ÇÑ´Ù.
     //  - qdbCommon::createTableOnSM()
-    //      - ì‹¤ì œë¡œ í•„ìš”í•œ ì •ë³´ëŠ” mtcColumnì´ë‹¤.
-    //      - Column IDë¥¼ ìƒˆë¡œ ìƒì„±í•˜ê³ , Column í†µê³„ ì •ë³´ë¥¼ ì´ˆê¸°í™”í•œë‹¤. (ë§¤ê°œë³€ìˆ˜ì¸ qcmColumnì„ ìˆ˜ì •í•œë‹¤.)
+    //      - ½ÇÁ¦·Î ÇÊ¿äÇÑ Á¤º¸´Â mtcColumnÀÌ´Ù.
+    //      - Column ID¸¦ »õ·Î »ı¼ºÇÏ°í, Column Åë°è Á¤º¸¸¦ ÃÊ±âÈ­ÇÑ´Ù. (¸Å°³º¯¼öÀÎ qcmColumnÀ» ¼öÁ¤ÇÑ´Ù.)
     IDE_TEST( qcm::copyQcmColumns( QC_QMX_MEM( aStatement ),
                                    sSourceTableInfo->columns,
                                    & sParseTree->columns,
@@ -528,10 +537,10 @@ IDE_RC qdbCopySwap::executeCreateTableFromTableSchema( qcStatement * aStatement 
         }
     }
 
-    /* 4. Non-Partitioned Tableì´ë©´, Dictionary Tableê³¼ Dictionary Table Info Listë¥¼ ìƒì„±í•œë‹¤.
-     *  - Dictionary Tableì„ ìƒì„±í•œë‹¤. (SM, Meta Table, Meta Cache)
-     *  - Target Tableì˜ Columnì— Dictionary Table OIDë¥¼ ì„¤ì •í•œë‹¤.
-     *  - Dictionary Table Info Listì— Dictionary Table Infoë¥¼ ì¶”ê°€í•œë‹¤.
+    /* 4. Non-Partitioned TableÀÌ¸é, Dictionary Table°ú Dictionary Table Info List¸¦ »ı¼ºÇÑ´Ù.
+     *  - Dictionary TableÀ» »ı¼ºÇÑ´Ù. (SM, Meta Table, Meta Cache)
+     *  - Target TableÀÇ Column¿¡ Dictionary Table OID¸¦ ¼³Á¤ÇÑ´Ù.
+     *  - Dictionary Table Info List¿¡ Dictionary Table Info¸¦ Ãß°¡ÇÑ´Ù.
      *  - Call : qcmDictionary::createDictionaryTable()
      */
     for ( sColumn = sParseTree->columns; sColumn != NULL; sColumn = sColumn->next )
@@ -539,11 +548,11 @@ IDE_RC qdbCopySwap::executeCreateTableFromTableSchema( qcStatement * aStatement 
         if ( ( sColumn->basicInfo->column.flag & SMI_COLUMN_COMPRESSION_MASK )
                                               == SMI_COLUMN_COMPRESSION_TRUE )
         {
-            // ê¸°ì¡´ Dictionary Table Infoë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+            // ±âÁ¸ Dictionary Table Info¸¦ °¡Á®¿Â´Ù.
             sDicTableInfo = (qcmTableInfo *)smiGetTableRuntimeInfoFromTableOID(
                                             sColumn->basicInfo->column.mDictionaryTableOID );
 
-            // Dictionary Tableì—ì„œ Replication ì •ë³´ë¥¼ ì œê±°í•œë‹¤.
+            // Dictionary Table¿¡¼­ Replication Á¤º¸¸¦ Á¦°ÅÇÑ´Ù.
             sTableFlag  = sDicTableInfo->tableFlag;
             sTableFlag &= ( ~SMI_TABLE_REPLICATION_MASK );
             sTableFlag |= SMI_TABLE_REPLICATION_DISABLE;
@@ -568,13 +577,13 @@ IDE_RC qdbCopySwap::executeCreateTableFromTableSchema( qcStatement * aStatement 
         }
     }
 
-    /* 5. Target Tableì„ ìƒì„±í•œë‹¤. (SM, Meta Table, Meta Cache)
-     *  - Source Tableì˜ Table Optionì„ ì‚¬ìš©í•˜ì—¬, Target Tableì„ ìƒì„±í•œë‹¤. (SM)
-     *  - Meta Tableì— Target Table ì •ë³´ë¥¼ ì¶”ê°€í•œë‹¤. (Meta Table)
+    /* 5. Target TableÀ» »ı¼ºÇÑ´Ù. (SM, Meta Table, Meta Cache)
+     *  - Source TableÀÇ Table OptionÀ» »ç¿ëÇÏ¿©, Target TableÀ» »ı¼ºÇÑ´Ù. (SM)
+     *  - Meta Table¿¡ Target Table Á¤º¸¸¦ Ãß°¡ÇÑ´Ù. (Meta Table)
      *      - SYS_TABLES_
-     *          - SMì—ì„œ ì–»ì€ Table OIDê°€ SYS_TABLES_ì— í•„ìš”í•˜ë‹¤.
-     *          - REPLICATION_COUNT, REPLICATION_RECOVERY_COUNTëŠ” ì´ˆê¸°í™”í•œë‹¤.
-     *          - LAST_DDL_TIMEì„ ì´ˆê¸°í™”í•œë‹¤. (SYSDATE)
+     *          - SM¿¡¼­ ¾òÀº Table OID°¡ SYS_TABLES_¿¡ ÇÊ¿äÇÏ´Ù.
+     *          - REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT´Â ÃÊ±âÈ­ÇÑ´Ù.
+     *          - LAST_DDL_TIMEÀ» ÃÊ±âÈ­ÇÑ´Ù. (SYSDATE)
      *      - SYS_COLUMNS_
      *      - SYS_ENCRYPTED_COLUMNS_
      *      - SYS_LOBS_
@@ -582,11 +591,11 @@ IDE_RC qdbCopySwap::executeCreateTableFromTableSchema( qcStatement * aStatement 
      *          - Call : qdbCommon::insertCompressionTableSpecIntoMeta()
      *      - SYS_PART_TABLES_
      *      - SYS_PART_KEY_COLUMNS_
-     *  - Table Infoë¥¼ ìƒì„±í•˜ê³ , SMì— ë“±ë¡í•œë‹¤. (Meta Cache)
-     *  - Table Infoë¥¼ ì–»ëŠ”ë‹¤.
+     *  - Table Info¸¦ »ı¼ºÇÏ°í, SM¿¡ µî·ÏÇÑ´Ù. (Meta Cache)
+     *  - Table Info¸¦ ¾ò´Â´Ù.
      */
 
-    // Tableì—ì„œ Replication ì •ë³´ë¥¼ ì œê±°í•œë‹¤.
+    // Table¿¡¼­ Replication Á¤º¸¸¦ Á¦°ÅÇÑ´Ù.
     sTableFlag  = sSourceTableInfo->tableFlag;
     sTableFlag &= ( ~SMI_TABLE_REPLICATION_MASK );
     sTableFlag |= SMI_TABLE_REPLICATION_DISABLE;
@@ -607,6 +616,17 @@ IDE_RC qdbCopySwap::executeCreateTableFromTableSchema( qcStatement * aStatement 
                                           & sTableOID )
               != IDE_SUCCESS );
 
+    /* TASK-7307 DML Data Consistency in Shard */
+    if ( sParseTree->mShardFlag == QCM_SHARD_FLAG_TABLE_BACKUP )
+    {
+        sShardFlag &= ~QCM_TABLE_SHARD_FLAG_TABLE_MASK;
+        sShardFlag |= QCM_TABLE_SHARD_FLAG_TABLE_BACKUP;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
     IDE_TEST( qdbCommon::insertTableSpecIntoMeta( aStatement,
                                                   sIsPartitioned,
                                                   sParseTree->flag,
@@ -621,7 +641,8 @@ IDE_RC qdbCopySwap::executeCreateTableFromTableSchema( qcStatement * aStatement 
                                                   sSourceTableInfo->segAttr,
                                                   sSourceTableInfo->segStoAttr,
                                                   QCM_TEMPORARY_ON_COMMIT_NONE,
-                                                  sSourceTableInfo->parallelDegree )
+                                                  sSourceTableInfo->parallelDegree,
+                                                  sShardFlag )
               != IDE_SUCCESS );
 
     IDE_TEST( qdbCommon::insertColumnSpecIntoMeta( aStatement,
@@ -631,7 +652,7 @@ IDE_RC qdbCopySwap::executeCreateTableFromTableSchema( qcStatement * aStatement 
                                                    ID_FALSE )
               != IDE_SUCCESS );
 
-    // DEFAULT_VALëŠ” qtcNodeë¥¼ ìš”êµ¬í•˜ë¯€ë¡œ, ë³„ë„ë¡œ ê°±ì‹ í•œë‹¤.
+    // DEFAULT_VAL´Â qtcNode¸¦ ¿ä±¸ÇÏ¹Ç·Î, º°µµ·Î °»½ÅÇÑ´Ù.
     IDE_TEST( qdbCopySwap::updateColumnDefaultValueMeta( aStatement,
                                                          sTableID,
                                                          sSourceTableInfo->tableID,
@@ -692,17 +713,17 @@ IDE_RC qdbCopySwap::executeCreateTableFromTableSchema( qcStatement * aStatement 
                                          SMI_TABLE_LOCK_X )
               != IDE_SUCCESS );
 
-    /* 6. Partitioned Tableì´ë©´, Partitionì„ ìƒì„±í•œë‹¤.
-     *  - Partitionì„ ìƒì„±í•œë‹¤.
-     *      - Next Table Partition IDë¥¼ ì–»ëŠ”ë‹¤.
-     *      - Partitionì„ ìƒì„±í•œë‹¤. (SM)
-     *      - Meta Tableì— Target Partition ì •ë³´ë¥¼ ì¶”ê°€í•œë‹¤. (Meta Table)
+    /* 6. Partitioned TableÀÌ¸é, PartitionÀ» »ı¼ºÇÑ´Ù.
+     *  - PartitionÀ» »ı¼ºÇÑ´Ù.
+     *      - Next Table Partition ID¸¦ ¾ò´Â´Ù.
+     *      - PartitionÀ» »ı¼ºÇÑ´Ù. (SM)
+     *      - Meta Table¿¡ Target Partition Á¤º¸¸¦ Ãß°¡ÇÑ´Ù. (Meta Table)
      *          - SYS_TABLE_PARTITIONS_
-     *              - SMì—ì„œ ì–»ì€ Partition OIDê°€ SYS_TABLE_PARTITIONS_ì— í•„ìš”í•˜ë‹¤.
-     *              - REPLICATION_COUNT, REPLICATION_RECOVERY_COUNTëŠ” ì´ˆê¸°í™”í•œë‹¤.
+     *              - SM¿¡¼­ ¾òÀº Partition OID°¡ SYS_TABLE_PARTITIONS_¿¡ ÇÊ¿äÇÏ´Ù.
+     *              - REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT´Â ÃÊ±âÈ­ÇÑ´Ù.
      *          - SYS_PART_LOBS_
-     *  - Partition Infoë¥¼ ìƒì„±í•˜ê³ , SMì— ë“±ë¡í•œë‹¤. (Meta Cache)
-     *  - Partition Infoë¥¼ ì–»ëŠ”ë‹¤.
+     *  - Partition Info¸¦ »ı¼ºÇÏ°í, SM¿¡ µî·ÏÇÑ´Ù. (Meta Cache)
+     *  - Partition Info¸¦ ¾ò´Â´Ù.
      */
     if ( sIsPartitioned == ID_TRUE )
     {
@@ -715,11 +736,9 @@ IDE_RC qdbCopySwap::executeCreateTableFromTableSchema( qcStatement * aStatement 
 
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                   sPartInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                                   SMI_TABLE_LOCK_X,
-                                                                  ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                                                    ID_ULONG_MAX :
-                                                                    smiGetDDLLockTimeOut() * 1000000 ) )
+                                                                  smiGetDDLLockTimeOut((QC_SMI_STMT(aStatement))->getTrans()))
                   != IDE_SUCCESS );
     }
     else
@@ -727,45 +746,45 @@ IDE_RC qdbCopySwap::executeCreateTableFromTableSchema( qcStatement * aStatement 
         /* Nothing to do */
     }
 
-    /* 7. Target Tableì— Constraintë¥¼ ìƒì„±í•œë‹¤.
-     *  - Next Constraint IDë¥¼ ì–»ëŠ”ë‹¤.
-     *  - CONSTRAINT_NAMEì— ì‚¬ìš©ìê°€ ì§€ì •í•œ Prefixë¥¼ ë¶™ì—¬ì„œ CONSTRAINT_NAMEì„ ìƒì„±í•œë‹¤.
-     *      - ìƒì„±í•œ CONSTRAINT_NAMEì´ Uniqueí•œì§€ í™•ì¸í•´ì•¼ í•œë‹¤.
-     *          - CONSTRAINT_NAMEì€ Unique Indexì˜ Columnì´ ì•„ë‹ˆë‹¤. ì½”ë“œë¡œ Uniqueë¥¼ ê²€ì‚¬í•œë‹¤.
-     *  - Meta Tableì— Target Tableì˜ Constraint ì •ë³´ë¥¼ ì¶”ê°€í•œë‹¤. (Meta Table)
+    /* 7. Target Table¿¡ Constraint¸¦ »ı¼ºÇÑ´Ù.
+     *  - Next Constraint ID¸¦ ¾ò´Â´Ù.
+     *  - CONSTRAINT_NAME¿¡ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Prefix¸¦ ºÙ¿©¼­ CONSTRAINT_NAMEÀ» »ı¼ºÇÑ´Ù.
+     *      - »ı¼ºÇÑ CONSTRAINT_NAMEÀÌ UniqueÇÑÁö È®ÀÎÇØ¾ß ÇÑ´Ù.
+     *          - CONSTRAINT_NAMEÀº Unique IndexÀÇ ColumnÀÌ ¾Æ´Ï´Ù. ÄÚµå·Î Unique¸¦ °Ë»çÇÑ´Ù.
+     *  - Meta Table¿¡ Target TableÀÇ Constraint Á¤º¸¸¦ Ãß°¡ÇÑ´Ù. (Meta Table)
      *      - SYS_CONSTRAINTS_
-     *          - Primary Key, Unique, Local Uniqueì¸ ê²½ìš°, Index IDê°€ SYS_CONSTRAINTS_ì— í•„ìš”í•˜ë‹¤.
+     *          - Primary Key, Unique, Local UniqueÀÎ °æ¿ì, Index ID°¡ SYS_CONSTRAINTS_¿¡ ÇÊ¿äÇÏ´Ù.
      *      - SYS_CONSTRAINT_COLUMNS_
      *      - SYS_CONSTRAINT_RELATED_
      */
-    /* 8. Target Tableì— Indexë¥¼ ìƒì„±í•œë‹¤.
-     *  - Source Tableì˜ Index ì •ë³´ë¥¼ ì‚¬ìš©í•˜ì—¬, Target Tableì˜ Indexë¥¼ ìƒì„±í•œë‹¤. (SM)
-     *      - Next Index IDë¥¼ ì–»ëŠ”ë‹¤.
-     *      - INDEX_NAMEì— ì‚¬ìš©ìê°€ ì§€ì •í•œ Prefixë¥¼ ë¶™ì—¬ì„œ INDEX_NAMEì„ ìƒì„±í•œë‹¤.
-     *      - Target Tableì˜ Table Handleì´ í•„ìš”í•˜ë‹¤.
-     *  - Meta Tableì— Target Tableì˜ Index ì •ë³´ë¥¼ ì¶”ê°€í•œë‹¤. (Meta Table)
+    /* 8. Target Table¿¡ Index¸¦ »ı¼ºÇÑ´Ù.
+     *  - Source TableÀÇ Index Á¤º¸¸¦ »ç¿ëÇÏ¿©, Target TableÀÇ Index¸¦ »ı¼ºÇÑ´Ù. (SM)
+     *      - Next Index ID¸¦ ¾ò´Â´Ù.
+     *      - INDEX_NAME¿¡ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Prefix¸¦ ºÙ¿©¼­ INDEX_NAMEÀ» »ı¼ºÇÑ´Ù.
+     *      - Target TableÀÇ Table HandleÀÌ ÇÊ¿äÇÏ´Ù.
+     *  - Meta Table¿¡ Target TableÀÇ Index Á¤º¸¸¦ Ãß°¡ÇÑ´Ù. (Meta Table)
      *      - SYS_INDICES_
-     *          - INDEX_TABLE_IDëŠ” 0ìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
-     *          - LAST_DDL_TIMEì„ ì´ˆê¸°í™”í•œë‹¤. (SYSDATE)
+     *          - INDEX_TABLE_ID´Â 0À¸·Î ÃÊ±âÈ­ÇÑ´Ù.
+     *          - LAST_DDL_TIMEÀ» ÃÊ±âÈ­ÇÑ´Ù. (SYSDATE)
      *      - SYS_INDEX_COLUMNS_
      *      - SYS_INDEX_RELATED_
      *
-     *  - Partitioned Tableì´ë©´, Local Index ë˜ëŠ” Non-Partitioned Indexë¥¼ ìƒì„±í•œë‹¤.
-     *      - Local Indexë¥¼ ìƒì„±í•œë‹¤.
-     *          - Local Indexë¥¼ ìƒì„±í•œë‹¤. (SM)
-     *          - Meta Tableì— Target Partition ì •ë³´ë¥¼ ì¶”ê°€í•œë‹¤. (Meta Table)
+     *  - Partitioned TableÀÌ¸é, Local Index ¶Ç´Â Non-Partitioned Index¸¦ »ı¼ºÇÑ´Ù.
+     *      - Local Index¸¦ »ı¼ºÇÑ´Ù.
+     *          - Local Index¸¦ »ı¼ºÇÑ´Ù. (SM)
+     *          - Meta Table¿¡ Target Partition Á¤º¸¸¦ Ãß°¡ÇÑ´Ù. (Meta Table)
      *              - SYS_PART_INDICES_
      *              - SYS_INDEX_PARTITIONS_
      *
-     *      - Non-Partitioned Indexë¥¼ ìƒì„±í•œë‹¤.
-     *          - INDEX_NAMEìœ¼ë¡œ Index Table Name, Key Index Name, Rid Index Nameì„ ê²°ì •í•œë‹¤.
+     *      - Non-Partitioned Index¸¦ »ı¼ºÇÑ´Ù.
+     *          - INDEX_NAMEÀ¸·Î Index Table Name, Key Index Name, Rid Index NameÀ» °áÁ¤ÇÑ´Ù.
      *              - Call : qdx::checkIndexTableName()
-     *          - Non-Partitioned Indexë¥¼ ìƒì„±í•œë‹¤.
-     *              - Index Tableì„ ìƒì„±í•œë‹¤. (SM, Meta Table, Meta Cache)
-     *              - Index Tableì˜ Indexë¥¼ ìƒì„±í•œë‹¤. (SM, Meta Table)
-     *              - Index Table Infoë¥¼ ë‹¤ì‹œ ì–»ëŠ”ë‹¤. (Meta Cache)
+     *          - Non-Partitioned Index¸¦ »ı¼ºÇÑ´Ù.
+     *              - Index TableÀ» »ı¼ºÇÑ´Ù. (SM, Meta Table, Meta Cache)
+     *              - Index TableÀÇ Index¸¦ »ı¼ºÇÑ´Ù. (SM, Meta Table)
+     *              - Index Table Info¸¦ ´Ù½Ã ¾ò´Â´Ù. (Meta Cache)
      *              - Call : qdx::createIndexTable(), qdx::createIndexTableIndices()
-     *          - Index Table IDë¥¼ ê°±ì‹ í•œë‹¤. (SYS_INDICES_.INDEX_TABLE_ID)
+     *          - Index Table ID¸¦ °»½ÅÇÑ´Ù. (SYS_INDICES_.INDEX_TABLE_ID)
      *              - Call : qdx::updateIndexSpecFromMeta()
      */
     IDE_TEST( createConstraintAndIndexFromInfo( aStatement,
@@ -782,20 +801,20 @@ IDE_RC qdbCopySwap::executeCreateTableFromTableSchema( qcStatement * aStatement 
                                                 sParseTree->mNamesPrefix )
               != IDE_SUCCESS );
 
-    /* 9. Target Tableì— Triggerë¥¼ ìƒì„±í•œë‹¤.
-     *  - Source Tableì˜ Trigger ì •ë³´ë¥¼ ì‚¬ìš©í•˜ì—¬, Target Tableì˜ Triggerë¥¼ ìƒì„±í•œë‹¤. (SM)
-     *      - TRIGGER_NAMEì— ì‚¬ìš©ìê°€ ì§€ì •í•œ Prefixë¥¼ ë¶™ì—¬ì„œ TRIGGER_NAMEì„ ìƒì„±í•œë‹¤.
-     *      - Trigger Stringsì— ìƒì„±í•œ TRIGGER_NAMEê³¼ Target Table Nameì„ ì ìš©í•œë‹¤.
-     *  - Meta Tableì— Target Tableì˜ Trigger ì •ë³´ë¥¼ ì¶”ê°€í•œë‹¤. (Meta Table)
+    /* 9. Target Table¿¡ Trigger¸¦ »ı¼ºÇÑ´Ù.
+     *  - Source TableÀÇ Trigger Á¤º¸¸¦ »ç¿ëÇÏ¿©, Target TableÀÇ Trigger¸¦ »ı¼ºÇÑ´Ù. (SM)
+     *      - TRIGGER_NAME¿¡ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Prefix¸¦ ºÙ¿©¼­ TRIGGER_NAMEÀ» »ı¼ºÇÑ´Ù.
+     *      - Trigger Strings¿¡ »ı¼ºÇÑ TRIGGER_NAME°ú Target Table NameÀ» Àû¿ëÇÑ´Ù.
+     *  - Meta Table¿¡ Target TableÀÇ Trigger Á¤º¸¸¦ Ãß°¡ÇÑ´Ù. (Meta Table)
      *      - SYS_TRIGGERS_
-     *          - ìƒì„±í•œ TRIGGER_NAMEì„ ì‚¬ìš©í•œë‹¤.
-     *          - SMì—ì„œ ì–»ì€ Trigger OIDê°€ SYS_TRIGGERS_ì— í•„ìš”í•˜ë‹¤.
-     *          - ë³€ê²½í•œ Trigger Stringìœ¼ë¡œ SUBSTRING_CNT, STRING_LENGTHë¥¼ ë§Œë“¤ì–´ì•¼ í•œë‹¤.
-     *          - LAST_DDL_TIMEì„ ì´ˆê¸°í™”í•œë‹¤. (SYSDATE)
+     *          - »ı¼ºÇÑ TRIGGER_NAMEÀ» »ç¿ëÇÑ´Ù.
+     *          - SM¿¡¼­ ¾òÀº Trigger OID°¡ SYS_TRIGGERS_¿¡ ÇÊ¿äÇÏ´Ù.
+     *          - º¯°æÇÑ Trigger StringÀ¸·Î SUBSTRING_CNT, STRING_LENGTH¸¦ ¸¸µé¾î¾ß ÇÑ´Ù.
+     *          - LAST_DDL_TIMEÀ» ÃÊ±âÈ­ÇÑ´Ù. (SYSDATE)
      *      - SYS_TRIGGER_STRINGS_
-     *          - ê°±ì‹ í•œ Trigger Stringsì„ ì˜ë¼ ë„£ëŠ”ë‹¤.
+     *          - °»½ÅÇÑ Trigger StringsÀ» Àß¶ó ³Ö´Â´Ù.
      *      - SYS_TRIGGER_UPDATE_COLUMNS_
-     *          - ìƒˆë¡œìš´ TABLE_IDë¥¼ ì´ìš©í•˜ì—¬ COLUMN_IDë¥¼ ë§Œë“¤ì–´ì•¼ í•œë‹¤.
+     *          - »õ·Î¿î TABLE_ID¸¦ ÀÌ¿ëÇÏ¿© COLUMN_ID¸¦ ¸¸µé¾î¾ß ÇÑ´Ù.
      *      - SYS_TRIGGER_DML_TABLES_
      */
     IDE_TEST( qdnTrigger::executeCopyTable( aStatement,
@@ -805,13 +824,13 @@ IDE_RC qdbCopySwap::executeCreateTableFromTableSchema( qcStatement * aStatement 
                                             & sTargetTriggerCache )
               != IDE_SUCCESS );
 
-    /* 10. Target Table Infoì™€ Target Partition Info Listë¥¼ ë‹¤ì‹œ ì–»ëŠ”ë‹¤.
-     *  - Table Infoë¥¼ ì œê±°í•œë‹¤.
-     *  - Table Infoë¥¼ ìƒì„±í•˜ê³ , SMì— ë“±ë¡í•œë‹¤.
-     *  - Table Infoë¥¼ ì–»ëŠ”ë‹¤.
-     *  - Partition Info Listë¥¼ ì œê±°í•œë‹¤.
-     *  - Partition Info Listë¥¼ ìƒì„±í•˜ê³ , SMì— ë“±ë¡í•œë‹¤.
-     *  - Partition Info Listë¥¼ ì–»ëŠ”ë‹¤.
+    /* 10. Target Table Info¿Í Target Partition Info List¸¦ ´Ù½Ã ¾ò´Â´Ù.
+     *  - Table Info¸¦ Á¦°ÅÇÑ´Ù.
+     *  - Table Info¸¦ »ı¼ºÇÏ°í, SM¿¡ µî·ÏÇÑ´Ù.
+     *  - Table Info¸¦ ¾ò´Â´Ù.
+     *  - Partition Info List¸¦ Á¦°ÅÇÑ´Ù.
+     *  - Partition Info List¸¦ »ı¼ºÇÏ°í, SM¿¡ µî·ÏÇÑ´Ù.
+     *  - Partition Info List¸¦ ¾ò´Â´Ù.
      */
     (void)qcm::destroyQcmTableInfo( sTableInfo );
     sTableInfo = NULL;
@@ -849,21 +868,21 @@ IDE_RC qdbCopySwap::executeCreateTableFromTableSchema( qcStatement * aStatement 
         /* Nothing to do */
     }
 
-    /* 11. Commentë¥¼ ë³µì‚¬í•œë‹¤. (Meta Table)
+    /* 11. Comment¸¦ º¹»çÇÑ´Ù. (Meta Table)
      *  - SYS_COMMENTS_
-     *      - TABLE_NAMEì„ Target Table Nameìœ¼ë¡œ ì§€ì •í•œë‹¤.
-     *      - Hidden Columnì´ë©´ Function-based Indexì˜ Columnì´ë¯€ë¡œ, Hidden Column Nameì„ ë³€ê²½í•œë‹¤.
-     *          - Hidden Column Nameì— Prefixë¥¼ ë¶™ì¸ë‹¤.
+     *      - TABLE_NAMEÀ» Target Table NameÀ¸·Î ÁöÁ¤ÇÑ´Ù.
+     *      - Hidden ColumnÀÌ¸é Function-based IndexÀÇ ColumnÀÌ¹Ç·Î, Hidden Column NameÀ» º¯°æÇÑ´Ù.
+     *          - Hidden Column Name¿¡ Prefix¸¦ ºÙÀÎ´Ù.
      *              - Hidden Column Name = Index Name + $ + IDX + Number
-     *      - ë‚˜ë¨¸ì§€ëŠ” ê·¸ëŒ€ë¡œ ë³µì‚¬í•œë‹¤.
+     *      - ³ª¸ÓÁö´Â ±×´ë·Î º¹»çÇÑ´Ù.
      */
     IDE_TEST( qdbComment::copyCommentsMeta( aStatement,
                                             sSourceTableInfo,
                                             sTableInfo )
               != IDE_SUCCESS );
 
-    /* 12. Viewì— ëŒ€í•´ Recompile & Set Validë¥¼ ìˆ˜í–‰í•œë‹¤.
-     *  - RELATED_USER_ID = User ID, RELATED_OBJECT_NAME = Table Name, RELATED_OBJECT_TYPE = 2 ì¸ ê²½ìš°ì— í•´ë‹¹í•œë‹¤.
+    /* 12. View¿¡ ´ëÇØ Recompile & Set Valid¸¦ ¼öÇàÇÑ´Ù.
+     *  - RELATED_USER_ID = User ID, RELATED_OBJECT_NAME = Table Name, RELATED_OBJECT_TYPE = 2 ÀÎ °æ¿ì¿¡ ÇØ´çÇÑ´Ù.
      *    (SYS_VIEW_RELATED_)
      *  - Call : qcmView::recompileAndSetValidViewOfRelated()
      */
@@ -874,10 +893,10 @@ IDE_RC qdbCopySwap::executeCreateTableFromTableSchema( qcStatement * aStatement 
                                                           QS_TABLE )
               != IDE_SUCCESS );
 
-    /* 13. DDL_SUPPLEMENTAL_LOG_ENABLEì´ 1ì¸ ê²½ìš°, Supplemental Logë¥¼ ê¸°ë¡í•œë‹¤.
-     *  - DDL Statement Textë¥¼ ê¸°ë¡í•œë‹¤.
+    /* 13. DDL_SUPPLEMENTAL_LOG_ENABLEÀÌ 1ÀÎ °æ¿ì, Supplemental Log¸¦ ±â·ÏÇÑ´Ù.
+     *  - DDL Statement Text¸¦ ±â·ÏÇÑ´Ù.
      *      - Call : qciMisc::writeDDLStmtTextLog()
-     *  - Table Meta Log Recordë¥¼ ê¸°ë¡í•œë‹¤.
+     *  - Table Meta Log Record¸¦ ±â·ÏÇÑ´Ù.
      *      - Call : qci::mManageReplicationCallback.mWriteTableMetaLog()
      */
     if ( QCU_DDL_SUPPLEMENTAL_LOG == 1 )
@@ -897,15 +916,34 @@ IDE_RC qdbCopySwap::executeCreateTableFromTableSchema( qcStatement * aStatement 
         /* Nothing to do */
     }
 
-    /* 14. Encrypted Columnì„ ë³´ì•ˆ ëª¨ë“ˆì— ë“±ë¡í•œë‹¤.
-     *  - ë³´ì•ˆ ì»¬ëŸ¼ ìƒì„± ì‹œ, ë³´ì•ˆ ëª¨ë“ˆì— Table Owner Name, Table Name, Column Name, Policy Nameì„ ë“±ë¡í•œë‹¤.
-     *  - ì˜ˆì™¸ ì²˜ë¦¬ë¥¼ í•˜ì§€ ì•Šê¸° ìœ„í•´, ë§ˆì§€ë§‰ì— ìˆ˜í–‰í•œë‹¤.
+    if (  QCG_GET_SESSION_IS_NEED_DDL_INFO( aStatement ) == ID_TRUE )
+    {
+        /* BUG-47811 DDL that requires NEED_DDL_INFO (transactional DDL, DDL Sync, DDL ASync )
+         * should not have global non parititioned index. */
+        IDE_TEST_RAISE( qcm::existGlobalNonPartitionedIndex( sTableInfo, &sTempIndex ) == ID_TRUE,
+                        ERR_NOT_SUPPORT_GLOBAL_NON_PARTITION_INDEX );
+
+        qrc::setDDLDestInfo( aStatement,
+                             1,
+                             &(sTableInfo->tableOID),
+                             0,
+                             NULL );
+    }
+
+    /* 14. Encrypted ColumnÀ» º¸¾È ¸ğµâ¿¡ µî·ÏÇÑ´Ù.
+     *  - º¸¾È ÄÃ·³ »ı¼º ½Ã, º¸¾È ¸ğµâ¿¡ Table Owner Name, Table Name, Column Name, Policy NameÀ» µî·ÏÇÑ´Ù.
+     *  - ¿¹¿Ü Ã³¸®¸¦ ÇÏÁö ¾Ê±â À§ÇØ, ¸¶Áö¸·¿¡ ¼öÇàÇÑ´Ù.
      *  - Call : qcsModule::setColumnPolicy()
      */
     qdbCommon::setAllColumnPolicy( sTableInfo );
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_NOT_SUPPORT_GLOBAL_NON_PARTITION_INDEX );
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_ROLLBACKABLE_DDL_GLOBAL_NOT_ALLOWED_NON_PART_INDEX,
+                                  sTempIndex->name ) );
+    }
     IDE_EXCEPTION( ERR_TOO_LONG_OBJECT_NAME )
     {
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_USING_TARGET_NAMES_PREFIX_IS_TOO_LONG ) );
@@ -929,7 +967,7 @@ IDE_RC qdbCopySwap::executeCreateTableFromTableSchema( qcStatement * aStatement 
         (void)qcm::destroyQcmTableInfo( sIndexTable->tableInfo );
     }
 
-    // Trigger CacheëŠ” Table Meta Cacheì™€ ë³„ë„ë¡œ ì¡´ì¬í•œë‹¤.
+    // Trigger Cache´Â Table Meta Cache¿Í º°µµ·Î Á¸ÀçÇÑ´Ù.
     if ( sSourceTableInfo != NULL )
     {
         qdnTrigger::freeTriggerCacheArray( sTargetTriggerCache,
@@ -954,93 +992,99 @@ IDE_RC qdbCopySwap::validateReplaceTable( qcStatement * aStatement )
  *          [USING PREFIX name_prefix]
  *          [RENAME FORCE]
  *          [IGNORE FOREIGN KEY CHILD];
- *      êµ¬ë¬¸ì˜ Validation
+ *      ±¸¹®ÀÇ Validation
  *
  * Implementation :
  *
- *  1. Target Tableì— ëŒ€í•´ ALTER TABLE êµ¬ë¬¸ì˜ ê³µí†µì ì¸ Validationë¥¼ ìˆ˜í–‰í•œë‹¤.
- *      - Table Nameì´ X$, D$, V$ë¡œ ì‹œì‘í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
- *      - User IDì™€ Table Infoë¥¼ ì–»ëŠ”ë‹¤.
- *      - Tableì— IS Lockì„ ì¡ëŠ”ë‹¤.
- *      - ALTER TABLEì„ ì‹¤í–‰í•  ìˆ˜ ìˆëŠ” Tableì¸ì§€ í™•ì¸í•œë‹¤.
- *      - Table ë³€ê²½ ê¶Œí•œì„ ê²€ì‚¬í•œë‹¤.
- *      - DDL_SUPPLEMENTAL_LOG_ENABLE = 1ì¸ ê²½ìš°, Supplemental Logë¥¼ ê¸°ë¡í•œë‹¤.
- *          - DDL Statement Textë¥¼ ê¸°ë¡í•œë‹¤.
+ *  1. Target Table¿¡ ´ëÇØ ALTER TABLE ±¸¹®ÀÇ °øÅëÀûÀÎ Validation¸¦ ¼öÇàÇÑ´Ù.
+ *      - Table NameÀÌ X$, D$, V$·Î ½ÃÀÛÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
+ *      - User ID¿Í Table Info¸¦ ¾ò´Â´Ù.
+ *      - Table¿¡ IS LockÀ» Àâ´Â´Ù.
+ *      - ALTER TABLEÀ» ½ÇÇàÇÒ ¼ö ÀÖ´Â TableÀÎÁö È®ÀÎÇÑ´Ù.
+ *      - Table º¯°æ ±ÇÇÑÀ» °Ë»çÇÑ´Ù.
+ *      - DDL_SUPPLEMENTAL_LOG_ENABLE = 1ÀÎ °æ¿ì, Supplemental Log¸¦ ±â·ÏÇÑ´Ù.
+ *          - DDL Statement Text¸¦ ±â·ÏÇÑ´Ù.
  *      - Call : qdbAlter::validateAlterCommon()
  *
- *  2. Targetì´ Partitioned Tableì´ë©´, ëª¨ë“  Partition Infoë¥¼ ì–»ê³  IS Lockì„ ì¡ëŠ”ë‹¤.
+ *  2. TargetÀÌ Partitioned TableÀÌ¸é, ¸ğµç Partition Info¸¦ ¾ò°í IS LockÀ» Àâ´Â´Ù.
+ *      º¯°æ: BUG-47208 partitioned IS, range, range hash, list partition
+ *           replace ´ë»ó partition IS    
  *
- *  3. Targetì´ Partitioned Tableì´ë©´, ëª¨ë“  Non-Partitioned Index Infoë¥¼ ì–»ê³  IS Lockì„ ì¡ëŠ”ë‹¤.
+ *  3. TargetÀÌ Partitioned TableÀÌ¸é, ¸ğµç Non-Partitioned Index Info¸¦ ¾ò°í IS LockÀ» Àâ´Â´Ù.
  *
- *  4. Source Tableì— ëŒ€í•´ Validationë¥¼ ìˆ˜í–‰í•œë‹¤.
- *      - Table Infoë¥¼ ì–»ëŠ”ë‹¤.
- *      - Target Table Ownerì™€ Source Table Ownerê°€ ê°™ì•„ì•¼ í•œë‹¤.
- *      - Tableì— IS Lockì„ ì¡ëŠ”ë‹¤.
- *      - ALTER TABLEì„ ì‹¤í–‰í•  ìˆ˜ ìˆëŠ” Tableì¸ì§€ í™•ì¸í•œë‹¤.
- *      - Table ë³€ê²½ ê¶Œí•œì„ ê²€ì‚¬í•œë‹¤.
+ *  4. Source Table¿¡ ´ëÇØ Validation¸¦ ¼öÇàÇÑ´Ù.
+ *      - Table Info¸¦ ¾ò´Â´Ù.
+ *      - Target Table Owner¿Í Source Table Owner°¡ °°¾Æ¾ß ÇÑ´Ù.
+ *      - Table¿¡ IS LockÀ» Àâ´Â´Ù.
+ *      - ALTER TABLEÀ» ½ÇÇàÇÒ ¼ö ÀÖ´Â TableÀÎÁö È®ÀÎÇÑ´Ù.
+ *      - Table º¯°æ ±ÇÇÑÀ» °Ë»çÇÑ´Ù.
  *
- *  5. Sourceê°€ Partitioned Tableì´ë©´, ëª¨ë“  Partition Infoë¥¼ ì–»ê³  IS Lockì„ ì¡ëŠ”ë‹¤.
+ *  5. Source°¡ Partitioned TableÀÌ¸é, ¸ğµç Partition Info¸¦ ¾ò°í IS LockÀ» Àâ´Â´Ù.
+ *      º¯°æ: BUG-47208 partitioned IS, range, range hash, list partition
+ *           replace ´ë»ó partition IS
  *
- *  6. Sourceê°€ Partitioned Tableì´ë©´, ëª¨ë“  Non-Partitioned Index Infoë¥¼ ì–»ê³  IS Lockì„ ì¡ëŠ”ë‹¤.
+ *  6. Source°¡ Partitioned TableÀÌ¸é, ¸ğµç Non-Partitioned Index Info¸¦ ¾ò°í IS LockÀ» Àâ´Â´Ù.
  *
- *  7. Sourceì™€ Targetì€ ë‹¤ë¥¸ Table IDë¥¼ ê°€ì ¸ì•¼ í•œë‹¤.
+ *  7. Source¿Í TargetÀº ´Ù¸¥ Table ID¸¦ °¡Á®¾ß ÇÑ´Ù.
  *
- *  8. Sourceì™€ Targetì´ ì¼ë°˜ Tableì¸ì§€ ê²€ì‚¬í•œë‹¤.
- *      - TABLE_TYPE = 'T', TEMPORARY = 'N', HIDDEN = 'N' ì´ì–´ì•¼ í•œë‹¤. (SYS_TABLES_)
+ *  8. Source¿Í TargetÀÌ ÀÏ¹İ TableÀÎÁö °Ë»çÇÑ´Ù.
+ *      - TABLE_TYPE = 'T', TEMPORARY = 'N', HIDDEN = 'N' ÀÌ¾î¾ß ÇÑ´Ù. (SYS_TABLES_)
  *
- *  9. Sourceì™€ Targetì˜ Compressed Column ì œì•½ì„ ê²€ì‚¬í•œë‹¤.
- *      - Replicationì´ ê±¸ë¦° ê²½ìš°, Compressed Columnì„ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *  9. Source¿Í TargetÀÇ Compressed Column Á¦¾àÀ» °Ë»çÇÑ´Ù.
+ *      - ReplicationÀÌ °É¸° °æ¿ì, Compressed ColumnÀ» Áö¿øÇÏÁö ¾Ê´Â´Ù.
  *
- *  10. Encrypt Column ì œì•½ì„ í™•ì¸í•œë‹¤.
- *      - RENAME FORCE ì ˆì„ ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš°, Encrypt Columnì„ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *  10. Encrypt Column Á¦¾àÀ» È®ÀÎÇÑ´Ù.
+ *      - RENAME FORCE ÀıÀ» ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì, Encrypt ColumnÀ» Áö¿øÇÏÁö ¾Ê´Â´Ù.
  *
- *  11. Foreign Key Constraint (Parent) ì œì•½ì„ í™•ì¸í•œë‹¤.
- *      - Referenced Indexë¥¼ ì°¸ì¡°í•˜ëŠ” Ref Child Info Listë¥¼ ë§Œë“ ë‹¤.
- *          - ê° Ref Child InfoëŠ” Table/Partition Refë¥¼ ê°€ì§€ê³  ìˆê³  IS Lockì„ íšë“í–ˆë‹¤.
- *          - Ref Child Info Listì—ì„œ Self Foreign Keyë¥¼ ì œê±°í•œë‹¤.
- *      - Referenced Indexë¥¼ ì°¸ì¡°í•˜ëŠ” Ref Child Table/Partition Listë¥¼ ë§Œë“ ë‹¤.
- *          - Ref Child Table/Partition Listì—ì„œ Table ì¤‘ë³µì„ ì œê±°í•œë‹¤.
- *      - Referenced Indexê°€ ìˆìœ¼ë©´, IGNORE FOREIGN KEY CHILD ì ˆì´ ìˆì–´ì•¼ í•œë‹¤.
- *      - Referenced Index ì—­í• ì„ í•  Indexê°€ Peerì— ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
- *          - REFERENCED_INDEX_IDê°€ ê°€ë¦¬í‚¤ëŠ” Indexì˜ Column Nameìœ¼ë¡œ êµ¬ì„±ëœ Indexë¥¼ Peerì—ì„œ ì°¾ëŠ”ë‹¤.
- *              - Primaryì´ê±°ë‚˜ Uniqueì´ì–´ì•¼ í•œë‹¤.
- *                  - Primary/Unique Key Constraintê°€ Indexë¡œ êµ¬í˜„ë˜ì–´ ìˆìœ¼ë¯€ë¡œ, Indexì—ì„œ ì°¾ëŠ”ë‹¤.
- *                  - Local UniqueëŠ” Foreign Key Constraint ëŒ€ìƒì´ ì•„ë‹ˆë‹¤.
- *              - Column Countê°€ ê°™ì•„ì•¼ í•œë‹¤.
- *              - Column Name ìˆœì„œê°€ ê°™ì•„ì•¼ í•œë‹¤.
- *                  - Foreign Key ìƒì„± ì‹œì—ëŠ” ìˆœì„œê°€ ë‹¬ë¼ë„ ì§€ì›í•˜ë‚˜, ì—¬ê¸°ì—ì„œëŠ” ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
- *              - Data Type, Languageê°€ ê°™ì•„ì•¼ í•œë‹¤.
- *                  - Precision, Scaleì€ ë‹¬ë¼ë„ ëœë‹¤.
- *              - ì°¸ì¡° Call : qdnForeignKey::validateForeignKeySpec()
- *          - ëŒ€ì‘í•˜ëŠ” Indexê°€ Peerì— ì—†ìœ¼ë©´, ì‹¤íŒ¨ì‹œí‚¨ë‹¤.
+ *  11. Foreign Key Constraint (Parent) Á¦¾àÀ» È®ÀÎÇÑ´Ù.
+ *      - Referenced Index¸¦ ÂüÁ¶ÇÏ´Â Ref Child Info List¸¦ ¸¸µç´Ù.
+ *          - °¢ Ref Child Info´Â Table/Partition Ref¸¦ °¡Áö°í ÀÖ°í IS LockÀ» È¹µæÇß´Ù.
+ *          - Ref Child Info List¿¡¼­ Self Foreign Key¸¦ Á¦°ÅÇÑ´Ù.
+ *      - Referenced Index¸¦ ÂüÁ¶ÇÏ´Â Ref Child Table/Partition List¸¦ ¸¸µç´Ù.
+ *          - Ref Child Table/Partition List¿¡¼­ Table Áßº¹À» Á¦°ÅÇÑ´Ù.
+ *      - Referenced Index°¡ ÀÖÀ¸¸é, IGNORE FOREIGN KEY CHILD ÀıÀÌ ÀÖ¾î¾ß ÇÑ´Ù.
+ *      - Referenced Index ¿ªÇÒÀ» ÇÒ Index°¡ Peer¿¡ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+ *          - REFERENCED_INDEX_ID°¡ °¡¸®Å°´Â IndexÀÇ Column NameÀ¸·Î ±¸¼ºµÈ Index¸¦ Peer¿¡¼­ Ã£´Â´Ù.
+ *              - PrimaryÀÌ°Å³ª UniqueÀÌ¾î¾ß ÇÑ´Ù.
+ *                  - Primary/Unique Key Constraint°¡ Index·Î ±¸ÇöµÇ¾î ÀÖÀ¸¹Ç·Î, Index¿¡¼­ Ã£´Â´Ù.
+ *                  - Local Unique´Â Foreign Key Constraint ´ë»óÀÌ ¾Æ´Ï´Ù.
+ *              - Column Count°¡ °°¾Æ¾ß ÇÑ´Ù.
+ *              - Column Name ¼ø¼­°¡ °°¾Æ¾ß ÇÑ´Ù.
+ *                  - Foreign Key »ı¼º ½Ã¿¡´Â ¼ø¼­°¡ ´Ş¶óµµ Áö¿øÇÏ³ª, ¿©±â¿¡¼­´Â Áö¿øÇÏÁö ¾Ê´Â´Ù.
+ *              - Data Type, Language°¡ °°¾Æ¾ß ÇÑ´Ù.
+ *                  - Precision, ScaleÀº ´Ş¶óµµ µÈ´Ù.
+ *              - ÂüÁ¶ Call : qdnForeignKey::validateForeignKeySpec()
+ *          - ´ëÀÀÇÏ´Â Index°¡ Peer¿¡ ¾øÀ¸¸é, ½ÇÆĞ½ÃÅ²´Ù.
  *
- *  12. Replication ì œì•½ ì‚¬í•­ì„ í™•ì¸í•œë‹¤.
- *      - í•œìª½ì´ë¼ë„ Replication ëŒ€ìƒì´ë©´, Sourceì™€ Target ë‘˜ ë‹¤ Partitioned Tableì´ê±°ë‚˜ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
+ *  12. Replication Á¦¾à »çÇ×À» È®ÀÎÇÑ´Ù.
+ *      - ÇÑÂÊÀÌ¶óµµ Replication ´ë»óÀÌ¸é, Source¿Í Target µÑ ´Ù Partitioned TableÀÌ°Å³ª ¾Æ´Ï¾î¾ß ÇÑ´Ù.
  *          - SYS_TABLES_
- *              - REPLICATION_COUNT > 0 ì´ë©´, Tableì´ Replication ëŒ€ìƒì´ë‹¤.
+ *              - REPLICATION_COUNT > 0 ÀÌ¸é, TableÀÌ Replication ´ë»óÀÌ´Ù.
  *              - IS_PARTITIONED : 'N'(Non-Partitioned Table), 'Y'(Partitioned Table)
- *      - Partitioned Tableì¸ ê²½ìš°, ê¸°ë³¸ ì •ë³´ê°€ ê°™ì•„ì•¼ í•œë‹¤.
+ *      - Partitioned TableÀÎ °æ¿ì, ±âº» Á¤º¸°¡ °°¾Æ¾ß ÇÑ´Ù.
  *          - SYS_PART_TABLES_
- *              - PARTITION_METHODê°€ ê°™ì•„ì•¼ í•œë‹¤.
- *      - Partitionì´ Replication ëŒ€ìƒì¸ ê²½ìš°, ì–‘ìª½ì— ê°™ì€ Partitionì´ ì¡´ì¬í•´ì•¼ í•œë‹¤.
+ *              - PARTITION_METHOD°¡ °°¾Æ¾ß ÇÑ´Ù.
+ *      - PartitionÀÌ Replication ´ë»óÀÎ °æ¿ì, ¾çÂÊ¿¡ °°Àº PartitionÀÌ Á¸ÀçÇØ¾ß ÇÑ´Ù.
  *          - SYS_TABLE_PARTITIONS_
- *              - REPLICATION_COUNT > 0 ì´ë©´, Partitionì´ Replication ëŒ€ìƒì´ë‹¤.
- *              - PARTITION_NAMEì´ ê°™ìœ¼ë©´, ê¸°ë³¸ ì •ë³´ë¥¼ ë¹„êµí•œë‹¤.
- *                  - PARTITION_MIN_VALUE, PARTITION_MAX_VALUE, PARTITION_ORDERê°€ ê°™ì•„ì•¼ í•œë‹¤.
- *      - ì–‘ìª½ Tableì´ ê°™ì€ Replicationì— ì†í•˜ë©´ ì•ˆ ëœë‹¤.
- *          - Replicationì—ì„œ Table Meta Logë¥¼ í•˜ë‚˜ì”© ì²˜ë¦¬í•˜ë¯€ë¡œ, ì´ ê¸°ëŠ¥ì„ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *              - REPLICATION_COUNT > 0 ÀÌ¸é, PartitionÀÌ Replication ´ë»óÀÌ´Ù.
+ *              - PARTITION_NAMEÀÌ °°À¸¸é, ±âº» Á¤º¸¸¦ ºñ±³ÇÑ´Ù.
+ *                  - PARTITION_MIN_VALUE, PARTITION_MAX_VALUE, PARTITION_ORDER°¡ °°¾Æ¾ß ÇÑ´Ù.
+ *      - ¾çÂÊ TableÀÌ °°Àº Replication¿¡ ¼ÓÇÏ¸é ¾È µÈ´Ù.
+ *          - Replication¿¡¼­ Table Meta Log¸¦ ÇÏ³ª¾¿ Ã³¸®ÇÏ¹Ç·Î, ÀÌ ±â´ÉÀ» Áö¿øÇÏÁö ¾Ê´Â´Ù.
+ *      º¯°æ: BUG-47208 range, range hash, list partition replace ´ë»ó partition¿¡ ´ëÇØ À§ Á¦¾à »çÇ× Ã¼Å©
  *
- *  13. partition table swap validate ìˆ˜í–‰
+ *  13. partition table swap validate ¼öÇà
  *
  ***********************************************************************/
 
     qdTableParseTree        * sParseTree            = NULL;
+    smOID                   * sDDLTableOIDArray     = NULL;
     qcmTableInfo            * sTableInfo            = NULL;
     qcmTableInfo            * sSourceTableInfo      = NULL;
     qcmRefChildInfo         * sRefChildInfo         = NULL;
     qcmIndex                * sPeerIndex            = NULL;
     UInt                      sSourceUserID         = 0;
-    
+
     sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;
 
     IDU_FIT_POINT( "qdbCopySwap::validateReplaceTable::alloc::mSourcePartTable",
@@ -1051,46 +1095,82 @@ IDE_RC qdbCopySwap::validateReplaceTable( qcStatement * aStatement )
               != IDE_SUCCESS );
     QD_SET_INIT_PART_TABLE_LIST( sParseTree->mSourcePartTable );
 
-    /* 1. Target Tableì— ëŒ€í•´ ALTER TABLE êµ¬ë¬¸ì˜ ê³µí†µì ì¸ Validationë¥¼ ìˆ˜í–‰í•œë‹¤.
-     *  - Table Nameì´ X$, D$, V$ë¡œ ì‹œì‘í•˜ì§€ ì•Šì•„ì•¼ í•œë‹¤.
-     *  - User IDì™€ Table Infoë¥¼ ì–»ëŠ”ë‹¤.
-     *  - Tableì— IS Lockì„ ì¡ëŠ”ë‹¤.
-     *  - ALTER TABLEì„ ì‹¤í–‰í•  ìˆ˜ ìˆëŠ” Tableì¸ì§€ í™•ì¸í•œë‹¤.
-     *  - Table ë³€ê²½ ê¶Œí•œì„ ê²€ì‚¬í•œë‹¤.
-     *  - DDL_SUPPLEMENTAL_LOG_ENABLE = 1ì¸ ê²½ìš°, Supplemental Logë¥¼ ê¸°ë¡í•œë‹¤.
-     *      - DDL Statement Textë¥¼ ê¸°ë¡í•œë‹¤.
+    /* 1. Target Table¿¡ ´ëÇØ ALTER TABLE ±¸¹®ÀÇ °øÅëÀûÀÎ Validation¸¦ ¼öÇàÇÑ´Ù.
+     *  - Table NameÀÌ X$, D$, V$·Î ½ÃÀÛÇÏÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
+     *  - User ID¿Í Table Info¸¦ ¾ò´Â´Ù.
+     *  - Table¿¡ IS LockÀ» Àâ´Â´Ù.
+     *  - ALTER TABLEÀ» ½ÇÇàÇÒ ¼ö ÀÖ´Â TableÀÎÁö È®ÀÎÇÑ´Ù.
+     *  - Table º¯°æ ±ÇÇÑÀ» °Ë»çÇÑ´Ù.
+     *  - DDL_SUPPLEMENTAL_LOG_ENABLE = 1ÀÎ °æ¿ì, Supplemental Log¸¦ ±â·ÏÇÑ´Ù.
+     *      - DDL Statement Text¸¦ ±â·ÏÇÑ´Ù.
      *  - Call : qdbAlter::validateAlterCommon()
      */
     IDE_TEST( qdbAlter::validateAlterCommon( aStatement, ID_FALSE ) != IDE_SUCCESS );
 
+    /* BUG-48290 shard object¿¡ ´ëÇÑ DDL Â÷´Ü(destination check) */
+    IDE_TEST( sdi::checkShardObjectForDDL( aStatement, SDI_DDL_TYPE_TABLE ) != IDE_SUCCESS );
+
     sTableInfo = sParseTree->tableInfo;
 
-    /* 2. Targetì´ Partitioned Tableì´ë©´, ëª¨ë“  Partition Infoë¥¼ ì–»ê³  IS Lockì„ ì¡ëŠ”ë‹¤. */
-    /* 3. Targetì´ Partitioned Tableì´ë©´, ëª¨ë“  Non-Partitioned Index Infoë¥¼ ì–»ê³  IS Lockì„ ì¡ëŠ”ë‹¤. */
+    /* 2. TargetÀÌ Partitioned TableÀÌ¸é, ¸ğµç Partition Info¸¦ ¾ò°í IS LockÀ» Àâ´Â´Ù. */
+    /* 3. TargetÀÌ Partitioned TableÀÌ¸é, ¸ğµç Non-Partitioned Index Info¸¦ ¾ò°í IS LockÀ» Àâ´Â´Ù. */
     if ( sTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
-        IDE_TEST( qdbCommon::checkAndSetAllPartitionInfo( aStatement,
-                                                          sTableInfo->tableID,
-                                                          & sParseTree->partTable->partInfoList )
-                  != IDE_SUCCESS );
+        if ( sParseTree->mPartAttr == NULL ) 
+        {
+            IDE_TEST( qdbCommon::checkAndSetAllPartitionInfo( aStatement,
+                                                              sTableInfo->tableID,
+                                                              & sParseTree->partTable->partInfoList )
+                      != IDE_SUCCESS );
 
-        IDE_TEST( qdx::makeAndLockIndexTableList( aStatement,
-                                                  ID_FALSE,
-                                                  sTableInfo,
-                                                  & sParseTree->oldIndexTables )
-                  != IDE_SUCCESS );
+            IDE_TEST( qdx::makeAndLockIndexTableList( aStatement,
+                                                      ID_FALSE,
+                                                      sTableInfo,
+                                                      & sParseTree->oldIndexTables )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            // TargetÀÌ HASH PARTITION ÀÌ¸é ÀüÃ¼ partition IS LOCK
+            if ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_HASH )
+            {
+                IDE_TEST( qdbCommon::checkAndSetAllPartitionInfo( aStatement,
+                                                                  sTableInfo->tableID,
+                                                                  & sParseTree->partTable->partInfoList )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( qdx::makeAndLockIndexTableList( aStatement,
+                                                          ID_FALSE,
+                                                          sTableInfo,
+                                                          & sParseTree->oldIndexTables )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                IDE_TEST( qdbCommon::checkPartitionInfo( aStatement,
+                                                         sTableInfo,
+                                                         sParseTree->mPartAttr->tablePartName )
+                          != IDE_SUCCESS );
+    
+                IDE_TEST( qdx::makeAndLockIndexTableList( aStatement,
+                                                          ID_FALSE,
+                                                          sTableInfo,
+                                                          & sParseTree->oldIndexTables )
+                          != IDE_SUCCESS );
+            }       
+        }
     }
     else
     {
         /* Nothing to do */
     }
 
-    /* 4. Source Tableì— ëŒ€í•´ Validationë¥¼ ìˆ˜í–‰í•œë‹¤.
-     *  - Table Infoë¥¼ ì–»ëŠ”ë‹¤.
-     *  - Target Table Ownerì™€ Source Table Ownerê°€ ê°™ì•„ì•¼ í•œë‹¤.
-     *  - Tableì— IS Lockì„ ì¡ëŠ”ë‹¤.
-     *  - ALTER TABLEì„ ì‹¤í–‰í•  ìˆ˜ ìˆëŠ” Tableì¸ì§€ í™•ì¸í•œë‹¤.
-     *  - Table ë³€ê²½ ê¶Œí•œì„ ê²€ì‚¬í•œë‹¤.
+    /* 4. Source Table¿¡ ´ëÇØ Validation¸¦ ¼öÇàÇÑ´Ù.
+     *  - Table Info¸¦ ¾ò´Â´Ù.
+     *  - Target Table Owner¿Í Source Table Owner°¡ °°¾Æ¾ß ÇÑ´Ù.
+     *  - Table¿¡ IS LockÀ» Àâ´Â´Ù.
+     *  - ALTER TABLEÀ» ½ÇÇàÇÒ ¼ö ÀÖ´Â TableÀÎÁö È®ÀÎÇÑ´Ù.
+     *  - Table º¯°æ ±ÇÇÑÀ» °Ë»çÇÑ´Ù.
      */
     IDE_TEST( qdbCommon::checkTableInfo( aStatement,
                                          sParseTree->mSourceUserName,
@@ -1100,6 +1180,11 @@ IDE_RC qdbCopySwap::validateReplaceTable( qcStatement * aStatement )
                                          & sParseTree->mSourcePartTable->mTableHandle,
                                          & sParseTree->mSourcePartTable->mTableSCN )
               != IDE_SUCCESS );
+
+    /* BUG-48290 sharding object¿¡ ´ëÇÑ DDL Â÷´Ü(source check) */
+    IDE_TEST( sdi::checkShardObjectForDDLInternal( aStatement,
+                                                   sParseTree->mSourceUserName,
+                                                   sParseTree->mSourceTableName ) != IDE_SUCCESS );
 
     IDE_TEST_RAISE( sSourceUserID != sParseTree->userID, ERR_DIFFERENT_TABLE_OWNER );
 
@@ -1118,32 +1203,67 @@ IDE_RC qdbCopySwap::validateReplaceTable( qcStatement * aStatement )
                                                sSourceTableInfo )
               != IDE_SUCCESS );
 
-    /* 5. Sourceê°€ Partitioned Tableì´ë©´, ëª¨ë“  Partition Infoë¥¼ ì–»ê³  IS Lockì„ ì¡ëŠ”ë‹¤. */
-    /* 6. Sourceê°€ Partitioned Tableì´ë©´, ëª¨ë“  Non-Partitioned Index Infoë¥¼ ì–»ê³  IS Lockì„ ì¡ëŠ”ë‹¤. */
+    /* 5. Source°¡ Partitioned TableÀÌ¸é, ¸ğµç Partition Info¸¦ ¾ò°í IS LockÀ» Àâ´Â´Ù. */
+    /* 6. Source°¡ Partitioned TableÀÌ¸é, ¸ğµç Non-Partitioned Index Info¸¦ ¾ò°í IS LockÀ» Àâ´Â´Ù. */
     if ( sSourceTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
-        IDE_TEST( qdbCommon::checkAndSetAllPartitionInfo( aStatement,
-                                                          sSourceTableInfo->tableID,
-                                                          & sParseTree->mSourcePartTable->mPartInfoList )
-                  != IDE_SUCCESS );
+        if ( sParseTree->mPartAttr == NULL )
+        {
+            IDE_TEST( qdbCommon::checkAndSetAllPartitionInfo( aStatement,
+                                                              sSourceTableInfo->tableID,
+                                                              & sParseTree->mSourcePartTable->mPartInfoList )
+                      != IDE_SUCCESS );
 
-        IDE_TEST( qdx::makeAndLockIndexTableList( aStatement,
-                                                  ID_FALSE,
-                                                  sSourceTableInfo,
-                                                  & sParseTree->mSourcePartTable->mIndexTableList )
-                  != IDE_SUCCESS );
+            IDE_TEST( qdx::makeAndLockIndexTableList( aStatement,
+                                                      ID_FALSE,
+                                                      sSourceTableInfo,
+                                                      & sParseTree->mSourcePartTable->mIndexTableList )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            // Source°¡ HASH PARTITION ÀÌ¸é ÀüÃ¼ partition IS LOCK
+            if ( sSourceTableInfo->partitionMethod == QCM_PARTITION_METHOD_HASH )
+            {
+                IDE_TEST( qdbCommon::checkAndSetAllPartitionInfo( aStatement,
+                                                                  sSourceTableInfo->tableID,
+                                                                  & sParseTree->mSourcePartTable->mPartInfoList )
+                          != IDE_SUCCESS );
+
+                IDE_TEST( qdx::makeAndLockIndexTableList( aStatement,
+                                                          ID_FALSE,
+                                                          sSourceTableInfo,
+                                                          & sParseTree->mSourcePartTable->mIndexTableList )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                IDE_TEST( qdbCommon::checkPartitionInfo( aStatement,
+                                                         sSourceTableInfo,
+                                                         sParseTree->mPartAttr->tablePartName )
+                          != IDE_SUCCESS );
+    
+                IDE_TEST( qdx::makeAndLockIndexTableList( aStatement,
+                                                          ID_FALSE,
+                                                          sSourceTableInfo,
+                                                          & sParseTree->mSourcePartTable->mIndexTableList )
+                          != IDE_SUCCESS );
+            }
+        }
     }
     else
     {
         /* Nothing to do */
     }
 
-    /* 7. Sourceì™€ Targetì€ ë‹¤ë¥¸ Table IDë¥¼ ê°€ì ¸ì•¼ í•œë‹¤. */
+    IDU_FIT_POINT( "qdbCopySwap::validateReplaceTable:replacePartitionISLock" );
+    
+    /* 7. Source¿Í TargetÀº ´Ù¸¥ Table ID¸¦ °¡Á®¾ß ÇÑ´Ù. */
     IDE_TEST_RAISE( sTableInfo->tableID == sSourceTableInfo->tableID,
                     ERR_SOURCE_TARGET_IS_SAME );
 
-    /* 8. Sourceì™€ Targetì´ ì¼ë°˜ Tableì¸ì§€ ê²€ì‚¬í•œë‹¤.
-     *  - TABLE_TYPE = 'T', TEMPORARY = 'N', HIDDEN = 'N' ì´ì–´ì•¼ í•œë‹¤. (SYS_TABLES_)
+    /* 8. Source¿Í TargetÀÌ ÀÏ¹İ TableÀÎÁö °Ë»çÇÑ´Ù.
+     *  - TABLE_TYPE = 'T', TEMPORARY = 'N', HIDDEN = 'N' ÀÌ¾î¾ß ÇÑ´Ù. (SYS_TABLES_)
      */
     IDE_TEST( checkNormalUserTable( aStatement,
                                     sTableInfo,
@@ -1155,8 +1275,8 @@ IDE_RC qdbCopySwap::validateReplaceTable( qcStatement * aStatement )
                                     sParseTree->mSourceTableName )
               != IDE_SUCCESS );
 
-    /* 9. Sourceì™€ Targetì˜ Compressed Column ì œì•½ì„ ê²€ì‚¬í•œë‹¤.
-     *  - Replicationì´ ê±¸ë¦° ê²½ìš°, Compressed Columnì„ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    /* 9. Source¿Í TargetÀÇ Compressed Column Á¦¾àÀ» °Ë»çÇÑ´Ù.
+     *  - ReplicationÀÌ °É¸° °æ¿ì, Compressed ColumnÀ» Áö¿øÇÏÁö ¾Ê´Â´Ù.
      */
     if ( ( sTableInfo->replicationCount > 0 ) ||
          ( sSourceTableInfo->replicationCount > 0 ) )
@@ -1176,8 +1296,8 @@ IDE_RC qdbCopySwap::validateReplaceTable( qcStatement * aStatement )
         /* Nothing to do */
     }
 
-    /* 10. Encrypt Column ì œì•½ì„ í™•ì¸í•œë‹¤.
-     *  - RENAME FORCE ì ˆì„ ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš°, Encrypt Columnì„ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    /* 10. Encrypt Column Á¦¾àÀ» È®ÀÎÇÑ´Ù.
+     *  - RENAME FORCE ÀıÀ» ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì, Encrypt ColumnÀ» Áö¿øÇÏÁö ¾Ê´Â´Ù.
      */
     IDE_TEST( checkEncryptColumn( sParseTree->mIsRenameForce,
                                   sTableInfo->columns )
@@ -1187,25 +1307,25 @@ IDE_RC qdbCopySwap::validateReplaceTable( qcStatement * aStatement )
                                   sSourceTableInfo->columns )
               != IDE_SUCCESS );
 
-    /* 11. Foreign Key Constraint (Parent) ì œì•½ì„ í™•ì¸í•œë‹¤.
-     *  - Referenced Indexë¥¼ ì°¸ì¡°í•˜ëŠ” Ref Child Info Listë¥¼ ë§Œë“ ë‹¤.
-     *      - ê° Ref Child InfoëŠ” Table/Partition Refë¥¼ ê°€ì§€ê³  ìˆê³  IS Lockì„ íšë“í–ˆë‹¤.
-     *      - Ref Child Info Listì—ì„œ Self Foreign Keyë¥¼ ì œê±°í•œë‹¤.
-     *  - Referenced Indexë¥¼ ì°¸ì¡°í•˜ëŠ” Ref Child Table/Partition Listë¥¼ ë§Œë“ ë‹¤.
-     *      - Ref Child Table/Partition Listì—ì„œ Table ì¤‘ë³µì„ ì œê±°í•œë‹¤.
-     *  - Referenced Indexê°€ ìˆìœ¼ë©´, IGNORE FOREIGN KEY CHILD ì ˆì´ ìˆì–´ì•¼ í•œë‹¤.
-     *  - Referenced Index ì—­í• ì„ í•  Indexê°€ Peerì— ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
-     *      - REFERENCED_INDEX_IDê°€ ê°€ë¦¬í‚¤ëŠ” Indexì˜ Column Nameìœ¼ë¡œ êµ¬ì„±ëœ Indexë¥¼ Peerì—ì„œ ì°¾ëŠ”ë‹¤.
-     *          - Primaryì´ê±°ë‚˜ Uniqueì´ì–´ì•¼ í•œë‹¤.
-     *              - Primary/Unique Key Constraintê°€ Indexë¡œ êµ¬í˜„ë˜ì–´ ìˆìœ¼ë¯€ë¡œ, Indexì—ì„œ ì°¾ëŠ”ë‹¤.
-     *              - Local UniqueëŠ” Foreign Key Constraint ëŒ€ìƒì´ ì•„ë‹ˆë‹¤.
-     *          - Column Countê°€ ê°™ì•„ì•¼ í•œë‹¤.
-     *          - Column Name ìˆœì„œê°€ ê°™ì•„ì•¼ í•œë‹¤.
-     *              - Foreign Key ìƒì„± ì‹œì—ëŠ” ìˆœì„œê°€ ë‹¬ë¼ë„ ì§€ì›í•˜ë‚˜, ì—¬ê¸°ì—ì„œëŠ” ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
-     *          - Data Type, Languageê°€ ê°™ì•„ì•¼ í•œë‹¤.
-     *              - Precision, Scaleì€ ë‹¬ë¼ë„ ëœë‹¤.
-     *          - ì°¸ì¡° Call : qdnForeignKey::validateForeignKeySpec()
-     *      - ëŒ€ì‘í•˜ëŠ” Indexê°€ Peerì— ì—†ìœ¼ë©´, ì‹¤íŒ¨ì‹œí‚¨ë‹¤.
+    /* 11. Foreign Key Constraint (Parent) Á¦¾àÀ» È®ÀÎÇÑ´Ù.
+     *  - Referenced Index¸¦ ÂüÁ¶ÇÏ´Â Ref Child Info List¸¦ ¸¸µç´Ù.
+     *      - °¢ Ref Child Info´Â Table/Partition Ref¸¦ °¡Áö°í ÀÖ°í IS LockÀ» È¹µæÇß´Ù.
+     *      - Ref Child Info List¿¡¼­ Self Foreign Key¸¦ Á¦°ÅÇÑ´Ù.
+     *  - Referenced Index¸¦ ÂüÁ¶ÇÏ´Â Ref Child Table/Partition List¸¦ ¸¸µç´Ù.
+     *      - Ref Child Table/Partition List¿¡¼­ Table Áßº¹À» Á¦°ÅÇÑ´Ù.
+     *  - Referenced Index°¡ ÀÖÀ¸¸é, IGNORE FOREIGN KEY CHILD ÀıÀÌ ÀÖ¾î¾ß ÇÑ´Ù.
+     *  - Referenced Index ¿ªÇÒÀ» ÇÒ Index°¡ Peer¿¡ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+     *      - REFERENCED_INDEX_ID°¡ °¡¸®Å°´Â IndexÀÇ Column NameÀ¸·Î ±¸¼ºµÈ Index¸¦ Peer¿¡¼­ Ã£´Â´Ù.
+     *          - PrimaryÀÌ°Å³ª UniqueÀÌ¾î¾ß ÇÑ´Ù.
+     *              - Primary/Unique Key Constraint°¡ Index·Î ±¸ÇöµÇ¾î ÀÖÀ¸¹Ç·Î, Index¿¡¼­ Ã£´Â´Ù.
+     *              - Local Unique´Â Foreign Key Constraint ´ë»óÀÌ ¾Æ´Ï´Ù.
+     *          - Column Count°¡ °°¾Æ¾ß ÇÑ´Ù.
+     *          - Column Name ¼ø¼­°¡ °°¾Æ¾ß ÇÑ´Ù.
+     *              - Foreign Key »ı¼º ½Ã¿¡´Â ¼ø¼­°¡ ´Ş¶óµµ Áö¿øÇÏ³ª, ¿©±â¿¡¼­´Â Áö¿øÇÏÁö ¾Ê´Â´Ù.
+     *          - Data Type, Language°¡ °°¾Æ¾ß ÇÑ´Ù.
+     *              - Precision, ScaleÀº ´Ş¶óµµ µÈ´Ù.
+     *          - ÂüÁ¶ Call : qdnForeignKey::validateForeignKeySpec()
+     *      - ´ëÀÀÇÏ´Â Index°¡ Peer¿¡ ¾øÀ¸¸é, ½ÇÆĞ½ÃÅ²´Ù.
      */
     IDE_TEST( getRefChildInfoList( aStatement,
                                    sTableInfo,
@@ -1256,46 +1376,98 @@ IDE_RC qdbCopySwap::validateReplaceTable( qcStatement * aStatement )
         IDE_TEST_RAISE( sPeerIndex == NULL, ERR_PEER_INDEX_NOT_EXISTS );
     }
 
-    /* 12. Replication ì œì•½ ì‚¬í•­ì„ í™•ì¸í•œë‹¤.
-     *  - í•œìª½ì´ë¼ë„ Replication ëŒ€ìƒì´ë©´, Sourceì™€ Target ë‘˜ ë‹¤ Partitioned Tableì´ê±°ë‚˜ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
+    /* 12. Replication Á¦¾à »çÇ×À» È®ÀÎÇÑ´Ù.
+     *  - ÇÑÂÊÀÌ¶óµµ Replication ´ë»óÀÌ¸é, Source¿Í Target µÑ ´Ù Partitioned TableÀÌ°Å³ª ¾Æ´Ï¾î¾ß ÇÑ´Ù.
      *      - SYS_TABLES_
-     *          - REPLICATION_COUNT > 0 ì´ë©´, Tableì´ Replication ëŒ€ìƒì´ë‹¤.
+     *          - REPLICATION_COUNT > 0 ÀÌ¸é, TableÀÌ Replication ´ë»óÀÌ´Ù.
      *          - IS_PARTITIONED : 'N'(Non-Partitioned Table), 'Y'(Partitioned Table)
-     *  - Partitioned Tableì¸ ê²½ìš°, ê¸°ë³¸ ì •ë³´ê°€ ê°™ì•„ì•¼ í•œë‹¤.
+     *  - Partitioned TableÀÎ °æ¿ì, ±âº» Á¤º¸°¡ °°¾Æ¾ß ÇÑ´Ù.
      *      - SYS_PART_TABLES_
-     *          - PARTITION_METHODê°€ ê°™ì•„ì•¼ í•œë‹¤.
-     *  - Partitionì´ Replication ëŒ€ìƒì¸ ê²½ìš°, ì–‘ìª½ì— ê°™ì€ Partitionì´ ì¡´ì¬í•´ì•¼ í•œë‹¤.
+     *          - PARTITION_METHOD°¡ °°¾Æ¾ß ÇÑ´Ù.
+     *  - PartitionÀÌ Replication ´ë»óÀÎ °æ¿ì, ¾çÂÊ¿¡ °°Àº PartitionÀÌ Á¸ÀçÇØ¾ß ÇÑ´Ù.
      *      - SYS_TABLE_PARTITIONS_
-     *          - REPLICATION_COUNT > 0 ì´ë©´, Partitionì´ Replication ëŒ€ìƒì´ë‹¤.
-     *          - PARTITION_NAMEì´ ê°™ìœ¼ë©´, ê¸°ë³¸ ì •ë³´ë¥¼ ë¹„êµí•œë‹¤.
-     *              - PARTITION_MIN_VALUE, PARTITION_MAX_VALUE, PARTITION_ORDERê°€ ê°™ì•„ì•¼ í•œë‹¤.
-     *  - ì–‘ìª½ Tableì´ ê°™ì€ Replicationì— ì†í•˜ë©´ ì•ˆ ëœë‹¤.
-     *      - Replicationì—ì„œ Table Meta Logë¥¼ í•˜ë‚˜ì”© ì²˜ë¦¬í•˜ë¯€ë¡œ, ì´ ê¸°ëŠ¥ì„ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+     *          - REPLICATION_COUNT > 0 ÀÌ¸é, PartitionÀÌ Replication ´ë»óÀÌ´Ù.
+     *          - PARTITION_NAMEÀÌ °°À¸¸é, ±âº» Á¤º¸¸¦ ºñ±³ÇÑ´Ù.
+     *              - PARTITION_MIN_VALUE, PARTITION_MAX_VALUE, PARTITION_ORDER°¡ °°¾Æ¾ß ÇÑ´Ù.
+     *  - ¾çÂÊ TableÀÌ °°Àº Replication¿¡ ¼ÓÇÏ¸é ¾È µÈ´Ù.
+     *      - Replication¿¡¼­ Table Meta Log¸¦ ÇÏ³ª¾¿ Ã³¸®ÇÏ¹Ç·Î, ÀÌ ±â´ÉÀ» Áö¿øÇÏÁö ¾Ê´Â´Ù.
      */
-    IDE_TEST( compareReplicationInfo( aStatement,
-                                      sTableInfo,
-                                      sParseTree->partTable->partInfoList,
-                                      sSourceTableInfo,
-                                      sParseTree->mSourcePartTable->mPartInfoList )
-              != IDE_SUCCESS );
 
-    IDE_TEST( compareReplicationInfo( aStatement,
-                                      sSourceTableInfo,
-                                      sParseTree->mSourcePartTable->mPartInfoList,
-                                      sTableInfo,
-                                      sParseTree->partTable->partInfoList )
-              != IDE_SUCCESS );
+    if ( sParseTree->mPartAttr == NULL ) 
+    {
+        IDE_TEST( compareReplicationInfo( aStatement,
+                                          sTableInfo,
+                                          sParseTree->partTable->partInfoList,
+                                          sSourceTableInfo,
+                                          sParseTree->mSourcePartTable->mPartInfoList )
+                  != IDE_SUCCESS );
 
+        IDE_TEST( compareReplicationInfo( aStatement,
+                                          sSourceTableInfo,
+                                          sParseTree->mSourcePartTable->mPartInfoList,
+                                          sTableInfo,
+                                          sParseTree->partTable->partInfoList )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        if ( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_HASH )
+        {                    
+            IDE_TEST( compareReplicationInfo( aStatement,
+                                              sTableInfo,
+                                              sParseTree->partTable->partInfoList,
+                                              sSourceTableInfo,
+                                              sParseTree->mSourcePartTable->mPartInfoList )
+                      != IDE_SUCCESS );
+
+            IDE_TEST( compareReplicationInfo( aStatement,
+                                              sSourceTableInfo,
+                                              sParseTree->mSourcePartTable->mPartInfoList,
+                                              sTableInfo,
+                                              sParseTree->partTable->partInfoList )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            IDE_TEST( compareReplicationInfoPartition( aStatement,
+                                                       sParseTree,
+                                                       sTableInfo,
+                                                       sSourceTableInfo )
+                      != IDE_SUCCESS );
+            
+        }
+    }
+                
     IDE_TEST( checkTablesExistInOneReplication( aStatement,
                                                 sTableInfo,
                                                 sSourceTableInfo )
               != IDE_SUCCESS );
 
-    /* 13. partition table swap validate ìˆ˜í–‰ */
+    /* 13. partition table swap validate ¼öÇà */
     IDE_TEST( validateReplacePartition( aStatement,
                                         sParseTree )
               != IDE_SUCCESS );
-    
+
+    if ( ( QCG_GET_SESSION_IS_NEED_DDL_INFO( aStatement ) == ID_TRUE ) &&
+         ( aStatement->mDDLInfo.mSrcTableOIDCount == 0 ) )
+    {
+        IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF(smOID) * 2, (void**)&sDDLTableOIDArray )
+                  != IDE_SUCCESS);
+        sDDLTableOIDArray[0] = sTableInfo->tableOID;
+        sDDLTableOIDArray[1] = sSourceTableInfo->tableOID;
+
+        qrc::setDDLSrcInfo( aStatement,
+                            ID_TRUE,
+                            2,
+                            sDDLTableOIDArray,
+                            0,
+                            NULL );
+    }
+    else
+    {
+        /* Nothing to do */
+    } 
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_DIFFERENT_TABLE_OWNER )
@@ -1330,184 +1502,185 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
  *          [USING PREFIX name_prefix]
  *          [RENAME FORCE]
  *          [IGNORE FOREIGN KEY CHILD];
- *      êµ¬ë¬¸ì˜ Execution
+ *      ±¸¹®ÀÇ Execution
  *
  * Implementation :
  *
- *  1. Targetì˜ Tableì— X Lockì„ ì¡ëŠ”ë‹¤.
- *      - Partitioned Tableì´ë©´, Partitionì— X Lockì„ ì¡ëŠ”ë‹¤.
- *      - Partitioned Tableì´ë©´, Non-Partitioned Indexì— X Lockì„ ì¡ëŠ”ë‹¤.
+ *  1. TargetÀÇ Table¿¡ X LockÀ» Àâ´Â´Ù.
+ *      - Partitioned TableÀÌ¸é, Partition¿¡ X LockÀ» Àâ´Â´Ù.
+ *      - Partitioned TableÀÌ¸é, Non-Partitioned Index¿¡ X LockÀ» Àâ´Â´Ù.
  *
- *  2. Sourceì˜ Tableì— X Lockì„ ì¡ëŠ”ë‹¤.
- *      - Partitioned Tableì´ë©´, Partitionì— X Lockì„ ì¡ëŠ”ë‹¤.
- *      - Partitioned Tableì´ë©´, Non-Partitioned Indexì— X Lockì„ ì¡ëŠ”ë‹¤.
+ *  2. SourceÀÇ Table¿¡ X LockÀ» Àâ´Â´Ù.
+ *      - Partitioned TableÀÌ¸é, Partition¿¡ X LockÀ» Àâ´Â´Ù.
+ *      - Partitioned TableÀÌ¸é, Non-Partitioned Index¿¡ X LockÀ» Àâ´Â´Ù.
  *
- *  3. Referenced Indexë¥¼ ì°¸ì¡°í•˜ëŠ” Tableì— X Lockì„ ì¡ëŠ”ë‹¤.
- *      - Partitioned Tableì´ë©´, Partitionì— X Lockì„ ì¡ëŠ”ë‹¤.
+ *  3. Referenced Index¸¦ ÂüÁ¶ÇÏ´Â Table¿¡ X LockÀ» Àâ´Â´Ù.
+ *      - Partitioned TableÀÌ¸é, Partition¿¡ X LockÀ» Àâ´Â´Ù.
  *
- *  4. Replication ëŒ€ìƒ Tableì¸ ê²½ìš°, ì œì•½ ì¡°ê±´ì„ ê²€ì‚¬í•˜ê³  Receiver Threadë¥¼ ì¤‘ì§€í•œë‹¤.
- *      - REPLICATION_DDL_ENABLE ì‹œìŠ¤í…œ í”„ë¼í¼í‹°ê°€ 1 ì´ì–´ì•¼ í•œë‹¤.
- *      - REPLICATION ì„¸ì…˜ í”„ë¼í¼í‹°ê°€ NONEì´ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
- *      - Eager Sender/Receiver Threadë¥¼ í™•ì¸í•˜ê³ , Receiver Threadë¥¼ ì¤‘ì§€í•œë‹¤.
- *          - Non-Partitioned Tableì´ë©´ Table OIDë¥¼ ì–»ê³ , Partitioned Tableì´ë©´ ëª¨ë“  Partition OIDì™€ Countë¥¼ ì–»ëŠ”ë‹¤.
- *          - í•´ë‹¹ Table ê´€ë ¨ Eager Sender/Receiver Threadê°€ ì—†ì–´ì•¼ í•œë‹¤.
- *          - í•´ë‹¹ Table ê´€ë ¨ Receiver Threadë¥¼ ì¤‘ì§€í•œë‹¤.
+ *  4. Replication ´ë»ó TableÀÎ °æ¿ì, Á¦¾à Á¶°ÇÀ» °Ë»çÇÏ°í Receiver Thread¸¦ ÁßÁöÇÑ´Ù.
+ *      - REPLICATION_DDL_ENABLE ½Ã½ºÅÛ ÇÁ¶óÆÛÆ¼°¡ 1 ÀÌ¾î¾ß ÇÑ´Ù.
+ *      - REPLICATION ¼¼¼Ç ÇÁ¶óÆÛÆ¼°¡ NONEÀÌ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
+ *      - Eager Sender/Receiver Thread¸¦ È®ÀÎÇÏ°í, Receiver Thread¸¦ ÁßÁöÇÑ´Ù.
+ *          - Non-Partitioned TableÀÌ¸é Table OID¸¦ ¾ò°í, Partitioned TableÀÌ¸é ¸ğµç Partition OID¿Í Count¸¦ ¾ò´Â´Ù.
+ *          - ÇØ´ç Table °ü·Ã Eager Sender/Receiver Thread°¡ ¾ø¾î¾ß ÇÑ´Ù.
+ *          - ÇØ´ç Table °ü·Ã Receiver Thread¸¦ ÁßÁöÇÑ´Ù.
  *
- *  5. Sourceì™€ Targetì˜ Table ê¸°ë³¸ ì •ë³´ë¥¼ êµí™˜í•œë‹¤. (Meta Table)
+ *  5. Source¿Í TargetÀÇ Table ±âº» Á¤º¸¸¦ ±³È¯ÇÑ´Ù. (Meta Table)
  *      - SYS_TABLES_
- *          - TABLE_NAME, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNTë¥¼ êµí™˜í•œë‹¤.
- *          - LAST_DDL_TIMEì„ ê°±ì‹ í•œë‹¤. (SYSDATE)
+ *          - TABLE_NAME, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT¸¦ ±³È¯ÇÑ´Ù.
+ *          - LAST_DDL_TIMEÀ» °»½ÅÇÑ´Ù. (SYSDATE)
  *
- *  6. Hidden Columnì´ë©´ Function-based Indexì˜ Columnì´ë¯€ë¡œ,
- *     ì‚¬ìš©ìê°€ Prefixë¥¼ ì§€ì •í•œ ê²½ìš°, Hidden Column Nameì„ ë³€ê²½í•œë‹¤. (Meta Table)
+ *  6. Hidden ColumnÀÌ¸é Function-based IndexÀÇ ColumnÀÌ¹Ç·Î,
+ *     »ç¿ëÀÚ°¡ Prefix¸¦ ÁöÁ¤ÇÑ °æ¿ì, Hidden Column NameÀ» º¯°æÇÑ´Ù. (Meta Table)
  *      - SYS_COLUMNS_
- *          - Sourceì˜ Hidden Column Nameì— Prefixë¥¼ ë¶™ì´ê³ , Targetì˜ Hidden Column Nameì—ì„œ Prefixë¥¼ ì œê±°í•œë‹¤.
+ *          - SourceÀÇ Hidden Column Name¿¡ Prefix¸¦ ºÙÀÌ°í, TargetÀÇ Hidden Column Name¿¡¼­ Prefix¸¦ Á¦°ÅÇÑ´Ù.
  *              - Hidden Column Name = Index Name + $ + IDX + Number
- *          - Hidden Column Nameì„ ë³€ê²½í•œë‹¤.
+ *          - Hidden Column NameÀ» º¯°æÇÑ´Ù.
  *      - SYS_ENCRYPTED_COLUMNS_, SYS_LOBS_, SYS_COMPRESSION_TABLES_
- *          - ë³€ê²½ ì‚¬í•­ ì—†ìŒ
+ *          - º¯°æ »çÇ× ¾øÀ½
  *
- *  7. Prefixë¥¼ ì§€ì •í•œ ê²½ìš°, Sourceì˜ INDEX_NAMEì— Prefixë¥¼ ë¶™ì´ê³ , Targetì˜ INDEX_NAMEì—ì„œ Prefixë¥¼ ì œê±°í•œë‹¤.
- *      - ì‹¤ì œ Index Nameì„ ë³€ê²½í•œë‹¤. (SM)
+ *  7. Prefix¸¦ ÁöÁ¤ÇÑ °æ¿ì, SourceÀÇ INDEX_NAME¿¡ Prefix¸¦ ºÙÀÌ°í, TargetÀÇ INDEX_NAME¿¡¼­ Prefix¸¦ Á¦°ÅÇÑ´Ù.
+ *      - ½ÇÁ¦ Index NameÀ» º¯°æÇÑ´Ù. (SM)
  *          - Call : smiTable::alterIndexName()
- *      - Meta Tableì—ì„œ Index Nameì„ ë³€ê²½í•œë‹¤. (Meta Table)
+ *      - Meta Table¿¡¼­ Index NameÀ» º¯°æÇÑ´Ù. (Meta Table)
  *          - SYS_INDICES_
- *              - INDEX_NAMEì„ ë³€ê²½í•œë‹¤.
- *              - LAST_DDL_TIMEì„ ê°±ì‹ í•œë‹¤. (SYSDATE)
+ *              - INDEX_NAMEÀ» º¯°æÇÑ´Ù.
+ *              - LAST_DDL_TIMEÀ» °»½ÅÇÑ´Ù. (SYSDATE)
  *          - SYS_INDEX_COLUMNS_, SYS_INDEX_RELATED_
- *              - ë³€ê²½ ì‚¬í•­ ì—†ìŒ
+ *              - º¯°æ »çÇ× ¾øÀ½
  *
- *  8. Prefixë¥¼ ì§€ì •í•œ ê²½ìš°, Non-Partitioned Indexì´ ìˆìœ¼ë©´ Nameì„ ë³€ê²½í•œë‹¤.
- *      - Non-Partitioned Indexì¸ ê²½ìš°, (1) Index Table Nameê³¼ (2) Index Tableì˜ Index Nameì„ ë³€ê²½í•œë‹¤.
- *          - Non-Partitioned IndexëŠ” INDEX_NAMEìœ¼ë¡œ Index Table Name, Key Index Name, RID Index Nameì„ ê²°ì •í•œë‹¤.
+ *  8. Prefix¸¦ ÁöÁ¤ÇÑ °æ¿ì, Non-Partitioned IndexÀÌ ÀÖÀ¸¸é NameÀ» º¯°æÇÑ´Ù.
+ *      - Non-Partitioned IndexÀÎ °æ¿ì, (1) Index Table Name°ú (2) Index TableÀÇ Index NameÀ» º¯°æÇÑ´Ù.
+ *          - Non-Partitioned Index´Â INDEX_NAMEÀ¸·Î Index Table Name, Key Index Name, RID Index NameÀ» °áÁ¤ÇÑ´Ù.
  *              - Index Table Name = $GIT_ + Index Name
  *              - Key Index Name = $GIK_ + Index Name
  *              - Rid Index Name = $GIR_ + Index Name
  *              - Call : qdx::makeIndexTableName()
- *          - Index Table Nameì„ ë³€ê²½í•œë‹¤. (Meta Table)
- *          - Index Tableì˜ Index Nameì„ ë³€ê²½í•œë‹¤. (SM, Meta Table)
+ *          - Index Table NameÀ» º¯°æÇÑ´Ù. (Meta Table)
+ *          - Index TableÀÇ Index NameÀ» º¯°æÇÑ´Ù. (SM, Meta Table)
  *              - Call : smiTable::alterIndexName()
- *          - Index Table Infoë¥¼ ë‹¤ì‹œ ì–»ëŠ”ë‹¤. (Meta Cache)
+ *          - Index Table Info¸¦ ´Ù½Ã ¾ò´Â´Ù. (Meta Cache)
  *
- *  9. Prefixë¥¼ ì§€ì •í•œ ê²½ìš°, Sourceì˜ CONSTRAINT_NAMEì— Prefixë¥¼ ë¶™ì´ê³ ,
- *     Targetì˜ CONSTRAINT_NAMEì—ì„œ Prefixë¥¼ ì œê±°í•œë‹¤. (Meta Table)
+ *  9. Prefix¸¦ ÁöÁ¤ÇÑ °æ¿ì, SourceÀÇ CONSTRAINT_NAME¿¡ Prefix¸¦ ºÙÀÌ°í,
+ *     TargetÀÇ CONSTRAINT_NAME¿¡¼­ Prefix¸¦ Á¦°ÅÇÑ´Ù. (Meta Table)
  *      - SYS_CONSTRAINTS_
- *          - CONSTRAINT_NAMEì„ ë³€ê²½í•œë‹¤.
- *              - ë³€ê²½í•œ CONSTRAINT_NAMEì´ Uniqueí•œì§€ í™•ì¸í•´ì•¼ í•œë‹¤.
- *                  - CONSTRAINT_NAMEì€ Unique Indexì˜ Columnì´ ì•„ë‹ˆë‹¤.
+ *          - CONSTRAINT_NAMEÀ» º¯°æÇÑ´Ù.
+ *              - º¯°æÇÑ CONSTRAINT_NAMEÀÌ UniqueÇÑÁö È®ÀÎÇØ¾ß ÇÑ´Ù.
+ *                  - CONSTRAINT_NAMEÀº Unique IndexÀÇ ColumnÀÌ ¾Æ´Ï´Ù.
  *      - SYS_CONSTRAINT_COLUMNS_, SYS_CONSTRAINT_RELATED_
- *          - ë³€ê²½ ì‚¬í•­ ì—†ìŒ
+ *          - º¯°æ »çÇ× ¾øÀ½
  *
- *  10. ë³€ê²½í•œ Trigger Nameê³¼ êµí™˜í•œ Table Nameì„ Trigger Stringsì— ë°˜ì˜í•˜ê³  Triggerë¥¼ ì¬ìƒì„±í•œë‹¤.
- *      - Prefixë¥¼ ì§€ì •í•œ ê²½ìš°, Sourceì˜ TRIGGER_NAMEì— Prefixë¥¼ ë¶™ì´ê³ ,
- *        Targetì˜ TRIGGER_NAMEì—ì„œ Prefixë¥¼ ì œê±°í•œë‹¤. (Meta Table)
+ *  10. º¯°æÇÑ Trigger Name°ú ±³È¯ÇÑ Table NameÀ» Trigger Strings¿¡ ¹İ¿µÇÏ°í Trigger¸¦ Àç»ı¼ºÇÑ´Ù.
+ *      - Prefix¸¦ ÁöÁ¤ÇÑ °æ¿ì, SourceÀÇ TRIGGER_NAME¿¡ Prefix¸¦ ºÙÀÌ°í,
+ *        TargetÀÇ TRIGGER_NAME¿¡¼­ Prefix¸¦ Á¦°ÅÇÑ´Ù. (Meta Table)
  *          - SYS_TRIGGERS_
- *              - TRIGGER_NAMEì„ ë³€ê²½í•œë‹¤.
- *              - ë³€ê²½í•œ Trigger Stringìœ¼ë¡œ SUBSTRING_CNT, STRING_LENGTHë¥¼ ë§Œë“¤ì–´ì•¼ í•œë‹¤.
- *              - LAST_DDL_TIMEì„ ê°±ì‹ í•œë‹¤. (SYSDATE)
- *      - Trigger Stringsì— ë³€ê²½í•œ Trigger Nameê³¼ êµí™˜í•œ Table Nameì„ ì ìš©í•œë‹¤. (SM, Meta Table, Meta Cache)
- *          - Trigger Objectì˜ Trigger ìƒì„± êµ¬ë¬¸ì„ ë³€ê²½í•œë‹¤. (SM)
+ *              - TRIGGER_NAMEÀ» º¯°æÇÑ´Ù.
+ *              - º¯°æÇÑ Trigger StringÀ¸·Î SUBSTRING_CNT, STRING_LENGTH¸¦ ¸¸µé¾î¾ß ÇÑ´Ù.
+ *              - LAST_DDL_TIMEÀ» °»½ÅÇÑ´Ù. (SYSDATE)
+ *      - Trigger Strings¿¡ º¯°æÇÑ Trigger Name°ú ±³È¯ÇÑ Table NameÀ» Àû¿ëÇÑ´Ù. (SM, Meta Table, Meta Cache)
+ *          - Trigger ObjectÀÇ Trigger »ı¼º ±¸¹®À» º¯°æÇÑ´Ù. (SM)
  *              - Call : smiObject::setObjectInfo()
- *          - New Trigger Cacheë¥¼ ìƒì„±í•˜ê³  SMì— ë“±ë¡í•œë‹¤. (Meta Cache)
+ *          - New Trigger Cache¸¦ »ı¼ºÇÏ°í SM¿¡ µî·ÏÇÑ´Ù. (Meta Cache)
  *              - Call : qdnTrigger::allocTriggerCache()
- *          - Trigger Stringsì„ ë³´ê´€í•˜ëŠ” Meta Tableì„ ê°±ì‹ í•œë‹¤. (Meta Table)
+ *          - Trigger StringsÀ» º¸°üÇÏ´Â Meta TableÀ» °»½ÅÇÑ´Ù. (Meta Table)
  *              - SYS_TRIGGER_STRINGS_
- *                  - DELETE & INSERTë¡œ ì²˜ë¦¬í•œë‹¤.
- *      - Triggerë¥¼ ë™ì‘ì‹œí‚¤ëŠ” Column ì •ë³´ì—ëŠ” ë³€ê²½ ì‚¬í•­ì´ ì—†ë‹¤.
+ *                  - DELETE & INSERT·Î Ã³¸®ÇÑ´Ù.
+ *      - Trigger¸¦ µ¿ÀÛ½ÃÅ°´Â Column Á¤º¸¿¡´Â º¯°æ »çÇ×ÀÌ ¾ø´Ù.
  *          - SYS_TRIGGER_UPDATE_COLUMNS_
- *      - ë‹¤ë¥¸ Triggerê°€ Cycle Checkì— ì‚¬ìš©í•˜ëŠ” ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤. (Meta Table)
+ *      - ´Ù¸¥ Trigger°¡ Cycle Check¿¡ »ç¿ëÇÏ´Â Á¤º¸¸¦ °»½ÅÇÑ´Ù. (Meta Table)
  *          - SYS_TRIGGER_DML_TABLES_
- *              - DML_TABLE_ID = Table ID ì´ë©´, (TABLE_IDì™€ ë¬´ê´€í•˜ê²Œ) DML_TABLE_IDë¥¼ Peerì˜ Table IDë¡œ êµì²´í•œë‹¤.
- *      - ì°¸ì¡° Call : qdnTrigger::executeRenameTable()
+ *              - DML_TABLE_ID = Table ID ÀÌ¸é, (TABLE_ID¿Í ¹«°üÇÏ°Ô) DML_TABLE_ID¸¦ PeerÀÇ Table ID·Î ±³Ã¼ÇÑ´Ù.
+ *      - ÂüÁ¶ Call : qdnTrigger::executeRenameTable()
  *
- *  11. Sourceì™€ Targetì˜ Table Infoë¥¼ ë‹¤ì‹œ ì–»ëŠ”ë‹¤.
- *      - Table Infoë¥¼ ìƒì„±í•˜ê³ , SMì— ë“±ë¡í•œë‹¤. (Meta Cache)
- *      - Table Infoë¥¼ ì–»ëŠ”ë‹¤.
+ *  11. Source¿Í TargetÀÇ Table Info¸¦ ´Ù½Ã ¾ò´Â´Ù.
+ *      - Table Info¸¦ »ı¼ºÇÏ°í, SM¿¡ µî·ÏÇÑ´Ù. (Meta Cache)
+ *      - Table Info¸¦ ¾ò´Â´Ù.
  *
- *  12. Commentë¥¼ êµí™˜í•œë‹¤. (Meta Table)
+ *  12. Comment¸¦ ±³È¯ÇÑ´Ù. (Meta Table)
  *      - SYS_COMMENTS_
- *          - TABLE_NAMEì„ êµí™˜í•œë‹¤.
- *          - Hidden Columnì´ë©´ Function-based Indexì˜ Columnì´ë¯€ë¡œ,
- *            ì‚¬ìš©ìê°€ Prefixë¥¼ ì§€ì •í•œ ê²½ìš°, Hidden Column Nameì„ ë³€ê²½í•œë‹¤.
- *              - Sourceì˜ Hidden Column Nameì— Prefixë¥¼ ë¶™ì´ê³ , Targetì˜ Hidden Column Nameì—ì„œ Prefixë¥¼ ì œê±°í•œë‹¤.
+ *          - TABLE_NAMEÀ» ±³È¯ÇÑ´Ù.
+ *          - Hidden ColumnÀÌ¸é Function-based IndexÀÇ ColumnÀÌ¹Ç·Î,
+ *            »ç¿ëÀÚ°¡ Prefix¸¦ ÁöÁ¤ÇÑ °æ¿ì, Hidden Column NameÀ» º¯°æÇÑ´Ù.
+ *              - SourceÀÇ Hidden Column Name¿¡ Prefix¸¦ ºÙÀÌ°í, TargetÀÇ Hidden Column Name¿¡¼­ Prefix¸¦ Á¦°ÅÇÑ´Ù.
  *                  - Hidden Column Name = Index Name + $ + IDX + Number
  *
- *  13. í•œìª½ì´ë¼ë„ Partitioned Tableì´ê³  Replication ëŒ€ìƒì´ë©´, Partitionì˜ Replication ì •ë³´ë¥¼ êµí™˜í•œë‹¤. (Meta Table)
+ *  13. ÇÑÂÊÀÌ¶óµµ Partitioned TableÀÌ°í Replication ´ë»óÀÌ¸é, PartitionÀÇ Replication Á¤º¸¸¦ ±³È¯ÇÑ´Ù. (Meta Table)
  *      - SYS_TABLE_PARTITIONS_
- *          - PARTITION_NAMEìœ¼ë¡œ Matching Partitionì„ ì„ íƒí•œë‹¤.
- *          - Matching Partitionì˜ REPLICATION_COUNT, REPLICATION_RECOVERY_COUNTë¥¼ êµí™˜í•˜ê³ , LAST_DDL_TIMEì„ ê°±ì‹ í•œë‹¤.
- *              - REPLICATION_COUNT > 0 ì´ë©´, Partitionì´ Replication ëŒ€ìƒì´ë‹¤.
- *      - Partitionì˜ ë‹¤ë¥¸ ì •ë³´ëŠ” ë³€ê²½ ì‚¬í•­ì´ ì—†ë‹¤.
+ *          - PARTITION_NAMEÀ¸·Î Matching PartitionÀ» ¼±ÅÃÇÑ´Ù.
+ *          - Matching PartitionÀÇ REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT¸¦ ±³È¯ÇÏ°í, LAST_DDL_TIMEÀ» °»½ÅÇÑ´Ù.
+ *              - REPLICATION_COUNT > 0 ÀÌ¸é, PartitionÀÌ Replication ´ë»óÀÌ´Ù.
+ *      - PartitionÀÇ ´Ù¸¥ Á¤º¸´Â º¯°æ »çÇ×ÀÌ ¾ø´Ù.
  *          - SYS_INDEX_PARTITIONS_
- *              - INDEX_PARTITION_NAMEì€ Partitioned Tableì˜ Index ë‚´ì—ì„œë§Œ Uniqueí•˜ë©´ ë˜ë¯€ë¡œ, Prefixê°€ í•„ìš”í•˜ì§€ ì•Šë‹¤.
+ *              - INDEX_PARTITION_NAMEÀº Partitioned TableÀÇ Index ³»¿¡¼­¸¸ UniqueÇÏ¸é µÇ¹Ç·Î, Prefix°¡ ÇÊ¿äÇÏÁö ¾Ê´Ù.
  *          - SYS_PART_TABLES_, SYS_PART_LOBS_, SYS_PART_KEY_COLUMNS_, SYS_PART_INDICES_
  *
- *  14. Partitioned Tableì´ë©´, Partition Infoë¥¼ ë‹¤ì‹œ ì–»ëŠ”ë‹¤.
- *      - Partition Infoë¥¼ ìƒì„±í•˜ê³ , SMì— ë“±ë¡í•œë‹¤. (Meta Cache)
- *      - Partition Infoë¥¼ ì–»ëŠ”ë‹¤.
+ *  14. Partitioned TableÀÌ¸é, Partition Info¸¦ ´Ù½Ã ¾ò´Â´Ù.
+ *      - Partition Info¸¦ »ı¼ºÇÏ°í, SM¿¡ µî·ÏÇÑ´Ù. (Meta Cache)
+ *      - Partition Info¸¦ ¾ò´Â´Ù.
  *
- *  15. Foreign Key Constraint (Parent)ê°€ ìˆìœ¼ë©´, Referenced Indexë¥¼ ë³€ê²½í•˜ê³  Table Infoë¥¼ ê°±ì‹ í•œë‹¤.
- *      - Referenced Indexë¥¼ ë³€ê²½í•œë‹¤. (Meta Table)
+ *  15. Foreign Key Constraint (Parent)°¡ ÀÖÀ¸¸é, Referenced Index¸¦ º¯°æÇÏ°í Table Info¸¦ °»½ÅÇÑ´Ù.
+ *      - Referenced Index¸¦ º¯°æÇÑ´Ù. (Meta Table)
  *          - SYS_CONSTRAINTS_
- *              - REFERENCED_INDEX_IDê°€ ê°€ë¦¬í‚¤ëŠ” Indexì˜ Column Nameìœ¼ë¡œ êµ¬ì„±ëœ Indexë¥¼ Peerì—ì„œ ì°¾ëŠ”ë‹¤. (Validationê³¼ ë™ì¼)
- *              - REFERENCED_TABLE_IDì™€ REFERENCED_INDEX_IDë¥¼ Peerì˜ Table IDì™€ Index IDë¡œ ë³€ê²½í•œë‹¤.
- *      - Referenced Indexë¥¼ ì°¸ì¡°í•˜ëŠ” Tableì˜ Table Infoë¥¼ ê°±ì‹ í•œë‹¤. (Meta Cache)
- *          - Partitioned Tableì´ë©´, Partition Infoë¥¼ ê°±ì‹ í•œë‹¤. (Meta Cache)
+ *              - REFERENCED_INDEX_ID°¡ °¡¸®Å°´Â IndexÀÇ Column NameÀ¸·Î ±¸¼ºµÈ Index¸¦ Peer¿¡¼­ Ã£´Â´Ù. (Validation°ú µ¿ÀÏ)
+ *              - REFERENCED_TABLE_ID¿Í REFERENCED_INDEX_ID¸¦ PeerÀÇ Table ID¿Í Index ID·Î º¯°æÇÑ´Ù.
+ *      - Referenced Index¸¦ ÂüÁ¶ÇÏ´Â TableÀÇ Table Info¸¦ °»½ÅÇÑ´Ù. (Meta Cache)
+ *          - Partitioned TableÀÌ¸é, Partition Info¸¦ °»½ÅÇÑ´Ù. (Meta Cache)
  *
- *  16. Package, Procedure, Functionì— ëŒ€í•´ Set Invalidë¥¼ ìˆ˜í–‰í•œë‹¤.
- *      - RELATED_USER_ID = User ID, RELATED_OBJECT_NAME = Table Name, RELATED_OBJECT_TYPE = 2 ì¸ ê²½ìš°ì— í•´ë‹¹í•œë‹¤.
+ *  16. Package, Procedure, Function¿¡ ´ëÇØ Set Invalid¸¦ ¼öÇàÇÑ´Ù.
+ *      - RELATED_USER_ID = User ID, RELATED_OBJECT_NAME = Table Name, RELATED_OBJECT_TYPE = 2 ÀÎ °æ¿ì¿¡ ÇØ´çÇÑ´Ù.
  *        (SYS_PACKAGE_RELATED_, SYS_PROC_RELATED_)
  *      - Call : qcmProc::relSetInvalidProcOfRelated(), qcmPkg::relSetInvalidPkgOfRelated()
  *
- *  17. Viewì— ëŒ€í•´ Set Invalid & Recompile & Set Validë¥¼ ìˆ˜í–‰í•œë‹¤.
- *      - RELATED_USER_ID = User ID, RELATED_OBJECT_NAME = Table Name, RELATED_OBJECT_TYPE = 2 ì¸ ê²½ìš°ì— í•´ë‹¹í•œë‹¤.
+ *  17. View¿¡ ´ëÇØ Set Invalid & Recompile & Set Valid¸¦ ¼öÇàÇÑ´Ù.
+ *      - RELATED_USER_ID = User ID, RELATED_OBJECT_NAME = Table Name, RELATED_OBJECT_TYPE = 2 ÀÎ °æ¿ì¿¡ ÇØ´çÇÑ´Ù.
  *        (SYS_VIEW_RELATED_)
  *      - Call : qcmView::setInvalidViewOfRelated(), qcmView::recompileAndSetValidViewOfRelated()
  *
- *  18. Object Privilegeë¥¼ êµí™˜í•œë‹¤. (Meta Table)
+ *  18. Object Privilege¸¦ ±³È¯ÇÑ´Ù. (Meta Table)
  *      - SYS_GRANT_OBJECT_
- *          - OBJ_ID = Table ID, OBJ_TYPE = 'T' ì´ë©´, OBJ_IDë§Œ êµí™˜í•œë‹¤.
+ *          - OBJ_ID = Table ID, OBJ_TYPE = 'T' ÀÌ¸é, OBJ_ID¸¸ ±³È¯ÇÑ´Ù.
  *
- *  19. Replication ëŒ€ìƒ Tableì¸ ê²½ìš°, Replication Meta Tableì„ ìˆ˜ì •í•œë‹¤. (Meta Table)
+ *  19. Replication ´ë»ó TableÀÎ °æ¿ì, Replication Meta TableÀ» ¼öÁ¤ÇÑ´Ù. (Meta Table)
  *      - SYS_REPL_ITEMS_
- *          - SYS_REPL_ITEMS_ì˜ TABLE_OIDëŠ” Non-Partitioned Table OIDì´ê±°ë‚˜ Partition OIDì´ë‹¤.
- *              - Partitioned Table OIDëŠ” SYS_REPL_ITEMS_ì— ì—†ë‹¤.
- *          - Non-Partitioned Tableì¸ ê²½ìš°, Table OIDë¥¼ Peerì˜ ê²ƒìœ¼ë¡œ ë³€ê²½í•œë‹¤.
- *          - Partitioned Tableì¸ ê²½ìš°, Partition OIDë¥¼ Peerì˜ ê²ƒìœ¼ë¡œ ë³€ê²½í•œë‹¤.
+ *          - SYS_REPL_ITEMS_ÀÇ TABLE_OID´Â Non-Partitioned Table OIDÀÌ°Å³ª Partition OIDÀÌ´Ù.
+ *              - Partitioned Table OID´Â SYS_REPL_ITEMS_¿¡ ¾ø´Ù.
+ *          - Non-Partitioned TableÀÎ °æ¿ì, Table OID¸¦ PeerÀÇ °ÍÀ¸·Î º¯°æÇÑ´Ù.
+ *          - Partitioned TableÀÎ °æ¿ì, Partition OID¸¦ PeerÀÇ °ÍÀ¸·Î º¯°æÇÑ´Ù.
  *
- *  20. Replication ëŒ€ìƒ Tableì´ê±°ë‚˜ DDL_SUPPLEMENTAL_LOG_ENABLEì´ 1ì¸ ê²½ìš°, Supplemental Logë¥¼ ê¸°ë¡í•œë‹¤.
- *      - Non-Partitioned Tableì´ë©´ Table OIDë¥¼ ì–»ê³ , Partitioned Tableì´ë©´ Partition OIDë¥¼ ì–»ëŠ”ë‹¤.
- *          - ë‹¨, Non-Partitioned Table <-> Partitioned Table ë³€í™˜ì¸ ê²½ìš°, Partitioned Tableì—ì„œ Table OIDë¥¼ ì–»ëŠ”ë‹¤.
- *          - Partitioned Tableì¸ ê²½ìš°, Peerì—ì„œ Partition Nameì´ ë™ì¼í•œ Partitionì„ ì°¾ì•„ì„œ Old OIDë¡œ ì‚¬ìš©í•œë‹¤.
- *              - Peerì— ë™ì¼í•œ Partition Nameì´ ì—†ìœ¼ë©´, Old OIDëŠ” 0 ì´ë‹¤.
- *      - Table Meta Log Recordë¥¼ ê¸°ë¡í•œë‹¤.
+ *  20. Replication ´ë»ó TableÀÌ°Å³ª DDL_SUPPLEMENTAL_LOG_ENABLEÀÌ 1ÀÎ °æ¿ì, Supplemental Log¸¦ ±â·ÏÇÑ´Ù.
+ *      - Non-Partitioned TableÀÌ¸é Table OID¸¦ ¾ò°í, Partitioned TableÀÌ¸é Partition OID¸¦ ¾ò´Â´Ù.
+ *          - ´Ü, Non-Partitioned Table <-> Partitioned Table º¯È¯ÀÎ °æ¿ì, Partitioned Table¿¡¼­ Table OID¸¦ ¾ò´Â´Ù.
+ *          - Partitioned TableÀÎ °æ¿ì, Peer¿¡¼­ Partition NameÀÌ µ¿ÀÏÇÑ PartitionÀ» Ã£¾Æ¼­ Old OID·Î »ç¿ëÇÑ´Ù.
+ *              - Peer¿¡ µ¿ÀÏÇÑ Partition NameÀÌ ¾øÀ¸¸é, Old OID´Â 0 ÀÌ´Ù.
+ *      - Table Meta Log Record¸¦ ±â·ÏÇÑ´Ù.
  *          - Call : qci::mManageReplicationCallback.mWriteTableMetaLog()
- *      - ì£¼ì˜ : Replicationì´ Swap DDLì„ Peerì— ìˆ˜í–‰í•˜ë©´ ì•ˆ ëœë‹¤.
- *          - Copyì™€ Swapì€ ì§ì„ ì´ë£¨ëŠ”ë°, Copyë¥¼ Peerì— ìˆ˜í–‰í•˜ì§€ ì•Šì•˜ìœ¼ë¯€ë¡œ Swapì„ Peerì— ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *      - ÁÖÀÇ : ReplicationÀÌ Swap DDLÀ» Peer¿¡ ¼öÇàÇÏ¸é ¾È µÈ´Ù.
+ *          - Copy¿Í SwapÀº Â¦À» ÀÌ·ç´Âµ¥, Copy¸¦ Peer¿¡ ¼öÇàÇÏÁö ¾Ê¾ÒÀ¸¹Ç·Î SwapÀ» Peer¿¡ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
  *
- *  21. Old Trigger Cacheë¥¼ ì œê±°í•œë‹¤.
+ *  21. Old Trigger Cache¸¦ Á¦°ÅÇÑ´Ù.
  *      - Call : qdnTrigger::freeTriggerCache()
- *      - ì˜ˆì™¸ ì²˜ë¦¬ë¥¼ í•˜ê¸° ìœ„í•´, ë§ˆì§€ë§‰ì— ìˆ˜í–‰í•œë‹¤.
+ *      - ¿¹¿Ü Ã³¸®¸¦ ÇÏ±â À§ÇØ, ¸¶Áö¸·¿¡ ¼öÇàÇÑ´Ù.
  *
- *  22. Table Nameì´ ë³€ê²½ë˜ì—ˆìœ¼ë¯€ë¡œ, Encrypted Columnì„ ë³´ì•ˆ ëª¨ë“ˆì— ë‹¤ì‹œ ë“±ë¡í•œë‹¤.
- *      - ë³´ì•ˆ ëª¨ë“ˆì— ë“±ë¡í•œ ê¸°ì¡´ Encrypted Column ì •ë³´ë¥¼ ì œê±°í•œë‹¤.
+ *  22. Table NameÀÌ º¯°æµÇ¾úÀ¸¹Ç·Î, Encrypted ColumnÀ» º¸¾È ¸ğµâ¿¡ ´Ù½Ã µî·ÏÇÑ´Ù.
+ *      - º¸¾È ¸ğµâ¿¡ µî·ÏÇÑ ±âÁ¸ Encrypted Column Á¤º¸¸¦ Á¦°ÅÇÑ´Ù.
  *          - Call : qcsModule::unsetColumnPolicy()
- *      - ë³´ì•ˆ ëª¨ë“ˆì— Table Owner Name, Table Name, Column Name, Policy Nameì„ ë“±ë¡í•œë‹¤.
+ *      - º¸¾È ¸ğµâ¿¡ Table Owner Name, Table Name, Column Name, Policy NameÀ» µî·ÏÇÑ´Ù.
  *          - Call : qcsModule::setColumnPolicy()
- *      - ì˜ˆì™¸ ì²˜ë¦¬ë¥¼ í•˜ì§€ ì•Šê¸° ìœ„í•´, ë§ˆì§€ë§‰ì— ìˆ˜í–‰í•œë‹¤.
+ *      - ¿¹¿Ü Ã³¸®¸¦ ÇÏÁö ¾Ê±â À§ÇØ, ¸¶Áö¸·¿¡ ¼öÇàÇÑ´Ù.
  *
- *  23. Referenced Indexë¥¼ ì°¸ì¡°í•˜ëŠ” Tableì˜ Old Table Infoë¥¼ ì œê±°í•œë‹¤.
- *      - Partitioned Tableì´ë©´, Partitionì˜ Old Partition Infoë¥¼ ì œê±°í•œë‹¤.
+ *  23. Referenced Index¸¦ ÂüÁ¶ÇÏ´Â TableÀÇ Old Table Info¸¦ Á¦°ÅÇÑ´Ù.
+ *      - Partitioned TableÀÌ¸é, PartitionÀÇ Old Partition Info¸¦ Á¦°ÅÇÑ´Ù.
  *
- *  24. Prefixë¥¼ ì§€ì •í•œ ê²½ìš°, Non-Partitioned Indexê°€ ìˆìœ¼ë©´ Old Index Table Infoë¥¼ ì œê±°í•œë‹¤.
+ *  24. Prefix¸¦ ÁöÁ¤ÇÑ °æ¿ì, Non-Partitioned Index°¡ ÀÖÀ¸¸é Old Index Table Info¸¦ Á¦°ÅÇÑ´Ù.
  *
- *  25. Partitioned Tableì´ë©´, Old Partition Infoë¥¼ ì œê±°í•œë‹¤.
+ *  25. Partitioned TableÀÌ¸é, Old Partition Info¸¦ Á¦°ÅÇÑ´Ù.
  *
- *  26. Old Table Infoë¥¼ ì œê±°í•œë‹¤.
+ *  26. Old Table Info¸¦ Á¦°ÅÇÑ´Ù.
  *
  ***********************************************************************/
 
     qdTableParseTree        * sParseTree                        = NULL;
+    smOID                   * sDDLTableOIDArray                 = NULL;
     qcmTableInfo            * sTableInfo                        = NULL;
     qcmPartitionInfoList    * sPartInfoList                     = NULL;
     smOID                   * sPartitionOIDs                    = NULL;
@@ -1545,9 +1718,9 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
 
     sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;
 
-    /* 1. Targetì˜ Tableì— X Lockì„ ì¡ëŠ”ë‹¤.
-     *  - Partitioned Tableì´ë©´, Partitionì— X Lockì„ ì¡ëŠ”ë‹¤.
-     *  - Partitioned Tableì´ë©´, Non-Partitioned Indexì— X Lockì„ ì¡ëŠ”ë‹¤.
+    /* 1. TargetÀÇ Table¿¡ X LockÀ» Àâ´Â´Ù.
+     *  - Partitioned TableÀÌ¸é, Partition¿¡ X LockÀ» Àâ´Â´Ù.
+     *  - Partitioned TableÀÌ¸é, Non-Partitioned Index¿¡ X LockÀ» Àâ´Â´Ù.
      */
     IDE_TEST( qcm::validateAndLockTable( aStatement,
                                          sParseTree->tableHandle,
@@ -1561,22 +1734,18 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
     {
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                   sParseTree->partTable->partInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                                   SMI_TABLE_LOCK_X,
-                                                                  ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                                                    ID_ULONG_MAX :
-                                                                    smiGetDDLLockTimeOut() * 1000000 ) )
+                                                                  smiGetDDLLockTimeOut((QC_SMI_STMT(aStatement))->getTrans()))
                   != IDE_SUCCESS );
 
         sPartInfoList = sParseTree->partTable->partInfoList;
 
         IDE_TEST( qdx::validateAndLockIndexTableList( aStatement,
                                                       sParseTree->oldIndexTables,
-                                                      SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                      SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                       SMI_TABLE_LOCK_X,
-                                                      ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                                        ID_ULONG_MAX :
-                                                        smiGetDDLLockTimeOut() * 1000000 ) )
+                                                      smiGetDDLLockTimeOut((QC_SMI_STMT(aStatement))->getTrans()))
                   != IDE_SUCCESS );
 
         sIndexTableList = sParseTree->oldIndexTables;
@@ -1592,9 +1761,9 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
         /* Nothing to do */
     }
 
-    /* 2. Sourceì˜ Tableì— X Lockì„ ì¡ëŠ”ë‹¤.
-     *  - Partitioned Tableì´ë©´, Partitionì— X Lockì„ ì¡ëŠ”ë‹¤.
-     *  - Partitioned Tableì´ë©´, Non-Partitioned Indexì— X Lockì„ ì¡ëŠ”ë‹¤.
+    /* 2. SourceÀÇ Table¿¡ X LockÀ» Àâ´Â´Ù.
+     *  - Partitioned TableÀÌ¸é, Partition¿¡ X LockÀ» Àâ´Â´Ù.
+     *  - Partitioned TableÀÌ¸é, Non-Partitioned Index¿¡ X LockÀ» Àâ´Â´Ù.
      */
     IDE_TEST( qcm::validateAndLockTable( aStatement,
                                          sParseTree->mSourcePartTable->mTableHandle,
@@ -1608,22 +1777,18 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
     {
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                   sParseTree->mSourcePartTable->mPartInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                                   SMI_TABLE_LOCK_X,
-                                                                  ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                                                    ID_ULONG_MAX :
-                                                                    smiGetDDLLockTimeOut() * 1000000 ) )
+                                                                  smiGetDDLLockTimeOut((QC_SMI_STMT(aStatement))->getTrans()))
                   != IDE_SUCCESS );
 
         sSourcePartInfoList = sParseTree->mSourcePartTable->mPartInfoList;
 
         IDE_TEST( qdx::validateAndLockIndexTableList( aStatement,
                                                       sParseTree->mSourcePartTable->mIndexTableList,
-                                                      SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                      SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                       SMI_TABLE_LOCK_X,
-                                                      ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                                        ID_ULONG_MAX :
-                                                        smiGetDDLLockTimeOut() * 1000000 ) )
+                                                      smiGetDDLLockTimeOut((QC_SMI_STMT(aStatement))->getTrans()))
                   != IDE_SUCCESS );
 
         sSourceIndexTableList = sParseTree->mSourcePartTable->mIndexTableList;
@@ -1639,8 +1804,8 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
         /* Nothing to do */
     }
 
-    /* 3. Referenced Indexë¥¼ ì°¸ì¡°í•˜ëŠ” Tableì— X Lockì„ ì¡ëŠ”ë‹¤.
-     *  - Partitioned Tableì´ë©´, Partitionì— X Lockì„ ì¡ëŠ”ë‹¤.
+    /* 3. Referenced Index¸¦ ÂüÁ¶ÇÏ´Â Table¿¡ X LockÀ» Àâ´Â´Ù.
+     *  - Partitioned TableÀÌ¸é, Partition¿¡ X LockÀ» Àâ´Â´Ù.
      */
     for ( sPartTableList = sParseTree->mRefChildPartTableList;
           sPartTableList != NULL;
@@ -1654,28 +1819,26 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
 
         IDE_TEST( qcmPartition::validateAndLockPartitionInfoList( aStatement,
                                                                   sPartTableList->mPartInfoList,
-                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                                  SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                                   SMI_TABLE_LOCK_X,
-                                                                  ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                                                    ID_ULONG_MAX :
-                                                                    smiGetDDLLockTimeOut() * 1000000 ) )
+                                                                  smiGetDDLLockTimeOut((QC_SMI_STMT(aStatement))->getTrans()))
                   != IDE_SUCCESS );
     }
 
     sRefChildPartTableList = sParseTree->mRefChildPartTableList;
 
-    /* 4. Replication ëŒ€ìƒ Tableì¸ ê²½ìš°, ì œì•½ ì¡°ê±´ì„ ê²€ì‚¬í•˜ê³  Receiver Threadë¥¼ ì¤‘ì§€í•œë‹¤.
-     *  - REPLICATION_DDL_ENABLE ì‹œìŠ¤í…œ í”„ë¼í¼í‹°ê°€ 1 ì´ì–´ì•¼ í•œë‹¤.
-     *  - REPLICATION ì„¸ì…˜ í”„ë¼í¼í‹°ê°€ NONEì´ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
-     *  - Eager Sender/Receiver Threadë¥¼ í™•ì¸í•˜ê³ , Receiver Threadë¥¼ ì¤‘ì§€í•œë‹¤.
-     *      - Non-Partitioned Tableì´ë©´ Table OIDë¥¼ ì–»ê³ , Partitioned Tableì´ë©´ ëª¨ë“  Partition OIDì™€ Countë¥¼ ì–»ëŠ”ë‹¤.
-     *      - í•´ë‹¹ Table ê´€ë ¨ Eager Sender/Receiver Threadê°€ ì—†ì–´ì•¼ í•œë‹¤.
-     *      - í•´ë‹¹ Table ê´€ë ¨ Receiver Threadë¥¼ ì¤‘ì§€í•œë‹¤.
+    /* 4. Replication ´ë»ó TableÀÎ °æ¿ì, Á¦¾à Á¶°ÇÀ» °Ë»çÇÏ°í Receiver Thread¸¦ ÁßÁöÇÑ´Ù.
+     *  - REPLICATION_DDL_ENABLE ½Ã½ºÅÛ ÇÁ¶óÆÛÆ¼°¡ 1 ÀÌ¾î¾ß ÇÑ´Ù.
+     *  - REPLICATION ¼¼¼Ç ÇÁ¶óÆÛÆ¼°¡ NONEÀÌ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
+     *  - Eager Sender/Receiver Thread¸¦ È®ÀÎÇÏ°í, Receiver Thread¸¦ ÁßÁöÇÑ´Ù.
+     *      - Non-Partitioned TableÀÌ¸é Table OID¸¦ ¾ò°í, Partitioned TableÀÌ¸é ¸ğµç Partition OID¿Í Count¸¦ ¾ò´Â´Ù.
+     *      - ÇØ´ç Table °ü·Ã Eager Sender/Receiver Thread°¡ ¾ø¾î¾ß ÇÑ´Ù.
+     *      - ÇØ´ç Table °ü·Ã Receiver Thread¸¦ ÁßÁöÇÑ´Ù.
      */
     if ( sTableInfo->replicationCount > 0 )
     {
-        /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
-         * Validateì™€ ExecuteëŠ” ë‹¤ë¥¸ Transactionì´ë¯€ë¡œ, í”„ë¼í¼í‹° ê²€ì‚¬ëŠ” Executeì—ì„œ í•œë‹¤.
+        /* PROJ-1442 Replication Online Áß DDL Çã¿ë
+         * Validate¿Í Execute´Â ´Ù¸¥ TransactionÀÌ¹Ç·Î, ÇÁ¶óÆÛÆ¼ °Ë»ç´Â Execute¿¡¼­ ÇÑ´Ù.
          */
         IDE_TEST( qci::mManageReplicationCallback.mIsDDLEnableOnReplicatedTable( 0, // aRequireLevel
                                                                                  sTableInfo )
@@ -1685,8 +1848,8 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
                         == SMI_TRANSACTION_REPL_NONE,
                         ERR_CANNOT_WRITE_REPL_INFO );
 
-        /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
-         * ê´€ë ¨ Receiver Thread ì¤‘ì§€
+        /* PROJ-1442 Replication Online Áß DDL Çã¿ë
+         * °ü·Ã Receiver Thread ÁßÁö
          */
         if ( sTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
         {
@@ -1704,9 +1867,9 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
                                                                    sTableOIDCount )
                   != IDE_SUCCESS );
 
-        // BUG-22703 : Begin Statementë¥¼ ìˆ˜í–‰í•œ í›„ì— Hangì´ ê±¸ë¦¬ì§€
-        // ì•Šì•„ì•¼ í•©ë‹ˆë‹¤.
-        // mStatistics í†µê³„ ì •ë³´ë¥¼ ì „ë‹¬ í•©ë‹ˆë‹¤.
+        // BUG-22703 : Begin Statement¸¦ ¼öÇàÇÑ ÈÄ¿¡ HangÀÌ °É¸®Áö
+        // ¾Ê¾Æ¾ß ÇÕ´Ï´Ù.
+        // mStatistics Åë°è Á¤º¸¸¦ Àü´Ş ÇÕ´Ï´Ù.
         IDE_TEST( qci::mManageReplicationCallback.mStopReceiverThreads( QC_SMI_STMT( aStatement ),
                                                                         QC_STATISTICS( aStatement ),
                                                                         sTableOIDArray,
@@ -1720,8 +1883,8 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
 
     if ( sSourceTableInfo->replicationCount > 0 )
     {
-        /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
-         * Validateì™€ ExecuteëŠ” ë‹¤ë¥¸ Transactionì´ë¯€ë¡œ, í”„ë¼í¼í‹° ê²€ì‚¬ëŠ” Executeì—ì„œ í•œë‹¤.
+        /* PROJ-1442 Replication Online Áß DDL Çã¿ë
+         * Validate¿Í Execute´Â ´Ù¸¥ TransactionÀÌ¹Ç·Î, ÇÁ¶óÆÛÆ¼ °Ë»ç´Â Execute¿¡¼­ ÇÑ´Ù.
          */
         IDE_TEST( qci::mManageReplicationCallback.mIsDDLEnableOnReplicatedTable( 0, // aRequireLevel
                                                                                  sSourceTableInfo )
@@ -1731,8 +1894,8 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
                         == SMI_TRANSACTION_REPL_NONE,
                         ERR_CANNOT_WRITE_REPL_INFO );
 
-        /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
-         * ê´€ë ¨ Receiver Thread ì¤‘ì§€
+        /* PROJ-1442 Replication Online Áß DDL Çã¿ë
+         * °ü·Ã Receiver Thread ÁßÁö
          */
         if ( sSourceTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
         {
@@ -1750,9 +1913,9 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
                                                                    sTableOIDCount )
                   != IDE_SUCCESS );
 
-        // BUG-22703 : Begin Statementë¥¼ ìˆ˜í–‰í•œ í›„ì— Hangì´ ê±¸ë¦¬ì§€
-        // ì•Šì•„ì•¼ í•©ë‹ˆë‹¤.
-        // mStatistics í†µê³„ ì •ë³´ë¥¼ ì „ë‹¬ í•©ë‹ˆë‹¤.
+        // BUG-22703 : Begin Statement¸¦ ¼öÇàÇÑ ÈÄ¿¡ HangÀÌ °É¸®Áö
+        // ¾Ê¾Æ¾ß ÇÕ´Ï´Ù.
+        // mStatistics Åë°è Á¤º¸¸¦ Àü´Ş ÇÕ´Ï´Ù.
         IDE_TEST( qci::mManageReplicationCallback.mStopReceiverThreads( QC_SMI_STMT( aStatement ),
                                                                         QC_STATISTICS( aStatement ),
                                                                         sTableOIDArray,
@@ -1764,24 +1927,25 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
         /* Nothing to do */
     }
 
-    /* 5. Sourceì™€ Targetì˜ Table ê¸°ë³¸ ì •ë³´ë¥¼ êµí™˜í•œë‹¤. (Meta Table)
+    /* 5. Source¿Í TargetÀÇ Table ±âº» Á¤º¸¸¦ ±³È¯ÇÑ´Ù. (Meta Table)
      *  - SYS_TABLES_
-     *      - TABLE_NAME, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNTë¥¼ êµí™˜í•œë‹¤.
-     *      - LAST_DDL_TIMEì„ ê°±ì‹ í•œë‹¤. (SYSDATE)
+     *      - TABLE_NAME, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT¸¦ ±³È¯ÇÑ´Ù.
+     *      - LAST_DDL_TIMEÀ» °»½ÅÇÑ´Ù. (SYSDATE)
+     *      - USABLE, SHARD_FLAG¸¦ ±³È¯ÇÑ´Ù. (TASK-7307)
      */
     IDE_TEST( swapTablesMeta( aStatement,
                               sTableInfo->tableID,
                               sSourceTableInfo->tableID )
               != IDE_SUCCESS );
 
-    /* 6. Hidden Columnì´ë©´ Function-based Indexì˜ Columnì´ë¯€ë¡œ,
-     * ì‚¬ìš©ìê°€ Prefixë¥¼ ì§€ì •í•œ ê²½ìš°, Hidden Column Nameì„ ë³€ê²½í•œë‹¤. (Meta Table)
+    /* 6. Hidden ColumnÀÌ¸é Function-based IndexÀÇ ColumnÀÌ¹Ç·Î,
+     * »ç¿ëÀÚ°¡ Prefix¸¦ ÁöÁ¤ÇÑ °æ¿ì, Hidden Column NameÀ» º¯°æÇÑ´Ù. (Meta Table)
      *  - SYS_COLUMNS_
-     *      - Sourceì˜ Hidden Column Nameì— Prefixë¥¼ ë¶™ì´ê³ , Targetì˜ Hidden Column Nameì—ì„œ Prefixë¥¼ ì œê±°í•œë‹¤.
+     *      - SourceÀÇ Hidden Column Name¿¡ Prefix¸¦ ºÙÀÌ°í, TargetÀÇ Hidden Column Name¿¡¼­ Prefix¸¦ Á¦°ÅÇÑ´Ù.
      *          - Hidden Column Name = Index Name + $ + IDX + Number
-     *      - Hidden Column Nameì„ ë³€ê²½í•œë‹¤.
+     *      - Hidden Column NameÀ» º¯°æÇÑ´Ù.
      *  - SYS_ENCRYPTED_COLUMNS_, SYS_LOBS_, SYS_COMPRESSION_TABLES_
-     *      - ë³€ê²½ ì‚¬í•­ ì—†ìŒ
+     *      - º¯°æ »çÇ× ¾øÀ½
      */
     IDE_TEST( renameHiddenColumnsMeta( aStatement,
                                        sTableInfo,
@@ -1789,27 +1953,27 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
                                        sParseTree->mNamesPrefix )
               != IDE_SUCCESS );
 
-    /* 7. Prefixë¥¼ ì§€ì •í•œ ê²½ìš°, Sourceì˜ INDEX_NAMEì— Prefixë¥¼ ë¶™ì´ê³ , Targetì˜ INDEX_NAMEì—ì„œ Prefixë¥¼ ì œê±°í•œë‹¤.
-     *  - ì‹¤ì œ Index Nameì„ ë³€ê²½í•œë‹¤. (SM)
+    /* 7. Prefix¸¦ ÁöÁ¤ÇÑ °æ¿ì, SourceÀÇ INDEX_NAME¿¡ Prefix¸¦ ºÙÀÌ°í, TargetÀÇ INDEX_NAME¿¡¼­ Prefix¸¦ Á¦°ÅÇÑ´Ù.
+     *  - ½ÇÁ¦ Index NameÀ» º¯°æÇÑ´Ù. (SM)
      *      - Call : smiTable::alterIndexName()
-     *  - Meta Tableì—ì„œ Index Nameì„ ë³€ê²½í•œë‹¤. (Meta Table)
+     *  - Meta Table¿¡¼­ Index NameÀ» º¯°æÇÑ´Ù. (Meta Table)
      *      - SYS_INDICES_
-     *          - INDEX_NAMEì„ ë³€ê²½í•œë‹¤.
-     *          - LAST_DDL_TIMEì„ ê°±ì‹ í•œë‹¤. (SYSDATE)
+     *          - INDEX_NAMEÀ» º¯°æÇÑ´Ù.
+     *          - LAST_DDL_TIMEÀ» °»½ÅÇÑ´Ù. (SYSDATE)
      *      - SYS_INDEX_COLUMNS_, SYS_INDEX_RELATED_
-     *          - ë³€ê²½ ì‚¬í•­ ì—†ìŒ
+     *          - º¯°æ »çÇ× ¾øÀ½
      */
-    /* 8. Prefixë¥¼ ì§€ì •í•œ ê²½ìš°, Non-Partitioned Indexì´ ìˆìœ¼ë©´ Nameì„ ë³€ê²½í•œë‹¤.
-     *  - Non-Partitioned Indexì¸ ê²½ìš°, (1) Index Table Nameê³¼ (2) Index Tableì˜ Index Nameì„ ë³€ê²½í•œë‹¤.
-     *      - Non-Partitioned IndexëŠ” INDEX_NAMEìœ¼ë¡œ Index Table Name, Key Index Name, RID Index Nameì„ ê²°ì •í•œë‹¤.
+    /* 8. Prefix¸¦ ÁöÁ¤ÇÑ °æ¿ì, Non-Partitioned IndexÀÌ ÀÖÀ¸¸é NameÀ» º¯°æÇÑ´Ù.
+     *  - Non-Partitioned IndexÀÎ °æ¿ì, (1) Index Table Name°ú (2) Index TableÀÇ Index NameÀ» º¯°æÇÑ´Ù.
+     *      - Non-Partitioned Index´Â INDEX_NAMEÀ¸·Î Index Table Name, Key Index Name, RID Index NameÀ» °áÁ¤ÇÑ´Ù.
      *          - Index Table Name = $GIT_ + Index Name
      *          - Key Index Name = $GIK_ + Index Name
      *          - Rid Index Name = $GIR_ + Index Name
      *          - Call : qdx::makeIndexTableName()
-     *      - Index Table Nameì„ ë³€ê²½í•œë‹¤. (Meta Table)
-     *      - Index Tableì˜ Index Nameì„ ë³€ê²½í•œë‹¤. (SM, Meta Table)
+     *      - Index Table NameÀ» º¯°æÇÑ´Ù. (Meta Table)
+     *      - Index TableÀÇ Index NameÀ» º¯°æÇÑ´Ù. (SM, Meta Table)
      *          - Call : smiTable::alterIndexName()
-     *      - Index Table Infoë¥¼ ë‹¤ì‹œ ì–»ëŠ”ë‹¤. (Meta Cache)
+     *      - Index Table Info¸¦ ´Ù½Ã ¾ò´Â´Ù. (Meta Cache)
      */
     IDE_TEST( renameIndices( aStatement,
                              sTableInfo,
@@ -1821,14 +1985,14 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
                              & sNewSourceIndexTableList )
               != IDE_SUCCESS );
 
-    /* 9. Prefixë¥¼ ì§€ì •í•œ ê²½ìš°, Sourceì˜ CONSTRAINT_NAMEì— Prefixë¥¼ ë¶™ì´ê³ ,
-     * Targetì˜ CONSTRAINT_NAMEì—ì„œ Prefixë¥¼ ì œê±°í•œë‹¤. (Meta Table)
+    /* 9. Prefix¸¦ ÁöÁ¤ÇÑ °æ¿ì, SourceÀÇ CONSTRAINT_NAME¿¡ Prefix¸¦ ºÙÀÌ°í,
+     * TargetÀÇ CONSTRAINT_NAME¿¡¼­ Prefix¸¦ Á¦°ÅÇÑ´Ù. (Meta Table)
      *  - SYS_CONSTRAINTS_
-     *      - CONSTRAINT_NAMEì„ ë³€ê²½í•œë‹¤.
-     *          - ë³€ê²½í•œ CONSTRAINT_NAMEì´ Uniqueí•œì§€ í™•ì¸í•´ì•¼ í•œë‹¤.
-     *              - CONSTRAINT_NAMEì€ Unique Indexì˜ Columnì´ ì•„ë‹ˆë‹¤.
+     *      - CONSTRAINT_NAMEÀ» º¯°æÇÑ´Ù.
+     *          - º¯°æÇÑ CONSTRAINT_NAMEÀÌ UniqueÇÑÁö È®ÀÎÇØ¾ß ÇÑ´Ù.
+     *              - CONSTRAINT_NAMEÀº Unique IndexÀÇ ColumnÀÌ ¾Æ´Ï´Ù.
      *  - SYS_CONSTRAINT_COLUMNS_, SYS_CONSTRAINT_RELATED_
-     *      - ë³€ê²½ ì‚¬í•­ ì—†ìŒ
+     *      - º¯°æ »çÇ× ¾øÀ½
      */
     IDE_TEST( renameConstraintsMeta( aStatement,
                                      sTableInfo,
@@ -1836,27 +2000,27 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
                                      sParseTree->mNamesPrefix )
               != IDE_SUCCESS );
 
-    /* 10. ë³€ê²½í•œ Trigger Nameê³¼ êµí™˜í•œ Table Nameì„ Trigger Stringsì— ë°˜ì˜í•˜ê³  Triggerë¥¼ ì¬ìƒì„±í•œë‹¤.
-     *  - Prefixë¥¼ ì§€ì •í•œ ê²½ìš°, Sourceì˜ TRIGGER_NAMEì— Prefixë¥¼ ë¶™ì´ê³ ,
-     *    Targetì˜ TRIGGER_NAMEì—ì„œ Prefixë¥¼ ì œê±°í•œë‹¤. (Meta Table)
+    /* 10. º¯°æÇÑ Trigger Name°ú ±³È¯ÇÑ Table NameÀ» Trigger Strings¿¡ ¹İ¿µÇÏ°í Trigger¸¦ Àç»ı¼ºÇÑ´Ù.
+     *  - Prefix¸¦ ÁöÁ¤ÇÑ °æ¿ì, SourceÀÇ TRIGGER_NAME¿¡ Prefix¸¦ ºÙÀÌ°í,
+     *    TargetÀÇ TRIGGER_NAME¿¡¼­ Prefix¸¦ Á¦°ÅÇÑ´Ù. (Meta Table)
      *      - SYS_TRIGGERS_
-     *          - TRIGGER_NAMEì„ ë³€ê²½í•œë‹¤.
-     *          - ë³€ê²½í•œ Trigger Stringìœ¼ë¡œ SUBSTRING_CNT, STRING_LENGTHë¥¼ ë§Œë“¤ì–´ì•¼ í•œë‹¤.
-     *          - LAST_DDL_TIMEì„ ê°±ì‹ í•œë‹¤. (SYSDATE)
-     *  - Trigger Stringsì— ë³€ê²½í•œ Trigger Nameê³¼ êµí™˜í•œ Table Nameì„ ì ìš©í•œë‹¤. (SM, Meta Table, Meta Cache)
-     *      - Trigger Objectì˜ Trigger ìƒì„± êµ¬ë¬¸ì„ ë³€ê²½í•œë‹¤. (SM)
+     *          - TRIGGER_NAMEÀ» º¯°æÇÑ´Ù.
+     *          - º¯°æÇÑ Trigger StringÀ¸·Î SUBSTRING_CNT, STRING_LENGTH¸¦ ¸¸µé¾î¾ß ÇÑ´Ù.
+     *          - LAST_DDL_TIMEÀ» °»½ÅÇÑ´Ù. (SYSDATE)
+     *  - Trigger Strings¿¡ º¯°æÇÑ Trigger Name°ú ±³È¯ÇÑ Table NameÀ» Àû¿ëÇÑ´Ù. (SM, Meta Table, Meta Cache)
+     *      - Trigger ObjectÀÇ Trigger »ı¼º ±¸¹®À» º¯°æÇÑ´Ù. (SM)
      *          - Call : smiObject::setObjectInfo()
-     *      - New Trigger Cacheë¥¼ ìƒì„±í•˜ê³  SMì— ë“±ë¡í•œë‹¤. (Meta Cache)
+     *      - New Trigger Cache¸¦ »ı¼ºÇÏ°í SM¿¡ µî·ÏÇÑ´Ù. (Meta Cache)
      *          - Call : qdnTrigger::allocTriggerCache()
-     *      - Trigger Stringsì„ ë³´ê´€í•˜ëŠ” Meta Tableì„ ê°±ì‹ í•œë‹¤. (Meta Table)
+     *      - Trigger StringsÀ» º¸°üÇÏ´Â Meta TableÀ» °»½ÅÇÑ´Ù. (Meta Table)
      *          - SYS_TRIGGER_STRINGS_
-     *              - DELETE & INSERTë¡œ ì²˜ë¦¬í•œë‹¤.
-     *  - Triggerë¥¼ ë™ì‘ì‹œí‚¤ëŠ” Column ì •ë³´ì—ëŠ” ë³€ê²½ ì‚¬í•­ì´ ì—†ë‹¤.
+     *              - DELETE & INSERT·Î Ã³¸®ÇÑ´Ù.
+     *  - Trigger¸¦ µ¿ÀÛ½ÃÅ°´Â Column Á¤º¸¿¡´Â º¯°æ »çÇ×ÀÌ ¾ø´Ù.
      *      - SYS_TRIGGER_UPDATE_COLUMNS_
-     *  - ë‹¤ë¥¸ Triggerê°€ Cycle Checkì— ì‚¬ìš©í•˜ëŠ” ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤. (Meta Table)
+     *  - ´Ù¸¥ Trigger°¡ Cycle Check¿¡ »ç¿ëÇÏ´Â Á¤º¸¸¦ °»½ÅÇÑ´Ù. (Meta Table)
      *      - SYS_TRIGGER_DML_TABLES_
-     *          - DML_TABLE_ID = Table ID ì´ë©´, (TABLE_IDì™€ ë¬´ê´€í•˜ê²Œ) DML_TABLE_IDë¥¼ Peerì˜ Table IDë¡œ êµì²´í•œë‹¤.
-     *  - ì°¸ì¡° Call : qdnTrigger::executeRenameTable()
+     *          - DML_TABLE_ID = Table ID ÀÌ¸é, (TABLE_ID¿Í ¹«°üÇÏ°Ô) DML_TABLE_ID¸¦ PeerÀÇ Table ID·Î ±³Ã¼ÇÑ´Ù.
+     *  - ÂüÁ¶ Call : qdnTrigger::executeRenameTable()
      */
     IDE_TEST( qdnTrigger::executeSwapTable( aStatement,
                                             sSourceTableInfo,
@@ -1868,7 +2032,7 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
                                             & sNewTriggerCache )
               != IDE_SUCCESS );
 
-    // Table, Partitionì˜ Replication Flagë¥¼ êµí™˜í•œë‹¤.
+    // Table, PartitionÀÇ Replication Flag¸¦ ±³È¯ÇÑ´Ù.
     IDE_TEST( swapReplicationFlagOnTableHeader( QC_SMI_STMT( aStatement ),
                                                 sTableInfo,
                                                 sPartInfoList,
@@ -1876,9 +2040,9 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
                                                 sSourcePartInfoList )
               != IDE_SUCCESS );
 
-    /* 11. Sourceì™€ Targetì˜ Table Infoë¥¼ ë‹¤ì‹œ ì–»ëŠ”ë‹¤.
-     *  - Table Infoë¥¼ ìƒì„±í•˜ê³ , SMì— ë“±ë¡í•œë‹¤. (Meta Cache)
-     *  - Table Infoë¥¼ ì–»ëŠ”ë‹¤.
+    /* 11. Source¿Í TargetÀÇ Table Info¸¦ ´Ù½Ã ¾ò´Â´Ù.
+     *  - Table Info¸¦ »ı¼ºÇÏ°í, SM¿¡ µî·ÏÇÑ´Ù. (Meta Cache)
+     *  - Table Info¸¦ ¾ò´Â´Ù.
      */
     IDE_TEST( qcm::makeAndSetQcmTableInfo( QC_SMI_STMT( aStatement ),
                                            sSourceTableInfo->tableID,
@@ -1914,12 +2078,12 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
                                SMI_TBSLV_DDL_DML )
               != IDE_SUCCESS );
 
-    /* 12. Commentë¥¼ êµí™˜í•œë‹¤. (Meta Table)
+    /* 12. Comment¸¦ ±³È¯ÇÑ´Ù. (Meta Table)
      *  - SYS_COMMENTS_
-     *      - TABLE_NAMEì„ êµí™˜í•œë‹¤.
-     *      - Hidden Columnì´ë©´ Function-based Indexì˜ Columnì´ë¯€ë¡œ,
-     *        ì‚¬ìš©ìê°€ Prefixë¥¼ ì§€ì •í•œ ê²½ìš°, Hidden Column Nameì„ ë³€ê²½í•œë‹¤.
-     *          - Sourceì˜ Hidden Column Nameì— Prefixë¥¼ ë¶™ì´ê³ , Targetì˜ Hidden Column Nameì—ì„œ Prefixë¥¼ ì œê±°í•œë‹¤.
+     *      - TABLE_NAMEÀ» ±³È¯ÇÑ´Ù.
+     *      - Hidden ColumnÀÌ¸é Function-based IndexÀÇ ColumnÀÌ¹Ç·Î,
+     *        »ç¿ëÀÚ°¡ Prefix¸¦ ÁöÁ¤ÇÑ °æ¿ì, Hidden Column NameÀ» º¯°æÇÑ´Ù.
+     *          - SourceÀÇ Hidden Column Name¿¡ Prefix¸¦ ºÙÀÌ°í, TargetÀÇ Hidden Column Name¿¡¼­ Prefix¸¦ Á¦°ÅÇÑ´Ù.
      *              - Hidden Column Name = Index Name + $ + IDX + Number
      */
     IDE_TEST( renameCommentsMeta( aStatement,
@@ -1928,14 +2092,14 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
                                   sParseTree->mNamesPrefix )
               != IDE_SUCCESS );
 
-    /* 13. í•œìª½ì´ë¼ë„ Partitioned Tableì´ê³  Replication ëŒ€ìƒì´ë©´, Partitionì˜ Replication ì •ë³´ë¥¼ êµí™˜í•œë‹¤. (Meta Table)
+    /* 13. ÇÑÂÊÀÌ¶óµµ Partitioned TableÀÌ°í Replication ´ë»óÀÌ¸é, PartitionÀÇ Replication Á¤º¸¸¦ ±³È¯ÇÑ´Ù. (Meta Table)
      *  - SYS_TABLE_PARTITIONS_
-     *      - PARTITION_NAMEìœ¼ë¡œ Matching Partitionì„ ì„ íƒí•œë‹¤.
-     *      - Matching Partitionì˜ REPLICATION_COUNT, REPLICATION_RECOVERY_COUNTë¥¼ êµí™˜í•˜ê³ , LAST_DDL_TIMEì„ ê°±ì‹ í•œë‹¤.
-     *          - REPLICATION_COUNT > 0 ì´ë©´, Partitionì´ Replication ëŒ€ìƒì´ë‹¤.
-     *  - Partitionì˜ ë‹¤ë¥¸ ì •ë³´ëŠ” ë³€ê²½ ì‚¬í•­ì´ ì—†ë‹¤.
+     *      - PARTITION_NAMEÀ¸·Î Matching PartitionÀ» ¼±ÅÃÇÑ´Ù.
+     *      - Matching PartitionÀÇ REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT¸¦ ±³È¯ÇÏ°í, LAST_DDL_TIMEÀ» °»½ÅÇÑ´Ù.
+     *          - REPLICATION_COUNT > 0 ÀÌ¸é, PartitionÀÌ Replication ´ë»óÀÌ´Ù.
+     *  - PartitionÀÇ ´Ù¸¥ Á¤º¸´Â º¯°æ »çÇ×ÀÌ ¾ø´Ù.
      *      - SYS_INDEX_PARTITIONS_
-     *          - INDEX_PARTITION_NAMEì€ Partitioned Tableì˜ Index ë‚´ì—ì„œë§Œ Uniqueí•˜ë©´ ë˜ë¯€ë¡œ, Prefixê°€ í•„ìš”í•˜ì§€ ì•Šë‹¤.
+     *          - INDEX_PARTITION_NAMEÀº Partitioned TableÀÇ Index ³»¿¡¼­¸¸ UniqueÇÏ¸é µÇ¹Ç·Î, Prefix°¡ ÇÊ¿äÇÏÁö ¾Ê´Ù.
      *      - SYS_PART_TABLES_, SYS_PART_LOBS_, SYS_PART_KEY_COLUMNS_, SYS_PART_INDICES_
      */
     IDE_TEST( swapTablePartitionsMetaForReplication( aStatement,
@@ -1943,9 +2107,9 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
                                                      sSourceTableInfo )
               != IDE_SUCCESS );
 
-    /* 14. Partitioned Tableì´ë©´, Partition Infoë¥¼ ë‹¤ì‹œ ì–»ëŠ”ë‹¤.
-     *  - Partition Infoë¥¼ ìƒì„±í•˜ê³ , SMì— ë“±ë¡í•œë‹¤. (Meta Cache)
-     *  - Partition Infoë¥¼ ì–»ëŠ”ë‹¤.
+    /* 14. Partitioned TableÀÌ¸é, Partition Info¸¦ ´Ù½Ã ¾ò´Â´Ù.
+     *  - Partition Info¸¦ »ı¼ºÇÏ°í, SM¿¡ µî·ÏÇÑ´Ù. (Meta Cache)
+     *  - Partition Info¸¦ ¾ò´Â´Ù.
      */
     if ( sNewTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
     {
@@ -1991,13 +2155,13 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
         /* Nothing to do */
     }
 
-    /* 15. Foreign Key Constraint (Parent)ê°€ ìˆìœ¼ë©´, Referenced Indexë¥¼ ë³€ê²½í•˜ê³  Table Infoë¥¼ ê°±ì‹ í•œë‹¤.
-     *  - Referenced Indexë¥¼ ë³€ê²½í•œë‹¤. (Meta Table)
+    /* 15. Foreign Key Constraint (Parent)°¡ ÀÖÀ¸¸é, Referenced Index¸¦ º¯°æÇÏ°í Table Info¸¦ °»½ÅÇÑ´Ù.
+     *  - Referenced Index¸¦ º¯°æÇÑ´Ù. (Meta Table)
      *      - SYS_CONSTRAINTS_
-     *          - REFERENCED_INDEX_IDê°€ ê°€ë¦¬í‚¤ëŠ” Indexì˜ Column Nameìœ¼ë¡œ êµ¬ì„±ëœ Indexë¥¼ Peerì—ì„œ ì°¾ëŠ”ë‹¤. (Validationê³¼ ë™ì¼)
-     *          - REFERENCED_TABLE_IDì™€ REFERENCED_INDEX_IDë¥¼ Peerì˜ Table IDì™€ Index IDë¡œ ë³€ê²½í•œë‹¤.
-     *  - Referenced Indexë¥¼ ì°¸ì¡°í•˜ëŠ” Tableì˜ Table Infoë¥¼ ê°±ì‹ í•œë‹¤. (Meta Cache)
-     *      - Partitioned Tableì´ë©´, Partition Infoë¥¼ ê°±ì‹ í•œë‹¤. (Meta Cache)
+     *          - REFERENCED_INDEX_ID°¡ °¡¸®Å°´Â IndexÀÇ Column NameÀ¸·Î ±¸¼ºµÈ Index¸¦ Peer¿¡¼­ Ã£´Â´Ù. (Validation°ú µ¿ÀÏ)
+     *          - REFERENCED_TABLE_ID¿Í REFERENCED_INDEX_ID¸¦ PeerÀÇ Table ID¿Í Index ID·Î º¯°æÇÑ´Ù.
+     *  - Referenced Index¸¦ ÂüÁ¶ÇÏ´Â TableÀÇ Table Info¸¦ °»½ÅÇÑ´Ù. (Meta Cache)
+     *      - Partitioned TableÀÌ¸é, Partition Info¸¦ °»½ÅÇÑ´Ù. (Meta Cache)
      */
     IDE_TEST( updateSysConstraintsMetaForReferencedIndex( aStatement,
                                                           sTableInfo,
@@ -2068,8 +2232,8 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
         sNewRefChildPartTableList = sNewPartTableList;
     }
 
-    /* 16. Package, Procedure, Functionì— ëŒ€í•´ Set Invalidë¥¼ ìˆ˜í–‰í•œë‹¤.
-     *  - RELATED_USER_ID = User ID, RELATED_OBJECT_NAME = Table Name, RELATED_OBJECT_TYPE = 2 ì¸ ê²½ìš°ì— í•´ë‹¹í•œë‹¤.
+    /* 16. Package, Procedure, Function¿¡ ´ëÇØ Set Invalid¸¦ ¼öÇàÇÑ´Ù.
+     *  - RELATED_USER_ID = User ID, RELATED_OBJECT_NAME = Table Name, RELATED_OBJECT_TYPE = 2 ÀÎ °æ¿ì¿¡ ÇØ´çÇÑ´Ù.
      *    (SYS_PACKAGE_RELATED_, SYS_PROC_RELATED_)
      *  - Call : qcmProc::relSetInvalidProcOfRelated(), qcmPkg::relSetInvalidPkgOfRelated()
      */
@@ -2101,8 +2265,8 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
                                                  QS_TABLE )
               != IDE_SUCCESS );
 
-    /* 17. Viewì— ëŒ€í•´ Set Invalid & Recompile & Set Validë¥¼ ìˆ˜í–‰í•œë‹¤.
-     *  - RELATED_USER_ID = User ID, RELATED_OBJECT_NAME = Table Name, RELATED_OBJECT_TYPE = 2 ì¸ ê²½ìš°ì— í•´ë‹¹í•œë‹¤.
+    /* 17. View¿¡ ´ëÇØ Set Invalid & Recompile & Set Valid¸¦ ¼öÇàÇÑ´Ù.
+     *  - RELATED_USER_ID = User ID, RELATED_OBJECT_NAME = Table Name, RELATED_OBJECT_TYPE = 2 ÀÎ °æ¿ì¿¡ ÇØ´çÇÑ´Ù.
      *    (SYS_VIEW_RELATED_)
      *  - Call : qcmView::setInvalidViewOfRelated(), qcmView::recompileAndSetValidViewOfRelated()
      */
@@ -2134,36 +2298,36 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
                                                           QS_TABLE )
               != IDE_SUCCESS );
 
-    /* 18. Object Privilegeë¥¼ êµí™˜í•œë‹¤. (Meta Table)
+    /* 18. Object Privilege¸¦ ±³È¯ÇÑ´Ù. (Meta Table)
      *  - SYS_GRANT_OBJECT_
-     *      - OBJ_ID = Table ID, OBJ_TYPE = 'T' ì´ë©´, OBJ_IDë§Œ êµí™˜í•œë‹¤.
+     *      - OBJ_ID = Table ID, OBJ_TYPE = 'T' ÀÌ¸é, OBJ_ID¸¸ ±³È¯ÇÑ´Ù.
      */
     IDE_TEST( swapGrantObjectMeta( aStatement,
                                    sTableInfo->tableID,
                                    sSourceTableInfo->tableID )
               != IDE_SUCCESS );
 
-    /* 19. Replication ëŒ€ìƒ Tableì¸ ê²½ìš°, Replication Meta Tableì„ ìˆ˜ì •í•œë‹¤. (Meta Table)
+    /* 19. Replication ´ë»ó TableÀÎ °æ¿ì, Replication Meta TableÀ» ¼öÁ¤ÇÑ´Ù. (Meta Table)
      *  - SYS_REPL_ITEMS_
-     *      - SYS_REPL_ITEMS_ì˜ TABLE_OIDëŠ” Non-Partitioned Table OIDì´ê±°ë‚˜ Partition OIDì´ë‹¤.
-     *          - Partitioned Table OIDëŠ” SYS_REPL_ITEMS_ì— ì—†ë‹¤.
-     *      - Non-Partitioned Tableì¸ ê²½ìš°, Table OIDë¥¼ Peerì˜ ê²ƒìœ¼ë¡œ ë³€ê²½í•œë‹¤.
-     *      - Partitioned Tableì¸ ê²½ìš°, Partition OIDë¥¼ Peerì˜ ê²ƒìœ¼ë¡œ ë³€ê²½í•œë‹¤.
+     *      - SYS_REPL_ITEMS_ÀÇ TABLE_OID´Â Non-Partitioned Table OIDÀÌ°Å³ª Partition OIDÀÌ´Ù.
+     *          - Partitioned Table OID´Â SYS_REPL_ITEMS_¿¡ ¾ø´Ù.
+     *      - Non-Partitioned TableÀÎ °æ¿ì, Table OID¸¦ PeerÀÇ °ÍÀ¸·Î º¯°æÇÑ´Ù.
+     *      - Partitioned TableÀÎ °æ¿ì, Partition OID¸¦ PeerÀÇ °ÍÀ¸·Î º¯°æÇÑ´Ù.
      */
     IDE_TEST( swapReplItemsMeta( aStatement,
                                  sTableInfo,
                                  sSourceTableInfo )
               != IDE_SUCCESS );
 
-    /* 20. Replication ëŒ€ìƒ Tableì´ê±°ë‚˜ DDL_SUPPLEMENTAL_LOG_ENABLEì´ 1ì¸ ê²½ìš°, Supplemental Logë¥¼ ê¸°ë¡í•œë‹¤.
-     *  - Non-Partitioned Tableì´ë©´ Table OIDë¥¼ ì–»ê³ , Partitioned Tableì´ë©´ Partition OIDë¥¼ ì–»ëŠ”ë‹¤.
-     *      - ë‹¨, Non-Partitioned Table <-> Partitioned Table ë³€í™˜ì¸ ê²½ìš°, Partitioned Tableì—ì„œ Table OIDë¥¼ ì–»ëŠ”ë‹¤.
-     *      - Partitioned Tableì¸ ê²½ìš°, Peerì—ì„œ Partition Nameì´ ë™ì¼í•œ Partitionì„ ì°¾ì•„ì„œ Old OIDë¡œ ì‚¬ìš©í•œë‹¤.
-     *          - Peerì— ë™ì¼í•œ Partition Nameì´ ì—†ìœ¼ë©´, Old OIDëŠ” 0 ì´ë‹¤.
-     *  - Table Meta Log Recordë¥¼ ê¸°ë¡í•œë‹¤.
+    /* 20. Replication ´ë»ó TableÀÌ°Å³ª DDL_SUPPLEMENTAL_LOG_ENABLEÀÌ 1ÀÎ °æ¿ì, Supplemental Log¸¦ ±â·ÏÇÑ´Ù.
+     *  - Non-Partitioned TableÀÌ¸é Table OID¸¦ ¾ò°í, Partitioned TableÀÌ¸é Partition OID¸¦ ¾ò´Â´Ù.
+     *      - ´Ü, Non-Partitioned Table <-> Partitioned Table º¯È¯ÀÎ °æ¿ì, Partitioned Table¿¡¼­ Table OID¸¦ ¾ò´Â´Ù.
+     *      - Partitioned TableÀÎ °æ¿ì, Peer¿¡¼­ Partition NameÀÌ µ¿ÀÏÇÑ PartitionÀ» Ã£¾Æ¼­ Old OID·Î »ç¿ëÇÑ´Ù.
+     *          - Peer¿¡ µ¿ÀÏÇÑ Partition NameÀÌ ¾øÀ¸¸é, Old OID´Â 0 ÀÌ´Ù.
+     *  - Table Meta Log Record¸¦ ±â·ÏÇÑ´Ù.
      *      - Call : qci::mManageReplicationCallback.mWriteTableMetaLog()
-     *  - ì£¼ì˜ : Replicationì´ Swap DDLì„ Peerì— ìˆ˜í–‰í•˜ë©´ ì•ˆ ëœë‹¤.
-     *      - Copyì™€ Swapì€ ì§ì„ ì´ë£¨ëŠ”ë°, Copyë¥¼ Peerì— ìˆ˜í–‰í•˜ì§€ ì•Šì•˜ìœ¼ë¯€ë¡œ Swapì„ Peerì— ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+     *  - ÁÖÀÇ : ReplicationÀÌ Swap DDLÀ» Peer¿¡ ¼öÇàÇÏ¸é ¾È µÈ´Ù.
+     *      - Copy¿Í SwapÀº Â¦À» ÀÌ·ç´Âµ¥, Copy¸¦ Peer¿¡ ¼öÇàÇÏÁö ¾Ê¾ÒÀ¸¹Ç·Î SwapÀ» Peer¿¡ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
      */
     if ( ( sDDLSupplementalLog == 1 ) || ( sNewTableInfo->replicationCount > 0 ) )
     {
@@ -2214,9 +2378,7 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
     if ( sNewTableInfo->replicationCount > 0 )
     {
         /* BUG-46252 Partition Merge / Split / Replace DDL asynchronization support */
-        if ( ( aStatement->session->mQPSpecific.mFlag
-               & QC_SESSION_INTERNAL_DDL_SYNC_MASK )
-             != QC_SESSION_INTERNAL_DDL_SYNC_TRUE )
+        if ( qrc::isInternalDDL( aStatement ) != ID_TRUE )
         {
             IDE_TEST( qciMisc::writeDDLStmtTextLog( aStatement,
                                                     sNewTableInfo->tableOwnerID,
@@ -2279,9 +2441,27 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
         /* Nothing to do */
     }
 
-    /* 21. Old Trigger Cacheë¥¼ ì œê±°í•œë‹¤.
+    if ( QCG_GET_SESSION_IS_NEED_DDL_INFO( aStatement ) == ID_TRUE )
+    {
+        IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF(smOID) * 2, (void**)&sDDLTableOIDArray )
+                  != IDE_SUCCESS);
+        sDDLTableOIDArray[0] = sNewTableInfo->tableOID;
+        sDDLTableOIDArray[1] = sNewSourceTableInfo->tableOID;
+
+        qrc::setDDLDestInfo( aStatement,
+                             2,
+                             sDDLTableOIDArray,
+                             0,
+                             NULL );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    /* 21. Old Trigger Cache¸¦ Á¦°ÅÇÑ´Ù.
      *  - Call : qdnTrigger::freeTriggerCache()
-     *  - ì˜ˆì™¸ ì²˜ë¦¬ë¥¼ í•˜ê¸° ìœ„í•´, ë§ˆì§€ë§‰ì— ìˆ˜í–‰í•œë‹¤.
+     *  - ¿¹¿Ü Ã³¸®¸¦ ÇÏ±â À§ÇØ, ¸¶Áö¸·¿¡ ¼öÇàÇÑ´Ù.
      */
     qdnTrigger::freeTriggerCacheArray( sTriggerCache,
                                        sTableInfo->triggerCount );
@@ -2289,12 +2469,12 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
     qdnTrigger::freeTriggerCacheArray( sSourceTriggerCache,
                                        sSourceTableInfo->triggerCount );
 
-    /* 22. Table Nameì´ ë³€ê²½ë˜ì—ˆìœ¼ë¯€ë¡œ, Encrypted Columnì„ ë³´ì•ˆ ëª¨ë“ˆì— ë‹¤ì‹œ ë“±ë¡í•œë‹¤.
-     *  - ë³´ì•ˆ ëª¨ë“ˆì— ë“±ë¡í•œ ê¸°ì¡´ Encrypted Column ì •ë³´ë¥¼ ì œê±°í•œë‹¤.
+    /* 22. Table NameÀÌ º¯°æµÇ¾úÀ¸¹Ç·Î, Encrypted ColumnÀ» º¸¾È ¸ğµâ¿¡ ´Ù½Ã µî·ÏÇÑ´Ù.
+     *  - º¸¾È ¸ğµâ¿¡ µî·ÏÇÑ ±âÁ¸ Encrypted Column Á¤º¸¸¦ Á¦°ÅÇÑ´Ù.
      *      - Call : qcsModule::unsetColumnPolicy()
-     *  - ë³´ì•ˆ ëª¨ë“ˆì— Table Owner Name, Table Name, Column Name, Policy Nameì„ ë“±ë¡í•œë‹¤.
+     *  - º¸¾È ¸ğµâ¿¡ Table Owner Name, Table Name, Column Name, Policy NameÀ» µî·ÏÇÑ´Ù.
      *      - Call : qcsModule::setColumnPolicy()
-     *  - ì˜ˆì™¸ ì²˜ë¦¬ë¥¼ í•˜ì§€ ì•Šê¸° ìœ„í•´, ë§ˆì§€ë§‰ì— ìˆ˜í–‰í•œë‹¤.
+     *  - ¿¹¿Ü Ã³¸®¸¦ ÇÏÁö ¾Ê±â À§ÇØ, ¸¶Áö¸·¿¡ ¼öÇàÇÑ´Ù.
      */
     qdbCommon::unsetAllColumnPolicy( sTableInfo );
     qdbCommon::unsetAllColumnPolicy( sSourceTableInfo );
@@ -2302,8 +2482,8 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
     qdbCommon::setAllColumnPolicy( sNewTableInfo );
     qdbCommon::setAllColumnPolicy( sNewSourceTableInfo );
 
-    /* 23. Referenced Indexë¥¼ ì°¸ì¡°í•˜ëŠ” Tableì˜ Old Table Infoë¥¼ ì œê±°í•œë‹¤.
-     *  - Partitioned Tableì´ë©´, Partitionì˜ Old Partition Infoë¥¼ ì œê±°í•œë‹¤.
+    /* 23. Referenced Index¸¦ ÂüÁ¶ÇÏ´Â TableÀÇ Old Table Info¸¦ Á¦°ÅÇÑ´Ù.
+     *  - Partitioned TableÀÌ¸é, PartitionÀÇ Old Partition Info¸¦ Á¦°ÅÇÑ´Ù.
      */
     for ( sPartTableList = sRefChildPartTableList;
           sPartTableList != NULL;
@@ -2314,7 +2494,7 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
         (void)qcm::destroyQcmTableInfo( sPartTableList->mTableInfo );
     }
 
-    /* 24. Prefixë¥¼ ì§€ì •í•œ ê²½ìš°, Non-Partitioned Indexê°€ ìˆìœ¼ë©´ Old Index Table Infoë¥¼ ì œê±°í•œë‹¤. */
+    /* 24. Prefix¸¦ ÁöÁ¤ÇÑ °æ¿ì, Non-Partitioned Index°¡ ÀÖÀ¸¸é Old Index Table Info¸¦ Á¦°ÅÇÑ´Ù. */
     if ( QC_IS_NULL_NAME( sParseTree->mNamesPrefix ) != ID_TRUE )
     {
         for ( sTempIndexTableList = sIndexTableList;
@@ -2336,12 +2516,12 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
         /* Nothing to do */
     }
 
-    /* 25. Partitioned Tableì´ë©´, Old Partition Infoë¥¼ ì œê±°í•œë‹¤. */
+    /* 25. Partitioned TableÀÌ¸é, Old Partition Info¸¦ Á¦°ÅÇÑ´Ù. */
     (void)qcmPartition::destroyQcmPartitionInfoList( sPartInfoList );
 
     (void)qcmPartition::destroyQcmPartitionInfoList( sSourcePartInfoList );
 
-    /* 26. Old Table Infoë¥¼ ì œê±°í•œë‹¤. */
+    /* 26. Old Table Info¸¦ Á¦°ÅÇÑ´Ù. */
     (void)qcm::destroyQcmTableInfo( sTableInfo );
     (void)qcm::destroyQcmTableInfo( sSourceTableInfo );
 
@@ -2353,7 +2533,7 @@ IDE_RC qdbCopySwap::executeReplaceTable( qcStatement * aStatement )
     }
     IDE_EXCEPTION_END;
 
-    // Trigger CacheëŠ” Table Meta Cacheì™€ ë³„ë„ë¡œ ì¡´ì¬í•œë‹¤.
+    // Trigger Cache´Â Table Meta Cache¿Í º°µµ·Î Á¸ÀçÇÑ´Ù.
     if ( sSourceTableInfo != NULL )
     {
         qdnTrigger::freeTriggerCacheArray( sNewTriggerCache,
@@ -2442,59 +2622,61 @@ IDE_RC qdbCopySwap::executeReplacePartition( qcStatement * aStatement )
  *          [USING PREFIX name_prefix]
  *          [RENAME FORCE]
  *          [IGNORE FOREIGN KEY CHILD];
- *      êµ¬ë¬¸ì˜ Execution
+ *      ±¸¹®ÀÇ Execution
  *
  * Implementation :
  *
- *  1. Target Tableì— IX Lockì„ ì¡ëŠ”ë‹¤.
- *      - ì§€ì •í•œ Partitionì— X Lockì„ ì¡ëŠ”ë‹¤.
+ *  1. Target Table¿¡ IX LockÀ» Àâ´Â´Ù.
+ *      - ÁöÁ¤ÇÑ Partition¿¡ X LockÀ» Àâ´Â´Ù.
  *
- *  2. Source Tableì— IX Lockì„ ì¡ëŠ”ë‹¤.
- *      - ì§€ì •í•œ Partitionì— X Lockì„ ì¡ëŠ”ë‹¤.
+ *  2. Source Table¿¡ IX LockÀ» Àâ´Â´Ù.
+ *      - ÁöÁ¤ÇÑ Partition¿¡ X LockÀ» Àâ´Â´Ù.
  *
- *  3. Replication ëŒ€ìƒ Partitionì¸ ê²½ìš°, ì œì•½ ì¡°ê±´ì„ ê²€ì‚¬í•˜ê³  Receiver Threadë¥¼ ì¤‘ì§€í•œë‹¤.
- *      - REPLICATION_DDL_ENABLE ì‹œìŠ¤í…œ í”„ë¼í¼í‹°ê°€ 1 ì´ì–´ì•¼ í•œë‹¤.
- *      - REPLICATION ì„¸ì…˜ í”„ë¼í¼í‹°ê°€ NONEì´ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
- *      - Eager Sender/Receiver Threadë¥¼ í™•ì¸í•˜ê³ , Receiver Threadë¥¼ ì¤‘ì§€í•œë‹¤.
- *          - í•´ë‹¹ Partition ê´€ë ¨ Eager Sender/Receiver Threadê°€ ì—†ì–´ì•¼ í•œë‹¤.
- *          - í•´ë‹¹ Partition ê´€ë ¨ Receiver Threadë¥¼ ì¤‘ì§€í•œë‹¤.
+ *  3. Replication ´ë»ó PartitionÀÎ °æ¿ì, Á¦¾à Á¶°ÇÀ» °Ë»çÇÏ°í Receiver Thread¸¦ ÁßÁöÇÑ´Ù.
+ *      - REPLICATION_DDL_ENABLE ½Ã½ºÅÛ ÇÁ¶óÆÛÆ¼°¡ 1 ÀÌ¾î¾ß ÇÑ´Ù.
+ *      - REPLICATION ¼¼¼Ç ÇÁ¶óÆÛÆ¼°¡ NONEÀÌ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
+ *      - Eager Sender/Receiver Thread¸¦ È®ÀÎÇÏ°í, Receiver Thread¸¦ ÁßÁöÇÑ´Ù.
+ *          - ÇØ´ç Partition °ü·Ã Eager Sender/Receiver Thread°¡ ¾ø¾î¾ß ÇÑ´Ù.
+ *          - ÇØ´ç Partition °ü·Ã Receiver Thread¸¦ ÁßÁöÇÑ´Ù.
  *
- *  4. Sourceì™€ Targetì˜ Table Partitions ê¸°ë³¸ ì •ë³´ë¥¼ êµí™˜í•œë‹¤. (Meta Table)
+ *  4. Source¿Í TargetÀÇ Table Partitions ±âº» Á¤º¸¸¦ ±³È¯ÇÑ´Ù. (Meta Table)
  *      - SYS_TABLE_PARTITIONS_
- *          - TABLE_ID, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNTë¥¼ êµí™˜í•œë‹¤.
- *          - LAST_DDL_TIMEì„ ê°±ì‹ í•œë‹¤. (SYSDATE)
+ *          - TABLE_ID, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT¸¦ ±³È¯ÇÑ´Ù.
+ *          - LAST_DDL_TIMEÀ» °»½ÅÇÑ´Ù. (SYSDATE)
  *
- *  5. Sourceì™€ Targetì˜ Table Partitions ê¸°ë³¸ ì •ë³´ë¥¼ êµí™˜í•œë‹¤. (Meta Table)
+ *  5. Source¿Í TargetÀÇ Table Partitions ±âº» Á¤º¸¸¦ ±³È¯ÇÑ´Ù. (Meta Table)
  *      - SYS_PART_LOBS__
  *          - TABLE_ID
  *
- *  6. Sourceì™€ Targetì˜ Table Partitions ê¸°ë³¸ ì •ë³´ë¥¼ êµí™˜í•œë‹¤. (Meta Table)
+ *  6. Source¿Í TargetÀÇ Table Partitions ±âº» Á¤º¸¸¦ ±³È¯ÇÑ´Ù. (Meta Table)
  *      - SYS_INDEX_PARTITIONS__
- *          - TABLE_PARTITION_ID, INDEX_PARTITION_IDë¥¼ êµí™˜í•œë‹¤.
- *          - LAST_DDL_TIMEì„ ê°±ì‹ í•œë‹¤. (SYSDATE)
+ *          - TABLE_PARTITION_ID, INDEX_PARTITION_ID¸¦ ±³È¯ÇÑ´Ù.
+ *          - LAST_DDL_TIMEÀ» °»½ÅÇÑ´Ù. (SYSDATE)
  *
- *  7. Partitionì˜ Replication Flagë¥¼ êµí™˜í•œë‹¤.
+ *  7. PartitionÀÇ Replication Flag¸¦ ±³È¯ÇÑ´Ù.
  *
- *  8. Partition Infoë¥¼ ë‹¤ì‹œ ì–»ëŠ”ë‹¤.
- *      - Partition Infoë¥¼ ìƒì„±í•˜ê³ , SMì— ë“±ë¡í•œë‹¤. (Meta Cache)
- *      - Partition Infoë¥¼ ì–»ëŠ”ë‹¤.
+ *  8. Partition Info¸¦ ´Ù½Ã ¾ò´Â´Ù.
+ *      - Partition Info¸¦ »ı¼ºÇÏ°í, SM¿¡ µî·ÏÇÑ´Ù. (Meta Cache)
+ *      - Partition Info¸¦ ¾ò´Â´Ù.
  *
- *  9. Replication ëŒ€ìƒ Partitionì¸ ê²½ìš°, Replication Meta Tableì„ ìˆ˜ì •í•œë‹¤. (Meta Table)
+ *  9. Replication ´ë»ó PartitionÀÎ °æ¿ì, Replication Meta TableÀ» ¼öÁ¤ÇÑ´Ù. (Meta Table)
  *      - SYS_REPL_ITEMS_
- *          - SYS_REPL_ITEMS_ì˜ TABLE_OIDëŠ” Non-Partitioned Table OIDì´ê±°ë‚˜
- *            Partition OIDì´ë‹¤.
- *              - Partitioned Table OIDëŠ” SYS_REPL_ITEMS_ì— ì—†ë‹¤.
- *          - Target, Source Partitionì˜ TABLE_OID(Partition OID) êµí™˜
+ *          - SYS_REPL_ITEMS_ÀÇ TABLE_OID´Â Non-Partitioned Table OIDÀÌ°Å³ª
+ *            Partition OIDÀÌ´Ù.
+ *              - Partitioned Table OID´Â SYS_REPL_ITEMS_¿¡ ¾ø´Ù.
+ *          - Target, Source PartitionÀÇ TABLE_OID(Partition OID) ±³È¯
  *
- *  10. Replication ëŒ€ìƒ Partitionì´ê±°ë‚˜ DDL_SUPPLEMENTAL_LOG_ENABLEì´ 1ì¸ ê²½ìš°, Supplemental Logë¥¼ ê¸°ë¡í•œë‹¤.
- *      - Table Meta Log Recordë¥¼ ê¸°ë¡í•œë‹¤.
+ *  10. Replication ´ë»ó PartitionÀÌ°Å³ª DDL_SUPPLEMENTAL_LOG_ENABLEÀÌ 1ÀÎ °æ¿ì, Supplemental Log¸¦ ±â·ÏÇÑ´Ù.
+ *      - Table Meta Log Record¸¦ ±â·ÏÇÑ´Ù.
  *          - Call : qci::mManageReplicationCallback.mWriteTableMetaLog()
  *
- *  11. Old Partition Infoë¥¼ ì œê±°í•œë‹¤.
+ *  11. Old Partition Info¸¦ Á¦°ÅÇÑ´Ù.
  *
  ***********************************************************************/
 
     qdTableParseTree        * sParseTree                        = NULL;
+    smOID                   * sDDLTableOIDArray                 = NULL; 
+    smOID                   * sDDLPartOIDArray                  = NULL; 
     qcmTableInfo            * sTableInfo                        = NULL;
     qcmTableInfo            * sSourceTableInfo                  = NULL;
     UInt                      sDDLSupplementalLog               = QCU_DDL_SUPPLEMENTAL_LOG;
@@ -2511,8 +2693,8 @@ IDE_RC qdbCopySwap::executeReplacePartition( qcStatement * aStatement )
 
     sParseTree = (qdTableParseTree *)aStatement->myPlan->parseTree;
 
-    /* 1. Target Tableì— IX Lockì„ ì¡ëŠ”ë‹¤.
-     *  - ì§€ì •í•œ Partitionì— X Lockì„ ì¡ëŠ”ë‹¤.
+    /* 1. Target Table¿¡ IX LockÀ» Àâ´Â´Ù.
+     *  - ÁöÁ¤ÇÑ Partition¿¡ X LockÀ» Àâ´Â´Ù.
      */
     IDE_TEST( qcm::validateAndLockTable( aStatement,
                                          sParseTree->tableHandle,
@@ -2533,15 +2715,13 @@ IDE_RC qdbCopySwap::executeReplacePartition( qcStatement * aStatement )
     IDE_TEST( qcmPartition::validateAndLockOnePartition( aStatement,
                                                          sTargetPartitionInfo->tableHandle,
                                                          sSCN,
-                                                         SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                         SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                          SMI_TABLE_LOCK_X,
-                                                         ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                                           ID_ULONG_MAX :
-                                                           smiGetDDLLockTimeOut() * 1000000 ) )
+                                                         smiGetDDLLockTimeOut((QC_SMI_STMT(aStatement))->getTrans()))
               != IDE_SUCCESS );
 
-    /* 2. Source Tableì— IX Lockì„ ì¡ëŠ”ë‹¤.
-     *  - ì§€ì •í•œ Partitionì— X Lockì„ ì¡ëŠ”ë‹¤.
+    /* 2. Source Table¿¡ IX LockÀ» Àâ´Â´Ù.
+     *  - ÁöÁ¤ÇÑ Partition¿¡ X LockÀ» Àâ´Â´Ù.
      */
     IDE_TEST( qcm::validateAndLockTable( aStatement,
                                          sParseTree->mSourcePartTable->mTableHandle,
@@ -2562,24 +2742,22 @@ IDE_RC qdbCopySwap::executeReplacePartition( qcStatement * aStatement )
     IDE_TEST( qcmPartition::validateAndLockOnePartition( aStatement,
                                                          sSourcePartitionInfo->tableHandle,
                                                          sSCN,
-                                                         SMI_TBSLV_DDL_DML, // TBS Validation ì˜µì…˜
+                                                         SMI_TBSLV_DDL_DML, // TBS Validation ¿É¼Ç
                                                          SMI_TABLE_LOCK_X,
-                                                         ( ( smiGetDDLLockTimeOut() == -1 ) ?
-                                                           ID_ULONG_MAX :
-                                                           smiGetDDLLockTimeOut() * 1000000 ) )
+                                                         smiGetDDLLockTimeOut((QC_SMI_STMT(aStatement))->getTrans()))
               != IDE_SUCCESS );
 
-    /* 3. Replication ëŒ€ìƒ Partitionì¸ ê²½ìš°, ì œì•½ ì¡°ê±´ì„ ê²€ì‚¬í•˜ê³  Receiver Threadë¥¼ ì¤‘ì§€í•œë‹¤.
-     *  - REPLICATION_DDL_ENABLE ì‹œìŠ¤í…œ í”„ë¼í¼í‹°ê°€ 1 ì´ì–´ì•¼ í•œë‹¤.
-     *  - REPLICATION ì„¸ì…˜ í”„ë¼í¼í‹°ê°€ NONEì´ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
-     *  - Eager Sender/Receiver Threadë¥¼ í™•ì¸í•˜ê³ , Receiver Threadë¥¼ ì¤‘ì§€í•œë‹¤.
-     *      - í•´ë‹¹ Partition ê´€ë ¨ Eager Sender/Receiver Threadê°€ ì—†ì–´ì•¼ í•œë‹¤.
-     *      - í•´ë‹¹ Partition ê´€ë ¨ Receiver Threadë¥¼ ì¤‘ì§€í•œë‹¤.
+    /* 3. Replication ´ë»ó PartitionÀÎ °æ¿ì, Á¦¾à Á¶°ÇÀ» °Ë»çÇÏ°í Receiver Thread¸¦ ÁßÁöÇÑ´Ù.
+     *  - REPLICATION_DDL_ENABLE ½Ã½ºÅÛ ÇÁ¶óÆÛÆ¼°¡ 1 ÀÌ¾î¾ß ÇÑ´Ù.
+     *  - REPLICATION ¼¼¼Ç ÇÁ¶óÆÛÆ¼°¡ NONEÀÌ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
+     *  - Eager Sender/Receiver Thread¸¦ È®ÀÎÇÏ°í, Receiver Thread¸¦ ÁßÁöÇÑ´Ù.
+     *      - ÇØ´ç Partition °ü·Ã Eager Sender/Receiver Thread°¡ ¾ø¾î¾ß ÇÑ´Ù.
+     *      - ÇØ´ç Partition °ü·Ã Receiver Thread¸¦ ÁßÁöÇÑ´Ù.
      */
     if ( sTargetPartitionInfo->replicationCount > 0 )
     {
-        /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
-         * Validateì™€ ExecuteëŠ” ë‹¤ë¥¸ Transactionì´ë¯€ë¡œ, í”„ë¼í¼í‹° ê²€ì‚¬ëŠ” Executeì—ì„œ í•œë‹¤.
+        /* PROJ-1442 Replication Online Áß DDL Çã¿ë
+         * Validate¿Í Execute´Â ´Ù¸¥ TransactionÀÌ¹Ç·Î, ÇÁ¶óÆÛÆ¼ °Ë»ç´Â Execute¿¡¼­ ÇÑ´Ù.
          */
         IDE_TEST( qci::mManageReplicationCallback.mIsDDLEnableOnReplicatedTable( 0, // aRequireLevel
                                                                                  sTableInfo )
@@ -2589,17 +2767,17 @@ IDE_RC qdbCopySwap::executeReplacePartition( qcStatement * aStatement )
                         == SMI_TRANSACTION_REPL_NONE,
                         ERR_CANNOT_WRITE_REPL_INFO );
 
-        /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
-         * ê´€ë ¨ Receiver Thread ì¤‘ì§€
+        /* PROJ-1442 Replication Online Áß DDL Çã¿ë
+         * °ü·Ã Receiver Thread ÁßÁö
          */
         IDE_TEST( qciMisc::checkRunningEagerReplicationByTableOID( aStatement,
                                                                    & sTargetPartitionInfo->tableOID,
                                                                    1 )
                   != IDE_SUCCESS );
 
-        // BUG-22703 : Begin Statementë¥¼ ìˆ˜í–‰í•œ í›„ì— Hangì´ ê±¸ë¦¬ì§€
-        // ì•Šì•„ì•¼ í•©ë‹ˆë‹¤.
-        // mStatistics í†µê³„ ì •ë³´ë¥¼ ì „ë‹¬ í•©ë‹ˆë‹¤.
+        // BUG-22703 : Begin Statement¸¦ ¼öÇàÇÑ ÈÄ¿¡ HangÀÌ °É¸®Áö
+        // ¾Ê¾Æ¾ß ÇÕ´Ï´Ù.
+        // mStatistics Åë°è Á¤º¸¸¦ Àü´Ş ÇÕ´Ï´Ù.
         IDE_TEST( qci::mManageReplicationCallback.mStopReceiverThreads( QC_SMI_STMT( aStatement ),
                                                                         QC_STATISTICS( aStatement ),
                                                                         & sTargetPartitionInfo->tableOID,
@@ -2613,8 +2791,8 @@ IDE_RC qdbCopySwap::executeReplacePartition( qcStatement * aStatement )
 
     if ( sSourcePartitionInfo->replicationCount > 0 )
     {
-        /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
-         * Validateì™€ ExecuteëŠ” ë‹¤ë¥¸ Transactionì´ë¯€ë¡œ, í”„ë¼í¼í‹° ê²€ì‚¬ëŠ” Executeì—ì„œ í•œë‹¤.
+        /* PROJ-1442 Replication Online Áß DDL Çã¿ë
+         * Validate¿Í Execute´Â ´Ù¸¥ TransactionÀÌ¹Ç·Î, ÇÁ¶óÆÛÆ¼ °Ë»ç´Â Execute¿¡¼­ ÇÑ´Ù.
          */
         IDE_TEST( qci::mManageReplicationCallback.mIsDDLEnableOnReplicatedTable( 0, // aRequireLevel
                                                                                  sSourceTableInfo )
@@ -2624,17 +2802,17 @@ IDE_RC qdbCopySwap::executeReplacePartition( qcStatement * aStatement )
                         == SMI_TRANSACTION_REPL_NONE,
                         ERR_CANNOT_WRITE_REPL_INFO );
 
-        /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
-         * ê´€ë ¨ Receiver Thread ì¤‘ì§€
+        /* PROJ-1442 Replication Online Áß DDL Çã¿ë
+         * °ü·Ã Receiver Thread ÁßÁö
          */
         IDE_TEST( qciMisc::checkRunningEagerReplicationByTableOID( aStatement,
                                                                    & sSourcePartitionInfo->tableOID,
                                                                    1 )
                   != IDE_SUCCESS );
 
-        // BUG-22703 : Begin Statementë¥¼ ìˆ˜í–‰í•œ í›„ì— Hangì´ ê±¸ë¦¬ì§€
-        // ì•Šì•„ì•¼ í•©ë‹ˆë‹¤.
-        // mStatistics í†µê³„ ì •ë³´ë¥¼ ì „ë‹¬ í•©ë‹ˆë‹¤.
+        // BUG-22703 : Begin Statement¸¦ ¼öÇàÇÑ ÈÄ¿¡ HangÀÌ °É¸®Áö
+        // ¾Ê¾Æ¾ß ÇÕ´Ï´Ù.
+        // mStatistics Åë°è Á¤º¸¸¦ Àü´Ş ÇÕ´Ï´Ù.
         IDE_TEST( qci::mManageReplicationCallback.mStopReceiverThreads( QC_SMI_STMT( aStatement ),
                                                                         QC_STATISTICS( aStatement ),
                                                                         & sSourcePartitionInfo->tableOID,
@@ -2646,10 +2824,11 @@ IDE_RC qdbCopySwap::executeReplacePartition( qcStatement * aStatement )
         /* Nothing to do */
     }
 
-    /* 4. Sourceì™€ Targetì˜ Table Partitions ê¸°ë³¸ ì •ë³´ë¥¼ êµí™˜í•œë‹¤. (Meta Table)
+    /* 4. Source¿Í TargetÀÇ Table Partitions ±âº» Á¤º¸¸¦ ±³È¯ÇÑ´Ù. (Meta Table)
      *  - SYS_TABLE_PARTITIONS_
-     *      - TABLE_ID, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNTë¥¼ êµí™˜í•œë‹¤.
-     *      - LAST_DDL_TIMEì„ ê°±ì‹ í•œë‹¤. (SYSDATE)
+     *      - TABLE_ID, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT¸¦ ±³È¯ÇÑ´Ù.
+     *      - LAST_DDL_TIMEÀ» °»½ÅÇÑ´Ù. (SYSDATE)
+     *      - PARITION_USABLE¸¦ ±³È¯ÇÑ´Ù. (TASK-7307)
      */
     IDE_TEST( swapTablePartitionsMeta( aStatement,
                                        sTableInfo->tableID,
@@ -2657,7 +2836,7 @@ IDE_RC qdbCopySwap::executeReplacePartition( qcStatement * aStatement )
                                        sParseTree->mPartAttr->tablePartName )
               != IDE_SUCCESS );
 
-    /* 5. Sourceì™€ Targetì˜ Table Partitions ê¸°ë³¸ ì •ë³´ë¥¼ êµí™˜í•œë‹¤. (Meta Table)
+    /* 5. Source¿Í TargetÀÇ Table Partitions ±âº» Á¤º¸¸¦ ±³È¯ÇÑ´Ù. (Meta Table)
      *  - SYS_PART_LOBS__
      *      - TABLE_ID
      */
@@ -2678,7 +2857,7 @@ IDE_RC qdbCopySwap::executeReplacePartition( qcStatement * aStatement )
         }
     }
 
-    // lob column  ì—†ìœ¼ë©´ ìˆ˜í–‰ í•˜ì§€ ì•ŠìŒ
+    // lob column  ¾øÀ¸¸é ¼öÇà ÇÏÁö ¾ÊÀ½
     if ( sColumns != NULL )
     {
         IDE_TEST( swapPartLobs( aStatement,
@@ -2693,10 +2872,10 @@ IDE_RC qdbCopySwap::executeReplacePartition( qcStatement * aStatement )
         /* Nothing to do */
     }
 
-    /* 6. Sourceì™€ Targetì˜ Table Partitions ê¸°ë³¸ ì •ë³´ë¥¼ êµí™˜í•œë‹¤. (Meta Table)
+    /* 6. Source¿Í TargetÀÇ Table Partitions ±âº» Á¤º¸¸¦ ±³È¯ÇÑ´Ù. (Meta Table)
      *  - SYS_INDEX_PARTITIONS__
-     *      - TABLE_PARTITION_ID, INDEX_PARTITION_IDë¥¼ êµí™˜í•œë‹¤.
-     *      - LAST_DDL_TIMEì„ ê°±ì‹ í•œë‹¤. (SYSDATE)
+     *      - TABLE_PARTITION_ID, INDEX_PARTITION_ID¸¦ ±³È¯ÇÑ´Ù.
+     *      - LAST_DDL_TIMEÀ» °»½ÅÇÑ´Ù. (SYSDATE)
      */
     IDE_TEST( swapIndexPartitions( aStatement,
                                    sTableInfo->tableID,
@@ -2731,7 +2910,7 @@ IDE_RC qdbCopySwap::executeReplacePartition( qcStatement * aStatement )
         // nothing to do
     }
 
-    /* 7. Partitionì˜ Replication Flagë¥¼ êµí™˜í•œë‹¤. */
+    /* 7. PartitionÀÇ Replication Flag¸¦ ±³È¯ÇÑ´Ù. */
     IDE_TEST( swapReplicationFlagOnPartitonTableHeader( QC_SMI_STMT( aStatement ),
                                                         sTargetPartitionInfo,
                                                         sSourcePartitionInfo )
@@ -2743,9 +2922,9 @@ IDE_RC qdbCopySwap::executeReplacePartition( qcStatement * aStatement )
                                           sSourcePartitionInfo )
               != IDE_SUCCESS );
 
-    /* 8. Partition Infoë¥¼ ë‹¤ì‹œ ì–»ëŠ”ë‹¤.
-     *  - Partition Infoë¥¼ ìƒì„±í•˜ê³ , SMì— ë“±ë¡í•œë‹¤. (Meta Cache)
-     *  - Partition Infoë¥¼ ì–»ëŠ”ë‹¤.
+    /* 8. Partition Info¸¦ ´Ù½Ã ¾ò´Â´Ù.
+     *  - Partition Info¸¦ »ı¼ºÇÏ°í, SM¿¡ µî·ÏÇÑ´Ù. (Meta Cache)
+     *  - Partition Info¸¦ ¾ò´Â´Ù.
      */
     IDE_TEST( qcmPartition::makeAndSetQcmPartitionInfo( QC_SMI_STMT( aStatement ),
                                                         sSourcePartitionInfo->partitionID,
@@ -2785,20 +2964,20 @@ IDE_RC qdbCopySwap::executeReplacePartition( qcStatement * aStatement )
                                             sSourcePartitionInfo->partitionID )
               != IDE_SUCCESS );
 
-    /* 9. Replication ëŒ€ìƒ Partitionì¸ ê²½ìš°, Replication Meta Tableì„ ìˆ˜ì •í•œë‹¤. (Meta Table)
+    /* 9. Replication ´ë»ó PartitionÀÎ °æ¿ì, Replication Meta TableÀ» ¼öÁ¤ÇÑ´Ù. (Meta Table)
      *  - SYS_REPL_ITEMS_
-     *      - SYS_REPL_ITEMS_ì˜ TABLE_OIDëŠ” Non-Partitioned Table OIDì´ê±°ë‚˜
-     *        Partition OIDì´ë‹¤.
-     *          - Partitioned Table OIDëŠ” SYS_REPL_ITEMS_ì— ì—†ë‹¤.
-     *      - Target, Source Partitionì˜ TABLE_OID(Partition OID) êµí™˜
+     *      - SYS_REPL_ITEMS_ÀÇ TABLE_OID´Â Non-Partitioned Table OIDÀÌ°Å³ª
+     *        Partition OIDÀÌ´Ù.
+     *          - Partitioned Table OID´Â SYS_REPL_ITEMS_¿¡ ¾ø´Ù.
+     *      - Target, Source PartitionÀÇ TABLE_OID(Partition OID) ±³È¯
      */
     IDE_TEST( swapReplItemsForParititonMeta( aStatement,
                                              sTargetPartitionInfo,
                                              sSourcePartitionInfo )
               != IDE_SUCCESS );
 
-    /* 10. Replication ëŒ€ìƒ Partitionì´ê±°ë‚˜ DDL_SUPPLEMENTAL_LOG_ENABLEì´ 1ì¸ ê²½ìš°, Supplemental Logë¥¼ ê¸°ë¡í•œë‹¤.
-     *  - Table Meta Log Recordë¥¼ ê¸°ë¡í•œë‹¤.
+    /* 10. Replication ´ë»ó PartitionÀÌ°Å³ª DDL_SUPPLEMENTAL_LOG_ENABLEÀÌ 1ÀÎ °æ¿ì, Supplemental Log¸¦ ±â·ÏÇÑ´Ù.
+     *  - Table Meta Log Record¸¦ ±â·ÏÇÑ´Ù.
      *      - Call : qci::mManageReplicationCallback.mWriteTableMetaLog()
      */
     if ( ( sDDLSupplementalLog == 1 ) || ( sTargetPartitionInfo->replicationCount > 0 ) )
@@ -2817,9 +2996,7 @@ IDE_RC qdbCopySwap::executeReplacePartition( qcStatement * aStatement )
     if ( sTargetPartitionInfo->replicationCount > 0 )
     {
         /* BUG-46252 Partition Merge / Split / Replace DDL asynchronization support */
-        if ( ( aStatement->session->mQPSpecific.mFlag
-               & QC_SESSION_INTERNAL_DDL_SYNC_MASK )
-             != QC_SESSION_INTERNAL_DDL_SYNC_TRUE )
+        if ( qrc::isInternalDDL( aStatement ) != ID_TRUE )
         {
             IDE_TEST( qciMisc::writeDDLStmtTextLog( aStatement,
                                                     sTargetPartitionInfo->tableOwnerID,
@@ -2849,7 +3026,30 @@ IDE_RC qdbCopySwap::executeReplacePartition( qcStatement * aStatement )
         /* Nothing to do */
     }
 
-    /* 11. Old Partition Infoë¥¼ ì œê±°í•œë‹¤. */
+    if ( QCG_GET_SESSION_IS_NEED_DDL_INFO( aStatement ) == ID_TRUE )
+    {
+        IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF(smOID) * 2, (void**)&sDDLTableOIDArray )
+                  != IDE_SUCCESS);
+        sDDLTableOIDArray[0] = sTableInfo->tableOID;
+        sDDLTableOIDArray[1] = sSourceTableInfo->tableOID;
+
+        IDE_TEST( QC_QMX_MEM( aStatement )->alloc( ID_SIZEOF(smOID) * 2, (void**)&sDDLPartOIDArray )
+                  != IDE_SUCCESS);
+        sDDLPartOIDArray[0] = sTargetPartitionInfo->tableOID;
+        sDDLPartOIDArray[1] = sSourcePartitionInfo->tableOID;
+
+        qrc::setDDLDestInfo( aStatement,
+                             2,
+                             sDDLTableOIDArray,
+                             1,
+                             sDDLPartOIDArray );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    /* 11. Old Partition Info¸¦ Á¦°ÅÇÑ´Ù. */
     (void)qcmPartition::destroyQcmPartitionInfo( sTargetPartitionInfo );
     (void)qcmPartition::destroyQcmPartitionInfo( sSourcePartitionInfo );
 
@@ -2879,9 +3079,9 @@ IDE_RC qdbCopySwap::getRefChildInfoList( qcStatement      * aStatement,
 {
 /***********************************************************************
  * Description :
- *      Referenced Indexë¥¼ ì°¸ì¡°í•˜ëŠ” Ref Child Info Listë¥¼ ë§Œë“ ë‹¤.
- *          - ê° Ref Child InfoëŠ” Table/Partition Refë¥¼ ê°€ì§€ê³  ìˆê³  IS Lockì„ íšë“í–ˆë‹¤.
- *          - Ref Child Info Listì—ì„œ Self Foreign Keyë¥¼ ì œê±°í•œë‹¤.
+ *      Referenced Index¸¦ ÂüÁ¶ÇÏ´Â Ref Child Info List¸¦ ¸¸µç´Ù.
+ *          - °¢ Ref Child Info´Â Table/Partition Ref¸¦ °¡Áö°í ÀÖ°í IS LockÀ» È¹µæÇß´Ù.
+ *          - Ref Child Info List¿¡¼­ Self Foreign Key¸¦ Á¦°ÅÇÑ´Ù.
  *
  * Implementation :
  *
@@ -2943,8 +3143,8 @@ IDE_RC qdbCopySwap::getPartitionedTableListFromRefChildInfoList( qcStatement    
 {
 /***********************************************************************
  * Description :
- *      Referenced Indexë¥¼ ì°¸ì¡°í•˜ëŠ” Ref Child Table/Partition Listë¥¼ ë§Œë“ ë‹¤.
- *          - Ref Child Table/Partition Listì—ì„œ Table ì¤‘ë³µì„ ì œê±°í•œë‹¤.
+ *      Referenced Index¸¦ ÂüÁ¶ÇÏ´Â Ref Child Table/Partition List¸¦ ¸¸µç´Ù.
+ *          - Ref Child Table/Partition List¿¡¼­ Table Áßº¹À» Á¦°ÅÇÑ´Ù.
  *
  * Implementation :
  *
@@ -3050,16 +3250,16 @@ void qdbCopySwap::findPeerIndex( qcmTableInfo  * aMyTable,
 {
 /***********************************************************************
  * Description :
- *      REFERENCED_INDEX_IDê°€ ê°€ë¦¬í‚¤ëŠ” Indexì˜ Column Nameìœ¼ë¡œ êµ¬ì„±ëœ Indexë¥¼ Peerì—ì„œ ì°¾ëŠ”ë‹¤.
- *          - Primaryì´ê±°ë‚˜ Uniqueì´ì–´ì•¼ í•œë‹¤.
- *              - Primary/Unique Key Constraintê°€ Indexë¡œ êµ¬í˜„ë˜ì–´ ìˆìœ¼ë¯€ë¡œ, Indexì—ì„œ ì°¾ëŠ”ë‹¤.
- *              - Local UniqueëŠ” Foreign Key Constraint ëŒ€ìƒì´ ì•„ë‹ˆë‹¤.
- *          - Column Countê°€ ê°™ì•„ì•¼ í•œë‹¤.
- *          - Column Name ìˆœì„œê°€ ê°™ì•„ì•¼ í•œë‹¤.
- *              - Foreign Key ìƒì„± ì‹œì—ëŠ” ìˆœì„œê°€ ë‹¬ë¼ë„ ì§€ì›í•˜ë‚˜, ì—¬ê¸°ì—ì„œëŠ” ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
- *          - Data Type, Languageê°€ ê°™ì•„ì•¼ í•œë‹¤.
- *              - Precision, Scaleì€ ë‹¬ë¼ë„ ëœë‹¤.
- *          - ì°¸ì¡° Call : qdnForeignKey::validateForeignKeySpec()
+ *      REFERENCED_INDEX_ID°¡ °¡¸®Å°´Â IndexÀÇ Column NameÀ¸·Î ±¸¼ºµÈ Index¸¦ Peer¿¡¼­ Ã£´Â´Ù.
+ *          - PrimaryÀÌ°Å³ª UniqueÀÌ¾î¾ß ÇÑ´Ù.
+ *              - Primary/Unique Key Constraint°¡ Index·Î ±¸ÇöµÇ¾î ÀÖÀ¸¹Ç·Î, Index¿¡¼­ Ã£´Â´Ù.
+ *              - Local Unique´Â Foreign Key Constraint ´ë»óÀÌ ¾Æ´Ï´Ù.
+ *          - Column Count°¡ °°¾Æ¾ß ÇÑ´Ù.
+ *          - Column Name ¼ø¼­°¡ °°¾Æ¾ß ÇÑ´Ù.
+ *              - Foreign Key »ı¼º ½Ã¿¡´Â ¼ø¼­°¡ ´Ş¶óµµ Áö¿øÇÏ³ª, ¿©±â¿¡¼­´Â Áö¿øÇÏÁö ¾Ê´Â´Ù.
+ *          - Data Type, Language°¡ °°¾Æ¾ß ÇÑ´Ù.
+ *              - Precision, ScaleÀº ´Ş¶óµµ µÈ´Ù.
+ *          - ÂüÁ¶ Call : qdnForeignKey::validateForeignKeySpec()
  *
  * Implementation :
  *
@@ -3148,19 +3348,19 @@ IDE_RC qdbCopySwap::compareReplicationInfo( qcStatement          * aStatement,
 {
 /***********************************************************************
  * Description :
- *      Replication ì œì•½ ì‚¬í•­ì„ í™•ì¸í•œë‹¤.
- *      - í•œìª½ì´ë¼ë„ Replication ëŒ€ìƒì´ë©´, Sourceì™€ Target ë‘˜ ë‹¤ Partitioned Tableì´ê±°ë‚˜ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
+ *      Replication Á¦¾à »çÇ×À» È®ÀÎÇÑ´Ù.
+ *      - ÇÑÂÊÀÌ¶óµµ Replication ´ë»óÀÌ¸é, Source¿Í Target µÑ ´Ù Partitioned TableÀÌ°Å³ª ¾Æ´Ï¾î¾ß ÇÑ´Ù.
  *          - SYS_TABLES_
- *              - REPLICATION_COUNT > 0 ì´ë©´, Tableì´ Replication ëŒ€ìƒì´ë‹¤.
+ *              - REPLICATION_COUNT > 0 ÀÌ¸é, TableÀÌ Replication ´ë»óÀÌ´Ù.
  *              - IS_PARTITIONED : 'N'(Non-Partitioned Table), 'Y'(Partitioned Table)
- *      - Partitioned Tableì¸ ê²½ìš°, ê¸°ë³¸ ì •ë³´ê°€ ê°™ì•„ì•¼ í•œë‹¤.
+ *      - Partitioned TableÀÎ °æ¿ì, ±âº» Á¤º¸°¡ °°¾Æ¾ß ÇÑ´Ù.
  *          - SYS_PART_TABLES_
- *              - PARTITION_METHODê°€ ê°™ì•„ì•¼ í•œë‹¤.
- *      - Partitionì´ Replication ëŒ€ìƒì¸ ê²½ìš°, ì–‘ìª½ì— ê°™ì€ Partitionì´ ì¡´ì¬í•´ì•¼ í•œë‹¤.
+ *              - PARTITION_METHOD°¡ °°¾Æ¾ß ÇÑ´Ù.
+ *      - PartitionÀÌ Replication ´ë»óÀÎ °æ¿ì, ¾çÂÊ¿¡ °°Àº PartitionÀÌ Á¸ÀçÇØ¾ß ÇÑ´Ù.
  *          - SYS_TABLE_PARTITIONS_
- *              - REPLICATION_COUNT > 0 ì´ë©´, Partitionì´ Replication ëŒ€ìƒì´ë‹¤.
- *              - PARTITION_NAMEì´ ê°™ìœ¼ë©´, ê¸°ë³¸ ì •ë³´ë¥¼ ë¹„êµí•œë‹¤.
- *                  - PARTITION_MIN_VALUE, PARTITION_MAX_VALUE, PARTITION_ORDERê°€ ê°™ì•„ì•¼ í•œë‹¤.
+ *              - REPLICATION_COUNT > 0 ÀÌ¸é, PartitionÀÌ Replication ´ë»óÀÌ´Ù.
+ *              - PARTITION_NAMEÀÌ °°À¸¸é, ±âº» Á¤º¸¸¦ ºñ±³ÇÑ´Ù.
+ *                  - PARTITION_MIN_VALUE, PARTITION_MAX_VALUE, PARTITION_ORDER°¡ °°¾Æ¾ß ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -3189,7 +3389,7 @@ IDE_RC qdbCopySwap::compareReplicationInfo( qcStatement          * aStatement,
             IDU_FIT_POINT( "qdbCopySwap::compareReplicationInfo::STRUCT_ALLOC_WITH_SIZE::sPartCondMinValues1",
                            idERR_ABORT_InsufficientMemory );
 
-            IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMX_MEM( aStatement ),
+            IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMP_MEM( aStatement ),
                                               SChar,
                                               QC_MAX_PARTKEY_COND_VALUE_LEN + 1,
                                               & sPartCondMinValues1 )
@@ -3198,7 +3398,7 @@ IDE_RC qdbCopySwap::compareReplicationInfo( qcStatement          * aStatement,
             IDU_FIT_POINT( "qdbCopySwap::compareReplicationInfo::STRUCT_ALLOC_WITH_SIZE::sPartCondMaxValues1",
                            idERR_ABORT_InsufficientMemory );
 
-            IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMX_MEM( aStatement ),
+            IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMP_MEM( aStatement ),
                                               SChar,
                                               QC_MAX_PARTKEY_COND_VALUE_LEN + 1,
                                               & sPartCondMaxValues1 )
@@ -3207,7 +3407,7 @@ IDE_RC qdbCopySwap::compareReplicationInfo( qcStatement          * aStatement,
             IDU_FIT_POINT( "qdbCopySwap::compareReplicationInfo::STRUCT_ALLOC_WITH_SIZE::sPartCondMinValues2",
                            idERR_ABORT_InsufficientMemory );
 
-            IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMX_MEM( aStatement ),
+            IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMP_MEM( aStatement ),
                                               SChar,
                                               QC_MAX_PARTKEY_COND_VALUE_LEN + 1,
                                               & sPartCondMinValues2 )
@@ -3216,7 +3416,7 @@ IDE_RC qdbCopySwap::compareReplicationInfo( qcStatement          * aStatement,
             IDU_FIT_POINT( "qdbCopySwap::compareReplicationInfo::STRUCT_ALLOC_WITH_SIZE::sPartCondMaxValues2",
                            idERR_ABORT_InsufficientMemory );
 
-            IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMX_MEM( aStatement ),
+            IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMP_MEM( aStatement ),
                                               SChar,
                                               QC_MAX_PARTKEY_COND_VALUE_LEN + 1,
                                               & sPartCondMaxValues2 )
@@ -3339,6 +3539,185 @@ IDE_RC qdbCopySwap::compareReplicationInfo( qcStatement          * aStatement,
     return IDE_FAILURE;
 }
 
+IDE_RC qdbCopySwap::compareReplicationInfoPartition( qcStatement          * aStatement,
+                                                     qdTableParseTree     * aParseTree, 
+                                                     qcmTableInfo         * aMyTableInfo,
+                                                     qcmTableInfo         * aPeerTableInfo )
+{
+/***********************************************************************
+ * Description :
+ *      Replication Á¦¾à »çÇ×À» È®ÀÎÇÑ´Ù.
+ *      - ÇÑÂÊÀÌ¶óµµ Replication ´ë»óÀÌ¸é, Source¿Í Target µÑ ´Ù Partitioned TableÀÌ°Å³ª ¾Æ´Ï¾î¾ß ÇÑ´Ù.
+ *          - SYS_TABLES_
+ *              - REPLICATION_COUNT > 0 ÀÌ¸é, TableÀÌ Replication ´ë»óÀÌ´Ù.
+ *              - IS_PARTITIONED : 'N'(Non-Partitioned Table), 'Y'(Partitioned Table)
+ *      - Partitioned TableÀÎ °æ¿ì, ±âº» Á¤º¸°¡ °°¾Æ¾ß ÇÑ´Ù.
+ *          - SYS_PART_TABLES_
+ *              - PARTITION_METHOD°¡ °°¾Æ¾ß ÇÑ´Ù.
+ *      - PartitionÀÌ Replication ´ë»óÀÎ °æ¿ì, ¾çÂÊ¿¡ °°Àº PartitionÀÌ Á¸ÀçÇØ¾ß ÇÑ´Ù.
+ *          - SYS_TABLE_PARTITIONS_
+ *              - REPLICATION_COUNT > 0 ÀÌ¸é, PartitionÀÌ Replication ´ë»óÀÌ´Ù.
+ *              - PARTITION_NAMEÀÌ °°À¸¸é, ±âº» Á¤º¸¸¦ ºñ±³ÇÑ´Ù.
+ *                  - PARTITION_MIN_VALUE, PARTITION_MAX_VALUE, PARTITION_ORDER°¡ °°¾Æ¾ß ÇÑ´Ù.
+ *      º¯°æ: BUG-47208 range, range hash, list partition replace ´ë»ó partition¿¡ À§ Á¦¾à Ã¼Å©
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+    SChar                   * sPartCondMinValues1   = NULL;
+    SChar                   * sPartCondMaxValues1   = NULL;
+    SChar                   * sPartCondMinValues2   = NULL;
+    SChar                   * sPartCondMaxValues2   = NULL;
+    SInt                      sResult               = 0;
+    qcmTableInfo            * sSrcTempPartInfo      = NULL;
+    qcmTableInfo            * sDstTempPartInfo      = NULL;
+    void                    * sHandle               = NULL;    
+    smSCN                     sSCN                  = SM_SCN_INIT;
+    
+    if (( aMyTableInfo->replicationCount > 0 ) ||
+        ( aPeerTableInfo->replicationCount > 0 ))
+    {
+        IDE_TEST_RAISE( aMyTableInfo->tablePartitionType != aPeerTableInfo->tablePartitionType,
+                        ERR_TABLE_PARTITION_TYPE_MISMATCH );
+
+        if ( aMyTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
+        {
+            IDE_TEST_RAISE( aMyTableInfo->partitionMethod != aPeerTableInfo->partitionMethod,
+                            ERR_PARTITION_METHOD_MISMATCH );
+
+            IDU_FIT_POINT( "qdbCopySwap::compareReplicationInfoPartition::STRUCT_ALLOC_WITH_SIZE::sPartCondMinValues1",
+                           idERR_ABORT_InsufficientMemory );
+
+            IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMP_MEM( aStatement ),
+                                              SChar,
+                                              QC_MAX_PARTKEY_COND_VALUE_LEN + 1,
+                                              & sPartCondMinValues1 )
+                      != IDE_SUCCESS );
+
+            IDU_FIT_POINT( "qdbCopySwap::compareReplicationInfoPartition::STRUCT_ALLOC_WITH_SIZE::sPartCondMaxValues1",
+                           idERR_ABORT_InsufficientMemory );
+
+            IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMP_MEM( aStatement ),
+                                              SChar,
+                                              QC_MAX_PARTKEY_COND_VALUE_LEN + 1,
+                                              & sPartCondMaxValues1 )
+                      != IDE_SUCCESS );
+
+            IDU_FIT_POINT( "qdbCopySwap::compareReplicationInfoPartition::STRUCT_ALLOC_WITH_SIZE::sPartCondMinValues2",
+                           idERR_ABORT_InsufficientMemory );
+
+            IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMP_MEM( aStatement ),
+                                              SChar,
+                                              QC_MAX_PARTKEY_COND_VALUE_LEN + 1,
+                                              & sPartCondMinValues2 )
+                      != IDE_SUCCESS );
+
+            IDU_FIT_POINT( "qdbCopySwap::compareReplicationInfoPartition::STRUCT_ALLOC_WITH_SIZE::sPartCondMaxValues2",
+                           idERR_ABORT_InsufficientMemory );
+
+            IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMP_MEM( aStatement ),
+                                              SChar,
+                                              QC_MAX_PARTKEY_COND_VALUE_LEN + 1,
+                                              & sPartCondMaxValues2 )
+                      != IDE_SUCCESS );
+            
+            // partition info
+            IDE_TEST( qcmPartition::getPartitionInfo( aStatement,
+                                                      aMyTableInfo->tableID,
+                                                      aParseTree->mPartAttr->tablePartName,
+                                                      & sDstTempPartInfo,
+                                                      & sSCN,
+                                                      & sHandle )
+                      != IDE_SUCCESS);
+
+            IDE_TEST( qcmPartition::getPartitionInfo( aStatement,
+                                                      aPeerTableInfo->tableID,
+                                                      aParseTree->mPartAttr->tablePartName,
+                                                      & sSrcTempPartInfo,
+                                                      & sSCN,
+                                                      & sHandle )
+                      != IDE_SUCCESS );
+        
+            if (( sDstTempPartInfo->replicationCount > 0 ) ||
+                ( sSrcTempPartInfo->replicationCount > 0 ))
+            {                          
+                if ( aMyTableInfo->partitionMethod != QCM_PARTITION_METHOD_HASH )
+                {
+                    IDE_TEST( qcmPartition::getPartMinMaxValue(
+                                  QC_SMI_STMT( aStatement ),
+                                  sDstTempPartInfo->partitionID,
+                                  sPartCondMinValues1,
+                                  sPartCondMaxValues1 )
+                              != IDE_SUCCESS );
+
+                    IDE_TEST( qcmPartition::getPartMinMaxValue(
+                                  QC_SMI_STMT( aStatement ),
+                                  sSrcTempPartInfo->partitionID,
+                                  sPartCondMinValues2,
+                                  sPartCondMaxValues2 )
+                              != IDE_SUCCESS );
+
+                    IDE_TEST( qciMisc::comparePartCondValues( QC_STATISTICS( aStatement ),
+                                                              aMyTableInfo,
+                                                              sPartCondMinValues1,
+                                                              sPartCondMinValues2,
+                                                              & sResult )
+                              != IDE_SUCCESS );
+
+                    IDE_TEST_RAISE( sResult != 0, ERR_PARTITION_CONDITION_MISMATCH );
+
+                    IDE_TEST( qciMisc::comparePartCondValues( QC_STATISTICS( aStatement ),
+                                                              aMyTableInfo,
+                                                              sPartCondMaxValues1,
+                                                              sPartCondMaxValues2,
+                                                              & sResult )
+                              != IDE_SUCCESS );
+
+                    IDE_TEST_RAISE( sResult != 0, ERR_PARTITION_CONDITION_MISMATCH );
+                }
+                else
+                {
+                    // hash partitionÀº ÇØ´ç ÇÔ¼ö¸¦ Å¸Áö ¾Ê´Â´Ù.
+                    /* Nothing to do */
+                }
+            }
+            else
+            {
+                /* Nothing to do */
+            }
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_TABLE_PARTITION_TYPE_MISMATCH )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_REPL_TABLE_PARTITION_TYPE_MISMATCH ) );
+    }
+    IDE_EXCEPTION( ERR_PARTITION_METHOD_MISMATCH )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_REPL_PARTITION_METHOD_MISMATCH ) );
+    }
+    IDE_EXCEPTION( ERR_PARTITION_CONDITION_MISMATCH )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_REPL_PARTITION_CONDITION_MISMATCH,
+                                  sDstTempPartInfo->name,
+                                  sSrcTempPartInfo->name ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 IDE_RC qdbCopySwap::executeCreateTablePartition( qcStatement           * aStatement,
                                                  qcmTableInfo          * aMyTableInfo,
                                                  qcmTableInfo          * aPeerTableInfo,
@@ -3347,16 +3726,16 @@ IDE_RC qdbCopySwap::executeCreateTablePartition( qcStatement           * aStatem
 {
 /***********************************************************************
  * Description :
- *      Partitionì„ ìƒì„±í•œë‹¤.
- *          - Next Table Partition IDë¥¼ ì–»ëŠ”ë‹¤.
- *          - Partitionì„ ìƒì„±í•œë‹¤. (SM)
- *          - Meta Tableì— Target Partition ì •ë³´ë¥¼ ì¶”ê°€í•œë‹¤. (Meta Table)
+ *      PartitionÀ» »ı¼ºÇÑ´Ù.
+ *          - Next Table Partition ID¸¦ ¾ò´Â´Ù.
+ *          - PartitionÀ» »ı¼ºÇÑ´Ù. (SM)
+ *          - Meta Table¿¡ Target Partition Á¤º¸¸¦ Ãß°¡ÇÑ´Ù. (Meta Table)
  *              - SYS_TABLE_PARTITIONS_
- *                  - SMì—ì„œ ì–»ì€ Partition OIDê°€ SYS_TABLE_PARTITIONS_ì— í•„ìš”í•˜ë‹¤.
- *                  - REPLICATION_COUNT, REPLICATION_RECOVERY_COUNTëŠ” ì´ˆê¸°í™”í•œë‹¤.
+ *                  - SM¿¡¼­ ¾òÀº Partition OID°¡ SYS_TABLE_PARTITIONS_¿¡ ÇÊ¿äÇÏ´Ù.
+ *                  - REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT´Â ÃÊ±âÈ­ÇÑ´Ù.
  *              - SYS_PART_LOBS_
- *      Partition Infoë¥¼ ìƒì„±í•˜ê³ , SMì— ë“±ë¡í•œë‹¤. (Meta Cache)
- *      Partition Infoë¥¼ ì–»ëŠ”ë‹¤.
+ *      Partition Info¸¦ »ı¼ºÇÏ°í, SM¿¡ µî·ÏÇÑ´Ù. (Meta Cache)
+ *      Partition Info¸¦ ¾ò´Â´Ù.
  *
  * Implementation :
  *
@@ -3409,10 +3788,10 @@ IDE_RC qdbCopySwap::executeCreateTablePartition( qcStatement           * aStatem
                                                          & sPartitionID )
                   != IDE_SUCCESS );
 
-        // ì•„ë˜ì—ì„œ Partitionì„ ìƒì„±í•  ë•Œ, qdbCommon::createTableOnSM()ì—ì„œ Column ì •ë³´ë¡œ qcmColumnì„ ìš”êµ¬í•œë‹¤.
+        // ¾Æ·¡¿¡¼­ PartitionÀ» »ı¼ºÇÒ ¶§, qdbCommon::createTableOnSM()¿¡¼­ Column Á¤º¸·Î qcmColumnÀ» ¿ä±¸ÇÑ´Ù.
         //  - qdbCommon::createTableOnSM()
-        //      - ì‹¤ì œë¡œ í•„ìš”í•œ ì •ë³´ëŠ” mtcColumnì´ë‹¤.
-        //      - Column IDë¥¼ ìƒˆë¡œ ìƒì„±í•˜ê³ , Column í†µê³„ ì •ë³´ë¥¼ ì´ˆê¸°í™”í•œë‹¤. (ë§¤ê°œë³€ìˆ˜ì¸ qcmColumnì„ ìˆ˜ì •í•œë‹¤.)
+        //      - ½ÇÁ¦·Î ÇÊ¿äÇÑ Á¤º¸´Â mtcColumnÀÌ´Ù.
+        //      - Column ID¸¦ »õ·Î »ı¼ºÇÏ°í, Column Åë°è Á¤º¸¸¦ ÃÊ±âÈ­ÇÑ´Ù. (¸Å°³º¯¼öÀÎ qcmColumnÀ» ¼öÁ¤ÇÑ´Ù.)
         IDE_TEST( qcm::copyQcmColumns( QC_QMX_MEM( aStatement ),
                                        sPeerPartInfo->partitionInfo->columns,
                                        & sPartitionColumns,
@@ -3421,8 +3800,8 @@ IDE_RC qdbCopySwap::executeCreateTablePartition( qcStatement           * aStatem
 
         sPartType = qdbCommon::getTableTypeFromTBSID( sPeerPartInfo->partitionInfo->TBSID );
 
-        /* PROJ-2464 hybrid partitioned table ì§€ì›
-         *  Partition Meta Cacheì˜ segAttrì™€ segStoAttrëŠ” 0ìœ¼ë¡œ ì´ˆê¸°í™”ë˜ì–´ ìˆë‹¤.
+        /* PROJ-2464 hybrid partitioned table Áö¿ø
+         *  Partition Meta CacheÀÇ segAttr¿Í segStoAttr´Â 0À¸·Î ÃÊ±âÈ­µÇ¾î ÀÖ´Ù.
          */
         qdbCommon::adjustPhysicalAttr( sPartType,
                                        aPeerTableInfo->segAttr,
@@ -3431,7 +3810,7 @@ IDE_RC qdbCopySwap::executeCreateTablePartition( qcStatement           * aStatem
                                        & sSegStoAttr,
                                        ID_TRUE /* aIsTable */ );
 
-        // Partitionì—ì„œ Replication ì •ë³´ë¥¼ ì œê±°í•œë‹¤.
+        // Partition¿¡¼­ Replication Á¤º¸¸¦ Á¦°ÅÇÑ´Ù.
         sTableFlag  = sPeerPartInfo->partitionInfo->tableFlag;
         sTableFlag &= ( ~SMI_TABLE_REPLICATION_MASK );
         sTableFlag |= SMI_TABLE_REPLICATION_DISABLE;
@@ -3564,45 +3943,45 @@ IDE_RC qdbCopySwap::createConstraintAndIndexFromInfo( qcStatement           * aS
 {
 /***********************************************************************
  * Description :
- *      Target Tableì— Constraintë¥¼ ìƒì„±í•œë‹¤.
- *          - Next Constraint IDë¥¼ ì–»ëŠ”ë‹¤.
- *          - CONSTRAINT_NAMEì— ì‚¬ìš©ìê°€ ì§€ì •í•œ Prefixë¥¼ ë¶™ì—¬ì„œ CONSTRAINT_NAMEì„ ìƒì„±í•œë‹¤.
- *              - ìƒì„±í•œ CONSTRAINT_NAMEì´ Uniqueí•œì§€ í™•ì¸í•´ì•¼ í•œë‹¤.
- *                  - CONSTRAINT_NAMEì€ Unique Indexì˜ Columnì´ ì•„ë‹ˆë‹¤. ì½”ë“œë¡œ Uniqueë¥¼ ê²€ì‚¬í•œë‹¤.
- *          - Meta Tableì— Target Tableì˜ Constraint ì •ë³´ë¥¼ ì¶”ê°€í•œë‹¤. (Meta Table)
+ *      Target Table¿¡ Constraint¸¦ »ı¼ºÇÑ´Ù.
+ *          - Next Constraint ID¸¦ ¾ò´Â´Ù.
+ *          - CONSTRAINT_NAME¿¡ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Prefix¸¦ ºÙ¿©¼­ CONSTRAINT_NAMEÀ» »ı¼ºÇÑ´Ù.
+ *              - »ı¼ºÇÑ CONSTRAINT_NAMEÀÌ UniqueÇÑÁö È®ÀÎÇØ¾ß ÇÑ´Ù.
+ *                  - CONSTRAINT_NAMEÀº Unique IndexÀÇ ColumnÀÌ ¾Æ´Ï´Ù. ÄÚµå·Î Unique¸¦ °Ë»çÇÑ´Ù.
+ *          - Meta Table¿¡ Target TableÀÇ Constraint Á¤º¸¸¦ Ãß°¡ÇÑ´Ù. (Meta Table)
  *              - SYS_CONSTRAINTS_
- *                  - Primary Key, Unique, Local Uniqueì¸ ê²½ìš°, Index IDê°€ SYS_CONSTRAINTS_ì— í•„ìš”í•˜ë‹¤.
+ *                  - Primary Key, Unique, Local UniqueÀÎ °æ¿ì, Index ID°¡ SYS_CONSTRAINTS_¿¡ ÇÊ¿äÇÏ´Ù.
  *              - SYS_CONSTRAINT_COLUMNS_
  *              - SYS_CONSTRAINT_RELATED_
  *
- *      Target Tableì— Indexë¥¼ ìƒì„±í•œë‹¤.
- *          - Source Tableì˜ Index ì •ë³´ë¥¼ ì‚¬ìš©í•˜ì—¬, Target Tableì˜ Indexë¥¼ ìƒì„±í•œë‹¤. (SM)
- *              - Next Index IDë¥¼ ì–»ëŠ”ë‹¤.
- *              - INDEX_NAMEì— ì‚¬ìš©ìê°€ ì§€ì •í•œ Prefixë¥¼ ë¶™ì—¬ì„œ INDEX_NAMEì„ ìƒì„±í•œë‹¤.
- *              - Target Tableì˜ Table Handleì´ í•„ìš”í•˜ë‹¤.
- *          - Meta Tableì— Target Tableì˜ Index ì •ë³´ë¥¼ ì¶”ê°€í•œë‹¤. (Meta Table)
+ *      Target Table¿¡ Index¸¦ »ı¼ºÇÑ´Ù.
+ *          - Source TableÀÇ Index Á¤º¸¸¦ »ç¿ëÇÏ¿©, Target TableÀÇ Index¸¦ »ı¼ºÇÑ´Ù. (SM)
+ *              - Next Index ID¸¦ ¾ò´Â´Ù.
+ *              - INDEX_NAME¿¡ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Prefix¸¦ ºÙ¿©¼­ INDEX_NAMEÀ» »ı¼ºÇÑ´Ù.
+ *              - Target TableÀÇ Table HandleÀÌ ÇÊ¿äÇÏ´Ù.
+ *          - Meta Table¿¡ Target TableÀÇ Index Á¤º¸¸¦ Ãß°¡ÇÑ´Ù. (Meta Table)
  *              - SYS_INDICES_
- *                  - INDEX_TABLE_IDëŠ” 0ìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
- *                  - LAST_DDL_TIMEì„ ì´ˆê¸°í™”í•œë‹¤. (SYSDATE)
+ *                  - INDEX_TABLE_ID´Â 0À¸·Î ÃÊ±âÈ­ÇÑ´Ù.
+ *                  - LAST_DDL_TIMEÀ» ÃÊ±âÈ­ÇÑ´Ù. (SYSDATE)
  *              - SYS_INDEX_COLUMNS_
  *              - SYS_INDEX_RELATED_
  *
- *          - Partitioned Tableì´ë©´, Local Index ë˜ëŠ” Non-Partitioned Indexë¥¼ ìƒì„±í•œë‹¤.
- *              - Local Indexë¥¼ ìƒì„±í•œë‹¤.
- *                  - Local Indexë¥¼ ìƒì„±í•œë‹¤. (SM)
- *                  - Meta Tableì— Target Partition ì •ë³´ë¥¼ ì¶”ê°€í•œë‹¤. (Meta Table)
+ *          - Partitioned TableÀÌ¸é, Local Index ¶Ç´Â Non-Partitioned Index¸¦ »ı¼ºÇÑ´Ù.
+ *              - Local Index¸¦ »ı¼ºÇÑ´Ù.
+ *                  - Local Index¸¦ »ı¼ºÇÑ´Ù. (SM)
+ *                  - Meta Table¿¡ Target Partition Á¤º¸¸¦ Ãß°¡ÇÑ´Ù. (Meta Table)
  *                      - SYS_PART_INDICES_
  *                      - SYS_INDEX_PARTITIONS_
  *
- *              - Non-Partitioned Indexë¥¼ ìƒì„±í•œë‹¤.
- *                  - INDEX_NAMEìœ¼ë¡œ Index Table Name, Key Index Name, Rid Index Nameì„ ê²°ì •í•œë‹¤.
+ *              - Non-Partitioned Index¸¦ »ı¼ºÇÑ´Ù.
+ *                  - INDEX_NAMEÀ¸·Î Index Table Name, Key Index Name, Rid Index NameÀ» °áÁ¤ÇÑ´Ù.
  *                      - Call : qdx::checkIndexTableName()
- *                  - Non-Partitioned Indexë¥¼ ìƒì„±í•œë‹¤.
- *                      - Index Tableì„ ìƒì„±í•œë‹¤. (SM, Meta Table, Meta Cache)
- *                      - Index Tableì˜ Indexë¥¼ ìƒì„±í•œë‹¤. (SM, Meta Table)
- *                      - Index Table Infoë¥¼ ë‹¤ì‹œ ì–»ëŠ”ë‹¤. (Meta Cache)
+ *                  - Non-Partitioned Index¸¦ »ı¼ºÇÑ´Ù.
+ *                      - Index TableÀ» »ı¼ºÇÑ´Ù. (SM, Meta Table, Meta Cache)
+ *                      - Index TableÀÇ Index¸¦ »ı¼ºÇÑ´Ù. (SM, Meta Table)
+ *                      - Index Table Info¸¦ ´Ù½Ã ¾ò´Â´Ù. (Meta Cache)
  *                      - Call : qdx::createIndexTable(), qdx::createIndexTableIndices()
- *                  - Index Table IDë¥¼ ê°±ì‹ í•œë‹¤. (SYS_INDICES_.INDEX_TABLE_ID)
+ *                  - Index Table ID¸¦ °»½ÅÇÑ´Ù. (SYS_INDICES_.INDEX_TABLE_ID)
  *                      - Call : qdx::updateIndexSpecFromMeta()
  *
  * Implementation :
@@ -3644,8 +4023,8 @@ IDE_RC qdbCopySwap::createConstraintAndIndexFromInfo( qcStatement           * aS
         sIndex = & aOldTableInfo->indices[i];
 
         // PROJ-1624 non-partitioned index
-        // primary key indexì˜ ê²½ìš° non-partitioned indexì™€ partitioned index
-        // ë‘˜ ë‹¤ ìƒì„±í•œë‹¤.
+        // primary key indexÀÇ °æ¿ì non-partitioned index¿Í partitioned index
+        // µÑ ´Ù »ı¼ºÇÑ´Ù.
         if ( aOldTableInfo->primaryKey != NULL )
         {
             if ( aOldTableInfo->primaryKey->indexId == sIndex->indexId )
@@ -3662,17 +4041,17 @@ IDE_RC qdbCopySwap::createConstraintAndIndexFromInfo( qcStatement           * aS
             /* Nothing to do */
         }
 
-        // Next Index IDë¥¼ ì–»ëŠ”ë‹¤.
+        // Next Index ID¸¦ ¾ò´Â´Ù.
         IDE_TEST( qcm::getNextIndexID( aStatement, & aNewTableIndex[i].indexId ) != IDE_SUCCESS );
 
         IDE_TEST_RAISE( ( idlOS::strlen( sIndex->name ) + aNamesPrefix.size ) > QC_MAX_OBJECT_NAME_LEN,
                         ERR_TOO_LONG_OBJECT_NAME );
 
-        // INDEX_NAMEì— ì‚¬ìš©ìê°€ ì§€ì •í•œ Prefixë¥¼ ë¶™ì—¬ì„œ INDEX_NAMEì„ ìƒì„±í•œë‹¤.
+        // INDEX_NAME¿¡ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Prefix¸¦ ºÙ¿©¼­ INDEX_NAMEÀ» »ı¼ºÇÑ´Ù.
         QC_STR_COPY( aNewTableIndex[i].name, aNamesPrefix );
         idlOS::strncat( aNewTableIndex[i].name, sIndex->name, QC_MAX_OBJECT_NAME_LEN );
 
-        // Index Columnìœ¼ë¡œ smiColumnListë¥¼ ë§Œë“ ë‹¤.
+        // Index ColumnÀ¸·Î smiColumnList¸¦ ¸¸µç´Ù.
         IDE_TEST( makeIndexColumnList( sIndex,
                                        aNewTableInfo,
                                        sNewTableIndexColumns,
@@ -3754,7 +4133,7 @@ IDE_RC qdbCopySwap::createConstraintAndIndexFromInfo( qcStatement           * aS
                 // (global) non-partitioned index
                 //--------------------------------
 
-                // non-partitioned indexì— í•´ë‹¹í•˜ëŠ” index tableì„ ì°¾ëŠ”ë‹¤.
+                // non-partitioned index¿¡ ÇØ´çÇÏ´Â index tableÀ» Ã£´Â´Ù.
                 IDE_TEST( qdx::findIndexTableInList( aOldIndexTables,
                                                      sIndex->indexTableID,
                                                      & sOldIndexTable )
@@ -3780,10 +4159,10 @@ IDE_RC qdbCopySwap::createConstraintAndIndexFromInfo( qcStatement           * aS
                 sIndexTableNamePos.offset   = 0;
                 sIndexTableNamePos.size     = idlOS::strlen( sIndexTableName );
 
-                // ì•„ë˜ì—ì„œ Partitionì„ ìƒì„±í•  ë•Œ, qdbCommon::createTableOnSM()ì—ì„œ Column ì •ë³´ë¡œ qcmColumnì„ ìš”êµ¬í•œë‹¤.
+                // ¾Æ·¡¿¡¼­ PartitionÀ» »ı¼ºÇÒ ¶§, qdbCommon::createTableOnSM()¿¡¼­ Column Á¤º¸·Î qcmColumnÀ» ¿ä±¸ÇÑ´Ù.
                 //  - qdbCommon::createTableOnSM()
-                //      - ì‹¤ì œë¡œ í•„ìš”í•œ ì •ë³´ëŠ” mtcColumnì´ë‹¤.
-                //      - Column IDë¥¼ ìƒˆë¡œ ìƒì„±í•˜ê³ , Column í†µê³„ ì •ë³´ë¥¼ ì´ˆê¸°í™”í•œë‹¤. (ë§¤ê°œë³€ìˆ˜ì¸ qcmColumnì„ ìˆ˜ì •í•œë‹¤.)
+                //      - ½ÇÁ¦·Î ÇÊ¿äÇÑ Á¤º¸´Â mtcColumnÀÌ´Ù.
+                //      - Column ID¸¦ »õ·Î »ı¼ºÇÏ°í, Column Åë°è Á¤º¸¸¦ ÃÊ±âÈ­ÇÑ´Ù. (¸Å°³º¯¼öÀÎ qcmColumnÀ» ¼öÁ¤ÇÑ´Ù.)
                 IDE_TEST( qcm::copyQcmColumns( QC_QMX_MEM( aStatement ),
                                                sOldIndexTable->tableInfo->columns,
                                                & sQcmColumns,
@@ -3808,7 +4187,7 @@ IDE_RC qdbCopySwap::createConstraintAndIndexFromInfo( qcStatement           * aS
                 sNewIndexTable->next = *aNewIndexTables;
                 *aNewIndexTables = sNewIndexTable;
 
-                // key index, rid indexë¥¼ ì°¾ëŠ”ë‹¤.
+                // key index, rid index¸¦ Ã£´Â´Ù.
                 IDE_TEST( qdx::getIndexTableIndices( sOldIndexTable->tableInfo,
                                                      sIndexTableIndex )
                           != IDE_SUCCESS );
@@ -3820,7 +4199,7 @@ IDE_RC qdbCopySwap::createConstraintAndIndexFromInfo( qcStatement           * aS
                 IDE_TEST( qdx::createIndexTableIndices( aStatement,
                                                         sIndex->userID,
                                                         sNewIndexTable,
-                                                        NULL, // Key Columnì˜ ì •ë ¬ ìˆœì„œë¥¼ ë³€ê²½í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                                                        NULL, // Key ColumnÀÇ Á¤·Ä ¼ø¼­¸¦ º¯°æÇÏÁö ¾Ê´Â´Ù.
                                                         sKeyIndexName,
                                                         sRidIndexName,
                                                         sIndexTableIndex[0]->TBSID,
@@ -3833,7 +4212,7 @@ IDE_RC qdbCopySwap::createConstraintAndIndexFromInfo( qcStatement           * aS
                                                         ID_ULONG(0) )
                           != IDE_SUCCESS );
 
-                // tableInfo ì¬ìƒì„±
+                // tableInfo Àç»ı¼º
                 sIndexTableInfo = sNewIndexTable->tableInfo;
 
                 IDE_TEST( qcm::makeAndSetQcmTableInfo( QC_SMI_STMT( aStatement ),
@@ -3850,7 +4229,7 @@ IDE_RC qdbCopySwap::createConstraintAndIndexFromInfo( qcStatement           * aS
 
                 (void)qcm::destroyQcmTableInfo( sIndexTableInfo );
 
-                // index table id ì„¤ì •
+                // index table id ¼³Á¤
                 aNewTableIndex[i].indexTableID = sNewIndexTable->tableID;
 
                 IDE_TEST( qdx::updateIndexSpecFromMeta( aStatement,
@@ -3863,8 +4242,8 @@ IDE_RC qdbCopySwap::createConstraintAndIndexFromInfo( qcStatement           * aS
                 /* Nothing to do */
             }
 
-            // primary key indexì˜ ê²½ìš° non-partitioned indexì™€ partitioned index
-            // ë‘˜ ë‹¤ ìƒì„±í•œë‹¤.
+            // primary key indexÀÇ °æ¿ì non-partitioned index¿Í partitioned index
+            // µÑ ´Ù »ı¼ºÇÑ´Ù.
             if ( ( sIndex->indexPartitionType != QCM_NONE_PARTITIONED_INDEX ) ||
                  ( sIsPrimary == ID_TRUE ) )
             {
@@ -3878,7 +4257,7 @@ IDE_RC qdbCopySwap::createConstraintAndIndexFromInfo( qcStatement           * aS
                                                         sIndex->userID,
                                                         aNewTableInfo->tableID,
                                                         aNewTableIndex[i].indexId,
-                                                        0, // í•­ìƒ LOCAL(0)ì´ë‹¤.
+                                                        0, // Ç×»ó LOCAL(0)ÀÌ´Ù.
                                                         (SInt)sFlag )
                           != IDE_SUCCESS );
 
@@ -3897,15 +4276,15 @@ IDE_RC qdbCopySwap::createConstraintAndIndexFromInfo( qcStatement           * aS
                       ( sPartInfoList != NULL ) && ( k < aPartitionCount );
                       sPartInfoList = sPartInfoList->next, k++ )
                 {
-                    // partitioned indexì— í•´ë‹¹í•˜ëŠ” local partition indexë¥¼ ì°¾ëŠ”ë‹¤.
+                    // partitioned index¿¡ ÇØ´çÇÏ´Â local partition index¸¦ Ã£´Â´Ù.
                     IDE_TEST( qdx::findIndexIDInIndices( aNewPartIndex[k],
                                                          aNewPartIndexCount,
                                                          sIndex->indexId,
                                                          & sIndexPartition )
                               != IDE_SUCCESS );
 
-                    /* PROJ-2464 hybrid partitioned table ì§€ì›
-                     *  - Column ë˜ëŠ” Index ì¤‘ í•˜ë‚˜ë§Œ ì „ë‹¬í•´ì•¼ í•œë‹¤.
+                    /* PROJ-2464 hybrid partitioned table Áö¿ø
+                     *  - Column ¶Ç´Â Index Áß ÇÏ³ª¸¸ Àü´ŞÇØ¾ß ÇÑ´Ù.
                      */
                     IDE_TEST( qdbCommon::adjustIndexColumn( NULL,
                                                             sIndexPartition,
@@ -3913,7 +4292,7 @@ IDE_RC qdbCopySwap::createConstraintAndIndexFromInfo( qcStatement           * aS
                                                             sIndexColumnList )
                               != IDE_SUCCESS );
 
-                    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+                    /* PROJ-2464 hybrid partitioned table Áö¿ø */
                     sFlag       = smiTable::getIndexInfo( (const void *)sIndexPartition->indexHandle );
                     sSegAttr    = smiTable::getIndexSegAttr( (const void *)sIndexPartition->indexHandle );
                     sSegStoAttr = smiTable::getIndexSegStoAttr( (const void *)sIndexPartition->indexHandle );
@@ -3931,7 +4310,7 @@ IDE_RC qdbCopySwap::createConstraintAndIndexFromInfo( qcStatement           * aS
                                                      aIndexCrtFlag & SMI_INDEX_BUILD_UNCOMMITTED_ROW_MASK,
                                                      sSegAttr,
                                                      sSegStoAttr,
-                                                     0, /* BUG-42124 Direct KeyëŠ” Partitioned Table ë¯¸ì§€ì› */
+                                                     0, /* BUG-42124 Direct Key´Â Partitioned Table ¹ÌÁö¿ø */
                                                      (const void **) & sIndexPartition->indexHandle )
                               != IDE_SUCCESS );
 
@@ -3946,8 +4325,8 @@ IDE_RC qdbCopySwap::createConstraintAndIndexFromInfo( qcStatement           * aS
                                                                   sPartInfoList->partitionInfo->partitionID,
                                                                   sIndexPartID,
                                                                   sIndexPartition->name,
-                                                                  NULL, // aPartMinValue (ë¯¸ì‚¬ìš©)
-                                                                  NULL, // aPartMaxValue (ë¯¸ì‚¬ìš©)
+                                                                  NULL, // aPartMinValue (¹Ì»ç¿ë)
+                                                                  NULL, // aPartMaxValue (¹Ì»ç¿ë)
                                                                   sIndexPartition->TBSID )
                               != IDE_SUCCESS );
                 }
@@ -4005,7 +4384,7 @@ IDE_RC qdbCopySwap::makeIndexColumnList( qcmIndex      * aIndex,
                        ID_SIZEOF( mtcColumn ) );
         aNewTableIndexColumns[j].column.flag = aIndex->keyColsFlag[j];
 
-        // Disk Tableì´ë©´, Index Columnì˜ flag, offset, valueë¥¼ Indexì— ë§ê²Œ ì¡°ì •í•œë‹¤.
+        // Disk TableÀÌ¸é, Index ColumnÀÇ flag, offset, value¸¦ Index¿¡ ¸Â°Ô Á¶Á¤ÇÑ´Ù.
         if ( ( aNewTableInfo->tableFlag & SMI_TABLE_TYPE_MASK ) == SMI_TABLE_DISK )
         {
             IDE_TEST( qdbCommon::setIndexKeyColumnTypeFlag( & aNewTableIndexColumns[j] )
@@ -4079,18 +4458,18 @@ IDE_RC qdbCopySwap::createConstraintFromInfoAfterIndex( qcStatement    * aStatem
     {
         sUnique = & aOldTableInfo->uniqueKeys[i];
 
-        // Next Constraint IDë¥¼ ì–»ëŠ”ë‹¤.
+        // Next Constraint ID¸¦ ¾ò´Â´Ù.
         IDE_TEST( qcm::getNextConstrID( aStatement, & sConstrID ) != IDE_SUCCESS );
 
         IDE_TEST_RAISE( ( idlOS::strlen( sUnique->name ) + aNamesPrefix.size ) > QC_MAX_OBJECT_NAME_LEN,
                         ERR_TOO_LONG_OBJECT_NAME );
 
-        // CONSTRAINT_NAMEì— ì‚¬ìš©ìê°€ ì§€ì •í•œ Prefixë¥¼ ë¶™ì—¬ì„œ CONSTRAINT_NAMEì„ ìƒì„±í•œë‹¤.
+        // CONSTRAINT_NAME¿¡ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Prefix¸¦ ºÙ¿©¼­ CONSTRAINT_NAMEÀ» »ı¼ºÇÑ´Ù.
         QC_STR_COPY( sConstrName, aNamesPrefix );
         idlOS::strncat( sConstrName, sUnique->name, QC_MAX_OBJECT_NAME_LEN );
 
-        // ìƒì„±í•œ CONSTRAINT_NAMEì´ Uniqueí•œì§€ í™•ì¸í•´ì•¼ í•œë‹¤.
-        // CONSTRAINT_NAMEì€ Unique Indexì˜ Columnì´ ì•„ë‹ˆë‹¤. ì½”ë“œë¡œ Uniqueë¥¼ ê²€ì‚¬í•œë‹¤.
+        // »ı¼ºÇÑ CONSTRAINT_NAMEÀÌ UniqueÇÑÁö È®ÀÎÇØ¾ß ÇÑ´Ù.
+        // CONSTRAINT_NAMEÀº Unique IndexÀÇ ColumnÀÌ ¾Æ´Ï´Ù. ÄÚµå·Î Unique¸¦ °Ë»çÇÑ´Ù.
         IDE_TEST( qdn::existSameConstrName( aStatement,
                                             sConstrName,
                                             aNewTableInfo->tableOwnerID,
@@ -4121,8 +4500,8 @@ IDE_RC qdbCopySwap::createConstraintFromInfoAfterIndex( qcStatement    * aStatem
                                                  0, // aReferencedTblID
                                                  0, // aReferencedIndexID
                                                  0, // aReferencedRule
-                                                 (SChar *)"", /* PROJ-1107 Check Constraint ì§€ì› */
-                                                 ID_TRUE ) // ConstraintStateì˜ Validate
+                                                 (SChar *)"", /* PROJ-1107 Check Constraint Áö¿ø */
+                                                 ID_TRUE ) // ConstraintStateÀÇ Validate
                   != IDE_SUCCESS );
 
         for ( k = 0; k < sUnique->constraintColumnCount; k++ )
@@ -4144,18 +4523,18 @@ IDE_RC qdbCopySwap::createConstraintFromInfoAfterIndex( qcStatement    * aStatem
     {
         sForeign = & aOldTableInfo->foreignKeys[i];
 
-        // Next Constraint IDë¥¼ ì–»ëŠ”ë‹¤.
+        // Next Constraint ID¸¦ ¾ò´Â´Ù.
         IDE_TEST( qcm::getNextConstrID( aStatement, & sConstrID ) != IDE_SUCCESS );
 
         IDE_TEST_RAISE( ( idlOS::strlen( sForeign->name ) + aNamesPrefix.size ) > QC_MAX_OBJECT_NAME_LEN,
                         ERR_TOO_LONG_OBJECT_NAME );
 
-        // CONSTRAINT_NAMEì— ì‚¬ìš©ìê°€ ì§€ì •í•œ Prefixë¥¼ ë¶™ì—¬ì„œ CONSTRAINT_NAMEì„ ìƒì„±í•œë‹¤.
+        // CONSTRAINT_NAME¿¡ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Prefix¸¦ ºÙ¿©¼­ CONSTRAINT_NAMEÀ» »ı¼ºÇÑ´Ù.
         QC_STR_COPY( sConstrName, aNamesPrefix );
         idlOS::strncat( sConstrName, sForeign->name, QC_MAX_OBJECT_NAME_LEN );
 
-        // ìƒì„±í•œ CONSTRAINT_NAMEì´ Uniqueí•œì§€ í™•ì¸í•´ì•¼ í•œë‹¤.
-        // CONSTRAINT_NAMEì€ Unique Indexì˜ Columnì´ ì•„ë‹ˆë‹¤. ì½”ë“œë¡œ Uniqueë¥¼ ê²€ì‚¬í•œë‹¤.
+        // »ı¼ºÇÑ CONSTRAINT_NAMEÀÌ UniqueÇÑÁö È®ÀÎÇØ¾ß ÇÑ´Ù.
+        // CONSTRAINT_NAMEÀº Unique IndexÀÇ ColumnÀÌ ¾Æ´Ï´Ù. ÄÚµå·Î Unique¸¦ °Ë»çÇÑ´Ù.
         IDE_TEST( qdn::existSameConstrName( aStatement,
                                             sConstrName,
                                             aNewTableInfo->tableOwnerID,
@@ -4174,8 +4553,8 @@ IDE_RC qdbCopySwap::createConstraintFromInfoAfterIndex( qcStatement    * aStatem
                                                  sForeign->referencedTableID,
                                                  sForeign->referencedIndexID,
                                                  sForeign->referenceRule,
-                                                 (SChar*)"", /* PROJ-1107 Check Constraint ì§€ì› */
-                                                 sForeign->validated ) // ConstraintStateì˜ Validate
+                                                 (SChar*)"", /* PROJ-1107 Check Constraint Áö¿ø */
+                                                 sForeign->validated ) // ConstraintStateÀÇ Validate
                   != IDE_SUCCESS );
 
         for ( k = 0; k < sForeign->constraintColumnCount; k++ )
@@ -4197,18 +4576,18 @@ IDE_RC qdbCopySwap::createConstraintFromInfoAfterIndex( qcStatement    * aStatem
     {
         sNotNulls = & aOldTableInfo->notNulls[i];
 
-        // Next Constraint IDë¥¼ ì–»ëŠ”ë‹¤.
+        // Next Constraint ID¸¦ ¾ò´Â´Ù.
         IDE_TEST( qcm::getNextConstrID( aStatement, & sConstrID ) != IDE_SUCCESS );
 
         IDE_TEST_RAISE( ( idlOS::strlen( sNotNulls->name ) + aNamesPrefix.size ) > QC_MAX_OBJECT_NAME_LEN,
                         ERR_TOO_LONG_OBJECT_NAME );
 
-        // CONSTRAINT_NAMEì— ì‚¬ìš©ìê°€ ì§€ì •í•œ Prefixë¥¼ ë¶™ì—¬ì„œ CONSTRAINT_NAMEì„ ìƒì„±í•œë‹¤.
+        // CONSTRAINT_NAME¿¡ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Prefix¸¦ ºÙ¿©¼­ CONSTRAINT_NAMEÀ» »ı¼ºÇÑ´Ù.
         QC_STR_COPY( sConstrName, aNamesPrefix );
         idlOS::strncat( sConstrName, sNotNulls->name, QC_MAX_OBJECT_NAME_LEN );
 
-        // ìƒì„±í•œ CONSTRAINT_NAMEì´ Uniqueí•œì§€ í™•ì¸í•´ì•¼ í•œë‹¤.
-        // CONSTRAINT_NAMEì€ Unique Indexì˜ Columnì´ ì•„ë‹ˆë‹¤. ì½”ë“œë¡œ Uniqueë¥¼ ê²€ì‚¬í•œë‹¤.
+        // »ı¼ºÇÑ CONSTRAINT_NAMEÀÌ UniqueÇÑÁö È®ÀÎÇØ¾ß ÇÑ´Ù.
+        // CONSTRAINT_NAMEÀº Unique IndexÀÇ ColumnÀÌ ¾Æ´Ï´Ù. ÄÚµå·Î Unique¸¦ °Ë»çÇÑ´Ù.
         IDE_TEST( qdn::existSameConstrName( aStatement,
                                             sConstrName,
                                             aNewTableInfo->tableOwnerID,
@@ -4227,8 +4606,8 @@ IDE_RC qdbCopySwap::createConstraintFromInfoAfterIndex( qcStatement    * aStatem
                                                  0, // aReferencedTblID
                                                  0, // aReferencedIndexID
                                                  0, // aReferencedRule
-                                                 (SChar *)"", /* PROJ-1107 Check Constraint ì§€ì› */
-                                                 ID_TRUE ) // ConstraintStateì˜ Validate
+                                                 (SChar *)"", /* PROJ-1107 Check Constraint Áö¿ø */
+                                                 ID_TRUE ) // ConstraintStateÀÇ Validate
                   != IDE_SUCCESS );
 
         for ( k = 0; k < sNotNulls->constraintColumnCount; k++ )
@@ -4246,23 +4625,23 @@ IDE_RC qdbCopySwap::createConstraintFromInfoAfterIndex( qcStatement    * aStatem
         }
     }
 
-    /* PROJ-1107 Check Constraint ì§€ì› */
+    /* PROJ-1107 Check Constraint Áö¿ø */
     for ( i = 0; i < aOldTableInfo->checkCount; i++ )
     {
         sChecks = & aOldTableInfo->checks[i];
 
-        // Next Constraint IDë¥¼ ì–»ëŠ”ë‹¤.
+        // Next Constraint ID¸¦ ¾ò´Â´Ù.
         IDE_TEST( qcm::getNextConstrID( aStatement, & sConstrID ) != IDE_SUCCESS );
 
         IDE_TEST_RAISE( ( idlOS::strlen( sChecks->name ) + aNamesPrefix.size ) > QC_MAX_OBJECT_NAME_LEN,
                         ERR_TOO_LONG_OBJECT_NAME );
 
-        // CONSTRAINT_NAMEì— ì‚¬ìš©ìê°€ ì§€ì •í•œ Prefixë¥¼ ë¶™ì—¬ì„œ CONSTRAINT_NAMEì„ ìƒì„±í•œë‹¤.
+        // CONSTRAINT_NAME¿¡ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Prefix¸¦ ºÙ¿©¼­ CONSTRAINT_NAMEÀ» »ı¼ºÇÑ´Ù.
         QC_STR_COPY( sConstrName, aNamesPrefix );
         idlOS::strncat( sConstrName, sChecks->name, QC_MAX_OBJECT_NAME_LEN );
 
-        // ìƒì„±í•œ CONSTRAINT_NAMEì´ Uniqueí•œì§€ í™•ì¸í•´ì•¼ í•œë‹¤.
-        // CONSTRAINT_NAMEì€ Unique Indexì˜ Columnì´ ì•„ë‹ˆë‹¤. ì½”ë“œë¡œ Uniqueë¥¼ ê²€ì‚¬í•œë‹¤.
+        // »ı¼ºÇÑ CONSTRAINT_NAMEÀÌ UniqueÇÑÁö È®ÀÎÇØ¾ß ÇÑ´Ù.
+        // CONSTRAINT_NAMEÀº Unique IndexÀÇ ColumnÀÌ ¾Æ´Ï´Ù. ÄÚµå·Î Unique¸¦ °Ë»çÇÑ´Ù.
         IDE_TEST( qdn::existSameConstrName( aStatement,
                                             sConstrName,
                                             aNewTableInfo->tableOwnerID,
@@ -4288,7 +4667,7 @@ IDE_RC qdbCopySwap::createConstraintFromInfoAfterIndex( qcStatement    * aStatem
                                                  0, // aReferencedIndexID
                                                  0, // aReferencedRule
                                                  sCheckConditionStrForMeta,
-                                                 ID_TRUE ) // ConstraintStateì˜ Validate
+                                                 ID_TRUE ) // ConstraintStateÀÇ Validate
                   != IDE_SUCCESS );
 
         for ( k = 0; k < sChecks->constraintColumnCount; k++ )
@@ -4316,18 +4695,18 @@ IDE_RC qdbCopySwap::createConstraintFromInfoAfterIndex( qcStatement    * aStatem
     {
         sTimestamp = aOldTableInfo->timestamp;
 
-        // Next Constraint IDë¥¼ ì–»ëŠ”ë‹¤.
+        // Next Constraint ID¸¦ ¾ò´Â´Ù.
         IDE_TEST( qcm::getNextConstrID( aStatement, & sConstrID ) != IDE_SUCCESS );
 
         IDE_TEST_RAISE( ( idlOS::strlen( sTimestamp->name ) + aNamesPrefix.size ) > QC_MAX_OBJECT_NAME_LEN,
                         ERR_TOO_LONG_OBJECT_NAME );
 
-        // CONSTRAINT_NAMEì— ì‚¬ìš©ìê°€ ì§€ì •í•œ Prefixë¥¼ ë¶™ì—¬ì„œ CONSTRAINT_NAMEì„ ìƒì„±í•œë‹¤.
+        // CONSTRAINT_NAME¿¡ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Prefix¸¦ ºÙ¿©¼­ CONSTRAINT_NAMEÀ» »ı¼ºÇÑ´Ù.
         QC_STR_COPY( sConstrName, aNamesPrefix );
         idlOS::strncat( sConstrName, sTimestamp->name, QC_MAX_OBJECT_NAME_LEN );
 
-        // ìƒì„±í•œ CONSTRAINT_NAMEì´ Uniqueí•œì§€ í™•ì¸í•´ì•¼ í•œë‹¤.
-        // CONSTRAINT_NAMEì€ Unique Indexì˜ Columnì´ ì•„ë‹ˆë‹¤. ì½”ë“œë¡œ Uniqueë¥¼ ê²€ì‚¬í•œë‹¤.
+        // »ı¼ºÇÑ CONSTRAINT_NAMEÀÌ UniqueÇÑÁö È®ÀÎÇØ¾ß ÇÑ´Ù.
+        // CONSTRAINT_NAMEÀº Unique IndexÀÇ ColumnÀÌ ¾Æ´Ï´Ù. ÄÚµå·Î Unique¸¦ °Ë»çÇÑ´Ù.
         IDE_TEST( qdn::existSameConstrName( aStatement,
                                             sConstrName,
                                             aNewTableInfo->tableOwnerID,
@@ -4346,8 +4725,8 @@ IDE_RC qdbCopySwap::createConstraintFromInfoAfterIndex( qcStatement    * aStatem
                                                  0, // aReferencedTblID
                                                  0, // aReferencedIndexID
                                                  0, // aReferencedRule
-                                                 (SChar *)"", /* PROJ-1107 Check Constraint ì§€ì› */
-                                                 ID_TRUE ) // ConstraintStateì˜ Validate
+                                                 (SChar *)"", /* PROJ-1107 Check Constraint Áö¿ø */
+                                                 ID_TRUE ) // ConstraintStateÀÇ Validate
                   != IDE_SUCCESS );
 
         sColumnID = ( aNewTableInfo->tableID * SMI_COLUMN_ID_MAXIMUM )
@@ -4392,10 +4771,11 @@ IDE_RC qdbCopySwap::swapTablesMeta( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *      Sourceì™€ Targetì˜ Table ê¸°ë³¸ ì •ë³´ë¥¼ êµí™˜í•œë‹¤. (Meta Table)
+ *      Source¿Í TargetÀÇ Table ±âº» Á¤º¸¸¦ ±³È¯ÇÑ´Ù. (Meta Table)
  *          - SYS_TABLES_
- *              - TABLE_NAME, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNTë¥¼ êµí™˜í•œë‹¤.
- *              - LAST_DDL_TIMEì„ ê°±ì‹ í•œë‹¤. (SYSDATE)
+ *              - TABLE_NAME, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT¸¦ ±³È¯ÇÑ´Ù.
+ *              - LAST_DDL_TIMEÀ» °»½ÅÇÑ´Ù. (SYSDATE)
+ *              - USABLE, SHARD_FLAG¸¦ ±³È¯ÇÑ´Ù. (TASK-7307)
  *
  * Implementation :
  *
@@ -4416,8 +4796,8 @@ IDE_RC qdbCopySwap::swapTablesMeta( qcStatement * aStatement,
     idlOS::snprintf( sSqlStr,
                      QD_MAX_SQL_LENGTH,
                      "UPDATE SYS_TABLES_ A "
-                     "   SET (        TABLE_NAME, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT ) = "
-                     "       ( SELECT TABLE_NAME, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT "
+                     "   SET (        TABLE_NAME, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT, USABLE, SHARD_FLAG ) = "
+                     "       ( SELECT TABLE_NAME, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT, USABLE, SHARD_FLAG "
                      "           FROM SYS_TABLES_ B "
                      "          WHERE B.TABLE_ID = CASE2( A.TABLE_ID = INTEGER'%"ID_INT32_FMT"', "
                      "                                    INTEGER'%"ID_INT32_FMT"', "
@@ -4456,14 +4836,14 @@ IDE_RC qdbCopySwap::renameHiddenColumnsMeta( qcStatement    * aStatement,
 /***********************************************************************
  *
  * Description :
- *      Hidden Columnì´ë©´ Function-based Indexì˜ Columnì´ë¯€ë¡œ,
- *      ì‚¬ìš©ìê°€ Prefixë¥¼ ì§€ì •í•œ ê²½ìš°, Hidden Column Nameì„ ë³€ê²½í•œë‹¤. (Meta Table)
+ *      Hidden ColumnÀÌ¸é Function-based IndexÀÇ ColumnÀÌ¹Ç·Î,
+ *      »ç¿ëÀÚ°¡ Prefix¸¦ ÁöÁ¤ÇÑ °æ¿ì, Hidden Column NameÀ» º¯°æÇÑ´Ù. (Meta Table)
  *          - SYS_COLUMNS_
- *              - Sourceì˜ Hidden Column Nameì— Prefixë¥¼ ë¶™ì´ê³ , Targetì˜ Hidden Column Nameì—ì„œ Prefixë¥¼ ì œê±°í•œë‹¤.
+ *              - SourceÀÇ Hidden Column Name¿¡ Prefix¸¦ ºÙÀÌ°í, TargetÀÇ Hidden Column Name¿¡¼­ Prefix¸¦ Á¦°ÅÇÑ´Ù.
  *                  - Hidden Column Name = Index Name + $ + IDX + Number
- *              - Hidden Column Nameì„ ë³€ê²½í•œë‹¤.
+ *              - Hidden Column NameÀ» º¯°æÇÑ´Ù.
  *          - SYS_ENCRYPTED_COLUMNS_, SYS_LOBS_, SYS_COMPRESSION_TABLES_
- *              - ë³€ê²½ ì‚¬í•­ ì—†ìŒ
+ *              - º¯°æ »çÇ× ¾øÀ½
  *
  * Implementation :
  *
@@ -4601,27 +4981,27 @@ IDE_RC qdbCopySwap::renameIndices( qcStatement       * aStatement,
 /***********************************************************************
  *
  * Description :
- *      Prefixë¥¼ ì§€ì •í•œ ê²½ìš°, Sourceì˜ INDEX_NAMEì— Prefixë¥¼ ë¶™ì´ê³ , Targetì˜ INDEX_NAMEì—ì„œ Prefixë¥¼ ì œê±°í•œë‹¤.
- *          - ì‹¤ì œ Index Nameì„ ë³€ê²½í•œë‹¤. (SM)
+ *      Prefix¸¦ ÁöÁ¤ÇÑ °æ¿ì, SourceÀÇ INDEX_NAME¿¡ Prefix¸¦ ºÙÀÌ°í, TargetÀÇ INDEX_NAME¿¡¼­ Prefix¸¦ Á¦°ÅÇÑ´Ù.
+ *          - ½ÇÁ¦ Index NameÀ» º¯°æÇÑ´Ù. (SM)
  *              - Call : smiTable::alterIndexName()
- *          - Meta Tableì—ì„œ Index Nameì„ ë³€ê²½í•œë‹¤. (Meta Table)
+ *          - Meta Table¿¡¼­ Index NameÀ» º¯°æÇÑ´Ù. (Meta Table)
  *              - SYS_INDICES_
- *                  - INDEX_NAMEì„ ë³€ê²½í•œë‹¤.
- *                  - LAST_DDL_TIMEì„ ê°±ì‹ í•œë‹¤. (SYSDATE)
+ *                  - INDEX_NAMEÀ» º¯°æÇÑ´Ù.
+ *                  - LAST_DDL_TIMEÀ» °»½ÅÇÑ´Ù. (SYSDATE)
  *              - SYS_INDEX_COLUMNS_, SYS_INDEX_RELATED_
- *                  - ë³€ê²½ ì‚¬í•­ ì—†ìŒ
+ *                  - º¯°æ »çÇ× ¾øÀ½
  *
- *      Prefixë¥¼ ì§€ì •í•œ ê²½ìš°, Non-Partitioned Indexì´ ìˆìœ¼ë©´ Nameì„ ë³€ê²½í•œë‹¤.
- *          - Non-Partitioned Indexì¸ ê²½ìš°, (1) Index Table Nameê³¼ (2) Index Tableì˜ Index Nameì„ ë³€ê²½í•œë‹¤.
- *              - Non-Partitioned IndexëŠ” INDEX_NAMEìœ¼ë¡œ Index Table Name, Key Index Name, RID Index Nameì„ ê²°ì •í•œë‹¤.
+ *      Prefix¸¦ ÁöÁ¤ÇÑ °æ¿ì, Non-Partitioned IndexÀÌ ÀÖÀ¸¸é NameÀ» º¯°æÇÑ´Ù.
+ *          - Non-Partitioned IndexÀÎ °æ¿ì, (1) Index Table Name°ú (2) Index TableÀÇ Index NameÀ» º¯°æÇÑ´Ù.
+ *              - Non-Partitioned Index´Â INDEX_NAMEÀ¸·Î Index Table Name, Key Index Name, RID Index NameÀ» °áÁ¤ÇÑ´Ù.
  *                  - Index Table Name = $GIT_ + Index Name
  *                  - Key Index Name = $GIK_ + Index Name
  *                  - Rid Index Name = $GIR_ + Index Name
  *                  - Call : qdx::makeIndexTableName()
- *              - Index Table Nameì„ ë³€ê²½í•œë‹¤. (Meta Table)
- *              - Index Tableì˜ Index Nameì„ ë³€ê²½í•œë‹¤. (SM, Meta Table)
+ *              - Index Table NameÀ» º¯°æÇÑ´Ù. (Meta Table)
+ *              - Index TableÀÇ Index NameÀ» º¯°æÇÑ´Ù. (SM, Meta Table)
  *                  - Call : smiTable::alterIndexName()
- *              - Index Table Infoë¥¼ ë‹¤ì‹œ ì–»ëŠ”ë‹¤. (Meta Cache)
+ *              - Index Table Info¸¦ ´Ù½Ã ¾ò´Â´Ù. (Meta Cache)
  *
  * Implementation :
  *
@@ -4732,7 +5112,7 @@ IDE_RC qdbCopySwap::renameIndices( qcStatement       * aStatement,
         IDE_TEST_RAISE( (UInt)sRowCnt != ( aTargetTableInfo->indexCount + aSourceTableInfo->indexCount ),
                         ERR_META_CRASH );
 
-        /* Index Table Nameì„ ë³€ê²½í•œë‹¤. (Meta Table) */
+        /* Index Table NameÀ» º¯°æÇÑ´Ù. (Meta Table) */
         idlOS::snprintf( sSqlStr,
                          QD_MAX_SQL_LENGTH,
                          "UPDATE SYS_TABLES_ A "
@@ -4761,7 +5141,7 @@ IDE_RC qdbCopySwap::renameIndices( qcStatement       * aStatement,
 
         IDE_TEST_RAISE( (UInt)sRowCnt != ( sSourceIndexTableCount + sTargetIndexTableCount ), ERR_META_CRASH );
 
-        /* Index Tableì˜ Index Nameì„ ë³€ê²½í•œë‹¤. (Meta Table) */
+        /* Index TableÀÇ Index NameÀ» º¯°æÇÑ´Ù. (Meta Table) */
         idlOS::snprintf( sSqlStr,
                          QD_MAX_SQL_LENGTH,
                          "UPDATE SYS_INDICES_ A "
@@ -4828,7 +5208,7 @@ IDE_RC qdbCopySwap::renameIndices( qcStatement       * aStatement,
 
         IDE_TEST_RAISE( (UInt)sRowCnt != ( sSourceIndexTableCount + sTargetIndexTableCount ), ERR_META_CRASH );
 
-        /* Index Table Infoë¥¼ ë‹¤ì‹œ ì–»ëŠ”ë‹¤. (Meta Cache) */
+        /* Index Table Info¸¦ ´Ù½Ã ¾ò´Â´Ù. (Meta Cache) */
         for ( sIndexTableList = aTargetIndexTableList, i = 0;
               sIndexTableList != NULL;
               sIndexTableList = sIndexTableList->next, i++ )
@@ -4979,10 +5359,10 @@ IDE_RC qdbCopySwap::renameIndicesOnSM( qcStatement      * aStatement,
                                             sIndexName )
                   != IDE_SUCCESS );
 
-        /* Index Tableì˜ Index Nameì„ ë³€ê²½í•œë‹¤. (SM) */
+        /* Index TableÀÇ Index NameÀ» º¯°æÇÑ´Ù. (SM) */
         if ( sIndex->indexTableID != 0 )
         {
-            /* Non-Partitioned IndexëŠ” INDEX_NAMEìœ¼ë¡œ Index Table Name, Key Index Name, RID Index Nameì„ ê²°ì •í•œë‹¤. */
+            /* Non-Partitioned Index´Â INDEX_NAMEÀ¸·Î Index Table Name, Key Index Name, RID Index NameÀ» °áÁ¤ÇÑ´Ù. */
             IDE_TEST( qdx::makeIndexTableName( aStatement,
                                                sEmptyIndexNamePos,
                                                sIndexName,
@@ -5051,10 +5431,10 @@ IDE_RC qdbCopySwap::renameIndicesOnSM( qcStatement      * aStatement,
                                             sIndexName )
                   != IDE_SUCCESS );
 
-        /* Index Tableì˜ Index Nameì„ ë³€ê²½í•œë‹¤. (SM) */
+        /* Index TableÀÇ Index NameÀ» º¯°æÇÑ´Ù. (SM) */
         if ( sIndex->indexTableID != 0 )
         {
-            /* Non-Partitioned IndexëŠ” INDEX_NAMEìœ¼ë¡œ Index Table Name, Key Index Name, RID Index Nameì„ ê²°ì •í•œë‹¤. */
+            /* Non-Partitioned Index´Â INDEX_NAMEÀ¸·Î Index Table Name, Key Index Name, RID Index NameÀ» °áÁ¤ÇÑ´Ù. */
             IDE_TEST( qdx::makeIndexTableName( aStatement,
                                                sEmptyIndexNamePos,
                                                sIndexName,
@@ -5121,8 +5501,8 @@ IDE_RC qdbCopySwap::checkConstraintNameAfterRename( qcStatement    * aStatement,
 /***********************************************************************
  *
  * Description :
- *      Prefixë¥¼ ë¶™ì´ê±°ë‚˜ ì œê±°í•œ CONSTRAINT_NAMEì´ ìœ ì¼í•œì§€ í™•ì¸í•œë‹¤.
- *      Meta Tableì—ì„œ CONSTRAINT_NAMEì„ ë³€ê²½í•œ ì´í›„ì— í˜¸ì¶œí•´ì•¼ í•œë‹¤.
+ *      Prefix¸¦ ºÙÀÌ°Å³ª Á¦°ÅÇÑ CONSTRAINT_NAMEÀÌ À¯ÀÏÇÑÁö È®ÀÎÇÑ´Ù.
+ *      Meta Table¿¡¼­ CONSTRAINT_NAMEÀ» º¯°æÇÑ ÀÌÈÄ¿¡ È£ÃâÇØ¾ß ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -5147,7 +5527,7 @@ IDE_RC qdbCopySwap::checkConstraintNameAfterRename( qcStatement    * aStatement,
         IDE_TEST_RAISE( ( idlOS::strlen( aConstraintName ) + aNamesPrefix.size ) > QC_MAX_OBJECT_NAME_LEN,
                         ERR_NAMES_PREFIX_IS_TOO_LONG );
 
-        // CONSTRAINT_NAMEì— ì‚¬ìš©ìê°€ ì§€ì •í•œ Prefixë¥¼ ë¶™ì—¬ì„œ CONSTRAINT_NAMEì„ ìƒì„±í•œë‹¤.
+        // CONSTRAINT_NAME¿¡ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Prefix¸¦ ºÙ¿©¼­ CONSTRAINT_NAMEÀ» »ı¼ºÇÑ´Ù.
         QC_STR_COPY( sConstraintsName, aNamesPrefix );
         idlOS::strncat( sConstraintsName, aConstraintName, QC_MAX_OBJECT_NAME_LEN );
     }
@@ -5162,11 +5542,11 @@ IDE_RC qdbCopySwap::checkConstraintNameAfterRename( qcStatement    * aStatement,
                                          aNamesPrefix.size ) != 0,
                         ERR_NAMES_PREFIX_IS_TOO_LONG );
 
-        // CONSTRAINT_NAMEì—ì„œ ì‚¬ìš©ìê°€ ì§€ì •í•œ Prefixë¥¼ ì œê±°í•œ CONSTRAINT_NAMEì„ ìƒì„±í•œë‹¤.
+        // CONSTRAINT_NAME¿¡¼­ »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Prefix¸¦ Á¦°ÅÇÑ CONSTRAINT_NAMEÀ» »ı¼ºÇÑ´Ù.
         idlOS::strncpy( sConstraintsName, aConstraintName + aNamesPrefix.size, QC_MAX_OBJECT_NAME_LEN + 1 );
     }
 
-    /* ë³€ê²½í•œ CONSTRAINT_NAMEì´ í•˜ë‚˜ë§Œ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤. */
+    /* º¯°æÇÑ CONSTRAINT_NAMEÀÌ ÇÏ³ª¸¸ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÑ´Ù. */
     idlOS::snprintf( sSqlStr,
                      QD_MAX_SQL_LENGTH,
                      "SELECT COUNT(*) "
@@ -5210,14 +5590,14 @@ IDE_RC qdbCopySwap::renameConstraintsMeta( qcStatement    * aStatement,
 /***********************************************************************
  *
  * Description :
- *      Prefixë¥¼ ì§€ì •í•œ ê²½ìš°, Sourceì˜ CONSTRAINT_NAMEì— Prefixë¥¼ ë¶™ì´ê³ ,
- *      Targetì˜ CONSTRAINT_NAMEì—ì„œ Prefixë¥¼ ì œê±°í•œë‹¤. (Meta Table)
+ *      Prefix¸¦ ÁöÁ¤ÇÑ °æ¿ì, SourceÀÇ CONSTRAINT_NAME¿¡ Prefix¸¦ ºÙÀÌ°í,
+ *      TargetÀÇ CONSTRAINT_NAME¿¡¼­ Prefix¸¦ Á¦°ÅÇÑ´Ù. (Meta Table)
  *          - SYS_CONSTRAINTS_
- *              - CONSTRAINT_NAMEì„ ë³€ê²½í•œë‹¤.
- *                  - ë³€ê²½í•œ CONSTRAINT_NAMEì´ Uniqueí•œì§€ í™•ì¸í•´ì•¼ í•œë‹¤.
- *                      - CONSTRAINT_NAMEì€ Unique Indexì˜ Columnì´ ì•„ë‹ˆë‹¤.
+ *              - CONSTRAINT_NAMEÀ» º¯°æÇÑ´Ù.
+ *                  - º¯°æÇÑ CONSTRAINT_NAMEÀÌ UniqueÇÑÁö È®ÀÎÇØ¾ß ÇÑ´Ù.
+ *                      - CONSTRAINT_NAMEÀº Unique IndexÀÇ ColumnÀÌ ¾Æ´Ï´Ù.
  *          - SYS_CONSTRAINT_COLUMNS_, SYS_CONSTRAINT_RELATED_
- *              - ë³€ê²½ ì‚¬í•­ ì—†ìŒ
+ *              - º¯°æ »çÇ× ¾øÀ½
  *
  * Implementation :
  *
@@ -5244,7 +5624,7 @@ IDE_RC qdbCopySwap::renameConstraintsMeta( qcStatement    * aStatement,
                                           & sSqlStr )
                   != IDE_SUCCESS );
 
-        // Constraint Countë¥¼ ì–»ëŠ”ë‹¤.
+        // Constraint Count¸¦ ¾ò´Â´Ù.
         idlOS::snprintf( sSqlStr,
                          QD_MAX_SQL_LENGTH,
                          "SELECT COUNT(*) "
@@ -5264,7 +5644,7 @@ IDE_RC qdbCopySwap::renameConstraintsMeta( qcStatement    * aStatement,
         IDE_TEST_RAISE( sRecordExist == ID_FALSE, ERR_META_CRASH );
         sConstraintCount = (ULong)sResultCount;
 
-        // Sourceì˜ CONSTRAINT_NAMEì— Prefixë¥¼ ë¶™ì´ê³ , Targetì˜ CONSTRAINT_NAMEì—ì„œ Prefixë¥¼ ì œê±°í•œë‹¤.
+        // SourceÀÇ CONSTRAINT_NAME¿¡ Prefix¸¦ ºÙÀÌ°í, TargetÀÇ CONSTRAINT_NAME¿¡¼­ Prefix¸¦ Á¦°ÅÇÑ´Ù.
         idlOS::snprintf( sSqlStr,
                          QD_MAX_SQL_LENGTH,
                          "UPDATE SYS_CONSTRAINTS_ "
@@ -5420,12 +5800,12 @@ IDE_RC qdbCopySwap::renameCommentsMeta( qcStatement    * aStatement,
 /***********************************************************************
  *
  * Description :
- *      Commentë¥¼ êµí™˜í•œë‹¤. (Meta Table)
+ *      Comment¸¦ ±³È¯ÇÑ´Ù. (Meta Table)
  *          - SYS_COMMENTS_
- *              - TABLE_NAMEì„ êµí™˜í•œë‹¤.
- *              - Hidden Columnì´ë©´ Function-based Indexì˜ Columnì´ë¯€ë¡œ,
- *                ì‚¬ìš©ìê°€ Prefixë¥¼ ì§€ì •í•œ ê²½ìš°, Hidden Column Nameì„ ë³€ê²½í•œë‹¤.
- *                  - Sourceì˜ Hidden Column Nameì— Prefixë¥¼ ë¶™ì´ê³ , Targetì˜ Hidden Column Nameì—ì„œ Prefixë¥¼ ì œê±°í•œë‹¤.
+ *              - TABLE_NAMEÀ» ±³È¯ÇÑ´Ù.
+ *              - Hidden ColumnÀÌ¸é Function-based IndexÀÇ ColumnÀÌ¹Ç·Î,
+ *                »ç¿ëÀÚ°¡ Prefix¸¦ ÁöÁ¤ÇÑ °æ¿ì, Hidden Column NameÀ» º¯°æÇÑ´Ù.
+ *                  - SourceÀÇ Hidden Column Name¿¡ Prefix¸¦ ºÙÀÌ°í, TargetÀÇ Hidden Column Name¿¡¼­ Prefix¸¦ Á¦°ÅÇÑ´Ù.
  *                      - Hidden Column Name = Index Name + $ + IDX + Number
  *
  * Implementation :
@@ -5449,7 +5829,7 @@ IDE_RC qdbCopySwap::renameCommentsMeta( qcStatement    * aStatement,
     {
         QC_STR_COPY( sNamesPrefix, aNamesPrefix );
 
-        /* Sourceì˜ Hidden Column Nameì— Prefixë¥¼ ë¶™ì¸ë‹¤. */
+        /* SourceÀÇ Hidden Column Name¿¡ Prefix¸¦ ºÙÀÎ´Ù. */
         idlOS::snprintf( sSqlStr,
                          QD_MAX_SQL_LENGTH,
                          "UPDATE SYS_COMMENTS_ "
@@ -5471,7 +5851,7 @@ IDE_RC qdbCopySwap::renameCommentsMeta( qcStatement    * aStatement,
                                      & sRowCnt )
                   != IDE_SUCCESS );
 
-        /* Targetì˜ Hidden Column Nameì—ì„œ Prefixë¥¼ ì œê±°í•œë‹¤. */
+        /* TargetÀÇ Hidden Column Name¿¡¼­ Prefix¸¦ Á¦°ÅÇÑ´Ù. */
         idlOS::snprintf( sSqlStr,
                          QD_MAX_SQL_LENGTH,
                          "UPDATE SYS_COMMENTS_ "
@@ -5498,7 +5878,7 @@ IDE_RC qdbCopySwap::renameCommentsMeta( qcStatement    * aStatement,
         /* Nothing to do */
     }
 
-    /* Commentì˜ Table Nameì„ êµí™˜í•œë‹¤. */
+    /* CommentÀÇ Table NameÀ» ±³È¯ÇÑ´Ù. */
     idlOS::snprintf( sSqlStr,
                      QD_MAX_SQL_LENGTH,
                      "UPDATE SYS_COMMENTS_ "
@@ -5533,14 +5913,15 @@ IDE_RC qdbCopySwap::swapTablePartitionsMetaForReplication( qcStatement  * aState
 /***********************************************************************
  *
  * Description :
- *      í•œìª½ì´ë¼ë„ Partitioned Tableì´ê³  Replication ëŒ€ìƒì´ë©´, Partitionì˜ Replication ì •ë³´ë¥¼ êµí™˜í•œë‹¤. (Meta Table)
+ *      ÇÑÂÊÀÌ¶óµµ Partitioned TableÀÌ°í Replication ´ë»óÀÌ¸é, PartitionÀÇ Replication Á¤º¸¸¦ ±³È¯ÇÑ´Ù. (Meta Table)
  *          - SYS_TABLE_PARTITIONS_
- *              - PARTITION_NAMEìœ¼ë¡œ Matching Partitionì„ ì„ íƒí•œë‹¤.
- *              - Matching Partitionì˜ REPLICATION_COUNT, REPLICATION_RECOVERY_COUNTë¥¼ êµí™˜í•˜ê³ , LAST_DDL_TIMEì„ ê°±ì‹ í•œë‹¤.
- *                  - REPLICATION_COUNT > 0 ì´ë©´, Partitionì´ Replication ëŒ€ìƒì´ë‹¤.
- *          - Partitionì˜ ë‹¤ë¥¸ ì •ë³´ëŠ” ë³€ê²½ ì‚¬í•­ì´ ì—†ë‹¤.
+ *              - PARTITION_NAMEÀ¸·Î Matching PartitionÀ» ¼±ÅÃÇÑ´Ù.
+ *              - Matching PartitionÀÇ REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT¸¦ ±³È¯ÇÏ°í, LAST_DDL_TIMEÀ» °»½ÅÇÑ´Ù.
+ *                  - REPLICATION_COUNT > 0 ÀÌ¸é, PartitionÀÌ Replication ´ë»óÀÌ´Ù.
+ *              - PARTITION_USABLEÀ» ±³È¯ÇÑ´Ù. (TASK-7307)
+ *          - PartitionÀÇ ´Ù¸¥ Á¤º¸´Â º¯°æ »çÇ×ÀÌ ¾ø´Ù.
  *              - SYS_INDEX_PARTITIONS_
- *                  - INDEX_PARTITION_NAMEì€ Partitioned Tableì˜ Index ë‚´ì—ì„œë§Œ Uniqueí•˜ë©´ ë˜ë¯€ë¡œ, Prefixê°€ í•„ìš”í•˜ì§€ ì•Šë‹¤.
+ *                  - INDEX_PARTITION_NAMEÀº Partitioned TableÀÇ Index ³»¿¡¼­¸¸ UniqueÇÏ¸é µÇ¹Ç·Î, Prefix°¡ ÇÊ¿äÇÏÁö ¾Ê´Ù.
  *              - SYS_PART_TABLES_, SYS_PART_LOBS_, SYS_PART_KEY_COLUMNS_, SYS_PART_INDICES_
  *
  * Implementation :
@@ -5551,9 +5932,11 @@ IDE_RC qdbCopySwap::swapTablePartitionsMetaForReplication( qcStatement  * aState
     vSLong   sRowCnt = ID_vLONG(0);
 
     if ( ( ( aTargetTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE ) &&
-           ( aTargetTableInfo->replicationCount > 0 ) ) ||
+           ( ( aTargetTableInfo->replicationCount > 0 ) ||
+             ( QCM_TABLE_IS_FOR_SHARD(aTargetTableInfo->mShardFlag) == ID_TRUE ) ) ) ||
          ( ( aSourceTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE ) &&
-           ( aSourceTableInfo->replicationCount > 0 ) ) )
+           ( ( aSourceTableInfo->replicationCount > 0 ) ||
+             ( QCM_TABLE_IS_FOR_SHARD(aSourceTableInfo->mShardFlag) == ID_TRUE ) ) ) )
     {
         IDU_FIT_POINT( "qdbCopySwap::swapTablePartitionsMetaForReplication::STRUCT_ALLOC_WITH_SIZE::sSqlStr",
                        idERR_ABORT_InsufficientMemory );
@@ -5567,8 +5950,8 @@ IDE_RC qdbCopySwap::swapTablePartitionsMetaForReplication( qcStatement  * aState
         idlOS::snprintf( sSqlStr,
                          QD_MAX_SQL_LENGTH,
                          "UPDATE SYS_TABLE_PARTITIONS_ A "
-                         "   SET ( REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT ) = "
-                         "       ( SELECT REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT "
+                         "   SET ( PARTITION_USABLE, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT ) = "
+                         "       ( SELECT PARTITION_USABLE, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT "
                          "           FROM SYS_TABLE_PARTITIONS_ C "
                          "          WHERE C.TABLE_ID IN ( INTEGER'%"ID_INT32_FMT"', "
                          "                                INTEGER'%"ID_INT32_FMT"' ) AND "
@@ -5614,10 +5997,10 @@ IDE_RC qdbCopySwap::updateSysConstraintsMetaForReferencedIndex( qcStatement     
 /***********************************************************************
  *
  * Description :
- *      Referenced Indexë¥¼ ë³€ê²½í•œë‹¤. (Meta Table)
+ *      Referenced Index¸¦ º¯°æÇÑ´Ù. (Meta Table)
  *          - SYS_CONSTRAINTS_
- *              - REFERENCED_INDEX_IDê°€ ê°€ë¦¬í‚¤ëŠ” Indexì˜ Column Nameìœ¼ë¡œ êµ¬ì„±ëœ Indexë¥¼ Peerì—ì„œ ì°¾ëŠ”ë‹¤. (Validationê³¼ ë™ì¼)
- *              - REFERENCED_TABLE_IDì™€ REFERENCED_INDEX_IDë¥¼ Peerì˜ Table IDì™€ Index IDë¡œ ë³€ê²½í•œë‹¤.
+ *              - REFERENCED_INDEX_ID°¡ °¡¸®Å°´Â IndexÀÇ Column NameÀ¸·Î ±¸¼ºµÈ Index¸¦ Peer¿¡¼­ Ã£´Â´Ù. (Validation°ú µ¿ÀÏ)
+ *              - REFERENCED_TABLE_ID¿Í REFERENCED_INDEX_ID¸¦ PeerÀÇ Table ID¿Í Index ID·Î º¯°æÇÑ´Ù.
  *
  * Implementation :
  *
@@ -5717,9 +6100,9 @@ IDE_RC qdbCopySwap::swapGrantObjectMeta( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *      Object Privilegeë¥¼ êµí™˜í•œë‹¤. (Meta Table)
+ *      Object Privilege¸¦ ±³È¯ÇÑ´Ù. (Meta Table)
  *          - SYS_GRANT_OBJECT_
- *              - OBJ_ID = Table ID, OBJ_TYPE = 'T' ì´ë©´, OBJ_IDë§Œ êµí™˜í•œë‹¤.
+ *              - OBJ_ID = Table ID, OBJ_TYPE = 'T' ÀÌ¸é, OBJ_ID¸¸ ±³È¯ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -5763,6 +6146,147 @@ IDE_RC qdbCopySwap::swapGrantObjectMeta( qcStatement * aStatement,
     return IDE_FAILURE;
 }
 
+IDE_RC qdbCopySwap::insertReplItemMetaToReplaceHistory( qcStatement  * aStatement,
+                                                        qcmTableInfo * aTargetTableInfo,
+                                                        qcmTableInfo * aSourceTableInfo )
+{
+/***********************************************************************
+ *
+ * Description :
+ *      Replication Meta TableÀ» Ãß°¡ÇÑ´Ù. (Meta Table)
+ *          - SYS_REPL_ITEM_REPLACE_HISTORY_
+ *              - 
+ *                  - 
+ *              - 
+ *              - 
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+    SChar  * sSqlStr = NULL;
+    vSLong   sDummyCnt = ID_vLONG(0);
+
+    if ( ( aTargetTableInfo->replicationCount > 0 ) || ( aSourceTableInfo->replicationCount > 0 ) )
+    {
+        IDU_FIT_POINT( "qdbCopySwap::insertReplItemMetaToReplaceHistory::STRUCT_ALLOC_WITH_SIZE::sSqlStr",
+                       idERR_ABORT_InsufficientMemory );
+
+        IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMX_MEM( aStatement ),
+                                          SChar,
+                                          QD_MAX_SQL_LENGTH,
+                                          & sSqlStr )
+                  != IDE_SUCCESS );
+
+        if ( aTargetTableInfo->tablePartitionType == QCM_NONE_PARTITIONED_TABLE )
+        {
+            idlOS::snprintf( sSqlStr,
+                             QD_MAX_SQL_LENGTH,
+                             "DELETE FROM SYS_REPL_ITEM_REPLACE_HISTORY_ "
+                             "       WHERE OLD_OID IN "
+                             "                       ( BIGINT'%"ID_INT64_FMT"', BIGINT'%"ID_INT64_FMT"' ) "
+                             "         OR  NEW_OID IN "
+                             "                       ( BIGINT'%"ID_INT64_FMT"', BIGINT'%"ID_INT64_FMT"' ) ",
+                             QCM_OID_TO_BIGINT( aTargetTableInfo->tableOID ),
+                             QCM_OID_TO_BIGINT( aTargetTableInfo->tableOID ),
+                             QCM_OID_TO_BIGINT( aSourceTableInfo->tableOID ),
+                             QCM_OID_TO_BIGINT( aTargetTableInfo->tableOID ) );
+
+            IDE_TEST( qcg::runDMLforDDL( QC_SMI_STMT( aStatement ),
+                                         sSqlStr,
+                                         & sDummyCnt )
+                      != IDE_SUCCESS );
+
+            /* PROJ-2742 1:1 Consistent mode ÀÌÁßÈ­¿¡¼­ µÎ ³ëµå »çÀÌ¿¡ Àå¾Ö ¹ß»ı ½Ã µ¥ÀÌÅÍ Á¤ÇÕ¼ºÀ» º¸Àå 
+             * Table replace½Ã º¯°æ Àü Table oid¸¦ ÀúÀåÇÑ´Ù.
+             * Consistent mode¸¸ Áö¿øÇÏ¹Ç·Î, Ãß ÈÄ Áö¿øÇÏ´Â ¸ğµå°¡ Ãß°¡µÇ¸é ¾Æ·¡ Äõ¸® where Á¶°ÇÀ» ¼öÁ¤ÇØ¾ß ÇÑ´Ù. 
+             *  WHERE REPL_MODE=12 (consistent mode)*/
+            idlOS::snprintf( sSqlStr,
+                             QD_MAX_SQL_LENGTH,
+                             "INSERT INTO SYS_REPL_ITEM_REPLACE_HISTORY_ ( REPLICATION_NAME, USER_NAME, TABLE_NAME, PARTITION_NAME, OLD_OID , NEW_OID )"
+                             "   SELECT REPLICATION_NAME, LOCAL_USER_NAME, LOCAL_TABLE_NAME, " 
+                             "          '', TABLE_OID,  CASE2( TABLE_OID = BIGINT'%"ID_INT64_FMT"', "
+                             "                                             BIGINT'%"ID_INT64_FMT"'," 
+                             "                                             BIGINT'%"ID_INT64_FMT"' ) " 
+                             "      FROM SYS_REPL_ITEMS_ WHERE TABLE_OID IN "
+                             "                                 ( BIGINT'%"ID_INT64_FMT"', BIGINT'%"ID_INT64_FMT"' ) "
+                             "AND REPLICATION_NAME IN ( SELECT REPLICATION_NAME FROM SYSTEM_.SYS_REPLICATIONS_ WHERE REPL_MODE=12 )",
+                             QCM_OID_TO_BIGINT( aTargetTableInfo->tableOID ),
+                             QCM_OID_TO_BIGINT( aSourceTableInfo->tableOID ),
+                             QCM_OID_TO_BIGINT( aTargetTableInfo->tableOID ),
+                             QCM_OID_TO_BIGINT( aSourceTableInfo->tableOID ),
+                             QCM_OID_TO_BIGINT( aTargetTableInfo->tableOID ) );
+
+            IDE_TEST( qcg::runDMLforDDL( QC_SMI_STMT( aStatement ),
+                                         sSqlStr,
+                                         & sDummyCnt )
+                      != IDE_SUCCESS );
+        }
+        else
+        {            
+            idlOS::snprintf( sSqlStr,
+                             QD_MAX_SQL_LENGTH,
+                             "DELETE FROM SYS_REPL_ITEM_REPLACE_HISTORY_ "
+                             "   WHERE OLD_OID IN "
+                             "                 ( SELECT PARTITION_OID FROM SYS_TABLE_PARTITIONS_ " 
+                             "                    WHERE TABLE_ID IN " 
+                             "                           ( BIGINT'%"ID_INT32_FMT"', "
+                             "                             BIGINT'%"ID_INT32_FMT"' ) ) "
+                             "      OR NEW_OID IN "
+                             "                 ( SELECT PARTITION_OID FROM SYS_TABLE_PARTITIONS_ " 
+                             "                     WHERE TABLE_ID IN " 
+                             "                           ( BIGINT'%"ID_INT32_FMT"', "
+                             "                             BIGINT'%"ID_INT32_FMT"' ) ) ",
+                             aTargetTableInfo->tableID,
+                             aSourceTableInfo->tableID, 
+                             aTargetTableInfo->tableID,
+                             aSourceTableInfo->tableID ); 
+
+            IDE_TEST( qcg::runDMLforDDL( QC_SMI_STMT( aStatement ),
+                                         sSqlStr,
+                                         & sDummyCnt )
+                      != IDE_SUCCESS );
+
+            idlOS::snprintf( sSqlStr,
+                             QD_MAX_SQL_LENGTH,
+                             "INSERT INTO SYS_REPL_ITEM_REPLACE_HISTORY_ ( REPLICATION_NAME, USER_NAME, TABLE_NAME, PARTITION_NAME, OLD_OID , NEW_OID )"
+                             "   SELECT I.REPLICATION_NAME, I.LOCAL_USER_NAME, I.LOCAL_TABLE_NAME, " 
+                             "          I.LOCAL_PARTITION_NAME, I.TABLE_OID, P.PARTITION_OID " 
+                             "      FROM SYS_REPL_ITEMS_ I, SYS_TABLES_ T, SYS_TABLE_PARTITIONS_ P"
+                             "      WHERE I.TABLE_OID IN "
+                             "            ( SELECT PARTITION_OID FROM SYS_TABLE_PARTITIONS_  WHERE TABLE_ID IN "
+                             "                                                                             ( BIGINT'%"ID_INT32_FMT"', "
+                             "                                                                               BIGINT'%"ID_INT32_FMT"' ) ) "
+                             "     AND I.LOCAL_PARTITION_NAME=P.PARTITION_NAME"
+                             "     AND I.TABLE_OID != P.PARTITION_OID"
+                             "     AND T.TABLE_ID = P.TABLE_ID"
+                             "     AND T.TABLE_ID IN "
+                            "                   ( BIGINT'%"ID_INT32_FMT"', "
+                            "                     BIGINT'%"ID_INT32_FMT"' ) "
+                             "     AND REPLICATION_NAME IN ( SELECT REPLICATION_NAME FROM SYS_REPLICATIONS_ WHERE REPL_MODE=12 )",
+                             aTargetTableInfo->tableID,
+                             aSourceTableInfo->tableID,
+                             aTargetTableInfo->tableID,
+                             aSourceTableInfo->tableID ); 
+
+            IDE_TEST( qcg::runDMLforDDL( QC_SMI_STMT( aStatement ),
+                                         sSqlStr,
+                                         & sDummyCnt )
+                      != IDE_SUCCESS );
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 IDE_RC qdbCopySwap::swapReplItemsMeta( qcStatement  * aStatement,
                                        qcmTableInfo * aTargetTableInfo,
                                        qcmTableInfo * aSourceTableInfo )
@@ -5770,12 +6294,12 @@ IDE_RC qdbCopySwap::swapReplItemsMeta( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *      Replication Meta Tableì„ ìˆ˜ì •í•œë‹¤. (Meta Table)
+ *      Replication Meta TableÀ» ¼öÁ¤ÇÑ´Ù. (Meta Table)
  *          - SYS_REPL_ITEMS_
- *              - SYS_REPL_ITEMS_ì˜ TABLE_OIDëŠ” Non-Partitioned Table OIDì´ê±°ë‚˜ Partition OIDì´ë‹¤.
- *                  - Partitioned Table OIDëŠ” SYS_REPL_ITEMS_ì— ì—†ë‹¤.
- *              - Non-Partitioned Tableì¸ ê²½ìš°, Table OIDë¥¼ Peerì˜ ê²ƒìœ¼ë¡œ ë³€ê²½í•œë‹¤.
- *              - Partitioned Tableì¸ ê²½ìš°, Partition OIDë¥¼ Peerì˜ ê²ƒìœ¼ë¡œ ë³€ê²½í•œë‹¤.
+ *              - SYS_REPL_ITEMS_ÀÇ TABLE_OID´Â Non-Partitioned Table OIDÀÌ°Å³ª Partition OIDÀÌ´Ù.
+ *                  - Partitioned Table OID´Â SYS_REPL_ITEMS_¿¡ ¾ø´Ù.
+ *              - Non-Partitioned TableÀÎ °æ¿ì, Table OID¸¦ PeerÀÇ °ÍÀ¸·Î º¯°æÇÑ´Ù.
+ *              - Partitioned TableÀÎ °æ¿ì, Partition OID¸¦ PeerÀÇ °ÍÀ¸·Î º¯°æÇÑ´Ù.
  *
  * Implementation :
  *
@@ -5783,6 +6307,11 @@ IDE_RC qdbCopySwap::swapReplItemsMeta( qcStatement  * aStatement,
 
     SChar  * sSqlStr = NULL;
     vSLong   sRowCnt = ID_vLONG(0);
+
+    IDE_TEST( insertReplItemMetaToReplaceHistory( aStatement,
+                                                  aTargetTableInfo,
+                                                  aSourceTableInfo )
+              != IDE_SUCCESS );
 
     if ( ( aTargetTableInfo->replicationCount > 0 ) || ( aSourceTableInfo->replicationCount > 0 ) )
     {
@@ -5862,7 +6391,7 @@ IDE_RC qdbCopySwap::updateColumnDefaultValueMeta( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *      SYS_COLUMNS_ì˜ DEFAULT_VALë¥¼ ë³µì‚¬í•œë‹¤.
+ *      SYS_COLUMNS_ÀÇ DEFAULT_VAL¸¦ º¹»çÇÑ´Ù.
  *
  * Implementation :
  *
@@ -5917,7 +6446,7 @@ IDE_RC qdbCopySwap::swapReplicationFlagOnTableHeader( smiStatement         * aSt
 {
 /***********************************************************************
  * Description :
- *      Table, Partitionì˜ Replication Flagë¥¼ êµí™˜í•œë‹¤.
+ *      Table, PartitionÀÇ Replication Flag¸¦ ±³È¯ÇÑ´Ù.
  *
  *      - Table            : SMI_TABLE_REPLICATION_MASK, SMI_TABLE_REPLICATION_TRANS_WAIT_MASK
  *      - Partition        : SMI_TABLE_REPLICATION_MASK, SMI_TABLE_REPLICATION_TRANS_WAIT_MASK
@@ -5936,7 +6465,7 @@ IDE_RC qdbCopySwap::swapReplicationFlagOnTableHeader( smiStatement         * aSt
     if ( ( aTargetTableInfo->replicationCount > 0 ) ||
          ( aSourceTableInfo->replicationCount > 0 ) )
     {
-        // Tableì˜ Replication Flagë¥¼ êµí™˜í•œë‹¤.
+        // TableÀÇ Replication Flag¸¦ ±³È¯ÇÑ´Ù.
         sTableFlag  = aTargetTableInfo->tableFlag
                     & ~( SMI_TABLE_REPLICATION_MASK | SMI_TABLE_REPLICATION_TRANS_WAIT_MASK );
         sTableFlag |= aSourceTableInfo->tableFlag
@@ -5975,7 +6504,7 @@ IDE_RC qdbCopySwap::swapReplicationFlagOnTableHeader( smiStatement         * aSt
 
         if ( aTargetTableInfo->tablePartitionType == QCM_PARTITIONED_TABLE )
         {
-            // Partitionì˜ Replication Flagë¥¼ êµí™˜í•œë‹¤.
+            // PartitionÀÇ Replication Flag¸¦ ±³È¯ÇÑ´Ù.
             for ( sPartInfo1 = aTargetPartInfoList;
                   sPartInfo1 != NULL;
                   sPartInfo1 = sPartInfo1->next )
@@ -5986,7 +6515,7 @@ IDE_RC qdbCopySwap::swapReplicationFlagOnTableHeader( smiStatement         * aSt
                                                              & sPartInfo2 )
                           != IDE_SUCCESS );
 
-                // ì§ì„ ì´ë£¨ëŠ” Partition ì¤‘ì—ì„œ í•˜ë‚˜ë¼ë„ Replication ëŒ€ìƒì´ì–´ì•¼ í•œë‹¤.
+                // Â¦À» ÀÌ·ç´Â Partition Áß¿¡¼­ ÇÏ³ª¶óµµ Replication ´ë»óÀÌ¾î¾ß ÇÑ´Ù.
                 if ( sPartInfo2 == NULL )
                 {
                     continue;
@@ -6043,17 +6572,17 @@ IDE_RC qdbCopySwap::swapReplicationFlagOnTableHeader( smiStatement         * aSt
         }
         else
         {
-            // Dictionary Tableì— Replication Flagë¥¼ ì ìš©í•œë‹¤.
+            // Dictionary Table¿¡ Replication Flag¸¦ Àû¿ëÇÑ´Ù.
             for ( sColumn = aTargetTableInfo->columns; sColumn != NULL; sColumn = sColumn->next )
             {
                 if ( ( sColumn->basicInfo->column.flag & SMI_COLUMN_COMPRESSION_MASK )
                                                       == SMI_COLUMN_COMPRESSION_TRUE )
                 {
-                    // ê¸°ì¡´ Dictionary Table Infoë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+                    // ±âÁ¸ Dictionary Table Info¸¦ °¡Á®¿Â´Ù.
                     sDicTableInfo = (qcmTableInfo *)smiGetTableRuntimeInfoFromTableOID(
                                                     sColumn->basicInfo->column.mDictionaryTableOID );
 
-                    // Dictionary Table InfoëŠ” Tableì„ ë”°ë¥¸ë‹¤.
+                    // Dictionary Table Info´Â TableÀ» µû¸¥´Ù.
                     sTableFlag = sDicTableInfo->tableFlag
                                & ~( SMI_TABLE_REPLICATION_MASK | SMI_TABLE_REPLICATION_TRANS_WAIT_MASK );
                     if ( aSourceTableInfo->replicationCount > 0 )
@@ -6089,11 +6618,11 @@ IDE_RC qdbCopySwap::swapReplicationFlagOnTableHeader( smiStatement         * aSt
                 if ( ( sColumn->basicInfo->column.flag & SMI_COLUMN_COMPRESSION_MASK )
                                                       == SMI_COLUMN_COMPRESSION_TRUE )
                 {
-                    // ê¸°ì¡´ Dictionary Table Infoë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+                    // ±âÁ¸ Dictionary Table Info¸¦ °¡Á®¿Â´Ù.
                     sDicTableInfo = (qcmTableInfo *)smiGetTableRuntimeInfoFromTableOID(
                                                     sColumn->basicInfo->column.mDictionaryTableOID );
 
-                    // Dictionary Table InfoëŠ” Tableì„ ë”°ë¥¸ë‹¤.
+                    // Dictionary Table Info´Â TableÀ» µû¸¥´Ù.
                     sTableFlag = sDicTableInfo->tableFlag
                                & ~( SMI_TABLE_REPLICATION_MASK | SMI_TABLE_REPLICATION_TRANS_WAIT_MASK );
                     if ( aTargetTableInfo->replicationCount > 0 )
@@ -6143,8 +6672,8 @@ IDE_RC qdbCopySwap::checkTablesExistInOneReplication( qcStatement  * aStatement,
 {
 /***********************************************************************
  * Description :
- *      ì–‘ìª½ Tableì´ ê°™ì€ Replicationì— ì†í•˜ë©´ ì•ˆ ëœë‹¤.
- *          - Replicationì—ì„œ Table Meta Logë¥¼ í•˜ë‚˜ì”© ì²˜ë¦¬í•˜ë¯€ë¡œ, ì´ ê¸°ëŠ¥ì„ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *      ¾çÂÊ TableÀÌ °°Àº Replication¿¡ ¼ÓÇÏ¸é ¾È µÈ´Ù.
+ *          - Replication¿¡¼­ Table Meta Log¸¦ ÇÏ³ª¾¿ Ã³¸®ÇÏ¹Ç·Î, ÀÌ ±â´ÉÀ» Áö¿øÇÏÁö ¾Ê´Â´Ù.
  *
  * Implementation :
  *
@@ -6210,8 +6739,8 @@ IDE_RC qdbCopySwap::checkEncryptColumn( idBool      aIsRenameForce,
 {
 /***********************************************************************
  * Description :
- *      Encrypt Column ì œì•½ì„ í™•ì¸í•œë‹¤.
- *          - RENAME FORCE ì ˆì„ ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš°, Encrypt Columnì„ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *      Encrypt Column Á¦¾àÀ» È®ÀÎÇÑ´Ù.
+ *          - RENAME FORCE ÀıÀ» ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì, Encrypt ColumnÀ» Áö¿øÇÏÁö ¾Ê´Â´Ù.
  *
  * Implementation :
  *
@@ -6252,8 +6781,8 @@ IDE_RC qdbCopySwap::checkCompressedColumnForReplication( qcStatement    * aState
 {
 /***********************************************************************
  * Description :
- *      Sourceì™€ Targetì˜ Compressed Column ì œì•½ì„ ê²€ì‚¬í•œë‹¤.
- *          - Replicationì´ ê±¸ë¦° ê²½ìš°, Compressed Columnì„ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *      Source¿Í TargetÀÇ Compressed Column Á¦¾àÀ» °Ë»çÇÑ´Ù.
+ *          - ReplicationÀÌ °É¸° °æ¿ì, Compressed ColumnÀ» Áö¿øÇÏÁö ¾Ê´Â´Ù.
  *
  * Implementation :
  *
@@ -6299,8 +6828,8 @@ IDE_RC qdbCopySwap::checkNormalUserTable( qcStatement    * aStatement,
 {
 /***********************************************************************
  * Description :
- *      ì¼ë°˜ Tableì¸ì§€ ê²€ì‚¬í•œë‹¤.
- *          - TABLE_TYPE = 'T', TEMPORARY = 'N', HIDDEN = 'N' ì´ì–´ì•¼ í•œë‹¤. (SYS_TABLES_)
+ *      ÀÏ¹İ TableÀÎÁö °Ë»çÇÑ´Ù.
+ *          - TABLE_TYPE = 'T', TEMPORARY = 'N', HIDDEN = 'N' ÀÌ¾î¾ß ÇÑ´Ù. (SYS_TABLES_)
  *
  * Implementation :
  *
@@ -6343,10 +6872,11 @@ IDE_RC qdbCopySwap::swapTablePartitionsMeta( qcStatement     * aStatement,
 /***********************************************************************
  *
  * Description :
- *      Sourceì™€ Targetì˜ Table ê¸°ë³¸ ì •ë³´ë¥¼ êµí™˜í•œë‹¤. (Meta Table)
+ *      Source¿Í TargetÀÇ Table ±âº» Á¤º¸¸¦ ±³È¯ÇÑ´Ù. (Meta Table)
  *          - SYS_TABLE_PARTITIONS_
- *              - TABLE_ID, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNTë¥¼ êµí™˜í•œë‹¤.
- *              - LAST_DDL_TIMEì„ ê°±ì‹ í•œë‹¤. (SYSDATE)
+ *              - TABLE_ID, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT¸¦ ±³È¯ÇÑ´Ù.
+ *              - LAST_DDL_TIMEÀ» °»½ÅÇÑ´Ù. (SYSDATE)
+ *              - PARITION_USABLE¸¦ ±³È¯ÇÑ´Ù. (TASK-7307)
  *
  * Implementation :
  *
@@ -6370,8 +6900,8 @@ IDE_RC qdbCopySwap::swapTablePartitionsMeta( qcStatement     * aStatement,
     idlOS::snprintf( sSqlStr,
                      QD_MAX_SQL_LENGTH,
                      "UPDATE SYS_TABLE_PARTITIONS_ A "
-                     "   SET (        TABLE_ID, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT ) = "
-                     "       ( SELECT TABLE_ID, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT "
+                     "   SET (        TABLE_ID, PARTITION_USABLE, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT ) = "
+                     "       ( SELECT TABLE_ID, PARTITION_USABLE, REPLICATION_COUNT, REPLICATION_RECOVERY_COUNT "
                      "           FROM SYS_TABLE_PARTITIONS_ B "
                      "          WHERE B.TABLE_ID = CASE2( A.TABLE_ID = INTEGER'%"ID_INT32_FMT"', "
                      "                                    INTEGER'%"ID_INT32_FMT"', "
@@ -6415,7 +6945,7 @@ IDE_RC qdbCopySwap::swapPartLobs( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *      Sourceì™€ Targetì˜ Partition Table ê¸°ë³¸ ì •ë³´ë¥¼ êµí™˜í•œë‹¤. (Meta Table)
+ *      Source¿Í TargetÀÇ Partition Table ±âº» Á¤º¸¸¦ ±³È¯ÇÑ´Ù. (Meta Table)
  *          - SYS_PART_LOBS_
  *              - TABLE_ID
  *
@@ -6483,10 +7013,10 @@ IDE_RC qdbCopySwap::swapIndexPartitions( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *      Sourceì™€ Targetì˜ Table ê¸°ë³¸ ì •ë³´ë¥¼ êµí™˜í•œë‹¤. (Meta Table)
+ *      Source¿Í TargetÀÇ Table ±âº» Á¤º¸¸¦ ±³È¯ÇÑ´Ù. (Meta Table)
  *          - SYS_INDEX_PARTITIONS_
  *              - TABLE_ID, INDEX_ID, INDEX_PARTITION_NAME
- *              - LAST_DDL_TIMEì„ ê°±ì‹ í•œë‹¤. (SYSDATE)
+ *              - LAST_DDL_TIMEÀ» °»½ÅÇÑ´Ù. (SYSDATE)
  *
  * Implementation :
  *
@@ -6568,6 +7098,88 @@ IDE_RC qdbCopySwap::swapIndexPartitions( qcStatement  * aStatement,
     return IDE_FAILURE;
 }
 
+IDE_RC qdbCopySwap::insertReplItemsForParititonMetaToReplaceHistory( qcStatement  * aStatement,
+                                                                     qcmTableInfo * aTargetPartTableInfo,
+                                                                     qcmTableInfo * aSourcePartTableInfo )
+{
+/***********************************************************************
+ *
+ * Description :
+ *      Replication Meta TableÀ» ¼öÁ¤ÇÑ´Ù. (Meta Table)
+ *          - SYS_REPL_ITEMS_
+ *          - SYS_REPL_ITEMS_ÀÇ TABLE_OID´Â Non-Partitioned Table OIDÀÌ°Å³ª
+ *            Partition OIDÀÌ´Ù.
+ *          - Partitioned Table OID´Â SYS_REPL_ITEMS_¿¡ ¾ø´Ù.
+ *          - target, source Partitioned Table ÀÇ TABLE_OID(Partition OID) ±³È¯
+ *
+ * Implementation :
+ *
+ ***********************************************************************/
+
+    SChar  * sSqlStr = NULL;
+    vSLong   sDummyCnt = ID_vLONG(0);
+
+    if ( ( aTargetPartTableInfo->replicationCount > 0 ) ||
+         ( aSourcePartTableInfo->replicationCount > 0 ) )
+    {
+        IDU_FIT_POINT( "qdbCopySwap::insertReplItemsForParititonMetaToReplaceHistory::STRUCT_ALLOC_WITH_SIZE::sSqlStr",
+                       idERR_ABORT_InsufficientMemory );
+
+        IDE_TEST( STRUCT_ALLOC_WITH_SIZE( QC_QMX_MEM( aStatement ),
+                                          SChar,
+                                          QD_MAX_SQL_LENGTH,
+                                          & sSqlStr )
+                  != IDE_SUCCESS );
+            idlOS::snprintf( sSqlStr,
+                             QD_MAX_SQL_LENGTH,
+                             "DELETE FROM SYS_REPL_ITEM_REPLACE_HISTORY_ "
+                             "       WHERE OLD_OID IN "
+                             "                       ( BIGINT'%"ID_INT64_FMT"', BIGINT'%"ID_INT64_FMT"' ) "
+                             "         OR  NEW_OID IN "
+                             "                       ( BIGINT'%"ID_INT64_FMT"', BIGINT'%"ID_INT64_FMT"' ) ",
+                             QCM_OID_TO_BIGINT( aTargetPartTableInfo->tableOID ),
+                             QCM_OID_TO_BIGINT( aTargetPartTableInfo->tableOID ),
+                             QCM_OID_TO_BIGINT( aSourcePartTableInfo->tableOID ),
+                             QCM_OID_TO_BIGINT( aTargetPartTableInfo->tableOID ) );
+
+            IDE_TEST( qcg::runDMLforDDL( QC_SMI_STMT( aStatement ),
+                                         sSqlStr,
+                                         & sDummyCnt )
+                      != IDE_SUCCESS );
+
+            idlOS::snprintf( sSqlStr,
+                             QD_MAX_SQL_LENGTH,
+                             "INSERT INTO SYS_REPL_ITEM_REPLACE_HISTORY_ ( REPLICATION_NAME, USER_NAME, TABLE_NAME, PARTITION_NAME, OLD_OID , NEW_OID )"
+                             "   SELECT REPLICATION_NAME, LOCAL_USER_NAME, LOCAL_TABLE_NAME, LOCAL_PARTITION_NAME, " 
+                             "          TABLE_OID,  CASE2( TABLE_OID = BIGINT'%"ID_INT64_FMT"', "
+                             "                                             BIGINT'%"ID_INT64_FMT"'," 
+                             "                                             BIGINT'%"ID_INT64_FMT"' ) " 
+                             "      FROM SYS_REPL_ITEMS_ WHERE TABLE_OID IN "
+                             "                                 ( BIGINT'%"ID_INT64_FMT"', BIGINT'%"ID_INT64_FMT"' ) "
+                             "AND REPLICATION_NAME IN ( SELECT REPLICATION_NAME FROM SYSTEM_.SYS_REPLICATIONS_ WHERE REPL_MODE=12 )",
+                             QCM_OID_TO_BIGINT( aTargetPartTableInfo->tableOID ),
+                             QCM_OID_TO_BIGINT( aSourcePartTableInfo->tableOID ),
+                             QCM_OID_TO_BIGINT( aTargetPartTableInfo->tableOID ),
+                             QCM_OID_TO_BIGINT( aSourcePartTableInfo->tableOID ),
+                             QCM_OID_TO_BIGINT( aTargetPartTableInfo->tableOID ) );
+
+        IDE_TEST( qcg::runDMLforDDL( QC_SMI_STMT( aStatement ),
+                                     sSqlStr,
+                                     & sDummyCnt )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 IDE_RC qdbCopySwap::swapReplItemsForParititonMeta( qcStatement  * aStatement,
                                                    qcmTableInfo * aTargetPartTableInfo,
                                                    qcmTableInfo * aSourcePartTableInfo )
@@ -6575,12 +7187,12 @@ IDE_RC qdbCopySwap::swapReplItemsForParititonMeta( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *      Replication Meta Tableì„ ìˆ˜ì •í•œë‹¤. (Meta Table)
+ *      Replication Meta TableÀ» ¼öÁ¤ÇÑ´Ù. (Meta Table)
  *          - SYS_REPL_ITEMS_
- *          - SYS_REPL_ITEMS_ì˜ TABLE_OIDëŠ” Non-Partitioned Table OIDì´ê±°ë‚˜
- *            Partition OIDì´ë‹¤.
- *          - Partitioned Table OIDëŠ” SYS_REPL_ITEMS_ì— ì—†ë‹¤.
- *          - target, source Partitioned Table ì˜ TABLE_OID(Partition OID) êµí™˜
+ *          - SYS_REPL_ITEMS_ÀÇ TABLE_OID´Â Non-Partitioned Table OIDÀÌ°Å³ª
+ *            Partition OIDÀÌ´Ù.
+ *          - Partitioned Table OID´Â SYS_REPL_ITEMS_¿¡ ¾ø´Ù.
+ *          - target, source Partitioned Table ÀÇ TABLE_OID(Partition OID) ±³È¯
  *
  * Implementation :
  *
@@ -6588,6 +7200,11 @@ IDE_RC qdbCopySwap::swapReplItemsForParititonMeta( qcStatement  * aStatement,
 
     SChar  * sSqlStr = NULL;
     vSLong   sRowCnt = ID_vLONG(0);
+
+    IDE_TEST( insertReplItemsForParititonMetaToReplaceHistory( aStatement,
+                                                               aTargetPartTableInfo,
+                                                               aSourcePartTableInfo )
+              != IDE_SUCCESS );
 
     if ( ( aTargetPartTableInfo->replicationCount > 0 ) ||
          ( aSourcePartTableInfo->replicationCount > 0 ) )
@@ -6646,7 +7263,7 @@ IDE_RC qdbCopySwap::swapReplicationFlagOnPartitonTableHeader( smiStatement  * aS
 {
 /***********************************************************************
  * Description :
- *      Partitionì˜ Replication Flagë¥¼ êµí™˜í•œë‹¤.
+ *      PartitionÀÇ Replication Flag¸¦ ±³È¯ÇÑ´Ù.
  *
   *      - Partition : SMI_TABLE_REPLICATION_MASK, SMI_TABLE_REPLICATION_TRANS_WAIT_MASK
   *
@@ -6659,7 +7276,7 @@ IDE_RC qdbCopySwap::swapReplicationFlagOnPartitonTableHeader( smiStatement  * aS
     if ( ( aTargetPartTableInfo->replicationCount > 0 ) ||
          ( aSourcePartTableInfo->replicationCount > 0 ) )
     {
-        // Partitionì˜ Replication Flagë¥¼ êµí™˜í•œë‹¤.
+        // PartitionÀÇ Replication Flag¸¦ ±³È¯ÇÑ´Ù.
         sTableFlag  = aTargetPartTableInfo->tableFlag
             & ~( SMI_TABLE_REPLICATION_MASK | SMI_TABLE_REPLICATION_TRANS_WAIT_MASK );
         sTableFlag |= aSourcePartTableInfo->tableFlag
@@ -6716,14 +7333,18 @@ IDE_RC qdbCopySwap::validateReplacePartition( qcStatement      * aStatement,
  *      BUG-45745
  *
  * Implementation :
- *  partition table swap validate ìˆ˜í–‰
- *      1, partition table swap validate ìˆ˜í–‰
- *      2. table parttion key ê´€ë ¨ì²´í¬
- *      3. table partiton column ê´€ë ¨ ì²´í¬
- *      4. table partiton ì†ì„± ê´€ë ¨ ì²´í¬
+ *  partition table swap validate ¼öÇà
+ *      1, partition table swap validate ¼öÇà
+ *      2. table parttion key °ü·ÃÃ¼Å©
+ *      3. table partiton column °ü·Ã Ã¼Å©
+ *      4. table partiton ¼Ó¼º °ü·Ã Ã¼Å©
+ *      º¯°æ: BUG-47208  range, range hash, list partition
+ *            replace ´ë»ó partition ¼Ó¼º Ã¼Å©    
  *
  ***********************************************************************/
 
+    smOID                   * sDDLTableOIDArray     = NULL;
+    smOID                   * sDDLPartOIDArray      = NULL;
     qcmTableInfo            * sTableInfo            = NULL;
     qcmTableInfo            * sSourceTableInfo      = NULL;
     qcmTableInfo            * sSrcTempPartInfo      = NULL;
@@ -6733,8 +7354,6 @@ IDE_RC qdbCopySwap::validateReplacePartition( qcStatement      * aStatement,
     qcmColumn               * sSourceColumns        = NULL;
     qdPartitionAttribute    * sNewTargetPartAttr    = NULL;
     qdPartitionAttribute    * sNewSourcePartAttr    = NULL;
-    qcmPartitionInfoList    * sTargetPartInfoList   = NULL;
-    qcmPartitionInfoList    * sSourcePartInfoList   = NULL;
     UInt                      sTargetPartOrder      = 0;
     UInt                      sSourcePartOrder      = 0;
     UInt                      sTargetPartCount      = 0;
@@ -6745,18 +7364,16 @@ IDE_RC qdbCopySwap::validateReplacePartition( qcStatement      * aStatement,
     smSCN                     sSCN                  = SM_SCN_INIT;
     qcuSqlSourceInfo          sqlInfo;
         
-    /* 1, partition table swap validate ìˆ˜í–‰ */
+    /* 1, partition table swap validate ¼öÇà */
     if ( aParseTree->mPartAttr != NULL )
     {
         sTableInfo          = aParseTree->tableInfo;
         sSourceTableInfo    = aParseTree->mSourcePartTable->mTableInfo;
 
-        /* 1. table parttion ì¡´ì¬ì—¬ë¶€ ì²´í¬ */
-        
-        // target, source  paritioned table check
-        IDE_TEST_RAISE ( ( aParseTree->partTable->partInfoList == NULL ) ||
-                         ( aParseTree->mSourcePartTable->mPartInfoList == NULL ),
-                         ERR_NOT_EXIST_PARTITION_TABLE );
+        /* 1. table parttion Á¸Àç¿©ºÎ Ã¼Å© */
+        IDE_TEST_RAISE(( sTableInfo->tablePartitionType == QCM_NONE_PARTITIONED_TABLE ) ||
+                       ( sSourceTableInfo->tablePartitionType == QCM_NONE_PARTITIONED_TABLE),
+                       ERR_NOT_EXIST_PARTITION_TABLE );
 
         // target exist partition table
         if ( qcmPartition::getPartitionInfo( aStatement,
@@ -6773,7 +7390,8 @@ IDE_RC qdbCopySwap::validateReplacePartition( qcStatement      * aStatement,
         }
         else
         {
-            // nothing to do 
+            /* BUG-48290 shard object¿¡ ´ëÇÑ DDL Â÷´Ü(destination check) */
+            IDE_TEST( sdi::checkShardObjectForDDL( aStatement, SDI_DDL_TYPE_TABLE ) != IDE_SUCCESS );
         }
 
         // Source exist partition table
@@ -6791,16 +7409,19 @@ IDE_RC qdbCopySwap::validateReplacePartition( qcStatement      * aStatement,
         }
         else
         {
-            // nothing to do
+            /* BUG-48290 shard object¿¡ ´ëÇÑ DDL Â÷´Ü(source check) */
+            IDE_TEST( sdi::checkShardObjectForDDLInternal( aStatement,
+                                                           aParseTree->userName,
+                                                           aParseTree->mPartAttr->tablePartName ) != IDE_SUCCESS );
         }
 
-        /* 2. table parttion key ê´€ë ¨ì²´í¬ */
+        /* 2. table parttion key °ü·ÃÃ¼Å© */
         
-        // partition key column count ê°™ì•„ì•¼í•¨.
+        // partition key column count °°¾Æ¾ßÇÔ.
         IDE_TEST_RAISE( sTableInfo->partKeyColCount != sSourceTableInfo->partKeyColCount,
                         ERR_REPLACE_DIFFERENT_PARTITION );
         
-        // partition key columnì˜ column order ê°™ì•„ì•¼í•¨
+        // partition key columnÀÇ column order °°¾Æ¾ßÇÔ
         for ( sTargetColumns = sTableInfo->partKeyColumns,
                   sSourceColumns = sSourceTableInfo->partKeyColumns;
               sTargetColumns != NULL;
@@ -6814,14 +7435,14 @@ IDE_RC qdbCopySwap::validateReplacePartition( qcStatement      * aStatement,
                             ERR_REPLACE_DIFFERENT_PARTITION );
         }
 
-        /* 3. table partiton column ê´€ë ¨ ì²´í¬ */
+        /* 3. table partiton column °ü·Ã Ã¼Å© */
 
         // column count, index count
         IDE_TEST_RAISE( ( sDstTempPartInfo->columnCount != sSrcTempPartInfo->columnCount ) ||
                         ( sDstTempPartInfo->indexCount != sSrcTempPartInfo->indexCount ),
                         ERR_REPLACE_DIFFERENT_PARTITION );
 
-        // target, source column typeì€ ê°™ì•„ì•¼ í•¨.
+        // target, source column typeÀº °°¾Æ¾ß ÇÔ.
         sTargetColumns = sTableInfo->columns;
         sSourceColumns = sSourceTableInfo->columns;
         
@@ -6841,7 +7462,7 @@ IDE_RC qdbCopySwap::validateReplacePartition( qcStatement      * aStatement,
             sTargetColumns = sTargetColumns->next;
         }
 
-        /* 4. table partiton ì†ì„± ê´€ë ¨ ì²´í¬ */
+        /* 4. table partiton ¼Ó¼º °ü·Ã Ã¼Å© */
         
         // target, source partition method 
         IDE_TEST_RAISE( ( sDstTempPartInfo->partitionMethod !=
@@ -6867,7 +7488,7 @@ IDE_RC qdbCopySwap::validateReplacePartition( qcStatement      * aStatement,
         IDU_FIT_POINT( "qdbCopySwap::validateReplacePartitionTable::sNewTargetPartAttr",
                        idERR_ABORT_InsufficientMemory );
 
-        IDE_TEST( STRUCT_ALLOC_WITH_COUNT( aStatement->qmxMem,
+        IDE_TEST( STRUCT_ALLOC_WITH_COUNT( QC_QMP_MEM( aStatement ),
                                            qdPartitionAttribute,
                                            1,
                                            & sNewTargetPartAttr )
@@ -6878,7 +7499,7 @@ IDE_RC qdbCopySwap::validateReplacePartition( qcStatement      * aStatement,
         IDU_FIT_POINT( "qdbCopySwap::validateReplacePartitionTable::alterPart",
                        idERR_ABORT_InsufficientMemory );
 
-        IDE_TEST( STRUCT_ALLOC_WITH_COUNT( aStatement->qmxMem,
+        IDE_TEST( STRUCT_ALLOC_WITH_COUNT( QC_QMP_MEM( aStatement ),
                                            qdAlterPartition,
                                            1,
                                            & sNewTargetPartAttr->alterPart )
@@ -6888,7 +7509,7 @@ IDE_RC qdbCopySwap::validateReplacePartition( qcStatement      * aStatement,
         IDU_FIT_POINT( "qdbCopySwap::validateReplacePartitionTable::sNewSourcePartAttr",
                        idERR_ABORT_InsufficientMemory );
 
-        IDE_TEST( STRUCT_ALLOC_WITH_COUNT( aStatement->qmxMem,
+        IDE_TEST( STRUCT_ALLOC_WITH_COUNT( QC_QMP_MEM( aStatement ),
                                            qdPartitionAttribute,
                                            1,
                                            & sNewSourcePartAttr )
@@ -6899,7 +7520,7 @@ IDE_RC qdbCopySwap::validateReplacePartition( qcStatement      * aStatement,
         IDU_FIT_POINT( "qdbCopySwap::validateReplacePartitionTable::alterPart",
                        idERR_ABORT_InsufficientMemory );
 
-        IDE_TEST( STRUCT_ALLOC_WITH_COUNT( aStatement->qmxMem,
+        IDE_TEST( STRUCT_ALLOC_WITH_COUNT( QC_QMP_MEM( aStatement ),
                                            qdAlterPartition,
                                            1,
                                            & sNewSourcePartAttr->alterPart )
@@ -6907,103 +7528,89 @@ IDE_RC qdbCopySwap::validateReplacePartition( qcStatement      * aStatement,
 
         if ( sSrcTempPartInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE )
         {
-            for ( sTargetPartInfoList = aParseTree->partTable->partInfoList,
-                      sSourcePartInfoList = aParseTree->mSourcePartTable->mPartInfoList;
-                  sTargetPartInfoList != NULL;
-                  sTargetPartInfoList = sTargetPartInfoList->next,
-                      sSourcePartInfoList = sSourcePartInfoList->next )
+            IDE_TEST( qdbCommon::makePartCondValList( aStatement,
+                                                      sDstTempPartInfo,
+                                                      sDstTempPartInfo->partitionID,
+                                                      sNewTargetPartAttr )
+                      != IDE_SUCCESS );
+
+            IDE_TEST( qdbCommon::makePartCondValList( aStatement,
+                                                      sSrcTempPartInfo,
+                                                      sSrcTempPartInfo->partitionID,
+                                                      sNewSourcePartAttr )
+                      != IDE_SUCCESS );
+
+            if (( sNewTargetPartAttr->alterPart->partKeyCondMinValStr->length != 0 ) ||
+                ( sNewSourcePartAttr->alterPart->partKeyCondMinValStr->length != 0 ))
             {
-                IDE_TEST( qdbCommon::makePartCondValList( aStatement,
-                                                          sTargetPartInfoList->partitionInfo,
-                                                          sTargetPartInfoList->partitionInfo->partitionID,
-                                                          sNewTargetPartAttr )
-                          != IDE_SUCCESS );
+                // min value
+                IDE_TEST_RAISE( qmoPartition::compareRangePartition(
+                                    sTableInfo->partKeyColumns,
+                                    sNewTargetPartAttr->alterPart->partCondMinVal,
+                                    sNewSourcePartAttr->alterPart->partCondMinVal ) != 0,
+                                ERR_REPLACE_DIFFERENT_PARTITION );
+            }
+            else
+            {
+                // nothing to do
+            }
 
-                IDE_TEST( qdbCommon::makePartCondValList( aStatement,
-                                                          sSourcePartInfoList->partitionInfo,
-                                                          sSourcePartInfoList->partitionInfo->partitionID,
-                                                          sNewSourcePartAttr )
-                          != IDE_SUCCESS );
-
-                if (( sNewTargetPartAttr->alterPart->partKeyCondMinValStr->length != 0 ) ||
-                    ( sNewSourcePartAttr->alterPart->partKeyCondMinValStr->length != 0 ))
-                {
-                    // min value
-                    IDE_TEST_RAISE( qmoPartition::compareRangePartition(
-                                        sTableInfo->partKeyColumns,
-                                        sNewTargetPartAttr->alterPart->partCondMinVal,
-                                        sNewSourcePartAttr->alterPart->partCondMinVal ) != 0,
-                                    ERR_REPLACE_DIFFERENT_PARTITION );
-                }
-                else
-                {
-                    // nothing to do
-                }
-
-                if (( sNewTargetPartAttr->alterPart->partKeyCondMaxValStr->length != 0 ) ||
-                    ( sNewSourcePartAttr->alterPart->partKeyCondMaxValStr->length != 0 ))
-                {
-                    // max value
-                    IDE_TEST_RAISE( qmoPartition::compareRangePartition(
-                                        sTableInfo->partKeyColumns,
-                                        sNewTargetPartAttr->alterPart->partCondMaxVal,
-                                        sNewSourcePartAttr->alterPart->partCondMaxVal ) != 0,
-                                    ERR_REPLACE_DIFFERENT_PARTITION );
-                }
-                else
-                {
-                    // nothing to do
-                }
+            if (( sNewTargetPartAttr->alterPart->partKeyCondMaxValStr->length != 0 ) ||
+                ( sNewSourcePartAttr->alterPart->partKeyCondMaxValStr->length != 0 ))
+            {
+                // max value
+                IDE_TEST_RAISE( qmoPartition::compareRangePartition(
+                                    sTableInfo->partKeyColumns,
+                                    sNewTargetPartAttr->alterPart->partCondMaxVal,
+                                    sNewSourcePartAttr->alterPart->partCondMaxVal ) != 0,
+                                ERR_REPLACE_DIFFERENT_PARTITION );
+            }
+            else
+            {
+                // nothing to do
             }
         }
         /* BUG-46065 support range using hash */
         else if ( sSrcTempPartInfo->partitionMethod == QCM_PARTITION_METHOD_RANGE_USING_HASH )
         {
-            for ( sTargetPartInfoList = aParseTree->partTable->partInfoList,
-                      sSourcePartInfoList = aParseTree->mSourcePartTable->mPartInfoList;
-                  sTargetPartInfoList != NULL;
-                  sTargetPartInfoList = sTargetPartInfoList->next,
-                      sSourcePartInfoList = sSourcePartInfoList->next )
+            IDE_TEST( qdbCommon::makePartCondValList( aStatement,
+                                                      sDstTempPartInfo,
+                                                      sDstTempPartInfo->partitionID,
+                                                      sNewTargetPartAttr )
+                      != IDE_SUCCESS );
+
+            IDE_TEST( qdbCommon::makePartCondValList( aStatement,
+                                                      sSrcTempPartInfo,
+                                                      sSrcTempPartInfo->partitionID,
+                                                      sNewSourcePartAttr )
+                      != IDE_SUCCESS );
+
+            if (( sNewTargetPartAttr->alterPart->partKeyCondMinValStr->length != 0 ) ||
+                ( sNewSourcePartAttr->alterPart->partKeyCondMinValStr->length != 0 ))
             {
-                IDE_TEST( qdbCommon::makePartCondValList( aStatement,
-                                                          sTargetPartInfoList->partitionInfo,
-                                                          sTargetPartInfoList->partitionInfo->partitionID,
-                                                          sNewTargetPartAttr )
-                          != IDE_SUCCESS );
+                // min value
+                IDE_TEST_RAISE( qmoPartition::compareRangeUsingHashPartition(
+                                    sNewTargetPartAttr->alterPart->partCondMinVal,
+                                    sNewSourcePartAttr->alterPart->partCondMinVal ) != 0,
+                                ERR_REPLACE_DIFFERENT_PARTITION );
+            }
+            else
+            {
+                // nothing to do
+            }
 
-                IDE_TEST( qdbCommon::makePartCondValList( aStatement,
-                                                          sSourcePartInfoList->partitionInfo,
-                                                          sSourcePartInfoList->partitionInfo->partitionID,
-                                                          sNewSourcePartAttr )
-                          != IDE_SUCCESS );
-
-                if (( sNewTargetPartAttr->alterPart->partKeyCondMinValStr->length != 0 ) ||
-                    ( sNewSourcePartAttr->alterPart->partKeyCondMinValStr->length != 0 ))
-                {
-                    // min value
-                    IDE_TEST_RAISE( qmoPartition::compareRangeUsingHashPartition(
-                                        sNewTargetPartAttr->alterPart->partCondMinVal,
-                                        sNewSourcePartAttr->alterPart->partCondMinVal ) != 0,
-                                    ERR_REPLACE_DIFFERENT_PARTITION );
-                }
-                else
-                {
-                    // nothing to do
-                }
-
-                if (( sNewTargetPartAttr->alterPart->partKeyCondMaxValStr->length != 0 ) ||
-                    ( sNewSourcePartAttr->alterPart->partKeyCondMaxValStr->length != 0 ))
-                {
-                    // max value
-                    IDE_TEST_RAISE( qmoPartition::compareRangeUsingHashPartition(
-                                        sNewTargetPartAttr->alterPart->partCondMaxVal,
-                                        sNewSourcePartAttr->alterPart->partCondMaxVal ) != 0,
-                                    ERR_REPLACE_DIFFERENT_PARTITION );
-                }
-                else
-                {
-                    // nothing to do
-                }
+            if (( sNewTargetPartAttr->alterPart->partKeyCondMaxValStr->length != 0 ) ||
+                ( sNewSourcePartAttr->alterPart->partKeyCondMaxValStr->length != 0 ))
+            {
+                // max value
+                IDE_TEST_RAISE( qmoPartition::compareRangeUsingHashPartition(
+                                    sNewTargetPartAttr->alterPart->partCondMaxVal,
+                                    sNewSourcePartAttr->alterPart->partCondMaxVal ) != 0,
+                                ERR_REPLACE_DIFFERENT_PARTITION );
+            }
+            else
+            {
+                // nothing to do
             }
         }
         else if( sSrcTempPartInfo->partitionMethod == QCM_PARTITION_METHOD_HASH )
@@ -7031,48 +7638,65 @@ IDE_RC qdbCopySwap::validateReplacePartition( qcStatement      * aStatement,
         }
         else if( sTableInfo->partitionMethod == QCM_PARTITION_METHOD_LIST )
         {
-            for ( sTargetPartInfoList = aParseTree->partTable->partInfoList,
-                      sSourcePartInfoList = aParseTree->mSourcePartTable->mPartInfoList;
-                  sTargetPartInfoList != NULL;
-                  sTargetPartInfoList = sTargetPartInfoList->next,
-                      sSourcePartInfoList = sSourcePartInfoList->next )
-            {
-                IDE_TEST( qdbCommon::makePartCondValList( aStatement,
-                                                          sTargetPartInfoList->partitionInfo,
-                                                          sTargetPartInfoList->partitionInfo->partitionID,
-                                                          sNewTargetPartAttr )
-                          != IDE_SUCCESS );
+            IDE_TEST( qdbCommon::makePartCondValList( aStatement,
+                                                      sDstTempPartInfo,
+                                                      sDstTempPartInfo->partitionID,
+                                                      sNewTargetPartAttr )
+                      != IDE_SUCCESS );
 
-                IDE_TEST( qdbCommon::makePartCondValList( aStatement,
-                                                          sSourcePartInfoList->partitionInfo,
-                                                          sSourcePartInfoList->partitionInfo->partitionID,
-                                                          sNewSourcePartAttr )
-                          != IDE_SUCCESS );
+            IDE_TEST( qdbCommon::makePartCondValList( aStatement,
+                                                      sSrcTempPartInfo,
+                                                      sSrcTempPartInfo->partitionID,
+                                                      sNewSourcePartAttr )
+                      != IDE_SUCCESS );
                 
-                if ( sNewSourcePartAttr->alterPart->partKeyCondMaxValStr->length > 0 )
-                    {
-                        for( sMaxValCount = 0;
-                             sMaxValCount < sNewSourcePartAttr->alterPart->partCondMaxVal->partCondValCount;
-                             sMaxValCount++ )
-                        {
-                            IDE_TEST_RAISE( qmoPartition::compareListPartition(
-                                                sTableInfo->partKeyColumns,
-                                                sNewTargetPartAttr->alterPart->partCondMaxVal,
-                                                sNewSourcePartAttr->alterPart->partCondMaxVal->partCondValues[sMaxValCount] )
-                                            != ID_TRUE,
-                                            ERR_REPLACE_DIFFERENT_PARTITION );
-                        }
-                    }
-                    else
-                    {
-                        // nothing to do
-                    }
+            if ( sNewSourcePartAttr->alterPart->partKeyCondMaxValStr->length > 0 )
+            {
+                for( sMaxValCount = 0;
+                     sMaxValCount < sNewSourcePartAttr->alterPart->partCondMaxVal->partCondValCount;
+                     sMaxValCount++ )
+                {
+                    IDE_TEST_RAISE( qmoPartition::compareListPartition(
+                                        sTableInfo->partKeyColumns,
+                                        sNewTargetPartAttr->alterPart->partCondMaxVal,
+                                        sNewSourcePartAttr->alterPart->partCondMaxVal->partCondValues[sMaxValCount] )
+                                    != ID_TRUE,
+                                    ERR_REPLACE_DIFFERENT_PARTITION );
+                }
+            }
+            else
+            {
+                // nothing to do
             }
         }
         else
         {
             // Nothing to do
         }
+
+        if ( QCG_GET_SESSION_IS_NEED_DDL_INFO( aStatement ) == ID_TRUE )
+        {
+            IDE_TEST( QC_QMP_MEM ( aStatement )->alloc( ID_SIZEOF(smOID) * 2, (void**)&sDDLTableOIDArray )
+                      != IDE_SUCCESS);
+            sDDLTableOIDArray[0] = sTableInfo->tableOID;
+            sDDLTableOIDArray[1] = sSourceTableInfo->tableOID;
+
+            IDE_TEST( aStatement->qmxMem->alloc( ID_SIZEOF(smOID) * 2 * 1, (void**)&sDDLPartOIDArray )
+                      != IDE_SUCCESS);
+            sDDLPartOIDArray[0] = sDstTempPartInfo->tableOID;
+            sDDLPartOIDArray[1] = sSrcTempPartInfo->tableOID;
+
+            qrc::setDDLSrcInfo( aStatement,
+                                ID_TRUE,
+                                2,
+                                sDDLTableOIDArray,
+                                1,
+                                sDDLPartOIDArray );
+        }
+        else
+        {
+            /* Nothing to do */
+        } 
     }
     else
     {

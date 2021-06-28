@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtlTerritory.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: mtlTerritory.h 87064 2020-03-30 04:21:12Z jake.jang $
  ***********************************************************************/
 
 #ifndef _O_MTL_TERRITORY_H_
@@ -161,6 +161,10 @@ public:
     static IDE_RC  checkNlsNumericChar( SChar * aNumChar );
 
     static IDE_RC  createCurrencySymbolTable( void );
+
+    // PROJ-2727
+    static IDE_RC  searchNlsISOTerritoryName(  SChar  * aValue,
+                                               SChar  * aBuffer );
 };
 
 #endif /* _O_MTL_TERRITORY_H_ */

@@ -136,9 +136,9 @@ void prepareInsertQuery( oaLogRecordInsert * aLogRecord,
 
     if ( aIsDirectPathMode == ACP_TRUE )
     {
-        /* ~ 10g : APPEND HintëŠ” INSERT ... SELECT êµ¬ë¬¸ì—ì„œë§Œ ë™ì‘
-         * 11gR1 : INSERT ... VALUES ... êµ¬ë¬¸ì—ì„œ APPEND Hintê°€ ë™ì‘
-         * 11gR2 : INSERT ... VALUES ... êµ¬ë¬¸ì—ì„œ APPEND_VALUES Hintê°€ ë™ì‘
+        /* ~ 10g : APPEND Hint´Â INSERT ... SELECT ±¸¹®¿¡¼­¸¸ µ¿ÀÛ
+         * 11gR1 : INSERT ... VALUES ... ±¸¹®¿¡¼­ APPEND Hint°¡ µ¿ÀÛ
+         * 11gR2 : INSERT ... VALUES ... ±¸¹®¿¡¼­ APPEND_VALUES Hint°¡ µ¿ÀÛ
          */
         if ( aSetUserToTable == ACP_TRUE )
         {
@@ -312,7 +312,7 @@ void prepareDeleteQuery( oaLogRecordDelete * aLogRecord,
 }
 
 /**
- * @breif  Array DML Max Sizeë¥¼ ì–»ëŠ”ë‹¤.
+ * @breif  Array DML Max Size¸¦ ¾ò´Â´Ù.
  *
  * @param  aHandle    Oracle Applier Handle
  *
@@ -328,11 +328,11 @@ acp_uint32_t oaApplierGetArrayDMLMaxSize( oaApplierHandle * aHandle )
 }
 
 /**
- * @breif  Group Commit ì—¬ë¶€ë¥¼ ì–»ëŠ”ë‹¤.
+ * @breif  Group Commit ¿©ºÎ¸¦ ¾ò´Â´Ù.
  *
  * @param  aHandle    Oracle Applier Handle
  *
- * @return Group Commit ì—¬ë¶€
+ * @return Group Commit ¿©ºÎ
  */
 acp_bool_t oaApplierIsGroupCommit( oaApplierHandle * aHandle )
 {
@@ -367,12 +367,12 @@ ace_rc_t oaApplierApplyLogRecordList( oaContext       * aContext,
 }
 
 /**
- * @breif  ACK ì „ì†¡ì´ í•„ìš”í•œì§€ í™•ì¸í•œë‹¤.
+ * @breif  ACK Àü¼ÛÀÌ ÇÊ¿äÇÑÁö È®ÀÎÇÑ´Ù.
  *
  * @param  aHandle    Adapter Applier Handle
  * @param  aLogRecord Log Record
  *
- * @return ACK ì „ì†¡ í•„ìš” ì—¬ë¶€
+ * @return ACK Àü¼Û ÇÊ¿ä ¿©ºÎ
  */
 acp_bool_t oaApplierIsAckNeeded( oaApplierHandle    * aHandle,
                                  oaLogRecord        * aLogRecord )

@@ -195,37 +195,37 @@ mtdModule mtdVarchar = {
     {
         // Key Comparison
         {
-            // mt valueë“¤ ê°„ì˜ compare
+            // mt valueµé °£ÀÇ compare
             mtdVarcharFixedMtdFixedMtdKeyAscComp, // Ascending Key Comparison
             mtdVarcharFixedMtdFixedMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt valueë“¤ ê°„ì˜ compare
+            // mt valueµé °£ÀÇ compare
             mtdVarcharMtdMtdKeyAscComp, // Ascending Key Comparison
             mtdVarcharMtdMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // mt valueì™€ stored valueê°„ì˜ compare
+            // mt value¿Í stored value°£ÀÇ compare
             mtdVarcharStoredMtdKeyAscComp, // Ascending Key Comparison
             mtdVarcharStoredMtdKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            // stored valueë“¤ ê°„ì˜ compare
+            // stored valueµé °£ÀÇ compare
             mtdVarcharStoredStoredKeyAscComp, // Ascending Key Comparison
             mtdVarcharStoredStoredKeyDescComp // Descending Key Comparison
         }
         ,
         {
-            /* PROJ-2433 : index Direct keyì™€ fixed mt valueë“¤ ê°„ì˜ compare */
+            /* PROJ-2433 : index Direct key¿Í fixed mt valueµé °£ÀÇ compare */
             mtdVarcharIndexKeyFixedMtdKeyAscComp,
             mtdVarcharIndexKeyFixedMtdKeyDescComp
         }
         ,
         {
-            /* PROJ-2433 : index Direct keyì™€ mt valueë“¤ ê°„ì˜ compare */
+            /* PROJ-2433 : index Direct key¿Í mt valueµé °£ÀÇ compare */
             mtdVarcharIndexKeyMtdKeyAscComp,
             mtdVarcharIndexKeyMtdKeyDescComp
         }
@@ -262,7 +262,7 @@ IDE_RC mtdInitialize( UInt aNo )
     IDE_TEST( mtd::initializeModule( &mtdVarchar, aNo )
               != IDE_SUCCESS );
 
-    // mtdColumnì˜ ì´ˆê¸°í™”
+    // mtdColumnÀÇ ÃÊ±âÈ­
     IDE_TEST( mtc::initializeColumn( & mtdColumn,
                                      & mtdVarchar,
                                      0,   // arguments
@@ -332,8 +332,8 @@ IDE_RC mtdValue( mtcTemplate* /* aTemplate */,
     *aResult = IDE_SUCCESS;
 
     // To fix BUG-13444
-    // tokenFenceì™€ RowFenceëŠ” ë³„ê°œì˜ ê²€ì‚¬ê³¼ì •ì´ë¯€ë¡œ,
-    // ë¨¼ì € RowFenceê²€ì‚¬ í›„ TokenFenceê²€ì‚¬ë¥¼ í•´ì•¼ í•œë‹¤.
+    // tokenFence¿Í RowFence´Â º°°³ÀÇ °Ë»ç°úÁ¤ÀÌ¹Ç·Î,
+    // ¸ÕÀú RowFence°Ë»ç ÈÄ TokenFence°Ë»ç¸¦ ÇØ¾ß ÇÑ´Ù.
     sIterator = sValue->value;
     sFence    = (UChar*)aValue + aValueSize;
     if( sIterator >= sFence )
@@ -362,13 +362,13 @@ IDE_RC mtdValue( mtcTemplate* /* aTemplate */,
         }
 
         // BUG-40290
-        // ë²„í¼ê°€ ëª¨ì˜ë¼ì„œ ì˜ë ¤ë„ length ë¥¼ ê¸°ë¡í•´ì£¼ë©´ ì¢‹ë‹¤.
+        // ¹öÆÛ°¡ ¸ğÀß¶ó¼­ Àß·Áµµ length ¸¦ ±â·ÏÇØÁÖ¸é ÁÁ´Ù.
         sValue->length = sIterator - sValue->value;
     }
 
     if( *aResult == IDE_SUCCESS )
     {
-        // precision, scale ì¬ ì„¤ì • í›„, estimateë¡œ semantic ê²€ì‚¬
+        // precision, scale Àç ¼³Á¤ ÈÄ, estimate·Î semantic °Ë»ç
         aColumn->flag            = 1;
         aColumn->precision       = sValue->length != 0 ? sValue->length : 1;
         aColumn->scale           = 0;
@@ -438,7 +438,7 @@ SInt mtdVarcharLogicalAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -501,7 +501,7 @@ SInt mtdVarcharLogicalDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
+ * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
  *
  * Implementation :
  *
@@ -564,7 +564,7 @@ SInt mtdVarcharFixedMtdFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -627,7 +627,7 @@ SInt mtdVarcharFixedMtdFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
+ * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
  *
  * Implementation :
  *
@@ -690,7 +690,7 @@ SInt mtdVarcharMtdMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -762,7 +762,7 @@ SInt mtdVarcharMtdMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyë“¤ ê°„ì˜ descending compare
+ * Description : Mtd Å¸ÀÔÀÇ Keyµé °£ÀÇ descending compare
  *
  * Implementation :
  *
@@ -834,7 +834,7 @@ SInt mtdVarcharStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ ascending compare
+ * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -852,8 +852,8 @@ SInt mtdVarcharStoredMtdKeyAscComp( mtdValueInfo * aValueInfo1,
     // value1
     //---------    
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // Dictionary compression columnì¸ ê²½ìš° store typeì„mt typeìœ¼ë¡œ
-    // ë³€í™˜í•´ì„œ ì‹¤ì œ ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+    // Dictionary compression columnÀÎ °æ¿ì store typeÀ»mt typeÀ¸·Î
+    // º¯È¯ÇØ¼­ ½ÇÁ¦ µ¥ÀÌÅÍ¸¦ °¡Á®¿Â´Ù.
     if ( (((smiColumn*)aValueInfo1->column)->flag & SMI_COLUMN_COMPRESSION_MASK) !=
          SMI_COLUMN_COMPRESSION_TRUE )
     {
@@ -921,7 +921,7 @@ SInt mtdVarcharStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Mtd íƒ€ì…ì˜ Keyì™€ Stored Key ê°„ì˜ descending compare
+ * Description : Mtd Å¸ÀÔÀÇ Key¿Í Stored Key °£ÀÇ descending compare
  *
  * Implementation :
  *
@@ -939,8 +939,8 @@ SInt mtdVarcharStoredMtdKeyDescComp( mtdValueInfo * aValueInfo1,
     // value1
     //---------    
     // PROJ-2429 Dictionary based data compress for on-disk DB
-    // Dictionary compression columnì¸ ê²½ìš° store typeì„mt typeìœ¼ë¡œ
-    // ë³€í™˜í•´ì„œ ì‹¤ì œ ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+    // Dictionary compression columnÀÎ °æ¿ì store typeÀ»mt typeÀ¸·Î
+    // º¯È¯ÇØ¼­ ½ÇÁ¦ µ¥ÀÌÅÍ¸¦ °¡Á®¿Â´Ù.
     if ( (((smiColumn*)aValueInfo1->column)->flag & SMI_COLUMN_COMPRESSION_MASK) !=
          SMI_COLUMN_COMPRESSION_TRUE )
     {
@@ -1007,7 +1007,7 @@ SInt mtdVarcharStoredStoredKeyAscComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyë“¤ ê°„ì˜ ascending compare
+ * Description : Stored Keyµé °£ÀÇ ascending compare
  *
  * Implementation :
  *
@@ -1104,7 +1104,7 @@ SInt mtdVarcharStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
 {
 /***********************************************************************
  *
- * Description : Stored Keyë“¤ ê°„ì˜ descending compare
+ * Description : Stored Keyµé °£ÀÇ descending compare
  *
  * Implementation :
  *
@@ -1197,8 +1197,8 @@ SInt mtdVarcharStoredStoredKeyDescComp( mtdValueInfo * aValueInfo1,
 }
 
 /* PROJ-2433
- * Direct key Indexì˜ direct keyì™€ mtdì˜ compare í•¨ìˆ˜
- * - partial direct keyë¥¼ ì²˜ë¦¬í•˜ëŠ”ë¶€ë¶„ ì¶”ê°€ */
+ * Direct key IndexÀÇ direct key¿Í mtdÀÇ compare ÇÔ¼ö
+ * - partial direct key¸¦ Ã³¸®ÇÏ´ÂºÎºĞ Ãß°¡ */
 SInt mtdVarcharIndexKeyFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
                                            mtdValueInfo * aValueInfo2 )
 {
@@ -1224,19 +1224,19 @@ SInt mtdVarcharIndexKeyFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 
     /*
      * PROJ-2433 Direct Key Index
-     * Partial Direct Key ì²˜ë¦¬
+     * Partial Direct Key Ã³¸®
      * 
-     * - Direct Keyê°€ partial direct keyì¸ ê²½ìš°
-     *   partialëœ ê¸¸ì´ë§Œí¼ë§Œ ë¹„êµí•˜ë„ë¡ lengthë¥¼ ìˆ˜ì •í•œë‹¤
+     * - Direct Key°¡ partial direct keyÀÎ °æ¿ì
+     *   partialµÈ ±æÀÌ¸¸Å­¸¸ ºñ±³ÇÏµµ·Ï length¸¦ ¼öÁ¤ÇÑ´Ù
      */ 
     if ( ( aValueInfo1->flag & MTD_PARTIAL_KEY_MASK ) == MTD_PARTIAL_KEY_ON )
     {
         sDirectKeyPartialSize = aValueInfo1->length;
 
-        /* partail key ì´ë©´ */
+        /* partail key ÀÌ¸é */
         if ( sDirectKeyPartialSize != 0 )
         {
-            /* direct key ê¸¸ì´ë³´ì •*/
+            /* direct key ±æÀÌº¸Á¤*/
             if ( ( sLength1 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength1 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -1246,7 +1246,7 @@ SInt mtdVarcharIndexKeyFixedMtdKeyAscComp( mtdValueInfo * aValueInfo1,
                 /* nothing todo */
             }
 
-            /* search key ë„ partial ê¸¸ì´ë§Œí¼ ë³´ì •*/
+            /* search key µµ partial ±æÀÌ¸¸Å­ º¸Á¤*/
             if ( ( sLength2 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength2 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -1348,19 +1348,19 @@ SInt mtdVarcharIndexKeyFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 
     /*
      * PROJ-2433 Direct Key Index
-     * Partial Direct Key ì²˜ë¦¬
+     * Partial Direct Key Ã³¸®
      * 
-     * - Direct Keyê°€ partial direct keyì¸ ê²½ìš°
-     *   partialëœ ê¸¸ì´ë§Œí¼ë§Œ ë¹„êµí•˜ë„ë¡ lengthë¥¼ ìˆ˜ì •í•œë‹¤
+     * - Direct Key°¡ partial direct keyÀÎ °æ¿ì
+     *   partialµÈ ±æÀÌ¸¸Å­¸¸ ºñ±³ÇÏµµ·Ï length¸¦ ¼öÁ¤ÇÑ´Ù
      */ 
     if ( ( aValueInfo1->flag & MTD_PARTIAL_KEY_MASK ) == MTD_PARTIAL_KEY_ON )
     {
         sDirectKeyPartialSize = aValueInfo1->length;
 
-        /* partail key ì´ë©´ */
+        /* partail key ÀÌ¸é */
         if ( sDirectKeyPartialSize != 0 )
         {
-            /* direct key ê¸¸ì´ë³´ì •*/
+            /* direct key ±æÀÌº¸Á¤*/
             if ( ( sLength1 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength1 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -1370,7 +1370,7 @@ SInt mtdVarcharIndexKeyFixedMtdKeyDescComp( mtdValueInfo * aValueInfo1,
                 /* nothing todo */
             }
 
-            /* search key ë„ partial ê¸¸ì´ë§Œí¼ ë³´ì •*/
+            /* search key µµ partial ±æÀÌ¸¸Å­ º¸Á¤*/
             if ( ( sLength2 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength2 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -1479,19 +1479,19 @@ SInt mtdVarcharIndexKeyMtdKeyAscComp( mtdValueInfo * aValueInfo1,
 
     /*
      * PROJ-2433 Direct Key Index
-     * Partial Direct Key ì²˜ë¦¬
+     * Partial Direct Key Ã³¸®
      * 
-     * - Direct Keyê°€ partial direct keyì¸ ê²½ìš°
-     *   partialëœ ê¸¸ì´ë§Œí¼ë§Œ ë¹„êµí•˜ë„ë¡ lengthë¥¼ ìˆ˜ì •í•œë‹¤
+     * - Direct Key°¡ partial direct keyÀÎ °æ¿ì
+     *   partialµÈ ±æÀÌ¸¸Å­¸¸ ºñ±³ÇÏµµ·Ï length¸¦ ¼öÁ¤ÇÑ´Ù
      */ 
     if ( ( aValueInfo1->flag & MTD_PARTIAL_KEY_MASK ) == MTD_PARTIAL_KEY_ON )
     {
         sDirectKeyPartialSize = aValueInfo1->length;
 
-        /* partail key ì´ë©´ */
+        /* partail key ÀÌ¸é */
         if ( sDirectKeyPartialSize != 0 )
         {
-            /* direct key ê¸¸ì´ë³´ì •*/
+            /* direct key ±æÀÌº¸Á¤*/
             if ( ( sLength1 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength1 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -1501,7 +1501,7 @@ SInt mtdVarcharIndexKeyMtdKeyAscComp( mtdValueInfo * aValueInfo1,
                 /* nothing todo */
             }
 
-            /* search key ë„ partial ê¸¸ì´ë§Œí¼ ë³´ì •*/
+            /* search key µµ partial ±æÀÌ¸¸Å­ º¸Á¤*/
             if ( ( sLength2 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength2 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -1610,19 +1610,19 @@ SInt mtdVarcharIndexKeyMtdKeyDescComp( mtdValueInfo * aValueInfo1,
 
     /*
      * PROJ-2433 Direct Key Index
-     * Partial Direct Key ì²˜ë¦¬
+     * Partial Direct Key Ã³¸®
      * 
-     * - Direct Keyê°€ partial direct keyì¸ ê²½ìš°
-     *   partialëœ ê¸¸ì´ë§Œí¼ë§Œ ë¹„êµí•˜ë„ë¡ lengthë¥¼ ìˆ˜ì •í•œë‹¤
+     * - Direct Key°¡ partial direct keyÀÎ °æ¿ì
+     *   partialµÈ ±æÀÌ¸¸Å­¸¸ ºñ±³ÇÏµµ·Ï length¸¦ ¼öÁ¤ÇÑ´Ù
      */ 
     if ( ( aValueInfo1->flag & MTD_PARTIAL_KEY_MASK ) == MTD_PARTIAL_KEY_ON )
     {
         sDirectKeyPartialSize = aValueInfo1->length;
 
-        /* partail key ì´ë©´ */
+        /* partail key ÀÌ¸é */
         if ( sDirectKeyPartialSize != 0 )
         {
-            /* direct key ê¸¸ì´ë³´ì •*/
+            /* direct key ±æÀÌº¸Á¤*/
             if ( ( sLength1 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength1 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -1632,7 +1632,7 @@ SInt mtdVarcharIndexKeyMtdKeyDescComp( mtdValueInfo * aValueInfo1,
                 /* nothing todo */
             }
 
-            /* search key ë„ partial ê¸¸ì´ë§Œí¼ ë³´ì •*/
+            /* search key µµ partial ±æÀÌ¸¸Å­ º¸Á¤*/
             if ( ( sLength2 + mtdHeaderSize() ) > sDirectKeyPartialSize )
             {
                 sLength2 = (UShort)( sDirectKeyPartialSize - mtdHeaderSize() );
@@ -1751,7 +1751,7 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
 {
 /***********************************************************************
  *
- * Description : valueì˜ semantic ê²€ì‚¬ ë° mtcColum ì´ˆê¸°í™”
+ * Description : valueÀÇ semantic °Ë»ç ¹× mtcColum ÃÊ±âÈ­
  *
  * Implementation :
  *
@@ -1764,9 +1764,9 @@ IDE_RC mtdValidate( mtcColumn * aColumn,
     IDE_TEST_RAISE( sCharVal->length + ID_SIZEOF(UShort) != aValueSize,
                     ERR_INVALID_LENGTH );
 
-    // ì´ˆê¸°í™”ëœ aColumnì€ cannonize() ì‹œì— ì‚¬ìš©
-    // ì´ë•Œ, data type moduleì˜ precision ì •ë³´ë§Œì„ ì‚¬ìš©í•˜ë¯€ë¡œ,
-    // language ì •ë³´ ì„¤ì •í•  í•„ìš”ì—†ìŒ
+    // ÃÊ±âÈ­µÈ aColumnÀº cannonize() ½Ã¿¡ »ç¿ë
+    // ÀÌ¶§, data type moduleÀÇ precision Á¤º¸¸¸À» »ç¿ëÇÏ¹Ç·Î,
+    // language Á¤º¸ ¼³Á¤ÇÒ ÇÊ¿ä¾øÀ½
     IDE_TEST( mtc::initializeColumn( aColumn,
                                      & mtdVarchar,
                                      1,                // arguments
@@ -1807,7 +1807,7 @@ IDE_RC mtdValueFromOracle( mtcColumn*  aColumn,
         aOracleLength = 0;
     }
 
-    // aColumnì˜ ì´ˆê¸°í™”
+    // aColumnÀÇ ÃÊ±âÈ­
     IDE_TEST( mtc::initializeColumn( aColumn,
                                      & mtdVarchar,
                                      1,
@@ -1849,8 +1849,8 @@ static IDE_RC mtdStoredValue2MtdValue( UInt              aColumnSize,
 {
 /*******************************************************************
  * PROJ-1705
- * ë””ìŠ¤í¬í…Œì´ë¸”ì»¬ëŸ¼ì˜ ë°ì´íƒ€ë¥¼
- * qp ë ˆì½”ë“œì²˜ë¦¬ì˜ì—­ì˜ í•´ë‹¹ ì»¬ëŸ¼ìœ„ì¹˜ì— ë³µì‚¬
+ * µğ½ºÅ©Å×ÀÌºíÄÃ·³ÀÇ µ¥ÀÌÅ¸¸¦
+ * qp ·¹ÄÚµåÃ³¸®¿µ¿ªÀÇ ÇØ´ç ÄÃ·³À§Ä¡¿¡ º¹»ç
  *******************************************************************/
 
     mtdCharType* sVarcharValue;
@@ -1859,7 +1859,7 @@ static IDE_RC mtdStoredValue2MtdValue( UInt              aColumnSize,
     
     if( ( aDestValueOffset == 0 ) && ( aLength == 0 ) )
     {
-        // NULL ë°ì´íƒ€
+        // NULL µ¥ÀÌÅ¸
         sVarcharValue->length = 0;
     }
     else
@@ -1886,9 +1886,9 @@ UInt mtdNullValueSize()
 {
 /*******************************************************************
  * PROJ-1705
- * ê° ë°ì´íƒ€íƒ€ì…ì˜ null Valueì˜ í¬ê¸° ë°˜í™˜
- * ì˜ˆ ) mtdCharType( UShort length; UChar value[1] ) ì—ì„œ
- *      length íƒ€ì…ì¸ UShortì˜ í¬ê¸°ë¥¼ ë°˜í™˜
+ * °¢ µ¥ÀÌÅ¸Å¸ÀÔÀÇ null ValueÀÇ Å©±â ¹İÈ¯
+ * ¿¹ ) mtdCharType( UShort length; UChar value[1] ) ¿¡¼­
+ *      length Å¸ÀÔÀÎ UShortÀÇ Å©±â¸¦ ¹İÈ¯
  *******************************************************************/
     return mtdActualSize( NULL, &mtdCharNull );
 }
@@ -1897,10 +1897,10 @@ static UInt mtdHeaderSize()
 {
 /***********************************************************************
  * PROJ-1705
- * lengthë¥¼ ê°€ì§€ëŠ” ë°ì´íƒ€íƒ€ì…ì˜ length ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” ë³€ìˆ˜ì˜ í¬ê¸° ë°˜í™˜
- * ì˜ˆ ) mtdCharType( UShort length; UChar value[1] ) ì—ì„œ
- *      length íƒ€ì…ì¸ UShortì˜ í¬ê¸°ë¥¼ ë°˜í™˜
- *  integerì™€ ê°™ì€ ê³ ì •ê¸¸ì´ ë°ì´íƒ€íƒ€ì…ì€ 0 ë°˜í™˜
+ * length¸¦ °¡Áö´Â µ¥ÀÌÅ¸Å¸ÀÔÀÇ length Á¤º¸¸¦ ÀúÀåÇÏ´Â º¯¼öÀÇ Å©±â ¹İÈ¯
+ * ¿¹ ) mtdCharType( UShort length; UChar value[1] ) ¿¡¼­
+ *      length Å¸ÀÔÀÎ UShortÀÇ Å©±â¸¦ ¹İÈ¯
+ *  integer¿Í °°Àº °íÁ¤±æÀÌ µ¥ÀÌÅ¸Å¸ÀÔÀº 0 ¹İÈ¯
  **********************************************************************/
 
     return ID_SIZEOF(UShort);    
@@ -1910,9 +1910,9 @@ static UInt mtdStoreSize( const smiColumn * /*aColumn*/ )
 {
 /***********************************************************************
  * PROJ-2399 row tmaplate 
- * smì— ì €ì¥ë˜ëŠ” ë°ì´í„°ì˜ í¬ê¸°ë¥¼ ë°˜í™˜í•œë‹¤.
- * variable íƒ€ì…ì˜ ë°ì´í„° íƒ€ì…ì€ ID_UINT_MAXë¥¼ ë°˜í™˜
- * mtheaderê°€ smì— ì €ì¥ëœê²½ìš°ê°€ ì•„ë‹ˆë©´ mtheaderí¬ê¸°ë¥¼ ë¹¼ì„œ ë°˜í™˜
+ * sm¿¡ ÀúÀåµÇ´Â µ¥ÀÌÅÍÀÇ Å©±â¸¦ ¹İÈ¯ÇÑ´Ù.
+ * variable Å¸ÀÔÀÇ µ¥ÀÌÅÍ Å¸ÀÔÀº ID_UINT_MAX¸¦ ¹İÈ¯
+ * mtheader°¡ sm¿¡ ÀúÀåµÈ°æ¿ì°¡ ¾Æ´Ï¸é mtheaderÅ©±â¸¦ »©¼­ ¹İÈ¯
  **********************************************************************/
 
     return ID_UINT_MAX;

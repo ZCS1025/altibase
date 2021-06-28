@@ -23,12 +23,12 @@
  *     ALTIBASE SHARD manage ment function
  *
  * Syntax :
- *    SHARD_SET_SHARD_RAGNE( user_name     VARCHAR,
- *                           table_name    VARCHAR,
- *                           value         VARCHAR,
- *                           sub_value     VARCHAR,
- *                           node_name     VARCHAR,
- *                           set_func_type VARCHAR )
+ *    SHARD_SET_SHARD_RANGE_LOCAL( user_name     VARCHAR,
+ *                                 table_name    VARCHAR,
+ *                                 value         VARCHAR,
+ *                                 sub_value     VARCHAR,
+ *                                 node_name     VARCHAR,
+ *                                 set_func_type VARCHAR )
  *    RETURN 0
  *
  **********************************************************************/
@@ -37,6 +37,7 @@
 #include <sdm.h>
 #include <smi.h>
 #include <qcg.h>
+#include <sdiZookeeper.h>
 
 extern mtdModule mtdInteger;
 extern mtdModule mtdVarchar;
@@ -54,7 +55,7 @@ static IDE_RC sdfEstimate( mtcNode*        aNode,
 mtfModule sdfSetShardRangeModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     sdfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -173,8 +174,36 @@ IDE_RC sdfCalculate_SetShardRange( mtcNode*     aNode,
     smiStatement              sSmiStmt;
     UInt                      sSmiStmtFlag;
     SInt                      sState = 0;
+    idBool                    sIsOldSessionShardMetaTouched = ID_FALSE;
+    SChar                     sPartitionName[QC_MAX_OBJECT_NAME_LEN + 1];
+    qcmTablePartitionType     sTablePartitionType = QCM_PARTITIONED_TABLE;
 
+    ULong                     sSMN = ID_ULONG(0);
+    idBool                    sIsTableFound = ID_FALSE;
+    sdiTableInfo              sTableInfo;
+    sdiSplitMethod 			  sSdSplitMethod = SDI_SPLIT_NONE;
+    sdiLocalMetaInfo          sLocalMetaInfo;
+    UInt                      i = 0;
+
+    sdiReplicaSetInfo         sReplicaSetInfo;
+    sdiReplicaSetInfo         sFoundReplicaSetInfo;
+    SChar                     sObjectValue[SDI_RANGE_VARCHAR_MAX_PRECISION + 1];
+    qcNamePosition            sPosition;
+    SLong                     sLongVal;
+    
     sStatement   = ((qcTemplate*)aTemplate)->stmt;
+    sOldStmt     = QC_SMI_STMT(sStatement);
+    sStatement->mFlag &= ~QC_STMT_SHARD_META_CHANGE_MASK;
+    sStatement->mFlag |= QC_STMT_SHARD_META_CHANGE_TRUE;
+
+    sObjectValue[0] = '\0';
+    
+    /* BUG-47623 »þµå ¸ÞÅ¸ º¯°æ¿¡ ´ëÇÑ trc ·Î±×Áß commit ·Î±×¸¦ ÀÛ¼ºÇÏ±âÀü¿¡ DASSERT ·Î Á×´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù. */
+    if ( ( sStatement->session->mQPSpecific.mFlag & QC_SESSION_SHARD_META_TOUCH_MASK ) ==
+         QC_SESSION_SHARD_META_TOUCH_TRUE )
+    {
+        sIsOldSessionShardMetaTouched = ID_TRUE;
+    }
 
     // BUG-46366
     IDE_TEST_RAISE( ( QC_SMI_STMT(sStatement)->getTrans() == NULL ) ||
@@ -185,6 +214,15 @@ IDE_RC sdfCalculate_SetShardRange( mtcNode*     aNode,
     // Check Privilege
     IDE_TEST_RAISE( QCG_GET_SESSION_USER_ID(sStatement) != QCI_SYS_USER_ID,
                     ERR_NO_GRANT );
+
+    if ( SDU_SHARD_LOCAL_FORCE != 1 )
+    {
+        /* Shard Local OperationÀº internal ¿¡¼­¸¸ ¼öÇàµÇ¾î¾ß ÇÑ´Ù.  */
+        IDE_TEST_RAISE( ( QCG_GET_SESSION_IS_SHARD_INTERNAL_LOCAL_OPERATION( sStatement ) != ID_TRUE ) &&
+                        ( ( sStatement->session->mQPSpecific.mFlag & QC_SESSION_ALTER_META_MASK )
+                             != QC_SESSION_ALTER_META_ENABLE),
+                        ERR_INTERNAL_OPERATION );
+    }
 
     IDE_TEST( mtf::postfixCalculate( aNode,
                                      aStack,
@@ -241,6 +279,24 @@ IDE_RC sdfCalculate_SetShardRange( mtcNode*     aNode,
                         (SChar*)sValue->value,
                         sValue->length );
         sValueStr[sValue->length] = '\0';
+        
+        // PARTITION VALUE¸¦ ÀÔ·Â°ú µ¿ÀÏÇÏ°Ô ' ºÙ¿© ÁØ´Ù.
+        if ( sValueStr[0] == '\'' )
+        {
+            // INPUT ARG ('''A''') => 'A' => '''A'''
+            idlOS::snprintf( sObjectValue,
+                             SDI_RANGE_VARCHAR_MAX_PRECISION + 1,
+                             "''%s''",
+                             sValueStr );
+        }
+        else
+        {
+            // INPUT ARG ('A') => A => 'A'
+            idlOS::snprintf( sObjectValue,
+                             SDI_RANGE_VARCHAR_MAX_PRECISION + 1,
+                             "'%s'",
+                             sValueStr );
+        }
 
         // sub value
         sSubValue = (mtdCharType*)aStack[4].value;
@@ -255,7 +311,7 @@ IDE_RC sdfCalculate_SetShardRange( mtcNode*     aNode,
         // shard node name
         sNodeName = (mtdCharType*)aStack[5].value;
 
-        IDE_TEST_RAISE( sNodeName->length > SDI_NODE_NAME_MAX_SIZE,
+        IDE_TEST_RAISE( sNodeName->length > SDI_CHECK_NODE_NAME_MAX_SIZE,
                         ERR_SHARD_GROUP_NAME_TOO_LONG );
         idlOS::strncpy( sNodeNameStr,
                         (SChar*)sNodeName->value,
@@ -275,6 +331,9 @@ IDE_RC sdfCalculate_SetShardRange( mtcNode*     aNode,
         //---------------------------------
         // Begin Statement for meta
         //---------------------------------
+        IDE_TEST( sdi::getIncreasedSMNForMetaNode( ( QC_SMI_STMT( sStatement ) )->getTrans() , 
+                                                   &sSMN ) 
+                  != IDE_SUCCESS );
 
         sSmiStmtFlag = SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR;
         sOldStmt                = QC_SMI_STMT(sStatement);
@@ -287,6 +346,118 @@ IDE_RC sdfCalculate_SetShardRange( mtcNode*     aNode,
                   != IDE_SUCCESS );
         sState = 2;
 
+        // Shard µî·ÏµÈ Procedure È¤Àº Partitioned Table¸¸ ´ë»óÀ¸·ÎÇÑ´Ù.
+        IDE_TEST( sdm::getTableInfo( QC_SMI_STMT( sStatement ),
+                                     sUserNameStr,
+                                     sTableNameStr,
+                                     sSMN, //sMetaNodeInfo.mShardMetaNumber,
+                                     &sTableInfo,
+                                     &sIsTableFound )
+                  != IDE_SUCCESS );
+
+        IDE_TEST_RAISE( sIsTableFound == ID_FALSE,
+                        ERR_NOT_EXIST_TABLE );
+
+        IDE_TEST( sdm::getAllReplicaSetInfoSortedByPName( QC_SMI_STMT( sStatement ),
+                                                          &sReplicaSetInfo,
+                                                          sSMN ) 
+                  != IDE_SUCCESS );
+        
+        if ( sTableInfo.mObjectType == 'T' )
+        {
+            switch (sdi::getShardObjectType(&sTableInfo))
+            {
+                case SDI_SINGLE_SHARD_KEY_DIST_OBJECT:
+                    IDE_TEST_RAISE( aStack[4].column->module->isNull( aStack[4].column,
+                                                           aStack[4].value ) != ID_TRUE, ERR_ARGUMENT_NOT_APPLICABLE );
+                    
+                    /* HASH, RANGE, LIST ÀÇ °æ¿ì¿¡´Â ÆÄÆ¼¼Ç ÀÌ¸§À» ¾Ë¾Æ¿Í¼­ Ranges_¿¡ ³Ö¾îÁà¾ß ÇÑ´Ù. */
+                    IDE_TEST( sdm::getPartitionNameByValue( QC_SMI_STMT( sStatement ),
+                                                            sUserNameStr,
+                                                            sTableNameStr,
+                                                            sObjectValue,
+                                                            &sTablePartitionType,
+                                                            sPartitionName ) != IDE_SUCCESS );
+
+                    if ( idlOS::strncmp( sPartitionName, SDM_NA_STR, QC_MAX_OBJECT_NAME_LEN + 1 ) == 0 )
+                    {
+                        // partitioned tableÀÇ °æ¿ì range value¿Í partitionÀÇ °æ°è°ªÀÌ ¸Â´Â °ÍÀÌ ¾øÀ¸¸é ¿¡·¯¸¦ ¹ÝÈ¯ÇÑ´Ù.
+                        IDE_TEST_RAISE( sTablePartitionType != QCM_NONE_PARTITIONED_TABLE, ERR_SHARD_PARTITION_VALUE_NOT_EXIST );
+
+                    }
+                    else
+                    {
+                        /* do nothing */
+                    }
+                    break;
+                case SDI_COMPOSITE_SHARD_KEY_DIST_OBJECT:
+                    IDE_TEST_RAISE( sdi::getShardObjectType(&sTableInfo) != SDI_COMPOSITE_SHARD_KEY_DIST_OBJECT, ERR_ARGUMENT_NOT_APPLICABLE );
+                    /* COMPOSITE Àº ÆÄÆ¼¼Ç ÀÌ¸§°ú ¸ÅÇÎÇÏÁö ¾Ê°í, Ranges_¿¡´Â SDM_NA_STR·Î ÀÔ·ÂµÈ´Ù. */
+                    idlOS::strncpy( sPartitionName, SDM_NA_STR, QC_MAX_OBJECT_NAME_LEN + 1 );
+                    break;
+                case SDI_CLONE_DIST_OBJECT:
+                case SDI_SOLO_DIST_OBJECT:
+                case SDI_NON_SHARD_OBJECT:
+                default:
+                    IDE_RAISE(ERR_ARGUMENT_NOT_APPLICABLE);
+                    break;
+            }
+        }
+        else
+        {
+            idlOS::strncpy( sPartitionName, SDM_NA_STR, QC_MAX_OBJECT_NAME_LEN + 1 );            
+        }
+        
+        //---------------------------------
+        // check hash value
+        //---------------------------------
+
+        // hash max´Â 1~1000±îÁö¸¸ °¡´ÉÇÏ´Ù.
+        if ( sTableInfo.mSplitMethod == SDI_SPLIT_HASH )
+        {
+            sPosition.stmtText = (SChar*)(sValueStr);
+            sPosition.offset   = 0;
+            sPosition.size     = sValue->length;
+
+            IDE_TEST_RAISE( qtc::getBigint( sPosition.stmtText,
+                                            &sLongVal,
+                                            &sPosition ) != IDE_SUCCESS,
+                            ERR_INVALID_SHARD_KEY_RANGE );
+
+            IDE_TEST_RAISE( ( sLongVal <= 0 ) || ( sLongVal > SDI_HASH_MAX_VALUE ),
+                            ERR_INVALID_SHARD_KEY_RANGE );
+        }
+        else
+        {
+            IDE_TEST_RAISE( sValue->length == 0, ERR_INVALID_SHARD_KEY_RANGE );
+        }
+
+        if ( sTableInfo.mSubKeyExists == ID_TRUE )
+        {
+            if ( sTableInfo.mSubSplitMethod == SDI_SPLIT_HASH )
+            {
+                sPosition.stmtText = (SChar*)(sSubValueStr);
+                sPosition.offset   = 0;
+                sPosition.size     = sSubValue->length;
+
+                IDE_TEST_RAISE( qtc::getBigint( sPosition.stmtText,
+                                                &sLongVal,
+                                                &sPosition ) != IDE_SUCCESS,
+                                ERR_INVALID_SHARD_KEY_RANGE );
+
+                IDE_TEST_RAISE( ( sLongVal <= 0 ) || ( sLongVal > SDI_HASH_MAX_VALUE ),
+                                ERR_INVALID_SUB_SHARD_KEY_RANGE );
+            }
+            else
+            {
+                IDE_TEST_RAISE( sSubValue->length == 0, ERR_INVALID_SUB_SHARD_KEY_RANGE );
+            }
+        }
+        else
+        {
+            IDE_TEST_RAISE( sSubValueStr[0] != '\0', ERR_INVALID_SUB_SHARD_KEY_RANGE );
+        }
+        
         //---------------------------------
         // Insert Meta
         //---------------------------------
@@ -294,10 +465,9 @@ IDE_RC sdfCalculate_SetShardRange( mtcNode*     aNode,
         IDE_TEST( sdm::insertRange( sStatement,
                                     (SChar*)sUserNameStr,
                                     (SChar*)sTableNameStr,
-                                    (SChar*)sValueStr,
-                                    sValue->length,
+                                    sPartitionName,
+                                    (SChar*)sObjectValue,
                                     (SChar*)sSubValueStr,
-                                    sSubValue->length,
                                     (SChar*)sNodeNameStr,
                                     (SChar*)sSetFuncTypeStr,
                                     &sRowCnt )
@@ -315,12 +485,180 @@ IDE_RC sdfCalculate_SetShardRange( mtcNode*     aNode,
 
         IDE_TEST_RAISE( sRowCnt == 0,
                         ERR_INVALID_SHARD_TABLE );
+
+        //---------------------------------
+        // Replication Add
+        //---------------------------------
+        /* Partitioned Table¸¸ Repl ´ë»óÀÌ´Ù.. */
+        if ( sTableInfo.mObjectType == 'T' )
+        {
+            IDE_TEST( sdm::getSplitMethodByPartition( QC_SMI_STMT( sStatement ),
+                                                      sUserNameStr,
+                                                      sTableNameStr, 
+                                                      &sSdSplitMethod)
+                      != IDE_SUCCESS );
+
+            if ( sSdSplitMethod != SDI_SPLIT_NONE )
+            {
+                IDE_TEST( sdm::getLocalMetaInfo( &sLocalMetaInfo ) != IDE_SUCCESS );
+
+                /* ÁöÁ¤µÈ Node¿Í ³» NodeNameÀÌ ÀÏÄ¡ÇÏ¸é ³»°¡ Sender ÀÌ´Ù. */
+                if ( idlOS::strncmp( sLocalMetaInfo.mNodeName, sNodeNameStr, SDI_NODE_NAME_MAX_SIZE + 1 ) == 0 )
+                {
+
+                    /* ÀÌ¹Ì »ý¼ºµÇ¾î ÀÖ´Â Repl¿¡ TableÀ» Ãß°¡ÇØ ÁÖ¾î¾ß ÇÔ */
+                    for ( i = 0 ; i < sLocalMetaInfo.mKSafety; i++ )
+                    {
+                        sSmiStmtFlag = SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR;
+                        sOldStmt                = QC_SMI_STMT(sStatement);
+                        QC_SMI_STMT(sStatement) = &sSmiStmt;
+                        sState = 1;
+
+                        IDE_TEST( sSmiStmt.begin( sStatement->mStatistics,
+                                                  sOldStmt,
+                                                  sSmiStmtFlag )
+                                  != IDE_SUCCESS );
+                        sState = 2;
+
+                        /* ³»°¡ º¸³»´Â ReplNameÀ» Ã£¾Æ¾ß ÇÑ´Ù. */
+                        IDE_TEST( sdm::findSendReplInfoFromReplicaSet( &sReplicaSetInfo,
+                                                                       sLocalMetaInfo.mNodeName,
+                                                                       &sFoundReplicaSetInfo )
+                                  != IDE_SUCCESS );
+
+                        IDE_TEST( sdm::addReplicationItemUsingRPSets( sStatement,
+                                                                      &sFoundReplicaSetInfo,
+                                                                      SDM_NA_STR,
+                                                                      sUserNameStr,
+                                                                      sTableNameStr,
+                                                                      sPartitionName,
+                                                                      i,
+                                                                      SDM_REPL_SENDER )
+                                  != IDE_SUCCESS );
+                        
+                        sState = 1;
+                        IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+
+                        sState = 0;
+                        QC_SMI_STMT(sStatement) = sOldStmt;
+                    }
+
+                    if ( SDU_SHARD_LOCAL_FORCE != 1 )
+                    {
+                        /* TASK-7307 DML Data Consistency in Shard
+                         *   ³» Node¿¡¼­ »ç¿ëÇÏ´Â ÆÄÆ¼¼ÇÀÌ¸é USABLE·Î º¯°æÇÑ´Ù */
+                        IDE_TEST( sdm::alterUsable( sStatement,
+                                                    sUserNameStr,
+                                                    sTableNameStr,
+                                                    sPartitionName,
+                                                    ID_TRUE, /* isUsable */
+                                                    ID_TRUE  /* isNewTrans */ )
+                                  != IDE_SUCCESS );
+                    }
+                    else
+                    {
+                        /* Nothing to do */
+                    }
+                }
+                else
+                {
+                    /* ³»°¡ Recv Node ÀÎÁö È®ÀÎÇÏ¿©¾ß ÇÑ´Ù. */
+                    for ( i = 0 ; i < sLocalMetaInfo.mKSafety; i++ )
+                    {
+                        sSmiStmtFlag = SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR;
+                        sOldStmt                = QC_SMI_STMT(sStatement);
+                        QC_SMI_STMT(sStatement) = &sSmiStmt;
+                        sState = 1;
+
+                        IDE_TEST( sSmiStmt.begin( sStatement->mStatistics,
+                                                  sOldStmt,
+                                                  sSmiStmtFlag )
+                                  != IDE_SUCCESS );
+                        sState = 2;
+
+                        /* ³»°¡ ¹Þ´Â ReplName¸¦ Ã£¾Æ¾ß ÇÑ´Ù. */
+                        IDE_TEST( sdm::findRecvReplInfoFromReplicaSet( &sReplicaSetInfo,
+                                                                       sLocalMetaInfo.mNodeName,
+                                                                       i,
+                                                                       &sFoundReplicaSetInfo )
+                                  != IDE_SUCCESS );
+
+                        /* ³»°¡ Recv ÁßÀÎ RPSet Áß¿¡ ÁöÁ¤µÈ Node°¡ ¾øÀ»¼öµµ ÀÖ´Ù.
+                         * ÇÔ¼ö ³»ºÎ¿¡¼­ È®ÀÎ ÈÄ Ã³¸® */
+                        IDE_TEST( sdm::addReplicationItemUsingRPSets( sStatement,
+                                                                      &sFoundReplicaSetInfo,
+                                                                      sNodeNameStr,
+                                                                      sUserNameStr,
+                                                                      sTableNameStr,
+                                                                      sPartitionName,
+                                                                      i,
+                                                                      SDM_REPL_RECEIVER )
+                                  != IDE_SUCCESS );
+
+                        sState = 1;
+                        IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+
+                        sState = 0;
+                        QC_SMI_STMT(sStatement) = sOldStmt;
+                       
+                    }
+                }
+
+                /* ÁöÁ¤µÈ Node¿Í ³» NodeNameÀÌ ÀÏÄ¡ÇÏ¸é ³»°¡ Sender ÀÌ´Ù. */
+                if ( idlOS::strncmp( sLocalMetaInfo.mNodeName, sNodeNameStr, SDI_NODE_NAME_MAX_SIZE + 1 ) == 0 )
+                {
+                    for ( i = 0 ; i < sLocalMetaInfo.mKSafety; i++ )
+                    {
+                        sSmiStmtFlag = SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR;
+                        sOldStmt                = QC_SMI_STMT(sStatement);
+                        QC_SMI_STMT(sStatement) = &sSmiStmt;
+                        sState = 1;
+
+                        IDE_TEST( sSmiStmt.begin( sStatement->mStatistics,
+                                                  sOldStmt,
+                                                  sSmiStmtFlag )
+                                  != IDE_SUCCESS );
+                        sState = 2;
+
+                        /* ³»°¡ º¸³»´Â ReplNameÀ» Ã£¾Æ¾ß ÇÑ´Ù. */
+                        IDE_TEST( sdm::findSendReplInfoFromReplicaSet( &sReplicaSetInfo,
+                                                                       sLocalMetaInfo.mNodeName,
+                                                                       &sFoundReplicaSetInfo )
+                                  != IDE_SUCCESS );
+
+                        IDE_TEST( sdm::flushReplicationItemUsingRPSets( sStatement,
+                                                                        &sFoundReplicaSetInfo,
+                                                                        sUserNameStr,
+                                                                        sLocalMetaInfo.mNodeName,
+                                                                        i,
+                                                                        SDM_REPL_SENDER )
+                                  != IDE_SUCCESS );
+                        
+                        sState = 1;
+                        IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+
+                        sState = 0;
+                        QC_SMI_STMT(sStatement) = sOldStmt;
+                    }
+                }
+            }
+        }
     }
 
     *(mtdIntegerType*)aStack[0].value = 0;
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_INTERNAL_OPERATION )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdfCalculate_SetShardRange",
+                                  "SHARD_INTERNAL_LOCAL_OPERATION is not 1" ) );
+    }
+    IDE_EXCEPTION( ERR_NOT_EXIST_TABLE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDM_SHARD_TABLE_NOT_EXIST ) );
+    }
     IDE_EXCEPTION( ERR_INSIDE_QUERY )
     {
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QSX_PSM_INSIDE_QUERY ) );
@@ -353,7 +691,21 @@ IDE_RC sdfCalculate_SetShardRange( mtcNode*     aNode,
     {
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QRC_NO_GRANT ) );
     }
+    IDE_EXCEPTION( ERR_SHARD_PARTITION_VALUE_NOT_EXIST );
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDM_SHARD_PARTITION_VALUE_NOT_EXIST, sValueStr, sTableNameStr ) );
+    }
+    IDE_EXCEPTION( ERR_INVALID_SUB_SHARD_KEY_RANGE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDF_INVALID_RANGE_VALUE, sSubValueStr) );
+    }
+    IDE_EXCEPTION( ERR_INVALID_SHARD_KEY_RANGE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDF_INVALID_RANGE_VALUE, sValueStr) );
+    }
     IDE_EXCEPTION_END;
+
+    IDE_PUSH();
 
     switch ( sState )
     {
@@ -372,5 +724,17 @@ IDE_RC sdfCalculate_SetShardRange( mtcNode*     aNode,
             break;
     }
 
+    /* BUG-47623 »þµå ¸ÞÅ¸ º¯°æ¿¡ ´ëÇÑ trc ·Î±×Áß commit ·Î±×¸¦ ÀÛ¼ºÇÏ±âÀü¿¡ DASSERT ·Î Á×´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù. */
+    if ( sIsOldSessionShardMetaTouched == ID_TRUE )
+    {
+        sdi::setShardMetaTouched( sStatement->session );
+    }
+    else
+    {
+        sdi::unsetShardMetaTouched( sStatement->session );
+    }
+
+    IDE_POP();
+    
     return IDE_FAILURE;
 }

@@ -21,11 +21,11 @@
  * Description :
  *     SDIN(SharD INsert) Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ insertë¥¼ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     °ü°èÇü ¸ğµ¨¿¡¼­ insert¸¦ ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -61,7 +61,7 @@
 typedef struct qmncSDIN
 {
     //---------------------------------
-    // Code ì˜ì—­ ê³µí†µ ì •ë³´
+    // Code ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmnPlan               plan;
@@ -69,13 +69,13 @@ typedef struct qmncSDIN
     UInt                  planID;
 
     //---------------------------------
-    // querySet ê´€ë ¨ ì •ë³´
+    // querySet °ü·Ã Á¤º¸
     //---------------------------------
 
     qmsTableRef         * tableRef;
 
     //---------------------------------
-    // insert ê´€ë ¨ ì •ë³´
+    // insert °ü·Ã Á¤º¸
     //---------------------------------
 
     idBool                isInsertSelect;
@@ -90,11 +90,11 @@ typedef struct qmncSDIN
     UInt                  canonizedTuple;
     void                * queueMsgIDSeq;
 
-    // sequence ì •ë³´
+    // sequence Á¤º¸
     qcParseSeqCaches    * nextValSeqs;
 
     //---------------------------------
-    // ê³ ìœ  ì •ë³´
+    // °íÀ¯ Á¤º¸
     //---------------------------------
 
     UInt                  shardDataIndex;
@@ -102,13 +102,14 @@ typedef struct qmncSDIN
     UInt                  shardDataSize;
 
     UInt                  bindParam;    // offset
+    UInt                  outBindParam; // offset
 
     qcNamePosition        shardQuery;
     sdiAnalyzeInfo      * shardAnalysis;
     UShort                shardParamCount;
 
     //---------------------------------
-    // Display ê´€ë ¨ ì •ë³´
+    // Display °ü·Ã Á¤º¸
     //---------------------------------
 
     qmsNamePosition       tableOwnerName;     // Table Owner Name
@@ -120,7 +121,7 @@ typedef struct qmncSDIN
 typedef struct qmndSDIN
 {
     //---------------------------------
-    // Data ì˜ì—­ ê³µí†µ ì •ë³´
+    // Data ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmndPlan              plan;
@@ -128,11 +129,16 @@ typedef struct qmndSDIN
     UInt                * flag;
 
     //---------------------------------
-    // INST ê³ ìœ  ì •ë³´
+    // INST °íÀ¯ Á¤º¸
     //---------------------------------
 
     /* BUG-42764 Multi Row */
     qmmMultiRows        * rows;   // Current row
+    //---------------------------------
+    // lob Ã³¸®¸¦ À§ÇÑ Á¤º¸
+    //---------------------------------
+    
+    struct qmxLobInfo   * lobInfo;
 
     sdiDataNodes        * mDataInfo;
 
@@ -146,11 +152,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ìˆ˜í–‰ í•¨ìˆ˜
+    // ¼öÇà ÇÔ¼ö
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -159,7 +165,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan ì •ë³´ ì¶œë ¥
+    // Plan Á¤º¸ Ãâ·Â
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -171,10 +177,10 @@ public:
 private:
 
     //------------------------
-    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
+    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
     //------------------------
 
-    // ìµœì´ˆ ì´ˆê¸°í™”
+    // ÃÖÃÊ ÃÊ±âÈ­
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncSDIN   * aCodePlan,
                              qmndSDIN   * aDataPlan );
@@ -183,27 +189,27 @@ private:
                                 qmncSDIN     * aCodePlan,
                                 sdiBindParam * aBindParams );
 
-    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨.
+    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ.
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // ìµœì´ˆ INSTì„ ìˆ˜í–‰
+    // ÃÖÃÊ INSTÀ» ¼öÇà
     static IDE_RC doItFirst( qcTemplate * aTemplate,
                              qmnPlan    * aPlan,
                              qmcRowFlag * aFlag );
 
-    // ë‹¤ìŒ INSTì„ ìˆ˜í–‰
+    // ´ÙÀ½ INSTÀ» ¼öÇà
     static IDE_RC doItNext( qcTemplate * aTemplate,
                             qmnPlan    * aPlan,
                             qmcRowFlag * aFlag );
 
-    // ìµœì´ˆ INSTì„ ìˆ˜í–‰
+    // ÃÖÃÊ INSTÀ» ¼öÇà
     static IDE_RC doItFirstMultiRows( qcTemplate * aTemplate,
                                       qmnPlan    * aPlan,
                                       qmcRowFlag * aFlag );
 
-    // ë‹¤ìŒ INSTì„ ìˆ˜í–‰
+    // ´ÙÀ½ INSTÀ» ¼öÇà
     static IDE_RC doItNextMultiRows( qcTemplate * aTemplate,
                                      qmnPlan    * aPlan,
                                      qmcRowFlag * aFlag );
@@ -216,9 +222,20 @@ private:
     static IDE_RC insertOnce( qcTemplate * aTemplate,
                               qmnPlan    * aPlan );
 
-    static IDE_RC copySmiValueToTuple( qcmTableInfo * aTableInfo,
-                                       smiValue     * aInsertedRow,
-                                       mtcTuple     * aTuple );
+    static IDE_RC copySmiValueToTuple( qcTemplate      * aTemplate,
+                                       qcmTableInfo    * aTableInfo,
+                                       smiValue        * aInsertedRow,
+                                       mtcTuple        * aTuple,
+                                       sdiBindParam    * aBindParams,
+                                       sdiOutBindParam * aOutBindParams,
+                                       qmxLobInfo      * aLobInfo );
+                                   
+
+    /* PROJ-2728 Sharding LOB */
+    static idBool existInLobInfoAndAdjustBindId(
+                                       qmxLobInfo   * aLobInfo,
+                                       SInt           aColumnOrder,
+                                       SInt           aBindId );
 };
 
 #endif /* _O_QMN_SHARD_INST_H_ */

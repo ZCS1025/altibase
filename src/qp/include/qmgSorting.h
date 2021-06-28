@@ -19,11 +19,11 @@
  * $Id: qmgSorting.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
  * Description :
- *     Sorting Graphë¥¼ ìœ„í•œ ì •ì˜
+ *     Sorting Graph¸¦ À§ÇÑ Á¤ÀÇ
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -34,7 +34,7 @@
 #include <qmgDef.h>
 
 //---------------------------------------------------
-// Sorting Graphì˜ Define ìƒìˆ˜
+// Sorting GraphÀÇ Define »ó¼ö
 //---------------------------------------------------
 
 // qmgSORT.graph.flag
@@ -45,50 +45,50 @@
 
 
 //---------------------------------------------------
-// Sorting Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+// Sorting Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
 //---------------------------------------------------
 
 typedef struct qmgSORT
 {
-    qmgGraph         graph;      // ê³µí†µ Graph ì •ë³´
+    qmgGraph         graph;      // °øÅë Graph Á¤º¸
 
-    qmsSortColumns * orderBy;    // orderBy ì •ë³´
+    qmsSortColumns * orderBy;    // orderBy Á¤º¸
 
     //-----------------------------------------------
-    // Limit Sort ìµœì í™”ê°€ ì„ íƒëœ ê²½ìš°, ë‹¤ìŒê³¼ ê°™ì´ ì„¤ì •ë¨
+    // Limit Sort ÃÖÀûÈ­°¡ ¼±ÅÃµÈ °æ¿ì, ´ÙÀ½°ú °°ÀÌ ¼³Á¤µÊ
     //   
     //   - limitCnt = qmsLimit::start + qmsLimit::count
     // 
-    //   ì´ë•Œ limitCntëŠ” ìµœëŒ€ Limit ê°œìˆ˜ ì´í•˜ì´ì–´ì•¼ í•¨
-    //   limitCntê°€ ìµœëŒ€ Limit ê°œìˆ˜ë¥¼ ì´ˆê³¼í•˜ë©´,
-    //   Limit Sort ìµœì í™”ëŠ” ì„ íƒë˜ì§€ ì•Šê¸° ë•Œë¬¸ì´ë‹¤.
-    //   - ìµœëŒ€ limitCnt : QMN_LMST_MAXIMUM_LIMIT_CNT 
+    //   ÀÌ¶§ limitCnt´Â ÃÖ´ë Limit °³¼ö ÀÌÇÏÀÌ¾î¾ß ÇÔ
+    //   limitCnt°¡ ÃÖ´ë Limit °³¼ö¸¦ ÃÊ°úÇÏ¸é,
+    //   Limit Sort ÃÖÀûÈ­´Â ¼±ÅÃµÇÁö ¾Ê±â ¶§¹®ÀÌ´Ù.
+    //   - ÃÖ´ë limitCnt : QMN_LMST_MAXIMUM_LIMIT_CNT 
     //-----------------------------------------------
     
-    ULong            limitCnt;   // ì €ì¥í•  Rowì˜ ìˆ˜
+    ULong            limitCnt;   // ÀúÀåÇÒ RowÀÇ ¼ö
     
 } qmgSORT;
 
 //---------------------------------------------------
-// Sorting Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+// Sorting Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
 //---------------------------------------------------
 
 class qmgSorting
 {
 public:
-    // Graph ì˜ ì´ˆê¸°í™”
+    // Graph ÀÇ ÃÊ±âÈ­
     static IDE_RC  init( qcStatement * aStatement,
                          qmsQuerySet * aQuerySet,
                          qmgGraph    * aChildGraph,
                          qmgGraph   ** aGraph );
 
-    // Graphì˜ ìµœì í™” ìˆ˜í–‰
+    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
     static IDE_RC  optimize( qcStatement * aStatement, qmgGraph * aGraph );
 
-    // Graphì˜ Plan Tree ìƒì„±
+    // GraphÀÇ Plan Tree »ı¼º
     static IDE_RC  makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph * aGraph );
 
-    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
+    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
     static IDE_RC  printGraph( qcStatement  * aStatement,
                                qmgGraph     * aGraph,
                                ULong          aDepth,

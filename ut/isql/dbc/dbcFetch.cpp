@@ -46,8 +46,8 @@ SQLRETURN utISPApi::Fetch(idBool aPrepare)
 
     if (sSQLRC != SQL_NO_DATA)
     {
-        /* SELECT ì¿¼ë¦¬ ê²°ê³¼ í–‰ì˜ ê° ì»¬ëŸ¼ê°’ì— ëŒ€í•´ ë£¨í”„ë¥¼ ëŒë©´ì„œ
-         * ìž¬í¬ë§·íŒ…ì´ í•„ìš”í•œ ì»¬ëŸ¼ê°’ì„ ìž¬í¬ë§·íŒ…í•œë‹¤.
+        /* SELECT Äõ¸® °á°ú ÇàÀÇ °¢ ÄÃ·³°ª¿¡ ´ëÇØ ·çÇÁ¸¦ µ¹¸é¼­
+         * ÀçÆ÷¸ËÆÃÀÌ ÇÊ¿äÇÑ ÄÃ·³°ªÀ» ÀçÆ÷¸ËÆÃÇÑ´Ù.
          */
         m_Result.Reformat();
     }
@@ -82,6 +82,11 @@ SQLRETURN utISPApi::GetLobData(idBool aPrepare, SInt aIdx,
     {
         sSQLRC = SQL_SUCCESS;
 
+        /* BUG-49014 */
+        IDE_TEST_RAISE(sClobCol->InitLobBuffer(1)
+                       != IDE_SUCCESS, MAllocError);
+        sClobCol->SetNull();
+
         IDE_CONT(skip_get_data);
     }
 
@@ -99,7 +104,7 @@ SQLRETURN utISPApi::GetLobData(idBool aPrepare, SInt aIdx,
                              SQL_C_CLOB_LOCATOR,
                              (SQLUINTEGER*)&sBindSize );
 
-    // fix BUG-24553 LOB ì²˜ë¦¬ì‹œ ì—ëŸ¬ê°€ ë°œìƒí•  ê²½ìš° ì—ëŸ¬ ì„¤ì •
+    // fix BUG-24553 LOB Ã³¸®½Ã ¿¡·¯°¡ ¹ß»ýÇÒ °æ¿ì ¿¡·¯ ¼³Á¤
     IDE_TEST_RAISE(sSQLRC != SQL_SUCCESS, LobError);
 
     if ( sDisplaySize >= ( sBindSize - aOffset ) )
@@ -123,7 +128,7 @@ SQLRETURN utISPApi::GetLobData(idBool aPrepare, SInt aIdx,
                            sBindSize + 1,
                            (SQLUINTEGER*)(sClobCol->GetIndicator()));
 
-        // fix BUG-24553 LOB ì²˜ë¦¬ì‹œ ì—ëŸ¬ê°€ ë°œìƒí•  ê²½ìš° ì—ëŸ¬ ì„¤ì •
+        // fix BUG-24553 LOB Ã³¸®½Ã ¿¡·¯°¡ ¹ß»ýÇÒ °æ¿ì ¿¡·¯ ¼³Á¤
         IDE_TEST_RAISE(sSQLRC != SQL_SUCCESS, LobError);
 
         sClobCol->SetLobValue();
@@ -135,7 +140,7 @@ SQLRETURN utISPApi::GetLobData(idBool aPrepare, SInt aIdx,
         sClobCol->SetNull();
     }
 
-    // BUG-25822 iSQLì—ì„œ CLOBë¥¼ ê°€ì ¸ì˜¨í›„ SQLFreeLobì„ í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+    // BUG-25822 iSQL¿¡¼­ CLOB¸¦ °¡Á®¿ÂÈÄ SQLFreeLobÀ» ÇÏÁö ¾Ê½À´Ï´Ù.
     (void)SQLFreeLob(sStmt, sLobLocator);
 
     IDE_EXCEPTION_CONT(skip_get_data);
@@ -147,14 +152,14 @@ SQLRETURN utISPApi::GetLobData(idBool aPrepare, SInt aIdx,
         uteSetErrorCode(mErrorMgr, utERR_ABORT_memory_error,
                         __FILE__, __LINE__);
     }
-    // fix BUG-24553 LOB ì²˜ë¦¬ì‹œ ì—ëŸ¬ê°€ ë°œìƒí•  ê²½ìš° ì—ëŸ¬ ì„¤ì •
+    // fix BUG-24553 LOB Ã³¸®½Ã ¿¡·¯°¡ ¹ß»ýÇÒ °æ¿ì ¿¡·¯ ¼³Á¤
     IDE_EXCEPTION(LobError);
     {
         SetErrorMsgWithHandle(SQL_HANDLE_STMT, (SQLHANDLE)sStmt);
     }
     IDE_EXCEPTION_END;
 
-    // BUG-25822 iSQLì—ì„œ CLOBë¥¼ ê°€ì ¸ì˜¨í›„ SQLFreeLobì„ í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+    // BUG-25822 iSQL¿¡¼­ CLOB¸¦ °¡Á®¿ÂÈÄ SQLFreeLobÀ» ÇÏÁö ¾Ê½À´Ï´Ù.
     (void)SQLFreeLob(sStmt, sLobLocator);
 
     return IDE_FAILURE;

@@ -13,11 +13,11 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
- 
 
 /***********************************************************************
  * $Id $
  **********************************************************************/
+
 
 #include <sdtTempPage.h>
 
@@ -28,54 +28,54 @@ SChar sdtTempPage::mPageName[ SDT_TEMP_PAGETYPE_MAX ][ SMI_TT_STR_SIZE ] = {
     "LNODE",
     "INODE",
     "INDEX_EXTRA",
-    "HASHPARTITION",
-    "UNIQUEROWS",
-    "ROWPAGE"
+    "HASHROWS",  /* dump Sort Pageø°º≠¥¬ ªÁøÎµ«¡ˆ æ ¿Ω */
+    "SUBHASH"    /* dump Sort Pageø°º≠¥¬ ªÁøÎµ«¡ˆ æ ¿Ω */
 };
 
 /**************************************************************************
  * Description :
- * PageÎ•º sdtTempPage ÌòïÌÉúÎ°ú Ï¥àÍ∏∞ÌôîÌïúÎã§.
+ * Page∏¶ sdtTempPage «¸≈¬∑Œ √ ±‚»≠«—¥Ÿ.
  *
  * <IN>
- * aPagePtr       - Ï¥àÍ∏∞ÌôîÌï† ÎåÄÏÉÅ Page
- * aType          - PageÏùò Type
- * aPrev          - PageÏùò Ïù¥Ï†Ñ PID
- * aNext          - PageÏùò Îã§Ïùå PID
+ * aPagePtr       - √ ±‚»≠«“ ¥ÎªÛ Page
+ * aType          - Page¿« Type
+ * aPrev          - Page¿« ¿Ã¿¸ PID
+ * aNext          - Page¿« ¥Ÿ¿Ω PID
  ***************************************************************************/
-IDE_RC sdtTempPage::init( UChar    * aPagePtr,
-                          UInt       aType,
-                          scPageID   aPrev,
-                          scPageID   aSelf,
-                          scPageID   aNext )
+void sdtTempPage::init( sdtSortPageHdr  * aPageHdr,
+                        sdtTempPageType   aType,
+                        scPageID          aPrev,
+                        scPageID          aSelf,
+                        scPageID          aNext )
 {
-    sdtTempPageHdr *sHdr = (sdtTempPageHdr*)aPagePtr;
-
     IDE_DASSERT( SD_PAGE_SIZE -1 <= SDT_TEMP_FREEOFFSET_BITMASK );
 
-    sHdr->mTypeAndFreeOffset = ( aType << SDT_TEMP_TYPE_SHIFT ) |
+    aPageHdr->mTypeAndFreeOffset = ( aType << SDT_TEMP_TYPE_SHIFT ) |
         ( SD_PAGE_SIZE - 1 );
 
-    IDE_DASSERT( getType( aPagePtr ) == aType );
-    IDE_DASSERT( getFreeOffset( aPagePtr ) == SD_PAGE_SIZE - 1 );
-    sHdr->mPrevPID   = aPrev;
-    sHdr->mSelfPID   = aSelf;
-    sHdr->mNextPID   = aNext;
-    sHdr->mSlotCount = 0;
+    IDE_DASSERT( getType( aPageHdr ) == aType );
+    IDE_DASSERT( getFreeOffset( aPageHdr ) == SD_PAGE_SIZE - 1 );
+    aPageHdr->mPrevPID   = aPrev;
+    aPageHdr->mSelfPID   = aSelf;
+    aPageHdr->mNextPID   = aNext;
+    aPageHdr->mSlotCount = 0;
 
-    return IDE_SUCCESS;
+    return;
 }
 
 void sdtTempPage::dumpTempPage( void  * aPagePtr,
                                 SChar * aOutBuf,
                                 UInt    aOutSize )
 {
-    sdtTempPageHdr  * sHdr = (sdtTempPageHdr*)aPagePtr;
+    sdtSortPageHdr  * sHdr = (sdtSortPageHdr*)aPagePtr;
     UInt              sSlotValue;
     UInt              sSize;
     sdtTempPageType   sType;
     UInt              i;
 
+    (void)idlVA::appendFormat( aOutBuf,
+                               aOutSize,
+                               "\nDUMP TEMP PAGE:\n" );
     sSize = idlOS::strlen( aOutBuf );
     IDE_TEST( ideLog::ideMemToHexStr( (UChar*)aPagePtr,
                                       SD_PAGE_SIZE,
@@ -84,54 +84,152 @@ void sdtTempPage::dumpTempPage( void  * aPagePtr,
                                       aOutSize - sSize )
               != IDE_SUCCESS );
 
-    idlVA::appendFormat( aOutBuf,
-                         aOutSize,
-                         "\nDUMP TEMPPAGE HEADER:\n"
-                         "mTypeAndFreeOffset : %"ID_UINT64_FMT"\n"
-                         "mPrevPID           : %"ID_UINT32_FMT"\n"
-                         "mSelfPID           : %"ID_UINT32_FMT"\n"
-                         "mNextPID           : %"ID_UINT32_FMT"\n"
-                         "mSlotCount         : %"ID_UINT32_FMT"\n",
-                         sHdr->mTypeAndFreeOffset,
-                         sHdr->mPrevPID,
-                         sHdr->mSelfPID,
-                         sHdr->mNextPID,
-                         sHdr->mSlotCount );
+    (void)idlVA::appendFormat( aOutBuf,
+                               aOutSize,
+                               "\n\nDUMP TEMP PAGE HEADER:\n"
+                               "mTypeAndFreeOffset : %"ID_UINT32_FMT"\n"
+                               "mPrevPID           : %"ID_UINT32_FMT"\n"
+                               "mSelfPID           : %"ID_UINT32_FMT"\n"
+                               "mNextPID           : %"ID_UINT32_FMT"\n"
+                               "mSlotCount         : %"ID_UINT32_FMT"\n",
+                               sHdr->mTypeAndFreeOffset,
+                               sHdr->mPrevPID,
+                               sHdr->mSelfPID,
+                               sHdr->mNextPID,
+                               sHdr->mSlotCount );
 
-    sType = (sdtTempPageType)getType( (UChar*)aPagePtr );
-    if( ( SDT_TEMP_PAGETYPE_INIT <= sType ) &&
-        ( sType < SDT_TEMP_PAGETYPE_MAX ) )
+    sType = getType( sHdr );
+    if ( ( SDT_TEMP_PAGETYPE_INIT <= sType ) &&
+         ( sType < SDT_TEMP_PAGETYPE_MAX ) )
     {
-        idlVA::appendFormat( aOutBuf,
-                             aOutSize,
-                             "mType              : %s\n",
-                             mPageName[ sType ] );
+        (void)idlVA::appendFormat( aOutBuf,
+                                   aOutSize,
+                                   "mType              : %s\n",
+                                   mPageName[ sType ] );
     }
 
-    idlVA::appendFormat( aOutBuf,
-                         aOutSize,
-                         "Slot Array :\n" );
+    (void)idlVA::appendFormat( aOutBuf,
+                               aOutSize,
+                               "\nSlot Array :" );
 
     for( i = 0 ; i < sHdr->mSlotCount; i ++ )
     {
-        if( ( i & 15 ) == 0 )
+        if ( ( i % 16 ) == 0 )
         {
-            idlVA::appendFormat( aOutBuf,
-                                 aOutSize,
-                                 "\n[%4"ID_UINT32_FMT"] ",
-                                 i );
+            (void)idlVA::appendFormat( aOutBuf,
+                                       aOutSize,
+                                       "\n[%4"ID_UINT32_FMT"] ",
+                                       i );
         }
 
         sSlotValue = getSlotOffset( (UChar*)aPagePtr, i );
-        idlVA::appendFormat( aOutBuf,
-                             aOutSize,
-                             "%6"ID_UINT32_FMT, sSlotValue );
+        (void)idlVA::appendFormat( aOutBuf,
+                                   aOutSize,
+                                   "%6"ID_UINT32_FMT, sSlotValue );
     }
-    idlVA::appendFormat( aOutBuf, aOutSize, "\n");
+    (void)idlVA::appendFormat( aOutBuf, aOutSize, "\n\n");
 
     return;
 
     IDE_EXCEPTION_END;
+
+    return;
+}
+
+/***************************************************************************
+ * Description : Sort Temp Page¿« Header∏¶ dump«—¥Ÿ.
+ *
+ * aPagePtr   - [IN] dump ¥ÎªÛ Sort Temp Page
+ * aOutBuf    - [IN] dump«— ¡§∫∏∏¶ ¥„¿ª Buffer 
+ * aOutSize   - [IN] Buffer¿« ≈©±‚
+ ***************************************************************************/
+void sdtTempPage::dumpWAPageHeaders( void     * aWASegment,
+                                     SChar    * aOutBuf,
+                                     UInt       aOutSize )
+{
+    sdtSortSegHdr  * sWASegment = (sdtSortSegHdr*)aWASegment;
+    SChar          * sTypeNamePtr;
+    SChar            sInvalidName[] = "INVALID";
+    sdtSortPageHdr * sPagePtr;
+    sdtTempPageType  sType;
+    sdtWCB         * sWCBPtr;
+    sdtWCB         * sEndWCBPtr;
+    scPageID         sWPageID;
+
+    (void)idlVA::appendFormat( aOutBuf,
+                               aOutSize,
+                               "TEMP PAGE HEADERS:\n"
+                               "%10s %16s %10s %16s %10s %10s %10s %10s %10s\n",
+                               "WPID",
+                               "TAFO", /*TypeAndFreeOffset*/
+                               "TYPE",
+                               "TYPENAME",
+                               "FREEOFF",
+                               "PREVPID",
+                               "SELFPID",
+                               "NEXTPID",
+                               "SLOTCNT" );
+
+    sWCBPtr    = &(sWASegment->mWCBMap[0]);
+    sEndWCBPtr = sWCBPtr + (sWASegment->mMaxWAExtentCount * SDT_WAEXTENT_PAGECOUNT);
+    sWPageID   = 0;
+
+    while( sWCBPtr < sEndWCBPtr )
+    {
+        sPagePtr = (sdtSortPageHdr *)sWCBPtr->mWAPagePtr;
+
+        sWCBPtr++;
+
+        if ( sPagePtr == NULL )
+        {
+            sWPageID++;
+            continue;
+        }
+
+        if ( ( sPagePtr->mTypeAndFreeOffset == 0 ) &&
+             ( sPagePtr->mPrevPID == 0 ) &&
+             ( sPagePtr->mNextPID == 0 ) &&
+             ( sPagePtr->mSlotCount  == 0 ) )
+        {
+            sWPageID++;
+            continue;
+        }
+
+        sType = getType( sPagePtr );
+        if ( ( SDT_TEMP_PAGETYPE_INIT <= sType ) &&
+             ( sType < SDT_TEMP_PAGETYPE_MAX ) )
+        {
+            sTypeNamePtr = mPageName[ sType ];
+        }
+        else
+        {
+            sTypeNamePtr = sInvalidName;
+        }
+
+        (void)idlVA::appendFormat( aOutBuf,
+                                   aOutSize,
+                                   "%10"ID_UINT32_FMT
+                                   " %16"ID_UINT32_FMT
+                                   " %10"ID_UINT32_FMT
+                                   " %16s"
+                                   " %10"ID_UINT32_FMT
+                                   " %10"ID_UINT32_FMT
+                                   " %10"ID_UINT32_FMT
+                                   " %10"ID_UINT32_FMT
+                                   " %10"ID_UINT32_FMT"\n",
+                                   sWPageID,
+                                   sPagePtr->mTypeAndFreeOffset,
+                                   getType( sPagePtr ),
+                                   sTypeNamePtr,
+                                   getFreeOffset( sPagePtr ),
+                                   sPagePtr->mPrevPID,
+                                   sPagePtr->mSelfPID,
+                                   sPagePtr->mNextPID,
+                                   sPagePtr->mSlotCount );
+        sWPageID++;
+    }
+
+    (void)idlVA::appendFormat( aOutBuf, aOutSize, "\n" );
 
     return;
 }

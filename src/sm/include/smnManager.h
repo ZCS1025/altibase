@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smnManager.h 82916 2018-04-26 06:29:17Z seulki $
+ * $Id: smnManager.h 89963 2021-02-09 05:22:10Z justin.kwon $
  **********************************************************************/
 
 #ifndef _O_SMN_MANAGER_H_
@@ -79,7 +79,7 @@ class smnManager
     
     static void setInitIndexPtr( void* aIndexHeader );
 
-    /* BUG-17456 Disk Tablespace onlineì´í›„ update ë°œìƒì‹œ index ë¬´í•œë£¨í”„ */
+    /* BUG-17456 Disk Tablespace onlineÀÌÈÄ update ¹ß»ı½Ã index ¹«ÇÑ·çÇÁ */
     static void setIndexSmoNo( void* aIndexHeader, ULong aSmoNo );
 
     // BUG-24403
@@ -112,8 +112,8 @@ class smnManager
                                          SChar           ** aRow,
                                          idBool             aIsNeedValidation );
 
-    // BUG-25279 Btree For Spatialê³¼ Disk Btreeì˜ ìë£Œêµ¬ì¡° ë° ë¡œê¹… ë¶„ë¦¬
-    // Bug ìˆ˜í–‰ ê³¼ì •ì—ì„œ Index êµ¬ì¡° ê°œì„ ì„ ìœ„í•´ Build Indexë¥¼ í•˜ë‚˜ë¡œ í†µí•©í•©ë‹ˆë‹¤.
+    // BUG-25279 Btree For Spatial°ú Disk BtreeÀÇ ÀÚ·á±¸Á¶ ¹× ·Î±ë ºĞ¸®
+    // Bug ¼öÇà °úÁ¤¿¡¼­ Index ±¸Á¶ °³¼±À» À§ÇØ Build Index¸¦ ÇÏ³ª·Î ÅëÇÕÇÕ´Ï´Ù.
     static IDE_RC buildIndex( idvSQL              * aStatistics,
                               void                * aTrans,
                               smcTableHeader      * aTable,
@@ -170,14 +170,16 @@ class smnManager
                                                   smOID         aIndexOID );
 
     static IDE_RC indexOperation( idvSQL*, void*, void*, void*, smSCN,
-                                  SChar*, SChar*, idBool, smSCN, void*, SChar**, ULong );
+                                  SChar*, SChar*, idBool, smSCN, void*, SChar**, ULong, idBool );
     
     /*============================================================*/
 
-    /* index moduleì—ì„œ smp, svpì— ìƒê´€ì—†ì´ ì‚¬ìš©í•˜ëŠ” í•¨ìˆ˜ */
-    static inline idBool checkSCN( smiIterator *aIterator,
+    /* index module¿¡¼­ smp, svp¿¡ »ó°ü¾øÀÌ »ç¿ëÇÏ´Â ÇÔ¼ö */
+    static inline IDE_RC checkSCN( smiIterator *aIterator,
                                    const void  *aRow,
-                                   idBool      *aCanReusableRollback );
+                                   idBool      *aCanReusableRollback,
+                                   idBool      *aIsVisible,
+                                   idBool       aIsFullScan = ID_FALSE );
 
     static inline idBool checkCanReusableRollback( smiIterator * aIterator,
                                                    const void  * aRow );
@@ -186,12 +188,12 @@ class smnManager
     
     static void updatedRow( smiIterator * aIterator );
     
-    /* smpë¥¼ ì‚¬ìš©í•˜ëŠ” í•¨ìˆ˜ */
+    /* smp¸¦ »ç¿ëÇÏ´Â ÇÔ¼ö */
     static IDE_RC lockMemRow(smiIterator *aIterator);
 
     static void updatedMemRow(smiIterator *aIterator);
 
-    /* svpë¥¼ ì‚¬ìš©í•˜ëŠ” í•¨ìˆ˜ */
+    /* svp¸¦ »ç¿ëÇÏ´Â ÇÔ¼ö */
     static IDE_RC lockVolRow( smiIterator * aIterator);
 
     static void updatedVolRow( smiIterator * aIterator );
@@ -217,15 +219,11 @@ class smnManager
 
     static inline UInt getSizeOfIndexHeader( void );
 
-    static IDE_RC indexInsertFunc( idvSQL * aStatistics,
-                                   void   * a_pTrans,
-                                   void   * aTable,
-                                   void   * a_pIndexHeader,
-                                   smSCN    aInfiniteSCN,
-                                   SChar  * a_pRow,
-                                   SChar  * a_pNull,
-                                   idBool   a_uniqueCheck,
-                                   smSCN    aStmtSCN );
+    static IDE_RC indexInsertWithoutUniqueCheck( void   * a_pTrans,
+                                                 void   * aTable,
+                                                 void   * a_pIndexHeader,
+                                                 SChar  * a_pRow,
+                                                 SChar  * a_pNull );
     
     static IDE_RC indexDeleteFunc( void   * aIndexHeader,
                                    SChar  * aRow,
@@ -234,7 +232,6 @@ class smnManager
     
     static void   initIndexHeader( void                 * aIndexHeader,
                                    smOID                  aTableSelfOID, 
-                                   smSCN                  aCommitSCN,
                                    SChar                * aName,
                                    UInt                   aID,
                                    UInt                   aType,
@@ -243,16 +240,6 @@ class smnManager
                                    smiSegAttr           * aSegAttr,
                                    smiSegStorageAttr    * aSegStoAttr,
                                    ULong                  aDirectKeyMaxSize );
-
-    static void   initTempIndexHeader( void                  * aIndexHeader,
-                                       smOID                   aTableSelfOID, 
-                                       smSCN                   aStmtSCN,
-                                       UInt                    aID,
-                                       UInt                    aType,
-                                       UInt                    aFlag,
-                                       const smiColumnList   * aColumns,
-                                       smiSegAttr            * aSegAttr,
-                                       smiSegStorageAttr     * aSegStoAttr );
     
     static IDE_RC initIndexMetaPage ( UChar            * aPagePtr,
                                       UInt               aType,
@@ -276,11 +263,11 @@ class smnManager
 
     static IDE_RC deleteRowFromIndexForSVC( SChar          * aRow,
                                             smcTableHeader * aHeader,
-                                            ULong          * aModifyIdxBit );
+                                            ULong            aModifyIdxBit );
 
     static IDE_RC deleteRowFromIndex( SChar          * aRow, 
                                       smcTableHeader * aHeader,
-                                      ULong          * aModifyIdxBit );
+                                      ULong            aModifyIdxBit );
     
     static idBool isNullModuleOfIndexHeader(void *a_pIndexHeader);
 
@@ -313,7 +300,7 @@ class smnManager
 
     /* BUG-31845 [sm-disk-index] Debugging information is needed for 
      * PBT when fail to check visibility using DRDB Index.
-     * ê²€ì¦ìš© Dump ì½”ë“œ ì¶”ê°€ */
+     * °ËÁõ¿ë Dump ÄÚµå Ãß°¡ */
     static IDE_RC dumpCommonHeader( smnIndexHeader * aHeader,
                                     SChar          * aOutBuf,
                                     UInt             aOutSize );
@@ -333,6 +320,9 @@ public:
     static iduMemPool       mDiskTempPagePool;
 
     static IDE_RC doKeyReorganization( smnIndexHeader * aIndexHeader );
+
+private:
+    static idBool mIsInvalidUniqueness;  // BUG-47736
 };
 
 inline idBool smnManager::isIndexEnabled( void* aIndexHeader )
@@ -344,18 +334,18 @@ inline idBool smnManager::isIndexEnabled( void* aIndexHeader )
 }
 
 /*******************************************************************************
- * Description: Enable index ë„ì¤‘ abortê°€ ë°œìƒí–ˆì„ ë•Œ, ì´ë¯¸ ìƒì„±ëœ indexì™€
- *      runtime header ë“±ì„ íŒŒê´´í•´ ì£¼ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ * Description: Enable index µµÁß abort°¡ ¹ß»ıÇßÀ» ¶§, ÀÌ¹Ì »ı¼ºµÈ index¿Í
+ *      runtime header µîÀ» ÆÄ±«ÇØ ÁÖ´Â ÇÔ¼öÀÌ´Ù.
  *
- *      Disk indexì˜ index segmentëŠ” ë³¸ í•¨ìˆ˜ì—ì„œ íŒŒê´´í•˜ì§€ ì•Šì•„ë„ NTA logical
- *      rollback ìœ¼ë¡œ íŒŒê´´ëœë‹¤.
+ *      Disk indexÀÇ index segment´Â º» ÇÔ¼ö¿¡¼­ ÆÄ±«ÇÏÁö ¾Ê¾Æµµ NTA logical
+ *      rollback À¸·Î ÆÄ±«µÈ´Ù.
  *
  * Related Issues:
- *      PROJ-2184 RP Sync ì„±ëŠ¥ í–¥ìƒ
+ *      PROJ-2184 RP Sync ¼º´É Çâ»ó
  * 
  * aStatistics      - [IN] idvSQL
- * aTableOID        - [IN] ëŒ€ìƒ indexê°€ ì†í•œ tableì˜ OID
- * aIndexOID        - [IN] ëŒ€ìƒ indexì˜ OID
+ * aTableOID        - [IN] ´ë»ó index°¡ ¼ÓÇÑ tableÀÇ OID
+ * aIndexOID        - [IN] ´ë»ó indexÀÇ OID
  ******************************************************************************/
 inline IDE_RC smnManager::dropIndexRuntimeByAbort( smOID        aTableOID,
                                                    smOID        aIndexOID )
@@ -383,8 +373,8 @@ inline IDE_RC smnManager::dropIndexRuntimeByAbort( smOID        aTableOID,
 }
 
 /* PROJ-1594 Volatile TBS
- * SCAN ëª¨ë“ˆì—ì„œ scnì„ ì²´í¬í•  ë•Œ, memory, volatile tableì— ëŒ€í•´
- * ê³µí†µìœ¼ë¡œ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” í•¨ìˆ˜ì´ë‹¤.
+ * SCAN ¸ğµâ¿¡¼­ scnÀ» Ã¼Å©ÇÒ ¶§, memory, volatile table¿¡ ´ëÇØ
+ * °øÅëÀ¸·Î »ç¿ëÇÒ ¼ö ÀÖ´Â ÇÔ¼öÀÌ´Ù.
  *
  * PROJ-1381 Fetch Across Commits
  * Row SCN     : sCreateSCN, sLimitSCN
@@ -395,15 +385,19 @@ inline IDE_RC smnManager::dropIndexRuntimeByAbort( smOID        aTableOID,
  * case 2   INFINITE | COMMITED    | VALID TID
  * case 3   COMMITED | COMMITED    | NULL  TID
  *
- * case 2ëŠ” TXë¥¼ commit í–ˆìœ¼ë‚˜ ì•„ì§ commit SCNì„
- * Rowì— ì„¤ì •í•˜ì§€ ì•Šì€ ìƒíƒœì´ë‹¤.
+ * case 2´Â TX¸¦ commit ÇßÀ¸³ª ¾ÆÁ÷ commit SCNÀ»
+ * Row¿¡ ¼³Á¤ÇÏÁö ¾ÊÀº »óÅÂÀÌ´Ù.
  */
-inline idBool smnManager::checkSCN( smiIterator *aIterator,
+inline IDE_RC smnManager::checkSCN( smiIterator *aIterator,
                                     const void  *aRow,
-                                    idBool      *aCanReusableRollback )
+                                    idBool      *aCanReusableRollback,
+                                    idBool      *aIsVisible,
+                                    idBool       aIsFullScan ) /* Default : ID_FALSE */
 {
     smSCN     sCreateSCN;
     smSCN     sLimitSCN;
+    smSCN     sCreateSCNTmp;
+    smSCN     sLimitSCNTmp;
     smSCN     sRowSCN;
     smSCN     sNxtSCN;
     smTID     sRowTID = SM_NULL_TID;
@@ -411,10 +405,8 @@ inline idBool smnManager::checkSCN( smiIterator *aIterator,
 #ifdef DEBUG
     smSCN     sRowSCNAfterCheck;
 #endif
-    smxTrans *sTrans = (smxTrans*)aIterator->trans;
-
-    const     smpSlotHeader* sSlotHeader = NULL;
-    idBool    sIsVisible = ID_FALSE;
+    smxTrans               * sTrans = (smxTrans*)aIterator->trans;
+    volatile smpSlotHeader * sSlotHeader = NULL;
 
     sSlotHeader = (smpSlotHeader*)aRow;
 
@@ -422,32 +414,97 @@ inline idBool smnManager::checkSCN( smiIterator *aIterator,
     {
         *aCanReusableRollback = ID_TRUE;
     }
+    *aIsVisible = ID_FALSE;
 
-    SM_SET_SCN( &sCreateSCN, &(sSlotHeader->mCreateSCN) );
-    SM_SET_SCN( &sLimitSCN, &(sSlotHeader->mLimitSCN) );
+    if ( aIsFullScan == ID_FALSE )
+    {
+        SM_SET_SCN( &sCreateSCN, &(sSlotHeader->mCreateSCN) );
+        SM_SET_SCN( &sLimitSCN, &(sSlotHeader->mLimitSCN) );
+    }
+    else
+    {
+        /* BUG-48353
+           FULL SCAN ÀÎ°æ¿ì PAGE LATCH ¹Û¿¡¼­ checkSCN() È£ÃâÇÑ´Ù.
+           CreateSCN°ú LimitSCNÀÌ µ¿ÀÏÇÑ Record·ÎºÎÅÍ ¹Ş¾Æ¿Â °ªÀÎÁö¸¦ º¸ÀåÇØ¾ß ÇÑ´Ù. */
+        do
+        {
+            ID_SERIAL_BEGIN( SM_SET_SCN( &sCreateSCN, &(sSlotHeader->mCreateSCN) ) );
+            ID_SERIAL_EXEC(  SM_SET_SCN( &sLimitSCN, &(sSlotHeader->mLimitSCN) ), 1 );
+            ID_SERIAL_EXEC(  SM_SET_SCN( &sCreateSCNTmp, &(sSlotHeader->mCreateSCN) ), 2 );
+            ID_SERIAL_END(   SM_SET_SCN( &sLimitSCNTmp, &(sSlotHeader->mLimitSCN) ) );
+
+        } while ( !SM_SCN_IS_EQ( &sCreateSCN, &sCreateSCNTmp ) ||
+                  !SM_SCN_IS_EQ( &sLimitSCN, &sLimitSCNTmp ) );
+    }
+
+    if ( sTrans->mIsGCTx == ID_TRUE )
+    {
+        if ( SM_SCN_IS_INFINITE( sCreateSCN ) &&
+             /* BUG-48244 : ³»(TX)°¡ 2PCÇÑ TX´Â Pending ¿Ï·á½Ã±îÁö ´ë±âÇÒ ÇÊ¿ä¾ø´Ù. */
+             ( SMP_GET_TID( sCreateSCN ) != aIterator->tid ) )
+        {
+            IDE_TEST( smxTrans::waitPendingTx( sTrans,
+                                               sCreateSCN,
+                                               aIterator->SCN )
+                      != IDE_SUCCESS );
+        }
+
+        if ( SM_SCN_IS_INFINITE( sLimitSCN ) &&
+             /* BUG-48244 : ³»(TX)°¡ 2PCÇÑ TX´Â Pending ¿Ï·á½Ã±îÁö ´ë±âÇÒ ÇÊ¿ä¾ø´Ù. */
+             ( SMP_GET_TID( sLimitSCN ) != aIterator->tid ) )
+        {
+            IDE_TEST( smxTrans::waitPendingTx( sTrans,
+                                               sLimitSCN,
+                                               aIterator->SCN )
+                      != IDE_SUCCESS );
+        }
+
+        /* BUG-48244 : waitPendingTX()³»ºÎ¿¡¼­ COMMITÇÑ ÀÌÈÄ¿¡ RECORD SCNÀ» ´Ù½Ã ¹Ş¾Æ¿Â´Ù.
+                       GCTX¿¡¼­ ³ôÀº view·Î º¸´Â°æ¿ì, RECORD°¡ ¾Èº¸ÀÏ¼öµµ ÀÖ±â ¶§¹®ÀÌ´Ù. */ 
+        if ( aIsFullScan == ID_FALSE )
+        {
+            SM_SET_SCN( &sCreateSCN, &(sSlotHeader->mCreateSCN) );
+            SM_SET_SCN( &sLimitSCN, &(sSlotHeader->mLimitSCN) );
+        }
+        else
+        {
+            /* BUG-48353
+               FULL SCAN ÀÎ°æ¿ì PAGE LATCH ¹Û¿¡¼­ checkSCN() È£ÃâÇÑ´Ù.
+               CreateSCN°ú LimitSCNÀÌ µ¿ÀÏÇÑ Record·ÎºÎÅÍ ¹Ş¾Æ¿Â °ªÀÎÁö¸¦ º¸ÀåÇØ¾ß ÇÑ´Ù. */
+            do
+            {
+                ID_SERIAL_BEGIN( SM_SET_SCN( &sCreateSCN, &(sSlotHeader->mCreateSCN) ) );
+                ID_SERIAL_EXEC(  SM_SET_SCN( &sLimitSCN, &(sSlotHeader->mLimitSCN) ), 1 );
+                ID_SERIAL_EXEC(  SM_SET_SCN( &sCreateSCNTmp, &(sSlotHeader->mCreateSCN) ), 2 );
+                ID_SERIAL_END(   SM_SET_SCN( &sLimitSCNTmp, &(sSlotHeader->mLimitSCN) ) );
+
+            } while ( !SM_SCN_IS_EQ( &sCreateSCN, &sCreateSCNTmp ) ||
+                      !SM_SCN_IS_EQ( &sLimitSCN, &sLimitSCNTmp ) );
+        }
+    }
 
     SMX_GET_SCN_AND_TID( sCreateSCN, sRowSCN, sRowTID );
     SMX_GET_SCN_AND_TID( sLimitSCN, sNxtSCN, sNxtTID );
 
     while ( 1 )
     {
-        /* delete bitë¥¼ ì„¤ì •í•œ ê²½ìš° í•´ë‹¹ ROWë¥¼ ë³´ì§€ ì•ŠëŠ”ë‹¤. */
+        /* delete bit¸¦ ¼³Á¤ÇÑ °æ¿ì ÇØ´ç ROW¸¦ º¸Áö ¾Ê´Â´Ù. */
         IDE_TEST_CONT( SM_SCN_IS_DELETED( sRowSCN ), skip_check_visibility );
 
-        /* ì½ì„ ìˆ˜ ìˆëŠ” ëŒ€ìƒ SCNì˜ ê²½ìš° */
-        if ( /* rowì˜ SCNì´ cursorì˜ view SCNë³´ë‹¤ ì‘ê±°ë‚˜ */
+        /* ÀĞÀ» ¼ö ÀÖ´Â ´ë»ó SCNÀÇ °æ¿ì */
+        if ( /* rowÀÇ SCNÀÌ cursorÀÇ view SCNº¸´Ù ÀÛ°Å³ª */
              ( SM_SCN_IS_LE( &sRowSCN, &(aIterator->SCN) ) ) ||
-             /* ê°™ì€ Txì—ì„œ cursorê°€ ì—´ë¦¬ê¸° ì „ì— ìƒì„±í•œ rowì´ë©´ */
+             /* °°Àº Tx¿¡¼­ cursor°¡ ¿­¸®±â Àü¿¡ »ı¼ºÇÑ rowÀÌ¸é */
              ( ( sRowTID == aIterator->tid ) &&
                ( SM_SCN_IS_LT( &sCreateSCN, &(aIterator->infinite) ) ) ) )
         {
-            /* rowì— lockì„ ê±¸ì—ˆê±°ë‚˜ next versionì´ ì—†ìœ¼ë©´ ë³¼ ìˆ˜ ìˆë‹¤. */
+            /* row¿¡ lockÀ» °É¾ú°Å³ª next versionÀÌ ¾øÀ¸¸é º¼ ¼ö ÀÖ´Ù. */
             if ( SM_SCN_IS_FREE_ROW( sNxtSCN ) ||
                  SM_SCN_IS_LOCK_ROW( sNxtSCN ) )
             {
                 /* PROJ-2694 Fetch Across Rollback
-                 * holdable cursor open ì´ì „ ìì‹ ì´ ìƒì„±í•œ rowì— ì ‘ê·¼í–ˆì„ ê²½ìš°
-                 * í•´ë‹¹ Txë¥¼ rollbackì‹œ cursorë¥¼ ì¬í™œìš©í•  ìˆ˜ ì—†ë‹¤. */
+                 * holdable cursor open ÀÌÀü ÀÚ½ÅÀÌ »ı¼ºÇÑ row¿¡ Á¢±ÙÇßÀ» °æ¿ì
+                 * ÇØ´ç Tx¸¦ rollback½Ã cursor¸¦ ÀçÈ°¿ëÇÒ ¼ö ¾ø´Ù. */
                 if ( ( sRowTID == aIterator->tid ) && 
                      ( sTrans->mCursorOpenInfSCN != SM_SCN_INIT ) &&
                      ( SM_SCN_IS_LT( &sCreateSCN, &( sTrans->mCursorOpenInfSCN ) ) ) &&
@@ -460,7 +517,7 @@ inline idBool smnManager::checkSCN( smiIterator *aIterator,
                     /* nothing to do */
                 }
 
-                sIsVisible = ID_TRUE;
+                *aIsVisible = ID_TRUE;
                 break;
             }
             else
@@ -470,7 +527,7 @@ inline idBool smnManager::checkSCN( smiIterator *aIterator,
 
             if ( sNxtTID == aIterator->tid )
             {
-                /* Next Versionì„ ë‚´ê°€ ë§Œë“¤ì—ˆì§€ë§Œ cursorë¥¼ ì—´ê¸°ì „ì— ë§Œë“¤ì—ˆìŒ */
+                /* Next VersionÀ» ³»°¡ ¸¸µé¾úÁö¸¸ cursor¸¦ ¿­±âÀü¿¡ ¸¸µé¾úÀ½ */
                 if ( SM_SCN_IS_GE( &(sLimitSCN), &(aIterator->infinite) ) )
                 {
 
@@ -479,12 +536,12 @@ inline idBool smnManager::checkSCN( smiIterator *aIterator,
                         ( aCanReusableRollback != NULL ) )
                     {
                         /* PROJ-2694 Fetch Across Rollback 
-                         * holdable cursor open ì´ì „ ìì‹ ì´ ìƒì„±í•œ rowì— ì ‘ê·¼í–ˆì„ ê²½ìš°
-                         * í•´ë‹¹ Txë¥¼ rollbackì‹œ cursorë¥¼ ì¬í™œìš©í•  ìˆ˜ ì—†ë‹¤. */
+                         * holdable cursor open ÀÌÀü ÀÚ½ÅÀÌ »ı¼ºÇÑ row¿¡ Á¢±ÙÇßÀ» °æ¿ì
+                         * ÇØ´ç Tx¸¦ rollback½Ã cursor¸¦ ÀçÈ°¿ëÇÒ ¼ö ¾ø´Ù. */
                         *aCanReusableRollback = ID_FALSE;
                     }
 
-                    sIsVisible = ID_TRUE;
+                    *aIsVisible = ID_TRUE;
                     break;
                 }
                 else
@@ -494,16 +551,16 @@ inline idBool smnManager::checkSCN( smiIterator *aIterator,
             }
             else
             {
-                /* Next Versionì„ ë‚´ê°€ ë§Œë“¤ì§€ ì•Šì€ ê²½ìš°
-                 * ì•„ë˜ 3ê°€ì§€ ê²½ìš°ì— ëŒ€í•´ ëª¨ë‘ ê²€ì‚¬ê°€ ê°€ëŠ¥í•˜ë‹¤.
-                 * 1. Commit í•˜ì§€ ì•Šì•˜ê³ , Next Versionì˜ SCNì´ infiniteì¸ ê²½ìš°
-                 * 2. Commit í–ˆì§€ë§Œ ì•„ì§ Commit SCNì„ ì„¤ì •í•˜ì§€ ì•Šì€ ê²½ìš°
-                 * 3. Commit í–ˆê³ , Commit SCNë„ ì„¤ì •í•œ ê²½ìš°
-                 *    (1   : sNxtSCNì´ INFINITE SCNì´ë¯€ë¡œ ë³¼ ìˆ˜ ìˆë‹¤. )
-                 *    (2,3 : sNxtSCNì´ COMMITED SCNì´ë¯€ë¡œ ëŒ€ì†Œ ë¹„êµ ê°€ëŠ¥ ) */
+                /* Next VersionÀ» ³»°¡ ¸¸µéÁö ¾ÊÀº °æ¿ì
+                 * ¾Æ·¡ 3°¡Áö °æ¿ì¿¡ ´ëÇØ ¸ğµÎ °Ë»ç°¡ °¡´ÉÇÏ´Ù.
+                 * 1. Commit ÇÏÁö ¾Ê¾Ò°í, Next VersionÀÇ SCNÀÌ infiniteÀÎ °æ¿ì
+                 * 2. Commit ÇßÁö¸¸ ¾ÆÁ÷ Commit SCNÀ» ¼³Á¤ÇÏÁö ¾ÊÀº °æ¿ì
+                 * 3. Commit Çß°í, Commit SCNµµ ¼³Á¤ÇÑ °æ¿ì
+                 *    (1   : sNxtSCNÀÌ INFINITE SCNÀÌ¹Ç·Î º¼ ¼ö ÀÖ´Ù. )
+                 *    (2,3 : sNxtSCNÀÌ COMMITED SCNÀÌ¹Ç·Î ´ë¼Ò ºñ±³ °¡´É ) */
                 if ( SM_SCN_IS_GT( &(sNxtSCN), &(aIterator->SCN) ) )
                 {
-                    sIsVisible = ID_TRUE;
+                    *aIsVisible = ID_TRUE;
                     break;
                 }
                 else
@@ -521,14 +578,14 @@ inline idBool smnManager::checkSCN( smiIterator *aIterator,
     }
 
 #ifdef DEBUG
-    if ( sIsVisible == ID_TRUE )
+    if ( *aIsVisible == ID_TRUE )
     {
-        /* Next Rowë¥¼ Freeí•˜ë©´ Next Rowì˜ SCNì´ 0x7FFFFFFFFFFFFFFDê°€ ëœë‹¤.
-         * ë”°ë¼ì„œ í˜„ì¬ Rowë¥¼ ë³¼ ìˆ˜ ìˆë‹¤ê³  íŒë‹¨í•œë‹¤.
-         * Next Rowê°€ ì‚­ì œë˜ë©´ í˜„ì¬ Rowë„ ì‚­ì œë  Rowì¼ ìˆ˜ ìˆë‹¤.
-         * ê·¸ëŸ°ë° ì´ëŸ° ê²½ìš°ëŠ” ë²„ê·¸ì— ì˜í•œ ê²ƒì´ë‹¤.
-         * ì™œëƒí•˜ë©´ Checkí•˜ê³  ìˆëŠ” Rowì— ëŒ€í•´ Updateë¥¼ ìˆ˜í–‰í–ˆê¸° ë•Œë¬¸ì´ë‹¤. */
-        SMX_GET_SCN_AND_TID( sSlotHeader->mCreateSCN,
+        /* Next Row¸¦ FreeÇÏ¸é Next RowÀÇ SCNÀÌ 0x7FFFFFFFFFFFFFFD°¡ µÈ´Ù.
+         * µû¶ó¼­ ÇöÀç Row¸¦ º¼ ¼ö ÀÖ´Ù°í ÆÇ´ÜÇÑ´Ù.
+         * Next Row°¡ »èÁ¦µÇ¸é ÇöÀç Rowµµ »èÁ¦µÉ RowÀÏ ¼ö ÀÖ´Ù.
+         * ±×·±µ¥ ÀÌ·± °æ¿ì´Â ¹ö±×¿¡ ÀÇÇÑ °ÍÀÌ´Ù.
+         * ¿Ö³ÄÇÏ¸é CheckÇÏ°í ÀÖ´Â Row¿¡ ´ëÇØ Update¸¦ ¼öÇàÇß±â ¶§¹®ÀÌ´Ù. */
+        SMX_GET_SCN_AND_TID( ((smpSlotHeader*)sSlotHeader)->mCreateSCN,
                              sRowSCNAfterCheck,
                              sRowTID );
         if ( !SM_SCN_IS_EQ( &sRowSCN, &sRowSCNAfterCheck ) )
@@ -545,7 +602,7 @@ inline idBool smnManager::checkSCN( smiIterator *aIterator,
                         SM_SCN_TO_LONG( sRowSCN ),
                         SM_SCN_TO_LONG( sRowSCNAfterCheck ) );
 
-            smcRecord::logSlotInfo(sSlotHeader);
+            smcRecord::logSlotInfo((smpSlotHeader*)sSlotHeader);
 
             IDE_ASSERT(0);
         }
@@ -560,11 +617,15 @@ inline idBool smnManager::checkSCN( smiIterator *aIterator,
     }
 #endif
 
-    /* BUG-40385 sIsVisible ê°’ì— ë”°ë¼ Failure ë¦¬í„´ì¼ ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
-     * ìœ„ì— IDE_TEST_RAISE -> IDE_TEST_CONT ë¡œ ë³€í™˜í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+    /* BUG-40385 *aIsVisible °ª¿¡ µû¶ó Failure ¸®ÅÏÀÏ ¼ö ÀÖÀ¸¹Ç·Î,
+     * À§¿¡ IDE_TEST_RAISE -> IDE_TEST_CONT ·Î º¯È¯ÇÏÁö ¾Ê´Â´Ù. */
     IDE_EXCEPTION_CONT( skip_check_visibility );
 
-    return sIsVisible;
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
 inline UInt smnManager::getSizeOfIndexHeader( void )
@@ -598,27 +659,27 @@ inline idBool smnManager::checkCanReusableRollback( smiIterator * aIterator,
     SMX_GET_SCN_AND_TID( sCreateSCN, sRowSCN, sRowTID );
     if( SM_SCN_IS_DELETED( sRowSCN ) == ID_TRUE )
     {
-        /* í•´ë‹¹ rowê°€ ì´ë¯¸ ì‚­ì œë˜ì—ˆë‹¤ë©´ fetch across rollbackê³¼ ê´€ê³„ê°€ ì—†ë‹¤. */
+        /* ÇØ´ç row°¡ ÀÌ¹Ì »èÁ¦µÇ¾ú´Ù¸é fetch across rollback°ú °ü°è°¡ ¾ø´Ù. */
         sIsReusableRollback = ID_TRUE;
     }
     else
     {
         if( sRowTID != aIterator->tid )
         {
-            /* ë‹¤ë¥¸ Txì˜ ë‚´ìš©ì— ì ‘ê·¼í•  ê²½ìš° fetch across rollbackê³¼ ê´€ê³„ê°€ ì—†ë‹¤. */
+            /* ´Ù¸¥ TxÀÇ ³»¿ë¿¡ Á¢±ÙÇÒ °æ¿ì fetch across rollback°ú °ü°è°¡ ¾ø´Ù. */
             sIsReusableRollback = ID_TRUE;
         }
         else
         {
-            if( ( SM_SCN_IS_LT( &sCreateSCN, &( sTrans->mCursorOpenInfSCN ) ) == ID_TRUE ) &&
+            if( ( SM_SCN_IS_LT( &sCreateSCN, &( sTrans->mCursorOpenInfSCN ) ) == ID_TRUE ) && 
                 ( sTrans->mCursorOpenInfSCN != SM_SCN_INIT ) )
             {
-                /* ì ‘ê·¼í•œ rowê°€ holdable cursorê°€ ì—´ë¦¬ê¸° ì „ ìƒì„±í•œ rowì¼ ê²½ìš° fetch across rollbackì´ ë¶ˆê°€ëŠ¥í•˜ë‹¤.     */
+                /* Á¢±ÙÇÑ row°¡ holdable cursor°¡ ¿­¸®±â Àü »ı¼ºÇÑ rowÀÏ °æ¿ì fetch across rollbackÀÌ ºÒ°¡´ÉÇÏ´Ù.     */
                 sIsReusableRollback = ID_FALSE;
             }
             else
             {
-                /* non holdable cursorì´ê±°ë‚˜ holdable cursorê°€ ì—´ë¦° í›„ ìƒì„±í•œ rowì¼ ê²½ìš° fetch across rollbackê³¼ ê´€ê³„ê°€ ì—†ë‹¤. */
+                /* non holdable cursorÀÌ°Å³ª holdable cursor°¡ ¿­¸° ÈÄ »ı¼ºÇÑ rowÀÏ °æ¿ì fetch across rollback°ú °ü°è°¡ ¾ø´Ù. */
                 sIsReusableRollback = ID_TRUE;
             }
         }

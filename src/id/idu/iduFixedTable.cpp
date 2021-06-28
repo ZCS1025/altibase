@@ -48,10 +48,10 @@ void   iduFixedTable::registFixedTable(iduFixedTableDesc *aDesc)
 {
     iduFixedTableColDesc *sColDesc;
 
-    // Table ê°ì²´ ê°¯ìˆ˜ ì¦ê°€
+    // Table °´Ã¼ °¹¼ö Áõ°¡
     mTableCount++;
 
-    // Column ê°ì²´ ê°¯ìˆ˜ ì—°ì‚°
+    // Column °´Ã¼ °¹¼ö ¿¬»ê
     for (sColDesc = aDesc->mColDesc;
          sColDesc->mName != NULL;
          sColDesc++)
@@ -59,7 +59,7 @@ void   iduFixedTable::registFixedTable(iduFixedTableDesc *aDesc)
         mColumnCount++;
     }
 
-    // single listë¡œ ìœ ì§€í•œë‹¤.
+    // single list·Î À¯ÁöÇÑ´Ù.
 
     mTableTail->mNext = aDesc;
     mTableTail        = aDesc;
@@ -76,7 +76,7 @@ void   iduFixedTable::setCallback(iduFixedTableAllocRecordBuffer aAlloc,
 }
 
 //=============================================================================
-// iduFixedTable Memory ê´€ë¦¬ì
+// iduFixedTable Memory °ü¸®ÀÚ
 
 IDE_RC iduFixedTableMemory::initialize( iduMemory * aMemory )
 {
@@ -86,8 +86,8 @@ IDE_RC iduFixedTableMemory::initialize( iduMemory * aMemory )
     mContext        = NULL;
 
     /* BUG-42639 Monitoring query
-     * x$ì™€ v$ë¥¼ ì‚¬ìš©í•˜ëŠ” Fixed Tableì˜ MemoryëŠ”
-     * QMX Memory ë¥¼ ì¸ìë¡œ ë°›ì•„ì„œ ì²˜ë¦¬í•˜ë„ë¡ í•œë‹¤.
+     * x$¿Í v$¸¦ »ç¿ëÇÏ´Â Fixed TableÀÇ Memory´Â
+     * QMX Memory ¸¦ ÀÎÀÚ·Î ¹Ş¾Æ¼­ Ã³¸®ÇÏµµ·Ï ÇÑ´Ù.
      */
     if ( aMemory == NULL )
     {

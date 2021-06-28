@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smmDatabaseFile.cpp 85250 2019-04-16 07:15:32Z emlee $
+ * $Id: smmDatabaseFile.cpp 85837 2019-07-14 23:44:48Z emlee $
  **********************************************************************/
 
 #include <idl.h>
@@ -40,13 +40,13 @@ smmDatabaseFile::smmDatabaseFile()
 }
 
 /*
-  ë°ì´íƒ€ë² ì´ìŠ¤íŒŒì¼(CHECKPOINT IMAGE) ê°ì²´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+  µ¥ÀÌÅ¸º£ÀÌ½ºÆÄÀÏ(CHECKPOINT IMAGE) °´Ã¼¸¦ ÃÊ±âÈ­ÇÑ´Ù.
 
-  [IN] aSpaceID    - ë°ì´íƒ€ë² ì´ìŠ¤íŒŒì¼ì˜ TBS ID
-  [IN] aPingpongNo - PINGPONG ë²ˆí˜¸
-  [IN] aDBFileNo   - ë°ì´íƒ€ë² ì´ìŠ¤íŒŒì¼ ë²ˆí˜¸
-  [IN] aFstPageID   - ë°ì´íƒ€ë² ì´ìŠ¤íŒŒì¼ì˜ ì²«ë²ˆì§¸ PID
-  [IN] aLstPageID   - ë°ì´íƒ€ë² ì´ìŠ¤íŒŒì¼ì˜ ë§ˆì§€ë§‰ PID
+  [IN] aSpaceID    - µ¥ÀÌÅ¸º£ÀÌ½ºÆÄÀÏÀÇ TBS ID
+  [IN] aPingpongNo - PINGPONG ¹øÈ£
+  [IN] aDBFileNo   - µ¥ÀÌÅ¸º£ÀÌ½ºÆÄÀÏ ¹øÈ£
+  [IN] aFstPageID   - µ¥ÀÌÅ¸º£ÀÌ½ºÆÄÀÏÀÇ Ã¹¹øÂ° PID
+  [IN] aLstPageID   - µ¥ÀÌÅ¸º£ÀÌ½ºÆÄÀÏÀÇ ¸¶Áö¸· PID
  */
 IDE_RC smmDatabaseFile::initialize( scSpaceID   aSpaceID,
                                     UInt        aPingPongNum,
@@ -68,9 +68,9 @@ IDE_RC smmDatabaseFile::initialize( scSpaceID   aSpaceID,
 
 
     // To Fix BUG-18434
-    //        alter tablespace online/offline ë™ì‹œìˆ˜í–‰ì¤‘ ì„œë²„ì‚¬ë§
+    //        alter tablespace online/offline µ¿½Ã¼öÇàÁß ¼­¹ö»ç¸Á
     //
-    // Page Bufferì— ì ‘ê·¼ì— ëŒ€í•œ ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•œ Mutex ì´ˆê¸°í™”
+    // Page Buffer¿¡ Á¢±Ù¿¡ ´ëÇÑ µ¿½Ã¼º Á¦¾î¸¦ À§ÇÑ Mutex ÃÊ±âÈ­
     idlOS::snprintf( sMutexName,
                      128,
                      "MEM_DBFILE_PAGEBUFFER_%"ID_UINT32_FMT"_%"ID_UINT32_FMT"_%"ID_UINT32_FMT"_MUTEX",
@@ -102,8 +102,8 @@ IDE_RC smmDatabaseFile::initialize( scSpaceID   aSpaceID,
               != IDE_SUCCESS );
 
     // To Fix BUG-18130
-    //    Meta Pageì¤‘ ì¼ë¶€ë§Œ File Headerêµ¬ì¡°ì²´ë¡œ memcpyí›„
-    //    Diskì— ë‚´ë¦´ë•ŒëŠ” Meta Pageì „ì²´ë¥¼ ë‚´ë¦¬ëŠ” ë¬¸ì œ í•´ê²°
+    //    Meta PageÁß ÀÏºÎ¸¸ File Header±¸Á¶Ã¼·Î memcpyÈÄ
+    //    Disk¿¡ ³»¸±¶§´Â Meta PageÀüÃ¼¸¦ ³»¸®´Â ¹®Á¦ ÇØ°á
     idlOS::memset( mAlignedPageBuffer,
                    0,
                    SM_DBFILE_METAHDR_PAGE_SIZE );
@@ -124,31 +124,31 @@ IDE_RC smmDatabaseFile::initialize( scSpaceID   aSpaceID,
     SM_LSN_MAX( sMaxLSN );
 
 
-    // RedoLSNì€ ë¡œê·¸ì•µì»¤ë¡œë¶€í„° ì´ˆê¸°í™”ë˜ê¸°ì „ê¹Œì§€ëŠ” ë˜ëŠ”
-    // ì²´í¬í¬ì¸íŠ¸ê°€ ë°œìƒí•˜ê¸° ì „ ì „ê¹Œì§€ëŠ” ID_UINT_MAX ê°’ì„ ê°€ì§„ë‹¤.
+    // RedoLSNÀº ·Î±×¾ŞÄ¿·ÎºÎÅÍ ÃÊ±âÈ­µÇ±âÀü±îÁö´Â ¶Ç´Â
+    // Ã¼Å©Æ÷ÀÎÆ®°¡ ¹ß»ıÇÏ±â Àü Àü±îÁö´Â ID_UINT_MAX °ªÀ» °¡Áø´Ù.
     SM_GET_LSN( mChkptImageHdr.mMemRedoLSN,
                 sMaxLSN )
 
-    // CreateLSNì€ ë¡œê·¸ì•µì»¤ë¡œë¶€í„° ì´ˆê¸°í™”ë˜ê¸°ì „ê¹Œì§€ëŠ” ë˜ëŠ”
-    // ë°ì´íƒ€íŒŒì¼ì´ ìƒì„±ë˜ê¸° ì „ê¹Œì§€ëŠ” ID_UINT_MAX ê°’ì„ ê°€ì§„ë‹¤.
+    // CreateLSNÀº ·Î±×¾ŞÄ¿·ÎºÎÅÍ ÃÊ±âÈ­µÇ±âÀü±îÁö´Â ¶Ç´Â
+    // µ¥ÀÌÅ¸ÆÄÀÏÀÌ »ı¼ºµÇ±â Àü±îÁö´Â ID_UINT_MAX °ªÀ» °¡Áø´Ù.
     SM_GET_LSN( mChkptImageHdr.mMemCreateLSN,
                 sMaxLSN )
 
     ////////////////////////////////////////////////////////////
-    // PRJ-1548 User Memory TableSpace ê°œë…ë„ì…
+    // PRJ-1548 User Memory TableSpace °³³äµµÀÔ
 
-    // ë©”ëª¨ë¦¬í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ ë¯¸ë””ì–´ ë³µêµ¬ì—°ì‚°ì—ì„œ ì‚¬ìš©
+    // ¸Ş¸ğ¸®Å×ÀÌºí½ºÆäÀÌ½ºÀÇ ¹Ìµğ¾î º¹±¸¿¬»ê¿¡¼­ »ç¿ë
 
     if ( aFstPageID != NULL )
     {
-        mFstPageID      = *aFstPageID;  // ë°ì´íƒ€íŒŒì¼ì˜ ë§ˆì§€ë§‰ PID
+        mFstPageID      = *aFstPageID;  // µ¥ÀÌÅ¸ÆÄÀÏÀÇ ¸¶Áö¸· PID
     }
 
     if ( aLstPageID != NULL )
     {
-        mLstPageID      = *aLstPageID;  // ë°ì´íƒ€íŒŒì¼ì˜ ì²«ë²ˆì§¸ PID
+        mLstPageID      = *aLstPageID;  // µ¥ÀÌÅ¸ÆÄÀÏÀÇ Ã¹¹øÂ° PID
     }
-    mIsMediaFailure = ID_FALSE;    // ë¯¸ë””ì–´ë³µêµ¬ì§„í–‰ì—¬ë¶€
+    mIsMediaFailure = ID_FALSE;    // ¹Ìµğ¾îº¹±¸ÁøÇà¿©ºÎ
 
     return IDE_SUCCESS;
 
@@ -269,17 +269,17 @@ smmDatabaseFile::setFileName( SChar *aDir,
 
 
 /***********************************************************************
- * Description : <aCurrentDB, aDBFileNo>ì— í•´ë‹¹í•˜ëŠ” DatabaseíŒŒì¼ì„ ìƒì„±í•˜ê³ 
- *               í¬ê¸°ëŠ” aSizeë¡œ í•œë‹¤.
+ * Description : <aCurrentDB, aDBFileNo>¿¡ ÇØ´çÇÏ´Â DatabaseÆÄÀÏÀ» »ı¼ºÇÏ°í
+ *               Å©±â´Â aSize·Î ÇÑ´Ù.
  *
- * aTBSNode   : Db Fileì„ ë§Œë“¤ë ¤ê³  í•˜ëŠ”  Tablespaceì˜ Node
- * aCurrentDB : MMDBëŠ” Ping-Pongì´ê¸° ë•Œë¬¸ì— ë‘ê°œì˜ Database Imageê°€ ì¡´ì¬. ë”°ë¼ì„œ
- *              ì–´ëŠ Imageì— DBë¥¼ ìƒì„±í• ì§€ ê²°ì •íˆê¸°ìœ„í•´ ë„˜ê¹€
- *              0 or 1ì´ì–´ì•¼ í•¨.
+ * aTBSNode   : Db FileÀ» ¸¸µé·Á°í ÇÏ´Â  TablespaceÀÇ Node
+ * aCurrentDB : MMDB´Â Ping-PongÀÌ±â ¶§¹®¿¡ µÎ°³ÀÇ Database Image°¡ Á¸Àç. µû¶ó¼­
+ *              ¾î´À Image¿¡ DB¸¦ »ı¼ºÇÒÁö °áÁ¤È÷±âÀ§ÇØ ³Ñ±è
+ *              0 or 1ÀÌ¾î¾ß ÇÔ.
  * aDBFileNo  : Datbase File No
- * aSize      : ìƒì„±í•  íŒŒì¼ì˜ í¬ê¸°.(Byte), ë§Œì•½ aSize == 0ë¼ë©´, DB Headerë§Œ
- *              ê¸°ë¡í•œë‹¤.
- * aChkptImageHdr : ë©”ëª¨ë¦¬ ì²´í¬í¬ì¸íŠ¸ì´ë¯¸ì§€(ë°ì´íƒ€íŒŒì¼)ì˜ ë©”íƒ€í—¤ë”
+ * aSize      : »ı¼ºÇÒ ÆÄÀÏÀÇ Å©±â.(Byte), ¸¸¾à aSize == 0¶ó¸é, DB Header¸¸
+ *              ±â·ÏÇÑ´Ù.
+ * aChkptImageHdr : ¸Ş¸ğ¸® Ã¼Å©Æ÷ÀÎÆ®ÀÌ¹ÌÁö(µ¥ÀÌÅ¸ÆÄÀÏ)ÀÇ ¸ŞÅ¸Çì´õ
  **********************************************************************/
 IDE_RC smmDatabaseFile::createDbFile(smmTBSNode       * aTBSNode,
                                      SInt               aCurrentDB,
@@ -295,7 +295,7 @@ IDE_RC smmDatabaseFile::createDbFile(smmTBSNode       * aTBSNode,
     IDE_ASSERT( aTBSNode != NULL );
     IDE_ASSERT( mFile.getCurFDCnt() == 0 );
 
-    /* aSizeëŠ” DB File Headerë³´ë‹¤ ì»¤ì•¼ í•œë‹¤. */
+    /* aSize´Â DB File Headerº¸´Ù Ä¿¾ß ÇÑ´Ù. */
     IDE_ASSERT( ( aSize + 1 > SD_PAGE_SIZE ) || ( aSize == 0 ) );
 
     if( smuProperty::getIOType() == 0 )
@@ -314,7 +314,7 @@ IDE_RC smmDatabaseFile::createDbFile(smmTBSNode       * aTBSNode,
 
     setDir( sCreateDir ) ;
 
-    /* DBFile ì´ë¦„ì„ ë§Œë“ ë‹¤. */
+    /* DBFile ÀÌ¸§À» ¸¸µç´Ù. */
     idlOS::snprintf( sDBFileName,
                      ID_SIZEOF(sDBFileName),
                      SMM_CHKPT_IMAGE_NAME_WITH_PATH,
@@ -327,40 +327,40 @@ IDE_RC smmDatabaseFile::createDbFile(smmTBSNode       * aTBSNode,
 
     if ( mFile.exist() == ID_TRUE )
     {
-        // BUG-29607 create checkpoint image ë„ì¤‘ ë™ì¼ íŒŒì¼ì´ ìˆìœ¼ë©´
-        //           ì¬ì‚¬ìš© í•˜ì§€ ë§ê³  ì§€ìš°ê³  ë‹¤ì‹œ ìƒì„±í•œë‹¤.
-        // checkpoint image ìƒì„±ì€ checkpointì‹œ ìë™ìœ¼ë¡œ ë°œìƒí•˜ë¯€ë¡œ
-        // íŒŒì¼ì´ ìˆë‹¤ê³  ì˜¤ë¥˜ë¥¼ ë°˜í™˜í•˜ë©´, ì‚¬ìš©ìê°€ trc.logë¥¼ í™•ì¸í•˜ì§€ ì•Šì„ ì‹œ ì¥ì‹œê°„
-        // checkpointë¥¼ ëª»í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ, ì˜¤ë¥˜ë¥¼ ë°˜í™˜í•˜ì§€ ì•Šê³  ì‚­ì œ í›„ ì¬ìƒì„±í•œë‹¤.
-        // ëŒ€ì‹ , create tablespaceì‹œ ì•ìœ¼ë¡œ ìƒì„± í•  ê²ƒì„ ê°ì•ˆí•´ì„œ
-        // Fileì˜ ì¡´ì¬ ìœ ë¬´ë¥¼ ë¯¸ë¦¬ ê²€ì‚¬í•˜ì—¬ ì‚¬ìš©ìì˜ ì‹¤ìˆ˜ë¥¼ ë¯¸ë¦¬ ë°©ì§€í•œë‹¤.
+        // BUG-29607 create checkpoint image µµÁß µ¿ÀÏ ÆÄÀÏÀÌ ÀÖÀ¸¸é
+        //           Àç»ç¿ë ÇÏÁö ¸»°í Áö¿ì°í ´Ù½Ã »ı¼ºÇÑ´Ù.
+        // checkpoint image »ı¼ºÀº checkpoint½Ã ÀÚµ¿À¸·Î ¹ß»ıÇÏ¹Ç·Î
+        // ÆÄÀÏÀÌ ÀÖ´Ù°í ¿À·ù¸¦ ¹İÈ¯ÇÏ¸é, »ç¿ëÀÚ°¡ trc.log¸¦ È®ÀÎÇÏÁö ¾ÊÀ» ½Ã Àå½Ã°£
+        // checkpoint¸¦ ¸øÇÒ ¼ö ÀÖÀ¸¹Ç·Î, ¿À·ù¸¦ ¹İÈ¯ÇÏÁö ¾Ê°í »èÁ¦ ÈÄ Àç»ı¼ºÇÑ´Ù.
+        // ´ë½Å, create tablespace½Ã ¾ÕÀ¸·Î »ı¼º ÇÒ °ÍÀ» °¨¾ÈÇØ¼­
+        // FileÀÇ Á¸Àç À¯¹«¸¦ ¹Ì¸® °Ë»çÇÏ¿© »ç¿ëÀÚÀÇ ½Ç¼ö¸¦ ¹Ì¸® ¹æÁöÇÑ´Ù.
         //
-        // BUGBUG ì˜¤ë¥˜ ì•ŒëŒ ê¸°ëŠ¥ì´ ì¶”ê°€ë˜ë©´ ì˜ˆì™¸ë¡œ ì „í™˜í•œë‹¤.
+        // BUGBUG ¿À·ù ¾Ë¶÷ ±â´ÉÀÌ Ãß°¡µÇ¸é ¿¹¿Ü·Î ÀüÈ¯ÇÑ´Ù.
 
         IDE_TEST( idf::unlink( sDBFileName ) != IDE_SUCCESS );
     }
 
-    // PRJ-1149 media recoveryë¥¼ ìœ„í•˜ì—¬ memory ë°ì´íƒ€íŒŒì¼ë„
-    // íŒŒì¼ í—¤ë”ê°€ ì¶”ê°€ë¨.
-    // ë°ì´íƒ€ë² ì´ìŠ¤íŒŒì¼ ë©”íƒ€í—¤ë” ì„¤ì •
-    // MemCreateLSNì€ AllocNewPageChunk ì²˜ë¦¬ì‹œ ì„¤ì •ì´
-    // ì´ë¯¸ ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤.
+    // PRJ-1149 media recovery¸¦ À§ÇÏ¿© memory µ¥ÀÌÅ¸ÆÄÀÏµµ
+    // ÆÄÀÏ Çì´õ°¡ Ãß°¡µÊ.
+    // µ¥ÀÌÅ¸º£ÀÌ½ºÆÄÀÏ ¸ŞÅ¸Çì´õ ¼³Á¤
+    // MemCreateLSNÀº AllocNewPageChunk Ã³¸®½Ã ¼³Á¤ÀÌ
+    // ÀÌ¹Ì µÇ¾î ÀÖ¾î¾ß ÇÑ´Ù.
     setChkptImageHdr( sctTableSpaceMgr::getMemRedoLSN(),
                       NULL,     // aMemCreateLSN
                       NULL,     // spaceID
                       NULL,     // smVersion
                       NULL );   // aDataFileDescSlotID
 
-    /* DBFile Headerë§Œì„ ê°€ì§„ DBFileì„ ìƒì„±í•œë‹¤. */
+    /* DBFile Header¸¸À» °¡Áø DBFileÀ» »ı¼ºÇÑ´Ù. */
     IDE_TEST( createDBFileOnDiskAndOpen( sIsDirectIO )
               != IDE_SUCCESS );
 
-    /* FileHeaderì— Checkpont Image Headerë¥¼ ê¸°ë¡í•œë‹¤ */
+    /* FileHeader¿¡ Checkpont Image Header¸¦ ±â·ÏÇÑ´Ù */
     IDE_TEST( setDBFileHeader( aChkptImageHdr ) != IDE_SUCCESS );
 
     IDU_FIT_POINT("BUG-46574@smmDatabaseFile::createDbFile::writeUntilSuccess");
 
-    /* Fileì˜ í¬ê¸°ë¥¼ ì •í•œë‹¤. */
+    /* FileÀÇ Å©±â¸¦ Á¤ÇÑ´Ù. */
     if( aSize > (SM_DBFILE_METAHDR_PAGE_SIZE + 1) )
     {
         idlOS::memset( sDummyPage, 0, SM_DBFILE_METAHDR_PAGE_SIZE );
@@ -383,9 +383,9 @@ IDE_RC smmDatabaseFile::createDbFile(smmTBSNode       * aTBSNode,
                  SM_TRC_MEMORY_FILE_CREATE,
                  getFileName() );
 
-    // ë¡œê·¸ì•µì»¤ì— ì €ì¥ë˜ì–´ ìˆì§€ì•Šìœ¼ë©´ ì €ì¥í•œë‹¤.
-    // ë¡œê·¸ì•µì»¤ì— ì €ì¥ë˜ì–´ ìˆë‹¤ë©´ CreateDBFileOnDisk Flagë¥¼ ê°±ì‹ í•˜ì—¬
-    // ì €ì¥í•œë‹¤.
+    // ·Î±×¾ŞÄ¿¿¡ ÀúÀåµÇ¾î ÀÖÁö¾ÊÀ¸¸é ÀúÀåÇÑ´Ù.
+    // ·Î±×¾ŞÄ¿¿¡ ÀúÀåµÇ¾î ÀÖ´Ù¸é CreateDBFileOnDisk Flag¸¦ °»½ÅÇÏ¿©
+    // ÀúÀåÇÑ´Ù.
 
     IDE_TEST( addAttrToLogAnchorIfCrtFlagIsFalse( aTBSNode )
               != IDE_SUCCESS );
@@ -398,9 +398,9 @@ IDE_RC smmDatabaseFile::createDbFile(smmTBSNode       * aTBSNode,
 }
 
 /*
- * Memory DBFileì„ Diskì— ìƒì„±í•˜ê³  Opení•œë‹¤.
+ * Memory DBFileÀ» Disk¿¡ »ı¼ºÇÏ°í OpenÇÑ´Ù.
  *
- * aUsedDirectIO - [IN] Direct IOë¥¼ ì‚¬ìš©í•˜ë©´ ID_TRUE, else ID_FALSE
+ * aUsedDirectIO - [IN] Direct IO¸¦ »ç¿ëÇÏ¸é ID_TRUE, else ID_FALSE
  *
  */
 IDE_RC smmDatabaseFile::createDBFileOnDiskAndOpen( idBool aUseDirectIO )
@@ -411,13 +411,13 @@ IDE_RC smmDatabaseFile::createDBFileOnDiskAndOpen( idBool aUseDirectIO )
 
     IDE_TEST( mFile.open( aUseDirectIO ) != IDE_SUCCESS );
 
-    // ì—¬ê¸°ì—ì„œ DB File Header Pageë¥¼ ë¯¸ë¦¬ ë§Œë“¤ì–´ë‘ë©´ ì•ˆëœë‹¤.
+    // ¿©±â¿¡¼­ DB File Header Page¸¦ ¹Ì¸® ¸¸µé¾îµÎ¸é ¾ÈµÈ´Ù.
     //
-    // Create Tablespaceì˜ Undoì‹œì— ì‚­ì œí•  DB Fileì˜ Headerì— ê¸°ë¡ëœ
-    // Tablespace IDë¥¼ ë³´ê³ , Tablespace IDê°€ ì¼ì¹˜í•  ë•Œë§ŒíŒŒì¼ì„ ì‚­ì œí•œë‹¤.
+    // Create TablespaceÀÇ Undo½Ã¿¡ »èÁ¦ÇÒ DB FileÀÇ Header¿¡ ±â·ÏµÈ
+    // Tablespace ID¸¦ º¸°í, Tablespace ID°¡ ÀÏÄ¡ÇÒ ¶§¸¸ÆÄÀÏÀ» »èÁ¦ÇÑ´Ù.
     //
-    // ê·¸ëŸ¬ë¯€ë¡œ, DB Fileì˜ Headerì— TablespaceIDê°€ ì œëŒ€ë¡œ ì„¤ì •ëœ í›„ì—
-    // DBíŒŒì¼ì˜ Header Pageë¥¼ ê¸°ë¡í•˜ì—¬ì•¼ í•œë‹¤.
+    // ±×·¯¹Ç·Î, DB FileÀÇ Header¿¡ TablespaceID°¡ Á¦´ë·Î ¼³Á¤µÈ ÈÄ¿¡
+    // DBÆÄÀÏÀÇ Header Page¸¦ ±â·ÏÇÏ¿©¾ß ÇÑ´Ù.
 
     return IDE_SUCCESS;
 
@@ -427,33 +427,33 @@ IDE_RC smmDatabaseFile::createDBFileOnDiskAndOpen( idBool aUseDirectIO )
 }
 
 /*
- * Memory DB File Headerì— ë©”íƒ€í—¤ë”ë¥¼ ê¸°ë¡í•œë‹¤.
+ * Memory DB File Header¿¡ ¸ŞÅ¸Çì´õ¸¦ ±â·ÏÇÑ´Ù.
  *
- * aChkptImageHdr - [IN] ë©”ëª¨ë¦¬ ì²´í¬í¬ì¸íŠ¸ì´ë¯¸ì§€(ë°ì´íƒ€íŒŒì¼)ì˜ ë©”íƒ€í—¤ë”
+ * aChkptImageHdr - [IN] ¸Ş¸ğ¸® Ã¼Å©Æ÷ÀÎÆ®ÀÌ¹ÌÁö(µ¥ÀÌÅ¸ÆÄÀÏ)ÀÇ ¸ŞÅ¸Çì´õ
  *
  */
 IDE_RC smmDatabaseFile::setDBFileHeader( smmChkptImageHdr * aChkptImageHdr )
 {
-    smmChkptImageHdr * aChkptImageHdr2Write;
+    smmChkptImageHdr * sChkptImageHdr2Write;
 
     if ( aChkptImageHdr != NULL )
     {
         IDE_DASSERT( checkValuesOfDBFHdr( aChkptImageHdr )
                      == IDE_SUCCESS );
 
-        aChkptImageHdr2Write = aChkptImageHdr;
+        sChkptImageHdr2Write = aChkptImageHdr;
     }
     else
     {
-        // CreateDBì‹œì—ëŠ” Redo LSNì´ Hdrì— ì„¤ì •ë˜ì–´ ìˆì§€ ì•ŠëŠ”
-        // ê²½ìš°ê°€ ìˆë‹¤.
+        // CreateDB½Ã¿¡´Â Redo LSNÀÌ Hdr¿¡ ¼³Á¤µÇ¾î ÀÖÁö ¾Ê´Â
+        // °æ¿ì°¡ ÀÖ´Ù.
 
-        aChkptImageHdr2Write = & mChkptImageHdr;
+        sChkptImageHdr2Write = & mChkptImageHdr;
     }
 
     // write dbf file header.
     IDE_TEST( writeUntilSuccessDIO( SM_DBFILE_METAHDR_PAGE_OFFSET,
-                                    aChkptImageHdr2Write,
+                                    sChkptImageHdr2Write,
                                     ID_SIZEOF(smmChkptImageHdr),
                                     smLayerCallback::setEmergency )
               != IDE_SUCCESS );
@@ -464,13 +464,13 @@ IDE_RC smmDatabaseFile::setDBFileHeader( smmChkptImageHdr * aChkptImageHdr )
 }
 
 /*
- * ì§€ì •ëœ ê²½ë¡œì˜ Memory DB File Headerì— ë©”íƒ€í—¤ë”ë¥¼ ê¸°ë¡í•œë‹¤.
- * dbsí´ë”ì— ì¡´ì¬í•˜ì§€ ì•ŠëŠ”(í˜„ì¬ DBêµ¬ë™ì— ì‚¬ìš©ë˜ì§€ì•ŠëŠ”) Memory DBíŒŒì¼ì˜ í—¤ë”ë¥¼
- * ê°±ì‹ í• ë•Œ ì‚¬ìš©ë˜ëŠ” í•¨ìˆ˜ì´ë‹¤. incremental backupëœ íŒŒì¼í—¤ë”ì— backupì •ë³´ë¥¼
- * ë‚¨ê¸°ê¸°ìœ„í•´ ì‚¬ìš©ëœë‹¤.
+ * ÁöÁ¤µÈ °æ·ÎÀÇ Memory DB File Header¿¡ ¸ŞÅ¸Çì´õ¸¦ ±â·ÏÇÑ´Ù.
+ * dbsÆú´õ¿¡ Á¸ÀçÇÏÁö ¾Ê´Â(ÇöÀç DB±¸µ¿¿¡ »ç¿ëµÇÁö¾Ê´Â) Memory DBÆÄÀÏÀÇ Çì´õ¸¦
+ * °»½ÅÇÒ¶§ »ç¿ëµÇ´Â ÇÔ¼öÀÌ´Ù. incremental backupµÈ ÆÄÀÏÇì´õ¿¡ backupÁ¤º¸¸¦
+ * ³²±â±âÀ§ÇØ »ç¿ëµÈ´Ù.
  *
- * aChkptImagePath  - [IN] ë©”ëª¨ë¦¬ ì²´í¬í¬ì¸íŠ¸ì´ë¯¸ì§€(ë°ì´íƒ€íŒŒì¼)ì˜ ê²½ë¡œ
- * aChkptImageHdr   - [IN] ë©”ëª¨ë¦¬ ì²´í¬í¬ì¸íŠ¸ì´ë¯¸ì§€(ë°ì´íƒ€íŒŒì¼)ì˜ ë©”íƒ€í—¤ë”
+ * aChkptImagePath  - [IN] ¸Ş¸ğ¸® Ã¼Å©Æ÷ÀÎÆ®ÀÌ¹ÌÁö(µ¥ÀÌÅ¸ÆÄÀÏ)ÀÇ °æ·Î
+ * aChkptImageHdr   - [IN] ¸Ş¸ğ¸® Ã¼Å©Æ÷ÀÎÆ®ÀÌ¹ÌÁö(µ¥ÀÌÅ¸ÆÄÀÏ)ÀÇ ¸ŞÅ¸Çì´õ
  *
  */
 IDE_RC smmDatabaseFile::setDBFileHeaderByPath( 
@@ -537,13 +537,13 @@ IDE_RC smmDatabaseFile::setDBFileHeaderByPath(
 }
 
 /*
-  ì²´í¬í¬ì¸íŠ¸ ì´ë¯¸ì§€ íŒŒì¼ì— Checkpoint Image Headerê°€ ê¸°ë¡ëœ ê²½ìš°
-  ì´ë¥¼ ì½ì–´ì„œ Tablespace IDê°€ ì¼ì¹˜í•˜ëŠ”ì§€ ë¹„êµí•˜ê³  Fileì„ Closeí•œë‹¤.
+  Ã¼Å©Æ÷ÀÎÆ® ÀÌ¹ÌÁö ÆÄÀÏ¿¡ Checkpoint Image Header°¡ ±â·ÏµÈ °æ¿ì
+  ÀÌ¸¦ ÀĞ¾î¼­ Tablespace ID°¡ ÀÏÄ¡ÇÏ´ÂÁö ºñ±³ÇÏ°í FileÀ» CloseÇÑ´Ù.
 
-  [IN] aSpaceID - Checkpoint Image Headerì˜ Tablespace IDì™€ ë¹„êµí•  ID
-  [OUT] aIsHeaderWritten - Checkpoint Image Headerê°€ ê¸°ë¡ë˜ì–´ ìˆëŠ”ì§€ ì—¬ë¶€
-  [OUT] aSpaceIdMatches - Checkpoint Image Headerì˜ Tablespace IDì™€
-                          aSpaceIDê°€ ì¼ì¹˜í•˜ëŠ”ì§€ ì—¬ë¶€
+  [IN] aSpaceID - Checkpoint Image HeaderÀÇ Tablespace ID¿Í ºñ±³ÇÒ ID
+  [OUT] aIsHeaderWritten - Checkpoint Image Header°¡ ±â·ÏµÇ¾î ÀÖ´ÂÁö ¿©ºÎ
+  [OUT] aSpaceIdMatches - Checkpoint Image HeaderÀÇ Tablespace ID¿Í
+                          aSpaceID°¡ ÀÏÄ¡ÇÏ´ÂÁö ¿©ºÎ
 */
 IDE_RC smmDatabaseFile::readSpaceIdAndClose( scSpaceID   aSpaceID,
                                              idBool    * aIsHeaderWritten,
@@ -558,7 +558,7 @@ IDE_RC smmDatabaseFile::readSpaceIdAndClose( scSpaceID   aSpaceID,
     *aIsHeaderWritten  = ID_FALSE;
     *aSpaceIdMatches   = ID_FALSE;
 
-    // Checkpoint Image Headerë¥¼ ì½ì–´ì˜¤ê¸° ìœ„í•´ Fileì„ Open
+    // Checkpoint Image Header¸¦ ÀĞ¾î¿À±â À§ÇØ FileÀ» Open
     if ( isOpen() == ID_FALSE )
     {
         if ( open() != IDE_SUCCESS )
@@ -574,13 +574,13 @@ IDE_RC smmDatabaseFile::readSpaceIdAndClose( scSpaceID   aSpaceID,
                    != IDE_SUCCESS );
 
         // To Fix BUG-18272   TC/Server/sm4/PRJ-1548/dynmem/../suites/
-        //                    restart/rt_ctdt_aa.sql ìˆ˜í–‰ë„ì¤‘ ì£½ìŠµë‹ˆë‹¤.
+        //                    restart/rt_ctdt_aa.sql ¼öÇàµµÁß Á×½À´Ï´Ù.
         //
-        // Checkpoint Image Fileì´ ìƒì„±ë˜ë‹¤ ë§Œ ê²½ìš°
-        // Checkpoint Image Headerê°€ ê¸°ë¡ì¡°ì°¨ ë˜ì–´ ìˆì§€ ì•Šì„ ìˆ˜ë„ ìˆë‹¤
+        // Checkpoint Image FileÀÌ »ı¼ºµÇ´Ù ¸¸ °æ¿ì
+        // Checkpoint Image Header°¡ ±â·ÏÁ¶Â÷ µÇ¾î ÀÖÁö ¾ÊÀ» ¼öµµ ÀÖ´Ù
         //
-        // Fileì˜ í¬ê¸°ê°€ Checkpoint Image Headerë³´ë‹¤ í´ë•Œë§Œ
-        // Checkpoint Image Headerë¥¼ ì½ëŠ”ë‹¤.
+        // FileÀÇ Å©±â°¡ Checkpoint Image Headerº¸´Ù Å¬¶§¸¸
+        // Checkpoint Image Header¸¦ ÀĞ´Â´Ù.
         if ( sChkptFileSize >= ID_SIZEOF(sChkptImageHdr) )
         {
             IDE_ASSERT( isOpen() == ID_TRUE );
@@ -603,7 +603,7 @@ IDE_RC smmDatabaseFile::readSpaceIdAndClose( scSpaceID   aSpaceID,
             *aIsHeaderWritten = ID_TRUE;
         }
 
-        // Checkpoint Image Fileì„ Close
+        // Checkpoint Image FileÀ» Close
         IDE_TEST( mFile.close() != IDE_SUCCESS );
     }
 
@@ -613,19 +613,19 @@ IDE_RC smmDatabaseFile::readSpaceIdAndClose( scSpaceID   aSpaceID,
 }
 
 /*
-    íŒŒì¼ì´ ì¡´ì¬í•  ê²½ìš° ì‚­ì œí•œë‹¤.
-    ì¡´ì¬í•˜ì§€ ì•Šì„ ê²½ìš° ì•„ë¬´ì¼ë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+    ÆÄÀÏÀÌ Á¸ÀçÇÒ °æ¿ì »èÁ¦ÇÑ´Ù.
+    Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì ¾Æ¹«ÀÏµµ ÇÏÁö ¾Ê´Â´Ù.
 
-    [IN] aSpaceID  - ì‚­ì œí•  Tablespaceì˜ ID
-    [IN] aFileName - ì‚­ì œí•  íŒŒì¼ëª…
+    [IN] aSpaceID  - »èÁ¦ÇÒ TablespaceÀÇ ID
+    [IN] aFileName - »èÁ¦ÇÒ ÆÄÀÏ¸í
  */
 IDE_RC smmDatabaseFile::removeFileIfExist( scSpaceID aSpaceID,
                                            const SChar * aFileName )
 {
     if ( idf::access( aFileName, F_OK)
-         == 0 ) // íŒŒì¼ì¡´ì¬ ?
+         == 0 ) // ÆÄÀÏÁ¸Àç ?
     {
-        // Checkpoint Image Fileì„ Diskì—ì„œ ì œê±°
+        // Checkpoint Image FileÀ» Disk¿¡¼­ Á¦°Å
         if ( idf::unlink( aFileName ) != 0 )
         {
 
@@ -645,7 +645,7 @@ IDE_RC smmDatabaseFile::removeFileIfExist( scSpaceID aSpaceID,
     else
     {
         ideLog::log(SM_TRC_LOG_LEVEL_MRECOV,"[TBSID:%d] NO FILE!!! \n", aSpaceID );
-        // íŒŒì¼ì´ ì¡´ì¬í•˜ ì•Šì„ ê²½ìš° ë¬´ì‹œ.
+        // ÆÄÀÏÀÌ Á¸ÀçÇÏ ¾ÊÀ» °æ¿ì ¹«½Ã.
         errno = 0;
     }
 
@@ -654,12 +654,12 @@ IDE_RC smmDatabaseFile::removeFileIfExist( scSpaceID aSpaceID,
 
 
 /*
-    Checkpoint Image Fileì„ Closeí•˜ê³  Diskì—ì„œ ì§€ì›Œì¤€ë‹¤.
+    Checkpoint Image FileÀ» CloseÇÏ°í Disk¿¡¼­ Áö¿öÁØ´Ù.
 
-    ë§Œì•½ íŒŒì¼ì´ ì¡´ì¬í•˜ì§€ ì•Šì„ ê²½ìš° ë¬´ì‹œí•˜ê³  ë„˜ì–´ê°„ë‹¤.
+    ¸¸¾à ÆÄÀÏÀÌ Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì ¹«½ÃÇÏ°í ³Ñ¾î°£´Ù.
 
-    [IN] aSpaceID - ì‚­ì œí•˜ë ¤ëŠ” Checkpoint Imageê°€ ì†í•œ Tablespaceì˜ ID
-    [IN] aRemoveImageFiles  - Checkpoint Image Fileì„ ì§€ì›Œì•¼ í•  ì§€ ì—¬ë¶€
+    [IN] aSpaceID - »èÁ¦ÇÏ·Á´Â Checkpoint Image°¡ ¼ÓÇÑ TablespaceÀÇ ID
+    [IN] aRemoveImageFiles  - Checkpoint Image FileÀ» Áö¿ö¾ß ÇÒ Áö ¿©ºÎ
 */
 IDE_RC smmDatabaseFile::closeAndRemoveDbFile(scSpaceID      aSpaceID,
                                              idBool         aRemoveImageFiles,
@@ -681,22 +681,22 @@ IDE_RC smmDatabaseFile::closeAndRemoveDbFile(scSpaceID      aSpaceID,
         ideLog::log(SM_TRC_LOG_LEVEL_MRECOV,"[In NormalProcessing]"  );
     }
 
-    // Checkpoint Image Headerë¥¼ ì½ì–´ì„œ Space IDë¥¼ ì²´í¬í•˜ê³  Fileì„ Close
-    // (  Closeê°€ ë˜ì–´ì•¼ ì‚­ì œê°€ëŠ¥ )
+    // Checkpoint Image Header¸¦ ÀĞ¾î¼­ Space ID¸¦ Ã¼Å©ÇÏ°í FileÀ» Close
+    // (  Close°¡ µÇ¾î¾ß »èÁ¦°¡´É )
     IDE_TEST( readSpaceIdAndClose( aSpaceID,
                                    & sIsHeaderWritten,
                                    & sSpaceIdMatches ) != IDE_SUCCESS );
 
     if ( aRemoveImageFiles == ID_TRUE )
     {
-        // TO Fix BUG-17143  create/drop tablespace ë„ì¤‘ kill, restartì‹œ
-        //                   The data file does not exist.ì—ëŸ¬ë°œìƒ
-        // Checkpoint Imageìƒì— ê¸°ë¡ëœ Tablespace IDì™€
-        // DROPí•˜ë ¤ëŠ” Tablespaceì˜ IDê°€ ì¼ì¹˜í•˜ëŠ” ê²½ìš°ì—ë§Œ íŒŒì¼ì„ ì‚­ì œí•œë‹¤.
+        // TO Fix BUG-17143  create/drop tablespace µµÁß kill, restart½Ã
+        //                   The data file does not exist.¿¡·¯¹ß»ı
+        // Checkpoint Image»ó¿¡ ±â·ÏµÈ Tablespace ID¿Í
+        // DROPÇÏ·Á´Â TablespaceÀÇ ID°¡ ÀÏÄ¡ÇÏ´Â °æ¿ì¿¡¸¸ ÆÄÀÏÀ» »èÁ¦ÇÑ´Ù.
 
-        // Checkpoint Image Headerì•ˆì˜ Tablespace IDê°€ ì¼ì¹˜í•˜ê±°ë‚˜
+        // Checkpoint Image Header¾ÈÀÇ Tablespace ID°¡ ÀÏÄ¡ÇÏ°Å³ª
         if ( ( sSpaceIdMatches == ID_TRUE ) ||
-             // Checkpoint Image Headerì¡°ì°¨ ê¸°ë¡ë˜ì§€ ì•Šì€ ê²½ìš°
+             // Checkpoint Image HeaderÁ¶Â÷ ±â·ÏµÇÁö ¾ÊÀº °æ¿ì
              ( sIsHeaderWritten == ID_FALSE ) )
         {
             IDE_TEST( removeFileIfExist( aSpaceID,
@@ -711,12 +711,12 @@ IDE_RC smmDatabaseFile::closeAndRemoveDbFile(scSpaceID      aSpaceID,
     {
         IDE_ERROR( sctTableSpaceMgr::isMemTableSpace( aSpaceID ) == ID_TRUE );
 
-        // ì´ë¯¸ ë¡œê·¸ì•µì»¤ì— ì €ì¥ë˜ì—ˆëŠ”ì§€ í™•ì¸í•œë‹¤.
+        // ÀÌ¹Ì ·Î±×¾ŞÄ¿¿¡ ÀúÀåµÇ¾ú´ÂÁö È®ÀÎÇÑ´Ù.
         sSaved = smmManager::isCreateDBFileAtLeastOne(
                 (aTBSNode->mCrtDBFileInfo[ mFileNum ]).mCreateDBFileOnDisk ) ;
 
-        // ë¡œê·¸ì•µì»¤ì— DBFileì´ ì €ì¥ë˜ì–´ìˆì§€ ì•Šìœ¼ë¯€ë¡œ í•´ì¬í•  DataFileDescSlotì´
-        // ì—†ë‹¤.
+        // ·Î±×¾ŞÄ¿¿¡ DBFileÀÌ ÀúÀåµÇ¾îÀÖÁö ¾ÊÀ¸¹Ç·Î ÇØÀçÇÒ DataFileDescSlotÀÌ
+        // ¾ø´Ù.
         IDE_TEST_CONT( sSaved != ID_TRUE, 
                         already_dealloc_datafiledesc_slot );
 
@@ -727,13 +727,13 @@ IDE_RC smmDatabaseFile::closeAndRemoveDbFile(scSpaceID      aSpaceID,
                         &sDataFileDescSlotID )
                   != IDE_SUCCESS );
 
-        // DataFileDescSlotì´ ì´ë¯¸ í• ë‹¹í•´ì œ ëœê²½ìš° 
+        // DataFileDescSlotÀÌ ÀÌ¹Ì ÇÒ´çÇØÁ¦ µÈ°æ¿ì 
         IDE_TEST_CONT( smriChangeTrackingMgr::isAllocDataFileDescSlotID(
                         &sDataFileDescSlotID ) != ID_TRUE,
                         already_dealloc_datafiledesc_slot );
 
-        // DataFileDescSlotì´ ì´ë¯¸ í• ë‹¹í•´ì œ ë˜ì—ˆìœ¼ë‚˜ loganchorì—ëŠ”
-        // DataFileDescSlotIDê°€ ë‚¨ì•„ìˆëŠ”ê²½ìš° í™•ì¸
+        // DataFileDescSlotÀÌ ÀÌ¹Ì ÇÒ´çÇØÁ¦ µÇ¾úÀ¸³ª loganchor¿¡´Â
+        // DataFileDescSlotID°¡ ³²¾ÆÀÖ´Â°æ¿ì È®ÀÎ
         IDE_TEST_CONT( smriChangeTrackingMgr::isValidDataFileDescSlot4Mem( 
                         this, &sDataFileDescSlotID ) != ID_TRUE,
                         already_reuse_datafiledesc_slot);
@@ -770,11 +770,11 @@ IDE_RC smmDatabaseFile::closeAndRemoveDbFile(scSpaceID      aSpaceID,
 }
 
 /**
-   Direct I/Oë¥¼ ìœ„í•´ Disk Sector Sizeë¡œ Alignëœ Bufferë¥¼ í†µí•´ File Readìˆ˜í–‰
+   Direct I/O¸¦ À§ÇØ Disk Sector Size·Î AlignµÈ Buffer¸¦ ÅëÇØ File Read¼öÇà
 
-   [IN] aWhere  - readí•  Fileì˜ Offset
-   [IN] aBuffer - readëœ ë°ì´í„°ê°€ ë³µì‚¬ë  Buffer
-   [IN] aSize   - readí•  í¬ê¸°
+   [IN] aWhere  - readÇÒ FileÀÇ Offset
+   [IN] aBuffer - readµÈ µ¥ÀÌÅÍ°¡ º¹»çµÉ Buffer
+   [IN] aSize   - readÇÒ Å©±â
  */
 IDE_RC
 smmDatabaseFile::readDIO( PDL_OFF_T  aWhere,
@@ -846,42 +846,42 @@ smmDatabaseFile::readDIO( PDL_OFF_T  aWhere,
 }
 
 /**
-    Direct I/Oë¥¼ ì´ìš©í•˜ì—¬ writeí•˜ê¸° ìœ„í•´ Alignëœ Bufferì— ë°ì´í„° ë³µì‚¬
+    Direct I/O¸¦ ÀÌ¿ëÇÏ¿© writeÇÏ±â À§ÇØ AlignµÈ Buffer¿¡ µ¥ÀÌÅÍ º¹»ç
 
-    [IN] aAlignedDst - ë°ì´í„°ê°€ ë³µì‚¬ë  Alignëœ ë©”ëª¨ë¦¬ ê³µê°„
-    [IN] aSrc        - ì›ë³¸ ë°ì´í„° ì£¼ì†Œ
-    [IN] aSrcSize    - ì›ë³¸ ë°ì´í„° í¬ê¸°
-    [OUT] aSizeToWrite - aAlignedDstë¥¼ Direct I/Oë¡œ writeì‹œì— ê¸°ë¡í•  í¬ê¸°
+    [IN] aAlignedDst - µ¥ÀÌÅÍ°¡ º¹»çµÉ AlignµÈ ¸Ş¸ğ¸® °ø°£
+    [IN] aSrc        - ¿øº» µ¥ÀÌÅÍ ÁÖ¼Ò
+    [IN] aSrcSize    - ¿øº» µ¥ÀÌÅÍ Å©±â
+    [OUT] aSizeToWrite - aAlignedDst¸¦ Direct I/O·Î write½Ã¿¡ ±â·ÏÇÒ Å©±â
  */
 IDE_RC smmDatabaseFile::copyDataForDirectWrite( void * aAlignedDst,
                                                 void * aSrc,
                                                 UInt   aSrcSize,
                                                 UInt * aSizeToWrite )
 {
-    // Direct IO Pageí¬ê¸°ê°€ DB File Header Pageí¬ê¸°ë³´ë‹¤ í´ ê²½ìš°,
-    // DB File Headerë¥¼ Direct I/Oë¡œ ê¸°ë¡í•˜ê¸° ìœ„í•´
-    // Direct IO Pageí¬ê¸°ë§Œí¼ Align í•˜ì—¬ ê¸°ë¡í•  ê²½ìš°
-    // 0ë²ˆ Pageì˜ì—­ì„ ì¹¨ë²”í•  ìˆ˜ ìˆë‹¤.
+    // Direct IO PageÅ©±â°¡ DB File Header PageÅ©±âº¸´Ù Å¬ °æ¿ì,
+    // DB File Header¸¦ Direct I/O·Î ±â·ÏÇÏ±â À§ÇØ
+    // Direct IO PageÅ©±â¸¸Å­ Align ÇÏ¿© ±â·ÏÇÒ °æ¿ì
+    // 0¹ø Page¿µ¿ªÀ» Ä§¹üÇÒ ¼ö ÀÖ´Ù.
     //
-    // ê·¸ëŸ¬ë¯€ë¡œ, Direct IO Pageí¬ê¸°ëŠ” í•­ìƒ DB Fileì˜ Header Pageë³´ë‹¤
-    // ì‘ê±°ë‚˜ ê°™ì•„ì•¼ í•œë‹¤.
+    // ±×·¯¹Ç·Î, Direct IO PageÅ©±â´Â Ç×»ó DB FileÀÇ Header Pageº¸´Ù
+    // ÀÛ°Å³ª °°¾Æ¾ß ÇÑ´Ù.
     IDE_ASSERT( iduProperty::getDirectIOPageSize() <=
                 SM_DBFILE_METAHDR_PAGE_SIZE );
 
     UInt sSizeToWrite = idlOS::align( aSrcSize,
                                       iduProperty::getDirectIOPageSize() );
 
-    // Page ë³´ë‹¤ í° í¬ê¸°ë¥¼ ê¸°ë¡í•  ìˆ˜ ì—†ë‹¤.
+    // Page º¸´Ù Å« Å©±â¸¦ ±â·ÏÇÒ ¼ö ¾ø´Ù.
     IDE_ASSERT( sSizeToWrite <= SM_PAGE_SIZE );
 
     if ( sSizeToWrite > aSrcSize )
     {
-        // Alignëœ í¬ê¸°ê°€ ë” í´ ê²½ìš°, Bufferë¥¼ ìš°ì„  0ìœ¼ë¡œ ì´ˆê¸°í™”
-        // ì´ˆê¸°í™”ë˜ì§€ ì•Šì€ ì˜ì—­ì„ Writeí•˜ì§€ ì•Šë„ë¡ ë¯¸ì—°ì— ë°©ì§€.
+        // AlignµÈ Å©±â°¡ ´õ Å¬ °æ¿ì, Buffer¸¦ ¿ì¼± 0À¸·Î ÃÊ±âÈ­
+        // ÃÊ±âÈ­µÇÁö ¾ÊÀº ¿µ¿ªÀ» WriteÇÏÁö ¾Êµµ·Ï ¹Ì¿¬¿¡ ¹æÁö.
         idlOS::memsetOnMemCheck( aAlignedDst, 0, sSizeToWrite );
     }
 
-    // Data í¬ê¸°ë§Œí¼ Alignëœ ë©”ëª¨ë¦¬ ê³µê°„ì— ë³µì‚¬
+    // Data Å©±â¸¸Å­ AlignµÈ ¸Ş¸ğ¸® °ø°£¿¡ º¹»ç
     idlOS::memcpy( aAlignedDst, aSrc, aSrcSize );
 
     *aSizeToWrite = sSizeToWrite;
@@ -890,11 +890,11 @@ IDE_RC smmDatabaseFile::copyDataForDirectWrite( void * aAlignedDst,
 }
 
 ///**
-//   Direct I/Oë¥¼ ìœ„í•´ Disk Sector Sizeë¡œ Alignëœ Bufferë¥¼ í†µí•´ File Writeìˆ˜í–‰
+//   Direct I/O¸¦ À§ÇØ Disk Sector Size·Î AlignµÈ Buffer¸¦ ÅëÇØ File Write¼öÇà
 //
-//   [IN] aWhere  - writeí•  Fileì˜ Offset
-//   [IN] aBuffer - writeëœ ë°ì´í„°ê°€ ë³µì‚¬ë  Buffer
-//   [IN] aSize   - writeí•  í¬ê¸°
+//   [IN] aWhere  - writeÇÒ FileÀÇ Offset
+//   [IN] aBuffer - writeµÈ µ¥ÀÌÅÍ°¡ º¹»çµÉ Buffer
+//   [IN] aSize   - writeÇÒ Å©±â
 // */
 //IDE_RC
 //smmDatabaseFile::writeDIO( PDL_OFF_T aWhere,
@@ -959,12 +959,12 @@ IDE_RC smmDatabaseFile::copyDataForDirectWrite( void * aAlignedDst,
 //}
 
 /**
-   Direct I/Oë¥¼ ìœ„í•´ Disk Sector Sizeë¡œ Alignëœ Bufferë¥¼ í†µí•´ File Writeìˆ˜í–‰
-   ( writeUntilSuccessë²„ì ¼ )
+   Direct I/O¸¦ À§ÇØ Disk Sector Size·Î AlignµÈ Buffer¸¦ ÅëÇØ File Write¼öÇà
+   ( writeUntilSuccess¹öÁ¯ )
 
-   [IN] aWhere  - writeí•  Fileì˜ Offset
-   [IN] aBuffer - writeëœ ë°ì´í„°ê°€ ë³µì‚¬ë  Buffer
-   [IN] aSize   - writeí•  í¬ê¸°
+   [IN] aWhere  - writeÇÒ FileÀÇ Offset
+   [IN] aBuffer - writeµÈ µ¥ÀÌÅÍ°¡ º¹»çµÉ Buffer
+   [IN] aSize   - writeÇÒ Å©±â
  */
 IDE_RC
 smmDatabaseFile::writeUntilSuccessDIO( PDL_OFF_T            aWhere,
@@ -1041,20 +1041,20 @@ smmDatabaseFile::writeUntilSuccessDIO( PDL_OFF_T            aWhere,
 IDE_RC
 smmDatabaseFile::readPage( smmTBSNode * aTBSNode,
                            scPageID     aPageID,
-                           UChar *      aPage)
+                           UChar      * aPage )
 {
     PDL_OFF_T         sOffset;
 
     //PRJ-1149, backup & media recovery.
-    sOffset = ( SM_PAGE_SIZE * smmManager::getPageNoInFile(
-                    aTBSNode, aPageID ) ) + SM_DBFILE_METAHDR_PAGE_SIZE;
+    sOffset = ( SM_PAGE_SIZE * smmManager::getPageNoInFile( aTBSNode, aPageID ) ) 
+              + SM_DBFILE_METAHDR_PAGE_SIZE;
 
-    /* Direct IOë¡œ IOê°€ ìˆ˜í–‰ë  ìˆ˜ ìˆê¸° ë•Œë¬¸ì— mAlignedPageBufferë¥¼ ì´ìš©í•´ì•¼ í•œë‹¤.*/
-    IDE_TEST( mFile.read(
-                  NULL, /* idvSQL* */
-                  sOffset,
-                  aPage,
-                  SM_PAGE_SIZE ) != IDE_SUCCESS );
+    /* Direct IO·Î IO°¡ ¼öÇàµÉ ¼ö ÀÖ±â ¶§¹®¿¡ mAlignedPageBuffer¸¦ ÀÌ¿ëÇØ¾ß ÇÑ´Ù.*/
+    IDE_TEST( mFile.read( NULL, /* idvSQL* */
+                          sOffset,
+                          aPage,
+                          SM_PAGE_SIZE ) 
+              != IDE_SUCCESS );
 
     if ( aPageID != smLayerCallback::getPersPageID( (void*)aPage ) )
     {
@@ -1084,54 +1084,21 @@ smmDatabaseFile::readPage( smmTBSNode * aTBSNode,
 IDE_RC
 smmDatabaseFile::readPageWithoutCheck( smmTBSNode * aTBSNode,
                                        scPageID     aPageID,
-                                       UChar *      aPage)
+                                       UChar      * aPage)
 {
     PDL_OFF_T         sOffset;
 
     //PRJ-1149, backup & media recovery.
-    sOffset = ( SM_PAGE_SIZE * smmManager::getPageNoInFile(
-                    aTBSNode, aPageID ) ) + SM_DBFILE_METAHDR_PAGE_SIZE;
+    sOffset = ( SM_PAGE_SIZE * smmManager::getPageNoInFile( aTBSNode, aPageID ) ) 
+              + SM_DBFILE_METAHDR_PAGE_SIZE;
 
-    /* Direct IOë¡œ IOê°€ ìˆ˜í–‰ë  ìˆ˜ ìˆê¸° ë•Œë¬¸ì— mAlignedPageBufferë¥¼ ì´ìš©í•´ì•¼ í•œë‹¤.*/
-    IDE_TEST( mFile.read(
-                  NULL, /* idvSQL* */
-                  sOffset,
-                  aPage,
-                  SM_PAGE_SIZE ) != IDE_SUCCESS );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-
-IDE_RC
-smmDatabaseFile::readPage(smmTBSNode * aTBSNode, scPageID aPageID)
-{
-
-    void*            sPage;
-    PDL_OFF_T        sOffset;
-
-    IDE_ASSERT( smmManager::getPersPagePtr( aTBSNode->mTBSAttr.mID, 
-                                            aPageID,
-                                            &sPage )
-                == IDE_SUCCESS );
-
-    //PRJ-1149, backup & media recovery.
-    sOffset = ( SM_PAGE_SIZE * smmManager::getPageNoInFile(
-                    aTBSNode, aPageID ) ) + SM_DBFILE_METAHDR_PAGE_SIZE;
-
-    /* Direct IOë¡œ IOê°€ ìˆ˜í–‰ë  ìˆ˜ ìˆê¸° ë•Œë¬¸ì— mAlignedPageBufferë¥¼ ì´ìš©í•´ì•¼ í•œë‹¤.*/
+    /* Direct IO·Î IO°¡ ¼öÇàµÉ ¼ö ÀÖ±â ¶§¹®¿¡ mAlignedPageBuffer¸¦ ÀÌ¿ëÇØ¾ß ÇÑ´Ù.*/
     IDE_TEST( mFile.read( NULL, /* idvSQL* */
-                             sOffset,
-                             sPage,
-                             SM_PAGE_SIZE )
+                          sOffset,
+                          aPage,
+                          SM_PAGE_SIZE ) 
               != IDE_SUCCESS );
 
-    IDE_ASSERT( aPageID == smLayerCallback::getPersPageID( sPage ) );
-
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -1139,9 +1106,42 @@ smmDatabaseFile::readPage(smmTBSNode * aTBSNode, scPageID aPageID)
     return IDE_FAILURE;
 }
 
-// PRJ-1149, memory DBFë„ ë°ì´íƒ€íŒŒì¼ í—¤ë”ê°€ ì¶”ê°€ë˜ì–´ì„œ.
-// smmManager::loadSerialì—ì„œ iduFile::read(PDL_OFF_T, void*, size_t,size_t*)
-// ë¥¼ ë°”ë¡œ í˜¸ì¶œí•˜ì§€ ì•Šê¸° ìœ„í•˜ì—¬ ì¶”ê°€ëœ í•¨ìˆ˜.
+
+//IDE_RC
+//smmDatabaseFile::readPage(smmTBSNode * aTBSNode, scPageID aPageID)
+//{
+//
+//    void*            sPage;
+//    PDL_OFF_T        sOffset;
+//
+//    IDE_ASSERT( smmManager::getPersPagePtr( aTBSNode->mTBSAttr.mID, 
+//                                            aPageID,
+//                                            &sPage )
+//                == IDE_SUCCESS );
+//
+//    //PRJ-1149, backup & media recovery.
+//    sOffset = ( SM_PAGE_SIZE * smmManager::getPageNoInFile(
+//                    aTBSNode, aPageID ) ) + SM_DBFILE_METAHDR_PAGE_SIZE;
+//
+//    /* Direct IO·Î IO°¡ ¼öÇàµÉ ¼ö ÀÖ±â ¶§¹®¿¡ mAlignedPageBuffer¸¦ ÀÌ¿ëÇØ¾ß ÇÑ´Ù.*/
+//    IDE_TEST( mFile.read( NULL, /* idvSQL* */
+//                             sOffset,
+//                             sPage,
+//                             SM_PAGE_SIZE )
+//              != IDE_SUCCESS );
+//
+//    IDE_ASSERT( aPageID == smLayerCallback::getPersPageID( sPage ) );
+//
+//    return IDE_SUCCESS;
+//
+//    IDE_EXCEPTION_END;
+//
+//    return IDE_FAILURE;
+//}
+
+// PRJ-1149, memory DBFµµ µ¥ÀÌÅ¸ÆÄÀÏ Çì´õ°¡ Ãß°¡µÇ¾î¼­.
+// smmManager::loadSerial¿¡¼­ iduFile::read(PDL_OFF_T, void*, size_t,size_t*)
+// ¸¦ ¹Ù·Î È£ÃâÇÏÁö ¾Ê±â À§ÇÏ¿© Ãß°¡µÈ ÇÔ¼ö.
 IDE_RC smmDatabaseFile::readPages(PDL_OFF_T   aWhere,
                                   void*       aBuffer,
                                   size_t      aSize,
@@ -1150,10 +1150,10 @@ IDE_RC smmDatabaseFile::readPages(PDL_OFF_T   aWhere,
 {
 
     IDE_TEST ( mFile.read( NULL, /* idvSQL* */
-                              aWhere + SM_DBFILE_METAHDR_PAGE_SIZE,
-                              aBuffer,
-                              aSize,
-                              aReadSize )
+                           aWhere + SM_DBFILE_METAHDR_PAGE_SIZE,
+                           aBuffer,
+                           aSize,
+                           aReadSize )
                != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -1165,17 +1165,17 @@ IDE_RC smmDatabaseFile::readPages(PDL_OFF_T   aWhere,
 
 #ifndef VC_WIN32
 /* **************************************************************************
- * Description : AIOë¥¼ ì´ìš©í•´ DBFileì˜ Pageë“¤ì„ ì½ì–´ë“¤ì¸ë‹¤.
+ * Description : AIO¸¦ ÀÌ¿ëÇØ DBFileÀÇ PageµéÀ» ÀĞ¾îµéÀÎ´Ù.
  *
- *   aWhere          [IN] - DBFileë¡œë¶€í„° ì½ì–´ë“¤ì¼ ìœ„ì¹˜
- *   aBuffer         [IN] - Pageë“¤ì„ ì €ì¥í•  Buffer
- *   aSize           [IN] - ì½ì–´ë“¤ì¼ ì‚¬ì´ì¦ˆ
- *   aReadSize      [OUT] - ì‹¤ì œ ì½ì–´ë“¤ì¸ ì–‘
- *   aAIOCount       [IN] - AIO ê°¯ìˆ˜
+ *   aWhere          [IN] - DBFile·ÎºÎÅÍ ÀĞ¾îµéÀÏ À§Ä¡
+ *   aBuffer         [IN] - PageµéÀ» ÀúÀåÇÒ Buffer
+ *   aSize           [IN] - ÀĞ¾îµéÀÏ »çÀÌÁî
+ *   aReadSize      [OUT] - ½ÇÁ¦ ÀĞ¾îµéÀÎ ¾ç
+ *   aAIOCount       [IN] - AIO °¹¼ö
  *
- *   ì½ì–´ë“¤ì¼ ë¶€ë¶„ì„ AIOCountë§Œí¼ ë¶„í• í•˜ì—¬ ë¹„ë™ê¸° Readë¥¼ ìˆ˜í–‰í•œë‹¤.
- *   ê° AIOì— ì½ì„ ìœ„ì¹˜ë¥¼ ì§€ì •í•´ ì¤€ ë’¤ Readë¥¼ ë§ê¸´ë‹¤.
- *   AIOê°€ Read ì™„ë£Œë  ë•Œê¹Œì§€ ëŒ€ê¸°í•˜ê²Œ ëœë‹¤.
+ *   ÀĞ¾îµéÀÏ ºÎºĞÀ» AIOCount¸¸Å­ ºĞÇÒÇÏ¿© ºñµ¿±â Read¸¦ ¼öÇàÇÑ´Ù.
+ *   °¢ AIO¿¡ ÀĞÀ» À§Ä¡¸¦ ÁöÁ¤ÇØ ÁØ µÚ Read¸¦ ¸Â±ä´Ù.
+ *   AIO°¡ Read ¿Ï·áµÉ ¶§±îÁö ´ë±âÇÏ°Ô µÈ´Ù.
  *
  * **************************************************************************/
 IDE_RC smmDatabaseFile::readPagesAIO( PDL_OFF_T   aWhere,
@@ -1199,7 +1199,7 @@ IDE_RC smmDatabaseFile::readPagesAIO( PDL_OFF_T   aWhere,
     SInt        sState = 0;
 
     IDE_DASSERT( aSize > SMM_MIN_AIO_FILE_SIZE );
-    IDE_DASSERT( (aSize % SM_PAGE_SIZE) == 0); // ì–¸ì œë‚˜ í˜ì´ì§€ì˜ ë°°ìˆ˜!
+    IDE_DASSERT( (aSize % SM_PAGE_SIZE) == 0); // ¾ğÁ¦³ª ÆäÀÌÁöÀÇ ¹è¼ö!
 
     sOffset   = 0;
     sStartPos = aWhere + SM_DBFILE_METAHDR_PAGE_SIZE;
@@ -1222,7 +1222,7 @@ IDE_RC smmDatabaseFile::readPagesAIO( PDL_OFF_T   aWhere,
         IDE_TEST( sAIOUnit[i].initialize( sFD ) != IDE_SUCCESS );
     }
 
-    // ê° AIOê°€ ì½ì–´ë“¤ì¼ Sizeë¥¼ ê³„ì‚°í•œë‹¤.
+    // °¢ AIO°¡ ÀĞ¾îµéÀÏ Size¸¦ °è»êÇÑ´Ù.
     if( aAIOCount > 1 )
     {
         sReadUnitSize = idlOS::align(
@@ -1264,7 +1264,7 @@ IDE_RC smmDatabaseFile::readPagesAIO( PDL_OFF_T   aWhere,
             sCalcSize = sReadUnitSize;
         }
 
-        // ê° AIOë§ˆë‹¤ ì‘ì—… ë¶„ë°°
+        // °¢ AIO¸¶´Ù ÀÛ¾÷ ºĞ¹è
         if( sReadCount < aAIOCount )
         {
             if( sAIOUnit[sReadCount].read( sStartPos + sOffset,
@@ -1285,7 +1285,7 @@ IDE_RC smmDatabaseFile::readPagesAIO( PDL_OFF_T   aWhere,
             }
         }
 
-        // Read ì™„ë£Œë˜ê¸°ê¹Œì§€ ëŒ€ê¸°.
+        // Read ¿Ï·áµÇ±â±îÁö ´ë±â.
         if( sFreeCount < sReadCount )
         {
             if( sAIOUnit[sFreeCount].isFinish(&sErrorCode) == ID_TRUE )
@@ -1357,11 +1357,11 @@ smmDatabaseFile::writePage(smmTBSNode * aTBSNode, scPageID aPageID)
     smmChkptImageHdr sChkptImageHdr;
 
     //PRJ-1149, backup & media recovery.
-    sOffset =( SM_PAGE_SIZE * smmManager::getPageNoInFile(
-                   aTBSNode, aPageID ) ) + SM_DBFILE_METAHDR_PAGE_SIZE;
+    sOffset = ( SM_PAGE_SIZE * smmManager::getPageNoInFile( aTBSNode, aPageID ) ) 
+              + SM_DBFILE_METAHDR_PAGE_SIZE;
 
     //PROJ-2133 incremental backup
-    // change trackingì„ ìˆ˜í–‰í•œë‹¤. 
+    // change trackingÀ» ¼öÇàÇÑ´Ù. 
     if ( smLayerCallback::isCTMgrEnabled() == ID_TRUE )
     {
         getChkptImageHdr( &sChkptImageHdr );
@@ -1379,10 +1379,10 @@ smmDatabaseFile::writePage(smmTBSNode * aTBSNode, scPageID aPageID)
         }
         else
         {
-            // DatabaseFileì´ ìƒì„±ë ë•Œ pageID 0ë²ˆì„ ê¸°ë¡í•˜ê²Œëœë‹¤.
-            // ì´ë•Œ DataFileDescSlotì´ í• ë‹¹ë˜ê¸° ì „ì— pageID 0ë²ˆì´
-            // ê¸°ë¡ë  ê²½ìš°ê°€ ìˆëŠ”ë° ì´ê²½ìš°ì—ëŠ” change trackingì„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
-            // DatabaseFile ìƒì„± í›„ë°˜ ì‘ì—…ì—ì„œ DataFileDescSlotì´ í• ë‹¹ëœë‹¤.
+            // DatabaseFileÀÌ »ı¼ºµÉ¶§ pageID 0¹øÀ» ±â·ÏÇÏ°ÔµÈ´Ù.
+            // ÀÌ¶§ DataFileDescSlotÀÌ ÇÒ´çµÇ±â Àü¿¡ pageID 0¹øÀÌ
+            // ±â·ÏµÉ °æ¿ì°¡ ÀÖ´Âµ¥ ÀÌ°æ¿ì¿¡´Â change trackingÀ» ÇÏÁö ¾Ê´Â´Ù.
+            // DatabaseFile »ı¼º ÈÄ¹İ ÀÛ¾÷¿¡¼­ DataFileDescSlotÀÌ ÇÒ´çµÈ´Ù.
             IDE_ASSERT( aPageID == 0 );
         }
         
@@ -1401,8 +1401,7 @@ smmDatabaseFile::writePage(smmTBSNode * aTBSNode, scPageID aPageID)
      * server can misunderstand that the freed slot is the allocated slot. */
     if( smuProperty::getMemDPFlushWaitTime() > 0 )
     {
-        if( ( smuProperty::getMemDPFlushWaitSID() 
-                == aTBSNode->mTBSAttr.mID ) &&
+        if( ( smuProperty::getMemDPFlushWaitSID() == aTBSNode->mTBSAttr.mID ) &&
             ( smuProperty::getMemDPFlushWaitPID() == aPageID ) )
         {
             sMemDPFlushWaitOffset = smuProperty::getMemDPFlushWaitOffset();
@@ -1417,7 +1416,7 @@ smmDatabaseFile::writePage(smmTBSNode * aTBSNode, scPageID aPageID)
         }
     }
 
-    /* Direct IOë¡œ IOê°€ ìˆ˜í–‰ë  ìˆ˜ ìˆê¸° ë•Œë¬¸ì— mAlignedPageBufferë¥¼ ì´ìš©í•´ì•¼ í•œë‹¤.*/
+    /* Direct IO·Î IO°¡ ¼öÇàµÉ ¼ö ÀÖ±â ¶§¹®¿¡ mAlignedPageBuffer¸¦ ÀÌ¿ëÇØ¾ß ÇÑ´Ù.*/
     IDE_TEST( writeUntilSuccessDIO( sOffset,
                                     sPage,
                                     SM_PAGE_SIZE,
@@ -1443,7 +1442,7 @@ smmDatabaseFile::writePage( smmTBSNode * aTBSNode,
     sOffset = (SM_PAGE_SIZE * smmManager::getPageNoInFile(
                    aTBSNode, aPageID ) ) + SM_DBFILE_METAHDR_PAGE_SIZE;
 
-    /* Direct IOë¡œ IOê°€ ìˆ˜í–‰ë  ìˆ˜ ìˆê¸° ë•Œë¬¸ì— mAlignedPageBufferë¥¼ ì´ìš©í•´ì•¼ í•œë‹¤.*/
+    /* Direct IO·Î IO°¡ ¼öÇàµÉ ¼ö ÀÖ±â ¶§¹®¿¡ mAlignedPageBuffer¸¦ ÀÌ¿ëÇØ¾ß ÇÑ´Ù.*/
     IDE_TEST( writeUntilSuccessDIO( sOffset,
                                     aPage,
                                     SM_PAGE_SIZE,
@@ -1455,18 +1454,18 @@ smmDatabaseFile::writePage( smmTBSNode * aTBSNode,
     return IDE_FAILURE;
 }
 
-IDE_RC smmDatabaseFile::open(idBool /*a_bDirect*/)
+IDE_RC smmDatabaseFile::open()
 {
     return mFile.open(((smuProperty::getIOType() == 0) ?
                           ID_FALSE : ID_TRUE));
 }
 
 /*
-    ìƒˆë¡œìš´ Checkpoint ImageíŒŒì¼ì„ ìƒì„±í•  Checkpoint Pathë¥¼ ë¦¬í„´í•œë‹¤.
+    »õ·Î¿î Checkpoint ImageÆÄÀÏÀ» »ı¼ºÇÒ Checkpoint Path¸¦ ¸®ÅÏÇÑ´Ù.
 
-    [IN]  aTBSNode  - Checkpoint Pathë¥¼ ì°¾ì„ Tablespace Node
-    [IN]  aDBFileNo - DB File(Checkpoint Image) ë²ˆí˜¸
-    [OUT] aDBDir    - Fileì„ ìƒì„±í•  DB Dir (Checkpoint Path)
+    [IN]  aTBSNode  - Checkpoint Path¸¦ Ã£À» Tablespace Node
+    [IN]  aDBFileNo - DB File(Checkpoint Image) ¹øÈ£
+    [OUT] aDBDir    - FileÀ» »ı¼ºÇÒ DB Dir (Checkpoint Path)
  */
 IDE_RC smmDatabaseFile::makeDBDirForCreate(smmTBSNode * aTBSNode,
                                            UInt         aDBFileNo,
@@ -1480,11 +1479,11 @@ IDE_RC smmDatabaseFile::makeDBDirForCreate(smmTBSNode * aTBSNode,
 
 
     // BUGBUG-1548 Refactoring
-    // Checkpoint Pathê´€ë ¨ í•¨ìˆ˜ë“¤ì„ ë³„ë„ì˜ classë¡œ ë¹¼ê³ 
-    // smmDatabaseFileë³´ë‹¤ ë‚®ì€ Layerì— ë‘”ë‹¤.
+    // Checkpoint Path°ü·Ã ÇÔ¼öµéÀ» º°µµÀÇ class·Î »©°í
+    // smmDatabaseFileº¸´Ù ³·Àº Layer¿¡ µĞ´Ù.
 
-    // ìš´ì˜ì¤‘ì—ëŠ” Alter Tablespace Checkpoint Pathê°€ ë¶ˆê°€ëŠ¥í•˜ë¯€ë¡œ
-    // ë™ì‹œì„± ì œì–´ë¥¼ ì‹ ê²½ ì“¸ í•„ìš”ê°€ ì—†ë‹¤.
+    // ¿î¿µÁß¿¡´Â Alter Tablespace Checkpoint Path°¡ ºÒ°¡´ÉÇÏ¹Ç·Î
+    // µ¿½Ã¼º Á¦¾î¸¦ ½Å°æ ¾µ ÇÊ¿ä°¡ ¾ø´Ù.
 
     IDE_TEST( smmTBSChkptPath::getChkptPathNodeCount( aTBSNode,
                                                       & sCPathCount )
@@ -1516,9 +1515,9 @@ IDE_RC smmDatabaseFile::makeDBDirForCreate(smmTBSNode * aTBSNode,
 
 /* ------------------------------------------------
  *
- * ëª¨ë“  dirì—ì„œ fileì„ ì°¾ê³ ,
- * ë§Œì•½ ìˆë‹¤ë©´ fileì˜ ì´ë¦„ê³¼ trueë¥¼ ë¦¬í„´í•œë‹¤.
- * falseë¼ë©´ ë¦¬í„´ëœ fileì˜ ì´ë¦„ì€ ì˜ë¯¸ì—†ë‹¤.
+ * ¸ğµç dir¿¡¼­ fileÀ» Ã£°í,
+ * ¸¸¾à ÀÖ´Ù¸é fileÀÇ ÀÌ¸§°ú true¸¦ ¸®ÅÏÇÑ´Ù.
+ * false¶ó¸é ¸®ÅÏµÈ fileÀÇ ÀÌ¸§Àº ÀÇ¹Ì¾ø´Ù.
  * ----------------------------------------------*/
 idBool smmDatabaseFile::findDBFile(smmTBSNode * aTBSNode,
                                    UInt         aPingPongNum,
@@ -1546,8 +1545,8 @@ idBool smmDatabaseFile::findDBFile(smmTBSNode * aTBSNode,
         sctTableSpaceMgr::adjustFileSeparator( sCPathNode->mChkptPathAttr.mChkptPath );
 #endif
 
-        // BUGBUG-1548 Tablespace Nameì´ NULLë¬¸ìë¡œ ëë‚˜ëŠ”
-        // ë¬¸ìì—´ì´ ì•„ë‹Œë°ë„ NULLë¬¸ìë¡œ ëë‚˜ëŠ” ë¬¸ìì—´ì²˜ëŸ¼ ì·¨ê¸‰í•˜ê³  ìˆìŒ
+        // BUGBUG-1548 Tablespace NameÀÌ NULL¹®ÀÚ·Î ³¡³ª´Â
+        // ¹®ÀÚ¿­ÀÌ ¾Æ´Ñµ¥µµ NULL¹®ÀÚ·Î ³¡³ª´Â ¹®ÀÚ¿­Ã³·³ Ãë±ŞÇÏ°í ÀÖÀ½
         idlOS::snprintf(aFileName,
                         SM_MAX_FILE_NAME,
                         SMM_CHKPT_IMAGE_NAME_WITH_PATH,
@@ -1568,10 +1567,10 @@ idBool smmDatabaseFile::findDBFile(smmTBSNode * aTBSNode,
 }
 
 /*
- * íŠ¹ì • DBíŒŒì¼ì´ Diskì— ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
+ * Æ¯Á¤ DBÆÄÀÏÀÌ Disk¿¡ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
  *
- * aPingPongNum [IN] - Ping/Ping DBë²ˆí˜¸ ( 0 or 1 )
- * aDBFileNo    [IN] - DB Fileì˜ ë²ˆí˜¸ ( 0ë¶€í„° ì‹œì‘í•˜ëŠ” ìˆ«ì )
+ * aPingPongNum [IN] - Ping/Ping DB¹øÈ£ ( 0 or 1 )
+ * aDBFileNo    [IN] - DB FileÀÇ ¹øÈ£ ( 0ºÎÅÍ ½ÃÀÛÇÏ´Â ¼ıÀÚ )
  */
 idBool smmDatabaseFile::isDBFileOnDisk( smmTBSNode * aTBSNode,
                                         UInt         aPingPongNum,
@@ -1596,9 +1595,9 @@ idBool smmDatabaseFile::isDBFileOnDisk( smmTBSNode * aTBSNode,
 
 
 /*
-   ë°ì´íƒ€ íŒŒì¼ í•´ë” ê°±ì‹ .
-   PRJ-1149,  ì£¼ì–´ì§„ ë°ì´íƒ€ íŒŒì¼ ë…¸ë“œì˜ í—¤ë”ë¥¼ ì´ìš©í•˜ì—¬
-   ë°ì´íƒ€ íŒŒì¼ ê°±ì‹ ì„ í•œë‹¤.
+   µ¥ÀÌÅ¸ ÆÄÀÏ ÇØ´õ °»½Å.
+   PRJ-1149,  ÁÖ¾îÁø µ¥ÀÌÅ¸ ÆÄÀÏ ³ëµåÀÇ Çì´õ¸¦ ÀÌ¿ëÇÏ¿©
+   µ¥ÀÌÅ¸ ÆÄÀÏ °»½ÅÀ» ÇÑ´Ù.
 */
 IDE_RC smmDatabaseFile::flushDBFileHdr()
 {
@@ -1607,18 +1606,18 @@ IDE_RC smmDatabaseFile::flushDBFileHdr()
     IDE_DASSERT( assertValuesOfDBFHdr( &mChkptImageHdr )
                  == IDE_SUCCESS );
 
-    /* BUG-17825 Data File Headerê¸°ë¡ì¤‘ Process Failureì‹œ
-     *           Startupì•ˆë  ìˆ˜ ìˆìŒ
+    /* BUG-17825 Data File Header±â·ÏÁß Process Failure½Ã
+     *           Startup¾ÈµÉ ¼ö ÀÖÀ½
      *
-     * ìœ„ì˜ ë²„ê·¸ì™€ ê´€ë ¨í•˜ì—¬ Memory Checkpoint Image Headerì—
-     * ëŒ€í•œ Atomic Writeê°€ ë¹„ì •ìƒ ì¢…ë£Œë¡œ ì¸í•´ ê¹¨ì§„ë‹¤í•˜ì—¬ë„
-     * Checkpoint ê°€ ì‹¤íŒ¨í•œ ê²ƒì´ê¸° ë•Œë¬¸ì— ì´ì „ Stableì„ ì°¸ê³  í•˜ê²Œ ë˜ë¯€ë¡œ
-     * ë¬¸ì œê°€ ë°œìƒí•˜ì§€ ì•ŠëŠ”ë‹¤. */
+     * À§ÀÇ ¹ö±×¿Í °ü·ÃÇÏ¿© Memory Checkpoint Image Header¿¡
+     * ´ëÇÑ Atomic Write°¡ ºñÁ¤»ó Á¾·á·Î ÀÎÇØ ±úÁø´ÙÇÏ¿©µµ
+     * Checkpoint °¡ ½ÇÆĞÇÑ °ÍÀÌ±â ¶§¹®¿¡ ÀÌÀü StableÀ» Âü°í ÇÏ°Ô µÇ¹Ç·Î
+     * ¹®Á¦°¡ ¹ß»ıÇÏÁö ¾Ê´Â´Ù. */
 
     sOffset = SM_DBFILE_METAHDR_PAGE_OFFSET;
 
     /* PROJ-2162 RestartRiskReduction
-     * Consistency í• ì§€ ì•Šìœ¼ë©´, ê°•ì œë¡œ MRDB Flushë¥¼ ë§‰ëŠ”ë‹¤. */
+     * Consistency ÇÒÁö ¾ÊÀ¸¸é, °­Á¦·Î MRDB Flush¸¦ ¸·´Â´Ù. */
     if( ( smrRecoveryMgr::getConsistency() == ID_TRUE ) || 
         ( smuProperty::getCrashTolerance() == 2 ) )
     {
@@ -1639,30 +1638,30 @@ IDE_RC smmDatabaseFile::flushDBFileHdr()
 }
 
 /*
-   ë°ì´íƒ€ë² ì´ìŠ¤ íŒŒì¼ í•´ë” ì½ìŒ.
-   aChkptImageHdr ê°€ NULLì´ ì•„ë‹ˆë©´ ì¸ìì— ì½ì–´ë“¤ì´ê³ ,
-   NULLì´ë©´ mChkptImageHdrì— ì½ì–´ë“¤ì¸ë‹¤.
+   µ¥ÀÌÅ¸º£ÀÌ½º ÆÄÀÏ ÇØ´õ ÀĞÀ½.
+   aChkptImageHdr °¡ NULLÀÌ ¾Æ´Ï¸é ÀÎÀÚ¿¡ ÀĞ¾îµéÀÌ°í,
+   NULLÀÌ¸é mChkptImageHdr¿¡ ÀĞ¾îµéÀÎ´Ù.
 
-   [OUT] aChkptImageHdr : ë°ì´íƒ€íŒŒì¼ë©”íƒ€í—¤ë” í¬ì¸í„°
+   [OUT] aChkptImageHdr : µ¥ÀÌÅ¸ÆÄÀÏ¸ŞÅ¸Çì´õ Æ÷ÀÎÅÍ
 */
 IDE_RC smmDatabaseFile::readChkptImageHdr(
                             smmChkptImageHdr * aChkptImageHdr )
 {
-    smmChkptImageHdr * aChkptImageHdrBuffer ;
+    smmChkptImageHdr * sChkptImageHdrBuffer ;
 
     if ( aChkptImageHdr != NULL )
     {
-        aChkptImageHdrBuffer = aChkptImageHdr;
+        sChkptImageHdrBuffer = aChkptImageHdr;
     }
     else
     {
-        aChkptImageHdrBuffer = &mChkptImageHdr;
+        sChkptImageHdrBuffer = &mChkptImageHdr;
 
     }
 
     //PRJ-1149, backup & media recovery.
     IDE_TEST( readDIO( SM_DBFILE_METAHDR_PAGE_OFFSET,
-                       aChkptImageHdrBuffer,
+                       sChkptImageHdrBuffer,
                        ID_SIZEOF( smmChkptImageHdr ) )
                    != IDE_SUCCESS );
 
@@ -1674,13 +1673,13 @@ IDE_RC smmDatabaseFile::readChkptImageHdr(
 }
 
 /*
-   ë°ì´íƒ€íŒŒì¼ HEADERì— ì²´í¬í¬ì¸íŠ¸ ì •ë³´ë¥¼ ê¸°ë¡í•œë‹¤.
+   µ¥ÀÌÅ¸ÆÄÀÏ HEADER¿¡ Ã¼Å©Æ÷ÀÎÆ® Á¤º¸¸¦ ±â·ÏÇÑ´Ù.
 
-   [IN] aMemRedoLSN         : ë¯¸ë””ì–´ë³µêµ¬ì— í•„ìš”í•œ Memory Redo LSN
-   [IN] aMemCreateLSN       : ë¯¸ë””ì–´ë³µêµ¬ì— í•„ìš”í•œ Memory Create LSN
-   [IN] aSpaceID            : Checkpoint Imageê°€ ì†í•œ Tablespaceì˜ ID
-   [IN] aSmVersion          : ë¯¸ë””ì–´ë³µêµ¬ì— í•„ìš”í•œ ë°”ì´ë„ˆë¦¬ Version
-   [IN] aDataFileDescSlotID : change trackingì— í• ë‹¹ëœ DataFileDescSlotID 
+   [IN] aMemRedoLSN         : ¹Ìµğ¾îº¹±¸¿¡ ÇÊ¿äÇÑ Memory Redo LSN
+   [IN] aMemCreateLSN       : ¹Ìµğ¾îº¹±¸¿¡ ÇÊ¿äÇÑ Memory Create LSN
+   [IN] aSpaceID            : Checkpoint Image°¡ ¼ÓÇÑ TablespaceÀÇ ID
+   [IN] aSmVersion          : ¹Ìµğ¾îº¹±¸¿¡ ÇÊ¿äÇÑ ¹ÙÀÌ³Ê¸® Version
+   [IN] aDataFileDescSlotID : change tracking¿¡ ÇÒ´çµÈ DataFileDescSlotID 
                               PROJ-2133
 */
 void smmDatabaseFile::setChkptImageHdr( 
@@ -1730,11 +1729,11 @@ void smmDatabaseFile::setChkptImageHdr(
 }
 
 /*
-  ë°ì´íƒ€íŒŒì¼ ë©”í„°í—¤ë” ë°˜í™˜
+  µ¥ÀÌÅ¸ÆÄÀÏ ¸ŞÅÍÇì´õ ¹İÈ¯
 
-  ì„œë²„êµ¬ë™ì‹œ ìµœì´ˆë¡œ Loganchorë¡œë¶€í„° ì´ˆê¸°í™”ëœë‹¤.
+  ¼­¹ö±¸µ¿½Ã ÃÖÃÊ·Î Loganchor·ÎºÎÅÍ ÃÊ±âÈ­µÈ´Ù.
 
-  [OUT] aChkptImageHdr - ë°ì´íƒ€íŒŒì¼ì˜ ë©”íƒ€í—¤ë”ë¥¼ ë°˜í™˜í•œë‹¤.
+  [OUT] aChkptImageHdr - µ¥ÀÌÅ¸ÆÄÀÏÀÇ ¸ŞÅ¸Çì´õ¸¦ ¹İÈ¯ÇÑ´Ù.
 */
 void smmDatabaseFile::getChkptImageHdr( smmChkptImageHdr * aChkptImageHdr )
 {
@@ -1748,14 +1747,14 @@ void smmDatabaseFile::getChkptImageHdr( smmChkptImageHdr * aChkptImageHdr )
 }
 
 /*
-  ë°ì´íƒ€íŒŒì¼ ì†ì„± ë°˜í™˜
+  µ¥ÀÌÅ¸ÆÄÀÏ ¼Ó¼º ¹İÈ¯
 
-  ì•„ë˜ í•¨ìˆ˜ì—ì„œëŠ” smmManager::mCreateDBFileOnDiskë¥¼ ì°¸ì¡°í•˜ê¸° ë•Œë¬¸ì—
-  ë§Œì•½ smmManager::mCreateDBFileOnDisk ë³€ê²½ì´ í•„ìš”í•˜ë‹¤ë©´
-  smmManager::setCreateDBFileOnDisk í˜¸ì¶œí›„ì—
-  getChkptImageAttrë¥¼ í˜¸ì¶œí•˜ì—¬ ìˆœì„œë¥¼ ì§€ì¼œì•¼ í•œë‹¤.
+  ¾Æ·¡ ÇÔ¼ö¿¡¼­´Â smmManager::mCreateDBFileOnDisk¸¦ ÂüÁ¶ÇÏ±â ¶§¹®¿¡
+  ¸¸¾à smmManager::mCreateDBFileOnDisk º¯°æÀÌ ÇÊ¿äÇÏ´Ù¸é
+  smmManager::setCreateDBFileOnDisk È£ÃâÈÄ¿¡
+  getChkptImageAttr¸¦ È£ÃâÇÏ¿© ¼ø¼­¸¦ ÁöÄÑ¾ß ÇÑ´Ù.
 
-  [OUT] aChkptImageAttr - ë°ì´íƒ€íŒŒì¼ì˜ ì†ì„±ì„ ë°˜í™˜í•œë‹¤.
+  [OUT] aChkptImageAttr - µ¥ÀÌÅ¸ÆÄÀÏÀÇ ¼Ó¼ºÀ» ¹İÈ¯ÇÑ´Ù.
 
 */
 void smmDatabaseFile::getChkptImageAttr(
@@ -1793,7 +1792,7 @@ void smmDatabaseFile::getChkptImageAttr(
     SM_GET_LSN( aChkptImageAttr->mMemCreateLSN, mChkptImageHdr.mMemCreateLSN )
 
     // fix BUG-17343
-    // Loganchorì— ì´ë¯¸ ì €ì¥ë˜ì–´ ìˆë‹¤ë©´ ID_TRUEë¥¼ ì„¤ì •í•œë‹¤.
+    // Loganchor¿¡ ÀÌ¹Ì ÀúÀåµÇ¾î ÀÖ´Ù¸é ID_TRUE¸¦ ¼³Á¤ÇÑ´Ù.
     for ( i = 0 ; i < SMM_PINGPONG_COUNT; i++ )
     {
         aChkptImageAttr->mCreateDBFileOnDisk[ i ]
@@ -1807,15 +1806,15 @@ void smmDatabaseFile::getChkptImageAttr(
 
 
 /*
-  ë°ì´íƒ€íŒŒì¼ì˜ ë©”íƒ€í—¤ë”ë¥¼ íŒë…í•˜ì—¬ ë¯¸ë””ì–´ë³µêµ¬ê°€
-  í•„ìš”í•œì§€ íŒë‹¨í•œë‹¤.
+  µ¥ÀÌÅ¸ÆÄÀÏÀÇ ¸ŞÅ¸Çì´õ¸¦ ÆÇµ¶ÇÏ¿© ¹Ìµğ¾îº¹±¸°¡
+  ÇÊ¿äÇÑÁö ÆÇ´ÜÇÑ´Ù.
 
-  ë°ì´íƒ€íŒŒì¼ê°ì²´ì— ì„¤ì •ëœ ChkptImageHdr(== Loganchorë¡œë¶€í„° ì´ˆê¸°í™”ë¨)
-  ì™€ ì‹¤ì œ ë°ì´íƒ€íŒŒì¼ë¡œë¶€í„° íŒë…ëœ ChkptImageHdrë¥¼ ë¹„êµí•˜ì—¬
-  ë¯¸ë””ì–´ë³µêµ¬ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
+  µ¥ÀÌÅ¸ÆÄÀÏ°´Ã¼¿¡ ¼³Á¤µÈ ChkptImageHdr(== Loganchor·ÎºÎÅÍ ÃÊ±âÈ­µÊ)
+  ¿Í ½ÇÁ¦ µ¥ÀÌÅ¸ÆÄÀÏ·ÎºÎÅÍ ÆÇµ¶µÈ ChkptImageHdr¸¦ ºñ±³ÇÏ¿©
+  ¹Ìµğ¾îº¹±¸¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
 
-  [IN ] aChkptImageHdr - ë°ì´íƒ€íŒŒì¼ë¡œë¶€í„° íŒë…í•œ ë©”íƒ€í—¤ë”
-  [OUT] aNeedRecovery  - ë¯¸ë””ì–´ë³µêµ¬ì˜ í•„ìš”ì—¬ë¶€ ë°˜í™˜
+  [IN ] aChkptImageHdr - µ¥ÀÌÅ¸ÆÄÀÏ·ÎºÎÅÍ ÆÇµ¶ÇÑ ¸ŞÅ¸Çì´õ
+  [OUT] aNeedRecovery  - ¹Ìµğ¾îº¹±¸ÀÇ ÇÊ¿ä¿©ºÎ ¹İÈ¯
 */
 IDE_RC smmDatabaseFile::checkValidationDBFHdr(
                              smmChkptImageHdr  * aChkptImageHdr,
@@ -1831,12 +1830,12 @@ IDE_RC smmDatabaseFile::checkValidationDBFHdr(
 
     sIsMediaFailure = ID_FALSE;
 
-    // Loganchorë¡œë¶€í„° ì´ˆê¸°í™”ëœ ChkptImageHdr
+    // Loganchor·ÎºÎÅÍ ÃÊ±âÈ­µÈ ChkptImageHdr
 
     IDE_TEST ( readChkptImageHdr(aChkptImageHdr) != IDE_SUCCESS );
 
-// XXX BUG-27058 replicationGiveup.sqlì—ì„œ ì„œë²„ ë¹„ì •ìƒ ì¢…ë£Œë¡œ ì¸í•˜ì—¬
-// ì„ì‹œë¡œ ë‹¤ìŒ ë””ë²„ê¹… Msgë¥¼ Releaseì—ì„œë„ ì¶œë ¥ ë˜ê²Œ í•©ë‹ˆë‹¤.
+// XXX BUG-27058 replicationGiveup.sql¿¡¼­ ¼­¹ö ºñÁ¤»ó Á¾·á·Î ÀÎÇÏ¿©
+// ÀÓ½Ã·Î ´ÙÀ½ µğ¹ö±ë Msg¸¦ Release¿¡¼­µµ Ãâ·Â µÇ°Ô ÇÕ´Ï´Ù.
 // #ifdef DEBUG
     ideLog::log(SM_TRC_LOG_LEVEL_MEMORY,
                 SM_TRC_MRECOVERY_CHECK_DB_SID_PPID_FID,
@@ -1875,35 +1874,35 @@ IDE_RC smmDatabaseFile::checkValidationDBFHdr(
                     != IDE_SUCCESS,
                     err_invalid_hdr );
 
-    // [1] SM VERSION í™•ì¸
-    // ë°ì´íƒ€íŒŒì¼ê³¼ ì„œë²„ ë°”ì´ë„ˆë¦¬ì˜ í˜¸í™˜ì„±ì„ ê²€ì‚¬í•œë‹¤.
+    // [1] SM VERSION È®ÀÎ
+    // µ¥ÀÌÅ¸ÆÄÀÏ°ú ¼­¹ö ¹ÙÀÌ³Ê¸®ÀÇ È£È¯¼ºÀ» °Ë»çÇÑ´Ù.
     IDE_TEST_RAISE(sDBVer != sCtlVer, err_invalid_hdr);
     IDE_TEST_RAISE(sDBVer != sFileVer, err_invalid_hdr);
 
-    // [3] CREATE SN í™•ì¸
-    // ë°ì´íƒ€íŒŒì¼ì˜ Create SNì€ Loganchorì˜ Create SNê³¼ ë™ì¼í•´ì•¼í•œë‹¤.
-    // ë‹¤ë¥´ë©´ íŒŒì¼ëª…ë§Œ ë™ì¼í•œ ì™„ì „íˆ ë‹¤ë¥¸ ë°ì´íƒ€íŒŒì¼ì´ë‹¤.
+    // [3] CREATE SN È®ÀÎ
+    // µ¥ÀÌÅ¸ÆÄÀÏÀÇ Create SNÀº LoganchorÀÇ Create SN°ú µ¿ÀÏÇØ¾ßÇÑ´Ù.
+    // ´Ù¸£¸é ÆÄÀÏ¸í¸¸ µ¿ÀÏÇÑ ¿ÏÀüÈ÷ ´Ù¸¥ µ¥ÀÌÅ¸ÆÄÀÏÀÌ´Ù.
     // CREATE LSN
     IDE_TEST_RAISE( smLayerCallback::isLSNEQ(
                         &mChkptImageHdr.mMemCreateLSN,
                         &aChkptImageHdr->mMemCreateLSN)
                     != ID_TRUE, err_invalid_hdr );
 
-    // [4] Redo LSN í™•ì¸
+    // [4] Redo LSN È®ÀÎ
     if ( smLayerCallback::isLSNLTE(
              &mChkptImageHdr.mMemRedoLSN,
              &aChkptImageHdr->mMemRedoLSN ) != ID_TRUE )
     {
-        // ë°ì´íƒ€ íŒŒì¼ì˜ REDO LSNë³´ë‹¤ Loganchorì˜
-        // Redo LSNì´ ë” í¬ë©´ ë¯¸ë””ì–´ ë³µêµ¬ê°€ í•„ìš”í•˜ë‹¤.
+        // µ¥ÀÌÅ¸ ÆÄÀÏÀÇ REDO LSNº¸´Ù LoganchorÀÇ
+        // Redo LSNÀÌ ´õ Å©¸é ¹Ìµğ¾î º¹±¸°¡ ÇÊ¿äÇÏ´Ù.
 
-        sIsMediaFailure = ID_TRUE; // ë¯¸ë””ì–´ ë³µêµ¬ í•„ìš”
+        sIsMediaFailure = ID_TRUE; // ¹Ìµğ¾î º¹±¸ ÇÊ¿ä
     }
     else
     {
-        // [ ì •ìƒìƒíƒœ ]
-        // ë°ì´íƒ€ íŒŒì¼ì˜ REDO LSNë³´ë‹¤ Loganchorì˜ Redo LSNì´
-        // ë” ì‘ê±°ë‚˜ ê°™ë‹¤.
+        // [ Á¤»ó»óÅÂ ]
+        // µ¥ÀÌÅ¸ ÆÄÀÏÀÇ REDO LSNº¸´Ù LoganchorÀÇ Redo LSNÀÌ
+        // ´õ ÀÛ°Å³ª °°´Ù.
     }
 
 #ifdef DEBUG
@@ -1951,9 +1950,9 @@ IDE_RC smmDatabaseFile::checkValidationDBFHdr(
 }
 
 /*
-   ë°ì´íƒ€íŒŒì¼ HEADERì˜ ìœ íš¨ì„±ì„ ê²€ì‚¬í•œë‹¤.
+   µ¥ÀÌÅ¸ÆÄÀÏ HEADERÀÇ À¯È¿¼ºÀ» °Ë»çÇÑ´Ù.
 
-   [IN] aChkptImageHdr : smmChkptImageHdr íƒ€ì…ì˜ í¬ì¸í„°
+   [IN] aChkptImageHdr : smmChkptImageHdr Å¸ÀÔÀÇ Æ÷ÀÎÅÍ
 */
 IDE_RC smmDatabaseFile::checkValuesOfDBFHdr(
                                    smmChkptImageHdr*  aChkptImageHdr )
@@ -1962,7 +1961,7 @@ IDE_RC smmDatabaseFile::checkValuesOfDBFHdr(
 
     IDE_DASSERT( aChkptImageHdr != NULL );
 
-    // REDO LSNê³¼ CREATE LSNì€ 0ì´ê±°ë‚˜ ULONG_MAX ê°’ì„ ê°€ì§ˆ ìˆ˜ ì—†ë‹¤.
+    // REDO LSN°ú CREATE LSNÀº 0ÀÌ°Å³ª ULONG_MAX °ªÀ» °¡Áú ¼ö ¾ø´Ù.
     SM_LSN_INIT(sCmpLSN);
 
     IDE_TEST( smLayerCallback::isLSNEQ( &aChkptImageHdr->mMemRedoLSN,
@@ -1986,9 +1985,9 @@ IDE_RC smmDatabaseFile::checkValuesOfDBFHdr(
 
 
 /*
-   ë°ì´íƒ€íŒŒì¼ HEADERì˜ ìœ íš¨ì„±ì„ ê²€ì‚¬í•œë‹¤. (ASSERTë²„ì ¼)
+   µ¥ÀÌÅ¸ÆÄÀÏ HEADERÀÇ À¯È¿¼ºÀ» °Ë»çÇÑ´Ù. (ASSERT¹öÁ¯)
 
-   [IN] aChkptImageHdr : smmChkptImageHdr íƒ€ì…ì˜ í¬ì¸í„°
+   [IN] aChkptImageHdr : smmChkptImageHdr Å¸ÀÔÀÇ Æ÷ÀÎÅÍ
 */
 IDE_RC smmDatabaseFile::assertValuesOfDBFHdr(
                           smmChkptImageHdr*  aChkptImageHdr )
@@ -1997,14 +1996,14 @@ IDE_RC smmDatabaseFile::assertValuesOfDBFHdr(
 
     IDE_DASSERT( aChkptImageHdr != NULL );
 
-    // REDO LSNê³¼ CREATE LSNì€ 0ì´ê±°ë‚˜ ULONG_MAX ê°’ì„ ê°€ì§ˆ ìˆ˜ ì—†ë‹¤.
+    // REDO LSN°ú CREATE LSNÀº 0ÀÌ°Å³ª ULONG_MAX °ªÀ» °¡Áú ¼ö ¾ø´Ù.
     SM_LSN_INIT(sCmpLSN);
 
     IDE_ASSERT( smLayerCallback::isLSNEQ(
                     &aChkptImageHdr->mMemRedoLSN,
                     &sCmpLSN ) == ID_FALSE );
 
-// BUGBUG-1548 Memory LFGì—ë§Œ logë¥¼ ê¸°ë¡í•œ ìƒí™©ì—ì„œëŠ” Disk LFG(0ë²ˆ)ì˜ LSNì´ 0ì¼ìˆ˜ ìˆë‹¤.
+// BUGBUG-1548 Memory LFG¿¡¸¸ log¸¦ ±â·ÏÇÑ »óÈ²¿¡¼­´Â Disk LFG(0¹ø)ÀÇ LSNÀÌ 0ÀÏ¼ö ÀÖ´Ù.
 /*
         IDE_TEST( smLayerCallback::isLSNEQ(
                          &aChkptImageHdr->mArrMemCreateLSN[ sLoop ],
@@ -2025,9 +2024,9 @@ IDE_RC smmDatabaseFile::assertValuesOfDBFHdr(
 }
 
 /*
-  PRJ-1548 User Memroy Tablespace ê°œë…ë„ì…
+  PRJ-1548 User Memroy Tablespace °³³äµµÀÔ
 
-  ìƒì„±ëœ ë°ì´íƒ€íŒŒì¼ì— ëŒ€í•œ ì†ì„±ì„ ë¡œê·¸ì•µì»¤ì— ì¶”ê°€í•œë‹¤.
+  »ı¼ºµÈ µ¥ÀÌÅ¸ÆÄÀÏ¿¡ ´ëÇÑ ¼Ó¼ºÀ» ·Î±×¾ŞÄ¿¿¡ Ãß°¡ÇÑ´Ù.
 */
 IDE_RC smmDatabaseFile::addAttrToLogAnchorIfCrtFlagIsFalse(
                                  smmTBSNode* aTBSNode )
@@ -2039,35 +2038,35 @@ IDE_RC smmDatabaseFile::addAttrToLogAnchorIfCrtFlagIsFalse(
 
     IDE_DASSERT( aTBSNode != NULL );
 
-    // smmManager::mCreateDBFileOnDisk[] í”Œë˜ê·¸ëŠ” TRUEë¡œ ì„¤ì •í•˜ê¸° ì „ì—ëŠ”
-    // ë°˜ë“œì‹œ FALSE ì—¬ì•¼ í•œë‹¤.
+    // smmManager::mCreateDBFileOnDisk[] ÇÃ·¡±×´Â TRUE·Î ¼³Á¤ÇÏ±â Àü¿¡´Â
+    // ¹İµå½Ã FALSE ¿©¾ß ÇÑ´Ù.
     IDE_ASSERT( smmManager::getCreateDBFileOnDisk( aTBSNode,
                                                    mPingPongNum,
                                                    mFileNum )
                 == ID_FALSE );
 
-    // ì´ë¯¸ ë¡œê·¸ì•µì»¤ì— ì €ì¥ë˜ì—ˆëŠ”ì§€ í™•ì¸í•œë‹¤.
+    // ÀÌ¹Ì ·Î±×¾ŞÄ¿¿¡ ÀúÀåµÇ¾ú´ÂÁö È®ÀÎÇÑ´Ù.
     sSaved = smmManager::isCreateDBFileAtLeastOne(
                 (aTBSNode->mCrtDBFileInfo[ mFileNum ]).mCreateDBFileOnDisk ) ;
 
-    // íŒŒì¼ì´ ìƒì„±ë˜ì—ˆìœ¼ë¯€ë¡œ ìƒì„±ì—¬ë¶€ë¥¼ ì„¤ì •í•œë‹¤.
+    // ÆÄÀÏÀÌ »ı¼ºµÇ¾úÀ¸¹Ç·Î »ı¼º¿©ºÎ¸¦ ¼³Á¤ÇÑ´Ù.
     smmManager::setCreateDBFileOnDisk( aTBSNode,
             mPingPongNum,
             mFileNum,
             ID_TRUE );
 
-    // ë°ì´íƒ€íŒŒì¼ í—¤ë”ë¡œ ë¶€í„° ì†ì„±ì„ ì–»ëŠ”ë‹¤.
-    // ì•„ë˜ í•¨ìˆ˜ì—ì„œëŠ” smmManager::mCreateDBFileOnDiskë¥¼ ì°¸ì¡°í•˜ê¸° ë•Œë¬¸ì—
-    // ë§Œì•½ ë³€ê²½ì´ í•„ìš”í•˜ë‹¤ë©´ smmManager::setCreateDBFileOnDisk í˜¸ì¶œí›„ì—
-    // getChkptImageAttrë¥¼ í˜¸ì¶œí•˜ì—¬ ìˆœì„œë¥¼ ì§€ì¼œì•¼ í•œë‹¤.
+    // µ¥ÀÌÅ¸ÆÄÀÏ Çì´õ·Î ºÎÅÍ ¼Ó¼ºÀ» ¾ò´Â´Ù.
+    // ¾Æ·¡ ÇÔ¼ö¿¡¼­´Â smmManager::mCreateDBFileOnDisk¸¦ ÂüÁ¶ÇÏ±â ¶§¹®¿¡
+    // ¸¸¾à º¯°æÀÌ ÇÊ¿äÇÏ´Ù¸é smmManager::setCreateDBFileOnDisk È£ÃâÈÄ¿¡
+    // getChkptImageAttr¸¦ È£ÃâÇÏ¿© ¼ø¼­¸¦ ÁöÄÑ¾ß ÇÑ´Ù.
     getChkptImageAttr( aTBSNode, &sChkptImageAttr );
 
     if ( sSaved == ID_TRUE )
     {
         //PROJ-2133 incremental backup
-        //Disk datafileìƒì„±ê³¼ëŠ” ë‹¤ë¥´ê²Œ memory DatabaseFileì˜ ìƒì„±ì€ checkpointë¥¼
-        //ë§‰ê³  ìˆ˜í–‰ë˜ê¸°ë•Œë¬¸ì— ë³„ë„ë¡œ checkpointì—ëŒ€í•œ lockì„ ì¡ì§€ì•Šê³ 
-        //DataFileDescSlotì„ í• ë‹¹í•œë‹¤.
+        //Disk datafile»ı¼º°ú´Â ´Ù¸£°Ô memory DatabaseFileÀÇ »ı¼ºÀº checkpoint¸¦
+        //¸·°í ¼öÇàµÇ±â¶§¹®¿¡ º°µµ·Î checkpoint¿¡´ëÇÑ lockÀ» ÀâÁö¾Ê°í
+        //DataFileDescSlotÀ» ÇÒ´çÇÑ´Ù.
         if ( ( smLayerCallback::isCTMgrEnabled() == ID_TRUE ) ||
              ( smLayerCallback::isCreatingCTFile() == ID_TRUE ) )
         {
@@ -2086,7 +2085,7 @@ IDE_RC smmDatabaseFile::addAttrToLogAnchorIfCrtFlagIsFalse(
             mChkptImageHdr.mDataFileDescSlotID.mSlotIdx = 
                                     sDataFileDescSlotIDFromLogAnchor.mSlotIdx;
 
-            //DataFileDescSlotIDë¥¼ ChkptImageHdrì— ê¸°ë¡í•œë‹¤.
+            //DataFileDescSlotID¸¦ ChkptImageHdr¿¡ ±â·ÏÇÑ´Ù.
             IDE_ASSERT( setDBFileHeader( NULL ) == IDE_SUCCESS );
         }
         else
@@ -2096,7 +2095,7 @@ IDE_RC smmDatabaseFile::addAttrToLogAnchorIfCrtFlagIsFalse(
 
 
         // fix BUG-17343
-        // loganchorì— Stable/Unstable Chkpt Imageì— ëŒ€í•œ ìƒì„± ì •ë³´ë¥¼ ì €ì¥
+        // loganchor¿¡ Stable/Unstable Chkpt Image¿¡ ´ëÇÑ »ı¼º Á¤º¸¸¦ ÀúÀå
         IDE_ASSERT( smLayerCallback::updateChkptImageAttrAndFlush(
                            &(aTBSNode->mCrtDBFileInfo[ mFileNum ]),
                            &sChkptImageAttr )
@@ -2105,9 +2104,9 @@ IDE_RC smmDatabaseFile::addAttrToLogAnchorIfCrtFlagIsFalse(
     else
     {
         //PROJ-2133 incremental backup
-        //Disk datafileìƒì„±ê³¼ëŠ” ë‹¤ë¥´ê²Œ memory DatabaseFileì˜ ìƒì„±ì€ checkpointë¥¼
-        //ë§‰ê³  ìˆ˜í–‰ë˜ê¸°ë•Œë¬¸ì— ë³„ë„ë¡œ checkpointì—ëŒ€í•œ lockì„ ì¡ì§€ì•Šê³ 
-        //DataFileDescSlotì„ í• ë‹¹í•œë‹¤.
+        //Disk datafile»ı¼º°ú´Â ´Ù¸£°Ô memory DatabaseFileÀÇ »ı¼ºÀº checkpoint¸¦
+        //¸·°í ¼öÇàµÇ±â¶§¹®¿¡ º°µµ·Î checkpoint¿¡´ëÇÑ lockÀ» ÀâÁö¾Ê°í
+        //DataFileDescSlotÀ» ÇÒ´çÇÑ´Ù.
         if ( ( smLayerCallback::isCTMgrEnabled() == ID_TRUE ) ||
              ( smLayerCallback::isCreatingCTFile() == ID_TRUE ) )
         {
@@ -2128,7 +2127,7 @@ IDE_RC smmDatabaseFile::addAttrToLogAnchorIfCrtFlagIsFalse(
             mChkptImageHdr.mDataFileDescSlotID.mSlotIdx = 
                                         sDataFileDescSlotID->mSlotIdx;
             
-            //DataFileDescSlotIDë¥¼ ChkptImageHdrì— ê¸°ë¡í•œë‹¤.
+            //DataFileDescSlotID¸¦ ChkptImageHdr¿¡ ±â·ÏÇÑ´Ù.
             IDE_ASSERT( setDBFileHeader( NULL ) == IDE_SUCCESS );
         }
         else
@@ -2137,7 +2136,7 @@ IDE_RC smmDatabaseFile::addAttrToLogAnchorIfCrtFlagIsFalse(
         }
 
 
-        // ìµœì´ˆ ìƒì„±ì´ê¸° ë•Œë¬¸ì— ë¡œê·¸ì•µì»¤ì— ì¶”ê°€í•œë‹¤.
+        // ÃÖÃÊ »ı¼ºÀÌ±â ¶§¹®¿¡ ·Î±×¾ŞÄ¿¿¡ Ãß°¡ÇÑ´Ù.
         IDE_ASSERT( smLayerCallback::addChkptImageAttrAndFlush(
                            &(aTBSNode->mCrtDBFileInfo[ mFileNum ]),
                            &(sChkptImageAttr) )
@@ -2149,9 +2148,9 @@ IDE_RC smmDatabaseFile::addAttrToLogAnchorIfCrtFlagIsFalse(
 
 
 /*
-  PRJ-1548 User Memroy Tablespace ê°œë…ë„ì…
+  PRJ-1548 User Memroy Tablespace °³³äµµÀÔ
 
-  ë¯¸ë””ì–´ë³µêµ¬ë¥¼ ì§„í–‰í•˜ê¸° ìœ„í•´ ë°ì´íƒ€íŒŒì¼ì— í”Œë˜ê·¸ë¥¼ ì„¤ì •í•œë‹¤.
+  ¹Ìµğ¾îº¹±¸¸¦ ÁøÇàÇÏ±â À§ÇØ µ¥ÀÌÅ¸ÆÄÀÏ¿¡ ÇÃ·¡±×¸¦ ¼³Á¤ÇÑ´Ù.
 */
 IDE_RC smmDatabaseFile::prepareMediaRecovery(
                                smiRecoverType        aRecoveryType,
@@ -2165,22 +2164,22 @@ IDE_RC smmDatabaseFile::prepareMediaRecovery(
     IDE_DASSERT( aFromRedoLSN != NULL );
     IDE_DASSERT( aToRedoLSN   != NULL );
 
-    // ë¯¸ë””ì–´ì˜¤ë¥˜ í”Œë˜ê·¸ë¥¼ ID_TRUE ì„¤ì •í•œë‹¤.
+    // ¹Ìµğ¾î¿À·ù ÇÃ·¡±×¸¦ ID_TRUE ¼³Á¤ÇÑ´Ù.
     mIsMediaFailure = ID_TRUE;
 
     SM_LSN_INIT( sInitLSN );
 
-    // [1] TO REDO LSN ê²°ì •í•˜ê¸°
+    // [1] TO REDO LSN °áÁ¤ÇÏ±â
     if ( aRecoveryType == SMI_RECOVER_COMPLETE )
     {
-        // ì™„ì „ë³µêµ¬ì¼ ê²½ìš° íŒŒì¼í—¤ë”ì˜ REDO LSNê¹Œì§€
-        // ë¯¸ë””ì–´ ë³µêµ¬ë¥¼ ì§„í–‰í•œë‹¤.
+        // ¿ÏÀüº¹±¸ÀÏ °æ¿ì ÆÄÀÏÇì´õÀÇ REDO LSN±îÁö
+        // ¹Ìµğ¾î º¹±¸¸¦ ÁøÇàÇÑ´Ù.
         SM_GET_LSN( *aToRedoLSN, mChkptImageHdr.mMemRedoLSN );
     }
     else
     {
-        // ë¶ˆì™„ì „ ë³µêµ¬ì¼ê²½ìš° í• ìˆ˜ ìˆëŠ”ë°ê¹Œì§€
-        // ë¯¸ë””ì–´ ë³µêµ¬ë¥¼ ì§„í–‰í•œë‹¤.
+        // ºÒ¿ÏÀü º¹±¸ÀÏ°æ¿ì ÇÒ¼ö ÀÖ´Âµ¥±îÁö
+        // ¹Ìµğ¾î º¹±¸¸¦ ÁøÇàÇÑ´Ù.
         IDE_ASSERT( ( aRecoveryType == SMI_RECOVER_UNTILCANCEL ) ||
                     ( aRecoveryType == SMI_RECOVER_UNTILTIME) );
 
@@ -2188,55 +2187,55 @@ IDE_RC smmDatabaseFile::prepareMediaRecovery(
     }
 
     /*
-      [2] FROM REDOLSN ê²°ì •í•˜ê¸°
-      ë§Œì•½ íŒŒì¼í—¤ë”ì˜ REDOLSNì´ INITLSNì´ë¼ë©´ EMPTY
-      ë°ì´íƒ€íŒŒì¼ì´ë‹¤.
+      [2] FROM REDOLSN °áÁ¤ÇÏ±â
+      ¸¸¾à ÆÄÀÏÇì´õÀÇ REDOLSNÀÌ INITLSNÀÌ¶ó¸é EMPTY
+      µ¥ÀÌÅ¸ÆÄÀÏÀÌ´Ù.
      */
     if ( smLayerCallback::isLSNEQ( &aChkptImageHdr->mMemRedoLSN,
                                    &sInitLSN) == ID_TRUE )
     {
-        // ë¶ˆì™„ì „ë³µêµ¬ ìš”êµ¬ì‹œ EMPTY íŒŒì¼ì´ ì¡´ì¬í•œë‹¤ë©´
-        // ì™„ì „ë³µêµ¬ë¥¼ ìˆ˜í–‰í•˜ì—¬ì•¼í•˜ê¸° ë•Œë¬¸ì— ì—ëŸ¬ì²˜ë¦¬í•œë‹¤.
+        // ºÒ¿ÏÀüº¹±¸ ¿ä±¸½Ã EMPTY ÆÄÀÏÀÌ Á¸ÀçÇÑ´Ù¸é
+        // ¿ÏÀüº¹±¸¸¦ ¼öÇàÇÏ¿©¾ßÇÏ±â ¶§¹®¿¡ ¿¡·¯Ã³¸®ÇÑ´Ù.
         IDE_TEST_RAISE(
             (aRecoveryType == SMI_RECOVER_UNTILTIME) ||
             (aRecoveryType == SMI_RECOVER_UNTILCANCEL),
             err_incomplete_media_recovery);
 
-        // EMPTY ë°ì´íƒ€íŒŒì¼ì¼ ê²½ìš°ì—ëŠ” CREATELSN
-        // ë¶€í„° ë¯¸ë””ì–´ë³µêµ¬ë¥¼ ì§„í–‰í•œë‹¤.
+        // EMPTY µ¥ÀÌÅ¸ÆÄÀÏÀÏ °æ¿ì¿¡´Â CREATELSN
+        // ºÎÅÍ ¹Ìµğ¾îº¹±¸¸¦ ÁøÇàÇÑ´Ù.
         SM_GET_LSN( *aFromRedoLSN, mChkptImageHdr.mMemCreateLSN );
     }
     else
     {
         /* BUG-39354
-         * íŒŒì¼ í—¤ë”ì˜ REDOLSNì´ CREATELSNê³¼ ë™ì¼í•˜ë©´
-         * EMPTY Memory Checkpoint ImageíŒŒì¼ì´ë‹¤.
+         * ÆÄÀÏ Çì´õÀÇ REDOLSNÀÌ CREATELSN°ú µ¿ÀÏÇÏ¸é
+         * EMPTY Memory Checkpoint ImageÆÄÀÏÀÌ´Ù.
          */
         if ( smLayerCallback::isLSNEQ( &aChkptImageHdr->mMemRedoLSN,
                                        &mChkptImageHdr.mMemCreateLSN ) == ID_TRUE )
         {
-            /* ë¶ˆì™„ì „ë³µêµ¬ ìš”êµ¬ì‹œ EMPTY íŒŒì¼ì´ ì¡´ì¬í•œë‹¤ë©´
-             ì™„ì „ë³µêµ¬ë¥¼ ìˆ˜í–‰í•˜ì—¬ì•¼í•˜ê¸° ë•Œë¬¸ì— ì—ëŸ¬ì²˜ë¦¬í•œë‹¤. */
+            /* ºÒ¿ÏÀüº¹±¸ ¿ä±¸½Ã EMPTY ÆÄÀÏÀÌ Á¸ÀçÇÑ´Ù¸é
+             ¿ÏÀüº¹±¸¸¦ ¼öÇàÇÏ¿©¾ßÇÏ±â ¶§¹®¿¡ ¿¡·¯Ã³¸®ÇÑ´Ù. */
             IDE_TEST_RAISE(
                 (aRecoveryType == SMI_RECOVER_UNTILTIME) ||
                 (aRecoveryType == SMI_RECOVER_UNTILCANCEL),
                 err_incomplete_media_recovery);
             
-            /* EMPTY ë°ì´íƒ€íŒŒì¼ì¼ ê²½ìš°ì—ëŠ” CREATELSN
-             * ë¶€í„° ë¯¸ë””ì–´ë³µêµ¬ë¥¼ ì§„í–‰í•œë‹¤. */
+            /* EMPTY µ¥ÀÌÅ¸ÆÄÀÏÀÏ °æ¿ì¿¡´Â CREATELSN
+             * ºÎÅÍ ¹Ìµğ¾îº¹±¸¸¦ ÁøÇàÇÑ´Ù. */
             SM_GET_LSN( *aFromRedoLSN, mChkptImageHdr.mMemCreateLSN );
         }
         else
         {
-            // ì™„ì „ë³µêµ¬ ë˜ëŠ” ë¶ˆì™„ì „ ë³µêµ¬ì—ì„œì˜
-            // FROM REDOLSNì€ íŒŒì¼í—¤ë”ì˜ REDO LSNë¶€í„°
-            // ì§„í–‰í•œë‹¤.
+            // ¿ÏÀüº¹±¸ ¶Ç´Â ºÒ¿ÏÀü º¹±¸¿¡¼­ÀÇ
+            // FROM REDOLSNÀº ÆÄÀÏÇì´õÀÇ REDO LSNºÎÅÍ
+            // ÁøÇàÇÑ´Ù.
             SM_GET_LSN( *aFromRedoLSN, aChkptImageHdr->mMemRedoLSN );
         }
     }
 
-    // ë¯¸ë””ì–´ë³µêµ¬ì—ì„œëŠ”
-    // FROM REDOLSN < TO REDOLSNì˜ ì¡°ê±´ì„ ë§Œì¡±í•´ì•¼í•œë‹¤.
+    // ¹Ìµğ¾îº¹±¸¿¡¼­´Â
+    // FROM REDOLSN < TO REDOLSNÀÇ Á¶°ÇÀ» ¸¸Á·ÇØ¾ßÇÑ´Ù.
     IDE_ASSERT( smLayerCallback::isLSNGT( aToRedoLSN,
                                           aFromRedoLSN)
                 == ID_TRUE );
@@ -2253,13 +2252,13 @@ IDE_RC smmDatabaseFile::prepareMediaRecovery(
 }
 
 /***********************************************************************
- * Description : BUG-28523 [SM] ì²´í¬ í¬ì¸íŠ¸ ê²½ë¡œ ì‚­ì œì‹œ ê²½ë¡œìƒì—
- *               ì²´í¬í¬ì¸íŠ¸ ì´ë¯¸ì§€ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•´ì•¼ í•©ë‹ˆë‹¤.
- *               Checkpoint Pathë¥¼ Dropí•˜ê¸° ì „ì— í•´ë‹¹ Pathë‚´ì˜
- *               Checkpoint Imageë¥¼ ë‹¤ë¥¸ ìœ íš¨í•œ ê²½ë¡œë¡œ ì˜®ê²¼ëŠ”ì§€ë¥¼ í™•ì¸í•œë‹¤.
+ * Description : BUG-28523 [SM] Ã¼Å© Æ÷ÀÎÆ® °æ·Î »èÁ¦½Ã °æ·Î»ó¿¡
+ *               Ã¼Å©Æ÷ÀÎÆ® ÀÌ¹ÌÁö°¡ Á¸ÀçÇÏ´ÂÁö °Ë»çÇØ¾ß ÇÕ´Ï´Ù.
+ *               Checkpoint Path¸¦ DropÇÏ±â Àü¿¡ ÇØ´ç Path³»ÀÇ
+ *               Checkpoint Image¸¦ ´Ù¸¥ À¯È¿ÇÑ °æ·Î·Î ¿Å°å´ÂÁö¸¦ È®ÀÎÇÑ´Ù.
  *
  *   aTBSNode          [IN] - Tablespace Node
- *   aCheckpointReason [IN] - Dropí•˜ë ¤ëŠ” Checkpoint Path Node
+ *   aCheckpointReason [IN] - DropÇÏ·Á´Â Checkpoint Path Node
  **********************************************************************/
 IDE_RC smmDatabaseFile::checkChkptImgInDropCPath( smmTBSNode       * aTBSNode,
                                                   smmChkptPathNode * aDropPathNode )
@@ -2281,8 +2280,8 @@ IDE_RC smmDatabaseFile::checkChkptImgInDropCPath( smmTBSNode       * aTBSNode,
           sDBFileNo <= aTBSNode->mLstCreatedDBFile;
           sDBFileNo++ )
     {
-        // Dropí•˜ë ¤ëŠ” ê²½ë¡œë¥¼ ì œì™¸í•œ ë‹¤ë¥¸ ê²½ë¡œì—ì„œ
-        // Checkpoint Image Fileì„ ì°¾ëŠ”ë‹¤.
+        // DropÇÏ·Á´Â °æ·Î¸¦ Á¦¿ÜÇÑ ´Ù¸¥ °æ·Î¿¡¼­
+        // Checkpoint Image FileÀ» Ã£´Â´Ù.
 
         sFound = ID_FALSE;
 
@@ -2301,7 +2300,7 @@ IDE_RC smmDatabaseFile::checkChkptImgInDropCPath( smmTBSNode       * aTBSNode,
             sctTableSpaceMgr::adjustFileSeparator( aDropPathNode->mChkptPathAttr.mChkptPath );
 #endif
 
-            // Drop í•  Pathì´ì™¸ì˜ ê²½ë¡œì— DB Img Fileì´ ì¡´ì¬ í•˜ì—¬ì•¼ í•œë‹¤.
+            // Drop ÇÒ PathÀÌ¿ÜÀÇ °æ·Î¿¡ DB Img FileÀÌ Á¸Àç ÇÏ¿©¾ß ÇÑ´Ù.
             if( idlOS::strcmp( sCPathNode->mChkptPathAttr.mChkptPath,
                                aDropPathNode->mChkptPathAttr.mChkptPath ) == 0 )
             {
@@ -2325,9 +2324,9 @@ IDE_RC smmDatabaseFile::checkChkptImgInDropCPath( smmTBSNode       * aTBSNode,
 
         if( sFound == ID_FALSE )
         {
-            // Chkpt Imgë¥¼ ì°¾ì§€ ëª»í–ˆë‹¤ë©´ ì´ìœ ëŠ” ë‘˜ ì¤‘ í•˜ë‚˜ì´ë‹¤.
-            // 1. Dropí•˜ë ¤ëŠ” ê²½ë¡œì— Chkpt Imageê°€ ìˆëŠ” ê²½ìš°
-            // 2. íŒŒì¼ì´ ì•„ë¬´ê³³ì—ë„ ì—†ëŠ” ê²½ìš°
+            // Chkpt Img¸¦ Ã£Áö ¸øÇß´Ù¸é ÀÌÀ¯´Â µÑ Áß ÇÏ³ªÀÌ´Ù.
+            // 1. DropÇÏ·Á´Â °æ·Î¿¡ Chkpt Image°¡ ÀÖ´Â °æ¿ì
+            // 2. ÆÄÀÏÀÌ ¾Æ¹«°÷¿¡µµ ¾ø´Â °æ¿ì
 
 #if defined(VC_WIN32)
             sctTableSpaceMgr::adjustFileSeparator( aDropPathNode->mChkptPathAttr.mChkptPath );
@@ -2385,9 +2384,9 @@ IDE_RC smmDatabaseFile::checkChkptImgInDropCPath( smmTBSNode       * aTBSNode,
 }
 
 /***********************************************************************
- * Description : BUG-29607 Create Memory Tablespace ì‹œ ë™ì¼í•œ ì´ë¦„ì˜ íŒŒì¼ì´
- *               ì²´í¬í¬ì¸íŠ¸ ê²½ë¡œì•ˆì— ì¡´ì¬í•˜ëŠ”ì§€ë¥¼ ì•ìœ¼ë¡œ ìƒì„±ë  íŒŒì¼ëª…ë„
- *               ê°ì•ˆí•´ì„œ í™•ì¸í•©ë‹ˆë‹¤.
+ * Description : BUG-29607 Create Memory Tablespace ½Ã µ¿ÀÏÇÑ ÀÌ¸§ÀÇ ÆÄÀÏÀÌ
+ *               Ã¼Å©Æ÷ÀÎÆ® °æ·Î¾È¿¡ Á¸ÀçÇÏ´ÂÁö¸¦ ¾ÕÀ¸·Î »ı¼ºµÉ ÆÄÀÏ¸íµµ
+ *               °¨¾ÈÇØ¼­ È®ÀÎÇÕ´Ï´Ù.
  *
  *   aTBSNode          [IN] - Tablespace Node
  **********************************************************************/
@@ -2429,9 +2428,9 @@ IDE_RC smmDatabaseFile::chkExistDBFileByNode( smmTBSNode * aTBSNode )
 }
 
 /***********************************************************************
- * Description : BUG-29607 Create DB ì‹œ ë™ì¼í•œ ì´ë¦„ì˜ íŒŒì¼ì´
- *               ì²´í¬í¬ì¸íŠ¸ ê²½ë¡œì•ˆì— ì¡´ì¬í•˜ëŠ”ì§€ë¥¼ ì•ìœ¼ë¡œ ìƒì„±ë  íŒŒì¼ëª…ë„
- *               ê°ì•ˆí•´ì„œ í™•ì¸í•©ë‹ˆë‹¤.
+ * Description : BUG-29607 Create DB ½Ã µ¿ÀÏÇÑ ÀÌ¸§ÀÇ ÆÄÀÏÀÌ
+ *               Ã¼Å©Æ÷ÀÎÆ® °æ·Î¾È¿¡ Á¸ÀçÇÏ´ÂÁö¸¦ ¾ÕÀ¸·Î »ı¼ºµÉ ÆÄÀÏ¸íµµ
+ *               °¨¾ÈÇØ¼­ È®ÀÎÇÕ´Ï´Ù.
  *
  *   aTBSNode          [IN] - Tablespace Name
  **********************************************************************/
@@ -2454,8 +2453,8 @@ IDE_RC smmDatabaseFile::chkExistDBFileByProp( const SChar * aTBSName )
 }
 
 /***********************************************************************
- * Description : BUG-29607 Create Memory Tablespace ì‹œ ë¹„ìŠ·í•œ ì´ë¦„ì˜ íŒŒì¼ì´
- *               ì²´í¬í¬ì¸íŠ¸ ê²½ë¡œì•ˆì— ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•©ë‹ˆë‹¤.
+ * Description : BUG-29607 Create Memory Tablespace ½Ã ºñ½ÁÇÑ ÀÌ¸§ÀÇ ÆÄÀÏÀÌ
+ *               Ã¼Å©Æ÷ÀÎÆ® °æ·Î¾È¿¡ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÕ´Ï´Ù.
  *
  *   aTBSName       [IN] - Tablespace Name
  *   aChkptPath     [IN] - Checkpoint Path
@@ -2511,7 +2510,7 @@ IDE_RC smmDatabaseFile::chkExistDBFile( const SChar * aTBSName,
          */
 	errno=0;
 
-        // íŒŒì¼ëª…ì„ í•˜ë‚˜ì”© ê°€ì ¸ì™€ì„œ ë¹„êµ,
+        // ÆÄÀÏ¸íÀ» ÇÏ³ª¾¿ °¡Á®¿Í¼­ ºñ±³,
         sRc = idf::readdir_r( sDir,
                               sDirEnt,
                               &sResDirEnt );
@@ -2540,7 +2539,7 @@ IDE_RC smmDatabaseFile::chkExistDBFile( const SChar * aTBSName,
 
         if( sPingPongNum == SMM_PINGPONG_COUNT )
         {
-            // íŒŒì¼ëª…ì´ ì•„ì˜ˆ ë¹„ìŠ·í•˜ì§€ ì•Šì€ê²½ìš° ì œì™¸
+            // ÆÄÀÏ¸íÀÌ ¾Æ¿¹ ºñ½ÁÇÏÁö ¾ÊÀº°æ¿ì Á¦¿Ü
             continue;
         }
 
@@ -2550,8 +2549,8 @@ IDE_RC smmDatabaseFile::chkExistDBFile( const SChar * aTBSName,
                                           idlOS::strlen( sCurFileName ) )
             == ID_FALSE )
         {
-            // íŒŒì¼ëª… ì´í›„ë¶€ë¶„ì´ ìˆ«ìì¸ ê²½ìš°ê°€ ì•„ë‹ˆë©´ ì œì™¸.
-            // Checkpoint Image File Number í™•ì¸.
+            // ÆÄÀÏ¸í ÀÌÈÄºÎºĞÀÌ ¼ıÀÚÀÎ °æ¿ì°¡ ¾Æ´Ï¸é Á¦¿Ü.
+            // Checkpoint Image File Number È®ÀÎ.
             continue;
         }
 
@@ -2598,7 +2597,7 @@ IDE_RC smmDatabaseFile::chkExistDBFile( const SChar * aTBSName,
 }
 
 /***********************************************************************
- * Description : smmDataFileì„ incremetalBackupí•œë‹¤.
+ * Description : smmDataFileÀ» incremetalBackupÇÑ´Ù.
  * PROJ-2133
  *
  **********************************************************************/
@@ -2637,7 +2636,7 @@ IDE_RC smmDatabaseFile::incrementalBackup( smriCTDataFileDescSlot * aDataFileDes
     IDE_TEST( sDestFile.open()      != IDE_SUCCESS );
     sState = 2;
 
-    /* Incremental backupì„ ìˆ˜í–‰í•œë‹¤.*/
+    /* Incremental backupÀ» ¼öÇàÇÑ´Ù.*/
     IDE_TEST( smriChangeTrackingMgr::performIncrementalBackup( 
                                                    aDataFileDescSlot,
                                                    sSrcFile,
@@ -2649,8 +2648,8 @@ IDE_RC smmDatabaseFile::incrementalBackup( smriCTDataFileDescSlot * aDataFileDes
               != IDE_SUCCESS );
 
     /* 
-     * ìƒì„±ëœ íŒŒì¼ì˜ í¬ê¸°ì™€ ë³µì‚¬ëœ IBChunkì˜ ê°œìˆ˜ë¥¼ ë¹„êµí•´ backupëœ í¬ê¸°ê°€
-     * ë™ì¼í•œì§€ í™•ì¸í•œë‹¤
+     * »ı¼ºµÈ ÆÄÀÏÀÇ Å©±â¿Í º¹»çµÈ IBChunkÀÇ °³¼ö¸¦ ºñ±³ÇØ backupµÈ Å©±â°¡
+     * µ¿ÀÏÇÑÁö È®ÀÎÇÑ´Ù
      */
     IDE_TEST( sDestFile.getFileSize( &sBackupFileSize ) != IDE_SUCCESS );
 
@@ -2659,9 +2658,9 @@ IDE_RC smmDatabaseFile::incrementalBackup( smriCTDataFileDescSlot * aDataFileDes
     sBackupSize = (ULong)aBackupInfo->mIBChunkCNT * sIBChunkSizeInByte;
 
     /* 
-     * íŒŒì¼ì˜ í™•ì¥ì´ë‚˜ ì¶•ì†Œê°€ IBChunkì˜ í¬ê¸°ë§Œí¼ ì´ë£¨ì§€ì§€ ì•Šì„ìˆ˜ ìˆê¸°ë•Œë¬¸ì—
-     * ì‹¤ì œ ë°±ì—…ëœ íŒŒì¼ì˜ í¬ê¸°ëŠ” mIBChunkCNTì˜ ë°°ìˆ˜ê°€ ì•„ë‹ìˆ˜ ìˆë‹¤.
-     * íŒŒì¼ì˜ í¬ê¸°ê°€ mIBChunkCNTì˜ ë°°ìˆ˜ê°€ ë˜ë„ë¡ ì¡°ì •í•´ì¤€ë‹¤.
+     * ÆÄÀÏÀÇ È®ÀåÀÌ³ª Ãà¼Ò°¡ IBChunkÀÇ Å©±â¸¸Å­ ÀÌ·çÁöÁö ¾ÊÀ»¼ö ÀÖ±â¶§¹®¿¡
+     * ½ÇÁ¦ ¹é¾÷µÈ ÆÄÀÏÀÇ Å©±â´Â mIBChunkCNTÀÇ ¹è¼ö°¡ ¾Æ´Ò¼ö ÀÖ´Ù.
+     * ÆÄÀÏÀÇ Å©±â°¡ mIBChunkCNTÀÇ ¹è¼ö°¡ µÇµµ·Ï Á¶Á¤ÇØÁØ´Ù.
      */
     
     if( sBackupFileSize > SM_DBFILE_METAHDR_PAGE_SIZE )
@@ -2711,7 +2710,7 @@ IDE_RC smmDatabaseFile::incrementalBackup( smriCTDataFileDescSlot * aDataFileDes
 }
 
 /***********************************************************************
- * Description : ë³µì›ëœ chkptImageíŒŒì¼ì˜ pingpongíŒŒì¼ì„ ë§Œë“¤ì–´ì•¼í•˜ëŠ”ì§€ íŒë‹¨í•œë‹¤.
+ * Description : º¹¿øµÈ chkptImageÆÄÀÏÀÇ pingpongÆÄÀÏÀ» ¸¸µé¾î¾ßÇÏ´ÂÁö ÆÇ´ÜÇÑ´Ù.
  * PROJ-2133
  *
  **********************************************************************/
@@ -2740,35 +2739,35 @@ IDE_RC smmDatabaseFile::isNeedCreatePingPongFile( smriBISlot * aBISlot,
     sCtlVer  = mChkptImageHdr.mSmVersion & SM_CHECK_VERSION_MASK;
     sFileVer = sChkptImageHdr.mSmVersion & SM_CHECK_VERSION_MASK;
 
-    // [1] SM VERSION í™•ì¸
-    // ë°ì´íƒ€íŒŒì¼ê³¼ ì„œë²„ ë°”ì´ë„ˆë¦¬ì˜ í˜¸í™˜ì„±ì„ ê²€ì‚¬í•œë‹¤.
+    // [1] SM VERSION È®ÀÎ
+    // µ¥ÀÌÅ¸ÆÄÀÏ°ú ¼­¹ö ¹ÙÀÌ³Ê¸®ÀÇ È£È¯¼ºÀ» °Ë»çÇÑ´Ù.
     IDE_TEST_RAISE(sDBVer != sCtlVer, err_invalid_hdr);
     IDE_TEST_RAISE(sDBVer != sFileVer, err_invalid_hdr);
 
-    // [3] CREATE SN í™•ì¸
-    // ë°ì´íƒ€íŒŒì¼ì˜ Create SNì€ Loganchorì˜ Create SNê³¼ ë™ì¼í•´ì•¼í•œë‹¤.
-    // ë‹¤ë¥´ë©´ íŒŒì¼ëª…ë§Œ ë™ì¼í•œ ì™„ì „íˆ ë‹¤ë¥¸ ë°ì´íƒ€íŒŒì¼ì´ë‹¤.
+    // [3] CREATE SN È®ÀÎ
+    // µ¥ÀÌÅ¸ÆÄÀÏÀÇ Create SNÀº LoganchorÀÇ Create SN°ú µ¿ÀÏÇØ¾ßÇÑ´Ù.
+    // ´Ù¸£¸é ÆÄÀÏ¸í¸¸ µ¿ÀÏÇÑ ¿ÏÀüÈ÷ ´Ù¸¥ µ¥ÀÌÅ¸ÆÄÀÏÀÌ´Ù.
     // CREATE LSN
     IDE_TEST_RAISE( smLayerCallback::isLSNEQ(
                         &mChkptImageHdr.mMemCreateLSN,
                         &sChkptImageHdr.mMemCreateLSN)
                     != ID_TRUE, err_invalid_hdr );
 
-    // [4] Redo LSN í™•ì¸
+    // [4] Redo LSN È®ÀÎ
     if ( smLayerCallback::isLSNLTE(
              &mChkptImageHdr.mMemRedoLSN,
              &sChkptImageHdr.mMemRedoLSN ) != ID_TRUE )
     {
-        // ë°ì´íƒ€ íŒŒì¼ì˜ REDO LSNë³´ë‹¤ Loganchorì˜
-        // Redo LSNì´ ë” í¬ë©´ ë¯¸ë””ì–´ ë³µêµ¬ê°€ í•„ìš”í•˜ë‹¤.
+        // µ¥ÀÌÅ¸ ÆÄÀÏÀÇ REDO LSNº¸´Ù LoganchorÀÇ
+        // Redo LSNÀÌ ´õ Å©¸é ¹Ìµğ¾î º¹±¸°¡ ÇÊ¿äÇÏ´Ù.
 
         sResult = ID_FALSE;
     }
     else
     {
-        // [ ì •ìƒìƒíƒœ ]
-        // ë°ì´íƒ€ íŒŒì¼ì˜ REDO LSNë³´ë‹¤ Loganchorì˜ Redo LSNì´
-        // ë” ì‘ê±°ë‚˜ ê°™ë‹¤.
+        // [ Á¤»ó»óÅÂ ]
+        // µ¥ÀÌÅ¸ ÆÄÀÏÀÇ REDO LSNº¸´Ù LoganchorÀÇ Redo LSNÀÌ
+        // ´õ ÀÛ°Å³ª °°´Ù.
     }
 
     *aResult = sResult;
@@ -2789,7 +2788,7 @@ IDE_RC smmDatabaseFile::isNeedCreatePingPongFile( smriBISlot * aBISlot,
 } 
 
 /***********************************************************************
- * Description : ì§€ì •ëœ íŒŒì¼ pathì— ì¡´ì¬í•˜ëŠ” chkptImageì˜ í—¤ë”ë¥¼ ì½ì–´ì˜¨ë‹¤.
+ * Description : ÁöÁ¤µÈ ÆÄÀÏ path¿¡ Á¸ÀçÇÏ´Â chkptImageÀÇ Çì´õ¸¦ ÀĞ¾î¿Â´Ù.
  * PROJ-2133
  *
  **********************************************************************/

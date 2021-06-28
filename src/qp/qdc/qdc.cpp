@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdc.cpp 85332 2019-04-26 01:19:42Z ahra.cho $
+ * $Id: qdc.cpp 90785 2021-05-06 07:26:22Z hykim $
  **********************************************************************/
 
 #include <idl.h>
@@ -45,35 +45,37 @@
 
 #include <iduMemPoolMgr.h>
 #include <qdpRole.h>
+#include <sdi.h>
+#include <sdiZookeeper.h>
 
 //------------------------------------------------------------------------
 // PROJ-2242 OPTIMIZER_FEATURE_ENABLE :
-//     Plan ì— ì˜í–¥ì„ ë¼ì¹˜ëŠ” property ë¥¼ ì¼ê´„ ë³€ê²½í•˜ëŠ”ë° ì‚¬ìš©ë˜ë©°
-//     ì•„ë˜ì™€ ê°™ì€ optimizer property ë³€ê²½ì‚¬í•­ì´ ë°œìƒí•  ê²½ìš°
-//     - Plan ì— ì˜í–¥ì„ ë¼ì¹˜ëŠ” ìƒˆë¡œìš´ property ì¶”ê°€
-//     - Plan ì— ì˜í–¥ì„ ë¼ì¹˜ëŠ” ê¸°ì¡´ property ì˜ default value ë³€ê²½
-//     ë‹¤ìŒ ì‚¬í•­ì„ ë³€ê²½í•œë‹¤.
+//     Plan ¿¡ ¿µÇâÀ» ³¢Ä¡´Â property ¸¦ ÀÏ°ı º¯°æÇÏ´Âµ¥ »ç¿ëµÇ¸ç
+//     ¾Æ·¡¿Í °°Àº optimizer property º¯°æ»çÇ×ÀÌ ¹ß»ıÇÒ °æ¿ì
+//     - Plan ¿¡ ¿µÇâÀ» ³¢Ä¡´Â »õ·Î¿î property Ãß°¡
+//     - Plan ¿¡ ¿µÇâÀ» ³¢Ä¡´Â ±âÁ¸ property ÀÇ default value º¯°æ
+//     ´ÙÀ½ »çÇ×À» º¯°æÇÑ´Ù.
 //
-//     1. QDC_OPTIMIZER_FEATURE_CNT ë³´ì™„
-//     2. ì•„ë˜ í•­ëª©ì¤‘ ê¸°ì¡´ì— QCU_OPTIMIZER_FEATURE_VERSION_MAX ë¥¼
-//        ì‚¬ìš©í•œ property ì— ëŒ€í•´ ìµœì´ˆ ë°˜ì˜í•œ ì´ˆê¸° version ìœ¼ë¡œ ìˆ˜ì •
-//      - QDC_OPTIMIZER_FEATURE_VERSION_NONE ì„ ê´€ë¦¬í•˜ëŠ” enum
+//     1. QDC_OPTIMIZER_FEATURE_CNT º¸¿Ï
+//     2. ¾Æ·¡ Ç×¸ñÁß ±âÁ¸¿¡ QCU_OPTIMIZER_FEATURE_VERSION_MAX ¸¦
+//        »ç¿ëÇÑ property ¿¡ ´ëÇØ ÃÖÃÊ ¹İ¿µÇÑ ÃÊ±â version À¸·Î ¼öÁ¤
+//      - QDC_OPTIMIZER_FEATURE_VERSION_NONE À» °ü¸®ÇÏ´Â enum
 //      - gFeatureProperty (property history)
 //      - qdc::getFeatureVersionNo
-//     3. 2ì—ì„œ ìˆ˜ì •í•œ ë¶€ë¶„ì˜ ì¶”ê°€í•˜ë ¤ëŠ” property ë¥¼ ë°˜ì˜
-//        ì¶”ê°€ì‹œ QCU_OPTIMIZER_FEATURE_VERSION_MAX ë¥¼ ì´ìš©
-//     4. Manual ì— OPTIMIZER_FEATURE_ENABLE í—ˆìš©ë²„ì „ ì¶”ê°€ìš”ì²­
+//     3. 2¿¡¼­ ¼öÁ¤ÇÑ ºÎºĞÀÇ Ãß°¡ÇÏ·Á´Â property ¸¦ ¹İ¿µ
+//        Ãß°¡½Ã QCU_OPTIMIZER_FEATURE_VERSION_MAX ¸¦ ÀÌ¿ë
+//     4. Manual ¿¡ OPTIMIZER_FEATURE_ENABLE Çã¿ë¹öÀü Ãß°¡¿äÃ»
 //
-//  comment) system property ë¥¼ ë™ì ìœ¼ë¡œ ê´€ë¦¬í•˜ëŠ” êµ¬ì¡°ê°€ ì—†ëŠ” ê´€ê³„ë¡œ
-//           value ë¥¼ í•˜ë‚˜ë§Œ ê°–ëŠ” property ê¸°ì¤€ìœ¼ë¡œ ë‹¨ìˆœí•˜ê²Œ êµ¬í˜„í•¨.
+//  comment) system property ¸¦ µ¿ÀûÀ¸·Î °ü¸®ÇÏ´Â ±¸Á¶°¡ ¾ø´Â °ü°è·Î
+//           value ¸¦ ÇÏ³ª¸¸ °®´Â property ±âÁØÀ¸·Î ´Ü¼øÇÏ°Ô ±¸ÇöÇÔ.
 //------------------------------------------------------------------------
 
-#define QDC_OPTIMIZER_FEATURE_CNT   (32)
+#define QDC_OPTIMIZER_FEATURE_CNT   (34)
 
 static qdcFeatureProperty gFeatureProperty[QDC_OPTIMIZER_FEATURE_CNT] =
 {
-    /* tag ë¥¼ ë”°ê¸° ì „ ì¶”ê°€ë˜ëŠ” ê²½ìš°ëŠ”
-     * QDC_OPTIMIZER_FEATURE_VERSION_MAX ë¥¼ ì´ìš©í•œë‹¤.
+    /* tag ¸¦ µû±â Àü Ãß°¡µÇ´Â °æ¿ì´Â
+     * QDC_OPTIMIZER_FEATURE_VERSION_MAX ¸¦ ÀÌ¿ëÇÑ´Ù.
      * Example)
      *   { (SChar *)"__OPTIMIZER_CONSTANT_FILTER_SUBSUMPTION",
      *     (SChar *)"0",
@@ -232,15 +234,25 @@ static qdcFeatureProperty gFeatureProperty[QDC_OPTIMIZER_FEATURE_CNT] =
       QDC_OPTIMIZER_FEATURE_VERSION_7_1_0_0_0,
       PLAN_PROPERTY_OPTIMIZER_HIERARCHY_TRANSFORMATION },
     { (SChar *)"__OPTIMIZER_UNNEST_COMPATIBILITY",  // 31
-      (SChar *)"1",
-      (SChar *)"1",
-      QDC_OPTIMIZER_FEATURE_VERSION_7_1_0_0_0,
+      (SChar *)"3",
+      (SChar *)"2",
+      QDC_OPTIMIZER_FEATURE_VERSION_MAX,
       PLAN_PROPERTY_OPTIMIZER_UNNEST_COMPATIBILITY },
     { (SChar *)"__OPTIMIZER_INVERSE_JOIN_ENABLE",               // 32
       (SChar *)"0",
       (SChar *)"1",
       QDC_OPTIMIZER_FEATURE_VERSION_6_3_1_0_1,
-      PLAN_PROPERTY_OPTIMIZER_UNNEST_COMPATIBILITY }
+      PLAN_PROPERTY_OPTIMIZER_INVERSE_JOIN_ENABLE },
+    { (SChar *)"__OPTIMIZER_INDEX_COST_MODE",               // 33
+      (SChar *)"0",
+      (SChar *)"1",
+      QDC_OPTIMIZER_FEATURE_VERSION_MAX,
+      PLAN_PROPERTY_OPTIMIZER_INDEX_COST_MODE},
+    { (SChar *)"__LEFT_OUTER_SKIP_RIGHT_ENABLE",               // 34
+      (SChar *)"0",
+      (SChar *)"1",
+      QDC_OPTIMIZER_FEATURE_VERSION_MAX,
+      PLAN_PROPERTY_LEFT_OUTER_SKIP_RIGHT_ENABLE }
 };
 
 
@@ -282,8 +294,8 @@ IDE_RC qdc::checkpoint( qcStatement * aStatement )
 
     // execution
     IDE_TEST( smiCheckPoint(aStatement->mStatistics,
-                            ID_FALSE) /* Turn Offëœ Flusherë“¤ì„
-                                       *  ê¹¨ìš°ì§€ ì•ŠëŠ”ë‹¤
+                            ID_FALSE) /* Turn OffµÈ FlusherµéÀ»
+                                       *  ±ú¿ìÁö ¾Ê´Â´Ù
                                        */
               != IDE_SUCCESS);
 
@@ -297,7 +309,7 @@ IDE_RC qdc::checkpoint( qcStatement * aStatement )
 }
 
 /* 
- * PROJ-2065 í•œê³„ìƒí™©í…ŒìŠ¤íŠ¸ garbage collection
+ * PROJ-2065 ÇÑ°è»óÈ²Å×½ºÆ® garbage collection
  *
  * ALTER SYSTEM shrink_mempool
  */
@@ -397,14 +409,17 @@ qdc::setSystemProperty(qcStatement * aStatement, idpArgument *aArg)
     SChar                    sMsg[(IDP_MAX_VALUE_LEN + 1) * 2 + 24];
     SInt                     sTemp = -1;
     idBool                   sIsFeatureEnable = ID_FALSE;
-
+    UInt                     sPropertyAttribute = 0;
+    UInt                     sOldValue ;
+    UInt                     sNewValue ;
+    
     sParseTree = (qdSystemSetParseTree *)(aStatement->myPlan->parseTree);
 
     // check privileges
     IDE_TEST( checkPrivileges( aStatement ) != IDE_SUCCESS );
 
     //-----------------------------------------------------
-    // Property Name ë° Value String ìƒì„±
+    // Property Name ¹× Value String »ı¼º
     //-----------------------------------------------------
 
     IDE_TEST_RAISE( sParseTree->name.size > IDP_MAX_VALUE_LEN,
@@ -456,8 +471,8 @@ qdc::setSystemProperty(qcStatement * aStatement, idpArgument *aArg)
                                24 ) == 0 )
     {
         /* PROJ-2242
-         * OPTIMIZER_FEATURE_ENABLE ë³€ê²½ì‹œ
-         * gFeatureProperty ì— ì •ì˜ëœ property ë“¤ì„ ì¼ê´„ ë³€ê²½
+         * OPTIMIZER_FEATURE_ENABLE º¯°æ½Ã
+         * gFeatureProperty ¿¡ Á¤ÀÇµÈ property µéÀ» ÀÏ°ı º¯°æ
          */
         
         IDE_TEST( changeFeatureProperty( aStatement,
@@ -467,25 +482,67 @@ qdc::setSystemProperty(qcStatement * aStatement, idpArgument *aArg)
 
         sIsFeatureEnable = ID_TRUE;
     }
+    else if ( idlOS::strMatch( sName,
+                               idlOS::strlen( sName ),
+                               "AUTO_COMMIT",
+                               11 ) == 0 )
+    {
+        /* BUG-48247 
+         * SHARD È¯°æ¿¡¼­ auto commitÀ» Á¦ÇÑÇÒ ÇÊ¿ä°¡ ÀÖ½À´Ï´Ù.  
+         * SDU_SHARD_ALLOW_AUTO_COMMITÀÌ 0À¸·Î ¼³Á¤µÇ¾î ÀÖ´Â °æ¿ì AUTO_COMMIT=1·Î ¼³Á¤ ºÒ°¡ 
+         */
+        if ( (SDU_SHARD_ENABLE == 1) && (SDU_SHARD_ALLOW_AUTO_COMMIT == 0) )
+        {
+            IDE_TEST( idp::read( sName, &sOldValue ) != IDE_SUCCESS );
+
+            sNewValue = idlOS::strToUInt( (UChar *)sValue, idlOS::strlen( sValue ) );
+
+            /* AUTO_COMMITÀÌ 1·Î ¼³Á¤µÇ¾î ÀÖ´Â °æ¿ì ERROR ¹ß»ı */ 
+            IDE_TEST_RAISE( sOldValue == 1 , ERR_INVALID_CONDITION ); 
+
+            /* AUTO_COMMITÀ» 1·Î ¼³Á¤ÇÏ·Á´Â °æ¿ì ERROR ¹ß»ı */ 
+            IDE_TEST_RAISE( sNewValue == 1 , ERR_CANNOT_SET_AUTOCOMMIT ); 
+
+        } 
+    }
+    else if ( idlOS::strMatch( sName,
+                               idlOS::strlen( sName ),
+                               "GLOBAL_TRANSACTION_LEVEL",
+                               24 ) == 0 )
+    {
+        /* BUG-48352 */
+        if ( SDU_SHARD_ENABLE == 0 )
+        {
+            sNewValue = idlOS::strToUInt( (UChar *)sValue, idlOS::strlen( sValue ) );
+            
+            IDE_TEST_RAISE( sNewValue == 3, ERR_CANNOT_SET_GLOBALTRANSACTIONLEVEL );
+        }
+    }
     else
     {
         /* Nothing to do */
     }
 
     //-----------------------------------------------------
-    // System Property ë³€ê²½
+    // System Property º¯°æ
     //-----------------------------------------------------
 
     // BUG-19498 value range check
-    IDE_TEST( idp::validate( sName, sValue ) != IDE_SUCCESS );
+    IDE_TEST( idp::validate( sName, sValue, ID_TRUE )
+              != IDE_SUCCESS );    
+    
+    // PROJ-2727
+    IDE_TEST( idp::getPropertyAttribute( sName, &sPropertyAttribute )
+              != IDE_SUCCESS );
 
+    QCG_SET_SESSION_PROPERTY_ATTRIBUTE( aStatement, sPropertyAttribute );
 
     IDE_TEST( idp::update( aStatement->mStatistics, sName, sValue, 0, (void *)aArg )
               != IDE_SUCCESS );
 
     //-----------------------------------------------------
     // PROJ-2242
-    // OPTIMIZER_FEATURE_ENABLE ì¼ ê²½ìš° environment ê¸°ë¡
+    // OPTIMIZER_FEATURE_ENABLE ÀÏ °æ¿ì environment ±â·Ï
     //-----------------------------------------------------
 
     if( sIsFeatureEnable == ID_TRUE )
@@ -500,7 +557,7 @@ qdc::setSystemProperty(qcStatement * aStatement, idpArgument *aArg)
     }
     
     //-----------------------------------------------------
-    // ë³€ê²½ëœ System Propery ë‚´ìš©ì„ Boot Logì— ê¸°ë¡
+    // º¯°æµÈ System Propery ³»¿ëÀ» Boot Log¿¡ ±â·Ï
     //-----------------------------------------------------
 
     idlOS::snprintf( sMsg, ID_SIZEOF(sMsg),
@@ -511,8 +568,8 @@ qdc::setSystemProperty(qcStatement * aStatement, idpArgument *aArg)
     ideLog::log(IDE_QP_0, "%s", sMsg);
 
     /* PROJ-2208
-     * NLS_TERRITORYì˜ ë³€ê²½ì€ NLS_ISO_CURRENCY, NLS_CURRENCY,
-     * NLS_NUMERIC_CHARACTERSê°€ ê°™ì´ ë³€ê²½ëœë‹¤.
+     * NLS_TERRITORYÀÇ º¯°æÀº NLS_ISO_CURRENCY, NLS_CURRENCY,
+     * NLS_NUMERIC_CHARACTERS°¡ °°ÀÌ º¯°æµÈ´Ù.
      */
     if ( idlOS::strMatch( sName,
                           idlOS::strlen( sName ),
@@ -563,6 +620,21 @@ qdc::setSystemProperty(qcStatement * aStatement, idpArgument *aArg)
     {
         IDE_SET( ideSetErrorCode(qpERR_ABORT_QDC_TOO_LONG_PROPERTY) );
     }
+    IDE_EXCEPTION(ERR_INVALID_CONDITION);
+    {
+        IDE_SET( ideSetErrorCode(qpERR_ABORT_QMC_UNEXPECTED_ERROR, 
+                                 "qdc::setSystemProperty", 
+                                 "Invalid condition.") );
+    }
+    IDE_EXCEPTION(ERR_CANNOT_SET_AUTOCOMMIT);
+    {
+        IDE_SET( ideSetErrorCode(qpERR_ABORT_QDC_CANNOT_CHANGE_AUTOCOMMIT_IN_SHARD_ENV) );
+    }
+    IDE_EXCEPTION( ERR_CANNOT_SET_GLOBALTRANSACTIONLEVEL )
+    {
+        IDE_SET( ideSetErrorCode(qpERR_ABORT_QDC_GCTX_NOT_ALLOW) );
+    }
+
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -598,11 +670,11 @@ qdc::validateCreateDatabase(qcStatement * /* aStatement */ )
 /***********************************************************************
  *
  * Description :
- *      CREATE DATABASE ... ì˜ validation ìˆ˜í–‰
+ *      CREATE DATABASE ... ÀÇ validation ¼öÇà
  *
  * Implementation :
- *      1. ê¶Œí•œ ê²€ì‚¬
- *      2. ë°ì´í„°ë² ì´ìŠ¤ ì´ë¦„ ê²€ì¦
+ *      1. ±ÇÇÑ °Ë»ç
+ *      2. µ¥ÀÌÅÍº£ÀÌ½º ÀÌ¸§ °ËÁõ
  *
  ***********************************************************************/
 
@@ -610,7 +682,7 @@ qdc::validateCreateDatabase(qcStatement * /* aStatement */ )
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY("qdc::validateCreateDatabase"));
 
     // check grant
-    /* BUGBUG... open meta ì „ì´ê¸° ë•Œë¬¸ì— check ë¶ˆê°€ëŠ¥
+    /* BUGBUG... open meta ÀüÀÌ±â ¶§¹®¿¡ check ºÒ°¡´É
        IDE_TEST( qdpPrivilege::checkDDLCreateDatabasePriv(
        aStatement,
        QC_GET_SESSION_USER_ID(aStatement))
@@ -624,14 +696,14 @@ qdc::validateCreateDatabase(qcStatement * /* aStatement */ )
 
 IDE_RC
 qdc::validateAlterDatabase(qcStatement * aStatement)
-{// BUGBUG... DATABASE_DDL ì¼ ê²½ìš° validate í•¨ìˆ˜ í˜¸ì¶œë˜ì§€ ì•ŠìŒ
+{// BUGBUG... DATABASE_DDL ÀÏ °æ¿ì validate ÇÔ¼ö È£ÃâµÇÁö ¾ÊÀ½
 /***********************************************************************
  *
  * Description :
- *      ALTER DATABASE ... ì˜ validation ìˆ˜í–‰
+ *      ALTER DATABASE ... ÀÇ validation ¼öÇà
  *
  * Implementation :
- *      1. ê¶Œí•œ ê²€ì‚¬
+ *      1. ±ÇÇÑ °Ë»ç
  *
  ***********************************************************************/
 
@@ -641,7 +713,7 @@ qdc::validateAlterDatabase(qcStatement * aStatement)
     // check grant
     IDE_TEST_RAISE( QCG_GET_SESSION_USER_IS_SYSDBA(aStatement) != ID_TRUE,
                     ERR_NO_GRANT_ALTER_DATABASE );
-    /* BUGBUG... open meta ì „ì´ê¸° ë•Œë¬¸ì— check ë¶ˆê°€ëŠ¥
+    /* BUGBUG... open meta ÀüÀÌ±â ¶§¹®¿¡ check ºÒ°¡´É
     IDE_TEST( qdpPrivilege::checkDDLAlterDatabasePriv(
                 aStatement,
                 QC_GET_SESSION_USER_ID(aStatement))
@@ -665,14 +737,14 @@ qdc::validateAlterDatabase(qcStatement * aStatement)
 /* BUG-39257 The statement 'ALTER DATABASE' has many parsetrees */
 IDE_RC
 qdc::validateAlterDatabaseOpt2(qcStatement * aStatement)
-{// BUGBUG... DATABASE_DDL ì¼ ê²½ìš° validate í•¨ìˆ˜ í˜¸ì¶œë˜ì§€ ì•ŠìŒ
+{// BUGBUG... DATABASE_DDL ÀÏ °æ¿ì validate ÇÔ¼ö È£ÃâµÇÁö ¾ÊÀ½
 /***********************************************************************
  *
  * Description :
- *      ALTER DATABASE ... ì˜ validation ìˆ˜í–‰
+ *      ALTER DATABASE ... ÀÇ validation ¼öÇà
  *
  * Implementation :
- *      1. ê¶Œí•œ ê²€ì‚¬
+ *      1. ±ÇÇÑ °Ë»ç
  *
  ***********************************************************************/
 
@@ -695,7 +767,7 @@ qdc::validateAlterDatabaseOpt2(qcStatement * aStatement)
             // check grant
             IDE_TEST_RAISE( QCG_GET_SESSION_USER_IS_SYSDBA(aStatement) != ID_TRUE,
                             ERR_NO_GRANT_ALTER_DATABASE );
-            /* BUGBUG... open meta ì „ì´ê¸° ë•Œë¬¸ì— check ë¶ˆê°€ëŠ¥
+            /* BUGBUG... open meta ÀüÀÌ±â ¶§¹®¿¡ check ºÒ°¡´É
             IDE_TEST( qdpPrivilege::checkDDLAlterDatabasePriv(
                         aStatement,
                         QC_GET_SESSION_USER_ID(aStatement))
@@ -724,10 +796,10 @@ qdc::validateDropDatabase(qcStatement * /* aStatement */ )
 /***********************************************************************
  *
  * Description :
- *      DROP DATABASE ... ì˜ validation ìˆ˜í–‰
+ *      DROP DATABASE ... ÀÇ validation ¼öÇà
  *
  * Implementation :
- *      1. ê¶Œí•œ ê²€ì‚¬
+ *      1. ±ÇÇÑ °Ë»ç
  *
  ***********************************************************************/
 
@@ -735,7 +807,7 @@ qdc::validateDropDatabase(qcStatement * /* aStatement */ )
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY("qdc::validateDropDatabase"));
 
     // check grant
-    /* BUGBUG... open meta ì „ì´ê¸° ë•Œë¬¸ì— check ë¶ˆê°€ëŠ¥
+    /* BUGBUG... open meta ÀüÀÌ±â ¶§¹®¿¡ check ºÒ°¡´É
        IDE_TEST( qdpPrivilege::checkDDLDropDatabasePriv(
        aStatement,
        QC_GET_SESSION_USER_ID(aStatement))
@@ -753,10 +825,10 @@ qdc::executeCreateDatabase(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *      CREATE DATABASE ... ì˜ execution ìˆ˜í–‰
+ *      CREATE DATABASE ... ÀÇ execution ¼öÇà
  *
- *      1. ë°ì´í„°ë² ì´ìŠ¤ ìºë¦­í„° ì…‹ ì²´í¬
- *      2. ë‚´ì…”ë„ ìºë¦­í„° ì…‹ ì²´í¬
+ *      1. µ¥ÀÌÅÍº£ÀÌ½º Ä³¸¯ÅÍ ¼Â Ã¼Å©
+ *      2. ³»¼Å³Î Ä³¸¯ÅÍ ¼Â Ã¼Å©
  *
  * Implementation :
  *
@@ -777,23 +849,23 @@ qdc::executeCreateDatabase(qcStatement * aStatement)
     sParseTree = (qdDatabaseParseTree *) aStatement->myPlan->parseTree;
 
     // To fix BUG-24023
-    // create dbì‹¤íŒ¨í•  ê²½ìš°ë¥¼ ëŒ€ë¹„í•˜ì—¬ ë°±ì—…
+    // create db½ÇÆĞÇÒ °æ¿ì¸¦ ´ëºñÇÏ¿© ¹é¾÷
     sDBCharSetModule = mtl::mDBCharSet;
     sNCharSetModule = mtl::mNationalCharSet;
 
-    // BUG-26088 mmcStatement::beginDB() ì—ì„œ valgrind ì˜¤ë¥˜ê°€ ë°œìƒí•©ë‹ˆë‹¤.
-    // mm ì—ì„œ ê¶Œí•œê²€ì‚¬ë¥¼ í•˜ë©´ ì•ˆëœë‹¤. QP ì—ì„œ ì§ì ‘ í•´ì£¼ë„ë¡ í•œë‹¤.
+    // BUG-26088 mmcStatement::beginDB() ¿¡¼­ valgrind ¿À·ù°¡ ¹ß»ıÇÕ´Ï´Ù.
+    // mm ¿¡¼­ ±ÇÇÑ°Ë»ç¸¦ ÇÏ¸é ¾ÈµÈ´Ù. QP ¿¡¼­ Á÷Á¢ ÇØÁÖµµ·Ï ÇÑ´Ù.
     IDE_TEST_RAISE( QCG_GET_SESSION_USER_IS_SYSDBA(aStatement) != ID_TRUE,
                     ERR_NO_GRANT_ALTER_DATABASE );
 
     if( SM_PAGE_SIZE >= sUnit )
     {
-        // ìƒì„±í•  ë°ì´í„°ë² ì´ìŠ¤ Pageìˆ˜
+        // »ı¼ºÇÒ µ¥ÀÌÅÍº£ÀÌ½º Page¼ö
         sArgCreateDB.mUserCreatePageCount = sParseTree->intValue1 / (SM_PAGE_SIZE / sUnit);
     }
     else
     {
-        // ìƒì„±í•  ë°ì´í„°ë² ì´ìŠ¤ Pageìˆ˜
+        // »ı¼ºÇÒ µ¥ÀÌÅÍº£ÀÌ½º Page¼ö
         sArgCreateDB.mUserCreatePageCount = sParseTree->intValue1 * (sUnit / SM_PAGE_SIZE);
     }
 
@@ -809,7 +881,7 @@ qdc::executeCreateDatabase(qcStatement * aStatement)
                     
     // PROJ-1579 NCHAR
     // DB CHARACTER SET CHECK
-    // ì§€ì›í•˜ëŠ” ìºë¦­í„° ì…‹ ì¤‘ UTF16ë§Œ ì œì™¸í•˜ê³  ëª¨ë‘ ì‚¬ìš©í•  ìˆ˜ ìˆë‹¤.
+    // Áö¿øÇÏ´Â Ä³¸¯ÅÍ ¼Â Áß UTF16¸¸ Á¦¿ÜÇÏ°í ¸ğµÎ »ç¿ëÇÒ ¼ö ÀÖ´Ù.
     idlOS::memcpy(sDBCharSet,
                   aStatement->myPlan->stmtText +
                   sParseTree->dbCharSet.offset,
@@ -837,7 +909,7 @@ qdc::executeCreateDatabase(qcStatement * aStatement)
                     
     // PROJ-1579 NCHAR
     // NATIONAL CHARACTER SET CHECK
-    // UTF8, UTF16ë§Œ ì‚¬ìš©í•  ìˆ˜ ìˆë‹¤.
+    // UTF8, UTF16¸¸ »ç¿ëÇÒ ¼ö ÀÖ´Ù.
 
     idlOS::memcpy(sNationalCharSet,
                   aStatement->myPlan->stmtText +
@@ -870,6 +942,11 @@ qdc::executeCreateDatabase(qcStatement * aStatement)
     // National Charset
     sArgCreateDB.mNationalCharSet = (SChar*)(mtl::mNationalCharSet->names->string);
 
+    /* shard database check */
+    IDE_TEST( sdi::validateCreateDB(sArgCreateDB.mDBName,
+                                    sArgCreateDB.mDBCharSet,
+                                    sArgCreateDB.mNationalCharSet) != IDE_SUCCESS );
+
     IDE_TEST( qcg::mCreateCallback( aStatement->mStatistics, (void *)&sArgCreateDB )
               != IDE_SUCCESS );
     
@@ -899,7 +976,7 @@ qdc::executeCreateDatabase(qcStatement * aStatement)
     IDE_EXCEPTION_END;
 
     // To fix BUG-24023
-    // ì‹¤íŒ¨í•œ ê²½ìš° ì›ë³µ.
+    // ½ÇÆĞÇÑ °æ¿ì ¿øº¹.
     mtl::mDBCharSet = sDBCharSetModule;
     mtl::mNationalCharSet = sNCharSetModule;
 
@@ -914,7 +991,7 @@ qdc::executeUpgradeMeta( qcStatement * /* aStatement */ )
 /***********************************************************************
  *
  * Description :
- *      ALTER DATABASE ... UPGRADE META ì˜ execution ìˆ˜í–‰
+ *      ALTER DATABASE ... UPGRADE META ÀÇ execution ¼öÇà
  *
  * Implementation :
  *
@@ -936,7 +1013,7 @@ qdc::executeAlterDatabase( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *      UPGRADE META ë¥¼ ì œì™¸í•œ ALTER DATABASE ... ì˜ execution ìˆ˜í–‰
+ *      UPGRADE META ¸¦ Á¦¿ÜÇÑ ALTER DATABASE ... ÀÇ execution ¼öÇà
  *
  * Implementation :
  *
@@ -961,8 +1038,8 @@ qdc::executeAlterDatabase( qcStatement * aStatement )
         case QCI_STARTUP_META:
         case QCI_STARTUP_SERVICE:
         case QCI_META_DOWNGRADE:
-            // BUG-26088 mmcStatement::beginDB() ì—ì„œ valgrind ì˜¤ë¥˜ê°€ ë°œìƒí•©ë‹ˆë‹¤.
-            // mm ì—ì„œ ê¶Œí•œê²€ì‚¬ë¥¼ í•˜ë©´ ì•ˆëœë‹¤. QP ì—ì„œ ì§ì ‘ í•´ì£¼ë„ë¡ í•œë‹¤.
+            // BUG-26088 mmcStatement::beginDB() ¿¡¼­ valgrind ¿À·ù°¡ ¹ß»ıÇÕ´Ï´Ù.
+            // mm ¿¡¼­ ±ÇÇÑ°Ë»ç¸¦ ÇÏ¸é ¾ÈµÈ´Ù. QP ¿¡¼­ Á÷Á¢ ÇØÁÖµµ·Ï ÇÑ´Ù.
             IDE_TEST_RAISE( QCG_GET_SESSION_USER_IS_SYSDBA(aStatement) != ID_TRUE,
                             ERR_NO_GRANT_ALTER_DATABASE );
 
@@ -975,20 +1052,20 @@ qdc::executeAlterDatabase( qcStatement * aStatement )
 
         case QCI_SESSION_CLOSE:
             // bug-19279 remote sysdba enable + sys can kill session
-            // ë³€ê²½ì „: sysdbaê°€ ì•„ë‹ˆë©´ alter database êµ¬ë¬¸ ì‹¤í–‰ ë¶ˆê°€
-            // ë³€ê²½í›„: sysdbaê°€ ì•„ë‹ˆë”ë¼ë„, sys ê³„ì •ì´ê³ 
-            //         alter database name session close id êµ¬ë¬¸ì´ë©´ í—ˆìš©
-            // ì¦‰, sysdbaê°€ ì•„ë‹ˆë”ë¼ë„ sys ê³„ì •ìœ¼ë¡œ session killì„ í• ìˆ˜ ìˆë‹¤.
-            // ex) ë˜í•œ ë‹¤ìŒê³¼ ê°™ì€ ìƒí™©ì—ë„ ì ìš©ì´ ëœë‹¤
-            // aê°€ ì›ê²©ìœ¼ë¡œ sysdbaë¡œ ì ‘ì†í›„ ì‚¬ìš©ì„ ì•ˆí•˜ê³  ìˆë‹¤.
-            // bê°€ ê¸‰í•˜ê²Œ sysdbaë¡œ ì ‘ì†í•  í•„ìš”ê°€ ìˆëŠ”ë° sysdbaëŠ” ë™ì‹œ 1 ì„¸ì…˜ë§Œ
-            // ê°€ëŠ¥í•˜ë¯€ë¡œ ì ‘ì†ì„ ëª»í•˜ê²Œ ëœë‹¤.
-            // ì´ë•Œ, bê°€ sysë¡œ ì ‘ì†í•´ aì˜ sysdba ì„¸ì…˜ì„ ê°•ì œë¡œ kill í•œë‹¤.
-            // ì´ì œ sysdba ì„¸ì…˜ì´ ì—†ìœ¼ë¯€ë¡œ, bëŠ” ë‹¤ì‹œ sysdbaë¡œ ì ‘ì†ê°€ëŠ¥í•˜ë‹¤
-            // target sessionì´ sysdba sessionì¸ ê²½ìš° logging
+            // º¯°æÀü: sysdba°¡ ¾Æ´Ï¸é alter database ±¸¹® ½ÇÇà ºÒ°¡
+            // º¯°æÈÄ: sysdba°¡ ¾Æ´Ï´õ¶óµµ, sys °èÁ¤ÀÌ°í
+            //         alter database name session close id ±¸¹®ÀÌ¸é Çã¿ë
+            // Áï, sysdba°¡ ¾Æ´Ï´õ¶óµµ sys °èÁ¤À¸·Î session killÀ» ÇÒ¼ö ÀÖ´Ù.
+            // ex) ¶ÇÇÑ ´ÙÀ½°ú °°Àº »óÈ²¿¡µµ Àû¿ëÀÌ µÈ´Ù
+            // a°¡ ¿ø°İÀ¸·Î sysdba·Î Á¢¼ÓÈÄ »ç¿ëÀ» ¾ÈÇÏ°í ÀÖ´Ù.
+            // b°¡ ±ŞÇÏ°Ô sysdba·Î Á¢¼ÓÇÒ ÇÊ¿ä°¡ ÀÖ´Âµ¥ sysdba´Â µ¿½Ã 1 ¼¼¼Ç¸¸
+            // °¡´ÉÇÏ¹Ç·Î Á¢¼ÓÀ» ¸øÇÏ°Ô µÈ´Ù.
+            // ÀÌ¶§, b°¡ sys·Î Á¢¼ÓÇØ aÀÇ sysdba ¼¼¼ÇÀ» °­Á¦·Î kill ÇÑ´Ù.
+            // ÀÌÁ¦ sysdba ¼¼¼ÇÀÌ ¾øÀ¸¹Ç·Î, b´Â ´Ù½Ã sysdba·Î Á¢¼Ó°¡´ÉÇÏ´Ù
+            // target sessionÀÌ sysdba sessionÀÎ °æ¿ì logging
 
-            // BUG-26088 mmcStatement::beginDB() ì—ì„œ valgrind ì˜¤ë¥˜ê°€ ë°œìƒí•©ë‹ˆë‹¤.
-            // mm ì—ì„œ ê¶Œí•œê²€ì‚¬ë¥¼ í•˜ë©´ ì•ˆëœë‹¤. QP ì—ì„œ ì§ì ‘ í•´ì£¼ë„ë¡ í•œë‹¤.
+            // BUG-26088 mmcStatement::beginDB() ¿¡¼­ valgrind ¿À·ù°¡ ¹ß»ıÇÕ´Ï´Ù.
+            // mm ¿¡¼­ ±ÇÇÑ°Ë»ç¸¦ ÇÏ¸é ¾ÈµÈ´Ù. QP ¿¡¼­ Á÷Á¢ ÇØÁÖµµ·Ï ÇÑ´Ù.
             IDE_TEST_RAISE( QCG_GET_SESSION_USER_ID(aStatement) != QC_SYS_USER_ID,
                             ERR_NO_GRANT_ALTER_DATABASE );
 
@@ -1025,8 +1102,8 @@ qdc::executeAlterDatabase( qcStatement * aStatement )
             break;
 
         case QCI_DTX_COMMIT:
-            // BUG-26088 mmcStatement::beginDB() ì—ì„œ valgrind ì˜¤ë¥˜ê°€ ë°œìƒí•©ë‹ˆë‹¤.
-            // mm ì—ì„œ ê¶Œí•œê²€ì‚¬ë¥¼ í•˜ë©´ ì•ˆëœë‹¤. QP ì—ì„œ ì§ì ‘ í•´ì£¼ë„ë¡ í•œë‹¤.
+            // BUG-26088 mmcStatement::beginDB() ¿¡¼­ valgrind ¿À·ù°¡ ¹ß»ıÇÕ´Ï´Ù.
+            // mm ¿¡¼­ ±ÇÇÑ°Ë»ç¸¦ ÇÏ¸é ¾ÈµÈ´Ù. QP ¿¡¼­ Á÷Á¢ ÇØÁÖµµ·Ï ÇÑ´Ù.
             IDE_TEST_RAISE( QCG_GET_SESSION_USER_IS_SYSDBA(aStatement) != ID_TRUE,
                             ERR_NO_GRANT_ALTER_DATABASE );
 
@@ -1036,8 +1113,8 @@ qdc::executeAlterDatabase( qcStatement * aStatement )
             break;
 
         case QCI_DTX_ROLLBACK:
-            // BUG-26088 mmcStatement::beginDB() ì—ì„œ valgrind ì˜¤ë¥˜ê°€ ë°œìƒí•©ë‹ˆë‹¤.
-            // mm ì—ì„œ ê¶Œí•œê²€ì‚¬ë¥¼ í•˜ë©´ ì•ˆëœë‹¤. QP ì—ì„œ ì§ì ‘ í•´ì£¼ë„ë¡ í•œë‹¤.
+            // BUG-26088 mmcStatement::beginDB() ¿¡¼­ valgrind ¿À·ù°¡ ¹ß»ıÇÕ´Ï´Ù.
+            // mm ¿¡¼­ ±ÇÇÑ°Ë»ç¸¦ ÇÏ¸é ¾ÈµÈ´Ù. QP ¿¡¼­ Á÷Á¢ ÇØÁÖµµ·Ï ÇÑ´Ù.
             IDE_TEST_RAISE( QCG_GET_SESSION_USER_IS_SYSDBA(aStatement) != ID_TRUE,
                             ERR_NO_GRANT_ALTER_DATABASE );
 
@@ -1049,14 +1126,15 @@ qdc::executeAlterDatabase( qcStatement * aStatement )
         case QCI_SHUTDOWN_NORMAL:
         case QCI_SHUTDOWN_IMMEDIATE:
         case QCI_SHUTDOWN_EXIT:
-            // BUG-26088 mmcStatement::beginDB() ì—ì„œ valgrind ì˜¤ë¥˜ê°€ ë°œìƒí•©ë‹ˆë‹¤.
-            // mm ì—ì„œ ê¶Œí•œê²€ì‚¬ë¥¼ í•˜ë©´ ì•ˆëœë‹¤. QP ì—ì„œ ì§ì ‘ í•´ì£¼ë„ë¡ í•œë‹¤.
+            // BUG-26088 mmcStatement::beginDB() ¿¡¼­ valgrind ¿À·ù°¡ ¹ß»ıÇÕ´Ï´Ù.
+            // mm ¿¡¼­ ±ÇÇÑ°Ë»ç¸¦ ÇÏ¸é ¾ÈµÈ´Ù. QP ¿¡¼­ Á÷Á¢ ÇØÁÖµµ·Ï ÇÑ´Ù.
             IDE_TEST_RAISE( QCG_GET_SESSION_USER_IS_SYSDBA(aStatement) != ID_TRUE,
                             ERR_NO_GRANT_ALTER_DATABASE );
 
             sArgShutdown.mQcStatement  = (qciStatement*)aStatement;
             sArgShutdown.mPhase        = (qciStartupPhase)sParseTree->flag;
             sArgShutdown.mShutdownFlag = sParseTree->optionflag;
+            (void)sdiZookeeper::shutdown();
             IDE_TEST( qcg::mShutdownCallback( aStatement->mStatistics, (void *)&sArgShutdown )
                       != IDE_SUCCESS );
             break;
@@ -1085,7 +1163,7 @@ qdc::executeDropDatabase(qcStatement * aStatement)
 /***********************************************************************
  *
  * Description :
- *      DROP DATABASE ... ì˜ execution ìˆ˜í–‰
+ *      DROP DATABASE ... ÀÇ execution ¼öÇà
  *
  * Implementation :
  *
@@ -1097,8 +1175,8 @@ qdc::executeDropDatabase(qcStatement * aStatement)
     qdDatabaseParseTree *sParseTree;
     qciArgDropDB  sArgDropDB;
 
-    // BUG-26088 mmcStatement::beginDB() ì—ì„œ valgrind ì˜¤ë¥˜ê°€ ë°œìƒí•©ë‹ˆë‹¤.
-    // mm ì—ì„œ ê¶Œí•œê²€ì‚¬ë¥¼ í•˜ë©´ ì•ˆëœë‹¤. QP ì—ì„œ ì§ì ‘ í•´ì£¼ë„ë¡ í•œë‹¤.
+    // BUG-26088 mmcStatement::beginDB() ¿¡¼­ valgrind ¿À·ù°¡ ¹ß»ıÇÕ´Ï´Ù.
+    // mm ¿¡¼­ ±ÇÇÑ°Ë»ç¸¦ ÇÏ¸é ¾ÈµÈ´Ù. QP ¿¡¼­ Á÷Á¢ ÇØÁÖµµ·Ï ÇÑ´Ù.
     IDE_TEST_RAISE( QCG_GET_SESSION_USER_IS_SYSDBA(aStatement) != ID_TRUE,
                     ERR_NO_GRANT_ALTER_DATABASE );
 
@@ -1106,6 +1184,9 @@ qdc::executeDropDatabase(qcStatement * aStatement)
 
     sArgDropDB.mDBName = sParseTree->dbName.stmtText + sParseTree->dbName.offset;
     sArgDropDB.mDBNameLen  = sParseTree->dbName.size;
+
+    /* shard database check */
+    IDE_TEST( sdi::validateDropDB(sArgDropDB.mDBName) != IDE_SUCCESS );
 
     IDE_TEST( qcg::mDropCallback( aStatement->mStatistics, (void *)&sArgDropDB )
               != IDE_SUCCESS );
@@ -1141,7 +1222,6 @@ IDE_RC qdc::checkPrivileges(qcStatement * aStatement)
     smiStatement    * sDummySmiStmt = NULL;
     smiStatement      sSmiStmt;
     //PROJ-1677 DEQ
-    smSCN             sDummySCN;
     smiStatement    * sSmiStmtOrg   = NULL;
     SInt              sState        = 0;
     UInt              sSmiStmtFlag  = 0;
@@ -1184,7 +1264,7 @@ IDE_RC qdc::checkPrivileges(qcStatement * aStatement)
 
     // transaction commit
     sState = 1;
-    IDE_TEST( sSmiTrans.commit(&sDummySCN) != IDE_SUCCESS );
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
 
     // transaction destroy
     sState = 0;
@@ -1253,8 +1333,8 @@ IDE_RC qdc::alterArchiveMode( qcStatement* aStatement )
     qdDatabaseParseTree* sParseTree;
     smiArchiveMode       sArchiveMode;
 
-    // BUG-26088 mmcStatement::beginDB() ì—ì„œ valgrind ì˜¤ë¥˜ê°€ ë°œìƒí•©ë‹ˆë‹¤.
-    // mm ì—ì„œ ê¶Œí•œê²€ì‚¬ë¥¼ í•˜ë©´ ì•ˆëœë‹¤. QP ì—ì„œ ì§ì ‘ í•´ì£¼ë„ë¡ í•œë‹¤.
+    // BUG-26088 mmcStatement::beginDB() ¿¡¼­ valgrind ¿À·ù°¡ ¹ß»ıÇÕ´Ï´Ù.
+    // mm ¿¡¼­ ±ÇÇÑ°Ë»ç¸¦ ÇÏ¸é ¾ÈµÈ´Ù. QP ¿¡¼­ Á÷Á¢ ÇØÁÖµµ·Ï ÇÑ´Ù.
     IDE_TEST_RAISE( QCG_GET_SESSION_USER_IS_SYSDBA(aStatement) != ID_TRUE,
                     ERR_NO_GRANT_ALTER_DATABASE );
 
@@ -1286,16 +1366,14 @@ IDE_RC qdc::executeFullBackup( qcStatement* aStatement )
     qdFullBackupSpec*        sBackupSpec;
 
     smiTrans                 sSmiTrans;
-    //PROJ-1677 DEQ
-    smSCN                    sDummySCN;
     smiStatement*            sDummySmiStmt = NULL;
     smiStatement             sSmiStmt;
     smiStatement*            sSmiStmtOrg = NULL;
     SInt                     sState = 0;
     UInt                     sSmiStmtFlag = 0;
 
-    // BUG-26088 mmcStatement::beginDB() ì—ì„œ valgrind ì˜¤ë¥˜ê°€ ë°œìƒí•©ë‹ˆë‹¤.
-    // mm ì—ì„œ ê¶Œí•œê²€ì‚¬ë¥¼ í•˜ë©´ ì•ˆëœë‹¤. QP ì—ì„œ ì§ì ‘ í•´ì£¼ë„ë¡ í•œë‹¤.
+    // BUG-26088 mmcStatement::beginDB() ¿¡¼­ valgrind ¿À·ù°¡ ¹ß»ıÇÕ´Ï´Ù.
+    // mm ¿¡¼­ ±ÇÇÑ°Ë»ç¸¦ ÇÏ¸é ¾ÈµÈ´Ù. QP ¿¡¼­ Á÷Á¢ ÇØÁÖµµ·Ï ÇÑ´Ù.
     IDE_TEST_RAISE( QCG_GET_SESSION_USER_IS_SYSDBA(aStatement) != ID_TRUE,
                     ERR_NO_GRANT_ALTER_DATABASE );
 
@@ -1380,7 +1458,7 @@ IDE_RC qdc::executeFullBackup( qcStatement* aStatement )
 
     // transaction commit
     sState = 1;
-    IDE_TEST( sSmiTrans.commit(&sDummySCN) != IDE_SUCCESS );
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
 
     // transaction destroy
     sState = 0;
@@ -1429,8 +1507,8 @@ IDE_RC qdc::executeMediaRecovery( qcStatement* aStatement )
     static const SChar      * sFormat = "YYYY-MM-DD:HH:MI:SS";
     SChar                   * sFromTag = NULL;
 
-    // BUG-26088 mmcStatement::beginDB() ì—ì„œ valgrind ì˜¤ë¥˜ê°€ ë°œìƒí•©ë‹ˆë‹¤.
-    // mm ì—ì„œ ê¶Œí•œê²€ì‚¬ë¥¼ í•˜ë©´ ì•ˆëœë‹¤. QP ì—ì„œ ì§ì ‘ í•´ì£¼ë„ë¡ í•œë‹¤.
+    // BUG-26088 mmcStatement::beginDB() ¿¡¼­ valgrind ¿À·ù°¡ ¹ß»ıÇÕ´Ï´Ù.
+    // mm ¿¡¼­ ±ÇÇÑ°Ë»ç¸¦ ÇÏ¸é ¾ÈµÈ´Ù. QP ¿¡¼­ Á÷Á¢ ÇØÁÖµµ·Ï ÇÑ´Ù.
     IDE_TEST_RAISE( QCG_GET_SESSION_USER_IS_SYSDBA(aStatement) != ID_TRUE,
                     ERR_NO_GRANT_ALTER_DATABASE );
 
@@ -1441,7 +1519,7 @@ IDE_RC qdc::executeMediaRecovery( qcStatement* aStatement )
     {
         case QD_MEDIA_RECOVERY_CREATE_DATAFILE:
             {
-                // EMPTY ë””ìŠ¤í¬ ë°ì´íƒ€íŒŒì¼ì„ ìƒì„±í•œë‹¤.
+                // EMPTY µğ½ºÅ© µ¥ÀÌÅ¸ÆÄÀÏÀ» »ı¼ºÇÑ´Ù.
                 IDE_TEST(
                     smiMediaRecovery::createDatafile( sParseTree->oldName,
                                                       sParseTree->newName )
@@ -1450,7 +1528,7 @@ IDE_RC qdc::executeMediaRecovery( qcStatement* aStatement )
             }
         case QD_MEDIA_RECOVERY_CREATE_CHECKPOINT_IMAGE:
             {
-                // EMPTY ë©”ëª¨ë¦¬ ë°ì´íƒ€íŒŒì¼ì„ ìƒì„±í•œë‹¤.
+                // EMPTY ¸Ş¸ğ¸® µ¥ÀÌÅ¸ÆÄÀÏÀ» »ı¼ºÇÑ´Ù.
                 IDE_TEST(
                     smiMediaRecovery::createChkptImage( sParseTree->oldName )
                     != IDE_SUCCESS );
@@ -1542,7 +1620,6 @@ IDE_RC qdc::executeMediaRecovery( qcStatement* aStatement )
 IDE_RC qdc::executeIncrementalBackup( qcStatement* aStatement )
 {
     smiTrans                  sSmiTrans;
-    smSCN                     sDummySCN;
     smiStatement            * sDummySmiStmt = NULL;
     smiStatement              sSmiStmt;
     smiStatement            * sSmiStmtOrg = NULL;
@@ -1558,8 +1635,8 @@ IDE_RC qdc::executeIncrementalBackup( qcStatement* aStatement )
     SChar                   * sTagName = NULL;
     idBool                    sCheckTagName;
 
-    // BUG-26088 mmcStatement::beginDB() ì—ì„œ valgrind ì˜¤ë¥˜ê°€ ë°œìƒí•©ë‹ˆë‹¤.
-    // mm ì—ì„œ ê¶Œí•œê²€ì‚¬ë¥¼ í•˜ë©´ ì•ˆëœë‹¤. QP ì—ì„œ ì§ì ‘ í•´ì£¼ë„ë¡ í•œë‹¤.
+    // BUG-26088 mmcStatement::beginDB() ¿¡¼­ valgrind ¿À·ù°¡ ¹ß»ıÇÕ´Ï´Ù.
+    // mm ¿¡¼­ ±ÇÇÑ°Ë»ç¸¦ ÇÏ¸é ¾ÈµÈ´Ù. QP ¿¡¼­ Á÷Á¢ ÇØÁÖµµ·Ï ÇÑ´Ù.
     IDE_TEST_RAISE( QCG_GET_SESSION_USER_IS_SYSDBA(aStatement) != ID_TRUE,
                     ERR_NO_GRANT_ALTER_DATABASE );
 
@@ -1684,7 +1761,7 @@ IDE_RC qdc::executeIncrementalBackup( qcStatement* aStatement )
 
     // transaction commit
     sState = 1;
-    IDE_TEST( sSmiTrans.commit( &sDummySCN ) != IDE_SUCCESS );
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
 
     // transaction destroy
     sState = 0;
@@ -1732,8 +1809,8 @@ IDE_RC qdc::executeRestore( qcStatement* aStatement )
     qdTablespaceList   * sTbsList;
     smiTableSpaceAttr    sTbsAttr;
 
-    // BUG-26088 mmcStatement::beginDB() ì—ì„œ valgrind ì˜¤ë¥˜ê°€ ë°œìƒí•©ë‹ˆë‹¤.
-    // mm ì—ì„œ ê¶Œí•œê²€ì‚¬ë¥¼ í•˜ë©´ ì•ˆëœë‹¤. QP ì—ì„œ ì§ì ‘ í•´ì£¼ë„ë¡ í•œë‹¤.
+    // BUG-26088 mmcStatement::beginDB() ¿¡¼­ valgrind ¿À·ù°¡ ¹ß»ıÇÕ´Ï´Ù.
+    // mm ¿¡¼­ ±ÇÇÑ°Ë»ç¸¦ ÇÏ¸é ¾ÈµÈ´Ù. QP ¿¡¼­ Á÷Á¢ ÇØÁÖµµ·Ï ÇÑ´Ù.
     IDE_TEST_RAISE( QCG_GET_SESSION_USER_IS_SYSDBA(aStatement) != ID_TRUE,
                     ERR_NO_GRANT_ALTER_DATABASE );
 
@@ -1843,7 +1920,6 @@ IDE_RC qdc::executeChangeTracking( qcStatement* aStatement )
     smiStatement    * sDummySmiStmt = NULL;
     smiStatement    * sSmiStmtOrg   = NULL;
     smiStatement      sSmiStmt;
-    smSCN             sDummySCN;
     SInt              sState        = 0;
     UInt              sSmiStmtFlag  = 0;
 
@@ -1899,7 +1975,7 @@ IDE_RC qdc::executeChangeTracking( qcStatement* aStatement )
 
     sState = 1;
     // transaction commit
-    IDE_TEST( sSmiTrans.commit(&sDummySCN) != IDE_SUCCESS );
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
 
     sState = 0;
     // transaction destroy
@@ -1939,7 +2015,6 @@ IDE_RC qdc::executeRemoveBackupInfoFile( qcStatement * aStatement )
     smiStatement    * sDummySmiStmt = NULL;
     smiStatement    * sSmiStmtOrg   = NULL;
     smiStatement      sSmiStmt;
-    smSCN             sDummySCN;
     SInt              sState        = 0;
     UInt              sSmiStmtFlag  = 0;
 
@@ -1983,7 +2058,7 @@ IDE_RC qdc::executeRemoveBackupInfoFile( qcStatement * aStatement )
 
     sState = 1;
     // transaction commit
-    IDE_TEST( sSmiTrans.commit( &sDummySCN ) != IDE_SUCCESS );
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
 
     sState = 0;
     // transaction destroy
@@ -2023,7 +2098,6 @@ IDE_RC qdc::executeRemoveObsoleteBackupFile( qcStatement * aStatement )
     smiStatement                  * sDummySmiStmt = NULL;
     smiStatement                  * sSmiStmtOrg   = NULL;
     smiStatement                    sSmiStmt;
-    smSCN                           sDummySCN;
     SInt                            sState        = 0;
     UInt                            sSmiStmtFlag  = 0;
 
@@ -2067,7 +2141,7 @@ IDE_RC qdc::executeRemoveObsoleteBackupFile( qcStatement * aStatement )
 
     sState = 1;
     // transaction commit
-    IDE_TEST( sSmiTrans.commit( &sDummySCN ) != IDE_SUCCESS );
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
 
     sState = 0;
     // transaction destroy
@@ -2107,7 +2181,6 @@ IDE_RC qdc::executeChangeBackupDirectory( qcStatement* aStatement )
     smiStatement                  * sDummySmiStmt = NULL;
     smiStatement                  * sSmiStmtOrg   = NULL;
     smiStatement                    sSmiStmt;
-    smSCN                           sDummySCN;
     SInt                            sState        = 0;
     UInt                            sSmiStmtFlag  = 0;
 
@@ -2155,7 +2228,7 @@ IDE_RC qdc::executeChangeBackupDirectory( qcStatement* aStatement )
 
     sState = 1;
     // transaction commit
-    IDE_TEST( sSmiTrans.commit( &sDummySCN ) != IDE_SUCCESS );
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
 
     sState = 0;
     // transaction destroy
@@ -2195,7 +2268,6 @@ IDE_RC qdc::executeMoveBackupFile( qcStatement* aStatement )
     smiStatement                  * sDummySmiStmt = NULL;
     smiStatement                  * sSmiStmtOrg   = NULL;
     smiStatement                    sSmiStmt;
-    smSCN                           sDummySCN;
     SInt                            sState        = 0;
     UInt                            sSmiStmtFlag  = 0;
 
@@ -2244,7 +2316,7 @@ IDE_RC qdc::executeMoveBackupFile( qcStatement* aStatement )
 
     sState = 1;
     // transaction commit
-    IDE_TEST( sSmiTrans.commit( &sDummySCN ) != IDE_SUCCESS );
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
 
     sState = 0;
     // transaction destroy
@@ -2283,7 +2355,7 @@ IDE_RC qdc::switchLogFile( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description : To fix BUG-11952
- *      ALTER SYSTEM SWITCH LOGFILEì˜ execution
+ *      ALTER SYSTEM SWITCH LOGFILEÀÇ execution
  *
  * Implementation :
  *
@@ -2295,7 +2367,7 @@ IDE_RC qdc::switchLogFile( qcStatement * aStatement )
     IDE_TEST_RAISE( QCG_GET_SESSION_USER_IS_SYSDBA(aStatement) != ID_TRUE,
                     ERR_NO_GRANT_SYSDBA );
 
-    // TODO: sm interfaceë¥¼ ì‚¬ìš©í•˜ì—¬ êµ¬í˜„í•´ì•¼ í•¨
+    // TODO: sm interface¸¦ »ç¿ëÇÏ¿© ±¸ÇöÇØ¾ß ÇÔ
     IDE_TEST( smiBackup::switchLogFile()
               != IDE_SUCCESS);
 
@@ -2319,7 +2391,7 @@ IDE_RC qdc::flushBufferPool( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description : BUG-15010
- *      ALTER SYSTEM FLUSH BUFFER_POOLì˜ execution
+ *      ALTER SYSTEM FLUSH BUFFER_POOLÀÇ execution
  *
  * Implementation :
  *
@@ -2359,7 +2431,7 @@ IDE_RC qdc::flusherOnOff( qcStatement *aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1568 BUFFER MANAGER RENEWAL
- *               flusherë¥¼ on, offí•˜ëŠ” DCL êµ¬ë¬¸
+ *               flusher¸¦ on, offÇÏ´Â DCL ±¸¹®
  *
  * Implementation :
  *
@@ -2398,7 +2470,7 @@ IDE_RC qdc::compactPlanCache( qcStatement * aStatement )
  *    ALTER SYSTEM COMPACT SQL_PLAN_CACHE
  *
  * Implementation :
- *    reference countê°€ 0ì¸ plan cacheë¥¼ ëª¨ë‘ ì‚­ì œí•œë‹¤.
+ *    reference count°¡ 0ÀÎ plan cache¸¦ ¸ğµÎ »èÁ¦ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -2439,7 +2511,7 @@ IDE_RC qdc::resetPlanCache( qcStatement * aStatement )
  *    ALTER SYSTEM RESET SQL_PLAN_CACHE
  *
  * Implementation :
- *    plan cacheë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+ *    plan cache¸¦ ÃÊ±âÈ­ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -2476,10 +2548,10 @@ IDE_RC qdc::rebuildMinViewSCN( qcStatement *aStatement )
 {
 /***********************************************************************
  *
- * Description : ì‹œìŠ¤í…œì˜ Active íŠ¸ëœì­ì…˜ë“¤ ì¤‘ì— ê°€ì¥ ì‘ì€ ViewSCNì„
- *               êµ¬í•˜ê³  ê°±ì‹ í•¨.
+ * Description : ½Ã½ºÅÛÀÇ Active Æ®·£Àè¼Çµé Áß¿¡ °¡Àå ÀÛÀº ViewSCNÀ»
+ *               ±¸ÇÏ°í °»½ÅÇÔ.
  *
- * BUG-23637 ìµœì†Œ ë””ìŠ¤í¬ ViewSCNì„ íŠ¸ëœì­ì…˜ë ˆë²¨ì—ì„œ Statement ë ˆë²¨ë¡œ êµ¬í•¨.
+ * BUG-23637 ÃÖ¼Ò µğ½ºÅ© ViewSCNÀ» Æ®·£Àè¼Ç·¹º§¿¡¼­ Statement ·¹º§·Î ±¸ÇÔ.
  *
  * Implementation :
  *
@@ -2505,8 +2577,6 @@ IDE_RC qdc::startSecurity( qcStatement *  aStatement )
     smiTrans          sSmiTrans;
     smiStatement    * sDummySmiStmt = NULL;
     smiStatement      sSmiStmt;
-    //PROJ-1677 DEQ
-    smSCN             sDummySCN;
     smiStatement    * sSmiStmtOrg   = NULL;
     SInt              sState        = 0;
     UInt              sSmiStmtFlag  = 0;
@@ -2519,7 +2589,7 @@ IDE_RC qdc::startSecurity( qcStatement *  aStatement )
     IDE_TEST( checkPrivileges( aStatement ) != IDE_SUCCESS );
 
     //-----------------------------------------------------
-    // Security Module ì‹œì‘
+    // Security Module ½ÃÀÛ
     //-----------------------------------------------------
     
     // transaction initialze
@@ -2559,7 +2629,7 @@ IDE_RC qdc::startSecurity( qcStatement *  aStatement )
 
     // transaction commit
     sState = 1;
-    IDE_TEST( sSmiTrans.commit(&sDummySCN) != IDE_SUCCESS );
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
 
     // transaction destroy
     sState = 0;
@@ -2610,8 +2680,6 @@ IDE_RC qdc::stopSecurity( qcStatement *  aStatement )
     smiTrans          sSmiTrans;
     smiStatement    * sDummySmiStmt = NULL;
     smiStatement      sSmiStmt;
-    //PROJ-1677 DEQ
-    smSCN             sDummySCN;
     smiStatement    * sSmiStmtOrg   = NULL;
     SInt              sState        = 0;
     UInt              sSmiStmtFlag  = 0;
@@ -2624,7 +2692,7 @@ IDE_RC qdc::stopSecurity( qcStatement *  aStatement )
     IDE_TEST( checkPrivileges( aStatement ) != IDE_SUCCESS );
 
     //-----------------------------------------------------
-    // Security Module ì¢…ë£Œ
+    // Security Module Á¾·á
     //-----------------------------------------------------
     
     // transaction initialze
@@ -2664,7 +2732,7 @@ IDE_RC qdc::stopSecurity( qcStatement *  aStatement )
 
     // transaction commit
     sState = 1;
-    IDE_TEST( sSmiTrans.commit(&sDummySCN) != IDE_SUCCESS );
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
 
     // transaction destroy
     sState = 0;
@@ -2714,8 +2782,6 @@ IDE_RC qdc::startAudit( qcStatement *  aStatement )
     smiTrans          sSmiTrans;
     smiStatement    * sDummySmiStmt = NULL;
     smiStatement      sSmiStmt;
-    //PROJ-1677 DEQ
-    smSCN             sDummySCN;
     smiStatement    * sSmiStmtOrg   = NULL;
     SInt              sState        = 0;
     UInt              sSmiStmtFlag  = 0;
@@ -2728,7 +2794,7 @@ IDE_RC qdc::startAudit( qcStatement *  aStatement )
     IDE_TEST( checkPrivileges( aStatement ) != IDE_SUCCESS );
 
     //-----------------------------------------------------
-    // Security Module ì‹œì‘
+    // Security Module ½ÃÀÛ
     //-----------------------------------------------------
     
     // transaction initialze
@@ -2768,7 +2834,7 @@ IDE_RC qdc::startAudit( qcStatement *  aStatement )
 
     // transaction commit
     sState = 1;
-    IDE_TEST( sSmiTrans.commit(&sDummySCN) != IDE_SUCCESS );
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
 
     // transaction destroy
     sState = 0;
@@ -2818,8 +2884,6 @@ IDE_RC qdc::stopAudit( qcStatement *  aStatement )
     smiTrans          sSmiTrans;
     smiStatement    * sDummySmiStmt = NULL;
     smiStatement      sSmiStmt;
-    //PROJ-1677 DEQ
-    smSCN             sDummySCN;
     smiStatement    * sSmiStmtOrg   = NULL;
     SInt              sState        = 0;
     UInt              sSmiStmtFlag  = 0;
@@ -2832,7 +2896,7 @@ IDE_RC qdc::stopAudit( qcStatement *  aStatement )
     IDE_TEST( checkPrivileges( aStatement ) != IDE_SUCCESS );
 
     //-----------------------------------------------------
-    // Security Module ì¢…ë£Œ
+    // Security Module Á¾·á
     //-----------------------------------------------------
     
     // transaction initialze
@@ -2872,7 +2936,7 @@ IDE_RC qdc::stopAudit( qcStatement *  aStatement )
 
     // transaction commit
     sState = 1;
-    IDE_TEST( sSmiTrans.commit(&sDummySCN) != IDE_SUCCESS );
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
 
     // transaction destroy
     sState = 0;
@@ -2922,8 +2986,6 @@ IDE_RC qdc::reloadAudit( qcStatement *  aStatement )
     smiTrans          sSmiTrans;
     smiStatement    * sDummySmiStmt = NULL;
     smiStatement      sSmiStmt;
-    //PROJ-1677 DEQ
-    smSCN             sDummySCN;
     smiStatement    * sSmiStmtOrg   = NULL;
     SInt              sState        = 0;
     UInt              sSmiStmtFlag  = 0;
@@ -2936,7 +2998,7 @@ IDE_RC qdc::reloadAudit( qcStatement *  aStatement )
     IDE_TEST( checkPrivileges( aStatement ) != IDE_SUCCESS );
 
     //-----------------------------------------------------
-    // Security Module ì¢…ë£Œ
+    // Security Module Á¾·á
     //-----------------------------------------------------
     
     // transaction initialze
@@ -2976,7 +3038,7 @@ IDE_RC qdc::reloadAudit( qcStatement *  aStatement )
 
     // transaction commit
     sState = 1;
-    IDE_TEST( sSmiTrans.commit(&sDummySCN) != IDE_SUCCESS );
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
 
     // transaction destroy
     sState = 0;
@@ -3026,8 +3088,6 @@ IDE_RC qdc::auditOption( qcStatement *  aStatement )
     smiTrans          sSmiTrans;
     smiStatement    * sDummySmiStmt = NULL;
     smiStatement      sSmiStmt;
-    //PROJ-1677 DEQ
-    smSCN             sDummySCN;
     smiStatement    * sSmiStmtOrg   = NULL;
     SInt              sState        = 0;
     UInt              sSmiStmtFlag  = 0;
@@ -3040,7 +3100,7 @@ IDE_RC qdc::auditOption( qcStatement *  aStatement )
     IDE_TEST( checkPrivileges( aStatement ) != IDE_SUCCESS );
 
     //-----------------------------------------------------
-    // Security Module ì¢…ë£Œ
+    // Security Module Á¾·á
     //-----------------------------------------------------
     
     // transaction initialze
@@ -3080,7 +3140,7 @@ IDE_RC qdc::auditOption( qcStatement *  aStatement )
 
     // transaction commit
     sState = 1;
-    IDE_TEST( sSmiTrans.commit(&sDummySCN) != IDE_SUCCESS );
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
 
     // transaction destroy
     sState = 0;
@@ -3130,8 +3190,6 @@ IDE_RC qdc::noAuditOption( qcStatement *  aStatement )
     smiTrans          sSmiTrans;
     smiStatement    * sDummySmiStmt = NULL;
     smiStatement      sSmiStmt;
-    //PROJ-1677 DEQ
-    smSCN             sDummySCN;
     smiStatement    * sSmiStmtOrg   = NULL;
     SInt              sState        = 0;
     UInt              sSmiStmtFlag  = 0;
@@ -3144,7 +3202,7 @@ IDE_RC qdc::noAuditOption( qcStatement *  aStatement )
     IDE_TEST( checkPrivileges( aStatement ) != IDE_SUCCESS );
 
     //-----------------------------------------------------
-    // Security Module ì¢…ë£Œ
+    // Security Module Á¾·á
     //-----------------------------------------------------
     
     // transaction initialze
@@ -3184,7 +3242,7 @@ IDE_RC qdc::noAuditOption( qcStatement *  aStatement )
 
     // transaction commit
     sState = 1;
-    IDE_TEST( sSmiTrans.commit(&sDummySCN) != IDE_SUCCESS );
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
 
     // transaction destroy
     sState = 0;
@@ -3227,8 +3285,6 @@ IDE_RC qdc::delAuditOption( qcStatement *  aStatement )
     smiTrans          sSmiTrans;
     smiStatement    * sDummySmiStmt = NULL;
     smiStatement      sSmiStmt;
-    //PROJ-1677 DEQ
-    smSCN             sDummySCN;
     smiStatement    * sSmiStmtOrg   = NULL;
     SInt              sState        = 0;
     UInt              sSmiStmtFlag  = 0;
@@ -3241,7 +3297,7 @@ IDE_RC qdc::delAuditOption( qcStatement *  aStatement )
     IDE_TEST( checkPrivileges( aStatement ) != IDE_SUCCESS );
 
     //-----------------------------------------------------
-    // Security Module ì¢…ë£Œ
+    // Security Module Á¾·á
     //-----------------------------------------------------
     
     // transaction initialze
@@ -3281,7 +3337,7 @@ IDE_RC qdc::delAuditOption( qcStatement *  aStatement )
 
     // transaction commit
     sState = 1;
-    IDE_TEST( sSmiTrans.commit(&sDummySCN) != IDE_SUCCESS );
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
 
     // transaction destroy
     sState = 0;
@@ -3322,27 +3378,27 @@ IDE_RC qdc::changeFeatureProperty( qcStatement * aStatement,
 /******************************************************************************
  *
  * Description : PROJ-2242 (OPTIMIZER_FEATURE_ENABLE)
- *               Plan ì— ì˜í–¥ì„ ë¼ì¹˜ëŠ” property ë¥¼ ì¼ê´„ ë³€ê²½
+ *               Plan ¿¡ ¿µÇâÀ» ³¢Ä¡´Â property ¸¦ ÀÏ°ı º¯°æ
  *
  *               BUG-43532
- *               OPTIMIZER_FEATURE_ENABLEì„ ë³€ê²½í•˜ë©´ ê´€ë ¨í•œ PROPERTYë¥¼
- *               ì¼ê´„ ë³€ê²½í•©ë‹ˆë‹¤.
+ *               OPTIMIZER_FEATURE_ENABLEÀ» º¯°æÇÏ¸é °ü·ÃÇÑ PROPERTY¸¦
+ *               ÀÏ°ı º¯°æÇÕ´Ï´Ù.
  *
  * Implementation :
  *
- *    gFeatureProperty ì— ì¡´ì¬í•˜ëŠ” property ì¼ê´„ ë³€ê²½
- *     - New Version ì´í•˜ëŠ” new valueë¡œ ë³€ê²½
- *     - New Version ì´ˆê³¼ëŠ” old valueë¡œ ë³€ê²½
+ *    gFeatureProperty ¿¡ Á¸ÀçÇÏ´Â property ÀÏ°ı º¯°æ
+ *     - New Version ÀÌÇÏ´Â new value·Î º¯°æ
+ *     - New Version ÃÊ°ú´Â old value·Î º¯°æ
  *
- * comment) system property ë¥¼ ë™ì ìœ¼ë¡œ ê´€ë¦¬í•˜ëŠ” êµ¬ì¡°ê°€ ì—†ëŠ” ê´€ê³„ë¡œ
- *          value ë¥¼ í•˜ë‚˜ë§Œ ê°–ëŠ” property ê¸°ì¤€ìœ¼ë¡œ ë‹¨ìˆœí•˜ê²Œ êµ¬í˜„í•¨.
+ * comment) system property ¸¦ µ¿ÀûÀ¸·Î °ü¸®ÇÏ´Â ±¸Á¶°¡ ¾ø´Â °ü°è·Î
+ *          value ¸¦ ÇÏ³ª¸¸ °®´Â property ±âÁØÀ¸·Î ´Ü¼øÇÏ°Ô ±¸ÇöÇÔ.
  *
  *****************************************************************************/
 
     qdcFeatureVersion sNewVersion;
     UInt sLength;
     SInt i;
-
+    
     sLength = idlOS::strlen( aNewValue );
 
     IDE_TEST_RAISE( (sLength <= 0) ||
@@ -3355,15 +3411,16 @@ IDE_RC qdc::changeFeatureProperty( qcStatement * aStatement,
     IDE_TEST_RAISE( sNewVersion == QDC_OPTIMIZER_FEATURE_VERSION_NONE,
                     err_invalid_feature_enable_value ); 
 
-    // gFeatureProperty ì— ì¡´ì¬í•˜ëŠ” property ì¼ê´„ ë³€ê²½
+    // gFeatureProperty ¿¡ Á¸ÀçÇÏ´Â property ÀÏ°ı º¯°æ
     for ( i = 0; i < QDC_OPTIMIZER_FEATURE_CNT; i++ )
     {
-        // 1. sNewVersion ì´í•˜ëŠ” new vlaueë¡œ ë³€ê²½.
+        // 1. sNewVersion ÀÌÇÏ´Â new vlaue·Î º¯°æ.
         if( sNewVersion >= gFeatureProperty[i].mVersion )
         {
             IDE_TEST( idp::validate(
                         gFeatureProperty[i].mName,
-                        gFeatureProperty[i].mNewValue )
+                        gFeatureProperty[i].mNewValue,
+                        ID_TRUE ) // isSystem
                       != IDE_SUCCESS );
 
             IDE_TEST( idp::update(
@@ -3378,12 +3435,13 @@ IDE_RC qdc::changeFeatureProperty( qcStatement * aStatement,
                          aStatement,
                          gFeatureProperty[i].mPlanName );
         }
-        // 2. sNewVersion ì´ˆê³¼ëŠ” old valueë¡œ ë³€ê²½.
+        // 2. sNewVersion ÃÊ°ú´Â old value·Î º¯°æ.
         else
         {
             IDE_TEST( idp::validate(
                         gFeatureProperty[i].mName,
-                        gFeatureProperty[i].mOldValue )
+                        gFeatureProperty[i].mOldValue,
+                        ID_TRUE )  // isSystem
                       != IDE_SUCCESS );
 
             IDE_TEST( idp::update(
@@ -3478,24 +3536,24 @@ IDE_RC qdc::changeFeatureProperty4Startup( SChar * aNewValue )
 /******************************************************************************
  *
  * Description : PROJ-2242 (OPTIMIZER_FEATURE_ENABLE)
- *               Plan ì— ì˜í–¥ì„ ë¼ì¹˜ëŠ” property ë¥¼ ì¼ê´„ ë³€ê²½
+ *               Plan ¿¡ ¿µÇâÀ» ³¢Ä¡´Â property ¸¦ ÀÏ°ı º¯°æ
  *
  *               BUG-43532
- *               OPTIMIZER_FEATURE_ENABLEì„ ë³€ê²½í•˜ë©´ ê´€ë ¨í•œ PROPERTYë¥¼
- *               ì¼ê´„ ë³€ê²½í•©ë‹ˆë‹¤.
+ *               OPTIMIZER_FEATURE_ENABLEÀ» º¯°æÇÏ¸é °ü·ÃÇÑ PROPERTY¸¦
+ *               ÀÏ°ı º¯°æÇÕ´Ï´Ù.
  *
  *               BUG-43533
- *               Server startupì‹œì—ëŠ” OPTIMIZER_FEATURE_ENABLEì„ ì„¤ì •í•´ë„
- *               property, envì— ì„¤ì •í•œ propertyëŠ” ë³€ê²½í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
- *               ì´ë¥¼ ìœ„í•´ idp::update ëŒ€ì‹  idp::update4Startupì„ í˜¸ì¶œí•©ë‹ˆë‹¤.
+ *               Server startup½Ã¿¡´Â OPTIMIZER_FEATURE_ENABLEÀ» ¼³Á¤ÇØµµ
+ *               property, env¿¡ ¼³Á¤ÇÑ property´Â º¯°æÇÏÁö ¾Ê½À´Ï´Ù.
+ *               ÀÌ¸¦ À§ÇØ idp::update ´ë½Å idp::update4StartupÀ» È£ÃâÇÕ´Ï´Ù.
  * Implementation :
  *
- *    gFeatureProperty ì— ì¡´ì¬í•˜ëŠ” property ì¼ê´„ ë³€ê²½
- *     - New Version ì´í•˜ëŠ” new valueë¡œ ë³€ê²½
- *     - New Version ì´ˆê³¼ëŠ” old valueë¡œ ë³€ê²½
+ *    gFeatureProperty ¿¡ Á¸ÀçÇÏ´Â property ÀÏ°ı º¯°æ
+ *     - New Version ÀÌÇÏ´Â new value·Î º¯°æ
+ *     - New Version ÃÊ°ú´Â old value·Î º¯°æ
  *
- * comment) system property ë¥¼ ë™ì ìœ¼ë¡œ ê´€ë¦¬í•˜ëŠ” êµ¬ì¡°ê°€ ì—†ëŠ” ê´€ê³„ë¡œ
- *          value ë¥¼ í•˜ë‚˜ë§Œ ê°–ëŠ” property ê¸°ì¤€ìœ¼ë¡œ ë‹¨ìˆœí•˜ê²Œ êµ¬í˜„í•¨.
+ * comment) system property ¸¦ µ¿ÀûÀ¸·Î °ü¸®ÇÏ´Â ±¸Á¶°¡ ¾ø´Â °ü°è·Î
+ *          value ¸¦ ÇÏ³ª¸¸ °®´Â property ±âÁØÀ¸·Î ´Ü¼øÇÏ°Ô ±¸ÇöÇÔ.
  *
  *****************************************************************************/
 
@@ -3515,15 +3573,16 @@ IDE_RC qdc::changeFeatureProperty4Startup( SChar * aNewValue )
     IDE_TEST_RAISE( sNewVersion == QDC_OPTIMIZER_FEATURE_VERSION_NONE,
                     err_invalid_feature_enable_value ); 
 
-    // gFeatureProperty ì— ì¡´ì¬í•˜ëŠ” property ì¼ê´„ ë³€ê²½
+    // gFeatureProperty ¿¡ Á¸ÀçÇÏ´Â property ÀÏ°ı º¯°æ
     for ( i = 0; i < QDC_OPTIMIZER_FEATURE_CNT; i++ )
     {
-        // 1. sNewVersion ì´í•˜ëŠ” new vlaueë¡œ ë³€ê²½.
+        // 1. sNewVersion ÀÌÇÏ´Â new vlaue·Î º¯°æ.
         if( sNewVersion >= gFeatureProperty[i].mVersion )
         {
             IDE_TEST( idp::validate(
                         gFeatureProperty[i].mName,
-                        gFeatureProperty[i].mNewValue )
+                        gFeatureProperty[i].mNewValue,
+                        ID_TRUE )  // isSystem
                       != IDE_SUCCESS );
 
             IDE_TEST( idp::update4Startup(
@@ -3534,12 +3593,13 @@ IDE_RC qdc::changeFeatureProperty4Startup( SChar * aNewValue )
                         NULL )
                       != IDE_SUCCESS );
         }
-        // 2. sNewVersion ì´ˆê³¼ëŠ” old valueë¡œ ë³€ê²½.
+        // 2. sNewVersion ÃÊ°ú´Â old value·Î º¯°æ.
         else
         {
             IDE_TEST( idp::validate(
                         gFeatureProperty[i].mName,
-                        gFeatureProperty[i].mOldValue )
+                        gFeatureProperty[i].mOldValue,
+                        ID_TRUE )  // isSystem
                       != IDE_SUCCESS );
 
             IDE_TEST( idp::update4Startup(
@@ -3569,11 +3629,11 @@ IDE_RC qdc::reloadAccessList( qcStatement * aStatement )
 /******************************************************************************
  *
  * Description : PROJ-2624
- *               [ê¸°ëŠ¥ì„±] MM - ìœ ì—°í•œ access_list ê´€ë¦¬ë°©ë²• ì œê³µ
+ *               [±â´É¼º] MM - À¯¿¬ÇÑ access_list °ü¸®¹æ¹ı Á¦°ø
  *
  * Implementation :
- *    ì›ë˜ ì €ì¥ëœ access listë¥¼ ì§€ìš°ê³ 
- *    ACCESS_LIST_FILEì—ì„œ ìƒˆë¡œìš´ access listë¥¼ ì½ì–´ì˜¨ë‹¤.
+ *    ¿ø·¡ ÀúÀåµÈ access list¸¦ Áö¿ì°í
+ *    ACCESS_LIST_FILE¿¡¼­ »õ·Î¿î access list¸¦ ÀĞ¾î¿Â´Ù.
  *
  *****************************************************************************/
 

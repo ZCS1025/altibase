@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: tsm.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: tsm.cpp 88963 2020-10-19 03:33:18Z jake.jang $
  **********************************************************************/
 
 #include <idl.h>
@@ -80,9 +80,9 @@ const UChar tsmHashPermut[256] = {
 };
 
 /*
-    TSMÏóêÏÑú
-    spaceIDÎäî ÏÇ¨Ïö©Ï†ÑÏóê ÏÇ¨Ïö©ÌïòÎ†§Îäî TablespaceÎ°ú ÏÑ§Ï†ïÎêòÍ≥†
-    colSpaceÎäî Î≥¥Ï†ïÎêòÏßÄ ÏïäÎäîÎã§.
+    TSMø°º≠
+    spaceID¥¬ ªÁøÎ¿¸ø° ªÁøÎ«œ∑¡¥¬ Tablespace∑Œ º≥¡§µ«∞Ì
+    colSpace¥¬ ∫∏¡§µ«¡ˆ æ ¥¬¥Ÿ.
  */
 
 static tsmColumn gMetaCatalogColumn[3] = {
@@ -241,9 +241,9 @@ static void printTable( const SChar*      aTableName,
 static IDE_RC tsmDefaultCallBackFunction( idBool*     aResult,
                                           const void*, const scGRID, void* );
 
-/* BUG-26667 TSM TESTÏ§ë sdnbModule.cpp assertÎ∞úÏÉù
- * Proj-1872 DiskIndexÏ†ÄÏû•Íµ¨Ï°∞ÏµúÏ†ÅÌôîÏùò ÎØ∏Î∞òÏòÅÎêú Î∂ÄÎ∂ÑÏùÑ Ï∂îÍ∞Ä Î∞òÏòÅÌï©ÎãàÎã§.
- * Compare Ìï®ÏàòÎäî Disk IndexÏùò Í≤ΩÏö∞ ÏûêÎ£å Ï†ÄÏû• ÌòïÌÉúÏóê Îî∞Îùº Îã¨Î¶¨ Ìò∏Ï∂úÎêòÏñ¥Ïïº Ìï©ÎãàÎã§.*/
+/* BUG-26667 TSM TEST¡ﬂ sdnbModule.cpp assertπﬂª˝
+ * Proj-1872 DiskIndex¿˙¿Â±∏¡∂√÷¿˚»≠¿« πÃπ›øµµ» ∫Œ∫–¿ª √ﬂ∞° π›øµ«’¥œ¥Ÿ.
+ * Compare «‘ºˆ¥¬ Disk Index¿« ∞ÊøÏ ¿⁄∑· ¿˙¿Â «¸≈¬ø° µ˚∂Û ¥ﬁ∏Æ »£√‚µ«æÓæﬂ «’¥œ¥Ÿ.*/
 
 static SInt tsmCompareUInt(    smiValueInfo * aValueInfo1,
                                smiValueInfo * aValueInfo2 );
@@ -479,7 +479,8 @@ smiGlobalCallBackList gTsmGlobalCallBackList = {
     (smiGetColumnHeaderDescFunc)NULL,
     (smiGetTableHeaderDescFunc)NULL,
     (smiGetPartitionHeaderDescFunc)NULL,
-    (smiGetColumnMapFromColumnHeader)NULL
+    (smiGetColumnMapFromColumnHeader)NULL,
+    NULL,
 };
 
 tsmHashKeyFunc tsmHashFuncList[4] = {
@@ -518,13 +519,13 @@ tsmActualSizeFunc tsmActualSizeFuncList[4] = {
 };
 
 /*
-    Column ListÏïàÏùò ColumnÏóê SpaceIDÎ•º ÏÑ∏ÌåÖÌïúÎã§.
+    Column Listæ»¿« Columnø° SpaceID∏¶ ºº∆√«—¥Ÿ.
 
-    globalÌïòÍ≤å Ï†ïÏùòÎêòÏñ¥ ÏûáÎäî smiColumnÏóêÎäî SC_NULL_SPACEIDÍ∞Ä ÏÑ§Ï†ïÎêòÏñ¥ ÏûàÎã§
-    Ïó¨Í∏∞Ïóê TableÏù¥ ÏÜçÌïòÎäî SPACEIDÎ•º ÏÑ§Ï†ïÌï¥Ï£ºÏñ¥Ïïº SMÏù¥ Ï†úÎåÄÎ°ú ÎèôÏûëÌïúÎã§.
+    global«œ∞‘ ¡§¿«µ«æÓ ¿’¥¬ smiColumnø°¥¬ SC_NULL_SPACEID∞° º≥¡§µ«æÓ ¿÷¥Ÿ
+    ø©±‚ø° Table¿Ã º”«œ¥¬ SPACEID∏¶ º≥¡§«ÿ¡÷æÓæﬂ SM¿Ã ¡¶¥Î∑Œ µø¿€«—¥Ÿ.
 
-    [IN] aColumnList - ColumnÏùò List
-    [IN] aTBSID      - ColumnÏóê ÏÑ§Ï†ïÌï† Tablespace ID
+    [IN] aColumnList - Column¿« List
+    [IN] aTBSID      - Columnø° º≥¡§«“ Tablespace ID
  */
 IDE_RC tsmSetSpaceID2Columns( smiColumnList * aColumnList,
                               scSpaceID aTBSID )
@@ -542,7 +543,7 @@ IDE_RC tsmSetSpaceID2Columns( smiColumnList * aColumnList,
 }
 
 
-/* BUG-23680 [5.3.1 Release] TSM Ï†ïÏÉÅÌôî */
+/* BUG-23680 [5.3.1 Release] TSM ¡§ªÛ»≠ */
 IDE_RC tsmClearVariableFlag( smiColumnList * aColumnList )
 {
     while ( aColumnList != NULL )
@@ -569,10 +570,10 @@ void tsmLog(const SChar *aFmt, ...)
     va_list ap;
     va_start(ap, aFmt);
     /* ------------------------------------------------
-     *  vfprintfÍ∞Ä ÎπÑÎ°ù idlOS::Ïóê ÏóÜÏßÄÎßå,
-     *  PDLÎäî fprintfÎ•º vfprintfÎ•º Ïù¥Ïö©Ìï¥ÏÑú
-     *  Íµ¨ÌòÑÌïúÎã§. Îî∞ÎùºÏÑú, PDLÍ∞Ä Ïª¥ÌååÏùº ÎêòÎäî Ìïú,
-     *  ::vfprintfÎ•º ÏÇ¨Ïö©Ìï¥ÎèÑ Î¨¥Î∞©ÌïòÎã§Í≥† ÌåêÎã®ÌïúÎã§.
+     *  vfprintf∞° ∫Ò∑œ idlOS::ø° æ¯¡ˆ∏∏,
+     *  PDL¥¬ fprintf∏¶ vfprintf∏¶ ¿ÃøÎ«ÿº≠
+     *  ±∏«ˆ«—¥Ÿ. µ˚∂Ûº≠, PDL∞° ƒƒ∆ƒ¿œ µ«¥¬ «—,
+     *  ::vfprintf∏¶ ªÁøÎ«ÿµµ π´πÊ«œ¥Ÿ∞Ì ∆«¥‹«—¥Ÿ.
      *  2001/06/08  by gamestar
      * ----------------------------------------------*/
     (void)::vfprintf(TSM_OUTPUT, aFmt, ap);
@@ -832,9 +833,9 @@ static SInt tsmCompareVarchar( smiValueInfo * aValueInfo1,
     return 0;
 }
 
-/* BUG-26667 TSM TESTÏ§ë sdnbModule.cpp assertÎ∞úÏÉù
- * Proj-1872 DiskIndexÏ†ÄÏû•Íµ¨Ï°∞ÏµúÏ†ÅÌôîÏùò ÎØ∏Î∞òÏòÅÎêú Î∂ÄÎ∂ÑÏùÑ Ï∂îÍ∞Ä Î∞òÏòÅÌï©ÎãàÎã§.
- * Compare Ìï®ÏàòÎäî Disk IndexÏùò Í≤ΩÏö∞ ÏûêÎ£å Ï†ÄÏû• ÌòïÌÉúÏóê Îî∞Îùº Îã¨Î¶¨ Ìò∏Ï∂úÎêòÏñ¥Ïïº Ìï©ÎãàÎã§.*/
+/* BUG-26667 TSM TEST¡ﬂ sdnbModule.cpp assertπﬂª˝
+ * Proj-1872 DiskIndex¿˙¿Â±∏¡∂√÷¿˚»≠¿« πÃπ›øµµ» ∫Œ∫–¿ª √ﬂ∞° π›øµ«’¥œ¥Ÿ.
+ * Compare «‘ºˆ¥¬ Disk Index¿« ∞ÊøÏ ¿⁄∑· ¿˙¿Â «¸≈¬ø° µ˚∂Û ¥ﬁ∏Æ »£√‚µ«æÓæﬂ «’¥œ¥Ÿ.*/
 static SInt tsmCompareUIntKeyAndVRow( smiValueInfo * aValueInfo1,
                                       smiValueInfo * aValueInfo2 ) // src: mtdIntegerStoredMtdKeyAscComp
 {
@@ -842,7 +843,7 @@ static SInt tsmCompareUIntKeyAndVRow( smiValueInfo * aValueInfo1,
 
     aValueInfo1->flag = TSM_OFFSET_USELESS;
 
-    ID_INT_BYTE_ASSIGN( &sRow1, aValueInfo1->value ); //UIntÏùò 4Byte Align Í≥†Î†§
+    ID_INT_BYTE_ASSIGN( &sRow1, aValueInfo1->value ); //UInt¿« 4Byte Align ∞Ì∑¡
     aValueInfo1->value = (&sRow1);
 
     return tsmCompareUInt( aValueInfo1, aValueInfo2 );
@@ -916,9 +917,9 @@ static SInt tsmCompareStringKeyAndVRow( smiValueInfo * aValueInfo1,
 static SInt tsmCompareVarcharKeyAndVRow( smiValueInfo * /*aValueInfo1*/,
                                          smiValueInfo * /*aValueInfo2*/ ) // src : mtdVarcharStoredMtdKeyAscComp
 {
-    // ÏúÑ Î°úÏßÅÏùÄ DiskIndexÏóêÏÑú ÏÇ¨Ïö©ÌïòÎäîÎç∞, Disk IndexÏùò VarcharÎäî
-    // tsmClearVariableFlag Ìï®ÏàòÏóê ÏùòÌï¥ StringÏúºÎ°ú Î≥ÄÌôòÎêòÎØÄÎ°ú
-    // Ïù¥ Ìï®ÏàòÎäî Ìò∏Ï∂úÎêòÏßÄ ÏïäÎäîÎã§.
+    // ¿ß ∑Œ¡˜¿∫ DiskIndexø°º≠ ªÁøÎ«œ¥¬µ•, Disk Index¿« Varchar¥¬
+    // tsmClearVariableFlag «‘ºˆø° ¿««ÿ String¿∏∑Œ ∫Ø»Øµ«π«∑Œ
+    // ¿Ã «‘ºˆ¥¬ »£√‚µ«¡ˆ æ ¥¬¥Ÿ.
     IDE_ASSERT( 0 );
 
     return 0;
@@ -982,9 +983,9 @@ static SInt tsmCompareStringKeyAndKey( smiValueInfo * aValueInfo1,
 static SInt tsmCompareVarcharKeyAndKey( smiValueInfo * /*aValueInfo1*/,
                                         smiValueInfo * /*aValueInfo2*/ )
 {
-    // ÏúÑ Î°úÏßÅÏùÄ DiskIndexÏóêÏÑú ÏÇ¨Ïö©ÌïòÎäîÎç∞, Disk IndexÏùò VarcharÎäî
-    // tsmClearVariableFlag Ìï®ÏàòÏóê ÏùòÌï¥ StringÏúºÎ°ú Î≥ÄÌôòÎêòÎØÄÎ°ú
-    // Ïù¥ Ìï®ÏàòÎäî Ìò∏Ï∂úÎêòÏßÄ ÏïäÎäîÎã§.
+    // ¿ß ∑Œ¡˜¿∫ DiskIndexø°º≠ ªÁøÎ«œ¥¬µ•, Disk Index¿« Varchar¥¬
+    // tsmClearVariableFlag «‘ºˆø° ¿««ÿ String¿∏∑Œ ∫Ø»Øµ«π«∑Œ
+    // ¿Ã «‘ºˆ¥¬ »£√‚µ«¡ˆ æ ¥¬¥Ÿ.
     IDE_ASSERT( 0 );
 
     return 0;
@@ -1367,7 +1368,7 @@ static IDE_RC tsmCopyDiskColumnUInt( UInt              /*aColumnSize*/,
 
     if( aLength == 0 )
     {
-        // NULL Îç∞Ïù¥ÌÉÄ
+        // NULL µ•¿Ã≈∏
         *sIntegerValue = 0x80000000;
     }
     else
@@ -1392,7 +1393,7 @@ static IDE_RC tsmCopyDiskColumnString( UInt              aColumnSize,
 
     if( ( aDestValueOffset == 0 ) && ( aLength == 0 ) )
     {
-        // NULL Îç∞Ïù¥ÌÉÄ
+        // NULL µ•¿Ã≈∏
         sStrValue[0] = '\0';
     }
     else
@@ -1423,7 +1424,7 @@ static IDE_RC tsmCopyDiskColumnVarchar( UInt              aColumnSize,
 
     if( ( aDestValueOffset == 0 ) && ( aLength == 0 ) )
     {
-        // NULL Îç∞Ïù¥ÌÉÄ
+        // NULL µ•¿Ã≈∏
         sStrValue[0] = '\0';
     }
     else
@@ -1793,13 +1794,13 @@ IDE_RC tsmRangeMinimum( idBool     * aResult,
                 else
                 {
                     if( gTableType == SMI_TABLE_DISK )
-                    {   // src : mtk::rangeCallBackGE4Stored, DiskIndexÏùº Í≤ΩÏö∞ Sotred type
+                    {   // src : mtk::rangeCallBackGE4Stored, DiskIndex¿œ ∞ÊøÏ Sotred type
                         sValue = (smiValue*)aRow;
                         sRow = sValue->value;
                     }
                     else
-                    {   // src : mtk::rangeCallBackGE4Mtd, Í∑∏ Ïô∏Ïùò
-                        // Í≤ΩÏö∞Îäî MTD
+                    {   // src : mtk::rangeCallBackGE4Mtd, ±◊ ø‹¿«
+                        // ∞ÊøÏ¥¬ MTD
                         IDE_ASSERT( sCount < SMI_MAX_IDX_COLUMNS );
                         sRow = (UChar*)aRow + sIndex->mColumnOffsets[sCount];
                     }
@@ -1828,12 +1829,12 @@ IDE_RC tsmRangeMinimum( idBool     * aResult,
                 else
                 {
                     if( gTableType == SMI_TABLE_DISK )
-                    {   // src : mtk::rangeCallBackGE4Stored, DiskIndexÏùº Í≤ΩÏö∞ Sotred type
+                    {   // src : mtk::rangeCallBackGE4Stored, DiskIndex¿œ ∞ÊøÏ Sotred type
                         sValue = (smiValue*)aRow;
                         sRow = sValue->value;
                     }
                     else
-                    {   // src : mtk::rangeCallBackGE4Mtd, Í∑∏ Ïô∏Ïùò Í≤ΩÏö∞Îäî MTD
+                    {   // src : mtk::rangeCallBackGE4Mtd, ±◊ ø‹¿« ∞ÊøÏ¥¬ MTD
                         sRow = (UChar*)aRow + sIndex->mColumnOffsets[sCount];
                     }
                 }
@@ -1871,12 +1872,12 @@ IDE_RC tsmRangeMinimum( idBool     * aResult,
 
                 if( gTableType == SMI_TABLE_DISK &&
                     sIndex != NULL)
-                {   // src : mtk::rangeCallBackGE4Stored, DiskIndexÏùº Í≤ΩÏö∞ Sotred type
+                {   // src : mtk::rangeCallBackGE4Stored, DiskIndex¿œ ∞ÊøÏ Sotred type
                     sValue = (smiValue*)aRow;
                     sRow = sValue->value;
                 }
                 else
-                {   // src : mtk::rangeCallBackGE4Mtd, Í∑∏ Ïô∏Ïùò Í≤ΩÏö∞Îäî MTD
+                {   // src : mtk::rangeCallBackGE4Mtd, ±◊ ø‹¿« ∞ÊøÏ¥¬ MTD
                     if(sIndex != NULL)
                     {
                         sTempColumn.offset = sIndex->mColumnOffsets[sCount];
@@ -1975,12 +1976,12 @@ IDE_RC tsmRangeMaximum( idBool     * aResult,
                 else
                 {
                     if( gTableType == SMI_TABLE_DISK )
-                    {   // src : mtk::rangeCallBackGE4Stored, DiskIndexÏùº Í≤ΩÏö∞ Sotred type
+                    {   // src : mtk::rangeCallBackGE4Stored, DiskIndex¿œ ∞ÊøÏ Sotred type
                         sValue = (smiValue*)aRow;
                         sRow = sValue->value;
                     }
                     else
-                    {   // src : mtk::rangeCallBackGE4Mtd, Í∑∏ Ïô∏Ïùò Í≤ΩÏö∞Îäî MTD
+                    {   // src : mtk::rangeCallBackGE4Mtd, ±◊ ø‹¿« ∞ÊøÏ¥¬ MTD
                         sRow = (UChar*)aRow + ((smnIndexHeader*)sIndex)->mColumnOffsets[sCount];
                     }
                 }
@@ -2008,12 +2009,12 @@ IDE_RC tsmRangeMaximum( idBool     * aResult,
                 else
                 {
                     if( gTableType == SMI_TABLE_DISK )
-                    {   // src : mtk::rangeCallBackGE4Stored, DiskIndexÏùº Í≤ΩÏö∞ Sotred type
+                    {   // src : mtk::rangeCallBackGE4Stored, DiskIndex¿œ ∞ÊøÏ Sotred type
                         sValue = (smiValue*)aRow;
                         sRow = sValue->value;
                     }
                     else
-                    {   // src : mtk::rangeCallBackGE4Mtd, Í∑∏ Ïô∏Ïùò Í≤ΩÏö∞Îäî MTD
+                    {   // src : mtk::rangeCallBackGE4Mtd, ±◊ ø‹¿« ∞ÊøÏ¥¬ MTD
                         sRow = (UChar*)aRow + ((smnIndexHeader*)sIndex)->mColumnOffsets[sCount];
                     }
                 }
@@ -2051,12 +2052,12 @@ IDE_RC tsmRangeMaximum( idBool     * aResult,
 
                 if( gTableType == SMI_TABLE_DISK &&
                     sIndex != NULL)
-                {   // src : mtk::rangeCallBackGE4Stored, DiskIndexÏùº Í≤ΩÏö∞ Sotred type
+                {   // src : mtk::rangeCallBackGE4Stored, DiskIndex¿œ ∞ÊøÏ Sotred type
                     sValue = (smiValue*)aRow;
                     sRow = sValue->value;
                 }
                 else
-                {   // src : mtk::rangeCallBackGE4Mtd, Í∑∏ Ïô∏Ïùò Í≤ΩÏö∞Îäî MTD
+                {   // src : mtk::rangeCallBackGE4Mtd, ±◊ ø‹¿« ∞ÊøÏ¥¬ MTD
                     if(sIndex != NULL)
                     {
                         sTempColumn.offset =
@@ -2138,7 +2139,7 @@ IDE_RC tsmCreateTable( void )
 
     smiStatement *spRootStmt;
 
-    /* BUG-23680 [5.3.1 Release] TSM Ï†ïÏÉÅÌôî */
+    /* BUG-23680 [5.3.1 Release] TSM ¡§ªÛ»≠ */
     if( smiTableSpace::isDiskTableSpace( gTBSID )
         == ID_TRUE )
     {
@@ -3412,7 +3413,7 @@ IDE_RC tsmInsertTable( void )
 
     /* BUG-32173 [sm-util] [F4 test] The TSM needs the fetch column list for
      * using DRDB index.
-     * DiskIndex Ïù¥Ïö©Ïãú Î∞òÎìúÏãú FetchColumnListÍ∞Ä Ï°¥Ïû¨Ìï¥Ïïº Ìï®. */
+     * DiskIndex ¿ÃøÎΩ√ π›µÂΩ√ FetchColumnList∞° ¡∏¿Á«ÿæﬂ «‘. */
     if( gTableType == SMI_TABLE_DISK )
     {
         tsmMakeFetchColumnList( sTable, sFetchColumnList );
@@ -3496,7 +3497,7 @@ IDE_RC tsmInsertTable( void )
 
     /* BUG-32173 [sm-util] [F4 test] The TSM needs the fetch column list for
      * using DRDB index.
-     * DiskIndex Ïù¥Ïö©Ïãú Î∞òÎìúÏãú FetchColumnListÍ∞Ä Ï°¥Ïû¨Ìï¥Ïïº Ìï®. */
+     * DiskIndex ¿ÃøÎΩ√ π›µÂΩ√ FetchColumnList∞° ¡∏¿Á«ÿæﬂ «‘. */
     if( gTableType == SMI_TABLE_DISK )
     {
         tsmMakeFetchColumnList( sTable, sFetchColumnList );
@@ -3595,7 +3596,7 @@ IDE_RC tsmInsertTable( void )
 
     /* BUG-32173 [sm-util] [F4 test] The TSM needs the fetch column list for
      * using DRDB index.
-     * DiskIndex Ïù¥Ïö©Ïãú Î∞òÎìúÏãú FetchColumnListÍ∞Ä Ï°¥Ïû¨Ìï¥Ïïº Ìï®. */
+     * DiskIndex ¿ÃøÎΩ√ π›µÂΩ√ FetchColumnList∞° ¡∏¿Á«ÿæﬂ «‘. */
     if( gTableType == SMI_TABLE_DISK )
     {
         tsmMakeFetchColumnList( sTable, sFetchColumnList );
@@ -3913,7 +3914,7 @@ IDE_RC tsmInsertTempTable( void )
             sColumn = (tsmColumn*)smiGetTableColumns( sTable,i );
 
 
-            // variable typeÏùÄ Ï∂îÌõÑÏóê ÏàòÏ†ïÎêòÏñ¥Ïïº Ìï® bugbug
+            // variable type¿∫ √ﬂ»ƒø° ºˆ¡§µ«æÓæﬂ «‘ bugbug
             if (sColumn->type == TSM_TYPE_VARCHAR)
             {
                 /*
@@ -4685,7 +4686,7 @@ IDE_RC tsmCreateTable( UInt    a_ownerID,
     smiStatement *spRootStmt;
     UInt          sState = 0;
 
-    /* BUG-23680 [5.3.1 Release] TSM Ï†ïÏÉÅÌôî */
+    /* BUG-23680 [5.3.1 Release] TSM ¡§ªÛ»≠ */
     if( smiTableSpace::isDiskTableSpace( gTBSID )
         == ID_TRUE )
     {
@@ -7115,7 +7116,7 @@ IDE_RC tsmInsert(smiStatement *aStmt,
                                    & sCursorData )
                     != IDE_SUCCESS, open_error);
 
-    // Í∞í Ï¥àÍ∏∞Ìôî
+    // ∞™ √ ±‚»≠
     for (i = 0; i < aSchemaNum * 3; i += 3)
     {
         sValue[i + 1].length = idlOS::strlen((SChar *)sValue[i + 1].value) + 1;
@@ -8926,7 +8927,7 @@ IDE_RC qcxReadSequence(smiStatement * a_pStatement,
 }
 
 
-/*BUG-30517 tsmÏùÄ offset useless fixed columnÏùÑ Í≥†Î†§ÌïòÏßÄ ÏïäÍ≥† ÏûàÏäµÎãàÎã§. */
+/*BUG-30517 tsm¿∫ offset useless fixed column¿ª ∞Ì∑¡«œ¡ˆ æ ∞Ì ¿÷Ω¿¥œ¥Ÿ. */
 
 const void* tsmGetVarColumn( const void*       aRow,
                              const smiColumn * aColumn,

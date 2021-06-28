@@ -147,9 +147,9 @@ SQLRETURN getObjPrivQuery( FILE  *aFp,
     IDE_TEST_RAISE( SQLAllocStmt( m_hdbc, &sStmt )
                                   != SQL_SUCCESS, alloc_error );
    
-    /* DIRECTORY, SEQUENCE, TABLE: DBì „ì²´ ëª¨ë“œ, USER ëª¨ë“œ ì—ì„œ user name, obj nameë¥¼ 
-     * int ë¡œ ë³€í™˜
-     * PROCEDURE,VIEW: object ëª¨ë“œ ì—ì„œë§Œ user name, obj nameì„ int ë¡œ ë³€í™˜
+    /* DIRECTORY, SEQUENCE, TABLE: DBÀüÃ¼ ¸ðµå, USER ¸ðµå ¿¡¼­ user name, obj name¸¦ 
+     * int ·Î º¯È¯
+     * PROCEDURE,VIEW: object ¸ðµå ¿¡¼­¸¸ user name, obj nameÀ» int ·Î º¯È¯
      */
     switch( aObjType )
     {
@@ -276,7 +276,7 @@ SQLRETURN getObjPrivQuery( FILE  *aFp,
 #undef IDE_FN
 }
 
-/* Object Privilegeì˜ íƒ€ìž… í™•ì¸  */
+/* Object PrivilegeÀÇ Å¸ÀÔ È®ÀÎ  */
 SQLRETURN searchObjPrivQuery( FILE  *aFp,
                               SInt   aObjType, 
                               SInt   aUserId, 
@@ -300,7 +300,7 @@ SQLRETURN searchObjPrivQuery( FILE  *aFp,
         SQLBindCol(sCntPrivStmt, 1, SQL_C_SLONG,   &sCntPriv,  0, NULL)
         != SQL_SUCCESS, cntPrivExecuteError);          
 
-    // Object Privilege ì¢…ë¥˜ ë§Œí¼ ìˆ˜í–‰
+    // Object Privilege Á¾·ù ¸¸Å­ ¼öÇà
     while ( (sRet = SQLFetch( sCntPrivStmt ) ) != SQL_NO_DATA )
     {
         IDE_TEST_RAISE( sRet != SQL_SUCCESS, cntPrivStmtError );
@@ -338,7 +338,7 @@ SQLRETURN searchObjPrivQuery( FILE  *aFp,
 #undef IDE_FN
 }
 
-/* WITH GRANT OPTION ì¡´ìž¬ ì—¬ë¶€ë¥¼ ì²´í¬ */
+/* WITH GRANT OPTION Á¸Àç ¿©ºÎ¸¦ Ã¼Å© */
 SQLRETURN checkObjPrivQuery( FILE  *aFp,
                               SInt   aObjType, 
                               SInt   aUserId, 
@@ -445,7 +445,7 @@ SQLRETURN checkObjPrivQuery( FILE  *aFp,
 #undef IDE_FN
 }
 
-/* ì˜ì¡´ ê´€ê³„ì— ìžˆëŠ” Object Privilegeì„ êµ¬í•œë‹¤. */
+/* ÀÇÁ¸ °ü°è¿¡ ÀÖ´Â Object PrivilegeÀ» ±¸ÇÑ´Ù. */
 SQLRETURN relateObjPrivQuery( FILE  *aFp,
                               SInt   aObjType, 
                               SInt   aUserId, 
@@ -469,7 +469,7 @@ SQLRETURN relateObjPrivQuery( FILE  *aFp,
     IDE_TEST_RAISE( SQLAllocStmt( m_hdbc, &sStmt )
                     != SQL_SUCCESS, alloc_error );
 
-    // Object Privilege ê²€ìƒ‰ì„ ìœ„í•œ ê³„ì¸µ ì¿¼ë¦¬
+    // Object Privilege °Ë»öÀ» À§ÇÑ °èÃþ Äõ¸®
     idlOS::sprintf(sQuery, GET_OBJPRIV_HIER_QUERY,
                             aPrivId, aUserId, aUserId, aObjId, aPrivId,
                             aUserId, aObjId, aPrivId );
@@ -539,8 +539,8 @@ SQLRETURN relateObjPrivQuery( FILE  *aFp,
 }
 
 
-/* Object Privilege Cycle ì¼ê²½ìš° ê³„ì¸µì¿¼ë¦¬ë¡œëŠ” Cycle í˜•ì„±í•˜ëŠ” ê¶Œí•œì€
- * EXPORT ë˜ë‹ˆ ì•Šê¸° ë•Œë¬¸ì— ë”°ë¡œ ì²˜ë¦¬ í•¨
+/* Object Privilege Cycle ÀÏ°æ¿ì °èÃþÄõ¸®·Î´Â Cycle Çü¼ºÇÏ´Â ±ÇÇÑÀº
+ * EXPORT µÇ´Ï ¾Ê±â ¶§¹®¿¡ µû·Î Ã³¸® ÇÔ
 */
 SQLRETURN recCycleObjPrivQuery( FILE *aFp,
                            SInt   aObjType, 

@@ -17,7 +17,7 @@
 
 
 /***********************************************************************
- * $Id: smiTrans.h 85343 2019-04-30 01:50:33Z returns $
+ * $Id: smiTrans.h 90824 2021-05-13 05:35:21Z minku.kang $
  **********************************************************************/
 
 #ifndef _O_SMI_TRANS_H_
@@ -26,16 +26,28 @@
 # include <idv.h>
 # include <smiDef.h>
 # include <smiStatement.h>
+# include <smxTrans.h>
 
 # define SMI_TRANS_SLOT_ID_NULL ID_UINT_MAX
 
 # define SMI_MAX_SVPNAME_SIZE SMX_MAX_SVPNAME_SIZE
+
+# define SMI_DDL_BEGIN_SAVEPOINT       SM_DDL_BEGIN_SAVEPOINT
+# define SMI_DDL_INFO_SAVEPOINT        SM_DDL_INFO_SAVEPOINT
 
 typedef enum smiTransInitOpt
 {
     SMI_TRANS_INIT,
     SMI_TRANS_ATTACH
 } smiTransInitOpt;
+
+typedef enum smiBackupTableInfoType
+{
+    SMI_BACKUP_NONE,
+    SMI_BACKUP_OLD_TABLE_INFO,
+    SMI_BACKUP_NEW_TABLE_INFO,
+    SMI_BACKUP_IMPOSSIBLE,
+} smiBackupTableInfoType;
 
 class smiTrans
 {
@@ -45,6 +57,7 @@ class smiTrans
     friend class smiTableCursor;
 
  public:  /* POD class type should make non-static data members as public */
+
     void*            mTrans;
     UInt             mFlag;
     smiStatement   * mStmtListHead;
@@ -55,10 +68,12 @@ class smiTrans
     smLSN             mCommitLSN;
 
     /* BUG-46786 : FOR SHARDING
-       smiStatement::end() ì‹œ implicit savepointë¥¼ í•´ì œí•˜ì§€ ì•Šê³ , ì´ ë³€ìˆ˜ì— ì €ìž¥í•´ë‘”ë‹¤.
-       ìƒ¤ë”©ì—ì„œ rollback ì‹œ ì‚¬ìš©í•œë‹¤. */
+       smiStatement::end() ½Ã implicit savepoint¸¦ ÇØÁ¦ÇÏÁö ¾Ê°í, ÀÌ º¯¼ö¿¡ ÀúÀåÇØµÐ´Ù.
+       »þµù¿¡¼­ rollback ½Ã »ç¿ëÇÑ´Ù. */
     smxSavepoint    * mImpSVP4Shard;
 
+    static smiTransactionalDDLCallback mTransactionalDDLCallback;
+ 
  public:
     IDE_RC initialize();
 
@@ -73,8 +88,11 @@ class smiTrans
                                            SMI_TRANSACTION_NORMAL       |
                                            SMI_TRANSACTION_REPL_DEFAULT |
                                            SMI_COMMIT_WRITE_NOWAIT),
-                  UInt           aReplID       = SMX_NOT_REPL_TX_ID,
-                  idBool         aIgnoreRetry  = ID_FALSE);
+                  UInt           aReplID        = SMX_NOT_REPL_TX_ID,
+                  idBool         aIgnoreRetry   = ID_FALSE,
+                  idBool         aIsServiceTX   = ID_FALSE );
+
+    void setDistTxInfo( smiDistTxInfo * aDistTxInfo );
 
     IDE_RC rollback( const SChar* aSavePoint = NULL, UInt aTransReleasePolicy = SMI_RELEASE_TRANSACTION );
     /*
@@ -85,31 +103,42 @@ class smiTrans
       dequeue statement begin  ----------------- > execute .... 
                                           ^
                                           |
-                                        get queue stamp (sessionì˜ queue stampì— ì €ìž¥)
+                                        get queue stamp (sessionÀÇ queue stamp¿¡ ÀúÀå)
                                         
-      dequeue statement beginê³¼ execute ë°”ë¡œ ì§ì „ì— queue itemì´ commitë˜ì—ˆë‹¤ë©´,
-      dequeue executeì‹œì—  í•´ë‹¹ queue itemì„ MVCCë•Œë¬¸ì— ë³¼ìˆ˜ ì—†ì–´ì„œ ëŒ€ê¸° ìƒíƒœë¡œ ê°„ë‹¤.
-      ê·¸ë¦¬ê³  sessionì˜ queue timestampì™€ queue timestampê³¼ ê°™ì•„ì„œ  ë‹¤ìŒ enqueue
-      eventê°€ ë°œìƒí• ë•Œ ê¹Œì§€  queueì— ë°ì´íƒ€ê°€ ìžˆìŒì—ë„ ë¶ˆêµ¬í•˜ê³  dequeueë¥¼ í• ìˆ˜ ì—†ë‹¤ .
-      ì´ë¬¸ì œë¥¼ í•´ê²° í•˜ê¸° ìœ„í•˜ì—¬  commitSCNì„ ë‘ì—ˆë‹¤. */
-    
-    IDE_RC commit(smSCN* aCommitSCN, UInt aTransReleasePolicy = SMI_RELEASE_TRANSACTION);
+      dequeue statement begin°ú execute ¹Ù·Î Á÷Àü¿¡ queue itemÀÌ commitµÇ¾ú´Ù¸é,
+      dequeue execute½Ã¿¡  ÇØ´ç queue itemÀ» MVCC¶§¹®¿¡ º¼¼ö ¾ø¾î¼­ ´ë±â »óÅÂ·Î °£´Ù.
+      ±×¸®°í sessionÀÇ queue timestamp¿Í queue timestamp°ú °°¾Æ¼­  ´ÙÀ½ enqueue
+      event°¡ ¹ß»ýÇÒ¶§ ±îÁö  queue¿¡ µ¥ÀÌÅ¸°¡ ÀÖÀ½¿¡µµ ºÒ±¸ÇÏ°í dequeue¸¦ ÇÒ¼ö ¾ø´Ù .
+      ÀÌ¹®Á¦¸¦ ÇØ°á ÇÏ±â À§ÇÏ¿©  commitSCNÀ» µÎ¾ú´Ù. */
+   
+    inline idBool isPrepared() 
+    { 
+        return getSmxTrans()->isPrepared();
+    }
+
+    IDE_RC commit(smSCN *aCommitSCN = NULL, UInt aTransReleasePolicy = SMI_RELEASE_TRANSACTION);
 
     // For Global Transaction 
     /* BUG-18981 */
-    IDE_RC prepare(ID_XID *aXID );
-    IDE_RC forget(ID_XID *aXID);
+    IDE_RC prepare( ID_XID *aXID, smSCN * aPrepareSCN = NULL, idBool aLogging = ID_TRUE );
     IDE_RC isReadOnly(idBool *aIsReadOnly);
     IDE_RC attach( SInt aSlotID );
+    IDE_RC dettach();
+    IDE_RC realloc( idvSQL *aStatistics, idBool aIgnoreRetry );
     void   showOIDList();
     
     IDE_RC savepoint(const SChar* aSavePoint,
                      smiStatement *aStatement = NULL );
 
     // For BUG-12512
-    void   reservePsmSvp( );
+    void   reservePsmSvp( idBool aIsShard );
     void   clearPsmSvp( );
     IDE_RC abortToPsmSvp( );
+
+    idBool isExistExpSavepoint(const SChar *aSavepointName);  /* BUG-48489 */
+
+    // TASK-7244 PSM partial rollback in Sharding
+    idBool isShardPsmSvpReserved();
     
     smTID  getTransID();
     inline smiStatement* getStatement( void );
@@ -120,13 +149,13 @@ class smiTrans
 
     UInt   getFirstUpdateTime();
 
-    // QPì—ì„œ Metaê°€ ì ‘ê·¼ëœ ê²½ìš° ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì—¬
-    // Transactionì— Metaì ‘ê·¼ ì—¬ë¶€ë¥¼ ì„¸íŒ…í•œë‹¤
+    // QP¿¡¼­ Meta°¡ Á¢±ÙµÈ °æ¿ì ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ¿©
+    // Transaction¿¡ MetaÁ¢±Ù ¿©ºÎ¸¦ ¼¼ÆÃÇÑ´Ù
     IDE_RC setMetaTableModified();
     smSN getBeginSN();
     smSN getCommitSN();
 
-    // DDL Transactionì„ í‘œì‹œí•˜ëŠ” Log Recordë¥¼ ê¸°ë¡í•œë‹¤.
+    // DDL TransactionÀ» Ç¥½ÃÇÏ´Â Log Record¸¦ ±â·ÏÇÑ´Ù.
     IDE_RC writeDDLLog();
 
     void  setStatistics( idvSQL * aStatistics );
@@ -139,10 +168,70 @@ class smiTrans
     idBool isReusableRollback( void );
     void   setCursorHoldable( void );
 
+    IDE_RC setExpSvpForBackupDDLTargetTableInfo( smOID   aOldTableOID,
+                                                 UInt    aOldPartOIDCount,
+                                                 smOID * aOldPartOID,
+                                                 smOID   aNewTableOID, 
+                                                 UInt    aNewPartOIDCount,
+                                                 smOID * aNewPartOID );
+
+    IDE_RC allocNSetDDLTargetTableInfo( UInt                     aTableID,
+                                        void                   * aOldTableInfo,
+                                        void                   * aNewTableInfo,
+                                        idBool                   aIsReCreated,
+                                        smiDDLTargetTableInfo ** aInfo );
+    void   freeDDLTargetTableInfo( smiDDLTargetTableInfo * aDDLTargetTableInfo );
+
+    IDE_RC allocNSetDDLTargetPartTableInfo( smiDDLTargetTableInfo * aInfo,
+                                            UInt                    aTableID,
+                                            idBool                  aIsReCreated,
+                                            void                  * aPartOldTableInfo,
+                                            void                  * aPartNewTableInfo );
+    void   freeDDLTargetPartTableInfo( smiDDLTargetTableInfo * aInfo );
+    void   setGlobalSMNChangeFunc( smTransApplyShardMetaChangeFunc aFunc );
+
     /* BUG-46786 */
     static idBool checkImpSVP4Shard( smiTrans * aTrans );
     static IDE_RC abortToImpSVP4Shard( smiTrans * aTrans );
+    
+    static void   setTransactionalDDLCallback( smiTrasactionalDDLCallback * aTransactionalDDLCallback );
+
+    static smiBackupTableInfoType checkBackupTableInfoType( smOID aOldTableOID, smOID aNewTableOID );
+
+    static IDE_RC backupDDLTargetTableInfo( smiTrans               * aTrans,
+                                            smOID                    aOldTableOID,
+                                            UInt                     aOldPartOIDCount,
+                                            smOID                  * aOldPartOIDArray,
+                                            smOID                    aNewTableOID,
+                                            UInt                     aNewPartOIDCount,
+                                            smOID                  * aNewPartOIDArray,
+                                            smiDDLTargetTableInfo ** aDDLTargetTableInfo );
+    static void   removeDDLTargetTableInfo( smiTrans * aTrans, smiDDLTargetTableInfo * aDDLTargetTableInfo );
+    static void   restoreDDLTargetOldTableInfo( smiDDLTargetTableInfo * aDDLTargetTableInfo );
+    static void   destroyDDLTargetNewTableInfo( smiDDLTargetTableInfo * aDDLTargetTableInfo );
+
+    /* BUG-48250 */
+    void   setIndoubtFetchTimeout( UInt aTimeout );
+    void   setIndoubtFetchMethod( UInt aMethod );
+    /* BUG-48829 */
+    void   setGlobalTransactionLevel( idBool aIsGCTx );
+
+    void   setInternalTableSwap();
+
+private:
+    smxTrans* getSmxTrans();
 };
+
+inline void smiTrans::setGlobalSMNChangeFunc( smTransApplyShardMetaChangeFunc aFunc )
+{
+    getSmxTrans()->setGlobalSMNChangeFunc( aFunc );
+    return ;
+}
+
+inline smxTrans* smiTrans::getSmxTrans( void )
+{
+    return (smxTrans*)mTrans;
+}
 
 inline void* smiTrans::getTrans( void )
 {
@@ -168,5 +257,108 @@ inline UInt smiTrans::getTransactionMode( void )
 {
     return mFlag & SMI_TRANSACTION_MASK;
 }
+
+inline void smiTrans::setTransactionalDDLCallback( smiTrasactionalDDLCallback * aTransactionalDDLCallback )
+{
+    mTransactionalDDLCallback = *aTransactionalDDLCallback;
+}
+
+inline smiBackupTableInfoType smiTrans::checkBackupTableInfoType( smOID aOldTableOID, smOID aNewTableOID )
+{
+    smiBackupTableInfoType sType = SMI_BACKUP_NONE;
+
+    if ( ( aOldTableOID == SM_OID_NULL ) && ( aNewTableOID == SM_OID_NULL ) )
+    {
+        sType = SMI_BACKUP_NONE;
+    }
+    else if ( ( aOldTableOID != SM_OID_NULL ) && ( aNewTableOID == SM_OID_NULL ) )
+    {        
+        sType = SMI_BACKUP_OLD_TABLE_INFO;
+    }
+    else if ( ( aOldTableOID == SM_OID_NULL ) && ( aNewTableOID != SM_OID_NULL ) )
+    {
+        sType = SMI_BACKUP_NEW_TABLE_INFO;
+    }
+    else
+    {
+        sType = SMI_BACKUP_IMPOSSIBLE;
+    }
+
+    return sType;
+}
+
+inline IDE_RC smiTrans::backupDDLTargetTableInfo( smiTrans               * aTrans, 
+                                                  smOID                    aOldTableOID,
+                                                  UInt                     aOldPartOIDCount,
+                                                  smOID                  * aOldPartOIDArray,
+                                                  smOID                    aNewTableOID,
+                                                  UInt                     aNewPartOIDCount,
+                                                  smOID                  * aNewPartOIDArray,
+                                                  smiDDLTargetTableInfo ** aDDLTargetTableInfo )
+{
+    smiBackupTableInfoType sType = checkBackupTableInfoType( aOldTableOID, aNewTableOID );
+
+    switch ( sType )
+    {
+        case SMI_BACKUP_OLD_TABLE_INFO:
+            IDE_TEST( mTransactionalDDLCallback.backupDDLTargetOldTableInfo( aTrans, 
+                                                                             aOldTableOID,
+                                                                             aOldPartOIDCount,
+                                                                             aOldPartOIDArray,
+                                                                             aDDLTargetTableInfo )
+                      != IDE_SUCCESS );
+            break;
+
+        case SMI_BACKUP_NEW_TABLE_INFO:
+            IDE_TEST( mTransactionalDDLCallback.backupDDLTargetNewTableInfo( aTrans, 
+                                                                             aNewTableOID,
+                                                                             aNewPartOIDCount,
+                                                                             aNewPartOIDArray,
+                                                                             aDDLTargetTableInfo )
+                      != IDE_SUCCESS );
+            break;
+
+        case SMI_BACKUP_NONE:
+            break;
+
+        case SMI_BACKUP_IMPOSSIBLE:
+            IDE_DASSERT(0);
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+inline void smiTrans::removeDDLTargetTableInfo( smiTrans * aTrans, smiDDLTargetTableInfo * aDDLTargetTableInfo )
+{
+    mTransactionalDDLCallback.removeDDLTargetTableInfo( aTrans, aDDLTargetTableInfo );
+}
+
+inline void smiTrans::restoreDDLTargetOldTableInfo( smiDDLTargetTableInfo * aDDLTargetTableInfo )
+{
+    mTransactionalDDLCallback.restoreDDLTargetOldTableInfo( aDDLTargetTableInfo );
+}
+
+inline void smiTrans::destroyDDLTargetNewTableInfo( smiDDLTargetTableInfo * aDDLTargetTableInfo )
+{
+    mTransactionalDDLCallback.destroyDDLTargetNewTableInfo( aDDLTargetTableInfo );
+}
+
+/* BUG-48586 */
+inline void smiTrans::setInternalTableSwap()
+{
+    getSmxTrans()->setInternalTableSwap();
+}
+
+typedef struct smiTransNode
+{
+    smiTrans    mSmiTrans;
+    iduListNode mNode;
+} smiTransNode;
+
 
 #endif /* _O_SMI_TRANS_H_ */

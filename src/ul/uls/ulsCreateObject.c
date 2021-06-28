@@ -16,7 +16,7 @@
 
 /***********************************************************************
  *
- * Spatio-Temporal Date Ï°∞Ïûë Ìï®Ïàò
+ * Spatio-Temporal Date ¡∂¿€ «‘ºˆ
  *
  ***********************************************************************/
 
@@ -40,7 +40,7 @@
  *
  * Description:
  *
- *   2D Point Í∞ùÏ≤¥Î•º ÏÉùÏÑ±ÌïúÎã§.
+ *   2D Point ∞¥√º∏¶ ª˝º∫«—¥Ÿ.
  *
  * Implementation:
  *
@@ -52,10 +52,10 @@ ulsCreatePoint2D( ulsHandle         * aHandle,
                   ulvSLen             aBufferSize,
                   stdPoint2D        * aPoint,
                   acp_sint32_t        aSRID,
-                  ulvSLen            * aObjLength )
+                  ulvSLen           * aObjLength )
 {
-    stdPoint2DType * sPointObj;
-    ACP_UNUSED(aSRID);
+    stdPoint2DType    * sPointObj;
+    stdPoint2DExtType * sPointExtObj;
 
     /*------------------------------*/
     /* Parameter Validation*/
@@ -70,46 +70,79 @@ ulsCreatePoint2D( ulsHandle         * aHandle,
     ACI_TEST_RAISE( aBuffer == NULL, CALC_OBJ_SIZE  );
     
     /* Buffer Size Validation*/
-    ACI_TEST_RAISE( aBufferSize < (acp_sint32_t) ACI_SIZEOF(stdPoint2DType),
-                    ERR_INSUFFICIENT_BUFFER_SIZE );
+    if ( aSRID == ST_SRID_UNDEFINED )
+    {
+        ACI_TEST_RAISE( aBufferSize < (acp_sint32_t) ACI_SIZEOF(stdPoint2DType),
+                        ERR_INSUFFICIENT_BUFFER_SIZE );
+    }
+    else
+    {
+        ACI_TEST_RAISE( aBufferSize < (acp_sint32_t) ACI_SIZEOF( stdPoint2DExtType ),
+                        ERR_INSUFFICIENT_BUFFER_SIZE );
+    }
 
     /*------------------------------*/
-    /* Ï¥àÍ∏∞Ìôî */
+    /* √ ±‚»≠ */
     /*------------------------------*/
     
     sPointObj = (stdPoint2DType*) aBuffer;
+    sPointExtObj = (stdPoint2DExtType*) aBuffer;
 
-    /* Geometry Header Ï¥àÍ∏∞Ìôî */
+    /* Geometry Header √ ±‚»≠ */
     ACI_TEST( ulsInitHeader( aHandle, (stdGeometryHeader*) sPointObj )
               != ACI_SUCCESS );
 
     /*------------------------------*/
-    /* Point Í∞ùÏ≤¥ ÏÉùÏÑ±*/
+    /* Point ∞¥√º ª˝º∫*/
     /*------------------------------*/
 
-    /* Type ÏÑ§Ï†ï*/
-    ACI_TEST( ulsSetGeoType( aHandle,
-                             (stdGeometryHeader*) sPointObj,
-                             STD_POINT_2D_TYPE )
-              != ACI_SUCCESS );
+    /* Type º≥¡§*/
+    if ( aSRID == ST_SRID_UNDEFINED )
+    {
+        ACI_TEST( ulsSetGeoType( aHandle,
+                                 (stdGeometryHeader*) sPointObj,
+                                 STD_POINT_2D_TYPE )
+                  != ACI_SUCCESS );
+    }
+    else
+    {
+        ACI_TEST( ulsSetGeoType( aHandle,
+                                 (stdGeometryHeader*) sPointObj,
+                                 STD_POINT_2D_EXT_TYPE )
+                  != ACI_SUCCESS );
+    }
 
-    /* Ï¢åÌëú ÏÑ§Ï†ï*/
+    /* ¡¬«• º≥¡§*/
     sPointObj->mPoint.mX = aPoint->mX;
     sPointObj->mPoint.mY = aPoint->mY;
 
-    /* MBR ÏÑ§Ï†ï*/
+    /* MBR º≥¡§*/
     sPointObj->mMbr.mMinX = aPoint->mX;
     sPointObj->mMbr.mMinY = aPoint->mY;
     sPointObj->mMbr.mMaxX = aPoint->mX;
     sPointObj->mMbr.mMaxY = aPoint->mY;
-    /* sPointObj->mMbr.mMinT;*/
-    /* sPointObj->mMbr.mMaxT;*/
     
-    /* Size ÏÑ§Ï†ï*/
+    /* Size º≥¡§*/
     sPointObj->mSize = ACI_SIZEOF( stdPoint2DType );
 
+    /* SRID º≥¡§*/
+    if ( aSRID == ST_SRID_UNDEFINED )
+    {
+        // Nothing to do.
+    }
+    else
+    {
+        // memset padding
+        acpMemSet( (acp_char_t*)sPointExtObj + sPointExtObj->mSize,
+                   0x00,
+                   ACI_SIZEOF(stdPoint2DExtType) - ACI_SIZEOF(stdPoint2DType) );
+        
+        sPointExtObj->mSize = ACI_SIZEOF( stdPoint2DExtType );
+        sPointExtObj->mSRID = aSRID;
+    }
+    
     /*------------------------------*/
-    /* Î¶¨ÌÑ¥Í∞í ÏÑ§Ï†ï*/
+    /* ∏Æ≈œ∞™ º≥¡§*/
     /*------------------------------*/
     
     *aObjLength = sPointObj->mSize;
@@ -118,7 +151,14 @@ ulsCreatePoint2D( ulsHandle         * aHandle,
 
     ACI_EXCEPTION( CALC_OBJ_SIZE );
     {
-        *aObjLength = ACI_SIZEOF( stdPoint2DType );
+        if ( aSRID == ST_SRID_UNDEFINED )
+        {
+            *aObjLength = ACI_SIZEOF( stdPoint2DType );
+        }
+        else
+        {
+            *aObjLength = ACI_SIZEOF( stdPoint2DExtType );
+        }
         return ACS_SUCCESS;
     }
     
@@ -133,10 +173,20 @@ ulsCreatePoint2D( ulsHandle         * aHandle,
     }
     ACI_EXCEPTION( ERR_INSUFFICIENT_BUFFER_SIZE );
     {
-        ulsSetErrorCode( aHandle,
-                         ulERR_ABORT_ACS_INSUFFICIENT_BUFFER_SIZE,
-                         aBufferSize,
-                         (acp_sint32_t) ACI_SIZEOF(stdPoint2DType) );
+        if ( aSRID == ST_SRID_UNDEFINED )
+        {
+            ulsSetErrorCode( aHandle,
+                             ulERR_ABORT_ACS_INSUFFICIENT_BUFFER_SIZE,
+                             aBufferSize,
+                             (acp_sint32_t) ACI_SIZEOF(stdPoint2DType) );
+        }
+        else
+        {
+            ulsSetErrorCode( aHandle,
+                             ulERR_ABORT_ACS_INSUFFICIENT_BUFFER_SIZE,
+                             aBufferSize,
+                             (acp_sint32_t) ACI_SIZEOF( stdPoint2DExtType ) );
+        }
     }
 
     ACI_EXCEPTION_END;
@@ -153,10 +203,9 @@ ulsCreateLineString2D( ulsHandle         * aHandle,
                        acp_sint32_t        aSRID,
                        ulvSLen           * aObjLength )
 {
-    stdLineString2DType * sObj;
-    acp_uint32_t          sObjSize;
-    ACP_UNUSED(aSRID);
-    
+    stdLineString2DType    * sObj;
+    stdLineString2DExtType * sExtObj;
+    acp_uint32_t             sObjSize;
 
     /*------------------------------*/
     /* Parameter Validation*/
@@ -181,40 +230,61 @@ ulsCreateLineString2D( ulsHandle         * aHandle,
                     ERR_INSUFFICIENT_BUFFER_SIZE );
 
     /*------------------------------*/
-    /* Ï¥àÍ∏∞Ìôî */
+    /* √ ±‚»≠ */
     /*------------------------------*/
     
     sObj = (stdLineString2DType*) aBuffer;
+    sExtObj = (stdLineString2DExtType*) aBuffer;
 
-    /* Geometry Header Ï¥àÍ∏∞Ìôî */
+    /* Geometry Header √ ±‚»≠ */
     ACI_TEST( ulsInitHeader( aHandle, (stdGeometryHeader*) sObj )
               != ACI_SUCCESS );
 
     /*------------------------------*/
-    /* Í∞ùÏ≤¥ ÏÉùÏÑ±*/
+    /* ∞¥√º ª˝º∫*/
     /*------------------------------*/
 
-    /* Type ÏÑ§Ï†ï*/
-    ACI_TEST( ulsSetGeoType( aHandle,
-                             (stdGeometryHeader*) sObj,
-                             STD_LINESTRING_2D_TYPE )
-              != ACI_SUCCESS );
+    /* Type º≥¡§*/
+    if ( aSRID == ST_SRID_UNDEFINED )
+    {
+        ACI_TEST( ulsSetGeoType( aHandle,
+                                 (stdGeometryHeader*) sObj,
+                                 STD_LINESTRING_2D_TYPE )
+                  != ACI_SUCCESS );
+    }
+    else
+    {
+        ACI_TEST( ulsSetGeoType( aHandle,
+                                 (stdGeometryHeader*) sObj,
+                                 STD_LINESTRING_2D_EXT_TYPE )
+                  != ACI_SUCCESS );
+    }
 
-    /* Ï¢åÌëú ÏÑ§Ï†ï*/
+    /* ¡¬«• º≥¡§*/
     acpMemCpy( ulsM_GetPointsLS2D( sObj ),
                aPoints,
                ACI_SIZEOF(stdPoint2D) * aNumPoints );
 
     sObj->mNumPoints = aNumPoints;
 
-    /* MBR ÏÑ§Ï†ï*/
+    /* MBR º≥¡§*/
     ulsM_GetMBR2D( aNumPoints, aPoints, &sObj->mMbr );
     
-    /* Size ÏÑ§Ï†ï*/
+    /* Size º≥¡§*/
     sObj->mSize = sObjSize;
 
+    /* SRID º≥¡§*/
+    if ( aSRID == ST_SRID_UNDEFINED )
+    {
+        // Nothing to do.
+    }
+    else
+    {
+        sExtObj->mSRID = aSRID;
+    }
+    
     /*------------------------------*/
-    /* Î¶¨ÌÑ¥Í∞í ÏÑ§Ï†ï*/
+    /* ∏Æ≈œ∞™ º≥¡§*/
     /*------------------------------*/
     
     *aObjLength = sObj->mSize;
@@ -287,19 +357,19 @@ ulsCreateLinearRing2D( ulsHandle         * aHandle,
                     ERR_INSUFFICIENT_BUFFER_SIZE );
 
     /*------------------------------*/
-    /* Ï¥àÍ∏∞Ìôî */
+    /* √ ±‚»≠ */
     /*------------------------------*/
     
     sObj = (stdLinearRing2D*) aBuffer;
 
-    /* Ï¢åÌëú ÏÑ§Ï†ï*/
+    /* ¡¬«• º≥¡§*/
     acpMemCpy( ulsM_GetPointsLR2D( sObj ),
                aPoints,
                ACI_SIZEOF(stdPoint2D) * aNumPoints );
     sObj->mNumPoints = aNumPoints;
 
     /*------------------------------*/
-    /* Î¶¨ÌÑ¥Í∞í ÏÑ§Ï†ï*/
+    /* ∏Æ≈œ∞™ º≥¡§*/
     /*------------------------------*/
     
     *aObjLength = sObjSize;
@@ -349,11 +419,12 @@ ulsCreatePolygon2D( ulsHandle              * aHandle,
                     ulvSLen                * aObjLength )
 {
     stdPolygon2DType    * sObj;
+    stdPolygon2DExtType * sExtObj;
     stdLinearRing2D     * sRing;
     acp_uint32_t          sObjSize;
     acp_uint32_t          sRingSize;
     acp_uint32_t          i;
-    ACP_UNUSED(aSRID);
+
     /*------------------------------*/
     /* Parameter Validation*/
     /*------------------------------*/
@@ -366,7 +437,7 @@ ulsCreatePolygon2D( ulsHandle              * aHandle,
     
     /* Calc Object Size*/
     ACI_TEST_RAISE( ulsGetPolygon2DSize( aHandle, aNumRings, aRings, &sObjSize )
-              != ACI_SUCCESS, ERR_INVALID_PARAMETER );
+                    != ACI_SUCCESS, ERR_INVALID_PARAMETER );
     
     ACI_TEST_RAISE( aBuffer == NULL, CALC_OBJ_SIZE  );
         
@@ -377,30 +448,41 @@ ulsCreatePolygon2D( ulsHandle              * aHandle,
                     ERR_INSUFFICIENT_BUFFER_SIZE );
 
     /*------------------------------*/
-    /* Ï¥àÍ∏∞Ìôî */
+    /* √ ±‚»≠ */
     /*------------------------------*/
     sObj = (stdPolygon2DType*) aBuffer;
+    sExtObj = (stdPolygon2DExtType*) aBuffer;
 
-    /* Geometry Header Ï¥àÍ∏∞Ìôî */
+    /* Geometry Header √ ±‚»≠ */
     ACI_TEST( ulsInitHeader( aHandle, (stdGeometryHeader*) sObj )
               != ACI_SUCCESS );
 
     /*------------------------------*/
-    /* Í∞ùÏ≤¥ ÏÉùÏÑ±*/
+    /* ∞¥√º ª˝º∫*/
     /*------------------------------*/
 
-    /* Type ÏÑ§Ï†ï*/
-    ACI_TEST( ulsSetGeoType( aHandle,
-                             (stdGeometryHeader*) sObj,
-                             STD_POLYGON_2D_TYPE )
-              != ACI_SUCCESS );
+    /* Type º≥¡§*/
+    if ( aSRID == ST_SRID_UNDEFINED )
+    {
+        ACI_TEST( ulsSetGeoType( aHandle,
+                                 (stdGeometryHeader*) sObj,
+                                 STD_POLYGON_2D_TYPE )
+                  != ACI_SUCCESS );
+    }
+    else
+    {
+        ACI_TEST( ulsSetGeoType( aHandle,
+                                 (stdGeometryHeader*) sObj,
+                                 STD_POLYGON_2D_EXT_TYPE )
+                  != ACI_SUCCESS );
+    }
 
     sObj->mNumRings = aNumRings;
     ACI_TEST( ulsSeekFirstRing2D( aHandle, sObj, &sRing )
               != ACI_SUCCESS );
+    
     for( i=0; i<aNumRings; i++ )
     {
-        
         ACI_TEST( ulsGetLinearRing2DSize( aHandle,
                                           aRings[i]->mNumPoints,
                                           &sRingSize )
@@ -412,15 +494,25 @@ ulsCreatePolygon2D( ulsHandle              * aHandle,
                   != ACI_SUCCESS );
     }
     
-    /* MBR ÏÑ§Ï†ï*/
+    /* MBR º≥¡§*/
     ACI_TEST( ulsRecalcMBR( aHandle, (stdGeometryType*)sObj, &sObj->mMbr )
               != ACI_SUCCESS );
     
-    /* Size ÏÑ§Ï†ï*/
+    /* Size º≥¡§*/
     sObj->mSize = sObjSize;
 
+    /* SRID º≥¡§*/
+    if ( aSRID == ST_SRID_UNDEFINED )
+    {
+        // Nothing to do.
+    }
+    else
+    {
+        sExtObj->mSRID = aSRID;
+    }
+    
     /*------------------------------*/
-    /* Î¶¨ÌÑ¥Í∞í ÏÑ§Ï†ï*/
+    /* ∏Æ≈œ∞™ º≥¡§*/
     /*------------------------------*/
     
     *aObjLength = sObj->mSize;
@@ -477,6 +569,7 @@ ulsCreateMultiGeometry( ulsHandle               * aHandle,
     acp_uint32_t               i;
     stdGeometryType          * sSubObj;
     stdGeoTypes                sSubGeoType;
+    acp_sint32_t               sSRID = ST_SRID_UNDEFINED;
     
     
     /*------------------------------*/
@@ -511,6 +604,16 @@ ulsCreateMultiGeometry( ulsHandle               * aHandle,
                         ERR_INVALID_PARAMETER  );
         
         sObjSize += sSubObjSize;
+
+        if ( ( ulsM_GetSRID(aGeometries[ i ] ) != ST_SRID_UNDEFINED ) &&
+             ( sSRID == ST_SRID_UNDEFINED ) )
+        {
+            sSRID = ulsM_GetSRID(aGeometries[ i ]);
+        }
+        else
+        {
+            // Nothing to do.
+        }
     }
     
     ACI_TEST_RAISE( aBuffer == NULL, CALC_OBJ_SIZE  );
@@ -520,19 +623,19 @@ ulsCreateMultiGeometry( ulsHandle               * aHandle,
                     ERR_INSUFFICIENT_BUFFER_SIZE );
 
     /*------------------------------*/
-    /* Ï¥àÍ∏∞Ìôî */
+    /* √ ±‚»≠ */
     /*------------------------------*/
     sObj = (stdGeoCollection2DType*) aBuffer;
 
-    /* Geometry Header Ï¥àÍ∏∞Ìôî */
+    /* Geometry Header √ ±‚»≠ */
     ACI_TEST( ulsInitHeader( aHandle, (stdGeometryHeader*) sObj )
               != ACI_SUCCESS );
 
     /*------------------------------*/
-    /* Í∞ùÏ≤¥ ÏÉùÏÑ±*/
+    /* ∞¥√º ª˝º∫*/
     /*------------------------------*/
 
-    /* Type ÏÑ§Ï†ï*/
+    /* Type º≥¡§*/
     ACI_TEST( ulsSetGeoType( aHandle,
                              (stdGeometryHeader*) sObj,
                              aGeoTypes )
@@ -555,17 +658,27 @@ ulsCreateMultiGeometry( ulsHandle               * aHandle,
                   != ACI_SUCCESS );
     }
     
-    /* MBR ÏÑ§Ï†ï*/
+    /* MBR º≥¡§*/
     ACI_TEST( ulsRecalcMBR( aHandle,
                             (stdGeometryType*)sObj,
                             &sObj->mMbr )
               != ACI_SUCCESS );
     
-    /* Size ÏÑ§Ï†ï*/
+    /* Size º≥¡§*/
     sObj->mSize = sObjSize;
 
+    /* SRID º≥¡§*/
+    if ( ulsM_IsGeometry2DExtType( aGeoTypes ) == 1 )
+    {
+        ulsM_SetSRID( (stdGeometryType*)sObj, sSRID );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
     /*------------------------------*/
-    /* Î¶¨ÌÑ¥Í∞í ÏÑ§Ï†ï*/
+    /* ∏Æ≈œ∞™ º≥¡§*/
     /*------------------------------*/
     
     *aObjLength = sObj->mSize;
@@ -614,15 +727,64 @@ ulsCreateMultiPoint2D( ulsHandle               * aHandle,
                        stdPoint2DType         ** aPoints,
                        ulvSLen                 * aObjLength )
 {
-    return ulsCreateMultiGeometry( aHandle,
-                                   aBuffer,
-                                   aBufferSize,
-                                   STD_MULTIPOINT_2D_TYPE,
-                                   STD_POINT_2D_TYPE,
-                                   1,
-                                   aNumPoints,
-                                   (stdGeometryType  **) aPoints,
-                                   aObjLength );
+    ACI_TEST_RAISE( ulsCheckEnv( aHandle ) != ACI_SUCCESS,
+                    ERR_INVALID_HANDLE );
+    
+    ACI_TEST_RAISE( aPoints == NULL, ERR_NULL_PARAMETER );
+    ACI_TEST_RAISE( aNumPoints < 1, ERR_INVALID_PARAMETER );
+    ACI_TEST_RAISE( aPoints[0] == NULL, ERR_INVALID_PARAMETER );
+
+    switch ( aPoints[0]->mType )
+    {
+        case STD_POINT_2D_EXT_TYPE:
+            ACI_TEST( ulsCreateMultiGeometry( aHandle,
+                                              aBuffer,
+                                              aBufferSize,
+                                              STD_MULTIPOINT_2D_EXT_TYPE,
+                                              STD_POINT_2D_EXT_TYPE,
+                                              1,
+                                              aNumPoints,
+                                              (stdGeometryType  **) aPoints,
+                                              aObjLength )
+                      != ACI_SUCCESS );
+            break;
+
+        case STD_POINT_2D_TYPE:
+            ACI_TEST( ulsCreateMultiGeometry( aHandle,
+                                              aBuffer,
+                                              aBufferSize,
+                                              STD_MULTIPOINT_2D_TYPE,
+                                              STD_POINT_2D_TYPE,
+                                              1,
+                                              aNumPoints,
+                                              (stdGeometryType  **) aPoints,
+                                              aObjLength )
+                      != ACI_SUCCESS );
+            break;
+
+        default:
+            break;
+    }
+    
+    return ACS_SUCCESS;
+
+    ACI_EXCEPTION( ERR_INVALID_HANDLE );
+    {
+        return ACS_INVALID_HANDLE;
+    }
+    ACI_EXCEPTION( ERR_NULL_PARAMETER );
+    {
+        ulsSetErrorCode( aHandle,
+                         ulERR_ABORT_INVALID_USE_OF_NULL_POINTER );
+    }
+    ACI_EXCEPTION( ERR_INVALID_PARAMETER );
+    {
+        ulsSetErrorCode( aHandle,
+                         ulERR_ABORT_ACS_INVALID_PARAMETER_RANGE );
+    }
+    ACI_EXCEPTION_END;
+    
+    return ACS_ERROR;
 }
 
 
@@ -635,15 +797,64 @@ ulsCreateMultiLineString2D( ulsHandle                   * aHandle,
                             stdLineString2DType        ** aLineStrings,
                             ulvSLen                     * aObjLength )
 {
-    return ulsCreateMultiGeometry( aHandle,
-                                   aBuffer,
-                                   aBufferSize,
-                                   STD_MULTILINESTRING_2D_TYPE,
-                                   STD_LINESTRING_2D_TYPE,
-                                   1,
-                                   aNumLineStrings,
-                                   (stdGeometryType  **) aLineStrings,
-                                   aObjLength );
+    ACI_TEST_RAISE( ulsCheckEnv( aHandle ) != ACI_SUCCESS,
+                    ERR_INVALID_HANDLE );
+    
+    ACI_TEST_RAISE( aLineStrings == NULL, ERR_NULL_PARAMETER );
+    ACI_TEST_RAISE( aNumLineStrings < 1, ERR_INVALID_PARAMETER );
+    ACI_TEST_RAISE( aLineStrings[0] == NULL, ERR_INVALID_PARAMETER );
+
+    switch( aLineStrings[0]->mType )
+    {
+        case STD_LINESTRING_2D_EXT_TYPE:
+            ACI_TEST( ulsCreateMultiGeometry( aHandle,
+                                              aBuffer,
+                                              aBufferSize,
+                                              STD_MULTILINESTRING_2D_EXT_TYPE,
+                                              STD_LINESTRING_2D_EXT_TYPE,
+                                              1,
+                                              aNumLineStrings,
+                                              (stdGeometryType  **) aLineStrings,
+                                              aObjLength )
+                      != ACI_SUCCESS );
+            break;
+
+        case STD_LINESTRING_2D_TYPE:
+            ACI_TEST( ulsCreateMultiGeometry( aHandle,
+                                              aBuffer,
+                                              aBufferSize,
+                                              STD_MULTILINESTRING_2D_TYPE,
+                                              STD_LINESTRING_2D_TYPE,
+                                              1,
+                                              aNumLineStrings,
+                                              (stdGeometryType  **) aLineStrings,
+                                              aObjLength )
+                      != ACI_SUCCESS );
+            break;
+
+        default:
+            break;
+    }
+    
+    return ACS_SUCCESS;
+
+    ACI_EXCEPTION( ERR_INVALID_HANDLE );
+    {
+        return ACS_INVALID_HANDLE;
+    }
+    ACI_EXCEPTION( ERR_NULL_PARAMETER );
+    {
+        ulsSetErrorCode( aHandle,
+                         ulERR_ABORT_INVALID_USE_OF_NULL_POINTER );
+    }
+    ACI_EXCEPTION( ERR_INVALID_PARAMETER );
+    {
+        ulsSetErrorCode( aHandle,
+                         ulERR_ABORT_ACS_INVALID_PARAMETER_RANGE );
+    }
+    ACI_EXCEPTION_END;
+    
+    return ACS_ERROR;
 }
 
 
@@ -656,15 +867,64 @@ ulsCreateMultiPolygon2D( ulsHandle               * aHandle,
                          stdPolygon2DType       ** aPolygons,
                          ulvSLen                 * aObjLength )
 {
-    return ulsCreateMultiGeometry( aHandle,
-                                   aBuffer,
-                                   aBufferSize,
-                                   STD_MULTIPOLYGON_2D_TYPE,
-                                   STD_POLYGON_2D_TYPE,
-                                   1,
-                                   aNumPolygons,
-                                   (stdGeometryType  **) aPolygons,
-                                   aObjLength );
+    ACI_TEST_RAISE( ulsCheckEnv( aHandle ) != ACI_SUCCESS,
+                    ERR_INVALID_HANDLE );
+    
+    ACI_TEST_RAISE( aPolygons == NULL, ERR_NULL_PARAMETER );
+    ACI_TEST_RAISE( aNumPolygons < 1, ERR_INVALID_PARAMETER );
+    ACI_TEST_RAISE( aPolygons[0] == NULL, ERR_INVALID_PARAMETER );
+
+    switch( aPolygons[0]->mType )
+    {
+        case STD_POLYGON_2D_EXT_TYPE:
+            ACI_TEST( ulsCreateMultiGeometry( aHandle,
+                                              aBuffer,
+                                              aBufferSize,
+                                              STD_MULTIPOLYGON_2D_EXT_TYPE,
+                                              STD_POLYGON_2D_EXT_TYPE,
+                                              1,
+                                              aNumPolygons,
+                                              (stdGeometryType  **) aPolygons,
+                                              aObjLength )
+                      != ACI_SUCCESS );
+            break;
+            
+        case STD_POLYGON_2D_TYPE:
+            ACI_TEST( ulsCreateMultiGeometry( aHandle,
+                                              aBuffer,
+                                              aBufferSize,
+                                              STD_MULTIPOLYGON_2D_TYPE,
+                                              STD_POLYGON_2D_TYPE,
+                                              1,
+                                              aNumPolygons,
+                                              (stdGeometryType  **) aPolygons,
+                                              aObjLength )
+                      != ACI_SUCCESS );
+            break;
+            
+        default:
+            break;
+    }
+    
+    return ACS_SUCCESS;
+
+    ACI_EXCEPTION( ERR_INVALID_HANDLE );
+    {
+        return ACS_INVALID_HANDLE;
+    }
+    ACI_EXCEPTION( ERR_NULL_PARAMETER );
+    {
+        ulsSetErrorCode( aHandle,
+                         ulERR_ABORT_INVALID_USE_OF_NULL_POINTER );
+    }
+    ACI_EXCEPTION( ERR_INVALID_PARAMETER );
+    {
+        ulsSetErrorCode( aHandle,
+                         ulERR_ABORT_ACS_INVALID_PARAMETER_RANGE );
+    }
+    ACI_EXCEPTION_END;
+    
+    return ACS_ERROR;
 }
 
 
@@ -677,15 +937,59 @@ ulsCreateGeomCollection2D( ulsHandle               * aHandle,
                            stdGeometryType        ** aGeometries,
                            ulvSLen                 * aObjLength )
 {
-    return ulsCreateMultiGeometry( aHandle,
-                                   aBuffer,
-                                   aBufferSize,
-                                   STD_GEOCOLLECTION_2D_TYPE,
-                                   STD_UNKNOWN_TYPE,
-                                   1,
-                                   aNumGeometries,
-                                   (stdGeometryType  **) aGeometries,
-                                   aObjLength );
+    ACI_TEST_RAISE( ulsCheckEnv( aHandle ) != ACI_SUCCESS,
+                    ERR_INVALID_HANDLE );
+    
+    ACI_TEST_RAISE( aGeometries == NULL, ERR_NULL_PARAMETER );
+    ACI_TEST_RAISE( aNumGeometries < 1, ERR_INVALID_PARAMETER );
+    ACI_TEST_RAISE( aGeometries[0] == NULL, ERR_INVALID_PARAMETER );
+
+    if ( ulsM_IsGeometry2DExtType(aGeometries[0]->u.header.mType) == 1 )
+    {
+        ACI_TEST( ulsCreateMultiGeometry( aHandle,
+                                          aBuffer,
+                                          aBufferSize,
+                                          STD_GEOCOLLECTION_2D_EXT_TYPE,
+                                          STD_UNKNOWN_TYPE,
+                                          1,
+                                          aNumGeometries,
+                                          (stdGeometryType  **) aGeometries,
+                                          aObjLength )
+                  != ACI_SUCCESS );
+    }
+    else
+    {
+        ACI_TEST( ulsCreateMultiGeometry( aHandle,
+                                          aBuffer,
+                                          aBufferSize,
+                                          STD_GEOCOLLECTION_2D_TYPE,
+                                          STD_UNKNOWN_TYPE,
+                                          1,
+                                          aNumGeometries,
+                                          (stdGeometryType  **) aGeometries,
+                                          aObjLength )
+                  != ACI_SUCCESS );
+    }
+    
+    return ACS_SUCCESS;
+
+    ACI_EXCEPTION( ERR_INVALID_HANDLE );
+    {
+        return ACS_INVALID_HANDLE;
+    }
+    ACI_EXCEPTION( ERR_NULL_PARAMETER );
+    {
+        ulsSetErrorCode( aHandle,
+                         ulERR_ABORT_INVALID_USE_OF_NULL_POINTER );
+    }
+    ACI_EXCEPTION( ERR_INVALID_PARAMETER );
+    {
+        ulsSetErrorCode( aHandle,
+                         ulERR_ABORT_ACS_INVALID_PARAMETER_RANGE );
+    }
+    ACI_EXCEPTION_END;
+    
+    return ACS_ERROR;
 }
 
 
@@ -697,7 +1001,7 @@ ulsCreateGeomCollection2D( ulsHandle               * aHandle,
  *
  * Description:
  *
- *   Geometry HeaderÎ•º Ï¥àÍ∏∞ÌôîÌïúÎã§.
+ *   Geometry Header∏¶ √ ±‚»≠«—¥Ÿ.
  *
  * Implementation:
  *
@@ -719,9 +1023,9 @@ ulsInitHeader( ulsHandle         * aHandle,
     /* Initialize Header*/
     /*------------------------------*/
 
-    /* TODO - stdGeometry->null()Ìï®ÏàòÎ•º ÏÇ¨Ïö©ÌïòÎäî Í≤ÉÏù¥ Î∞îÎûåÏßÅÌïòÎã§.*/
+    /* TODO - stdGeometry->null()«‘ºˆ∏¶ ªÁøÎ«œ¥¬ ∞Õ¿Ã πŸ∂˜¡˜«œ¥Ÿ.*/
     
-    /* Null Ï¥àÍ∏∞Ìôî*/
+    /* Null √ ±‚»≠*/
     acpMemSet( aObjectHeader, 0x00, ACI_SIZEOF( stdGeometryHeader ) );
     ACI_TEST( ulsSetGeoType( aHandle,
                              aObjectHeader,
@@ -738,7 +1042,7 @@ ulsInitHeader( ulsHandle         * aHandle,
  *
  * Description:
  *
- *   Geometry TypeÏùÑ ÏÑ§Ï†ïÌïúÎã§.
+ *   Geometry Type¿ª º≥¡§«—¥Ÿ.
  *
  * Implementation:
  *
@@ -754,7 +1058,7 @@ ulsSetGeoType( ulsHandle          * aHandle,
     /* Parameter Validation*/
     /*------------------------------*/
 
-    /* BUG-28414 : warnning Ï†úÍ±∞ */
+    /* BUG-28414 : warnning ¡¶∞≈ */
     ACE_ASSERT( aHandle != NULL );
     ACE_ASSERT( aObjHeader != NULL );
 
@@ -783,7 +1087,7 @@ ulsSetGeoType( ulsHandle          * aHandle,
  *
  * Description:
  *
- *   Í∞ùÏ≤¥Ïùò Geometry TypeÏùÑ ÌöçÎìùÌïúÎã§.
+ *   ∞¥√º¿« Geometry Type¿ª »πµÊ«—¥Ÿ.
  *
  * Implementation:
  *
@@ -820,7 +1124,7 @@ ulsGetGeoType( ulsHandle          * aHandle,
     }
     else
     {
-        /* Endian Î≥ÄÌôò*/
+        /* Endian ∫Ø»Ø*/
         ulsEndianShort( & sType );
     }
 
@@ -837,7 +1141,7 @@ ulsGetGeoType( ulsHandle          * aHandle,
  *
  * Description:
  *
- *   GeometryÏùò MBRÏùÑ Ïû¨Í≥ÑÏÇ∞ÌïòÏó¨ ÎÑòÍ≤®Ï§ÄÎã§.
+ *   Geometry¿« MBR¿ª ¿Á∞ËªÍ«œø© ≥—∞‹¡ÿ¥Ÿ.
  *
  * Implementation:
  *
@@ -860,15 +1164,18 @@ ACI_RC ulsRecalcMBR(  ulsHandle                * aHandle,
 
     switch( aObj->u.header.mType )
     {
+        case STD_POINT_2D_EXT_TYPE :
         case STD_POINT_2D_TYPE :
             aMbr->mMinX = aMbr->mMaxX = aObj->u.point2D.mPoint.mX;
             aMbr->mMinY = aMbr->mMaxY = aObj->u.point2D.mPoint.mY;
             break;
+        case STD_LINESTRING_2D_EXT_TYPE :
         case STD_LINESTRING_2D_TYPE :
             ulsM_GetMBR2D( aObj->u.linestring2D.mNumPoints,
                            ulsM_GetPointsLS2D( &aObj->u.linestring2D ),
                            aMbr );
             break;
+        case STD_POLYGON_2D_EXT_TYPE :
         case STD_POLYGON_2D_TYPE :
             sNum = aObj->u.polygon2D.mNumRings;
             ACI_TEST( ulsSeekFirstRing2D( aHandle,
@@ -894,10 +1201,14 @@ ACI_RC ulsRecalcMBR(  ulsHandle                * aHandle,
             }
             break;
             
+        case STD_MULTIPOINT_2D_EXT_TYPE :
         case STD_MULTIPOINT_2D_TYPE :
+        case STD_MULTILINESTRING_2D_EXT_TYPE :
         case STD_MULTILINESTRING_2D_TYPE :
-        case STD_MULTIPOLYGON_2D_TYPE        :
-        case STD_GEOCOLLECTION_2D_TYPE       :
+        case STD_MULTIPOLYGON_2D_EXT_TYPE :
+        case STD_MULTIPOLYGON_2D_TYPE :
+        case STD_GEOCOLLECTION_2D_EXT_TYPE :
+        case STD_GEOCOLLECTION_2D_TYPE :
             sNum = aObj->u.mpoint2D.mNumObjects;
             ACI_TEST( ulsSeekFirstGeometry( aHandle,
                                             aObj,
@@ -947,3 +1258,40 @@ ACI_RC ulsRecalcMBR(  ulsHandle                * aHandle,
     return ACI_FAILURE;
 }
 
+/*----------------------------------------------------------------*
+ *
+ * Description: PROJ-2422 SRID
+ *
+ *   Geometry¿« SRID∏¶ ≥—∞‹¡ÿ¥Ÿ.
+ *
+ * Implementation:
+ *
+ *---------------------------------------------------------------*/
+ACI_RC ulsGetSRID(  ulsHandle         * aHandle,
+                    stdGeometryType   * aObj,
+                    acp_sint32_t      * aSRID  )
+{
+    ACI_TEST_RAISE( ulsCheckEnv( aHandle ) != ACI_SUCCESS,
+                    ERR_INVALID_HANDLE );
+
+    ACI_TEST_RAISE( aObj == NULL, ERR_NULL_PARAMETER );
+    ACI_TEST_RAISE( aSRID == NULL, ERR_NULL_PARAMETER );
+
+    *aSRID = ulsM_GetSRID( aObj );
+    
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION( ERR_INVALID_HANDLE );
+    {
+        ulsSetErrorCode( aHandle,
+                         ulERR_ABORT_INVALID_USE_OF_NULL_POINTER );
+    }
+    ACI_EXCEPTION( ERR_NULL_PARAMETER );
+    {
+        ulsSetErrorCode( aHandle,
+                         ulERR_ABORT_INVALID_USE_OF_NULL_POINTER );
+    }
+    ACI_EXCEPTION_END;
+    
+    return ACI_FAILURE;
+}

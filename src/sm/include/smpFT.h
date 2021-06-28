@@ -26,9 +26,9 @@
 # include <smDef.h>
 # include <sdcDef.h>
 
-/* í˜„ì¬ VarcharëŠ” 32000ê¹Œì§€ ê°€ëŠ¥í•˜ë‹¤. ë”°ë¼ì„œ, 
- * Pageí•˜ë‚˜ë¥¼ ëª½ë•… Dumpí•˜ê¸°ì—ëŠ” ì¶©ë¶„í•˜ì§€ ì•Šê¸°
- * ë•Œë¬¸ì—, 8192Byteì”©Dumpí•œë‹¤. */
+/* ÇöÀç Varchar´Â 32000±îÁö °¡´ÉÇÏ´Ù. µû¶ó¼­, 
+ * PageÇÏ³ª¸¦ ¸ù¶¥ DumpÇÏ±â¿¡´Â ÃæºĞÇÏÁö ¾Ê±â
+ * ¶§¹®¿¡, 8192Byte¾¿DumpÇÑ´Ù. */
 
 #define SMP_PAGE_PART_SIZE       (8192)
 #define SMP_DUMP_COLUMN_SIZE     ((SMP_PAGE_PART_SIZE*2) + 8)
@@ -53,7 +53,7 @@ class smpFT
 public:
     //------------------------------------------
     // D$MEM_DB_PAGE
-    // MEM PCHë¡œë¶€í„° í˜ì´ì§€ë¥¼ Dumpí•œë‹¤.
+    // MEM PCH·ÎºÎÅÍ ÆäÀÌÁö¸¦ DumpÇÑ´Ù.
     //------------------------------------------
     static IDE_RC buildRecordMemDBPageDump(idvSQL              * /*aStatistics*/,
                                            void                *aHeader,

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smrUpdate.h 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: smrUpdate.h 90444 2021-04-02 10:15:58Z minku.kang $
  **********************************************************************/
 
 #ifndef _O_SMR_UPDATE_H_
@@ -43,7 +43,7 @@ public:
                                   smrUptLogImgInfo *aAftImage,
                                   smLSN            *aWrittenLogLSN = NULL);
 
-    /* NullTransaction ( ID_UINT_MAX)ë¡œ Logë¥¼ ê¸°ë¡í•¨ */
+    /* NullTransaction (ID_SINT_MAX)·Î Log¸¦ ±â·ÏÇÔ */
     static IDE_RC writeDummyUpdateLog( smrUpdateType     aUpdateLogType,
                                        scGRID            aGRID,
                                        vULong            aData,
@@ -126,7 +126,7 @@ public:
                                          void*        aTrans,
                                          smOID        aOID,
                                          const smVCDesc*  aIndex,
-                                         //tableí—¤ë”ì˜ mIndexes[] ì²¨ì
+                                         //tableÇì´õÀÇ mIndexes[] Ã·ÀÚ
                                          const UInt   aOIDIdx,
                                          smOID        aOIDVar,
                                          UInt         aLength,
@@ -360,36 +360,36 @@ public:
                                          void*   aTrans, 
                                          smLSN*  aLsnNTA ); 
 
-    // Memory Tablespace Createì— ëŒ€í•œ ë¡œê¹…
+    // Memory Tablespace Create¿¡ ´ëÇÑ ·Î±ë
     static IDE_RC writeMemoryTBSCreate( idvSQL                * aStatistics,
                                         void                  * aTrans,
                                         smiTableSpaceAttr     * aTBSAttr,
                                         smiChkptPathAttrList  * aChkptPathAttrList );
     
-    // Volatile Tablespace Create ë° Dropì— ëŒ€í•œ ë¡œê¹…
+    // Volatile Tablespace Create ¹× Drop¿¡ ´ëÇÑ ·Î±ë
     static IDE_RC writeVolatileTBSCreate( idvSQL*             aStatistics,
                                           void*               aTrans,
                                           scSpaceID           aSpaceID );
     
-    // Memory Tablespace DB File ìƒì„±ì— ëŒ€í•œ ë¡œê¹…
+    // Memory Tablespace DB File »ı¼º¿¡ ´ëÇÑ ·Î±ë
     static IDE_RC writeMemoryDBFileCreate( idvSQL*             aStatistics,
                                            void*               aTrans,
                                            scSpaceID           aSpaceID,
                                            UInt                aPingPongNo,
                                            UInt                aDBFileNo );
 
-    // Memory Tablespace Dropì— ëŒ€í•œ ë¡œê¹…
+    // Memory Tablespace Drop¿¡ ´ëÇÑ ·Î±ë
     static IDE_RC writeMemoryTBSDrop( idvSQL*             aStatistics,
                                       void*               aTrans,
                                       scSpaceID           aSpaceID,
                                       smiTouchMode        aTouchMode );
     
-    // Volatile Tablespace Dropì— ëŒ€í•œ ë¡œê¹…
+    // Volatile Tablespace Drop¿¡ ´ëÇÑ ·Î±ë
     static IDE_RC writeVolatileTBSDrop( idvSQL*             aStatistics,
                                         void*               aTrans,
                                         scSpaceID           aSpaceID );
 
-    // Memory Tablespace ì˜ ALTER AUTO EXTEND ... ì— ëŒ€í•œ ë¡œê¹…
+    // Memory Tablespace ÀÇ ALTER AUTO EXTEND ... ¿¡ ´ëÇÑ ·Î±ë
     static IDE_RC writeMemoryTBSAlterAutoExtend(
                       idvSQL*             aStatistics,
                       void*               aTrans,
@@ -401,7 +401,7 @@ public:
                       scPageID            aANextPageCount,
                       scPageID            aAMaxPageCount );
 
-    // Volatile Tablespace ì˜ ALTER AUTO EXTEND ... ì— ëŒ€í•œ ë¡œê¹…
+    // Volatile Tablespace ÀÇ ALTER AUTO EXTEND ... ¿¡ ´ëÇÑ ·Î±ë
     static IDE_RC writeVolatileTBSAlterAutoExtend(
                       idvSQL*             aStatistics,
                       void*               aTrans,
@@ -413,7 +413,7 @@ public:
                       scPageID            aANextPageCount,
                       scPageID            aAMaxPageCount );
 
-    // Tablespace Attribute Flagì˜ ë³€ê²½ì— ëŒ€í•œ ë¡œê¹…
+    // Tablespace Attribute FlagÀÇ º¯°æ¿¡ ´ëÇÑ ·Î±ë
     // (Ex> ALTER Tablespace Log Compress ON/OFF )
     static IDE_RC writeTBSAlterAttrFlag(
                       void*               aTrans,
@@ -421,7 +421,7 @@ public:
                       UInt                aBeforeAttrFlag,
                       UInt                aAfterAttrFlag );
     
-    // Tablespace ì˜ ALTER ONLINE/OFFLINE ... ì— ëŒ€í•œ ë¡œê¹…
+    // Tablespace ÀÇ ALTER ONLINE/OFFLINE ... ¿¡ ´ëÇÑ ·Î±ë
     static IDE_RC writeTBSAlterOnOff(
                       idvSQL*             aStatistics,
                       void*               aTrans,
@@ -431,7 +431,7 @@ public:
                       UInt                aAState, 
                       smLSN*              aBeginLSN );
     
-    // Disk Tablespaceì˜ Create/Drop ì— ëŒ€í•œ ë¡œê¹… ìˆ˜í–‰ 
+    // Disk TablespaceÀÇ Create/Drop ¿¡ ´ëÇÑ ·Î±ë ¼öÇà 
     static IDE_RC writeDiskTBSCreateDrop( idvSQL            * aStatistics,
                                           void              * aTrans,
                                           sctUpdateType       aUpdateType,
@@ -439,7 +439,7 @@ public:
                                           smiTableSpaceAttr * aTableSpaceAttr,  /* PROJ-1923 */
                                           smLSN             * aBeginLSN );
     
-    // Disk DataFile ì˜ Alter Online/Offline ì— ëŒ€í•œ ë¡œê¹… ìˆ˜í–‰ 
+    // Disk DataFile ÀÇ Alter Online/Offline ¿¡ ´ëÇÑ ·Î±ë ¼öÇà 
     static IDE_RC writeDiskDBFAlterOnOff( idvSQL*             aStatistics,
                                           void*               aTrans,
                                           scSpaceID           aSpaceID,
@@ -448,7 +448,7 @@ public:
                                           UInt                aBState,
                                           UInt                aAState );
 
-    // DBF ìƒì„±ì— ëŒ€í•œ ë¡œê¹… ìˆ˜í–‰
+    // DBF »ı¼º¿¡ ´ëÇÑ ·Î±ë ¼öÇà
     static IDE_RC writeLogCreateDBF( idvSQL             * aStatistics,
                                      void               * aTrans,
                                      scSpaceID            aSpaceID,
@@ -456,7 +456,7 @@ public:
                                      smiTouchMode         aTouchMode,
                                      smiDataFileAttr    * aFileAttr,    /* PROJ-1923 */
                                      smLSN              * aBeginLSN);
-    // DBF ì‚­ì œì— ëŒ€í•œ ë¡œê¹… ìˆ˜í–‰
+    // DBF »èÁ¦¿¡ ´ëÇÑ ·Î±ë ¼öÇà
     static IDE_RC writeLogDropDBF(idvSQL*             aStatistics,
                                   void               *aTrans,
                                   scSpaceID           aSpaceID,
@@ -475,7 +475,7 @@ public:
                                          UInt           aBImgSize,
                                          UInt           aAImgSize);
 
-    // DBF í™•ì¥ì— ëŒ€í•œ ë¡œê¹… ìˆ˜í–‰
+    // DBF È®Àå¿¡ ´ëÇÑ ·Î±ë ¼öÇà
     static IDE_RC writeLogExtendDBF(idvSQL*             aStatistics,
                                     void               *aTrans,
                                     scSpaceID           aSpaceID,
@@ -483,7 +483,7 @@ public:
                                     ULong               aAfterCurrSize,
                                     smLSN              *aBeginLSN);
 
-    // DBF ì¶•ì†Œì— ëŒ€í•œ ë¡œê¹… ìˆ˜í–‰
+    // DBF Ãà¼Ò¿¡ ´ëÇÑ ·Î±ë ¼öÇà
     static IDE_RC writeLogShrinkDBF(idvSQL*             aStatistics,
                                     void               *aTrans,
                                     scSpaceID           aSpaceID,
@@ -492,7 +492,7 @@ public:
                                     ULong               aAfterCurrSize,
                                     smLSN              *aBeginLSN);
 
-    // DBF Autoextend mode ë³€ê²½ì— ëŒ€í•œ ë¡œê¹… ìˆ˜í–‰
+    // DBF Autoextend mode º¯°æ¿¡ ´ëÇÑ ·Î±ë ¼öÇà
     static IDE_RC writeLogSetAutoExtDBF(idvSQL*             aStatistics,
                                         void               *aTrans,
                                         scSpaceID           aSpaceID,
@@ -502,7 +502,7 @@ public:
                                         ULong               aAfterMaxSize,
                                         smLSN              *aBeginLSN);
 
-    // Prepare íŠ¸ëœì­ì…˜ì— ëŒ€í•œ íŠ¸ëœì­ì…˜ ì„¸ê·¸ë¨¼íŠ¸ ì •ë³´ ë³µì›
+    // Prepare Æ®·£Àè¼Ç¿¡ ´ëÇÑ Æ®·£Àè¼Ç ¼¼±×¸ÕÆ® Á¤º¸ º¹¿ø
     static IDE_RC writeXaSegsLog( idvSQL      * aStatistics,
                                   void        * aTrans,
                                   ID_XID      * aXID,
@@ -516,7 +516,12 @@ public:
                                   scPageID      aFstUndoPID,
                                   scPageID      aLstUndoPID );
 
-    static IDE_RC writeXaPrepareReqLog( smTID    aTID,
+    static IDE_RC writeXaStartReqLog( ID_XID * aXID,
+                                      smTID    aTID,
+                                      smLSN  * aLSN );
+
+    static IDE_RC writeXaPrepareReqLog( ID_XID * aXID,
+                                        smTID    aTID,
                                         UInt     aGlobalTxId,
                                         UChar  * aBranchTx,
                                         UInt     aBranchTxSize,

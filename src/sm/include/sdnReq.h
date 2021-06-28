@@ -162,10 +162,12 @@ class sdnReqFunc
         };
         static IDE_RC waitForTrans( void     * aTrans,
                                     smTID     aWaitTransID,
+                                    scSpaceID aSpaceID,
                                     ULong     aLockWaitTime )
         {
             return smxTransMgr::waitForTrans( aTrans ,
                                               aWaitTransID,
+                                              aSpaceID,
                                               aLockWaitTime );
         };
         static idBool isWaitForTransCase( void   * aTrans,
@@ -208,10 +210,6 @@ class sdnReqFunc
                                                 aPageID,
                                                 aCTSlotNum );
         };
-        static void getSysMinDskViewSCN( smSCN * aSCN )
-        {
-            smxTransMgr::getSysMinDskViewSCN( aSCN );
-        };
         static IDE_RC rebuildMinViewSCN( idvSQL * aStatistics )
         {
             return smxTransMgr::rebuildMinViewSCN( aStatistics );
@@ -253,6 +251,12 @@ class sdnReqFunc
         {
             return smlLockMgr::lockTableModeIS( aTrans,
                                                 aLockItem );
+        };
+        static IDE_RC lockTableModeIS4FixedTable( void * aTrans,
+                                                  void * aLockItem )
+        {
+            return smlLockMgr::lockTableModeIS4FixedTable( aTrans,
+                                                           aLockItem );
         };
 };
 

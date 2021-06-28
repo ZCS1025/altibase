@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduMemPool.h 84032 2018-09-19 05:32:05Z kclee $
+ * $Id: iduMemPool.h 83870 2018-09-03 04:32:39Z kclee $
  **********************************************************************/
 
 #ifndef _O_IDU_MEM_POOL_H_
@@ -27,8 +27,8 @@ typedef enum iduMemPoolType{
 
 #define IDU_MEM_POOL_MUTEX_POSTFIX       "_MUTEX_"
 
-//10: UINT32_FMTì˜ 10ì§„ìˆ˜í‘œê¸°ìµœëŒ€ìë¦¬ìˆ˜(iduMemList.cppì—ì„œ ì‚¬ìš©í•¨.)
-//1 : ë¬¸ìì—´ë null
+//10: UINT32_FMTÀÇ 10Áø¼öÇ¥±âÃÖ´ëÀÚ¸®¼ö(iduMemList.cpp¿¡¼­ »ç¿ëÇÔ.)
+//1 : ¹®ÀÚ¿­³¡ null
 //ex)64 - 7 -10 - 1
 #define IDU_MEM_POOL_NAME_LEN  ( IDU_MUTEX_NAME_LEN - \
                                  ID_SIZEOF(IDU_MEM_POOL_MUTEX_POSTFIX)-10 -1)

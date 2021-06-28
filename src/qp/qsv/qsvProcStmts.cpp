@@ -14,9 +14,8 @@
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
  
-
 /***********************************************************************
- * $Id: qsvProcStmts.cpp 85120 2019-04-02 01:27:30Z khkwak $
+ * $Id: qsvProcStmts.cpp 90004 2021-02-16 23:52:58Z khkwak $
  **********************************************************************/
 
 #include <idl.h>
@@ -44,6 +43,7 @@
 #include <qmvWith.h>
 #include <qdpPrivilege.h>
 #include <qdpRole.h>
+#include <sdi.h>
 
 extern mtdModule    mtdBoolean;
 extern mtdModule    mtdVarchar;
@@ -92,8 +92,8 @@ IDE_RC qsvProcStmts::validateBlock( qcStatement * aStatement,
     sParseTree = aStatement->spvEnv->createProc;
 
     // BUG-37364
-    // packageì˜ initialize sectionì—ì„œ declare block ì‚¬ìš© ì‹œ
-    // qsProcParseTreeëŠ” NULLì´ë‹¤.
+    // packageÀÇ initialize section¿¡¼­ declare block »ç¿ë ½Ã
+    // qsProcParseTree´Â NULLÀÌ´Ù.
     if( sParseTree != NULL )
     {
         // fix BUG-32837
@@ -103,7 +103,7 @@ IDE_RC qsvProcStmts::validateBlock( qcStatement * aStatement,
     else
     {
         // Nothing to do.
-        // packageì˜ initialize sectionì—” parameterê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // packageÀÇ initialize section¿£ parameter°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
     }
 
     IDE_TEST(connectAllVariables( aStatement,
@@ -158,13 +158,13 @@ IDE_RC qsvProcStmts::validateBlock( qcStatement * aStatement,
     }
 
     // local variables, cursor
-    // PROJ-1075 type ì´ë¦„ë„ ì¤‘ë³µë  ìˆ˜ ì—†ìŒ.(ë³€ìˆ˜ì™€ í˜¼ìš©ë¶ˆê°€)
+    // PROJ-1075 type ÀÌ¸§µµ Áßº¹µÉ ¼ö ¾øÀ½.(º¯¼ö¿Í È¥¿ëºÒ°¡)
     for (sCurrItem = sBLOCK->variableItems;
          sCurrItem != NULL;
          sCurrItem = sCurrItem->next)
     {
         // To fix BUG-14129
-        // í˜„ì¬ validateì¤‘ì¸ declare itemì„ ë§í¬.
+        // ÇöÀç validateÁßÀÎ declare itemÀ» ¸µÅ©.
         aStatement->spvEnv->currDeclItem = sCurrItem;
 
         if ( ( sCurrItem->itemType == QS_VARIABLE ) ||
@@ -247,12 +247,20 @@ IDE_RC qsvProcStmts::validateBlock( qcStatement * aStatement,
             switch ( sCurrItem->itemType )
             {
                 /* BUG-43112
-                   __autonomous_transaction_pragma_disable propertyê°€ 
-                   0(default)ì´ë©´ ATê¸°ëŠ¥ ì§€ì›, 1ì´ë©´ ê¸°ëŠ¥ì„ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+                   __autonomous_transaction_pragma_disable property°¡ 
+                   0(default)ÀÌ¸é AT±â´É Áö¿ø, 1ÀÌ¸é ±â´ÉÀ» Áö¿øÇÏÁö ¾Ê´Â´Ù. */
                 case QS_PRAGMA_AUTONOMOUS_TRANS:
+                    // TASK-7244 Shard¿¡¼­´Â Autonomous transactionÀ» Áö¿øÇÏÁö ¾Ê´Â´Ù.
+                    if ( SDU_SHARD_ENABLE == 1 )
+                    {
+                        sqlInfo.setSourceInfo( aStatement,
+                                               & sCurrItem->name );
+                        IDE_RAISE( ERR_NOT_SUPPORT_AT );
+                    }
+
                     if ( QCU_AUTONOMOUS_TRANSACTION_PRAGMA_DISABLE == 0 )
                     {
-                        // qsProcStmtsBlockì´ ìµœìƒìœ„ì—¬ì•¼ í•œë‹¤. 
+                        // qsProcStmtsBlockÀÌ ÃÖ»óÀ§¿©¾ß ÇÑ´Ù. 
                         if ( aParentStmt == NULL )
                         {
                             for ( sNextItem = sCurrItem->next;
@@ -299,11 +307,11 @@ IDE_RC qsvProcStmts::validateBlock( qcStatement * aStatement,
     }
 
     /* BUG-34112
-       í…ŒìŠ¤íŠ¸ë¥¼ ìœ„í•´ ê°•ì œì ìœ¼ë¡œ AT ì„¤ì •í•©ë‹ˆë‹¤. ì„¤ì •ì¡°ê±´ì€ ì•„ë˜ì™€ ê°™ìŠµë‹ˆë‹¤.
-           1. ìµœìƒìœ„ psm block ì¼ ê²ƒ
-           2. autonomous_transaction_pragam disableì´ 0(default)ì¼ ê²ƒ
-           3. __force_autonomous_transaction_pragmaê°€ 1 ì¼ ê²ƒ
-           4. ìœ„ì—ì„œ ATê°€ ID_FALSE ì¼ ê²ƒ => ì´ë¯¸ ì„¤ì •ëœ ìƒíƒœì—ì„œ ì¬ì„¤ì • í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+       Å×½ºÆ®¸¦ À§ÇØ °­Á¦ÀûÀ¸·Î AT ¼³Á¤ÇÕ´Ï´Ù. ¼³Á¤Á¶°ÇÀº ¾Æ·¡¿Í °°½À´Ï´Ù.
+           1. ÃÖ»óÀ§ psm block ÀÏ °Í
+           2. autonomous_transaction_pragam disableÀÌ 0(default)ÀÏ °Í
+           3. __force_autonomous_transaction_pragma°¡ 1 ÀÏ °Í
+           4. À§¿¡¼­ AT°¡ ID_FALSE ÀÏ °Í => ÀÌ¹Ì ¼³Á¤µÈ »óÅÂ¿¡¼­ Àç¼³Á¤ ÇÏÁö ¾Ê´Â´Ù. */
     if ( (aParentStmt == NULL) &&
          (QCU_AUTONOMOUS_TRANSACTION_PRAGMA_DISABLE == 0) &&
          (QCU_FORCE_AUTONOMOUS_TRANSACTION_PRAGMA == 1) &&
@@ -317,8 +325,8 @@ IDE_RC qsvProcStmts::validateBlock( qcStatement * aStatement,
     }
 
     // To fix BUG-14129
-    // declare itemì˜ validation ì™„ë£Œ.
-    // ë§í¬ë¥¼ í•´ì œ.
+    // declare itemÀÇ validation ¿Ï·á.
+    // ¸µÅ©¸¦ ÇØÁ¦.
     aStatement->spvEnv->currDeclItem = NULL;
 
     // parse & validate body
@@ -336,10 +344,10 @@ IDE_RC qsvProcStmts::validateBlock( qcStatement * aStatement,
     {
         // exception handler
         // PROJ-1335, To fix BUG-12475
-        // exception handler ì•ˆì—ì„œëŠ” ìì‹ ì˜ blockìœ¼ë¡œ goto í•  ìˆ˜ ì—†ê³ 
-        // ìì‹ ì˜ ìƒìœ„ blockìœ¼ë¡œ gotoí•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì—
-        // parent statementì˜ ì¸ìë¡œ ìì‹ ì˜ statementë¥¼ ì£¼ëŠ” ê²ƒì´ ì•„ë‹ˆë¼
-        // ìì‹ ì˜ parent statementë¥¼ ë„˜ê¸´ë‹¤.
+        // exception handler ¾È¿¡¼­´Â ÀÚ½ÅÀÇ blockÀ¸·Î goto ÇÒ ¼ö ¾ø°í
+        // ÀÚ½ÅÀÇ »óÀ§ blockÀ¸·Î gotoÇÒ ¼ö ÀÖ±â ¶§¹®¿¡
+        // parent statementÀÇ ÀÎÀÚ·Î ÀÚ½ÅÀÇ statement¸¦ ÁÖ´Â °ÍÀÌ ¾Æ´Ï¶ó
+        // ÀÚ½ÅÀÇ parent statement¸¦ ³Ñ±ä´Ù.
         IDE_TEST(validateExceptionHandler( aStatement, sBLOCK, NULL, aParentStmt, aPurpose )
                  != IDE_SUCCESS);
     }
@@ -347,8 +355,8 @@ IDE_RC qsvProcStmts::validateBlock( qcStatement * aStatement,
     disconnectAllVariables( aStatement, sOldAllVariables );
 
     // BUG-37364
-    // packageì˜ initialize sectionì—ì„œ declare block ì‚¬ìš© ì‹œ
-    // qsProcParseTreeëŠ” NULLì´ë‹¤.
+    // packageÀÇ initialize section¿¡¼­ declare block »ç¿ë ½Ã
+    // qsProcParseTree´Â NULLÀÌ´Ù.
     if( sParseTree != NULL )
     {
         // fix BUG-32837
@@ -357,7 +365,7 @@ IDE_RC qsvProcStmts::validateBlock( qcStatement * aStatement,
     else
     {
         // Nothing to do.
-        // packageì˜ initialize sectionì—” parameterê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // packageÀÇ initialize section¿£ parameter°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
     }
 
     return IDE_SUCCESS;
@@ -395,6 +403,30 @@ IDE_RC qsvProcStmts::validateBlock( qcStatement * aStatement,
                             sqlInfo.getErrMessage() ));
         (void)sqlInfo.fini();
     }
+    IDE_EXCEPTION( ERR_NOT_SUPPORT_AT );
+    {
+        // TASK-7244 Shard¿¡¼­´Â Autonomous transactionÀ» Áö¿øÇÏÁö ¾Ê´Â´Ù.
+        IDE_SET(
+            ideSetErrorCode(sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
+                            "Autonomous transaction exists.",
+                            "" ) );
+
+        // set original error code.
+        qsxEnv::setErrorCode( QC_QSX_ENV(aStatement) );
+
+        (void)sqlInfo.initWithBeforeMessage(
+            aStatement->qmeMem );
+
+        IDE_SET(
+            ideSetErrorCode(qpERR_ABORT_QSX_SQLTEXT_WRAPPER,
+                            sqlInfo.getBeforeErrMessage(),
+                            sqlInfo.getErrMessage()));
+        (void)sqlInfo.fini();
+
+        // set sophisticated error message.
+        qsxEnv::setErrorMessage( QC_QSX_ENV(aStatement) );
+    }
+
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -409,11 +441,11 @@ IDE_RC qsvProcStmts::parseSql( qcStatement * aStatement,
 
     QSV_ENV_SET_SQL( aStatement, aProcStmts );
 
-    // BUG-37878 withì ˆì´ ìˆìœ¼ë©´ parse ë‹¨ê³„ì—ì„œë„ validateë¥¼ ìˆ˜í–‰í•˜ê³ ,
-    // sysdateë¥¼ ì‚¬ìš©í•˜ë©´ setUseDate í•¨ìˆ˜ì—ì„œ currStmtë¥¼ ì‚¬ìš©í•˜ë¯€ë¡œ ì„¤ì •í•œë‹¤.
+    // BUG-37878 withÀıÀÌ ÀÖÀ¸¸é parse ´Ü°è¿¡¼­µµ validate¸¦ ¼öÇàÇÏ°í,
+    // sysdate¸¦ »ç¿ëÇÏ¸é setUseDate ÇÔ¼ö¿¡¼­ currStmt¸¦ »ç¿ëÇÏ¹Ç·Î ¼³Á¤ÇÑ´Ù.
     aStatement->spvEnv->currStmt = aProcStmts;
 
-    // qcStatement ë‹¤ì‹œ êµ¬ì¶•
+    // qcStatement ´Ù½Ã ±¸Ãà
     IDE_TEST( initSqlStmtForParse( aStatement,
                                    aProcStmts ) != IDE_SUCCESS );
 
@@ -441,7 +473,7 @@ IDE_RC qsvProcStmts::parseSql( qcStatement * aStatement,
     qsxEnv::setErrorCode( QC_QSX_ENV(aStatement) );
 
     // BUG-43998
-    // PSM ìƒì„± ì˜¤ë¥˜ ë°œìƒì‹œ ì˜¤ë¥˜ ë°œìƒ ìœ„ì¹˜ë¥¼ í•œ ë²ˆë§Œ ì¶œë ¥í•˜ë„ë¡ í•©ë‹ˆë‹¤.
+    // PSM »ı¼º ¿À·ù ¹ß»ı½Ã ¿À·ù ¹ß»ı À§Ä¡¸¦ ÇÑ ¹ø¸¸ Ãâ·ÂÇÏµµ·Ï ÇÕ´Ï´Ù.
     if ( ideHasErrorPosition() == ID_FALSE )
     {
         sqlInfo.setSourceInfo( aStatement,
@@ -476,7 +508,7 @@ IDE_RC qsvProcStmts::initSqlStmtForParse( qcStatement * aStatement,
 
     sStatement->mStatistics = aStatement->mStatistics;
 
-    // myPlanì„ ì„¤ì •í•œë‹¤.
+    // myPlanÀ» ¼³Á¤ÇÑ´Ù.
     sStatement->myPlan = & sStatement->privatePlan;
     sStatement->myPlan->planEnv = NULL;
 
@@ -496,6 +528,9 @@ IDE_RC qsvProcStmts::initSqlStmtForParse( qcStatement * aStatement,
 
     sStatement->myPlan->parseTree       = sSQL->parseTree;
     sStatement->myPlan->parseTree->stmt = sStatement;
+
+    /* TASK-7219 Shard Transformer Refactoring */
+    sStatement->mShardQuerySetList = aStatement->mShardQuerySetList;
 
     sSQL->statement = sStatement;
 
@@ -520,7 +555,7 @@ IDE_RC qsvProcStmts::parseCursor( qcStatement * aStatement,
     QSV_ENV_SET_SQL( aStatement, aCursor );
 
     // BUG-44716 Initialize & finalize parameters of Cursor
-    // Package specì˜ cursorì— packageì˜ OIDë¥¼ ë„£ì–´ì¤€ë‹¤.
+    // Package specÀÇ cursor¿¡ packageÀÇ OID¸¦ ³Ö¾îÁØ´Ù.
     if ( (aStatement->spvEnv->createPkg != NULL) &&
          (aStatement->spvEnv->createPkg->objType == QS_PKG) )
     {
@@ -539,14 +574,14 @@ IDE_RC qsvProcStmts::parseCursor( qcStatement * aStatement,
                                       aCursor ) != IDE_SUCCESS );
 
     // BUG-38629 Cursor parameter should be found at 'with clause' in PSM.
-    // PSMì˜ cursorë¥¼ ì„ ì–¸í•  ë•Œ with ì ˆì„ ì‚¬ìš©í•˜ë©´
-    // qmv::parseSelectì—ì„œ withì ˆì„ validateí•œë‹¤.
-    // ì´ë•Œ withì ˆì´ cursor parameterë¥¼ ì°¸ì¡°í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
-    // cursor parameterë¥¼ ë¯¸ë¦¬ validateí•˜ê³  allParaDeclsì— ì—°ê²°í•œë‹¤.
+    // PSMÀÇ cursor¸¦ ¼±¾ğÇÒ ¶§ with ÀıÀ» »ç¿ëÇÏ¸é
+    // qmv::parseSelect¿¡¼­ withÀıÀ» validateÇÑ´Ù.
+    // ÀÌ¶§ withÀıÀÌ cursor parameter¸¦ ÂüÁ¶ÇÒ ¼ö ÀÖÀ¸¹Ç·Î
+    // cursor parameter¸¦ ¹Ì¸® validateÇÏ°í allParaDecls¿¡ ¿¬°áÇÑ´Ù.
     if (aCursor->paraDecls != NULL)
     {
-        // validateParaDef ì¤‘ì— ì˜¤ë¥˜ê°€ ë°œìƒí•œ ê²½ìš°ì—ëŠ” error ì²˜ë¦¬ì‹œ
-        // Error msgë¥¼ wrapperë¡œ ê°ì‹¸ì§€ ì•ŠëŠ”ë‹¤.
+        // validateParaDef Áß¿¡ ¿À·ù°¡ ¹ß»ıÇÑ °æ¿ì¿¡´Â error Ã³¸®½Ã
+        // Error msg¸¦ wrapper·Î °¨½ÎÁö ¾Ê´Â´Ù.
         sStage = 1;
         // validate parameter
         IDE_TEST(qsvProcVar::validateParaDef(aStatement, aCursor->paraDecls)
@@ -574,7 +609,9 @@ IDE_RC qsvProcStmts::parseCursor( qcStatement * aStatement,
         // Nothing to do.
     }
 
-    IDE_TEST( qmv::parseSelect(aCursor->statement) != IDE_SUCCESS );
+    /* TASK-7219 Shard Transformer Refactoring */
+    IDE_TEST( qmv::parseSelectInternal( aCursor->statement )
+              != IDE_SUCCESS );
 
     if (aCursor->paraDecls != NULL)
     {
@@ -599,7 +636,7 @@ IDE_RC qsvProcStmts::parseCursor( qcStatement * aStatement,
     IDE_EXCEPTION_END;
 
     // BUG-43998
-    // PSM ìƒì„± ì˜¤ë¥˜ ë°œìƒì‹œ ì˜¤ë¥˜ ë°œìƒ ìœ„ì¹˜ë¥¼ í•œ ë²ˆë§Œ ì¶œë ¥í•˜ë„ë¡ í•©ë‹ˆë‹¤.
+    // PSM »ı¼º ¿À·ù ¹ß»ı½Ã ¿À·ù ¹ß»ı À§Ä¡¸¦ ÇÑ ¹ø¸¸ Ãâ·ÂÇÏµµ·Ï ÇÕ´Ï´Ù.
     if ( sStage == 0 )
     {
         // set original error code.
@@ -643,7 +680,7 @@ IDE_RC qsvProcStmts::initCursorStmtForParse( qcStatement * aStatement,
 
     sStatement->mStatistics = aStatement->mStatistics;
 
-    // myPlanì„ ì„¤ì •í•œë‹¤.
+    // myPlanÀ» ¼³Á¤ÇÑ´Ù.
     sStatement->myPlan = & sStatement->privatePlan;
     sStatement->myPlan->planEnv = NULL;
 
@@ -664,6 +701,9 @@ IDE_RC qsvProcStmts::initCursorStmtForParse( qcStatement * aStatement,
     sStatement->myPlan->parseTree = aCursor->mCursorSql->parseTree;
 
     sStatement->myPlan->parseTree->stmt = sStatement;
+
+    /* TASK-7219 Shard Transformer Refactoring */
+    sStatement->mShardQuerySetList = aStatement->mShardQuerySetList;
 
     aCursor->statement = sStatement;
 
@@ -741,7 +781,7 @@ IDE_RC qsvProcStmts::validateSql( qcStatement     * aStatement,
            (sStatement->myPlan->parseTree->stmtKind == QCI_STMT_SELECT_FOR_UPDATE) ||
            (sStatement->myPlan->parseTree->stmtKind == QCI_STMT_DEQUEUE) )
          &&
-         ( sSQL->isExistsSql == ID_FALSE ) )  // if exists subqueryëŠ” ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+         ( sSQL->isExistsSql == ID_FALSE ) )  // if exists subquery´Â °Ë»çÇÏÁö ¾Ê´Â´Ù.
     {
         sParseTree = (qmsParseTree *) sStatement->myPlan->parseTree;
 
@@ -764,11 +804,13 @@ IDE_RC qsvProcStmts::validateSql( qcStatement     * aStatement,
             }
             else
             {
-                // lvalueì— psmë³€ìˆ˜ê°€ ì¡´ì¬í•˜ë¯€ë¡œ lvalue flagë¥¼ ì”Œì›€.
-                // outì¸ ê²½ìš°ì—ë§Œ í•´ë‹¹ë¨. array_index_variableì¸ ê²½ìš°
-                // ì—†ìœ¼ë©´ ë§Œë“¤ì–´ì•¼ í•˜ê¸° ë•Œë¬¸.
-                if( sCurrParam->inOutType == QS_OUT )
+                // lvalue¿¡ psmº¯¼ö°¡ Á¸ÀçÇÏ¹Ç·Î lvalue flag¸¦ ¾º¿ò.
+                // outÀÎ °æ¿ì¿¡¸¸ ÇØ´çµÊ. array_index_variableÀÎ °æ¿ì
+                // ¾øÀ¸¸é ¸¸µé¾î¾ß ÇÏ±â ¶§¹®.
+                if( (sCurrParam->inOutType == QS_OUT) ||
+                    (sCurrParam->inOutType == QS_INOUT) )
                 {
+                    sCurrParamNode->lflag &= ~QTC_NODE_LVALUE_MASK;
                     sCurrParamNode->lflag |= QTC_NODE_LVALUE_ENABLE;
                 }
                 else
@@ -780,10 +822,10 @@ IDE_RC qsvProcStmts::validateSql( qcStatement     * aStatement,
     }
 
     // PROJ-1359 Trigger
-    // Triggerë¥¼ ìœ„í•œ Validationì„ ìˆ˜í–‰í•œë‹¤.
-    // Action Body ë‚´ì— ë‹¤ìŒ êµ¬ë¬¸ì„ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
-    //     - Transaction Control Statementë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
-    //     - PSMì„ í˜¸ì¶œí•  ìˆ˜ ì—†ë‹¤.
+    // Trigger¸¦ À§ÇÑ ValidationÀ» ¼öÇàÇÑ´Ù.
+    // Action Body ³»¿¡ ´ÙÀ½ ±¸¹®À» »ç¿ëÇÒ ¼ö ¾ø´Ù.
+    //     - Transaction Control Statement¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù.
+    //     - PSMÀ» È£ÃâÇÒ ¼ö ¾ø´Ù.
     switch ( aPurpose )
     {
         case QS_PURPOSE_PSM:
@@ -854,7 +896,7 @@ IDE_RC qsvProcStmts::validateSql( qcStatement     * aStatement,
     qsxEnv::setErrorCode( QC_QSX_ENV(aStatement) );
 
     // BUG-43998
-    // PSM ìƒì„± ì˜¤ë¥˜ ë°œìƒì‹œ ì˜¤ë¥˜ ë°œìƒ ìœ„ì¹˜ë¥¼ í•œ ë²ˆë§Œ ì¶œë ¥í•˜ë„ë¡ í•©ë‹ˆë‹¤.
+    // PSM »ı¼º ¿À·ù ¹ß»ı½Ã ¿À·ù ¹ß»ı À§Ä¡¸¦ ÇÑ ¹ø¸¸ Ãâ·ÂÇÏµµ·Ï ÇÕ´Ï´Ù.
     if ( ideHasErrorPosition() == ID_FALSE )
     {
         sqlInfo.setSourceInfo( aStatement,
@@ -1079,8 +1121,8 @@ IDE_RC qsvProcStmts::validateWhile( qcStatement     * aStatement,
     }
 
     // BUG-41262 PSM overloading
-    // PSM overloading ì€ parser ë‹¨ê³„ì—ì„œ ì²˜ë¦¬í•œë‹¤.
-    // í•˜ì§€ë§Œ PSM ë‚´ë¶€ì˜ ë³€ìˆ˜ëŠ” connectAllVariables ë¥¼ í˜¸ì¶œí›„ì— ì ‘ê·¼ì´ ê°€ëŠ¥í•˜ë‹¤.
+    // PSM overloading Àº parser ´Ü°è¿¡¼­ Ã³¸®ÇÑ´Ù.
+    // ÇÏÁö¸¸ PSM ³»ºÎÀÇ º¯¼ö´Â connectAllVariables ¸¦ È£ÃâÈÄ¿¡ Á¢±ÙÀÌ °¡´ÉÇÏ´Ù.
     for (sProcStmt = sWHILE->loopStmts;
          sProcStmt != NULL;
          sProcStmt = sProcStmt->next)
@@ -1242,8 +1284,8 @@ IDE_RC qsvProcStmts::validateFor( qcStatement     * aStatement,
              != IDE_SUCCESS);
 
     // BUG-41262 PSM overloading
-    // PSM overloading ì€ parser ë‹¨ê³„ì—ì„œ ì²˜ë¦¬í•œë‹¤.
-    // í•˜ì§€ë§Œ PSM ë‚´ë¶€ì˜ ë³€ìˆ˜ëŠ” connectAllVariables ë¥¼ í˜¸ì¶œí›„ì— ì ‘ê·¼ì´ ê°€ëŠ¥í•˜ë‹¤.
+    // PSM overloading Àº parser ´Ü°è¿¡¼­ Ã³¸®ÇÑ´Ù.
+    // ÇÏÁö¸¸ PSM ³»ºÎÀÇ º¯¼ö´Â connectAllVariables ¸¦ È£ÃâÈÄ¿¡ Á¢±ÙÀÌ °¡´ÉÇÏ´Ù.
     for (sProcStmt = sFOR->loopStmts;
          sProcStmt != NULL;
          sProcStmt = sProcStmt->next)
@@ -1345,21 +1387,21 @@ IDE_RC qsvProcStmts::validateFor( qcStatement     * aStatement,
 
         // To Fix PR-8816
         // FOR i1 IN 1 .. 100 LOOP
-        // ìœ„ì™€ ê°™ì€ FOR LOOP ë¬¸ì—ì„œ lowerNode(1)ì™€ upperNode(100)ëŠ”
-        // Intervalì˜ ìœ íš¨ì„± ê²€ì‚¬( lowerNode <= upperNode )ë¥¼ ìœ„í•œ ì²˜ë¦¬ì—ì„œ
-        // í˜•ë³€í™˜ì´ ë°œìƒí•  ìˆ˜ ìˆë‹¤.
-        // ì´ëŸ¬í•œ í˜•ë³€í™˜ì€ Parsing ë‹¨ê³„ì—ì„œ 1 ê³¼ ê°™ì€ ì •ìˆ˜ë¥¼ SMALLINTë¡œ
-        // ì·¨ê¸‰í•˜ê¸° ë•Œë¬¸ì— ë°œìƒí•˜ëŠ” í˜„ìƒì´ë©°, INTEGERë¡œ í˜•ë³€í™˜ëœ Nodeë¥¼
-        // lowerNodeì™€ upperNodeë¡œ ëŒ€ì¹˜í•˜ì—¬ì•¼ í•œë‹¤.
-        // Parsing ë‹¨ê³„ì—ì„œ INTEGERë¡œ ì§€ì •í•  ìˆ˜ ì—†ëŠ” ì´ìœ ëŠ”
-        // FOR ë¬¸ì—ì„œì˜ Expressionê³¼ ì¼ë°˜ Expressionì„ êµ¬ë¶„í•˜ëŠ” ê²ƒ
-        // ìì²´ê°€ ì§€ë‚˜ì¹˜ê²Œ ë³µì¡í•œ Parsing ê³¼ì •ì„ ìœ ë°œì‹œí‚¤ê¸° ë•Œë¬¸ì´ë‹¤.
+        // À§¿Í °°Àº FOR LOOP ¹®¿¡¼­ lowerNode(1)¿Í upperNode(100)´Â
+        // IntervalÀÇ À¯È¿¼º °Ë»ç( lowerNode <= upperNode )¸¦ À§ÇÑ Ã³¸®¿¡¼­
+        // Çüº¯È¯ÀÌ ¹ß»ıÇÒ ¼ö ÀÖ´Ù.
+        // ÀÌ·¯ÇÑ Çüº¯È¯Àº Parsing ´Ü°è¿¡¼­ 1 °ú °°Àº Á¤¼ö¸¦ SMALLINT·Î
+        // Ãë±ŞÇÏ±â ¶§¹®¿¡ ¹ß»ıÇÏ´Â Çö»óÀÌ¸ç, INTEGER·Î Çüº¯È¯µÈ Node¸¦
+        // lowerNode¿Í upperNode·Î ´ëÄ¡ÇÏ¿©¾ß ÇÑ´Ù.
+        // Parsing ´Ü°è¿¡¼­ INTEGER·Î ÁöÁ¤ÇÒ ¼ö ¾ø´Â ÀÌÀ¯´Â
+        // FOR ¹®¿¡¼­ÀÇ Expression°ú ÀÏ¹İ ExpressionÀ» ±¸ºĞÇÏ´Â °Í
+        // ÀÚÃ¼°¡ Áö³ªÄ¡°Ô º¹ÀâÇÑ Parsing °úÁ¤À» À¯¹ß½ÃÅ°±â ¶§¹®ÀÌ´Ù.
 
-        // ì¶”í›„ TO_INTEGER() ì™€ ê°™ì€ í˜•ë³€í™˜ í•¨ìˆ˜ê°€ êµ¬í˜„ë˜ë©´,
-        // ì´ëŠ” Parsing ë‹¨ê³„ì—ì„œ ì²˜ë¦¬í•  ìˆ˜ ìˆë‹¤.
+        // ÃßÈÄ TO_INTEGER() ¿Í °°Àº Çüº¯È¯ ÇÔ¼ö°¡ ±¸ÇöµÇ¸é,
+        // ÀÌ´Â Parsing ´Ü°è¿¡¼­ Ã³¸®ÇÒ ¼ö ÀÖ´Ù.
 
-        // To Fix PR-11391 ë¹„êµë¥¼ lowerVar, upperVarë¡œ í•˜ê¸° ë•Œë¬¸ì—
-        // conversionì´ ì¼ì–´ë‚˜ì§€ ì•ŠëŠ”ë‹¤.
+        // To Fix PR-11391 ºñ±³¸¦ lowerVar, upperVar·Î ÇÏ±â ¶§¹®¿¡
+        // conversionÀÌ ÀÏ¾î³ªÁö ¾Ê´Â´Ù.
         //sFOR->lowerNode = (qtcNode *) sFOR->isIntervalOkNode->node.arguments;
         //sFOR->upperNode =
         //    (qtcNode *) sFOR->isIntervalOkNode->node.arguments->next;
@@ -1706,7 +1748,7 @@ IDE_RC qsvProcStmts::validateGoto( qcStatement     * aStatement,
 
     aStatement->spvEnv->currStmt = aProcStmts;
 
-    // GOTOì˜ Validationì€ Optimizeë‹¨ê³„ì—ì„œ í•œë‹¤.
+    // GOTOÀÇ ValidationÀº Optimize´Ü°è¿¡¼­ ÇÑ´Ù.
 
     // BUG-27442
     // Validate length of Label name
@@ -1759,7 +1801,7 @@ IDE_RC qsvProcStmts::validateExecImm( qcStatement     * aStatement,
     sFindVar         = ID_FALSE;
     sExistsRecordVar = ID_FALSE;
     
-    // 0. query stringì˜ ë°ì´í„°íƒ€ì…ì€ varcharë‚˜ charê°€ ë˜ì–´ì•¼ í•¨.
+    // 0. query stringÀÇ µ¥ÀÌÅÍÅ¸ÀÔÀº varchar³ª char°¡ µÇ¾î¾ß ÇÔ.
     IDE_TEST( qtc::estimate( sExecImm->sqlStringNode,
                              QC_SHARED_TMPLATE(aStatement),
                              aStatement,
@@ -1789,11 +1831,11 @@ IDE_RC qsvProcStmts::validateExecImm( qcStatement     * aStatement,
                         & sqlInfo ) != IDE_SUCCESS,
                     ERR_SUBQ_NOT_ALLOWED );
     
-    // 1. intoì ˆì´ ìˆë‹¤ë©´ intoì ˆì— ëŒ€í•œ validation
+    // 1. intoÀıÀÌ ÀÖ´Ù¸é intoÀı¿¡ ´ëÇÑ validation
     if( sExecImm->intoVariableNodes != NULL )
     {
-        // 1.1 intoì ˆì€ ëª¨ë‘ procedureë³€ìˆ˜ë§Œ ê°€ëŠ¥.
-        // execute immediateì—ì„œ targetì˜ ê°¯ìˆ˜ëŠ” ì•Œ ìˆ˜ ì—†ë‹¤.
+        // 1.1 intoÀıÀº ¸ğµÎ procedureº¯¼ö¸¸ °¡´É.
+        // execute immediate¿¡¼­ targetÀÇ °¹¼ö´Â ¾Ë ¼ö ¾ø´Ù.
         IDE_TEST( validateIntoClauseInternal( aStatement,
                                               sExecImm->intoVariableNodes,
                                               0, /* target count */
@@ -1819,7 +1861,7 @@ IDE_RC qsvProcStmts::validateExecImm( qcStatement     * aStatement,
 
     sExecImm->usingParamCount = 0;
     
-    // 2. usingì ˆì´ ìˆë‹¤ë©´ usingì ˆì— ëŒ€í•œ validation
+    // 2. usingÀıÀÌ ÀÖ´Ù¸é usingÀı¿¡ ´ëÇÑ validation
     if( sExecImm->usingParams != NULL )
     {
         for( sCurrParam = sExecImm->usingParams;
@@ -1830,7 +1872,7 @@ IDE_RC qsvProcStmts::validateExecImm( qcStatement     * aStatement,
 
             if( sCurrParam->inOutType == QS_IN )
             {
-                // 2.1 iníƒ€ì…ì¸ ê²½ìš° íŠ¹ë³„í•œ ê²€ì‚¬ë¥¼ í•˜ì§€ ì•ŠìŒ.
+                // 2.1 inÅ¸ÀÔÀÎ °æ¿ì Æ¯º°ÇÑ °Ë»ç¸¦ ÇÏÁö ¾ÊÀ½.
                 IDE_TEST( qtc::estimate( sCurrParamNode,
                                          QC_SHARED_TMPLATE(aStatement), 
                                          aStatement,
@@ -1841,8 +1883,8 @@ IDE_RC qsvProcStmts::validateExecImm( qcStatement     * aStatement,
             }
             else
             {
-                // 2.2 out, in outì¸ ê²½ìš° ë°˜ë“œì‹œ procedureë³€ìˆ˜ì—¬ì•¼ í•¨.
-                // invalid out argument ì—ëŸ¬ë¥¼ ëƒ„.
+                // 2.2 out, in outÀÎ °æ¿ì ¹İµå½Ã procedureº¯¼ö¿©¾ß ÇÔ.
+                // invalid out argument ¿¡·¯¸¦ ³¿.
                 IDE_TEST(qsvProcVar::searchVarAndPara(
                          aStatement,
                          sCurrParamNode,
@@ -1874,11 +1916,13 @@ IDE_RC qsvProcStmts::validateExecImm( qcStatement     * aStatement,
                     // Nothing to do.
                 }
 
-                // lvalueì— psmë³€ìˆ˜ê°€ ì¡´ì¬í•˜ë¯€ë¡œ lvalue flagë¥¼ ì”Œì›€.
-                // outì¸ ê²½ìš°ì—ë§Œ í•´ë‹¹ë¨. array_index_variableì¸ ê²½ìš°
-                // ì—†ìœ¼ë©´ ë§Œë“¤ì–´ì•¼ í•˜ê¸° ë•Œë¬¸.
-                if( sCurrParam->inOutType == QS_OUT )
+                // lvalue¿¡ psmº¯¼ö°¡ Á¸ÀçÇÏ¹Ç·Î lvalue flag¸¦ ¾º¿ò.
+                // outÀÎ °æ¿ì¿¡¸¸ ÇØ´çµÊ. array_index_variableÀÎ °æ¿ì
+                // ¾øÀ¸¸é ¸¸µé¾î¾ß ÇÏ±â ¶§¹®.
+                if( (sCurrParam->inOutType == QS_OUT) ||
+                    (sCurrParam->inOutType == QS_INOUT) )
                 {
+                    sCurrParamNode->lflag &= ~QTC_NODE_LVALUE_MASK;
                     sCurrParamNode->lflag |= QTC_NODE_LVALUE_ENABLE;
                 }
                 else
@@ -1886,7 +1930,7 @@ IDE_RC qsvProcStmts::validateExecImm( qcStatement     * aStatement,
                     // Nothing to do.
                 }
 
-                // 2.3 out, in outì¸ ê²½ìš° outbinding_disableì´ë©´ ì—ëŸ¬
+                // 2.3 out, in outÀÎ °æ¿ì outbinding_disableÀÌ¸é ¿¡·¯
 
                 IDE_TEST( qtc::estimate( sCurrParamNode,
                                          QC_SHARED_TMPLATE(aStatement), 
@@ -1896,7 +1940,7 @@ IDE_RC qsvProcStmts::validateExecImm( qcStatement     * aStatement,
                                          NULL )
                           != IDE_SUCCESS );
 
-                // BUG-42790 lvalueì—ëŠ” í•­ìƒ columnModuleì´ì—¬ì•¼í•œë‹¤.
+                // BUG-42790 lvalue¿¡´Â Ç×»ó columnModuleÀÌ¿©¾ßÇÑ´Ù.
                 IDE_ERROR_RAISE( ( sCurrParamNode->node.module ==
                                    &qtc::columnModule ),
                                  ERR_UNEXPECTED_MODULE_ERROR );
@@ -1969,7 +2013,7 @@ IDE_RC qsvProcStmts::validateOpenFor( qcStatement     * aStatement,
 /***********************************************************************
  *
  *  Description : PROJ-1386 Dynamic-SQL
- *                OPEN ... FOR ... êµ¬ë¬¸ì— ëŒ€í•œ validation
+ *                OPEN ... FOR ... ±¸¹®¿¡ ´ëÇÑ validation
  *
  *  Implementation :
  *
@@ -2002,8 +2046,8 @@ IDE_RC qsvProcStmts::validateOpenFor( qcStatement     * aStatement,
     else
     {
         /* BUG-38509 autonomous transaction
-           autonomous transaction blockì—ì„œ ref cursorë¥¼ ì‚¬ìš©í•˜ì§€ ëª» í•œë‹¤.
-           ì‚¬ìš© ì‹œ executeí•  ë•Œ fatal ë°œìƒ */
+           autonomous transaction block¿¡¼­ ref cursor¸¦ »ç¿ëÇÏÁö ¸ø ÇÑ´Ù.
+           »ç¿ë ½Ã executeÇÒ ¶§ fatal ¹ß»ı */
         if ( aStatement->spvEnv->createProc != NULL )
         {
             sBlock = aStatement->spvEnv->createProc->block;
@@ -2031,7 +2075,7 @@ IDE_RC qsvProcStmts::validateOpenFor( qcStatement     * aStatement,
     }
     else
     {
-        // package specì— ì„ ì–¸í•œ cursorì´ë©´ sqlIdxë¥¼ ìƒˆë¡œ í• ë‹¹í•œë‹¤.
+        // package spec¿¡ ¼±¾ğÇÑ cursorÀÌ¸é sqlIdx¸¦ »õ·Î ÇÒ´çÇÑ´Ù.
         // BUG-43158 Enhance statement list caching in PSM
         if ( aStatement->spvEnv->createProc != NULL )
         {
@@ -2125,9 +2169,9 @@ IDE_RC qsvProcStmts::validateFetch( qcStatement     * aStatement,
  *
  *
  *  Implementation :
- *         (1) ref cursor variableì— ëŒ€í•œ ê²ƒì¸ì§€, cursorì— ëŒ€í•œ ê²ƒì¸ì§€ ë¶„ë¥˜
- *         (2) ë¶„ë¥˜ëœ ê²°ê³¼ë¥¼ qsProcStmtFetchêµ¬ì¡°ì²´ì— ì €ì¥
- *         (3) ì¢…ë¥˜ì— ë§ëŠ” validateí•¨ìˆ˜ë¥¼ í˜¸ì¶œ
+ *         (1) ref cursor variable¿¡ ´ëÇÑ °ÍÀÎÁö, cursor¿¡ ´ëÇÑ °ÍÀÎÁö ºĞ·ù
+ *         (2) ºĞ·ùµÈ °á°ú¸¦ qsProcStmtFetch±¸Á¶Ã¼¿¡ ÀúÀå
+ *         (3) Á¾·ù¿¡ ¸Â´Â validateÇÔ¼ö¸¦ È£Ãâ
  *
  ***********************************************************************/
 
@@ -2154,8 +2198,8 @@ IDE_RC qsvProcStmts::validateFetch( qcStatement     * aStatement,
         sProcStmtFetch->isRefCursor = ID_TRUE;
 
         /* BUG-38509 autonomous transaction
-           autonomous transaction blockì—ì„œ ref cursorë¥¼ ì‚¬ìš©í•˜ì§€ ëª» í•œë‹¤.
-           ì‚¬ìš© ì‹œ executeí•  ë•Œ fatal ë°œìƒ */
+           autonomous transaction block¿¡¼­ ref cursor¸¦ »ç¿ëÇÏÁö ¸ø ÇÑ´Ù.
+           »ç¿ë ½Ã executeÇÒ ¶§ fatal ¹ß»ı */
         if ( aStatement->spvEnv->createProc != NULL )
         {
             sBlock = aStatement->spvEnv->createProc->block;
@@ -2245,9 +2289,9 @@ IDE_RC qsvProcStmts::validateClose( qcStatement     * aStatement,
  *
  *
  *  Implementation :
- *         (1) ref cursor variableì— ëŒ€í•œ ê²ƒì¸ì§€, cursorì— ëŒ€í•œ ê²ƒì¸ì§€ ë¶„ë¥˜
- *         (2) ë¶„ë¥˜ëœ ê²°ê³¼ë¥¼ qsProcStmtFetchêµ¬ì¡°ì²´ì— ì €ì¥
- *         (3) ì¢…ë¥˜ì— ë§ëŠ” validateí•¨ìˆ˜ë¥¼ í˜¸ì¶œ
+ *         (1) ref cursor variable¿¡ ´ëÇÑ °ÍÀÎÁö, cursor¿¡ ´ëÇÑ °ÍÀÎÁö ºĞ·ù
+ *         (2) ºĞ·ùµÈ °á°ú¸¦ qsProcStmtFetch±¸Á¶Ã¼¿¡ ÀúÀå
+ *         (3) Á¾·ù¿¡ ¸Â´Â validateÇÔ¼ö¸¦ È£Ãâ
  *
  ***********************************************************************/
 
@@ -2274,8 +2318,8 @@ IDE_RC qsvProcStmts::validateClose( qcStatement     * aStatement,
         sProcStmtClose->isRefCursor = ID_TRUE;
 
         /* BUG-38509 autonomous transaction
-           autonomous transaction blockì—ì„œ ref cursorë¥¼ ì‚¬ìš©í•˜ì§€ ëª» í•œë‹¤.
-           ì‚¬ìš© ì‹œ executeí•  ë•Œ fatal ë°œìƒ */
+           autonomous transaction block¿¡¼­ ref cursor¸¦ »ç¿ëÇÏÁö ¸ø ÇÑ´Ù.
+           »ç¿ë ½Ã executeÇÒ ¶§ fatal ¹ß»ı */
         if ( aStatement->spvEnv->createProc != NULL )
         {
             sBlock = aStatement->spvEnv->createProc->block;
@@ -2403,7 +2447,7 @@ IDE_RC qsvProcStmts::validateAssign( qcStatement     * aStatement,
 
     IDU_FIT_POINT_FATAL( "qsvProcStmts::validateAssign::__FT__::STAGE1" );
 
-    // lvalueì— psm variableì´ ì¡´ì¬í•˜ëŠ”ì§€ search.
+    // lvalue¿¡ psm variableÀÌ Á¸ÀçÇÏ´ÂÁö search.
     IDE_TEST(qsvProcVar::searchVarAndPara(
                  aStatement,
                  sASSIGN->leftNode,
@@ -2457,12 +2501,13 @@ IDE_RC qsvProcStmts::validateAssign( qcStatement     * aStatement,
         }
     }
 
-    // lvalueì— psmë³€ìˆ˜ê°€ ì¡´ì¬í•˜ë¯€ë¡œ lvalue flagë¥¼ ì”Œì›€.
-    // qtcColumn ëª¨ë“ˆì—ì„œ estimateì‹œ ì°¸ì¡°í•¨.
+    // lvalue¿¡ psmº¯¼ö°¡ Á¸ÀçÇÏ¹Ç·Î lvalue flag¸¦ ¾º¿ò.
+    // qtcColumn ¸ğµâ¿¡¼­ estimate½Ã ÂüÁ¶ÇÔ.
+    sASSIGN->leftNode->lflag &= ~QTC_NODE_LVALUE_MASK;
     sASSIGN->leftNode->lflag |= QTC_NODE_LVALUE_ENABLE;
 
-    // lvalueì— estimateë¥¼ í•˜ëŠ” ì´ìœ ëŠ”
-    // associative arrayì˜ indexê³„ì‚° ë•Œë¬¸.
+    // lvalue¿¡ estimate¸¦ ÇÏ´Â ÀÌÀ¯´Â
+    // associative arrayÀÇ index°è»ê ¶§¹®.
     IDE_TEST( qtc::estimate( sASSIGN->leftNode,
                              QC_SHARED_TMPLATE( aStatement ),
                              aStatement,
@@ -2483,7 +2528,7 @@ IDE_RC qsvProcStmts::validateAssign( qcStatement     * aStatement,
             sASSIGN->copyRef = ID_FALSE;
         }
 
-        // BUG-42790 lvalueì—ëŠ” í•­ìƒ columnModuleì´ì—¬ì•¼í•œë‹¤.
+        // BUG-42790 lvalue¿¡´Â Ç×»ó columnModuleÀÌ¿©¾ßÇÑ´Ù.
         IDE_ERROR_RAISE( ( sASSIGN->leftNode->node.module ==
                            &qtc::columnModule ),
                          ERR_UNEXPECTED_MODULE_ERROR );
@@ -2504,9 +2549,9 @@ IDE_RC qsvProcStmts::validateAssign( qcStatement     * aStatement,
         }
 
         // PROJ-1904 Extend UDT
-        // ARR_TYPE1ì€ 1ì°¨ì› ARRAY, ARR_TYPE2ëŠ” 2ì°¨ì› ARRAYì¼ ë•Œ,
-        // ê°„ì ‘ ì°¸ì¡°ë¥¼ ìœ„í•´ì„œ rightNodeì— QTC_NODE_LVALUE_ENABLEì„ ì„¤ì •í•œë‹¤.
-        // ë§Œì•½ flagë¥¼ ì„¤ì •í•˜ì§€ ì•Šìœ¼ë©´, no data found ì˜¤ë¥˜ê°€ ë°œìƒí•œë‹¤.
+        // ARR_TYPE1Àº 1Â÷¿ø ARRAY, ARR_TYPE2´Â 2Â÷¿ø ARRAYÀÏ ¶§,
+        // °£Á¢ ÂüÁ¶¸¦ À§ÇØ¼­ rightNode¿¡ QTC_NODE_LVALUE_ENABLEÀ» ¼³Á¤ÇÑ´Ù.
+        // ¸¸¾à flag¸¦ ¼³Á¤ÇÏÁö ¾ÊÀ¸¸é, no data found ¿À·ù°¡ ¹ß»ıÇÑ´Ù.
         //
         // V1 NOCOPY ARR_TYPE1;
         // V2        ARR_TYPE2;
@@ -2630,11 +2675,11 @@ IDE_RC qsvProcStmts::validateRaise( qcStatement     * aStatement,
 
     if( sRAISE->exception == NULL )
     {
-        // PROJ-1335, To fix BUG-13207  RAISE ì§€ì›
-        // exceptionì´ nullì´ë¼ë©´ exception handling ë¸”ë¡ì—ì„œ
-        // ì‚¬ìš©í•œ ê²½ìš°ì„.
-        // exceptionCountê°€ ì–‘ìˆ˜ì¸ ê²½ìš° exception handler ë‚´ë¶€ì— ìˆìŒì„
-        // ì•Œ ìˆ˜ ìˆìŒ.
+        // PROJ-1335, To fix BUG-13207  RAISE Áö¿ø
+        // exceptionÀÌ nullÀÌ¶ó¸é exception handling ºí·Ï¿¡¼­
+        // »ç¿ëÇÑ °æ¿ìÀÓ.
+        // exceptionCount°¡ ¾ç¼öÀÎ °æ¿ì exception handler ³»ºÎ¿¡ ÀÖÀ½À»
+        // ¾Ë ¼ö ÀÖÀ½.
         if (aStatement->spvEnv->exceptionCount <= 0)
         {
             sqlInfo.setSourceInfo( aStatement,
@@ -2705,8 +2750,8 @@ IDE_RC qsvProcStmts::validateReturn( qcStatement     * aStatement,
 
     // PROJ-1073 Package
     /* BUG-40013
-       packageì˜ initialize sectionì€ procedure body(begin ~ end)ì™€ ë™ì¼í•˜ê²Œ ë™ì‘í•˜ë©°,
-       í•´ë‹¹ ë¶€ë¶„ì— ëŒ€í•œ validation ì‹œì ì—ì„œëŠ” qsProcParseTreeëŠ” NULLì´ë‹¤. */
+       packageÀÇ initialize sectionÀº procedure body(begin ~ end)¿Í µ¿ÀÏÇÏ°Ô µ¿ÀÛÇÏ¸ç,
+       ÇØ´ç ºÎºĞ¿¡ ´ëÇÑ validation ½ÃÁ¡¿¡¼­´Â qsProcParseTree´Â NULLÀÌ´Ù. */
     if ( sParseTree == NULL )
     {
         if ( ( aStatement->spvEnv->createPkg != NULL ) &&
@@ -2887,10 +2932,10 @@ IDE_RC qsvProcStmts::validateLabel( qcStatement     * aStatement,
             break;
         }
         // To Fix BUG-13144
-        // LABELì´ BLOCK, LOOPë°”ë¡œ ì „ì— ì˜¤ê±°ë‚˜ ì´ëŸ° LABELë°”ë¡œ ìœ„ì— ìˆì–´ì•¼
-        // í•œë‹¤.
+        // LABELÀÌ BLOCK, LOOP¹Ù·Î Àü¿¡ ¿À°Å³ª ÀÌ·± LABEL¹Ù·Î À§¿¡ ÀÖ¾î¾ß
+        // ÇÑ´Ù.
         // ex)
-        // <<LABEL1>> -- ì´ì™€ ê°™ì€ ê²½ìš°ë„ í—ˆìš©í•¨.
+        // <<LABEL1>> -- ÀÌ¿Í °°Àº °æ¿ìµµ Çã¿ëÇÔ.
         // <<LABEL2>>
         // FOR I IN 1 .. 10 LOOP
         // ...
@@ -2906,8 +2951,8 @@ IDE_RC qsvProcStmts::validateLabel( qcStatement     * aStatement,
     }
 
     // PROJ-1335, To fix BUG-12475
-    // labelì„ parent statementì— ë³µì‚¬í•˜ì—¬ ë‹¬ì•„ë†“ëŠ”ë‹¤.
-    // goto ì‚¬ìš©ì‹œ ì°¸ì¡°í•˜ê¸° ìœ„í•¨
+    // labelÀ» parent statement¿¡ º¹»çÇÏ¿© ´Ş¾Æ³õ´Â´Ù.
+    // goto »ç¿ë½Ã ÂüÁ¶ÇÏ±â À§ÇÔ
     IDE_TEST( setLabelToParentStmt( aStatement, aParentStmt, sCurrLabel )
               != IDE_SUCCESS );
 
@@ -3360,7 +3405,7 @@ IDE_RC qsvProcStmts::makeProcSynonymList( qcStatement    * aStatement,
             
             sSynonym->next = aStatement->spvEnv->objectSynonymList;
             
-            // ì—°ê²°í•œë‹¤.
+            // ¿¬°áÇÑ´Ù.
             aStatement->spvEnv->objectSynonymList = sSynonym;
         }
         else
@@ -3404,8 +3449,8 @@ qsvProcStmts::validateExceptionHandler( qcStatement       * aStatement,
     // initialize
     sHandledExceptions = NULL;
 
-    /* aProcBLOCKì´ nullì¼ ë•ŒëŠ” packageì˜ initialize sectionì—ì„œ
-       exception ì²˜ë¦¬ ì‹œ ì´ë‹¤. */
+    /* aProcBLOCKÀÌ nullÀÏ ¶§´Â packageÀÇ initialize section¿¡¼­
+       exception Ã³¸® ½Ã ÀÌ´Ù. */
     if( aProcBLOCK != NULL )
     {
         IDE_DASSERT( aPkgBLOCK == NULL );
@@ -3438,12 +3483,12 @@ qsvProcStmts::validateExceptionHandler( qcStatement       * aStatement,
                  sTmpException = sTmpException->next)
             {
                 // PROJ-1073 Package
-                // packageì—ì„œë„ exceptionë³€ìˆ˜ ì„ ì–¸ê°€ëŠ¥í•˜ë©°, ê° idë¥¼ ê°€ì§„ë‹¤.
-                // ê·¸ë ‡ê¸° ë•Œë¬¸ì—, idë§Œìœ¼ë¡œ ì°¾ìœ¼ë©´,
-                // ë™ì¼í•œ idë¥¼ ê°€ì§„ ë‹¤ë¥¸ packageì˜ exceptionë³€ìˆ˜ì˜ ê²½ìš°,
-                // ë™ì¼í•˜ì§€ ì•Šì§€ë§Œ ë™ì¼í•œ excpetionë³€ìˆ˜ë¼ê³  íŒë‹¨í•œë‹¤.
-                // ë”°ë¼ì„œ, ì´ë¥¼ êµ¬ë³„í•˜ê¸° ìœ„í•´ì„œëŠ” exceptionë³€ìˆ˜ì˜ idì™€
-                // exceptionë³€ìˆ˜ê°€ ì„ ì–¸ëœ ê°ì²´ì˜ objectIDë„ ê°™ì´ í™•ì¸í•´ì•¼ í•œë‹¤.
+                // package¿¡¼­µµ exceptionº¯¼ö ¼±¾ğ°¡´ÉÇÏ¸ç, °¢ id¸¦ °¡Áø´Ù.
+                // ±×·¸±â ¶§¹®¿¡, id¸¸À¸·Î Ã£À¸¸é,
+                // µ¿ÀÏÇÑ id¸¦ °¡Áø ´Ù¸¥ packageÀÇ exceptionº¯¼öÀÇ °æ¿ì,
+                // µ¿ÀÏÇÏÁö ¾ÊÁö¸¸ µ¿ÀÏÇÑ excpetionº¯¼ö¶ó°í ÆÇ´ÜÇÑ´Ù.
+                // µû¶ó¼­, ÀÌ¸¦ ±¸º°ÇÏ±â À§ÇØ¼­´Â exceptionº¯¼öÀÇ id¿Í
+                // exceptionº¯¼ö°¡ ¼±¾ğµÈ °´Ã¼ÀÇ objectIDµµ °°ÀÌ È®ÀÎÇØ¾ß ÇÑ´Ù.
                 if ( ( sTmpException->id == sException->id ) && 
                      ( sTmpException->objectID == sException->objectID ) )
                 {
@@ -3479,7 +3524,7 @@ qsvProcStmts::validateExceptionHandler( qcStatement       * aStatement,
 
         // PROJ-1335, To fix BUG-13207
         // validate for RAISE
-        // RAISE;ëŠ” ë°˜ë“œì‹œ exception handlerë‚´ë¶€ì—ì„œë§Œ ì‚¬ìš©ë˜ì–´ì•¼ í•œë‹¤.
+        // RAISE;´Â ¹İµå½Ã exception handler³»ºÎ¿¡¼­¸¸ »ç¿ëµÇ¾î¾ß ÇÑ´Ù.
         (aStatement->spvEnv->exceptionCount)++;
 
         // exception handler action statement
@@ -3488,17 +3533,17 @@ qsvProcStmts::validateExceptionHandler( qcStatement       * aStatement,
         IDE_TEST(sProcStmt->parse(aStatement, sProcStmt) != IDE_SUCCESS);
 
         // BUG-37501
-        // exceptionHandlersì˜ parentëŠ” exception blockì´ë‹¤.
+        // exceptionHandlersÀÇ parent´Â exception blockÀÌ´Ù.
         IDE_TEST(sProcStmt->validate(aStatement, sProcStmt, sExceptionStmt, aPurpose )
                  != IDE_SUCCESS);
 
         // BUG-37501 
-        // exception block ì „ì²´ì—ì„œ labelì„ í™œìš©ê°€ëŠ¥í•˜ë„ë¡ excpetion blockì˜ childlabelì„ ì´ì–´ì¤˜ì•¼ í•œë‹¤.
+        // exception block ÀüÃ¼¿¡¼­ labelÀ» È°¿ë°¡´ÉÇÏµµ·Ï excpetion blockÀÇ childlabelÀ» ÀÌ¾îÁà¾ß ÇÑ´Ù.
         IDE_TEST( connectChildLabel( aStatement, sProcStmt, sExceptionStmt ) != IDE_SUCCESS );
 
         // PROJ-1335, To fix BUG-13207
         // validate for RAISE
-        // RAISE;ëŠ” ë°˜ë“œì‹œ exception handlerë‚´ë¶€ì—ì„œë§Œ ì‚¬ìš©ë˜ì–´ì•¼ í•œë‹¤.
+        // RAISE;´Â ¹İµå½Ã exception handler³»ºÎ¿¡¼­¸¸ »ç¿ëµÇ¾î¾ß ÇÑ´Ù.
         (aStatement->spvEnv->exceptionCount)--;
     }
 
@@ -3564,7 +3609,7 @@ IDE_RC qsvProcStmts::checkSelectIntoClause(
         {
             sSql = (qsProcStmtSql*)aProcStmt;
 
-            // 1.1 intoì ˆì€ ëª¨ë‘ procedureë³€ìˆ˜ë§Œ ê°€ëŠ¥.
+            // 1.1 intoÀıÀº ¸ğµÎ procedureº¯¼ö¸¸ °¡´É.
             for( sCurrIntoVar = sSql->intoVariables->intoNodes;
                  sCurrIntoVar != NULL;
                  sCurrIntoVar = (qtcNode *)(sCurrIntoVar->node.next) )
@@ -3610,8 +3655,8 @@ IDE_RC qsvProcStmts::checkSelectIntoClause(
                     // Nothing to do.
                 }
 
-                // lvalueì— psmë³€ìˆ˜ê°€ ì¡´ì¬í•˜ë¯€ë¡œ lvalue flagë¥¼ ì”Œì›€.
-                // qtcColumn ëª¨ë“ˆì—ì„œ estimateì‹œ ì°¸ì¡°í•¨.
+                // lvalue¿¡ psmº¯¼ö°¡ Á¸ÀçÇÏ¹Ç·Î lvalue flag¸¦ ¾º¿ò.
+                // qtcColumn ¸ğµâ¿¡¼­ estimate½Ã ÂüÁ¶ÇÔ.
                 sCurrIntoVar->lflag |= QTC_NODE_LVALUE_ENABLE;
                 
                 IDE_TEST( qtc::estimate( sCurrIntoVar,
@@ -3776,11 +3821,11 @@ IDE_RC qsvProcStmts::getException(
         }
     }
 
-    /* package bodyì˜ initialize sectionì—ì„œ exception handlingì´ ê°€ëŠ¥í•˜ë‹¤. */
+    /* package bodyÀÇ initialize section¿¡¼­ exception handlingÀÌ °¡´ÉÇÏ´Ù. */
     if( (sFind == ID_FALSE) && (sPkgParseTree != NULL ) )
     {
         /* BUG-41847 
-           package localì— ì„ ì–¸ëœ exception ë³€ìˆ˜ë¥¼ ì°¾ëŠ”ë‹¤. */
+           package local¿¡ ¼±¾ğµÈ exception º¯¼ö¸¦ Ã£´Â´Ù. */
         IDE_TEST( qsvPkgStmts::getPkgLocalException( aStatement,
                                                      aException,
                                                      &sFind )
@@ -3915,14 +3960,14 @@ qsvProcStmts::checkTriggerActionBody( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *    CREATE TRIGGERë¥¼ ìœ„í•œ Action Bodyì— ëŒ€í•œ Validation.
+ *    CREATE TRIGGER¸¦ À§ÇÑ Action Body¿¡ ´ëÇÑ Validation.
  *
  * Implementation :
- *    Triggerë¥¼ ìœ„í•œ ë‹¤ìŒê³¼ ê°™ì€ ì œì•½ ì¡°ê±´ì„ ê²€ì‚¬í•œë‹¤.
- *        - Transaction Control Statementê°€ ì—†ì–´ì•¼ í•¨.
- *        - PSMì„ í˜¸ì¶œí•´ì„œëŠ” ì•ˆë¨.
+ *    Trigger¸¦ À§ÇÑ ´ÙÀ½°ú °°Àº Á¦¾à Á¶°ÇÀ» °Ë»çÇÑ´Ù.
+ *        - Transaction Control Statement°¡ ¾ø¾î¾ß ÇÔ.
+ *        - PSMÀ» È£ÃâÇØ¼­´Â ¾ÈµÊ.
  *
- *    DML Statementì¸ ê²½ìš° ì ‘ê·¼í•˜ëŠ” Tableëª©ë¡ì„ êµ¬ì„±í•œë‹¤.
+ *    DML StatementÀÎ °æ¿ì Á¢±ÙÇÏ´Â Table¸ñ·ÏÀ» ±¸¼ºÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -3935,31 +3980,32 @@ qsvProcStmts::checkTriggerActionBody( qcStatement * aStatement,
     qcuSqlSourceInfo        sqlInfo;
 
     //---------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aProcStmts != NULL );
 
     //---------------------------------------
-    // Trigger Action Bodyë‚´ì˜ Statementì— ëŒ€í•œ Validation
+    // Trigger Action Body³»ÀÇ Statement¿¡ ´ëÇÑ Validation
     //---------------------------------------
 
     sSQL = (qsProcStmtSql *)aProcStmts;
     sIsDML = ID_FALSE;
 
-    // Action Bodyê°€ DMLë¡œ ì°¸ì¡°í•˜ëŠ” Tableì˜ Listë¥¼ êµ¬ì„±í•œê³ .
-    // Cycle Detectionì„ ìœ„í•œ ì •ë³´ë¥¼ êµ¬ì„±í•œë‹¤.
+    // Action Body°¡ DML·Î ÂüÁ¶ÇÏ´Â TableÀÇ List¸¦ ±¸¼ºÇÑ°í.
+    // Cycle DetectionÀ» À§ÇÑ Á¤º¸¸¦ ±¸¼ºÇÑ´Ù.
     switch ( sSQL->common.stmtType )
     {
         //---------------------------------------
-        // Transaction Control êµ¬ë¬¸ì´ ì¡´ì¬í•  ìˆ˜ ì—†ë‹¤.
+        // Transaction Control ±¸¹®ÀÌ Á¸ÀçÇÒ ¼ö ¾ø´Ù.
         // (COMMIT, ROLLBACK, SAVEPOINT, SET_TX) etc
-        // PSM í˜¸ì¶œì„ í•  ìˆ˜ ì—†ë‹¤.
+        // PSM È£ÃâÀ» ÇÒ ¼ö ¾ø´Ù.
         //---------------------------------------
 
         case QS_PROC_STMT_COMMIT:
         case QS_PROC_STMT_ROLLBACK:
+        case QS_PROC_STMT_ROLLBACK_TO_SAVEPOINT:  /* BUG-48216 */
         case QS_PROC_STMT_SAVEPOINT:
         case QS_PROC_STMT_SET_TX:
             if ( QSV_CHECK_AT_TRIGGER_ACTION_BODY_BLOCK( aStatement->spvEnv->createProc )
@@ -3976,11 +4022,11 @@ qsvProcStmts::checkTriggerActionBody( qcStatement * aStatement,
             break;
 
             //---------------------------------------
-            // DML Statementì¸ ê²½ìš° Triggerì˜ Cycleì„ ê²€ì‚¬í•˜ê¸° ìœ„í•´
-            // ì ‘ê·¼ Tableì˜ ëª©ë¡ì„ ê´€ë¦¬í•œë‹¤.
-            // ì¶”í›„ í™•ì¥ì„ ìœ„í•´ ë™ì¼ í…Œì´ë¸” ì—¬ë¶€ëŠ” ê²€ì‚¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
-            // ì˜ˆë¥¼ ë“¤ì–´, INSERT eventì™€ UPDATE êµ¬ë¬¸ê°„ì—ëŠ” Cycleì´ ì¡´ì¬í•˜ì§€
-            // ì•Šì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤.
+            // DML StatementÀÎ °æ¿ì TriggerÀÇ CycleÀ» °Ë»çÇÏ±â À§ÇØ
+            // Á¢±Ù TableÀÇ ¸ñ·ÏÀ» °ü¸®ÇÑ´Ù.
+            // ÃßÈÄ È®ÀåÀ» À§ÇØ µ¿ÀÏ Å×ÀÌºí ¿©ºÎ´Â °Ë»çÇÏÁö ¾Ê´Â´Ù.
+            // ¿¹¸¦ µé¾î, INSERT event¿Í UPDATE ±¸¹®°£¿¡´Â CycleÀÌ Á¸ÀçÇÏÁö
+            // ¾ÊÀ» ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù.
             //---------------------------------------
 
         case QS_PROC_STMT_INSERT:
@@ -3999,8 +4045,8 @@ qsvProcStmts::checkTriggerActionBody( qcStatement * aStatement,
             sIsDML = ID_TRUE;
             break;
             // fix BUG-11861
-            // move dmlì€ ê°±ì‹ ë˜ëŠ” tableì´ target, source 2ê°œì´ë¯€ë¡œ
-            // sTableIDì—ëŠ” targetì„, sTableIDforMoveì—ëŠ” sourceë¥¼ ì„¸íŒ…
+            // move dmlÀº °»½ÅµÇ´Â tableÀÌ target, source 2°³ÀÌ¹Ç·Î
+            // sTableID¿¡´Â targetÀ», sTableIDforMove¿¡´Â source¸¦ ¼¼ÆÃ
         case QS_PROC_STMT_MOVE:
             sTableID = ((qmmMoveParseTree *)sSQL->statement->myPlan->parseTree)
                 ->querySet->SFWGH->from->tableRef->tableInfo->tableID;
@@ -4033,8 +4079,8 @@ qsvProcStmts::checkTriggerActionBody( qcStatement * aStatement,
         aStatement->spvEnv->modifiedTableList = sModifiedTable;
 
         // fix BUG-11861
-        // move dmlì¸ ê²½ìš° insert,delete,updateì™€ ë‹¬ë¦¬
-        // modifiedtableì´ ë‘ê°œì„(target table, source table)
+        // move dmlÀÎ °æ¿ì insert,delete,update¿Í ´Ş¸®
+        // modifiedtableÀÌ µÎ°³ÀÓ(target table, source table)
         if( sSQL->common.stmtType == QS_PROC_STMT_MOVE )
         {
             IDE_TEST ( QC_QME_MEM(aStatement)->alloc( ID_SIZEOF(qsModifiedTable ),
@@ -4059,7 +4105,7 @@ qsvProcStmts::checkTriggerActionBody( qcStatement * aStatement,
 
             if ( (sInsParseTree->flag & QMM_MULTI_INSERT_MASK) == QMM_MULTI_INSERT_TRUE )
             {
-                // ì²˜ìŒ insertëŠ” ì´ë¯¸ ë“±ë¡í–ˆë‹¤.
+                // Ã³À½ insert´Â ÀÌ¹Ì µî·ÏÇß´Ù.
                 for ( sInsParseTree = sInsParseTree->next;
                       sInsParseTree != NULL;
                       sInsParseTree = sInsParseTree->next )
@@ -4115,14 +4161,14 @@ IDE_RC qsvProcStmts::setLabelToParentStmt( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description : PROJ-1335, To fix BUG-12475
- *               parent Statementì— labelì„ ë‹¬ì•„ì¤Œ
- *               gotoê°€ parent statementë¥¼ ë”°ë¼ê°€ë©´ì„œ labelì„ ê²€ìƒ‰í• 
- *               ë•Œ ì“°ì„.
+ *               parent Statement¿¡ labelÀ» ´Ş¾ÆÁÜ
+ *               goto°¡ parent statement¸¦ µû¶ó°¡¸é¼­ labelÀ» °Ë»öÇÒ
+ *               ¶§ ¾²ÀÓ.
  * Implementation :
- *   (1) parentStmtì˜ label ì¤‘ì— ë‹¬ì•„ì¤„ labelì˜ ì´ë¦„ê³¼ ê°™ìœ¼ë©´ ì—ëŸ¬
- *   (2) labelì„ ë³µì‚¬í•˜ì—¬ parent->childLabelsì— ë‹¬ì•„ë†“ëŠ”ë‹¤.
- *       labelì„ ë³µì‚¬í•˜ëŠ” ì´ìœ ëŠ” parentLabelsì—ë„ labelì´ ë‹¬ë¦¬ê¸° ë•Œë¬¸ì—
- *       label->nextê°€ ë‹¬ë¼ì§€ê¸° ë•Œë¬¸ì´ë‹¤.
+ *   (1) parentStmtÀÇ label Áß¿¡ ´Ş¾ÆÁÙ labelÀÇ ÀÌ¸§°ú °°À¸¸é ¿¡·¯
+ *   (2) labelÀ» º¹»çÇÏ¿© parent->childLabels¿¡ ´Ş¾Æ³õ´Â´Ù.
+ *       labelÀ» º¹»çÇÏ´Â ÀÌÀ¯´Â parentLabels¿¡µµ labelÀÌ ´Ş¸®±â ¶§¹®¿¡
+ *       label->next°¡ ´Ş¶óÁö±â ¶§¹®ÀÌ´Ù.
  *
  ***********************************************************************/
 
@@ -4192,9 +4238,9 @@ qsvProcStmts::isSQLType( qsProcStmtType aType )
 }
 
 /* BUG-24383 Support enqueue statement at PSM
- * QS_PROC_STMT_ENQUEUE TYPE ì¶”ê°€ */
+ * QS_PROC_STMT_ENQUEUE TYPE Ãß°¡ */
 /* BUG-37797 Support dequeue statement at PSM
- * QS_PROC_STMT_DEQUEUE TYPE ì¶”ê°€ */
+ * QS_PROC_STMT_DEQUEUE TYPE Ãß°¡ */
 idBool
 qsvProcStmts::isDMLType( qsProcStmtType aType )
 {
@@ -4215,7 +4261,7 @@ qsvProcStmts::isDMLType( qsProcStmtType aType )
 }
 
 /* BUG-37797 Support dequeue statement at PSM
- * QS_PROC_STMT_DEQUEUE TYPE ì¶”ê°€ */
+ * QS_PROC_STMT_DEQUEUE TYPE Ãß°¡ */
 idBool
 qsvProcStmts::isFetchType( qsProcStmtType aType )
 {
@@ -4232,7 +4278,7 @@ qsvProcStmts::isFetchType( qsProcStmtType aType )
 
 /* PROJ-2197 PSM Renewal
  * BUG-36988 Query Trans
- * PSM ë³€ìˆ˜ë¥¼ qsUsingParamì— ì¶”ê°€í•œë‹¤. */
+ * PSM º¯¼ö¸¦ qsUsingParam¿¡ Ãß°¡ÇÑ´Ù. */
 IDE_RC qsvProcStmts::makeUsingParam( qsVariables * aVariable,
                                      qtcNode     * aQtcColumn,
                                      mtcCallBack * aCallBack )
@@ -4283,8 +4329,8 @@ IDE_RC qsvProcStmts::makeUsingParam( qsVariables * aVariable,
         sTempUsingParam = sSql->usingParams;
 
         /* BUG-37042
-         * ë™ì¼í•œ ìœ„ì¹˜ì˜ PSM ë³€ìˆ˜ê°€ ì˜¬ ìˆ˜ ìˆë‹¤. ( case ... when ì˜ ê²½ìš° )
-         * ë™ì¼í•œ ìœ„ì¹˜ì˜ PSM ë³€ìˆ˜ì´ë©´ skip í•˜ë„ë¡ í•œë‹¤. */
+         * µ¿ÀÏÇÑ À§Ä¡ÀÇ PSM º¯¼ö°¡ ¿Ã ¼ö ÀÖ´Ù. ( case ... when ÀÇ °æ¿ì )
+         * µ¿ÀÏÇÑ À§Ä¡ÀÇ PSM º¯¼öÀÌ¸é skip ÇÏµµ·Ï ÇÑ´Ù. */
         while( sTempUsingParam != NULL )
         {
             if( sTempUsingParam->paramNode->position.offset == sOffset )
@@ -4330,7 +4376,7 @@ IDE_RC qsvProcStmts::makeUsingParam( qsVariables * aVariable,
 
         if( sMtcNode->arguments != NULL )
         {
-            // typeInfoì˜ ì²«ë²ˆì§¸ ì»¬ëŸ¼ì´ index columnì„.
+            // typeInfoÀÇ Ã¹¹øÂ° ÄÃ·³ÀÌ index columnÀÓ.
             sModule = aVariable->typeInfo->columns->basicInfo->module;
 
             IDE_TEST( qtc::estimate( (qtcNode*)(sMtcNode->arguments),
@@ -4350,11 +4396,15 @@ IDE_RC qsvProcStmts::makeUsingParam( qsVariables * aVariable,
                       != IDE_SUCCESS );
         }
 
-        sUsingParam->paramNode[0].lflag &= ~QTC_NODE_LVALUE_MASK;
-        sUsingParam->paramNode[0].lflag |= QTC_NODE_LVALUE_ENABLE;
-
-        // BUG-36131
-        sUsingParam->inOutType = QS_IN;
+        if ( (sUsingParam->paramNode->lflag & QTC_NODE_LVALUE_MASK) == QTC_NODE_LVALUE_ENABLE )
+        {
+            sUsingParam->inOutType = QS_INOUT;
+        }
+        else
+        {
+            // BUG-36131
+            sUsingParam->inOutType = QS_IN;
+        }
 
         sUsingParam->next = NULL;
 
@@ -4364,7 +4414,7 @@ IDE_RC qsvProcStmts::makeUsingParam( qsVariables * aVariable,
         }
         else
         {
-            /* ìƒˆë¡œ ë§Œë“  usingParamì„ offset ìˆœì„œëŒ€ë¡œ ë„£ëŠ”ë‹¤. */
+            /* »õ·Î ¸¸µç usingParamÀ» offset ¼ø¼­´ë·Î ³Ö´Â´Ù. */
             sTempUsingParam = sSql->usingParams;
 
             if( (sTempUsingParam->paramNode->position.offset) >
@@ -4433,7 +4483,7 @@ IDE_RC qsvProcStmts::getExceptionFromPkg( qcStatement * aStatement,
 
     if( sExists == ID_TRUE )
     {
-        // synonymìœ¼ë¡œ ì°¸ì¡°ë˜ëŠ” pkgì˜ ê¸°ë¡
+        // synonymÀ¸·Î ÂüÁ¶µÇ´Â pkgÀÇ ±â·Ï
         IDE_TEST( qsvPkgStmts::makePkgSynonymList(
                            aStatement,
                            &sSynonymInfo,
@@ -4544,10 +4594,10 @@ IDE_RC qsvProcStmts::searchExceptionFromPkg( qsxPkgInfo   * aPkgInfo,
 }
 
 /* BUG-36902 
- * qsxExecutor::execStmtList í•¨ìˆ˜ì—ì„œ qtc::setDatePseudoColumn í•¨ìˆ˜ë¥¼
- * í˜¸ì¶œí•  ì§€ ì—¬ë¶€ë¥¼ useDateì— ì„¤ì •í•œë‹¤.
- * PSM ë‚´ì˜ DMLì€ ê° DMLì„ ì‹¤í–‰í•  ë•Œ qtc::setDatePseudoColumn í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ë¯€ë¡œ 
- * useDateë¥¼ ë³€ê²½í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+ * qsxExecutor::execStmtList ÇÔ¼ö¿¡¼­ qtc::setDatePseudoColumn ÇÔ¼ö¸¦
+ * È£ÃâÇÒ Áö ¿©ºÎ¸¦ useDate¿¡ ¼³Á¤ÇÑ´Ù.
+ * PSM ³»ÀÇ DMLÀº °¢ DMLÀ» ½ÇÇàÇÒ ¶§ qtc::setDatePseudoColumn ÇÔ¼ö¸¦ È£ÃâÇÏ¹Ç·Î 
+ * useDate¸¦ º¯°æÇÏÁö ¾Ê´Â´Ù. */
 IDE_RC qsvProcStmts::setUseDate( qsvEnvInfo * aEnvInfo )
 {
     qsProcParseTree * sProcParseTree;
@@ -4557,8 +4607,8 @@ IDE_RC qsvProcStmts::setUseDate( qsvEnvInfo * aEnvInfo )
     sProcStmts     = aEnvInfo->currStmt;
 
     /* BUG-37854
-       parameterì˜ default ë³€ìˆ˜ê°€ sysdateì˜ ê²½ìš°,
-       parameterì˜ validate ì‹œì ì—ì„œëŠ” í˜„ì¬ qsProcStmtsëŠ” NULLì´ë‹¤. */
+       parameterÀÇ default º¯¼ö°¡ sysdateÀÇ °æ¿ì,
+       parameterÀÇ validate ½ÃÁ¡¿¡¼­´Â ÇöÀç qsProcStmts´Â NULLÀÌ´Ù. */
     if ( sProcStmts != NULL )
     {
         if ( isSQLType( sProcStmts->stmtType ) == ID_FALSE )
@@ -4597,15 +4647,20 @@ IDE_RC qsvProcStmts::queryTrans ( qcStatement * aQcStmt,
     SInt                 sStrLen;
     SInt                 sTotalLen  = 0;
 
-    // ë™ì¼í•œ Bind ë³€ìˆ˜ë¥¼ ì²´í¬í•˜ê¸° ìœ„í•œ list
-    qcNamePosition     * sBindVars  = NULL;
-    SInt                 sBindCount = 0;
+    // µ¿ÀÏÇÑ Bind º¯¼ö¸¦ Ã¼Å©ÇÏ±â À§ÇÑ list
+    qcNamePosition     * sInBindVars  = NULL;
+    SInt                 sInBindCount = 0;
     UInt                 sState     = 0;
 
     // BUG-37333
     qsUsingSubprograms * sSubprogram;
     SInt                 sSubprogramOffset = 0;
     qcNamePosition     * sPkgName          = NULL;
+
+    // BUG-47695
+    SInt                 aOutBindCount  = 0;
+    SInt                 sRecIndex      = 0;
+    SInt                 sRecFieldCount = 0;
 
     sSql        = (qsProcStmtSql *)aProcStmts;
     sSqlPos     = sSql->common.pos;
@@ -4619,12 +4674,12 @@ IDE_RC qsvProcStmts::queryTrans ( qcStatement * aQcStmt,
 
     if( sSql->usingParamCount > 0 )
     {
-        /* ê°™ì€ ì´ë¦„ì˜ PSM ë³€ìˆ˜ë¥¼ ê°™ì€ ì´ë¦„ì˜ bind ë³€ìˆ˜ë¡œ ë³€í™˜í•˜ê¸° ìœ„í•´ì„œ
-         * sBindVarsì— ë³€í™˜í•œ PSM ë³€ìˆ˜ì˜ ì´ë¦„ì„ ì €ì¥í•œë‹¤. */
+        /* °°Àº ÀÌ¸§ÀÇ PSM º¯¼ö¸¦ °°Àº ÀÌ¸§ÀÇ bind º¯¼ö·Î º¯È¯ÇÏ±â À§ÇØ¼­
+         * sInBindVars¿¡ º¯È¯ÇÑ PSM º¯¼öÀÇ ÀÌ¸§À» ÀúÀåÇÑ´Ù. */
         IDE_TEST( STRUCT_ALLOC_WITH_COUNT( QC_QME_MEM( aQcStmt ),
                                            qcNamePosition,
                                            sSql->usingParamCount,
-                                           &sBindVars )
+                                           &sInBindVars )
                   != IDE_SUCCESS );
         sState = 1;
     }
@@ -4639,22 +4694,22 @@ IDE_RC qsvProcStmts::queryTrans ( qcStatement * aQcStmt,
     }
     else
     {
-        /* into ì ˆì´ ì—†ëŠ” ê²½ìš° (select statementê°€ ì•„ë‹Œê²½ìš°)
-         * into ì ˆì„ ì„ íƒí•˜ì§€ ì•Šê¸°ìœ„í•´ì„œ ID_SINT_MAXë¥¼ ì„¤ì •í•œë‹¤. */
+        /* into ÀıÀÌ ¾ø´Â °æ¿ì (select statement°¡ ¾Æ´Ñ°æ¿ì)
+         * into ÀıÀ» ¼±ÅÃÇÏÁö ¾Ê±âÀ§ÇØ¼­ ID_SINT_MAX¸¦ ¼³Á¤ÇÑ´Ù. */
         sIntoOffset = ID_SINT_MAX;
     }
 
     if( aQcStmt->spvEnv->createPkg != NULL )
     {
-        /* package subprogram listì˜ ê²½ìš°, ë™ì¼í•œ package ë‚´ì˜ subprogramì„ ì‚¬ìš©í–ˆì„ ì‹œ,
-         * ì‹¤í–‰ ì‹œ í•´ë‹¹ subprogramì„ ì°¾ê¸° ìœ„í•´ package nameì„ ëª…ì‹œí•´ì¤˜ì•¼ í•˜ë©°,
-         * create packageì˜ validate ë•Œ ì´ë£¨ì–´ì§„ë‹¤.
-         * ì¦‰, create packageì˜ validate ì‹œ í•´ë‹¹ listê°€ ë§Œë“¤ì–´ì§€ê³ , package nameë„ ëª…ì‹œí•œë‹¤. */
+        /* package subprogram listÀÇ °æ¿ì, µ¿ÀÏÇÑ package ³»ÀÇ subprogramÀ» »ç¿ëÇßÀ» ½Ã,
+         * ½ÇÇà ½Ã ÇØ´ç subprogramÀ» Ã£±â À§ÇØ package nameÀ» ¸í½ÃÇØÁà¾ß ÇÏ¸ç,
+         * create packageÀÇ validate ¶§ ÀÌ·ç¾îÁø´Ù.
+         * Áï, create packageÀÇ validate ½Ã ÇØ´ç list°¡ ¸¸µé¾îÁö°í, package nameµµ ¸í½ÃÇÑ´Ù. */
         sPkgName = &aQcStmt->spvEnv->createPkg->pkgNamePos;
     }
     else
     {
-        // packageê°€ ì•„ë‹Œ ê²½ìš° subprogramListëŠ” ì‹¤í–‰í•˜ì§€ ì•Šê¸° ìœ„í•´ ID_SINT_MAXë¥¼ ì„¤ì •
+        // package°¡ ¾Æ´Ñ °æ¿ì subprogramList´Â ½ÇÇàÇÏÁö ¾Ê±â À§ÇØ ID_SINT_MAX¸¦ ¼³Á¤
         IDE_DASSERT( sSubprogram == NULL );
         sSubprogramOffset = ID_SINT_MAX;
     }
@@ -4670,8 +4725,8 @@ IDE_RC qsvProcStmts::queryTrans ( qcStatement * aQcStmt,
         }
         else
         {
-            // sUsingParamì´ NULL ì´ë©´ intoë¥¼ ì„ íƒí•˜ê¸° ìœ„í•´
-            // offsetì„ ID_SINT_MAXë¡œ ì„¤ì •í•œë‹¤.
+            // sUsingParamÀÌ NULL ÀÌ¸é into¸¦ ¼±ÅÃÇÏ±â À§ÇØ
+            // offsetÀ» ID_SINT_MAX·Î ¼³Á¤ÇÑ´Ù.
             sUsingOffset = ID_SINT_MAX;
         }
 
@@ -4705,7 +4760,7 @@ IDE_RC qsvProcStmts::queryTrans ( qcStatement * aQcStmt,
             // Nothing to do.
         }
 
-        // PSM ë³€ìˆ˜ í˜¹ì€ intoì ˆ ì´ì „ì˜ SQLì„ target bufferì— ë³µì‚¬í•œë‹¤.
+        // PSM º¯¼ö È¤Àº intoÀı ÀÌÀüÀÇ SQLÀ» target buffer¿¡ º¹»çÇÑ´Ù.
         sStrLen  = sVarOffset - sOrgSqlTextOffset;
 
         // BUG-39212 Rows referenced by trigger should be used like host variable.
@@ -4756,9 +4811,12 @@ IDE_RC qsvProcStmts::queryTrans ( qcStatement * aQcStmt,
                                        sSql,
                                        &sSqlBuffer,
                                        &sUsingParam,
-                                       &sBindVars,
-                                       &sBindCount,
-                                       &sOrgSqlTextOffset )
+                                       &sOrgSqlTextOffset,
+                                       &sInBindVars,
+                                       &sInBindCount,
+                                       &aOutBindCount,
+                                       &sRecIndex,
+                                       &sRecFieldCount )
                           != IDE_SUCCESS );
             }
             else
@@ -4778,7 +4836,7 @@ IDE_RC qsvProcStmts::queryTrans ( qcStatement * aQcStmt,
         }
     }
 
-    // ë‚˜ë¨¸ì§€ SQLì„ target bufferì— ë³µì‚¬í•œë‹¤.
+    // ³ª¸ÓÁö SQLÀ» target buffer¿¡ º¹»çÇÑ´Ù.
     sStrLen  = (sSqlPos.offset + sSqlPos.size) - sOrgSqlTextOffset;
 
     if( sStrLen > 0 )
@@ -4793,7 +4851,7 @@ IDE_RC qsvProcStmts::queryTrans ( qcStatement * aQcStmt,
 
     sTotalLen = iduVarMemStringGetLength( &sSqlBuffer );
 
-    // ë³€í™˜í•œ SQL textë¥¼ ìƒˆë¡œ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•˜ì—¬ ë³µì‚¬í•œë‹¤.
+    // º¯È¯ÇÑ SQL text¸¦ »õ·Î ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÏ¿© º¹»çÇÑ´Ù.
     IDE_TEST( QC_QMP_MEM(aQcStmt)->alloc( sTotalLen + 1,
                                           (void**)&sSql->sqlText )
               != IDE_SUCCESS );
@@ -4810,7 +4868,7 @@ IDE_RC qsvProcStmts::queryTrans ( qcStatement * aQcStmt,
     if( sState == 1 )
     {
         sState = 0;
-        IDE_TEST( QC_QME_MEM(aQcStmt)->free(sBindVars)
+        IDE_TEST( QC_QME_MEM(aQcStmt)->free(sInBindVars)
                   != IDE_SUCCESS );
     }
     else
@@ -4825,7 +4883,7 @@ IDE_RC qsvProcStmts::queryTrans ( qcStatement * aQcStmt,
 
     if( sState == 1 )
     {
-        (void)QC_QME_MEM(aQcStmt)->free(sBindVars);
+        (void)QC_QME_MEM(aQcStmt)->free(sInBindVars);
     }
     else
     {
@@ -4840,9 +4898,12 @@ IDE_RC qsvProcStmts::makeBindVar( qcStatement     * aQcStmt,
                                   qsProcStmtSql   * aSql,
                                   iduVarMemString * aSqlBuffer,
                                   qsUsingParam   ** aUsingParam,
-                                  qcNamePosition ** aBindVars,
-                                  SInt            * aBindCount,
-                                  SInt            * aOrgSqlTextOffset )
+                                  SInt            * aOrgSqlTextOffset,
+                                  qcNamePosition ** aInBindVars,
+                                  SInt            * aInBindCount,
+                                  SInt            * aOutBindCount,
+                                  SInt            * aRecIndex,
+                                  SInt            * aRecFieldCount )
 {
     qtcNode        * sUsingNode;
     qsUsingParam   * sUsingParam;
@@ -4859,10 +4920,16 @@ IDE_RC qsvProcStmts::makeBindVar( qcStatement     * aQcStmt,
     qtcNode        * sIndexNode[2];
     qcNamePosition   sNullPosition;
     // BUG-42858
-    qcuSqlSourceInfo    sqlInfo;
+    qcuSqlSourceInfo sqlInfo;
     // BUG-46174
     SInt             j;
     qtcNode        * sColumnNode = NULL;
+
+    // BUG-47695
+    qcmColumn      * sFieldColumn = NULL;
+    qsVariables    * sVariable;
+    qcNamePosition   sFieldName;
+    idBool           sFindVar;
 
     SET_EMPTY_POSITION( sNullPosition );
 
@@ -4870,7 +4937,7 @@ IDE_RC qsvProcStmts::makeBindVar( qcStatement     * aQcStmt,
     sUsingNode  = sUsingParam->paramNode;
 
     // BUG-42858
-    // arrayì˜ indexì— tableì˜ columnì„ ì‚¬ìš©í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.
+    // arrayÀÇ index¿¡ tableÀÇ columnÀ» »ç¿ëÇÒ ¼ö ¾ø½À´Ï´Ù.
     if ( ( ( sUsingNode->lflag & QTC_NODE_SP_ARRAY_INDEX_VAR_MASK )
            == QTC_NODE_SP_ARRAY_INDEX_VAR_EXIST ) &&
          ( sUsingNode->depInfo.depCount > 0 ) )
@@ -4884,35 +4951,38 @@ IDE_RC qsvProcStmts::makeBindVar( qcStatement     * aQcStmt,
         // Nothing to do.
     }
 
-    if ( (sUsingNode->position.size != 1) ||
-         ((sUsingNode->position.stmtText[sUsingNode->position.offset]) != '?') )
+    // LVALUE_ENABLEÀÌ¸é °¢°¢ bind ÇØ¾ß ÇÑ´Ù.
+    if ( (sUsingNode->lflag & QTC_NODE_LVALUE_MASK) == QTC_NODE_LVALUE_DISABLE )
     {
-        for( i = 0; i < *aBindCount; i++)
+        if ( (sUsingNode->position.stmtText[sUsingNode->position.offset]) != '?' )
         {
-            // ì´ë¯¸ ë“±ë¡í•œ bind ë³€ìˆ˜ì¸ì§€ ì°¾ëŠ”ë‹¤.
-            if ( QC_IS_NAME_MATCHED( (*aBindVars)[i], sUsingNode->position ) )
+            for( i = 0; i < *aInBindCount; i++)
             {
-                break;
-            }
-            else
-            {
-                // Nothing to do.
+                // ÀÌ¹Ì µî·ÏÇÑ bind º¯¼öÀÎÁö Ã£´Â´Ù.
+                if ( QC_IS_NAME_MATCHED( (*aInBindVars)[i], sUsingNode->position ) )
+                {
+                    break;
+                }
             }
         }
-    }
-    else
-    {
-        i = *aBindCount;
-    }
+        else // '?'·Î bind¸¦ ÇÏ¸é ¹«Á¶°Ç »õ·Î µî·ÏÇÑ´Ù.
+        {
+            i = *aInBindCount;
+        }
 
-    if( i == *aBindCount ) // ì°¾ì§€ ëª»í•œ ê²½ìš° ë“±ë¡í•œë‹¤.
-    {
-        (*aBindVars)[i] = sUsingNode->position;
-        (*aBindCount)++;
-    }
-    else
-    {
-        // Noting to do.
+        // Ã£Áö ¸øÇÑ °æ¿ì µî·ÏÇÑ´Ù.
+        if( i == *aInBindCount )
+        {
+            (*aInBindVars)[i] = sUsingNode->position;
+            (*aInBindCount)++;
+        }
+
+        // Record º¯¼ö¸¦ »ç¿ëÇÑ °æ¿ì index¸¦ Á¶Á¤ÇÑ´Ù.
+        if ( (*aRecFieldCount != 0) &&
+             (*aRecIndex < i ) )
+        {
+            i = i + *aRecFieldCount - 1;
+        }
     }
 
     sTemplate    = QC_SHARED_TMPLATE( aQcStmt );
@@ -4924,7 +4994,7 @@ IDE_RC qsvProcStmts::makeBindVar( qcStatement     * aQcStmt,
         sRowColumn = ((qtcModule*)sMtcColumn->module)->typeInfo->columns->next;
         sRowModule = (qtcModule*)sRowColumn->basicInfo->module;
 
-        // Primitive typeì˜ associative array ì¸ ê²½ìš°
+        // Primitive typeÀÇ associative array ÀÎ °æ¿ì
         if( ( sRowModule->module.id != MTD_ROWTYPE_ID ) &&
             ( sRowModule->module.id != MTD_RECORDTYPE_ID ) )
         {
@@ -4959,7 +5029,7 @@ IDE_RC qsvProcStmts::makeBindVar( qcStatement     * aQcStmt,
         }
         else
         {
-            // record type ì—ì„œ bind ë³€ìˆ˜ë¥¼ ë„£ëŠ”ë‹¤.
+            // record type ¿¡¼­ bind º¯¼ö¸¦ ³Ö´Â´Ù.
             sMtdModuleID = sRowModule->module.id;
             sMtcColumn   = sRowColumn->basicInfo;
         }
@@ -4969,8 +5039,8 @@ IDE_RC qsvProcStmts::makeBindVar( qcStatement     * aQcStmt,
         // Noting to do.
     }
 
-    // 1) Record/row typeì¸ ê²½ìš°
-    // 2) Record/row typeì˜ Array typeì¸ ê²½ìš°
+    // 1) Record/row typeÀÎ °æ¿ì
+    // 2) Record/row typeÀÇ Array typeÀÎ °æ¿ì
     if( ( sMtdModuleID == MTD_ROWTYPE_ID ) ||
         ( sMtdModuleID == MTD_RECORDTYPE_ID ) )
     {
@@ -4979,14 +5049,24 @@ IDE_RC qsvProcStmts::makeBindVar( qcStatement     * aQcStmt,
         if ( (sUsingNode->lflag & QTC_NODE_SP_INS_UPT_VALUE_REC_MASK) ==
              QTC_NODE_SP_INS_UPT_VALUE_REC_TRUE )
         {
+            /* BUG-47695
+             *   DML¿¡¼­ IN ¼Ó¼ºÀÇ record type º¯¼ö´Â 1°³¸¸ »ç¿ëÇÒ ¼ö ÀÖ´Ù.
+             *   ÇØ´ç À§Ä¡¸¦ ±â¾ïÇß´Ù°¡ record type º¯¼öÀÇ offsetº¸´Ù µÚÀÇ º¯¼ö´Â
+             *   record type º¯¼öÀÇ column count¸¸Å­ ´õÇØ¼­ bind º¯¼ö ÀÌ¸§À» º¯°æÇØ¾ß ÇÑ´Ù.
+             *     ex) UPDATE (SELECT C1, C2 FROM T1 WHERE C1 < VAR1) SET ROW = VAR2 WHERE C1 < VAR3 RETURN C1, C2 INTO VAR4;
+             *           => UPDATE (SELECT C1, C2 FROM T1 WHERE C1 < VAR1) SET C1 = VAR2.C1, C2 = VAR2.C2 WEHRE C1 < VAR3 RETURN C1, C2 INTO VAR4;
+             *           => UPDATE (SELECT C1, C2 FROM T1 WHERE C1 < :B0) SET C1 = :B1, :B2 WHERE C1 < :B3 RETURN C1, C2 INTO :O0, :O1; */
+            *aRecIndex = i;
+            *aRecFieldCount = sColumnCount;
+
             // BUG-46174
-            /* Record Typeì¸ ê²½ìš° recordì˜ column ê°œìˆ˜ë§Œí¼ bind ë³€ìˆ˜ë¥¼ ë§Œë“ ë‹¤.
+            /* Record TypeÀÎ °æ¿ì recordÀÇ column °³¼ö¸¸Å­ bind º¯¼ö¸¦ ¸¸µç´Ù.
              *    ex) TYPE REC iS RECORD ( A1 INTEGER, A2 INTEGER );
              *        var REC;
              * before) UPDATE T1 SET ROW = var
-             *  after) UPDATE T1 SET ROW = (:C0, :C1) 
+             *  after) UPDATE T1 SET ROW = (:B0, :B1) 
              * before) INSERT INTO T1 VALUES var
-             *  after) INSERT INTO T1 VALUES (:C0, :C1) */
+             *  after) INSERT INTO T1 VALUES (:B0, :B1) */
             IDE_TEST( iduVarMemStringAppendFormat( aSqlBuffer, "(", 1 )
                       != IDE_SUCCESS );
 
@@ -4998,10 +5078,10 @@ IDE_RC qsvProcStmts::makeBindVar( qcStatement     * aQcStmt,
             }
 
             // BUG-46583
-            // INSERT VALUESì ˆ, UPDATE SET ì ˆì—ì„œ ëª…ì‹œí•œ ë ˆì½”ë“œë³€ìˆ˜ë¥¼
-            // ë‹¤ë¥¸ì ˆ(returning ì ˆ)ì— ê°™ì´ ì‚¬ìš©í•œ ê²½ìš° ë‹¤ë¥¸ ë°”ì´ë“œë³€ìˆ˜ëª…ìœ¼ë¡œ
-            // ì§€ì •í•˜ë„ë¡ í•´ì•¼í•©ë‹ˆë‹¤. 
-            SET_POSITION( (*aBindVars)[i], sNullPosition );
+            // INSERT VALUESÀı, UPDATE SET Àı¿¡¼­ ¸í½ÃÇÑ ·¹ÄÚµåº¯¼ö¸¦
+            // ´Ù¸¥Àı(returning Àı)¿¡ °°ÀÌ »ç¿ëÇÑ °æ¿ì ´Ù¸¥ ¹ÙÀÌµåº¯¼ö¸íÀ¸·Î
+            // ÁöÁ¤ÇÏµµ·Ï ÇØ¾ßÇÕ´Ï´Ù. 
+            SET_POSITION( (*aInBindVars)[i], sNullPosition );
 
             for ( j = 0, sColumnNode = aSql->usingRecValueInsUpt;
                   j < sColumnCount;
@@ -5011,8 +5091,8 @@ IDE_RC qsvProcStmts::makeBindVar( qcStatement     * aQcStmt,
                 {
                     sUsingParam->paramNode = sColumnNode;
 
-                    // BUG-46583 Columnì˜ Cë¥¼ ì‚¬ìš©
-                    IDE_TEST( iduVarMemStringAppendFormat( aSqlBuffer, ":C%"ID_INT32_FMT, j )
+                    // BUG-46583 ColumnÀÇ C¸¦ »ç¿ë
+                    IDE_TEST( iduVarMemStringAppendFormat( aSqlBuffer, ":B%"ID_INT32_FMT, i)
                               != IDE_SUCCESS );
                 }
                 else
@@ -5033,7 +5113,7 @@ IDE_RC qsvProcStmts::makeBindVar( qcStatement     * aQcStmt,
                     i++;
 
                     // BUG-46583
-                    IDE_TEST( iduVarMemStringAppendFormat( aSqlBuffer, ", :C%"ID_INT32_FMT, j )
+                    IDE_TEST( iduVarMemStringAppendFormat( aSqlBuffer, ", :B%"ID_INT32_FMT, i)
                               != IDE_SUCCESS );
                 }
             }
@@ -5043,30 +5123,109 @@ IDE_RC qsvProcStmts::makeBindVar( qcStatement     * aQcStmt,
         }
         else
         {
-/* Record Typeì¸ ê²½ìš° recordì˜ column ê°œìˆ˜ë§Œí¼ bind ë³€ìˆ˜ë¥¼ ë§Œë“ ë‹¤.
+/* Record TypeÀÎ °æ¿ì recordÀÇ column °³¼ö¸¸Å­ bind º¯¼ö¸¦ ¸¸µç´Ù.
  *    ex) TYPE ARR1 iS RECORD ( A1 INTEGER, A2 INTEGER );
  *        UPDATE T1 SET I1=I1, I2=I2 RETURN I1, I2 BULK COLLECT INTO ARR1;
  * step1) UPDATE T1 SET I1=I1, I2=I2 RETURN I1, I2 BULK COLLECT INTO :O0 
  * step2) UPDATE T1 SET I1=I1, I1=I2 RETURN I1, I2 BULK COLLECT INTO :O0, :O1 */
-            for( i = 0; i < sColumnCount; i++ )
+            if ( sRowModule == NULL )
             {
-                IDE_TEST( qtc::makeProcVariable( aQcStmt,
-                                                 sIndexNode,
-                                                 &sNullPosition,
-                                                 NULL,
-                                                 QTC_PROC_VAR_OP_NEXT_COLUMN )
+                IDE_TEST( qsvProcVar::searchVarAndPara( aQcStmt,
+                                                        sUsingNode,
+                                                        ID_TRUE, // for OUTPUT
+                                                        &sFindVar,
+                                                        &sVariable)
+                          != IDE_SUCCESS);
+
+                if ( sFindVar == ID_FALSE )
+                {
+                    // BUG-42715
+                    // bind º¯¼ö°¡ ¾Æ´Ï¸é package º¯¼öÀÌ´Ù.
+                    IDE_TEST( qsvProcVar::searchVariableFromPkg( aQcStmt,
+                                                                 sUsingNode,
+                                                                 &sFindVar,
+                                                                 &sVariable )
+                              != IDE_SUCCESS );
+                }
+
+                if (sFindVar == ID_FALSE)
+                {
+                    sqlInfo.setSourceInfo( aQcStmt,
+                                           &sUsingNode->position );
+
+                    IDE_RAISE( ERR_NOT_FOUND_VAR );
+                }
+
+                IDE_TEST( qtc::estimate( sUsingNode,
+                                         QC_SHARED_TMPLATE(aQcStmt),
+                                         aQcStmt,
+                                         NULL,
+                                         NULL,
+                                         NULL )
                           != IDE_SUCCESS );
 
-                IDE_TEST( mtc::initializeColumn(
-                        QTC_TMPL_COLUMN( sTemplate, sIndexNode[0] ),
-                        &mtdInteger,
-                        0,
-                        0,
-                        0 )
-                    != IDE_SUCCESS );
+                if ( (sVariable->variableType == QS_ASSOCIATIVE_ARRAY_TYPE ) &&
+                     (sUsingNode->node.arguments != NULL) )
+                {
+                    sMtcColumn   = sVariable->typeInfo->columns->next->basicInfo;
+                    sFieldColumn = ((qtcModule*)(sMtcColumn->module))->typeInfo->columns;
+                }
+                else
+                {
+                    sMtcColumn   = QTC_STMT_COLUMN(aQcStmt, sUsingNode);
+                    sFieldColumn = sVariable->typeInfo->columns;
+                }
+            }
+            else
+            {
+                if ( sUsingNode->node.arguments != NULL )  // ex) array_var[1]
+                {
+                    sFieldColumn = sRowModule->typeInfo->columns;
+                }
+                else // ex) array_var
+                {
+                    sFieldColumn = NULL;
+                }
+            }
 
-                sIndexNode[0]->lflag &= ~QTC_NODE_COLUMN_ESTIMATE_MASK;
-                sIndexNode[0]->lflag |= QTC_NODE_COLUMN_ESTIMATE_TRUE;
+            for( j = 0; j < sColumnCount; j++ )
+            {
+                if ( sFieldColumn != NULL )
+                {
+                    sFieldName.stmtText = sFieldColumn->name;
+                    sFieldName.offset = 0;
+                    sFieldName.size = idlOS::strlen((SChar*)sFieldColumn->name);
+                    sFieldColumn = sFieldColumn->next;
+
+                    IDE_TEST( qsvProcVar::makeRecordColumnByName( aQcStmt,
+                                                                  sUsingNode,
+                                                                  &sFieldName,
+                                                                  sIndexNode )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    IDE_TEST( qtc::makeProcVariable( aQcStmt,
+                                                     sIndexNode,
+                                                     &sNullPosition,
+                                                     NULL,
+                                                     QTC_PROC_VAR_OP_NEXT_COLUMN )
+                              != IDE_SUCCESS );
+
+                    IDE_TEST( mtc::initializeColumn(
+                            QTC_TMPL_COLUMN( sTemplate, sIndexNode[0] ),
+                            &mtdInteger,
+                            0,
+                            0,
+                            0 )
+                        != IDE_SUCCESS );
+
+                    sIndexNode[0]->lflag &= ~QTC_NODE_COLUMN_ESTIMATE_MASK;
+                    sIndexNode[0]->lflag |= QTC_NODE_COLUMN_ESTIMATE_TRUE;
+                }
+
+                sIndexNode[0]->lflag &= ~QTC_NODE_LVALUE_MASK;
+                sIndexNode[0]->lflag |= QTC_NODE_LVALUE_ENABLE;
 
                 IDE_TEST( qtc::estimate( sIndexNode[0],
                                          sTemplate,
@@ -5076,16 +5235,14 @@ IDE_RC qsvProcStmts::makeBindVar( qcStatement     * aQcStmt,
                                          NULL )
                           != IDE_SUCCESS );
 
-                sIndexNode[0]->lflag &= ~QTC_NODE_LVALUE_MASK;
-                sIndexNode[0]->lflag |= QTC_NODE_LVALUE_ENABLE;
-
-                // ì²˜ìŒì´ë©´ usingParamì˜ paramNodeë§Œ ë³€ê²½í•œë‹¤.
-                // ì´í›„ì—ëŠ” usingParamì„ í• ë‹¹í•´ì„œ ì¶”ê°€í•œë‹¤.
-                if( i == 0 )
+                // Ã³À½ÀÌ¸é usingParamÀÇ paramNode¸¸ º¯°æÇÑ´Ù.
+                // ÀÌÈÄ¿¡´Â usingParamÀ» ÇÒ´çÇØ¼­ Ãß°¡ÇÑ´Ù.
+                if( j == 0 )
                 {
                     sUsingParam->paramNode = sIndexNode[0];
+                    sUsingParam->inOutType = QS_OUT;
 
-                    IDE_TEST( iduVarMemStringAppendFormat( aSqlBuffer, ":O%"ID_INT32_FMT, i )
+                    IDE_TEST( iduVarMemStringAppendFormat( aSqlBuffer, ":O%"ID_INT32_FMT, (*aOutBindCount)++ )
                               != IDE_SUCCESS );
                 }
                 else
@@ -5097,17 +5254,17 @@ IDE_RC qsvProcStmts::makeBindVar( qcStatement     * aQcStmt,
 
                     sNewUsingParam->paramNode = sIndexNode[0];
                     // BUG-46589
-                    // Return into ì ˆ ì´í›„ì—ë„ PSM ë³€ìˆ˜ë¥¼ ì‚¬ìš©í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
-                    // next linkë¥¼ ì—°ê²°í•´ì•¼ í•©ë‹ˆë‹¤.
+                    // Return into Àı ÀÌÈÄ¿¡µµ PSM º¯¼ö¸¦ »ç¿ëÇÒ ¼ö ÀÖÀ¸¹Ç·Î
+                    // next link¸¦ ¿¬°áÇØ¾ß ÇÕ´Ï´Ù.
                     sNewUsingParam->next      = sUsingParam->next;
-                    sNewUsingParam->inOutType = QS_IN;
+                    sNewUsingParam->inOutType = QS_OUT;
 
                     sUsingParam->next = sNewUsingParam;
                     sUsingParam       = sNewUsingParam;
 
                     aSql->usingParamCount++;
 
-                    IDE_TEST( iduVarMemStringAppendFormat( aSqlBuffer, ", :O%"ID_INT32_FMT, i )
+                    IDE_TEST( iduVarMemStringAppendFormat( aSqlBuffer, ", :O%"ID_INT32_FMT, (*aOutBindCount)++ )
                               != IDE_SUCCESS );
                 }
             }
@@ -5115,9 +5272,34 @@ IDE_RC qsvProcStmts::makeBindVar( qcStatement     * aQcStmt,
     }
     else
     {
-        // PSM ë³€ìˆ˜ë¥¼ bind ë³€ìˆ˜ë¡œ ì¹˜í™˜í•´ì„œ target bufferì— ì¶”ê°€í•œë‹¤.
-        IDE_TEST( iduVarMemStringAppendFormat( aSqlBuffer, ":B%"ID_INT32_FMT, i )
-                  != IDE_SUCCESS );
+        if ( sUsingParam->inOutType != QS_IN )
+        {
+            // LobÀº INOUT type bindingÀÌ ºÒ°¡´ÉÇÏ´Ù.
+            switch ( sMtcColumn->type.dataTypeId )
+            {
+                case MTD_BLOB_ID:
+                case MTD_BLOB_LOCATOR_ID:
+                case MTD_CLOB_ID:
+                case MTD_CLOB_LOCATOR_ID:
+                    sUsingParam->inOutType = QS_OUT;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if ( (sUsingNode->lflag & QTC_NODE_LVALUE_MASK) == QTC_NODE_LVALUE_DISABLE )
+        {
+            // PSM º¯¼ö¸¦ bind º¯¼ö·Î Ä¡È¯ÇØ¼­ target buffer¿¡ Ãß°¡ÇÑ´Ù.
+            IDE_TEST( iduVarMemStringAppendFormat( aSqlBuffer, ":B%"ID_INT32_FMT, i )
+                      != IDE_SUCCESS );
+        }
+        else
+        {
+            // PSM º¯¼ö¸¦ bind º¯¼ö·Î Ä¡È¯ÇØ¼­ target buffer¿¡ Ãß°¡ÇÑ´Ù.
+            IDE_TEST( iduVarMemStringAppendFormat( aSqlBuffer, ":O%"ID_INT32_FMT, (*aOutBindCount)++ )
+                      != IDE_SUCCESS );
+        }
     }
 
     *aUsingParam       = sUsingParam->next;
@@ -5133,14 +5315,22 @@ IDE_RC qsvProcStmts::makeBindVar( qcStatement     * aQcStmt,
                              sqlInfo.getErrMessage() ));
         (void)sqlInfo.fini();
     }
+    IDE_EXCEPTION(ERR_NOT_FOUND_VAR);
+    {
+        (void)sqlInfo.init(aQcStmt->qmeMem);
+        IDE_SET(
+            ideSetErrorCode( qpERR_ABORT_QSV_NOT_EXIST_VARIABLE_NAME_SQLTEXT,
+                             sqlInfo.getErrMessage() ));
+        (void)sqlInfo.fini();
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 }
 
 // BUG-37501
-// exception ë‚´ë¶€ì—ì„œ ì„ ì–¸ëœ labelë“¤ì„ exception blockì˜ childLabelì— ì—°ê²°í•´ì¤€ë‹¤.
-// ì´ childLabelë“¤ì€ gotoë¬¸ì—ì„œ labelì„ ì°¾ì„ ë•Œ ì‚¬ìš©ëœë‹¤.
+// exception ³»ºÎ¿¡¼­ ¼±¾ğµÈ labelµéÀ» exception blockÀÇ childLabel¿¡ ¿¬°áÇØÁØ´Ù.
+// ÀÌ childLabelµéÀº goto¹®¿¡¼­ labelÀ» Ã£À» ¶§ »ç¿ëµÈ´Ù.
 IDE_RC qsvProcStmts::connectChildLabel( qcStatement * aStatement,
                                         qsProcStmts * aSrcProcStmt,
                                         qsProcStmts * aDestProcStmt )
@@ -5196,7 +5386,7 @@ IDE_RC qsvProcStmts::validateIntoClause( qcStatement * aStatement,
 
     IDE_DASSERT( aIntoVars->intoNodes != NULL );
 
-    // target ê°¯ìˆ˜ë¥¼ êµ¬í•œë‹¤.
+    // target °¹¼ö¸¦ ±¸ÇÑ´Ù.
     for ( sCurrTarget = aTarget ;
           sCurrTarget != NULL ;
           sCurrTarget = sCurrTarget->next )
@@ -5204,7 +5394,7 @@ IDE_RC qsvProcStmts::validateIntoClause( qcStatement * aStatement,
         sTargetCount++;
     }
 
-    // into clause , bulk collect into clauseì— ëŒ€í•œ validationì„ í•œë‹¤.
+    // into clause , bulk collect into clause¿¡ ´ëÇÑ validationÀ» ÇÑ´Ù.
     IDE_TEST( validateIntoClauseInternal( aStatement,
                                           aIntoVars,
                                           sTargetCount,
@@ -5233,7 +5423,7 @@ IDE_RC qsvProcStmts::validateIntoClauseForRefCursor( qcStatement * aStatement,
 
     IDE_DASSERT( aIntoVars->intoNodes != NULL );
 
-    // into clause , bulk collect into clauseì— ëŒ€í•œ validationì„ í•œë‹¤.
+    // into clause , bulk collect into clause¿¡ ´ëÇÑ validationÀ» ÇÑ´Ù.
     IDE_TEST( validateIntoClauseInternal( aStatement,
                                           aIntoVars,
                                           0, /* target count */
@@ -5268,7 +5458,7 @@ IDE_RC qsvProcStmts::validateIntoClauseInternal( qcStatement * aStatement,
  *    BUG-37273, BUG-41707
  *
  * Implementation :
- *    into clause , bulk collect into clauseì— ëŒ€í•œ validationì„ í•œë‹¤.
+ *    into clause , bulk collect into clause¿¡ ´ëÇÑ validationÀ» ÇÑ´Ù.
  *        - SELECT
  *        - EXECUTE IMMEDIATE
  *        - CURSOR
@@ -5339,8 +5529,8 @@ IDE_RC qsvProcStmts::validateIntoClauseInternal( qcStatement * aStatement,
             // Nothing to do.
         }
 
-        /* lvalueì— psmë³€ìˆ˜ê°€ ì¡´ì¬í•˜ë¯€ë¡œ lvalue flagë¥¼ ì”Œì›€.
-           qtcColumn ëª¨ë“ˆì—ì„œ estimateì‹œ ì°¸ì¡°í•¨. */
+        /* lvalue¿¡ psmº¯¼ö°¡ Á¸ÀçÇÏ¹Ç·Î lvalue flag¸¦ ¾º¿ò.
+           qtcColumn ¸ğµâ¿¡¼­ estimate½Ã ÂüÁ¶ÇÔ. */
         sCurrIntoVar->lflag |= QTC_NODE_LVALUE_ENABLE;
 
         IDE_TEST( qtc::estimate( sCurrIntoVar,
@@ -5357,7 +5547,7 @@ IDE_RC qsvProcStmts::validateIntoClauseInternal( qcStatement * aStatement,
             continue;
         }
 
-        // BUG-42790 lvalueì—ëŠ” í•­ìƒ columnModuleì´ì—¬ì•¼ í•œë‹¤.
+        // BUG-42790 lvalue¿¡´Â Ç×»ó columnModuleÀÌ¿©¾ß ÇÑ´Ù.
         IDE_ERROR_RAISE( ( sCurrIntoVar->node.module ==
                            &qtc::columnModule ),
                          ERR_UNEXPECTED_MODULE_ERROR );
@@ -5430,7 +5620,7 @@ IDE_RC qsvProcStmts::validateIntoClauseInternal( qcStatement * aStatement,
                     sCurrIntoVar->lflag &= ~QTC_NODE_SP_ARRAY_INDEX_VAR_MASK;
                     sCurrIntoVar->lflag |= QTC_NODE_SP_ARRAY_INDEX_VAR_EXIST;
 
-                    // index nodeë¥¼ ì—°ê²°í•œë‹¤.
+                    // index node¸¦ ¿¬°áÇÑ´Ù.
                     sCurrIntoVar->node.arguments = (mtcNode*) sIndexNode[0];
                     sCurrIntoVar->node.lflag |= 1;
 
@@ -5469,21 +5659,21 @@ IDE_RC qsvProcStmts::validateIntoClauseInternal( qcStatement * aStatement,
                 {
                     // Nothing to do.
                 }
-            } /* ASSOCIATIVE ARRAY Typeì¸ ê²½ìš° */
+            } /* ASSOCIATIVE ARRAY TypeÀÎ °æ¿ì */
             else
             {
-                // bulk collectì¸ ê²½ìš° associative array typeë§Œ ê°€ëŠ¥
+                // bulk collectÀÎ °æ¿ì associative array type¸¸ °¡´É
                 sqlInfo.setSourceInfo(
                     aStatement,
                     & sCurrIntoVar->position );
                 IDE_RAISE(ERR_NOT_ASSOCIATIVE);
-            } /* ASSOCIATIVE ARRAY Typeì´ ì•„ë‹Œ ê²½ìš° */
+            } /* ASSOCIATIVE ARRAY TypeÀÌ ¾Æ´Ñ °æ¿ì */
         } /* BULK COLLECT INTO CLAUSE */
         else
         {
             if ( sMtcColumn->module->id == MTD_ASSOCIATIVE_ARRAY_ID )
             {
-                // bulk collectì´ ì—†ìœ¼ë©´ associative array type ë¶ˆê°€
+                // bulk collectÀÌ ¾øÀ¸¸é associative array type ºÒ°¡
                 sqlInfo.setSourceInfo(
                     aStatement,
                     & sCurrIntoVar->position );
@@ -5506,9 +5696,9 @@ IDE_RC qsvProcStmts::validateIntoClauseInternal( qcStatement * aStatement,
 
     if( sExistsRecordVar == ID_TRUE )
     {
-        // record variableì´ ìˆëŠ” ê²½ìš°ì´ë¯€ë¡œ targetCountì™€ record varì˜ ë‚´ë¶€ì»¬ëŸ¼
-        // countë¥¼ ì²´í¬í•œë‹¤.
-        // ë‹¨, ì´ë•ŒëŠ” intoVarCountëŠ” ë°˜ë“œì‹œ 1ì´ì–´ì•¼ë§Œ í•œë‹¤.
+        // record variableÀÌ ÀÖ´Â °æ¿ìÀÌ¹Ç·Î targetCount¿Í record varÀÇ ³»ºÎÄÃ·³
+        // count¸¦ Ã¼Å©ÇÑ´Ù.
+        // ´Ü, ÀÌ¶§´Â intoVarCount´Â ¹İµå½Ã 1ÀÌ¾î¾ß¸¸ ÇÑ´Ù.
         if( sIntoVarCount != 1 )
         {
             sqlInfo.setSourceInfo(
@@ -5518,7 +5708,7 @@ IDE_RC qsvProcStmts::validateIntoClauseInternal( qcStatement * aStatement,
         }
         else
         {
-            // ë¬´ì¡°ê±´ record variableì´ë¼ ê°€ì •í•  ìˆ˜ ìˆë‹¤.
+            // ¹«Á¶°Ç record variableÀÌ¶ó °¡Á¤ÇÒ ¼ö ÀÖ´Ù.
             IDE_DASSERT( sIntoVars != NULL );
             sCurrIntoVar = sIntoVars;
 
@@ -5693,8 +5883,8 @@ IDE_RC qsvProcStmts::validatePragmaExcepInit( qcStatement           * aStatement
              (sVariable->itemType == QS_EXCEPTION) )
         {
             /* BUG-41240 EXCEPTION_INIT Pragma 
-               aPragmaExcepInit->userErrorCodeë¥¼ ê°€ì§€ê³  sServerErrorCodeë¥¼ ì°¾ëŠ”ë‹¤. */ 
-            // BUGBUG manualì— ìˆëŠ” ì—ëŸ¬ì½”ë“œë¥¼ ê°€ì§€ê³  ì„œë²„ì—ì„œ ì‚¬ìš©í•˜ëŠ” ì—ëŸ¬ì½”ë“œë¥¼ ì°¾ì„ ìˆ˜ ì—†ë‹¤.
+               aPragmaExcepInit->userErrorCode¸¦ °¡Áö°í sServerErrorCode¸¦ Ã£´Â´Ù. */ 
+            // BUGBUG manual¿¡ ÀÖ´Â ¿¡·¯ÄÚµå¸¦ °¡Áö°í ¼­¹ö¿¡¼­ »ç¿ëÇÏ´Â ¿¡·¯ÄÚµå¸¦ Ã£À» ¼ö ¾ø´Ù.
             // sServerErrorCode = ideGetServerErrorCode( aPragmaExcepInit->userErrorCode );
 
             if( sServerErrorCode == ID_UINT_MAX )
@@ -5762,7 +5952,7 @@ idBool qsvProcStmts::checkDupErrorCode( qsExceptions * aTarget1,
     }
     else
     {
-        // aTarget1ê³¼ aTarget2 ì¤‘ í•˜ë‚˜ì˜ error codeê°€ 0ì¼ ìˆ˜ë„ ìˆìŒ.
+        // aTarget1°ú aTarget2 Áß ÇÏ³ªÀÇ error code°¡ 0ÀÏ ¼öµµ ÀÖÀ½.
         if ( aTarget1->userErrorCode == aTarget2->userErrorCode )
         {
             sResult = ID_TRUE;

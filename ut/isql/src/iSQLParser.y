@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLParser.y 84891 2019-02-15 05:17:06Z bethy $
+ * $Id: iSQLParser.y 86554 2020-01-21 05:05:40Z bethy $
  **********************************************************************/
 
 /* ======================================================
@@ -23,8 +23,8 @@
     iSQLParser.y
 
    DESCRIPTION
-    iSQLPreLexerë¡œë¶€í„° ë„˜ê²¨ë°›ì€ ì…ë ¥ë²„í¼ë¥¼ parsing.
-    ì´ë•Œ isql commandë§Œ íŒŒì‹±í•˜ê³  sql commandëŠ” ê·¸ëŒ€ë¡œ ì„œë²„ë¡œ ì „ì†¡í•œë‹¤.
+    iSQLPreLexer·ÎºÎÅÍ ³Ñ°Ü¹ŞÀº ÀÔ·Â¹öÆÛ¸¦ parsing.
+    ÀÌ¶§ isql command¸¸ ÆÄ½ÌÇÏ°í sql command´Â ±×´ë·Î ¼­¹ö·Î Àü¼ÛÇÑ´Ù.
 
    PUBLIC FUNCTION(S)
 
@@ -149,6 +149,7 @@ void chkID();
 %token ISQL_T_DISJOIN ISQL_T_CONJOIN  /* PROJ-1810 */
 %token ISQL_T_VERIFY /* BUG-43599 */
 %token ISQL_T_PREFETCHROWS ISQL_T_ASYNCPREFETCH /* BUG-44613 */
+%token ISQL_T_MULTIERROR /* BUG-47627 */
 
 /* BUG-41163 SET SQLP[ROMPT] */
 %token ISQL_T_SQLPROMPT
@@ -603,7 +604,7 @@ CHECK_STAT
     }
     ;
 
-/* BUG-26236 comment ì¿¼ë¦¬ë¬¸ì˜ ìœ í‹¸ë¦¬í‹° ì§€ì› */
+/* BUG-26236 comment Äõ¸®¹®ÀÇ À¯Æ¿¸®Æ¼ Áö¿ø */
 COMMENT_STAT
     : ISQL_T_COMMENT
     {
@@ -917,7 +918,7 @@ EDIT_STAT
         gCommand->SetCommandKind(HISEDIT_COM);
         idlOS::sprintf(gTmpBuf, "%s\n", $<str>1);
         gCommand->SetCommandStr(gTmpBuf);
-        // BUG-21412: @?/sample/test.sql ê°™ì€ ëª…ë ¹ ìˆ˜í–‰ í›„ {n}ed ëª…ë ¹ì´ ì œëŒ€ë¡œ ì•ˆë˜ëŠ” ë¬¸ì œ ìˆ˜ì •
+        // BUG-21412: @?/sample/test.sql °°Àº ¸í·É ¼öÇà ÈÄ {n}ed ¸í·ÉÀÌ Á¦´ë·Î ¾ÈµÇ´Â ¹®Á¦ ¼öÁ¤
         gCommand->SetFileName((SChar*)"");
 
         pos = idlOS::strchr(gTmpBuf, 'E');
@@ -1007,9 +1008,9 @@ EXEC_FUNC_STAT
         ret = iSQLConnectParserparse(NULL);
         if ( ret == 1 )
         {
-            /* iSQLConnectParserparse ì—ì„œ ë¬¸ë²• ì˜¤ë¥˜ê°€ ê²€ì¶œë˜ì–´ë„ 
-             * isqlì´ Syntax Errorë¥¼ ë°˜í™˜í•˜ì§€ ì•ŠëŠ”ë‹¤.
-             * ì„œë²„ë¡œë¶€í„° ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ ë°›ê¸° ìœ„í•´ ê³„ì† ì§„í–‰í•œë‹¤. */
+            /* iSQLConnectParserparse ¿¡¼­ ¹®¹ı ¿À·ù°¡ °ËÃâµÇ¾îµµ 
+             * isqlÀÌ Syntax Error¸¦ ¹İÈ¯ÇÏÁö ¾Ê´Â´Ù.
+             * ¼­¹ö·ÎºÎÅÍ ¿¡·¯ ¸Ş½ÃÁö¸¦ ¹Ş±â À§ÇØ °è¼Ó ÁøÇàÇÑ´Ù. */
             /* YYABORT; */
         }
 
@@ -1095,9 +1096,9 @@ EXEC_PROC_STAT
         ret = iSQLConnectParserparse(NULL);
         if ( ret == 1 )
         {
-            /* iSQLConnectParserparse ì—ì„œ ë¬¸ë²• ì˜¤ë¥˜ê°€ ê²€ì¶œë˜ì–´ë„ 
-             * isqlì´ Syntax Errorë¥¼ ë°˜í™˜í•˜ì§€ ì•ŠëŠ”ë‹¤.
-             * ì„œë²„ë¡œë¶€í„° ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ ë°›ê¸° ìœ„í•´ ê³„ì† ì§„í–‰í•œë‹¤. */
+            /* iSQLConnectParserparse ¿¡¼­ ¹®¹ı ¿À·ù°¡ °ËÃâµÇ¾îµµ 
+             * isqlÀÌ Syntax Error¸¦ ¹İÈ¯ÇÏÁö ¾Ê´Â´Ù.
+             * ¼­¹ö·ÎºÎÅÍ ¿¡·¯ ¸Ş½ÃÁö¸¦ ¹Ş±â À§ÇØ °è¼Ó ÁøÇàÇÑ´Ù. */
             /* YYABORT; */
         }
 
@@ -1749,9 +1750,9 @@ COLUMN_LST_STATEMENT
         gCommand->SetCommandStr(gTmpBuf);
         gCommand->SetQuery(gTmpBuf);
 
-        /* ëª…ë ¹ì–´ê°€ COLUMN col; ì¼ ê²½ìš° ì„¸ë¯¸ì½œë¡ ì´
-         * ISQL_T_COLUMN_IDENTIFIER í† í°ì— ë¶™ì–´ì„œ
-         * ë°˜í™˜ë˜ê¸° ë•Œë¬¸ì— ì´ë¥¼ ì œê±°í•´ì•¼ í•¨ */
+        /* ¸í·É¾î°¡ COLUMN col; ÀÏ °æ¿ì ¼¼¹ÌÄİ·ĞÀÌ
+         * ISQL_T_COLUMN_IDENTIFIER ÅäÅ«¿¡ ºÙ¾î¼­
+         * ¹İÈ¯µÇ±â ¶§¹®¿¡ ÀÌ¸¦ Á¦°ÅÇØ¾ß ÇÔ */
         if (sEnd[0] == '\0' && sCol[sLen-1] == ';')
         {
             sCol[sLen-1] = '\0';
@@ -1851,7 +1852,7 @@ SET_STAT
         gCommand->SetOnOff($<str>3);
     }
     | ISQL_T_SET ISQL_T_CHECKCONSTRAINTS on_off end_stmt
-    {   /* PROJ-1107 Check Constraint ì§€ì› */
+    {   /* PROJ-1107 Check Constraint Áö¿ø */
         gCommand->mExecutor = iSQLCommand::executeSet;
         gCommand->SetCommandKind( SET_COM );
         gCommand->SetiSQLOptionKind( iSQL_CHECKCONSTRAINTS );
@@ -2068,8 +2069,8 @@ SET_STAT
         idlOS::strcpy(gPromptBuf, $<str>1);
         utString::eraseWhiteSpace(gPromptBuf);
 
-        /* end_stmtê°€ ì—†ëŠ” ê²½ìš°, prompt_textì˜ ëì— ì„¸ë¯¸ì½œë¡ ì´ ìˆë‹¤ë©´
-         * ì´ê²ƒì„ end_stmtë¡œ ê°„ì£¼í•´ì•¼ í•œë‹¤. */
+        /* end_stmt°¡ ¾ø´Â °æ¿ì, prompt_textÀÇ ³¡¿¡ ¼¼¹ÌÄİ·ĞÀÌ ÀÖ´Ù¸é
+         * ÀÌ°ÍÀ» end_stmt·Î °£ÁÖÇØ¾ß ÇÑ´Ù. */
         sEndStmt = $<str>2;
         if ( sEndStmt[0] == '\0' )
         {
@@ -2222,6 +2223,17 @@ SET_STAT
         gCommand->SetCommandStr(gTmpBuf);
         gCommand->SetAsyncPrefetch(sType);
     }
+    /* BUG-47627 SET MULTIERROR ON|OFF */
+    | ISQL_T_SET ISQL_T_MULTIERROR on_off end_stmt
+    {
+        gCommand->mExecutor = iSQLCommand::executeSet;
+        gCommand->SetCommandKind(SET_COM);
+        gCommand->SetiSQLOptionKind(iSQL_MULTIERROR);
+        idlOS::sprintf(gTmpBuf, "%s %s %s%s\n",
+                $<str>1, $<str>2, $<str>3, $<str>4);
+        gCommand->SetCommandStr(gTmpBuf);
+        gCommand->SetOnOff($<str>3);
+    }
     ;
 
 SHELL_STAT
@@ -2314,7 +2326,7 @@ SHOW_STAT
         gCommand->SetCommandStr(gTmpBuf);
     }
     | ISQL_T_SHOW ISQL_T_CHECKCONSTRAINTS end_stmt
-    {   /* PROJ-1107 Check Constraint ì§€ì› */
+    {   /* PROJ-1107 Check Constraint Áö¿ø */
         gCommand->mExecutor = iSQLCommand::executeShow;
         gCommand->SetCommandKind( SHOW_COM );
         gCommand->SetiSQLOptionKind( iSQL_CHECKCONSTRAINTS );
@@ -2536,6 +2548,15 @@ SHOW_STAT
         gCommand->mExecutor = iSQLCommand::executeShow;
         gCommand->SetCommandKind(SHOW_COM);
         gCommand->SetiSQLOptionKind(iSQL_ASYNCPREFETCH);
+        idlOS::sprintf(gTmpBuf, "%s %s%s\n", $<str>1, $<str>2, $<str>3);
+        gCommand->SetCommandStr(gTmpBuf);
+    }
+    /* BUG-47627 SET MULTIERROR ON|OFF */
+    | ISQL_T_SHOW ISQL_T_MULTIERROR end_stmt
+    {
+        gCommand->mExecutor = iSQLCommand::executeShow;
+        gCommand->SetCommandKind(SHOW_COM);
+        gCommand->SetiSQLOptionKind(iSQL_MULTIERROR);
         idlOS::sprintf(gTmpBuf, "%s %s%s\n", $<str>1, $<str>2, $<str>3);
         gCommand->SetCommandStr(gTmpBuf);
     }
@@ -3338,7 +3359,7 @@ identifier
         $<str>$ = $<str>1;
     }
     | ISQL_T_CHECKCONSTRAINTS
-    {   /* PROJ-1107 Check Constraint ì§€ì› */
+    {   /* PROJ-1107 Check Constraint Áö¿ø */
         gCommand->SetHelpKind( CHECKCONSTRAINTS_COM );
         $<str>$ = $<str>1;
     }
@@ -3895,6 +3916,11 @@ identifier
         gCommand->SetHelpKind(ASYNCPREFETCH_COM);
         $<str>$ = $<str>1;
     }
+    | ISQL_T_MULTIERROR
+    {
+        gCommand->SetHelpKind(MULTIERROR_COM);
+        $<str>$ = $<str>1;
+    }
     ;
 
 explain_plan_opt
@@ -3945,8 +3971,8 @@ void chkID()
 }
 
 /* ============================================
- * start ..., @..., @@... ì—ì„œ ì»¤ë§¨ë“œì™€ ;ë¥¼
- * ì œì™¸í•œ ë¬¸ìì—´(parameter ë¶€ë¶„)ë§Œ ì¶”ì¶œí•˜ê¸°
+ * start ..., @..., @@... ¿¡¼­ Ä¿¸Çµå¿Í ;¸¦
+ * Á¦¿ÜÇÑ ¹®ÀÚ¿­(parameter ºÎºĞ)¸¸ ÃßÃâÇÏ±â
  * ============================================ */
 UInt getOptionPos(SChar *aOptStr)
 {

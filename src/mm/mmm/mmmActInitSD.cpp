@@ -30,7 +30,7 @@ static IDE_RC mmmPhaseActionInitSD( mmmPhase         aPhase,
     switch( aPhase )
     {
         case MMM_STARTUP_PRE_PROCESS:
-            sdi::initialize();
+            IDE_TEST(sdi::initialize() != IDE_SUCCESS);
             break;
         case MMM_STARTUP_PROCESS:
             break;

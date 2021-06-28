@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smrReq.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smrReq.h 90522 2021-04-09 01:29:20Z emlee $
  **********************************************************************/
 
 #ifndef _O_SMR_REQ_H_
@@ -114,11 +114,11 @@ class smrReqFunc
             return smxTrans::getTransLstUndoNxtLSN( aTrans );
         };
 
-        static IDE_RC setLstUndoNxtLSN( void   * aTrans,
-                                        smLSN    aLSN )
+        static void setLstUndoNxtLSN( void   * aTrans,
+                                      smLSN    aLSN )
         {
-            return smxTrans::setTransLstUndoNxtLSN( aTrans,
-                                                    aLSN );
+            smxTrans::setTransLstUndoNxtLSN( aTrans,
+                                             aLSN );
         };
 
         static smLSN getCurUndoNxtLSN( void * aTrans )
@@ -150,9 +150,9 @@ class smrReqFunc
             smxTrans::setIsFirstLog( aTrans, aFlag );
         };
 
-        static IDE_RC getMinLSNOfAllActiveTrans( smLSN * aLSN )
+        static void getMinLSNOfAllActiveTrans( smLSN * aLSN )
         {
-            return smxTransMgr::getMinLSNOfAllActiveTrans( aLSN );
+            smxTransMgr::getMinLSNOfAllActiveTrans( aLSN );
         };
 
         static void addActiveTrans( void    * aTrans,
@@ -203,11 +203,13 @@ class smrReqFunc
         };
 
         static IDE_RC setXAInfoAnAddPrepareLst( void    * aTrans,
+                                                idBool    aIsGCTx,
                                                 timeval   aTimeVal,
                                                 ID_XID    aXID, /* BUG-18981 */
                                                 smSCN   * aFstDskViewSCN )
         {
             return smxTransMgr::setXAInfoAnAddPrepareLst( aTrans,
+                                                          aIsGCTx,
                                                           aTimeVal,
                                                           aXID, /* BUG-18981  */
                                                           aFstDskViewSCN );
@@ -290,11 +292,6 @@ class smrReqFunc
             return smxTransMgr::isEmptyActiveTrans();
         };
 
-        static idBool getTransAbleToRollback( void * aTrans )
-        {
-            return smxTrans::getTransAbleToRollback( aTrans );
-        };
-
         static void * getFirstPreparedTrx()
         {
             return smxTransMgr::getFirstPreparedTrx();
@@ -358,7 +355,7 @@ class smrReqFunc
         static void allocRSGroupID( void * aTrans,
                                     UInt * aPageListIdx )
         {
-            /* TransactionÏù¥ ÏÇ¨Ïö©Ìï† RS ID Î•º Í∞ÄÏ†∏Ïò®Îã§.*/
+            /* Transaction¿Ã ªÁøÎ«“ RS ID ∏¶ ∞°¡Æø¬¥Ÿ.*/
             smxTrans::allocRSGroupID( aTrans,
                                       aPageListIdx );
         };
@@ -548,9 +545,9 @@ class smrReqFunc
             return smcTable::clearIndexList( aTblHeaderOID );
         };
 
-        static void changeTableScnForRebuild( smOID aTableOID )
+        static void changeTableSCNForRebuild( smOID aTableOID )
         {
-            smcTable::changeTableScnForRebuild( aTableOID );
+            smcTable::changeTableSCNForRebuild( aTableOID );
         };
 
         static IDE_RC doNTADropDiskTable( idvSQL    * aIdvSQL,
@@ -620,7 +617,7 @@ class smrReqFunc
 
         /* table  redo-undo function */
 
-        /* PRJ-1496 commit logÏóê disk table row count Ï†ÄÏû• */
+        /* PRJ-1496 commit logø° disk table row count ¿˙¿Â */
         static IDE_RC redoAllTableInfoToDB( SChar     * aAfterImage,
                                             SInt        aSize,
                                             idBool      aForMediaRecovery )
@@ -1648,7 +1645,7 @@ class smrReqFunc
                                                      aPID );
         };
 
-        /* PROJ-1665 : PageÏùò consistent ÏÉÅÌÉú Ïó¨Î∂Ä Î∞òÌôò */
+        /* PROJ-1665 : Page¿« consistent ªÛ≈¬ ø©∫Œ π›»Ø */
         static idBool isConsistentPage4DRDB( UChar * aPageHdr )
         {
             return sdpPhyPage::isConsistentPage( aPageHdr );

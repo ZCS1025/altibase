@@ -37,15 +37,15 @@ private:
                                     qmsSFWGH    * aSFWGH,
                                     idBool      * aChanged );
 
-    // Distinct Eliminationì´ í•„ìš”í•œì§€ í™•ì¸
+    // Distinct EliminationÀÌ ÇÊ¿äÇÑÁö È®ÀÎ
     static idBool canTransform( qmsSFWGH * aSFWGH );
 
-    // BUG-39665 GROUP BY ìˆëŠ” SELECT TARGETì˜ DISTINCT 
+    // BUG-39665 GROUP BY ÀÖ´Â SELECT TARGETÀÇ DISTINCT 
     static IDE_RC isDistTargetByGroup( qcStatement  * aStatement,
                                        qmsSFWGH     * aSFWGH,
                                        idBool       * sIsDistTarget );
 
-    // BUG-39522 GROUP BY ì—†ëŠ” SELECT TARGETì˜ DISTINCT
+    // BUG-39522 GROUP BY ¾ø´Â SELECT TARGETÀÇ DISTINCT
     static IDE_RC isDistTargetByUniqueIdx( qcStatement  * aStatement,
                                            qmsSFWGH     * aSFWGH,
                                            qmsFrom      * aFrom,

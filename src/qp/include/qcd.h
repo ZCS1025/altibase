@@ -26,6 +26,17 @@
 
 typedef void* QCD_HSTMT;
 
+#define QCD_MAKE_BIND_DATA( _BindData_, _Value_, _ValueSize_, _BindId_, _Column_ )      \
+{                                           \
+    (_BindData_)->id     = (_BindId_);      \
+    (_BindData_)->name   = NULL;            \
+    (_BindData_)->column = (_Column_);      \
+    (_BindData_)->data   = (_Value_);       \
+    (_BindData_)->size   = (_ValueSize_);   \
+    (_BindData_)->next   = NULL;            \
+}
+
+
 class qcd
 {
  public:
@@ -36,9 +47,11 @@ class qcd
                              QCD_HSTMT   * aHstmt /* OUT */ );
 
     static IDE_RC prepare( QCD_HSTMT     aHstmt,
+                           qcStatement * aQcStmt,     // parent
+                           qcStatement * aExecQcStmt, // child
+                           qciStmtType * aStmtType,
                            SChar       * aSqlString,
                            UInt          aSqlStringLen,
-                           qciStmtType * aStmtType,
                            idBool        aExecMode );
 
     static IDE_RC bindParamInfoSet( QCD_HSTMT      aHstmt,
@@ -46,10 +59,13 @@ class qcd
                                     UShort         aBindId,
                                     qsInOutType    aInOutType );
 
-    static IDE_RC bindParamData( QCD_HSTMT     aHstmt,
-                                 void        * aValue,
-                                 UInt          aValueSize,
-                                 UShort        aBindId );
+    static IDE_RC bindParamData( QCD_HSTMT      aHstmt,
+                                 void         * aValue,
+                                 UInt           aValueSize,
+                                 UShort         aBindId,
+                                 iduMemory    * aMemory,
+                                 qciBindData ** aBindDataList,
+                                 qsInOutType    aInOutType );
 
     static IDE_RC execute( QCD_HSTMT     aHstmt,
                            qcStatement * aQcStmt, // BUG-37467
@@ -74,11 +90,6 @@ class qcd
                                          void         * aData,
                                          UShort         aBindId );
 
-    static IDE_RC addBindDataList( iduMemory    * aMemory,
-                                   qciBindData ** aBindDataList,
-                                   void         * aData,
-                                   UShort         aBindId );
-
     static IDE_RC checkBindParamCount( QCD_HSTMT aHstmt,
                                        UShort    aBindParamCount );
 
@@ -86,8 +97,8 @@ class qcd
                                         UShort     aBindColumnCount );
 
     /* PROJ-2197 PSM Renewal
-     * PSMÏóêÏÑú ÏùºÎ∞ò DMLÏùÑ ÏàòÌñâÌïòÎäî Í≤ΩÏö∞Ïóê Ìï¥Îãπ DMLÏùÑ ÏàòÌñâÌïòÎäî
-     * qcStatementÎ•º Í∞ÄÏ†∏Ïò§Í∏∞ ÏúÑÌïú Ìï®Ïàò */
+     * PSMø°º≠ ¿œπ› DML¿ª ºˆ«‡«œ¥¬ ∞ÊøÏø° «ÿ¥Á DML¿ª ºˆ«‡«œ¥¬
+     * qcStatement∏¶ ∞°¡Æø¿±‚ ¿ß«— «‘ºˆ */
     static IDE_RC getQcStmt( QCD_HSTMT      aHstmt,
                              qcStatement ** aQcStmt );
 
@@ -121,12 +132,6 @@ class qcd
                                    mtcColumn    * aColumn,
                                    UShort         aBindId,
                                    qsInOutType    aInOutType );
-
-    static void makeBindData( qciBindData * aBindData,
-                              void        * aValue,
-                              UInt          aValueSize,
-                              UShort        aBindId,
-                              mtcColumn   * aColumn);
 
     // BUG-41248 DBMS_SQL package
     static void makeBindParamInfoByName( qciBindParam * aBindParam,

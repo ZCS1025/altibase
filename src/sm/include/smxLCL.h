@@ -35,8 +35,8 @@ public:
     inline void  initialize();
     inline void  destroy();
     void    getOldestSCN(smSCN* aSCN);
-    void    insert(smLobCursor* aStartScn);
-    void    remove(smLobCursor* aStartScn);
+    void    insert(smLobCursor* aStartSCN);
+    void    remove(smLobCursor* aStartSCN);
     inline smLobCursor* getBaseNode();
     inline smLobCursor* getFirstNode();
     inline smLobCursor* getNextNode(smLobCursor* aNode);
@@ -49,7 +49,7 @@ private:
 
     /* BUG-31315 [sm_resource] Change allocation disk in mode LOB buffer, 
      * from Open disk LOB cursor to prepare for write 
-     * Transactionì— ì—´ë¦° Lob Cursor ê°œìˆ˜ ê²€ì¦ì„ ìœ„í•œ ë³€ìˆ˜*/
+     * Transaction¿¡ ¿­¸° Lob Cursor °³¼ö °ËÁõÀ» À§ÇÑ º¯¼ö*/
     UInt          mCursorCnt;
 };
 
@@ -85,8 +85,8 @@ inline smLobCursor* smxLCL::getNextNode(smLobCursor* aNode)
 }
 
 /***********************************************************************
- * Description : aRowì— aColoumnIDê°€ ê°€ë¦¬í‚¤ëŠ” LOBì„ ë³´ëŠ” Cursorì˜ ê°¯ìˆ˜ë¥¼
- *               Returní•œë‹¤.
+ * Description : aRow¿¡ aColoumnID°¡ °¡¸®Å°´Â LOBÀ» º¸´Â CursorÀÇ °¹¼ö¸¦
+ *               ReturnÇÑ´Ù.
  *
  * aColumnID    - [IN] Column ID
  * aRow         - [IN] Row Pointer
@@ -98,8 +98,8 @@ inline  UInt smxLCL::getLobCursorCnt(UInt aColumnID, void *aRow)
 
     if( aRow == NULL )
     {
-        /* aRowê°€ Nullì¼ ê²½ìš°, ì¦‰ íŠ¹ì • Rowì—ì„œ ì°¾ëŠ”ê²Œ ì•„ë‹ˆë©´
-         * LCLì˜ ì „ì²´ LobCursor ê°œìˆ˜ë¥¼ ë°˜í™˜í•œë‹¤. */
+        /* aRow°¡ NullÀÏ °æ¿ì, Áï Æ¯Á¤ Row¿¡¼­ Ã£´Â°Ô ¾Æ´Ï¸é
+         * LCLÀÇ ÀüÃ¼ LobCursor °³¼ö¸¦ ¹İÈ¯ÇÑ´Ù. */
         sCount = mCursorCnt;
     }
     else

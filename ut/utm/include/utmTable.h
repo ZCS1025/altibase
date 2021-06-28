@@ -33,19 +33,12 @@ SQLRETURN getTableInfo( SChar *a_user,
 /* BUG-40038 [ux-aexport] Needs to consider temporary table in aexport codes */
 SQLRETURN getTempTableQuery( SChar *a_user,
                              SChar *a_table,
-                             FILE  *a_crt_fp,
-                             SChar *aTbsName );
+                             FILE  *a_crt_fp );
 
 SQLRETURN getTableQuery( SChar *a_user,
                          SChar *a_table,
                          FILE  *a_crt_fp,
-                         FILE  *aAltTblFp,  /* PROJ-2359 Table/Partition Access Option */
-                         FILE  *aDbStatsFp, /* BUG-40174 Support export and import DBMS Stats */
-                         SQLBIGINT aMaxRow,
-                         SChar *aTbsName,
-                         SInt   aTbsType,
-                         SInt   aPctFree,
-                         SInt   aPctUsed );
+                         FILE  *aAltTblFp );  /* PROJ-2359 Table/Partition Access Option */
 
 SQLRETURN getColumnInfo( SChar  * aDdl,
                          SInt   * aDdlPos,
@@ -93,7 +86,7 @@ SQLRETURN getStorage( SChar * aUser,
                       SChar * aDdl,
                       SInt  * aDdlPos );
 
-/* BUG-43010 Table DDL ÏÉùÏÑ± Ïãú, Î°úÍ∑∏ ÏïïÏ∂ïÏó¨Î∂ÄÎ•º ÌôïÏù∏Ìï¥Ïïº Ìï©ÎãàÎã§. */
+/* BUG-43010 Table DDL ª˝º∫ Ω√, ∑Œ±◊ æ–√‡ø©∫Œ∏¶ »Æ¿Œ«ÿæﬂ «’¥œ¥Ÿ. */
 IDE_RC utmWriteLogCompressionClause( SChar  * aUserName,
                                      SChar  * aTableName,
                                      SChar  * aDdlStr,

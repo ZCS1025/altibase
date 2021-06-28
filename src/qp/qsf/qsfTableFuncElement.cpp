@@ -19,17 +19,17 @@
  * $Id$
  *
  * Description :
- *     BUG-41311 array typeì¸ìžì˜ elementë¥¼ ë°˜í™˜
+ *     BUG-41311 array typeÀÎÀÚÀÇ element¸¦ ¹ÝÈ¯
  *
  * Syntax :
  *     table_function_element( var, 1, 1 )
- *     RETURN var array type ë³€ìˆ˜ì˜ ì²«ë²ˆì§¸ keyì˜ ì²«ë²ˆì§¸ ì»¬ëŸ¼ì„ ë°˜í™˜
+ *     RETURN var array type º¯¼öÀÇ Ã¹¹øÂ° keyÀÇ Ã¹¹øÂ° ÄÃ·³À» ¹ÝÈ¯
  *
  * Implementation :
- *     - ì²«ë²ˆì§¸ ì¸ìžê°€ record typeì˜ array typeì¸ ê²½ìš°
- *     - ì²«ë²ˆì§¸ ì¸ìžê°€ primitive typeì˜ array typeì¸ ê²½ìš°
- *     - ì²«ë²ˆì§¸ ì¸ìžê°€ record typeì¸ ê²½ìš°
- *     - ì²«ë²ˆì§¸ ì¸ìžê°€ list typeì¸ ê²½ìš°
+ *     - Ã¹¹øÂ° ÀÎÀÚ°¡ record typeÀÇ array typeÀÎ °æ¿ì
+ *     - Ã¹¹øÂ° ÀÎÀÚ°¡ primitive typeÀÇ array typeÀÎ °æ¿ì
+ *     - Ã¹¹øÂ° ÀÎÀÚ°¡ record typeÀÎ °æ¿ì
+ *     - Ã¹¹øÂ° ÀÎÀÚ°¡ list typeÀÎ °æ¿ì
  *
  **********************************************************************/
 
@@ -63,7 +63,7 @@ IDE_RC qsfTableFuncElementCalculate( mtcNode*     aNode,
 mtfModule qsfTableFuncElementModule = {
     1|MTC_NODE_OPERATOR_FUNCTION|MTC_NODE_VARIABLE_TRUE,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     qsfTableFuncElementFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -110,7 +110,7 @@ IDE_RC qsfTableFuncElementEstimate( mtcNode*     aNode,
 
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
-    // ì²«ë²ˆì§¸ ì¸ìžëŠ” ë°˜ë“œì‹œ loop_value pseudo columnì´ê³  array/record/list typeì´ì–´ì•¼ í•¨
+    // Ã¹¹øÂ° ÀÎÀÚ´Â ¹Ýµå½Ã loop_value pseudo columnÀÌ°í array/record/list typeÀÌ¾î¾ß ÇÔ
     sNode = (qtcNode*)(aNode->arguments);
     
     IDE_TEST_RAISE( ( sNode->node.module != &qtc::passModule ) ||
@@ -124,7 +124,7 @@ IDE_RC qsfTableFuncElementEstimate( mtcNode*     aNode,
                     ( aStack[1].column->module->id != MTD_LIST_ID ),
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
-    // ë‘ë²ˆì§¸ ì¸ìžëŠ” ë°˜ë“œì‹œ loop_level pseudo columnì´ì–´ì•¼ í•¨
+    // µÎ¹øÂ° ÀÎÀÚ´Â ¹Ýµå½Ã loop_level pseudo columnÀÌ¾î¾ß ÇÔ
     sNode = (qtcNode*)(aNode->arguments->next);
     
     IDE_TEST_RAISE( ( sNode->node.arguments != NULL ) ||
@@ -135,7 +135,7 @@ IDE_RC qsfTableFuncElementEstimate( mtcNode*     aNode,
     IDE_TEST_RAISE( aStack[2].column->module->id != MTD_BIGINT_ID,
                     ERR_INVALID_FUNCTION_ARGUMENT );
     
-    // ì„¸ë²ˆì§¸ ì¸ìžëŠ” ë°˜ë“œì‹œ ìˆ«ìžíƒ€ìž…ì˜ ìƒìˆ˜ì´ì–´ì•¼ í•¨
+    // ¼¼¹øÂ° ÀÎÀÚ´Â ¹Ýµå½Ã ¼ýÀÚÅ¸ÀÔÀÇ »ó¼öÀÌ¾î¾ß ÇÔ
     if ( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) == 3 )
     {
         sNode = (qtcNode*)(aNode->arguments->next->next);
@@ -156,14 +156,14 @@ IDE_RC qsfTableFuncElementEstimate( mtcNode*     aNode,
     }
     else
     {
-        // table function transformì„ í†µí•´ ì„¸ë²ˆì§¸ ì¸ìžê°€ ì •ì˜ëœ ê²½ìš°
+        // table function transformÀ» ÅëÇØ ¼¼¹øÂ° ÀÎÀÚ°¡ Á¤ÀÇµÈ °æ¿ì
         IDE_TEST_RAISE( aNode->info > MTC_TUPLE_COLUMN_ID_MAXIMUM,
                         ERR_INVALID_FUNCTION_ARGUMENT );
         
         sColumnOrder = (mtdSmallintType)aNode->info;
     }
 
-    // range ê²€ì‚¬
+    // range °Ë»ç
     if ( aStack[1].column->module->id == MTD_ASSOCIATIVE_ARRAY_ID )
     {
         sQtcModule = (qtcModule*) aStack[1].column->module;
@@ -175,7 +175,7 @@ IDE_RC qsfTableFuncElementEstimate( mtcNode*     aNode,
         if ( ( sColumn->module->id >= MTD_UDT_ID_MIN ) &&
              ( sColumn->module->id <= MTD_UDT_ID_MAX ) )
         {
-            // UDTì¤‘ record typeë§Œ ê°€ëŠ¥
+            // UDTÁß record type¸¸ °¡´É
             IDE_TEST_RAISE( ( sColumn->module->id != MTD_ROWTYPE_ID ) &&
                             ( sColumn->module->id != MTD_RECORDTYPE_ID ),
                             ERR_INVALID_FUNCTION_ARGUMENT );
@@ -227,7 +227,7 @@ IDE_RC qsfTableFuncElementEstimate( mtcNode*     aNode,
         sQtcModule = NULL;
         sStack = (mtcStack*)aStack[1].value;
 
-        // listì˜ ëª¨ë“  elementì˜ typeì´ ê°™ì•„ì•¼ í•œë‹¤.
+        // listÀÇ ¸ðµç elementÀÇ typeÀÌ °°¾Æ¾ß ÇÑ´Ù.
         for( sCount = 1, sFence = aStack[1].column->precision;
              sCount < sFence;
              sCount++ )
@@ -256,10 +256,10 @@ IDE_RC qsfTableFuncElementEstimate( mtcNode*     aNode,
     
     aTemplate->rows[aNode->table].execute[aNode->column] = qsfExecute;
 
-    // calculateInfoì— QcmColumnì„ ê¸°ë¡í•œë‹¤.
+    // calculateInfo¿¡ QcmColumnÀ» ±â·ÏÇÑ´Ù.
     aTemplate->rows[aNode->table].execute[aNode->column].calculateInfo = sQcmColumn;
     
-    // return type ì´ˆê¸°í™”
+    // return type ÃÊ±âÈ­
     mtc::initializeColumn( aStack[0].column, sColumn );
     
     return IDE_SUCCESS;

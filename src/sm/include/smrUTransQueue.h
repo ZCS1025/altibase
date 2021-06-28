@@ -29,17 +29,17 @@
 typedef struct smrUndoTransInfo
 {
     void        *mTrans;
-    /* mTransì˜ mLstUndoNxtLSNì´ ê°€ë¦¬í‚¤ëŠ” Logì˜ LogHead */
+    /* mTransÀÇ mLstUndoNxtLSNÀÌ °¡¸®Å°´Â LogÀÇ LogHead */
     smrLogHead   mLogHead;
-    /* mTransì˜ mLstUndoNxtLSNì´ ê°€ë¦¬í‚¤ëŠ” Logì˜ LogBuffer Ptr */
+    /* mTransÀÇ mLstUndoNxtLSNÀÌ °¡¸®Å°´Â LogÀÇ LogBuffer Ptr */
     SChar*       mLogPtr;
-    /* mTransì˜ mLstUndoNxtLSNì´ ê°€ë¦¬í‚¤ëŠ” Logê°€ ìˆëŠ” Logfile Ptr */
+    /* mTransÀÇ mLstUndoNxtLSNÀÌ °¡¸®Å°´Â Log°¡ ÀÖ´Â Logfile Ptr */
     smrLogFile*  mLogFilePtr;
-    /* mTransì˜ mLstUndoNxtLSNì´ ê°€ë¦¬í‚¤ëŠ” Logê°€ Validí•˜ë©´ ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE */
+    /* mTransÀÇ mLstUndoNxtLSNÀÌ °¡¸®Å°´Â Log°¡ ValidÇÏ¸é ID_TRUE, ¾Æ´Ï¸é ID_FALSE */
     idBool       mIsValid;
          
-    /* ë¡œê·¸íŒŒì¼ë¡œ ë¶€í„° ì½ì€ ë¡œê·¸ì˜ í¬ê¸°
-       ì••ì¶•ëœ ë¡œê·¸ì˜ ê²½ìš° ë¡œê·¸ì˜ í¬ê¸°ì™€ ë¡œê·¸íŒŒì¼ìƒì˜ ë¡œê·¸í¬ê¸°ê°€ ë‹¤ë¥´ë‹¤
+    /* ·Î±×ÆÄÀÏ·Î ºÎÅÍ ÀĞÀº ·Î±×ÀÇ Å©±â
+       ¾ĞÃàµÈ ·Î±×ÀÇ °æ¿ì ·Î±×ÀÇ Å©±â¿Í ·Î±×ÆÄÀÏ»óÀÇ ·Î±×Å©±â°¡ ´Ù¸£´Ù
      */
     UInt         mLogSizeAtDisk;
 } smrUndoTransInfo;
@@ -64,16 +64,16 @@ public:
     virtual ~smrUTransQueue();
 
 private:
-    /*í˜„ì¬ Undoí•  Transactinoì˜ ê°¯ìˆ˜ */
+    /*ÇöÀç UndoÇÒ TransactinoÀÇ °¹¼ö */
     UInt              mCurUndoTransCount;
-    /*Undo Transactionì˜ ìµœëŒ€ ê°¯ìˆ˜ */
+    /*Undo TransactionÀÇ ÃÖ´ë °¹¼ö */
     UInt              mMaxTransCount;
 
     /*smrUndoTransInfo Array */
     smrUndoTransInfo *mArrUndoTransInfo;
 
-    /*smrUndoTransInfoë¥¼ mLogheadì˜ mSNì´ í° ìˆœì„œë¡œ
-      Sortingí•´ì„œ ìœ ì§€í•˜ëŠ” Sort Array */
+    /*smrUndoTransInfo¸¦ mLogheadÀÇ mSNÀÌ Å« ¼ø¼­·Î
+      SortingÇØ¼­ À¯ÁöÇÏ´Â Sort Array */
     iduPriorityQueue      mPQueueTransInfo;
 };
 

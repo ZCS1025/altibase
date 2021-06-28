@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLCompiler.cpp 85096 2019-03-28 04:04:46Z bethy $
+ * $Id: iSQLCompiler.cpp 88494 2020-09-04 04:29:31Z chkim $
  **********************************************************************/
 
 #include <ideErrorMgr.h>
@@ -316,7 +316,7 @@ iSQLCompiler::SetScriptFile( SChar         *a_FileName,
         pos = idlOS::getenv(IDP_HOME_ENV);
         IDE_TEST( pos == NULL );
         idlOS::strcpy(filePath, pos);
-        // BUG-21412: filePathì™€ filenameì´ '/' ì—†ì´ ì—°ê²°ë˜ëŠ”ê±¸ ë§‰ìŒ
+        // BUG-21412: filePath¿Í filenameÀÌ '/' ¾øÀÌ ¿¬°áµÇ´Â°É ¸·À½
         if ( tmp[0] != IDL_FILE_SEPARATOR )
         {
             idlOS::strcat(filePath, IDL_FILE_SEPARATORS);
@@ -360,7 +360,8 @@ iSQLCompiler::SetScriptFile( SChar         *a_FileName,
         idlOS::strcpy(full_filename, filename);
     }
 
-    fp = isql_fopen(full_filename, "r");
+    /* BUG-47652 Set file permission */
+    fp = isql_fopen( full_filename, "r", gProgOption.isExistFilePerm() );
     IDE_TEST_RAISE(fp == NULL, fail_open_file);
 
     sf = (script_file*)idlOS::malloc(ID_SIZEOF(script_file));
@@ -454,10 +455,13 @@ iSQLCompiler::SaveCommandToFile( SChar        * a_Command,
         }
     }
 
-    fp = isql_fopen(filename, "r");
+    /* BUG-47652 Set file permission */
+    fp = isql_fopen( filename, "r", gProgOption.isExistFilePerm() );
     IDE_TEST_RAISE(fp != NULL, already_exist_file);
-
-    fp = isql_fopen(filename, "wt");  // BUGBUG option : append/replace, history no
+   
+    /* BUG-47652 Set file permission */
+    // BUGBUG option : append/replace, history no
+    fp = isql_fopen( filename, "wt", gProgOption.isExistFilePerm() );  
     IDE_TEST_RAISE(fp == NULL, fail_open_file);
 
     idlOS::fprintf(fp, "%s", a_Command);
@@ -501,7 +505,9 @@ iSQLCompiler::SaveCommandToFile2( SChar * a_Command )
 {
     FILE  *fp;
 
-    fp = isql_fopen(ISQL_BUF, "wt");  // BUGBUG option : append/replace, history no
+    /* BUG-47652 Set file permission */
+    // BUGBUG option : append/replace, history no
+    fp = isql_fopen( ISQL_BUF, "wt", gProgOption.isExistFilePerm() );  
     IDE_TEST_RAISE(fp == NULL, fail_open_file);
 
     idlOS::fprintf(fp, "%s", a_Command);
@@ -633,13 +639,13 @@ iSQLCompiler::PrintCommand()
         idlOS::sprintf(m_Spool->m_Buf, "%s%s", 
                 sSqlPrompt,
                 gBufMgr->GetBuf());
-        m_Spool->PrintCommand2(sDisplayOut, sSpoolOut);
+        m_Spool->PrintCommand(sDisplayOut, sSpoolOut);
     }
 }
 
 /***********************************************************
  * BUG-41173
- *  passing parameterë“¤ ì¤‘ì—ì„œ sVarIdx ìœ„ì¹˜ì˜ ê°’ì„ ë°˜í™˜í•œë‹¤.
+ *  passing parameterµé Áß¿¡¼­ sVarIdx À§Ä¡ÀÇ °ªÀ» ¹İÈ¯ÇÑ´Ù.
  ***********************************************************/
 SChar *
 iSQLCompiler::GetPassingValue(UInt sVarIdx)

@@ -20,7 +20,7 @@ import Altibase.jdbc.driver.util.AltibaseProperties;
 import Altibase.jdbc.driver.util.StringUtils;
 
 /**
- * PROJ-2474 Ssl Certificate ì •ë³´ë¥¼ ë‹´ê³ ìˆëŠ” java bean í´ë˜ìŠ¤
+ * PROJ-2474 Ssl Certificate Á¤º¸¸¦ ´ã°íÀÖ´Â java bean Å¬·¡½º
  * @author yjpark
  *
  */
@@ -62,7 +62,7 @@ public class SSLProperties
     }
     
     /**
-     * Ssl í”„ë¡œí¼í‹°ê°€ nullì¸ ê²½ìš° System í”„ë¡œí¼í‹°ë¥¼ í™•ì¸í•´ ê°€ì ¸ì˜¨ë‹¤.
+     * Ssl ÇÁ·ÎÆÛÆ¼°¡ nullÀÎ °æ¿ì System ÇÁ·ÎÆÛÆ¼¸¦ È®ÀÎÇØ °¡Á®¿Â´Ù.
      * @param aSslPropValue jdbc property value
      * @param aSysPropName system property name
      * @return
@@ -153,7 +153,7 @@ public class SSLProperties
         String[] sCipherSuiteList = null;
         if (!StringUtils.isEmpty(mCipherSuiteList))
         {
-            // PROJ-2474 ë¬¸ìì—´ì—ì„œ ë¨¼ì € ê³µë°±ì„ ì œê±°í•˜ê³  ì½œë¡ ìœ¼ë¡œ êµ¬ë¶„í•œ ë¬¸ìì—´ ë°°ì—´ì„ ë§Œë“ ë‹¤. 
+            // PROJ-2474 ¹®ÀÚ¿­¿¡¼­ ¸ÕÀú °ø¹éÀ» Á¦°ÅÇÏ°í Äİ·ĞÀ¸·Î ±¸ºĞÇÑ ¹®ÀÚ¿­ ¹è¿­À» ¸¸µç´Ù. 
             mCipherSuiteList = mCipherSuiteList.replaceAll(" ", "");
             sCipherSuiteList = mCipherSuiteList.split(SPRIT_CHAR);
         }

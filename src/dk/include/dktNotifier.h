@@ -23,21 +23,33 @@
 #include <dkt.h>
 #include <dksDef.h>
 #include <dktDtxInfo.h>
+#include <dki.h>
+
+typedef enum
+{
+    DK_NOTIFY_NONE,
+    DK_NOTIFY_NORMAL,
+    DK_NOTIFY_FAILOVER
+} DK_NOTIFY_TYPE;
 
 class dktNotifier : public idtBaseThread
 {
 private:
     dksSession * mSession;
-    /* ÎØ∏Î∞òÏòÅ Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖò Í∞úÏàò*/
+    /* πÃπ›øµ ±€∑Œπ˙ ∆Æ∑£¿Ëº« ∞≥ºˆ*/
     UInt    mDtxInfoCnt;
+    UInt    mFailoverDtxInfoCnt;
     idBool  mExit;
     idBool  mPause;
+    idBool  mRestart;
+    idBool  mRunFailoverOneCycle;
 
 public:
-    /* Notify ÎåÄÏÉÅ Í∏ÄÎ°úÎ≤å Ìä∏ÎûúÏû≠ÏÖò Î¶¨Ïä§Ìä∏ */
+    /* Notify ¥ÎªÛ ±€∑Œπ˙ ∆Æ∑£¿Ëº« ∏ÆΩ∫∆Æ */
     iduList  mDtxInfo;                 /* PROJ-2569 2PC */
+    iduList  mFailoverDtxInfo;         /* PROJ-2747 Global Tx Consistent */
     UInt     mSessionId;
-    /* mDtxInfoList Ïóê ÎåÄÌïú ÎèôÏãúÏ†ëÍ∑ºÏùÑ ÎßâÍ∏∞ ÏúÑÌïú mutex */
+    /* mDtxInfoList ø° ¥Î«— µøΩ√¡¢±Ÿ¿ª ∏∑±‚ ¿ß«— mutex */
     iduMutex  mNotifierDtxInfoMutex;
 
 public:
@@ -45,12 +57,25 @@ public:
     virtual ~dktNotifier() {};
 
     IDE_RC initialize();
-    IDE_RC createDtxInfo( UInt          aLocalTxId, 
-                          UInt         aGlobalTxId, 
+    IDE_RC createDtxInfo( DK_NOTIFY_TYPE aType,
+                          ID_XID      * aXID,
+                          UInt          aLocalTxId, 
+                          UInt          aGlobalTxId, 
+                          idBool        aIsRequestNode,
                           dktDtxInfo ** aDtxInfo );
-    void   addDtxInfo( dktDtxInfo * aDtxInfo );
-    void   removeDtxInfo( dktDtxInfo * aDtxInfo );
+    void   addDtxInfo( DK_NOTIFY_TYPE aType, dktDtxInfo * aDtxInfo );
+    void   removeDtxInfo( DK_NOTIFY_TYPE aType, dktDtxInfo * aDtxInfo );
+   
+    idBool setResultPassiveDtxInfo( ID_XID * aXID, idBool aCommit );
     IDE_RC sendResult( UInt * aSendCount );
+
+    idBool setResultFailoverDtxInfo( ID_XID * aXID, 
+                                     idBool   aCommit,
+                                     smSCN  * aGlobalCommitSCN );
+
+    void   failoverNotify();
+    IDE_RC askResultToRequestNode( dktDtxInfo * aDtxInfo, UInt * aResultCode );
+
     void   notify();
     IDE_RC notifyXaResult( dktDtxInfo    * aDtxInfo,
                            dksSession    * aSession,
@@ -76,17 +101,28 @@ public:
                                    SInt         ** aFailErrCodes,
                                    UInt          * aCountHeuristicXID,
                                    ID_XID       ** aHeuristicXIDs );
+
+    IDE_RC notifyOneBranchXaResultForShard( dktDtxInfo          * aDtxInfo,
+                                            dktDtxBranchTxInfo  * aDtxBranchTxInfo,
+                                            ID_XID              * aXID );
+
     void freeXaResult( dktLinkerType   aLinkerType,
                        ID_XID        * aFailXIDs,
                        ID_XID        * aHeuristicXIDs,
                        SInt          * aFailErrCodes );
 
-    idBool findDtxInfo( UInt aLocalTxId, 
+    idBool findDtxInfo( DK_NOTIFY_TYPE aType,
+                        UInt aLocalTxId, 
                         UInt  aGlobalTxId, 
                         dktDtxInfo ** aDtxInfo );
+    idBool findDtxInfoByXID( DK_NOTIFY_TYPE    aType,
+                             idBool            aLocked,
+                             ID_XID          * aXID,
+                             dktDtxInfo     ** aDtxInfo );
 
-    IDE_RC removeEndedDtxInfo( UInt     aLocalTxId,
-                               UInt    aGlobalTxId );
+    IDE_RC removeEndedDtxInfo( DK_NOTIFY_TYPE aType,
+                               UInt     aLocalTxId,
+                               UInt     aGlobalTxId );
     void writeNotifyHeuristicXIDLog( dktDtxInfo   * aDtxInfo,
                                      UInt           aCountHeuristicXID,
                                      ID_XID       * aHeuristicXIDs );
@@ -97,23 +133,41 @@ public:
     void run();
     void destroyDtxInfoList();
 
-    IDE_RC manageDtxInfoListByLog( UInt    aLocalTxId,
-                                   UInt    aGlobalTxId,
-                                   UInt    aBranchTxInfoSize,
-                                   UChar * aBranchTxInfo,
-                                   smLSN * aPrepareLSN,
-                                   UChar   aType );
-    IDE_RC setResult( UInt   aLocalTxId,
-                      UInt   aGlobalTxId,
-                      UChar  aResult );
+    IDE_RC manageDtxInfoListByLog( ID_XID * aXID,
+                                   UInt     aLocalTxId,
+                                   UInt     aGlobalTxId,
+                                   UInt     aBranchTxInfoSize,
+                                   UChar  * aBranchTxInfo,
+                                   smLSN  * aPrepareLSN,
+                                   smSCN  * aGlobalCommitSCN,
+                                   UChar    aType );
+    IDE_RC setResult( DK_NOTIFY_TYPE aType,
+                      UInt    aLocalTxId,
+                      UInt    aGlobalTxId,
+                      UChar   aResult,
+                      smSCN * aGlobalCommitSCN );
 
     IDE_RC getNotifierTransactionInfo( dktNotifierTransactionInfo ** aInfo,
                                        UInt                        * aInfoCount );
+    
+    IDE_RC getShardNotifierTransactionInfo( dktNotifierTransactionInfo ** aInfo,
+                                            UInt                        * aInfoCount );
+
     UInt   getAllBranchTxCnt();
+    UInt   getAllShardBranchTxCnt();
+
+    IDE_RC addUnCompleteGlobalTxList( iduList * aGlobalTxList );
+
+    void   waitUntilFailoverNotifierRunOneCycle();
 
     inline void setExit( idBool aIsExit );
     inline void setPause( idBool aIsPause );
     inline void setSession( dksSession * aSession );
+
+    inline UInt getDtxInfoCnt( void );
+    
+    inline void lock(); 
+    inline void unlock();
 };
 
 inline void dktNotifier::setExit( idBool aIsExit )
@@ -129,6 +183,29 @@ inline void dktNotifier::setPause( idBool aIsPause )
 inline void dktNotifier::setSession( dksSession * aSession )
 {
     mSession = aSession;
+}
+
+inline UInt dktNotifier::getDtxInfoCnt()
+{
+    UInt sDtxInfoCnt;
+
+    (void)(mNotifierDtxInfoMutex.lock(NULL));
+
+    sDtxInfoCnt = mDtxInfoCnt;
+
+    (void)(mNotifierDtxInfoMutex.unlock());
+
+    return sDtxInfoCnt;
+}
+
+inline void dktNotifier::lock() 
+{ 
+    IDE_ASSERT( mNotifierDtxInfoMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
+}
+
+inline void   dktNotifier::unlock() 
+{ 
+    IDE_ASSERT( mNotifierDtxInfoMutex.unlock() == IDE_SUCCESS );
 }
 
 #endif  /* _O_DKT_NOTIFIER_H_ */

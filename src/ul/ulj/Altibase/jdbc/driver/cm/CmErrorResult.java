@@ -17,25 +17,36 @@
 package Altibase.jdbc.driver.cm;
 
 import Altibase.jdbc.driver.ex.ErrorDef;
+import Altibase.jdbc.driver.sharding.core.FailoverAlignInfo;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CmErrorResult
 {
     private static final int ERROR_ACTION_IGNORE = 0x02000000;
 
-    private byte              mOp;
-    private int               mErrorIndex;
-    private int               mErrorCode;
-    private String            mErrorMessage;
-    private boolean           mIsBatchError;
-    private CmErrorResult     mNext;
-    private CmProtocolContext mProtocolContext;         // BUG-46513 ì—ëŸ¬ê²°ê³¼ë¡œë¶€í„° executeê²°ê³¼ë¥¼ ì…‹íŒ…í•˜ê¸° ìœ„í•œ ì»¨í…ìŠ¤íŠ¸ ê°ì²´
-    private long              mSMNOfDataNode;           // BUG-46513 DataNodeì— ìƒˆë¡œ ì €ì¥í•  SMN ê°’
-    private boolean           mIsNeedToDisconnect;      // BUG-46513 SMN ì˜¤ë¥˜ê°€ ë°œìƒí–ˆì„ ë•Œ Disconnect í•´ì•¼í•˜ëŠ”ì§€ ì—¬ë¶€
+    // BUG-46790 shard failover
+    private static final int ERROR_MODULE_SD     = 0xE0000000;
+    private static final int ERROR_MODULE_MASK   = 0xF0000000;
+
+    private byte                    mOp;
+    private int                     mErrorIndex;
+    private int                     mErrorCode;
+    private String                  mErrorMessage;
+    private boolean                 mIsBatchError;
+    private CmErrorResult           mNext;
+    private CmProtocolContext       mProtocolContext;          // BUG-46513 ¿¡·¯°á°ú·ÎºÎÅÍ execute°á°ú¸¦ ¼ÂÆÃÇÏ±â À§ÇÑ ÄÁÅØ½ºÆ® °´Ã¼
+    private long                    mSMNOfDataNode;            // BUG-46513 DataNode¿¡ »õ·Î ÀúÀåÇÒ SMN °ª
+    private boolean                 mIsNeedToDisconnect;       // BUG-46513 SMN ¿À·ù°¡ ¹ß»ıÇßÀ» ¶§ Disconnect ÇØ¾ßÇÏ´ÂÁö ¿©ºÎ
+    private List<FailoverAlignInfo> mAlignInfoList;            // BUG-46790 shard failover alignÁ¤º¸¸¦ ´ã°í ÀÖ´Â ArrayList
+    private long                    mSCN;                      // TASK-7220 °í¼º´É ºĞ»ê°øÀ¯Æ®·£Àè¼Ç Á¤ÇÕ¼º 
+    private long                    mNodeId;                   // TASK-7218 Multi-Error Handling
 
     CmErrorResult()
     {
+        mAlignInfoList = new ArrayList<FailoverAlignInfo>();
     }
 
     public CmErrorResult(byte aOp, int aErrorIndex, int aErrorCode, String aErrorMessage, boolean aIsBatchError)
@@ -47,12 +58,18 @@ public class CmErrorResult
         mIsBatchError = aIsBatchError;
     }
 
-    public void readFrom(CmChannel aChannel) throws SQLException
+    public void readFrom(CmChannel aChannel, byte aResultOp) throws SQLException
     {
         mOp = aChannel.readByte();
         mErrorIndex = aChannel.readInt();
         mErrorCode = aChannel.readInt();
         mErrorMessage = aChannel.readStringForErrorResult();
+        // TASK-7220 °í¼º´É ºĞ»ê°øÀ¯Æ®·£Àè¼Ç Á¤ÇÕ¼º
+        if (aResultOp == CmOperationDef.DB_OP_ERROR_V3_RESULT)
+        {
+            mSCN = aChannel.readLong();
+            mNodeId = aChannel.readUnsignedInt();
+        }
     }
 
     public void addError(CmErrorResult aNext)
@@ -111,9 +128,9 @@ public class CmErrorResult
     }
 
     /**
-     * ë¬´ì‹œí•´ë„ ë˜ëŠ” ì—ëŸ¬ì¸ì§€ í™•ì¸í•œë‹¤.
+     * ¹«½ÃÇØµµ µÇ´Â ¿¡·¯ÀÎÁö È®ÀÎÇÑ´Ù.
      *
-     * @return ë¬´ì‹œí•´ë„ ë˜ëŠ”ì§€ ì—¬ë¶€
+     * @return ¹«½ÃÇØµµ µÇ´ÂÁö ¿©ºÎ
      */
     public boolean isIgnorable()
     {
@@ -121,8 +138,8 @@ public class CmErrorResult
     }
 
     /**
-     * SESSION_WITH_INVALID_SMN ì—ëŸ¬ì¸ì§€ ì—¬ë¶€ë¥¼ ë¦¬í„´í•œë‹¤.
-     * @return smn invalid ì—¬ë¶€
+     * SESSION_WITH_INVALID_SMN ¿¡·¯ÀÎÁö ¿©ºÎ¸¦ ¸®ÅÏÇÑ´Ù.
+     * @return smn invalid ¿©ºÎ
      */
     public boolean isInvalidSMNError()
     {
@@ -130,10 +147,19 @@ public class CmErrorResult
     }
 
     /**
-     * ignorable ì—ëŸ¬ ì¤‘ ì‹¤ì œë¡œ SQLWarningì„ ìƒì„±ì‹œì¼œì•¼ í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
-     * @param aErrorCode ì—ëŸ¬ì½”ë“œ
-     * @return true ë‚´ë¶€ êµ¬í˜„ìœ¼ë¡œ ì¸í•œ ignoreì´ê¸° ë•Œë¬¸ì— SQLWarningì„ ë¬´ì‹œí•  ìˆ˜ ìˆë‹¤.
-     * <br> false SQLWarningì„ ìƒì„±ì‹œì¼œì•¼ í•œë‹¤.
+     * shard °ü·Ã sd ¸ğµâ¿¡¼­ ¹ß»ıÇÑ ¿¡·¯ÀÎÁö Ã¼Å©ÇÑ´Ù.
+     * @return sd ¸ğµâ ¿¡·¯ ¿©ºÎ
+     */
+    public boolean isShardModuleError()
+    {
+        return ((getErrorCode() & ERROR_MODULE_MASK) == ERROR_MODULE_SD);
+    }
+
+    /**
+     * ignorable ¿¡·¯ Áß ½ÇÁ¦·Î SQLWarningÀ» »ı¼º½ÃÄÑ¾ß ÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
+     * @param aErrorCode ¿¡·¯ÄÚµå
+     * @return true ³»ºÎ ±¸ÇöÀ¸·Î ÀÎÇÑ ignoreÀÌ±â ¶§¹®¿¡ SQLWarningÀ» ¹«½ÃÇÒ ¼ö ÀÖ´Ù.
+     * <br> false SQLWarningÀ» »ı¼º½ÃÄÑ¾ß ÇÑ´Ù.
      */
     public boolean canSkipSQLWarning(int aErrorCode)
     {
@@ -166,8 +192,9 @@ public class CmErrorResult
     @Override
     public String toString()
     {
+        int sOp = Byte.toUnsignedInt(mOp);  // BUG-48775
         final StringBuilder sSb = new StringBuilder("CmErrorResult{");
-        sSb.append("mOp=").append(CmOperation.getOperationName(mOp, true));
+        sSb.append("mOp=").append(CmOperation.getOperationName(sOp, true));
         sSb.append(", mErrorIndex=").append(mErrorIndex);
         sSb.append(", mErrorCode=").append(mErrorCode);
         sSb.append(", mErrorMessage='").append(mErrorMessage).append('\'');
@@ -208,5 +235,20 @@ public class CmErrorResult
     public boolean isNeedToDisconnect()
     {
         return mIsNeedToDisconnect;
+    }
+
+    public List<FailoverAlignInfo> getFailoverAlignInfoList()
+    {
+        return mAlignInfoList;
+    }
+
+    public void addFailoverAlignInfo(FailoverAlignInfo aAlignInfo)
+    {
+        mAlignInfoList.add(aAlignInfo);
+    }
+
+    long getSCN()
+    {
+        return mSCN;
     }
 }

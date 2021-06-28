@@ -20,6 +20,7 @@ package Altibase.jdbc.driver.sharding.executor;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
 import static Altibase.jdbc.driver.sharding.util.ShardingTraceLogger.shard_log;
@@ -27,32 +28,34 @@ import static Altibase.jdbc.driver.sharding.util.ShardingTraceLogger.shard_log;
 public class PreparedStatementExecutor
 {
     private ExecutorEngine                    mExecutorEngine;
+    private ExecuteCallback<ResultSet>        mResultSetCallback;
 
     public PreparedStatementExecutor(ExecutorEngine aExecutorEngine)
     {
         this.mExecutorEngine = aExecutorEngine;
-    }
-
-    public List<ResultSet> executeQuery(List<? extends BaseStatementUnit> aStatementUnits) throws SQLException
-    {
-        return mExecutorEngine.executeStatement(aStatementUnits, new ExecuteCallback<ResultSet>()
+        mResultSetCallback = new ExecuteCallback<ResultSet>()
         {
-            public ResultSet execute(BaseStatementUnit aBaseStatementUnit) throws SQLException
+            public ResultSet execute(Statement aStatement) throws SQLException
             {
-                shard_log("(NODE EXECUTEQUERY) {0}", aBaseStatementUnit);
-                return ((PreparedStatement) aBaseStatementUnit.getStatement()).executeQuery();
+                shard_log("(NODE EXECUTEQUERY) {0}", aStatement);
+                return ((PreparedStatement)aStatement).executeQuery();
             }
-        });
+        };
     }
 
-    public int executeUpdate(List<? extends BaseStatementUnit> aStatementUnits) throws SQLException
+    public List<ResultSet> executeQuery(List<Statement> aStatements) throws SQLException
     {
-        List<Integer> sResults = mExecutorEngine.executeStatement(aStatementUnits, new ExecuteCallback<Integer>()
+        return mExecutorEngine.executeStatement(aStatements, mResultSetCallback);
+    }
+
+    public int executeUpdate(List<Statement> aStatements) throws SQLException
+    {
+        List<Integer> sResults = mExecutorEngine.executeStatement(aStatements, new ExecuteCallback<Integer>()
         {
-            public Integer execute(BaseStatementUnit aBaseStatementUnit) throws SQLException
+            public Integer execute(Statement aStatement) throws SQLException
             {
-                shard_log("(NODE EXECUTEUPDATE) {0}", aBaseStatementUnit);
-                return ((PreparedStatement)aBaseStatementUnit.getStatement()).executeUpdate();
+                shard_log("(NODE EXECUTEUPDATE) {0}", aStatement);
+                return ((PreparedStatement)aStatement).executeUpdate();
             }
         });
 
@@ -71,14 +74,14 @@ public class PreparedStatementExecutor
         return sResult;
     }
 
-    public boolean execute(List<? extends BaseStatementUnit> aStatementUnits) throws SQLException
+    public boolean execute(List<Statement> aStatements) throws SQLException
     {
-        List<Boolean> sResult = mExecutorEngine.executeStatement(aStatementUnits, new ExecuteCallback<Boolean>()
+        List<Boolean> sResult = mExecutorEngine.executeStatement(aStatements, new ExecuteCallback<Boolean>()
         {
-            public Boolean execute(BaseStatementUnit aBaseStatementUnit) throws SQLException
+            public Boolean execute(Statement aStatement) throws SQLException
             {
-                shard_log("(NODE EXECUTE) {0}", aBaseStatementUnit);
-                return ((PreparedStatement)aBaseStatementUnit.getStatement()).execute();
+                shard_log("(NODE EXECUTE) {0}", aStatement);
+                return ((PreparedStatement)aStatement).execute();
             }
         });
 

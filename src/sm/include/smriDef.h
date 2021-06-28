@@ -20,14 +20,14 @@
  *
  * Description :
  *
- * - Incremental chunk change tracking ìë£Œêµ¬ì¡°
- * - ì•½ì–´ ì •ë¦¬
+ * - Incremental chunk change tracking ÀÚ·á±¸Á¶
+ * - ¾à¾î Á¤¸®
  *   CT     = change tracking
  *   Ext    = extent
  *   Bmp    = bitmap
  *   Emp    = empty
  *
- *   changeTrackingíŒŒì¼ì˜ êµ¬ì¡°
+ *   changeTrackingÆÄÀÏÀÇ ±¸Á¶
  *   http://nok.altibase.com/x/L4C0
  *
  **********************************************************************/
@@ -45,26 +45,26 @@
 
 #define SMRI_CT_BIT_CNT                         (8)
 
-/*CTBodyì—ì„œ EXTMAP blockì˜ index*/
+/*CTBody¿¡¼­ EXTMAP blockÀÇ index*/
 #define SMRI_CT_EXT_MAP_BLOCK_IDX               (0)
 
-/*CTíŒŒì¼ì„ êµ¬ì„±í•˜ëŠ” blockì˜ í¬ê¸°*/
+/*CTÆÄÀÏÀ» ±¸¼ºÇÏ´Â blockÀÇ Å©±â*/
 #define SMRI_CT_BLOCK_SIZE                      (512)
 
-/*CTíŒŒì¼ì˜ header blockì˜ ìœ„ì¹˜*/
+/*CTÆÄÀÏÀÇ header blockÀÇ À§Ä¡*/
 #define SMRI_CT_HDR_OFFSET                      (0)
 
-/*í•œ CTBodyê°€ ê°€ì§€ê³  ìˆëŠ” EXTì˜ ìˆ˜*/
+/*ÇÑ CTBody°¡ °¡Áö°í ÀÖ´Â EXTÀÇ ¼ö*/
 #define SMRI_CT_EXT_CNT                         (320)
 
-/*í•œ CTBodyê°€ ê°€ì§€ê³  ìˆëŠ” BMPEXTì˜ ìˆ˜
- * (MetaEXTì™€ EmpEXTë¥¼ ì „ì²´ EXTìˆ˜ì—ì„œ ëº€ë‹¤)*/
+/*ÇÑ CTBody°¡ °¡Áö°í ÀÖ´Â BMPEXTÀÇ ¼ö
+ * (MetaEXT¿Í EmpEXT¸¦ ÀüÃ¼ EXT¼ö¿¡¼­ »«´Ù)*/
 #define SMRI_CT_BMP_EXT_CNT                     (SMRI_CT_EXT_CNT - 2)
 
-/*ExtMapì˜ í¬ê¸°*/
+/*ExtMapÀÇ Å©±â*/
 #define SMRI_CT_EXT_MAP_SIZE                    (SMRI_CT_BMP_EXT_CNT)
 
-/*í•œ extentë¥¼ êµ¬ì„±í•˜ëŠ” blockì˜ ìˆ˜*/
+/*ÇÑ extent¸¦ ±¸¼ºÇÏ´Â blockÀÇ ¼ö*/
 #define SMRI_CT_EXT_BLOCK_CNT                   (64)
 
 #define SMRI_CT_EXT_META_BLOCK_CNT              (1)
@@ -72,17 +72,17 @@
 #define SMRI_CT_EXT_BLOCK_CNT_EXCEPT_META_BLOCK  (SMRI_CT_EXT_BLOCK_CNT            \
                                                   - SMRI_CT_EXT_META_BLOCK_CNT)
 
-/*í•œ BmpBlockì´ ê°€ì§€ëŠ” bitmapì˜ í¬ê¸°*/
+/*ÇÑ BmpBlockÀÌ °¡Áö´Â bitmapÀÇ Å©±â*/
 #define SMRI_CT_BMP_BLOCK_BITMAP_SIZE           (488)
 
 #define SMRI_CT_DATAFILE_DESC_BLOCK_CNT         (SMRI_CT_EXT_BLOCK_CNT_EXCEPT_META_BLOCK)
 
-/*Datafiel Desc blockì´ ê°€ì§€ê³ ìˆëŠ” slotì˜ ìˆ˜*/
+/*Datafiel Desc blockÀÌ °¡Áö°íÀÖ´Â slotÀÇ ¼ö*/
 #define SMRI_CT_DATAFILE_DESC_SLOT_CNT          (3)
 
 #define SMRI_CT_DATAFILE_DESC_BMP_EXT_LIST_CNT  (3)
 
-/*Datafile Desc blockì— ì‚¬ìš©ì¤‘ì´ì§€ ì•Šì€ slotì´ ìˆëŠ”ì§€ í™•ì¸í•˜ê¸°ìœ„í•œ flag*/
+/*Datafile Desc block¿¡ »ç¿ëÁßÀÌÁö ¾ÊÀº slotÀÌ ÀÖ´ÂÁö È®ÀÎÇÏ±âÀ§ÇÑ flag*/
 #define SMRI_CT_DATAFILE_DESC_SLOT_FLAG_MASK    (0x7)
 
 #define SMRI_CT_DATAFILE_DESC_SLOT_FLAG_FIRST   (0x1)
@@ -90,25 +90,25 @@
 #define SMRI_CT_DATAFILE_DESC_SLOT_FLAG_THIRD   (0x4)                 
 
 
-/*Datafile Desc slotì— ìˆëŠ” BmpEXT listì— ëŒ€í•œ hintì˜ ìˆ˜*/
+/*Datafile Desc slot¿¡ ÀÖ´Â BmpEXT list¿¡ ´ëÇÑ hintÀÇ ¼ö*/
 #define SMRI_CT_BMP_EXT_LIST_HINT_CNT           (9)
 
 #define SMRI_CT_EXT_HDR_ID_MASK                 (0xFFFFFFC0)
 
 
-/*differential backupì„ ìœ„í•œ BmpExt list ë²ˆí˜¸*/
+/*differential backupÀ» À§ÇÑ BmpExt list ¹øÈ£*/
 #define SMRI_CT_DIFFERENTIAL_LIST0              (0)
 
-/*differential backupì„ ìœ„í•œ BmpExt list ë²ˆí˜¸*/
+/*differential backupÀ» À§ÇÑ BmpExt list ¹øÈ£*/
 #define SMRI_CT_DIFFERENTIAL_LIST1              (1)
 
-/*cumulative backupì„ ìœ„í•œ BmpExt list ë²ˆí˜¸*/
+/*cumulative backupÀ» À§ÇÑ BmpExt list ¹øÈ£*/
 #define SMRI_CT_CUMULATIVE_LIST                 (2)
 
 
 /*
- * CTíŒŒì¼ì´ ê°€ì§ˆìˆ˜ìˆëŠ” bodyì˜ ìˆ˜
- *  - blockIDê°’ì˜ í˜•ì´ UIntì¸ ê´€ê³„ë¡œ ìµœëŒ€ 209715ê°œì˜ bodyë¥¼ ê°€ì§ˆìˆ˜ ìˆë‹¤.
+ * CTÆÄÀÏÀÌ °¡Áú¼öÀÖ´Â bodyÀÇ ¼ö
+ *  - blockID°ªÀÇ ÇüÀÌ UIntÀÎ °ü°è·Î ÃÖ´ë 209715°³ÀÇ body¸¦ °¡Áú¼ö ÀÖ´Ù.
  */
 #define SMRI_CT_MAX_CT_BODY_CNT                 (128)
  
@@ -120,7 +120,7 @@
  
 #define SMRI_CT_FILE_HDR_BLOCK_ID               SMRI_CT_INVALID_BLOCK_ID
 
-/*extentì˜ í¬ê¸°*/
+/*extentÀÇ Å©±â*/
 #define SMRI_CT_EXT_SIZE                        (SMRI_CT_BLOCK_SIZE            \
                                                  * SMRI_CT_EXT_BLOCK_CNT)
 
@@ -143,7 +143,7 @@ typedef enum smriCTBlockType
 }smriCTBlockType;
  
 /*-------------------------------------------------------------
- * CT DataFileDesc slotì— í• ë‹¹ëœ ë°ì´í„°íŒŒì¼ì˜ tablespace type
+ * CT DataFileDesc slot¿¡ ÇÒ´çµÈ µ¥ÀÌÅÍÆÄÀÏÀÇ tablespace type
  *-----------------------------------------------------------*/
 typedef enum smriCTTBSType
 {
@@ -153,7 +153,7 @@ typedef enum smriCTTBSType
 }smriCTTBSType;
  
 /*-------------------------------------------------------------
- * slotì˜ ë³€ê²½ëœ í˜ì´ì§€ ì¶”ì  ìƒíƒœ
+ * slotÀÇ º¯°æµÈ ÆäÀÌÁö ÃßÀû »óÅÂ
  *-----------------------------------------------------------*/
 typedef enum smriCTState
 {
@@ -162,7 +162,7 @@ typedef enum smriCTState
 }smriCTState;
  
 /*-------------------------------------------------------------
- * BMPExt íƒ€ì…
+ * BMPExt Å¸ÀÔ
  *-----------------------------------------------------------*/
 typedef enum smriCTBmpExtType
 {
@@ -174,7 +174,7 @@ typedef enum smriCTBmpExtType
  
  
 /*-------------------------------------------------------------
- * change trackingê¸°ëŠ¥ í™œì„±í™” ì—¬ë¶€ ìƒíƒœ
+ * change tracking±â´É È°¼ºÈ­ ¿©ºÎ »óÅÂ
  *-----------------------------------------------------------*/
 typedef enum smriCTMgrState
 {
@@ -184,7 +184,7 @@ typedef enum smriCTMgrState
 }smriCTMgrState;
 
 /*-------------------------------------------------------------
- * CTíŒŒì¼ í—¤ë” ìƒíƒœ
+ * CTÆÄÀÏ Çì´õ »óÅÂ
  *-----------------------------------------------------------*/
 typedef enum smriCTHdrState
 {
@@ -194,7 +194,7 @@ typedef enum smriCTHdrState
 }smriCTHdrState; 
 
 /*-------------------------------------------------------------
- * logAnchorì— ì €ì¥ëœ CTíŒŒì¼ ì •ë³´
+ * logAnchor¿¡ ÀúÀåµÈ CTÆÄÀÏ Á¤º¸
  *-----------------------------------------------------------*/
 typedef struct smriCTFileAttr
 {
@@ -205,7 +205,7 @@ typedef struct smriCTFileAttr
 
  
 /*-------------------------------------------------------------
- * Block headerì˜ êµ¬ì¡°ì²´(24 bytes)
+ * Block headerÀÇ ±¸Á¶Ã¼(24 bytes)
  *-----------------------------------------------------------*/
 typedef struct smriCTBlockHdr
 {
@@ -215,13 +215,13 @@ typedef struct smriCTBlockHdr
     /*block ID*/
     UInt            mBlockID;
 
-    /*blockì´ ì†í•œ extent headerì˜ block ID*/
+    /*blockÀÌ ¼ÓÇÑ extent headerÀÇ block ID*/
     UInt            mExtHdrBlockID;
 
-    /*blockì˜ ì¢…ë¥˜*/
+    /*blockÀÇ Á¾·ù*/
     smriCTBlockType    mBlockType;
 
-    /*blockì— ëŒ€í•œ mutex*/
+    /*block¿¡ ´ëÇÑ mutex*/
     iduMutex        mMutex;
 
 #ifndef COMPILE_64BIT
@@ -231,29 +231,29 @@ typedef struct smriCTBlockHdr
 
  
 /*-------------------------------------------------------------
- * CT file header blockì˜ êµ¬ì¡°ì²´(512 bytes)
+ * CT file header blockÀÇ ±¸Á¶Ã¼(512 bytes)
  *-----------------------------------------------------------*/
 typedef struct smriCTFileHdrBlock
 {
     /*block header*/
     smriCTBlockHdr      mBlockHdr;
 
-    /*CTBodyì˜ ìˆ˜*/
+    /*CTBodyÀÇ ¼ö*/
     UInt                mCTBodyCNT;
 
-    /*incremental backupë‹¨ìœ„ ì˜ í¬ê¸°(í˜ì´ì§€ ìˆ˜)*/
+    /*incremental backup´ÜÀ§ ÀÇ Å©±â(ÆäÀÌÁö ¼ö)*/
     UInt                mIBChunkSize;
 
-    /*flushê´€ë ¨ ì¡°ê±´ë³€ìˆ˜*/
+    /*flush°ü·Ã Á¶°Çº¯¼ö*/
     iduCond             mFlushCV;
 
-    /*extendê´€ë ¨ ì¡°ê±´ë³€ìˆ˜*/
+    /*extend°ü·Ã Á¶°Çº¯¼ö*/
     iduCond             mExtendCV;
                
-    /*diskë¡œ flushëœ ê°€ì¥ ìµœê·¼ì˜ check point LSN*/
+    /*disk·Î flushµÈ °¡Àå ÃÖ±ÙÀÇ check point LSN*/
     smLSN               mLastFlushLSN;
 
-    /*í˜„ì¬í˜ì´ì§€ ë³€ê²½ì •ë³´ë¥¼ ì¶”ì í•˜ëŠ” database ì´ë¦„*/
+    /*ÇöÀçÆäÀÌÁö º¯°æÁ¤º¸¸¦ ÃßÀûÇÏ´Â database ÀÌ¸§*/
     SChar               mDBName[SM_MAX_DB_NAME];
 
 #ifndef COMPILE_64BIT
@@ -264,7 +264,7 @@ typedef struct smriCTFileHdrBlock
 }smriCTFileHdrBlock;
  
 /*-------------------------------------------------------------
- * extent map blockì˜ êµ¬ì¡°ì²´(512 bytes)
+ * extent map blockÀÇ ±¸Á¶Ã¼(512 bytes)
  *-----------------------------------------------------------*/
 typedef struct smriCTExtMapBlock
 {
@@ -275,50 +275,50 @@ typedef struct smriCTExtMapBlock
 
     smLSN           mFlushLSN;
 
-    //extent map ê³µê°„
+    //extent map °ø°£
     UChar           mExtentMap[SMRI_CT_EXT_MAP_SIZE];
 
     UChar           mAlign[158];
 }smriCTExtMapBlock;
  
 /*-------------------------------------------------------------
- * BMPExt Listì˜ êµ¬ì¡°ì²´(40 bytes)
+ * BMPExt ListÀÇ ±¸Á¶Ã¼(40 bytes)
  *-----------------------------------------------------------*/
 typedef struct smriCTBmpExtList
 {
     UInt           mSetBitCount;
-    /*BMPExt Listì˜ hint, ì¼ì •ê°œìˆ˜ì˜ blockIDë¥¼ ì €ì¥í•˜ëŠ” ë°°ì—´ë¡œ
-      slotì—í• ë‹¹ëœìˆœì„œëŒ€ë¡œë°°ì—´ì—BmpExtHdrì˜ blockIDê°€ì €ì¥ëœë‹¤*/
+    /*BMPExt ListÀÇ hint, ÀÏÁ¤°³¼öÀÇ blockID¸¦ ÀúÀåÇÏ´Â ¹è¿­·Î
+      slot¿¡ÇÒ´çµÈ¼ø¼­´ë·Î¹è¿­¿¡BmpExtHdrÀÇ blockID°¡ÀúÀåµÈ´Ù*/
     UInt           mBmpExtListHint[SMRI_CT_BMP_EXT_LIST_HINT_CNT];
 }smriCTBmpExtList;
 
 /*-------------------------------------------------------------
- * datafile descriptor slotì˜ êµ¬ì¡°ì²´(160 bytes)
+ * datafile descriptor slotÀÇ ±¸Á¶Ã¼(160 bytes)
  *-----------------------------------------------------------*/
 typedef struct smriCTDataFileDescSlot
 {
     /*datafile descriptor slot ID*/
     smiDataFileDescSlotID       mSlotID;
 
-    /*í˜ì´ì§€ ë³€ê²½ì— ëŒ€í•œ ì¶”ì  í™œì„±í™” ì—¬ë¶€*/
+    /*ÆäÀÌÁö º¯°æ¿¡ ´ëÇÑ ÃßÀû È°¼ºÈ­ ¿©ºÎ*/
     smriCTState                 mTrackingState;
 
-    /*ì¶”ì ì¤‘ì¸ datafileì˜ ì¢…ë¥˜*/
+    /*ÃßÀûÁßÀÎ datafileÀÇ Á¾·ù*/
     smriCTTBSType               mTBSType;
 
-    /*ì¶”ì ì¤‘ì¸ datafileì˜ í˜ì´ì§€ í¬ê¸°*/
+    /*ÃßÀûÁßÀÎ datafileÀÇ ÆäÀÌÁö Å©±â*/
     UInt                        mPageSize;
 
-    /*slotì— í• ë‹¹ëœ bitmap extentì˜ ìˆ˜*/
+    /*slot¿¡ ÇÒ´çµÈ bitmap extentÀÇ ¼ö*/
     UShort                      mBmpExtCnt;
 
-    /*í˜„ì¬ ì¶”ì ì¤‘ì¸ bitmap extent listì˜ ID*/
+    /*ÇöÀç ÃßÀûÁßÀÎ bitmap extent listÀÇ ID*/
     UShort                      mCurTrackingListID;
 
     /*bitmap extent list(differential0, differential1, cumulative)*/
     smriCTBmpExtList            mBmpExtList[SMRI_CT_DATAFILE_DESC_BMP_EXT_LIST_CNT];
 
-    /*datafileì˜ ID*/
+    /*datafileÀÇ ID*/
     /*BUG-33931 FileID check is being wrong during changetracking*/
     UInt                        mFileID;
 
@@ -331,17 +331,17 @@ typedef struct smriCTDataFileDescSlot
 }smriCTDataFileDescSlot;
 
 /*-------------------------------------------------------------
- * datafile descriptor blockì˜ êµ¬ì¡°ì²´(512 bytes)
+ * datafile descriptor blockÀÇ ±¸Á¶Ã¼(512 bytes)
  *-----------------------------------------------------------*/
 typedef struct smriCTDataFileDescBlock
 {
     /*block header*/
     smriCTBlockHdr          mBlockHdr;
 
-    /*datafile descriptor slotì´ ì‚¬ìš©ì¤‘ì¸ì§€ í™•ì¸í•˜ê¸° ìœ„í•œ flag*/
+    /*datafile descriptor slotÀÌ »ç¿ëÁßÀÎÁö È®ÀÎÇÏ±â À§ÇÑ flag*/
     UInt                    mAllocSlotFlag;
  
-    /*datafile descriptor slotê³µê°„*/
+    /*datafile descriptor slot°ø°£*/
     smriCTDataFileDescSlot  mSlot[SMRI_CT_DATAFILE_DESC_SLOT_CNT];
 
     UChar                   mAlign[4];
@@ -349,7 +349,7 @@ typedef struct smriCTDataFileDescBlock
  
 
 /*-------------------------------------------------------------
- * Bmp Ext Hdr blockì˜ êµ¬ì¡°ì²´(512 bytes)
+ * Bmp Ext Hdr blockÀÇ ±¸Á¶Ã¼(512 bytes)
  *-----------------------------------------------------------*/
 typedef struct smriCTBmpExtHdrBlock
 {
@@ -365,18 +365,18 @@ typedef struct smriCTBmpExtHdrBlock
     /*cumulative bitmap extent header block ID*/
     UInt                        mCumBmpExtHdrBlockID;
 
-    /*bitmap extentê°€ ì¶”ì ì¤‘ì¸ bitmap ì •ë³´ì˜ íƒ€ì…(differential, cumulative)*/
+    /*bitmap extent°¡ ÃßÀûÁßÀÎ bitmap Á¤º¸ÀÇ Å¸ÀÔ(differential, cumulative)*/
     smriCTBmpExtType            mType;
 
-    /*bitmap extentê°€ í• ë‹¹ë˜ì–´ìˆëŠ” datafile descriptor slotì˜ ID*/
+    /*bitmap extent°¡ ÇÒ´çµÇ¾îÀÖ´Â datafile descriptor slotÀÇ ID*/
     smiDataFileDescSlotID        mDataFileDescSlotID;
 
-    /*bitmap extentê°€ datafile descriptor slotì— í• ë‹¹ëœ ìˆœë²ˆ*/
+    /*bitmap extent°¡ datafile descriptor slot¿¡ ÇÒ´çµÈ ¼ø¹ø*/
     UInt                        mBmpExtSeq;
 
     smLSN                       mFlushLSN;
 
-    /*bitmap extentì— ëŒ€í•œ latch*/
+    /*bitmap extent¿¡ ´ëÇÑ latch*/
     /* BUG-33899 fail to create changeTracking file in window */
     union {
         iduLatch                    mLatch;
@@ -385,19 +385,19 @@ typedef struct smriCTBmpExtHdrBlock
 }smriCTBmpExtHdrBlock;
 
 /*-------------------------------------------------------------
- * BmpBlockì˜ êµ¬ì¡°ì²´(512 bytes)
+ * BmpBlockÀÇ ±¸Á¶Ã¼(512 bytes)
  *-----------------------------------------------------------*/
 typedef struct smriCTBmpBlock
 {
     /*block header*/
     smriCTBlockHdr    mBlockHdr;
 
-    /*bitmap ê³µê°„*/
+    /*bitmap °ø°£*/
     SChar             mBitmap[SMRI_CT_BMP_BLOCK_BITMAP_SIZE];
 }smriCTBmpBlock;
 
 /*-------------------------------------------------------------
- * meta extentì˜ êµ¬ì¡°ì²´
+ * meta extentÀÇ ±¸Á¶Ã¼
  *-----------------------------------------------------------*/
 typedef struct smriCTMetaExt
 {
@@ -409,7 +409,7 @@ typedef struct smriCTMetaExt
 }smriCTMetaExt;
  
 /*-------------------------------------------------------------
- * Bitmap extentì˜ êµ¬ì¡°ì²´
+ * Bitmap extentÀÇ ±¸Á¶Ã¼
  *-----------------------------------------------------------*/
 typedef struct smriCTBmpExt
 {
@@ -421,7 +421,7 @@ typedef struct smriCTBmpExt
 }smriCTBmpExt;
  
 /*-------------------------------------------------------------
- * Empty extentì˜ êµ¬ì¡°ì²´
+ * Empty extentÀÇ ±¸Á¶Ã¼
  *-----------------------------------------------------------*/
 typedef struct smriCTEmptyExt
 {
@@ -430,24 +430,24 @@ typedef struct smriCTEmptyExt
 }smriCTEmptyExt;
 
 /*-------------------------------------------------------------
- * CTBodyì˜ êµ¬ì¡°ì²´
+ * CTBodyÀÇ ±¸Á¶Ã¼
  *-----------------------------------------------------------*/
 typedef struct smriCTBody
 {
-    /* meta ì˜ì—­ */
+    /* meta ¿µ¿ª */
     smriCTMetaExt           mMetaExtent;
 
-    /* bitmap ì˜ì—­ */
+    /* bitmap ¿µ¿ª */
     smriCTBmpExt            mBmpExtent[SMRI_CT_BMP_EXT_CNT];
 
-    /*empty ì˜ì—­*/
+    /*empty ¿µ¿ª*/
     smriCTEmptyExt          mEmptyExtent;
 
-    /*blockë‹¨ìœ„ë¡œ ì ‘ê·¼í•˜ê¸° ìœ„í•œ self í¬ì¸í„°*/
+    /*block´ÜÀ§·Î Á¢±ÙÇÏ±â À§ÇÑ self Æ÷ÀÎÅÍ*/
     smriCTBmpBlock        * mBlock;
 }smriCTBody;
 
-/*BIíŒŒì¼ ë‚´ì—ì„œì˜ header offset*/
+/*BIÆÄÀÏ ³»¿¡¼­ÀÇ header offset*/
 #define SMRI_BI_HDR_OFFSET                  (0)                            
 /*INVALID backup info slot index*/
 #define SMRI_BI_INVALID_SLOT_IDX            (ID_UINT_MAX)                  
@@ -469,7 +469,7 @@ typedef struct smriCTBody
 #define SMRI_BI_BACKUP_TAG_PREFIX           "TAG_"
 
 /*-------------------------------------------------------------
- * ë°±ì—… ëŒ€ìƒ
+ * ¹é¾÷ ´ë»ó
  *-----------------------------------------------------------*/
 typedef enum smriBIBackupTarget
 {
@@ -487,7 +487,7 @@ typedef enum smriBIMgrState
 }smriBIMgrState;
 
 /*-------------------------------------------------------------
- * logAnchorì— ì €ì¥ëœ CTíŒŒì¼ ì •ë³´
+ * logAnchor¿¡ ÀúÀåµÈ CTÆÄÀÏ Á¤º¸
  *-----------------------------------------------------------*/
 typedef struct smriBIFileAttr
 {
@@ -504,16 +504,16 @@ typedef struct smriBIFileAttr
  *-----------------------------------------------------------*/
 typedef struct smriBIFileHdr
 {
-    /*íŒŒì¼ í—¤ë”ì˜ ì²´í¬ì„¬*/
+    /*ÆÄÀÏ Çì´õÀÇ Ã¼Å©¼¶*/
     UInt            mCheckSum;
     
-    /*backupinfo slotì˜ ì „ì²´ ê°¯ìˆ˜*/
+    /*backupinfo slotÀÇ ÀüÃ¼ °¹¼ö*/
     UInt            mBISlotCnt;
     
-    /*ë°ì´í„°ë² ì´ìŠ¤ ì´ë¦„*/
+    /*µ¥ÀÌÅÍº£ÀÌ½º ÀÌ¸§*/
     SChar           mDBName[SM_MAX_DB_NAME];
     
-    /*ë°±ì—…ì´ ì™„ë£Œëœ LSN*/
+    /*¹é¾÷ÀÌ ¿Ï·áµÈ LSN*/
     smLSN           mLastBackupLSN;
 
     UChar           mAlign[368];
@@ -524,56 +524,56 @@ typedef struct smriBIFileHdr
  *-----------------------------------------------------------*/
 typedef struct smriBISlot
 {
-    /*backupinfo slotì˜ ì²´í¬ì„¬*/
+    /*backupinfo slotÀÇ Ã¼Å©¼¶*/
     UInt                mCheckSum;
 
-    /*ë°±ì—… ì‹œì‘ ì‹œê°„*/
+    /*¹é¾÷ ½ÃÀÛ ½Ã°£*/
     UInt                mBeginBackupTime;
 
-    /*ë°±ì—… ì™„ë£Œ ì‹œê°„*/
+    /*¹é¾÷ ¿Ï·á ½Ã°£*/
     UInt                mEndBackupTime;
 
-    /*íŒŒì¼ì— ì €ì¥ëœ incremental backup chunkì˜ ìˆ˜*/
+    /*ÆÄÀÏ¿¡ ÀúÀåµÈ incremental backup chunkÀÇ ¼ö*/
     UInt                mIBChunkCNT;
 
-    /*ë°±ì—… ëŒ€ìƒ(database or table space)*/
+    /*¹é¾÷ ´ë»ó(database or table space)*/
     smriBIBackupTarget  mBackupTarget;
 
-    /*ë°±ì—… ìˆ˜í–‰ level*/
+    /*¹é¾÷ ¼öÇà level*/
     smiBackupLevel      mBackupLevel;
 
-    /*incremental backupë‹¨ìœ„ í¬ê¸°*/
+    /*incremental backup´ÜÀ§ Å©±â*/
     UInt                mIBChunkSize;
 
-    /*ë°±ì—… íƒ€ì…(full, differential, cumulative)*/
+    /*¹é¾÷ Å¸ÀÔ(full, differential, cumulative)*/
     UShort              mBackupType;
 
-    /*ë°±ì—…ëœ ë°ì´í„°íŒŒì¼ì˜ table space ID*/
+    /*¹é¾÷µÈ µ¥ÀÌÅÍÆÄÀÏÀÇ table space ID*/
     scSpaceID           mSpaceID;
 
     union
     {
-        /*disk table spaceì˜ íŒŒì¼ ID*/
+        /*disk table spaceÀÇ ÆÄÀÏ ID*/
         sdFileID        mFileID;
 
-        /*memory table spaceì˜ íŒŒì¼ num*/
+        /*memory table spaceÀÇ ÆÄÀÏ num*/
         UInt            mFileNo;
     };
 
-    /*ë°±ì—…ìˆ˜í–‰ ì‹œì ì˜ ì›ë³¸ íŒŒì¼ í¬ê¸°*/
+    /*¹é¾÷¼öÇà ½ÃÁ¡ÀÇ ¿øº» ÆÄÀÏ Å©±â*/
     ULong               mOriginalFileSize;
 
-    /* chkpt imageì— ì†í•œ í˜ì´ì§€ì˜ ê°¯ìˆ˜
-     * controlë‹¨ê³„ì—ì„œëŠ” Membaseê°€ ë¡œë“œë˜ì§€ ì•Šì€ ìƒíƒœë¼ Membaseì— ëŒ€í•œ ì ‘ê·¼ì´
-     * ë¶ˆê°€í•˜ë‹¤. incremental backup ìˆ˜í–‰ì‹œ Membaseì˜ mDBFilePageCntê°’ì„
-     * ì €ì¥í•œë‹¤.
+    /* chkpt image¿¡ ¼ÓÇÑ ÆäÀÌÁöÀÇ °¹¼ö
+     * control´Ü°è¿¡¼­´Â Membase°¡ ·ÎµåµÇÁö ¾ÊÀº »óÅÂ¶ó Membase¿¡ ´ëÇÑ Á¢±ÙÀÌ
+     * ºÒ°¡ÇÏ´Ù. incremental backup ¼öÇà½Ã MembaseÀÇ mDBFilePageCnt°ªÀ»
+     * ÀúÀåÇÑ´Ù.
      */
     vULong              mDBFilePageCnt;
 
-    /*ë°±ì—…ì˜ íƒœê·¸ì´ë¦„*/
+    /*¹é¾÷ÀÇ ÅÂ±×ÀÌ¸§*/
     SChar               mBackupTag[SMI_MAX_BACKUP_TAG_NAME_LEN];
 
-    /*ë°±ì—… íŒŒì¼ì˜ ì´ë¦„*/
+    /*¹é¾÷ ÆÄÀÏÀÇ ÀÌ¸§*/
     SChar               mBackupFileName[SMRI_BI_MAX_BACKUP_FILE_NAME_LEN];
 }smriBISlot;
 

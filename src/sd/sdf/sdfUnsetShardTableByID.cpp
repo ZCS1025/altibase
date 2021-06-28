@@ -23,7 +23,7 @@
  *     ALTIBASE SHARD management function
  *
  * Syntax :
- *    SHARD_UNSET_SHARD_TABLE_BY_ID( table_id INTEGER )
+ *    SHARD_UNSET_SHARD_TABLE_BY_ID_LOCAL( table_id INTEGER )
  *    RETURN 0
  *
  **********************************************************************/
@@ -49,7 +49,7 @@ static IDE_RC sdfEstimate( mtcNode*        aNode,
 mtfModule sdfUnsetShardTableByIDModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     sdfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -153,8 +153,31 @@ IDE_RC sdfCalculate_UnsetShardTableByID( mtcNode*     aNode,
     smiStatement              sSmiStmt;
     UInt                      sSmiStmtFlag;
     SInt                      sState = 0;
+    idBool                    sIsOldSessionShardMetaTouched = ID_FALSE;
 
+    ULong                     sSMN = ID_ULONG(0);
+    idBool                    sIsTableFound = ID_FALSE;
+    sdiTableInfo              sTableInfo;
+    sdiLocalMetaInfo          sLocalMetaInfo;
+    UInt                      i = 0;
+    SChar                     sBackupTableNameStr[QC_MAX_OBJECT_NAME_LEN + 1];
+    sdiReplicaSetInfo         sReplicaSetInfo;
+    sdiReplicaSetInfo         sFoundReplicaSetInfo;
+
+    UInt                      sUserID = QC_EMPTY_USER_ID;
+    SChar                     sSqlStr[SDF_QUERY_LEN];
+    
     sStatement   = ((qcTemplate*)aTemplate)->stmt;
+
+    sStatement->mFlag &= ~QC_STMT_SHARD_META_CHANGE_MASK;
+    sStatement->mFlag |= QC_STMT_SHARD_META_CHANGE_TRUE;
+
+    /* BUG-47623 »þµå ¸ÞÅ¸ º¯°æ¿¡ ´ëÇÑ trc ·Î±×Áß commit ·Î±×¸¦ ÀÛ¼ºÇÏ±âÀü¿¡ DASSERT ·Î Á×´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù. */
+    if ( ( sStatement->session->mQPSpecific.mFlag & QC_SESSION_SHARD_META_TOUCH_MASK ) ==
+         QC_SESSION_SHARD_META_TOUCH_TRUE )
+    {
+        sIsOldSessionShardMetaTouched = ID_TRUE;
+    }
 
     // BUG-46366
     IDE_TEST_RAISE( ( QC_SMI_STMT(sStatement)->getTrans() == NULL ) ||
@@ -165,6 +188,15 @@ IDE_RC sdfCalculate_UnsetShardTableByID( mtcNode*     aNode,
     // Check Privilege
     IDE_TEST_RAISE( QCG_GET_SESSION_USER_ID(sStatement) != QCI_SYS_USER_ID,
                     ERR_NO_GRANT );
+
+    if ( SDU_SHARD_LOCAL_FORCE != 1 )
+    {
+        /* Shard Local OperationÀº internal ¿¡¼­¸¸ ¼öÇàµÇ¾î¾ß ÇÑ´Ù.  */
+        IDE_TEST_RAISE( ( QCG_GET_SESSION_IS_SHARD_INTERNAL_LOCAL_OPERATION( sStatement ) != ID_TRUE ) &&
+                        ( ( sStatement->session->mQPSpecific.mFlag & QC_SESSION_ALTER_META_MASK )
+                             != QC_SESSION_ALTER_META_ENABLE),
+                        ERR_INTERNAL_OPERATION );
+    }
 
     IDE_TEST( mtf::postfixCalculate( aNode,
                                      aStack,
@@ -187,10 +219,149 @@ IDE_RC sdfCalculate_UnsetShardTableByID( mtcNode*     aNode,
         // shard ID
         sShardID = *(mtdIntegerType*)aStack[1].value;
 
+       IDE_TEST( sdi::getIncreasedSMNForMetaNode( ( QC_SMI_STMT( sStatement ) )->getTrans() , 
+                                                   &sSMN ) 
+                  != IDE_SUCCESS );
+
+        sSmiStmtFlag = SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR;
+        sOldStmt                = QC_SMI_STMT(sStatement);
+        QC_SMI_STMT(sStatement) = &sSmiStmt;
+        sState = 1;
+
+        IDE_TEST( sSmiStmt.begin( sStatement->mStatistics,
+                                  sOldStmt,
+                                  sSmiStmtFlag )
+                  != IDE_SUCCESS );
+        sState = 2;
+
+        // Shard µî·ÏµÈ Procedure È¤Àº Partitioned Table¸¸ ´ë»óÀ¸·ÎÇÑ´Ù.
+        IDE_TEST( sdm::getTableInfoByID( QC_SMI_STMT( sStatement ),
+                                         sShardID,
+                                         sSMN, //sMetaNodeInfo.mShardMetaNumber,
+                                         &sTableInfo,
+                                         &sIsTableFound )
+                  != IDE_SUCCESS );
+
+        IDE_TEST_RAISE( sIsTableFound == ID_FALSE,
+                        ERR_NOT_EXIST_TABLE );
+
+        sState = 1;
+        IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+
+        sState = 0;
+        QC_SMI_STMT(sStatement) = sOldStmt;
+
+        if ( SDU_SHARD_LOCAL_FORCE != 1 )
+        {
+            /* TableÀÏ °æ¿ì RPÁ¦°Å¿Í _BAK_Table Á¦°Åµµ ÇØÁÖ¾î¾ß ÇÑ´Ù. */
+            if ( sTableInfo.mObjectType == 'T' )
+            {
+                IDE_TEST( sdm::getLocalMetaInfo( &sLocalMetaInfo ) != IDE_SUCCESS );
+
+                idlOS::snprintf( sBackupTableNameStr,
+                                 QC_MAX_OBJECT_NAME_LEN+1,
+                                 "%s%s",
+                                 SDI_BACKUP_TABLE_PREFIX,
+                                 sTableInfo.mObjectName );
+
+                //---------------------------------
+                // Drop Replication
+                //---------------------------------
+                for ( i = 0 ; i < sLocalMetaInfo.mKSafety; i++ )
+                {
+                    sSmiStmtFlag = SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR;
+                    sOldStmt                = QC_SMI_STMT(sStatement);
+                    QC_SMI_STMT(sStatement) = &sSmiStmt;
+                    sState = 1;
+
+                    IDE_TEST( sSmiStmt.begin( sStatement->mStatistics,
+                                              sOldStmt,
+                                              sSmiStmtFlag )
+                              != IDE_SUCCESS );
+                    sState = 2;
+
+                    IDE_TEST( sdm::getAllReplicaSetInfoSortedByPName( QC_SMI_STMT( sStatement ),
+                                                                      &sReplicaSetInfo,
+                                                                      sSMN ) 
+                              != IDE_SUCCESS );
+
+                    /* ³»°¡ º¸³»´Â ReplNameÀ» Ã£¾Æ¾ß ÇÑ´Ù. */
+                    IDE_TEST( sdm::findSendReplInfoFromReplicaSet( &sReplicaSetInfo,
+                                                                   sLocalMetaInfo.mNodeName,
+                                                                   &sFoundReplicaSetInfo )
+                              != IDE_SUCCESS );
+
+                    IDE_TEST( sdm::dropReplicationItemUsingRPSets( sStatement,
+                                                                   &sFoundReplicaSetInfo,
+                                                                   sTableInfo.mUserName,
+                                                                   sTableInfo.mObjectName,
+                                                                   i,
+                                                                   SDM_REPL_SENDER,
+                                                                   sSMN )
+                              != IDE_SUCCESS );
+
+                    /* ³»°¡ ¹Þ´Â ReplName¸¦ Ã£¾Æ¾ß ÇÑ´Ù. */
+                    IDE_TEST( sdm::findRecvReplInfoFromReplicaSet( &sReplicaSetInfo,
+                                                                   sLocalMetaInfo.mNodeName,
+                                                                   i,
+                                                                   &sFoundReplicaSetInfo )
+                              != IDE_SUCCESS );
+
+                    /* Node¿¡¼­ ¹Þ´Â ÁßÀÎ Unset ´ë»ó TableÀÇ ¸ðµç ReplÀ» Á¦°ÅÇÑ´Ù */
+                    IDE_TEST( sdm::dropReplicationItemUsingRPSets( sStatement,
+                                                                   &sFoundReplicaSetInfo,
+                                                                   sTableInfo.mUserName,
+                                                                   sTableInfo.mObjectName,
+                                                                   i,
+                                                                   SDM_REPL_RECEIVER,
+                                                                   sSMN )
+                              != IDE_SUCCESS );
+
+                    sState = 1;
+                    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+
+                    sState = 0;
+                    QC_SMI_STMT(sStatement) = sOldStmt;
+                }
+
+                //---------------------------------
+                // Drop _BAK_ Table
+                //---------------------------------
+                idlOS::snprintf( sSqlStr, SDF_QUERY_LEN,
+                                 "drop table %s.%s ",
+                                 sTableInfo.mUserName,
+                                 sBackupTableNameStr );
+
+                sSmiStmtFlag = SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR;
+                sOldStmt                = QC_SMI_STMT(sStatement);
+                QC_SMI_STMT(sStatement) = &sSmiStmt;
+                sState = 1;
+
+                IDE_TEST( sSmiStmt.begin( sStatement->mStatistics,
+                                          sOldStmt,
+                                          sSmiStmtFlag )
+                          != IDE_SUCCESS );
+                sState = 2;
+
+                IDE_TEST( qciMisc::getUserIdByName( sTableInfo.mUserName, &sUserID ) != IDE_SUCCESS );
+                ideLog::log(IDE_SD_17,"[SHARD INTERNAL SQL]: %s", sSqlStr);
+                IDE_TEST( qciMisc::runRollbackableInternalDDL( sStatement,
+                                                               QC_SMI_STMT( sStatement ),
+                                                               sUserID,
+                                                               sSqlStr )
+                          != IDE_SUCCESS );
+
+                sState = 1;
+                IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+
+                sState = 0;
+                QC_SMI_STMT(sStatement) = sOldStmt;
+            }
+        }
+
         //---------------------------------
         // Begin Statement for meta
         //---------------------------------
-
         sSmiStmtFlag = SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR;
         sOldStmt                = QC_SMI_STMT(sStatement);
         QC_SMI_STMT(sStatement) = &sSmiStmt;
@@ -205,29 +376,38 @@ IDE_RC sdfCalculate_UnsetShardTableByID( mtcNode*     aNode,
         //---------------------------------
         // Delete Object
         //---------------------------------
-
         IDE_TEST( sdm::deleteObjectByID( sStatement,
                                          (UInt)sShardID,
                                          &sTableRowCnt )
                   != IDE_SUCCESS );
 
+        IDE_TEST_RAISE( sTableRowCnt == 0,
+                        ERR_INVALID_SHARD_TABLE );
+
         //---------------------------------
         // End Statement
         //---------------------------------
-
         sState = 1;
         IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
 
         sState = 0;
         QC_SMI_STMT(sStatement) = sOldStmt;
-
-        IDE_TEST_RAISE( sTableRowCnt == 0,
-                        ERR_INVALID_SHARD_TABLE );
     }
     
     *(mtdIntegerType*)aStack[0].value = 0;
 
     return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_INTERNAL_OPERATION )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdfCalculate_UnsetShardTableByID",
+                                  "SHARD_INTERNAL_LOCAL_OPERATION is not 1" ) );
+    }
+    IDE_EXCEPTION( ERR_NOT_EXIST_TABLE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDM_SHARD_TABLE_NOT_EXIST ) );
+    }
 
     IDE_EXCEPTION( ERR_INSIDE_QUERY )
     {
@@ -247,6 +427,8 @@ IDE_RC sdfCalculate_UnsetShardTableByID( mtcNode*     aNode,
     }
     IDE_EXCEPTION_END;
 
+    IDE_PUSH();
+    
     switch ( sState )
     {
         case 2:
@@ -264,5 +446,17 @@ IDE_RC sdfCalculate_UnsetShardTableByID( mtcNode*     aNode,
             break;
     }
 
+    /* BUG-47623 »þµå ¸ÞÅ¸ º¯°æ¿¡ ´ëÇÑ trc ·Î±×Áß commit ·Î±×¸¦ ÀÛ¼ºÇÏ±âÀü¿¡ DASSERT ·Î Á×´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù. */
+    if ( sIsOldSessionShardMetaTouched == ID_TRUE )
+    {
+        sdi::setShardMetaTouched( sStatement->session );
+    }
+    else
+    {
+        sdi::unsetShardMetaTouched( sStatement->session );
+    }
+
+    IDE_POP();
+    
     return IDE_FAILURE;
 }

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpcHBT.h 82897 2018-04-25 00:24:10Z returns $
+ * $Id: rpcHBT.h 82877 2018-04-24 00:34:35Z returns $
  **********************************************************************/
 
 /*
@@ -101,7 +101,7 @@ public:
     void   destroy();
 
     void   run();
-    void   stop();              // ì¢…ë£Œ called by mmiMgr
+    void   stop();              // Á¾·á called by mmiMgr
     static IDE_RC lock()     { return mMutex.lock(NULL /* idvSQL* */);   }
     static IDE_RC unlock()   { return mMutex.unlock(); }
 

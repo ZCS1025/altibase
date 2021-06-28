@@ -43,4 +43,8 @@ ACI_RC ulsdnStmtShardStmtPartialRollbackResult( cmiProtocolContext * aProtocolCo
                                                 void               * aServiceSession,
                                                 void               * aUserContext );
 
+/* TASK-7219 Non-shard DML */
+SQLRETURN ulsdnStmtSetPartialExecType( ulnStmt      * aStmt,
+                                       acp_sint32_t   aPartialCoordType );
+
 #endif // _O_ULSDN_STMT_H_ 1

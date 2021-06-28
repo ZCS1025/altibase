@@ -50,7 +50,7 @@ void idsPassword::crypt( SChar * aResult, SChar * aPassword, UInt aPasswordLen, 
     }
 
     /* step 1
-     * bufferì— saltì™€ passwordë¥¼ ë¶™ì—¬ ë³µì‚¬í•œë‹¤.
+     * buffer¿¡ salt¿Í password¸¦ ºÙ¿© º¹»çÇÑ´Ù.
      * [salt/user password]
      */
     if ( aSalt != NULL )
@@ -65,7 +65,7 @@ void idsPassword::crypt( SChar * aResult, SChar * aPassword, UInt aPasswordLen, 
     idlOS::memcpy( sBuffer + IDS_SALT_LEN, aPassword, sPasswordLen );
 
     /* step 2
-     * resultì— saltë¥¼ ë¶™ì´ê³  sha512ë¡œ ì•”í˜¸í™”í•´ì„œ ì™„ì„±í•œë‹¤.
+     * result¿¡ salt¸¦ ºÙÀÌ°í sha512·Î ¾ÏÈ£È­ÇØ¼­ ¿Ï¼ºÇÑ´Ù.
      *
      * crypt([salt][user password])
      *              |

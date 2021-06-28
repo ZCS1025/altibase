@@ -19,7 +19,8 @@ package Altibase.jdbc.driver.sharding.core;
 
 public class ShardVersion
 {
-    public static byte SHARD_MAJOR_VERSION = 2;
-    public static byte SHARD_MINOR_VERSION = 2;
-    public static byte SHARD_PATCH_VERSION = 0;
+    // BUG-48254 2.2.1 -> 3.1.1·Î º¯°æ
+    public static byte SHARD_MAJOR_VERSION = 3;
+    public static byte SHARD_MINOR_VERSION = 1;
+    public static byte SHARD_PATCH_VERSION = 1;
 }

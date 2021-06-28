@@ -18,7 +18,7 @@ package Altibase.jdbc.driver;
 
 import Altibase.jdbc.driver.util.StringUtils;
 
-class AltibaseFailoverServerInfo
+public class AltibaseFailoverServerInfo
 {
     private final String mServer;
     private final String mDbName; // BUG-43219 add dbname property to failover
@@ -33,7 +33,7 @@ class AltibaseFailoverServerInfo
     }
 
     /**
-     * ì ‘ì†í•  ì„œë²„ì˜ host ê°’ì„ ì–»ëŠ”ë‹¤.
+     * Á¢¼ÓÇÒ ¼­¹öÀÇ host °ªÀ» ¾ò´Â´Ù.
      *
      * @return host
      */
@@ -43,7 +43,7 @@ class AltibaseFailoverServerInfo
     }
 
     /**
-     * ì ‘ì†í•  ì„œë²„ì˜ port numberë¥¼ ì–»ëŠ”ë‹¤.
+     * Á¢¼ÓÇÒ ¼­¹öÀÇ port number¸¦ ¾ò´Â´Ù.
      *
      * @return port number
      */
@@ -52,12 +52,12 @@ class AltibaseFailoverServerInfo
         return mPortNo;
     }
 
-    // #region ì„œë²„ ì‚¬ìš© ì‹œì‘, ì ‘ì† ì‹¤íŒ¨ ì‹œê°„ ì •ë³´
+    // #region ¼­¹ö »ç¿ë ½ÃÀÛ, Á¢¼Ó ½ÇÆĞ ½Ã°£ Á¤º¸
 
     /**
-     * ì„œë²„ ì ‘ì†ì— ì‹¤íŒ¨í•œ ì‹œê°„ì„ ì–»ëŠ”ë‹¤.
+     * ¼­¹ö Á¢¼Ó¿¡ ½ÇÆĞÇÑ ½Ã°£À» ¾ò´Â´Ù.
      *
-     * @return ì„œë²„ ì ‘ì†ì— ì‹¤íŒ¨í•œ ì‹œê°„
+     * @return ¼­¹ö Á¢¼Ó¿¡ ½ÇÆĞÇÑ ½Ã°£
      */
     public long getFailStartTime()
     {
@@ -66,7 +66,7 @@ class AltibaseFailoverServerInfo
     }
 
     /**
-     * ì ‘ì†í•  ì„œë²„ì˜ DB Nameì„ ì–»ëŠ”ë‹¤.
+     * Á¢¼ÓÇÒ ¼­¹öÀÇ DB NameÀ» ¾ò´Â´Ù.
      *
      * @return DB Name
      */
@@ -83,14 +83,14 @@ class AltibaseFailoverServerInfo
 
     // #endregion
 
-    // #region Object ì˜¤ë²„ë¼ì´ë“œ
+    // #region Object ¿À¹ö¶óÀÌµå
 
     /**
-     * alternate servers string í¬ë§·ì— ë§ëŠ” ë¬¸ìì—´ ê°’ì„ ì–»ëŠ”ë‹¤.
+     * alternate servers string Æ÷¸Ë¿¡ ¸Â´Â ¹®ÀÚ¿­ °ªÀ» ¾ò´Â´Ù.
      */
     public String toString()
     {
-        /* alternateservers í¬ë§·ì— ë§ì¶¤ */
+        /* alternateservers Æ÷¸Ë¿¡ ¸ÂÃã */
         String sDbName = (StringUtils.isEmpty(mDbName)) ? "" : "/" + mDbName;
         return mServer + ":" + mPortNo + sDbName;
     }
@@ -101,7 +101,7 @@ class AltibaseFailoverServerInfo
     }
 
     /**
-     * Serverì™€ Port, Database Nameì´ ê°™ì€ì§€ í™•ì¸í•œë‹¤.
+     * Server¿Í Port, Database NameÀÌ °°ÀºÁö È®ÀÎÇÑ´Ù.
      */
     public boolean equals(Object aObj)
     {

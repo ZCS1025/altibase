@@ -5,7 +5,7 @@
 # 브랜치에서 에러코드를 할당받으시면 안됩니다.
 # 반드시 main trunk에서 번호를 할당받은 후 브랜치에서 사용하셔야 합니다.
 # 의문 사항이 있으시면 AK팀 혹은 QP(품질본부)팀에 문의 부탁드립니다.
-# Last Number = 76
+# Last Number = 83
 
 SECTION = 10
 
@@ -296,6 +296,30 @@ SECTION = 10
 77, stERR_ABORT_INVALID_GEOMETRY = Invalid Geometry
 # *Cause: An attempt was made to perform an operation on an invalid geometry object.
 # *Action: Ensure that the geometry object is valid.
+
+78, stERR_ABORT_INVALID_SRID = The Spatial Reference ID(SRID) is incorrect.
+# *Cause: The Spatial Reference ID(SRID) of the geometry column is different from the input SRID.
+# *Action: Verify the input Spatial Reference ID(SRID).
+
+79, stERR_ABORT_MIXED_SRID = Operation on mixed SRID geometries. (<0%d>: <1%d>)
+# *Cause: SRIDs of the geometries are mixed.
+# # *Action: Verify the input SRIDs
+
+80, stERR_ABORT_UNKNOWN_SRID = Unknown Spatial Reference ID (<0%d>)
+# *Cause: The Spatial Reference ID(SRID) was not found.
+# *Action: Verify the input Spatial Reference ID(SRID).
+
+81, stERR_ABORT_PROJ4_INIT_FAILED = Failed to initialize PROJ4 library (<0%s>, <1%d>, <2%d>)
+# *Cause: Failed to initialize PROJ4 library.
+# *Action: Verify the input arguments.
+
+82, stERR_ABORT_PROJ4_TRANSFORM_FAILED = Failed to PROJ4 transform (<0%s>)
+# *Cause: Failed to PROJ4 transform.
+# *Action: Verify the input arguments.
+
+83, stERR_ABORT_INVALID_GEOMETRY_MADEBY_GEOMFROMWKB = Invalid Geometry(<0%s>) 
+# *Cause: An attempt was made to perform an operation on an invalid geometry.
+# *Action: Check the error number from the trace log and contact Altibase’s Support Center (http://support.altibase.com).
 
 INTERNAL_TRACE_MESSAGE_BEGIN
 

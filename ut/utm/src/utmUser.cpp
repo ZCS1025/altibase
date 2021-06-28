@@ -31,45 +31,20 @@
     "and c.user_name=? "                                                \
     "order by 1"
 
-#define GET_USER_TBS_QUERY                                           \
-    " select /*+ USE_HASH( A, B ) USE_HASH( A, C )  */ "             \
-    " a.USER_ID, a.USER_NAME, b.name, c.name, "                      \
-    " a.password_limit_flag,"                                        \
-    " a.failed_login_attempts, a.password_lock_time,"                \
-    " a.password_life_time, a.password_grace_time,"                  \
-    " a.password_reuse_time, a.password_reuse_max,"                  \
-    " a.password_verify_function, a.disable_tcp,"                    \
-    " b.id, b.type, c.id, c.type "                                   \
-    " from system_.sys_users_ a, x$tablespaces_header b,"            \
-    " x$tablespaces_header c"                                        \
-    " where b.id = a.default_tbs_id "                                \
-    " and c.id = a.temp_tbs_id and a.USER_NAME = ? "
-
-#define GET_USER_TBS_ACCESS_QUERY                         \
-     "select /*+ USE_HASH( A, B ) */ b.name, a.is_access" \
-     "  , b.id, b.type"                                   \
-     "  from system_.sys_tbs_users_ a,"                   \
-     "       x$tablespaces_header b"                      \
-     " where a.user_id = ? "                              \
-     "   and a.tbs_id = b.id"                             \
-
 #define GET_USER_COUNT_QUERY                    \
     "select/*+ NO_PLAN_CACHE */ count(*) from system_.sys_users_"
 
 
 #define GET_USER_DETAIL_QUERY                                        \
     " select /*+ USE_HASH( A, B ) USE_HASH( A, C ) NO_PLAN_CACHE */" \
-    " a.USER_ID, a.USER_NAME, b.name, c.name,"                       \
-    " a.password_limit_flag,"                                        \
-    " a.failed_login_attempts, a.password_lock_time,"                \
-    " a.password_life_time, a.password_grace_time,"                  \
-    " a.password_reuse_time, a.password_reuse_max,"                  \
-    " a.password_verify_function,a.user_type,"                       \
-    " a.disable_tcp"                                                 \
+    " a.USER_ID, a.USER_NAME,"                                       \
+    " a.user_type "                                                  \
     " from system_.sys_users_ a, x$tablespaces_header b, "           \
     " x$tablespaces_header c"                                        \
     " where b.id = a.default_tbs_id"                                 \
-    " and c.id = a.temp_tbs_id order by a.user_type desc,1 "
+    " and c.id = a.temp_tbs_id "                                     \
+    " and user_name not in ('SYS', 'SYSTEM_', 'PUBLIC') "            \
+    " order by a.user_type desc,1 "
 
 /* BUG-31699 */
 #define GET_NO_EXIST_TABLESPACE_USER_QUERY               \
@@ -87,7 +62,7 @@
     
 #define MAX_OUTPUT_CNT 100
 
-/* tablespaceê°€ ì‚­ì œ ë˜ê±°ë‚˜ ì¡´ì¬ í•˜ì§€ ì•ŠëŠ” USER NAME êµ¬í•˜ì—¬ ì—ëŸ¬ ì¶œë ¥ */
+/* tablespace°¡ »èÁ¦ µÇ°Å³ª Á¸Àç ÇÏÁö ¾Ê´Â USER NAME ±¸ÇÏ¿© ¿¡·¯ Ãâ·Â */
 void setErrNoExistTBSUser()
 {
 #define IDE_FN "setErrNoExistTBSUser()"
@@ -114,8 +89,8 @@ void setErrNoExistTBSUser()
                                 (SQLLEN)ID_SIZEOF( sUserName ),
                                 &sUserNameInd ) != SQL_SUCCESS, StmtError );
 
-    /* userê°€ ëª‡ì´ë‚˜ ìˆì„ì§€ ì•Œ ìˆ˜ ì—†ìœ¼ë¯€ë¡œ, MAX_OUTPUT_CNT ê¹Œì§€ë§Œ
-     * ì—ëŸ¬ë¡œ ì¶œë ¥í•œë‹¤. ë” ìˆìœ¼ë©´ ì¤„ì„í‘œ(...)ë¥¼ ì´ìš©í•´ ë” ìˆìŒì„ í‘œì‹œ. */
+    /* user°¡ ¸îÀÌ³ª ÀÖÀ»Áö ¾Ë ¼ö ¾øÀ¸¹Ç·Î, MAX_OUTPUT_CNT ±îÁö¸¸
+     * ¿¡·¯·Î Ãâ·ÂÇÑ´Ù. ´õ ÀÖÀ¸¸é ÁÙÀÓÇ¥(...)¸¦ ÀÌ¿ëÇØ ´õ ÀÖÀ½À» Ç¥½Ã. */
     for ( i = 0; i < MAX_OUTPUT_CNT; i++ )
     {
         sRet = SQLFetch( sStmt );
@@ -177,7 +152,7 @@ SInt getPrivNo( const SChar *aPrivName )
     SInt sPrivNo = UTM_NONE;
 
     /* BUG-22769
-     * ì‚¬ìš©ì ê³„ì • ìƒì„±ì‹œ ê¸°ë³¸ì ìœ¼ë¡œ ìƒì„±ë˜ëŠ” ê¶Œí•œì€ ì•„ë˜ 8ê°€ ìˆë‹¤.
+     * »ç¿ëÀÚ °èÁ¤ »ı¼º½Ã ±âº»ÀûÀ¸·Î »ı¼ºµÇ´Â ±ÇÇÑÀº ¾Æ·¡ 8°¡ ÀÖ´Ù.
      * 0. CREATE_PROCEDURE
      * 1. CREATE_SEQUENCE
      * 2. CREATE_SESSION
@@ -188,7 +163,7 @@ SInt getPrivNo( const SChar *aPrivName )
      * 7. CREATE_MATERIALIZED_VIEW
      * 8. CREATE_DATABASE_LINK
      * 9. CREATE_LIBRARY
-     * sDefaultPriv[] ì˜ array ë²ˆí˜¸ëŠ” ìœ„ì˜ ìˆ«ìë¥¼ ì‚¬ìš©í•œë‹¤.
+     * sDefaultPriv[] ÀÇ array ¹øÈ£´Â À§ÀÇ ¼ıÀÚ¸¦ »ç¿ëÇÑ´Ù.
      */
     if ( idlOS::strcmp( aPrivName, "CREATE PROCEDURE" ) == 0 )
     {
@@ -255,11 +230,11 @@ SQLRETURN getUserPrivileges( FILE  *aFp,
     //fix BUG-22905.
     UInt           i;
     //BUG-22769
-    idBool         sDefaultPriv[UTM_PRIV_COUNT];   //ê¶Œí•œì´ revoke ë˜ì—ˆëŠ”ì§€ë¥¼ íŒë‹¨í•˜ê¸° ìœ„í•´ ì‚¬ìš©ëœë‹¤.
+    idBool         sDefaultPriv[UTM_PRIV_COUNT];   //±ÇÇÑÀÌ revoke µÇ¾ú´ÂÁö¸¦ ÆÇ´ÜÇÏ±â À§ÇØ »ç¿ëµÈ´Ù.
     SChar          sPrivList[QUERY_LEN] = { '\0', };
     SInt           sPrivNo; /* BUG-44595 */
 
-    //FALSEë¡œ ì„¸íŒ…...
+    //FALSE·Î ¼¼ÆÃ...
     idlOS::memset(sDefaultPriv, 0x00, ID_SIZEOF(idBool) * UTM_PRIV_COUNT);
 
     IDE_TEST_RAISE(SQLAllocStmt(m_hdbc, &sPrivStmt) != SQL_SUCCESS,
@@ -289,7 +264,7 @@ SQLRETURN getUserPrivileges( FILE  *aFp,
 
     IDE_TEST(Execute(sPrivStmt) != SQL_SUCCESS);
     
-    //BUG-22769 revoke ì‹œí‚¬ ê¶Œí•œ ì €ì¥ì´ˆê¸°í™”
+    //BUG-22769 revoke ½ÃÅ³ ±ÇÇÑ ÀúÀåÃÊ±âÈ­
     idlOS::strcpy( m_revokeStr, "" );
     
     while ((sRet = SQLFetch(sPrivStmt)) != SQL_NO_DATA)
@@ -329,7 +304,7 @@ SQLRETURN getUserPrivileges( FILE  *aFp,
     if ( aIsRole != ID_TRUE )
     {
         // BUG-22769
-        // ê¸°ë³¸ì ìœ¼ë¡œ ìƒì„±ëœ ê¶Œí•œì´ revoke ë˜ì—ˆì„ ê²½ìš°ì˜ ì²˜ë¦¬
+        // ±âº»ÀûÀ¸·Î »ı¼ºµÈ ±ÇÇÑÀÌ revoke µÇ¾úÀ» °æ¿ìÀÇ Ã³¸®
         for ( i = 0; i < UTM_PRIV_COUNT; i++)
         {
             if ( sDefaultPriv[i] == ID_FALSE )
@@ -398,7 +373,7 @@ SQLRETURN getUserPrivileges( FILE  *aFp,
     }
     
     // BUG-22769
-    // ê¶Œí•œ Revoke
+    // ±ÇÇÑ Revoke
     if ( sAllFlag != ID_TRUE && idlOS::strlen( m_revokeStr ) > 0 )
     {
         m_revokeStr[ idlOS::strlen(m_revokeStr) - 2 ] = ' ';
@@ -428,60 +403,20 @@ SQLRETURN getUserPrivileges( FILE  *aFp,
 
 /* 
  * getUserQuery_user: 
- *   user modeì—ì„œ user ìƒì„± êµ¬ë¬¸ì„ exportí•˜ëŠ” í•¨ìˆ˜.
+ *   user mode¿¡¼­ user »ı¼º ±¸¹®À» exportÇÏ´Â ÇÔ¼ö.
  *
  * BUG-40469:
- *   user modeì—ì„œ TABLESPACE í”„ë¡œí¼í‹°ê°€ ONì¸ ê²½ìš°,
- *   tablespace ìƒì„± êµ¬ë¬¸ì„ export í•˜ëŠ” ê¸°ëŠ¥ì´ ì¶”ê°€ë¨.
+ *   user mode¿¡¼­ TABLESPACE ÇÁ·ÎÆÛÆ¼°¡ ONÀÎ °æ¿ì,
+ *   tablespace »ı¼º ±¸¹®À» export ÇÏ´Â ±â´ÉÀÌ Ãß°¡µÊ.
  *   ***
- *   export ë˜ëŠ” í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ëŠ” ì‚¬ìš©ì ê¸°ì¤€ - ì¦‰,
- *   ì‚¬ìš©ìì˜ default, temporary, access tablespace - ì´ë‹¤.
+ *   export µÇ´Â Å×ÀÌºí½ºÆäÀÌ½º´Â »ç¿ëÀÚ ±âÁØ - Áï,
+ *   »ç¿ëÀÚÀÇ default, temporary, access tablespace - ÀÌ´Ù.
  */
 SQLRETURN getUserQuery_user( FILE  *aUserFp,
                              SChar *a_user_name,
                              SChar *a_passwd )
 {
 #define IDE_FN "getUserQuery_user()"
-    SQLHSTMT s_userStmt = SQL_NULL_HSTMT;
-    SQLHSTMT s_accessStmt = SQL_NULL_HSTMT;
-    SQLRETURN sRet;
-
-    SInt        s_pos   = 0;
-    SInt        s_userID= 0;
-    SChar       s_user_name[UTM_NAME_LEN+1];
-    SChar       s_defaultTbs_name[STR_LEN+1];
-    SChar       s_accTbs_name[STR_LEN];
-    SInt        s_accOnOff  = 0;
-    SChar       s_query[QUERY_LEN / 2];
-    SChar       s_query2[QUERY_LEN / 2];  // access on
-    SQLLEN      s_userID_ind    = 0;
-    SQLLEN      s_user_ind      = 0;
-    SQLLEN      s_defaultTbs_ind= 0;
-    SQLLEN      s_accOnOff_ind  = 0;
-    SQLLEN      s_accTbs_ind    = 0;
-    SChar       s_DisableTCP[2] = {0, };
-    SQLLEN      s_DisableTCP_ind;
-    SInt        s_FailedLoginAttempts    = 0;
-    SInt        s_PasswordLockTime       = 0;
-    SInt        s_PasswordLifeTime       = 0;
-    SInt        s_PasswordGraceTime      = 0;
-    SInt        s_PasswordReuseTime      = 0;
-    SInt        s_PasswordReuseMax       = 0;
-    SQLLEN      s_tempTbs_ind            = 0;
-    SQLLEN      s_PasswordLimitFlag_ind  = 0;
-    SQLLEN      s_PasswordVerifyFunc_ind = 0;
-    SChar       s_PasswordLimitFlag[2]   = {0,};
-    SChar       s_tempTbs_name[STR_LEN];
-    SChar       s_PasswordVerifyFunc[UTM_NAME_LEN+1];
-    SChar       sDdl[QUERY_LEN * QUERY_LEN] = { '\0', };
-    
-    /* BUG-40469 output tablespaces info. in user mode */
-    SInt        s_defaultTbs_id   = -1;
-    SInt        s_defaultTbs_type = -1;
-    SInt        s_tempTbs_id      = -1;
-    SInt        s_tempTbs_type    = -1;
-    SInt        s_accTbs_id       = -1;
-    SInt        s_accTbs_type     = -1;
 
     idlOS::fprintf(stdout, "\n##### USER #####\n");
 
@@ -489,329 +424,26 @@ SQLRETURN getUserQuery_user( FILE  *aUserFp,
     idlOS::fprintf( aUserFp, "--  USER \n");
     idlOS::fprintf( aUserFp, "--############################\n");
 
-    IDE_TEST_RAISE(SQLAllocStmt(m_hdbc, &s_userStmt) != SQL_SUCCESS,
-                   DBCError);
-
-    /* PROJ-1349
-     * 1. TEMPORARY TABLESPACE tbs_name
-     * 2. DEFAULT   TABLESPACE tbs_name
-     * 3. ACCESS tbs_name ON/OFF
-     * */
-    idlOS::sprintf(s_query, GET_USER_TBS_QUERY);
-    
-    IDE_TEST(Prepare(s_query, s_userStmt) != SQL_SUCCESS);
-
-    IDE_TEST_RAISE(
-    SQLBindParameter(s_userStmt, 1, SQL_PARAM_INPUT,
-                     SQL_C_CHAR, SQL_VARCHAR, UTM_NAME_LEN,0,
-                     a_user_name, UTM_NAME_LEN+1, NULL)
-                     != SQL_SUCCESS, UserStmtError);
-
-    IDE_TEST_RAISE(
-    SQLBindCol( s_userStmt, 1, SQL_C_SLONG, (SQLPOINTER)&s_userID,
-                0, &s_userID_ind ) != SQL_SUCCESS, UserStmtError);
-    IDE_TEST_RAISE(
-    SQLBindCol(s_userStmt, 2, SQL_C_CHAR, (SQLPOINTER)s_user_name,
-               (SQLLEN)ID_SIZEOF(s_user_name), &s_user_ind)
-               != SQL_SUCCESS, UserStmtError);
-
-    IDE_TEST_RAISE(
-    SQLBindCol(s_userStmt, 3, SQL_C_CHAR, (SQLPOINTER)s_defaultTbs_name,
-               (SQLLEN)ID_SIZEOF(s_defaultTbs_name), &s_defaultTbs_ind)
-               != SQL_SUCCESS, UserStmtError);    
-
-    IDE_TEST_RAISE(
-    SQLBindCol(s_userStmt, 4, SQL_C_CHAR, (SQLPOINTER)s_tempTbs_name,
-               (SQLLEN)ID_SIZEOF(s_tempTbs_name), &s_tempTbs_ind)
-               != SQL_SUCCESS, UserStmtError);    
-    IDE_TEST_RAISE(
-        SQLBindCol(s_userStmt, 5, SQL_C_CHAR, (SQLPOINTER)s_PasswordLimitFlag,
-                   (SQLLEN)ID_SIZEOF(s_PasswordLimitFlag), &s_PasswordLimitFlag_ind)
-        != SQL_SUCCESS, UserStmtError);
-    IDE_TEST_RAISE(
-        SQLBindCol(s_userStmt, 6, SQL_C_SLONG, (SQLPOINTER)&s_FailedLoginAttempts,
-                   0, NULL ) != SQL_SUCCESS, UserStmtError);
-    IDE_TEST_RAISE(
-        SQLBindCol(s_userStmt, 7, SQL_C_SLONG, (SQLPOINTER)&s_PasswordLockTime,
-                   0, NULL ) != SQL_SUCCESS, UserStmtError);
-    IDE_TEST_RAISE(
-        SQLBindCol(s_userStmt, 8, SQL_C_SLONG, (SQLPOINTER)&s_PasswordLifeTime,
-                   0, NULL ) != SQL_SUCCESS, UserStmtError);
-    IDE_TEST_RAISE(
-        SQLBindCol(s_userStmt, 9, SQL_C_SLONG, (SQLPOINTER)&s_PasswordGraceTime,
-                   0, NULL ) != SQL_SUCCESS, UserStmtError);
-    IDE_TEST_RAISE(
-        SQLBindCol(s_userStmt, 10, SQL_C_SLONG, (SQLPOINTER)&s_PasswordReuseTime,
-                   0, NULL ) != SQL_SUCCESS, UserStmtError);
-    IDE_TEST_RAISE(
-        SQLBindCol(s_userStmt, 11, SQL_C_SLONG, (SQLPOINTER)&s_PasswordReuseMax,
-                   0, NULL ) != SQL_SUCCESS, UserStmtError);
-    IDE_TEST_RAISE(
-        SQLBindCol(s_userStmt, 12, SQL_C_CHAR, (SQLPOINTER)s_PasswordVerifyFunc,
-                   (SQLLEN)ID_SIZEOF(s_PasswordVerifyFunc), &s_PasswordVerifyFunc_ind)
-        != SQL_SUCCESS, UserStmtError);
-
-    /* PROJ-2474 TLS/SSL Support */
-    IDE_TEST_RAISE(
-        SQLBindCol(s_userStmt, 13, SQL_C_CHAR, (SQLPOINTER)s_DisableTCP,
-            (SQLLEN)ID_SIZEOF(s_DisableTCP), &s_DisableTCP_ind)
-        != SQL_SUCCESS, UserStmtError);
-
-    /* BUG-40469 output tablespaces info. in user mode */
-    IDE_TEST_RAISE(
-        SQLBindCol(s_userStmt, 14, SQL_C_SLONG, (SQLPOINTER)&s_defaultTbs_id,
-                   0, NULL) != SQL_SUCCESS, UserStmtError);        
-    IDE_TEST_RAISE(
-        SQLBindCol(s_userStmt, 15, SQL_C_SLONG, (SQLPOINTER)&s_defaultTbs_type,
-                   0, NULL) != SQL_SUCCESS, UserStmtError);    
-    IDE_TEST_RAISE(
-        SQLBindCol(s_userStmt, 16, SQL_C_SLONG, (SQLPOINTER)&s_tempTbs_id,
-                   0, NULL) != SQL_SUCCESS, UserStmtError);        
-    IDE_TEST_RAISE(
-        SQLBindCol(s_userStmt, 17, SQL_C_SLONG, (SQLPOINTER)&s_tempTbs_type,
-                   0, NULL) != SQL_SUCCESS, UserStmtError);    
-
-    IDE_TEST(Execute(s_userStmt) != SQL_SUCCESS);
-
-    sRet = SQLFetch(s_userStmt);
-    IDE_TEST(sRet == SQL_NO_DATA);
-    IDE_TEST_RAISE(sRet != SQL_SUCCESS, UserStmtError);
-
-    // BUG-33995 aexport have wrong free handle code
-    FreeStmt( &s_userStmt );
-
-    s_pos = idlOS::sprintf( sDdl,
-                            "create user \"%s\" identified by \"%s\"",
-                            s_user_name,
-                            a_passwd );
-
-    /* PROJ-2207 Password policy support */
-    if ( idlOS::strcmp(s_PasswordLimitFlag, "T") == 0 )
-    {
-        s_pos += idlOS::sprintf( sDdl + s_pos,
-                                 "\n limit ( " );
-
-        // FAILED_LGOIN_ATTEMPTS
-        if ( s_FailedLoginAttempts == 0 )
-        {
-            s_pos += idlOS::sprintf( sDdl + s_pos,
-                                     "\n failed_login_attempts unlimited, " );
-        }
-        else
-        {
-            s_pos += idlOS::sprintf( sDdl + s_pos,
-                                     "\n failed_login_attempts %d, ",
-                                     s_FailedLoginAttempts );
-        }
-            
-        // PASSWORD_LOCK_TIME
-        if ( s_PasswordLockTime == 0 )
-        {
-            s_pos += idlOS::sprintf( sDdl + s_pos,
-                                     "\n password_lock_time unlimited, " );
-        }
-        else
-        {
-            s_pos += idlOS::sprintf( sDdl + s_pos,
-                                     "\n password_lock_time %d, ",
-                                     s_PasswordLockTime );
-        }
-            
-        // PASSWORD_LIFE_TIME
-        if ( s_PasswordLifeTime == 0 )
-        {
-            s_pos += idlOS::sprintf( sDdl + s_pos,
-                                     "\n password_life_time unlimited, " );
-        }
-        else
-        {
-            s_pos += idlOS::sprintf( sDdl + s_pos,
-                                     "\n password_life_time %d, ",
-                                     s_PasswordLifeTime );
-        }
-
-        // PASSWORD_GRACE_TIME
-        if ( s_PasswordGraceTime == 0 )
-        {
-            s_pos += idlOS::sprintf( sDdl + s_pos,
-                                     "\n password_grace_time unlimited, " );
-        }
-        else
-        {
-            s_pos += idlOS::sprintf( sDdl + s_pos,
-                                     "\n password_grace_time %d, ",
-                                     s_PasswordGraceTime );
-        }
-            
-        // PASSWORD_REUSE_TIME
-        if ( s_PasswordReuseTime == 0 )
-        {
-            s_pos += idlOS::sprintf( sDdl + s_pos,
-                                     "\n password_reuse_time unlimited, " );
-        }
-        else
-        {
-            s_pos += idlOS::sprintf( sDdl + s_pos,
-                                     "\n password_reuse_time %d, ",
-                                     s_PasswordReuseTime );
-        }
-            
-        // PASSWORD_REUSE_MAX
-        if ( s_PasswordReuseMax == 0 )
-        {
-            s_pos += idlOS::sprintf( sDdl + s_pos,
-                                     "\n password_reuse_max unlimited, " );
-        }
-        else
-        {
-            s_pos += idlOS::sprintf( sDdl + s_pos,
-                                     "\n password_reuse_max %d, ",
-                                     s_PasswordReuseMax );
-        }
-            
-            
-        // PASSWORD_VERIFY_FUNCTION
-        if ( s_PasswordVerifyFunc_ind != SQL_NULL_DATA )
-        {
-            eraseWhiteSpace(s_PasswordVerifyFunc);
-            s_pos += idlOS::sprintf( sDdl + s_pos,
-                                     "\n password_verify_function \"%s\" ",
-                                     s_PasswordVerifyFunc );
-        }
-        else
-        {
-            s_pos += idlOS::sprintf( sDdl + s_pos,
-                                     "\n password_verify_function NULL ",
-                                     s_PasswordVerifyFunc );
-        }
-                    
-
-        s_pos += idlOS::sprintf( sDdl + s_pos, "\n ) " );
-    }
-    else
-    {
-        // Nothing To Do
-    }
-        
-    
-    if ( s_tempTbs_ind != SQL_NULL_DATA )
-    {
-        eraseWhiteSpace(s_tempTbs_name);
-        s_pos += idlOS::sprintf( sDdl + s_pos,
-                                 "\n temporary tablespace \"%s\"",
-                                 s_tempTbs_name );
-
-        /* BUG-40469 output tablespaces info. in user mode */
-        if ( gProgOption.mbCrtTbs4UserMode == ID_TRUE )
-        {
-            IDE_TEST(getTBSInfo4UserMode(gFileStream.mTbsFp,
-                                         s_tempTbs_id,
-                                         s_tempTbs_type) != SQL_SUCCESS);
-        }
-
-    }
-    if ( s_defaultTbs_ind != SQL_NULL_DATA )
-    {
-        eraseWhiteSpace(s_defaultTbs_name);
-        s_pos += idlOS::sprintf( sDdl + s_pos,
-                                 "\n default tablespace \"%s\"",
-                                 s_defaultTbs_name );
-
-        /* BUG-40469 output tablespaces info. in user mode */
-        if ( gProgOption.mbCrtTbs4UserMode == ID_TRUE )
-        {
-            IDE_TEST(getTBSInfo4UserMode(gFileStream.mTbsFp,
-                                         s_defaultTbs_id,
-                                         s_defaultTbs_type) != SQL_SUCCESS);
-        }
-    }
-
-    IDE_TEST_RAISE(SQLAllocStmt(m_hdbc, &s_accessStmt) != SQL_SUCCESS,
-                   DBCError);
-
-    idlOS::sprintf(s_query2, GET_USER_TBS_ACCESS_QUERY);
-
-    IDE_TEST(Prepare(s_query2, s_accessStmt) != SQL_SUCCESS);
-
-    IDE_TEST_RAISE(
-    SQLBindParameter(s_accessStmt, 1, SQL_PARAM_INPUT,
-                     SQL_C_SLONG, SQL_INTEGER,0,0,
-                     &s_userID, sizeof(s_userID), NULL)
-                     != SQL_SUCCESS, AccessStmtError);
-
-    IDE_TEST_RAISE(
-    SQLBindCol(s_accessStmt, 1, SQL_C_CHAR, (SQLPOINTER)s_accTbs_name,
-               (SQLLEN)ID_SIZEOF(s_accTbs_name), &s_accTbs_ind)
-               != SQL_SUCCESS, AccessStmtError);                   
-    
-    IDE_TEST_RAISE(
-    SQLBindCol(s_accessStmt, 2, SQL_C_SLONG,
-               (SQLPOINTER)&s_accOnOff, 0, &s_accOnOff_ind)
-               != SQL_SUCCESS, AccessStmtError);
-        
-    /* BUG-40469 output tablespaces info. in user mode */
-    IDE_TEST_RAISE(
-        SQLBindCol(s_accessStmt, 3, SQL_C_SLONG, (SQLPOINTER)&s_accTbs_id,
-                   0, NULL) != SQL_SUCCESS, AccessStmtError);        
-    IDE_TEST_RAISE(
-        SQLBindCol(s_accessStmt, 4, SQL_C_SLONG, (SQLPOINTER)&s_accTbs_type,
-                   0, NULL) != SQL_SUCCESS, AccessStmtError);    
-
-    IDE_TEST(Execute(s_accessStmt) != SQL_SUCCESS);
-
-    while ((sRet = SQLFetch(s_accessStmt)) != SQL_NO_DATA)
-    {
-        IDE_TEST_RAISE( sRet != SQL_SUCCESS, AccessStmtError );
-
-        if ( s_accOnOff == 0 )
-        {
-            eraseWhiteSpace( s_accTbs_name);
-            s_pos += idlOS::sprintf( sDdl + s_pos,
-                                     "\n access \"%s\" off",
-                                     s_accTbs_name);
-        }
-        else if ( s_accOnOff == 1 )
-        {
-            eraseWhiteSpace( s_accTbs_name);
-            s_pos += idlOS::sprintf( sDdl + s_pos,
-                                     "\n access \"%s\" on",
-                                     s_accTbs_name );
-        }
-
-        /* BUG-40469 output tablespaces info. in user mode */
-        if ( gProgOption.mbCrtTbs4UserMode == ID_TRUE )
-        {
-            IDE_TEST(getTBSInfo4UserMode(gFileStream.mTbsFp,
-                                         s_accTbs_id,
-                                         s_accTbs_type) != SQL_SUCCESS);
-        }
-    }
-
-    /* PROJ-2474 TLS/SSL Support */
-    if ( idlOS::strcmp(s_DisableTCP, "T") == 0 )
-    {
-        s_pos += idlOS::sprintf( sDdl + s_pos, "\n disable tcp" );
-    }
-    else
-    {
-
-        /* Nothing to do */
-    }
-
-    // BUG-33995 aexport have wrong free handle code
-    FreeStmt( &s_accessStmt );
-
     if ( gProgOption.mbExistDrop == ID_TRUE )
     {
         idlOS::fprintf( aUserFp, "drop user \"%s\" cascade;\n", a_user_name );
     }
 
-    s_pos += idlOS::sprintf(sDdl + s_pos, ";");
+    /* BUG-47159 Using DBMS_METADATA package in aexport */
+    IDE_TEST(gMeta->getUserDdl(a_user_name, a_passwd)
+             != IDE_SUCCESS);
 
 #ifdef DEBUG
-    idlOS::fprintf( stderr, "%s\n", sDdl );
+    idlOS::fprintf( stderr, "%s\n", gMeta->getDdlStr() );
 #endif
-    idlOS::fprintf( aUserFp, "%s\n\n", sDdl );
+    idlOS::fprintf( aUserFp, "%s\n\n", gMeta->getDdlStr() );
+
+    /* BUG-40469 output tablespaces info. in user mode */
+    if ( gProgOption.mbCrtTbs4UserMode == ID_TRUE )
+    {
+        IDE_TEST(getTBSInfo4UserMode(gFileStream.mTbsFp,
+                                     a_user_name) != SQL_SUCCESS);
+    }
 
     IDE_TEST( getUserPrivileges( aUserFp, a_user_name, ID_FALSE ) != SQL_SUCCESS );
 
@@ -819,33 +451,9 @@ SQLRETURN getUserQuery_user( FILE  *aUserFp,
 
     return SQL_SUCCESS;
 
-    IDE_EXCEPTION(DBCError);
-    {
-        utmSetErrorMsgWithHandle(SQL_HANDLE_DBC, (SQLHANDLE)m_hdbc);
-    }
-    IDE_EXCEPTION(UserStmtError);
-    {
-        utmSetErrorMsgWithHandle(SQL_HANDLE_STMT, (SQLHANDLE)s_userStmt);
-    }
-    IDE_EXCEPTION(AccessStmtError);
-    {
-        utmSetErrorMsgWithHandle(SQL_HANDLE_STMT, (SQLHANDLE)s_accessStmt);
-    }
     IDE_EXCEPTION_END;
 
     idlOS::fflush( aUserFp );
-
-    if ( s_userStmt != SQL_NULL_HSTMT )
-    {
-        // BUG-33995 aexport have wrong free handle code
-        FreeStmt( &s_userStmt );
-    }
-
-    if ( s_accessStmt != SQL_NULL_HSTMT )
-    {
-        // BUG-33995 aexport have wrong free handle code
-        FreeStmt( &s_accessStmt );
-    }
 
     return SQL_ERROR;
 #undef IDE_FN
@@ -859,42 +467,18 @@ SQLRETURN getUserQuery( FILE  *aUserFp,
 #define IDE_FN "getUserQuery()"
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
     SQLHSTMT s_userStmt = SQL_NULL_HSTMT;
-    SQLHSTMT s_accessStmt = SQL_NULL_HSTMT;
     SQLRETURN sRet;
 
     SInt        i = 1;
-    SInt        s_pos = 0;
     SInt        sUserCnt = 0;
     SInt        s_userID;
     SChar       s_user_name[UTM_NAME_LEN+1];
-    SChar       s_defaultTbs_name[STR_LEN];
-    SChar       s_accTbs_name[STR_LEN];
-    SInt        s_accOnOff;
     SChar       s_query[QUERY_LEN / 2];
-    SChar       s_query2[QUERY_LEN / 2];  // access on
     SChar       s_tmp[UTM_NAME_LEN+1];
     SQLLEN      s_userID_ind;
     SQLLEN      s_user_ind;
-    SQLLEN      s_defaultTbs_ind;
-    SQLLEN      s_accOnOff_ind;
-    SQLLEN      s_accTbs_ind;
-    SChar       s_PasswordLimitFlag[2] = {0,};
-    SInt        s_FailedLoginAttempts;
-    SInt        s_PasswordLockTime;
-    SInt        s_PasswordLifeTime;
-    SInt        s_PasswordGraceTime;
-    SInt        s_PasswordReuseTime;
-    SInt        s_PasswordReuseMax;
-    SQLLEN      s_tempTbs_ind = 0;
-    SQLLEN      s_PasswordLimitFlag_ind = 0;
-    SQLLEN      s_PasswordVerifyFunc_ind = 0;
     SQLLEN      s_UserType_ind = 0;
-    SChar       s_tempTbs_name[STR_LEN];
-    SChar       s_PasswordVerifyFunc[UTM_NAME_LEN+1];
     SChar       s_UserType[2] = {0,};
-    SChar       s_DisableTCP[2] = {0, };
-    SQLLEN      s_DisableTCP_ind;
-    SChar       sDdl[QUERY_LEN * QUERY_LEN] = { '\0', };
 
     idlOS::fprintf(stdout, "\n##### USER  #####\n");
 
@@ -948,66 +532,16 @@ SQLRETURN getUserQuery( FILE  *aUserFp,
         SQLBindCol(s_userStmt, 2, SQL_C_CHAR, (SQLPOINTER)s_user_name,
                    (SQLLEN)ID_SIZEOF(s_user_name), &s_user_ind)
         != SQL_SUCCESS, UserStmtError);
-    IDE_TEST_RAISE(
-        SQLBindCol(s_userStmt, 3, SQL_C_CHAR, (SQLPOINTER)s_defaultTbs_name,
-                   (SQLLEN)ID_SIZEOF(s_defaultTbs_name), &s_defaultTbs_ind)
-        != SQL_SUCCESS, UserStmtError);
-    IDE_TEST_RAISE(
-        SQLBindCol(s_userStmt, 4, SQL_C_CHAR, (SQLPOINTER)s_tempTbs_name,
-                   (SQLLEN)ID_SIZEOF(s_tempTbs_name), &s_tempTbs_ind)
-        != SQL_SUCCESS, UserStmtError);
-    IDE_TEST_RAISE(
-        SQLBindCol(s_userStmt, 5, SQL_C_CHAR, (SQLPOINTER)s_PasswordLimitFlag,
-                   (SQLLEN)ID_SIZEOF(s_PasswordLimitFlag), &s_PasswordLimitFlag_ind)
-        != SQL_SUCCESS, UserStmtError);
-    IDE_TEST_RAISE(
-        SQLBindCol(s_userStmt, 6, SQL_C_SLONG, (SQLPOINTER)&s_FailedLoginAttempts,
-                   0, NULL ) != SQL_SUCCESS, UserStmtError);
-    IDE_TEST_RAISE(
-        SQLBindCol(s_userStmt, 7, SQL_C_SLONG, (SQLPOINTER)&s_PasswordLockTime,
-                   0, NULL ) != SQL_SUCCESS, UserStmtError);
-    IDE_TEST_RAISE(
-        SQLBindCol(s_userStmt, 8, SQL_C_SLONG, (SQLPOINTER)&s_PasswordLifeTime,
-                   0, NULL ) != SQL_SUCCESS, UserStmtError);
-    IDE_TEST_RAISE(
-        SQLBindCol(s_userStmt, 9, SQL_C_SLONG, (SQLPOINTER)&s_PasswordGraceTime,
-                   0, NULL ) != SQL_SUCCESS, UserStmtError);
-    IDE_TEST_RAISE(
-        SQLBindCol(s_userStmt, 10, SQL_C_SLONG, (SQLPOINTER)&s_PasswordReuseTime,
-                   0, NULL ) != SQL_SUCCESS, UserStmtError);
-    IDE_TEST_RAISE(
-        SQLBindCol(s_userStmt, 11, SQL_C_SLONG, (SQLPOINTER)&s_PasswordReuseMax,
-                   0, NULL ) != SQL_SUCCESS, UserStmtError);
-    IDE_TEST_RAISE(
-        SQLBindCol(s_userStmt, 12, SQL_C_CHAR, (SQLPOINTER)s_PasswordVerifyFunc,
-                   (SQLLEN)ID_SIZEOF(s_PasswordVerifyFunc), &s_PasswordVerifyFunc_ind)
-        != SQL_SUCCESS, UserStmtError);
     /* PROJ-1812 ROLE */
     IDE_TEST_RAISE(
-        SQLBindCol(s_userStmt, 13, SQL_C_CHAR, (SQLPOINTER)s_UserType,
+        SQLBindCol(s_userStmt, 3, SQL_C_CHAR, (SQLPOINTER)s_UserType,
                    (SQLLEN)ID_SIZEOF(s_UserType), &s_UserType_ind)
         != SQL_SUCCESS, UserStmtError);
-
-    /* PROJ-2474 TLS/SSL Support */
-    IDE_TEST_RAISE(
-        SQLBindCol(s_userStmt, 14, SQL_C_CHAR, (SQLPOINTER)s_DisableTCP,
-            (SQLLEN)ID_SIZEOF(s_DisableTCP), &s_DisableTCP_ind)
-        != SQL_SUCCESS, UserStmtError);
-
-    IDE_TEST_RAISE(SQLAllocStmt(m_hdbc, &s_accessStmt) != SQL_SUCCESS,
-                   DBCError);
 
     while ((sRet = SQLFetch(s_userStmt)) != SQL_NO_DATA)
     {
         IDE_TEST_RAISE( sRet != SQL_SUCCESS, UserStmtError );
 
-        if ( ( idlOS::strcmp(s_user_name, "SYS") == 0 ) ||
-             ( idlOS::strcmp(s_user_name, "SYSTEM_") == 0 ) ||
-             ( idlOS::strcmp(s_user_name, "PUBLIC") == 0 ) )
-        {
-            continue;
-        }
-        
         /* PROJ-1812 ROLE */
         if ( idlOS::strcmp(s_UserType, "U") == 0 )
         {
@@ -1018,8 +552,8 @@ SQLRETURN getUserQuery( FILE  *aUserFp,
             else
             {
                 /* BUG-19012 */
-                // password ì…ë ¥ ì—†ì´ enter ë¥¼ ì…ë ¥í•  ê²½ìš°
-                // default password ë¡œì„œ user name ì´ ë“¤ì–´ê°.
+                // password ÀÔ·Â ¾øÀÌ enter ¸¦ ÀÔ·ÂÇÒ °æ¿ì
+                // default password ·Î¼­ user name ÀÌ µé¾î°¨.
                 idlOS::fprintf(stdout, "** input user %s's password"
                                "(default - same with USER_NAME): ",
                                s_user_name);
@@ -1043,192 +577,6 @@ SQLRETURN getUserQuery( FILE  *aUserFp,
             }
             idlOS::strcpy(m_UserInfo[i].m_user, s_user_name);
             idlOS::strcpy(m_UserInfo[i].m_passwd, s_tmp);
-            s_pos = idlOS::sprintf( sDdl,
-                                    "create user \"%s\" identified by \"%s\"",
-                                    s_user_name,
-                                    s_tmp );
-
-            /* PROJ-2207 Password policy support */
-            if ( idlOS::strcmp(s_PasswordLimitFlag, "T") == 0 )
-            {
-                s_pos += idlOS::sprintf( sDdl + s_pos,
-                                         "\n limit ( " );
-
-                // FAILED_LGOIN_ATTEMPTS
-                if ( s_FailedLoginAttempts == 0 )
-                {
-                    s_pos += idlOS::sprintf( sDdl + s_pos,
-                                             "\n failed_login_attempts unlimited, " );
-                }
-                else
-                {
-                    s_pos += idlOS::sprintf( sDdl + s_pos,
-                                             "\n failed_login_attempts %d, ",
-                                             s_FailedLoginAttempts );
-                }
-            
-                // PASSWORD_LOCK_TIME
-                if ( s_PasswordLockTime == 0 )
-                {
-                    s_pos += idlOS::sprintf( sDdl + s_pos,
-                                             "\n password_lock_time unlimited, " );
-                }
-                else
-                {
-                    s_pos += idlOS::sprintf( sDdl + s_pos,
-                                             "\n password_lock_time %d, ",
-                                             s_PasswordLockTime );
-                }
-            
-                // PASSWORD_LIFE_TIME
-                if ( s_PasswordLifeTime == 0 )
-                {
-                    s_pos += idlOS::sprintf( sDdl + s_pos,
-                                             "\n password_life_time unlimited, " );
-                }
-                else
-                {
-                    s_pos += idlOS::sprintf( sDdl + s_pos,
-                                             "\n password_life_time %d, ",
-                                             s_PasswordLifeTime );
-                }
-
-                // PASSWORD_GRACE_TIME
-                if ( s_PasswordGraceTime == 0 )
-                {
-                    s_pos += idlOS::sprintf( sDdl + s_pos,
-                                             "\n password_grace_time unlimited, " );
-                }
-                else
-                {
-                    s_pos += idlOS::sprintf( sDdl + s_pos,
-                                             "\n password_grace_time %d, ",
-                                             s_PasswordGraceTime );
-                }
-            
-                // PASSWORD_REUSE_TIME
-                if ( s_PasswordReuseTime == 0 )
-                {
-                    s_pos += idlOS::sprintf( sDdl + s_pos,
-                                             "\n password_reuse_time unlimited, " );
-                }
-                else
-                {
-                    s_pos += idlOS::sprintf( sDdl + s_pos,
-                                             "\n password_reuse_time %d, ",
-                                             s_PasswordReuseTime );
-                }
-            
-                // PASSWORD_REUSE_MAX
-                if ( s_PasswordReuseMax == 0 )
-                {
-                    s_pos += idlOS::sprintf( sDdl + s_pos,
-                                             "\n password_reuse_max unlimited, " );
-                }
-                else
-                {
-                    s_pos += idlOS::sprintf( sDdl + s_pos,
-                                             "\n password_reuse_max %d, ",
-                                             s_PasswordReuseMax );
-                }
-            
-            
-                // PASSWORD_VERIFY_FUNCTION
-                if ( s_PasswordVerifyFunc_ind != SQL_NULL_DATA )
-                {
-                    eraseWhiteSpace(s_PasswordVerifyFunc);
-                    s_pos += idlOS::sprintf( sDdl + s_pos,
-                                             "\n password_verify_function \"%s\" ",
-                                             s_PasswordVerifyFunc );
-                }
-                else
-                {
-                    s_pos += idlOS::sprintf( sDdl + s_pos,
-                                             "\n password_verify_function NULL ",
-                                             s_PasswordVerifyFunc );
-                }
-                    
-
-                s_pos += idlOS::sprintf( sDdl + s_pos, "\n ) " );
-            }
-            else
-            {
-                // Nothing To Do
-            }
-        
-            if ( s_tempTbs_ind != SQL_NULL_DATA )
-            {
-                eraseWhiteSpace(s_tempTbs_name);
-                s_pos += idlOS::sprintf( sDdl + s_pos,
-                                         "\n temporary tablespace \"%s\" ",
-                                         s_tempTbs_name );
-            }
-            if ( s_defaultTbs_ind != SQL_NULL_DATA )
-            {
-                eraseWhiteSpace(s_defaultTbs_name);
-                s_pos += idlOS::sprintf( sDdl + s_pos,
-                                         "\n default tablespace \"%s\" ",
-                                         s_defaultTbs_name );
-            }
-
-            idlOS::sprintf(s_query2, GET_USER_TBS_ACCESS_QUERY);
-
-            IDE_TEST(Prepare(s_query2, s_accessStmt) != SQL_SUCCESS);
-
-            IDE_TEST_RAISE(
-                SQLBindParameter(s_accessStmt, 1, SQL_PARAM_INPUT,
-                                 SQL_C_SLONG, SQL_INTEGER,0,0,
-                                 &s_userID, sizeof(s_userID), NULL)
-                != SQL_SUCCESS, AccessStmtError);
-
-            IDE_TEST_RAISE(
-                SQLBindCol(s_accessStmt, 1, SQL_C_CHAR, (SQLPOINTER)s_accTbs_name,
-                           (SQLLEN)ID_SIZEOF(s_accTbs_name), &s_accTbs_ind)
-                != SQL_SUCCESS, AccessStmtError);            
-        
-            IDE_TEST_RAISE(
-                SQLBindCol(s_accessStmt, 2, SQL_C_SLONG, (SQLPOINTER)&s_accOnOff, 0,
-                           &s_accOnOff_ind)
-                != SQL_SUCCESS, AccessStmtError);            
-
-            IDE_TEST(Execute(s_accessStmt) != SQL_SUCCESS);
-        
-            while ((sRet = SQLFetch(s_accessStmt)) != SQL_NO_DATA)
-            {
-                IDE_TEST_RAISE( sRet != SQL_SUCCESS, AccessStmtError );
-
-                if ( s_accOnOff == 0 )
-                {
-                    eraseWhiteSpace(s_accTbs_name);
-                    s_pos += idlOS::sprintf( sDdl + s_pos,
-                                             "\n access \"%s\" off",
-                                             s_accTbs_name );
-                }
-                else if ( s_accOnOff == 1 )
-                {
-                    eraseWhiteSpace(s_accTbs_name);
-                    s_pos += idlOS::sprintf( sDdl + s_pos,
-                                             "\n access \"%s\" on",
-                                             s_accTbs_name );
-                }
-            }
-
-            /* PROJ-2474 SSL/TLS Support */
-            if ( idlOS::strcmp(s_DisableTCP, "T") == 0 )
-            {
-                s_pos += idlOS::sprintf( sDdl + s_pos, "\n disable tcp" );
-            }
-            else
-            {
-                /* Nothing to do */
-            }
-
-            IDE_TEST_RAISE(SQLFreeStmt(s_accessStmt, SQL_CLOSE)
-                           != SQL_SUCCESS, AccessStmtError);
-            IDE_TEST_RAISE(SQLFreeStmt(s_accessStmt, SQL_UNBIND)
-                           != SQL_SUCCESS, AccessStmtError);
-
-            s_pos += idlOS::sprintf( sDdl + s_pos, ";" );
 
             idlOS::fprintf(aUserFp, "--############################\n");
             idlOS::fprintf(aUserFp, "--  USER \"%s\"\n", s_user_name);
@@ -1239,18 +587,19 @@ SQLRETURN getUserQuery( FILE  *aUserFp,
                 idlOS::fprintf(aUserFp, "drop user \"%s\" cascade;\n", s_user_name);
             }
 
+            /* BUG-47159 Using DBMS_METADATA package in aexport */
+            IDE_TEST(gMeta->getUserDdl(s_user_name, s_tmp)
+                     != IDE_SUCCESS);
 #ifdef DEBUG
-            idlOS::fprintf( stderr, "%s\n", sDdl );
+            idlOS::fprintf( stderr, "%s\n", gMeta->getDdlStr() );
 #endif
-            idlOS::fprintf( aUserFp, "%s\n\n", sDdl );
+            idlOS::fprintf( aUserFp, "%s\n\n", gMeta->getDdlStr() );
 
             IDE_TEST( getUserPrivileges( aUserFp, s_user_name, ID_FALSE ) != SQL_SUCCESS );
         }
         else
         {
             idlOS::strcpy(m_UserInfo[i].m_user, s_user_name);
-            s_pos = idlOS::sprintf( sDdl, "create role \"%s\"", s_user_name );
-            s_pos += idlOS::sprintf( sDdl + s_pos, ";" );
             
             idlOS::fprintf(aUserFp, "--############################\n");
             idlOS::fprintf(aUserFp, "--  ROLE \"%s\"\n", s_user_name);
@@ -1261,10 +610,13 @@ SQLRETURN getUserQuery( FILE  *aUserFp,
                 idlOS::fprintf(aUserFp, "drop role \"%s\";\n", s_user_name);
             }
 
+            /* BUG-47159 Using DBMS_METADATA package in aexport */
+            IDE_TEST(gMeta->getDdl(DDL, UTM_OBJ_TYPE_ROLE, s_user_name, (SChar*)NULL)
+                     != IDE_SUCCESS);
 #ifdef DEBUG
-            idlOS::fprintf( stderr, "%s\n", sDdl );
+            idlOS::fprintf( stderr, "%s\n", gMeta->getDdlStr() );
 #endif
-            idlOS::fprintf( aUserFp, "%s\n\n", sDdl );
+            idlOS::fprintf( aUserFp, "%s\n\n", gMeta->getDdlStr() );
 
             /* role */
             IDE_TEST( getRoleToUser( aUserFp, s_user_name ) != SQL_SUCCESS );
@@ -1277,7 +629,6 @@ SQLRETURN getUserQuery( FILE  *aUserFp,
 
     // BUG-33995 aexport have wrong free handle code
     FreeStmt( &s_userStmt );
-    FreeStmt( &s_accessStmt );
     
     idlOS::fflush(aUserFp);
 
@@ -1295,10 +646,6 @@ SQLRETURN getUserQuery( FILE  *aUserFp,
     {
         utmSetErrorMsgWithHandle(SQL_HANDLE_STMT, (SQLHANDLE)s_userStmt);
     }
-    IDE_EXCEPTION(AccessStmtError);
-    {
-        utmSetErrorMsgWithHandle(SQL_HANDLE_STMT, (SQLHANDLE)s_accessStmt);
-    }
     IDE_EXCEPTION(NoExistTablespaceError);
     {
         setErrNoExistTBSUser();
@@ -1311,12 +658,6 @@ SQLRETURN getUserQuery( FILE  *aUserFp,
     {
         // BUG-33995 aexport have wrong free handle code
         FreeStmt( &s_userStmt );
-    }
-
-    if ( s_accessStmt != SQL_NULL_HSTMT )
-    {
-        // BUG-33995 aexport have wrong free handle code
-        FreeStmt( &s_accessStmt );
     }
 
     return SQL_ERROR;

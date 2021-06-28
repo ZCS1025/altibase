@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smlReq.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smlReq.h 86118 2019-09-04 01:01:19Z justin.kwon $
  **********************************************************************/
 
 
@@ -66,10 +66,12 @@ class smlReqFunc
         };
         static IDE_RC waitForTrans( void    * aTrans,
                                     smTID     aTID,
+                                    scSpaceID aSpaceID,
                                     ULong     aLockWaitMicSec )
         {
             return smxTransMgr::waitForTrans( aTrans,
                                               aTID,
+                                              aSpaceID,
                                               aLockWaitMicSec );
         };
         static SInt getCurTransCnt()

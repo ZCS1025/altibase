@@ -52,6 +52,12 @@ public:
 
     static void   finalizeStatement( sdiStatement * aSdStmt );
 
+    /* PROJ-2728 Sharding LOB */
+    static void   findRemoteStatement( sdiStatement   * aSdStmt,
+                                       UInt             aNodeId,
+                                       UInt             aRemoteStmtId,
+                                       sdlRemoteStmt ** aRemoteStmt );
+
 private:
     static IDE_RC getNodeContainer( sdiStatement   * aSdStmt,
                                     UInt             aNodeId,
@@ -64,6 +70,7 @@ private:
 inline void sdlStatementManager::initRemoteNode( sdlRemoteNode * aRemoteNode )
 {
     aRemoteNode->mNodeId = 0;
+    aRemoteNode->mCurRemoteStmtId = 0;
 
     /* init list */
     IDU_LIST_INIT( &aRemoteNode->mStmtListHead );

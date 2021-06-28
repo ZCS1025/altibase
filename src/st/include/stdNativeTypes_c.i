@@ -26,6 +26,11 @@
 #define ST_VALID   (acp_char_t)(1)
 #define ST_UNKNOWN (acp_char_t)(-1)
 
+#define ST_SRID_UNDEFINED  ((acp_sint32_t)0)
+#define ST_SRID_INIT       ((acp_sint32_t)0x80000000)
+#define ST_SRID_MAX        ((acp_sint32_t)0x7FFFFFFF)
+#define ST_SRID_MIN        ((acp_sint32_t)0x80000001)
+
 /* 2D Point */
 typedef struct stdPoint2D
 {
@@ -37,7 +42,6 @@ typedef struct stdPoint2D
 typedef struct stdLinearRing2D
 {
     acp_uint32_t      mNumPoints;           // the number of points
-    // BUG-22924
     acp_char_t        mIsValid;
     acp_char_t        mPadding[3];          // padding area
 //  stdPoint2D        mPoints[mNumPoints];  // array of points
@@ -67,6 +71,7 @@ typedef enum stdByteOrder
 typedef enum stdGeoTypes
 {
     STD_UNKNOWN_TYPE                = 0,
+    
     STD_POINT_2D_TYPE               = 2001,
     STD_LINESTRING_2D_TYPE          = 2003,
     STD_POLYGON_2D_TYPE             = 2005,
@@ -74,6 +79,15 @@ typedef enum stdGeoTypes
     STD_MULTILINESTRING_2D_TYPE     = 2013,
     STD_MULTIPOLYGON_2D_TYPE        = 2015,
     STD_GEOCOLLECTION_2D_TYPE       = 2020,
+    
+    STD_POINT_2D_EXT_TYPE           = 2501,  // Extended Point 2D Type
+    STD_LINESTRING_2D_EXT_TYPE      = 2503,  // Extended LineString 2D Type
+    STD_POLYGON_2D_EXT_TYPE         = 2505,  // Extended Polygon 2D Type
+    STD_MULTIPOINT_2D_EXT_TYPE      = 2511,  // Extended MultiPoint 2D Type
+    STD_MULTILINESTRING_2D_EXT_TYPE = 2513,  // Extended MultiLineString 2D Type
+    STD_MULTIPOLYGON_2D_EXT_TYPE    = 2515,  // Extended MultiPolygon 2D Type
+    STD_GEOCOLLECTION_2D_EXT_TYPE   = 2520,  // Extended GeoCollection 2D Type
+    
     STD_NULL_TYPE                   = 9990,  // Null Geometry Object
     STD_EMPTY_TYPE                  = 9991   // Empty Geometry Object
 } stdGeoTypes;
@@ -121,7 +135,7 @@ typedef struct stdLineString2DType
     acp_uint32_t      mSize;                // object size including header
     stdMBR            mMbr;                 // minimum boundary rectangle
     acp_uint32_t      mNumPoints;           // the number of points
-    acp_char_t        mPadding2[4];         // padding area
+    acp_char_t        mPadding[4];         // padding area
 //  stdPoint2D        mPoints[mNumPoints];  // array of points
 } stdLineString2DType;
 
@@ -147,7 +161,7 @@ typedef struct stdPolygon2DType
     acp_uint32_t      mSize;            // object size including header
     stdMBR            mMbr;             // minimum boundary rectangle
     acp_uint32_t      mNumRings;        // the number of rings
-    acp_char_t        mPadding2[4];     // padding area
+    acp_char_t        mPadding[4];     // padding area
 //  stdLinearRing2D   mRings[mNumRings];// list of rings
 } stdPolygon2DType;
 
@@ -160,7 +174,7 @@ typedef struct stdMultiPoint2DType
     acp_uint32_t      mSize;                // object size including header
     stdMBR            mMbr;                 // minimum boundary rectangle
     acp_uint32_t      mNumObjects;          // the number of objects
-    acp_char_t        mPadding2[4];         // padding area
+    acp_char_t        mPadding[4];         // padding area
 //  stdPoint2DType    mPoints[mNumObjects]; // array of objects
 } stdMultiPoint2DType;
 
@@ -173,7 +187,7 @@ typedef struct stdMultiCurve2DType
     acp_uint32_t      mSize;                // object size including header
     stdMBR            mMbr;                 // minimum boundary rectangle
     acp_uint32_t      mNumObjects;          // the number of objects
-    acp_char_t        mPadding2[4];         // padding area
+    acp_char_t        mPadding[4];         // padding area
 //  stdCurve2DType    mCurves[mNumObjects]; // array of objects
 } stdMultiCurve2DType;
 
@@ -186,7 +200,7 @@ typedef struct stdMultiLineString2DType
     acp_uint32_t      mSize;            // object size including header
     stdMBR            mMbr;             // minimum boundary rectangle
     acp_uint32_t      mNumObjects;      // the number of objects
-    acp_char_t        mPadding2[4];     // padding area
+    acp_char_t        mPadding[4];     // padding area
 //  stdLineString2DType mLineStrings[mNumObjects];  // list of objects
 } stdMultiLineString2DType;
 
@@ -199,7 +213,7 @@ typedef struct stdMultiSurface2DType
     acp_uint32_t      mSize;            // object size including header
     stdMBR            mMbr;             // minimum boundary rectangle
     acp_uint32_t      mNumObjects;      // the number of objects
-    acp_char_t        mPadding2[4];     // padding area
+    acp_char_t        mPadding[4];     // padding area
 //  stdSurface2DType  mSurfaces[mNumObjects];   // array of objects
 } stdMultiSurface2DType;
 
@@ -212,7 +226,7 @@ typedef struct stdMultiPolygon2DType
     acp_uint32_t      mSize;            // object size including header
     stdMBR            mMbr;             // minimum boundary rectangle
     acp_uint32_t      mNumObjects;      // the number of objects
-    acp_char_t        mPadding2[4];     // padding area
+    acp_char_t        mPadding[4];     // padding area
 //  stdPolygon2DType  mPolygons[mNumObjects];   // list of objects
 } stdMultiPolygon2DType;
 
@@ -227,9 +241,154 @@ typedef struct stdGeoCollection2DType
     acp_uint32_t      mSize;            // object size including header
     stdMBR            mMbr;             // minimum boundary rectangle
     acp_uint32_t      mNumGeometries;   // the number of objects
-    acp_char_t        mPadding2[4];     // padding area
+    acp_char_t        mPadding[4];     // padding area
 //  stdGeometryType   mGeometries[mNumGeometries];  // list of objects
 } stdGeoCollection2DType;
+
+/* Extended 2D Point Object */
+typedef struct stdPoint2DExtType
+{
+    acp_uint16_t      mType;            /* 2501 */
+    acp_char_t        mByteOrder;       /* byte order */
+    acp_char_t        mIsValid;         /* valid/invalid status */
+    acp_uint32_t      mSize;            /* object size including header */
+    stdMBR            mMbr;             /* minimum boundary rectangle */
+    stdPoint2D        mPoint;           /* point */
+    acp_sint32_t      mSRID;            /* spatial reference system id */
+    acp_char_t        mPadding[4];      /* padding area */
+} stdPoint2DExtType;
+
+/* Extended 2D Curve Object */
+typedef struct stdCurve2DExtType
+{
+    acp_uint16_t      mType;            /* 2502 */
+    acp_char_t        mByteOrder;       /* byte order */
+    acp_char_t        mIsValid;         /* valid/invalid status */
+    acp_uint32_t      mSize;            /* object size including header */
+    stdMBR            mMbr;             /* minimum boundary rectangle */
+    stdPoint2D        mStartpoint;      /* start point */
+    stdPoint2D        mMiddlepoint;     /* middle point */
+    stdPoint2D        mEndpoint;        /* end point */
+    acp_sint32_t      mSRID;            /* spatial reference system id */
+    acp_char_t        mPadding[4];      /* padding area */
+} stdCurve2DExtType;
+
+/* Extended 2D LineString Object */
+typedef struct stdLineString2DExtType
+{
+    acp_uint16_t      mType;                /* 2503 */
+    acp_char_t        mByteOrder;           /* byte order */
+    acp_char_t        mIsValid;             /* valid/invalid status */
+    acp_uint32_t      mSize;                /* object size including header */
+    stdMBR            mMbr;                 /* minimum boundary rectangle */
+    acp_uint32_t      mNumPoints;           /* the number of points */
+    acp_sint32_t      mSRID;                /* spatial reference system id */
+/*  stdPoint2D        mPoints[mNumPoints];  // array of points */
+} stdLineString2DExtType;
+
+/* Extended 2D Surface Object */
+typedef struct stdSurface2DExtType
+{
+    acp_uint16_t      mType;            /* 2504 */
+    acp_char_t        mByteOrder;       /* byte order */
+    acp_char_t        mIsValid;         /* valid/invalid status */
+    acp_uint32_t      mSize;            /* object size including header */
+    stdMBR            mMbr;             /* minimum boundary rectangle */
+    stdPoint2D        mLeftupper;       /* left upper point */
+    stdPoint2D        mRigthbottom;     /* right bottom point */
+    acp_sint32_t      mSRID;            /* spatial reference system id */
+} stdSurface2DExtType;
+
+/* Extended 2D Polygon Object */
+typedef struct stdPolygon2DExtType
+{
+    acp_uint16_t      mType;            /* 2505 */
+    acp_char_t        mByteOrder;       /* byte order */
+    acp_char_t        mIsValid;         /* valid/invalid status */
+    acp_uint32_t      mSize;            /* object size including header */
+    stdMBR            mMbr;             /* minimum boundary rectangle */
+    acp_uint32_t      mNumRings;        /* the number of rings */
+    acp_sint32_t      mSRID;            /* spatial reference system id */
+/*  stdLinearRing2D   mRings[mNumRings];// list of rings */
+} stdPolygon2DExtType;
+
+/* Extended 2D Multi-Point Object */
+typedef struct stdMultiPoint2DExtType
+{
+    acp_uint16_t      mType;                /* 2511 */
+    acp_char_t        mByteOrder;           /* byte order */
+    acp_char_t        mIsValid;             /* valid/invalid status */
+    acp_uint32_t      mSize;                /* object size including header */
+    stdMBR            mMbr;                 /* minimum boundary rectangle */
+    acp_uint32_t      mNumObjects;          /* the number of objects */
+    acp_sint32_t      mSRID;                /* spatial reference system id */
+/*  stdPoint2DType    mPoints[mNumObjects]; // array of objects */
+} stdMultiPoint2DExtType;
+
+/* Extended 2D Multi-Curve Object */
+typedef struct stdMultiCurve2DExtType
+{
+    acp_uint16_t      mType;                /* 2512 */
+    acp_char_t        mByteOrder;           /* byte order */
+    acp_char_t        mIsValid;             /* valid/invalid status */
+    acp_uint32_t      mSize;                /* object size including header */
+    stdMBR            mMbr;                 /* minimum boundary rectangle */
+    acp_uint32_t      mNumObjects;          /* the number of objects */
+    acp_sint32_t      mSRID;                /* spatial reference system id */
+/*  stdCurve2DType    mCurves[mNumObjects]; // array of objects */
+} stdMultiCurve2DExtType;
+
+/* Extended 2D Multi-LineString Object */
+typedef struct stdMultiLineString2DExtType
+{
+    acp_uint16_t      mType;            /* 2513 */
+    acp_char_t        mByteOrder;       /* byte order */
+    acp_char_t        mIsValid;         /* valid/invalid status */
+    acp_uint32_t      mSize;            /* object size including header */
+    stdMBR            mMbr;             /* minimum boundary rectangle */
+    acp_uint32_t      mNumObjects;      /* the number of objects */
+    acp_sint32_t      mSRID;            /* spatial reference system id */
+/*  stdLineString2DType mLineStrings[mNumObjects];  // list of objects */
+} stdMultiLineString2DExtType;
+
+/* Extended 2D Multi-Surface Object */
+typedef struct stdMultiSurface2DExtType
+{
+    acp_uint16_t      mType;            /* 2514 */
+    acp_char_t        mByteOrder;       /* byte order */
+    acp_char_t        mIsValid;         /* valid/invalid status */
+    acp_uint32_t      mSize;            /* object size including header */
+    stdMBR            mMbr;             /* minimum boundary rectangle */
+    acp_uint32_t      mNumObjects;      /* the number of objects */
+    acp_sint32_t      mSRID;            /* spatial reference system id */
+/*  stdSurface2DType  mSurfaces[mNumObjects];   // array of objects */
+} stdMultiSurface2DExtType;
+
+/* Extended 2D Multi-Polygon Object */
+typedef struct stdMultiPolygon2DExtType
+{
+    acp_uint16_t      mType;            /* 2515 */
+    acp_char_t        mByteOrder;       /* byte order */
+    acp_char_t        mIsValid;         /* valid/invalid status */
+    acp_uint32_t      mSize;            /* object size including header */
+    stdMBR            mMbr;             /* minimum boundary rectangle */
+    acp_uint32_t      mNumObjects;      /* the number of objects */
+    acp_sint32_t      mSRID;            /* spatial reference system id */
+/*  stdPolygon2DType  mPolygons[mNumObjects];   // list of objects */
+} stdMultiPolygon2DExtType;
+
+/* Extended 2D GeoCollection Object */
+typedef struct stdGeoCollection2DExtType
+{
+    acp_uint16_t      mType;            /* 2520 */
+    acp_char_t        mByteOrder;       /* byte order */
+    acp_char_t        mIsValid;         /* valid/invalid status */
+    acp_uint32_t      mSize;            /* object size including header */
+    stdMBR            mMbr;             /* minimum boundary rectangle */
+    acp_uint32_t      mNumGeometries;   /* the number of objects */
+    acp_sint32_t      mSRID;            /* spatial reference system id */
+/*  stdGeometryType   mGeometries[mNumGeometries];  // list of objects */
+} stdGeoCollection2DExtType;
 
 /* Geometry Object */
 typedef struct stdGeometryType
@@ -248,6 +407,17 @@ typedef struct stdGeometryType
         stdMultiSurface2DType             msurface2D;
         stdMultiPolygon2DType             mpolygon2D;
         stdGeoCollection2DType            collection2D;
+        stdPoint2DExtType                 point2DExt;
+        stdCurve2DExtType                 curve2DExt;
+        stdLineString2DExtType            linestring2DExt;
+        stdSurface2DExtType               surface2DExt;
+        stdPolygon2DExtType               polygon2DExt;
+        stdMultiPoint2DExtType            mpoint2DExt;
+        stdMultiCurve2DExtType            mcurve2DExt;
+        stdMultiLineString2DExtType       mlinestring2DExt;
+        stdMultiSurface2DExtType          msurface2DExt;
+        stdMultiPolygon2DExtType          mpolygon2DExt;
+        stdGeoCollection2DExtType         collection2DExt;
     } u; /* C Compiler Needs the name of its member */
 } stdGeometryType;
 

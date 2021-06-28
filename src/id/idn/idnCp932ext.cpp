@@ -144,7 +144,7 @@ SInt convertMbToWc4Cp932ext( void * aSrc,
 /***********************************************************************
  *
  * Description :
- *     PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì›
+ *     PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø
  *
  * Implementation :
  *
@@ -733,7 +733,7 @@ SInt convertWcToMb4Cp932ext( void * aSrc,
 /***********************************************************************
  *
  * Description :
- *     PROJ-2590 [ê¸°ëŠ¥ì„±] CP932 database character set ì§€ì›
+ *     PROJ-2590 [±â´É¼º] CP932 database character set Áö¿ø
  *
  * Implementation :
  *

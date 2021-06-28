@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: utProperties.cpp 80540 2017-07-19 08:00:50Z daramix $
+ * $Id: utProperties.cpp 89731 2021-01-11 00:37:00Z chkim $
  ******************************************************************************/
 
 #include <utProperties.h>
@@ -24,6 +24,12 @@
 IDL_EXTERN_C SChar* str_case_str(const SChar*, const SChar*);
 bool mAtcIsFirst;
 bool utProperties::mVerbose = false;
+/* BUG-48134 Print MOSO EQ record to log file optionallay */
+bool utProperties::mIsLogEqMOSO = false;
+/* BUG-48425 Print MOSX and MXSO record to log file optionallay */
+bool utProperties::mIsLogDfMOSO = true;
+bool utProperties::mIsLogMOSX = true;
+bool utProperties::mIsLogMXSO = true;
 
 static const SChar *HelpMessage =
 "===================================================================== \n"
@@ -93,8 +99,16 @@ IDE_RC utProperties::initialize(int argc, char **argv)
     mVerbose   = false; // write report for SYNC
     mAtcIsFirst = true;
 
-    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
+    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
     mMaxArrayFetch =  0;
+    
+    /* BUG-48134 Print MOSO EQ record to log file optionallay */
+    utProperties::mIsLogEqMOSO = false;
+
+    /* BUG-48425 Print MOSX and MXSO record to log file optionallay */
+    utProperties::mIsLogDfMOSO = true;
+    utProperties::mIsLogMOSX = true;
+    utProperties::mIsLogMXSO = true;
 
     while((opr = idlOS::getopt(argc, argv, "t:hvVf:d:?:m:s:x:")) != EOF)
     {
@@ -114,7 +128,7 @@ IDE_RC utProperties::initialize(int argc, char **argv)
                 /* 
                  * BUG-32566
                  *
-                 * iloaderì™€ ê°™ì´ Version ì¶œë ¥ë˜ë„ë¡ ìˆ˜ì •
+                 * iloader¿Í °°ÀÌ Version Ãâ·ÂµÇµµ·Ï ¼öÁ¤
                  */
                 printVersion();
                 exit(0);
@@ -685,8 +699,14 @@ IDE_RC utProperties::prepare(const char*,  const char* aConfiguration)
             setProperty(&mDML[SU], "UPDATE_TO_SLAVE" , sKey, sVal);
             setProperty(&mTimeInterval, "CHECK_INTERVAL", sKey, sVal);
             setProperty(&mCountToCommit, "COUNT_TO_COMMIT", sKey, sVal);
-            /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
+            /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
             setProperty(&mMaxArrayFetch, "FILE_MODE_MAX_ARRAY", sKey, sVal);
+            /* BUG-48134 Print Equal MOSO record to log file optionallay */
+            setProperty(&utProperties::mIsLogEqMOSO, "LOG_EQ_MOSO", sKey, sVal);
+            /* BUG-48425 Print MOSX and MXSO record to log file optionallay */
+            setProperty( &utProperties::mIsLogDfMOSO, "LOG_DF_MOSO", sKey, sVal );
+            setProperty( &utProperties::mIsLogMOSX, "LOG_MOSX", sKey, sVal );
+            setProperty( &utProperties::mIsLogMXSO, "LOG_MXSO", sKey, sVal );
         }
         else
         {
@@ -732,7 +752,7 @@ IDE_RC utProperties::prepare(const char*,  const char* aConfiguration)
 
     IDE_EXCEPTION_END;
 
-    // BUG-25228 [CodeSonar] utProperties::prepare() í•¨ìˆ˜ì—ì„œ ì—ëŸ¬ ë°œìƒì‹œ íŒŒì¼ ë‹«ì§€ ì•ŠìŒ.
+    // BUG-25228 [CodeSonar] utProperties::prepare() ÇÔ¼ö¿¡¼­ ¿¡·¯ ¹ß»ı½Ã ÆÄÀÏ ´İÁö ¾ÊÀ½.
     if(sFile != NULL)
     {
         idlOS::fclose(sFile);
@@ -749,7 +769,7 @@ void utProperties::printUsage()
 /* 
  * BUG-32566
  *
- * iloaderì™€ ê°™ì´ Version ì¶œë ¥ë˜ë„ë¡ ìˆ˜ì •
+ * iloader¿Í °°ÀÌ Version Ãâ·ÂµÇµµ·Ï ¼öÁ¤
  */
 void utProperties::printVersion()
 {
@@ -823,7 +843,7 @@ void utProperties::printConfig(FILE * conf)
     }
 
     idlOS::fprintf(conf,"MAX_THREAD = %d\n",mMaxThread);
-    /* TASK-4212: auditíˆ´ì˜ ëŒ€ìš©ëŸ‰ ì²˜ë¦¬ì‹œ ê°œì„  */
+    /* TASK-4212: auditÅøÀÇ ´ë¿ë·® Ã³¸®½Ã °³¼± */
     idlOS::fprintf(conf,"FILE_MODE_MAX_ARRAY = %d\n",mMaxArrayFetch);
 
     idlOS::fprintf(conf,

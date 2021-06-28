@@ -48,7 +48,7 @@ mtfModule mtfNth_element = {
     1|MTC_NODE_OPERATOR_FUNCTION|
     MTC_NODE_PRINT_FMT_PREFIX_PA,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfNth_elementFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -121,13 +121,13 @@ IDE_RC mtfNth_elementEstimate( mtcNode*     aNode,
         
         sStack = (mtcStack*)aStack[1].value;
 
-        // listì˜ ëª¨ë“  elementì˜ typeì´ ê°™ì•„ì•¼ í•œë‹¤.
+        // listÀÇ ¸ðµç elementÀÇ typeÀÌ °°¾Æ¾ß ÇÑ´Ù.
         for( sCount = 0, sFence = aStack[1].column->precision;
              sCount < sFence;
              sCount++ )
         {
             // BUG-41310
-            // listì˜ argumentë¡œ rowtype / recordtype / array / lob ì´ ì˜¬ ìˆ˜ ì—†ë‹¤.
+            // listÀÇ argument·Î rowtype / recordtype / array / lob ÀÌ ¿Ã ¼ö ¾ø´Ù.
             IDE_TEST_RAISE( ( sStack[sCount].column->module->id == MTD_ROWTYPE_ID ) ||
                             ( sStack[sCount].column->module->id == MTD_RECORDTYPE_ID ) ||
                             ( sStack[sCount].column->module->id == MTD_ASSOCIATIVE_ARRAY_ID ) ||
@@ -151,10 +151,10 @@ IDE_RC mtfNth_elementEstimate( mtcNode*     aNode,
         
         aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecuteList;
         
-        // ì²«ë²ˆì§¸ elementë¡œ ì´ˆê¸°í™”í•œë‹¤.
+        // Ã¹¹øÂ° element·Î ÃÊ±âÈ­ÇÑ´Ù.
         mtc::initializeColumn( aStack[0].column, sStack[0].column );
 
-        // BUG-39511 listë¥¼ ë°˜í™˜í•˜ëŠ” ê²½ìš° valueë„ ì„¤ì •í•œë‹¤.
+        // BUG-39511 list¸¦ ¹ÝÈ¯ÇÏ´Â °æ¿ì valueµµ ¼³Á¤ÇÑ´Ù.
         if ( aStack[0].column->module == &mtdList )
         {
             aStack[0].value = sStack[0].value;
@@ -167,7 +167,7 @@ IDE_RC mtfNth_elementEstimate( mtcNode*     aNode,
     else
     {
         // BUG-41310
-        // listì˜ argumentë¡œ rowtype / recordtype / array / lob ì´ ì˜¬ ìˆ˜ ì—†ë‹¤.
+        // listÀÇ argument·Î rowtype / recordtype / array / lob ÀÌ ¿Ã ¼ö ¾ø´Ù.
         IDE_TEST_RAISE( ( aStack[1].column->module->id == MTD_ROWTYPE_ID ) ||
                         ( aStack[1].column->module->id == MTD_RECORDTYPE_ID ) ||
                         ( aStack[1].column->module->id == MTD_ASSOCIATIVE_ARRAY_ID ) ||
@@ -228,7 +228,7 @@ IDE_RC mtfNth_elementCalculate( mtcNode*     aNode,
     }
     else
     {
-        // 0 í˜¹ì€ 1ë¶€í„° ì‹œìž‘í•œë‹¤.
+        // 0 È¤Àº 1ºÎÅÍ ½ÃÀÛÇÑ´Ù.
         if ( sValue == 0 )
         {
             sValue++;
@@ -238,7 +238,7 @@ IDE_RC mtfNth_elementCalculate( mtcNode*     aNode,
             // Nothing to do.
         }
 
-        // 1ì´ë‚˜ -1ì´ ì•„ë‹ˆë©´ ì—ëŸ¬
+        // 1ÀÌ³ª -1ÀÌ ¾Æ´Ï¸é ¿¡·¯
         IDE_TEST_RAISE( ( sValue != -1 ) && ( sValue != 1 ),
                         ERR_ARGUMENT_NOT_APPLICABLE );
         
@@ -295,7 +295,7 @@ IDE_RC mtfNth_elementCalculateList( mtcNode*     aNode,
     }
     else
     {
-        // 0 í˜¹ì€ 1ë¶€í„° ì‹œìž‘í•œë‹¤.
+        // 0 È¤Àº 1ºÎÅÍ ½ÃÀÛÇÑ´Ù.
         if ( sValue == 0 )
         {
             sValue++;
@@ -305,7 +305,7 @@ IDE_RC mtfNth_elementCalculateList( mtcNode*     aNode,
             // Nothing to do.
         }
 
-        // -1ì´ë©´ ëì—ì„œ ì²«ë²ˆì§¸
+        // -1ÀÌ¸é ³¡¿¡¼­ Ã¹¹øÂ°
         if ( sValue < 0 )
         {
             sValue += aStack[1].column->precision + 1;
@@ -315,7 +315,7 @@ IDE_RC mtfNth_elementCalculateList( mtcNode*     aNode,
             // Nothing to do.
         }
         
-        // ë²”ìœ„ë¥¼ ë„˜ìœ¼ë©´ ì—ëŸ¬
+        // ¹üÀ§¸¦ ³ÑÀ¸¸é ¿¡·¯
         IDE_TEST_RAISE( ( sValue <= 0 ) || ( sValue > aStack[1].column->precision ),
                         ERR_ARGUMENT_NOT_APPLICABLE );
         

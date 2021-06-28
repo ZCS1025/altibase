@@ -23,29 +23,29 @@
 #define _O_SMM_FPL_MANAGER_H_ 1
 
 /*
-  PROJ-1490 í˜ì´ì§€ë¦¬ìŠ¤íŠ¸ ë‹¤ì¤‘í™”ë° ë©”ëª¨ë¦¬ë°˜ë‚©
+  PROJ-1490 ÆäÀÌÁö¸®½ºÆ® ´ÙÁßÈ­¹× ¸Ş¸ğ¸®¹İ³³
 
-  ì—¬ëŸ¬ê°œë¡œ ë‹¤ì¤‘í™”ëœ ë°ì´í„°ë² ì´ìŠ¤ì˜ Free Page List ë“¤ì„ ê´€ë¦¬í•œë‹¤.
-  FPLì€ Free Page Listì˜ ì•½ìì´ë‹¤.
+  ¿©·¯°³·Î ´ÙÁßÈ­µÈ µ¥ÀÌÅÍº£ÀÌ½ºÀÇ Free Page List µéÀ» °ü¸®ÇÑ´Ù.
+  FPLÀº Free Page ListÀÇ ¾àÀÚÀÌ´Ù.
 */
 
 
-// ì—¬ëŸ¬ê°œë¡œ ë‹¤ì¤‘í™”ëœ Free Pageë“¤ì— 0ë¶€í„° ìˆœì°¨ì ìœ¼ë¡œ 1ì”© ì¦ê°€í•˜ë©° ë§¤ê¸´ ë²ˆí˜¸
+// ¿©·¯°³·Î ´ÙÁßÈ­µÈ Free Pageµé¿¡ 0ºÎÅÍ ¼øÂ÷ÀûÀ¸·Î 1¾¿ Áõ°¡ÇÏ¸ç ¸Å±ä ¹øÈ£
 typedef UInt smmFPLNo ;
 #define SMM_NULL_FPL_NO ( ID_UINT_MAX )
 
 
 /*
- * ì—¬ëŸ¬ê°œì˜ í˜ì´ì§€ë¥¼ FreeListInfo Pageì•ˆì˜ Next Free Pageë¡œ ì—®ì€ í˜ì´ì§€ ë¦¬ìŠ¤íŠ¸
+ * ¿©·¯°³ÀÇ ÆäÀÌÁö¸¦ FreeListInfo Page¾ÈÀÇ Next Free Page·Î ¿«Àº ÆäÀÌÁö ¸®½ºÆ®
  */
 typedef struct smmPageList
 {
-    scPageID mHeadPID;      // ì²«ë²ˆì§¸ Page
-    scPageID mTailPID;      // ë§ˆì§€ë§‰ Page
-    vULong   mPageCount;    // ì´ Page ìˆ˜ 
+    scPageID mHeadPID;      // Ã¹¹øÂ° Page
+    scPageID mTailPID;      // ¸¶Áö¸· Page
+    vULong   mPageCount;    // ÃÑ Page ¼ö 
 } smmPageList ;
 
-// smmPageListë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+// smmPageList¸¦ ÃÊ±âÈ­ÇÑ´Ù.
 #define SMM_PAGELIST_INIT( list )     \
 (list)->mHeadPID = SM_NULL_PID ;      \
 (list)->mTailPID = SM_NULL_PID ;      \
@@ -61,40 +61,40 @@ class smmFPLManager
 {
 private:
 
-    // Free Page Listë¥¼ ë³€ê²½í•œë‹¤.
-    // Free Page List ë³€ê²½ ì „ì— ë¡œê¹…ë„ í•¨ê»˜ ì‹¤ì‹œí•œë‹¤.
+    // Free Page List¸¦ º¯°æÇÑ´Ù.
+    // Free Page List º¯°æ Àü¿¡ ·Î±ëµµ ÇÔ²² ½Ç½ÃÇÑ´Ù.
     static IDE_RC logAndSetFreePageList( smmTBSNode * aTBSNode,
                                          void     *   aTrans,
                                          smmFPLNo     aFPLNo,
                                          scPageID     aFirstFreePageID,
                                          vULong       aFreePageCount );
     
-    // Free Page Listì— Free Pageë“¤ì„ appendí•œë‹¤.
+    // Free Page List¿¡ Free PageµéÀ» appendÇÑ´Ù.
     static IDE_RC expandFreePageList( smmTBSNode * aTBSNode,
                                       void     *   aTrans,
                                       smmFPLNo     aFPLNo ,
                                       vULong       aRequiredFreePageCnt );
 
     //////////////////////////////////////////////////////////////////////////
-    // Expand Chunkí™•ì¥ ê´€ë ¨ í•¨ìˆ˜ 
+    // Expand ChunkÈ®Àå °ü·Ã ÇÔ¼ö 
     //////////////////////////////////////////////////////////////////////////
-    // smmFPLManager::getTotalPageCount4AllTBSë¥¼ ìœ„í•œ Actioní•¨ìˆ˜
+    // smmFPLManager::getTotalPageCount4AllTBS¸¦ À§ÇÑ ActionÇÔ¼ö
     static IDE_RC aggregateTotalPageCountAction( idvSQL            * aStatistics, 
                                                  sctTableSpaceNode * aTBSNode,
                                                  void              * aActionArg  );
 
-    // Tablespaceì˜ NEXT í¬ê¸°ë§Œí¼ Chunkí™•ì¥ì„ ì‹œë„í•œë‹¤.
+    // TablespaceÀÇ NEXT Å©±â¸¸Å­ ChunkÈ®ÀåÀ» ½ÃµµÇÑ´Ù.
     static IDE_RC tryToExpandNextSize(smmTBSNode * aTBSNode,
                                       void *       aTrans);
 
-    // ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì— ì˜í•´ì„œì´ë˜,
-    // aTransì˜í•´ì„œ ì´ë˜ ìƒê´€ì—†ì´ Tablespaceì˜ NEXT í¬ê¸°ë§Œí¼ì˜
-    // Chunkê°€ ìƒì„±ë¨ì„ ë³´ì¥í•œë‹¤.
+    // ´Ù¸¥ Æ®·£Àè¼Ç¿¡ ÀÇÇØ¼­ÀÌ´ø,
+    // aTransÀÇÇØ¼­ ÀÌ´ø »ó°ü¾øÀÌ TablespaceÀÇ NEXT Å©±â¸¸Å­ÀÇ
+    // Chunk°¡ »ı¼ºµÊÀ» º¸ÀåÇÑ´Ù.
     static IDE_RC expandOrWait(smmTBSNode * aTBSNode,
                                void *       aTrans);
 
-    // ëª¨ë“  Tablespaceì˜ í˜„ì¬ í• ë‹¹ëœ SIZE < MEM_MAX_DB_SIZEì¸ì§€
-    // ê²€ì‚¬í•˜ê¸° ìœ„í•´ Tablespaceì˜ í™•ì¥ì‹œ ì¡ëŠ” Mutex
+    // ¸ğµç TablespaceÀÇ ÇöÀç ÇÒ´çµÈ SIZE < MEM_MAX_DB_SIZEÀÎÁö
+    // °Ë»çÇÏ±â À§ÇØ TablespaceÀÇ È®Àå½Ã Àâ´Â Mutex
     static iduMutex mGlobalPageCountCheckMutex;
 public :
 
@@ -104,11 +104,11 @@ public :
     // Static Destroyer
     static IDE_RC destroyStatic();
     
-    // Free Page List ê´€ë¦¬ìë¥¼ ì´ˆê¸°í™”í•œë‹¤.
+    // Free Page List °ü¸®ÀÚ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
     static IDE_RC initialize(smmTBSNode * aTBSNode);
 
 
-    // Free Page List ê´€ë¦¬ìë¥¼ íŒŒê´´í•œë‹¤.
+    // Free Page List °ü¸®ÀÚ¸¦ ÆÄ±«ÇÑ´Ù.
     static IDE_RC destroy(smmTBSNode * aTBSNode);
     
 
@@ -117,11 +117,11 @@ public :
     
     
     
-    // Free Pageë¥¼ ê°€ì¥ ë§ì´ ê°€ì§„ ë°ì´í„°ë² ì´ìŠ¤ Free Page Listë¥¼ ì°¾ì•„ë‚¸ë‹¤.
+    // Free Page¸¦ °¡Àå ¸¹ÀÌ °¡Áø µ¥ÀÌÅÍº£ÀÌ½º Free Page List¸¦ Ã£¾Æ³½´Ù.
     static IDE_RC getLargestFreePageList( smmTBSNode * aTBSNode,
                                           smmFPLNo *   aFPLNo );
 
-    // í•˜ë‚˜ì˜ Free Pageë“¤ì„ ë°ì´í„°ë² ì´ìŠ¤ ì—¬ëŸ¬ê°œì˜ Page Listì— ê³¨ê³ ë£¨ ë¶„ë°°í•œë‹¤.
+    // ÇÏ³ªÀÇ Free PageµéÀ» µ¥ÀÌÅÍº£ÀÌ½º ¿©·¯°³ÀÇ Page List¿¡ °ñ°í·ç ºĞ¹èÇÑ´Ù.
     static IDE_RC distributeFreePages( 
                         smmTBSNode *  aTBSNode,
                         scPageID      aChunkFirstFreePID,
@@ -130,78 +130,78 @@ public :
                         UInt          aArrFreePageListCount,
                         smmPageList * aArrFreePageLists );
 
-    // Chunk í• ë‹¹ Mutexì— Latchë¥¼ ê±´ë‹¤.
+    // Chunk ÇÒ´ç Mutex¿¡ Latch¸¦ °Ç´Ù.
     static IDE_RC lockAllocChunkMutex(smmTBSNode * aTBSNode);
-    // Chunk í• ë‹¹ Mutexë¡œë¶€í„° Latchë¥¼ í‘¼ë‹¤.
+    // Chunk ÇÒ´ç Mutex·ÎºÎÅÍ Latch¸¦ Ç¬´Ù.
     static IDE_RC unlockAllocChunkMutex(smmTBSNode * aTBSNode);
 
 
-    // ëª¨ë“  Tablepsaceì— ëŒ€í•´ OSë¡œë¶€í„° í• ë‹¹í•œ Pageì˜ ìˆ˜ì˜ ì´í•©ì„ ë°˜í™˜í•œë‹¤
+    // ¸ğµç Tablepsace¿¡ ´ëÇØ OS·ÎºÎÅÍ ÇÒ´çÇÑ PageÀÇ ¼öÀÇ ÃÑÇÕÀ» ¹İÈ¯ÇÑ´Ù
     static IDE_RC getTotalPageCount4AllTBS( scPageID * aTotalPageCount );
         
-    // Free Page List ì— ë˜ì¹˜ë¥¼ ê±´ë‹¤.
+    // Free Page List ¿¡ ·¡Ä¡¸¦ °Ç´Ù.
     static IDE_RC lockFreePageList( smmTBSNode * aTBSNode,
                                     smmFPLNo     aFPLNo );
     
-    // Free Page List ë¡œë¶€í„° ë˜ì¹˜ë¥¼ í‘¼ë‹¤.
+    // Free Page List ·ÎºÎÅÍ ·¡Ä¡¸¦ Ç¬´Ù.
     static IDE_RC unlockFreePageList( smmTBSNode * aTBSNode,
                                       smmFPLNo     aFPLNo );
 
-    // ëª¨ë“  Free Page Listì— latchë¥¼ ì¡ëŠ”ë‹¤.
+    // ¸ğµç Free Page List¿¡ latch¸¦ Àâ´Â´Ù.
     static IDE_RC lockAllFPLs(smmTBSNode * aTBSNode);
     
-    // ëª¨ë“  Free Page Listì—ì„œ latchë¥¼ í‘¼ë‹¤.
+    // ¸ğµç Free Page List¿¡¼­ latch¸¦ Ç¬´Ù.
     static IDE_RC unlockAllFPLs(smmTBSNode * aTBSNode);
     
     /* BUG-31881 [sm-mem-resource] When executing alter table in MRDB and 
      * using space by other transaction,
      * The server can not do restart recovery. 
-     * ì§€ê¸ˆë¶€í„° ì´ Transactionì´ ë°˜í™˜í•˜ëŠ” Pageë“¤ì€ ì˜ˆì•½í•´ë‘”ë‹¤. */
+     * Áö±İºÎÅÍ ÀÌ TransactionÀÌ ¹İÈ¯ÇÏ´Â PageµéÀº ¿¹¾àÇØµĞ´Ù. */
     static IDE_RC beginPageReservation( smmTBSNode * aTBSNode,
                                         void       * aTrans );
 
-    /* Pageì˜ˆì•½ì„ ë©ˆì¶˜ë‹¤. */
+    /* Page¿¹¾àÀ» ¸ØÃá´Ù. */
     static IDE_RC endPageReservation( smmTBSNode * aTBSNode,
                                       void       * aTrans );
 
-    /* mArrFPLMutexê°€ ì¡íŒ ìƒíƒœë¡œ í˜¸ì¶œë˜ì–´ì•¼ í•¨ */
-    /* ì˜ˆì•½í•´ë‘” í˜ì´ì§€ë¥¼ ì°¾ëŠ”ë‹¤. */
+    /* mArrFPLMutex°¡ ÀâÈù »óÅÂ·Î È£ÃâµÇ¾î¾ß ÇÔ */
+    /* ¿¹¾àÇØµĞ ÆäÀÌÁö¸¦ Ã£´Â´Ù. */
     static IDE_RC findPageReservationSlot( 
         smmPageReservation  * aPageReservation,
         void                * aTrans,
         UInt                * aSlotNo );
 
-    /* mArrFPLMutexê°€ ì¡íŒ ìƒíƒœë¡œ í˜¸ì¶œë˜ì–´ì•¼ í•¨ */
-    /* ìì‹  ì™¸ ë‹¤ë¥¸ Transactionë“¤ì´ ì˜ˆì•½í•´ë‘” Pageì˜ ê°œìˆ˜ë¥¼ ê°€ì ¸ì˜´ */
+    /* mArrFPLMutex°¡ ÀâÈù »óÅÂ·Î È£ÃâµÇ¾î¾ß ÇÔ */
+    /* ÀÚ½Å ¿Ü ´Ù¸¥ TransactionµéÀÌ ¿¹¾àÇØµĞ PageÀÇ °³¼ö¸¦ °¡Á®¿È */
     static IDE_RC getUnusablePageCount( 
         smmPageReservation  * aPageReservation,
         void                * aTrans,
         UInt                * aUnusablePageCount );
 
-    /* í˜¹ì‹œ ì´ Transactionê³¼ ê´€ë ¨ëœ ì˜ˆì•½ í˜ì´ì§€ê°€ ìˆìœ¼ë©´, ëª¨ë‘ ì •ë¦¬í•œë‹¤. */
+    /* È¤½Ã ÀÌ Transaction°ú °ü·ÃµÈ ¿¹¾à ÆäÀÌÁö°¡ ÀÖÀ¸¸é, ¸ğµÎ Á¤¸®ÇÑ´Ù. */
     static IDE_RC finalizePageReservation( void      * aTrans,
                                            scSpaceID   aSpaceID );
 
-    /* pageReservation ê´€ë ¨ ë‚´ìš©ì„ dump í•œë‹¤. */
+    /* pageReservation °ü·Ã ³»¿ëÀ» dump ÇÑ´Ù. */
     static IDE_RC dumpPageReservationByBuffer
         ( smmPageReservation * aPageReservation,
           SChar              * aOutBuf,
           UInt                 aOutSize );
 
-    /* pageReservation ê´€ë ¨ ë‚´ìš©ì„ SM TrcLogì— ì¶œë ¥í•œë‹¤. */
+    /* pageReservation °ü·Ã ³»¿ëÀ» SM TrcLog¿¡ Ãâ·ÂÇÑ´Ù. */
     static void dumpPageReservation( smmPageReservation * aPageReservation );
 
-    // íŠ¹ì • Free Page Listì— Latchë¥¼ íšë“í•œ í›„ íŠ¹ì • ê°¯ìˆ˜ ì´ìƒì˜
-    // Free Pageê°€ ìˆìŒì„ ë³´ì¥í•œë‹¤.
+    // Æ¯Á¤ Free Page List¿¡ Latch¸¦ È¹µæÇÑ ÈÄ Æ¯Á¤ °¹¼ö ÀÌ»óÀÇ
+    // Free Page°¡ ÀÖÀ½À» º¸ÀåÇÑ´Ù.
     static IDE_RC lockListAndPreparePages( smmTBSNode * aTBSNode,
                                            void       * aTrans,
                                            smmFPLNo     aFPLNo,
                                            vULong       aPageCount );
 
     
-    // Free Page List ì—ì„œ í•˜ë‚˜ì˜ Free Pageë¥¼ ë–¼ì–´ë‚¸ë‹¤.
-    // aHeadPAgeë¶€í„° aTailPageê¹Œì§€
-    // Free List Info Pageì˜ Next Free Page IDë¡œ ì—°ê²°ëœ ì±„ë¡œ ë¦¬í„´í•œë‹¤.
+    // Free Page List ¿¡¼­ ÇÏ³ªÀÇ Free Page¸¦ ¶¼¾î³½´Ù.
+    // aHeadPAgeºÎÅÍ aTailPage±îÁö
+    // Free List Info PageÀÇ Next Free Page ID·Î ¿¬°áµÈ Ã¤·Î ¸®ÅÏÇÑ´Ù.
     static IDE_RC removeFreePagesFromList( smmTBSNode * aTBSNode,
                                            void *       aTrans,
                                            smmFPLNo     aFPLNo,
@@ -209,9 +209,9 @@ public :
                                            scPageID  *  aHeadPID,
                                            scPageID  *  aTailPID );
 
-    // Free Page List ì— í•˜ë‚˜ì˜ Free Page Listë¥¼ ë¶™ì¸ë‹¤.
-    // aHeadPageë¶€í„° aTailPageê¹Œì§€
-    // Free List Info Pageì˜ Next Free Page IDë¡œ ì—°ê²°ë˜ì–´ ìˆì–´ì•¼ í•œë‹¤..
+    // Free Page List ¿¡ ÇÏ³ªÀÇ Free Page List¸¦ ºÙÀÎ´Ù.
+    // aHeadPageºÎÅÍ aTailPage±îÁö
+    // Free List Info PageÀÇ Next Free Page ID·Î ¿¬°áµÇ¾î ÀÖ¾î¾ß ÇÑ´Ù..
     static IDE_RC appendFreePagesToList  ( 
                             smmTBSNode * aTBSNode,
                             void *       aTrans,
@@ -223,7 +223,7 @@ public :
                             idBool       aSetNextFreePageOfFPL  );
 
 
-    // Free Page ë“¤ì„ ê°ê°ì˜ Free Page Listì˜ ë§¨ ì•ì— appendí•œë‹¤. 
+    // Free Page µéÀ» °¢°¢ÀÇ Free Page ListÀÇ ¸Ç ¾Õ¿¡ appendÇÑ´Ù. 
     static IDE_RC appendPageLists2FPLs( 
                             smmTBSNode *  aTBSNode,
                             smmPageList * aArrFreePageList,
@@ -241,30 +241,30 @@ public :
     static IDE_RC getTotalPageCountExceptDicTBS( 
                                       scPageID   * aTotalPageCount );
 
-    // Free Page Listì˜ ì²«ë²ˆì§¸ Page IDì™€ Pageìˆ˜ì˜ validityë¥¼ ì²´í¬í•œë‹¤.
+    // Free Page ListÀÇ Ã¹¹øÂ° Page ID¿Í Page¼öÀÇ validity¸¦ Ã¼Å©ÇÑ´Ù.
     static idBool isValidFPL(scSpaceID        aSpaceID,
                              scPageID         aFirstPID,
                              vULong           aPageCount);
 
-    // Free Page Listì˜ ì²«ë²ˆì§¸ Page IDì™€ Pageìˆ˜ì˜ validityë¥¼ ì²´í¬í•œë‹¤.
+    // Free Page ListÀÇ Ã¹¹øÂ° Page ID¿Í Page¼öÀÇ validity¸¦ Ã¼Å©ÇÑ´Ù.
     static idBool isValidFPL( scSpaceID           aSpaceID,
                               smmDBFreePageList * aFPL );
 
-    // ëª¨ë“  Free Page Listê°€ Validí•œì§€ ì²´í¬í•œë‹¤
+    // ¸ğµç Free Page List°¡ ValidÇÑÁö Ã¼Å©ÇÑ´Ù
     static idBool isAllFPLsValid(smmTBSNode * aTBSNode);
 
-    // ëª¨ë“  Free Page Listì˜ ë‚´ìš©ì„ ì°ëŠ”ë‹¤.
+    // ¸ğµç Free Page ListÀÇ ³»¿ëÀ» Âï´Â´Ù.
     static void dumpAllFPLs(smmTBSNode * aTBSNode);
 };
 
-// Chunk í• ë‹¹ Mutexì— Latchë¥¼ ê±´ë‹¤.
+// Chunk ÇÒ´ç Mutex¿¡ Latch¸¦ °Ç´Ù.
 inline IDE_RC smmFPLManager::lockAllocChunkMutex(smmTBSNode * aTBSNode)
 {
     return aTBSNode->mAllocChunkMutex.lock( NULL );
 }
 
 
-// Chunk í• ë‹¹ Mutexë¡œë¶€í„° Latchë¥¼ í‘¼ë‹¤.
+// Chunk ÇÒ´ç Mutex·ÎºÎÅÍ Latch¸¦ Ç¬´Ù.
 inline IDE_RC smmFPLManager::unlockAllocChunkMutex(smmTBSNode * aTBSNode)
 {
     return aTBSNode->mAllocChunkMutex.unlock();

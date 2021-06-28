@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: ideErrorMgr.cpp 84317 2018-11-12 00:39:24Z minku.kang $
+ * $Id: ideErrorMgr.cpp 90135 2021-03-05 06:50:13Z kclee $
  **********************************************************************/
 
 /***********************************************************************
@@ -14,13 +14,13 @@
  *
  *	Related Files	:
  *
- *	Description		:	ì—ëŸ¬ ì²˜ë¦¬ ëª¨ë“ˆ
+ *	Description		:	¿¡·¯ Ã³¸® ¸ğµâ
  *
  *
  **********************************************************************/
 
 /* ----------------------------------------------------------------------------
- * ì„±ëŠ¥ ê³ ë ¤ë¡œ ì¸í•´ class ëŒ€ì‹  struct ë° plain function ìœ¼ë¡œ êµ¬í˜„
+ * ¼º´É °í·Á·Î ÀÎÇØ class ´ë½Å struct ¹× plain function À¸·Î ±¸Çö
  * ---------------------------------------------------------------------------*/
 
 #include <idl.h>
@@ -38,15 +38,16 @@
 #endif
 #define idERR_IGNORE_NoError 0x42000000
 #include <idtContainer.h>
+#include <iduMemMgr.h>
 
 /* ----------------------------------------------------------------------------
  *
- *  PDL ì—ëŸ¬ ìˆ˜ì •
+ *  PDL ¿¡·¯ ¼öÁ¤
  *
- *  Sparc Solaris 2.7ì—ì„œ 64ë¹„íŠ¸ ì»´íŒŒì¼ ëª¨ë“œì¼ ê²½ìš°
- *  ì „ì—­ ì‹œìŠ¤í…œ ì—ëŸ¬ì½”ë“œë²ˆí˜¸ ë³€ìˆ˜ì¸ sys_nerrì´ ì—†ì–´ì§„ë‹¤.
- *  ê·¸ëŸ¬ë‚˜, PDLì—ì„œëŠ” ì´ê²ƒì„ ê³ ë ¤í•˜ì§€ ì•Šê³  ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì—
- *  ë§í¬ì—ëŸ¬ë¥¼ ë°œìƒí•œë‹¤. ì´ê²ƒì„ ë°©ì§€í•˜ê¸° ìœ„í•´ ì„ì‹œë¡œ sys_nerrì„ ì •ì˜í•œë‹¤.
+ *  Sparc Solaris 2.7¿¡¼­ 64ºñÆ® ÄÄÆÄÀÏ ¸ğµåÀÏ °æ¿ì
+ *  Àü¿ª ½Ã½ºÅÛ ¿¡·¯ÄÚµå¹øÈ£ º¯¼öÀÎ sys_nerrÀÌ ¾ø¾îÁø´Ù.
+ *  ±×·¯³ª, PDL¿¡¼­´Â ÀÌ°ÍÀ» °í·ÁÇÏÁö ¾Ê°í »ç¿ëÇÏ±â ¶§¹®¿¡
+ *  ¸µÅ©¿¡·¯¸¦ ¹ß»ıÇÑ´Ù. ÀÌ°ÍÀ» ¹æÁöÇÏ±â À§ÇØ ÀÓ½Ã·Î sys_nerrÀ» Á¤ÀÇÇÑ´Ù.
  *
  * --------------------------------------------------------------------------*/
 
@@ -62,10 +63,10 @@ int sys_nerr;
 struct ideErrorMgr *toppers_error = NULL;
 #endif
 
-/* TASK-6739 Altibase 710 ì„±ëŠ¥ ê°œì„  */
+/* TASK-6739 Altibase 710 ¼º´É °³¼± */
 IDTHREAD ideErrorMgr gIdeErrorMgr;
 
-ideErrTypeInfo typeInfo[] = // ì—ëŸ¬ ë©”ì‹œì§€ í™”ì¼ì— ì‚¬ìš©ë˜ëŠ” ë°ì´íƒ€ íƒ€ì… ì¢…ë¥˜
+ideErrTypeInfo typeInfo[] = // ¿¡·¯ ¸Ş½ÃÁö È­ÀÏ¿¡ »ç¿ëµÇ´Â µ¥ÀÌÅ¸ Å¸ÀÔ Á¾·ù
 {
     { IDE_ERR_SCHAR   , "%c"  , "%c"  , 2 },
     { IDE_ERR_STRING  , "%s"  , "%s"  , 2 },
@@ -109,7 +110,7 @@ const idBool ideErrorConversionMatrix[IDE_MAX_ERROR_ACTION][IDE_MAX_ERROR_ACTION
 
 /* ----------------------------------------------------------------------
  *
- *  MT í´ë¼ì´ì–¸íŠ¸ë¥¼ ìœ„í•œ ì»´íŒŒì¼ - shore storage manager ì°¸ì¡°
+ *  MT Å¬¶óÀÌ¾ğÆ®¸¦ À§ÇÑ ÄÄÆÄÀÏ - shore storage manager ÂüÁ¶
  *
  * ---------------------------------------------------------------------- */
 
@@ -148,7 +149,7 @@ void ideLogError(const SChar* aErrInfo,
 
 /* ----------------------------------------------------------------------
  *
- *  ID ì—ëŸ¬ ì½”ë“œê°’ ì–»ê¸° : SERVER, CLIENT ê³µí†µ í•¨ìˆ˜
+ *  ID ¿¡·¯ ÄÚµå°ª ¾ò±â : SERVER, CLIENT °øÅë ÇÔ¼ö
  *
  * ----------------------------------------------------------------------*/
 
@@ -193,6 +194,11 @@ void   ideSetHasErrorPosition()
 void   ideInitHasErrorPosition()
 {
     gIdeErrorMgr.Stack.HasErrorPosition = ID_FALSE;
+}
+
+idBool ideNoErrorYet()
+{
+    return (idBool)(gIdeErrorMgr.Stack.LastError == idERR_IGNORE_NoError);
 }
 
 SInt ideFindErrorCode(UInt ErrorCode)
@@ -259,7 +265,7 @@ IDE_RC ideIsRebuild( UInt aErrorCode )
 
 /* ----------------------------------------------------------------------
  *
- *  ì—ëŸ¬ ì½”ë“œê°’ ì„¤ì • + ë©”ì‹œì§€ êµ¬ì„±
+ *  ¿¡·¯ ÄÚµå°ª ¼³Á¤ + ¸Ş½ÃÁö ±¸¼º
  *
  * ----------------------------------------------------------------------*/
 
@@ -276,6 +282,9 @@ IDL_EXTERN_C void ideClearError()
     {
     }
 
+    /* BUG-47635 */
+    ideErrorCollectionClear();
+
 #ifdef DEBUG
     gIdeErrorMgr.ErrorTested = 0;
     gIdeErrorMgr.ErrorIndex  = 0;
@@ -283,9 +292,9 @@ IDL_EXTERN_C void ideClearError()
 }
 
 #ifdef DEBUG
-SInt ideSetDebugInfo(SChar *File,     // ì—ëŸ¬ í™”ì¼
-                     UInt   Line,     // ì—ëŸ¬ ë¼ì¸
-                     SChar *testline) // ì—ëŸ¬ì •ë³´
+SInt ideSetDebugInfo(SChar *File,     // ¿¡·¯ È­ÀÏ
+                     UInt   Line,     // ¿¡·¯ ¶óÀÎ
+                     SChar *testline) // ¿¡·¯Á¤º¸
 {
     ideErrorMgr* error = ideGetErrorMgr();
     if( error->ErrorTested)
@@ -307,13 +316,13 @@ SInt ideSetDebugInfo(SChar *File,     // ì—ëŸ¬ í™”ì¼
 
 /* ----------------------------------------------------------------------
  *
- *  ì„œë²„ë¥¼ ìœ„í•œ ID ì—ëŸ¬ ë©”ì‹œì§€ ë¡œë”© ë° ì–»ê¸°
+ *  ¼­¹ö¸¦ À§ÇÑ ID ¿¡·¯ ¸Ş½ÃÁö ·Îµù ¹× ¾ò±â
  *
  * ----------------------------------------------------------------------*/
 
 static ideErrorFactory ideErrorStorage[E_MODULE_COUNT];
 
-// formatted stirngì„ ì½ì–´ì„œ ê°€ë³€ì¸ì ì •ë³´ë¥¼ êµ¬ì„±
+// formatted stirngÀ» ÀĞ¾î¼­ °¡º¯ÀÎÀÚ Á¤º¸¸¦ ±¸¼º
 static SInt ideGetArgumentInfo(SChar *orgFmt, ideArgInfo *orgInfo, va_list args)
 {
     UInt  maxInfoCnt = 0;
@@ -325,18 +334,18 @@ static SInt ideGetArgumentInfo(SChar *orgFmt, ideArgInfo *orgInfo, va_list args)
     SChar      *fmt;
 
     fmt = orgFmt;
-    orgInfo[0].type_info = NULL; // ì´ˆê¸°í™”
+    orgInfo[0].type_info = NULL; // ÃÊ±âÈ­
 
     while(( c = *fmt++) )
     {
-        if (c == '<') // [<] ì¶œí˜„
+        if (c == '<') // [<] ÃâÇö
         {
-            SChar numBuf[8]; // ì¸ìë²ˆí˜¸ ì…ë ¥
+            SChar numBuf[8]; // ÀÎÀÚ¹øÈ£ ÀÔ·Â
 
             /* ------------------
-             * [1] ì¸ìë²ˆí˜¸ ì–»ê¸°
+             * [1] ÀÎÀÚ¹øÈ£ ¾ò±â
              * -----------------*/
-            if (isdigit(*fmt) == 0) // ìˆ«ìê°€ ì•„ë‹˜
+            if (isdigit(*fmt) == 0) // ¼ıÀÚ°¡ ¾Æ´Ô
             {
                 continue;
             }
@@ -350,7 +359,7 @@ static SInt ideGetArgumentInfo(SChar *orgFmt, ideArgInfo *orgInfo, va_list args)
                 }
                 numBuf[i] = *fmt++;
             }
-            // ëª‡ë²ˆì§¸ ì…ë ¥ ì¸ìì¸ê°€? í¬ì¸í„° ëŒ€ì…
+            // ¸î¹øÂ° ÀÔ·Â ÀÎÀÚÀÎ°¡? Æ÷ÀÎÅÍ ´ëÀÔ
             inputOrder        = (UInt)idlOS::strtol(numBuf, NULL, 10);
             if (inputOrder >= MAX_ARGUMENT)
             {
@@ -363,7 +372,7 @@ static SInt ideGetArgumentInfo(SChar *orgFmt, ideArgInfo *orgInfo, va_list args)
             if (inputOrder > maxInfoCnt) maxInfoCnt = inputOrder;
 
             /* ------------------
-             * [2] ì¸ìíƒ€ì… ì–»ê¸°
+             * [2] ÀÎÀÚÅ¸ÀÔ ¾ò±â
              * -----------------*/
             for (i = 0; ; i++)
             {
@@ -391,14 +400,14 @@ static SInt ideGetArgumentInfo(SChar *orgFmt, ideArgInfo *orgInfo, va_list args)
     {
         return IDE_FAILURE;
     }
-    orgInfo[maxInfoCnt + 1].type_info = NULL; // NULLì„ ì§€ì • ; ë§ˆì§€ë§‰ flag
+    orgInfo[maxInfoCnt + 1].type_info = NULL; // NULLÀ» ÁöÁ¤ ; ¸¶Áö¸· flag
 
     /* ------------------
-     * [3] ì¸ì í¬ì¸í„° ëŒ€ì…
-     //     argument *ë¥¼ ë‹¤ì‹œ ì €ì¥.
+     * [3] ÀÎÀÚ Æ÷ÀÎÅÍ ´ëÀÔ
+     //     argument *¸¦ ´Ù½Ã ÀúÀå.
      * -----------------*/
 
-    for (i = 0; ; i++) // BUGBUG : sizeof(data types)ë¡œ í•´ì„œ ë¯¸ë¦¬ ê³„ì‚°í•  ìˆ˜ ìˆìŒ.
+    for (i = 0; ; i++) // BUGBUG : sizeof(data types)·Î ÇØ¼­ ¹Ì¸® °è»êÇÒ ¼ö ÀÖÀ½.
     {
         ideErrTypeInfo *typeinfo = orgInfo[i].type_info;
         if (typeinfo == NULL) break;
@@ -460,17 +469,17 @@ static SInt ideConcatErrorArg(SChar *orgBuf, SChar *fmt, ideArgInfo *info)
     UInt  orgBufLen;
 
     /* ---------------------------
-     * [1] formatted string êµ¬ì„±
+     * [1] formatted string ±¸¼º
      * --------------------------*/
     while( (c = *fmt++) != 0)
     {
-        if (c == '<') // [<] ì¶œí˜„
+        if (c == '<') // [<] ÃâÇö
         {
-            while(*fmt++ != '>') ; //[>]ê°€ ë‚˜ì˜¬ë•Œ ê¹Œì§€ skip ë° ë©”ì‹œì§€ êµ¬í˜„
+            while(*fmt++ != '>') ; //[>]°¡ ³ª¿Ã¶§ ±îÁö skip ¹× ¸Ş½ÃÁö ±¸Çö
 
-            // BUG-21296 : HPì¥ë¹„ì—ì„œ ê¸´ error messageë¡œ ì¸í•´ ë©”ë¦¬ê°€ ê¸í˜
-            // orgBufì— appendì‹œí‚¤ê³  orgBufLenì„ ì¬ê³„ì‚°í•´ì•¼ í•˜ê³ 
-            // MAX_ERROR_MSG_LENGë³´ë‹¤ ê¸´ error messageë¥¼ truncateí•¨
+            // BUG-21296 : HPÀåºñ¿¡¼­ ±ä error message·Î ÀÎÇØ ¸Ş¸®°¡ ±ÜÈû
+            // orgBuf¿¡ append½ÃÅ°°í orgBufLenÀ» Àç°è»êÇØ¾ß ÇÏ°í
+            // MAX_ERROR_MSG_LENGº¸´Ù ±ä error message¸¦ truncateÇÔ
             orgBufLen = idlOS::strlen(orgBuf);
 
             switch(info->outputOrder->type_info->type)
@@ -615,7 +624,7 @@ UInt ideGetErrorArgCount(UInt ErrorCode)
     
     while( *Fmt != '\0')
     {
-        if (*Fmt == '<') // [<] ì¶œí˜„
+        if (*Fmt == '<') // [<] ÃâÇö
         {
             Count++;
             Fmt++;
@@ -634,7 +643,7 @@ UInt ideGetErrorArgCount(UInt ErrorCode)
     return Count;
 }
 
-// Error Codeë¥¼ í• ë‹¹í•  ìˆ˜ ì—†ìŒ.
+// Error Code¸¦ ÇÒ´çÇÒ ¼ö ¾øÀ½.
 SInt ideRegistErrorMsb(SChar *fn)
 {
     int             i;
@@ -646,7 +655,7 @@ SInt ideRegistErrorMsb(SChar *fn)
     ideErrorFactory *Storage;
 
     /* --------------------------
-     * [0] ì¸ì ê²€ì‚¬
+     * [0] ÀÎÀÚ °Ë»ç
      * -------------------------*/
 
     if (fn == NULL)
@@ -655,7 +664,7 @@ SInt ideRegistErrorMsb(SChar *fn)
     }
 
     /* --------------------------
-     * [1] MSB í™”ì¼ì„ ì½ëŠ”ë‹¤.
+     * [1] MSB È­ÀÏÀ» ÀĞ´Â´Ù.
      * -------------------------*/
 #ifndef GEN_ERR_MSG
     if ( (sFD = idf::open(fn, O_RDONLY)) == PDL_INVALID_HANDLE)
@@ -678,7 +687,7 @@ SInt ideRegistErrorMsb(SChar *fn)
     }
 
     /* ------------------------------------------
-     * [2] ì½ì€ ì„ì‹œ í—¤ë” ë°ì´íƒ€ ì €ì¥
+     * [2] ÀĞÀº ÀÓ½Ã Çì´õ µ¥ÀÌÅ¸ ÀúÀå
      * -----------------------------------------*/
     AltiVer  = idlOS::ntoh(TempMsbHeader.value_.header.AltiVersionId);
     errCount = idlOS::ntoh(TempMsbHeader.value_.header.ErrorCount);
@@ -688,7 +697,7 @@ SInt ideRegistErrorMsb(SChar *fn)
     TempMsbHeader.value_.header.Section       = Section;
 
     /* ------------------------------------------
-     * [2.5] í—¤ë”ì˜ ë²„ì „ ì •ë³´ ê²€ì‚¬
+     * [2.5] Çì´õÀÇ ¹öÀü Á¤º¸ °Ë»ç
      * -----------------------------------------*/
 
     if (AltiVer != iduVersionID)
@@ -705,13 +714,13 @@ SInt ideRegistErrorMsb(SChar *fn)
     }
 
     /* ------------------------------------------
-     * [3] Error Storageì˜ Section ê²°ì • ë° í—¤ë” ì €ì¥
+     * [3] Error StorageÀÇ Section °áÁ¤ ¹× Çì´õ ÀúÀå
      * -----------------------------------------*/
     Storage = &ideErrorStorage[Section];
     idlOS::memcpy(&Storage->MsbHeader, &TempMsbHeader, sizeof(idErrorMsbType));
 
     /* ------------------------------------------
-     * [4] ì‹¤ì œ ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ ì½ì–´ ë“¤ì„
+     * [4] ½ÇÁ¦ ¿¡·¯ ¸Ş½ÃÁö¸¦ ÀĞ¾î µéÀÓ
      * -----------------------------------------*/
     MsgBuf = (SChar **)idlOS::malloc(errCount * sizeof(SChar *));
     if (MsgBuf == NULL)
@@ -726,7 +735,7 @@ SInt ideRegistErrorMsb(SChar *fn)
     for (i = 0; !idlOS::fdeof(sFD) && i < (SInt)errCount; i++)
 #endif
     {
-        // ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ ì½ì–´ì„œ ë³´ê´€
+        // ¿¡·¯ ¸Ş½ÃÁö¸¦ ÀĞ¾î¼­ º¸°ü
         SChar buffer[1024];
 
 #ifndef GEN_ERR_MSG
@@ -745,7 +754,7 @@ SInt ideRegistErrorMsb(SChar *fn)
 
             IDE_TEST_RAISE((len == 0) || (len > sizeof(buffer)), failure_process);
             if (isspace(buffer[len - 1])) buffer[len - 1] = 0;
-            idlOS::strcpy(MsgBuf[i], buffer);
+            idlOS::strncpy(MsgBuf[i], buffer, len); //BUG-48552
         }
         else
         {
@@ -759,7 +768,7 @@ SInt ideRegistErrorMsb(SChar *fn)
     (void)idlOS::close(sFD);
 #endif
     /* ------------------------------------------
-     * [5] Error Storage ì™„ì„±
+     * [5] Error Storage ¿Ï¼º
      * -----------------------------------------*/
     Storage->MsgBuf = MsgBuf;
 
@@ -813,7 +822,7 @@ static void ideSetServerErrorCode(ideErrorMgr *aErrorMgr,
     static SChar *ERR_PARSE_ARG_MESSAGE  = (SChar *)"Invalid Error-Formatted String";
     static SChar *ERR_CONCAT_ARG_MESSAGE = (SChar *)"Invalid Error-Concatenation";
 
-    /* ì—ëŸ¬ ë©”ì‹œì§€ êµ¬ì„± ì¤€ë¹„*/
+    /* ¿¡·¯ ¸Ş½ÃÁö ±¸¼º ÁØºñ*/
     UInt         Section;
     UInt         Index;
     ideArgInfo   argInfo[MAX_ARGUMENT];
@@ -829,7 +838,7 @@ static void ideSetServerErrorCode(ideErrorMgr *aErrorMgr,
         aErrorMgr->Stack.HasErrorPosition = ID_FALSE;
         idlOS::strcpy(aErrorMgr->Stack.LastErrorMsg, NULL_MESSAGE );
     }
-    else if (Index < Storage->MsbHeader.value_.header.ErrorCount) // ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ êµ¬ì„±í•˜ì.
+    else if (Index < Storage->MsbHeader.value_.header.ErrorCount) // ¿¡·¯ ¸Ş½ÃÁö¸¦ ±¸¼ºÇÏÀÚ.
     {
         SChar *fmt = Storage->MsgBuf[Index];
 
@@ -889,7 +898,7 @@ static void ideSetServerErrorCode(ideErrorMgr *aErrorMgr,
 
 ideErrorMgr* ideSetErrorCode(UInt ErrorCode, ...)
 {
-    SInt         systemErrno = errno; // ë¯¸ë¦¬ ì„¤ì •
+    SInt         systemErrno = errno; // ¹Ì¸® ¼³Á¤
     va_list      args;
 
     va_start(args, ErrorCode);
@@ -907,7 +916,7 @@ ideErrorMgr* ideSetErrorCode(UInt ErrorCode, ...)
 
 ideErrorMgr* ideFitSetErrorCode( UInt aErrorCode, va_list aArgs )
 {
-    SInt         sSystemErrno = errno; // ë¯¸ë¦¬ ì„¤ì •
+    SInt         sSystemErrno = errno; // ¹Ì¸® ¼³Á¤
 
     ideSetServerErrorCode( &gIdeErrorMgr,
                            aErrorCode,
@@ -918,10 +927,10 @@ ideErrorMgr* ideFitSetErrorCode( UInt aErrorCode, va_list aArgs )
 }
 #endif
 
-// PROJ-1335 errorCode, errorMsgë¥¼ ì§ì ‘ ì„¸íŒ…
+// PROJ-1335 errorCode, errorMsg¸¦ Á÷Á¢ ¼¼ÆÃ
 ideErrorMgr* ideSetErrorCodeAndMsg( UInt ErrorCode, SChar* ErrorMsg )
 {
-    SInt         systemErrno = errno; // ë¯¸ë¦¬ ì„¤ì •
+    SInt         systemErrno = errno; // ¹Ì¸® ¼³Á¤
 
     gIdeErrorMgr.Stack.LastError       = ErrorCode;
     gIdeErrorMgr.Stack.LastSystemErrno = systemErrno;
@@ -948,15 +957,15 @@ void ideDump()
 
     errbuf = (SChar *)idlOS::calloc(1, errbuflen);
     /* BUG-25586
-     * [CodeSonar::NullPointerDereference] ideDump() ì—ì„œ ë°œìƒ */
+     * [CodeSonar::NullPointerDereference] ideDump() ¿¡¼­ ¹ß»ı */
     IDE_TEST_RAISE( errbuf == NULL, skip_err_dump );
 
     {
 #ifndef GEN_ERR_MSG
         UInt sSourceInfo = 0;
         /* ------------------------------------------------
-         *  genErrMsgë¥¼ ë§Œë“¤ê²½ìš° propertyë¥¼
-         *  ì°¸ì¡°í•˜ì§€ ì•Šë„ë¡!
+         *  genErrMsg¸¦ ¸¸µé°æ¿ì property¸¦
+         *  ÂüÁ¶ÇÏÁö ¾Êµµ·Ï!
          * ----------------------------------------------*/
         (void)idp::read("SOURCE_INFO", &sSourceInfo);
 
@@ -995,14 +1004,14 @@ void ideSetClientErrorCode(ideClientErrorMgr     *aErrorMgr,
     static SChar *ERR_PARSE_ARG_MESSAGE  = (SChar *)"Invalid Error-Formatted String";
     static SChar *ERR_CONCAT_ARG_MESSAGE = (SChar *)"Invalid Error-Concatenation";
 
-    /* ì—ëŸ¬ ë©”ì‹œì§€ êµ¬ì„± ì¤€ë¹„*/
+    /* ¿¡·¯ ¸Ş½ÃÁö ±¸¼º ÁØºñ*/
     UInt         Index;
     ideArgInfo   argInfo[MAX_ARGUMENT];
     Index   =  aErrorCode & E_INDEX_MASK;
     
     aErrorMgr->mErrorCode       = aErrorCode;
 
-    if (1)//Index < Storage->MsbHeader.value_.header.ErrorCount) // ì—ëŸ¬ ë©”ì‹œì§€ë¥¼ êµ¬ì„±í•˜ì.
+    if (1)//Index < Storage->MsbHeader.value_.header.ErrorCount) // ¿¡·¯ ¸Ş½ÃÁö¸¦ ±¸¼ºÇÏÀÚ.
     {
         SChar *fmt = (SChar *)aFactory[Index].mErrorMsg;
 
@@ -1040,5 +1049,349 @@ void ideSetClientErrorCode(ideClientErrorMgr     *aErrorMgr,
     {
         idlOS::strcpy(aErrorMgr->mErrorMessage, OUT_BOUND_MESSAGE);
     }
+}
+
+/* TASK-7218 Handling Multi-Error for SD */
+IDE_RC ideErrorCollectionGetNode( iduList **aListNode )
+{
+    iduListNode             *sListNode = NULL;
+    ideErrorCollectionStack *sError    = NULL;
+    ideErrorCollection      *sErrorMgr = &(gIdeErrorMgr.mErrors);
+
+    if ( sErrorMgr->mFreeListCnt > 0 )
+    {
+        sListNode = IDU_LIST_GET_FIRST( &(sErrorMgr->mFreeList) );
+        IDU_LIST_REMOVE(sListNode);
+        sErrorMgr->mFreeListCnt--;
+    }
+    else
+    {
+        IDE_TEST( iduMemMgr::malloc( IDU_MEM_ID_MULTI_ERROR_MANAGER,
+                                     sizeof(iduListNode),
+                                     (void **)&sListNode)
+                  != IDE_SUCCESS );
+
+        IDE_TEST( iduMemMgr::malloc( IDU_MEM_ID_MULTI_ERROR_MANAGER,
+                                     sizeof(ideErrorCollectionStack),
+                                     (void **)&sError)
+                  != IDE_SUCCESS );
+
+        IDU_LIST_INIT_OBJ( sListNode, sError );
+    }
+    *aListNode = sListNode;
+
+    return IDE_SUCCESS;
+    IDE_EXCEPTION_END;
+    return IDE_FAILURE;
+}
+
+/*
+ * TASK-7218 Multi-Error Handling 2nd
+ *   1. mIsAllTheSame ¼³Á¤
+ *   2. Multi-Error¿ë ¿¡·¯ ¸Ş½ÃÁö ´©Àû
+ */
+static IDE_RC ideErrorCollectionSetMultiError( UInt    aErrorCode,
+                                          SChar  *aErrorMessage )
+{
+    ideErrorCollection  *sErrorMgr = &(gIdeErrorMgr.mErrors);
+    SInt                 sBufferSize;
+
+    // 1.
+    if ( sErrorMgr->mErrorListCnt == 1 ) // first input
+    {
+        sErrorMgr->mMultiErrorMsgLen = 0;
+        sErrorMgr->mIsAllTheSame = ID_TRUE;
+    }
+    else
+    {
+        /* ´©ÀûµÈ ¿¡·¯ ÄÚµå°¡ ¸ğµÎ µ¿ÀÏÇÑ °æ¿ì¿¡¸¸ °Ë»çÇÏ¸é µÈ´Ù.
+         * ¸Ç ¾Õ ¿¡·¯ ÄÚµå¸¦ °¡Á®¿Í¼­ ºñ±³ÇÑ´Ù. */
+        if ( ( sErrorMgr->mIsAllTheSame == ID_TRUE ) &&
+             ( aErrorCode != ideErrorCollectionFirstErrorCode() ) )
+        {
+            sErrorMgr->mIsAllTheSame = ID_FALSE;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    // 2.
+    sBufferSize = MAX_LAST_ERROR_MSG_LEN - sErrorMgr->mMultiErrorMsgLen;
+    if ( sBufferSize > 1 )
+    {
+        sErrorMgr->mMultiErrorMsgLen += idlOS::snprintf(
+               sErrorMgr->mMultiErrorMessage + sErrorMgr->mMultiErrorMsgLen,
+               sBufferSize,
+               (sErrorMgr->mErrorListCnt == 1)? "%s" : "\n%s",
+               aErrorMessage );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+    return IDE_SUCCESS;
+}
+
+IDE_RC ideErrorCollectionAdd( UInt    aErrorCode,
+                              SChar  *aErrorMessage,
+                              UInt    aNodeId )
+{
+    iduListNode             *sListNode = NULL;
+    ideErrorCollectionStack *sError    = NULL;
+    ideErrorCollection      *sErrorMgr = &(gIdeErrorMgr.mErrors);
+
+    // Skip to add an error after IDE_POP
+    IDE_TEST( sErrorMgr->mFreezeCnt > 0 );
+
+    /* defense code
+     *   iduList º¯¼öÀÎ sErrorMgr->mErrorList´Â »ç¿ëÀü¿¡ ÃÊ±âÈ­ ÇÊ¿ä.
+     *   ideErrorCollectionInit() ÇÔ¼ö¸¦ »ç¿ëÇØ¼­ ÃÊ±âÈ­°¡ ¼öÇàµÇÁö¸¸,
+     *   È¤½Ã¶óµµ »õ´Â µ¥°¡ ÀÖÀ»±îºÁ ¹æ¾î ÄÚµå »ğÀÔ.
+     */
+    if ( sErrorMgr->mErrorListCnt == 0 )
+    {
+        IDU_LIST_INIT( &(sErrorMgr->mErrorList) );
+    }
+    if ( sErrorMgr->mFreeListCnt == 0 )
+    {
+        IDU_LIST_INIT( &(sErrorMgr->mFreeList) );
+    }
+
+    IDE_TEST_RAISE( ideErrorCollectionGetNode( &sListNode )
+                    != IDE_SUCCESS, InsufficientMemory );
+
+    sError = (ideErrorCollectionStack*) (sListNode->mObj);
+
+    sError->mErrorCode = aErrorCode;
+    idlOS::strcpy( sError->mErrorMessage, aErrorMessage );
+    sError->mNodeId = aNodeId;
+
+    IDU_LIST_ADD_LAST( &(sErrorMgr->mErrorList), sListNode );
+
+    sErrorMgr->mErrorListCnt++;
+
+    /* TASK-7218 Multi-Error Handling 2nd */
+    ideErrorCollectionSetMultiError( aErrorCode, aErrorMessage );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(InsufficientMemory);
+    {
+        IDE_SET(ideSetErrorCode(idERR_ABORT_InsufficientMemory));
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+UInt ideErrorCollectionFirstErrorCode()
+{
+    iduList *sListNode  = NULL;
+    iduList *sErrorList = &(gIdeErrorMgr.mErrors.mErrorList);
+
+    IDE_TEST( IDU_LIST_IS_EMPTY( sErrorList ) == ID_TRUE );
+
+    sListNode = IDU_LIST_GET_FIRST( sErrorList );
+    return ((ideErrorCollectionStack*)(sListNode->mObj))->mErrorCode;
+
+    IDE_EXCEPTION_END;
+    return 0;
+}
+
+UInt ideErrorCollectionLastErrorCode()
+{
+    iduList *sListNode  = NULL;
+    iduList *sErrorList = &(gIdeErrorMgr.mErrors.mErrorList);
+
+    IDE_TEST( IDU_LIST_IS_EMPTY( sErrorList ) == ID_TRUE );
+
+    sListNode = IDU_LIST_GET_LAST( sErrorList );
+    return ((ideErrorCollectionStack*)(sListNode->mObj))->mErrorCode;
+
+    IDE_EXCEPTION_END;
+    return 0;
+}
+
+SChar* ideErrorCollectionFirstErrorMsg()
+{
+    iduList *sListNode  = NULL;
+    iduList *sErrorList = &(gIdeErrorMgr.mErrors.mErrorList);
+
+    IDE_TEST( IDU_LIST_IS_EMPTY( sErrorList ) == ID_TRUE );
+
+    sListNode = IDU_LIST_GET_FIRST( sErrorList );
+    return ((ideErrorCollectionStack*)(sListNode->mObj))->mErrorMessage;
+
+    IDE_EXCEPTION_END;
+    return NULL;
+}
+
+SChar* ideErrorCollectionLastErrorMsg()
+{
+    iduList *sListNode  = NULL;
+    iduList *sErrorList = &(gIdeErrorMgr.mErrors.mErrorList);
+
+    IDE_TEST( IDU_LIST_IS_EMPTY( sErrorList ) == ID_TRUE );
+
+    sListNode = IDU_LIST_GET_LAST( sErrorList );
+    return ((ideErrorCollectionStack*)(sListNode->mObj))->mErrorMessage;
+
+    IDE_EXCEPTION_END;
+    return NULL;
+}
+
+UInt ideErrorCollectionFirstErrorNodeId()
+{
+    iduList *sListNode  = NULL;
+    iduList *sErrorList = &(gIdeErrorMgr.mErrors.mErrorList);
+
+    IDE_TEST( IDU_LIST_IS_EMPTY( sErrorList ) == ID_TRUE );
+
+    sListNode = IDU_LIST_GET_FIRST( sErrorList );
+    return ((ideErrorCollectionStack*)(sListNode->mObj))->mNodeId;
+
+    IDE_EXCEPTION_END;
+    return 0;
+}
+
+void ideErrorCollectionRemoveFirst()
+{
+    iduList *sListNode  = NULL;
+    iduList *sErrorList = &(gIdeErrorMgr.mErrors.mErrorList);
+    iduList *sFreeList  = &(gIdeErrorMgr.mErrors.mFreeList);
+
+    if ( IDU_LIST_IS_EMPTY( sErrorList ) == ID_FALSE )
+    {
+        sListNode = IDU_LIST_GET_FIRST( sErrorList );
+
+        IDU_LIST_REMOVE( sListNode );
+        IDU_LIST_ADD_LAST( sFreeList, sListNode );
+
+        gIdeErrorMgr.mErrors.mErrorListCnt--;
+        gIdeErrorMgr.mErrors.mFreeListCnt++;
+    }
+
+    return;
+}
+
+void ideErrorCollectionRemoveLast()
+{
+    iduList *sListNode  = NULL;
+    iduList *sErrorList = &(gIdeErrorMgr.mErrors.mErrorList);
+    iduList *sFreeList  = &(gIdeErrorMgr.mErrors.mFreeList);
+
+    if ( IDU_LIST_IS_EMPTY( sErrorList ) == ID_FALSE )
+    {
+        sListNode = IDU_LIST_GET_LAST( sErrorList );
+
+        IDU_LIST_REMOVE( sListNode );
+        IDU_LIST_ADD_LAST( sFreeList, sListNode );
+
+        gIdeErrorMgr.mErrors.mErrorListCnt--;
+        gIdeErrorMgr.mErrors.mFreeListCnt++;
+    }
+}
+
+SInt ideErrorCollectionSize()
+{
+    return gIdeErrorMgr.mErrors.mErrorListCnt;
+}
+
+void ideErrorCollectionInit()
+{
+    ideErrorCollection *sErrorMgr = &(gIdeErrorMgr.mErrors);
+
+    sErrorMgr->mErrorListCnt = 0;
+    sErrorMgr->mFreeListCnt = 0;
+    sErrorMgr->mFreezeCnt = 0;
+    sErrorMgr->mIsAllTheSame = ID_TRUE;
+    sErrorMgr->mMultiErrorMsgLen = 0;
+
+    IDU_LIST_INIT( &(sErrorMgr->mErrorList) );
+    IDU_LIST_INIT( &(sErrorMgr->mFreeList) );
+}
+
+void ideErrorCollectionClear()
+{
+    iduListNode *sIterator = NULL;
+    iduListNode *sNextNode = NULL;
+
+    ideErrorCollection *sErrorMgr = &(gIdeErrorMgr.mErrors);
+    iduList            *sFreeList = &(sErrorMgr->mFreeList);
+
+    // Defense Code
+    if ( sErrorMgr->mErrorListCnt == 0 )
+    {
+        IDU_LIST_INIT( &(sErrorMgr->mErrorList) );
+    }
+    if ( sErrorMgr->mFreeListCnt == 0 )
+    {
+        IDU_LIST_INIT( sFreeList );
+    }
+
+    if ( sErrorMgr->mErrorListCnt > 0 )
+    {
+        IDU_LIST_ITERATE_SAFE( &(sErrorMgr->mErrorList),
+                               sIterator,
+                               sNextNode )
+        {
+            IDU_LIST_REMOVE( sIterator );
+            IDU_LIST_ADD_LAST( sFreeList, sIterator );
+            sErrorMgr->mErrorListCnt--;
+            sErrorMgr->mFreeListCnt++;
+        }
+    }
+
+    sErrorMgr->mIsAllTheSame = ID_TRUE;
+    sErrorMgr->mMultiErrorMsgLen = 0;
+}
+
+void ideErrorCollectionDestroy()
+{
+    iduListNode *sIterator = NULL;
+    iduListNode *sNextNode = NULL;
+
+    ideErrorCollectionStack *sError;
+    ideErrorCollection      *sErrorMgr = &(gIdeErrorMgr.mErrors);
+
+    if ( sErrorMgr->mErrorListCnt > 0 )
+    {
+        IDU_LIST_ITERATE_SAFE( &(sErrorMgr->mErrorList),
+                               sIterator,
+                               sNextNode )
+        {
+            sError = (ideErrorCollectionStack *)sIterator->mObj;
+            (void)iduMemMgr::free( (void*)sError );
+            IDU_LIST_REMOVE( sIterator );
+            (void)iduMemMgr::free( (void*)sIterator );
+        }
+    }
+
+    if ( sErrorMgr->mFreeListCnt > 0 )
+    {
+        IDU_LIST_ITERATE_SAFE( &(sErrorMgr->mFreeList),
+                               sIterator,
+                               sNextNode )
+        {
+            sError = (ideErrorCollectionStack *)sIterator->mObj;
+            (void)iduMemMgr::free( (void*)sError );
+            IDU_LIST_REMOVE( sIterator );
+            (void)iduMemMgr::free( (void*)sIterator );
+        }
+    }
+
+    ideErrorCollectionInit();
+}
+
+idBool ideErrorCollectionIsAllTheSame()
+{
+    return gIdeErrorMgr.mErrors.mIsAllTheSame;
+}
+
+SChar* ideErrorCollectionMultiErrorMsg()
+{
+    return gIdeErrorMgr.mErrors.mMultiErrorMessage;
 }
 

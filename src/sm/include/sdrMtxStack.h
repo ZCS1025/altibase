@@ -68,11 +68,11 @@ private:
 };
 
 /***********************************************************************
- * Description : ìŠ¤íƒì„ ì´ˆê¸°í™”í•œë‹¤.
+ * Description : ½ºÅÃÀ» ÃÊ±âÈ­ÇÑ´Ù.
  *
  * - 1st. code design
  *
- *   sizeë§Œí¼ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•œë‹¤.
+ *   size¸¸Å­ ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÑ´Ù.
  *   
  **********************************************************************/
 inline IDE_RC sdrMtxStack::initialize( sdrMtxStackInfo *  aStack )
@@ -86,9 +86,9 @@ inline IDE_RC sdrMtxStack::initialize( sdrMtxStackInfo *  aStack )
 }
 
 /***********************************************************************
- * Description : íŒŒê´´ì
+ * Description : ÆÄ±«ÀÚ
  *
- * ë©”ëª¨ë¦¬ íŒŒê´´
+ * ¸Ş¸ğ¸® ÆÄ±«
  **********************************************************************/
 inline IDE_RC sdrMtxStack::destroy( sdrMtxStackInfo * /*aStack*/ )
 {
@@ -96,14 +96,14 @@ inline IDE_RC sdrMtxStack::destroy( sdrMtxStackInfo * /*aStack*/ )
 }
 
 /***********************************************************************
- * Description : í•˜ë‚˜ì˜ itemì„ stackì— ë„£ëŠ”ë‹¤.
+ * Description : ÇÏ³ªÀÇ itemÀ» stack¿¡ ³Ö´Â´Ù.
  *
- * ì˜¤ë¸Œì íŠ¸ëŠ” ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹ë°›ì€ ìƒíƒœì„
+ * ¿ÀºêÁ§Æ®´Â ¸Ş¸ğ¸®¸¦ ÇÒ´ç¹ŞÀº »óÅÂÀÓ
  *
  * - 1st. code design
  *
- * if( stackì´ ê½‰ ì°¼ë‹¤ )
- *     2ë°°ë¡œ resize
+ * if( stackÀÌ ²Ë Ã¡´Ù )
+ *     2¹è·Î resize
  *
  * array[size++] = item
  * 
@@ -118,8 +118,8 @@ inline IDE_RC sdrMtxStack::push( sdrMtxStackInfo * aStack,
     IDE_DASSERT( validate( aStack ) == ID_TRUE );
 
     // BUG-13972
-    // sNewSizeê°€ ë¹„ì •ìƒì ìœ¼ë¡œ ì»¤ì§€ëŠ” ê²½ìš°
-    // sdrMtxStackì„ dumpí•˜ê³  ì„œë²„ë¥¼ ê°•ì œ ë¹„ì •ìƒ ì¢…ë£Œ ì‹œí‚¨ë‹¤.
+    // sNewSize°¡ ºñÁ¤»óÀûÀ¸·Î Ä¿Áö´Â °æ¿ì
+    // sdrMtxStackÀ» dumpÇÏ°í ¼­¹ö¸¦ °­Á¦ ºñÁ¤»ó Á¾·á ½ÃÅ²´Ù.
     sIndex = aStack->mCurrSize;
 
     if ( sIndex < SDR_MAX_MTX_STACK_SIZE )
@@ -138,11 +138,11 @@ inline IDE_RC sdrMtxStack::push( sdrMtxStackInfo * aStack,
 }
 
 /***********************************************************************
- * Description : ê°€ì¥ ìœ„ì˜ itemì„ stackì—ì„œ ì‚­ì œí•œë‹¤.
+ * Description : °¡Àå À§ÀÇ itemÀ» stack¿¡¼­ »èÁ¦ÇÑ´Ù.
  * 
  * - 1st. code design
  *
- * aStack->mSizeë¥¼ ê°ì†Œ
+ * aStack->mSize¸¦ °¨¼Ò
  *
  **********************************************************************/
 inline sdrMtxLatchItem * sdrMtxStack::pop( sdrMtxStackInfo * aStack )
@@ -161,7 +161,7 @@ inline sdrMtxLatchItem * sdrMtxStack::pop( sdrMtxStackInfo * aStack )
 }
 
 /***********************************************************************
- * Description : í˜„ì¬ stackì˜ sizeë¥¼ ì–»ëŠ”ë‹¤.
+ * Description : ÇöÀç stackÀÇ size¸¦ ¾ò´Â´Ù.
  **********************************************************************/
 inline UInt sdrMtxStack::getCurrSize( sdrMtxStackInfo * aStack )
 {
@@ -170,10 +170,10 @@ inline UInt sdrMtxStack::getCurrSize( sdrMtxStackInfo * aStack )
 }
 
 /***********************************************************************
- * Description : stackì´ ë¹„ì–´ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
+ * Description : stackÀÌ ºñ¾îÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
  *
  * - 1st. code design
- *   + if( sizeê°€ 0 )
+ *   + if( size°¡ 0 )
  *         return true
  *   + return false
  **********************************************************************/

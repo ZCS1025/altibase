@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfRegExpCount.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfRegExpCount.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -71,7 +71,7 @@ IDE_RC mtfRegExpReverseFindPosition( UShort*           aPosition,
 mtfModule mtfRegExpCount = {
     2|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfRegExpCountFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -161,7 +161,7 @@ IDE_RC mtfRegExpCountEstimate( mtcNode*     aNode,
                                         sModules )
               != IDE_SUCCESS );
 
-    /* ê²°ê³¼ë¥¼ ì €ì¥í•¨ */
+    /* °á°ú¸¦ ÀúÀåÇÔ */
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      & mtdInteger,
                                      0,
@@ -169,7 +169,7 @@ IDE_RC mtfRegExpCountEstimate( mtcNode*     aNode,
                                      0 )
               != IDE_SUCCESS );
 
-    /* regexpì˜ compiled patternì„ ì €ì¥í•¨ */
+    /* regexpÀÇ compiled patternÀ» ÀúÀåÇÔ */
     sPrecision = MTF_REG_EXPRESSION_SIZE( aStack[2].column->precision );
     
     IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
@@ -231,7 +231,7 @@ IDE_RC mtfRegExpCountEstimate( mtcNode*     aNode,
             aTemplate->rows[aNode->table].execute[aNode->column].calculateInfo =
                 sCompiledExpression;
 
-            // ë”ì´ìƒ ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
+            // ´õÀÌ»ó »ç¿ëÇÏÁö ¾ÊÀ½
             IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                              & mtdBinary,
                                              1,
@@ -257,7 +257,7 @@ IDE_RC mtfRegExpCountEstimate( mtcNode*     aNode,
         aNode->lflag &= ~MTC_NODE_REESTIMATE_MASK;
         aNode->lflag |= MTC_NODE_REESTIMATE_TRUE;
             
-        // BUG-38070 undef typeìœ¼ë¡œ re-estimateí•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // BUG-38070 undef typeÀ¸·Î re-estimateÇÏÁö ¾Ê´Â´Ù.
         if ( ( aTemplate->variableRow != ID_USHORT_MAX ) &&
              ( ( aNode->lflag & MTC_NODE_BIND_MASK ) == MTC_NODE_BIND_EXIST ) )
         {
@@ -283,7 +283,7 @@ IDE_RC mtfRegExpCountEstimate( mtcNode*     aNode,
         aNode->lflag |= MTC_NODE_REESTIMATE_FALSE;
     }
     
-    /* BUG-44740 mtfRegExpression ì¬ì‚¬ìš©ì„ ìœ„í•´ Tuple Rowë¥¼ ì´ˆê¸°í™”í•œë‹¤. */
+    /* BUG-44740 mtfRegExpression Àç»ç¿ëÀ» À§ÇØ Tuple Row¸¦ ÃÊ±âÈ­ÇÑ´Ù. */
     aTemplate->rows[aNode->table].lflag &= ~MTC_TUPLE_ROW_MEMSET_MASK;
     aTemplate->rows[aNode->table].lflag |= MTC_TUPLE_ROW_MEMSET_TRUE;
 
@@ -317,21 +317,21 @@ IDE_RC mtfRegExpGetCount( const mtlModule*  aLanguage,
     
     *aCount = 0;
     
-    // íƒìƒ‰ì„ ì‹œì‘í•  ìœ„ì¹˜ ì¡°ì •
+    // Å½»öÀ» ½ÃÀÛÇÒ À§Ä¡ Á¶Á¤
     sSourceIndex = (UChar*) aSource;
     sSourceFence = sSourceIndex + aSourceLen;
     
     sStart = aStart;
     while ( sStart - 1 > 0 )
     {
-        // TASK-3420 ë¬¸ìì—´ ì²˜ë¦¬ ì •ì±… ê°œì„ 
+        // TASK-3420 ¹®ÀÚ¿­ Ã³¸® Á¤Ã¥ °³¼±
         (void)aLanguage->nextCharPtr( & sSourceIndex, sSourceFence );
         --sStart;
     }
    
     // BUG-45386
-    // 'ABC', 'B*' ì´ëŸ° ê²½ìš° endOfLineì—ì„œë„ ë§¤ì¹˜ë˜ì–´ì•¼ í•œë‹¤.
-    // ë”°ë¼ì„œ sSourceIndexê°€ sSourceFenceì¸ ê²½ìš°ì—ë„ searchë¥¼ í•œë‹¤.
+    // 'ABC', 'B*' ÀÌ·± °æ¿ì endOfLine¿¡¼­µµ ¸ÅÄ¡µÇ¾î¾ß ÇÑ´Ù.
+    // µû¶ó¼­ sSourceIndex°¡ sSourceFenceÀÎ °æ¿ì¿¡µµ search¸¦ ÇÑ´Ù.
     while ( sSourceIndex <= sSourceFence )
     {
         if ( mtfRegExp::search( aExp,
@@ -340,7 +340,7 @@ IDE_RC mtfRegExpGetCount( const mtlModule*  aLanguage,
                                 &sBeginStr,
                                 &sEndStr ) == ID_TRUE )
         {
-            /* 'ABCDEF','B*' ì´ëŸ¬í•œ ê²½ìš° sEndStrì´ ì£¼ì–´ì§„ sSourceIndexì™€ ê°™ì„ìˆ˜ ìˆë‹¤. */
+            /* 'ABCDEF','B*' ÀÌ·¯ÇÑ °æ¿ì sEndStrÀÌ ÁÖ¾îÁø sSourceIndex¿Í °°À»¼ö ÀÖ´Ù. */
             if ( sSourceIndex != (UChar*)sEndStr )
             {
                 sSourceIndex = (UChar*)sEndStr;
@@ -363,7 +363,7 @@ IDE_RC mtfRegExpGetCount( const mtlModule*  aLanguage,
     return IDE_SUCCESS;
 }
 
-/* aLength ê¹Œì§€ì˜ ë¬¸ì ìˆ˜ë¥¼ ë°˜í™˜ í•œë‹¤. */
+/* aLength ±îÁöÀÇ ¹®ÀÚ ¼ö¸¦ ¹İÈ¯ ÇÑ´Ù. */
 UShort mtfRegExpGetCharCount( const mtlModule*  aLanguage,
                               const UChar*      aSource,
                               UShort            aLength )
@@ -430,9 +430,9 @@ IDE_RC mtfRegExpCountCalculateFor2Args( mtcNode*     aNode,
         sPatternLength = sVarchar2->length;
 
         /* BUG-45213 valgrin warning
-         * SortTempì™€ ê°™ì´ mtrNodeë¡œ ìŒ“ì¼ ê²½ìš° í•­ìƒ ìƒˆë¡œìš´ Rowê°€
-         * í• ë‹¹ë˜ë¯€ë¡œ ì´ì „ sCompiledExpression->patternLen ë¹„êµí•´ë´ì•¼
-         * ì˜ë¯¸ê°€ ì—†ë‹¤ ë”°ë¼ì„œ ì´ëŸ´ê²½ìš° ê·¸ëƒ¥ Compileí•œë‹¤.
+         * SortTemp¿Í °°ÀÌ mtrNode·Î ½×ÀÏ °æ¿ì Ç×»ó »õ·Î¿î Row°¡
+         * ÇÒ´çµÇ¹Ç·Î ÀÌÀü sCompiledExpression->patternLen ºñ±³ÇØºÁ¾ß
+         * ÀÇ¹Ì°¡ ¾ø´Ù µû¶ó¼­ ÀÌ·²°æ¿ì ±×³É CompileÇÑ´Ù.
          */
         if ( ( aTemplate->rows[aNode->table].lflag & MTC_TUPLE_PLAN_MTR_MASK )
              == MTC_TUPLE_PLAN_MTR_TRUE )
@@ -538,15 +538,15 @@ IDE_RC mtfRegExpCountCalculateFor3Args( mtcNode*     aNode,
         sPattern = sVarchar2->value;
         sPatternLength = sVarchar2->length;
 
-        // Sourceì˜ ë¬¸ì ê°œìˆ˜ë¥¼ êµ¬í•¨
+        // SourceÀÇ ¹®ÀÚ °³¼ö¸¦ ±¸ÇÔ
         sSourceCharCount = mtfRegExpGetCharCount( aStack[1].column->language,
                                                   sVarchar1->value,
                                                   sVarchar1->length );
 
         /* BUG-45213 valgrin warning
-         * SortTempì™€ ê°™ì´ mtrNodeë¡œ ìŒ“ì¼ ê²½ìš° í•­ìƒ ìƒˆë¡œìš´ Rowê°€
-         * í• ë‹¹ë˜ë¯€ë¡œ ì´ì „ sCompiledExpression->patternLen ë¹„êµí•´ë´ì•¼
-         * ì˜ë¯¸ê°€ ì—†ë‹¤ ë”°ë¼ì„œ ì´ëŸ´ê²½ìš° ê·¸ëƒ¥ Compileí•œë‹¤.
+         * SortTemp¿Í °°ÀÌ mtrNode·Î ½×ÀÏ °æ¿ì Ç×»ó »õ·Î¿î Row°¡
+         * ÇÒ´çµÇ¹Ç·Î ÀÌÀü sCompiledExpression->patternLen ºñ±³ÇØºÁ¾ß
+         * ÀÇ¹Ì°¡ ¾ø´Ù µû¶ó¼­ ÀÌ·²°æ¿ì ±×³É CompileÇÑ´Ù.
          */
         if ( ( aTemplate->rows[aNode->table].lflag & MTC_TUPLE_PLAN_MTR_MASK )
              == MTC_TUPLE_PLAN_MTR_TRUE )
@@ -585,8 +585,8 @@ IDE_RC mtfRegExpCountCalculateFor3Args( mtcNode*     aNode,
         }
 
         /* BUG-34232
-         * sStart( íƒìƒ‰ì„ ì‹œì‘í•  ìœ„ì¹˜ )ê°€ ì…ë ¥ë°›ì€ ë¬¸ìì—´ ê¸¸ì´ë³´ë‹¤ í° ê²½ìš°, 
-         * ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¤ëŠ” ëŒ€ì‹  0ì„ ë¦¬í„´í•˜ë„ë¡ ìˆ˜ì • */
+         * sStart( Å½»öÀ» ½ÃÀÛÇÒ À§Ä¡ )°¡ ÀÔ·Â¹ŞÀº ¹®ÀÚ¿­ ±æÀÌº¸´Ù Å« °æ¿ì, 
+         * ¿¡·¯¸¦ ¹ß»ı½ÃÅ°´Â ´ë½Å 0À» ¸®ÅÏÇÏµµ·Ï ¼öÁ¤ */
         if ( sStart > sSourceCharCount )
         {
             sCount = 0;
@@ -707,14 +707,14 @@ IDE_RC mtfRegExpCountCalculateFor3ArgsFast( mtcNode*     aNode,
         IDE_DASSERT( aInfo != NULL );
         sCompiledExpression = (mtfRegExpression*)aInfo;
         
-        // Sourceì˜ ë¬¸ì ê°œìˆ˜ë¥¼ êµ¬í•¨
+        // SourceÀÇ ¹®ÀÚ °³¼ö¸¦ ±¸ÇÔ
         sSourceCharCount = mtfRegExpGetCharCount( aStack[1].column->language,
                                                   sVarchar1->value,
                                                   sVarchar1->length );
         
         /* BUG-34232
-         * sStart( íƒìƒ‰ì„ ì‹œì‘í•  ìœ„ì¹˜ )ê°€ ì…ë ¥ë°›ì€ ë¬¸ìì—´ ê¸¸ì´ë³´ë‹¤ í° ê²½ìš°,
-         * ì—ëŸ¬ë¥¼ ë°œìƒì‹œí‚¤ëŠ” ëŒ€ì‹  0ì„ ë¦¬í„´í•˜ë„ë¡ ìˆ˜ì • */
+         * sStart( Å½»öÀ» ½ÃÀÛÇÒ À§Ä¡ )°¡ ÀÔ·Â¹ŞÀº ¹®ÀÚ¿­ ±æÀÌº¸´Ù Å« °æ¿ì,
+         * ¿¡·¯¸¦ ¹ß»ı½ÃÅ°´Â ´ë½Å 0À» ¸®ÅÏÇÏµµ·Ï ¼öÁ¤ */
         if ( sStart > sSourceCharCount )
         {
             sCount = 0;

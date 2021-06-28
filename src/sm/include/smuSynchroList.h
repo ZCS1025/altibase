@@ -31,43 +31,43 @@
 /*
    Synchronized List
 
-   ë™ì‹œì„± ì œì–´ëœ ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ì˜ êµ¬í˜„
+   µ¿½Ã¼º Á¦¾îµÈ ¸µÅ©µå ¸®½ºÆ®ÀÇ ±¸Çö
 */
 
 class smuSynchroList
 {
 public :
-    /* ê°ì²´ ì´ˆê¸°í™” */
+    /* °´Ã¼ ÃÊ±âÈ­ */
     IDE_RC initialize( SChar * aListName,
                        iduMemoryClientIndex aMemoryIndex);
     
-    /* ê°ì²´ íŒŒê´´ */
+    /* °´Ã¼ ÆÄ±« */
     IDE_RC destroy();
 
-    /* Linked Listì˜ Headì— Dataë¥¼ Add */
+    /* Linked ListÀÇ Head¿¡ Data¸¦ Add */
     IDE_RC addToHead( void * aData );
 
-    /* Linked Listì˜ Tailì— Dataë¥¼ Add */
+    /* Linked ListÀÇ Tail¿¡ Data¸¦ Add */
     IDE_RC addToTail( void * aData );
     
-    /* Linked Listì˜ Headë¡œë¶€í„° Dataë¥¼ ì œê±° */
+    /* Linked ListÀÇ Head·ÎºÎÅÍ Data¸¦ Á¦°Å */
     IDE_RC removeFromHead( void ** aData );
 
-    /*  Linked Listì˜ Tailë¡œë¶€í„° Dataë¥¼ ì œê±° */
+    /*  Linked ListÀÇ Tail·ÎºÎÅÍ Data¸¦ Á¦°Å */
     IDE_RC removeFromTail( void ** aData );
 
-    /* Linked Listì˜ Tailì„ ë¦¬í„´, ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°í•˜ì§€ëŠ” ì•ŠìŒ */
+    /* Linked ListÀÇ TailÀ» ¸®ÅÏ, ¸®½ºÆ®¿¡¼­ Á¦°ÅÇÏÁö´Â ¾ÊÀ½ */
     IDE_RC peekTail( void ** aData );
 
-    /* Linked Listì•ˆì˜ Elementê°¯ìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤ */
+    /* Linked List¾ÈÀÇ Element°¹¼ö¸¦ ¸®ÅÏÇÑ´Ù */
     IDE_RC getElementCount( UInt * aElemCount );
     
 
 protected :
-    UInt       mElemCount;    /* Linked Listì•ˆì˜ Element ê°¯ìˆ˜ */
-    smuList    mList;         /* Linked List ì˜ Base Node */
-    iduMemPool mListNodePool; /* Linked List Nodeì˜ Memory Pool */
-    iduMutex   mListMutex;    /* ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•œ Mutex */
+    UInt       mElemCount;    /* Linked List¾ÈÀÇ Element °¹¼ö */
+    smuList    mList;         /* Linked List ÀÇ Base Node */
+    iduMemPool mListNodePool; /* Linked List NodeÀÇ Memory Pool */
+    iduMutex   mListMutex;    /* µ¿½Ã¼º Á¦¾î¸¦ À§ÇÑ Mutex */
 };
 
 #endif /* _O_SMU_SYNCHRO_LIST_H_ */

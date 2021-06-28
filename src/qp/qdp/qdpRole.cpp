@@ -31,11 +31,11 @@
 /***********************************************************************
  *
  * Description :
- *    CREATE ROLE ... ì˜ validation ìˆ˜í–‰
+ *    CREATE ROLE ... ÀÇ validation ¼öÇà
  *
  * Implementation :
- *    1. CREATE ROLE ê¶Œí•œì´ ìˆëŠ”ì§€ ì²´í¬
- *    2. ê°™ì€ ì´ë¦„ì˜ ì‚¬ìš©ìê°€ ì´ë¯¸ ìˆëŠ”ì§€ ì²´í¬
+ *    1. CREATE ROLE ±ÇÇÑÀÌ ÀÖ´ÂÁö Ã¼Å©
+ *    2. °°Àº ÀÌ¸§ÀÇ »ç¿ëÀÚ°¡ ÀÌ¹Ì ÀÖ´ÂÁö Ã¼Å©
  *
  ***********************************************************************/
 IDE_RC qdpRole::validateCreateRole( qcStatement * aStatement )
@@ -46,7 +46,7 @@ IDE_RC qdpRole::validateCreateRole( qcStatement * aStatement )
 
     sParseTree = (qdUserParseTree *)aStatement->myPlan->parseTree;
 
-    /* Default Roleì„ ì§€ì›í•˜ì§€ ì•Šì•„ íŒ¨ìŠ¤ì›Œë“œëŠ” ì—†ë‹¤. */
+    /* Default RoleÀ» Áö¿øÇÏÁö ¾Ê¾Æ ÆĞ½º¿öµå´Â ¾ø´Ù. */
     IDE_DASSERT( QC_IS_NULL_NAME( sParseTree->password ) == ID_TRUE );    
 
     // check grant
@@ -77,11 +77,11 @@ IDE_RC qdpRole::validateCreateRole( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *    DROP ROLE ... ì˜ validation ìˆ˜í–‰
+ *    DROP ROLE ... ÀÇ validation ¼öÇà
  *
  * Implementation :
- *    1. ROLE ì¸ì§€ ì²´í¬ 
- *    2. DROP ANY ROLE ê¶Œí•œì´ ìˆëŠ”ì§€ ì²´í¬
+ *    1. ROLE ÀÎÁö Ã¼Å© 
+ *    2. DROP ANY ROLE ±ÇÇÑÀÌ ÀÖ´ÂÁö Ã¼Å©
  *
  ***********************************************************************/
 IDE_RC qdpRole::validateDropRole( qcStatement * aStatement )
@@ -141,11 +141,11 @@ IDE_RC qdpRole::validateDropRole( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *      CREATE ROLE ë¬¸ì˜ execution ìˆ˜í–‰ í•¨ìˆ˜
+ *      CREATE ROLE ¹®ÀÇ execution ¼öÇà ÇÔ¼ö
  *
  * Implementation :
- *      1. ìƒˆë¡œìš´ ì‚¬ìš©ìë¥¼ ìœ„í•œ user IDë¥¼ ë¶€ì—¬
- *      2. SYS_USERS_ ë©”íƒ€ í…Œì´ë¸”ì— ì‚¬ìš©ì ì •ë³´ ì…ë ¥
+ *      1. »õ·Î¿î »ç¿ëÀÚ¸¦ À§ÇÑ user ID¸¦ ºÎ¿©
+ *      2. SYS_USERS_ ¸ŞÅ¸ Å×ÀÌºí¿¡ »ç¿ëÀÚ Á¤º¸ ÀÔ·Â
  *
  ***********************************************************************/
 IDE_RC qdpRole::executeCreateRole( qcStatement * aStatement )
@@ -220,12 +220,12 @@ IDE_RC qdpRole::executeCreateRole( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *    DROP ROLE ìˆ˜í–‰
+ *    DROP ROLE ¼öÇà
  *
  * Implementation :
- *    1. USER ì¡´ì¬ ì—¬ë¶€ ê²€ì‚¬
- *    4. SYS_USERS_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ì‚­ì œ
- *    5. ê´€ë ¨ ê¶Œí•œ ì •ë³´ ì‚­ì œ
+ *    1. USER Á¸Àç ¿©ºÎ °Ë»ç
+ *    4. SYS_USERS_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ »èÁ¦
+ *    5. °ü·Ã ±ÇÇÑ Á¤º¸ »èÁ¦
  *    - SYS_USERS_, SYS_USER_ROLES_, SYS_GRANT_SYSTEM_, SYS_GRANT_OBJECT_
  *
  ***********************************************************************/
@@ -284,9 +284,9 @@ IDE_RC qdpRole::executeDropRole( qcStatement * aStatement )
 /***********************************************************************
  *
  * Description :
- *       ROLEì„ ë¶€ì—¬ ë°›ì€ GRANTEE LIST (USER) ë¥¼ ìƒì„±í•œë‹¤.
- *       reference, cascade constraint ì— userë¥¼ ì´ìš©í•˜ì—¬ ì°¸ì¡° ë¬´ê²°ì„±
- *       ì œì•½ ì¡°ê±´ì„ ì‚­ì œ í• ë•Œ ì‚¬ìš© ëœë‹¤.
+ *       ROLEÀ» ºÎ¿© ¹ŞÀº GRANTEE LIST (USER) ¸¦ »ı¼ºÇÑ´Ù.
+ *       reference, cascade constraint ¿¡ user¸¦ ÀÌ¿ëÇÏ¿© ÂüÁ¶ ¹«°á¼º
+ *       Á¦¾à Á¶°ÇÀ» »èÁ¦ ÇÒ¶§ »ç¿ë µÈ´Ù.
  *
  * Implementation :
  *       SELECT * FROM SYS_USER_ROLES_
@@ -400,7 +400,7 @@ IDE_RC qdpRole::getGranteeListByRoleID( qcStatement              * aStatement,
 /***********************************************************************
  *
  * Description :
- *    ì‚¬ìš© ìê°€ ë¶€ì—¬ ë°›ì€ roleì˜ ê°œìˆ˜ êµ¬í•œë‹¤.
+ *    »ç¿ë ÀÚ°¡ ºÎ¿© ¹ŞÀº roleÀÇ °³¼ö ±¸ÇÑ´Ù.
  *
  * Implementation :
  *     SELECT * FROM SYSTEM_.SYS_USER_ROLES_
@@ -506,7 +506,7 @@ IDE_RC qdpRole::getRoleCountByUserID( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Role List array êµ¬ì„±
+ *    Role List array ±¸¼º
  *
  * Implementation :
  *     SELECT * FROM SYSTEM_.SYS_USER_ROLES_
@@ -635,7 +635,7 @@ IDE_RC qdpRole::checkDDLCreateTablePriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -689,7 +689,7 @@ IDE_RC qdpRole::checkDDLCreateViewPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -744,7 +744,7 @@ IDE_RC qdpRole::checkDDLCreateIndexPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -800,7 +800,7 @@ IDE_RC qdpRole::checkDDLCreateSequencePriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -855,7 +855,7 @@ IDE_RC qdpRole::checkDDLCreatePSMPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -911,7 +911,7 @@ IDE_RC qdpRole::checkDDLCreateLibraryPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -966,7 +966,7 @@ IDE_RC qdpRole::checkDDLDropLibraryPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -1021,7 +1021,7 @@ IDE_RC qdpRole::checkDDLAlterLibraryPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -1077,7 +1077,7 @@ IDE_RC qdpRole::checkDMLExecuteLibraryPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -1134,7 +1134,7 @@ IDE_RC qdpRole::checkDDLCreateTriggerPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -1190,7 +1190,7 @@ IDE_RC qdpRole::checkDDLCreateTriggerTablePriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -1246,7 +1246,7 @@ IDE_RC qdpRole::checkDDLCreateSynonymPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -1300,7 +1300,7 @@ IDE_RC qdpRole::checkDDLCreatePublicSynonymPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -1353,7 +1353,7 @@ IDE_RC qdpRole::checkDDLCreateUserPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -1406,7 +1406,7 @@ IDE_RC qdpRole::checkDDLReplicationPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -1460,7 +1460,7 @@ IDE_RC qdpRole::checkDDLAlterTablePriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -1516,7 +1516,7 @@ IDE_RC qdpRole::checkDDLAlterIndexPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -1573,7 +1573,7 @@ IDE_RC qdpRole::checkDDLAlterSequencePriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -1628,7 +1628,7 @@ IDE_RC qdpRole::checkDDLAlterPSMPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -1683,7 +1683,7 @@ IDE_RC qdpRole::checkDDLAlterTriggerPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -1738,7 +1738,7 @@ IDE_RC qdpRole::checkDDLAlterUserPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -1792,7 +1792,7 @@ IDE_RC qdpRole::checkDDLAlterSystemPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -1897,7 +1897,7 @@ IDE_RC qdpRole::checkDDLDropTablePriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -1952,7 +1952,7 @@ IDE_RC qdpRole::checkDDLDropViewPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -2008,7 +2008,7 @@ IDE_RC qdpRole::checkDDLDropIndexPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -2064,7 +2064,7 @@ IDE_RC qdpRole::checkDDLDropSequencePriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -2119,7 +2119,7 @@ IDE_RC qdpRole::checkDDLDropPSMPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -2175,7 +2175,7 @@ IDE_RC qdpRole::checkDDLDropTriggerPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -2229,7 +2229,7 @@ IDE_RC qdpRole::checkDDLDropUserPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -2283,7 +2283,7 @@ IDE_RC qdpRole::checkDDLCreateDirectoryPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -2337,7 +2337,7 @@ IDE_RC qdpRole::checkDDLDropDirectoryPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -2397,7 +2397,7 @@ IDE_RC qdpRole::checkDMLExecutePSMPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -2527,7 +2527,7 @@ IDE_RC qdpRole::checkDMLSelectSequencePriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -2605,7 +2605,7 @@ IDE_RC qdpRole::checkDMLSelectTablePriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -2685,7 +2685,7 @@ IDE_RC qdpRole::checkDMLInsertTablePriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -2766,7 +2766,7 @@ IDE_RC qdpRole::checkDMLDeleteTablePriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -2847,7 +2847,7 @@ IDE_RC qdpRole::checkDMLUpdateTablePriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -2921,7 +2921,7 @@ IDE_RC qdpRole::checkDMLLockTablePriv( qcStatement    * aStatement,
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -2978,7 +2978,7 @@ IDE_RC qdpRole::checkDMLReadDirectoryPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -3035,7 +3035,7 @@ IDE_RC qdpRole::checkDMLWriteDirectoryPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -3091,7 +3091,7 @@ IDE_RC qdpRole::checkDDLCreateTableSpacePriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != aUserID )
     {
         sRoleList = sRoleListBuffer;
@@ -3142,7 +3142,7 @@ IDE_RC qdpRole::checkDDLAlterTableSpacePriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != aUserID )
     {
         sRoleList = sRoleListBuffer;
@@ -3193,7 +3193,7 @@ IDE_RC qdpRole::checkDDLManageTableSpacePriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != aUserID )
     {
         sRoleList = sRoleListBuffer;
@@ -3244,7 +3244,7 @@ IDE_RC qdpRole::checkDDLDropTableSpacePriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != aUserID )
     {
         sRoleList = sRoleListBuffer;
@@ -3296,7 +3296,7 @@ IDE_RC qdpRole::checkAccessAnyTBSPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != aUserID )
     {
         sRoleList = sRoleListBuffer;
@@ -3350,7 +3350,7 @@ IDE_RC qdpRole::checkAccessTBS(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != aUserID )
     {
         sRoleList = sRoleListBuffer;
@@ -3403,7 +3403,7 @@ IDE_RC qdpRole::checkDDLDropSynonymPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -3457,7 +3457,7 @@ IDE_RC qdpRole::checkDDLDropPublicSynonymPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -3511,7 +3511,7 @@ IDE_RC qdpRole::checkDBMSStatPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -3566,7 +3566,7 @@ IDE_RC qdpRole::checkDDLCreateMViewPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -3621,7 +3621,7 @@ IDE_RC qdpRole::checkDDLAlterMViewPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -3676,7 +3676,7 @@ IDE_RC qdpRole::checkDDLDropMViewPriv(
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -3733,7 +3733,7 @@ IDE_RC qdpRole::checkDDLCreateDatabaseLinkPriv( qcStatement * aStatement,
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -3787,7 +3787,7 @@ IDE_RC qdpRole::checkDDLDropDatabaseLinkPriv( qcStatement * aStatement,
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -3841,7 +3841,7 @@ IDE_RC qdpRole::checkDDLCreateRolePriv( qcStatement * aStatement )
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -3894,7 +3894,7 @@ IDE_RC qdpRole::checkDDLDropAnyRolePriv( qcStatement * aStatement )
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -3946,7 +3946,7 @@ IDE_RC qdpRole::checkDDLGrantAnyRolePriv( qcStatement * aStatement )
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -3998,7 +3998,7 @@ IDE_RC qdpRole::checkDDLGrantAnyPrivilegesPriv( qcStatement * aStatement )
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -4051,7 +4051,7 @@ IDE_RC qdpRole::checkDDLCreateAnyJobPriv( qcStatement * aStatement )
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -4103,7 +4103,7 @@ IDE_RC qdpRole::checkDDLDropAnyJobPriv( qcStatement * aStatement )
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;
@@ -4155,7 +4155,7 @@ IDE_RC qdpRole::checkDDLAlterAnyJobPriv( qcStatement * aStatement )
 
     sRoleList = QCG_GET_SESSION_USER_ROLE_LIST( aStatement );
 
-    // session userê°€ ë³€ê²½ëœ ê²½ìš° ë‹¤ì‹œ ê°€ì ¸ì˜¨ë‹¤.
+    // session user°¡ º¯°æµÈ °æ¿ì ´Ù½Ã °¡Á®¿Â´Ù.
     if ( sRoleList[0] != QCG_GET_SESSION_USER_ID( aStatement ) )
     {
         sRoleList = sRoleListBuffer;

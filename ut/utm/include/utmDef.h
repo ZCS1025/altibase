@@ -15,26 +15,17 @@
  */
  
 /***********************************************************************
- * $Id: utmDef.h 84392 2018-11-21 00:08:16Z bethy $
+ * $Id: utmDef.h 88494 2020-09-04 04:29:31Z chkim $
  **********************************************************************/
 
 #ifndef _O_UTM_DEF_H_
 #define _O_UTM_DEF_H_ 1
 
-#define ENV_PRODUCT_PREFIX      ""
-#define EXPORT_PRODUCT_LNAME    "aexport"
-#define EXPORT_PRODUCT_UNAME    "AEXPORT"
-#define ENV_ALTIBASE_PORT_NO    "ALTIBASE_PORT_NO"
-#define PROPERTY_PORT_NO        "PORT_NO"
-#define DEFAULT_PORT_NO         20300
+#include <uttEnv.h>
 
 #define A3EXPORT_CONFFILE       (SChar *)"conf"IDL_FILE_SEPARATORS EXPORT_PRODUCT_LNAME".properties"
-#define ISQL_PRODUCT_NAME       PRODUCT_PREFIX"isql"
-#define ILO_PRODUCT_NAME        PRODUCT_PREFIX"iloader"
 
-/* BUG-40407 SSL */
-#define ENV_ISQL_CONNECTION      ENV_PRODUCT_PREFIX"ISQL_CONNECTION"
-#define ENV_ALTIBASE_SSL_PORT_NO ALTIBASE_ENV_PREFIX"SSL_PORT_NO"
+#define ILO_PRODUCT_NAME        PRODUCT_PREFIX"iloader"
 
 #define CLI_CONNTYPE_TCP         1
 #define CLI_CONNTYPE_SSL         6
@@ -45,10 +36,10 @@
 #define QUERY_LEN     (1024)
 #define STR_LEN       (50)
 #define PARSE_LEN     (100)
-//fix BUG-17481 aexportÍ∞Ä partion disk tableÏùÑ ÏßÄÏõêÌï¥Ïïº ÌïúÎã§.
+//fix BUG-17481 aexport∞° partion disk table¿ª ¡ˆø¯«ÿæﬂ «—¥Ÿ.
 #define UTM_QUERY_LEN (2048)
 #define UTM_NAME_LEN  (128+20) /* BUG-39622: object max length(128) + alpha */
-/* PROJ-1107 Check Constraint ÏßÄÏõê */
+/* PROJ-1107 Check Constraint ¡ˆø¯ */
 #define UTM_CHECK_CONDITION_LEN (4000)
 /* PROJ-1090 Function-based Index */
 #define UTM_EXPRESSION_LEN      (4000)
@@ -72,7 +63,7 @@
 #define UTM_LIBRARY            (9)
 
 //BUG-22769
-#define UTM_PRIV_COUNT (10)   //ÏÇ¨Ïö©Ïûê Í≥ÑÏ†ï ÏÉùÏÑ±Ïãú Í∏∞Î≥∏Ï†ÅÏúºÎ°ú ÏÉùÏÑ±ÎêòÎäî Í∂åÌïúÏùò Ïàò
+#define UTM_PRIV_COUNT (10)   //ªÁøÎ¿⁄ ∞Ë¡§ ª˝º∫Ω√ ±‚∫ª¿˚¿∏∑Œ ª˝º∫µ«¥¬ ±««—¿« ºˆ
 
 /* BUG-44595 */
 #define UTM_CREATE_PROCEDURE           (0)
@@ -142,9 +133,9 @@ typedef struct UserInfo
 
 /* BUG-17491 */
 /* 
- * server side ÏóêÏÑúÏùò partition method Ïóê ÎåÄÌïú Ï†ïÎ≥¥ : 
- * qp/src/include/qcmTableInfo.h Ïùò qcmPartitionMethod Ïóê Îî∞Îùº
- * UTM_PARTITION_METHOD Îì§ÏùÑ Ï†ïÏùòÌï®.
+ * server side ø°º≠¿« partition method ø° ¥Î«— ¡§∫∏ : 
+ * qp/src/include/qcmTableInfo.h ¿« qcmPartitionMethod ø° µ˚∂Û
+ * UTM_PARTITION_METHOD µÈ¿ª ¡§¿««‘.
  */
 typedef enum
 {
@@ -165,21 +156,33 @@ typedef struct
 
 /* BUG-36367 aexport must consider new objects, 'package' and 'library' */
 #define UTM_STR_ALL "ALL"
-#define UTM_STR_TBL "TBL"
-#define UTM_STR_INDEX "INDEX"
-#define UTM_STR_FK   "FK"
-#define UTM_STR_SEQ  "SEQ"
-#define UTM_STR_DBLINK "LINK"
-#define UTM_STR_PROC "PROC"
-#define UTM_STR_VIEW "VIEW"
-#define UTM_STR_TBS  "TBS"
-#define UTM_STR_TRIG "TRIG"
-#define UTM_STR_LIB  "LIB"
-#define UTM_STR_JOB  "JOB"
 #define UTM_STR_SYS  "SYS"
 #define UTM_STR_MANAGER "MANAGER"
 #define UTM_STR_IN   "in"
 #define UTM_STR_OUT  "out"
+
+/* BUG-47159 Using DBMS_METADATA package in aexport */
+#define UTM_OBJ_TYPE_CONSTRAINT  "CONSTRAINT"
+#define UTM_OBJ_TYPE_DB_LINK     "DB_LINK"
+#define UTM_OBJ_TYPE_INDEX       "INDEX"
+#define UTM_OBJ_TYPE_JOB         "JOB"
+#define UTM_OBJ_TYPE_QUEUE       "QUEUE"
+#define UTM_OBJ_TYPE_REF_CONST   "REF_CONSTRAINT"
+#define UTM_OBJ_TYPE_REPLICATION "REPLICATION"
+#define UTM_OBJ_TYPE_ROLE        "ROLE"
+#define UTM_OBJ_TYPE_SEQUENCE    "SEQUENCE"
+#define UTM_OBJ_TYPE_TABLE       "TABLE"
+#define UTM_OBJ_TYPE_TABLESPACE  "TABLESPACE"
+#define UTM_OBJ_TYPE_COMMENT     "COMMENT"
+#define UTM_OBJ_TYPE_ACCESS_MODE "ACCESS_MODE"
+#define UTM_OBJ_TYPE_PROCEDURE   "PROCEDURE"
+#define UTM_OBJ_TYPE_FUNCTION    "FUNCTION"
+#define UTM_OBJ_TYPE_VIEW        "VIEW"
+#define UTM_OBJ_TYPE_DIRECTORY   "DIRECTORY"
+#define UTM_OBJ_TYPE_MVIEW       "MATERIALIZED_VIEW"
+#define UTM_OBJ_TYPE_PKG_SPEC    "PACKAGE_SPEC"
+#define UTM_OBJ_TYPE_PKG_BODY    "PACKAGE_BODY"
+#define UTM_OBJ_TYPE_LIBRARY     "LIBRARY"
 
 /* BUG-44831 Exporting INDEX Stats for PK, Unique constraint
  * with system-given name */

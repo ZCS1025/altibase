@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsfSendText.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qsfSendText.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <idl.h>
@@ -48,7 +48,7 @@ static IDE_RC qsfEstimate( mtcNode     * aNode,
 mtfModule qsfSendTextModule = {
     1 | MTC_NODE_OPERATOR_MISC | MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0, /* default selectivity (ÎπÑÍµê Ïó∞ÏÇ∞Ïûê ÏïÑÎãò) */
+    1.0, /* default selectivity (∫Ò±≥ ø¨ªÍ¿⁄ æ∆¥‘) */
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -107,7 +107,7 @@ IDE_RC qsfEstimate( mtcNode     * aNode,
 
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
-    /* ReturnÍ∞íÏùÄ Integer */
+    /* Return∞™¿∫ Integer */
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      sModule,
                                      0,

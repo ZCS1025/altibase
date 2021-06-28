@@ -23,13 +23,13 @@ static acl_mem_pool_t *gCmtVariablePiecePoolClient = NULL;
 ACI_RC cmtVariableInitializeStatic()
 {
     /*
-     * Pool ë©”ëª¨ë¦¬ í• ë‹¹
+     * Pool ¸Þ¸ð¸® ÇÒ´ç
      */
     ACI_TEST(acpMemAlloc((void **)&gCmtVariablePiecePoolClient, ACI_SIZEOF(acl_mem_pool_t))
              != ACP_RC_SUCCESS);
 
     /*
-     * Pool ì´ˆê¸°í™”
+     * Pool ÃÊ±âÈ­
      */
     ACI_TEST(aclMemPoolCreate(gCmtVariablePiecePoolClient,
                               ACI_SIZEOF(cmtVariablePiece),
@@ -44,12 +44,12 @@ ACI_RC cmtVariableInitializeStatic()
 ACI_RC cmtVariableFinalizeStatic()
 {
     /*
-     * Pool ì‚­ì œ
+     * Pool »èÁ¦
      */
     aclMemPoolDestroy(gCmtVariablePiecePoolClient);
 
     /*
-     * Pool ë©”ëª¨ë¦¬ í•´ì œ
+     * Pool ¸Þ¸ð¸® ÇØÁ¦
      */
     acpMemFree(gCmtVariablePiecePoolClient);
     gCmtVariablePiecePoolClient = NULL;
@@ -61,7 +61,7 @@ ACI_RC cmtVariableFinalizeStatic()
 ACI_RC cmtVariableInitialize(cmtVariable *aVariable)
 {
     /*
-     * ë©¤ë²„ ì´ˆê¸°í™”
+     * ¸â¹ö ÃÊ±âÈ­
      */
     aVariable->mTotalSize   = 0;
     aVariable->mCurrentSize = 0;
@@ -79,14 +79,14 @@ ACI_RC cmtVariableFinalize(cmtVariable *aVariable)
     acp_list_node_t  *sNodeNext;
 
     /*
-     * Piece Listì˜ Pieceë“¤ì„ Free
+     * Piece ListÀÇ PieceµéÀ» Free
      */
     ACP_LIST_ITERATE_SAFE(&aVariable->mPieceList, sIterator, sNodeNext)
     {
         sPiece = (cmtVariablePiece *)sIterator->mObj;
 
         /*
-         * ê¸°ë³¸ PieceëŠ” Free í•  ìˆ˜ ì—†ìŒ
+         * ±âº» Piece´Â Free ÇÒ ¼ö ¾øÀ½
          */
         if (sPiece != &aVariable->mPiece)
         {
@@ -95,7 +95,7 @@ ACI_RC cmtVariableFinalize(cmtVariable *aVariable)
     }
 
     /*
-     * ì´ˆê¸°í™”
+     * ÃÊ±âÈ­
      */
     ACI_TEST(cmtVariableInitialize(aVariable) != ACI_SUCCESS);
 
@@ -115,17 +115,17 @@ ACI_RC cmtVariableGetData(cmtVariable *aVariable, acp_uint8_t *aBuffer, acp_uint
     cmtVariablePiece *sPiece;
 
     /*
-     * Variable Dataê°€ ëª¨ë‘ ì±„ì›Œì ¸ìžˆëŠ”ì§€ ê²€ì‚¬
+     * Variable Data°¡ ¸ðµÎ Ã¤¿öÁ®ÀÖ´ÂÁö °Ë»ç
      */
     ACI_TEST_RAISE(aVariable->mTotalSize != aVariable->mCurrentSize, IncompleteVariable);
 
     /*
-     * ë³µì‚¬í•  ê¸¸ì´ ê³„ì‚°
+     * º¹»çÇÒ ±æÀÌ °è»ê
      */
     aBufferSize = ACP_MIN(aBufferSize, aVariable->mTotalSize);
 
     /*
-     * Piece Listë¥¼ ë°©ë¬¸í•˜ì—¬ Data ë³µì‚¬
+     * Piece List¸¦ ¹æ¹®ÇÏ¿© Data º¹»ç
      */
     ACP_LIST_ITERATE(&aVariable->mPieceList, sIterator)
     {
@@ -158,12 +158,12 @@ ACI_RC cmtVariableGetDataWithCallback(cmtVariable                *aVariable,
     cmtVariablePiece *sPiece;
 
     /*
-     * Variable Dataê°€ ëª¨ë‘ ì±„ì›Œì ¸ìžˆëŠ”ì§€ ê²€ì‚¬
+     * Variable Data°¡ ¸ðµÎ Ã¤¿öÁ®ÀÖ´ÂÁö °Ë»ç
      */
     ACI_TEST_RAISE(aVariable->mTotalSize != aVariable->mCurrentSize, IncompleteVariable);
 
     /*
-     * Piece Listë¥¼ ë°©ë¬¸í•˜ë©° GetDataCallback í˜¸ì¶œ
+     * Piece List¸¦ ¹æ¹®ÇÏ¸ç GetDataCallback È£Ãâ
      */
     ACP_LIST_ITERATE(&aVariable->mPieceList, sIterator)
     {
@@ -190,19 +190,19 @@ ACI_RC cmtVariableGetDataWithCallback(cmtVariable                *aVariable,
 ACI_RC cmtVariableSetData(cmtVariable *aVariable, acp_uint8_t *aBuffer, acp_uint32_t aBufferSize)
 {
     /*
-     * ë¹ˆ Variableì¸ì§€ ê²€ì‚¬
+     * ºó VariableÀÎÁö °Ë»ç
      */
     ACI_TEST_RAISE(aVariable->mPieceCount > 0, VariableNotEmpty);
 
     /*
-     * ë©¤ë²„ ì„¸íŒ…
+     * ¸â¹ö ¼¼ÆÃ
      */
     aVariable->mTotalSize     = aBufferSize;
     aVariable->mCurrentSize   = aBufferSize;
     aVariable->mPieceCount    = 1;
 
     /*
-     * ê¸°ë³¸ Piece ì„¸íŒ…
+     * ±âº» Piece ¼¼ÆÃ
      */
     aVariable->mPiece.mOffset = 0;
     aVariable->mPiece.mSize   = aBufferSize;
@@ -211,7 +211,7 @@ ACI_RC cmtVariableSetData(cmtVariable *aVariable, acp_uint8_t *aBuffer, acp_uint
     acpListInitObj(&aVariable->mPiece.mPieceListNode, &aVariable->mPiece);
 
     /*
-     * Piece ì¶”ê°€
+     * Piece Ãß°¡
      */
     acpListAppendNode(&aVariable->mPieceList, &aVariable->mPiece.mPieceListNode);
 
@@ -234,7 +234,7 @@ ACI_RC cmtVariableSetVarString(cmtVariable *aVariable, aci_var_string_t *aString
     acp_uint32_t            sOffset = 0;
 
     /*
-     * ë¹ˆ Variableì¸ì§€ ê²€ì‚¬
+     * ºó VariableÀÎÁö °Ë»ç
      */
     ACI_TEST_RAISE(aVariable->mPieceCount > 0, VariableNotEmpty);
 
@@ -278,18 +278,18 @@ ACI_RC cmtVariableAddPiece(cmtVariable *aVariable, acp_uint32_t aOffset, acp_uin
     cmtVariablePiece *sPiece;
 
     /*
-     * Piece Offset ê²€ì‚¬
+     * Piece Offset °Ë»ç
      */
     ACI_TEST_RAISE(aVariable->mCurrentSize != aOffset, VariablePieceRangeMismatch);
 
     /*
-     * Size ê°±ì‹ 
+     * Size °»½Å
      */
     aVariable->mCurrentSize += aSize;
     aVariable->mTotalSize    = aVariable->mCurrentSize;
 
     /*
-     * Pieceê°€ í•˜ë‚˜ë„ ì—†ëŠ” ìƒíƒœì´ë©´ ê¸°ë³¸ Piece ì´ìš©, ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ Poolë¡œë¶€í„° í• ë‹¹
+     * Piece°¡ ÇÏ³ªµµ ¾ø´Â »óÅÂÀÌ¸é ±âº» Piece ÀÌ¿ë, ±×·¸Áö ¾ÊÀ¸¸é Pool·ÎºÎÅÍ ÇÒ´ç
      */
     if (aVariable->mPieceCount == 0)
     {
@@ -302,7 +302,7 @@ ACI_RC cmtVariableAddPiece(cmtVariable *aVariable, acp_uint32_t aOffset, acp_uin
     }
 
     /*
-     * Piece ì„¸íŒ…
+     * Piece ¼¼ÆÃ
      */
     sPiece->mOffset = aOffset;
     sPiece->mSize   = aSize;
@@ -311,7 +311,7 @@ ACI_RC cmtVariableAddPiece(cmtVariable *aVariable, acp_uint32_t aOffset, acp_uin
     acpListInitObj(&sPiece->mPieceListNode, sPiece);
 
     /*
-     * Piece ì¶”ê°€
+     * Piece Ãß°¡
      */
     aVariable->mPieceCount++;
 
@@ -383,7 +383,7 @@ ACI_RC cmtVariableCopy(cmtVariable *aVariable, acp_uint8_t *aBuffer, acp_uint32_
 acp_uint8_t *cmtVariableGetPieceData(cmtVariable *aVariable)
 {
     /*
-     * Pieceê°€ 1ì¸ ê²½ìš°ì—ë§Œ Data í¬ì¸í„°ë¥¼ ë¦¬í„´
+     * Piece°¡ 1ÀÎ °æ¿ì¿¡¸¸ Data Æ÷ÀÎÅÍ¸¦ ¸®ÅÏ
      */
     if (aVariable->mPieceCount == 1)
     {

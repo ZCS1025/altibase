@@ -112,7 +112,7 @@ IDE_RC mtfDecryptEstimate( mtcNode*     aNode,
                   != IDE_SUCCESS );
     }
 
-    // echarì™€ evarcharê°€ ê°™ë‹¤.
+    // echar¿Í evarchar°¡ °°´Ù.
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
 
     return IDE_SUCCESS;
@@ -162,7 +162,7 @@ IDE_RC mtfDecryptCalculate( mtcNode*     aNode,
     sEncColumn = aTemplate->rows[sEncNode->baseTable].columns
         + sEncNode->baseColumn;
     
-    if( sEncColumn->policy[0] != '\0' )
+    if ( sEncColumn->mColumnAttr.mEncAttr.mPolicy[0] != '\0' )
     {
         if( sEcharValue->mCipherLength > 0 )
         {
@@ -173,7 +173,7 @@ IDE_RC mtfDecryptCalculate( mtcNode*     aNode,
                       != IDE_SUCCESS );
             
             IDE_TEST( aTemplate->decrypt( & sDecryptInfo,
-                                          sEncColumn->policy,
+                                          sEncColumn->mColumnAttr.mEncAttr.mPolicy,
                                           sEcharValue->mValue,
                                           sEcharValue->mCipherLength,
                                           sPlain,

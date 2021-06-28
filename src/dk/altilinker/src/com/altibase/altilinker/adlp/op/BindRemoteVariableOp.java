@@ -26,7 +26,7 @@ public class BindRemoteVariableOp extends RequestOperation
 {
     public long   mRemoteStatementId  = 0;
     public int    mBindVariableIndex  = 0;
-    public int    mBindVariableType   = SQLType.SQL_VARCHAR;
+    public int    mBindVariableType   = AltibaseSQLType.SQL_VARCHAR;
     public String mBindVariableString = null;
     
     public BindRemoteVariableOp()
@@ -53,7 +53,7 @@ public class BindRemoteVariableOp extends RequestOperation
                 mBindVariableIndex = readInt (aOpPayload);
                 mBindVariableType  = readInt (aOpPayload);
     
-                if (mBindVariableType == SQLType.SQL_VARCHAR)
+                if (mBindVariableType == AltibaseSQLType.SQL_VARCHAR)
                     mBindVariableString = readVariableString(aOpPayload, true);
             }
             catch (BufferUnderflowException e)
@@ -82,7 +82,7 @@ public class BindRemoteVariableOp extends RequestOperation
             return false;
         }
         
-        if (mBindVariableType != SQLType.SQL_VARCHAR)
+        if (mBindVariableType != AltibaseSQLType.SQL_VARCHAR)
         {
             return false;
         }

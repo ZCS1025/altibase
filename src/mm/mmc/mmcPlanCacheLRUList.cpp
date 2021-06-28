@@ -66,8 +66,8 @@ void mmcPlanCacheLRUList::finalize()
     IDE_ASSERT( mLRUMutex.destroy() == IDE_SUCCESS);
 }
 
-//rebuildë˜ëŠ” plan validationì— ì˜í•˜ì—¬ unused PCBì˜
-//child PCOë¥¼ ì§ì ‘í•´ì œí•˜ëŠ” ê²½ìš°ì— ë¶ˆë¦°ë‹¤.
+//rebuild¶Ç´Â plan validation¿¡ ÀÇÇÏ¿© unused PCBÀÇ
+//child PCO¸¦ Á÷Á¢ÇØÁ¦ÇÏ´Â °æ¿ì¿¡ ºÒ¸°´Ù.
 void mmcPlanCacheLRUList::updateCacheSize(idvSQL                 *aStatSQL,
                                           UInt                    aChildPCOSize,
                                           mmcPCB                 *aUnUsedPCB)
@@ -125,7 +125,7 @@ void mmcPlanCacheLRUList::validateLRULst(iduList       *aHead,
 
 }
 
-// PCBë¥¼ cold region LRU Listì˜ headì— insertí•œë‹¤.
+// PCB¸¦ cold region LRU ListÀÇ head¿¡ insertÇÑ´Ù.
 void mmcPlanCacheLRUList::checkIn(idvSQL                 *aStatSQL,
                                   mmcPCB                 *aPCB,
                                   qciSQLPlanCacheContext *aPlanCacheContext,
@@ -145,8 +145,8 @@ void mmcPlanCacheLRUList::checkIn(idvSQL                 *aStatSQL,
     
     
     IDE_ASSERT(aPCB != NULL);
-    /*fix BUG-30701 , plan cahce replace algorithmì„ ê°œì„ í•˜ì—¬ í•œë‹¤.
-      LRU latch duration ì¤„ì´ê¸°.
+    /*fix BUG-30701 , plan cahce replace algorithmÀ» °³¼±ÇÏ¿© ÇÑ´Ù.
+      LRU latch duration ÁÙÀÌ±â.
      */
     IDU_LIST_INIT(&sVictimPcbLst);
     /*fix BUG-31050 The approach for reducing the latch duration of plan cache LRU
@@ -170,12 +170,12 @@ void mmcPlanCacheLRUList::checkIn(idvSQL                 *aStatSQL,
     {
         IDV_SQL_OPTIME_BEGIN(aStatSQL, IDV_OPTM_INDEX_PLAN_CACHE_IN_REPLACE);
 
-        // victimì„ ì°¾ì•„ì„œ replaceì‹œí‚¨ë‹¤.
+        // victimÀ» Ã£¾Æ¼­ replace½ÃÅ²´Ù.
         replace(aStatSQL,
                 sCurCacheMaxSize,
                 (sNewCacheSize - sCurCacheMaxSize),
-                /*fix BUG-30701 , plan cahce replace algorithì„ ê°œì„ í•˜ì—¬ í•œë‹¤.
-                  LRU latch duration ì¤„ì´ê¸°.
+                /*fix BUG-30701 , plan cahce replace algorithÀ» °³¼±ÇÏ¿© ÇÑ´Ù.
+                  LRU latch duration ÁÙÀÌ±â.
                 */
                 &sVictimPcbLst,
                 /*fix BUG-31050 The approach for reducing the latch duration of plan cache LRU
@@ -216,7 +216,7 @@ void mmcPlanCacheLRUList::checkIn(idvSQL                 *aStatSQL,
     }
     else
     {
-        //garbage collectingì„ ìœ„í•˜ì—¬ LRU listì— ë‹¬ì•„ë…¼ë‹¤.
+        //garbage collectingÀ» À§ÇÏ¿© LRU list¿¡ ´Þ¾Æ³í´Ù.
         IDU_LIST_ADD_LAST(&(mColdRegionList.mLRuList),
                           aPCB->getLRuListNode());
         sChildPCO->updatePlanState(MMC_CHILD_PCO_PLAN_NEED_HARD_PREPARE);
@@ -225,7 +225,7 @@ void mmcPlanCacheLRUList::checkIn(idvSQL                 *aStatSQL,
     aPCB->setLRURegion(aStatSQL,
                        MMC_PCB_IN_COLD_LRU_REGION);
 
-    // prepare-latchë¥¼ í‘¼ë‹¤.
+    // prepare-latch¸¦ Ç¬´Ù.
     sChildPCO->releasePrepareLatch();
     
     IDE_ASSERT( mLRUMutex.unlock() == IDE_SUCCESS);
@@ -236,8 +236,8 @@ void mmcPlanCacheLRUList::checkIn(idvSQL                 *aStatSQL,
         mmcPlanCache::incCacheInsertCnt(aStatSQL);
     }
     
-    /*fix BUG-30701 , plan cahce replace algorithì„ ê°œì„ í•˜ì—¬ í•œë‹¤.
-      LRU latch duration ì¤„ì´ê¸°.
+    /*fix BUG-30701 , plan cahce replace algorithÀ» °³¼±ÇÏ¿© ÇÑ´Ù.
+      LRU latch duration ÁÙÀÌ±â.
      */    
     if(IDU_LIST_IS_EMPTY(&sVictimPcbLst) == ID_FALSE)
     {
@@ -251,8 +251,8 @@ void mmcPlanCacheLRUList::checkIn(idvSQL                 *aStatSQL,
         freeVictimParentPCO(aStatSQL,&sVictimParentPCOLst);   
     }
 }
-/*fix BUG-30701 , plan cahce replace algorithì„ ê°œì„ í•˜ì—¬ í•œë‹¤.
-  LRU latch duration ì¤„ì´ê¸°.
+/*fix BUG-30701 , plan cahce replace algorithÀ» °³¼±ÇÏ¿© ÇÑ´Ù.
+  LRU latch duration ÁÙÀÌ±â.
 */    
 void mmcPlanCacheLRUList::freeVictims(iduList * aVictimPcbLst)
 {
@@ -268,11 +268,11 @@ void mmcPlanCacheLRUList::freeVictims(iduList * aVictimPcbLst)
         sChildPCO = sPCB->getChildPCO();
         if(sChildPCO != NULL)
         {
-            //child PCO í•´ì œ
+            //child PCO ÇØÁ¦
             sChildPCO->finalize();
             mmcPlanCache::freePCO(sChildPCO);
         }
-        //PCBí•´ì œ
+        //PCBÇØÁ¦
         sPCB->finalize();
         mmcPlanCache::freePCB(sPCB);
         
@@ -309,28 +309,29 @@ void mmcPlanCacheLRUList::register4GC(idvSQL   *aStatSQL,
     IDE_ASSERT( mLRUMutex.lock(aStatSQL) == IDE_SUCCESS);
 
     // PROJ-2163
-    // bindParam ì€ childPCO ê°€ ê°–ê³  ìžˆëŠ” QC_QMP_MEM ì˜ PlanBindInfo ë¥¼ í¬ì¸íŒ…í•˜ê³  ìžˆë‹¤.
-    // childPCO ê°€ ì§€ì›Œì§ˆ ê²½ìš° í¬ì¸íŒ… ì •ë³´ë¥¼ NULL ë¡œ ì„¸íŒ…í•œë‹¤.
+    // bindParam Àº childPCO °¡ °®°í ÀÖ´Â QC_QMP_MEM ÀÇ PlanBindInfo ¸¦ Æ÷ÀÎÆÃÇÏ°í ÀÖ´Ù.
+    // childPCO °¡ Áö¿öÁú °æ¿ì Æ÷ÀÎÆÃ Á¤º¸¸¦ NULL ·Î ¼¼ÆÃÇÑ´Ù.
     aPCB->getChildPCO()->getPlanBindInfo()->bindParam = NULL;
  
-    //garbage collectingì„ ìœ„í•˜ì—¬ LRU listì— ë‹¬ì•„ë…¼ë‹¤.
+    //garbage collectingÀ» À§ÇÏ¿© LRU list¿¡ ´Þ¾Æ³í´Ù.
     IDU_LIST_ADD_LAST(&(mColdRegionList.mLRuList),
                       aPCB->getLRuListNode());
     aPCB->setLRURegion(aStatSQL,
                        MMC_PCB_IN_COLD_LRU_REGION);
     (aPCB->getChildPCO())->updatePlanState(MMC_CHILD_PCO_PLAN_NEED_HARD_PREPARE);
     aPCB->resetFrequency(aStatSQL);
-    // prepare-latchë¥¼ í‘¼ë‹¤.
+    // prepare-latch¸¦ Ç¬´Ù.
     (aPCB->getChildPCO())->releasePrepareLatch();
     IDE_ASSERT( mLRUMutex.unlock() == IDE_SUCCESS);
 
 }
 
-// plan rebuild ë˜ëŠ” plan validationê²€ì‚¬ì‹œ invalidí•œ planì„
-// ë‹´ê³  ìžˆëŠ” PCBë¥¼  cold region LRU listì˜ tailë¡œ ì˜®ê¸´ë‹¤.
+// plan rebuild ¶Ç´Â plan validation°Ë»ç½Ã invalidÇÑ planÀ»
+// ´ã°í ÀÖ´Â PCB¸¦  cold region LRU listÀÇ tail·Î ¿Å±ä´Ù.
 
 void mmcPlanCacheLRUList::moveToColdRegionTail(idvSQL* aStatSQL,
-                                               mmcPCB* aPCB)
+                                               mmcPCB* aPCB,
+                                               mmcPCBLRURegion* aLRURegion)
 {
     mmcPCBLRURegion  sLRURegion;
     
@@ -356,13 +357,19 @@ void mmcPlanCacheLRUList::moveToColdRegionTail(idvSQL* aStatSQL,
     }
     IDU_LIST_ADD_LAST(&(mColdRegionList.mLRuList),
                       aPCB->getLRuListNode());
+
+    /* BUG-47813 */
+    if (aLRURegion != NULL)
+    {
+        aPCB->getLRURegion(aStatSQL, aLRURegion);
+    }
     
     IDE_ASSERT( mLRUMutex.unlock() == IDE_SUCCESS);
     
 }
 
-// aReplaceSizeë§Œí¼  cache sizeë¥¼ ì¤„ì´ê¸° ìœ„í•˜ì—¬
-// victimë“¤ì„ ì°¾ì•„ì„œ replace ì‹œí‚¨ë‹¤.
+// aReplaceSize¸¸Å­  cache size¸¦ ÁÙÀÌ±â À§ÇÏ¿©
+// victimµéÀ» Ã£¾Æ¼­ replace ½ÃÅ²´Ù.
 void mmcPlanCacheLRUList::replace(idvSQL  *aStatSQL,
                                   ULong   aCurCacheMaxSize,
                                   ULong   aReplaceSize,
@@ -425,7 +432,7 @@ void mmcPlanCacheLRUList::replace(idvSQL  *aStatSQL,
         if(sFixCount == 0)
         {
             sParentPCO = sPCB->getParentPCO();
-            //parentê°€ ì´ë¯¸ í•´ì œë˜ì—ˆìœ¼ë©´ ì•ˆëœë‹¤.
+            //parent°¡ ÀÌ¹Ì ÇØÁ¦µÇ¾úÀ¸¸é ¾ÈµÈ´Ù.
             IDE_DASSERT(sParentPCO->getSQLString4HardPrepare() != NULL);
 
             //fix BUG-30855 It needs to describe soft prepare time in detail for problem tracking.
@@ -442,7 +449,7 @@ void mmcPlanCacheLRUList::replace(idvSQL  *aStatSQL,
                                         IDV_STAT_INDEX_PLAN_CACHE_PPCO_MISS_X_TRY_LATCH_COUNT,
                                         1);
 
-                    /* ì„œë²„ì— ì ‘ì†ì´ ì•ˆë ë•Œë¥¼ ëŒ€ë¹„í•´ 1,000,000ì˜ ë°°ìˆ˜ì— ë¡œê·¸ë¥¼ ì¶œë ¥í•œë‹¤. */
+                    /* ¼­¹ö¿¡ Á¢¼ÓÀÌ ¾ÈµÉ¶§¸¦ ´ëºñÇØ 1,000,000ÀÇ ¹è¼ö¿¡ ·Î±×¸¦ Ãâ·ÂÇÑ´Ù. */
                     if (aStatSQL->mSess->mStatEvent[sIndex].mValue % 1000000 == 0)
                     {
                         ideLog::log(IDE_SERVER_0,
@@ -467,15 +474,15 @@ void mmcPlanCacheLRUList::replace(idvSQL  *aStatSQL,
             }
             IDV_SQL_OPTIME_END(aStatSQL,
                                IDV_OPTM_INDEX_PLAN_CACHE_IN_REPLACE_WAIT_PARENT_PCO);
-            // ë‹¤ì‹œ fix-countë¥¼ í™•ì¸.
+            // ´Ù½Ã fix-count¸¦ È®ÀÎ.
             sPCB->getFixCount(aStatSQL,&sFixCount);
             if(sFixCount == 0)
             {
                 IDV_SQL_OPTIME_BEGIN(aStatSQL,
                                      IDV_OPTM_INDEX_PLAN_CACHE_IN_REPLACE_VICTIM_FREE);
 
-                // rebuildë˜ëŠ” plan validationì— ë°”ë¡œ child PCOë¥¼
-                // í•´ì œí• ìˆ˜ ìžˆë‹¤.
+                // rebuild¶Ç´Â plan validation¿¡ ¹Ù·Î child PCO¸¦
+                // ÇØÁ¦ÇÒ¼ö ÀÖ´Ù.
                 if(sPCB->getChildPCO() != NULL)
                 {
                     sChildPCO = sPCB->getChildPCO();
@@ -490,7 +497,7 @@ void mmcPlanCacheLRUList::replace(idvSQL  *aStatSQL,
 
                     sPCOSize = sChildPCO->getSize();
                     sVictimsSize += sPCOSize;
-                    //parent PCOì—ì„œ ì‚­ì œ.
+                    //parent PCO¿¡¼­ »èÁ¦.
                     sParentPCO->deletePCBOfChild(sPCB);
                     if(sPCOSize > 0)
                     {    
@@ -501,15 +508,15 @@ void mmcPlanCacheLRUList::replace(idvSQL  *aStatSQL,
                 {
                     sParentPCO->deletePCBOfChild(sPCB);
                 }
-                // LRU Listì—ì„œ ì‚­ì œ.
+                // LRU List¿¡¼­ »èÁ¦.
                 IDU_LIST_REMOVE(sPCB->getLRuListNode());
-                /*fix BUG-30701 , plan cahce replace algorithì„ ê°œì„ í•˜ì—¬ í•œë‹¤.
-                  LRU latch duration ì¤„ì´ê¸°.
-                  victim listì— ì¶”ê°€.
+                /*fix BUG-30701 , plan cahce replace algorithÀ» °³¼±ÇÏ¿© ÇÑ´Ù.
+                  LRU latch duration ÁÙÀÌ±â.
+                  victim list¿¡ Ãß°¡.
                 */
                 IDU_LIST_ADD_LAST(aVictimLst,sPCB->getLRuListNode());
                 
-                //parent prepare-latchë¥¼ í’€ê¸°ì „ì— child ê°¯ìˆ˜ë¥¼ ì €ìž¥.
+                //parent prepare-latch¸¦ Ç®±âÀü¿¡ child °¹¼ö¸¦ ÀúÀå.
                 sChildCnt = sParentPCO->getChildCnt();
                 sParentPCO->releasePrepareLatch();
                 if(sChildCnt == 0)
@@ -535,7 +542,7 @@ void mmcPlanCacheLRUList::replace(idvSQL  *aStatSQL,
         }//else
 
         // fix BUG-30706
-        // ì›í•˜ëŠ” í¬ê¸°ë§Œí¼ í• ë‹¹ ë°›ìœ¼ë©´ Cold List íƒìƒ‰ ì¢…ë£Œ
+        // ¿øÇÏ´Â Å©±â¸¸Å­ ÇÒ´ç ¹ÞÀ¸¸é Cold List Å½»ö Á¾·á
         if (sVictimsSize >= aReplaceSize)
         {
             break;
@@ -561,9 +568,9 @@ void mmcPlanCacheLRUList::replace(idvSQL  *aStatSQL,
     }
 }
 
-//replace ê³¼ì •ì—ì„œ frequency >= HOT_REGION_LRU_FREQUECY
-//ì¸ PCBë¥¼ cold region LRU listì—ì„œ hot region LRU list
-//ìœ¼ë¡œ ì˜®ê¸°ë ¤ê³  ì‹œë„ í•œë‹¤. 
+//replace °úÁ¤¿¡¼­ frequency >= HOT_REGION_LRU_FREQUECY
+//ÀÎ PCB¸¦ cold region LRU list¿¡¼­ hot region LRU list
+//À¸·Î ¿Å±â·Á°í ½Ãµµ ÇÑ´Ù. 
 void mmcPlanCacheLRUList::tryMovePCBtoHotRegion(idvSQL  *aStatSQL,
                                                 ULong    aCurCacheMaxSize,
                                                 mmcPCB  *aPCB,
@@ -587,7 +594,7 @@ void mmcPlanCacheLRUList::tryMovePCBtoHotRegion(idvSQL  *aStatSQL,
         {
             sMoveSize = sNewHotRegionSize - sHotRegionUpperBoundSize;
             sCurMoveSize = 0;
-            //HOT Region LRU listì—ì„œ PCBë¥¼ ì œê±°í•œë‹¤.
+            //HOT Region LRU list¿¡¼­ PCB¸¦ Á¦°ÅÇÑ´Ù.
             IDU_LIST_ITERATE_BACK_SAFE(&(mHotRegionList.mLRuList),sIterator,sNodeNext)   
             {
                 sHotPCB = (mmcPCB*)sIterator->mObj;
@@ -616,7 +623,7 @@ void mmcPlanCacheLRUList::tryMovePCBtoHotRegion(idvSQL  *aStatSQL,
             }//IDU_LIST_ITERATE_SAFE
             if(*aSuccess == ID_TRUE)
             {
-                // ë‚´ê°€ ë“¤ì–´ê°ˆìˆ˜ ìžˆë‹¤.
+                // ³»°¡ µé¾î°¥¼ö ÀÖ´Ù.
                 IDU_LIST_REMOVE(aPCB->getLRuListNode());
                 mColdRegionList.mCurMemSize -= aPCB->getChildPCOSize();
                 IDU_LIST_ADD_FIRST(&(mHotRegionList.mLRuList),
@@ -628,17 +635,17 @@ void mmcPlanCacheLRUList::tryMovePCBtoHotRegion(idvSQL  *aStatSQL,
             else
             {
                 //nothing to do
-                //PCBë¥¼ COLDì—ì„œ HOTìœ¼ë¡œ ì˜®ê¸¸ìˆ˜ ì—†ì—ˆë‹¤.
+                //PCB¸¦ COLD¿¡¼­ HOTÀ¸·Î ¿Å±æ¼ö ¾ø¾ú´Ù.
             }
         }
         else
         {
-            // PCBì˜ plan ìžì²´ê°€ ë„ˆë¬´ ì»¤ì„œ hot-regionìœ¼ë¡œ ì˜®ê¸¸ìˆ˜ ì—†ë‹¤.
+            // PCBÀÇ plan ÀÚÃ¼°¡ ³Ê¹« Ä¿¼­ hot-regionÀ¸·Î ¿Å±æ¼ö ¾ø´Ù.
         }   
     }
     else
     {
-        // COLD -> HOT regionìœ¼ë¡œ ì˜®ê¸¸ìˆ˜ ìžˆë‹¤.
+        // COLD -> HOT regionÀ¸·Î ¿Å±æ¼ö ÀÖ´Ù.
         IDU_LIST_REMOVE(aPCB->getLRuListNode());
         mColdRegionList.mCurMemSize -= aPCB->getChildPCOSize();
         IDU_LIST_ADD_FIRST(&(mHotRegionList.mLRuList),
@@ -684,8 +691,8 @@ void mmcPlanCacheLRUList::compact(idvSQL  *aStatSQL)
 
 }
 
-// ì£¼ì–´ì§„ LRU listì—ì„œ fix-countê°€ 0ì¸ PCBë¥¼
-// ëª¨ë‘ replaceì‹œí‚¨ë‹¤.
+// ÁÖ¾îÁø LRU list¿¡¼­ fix-count°¡ 0ÀÎ PCB¸¦
+// ¸ðµÎ replace½ÃÅ²´Ù.
 void mmcPlanCacheLRUList::compactLRU(idvSQL  *aStatSQL,
                                      iduList *aLRUList,
                                      UInt    *aCacheOutCnt,
@@ -709,12 +716,12 @@ void mmcPlanCacheLRUList::compactLRU(idvSQL  *aStatSQL,
         {
             sParentPCO = sPCB->getParentPCO();
             sParentPCO->latchPrepareAsExclusive(aStatSQL);
-            // ë‹¤ì‹œ fix-countë¥¼ í™•ì¸.
+            // ´Ù½Ã fix-count¸¦ È®ÀÎ.
             sPCB->getFixCount(aStatSQL,&sFixCount);
             if(sFixCount == 0)
             {
-                // rebuildë˜ëŠ” plan validationì— ë°”ë¡œ child PCOë¥¼
-                // í•´ì œí• ìˆ˜ ìžˆë‹¤.
+                // rebuild¶Ç´Â plan validation¿¡ ¹Ù·Î child PCO¸¦
+                // ÇØÁ¦ÇÒ¼ö ÀÖ´Ù.
                 if(sPCB->getChildPCO() != NULL)
                 {
                     sChildPCO = sPCB->getChildPCO();
@@ -729,9 +736,9 @@ void mmcPlanCacheLRUList::compactLRU(idvSQL  *aStatSQL,
 
                     sPCOSize = sChildPCO->getSize();
                     *aVictimsSize += sPCOSize;
-                    //parent PCOì—ì„œ ì‚­ì œ.
+                    //parent PCO¿¡¼­ »èÁ¦.
                     sParentPCO->deletePCBOfChild(sPCB);
-                    //child PCO í•´ì œ 
+                    //child PCO ÇØÁ¦ 
                     sChildPCO->finalize();
                     mmcPlanCache::freePCO(sChildPCO);
                     if(sPCOSize > 0)
@@ -743,12 +750,12 @@ void mmcPlanCacheLRUList::compactLRU(idvSQL  *aStatSQL,
                 {
                     sParentPCO->deletePCBOfChild(sPCB);
                 }
-                // LRU Listì—ì„œ ì‚­ì œ.
+                // LRU List¿¡¼­ »èÁ¦.
                 IDU_LIST_REMOVE(sPCB->getLRuListNode());
-                //PCBí•´ì œ
+                //PCBÇØÁ¦
                 sPCB->finalize();
                 mmcPlanCache::freePCB(sPCB);
-                //parent prepare-latchë¥¼ í’€ê¸°ì „ì— child ê°¯ìˆ˜ë¥¼ ì €ìž¥.
+                //parent prepare-latch¸¦ Ç®±âÀü¿¡ child °¹¼ö¸¦ ÀúÀå.
                 sChildCnt = sParentPCO->getChildCnt();
                 sParentPCO->releasePrepareLatch();
                 if(sChildCnt == 0)

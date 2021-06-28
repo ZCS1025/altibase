@@ -21,10 +21,10 @@
 /* **********************************************************************
  *   $Id: 
  *   NAME
- *     idtCPUSet.h - CPU Set ì •ë³´
+ *     idtCPUSet.h - CPU Set Á¤º¸
  *
  *   DESCRIPTION
- *     TASK-6764ë¡œ ìƒˆë¡œì´ ì¶”ê°€ëœ CPU Set í´ëž˜ìŠ¤
+ *     TASK-6764·Î »õ·ÎÀÌ Ãß°¡µÈ CPU Set Å¬·¡½º
  *
  *   PUBLIC FUNCTION(S)
  *

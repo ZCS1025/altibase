@@ -453,6 +453,8 @@ typedef SQLWCHAR        SQLTCHAR;
 typedef SQLCHAR         SQLTCHAR;
 #endif
 
+typedef void *          SQLShardKeyContext; 
+
 #ifdef __cplusplus
 }
 #endif

@@ -44,7 +44,7 @@ smnbValuebaseBuild::~smnbValuebaseBuild()
 /* ------------------------------------------------
  * Description:
  *
- * Rowì—ì„œ ê° key valueë¥¼ ë§Œë“¦
+ * Row¿¡¼­ °¢ key value¸¦ ¸¸µê
  * ------------------------------------------------*/
 void smnbValuebaseBuild::makeKeyFromRow( smnbHeader   * aIndex,
                                          SChar        * aRow,
@@ -55,7 +55,7 @@ void smnbValuebaseBuild::makeKeyFromRow( smnbHeader   * aIndex,
     SChar        * sKeyPtr;
     SChar        * sVarValuePtr = NULL;
 
-    for( sColumn4Build = &aIndex->columns4Build[0]; // aIndexì˜ ì»¬ëŸ¼ ê°œìˆ˜ë§Œí¼
+    for( sColumn4Build = &aIndex->columns4Build[0]; // aIndexÀÇ ÄÃ·³ °³¼ö¸¸Å­
          sColumn4Build != aIndex->fence4Build;
          sColumn4Build++ )
     {
@@ -64,8 +64,8 @@ void smnbValuebaseBuild::makeKeyFromRow( smnbHeader   * aIndex,
         sKeyPtr = aKey + sColumn4Build->keyColumn.offset;
 
         // BUG-38573
-        // Compressed Columnì¸ ê²½ìš°, FIXED/VARIABLE typeì— ìƒê´€ì—†ì´
-        // FIXED type ì²˜ë¦¬ì™€ ê°™ì´ memcpyë§Œ ìˆ˜í–‰í•œë‹¤.
+        // Compressed ColumnÀÎ °æ¿ì, FIXED/VARIABLE type¿¡ »ó°ü¾øÀÌ
+        // FIXED type Ã³¸®¿Í °°ÀÌ memcpy¸¸ ¼öÇàÇÑ´Ù.
         if( ( sColumn->flag & SMI_COLUMN_COMPRESSION_MASK )
               == SMI_COLUMN_COMPRESSION_TRUE )
         {
@@ -87,7 +87,7 @@ void smnbValuebaseBuild::makeKeyFromRow( smnbHeader   * aIndex,
                 case SMI_COLUMN_TYPE_VARIABLE_LARGE:
                     sVarValuePtr = sgmManager::getVarColumn( aRow, sColumn, sKeyPtr );
 
-                    // variable columnì˜ valueê°€ NULLì¼ ê²½ìš°, NULL ê°’ì„ ì±„ì›€
+                    // variable columnÀÇ value°¡ NULLÀÏ °æ¿ì, NULL °ªÀ» Ã¤¿ò
                     if ( sVarValuePtr == NULL )
                     {
                         sColumn4Build->null( &(sColumn4Build->keyColumn), sKeyPtr );
@@ -108,9 +108,9 @@ void smnbValuebaseBuild::makeKeyFromRow( smnbHeader   * aIndex,
 /* ------------------------------------------------
  * Description:
  *
- * Run(sort/merge) í• ë‹¹
- *  - ì‚¬ìš© í›„ freeëœ runì´ ìˆìœ¼ë©´ ì¬ì‚¬ìš©
- *  - ì—†ìœ¼ë©´ ìƒˆ memory í• ë‹¹
+ * Run(sort/merge) ÇÒ´ç
+ *  - »ç¿ë ÈÄ freeµÈ runÀÌ ÀÖÀ¸¸é Àç»ç¿ë
+ *  - ¾øÀ¸¸é »õ memory ÇÒ´ç
  *  +-------------+         +-------------+
  *  | mFstFreeRun |-> ... ->| mFstFreeRun |->NULL
  *  +-------------+         +-------------+
@@ -119,31 +119,12 @@ IDE_RC smnbValuebaseBuild::allocRun( smnbBuildRun ** aRun )
 {
     smnbBuildRun   * sCurRun;
 
-    if( mFstFreeRun != NULL )
-    {
-        // free ëœ runì´ ìˆìœ¼ë©´ ì¬ì‚¬ìš©
-        sCurRun     = mFstFreeRun;
+    /* BUG-47082 : ¸Ş¸ğ¸® Àı¾à°ú ¼º´ÉÇâ»óÀ» À§ÇØ free run list¸¦ »èÁ¦ÇÑ´Ù. */
 
-        if( mFstFreeRun->mNext == NULL )
-        {
-            mFstFreeRun = NULL;
-            mLstFreeRun = NULL;
-        }
-        else
-        {
-            mFstFreeRun = mFstFreeRun->mNext;
-        }
-    }
-    else
-    {
-        /* smnbValuebaseBuild_allocRun_alloc_CurRun.tc */
-        IDU_FIT_POINT("smnbValuebaseBuild::allocRun::alloc::CurRun");
-        IDE_TEST( mRunPool.alloc(
-                      (void**)&sCurRun )
-                  != IDE_SUCCESS );
-
-        mTotalRunCnt++;
-    }
+    /* smnbValuebaseBuild_allocRun_alloc_CurRun.tc */
+    IDU_FIT_POINT("smnbValuebaseBuild::allocRun::alloc::CurRun");
+    IDE_TEST( mRunPool.alloc( (void**)&sCurRun )
+              != IDE_SUCCESS );
 
     // run initialize
     sCurRun->mSlotCount = 0;
@@ -162,24 +143,17 @@ IDE_RC smnbValuebaseBuild::allocRun( smnbBuildRun ** aRun )
  * Description:
  *
  * Run(sort/merge) free
- *  - freeRun listì— freeë  runì„ ì—°ê²°í•œë‹¤.
+ *  - freeRun list¿¡ freeµÉ runÀ» ¿¬°áÇÑ´Ù.
  * ------------------------------------------------*/
 void smnbValuebaseBuild::freeRun( smnbBuildRun    * aRun )
 {
-    aRun->mNext = mFstFreeRun;
-
-    mFstFreeRun = aRun;
-
-    if( mLstFreeRun == NULL )
-    {
-        mLstFreeRun = aRun;
-    }
+    mRunPool.memfree( aRun );
 }
 
 /* ------------------------------------------------
  * Description:
  *
- * Runì—ì„œ key valueì˜ offset swap
+ * Run¿¡¼­ key valueÀÇ offset swap
  * ----------------------------------------------*/
 void smnbValuebaseBuild::swapOffset( UShort  * aOffset1,
                                      UShort  * aOffset2 )
@@ -194,7 +168,7 @@ void smnbValuebaseBuild::swapOffset( UShort  * aOffset1,
 /* ------------------------------------------------
  * Description:
  *
- * thread ì‘ì—… ì‹œì‘ ë£¨í‹´
+ * thread ÀÛ¾÷ ½ÃÀÛ ·çÆ¾
  * ----------------------------------------------*/
 IDE_RC smnbValuebaseBuild::threadRun( UInt                  aPhase,
                                       UInt                  aThreadCnt,
@@ -202,7 +176,7 @@ IDE_RC smnbValuebaseBuild::threadRun( UInt                  aPhase,
 {
     UInt             i;
 
-    // Working Thread ì‹¤í–‰
+    // Working Thread ½ÇÇà
     for( i = 0; i < aThreadCnt; i++ )
     {
         aThreads[i].mPhase = aPhase;
@@ -210,13 +184,13 @@ IDE_RC smnbValuebaseBuild::threadRun( UInt                  aPhase,
         IDE_TEST( aThreads[i].start( ) != IDE_SUCCESS );
     }
 
-    // Working Thread ì¢…ë£Œ ëŒ€ê¸°
+    // Working Thread Á¾·á ´ë±â
     for( i = 0; i < aThreadCnt; i++ )
     {
         IDE_TEST( aThreads[i].join() != IDE_SUCCESS );
     }
 
-    // Working Thread ìˆ˜í–‰ ê²°ê³¼ í™•ì¸
+    // Working Thread ¼öÇà °á°ú È®ÀÎ
     for( i = 0; i < aThreadCnt; i++ )
     {
         if( aThreads[i].mIsSuccess == ID_FALSE )
@@ -279,13 +253,16 @@ IDE_RC smnbValuebaseBuild::buildIndex( void              * aTrans,
 
     sIsPers = aIndex->mFlag & SMI_INDEX_PERSISTENT_MASK;
 
-    // persistent indexëŠ” í•­ìƒ pointer base buildë¡œ ìˆ˜í–‰ë¨.
+    // persistent index´Â Ç×»ó pointer base build·Î ¼öÇàµÊ.
     IDE_ERROR( sIsPers != SMI_INDEX_PERSISTENT_ENABLE );
 
-    sMaxUnionRunCnt = smuProperty::getMemoryIndexBuildRunCountAtUnionMerge();
+    /* BUG-47082
+       THREAD °¹¼öÀÇ Á¦°ö±Ù °ªÀ¸·Î Union Run °¹¼ö¸¦ ¼³Á¤ÇÑ´Ù.
+       ex) THREAD 16°³ => Union Run 4°³, THREAD 25°³ => Union Run 5°³ */
+    sMaxUnionRunCnt = (UInt)idlOS::sqrt( (double)aThreadCnt );
 
     /* PROJ-1407 Temporary Table
-     * Temp table indexì¼ ê²½ìš° trace logë¥¼ ê¸°ë¡í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+     * Temp table indexÀÏ °æ¿ì trace log¸¦ ±â·ÏÇÏÁö ¾Ê´Â´Ù. */
     sIsPrivateVol = (( aTable->mFlag & SMI_TABLE_PRIVATE_VOLATILE_MASK )
                      == SMI_TABLE_PRIVATE_VOLATILE_TRUE ) ? ID_TRUE : ID_FALSE ;
 
@@ -298,7 +275,7 @@ IDE_RC smnbValuebaseBuild::buildIndex( void              * aTrans,
                                    ID_TRUE,                 //use mutex
                                    IDU_MEM_POOL_DEFAULT_ALIGN_SIZE, //align
                                    ID_FALSE,               // force pooling
-                                   ID_FALSE,               // garbage collection
+                                   ID_TRUE,                /* garbage collection */
                                    ID_TRUE,                /* HWCacheLine */
                                    IDU_MEMPOOL_TYPE_LEGACY /* mempool type */ ) 
               != IDE_SUCCESS);			
@@ -359,18 +336,18 @@ IDE_RC smnbValuebaseBuild::buildIndex( void              * aTrans,
                                          aGetRowFunc )
                  != IDE_SUCCESS);
 
-        // BUG-30426 [SM] Memory Index ìƒì„± ì‹¤íŒ¨ì‹œ threadë¥¼ destroy í•´ì•¼ í•©ë‹ˆë‹¤.
+        // BUG-30426 [SM] Memory Index »ı¼º ½ÇÆĞ½Ã thread¸¦ destroy ÇØ¾ß ÇÕ´Ï´Ù.
         sThrState++;
     }
 
 // ----------------------------------------
-// Phase 1. Extract & Sort
+// Phase 1. Extract & Sort & Merge Run
 // ----------------------------------------
     if( sIsPrivateVol == ID_FALSE )
     {
         ideLog::log( IDE_SM_0, "\
 ============================================\n\
- [MEM_IDX_CRE] 1. Extract & In-Memory Sort  \n\
+ [MEM_IDX_CRE] 1. Extract & In-Memory Sort & Merge\n\
 ============================================\n");
     }
 
@@ -379,26 +356,8 @@ IDE_RC smnbValuebaseBuild::buildIndex( void              * aTrans,
                          sThreads )
               != IDE_SUCCESS );
 
-
 // ----------------------------------------
-// Phase 2. Merge Run
-// ----------------------------------------
-    if( sIsPrivateVol == ID_FALSE )
-    {
-        ideLog::log( IDE_SM_0, "\
-============================================\n\
- [MEM_IDX_CRE] 2.Merge                      \n\
-============================================\n");
-    }
-
-    IDE_TEST( threadRun( SMN_MERGE_RUN,
-                         aThreadCnt,
-                         sThreads )
-              != IDE_SUCCESS );
-
-
-// ----------------------------------------
-// Phase 2-1. Union Merge Run
+// Phase 2. Union Merge Run
 // ----------------------------------------
     if( (aThreadCnt / sMaxUnionRunCnt) >= 2 )
     {
@@ -406,7 +365,7 @@ IDE_RC smnbValuebaseBuild::buildIndex( void              * aTrans,
         {
             ideLog::log( IDE_SM_0, "\
 ============================================\n\
- [MEM_IDX_CRE] 2-1. Union Merge Run         \n\
+ [MEM_IDX_CRE] 2. Union Merge Run         \n\
 ============================================\n" );
         }
 
@@ -444,13 +403,13 @@ IDE_RC smnbValuebaseBuild::buildIndex( void              * aTrans,
     /* BUG-39681 Do not need statistic information when server start */
     if( smiGetStartupPhase() == SMI_STARTUP_SERVICE )
     {
-        // index buildì— ì˜í•œ í†µê³„ì¹˜ ëˆ„ì 
+        // index build¿¡ ÀÇÇÑ Åë°èÄ¡ ´©Àû
         SMNB_ADD_STATISTIC( &(((smnbHeader*)aIndex->mHeader)->mStmtStat),
                             &sIndexStat );
     }
 
 
-    // BUG-30426 [SM] Memory Index ìƒì„± ì‹¤íŒ¨ì‹œ threadë¥¼ destroy í•´ì•¼ í•©ë‹ˆë‹¤.
+    // BUG-30426 [SM] Memory Index »ı¼º ½ÇÆĞ½Ã thread¸¦ destroy ÇØ¾ß ÇÕ´Ï´Ù.
     while( sThrState > 0 )
     {
         IDE_TEST( sThreads[--sThrState].destroy() != IDE_SUCCESS);
@@ -486,7 +445,7 @@ IDE_RC smnbValuebaseBuild::buildIndex( void              * aTrans,
     }
     else
     {
-        /* ë°ì´í„°ê°€ ì „í˜€ ì—†ëŠ” ìƒíƒœë©´, í†µê³„ë¥¼ Invalidìƒíƒœë¡œ ë‘ . */
+        /* µ¥ÀÌÅÍ°¡ ÀüÇô ¾ø´Â »óÅÂ¸é, Åë°è¸¦ Invalid»óÅÂ·Î µÒ. */
         ideLog::log( IDE_SM_0, "\
 ========================================\n\
 [MEM_IDX_CRE] 4. Gather Stat(SKIP)     \n\
@@ -512,7 +471,7 @@ IDE_RC smnbValuebaseBuild::buildIndex( void              * aTrans,
     
     IDE_PUSH();
 
-    // BUG-30426 [SM] Memory Index ìƒì„± ì‹¤íŒ¨ì‹œ threadë¥¼ destroy í•´ì•¼ í•©ë‹ˆë‹¤.
+    // BUG-30426 [SM] Memory Index »ı¼º ½ÇÆĞ½Ã thread¸¦ destroy ÇØ¾ß ÇÕ´Ï´Ù.
     for(i = 0; i < sThrState; i++)
     {
         (void)sThreads[i].destroy();
@@ -541,7 +500,7 @@ IDE_RC smnbValuebaseBuild::buildIndex( void              * aTrans,
 /* ------------------------------------------------
  * Description :
  *
- * Index build ì“°ë ˆë“œ ì´ˆê¸°í™”
+ * Index build ¾²·¹µå ÃÊ±âÈ­
  * ----------------------------------------------*/
 IDE_RC smnbValuebaseBuild::initialize( void              * aTrans,
                                        smcTableHeader    * aTable,
@@ -575,10 +534,7 @@ IDE_RC smnbValuebaseBuild::initialize( void              * aTrans,
 
     mFstRun            = NULL;
     mLstRun            = NULL;
-    mFstFreeRun        = NULL;
-    mLstFreeRun        = NULL;
 
-    mTotalRunCnt       = 0;
     mIsSuccess         = ID_TRUE;
 
     mRunPool           = aRunPool;
@@ -588,12 +544,12 @@ IDE_RC smnbValuebaseBuild::initialize( void              * aTrans,
     sAvailableRunSize  = aRunSize - ID_SIZEOF(smnbBuildRunHdr);
     sKeyNOffsetSize    = aKeySize + ID_SIZEOF(UShort);
 
-    // sort runì— ì±„ì›Œì§ˆ ìµœëŒ€ key ìˆ˜
-    // sort runì˜ key contents : key value, row pointer, offset
+    // sort run¿¡ Ã¤¿öÁú ÃÖ´ë key ¼ö
+    // sort runÀÇ key contents : key value, row pointer, offset
     mMaxSortRunKeyCnt  = sAvailableRunSize / sKeyNOffsetSize;
 
-    // merge runì— ì±„ì›Œì§ˆ ìµœëŒ€ key ìˆ˜
-    // merge runì˜ key contents : key value, row pointer
+    // merge run¿¡ Ã¤¿öÁú ÃÖ´ë key ¼ö
+    // merge runÀÇ key contents : key value, row pointer
     mMaxMergeRunKeyCnt = sAvailableRunSize / aKeySize;
 
     /* BUG-42152 when adding column with default value on memory partitioned table,
@@ -626,7 +582,7 @@ IDE_RC smnbValuebaseBuild::initialize( void              * aTrans,
     return IDE_FAILURE;
 }
 
-/* BUG-27403 ì“°ë ˆë“œ ì •ë¦¬ */
+/* BUG-27403 ¾²·¹µå Á¤¸® */
 IDE_RC smnbValuebaseBuild::destroy()
 {
     IDE_TEST(mSortStack.destroy() != IDE_SUCCESS);
@@ -641,7 +597,7 @@ IDE_RC smnbValuebaseBuild::destroy()
 /* ------------------------------------------------
  * Description :
  *
- * ì“°ë ˆë“œ ë©”ì¸ ì‹¤í–‰ ë£¨í‹´
+ * ¾²·¹µå ¸ŞÀÎ ½ÇÇà ·çÆ¾
  * ----------------------------------------------*/
 void smnbValuebaseBuild::run()
 {
@@ -653,12 +609,24 @@ void smnbValuebaseBuild::run()
     {
         case SMN_EXTRACT_AND_SORT:
 
-            // Phase 1. Parallel Key Extraction & Sort
-            IDE_TEST( extractNSort( &sIndexStat ) != IDE_SUCCESS );
-            break;
+            /* BUG-47082
+               ¾Æ·¡¿Í °°ÀÌ º¯°æÇÏ¿´½À´Ï´Ù.
 
-        case SMN_MERGE_RUN:
-            // Phase 2. Parallel Merge
+               ±âÁ¸¿¡´Â
+               1. ¾²·¹µå °¢°¢ "record extract"¿Í "run ³»ºÎ quick sort" ±îÁö ¼öÇà
+               2. ¸ğµç ¾²·¹µå°¡ ³¡³¯¶§±îÁö join ÇØ¼­ ±â´Ù¸².
+               3. ¾²·¹µå °¢°¢ ÀÚ½ÅÀÌ °®°í ÀÖ´Â runÀ» "ÀÏÂ÷ÀûÀ¸·Î merge" ¸¦ ¼öÇà
+               2. ¸ğµç ¾²·¹µå°¡ ³¡³¯¶§±îÁö join ÇØ¼­ ±â´Ù¸².
+               
+               ¼öÁ¤ÀÌÈÄ´Â
+               1. ¾²·¹µå °¢°¢ "record extract"¿Í "run ³»ºÎ quick sort"¿Í
+                  ÀÚ½ÅÀÌ °®°í ÀÖ´Â runÀ» "ÀÏÂ÷ÀûÀ¸·Î merge" ¸¦ ¼öÇà
+               2. ¸ğµç ¾²·¹µå°¡ ³¡³¯¶§±îÁö join ÇØ¼­ ±â´Ù¸².
+            */
+
+            /* Phase 1. Parallel Key Extraction & Sort */
+            IDE_TEST( extractNSort( &sIndexStat ) != IDE_SUCCESS );
+            /* Phase 2. Parallel Merge */
             IDE_TEST( mergeRun( &sIndexStat ) != IDE_SUCCESS );
             break;
 
@@ -682,10 +650,29 @@ void smnbValuebaseBuild::run()
     return;
 
     IDE_EXCEPTION_END;
-    
+
     mErrorCode = ideGetErrorCode();
     ideCopyErrorInfo( &mErrorMgr, ideGetErrorMgr() );
 
+    /* BUG-47581 build memory index ¿¡¼­ ¿¹¿Ü ¹ß»ı »óÈ²¿¡ ´ëÇÑ Á¤º¸ º¸°­.
+     * 1. Null, Unique µîÀº À¯Àú ½Ç¼ö·Î ¹ß»ı ÇÒ ¼ö ÀÖ´Ù.
+     *    Rebuild indexes ¿¡¼­¸¸ È®ÀÎÇÑ´Ù.
+     * 2. Error Code °¡ 0ÀÏ °æ¿ì »óÀ§¿¡¼­ ÀÎÁöÇÏÁö ¸øÇÏ¹Ç·Î ¿©±â¿¡¼­ Ãâ·ÂÇÑ´Ù.*/
+    if (( smiGetStartupPhase() != SMI_STARTUP_SERVICE ) &&
+        ( mErrorCode == 0 ))
+    {
+        ideLog::log( IDE_ERR_0,
+                     "Index creation failed (ErrorCode=0)\n"
+                     "Phase: %"ID_UINT32_FMT", "
+                     "SpaceID: %"ID_UINT32_FMT", "
+                     "TableOID: %"ID_vULONG_FMT", "
+                     "IndexID: %"ID_UINT32_FMT", NAME: %s\n",
+                     mPhase,
+                     mTable->mSpaceID,
+                     mTable->mSelfOID,
+                     mIndex->mId,
+                     mIndex->mName );
+    }
     IDL_MEM_BARRIER;
 }
 
@@ -726,10 +713,10 @@ IDE_RC smnbValuebaseBuild::isRowUnique( smnbStatistic       * aIndexStat,
          * in the rebuilding memory index process should
          * be read.
          *
-         * restart index rebuildì‹œ prepareëœ rowê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
-         * old versionê³¼ new versionì˜ key valueê°€ ê°™ì€ ê²½ìš°ê°€
-         * ì¡´ì¬í•  ìˆ˜ ìˆë‹¤.
-         * ì´ ê²½ìš° ë™ì¼ valueë¼ë„ ë¬¸ì œì—†ë‹¤. */
+         * restart index rebuild½Ã prepareµÈ row°¡ Á¸ÀçÇÏ´Â °æ¿ì
+         * old version°ú new versionÀÇ key value°¡ °°Àº °æ¿ì°¡
+         * Á¸ÀçÇÒ ¼ö ÀÖ´Ù.
+         * ÀÌ °æ¿ì µ¿ÀÏ value¶óµµ ¹®Á¦¾ø´Ù. */
         if ( mIsNeedValidation == ID_FALSE )
         {
             IDE_TEST_RAISE(
@@ -757,17 +744,17 @@ IDE_RC smnbValuebaseBuild::isRowUnique( smnbStatistic       * aIndexStat,
     {
         IDE_SET( ideSetErrorCode( smERR_ABORT_smnUniqueViolation ) );
 
-        /* BUG-42169 ì„œë²„ ì¬ì‹œì‘ìœ¼ë¡œ ì¸í•œ index rebuild ê³¼ì •ì—ì„œ uniquenessê°€ ê¹¨ì§ˆê²½ìš°
-         * ë””ë²„ê·¸ë¥¼ ìœ„í•œ ì¶”ê°€ ì •ë³´ë¥¼ ì¶œë ¥í•´ì•¼ í•œë‹¤. */
+        /* BUG-42169 ¼­¹ö Àç½ÃÀÛÀ¸·Î ÀÎÇÑ index rebuild °úÁ¤¿¡¼­ uniqueness°¡ ±úÁú°æ¿ì
+         * µğ¹ö±×¸¦ À§ÇÑ Ãß°¡ Á¤º¸¸¦ Ãâ·ÂÇØ¾ß ÇÑ´Ù. */
         if ( smiGetStartupPhase() != SMI_STARTUP_SERVICE )
         {
-            /* sm trc logì—ëŠ” header ë° ë¬¸ì œê°€ ë°œìƒí•œ slotì˜ ì •ë³´ë¥¼ ë‚¨ê¸´ë‹¤. */
+            /* sm trc log¿¡´Â header ¹× ¹®Á¦°¡ ¹ß»ıÇÑ slotÀÇ Á¤º¸¸¦ ³²±ä´Ù. */
             ideLog::log( IDE_SM_0, "Unique Violation Error Occurs In Restart Rebuild Index" );
             smnManager::logCommonHeader( mIndex );
             (void)smpFixedPageList::dumpSlotHeader( sRow1 );
             (void)smpFixedPageList::dumpSlotHeader( sRow2 );
 
-            /* error trc logì—ëŠ” ë¬¸ì œê°€ ë°œìƒí•œ ì¸ë±ìŠ¤ì˜ id, nameì„ ë‚¨ê¸´ë‹¤. */
+            /* error trc log¿¡´Â ¹®Á¦°¡ ¹ß»ıÇÑ ÀÎµ¦½ºÀÇ id, nameÀ» ³²±ä´Ù. */
             ideLog::log( IDE_ERR_0, "Unique Violation Error Occurs In Restart Rebuild Index\n"
                          "IndexName   : %s\n"
                          "IndexOID    : %"ID_UINT32_FMT,
@@ -783,41 +770,42 @@ IDE_RC smnbValuebaseBuild::isRowUnique( smnbStatistic       * aIndexStat,
 /* ---------------------------------------------------------
  * Description:
  *
- * - threadì— í• ë‹¹ëœ pageë“¤ë¡œë¶€í„° row pointerë¥¼ ì¶”ì¶œí•˜ì—¬
- *   key valueë¥¼ ìƒì„±í•´ì„œ sort runì— ì €ì¥.
- * - sort runì´ ê°€ë“ ì°¨ë©´ quick sortë¡œ ì •ë ¬í•œ í›„ ì •ë ¬ëœ
- *   ìˆœì„œëŒ€ë¡œ merge runì— <row ptr, key value>ìŒìœ¼ë¡œ ì €ì¥.
+ * - thread¿¡ ÇÒ´çµÈ pageµé·ÎºÎÅÍ row pointer¸¦ ÃßÃâÇÏ¿©
+ *   key value¸¦ »ı¼ºÇØ¼­ sort run¿¡ ÀúÀå.
+ * - sort runÀÌ °¡µæ Â÷¸é quick sort·Î Á¤·ÄÇÑ ÈÄ Á¤·ÄµÈ
+ *   ¼ø¼­´ë·Î merge run¿¡ <row ptr, key value>½ÖÀ¸·Î ÀúÀå.
  * ---------------------------------------------------------*/
 IDE_RC smnbValuebaseBuild::extractNSort( smnbStatistic    * aIndexStat )
 {
     smnbHeader        * sHeader;
-    smnbBuildRun      * sSortRun  = NULL;
+    smnbBuildRun      * sSortRun   = NULL;
     smnbKeyInfo       * sKeyInfo;
     smnbColumn        * sColumn;
     UShort            * sKeyOffset;
-    scPageID            sPageID;
-    UInt                sPageSeq = 0;
+    scPageID            sPageID    = SM_NULL_PID;
+    UInt                sPageSeq   = 0;
     SChar             * sFence;
-    SChar             * sRow;
-    idBool              sLocked = ID_FALSE;
+    SChar             * sRow       = NULL;
+    idBool              sLocked    = ID_FALSE;
     UInt                sSlotCount = 0;
+    UInt                sState     = 0;
 
     sHeader = (smnbHeader*)mIndex->mHeader;
 
-    // sort runì„ í• ë‹¹ ë°›ìŒ
+    // sort runÀ» ÇÒ´ç ¹ŞÀ½
     IDE_TEST( allocRun( &sSortRun ) != IDE_SUCCESS );
+    sState = 1;
 
-    // sort runì—ì„œ key offset í• ë‹¹
+    // sort run¿¡¼­ key offset ÇÒ´ç
     sKeyOffset = (UShort*)(&sSortRun->mBody[mMaxSortRunKeyCnt * mKeySize]);
-
-    sPageID = SM_NULL_OID;
 
     while( 1 )
     {
-        /* í•¨ìˆ˜ ë‚´ë¶€ì—ì„œ Lock í’€ê³  ë‹¤ì‹œ ì¡ì•„ì¤Œ */
+        /* ÇÔ¼ö ³»ºÎ¿¡¼­ Lock Ç®°í ´Ù½Ã Àâ¾ÆÁÜ */
         IDE_TEST( mGetPageFunc( mTable, &sPageID, &sLocked ) != IDE_SUCCESS );
+        sState = 2;
 
-        if( sPageID == SM_NULL_OID )
+        if( sPageID == SM_NULL_PID )
         {
             break;
         }
@@ -836,13 +824,14 @@ IDE_RC smnbValuebaseBuild::extractNSort( smnbStatistic    * aIndexStat )
                                    &sFence,
                                    &sRow,
                                    mIsNeedValidation ) != IDE_SUCCESS );
+            sState = 3;
 
             if( sRow == NULL )
             {
                 break;
             }
 
-            // mMaxSortRunKeyCnt : sort runì— ì €ì¥í•  ìˆ˜ ìˆëŠ” keyì˜ ìˆ˜
+            // mMaxSortRunKeyCnt : sort run¿¡ ÀúÀåÇÒ ¼ö ÀÖ´Â keyÀÇ ¼ö
             if( sSlotCount == mMaxSortRunKeyCnt )
             {
                 IDE_TEST( quickSort( aIndexStat,
@@ -850,52 +839,58 @@ IDE_RC smnbValuebaseBuild::extractNSort( smnbStatistic    * aIndexStat )
                                      0,
                                      sSlotCount - 1 )
                           != IDE_SUCCESS );
+                sState = 4;
 
                 IDE_TEST( moveSortedRun( sSortRun,
                                          sSlotCount,
                                          sKeyOffset )
                           != IDE_SUCCESS );
+                sState = 5;
 
                 sSlotCount = 0;
-
 
                 IDE_TEST( iduCheckSessionEvent( mStatistics )
                           != IDE_SUCCESS );
             }
-                
-            // sort runì—ì„œ key(row pointer + key value) ê³µê°„ í• ë‹¹
+            sState = 6;
+
+            // sort run¿¡¼­ key(row pointer + key value) °ø°£ ÇÒ´ç
             sKeyInfo = (smnbKeyInfo*)(&sSortRun->mBody[sSlotCount * mKeySize]);
 
             sKeyInfo->rowPtr = sRow;               // row pointer
             sKeyOffset[sSlotCount] = sSlotCount;   // offset
 
-            // row pointerë¡œë¶€í„° key value ìƒì„± -> sKeyInfo->keyValue
-            (void)makeKeyFromRow( sHeader,
-                                  sRow,
-                                  (SChar*)sKeyInfo->keyValue );
+            // row pointer·ÎºÎÅÍ key value »ı¼º -> sKeyInfo->keyValue
+            makeKeyFromRow( sHeader,
+                            sRow,
+                            (SChar*)sKeyInfo->keyValue );
+
+            IDU_FIT_POINT_RAISE( "BUG-47581@smnbValuebaseBuild::extractNSort",
+                                 ERR_NOTNULL_VIOLATION );
 
             // check null violation
             if( sHeader->mIsNotNull == ID_TRUE )
             {
-                // í•˜ë‚˜ë¼ë„ Nullì´ë©´ ì•ˆë˜ê¸° ë•Œë¬¸ì—
-                // ëª¨ë‘ Nullì¸ ê²½ìš°ë§Œ ì²´í¬í•˜ëŠ” isNullKeyë¥¼ ì‚¬ìš©í•˜ë©´ ì•ˆëœë‹¤
+                // ÇÏ³ª¶óµµ NullÀÌ¸é ¾ÈµÇ±â ¶§¹®¿¡
+                // ¸ğµÎ NullÀÎ °æ¿ì¸¸ Ã¼Å©ÇÏ´Â isNullKey¸¦ »ç¿ëÇÏ¸é ¾ÈµÈ´Ù
                 for( sColumn = &sHeader->columns4Build[0];
                      sColumn < sHeader->fence4Build;
                      sColumn++)
                 {
-                    if( smnbBTree::isNullColumn( sColumn,
-                                                 &(sColumn->keyColumn),
-                                                 sKeyInfo->keyValue ) == ID_TRUE )
-                    {
-                        IDE_RAISE( ERR_NOTNULL_VIOLATION );
-                    }
+                    IDE_TEST_RAISE(( smnbBTree::isNullColumn( sColumn,
+                                                              &(sColumn->keyColumn),
+                                                              sKeyInfo->keyValue ) == ID_TRUE ),
+                                   ERR_NOTNULL_VIOLATION );
                 }
             }
+
+            sState = 7;
+
             sSlotCount++;
         }
     }
 
-    // ë§ˆì§€ë§‰ rowë¥¼ extractí•˜ê³  ê·¸ sort runì„ ì •ë ¬í•œ í›„ merge runìœ¼ë¡œ copy
+    // ¸¶Áö¸· row¸¦ extractÇÏ°í ±× sort runÀ» Á¤·ÄÇÑ ÈÄ merge runÀ¸·Î copy
     if( sSlotCount != 0 )
     {
         IDE_TEST( quickSort( aIndexStat,
@@ -903,28 +898,96 @@ IDE_RC smnbValuebaseBuild::extractNSort( smnbStatistic    * aIndexStat )
                              0,
                              sSlotCount - 1 )
                   != IDE_SUCCESS );
+        sState = 8;
 
         IDE_TEST( moveSortedRun( sSortRun,
                                  sSlotCount,
                                  sKeyOffset )
                   != IDE_SUCCESS );
+        sState = 9;
     }
-    
-    // sort run freeì‹œí‚´
+
+    // sort run free½ÃÅ´
     freeRun( sSortRun );
 
     return IDE_SUCCESS;
 
-    // PRIMARY KEYëŠ” NULLê°’ì„ ìƒ‰ì¸í• ìˆ˜ ì—†ë‹¤
+    // PRIMARY KEY´Â NULL°ªÀ» »öÀÎÇÒ¼ö ¾ø´Ù
     IDE_EXCEPTION( ERR_NOTNULL_VIOLATION );
     {
+        if ( smiGetStartupPhase() != SMI_STARTUP_SERVICE )
+        {
+            ideLog::logMem( IDE_DUMP_0,
+                            (UChar*)sKeyInfo->keyValue,
+                            mKeySize,
+                            "[ Hex Dump Key Value In smnbValuebaseBuild::extractNSort() ]\n"
+                            "Not Null Column Idx: %"ID_UINT32_FMT"\n",
+                            ((UChar*)sColumn - (UChar*)&sHeader->columns4Build[0])/
+                            ID_SIZEOF(smnbColumn) + 1 );
+
+            for( sColumn = &sHeader->columns4Build[0];
+                 sColumn < sHeader->fence4Build;
+                 sColumn++)
+            {
+                ideLog::logMem( IDE_DUMP_0,
+                                (UChar*)sColumn,
+                                ID_SIZEOF(smnbColumn),
+                                "[ Hex Dump Mem Column Info ]\n" );
+            }
+        }
+
         IDE_SET( ideSetErrorCode( smERR_ABORT_NOT_NULL_VIOLATION ) );
     }
     IDE_EXCEPTION_END;
 
+    if ( smiGetStartupPhase() != SMI_STARTUP_SERVICE )
+    {
+        // BUG-47581 build memory index ¿¡¼­ ¿¹¿Ü ¹ß»ı »óÈ²¿¡ ´ëÇÑ Á¤º¸ º¸°­.
+        ideLog::log( IDE_ERR_0,
+                     "Index creation failed (smnbValuebaseBuild::extractNSort())\n"
+                     "State: %"ID_UINT32_FMT", "
+                     "SpaceID: %"ID_UINT32_FMT", "
+                     "TableOID: %"ID_vULONG_FMT", "
+                     "IndexID: %"ID_UINT32_FMT", "
+                     "PageID: %"ID_UINT32_FMT", "
+                     "SlotCount: %"ID_UINT32_FMT", "
+                     "RowPtr: %"ID_xPOINTER_FMT", "
+                     "RowSize: %"ID_UINT32_FMT"\n",
+                     sState,
+                     mTable->mSpaceID,
+                     mTable->mSelfOID,
+                     mIndex->mId,
+                     sPageID,
+                     sSlotCount,
+                     sRow,
+                     mTable->mFixed.mMRDB.mSlotSize );
+
+        if ( sRow != NULL )
+        {
+            ideLog::logMem( IDE_DUMP_0,
+                            (UChar*)sRow,
+                            mTable->mFixed.mMRDB.mSlotSize,
+                            "[ Hex Dump Mem Row In smnbValuebaseBuild::extractNSort() ]\n" );
+        }
+
+        if ( sPageID != SM_NULL_PID )
+        {
+            SChar * sPagePtr;
+            IDE_ASSERT( smmManager::getPersPagePtr( mTable->mSpaceID,
+                                                    sPageID,
+                                                    (void**)&sPagePtr )
+                        == IDE_SUCCESS );
+
+            ideLog::logMem( IDE_DUMP_0,
+                            (UChar*)sPagePtr,
+                            SM_PAGE_SIZE,
+                            "[ Hex Dump Mem Page In smnbValuebaseBuild::extractNSort() ]\n" );
+        }
+    }
+
     if( sLocked == ID_TRUE )
     {
-        // nullì¼ ê²½ìš° latchê°€ ì¡íŒ pageì˜ latchë¥¼ í•´ì œ
+        // nullÀÏ °æ¿ì latch°¡ ÀâÈù pageÀÇ latch¸¦ ÇØÁ¦
         (void)smnManager::releasePageLatch( mTable, sPageID );
         sLocked = ID_FALSE;
     }
@@ -943,7 +1006,7 @@ IDE_RC smnbValuebaseBuild::moveSortedRun( smnbBuildRun   * aSortRun,
 
     IDE_TEST( allocRun( &sMergeRun ) != IDE_SUCCESS );
 
-    // sort runì˜ keyë“¤ì„ merge runìœ¼ë¡œ copy
+    // sort runÀÇ keyµéÀ» merge runÀ¸·Î copy
     for( i = 0; i < aSlotCount; i++ )
     {
         idlOS::memcpy( &sMergeRun->mBody[i * mKeySize],
@@ -971,10 +1034,425 @@ IDE_RC smnbValuebaseBuild::moveSortedRun( smnbBuildRun   * aSortRun,
     return IDE_FAILURE;
 }
 
+/*********************************************************************
+ * FUNCTION DESCRIPTION : smnbValuebaseBuild::getPivot             *
+ * ------------------------------------------------------------------*
+ * BUG-47082
+ *
+ * QUICK SORT ¿¡¼­ »ç¿ëÇÒ PIVOT À» ±¸ÇØ¼­ ¸®ÅÏÇÑ´Ù.
+ * ÃÖ¾ÇÀ» ÇÇÇÏ±â À§ÇØ, 3°³ÀÇ °ª(lo, mid, hi) Áß Áß°£°ªÀ» ¼±ÅÃÇÑ´Ù.
+ *
+ *********************************************************************/
+SInt smnbValuebaseBuild::getPivot( smnbStatistic * aIndexStat,
+                                   smnbHeader    * aIndexHeader,
+                                   SChar         * aBuffer,
+                                   UShort        * aKeyOffset,
+                                   SInt            aLeftPos,
+                                   SInt            aRightPos )
+{
+    SInt   sLo;
+    SInt   sMid;
+    SInt   sHi;
+    SInt   sTmp;
+    idBool sDummy;
+
+    smnbKeyInfo  * sKeyInfo1;
+    smnbKeyInfo  * sKeyInfo2;
+
+    SInt sResult;
+
+    if ( aRightPos - aLeftPos < 2 )
+    {
+        /* 2°³ ÀÌÇÏ¸é */
+        sHi = aLeftPos;
+        IDE_CONT( PIVOT_RETURN );
+    }
+    else if ( aRightPos - aLeftPos >= 999 )
+    {
+        /* 1000°³ ÀÌ»óÀÌ¸é */
+        sHi = getPivot4Large( aIndexStat,
+                              aIndexHeader,
+                              aBuffer,
+                              aKeyOffset,
+                              aLeftPos,
+                              aRightPos );
+        IDE_CONT( PIVOT_RETURN );
+    }
+
+    sLo  = aLeftPos;
+    sMid = (aLeftPos + aRightPos ) / 2;
+    sHi  = aRightPos;
+
+    /* sLo, sMid, sHi Áß¿¡ Áß°£°ªÀ» Ã£´Â´Ù. */
+
+    sKeyInfo1 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[sMid]];
+    sKeyInfo2 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[sLo]];
+
+    sResult = compareKeys( aIndexStat,
+                           aIndexHeader->columns4Build,
+                           aIndexHeader->fence4Build,
+                           (SChar*)sKeyInfo1->keyValue,
+                           (SChar*)sKeyInfo2->keyValue,
+                           sKeyInfo1->rowPtr,
+                           sKeyInfo2->rowPtr,
+                           &sDummy );
+    /* ( sMid < sLo ) */
+    if ( sResult < 0 )
+    {
+        sTmp = sMid;
+        sMid = sLo;
+        sLo  = sTmp;
+    }
+
+    sKeyInfo1 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[sHi]];
+    sKeyInfo2 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[sLo]];
+
+    sResult = compareKeys( aIndexStat,
+                           aIndexHeader->columns4Build,
+                           aIndexHeader->fence4Build,
+                           (SChar*)sKeyInfo1->keyValue,
+                           (SChar*)sKeyInfo2->keyValue,
+                           sKeyInfo1->rowPtr,
+                           sKeyInfo2->rowPtr,
+                           &sDummy );
+    /* ( sHi < sLo ) */
+    if ( sResult < 0 )
+    {
+        sTmp = sHi;
+        sHi  = sLo;
+        sLo  = sTmp;
+    }
+
+    sKeyInfo1 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[sMid]];
+    sKeyInfo2 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[sHi]];
+
+    sResult = compareKeys( aIndexStat,
+                           aIndexHeader->columns4Build,
+                           aIndexHeader->fence4Build,
+                           (SChar*)sKeyInfo1->keyValue,
+                           (SChar*)sKeyInfo2->keyValue,
+                           sKeyInfo1->rowPtr,
+                           sKeyInfo2->rowPtr,
+                           &sDummy );
+    /* ( sMid < sHi ) */
+    if ( sResult < 0 )
+    {
+        sTmp = sMid;
+        sMid = sHi;
+        sHi  = sTmp;
+    }
+
+    IDE_EXCEPTION_CONT( PIVOT_RETURN );
+
+    return sHi;
+}
+
+/*********************************************************************
+ * FUNCTION DESCRIPTION : smnbValuebaseBuild::getPivot4Large       *
+ * ------------------------------------------------------------------*
+ * BUG-47082
+ *
+ * ÀÎµ¦½ºÅ° °¹¼ö°¡ 1000°³ÀÌ»óÀÎ °æ¿ì
+ * QUICK SORT ¿¡¼­ »ç¿ëÇÒ PIVOT À» ±¸ÇØ¼­ ¸®ÅÏÇÑ´Ù.
+ *
+ * 9°³ÀÇ °ª Áß Áß°£°ªÀ» ¼±ÅÃÇÑ´Ù.
+ *   
+ * pivot = median( median(s1Lo, s1Mid, s1Hi),
+ *                 median(s2Lo, s2Mid, s2Hi),
+ *                 median(s3Lo, s3Mid, s3Hi) )
+ *
+ *********************************************************************/
+SInt smnbValuebaseBuild::getPivot4Large( smnbStatistic * aIndexStat,
+                                         smnbHeader    * aIndexHeader,
+                                         SChar         * aBuffer,
+                                         UShort        * aKeyOffset,
+                                         SInt            aLeftPos,
+                                         SInt            aRightPos )
+{
+    SInt   s1Lo;
+    SInt   s1Mid;
+    SInt   s1Hi;
+    SInt   s2Lo;
+    SInt   s2Mid;
+    SInt   s2Hi;
+    SInt   s3Lo;
+    SInt   s3Mid;
+    SInt   s3Hi;
+
+    SInt   sTmp;
+    SInt   sInc;
+    idBool sDummy;
+
+    smnbKeyInfo  * sKeyInfo1;
+    smnbKeyInfo  * sKeyInfo2;
+
+    SInt sResult;
+
+    sInc = ( aRightPos - aLeftPos ) / 8;
+
+    s1Lo  = aLeftPos;
+    s1Mid = aLeftPos + ( 1 * sInc );
+    s1Hi  = aLeftPos + ( 2 * sInc );
+
+    s2Lo  = aLeftPos + ( 3 * sInc );
+    s2Mid = aLeftPos + ( 4 * sInc );
+    s2Hi  = aLeftPos + ( 5 * sInc );
+
+    s3Lo  = aLeftPos + ( 6 * sInc );
+    s3Mid = aLeftPos + ( 7 * sInc );
+    s3Hi  = aRightPos;
+
+    /************************************
+     * s1Hi = median(s1Lo, s1Mid, s1Hi)
+     ************************************/
+
+    sKeyInfo1 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[s1Mid]];
+    sKeyInfo2 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[s1Lo]];
+
+    sResult = compareKeys( aIndexStat,
+                           aIndexHeader->columns4Build,
+                           aIndexHeader->fence4Build,
+                           (SChar*)sKeyInfo1->keyValue,
+                           (SChar*)sKeyInfo2->keyValue,
+                           sKeyInfo1->rowPtr,
+                           sKeyInfo2->rowPtr,
+                           &sDummy );
+    /* ( s1Mid < s1Lo ) */
+    if ( sResult < 0 )
+    {
+        sTmp = s1Mid;
+        s1Mid = s1Lo;
+        s1Lo  = sTmp;
+    }
+
+    sKeyInfo1 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[s1Hi]];
+    sKeyInfo2 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[s1Lo]];
+
+    sResult = compareKeys( aIndexStat,
+                           aIndexHeader->columns4Build,
+                           aIndexHeader->fence4Build,
+                           (SChar*)sKeyInfo1->keyValue,
+                           (SChar*)sKeyInfo2->keyValue,
+                           sKeyInfo1->rowPtr,
+                           sKeyInfo2->rowPtr,
+                           &sDummy );
+    /* ( s1Hi < s1Lo ) */
+    if ( sResult < 0 )
+    {
+        sTmp = s1Hi;
+        s1Hi  = s1Lo;
+        s1Lo  = sTmp;
+    }
+
+    sKeyInfo1 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[s1Mid]];
+    sKeyInfo2 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[s1Hi]];
+
+    sResult = compareKeys( aIndexStat,
+                           aIndexHeader->columns4Build,
+                           aIndexHeader->fence4Build,
+                           (SChar*)sKeyInfo1->keyValue,
+                           (SChar*)sKeyInfo2->keyValue,
+                           sKeyInfo1->rowPtr,
+                           sKeyInfo2->rowPtr,
+                           &sDummy );
+    /* ( s1Mid < s1Hi ) */
+    if ( sResult < 0 )
+    {
+        sTmp = s1Mid;
+        s1Mid = s1Hi;
+        s1Hi  = sTmp;
+    }
+
+    /************************************
+     * s2Hi = median(s2Lo, s2Mid, s2Hi)
+     ************************************/
+
+    sKeyInfo1 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[s2Mid]];
+    sKeyInfo2 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[s2Lo]];
+
+    sResult = compareKeys( aIndexStat,
+                           aIndexHeader->columns4Build,
+                           aIndexHeader->fence4Build,
+                           (SChar*)sKeyInfo1->keyValue,
+                           (SChar*)sKeyInfo2->keyValue,
+                           sKeyInfo1->rowPtr,
+                           sKeyInfo2->rowPtr,
+                           &sDummy );
+    /* ( s2Mid < s2Lo ) */
+    if ( sResult < 0 )
+    {
+        sTmp = s2Mid;
+        s2Mid = s2Lo;
+        s2Lo  = sTmp;
+    }
+
+    sKeyInfo1 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[s2Hi]];
+    sKeyInfo2 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[s2Lo]];
+
+    sResult = compareKeys( aIndexStat,
+                           aIndexHeader->columns4Build,
+                           aIndexHeader->fence4Build,
+                           (SChar*)sKeyInfo1->keyValue,
+                           (SChar*)sKeyInfo2->keyValue,
+                           sKeyInfo1->rowPtr,
+                           sKeyInfo2->rowPtr,
+                           &sDummy );
+    /* ( s2Hi < s2Lo ) */
+    if ( sResult < 0 )
+    {
+        sTmp = s2Hi;
+        s2Hi  = s2Lo;
+        s2Lo  = sTmp;
+    }
+
+    sKeyInfo1 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[s2Mid]];
+    sKeyInfo2 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[s2Hi]];
+
+    sResult = compareKeys( aIndexStat,
+                           aIndexHeader->columns4Build,
+                           aIndexHeader->fence4Build,
+                           (SChar*)sKeyInfo1->keyValue,
+                           (SChar*)sKeyInfo2->keyValue,
+                           sKeyInfo1->rowPtr,
+                           sKeyInfo2->rowPtr,
+                           &sDummy );
+    /* ( s2Mid < s2Hi ) */
+    if ( sResult < 0 )
+    {
+        sTmp = s2Mid;
+        s2Mid = s2Hi;
+        s2Hi  = sTmp;
+    }
+
+    /************************************
+     * s3Hi = median(s3Lo, s3Mid, s3Hi)
+     ************************************/
+
+    sKeyInfo1 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[s3Mid]];
+    sKeyInfo2 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[s3Lo]];
+
+    sResult = compareKeys( aIndexStat,
+                           aIndexHeader->columns4Build,
+                           aIndexHeader->fence4Build,
+                           (SChar*)sKeyInfo1->keyValue,
+                           (SChar*)sKeyInfo2->keyValue, 
+                           sKeyInfo1->rowPtr,
+                           sKeyInfo2->rowPtr,
+                           &sDummy );
+    /* ( s3Mid < s3Lo ) */
+    if ( sResult < 0 )
+    {
+        sTmp = s3Mid;
+        s3Mid = s3Lo;
+        s3Lo  = sTmp;
+    }
+
+    sKeyInfo1 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[s3Hi]];
+    sKeyInfo2 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[s3Lo]];
+
+    sResult = compareKeys( aIndexStat,
+                           aIndexHeader->columns4Build,
+                           aIndexHeader->fence4Build,
+                           (SChar*)sKeyInfo1->keyValue,
+                           (SChar*)sKeyInfo2->keyValue,
+                           sKeyInfo1->rowPtr,
+                           sKeyInfo2->rowPtr,
+                           &sDummy );
+    /* ( s3Hi < s3Lo ) */
+    if ( sResult < 0 )
+    {
+        sTmp = s3Hi;
+        s3Hi  = s3Lo;
+        s3Lo  = sTmp;
+    }
+
+    sKeyInfo1 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[s3Mid]];
+    sKeyInfo2 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[s3Hi]];
+
+    sResult = compareKeys( aIndexStat,
+                           aIndexHeader->columns4Build,
+                           aIndexHeader->fence4Build,
+                           (SChar*)sKeyInfo1->keyValue,
+                           (SChar*)sKeyInfo2->keyValue,
+                           sKeyInfo1->rowPtr,
+                           sKeyInfo2->rowPtr,
+                           &sDummy );
+    /* ( s3Mid < s3Hi ) */
+    if ( sResult < 0 )
+    {
+        sTmp = s3Mid;
+        s3Mid = s3Hi;
+        s3Hi  = sTmp;
+    }
+
+    /************************************
+     * s3Hi = median(s1Hi, s2Hi, s3Hi)
+     ************************************/
+
+    sKeyInfo1 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[s2Hi]];
+    sKeyInfo2 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[s1Hi]];
+
+    sResult = compareKeys( aIndexStat,
+                           aIndexHeader->columns4Build,
+                           aIndexHeader->fence4Build,
+                           (SChar*)sKeyInfo1->keyValue,
+                           (SChar*)sKeyInfo2->keyValue,
+                           sKeyInfo1->rowPtr,
+                           sKeyInfo2->rowPtr,
+                           &sDummy );
+    /* ( s2Hi < s1Hi ) */
+    if ( sResult < 0 )
+    {
+        sTmp = s2Hi;
+        s2Hi = s1Hi;
+        s1Hi = sTmp;
+    }
+
+    sKeyInfo1 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[s3Hi]];
+    sKeyInfo2 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[s1Hi]];
+
+    sResult = compareKeys( aIndexStat,
+                           aIndexHeader->columns4Build,
+                           aIndexHeader->fence4Build,
+                           (SChar*)sKeyInfo1->keyValue,
+                           (SChar*)sKeyInfo2->keyValue,
+                           sKeyInfo1->rowPtr,
+                           sKeyInfo2->rowPtr,
+                           &sDummy );
+    /* ( s3Hi < s1Hi ) */
+    if ( sResult < 0 )
+    {
+        sTmp = s3Hi;
+        s3Hi = s1Hi;
+        s1Hi = sTmp;
+    }
+
+    sKeyInfo1 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[s2Hi]];
+    sKeyInfo2 = (smnbKeyInfo *)&aBuffer[mKeySize * aKeyOffset[s3Hi]];
+
+    sResult = compareKeys( aIndexStat,
+                           aIndexHeader->columns4Build,
+                           aIndexHeader->fence4Build,
+                           (SChar*)sKeyInfo1->keyValue,
+                           (SChar*)sKeyInfo2->keyValue,
+                           sKeyInfo1->rowPtr,
+                           sKeyInfo2->rowPtr,
+                           &sDummy );
+    /* ( s2Hi < s3Hi ) */
+    if ( sResult < 0 )
+    {
+        sTmp = s2Hi;
+        s2Hi = s3Hi;
+        s3Hi = sTmp;
+    }
+
+    return s3Hi;
+}
+
 /* ------------------------------------------------
  * quick sort
- *  - sort runì˜ offsetì„ ì´ìš©í•˜ì—¬ í•´ë‹¹ ìœ„ì¹˜ì˜
- *    key valueë¥¼ ë¹„êµí•˜ì—¬ offsetì„ swap
+ *  - sort runÀÇ offsetÀ» ÀÌ¿ëÇÏ¿© ÇØ´ç À§Ä¡ÀÇ
+ *    key value¸¦ ºñ±³ÇÏ¿© offsetÀ» swap
  * ----------------------------------------------*/
 IDE_RC smnbValuebaseBuild::quickSort( smnbStatistic  * aIndexStat,
                                       SChar          * aBuffer,
@@ -996,7 +1474,7 @@ IDE_RC smnbValuebaseBuild::quickSort( smnbStatistic  * aIndexStat,
     sIndexHeader = (smnbHeader*)(mIndex->mHeader);
     sKeyOffset   = (UShort*)&(aBuffer[mKeySize * mMaxSortRunKeyCnt]);
 
-    //fix BUG-27403 ìµœì´ˆ í•´ì•¼í•  ì¼ ì…ë ¥
+    //fix BUG-27403 ÃÖÃÊ ÇØ¾ßÇÒ ÀÏ ÀÔ·Â
     sCurStack.mLeftPos   = aHead;
     sCurStack.mRightPos  = aTail;
     IDE_TEST( mSortStack.push(ID_FALSE, &sCurStack) != IDE_SUCCESS );
@@ -1009,8 +1487,8 @@ IDE_RC smnbValuebaseBuild::quickSort( smnbStatistic  * aIndexStat,
                  != IDE_SUCCESS);
 
         // Bug-27403
-        // QuickSortì˜ ì•Œê³ ë¦¬ì¦˜ìƒ, CallStackì€ ItemCountë³´ë‹¤ ë§ì•„ì§ˆ ìˆ˜ ì—†ë‹¤.
-        // ë”°ë¼ì„œ ì´ë³´ë‹¤ ë§ìœ¼ë©´, ë¬´í•œë£¨í”„ì— ë¹ ì¡Œì„ ê°€ëŠ¥ì„±ì´ ë†’ë‹¤.
+        // QuickSortÀÇ ¾Ë°í¸®Áò»ó, CallStackÀº ItemCountº¸´Ù ¸¹¾ÆÁú ¼ö ¾ø´Ù.
+        // µû¶ó¼­ ÀÌº¸´Ù ¸¹À¸¸é, ¹«ÇÑ·çÇÁ¿¡ ºüÁ³À» °¡´É¼ºÀÌ ³ô´Ù.
         IDE_ERROR( (aTail - aHead + 1) >= 0 );
         IDE_ERROR( (UInt)(aTail - aHead + 1) > mSortStack.getTotItemCnt() );
 
@@ -1021,7 +1499,13 @@ IDE_RC smnbValuebaseBuild::quickSort( smnbStatistic  * aIndexStat,
 
         i = sCurStack.mLeftPos;
         j = sCurStack.mRightPos + 1;
-        k = ( sCurStack.mLeftPos + sCurStack.mRightPos ) / 2;
+        /* BUG-47082 */
+        k = getPivot( aIndexStat,
+                      sIndexHeader,
+                      aBuffer,
+                      sKeyOffset,
+                      sCurStack.mLeftPos,
+                      sCurStack.mRightPos );
 
         if( sCurStack.mLeftPos < sCurStack.mRightPos )
         {
@@ -1108,8 +1592,8 @@ IDE_RC smnbValuebaseBuild::quickSort( smnbStatistic  * aIndexStat,
 /* ------------------------------------------------
  * Description:
  *
- * - mergeRunì€ ê° threadì—ì„œ ë§Œë“¤ì–´ì§„ merge runë“¤ì„
- *   ì •ë ¬ëœ í•˜ë‚˜ì˜ listë¡œ ë§Œë“ ë‹¤.
+ * - mergeRunÀº °¢ thread¿¡¼­ ¸¸µé¾îÁø merge runµéÀ»
+ *   Á¤·ÄµÈ ÇÏ³ªÀÇ list·Î ¸¸µç´Ù.
  * ----------------------------------------------*/
 IDE_RC smnbValuebaseBuild::mergeRun( smnbStatistic    * aIndexStat )
 {
@@ -1118,7 +1602,7 @@ IDE_RC smnbValuebaseBuild::mergeRun( smnbStatistic    * aIndexStat )
     smnbBuildRun       * sCurRun = NULL;
     UInt                 sState  = 0;
     
-    // mergeí•  runì˜ ìˆ˜ê°€ í•œê°œ ì´í•˜ì¼ ê²½ìš° skip
+    // mergeÇÒ runÀÇ ¼ö°¡ ÇÑ°³ ÀÌÇÏÀÏ °æ¿ì skip
     mMergedRunCount = mSortedRunCount;
 
     IDE_TEST_CONT( mMergedRunCount <= 1, SKIP_MERGE );
@@ -1137,7 +1621,7 @@ IDE_RC smnbValuebaseBuild::mergeRun( smnbStatistic    * aIndexStat )
 
     sCurRun = mFstRun;
 
-    // mergeí•  runë“¤ì„ mergeRunì— ì±„ì›€
+    // mergeÇÒ runµéÀ» mergeRun¿¡ Ã¤¿ò
     while( sCurRun != NULL )
     {
         sMergeRunInfo[sMergeRunInfoCnt].mRun     = sCurRun;
@@ -1179,10 +1663,10 @@ IDE_RC smnbValuebaseBuild::mergeRun( smnbStatistic    * aIndexStat )
 /* ------------------------------------------------
  * Description:
  *
- * - union merge runì€ ê° threadì—ì„œ mergeëœ listë“¤ì„
- *   íŠ¹ì • ê°¯ìˆ˜ë§Œí¼ì˜ listë¡œ mergeí•œë‹¤.
- * - make tree ë‹¨ê³„ì—ì„œ í•œêº¼ë²ˆì— mergeí•˜ëŠ” ê²ƒë³´ë‹¤
- *   ë³‘ë ¬ì„±ì„ ê·¹ëŒ€í™”í•¨ìœ¼ë¡œì¨ index build ì‹œê°„ì„ ë‹¨ì¶•.
+ * - union merge runÀº °¢ thread¿¡¼­ mergeµÈ listµéÀ»
+ *   Æ¯Á¤ °¹¼ö¸¸Å­ÀÇ list·Î mergeÇÑ´Ù.
+ * - make tree ´Ü°è¿¡¼­ ÇÑ²¨¹ø¿¡ mergeÇÏ´Â °Íº¸´Ù
+ *   º´·Ä¼ºÀ» ±Ø´ëÈ­ÇÔÀ¸·Î½á index build ½Ã°£À» ´ÜÃà.
  * ----------------------------------------------*/
 IDE_RC smnbValuebaseBuild::unionMergeRun( smnbStatistic  * aIndexStat )
 {
@@ -1194,24 +1678,24 @@ IDE_RC smnbValuebaseBuild::unionMergeRun( smnbStatistic  * aIndexStat )
     UInt                sState = 0;
     UInt                i;
 
-    // union mergeë¥¼ ì‹¤í–‰í•  thread ID
+    // union merge¸¦ ½ÇÇàÇÒ thread ID
     sBeginTID = mMyTID;  
 
-    // union mergeë¥¼ ì‹¤í–‰í•  threadì— í• ë‹¹ëœ ë§ˆì§€ë§‰ threadì˜ ID
+    // union merge¸¦ ½ÇÇàÇÒ thread¿¡ ÇÒ´çµÈ ¸¶Áö¸· threadÀÇ ID
     sLastTID  = IDL_MIN( mMyTID + mMaxUnionRunCnt, mThreadCnt );
 
-    // union mergeëŠ” ëª¨ë“  threadê°€ ë‹¤ ì‹¤í–‰ë˜ì§€ëŠ” ì•ŠëŠ”ë‹¤.
-    // íŠ¹ì • ê°¯ìˆ˜ë§Œí¼ì˜ threadê°€ ë‹¤ë¥¸ threadì˜ merge ê²°ê³¼ë¥¼ ê°€ì ¸ì™€ì„œ merge.
-    // union mergeë¥¼ ìˆ˜í–‰í•  TIDê°€ ì•„ë‹ˆë©´ ì¢…ë£Œ.
+    // union merge´Â ¸ğµç thread°¡ ´Ù ½ÇÇàµÇÁö´Â ¾Ê´Â´Ù.
+    // Æ¯Á¤ °¹¼ö¸¸Å­ÀÇ thread°¡ ´Ù¸¥ threadÀÇ merge °á°ú¸¦ °¡Á®¿Í¼­ merge.
+    // union merge¸¦ ¼öÇàÇÒ TID°¡ ¾Æ´Ï¸é Á¾·á.
     IDE_TEST_CONT( mMyTID % mMaxUnionRunCnt != 0, SKIP_MERGE );
 
-    // sTotalRunCount : mergeí•  ì „ì²´ run ìˆ˜
+    // sTotalRunCount : mergeÇÒ ÀüÃ¼ run ¼ö
     for( i = sBeginTID; i < sLastTID; i++ )
     {
         sTotalRunCount += mThreads[i].mMergedRunCount;
     }
 
-    // mergeí•  runì˜ ìˆ˜ê°€ 0ì´ë©´(no key) ì¢…ë£Œ
+    // mergeÇÒ runÀÇ ¼ö°¡ 0ÀÌ¸é(no key) Á¾·á
     IDE_TEST_CONT( sTotalRunCount <= 1, SKIP_MERGE );
 
     // initialize heap
@@ -1225,7 +1709,7 @@ IDE_RC smnbValuebaseBuild::unionMergeRun( smnbStatistic  * aIndexStat )
               != IDE_SUCCESS );
     sState = 1;
 
-    // union mergeë¥¼ ìœ„í•´ ê° threadì˜ merge listë¥¼ ê°€ì ¸ì˜´
+    // union merge¸¦ À§ÇØ °¢ threadÀÇ merge list¸¦ °¡Á®¿È
     for( i = sBeginTID; i < sLastTID; i++ )
     {
         if( mThreads[i].mMergedRunCount > 0 )
@@ -1236,18 +1720,6 @@ IDE_RC smnbValuebaseBuild::unionMergeRun( smnbStatistic  * aIndexStat )
                 mThreads[i].mFstRun->mSlotCount;
             sMergeRunInfo[sMergeRunInfoCnt].mSlotSeq = 0;
             sMergeRunInfoCnt++;
-        }
-
-        // union mergeë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ” threadì˜ free listë¥¼
-        // union mergeë¥¼ ìˆ˜í–‰í•˜ëŠ” threadì˜ free listì— ì—°ê²°
-        if( i != sBeginTID )
-        {
-            ((smnbBuildRun *)mLstFreeRun)->mNext =
-                (smnbBuildRun *)(mThreads[i].mFstFreeRun);
-            mLstFreeRun = mThreads[i].mLstFreeRun;
-
-            mThreads[i].mFstFreeRun = NULL;
-            mThreads[i].mLstFreeRun = NULL;
         }
         mThreads[i].mMergedRunCount = 0;
     }
@@ -1415,7 +1887,7 @@ IDE_RC smnbValuebaseBuild::makeTree( smnbValuebaseBuild  * aThreads,
     // the last merge & build tree
     while( 1 )
     {
-        // selection treeì˜ ëª¨ë“  runë“¤ì—ì„œ keyë¥¼ êº¼ëƒˆì„ ë•Œ ì¢…ë£Œ
+        // selection treeÀÇ ¸ğµç runµé¿¡¼­ key¸¦ ²¨³ÂÀ» ¶§ Á¾·á
         if( sClosedRun == sMergeRunInfoCnt )
         {
             break;
@@ -1423,20 +1895,20 @@ IDE_RC smnbValuebaseBuild::makeTree( smnbValuebaseBuild  * aThreads,
         
         sMinIdx = sHeapMap[1];   // the root of selection tree
 
-        // runì—ì„œ ê°€ì ¸ì˜¬ keyì˜ offsetì„ ê³„ì‚°í•˜ì—¬ keyë¥¼ ê°€ì ¸ì˜´
+        // run¿¡¼­ °¡Á®¿Ã keyÀÇ offsetÀ» °è»êÇÏ¿© key¸¦ °¡Á®¿È
         sKeyInfo =
             ((smnbKeyInfo*)
              &(sMergeRunInfo[sMinIdx].mRun->mBody[sMergeRunInfo[sMinIdx].mSlotSeq * mKeySize]));
 
-        // row pointerë¥¼ leaf nodeì— ì“´ë‹¤
+        // row pointer¸¦ leaf node¿¡ ¾´´Ù
         IDE_TEST( write2LeafNode( aIndexStat,
                                   sIndexHeader,
                                   aStack,
                                   sKeyInfo->rowPtr )
                   != IDE_SUCCESS );
 
-        // ë§¤ë²ˆ Session Eventë¥¼ ê²€ì‚¬í•˜ëŠ” ê²ƒì€ ì„±ëŠ¥ìƒ ë¶€í•˜ì´ê¸° ë•Œë¬¸ì—,
-        // ìƒˆë¡œìš´ LeafNodeê°€ ìƒì„±ë ë•Œë§ˆë‹¤ Session Eventë¥¼ ê²€ì‚¬í•œë‹¤.
+        // ¸Å¹ø Session Event¸¦ °Ë»çÇÏ´Â °ÍÀº ¼º´É»ó ºÎÇÏÀÌ±â ¶§¹®¿¡,
+        // »õ·Î¿î LeafNode°¡ »ı¼ºµÉ¶§¸¶´Ù Session Event¸¦ °Ë»çÇÑ´Ù.
         if( sSequence != sIndexHeader->pLstNode->sequence )
         {
             sSequence = sIndexHeader->pLstNode->sequence;
@@ -1444,7 +1916,7 @@ IDE_RC smnbValuebaseBuild::makeTree( smnbValuebaseBuild  * aThreads,
                      != IDE_SUCCESS);
          }
 
-        // heapì—ì„œ keyë¥¼ ê°€ì ¸ì˜¨ë‹¤
+        // heap¿¡¼­ key¸¦ °¡Á®¿Â´Ù
         IDE_TEST( heapPop( aIndexStat,
                            sMinIdx,
                            &sIsClosedRun,
@@ -1472,7 +1944,7 @@ IDE_RC smnbValuebaseBuild::makeTree( smnbValuebaseBuild  * aThreads,
         IDE_ERROR( sIndexHeader->pLstNode != NULL );
         sLstNode = (smnbLNode *)(sIndexHeader->pLstNode);
         sRow     = sLstNode->mRowPtrs[sLstNode->mSlotCount - 1];
-        sKey     = ( ( SMNB_IS_DIRECTKEY_IN_NODE( sLstNode ) == ID_TRUE ) ?
+        sKey     = ( ( SMNB_IS_DIRECTKEY_INDEX( sIndexHeader ) == ID_TRUE ) ?
                      SMNB_GET_KEY_PTR( sLstNode, sLstNode->mSlotCount - 1 ) : NULL );
 
         IDE_TEST( write2ParentNode( aIndexStat,
@@ -1488,7 +1960,7 @@ IDE_RC smnbValuebaseBuild::makeTree( smnbValuebaseBuild  * aThreads,
         {
             sParentPtr = aStack->mStack[sDepth].node;
             sRow       = sParentPtr->mRowPtrs[sParentPtr->mSlotCount - 1];
-            sKey       = ( ( SMNB_IS_DIRECTKEY_IN_NODE( sParentPtr ) == ID_TRUE ) ?
+            sKey       = ( ( SMNB_IS_DIRECTKEY_INDEX( sIndexHeader ) == ID_TRUE ) ?
                            SMNB_GET_KEY_PTR( sParentPtr, sParentPtr->mSlotCount - 1 ) : NULL );
 
             IDE_TEST( write2ParentNode(
@@ -1504,10 +1976,10 @@ IDE_RC smnbValuebaseBuild::makeTree( smnbValuebaseBuild  * aThreads,
 
         sParentPtr = (smnbINode*)(aStack->mStack[aStack->mDepth].node);
 
-        while((sParentPtr->flag & SMNB_NODE_TYPE_MASK) == SMNB_NODE_TYPE_INTERNAL)
+        while ( SMNB_IS_INTERNAL_NODE( sParentPtr ) )
         {
             /* PROJ-2433
-             * child pointerëŠ” ìœ ì§€ */
+             * child pointer´Â À¯Áö */
             smnbBTree::setInternalSlot( sParentPtr,
                                         (SShort)( sParentPtr->mSlotCount - 1 ),
                                         sParentPtr->mChildPtrs[sParentPtr->mSlotCount - 1],
@@ -1551,7 +2023,7 @@ IDE_RC smnbValuebaseBuild::makeTree( smnbValuebaseBuild  * aThreads,
             break;
     }
 
-    // ìƒì„±ëœ index nodeë“¤ì„ freeì‹œí‚¨ë‹¤.
+    // »ı¼ºµÈ index nodeµéÀ» free½ÃÅ²´Ù.
     if( aStack->mDepth == -1 )
     {
         ((smnbHeader*)(mIndex->mHeader))->root =
@@ -1591,7 +2063,7 @@ IDE_RC smnbValuebaseBuild::write2LeafNode( smnbStatistic    * aIndexStat,
         if( sLNode != NULL )
         {
             sRow = sLNode->mRowPtrs[sLNode->mSlotCount - 1];
-            sKey = ( ( SMNB_IS_DIRECTKEY_IN_NODE( sLNode ) == ID_TRUE ) ?
+            sKey = ( ( SMNB_IS_DIRECTKEY_INDEX( aHeader ) == ID_TRUE ) ?
                      SMNB_GET_KEY_PTR( sLNode, sLNode->mSlotCount - 1 ) : NULL );
 
             IDE_TEST( write2ParentNode(
@@ -1639,11 +2111,11 @@ IDE_RC smnbValuebaseBuild::write2LeafNode( smnbStatistic    * aIndexStat,
     smnbBTree::setLeafSlot( sLNode,
                             sLNode->mSlotCount,
                             aRowPtr,
-                            NULL ); /* PROJ-2433 : keyëŠ” ì•„ë˜ì—ì„œ ì„¸íŒ… */
+                            NULL ); /* PROJ-2433 : key´Â ¾Æ·¡¿¡¼­ ¼¼ÆÃ */
 
     /* PROJ-2433
-     * direct key ì„¸íŒ… */
-    if ( SMNB_IS_DIRECTKEY_IN_NODE( sLNode ) == ID_TRUE )
+     * direct key ¼¼ÆÃ */
+    if ( SMNB_IS_DIRECTKEY_INDEX( aHeader ) == ID_TRUE )
     {
         IDE_TEST( smnbBTree::makeKeyFromRow( aHeader,
                                              aRowPtr,
@@ -1699,7 +2171,7 @@ IDE_RC smnbValuebaseBuild::write2ParentNode( smnbStatistic    * aIndexStat,
     if ( sINode->mSlotCount >= SMNB_INTERNAL_SLOT_MAX_COUNT( aHeader ) )
     {
         sRow = sINode->mRowPtrs[sINode->mSlotCount - 1];
-        sKey = ( ( SMNB_IS_DIRECTKEY_IN_NODE( sINode ) == ID_TRUE ) ?
+        sKey = ( ( SMNB_IS_DIRECTKEY_INDEX( aHeader ) == ID_TRUE ) ?
                  SMNB_GET_KEY_PTR( sINode, sINode->mSlotCount - 1 ) : NULL );
 
         IDE_TEST( write2ParentNode( aIndexStat,
@@ -1731,7 +2203,7 @@ IDE_RC smnbValuebaseBuild::write2ParentNode( smnbStatistic    * aIndexStat,
     }
      
     /* PROJ-2433
-     * internal nodeì— rowë¥¼ ì¶”ê°€í•œë‹¤ */
+     * internal node¿¡ row¸¦ Ãß°¡ÇÑ´Ù */
     smnbBTree::setInternalSlot( sINode,
                                 sINode->mSlotCount,
                                 (smnbNode *)aChildPtr,
@@ -1769,14 +2241,14 @@ IDE_RC smnbValuebaseBuild::heapInit( smnbStatistic     * aIndexStat,
     sHeapLevelCnt = aRunCount;
     sIndexHeader = (smnbHeader*)(mIndex->mHeader);
 
-    // heapMapì˜ leaf level ì´ˆê¸°í™” : mergeRun ë°°ì—´ì˜ index
+    // heapMapÀÇ leaf level ÃÊ±âÈ­ : mergeRun ¹è¿­ÀÇ index
     for( i = 0; i < sHeapLevelCnt; i++ )
     {
         aHeapMap[i + sPos] = i;
     }
 
-    // heapMapì˜ leaf level ì´ˆê¸°í™”
-    //  : runì´ í• ë‹¹ë˜ì§€ ì•Šì€ heapMapì˜ ë‚˜ë¨¸ì§€ ë¶€ë¶„ì€ -1ë¡œ ì„¤ì •
+    // heapMapÀÇ leaf level ÃÊ±âÈ­
+    //  : runÀÌ ÇÒ´çµÇÁö ¾ÊÀº heapMapÀÇ ³ª¸ÓÁö ºÎºĞÀº -1·Î ¼³Á¤
     for(i = i + sPos ; i < aHeapMapCount; i++)
     {
         aHeapMap[i] = -1;
@@ -1784,7 +2256,7 @@ IDE_RC smnbValuebaseBuild::heapInit( smnbStatistic     * aIndexStat,
 
     while( 1 )
     {
-        // bottom-upìœ¼ë¡œ heapMap ì´ˆê¸°í™”
+        // bottom-upÀ¸·Î heapMap ÃÊ±âÈ­
         sPos = sPos / 2;
         sHeapLevelCnt  = (sHeapLevelCnt + 1) / 2;
         
@@ -1867,13 +2339,13 @@ IDE_RC smnbValuebaseBuild::heapPop( smnbStatistic    * aIndexStat,
     aMergeRunInfo[aMinIdx].mSlotSeq++;
     *aIsClosedRun = ID_FALSE;
 
-    // runì˜ ë§ˆì§€ë§‰ slotì¼ ê²½ìš°
+    // runÀÇ ¸¶Áö¸· slotÀÏ °æ¿ì
     if ( aMergeRunInfo[aMinIdx].mSlotSeq == aMergeRunInfo[aMinIdx].mSlotCnt )
     {
         sTmpRun = aMergeRunInfo[aMinIdx].mRun;
 
-        // nextê°€ NULLì´ë©´ heapMapì— -1ì„ ì„¤ì •í•˜ì—¬ keyê°€ ì—†ìŒì„ í‘œì‹œ
-        // ì•„ë‹ˆë©´ listì˜ nextë¥¼ ì„œí•‘
+        // next°¡ NULLÀÌ¸é heapMap¿¡ -1À» ¼³Á¤ÇÏ¿© key°¡ ¾øÀ½À» Ç¥½Ã
+        // ¾Æ´Ï¸é listÀÇ next¸¦ ¼­ÇÎ
         if( sTmpRun->mNext == NULL )
         {
             aMergeRunInfo[aMinIdx].mRun     = NULL;
@@ -1895,7 +2367,7 @@ IDE_RC smnbValuebaseBuild::heapPop( smnbStatistic    * aIndexStat,
         IDE_DASSERT( aMergeRunInfo[aMinIdx].mSlotSeq < aMergeRunInfo[aMinIdx].mSlotCnt );
     }
 
-    // heapì—ì„œ popëœ runì˜ parent ìœ„ì¹˜
+    // heap¿¡¼­ popµÈ runÀÇ parent À§Ä¡
     sPos = (sPos + aMinIdx) / 2;
     
     while( 1 )
@@ -2057,10 +2529,10 @@ SInt smnbValuebaseBuild::compareKeys( smnbStatistic      * aIndexStat,
 
     *aIsEqual = ID_TRUE;
 
-    /* BUG-39043 í‚¤ ê°’ì´ ë™ì¼ í•  ê²½ìš° pointer ìœ„ì¹˜ë¡œ ìˆœì„œë¥¼ ì •í•˜ë„ë¡ í•  ê²½ìš°
-     * ì„œë²„ë¥¼ ìƒˆë¡œ ì˜¬ë¦° ê²½ìš° ìœ„ì¹˜ê°€ ë³€ê²½ë˜ê¸° ë•Œë¬¸ì— persistent indexë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
-     * ì €ì¥ëœ indexì™€ ì‹¤ì œ ìˆœì„œê°€ ë§ì§€ ì•Šì•„ ë¬¸ì œê°€ ìƒê¸¸ ìˆ˜ ìˆë‹¤.
-     * ì´ë¥¼ í•´ê²°í•˜ê¸° ìœ„í•´ í‚¤ ê°’ì´ ë™ì¼ í•œ ê²½ìš° OIDë¡œ ìˆœì„œë¥¼ ì •í•˜ë„ë¡ í•œë‹¤. */
+    /* BUG-39043 Å° °ªÀÌ µ¿ÀÏ ÇÒ °æ¿ì pointer À§Ä¡·Î ¼ø¼­¸¦ Á¤ÇÏµµ·Ï ÇÒ °æ¿ì
+     * ¼­¹ö¸¦ »õ·Î ¿Ã¸° °æ¿ì À§Ä¡°¡ º¯°æµÇ±â ¶§¹®¿¡ persistent index¸¦ »ç¿ëÇÏ´Â °æ¿ì
+     * ÀúÀåµÈ index¿Í ½ÇÁ¦ ¼ø¼­°¡ ¸ÂÁö ¾Ê¾Æ ¹®Á¦°¡ »ı±æ ¼ö ÀÖ´Ù.
+     * ÀÌ¸¦ ÇØ°áÇÏ±â À§ÇØ Å° °ªÀÌ µ¿ÀÏ ÇÑ °æ¿ì OID·Î ¼ø¼­¸¦ Á¤ÇÏµµ·Ï ÇÑ´Ù. */
     if( SMP_SLOT_GET_OID( aRowPtr1 ) > SMP_SLOT_GET_OID( aRowPtr2 ) )
     {
         return 1;
@@ -2074,9 +2546,9 @@ SInt smnbValuebaseBuild::compareKeys( smnbStatistic      * aIndexStat,
 }
 
 /* ------------------------------------------------
- * ëª¨ë“  ì»¬ëŸ¼ì´ NULLì„ ê°€ì§€ê³  ìˆëŠ”ì§€ ê²€ì‚¬
- * Unique Indexê°€ ì•„ë‹ ê²½ìš° ë¬´ì¡°ê±´ Nullì´ë¼ê³  ì¸ì‹í•˜ê¸°
- * ë•Œë¬¸ì— ì£¼ì˜í•´ì•¼ í•œë‹¤.
+ * ¸ğµç ÄÃ·³ÀÌ NULLÀ» °¡Áö°í ÀÖ´ÂÁö °Ë»ç
+ * Unique Index°¡ ¾Æ´Ò °æ¿ì ¹«Á¶°Ç NullÀÌ¶ó°í ÀÎ½ÄÇÏ±â
+ * ¶§¹®¿¡ ÁÖÀÇÇØ¾ß ÇÑ´Ù.
  * ----------------------------------------------*/
 idBool smnbValuebaseBuild::isNull( smnbHeader  * aHeader,
                                    SChar       * aKeyValue )
@@ -2084,8 +2556,8 @@ idBool smnbValuebaseBuild::isNull( smnbHeader  * aHeader,
     smnbColumn * sColumn;
     idBool       sIsNull = ID_TRUE;
     
-    // Buildí•˜ê¸° ìœ„í•œ Column êµ¬ì¡°ë¥¼ ì¨ì•¼ í•˜ê¸° ë•Œë¬¸ì—
-    // smnbModule::isNullKeyë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤
+    // BuildÇÏ±â À§ÇÑ Column ±¸Á¶¸¦ ½á¾ß ÇÏ±â ¶§¹®¿¡
+    // smnbModule::isNullKey¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù
     sColumn = &aHeader->columns4Build[0];
     for( ; sColumn != aHeader->fence4Build; sColumn++ )
     {

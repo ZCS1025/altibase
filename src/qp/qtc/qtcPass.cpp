@@ -16,13 +16,13 @@
  
 
 /***********************************************************************
- * $Id: qtcPass.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qtcPass.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  *
  * Description :
  *
  *     Pass Node
- *        - í•˜ìœ„ ë…¸ë“œì˜ ê²°ê³¼ë¥¼ ê·¸ëŒ€ë¡œ ì „ë‹¬í•˜ëŠ” Node
- *        - ì—°ì‚°ì˜ ì¤‘ë³µ ìˆ˜í–‰ì„ ë°©ì§€í•˜ê¸° ìœ„í•´ ì‚¬ìš©ëœë‹¤.
+ *        - ÇÏÀ§ ³ëµåÀÇ °á°ú¸¦ ±×´ë·Î Àü´ŞÇÏ´Â Node
+ *        - ¿¬»êÀÇ Áßº¹ ¼öÇàÀ» ¹æÁöÇÏ±â À§ÇØ »ç¿ëµÈ´Ù.
  *     Ex) SELECT i1 + 1 FROM T1 ORDER BY 1;
  *
  *     [PROJ]--------->[Assign]
@@ -38,12 +38,12 @@
  *                       |
  *                 src [I1 + 1]
  *
- *     ìœ„ì—ì„œì™€ ê°™ì´ [Pass Node]ë¥¼ ì¤‘ê°„ì— ì—°ê²°í•¨ìœ¼ë¡œì„œ [i1 + 1]ì˜
- *     ë°˜ë³µ ìˆ˜í–‰ì„ ë°©ì§€í•  ìˆ˜ ìˆë‹¤.
+ *     À§¿¡¼­¿Í °°ÀÌ [Pass Node]¸¦ Áß°£¿¡ ¿¬°áÇÔÀ¸·Î¼­ [i1 + 1]ÀÇ
+ *     ¹İº¹ ¼öÇàÀ» ¹æÁöÇÒ ¼ö ÀÖ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -53,7 +53,7 @@
 #include <qci.h>
 
 //-----------------------------------------
-// Pass ì—°ì‚°ìì˜ ì´ë¦„ì— ëŒ€í•œ ì •ë³´
+// Pass ¿¬»êÀÚÀÇ ÀÌ¸§¿¡ ´ëÇÑ Á¤º¸
 //-----------------------------------------
 
 static mtcName mtfFunctionName[1] = {
@@ -61,7 +61,7 @@ static mtcName mtfFunctionName[1] = {
 };
 
 //-----------------------------------------
-// Pass ì—°ì‚°ìì˜ Module ì— ëŒ€í•œ ì •ë³´
+// Pass ¿¬»êÀÚÀÇ Module ¿¡ ´ëÇÑ Á¤º¸
 //-----------------------------------------
 
 static IDE_RC qtcEstimate( mtcNode*     aNode,
@@ -71,20 +71,20 @@ static IDE_RC qtcEstimate( mtcNode*     aNode,
                            mtcCallBack* aCallBack );
 
 mtfModule qtc::passModule = {
-    1|                          // í•˜ë‚˜ì˜ Column ê³µê°„
-    MTC_NODE_OPERATOR_MISC,     // ê¸°íƒ€ ì—°ì‚°ì
-    ~0,                         // Indexable Mask : ì˜ë¯¸ ì—†ìŒ
-    1.0,                        // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
-    mtfFunctionName,            // ì´ë¦„ ì •ë³´
-    NULL,                       // Counter ì—°ì‚°ì ì—†ìŒ
-    mtf::initializeDefault,     // ì„œë²„ êµ¬ë™ì‹œ ì´ˆê¸°í™” í•¨ìˆ˜, ì—†ìŒ
-    mtf::finalizeDefault,       // ì„œë²„ ì¢…ë£Œì‹œ ì¢…ë£Œ í•¨ìˆ˜, ì—†ìŒ
-    qtcEstimate                 // Estimate í•  í•¨ìˆ˜
+    1|                          // ÇÏ³ªÀÇ Column °ø°£
+    MTC_NODE_OPERATOR_MISC,     // ±âÅ¸ ¿¬»êÀÚ
+    ~0,                         // Indexable Mask : ÀÇ¹Ì ¾øÀ½
+    1.0,                        // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    mtfFunctionName,            // ÀÌ¸§ Á¤º¸
+    NULL,                       // Counter ¿¬»êÀÚ ¾øÀ½
+    mtf::initializeDefault,     // ¼­¹ö ±¸µ¿½Ã ÃÊ±âÈ­ ÇÔ¼ö, ¾øÀ½
+    mtf::finalizeDefault,       // ¼­¹ö Á¾·á½Ã Á¾·á ÇÔ¼ö, ¾øÀ½
+    qtcEstimate                 // Estimate ÇÒ ÇÔ¼ö
 };
 
 
 //-----------------------------------------
-// Pass ì—°ì‚°ìì˜ ìˆ˜í–‰ í•¨ìˆ˜ì˜ ì •ì˜
+// Pass ¿¬»êÀÚÀÇ ¼öÇà ÇÔ¼öÀÇ Á¤ÀÇ
 //-----------------------------------------
 
 IDE_RC qtcCalculate_Pass( mtcNode*  aNode,
@@ -94,15 +94,15 @@ IDE_RC qtcCalculate_Pass( mtcNode*  aNode,
                           mtcTemplate* aTemplate );
 
 static const mtcExecute qtcExecute = {
-    mtf::calculateNA,     // Aggregation ì´ˆê¸°í™” í•¨ìˆ˜, ì—†ìŒ
-    mtf::calculateNA,     // Aggregation ìˆ˜í–‰ í•¨ìˆ˜, ì—†ìŒ
+    mtf::calculateNA,     // Aggregation ÃÊ±âÈ­ ÇÔ¼ö, ¾øÀ½
+    mtf::calculateNA,     // Aggregation ¼öÇà ÇÔ¼ö, ¾øÀ½
     mtf::calculateNA,
-    mtf::calculateNA,     // Aggregation ì¢…ë£Œ í•¨ìˆ˜, ì—†ìŒ
-    qtcCalculate_Pass,    // PASS ì—°ì‚° í•¨ìˆ˜
-    NULL,                 // ì—°ì‚°ì„ ìœ„í•œ ë¶€ê°€ ì •ë³´, ì—†ìŒ
+    mtf::calculateNA,     // Aggregation Á¾·á ÇÔ¼ö, ¾øÀ½
+    qtcCalculate_Pass,    // PASS ¿¬»ê ÇÔ¼ö
+    NULL,                 // ¿¬»êÀ» À§ÇÑ ºÎ°¡ Á¤º¸, ¾øÀ½
     mtx::calculateNA,
-    mtk::estimateRangeNA, // Key Range í¬ê¸° ì¶”ì¶œ í•¨ìˆ˜, ì—†ìŒ
-    mtk::extractRangeNA   // Key Range ìƒì„± í•¨ìˆ˜, ì—†ìŒ
+    mtk::estimateRangeNA, // Key Range Å©±â ÃßÃâ ÇÔ¼ö, ¾øÀ½
+    mtk::extractRangeNA   // Key Range »ı¼º ÇÔ¼ö, ¾øÀ½
 };
 
 IDE_RC qtcEstimate( mtcNode*     aNode,
@@ -114,15 +114,15 @@ IDE_RC qtcEstimate( mtcNode*     aNode,
 /***********************************************************************
  *
  * Description :
- *    Pass ì—°ì‚°ìì— ëŒ€í•˜ì—¬ Estimate ë¥¼ ìˆ˜í–‰í•¨.
- *    Pass Nodeì— ëŒ€í•œ Column ì •ë³´ ë° Execute ì •ë³´ë¥¼ Settingí•œë‹¤.
+ *    Pass ¿¬»êÀÚ¿¡ ´ëÇÏ¿© Estimate ¸¦ ¼öÇàÇÔ.
+ *    Pass Node¿¡ ´ëÇÑ Column Á¤º¸ ¹× Execute Á¤º¸¸¦ SettingÇÑ´Ù.
  *
  * Implementation :
  *
- *    í˜¸ìŠ¤íŠ¸ ë³€ìˆ˜ê°€ ì¡´ì¬í•  ê²½ìš°, ìƒìœ„ì—ì„œì˜ ì²˜ë¦¬ë¥¼ ìœ„í•´
- *    Argumentìì²´ì˜ ì •ë³´ë¥¼ Settingí•œë‹¤.
- *    ì´ ë•Œ ê²°ì •ëœ ì •ë³´ëŠ” Estimationì„ ìœ„í•´ ì‚¬ìš©ë  ë¿
- *    Executionì‹œ ì•„ë¬´ ì˜í–¥ì„ ë¯¸ì¹˜ì§€ ì•ŠëŠ”ë‹¤.
+ *    È£½ºÆ® º¯¼ö°¡ Á¸ÀçÇÒ °æ¿ì, »óÀ§¿¡¼­ÀÇ Ã³¸®¸¦ À§ÇØ
+ *    ArgumentÀÚÃ¼ÀÇ Á¤º¸¸¦ SettingÇÑ´Ù.
+ *    ÀÌ ¶§ °áÁ¤µÈ Á¤º¸´Â EstimationÀ» À§ÇØ »ç¿ëµÉ »Ó
+ *    Execution½Ã ¾Æ¹« ¿µÇâÀ» ¹ÌÄ¡Áö ¾Ê´Â´Ù.
  *
  ***********************************************************************/
 
@@ -136,9 +136,9 @@ IDE_RC qtcEstimate( mtcNode*     aNode,
          == MTC_NODE_INDIRECT_TRUE )
     {
         // To Fix PR-8192
-        // ì¼ë°˜ Expressionìœ¼ë¡œë¶€í„° ìƒì„±ëœ Pass Nodeì„.
+        // ÀÏ¹İ ExpressionÀ¸·ÎºÎÅÍ »ı¼ºµÈ Pass NodeÀÓ.
 
-        // Column ì •ë³´ë¡œ skipModuleì„ ì‚¬ìš©í•¨.
+        // Column Á¤º¸·Î skipModuleÀ» »ç¿ëÇÔ.
         /*
         IDE_TEST( qtc::skipModule.estimate( aTuple[aNode->table].columns +
                                             aNode->column,
@@ -160,17 +160,17 @@ IDE_RC qtcEstimate( mtcNode*     aNode,
     }
     else
     {
-        // Group By Expressionìœ¼ë¡œë¶€í„° ìƒì„±ëœ Pass Nodeì„.
-        // ë‚˜ ìì‹ ì˜ Column ì •ë³´ë¥¼ ìƒìœ„ë¡œ ì„¤ì •í•œë‹¤.
+        // Group By ExpressionÀ¸·ÎºÎÅÍ »ı¼ºµÈ Pass NodeÀÓ.
+        // ³ª ÀÚ½ÅÀÇ Column Á¤º¸¸¦ »óÀ§·Î ¼³Á¤ÇÑ´Ù.
 
-        // Converted Nodeë¥¼ íšë“í•´ì„œëŠ” ì•ˆëœë‹¤.
+        // Converted Node¸¦ È¹µæÇØ¼­´Â ¾ÈµÈ´Ù.
         sNode = aNode->arguments;
 
-        // Argumentì˜ Column ì •ë³´ë¥¼ ë³µì‚¬ ë° Execute ì •ë³´ë¥¼ settingí•œë‹¤.
+        // ArgumentÀÇ Column Á¤º¸¸¦ º¹»ç ¹× Execute Á¤º¸¸¦ settingÇÑ´Ù.
         sColumn = aTemplate->rows[aNode->table].columns + aNode->column;
 
         // BUG-23102
-        // mtcColumnìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
+        // mtcColumnÀ¸·Î ÃÊ±âÈ­ÇÑ´Ù.
         mtc::initializeColumn( sColumn,
                                aTemplate->rows[sNode->table].columns
                                + sNode->column );
@@ -198,11 +198,11 @@ IDE_RC qtcCalculate_Pass( mtcNode*     aNode,
  *
  * Description :
  *
- *    Argumentë¥¼ ì´ìš©í•˜ì—¬ ì •ë³´ë¥¼ Settingí•œë‹¤.
+ *    Argument¸¦ ÀÌ¿ëÇÏ¿© Á¤º¸¸¦ SettingÇÑ´Ù.
  *
  * Implementation :
  *
- *    Stackì— columnì •ë³´ì™€ Value ì •ë³´ë¥¼ Settingí•œë‹¤.
+ *    Stack¿¡ columnÁ¤º¸¿Í Value Á¤º¸¸¦ SettingÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -211,21 +211,21 @@ IDE_RC qtcCalculate_Pass( mtcNode*     aNode,
 
     IDE_TEST_RAISE( aRemain < 1, ERR_STACK_OVERFLOW );
 
-    // Argument íšë“.
+    // Argument È¹µæ.
     sNode = mtf::convertedNode( aNode->arguments,
                                 aTemplate );
 
     IDE_DASSERT(sNode->column != MTC_RID_COLUMN_ID);
 
-    // Argumentë¥¼ ì´ìš©í•œ Column ë° Value ì •ë³´ Setting
+    // Argument¸¦ ÀÌ¿ëÇÑ Column ¹× Value Á¤º¸ Setting
     
     aStack->column = aTemplate->rows[sNode->table].columns + sNode->column;
 
     /* BUG-44762 case when subquery
      *
-     * Case Whenì—ì„œ Subqueryë¡œ ì¸í•´ ì‚¬ìš©ëœ Pass Nodeì˜ ê²½ìš°ì—ëŠ” Nodeë¥¼ í†µí•´
-     * Valueë¥¼ ê³„ì‚°í•˜ì§€ ì•ŠëŠ”ë‹¤. SubQueryì˜ ê²°ê³¼ëŠ” ì´ë¯¸ Case whenì—ì„œ
-     * Stackì— ë¯¸ë¦¬ ì§€ì •í•´ë†“ì•˜ë‹¤
+     * Case When¿¡¼­ Subquery·Î ÀÎÇØ »ç¿ëµÈ Pass NodeÀÇ °æ¿ì¿¡´Â Node¸¦ ÅëÇØ
+     * Value¸¦ °è»êÇÏÁö ¾Ê´Â´Ù. SubQueryÀÇ °á°ú´Â ÀÌ¹Ì Case when¿¡¼­
+     * Stack¿¡ ¹Ì¸® ÁöÁ¤ÇØ³õ¾Ò´Ù
      */
     if ( ( ( ((qtcNode*)(aNode->arguments))->lflag & QTC_NODE_SUBQUERY_MASK )
            == QTC_NODE_SUBQUERY_EXIST ) &&
@@ -244,20 +244,20 @@ IDE_RC qtcCalculate_Pass( mtcNode*     aNode,
     if ( ( aNode->lflag & MTC_NODE_INDIRECT_MASK )
          == MTC_NODE_INDIRECT_FALSE )
     {
-        // BUG-28223 CASE expr WHEN .. THEN .. êµ¬ë¬¸ì˜ exprì— subquery ì‚¬ìš©ì‹œ ì—ëŸ¬ë°œìƒ
+        // BUG-28223 CASE expr WHEN .. THEN .. ±¸¹®ÀÇ expr¿¡ subquery »ç¿ë½Ã ¿¡·¯¹ß»ı
         // BUG-28446 [valgrind], BUG-38133
         // qtcCalculate_Pass(mtcNode*, mtcStack*, int, void*, mtcTemplate*) (qtcPass.cpp:333)
         if( ( aNode->lflag & MTC_NODE_CASE_EXPRESSION_PASSNODE_MASK )
             == MTC_NODE_CASE_EXPRESSION_PASSNODE_FALSE )
         {            
             // To Fix PR-10033
-            // GROUP BY ì»¬ëŸ¼ì„ ì°¸ì¡°í•˜ëŠ” Pass NodeëŠ” Direct Nodeì´ë‹¤.
-            // Pass Nodeê°€ Indirect Nodeê°€ ì•„ë‹Œ ê²½ìš°
-            // í•´ë‹¹ ì˜ì—­ì— ê°’ì„ ì €ì¥í•˜ê³  ìˆì–´ì•¼ í•œë‹¤.
-            // ì´ëŠ” Key Rangeë“±ì„ ìƒì„±í•  ë•Œ, indirect nodeì¸ ê²½ìš°
-            // í•´ë‹¹ Nodeë¥¼ ì°¾ì•„ ê·¸ ì˜ì—­ì— ìˆëŠ” Dataë¥¼ ì´ìš©í•˜ì—¬
-            // Key Rangeë¥¼ êµ¬ì„±í•˜ëŠ” ë°˜ë©´, direct nodeì¸ ê²½ìš°ì—ëŠ”
-            // Pass Nodeë¡œë¶€í„° ê°’ì„ ì–»ì–´ Key Rangeë¥¼ ìƒì„±í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+            // GROUP BY ÄÃ·³À» ÂüÁ¶ÇÏ´Â Pass Node´Â Direct NodeÀÌ´Ù.
+            // Pass Node°¡ Indirect Node°¡ ¾Æ´Ñ °æ¿ì
+            // ÇØ´ç ¿µ¿ª¿¡ °ªÀ» ÀúÀåÇÏ°í ÀÖ¾î¾ß ÇÑ´Ù.
+            // ÀÌ´Â Key RangeµîÀ» »ı¼ºÇÒ ¶§, indirect nodeÀÎ °æ¿ì
+            // ÇØ´ç Node¸¦ Ã£¾Æ ±× ¿µ¿ª¿¡ ÀÖ´Â Data¸¦ ÀÌ¿ëÇÏ¿©
+            // Key Range¸¦ ±¸¼ºÇÏ´Â ¹İ¸é, direct nodeÀÎ °æ¿ì¿¡´Â
+            // Pass Node·ÎºÎÅÍ °ªÀ» ¾ò¾î Key Range¸¦ »ı¼ºÇÏ±â ¶§¹®ÀÌ´Ù.
 
             sPassNodeColumn = aTemplate->rows[aNode->table].columns
                 + aNode->column;
@@ -273,15 +273,15 @@ IDE_RC qtcCalculate_Pass( mtcNode*     aNode,
         {
             // BUG-28446 [valgrind]
             // qtcCalculate_Pass(mtcNode*, mtcStack*, int, void*, mtcTemplate*) (qtcPass.cpp:333)
-            // SIMPLE CASEì²˜ë¦¬ë¥¼ ìœ„í•´ í•„ìš”ì— ì˜í•´ ìƒì„±ëœ PASS NODEì„ì„ í‘œì‹œ
-            // skipModuleì´ë©° sizeëŠ” 0ì´ë‹¤.
-            // ë”°ë¼ì„œ, ë³µì‚¬ë  ìˆ˜ ì—†ë‹¤.
+            // SIMPLE CASEÃ³¸®¸¦ À§ÇØ ÇÊ¿ä¿¡ ÀÇÇØ »ı¼ºµÈ PASS NODEÀÓÀ» Ç¥½Ã
+            // skipModuleÀÌ¸ç size´Â 0ÀÌ´Ù.
+            // µû¶ó¼­, º¹»çµÉ ¼ö ¾ø´Ù.
         }
     }
     else
     {
-        // Indirect Pass Nodeì˜ ê²½ìš° Argumentë§Œì„ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì—
-        // ì‹¤ì œ ê°’ì„ ì €ì¥í•  í•„ìš”ê°€ ì—†ë‹¤.
+        // Indirect Pass NodeÀÇ °æ¿ì Argument¸¸À» »ç¿ëÇÏ±â ¶§¹®¿¡
+        // ½ÇÁ¦ °ªÀ» ÀúÀåÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
     }
     
     return IDE_SUCCESS;

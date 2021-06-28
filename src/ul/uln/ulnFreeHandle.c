@@ -24,7 +24,7 @@
 /*
  * State transition functions
  *
- * FreeHandle ì˜ ê²½ìš° ulnFnContext ì˜ *mArgs ì— ìƒìœ„ í•¸ë“¤ì„ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°ê°€ ì˜¨ë‹¤.
+ * FreeHandle ÀÇ °æ¿ì ulnFnContext ÀÇ *mArgs ¿¡ »óÀ§ ÇÚµéÀ» °¡¸®Å°´Â Æ÷ÀÎÅÍ°¡ ¿Â´Ù.
  */
 
 /*
@@ -272,7 +272,7 @@ static SQLRETURN ulnFreeHandleEnv(ulnEnv *aEnv)
     ULN_FLAG_UP(sNeedUnLock);
 
     /*
-     * Env í•´ì œ
+     * Env ÇØÁ¦
      */
     ACI_TEST_RAISE(ulnEnvDestroy(aEnv) != ACI_SUCCESS, LABEL_MEM_MAN_ERR);
 
@@ -288,8 +288,8 @@ static SQLRETURN ulnFreeHandleEnv(ulnEnv *aEnv)
     uluLockDestroy(sLockEnv);
 
     /*
-     * Note : ENV ê°€ release ë˜ì–´ë²„ë ¸ìœ¼ë¯€ë¡œ ulnExit ë¥¼ í˜¸ì¶œí•´ì„œëŠ” ì•ˆëœë‹¤.
-     *        state function ì„ ê³§ì¥ í˜¸ì¶œí•´ì•¼ í•œë‹¤. ??
+     * Note : ENV °¡ release µÇ¾î¹ö·ÈÀ¸¹Ç·Î ulnExit ¸¦ È£ÃâÇØ¼­´Â ¾ÈµÈ´Ù.
+     *        state function À» °ğÀå È£ÃâÇØ¾ß ÇÑ´Ù. ??
      *
      * ulnSFID_94(&sFnContext);
      */
@@ -330,8 +330,8 @@ static SQLRETURN ulnFreeHandleDbc(ulnDbc *aDbc)
     ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_FREEHANDLE_DBC, aDbc, ULN_OBJ_TYPE_DBC);
 
     /*
-     * lock ENV : ENV ì˜ lock ì„ ì¡ì•„ ì¤˜ì•¼ í•œë‹¤. DBC ë¥¼ ì—†ì• ëŠ” ê²ƒê³¼ ENV ì˜ ìƒíƒœ ì „ì´ëŠ”
-     *            atomic í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+     * lock ENV : ENV ÀÇ lock À» Àâ¾Æ Áà¾ß ÇÑ´Ù. DBC ¸¦ ¾ø¾Ö´Â °Í°ú ENV ÀÇ »óÅÂ ÀüÀÌ´Â
+     *            atomic ÇØ¾ß ÇÏ±â ¶§¹®ÀÌ´Ù.
      */
 
     sParentEnv = aDbc->mParentEnv;
@@ -362,7 +362,7 @@ static SQLRETURN ulnFreeHandleDbc(ulnDbc *aDbc)
     ACI_TEST_RAISE(ulsdModuleEnvRemoveDbc(sParentEnv, aDbc) != ACI_SUCCESS, LABEL_MEM_MAN_ERR);
 #else /* COMPILE_SHARDCLI */
     /*
-     * BUGBUG: ENV ì˜ DBC ë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œí•˜ëŠ” ê²ƒì€ ë¨¼ì € í”„ë¦¬ë¥¼ í•œ í›„ì— í•´ì•¼ í• í…ë°.. ê·€ì°®ë‹¤.
+     * BUGBUG: ENV ÀÇ DBC ¸®½ºÆ®¿¡¼­ »èÁ¦ÇÏ´Â °ÍÀº ¸ÕÀú ÇÁ¸®¸¦ ÇÑ ÈÄ¿¡ ÇØ¾ß ÇÒÅÙµ¥.. ±ÍÂú´Ù.
      * Remove DBC from ENV
      */
 
@@ -386,8 +386,8 @@ static SQLRETURN ulnFreeHandleDbc(ulnDbc *aDbc)
      */
 
     /*
-     * Note : ulnExit ë¥¼ ë¶ˆëŸ¬ì„œëŠ” ì•ˆëœë‹¤. DBC ê°€ ì´ë¯¸ í•´ì œë˜ì—ˆê¸° ë•Œë¬¸ì´ë‹¤.
-     *        ENV ì˜ ìƒíƒœ ì „ì´ë§Œ ìˆ˜í–‰í•œë‹¤.
+     * Note : ulnExit ¸¦ ºÒ·¯¼­´Â ¾ÈµÈ´Ù. DBC °¡ ÀÌ¹Ì ÇØÁ¦µÇ¾ú±â ¶§¹®ÀÌ´Ù.
+     *        ENV ÀÇ »óÅÂ ÀüÀÌ¸¸ ¼öÇàÇÑ´Ù.
      */
 
     sFnContext.mWhere = ULN_STATE_EXIT_POINT;
@@ -401,6 +401,12 @@ static SQLRETURN ulnFreeHandleDbc(ulnDbc *aDbc)
 
     ULN_FLAG_DOWN(sNeedUnLockEnv);
     ACI_TEST(acpThrMutexUnlock(sLockEnv) != ACP_RC_SUCCESS);
+
+    /* ulnExist °¡ È£ÃâµÇÁö ¾Ê±â ¶§¹®¿¡ ¼öµ¿À¸·Î ShardCoordFixCtrlCtx ¸¦ ¼öÇàÇÑ´Ù. */
+    if ( sFnContext.mShardCoordFixCtrlCtx != NULL )
+    {
+        ulnDbcShardCoordFixCtrlExit( &sFnContext );
+    }
 
     return ULN_FNCONTEXT_GET_RC(&sFnContext);
 
@@ -421,6 +427,11 @@ static SQLRETURN ulnFreeHandleDbc(ulnDbc *aDbc)
         acpThrMutexUnlock(sLockEnv);
     }
 
+    if ( sFnContext.mShardCoordFixCtrlCtx != NULL )
+    {
+        ulnDbcShardCoordFixCtrlExit( &sFnContext );
+    }
+
     return ULN_FNCONTEXT_GET_RC(&sFnContext);
 }
 
@@ -430,7 +441,7 @@ ACI_RC ulnFreeHandleStmtSendFreeREQ(ulnFnContext *aContext, ulnDbc *aParentDbc, 
     acp_bool_t    sNeedPtContextFin = ACP_FALSE;
 
     // BUG-17514
-    // ëª¨ë“  RESULT SET IDëŠ” ACP_UINT16_MAXë¥¼ ì‚¬ìš©í•œë‹¤.
+    // ¸ğµç RESULT SET ID´Â ACP_UINT16_MAX¸¦ »ç¿ëÇÑ´Ù.
     acp_uint16_t  sResultSetID      = ACP_UINT16_MAX;
 
     ulnStmt        *sStmt;
@@ -441,7 +452,7 @@ ACI_RC ulnFreeHandleStmtSendFreeREQ(ulnFnContext *aContext, ulnDbc *aParentDbc, 
     sStmt = aContext->mHandle.mStmt;
 
     /*
-     * protocol context ì´ˆê¸°í™”
+     * protocol context ÃÊ±âÈ­
      */
     //fix BUG-17722
     ACI_TEST(ulnInitializeProtocolContext(aContext,
@@ -465,18 +476,18 @@ ACI_RC ulnFreeHandleStmtSendFreeREQ(ulnFnContext *aContext, ulnDbc *aParentDbc, 
                                &sPacket) != ACI_SUCCESS);
 
 
-    /* BUG-45286 Free with Dropì€ ì „ì†¡ ì§€ì—° */
+    /* BUG-45286 Free with DropÀº Àü¼Û Áö¿¬ */
     ACI_TEST_RAISE((aParentDbc->mAttrPDODeferProtocols >= 2) && (aMode == CMP_DB_FREE_DROP),
                    NO_FLUSH_PROTOCOL);
 
     /*
-     * req íŒ¨í‚· ì „ì†¡
+     * req ÆĞÅ¶ Àü¼Û
      */
     ACI_TEST(ulnFlushProtocol(aContext,&(aParentDbc->mPtContext))
              != ACI_SUCCESS);
 
     /*
-     * result íŒ¨í‚· ìˆ˜ì‹ 
+     * result ÆĞÅ¶ ¼ö½Å
      */
     //fix BUG-17722
     if (cmiGetLinkImpl(sCtx) == CMI_LINK_IMPL_IPCDA)
@@ -493,7 +504,7 @@ ACI_RC ulnFreeHandleStmtSendFreeREQ(ulnFnContext *aContext, ulnDbc *aParentDbc, 
     }
 
     /*
-     * protocol context ì •ë¦¬
+     * protocol context Á¤¸®
      */
     sNeedPtContextFin = ACP_FALSE;
     //fix BUG-17722
@@ -535,15 +546,15 @@ ACI_RC ulnFreeHandleStmtBody(ulnFnContext *aContext,
     ulnFnContext sFnContext;
 
     /*
-     * ì„œë²„ì— stmt ë¥¼ í• ë‹¹(prepare í•¨ìœ¼ë¡œì¨) í–ˆì—ˆë‹¤ë©´ ì„œë²„ì—ì„œ ìš°ì„  free í•œë‹¤
+     * ¼­¹ö¿¡ stmt ¸¦ ÇÒ´ç(prepare ÇÔÀ¸·Î½á) Çß¾ú´Ù¸é ¼­¹ö¿¡¼­ ¿ì¼± free ÇÑ´Ù
      */
     if(ulnStmtIsPrepared(aStmt) == ACP_TRUE)
     {
         /*
-         * Free stmt req ì „ì†¡. prepare ê°€ ëœ ê²½ìš°ì—ë§Œ.
+         * Free stmt req Àü¼Û. prepare °¡ µÈ °æ¿ì¿¡¸¸.
          *
-         * BUGBUG : ë§Œì•½ ì—°ê²°ëœ ìƒíƒœê°€ ì•„ë‹ˆë¼ë©´ ì£½ì–´ë„ ë ê¹Œ? state machine ì— ë”°ë¥´ë©´, ì£½ì–´ë„
-         *          ëœë‹¤. ì™œëƒí•˜ë©´ ë­”ê°€ ì‹¬ê°í•˜ê²Œ ê¼¬ì˜€ê¸° ë•Œë¬¸ì¸ë°...
+         * BUGBUG : ¸¸¾à ¿¬°áµÈ »óÅÂ°¡ ¾Æ´Ï¶ó¸é Á×¾îµµ µÉ±î? state machine ¿¡ µû¸£¸é, Á×¾îµµ
+         *          µÈ´Ù. ¿Ö³ÄÇÏ¸é ¹º°¡ ½É°¢ÇÏ°Ô ²¿¿´±â ¶§¹®ÀÎµ¥...
          */
         ACE_ASSERT(ULN_OBJ_GET_STATE(aParentDbc) >= ULN_S_C4);
 
@@ -574,12 +585,12 @@ ACI_RC ulnFreeHandleStmtBody(ulnFnContext *aContext,
     }
 
     /*
-     * ìƒìœ„ DBC ë¡œë¶€í„° ì‚­ì œ
+     * »óÀ§ DBC ·ÎºÎÅÍ »èÁ¦
      */
     ACI_TEST_RAISE(ulnDbcRemoveStmt(aParentDbc, aStmt) != ACI_SUCCESS, LABEL_MEM_MANAGE_ERR);
 
     /*
-     * Note: dbc ì™€ stmt ê°€ ê°™ì€ lock ì„ ê³µìœ í•¨ì— ì£¼ì˜.
+     * Note: dbc ¿Í stmt °¡ °°Àº lock À» °øÀ¯ÇÔ¿¡ ÁÖÀÇ.
      */
     ACI_TEST_RAISE(ulnStmtDestroy(aStmt) != ACI_SUCCESS, LABEL_MEM_MANAGE_ERR);
 
@@ -613,10 +624,10 @@ static SQLRETURN ulnFreeHandleStmt(ulnStmt *aStmt)
     sParentDbc = aStmt->mParentDbc;
 
     /* PROJ-1789 Updatable Scrollable Cursor
-     * Rowset Cacheë¥¼ ìœ„í•œ Stmt Free */
+     * Rowset Cache¸¦ À§ÇÑ Stmt Free */
     if (aStmt->mRowsetStmt != SQL_NULL_HSTMT)
     {
-        /* FnContextì— ì„¤ì •ëœ Stmtë¥¼ Freeí•˜ë¯€ë¡œ ì ê¹ ë°”ê¿”ì¤˜ì•¼ í•œë‹¤. */
+        /* FnContext¿¡ ¼³Á¤µÈ Stmt¸¦ FreeÇÏ¹Ç·Î Àá±ñ ¹Ù²ãÁà¾ß ÇÑ´Ù. */
         sFnContext.mHandle.mStmt = aStmt->mRowsetStmt;
         ACI_TEST(ulnFreeHandleStmtBody(&sFnContext,
                                        sParentDbc,
@@ -636,13 +647,19 @@ static SQLRETURN ulnFreeHandleStmt(ulnStmt *aStmt)
                                    ACP_TRUE) != ACI_SUCCESS);
 
     /*
-     * Note: ulnExit ë¥¼ ë¶€ë¥´ë©´ ì•ˆë¨. ìƒíƒœí•¨ìˆ˜ë¥¼ ê³§ì¥ ë¶ˆëŸ¬ì•¼ í•œë‹¤.
-     *       stmt ëŠ” ì´ë¯¸ í•´ì œë˜ì—ˆìœ¼ë¯€ë¡œ ìƒíƒœì „ì´ì˜ í•„ìš”ì„± ì—†ìŒ. ë‹¨ì§€ dbc ì˜ ìƒíƒœì „ì´ë§Œ í•˜ë©´ ë¨.
+     * Note: ulnExit ¸¦ ºÎ¸£¸é ¾ÈµÊ. »óÅÂÇÔ¼ö¸¦ °ğÀå ºÒ·¯¾ß ÇÑ´Ù.
+     *       stmt ´Â ÀÌ¹Ì ÇØÁ¦µÇ¾úÀ¸¹Ç·Î »óÅÂÀüÀÌÀÇ ÇÊ¿ä¼º ¾øÀ½. ´ÜÁö dbc ÀÇ »óÅÂÀüÀÌ¸¸ ÇÏ¸é µÊ.
      */
     sFnContext.mWhere = ULN_STATE_EXIT_POINT;
     ulnSFID_26(&sFnContext);
 
     ACI_TEST(acpThrMutexUnlock(sLockStmt) != ACP_RC_SUCCESS);
+
+    /* ulnExist °¡ È£ÃâµÇÁö ¾Ê±â ¶§¹®¿¡ ¼öµ¿À¸·Î ShardCoordFixCtrlCtx ¸¦ ¼öÇàÇÑ´Ù. */
+    if ( sFnContext.mShardCoordFixCtrlCtx != NULL )
+    {
+        ulnDbcShardCoordFixCtrlExit( &sFnContext );
+    }
 
     return ULN_FNCONTEXT_GET_RC(&sFnContext);
 
@@ -653,6 +670,11 @@ static SQLRETURN ulnFreeHandleStmt(ulnStmt *aStmt)
         ulnExit(&sFnContext);
     }
 
+    if ( sFnContext.mShardCoordFixCtrlCtx != NULL )
+    {
+        ulnDbcShardCoordFixCtrlExit( &sFnContext );
+    }
+
     return ULN_FNCONTEXT_GET_RC(&sFnContext);
 }
 
@@ -661,13 +683,13 @@ ACI_RC ulnFreeHandleDescBody(ulnFnContext *aContext, ulnDbc *aParentDbc, ulnDesc
     acp_list_node_t *sIterator;
 
     /*
-     * í•´ì œí•˜ë ¤ëŠ” ë””ìŠ¤í¬ë¦½í„°ì™€ ì—°ê³„ëœ Stmtë“¤ì˜ SQL_ATTR_APP_ROW_DESCë‚˜
-     * SQL_ATTR_APP_PARAM_DESCë“¤ì„ ì›ë˜ì˜ implicit ë””ìŠ¤í¬ë¦½í„°ë¡œ ë³µêµ¬í•œë‹¤.
+     * ÇØÁ¦ÇÏ·Á´Â µğ½ºÅ©¸³ÅÍ¿Í ¿¬°èµÈ StmtµéÀÇ SQL_ATTR_APP_ROW_DESC³ª
+     * SQL_ATTR_APP_PARAM_DESCµéÀ» ¿ø·¡ÀÇ implicit µğ½ºÅ©¸³ÅÍ·Î º¹±¸ÇÑ´Ù.
      */
     ACP_LIST_ITERATE(&(aDesc->mAssociatedStmtList), sIterator)
     {
         /*
-         * ë­”ê°€ ì´ìƒí•˜ê²Œ ê¼¬ì—¬ ìˆìœ¼ë©´ ì—ëŸ¬
+         * ¹º°¡ ÀÌ»óÇÏ°Ô ²¿¿© ÀÖÀ¸¸é ¿¡·¯
          */
         ACI_TEST_RAISE((((ulnStmtAssociatedWithDesc *)sIterator)->mStmt->mAttrApd == aDesc ||
                         ((ulnStmtAssociatedWithDesc *)sIterator)->mStmt->mAttrArd == aDesc),
@@ -684,14 +706,14 @@ ACI_RC ulnFreeHandleDescBody(ulnFnContext *aContext, ulnDbc *aParentDbc, ulnDesc
     }
 
     /*
-     * ìƒìœ„ DBC ë¡œë¶€í„° ì‚­ì œí•œë‹¤.
-     * BUGBUG: ë¡¤ë°±í•  ìì‹ ì´ ì—†ì–´ì„œ temporary list ëŠ” ì•ˆë§Œë“¤ê³ , ë””ìŠ¤í¬ë¦½í„° íŒŒê´´ ì „ì— ì‚­ì œí–ˆë‹¤.
+     * »óÀ§ DBC ·ÎºÎÅÍ »èÁ¦ÇÑ´Ù.
+     * BUGBUG: ·Ñ¹éÇÒ ÀÚ½ÅÀÌ ¾ø¾î¼­ temporary list ´Â ¾È¸¸µé°í, µğ½ºÅ©¸³ÅÍ ÆÄ±« Àü¿¡ »èÁ¦Çß´Ù.
      */
     ACI_TEST_RAISE(ulnDbcRemoveDesc(aParentDbc, aDesc) != ACI_SUCCESS, LABEL_MEM_MANAGE_ERR);
 
     /*
-     * ë””ìŠ¤í¬ë¦½í„°ë¥¼ íŒŒê´´í•œë‹¤.
-     * BUGBUG : ë¡¤ë°±ëª»í•˜ê² ë‹¤. ê·¸ëƒ¥ ì—ëŸ¬ë‚´ê³  ë“œëŸ¬ëˆ„ì›Œë²„ë¦¬ì.
+     * µğ½ºÅ©¸³ÅÍ¸¦ ÆÄ±«ÇÑ´Ù.
+     * BUGBUG : ·Ñ¹é¸øÇÏ°Ú´Ù. ±×³É ¿¡·¯³»°í µå·¯´©¿ö¹ö¸®ÀÚ.
      */
     ACI_TEST_RAISE(ulnDescDestroy(aDesc) != ACI_SUCCESS, LABEL_MEM_MANAGE_ERR);
 
@@ -731,8 +753,8 @@ static SQLRETURN ulnFreeHandleDesc(ulnDesc *aDesc)
     sParentDbc = (ulnDbc *)(aDesc->mParentObject);
 
     /*
-     * Note: DESC ì˜ ìƒíƒœì „ì´ëŠ” ì—†ëŠ” ê±°ë‚˜ ë§ˆì°¬ê°€ì§€ë‹¤.
-     * Note: ìƒìœ„ ê°ì²´ì¸ DBC ëŠ” DESC ì˜ Free ì— ë”°ë¥¸ ìƒíƒœì „ì´ëŠ” ì—†ë‹¤. ì—ëŸ¬ë°œìƒì€ ìˆì–´ë„.
+     * Note: DESC ÀÇ »óÅÂÀüÀÌ´Â ¾ø´Â °Å³ª ¸¶Âù°¡Áö´Ù.
+     * Note: »óÀ§ °´Ã¼ÀÎ DBC ´Â DESC ÀÇ Free ¿¡ µû¸¥ »óÅÂÀüÀÌ´Â ¾ø´Ù. ¿¡·¯¹ß»ıÀº ÀÖ¾îµµ.
      */
     ACI_TEST(ulnFreeHandleDescBody(&sFnContext, sParentDbc, aDesc) != ACI_SUCCESS);
 
@@ -740,6 +762,12 @@ static SQLRETURN ulnFreeHandleDesc(ulnDesc *aDesc)
      * unlock
      */
     ACI_TEST(acpThrMutexUnlock(sLockDesc) != ACP_RC_SUCCESS);
+
+    /* ulnExist °¡ È£ÃâµÇÁö ¾Ê±â ¶§¹®¿¡ ¼öµ¿À¸·Î ShardCoordFixCtrlCtx ¸¦ ¼öÇàÇÑ´Ù. */
+    if ( sFnContext.mShardCoordFixCtrlCtx != NULL )
+    {
+        ulnDbcShardCoordFixCtrlExit( &sFnContext );
+    }
 
     return ULN_FNCONTEXT_GET_RC(&sFnContext);
 
@@ -755,13 +783,18 @@ static SQLRETURN ulnFreeHandleDesc(ulnDesc *aDesc)
         ulnExit(&sFnContext);
     }
 
+    if ( sFnContext.mShardCoordFixCtrlCtx != NULL )
+    {
+        ulnDbcShardCoordFixCtrlExit( &sFnContext );
+    }
+
     return ULN_FNCONTEXT_GET_RC(&sFnContext);
 }
 
 /**
  * ulnFreeHandle.
  *
- * SQLFreeHandle()í•¨ìˆ˜ê°€ ê³§ì¥ ë§¤í•‘ë˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ * SQLFreeHandle()ÇÔ¼ö°¡ °ğÀå ¸ÅÇÎµÇ´Â ÇÔ¼öÀÌ´Ù.
  */
 SQLRETURN ulnFreeHandle(acp_sint16_t aHandleType, void *aHandle)
 {
@@ -777,7 +810,7 @@ SQLRETURN ulnFreeHandle(acp_sint16_t aHandleType, void *aHandle)
     {
         case SQL_HANDLE_ENV:
             /* bug-35985 macro compile error on AIX
-               envê°€ freeëœ í›„ì—ëŠ” filelockì´ ì—†ì–´ì§€ë¯€ë¡œ ë¨¼ì € ë¡œê¹… */
+               env°¡ freeµÈ ÈÄ¿¡´Â filelockÀÌ ¾ø¾îÁö¹Ç·Î ¸ÕÀú ·Î±ë */
             acpSnprintf(sTypeStr , ACI_SIZEOF(sTypeStr), "%s", "env");
             ULN_TRACE_LOG(NULL, ULN_TRACELOG_MID, NULL, 0,
                     "%-18s| %-4s [%p]",
@@ -802,8 +835,8 @@ SQLRETURN ulnFreeHandle(acp_sint16_t aHandleType, void *aHandle)
 
         default:
             /*
-             * AllocHandleì—ì„œëŠ” HY092ë¥¼ ë¦¬í„´í•´ì•¼ í•˜ì§€ë§Œ,
-             * FreeHandleì—ì„œëŠ” Invalid Handle
+             * AllocHandle¿¡¼­´Â HY092¸¦ ¸®ÅÏÇØ¾ß ÇÏÁö¸¸,
+             * FreeHandle¿¡¼­´Â Invalid Handle
              */
             acpSnprintf(sTypeStr , ACI_SIZEOF(sTypeStr), "%s", "invalid");
             ACI_TEST_RAISE(ACP_TRUE, LABEL_INVALID_HANDLE);

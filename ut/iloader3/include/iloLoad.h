@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iloLoad.h 84157 2018-10-14 23:36:20Z bethy $
+ * $Id: iloLoad.h 88170 2020-07-23 23:32:06Z chkim $
  **********************************************************************/
 
 #ifndef _O_ILO_LOAD_H
@@ -41,6 +41,9 @@
         /* do nothing... */                                       \
     }
 
+/* BUG-48016 Fix skipped commit */
+#define DEV_SHOW_COMMIT_PREFIX "[DEV-SHOW-COMMIT] "
+
 typedef enum iloLoopControl
 {
     NONE = 0,
@@ -52,8 +55,8 @@ typedef struct iloaderHandle iloaderHandle;
 
 typedef struct iloLoadInsertContext
 {
-    SInt    mTotal;            //Record ìˆœì„œë¥¼ ë‚˜íƒ€ë‚´ê¸° ìœ„í•¨
-    SInt    mRealCount;        //ì…ë ¥ëœ ì‹¤ì œ Recordìˆ˜ (-array ì‚¬ìš©ë¨)
+    SInt    mTotal;            //Record ¼ø¼­¸¦ ³ªÅ¸³»±â À§ÇÔ
+    SInt    mRealCount;        //ÀÔ·ÂµÈ ½ÇÁ¦ Record¼ö (-array »ç¿ëµÊ)
     SInt    mArrayCount;
     SInt    mPrevCommitRecCnt;
     SInt    mLoad4Sleep;   // for sleep, BUG-18707
@@ -61,6 +64,9 @@ typedef struct iloLoadInsertContext
     // BUG-28675
     SInt   *mRecordNumber;
     SInt    mConnIndex;
+
+    /* BUG-48016 Fix skipped commit */
+    SInt    mUncommitInsertCount;
 
     iloBool mLOBColExist;
     iloBool mOptionUsed;       // BUG-24583
@@ -107,10 +113,10 @@ public:
 
 protected:    
     /*  PROJ-1714
-     *  Parallel iloaderë¥¼ ì ìš©í•˜ê¸° ìœ„í•˜ì—¬ ì›í˜• ë²„í¼ì— ì…ë ¥í•˜ëŠ” Threadì™€ 
-     *  ë²„í¼ë¥¼ ì½ì–´ Tableì— Insertí•˜ëŠ” Threadë¥¼ ìƒì„±í•´ì•¼ í•œë‹¤.
-     *  êµ¬ì¡°ì˜ ë³€ê²½ì„ ìµœì†Œí™”í•˜ê¸° ìœ„í•´ì„œ staticí˜•ì˜ XXX_ThreadRun í•¨ìˆ˜ë¥¼ ì´ìš©í•´ Threadë¥¼ ì‹¤í–‰í•˜ê³ ,
-     *  Non-Staticì¸ ê° í•¨ìˆ˜ë¥¼ ì‹¤í–‰í•˜ë„ë¡ í•˜ì—¬ ê°ì²´ë¥¼ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡ í•œë‹¤.
+     *  Parallel iloader¸¦ Àû¿ëÇÏ±â À§ÇÏ¿© ¿øÇü ¹öÆÛ¿¡ ÀÔ·ÂÇÏ´Â Thread¿Í 
+     *  ¹öÆÛ¸¦ ÀĞ¾î Table¿¡ InsertÇÏ´Â Thread¸¦ »ı¼ºÇØ¾ß ÇÑ´Ù.
+     *  ±¸Á¶ÀÇ º¯°æÀ» ÃÖ¼ÒÈ­ÇÏ±â À§ÇØ¼­ staticÇüÀÇ XXX_ThreadRun ÇÔ¼ö¸¦ ÀÌ¿ëÇØ Thread¸¦ ½ÇÇàÇÏ°í,
+     *  Non-StaticÀÎ °¢ ÇÔ¼ö¸¦ ½ÇÇàÇÏµµ·Ï ÇÏ¿© °´Ã¼¸¦ ±×´ë·Î »ç¿ëÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
      */
     static void*    ReadFileToBuff_ThreadRun(void *arg);      
     static void*    InsertFromBuff_ThreadRun(void *arg); 
@@ -196,16 +202,16 @@ private:
     iloTableInfo       *m_pTableInfo;
     
     //PROJ-1760
-    SInt               m_TableLogStatus;        //No Logging ìœ¼ë¡œ ë³€ê²½í•˜ê¸°ì „ì— ì›ë˜ Tableì˜ Mode ì €ì¥
+    SInt               m_TableLogStatus;        //No Logging À¸·Î º¯°æÇÏ±âÀü¿¡ ¿ø·¡ TableÀÇ Mode ÀúÀå
 
-    SInt               mLoadCount;                            //Progressë¥¼ í™•ì¸í•˜ê¸° ìœ„í•¨..
+    SInt               mLoadCount;                            //Progress¸¦ È®ÀÎÇÏ±â À§ÇÔ..
 
 public:
     SInt               mErrorCount;
     SInt               mTotalCount;    
     UInt               mReadRecCount;
-    SInt               mConnIndex;                            //Connection ê°ì²´ë¥¼ êµ¬ë¶„í•˜ê¸° ìœ„í•¨.
-    SInt               mParallelLoad[MAX_PARALLEL_COUNT];     //ê° Parallel ì´ Loadí•œ Recordìˆ˜ ì €ì¥
+    SInt               mConnIndex;                            //Connection °´Ã¼¸¦ ±¸ºĞÇÏ±â À§ÇÔ.
+    SInt               mParallelLoad[MAX_PARALLEL_COUNT];     //°¢ Parallel ÀÌ LoadÇÑ Record¼ö ÀúÀå
     /* BUG-30413 */
     SInt               mSetCallbackLoadCnt;   
     SInt               mCBFrequencyCnt;       

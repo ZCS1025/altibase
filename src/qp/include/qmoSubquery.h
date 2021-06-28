@@ -21,13 +21,13 @@
  * Description :
  *     Subquery Manager
  *
- *     ì§ˆì˜ ì²˜ë¦¬ ì¤‘ì— ë“±ì¥í•˜ëŠ” Subqueryì— ëŒ€í•œ ìµœì í™”ë¥¼ ìˆ˜í–‰í•œë‹¤.
- *     Subqueryì— ëŒ€í•˜ì—¬ ìµœì í™”ë¥¼ í†µí•œ Graph ìƒì„±,
- *     Graphë¥¼ ì´ìš©í•œ Plan Tree ìƒì„±ì„ ë‹´ë‹¹í•œë‹¤.
+ *     ÁúÀÇ Ã³¸® Áß¿¡ µîÀåÇÏ´Â Subquery¿¡ ´ëÇÑ ÃÖÀûÈ­¸¦ ¼öÇàÇÑ´Ù.
+ *     Subquery¿¡ ´ëÇÏ¿© ÃÖÀûÈ­¸¦ ÅëÇÑ Graph »ı¼º,
+ *     Graph¸¦ ÀÌ¿ëÇÑ Plan Tree »ı¼ºÀ» ´ã´çÇÑ´Ù.
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -39,7 +39,7 @@
 #include <qmgProjection.h>
 
 //---------------------------------------------------
-// Subqueryë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+// Subquery¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
 //---------------------------------------------------
 
 enum qmoSubqueryType
@@ -53,7 +53,7 @@ enum qmoSubqueryType
 
 
 //---------------------------------------------------
-// Subqueryë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+// Subquery¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
 //---------------------------------------------------
 
 class qmoSubquery
@@ -61,40 +61,40 @@ class qmoSubquery
 public:
 
     //---------------------------------------------------
-    // subqueryì— ëŒ€í•œ plan ìƒì„±
+    // subquery¿¡ ´ëÇÑ plan »ı¼º
     //---------------------------------------------------
 
-    // Subqueryì— ëŒ€í•œ Plan Tree ìƒì„±
+    // Subquery¿¡ ´ëÇÑ Plan Tree »ı¼º
     static IDE_RC    makePlan( qcStatement  * aStatement,
                                UShort         aTupleID,
                                qtcNode      * aNode );
 
     //---------------------------------------------------
-    // ì—¬ëŸ¬ êµ¬ë¬¸ì—ì„œì˜ subqueryì— ëŒ€í•œ ìµœì í™” íŒ ì ìš©ê³¼ graph ìƒì„±
+    // ¿©·¯ ±¸¹®¿¡¼­ÀÇ subquery¿¡ ´ëÇÑ ÃÖÀûÈ­ ÆÁ Àû¿ë°ú graph »ı¼º
     //---------------------------------------------------
 
     //---------------------------------
-    // whereì ˆ subqueryì— ëŒ€í•œ ì²˜ë¦¬ë¥¼ í•œë‹¤.
-    // subquery ë…¸ë“œë¥¼ ì°¾ì•„ì„œ,
-    // predicateí˜• ë˜ëŠ” expresstioní˜•ì— ëŒ€í•œ ì²˜ë¦¬ë¥¼ í•˜ê²Œ ëœë‹¤.
-    // predicateê´€ë¦¬ìê°€ í˜¸ì¶œ
+    // whereÀı subquery¿¡ ´ëÇÑ Ã³¸®¸¦ ÇÑ´Ù.
+    // subquery ³ëµå¸¦ Ã£¾Æ¼­,
+    // predicateÇü ¶Ç´Â expresstionÇü¿¡ ´ëÇÑ Ã³¸®¸¦ ÇÏ°Ô µÈ´Ù.
+    // predicate°ü¸®ÀÚ°¡ È£Ãâ
     //---------------------------------
     static IDE_RC    optimize( qcStatement   * aStatement,
                                qtcNode       * aNode,
                                idBool          aTryKeyRange );
 
-    // Subqueryì— ëŒ€í•œ Graph ìƒì„±
+    // Subquery¿¡ ´ëÇÑ Graph »ı¼º
     static IDE_RC    makeGraph( qcStatement  * aSubQStatement );
 
     //---------------------------------
-    // Expressioní˜• subqueryì— ëŒ€í•œ ì²˜ë¦¬
-    // qmo::optimizeInsert()ì—ì„œ í˜¸ì¶œ :
+    // ExpressionÇü subquery¿¡ ´ëÇÑ Ã³¸®
+    // qmo::optimizeInsert()¿¡¼­ È£Ãâ :
     //      INSERT INTO T1 VALUES ( (SELECT SUM(I2) FROM T2) );
-    // qmo::optimizeUpdate()ì—ì„œ í˜¸ì¶œ :
+    // qmo::optimizeUpdate()¿¡¼­ È£Ãâ :
     //      UPDATE SET I1=(SELECT SUM(I1) FROM T2) WHERE I1>1;
     //      UPDATE SET (I1,I2)=(SELECT I1,I2 FROM T2) WHERE I1>1;
     //---------------------------------
-    // BUG-32854 ëª¨ë“  ì„œë¸Œì¿¼ë¦¬ì— ëŒ€í•´ì„œ MakeGraph í•œí›„ì— MakePlanì„ í•´ì•¼ í•œë‹¤.
+    // BUG-32854 ¸ğµç ¼­ºêÄõ¸®¿¡ ´ëÇØ¼­ MakeGraph ÇÑÈÄ¿¡ MakePlanÀ» ÇØ¾ß ÇÑ´Ù.
     static IDE_RC    optimizeExprMakeGraph( qcStatement * aStatement,
                                             UInt          aTupleID,
                                             qtcNode     * aNode );
@@ -104,7 +104,7 @@ public:
                                            qtcNode     * aNode );
 private:
 
-    // Subquery typeì„ íŒë‹¨í•œë‹¤.
+    // Subquery typeÀ» ÆÇ´ÜÇÑ´Ù.
     static IDE_RC    checkSubqueryType( qcStatement     * aStatement,
                                         qtcNode         * aSubqueryNode,
                                         qmoSubqueryType * aType );
@@ -115,18 +115,18 @@ private:
                                               qtcNode     * aSubQNode,
                                               idBool      * aExist );
     
-    // selectë¬¸ì— ëŒ€í•œ expressioní˜• subquery ì²˜ë¦¬
+    // select¹®¿¡ ´ëÇÑ expressionÇü subquery Ã³¸®
     static IDE_RC     optimizeExpr4Select( qcStatement * aStatement,
                                            qtcNode     * aNode);
 
-    // predicateí˜• subqueryì— ëŒ€í•œ subquery ìµœì í™”
+    // predicateÇü subquery¿¡ ´ëÇÑ subquery ÃÖÀûÈ­
     static IDE_RC    optimizePredicate( qcStatement * aStatement,
                                         qtcNode     * aCompareNode,
                                         qtcNode     * aNode,
                                         qtcNode     * aSubQNode,
                                         idBool        aTryKeyRange );
 
-    // transform NJ ìµœì í™” íŒ ì ìš©
+    // transform NJ ÃÖÀûÈ­ ÆÁ Àû¿ë
     static IDE_RC   transformNJ( qcStatement     * aStatement,
                                  qtcNode         * aCompareNode,
                                  qtcNode         * aNode,
@@ -135,32 +135,32 @@ private:
                                  idBool            aSubqueryIsSet,
                                  idBool          * aIsTransform );
 
-    // transform NJ ìµœì í™” íŒ ì ìš©ì‹œ
-    // predicate columnê³¼ subquery target columnì˜ not null ê²€ì‚¬
+    // transform NJ ÃÖÀûÈ­ ÆÁ Àû¿ë½Ã
+    // predicate column°ú subquery target columnÀÇ not null °Ë»ç
     static IDE_RC   checkNotNull( qcStatement  * aStatement,
                                   qtcNode      * aNode,
                                   qtcNode      * aSubQNode,
                                   idBool       * aIsNotNull );
 
-    // transform NJ, store and search ìµœì í™” íŒ ì ìš©ì‹œ
-    // subquery target columnì— ëŒ€í•œ not null ê²€ì‚¬
+    // transform NJ, store and search ÃÖÀûÈ­ ÆÁ Àû¿ë½Ã
+    // subquery target column¿¡ ´ëÇÑ not null °Ë»ç
     static IDE_RC   checkNotNullSubQTarget( qcStatement * aStatement,
                                             qtcNode     * aSubQNode,
                                             idBool      * aIsNotNull );
 
-    // transform NJ ìµœì í™” íŒ ì ìš©ì‹œ
-    // subquery target columnì— ì¸ë±ìŠ¤ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬
+    // transform NJ ÃÖÀûÈ­ ÆÁ Àû¿ë½Ã
+    // subquery target column¿¡ ÀÎµ¦½º°¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç
     static IDE_RC   checkIndex4SubQTarget( qcStatement * aStatement,
                                            qtcNode     * aSubQNode,
                                            idBool      * aIsExistIndex );
 
-    // transform NJ ìµœì í™” íŒ ì ìš©ì‹œ
-    // ìƒˆë¡œìš´ predicateì„ ë§Œë“¤ì–´ì„œ, subqueryì˜ ê¸°ì¡´ whereì ˆì— ì—°ê²°
+    // transform NJ ÃÖÀûÈ­ ÆÁ Àû¿ë½Ã
+    // »õ·Î¿î predicateÀ» ¸¸µé¾î¼­, subqueryÀÇ ±âÁ¸ whereÀı¿¡ ¿¬°á
     static IDE_RC   makeNewPredAndLink( qcStatement * aStatement,
                                         qtcNode     * aNode,
                                         qtcNode     * aSubQNode );
 
-    // store and search ìµœì í™” íŒ ì ìš©
+    // store and search ÃÖÀûÈ­ ÆÁ Àû¿ë
     static IDE_RC   storeAndSearch( qcStatement   * aStatement,
                                     qtcNode       * aCompareNode,
                                     qtcNode       * aNode,
@@ -168,8 +168,8 @@ private:
                                     qmoSubqueryType aSubQType,
                                     idBool          aSubqueryIsSet );
 
-    // store and search ìµœì í™” íŒ ì ìš©ì‹œ
-    // IN(=ANY), NOT IN(!=ALL)ì— ëŒ€í•œ ì €ì¥ë°©ì‹ ì§€ì •
+    // store and search ÃÖÀûÈ­ ÆÁ Àû¿ë½Ã
+    // IN(=ANY), NOT IN(!=ALL)¿¡ ´ëÇÑ ÀúÀå¹æ½Ä ÁöÁ¤
     static IDE_RC   setStoreFlagIN( qcStatement * aStatement,
                                     qtcNode     * aCompareNode,
                                     qtcNode     * aNode,
@@ -178,8 +178,8 @@ private:
                                     qmgPROJ     * sPROJ,
                                     idBool        aSubqueryIsSet );
 
-    // store and search ìµœì í™” íŒ ì ìš©ì‹œ
-    // =ALL, !=ANYì— ëŒ€í•œ ì €ì¥ë°©ì‹ ì§€ì •
+    // store and search ÃÖÀûÈ­ ÆÁ Àû¿ë½Ã
+    // =ALL, !=ANY¿¡ ´ëÇÑ ÀúÀå¹æ½Ä ÁöÁ¤
     static IDE_RC   setStoreFlagEqualAll( qcStatement * aStatement,
                                           qtcNode     * aNode,
                                           qtcNode     * aSubQNode,
@@ -187,28 +187,28 @@ private:
                                           qmgPROJ     * aPROJ,
                                           idBool        aSubqueryIsSet );
 
-    // INì ˆì˜ subquery keyRange ìµœì í™” íŒ ì ìš©
+    // INÀıÀÇ subquery keyRange ÃÖÀûÈ­ ÆÁ Àû¿ë
     static IDE_RC   inSubqueryKeyRange( qtcNode        * aCompareNode,
                                         qtcNode        * aSubQNode,
                                         qmoSubqueryType  aSubQType );
 
-    // subquery keyRange ìµœì í™” íŒ ì ìš©
+    // subquery keyRange ÃÖÀûÈ­ ÆÁ Àû¿ë
     static IDE_RC   subqueryKeyRange( qtcNode        * aCompareNode,
                                       qtcNode        * aSubQNode,
                                       qmoSubqueryType  aSubQType );
 
-    // Expressioní˜• constant subquery ìµœì í™” íŒ ì ìš©
+    // ExpressionÇü constant subquery ÃÖÀûÈ­ ÆÁ Àû¿ë
     static IDE_RC   constantSubquery( qcStatement * aStatement,
                                       qtcNode     * aSubQNode );
 
-    // store and search, IN subquery keyRange, transformNJ íŒë‹¨ì‹œ í•„ìš”í•œ
-    // column cardinalityë¥¼ êµ¬í•œë‹¤.
+    // store and search, IN subquery keyRange, transformNJ ÆÇ´Ü½Ã ÇÊ¿äÇÑ
+    // column cardinality¸¦ ±¸ÇÑ´Ù.
     static IDE_RC   getColumnCardinality( qcStatement * aStatement,
                                           qtcNode     * aColumnNode,
                                           SDouble     * aCardinality );
 
-    // store and search, IN subquery keyRange, transformNJ íŒë‹¨ì‹œ í•„ìš”í•œ
-    // subquery Target cardinalityë¥¼ êµ¬í•œë‹¤.
+    // store and search, IN subquery keyRange, transformNJ ÆÇ´Ü½Ã ÇÊ¿äÇÑ
+    // subquery Target cardinality¸¦ ±¸ÇÑ´Ù.
     static IDE_RC   getSubQTargetCardinality( qcStatement * aStatement,
                                               qtcNode     * aSubQNode,
                                               SDouble     * aCardinality );

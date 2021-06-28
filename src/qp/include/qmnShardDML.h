@@ -21,9 +21,9 @@
  * Description :
  *     SDEX(Shard DML EXecutor) Node
  *
- * Ïö©Ïñ¥ ÏÑ§Î™Ö :
+ * øÎæÓ º≥∏Ì :
  *
- * ÏïΩÏñ¥ :
+ * æ‡æÓ :
  *
  **********************************************************************/
 
@@ -57,34 +57,35 @@
 typedef struct qmncSDEX
 {
     //---------------------------------
-    // Code ÏòÅÏó≠ Í≥µÌÜµ Ï†ïÎ≥¥
+    // Code øµø™ ∞¯≈Î ¡§∫∏
     //---------------------------------
 
-    qmnPlan          plan;
-    UInt             flag;
-    UInt             planID;
+    qmnPlan            plan;
+    UInt               flag;
+    UInt               planID;
 
     //---------------------------------
-    // Í≥†Ïú† Ï†ïÎ≥¥
+    // ∞Ì¿Ø ¡§∫∏
     //---------------------------------
 
-    UInt             shardDataIndex;
-    UInt             shardDataOffset;
-    UInt             shardDataSize;
+    UInt               shardDataIndex;
+    UInt               shardDataOffset;
+    UInt               shardDataSize;
 
-    UInt             bindParam;    // offset
+    UInt               bindParam;    // offset
+    UInt               outBindParam; // offset
 
-    qcNamePosition   shardQuery;
-    sdiAnalyzeInfo * shardAnalysis;
-    UShort           shardParamOffset;
-    UShort           shardParamCount;
+    qcNamePosition     shardQuery;
+    sdiAnalyzeInfo   * shardAnalysis;
+    qcShardParamInfo * shardParamInfo; /* TASK-7219 */
+    UShort             shardParamCount;
 
 } qmncSDEX;
 
 typedef struct qmndSDEX
 {
     //---------------------------------
-    // Data ÏòÅÏó≠ Í≥µÌÜµ Ï†ïÎ≥¥
+    // Data øµø™ ∞¯≈Î ¡§∫∏
     //---------------------------------
 
     qmndPlan       plan;
@@ -92,7 +93,14 @@ typedef struct qmndSDEX
     UInt         * flag;
 
     //---------------------------------
-    // Í≥†Ïú† Ï†ïÎ≥¥
+    // lob √≥∏Æ∏¶ ¿ß«— ¡§∫∏
+    //---------------------------------
+    
+    struct qmxLobInfo   * lobInfo;
+    UInt                  lobBindCount;
+
+    //---------------------------------
+    // ∞Ì¿Ø ¡§∫∏
     //---------------------------------
 
     sdiDataNodes * mDataInfo;
@@ -107,11 +115,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // Ï¥àÍ∏∞Ìôî
+    // √ ±‚»≠
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ÏàòÌñâ Ìï®Ïàò
+    // ºˆ«‡ «‘ºˆ
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -120,14 +128,14 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan Ï†ïÎ≥¥ Ï∂úÎ†•
+    // Plan ¡§∫∏ √‚∑¬
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
                              iduVarString * aString,
                              qmnDisplay     aMode );
 
-    // ÏàòÌñâÏ†ïÎ≥¥ Ï∂úÎ†•
+    // ºˆ«‡¡§∫∏ √‚∑¬
     static IDE_RC printDataInfo( qcTemplate    * aTemplate,
                                  sdiClientInfo * aClientInfo,
                                  sdiDataNodes  * aDataInfo,
@@ -135,17 +143,26 @@ public:
                                  iduVarString  * aString,
                                  qmnDisplay      aMode,
                                  UInt          * aInitFlag );
-
+    
+    static void shardStmtPartialRollbackUsingSavepoint( qcTemplate  * aTemplate,
+                                                        qmnPlan     * aPlan );
 private:
 
-    // ÏµúÏ¥à Ï¥àÍ∏∞Ìôî
+    // √÷√  √ ±‚»≠
     static IDE_RC firstInit( qcTemplate * aTemplate,
                              qmncSDEX   * aCodePlan,
                              qmndSDEX   * aDataPlan );
 
-    static IDE_RC setParamInfo( qcTemplate   * aTemplate,
-                                qmncSDEX     * aCodePlan,
-                                sdiBindParam * aBindParams );
+    static IDE_RC setParamInfo( qcTemplate      * aTemplate,
+                                qmncSDEX        * aCodePlan,
+                                sdiBindParam    * aBindParams,
+                                sdiOutBindParam * aOutBindParams,
+                                UInt            * aLobBindCount );
+
+    /* PROJ-2728 Sharding LOB */
+    static IDE_RC setLobInfo( qcTemplate   * aTemplate,
+                              qmncSDEX     * aCodePlan,
+                              qmxLobInfo   * aLobInfo );
 };
 
 #endif /* _O_QMN_SDEX_H_ */

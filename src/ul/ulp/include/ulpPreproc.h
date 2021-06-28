@@ -42,41 +42,41 @@ int doPPparse( SChar *aFilename );
 
 
 /*
- * Lexer ì‚¬ìš©ë˜ëŠ” ëª¨ë“  functionë“¤ì„ ê°–ëŠ”ë‹¤.
+ * Lexer »ç¿ëµÇ´Â ¸ğµç functionµéÀ» °®´Â´Ù.
  */
 
 IDE_RC ulpPPInitialize( SChar *aFileName );
 
 void   ulpPPFinalize();
 
-/* í˜„ì¬ buffer ì •ë³´ êµ¬ì¡°ì²´ ì €ì¥. (YY_CURRENT_BUFFER) */
+/* ÇöÀç buffer Á¤º¸ ±¸Á¶Ã¼ ÀúÀå. (YY_CURRENT_BUFFER) */
 void   ulpPPSaveBufferState( void );
 
-/* C comment ì²˜ë¦¬ í•¨ìˆ˜ */
+/* C comment Ã³¸® ÇÔ¼ö */
 IDE_RC ulpPPCommentC( void );
 
-/* #if ì•ˆì˜ C comment ì²˜ë¦¬ í•¨ìˆ˜ (newlineë§Œ fileì— writeí•œë‹¤.) */
+/* #if ¾ÈÀÇ C comment Ã³¸® ÇÔ¼ö (newline¸¸ file¿¡ writeÇÑ´Ù.) */
 IDE_RC ulpPPCommentC4IF( void );
 
-/* C++ comment ì²˜ë¦¬ í•¨ìˆ˜ */
+/* C++ comment Ã³¸® ÇÔ¼ö */
 void   ulpPPCommentCplus( void );
 
-/* #if ì•ˆì˜ C++ comment ì²˜ë¦¬ í•¨ìˆ˜ (fileë¡œ write í•˜ì§€ ì•ŠëŠ”ë‹¤.)*/
+/* #if ¾ÈÀÇ C++ comment Ã³¸® ÇÔ¼ö (file·Î write ÇÏÁö ¾Ê´Â´Ù.)*/
 void   ulpPPCommentCplus4IF( void );
 
-/* macro êµ¬ë¬¸ì•ˆì˜ '//n'ë¬¸ìë¥¼ ì œê±° í•´ì£¼ëŠ” í•¨ìˆ˜. */
+/* macro ±¸¹®¾ÈÀÇ '//n'¹®ÀÚ¸¦ Á¦°Å ÇØÁÖ´Â ÇÔ¼ö. */
 void   ulpPPEraseBN4MacroText(SChar *aTmpDefinedStr, idBool aIsIf);
 
-/* ì²˜ë¦¬ í• í•„ìš” ì—†ëŠ” macro êµ¬ë¬¸ì„ skipí•´ì£¼ëŠ” í•¨ìˆ˜. */
+/* Ã³¸® ÇÒÇÊ¿ä ¾ø´Â macro ±¸¹®À» skipÇØÁÖ´Â ÇÔ¼ö. */
 IDE_RC ulpPPSkipUnknownMacro( void );
 
-/* lexerì˜ start conditionì„ ì›ë³µí•´ì£¼ëŠ” í•¨ìˆ˜. */
+/* lexerÀÇ start conditionÀ» ¿øº¹ÇØÁÖ´Â ÇÔ¼ö. */
 void   ulpPPRestoreCond(void);
 
-/* yyinput ëŒ€ìš© */
+/* yyinput ´ë¿ë */
 SChar  ulpPPYYinput(void);
 
-/* unput ëŒ€ìš© */
+/* unput ´ë¿ë */
 void  ulpPPYYunput( SChar aCh );
 
 /*

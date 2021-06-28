@@ -124,6 +124,7 @@ ACE_SRCS       = aceAssert.c           \
 
 ACL_GSRCS      = aclConfParse.c        \
                  aclConfLex.c
+
 ACL_SRCS       = $(ACL_GSRCS)          \
                  aclConf.c             \
                  aclConfPrivate.c      \
@@ -137,18 +138,23 @@ ACL_SRCS       = $(ACL_GSRCS)          \
                  aclMemTlsfImp.c       \
                  aclQueue.c            \
                  aclCompression.c      \
+                 aclLZ4.c              \
                  aclReadLine.c         \
                  aclCodeUTF8.c         \
                  aclCryptTEA.c         \
                  aclLicFile.c          \
                  aclLicLicense.c       \
-                 aclLFMemPool.c	       \
-				 aclSafeList.c         \
-                 aclStack.c
+                 aclLFMemPool.c        \
+                 aclSafeList.c         \
+                 aclStack.c 
+
+ifeq ($(ALTI_CFG_OS),LINUX)
+ACL_SRCS      += aclZookeeper.c
+endif
 
 ACT_SRCS       = actDump.c             \
-                 actTest.c			   \
-				 actPerf.c
+                 actTest.c             \
+                 actPerf.c
 
 ACI_SRCS       = aciVa.c               \
                  aciErrorMgr.c         \
@@ -180,12 +186,11 @@ ACI_SRCS       = aciVa.c               \
                  aciConvGbkextinv.c    \
                  aciVarString.c
 
-
-
 GENMSG_GSRCS   = genmsgParse.c genmsgLex.c
 GENMSG_SRCS    = $(GENMSG_GSRCS) genmsgCode.c genmsgManual.c genmsg.c
 
 LIBEDIT_DIR=$(CORE_DIR)/acl/libedit
+EXTERNAL_LIB_DIR=$(CORE_EXT_DIR)
 
 ifeq ($(READLINE_SUPPORT),yes)
 LIBEDIT_SRCS =      \
@@ -220,8 +225,30 @@ else
 LIBEDIT_SRCS =
 endif
 
+EXTERNAL_LIB_SRCS = \
+                lz4.c
+
+ZOOKEEPER_DIR=$(CORE_EXT_DIR)/src/zookeeper-client
+
+ZOOKEEPER_SRCS =       \
+     zookeeper.c       \
+     recordio.c        \
+     zookeeper.jute.c  \
+     zk_log.c          \
+     zk_hashtable.c    \
+     addrvec.c         \
+     mt_adaptor.c      \
+     hashtable_itr.c   \
+     hashtable.c
+
 LIBEDIT_OBJS   = $(LIBEDIT_SRCS:.c=$(OBJ_SUF))
 LIBEDIT_SHOBJS = $(LIBEDIT_SRCS:.c=$(SHOBJ_SUF))
+
+EXTERNAL_LIB_OBJS   = $(EXTERNAL_LIB_SRCS:.c=$(OBJ_SUF))
+EXTERNAL_LIB_SHOBJS = $(EXTERNAL_LIB_SRCS:.c=$(SHOBJ_SUF))
+
+ZOOKEEPER_OBJS   = $(ZOOKEEPER_SRCS:.c=$(OBJ_SUF))
+ZOOKEEPER_SHOBJS = $(ZOOKEEPER_SRCS:.c=$(SHOBJ_SUF))
 
 CORE_OBJS      = $(ACP_SRCS:.c=$(OBJ_SUF))       \
                  $(ACP_GASM_SRCS:.gs=$(OBJ_SUF)) \
@@ -229,7 +256,8 @@ CORE_OBJS      = $(ACP_SRCS:.c=$(OBJ_SUF))       \
                  $(ACE_SRCS:.c=$(OBJ_SUF))       \
                  $(ACL_SRCS:.c=$(OBJ_SUF))       \
                  $(ACI_SRCS:.c=$(OBJ_SUF))       \
-                 $(LIBEDIT_OBJS)
+                 $(LIBEDIT_OBJS)                 \
+                 $(EXTERNAL_LIB_OBJS)
 
 CORE_SHOBJS    = $(ACP_SRCS:.c=$(SHOBJ_SUF))       \
                  $(ACP_GASM_SRCS:.gs=$(SHOBJ_SUF)) \
@@ -237,7 +265,13 @@ CORE_SHOBJS    = $(ACP_SRCS:.c=$(SHOBJ_SUF))       \
                  $(ACE_SRCS:.c=$(SHOBJ_SUF))       \
                  $(ACL_SRCS:.c=$(SHOBJ_SUF))       \
                  $(ACI_SRCS:.c=$(SHOBJ_SUF))       \
-                 $(LIBEDIT_SHOBJS)
+                 $(LIBEDIT_SHOBJS)                 \
+                 $(EXTERNAL_LIB_SHOBJS)
+
+ifeq ($(ALTI_CFG_OS),LINUX)
+CORE_OBJS     += $(ZOOKEEPER_OBJS)
+CORE_SHOBJS   += $(ZOOKEEPER_SHOBJS)
+endif
 
 # COMPILER, COMPILE_BIT are from root.mk
 ifneq ($(COMPILER),gcc)
@@ -314,7 +348,7 @@ endif # end of COMPILER
 CTEST_OBJS     = $(ACT_SRCS:.c=$(OBJ_SUF))
 CTEST_SHOBJS   = $(ACT_SRCS:.c=$(SHOBJ_SUF))
 
-CORE_SRCDIRS   = acp ace acl acl/libedit/src aci
+CORE_SRCDIRS   = acp ace acl acl/libedit/src acl/externalLib/src acl/externalLib/src/zookeeper-client aci
 CTEST_SRCDIRS  = act
 
 CORE_OBJDIRS   = $(addprefix $(CORE_BUILD_DIR)/,$(CORE_SRCDIRS))
@@ -332,10 +366,12 @@ ALTICTEST_PICLIBS     = altictest_pic_$(ALTICORE_VERSION)
 GENMSG         = $(BINS_DIR)/genmsg$(EXEC_SUF)
 
 CORE_INCLUDES  = $(INC_OPT)$(CORE_DIR)/include
+CORE_INCLUDES += $(INC_OPT)$(CORE_EXT_DIR)/include
+
 CORE_LIBDIRS   = $(CORE_BUILD_DIR)/lib
 
 INCLUDES      += $(CORE_INCLUDES)
 INCLUDES      += $(PLATFORM_EXTERNAL_INCLUDES)
 LIBDIRS       += $(LIBS_DIR)
 
-ALINT_SILENCES    += aclCompression.h readline.h aciCallback.h aciConvEuckr.h aciConvSjis.h aciMsgLog.h aciConv.h aciConvGb2312.h aciConvUhc1.h aciProperty.h aciConvAscii.h aciConvJisx0201.h aciConvUhc2.h aciTypes.h aciConvBig5.h aciConvJisx0208.h aciConvUtf8.h aciVa.h aciConvCharSet.h aciConvJisx0212.h aciErrorMgr.h aciVarString.h aciConvCp949.h aciConvKsc5601.h aciHashUtil.h aciVersion.h aciConvEucjp.h aciConvReplaceCharMap.h aciMsg.h
+ALINT_SILENCES    += aclCompression.h aclLZ4.h lz4.h readline.h aciCallback.h aciConvEuckr.h aciConvSjis.h aciMsgLog.h aciConv.h aciConvGb2312.h aciConvUhc1.h aciProperty.h aciConvAscii.h aciConvJisx0201.h aciConvUhc2.h aciTypes.h aciConvBig5.h aciConvJisx0208.h aciConvUtf8.h aciVa.h aciConvCharSet.h aciConvJisx0212.h aciErrorMgr.h aciVarString.h aciConvCp949.h aciConvKsc5601.h aciHashUtil.h aciVersion.h aciConvEucjp.h aciConvReplaceCharMap.h aciMsg.h

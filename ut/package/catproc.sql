@@ -22,7 +22,6 @@ START ?/packages/dbms_alert.sql
 START ?/packages/dbms_concurrent_exec.sql
 START ?/packages/dbms_recyclebin.sql
 START ?/packages/dbms_utility.sql
-START ?/packages/dbms_shard.sql
 START ?/packages/dbms_sql_plan_cache.sql
 
 START ?/packages/dbms_application_info.plb
@@ -35,7 +34,6 @@ START ?/packages/dbms_alert.plb
 START ?/packages/dbms_concurrent_exec.plb
 START ?/packages/dbms_recyclebin.plb
 START ?/packages/dbms_utility.plb
-START ?/packages/dbms_shard.plb
 START ?/packages/dbms_sql_plan_cache.plb
 
 -- utility package
@@ -57,3 +55,19 @@ START ?/packages/utl_shard_online_rebuild.plb
 START ?/packages/standard.sql
 START ?/packages/dbms_standard.sql
 START ?/packages/dbms_standard.plb
+
+-- SPATIAL package
+START ?/packages/sys_spatial.sql
+START ?/packages/sys_spatial.plb
+
+-- SHARD package
+START ?/packages/dbms_shard.sql
+START ?/packages/dbms_shard_get_diagnostics.sql
+
+START ?/packages/dbms_shard.plb
+START ?/packages/dbms_shard_get_diagnositcs.plb
+
+-- BUG-47355
+START ?/packages/sys_context.sql
+START ?/packages/dbms_metadata.sql
+START ?/packages/dbms_metadata_body.sql

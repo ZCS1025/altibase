@@ -131,7 +131,7 @@ IDE_RC mtvCalculate_Date2Char( mtcNode*,
                   != IDE_SUCCESS );
 
         // PROJ-1436
-        // dateFormatì„ ì°¸ì¡°í–ˆìŒì„ í‘œì‹œí•œë‹¤.
+        // dateFormatÀ» ÂüÁ¶ÇßÀ½À» Ç¥½ÃÇÑ´Ù.
         aTemplate->dateFormatRef = ID_TRUE;
 
         sChar->length = (UShort)sLength;

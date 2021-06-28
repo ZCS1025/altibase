@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfReplicate.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfReplicate.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -43,7 +43,7 @@ static IDE_RC mtfReplicateEstimate( mtcNode*     aNode,
 mtfModule mtfReplicate = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfReplicateFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -156,9 +156,9 @@ IDE_RC mtfReplicateCalculate( mtcNode*     aNode,
  * Implementation :
  *    REPLICATE ( char, number )
  *
- *    aStack[0] : ì²«ë²ˆì§¸ ë¬¸ìžê°’ì„ ë‘ë²ˆì§¸ ìˆ«ìžë§Œí¼ ë°˜ë³µí•œ ë¬¸ìžê°’
- *    aStack[1] : char ( ë¬¸ìžê°’ )
- *    aStack[2] : number ( ìˆ«ìžê°’ )
+ *    aStack[0] : Ã¹¹øÂ° ¹®ÀÚ°ªÀ» µÎ¹øÂ° ¼ýÀÚ¸¸Å­ ¹Ýº¹ÇÑ ¹®ÀÚ°ª
+ *    aStack[1] : char ( ¹®ÀÚ°ª )
+ *    aStack[2] : number ( ¼ýÀÚ°ª )
  *    
  *    ex) REPLICATE ( 'kyn', 3 )  ==> kynkynkyn
  *
@@ -203,7 +203,7 @@ IDE_RC mtfReplicateCalculate( mtcNode*     aNode,
                         ERR_ARGUMENT2_VALUE_OUT_OF_RANGE ); 
         
         // BUG-25914
-        // replicate ìˆ˜í–‰ ê²°ê³¼ê°€ ê²°ê³¼ë…¸ë“œì˜ precisionì„ ë„˜ì„ ìˆ˜ ì—†ìŒ
+        // replicate ¼öÇà °á°ú°¡ °á°ú³ëµåÀÇ precisionÀ» ³ÑÀ» ¼ö ¾øÀ½
         if( (aStack[1].column->module->id == MTD_NCHAR_ID) ||
             (aStack[1].column->module->id == MTD_NVARCHAR_ID) )
         {

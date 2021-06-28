@@ -611,7 +611,7 @@ typedef enum aci_log_module_t
 #define ACI_XA_8    ACI_TRC_XA_8,  ACI_XA, 8 
 
 /* ------------------------------------------------
- *  aci_log_module_t ë¡œë¶€í„° Module ë²ˆí˜¸ì™€ ë ˆë²¨ì„ ì–»ëŠ”ë‹¤.
+ *  aci_log_module_t ·ÎºÎÅÍ Module ¹øÈ£¿Í ·¹º§À» ¾ò´Â´Ù.
  * ----------------------------------------------*/
 
 #define ACI_GET_TRC_MODULE(a)  ((a) >> 32)
@@ -619,46 +619,46 @@ typedef enum aci_log_module_t
 
 
 /* ---------------------------------------------
- * TASK-4007 [SM]PBTë¥¼ ìœ„í•œ ê¸°ëŠ¥ ì¶”ê°€
+ * TASK-4007 [SM]PBT¸¦ À§ÇÑ ±â´É Ãß°¡
  * 
- * Hexa codeë¡œ Dumpí•´ì£¼ëŠ” ê¸°ëŠ¥ ì¶”ê°€ 
+ * Hexa code·Î DumpÇØÁÖ´Â ±â´É Ãß°¡ 
  * --------------------------------------------- */
 
-/*   SRCëŠ” ë¤í”„ ëŒ€ìƒì˜ í¬ê¸°, DESTëŠ” ë¤í”„ë˜ì–´ ì €ìž¥ë˜ëŠ”
- * ë²„í¼ì˜ í¬ê¸°ìž…ë‹ˆë‹¤. SRC í¬ê¸°ê°€ ë‹¤ë¥¼ ê²½ìš°ì—ëŠ” LIMIT
- * ê¹Œì§€ ì¶œë ¥í•˜ê³ , DEST í¬ê¸°ê°€ ë‹¤ë¥¼ ê²½ìš°ì—ëŠ” ì•„ì˜ˆ ì¶œë ¥
- * í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
- *   SRC í¬ê¸°ê°€ ë‹¤ë¥¼ ê²½ìš°ëŠ” ì–´ì°¨í”¼ ê°’ì„ ì½ëŠ”ë° ë¬¸ì œê°€
- * ì—†ì§€ë§Œ, DESTí¬ê¸°ê°€ ë‹¤ë¥¼ ê²½ìš°ì—ëŠ” ì¶œë ¥ ëŒ€ìƒì´ ë˜ëŠ”
- * ë²„í¼ë¥¼ ì‹ ë¢°í•  ìˆ˜ ì—†ê¸° ë•Œë¬¸ìž…ë‹ˆë‹¤.
+/*   SRC´Â ´ýÇÁ ´ë»óÀÇ Å©±â, DEST´Â ´ýÇÁµÇ¾î ÀúÀåµÇ´Â
+ * ¹öÆÛÀÇ Å©±âÀÔ´Ï´Ù. SRC Å©±â°¡ ´Ù¸¦ °æ¿ì¿¡´Â LIMIT
+ * ±îÁö Ãâ·ÂÇÏ°í, DEST Å©±â°¡ ´Ù¸¦ °æ¿ì¿¡´Â ¾Æ¿¹ Ãâ·Â
+ * ÇÏÁö ¾Ê½À´Ï´Ù.
+ *   SRC Å©±â°¡ ´Ù¸¦ °æ¿ì´Â ¾îÂ÷ÇÇ °ªÀ» ÀÐ´Âµ¥ ¹®Á¦°¡
+ * ¾øÁö¸¸, DESTÅ©±â°¡ ´Ù¸¦ °æ¿ì¿¡´Â Ãâ·Â ´ë»óÀÌ µÇ´Â
+ * ¹öÆÛ¸¦ ½Å·ÚÇÒ ¼ö ¾ø±â ¶§¹®ÀÔ´Ï´Ù.
  */
 #define ACI_DUMP_SRC_LIMIT  ( 64*1024)
 #define ACI_DUMP_DEST_LIMIT (256*1024)
 
 /* Format flag */
 
-/* ê°œí–‰ ê³µë°± ë“±ì„ í†µí•´ BinaryBodyë¥¼ ì–´ë–»ê²Œ êµ¬ë¶„í•´ì¤„ì§€ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤. */
+/* °³Çà °ø¹é µîÀ» ÅëÇØ BinaryBody¸¦ ¾î¶»°Ô ±¸ºÐÇØÁÙÁö¸¦ ¼³Á¤ÇÕ´Ï´Ù. */
 #define ACI_DUMP_FORMAT_PIECE_MASK       (0x00000001) 
-#define ACI_DUMP_FORMAT_PIECE_SINGLE     (0x00000000) /* ë‹¨ì¼í•œ í•œ ì¡°ê°ìœ¼ë¡œ ì¶œë ¥í•©ë‹ˆë‹¤. */
-#define ACI_DUMP_FORMAT_PIECE_4BYTE      (0x00000001) /* 4Byteë‹¨ìœ„ë¡œ êµ¬ë¶„í•©ë‹ˆë‹¤.*/
+#define ACI_DUMP_FORMAT_PIECE_SINGLE     (0x00000000) /* ´ÜÀÏÇÑ ÇÑ Á¶°¢À¸·Î Ãâ·ÂÇÕ´Ï´Ù. */
+#define ACI_DUMP_FORMAT_PIECE_4BYTE      (0x00000001) /* 4Byte´ÜÀ§·Î ±¸ºÐÇÕ´Ï´Ù.*/
 
-/* ì ˆëŒ€ì£¼ì†Œ ë˜ëŠ” ìƒëŒ€ì£¼ì†Œë¥¼ ì¶œë ¥í•´ì¤ë‹ˆë‹¤. */
+/* Àý´ëÁÖ¼Ò ¶Ç´Â »ó´ëÁÖ¼Ò¸¦ Ãâ·ÂÇØÁÝ´Ï´Ù. */
 #define ACI_DUMP_FORMAT_ADDR_MASK        (0x00000006)
-#define ACI_DUMP_FORMAT_ADDR_NONE        (0x00000000) /* ì£¼ì†Œë¥¼ ì¶œë ¥í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. */
-#define ACI_DUMP_FORMAT_ADDR_ABSOLUTE    (0x00000002) /* ì ˆëŒ€ì£¼ì†Œë¥¼ ì¶œë ¥í•©ë‹ˆë‹¤.     */
-#define ACI_DUMP_FORMAT_ADDR_RELATIVE    (0x00000004) /* ìƒëŒ€ì£¼ì†Œë¥¼ ì¶œë ¥í•©ë‹ˆë‹¤.     */
-#define ACI_DUMP_FORMAT_ADDR_BOTH        (0x00000006) /* ì ˆëŒ€ ìƒëŒ€ ëª¨ë‘ ì¶œë ¥í•©ë‹ˆë‹¤. */
+#define ACI_DUMP_FORMAT_ADDR_NONE        (0x00000000) /* ÁÖ¼Ò¸¦ Ãâ·ÂÇÏÁö ¾Ê½À´Ï´Ù. */
+#define ACI_DUMP_FORMAT_ADDR_ABSOLUTE    (0x00000002) /* Àý´ëÁÖ¼Ò¸¦ Ãâ·ÂÇÕ´Ï´Ù.     */
+#define ACI_DUMP_FORMAT_ADDR_RELATIVE    (0x00000004) /* »ó´ëÁÖ¼Ò¸¦ Ãâ·ÂÇÕ´Ï´Ù.     */
+#define ACI_DUMP_FORMAT_ADDR_BOTH        (0x00000006) /* Àý´ë »ó´ë ¸ðµÎ Ãâ·ÂÇÕ´Ï´Ù. */
 
-/* Binaryë¡œ ë°ì´í„°ë¥¼ ì¶œë ¥í•´ì¤ë‹ˆë‹¤. */
+/* Binary·Î µ¥ÀÌÅÍ¸¦ Ãâ·ÂÇØÁÝ´Ï´Ù. */
 #define ACI_DUMP_FORMAT_BODY_MASK        (0x00000008)
-#define ACI_DUMP_FORMAT_BODY_NONE        (0x00000000) /* Binaryë°ì´í„°ë¥¼ ì¶œë ¥í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. */
-#define ACI_DUMP_FORMAT_BODY_HEX         (0x00000008) /* 16ì§„ìˆ˜ë¡œ ì¶œë ¥í•©ë‹ˆë‹¤. */
+#define ACI_DUMP_FORMAT_BODY_NONE        (0x00000000) /* Binaryµ¥ÀÌÅÍ¸¦ Ãâ·ÂÇÏÁö ¾Ê½À´Ï´Ù. */
+#define ACI_DUMP_FORMAT_BODY_HEX         (0x00000008) /* 16Áø¼ö·Î Ãâ·ÂÇÕ´Ï´Ù. */
 
-/* Characterë¡œ ë°ì´í„°ë¥¼ ì¶œë ¥í•´ì¤ë‹ˆë‹¤. */
+/* Character·Î µ¥ÀÌÅÍ¸¦ Ãâ·ÂÇØÁÝ´Ï´Ù. */
 #define ACI_DUMP_FORMAT_CHAR_MASK        (0x00000010)
-#define ACI_DUMP_FORMAT_CHAR_NONE        (0x00000000) /* Charë°ì´í„°ë¥¼ ì¶œë ¥í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. */
-#define ACI_DUMP_FORMAT_CHAR_ASCII       (0x00000010) /* ê³µë°±(32) ~ 126 ì‚¬ì´ì˜ ê°’ë“¤ì„ \
-                                                       * Asciië¡œ ì¶œë ¥í•´ì¤ë‹ˆë‹¤. */
+#define ACI_DUMP_FORMAT_CHAR_NONE        (0x00000000) /* Charµ¥ÀÌÅÍ¸¦ Ãâ·ÂÇÏÁö ¾Ê½À´Ï´Ù. */
+#define ACI_DUMP_FORMAT_CHAR_ASCII       (0x00000010) /* °ø¹é(32) ~ 126 »çÀÌÀÇ °ªµéÀ» \
+                                                       * Ascii·Î Ãâ·ÂÇØÁÝ´Ï´Ù. */
 
 #define ACI_DUMP_FORMAT_BINARY         ( ACI_DUMP_FORMAT_PIECE_SINGLE | \
                                          ACI_DUMP_FORMAT_ADDR_NONE |    \
@@ -701,10 +701,10 @@ typedef struct aci_msg_log_t
     acp_char_t               mFileName[1024];    /* File Name */
     acp_offset_t           mSize;              /* file size */
     acp_uint32_t                mMaxNumber;         /* loop file number */
-    acp_uint32_t                mCurNumber;         /* Replaceë  í™”ì¼ë²ˆí˜¸ */
-    acp_uint32_t                mInitialized;       /* ì´ˆê¸°í™” ìœ ë¬´ : idBoolì„ ì“°ì§€ ì•Šì€  */
-                                            /* ê²ƒì€ ì •ì ì˜ì—­ìœ¼ë¡œ 0 ì´ˆê¸°í™”ìœ¼ë¡œ  */
-                                            /* ë˜ê¸° ë•Œë¬¸ì— ì˜ë¯¸ê°€ í‹€ë ¤ì§. */
+    acp_uint32_t                mCurNumber;         /* ReplaceµÉ È­ÀÏ¹øÈ£ */
+    acp_uint32_t                mInitialized;       /* ÃÊ±âÈ­ À¯¹« : idBoolÀ» ¾²Áö ¾ÊÀº  */
+                                            /* °ÍÀº Á¤Àû¿µ¿ªÀ¸·Î 0 ÃÊ±âÈ­À¸·Î  */
+                                            /* µÇ±â ¶§¹®¿¡ ÀÇ¹Ì°¡ Æ²·ÁÁü. */
 } aci_msg_log_t;
 
 

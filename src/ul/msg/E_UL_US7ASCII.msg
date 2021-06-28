@@ -22,7 +22,7 @@
 # 브랜치에서 에러코드를 할당받으시면 안됩니다.
 # 반드시 main trunk에서 번호를 할당받은 후 브랜치에서 사용하셔야 합니다.
 # 의문 사항이 있으시면 AK팀 혹은 QP(품질본부)팀에 문의 부탁드립니다.
-# Last Number = 544
+# Last Number = 550
 
 SECTION = 5
 
@@ -569,6 +569,10 @@ SECTION = 5
 # *Cause: The input string cannot be converted to a number.
 # *Action: Check the input string.
 
+153, HY010, ulERR_ABORT_LOCK_SEQUENCE_ERR = Lock sequence error.
+# *Cause: invalid Lock call sequence.
+# *Action: Try disconnect and reconnect 
+
 #########################
 # SQLGetData / SQLPutData
 #########################
@@ -665,9 +669,9 @@ SECTION = 5
 # *Cuase: Failed to call the LOB function using a handle.
 # *Action: Contact Altibase's Support Center (http://support.altibase.com).
 
-314, HY000, ulERR_ABORT_FILE_SIZE_TOO_BIG = General error. The size of the provided file <0%s> is too big. The maximum file size is about 2GB.
+314, HY000, ulERR_ABORT_FILE_SIZE_TOO_BIG = General error. The size of the provided file <0%s> is too big. The maximum file size is 4,294,967,295 bytes (4GB-1byte).
 # *Cuase: The file is too big.
-# *Action: Check whether the file is correct and use a smaller file.
+# *Action: Check the file size and use a smaller file.
 
 # 315, 01000, ulERR_IGNORE_LOB_RETRIEVED_SIZE_TOO_BIG = The size of the LOB exceeds the range that can be represented by a 32-bit signed integer.
 # *Cause: The LOB data size exceeds the range that can be represented by a 32 bit signed integer.
@@ -902,13 +906,37 @@ SECTION = 5
 # *Cause: An error occurred during the data node connection.
 # *Action: Take appropriate measures after verifying the data node and error number.
 
-543, HY000, ulERR_ABORT_SHARD_META_CHANGED = The shard meta information was changed.
+543, 01000, ulERR_ABORT_SHARD_META_CHANGED = The shard meta information was changed.
 # *Cause: The shard meta information was changed.
 # *Action: Re-execute application logic.
 
 544, HY000, ulERR_ABORT_SHARD_INTERNAL_ERROR = The shard internal server error (<0%s>).
 # *Cause: Unexepected error.
 # *Action: Check the error number from the trace log and contact Altibase's Support Center (http://support.altibase.com).
+
+545, HYC00, ulERR_ABORT_SHARD_UNSUPPORTED_FUNCTION = The <0%s> is not supported in shard client library. 
+# *Cause: This function is not supported in shard client library.
+# *Action: Do not use this function.
+
+546, HYC00, ulERR_ABORT_FEATURE_NOT_IMPLEMENTED_IN_SHARD = This feature is not implemented.
+# *Cause: An unsupported attribute was used in shard client library.
+# *Action: Check the attribute.
+
+547, HYC00, ulERR_ABORT_NEED_ROLLBACK = Failed to execute the statement, because the global transaction has been terminated.
+# *Cause: After failing to commit in global transaction level, rollback is necessary to execute a statement to a remote server.
+# *Action: Execute rollback and retry the statement.
+
+548, IH, ulERR_ABORT_INVALID_LOCATOR_HANDLE = Invalid Locator Handle.
+# *Cause: A locator handle is invalid.
+# *Action: Check if the locator is 0.
+
+549, HY000, ulERR_ABORT_SHARD_MULTIPLE_ERRORS = Multiple errors occurred on each of shard nodes.
+# *Cause: Multiple errors occurred on each of shard nodes.
+# *Action: Check the error messages on each shard node.
+
+550, HY000, ulERR_ABORT_FAILED_TO_PROPAGATE_SHARD_META_NUMBER = Failed to propagate shard meta number.
+# *Cause: Failed to propagate shard meta number.
+# *Action: Check the shard node status or network.
 
 #############################
 # IB

@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iloPassword.cpp 80545 2017-07-19 08:05:23Z daramix $
+ * $Id: iloPassword.cpp 87077 2020-03-31 00:11:00Z chkim $
  **********************************************************************/
 
 #include <ilo.h>
@@ -54,18 +54,19 @@ getpass(const SChar *prompt)
 #else
     sigset_t       sig, sigsave;
     struct termios term, termsave;
+    /* BUG-47741 HP-UX error with here document */
+    SChar        * sControlTermPath = NULL;
 
-# if defined(HP_HPUX) ||defined(IA64_HP_HPUX)
-    if ( (fp = idlOS::fopen(ctermid(ttyname(0)), "r+")) == NULL )
-        return NULL;
+# if defined(L_ctermid)
+    sControlTermPath = sTermPathname;
 # else
-#  if defined(L_ctermid)
-    if ( (fp = idlOS::fopen(ctermid(sTermPathname), "r+")) == NULL )
-#  else
-    if ( (fp = idlOS::fopen(ctermid(NULL), "r+")) == NULL )
+#  if defined(HP_HPUX) || defined(IA64_HP_HPUX)
+    sControlTermPath = ttyname(0);
 #  endif
-        return NULL;
 # endif
+
+    if ( (fp = idlOS::fopen(ctermid(sControlTermPath), "r+")) == NULL )
+       return NULL;
 
     setbuf(fp, NULL);
 

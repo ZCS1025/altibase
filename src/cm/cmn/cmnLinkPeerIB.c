@@ -508,7 +508,7 @@ static ACI_RC cmnLinkPeerConnByIP(cmnLinkPeer          *aLink,
     acpMemCpy(&sLink->mDesc.mAddr, aAddr->ai_addr, aAddr->ai_addrlen);
     sLink->mDesc.mAddrLen = aAddr->ai_addrlen;
 
-    /* socket ì´ˆê¸°í™” */
+    /* socket ÃÊ±âÈ­ */
     sLink->mDesc.mLatency = aConnectArg->mIB.mLatency;
     sLink->mDesc.mConChkSpin = aConnectArg->mIB.mConChkSpin;
 
@@ -547,7 +547,7 @@ static ACI_RC cmnLinkPeerConnByIP(cmnLinkPeer          *aLink,
     }
     ACI_EXCEPTION_END;
 
-    // BUG-24170 [CM] cmiConnect ì‹¤íŒ¨ ì‹œ, cmiConnect ë‚´ì—ì„œ close
+    // BUG-24170 [CM] cmiConnect ½ÇÆĞ ½Ã, cmiConnect ³»¿¡¼­ close
     if (sSock != CMN_INVALID_SOCKET_HANDLE)
     {
         (void)gIB.mFuncs.rclose(sSock);
@@ -700,7 +700,7 @@ static ACI_RC cmnLinkPeerConnByName(cmnLinkPeer          *aLink,
     acpMemCpy(&sLink->mDesc.mAddr, sAddr->ai_addr, sAddr->ai_addrlen);
     sLink->mDesc.mAddrLen = sAddr->ai_addrlen;
 
-    /* socket ì´ˆê¸°í™” */
+    /* socket ÃÊ±âÈ­ */
     sLink->mDesc.mLatency = aConnectArg->mIB.mLatency;
     sLink->mDesc.mConChkSpin = aConnectArg->mIB.mConChkSpin;
 
@@ -735,7 +735,7 @@ static ACI_RC cmnLinkPeerConnByName(cmnLinkPeer          *aLink,
     }
     ACI_EXCEPTION_END;
 
-    /* BUG-24170 [CM] cmiConnect ì‹¤íŒ¨ ì‹œ, cmiConnect ë‚´ì—ì„œ close */
+    /* BUG-24170 [CM] cmiConnect ½ÇÆĞ ½Ã, cmiConnect ³»¿¡¼­ close */
     if (sLink->mDesc.mSock != CMN_INVALID_SOCKET_HANDLE)
     {
         (void)gIB.mFuncs.rclose(sLink->mDesc.mSock);
@@ -780,8 +780,8 @@ static acp_sint32_t cmnConnectTimedWait(acp_sint32_t     aSock,
         /**
          * [CAUTION]
          *
-         * Berkeley socket ê³¼ ë‹¤ë¥´ê²Œ blocking mode ì´ë”ë¼ë„
-         * rconnect() í•¨ìˆ˜ëŠ” 'connecting' ìƒíƒœë¡œ ë°˜í™˜ë  ìˆ˜ ìˆìŒ.
+         * Berkeley socket °ú ´Ù¸£°Ô blocking mode ÀÌ´õ¶óµµ
+         * rconnect() ÇÔ¼ö´Â 'connecting' »óÅÂ·Î ¹İÈ¯µÉ ¼ö ÀÖÀ½.
          */
 
         /* wait until connecting */
@@ -873,7 +873,7 @@ ACI_RC cmnLinkPeerSetOptionsIB(cmnLinkPeer *aLink, acp_sint32_t aOption)
     struct linger  sLingerOption;
 
     /*
-     * SO_KEEPALIVE ì„¸íŒ…
+     * SO_KEEPALIVE ¼¼ÆÃ
      */
     sOption = 1;
 
@@ -884,16 +884,16 @@ ACI_RC cmnLinkPeerSetOptionsIB(cmnLinkPeer *aLink, acp_sint32_t aOption)
                                  ACI_SIZEOF(sOption));
 
     /*
-     * BUG-26484: ì¶”ê°€ë¡œ ì„¤ì •í•  ì†Œì¼“ ì˜µì…˜ì„ ì§€ì •
+     * BUG-26484: Ãß°¡·Î ¼³Á¤ÇÒ ¼ÒÄÏ ¿É¼ÇÀ» ÁöÁ¤
      */
     if (aOption == SO_LINGER)
     {
         /*
-         * ì—°ì†ìœ¼ë¡œ ì—°ê²°í–ˆë‹¤ ëŠê¸°ë¥¼ ë°˜ë³µí•˜ë©´ ë” ì´ìƒ ì—°ê²°í•  ìˆ˜ ì—†ê²Œëœë‹¤.
-         * ì¼ë°˜ì ìœ¼ë¡œ ì†Œì¼“ì€ closeí•´ë„ TIME_WAIT ìƒíƒœë¡œ ì¼ì •ì‹œê°„ ëŒ€ê¸°í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
-         * SO_LINGER ì˜µì…˜ ì¶”ê°€. (SO_REUSEADDR ì˜µì…˜ìœ¼ë¡œëŠ” ì˜ ì•ˆë  ìˆ˜ë„ ìˆë‹¤;)
+         * ¿¬¼ÓÀ¸·Î ¿¬°áÇß´Ù ²÷±â¸¦ ¹İº¹ÇÏ¸é ´õ ÀÌ»ó ¿¬°áÇÒ ¼ö ¾ø°ÔµÈ´Ù.
+         * ÀÏ¹İÀûÀ¸·Î ¼ÒÄÏÀº closeÇØµµ TIME_WAIT »óÅÂ·Î ÀÏÁ¤½Ã°£ ´ë±âÇÏ±â ¶§¹®ÀÌ´Ù.
+         * SO_LINGER ¿É¼Ç Ãß°¡. (SO_REUSEADDR ¿É¼ÇÀ¸·Î´Â Àß ¾ÈµÉ ¼öµµ ÀÖ´Ù;)
          *
-         * SO_LINGER ì„¸íŒ…
+         * SO_LINGER ¼¼ÆÃ
         */
         sLingerOption.l_onoff  = 1;
         sLingerOption.l_linger = 0;
@@ -907,7 +907,7 @@ ACI_RC cmnLinkPeerSetOptionsIB(cmnLinkPeer *aLink, acp_sint32_t aOption)
     else if (aOption == SO_REUSEADDR)
     {
         /*
-         * SO_REUSEADDR ì„¸íŒ…
+         * SO_REUSEADDR ¼¼ÆÃ
          */
         sOption = 1;
 
@@ -923,7 +923,7 @@ ACI_RC cmnLinkPeerSetOptionsIB(cmnLinkPeer *aLink, acp_sint32_t aOption)
     }
 
     /*
-     * TCP_NODELAY ì„¸íŒ…
+     * TCP_NODELAY ¼¼ÆÃ
      */
     sOption = 1;
 
@@ -934,7 +934,7 @@ ACI_RC cmnLinkPeerSetOptionsIB(cmnLinkPeer *aLink, acp_sint32_t aOption)
                                  ACI_SIZEOF(sOption));
 
     /* BUG-22028
-     * SO_SNDBUF ì„¸íŒ… (ëŒ€ì—­í­ * ì§€ì—°ìœ¨) * 2
+     * SO_SNDBUF ¼¼ÆÃ (´ë¿ªÆø * Áö¿¬À²) * 2
      */
     sOption = CMB_BLOCK_DEFAULT_SIZE * 2;
 
@@ -946,7 +946,7 @@ ACI_RC cmnLinkPeerSetOptionsIB(cmnLinkPeer *aLink, acp_sint32_t aOption)
 
     /*
      * BUG-22028
-     * SO_RCVBUF ì„¸íŒ… (ëŒ€ì—­í­ * ì§€ì—°ìœ¨) * 2
+     * SO_RCVBUF ¼¼ÆÃ (´ë¿ªÆø * Áö¿¬À²) * 2
      */
     sOption = CMB_BLOCK_DEFAULT_SIZE * 2;
 
@@ -1040,7 +1040,7 @@ ACI_RC cmnLinkPeerRecvIB( cmnLinkPeer  *aLink,
     ACI_TEST_RAISE(sPacketType == CMP_PACKET_TYPE_A5, UnsupportedNetworkProtocol);
 
     /*
-     * Pending Blockìˆìœ¼ë©´ ì‚¬ìš© ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ Block í• ë‹¹
+     * Pending BlockÀÖÀ¸¸é »ç¿ë ±×·¸Áö ¾ÊÀ¸¸é Block ÇÒ´ç
      */
     /* proj_2160 cm_type removal */
     /* A7 or CMP_PACKET_TYPE_UNKNOWN: block already allocated. */
@@ -1058,7 +1058,7 @@ ACI_RC cmnLinkPeerRecvIB( cmnLinkPeer  *aLink,
     }
 
     /*
-     * Protocol Header Size í¬ê¸° ì´ìƒ ì½ìŒ
+     * Protocol Header Size Å©±â ÀÌ»ó ÀĞÀ½
      */
     ACI_TEST_RAISE(cmnSockRecvIB(sBlock,
                                  aLink,
@@ -1067,13 +1067,13 @@ ACI_RC cmnLinkPeerRecvIB( cmnLinkPeer  *aLink,
                                  aTimeout) != ACI_SUCCESS, SockRecvError);
 
     /*
-     * Protocol Header í•´ì„
+     * Protocol Header ÇØ¼®
      */
     ACI_TEST(cmpHeaderRead(aLink, &sHeader, sBlock) != ACI_SUCCESS);
     sPacketSize = sHeader.mA7.mPayloadLength + CMP_HEADER_SIZE;
 
     /*
-     * íŒ¨í‚· í¬ê¸° ì´ìƒ ì½ìŒ
+     * ÆĞÅ¶ Å©±â ÀÌ»ó ÀĞÀ½
      */
     ACI_TEST_RAISE(cmnSockRecvIB(sBlock,
                                  aLink,
@@ -1082,7 +1082,7 @@ ACI_RC cmnLinkPeerRecvIB( cmnLinkPeer  *aLink,
                                  aTimeout) != ACI_SUCCESS, SockRecvError);
 
     /*
-     * íŒ¨í‚· í¬ê¸° ì´ìƒ ì½í˜”ìœ¼ë©´ í˜„ì¬ íŒ¨í‚· ì´í›„ì˜ ë°ì´í„°ë¥¼ Pending Blockìœ¼ë¡œ ì˜®ê¹€
+     * ÆĞÅ¶ Å©±â ÀÌ»ó ÀĞÇûÀ¸¸é ÇöÀç ÆĞÅ¶ ÀÌÈÄÀÇ µ¥ÀÌÅÍ¸¦ Pending BlockÀ¸·Î ¿Å±è
      */
     if (sBlock->mDataSize > sPacketSize)
     {
@@ -1091,7 +1091,7 @@ ACI_RC cmnLinkPeerRecvIB( cmnLinkPeer  *aLink,
     }
 
     /*
-     * Blockê³¼ Headerë¥¼ ëŒë ¤ì¤Œ
+     * Block°ú Header¸¦ µ¹·ÁÁÜ
      */
     /* proj_2160 cm_type removal
      *  Do not use mLink.mPacketType. instead, use sPacketType.

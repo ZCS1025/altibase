@@ -30,49 +30,49 @@
 #include <smu.h>
 
 /*
-  [ì°¸ê³ ] SMMì•ˆì—ì„œì˜ Fileê°„ì˜ Layerë° ì—­í• ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
-         í•˜ìœ„ Layerì˜ ì½”ë“œì—ì„œëŠ” ìƒìœ„ Layerì˜ ì½”ë“œë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+  [Âü°í] SMM¾È¿¡¼­ÀÇ File°£ÀÇ Layer¹× ¿ªÇÒÀº ´ÙÀ½°ú °°´Ù.
+         ÇÏÀ§ LayerÀÇ ÄÚµå¿¡¼­´Â »óÀ§ LayerÀÇ ÄÚµå¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù.
 
   ----------------------------------------------------------------------------
-  smmTBSCreate          ; Create Tablespace êµ¬í˜„
-  smmTBSDrop            ; Drop Tablespace êµ¬í˜„
-  smmTBSAlterAutoExtend ; Alter Tablespace Auto Extend êµ¬í˜„
-  smmTBSAlterChkptPath  ; Alter Tablespace Add/Rename/Drop Checkpoint Pathêµ¬í˜„
-  smmTBSAlterDiscard    ; Alter Tablespace Discard êµ¬í˜„
-  smmTBSStartupShutdown ; Startup, Shutdownì‹œì˜ Tablespaceê´€ë ¨ ì²˜ë¦¬ë¥¼ êµ¬í˜„
+  smmTBSCreate          ; Create Tablespace ±¸Çö
+  smmTBSDrop            ; Drop Tablespace ±¸Çö
+  smmTBSAlterAutoExtend ; Alter Tablespace Auto Extend ±¸Çö
+  smmTBSAlterChkptPath  ; Alter Tablespace Add/Rename/Drop Checkpoint Path±¸Çö
+  smmTBSAlterDiscard    ; Alter Tablespace Discard ±¸Çö
+  smmTBSStartupShutdown ; Startup, Shutdown½ÃÀÇ Tablespace°ü·Ã Ã³¸®¸¦ ±¸Çö
   ----------------------------------------------------------------------------
-  smmTBSChkptPath  ; Tablespaceì˜ Checkpoint Path ê´€ë¦¬
-  smmTBSMultiPhase ; Tablespaceì˜ ë‹¤ë‹¨ê³„ ì´ˆê¸°í™”
+  smmTBSChkptPath  ; TablespaceÀÇ Checkpoint Path °ü¸®
+  smmTBSMultiPhase ; TablespaceÀÇ ´Ù´Ü°è ÃÊ±âÈ­
   ----------------------------------------------------------------------------
-  smmManager       ; Tablespaceì˜ ë‚´ë¶€ êµ¬í˜„ 
-  smmFPLManager    ; Tablespace Free Page Listì˜ ë‚´ë¶€ êµ¬í˜„
-  smmExpandChunk   ; Chunkì˜ ë‚´ë¶€êµ¬ì¡° êµ¬í˜„
+  smmManager       ; TablespaceÀÇ ³»ºÎ ±¸Çö 
+  smmFPLManager    ; Tablespace Free Page ListÀÇ ³»ºÎ ±¸Çö
+  smmExpandChunk   ; ChunkÀÇ ³»ºÎ±¸Á¶ ±¸Çö
   ----------------------------------------------------------------------------
   
-  c.f> Memory Tablespaceì˜ Alter Online/Offlineì€ smp layerì— êµ¬í˜„ë˜ì–´ ìˆë‹¤.
+  c.f> Memory TablespaceÀÇ Alter Online/OfflineÀº smp layer¿¡ ±¸ÇöµÇ¾î ÀÖ´Ù.
 */
 
 
 /*
-  Memory Tablespaceì˜
-  Alter Tablespace Add/Rename/Drop Checkpoint Pathêµ¬í˜„
+  Memory TablespaceÀÇ
+  Alter Tablespace Add/Rename/Drop Checkpoint Path±¸Çö
  */
 class smmTBSAlterChkptPath
 {
 public :
-    // ìƒì„±ì (ì•„ë¬´ê²ƒë„ ì•ˆí•¨)
+    // »ı¼ºÀÚ (¾Æ¹«°Íµµ ¾ÈÇÔ)
     smmTBSAlterChkptPath();
 
-    // ìƒˆë¡œìš´ Checkpoint Pathë¥¼ ì¶”ê°€í•œë‹¤.
+    // »õ·Î¿î Checkpoint Path¸¦ Ãß°¡ÇÑ´Ù.
     static IDE_RC alterTBSaddChkptPath( scSpaceID    aSpaceID,
                                         SChar      * aChkptPath );
 
-    // ê¸°ì¡´ì˜ Checkpoint Pathë¥¼ ë³€ê²½í•œë‹¤.
+    // ±âÁ¸ÀÇ Checkpoint Path¸¦ º¯°æÇÑ´Ù.
     static IDE_RC alterTBSrenameChkptPath( scSpaceID    aSpaceID,
                                            SChar      * aOrgChkptPath,
                                            SChar      * aNewChkptPath );
     
-    // ê¸°ì¡´ì˜ Checkpoint Pathë¥¼ ì œê±°í•œë‹¤.
+    // ±âÁ¸ÀÇ Checkpoint Path¸¦ Á¦°ÅÇÑ´Ù.
     static IDE_RC alterTBSdropChkptPath( scSpaceID   aSpaceID,
                                          SChar     * aChkptPath );
 

@@ -36,12 +36,12 @@ final class AltibaseKeySetDrivenResultSet extends AltibaseScrollInsensitiveResul
     }
 
     /**
-     * Keyset-drivenìœ¼ë¡œ ìƒì„±ëœ Result Setì„ ê°ì‹¼ë‹¤.
+     * Keyset-drivenÀ¸·Î »ı¼ºµÈ Result SetÀ» °¨½Ñ´Ù.
      * <p>
-     * base result setì€ ë°˜ë“œì‹œ Keyset-driven(scroll-sensitive ë˜ëŠ” updatable)ë¡œ ì—° ê²ƒì´ì–´ì•¼ í•˜ë©°,
-     * key columnì€ SQL BIGINT ê°’ìœ¼ë¡œ targetì ˆ ê°€ì¥ ë§ˆì§€ë§‰ì— ìˆì–´ì•¼ í•œë‹¤.
+     * base result setÀº ¹İµå½Ã Keyset-driven(scroll-sensitive ¶Ç´Â updatable)·Î ¿¬ °ÍÀÌ¾î¾ß ÇÏ¸ç,
+     * key columnÀº SQL BIGINT °ªÀ¸·Î targetÀı °¡Àå ¸¶Áö¸·¿¡ ÀÖ¾î¾ß ÇÑ´Ù.
      *
-     * @param aBaseResultSet Keyset-drivenìœ¼ë¡œ ìƒì„±ëœ Result Set
+     * @param aBaseResultSet Keyset-drivenÀ¸·Î »ı¼ºµÈ Result Set
      */
     AltibaseKeySetDrivenResultSet(AltibaseScrollInsensitiveResultSet aBaseResultSet)
     {
@@ -49,11 +49,11 @@ final class AltibaseKeySetDrivenResultSet extends AltibaseScrollInsensitiveResul
     }
 
     /**
-     * ê°ì²´ë§Œ ìƒì„±í•  ìˆ˜ ìˆê²Œ í•´ì£¼ëŠ” ìƒì„±ì.
-     * ì´ ìƒì„±ìë¥¼ í†µí•´ ë§Œë“  ê°ì²´ëŠ” ë°˜ë“œì‹œ ì‚¬ìš© ì „ì— ë‹¤ìŒ í•¨ìˆ˜ë¥¼ í†µí•´ ì´ˆê¸°í™”ë¥¼ í•´ì•¼í•œë‹¤:
+     * °´Ã¼¸¸ »ı¼ºÇÒ ¼ö ÀÖ°Ô ÇØÁÖ´Â »ı¼ºÀÚ.
+     * ÀÌ »ı¼ºÀÚ¸¦ ÅëÇØ ¸¸µç °´Ã¼´Â ¹İµå½Ã »ç¿ë Àü¿¡ ´ÙÀ½ ÇÔ¼ö¸¦ ÅëÇØ ÃÊ±âÈ­¸¦ ÇØ¾ßÇÑ´Ù:
      * {@link #init(AltibaseStatement, CmFetchResult, int)}
      * <p>
-     * ë‚˜ì¤‘ì— ì´ˆê¸°í™”í•˜ëŠ” ë°©ë²•ì„ ì‚¬ìš©í•  ìˆ˜ ìˆê²Œ í•˜ëŠ”ê²ƒì€ ìƒì„±ì´ ì¦ì€ ê²½ìš° ê·¸ ë¹„ìš©ì„ ì¤„ì´ë ¤ëŠ” ê²ƒì´ë‹¤.
+     * ³ªÁß¿¡ ÃÊ±âÈ­ÇÏ´Â ¹æ¹ıÀ» »ç¿ëÇÒ ¼ö ÀÖ°Ô ÇÏ´Â°ÍÀº »ı¼ºÀÌ ÀæÀº °æ¿ì ±× ºñ¿ëÀ» ÁÙÀÌ·Á´Â °ÍÀÌ´Ù.
      */
     AltibaseKeySetDrivenResultSet()
     {

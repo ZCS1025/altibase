@@ -17,13 +17,16 @@
 
 package Altibase.jdbc.driver.sharding.core;
 
+import Altibase.jdbc.driver.AbstractConnection;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
 
 import java.sql.*;
 import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.Executor;
 
-public class AltibaseShardingLogicalConnection implements Connection
+public class AltibaseShardingLogicalConnection extends AbstractConnection
 {
     protected Connection                       mPhysicalConnection;
     protected AltibaseShardingPooledConnection mPooledConnection;
@@ -266,5 +269,53 @@ public class AltibaseShardingLogicalConnection implements Connection
         {
             Error.throwSQLException(ErrorDef.CLOSED_CONNECTION);
         }
+    }
+
+    @Override
+    public boolean isValid(int timeout) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setClientInfo(String aName, String aValue) throws SQLClientInfoException
+    {
+        throw new SQLClientInfoException("setClientInfo is not supported in sharding", null);
+    }
+
+    @Override
+    public void setClientInfo(Properties aProperties) throws SQLClientInfoException
+    {
+        throw new SQLClientInfoException("setClientInfo is not supported in sharding", null);
+    }
+
+    @Override
+    public String getClientInfo(String aName) throws SQLException
+    {
+        throw new SQLClientInfoException("setClientInfo is not supported in sharding", null);
+    }
+
+    @Override
+    public Properties getClientInfo() throws SQLException
+    {
+        throw new SQLClientInfoException("getClientInfo is not supported in sharding", null);
+    }
+
+    @Override
+    public void abort(Executor aExecutor) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public void setNetworkTimeout(Executor aExecutor, int aMilliseconds) throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    @Override
+    public int getNetworkTimeout() throws SQLException
+    {
+        throw Error.createSQLFeatureNotSupportedException();
     }
 }

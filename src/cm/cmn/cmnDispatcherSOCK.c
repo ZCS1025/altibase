@@ -24,7 +24,7 @@ ACI_RC cmnDispatcherWaitLinkSOCK(cmnLink *aLink, cmnDirection aDirection, acp_ti
     acp_rc_t    sResult;
 
     /*
-     * Linkì˜ socket íšë“
+     * LinkÀÇ socket È¹µæ
      */
     ACI_TEST(aLink->mOp->mGetSocket(aLink, (void**)&sSock) != ACI_SUCCESS);
     
@@ -32,7 +32,7 @@ ACI_RC cmnDispatcherWaitLinkSOCK(cmnLink *aLink, cmnDirection aDirection, acp_ti
     ACI_EXCEPTION_CONT(Restart);
 
     /*
-     * select ìˆ˜í–‰
+     * select ¼öÇà
      */
     switch (aDirection)
     {
@@ -60,7 +60,8 @@ ACI_RC cmnDispatcherWaitLinkSOCK(cmnLink *aLink, cmnDirection aDirection, acp_ti
 
     ACI_EXCEPTION(SelectError);
     {
-        ACI_SET(aciSetErrorCode(cmERR_ABORT_SELECT_ERROR));
+        /* BUG-47714 ¿¡·¯ ¸Þ¼¼Áö¿¡ sock number Ãß°¡ */
+        ACI_SET(aciSetErrorCode(cmERR_ABORT_SELECT_ERROR, sSock->mHandle));
     }
     ACI_EXCEPTION(TimedOut);
     {

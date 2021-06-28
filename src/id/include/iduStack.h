@@ -4,7 +4,7 @@
  ****************************************************************************/
 
 /*****************************************************************************
- * $Id: iduStack.h 82992 2018-05-08 06:30:01Z kclee $
+ * $Id: iduStack.h 89766 2021-01-14 06:45:10Z kclee $
  ****************************************************************************/
 
 #ifndef _O_IDE_STACK_H_
@@ -70,7 +70,7 @@ public:
     static IDE_RC dumpAllCallstack();
 
 private:
-    static SInt             mCallStackCriticalSection;
+    volatile static SInt    mCallStackCriticalSection;
     static const SChar      mDigitChars[17];
 
     static IDTHREAD SInt    mCallDepth;
@@ -79,12 +79,13 @@ private:
 
     static void convertHex64(ULong, SChar*, SChar**);
     static void convertDec32(UInt , SChar*, SChar**);
-    static void writeBucket();
-    static void writeDec32(UInt);
-    static void writeHex32(UInt);
-    static void writeHex64(ULong);
-    static void writeHexPtr(void*);
-    static void writeString(const void*, size_t);
+    static void writeBucket(SChar*,UInt*);
+    static void writeDec32(SChar*,UInt*,UInt);
+    static void writeHex32(SChar*,UInt*,UInt);
+    static void writeHex64(SChar*,UInt*,ULong);
+    static void writeHexPtr(SChar*,UInt*,void*);
+    static void writeString(SChar*,UInt*,const void*, size_t);
+    static void copyToBuff(SChar*,UInt*,const void*, size_t);/*BUG-48433*/
 
 #if defined(ALTI_CFG_OS_WINDOWS)
     static iduSymInit                           mSymInitFunc;

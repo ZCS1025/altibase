@@ -16,16 +16,16 @@
  
 
 /***********************************************************************
- * $Id: qmc.cpp 85317 2019-04-25 00:20:11Z donovan.seo $
+ * $Id: qmc.cpp 89218 2020-11-12 01:36:24Z donovan.seo $
  *
  * Description :
- *     Executionì—ì„œ ì‚¬ìš©í•˜ëŠ” ê³µí†µ ëª¨ë“ˆë¡œ
- *     Materialized Columnì— ëŒ€í•œ ì²˜ë¦¬ë¥¼ í•˜ëŠ” ì‘ì—…ì´ ì£¼ë¥¼ ì´ë£¬ë‹¤.
+ *     Execution¿¡¼­ »ç¿ëÇÏ´Â °øÅë ¸ğµâ·Î
+ *     Materialized Column¿¡ ´ëÇÑ Ã³¸®¸¦ ÇÏ´Â ÀÛ¾÷ÀÌ ÁÖ¸¦ ÀÌ·é´Ù.
  *
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -48,15 +48,15 @@ extern mtdModule mtdByte;
 extern mtdModule mtdList;
 
 mtcExecute qmc::valueExecute = {
-    mtf::calculateNA,     // Aggregation ì´ˆê¸°í™” í•¨ìˆ˜, ì—†ìŒ
-    mtf::calculateNA,     // Aggregation ìˆ˜í–‰ í•¨ìˆ˜, ì—†ìŒ
+    mtf::calculateNA,     // Aggregation ÃÊ±âÈ­ ÇÔ¼ö, ¾øÀ½
+    mtf::calculateNA,     // Aggregation ¼öÇà ÇÔ¼ö, ¾øÀ½
     mtf::calculateNA,
-    mtf::calculateNA,     // Aggregation ì¢…ë£Œ í•¨ìˆ˜, ì—†ìŒ
-    qmc::calculateValue,  // VALUE ì—°ì‚° í•¨ìˆ˜
-    NULL,                 // ì—°ì‚°ì„ ìœ„í•œ ë¶€ê°€ ì •ë³´, ì—†ìŒ
+    mtf::calculateNA,     // Aggregation Á¾·á ÇÔ¼ö, ¾øÀ½
+    qmc::calculateValue,  // VALUE ¿¬»ê ÇÔ¼ö
+    NULL,                 // ¿¬»êÀ» À§ÇÑ ºÎ°¡ Á¤º¸, ¾øÀ½
     mtx::calculateNA,
-    mtk::estimateRangeNA, // Key Range í¬ê¸° ì¶”ì¶œ í•¨ìˆ˜, ì—†ìŒ
-    mtk::extractRangeNA   // Key Range ìƒì„± í•¨ìˆ˜, ì—†ìŒ
+    mtk::estimateRangeNA, // Key Range Å©±â ÃßÃâ ÇÔ¼ö, ¾øÀ½
+    mtk::extractRangeNA   // Key Range »ı¼º ÇÔ¼ö, ¾øÀ½
 };
 
 IDE_RC
@@ -70,11 +70,11 @@ qmc::calculateValue( mtcNode*     aNode,
  *
  * Description :
  *
- *    Valueì˜ ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
+ *    ValueÀÇ ¿¬»êÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
  *
- *    Stackì— columnì •ë³´ì™€ Value ì •ë³´ë¥¼ Settingí•œë‹¤.
+ *    Stack¿¡ columnÁ¤º¸¿Í Value Á¤º¸¸¦ SettingÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -103,7 +103,7 @@ qmc::setMtrNA( qcTemplate  * /* aTemplate */,
                qmdMtrNode  * /* aNode */,
                void        * /* aRow */ )
 {
-    // ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ë©´ ì•ˆë¨
+    // ÀÌ ÇÔ¼ö°¡ È£ÃâµÇ¸é ¾ÈµÊ
     IDE_DASSERT(0);
 
     return IDE_FAILURE;
@@ -117,14 +117,14 @@ qmc::setMtrByPointer( qcTemplate  * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    Pointerí˜• Columnì„ Materialized Rowì— ì €ì¥í•œë‹¤.
- *    ë‹¤ìŒê³¼ ê°™ì€ ìš©ë„ë¥¼ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
- *        - Memory Base Tableì˜ ì €ì¥
- *        - Memory Columnì˜ ì €ì¥
+ *    PointerÇü ColumnÀ» Materialized Row¿¡ ÀúÀåÇÑ´Ù.
+ *    ´ÙÀ½°ú °°Àº ¿ëµµ¸¦ À§ÇØ »ç¿ëµÈ´Ù.
+ *        - Memory Base TableÀÇ ÀúÀå
+ *        - Memory ColumnÀÇ ÀúÀå
  *
  * Implementation :
- *    Materialized Rowì—ì„œì˜ ì €ì¥ ìœ„ì¹˜ë¥¼ êµ¬í•˜ê³ ,
- *    Source Tupleì˜ row pointerë¥¼ ê·¸ ìœ„ì¹˜ì— ì €ì¥í•œë‹¤.
+ *    Materialized Row¿¡¼­ÀÇ ÀúÀå À§Ä¡¸¦ ±¸ÇÏ°í,
+ *    Source TupleÀÇ row pointer¸¦ ±× À§Ä¡¿¡ ÀúÀåÇÑ´Ù.
  ***********************************************************************/
 
     SChar ** sPos = (SChar**)((SChar*)aRow + aNode->dstColumn->column.offset);
@@ -142,14 +142,14 @@ qmc::setMtrByPointerAndTupleID( qcTemplate  * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    Pointerí˜• Columnì„ Materialized Rowì— ì €ì¥í•œë‹¤.
- *    ë‹¤ìŒê³¼ ê°™ì€ ìš©ë„ë¥¼ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
- *        - Memory Partitioned Tableì˜ ì €ì¥
- *        - Memory Columnì˜ ì €ì¥
+ *    PointerÇü ColumnÀ» Materialized Row¿¡ ÀúÀåÇÑ´Ù.
+ *    ´ÙÀ½°ú °°Àº ¿ëµµ¸¦ À§ÇØ »ç¿ëµÈ´Ù.
+ *        - Memory Partitioned TableÀÇ ÀúÀå
+ *        - Memory ColumnÀÇ ÀúÀå
  *
  * Implementation :
- *    Materialized Rowì—ì„œì˜ ì €ì¥ ìœ„ì¹˜ë¥¼ êµ¬í•˜ê³ ,
- *    Source Tupleì˜ row pointerë¥¼ ê·¸ ìœ„ì¹˜ì— ì €ì¥í•œë‹¤.
+ *    Materialized Row¿¡¼­ÀÇ ÀúÀå À§Ä¡¸¦ ±¸ÇÏ°í,
+ *    Source TupleÀÇ row pointer¸¦ ±× À§Ä¡¿¡ ÀúÀåÇÑ´Ù.
  ***********************************************************************/
 
     qmcMemPartRowInfo   sRowInfo;
@@ -158,7 +158,7 @@ qmc::setMtrByPointerAndTupleID( qcTemplate  * /* aTemplate */,
     sRowInfo.partitionTupleID = aNode->srcTuple->partitionTupleID;
 
     // BUG-38309
-    // ë©”ëª¨ë¦¬ íŒŒí‹°ì…˜ì¼ë•Œë„ rid ë¥¼ ì €ì¥í•´ì•¼ í•œë‹¤.
+    // ¸Ş¸ğ¸® ÆÄÆ¼¼ÇÀÏ¶§µµ rid ¸¦ ÀúÀåÇØ¾ß ÇÑ´Ù.
     sRowInfo.grid             = aNode->srcTuple->rid;
     sRowInfo.position         = (SChar*) aNode->srcTuple->row;
 
@@ -176,13 +176,13 @@ qmc::setMtrByRID( qcTemplate  * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    RIDë¥¼ Materialized Rowì— ì €ì¥í•œë‹¤.
- *    ë‹¤ìŒê³¼ ê°™ì€ ìš©ë„ë¥¼ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
- *        - Disk Base Tableì˜ ì €ì¥
+ *    RID¸¦ Materialized Row¿¡ ÀúÀåÇÑ´Ù.
+ *    ´ÙÀ½°ú °°Àº ¿ëµµ¸¦ À§ÇØ »ç¿ëµÈ´Ù.
+ *        - Disk Base TableÀÇ ÀúÀå
  *
  * Implementation :
- *    Materialized Rowì—ì„œì˜ ì €ì¥ ìœ„ì¹˜ë¥¼ êµ¬í•˜ê³ ,
- *    Source Tupleì˜ RIDë¥¼ ê·¸ ìœ„ì¹˜ì— ë³µì‚¬í•œë‹¤.
+ *    Materialized Row¿¡¼­ÀÇ ÀúÀå À§Ä¡¸¦ ±¸ÇÏ°í,
+ *    Source TupleÀÇ RID¸¦ ±× À§Ä¡¿¡ º¹»çÇÑ´Ù.
  ***********************************************************************/
 
     SChar * sPos = (SChar*)((SChar*)aRow + aNode->dstColumn->column.offset);
@@ -200,13 +200,13 @@ qmc::setMtrByRIDAndTupleID( qcTemplate  * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    RID, tupleIDë¥¼ Materialized Rowì— ì €ì¥í•œë‹¤.
- *    ë‹¤ìŒê³¼ ê°™ì€ ìš©ë„ë¥¼ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
- *        - Disk Partitioned Tableì˜ ì €ì¥
+ *    RID, tupleID¸¦ Materialized Row¿¡ ÀúÀåÇÑ´Ù.
+ *    ´ÙÀ½°ú °°Àº ¿ëµµ¸¦ À§ÇØ »ç¿ëµÈ´Ù.
+ *        - Disk Partitioned TableÀÇ ÀúÀå
  *
  * Implementation :
- *    Materialized Rowì—ì„œì˜ ì €ì¥ ìœ„ì¹˜ë¥¼ êµ¬í•˜ê³ ,
- *    Source Tupleì˜ RID, partitionTupleIDë¥¼ ê·¸ ìœ„ì¹˜ì— ë³µì‚¬í•œë‹¤.
+ *    Materialized Row¿¡¼­ÀÇ ÀúÀå À§Ä¡¸¦ ±¸ÇÏ°í,
+ *    Source TupleÀÇ RID, partitionTupleID¸¦ ±× À§Ä¡¿¡ º¹»çÇÑ´Ù.
  ***********************************************************************/
 
     qmnCursorInfo       * sCursorInfo;
@@ -252,23 +252,23 @@ qmc::setMtrByValue( qcTemplate  * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    ì—°ì‚°ìœ¼ë¡œ êµ¬ì„±ëœ Columnì„ Materialized Rowì— ì €ì¥í•œë‹¤.
- *    ë‹¤ìŒê³¼ ê°™ì€ ìš©ë„ë¥¼ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
- *        - i1 + 1 ì˜ [+]ì™€ ê°™ì´ Expressionìœ¼ë¡œ êµ¬ì„±ëœ Column
+ *    ¿¬»êÀ¸·Î ±¸¼ºµÈ ColumnÀ» Materialized Row¿¡ ÀúÀåÇÑ´Ù.
+ *    ´ÙÀ½°ú °°Àº ¿ëµµ¸¦ À§ÇØ »ç¿ëµÈ´Ù.
+ *        - i1 + 1 ÀÇ [+]¿Í °°ÀÌ ExpressionÀ¸·Î ±¸¼ºµÈ Column
  *
  * Implementation :
- *    Source nodeë£° ìˆ˜í–‰í•¨ìœ¼ë¡œì„œ Materialized Rowë¡œì˜ êµ¬ì„±ì´
- *    ìì—°ìŠ¤ëŸ½ê²Œ ì´ë£¨ì–´ì§„ë‹¤.
- *    ì´ëŠ” Source Columnì˜ ìˆ˜í–‰ ì •ë³´ë¥¼ ê·¸ëŒ€ë¡œ Destinationì— êµ¬ì„±í•¨ìœ¼ë¡œì„œ
- *    ê°€ëŠ¥í•˜ë©°, Sourceì˜ ìˆ˜í–‰ í›„ Destinationìœ¼ë¡œ ë³µì‚¬í•˜ëŠ” ë¶€í•˜ë¥¼ ì—†ì• ê¸°
- *    ìœ„í•¨ì´ë‹¤.
+ *    Source node·ê ¼öÇàÇÔÀ¸·Î¼­ Materialized Row·ÎÀÇ ±¸¼ºÀÌ
+ *    ÀÚ¿¬½º·´°Ô ÀÌ·ç¾îÁø´Ù.
+ *    ÀÌ´Â Source ColumnÀÇ ¼öÇà Á¤º¸¸¦ ±×´ë·Î Destination¿¡ ±¸¼ºÇÔÀ¸·Î¼­
+ *    °¡´ÉÇÏ¸ç, SourceÀÇ ¼öÇà ÈÄ DestinationÀ¸·Î º¹»çÇÏ´Â ºÎÇÏ¸¦ ¾ø¾Ö±â
+ *    À§ÇÔÀÌ´Ù.
  ***********************************************************************/
 
 #define IDE_FN ""
     IDE_MSGLOG_FUNC(IDE_MSGLOG_BODY(""));
 
-    // PROJ-2179 dstNode ëŒ€ì‹  srcNodeë¥¼ ìˆ˜ì •í•œë‹¤.
-    // ìµœì¢… ê²°ê³¼ëŠ” ì—¬ì „íˆ dstColumnì— ì¶œë ¥ëœë‹¤.
+    // PROJ-2179 dstNode ´ë½Å srcNode¸¦ ¼öÁ¤ÇÑ´Ù.
+    // ÃÖÁ¾ °á°ú´Â ¿©ÀüÈ÷ dstColumn¿¡ Ãâ·ÂµÈ´Ù.
     return qtc::calculate( aNode->srcNode, aTemplate );
 
 #undef IDE_FN
@@ -282,12 +282,12 @@ qmc::setMtrByCopy( qcTemplate  * /*aTemplate*/,
 /***********************************************************************
  *
  * Description :
- *    Source Columnì„ Materialized Rowì— ë³µì‚¬í•œë‹¤.
- *    í•´ë‹¹ Dataë¥¼ ì§ì ‘ ì €ì¥í•˜ê³  ìˆì–´ì•¼ ì²˜ë¦¬ê°€ ê°€ëŠ¥í•œ Columnì— ëŒ€í•˜ì—¬
- *    Materialized Rowë¥¼ êµ¬ì„±í•  ë•Œ ì´ë¥¼ ì‚¬ìš©í•œë‹¤.
+ *    Source ColumnÀ» Materialized Row¿¡ º¹»çÇÑ´Ù.
+ *    ÇØ´ç Data¸¦ Á÷Á¢ ÀúÀåÇÏ°í ÀÖ¾î¾ß Ã³¸®°¡ °¡´ÉÇÑ Column¿¡ ´ëÇÏ¿©
+ *    Materialized Row¸¦ ±¸¼ºÇÒ ¶§ ÀÌ¸¦ »ç¿ëÇÑ´Ù.
  *
  * Implementation :
- *    Source Columnì˜ Dataë¥¼ Destination Columnì˜ ìœ„ì¹˜ì— ë³µì‚¬í•œë‹¤.
+ *    Source ColumnÀÇ Data¸¦ Destination ColumnÀÇ À§Ä¡¿¡ º¹»çÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -322,15 +322,15 @@ qmc::setMtrByConvert( qcTemplate  * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Source Columnì˜ ìˆ˜í–‰ ê²°ê³¼ë¥¼ Materialized Rowì— ë³µì‚¬í•œë‹¤.
- *    ë‹¤ìŒê³¼ ê°™ì€ ìš©ë„ë¥¼ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
- *        - Indirect nodeì¸ ê²½ìš°
- *    Source Nodeì˜ ìˆ˜í–‰ ê²°ê³¼ì¸ Stackì„ ì°¸ì¡°í•˜ì—¬ ê·¸ ê²°ê³¼ë¥¼ ë³µì‚¬í•´ì•¼
- *    í•˜ëŠ” ê²½ìš°ì— ì‚¬ìš©í•œë‹¤.
+ *    Source ColumnÀÇ ¼öÇà °á°ú¸¦ Materialized Row¿¡ º¹»çÇÑ´Ù.
+ *    ´ÙÀ½°ú °°Àº ¿ëµµ¸¦ À§ÇØ »ç¿ëµÈ´Ù.
+ *        - Indirect nodeÀÎ °æ¿ì
+ *    Source NodeÀÇ ¼öÇà °á°úÀÎ StackÀ» ÂüÁ¶ÇÏ¿© ±× °á°ú¸¦ º¹»çÇØ¾ß
+ *    ÇÏ´Â °æ¿ì¿¡ »ç¿ëÇÑ´Ù.
  *
  * Implementation :
- *    Source Columnì„ ìˆ˜í–‰í•˜ê³ ,
- *    Stack ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬, Destination Columnì— ë³µì‚¬í•œë‹¤.
+ *    Source ColumnÀ» ¼öÇàÇÏ°í,
+ *    Stack Á¤º¸¸¦ ÀÌ¿ëÇÏ¿©, Destination Column¿¡ º¹»çÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -360,7 +360,7 @@ qmc::setMtrByConvert( qcTemplate  * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Tuple IDë¡œ ì €ì¥ ë§¤ì²´ë¥¼ íŒë‹¨í•˜ì—¬, Source Column ë˜ëŠ” Source Column ìˆ˜í–‰ ê²°ê³¼ë¥¼ Materialized Rowì— ë³µì‚¬í•œë‹¤.
+ *    Tuple ID·Î ÀúÀå ¸ÅÃ¼¸¦ ÆÇ´ÜÇÏ¿©, Source Column ¶Ç´Â Source Column ¼öÇà °á°ú¸¦ Materialized Row¿¡ º¹»çÇÑ´Ù.
  *
  * Implementation :
  ***********************************************************************/
@@ -402,7 +402,7 @@ IDE_RC qmc::setMtrByCopyOrConvert( qcTemplate  * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Tuple IDë¡œ ì €ì¥ ë§¤ì²´ë¥¼ íŒë‹¨í•˜ì—¬, Pointer ë˜ëŠ” RIDë¥¼ Materialized Rowì— ì €ì¥í•œë‹¤.
+ *    Tuple ID·Î ÀúÀå ¸ÅÃ¼¸¦ ÆÇ´ÜÇÏ¿©, Pointer ¶Ç´Â RID¸¦ Materialized Row¿¡ ÀúÀåÇÑ´Ù.
  *
  * Implementation :
  ***********************************************************************/
@@ -421,7 +421,7 @@ IDE_RC qmc::setMtrByPointerOrRIDAndTupleID( qcTemplate  * aTemplate,
                                                   aRow )
                   != IDE_SUCCESS );
 
-        // byte alignì´ì–´ì„œ ë³µì‚¬í•´ì•¼ í•œë‹¤.
+        // byte alignÀÌ¾î¼­ º¹»çÇØ¾ß ÇÑ´Ù.
         idlOS::memcpy( &sRowInfo, sByte->value, ID_SIZEOF(qmcMemPartRowInfo) );
 
         sRowInfo.isDisk = ID_FALSE;
@@ -436,7 +436,7 @@ IDE_RC qmc::setMtrByPointerOrRIDAndTupleID( qcTemplate  * aTemplate,
                                               aRow )
                   != IDE_SUCCESS );
 
-        // byte alignì´ì–´ì„œ ë³µì‚¬í•´ì•¼ í•œë‹¤.
+        // byte alignÀÌ¾î¼­ º¹»çÇØ¾ß ÇÑ´Ù.
         idlOS::memcpy( &sRowInfo, sByte->value, ID_SIZEOF(qmcDiskPartRowInfo) );
 
         sRowInfo.isDisk = ID_TRUE;
@@ -460,8 +460,8 @@ qmc::setMtrByNull( qcTemplate  * /*aTemplate*/,
 /***********************************************************************
  *
  * Description : 
- *    ìƒìœ„ì—ì„œ ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” Materialized Nodeë„ ê²½ìš°ì— ë”°ë¼
- *    ì—°ì‚°ë  ìˆ˜ ìˆì–´ nullë¡œ ì´ˆê¸°í™”í•œë‹¤.
+ *    »óÀ§¿¡¼­ »ç¿ëµÇÁö ¾Ê´Â Materialized Nodeµµ °æ¿ì¿¡ µû¶ó
+ *    ¿¬»êµÉ ¼ö ÀÖ¾î null·Î ÃÊ±âÈ­ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -475,7 +475,7 @@ qmc::setMtrByNull( qcTemplate  * /*aTemplate*/,
         MTD_OFFSET_USE,
         aNode->dstColumn->module->staticNull );
 
-    // BUG-41681 nullë¡œ ì´ˆê¸°í™”í•œë‹¤.
+    // BUG-41681 null·Î ÃÊ±âÈ­ÇÑ´Ù.
     aNode->dstColumn->module->null( aNode->dstColumn, sValue );
 
     return IDE_SUCCESS;
@@ -486,7 +486,7 @@ qmc::setTupleNA( qcTemplate  * /* aTemplate */,
                  qmdMtrNode  * /* aNode */,
                  void        * /* aRow */ )
 {
-    // ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ë©´ ì•ˆë¨.
+    // ÀÌ ÇÔ¼ö°¡ È£ÃâµÇ¸é ¾ÈµÊ.
     IDE_DASSERT(0);
 
     return IDE_SUCCESS;
@@ -500,14 +500,14 @@ qmc::setTupleByPointer( qcTemplate  * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    Materialized Rowì— ì €ì¥ëœ pointerí˜• columnì„ Tuple Setì— ë³µì›ì‹œí‚¨ë‹¤.
- *    ë‹¤ìŒê³¼ ê°™ì€ ìš©ë„ë¥¼ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
- *        - Temp Tableì— ì €ì¥ëœ Memory Base Tableì„ ë³µì›
- *        - Memory Temp Tableì— ì €ì¥ë„ë‹ˆ Memory Columnì„ ë³µì›
+ *    Materialized Row¿¡ ÀúÀåµÈ pointerÇü columnÀ» Tuple Set¿¡ º¹¿ø½ÃÅ²´Ù.
+ *    ´ÙÀ½°ú °°Àº ¿ëµµ¸¦ À§ÇØ »ç¿ëµÈ´Ù.
+ *        - Temp Table¿¡ ÀúÀåµÈ Memory Base TableÀ» º¹¿ø
+ *        - Memory Temp Table¿¡ ÀúÀåµµ´Ï Memory ColumnÀ» º¹¿ø
  *
  * Implementation :
- *    Materialized Rowì—ì„œ ì €ì¥ëœ ìœ„ì¹˜ë¥¼ êµ¬í•˜ê³ ,
- *    ê·¸ ìœ„ì¹˜ì— ì €ì¥ëœ pointerë¥¼ ì›ë˜ Tupleì— ë³µì›ì‹œí‚¨ë‹¤.
+ *    Materialized Row¿¡¼­ ÀúÀåµÈ À§Ä¡¸¦ ±¸ÇÏ°í,
+ *    ±× À§Ä¡¿¡ ÀúÀåµÈ pointer¸¦ ¿ø·¡ Tuple¿¡ º¹¿ø½ÃÅ²´Ù.
  ***********************************************************************/
 
     SChar     ** sPos = (SChar**) ((SChar*)aRow + aNode->dstColumn->column.offset);
@@ -534,7 +534,7 @@ qmc::setTupleByPointer( qcTemplate  * /* aTemplate */,
 
         aNode->srcColumn = sColumn;
 
-        // ê°’ì´ ì•„ë‹Œ Pointerê°€ ì €ì¥ë˜ëŠ” ê²½ìš°
+        // °ªÀÌ ¾Æ´Ñ Pointer°¡ ÀúÀåµÇ´Â °æ¿ì
         aNode->func.compareColumn = sColumn;
     }
     else
@@ -544,8 +544,8 @@ qmc::setTupleByPointer( qcTemplate  * /* aTemplate */,
     
     if ( ( aNode->flag & QMC_MTR_BASETABLE_MASK ) == QMC_MTR_BASETABLE_TRUE )
     {
-        // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
-        // baseTableì˜ ì›ë³µì‹œ TEMP_TYPEë¥¼ ê³ ë ¤í•´ì•¼ í•œë‹¤.
+        // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
+        // baseTableÀÇ ¿øº¹½Ã TEMP_TYPE¸¦ °í·ÁÇØ¾ß ÇÑ´Ù.
         sColumn = aNode->srcTuple->columns;
 
         for ( i = 0; i < aNode->srcTuple->columnCount; i++, sColumn++ )
@@ -594,8 +594,8 @@ qmc::setTupleByPointer( qcTemplate  * /* aTemplate */,
     }
     else
     {
-        // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
-        // srcê°€ TEMP_TYPEì¸ ê²½ìš° ì›ë³µì‹œ ê³ ë ¤í•´ì•¼ í•œë‹¤.
+        // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
+        // src°¡ TEMP_TYPEÀÎ °æ¿ì ¿øº¹½Ã °í·ÁÇØ¾ß ÇÑ´Ù.
         if ( ( aNode->srcColumn->column.flag & SMI_COLUMN_TYPE_MASK )
              == SMI_COLUMN_TYPE_TEMP_1B )
         {
@@ -669,14 +669,14 @@ qmc::setTupleByPointerAndTupleID( qcTemplate  * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Materialized Rowì— ì €ì¥ëœ pointerí˜• columnì„ Tuple Setì— ë³µì›ì‹œí‚¨ë‹¤.
- *    ë‹¤ìŒê³¼ ê°™ì€ ìš©ë„ë¥¼ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
- *        - Temp Tableì— ì €ì¥ëœ Memory Base Tableì„ ë³µì›
- *        - Memory Temp Tableì— ì €ì¥ë„ë‹ˆ Memory Columnì„ ë³µì›
+ *    Materialized Row¿¡ ÀúÀåµÈ pointerÇü columnÀ» Tuple Set¿¡ º¹¿ø½ÃÅ²´Ù.
+ *    ´ÙÀ½°ú °°Àº ¿ëµµ¸¦ À§ÇØ »ç¿ëµÈ´Ù.
+ *        - Temp Table¿¡ ÀúÀåµÈ Memory Base TableÀ» º¹¿ø
+ *        - Memory Temp Table¿¡ ÀúÀåµµ´Ï Memory ColumnÀ» º¹¿ø
  *
  * Implementation :
- *    Materialized Rowì—ì„œ ì €ì¥ëœ ìœ„ì¹˜ë¥¼ êµ¬í•˜ê³ ,
- *    ê·¸ ìœ„ì¹˜ì— ì €ì¥ëœ pointerë¥¼ ì›ë˜ Tupleì— ë³µì›ì‹œí‚¨ë‹¤.
+ *    Materialized Row¿¡¼­ ÀúÀåµÈ À§Ä¡¸¦ ±¸ÇÏ°í,
+ *    ±× À§Ä¡¿¡ ÀúÀåµÈ pointer¸¦ ¿ø·¡ Tuple¿¡ º¹¿ø½ÃÅ²´Ù.
  ***********************************************************************/
 
     qmcMemPartRowInfo   sRowInfo;
@@ -689,7 +689,7 @@ qmc::setTupleByPointerAndTupleID( qcTemplate  * aTemplate,
     IDE_DASSERT( ( sByte->length == ID_SIZEOF(qmcMemPartRowInfo) ) ||
                  ( sByte->length == ID_SIZEOF(qmcPartRowInfo) ) );
 
-    // byte alignì´ì–´ì„œ ë³µì‚¬í•´ì•¼í•œë‹¤.
+    // byte alignÀÌ¾î¼­ º¹»çÇØ¾ßÇÑ´Ù.
     idlOS::memcpy( & sRowInfo, sByte->value, ID_SIZEOF(qmcMemPartRowInfo) );
 
     aNode->srcTuple->partitionTupleID = sRowInfo.partitionTupleID;
@@ -701,17 +701,17 @@ qmc::setTupleByPointerAndTupleID( qcTemplate  * aTemplate,
     aNode->srcTuple->columns =
         aTemplate->tmplate.rows[sRowInfo.partitionTupleID].columns;
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     aNode->srcTuple->rowOffset   = aTemplate->tmplate.rows[sRowInfo.partitionTupleID].rowOffset;
     aNode->srcTuple->rowMaximum  = aTemplate->tmplate.rows[sRowInfo.partitionTupleID].rowMaximum;
     aNode->srcTuple->tableHandle = aTemplate->tmplate.rows[sRowInfo.partitionTupleID].tableHandle;
 
     // BUG-38309
-    // ë©”ëª¨ë¦¬ íŒŒí‹°ì…˜ì¼ë•Œë„ rid ë¥¼ ì €ì¥í•´ì•¼ í•œë‹¤.
+    // ¸Ş¸ğ¸® ÆÄÆ¼¼ÇÀÏ¶§µµ rid ¸¦ ÀúÀåÇØ¾ß ÇÑ´Ù.
     aNode->srcTuple->rid = sRowInfo.grid;
 
     /* PROJ-2334 PMT memory variable column */
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     if ( ( sByte->length == ID_SIZEOF(qmcPartRowInfo) )
          ||
          ( ( ( aNode->srcTuple->lflag & MTC_TUPLE_PARTITIONED_TABLE_MASK )
@@ -730,7 +730,7 @@ qmc::setTupleByPointerAndTupleID( qcTemplate  * aTemplate,
 
         aNode->srcColumn = sColumn;
 
-        // ê°’ì´ ì•„ë‹Œ Pointerê°€ ì €ì¥ë˜ëŠ” ê²½ìš°
+        // °ªÀÌ ¾Æ´Ñ Pointer°¡ ÀúÀåµÇ´Â °æ¿ì
         aNode->func.compareColumn = sColumn;
     }
     else
@@ -740,8 +740,8 @@ qmc::setTupleByPointerAndTupleID( qcTemplate  * aTemplate,
     
     if ( ( aNode->flag & QMC_MTR_BASETABLE_MASK ) == QMC_MTR_BASETABLE_TRUE )
     {
-        // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
-        // baseTableì˜ ì›ë³µì‹œ TEMP_TYPEë¥¼ ê³ ë ¤í•´ì•¼ í•œë‹¤.
+        // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
+        // baseTableÀÇ ¿øº¹½Ã TEMP_TYPE¸¦ °í·ÁÇØ¾ß ÇÑ´Ù.
         sColumn = aNode->srcTuple->columns;
 
         for ( i = 0; i < aNode->srcTuple->columnCount; i++, sColumn++ )
@@ -790,8 +790,8 @@ qmc::setTupleByPointerAndTupleID( qcTemplate  * aTemplate,
     }
     else
     {
-        // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
-        // srcê°€ TEMP_TYPEì¸ ê²½ìš° ì›ë³µì‹œ ê³ ë ¤í•´ì•¼ í•œë‹¤.
+        // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
+        // src°¡ TEMP_TYPEÀÎ °æ¿ì ¿øº¹½Ã °í·ÁÇØ¾ß ÇÑ´Ù.
         if ( ( aNode->srcColumn->column.flag & SMI_COLUMN_TYPE_MASK )
              == SMI_COLUMN_TYPE_TEMP_1B )
         {
@@ -845,13 +845,13 @@ qmc::setTupleByRID( qcTemplate  * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Materialized Rowì— ì €ì¥ëœ RID columnì„ Tuple Setì— ë³µì›ì‹œí‚¨ë‹¤.
- *    ë‹¤ìŒê³¼ ê°™ì€ ìš©ë„ë¥¼ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
- *        - Temp Tableì— ì €ì¥ëœ Disk Base Tableì„ ë³µì›
+ *    Materialized Row¿¡ ÀúÀåµÈ RID columnÀ» Tuple Set¿¡ º¹¿ø½ÃÅ²´Ù.
+ *    ´ÙÀ½°ú °°Àº ¿ëµµ¸¦ À§ÇØ »ç¿ëµÈ´Ù.
+ *        - Temp Table¿¡ ÀúÀåµÈ Disk Base TableÀ» º¹¿ø
  *
  * Implementation :
- *    Materialized Rowì—ì„œ ì €ì¥ëœ ìœ„ì¹˜ë¥¼ êµ¬í•˜ê³ ,
- *    RIDì™€ RIDì— í•´ë‹¹í•˜ëŠ” Recordë¥¼ ë³µì›ì‹œí‚¨ë‹¤.
+ *    Materialized Row¿¡¼­ ÀúÀåµÈ À§Ä¡¸¦ ±¸ÇÏ°í,
+ *    RID¿Í RID¿¡ ÇØ´çÇÏ´Â Record¸¦ º¹¿ø½ÃÅ²´Ù.
  ***********************************************************************/
 
     smiStatement * sStmt;
@@ -863,18 +863,18 @@ qmc::setTupleByRID( qcTemplate  * aTemplate,
     scGRID * sRID = (scGRID*) ((SChar*)aRow + aNode->dstColumn->column.offset);
 
     //--------------------------------
-    // RID ë³µì›
+    // RID º¹¿ø
     //--------------------------------
 
     idlOS::memcpy( & aNode->srcTuple->rid, sRID, ID_SIZEOF(scGRID) );
 
     //--------------------------------
-    // RIDë¡œë¶€í„° Record ë³µì›
+    // RID·ÎºÎÅÍ Record º¹¿ø
     //--------------------------------
 
     // BUG-24330
-    // outer-join ë“±ì—ì„œ ìƒì„±ëœ null ridì¸ ê²½ìš° ì§ì ‘ null rowë¥¼ ìƒì„±í•œë‹¤.
-    if ( SMI_GRID_IS_VIRTUAL_NULL( aNode->srcTuple->rid ) == ID_TRUE )
+    // outer-join µî¿¡¼­ »ı¼ºµÈ null ridÀÎ °æ¿ì Á÷Á¢ null row¸¦ »ı¼ºÇÑ´Ù.
+    if ( SMI_GRID_IS_VIRTUAL_NULL( aNode->srcTuple->rid ) )
     {
         for ( i = 0, sColumn = aNode->srcTuple->columns;
               i < aNode->srcTuple->columnCount;
@@ -906,18 +906,18 @@ qmc::setTupleByRID( qcTemplate  * aTemplate,
         sStmt = QC_SMI_STMT( aTemplate->stmt );
 
         // PROJ-1705
-        // ridë¡œ ë ˆì½”ë“œë¥¼ íŒ¨ì¹˜í•˜ëŠ” ê²½ìš°,
-        // disk tableê³¼ disk temp tableì„ êµ¬ë¶„í•˜ê¸° ìœ„í•œ í”Œë˜ê·¸ì •ë³´.
-        // PROJ-1705 í”„ë¡œì íŠ¸ëŠ” ë””ìŠ¤í¬í…Œì´ë¸”ì— ëŒ€í•´ì„œë§Œ ì ìš©ë˜ê¸°ë•Œë¬¸ì—
-        // ë””ìŠ¤í¬í…Œì´ë¸”ê³¼ ë””ìŠ¤í¬í…œí”„í…Œì´ë¸”ì˜ ridê°€ ë‹¤ë¥´ë‹¤.
-        // ì´ ridë¥¼ qpëŠ” GRIDë¼ëŠ” êµ¬ì¡°ì²´ë¡œ
-        // ë””ìŠ¤í¬í…Œì´ë¸”ê³¼ ë””ìŠ¤í¬í…œí”„í…Œì´ë¸” êµ¬ë¶„ì—†ì´ ì‚¬ìš©í•˜ê¸°ë¡œ í•˜ê³ ,
-        // ridë¡œ ë ˆì½”ë“œíŒ¨ì¹˜ì‹œ ( smiFetchRowFromGRID() )
-        // smì— ë””ìŠ¤í¬í…Œì´ë¸”ê³¼ ë””ìŠ¤í¬í…œí”„í…Œì´ë¸”ì— ë§ëŠ” ridë¡œ
-        // êµ¬ë¶„í•´ì„œ ë‚´ë ¤ì£¼ê¸°ë¡œ í•¨.
+        // rid·Î ·¹ÄÚµå¸¦ ÆĞÄ¡ÇÏ´Â °æ¿ì,
+        // disk table°ú disk temp tableÀ» ±¸ºĞÇÏ±â À§ÇÑ ÇÃ·¡±×Á¤º¸.
+        // PROJ-1705 ÇÁ·ÎÁ§Æ®´Â µğ½ºÅ©Å×ÀÌºí¿¡ ´ëÇØ¼­¸¸ Àû¿ëµÇ±â¶§¹®¿¡
+        // µğ½ºÅ©Å×ÀÌºí°ú µğ½ºÅ©ÅÛÇÁÅ×ÀÌºíÀÇ rid°¡ ´Ù¸£´Ù.
+        // ÀÌ rid¸¦ qp´Â GRID¶ó´Â ±¸Á¶Ã¼·Î
+        // µğ½ºÅ©Å×ÀÌºí°ú µğ½ºÅ©ÅÛÇÁÅ×ÀÌºí ±¸ºĞ¾øÀÌ »ç¿ëÇÏ±â·Î ÇÏ°í,
+        // rid·Î ·¹ÄÚµåÆĞÄ¡½Ã ( smiFetchRowFromGRID() )
+        // sm¿¡ µğ½ºÅ©Å×ÀÌºí°ú µğ½ºÅ©ÅÛÇÁÅ×ÀÌºí¿¡ ¸Â´Â rid·Î
+        // ±¸ºĞÇØ¼­ ³»·ÁÁÖ±â·Î ÇÔ.
 
         // BUG-37277
-        IDE_TEST_RAISE( SC_GRID_IS_NULL( aNode->srcTuple->rid ) == ID_TRUE,
+        IDE_TEST_RAISE( SC_GRID_IS_NULL( aNode->srcTuple->rid ),
                         ERR_NULL_GRID );
 
         if( ( aNode->flag & QMC_MTR_BASETABLE_TYPE_MASK )
@@ -942,7 +942,7 @@ qmc::setTupleByRID( qcTemplate  * aTemplate,
 
         IDE_TEST( sRc != IDE_SUCCESS );
 
-        // ì›í•˜ëŠ” Dataê°€ ì—†ìœ¼ë©´ ì•ˆë¨
+        // ¿øÇÏ´Â Data°¡ ¾øÀ¸¸é ¾ÈµÊ
         IDE_DASSERT( aNode->srcTuple->row != NULL );
     }
 
@@ -967,13 +967,13 @@ qmc::setTupleByRIDAndTupleID( qcTemplate  * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Materialized Rowì— ì €ì¥ëœ RID columnì„ Tuple Setì— ë³µì›ì‹œí‚¨ë‹¤.
- *    ë‹¤ìŒê³¼ ê°™ì€ ìš©ë„ë¥¼ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
- *        - Temp Tableì— ì €ì¥ëœ Disk Base Tableì„ ë³µì›
+ *    Materialized Row¿¡ ÀúÀåµÈ RID columnÀ» Tuple Set¿¡ º¹¿ø½ÃÅ²´Ù.
+ *    ´ÙÀ½°ú °°Àº ¿ëµµ¸¦ À§ÇØ »ç¿ëµÈ´Ù.
+ *        - Temp Table¿¡ ÀúÀåµÈ Disk Base TableÀ» º¹¿ø
  *
  * Implementation :
- *    Materialized Rowì—ì„œ ì €ì¥ëœ ìœ„ì¹˜ë¥¼ êµ¬í•˜ê³ ,
- *    RIDì™€ RIDì— í•´ë‹¹í•˜ëŠ” Recordë¥¼ ë³µì›ì‹œí‚¨ë‹¤.
+ *    Materialized Row¿¡¼­ ÀúÀåµÈ À§Ä¡¸¦ ±¸ÇÏ°í,
+ *    RID¿Í RID¿¡ ÇØ´çÇÏ´Â Record¸¦ º¹¿ø½ÃÅ²´Ù.
  ***********************************************************************/
 
     smiStatement * sStmt;
@@ -987,17 +987,17 @@ qmc::setTupleByRIDAndTupleID( qcTemplate  * aTemplate,
     qmnCursorInfo      * sCursorInfo = (qmnCursorInfo *) aNode->srcTuple->cursorInfo;
 
     //--------------------------------
-    // RID ë³µì›
+    // RID º¹¿ø
     //--------------------------------
 
     IDE_DASSERT( ( sByte->length == ID_SIZEOF(qmcDiskPartRowInfo) ) ||
                  ( sByte->length == ID_SIZEOF(qmcPartRowInfo) ) );
 
-    // byte alignì´ì–´ì„œ ë³µì‚¬í•´ì•¼í•œë‹¤.
+    // byte alignÀÌ¾î¼­ º¹»çÇØ¾ßÇÑ´Ù.
     idlOS::memcpy( & sRowInfo, sByte->value, ID_SIZEOF(qmcDiskPartRowInfo) );
 
-    // BUG-37507 partitionTupleID ê°€ ID_USHORT_MAX ì¼ë•ŒëŠ” ì™¸ë¶€ì°¸ì¡°ì¼ë•Œì´ë‹¤.
-    // ë¶ˆí•„ìš”í•œ mtr node ì´ë‹¤.
+    // BUG-37507 partitionTupleID °¡ ID_USHORT_MAX ÀÏ¶§´Â ¿ÜºÎÂüÁ¶ÀÏ¶§ÀÌ´Ù.
+    // ºÒÇÊ¿äÇÑ mtr node ÀÌ´Ù.
     IDE_TEST_CONT( sRowInfo.partitionTupleID == ID_USHORT_MAX, skip );
 
     sPartTuple = & aTemplate->tmplate.rows[sRowInfo.partitionTupleID];
@@ -1015,12 +1015,12 @@ qmc::setTupleByRIDAndTupleID( qcTemplate  * aTemplate,
 
     aNode->srcTuple->columns = sPartTuple->columns;
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     aNode->srcTuple->rowOffset   = sPartTuple->rowOffset;
     aNode->srcTuple->rowMaximum  = sPartTuple->rowMaximum;
     aNode->srcTuple->tableHandle = sPartTuple->tableHandle;
 
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     if ( sByte->length == ID_SIZEOF(qmcPartRowInfo) )
     {
         sColumn = &aNode->srcTuple->columns[aNode->srcNode->node.column];
@@ -1029,7 +1029,7 @@ qmc::setTupleByRIDAndTupleID( qcTemplate  * aTemplate,
 
         aNode->srcColumn = sColumn;
 
-        // ê°’ì´ ì €ì¥ë˜ì§€ ì•ŠëŠ” ê²½ìš°
+        // °ªÀÌ ÀúÀåµÇÁö ¾Ê´Â °æ¿ì
         aNode->func.compareColumn = sColumn;
     }
     else
@@ -1038,14 +1038,14 @@ qmc::setTupleByRIDAndTupleID( qcTemplate  * aTemplate,
     }
 
     //--------------------------------
-    // RIDë¡œë¶€í„° Record ë³µì›
+    // RID·ÎºÎÅÍ Record º¹¿ø
     //--------------------------------
 
     // BUG-24330
-    // outer-join ë“±ì—ì„œ ìƒì„±ëœ null ridì¸ ê²½ìš° ì§ì ‘ null rowë¥¼ ìƒì„±í•œë‹¤.
-    if ( SMI_GRID_IS_VIRTUAL_NULL( aNode->srcTuple->rid ) == ID_TRUE )
+    // outer-join µî¿¡¼­ »ı¼ºµÈ null ridÀÎ °æ¿ì Á÷Á¢ null row¸¦ »ı¼ºÇÑ´Ù.
+    if ( SMI_GRID_IS_VIRTUAL_NULL( aNode->srcTuple->rid ) )
     {
-        // ì›í•˜ëŠ” Dataê°€ ì—†ìœ¼ë©´ ì•ˆë¨
+        // ¿øÇÏ´Â Data°¡ ¾øÀ¸¸é ¾ÈµÊ
         IDE_DASSERT( sPartTuple->row != NULL );
 
         for ( i = 0, sColumn = sPartTuple->columns;
@@ -1054,7 +1054,7 @@ qmc::setTupleByRIDAndTupleID( qcTemplate  * aTemplate,
         {
             // BUG-39238
             // Set NULL OID for compressed column.
-            // BUG-42417 Partitioned Tableì€ Compressed Columnì„ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // BUG-42417 Partitioned TableÀº Compressed ColumnÀ» Áö¿øÇÏÁö ¾Ê´Â´Ù.
 
             // NULL Padding
             sValueTemp = (void*) mtd::valueForModule(
@@ -1077,15 +1077,15 @@ qmc::setTupleByRIDAndTupleID( qcTemplate  * aTemplate,
 
         //-------------------------------------------------
         // PROJ-1705
-        // QMC_MTR_TYPE_DISK_TABLE ì¸ ê²½ìš°
-        // ridë¡œ ë ˆì½”ë“œ íŒ¨ì¹˜ì‹œ smiColumnListê°€ í•„ìš”í•¨.
-        // ì—¬ê¸°ì„œ ìƒì„±ëœ smiColumnListëŠ” smiFetchRowFromGRID()í•¨ìˆ˜ì˜ ì¸ìë¡œ ì“°ì„.
-        // (ë””ìŠ¤í¬í…œí”„í…Œì´ë¸”ì€ í•´ë‹¹ë˜ì§€ ì•ŠëŠ”ë‹¤.)
+        // QMC_MTR_TYPE_DISK_TABLE ÀÎ °æ¿ì
+        // rid·Î ·¹ÄÚµå ÆĞÄ¡½Ã smiColumnList°¡ ÇÊ¿äÇÔ.
+        // ¿©±â¼­ »ı¼ºµÈ smiColumnList´Â smiFetchRowFromGRID()ÇÔ¼öÀÇ ÀÎÀÚ·Î ¾²ÀÓ.
+        // (µğ½ºÅ©ÅÛÇÁÅ×ÀÌºíÀº ÇØ´çµÇÁö ¾Ê´Â´Ù.)
         //-------------------------------------------------
 
-        /* PROJ-2464 hybrid partitioned table ì§€ì›
-         *  Hybridì¸ ê²½ìš°ì—ëŠ” Partitionedì˜ Typeì´ Diskê°€ ì•„ë‹ ìˆ˜ ìˆë‹¤.
-         *  ë”°ë¼ì„œ, qmc::setMtrNode()ì—ì„œ í• ë‹¹í•œ fetchColumnListë¥¼ Diskì— ë§ê²Œ ì¡°ì •í•œë‹¤.
+        /* PROJ-2464 hybrid partitioned table Áö¿ø
+         *  HybridÀÎ °æ¿ì¿¡´Â PartitionedÀÇ TypeÀÌ Disk°¡ ¾Æ´Ò ¼ö ÀÖ´Ù.
+         *  µû¶ó¼­, qmc::setMtrNode()¿¡¼­ ÇÒ´çÇÑ fetchColumnList¸¦ Disk¿¡ ¸Â°Ô Á¶Á¤ÇÑ´Ù.
          */
         if ( aNode->fetchColumnList != NULL )
         {
@@ -1096,7 +1096,7 @@ qmc::setTupleByRIDAndTupleID( qcTemplate  * aTemplate,
                               aTemplate,
                               sRowInfo.partitionTupleID,
                               ID_FALSE,  // aIsNeedAllFetchColumn
-                              NULL,      // index ì •ë³´
+                              NULL,      // index Á¤º¸
                               ID_FALSE,  // aIsAllocSmiColumnList
                               & aNode->fetchColumnList )
                           != IDE_SUCCESS );
@@ -1112,7 +1112,7 @@ qmc::setTupleByRIDAndTupleID( qcTemplate  * aTemplate,
         }
 
         // BUG-37277
-        IDE_TEST_RAISE( SC_GRID_IS_NULL( aNode->srcTuple->rid ) == ID_TRUE,
+        IDE_TEST_RAISE( SC_GRID_IS_NULL( aNode->srcTuple->rid ),
                         ERR_NULL_GRID );
 
         IDE_TEST( smiFetchRowFromGRID( aTemplate->stmt->mStatistics,
@@ -1124,7 +1124,7 @@ qmc::setTupleByRIDAndTupleID( qcTemplate  * aTemplate,
                                        sPartTuple->row )
                   != IDE_SUCCESS );
 
-        // ì›í•˜ëŠ” Dataê°€ ì—†ìœ¼ë©´ ì•ˆë¨
+        // ¿øÇÏ´Â Data°¡ ¾øÀ¸¸é ¾ÈµÊ
         IDE_DASSERT( sPartTuple->row != NULL );
 
         sPartTuple->rid = aNode->srcTuple->rid;
@@ -1156,7 +1156,7 @@ qmc::setTupleByValue( qcTemplate  * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ì²˜ë¦¬ ì ˆì°¨ìƒ ì›ë³µì‹œí‚¤ì§€ ì•Šì•„ë„ ë˜ëŠ” Columnìœ¼ë¡œ ì•„ë¬´ ì¼ë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *    Ã³¸® ÀıÂ÷»ó ¿øº¹½ÃÅ°Áö ¾Ê¾Æµµ µÇ´Â ColumnÀ¸·Î ¾Æ¹« ÀÏµµ ÇÏÁö ¾Ê´Â´Ù.
  *
  * Implementation :
  *
@@ -1205,7 +1205,7 @@ qmc::setTupleByValue( qcTemplate  * /* aTemplate */,
         // Nothing to do.
     }
 
-    // BUG-39552 listì˜ value pointer ì¬ì¡°ì •
+    // BUG-39552 listÀÇ value pointer ÀçÁ¶Á¤
     if ( ( aNode->dstColumn->module == &mtdList ) &&
          ( aNode->dstColumn->precision > 0 ) &&
          ( aNode->dstColumn->scale > 0 ) )
@@ -1222,12 +1222,13 @@ qmc::setTupleByValue( qcTemplate  * /* aTemplate */,
         for ( i = 0; i < aNode->dstColumn->precision; i++, sStack++ )
         {
             sStack->value = (void*)sValue;
-            sValue += sStack->column->column.size;
+            /* BUG-48273 */
+            sValue += idlOS::align( sStack->column->column.size, sStack->column->module->align );
         }
         
-        IDE_DASSERT( (UChar*)aRow + aNode->dstColumn->column.offset +
-                     aNode->dstColumn->column.size
-                     == sValue );
+        //IDE_DASSERT( (UChar*)aRow + aNode->dstColumn->column.offset +
+        //             aNode->dstColumn->column.size
+        //             == sValue );
     }
     else
     {
@@ -1240,7 +1241,7 @@ qmc::setTupleByValue( qcTemplate  * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    Tuple IDë¡œ ì €ì¥ ë§¤ì²´ë¥¼ íŒë‹¨í•˜ì—¬, Materialized Rowì— ì €ì¥ëœ Pointer ë˜ëŠ” RIDë¥¼ Tuple Setì— ë³µì›í•œë‹¤.
+ *    Tuple ID·Î ÀúÀå ¸ÅÃ¼¸¦ ÆÇ´ÜÇÏ¿©, Materialized Row¿¡ ÀúÀåµÈ Pointer ¶Ç´Â RID¸¦ Tuple Set¿¡ º¹¿øÇÑ´Ù.
  *
  * Implementation :
  ***********************************************************************/
@@ -1253,7 +1254,7 @@ IDE_RC qmc::setTupleByPointerOrRIDAndTupleID( qcTemplate  * aTemplate,
 
     IDE_DASSERT( sByte->length == ID_SIZEOF(qmcPartRowInfo) );
 
-    // byte alignì´ì–´ì„œ ë³µì‚¬í•´ì•¼ í•œë‹¤.
+    // byte alignÀÌ¾î¼­ º¹»çÇØ¾ß ÇÑ´Ù.
     idlOS::memcpy( &sRowInfo, sByte->value, ID_SIZEOF(qmcPartRowInfo) );
 
     if ( sRowInfo.isDisk != ID_TRUE )
@@ -1286,8 +1287,8 @@ qmc::setTupleByNull( qcTemplate  * /* aTemplate */,
 /***********************************************************************
  *
  * Description :
- *    ìƒìœ„ì—ì„œ ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” Materialized Nodeì— ëŒ€í•´
- *    ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *    »óÀ§¿¡¼­ »ç¿ëµÇÁö ¾Ê´Â Materialized Node¿¡ ´ëÇØ
+ *    ¾Æ¹«°Íµµ ÇÏÁö ¾Ê´Â´Ù.
  *
  * Implementation :
  *
@@ -1301,7 +1302,7 @@ qmc::getHashNA( UInt         /* aValue */,
                 qmdMtrNode * /* aNode */,
                 void       * /* aRow */ )
 {
-    // ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ë©´ ì•ˆë¨.
+    // ÀÌ ÇÔ¼ö°¡ È£ÃâµÇ¸é ¾ÈµÊ.
 
     IDE_DASSERT(0);
 
@@ -1316,14 +1317,14 @@ qmc::getHashByPointer( UInt         aValue,
 /***********************************************************************
  *
  * Description :
- *    í•´ë‹¹ Materialized Columnì˜ Hashê°’ì„ ì–»ëŠ”ë‹¤.
+ *    ÇØ´ç Materialized ColumnÀÇ Hash°ªÀ» ¾ò´Â´Ù.
  *
  * Implementation :
- *    Pointerê°€ ì €ì¥ëœ ê²½ìš°ë¡œ ì‹¤ì œ Record Pointerë¥¼ íšë“í•˜ê³ ,
- *    Source Columnì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ Hashê°’ì„ ì–»ëŠ”ë‹¤.
+ *    Pointer°¡ ÀúÀåµÈ °æ¿ì·Î ½ÇÁ¦ Record Pointer¸¦ È¹µæÇÏ°í,
+ *    Source ColumnÁ¤º¸¸¦ ÀÌ¿ëÇÏ¿© Hash°ªÀ» ¾ò´Â´Ù.
  *
- *    PROJ-2334 PMT memory partitioned table or variable columnì¸ ê²½ìš°
- *    partition tableì˜ columnì •ë³´ë¥¼ ì´ìš© í•˜ì—¬ Hashê°’ì„ ì–»ëŠ”ë‹¤.
+ *    PROJ-2334 PMT memory partitioned table or variable columnÀÎ °æ¿ì
+ *    partition tableÀÇ columnÁ¤º¸¸¦ ÀÌ¿ë ÇÏ¿© Hash°ªÀ» ¾ò´Â´Ù.
  ***********************************************************************/
 
     void * sRow = qmc::getRowByPointer( aNode, aRow );
@@ -1348,14 +1349,14 @@ qmc::getHashByPointerAndTupleID( UInt         aValue,
 /***********************************************************************
  *
  * Description :
- *    í•´ë‹¹ Materialized Columnì˜ Hashê°’ì„ ì–»ëŠ”ë‹¤.
+ *    ÇØ´ç Materialized ColumnÀÇ Hash°ªÀ» ¾ò´Â´Ù.
  *
  * Implementation :
- *    Pointerê°€ ì €ì¥ëœ ê²½ìš°ë¡œ ì‹¤ì œ Record Pointerë¥¼ íšë“í•˜ê³ ,
- *    Source Columnì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ Hashê°’ì„ ì–»ëŠ”ë‹¤.
+ *    Pointer°¡ ÀúÀåµÈ °æ¿ì·Î ½ÇÁ¦ Record Pointer¸¦ È¹µæÇÏ°í,
+ *    Source ColumnÁ¤º¸¸¦ ÀÌ¿ëÇÏ¿© Hash°ªÀ» ¾ò´Â´Ù.
  *
- *    PROJ-2334 PMT memory partitioned table or variable columnì¸ ê²½ìš°
- *    partition tableì˜ columnì •ë³´ë¥¼ ì´ìš© í•˜ì—¬ Hashê°’ì„ ì–»ëŠ”ë‹¤.
+ *    PROJ-2334 PMT memory partitioned table or variable columnÀÎ °æ¿ì
+ *    partition tableÀÇ columnÁ¤º¸¸¦ ÀÌ¿ë ÇÏ¿© Hash°ªÀ» ¾ò´Â´Ù.
  ***********************************************************************/
 
     void * sRow = qmc::getRowByPointerAndTupleID( aNode, aRow );
@@ -1380,11 +1381,11 @@ qmc::getHashByValue( UInt         aValue,
 /***********************************************************************
  *
  * Description :
- *    í•´ë‹¹ Materialized Columnì˜ Hashê°’ì„ ì–»ëŠ”ë‹¤.
+ *    ÇØ´ç Materialized ColumnÀÇ Hash°ªÀ» ¾ò´Â´Ù.
  *
  * Implementation :
- *    Valueê°’ ìì²´ê°€ ì €ì¥ëœ ê²½ìš°ë¡œ,
- *    Destination Columnì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ Hashê°’ì„ ì–»ëŠ”ë‹¤.
+ *    Value°ª ÀÚÃ¼°¡ ÀúÀåµÈ °æ¿ì·Î,
+ *    Destination ColumnÁ¤º¸¸¦ ÀÌ¿ëÇÏ¿© Hash°ªÀ» ¾ò´Â´Ù.
  *
  ***********************************************************************/
 
@@ -1405,7 +1406,7 @@ idBool
 qmc::isNullNA( qmdMtrNode * /* aNode */,
                void       * /* aRow */ )
 {
-    // ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ë©´ ì•ˆë¨.
+    // ÀÌ ÇÔ¼ö°¡ È£ÃâµÇ¸é ¾ÈµÊ.
 
     IDE_DASSERT(0);
 
@@ -1419,11 +1420,11 @@ qmc::isNullByPointer( qmdMtrNode * aNode,
 /***********************************************************************
  *
  * Description :
- *    í•´ë‹¹ Materialized Rowì— ì €ì¥ëœ pointer ì •ë³´ë¡œ hash ê°’ì„ ì–»ëŠ”ë‹¤.
+ *    ÇØ´ç Materialized Row¿¡ ÀúÀåµÈ pointer Á¤º¸·Î hash °ªÀ» ¾ò´Â´Ù.
  *
  * Implementation :
- *    Rowì˜ pointerê°’ì„ ì–»ëŠ”ë‹¤.
- *    Source Nodeì˜ ì •ë³´ì™€ Rowë¡œë¶€í„° hashê°’ì„ ì–»ëŠ”ë‹¤.
+ *    RowÀÇ pointer°ªÀ» ¾ò´Â´Ù.
+ *    Source NodeÀÇ Á¤º¸¿Í Row·ÎºÎÅÍ hash°ªÀ» ¾ò´Â´Ù.
  *
  ***********************************************************************/
 
@@ -1447,11 +1448,11 @@ qmc::isNullByPointerAndTupleID(  qmdMtrNode * aNode,
 /***********************************************************************
  *
  * Description :
- *    í•´ë‹¹ Materialized Rowì— ì €ì¥ëœ pointer ì •ë³´ë¡œ hash ê°’ì„ ì–»ëŠ”ë‹¤.
+ *    ÇØ´ç Materialized Row¿¡ ÀúÀåµÈ pointer Á¤º¸·Î hash °ªÀ» ¾ò´Â´Ù.
  *
  * Implementation :
- *    Rowì˜ pointerê°’ì„ ì–»ëŠ”ë‹¤.
- *    Source Nodeì˜ ì •ë³´ì™€ Rowë¡œë¶€í„° hashê°’ì„ ì–»ëŠ”ë‹¤.
+ *    RowÀÇ pointer°ªÀ» ¾ò´Â´Ù.
+ *    Source NodeÀÇ Á¤º¸¿Í Row·ÎºÎÅÍ hash°ªÀ» ¾ò´Â´Ù.
  *
  ***********************************************************************/
 
@@ -1475,10 +1476,10 @@ qmc::isNullByValue( qmdMtrNode * aNode,
 /***********************************************************************
  *
  * Description :
- *    í•´ë‹¹ Materialized Rowì— ì €ì¥ëœ Valueì •ë³´ë¡œ NULL ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
+ *    ÇØ´ç Materialized Row¿¡ ÀúÀåµÈ ValueÁ¤º¸·Î NULL ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
  *
  * Implementation :
- *    Destine Nodeì˜ ì •ë³´ì™€ í˜„ì¬ Rowë¡œë¶€í„° hashê°’ì„ ì–»ëŠ”ë‹¤.
+ *    Destine NodeÀÇ Á¤º¸¿Í ÇöÀç Row·ÎºÎÅÍ hash°ªÀ» ¾ò´Â´Ù.
  *
  ***********************************************************************/
 
@@ -1498,7 +1499,7 @@ void
 qmc::makeNullNA( qmdMtrNode * /* aNode */,
                  void       * /* aRow */ )
 {
-    // ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ë©´ ì•ˆë¨.
+    // ÀÌ ÇÔ¼ö°¡ È£ÃâµÇ¸é ¾ÈµÊ.
 
     IDE_DASSERT(0);
 }
@@ -1510,7 +1511,7 @@ qmc::makeNullNothing(  qmdMtrNode * /* aNode */,
 /***********************************************************************
  *
  * Description :
- *    í•´ë‹¹ Materialized Columnì˜ NULL Valueë¥¼ ìƒì„±í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *    ÇØ´ç Materialized ColumnÀÇ NULL Value¸¦ »ı¼ºÇÏÁö ¾Ê´Â´Ù.
  *
  * Implementation :
  *
@@ -1531,7 +1532,7 @@ qmc::makeNullValue( qmdMtrNode * aNode,
 /***********************************************************************
  *
  * Description :
- *    í•´ë‹¹ Materialized Columnì˜ NULL Valueë¥¼ìƒì„±í•œë‹¤.
+ *    ÇØ´ç Materialized ColumnÀÇ NULL Value¸¦»ı¼ºÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1554,7 +1555,7 @@ void *
 qmc::getRowNA ( qmdMtrNode * /* aNode */,
                 const void * /* aRow  */ )
 {
-    // ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ë©´ ì•ˆë¨
+    // ÀÌ ÇÔ¼ö°¡ È£ÃâµÇ¸é ¾ÈµÊ
     IDE_DASSERT( 0 );
 
     return NULL;
@@ -1568,7 +1569,7 @@ qmc::getRowByPointer ( qmdMtrNode * aNode,
  *
  * Description :
  *
- *    Materialized Rowì— ì €ì¥ëœ Row Pointerê°’ì„ Returní•œë‹¤.
+ *    Materialized Row¿¡ ÀúÀåµÈ Row Pointer°ªÀ» ReturnÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1598,7 +1599,7 @@ qmc::getRowByPointer ( qmdMtrNode * aNode,
 
         aNode->srcColumn = sColumn;
         
-        // ê°’ì´ ì•„ë‹Œ Pointerê°€ ì €ì¥ë˜ëŠ” ê²½ìš°
+        // °ªÀÌ ¾Æ´Ñ Pointer°¡ ÀúÀåµÇ´Â °æ¿ì
         aNode->func.compareColumn = sColumn;
     }
     else
@@ -1630,10 +1631,10 @@ qmc::getRowByPointer ( qmdMtrNode * aNode,
     {
         sRow = (void*)((SChar*)sRow + sTempTypeOffset);
 
-        // TEMP_TYPEì¸ ê²½ìš° OFFSET_USELESSë¡œ ë¹„êµí•œë‹¤.
-        // ì• ì´ˆì— setCompareFunctionì—ì„œ compareí•¨ìˆ˜ë¥¼ ëª¨ë‘ ê²°ì •í•˜ëŠ” ê²ƒì´ ë§ì§€ë§Œ
-        // ìµœì´ˆ parentì˜ mtrNodeëŠ” TEMP_TYPEê°€ ì•„ë‹ˆì—ˆìœ¼ë‚˜, childì˜ mtrNodeì— ì˜í•´
-        // TEMP_TYPEë¡œ ë³€ê²½ë  ìˆ˜ ìˆì–´ ì‹¤í–‰ì‹œê°„ì—ë„ íŒë‹¨í•´ì„œ ë³€ê²½í•œë‹¤.
+        // TEMP_TYPEÀÎ °æ¿ì OFFSET_USELESS·Î ºñ±³ÇÑ´Ù.
+        // ¾ÖÃÊ¿¡ setCompareFunction¿¡¼­ compareÇÔ¼ö¸¦ ¸ğµÎ °áÁ¤ÇÏ´Â °ÍÀÌ ¸ÂÁö¸¸
+        // ÃÖÃÊ parentÀÇ mtrNode´Â TEMP_TYPE°¡ ¾Æ´Ï¾úÀ¸³ª, childÀÇ mtrNode¿¡ ÀÇÇØ
+        // TEMP_TYPE·Î º¯°æµÉ ¼ö ÀÖ¾î ½ÇÇà½Ã°£¿¡µµ ÆÇ´ÜÇØ¼­ º¯°æÇÑ´Ù.
         if ( ( aNode->flag & QMC_MTR_SORT_ORDER_MASK )
              == QMC_MTR_SORT_ASCENDING )
         {
@@ -1677,14 +1678,14 @@ qmc::getRowByPointerAndTupleID( qmdMtrNode * aNode,
 /***********************************************************************
  *
  * Description :
- *    Materialized Rowì— ì €ì¥ëœ pointerí˜• columnì„ Tuple Setì— ë³µì›ì‹œí‚¨ë‹¤.
- *    ë‹¤ìŒê³¼ ê°™ì€ ìš©ë„ë¥¼ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
- *        - Temp Tableì— ì €ì¥ëœ Memory Base Tableì„ ë³µì›
- *        - Memory Temp Tableì— ì €ì¥ë„ë‹ˆ Memory Columnì„ ë³µì›
+ *    Materialized Row¿¡ ÀúÀåµÈ pointerÇü columnÀ» Tuple Set¿¡ º¹¿ø½ÃÅ²´Ù.
+ *    ´ÙÀ½°ú °°Àº ¿ëµµ¸¦ À§ÇØ »ç¿ëµÈ´Ù.
+ *        - Temp Table¿¡ ÀúÀåµÈ Memory Base TableÀ» º¹¿ø
+ *        - Memory Temp Table¿¡ ÀúÀåµµ´Ï Memory ColumnÀ» º¹¿ø
  *
  * Implementation :
- *    Materialized Rowì—ì„œ ì €ì¥ëœ ìœ„ì¹˜ë¥¼ êµ¬í•˜ê³ ,
- *    ê·¸ ìœ„ì¹˜ì— ì €ì¥ëœ pointerë¥¼ ì›ë˜ Tupleì— ë³µì›ì‹œí‚¨ë‹¤.
+ *    Materialized Row¿¡¼­ ÀúÀåµÈ À§Ä¡¸¦ ±¸ÇÏ°í,
+ *    ±× À§Ä¡¿¡ ÀúÀåµÈ pointer¸¦ ¿ø·¡ Tuple¿¡ º¹¿ø½ÃÅ²´Ù.
  ***********************************************************************/
 
     qmcMemPartRowInfo   sRowInfo;
@@ -1699,7 +1700,7 @@ qmc::getRowByPointerAndTupleID( qmdMtrNode * aNode,
     IDE_DASSERT( ( sByte->length == ID_SIZEOF(qmcMemPartRowInfo) ) ||
                  ( sByte->length == ID_SIZEOF(qmcPartRowInfo) ) );
 
-    // byte alignì´ì–´ì„œ ë³µì‚¬í•´ì•¼í•œë‹¤.
+    // byte alignÀÌ¾î¼­ º¹»çÇØ¾ßÇÑ´Ù.
     idlOS::memcpy( & sRowInfo, sByte->value, ID_SIZEOF(qmcMemPartRowInfo) );
 
     sPartitionTupleID = sRowInfo.partitionTupleID;
@@ -1722,7 +1723,7 @@ qmc::getRowByPointerAndTupleID( qmdMtrNode * aNode,
 
         aNode->srcColumn = sColumn;
 
-        // ê°’ì´ ì•„ë‹Œ Pointerê°€ ì €ì¥ë˜ëŠ” ê²½ìš°
+        // °ªÀÌ ¾Æ´Ñ Pointer°¡ ÀúÀåµÇ´Â °æ¿ì
         aNode->func.compareColumn = sColumn;
     }
     else
@@ -1730,8 +1731,8 @@ qmc::getRowByPointerAndTupleID( qmdMtrNode * aNode,
         // Nothing to do.
     }
 
-    // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
-    // baseTableì˜ ì›ë³µì‹œ TEMP_TYPEë¥¼ ê³ ë ¤í•´ì•¼ í•œë‹¤.
+    // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
+    // baseTableÀÇ ¿øº¹½Ã TEMP_TYPE¸¦ °í·ÁÇØ¾ß ÇÑ´Ù.
     sColumn = aNode->tmplate->rows[sPartitionTupleID].columns;
     
     if ( ( aNode->flag & QMC_MTR_BASETABLE_MASK ) == QMC_MTR_BASETABLE_TRUE )
@@ -1777,8 +1778,8 @@ qmc::getRowByPointerAndTupleID( qmdMtrNode * aNode,
     }
     else
     {
-        // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
-        // srcê°€ TEMP_TYPEì¸ ê²½ìš° ì›ë³µì‹œ ê³ ë ¤í•´ì•¼ í•œë‹¤.
+        // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
+        // src°¡ TEMP_TYPEÀÎ °æ¿ì ¿øº¹½Ã °í·ÁÇØ¾ß ÇÑ´Ù.
         if ( ( aNode->srcColumn->column.flag & SMI_COLUMN_TYPE_MASK )
              == SMI_COLUMN_TYPE_TEMP_1B )
         {
@@ -1828,8 +1829,8 @@ qmc::getRowByValue ( qmdMtrNode * aNode,
 /***********************************************************************
  *
  * Description :
- *    Materialized Rowì— VALUE ìì²´ê°€ ì €ì¥ë˜ì–´ ìˆìœ¼ë¯€ë¡œ,
- *    í˜„ì¬ Row ìì²´ë¥¼ Returní•œë‹¤.
+ *    Materialized Row¿¡ VALUE ÀÚÃ¼°¡ ÀúÀåµÇ¾î ÀÖÀ¸¹Ç·Î,
+ *    ÇöÀç Row ÀÚÃ¼¸¦ ReturnÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1862,10 +1863,10 @@ qmc::getRowByValue ( qmdMtrNode * aNode,
     {
         sRow = (void*)((SChar*)aRow + sTempTypeOffset);
 
-        // TEMP_TYPEì¸ ê²½ìš° OFFSET_USELESSë¡œ ë¹„êµí•œë‹¤.
-        // ì• ì´ˆì— setCompareFunctionì—ì„œ compareí•¨ìˆ˜ë¥¼ ëª¨ë‘ ê²°ì •í•˜ëŠ” ê²ƒì´ ë§ì§€ë§Œ
-        // ìµœì´ˆ parentì˜ mtrNodeëŠ” TEMP_TYPEê°€ ì•„ë‹ˆì—ˆìœ¼ë‚˜, childì˜ mtrNodeì— ì˜í•´
-        // TEMP_TYPEë¡œ ë³€ê²½ë  ìˆ˜ ìˆì–´ ì‹¤í–‰ì‹œê°„ì—ë„ íŒë‹¨í•´ì„œ ë³€ê²½í•œë‹¤.
+        // TEMP_TYPEÀÎ °æ¿ì OFFSET_USELESS·Î ºñ±³ÇÑ´Ù.
+        // ¾ÖÃÊ¿¡ setCompareFunction¿¡¼­ compareÇÔ¼ö¸¦ ¸ğµÎ °áÁ¤ÇÏ´Â °ÍÀÌ ¸ÂÁö¸¸
+        // ÃÖÃÊ parentÀÇ mtrNode´Â TEMP_TYPE°¡ ¾Æ´Ï¾úÀ¸³ª, childÀÇ mtrNode¿¡ ÀÇÇØ
+        // TEMP_TYPE·Î º¯°æµÉ ¼ö ÀÖ¾î ½ÇÇà½Ã°£¿¡µµ ÆÇ´ÜÇØ¼­ º¯°æÇÑ´Ù.
         if ( ( aNode->flag & QMC_MTR_SORT_ORDER_MASK )
              == QMC_MTR_SORT_ASCENDING )
         {
@@ -1909,10 +1910,10 @@ qmc::linkMtrNode( const qmcMtrNode * aCodeNode,
 /***********************************************************************
  *
  * Description :
- *    Data ì˜ì—­ì˜ Materialized Nodeë¥¼ ì—°ê²°í•œë‹¤.
+ *    Data ¿µ¿ªÀÇ Materialized Node¸¦ ¿¬°áÇÑ´Ù.
  *
  * Implementation :
- *    Data ì˜ì—­ì˜ ì—°ê²°ì‹œ Code ì˜ì—­ì˜ Materialize Node ê°œìˆ˜ë§Œí¼ ë°˜ë³µí•œë‹¤.
+ *    Data ¿µ¿ªÀÇ ¿¬°á½Ã Code ¿µ¿ªÀÇ Materialize Node °³¼ö¸¸Å­ ¹İº¹ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1945,8 +1946,8 @@ qmc::initMtrNode( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Code Materialized Node(aNode->myNode) ì •ë³´ë¡œë¶€í„°
- *    Data Materialized Node(aNode)ë¥¼ êµ¬ì„±í•œë‹¤.
+ *    Code Materialized Node(aNode->myNode) Á¤º¸·ÎºÎÅÍ
+ *    Data Materialized Node(aNode)¸¦ ±¸¼ºÇÑ´Ù.
  *
  * Implementation :
  *
@@ -1990,13 +1991,13 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
 /***********************************************************************
  *
  * Description :
- *    Materialized Rowë¥¼ êµ¬ì„±í•˜ëŠ” Columnë“¤ì˜ offsetì„ ì¬ì¡°ì •í•œë‹¤.
+ *    Materialized Row¸¦ ±¸¼ºÇÏ´Â ColumnµéÀÇ offsetÀ» ÀçÁ¶Á¤ÇÑ´Ù.
  *
  * Implementation :
- *    Materialized RowëŠ” ë‹¤ìŒê³¼ ê°™ì´ êµ¬ì„±ëœë‹¤.
- *       - Record Headerì˜ í¬ê¸° : aStartOffset
- *    ê° Columnì˜ ì¢…ë¥˜ì™€ Memory/Disk Temp Tableì˜ ì—¬ë¶€ì— ë”°ë¼,
- *    ê·¸ Offsetê³¼ Sizeì˜ êµ¬ì„±ì´ ë‹¬ë¼ì§„ë‹¤.
+ *    Materialized Row´Â ´ÙÀ½°ú °°ÀÌ ±¸¼ºµÈ´Ù.
+ *       - Record HeaderÀÇ Å©±â : aStartOffset
+ *    °¢ ColumnÀÇ Á¾·ù¿Í Memory/Disk Temp TableÀÇ ¿©ºÎ¿¡ µû¶ó,
+ *    ±× Offset°ú SizeÀÇ ±¸¼ºÀÌ ´Ş¶óÁø´Ù.
  ***********************************************************************/
 
     qmdMtrNode * sNode;
@@ -2011,10 +2012,10 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
     UInt         i;
 
     //--------------------------------------------------
-    // êµ¬ì„±ëœ Materialzied Columnë“¤ì„ ìˆœíšŒí•˜ë©°,
-    // offsetê³¼ sizeë“±ì„ ì¬ì¡°ì •í•œë‹¤.
-    // í•„ìš”í•  ê²½ìš°, Fixed->Variableë¡œ ë³€ê²½í•˜ëŠ” ì‘ì—…ë„
-    // ì§„í–‰í•œë‹¤.
+    // ±¸¼ºµÈ Materialzied ColumnµéÀ» ¼øÈ¸ÇÏ¸ç,
+    // offset°ú sizeµîÀ» ÀçÁ¶Á¤ÇÑ´Ù.
+    // ÇÊ¿äÇÒ °æ¿ì, Fixed->Variable·Î º¯°æÇÏ´Â ÀÛ¾÷µµ
+    // ÁøÇàÇÑ´Ù.
     //--------------------------------------------------
 
     sOffset = aStartOffset;
@@ -2022,7 +2023,7 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
     for ( sNode = aNode; sNode != NULL; sNode = sNode->next )
     {
         // BUG-46678
-        // Precisionì„ ëª…ì‹œí•˜ì§€ ì•Šì€ return columnì˜ sizeê°€ ì›ë³µë˜ì§€ ì•ŠëŠ” ê²½ìš°ê°€ ìˆìŠµë‹ˆë‹¤.
+        // PrecisionÀ» ¸í½ÃÇÏÁö ¾ÊÀº return columnÀÇ size°¡ ¿øº¹µÇÁö ¾Ê´Â °æ¿ì°¡ ÀÖ½À´Ï´Ù.
         if ( (sNode->dstColumn->flag & MTC_COLUMN_SP_ADJUST_PRECISION_MASK) == MTC_COLUMN_SP_ADJUST_PRECISION_TRUE )
         {
             IDE_TEST( qsxUtil::finalizeParamAndReturnColumnInfo( sNode->dstColumn )
@@ -2038,18 +2039,18 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
         switch ( sNode->flag & QMC_MTR_TYPE_MASK )
         {
             //-----------------------------------------------------------
-            // Base Tableì— ëŒ€í•œ ì²˜ë¦¬ ë°©ì‹
+            // Base Table¿¡ ´ëÇÑ Ã³¸® ¹æ½Ä
             //-----------------------------------------------------------
 
             case QMC_MTR_TYPE_MEMORY_TABLE :
             {
                 //-----------------------------------
-                // Memory Base Tableì˜ ê²½ìš°
+                // Memory Base TableÀÇ °æ¿ì
                 //-----------------------------------
-                // Disk Temp Tableì—ì„œì˜ ì²˜ë¦¬ë¥¼ ìœ„í•´ Columnì„
-                // BIGINT Typeìœ¼ë¡œ ì§€ì •( 32/64bit pointerì˜ ì €ì¥,
-                // RIDì™€ ë™ì¼í•œ í¬ê¸° ì €ì¥). RIDì˜ í¬ê¸°ê°€ BIGINTí¬ê¸°ë¥¼ ì´ˆê³¼í• 
-                // ê²½ìš°, ì´ì— ëŒ€í•œ ìˆ˜ì •ì´ ì´ë£¨ì–´ì ¸ì•¼ í•œë‹¤.
+                // Disk Temp Table¿¡¼­ÀÇ Ã³¸®¸¦ À§ÇØ ColumnÀ»
+                // BIGINT TypeÀ¸·Î ÁöÁ¤( 32/64bit pointerÀÇ ÀúÀå,
+                // RID¿Í µ¿ÀÏÇÑ Å©±â ÀúÀå). RIDÀÇ Å©±â°¡ BIGINTÅ©±â¸¦ ÃÊ°úÇÒ
+                // °æ¿ì, ÀÌ¿¡ ´ëÇÑ ¼öÁ¤ÀÌ ÀÌ·ç¾îÁ®¾ß ÇÑ´Ù.
                 IDE_DASSERT( ID_SIZEOF(scGRID) <= ID_SIZEOF(mtdBigintType) );
 
                 IDE_TEST( mtc::initializeColumn( sNode->dstColumn,
@@ -2071,13 +2072,13 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
             case QMC_MTR_TYPE_DISK_TABLE :
             {
                 //-----------------------------------
-                // Disk Base Tableì˜ ê²½ìš°
+                // Disk Base TableÀÇ °æ¿ì
                 //-----------------------------------
-                // Disk Temp Tableì—ì„œì˜ ì²˜ë¦¬ë¥¼ ìœ„í•´
-                // Columnì„ BIGINT Typeìœ¼ë¡œ ì§€ì •
-                // 32/64bit pointerë¥¼ ì €ì¥, RIDì™€ ë™ì¼í•œ í¬ê¸° ì €ì¥
-                // RIDì˜ í¬ê¸°ê°€ BIGINTí¬ê¸°ë¥¼ ì´ˆê³¼í•  ê²½ìš°,
-                // ì´ì— ëŒ€í•œ ìˆ˜ì •ì´ ì´ë£¨ì–´ì ¸ì•¼ í•œë‹¤.
+                // Disk Temp Table¿¡¼­ÀÇ Ã³¸®¸¦ À§ÇØ
+                // ColumnÀ» BIGINT TypeÀ¸·Î ÁöÁ¤
+                // 32/64bit pointer¸¦ ÀúÀå, RID¿Í µ¿ÀÏÇÑ Å©±â ÀúÀå
+                // RIDÀÇ Å©±â°¡ BIGINTÅ©±â¸¦ ÃÊ°úÇÒ °æ¿ì,
+                // ÀÌ¿¡ ´ëÇÑ ¼öÁ¤ÀÌ ÀÌ·ç¾îÁ®¾ß ÇÑ´Ù.
                 IDE_DASSERT( ID_SIZEOF(scGRID) <= ID_SIZEOF(mtdBigintType) );
 
                 IDE_TEST( mtc::initializeColumn( sNode->dstColumn,
@@ -2101,11 +2102,11 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
             case QMC_MTR_TYPE_MEMORY_PARTITIONED_TABLE :
             {
                 //-----------------------------------
-                // Memory Partitioned Tableì˜ ê²½ìš°
+                // Memory Partitioned TableÀÇ °æ¿ì
                 //-----------------------------------
 
                 // BUG-38309
-                // ì´ì œëŠ” 16byteë³´ë‹¤ ì»¤ì„œ mtdByteë¥¼ ì‚¬ìš©í•œë‹¤.
+                // ÀÌÁ¦´Â 16byteº¸´Ù Ä¿¼­ mtdByte¸¦ »ç¿ëÇÑ´Ù.
                 IDE_TEST( mtc::initializeColumn( sNode->dstColumn,
                                                  & mtdByte,
                                                  1,
@@ -2126,13 +2127,13 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
             case QMC_MTR_TYPE_DISK_PARTITIONED_TABLE :
             {
                 //-----------------------------------
-                // Disk Partitioned Tableì˜ ê²½ìš°
+                // Disk Partitioned TableÀÇ °æ¿ì
                 //-----------------------------------
 
                 // BUG-38309
-                // ì´ì œëŠ” 16byteë³´ë‹¤ ì»¤ì„œ mtdByteë¥¼ ì‚¬ìš©í•œë‹¤.
+                // ÀÌÁ¦´Â 16byteº¸´Ù Ä¿¼­ mtdByte¸¦ »ç¿ëÇÑ´Ù.
                 // PROJ-2204 join update, delete
-                // ridë¿ë§Œì•„ë‹ˆë¼ indexTuple ridë„ ì €ì¥í•˜ê³  ì›ë³µí•œë‹¤.
+                // rid»Ó¸¸¾Æ´Ï¶ó indexTuple ridµµ ÀúÀåÇÏ°í ¿øº¹ÇÑ´Ù.
                 IDE_TEST( mtc::initializeColumn( sNode->dstColumn,
                                                  & mtdByte,
                                                  1,
@@ -2150,16 +2151,16 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
                 break;
             }
 
-            case QMC_MTR_TYPE_HYBRID_PARTITIONED_TABLE : /* PROJ-2464 hybrid partitioned table ì§€ì› */
+            case QMC_MTR_TYPE_HYBRID_PARTITIONED_TABLE : /* PROJ-2464 hybrid partitioned table Áö¿ø */
             {
                 //-----------------------------------
-                // Hybrid Partitioned Tableì˜ ê²½ìš°
+                // Hybrid Partitioned TableÀÇ °æ¿ì
                 //-----------------------------------
 
                 // BUG-38309
-                // ì´ì œëŠ” 16byteë³´ë‹¤ ì»¤ì„œ mtdByteë¥¼ ì‚¬ìš©í•œë‹¤.
+                // ÀÌÁ¦´Â 16byteº¸´Ù Ä¿¼­ mtdByte¸¦ »ç¿ëÇÑ´Ù.
                 // PROJ-2204 join update, delete
-                // ridë¿ë§Œì•„ë‹ˆë¼ indexTuple ridë„ ì €ì¥í•˜ê³  ì›ë³µí•œë‹¤.
+                // rid»Ó¸¸¾Æ´Ï¶ó indexTuple ridµµ ÀúÀåÇÏ°í ¿øº¹ÇÑ´Ù.
                 IDE_TEST( mtc::initializeColumn( sNode->dstColumn,
                                                  & mtdByte,
                                                  1,
@@ -2178,13 +2179,13 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
             }
 
             //-----------------------------------------------------------
-            // Table ë‚´ì˜ Columnì— ëŒ€í•œ ì²˜ë¦¬
+            // Table ³»ÀÇ Column¿¡ ´ëÇÑ Ã³¸®
             //-----------------------------------------------------------
 
             case QMC_MTR_TYPE_MEMORY_PARTITION_KEY_COLUMN :
             {
                 //-----------------------------------
-                // Memory Columnì¸ ê²½ìš°
+                // Memory ColumnÀÎ °æ¿ì
                 //-----------------------------------
 
                 IDE_TEST( refineOffset4MemoryPartitionColumn( aNode, sNode, & sOffset )
@@ -2195,7 +2196,7 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
             case QMC_MTR_TYPE_MEMORY_KEY_COLUMN :
             {
                 //-----------------------------------
-                // Memory Columnì¸ ê²½ìš°
+                // Memory ColumnÀÎ °æ¿ì
                 //-----------------------------------
 
                 IDE_TEST( refineOffset4MemoryColumn( aNode, sNode, & sOffset )
@@ -2204,35 +2205,35 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
             }
 
             //-----------------------------------------------------------
-            // Expression ë° íŠ¹ìˆ˜ Columnì— ëŒ€í•œ ì²˜ë¦¬
+            // Expression ¹× Æ¯¼ö Column¿¡ ´ëÇÑ Ã³¸®
             //-----------------------------------------------------------
             case QMC_MTR_TYPE_CALCULATE:
             {
                 // To Fix PR-8146
-                // AVG(), STDDEV()ë“±ì˜ ì²˜ë¦¬ë¥¼ ìœ„í•´
-                // Offset ê³„ì‚°ì„ ìœ„í•´ì„œ í•´ë‹¹ Expressionì˜ Columnê°œìˆ˜ë¥¼
-                // ì´ìš©í•˜ì—¬ ê³„ì‚°í•˜ì—¬ì•¼ í•œë‹¤.
+                // AVG(), STDDEV()µîÀÇ Ã³¸®¸¦ À§ÇØ
+                // Offset °è»êÀ» À§ÇØ¼­ ÇØ´ç ExpressionÀÇ Column°³¼ö¸¦
+                // ÀÌ¿ëÇÏ¿© °è»êÇÏ¿©¾ß ÇÑ´Ù.
 
                 // To Fix PR-12093
-                // Destine Nodeë¥¼ ì‚¬ìš©í•˜ì—¬
-                // mtcColumnì˜ Countë¥¼ êµ¬í•˜ëŠ” ê²ƒì´ ì›ì¹™ì— ë§ìŒ
-                // ì‚¬ìš©í•˜ì§€ë„ ì•Šì„ mtcColumn ì •ë³´ë¥¼ ìœ ì§€í•˜ëŠ” ê²ƒì€ ë¶ˆí•©ë¦¬í•¨.
-                //     - Memory ê³µê°„ ë‚­ë¹„
-                //     - offset ì¡°ì • ì˜¤ë¥˜ (PR-12093)
+                // Destine Node¸¦ »ç¿ëÇÏ¿©
+                // mtcColumnÀÇ Count¸¦ ±¸ÇÏ´Â °ÍÀÌ ¿øÄ¢¿¡ ¸ÂÀ½
+                // »ç¿ëÇÏÁöµµ ¾ÊÀ» mtcColumn Á¤º¸¸¦ À¯ÁöÇÏ´Â °ÍÀº ºÒÇÕ¸®ÇÔ.
+                //     - Memory °ø°£ ³¶ºñ
+                //     - offset Á¶Á¤ ¿À·ù (PR-12093)
                 sColumnCnt =
                     sNode->dstNode->node.module->lflag &
                     MTC_NODE_COLUMN_COUNT_MASK;
 
                 for ( i = 0; i < sColumnCnt; i++ )
                 {
-                    // ê°’ ìì²´ê°€ ì €ì¥ë˜ëŠ” ê²½ìš°ì´ë¯€ë¡œ
-                    // Data Typeì— ë§ë„ë¡ offsetë“±ì„ aligní•œë‹¤.
+                    // °ª ÀÚÃ¼°¡ ÀúÀåµÇ´Â °æ¿ìÀÌ¹Ç·Î
+                    // Data Type¿¡ ¸Âµµ·Ï offsetµîÀ» alignÇÑ´Ù.
                     sNode->dstColumn[i].column.flag &= ~SMI_COLUMN_TYPE_MASK;
                     sNode->dstColumn[i].column.flag |= SMI_COLUMN_TYPE_FIXED;
 
                     // BUG-38494
-                    // Compressed Column ì—­ì‹œ ê°’ ìì²´ê°€ ì €ì¥ë˜ë¯€ë¡œ
-                    // Compressed ì†ì„±ì„ ì‚­ì œí•œë‹¤
+                    // Compressed Column ¿ª½Ã °ª ÀÚÃ¼°¡ ÀúÀåµÇ¹Ç·Î
+                    // Compressed ¼Ó¼ºÀ» »èÁ¦ÇÑ´Ù
                     sNode->dstColumn[i].column.flag &= ~SMI_COLUMN_COMPRESSION_MASK;
                     sNode->dstColumn[i].column.flag |= SMI_COLUMN_COMPRESSION_FALSE;
 
@@ -2248,33 +2249,33 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
 
             case QMC_MTR_TYPE_COPY_VALUE:
             case QMC_MTR_TYPE_CALCULATE_AND_COPY_VALUE:
-            case QMC_MTR_TYPE_HYBRID_PARTITION_KEY_COLUMN : /* PROJ-2464 hybrid partitioned table ì§€ì› */
+            case QMC_MTR_TYPE_HYBRID_PARTITION_KEY_COLUMN : /* PROJ-2464 hybrid partitioned table Áö¿ø */
             {
                 // To Fix PR-8146
-                // AVG(), STDDEV()ë“±ì˜ ì²˜ë¦¬ë¥¼ ìœ„í•´
-                // Offset ê³„ì‚°ì„ ìœ„í•´ì„œ í•´ë‹¹ Expressionì˜ Columnê°œìˆ˜ë¥¼
-                // ì´ìš©í•˜ì—¬ ê³„ì‚°í•˜ì—¬ì•¼ í•œë‹¤.
+                // AVG(), STDDEV()µîÀÇ Ã³¸®¸¦ À§ÇØ
+                // Offset °è»êÀ» À§ÇØ¼­ ÇØ´ç ExpressionÀÇ Column°³¼ö¸¦
+                // ÀÌ¿ëÇÏ¿© °è»êÇÏ¿©¾ß ÇÑ´Ù.
 
                 // To Fix PR-12093
-                // Destine Nodeë¥¼ ì‚¬ìš©í•˜ì—¬
-                // mtcColumnì˜ Countë¥¼ êµ¬í•˜ëŠ” ê²ƒì´ ì›ì¹™ì— ë§ìŒ
-                // ì‚¬ìš©í•˜ì§€ë„ ì•Šì„ mtcColumn ì •ë³´ë¥¼ ìœ ì§€í•˜ëŠ” ê²ƒì€ ë¶ˆí•©ë¦¬í•¨.
-                //     - Memory ê³µê°„ ë‚­ë¹„
-                //     - offset ì¡°ì • ì˜¤ë¥˜ (PR-12093)
+                // Destine Node¸¦ »ç¿ëÇÏ¿©
+                // mtcColumnÀÇ Count¸¦ ±¸ÇÏ´Â °ÍÀÌ ¿øÄ¢¿¡ ¸ÂÀ½
+                // »ç¿ëÇÏÁöµµ ¾ÊÀ» mtcColumn Á¤º¸¸¦ À¯ÁöÇÏ´Â °ÍÀº ºÒÇÕ¸®ÇÔ.
+                //     - Memory °ø°£ ³¶ºñ
+                //     - offset Á¶Á¤ ¿À·ù (PR-12093)
                 sColumnCnt =
                     sNode->dstNode->node.module->lflag &
                     MTC_NODE_COLUMN_COUNT_MASK;
 
                 for ( i = 0; i < sColumnCnt; i++ )
                 {
-                    // ê°’ ìì²´ê°€ ì €ì¥ë˜ëŠ” ê²½ìš°ì´ë¯€ë¡œ
-                    // Data Typeì— ë§ë„ë¡ offsetë“±ì„ aligní•œë‹¤.
+                    // °ª ÀÚÃ¼°¡ ÀúÀåµÇ´Â °æ¿ìÀÌ¹Ç·Î
+                    // Data Type¿¡ ¸Âµµ·Ï offsetµîÀ» alignÇÑ´Ù.
                     sNode->dstColumn[i].column.flag &= ~SMI_COLUMN_TYPE_MASK;
                     sNode->dstColumn[i].column.flag |= SMI_COLUMN_TYPE_FIXED;
 
                     // BUG-38494
-                    // Compressed Column ì—­ì‹œ ê°’ ìì²´ê°€ ì €ì¥ë˜ë¯€ë¡œ
-                    // Compressed ì†ì„±ì„ ì‚­ì œí•œë‹¤
+                    // Compressed Column ¿ª½Ã °ª ÀÚÃ¼°¡ ÀúÀåµÇ¹Ç·Î
+                    // Compressed ¼Ó¼ºÀ» »èÁ¦ÇÑ´Ù
                     sNode->dstColumn[i].column.flag &= ~SMI_COLUMN_COMPRESSION_MASK;
                     sNode->dstColumn[i].column.flag |= SMI_COLUMN_COMPRESSION_FALSE;
 
@@ -2284,7 +2285,7 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
                     sNode->dstColumn[i].column.offset = sOffset;
                     sOffset += sNode->dstColumn[i].column.size;
 
-                    // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+                    // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
                     if ( ( ( sNode->flag & QMC_MTR_TEMP_VAR_TYPE_ENABLE_MASK )
                            == QMC_MTR_TEMP_VAR_TYPE_ENABLE_TRUE ) &&
                          ( QMC_IS_MTR_TEMP_VAR_COLUMN( sNode->dstColumn[i] ) == ID_TRUE ) )
@@ -2303,9 +2304,9 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
             {
                 // PROJ-2469 Optimize View Materialization
                 // BUG-41681
-                // ë™ì¼ íƒ€ì…ì˜ useless columnì´ ìˆë‹¤ë©´ ê°™ì´ ì‚¬ìš©í•˜ê³ 
-                // ìƒìœ„ì—ì„œ ì‚¬ìš©í•˜ì§€ ì•Šì•„, Materialize í•  í•„ìš” ì—†ëŠ”
-                // View Columnì— ëŒ€í•´ì„œ null valueë§Œ ì €ì¥í•˜ë„ë¡ í•œë‹¤.
+                // µ¿ÀÏ Å¸ÀÔÀÇ useless columnÀÌ ÀÖ´Ù¸é °°ÀÌ »ç¿ëÇÏ°í
+                // »óÀ§¿¡¼­ »ç¿ëÇÏÁö ¾Ê¾Æ, Materialize ÇÒ ÇÊ¿ä ¾ø´Â
+                // View Column¿¡ ´ëÇØ¼­ null value¸¸ ÀúÀåÇÏµµ·Ï ÇÑ´Ù.
                 for ( sTmpNode = aNode; sTmpNode != sNode; sTmpNode = sTmpNode->next )
                 {
                     if ( ( ( sTmpNode->flag & QMC_MTR_TYPE_MASK )
@@ -2331,8 +2332,8 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
                 }
                 else
                 {
-                    // column typeì€ ìœ ì§€í•˜ë˜, null valueë§Œ ì €ì¥í•˜ë„ë¡
-                    // column sizeë¥¼ ì¤„ì¸ë‹¤.
+                    // column typeÀº À¯ÁöÇÏµÇ, null value¸¸ ÀúÀåÇÏµµ·Ï
+                    // column size¸¦ ÁÙÀÎ´Ù.
                     if ( ( sNode->dstColumn->module->flag & MTD_CREATE_PARAM_MASK )
                          == MTD_CREATE_PARAM_NONE )
                     {
@@ -2383,7 +2384,7 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
             }
             default :
             {
-                // Materialized Columnì˜ ì¢…ë¥˜ê°€ ì§€ì •ë˜ì–´ ìˆì–´ì•¼ í•¨.
+                // Materialized ColumnÀÇ Á¾·ù°¡ ÁöÁ¤µÇ¾î ÀÖ¾î¾ß ÇÔ.
                 IDE_DASSERT(0);
 
                 break;
@@ -2391,9 +2392,9 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
         } // end of switch
 
         //----------------------------------------------------
-        // Columnì´ ì €ì¥ë  ë§¤ì²´ì˜ ì§€ì •
-        //     - Memory Temp Tableì¼ ê²½ìš°
-        //     - Disk Temp Tableì¼ ê²½ìš°
+        // ColumnÀÌ ÀúÀåµÉ ¸ÅÃ¼ÀÇ ÁöÁ¤
+        //     - Memory Temp TableÀÏ °æ¿ì
+        //     - Disk Temp TableÀÏ °æ¿ì
         //----------------------------------------------------
 
         if ( (sNode->dstTuple->lflag & MTC_TUPLE_STORAGE_MASK)
@@ -2410,8 +2411,8 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
     }
 
     //-----------------------------------------------------
-    // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
-    // TEMP_TYPEì´ ì‚¬ìš©í•  ì»¬ëŸ¼ í¬ê¸°ì˜ ê³„ì‚°
+    // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
+    // TEMP_TYPEÀÌ »ç¿ëÇÒ ÄÃ·³ Å©±âÀÇ °è»ê
     //-----------------------------------------------------
 
     if ( sTempTypeColCount > 0 )
@@ -2421,7 +2422,7 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
             // 1 byte offset
             sTempTypeColSize = 1;
         }
-        else if ( sOffset + ( sTempTypeColCount + 1 ) * 2 < 65536 ) // 2byte alignì„ ê³ ë ¤í•œë‹¤.
+        else if ( sOffset + ( sTempTypeColCount + 1 ) * 2 < 65536 ) // 2byte alignÀ» °í·ÁÇÑ´Ù.
         {
             // 2 byte offset
             sTempTypeColSize = 2;
@@ -2433,10 +2434,10 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
         }
 
         //--------------------------------------------------
-        // êµ¬ì„±ëœ Materialzied Columnë“¤ì„ ìˆœíšŒí•˜ë©°,
-        // offsetê³¼ sizeë“±ì„ ì¬ì¡°ì •í•œë‹¤.
-        // í•„ìš”í•  ê²½ìš°, Fixed->Variableë¡œ ë³€ê²½í•˜ëŠ” ì‘ì—…ë„
-        // ì§„í–‰í•œë‹¤.
+        // ±¸¼ºµÈ Materialzied ColumnµéÀ» ¼øÈ¸ÇÏ¸ç,
+        // offset°ú sizeµîÀ» ÀçÁ¶Á¤ÇÑ´Ù.
+        // ÇÊ¿äÇÒ °æ¿ì, Fixed->Variable·Î º¯°æÇÏ´Â ÀÛ¾÷µµ
+        // ÁøÇàÇÑ´Ù.
         //--------------------------------------------------
 
         sOffset = aStartOffset;
@@ -2446,18 +2447,18 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
             switch ( sNode->flag & QMC_MTR_TYPE_MASK )
             {
                 //-----------------------------------------------------------
-                // Base Tableì— ëŒ€í•œ ì²˜ë¦¬ ë°©ì‹
+                // Base Table¿¡ ´ëÇÑ Ã³¸® ¹æ½Ä
                 //-----------------------------------------------------------
 
                 case QMC_MTR_TYPE_MEMORY_TABLE :
                 {
                     //-----------------------------------
-                    // Memory Base Tableì˜ ê²½ìš°
+                    // Memory Base TableÀÇ °æ¿ì
                     //-----------------------------------
-                    // Disk Temp Tableì—ì„œì˜ ì²˜ë¦¬ë¥¼ ìœ„í•´ Columnì„
-                    // BIGINT Typeìœ¼ë¡œ ì§€ì •( 32/64bit pointerì˜ ì €ì¥,
-                    // RIDì™€ ë™ì¼í•œ í¬ê¸° ì €ì¥). RIDì˜ í¬ê¸°ê°€ BIGINTí¬ê¸°ë¥¼ ì´ˆê³¼í• 
-                    // ê²½ìš°, ì´ì— ëŒ€í•œ ìˆ˜ì •ì´ ì´ë£¨ì–´ì ¸ì•¼ í•œë‹¤.
+                    // Disk Temp Table¿¡¼­ÀÇ Ã³¸®¸¦ À§ÇØ ColumnÀ»
+                    // BIGINT TypeÀ¸·Î ÁöÁ¤( 32/64bit pointerÀÇ ÀúÀå,
+                    // RID¿Í µ¿ÀÏÇÑ Å©±â ÀúÀå). RIDÀÇ Å©±â°¡ BIGINTÅ©±â¸¦ ÃÊ°úÇÒ
+                    // °æ¿ì, ÀÌ¿¡ ´ëÇÑ ¼öÁ¤ÀÌ ÀÌ·ç¾îÁ®¾ß ÇÑ´Ù.
                     IDE_DASSERT( ID_SIZEOF(scGRID) <= ID_SIZEOF(mtdBigintType) );
 
                     IDE_TEST( mtc::initializeColumn( sNode->dstColumn,
@@ -2479,13 +2480,13 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
                 case QMC_MTR_TYPE_DISK_TABLE :
                 {
                     //-----------------------------------
-                    // Disk Base Tableì˜ ê²½ìš°
+                    // Disk Base TableÀÇ °æ¿ì
                     //-----------------------------------
-                    // Disk Temp Tableì—ì„œì˜ ì²˜ë¦¬ë¥¼ ìœ„í•´
-                    // Columnì„ BIGINT Typeìœ¼ë¡œ ì§€ì •
-                    // 32/64bit pointerë¥¼ ì €ì¥, RIDì™€ ë™ì¼í•œ í¬ê¸° ì €ì¥
-                    // RIDì˜ í¬ê¸°ê°€ BIGINTí¬ê¸°ë¥¼ ì´ˆê³¼í•  ê²½ìš°,
-                    // ì´ì— ëŒ€í•œ ìˆ˜ì •ì´ ì´ë£¨ì–´ì ¸ì•¼ í•œë‹¤.
+                    // Disk Temp Table¿¡¼­ÀÇ Ã³¸®¸¦ À§ÇØ
+                    // ColumnÀ» BIGINT TypeÀ¸·Î ÁöÁ¤
+                    // 32/64bit pointer¸¦ ÀúÀå, RID¿Í µ¿ÀÏÇÑ Å©±â ÀúÀå
+                    // RIDÀÇ Å©±â°¡ BIGINTÅ©±â¸¦ ÃÊ°úÇÒ °æ¿ì,
+                    // ÀÌ¿¡ ´ëÇÑ ¼öÁ¤ÀÌ ÀÌ·ç¾îÁ®¾ß ÇÑ´Ù.
                     IDE_DASSERT( ID_SIZEOF(scGRID) <= ID_SIZEOF(mtdBigintType) );
 
                     IDE_TEST( mtc::initializeColumn( sNode->dstColumn,
@@ -2509,11 +2510,11 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
                 case QMC_MTR_TYPE_MEMORY_PARTITIONED_TABLE :
                 {
                     //-----------------------------------
-                    // Memory Partitioned Tableì˜ ê²½ìš°
+                    // Memory Partitioned TableÀÇ °æ¿ì
                     //-----------------------------------
 
                     // BUG-38309
-                    // ì´ì œëŠ” 16byteë³´ë‹¤ ì»¤ì„œ mtdByteë¥¼ ì‚¬ìš©í•œë‹¤.
+                    // ÀÌÁ¦´Â 16byteº¸´Ù Ä¿¼­ mtdByte¸¦ »ç¿ëÇÑ´Ù.
                     IDE_TEST( mtc::initializeColumn( sNode->dstColumn,
                                                      & mtdByte,
                                                      1,
@@ -2534,13 +2535,13 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
                 case QMC_MTR_TYPE_DISK_PARTITIONED_TABLE :
                 {
                     //-----------------------------------
-                    // Disk Partitioned Tableì˜ ê²½ìš°
+                    // Disk Partitioned TableÀÇ °æ¿ì
                     //-----------------------------------
 
                     // BUG-38309
-                    // ì´ì œëŠ” 16byteë³´ë‹¤ ì»¤ì„œ mtdByteë¥¼ ì‚¬ìš©í•œë‹¤.
+                    // ÀÌÁ¦´Â 16byteº¸´Ù Ä¿¼­ mtdByte¸¦ »ç¿ëÇÑ´Ù.
                     // PROJ-2204 join update, delete
-                    // ridë¿ë§Œì•„ë‹ˆë¼ indexTuple ridë„ ì €ì¥í•˜ê³  ì›ë³µí•œë‹¤.
+                    // rid»Ó¸¸¾Æ´Ï¶ó indexTuple ridµµ ÀúÀåÇÏ°í ¿øº¹ÇÑ´Ù.
                     IDE_TEST( mtc::initializeColumn( sNode->dstColumn,
                                                      & mtdByte,
                                                      1,
@@ -2558,16 +2559,16 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
                     break;
                 }
 
-                case QMC_MTR_TYPE_HYBRID_PARTITIONED_TABLE : /* PROJ-2464 hybrid partitioned table ì§€ì› */
+                case QMC_MTR_TYPE_HYBRID_PARTITIONED_TABLE : /* PROJ-2464 hybrid partitioned table Áö¿ø */
                 {
                     //-----------------------------------
-                    // Hybrid Partitioned Tableì˜ ê²½ìš°
+                    // Hybrid Partitioned TableÀÇ °æ¿ì
                     //-----------------------------------
 
                     // BUG-38309
-                    // ì´ì œëŠ” 16byteë³´ë‹¤ ì»¤ì„œ mtdByteë¥¼ ì‚¬ìš©í•œë‹¤.
+                    // ÀÌÁ¦´Â 16byteº¸´Ù Ä¿¼­ mtdByte¸¦ »ç¿ëÇÑ´Ù.
                     // PROJ-2204 join update, delete
-                    // ridë¿ë§Œì•„ë‹ˆë¼ indexTuple ridë„ ì €ì¥í•˜ê³  ì›ë³µí•œë‹¤.
+                    // rid»Ó¸¸¾Æ´Ï¶ó indexTuple ridµµ ÀúÀåÇÏ°í ¿øº¹ÇÑ´Ù.
                     IDE_TEST( mtc::initializeColumn( sNode->dstColumn,
                                                      & mtdByte,
                                                      1,
@@ -2586,13 +2587,13 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
                 }
 
                 //-----------------------------------------------------------
-                // Table ë‚´ì˜ Columnì— ëŒ€í•œ ì²˜ë¦¬
+                // Table ³»ÀÇ Column¿¡ ´ëÇÑ Ã³¸®
                 //-----------------------------------------------------------
 
                 case QMC_MTR_TYPE_MEMORY_PARTITION_KEY_COLUMN :
                 {
                     //-----------------------------------
-                    // Memory Columnì¸ ê²½ìš°
+                    // Memory ColumnÀÎ °æ¿ì
                     //-----------------------------------
 
                     IDE_TEST( refineOffset4MemoryPartitionColumn( aNode, sNode, & sOffset )
@@ -2603,7 +2604,7 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
                 case QMC_MTR_TYPE_MEMORY_KEY_COLUMN :
                 {
                     //-----------------------------------
-                    // Memory Columnì¸ ê²½ìš°
+                    // Memory ColumnÀÎ °æ¿ì
                     //-----------------------------------
 
                     IDE_TEST( refineOffset4MemoryColumn( aNode, sNode, & sOffset )
@@ -2612,35 +2613,35 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
                 }
 
                 //-----------------------------------------------------------
-                // Expression ë° íŠ¹ìˆ˜ Columnì— ëŒ€í•œ ì²˜ë¦¬
+                // Expression ¹× Æ¯¼ö Column¿¡ ´ëÇÑ Ã³¸®
                 //-----------------------------------------------------------
                 case QMC_MTR_TYPE_CALCULATE:
                 {
                     // To Fix PR-8146
-                    // AVG(), STDDEV()ë“±ì˜ ì²˜ë¦¬ë¥¼ ìœ„í•´
-                    // Offset ê³„ì‚°ì„ ìœ„í•´ì„œ í•´ë‹¹ Expressionì˜ Columnê°œìˆ˜ë¥¼
-                    // ì´ìš©í•˜ì—¬ ê³„ì‚°í•˜ì—¬ì•¼ í•œë‹¤.
+                    // AVG(), STDDEV()µîÀÇ Ã³¸®¸¦ À§ÇØ
+                    // Offset °è»êÀ» À§ÇØ¼­ ÇØ´ç ExpressionÀÇ Column°³¼ö¸¦
+                    // ÀÌ¿ëÇÏ¿© °è»êÇÏ¿©¾ß ÇÑ´Ù.
 
                     // To Fix PR-12093
-                    // Destine Nodeë¥¼ ì‚¬ìš©í•˜ì—¬
-                    // mtcColumnì˜ Countë¥¼ êµ¬í•˜ëŠ” ê²ƒì´ ì›ì¹™ì— ë§ìŒ
-                    // ì‚¬ìš©í•˜ì§€ë„ ì•Šì„ mtcColumn ì •ë³´ë¥¼ ìœ ì§€í•˜ëŠ” ê²ƒì€ ë¶ˆí•©ë¦¬í•¨.
-                    //     - Memory ê³µê°„ ë‚­ë¹„
-                    //     - offset ì¡°ì • ì˜¤ë¥˜ (PR-12093)
+                    // Destine Node¸¦ »ç¿ëÇÏ¿©
+                    // mtcColumnÀÇ Count¸¦ ±¸ÇÏ´Â °ÍÀÌ ¿øÄ¢¿¡ ¸ÂÀ½
+                    // »ç¿ëÇÏÁöµµ ¾ÊÀ» mtcColumn Á¤º¸¸¦ À¯ÁöÇÏ´Â °ÍÀº ºÒÇÕ¸®ÇÔ.
+                    //     - Memory °ø°£ ³¶ºñ
+                    //     - offset Á¶Á¤ ¿À·ù (PR-12093)
                     sColumnCnt =
                         sNode->dstNode->node.module->lflag &
                         MTC_NODE_COLUMN_COUNT_MASK;
 
                     for ( i = 0; i < sColumnCnt; i++ )
                     {
-                        // ê°’ ìì²´ê°€ ì €ì¥ë˜ëŠ” ê²½ìš°ì´ë¯€ë¡œ
-                        // Data Typeì— ë§ë„ë¡ offsetë“±ì„ aligní•œë‹¤.
+                        // °ª ÀÚÃ¼°¡ ÀúÀåµÇ´Â °æ¿ìÀÌ¹Ç·Î
+                        // Data Type¿¡ ¸Âµµ·Ï offsetµîÀ» alignÇÑ´Ù.
                         sNode->dstColumn[i].column.flag &= ~SMI_COLUMN_TYPE_MASK;
                         sNode->dstColumn[i].column.flag |= SMI_COLUMN_TYPE_FIXED;
 
                         // BUG-38494
-                        // Compressed Column ì—­ì‹œ ê°’ ìì²´ê°€ ì €ì¥ë˜ë¯€ë¡œ
-                        // Compressed ì†ì„±ì„ ì‚­ì œí•œë‹¤
+                        // Compressed Column ¿ª½Ã °ª ÀÚÃ¼°¡ ÀúÀåµÇ¹Ç·Î
+                        // Compressed ¼Ó¼ºÀ» »èÁ¦ÇÑ´Ù
                         sNode->dstColumn[i].column.flag &= ~SMI_COLUMN_COMPRESSION_MASK;
                         sNode->dstColumn[i].column.flag |= SMI_COLUMN_COMPRESSION_FALSE;
 
@@ -2656,31 +2657,31 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
 
                 case QMC_MTR_TYPE_COPY_VALUE:
                 case QMC_MTR_TYPE_CALCULATE_AND_COPY_VALUE:
-                case QMC_MTR_TYPE_HYBRID_PARTITION_KEY_COLUMN : /* PROJ-2464 hybrid partitioned table ì§€ì› */
+                case QMC_MTR_TYPE_HYBRID_PARTITION_KEY_COLUMN : /* PROJ-2464 hybrid partitioned table Áö¿ø */
                 {
                     // To Fix PR-8146
-                    // AVG(), STDDEV()ë“±ì˜ ì²˜ë¦¬ë¥¼ ìœ„í•´
-                    // Offset ê³„ì‚°ì„ ìœ„í•´ì„œ í•´ë‹¹ Expressionì˜ Columnê°œìˆ˜ë¥¼
-                    // ì´ìš©í•˜ì—¬ ê³„ì‚°í•˜ì—¬ì•¼ í•œë‹¤.
+                    // AVG(), STDDEV()µîÀÇ Ã³¸®¸¦ À§ÇØ
+                    // Offset °è»êÀ» À§ÇØ¼­ ÇØ´ç ExpressionÀÇ Column°³¼ö¸¦
+                    // ÀÌ¿ëÇÏ¿© °è»êÇÏ¿©¾ß ÇÑ´Ù.
 
                     // To Fix PR-12093
-                    // Destine Nodeë¥¼ ì‚¬ìš©í•˜ì—¬
-                    // mtcColumnì˜ Countë¥¼ êµ¬í•˜ëŠ” ê²ƒì´ ì›ì¹™ì— ë§ìŒ
-                    // ì‚¬ìš©í•˜ì§€ë„ ì•Šì„ mtcColumn ì •ë³´ë¥¼ ìœ ì§€í•˜ëŠ” ê²ƒì€ ë¶ˆí•©ë¦¬í•¨.
-                    //     - Memory ê³µê°„ ë‚­ë¹„
-                    //     - offset ì¡°ì • ì˜¤ë¥˜ (PR-12093)
+                    // Destine Node¸¦ »ç¿ëÇÏ¿©
+                    // mtcColumnÀÇ Count¸¦ ±¸ÇÏ´Â °ÍÀÌ ¿øÄ¢¿¡ ¸ÂÀ½
+                    // »ç¿ëÇÏÁöµµ ¾ÊÀ» mtcColumn Á¤º¸¸¦ À¯ÁöÇÏ´Â °ÍÀº ºÒÇÕ¸®ÇÔ.
+                    //     - Memory °ø°£ ³¶ºñ
+                    //     - offset Á¶Á¤ ¿À·ù (PR-12093)
                     sColumnCnt =
                         sNode->dstNode->node.module->lflag &
                         MTC_NODE_COLUMN_COUNT_MASK;
 
                     for ( i = 0; i < sColumnCnt; i++ )
                     {
-                        // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+                        // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
                         if ( ( ( sNode->flag & QMC_MTR_TEMP_VAR_TYPE_ENABLE_MASK )
                                == QMC_MTR_TEMP_VAR_TYPE_ENABLE_TRUE ) &&
                              ( QMC_IS_MTR_TEMP_VAR_COLUMN( sNode->dstColumn[i] ) == ID_TRUE ) )
                         {
-                            // TEMP_TYPEìœ¼ë¡œ ì„¤ì •í•œë‹¤.
+                            // TEMP_TYPEÀ¸·Î ¼³Á¤ÇÑ´Ù.
                             if ( sTempTypeColSize == 1 )
                             {
                                 sNode->dstColumn[i].column.flag &= ~SMI_COLUMN_TYPE_MASK;
@@ -2705,14 +2706,14 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
                         }
                         else
                         {
-                            // ê°’ ìì²´ê°€ ì €ì¥ë˜ëŠ” ê²½ìš°ì´ë¯€ë¡œ
-                            // Data Typeì— ë§ë„ë¡ offsetë“±ì„ aligní•œë‹¤.
+                            // °ª ÀÚÃ¼°¡ ÀúÀåµÇ´Â °æ¿ìÀÌ¹Ç·Î
+                            // Data Type¿¡ ¸Âµµ·Ï offsetµîÀ» alignÇÑ´Ù.
                             sNode->dstColumn[i].column.flag &= ~SMI_COLUMN_TYPE_MASK;
                             sNode->dstColumn[i].column.flag |= SMI_COLUMN_TYPE_FIXED;
 
                             // BUG-38494
-                            // Compressed Column ì—­ì‹œ ê°’ ìì²´ê°€ ì €ì¥ë˜ë¯€ë¡œ
-                            // Compressed ì†ì„±ì„ ì‚­ì œí•œë‹¤
+                            // Compressed Column ¿ª½Ã °ª ÀÚÃ¼°¡ ÀúÀåµÇ¹Ç·Î
+                            // Compressed ¼Ó¼ºÀ» »èÁ¦ÇÑ´Ù
                             sNode->dstColumn[i].column.flag &= ~SMI_COLUMN_COMPRESSION_MASK;
                             sNode->dstColumn[i].column.flag |= SMI_COLUMN_COMPRESSION_FALSE;
 
@@ -2730,9 +2731,9 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
                 {
                     // PROJ-2469 Optimize View Materialization
                     // BUG-41681
-                    // ë™ì¼ íƒ€ì…ì˜ useless columnì´ ìˆë‹¤ë©´ ê°™ì´ ì‚¬ìš©í•˜ê³ 
-                    // ìƒìœ„ì—ì„œ ì‚¬ìš©í•˜ì§€ ì•Šì•„, Materialize í•  í•„ìš” ì—†ëŠ”
-                    // View Columnì— ëŒ€í•´ì„œ null valueë§Œ ì €ì¥í•˜ë„ë¡ í•œë‹¤.
+                    // µ¿ÀÏ Å¸ÀÔÀÇ useless columnÀÌ ÀÖ´Ù¸é °°ÀÌ »ç¿ëÇÏ°í
+                    // »óÀ§¿¡¼­ »ç¿ëÇÏÁö ¾Ê¾Æ, Materialize ÇÒ ÇÊ¿ä ¾ø´Â
+                    // View Column¿¡ ´ëÇØ¼­ null value¸¸ ÀúÀåÇÏµµ·Ï ÇÑ´Ù.
                     for ( sTmpNode = aNode; sTmpNode != sNode; sTmpNode = sTmpNode->next )
                     {
                         if ( ( ( sTmpNode->flag & QMC_MTR_TYPE_MASK )
@@ -2758,8 +2759,8 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
                     }
                     else
                     {
-                        // column typeì€ ìœ ì§€í•˜ë˜, null valueë§Œ ì €ì¥í•˜ë„ë¡
-                        // column sizeë¥¼ ì¤„ì¸ë‹¤.
+                        // column typeÀº À¯ÁöÇÏµÇ, null value¸¸ ÀúÀåÇÏµµ·Ï
+                        // column size¸¦ ÁÙÀÎ´Ù.
                         if ( ( sNode->dstColumn->module->flag & MTD_CREATE_PARAM_MASK )
                              == MTD_CREATE_PARAM_NONE )
                         {
@@ -2810,7 +2811,7 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
                 }                   
                 default :
                 {
-                    // Materialized Columnì˜ ì¢…ë¥˜ê°€ ì§€ì •ë˜ì–´ ìˆì–´ì•¼ í•¨.
+                    // Materialized ColumnÀÇ Á¾·ù°¡ ÁöÁ¤µÇ¾î ÀÖ¾î¾ß ÇÔ.
                     IDE_DASSERT(0);
 
                     break;
@@ -2833,7 +2834,7 @@ qmc::refineOffsets( qmdMtrNode * aNode, UInt aStartOffset )
 /***********************************************************************
  *
  * Description :
- *    í•´ë‹¹ Tupleì˜ Fixed Record Sizeë¥¼ ê³„ì‚°í•œë‹¤.
+ *    ÇØ´ç TupleÀÇ Fixed Record Size¸¦ °è»êÇÑ´Ù.
  *
  * Implementation :
  *
@@ -2847,28 +2848,28 @@ UInt qmc::getRowOffsetForTuple( mtcTemplate * aTemplate,
     UShort      i;
 
     //-----------------------------------------------------
-    // Fixed Recordì˜ Size ê³„ì‚°
+    // Fixed RecordÀÇ Size °è»ê
     //-----------------------------------------------------
 
     // To Fix PR-8200
-    // ì €ì¥ ê³µê°„ì˜ í¬ê¸° ê³„ì‚°ì‹œ ë‹¤ìŒê³¼ ê°™ì€ ì‚¬í•­ì„ ê³ ë ¤í•˜ì—¬ì•¼ í•œë‹¤.
-    // ì˜ˆë¥¼ ë“¤ì–´ ë‹¤ìŒê³¼ ê°™ì´ ì €ì¥ ì»¬ëŸ¼ì„ êµ¬ì„±í•  ë•Œ
+    // ÀúÀå °ø°£ÀÇ Å©±â °è»ê½Ã ´ÙÀ½°ú °°Àº »çÇ×À» °í·ÁÇÏ¿©¾ß ÇÑ´Ù.
+    // ¿¹¸¦ µé¾î ´ÙÀ½°ú °°ÀÌ ÀúÀå ÄÃ·³À» ±¸¼ºÇÒ ¶§
     // [T1]-->[T2]-->[T3]-->[T3.i1]-->[T2.i1]-->[T3.i1]
-    // ê°ê°ì˜ offsetì€ ë‹¤ìŒê³¼ ê°™ì´ ê²°ì •ëœë‹¤.
+    // °¢°¢ÀÇ offsetÀº ´ÙÀ½°ú °°ÀÌ °áÁ¤µÈ´Ù.
     //  0  -->  8 --> 16 -->  16   -->  8    -->   0
-    // ì´ëŠ” ::refineOffsets()ì— ì˜í•´ ë©”ëª¨ë¦¬ ì»¬ëŸ¼ì€ ë³„ë„ë¡œ
-    // ì €ì¥ ê³µê°„ì„ í™•ë³´í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì´ë‹¤.
-    // ë”°ë¼ì„œ, ê°€ì¥ Offsetì´ í° ì»¬ëŸ¼ì„ ê¸°ì¤€ìœ¼ë¡œ Fixed Recordì˜
-    // Sizeë¥¼ ê³„ì‚°í•˜ì—¬ì•¼ í•œë‹¤.
+    // ÀÌ´Â ::refineOffsets()¿¡ ÀÇÇØ ¸Ş¸ğ¸® ÄÃ·³Àº º°µµ·Î
+    // ÀúÀå °ø°£À» È®º¸ÇÏÁö ¾Ê±â ¶§¹®ÀÌ´Ù.
+    // µû¶ó¼­, °¡Àå OffsetÀÌ Å« ÄÃ·³À» ±âÁØÀ¸·Î Fixed RecordÀÇ
+    // Size¸¦ °è»êÇÏ¿©¾ß ÇÑ´Ù.
 
-    // ê°€ì¥ Offsetì´ í° Columnì„ íšë“
+    // °¡Àå OffsetÀÌ Å« ColumnÀ» È¹µæ
     sColumn = aTemplate->rows[aTupleID].columns;
     for ( i = 1; i < aTemplate->rows[aTupleID].columnCount; i++ )
     {
-        /* PROJ-2419 ë°˜ì˜ ì´ì „ì—ëŠ” ëª¨ë“  Columnì˜ Offsetì´ ë‹¬ëìœ¼ë‚˜,
-         * PROJ-2419 ë°˜ì˜ ì´í›„ì—ëŠ” Offsetì´ 0ì¸ Columnì´ ì—¬ëŸ¬ ê°œì¼ ìˆ˜ ìˆë‹¤.
-         * ê·¸ëŸ¬ë‚˜, Fixed Column/Large Variable Columnì¸ ê²½ìš°,
-         * Fixed Slot Header Size(32) ë•Œë¬¸ì— Offsetì´ 32 ì´ìƒì´ë¯€ë¡œ ë¬¸ì œê°€ ì—†ë‹¤.
+        /* PROJ-2419 ¹İ¿µ ÀÌÀü¿¡´Â ¸ğµç ColumnÀÇ OffsetÀÌ ´Ş¶úÀ¸³ª,
+         * PROJ-2419 ¹İ¿µ ÀÌÈÄ¿¡´Â OffsetÀÌ 0ÀÎ ColumnÀÌ ¿©·¯ °³ÀÏ ¼ö ÀÖ´Ù.
+         * ±×·¯³ª, Fixed Column/Large Variable ColumnÀÎ °æ¿ì,
+         * Fixed Slot Header Size(32) ¶§¹®¿¡ OffsetÀÌ 32 ÀÌ»óÀÌ¹Ç·Î ¹®Á¦°¡ ¾ø´Ù.
          */
         if ( aTemplate->rows[aTupleID].columns[i].column.offset
              > sColumn->column.offset )
@@ -2888,27 +2889,27 @@ UInt qmc::getRowOffsetForTuple( mtcTemplate * aTemplate,
         if ( (sColumn->column.flag & SMI_COLUMN_TYPE_MASK)
              == SMI_COLUMN_TYPE_VARIABLE )
         {
-            // Disk Variable Columnì¼ ê²½ìš°ëŠ” ì—†ë‹¤.
+            // Disk Variable ColumnÀÏ °æ¿ì´Â ¾ø´Ù.
             IDE_ASSERT( ( sColumn->column.flag & SMI_COLUMN_STORAGE_MASK )
                         == SMI_COLUMN_STORAGE_MEMORY );
 
-            // ë§ˆì§€ë§‰ Columnì´ Variable Columnì¼ ê²½ìš°
-            // Variable Columnì˜ Header Sizeë¥¼ ê³„ì‚°
-            /* Fixed Slotì— Columnì´ ì—†ëŠ” ê²½ìš°, Fixed Slot Header Size ë§Œí¼ì˜ ê³µê°„ì´ í•„ìš”í•˜ë‹¤.
-             * Variable Slotì˜ OIDëŠ” Fixed Slot Headerì— ì¡´ì¬í•œë‹¤.
+            // ¸¶Áö¸· ColumnÀÌ Variable ColumnÀÏ °æ¿ì
+            // Variable ColumnÀÇ Header Size¸¦ °è»ê
+            /* Fixed Slot¿¡ ColumnÀÌ ¾ø´Â °æ¿ì, Fixed Slot Header Size ¸¸Å­ÀÇ °ø°£ÀÌ ÇÊ¿äÇÏ´Ù.
+             * Variable SlotÀÇ OID´Â Fixed Slot Header¿¡ Á¸ÀçÇÑ´Ù.
              */
             sFixedRecordSize = smiGetRowHeaderSize( SMI_TABLE_MEMORY );
         }
         else if ( (sColumn->column.flag & SMI_COLUMN_TYPE_MASK)
                   == SMI_COLUMN_TYPE_VARIABLE_LARGE )
         {
-            // Disk Variable Columnì¼ ê²½ìš°ëŠ” ì—†ë‹¤.
+            // Disk Variable ColumnÀÏ °æ¿ì´Â ¾ø´Ù.
             IDE_ASSERT( ( sColumn->column.flag & SMI_COLUMN_STORAGE_MASK )
                         == SMI_COLUMN_STORAGE_MEMORY );
 
-            // ë§ˆì§€ë§‰ Columnì´ Variable Columnì¼ ê²½ìš°
-            // Variable Columnì˜ Header Sizeë¥¼ ê³„ì‚°
-            // Large Variable Columnì¼ ê²½ìš°
+            // ¸¶Áö¸· ColumnÀÌ Variable ColumnÀÏ °æ¿ì
+            // Variable ColumnÀÇ Header Size¸¦ °è»ê
+            // Large Variable ColumnÀÏ °æ¿ì
             sFixedRecordSize = sColumn->column.offset +
                 IDL_MAX( smiGetVariableColumnSize( SMI_TABLE_MEMORY ),
                          smiGetVCDescInModeSize() + sColumn->column.vcInOutBaseSize );
@@ -2930,7 +2931,7 @@ UInt qmc::getRowOffsetForTuple( mtcTemplate * aTemplate,
                     smiGetLobColumnSize( SMI_TABLE_DISK );
             }
         }
-        // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+        // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
         else if ( (sColumn->column.flag & SMI_COLUMN_TYPE_MASK)
                   == SMI_COLUMN_TYPE_TEMP_1B )
         {
@@ -2948,7 +2949,7 @@ UInt qmc::getRowOffsetForTuple( mtcTemplate * aTemplate,
         }
         else
         {
-            // ë§ˆì§€ë§‰ Columnì´ Fixed Columnì¼ ê²½ìš°
+            // ¸¶Áö¸· ColumnÀÌ Fixed ColumnÀÏ °æ¿ì
             sFixedRecordSize = sColumn->column.offset + sColumn->column.size;
         }
     }
@@ -2970,20 +2971,20 @@ IDE_RC qmc::setRowSize( iduMemory  * aMemory,
 /***********************************************************************
  *
  * Description :
- *    í•´ë‹¹ Tupleì˜ Record Sizeë¥¼ ê³„ì‚°í•˜ê³ , Memoryë¥¼ í• ë‹¹í•¨.
- *    Disk Table, Disk Temp Table, Memory Temp Tableì— í•œí•˜ì—¬ ì‚¬ìš©í•¨.
+ *    ÇØ´ç TupleÀÇ Record Size¸¦ °è»êÇÏ°í, Memory¸¦ ÇÒ´çÇÔ.
+ *    Disk Table, Disk Temp Table, Memory Temp Table¿¡ ÇÑÇÏ¿© »ç¿ëÇÔ.
  *
  * Implementation :
  *
- *    - Fixed Recordì˜ Sizeë¥¼ êµ¬í•œë‹¤.
- *        - Offsetì´ ê°€ì¥ í° Columnì˜ ì¢…ë¥˜(Fixed/Variable)ì— ë”°ë¼,
- *          Record í¬ê¸°ë¥¼ ê²°ì •í•œë‹¤.
- *    - Disk Table(Disk Temp Table)ì˜ ê²½ìš°
- *        - Variable Columnë“¤ì„ ìœ„í•œ ê³µê°„ì˜ í¬ê¸°ë¥¼ ê³„ì‚°í•œë‹¤.
- *        - ê° Variable Columnì˜ ê³µê°„ì€ Variable Column
- *    - í¬ê¸°ì— ë§ëŠ” Memoryë¥¼ í• ë‹¹í•¨.
- *    - Disk Table(Disk Temp Table)ì˜ ê²½ìš°
- *        - Variable Columnì„ ìœ„í•œ value pointerë¥¼ ì„¤ì •í•œë‹¤.
+ *    - Fixed RecordÀÇ Size¸¦ ±¸ÇÑ´Ù.
+ *        - OffsetÀÌ °¡Àå Å« ColumnÀÇ Á¾·ù(Fixed/Variable)¿¡ µû¶ó,
+ *          Record Å©±â¸¦ °áÁ¤ÇÑ´Ù.
+ *    - Disk Table(Disk Temp Table)ÀÇ °æ¿ì
+ *        - Variable ColumnµéÀ» À§ÇÑ °ø°£ÀÇ Å©±â¸¦ °è»êÇÑ´Ù.
+ *        - °¢ Variable ColumnÀÇ °ø°£Àº Variable Column
+ *    - Å©±â¿¡ ¸Â´Â Memory¸¦ ÇÒ´çÇÔ.
+ *    - Disk Table(Disk Temp Table)ÀÇ °æ¿ì
+ *        - Variable ColumnÀ» À§ÇÑ value pointer¸¦ ¼³Á¤ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -2994,8 +2995,8 @@ IDE_RC qmc::setRowSize( iduMemory  * aMemory,
     UShort      i                   = 0;
 
     //-----------------------------------------------------
-    // Memory Tableì˜ ê²½ìš° Variable Columnì„ ìœ„í•œ
-    // ê³µê°„ì˜ í¬ê¸° ê³„ì‚°
+    // Memory TableÀÇ °æ¿ì Variable ColumnÀ» À§ÇÑ
+    // °ø°£ÀÇ Å©±â °è»ê
     //-----------------------------------------------------
 
     sVariableRecordSize = 0;
@@ -3017,7 +3018,7 @@ IDE_RC qmc::setRowSize( iduMemory  * aMemory,
                 sColumn = aTemplate->rows[aTupleID].columns + i;
 
                 // To fix BUG-24356
-                // geometryì— ëŒ€í•´ì„œë§Œ value bufferí• ë‹¹
+                // geometry¿¡ ´ëÇØ¼­¸¸ value bufferÇÒ´ç
                 if ( ( (sColumn->column.flag & SMI_COLUMN_TYPE_MASK)
                        == SMI_COLUMN_TYPE_VARIABLE_LARGE ) &&
                      (sColumn->module->id == MTD_GEOMETRY_ID) )
@@ -3038,14 +3039,14 @@ IDE_RC qmc::setRowSize( iduMemory  * aMemory,
             // Nothing To Do
         }
 
-        // Memory Table(Temp Table)ì˜ ê²½ìš°,
-        // Variable Columnì„ ìœ„í•œ ë³„ë„ì˜ ê³µê°„ì´ í•„ìš” ì—†ë‹¤.
-        // Memory Temp Tableì˜ Disk Variable Column => Fixed Columnìœ¼ë¡œ ì²˜ë¦¬
-        // Disk Temp Tableì˜ Memory Variable Column => Fixed Columnìœ¼ë¡œ ì²˜ë¦¬
+        // Memory Table(Temp Table)ÀÇ °æ¿ì,
+        // Variable ColumnÀ» À§ÇÑ º°µµÀÇ °ø°£ÀÌ ÇÊ¿ä ¾ø´Ù.
+        // Memory Temp TableÀÇ Disk Variable Column => Fixed ColumnÀ¸·Î Ã³¸®
+        // Disk Temp TableÀÇ Memory Variable Column => Fixed ColumnÀ¸·Î Ã³¸®
 
-        // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
-        // disk columnì´ memory tempì— ìŒ“ì´ëŠ” ê²½ìš° variable length typeì— ëŒ€í•´ì„œ
-        // SMI_COLUMN_TEMP_TYPEìœ¼ë¡œ ì €ì¥í•œë‹¤.
+        // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
+        // disk columnÀÌ memory temp¿¡ ½×ÀÌ´Â °æ¿ì variable length type¿¡ ´ëÇØ¼­
+        // SMI_COLUMN_TEMP_TYPEÀ¸·Î ÀúÀåÇÑ´Ù.
         for ( i = 0; i < aTemplate->rows[aTupleID].columnCount; i++ )
         {
             sColumn = aTemplate->rows[aTupleID].columns + i;
@@ -3070,19 +3071,19 @@ IDE_RC qmc::setRowSize( iduMemory  * aMemory,
     }
 
     //-----------------------------------------------------
-    // Record Sizeì˜ Setting
+    // Record SizeÀÇ Setting
     //-----------------------------------------------------
 
     aTemplate->rows[aTupleID].rowOffset = qmc::getRowOffsetForTuple( aTemplate, aTupleID );
 
     //-----------------------------------------------------
-    // ê³µê°„ í• ë‹¹ ë° Variable Column Value Pointer Setting
+    // °ø°£ ÇÒ´ç ¹× Variable Column Value Pointer Setting
     //-----------------------------------------------------
 
     if ( ( aTemplate->rows[aTupleID].lflag & MTC_TUPLE_STORAGE_MASK)
          == MTC_TUPLE_STORAGE_DISK )
     {
-        // ë””ìŠ¤í¬í…Œì´ë¸”ì— ëŒ€í•œ ê³µê°„ í• ë‹¹
+        // µğ½ºÅ©Å×ÀÌºí¿¡ ´ëÇÑ °ø°£ ÇÒ´ç
         IDU_LIMITPOINT("qmc::setRowSize::malloc2");
         IDE_TEST( aMemory->cralloc( aTemplate->rows[aTupleID].rowOffset,
                                     & aTemplate->rows[aTupleID].row )
@@ -3091,12 +3092,12 @@ IDE_RC qmc::setRowSize( iduMemory  * aMemory,
     else
     {
         // PROJ-1583 large geometry
-        // ê³µê°„ í• ë‹¹ ë° Variable Column Value Pointer Setting
+        // °ø°£ ÇÒ´ç ¹× Variable Column Value Pointer Setting
 
-        // ê³µê°„ í• ë‹¹
+        // °ø°£ ÇÒ´ç
         // To Fix PR-8561
-        // Variable Columnì— RIDë“±ì˜ ì •ë³´ë¥¼ ë‹´ê³  ìˆê¸° ë•Œë¬¸ì—
-        // ì´ˆê¸°í™”í•˜ì—¬ì•¼ í•¨.
+        // Variable Column¿¡ RIDµîÀÇ Á¤º¸¸¦ ´ã°í ÀÖ±â ¶§¹®¿¡
+        // ÃÊ±âÈ­ÇÏ¿©¾ß ÇÔ.
         if( sVariableRecordSize > 0 )
         {
             IDU_LIMITPOINT("qmc::setRowSize::malloc3");
@@ -3106,13 +3107,13 @@ IDE_RC qmc::setRowSize( iduMemory  * aMemory,
 
             sVarColumnOffset = 0;
 
-            // Memory Variable Columnì„ í• ë‹¹ëœ ê³µê°„ì— Memoryë¥¼ Settingí•¨.
+            // Memory Variable ColumnÀ» ÇÒ´çµÈ °ø°£¿¡ Memory¸¦ SettingÇÔ.
             for ( i = 0; i < aTemplate->rows[aTupleID].columnCount; i++ )
             {
                 sColumn = aTemplate->rows[aTupleID].columns + i;
 
                 // To fix BUG-24356
-                // geometryì— ëŒ€í•´ì„œë§Œ value bufferí• ë‹¹
+                // geometry¿¡ ´ëÇØ¼­¸¸ value bufferÇÒ´ç
                 if ( ( (sColumn->column.flag & SMI_COLUMN_TYPE_MASK)
                        == SMI_COLUMN_TYPE_VARIABLE_LARGE ) &&
                      (sColumn->module->id == MTD_GEOMETRY_ID) )
@@ -3130,7 +3131,7 @@ IDE_RC qmc::setRowSize( iduMemory  * aMemory,
                 }
             }
 
-            // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
+            // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
             for ( i = 0; i < aTemplate->rows[aTupleID].columnCount; i++ )
             {
                 sColumn = aTemplate->rows[aTupleID].columns + i;
@@ -3165,8 +3166,8 @@ qmc::getMtrRowSize( qmdMtrNode * aNode )
 /***********************************************************************
  *
  * Description :
- *    Materialized Rowì˜ ê³µê°„ í¬ê¸°ë¥¼ êµ¬í•œë‹¤.
- *    ::setRowSize()í›„ì— í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
+ *    Materialized RowÀÇ °ø°£ Å©±â¸¦ ±¸ÇÑ´Ù.
+ *    ::setRowSize()ÈÄ¿¡ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -3189,9 +3190,9 @@ qmc::setMtrNode( qcTemplate * aTemplate,
 /***********************************************************************
  *
  * Description :
- *    Code ì˜ì—­ì˜ Materialized Node ì •ë³´(aCodeNode)ë¡œë¶€í„°
- *    Data ì˜ì—­ì˜ Materialized Node ì •ë³´(aDataNode)ë¥¼ êµ¬ì„±í•œë‹¤.
- *    ì´ ë•Œ, Destination Nodeì˜ì—­ì˜ Columnì •ë³´ ë° Execute ì •ë³´ë„ êµ¬ì„±í•œë‹¤.
+ *    Code ¿µ¿ªÀÇ Materialized Node Á¤º¸(aCodeNode)·ÎºÎÅÍ
+ *    Data ¿µ¿ªÀÇ Materialized Node Á¤º¸(aDataNode)¸¦ ±¸¼ºÇÑ´Ù.
+ *    ÀÌ ¶§, Destination Node¿µ¿ªÀÇ ColumnÁ¤º¸ ¹× Execute Á¤º¸µµ ±¸¼ºÇÑ´Ù.
  *
  * Implementation :
  *                 destine node
@@ -3200,10 +3201,10 @@ qmc::setMtrNode( qcTemplate * aTemplate,
  *                  V
  *                 source node
  *
- *    ë³´ë‹¤ ë¹ ë¥¸ ì ‘ê·¼ì„ ìœ„í•´ qmdMtrNodeì—ëŠ” node ì •ë³´ ë¿ ì•„ë‹ˆë¼,
- *    Sourceì™€ Destineì˜ Column ì •ë³´ ë° Execute ì •ë³´ë¥¼ ë³„ë„ë¡œ ê´€ë¦¬í•œë‹¤.
- *    ë˜í•œ, source nodeì˜ ì •ë³´ë¥¼ ì´ìš©í•˜ì—¬ destine nodeì˜ columnì •ë³´ ë°
- *    exectue ì •ë³´ë„ ì´ ì‹œì ì—ì„œ ê²°ì •ëœë‹¤.
+ *    º¸´Ù ºü¸¥ Á¢±ÙÀ» À§ÇØ qmdMtrNode¿¡´Â node Á¤º¸ »Ó ¾Æ´Ï¶ó,
+ *    Source¿Í DestineÀÇ Column Á¤º¸ ¹× Execute Á¤º¸¸¦ º°µµ·Î °ü¸®ÇÑ´Ù.
+ *    ¶ÇÇÑ, source nodeÀÇ Á¤º¸¸¦ ÀÌ¿ëÇÏ¿© destine nodeÀÇ columnÁ¤º¸ ¹×
+ *    exectue Á¤º¸µµ ÀÌ ½ÃÁ¡¿¡¼­ °áÁ¤µÈ´Ù.
  *
  ***********************************************************************/
 
@@ -3213,22 +3214,22 @@ qmc::setMtrNode( qcTemplate * aTemplate,
     UInt         sColumnCnt;
 
     //----------------------------------------------------
-    // Base Table ì—¬ë¶€ì— ë”°ë¼,
-    // ì •í™•í•œ Source Nodeë¥¼ ì¶”ì¶œí•œë‹¤.
+    // Base Table ¿©ºÎ¿¡ µû¶ó,
+    // Á¤È®ÇÑ Source Node¸¦ ÃßÃâÇÑ´Ù.
     //----------------------------------------------------
 
     if ( aBaseTable == ID_TRUE )
     {
         // To Fix PR-11567
-        // Base Table ì¤‘ì—ë„ Pass Nodeê°€ ì¡´ì¬í•  ìˆ˜ ìˆë‹¤.
+        // Base Table Áß¿¡µµ Pass Node°¡ Á¸ÀçÇÒ ¼ö ÀÖ´Ù.
         // Ex) SELECT /+ DISTINCT SORT +/
         //     DISTINCT i1 + 1, i2 FROM T1 ORDER BY (i1 + 1) % 2, i2;
-        // Pass Nodeì˜ ê²½ìš° Sizeê°€ ì—†ëŠ” Column ì •ë³´ë¥¼ ê°–ê¸° ë•Œë¬¸ì—
-        // ì´ë¥¼ ì´ìš©í•˜ì—¬ destination column ì •ë³´ë¥¼ êµ¬ì¶•í•˜ë©´ ì•ˆëœë‹¤.
+        // Pass NodeÀÇ °æ¿ì Size°¡ ¾ø´Â Column Á¤º¸¸¦ °®±â ¶§¹®¿¡
+        // ÀÌ¸¦ ÀÌ¿ëÇÏ¿© destination column Á¤º¸¸¦ ±¸ÃàÇÏ¸é ¾ÈµÈ´Ù.
 
         // To FIX-PR-20820
-        // Base Tableì´ SubQuery ì¼ ê²½ìš°ë„ ìˆë‹¤.
-        // Order by ì— ë“¤ì–´ê°€ëŠ” Columnì´ Group By ì— ë‚˜ì˜¤ëŠ” Column ë˜ëŠ” Aggregation Function ë“±ì´ ì•„ë‹ ìˆ˜ë„ ìˆë‹¤.
+        // Base TableÀÌ SubQuery ÀÏ °æ¿ìµµ ÀÖ´Ù.
+        // Order by ¿¡ µé¾î°¡´Â ColumnÀÌ Group By ¿¡ ³ª¿À´Â Column ¶Ç´Â Aggregation Function µîÀÌ ¾Æ´Ò ¼öµµ ÀÖ´Ù.
         // Ex) SELECT
         //         ( SELECT s1 FROM t1 )
         //     FROM t1
@@ -3241,33 +3242,33 @@ qmc::setMtrNode( qcTemplate * aTemplate,
         }
         else
         {
-            // Aggregation Columnì˜ ê²½ìš°ë„ Conversionëœ ê°’ì„
-            // ì‚¬ìš©í•˜ì§€ ì•Šë„ë¡ Base Tableë¡œ ì²˜ë¦¬ë˜ì–´ì•¼ í•œë‹¤.
+            // Aggregation ColumnÀÇ °æ¿ìµµ ConversionµÈ °ªÀ»
+            // »ç¿ëÇÏÁö ¾Êµµ·Ï Base Table·Î Ã³¸®µÇ¾î¾ß ÇÑ´Ù.
             sSrcNode = aCodeNode->srcNode;
         }
     }
     else
     {
-        // Base Tableì´ ì•„ë‹ˆë¼ë©´,
-        // ì‹¤ì œ ê°’ì´ ì €ì¥ëœ Nodeë¥¼ ì¤‘ì‹¬ìœ¼ë¡œ ê·¸ ì •ë³´ë¥¼ êµ¬ì„±í•˜ì—¬ì•¼ í•œë‹¤.
+        // Base TableÀÌ ¾Æ´Ï¶ó¸é,
+        // ½ÇÁ¦ °ªÀÌ ÀúÀåµÈ Node¸¦ Áß½ÉÀ¸·Î ±× Á¤º¸¸¦ ±¸¼ºÇÏ¿©¾ß ÇÑ´Ù.
         sSrcNode = (qtcNode*)mtf::convertedNode( &aCodeNode->srcNode->node,
                                                  &aTemplate->tmplate );
     }
 
     //------------------------------------------------------
-    // Data Materialized Node ì˜ ê¸°ë³¸ ì •ë³´ Setting
-    //    - flag ì •ë³´ ë³µì‚¬
-    //    - Destination ì˜ì—­ì˜ ì •ë³´ Setting
+    // Data Materialized Node ÀÇ ±âº» Á¤º¸ Setting
+    //    - flag Á¤º¸ º¹»ç
+    //    - Destination ¿µ¿ªÀÇ Á¤º¸ Setting
     //        - dstNode : destination Node
-    //        - dstTuple : destination nodeì˜ tuple ìœ„ì¹˜
-    //        - dstColumn : destination nodeì˜ column ìœ„ì¹˜
-    //    - Source Node ì˜ì—­ì˜ ì •ë³´ Setting
+    //        - dstTuple : destination nodeÀÇ tuple À§Ä¡
+    //        - dstColumn : destination nodeÀÇ column À§Ä¡
+    //    - Source Node ¿µ¿ªÀÇ Á¤º¸ Setting
     //        - srcNode :
     //        - srcTuple
     //        - srcColumn
     //------------------------------------------------------
 
-    // Destie Nodeì˜ ì •ë³´ Setting
+    // Destie NodeÀÇ Á¤º¸ Setting
     aDataNode->flag = aCodeNode->flag;
     aDataNode->dstNode = aCodeNode->dstNode;
     aDataNode->dstTuple =
@@ -3275,7 +3276,7 @@ qmc::setMtrNode( qcTemplate * aTemplate,
     aDataNode->dstColumn =
         QTC_TUPLE_COLUMN(aDataNode->dstTuple, aCodeNode->dstNode);
 
-    // Source Nodeì˜ ì •ë³´ Setting
+    // Source NodeÀÇ Á¤º¸ Setting
     aDataNode->srcNode = aCodeNode->srcNode;
     aDataNode->srcTuple =
         & aTemplate->tmplate.rows[aCodeNode->srcNode->node.table];
@@ -3283,37 +3284,37 @@ qmc::setMtrNode( qcTemplate * aTemplate,
         QTC_TUPLE_COLUMN(aDataNode->srcTuple, aCodeNode->srcNode);
 
     //--------------------------------------------------------
-    // Destination Nodeì˜ì—­ì— í•´ë‹¹í•˜ëŠ” Column ì •ë³´ ë° Execute
-    // ì •ë³´ë¥¼ êµ¬ì„±í•œë‹¤.
-    // ì´ ë•Œ, ì›ë˜ Source Nodeê°€ ì•„ë‹Œ
-    // ì €ì¥ ëŒ€ìƒì´ ë˜ëŠ” Source Nodeì˜ Column ì •ë³´ì™€
-    // Execute ì •ë³´ë¥¼ ë³µì‚¬í•œë‹¤.
+    // Destination Node¿µ¿ª¿¡ ÇØ´çÇÏ´Â Column Á¤º¸ ¹× Execute
+    // Á¤º¸¸¦ ±¸¼ºÇÑ´Ù.
+    // ÀÌ ¶§, ¿ø·¡ Source Node°¡ ¾Æ´Ñ
+    // ÀúÀå ´ë»óÀÌ µÇ´Â Source NodeÀÇ Column Á¤º¸¿Í
+    // Execute Á¤º¸¸¦ º¹»çÇÑ´Ù.
     //
-    // ì°¸ì¡°) Host ë³€ìˆ˜ê°€ ì—†ëŠ” ê²½ìš°ë¼ë©´, Destination Nodeì˜ ì •ë³´ê°€
-    //       ì´ë¯¸ ê²°ì •ë˜ì–´ ìˆê¸°ë„ í•˜ì§€ë§Œ, ë™ì¼í•œ ê²°ê³¼ë¥¼ ë³µì‚¬í•˜ê¸°
-    //       ë•Œë¬¸ì— í° ë¬¸ì œê°€ ë˜ì§€ ì•ŠëŠ”ë‹¤.
+    // ÂüÁ¶) Host º¯¼ö°¡ ¾ø´Â °æ¿ì¶ó¸é, Destination NodeÀÇ Á¤º¸°¡
+    //       ÀÌ¹Ì °áÁ¤µÇ¾î ÀÖ±âµµ ÇÏÁö¸¸, µ¿ÀÏÇÑ °á°ú¸¦ º¹»çÇÏ±â
+    //       ¶§¹®¿¡ Å« ¹®Á¦°¡ µÇÁö ¾Ê´Â´Ù.
     //--------------------------------------------------------
 
-    // ì €ì¥í•  Source Nodeì˜ Column ì •ë³´ ë° Execute ì •ë³´ íšë“
+    // ÀúÀåÇÒ Source NodeÀÇ Column Á¤º¸ ¹× Execute Á¤º¸ È¹µæ
     sColumn  = QTC_TMPL_COLUMN(aTemplate, sSrcNode);
     sExecute = QTC_TMPL_EXECUTE(aTemplate, sSrcNode);
 
     // To Fix PR-8146
-    // Destine Nodeê°€ ì•„ë‹Œ Source Nodeë¥¼ ì‚¬ìš©í•˜ì—¬ì•¼ í•¨.
+    // Destine Node°¡ ¾Æ´Ñ Source Node¸¦ »ç¿ëÇÏ¿©¾ß ÇÔ.
     // To Fix PR-12093
-    // Destine Nodeë¥¼ ì‚¬ìš©í•˜ì—¬ mtcColumnì˜ Countë¥¼ êµ¬í•˜ëŠ” ê²ƒì´ ì›ì¹™ì— ë§ìŒ
-    // ì‚¬ìš©í•˜ì§€ë„ ì•Šì„ mtcColumn ì •ë³´ë¥¼ ìœ ì§€í•˜ëŠ” ê²ƒì€ ë¶ˆí•©ë¦¬í•¨.
-    //     - Memory ê³µê°„ ë‚­ë¹„
-    //     - offset ì¡°ì • ì˜¤ë¥˜ (PR-12093)
+    // Destine Node¸¦ »ç¿ëÇÏ¿© mtcColumnÀÇ Count¸¦ ±¸ÇÏ´Â °ÍÀÌ ¿øÄ¢¿¡ ¸ÂÀ½
+    // »ç¿ëÇÏÁöµµ ¾ÊÀ» mtcColumn Á¤º¸¸¦ À¯ÁöÇÏ´Â °ÍÀº ºÒÇÕ¸®ÇÔ.
+    //     - Memory °ø°£ ³¶ºñ
+    //     - offset Á¶Á¤ ¿À·ù (PR-12093)
     sColumnCnt =
         aDataNode->dstNode->node.module->lflag & MTC_NODE_COLUMN_COUNT_MASK;
 
-    // Column ì •ë³´ì˜ ë³µì‚¬
+    // Column Á¤º¸ÀÇ º¹»ç
     if( aDataNode->dstColumn != sColumn )
     {
-        // mtc::copyColumn()ì„ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.
-        // Variableì€ Variable ê·¸ëŒ€ë¡œ ìœ ì§€í•œë‹¤.
-        // í•„ìš”ì‹œ Fixedë¡œ ë³€ê²½í•œë‹¤.
+        // mtc::copyColumn()À» »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+        // VariableÀº Variable ±×´ë·Î À¯ÁöÇÑ´Ù.
+        // ÇÊ¿ä½Ã Fixed·Î º¯°æÇÑ´Ù.
         idlOS::memcpy( aDataNode->dstColumn,
                        sColumn,
                        ID_SIZEOF(mtcColumn) * sColumnCnt );
@@ -3321,11 +3322,11 @@ qmc::setMtrNode( qcTemplate * aTemplate,
     else
     {
         // BUG-34737
-        // srcì™€ dstê°€ ê°™ì€ ê²½ìš° ë³µì‚¬í•  í•„ìš”ê°€ ì—†ë‹¤.
+        // src¿Í dst°¡ °°Àº °æ¿ì º¹»çÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
         // Nothing to do.
     }
 
-    // Execute ì •ë³´ì˜ ë³µì‚¬
+    // Execute Á¤º¸ÀÇ º¹»ç
     if( aDataNode->dstTuple->execute + aDataNode->dstNode->node.column != sExecute )
     {
         idlOS::memcpy(
@@ -3339,15 +3340,15 @@ qmc::setMtrNode( qcTemplate * aTemplate,
     }
 
     //--------------------------------------------------------
-    // [Materialized Nodeì˜ í•¨ìˆ˜ í¬ì¸í„° ì—°ê²°]
-    // Materialized Nodeì˜ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ì—°ê²°í•œë‹¤.
-    //    - Conversionì´ ë°œìƒí•œ ê²½ìš°
-    //    - ê° Materialized Nodeì˜ ì¢…ë¥˜ì— ë”°ë¥¸ ì„¤ì •
+    // [Materialized NodeÀÇ ÇÔ¼ö Æ÷ÀÎÅÍ ¿¬°á]
+    // Materialized NodeÀÇ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¿¬°áÇÑ´Ù.
+    //    - ConversionÀÌ ¹ß»ıÇÑ °æ¿ì
+    //    - °¢ Materialized NodeÀÇ Á¾·ù¿¡ µû¸¥ ¼³Á¤
     //--------------------------------------------------------
 
     // BUG-36472
-    // dstNode ê°€ valueModule ì¼ ê²½ìš° ë³´ì •
-    // valueModule ì€ QMC_MTR_TYPE_CALCULATE ì¼ ìˆ˜ ì—†ìŒ
+    // dstNode °¡ valueModule ÀÏ °æ¿ì º¸Á¤
+    // valueModule Àº QMC_MTR_TYPE_CALCULATE ÀÏ ¼ö ¾øÀ½
     IDE_DASSERT( ( aDataNode->dstNode->node.module != &qtc::valueModule ) ||
                  ( ( aCodeNode->flag & QMC_MTR_TYPE_MASK) != QMC_MTR_TYPE_CALCULATE ) );
 
@@ -3355,10 +3356,10 @@ qmc::setMtrNode( qcTemplate * aTemplate,
         ( ( sSrcNode != aCodeNode->srcNode ) &&
           ( ( aCodeNode->flag & QMC_MTR_TYPE_MASK) != QMC_MTR_TYPE_CALCULATE ) ) )
     {
-        // Conversionì´ ë°œìƒí•˜ëŠ” ê²½ìš° ë˜ëŠ” Indirectionì´ ë°œìƒí•˜ëŠ” ê²½ìš°
+        // ConversionÀÌ ¹ß»ıÇÏ´Â °æ¿ì ¶Ç´Â IndirectionÀÌ ¹ß»ıÇÏ´Â °æ¿ì
 
         // To Fix PR-8333
-        // Valueì™€ ë™ì¼í•œ ì·¨ê¸‰ì„ í•´ì•¼ í•¨.
+        // Value¿Í µ¿ÀÏÇÑ Ãë±ŞÀ» ÇØ¾ß ÇÔ.
         aDataNode->dstTuple->execute[aDataNode->dstNode->node.column] =
             qmc::valueExecute;
 
@@ -3366,8 +3367,8 @@ qmc::setMtrNode( qcTemplate * aTemplate,
         aDataNode->dstColumn->column.flag |= SMI_COLUMN_TYPE_FIXED;
 
         // BUG-38494
-        // Compressed Column ì—­ì‹œ ê°’ ìì²´ê°€ ì €ì¥ë˜ë¯€ë¡œ
-        // Compressed ì†ì„±ì„ ì‚­ì œí•œë‹¤
+        // Compressed Column ¿ª½Ã °ª ÀÚÃ¼°¡ ÀúÀåµÇ¹Ç·Î
+        // Compressed ¼Ó¼ºÀ» »èÁ¦ÇÑ´Ù
         aDataNode->dstColumn->column.flag &= ~SMI_COLUMN_COMPRESSION_MASK;
         aDataNode->dstColumn->column.flag |= SMI_COLUMN_COMPRESSION_FALSE;
     }
@@ -3382,10 +3383,10 @@ qmc::setMtrNode( qcTemplate * aTemplate,
 
     //-------------------------------------------------
     // PROJ-1705
-    // QMC_MTR_TYPE_DISK_TABLE ì¸ ê²½ìš°
-    // ridë¡œ ë ˆì½”ë“œ íŒ¨ì¹˜ì‹œ smiColumnListê°€ í•„ìš”í•¨.
-    // ì—¬ê¸°ì„œ ìƒì„±ëœ smiColumnListëŠ” smiFetchRowFromGRID()í•¨ìˆ˜ì˜ ì¸ìë¡œ ì“°ì„.
-    // (ë””ìŠ¤í¬í…œí”„í…Œì´ë¸”ì€ í•´ë‹¹ë˜ì§€ ì•ŠëŠ”ë‹¤.)
+    // QMC_MTR_TYPE_DISK_TABLE ÀÎ °æ¿ì
+    // rid·Î ·¹ÄÚµå ÆĞÄ¡½Ã smiColumnList°¡ ÇÊ¿äÇÔ.
+    // ¿©±â¼­ »ı¼ºµÈ smiColumnList´Â smiFetchRowFromGRID()ÇÔ¼öÀÇ ÀÎÀÚ·Î ¾²ÀÓ.
+    // (µğ½ºÅ©ÅÛÇÁÅ×ÀÌºíÀº ÇØ´çµÇÁö ¾Ê´Â´Ù.)
     //-------------------------------------------------
 
     if( ( ( ( aDataNode->flag & QMC_MTR_TYPE_MASK )  == QMC_MTR_TYPE_DISK_TABLE ) &&
@@ -3399,20 +3400,20 @@ qmc::setMtrNode( qcTemplate * aTemplate,
         )
     {
         /*
-         * ë² ì´ìŠ¤í…Œì´ë¸”ì´ ë””ìŠ¤í¬í…Œì´ë¸”(ë””ìŠ¤í¬í…œí”„í…Œì´ë¸”ì€ì œì™¸)
-         * (QMC_MTR_TYPE_DISK_TABLE, QMC_MTR_BASETABLE_DISKTABLE)ì¸ ê²½ìš°ì™€
-         * ë² ì´ìŠ¤í…Œì´ë¸”ì´ ë””ìŠ¤í¬ íŒŒí‹°ì…˜ë“œí…Œì´ë¸”
-         * (QMC_MTR_TYPE_DISK_PARTITIONED_TABLE)ì¸ ê²½ìš°
-         * ë² ì´ìŠ¤í…Œì´ë¸”ì´ Hybrid Partitioned Table
-         * (QMC_MTR_TYPE_HYBRID_PARTITIONED_TABLE)ì¸ ê²½ìš° (PROJ-2464 hybrid partitioned table ì§€ì›)
-         * Remote Table ì¸ ê²½ìš° (BUG-39837)
+         * º£ÀÌ½ºÅ×ÀÌºíÀÌ µğ½ºÅ©Å×ÀÌºí(µğ½ºÅ©ÅÛÇÁÅ×ÀÌºíÀºÁ¦¿Ü)
+         * (QMC_MTR_TYPE_DISK_TABLE, QMC_MTR_BASETABLE_DISKTABLE)ÀÎ °æ¿ì¿Í
+         * º£ÀÌ½ºÅ×ÀÌºíÀÌ µğ½ºÅ© ÆÄÆ¼¼ÇµåÅ×ÀÌºí
+         * (QMC_MTR_TYPE_DISK_PARTITIONED_TABLE)ÀÎ °æ¿ì
+         * º£ÀÌ½ºÅ×ÀÌºíÀÌ Hybrid Partitioned Table
+         * (QMC_MTR_TYPE_HYBRID_PARTITIONED_TABLE)ÀÎ °æ¿ì (PROJ-2464 hybrid partitioned table Áö¿ø)
+         * Remote Table ÀÎ °æ¿ì (BUG-39837)
          */
 
         IDE_TEST( qdbCommon::makeFetchColumnList4TupleID(
                       aTemplate,
                       aDataNode->srcNode->node.table,
                       ID_FALSE, // aIsNeedAllFetchColumn
-                      NULL,     // index ì •ë³´
+                      NULL,     // index Á¤º¸
                       ID_TRUE,  // aIsAllocSmiColumnList
                       & aDataNode->fetchColumnList ) != IDE_SUCCESS );
     }
@@ -3421,7 +3422,7 @@ qmc::setMtrNode( qcTemplate * aTemplate,
         aDataNode->fetchColumnList = NULL;
     }
 
-    // tmplate ì¶”ê°€
+    // tmplate Ãß°¡
     aDataNode->tmplate = & aTemplate->tmplate;
 
     return IDE_SUCCESS;
@@ -3437,26 +3438,26 @@ qmc::setFunctionPointer( qmdMtrNode * aDataNode )
 /***********************************************************************
  *
  * Description :
- *    Materialized Nodeì˜ ì¢…ë¥˜ì— ë”°ë¼ í•´ë‹¹ í•¨ìˆ˜ Pointerë¥¼ ê²°ì •í•œë‹¤.
+ *    Materialized NodeÀÇ Á¾·ù¿¡ µû¶ó ÇØ´ç ÇÔ¼ö Pointer¸¦ °áÁ¤ÇÑ´Ù.
  *
  * Implementation :
  *
- *    í•´ë‹¹ Columnì˜ ì¢…ë¥˜ì— ë”°ë¼ í•¨ìˆ˜ pointerë¥¼ Settingí•œë‹¤.
+ *    ÇØ´ç ColumnÀÇ Á¾·ù¿¡ µû¶ó ÇÔ¼ö pointer¸¦ SettingÇÑ´Ù.
  *
  ***********************************************************************/
 
-    // Column ì¢…ë¥˜ì— ë”°ë¥¸ Function Pointer ì„¤ì •
+    // Column Á¾·ù¿¡ µû¸¥ Function Pointer ¼³Á¤
 
     switch ( aDataNode->flag & QMC_MTR_TYPE_MASK )
     {
         //-----------------------------------------------------------
-        // Base Tableì˜ ì¢…ë¥˜ì— ëŒ€í•œ ì²˜ë¦¬
+        // Base TableÀÇ Á¾·ù¿¡ ´ëÇÑ Ã³¸®
         //-----------------------------------------------------------
 
         case QMC_MTR_TYPE_MEMORY_TABLE :
         {
             //-----------------------------------
-            // Memory Base Tableì˜ ê²½ìš°
+            // Memory Base TableÀÇ °æ¿ì
             //-----------------------------------
 
             aDataNode->func.setMtr   = qmc::setMtrByPointer;
@@ -3469,8 +3470,8 @@ qmc::setFunctionPointer( qmdMtrNode * aDataNode )
                 QMC_MTR_RECOVER_RID_TRUE)
             {
                 /*
-                 * select target ì— _prowid ê°€ ìˆìŒ
-                 * => rid ë³µì›ì´ í•„ìš”
+                 * select target ¿¡ _prowid °¡ ÀÖÀ½
+                 * => rid º¹¿øÀÌ ÇÊ¿ä
                  */
                 aDataNode->func.setTuple = qmc::setTupleByPointer4Rid;
             }
@@ -3483,7 +3484,7 @@ qmc::setFunctionPointer( qmdMtrNode * aDataNode )
         case QMC_MTR_TYPE_DISK_TABLE :
         {
             //-----------------------------------
-            // Disk Base Tableì˜ ê²½ìš°
+            // Disk Base TableÀÇ °æ¿ì
             //-----------------------------------
 
             aDataNode->func.setMtr   = qmc::setMtrByRID;
@@ -3496,11 +3497,11 @@ qmc::setFunctionPointer( qmdMtrNode * aDataNode )
             break;
         }
         // PROJ-1502 PARTITIONED DISK TABLE
-        // partitioned tableì€ ê° rowë§ˆë‹¤ ë§ëŠ” tuple idë¥¼ ì €ì¥í•˜ì—¬ì•¼ í•œë‹¤.
+        // partitioned tableÀº °¢ row¸¶´Ù ¸Â´Â tuple id¸¦ ÀúÀåÇÏ¿©¾ß ÇÑ´Ù.
         case QMC_MTR_TYPE_MEMORY_PARTITIONED_TABLE :
         {
             //-----------------------------------
-            // Memory Partitioned Tableì˜ ê²½ìš°
+            // Memory Partitioned TableÀÇ °æ¿ì
             //-----------------------------------
 
             aDataNode->func.setMtr   = qmc::setMtrByPointerAndTupleID;
@@ -3515,7 +3516,7 @@ qmc::setFunctionPointer( qmdMtrNode * aDataNode )
         case QMC_MTR_TYPE_DISK_PARTITIONED_TABLE :
         {
             //-----------------------------------
-            // Disk Partitioned Tableì˜ ê²½ìš°
+            // Disk Partitioned TableÀÇ °æ¿ì
             //-----------------------------------
 
             aDataNode->func.setMtr   = qmc::setMtrByRIDAndTupleID;
@@ -3527,10 +3528,10 @@ qmc::setFunctionPointer( qmdMtrNode * aDataNode )
 
             break;
         }
-        case QMC_MTR_TYPE_HYBRID_PARTITIONED_TABLE : /* PROJ-2464 hybrid partitioned table ì§€ì› */
+        case QMC_MTR_TYPE_HYBRID_PARTITIONED_TABLE : /* PROJ-2464 hybrid partitioned table Áö¿ø */
         {
             //-----------------------------------
-            // Hybrid Partitioned Tableì˜ ê²½ìš°
+            // Hybrid Partitioned TableÀÇ °æ¿ì
             //-----------------------------------
 
             aDataNode->func.setMtr   = qmc::setMtrByPointerOrRIDAndTupleID;
@@ -3544,13 +3545,13 @@ qmc::setFunctionPointer( qmdMtrNode * aDataNode )
         }
 
         //-----------------------------------------------------------
-        // Column ì— ëŒ€í•œ ì²˜ë¦¬
+        // Column ¿¡ ´ëÇÑ Ã³¸®
         //-----------------------------------------------------------
 
         case QMC_MTR_TYPE_MEMORY_PARTITION_KEY_COLUMN :
         {
             //-----------------------------------
-            // Memory Columnì¸ ê²½ìš°
+            // Memory ColumnÀÎ °æ¿ì
             //-----------------------------------
 
             IDE_TEST( setFunction4MemoryPartitionColumn( aDataNode ) != IDE_SUCCESS );
@@ -3561,7 +3562,7 @@ qmc::setFunctionPointer( qmdMtrNode * aDataNode )
         case QMC_MTR_TYPE_MEMORY_KEY_COLUMN :
         {
             //-----------------------------------
-            // Memory Columnì¸ ê²½ìš°
+            // Memory ColumnÀÎ °æ¿ì
             //-----------------------------------
 
             IDE_TEST( setFunction4MemoryColumn( aDataNode ) != IDE_SUCCESS );
@@ -3569,7 +3570,7 @@ qmc::setFunctionPointer( qmdMtrNode * aDataNode )
             break;
         }
 
-        case QMC_MTR_TYPE_HYBRID_PARTITION_KEY_COLUMN : /* PROJ-2464 hybrid partitioned table ì§€ì› */
+        case QMC_MTR_TYPE_HYBRID_PARTITION_KEY_COLUMN : /* PROJ-2464 hybrid partitioned table Áö¿ø */
         {
             aDataNode->func.setMtr   = qmc::setMtrByCopyOrConvert;
             aDataNode->func.getHash  = qmc::getHashByValue;
@@ -3614,9 +3615,9 @@ qmc::setFunctionPointer( qmdMtrNode * aDataNode )
         {
             /***********************************************************
              * PROJ-2469 Optimize View Materialization
-             * View Materializationì˜ MtrNode ì¤‘
-             * ìƒìœ„ Query Blockì—ì„œ ì‚¬ìš© ë˜ì§€ ì•ŠëŠ” Column NodeëŠ”
-             * Dummy ì·¨ê¸‰í•œë‹¤.
+             * View MaterializationÀÇ MtrNode Áß
+             * »óÀ§ Query Block¿¡¼­ »ç¿ë µÇÁö ¾Ê´Â Column Node´Â
+             * Dummy Ãë±ŞÇÑ´Ù.
              ***********************************************************/
             aDataNode->func.setMtr   = qmc::setMtrByNull;
             aDataNode->func.getHash  = qmc::getHashNA;   // N/A
@@ -3628,7 +3629,7 @@ qmc::setFunctionPointer( qmdMtrNode * aDataNode )
         }            
         default :
         {
-            // Materialized Columnì˜ ì¢…ë¥˜ê°€ ì§€ì •ë˜ì–´ ìˆì–´ì•¼ í•¨.
+            // Materialized ColumnÀÇ Á¾·ù°¡ ÁöÁ¤µÇ¾î ÀÖ¾î¾ß ÇÔ.
             IDE_DASSERT(0);
 
             break;
@@ -3648,41 +3649,41 @@ qmc::setCompareFunction( qmdMtrNode * aDataNode )
 /***********************************************************************
  *
  * Description :
- *    Materialized Nodeì˜ ë¹„êµ í•¨ìˆ˜ ë° ë¹„êµ ëŒ€ìƒ Columnì„ ì§€ì •í•œë‹¤.
+ *    Materialized NodeÀÇ ºñ±³ ÇÔ¼ö ¹× ºñ±³ ´ë»ó ColumnÀ» ÁöÁ¤ÇÑ´Ù.
  *
  * Implementation :
  *
  ***********************************************************************/
 
     //----------------------------------------------------
-    // Columnì˜ Sorting Orderì— ë”°ë¥¸ ë¹„êµ í•¨ìˆ˜ ê²°ì •
-    // - Asc/Descì— ë”°ë¼ ë¹„êµ í•¨ìˆ˜ë¥¼ ê²°ì •í•œë‹¤.
-    // - ê°’ì˜ ì €ì¥/Pointerì˜ ì €ì¥ì— ë”°ë¼ ëŒ€ìƒ Columnì„ ê²°ì •í•œë‹¤.
+    // ColumnÀÇ Sorting Order¿¡ µû¸¥ ºñ±³ ÇÔ¼ö °áÁ¤
+    // - Asc/Desc¿¡ µû¶ó ºñ±³ ÇÔ¼ö¸¦ °áÁ¤ÇÑ´Ù.
+    // - °ªÀÇ ÀúÀå/PointerÀÇ ÀúÀå¿¡ µû¶ó ´ë»ó ColumnÀ» °áÁ¤ÇÑ´Ù.
     //----------------------------------------------------
     UInt    sCompareType;
 
-    // ë¹„êµ ëŒ€ìƒ Columnì˜ ê²°ì •
+    // ºñ±³ ´ë»ó ColumnÀÇ °áÁ¤
     // fix BUG-10114
-    // disk variable columnì¸ ê²½ìš°, ì €ì¥ ê³µê°„ì˜ ë‚­ë¹„ë¥¼ ì¤„ì´ê¸° ìœ„í•´,
-    // mtrRow êµ¬ì„±ì‹œ, smiVarColumnì˜ headerë§Œ ì €ì¥í•˜ê²Œ ëœë‹¤.
-    // ì´ ê²½ìš°ë„ pointerê°€ ì•„ë‹Œ, ê°’ì´ ì €ì¥ë˜ëŠ” ê²½ìš°ì´ë¯€ë¡œ,
-    // dstColumnì´ compareColumnì´ ë˜ë„ë¡ ì§€ì •í•´ì•¼ í•œë‹¤.
+    // disk variable columnÀÎ °æ¿ì, ÀúÀå °ø°£ÀÇ ³¶ºñ¸¦ ÁÙÀÌ±â À§ÇØ,
+    // mtrRow ±¸¼º½Ã, smiVarColumnÀÇ header¸¸ ÀúÀåÇÏ°Ô µÈ´Ù.
+    // ÀÌ °æ¿ìµµ pointer°¡ ¾Æ´Ñ, °ªÀÌ ÀúÀåµÇ´Â °æ¿ìÀÌ¹Ç·Î,
+    // dstColumnÀÌ compareColumnÀÌ µÇµµ·Ï ÁöÁ¤ÇØ¾ß ÇÑ´Ù.
     //
     // PROJ-2469 Optimize View Materialization
-    // QMC_MTR_TYPE_USELESS_COLUMN Typeì¼ ê²½ìš° dstColumnì´ compareColumnì´ ë˜ë„ë¡ ì§€ì •í•´ì•¼ í•œë‹¤.
+    // QMC_MTR_TYPE_USELESS_COLUMN TypeÀÏ °æ¿ì dstColumnÀÌ compareColumnÀÌ µÇµµ·Ï ÁöÁ¤ÇØ¾ß ÇÑ´Ù.
     if ( aDataNode->func.getRow == qmc::getRowByValue )
     {
-        // ê°’ ìì²´ê°€ ì €ì¥ë˜ëŠ” ê²½ìš°
+        // °ª ÀÚÃ¼°¡ ÀúÀåµÇ´Â °æ¿ì
         aDataNode->func.compareColumn = aDataNode->dstColumn;
     }
     else
     {
-        // ê°’ì´ ì•„ë‹Œ Pointerê°€ ì €ì¥ë˜ëŠ” ê²½ìš°
+        // °ªÀÌ ¾Æ´Ñ Pointer°¡ ÀúÀåµÇ´Â °æ¿ì
         aDataNode->func.compareColumn = aDataNode->srcColumn;
     }
 
-    // PROJ-2362 memory temp ì €ì¥ íš¨ìœ¨ì„± ê°œì„ 
-    // TEMP_TYPEì¸ ê²½ìš° OFFSET_USELESSë¡œ ë¹„êµí•œë‹¤.
+    // PROJ-2362 memory temp ÀúÀå È¿À²¼º °³¼±
+    // TEMP_TYPEÀÎ °æ¿ì OFFSET_USELESS·Î ºñ±³ÇÑ´Ù.
     if ( SMI_COLUMN_TYPE_IS_TEMP( aDataNode->func.compareColumn->column.flag ) == ID_TRUE )
     {
         if ( ( aDataNode->flag & QMC_MTR_SORT_ORDER_MASK )
@@ -3720,7 +3721,7 @@ qmc::setCompareFunction( qmdMtrNode * aDataNode )
             }
         }
 
-        // ë¹„êµ í•¨ìˆ˜ì˜ ê²°ì •
+        // ºñ±³ ÇÔ¼öÀÇ °áÁ¤
         if ( ( aDataNode->flag & QMC_MTR_SORT_ORDER_MASK )
              == QMC_MTR_SORT_ASCENDING )
         {
@@ -3745,7 +3746,7 @@ qmc::setFunction4MemoryColumn( qmdMtrNode * aDataNode )
 /***********************************************************************
  *
  * Description :
- *    Memory Columnì„ ìœ„í•œ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ê²°ì •í•œë‹¤.
+ *    Memory ColumnÀ» À§ÇÑ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ °áÁ¤ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -3755,10 +3756,10 @@ qmc::setFunction4MemoryColumn( qmdMtrNode * aDataNode )
          == MTC_TUPLE_STORAGE_MEMORY )
     {
         //----------------------------------
-        // Memory Temp Tableì— ì €ì¥ë  ê²½ìš°
+        // Memory Temp Table¿¡ ÀúÀåµÉ °æ¿ì
         //----------------------------------
 
-        // Fixed/Variableì— ê´€ê³„ ì—†ì´ Pointerë§Œ ì €ì¥í•¨.
+        // Fixed/Variable¿¡ °ü°è ¾øÀÌ Pointer¸¸ ÀúÀåÇÔ.
         aDataNode->func.setMtr   = qmc::setMtrByPointer;
         aDataNode->func.getHash  = qmc::getHashByPointer;
         aDataNode->func.isNull   = qmc::isNullByPointer;
@@ -3769,13 +3770,13 @@ qmc::setFunction4MemoryColumn( qmdMtrNode * aDataNode )
     else
     {
         //----------------------------------
-        // Disk Temp Tableì— ì €ì¥ë  ê²½ìš°
+        // Disk Temp Table¿¡ ÀúÀåµÉ °æ¿ì
         //----------------------------------
 
         if ( (aDataNode->dstColumn->column.flag & SMI_COLUMN_TYPE_MASK)
              == SMI_COLUMN_TYPE_FIXED )
         {
-            // Fixed Memory Columnì¼ ê²½ìš°
+            // Fixed Memory ColumnÀÏ °æ¿ì
             aDataNode->func.setMtr   = qmc::setMtrByCopy;
             aDataNode->func.getHash  = qmc::getHashByValue;
             aDataNode->func.isNull   = qmc::isNullByValue;
@@ -3785,7 +3786,7 @@ qmc::setFunction4MemoryColumn( qmdMtrNode * aDataNode )
         }
         else
         {
-            // Variable Memory Columnì¼ ê²½ìš°
+            // Variable Memory ColumnÀÏ °æ¿ì
             aDataNode->func.setMtr   = qmc::setMtrByConvert;
             aDataNode->func.getHash  = qmc::getHashByValue;
             aDataNode->func.isNull   = qmc::isNullByValue;
@@ -3804,7 +3805,7 @@ qmc::setFunction4MemoryPartitionColumn( qmdMtrNode * aDataNode )
 /***********************************************************************
  *
  * Description :
- *    Memory Columnì„ ìœ„í•œ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ê²°ì •í•œë‹¤.
+ *    Memory ColumnÀ» À§ÇÑ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ °áÁ¤ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -3814,10 +3815,10 @@ qmc::setFunction4MemoryPartitionColumn( qmdMtrNode * aDataNode )
          == MTC_TUPLE_STORAGE_MEMORY )
     {
         //----------------------------------
-        // Memory Temp Tableì— ì €ì¥ë  ê²½ìš°
+        // Memory Temp Table¿¡ ÀúÀåµÉ °æ¿ì
         //----------------------------------
 
-        // Fixed/Variableì— ê´€ê³„ ì—†ì´ Partition Tuple IDì™€ Pointerë¥¼ ì €ì¥í•¨.
+        // Fixed/Variable¿¡ °ü°è ¾øÀÌ Partition Tuple ID¿Í Pointer¸¦ ÀúÀåÇÔ.
         aDataNode->func.setMtr   = qmc::setMtrByPointerAndTupleID;
         aDataNode->func.getHash  = qmc::getHashByPointerAndTupleID;
         aDataNode->func.isNull   = qmc::isNullByPointerAndTupleID;
@@ -3828,7 +3829,7 @@ qmc::setFunction4MemoryPartitionColumn( qmdMtrNode * aDataNode )
     else
     {
         //----------------------------------
-        // Disk Temp Tableì— ì €ì¥ë  ê²½ìš°
+        // Disk Temp Table¿¡ ÀúÀåµÉ °æ¿ì
         //----------------------------------
 
         IDE_TEST( setFunction4MemoryColumn( aDataNode )
@@ -3850,21 +3851,21 @@ qmc::refineOffset4MemoryColumn( qmdMtrNode * aMtrList,
 /***********************************************************************
  *
  * Description :
- *     Memory Columnì´ Temp Tableì— ì €ì¥ë  ê²½ìš°ì˜ offsetì„ ê²°ì •í•œë‹¤.
+ *     Memory ColumnÀÌ Temp Table¿¡ ÀúÀåµÉ °æ¿ìÀÇ offsetÀ» °áÁ¤ÇÑ´Ù.
  *
  * Implementation :
- *     Memory Temp Tableì— ì €ì¥ë˜ëŠ” ê²½ìš°ì™€ Disk Temp Tableì— ì €ì¥ë˜ëŠ”
- *     ê²½ìš°ë¥¼ êµ¬ë¶„í•˜ì—¬ ì²˜ë¦¬í•˜ì—¬ì•¼ í•œë‹¤.
- *         - Memory Temp Tableì— ì €ì¥ë˜ëŠ” ê²½ìš° pointerë¥¼ ì¤‘ë³µ ì €ì¥í•˜ì§€
- *           ì•Šë„ë¡ í•˜ë©°,
- *         - Disk Temp Tableì— ì €ì¥ë˜ëŠ” ê²½ìš°ëŠ” ê°’ ìì²´ë¥¼ ì €ì¥í•  ìˆ˜ ìˆë„ë¡
- *           í•˜ì—¬ì•¼ í•œë‹¤.
+ *     Memory Temp Table¿¡ ÀúÀåµÇ´Â °æ¿ì¿Í Disk Temp Table¿¡ ÀúÀåµÇ´Â
+ *     °æ¿ì¸¦ ±¸ºĞÇÏ¿© Ã³¸®ÇÏ¿©¾ß ÇÑ´Ù.
+ *         - Memory Temp Table¿¡ ÀúÀåµÇ´Â °æ¿ì pointer¸¦ Áßº¹ ÀúÀåÇÏÁö
+ *           ¾Êµµ·Ï ÇÏ¸ç,
+ *         - Disk Temp Table¿¡ ÀúÀåµÇ´Â °æ¿ì´Â °ª ÀÚÃ¼¸¦ ÀúÀåÇÒ ¼ö ÀÖµµ·Ï
+ *           ÇÏ¿©¾ß ÇÑ´Ù.
  *
  ***********************************************************************/
 
     qmdMtrNode * sFindNode;
 
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     IDE_DASSERT( aMtrList != NULL );
     IDE_DASSERT( aColumnNode != NULL );
     IDE_DASSERT( aOffset != NULL );
@@ -3873,13 +3874,13 @@ qmc::refineOffset4MemoryColumn( qmdMtrNode * aMtrList,
          == MTC_TUPLE_STORAGE_MEMORY )
     {
         //----------------------------------
-        // Memory Temp Tableì— ì €ì¥ë  ê²½ìš°
+        // Memory Temp Table¿¡ ÀúÀåµÉ °æ¿ì
         //----------------------------------
-        // ì´ë¯¸ í•´ë‹¹ Pointerë¥¼ ê´€ë¦¬í•˜ëŠ” Nodeê°€ ìˆì„ ê²½ìš°,
-        // ë³„ë„ì˜ ê³µê°„ì„ í• ë‹¹ë°›ì§€ ì•Šê³ , ê¸°ì¡´ì˜ ê³µê°„ì„ ê·¸ëŒ€ë¡œ
-        // ì‚¬ìš©í•œë‹¤.
+        // ÀÌ¹Ì ÇØ´ç Pointer¸¦ °ü¸®ÇÏ´Â Node°¡ ÀÖÀ» °æ¿ì,
+        // º°µµÀÇ °ø°£À» ÇÒ´ç¹ŞÁö ¾Ê°í, ±âÁ¸ÀÇ °ø°£À» ±×´ë·Î
+        // »ç¿ëÇÑ´Ù.
 
-        // ë™ì¼í•œ Nodeê°€ ìˆëŠ” ì§€ ì°¾ëŠ”ë‹¤.
+        // µ¿ÀÏÇÑ Node°¡ ÀÖ´Â Áö Ã£´Â´Ù.
 
         for ( sFindNode = aMtrList;
               sFindNode != aColumnNode;
@@ -3894,10 +3895,10 @@ qmc::refineOffset4MemoryColumn( qmdMtrNode * aMtrList,
             {
                 if( aColumnNode->srcNode->node.conversion == NULL )
                 {
-                    // ë™ì¼í•œ Source Tupleì„ ê°–ê³ 
-                    // ì°¾ì€ ë…¸ë“œê°€ Memory Base Tableì´ê±°ë‚˜,
-                    // Memory Columnì¸ ê²½ìš°ì— ë™ì¼í•œ ì €ì¥ ì˜ì—­ì„
-                    // ì‚¬ìš©í•  ìˆ˜ ìˆë‹¤.
+                    // µ¿ÀÏÇÑ Source TupleÀ» °®°í
+                    // Ã£Àº ³ëµå°¡ Memory Base TableÀÌ°Å³ª,
+                    // Memory ColumnÀÎ °æ¿ì¿¡ µ¿ÀÏÇÑ ÀúÀå ¿µ¿ªÀ»
+                    // »ç¿ëÇÒ ¼ö ÀÖ´Ù.
                     break;
                 }
                 else
@@ -3913,9 +3914,9 @@ qmc::refineOffset4MemoryColumn( qmdMtrNode * aMtrList,
         }
         if ( aColumnNode == sFindNode )
         {
-            // ë™ì¼í•œ Nodeë¥¼ ì°¾ì§€ ëª»í•œ ê²½ìš°
-            // 32/64bit pointerë¥¼ ì €ì¥í•  ê³µê°„ì„ í• ë‹¹
-            // RIDì™€ ë™ì¼í•œ ê³µê°„ ì˜ì—­ì„ í• ë‹¹í•¨.
+            // µ¿ÀÏÇÑ Node¸¦ Ã£Áö ¸øÇÑ °æ¿ì
+            // 32/64bit pointer¸¦ ÀúÀåÇÒ °ø°£À» ÇÒ´ç
+            // RID¿Í µ¿ÀÏÇÑ °ø°£ ¿µ¿ªÀ» ÇÒ´çÇÔ.
             *aOffset = idlOS::align8( *aOffset );
 
             aColumnNode->dstColumn->column.offset = *aOffset;
@@ -3925,55 +3926,55 @@ qmc::refineOffset4MemoryColumn( qmdMtrNode * aMtrList,
         }
         else
         {
-            // ë™ì¼í•œ Nodeë¥¼ ì°¾ì€ ê²½ìš°
-            // ì°¾ì€ Nodeì˜ ê³µê°„ì„ ì‚¬ìš©í•œë‹¤.
+            // µ¿ÀÏÇÑ Node¸¦ Ã£Àº °æ¿ì
+            // Ã£Àº NodeÀÇ °ø°£À» »ç¿ëÇÑ´Ù.
             aColumnNode->dstColumn->column.offset =
                 sFindNode->dstColumn->column.offset;
             aColumnNode->dstColumn->column.size = ID_SIZEOF(scGRID);
 
-            // offsetì˜ ë³€ê²½ í•„ìš” ì—†ìŒ.
+            // offsetÀÇ º¯°æ ÇÊ¿ä ¾øÀ½.
         }
 
-        // pointerë§Œ ì €ì¥ë˜ë¯€ë¡œ fixedë¡œ ì„¤ì •í•œë‹¤.
+        // pointer¸¸ ÀúÀåµÇ¹Ç·Î fixed·Î ¼³Á¤ÇÑ´Ù.
         aColumnNode->dstColumn->column.flag &= ~SMI_COLUMN_TYPE_MASK;
         aColumnNode->dstColumn->column.flag |= SMI_COLUMN_TYPE_FIXED;
 
         // BUG-38494
-        // Compressed Column ì—­ì‹œ ê°’ ìì²´ê°€ ì €ì¥ë˜ë¯€ë¡œ
-        // Compressed ì†ì„±ì„ ì‚­ì œí•œë‹¤
+        // Compressed Column ¿ª½Ã °ª ÀÚÃ¼°¡ ÀúÀåµÇ¹Ç·Î
+        // Compressed ¼Ó¼ºÀ» »èÁ¦ÇÑ´Ù
         aColumnNode->dstColumn->column.flag &= ~SMI_COLUMN_COMPRESSION_MASK;
         aColumnNode->dstColumn->column.flag |= SMI_COLUMN_COMPRESSION_FALSE;
     }
     else
     {
         //----------------------------------
-        // Disk Temp Tableì— ì €ì¥ë  ê²½ìš°
+        // Disk Temp Table¿¡ ÀúÀåµÉ °æ¿ì
         //----------------------------------
 
         // BUG-38592
-        // Temp Tableì—ëŠ” ì‹¤ì œ ê°’ì´ ë“¤ì–´ì˜¤ë¯€ë¡œ,
-        // Fixed/Variableì— ìƒê´€ì—†ì´ Compressed ì†ì„±ì„ ì‚­ì œí•œë‹¤
+        // Temp Table¿¡´Â ½ÇÁ¦ °ªÀÌ µé¾î¿À¹Ç·Î,
+        // Fixed/Variable¿¡ »ó°ü¾øÀÌ Compressed ¼Ó¼ºÀ» »èÁ¦ÇÑ´Ù
         aColumnNode->dstColumn->column.flag &= ~SMI_COLUMN_COMPRESSION_MASK;
         aColumnNode->dstColumn->column.flag |= SMI_COLUMN_COMPRESSION_FALSE;
 
         if ( (aColumnNode->dstColumn->column.flag & SMI_COLUMN_TYPE_MASK)
              == SMI_COLUMN_TYPE_FIXED )
         {
-            // Fixed Memory Columnì¼ ê²½ìš°
+            // Fixed Memory ColumnÀÏ °æ¿ì
         }
         else
         {
-            // Variable Memory Columnì¼ ê²½ìš°
+            // Variable Memory ColumnÀÏ °æ¿ì
 
             // To Fix PR-8367
-            // mtcColumnì´ ì•„ë‹Œ smiColumnì„ ì‚¬ìš©í•´ì•¼ í•¨.
-            // Memory Variable Columnì˜ ê²½ìš° Disk Temp Tableì—
-            // ì €ì¥ë  ë•Œ Data ìì²´ë¥¼ ì €ì¥í•˜ì—¬ì•¼ í•¨.
+            // mtcColumnÀÌ ¾Æ´Ñ smiColumnÀ» »ç¿ëÇØ¾ß ÇÔ.
+            // Memory Variable ColumnÀÇ °æ¿ì Disk Temp Table¿¡
+            // ÀúÀåµÉ ¶§ Data ÀÚÃ¼¸¦ ÀúÀåÇÏ¿©¾ß ÇÔ.
             aColumnNode->dstColumn->column.flag &= ~SMI_COLUMN_TYPE_MASK;
             aColumnNode->dstColumn->column.flag |= SMI_COLUMN_TYPE_FIXED;
         }
 
-        // Offsetë§Œ ê²°ì •í•˜ë©´ ëœë‹¤.
+        // Offset¸¸ °áÁ¤ÇÏ¸é µÈ´Ù.
         *aOffset = idlOS::align( *aOffset,
                                  aColumnNode->dstColumn->module->align );
         aColumnNode->dstColumn->column.offset = *aOffset;
@@ -3992,19 +3993,19 @@ qmc::refineOffset4MemoryPartitionColumn( qmdMtrNode * aMtrList,
 /***********************************************************************
  *
  * Description :
- *     Memory Columnì´ Temp Tableì— ì €ì¥ë  ê²½ìš°ì˜ offsetì„ ê²°ì •í•œë‹¤.
+ *     Memory ColumnÀÌ Temp Table¿¡ ÀúÀåµÉ °æ¿ìÀÇ offsetÀ» °áÁ¤ÇÑ´Ù.
  *
  * Implementation :
- *     Memory Temp Tableì— ì €ì¥ë˜ëŠ” ê²½ìš°ì™€ Disk Temp Tableì— ì €ì¥ë˜ëŠ”
- *     ê²½ìš°ë¥¼ êµ¬ë¶„í•˜ì—¬ ì²˜ë¦¬í•˜ì—¬ì•¼ í•œë‹¤.
- *         - Memory Temp Tableì— ì €ì¥ë˜ëŠ” ê²½ìš° pointerë¥¼ ì¤‘ë³µ ì €ì¥í•˜ì§€
- *           ì•Šë„ë¡ í•˜ë©°,
- *         - Disk Temp Tableì— ì €ì¥ë˜ëŠ” ê²½ìš°ëŠ” ê°’ ìì²´ë¥¼ ì €ì¥í•  ìˆ˜ ìˆë„ë¡
- *           í•˜ì—¬ì•¼ í•œë‹¤.
+ *     Memory Temp Table¿¡ ÀúÀåµÇ´Â °æ¿ì¿Í Disk Temp Table¿¡ ÀúÀåµÇ´Â
+ *     °æ¿ì¸¦ ±¸ºĞÇÏ¿© Ã³¸®ÇÏ¿©¾ß ÇÑ´Ù.
+ *         - Memory Temp Table¿¡ ÀúÀåµÇ´Â °æ¿ì pointer¸¦ Áßº¹ ÀúÀåÇÏÁö
+ *           ¾Êµµ·Ï ÇÏ¸ç,
+ *         - Disk Temp Table¿¡ ÀúÀåµÇ´Â °æ¿ì´Â °ª ÀÚÃ¼¸¦ ÀúÀåÇÒ ¼ö ÀÖµµ·Ï
+ *           ÇÏ¿©¾ß ÇÑ´Ù.
  *
  ***********************************************************************/
 
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     IDE_DASSERT( aMtrList != NULL );
     IDE_DASSERT( aColumnNode != NULL );
     IDE_DASSERT( aOffset != NULL );
@@ -4013,11 +4014,11 @@ qmc::refineOffset4MemoryPartitionColumn( qmdMtrNode * aMtrList,
          == MTC_TUPLE_STORAGE_MEMORY )
     {
         //----------------------------------
-        // Memory Temp Tableì— ì €ì¥ë  ê²½ìš°
+        // Memory Temp Table¿¡ ÀúÀåµÉ °æ¿ì
         //----------------------------------
         
         // BUG-38309
-        // ì´ì œëŠ” 16byteë³´ë‹¤ ì»¤ì„œ mtdByteë¥¼ ì‚¬ìš©í•œë‹¤.
+        // ÀÌÁ¦´Â 16byteº¸´Ù Ä¿¼­ mtdByte¸¦ »ç¿ëÇÑ´Ù.
         IDE_TEST( mtc::initializeColumn( aColumnNode->dstColumn,
                                          & mtdByte,
                                          1,
@@ -4036,7 +4037,7 @@ qmc::refineOffset4MemoryPartitionColumn( qmdMtrNode * aMtrList,
     else
     {
         //----------------------------------
-        // Disk Temp Tableì— ì €ì¥ë  ê²½ìš°
+        // Disk Temp Table¿¡ ÀúÀåµÉ °æ¿ì
         //----------------------------------
 
         IDE_TEST( refineOffset4MemoryColumn( aMtrList, aColumnNode, aOffset )
@@ -4060,13 +4061,13 @@ qmc::findAttribute( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    ì£¼ì–´ì§„ result descriptorì—ì„œ íŠ¹ì •í•œ attributeë¥¼ ì°¾ì•„ ë°˜í™˜í•œë‹¤.
+ *    ÁÖ¾îÁø result descriptor¿¡¼­ Æ¯Á¤ÇÑ attribute¸¦ Ã£¾Æ ¹İÈ¯ÇÑ´Ù.
  *
  * Implementation :
- *     Result descriptorì˜ ê° attributeë“¤ì„ ìˆœì°¨ íƒìƒ‰í•˜ë©° ê°™ì€
- *     expressionì¸ì§€ í™•ì¸í•œë‹¤.
- *     qtc::isEquivalentExpressionì˜ ê²°ê³¼ ì™¸ conversionê¹Œì§€ ê°™ì•„ì•¼
- *     ê°™ì€ ê²ƒìœ¼ë¡œ ê°„ì£¼í•œë‹¤.
+ *     Result descriptorÀÇ °¢ attributeµéÀ» ¼øÂ÷ Å½»öÇÏ¸ç °°Àº
+ *     expressionÀÎÁö È®ÀÎÇÑ´Ù.
+ *     qtc::isEquivalentExpressionÀÇ °á°ú ¿Ü conversion±îÁö °°¾Æ¾ß
+ *     °°Àº °ÍÀ¸·Î °£ÁÖÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -4111,7 +4112,7 @@ qmc::findAttribute( qcStatement  * aStatement,
             sConverted1 = mtf::convertedNode(sExpr1, NULL);
             sConverted2 = mtf::convertedNode(sExpr2, NULL);
 
-            // ìµœì¢… conversionëœ ê²°ê³¼ê¹Œì§€ ê°™ì•„ì•¼ ê°™ì€ expressionìœ¼ë¡œ ê°„ì£¼í•œë‹¤.
+            // ÃÖÁ¾ conversionµÈ °á°ú±îÁö °°¾Æ¾ß °°Àº expressionÀ¸·Î °£ÁÖÇÑ´Ù.
             if ( QTC_STMT_COLUMN( aStatement, (qtcNode*)sConverted1 )->module ==
                  QTC_STMT_COLUMN( aStatement, (qtcNode*)sConverted2 )->module )
             {
@@ -4123,9 +4124,9 @@ qmc::findAttribute( qcStatement  * aStatement,
             }
 
             // BUG-39875
-            // UNION ì„ ì‚¬ìš©ì‹œì—ëŠ” select ì˜ target ì— ì»¨ë²„ì ¼ë…¸ë“œê°€ ë‹¬ë¦´ìˆ˜ ìˆë‹¤.
-            // ì´ë•Œë¬¸ì— aMakePassNode ê°€ TRUE ì´ë©´ ì»¨ë²„ì ¼ì´ ìˆì–´ë„ ê°™ë‹¤ê³  íŒë‹¨í•´ì•¼ í•œë‹¤.
-            // qmc::makeReference í•¨ìˆ˜ì—ì„œ ì»¨ë²„ì ¼ì„ ì—°ê²°í•´ì¤€ë‹¤.
+            // UNION À» »ç¿ë½Ã¿¡´Â select ÀÇ target ¿¡ ÄÁ¹öÁ¯³ëµå°¡ ´Ş¸±¼ö ÀÖ´Ù.
+            // ÀÌ¶§¹®¿¡ aMakePassNode °¡ TRUE ÀÌ¸é ÄÁ¹öÁ¯ÀÌ ÀÖ¾îµµ °°´Ù°í ÆÇ´ÜÇØ¾ß ÇÑ´Ù.
+            // qmc::makeReference ÇÔ¼ö¿¡¼­ ÄÁ¹öÁ¯À» ¿¬°áÇØÁØ´Ù.
             if( aMakePassNode == ID_TRUE )
             {
                 break;
@@ -4159,15 +4160,15 @@ qmc::makeReference( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    aDepNodeê°€ aRefNodeë¥¼ ì°¸ì¡°í•˜ë„ë¡ ê´€ê³„ë¥¼ ì„¤ì •í•œë‹¤.
- *    (ë‘ nodeê°€ ê°™ì€ column ë˜ëŠ” expressionì„ì„ ê°€ì •í•œë‹¤)
+ *    aDepNode°¡ aRefNode¸¦ ÂüÁ¶ÇÏµµ·Ï °ü°è¸¦ ¼³Á¤ÇÑ´Ù.
+ *    (µÎ node°¡ °°Àº column ¶Ç´Â expressionÀÓÀ» °¡Á¤ÇÑ´Ù)
  *
  * Implementation :
- *    - aDepNodeê°€ pass nodeë¼ë©´ argumentë¡œ aRefNodeë¥¼ ê°€ë¦¬í‚¨ë‹¤.
- *    - aDepNodeê°€ pass nodeê°€ ì•„ë‹Œ ê²½ìš°
- *      - ë§Œì•½ aMakePassNodeê°€ trueì´ë©° aDepNodeê°€ expressionì´ë¼ë©´
- *        aRefNodeë¥¼ ê°€ë¦¬í‚¤ëŠ” pass nodeë¥¼ ìƒì„±í•˜ì—¬ aDepNodeì— ì„¤ì •í•œë‹¤.
- *      - ê·¸ ì™¸ì˜ ê²½ìš° tuple-set ë‚´ì˜ ìœ„ì¹˜ë§Œ ë™ì¼í•˜ê²Œ ì„¤ì •í•œë‹¤.
+ *    - aDepNode°¡ pass node¶ó¸é argument·Î aRefNode¸¦ °¡¸®Å²´Ù.
+ *    - aDepNode°¡ pass node°¡ ¾Æ´Ñ °æ¿ì
+ *      - ¸¸¾à aMakePassNode°¡ trueÀÌ¸ç aDepNode°¡ expressionÀÌ¶ó¸é
+ *        aRefNode¸¦ °¡¸®Å°´Â pass node¸¦ »ı¼ºÇÏ¿© aDepNode¿¡ ¼³Á¤ÇÑ´Ù.
+ *      - ±× ¿ÜÀÇ °æ¿ì tuple-set ³»ÀÇ À§Ä¡¸¸ µ¿ÀÏÇÏ°Ô ¼³Á¤ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -4177,25 +4178,25 @@ qmc::makeReference( qcStatement  * aStatement,
 
     if( (*aDepNode)->node.module == &qtc::passModule )
     {
-        // Parentì˜ nodeê°€ pass nodeì¸ ìƒì„±ëœ ê²½ìš°
+        // ParentÀÇ node°¡ pass nodeÀÎ »ı¼ºµÈ °æ¿ì
         (*aDepNode)->node.arguments = &aRefNode->node;
     }
     else
     {
         // BUG-36997
-        // _prowid ëŠ” ì—°ì‚°ì„ ìˆ˜í–‰í•˜ì§€ ì•Šê³  column,value ì™€ ê°™ì´ ì½ê¸°ë§Œ í•˜ë©´ëœë‹¤.
-        // ë”°ë¼ì„œ PASS ë…¸ë“œë¥¼ ìƒì„±í•  í•„ìš”ê°€ ì—†ë‹¤.
+        // _prowid ´Â ¿¬»êÀ» ¼öÇàÇÏÁö ¾Ê°í column,value ¿Í °°ÀÌ ÀĞ±â¸¸ ÇÏ¸éµÈ´Ù.
+        // µû¶ó¼­ PASS ³ëµå¸¦ »ı¼ºÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
         if( ( aMakePassNode == ID_TRUE ) &&
             ( QMC_NEED_CALC( *aDepNode ) == ID_TRUE ) &&
             ( (*aDepNode)->node.module != &gQtcRidModule ) )
         {
-            // Pass nodeë¥¼ ìƒì„±í•  í•„ìš”ê°€ ìˆëŠ” ê²½ìš°
+            // Pass node¸¦ »ı¼ºÇÒ ÇÊ¿ä°¡ ÀÖ´Â °æ¿ì
             if( ( (*aDepNode)->node.module == &qtc::subqueryModule ) &&
                 ( (*aDepNode) == aRefNode ) )
             {
                 // Nothing to do.
-                // Subqueryì˜ ê²½ìš° materializeëœ í›„ì— value nodeë¡œ ë³€ê²½ë˜ë¯€ë¡œ
-                // pass nodeë¥¼ ì„¤ì •í•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
+                // SubqueryÀÇ °æ¿ì materializeµÈ ÈÄ¿¡ value node·Î º¯°æµÇ¹Ç·Î
+                // pass node¸¦ ¼³Á¤ÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
             }
             else
             {
@@ -4206,8 +4207,8 @@ qmc::makeReference( qcStatement  * aStatement,
                           != IDE_SUCCESS );
 
                 // BUG-39875
-                // PASS ë…¸ë“œë¥¼ ë§Œë“¤ë•Œ ê¸°ì¡´ì˜ ì»¨ë²„ì ¼ì„ ìœ ì§€í•´ì¤€ë‹¤.
-                // ì´ìœ ëŠ” UNION ì„ ì‚¬ìš©í•˜ë©´ target ì— ì»¨ë²„ì ¼ì´ ì¡´ì¬í• ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤.
+                // PASS ³ëµå¸¦ ¸¸µé¶§ ±âÁ¸ÀÇ ÄÁ¹öÁ¯À» À¯ÁöÇØÁØ´Ù.
+                // ÀÌÀ¯´Â UNION À» »ç¿ëÇÏ¸é target ¿¡ ÄÁ¹öÁ¯ÀÌ Á¸ÀçÇÒ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù.
                 sPassNode->node.conversion = ((*aDepNode)->node).conversion;
                 sPassNode->node.next       = ((*aDepNode)->node).next;
 
@@ -4216,7 +4217,7 @@ qmc::makeReference( qcStatement  * aStatement,
         }
         else
         {
-            // Pass nodeë¥¼ ìƒì„±í•  í•„ìš”ê°€ ì—†ëŠ” ê²½ìš°
+            // Pass node¸¦ »ı¼ºÇÒ ÇÊ¿ä°¡ ¾ø´Â °æ¿ì
             (*aDepNode)->node.table  = aRefNode->node.table;
             (*aDepNode)->node.column = aRefNode->node.column;
         }
@@ -4239,10 +4240,10 @@ qmc::appendPredicate( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Result descriptorì— predicateì— í¬í•¨ëœ attributeë“¤ì„ ì¶”ê°€í•œë‹¤.
+ *    Result descriptor¿¡ predicate¿¡ Æ÷ÇÔµÈ attributeµéÀ» Ãß°¡ÇÑ´Ù.
  *
  * Implementation :
- *    qmoPredicateì— nextì™€ moreë¥¼ ìˆœíšŒí•˜ë©° í¬í•¨ëœ expressionë“¤ì„ ì¶”ê°€í•œë‹¤.
+ *    qmoPredicate¿¡ next¿Í more¸¦ ¼øÈ¸ÇÏ¸ç Æ÷ÇÔµÈ expressionµéÀ» Ãß°¡ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -4288,11 +4289,11 @@ qmc::appendPredicate( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Result descriptorì— predicateì— í¬í•¨ëœ attributeë“¤ì„ ì¶”ê°€í•œë‹¤.
+ *    Result descriptor¿¡ predicate¿¡ Æ÷ÇÔµÈ attributeµéÀ» Ãß°¡ÇÑ´Ù.
  *
  * Implementation :
- *    - ë…¼ë¦¬ì—°ì‚°ìë‚˜ ë¹„êµì—°ì‚°ìì¸ ê²½ìš° argumentë“¤ë¡œ ì¬ê·€í˜¸ì¶œí•œë‹¤.
- *    - ê·¸ë ‡ì§€ ì•Šì€ ê²½ìš° appendAttributeë¥¼ í˜¸ì¶œí•œë‹¤.
+ *    - ³í¸®¿¬»êÀÚ³ª ºñ±³¿¬»êÀÚÀÎ °æ¿ì argumentµé·Î Àç±ÍÈ£ÃâÇÑ´Ù.
+ *    - ±×·¸Áö ¾ÊÀº °æ¿ì appendAttribute¸¦ È£ÃâÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -4307,7 +4308,7 @@ qmc::appendPredicate( qcStatement  * aStatement,
         ( ( aPredicate->node.module->lflag & MTC_NODE_OPERATOR_MASK )
           == MTC_NODE_OPERATOR_LIST ) )
     {
-        // ë…¼ë¦¬ì—°ì‚°ì ë˜ëŠ” ë¹„êµ ì—°ì‚°ìì¸ ê²½ìš°
+        // ³í¸®¿¬»êÀÚ ¶Ç´Â ºñ±³ ¿¬»êÀÚÀÎ °æ¿ì
         for( sArg = aPredicate->node.arguments;
              sArg != NULL;
              sArg = sArg->next )
@@ -4324,9 +4325,9 @@ qmc::appendPredicate( qcStatement  * aStatement,
     {
         /* BUG-39611 The sys_connect_by_path function support expression
          * argument.
-         * SYS_CONNEC_BY_PATHê°€ ì‚¬ìš©ëœ ê²½ìš° ì „ì²´ë¥¼ result descriptì— 
-         * ë“±ë¡í•´ì¤˜ì•¼ ë‚˜ì¤‘ì— CNBY Planìƒì„±ì‹œì´ë¯¸ ìƒì„±ëœ Argumentsì˜
-         * Tupleì„ ë³€ê²½í•  ìˆ˜ ìˆë‹¤.
+         * SYS_CONNEC_BY_PATH°¡ »ç¿ëµÈ °æ¿ì ÀüÃ¼¸¦ result descript¿¡ 
+         * µî·ÏÇØÁà¾ß ³ªÁß¿¡ CNBY Plan»ı¼º½ÃÀÌ¹Ì »ı¼ºµÈ ArgumentsÀÇ
+         * TupleÀ» º¯°æÇÒ ¼ö ÀÖ´Ù.
          */
         if ( ( aPredicate->node.lflag & MTC_NODE_FUNCTION_CONNECT_BY_MASK )
              == MTC_NODE_FUNCTION_CONNECT_BY_TRUE )
@@ -4372,7 +4373,7 @@ qmc::appendAttribute( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Result descriptorì— ì •í•´ì§„ optionì— ë”°ë¼ attributeë¥¼ ì¶”ê°€í•œë‹¤.
+ *    Result descriptor¿¡ Á¤ÇØÁø option¿¡ µû¶ó attribute¸¦ Ãß°¡ÇÑ´Ù.
  *
  * Implementation :
  *
@@ -4394,8 +4395,8 @@ qmc::appendAttribute( qcStatement  * aStatement,
     sExpr = &aExpr->node;
 
     /*BUG-44649
-      ì¡°ì¸ ë©”ì†Œë“œì— ë”°ë¼ì„œ level ì»¬ëŸ¼ì„ ì‚¬ìš©í•˜ëŠ” ì§ˆì˜ì˜ ê²°ê³¼ê°’ì´ ë‹¬ë¼ì§ˆ ìˆ˜ ìˆìŠµë‹ˆë‹¤. 
-      result descriptorì—ì„œ level ì •ë³´ëŠ” hierarchy êµ¬ë¬¸ì´ ì—†ëŠ” ê²½ìš° í•˜ìœ„ë¡œ ë‚´ë ¤ ì£¼ë©´ ì•ˆ ë©ë‹ˆë‹¤.*/
+      Á¶ÀÎ ¸Ş¼Òµå¿¡ µû¶ó¼­ level ÄÃ·³À» »ç¿ëÇÏ´Â ÁúÀÇÀÇ °á°ú°ªÀÌ ´Ş¶óÁú ¼ö ÀÖ½À´Ï´Ù. 
+      result descriptor¿¡¼­ level Á¤º¸´Â hierarchy ±¸¹®ÀÌ ¾ø´Â °æ¿ì ÇÏÀ§·Î ³»·Á ÁÖ¸é ¾È µË´Ï´Ù.*/
     if( (aQuerySet->SFWGH != NULL) && (sExpr->arguments == NULL) )
     {
         if( aQuerySet->SFWGH->hierarchy == NULL )
@@ -4425,18 +4426,18 @@ qmc::appendAttribute( qcStatement  * aStatement,
     {
         sExpr = sExpr->arguments;
 
-        // Pass nodeì˜ ê²½ìš° expressionì„ ê°€ë¦¬í‚¤ë”ë¼ë„ ìµœì¢… ê²°ê³¼ë¥¼ í•˜ë‚˜ì˜ attributeë¡œ ë³¸ë‹¤.
+        // Pass nodeÀÇ °æ¿ì expressionÀ» °¡¸®Å°´õ¶óµµ ÃÖÁ¾ °á°ú¸¦ ÇÏ³ªÀÇ attribute·Î º»´Ù.
         aAppendOption &= ~QMC_APPEND_EXPRESSION_MASK;
         aAppendOption |= QMC_APPEND_EXPRESSION_TRUE;
 
-        // Pass nodeì˜ ê²½ìš° calculateí•  í•„ìš” ì—†ì´ ì›ë³¸ì„ ì°¸ì¡°í•˜ë©´ ëœë‹¤.
+        // Pass nodeÀÇ °æ¿ì calculateÇÒ ÇÊ¿ä ¾øÀÌ ¿øº»À» ÂüÁ¶ÇÏ¸é µÈ´Ù.
         aFlag &= ~QMC_ATTR_SEALED_MASK;
         aFlag |= QMC_ATTR_SEALED_TRUE;
     }
 
     if( ( aFlag & QMC_ATTR_SEALED_MASK ) == QMC_ATTR_SEALED_TRUE )
     {
-        // Expressionì´ ì•„ë‹Œ ê²½ìš° sealed flagë¥¼ í•´ì œí•œë‹¤.
+        // ExpressionÀÌ ¾Æ´Ñ °æ¿ì sealed flag¸¦ ÇØÁ¦ÇÑ´Ù.
         if( ( sExpr->module == &qtc::columnModule ) ||
             ( sExpr->module == &qtc::valueModule ) )
         {
@@ -4455,7 +4456,7 @@ qmc::appendAttribute( qcStatement  * aStatement,
 
     if( ( aAppendOption & QMC_APPEND_ALLOW_DUP_MASK ) == QMC_APPEND_ALLOW_DUP_FALSE )
     {
-        // ì¤‘ë³µì„ í—ˆìš©í•˜ë„ë¡ flagê°€ ì„¤ì •ë˜ì§€ ì•Šì•˜ë‹¤ë©´ ì´ë¯¸ ì¡´ì¬í•˜ëŠ” attributeì¸ì§€ í™•ì¸
+        // Áßº¹À» Çã¿ëÇÏµµ·Ï flag°¡ ¼³Á¤µÇÁö ¾Ê¾Ò´Ù¸é ÀÌ¹Ì Á¸ÀçÇÏ´Â attributeÀÎÁö È®ÀÎ
         IDE_TEST( findAttribute( aStatement,
                                  *aResult,
                                  (qtcNode *)sExpr,
@@ -4470,11 +4471,11 @@ qmc::appendAttribute( qcStatement  * aStatement,
         {
             if( ( aAppendOption & QMC_APPEND_CHECK_ANALYTIC_MASK ) == QMC_APPEND_CHECK_ANALYTIC_TRUE )
             {
-                // Analytic functionì˜ analyticì ˆ í™•ì¸
+                // Analytic functionÀÇ analyticÀı È®ÀÎ
                 // ex) RANK() OVER (ORDER BY c1, c2)
-                //     ì—ì„œ c1, c2ì˜ ê²½ìš° ì •ë ¬ ì—¬ë¶€ì™€ ì •ë ¬ ë°©í–¥ì´ ê°™ì•„ì•¼ í•œë‹¤.
-                //     Window sortingì—ì„œë§Œ ì´ flagë¥¼ ì„¤ì •í•œë‹¤.
-                // BUG-42145 NULLS ORDER ì—­ì‹œ ê°™ì•„ì•¼í•œë‹¤.
+                //     ¿¡¼­ c1, c2ÀÇ °æ¿ì Á¤·Ä ¿©ºÎ¿Í Á¤·Ä ¹æÇâÀÌ °°¾Æ¾ß ÇÑ´Ù.
+                //     Window sorting¿¡¼­¸¸ ÀÌ flag¸¦ ¼³Á¤ÇÑ´Ù.
+                // BUG-42145 NULLS ORDER ¿ª½Ã °°¾Æ¾ßÇÑ´Ù.
                 sMask = (QMC_ATTR_ANALYTIC_SORT_MASK | QMC_ATTR_SORT_ORDER_MASK | QMC_ATTR_SORT_NULLS_ORDER_MASK);
                 sFlag1 = (sAttrs->flag & sMask);
                 sFlag2 = (aFlag & sMask);
@@ -4495,7 +4496,7 @@ qmc::appendAttribute( qcStatement  * aStatement,
 
             if( sExist == ID_TRUE )
             {
-                // ì´ë¯¸ ì¡´ì¬í•˜ëŠ” ê²½ìš° flagë¥¼ ë³‘í•©í•œë‹¤.
+                // ÀÌ¹Ì Á¸ÀçÇÏ´Â °æ¿ì flag¸¦ º´ÇÕÇÑ´Ù.
                 sMask = (QMC_ATTR_SEALED_MASK | QMC_ATTR_DISTINCT_MASK | QMC_ATTR_ORDER_BY_MASK);
                 sAttrs->flag |= (aFlag & sMask);
 
@@ -4541,13 +4542,13 @@ qmc::appendAttribute( qcStatement  * aStatement,
 
     if( sExist == ID_FALSE )
     {
-        // ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš° ìƒˆë¡œ ì¶”ê°€í•œë‹¤.
+        // Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì »õ·Î Ãß°¡ÇÑ´Ù.
 
         if( ( ( aFlag & QMC_ATTR_CONVERSION_MASK ) == QMC_ATTR_CONVERSION_FALSE ) &&
             ( sExpr->conversion != NULL ) )
         {
-            // Conversion flagê°€ falseì´ë©´ì„œ conversionì´ ì¡´ì¬í•˜ëŠ” ê²½ìš°
-            // conversionì´ ì œê±°ëœ nodeë¥¼ ì¶”ê°€í•œë‹¤.
+            // Conversion flag°¡ falseÀÌ¸é¼­ conversionÀÌ Á¸ÀçÇÏ´Â °æ¿ì
+            // conversionÀÌ Á¦°ÅµÈ node¸¦ Ãß°¡ÇÑ´Ù.
             IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qtcNode ),
                                                        (void **)&sCopiedNode )
                       != IDE_SUCCESS );
@@ -4567,7 +4568,7 @@ qmc::appendAttribute( qcStatement  * aStatement,
             sExpr->table  = sCopiedNode->node.table;
             sExpr->column = sCopiedNode->node.column;
 
-            // BUG-45320 ë³€ê²½ëœ table columnê°’ìœ¼ë¡œ ë°”ê¾¸ê¸°ìœ„í•´ flagë¥¼ ì„¸íŒ…í•œë‹¤. 
+            // BUG-45320 º¯°æµÈ table column°ªÀ¸·Î ¹Ù²Ù±âÀ§ÇØ flag¸¦ ¼¼ÆÃÇÑ´Ù. 
             sExpr->lflag &= ~MTC_NODE_COLUMN_LOCATE_CHANGE_MASK;
             sExpr->lflag |= MTC_NODE_COLUMN_LOCATE_CHANGE_TRUE;
         }
@@ -4577,36 +4578,36 @@ qmc::appendAttribute( qcStatement  * aStatement,
                 ( ( aAppendOption & QMC_APPEND_EXPRESSION_MASK ) == QMC_APPEND_EXPRESSION_TRUE ) )
             {
                 /*
-                 * ë‹¤ìŒì— í•´ë‹¹í•˜ëŠ” ê²½ìš° í•˜ìœ„ nodeë¥¼ ìˆœíšŒí•˜ì§€ ì•Šê³  ë°”ë¡œ ì¶”ê°€í•œë‹¤.
+                 * ´ÙÀ½¿¡ ÇØ´çÇÏ´Â °æ¿ì ÇÏÀ§ node¸¦ ¼øÈ¸ÇÏÁö ¾Ê°í ¹Ù·Î Ãß°¡ÇÑ´Ù.
                  *
-                 *  1. ë³„ë„ì˜ evaluationì´ í•„ìš”í•˜ì§€ ì•Šì€ ê²½ìš°
-                 *     Column, value, aggregate functionì˜ ê²½ìš° ê²°ê³¼ë¥¼ ë°”ë¡œ ì°¸ì¡°í•˜ë©´ ëœë‹¤.
+                 *  1. º°µµÀÇ evaluationÀÌ ÇÊ¿äÇÏÁö ¾ÊÀº °æ¿ì
+                 *     Column, value, aggregate functionÀÇ °æ¿ì °á°ú¸¦ ¹Ù·Î ÂüÁ¶ÇÏ¸é µÈ´Ù.
                  *
-                 *  2. Expression flagê°€ ì„¤ì •ëœ ê²½ìš°
-                 *     sorting key, grouping keyë“±ì€ expression ìì²´ì˜ ê²°ê³¼ë¥¼ ì¶œë ¥í•´ì•¼ í•œë‹¤.
-                 *     ë°˜ë©´ sorting keyê°€ ì•„ë‹Œ columnì„ selectì ˆì—ì„œ ì‚¬ìš©í•˜ëŠ” ê²½ìš°ì—ëŠ” í•˜ìœ„
-                 *     nodeë“¤ì„ íƒìƒ‰í•˜ì—¬ ì „ë‹¬í•  columnë“¤ì„ ìˆ˜ì§‘í•´ì•¼ í•œë‹¤.
+                 *  2. Expression flag°¡ ¼³Á¤µÈ °æ¿ì
+                 *     sorting key, grouping keyµîÀº expression ÀÚÃ¼ÀÇ °á°ú¸¦ Ãâ·ÂÇØ¾ß ÇÑ´Ù.
+                 *     ¹İ¸é sorting key°¡ ¾Æ´Ñ columnÀ» selectÀı¿¡¼­ »ç¿ëÇÏ´Â °æ¿ì¿¡´Â ÇÏÀ§
+                 *     nodeµéÀ» Å½»öÇÏ¿© Àü´ŞÇÒ columnµéÀ» ¼öÁıÇØ¾ß ÇÑ´Ù.
                  *
                  *     ex) SELECT c1 * c2, c2 * c3 FROM t1 ORDER BY c1 * c2;
                  *         => PROJ -- [c1 * c2], [c2 * c3]
                  *            SORT -- #[c1 * c2], [c2], [c3]
                  *            SCAN -- [c1], [c2], [c3]
-                 *            + #í‘œì‹œëŠ” sorting key
+                 *            + #Ç¥½Ã´Â sorting key
                  */
                 if( ( ( aAppendOption & QMC_APPEND_ALLOW_CONST_MASK ) == QMC_APPEND_ALLOW_CONST_FALSE ) &&
                     ( sExpr->module == &qtc::valueModule ) )
                 {
                     // Nothing to do.
-                    // ìƒìˆ˜ë‚˜ bind ë³€ìˆ˜ëŠ” ë³„ë„ì˜ flagê°€ ì„¤ì •ë˜ì–´ìˆì§€ ì•Šë‹¤ë©´ ë¬´ì‹œí•œë‹¤.
+                    // »ó¼ö³ª bind º¯¼ö´Â º°µµÀÇ flag°¡ ¼³Á¤µÇ¾îÀÖÁö ¾Ê´Ù¸é ¹«½ÃÇÑ´Ù.
                 }
                 else if( ( ( (qtcNode *)sExpr)->lflag & QTC_NODE_SEQUENCE_MASK ) == QTC_NODE_SEQUENCE_EXIST )
                 {
                     // Nothing to do.
-                    // Sequenceì˜ ê²½ìš° projectionì—ë§Œ ì¡´ì¬í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì¶”ê°€í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                    // SequenceÀÇ °æ¿ì projection¿¡¸¸ Á¸ÀçÇÒ ¼ö ÀÖÀ¸¹Ç·Î Ãß°¡ÇÏÁö ¾Ê´Â´Ù.
                 }
                 else
                 {
-                    // Result descriptorì—ì„œ ë§ˆì§€ë§‰ attributeë¥¼ ì°¾ì•„ ì´ì–´ë¶™ì¸ë‹¤.
+                    // Result descriptor¿¡¼­ ¸¶Áö¸· attribute¸¦ Ã£¾Æ ÀÌ¾îºÙÀÎ´Ù.
                     IDE_TEST( QC_QMP_MEM(aStatement)->alloc(
                                   ID_SIZEOF(qmcAttrDesc),
                                   (void**)&sNewAttr )
@@ -4618,12 +4619,12 @@ qmc::appendAttribute( qcStatement  * aStatement,
 
                     if( *aResult == NULL )
                     {
-                        // Result descriptorê°€ ë¹„ì–´ìˆëŠ” ê²½ìš°
+                        // Result descriptor°¡ ºñ¾îÀÖ´Â °æ¿ì
                         *aResult = sNewAttr;
                     }
                     else
                     {
-                        // Result descriptorê°€ ë¹„ì–´ìˆì§€ ì•Šì€ ê²½ìš° ë§ˆì§€ë§‰ nodeì— ì´ì–´ì¤€ë‹¤.
+                        // Result descriptor°¡ ºñ¾îÀÖÁö ¾ÊÀº °æ¿ì ¸¶Áö¸· node¿¡ ÀÌ¾îÁØ´Ù.
                         for( sItrAttr = *aResult;
                              sItrAttr->next != NULL;
                              sItrAttr = sItrAttr->next )
@@ -4683,13 +4684,13 @@ qmc::createResultFromQuerySet( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Query-set ìë£Œêµ¬ì¡°ë¡œë¶€í„° result descriptorë¥¼ ìƒì„±í•œë‹¤.
- *    ë‹¤ìŒ ë‘ operatorì—ì„œ ì‚¬ìš©í•œë‹¤.
- *    1. PROJ(top projectionì¸ ê²½ìš°)
+ *    Query-set ÀÚ·á±¸Á¶·ÎºÎÅÍ result descriptor¸¦ »ı¼ºÇÑ´Ù.
+ *    ´ÙÀ½ µÎ operator¿¡¼­ »ç¿ëÇÑ´Ù.
+ *    1. PROJ(top projectionÀÎ °æ¿ì)
  *    2. VMTR
  *
  * Implementation :
- *    Query-setì— ì„¤ì •ëœ target listë¥¼ íƒìƒ‰í•˜ë©° attributeë¥¼ ì¶”ê°€í•œë‹¤.
+ *    Query-set¿¡ ¼³Á¤µÈ target list¸¦ Å½»öÇÏ¸ç attribute¸¦ Ãß°¡ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -4703,25 +4704,25 @@ qmc::createResultFromQuerySet( qcStatement  * aStatement,
     sFlag &= ~QMC_ATTR_CONVERSION_MASK;
     sFlag |= QMC_ATTR_CONVERSION_TRUE;
 
-    // Query-setì˜ ìµœìƒìœ„ projectionì¸ ê²½ìš°
+    // Query-setÀÇ ÃÖ»óÀ§ projectionÀÎ °æ¿ì
     for( sTarget = aQuerySet->target;
          sTarget != NULL;
          sTarget = sTarget->next )
     {
         if( aQuerySet->SFWGH != NULL )
         {
-            // ì¼ë°˜ì ì¸ PROJ ë˜ëŠ” VMTR
+            // ÀÏ¹İÀûÀÎ PROJ ¶Ç´Â VMTR
             if( ( sTarget->targetColumn->node.module != &qtc::columnModule ) &&
                 ( sTarget->targetColumn->node.module != &qtc::valueModule ) )
             {
-                // ë‹¨ìˆœ columnì´ë‚˜ ìƒìˆ˜ ì™¸ expressionì¸ ê²½ìš°
+                // ´Ü¼ø columnÀÌ³ª »ó¼ö ¿Ü expressionÀÎ °æ¿ì
                 if( ( aQuerySet->SFWGH->selectType == QMS_DISTINCT ) ||
                     ( sTarget->targetColumn->node.module == &qtc::passModule ) ||
                     ( QTC_IS_AGGREGATE( sTarget->targetColumn ) == ID_TRUE ) )
                 {
-                    // DISTINCTì ˆì„ ì‚¬ìš©í•œ ê²½ìš° HSDSì—ì„œ,
-                    // Pass nodeê°€ ì„¤ì •ë˜ê±°ë‚˜ aggregate functionì„ ì‚¬ìš©í•œ ê²½ìš°ì—ëŠ”
-                    // GRAG/AGGRì—ì„œ ê²°ê³¼ë¥¼ ì „ë‹¬í•œë‹¤.
+                    // DISTINCTÀıÀ» »ç¿ëÇÑ °æ¿ì HSDS¿¡¼­,
+                    // Pass node°¡ ¼³Á¤µÇ°Å³ª aggregate functionÀ» »ç¿ëÇÑ °æ¿ì¿¡´Â
+                    // GRAG/AGGR¿¡¼­ °á°ú¸¦ Àü´ŞÇÑ´Ù.
                     sFlag &= ~QMC_ATTR_SEALED_MASK;
                     sFlag |= QMC_ATTR_SEALED_TRUE;
                 }
@@ -4750,14 +4751,14 @@ qmc::createResultFromQuerySet( qcStatement  * aStatement,
         }
         else
         {
-            // UNION ë“± SET ì—°ì‚°ìì˜ ìƒìœ„ PROJ
+            // UNION µî SET ¿¬»êÀÚÀÇ »óÀ§ PROJ
             sFlag &= ~QMC_ATTR_SEALED_MASK;
             sFlag |= QMC_ATTR_SEALED_FALSE;
         }
 
         if( ( sTarget->flag & QMS_TARGET_ORDER_BY_MASK ) == QMS_TARGET_ORDER_BY_TRUE )
         {
-            // ORDER BYì ˆì—ì„œ aliasë‚˜ indicatorë¡œ ì°¸ì¡°í•˜ëŠ” ê²½ìš°
+            // ORDER BYÀı¿¡¼­ alias³ª indicator·Î ÂüÁ¶ÇÏ´Â °æ¿ì
             sFlag &= ~QMC_ATTR_ORDER_BY_MASK;
             sFlag |= QMC_ATTR_ORDER_BY_TRUE;
 
@@ -4775,7 +4776,7 @@ qmc::createResultFromQuerySet( qcStatement  * aStatement,
         }
 
         // PROJ-2469 Optimize View Materialization
-        // ìƒìœ„ Query Blockì—ì„œ ì°¸ì¡°í•˜ì§€ ì•ŠëŠ” Viewì˜ Columnì— ëŒ€í•´ì„œ flag ì²˜ë¦¬í•œë‹¤.
+        // »óÀ§ Query Block¿¡¼­ ÂüÁ¶ÇÏÁö ¾Ê´Â ViewÀÇ Column¿¡ ´ëÇØ¼­ flag Ã³¸®ÇÑ´Ù.
         if ( ( sTarget->flag & QMS_TARGET_IS_USELESS_MASK ) == QMS_TARGET_IS_USELESS_TRUE )
         {
             sFlag &= ~QMC_ATTR_USELESS_RESULT_MASK;
@@ -4821,10 +4822,10 @@ qmc::copyResultDesc( qcStatement        * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Parentì—ì„œ childë¡œ result descriptorë¥¼ ë³µì‚¬í•œë‹¤.
+ *    Parent¿¡¼­ child·Î result descriptor¸¦ º¹»çÇÑ´Ù.
  *
  * Implementation :
- *    ì¼ë°˜ì ì¸ linked-listì˜ ë³µì‚¬ì™€ ë™ì¼í•˜ë‹¤.
+ *    ÀÏ¹İÀûÀÎ linked-listÀÇ º¹»ç¿Í µ¿ÀÏÇÏ´Ù.
  *
  ***********************************************************************/
     const qmcAttrDesc * sItrAttr;
@@ -4876,10 +4877,10 @@ qmc::appendQuerySetCorrelation( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Query-setì„ ì¬ê·€ì ìœ¼ë¡œ ìˆœíšŒí•˜ë©° correlation attributeë“¤ì„ ì¶”ê°€í•œë‹¤.
+ *    Query-setÀ» Àç±ÍÀûÀ¸·Î ¼øÈ¸ÇÏ¸ç correlation attributeµéÀ» Ãß°¡ÇÑ´Ù.
  *
  * Implementation :
- *    Set ì—°ì‚°ì´ ì•„ë‹Œ ê²½ìš° SFWGHì—ì„œ outerColumnì—ì„œ correlationì„ ì°¾ëŠ”ë‹¤.
+ *    Set ¿¬»êÀÌ ¾Æ´Ñ °æ¿ì SFWGH¿¡¼­ outerColumn¿¡¼­ correlationÀ» Ã£´Â´Ù.
  *
  ***********************************************************************/
 
@@ -4949,11 +4950,11 @@ qmc::appendSubqueryCorrelation( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Subqueryì— correlation attributeë“¤ì„ result descriptorì— ì¶”ê°€í•œë‹¤.
+ *    Subquery¿¡ correlation attributeµéÀ» result descriptor¿¡ Ãß°¡ÇÑ´Ù.
  *
  * Implementation :
- *    Outer queryì˜ dependencyë¥¼ êµ¬í•´ ì „ë‹¬í•˜ë©´ subqueryì—ì„œ correlation
- *    ì—¬ë¶€ë¥¼ íŒë‹¨í•œë‹¤.
+ *    Outer queryÀÇ dependency¸¦ ±¸ÇØ Àü´ŞÇÏ¸é subquery¿¡¼­ correlation
+ *    ¿©ºÎ¸¦ ÆÇ´ÜÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -4970,7 +4971,7 @@ qmc::appendSubqueryCorrelation( qcStatement  * aStatement,
         sParseTree = (qmsParseTree*)aSubqueryNode->subquery->myPlan->parseTree;
         sSubquerySet = sParseTree->querySet;
 
-        // Outer queryì˜ dependencyë¥¼ ì–»ì–´ì˜¨ë‹¤.
+        // Outer queryÀÇ dependency¸¦ ¾ò¾î¿Â´Ù.
         sDepInfo = &aQuerySet->SFWGH->depInfo;
 
         IDE_TEST( appendQuerySetCorrelation( aStatement,
@@ -5002,13 +5003,13 @@ qmc::pushResultDesc( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Parentì—ì„œ childë¡œ result descriptorë¥¼ ì „ë‹¬í•œë‹¤.
- *    ì´ ê³¼ì •ì„ í†µí•´ ê° operatorë“¤ë§ˆë‹¤ push projectionì´ êµ¬í˜„ëœë‹¤.
+ *    Parent¿¡¼­ child·Î result descriptor¸¦ Àü´ŞÇÑ´Ù.
+ *    ÀÌ °úÁ¤À» ÅëÇØ °¢ operatorµé¸¶´Ù push projectionÀÌ ±¸ÇöµÈ´Ù.
  *
  * Implementation :
- *    Parentì˜ ê° attributeì— sealed flagê°€ ì„¤ì •ëœ ê²½ìš° expressionì„
- *    ê·¸ëŒ€ë¡œ childì— ì¶”ê°€í•˜ê³ , ê·¸ë ‡ì§€ ì•Šì€ ê²½ìš° expressionì˜ ê° nodeë“¤ì„
- *    ë³„ê°œë¡œ childì— ì¶”ê°€í•œë‹¤.
+ *    ParentÀÇ °¢ attribute¿¡ sealed flag°¡ ¼³Á¤µÈ °æ¿ì expressionÀ»
+ *    ±×´ë·Î child¿¡ Ãß°¡ÇÏ°í, ±×·¸Áö ¾ÊÀº °æ¿ì expressionÀÇ °¢ nodeµéÀ»
+ *    º°°³·Î child¿¡ Ãß°¡ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -5037,12 +5038,12 @@ qmc::pushResultDesc( qcStatement  * aStatement,
             ( ( sItrAttr->flag & QMC_ATTR_DISTINCT_MASK ) == QMC_ATTR_DISTINCT_FALSE ) &&
             ( ( sItrAttr->flag & QMC_ATTR_ORDER_BY_MASK ) == QMC_ATTR_ORDER_BY_FALSE ) )
         {
-            // SubqueryëŠ” ë‹¤ìŒì˜ ì¡°ê±´ ì¤‘ í•´ë‹¹í•˜ì§€ ì•Šìœ¼ë©´ ë¬´ì‹œí•œë‹¤.
-            // (SubqueryëŠ” ìˆ˜í–‰ ë¹„ìš©ì´ ë†’ìœ¼ë¯€ë¡œ ê°€ëŠ¥í•œ PROJì—ì„œ ìˆ˜í–‰ ìœ ë„)
-            // 1. SELECT DISTINCTì ˆì—ì„œ ì‚¬ìš©ëœ ê²½ìš°(HSDSì—ì„œ ìˆ˜í–‰)
-            // 2. SELECTì ˆì—ì„œ ì‚¬ìš©ë˜ê³  ORDER BYì ˆì—ì„œ ì°¸ì¡°ëœ ê²½ìš°(SORTì—ì„œ ìˆ˜í–‰)
+            // Subquery´Â ´ÙÀ½ÀÇ Á¶°Ç Áß ÇØ´çÇÏÁö ¾ÊÀ¸¸é ¹«½ÃÇÑ´Ù.
+            // (Subquery´Â ¼öÇà ºñ¿ëÀÌ ³ôÀ¸¹Ç·Î °¡´ÉÇÑ PROJ¿¡¼­ ¼öÇà À¯µµ)
+            // 1. SELECT DISTINCTÀı¿¡¼­ »ç¿ëµÈ °æ¿ì(HSDS¿¡¼­ ¼öÇà)
+            // 2. SELECTÀı¿¡¼­ »ç¿ëµÇ°í ORDER BYÀı¿¡¼­ ÂüÁ¶µÈ °æ¿ì(SORT¿¡¼­ ¼öÇà)
 
-            // BUG-35082 subqueryì™€ correlationì´ ìˆëŠ” attributeë“¤ì„ ì¶”ê°€í•´ì¤€ë‹¤.
+            // BUG-35082 subquery¿Í correlationÀÌ ÀÖ´Â attributeµéÀ» Ãß°¡ÇØÁØ´Ù.
             IDE_TEST( appendSubqueryCorrelation( aStatement,
                                                  aQuerySet,
                                                  aChild,
@@ -5064,7 +5065,7 @@ qmc::pushResultDesc( qcStatement  * aStatement,
 
         if( sAttr != NULL )
         {
-            // Result descriptorì— ì´ë¯¸ ì¡´ì¬í•˜ëŠ” ê²½ìš° ì°¸ì¡°ê´€ê³„ë¥¼ ë§Œë“ ë‹¤.
+            // Result descriptor¿¡ ÀÌ¹Ì Á¸ÀçÇÏ´Â °æ¿ì ÂüÁ¶°ü°è¸¦ ¸¸µç´Ù.
             IDE_TEST( makeReference( aStatement,
                                      aMakePassNode,
                                      sAttr->expr,
@@ -5076,14 +5077,14 @@ qmc::pushResultDesc( qcStatement  * aStatement,
         }
         else
         {
-            // Result descriptorì— ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
+            // Result descriptor¿¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
 
             /*
-             * ì•„ë˜ ì¡°ê±´ì´ ëª¨ë‘ ì¶©ì¡±ë˜ì–´ì•¼ expressionì˜ argumentë“¤ì„ ì¶”ê°€í•œë‹¤.
-             * 1. GROUP BY, DISTINCT, ORDER BYì ˆì˜ expressionì´ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
-             *    (ì—¬ê¸°ì— í•´ë‹¹ë˜ë©´ sealed flagê°€ ì„¤ì •ë¨)
-             * 2. Column/value moduleì´ ì•„ë‹ˆì–´ì•¼ í•œë‹¤(argumentê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŒ).
-             * 3. Subqueryê°€ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
+             * ¾Æ·¡ Á¶°ÇÀÌ ¸ğµÎ ÃæÁ·µÇ¾î¾ß expressionÀÇ argumentµéÀ» Ãß°¡ÇÑ´Ù.
+             * 1. GROUP BY, DISTINCT, ORDER BYÀıÀÇ expressionÀÌ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
+             *    (¿©±â¿¡ ÇØ´çµÇ¸é sealed flag°¡ ¼³Á¤µÊ)
+             * 2. Column/value moduleÀÌ ¾Æ´Ï¾î¾ß ÇÑ´Ù(argument°¡ Á¸ÀçÇÏÁö ¾ÊÀ½).
+             * 3. Subquery°¡ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
              */
             if( ( ( sItrAttr->flag & QMC_ATTR_SEALED_MASK ) == QMC_ATTR_SEALED_FALSE ) &&
                 ( sItrAttr->expr->node.module != &qtc::columnModule ) &&
@@ -5138,13 +5139,13 @@ qmc::makeReferenceResult( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *    ë‘ result descriptorê°„ì˜ ì°¸ì¡° ê´€ê³„ë¥¼ ì„¤ì •í•´ì¤€ë‹¤.
- *    pushResultDescë¥¼ í˜¸ì¶œí•˜ì§€ ì•ŠëŠ” ë‹¤ìŒ operatorë“¤ì—ì„œ í˜¸ì¶œí•œë‹¤.
+ *    µÎ result descriptor°£ÀÇ ÂüÁ¶ °ü°è¸¦ ¼³Á¤ÇØÁØ´Ù.
+ *    pushResultDesc¸¦ È£ÃâÇÏÁö ¾Ê´Â ´ÙÀ½ operatorµé¿¡¼­ È£ÃâÇÑ´Ù.
  *      - HSDS
  *      - GRBY
  *
  * Implementation :
- *    ë‘ resultê°„ ë™ì¼í•œ attributeê°€ ì¡´ì¬í•˜ë©´ makeReferenceë¥¼ í˜¸ì¶œí•œë‹¤.
+ *    µÎ result°£ µ¿ÀÏÇÑ attribute°¡ Á¸ÀçÇÏ¸é makeReference¸¦ È£ÃâÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -5153,12 +5154,13 @@ qmc::makeReferenceResult( qcStatement * aStatement,
 
     IDU_FIT_POINT_FATAL( "qmc::makeReferenceResult::__FT__" );
 
-    for( sItrAttr = aChild;
+    // BUG-48101 parentsÀÇ Áßº¹µÈ result desc¿¡ ÂüÁ¶°ü°è°¡ ¼³Á¤µÇÁö ¾Ê½À´Ï´Ù.
+    for( sItrAttr = aParent;
          sItrAttr != NULL;
          sItrAttr = sItrAttr->next )
     {
         IDE_TEST( findAttribute( aStatement,
-                                 aParent,
+                                 aChild,
                                  sItrAttr->expr,
                                  aMakePassNode,
                                  &sAttr )
@@ -5168,8 +5170,8 @@ qmc::makeReferenceResult( qcStatement * aStatement,
         {
             IDE_TEST( makeReference( aStatement,
                                      aMakePassNode,
-                                     sItrAttr->expr,
-                                     &sAttr->expr )
+                                     sAttr->expr,
+                                     &sItrAttr->expr )
                       != IDE_SUCCESS );
         }
         else
@@ -5194,9 +5196,9 @@ qmc::filterResultDesc( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Result descriptorì—ì„œ attributeì˜ dependencyê°€ aDepInfoì—
- *    í¬í•¨ë˜ì§€ ì•ŠëŠ” ê²½ìš° ì œê±°í•œë‹¤.
- *    ë‹¨, ì˜ˆì™¸ì ìœ¼ë¡œ key flagê°€ ì„¤ì •ëœ ê²½ìš° ì´ë¥¼ ë¬´ì‹œí•˜ê³  í¬í•¨í•œë‹¤.
+ *    Result descriptor¿¡¼­ attributeÀÇ dependency°¡ aDepInfo¿¡
+ *    Æ÷ÇÔµÇÁö ¾Ê´Â °æ¿ì Á¦°ÅÇÑ´Ù.
+ *    ´Ü, ¿¹¿ÜÀûÀ¸·Î key flag°¡ ¼³Á¤µÈ °æ¿ì ÀÌ¸¦ ¹«½ÃÇÏ°í Æ÷ÇÔÇÑ´Ù.
  *
  * Implementation :
  *
@@ -5209,7 +5211,7 @@ qmc::filterResultDesc( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmc::filterResultDesc::__FT__" );
 
     // BUG-37057
-    // targetì„ ì œì™¸í•œ ì™¸ë¶€ì°¸ì¡° ì»¬ëŸ¼ì˜ ê²½ìš° result desc ê°€ ë ìˆ˜ ì—†ë‹¤.
+    // targetÀ» Á¦¿ÜÇÑ ¿ÜºÎÂüÁ¶ ÄÃ·³ÀÇ °æ¿ì result desc °¡ µÉ¼ö ¾ø´Ù.
     qtc::dependencyAnd( aDepInfo,
                         aDepInfo2,
                         &sAndDependencies );
@@ -5218,7 +5220,7 @@ qmc::filterResultDesc( qcStatement  * aStatement,
     {
         sNextAttr = sItrAttr->next;
 
-        // aDepInfoì— í¬í•¨ë˜ì§€ ì•Šê³  key attributeë„ ì•„ë‹Œ ê²½ìš° ì‚­ì œ
+        // aDepInfo¿¡ Æ÷ÇÔµÇÁö ¾Ê°í key attributeµµ ¾Æ´Ñ °æ¿ì »èÁ¦
         if( ( qtc::dependencyContains(
                   &sAndDependencies,
                   &sItrAttr->expr->depInfo ) == ID_FALSE ) &&
@@ -5226,12 +5228,12 @@ qmc::filterResultDesc( qcStatement  * aStatement,
         {
             if( sPrevAttr == NULL )
             {
-                // Result descriptrì˜ ì²« ë²ˆì§¸ attributeì¸ ê²½ìš°
+                // Result descriptrÀÇ Ã¹ ¹øÂ° attributeÀÎ °æ¿ì
                 *aResult = sNextAttr;
             }
             else
             {
-                // Result descriptrì˜ ì²« ë²ˆì§¸ê°€ ì•„ë‹Œ attributeì¸ ê²½ìš°
+                // Result descriptrÀÇ Ã¹ ¹øÂ°°¡ ¾Æ´Ñ attributeÀÎ °æ¿ì
                 sPrevAttr->next = sNextAttr;
             }
 
@@ -5261,8 +5263,8 @@ IDE_RC qmc::appendViewPredicate( qcStatement  * aStatement,
  *
  * Description :
  *    BUG-43077
- *    viewì•ˆì—ì„œ ì°¸ì¡°í•˜ëŠ” ì™¸ë¶€ ì°¸ì¡° ì»¬ëŸ¼ë“¤ì„ Result descriptorì— ì¶”ê°€í•œë‹¤.
- *    ë‹¤ìŒê³¼ ê°™ì€ ê²½ìš°ì—ëŠ” ì™¸ë¶€ ì°¸ì¡° ì»¬ëŸ¼ë“¤ì´ Result descriptorì— ì—†ì„ìˆ˜ ìˆë‹¤.
+ *    view¾È¿¡¼­ ÂüÁ¶ÇÏ´Â ¿ÜºÎ ÂüÁ¶ ÄÃ·³µéÀ» Result descriptor¿¡ Ãß°¡ÇÑ´Ù.
+ *    ´ÙÀ½°ú °°Àº °æ¿ì¿¡´Â ¿ÜºÎ ÂüÁ¶ ÄÃ·³µéÀÌ Result descriptor¿¡ ¾øÀ»¼ö ÀÖ´Ù.
  *    SELECT count(a.i1) FROM t2 a, t2 b, Lateral (select * from t1 where t1.i1=a.i1 and t1.i1=b.i1) v;
  *
  * Implementation :
@@ -5315,13 +5317,13 @@ qmc::duplicateGroupExpression( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *    HAVINGì ˆ ë˜ëŠ” analytic functionì— í¬í•¨ëœ group expressionì€ ë°˜ë“œì‹œ
- *    GRAGì˜ ê²°ê³¼ë¥¼ ê°€ë¦¬ì¼œì•¼ í•œë‹¤. ê·¸ëŸ°ë° DISTINCT/ORDER BYì ˆì„ ì‚¬ìš©í•œ
- *    ê²½ìš° HSDS/SORTì˜ ê²°ê³¼ë¥¼ ê°€ë¦¬í‚¤ë„ë¡ ë³€ê²½ë  ìˆ˜ ìˆì–´ ë³„ë„ë¡œ ë³µì‚¬í•œë‹¤.
+ *    HAVINGÀı ¶Ç´Â analytic function¿¡ Æ÷ÇÔµÈ group expressionÀº ¹İµå½Ã
+ *    GRAGÀÇ °á°ú¸¦ °¡¸®ÄÑ¾ß ÇÑ´Ù. ±×·±µ¥ DISTINCT/ORDER BYÀıÀ» »ç¿ëÇÑ
+ *    °æ¿ì HSDS/SORTÀÇ °á°ú¸¦ °¡¸®Å°µµ·Ï º¯°æµÉ ¼ö ÀÖ¾î º°µµ·Î º¹»çÇÑ´Ù.
  *
  * Implementation :
- *    Group expressionì€ pass nodeë¥¼ í†µí•´ ì°¸ì¡°í•˜ë¯€ë¡œ pass nodeë¥¼ ì°¾ì•„
- *    argumentë¥¼ ë³µì‚¬í•œí›„ ê°€ë¦¬í‚¤ë„ë¡ í•œë‹¤.
+ *    Group expressionÀº pass node¸¦ ÅëÇØ ÂüÁ¶ÇÏ¹Ç·Î pass node¸¦ Ã£¾Æ
+ *    argument¸¦ º¹»çÇÑÈÄ °¡¸®Å°µµ·Ï ÇÑ´Ù.
  *
  ***********************************************************************/
 

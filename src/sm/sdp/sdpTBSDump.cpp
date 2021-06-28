@@ -23,6 +23,7 @@
 #include <sctTableSpaceMgr.h>
 #include <sdpTBSDump.h>
 #include <sdpReq.h>
+#include <sdptbFT.h>
 
 IDE_RC sdpTBSDump::initialize()
 {
@@ -35,7 +36,7 @@ IDE_RC sdpTBSDump::destroy()
 }
 
 //------------------------------------------------------
-// D$DISK_TBS_FREEEXTLIST Dump Tableì˜ Column Description
+// D$DISK_TBS_FREEEXTLIST Dump TableÀÇ Column Description
 //------------------------------------------------------
 static iduFixedTableColDesc gDumpDiskTBSFreeEXTListColDesc[]=
 {
@@ -90,7 +91,7 @@ static iduFixedTableColDesc gDumpDiskTBSFreeEXTListColDesc[]=
 };
 
 //------------------------------------------------------
-// D$DISK_TBS_FREEEXTLIST Dump Tableì˜ Table Description
+// D$DISK_TBS_FREEEXTLIST Dump TableÀÇ Table Description
 //------------------------------------------------------
 iduFixedTableDesc  gDumpDiskTBSFreeEXTListTableDesc =
 {
@@ -105,7 +106,7 @@ iduFixedTableDesc  gDumpDiskTBSFreeEXTListTableDesc =
 };
 
 //------------------------------------------------------
-// D$DISK_TBS_FREEEXTLIST Dump Tableì˜ ë ˆì½”ë“œ Build
+// D$DISK_TBS_FREEEXTLIST Dump TableÀÇ ·¹ÄÚµå Build
 //------------------------------------------------------
 IDE_RC sdpTBSDump::buildRecord4ExtFreeList(
     idvSQL              * /*aStatistics*/,
@@ -114,26 +115,23 @@ IDE_RC sdpTBSDump::buildRecord4ExtFreeList(
     iduFixedTableMemory * aMemory )
 {
     scSpaceID       sSpaceID;
-    sdpExtMgmtOp  * sTBSMgrOp;
 
     IDE_ERROR( aHeader != NULL );
     IDE_ERROR( aMemory != NULL );
 
     IDE_TEST_RAISE( aDumpObj == NULL, ERR_EMPTY_OBJECT );
 
-    /* TBSê°€ ì¡´ìž¬í•˜ëŠ”ì§€ ê²€ì‚¬í•˜ê³  Dumpì¤‘ì— Dropë˜ì§€ ì•Šë„ë¡ Lockì„ ìž¡ëŠ”ë‹¤. */
-    /* BUG-28678  [SM] qmsDumpObjList::mObjInfoì— ì„¤ì •ë  ë©”ëª¨ë¦¬ ì£¼ì†ŒëŠ” 
-     * ë°˜ë“œì‹œ ê³µê°„ì„ í• ë‹¹í•´ì„œ ì„¤ì •í•´ì•¼í•©ë‹ˆë‹¤. 
+    /* TBS°¡ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÏ°í DumpÁß¿¡ DropµÇÁö ¾Êµµ·Ï LockÀ» Àâ´Â´Ù. */
+    /* BUG-28678  [SM] qmsDumpObjList::mObjInfo¿¡ ¼³Á¤µÉ ¸Þ¸ð¸® ÁÖ¼Ò´Â 
+     * ¹Ýµå½Ã °ø°£À» ÇÒ´çÇØ¼­ ¼³Á¤ÇØ¾ßÇÕ´Ï´Ù. 
      * 
-     * aDumpObjëŠ” Pointerë¡œ ë°ì´í„°ê°€ ì˜¤ê¸° ë•Œë¬¸ì— ê°’ì„ ê°€ì ¸ì™€ì•¼ í•©ë‹ˆë‹¤. */
+     * aDumpObj´Â Pointer·Î µ¥ÀÌÅÍ°¡ ¿À±â ¶§¹®¿¡ °ªÀ» °¡Á®¿Í¾ß ÇÕ´Ï´Ù. */
     sSpaceID  = *( (scSpaceID*)aDumpObj );
     IDE_ASSERT( sctTableSpaceMgr::isDiskTableSpace( sSpaceID ) == ID_TRUE );
 
-    sTBSMgrOp = sdpTableSpace::getTBSMgmtOP( sSpaceID );
-
-    IDE_TEST( sTBSMgrOp->mBuildRecod4FreeExtOfTBS( aHeader,
-                                                   aDumpObj,
-                                                   aMemory )
+    IDE_TEST( sdptbFT::buildRecord4FreeExtOfTBS( aHeader,
+                                                 aDumpObj,
+                                                 aMemory )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;

@@ -19,8 +19,8 @@
  * $Id: stfWKB.h 18883 2006-11-14 01:48:40Z sabbra $
  *
  * Description:
- * WKB(Well Known Binary)ë¡œë¶€í„° Geometry ê°ì²´ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
- * ìƒì„¸ êµ¬í˜„ì€ stdParsing.cpp ì— ìˆë‹¤.
+ * WKB(Well Known Binary)·ÎºÎÅÍ Geometry °´Ã¼ »ı¼ºÇÏ´Â ÇÔ¼ö
+ * »ó¼¼ ±¸ÇöÀº stdParsing.cpp ¿¡ ÀÖ´Ù.
  **********************************************************************/
 
 #ifndef _O_STF_WKB_H_
@@ -73,7 +73,7 @@ public:
                     IDE_RC*     aResult,
                     UInt        aValidateOption );
 
-    /* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()ë¥¼ ì§€ì›í•´ì•¼ í•©ë‹ˆë‹¤. */
+    /* BUG-44399 ST_RECTFROMTEXT(), ST_RECTFROMWKB()¸¦ Áö¿øÇØ¾ß ÇÕ´Ï´Ù. */
     static IDE_RC rectFromWKB( iduMemory * aQmxMem,
                                void      * aWKB,
                                void      * aBuf,

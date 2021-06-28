@@ -15,7 +15,7 @@
  */
 
 /***********************************************************************
- * $Id: mtxFromSmallintTo.cpp 85045 2019-03-20 01:40:10Z andrew.shin $
+ * $Id: mtxFromSmallintTo.cpp 84859 2019-02-01 06:07:08Z andrew.shin $
  **********************************************************************/
 
 #include <mtx.h>
@@ -179,7 +179,7 @@ static IDE_RC mtxFromSmallintToReal( mtxEntry ** aEntry )
         IDE_TEST_RAISE( MTX_IS_NULL_REAL( sReturn ),
                         ERR_VALUE_OVERFLOW );
 
-        /* To fix BUG-12281 - underflow ê²€ì‚¬ */
+        /* To fix BUG-12281 - underflow °Ë»ç */
         if ( idlOS::fabs( sDouble ) < MTD_REAL_MINIMUM )
         {
             *sReturn = 0;

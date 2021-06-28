@@ -16,11 +16,13 @@
  
 
 /***********************************************************************
- * $Id: rpDef.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpDef.h 90177 2021-03-11 04:29:45Z lswhh $
  **********************************************************************/
 
 #ifndef _O_RP_DEF_H_
 #define _O_RP_DEF_H_ 1
+
+#include <idl.h>
 
 #define RP_STATUS_NONE       (0)
 #define RP_STATUS_TX_BEGIN   (1 << 0)
@@ -105,7 +107,64 @@ typedef enum
 } rpRecvStartStatus;
 
 #define RP_SENDER_APPLY_CHECK_INTERVAL 10 //10 sec
-#define RP_UNUSED_RECEIVER_INDEX (SMX_NOT_REPL_TX_ID - 1)
+#define RP_UNUSED_RECEIVER_INDEX (SMX_LOCK_WAIT_REPL_TX_ID)
 
+/* for xlogfileMgr */
+#define XLOGFILE_PATH_MAX_LENGTH    (1024)
+#define XLOGFILE_HEADER_SIZE_INIT   (UInt)(ID_SIZEOF(rpdXLogfileHeader))
+
+typedef ULong rpXLogLSN;
+
+#define RP_XLOGLSN_OFFSET_BIT_SIZE    (ID_ULONG(32))
+#define RP_XLOGLSN_OFFSET_MASK        (ID_UINT_MAX)
+#define RP_XLOGLSN_INIT               (0)
+
+/* FileNo와 Offset으로 XLogLSN을 만든다. */
+#define RP_SET_XLOGLSN( FILENO, OFFSET )               \
+        ( ( ( rpXLogLSN )FILENO << RP_XLOGLSN_OFFSET_BIT_SIZE ) | OFFSET )
+
+/* XLogLSN에서 FileNo와 Offset을 추출한다. */
+#define RP_GET_XLOGLSN( FILENO, OFFSET, XLOGLSN )   \
+        { FILENO = (rpXLogLSN)XLOGLSN >> RP_XLOGLSN_OFFSET_BIT_SIZE; \
+          OFFSET = (rpXLogLSN)XLOGLSN & RP_XLOGLSN_OFFSET_MASK; }
+
+/* XLogLSN에서 FileNo를 추출한다. */
+#define RP_GET_FILENO_FROM_XLOGLSN( FILENO, XLOGLSN )   \
+        FILENO = (rpXLogLSN)XLOGLSN >> RP_XLOGLSN_OFFSET_BIT_SIZE;
+
+/* XLogLSN에서 Offset를 추출한다. */
+#define RP_GET_OFFSET_FROM_XLOGLSN( OFFSET, XLOGLSN )   \
+        OFFSET = (rpXLogLSN)XLOGLSN & RP_XLOGLSN_OFFSET_MASK;
+
+#define RP_IS_INIT_XLOGLSN( XLOGLSN )   ((XLOGLSN) == RP_XLOGLSN_INIT )
+
+#define RP_ENDIAN_ASSIGN2(dst, src)                    \
+    do                                                 \
+{                                                  \
+    *((UChar *)(dst) + 1) = *((UChar *)(src) + 0); \
+    *((UChar *)(dst) + 0) = *((UChar *)(src) + 1); \
+} while (0)
+
+#define RP_ENDIAN_ASSIGN4(dst, src)                    \
+    do                                                 \
+{                                                  \
+    *((UChar *)(dst) + 3) = *((UChar *)(src) + 0); \
+    *((UChar *)(dst) + 2) = *((UChar *)(src) + 1); \
+    *((UChar *)(dst) + 1) = *((UChar *)(src) + 2); \
+    *((UChar *)(dst) + 0) = *((UChar *)(src) + 3); \
+} while (0)
+
+#define RP_ENDIAN_ASSIGN8(dst, src)                    \
+    do                                                 \
+{                                                  \
+    *((UChar *)(dst) + 7) = *((UChar *)(src) + 0); \
+    *((UChar *)(dst) + 6) = *((UChar *)(src) + 1); \
+    *((UChar *)(dst) + 5) = *((UChar *)(src) + 2); \
+    *((UChar *)(dst) + 4) = *((UChar *)(src) + 3); \
+    *((UChar *)(dst) + 3) = *((UChar *)(src) + 4); \
+    *((UChar *)(dst) + 2) = *((UChar *)(src) + 5); \
+    *((UChar *)(dst) + 1) = *((UChar *)(src) + 6); \
+    *((UChar *)(dst) + 0) = *((UChar *)(src) + 7); \
+} while (0)
 
 #endif /* _O_RP_DEF_H_ */

@@ -30,6 +30,12 @@ ulsM_ExpandMBR( stdMBR *aMaster, stdMBR *aOther );
 
 acp_sint32_t  ulsM_IsGeometry2DType( stdGeoTypes aType );
 
+acp_sint32_t  ulsM_IsGeometry2DExtType( stdGeoTypes aType );
+
+acp_sint32_t  ulsM_GetSRID( stdGeometryType * aGeometry );
+
+void
+ulsM_SetSRID( stdGeometryType * aGeometry, acp_sint32_t aSRID );
 
 /**/
 /* Internal Function*/
@@ -51,11 +57,22 @@ readWKB_UInt( acp_uint8_t   *aBuf,
               acp_uint32_t  *aOffset,
               acp_bool_t     aEquiEndian);
 
+/*read Signed Int*/
+void
+readWKB_SInt( acp_uint8_t   *aBuf,
+              acp_sint32_t  *aVal,
+              acp_uint32_t  *aOffset,
+              acp_bool_t     aEquiEndian );
+
 /* Calc Geometry Size*/
 
 ACI_RC
-ulsGetPoint2DSize(      ulsHandle              * aHandle,
-                        acp_uint32_t           * aSize );
+ulsGetPoint2DSize( ulsHandle              * aHandle,
+                   acp_uint32_t           * aSize );
+
+ACI_RC
+ulsGetPoint2DExtSize( ulsHandle              * aHandle,
+                      acp_uint32_t           * aSize );
 
 ACI_RC
 ulsGetLineString2DSize( ulsHandle              * aHandle,
@@ -118,6 +135,50 @@ ulsGetGeoCollectionSizeFromWKB( ulsHandle      * aHandle,
                                 acp_uint8_t    * aWKBFence,
                                 acp_uint32_t   * aSize);
 
+ACSRETURN
+ulsGetPointSizeFromEWKB( ulsHandle              * aHandle,
+                         acp_uint8_t           ** aPtr,
+                         acp_uint8_t            * aWKBFence,
+                         acp_uint32_t           * aSize );
+
+ACSRETURN
+ulsGetLineStringSizeFromEWKB( ulsHandle         * aHandle,
+                              acp_uint8_t      ** aPtr,
+                              acp_uint8_t       * aWKBFence,
+                              acp_uint32_t      * aSize );
+
+
+ACSRETURN
+ulsGetPolygonSizeFromEWKB( ulsHandle            * aHandle,
+                           acp_uint8_t         ** aPtr,
+                           acp_uint8_t          * aWKBFence,
+                           acp_uint32_t         * aSize );
+
+ACSRETURN
+ulsGetMultiPointSizeFromEWKB( ulsHandle         * aHandle,
+                              acp_uint8_t      ** aPtr,
+                              acp_uint8_t       * aWKBFence,
+                              acp_uint32_t      * aSize );
+
+ACSRETURN
+ulsGetMultiLineStringSizeFromEWKB( ulsHandle    * aHandle,
+                                   acp_uint8_t ** aPtr,
+                                   acp_uint8_t  * aWKBFence,
+                                   acp_uint32_t * aSize );
+
+
+ACSRETURN
+ulsGetMultiPolygonSizeFromEWKB( ulsHandle       * aHandle,
+                                acp_uint8_t    ** aPtr,
+                                acp_uint8_t     * aWKBFence,
+                                acp_uint32_t    * aSize );
+
+
+ACSRETURN
+ulsGetGeoCollectionSizeFromEWKB( ulsHandle      * aHandle,
+                                 acp_uint8_t   ** aPtr,
+                                 acp_uint8_t    * aWKBFence,
+                                 acp_uint32_t   * aSize );
 
 /* Geometry Trace*/
 ACI_RC

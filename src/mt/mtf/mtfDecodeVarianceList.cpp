@@ -47,7 +47,7 @@ static IDE_RC mtfDecodeVarianceListEstimate( mtcNode*     aNode,
 mtfModule mtfDecodeVarianceList = {
     2|MTC_NODE_OPERATOR_AGGREGATION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfDecodeVarianceListFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -121,22 +121,22 @@ typedef struct mtfDecodeVarianceInfo
 
 typedef struct mtfDecodeVarianceListInfo
 {
-    // ì²«ë²ˆì§¸ ì¸ì
+    // Ã¹¹øÂ° ÀÎÀÚ
     mtcExecute     * sVarianceColumnExecute;
     mtcNode        * sVarianceColumnNode;
 
-    // ë‘ë²ˆì§¸ ì¸ì
+    // µÎ¹øÂ° ÀÎÀÚ
     mtcExecute     * sExprExecute;
     mtcNode        * sExprNode;
 
-    // return ì¸ì
+    // return ÀÎÀÚ
     mtcColumn      * sReturnColumn;
     void           * sReturnValue;
     mtcStack       * sReturnStack;
     SInt             sReturnCount;
 
-    // ì„ì‹œë³€ìˆ˜
-    mtfDecodeVarianceInfo sVarianceInfo[1];  // MTC_NODE_ARGUMENT_COUNT_MAXIMUMê¹Œì§€ í™•ì¥í•  ìˆ˜ ìˆìŒ
+    // ÀÓ½Ãº¯¼ö
+    mtfDecodeVarianceInfo sVarianceInfo[1];  // MTC_NODE_ARGUMENT_COUNT_MAXIMUM±îÁö È®ÀåÇÒ ¼ö ÀÖÀ½
 
 } mtfDecodeVarianceListInfo;
 
@@ -199,8 +199,8 @@ IDE_RC mtfDecodeVarianceListEstimate( mtcNode*     aNode,
     
     sFence = aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK;
 
-    /* BUG-44109 pivot êµ¬ë¬¸ì˜ transform í•¨ìˆ˜ì¸ list ìš© decode í•¨ìˆ˜ì—ì„œ
-       ì˜ëª»ëœ ì¸ì ê°œìˆ˜ë¥¼ ì‚¬ìš©í•  ê²½ìš° ë¹„ì •ìƒì¢…ë£Œí•©ë‹ˆë‹¤.  */
+    /* BUG-44109 pivot ±¸¹®ÀÇ transform ÇÔ¼öÀÎ list ¿ë decode ÇÔ¼ö¿¡¼­
+       Àß¸øµÈ ÀÎÀÚ °³¼ö¸¦ »ç¿ëÇÒ °æ¿ì ºñÁ¤»óÁ¾·áÇÕ´Ï´Ù.  */
     IDE_TEST_RAISE( ( sFence != 1 ) && ( sFence != 3 ),
                     ERR_INVALID_FUNCTION_ARGUMENT ); 
 
@@ -259,11 +259,11 @@ IDE_RC mtfDecodeVarianceListEstimate( mtcNode*     aNode,
                 sListStack = (mtcStack*)aStack[3].value;
                 sListCount = aStack[3].column->precision;
 
-                /* BUG-40349 sListCountëŠ” 2ì´ìƒì´ì–´ì•¼ í•œë‹¤. */
+                /* BUG-40349 sListCount´Â 2ÀÌ»óÀÌ¾î¾ß ÇÑ´Ù. */
                 IDE_TEST_RAISE( sListCount < 2, ERR_LIST_COUNT );
 
-                // listì˜ ëª¨ë“  elementê°€ ë™ì¼í•œ typeìœ¼ë¡œ convertë˜ì–´ì•¼ í•˜ë¯€ë¡œ
-                // listì˜ ì²«ë²ˆì§¸ elementì— ë§ì¶˜ë‹¤.
+                // listÀÇ ¸ğµç element°¡ µ¿ÀÏÇÑ typeÀ¸·Î convertµÇ¾î¾ß ÇÏ¹Ç·Î
+                // listÀÇ Ã¹¹øÂ° element¿¡ ¸ÂÃá´Ù.
                 IDE_TEST_RAISE( sListStack[0].column->module == &mtdList,
                                 ERR_CONVERSION_NOT_APPLICABLE );
         
@@ -313,7 +313,7 @@ IDE_RC mtfDecodeVarianceListEstimate( mtcNode*     aNode,
             {
                 aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeVarianceListExecute;
 
-                // Variance ê²°ê³¼ë¥¼ ì €ì¥í•¨
+                // Variance °á°ú¸¦ ÀúÀåÇÔ
                 IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                                  & mtdDouble,
                                                  0,
@@ -321,7 +321,7 @@ IDE_RC mtfDecodeVarianceListEstimate( mtcNode*     aNode,
                                                  0 )
                           != IDE_SUCCESS );
         
-                // Variance info ì •ë³´ë¥¼ mtdBinaryì— ì €ì¥
+                // Variance info Á¤º¸¸¦ mtdBinary¿¡ ÀúÀå
                 sBinaryPrecision = ID_SIZEOF(mtfDecodeVarianceListInfo);
                 IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                                  & mtdBinary,
@@ -334,13 +334,13 @@ IDE_RC mtfDecodeVarianceListEstimate( mtcNode*     aNode,
             {
                 aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeVarianceListExecute;
 
-                // Variance ê²°ê³¼ë¥¼ ì €ì¥í•  ì»¬ëŸ¼ì •ë³´
+                // Variance °á°ú¸¦ ÀúÀåÇÒ ÄÃ·³Á¤º¸
                 IDE_TEST( aCallBack->alloc( aCallBack->info,
                                             ID_SIZEOF(mtcColumn),
                                             (void**)&sMtcColumn )
                           != IDE_SUCCESS );
         
-                // Variance ê²°ê³¼ë¥¼ ì €ì¥í•¨
+                // Variance °á°ú¸¦ ÀúÀåÇÔ
                 IDE_TEST( mtc::initializeColumn( sMtcColumn,
                                                  & mtdDouble,
                                                  0,
@@ -348,7 +348,7 @@ IDE_RC mtfDecodeVarianceListEstimate( mtcNode*     aNode,
                                                  0 )
                           != IDE_SUCCESS );
         
-                // executionìš© sListCountê°œì˜ stackê³¼ double valueë¥¼ ì €ì¥í•  ê³µê°„ì„ ì„¤ì •í•œë‹¤.
+                // execution¿ë sListCount°³ÀÇ stack°ú double value¸¦ ÀúÀåÇÒ °ø°£À» ¼³Á¤ÇÑ´Ù.
                 IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                                  & mtdList,
                                                  2,
@@ -356,13 +356,13 @@ IDE_RC mtfDecodeVarianceListEstimate( mtcNode*     aNode,
                                                  sMtcColumn->column.size * sListCount )
                           != IDE_SUCCESS );
 
-                // estimateìš© sListCountê°œì˜ stackì„ ìƒì„±í•œë‹¤.
+                // estimate¿ë sListCount°³ÀÇ stackÀ» »ı¼ºÇÑ´Ù.
                 IDE_TEST( aCallBack->alloc( aCallBack->info,
                                             ID_SIZEOF(mtcStack) * sListCount,
                                             (void**)&(aStack[0].value) )
                           != IDE_SUCCESS);
 
-                // list stackì„ smiColumn.valueì— ê¸°ë¡í•´ë‘”ë‹¤.
+                // list stackÀ» smiColumn.value¿¡ ±â·ÏÇØµĞ´Ù.
                 aStack[0].column->column.value = aStack[0].value;
 
                 sListStack = (mtcStack*)aStack[0].value;
@@ -372,7 +372,7 @@ IDE_RC mtfDecodeVarianceListEstimate( mtcNode*     aNode,
                     sListStack[sCount].value  = sMtcColumn->module->staticNull;
                 }
         
-                // Variance info ì •ë³´ë¥¼ mtdBinaryì— ì €ì¥
+                // Variance info Á¤º¸¸¦ mtdBinary¿¡ ÀúÀå
                 sBinaryPrecision = ID_SIZEOF(mtfDecodeVarianceListInfo) +
                     ID_SIZEOF(mtfDecodeVarianceInfo) * ( sListCount - 1 );
                 IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
@@ -429,7 +429,7 @@ IDE_RC mtfDecodeVarianceListEstimate( mtcNode*     aNode,
 
             if ( sIsConstValue == ID_TRUE )
             {
-                // mtfDecodeVarianceListCalculateInfo ì €ì¥í•  ê³µê°„ì„ í• ë‹¹
+                // mtfDecodeVarianceListCalculateInfo ÀúÀåÇÒ °ø°£À» ÇÒ´ç
                 IDE_TEST( aCallBack->alloc( aCallBack->info,
                                             ID_SIZEOF(mtfDecodeVarianceListCalculateInfo),
                                             (void**) & sCalculateInfo )
@@ -454,7 +454,7 @@ IDE_RC mtfDecodeVarianceListEstimate( mtcNode*     aNode,
 
                     sCalculateInfo->sSearchCount = 1;
                     
-                    // ìƒìˆ˜ tupleì€ ì¬í• ë‹¹ë˜ë¯€ë¡œ ë³µì‚¬í•´ì„œ ì €ì¥í•œë‹¤.
+                    // »ó¼ö tupleÀº ÀçÇÒ´çµÇ¹Ç·Î º¹»çÇØ¼­ ÀúÀåÇÑ´Ù.
                     mtc::copyColumn( sMtcColumn,
                                      &(aTemplate->rows[sNode->table].columns[sNode->column]) );
                     
@@ -487,11 +487,11 @@ IDE_RC mtfDecodeVarianceListEstimate( mtcNode*     aNode,
                           ( sCount < sCalculateInfo->sSearchCount ) && ( sNode != NULL );
                           sCount++, sNode = sNode->next, sMtcColumn++ )
                     {
-                        // ëª¨ë‘ ë™ì¼ typeì´ì–´ì•¼ í•œë‹¤.
+                        // ¸ğµÎ µ¿ÀÏ typeÀÌ¾î¾ß ÇÑ´Ù.
                         IDE_DASSERT( sListStack[0].column->module->no ==
                                      sListStack[sCount].column->module->no );
                         
-                        // ìƒìˆ˜ tupleì€ ì¬í• ë‹¹ë˜ë¯€ë¡œ ë³µì‚¬í•´ì„œ ì €ì¥í•œë‹¤.
+                        // »ó¼ö tupleÀº ÀçÇÒ´çµÇ¹Ç·Î º¹»çÇØ¼­ ÀúÀåÇÑ´Ù.
                         mtc::copyColumn( sMtcColumn,
                                          &(aTemplate->rows[sNode->table].columns[sNode->column]) );
                         
@@ -511,7 +511,7 @@ IDE_RC mtfDecodeVarianceListEstimate( mtcNode*     aNode,
                                   ID_SIZEOF(mtfDecodeVarianceSortedValue),
                                   compareDecodeVarianceSortedValue );
                 
-                    // ì¤‘ë³µì´ ìˆì–´ì„œëŠ” ì•ˆëœë‹¤. (bsearchëŠ” í•œê°œë§Œ ì°¾ì•„ì¤€ë‹¤.)
+                    // Áßº¹ÀÌ ÀÖ¾î¼­´Â ¾ÈµÈ´Ù. (bsearch´Â ÇÑ°³¸¸ Ã£¾ÆÁØ´Ù.)
                     for ( sCount = 1; sCount < sCalculateInfo->sSearchCount; sCount++ )
                     {
                         sValueInfo1.column = (const mtcColumn *)
@@ -555,7 +555,7 @@ IDE_RC mtfDecodeVarianceListEstimate( mtcNode*     aNode,
         
         aTemplate->rows[aNode->table].execute[aNode->column] = mtfDecodeVarianceListExecute;
 
-        // Variance ê²°ê³¼ë¥¼ ì €ì¥í•¨
+        // Variance °á°ú¸¦ ÀúÀåÇÔ
         IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                          & mtdDouble,
                                          0,
@@ -563,7 +563,7 @@ IDE_RC mtfDecodeVarianceListEstimate( mtcNode*     aNode,
                                          0 )
                   != IDE_SUCCESS );
         
-        // Variance infoëŠ” í•„ìš”ì—†ë‹¤.
+        // Variance info´Â ÇÊ¿ä¾ø´Ù.
         IDE_TEST( mtc::initializeColumn( aStack[0].column + 1,
                                          & mtdBinary,
                                          1,
@@ -574,7 +574,7 @@ IDE_RC mtfDecodeVarianceListEstimate( mtcNode*     aNode,
 
     if ( sFence == 3 )
     {
-        // decode_Variance_list(i1, i2, (1,2,3))ê³¼ ê°™ì´ ì„¸ë²ˆì§¸ ì¸ìê°€ ìƒìˆ˜ì¸ ê²½ìš°
+        // decode_Variance_list(i1, i2, (1,2,3))°ú °°ÀÌ ¼¼¹øÂ° ÀÎÀÚ°¡ »ó¼öÀÎ °æ¿ì
         if ( sListCount > 1 )
         {
             sIsConstValue = ID_TRUE;
@@ -631,7 +631,7 @@ IDE_RC mtfDecodeVarianceListEstimate( mtcNode*     aNode,
             }
         }
             
-        // BUG-38070 undef typeìœ¼ë¡œ re-estimateí•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // BUG-38070 undef typeÀ¸·Î re-estimateÇÏÁö ¾Ê´Â´Ù.
         if ( ( aTemplate->variableRow != ID_USHORT_MAX ) &&
              ( ( aNode->lflag & MTC_NODE_BIND_MASK ) == MTC_NODE_BIND_EXIST ) )
         {
@@ -709,12 +709,12 @@ IDE_RC mtfDecodeVarianceListInitialize( mtcNode*     aNode,
     IDE_TEST_RAISE( sInfo == NULL, ERR_LIST_INFO );
 
     //-----------------------------
-    // Variance info ì´ˆê¸°í™”
+    // Variance info ÃÊ±âÈ­
     //-----------------------------
 
     sArgNode[0] = aNode->arguments;
 
-    // Variance column ì„¤ì •
+    // Variance column ¼³Á¤
     sInfo->sVarianceColumnExecute = aTemplate->rows[sArgNode[0]->table].execute + sArgNode[0]->column;
     sInfo->sVarianceColumnNode    = sArgNode[0];
 
@@ -722,7 +722,7 @@ IDE_RC mtfDecodeVarianceListInitialize( mtcNode*     aNode,
     {
         sArgNode[1] = sArgNode[0]->next;
 
-        // expression column ì„¤ì •
+        // expression column ¼³Á¤
         sInfo->sExprExecute = aTemplate->rows[sArgNode[1]->table].execute + sArgNode[1]->column;
         sInfo->sExprNode    = sArgNode[1];
     }
@@ -731,7 +731,7 @@ IDE_RC mtfDecodeVarianceListInitialize( mtcNode*     aNode,
         // Nothing to do.
     }
     
-    // return column ì„¤ì •
+    // return column ¼³Á¤
     sInfo->sReturnColumn = aTemplate->rows[aNode->table].columns + aNode->column;
     sInfo->sReturnValue  = (void *)
         ((UChar*) aTemplate->rows[aNode->table].row + sInfo->sReturnColumn->column.offset);
@@ -746,9 +746,9 @@ IDE_RC mtfDecodeVarianceListInitialize( mtcNode*     aNode,
         sInfo->sReturnStack = (mtcStack*)sInfo->sReturnValue;
         sInfo->sReturnCount = sInfo->sReturnColumn->precision;
         
-        // stack ì´ˆê¸°í™”
-        // (1) estimateë•Œ ìƒì„±í•œ column ì •ë³´ë¡œ ì´ˆê¸°í™”
-        // (2) valueë¥¼ ì‹¤ì œ ê°’ìœ¼ë¡œ ì„¤ì •
+        // stack ÃÊ±âÈ­
+        // (1) estimate¶§ »ı¼ºÇÑ column Á¤º¸·Î ÃÊ±âÈ­
+        // (2) value¸¦ ½ÇÁ¦ °ªÀ¸·Î ¼³Á¤
         sTempStack = (mtcStack*) sInfo->sReturnColumn->column.value;
         sTempValue = (mtdDoubleType*)
             ( (UChar*)sInfo->sReturnStack + ID_SIZEOF(mtcStack) * sInfo->sReturnCount );
@@ -766,7 +766,7 @@ IDE_RC mtfDecodeVarianceListInitialize( mtcNode*     aNode,
     }
     
     //-----------------------------
-    // Variance ê²°ê³¼ë¥¼ ì´ˆê¸°í™”
+    // Variance °á°ú¸¦ ÃÊ±âÈ­
     //-----------------------------
     
     if ( sInfo->sReturnStack == NULL )
@@ -842,10 +842,10 @@ IDE_RC mtfDecodeVarianceListAggregate( mtcNode*     aNode,
     {
         IDE_TEST_RAISE( aRemain < 1, ERR_STACK_OVERFLOW );
 
-        // ì„¸ë²ˆì§¸ ì¸ìëŠ” ë°˜ë“œì‹œ ìƒìˆ˜ì—¬ì•¼ í•œë‹¤.
+        // ¼¼¹øÂ° ÀÎÀÚ´Â ¹İµå½Ã »ó¼ö¿©¾ß ÇÑ´Ù.
         IDE_TEST_RAISE( sCalculateInfo == NULL, ERR_INVALID_FUNCTION_ARGUMENT );
         
-        // ë‘ë²ˆì§¸ ì¸ì
+        // µÎ¹øÂ° ÀÎÀÚ
         IDE_TEST( sInfo->sExprExecute->calculate( sInfo->sExprNode,
                                                   aStack,
                                                   aRemain,
@@ -863,7 +863,7 @@ IDE_RC mtfDecodeVarianceListAggregate( mtcNode*     aNode,
                       != IDE_SUCCESS );
         }
 
-        // decode ì—°ì‚°ìˆ˜í–‰
+        // decode ¿¬»ê¼öÇà
         sExprValue.column = aStack[0].column;
         sExprValue.value  = aStack[0].value;
         sExprValue.idx    = 0;
@@ -877,13 +877,13 @@ IDE_RC mtfDecodeVarianceListAggregate( mtcNode*     aNode,
     }
     else
     {
-        // nullë§Œ ì•„ë‹ˆë©´ ë¨
+        // null¸¸ ¾Æ´Ï¸é µÊ
         sFound = & sExprValue;
     }
 
     if ( sFound != NULL )
     {
-        // ì²«ë²ˆì§¸ ì¸ì
+        // Ã¹¹øÂ° ÀÎÀÚ
         IDE_TEST( sInfo->sVarianceColumnExecute->calculate( sInfo->sVarianceColumnNode,
                                                             aStack,
                                                             aRemain,

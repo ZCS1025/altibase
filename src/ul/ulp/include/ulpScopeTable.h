@@ -26,13 +26,13 @@
 #include <ulpTypes.h>
 #include <ulpMacro.h>
 
-/* BUG-45289 symblosì€ SCOPEê°€ ì—†ëŠ” 0 ~ 100ê¹Œì§€ í—ˆìš©ë˜ë¯€ë¡œ 
- * mScopeTable SizeëŠ” MAX_SCOPE_DEPTH + 1 ì‚¬ìš©í•˜ë„ë¡ í•œë‹¤ */
+/* BUG-45289 symblosÀº SCOPE°¡ ¾ø´Â 0 ~ 100±îÁö Çã¿ëµÇ¹Ç·Î 
+ * mScopeTable Size´Â MAX_SCOPE_DEPTH + 1 »ç¿ëÇÏµµ·Ï ÇÑ´Ù */
 #define SCOPE_TABLE_SIZE MAX_SCOPE_DEPTH + 1 
 
 /******************************
  * ulpScopeTable
- * host variableì˜ scope ê´€ë¦¬ë¥¼ ìœ„í•œ class
+ * host variableÀÇ scope °ü¸®¸¦ À§ÇÑ class
  ******************************/
 class ulpScopeTable
 {
@@ -45,19 +45,19 @@ public:
 
     void ulpFinalize();
 
-    // host variableë¥¼ m_SymbolTableì— ì €ì¥í•œë‹¤.
+    // host variable¸¦ m_SymbolTable¿¡ ÀúÀåÇÑ´Ù.
     ulpSymTNode    *ulpSAdd ( ulpSymTElement *aSym, SInt aScope );
 
-    // íŠ¹ì • ì´ë¦„ì„ ê°–ëŠ” ë³€ìˆ˜ë¥¼ symbol tableì—ì„œ scopeë¥¼ ì¤„ì—¬ê°€ë©´ì„œ ê²€ìƒ‰í•œë‹¤.
+    // Æ¯Á¤ ÀÌ¸§À» °®´Â º¯¼ö¸¦ symbol table¿¡¼­ scope¸¦ ÁÙ¿©°¡¸é¼­ °Ë»öÇÑ´Ù.
     ulpSymTElement *ulpSLookupAll( SChar *aName, SInt aScope );
 
-    // ê°™ì€ scopeìƒì˜ ëª¨ë“  ë³€ìˆ˜ì •ë³´ë¥¼ symbol tableì—ì„œ ì œê±°í•œë‹¤.
+    // °°Àº scope»óÀÇ ¸ğµç º¯¼öÁ¤º¸¸¦ symbol table¿¡¼­ Á¦°ÅÇÑ´Ù.
     void            ulpSDelScope( SInt aScope );
 
     // print symbol table for debug
     void            ulpPrintAllSymT( void );
 
-    // scope depth ê´€ë¦¬ í•¨ìˆ˜ë“¤.
+    // scope depth °ü¸® ÇÔ¼öµé.
     SInt            ulpGetDepth(void);
     void            ulpSetDepth(SInt aDepth);
     void            ulpIncDepth(void);

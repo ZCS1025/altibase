@@ -74,6 +74,7 @@ IDE_RC rpdDelayedLogQueue::initialize( SChar        * aRepName )
 
 void rpdDelayedLogQueue::finalize( void )
 {
+    (void)dequeueALL();
     (void)mNodePool.destroy( ID_FALSE );
 }
 
@@ -91,6 +92,7 @@ IDE_RC rpdDelayedLogQueue::initailizeNode( rpdDelayedLogQueueNode     ** aNode )
     sIsAlloced = ID_TRUE;
 
     sNode->mLogPtr = NULL;
+    SM_LSN_INIT( sNode->mReadLSN );
     sNode->mNext = NULL;
 
     *aNode = sNode;
@@ -124,12 +126,16 @@ IDE_RC rpdDelayedLogQueue::initailizeNode( rpdDelayedLogQueueNode     ** aNode )
 }
 
 void rpdDelayedLogQueue::setObject( rpdDelayedLogQueueNode  * aNode,
-                                    void                    * aLogPtr )
+                                    void                    * aLogPtr,
+                                    smLSN                   * aReadLSN )
 {
     aNode->mLogPtr = aLogPtr;
+    SM_SET_LSN( aNode->mReadLSN,
+                aReadLSN->mFileNo,
+                aReadLSN->mOffset );
 }
 
-IDE_RC rpdDelayedLogQueue::enqueue( void   * aLogPtr )
+IDE_RC rpdDelayedLogQueue::enqueue( void   * aLogPtr, smLSN * aReadLSN )
 {
     rpdDelayedLogQueueNode      * sNode = NULL;
 
@@ -137,7 +143,9 @@ IDE_RC rpdDelayedLogQueue::enqueue( void   * aLogPtr )
 
     IDE_TEST( initailizeNode( &sNode ) != IDE_SUCCESS );
 
-    setObject( sNode, aLogPtr );
+    setObject( sNode, 
+               aLogPtr,
+               aReadLSN );
 
     /*
      *  Update mHead
@@ -173,6 +181,7 @@ IDE_RC rpdDelayedLogQueue::enqueue( void   * aLogPtr )
 }
 
 IDE_RC rpdDelayedLogQueue::dequeue( void        ** aLogPtr,
+                                    smLSN        * aReadLSN,
                                     idBool       * aIsEmpty )
 {
     rpdDelayedLogQueueNode  * sNode = NULL;
@@ -203,7 +212,10 @@ IDE_RC rpdDelayedLogQueue::dequeue( void        ** aLogPtr,
         }
 
         *aLogPtr = sNode->mLogPtr;
-
+    
+        SM_SET_LSN( *aReadLSN,
+                    sNode->mReadLSN.mFileNo,
+                    sNode->mReadLSN.mOffset );
         IDE_TEST( mNodePool.memfree( sNode ) != IDE_SUCCESS );
     }
     else
@@ -212,6 +224,28 @@ IDE_RC rpdDelayedLogQueue::dequeue( void        ** aLogPtr,
     }
 
     *aIsEmpty = sIsEmpty;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpdDelayedLogQueue::dequeueALL()
+{
+    SChar       * sLogTempPtr = NULL;
+    smLSN         sReadTempLSN;
+    idBool        sIsEmpty = ID_FALSE;
+
+    while ( sIsEmpty == ID_FALSE )
+    {
+        sLogTempPtr = NULL;
+        IDE_TEST( dequeue( (void**)&sLogTempPtr,
+                           &sReadTempLSN,
+                           &sIsEmpty )
+                  != IDE_SUCCESS );
+    }
 
     return IDE_SUCCESS;
 

@@ -16,16 +16,16 @@
  
 
 /***********************************************************************
- * $Id: qtcValue.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qtcValue.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  *
  * Description :
  *
- *     Valueë¥¼ ì˜ë¯¸í•˜ëŠ” Node
+ *     Value¸¦ ÀÇ¹ÌÇÏ´Â Node
  *     Ex) 'ABC'
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -34,7 +34,7 @@
 #include <mte.h>
 
 //-----------------------------------------
-// Value ì—°ì‚°ìì˜ ì´ë¦„ì— ëŒ€í•œ ì •ë³´
+// Value ¿¬»êÀÚÀÇ ÀÌ¸§¿¡ ´ëÇÑ Á¤º¸
 //-----------------------------------------
 
 static mtcName qtcNames[1] = {
@@ -42,7 +42,7 @@ static mtcName qtcNames[1] = {
 };
 
 //-----------------------------------------
-// Value ì—°ì‚°ìì˜ Module ì— ëŒ€í•œ ì •ë³´
+// Value ¿¬»êÀÚÀÇ Module ¿¡ ´ëÇÑ Á¤º¸
 //-----------------------------------------
 
 static IDE_RC qtcValueEstimate( mtcNode*     aNode,
@@ -52,19 +52,19 @@ static IDE_RC qtcValueEstimate( mtcNode*     aNode,
                                 mtcCallBack* aCallBack );
 
 mtfModule qtc::valueModule = {
-    1|                      // í•˜ë‚˜ì˜ Column ê³µê°„
-    MTC_NODE_OPERATOR_MISC, // ê¸°íƒ€ ì—°ì‚°ì
-    ~0,                     // Indexable Mask : ì˜ë¯¸ ì—†ìŒ
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ì ì•„ë‹˜)
-    qtcNames,               // ì´ë¦„ ì •ë³´
-    NULL,                   // Counter ì—°ì‚°ì ì—†ìŒ
-    mtf::initializeDefault, // ì„œë²„ êµ¬ë™ì‹œ ì´ˆê¸°í™” í•¨ìˆ˜, ì—†ìŒ
-    mtf::finalizeDefault,   // ì„œë²„ ì¢…ë£Œì‹œ ì¢…ë£Œ í•¨ìˆ˜, ì—†ìŒ
-    qtcValueEstimate        // Estimate í•  í•¨ìˆ˜
+    1|                      // ÇÏ³ªÀÇ Column °ø°£
+    MTC_NODE_OPERATOR_MISC, // ±âÅ¸ ¿¬»êÀÚ
+    ~0,                     // Indexable Mask : ÀÇ¹Ì ¾øÀ½
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
+    qtcNames,               // ÀÌ¸§ Á¤º¸
+    NULL,                   // Counter ¿¬»êÀÚ ¾øÀ½
+    mtf::initializeDefault, // ¼­¹ö ±¸µ¿½Ã ÃÊ±âÈ­ ÇÔ¼ö, ¾øÀ½
+    mtf::finalizeDefault,   // ¼­¹ö Á¾·á½Ã Á¾·á ÇÔ¼ö, ¾øÀ½
+    qtcValueEstimate        // Estimate ÇÒ ÇÔ¼ö
 };
 
 //-----------------------------------------
-// Value ì—°ì‚°ìì˜ ìˆ˜í–‰ í•¨ìˆ˜ì˜ ì •ì˜
+// Value ¿¬»êÀÚÀÇ ¼öÇà ÇÔ¼öÀÇ Á¤ÀÇ
 //-----------------------------------------
 
 IDE_RC qtcCalculate_Value(  mtcNode*     aNode,
@@ -74,15 +74,15 @@ IDE_RC qtcCalculate_Value(  mtcNode*     aNode,
                             mtcTemplate* aTemplate );
 
 static const mtcExecute qtcExecute = {
-    mtf::calculateNA,     // Aggregation ì´ˆê¸°í™” í•¨ìˆ˜, ì—†ìŒ
-    mtf::calculateNA,     // Aggregation ìˆ˜í–‰ í•¨ìˆ˜, ì—†ìŒ
+    mtf::calculateNA,     // Aggregation ÃÊ±âÈ­ ÇÔ¼ö, ¾øÀ½
+    mtf::calculateNA,     // Aggregation ¼öÇà ÇÔ¼ö, ¾øÀ½
     mtf::calculateNA,
-    mtf::calculateNA,     // Aggregation ì¢…ë£Œ í•¨ìˆ˜, ì—†ìŒ
-    qtcCalculate_Value,   // VALUE ì—°ì‚° í•¨ìˆ˜
-    NULL,                 // ì—°ì‚°ì„ ìœ„í•œ ë¶€ê°€ ì •ë³´, ì—†ìŒ
+    mtf::calculateNA,     // Aggregation Á¾·á ÇÔ¼ö, ¾øÀ½
+    qtcCalculate_Value,   // VALUE ¿¬»ê ÇÔ¼ö
+    NULL,                 // ¿¬»êÀ» À§ÇÑ ºÎ°¡ Á¤º¸, ¾øÀ½
     mtx::calculateEmpty,
-    mtk::estimateRangeNA, // Key Range í¬ê¸° ì¶”ì¶œ í•¨ìˆ˜, ì—†ìŒ
-    mtk::extractRangeNA   // Key Range ìƒì„± í•¨ìˆ˜, ì—†ìŒ
+    mtk::estimateRangeNA, // Key Range Å©±â ÃßÃâ ÇÔ¼ö, ¾øÀ½
+    mtk::extractRangeNA   // Key Range »ı¼º ÇÔ¼ö, ¾øÀ½
 };
 
 IDE_RC qtcValueEstimate( mtcNode*     aNode,
@@ -94,13 +94,13 @@ IDE_RC qtcValueEstimate( mtcNode*     aNode,
 /***********************************************************************
  *
  * Description :
- *    Value ì—°ì‚°ìì— ëŒ€í•˜ì—¬ Estimate ë¥¼ ìˆ˜í–‰í•¨.
- *    Value Nodeì— ëŒ€í•œ Execute ì •ë³´ë¥¼ ì„¤ì •í•¨
+ *    Value ¿¬»êÀÚ¿¡ ´ëÇÏ¿© Estimate ¸¦ ¼öÇàÇÔ.
+ *    Value Node¿¡ ´ëÇÑ Execute Á¤º¸¸¦ ¼³Á¤ÇÔ
  *
  * Implementation :
  *
- *    Stackì— Value Nodeì— ëŒ€í•œ Column ì •ë³´ë¥¼ ì„¤ì •í•˜ê³ 
- *    Value Nodeì— ëŒ€í•œ Execute ì •ë³´ë¥¼ Setting
+ *    Stack¿¡ Value Node¿¡ ´ëÇÑ Column Á¤º¸¸¦ ¼³Á¤ÇÏ°í
+ *    Value Node¿¡ ´ëÇÑ Execute Á¤º¸¸¦ Setting
  ***********************************************************************/
 
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
@@ -119,11 +119,11 @@ IDE_RC qtcCalculate_Value( mtcNode*     aNode,
  *
  * Description :
  *
- *    Valueì˜ ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
+ *    ValueÀÇ ¿¬»êÀ» ¼öÇàÇÑ´Ù.
  *
  * Implementation :
  *
- *    Stackì— columnì •ë³´ì™€ Value ì •ë³´ë¥¼ Settingí•œë‹¤.
+ *    Stack¿¡ columnÁ¤º¸¿Í Value Á¤º¸¸¦ SettingÇÑ´Ù.
  *
  ***********************************************************************/
 

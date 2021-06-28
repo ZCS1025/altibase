@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLProgOption.cpp 82803 2018-04-17 00:20:32Z reznoa $
+ * $Id: iSQLProgOption.cpp 91040 2021-06-23 02:06:58Z chkim $
  **********************************************************************/
 
 #include <ideErrorMgr.h>
@@ -26,6 +26,9 @@
 #include <iSQLProperty.h>
 #include <iSQLProgOption.h>
 #include <iSQLCompiler.h>
+
+/* BUG-47652 Set file permission */
+UInt gFilePerm; 
 
 extern iSQLProperty         gProperty;
 extern iSQLCommand        * gCommand;
@@ -42,6 +45,7 @@ static const SChar *HelpMessage =
 "                 [-s server_name]                                     \n"
 "                 [-port port_no]                                      \n"
 "                 ( [-u user_name] [-p password] | [/NOLOG] )          \n"
+"                 [-sysdba] [-keep_sysdba]                             \n"
 "                 [-unixdomain-filepath file_path]                     \n"
 "                 [-ipc-filepath file_path]                            \n"
 "                 [-silent]                                            \n"
@@ -123,6 +127,12 @@ iSQLProgOption::iSQLProgOption()
     m_SslCipher[0]     = '\0';
     m_SslVerify[0]     = '\0';
     m_ConnectRetryMax  = ADM_CONNECT_RETRY_MAX; /* BUG-43352 */
+
+    /* BUG-47652 Set file permission */
+    mbExistFilePerm    = ID_FALSE;
+    gFilePerm          = DEFAULT_FILE_PERM;
+    /* BUG-48618 keep_sysdba */
+    m_bExist_KEEP_SYSDBA  = ID_FALSE;
 }
 
 IDE_RC iSQLProgOption::ParsingCommandLine(SInt aArgc, SChar ** aArgv)
@@ -153,7 +163,7 @@ IDE_RC iSQLProgOption::ParsingCommandLine(SInt aArgc, SChar ** aArgv)
 
         if (idlOS::strcasecmp(aArgv[sI], "-u") == 0)
         {
-            /* useridê°€ ì—†ëŠ” ê²½ìš° */
+            /* userid°¡ ¾ø´Â °æ¿ì */
             IDE_TEST_RAISE(aArgc <= sI + 1, PrintHelpScreen);
             IDE_TEST_RAISE(idlOS::strncmp(aArgv[sI + 1], "-", 1) == 0,
                            PrintHelpScreen);
@@ -295,7 +305,7 @@ IDE_RC iSQLProgOption::ParsingCommandLine(SInt aArgc, SChar ** aArgv)
         }
         else if (idlOS::strcasecmp(aArgv[sI], "-p") == 0)
         {
-            /* passwdê°€ ì—†ëŠ” ê²½ìš° */
+            /* passwd°¡ ¾ø´Â °æ¿ì */
             IDE_TEST_RAISE(aArgc <= sI + 1, PrintHelpScreen);
             IDE_TEST_RAISE(idlOS::strncmp(aArgv[sI + 1], "-", 1) == 0,
                            PrintHelpScreen);
@@ -308,7 +318,7 @@ IDE_RC iSQLProgOption::ParsingCommandLine(SInt aArgc, SChar ** aArgv)
         }
         else if (idlOS::strcasecmp(aArgv[sI], "-s") == 0)
         {
-            /* servernameì´ ì—†ëŠ” ê²½ìš° */
+            /* servernameÀÌ ¾ø´Â °æ¿ì */
             IDE_TEST_RAISE(aArgc <= sI + 1, PrintHelpScreen);
             IDE_TEST_RAISE(idlOS::strncmp(aArgv[sI + 1], "-", 1) == 0,
                            PrintHelpScreen);
@@ -319,7 +329,7 @@ IDE_RC iSQLProgOption::ParsingCommandLine(SInt aArgc, SChar ** aArgv)
         }
         else if (idlOS::strcasecmp(aArgv[sI], "-port") == 0)
         {
-            /* portnoê°€ ì—†ëŠ” ê²½ìš° */
+            /* portno°¡ ¾ø´Â °æ¿ì */
             IDE_TEST_RAISE(aArgc <= sI + 1, PrintHelpScreen);
             IDE_TEST_RAISE(idlOS::strncmp(aArgv[sI + 1], "-", 1) == 0,
                            PrintHelpScreen);
@@ -330,7 +340,7 @@ IDE_RC iSQLProgOption::ParsingCommandLine(SInt aArgc, SChar ** aArgv)
         }
         else if (idlOS::strcasecmp(aArgv[sI], "-f") == 0)
         {
-            /* scriptfileì´ ì—†ëŠ” ê²½ìš° */
+            /* scriptfileÀÌ ¾ø´Â °æ¿ì */
             IDE_TEST_RAISE(aArgc <= sI + 1, PrintHelpScreen);
             IDE_TEST_RAISE( isSameName( m_OutFileName, aArgv[sI + 1]) == ID_TRUE, PrintHelpScreen);
             IDE_TEST_RAISE(idlOS::snprintf(m_InFileName, ID_SIZEOF(m_InFileName), "%s", aArgv[sI + 1]) <= 0,  PrintHelpScreen);
@@ -377,20 +387,22 @@ IDE_RC iSQLProgOption::ParsingCommandLine(SInt aArgc, SChar ** aArgv)
         }
         else if (idlOS::strcasecmp(aArgv[sI], "-o") == 0)
         {
-            /* outfileì´ ì—†ëŠ” ê²½ìš° */
+            /* outfileÀÌ ¾ø´Â °æ¿ì */
             IDE_TEST_RAISE(aArgc <= sI + 1, PrintHelpScreen);
             IDE_TEST_RAISE( isSameName( m_InFileName, aArgv[sI + 1]) == ID_TRUE, PrintHelpScreen);
             IDE_TEST_RAISE(idlOS::snprintf(m_OutFileName, ID_SIZEOF(m_OutFileName), "%s", aArgv[sI + 1]) <= 0,  PrintHelpScreen);
             IDE_TEST_RAISE(m_OutFileName[0] == '-',  PrintHelpScreen);
 
-            m_OutFile = isql_fopen(m_OutFileName, "w");
+            /* BUG-47652 Set file permission */
+            IDE_TEST( setFilePermission() != IDE_SUCCESS );
+            m_OutFile = isql_fopen( m_OutFileName, "w", isExistFilePerm() );
             IDE_TEST_RAISE(m_OutFile == NULL, FileOpenFail);
 
             m_bExist_O = ID_TRUE;
         }
         else if (idlOS::strcasecmp(aArgv[sI], "-NLS_USE") == 0)
         {
-            /* NLSê°€ ì—†ëŠ” ê²½ìš° */
+            /* NLS°¡ ¾ø´Â °æ¿ì */
             IDE_TEST_RAISE(aArgc <= sI + 1, PrintHelpScreen);
             IDE_TEST_RAISE(idlOS::strncmp(aArgv[sI + 1], "-", 1) == 0,
                            PrintHelpScreen);
@@ -400,7 +412,7 @@ IDE_RC iSQLProgOption::ParsingCommandLine(SInt aArgc, SChar ** aArgv)
         }
         else if (idlOS::strcasecmp(aArgv[sI], "-NLS_NCHAR_LITERAL_REPLACE") == 0)
         {
-            /* NLSê°€ ì—†ëŠ” ê²½ìš° */
+            /* NLS°¡ ¾ø´Â °æ¿ì */
             IDE_TEST_RAISE(aArgc <= sI + 1, PrintHelpScreen);
             IDE_TEST_RAISE(idlOS::strncmp(aArgv[sI + 1], "-", 1) == 0,
                            PrintHelpScreen);
@@ -447,7 +459,7 @@ IDE_RC iSQLProgOption::ParsingCommandLine(SInt aArgc, SChar ** aArgv)
         }
         else if ( idlOS::strcasecmp( aArgv[sI], "-TIME_ZONE" ) == 0 ) /* PROJ-2209 */
         {
-            /* TIME_ZONE ì´ ì—†ëŠ” ê²½ìš° */
+            /* TIME_ZONE ÀÌ ¾ø´Â °æ¿ì */
             IDE_TEST_RAISE( aArgc <= sI + 1, PrintHelpScreen );
             IDE_TEST_RAISE( idlOS::strncmp( aArgv[sI + 1], "-", 1 ) == 0,
                             PrintHelpScreen );
@@ -455,6 +467,12 @@ IDE_RC iSQLProgOption::ParsingCommandLine(SInt aArgc, SChar ** aArgv)
             m_bExist_TIME_ZONE = ID_TRUE;
             idlOS::snprintf( m_TimezoneString, ID_SIZEOF( m_TimezoneString ), "%s",
                              aArgv[sI + 1] );
+        }
+        /* BUG-48618 keep_sysdba */
+        else if (idlOS::strcasecmp(aArgv[sI], "-keep_sysdba") == 0)
+        {
+            m_bExist_KEEP_SYSDBA = ID_TRUE;
+            sI--;
         }
         else
         {
@@ -474,10 +492,10 @@ IDE_RC iSQLProgOption::ParsingCommandLine(SInt aArgc, SChar ** aArgv)
 
     // =============================================================
     // bug-19279 remote sysdba enable
-    // sysdbaëª¨ë“œë¡œ ì ‘ì†ì‹œ server IPì •ë³´ê°€ ì—†ëŠ” ê²½ìš°ë§Œ localhostë¡œ ì„¸íŒ…
-    // => unix domainì„ ì‚¬ìš©í•˜ê²Œ ë¨ (windows: tcp)
-    // ìµœì†Œí•œ ì–´ë–¤ IPê°’ì´ë“  ì„¸íŒ…ì€ í•´ì•¼í•œë‹¤. utISPAPI::Open()ì—ì„œ
-    // ì´ ê°’ìœ¼ë¡œ "DSN=%s"í˜•ì‹ìœ¼ë¡œ ë§Œë“¤ì–´ connectí•˜ê¸° ë•Œë¬¸ì´ë‹¤
+    // sysdba¸ğµå·Î Á¢¼Ó½Ã server IPÁ¤º¸°¡ ¾ø´Â °æ¿ì¸¸ localhost·Î ¼¼ÆÃ
+    // => unix domainÀ» »ç¿ëÇÏ°Ô µÊ (windows: tcp)
+    // ÃÖ¼ÒÇÑ ¾î¶² IP°ªÀÌµç ¼¼ÆÃÀº ÇØ¾ßÇÑ´Ù. utISPAPI::Open()¿¡¼­
+    // ÀÌ °ªÀ¸·Î "DSN=%s"Çü½ÄÀ¸·Î ¸¸µé¾î connectÇÏ±â ¶§¹®ÀÌ´Ù
     if ((m_bExist_SYSDBA == ID_TRUE) && (m_bExist_S == ID_FALSE))
     {
         idlOS::snprintf(m_ServerName, ID_SIZEOF(m_ServerName), "localhost");
@@ -509,13 +527,13 @@ IDE_RC iSQLProgOption::ParsingCommandLine(SInt aArgc, SChar ** aArgv)
 
 /* BUG-31387 */
 /**
- * IPCì™€ Unix domainì€ localhostì— ì ‘ì† í•  ë•Œë§Œ ì‚¬ìš©í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
- * ServerNameì´ localhostê°€ ì•„ë‹ˆë¼ë©´ TCPë¥¼ ì‚¬ìš©í•˜ë„ë¡ ì—°ê²° ìœ í˜•ì„ ì¡°ì ˆí•œë‹¤.
+ * IPC¿Í Unix domainÀº localhost¿¡ Á¢¼Ó ÇÒ ¶§¸¸ »ç¿ëÇÒ ¼ö ÀÖÀ¸¹Ç·Î,
+ * ServerNameÀÌ localhost°¡ ¾Æ´Ï¶ó¸é TCP¸¦ »ç¿ëÇÏµµ·Ï ¿¬°á À¯ÇüÀ» Á¶ÀıÇÑ´Ù.
  *
- * ì›ê²© ì„œë²„ì— ì ‘ì†í•  ë•Œ IPC, Unix domainì„ ì‚¬ìš©í•˜ë„ë¡ ì„¤ì •í–ˆë‹¤ë©´
- * ì—°ê²° ìœ í˜• ì„¤ì •ì´ ë¬´ì‹œë¨ì„ ì•Œë¦¬ëŠ” ê²½ê³  ë©”ì‹œì§€ë¥¼ ì¶œë ¥í•œë‹¤.
- * Unix í”Œë«í¼ì—ì„œ Unix domainì„ ì‚¬ìš©í•  ë•ŒëŠ” í¬íŠ¸ ë²ˆí˜¸ê°€ í•„ìš”í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ
- * -port ì˜µì…˜ì„ ì§€ì •í–ˆì„ë•Œë„ ê²½ê³ ë¥¼ ì¶œë ¥í•œë‹¤.
+ * ¿ø°İ ¼­¹ö¿¡ Á¢¼ÓÇÒ ¶§ IPC, Unix domainÀ» »ç¿ëÇÏµµ·Ï ¼³Á¤Çß´Ù¸é
+ * ¿¬°á À¯Çü ¼³Á¤ÀÌ ¹«½ÃµÊÀ» ¾Ë¸®´Â °æ°í ¸Ş½ÃÁö¸¦ Ãâ·ÂÇÑ´Ù.
+ * Unix ÇÃ·§Æû¿¡¼­ Unix domainÀ» »ç¿ëÇÒ ¶§´Â Æ÷Æ® ¹øÈ£°¡ ÇÊ¿äÇÏÁö ¾ÊÀ¸¹Ç·Î
+ * -port ¿É¼ÇÀ» ÁöÁ¤ÇßÀ»¶§µµ °æ°í¸¦ Ãâ·ÂÇÑ´Ù.
  */
 void iSQLProgOption::AdjustConnType()
 {
@@ -548,8 +566,8 @@ void iSQLProgOption::AdjustConnType()
     }
 
     // bug-19279 remote sysdba enable
-    // conntype string(tcp/unix...)ì„ ì¬ ì„¤ì •í•œë‹¤.(í™”ë©´ ì¶œë ¥ìš©)
-    // why? sysdbaì˜ ê²½ìš° ì´ˆê¸°ê°’ê³¼ ë‹¤ë¥¼ ìˆ˜ ìˆë‹¤.
+    // conntype string(tcp/unix...)À» Àç ¼³Á¤ÇÑ´Ù.(È­¸é Ãâ·Â¿ë)
+    // why? sysdbaÀÇ °æ¿ì ÃÊ±â°ª°ú ´Ù¸¦ ¼ö ÀÖ´Ù.
     gProperty.AdjustConnTypeStr(gProperty.IsSysDBA(), m_ServerName);
 }
 
@@ -562,7 +580,7 @@ IDE_RC iSQLProgOption::ReadProgOptionInteractive()
     sConnType = gProperty.GetConnType(gProperty.IsSysDBA(), m_ServerName);
     sDefPortNo = ((sConnType == ISQL_CONNTYPE_IPC)||(sConnType == ISQL_CONNTYPE_IPCDA)) ? DEFAULT_PORT_NO+50 : DEFAULT_PORT_NO;
 
-    // BUG-23586 isql ì—ì„œ IP ë¥¼ ëª…ì‹œí•˜ë©´ ë¬´ì¡°ê±´ í™˜ê²½ë³€ìˆ˜ë¥¼ ì…ë ¥ë°›ê²Œ í•©ë‹ˆë‹¤.
+    // BUG-23586 isql ¿¡¼­ IP ¸¦ ¸í½ÃÇÏ¸é ¹«Á¶°Ç È¯°æº¯¼ö¸¦ ÀÔ·Â¹Ş°Ô ÇÕ´Ï´Ù.
     if (m_bExist_S == ID_FALSE)
     {
         if (sConnType == ISQL_CONNTYPE_TCP)
@@ -590,7 +608,7 @@ IDE_RC iSQLProgOption::ReadProgOptionInteractive()
         m_bExist_S = ID_TRUE;
     }
 
-    // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
+    // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
 #if defined(VC_WIN32)
     if (m_bExist_PORT == ID_FALSE)
 #else
@@ -644,11 +662,11 @@ IDE_RC iSQLProgOption::ReadProgOptionInteractive()
 
     IDE_EXCEPTION_CONT(skip_user_passwd);
 
-    // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
+    // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
     if (m_bExistNLS_USE == ID_FALSE)
     {
-        // BUG-24126 isql ì—ì„œ ALTIBASE_NLS_USE í™˜ê²½ë³€ìˆ˜ê°€ ì—†ì–´ë„ ê¸°ë³¸ NLSë¥¼ ì„¸íŒ…í•˜ë„ë¡ í•œë‹¤.
-        // ì˜¤ë¼í´ê³¼ ë™ì´í•˜ê²Œ US7ASCII ë¡œ í•©ë‹ˆë‹¤.
+        // BUG-24126 isql ¿¡¼­ ALTIBASE_NLS_USE È¯°æº¯¼ö°¡ ¾ø¾îµµ ±âº» NLS¸¦ ¼¼ÆÃÇÏµµ·Ï ÇÑ´Ù.
+        // ¿À¶óÅ¬°ú µ¿ÀÌÇÏ°Ô US7ASCII ·Î ÇÕ´Ï´Ù.
         idlOS::strncpy(m_NLS_USE, "US7ASCII", ID_SIZEOF(m_NLS_USE));
         m_bExistNLS_USE = ID_TRUE;
     }
@@ -657,7 +675,7 @@ IDE_RC iSQLProgOption::ReadProgOptionInteractive()
     if (m_bExistNLS_REPLACE == ID_FALSE)
     {
         // BUG-23705
-        // -NLS_NCHAR_LITERAL_REPLACE optionì„ ëª…ì‹œí•˜ì§€ì•Šìœ¼ë©´ m_NLS_REPLACE ì„ defaultê°’ 0ìœ¼ë¡œ set.
+        // -NLS_NCHAR_LITERAL_REPLACE optionÀ» ¸í½ÃÇÏÁö¾ÊÀ¸¸é m_NLS_REPLACE À» default°ª 0À¸·Î set.
         m_NLS_REPLACE = 0;
         m_bExistNLS_REPLACE = ID_TRUE;
     }
@@ -675,8 +693,8 @@ IDE_RC iSQLProgOption::ReadProgOptionInteractive()
     return IDE_SUCCESS;
 }
 
-// BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
-// altibase.propertiesë¥¼ ì°¸ì¡°í•˜ì§€ ì•ŠëŠ”ê²Œ ì¢‹ë‹¤.
+// BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
+// altibase.properties¸¦ ÂüÁ¶ÇÏÁö ¾Ê´Â°Ô ÁÁ´Ù.
 IDE_RC iSQLProgOption::ReadEnvironment()
 {
     /* Environment Variables Read here
@@ -695,7 +713,7 @@ IDE_RC iSQLProgOption::ReadEnvironment()
     SInt    sConnType;
     SChar  *sRetryMaxStr = NULL;
     SInt   sRetryMax = 0;
-
+    
     if (m_bExist_PORT == ID_FALSE)
     {
         sConnType = gProperty.GetConnType(gProperty.IsSysDBA(), m_ServerName);
@@ -784,6 +802,12 @@ IDE_RC iSQLProgOption::ReadEnvironment()
     }
     m_ConnectRetryMax = sRetryMax;
 
+    /* BUG-47652 Set file permission */
+    if (mbExistFilePerm == ID_FALSE)
+    {
+        IDE_TEST( setFilePermission() != IDE_SUCCESS );
+    }
+    
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(invalid_retry_value);
@@ -793,15 +817,49 @@ IDE_RC iSQLProgOption::ReadEnvironment()
                        ENV_STARTUP_CONNECT_RETRY_MAX,
                        ADM_CONNECT_RETRY_MAX);
     }
+    
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 }
 
-// BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
-// ì„œë²„ë¥¼ ì„¤ì¹˜í•œ ê²½ìš° í™˜ê²½ë³€ìˆ˜ë¥¼ ì„¤ì •í•˜ì§€ ì•Šê³  altibase.propertiesë§Œ ì„¤ì •í•´ì„œ
-// ì“¸ ìˆ˜ ìˆìœ¼ë¯€ë¡œ altibase.propertiesê°€ ìˆìœ¼ë©´ ì½ì–´ì˜¤ë„ë¡í•´ì•¼
-// ê¸°ì¡´ ìŠ¤í¬ë¦½íŠ¸ì—ì„œ ì—ëŸ¬ê°€ ì•ˆë‚œë‹¤.
+/* BUG-47652 Set file permission */
+IDE_RC iSQLProgOption::setFilePermission()
+{
+    SChar  sEnvVarName[ENV_NAME_LEN+1];
+    SChar  *sCharData;
+
+    idlOS::sprintf( sEnvVarName, "%s", ENV_ALTIBASE_UT_FILE_PERMISSION );
+    sCharData = idlOS::getenv( sEnvVarName );
+    IDE_TEST_RAISE ( uttEnv::setFilePermission( sCharData,
+                                                &gFilePerm,
+                                                &mbExistFilePerm ) != IDE_SUCCESS, 
+                             FilePerm_error );
+
+    idlOS::sprintf( sEnvVarName, "%s", ENV_ISQL_FILE_PERMISSION );
+    sCharData = idlOS::getenv( sEnvVarName );
+    IDE_TEST_RAISE ( uttEnv::setFilePermission( sCharData,
+                                                &gFilePerm,
+                                                &mbExistFilePerm ) != IDE_SUCCESS, 
+                             FilePerm_error );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( FilePerm_error );
+    {
+        uteSetErrorCode( &gErrorMgr, utERR_ABORT_FilePerm_OutOfRange_Error, 
+                         sEnvVarName, sCharData );
+        utePrintfErrorCode( stderr, &gErrorMgr );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+// BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
+// ¼­¹ö¸¦ ¼³Ä¡ÇÑ °æ¿ì È¯°æº¯¼ö¸¦ ¼³Á¤ÇÏÁö ¾Ê°í altibase.properties¸¸ ¼³Á¤ÇØ¼­
+// ¾µ ¼ö ÀÖÀ¸¹Ç·Î altibase.properties°¡ ÀÖÀ¸¸é ÀĞ¾î¿Àµµ·ÏÇØ¾ß
+// ±âÁ¸ ½ºÅ©¸³Æ®¿¡¼­ ¿¡·¯°¡ ¾È³­´Ù.
 void iSQLProgOption::ReadServerProperties()
 {
     /* Server Properties (altibase.properties)

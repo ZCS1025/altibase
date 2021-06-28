@@ -23,15 +23,15 @@
 #include <iduFXStack.h>
 
 /***********************************************************************
- * Description : Stackì„ ì´ˆê¸°í™” í•œë‹¤. ìŠ¤íƒì— í•„ìš”í•œ MemoryëŠ” ì´ë¯¸ í• ë‹¹ë˜
- *               ë˜ì–´ ìˆë‹¤ê³  ê°€ì •í•˜ê³  ì¶œë°œí•œë‹¤. ì—¬ê¸°ì„œëŠ” Mutexì™€ ì—¬íƒ€
- *               ë‹¤ë¥¸ Memberë§Œ ì´ˆê¸°í™” í•œë‹¤. ì´ë ‡ê²Œ í•˜ëŠ” ì´ìœ ëŠ” ê°€ê¸‰ì 
- *               mallocì„ í˜¸ì¶œí•˜ì§€ ì•Šê¸° ìœ„í•´ì„œ ì´ë‹¤.
+ * Description : StackÀ» ÃÊ±âÈ­ ÇÑ´Ù. ½ºÅÃ¿¡ ÇÊ¿äÇÑ Memory´Â ÀÌ¹Ì ÇÒ´çµÇ
+ *               µÇ¾î ÀÖ´Ù°í °¡Á¤ÇÏ°í Ãâ¹ßÇÑ´Ù. ¿©±â¼­´Â Mutex¿Í ¿©Å¸
+ *               ´Ù¸¥ Member¸¸ ÃÊ±âÈ­ ÇÑ´Ù. ÀÌ·¸°Ô ÇÏ´Â ÀÌÀ¯´Â °¡±ŞÀû
+ *               mallocÀ» È£ÃâÇÏÁö ¾Ê±â À§ÇØ¼­ ÀÌ´Ù.
  *
- * aStackName   - [IN] Stack ì´ë¦„, ë³´í†µ ìŠ¤íƒì„ ì‚¬ìš©ëª©ì ì„ ê¸°ìˆ í•œë‹¤.
- * aStackInfo   - [IN] iduFXStackInfoë¡œì„œ ìŠ¤íƒ ìë£Œêµ¬ì¡°
- * aMaxItemCnt  - [IN] ìŠ¤íƒì´ ê°€ì§ˆìˆ˜ ìˆëŠ” ìµœëŒ€ Itemê°¯ìˆ˜
- * aItemSize    - [IN] ìŠ¤íƒì˜ Item í¬ê¸°.
+ * aStackName   - [IN] Stack ÀÌ¸§, º¸Åë ½ºÅÃÀ» »ç¿ë¸ñÀûÀ» ±â¼úÇÑ´Ù.
+ * aStackInfo   - [IN] iduFXStackInfo·Î¼­ ½ºÅÃ ÀÚ·á±¸Á¶
+ * aMaxItemCnt  - [IN] ½ºÅÃÀÌ °¡Áú¼ö ÀÖ´Â ÃÖ´ë Item°¹¼ö
+ * aItemSize    - [IN] ½ºÅÃÀÇ Item Å©±â.
  **********************************************************************/
 IDE_RC iduFXStack::initialize( SChar          *aMtxName,
                                iduFXStackInfo *aStackInfo,
@@ -64,9 +64,9 @@ IDE_RC iduFXStack::initialize( SChar          *aMtxName,
 }
 
 /***********************************************************************
- * Description : Stackì˜ Mutexì™€ Condition Variableì„ ì •ë¦¬í•œë‹¤.
+ * Description : StackÀÇ Mutex¿Í Condition VariableÀ» Á¤¸®ÇÑ´Ù.
  *
- * aStackInfo - [IN] Stack ìë£Œêµ¬ì¡°.
+ * aStackInfo - [IN] Stack ÀÚ·á±¸Á¶.
  **********************************************************************/
 IDE_RC iduFXStack::destroy( iduFXStackInfo *aStackInfo )
 {
@@ -90,12 +90,12 @@ IDE_RC iduFXStack::destroy( iduFXStackInfo *aStackInfo )
 }
 
 /***********************************************************************
- * Description : Stackì— ìƒˆë¡œìš´ Itemì„ Pushí•œë‹¤. Maxê°œ ì´ìƒ ë„£ìœ¼ë©´
- *               ASSERTë¡œ ì£½ê²Œ í•œë‹¤. ìƒˆë¡œìš´ Itemì„ Pushí•˜ê³  í˜¹ì‹œ
- *               ìƒˆë¡œìš´ Itemì´ Pushë˜ê¸°ë¥¼ ê¸°ë‹¤ë¦¬ëŠ” Transa
+ * Description : Stack¿¡ »õ·Î¿î ItemÀ» PushÇÑ´Ù. Max°³ ÀÌ»ó ³ÖÀ¸¸é
+ *               ASSERT·Î Á×°Ô ÇÑ´Ù. »õ·Î¿î ItemÀ» PushÇÏ°í È¤½Ã
+ *               »õ·Î¿î ItemÀÌ PushµÇ±â¸¦ ±â´Ù¸®´Â Transa
  *
- * aStackInfo - [IN] Stack ìë£Œ êµ¬ì¡°
- * aItem      - [IN] Pushí•  Stackì˜ Item
+ * aStackInfo - [IN] Stack ÀÚ·á ±¸Á¶
+ * aItem      - [IN] PushÇÒ StackÀÇ Item
  **********************************************************************/
 IDE_RC iduFXStack::push( idvSQL         *aStatSQL,
                          iduFXStackInfo *aStackInfo,
@@ -113,13 +113,13 @@ IDE_RC iduFXStack::push( idvSQL         *aStatSQL,
     sCurItemCnt = aStackInfo->mCurItemCnt;
     sItemSize   = aStackInfo->mItemSize;
 
-    /* Maxê°œ ì´ìƒ ë„£ìœ¼ë©´ ì£½ëŠ”ë‹¤. */
+    /* Max°³ ÀÌ»ó ³ÖÀ¸¸é Á×´Â´Ù. */
     IDE_ASSERT( sCurItemCnt < aStackInfo->mMaxItemCnt );
 
     sPushPos = aStackInfo->mArray + sCurItemCnt * sItemSize;
 
-    /* ì•„ì´í…œì˜ í¬ê¸°ê°€ vULongí¬ê¸°ë©´ memcpyë¥¼ í˜¸ì¶œí•˜ì§€ ì•Šê³  Assignì„ í•œë‹¤. ìœ ì˜
-       í•  ì ì€ aItemì˜ ì‹œì‘ì£¼ì†Œê°€ 8Byte Alignë˜ì–´ ìˆì–´ì•¼ í•œë‹¤. */
+    /* ¾ÆÀÌÅÛÀÇ Å©±â°¡ vULongÅ©±â¸é memcpy¸¦ È£ÃâÇÏÁö ¾Ê°í AssignÀ» ÇÑ´Ù. À¯ÀÇ
+       ÇÒ Á¡Àº aItemÀÇ ½ÃÀÛÁÖ¼Ò°¡ 8Byte AlignµÇ¾î ÀÖ¾î¾ß ÇÑ´Ù. */
     if( sItemSize == ID_SIZEOF(UInt) )
     {
         *((UInt*)sPushPos) = *((UInt*)aItem);
@@ -138,10 +138,10 @@ IDE_RC iduFXStack::push( idvSQL         *aStatSQL,
         }
     }
 
-    /* ìƒˆë¡œìš´ Itemì´ Pushë˜ì—ˆìœ¼ë¯€ë¡œ í˜„ì¬ Itemì˜ ê°¯ìˆ˜ë¥¼ 1ì¦ê°€ ì‹œí‚¨ë‹¤. */
+    /* »õ·Î¿î ItemÀÌ PushµÇ¾úÀ¸¹Ç·Î ÇöÀç ItemÀÇ °¹¼ö¸¦ 1Áõ°¡ ½ÃÅ²´Ù. */
     aStackInfo->mCurItemCnt++;
 
-    /* ìƒˆë¡œìš´ Itemì´ Insertë˜ê¸°ë¥¼ ëŒ€ê¸°í•˜ëŠ” Threadë“¤ì„ ê¹¨ì›Œì¤€ë‹¤. */
+    /* »õ·Î¿î ItemÀÌ InsertµÇ±â¸¦ ´ë±âÇÏ´Â ThreadµéÀ» ±ú¿öÁØ´Ù. */
     IDE_TEST( getupWaiters( aStackInfo ) != IDE_SUCCESS );
 
     sState = 0;
@@ -160,17 +160,17 @@ IDE_RC iduFXStack::push( idvSQL         *aStatSQL,
 }
 
 /***********************************************************************
- * Description : ìƒˆë¡œìš´ Itemì„ Stackì— Pushí•œë‹¤.
+ * Description : »õ·Î¿î ItemÀ» Stack¿¡ PushÇÑ´Ù.
  *
- * aStackInfo - [IN] Stack ìë£Œ êµ¬ì¡°.
+ * aStackInfo - [IN] Stack ÀÚ·á ±¸Á¶.
  * aWaitMode  - [IN] When stack is empty,
- *                   if aWaitMode = IDU_FXSTACK_POP_WAIT ì´ë©´,
- *                     ìƒˆë¡œìš´ Itemì´ Pushë ë•Œê¹Œì§€ ëŒ€ê¸°,
+ *                   if aWaitMode = IDU_FXSTACK_POP_WAIT ÀÌ¸é,
+ *                     »õ·Î¿î ItemÀÌ PushµÉ¶§±îÁö ´ë±â,
  *                   else
- *                     Stackì´ ë¹„ì—ˆë‹¤ê³  returní•œë‹¤.
+ *                     StackÀÌ ºñ¾ú´Ù°í returnÇÑ´Ù.
  *
- * aPopItem   - [IN] Popëœ Itemì´ ë³µì‚¬ë  ë©”ëª¨ë¦¬ ì˜ì—­
- * aIsEmpty   - [IN] Stackì´ ë¹„ì—ˆìœ¼ë©´ ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE
+ * aPopItem   - [IN] PopµÈ ItemÀÌ º¹»çµÉ ¸Ş¸ğ¸® ¿µ¿ª
+ * aIsEmpty   - [IN] StackÀÌ ºñ¾úÀ¸¸é ID_TRUE, ¾Æ´Ï¸é ID_FALSE
  **********************************************************************/
 IDE_RC iduFXStack::pop( idvSQL             *aStatSQL,
                         iduFXStackInfo     *aStackInfo,
@@ -196,7 +196,7 @@ IDE_RC iduFXStack::pop( idvSQL             *aStatSQL,
         if( ( sCurItemCnt == 0 ) &&
             ( aWaitMode   == IDU_FXSTACK_POP_WAIT ) )
         {
-            /* ìƒˆë¡œìš´ Pushê°€ ë°œìƒí• ë•Œê¹Œì§€ ê¸°ë‹¤ë¦°ë‹¤. */
+            /* »õ·Î¿î Push°¡ ¹ß»ıÇÒ¶§±îÁö ±â´Ù¸°´Ù. */
             IDE_TEST( waitForPush( aStackInfo ) != IDE_SUCCESS );
         }
         else
@@ -205,8 +205,8 @@ IDE_RC iduFXStack::pop( idvSQL             *aStatSQL,
         }
     }
 
-    /* í˜„ì¬ Stackì´ ë¹„ì—ˆë‹¤ê³  Returní•œë‹¤. ì´ë•Œ aWaitModeê°€
-       IDU_FXSTACK_POP_NOWAIT ì´ì–´ì•¼ í•œë‹¤. */
+    /* ÇöÀç StackÀÌ ºñ¾ú´Ù°í ReturnÇÑ´Ù. ÀÌ¶§ aWaitMode°¡
+       IDU_FXSTACK_POP_NOWAIT ÀÌ¾î¾ß ÇÑ´Ù. */
     IDE_TEST_CONT( sCurItemCnt == 0, STACK_EMPTY );
 
     sItemSize = aStackInfo->mItemSize;
@@ -214,7 +214,7 @@ IDE_RC iduFXStack::pop( idvSQL             *aStatSQL,
     sCurItemCnt--;
     sPopPos = aStackInfo->mArray + ( sCurItemCnt ) * sItemSize;
 
-    /* Itemí¬ê¸°ê°€ vULong í¬ê¸°ì´ë©´ memcpyë¥¼ ë¶€ë¥´ì§€ ì•Šê³  assignì‹œí‚¨ë‹¤. */
+    /* ItemÅ©±â°¡ vULong Å©±âÀÌ¸é memcpy¸¦ ºÎ¸£Áö ¾Ê°í assign½ÃÅ²´Ù. */
     if( sItemSize == ID_SIZEOF(UInt) )
     {
         *((UInt*)aPopItem) = *((UInt*)sPopPos);
@@ -233,7 +233,7 @@ IDE_RC iduFXStack::pop( idvSQL             *aStatSQL,
         }
     }
 
-    /* Stackì—ì„œ Itemì„ ì œê±°í–ˆìœ¼ë¯€ë¡œ 1 ê°ì†Œ ì‹œí‚¨ë‹¤. */
+    /* Stack¿¡¼­ ItemÀ» Á¦°ÅÇßÀ¸¹Ç·Î 1 °¨¼Ò ½ÃÅ²´Ù. */
     aStackInfo->mCurItemCnt = sCurItemCnt;
 
     *aIsEmpty = ID_FALSE;

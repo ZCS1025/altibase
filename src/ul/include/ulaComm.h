@@ -32,7 +32,7 @@
 /* mColumnID in cmpArgRPMetaReplCol */
 #define ULA_META_COLUMN_ID_MASK         (0x000003FF)
 
-/* Implicit Savepoint ÏÉùÏÑ± Ï†ïÎ≥¥ */
+/* Implicit Savepoint ª˝º∫ ¡§∫∏ */
 #define ULA_IMPLICIT_SVP_NAME           (acp_char_t *)"$$IMPLICIT"
 #define ULA_IMPLICIT_SVP_NAME_SIZE      (10)
 #define ULA_STATEMENT_DEPTH_NULL        (0)
@@ -121,7 +121,7 @@ ACI_RC ulaCommRecvXLog( cmiProtocolContext * aProtocolContext,
                         acp_uint32_t         aTimeoutSec,
                         ulaErrorMgr        * aOutErrorMgr );
 
-// PROJ-1663 : BEGIN Ìå®ÌÇ∑ ÎØ∏ÏÇ¨Ïö©
+// PROJ-1663 : BEGIN ∆–≈∂ πÃªÁøÎ
 ACI_RC ulaCommRecvTrBegin(acp_bool_t         *aExitFlag,
                           cmiProtocolContext *aProtocolContext,
                           ulaXLog            *aOutXLog,
@@ -254,4 +254,25 @@ ACI_RC ulaCommRecvHandshake( acp_bool_t         * aExitFlag,
                              ulaXLog            * aOutXLog,
                              acp_uint32_t         aTimeoutSec,
                              ulaErrorMgr        * aOutErrorMgr );
+
+ACI_RC ulaCommRecvMetaPartitionCount( cmiProtocolContext * aProtocolContext,
+                                      acp_bool_t         * aExitFlag,
+                                      acp_uint32_t         aTimeoutSec,
+                                      ulaErrorMgr        * aOutErrorMgr );
+
+ACI_RC ulaCommSendMetaDictTableCount( cmiProtocolContext * aProtocolContext,
+                                      ulaErrorMgr        * aOutErrorMgr );
+
+ACI_RC ulaCommRecvMetaDictTableCount( cmiProtocolContext * aProtocolContext,
+                                      acp_bool_t         * aExitFlag,
+                                      acp_uint32_t         aTimeoutSec,
+                                      ulaErrorMgr        * aOutErrorMgr );
+
+ACI_RC ulaCommSendMetaInitFlag( cmiProtocolContext * aProtocolContext,
+                                ulaErrorMgr        * aOutErrorMgr );
+
+ACI_RC ulaCommRecvMetaInitFlag( cmiProtocolContext * aProtocolContext,
+                                acp_bool_t         * aExitFlag,
+                                acp_uint32_t         aTimeoutSec,
+                                ulaErrorMgr        * aOutErrorMgr );
 #endif  /* _O_ULA_COMM_H_ */

@@ -31,6 +31,8 @@
 
 extern mtfModule stfGeomFromText;
 
+extern mtdModule mtdInteger;
+
 static mtcName stfGeomFromTextFunctionName[2] = {
     { stfGeomFromTextFunctionName+1, 15, (void*)"ST_GEOMFROMTEXT" }, // Fix BUG-15519
     { NULL, 12, (void*)"GEOMFROMTEXT" }
@@ -46,7 +48,7 @@ static IDE_RC stfGeomFromTextEstimate(
 mtfModule stfGeomFromText = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     stfGeomFromTextFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -85,7 +87,7 @@ IDE_RC stfGeomFromTextEstimate(
 
     extern mtdModule stdGeometry;
 
-    const mtdModule* sModules[1];
+    const mtdModule* sModules[2];
 
     aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
@@ -93,7 +95,9 @@ IDE_RC stfGeomFromTextEstimate(
                     MTC_NODE_QUANTIFIER_TRUE,
                     ERR_NOT_AGGREGATION );
 
-    IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) != 1,
+    // GeomFromText('POINT(1 1)') or GeomFromText('POINT(1 1)', srid)
+    IDE_TEST_RAISE( ( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) < 1 ) ||
+                    ( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) > 2 ),
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
     for( sNode  = aNode->arguments, sLflag = MTC_NODE_INDEX_UNUSABLE;
@@ -114,6 +118,15 @@ IDE_RC stfGeomFromTextEstimate(
     IDE_TEST( mtf::getCharFuncResultModule( &sModules[0],
                                             aStack[1].column->module )
               != IDE_SUCCESS );
+
+    if ( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) == 2 )
+    {
+        sModules[1] = &mtdInteger;
+    }
+    else
+    {
+        // Nothing to do.
+    }
 
     IDE_TEST( mtf::makeConversionNodes( aNode,
                                         aNode->arguments,
@@ -156,6 +169,8 @@ IDE_RC stfGeomFromTextCalculate(
     qcTemplate      * sQcTmplate;
     iduMemory       * sQmxMem;
     iduMemoryStatus   sQmxMemStatus;
+    idBool            sSRIDOption = ID_FALSE;
+    SInt              sSRID = ST_SRID_INIT;
     UInt              sStage = 0;
 
     IDE_TEST( mtf::postfixCalculate( aNode,
@@ -177,21 +192,42 @@ IDE_RC stfGeomFromTextCalculate(
         sQcTmplate = (qcTemplate*) aTemplate;
         sQmxMem    = QC_QMX_MEM( sQcTmplate->stmt );
 
-        // Memory ìž¬ì‚¬ìš©ì„ ìœ„í•˜ì—¬ í˜„ìž¬ ìœ„ì¹˜ ê¸°ë¡
+        // Memory Àç»ç¿ëÀ» À§ÇÏ¿© ÇöÀç À§Ä¡ ±â·Ï
         IDE_TEST( sQmxMem->getStatus(&sQmxMemStatus) != IDE_SUCCESS);
         sStage = 1;
         
-        IDE_TEST( stfWKT::geomFromText(
-                      sQmxMem,
-                      aStack[1].value,
-                      aStack[0].value,
-                      (SChar*)(aStack[0].value) +aStack[0].column->column.size,
-                      &rc,
-                      STU_VALIDATION_ENABLE ) != IDE_SUCCESS);
+        // PROJ-2422 srid Áö¿ø
+        if ( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) == 2 )
+        {
+            if ( aStack[2].column->module->isNull( aStack[2].column,
+                                                   aStack[2].value ) == ID_FALSE )
+            {
+                sSRIDOption = ID_TRUE;
+                sSRID = *(mtdIntegerType*)aStack[2].value;
+            }
+            else
+            {
+                // Nothing to do.
+            }
+        }
+        else
+        {
+            // Nothing To Do
+        }
+        
+        IDE_TEST( stfWKT::geomFromText( sQmxMem,
+                                        aStack[1].value,
+                                        aStack[0].value,
+                                        (SChar*)(aStack[0].value) +aStack[0].column->column.size,
+                                        &rc,
+                                        STU_VALIDATION_ENABLE,
+                                        sSRIDOption,
+                                        sSRID )
+                  != IDE_SUCCESS);
 
         IDE_TEST_RAISE( rc != IDE_SUCCESS, ERR_INVALID_LITERAL );
 
-        // Memory ìž¬ì‚¬ìš©ì„ ìœ„í•œ Memory ì´ë™
+        // Memory Àç»ç¿ëÀ» À§ÇÑ Memory ÀÌµ¿
         sStage = 0;
         IDE_TEST( sQmxMem->setStatus(&sQmxMemStatus) != IDE_SUCCESS);
     }
@@ -200,6 +236,7 @@ IDE_RC stfGeomFromTextCalculate(
 
     IDE_EXCEPTION( ERR_INVALID_LITERAL );
     IDE_SET(ideSetErrorCode(mtERR_ABORT_INVALID_LITERAL));
+    
     IDE_EXCEPTION_END;
 
     if (sStage == 1)

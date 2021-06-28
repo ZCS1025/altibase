@@ -114,8 +114,8 @@ void ideClearFTCallStack( SInt aRootCnt )
         }
         else
         {
-            /* mRootBeginDepthê°€ 1ë³´ë‹¤ í° ê²½ìš°, 
-             * ì´ë¯¸ ìƒìœ„ì—ì„œ ROOT_BEGIN ì„ í•œ ê²ƒì´ë¯€ë¡œ ì´ˆê¸°í™” í•˜ì§€ ì•ŠëŠ”ë‹¤.  */
+            /* mRootBeginDepth°¡ 1º¸´Ù Å« °æ¿ì, 
+             * ÀÌ¹Ì »óÀ§¿¡¼­ ROOT_BEGIN À» ÇÑ °ÍÀÌ¹Ç·Î ÃÊ±âÈ­ ÇÏÁö ¾Ê´Â´Ù.  */
         }
     }
 }

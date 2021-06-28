@@ -77,7 +77,7 @@ static IDE_RC mtvEstimate( mtcNode*     aNode,
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtvExecute;
 
-    /* BUG-36429 LOB ColumnÏóê ÎåÄÌï¥ÏÑúÎäî ÏµúÎåÄ PrecisionÏùÑ Ìï†ÎãπÌïúÎã§. */
+    /* BUG-36429 LOB Columnø° ¥Î«ÿº≠¥¬ √÷¥Î Precision¿ª «“¥Á«—¥Ÿ. */
     if ( aStack[1].column->precision != 0 )
     {
         sPrecision = IDL_MIN( aStack[1].column->precision,
@@ -131,12 +131,12 @@ IDE_RC mtvCalculate_Clob2Varchar( mtcNode*     aNode,
 
     sLanguage = aStack[0].column->language;
 
-    // convert4ServerÎäî valueÌòïÎßåÏùÑ Ï≤òÎ¶¨Ìï† Ïàò ÏûàÏñ¥ aNodeÍ∞Ä NULLÏù¥Îã§.
+    // convert4Server¥¬ value«¸∏∏¿ª √≥∏Æ«“ ºˆ ¿÷æÓ aNode∞° NULL¿Ã¥Ÿ.
     if ( aNode != NULL )
     {
         if ( aTemplate->isBaseTable( aTemplate, aNode->baseTable ) == ID_TRUE )
         {
-            // clob columnÏù∏ Í≤ΩÏö∞
+            // clob column¿Œ ∞ÊøÏ
             sIsClobColumn = ID_TRUE;
         }
         else
@@ -152,63 +152,79 @@ IDE_RC mtvCalculate_Clob2Varchar( mtcNode*     aNode,
     if ( sIsClobColumn == ID_TRUE )
     {
         // PROJ-1362
-        // Lob LocatorÎ•º ÏñªÎäîÎç∞ ÌïÑÏöîÌïú Ïª§ÏÑúÏ†ïÎ≥¥Î•º Í∞ÄÏ†∏Ïò®Îã§.
+        // Lob Locator∏¶ æÚ¥¬µ• « ø‰«— ƒøº≠¡§∫∏∏¶ ∞°¡Æø¬¥Ÿ.
         IDE_TEST( aTemplate->getOpenedCursor( aTemplate,
                                               aNode->baseTable,
                                               & sCursor,
                                               & sOrgTableID,
                                               & sFound )
                   != IDE_SUCCESS );
-    
-        IDE_TEST_RAISE( sFound != ID_TRUE,
-                        ERR_CONVERSION_NOT_APPLICABLE );
-    
-        sRow = aTemplate->rows[sOrgTableID].row;
-        SC_COPY_GRID( aTemplate->rows[sOrgTableID].rid, sGRID );
-    
-        sOrgLobColumn = aTemplate->rows[sOrgTableID].columns
-            + aNode->baseColumn;
 
-        IDE_ASSERT_MSG( sOrgLobColumn->module->id == MTD_CLOB_ID,
-                        "sOrgLobColumn->module->id : %"ID_UINT32_FMT"\n",
-                        sOrgLobColumn->module->id );
-    
-        // BUG-43780
-        if ( (sOrgLobColumn->column.flag & SMI_COLUMN_STORAGE_MASK)
-             == SMI_COLUMN_STORAGE_MEMORY )
+        if ( sFound == ID_FALSE )
         {
-            IDE_TEST( mtc::openLobCursorWithRow( sCursor,
-                                                 sRow,
-                                                 & sOrgLobColumn->column,
-                                                 sInfo,
-                                                 SMI_LOB_READ_MODE,
-                                                 & sLocator )
-                      != IDE_SUCCESS );
-        
-            sOpened = ID_TRUE;
+            /* BUG-48006 partition table nvl2 function error */
+            if ( ( aTemplate->rows[sOrgTableID].lflag & MTC_TUPLE_PARTITIONED_TABLE_MASK )
+                 == MTC_TUPLE_PARTITIONED_TABLE_TRUE )
+            {
+                sIsNull = ID_TRUE;
+            }
+            else
+            {
+                IDE_RAISE( ERR_CONVERSION_NOT_APPLICABLE );
+            }
         }
         else
         {
-            // BUG-16318
-            IDE_TEST_RAISE( SC_GRID_IS_NULL(sGRID), ERR_NOT_APPLICABLE );
-            //fix BUG-19687
-            IDE_TEST( mtc::openLobCursorWithGRID( sCursor,
-                                                  sGRID,
-                                                  & sOrgLobColumn->column,
-                                                  sInfo,
-                                                  SMI_LOB_READ_MODE,
-                                                  & sLocator )
+            sRow = aTemplate->rows[sOrgTableID].row;
+            SC_COPY_GRID( aTemplate->rows[sOrgTableID].rid, sGRID );
+
+            sOrgLobColumn = aTemplate->rows[sOrgTableID].columns
+                + aNode->baseColumn;
+
+            IDE_ASSERT_MSG( sOrgLobColumn->module->id == MTD_CLOB_ID,
+                            "sOrgLobColumn->module->id : %"ID_UINT32_FMT"\n",
+                            sOrgLobColumn->module->id );
+
+            // BUG-43780
+            if ( (sOrgLobColumn->column.flag & SMI_COLUMN_STORAGE_MASK)
+                 == SMI_COLUMN_STORAGE_MEMORY )
+            {
+                IDE_TEST( mtc::openLobCursorWithRow( sCursor,
+                                                     sRow,
+                                                     & sOrgLobColumn->column,
+                                                     sInfo,
+                                                     SMI_LOB_READ_MODE,
+                                                     & sLocator )
+                          != IDE_SUCCESS );
+
+                sOpened = ID_TRUE;
+            }
+            else
+            {
+                // BUG-16318
+                IDE_TEST_RAISE( SC_GRID_IS_NULL(sGRID), ERR_NOT_APPLICABLE );
+                //fix BUG-19687
+                IDE_TEST( mtc::openLobCursorWithGRID( sCursor,
+                                                      sGRID,
+                                                      & sOrgLobColumn->column,
+                                                      sInfo,
+                                                      SMI_LOB_READ_MODE,
+                                                      & sLocator )
+                          != IDE_SUCCESS );
+
+                sOpened = ID_TRUE;
+            }
+
+            IDE_TEST( mtc::getLobLengthLocator( sLocator,
+                                                & sIsNull,
+                                                & sLobLength,
+                                                mtc::getStatistics(aTemplate) )
                       != IDE_SUCCESS );
-        
-            sOpened = ID_TRUE;
         }
 
-        IDE_TEST( mtc::getLobLengthLocator( sLocator,
-                                            & sIsNull,
-                                            & sLobLength )
-                  != IDE_SUCCESS );
-
-        if ( sIsNull == ID_TRUE )
+        /* BUG-47693 CLOB ƒ√∑≥ø° empty µ•¿Ã≈Õ∞° ¿÷¥¬ ∞ÊøÏ ¡∂»∏ ∞·∞˙∞° ∆≤∏≤ */
+        if ( ( sIsNull == ID_TRUE ) ||
+             ( sLobLength <= MTD_LOB_EMPTY_LENGTH ) )
         {
             mtdVarchar.null( aStack[0].column,
                              aStack[0].value );
@@ -216,12 +232,12 @@ IDE_RC mtvCalculate_Clob2Varchar( mtcNode*     aNode,
         else
         {
             // BUG-38842
-            // clob to varchar conversionÏãú ÏßÄÏ†ïÌïú Í∏∏Ïù¥ÎßåÌÅºÎßå Î≥ÄÌôòÌïúÎã§.
+            // clob to varchar conversionΩ√ ¡ˆ¡§«— ±Ê¿Ã∏∏≈≠∏∏ ∫Ø»Ø«—¥Ÿ.
             if ( MTU_CLOB_TO_VARCHAR_PRECISION < sLobLength )
             {
                 sLobLength = MTU_CLOB_TO_VARCHAR_PRECISION;
 
-                // Î¨∏ÏûêÍ∞Ä Ïß§Î¶¥ Ïàò ÏûàÎã§.
+                // πÆ¿⁄∞° ¬©∏± ºˆ ¿÷¥Ÿ.
                 sTruncated = ID_TRUE;
             }
             else
@@ -234,7 +250,7 @@ IDE_RC mtvCalculate_Clob2Varchar( mtcNode*     aNode,
 
             sVarcharValue = (mtdCharType*)aStack[0].value;
 
-            IDE_TEST( mtc::readLob( mtc::getStatistics( aTemplate ), // NULL, /* idvSQL* */
+            IDE_TEST( mtc::readLob( mtc::getStatistics( aTemplate ), /* idvSQL* */
                                     sLocator,
                                     0,
                                     sLobLength,
@@ -259,9 +275,12 @@ IDE_RC mtvCalculate_Clob2Varchar( mtcNode*     aNode,
             }
         }
 
-        sOpened = ID_FALSE;
-        IDE_TEST( aTemplate->closeLobLocator( sLocator )
-                  != IDE_SUCCESS );
+        if ( sOpened == ID_TRUE )
+        {
+            sOpened = ID_FALSE;
+            IDE_TEST( aTemplate->closeLobLocator( sLocator )
+                      != IDE_SUCCESS );
+        }
     }
     else
     {
@@ -278,12 +297,12 @@ IDE_RC mtvCalculate_Clob2Varchar( mtcNode*     aNode,
             sLobLength = sClobValue->length;
             
             // BUG-38842
-            // clob to varchar conversionÏãú ÏßÄÏ†ïÌïú Í∏∏Ïù¥ÎßåÌÅºÎßå Î≥ÄÌôòÌïúÎã§.
+            // clob to varchar conversionΩ√ ¡ˆ¡§«— ±Ê¿Ã∏∏≈≠∏∏ ∫Ø»Ø«—¥Ÿ.
             if ( MTU_CLOB_TO_VARCHAR_PRECISION < sLobLength )
             {
                 sLobLength = MTU_CLOB_TO_VARCHAR_PRECISION;
 
-                // Î¨∏ÏûêÍ∞Ä Ïß§Î¶¥ Ïàò ÏûàÎã§.
+                // πÆ¿⁄∞° ¬©∏± ºˆ ¿÷¥Ÿ.
                 sTruncated = ID_TRUE;
             }
             else

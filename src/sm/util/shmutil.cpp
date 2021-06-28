@@ -16,23 +16,16 @@
  
 
 /***********************************************************************
- * $Id: shmutil.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: shmutil.cpp 85760 2019-06-28 07:19:23Z et16 $
  **********************************************************************/
 
-#include <idl.h>
-#include <ide.h>
-#include <idp.h>
-#include <idu.h>
-#include <idErrorCode.h>
-#include <iduVersion.h>
 #include <smuUtility.h>
 #include <smi.h>
 #include <smm.h>
+#include <sct.h>
 #include <mmm.h>
 #include <mmuProperty.h>
 #include <mmuServerStat.h>
-#include <sctTableSpaceMgr.h>
-#include <sct.h>
 
 #ifdef VC_WIN32_NOT_YET_ADAPTED
 int KILL_PROC_BY_NAME(const char *);
@@ -132,7 +125,7 @@ int main(int argc, char* argv[])
     smuUtility::outputUtilityHeader("ShmUtil");
 
     /* --------------------
-     * [0] í™˜ê²½ë³€ìˆ˜ ì¡´ì¬ ê²€ì‚¬
+     * [0] È¯°æº¯¼ö Á¸Àç °Ë»ç
      * -------------------*/
     envhome = idlOS::getenv(IDP_HOME_ENV);
 
@@ -143,16 +136,16 @@ int main(int argc, char* argv[])
     gConfFile[0] = '\0';
 
     /* --------------------
-     * [1] ì˜µì…˜ ì²˜ë¦¬
+     * [1] ¿É¼Ç Ã³¸®
      * -------------------*/
     while ( (sOptR = idlOS::getopt(argc, argv, "d:f:pwe")) != EOF)
     {
         switch(sOptR)
         {
-            case 'd':  // í™ˆ ë””ë ‰í† ë¦¬ ëª…ì‹œ
+            case 'd':  // È¨ µğ·ºÅä¸® ¸í½Ã
                 idlOS::strncpy(gHomeDir, optarg, 255);
                 break;
-            case 'f':  // Conf í™”ì¼ ëª…ì‹œ
+            case 'f':  // Conf È­ÀÏ ¸í½Ã
                 idlOS::strncpy(gConfFile, optarg, 255);
                 break;
             case 'p':
@@ -173,7 +166,7 @@ int main(int argc, char* argv[])
     IDE_TEST_RAISE(sOptCount > 1 || sOptFlag == ' ', invalid_option_error);
 
     /* --------------------
-     *  í”„ë¡œí¼í‹° ë¡œë”©
+     *  ÇÁ·ÎÆÛÆ¼ ·Îµù
      * -------------------*/
     IDE_TEST_RAISE(idp::initialize(gHomeDir, gConfFile) != IDE_SUCCESS,
                    load_property_error);
@@ -182,7 +175,7 @@ int main(int argc, char* argv[])
     smuProperty::load();
 
     /* --------------------
-     *  ì—ëŸ¬ Message ë¡œë”©
+     *  ¿¡·¯ Message ·Îµù
      * -------------------*/
     IDE_TEST_RAISE(smuUtility::loadErrorMsb(idp::getHomeDir(),
                                             (SChar*)"US7ASCII")
@@ -191,7 +184,7 @@ int main(int argc, char* argv[])
     if( gCheckStatus.isFileExist() == ID_TRUE )
     {
         /* ---------------------------
-         *  Server Lock File ì´ˆê¸°í™”
+         *  Server Lock File ÃÊ±âÈ­
          * --------------------------*/
         IDE_TEST_RAISE(gCheckStatus.initialize() != IDE_SUCCESS,
                        status_init_error);
@@ -203,7 +196,7 @@ int main(int argc, char* argv[])
 
 
     /* -------------------------------------------
-     * [3] SHM KEY í”„ë¡œí¼í‹° ê²€ì‚¬ ë° attach() ê°€ëŠ¥?
+     * [3] SHM KEY ÇÁ·ÎÆÛÆ¼ °Ë»ç ¹× attach() °¡´É?
      * ------------------------------------------*/
     IDE_ASSERT(idp::read("SHM_DB_KEY", (void**)&sShmDBKey, 0)
                == IDE_SUCCESS);
@@ -217,7 +210,7 @@ int main(int argc, char* argv[])
     IDE_TEST(idvManager::startupService() != IDE_SUCCESS);
 
     /* -----------------------
-     * [4] SM ë§¤ë‹ˆì € ì´ˆê¸°í™”
+     * [4] SM ¸Å´ÏÀú ÃÊ±âÈ­
      * ----------------------*/
     IDE_TEST_RAISE(smiStartup(SMI_STARTUP_PRE_PROCESS,
                               SMI_STARTUP_NOACTION,
@@ -234,7 +227,7 @@ int main(int argc, char* argv[])
                               &mmm::mSmiGlobalCallBackList) != IDE_SUCCESS,
                    smi_init_error );
     /* -----------------------
-     * [4-1] Shared Memory Attach ìˆ˜í–‰
+     * [4-1] Shared Memory Attach ¼öÇà
      * ----------------------*/
     IDE_TEST(smmManager::prepareDB( SMM_PREPARE_OP_DONT_CHECK_DB_SIGNATURE_4SHMUTIL )
 
@@ -252,9 +245,9 @@ int main(int argc, char* argv[])
             break;
 
         case 'w': // write to disk
-            // ì–´ëŠ ë””ë ‰í† ë¦¬ì— DBíŒŒì¼ì„ ë§Œë“¤ì§€ ê²°ì •í•œë‹¤.
+            // ¾î´À µğ·ºÅä¸®¿¡ DBÆÄÀÏÀ» ¸¸µéÁö °áÁ¤ÇÑ´Ù.
             IDE_TEST( askDBPath( sDBPath,
-                                 SM_MAX_FILE_NAME ) // ìµœëŒ€ Pathê¸¸ì´
+                                 SM_MAX_FILE_NAME ) // ÃÖ´ë Path±æÀÌ
                       != IDE_SUCCESS );
             break;
         case 'p': // print info
@@ -263,8 +256,8 @@ int main(int argc, char* argv[])
 
     }
 
-    // ëª¨ë“  Tablespaceì— ëŒ€í•´ Optionë³„ ë™ì‘ ì‹¤ì‹œ
-    sctTableSpaceMgr::getFirstSpaceNode( (void**)& sTBSNode );
+    // ¸ğµç Tablespace¿¡ ´ëÇØ Optionº° µ¿ÀÛ ½Ç½Ã
+    sTBSNode = (smmTBSNode*)sctTableSpaceMgr::getFirstSpaceNode();
     while ( sTBSNode != NULL)
     {
 
@@ -274,7 +267,7 @@ int main(int argc, char* argv[])
                                              SCT_SS_SKIP_SHMUTIL_OPER)
                  == ID_TRUE )
             {
-                // shmutilì˜ ë™ì‘ì„ SKIPí•´ì•¼ í•˜ëŠ” ê²½ìš°
+                // shmutilÀÇ µ¿ÀÛÀ» SKIPÇØ¾ß ÇÏ´Â °æ¿ì
                 // do nothing..
             }
             else
@@ -284,7 +277,7 @@ int main(int argc, char* argv[])
                                restore_type_error);
 
                 /* -----------------------
-                 * [5] Option ë³„ ìˆ˜í–‰
+                 * [5] Option º° ¼öÇà
                  * ----------------------*/
                 switch(sOptFlag)
                 {
@@ -301,12 +294,10 @@ int main(int argc, char* argv[])
         else
         {
             // do nothing..
-            // Disk Tablespaceì— ëŒ€í•´ì„œëŠ” ì•„ë¬´ê²ƒë„ ì²˜ë¦¬í•  ê²ƒì´ ì—†ë‹¤.
+            // Disk Tablespace¿¡ ´ëÇØ¼­´Â ¾Æ¹«°Íµµ Ã³¸®ÇÒ °ÍÀÌ ¾ø´Ù.
         }
 
-
-        sctTableSpaceMgr::getNextSpaceNode( (void*) sTBSNode,
-                                            (void**)& sTBSNode );
+        sTBSNode = (smmTBSNode*)sctTableSpaceMgr::getNextSpaceNode( sTBSNode->mHeader.mID );
     }
 
     switch(sOptFlag)
@@ -330,7 +321,7 @@ int main(int argc, char* argv[])
 
     return IDE_SUCCESS;
     /* -----------------------------------------------------------------
-     * E [0] : SM ì—ëŸ¬ ì²˜ë¦¬
+     * E [0] : SM ¿¡·¯ Ã³¸®
      * ---------------------------------------------------------------*/
     IDE_EXCEPTION(shm_remove_canceled);
     {
@@ -438,7 +429,7 @@ void printMemBase(SChar *aMsg, smmTBSNode * aTBSNode)
 
     total_page = aTBSNode->mMemBase->mAllocPersPageCount;
 
-    // ëª¨ë“  Free Page Listì˜ ì´ Free Pageìˆ˜ë¥¼ êµ¬í•œë‹¤.
+    // ¸ğµç Free Page ListÀÇ ÃÑ Free Page¼ö¸¦ ±¸ÇÑ´Ù.
     free_page = 0;
     for ( i=0; i< aTBSNode->mMemBase->mFreePageListCount; i++ )
     {
@@ -468,8 +459,8 @@ void printMemBase(SChar *aMsg, smmTBSNode * aTBSNode)
 
 
     smuUtility::outputMsg("\n #################### Detail Information ###################### \n");
-    sSCH = sBaseSCH->m_next;          // ì²«ë²ˆì§¸ SCHë¡œ ì˜®ê¸´ë‹¤.
-    sKey = smmFixedMemoryMgr::getShmKey(aTBSNode); // Base keyë¥¼ ì–»ìŒ
+    sSCH = sBaseSCH->m_next;          // Ã¹¹øÂ° SCH·Î ¿Å±ä´Ù.
+    sKey = smmFixedMemoryMgr::getShmKey(aTBSNode); // Base key¸¦ ¾òÀ½
 
     while(sSCH != NULL)
     {
@@ -726,7 +717,7 @@ IDE_RC eraseSHM(smmTBSNode * aTBSNode)
     idBool sRunningFlag;
 
     /* -------------------------
-     * [1] ì„œë²„ê°€ ë™ì‘ì¤‘ì¸ì§€ ê²€ì‚¬
+     * [1] ¼­¹ö°¡ µ¿ÀÛÁßÀÎÁö °Ë»ç
      * ------------------------*/
 
     if( gCheckStatus.isFileExist() == ID_TRUE )

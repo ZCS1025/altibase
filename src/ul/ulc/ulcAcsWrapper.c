@@ -16,7 +16,7 @@
 
 /***********************************************************************
  *
- *    Spatio-Temporal API Wrapper Date í•¨ìˆ˜
+ *    Spatio-Temporal API Wrapper Date ÇÔ¼ö
  *
  ***********************************************************************/
 
@@ -257,6 +257,14 @@ ACSRETURN ACSGetGeometrySizeFromWKB( ACSHENV       aHandle,
                                       (ulvSLen*) aSize);
 }
 
+ACSRETURN ACSGetGeometrySRID( ACSHENV            aHandle,
+                              stdGeometryType  * aGeometry,
+                              SQLINTEGER       * aSRID )
+{
+    return ulsGetSRID( aHandle,
+                       aGeometry,
+                       aSRID );
+}
 
 /*----------------------------------------------------------------*
  *  Geometry Infomation Search Function  

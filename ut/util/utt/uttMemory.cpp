@@ -29,14 +29,14 @@
  *
  * PUBLIC FUNCTION(S)
  *   uttMemory( ULong BufferSize )
- *      BufferSize는 메모리 할당을 위한 중간 버퍼의 크기 할당받는
- *      메모리의 크기는 BufferSize를 초과할 수 없습니다.
+ *      BufferSize�� �޸� �Ҵ��� ���� �߰� ������ ũ�� �Ҵ�޴�
+ *      �޸��� ũ��� BufferSize�� �ʰ��� �� �����ϴ�.
  *
  *   void* alloc( size_t Size )
- *      Size만큼의 메모리를 할당해 줍니다.
+ *      Size��ŭ�� �޸𸮸� �Ҵ��� �ݴϴ�.
  *
  *   void clear( )
- *      할당받은 모든 메모리를 해제 합니다.
+ *      �Ҵ���� ��� �޸𸮸� ���� �մϴ�.
  *
  * NOTES
  *

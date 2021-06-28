@@ -18,17 +18,12 @@
 /*****************************************************************************
  * $Id:
  ****************************************************************************/
-#include <idl.h>
-#include <idp.h>
-#include <ide.h>
 #include <smuProperty.h>
 #include <smErrorCode.h>
 #include <smx.h>
-#include <smr.h>
 #include <sdt.h>
 #include <smiTrans.h>
 #include <sma.h>
-#include <sdb.h>
 #include <sdpst.h>
 
 extern smrChkptThread gSmrChkptThread;
@@ -73,6 +68,8 @@ UInt smuProperty::mBufferFlusherCnt;
 UInt smuProperty::mBufferIOBufferSize;
 ULong smuProperty::mBufferAreaSize;
 ULong smuProperty::mBufferAreaChunkSize;
+//BUG-48042
+UInt smuProperty::mBuffAreaCreateParDeg;
 //UInt smuProperty::mBufferPinningCount;
 //UInt smuProperty::mBufferPinningHistoryCount;
 UInt smuProperty::mDefaultFlusherWaitSec;
@@ -91,7 +88,7 @@ UInt smuProperty::mBlockAllTxTimeOut;
 
 UInt smuProperty::mCheckpointFlushResponsibility;
 
-// PROJ-2068 Direct-Path INSERT ì„±ëŠ¥ ê°œì„ 
+// PROJ-2068 Direct-Path INSERT ¼º´É °³¼±
 SLong smuProperty::mDPathBuffPageAllocRetryUSec;
 idBool smuProperty::mDPathInsertEnable;
 
@@ -102,29 +99,35 @@ ULong smuProperty::mReservedDiskSizeForLogFile;
  *********************************************************************/
 ULong   smuProperty::mHashAreaSize;
 UInt    smuProperty::mTempSortPartitionSize;
-ULong   smuProperty::mTotalWASize;
-UInt    smuProperty::mTempMaxPageCount;
+ULong   smuProperty::mInitTotalWASize;
+ULong   smuProperty::mMaxTotalWASize;
+UInt    smuProperty::mTmpMinInitWAExtCnt;
+UInt    smuProperty::mTmpOverInitWAExtCnt;
+UInt    smuProperty::mTmpCheckUnique4Update;
+UInt    smuProperty::mTmpInitWASegCnt;
 UInt    smuProperty::mTempRowSplitThreshold;
 UInt    smuProperty::mTempSortGroupRatio;
 UInt    smuProperty::mTempHashGroupRatio;
-UInt    smuProperty::mTempClusterHashGroupRatio;
-UInt    smuProperty::mTempUseClusterHash;
+UInt    smuProperty::mTempSubHashGroupRatio;
 UInt    smuProperty::mTempSleepInterval;
 UInt    smuProperty::mTempAllocTryCount;
-UInt    smuProperty::mTempFlusherCount;
-UInt    smuProperty::mTempFlushQueueSize;
-UInt    smuProperty::mTempFlushPageCount;
 UInt    smuProperty::mTempMaxKeySize;
 UInt    smuProperty::mTempStatsWatchArraySize;
 UInt    smuProperty::mTempStatsWatchTime;
 SChar * smuProperty::mTempDumpDirectory;
 UInt    smuProperty::mTempDumpEnable;
+idBool  smuProperty::mWCBCleanMemset;
 UInt    smuProperty::mSmTempOperAbort;
 UInt    smuProperty::mTempHashBucketDensity;
 
+UInt    smuProperty::mTmpAllocWAExtCnt;
+UInt    smuProperty::mTmpHashFetchSubHashMaxRatio;
 
 //sdp
+#if 0
 ULong smuProperty::mTransWaitTime4TTS;
+#endif
+ULong smuProperty::mTransWaitTime;
 UInt smuProperty::mTmsIgnoreHintPID;
 SInt smuProperty::mTmsManualSlotNoInItBMP;
 SInt smuProperty::mTmsManualSlotNoInLfBMP;
@@ -170,12 +173,12 @@ UInt  smuProperty::mKeyRedistributionLowLimit;
 SLong smuProperty::mMaxTraverseLength;
 UInt  smuProperty::mUnbalancedSplitRate;
 
-// BUG-29506 TBTê°€ TBKë¡œ ì „í™˜ì‹œ ë³€ê²½ëœ offsetì„ CTSì— ë°˜ì˜í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
-// ì¬í˜„í•˜ê¸° ìœ„í•´ CTS í• ë‹¹ ì—¬ë¶€ë¥¼ ì„ì˜ë¡œ ì œì–´í•˜ê¸° ìœ„í•œ PROPERTYë¥¼ ì¶”ê°€
+// BUG-29506 TBT°¡ TBK·Î ÀüÈ¯½Ã º¯°æµÈ offsetÀ» CTS¿¡ ¹İ¿µÇÏÁö ¾Ê½À´Ï´Ù.
+// ÀçÇöÇÏ±â À§ÇØ CTS ÇÒ´ç ¿©ºÎ¸¦ ÀÓÀÇ·Î Á¦¾îÇÏ±â À§ÇÑ PROPERTY¸¦ Ãß°¡
 UInt  smuProperty::mDisableTransactionBoundInCTS;
 
-// BUG-29839 ì¬ì‚¬ìš©ëœ undo pageì—ì„œ ì´ì „ CTSë¥¼ ë³´ë ¤ê³  í•  ìˆ˜ ìˆìŒ.
-// ì¬í˜„í•˜ê¸° ìœ„í•´ transactionì— íŠ¹ì • segment entryë¥¼ bindingí•˜ëŠ” ê¸°ëŠ¥ ì¶”ê°€
+// BUG-29839 Àç»ç¿ëµÈ undo page¿¡¼­ ÀÌÀü CTS¸¦ º¸·Á°í ÇÒ ¼ö ÀÖÀ½.
+// ÀçÇöÇÏ±â À§ÇØ transaction¿¡ Æ¯Á¤ segment entry¸¦ bindingÇÏ´Â ±â´É Ãß°¡
 UInt  smuProperty::mManualBindingTXSegByEntryID;
 
 // PROJ-1591
@@ -221,23 +224,23 @@ UInt   smuProperty::mRestoreAIOCount;
 UInt   smuProperty::mRestoreBufferPageCount;
 UInt   smuProperty::mCheckpointAIOCount;
 
-// í•˜ë‚˜ì˜ Expand Chunkì— ì†í•˜ëŠ” Pageìˆ˜
+// ÇÏ³ªÀÇ Expand Chunk¿¡ ¼ÓÇÏ´Â Page¼ö
 UInt  smuProperty::mExpandChunkPageCount;
 
-// ë‹¤ìŒê³¼ ê°™ì€ Page Listë“¤ì„ ê°ê° ëª‡ê°œì˜ Listë¡œ ë‹¤ì¤‘í™” í•  ì§€ ê²°ì •í•œë‹¤.
+// ´ÙÀ½°ú °°Àº Page ListµéÀ» °¢°¢ ¸î°³ÀÇ List·Î ´ÙÁßÈ­ ÇÒ Áö °áÁ¤ÇÑ´Ù.
 //
-// ë°ì´í„°ë² ì´ìŠ¤ Free Page List
-// í…Œì´ë¸”ì˜ Allocated Page List
-// í…Œì´ë¸”ì˜ Free Page List
+// µ¥ÀÌÅÍº£ÀÌ½º Free Page List
+// Å×ÀÌºíÀÇ Allocated Page List
+// Å×ÀÌºíÀÇ Free Page List
 UInt   smuProperty::mPageListGroupCount;
 
-// Expand Chunkí™•ì¥ì‹œì— Free Pageë“¤ì´ ì—¬ëŸ¬ë²ˆì— ê±¸ì³ì„œ
-// ë‹¤ì¤‘í™”ëœ Free Page Listë¡œ ë¶„ë°°ëœë‹¤.
+// Expand ChunkÈ®Àå½Ã¿¡ Free PageµéÀÌ ¿©·¯¹ø¿¡ °ÉÃÄ¼­
+// ´ÙÁßÈ­µÈ Free Page List·Î ºĞ¹èµÈ´Ù.
 //
-// ì´ ë•Œ, í•œë²ˆì— ëª‡ê°œì˜ Pageë¥¼ Free Page Listë¡œ ë¶„ë°°í• ì§€ë¥¼ ì„¤ì •í•œë‹¤.
+// ÀÌ ¶§, ÇÑ¹ø¿¡ ¸î°³ÀÇ Page¸¦ Free Page List·Î ºĞ¹èÇÒÁö¸¦ ¼³Á¤ÇÑ´Ù.
 UInt   smuProperty::mPerListDistPageCount;
 
-// Free Page Listê°€ ë¶„í•  ë˜ê¸° ìœ„í•´ ê°€ì ¸ì•¼ í•˜ëŠ” ìµœì†Œí•œì˜ Pageìˆ˜
+// Free Page List°¡ ºĞÇÒ µÇ±â À§ÇØ °¡Á®¾ß ÇÏ´Â ÃÖ¼ÒÇÑÀÇ Page¼ö
 UInt   smuProperty::mMinPagesOnDBFreeList;
 
 UInt   smuProperty::mSeparateDicTBSSizeEnable;
@@ -282,6 +285,7 @@ UInt   smuProperty::mFileInitBufferSize;
 ULong  smuProperty::mLogFileSize;
 UInt   smuProperty::mZeroSizeLogFileAutoDelete;
 UInt   smuProperty::mLogFilePrepareCount;
+idBool smuProperty::mUseTempForPrepareLogFile;
 UInt   smuProperty::mLogFilePreCreateInterval;
 //UInt   smuProperty::mMaxKeepLogFile;
 UInt   smuProperty::mShmDBKey;
@@ -296,8 +300,10 @@ UInt   smuProperty::mLogReadMethodType;
 /* BUG-35392 */
 idBool smuProperty::mFastUnlockLogAllocMutex;
 
+UInt   smuProperty::mLogCompAcceleration;
+
 // TASK-2398 Log Compress
-// ì••ì¶• í•´ì œë˜ì–´ í•´ì‹±ëœ Disk Logì˜ ë‚´ìš©ì„ ì €ì¥í•´ë‘˜ ë²„í¼ì˜ í¬ê¸°
+// ¾ĞÃà ÇØÁ¦µÇ¾î ÇØ½ÌµÈ Disk LogÀÇ ³»¿ëÀ» ÀúÀåÇØµÑ ¹öÆÛÀÇ Å©±â
 ULong  smuProperty::mDiskRedoLogDecompressBufferSize;
 
 UInt   smuProperty::mLFGGroupCommitUpdateTxCount;
@@ -359,6 +365,7 @@ UInt    smuProperty::mEnableRowTemplate;
 
 // sma
 UInt smuProperty::mDeleteAgerCount;
+UInt smuProperty::mAgerListCount;
 UInt smuProperty::mLogicalAgerCount;
 UInt smuProperty::mMinLogicalAgerCount;
 UInt smuProperty::mMaxLogicalAgerCount;
@@ -368,6 +375,8 @@ UInt smuProperty::mAgerCommitInterval;
 UInt smuProperty::mRefinePageCount;
 UInt smuProperty::mTableCompactAtShutdown;
 UInt smuProperty::mParallelLogicalAger;
+UInt smuProperty::mParallelDeleteThread;
+
 UInt smuProperty::mCatalogSlotReusable;
 
 //sml
@@ -375,6 +384,13 @@ UInt smuProperty::mTableLockEnable;
 UInt smuProperty::mTablespaceLockEnable;
 SInt smuProperty::mDDLLockTimeOut;
 UInt smuProperty::mLockNodeCacheCount; /* BUG-43408 */
+UInt smuProperty::mSkipLockedTableAtFixedTable;
+
+/* PROJ-2734 */
+idBool smuProperty::mDistributionDeadlockEnable;
+ULong  smuProperty::mDistributionDeadlockRiskLowWaitTime;
+ULong  smuProperty::mDistributionDeadlockRiskMidWaitTime;
+ULong  smuProperty::mDistributionDeadlockRiskHighWaitTime;
 
 //smn
 UInt smuProperty::mIndexBuildMinRecordCount;
@@ -386,7 +402,6 @@ UInt smuProperty::mIndexRebuildAtStartup;
 UInt smuProperty::mIndexRebuildParallelFactorAtSartup;
 UInt smuProperty::mMMDBDefIdxType;
 ULong smuProperty::mMemoryIndexBuildRunSize;
-ULong smuProperty::mMemoryIndexBuildRunCountAtUnionMerge;
 ULong smuProperty::mMemoryIndexBuildValueLengthThreshold;
 SInt smuProperty::mIndexRebuildParallelMode;
 UInt smuProperty::mMemBtreeNodeSize;
@@ -397,6 +412,7 @@ SInt smuProperty::mMemIndexKeyRedistributionStandardRate;
 idBool smuProperty::mScanlistMoveNonBlock;
 idBool smuProperty::mIsCPUAffinity;
 idBool smuProperty::mGatherIndexStatOnDDL;
+idBool smuProperty::mSkipIdxStatNodeBound;
 
 //smx
 UInt  smuProperty::mRebuildMinViewSCNInterval;
@@ -405,11 +421,15 @@ UInt  smuProperty::mTransTouchPageCntByNode;
 UInt  smuProperty::mTransTouchPageCacheRatio;
 UInt  smuProperty::mTransTblSize;
 UInt  smuProperty::mTransTableFullTrcLogCycle;
-SLong smuProperty::mLockTimeOut;
+ULong smuProperty::mLockTimeOut;
 UInt  smuProperty::mReplLockTimeOut;
 UInt  smuProperty::mTransAllocWaitTime;
 UInt  smuProperty::mPrivateBucketCount;
 UInt  smuProperty::mTXSEGEntryCnt;
+/* BUG-47525 */
+UInt  smuProperty::mGroupCommitCnt;
+UInt  smuProperty::mGroupCommitListCnt;
+
 UInt  smuProperty::mTXSegAllocWaitTime;
 UInt  smuProperty::mTxOIDListMemPoolType;
 /* BUG-35392 */
@@ -418,6 +438,11 @@ UInt  smuProperty::mUCLSNChkThrInterval;
 UInt   smuProperty::mTrcLogLegacyTxInfo;
 /* BUG-40790 */
 UInt   smuProperty::mLobCursorHashBucketCount;
+/* BUG-47365 */
+UInt   smuProperty::mLogCompResourceReuse;
+UInt   smuProperty::mCompResTuneSize;
+/* PROJ-2733 */
+ULong  smuProperty::mVersioningMinTime;
 
 //smu
 UInt   smuProperty::mArtDecreaseVal;
@@ -428,6 +453,8 @@ SChar* smuProperty::mDefaultDiskDBDir;
 idBool smuProperty::mForceIndexDirectKey;
 /* BUG-41121 */
 UInt smuProperty::mForceIndexPersistenceMode;
+/* PROJ-2733 */
+UInt   smuProperty::mShardEnable;
 
 //smi
 UInt   smuProperty::mDBMSStatMethod;
@@ -478,7 +505,7 @@ UInt   smuProperty::mRELPathInLog;
 ULong  smuProperty::mVolMaxDBSize;
 
 //scp
-/* Proj-2059 DB Upgrade ê¸°ëŠ¥ */
+/* Proj-2059 DB Upgrade ±â´É */
 UInt   smuProperty::mDataPortFileBlockSize;
 UInt   smuProperty::mExportColumnChainingThreshold;
 UInt   smuProperty::mDataPortDirectIOEnable;
@@ -488,7 +515,7 @@ UInt   smuProperty::mPortNo;
 
 //-------------------------------------
 // To Fix PR-14783
-// System Threadì˜ ë™ì‘ì„ ì œì–´í•¨.
+// System ThreadÀÇ µ¿ÀÛÀ» Á¦¾îÇÔ.
 //-------------------------------------
 
 UInt   smuProperty::mRunMemDeleteThread;
@@ -525,11 +552,6 @@ UInt   smuProperty::mDWDirCount;
 SChar* smuProperty::mDWDir[SM_MAX_DWDIR_COUNT];
 
 /* PROJ-2620 */
-SInt   smuProperty::mLockMgrType;
-SInt   smuProperty::mLockMgrSpinCount;
-SInt   smuProperty::mLockMgrMinSleep;
-SInt   smuProperty::mLockMgrMaxSleep;
-SInt   smuProperty::mLockMgrDetectDeadlockInterval;
 SInt   smuProperty::mLockMgrCacheNode;
 
 void smuProperty::initialize()
@@ -592,7 +614,7 @@ IDE_RC smuProperty::load()
 
 void smuProperty::init4Util()
 {
-    /* Loadëœ í›„ í˜¸ì¶œë˜ì–´ì•¼ í•¨ */
+    /* LoadµÈ ÈÄ È£ÃâµÇ¾î¾ß ÇÔ */
     IDE_DASSERT( mIsLoaded == ID_TRUE );
 
     mBufferAreaSize = 1024*1024; // 1M
@@ -737,6 +759,10 @@ void smuProperty::loadForSDB()
     IDE_ASSERT( idp::read( "BUFFER_AREA_CHUNK_SIZE",
                            &mBufferAreaChunkSize )
                 == IDE_SUCCESS );
+    //BUG-48042
+    IDE_ASSERT( idp::read( "__BUFFAREA_CREATE_PARALLEL_DEGREE",
+                           &mBuffAreaCreateParDeg )
+                == IDE_SUCCESS );
 
 //    IDE_ASSERT( idp::read( "BUFFER_PINNING_COUNT",
 //                           &mBufferPinningCount )
@@ -800,8 +826,8 @@ void smuProperty::loadForSDB()
 
     //proj-1568 end
 
-    /* BUG-18646: Direct Path Insertì‹œ ì—°ì†ëœ Pageì— ëŒ€í•œ Insert ì—°ì‚°ì‹œ IOë¥¼
-       Pageë‹¨ìœ„ê°€ ì•„ë‹Œ ì—¬ëŸ¬ê°œì˜ í˜ì´ì§€ë¥¼ ë¬¶ì–´ì„œ í•œë²ˆì˜ IOë¡œ ìˆ˜í–‰í•˜ì—¬ì•¼ í•©ë‹ˆë‹¤. */
+    /* BUG-18646: Direct Path Insert½Ã ¿¬¼ÓµÈ Page¿¡ ´ëÇÑ Insert ¿¬»ê½Ã IO¸¦
+       Page´ÜÀ§°¡ ¾Æ´Ñ ¿©·¯°³ÀÇ ÆäÀÌÁö¸¦ ¹­¾î¼­ ÇÑ¹øÀÇ IO·Î ¼öÇàÇÏ¿©¾ß ÇÕ´Ï´Ù. */
     IDE_ASSERT( idp::read( "BULKIO_PAGE_COUNT_FOR_DIRECT_PATH_INSERT",
                            &mBulkIOPageCnt4DPInsert )
                 == IDE_SUCCESS );
@@ -818,7 +844,7 @@ void smuProperty::loadForSDB()
     IDE_ASSERT( idp::read( "__FLUSHER_BUSY_CONDITION_CHECK_INTERVAL",
                            &mFlusherBusyConditionCheckInterval ) == IDE_SUCCESS );
 
-    // PROJ-2068 Direct-Path INSERT ì„±ëŠ¥ ê°œì„ 
+    // PROJ-2068 Direct-Path INSERT ¼º´É °³¼±
     IDE_ASSERT( idp::read( "__DPATH_BUFF_PAGE_ALLOC_RETRY_USEC",
                            &mDPathBuffPageAllocRetryUSec )
                 == IDE_SUCCESS );
@@ -833,8 +859,13 @@ void smuProperty::loadForSDP()
     UInt sSlotCnt;
 #endif
 
+#if 0
     IDE_ASSERT( idp::read((SChar*)"TRANS_WAIT_TIME_FOR_TTS",
                           &mTransWaitTime4TTS  )
+                == IDE_SUCCESS );
+#endif
+    IDE_ASSERT( idp::read((SChar*)"TRANS_WAIT_TIME",
+                          &mTransWaitTime)
                 == IDE_SUCCESS );
 
     IDE_ASSERT( idp::read((SChar*)"DEFAULT_SEGMENT_STORAGE_INITEXTENTS",
@@ -950,9 +981,9 @@ void smuProperty::loadForSDP()
                 == IDE_SUCCESS );
 
     /* PROJ-2037 Treelist Segment Management */
-    /* RtBMP, ItBMP, ExtDir ì˜ Slot CountëŠ” í˜ì´ì§€ í¬ê¸°ì— ë”°ë¼ ìµœëŒ€ê°’ì´
-     * ì •í•´ë”˜ë‹¤. í”„ë¡œí¼í‹°ì— ì´ëŸ° ìµœëŒ€ê°’ë³´ë‹¤ ë” í° ê°’ì´ ì„¤ì •ëœ ê²½ìš° ìµœëŒ€ê°’ìœ¼ë¡œ
-     * ì¡°ì •í•´ì¤€ë‹¤. */
+    /* RtBMP, ItBMP, ExtDir ÀÇ Slot Count´Â ÆäÀÌÁö Å©±â¿¡ µû¶ó ÃÖ´ë°ªÀÌ
+     * Á¤ÇØµò´Ù. ÇÁ·ÎÆÛÆ¼¿¡ ÀÌ·± ÃÖ´ë°ªº¸´Ù ´õ Å« °ªÀÌ ¼³Á¤µÈ °æ¿ì ÃÖ´ë°ªÀ¸·Î
+     * Á¶Á¤ÇØÁØ´Ù. */
 #ifdef DEBUG
     sSlotCnt = mTmsMaxSlotCntPerRtBMP;
     IDE_DASSERT( callbackTmsMaxSlotCntPerRtBMP( NULL,
@@ -1013,14 +1044,14 @@ void smuProperty::loadForSDN()
                          &mUnbalancedSplitRate)
                == IDE_SUCCESS);
 
-    // BUG-29506 TBTê°€ TBKë¡œ ì „í™˜ì‹œ ë³€ê²½ëœ offsetì„ CTSì— ë°˜ì˜í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
-    // ì¬í˜„í•˜ê¸° ìœ„í•´ CTS í• ë‹¹ ì—¬ë¶€ë¥¼ ì„ì˜ë¡œ ì œì–´í•˜ê¸° ìœ„í•œ PROPERTYë¥¼ ì¶”ê°€
+    // BUG-29506 TBT°¡ TBK·Î ÀüÈ¯½Ã º¯°æµÈ offsetÀ» CTS¿¡ ¹İ¿µÇÏÁö ¾Ê½À´Ï´Ù.
+    // ÀçÇöÇÏ±â À§ÇØ CTS ÇÒ´ç ¿©ºÎ¸¦ ÀÓÀÇ·Î Á¦¾îÇÏ±â À§ÇÑ PROPERTY¸¦ Ãß°¡
     IDE_ASSERT(idp::read("__DISABLE_TRANSACTION_BOUND_IN_CTS",
                          &mDisableTransactionBoundInCTS)
                == IDE_SUCCESS);
 
-    // BUG-29839 ì¬ì‚¬ìš©ëœ undo pageì—ì„œ ì´ì „ CTSë¥¼ ë³´ë ¤ê³  í•  ìˆ˜ ìˆìŒ.
-    // ì¬í˜„í•˜ê¸° ìœ„í•´ transactionì— íŠ¹ì • segment entryë¥¼ bindingí•˜ëŠ” ê¸°ëŠ¥ ì¶”ê°€
+    // BUG-29839 Àç»ç¿ëµÈ undo page¿¡¼­ ÀÌÀü CTS¸¦ º¸·Á°í ÇÒ ¼ö ÀÖÀ½.
+    // ÀçÇöÇÏ±â À§ÇØ transaction¿¡ Æ¯Á¤ segment entry¸¦ bindingÇÏ´Â ±â´É Ãß°¡
     IDE_ASSERT(idp::read("__MANUAL_BINDING_TRANSACTION_SEGMENT_BY_ENTRY_ID",
                          &mManualBindingTXSegByEntryID)
                == IDE_SUCCESS);
@@ -1422,6 +1453,11 @@ void smuProperty::loadForSMR()
 
     mFastUnlockLogAllocMutex = ( sTempValue == 1 ) ? ID_TRUE : ID_FALSE;
 
+    /* BUG-45744 */
+    IDE_ASSERT( idp::read( "__LOG_COMPRESSION_ACCELERATION",
+                           &mLogCompAcceleration )
+                == IDE_SUCCESS );
+
     /*******************************************************************
      * PROJ-2201 Innovation in sorting and hashing(temp)
      *******************************************************************/
@@ -1431,28 +1467,35 @@ void smuProperty::loadForSMR()
                                   TempSortPartitionSize );
     SMU_PROPERTY_WRITABLE_REGIST( "TEMP_SORT_GROUP_RATIO", 
                                   TempSortGroupRatio );
+    SMU_PROPERTY_WRITABLE_REGIST( "INIT_TOTAL_WA_SIZE",
+                                  InitTotalWASize );
     SMU_PROPERTY_WRITABLE_REGIST( "TOTAL_WA_SIZE",
-                                  TotalWASize );
-    SMU_PROPERTY_WRITABLE_REGIST( "TEMP_MAX_PAGE_COUNT",
-                                  TempMaxPageCount );
+                                  MaxTotalWASize );
+
+    SMU_PROPERTY_WRITABLE_REGIST( "__TEMP_CHECK_UNIQUE_FOR_UPDATE",
+                                  TmpCheckUnique4Update );
+    SMU_PROPERTY_WRITABLE_REGIST( "__TEMP_MIN_INIT_WAEXTENT_COUNT",
+                                  TmpMinInitWAExtCnt );
+    SMU_PROPERTY_WRITABLE_REGIST( "__TEMP_OVER_INIT_WAEXTENT_COUNT",
+                                  TmpOverInitWAExtCnt );
+    SMU_PROPERTY_WRITABLE_REGIST( "__TEMP_INIT_WASEGMENT_COUNT",
+                                  TmpInitWASegCnt );
+
+    SMU_PROPERTY_WRITABLE_REGIST( "__TEMP_ALLOC_WAEXTENT_COUNT",
+                                  TmpAllocWAExtCnt );
+    SMU_PROPERTY_WRITABLE_REGIST( "__TEMP_HASH_FETCH_SUBHASH_MAX_RATIO",
+                                  TmpHashFetchSubHashMaxRatio );
+
     SMU_PROPERTY_WRITABLE_REGIST( "TEMP_ALLOC_TRY_COUNT",
                                   TempAllocTryCount );
     SMU_PROPERTY_READONLY_REGIST( "TEMP_ROW_SPLIT_THRESHOLD",
                                   TempRowSplitThreshold );
     SMU_PROPERTY_WRITABLE_REGIST( "TEMP_HASH_GROUP_RATIO", 
                                   TempHashGroupRatio );
-    SMU_PROPERTY_WRITABLE_REGIST( "TEMP_CLUSTER_HASH_GROUP_RATIO", 
-                                  TempClusterHashGroupRatio );
-    SMU_PROPERTY_WRITABLE_REGIST( "TEMP_USE_CLUSTER_HASH", 
-                                  TempUseClusterHash );
+    SMU_PROPERTY_WRITABLE_REGIST( "__TEMP_SUBHASH_GROUP_RATIO", 
+                                  TempSubHashGroupRatio );
     SMU_PROPERTY_WRITABLE_REGIST( "TEMP_SLEEP_INTERVAL", 
                                   TempSleepInterval );
-    SMU_PROPERTY_WRITABLE_REGIST( "TEMP_FLUSHER_COUNT",
-                                  TempFlusherCount );
-    SMU_PROPERTY_WRITABLE_REGIST( "TEMP_FLUSH_QUEUE_SIZE",
-                                  TempFlushQueueSize );
-    SMU_PROPERTY_WRITABLE_REGIST( "TEMP_FLUSH_PAGE_COUNT",
-                                  TempFlushPageCount );
     SMU_PROPERTY_READONLY_REGIST( "TEMP_MAX_KEY_SIZE",
                                   TempMaxKeySize );
     SMU_PROPERTY_READONLY_REGIST( "TEMP_STATS_WATCH_ARRAY_SIZE",
@@ -1463,6 +1506,8 @@ void smuProperty::loadForSMR()
                                       TempDumpDirectory );
     SMU_PROPERTY_WRITABLE_REGIST( "__TEMPDUMP_ENABLE",
                                   TempDumpEnable );
+    SMU_PROPERTY_WRITABLE_REGIST( "__WCB_CLEAN_MEMSET",
+                                  WCBCleanMemset );
     SMU_PROPERTY_WRITABLE_REGIST( "__SM_TEMP_OPER_ABORT",
                                   SmTempOperAbort );
     SMU_PROPERTY_READONLY_REGIST( "TEMP_HASH_BUCKET_DENSITY",
@@ -1479,14 +1524,18 @@ void smuProperty::loadForSMR()
     IDE_ASSERT( idp::read("__SM_SKIP_CHECKSCN_IN_STARTUP",
                           &mSkipCheckSCNInStartup )
                 == IDE_SUCCESS );
+
+
+    
 }
 
-// To Fix PR-13786 ë³µì¡ë„ ê°œì„ 
+// To Fix PR-13786 º¹Àâµµ °³¼±
 void smuProperty::loadForSMR_LogFile()
 {
     UInt i;
+    UInt sValue;
 
-    /* BUGBUG: ë™ì¼í•œ Log Dirì´ ì¡´ì¬í•˜ë©´ ì•Šëœë‹¤. */
+    /* BUGBUG: µ¿ÀÏÇÑ Log DirÀÌ Á¸ÀçÇÏ¸é ¾ÊµÈ´Ù. */
     IDE_ASSERT( idp::readPtr( "LOG_DIR",
                               (void**)&mLogDirPath ) 
                 == IDE_SUCCESS );
@@ -1517,10 +1566,10 @@ void smuProperty::loadForSMR_LogFile()
                 == IDE_SUCCESS );
 
 
-    /* For Parallel Logging:ë¡œê·¸ Dirì´ ì—¬ëŸ¬ê°œê°€ ë¨ì— ë”°ë¼
-       ê°ê°ì˜ ë¡œê·¸ Dirë§ˆë‹¤
-       Archive Dirì´ ë”°ë¡œ ì¡´ì¬í•´ì•¼ í•œë‹¤. */
-    /* BUGBUG: ë™ì¼í•œ Archive Dirì´ ì¡´ì¬í•˜ë©´ ì•Šëœë‹¤. */
+    /* For Parallel Logging:·Î±× DirÀÌ ¿©·¯°³°¡ µÊ¿¡ µû¶ó
+       °¢°¢ÀÇ ·Î±× Dir¸¶´Ù
+       Archive DirÀÌ µû·Î Á¸ÀçÇØ¾ß ÇÑ´Ù. */
+    /* BUGBUG: µ¿ÀÏÇÑ Archive DirÀÌ Á¸ÀçÇÏ¸é ¾ÊµÈ´Ù. */
     idp::readPtr( "ARCHIVE_DIR",
                   (void**)&mArchiveDirPath ); 
 
@@ -1564,7 +1613,14 @@ void smuProperty::loadForSMR_LogFile()
     IDE_ASSERT( idp::read("PREPARE_LOG_FILE_COUNT",
                           &mLogFilePrepareCount)
                 == IDE_SUCCESS );
-
+    
+    /* BUG-48409 temp¸¦ ÀÌ¿ëÇÑ Logfile»ı¼º ¹æ¹ı Ãß°¡ */
+    IDE_ASSERT( idp::read("__USE_TEMP_FOR_PREPARE_LOGFILE",
+                          &sValue )
+                == IDE_SUCCESS );
+    
+    mUseTempForPrepareLogFile = ( sValue == 0 )? ID_FALSE : ID_TRUE;
+    
     IDE_ASSERT( idp::read("LOGFILE_PRECREATE_INTERVAL",
                           &mLogFilePreCreateInterval)
                 == IDE_SUCCESS );
@@ -1583,7 +1639,7 @@ void smuProperty::loadForSMP()
                == IDE_SUCCESS);
     
     /*
-     * BUG-25327 : [MDB] Free Page Size Class ê°œìˆ˜ë¥¼ Propertyí™” í•´ì•¼ í•©ë‹ˆë‹¤.
+     * BUG-25327 : [MDB] Free Page Size Class °³¼ö¸¦ PropertyÈ­ ÇØ¾ß ÇÕ´Ï´Ù.
      */
     IDE_ASSERT(idp::read("MEM_SIZE_CLASS_COUNT",
                          &mMemSizeClassCount)
@@ -1600,8 +1656,8 @@ void smuProperty::loadForSMP()
 
     if ( mAllocPageCount == 0 )
     {
-        // TABLE_ALLOC_PAGE_COUNT ê°’ì´ 0ì´ë©´
-        // Listì— ìœ ì§€í•˜ê³  ì‹¶ì€ Page ê°¯ìˆ˜ë§Œí¼ DBì—ì„œ ê°€ì ¸ì˜¨ë‹¤.
+        // TABLE_ALLOC_PAGE_COUNT °ªÀÌ 0ÀÌ¸é
+        // List¿¡ À¯ÁöÇÏ°í ½ÍÀº Page °¹¼ö¸¸Å­ DB¿¡¼­ °¡Á®¿Â´Ù.
         mAllocPageCount = mMinPagesOnTableFreeList;
     }
 }
@@ -1654,6 +1710,10 @@ void smuProperty::loadForSMA()
                          &mDeleteAgerCount)
                == IDE_SUCCESS);
 
+    IDE_ASSERT(idp::read("__AGER_LIST_COUNT",
+                         &mAgerListCount)
+               == IDE_SUCCESS);
+
     IDE_ASSERT(idp::read("MAX_LOGICAL_AGER_COUNT",
                          &mMaxLogicalAgerCount)
                == IDE_SUCCESS);
@@ -1692,6 +1752,10 @@ void smuProperty::loadForSMA()
                           &mParallelLogicalAger)
                 == IDE_SUCCESS);
 
+    IDE_ASSERT( idp::read("__PARALLEL_DELETE_THREAD",
+                          &mParallelDeleteThread)
+                == IDE_SUCCESS);
+
     IDE_ASSERT( idp::read( "__CATALOG_SLOT_REUSABLE",
                            &mCatalogSlotReusable )
                 == IDE_SUCCESS );
@@ -1715,6 +1779,23 @@ void smuProperty::loadForSML()
                           &mLockNodeCacheCount)
                 == IDE_SUCCESS);
 
+    IDE_ASSERT( idp::read("__SKIP_LOCKED_TABLE_AT_FIXED_TABLE",
+                          &mSkipLockedTableAtFixedTable)
+                == IDE_SUCCESS);
+
+    /* PROJ-2734 */
+    IDE_ASSERT( idp::read("DISTRIBUTION_DEADLOCK_ENABLE",
+                          &mDistributionDeadlockEnable)
+                == IDE_SUCCESS);
+    IDE_ASSERT( idp::read("DISTRIBUTION_DEADLOCK_RISK_LOW_WAIT_TIME",
+                          &mDistributionDeadlockRiskLowWaitTime)
+                == IDE_SUCCESS);
+    IDE_ASSERT( idp::read("DISTRIBUTION_DEADLOCK_RISK_MID_WAIT_TIME",
+                          &mDistributionDeadlockRiskMidWaitTime)
+                == IDE_SUCCESS);
+    IDE_ASSERT( idp::read("DISTRIBUTION_DEADLOCK_RISK_HIGH_WAIT_TIME",
+                          &mDistributionDeadlockRiskHighWaitTime)
+                == IDE_SUCCESS);
 }
 
 
@@ -1752,12 +1833,6 @@ void smuProperty::loadForSMN()
     // PROJ-1629 Memory Index Build
     IDE_ASSERT(idp::read("MEMORY_INDEX_BUILD_RUN_SIZE",
                          &mMemoryIndexBuildRunSize)
-               == IDE_SUCCESS);
-
-    // PROJ-1629 Memory Index Build
-    // BUG-19249 : ë‚´ë¶€ propertyë¡œ ë³€ê²½
-    IDE_ASSERT(idp::read("__MEMORY_INDEX_BUILD_RUN_COUNT_AT_UNION_MERGE",
-                         &mMemoryIndexBuildRunCountAtUnionMerge)
                == IDE_SUCCESS);
 
     // PROJ-1629 Memory Index Build
@@ -1805,13 +1880,18 @@ void smuProperty::loadForSMN()
 
     mIsCPUAffinity = ( sTempValue == 1 ) ? ID_TRUE : ID_FALSE;
 
-    /* BUG-44794 ì¸ë±ìŠ¤ ë¹Œë“œì‹œ ì¸ë±ìŠ¤ í†µê³„ ì •ë³´ë¥¼ ìˆ˜ì§‘í•˜ì§€ ì•ŠëŠ” íˆë“  í”„ë¡œí¼í‹° ì¶”ê°€ */
+    /* BUG-44794 ÀÎµ¦½º ºôµå½Ã ÀÎµ¦½º Åë°è Á¤º¸¸¦ ¼öÁıÇÏÁö ¾Ê´Â È÷µç ÇÁ·ÎÆÛÆ¼ Ãß°¡ */
     IDE_ASSERT( idp::read( "__GATHER_INDEX_STAT_ON_DDL",
                            &sTempValue )
                 == IDE_SUCCESS );
 
     mGatherIndexStatOnDDL = ( sTempValue == 1 ) ? ID_TRUE : ID_FALSE;
 
+    // BUG-47540 __SKIP_IDX_STAT_BOUND_NODE
+    IDE_ASSERT(idp::read("__SKIP_IDX_STAT_NODE_BOUND",
+                         &sTempValue)
+               == IDE_SUCCESS);
+    mSkipIdxStatNodeBound = (sTempValue == 1) ? ID_TRUE : ID_FALSE;
 }
 void smuProperty::loadForSMX()
 {
@@ -1852,6 +1932,12 @@ void smuProperty::loadForSMX()
     IDE_ASSERT( idp::read( "TRANSACTION_SEGMENT_COUNT", &mTXSEGEntryCnt )
                 == IDE_SUCCESS );
 
+    IDE_ASSERT( idp::read( "__GROUP_COMMIT_COUNT", &mGroupCommitCnt )
+                == IDE_SUCCESS );
+
+    IDE_ASSERT( idp::read( "__GROUP_COMMIT_LIST_COUNT", &mGroupCommitListCnt )
+                == IDE_SUCCESS );
+
     IDE_ASSERT( idp::read( "TRANSACTION_SEGMENT_ALLOC_WAIT_TIME_", 
                            &mTXSegAllocWaitTime ) == IDE_SUCCESS );
 
@@ -1871,6 +1957,20 @@ void smuProperty::loadForSMX()
     /* BUG-40790 */
     IDE_ASSERT( idp::read("__LOB_CURSOR_HASH_BUCKET_COUNT",
                           &mLobCursorHashBucketCount )
+                == IDE_SUCCESS );
+
+    /* BUG-47365 */
+    IDE_ASSERT( idp::read("LOG_COMP_RESOURCE_REUSE",
+                          &mLogCompResourceReuse )
+                == IDE_SUCCESS );
+
+    IDE_ASSERT( idp::read("COMP_RES_TUNE_SIZE",
+                          &mCompResTuneSize )
+                == IDE_SUCCESS );
+
+    /* PROJ-2733 */
+    IDE_ASSERT( idp::read("VERSIONING_MIN_TIME",
+                          &mVersioningMinTime )
                 == IDE_SUCCESS );
 }
 
@@ -1913,6 +2013,12 @@ void smuProperty::loadForSMU()
     IDE_ASSERT( idp::read("__FORCE_INDEX_PERSISTENCE_MODE",
                           &mForceIndexPersistenceMode )
                 == IDE_SUCCESS );
+
+    /* PROJ-2733 */
+    IDE_ASSERT( idp::read("SHARD_ENABLE",
+                         (void*)&mShardEnable ) 
+                == IDE_SUCCESS );
+
 }
 
 void smuProperty::loadForSMI()
@@ -2057,15 +2163,15 @@ void smuProperty::loadForSMI()
 }
 
 /*
- * Proj-2059 DB Upgrade ê¸°ëŠ¥
- * SCPModuleì—ì„œ ì‚¬ìš©í•˜ëŠ” Propertiesë¥¼ ì½ì–´ì˜¨ë‹¤.  */
+ * Proj-2059 DB Upgrade ±â´É
+ * SCPModule¿¡¼­ »ç¿ëÇÏ´Â Properties¸¦ ÀĞ¾î¿Â´Ù.  */
 void smuProperty::loadForSCP()
 {
     IDE_ASSERT(idp::read("__DATAPORT_FILE_BLOCK_SIZE",
                          (void*)&mDataPortFileBlockSize)
                == IDE_SUCCESS);
 
-    // DirectIOë¥¼ ìœ„í•´ Alignì„ ë§ì¶°ì¤˜ì•¼ í•©ë‹ˆë‹¤.
+    // DirectIO¸¦ À§ÇØ AlignÀ» ¸ÂÃçÁà¾ß ÇÕ´Ï´Ù.
     mDataPortFileBlockSize = idlOS::align( mDataPortFileBlockSize,
                                            ID_MAX_DIO_PAGE_SIZE );
 
@@ -2152,12 +2258,6 @@ void smuProperty::loadForSmartSSD()
 
 void smuProperty::loadForLockMgr(void)
 {
-    SMU_PROPERTY_READONLY_REGIST("LOCK_MGR_TYPE",       LockMgrType);
-    SMU_PROPERTY_WRITABLE_REGIST("LOCK_MGR_SPIN_COUNT", LockMgrSpinCount);
-    SMU_PROPERTY_WRITABLE_REGIST("LOCK_MGR_MIN_SLEEP",  LockMgrMinSleep);
-    SMU_PROPERTY_WRITABLE_REGIST("LOCK_MGR_MAX_SLEEP",  LockMgrMaxSleep);
-    SMU_PROPERTY_WRITABLE_REGIST("LOCK_MGR_DETECTDEADLOCK_INTERVAL",
-                                 LockMgrDetectDeadlockInterval);
     SMU_PROPERTY_READONLY_REGIST("LOCK_MGR_CACHE_NODE", LockMgrCacheNode);
 }
 
@@ -2182,9 +2282,12 @@ void smuProperty::registCallbacks()
     idp::setupAfterUpdateCallback("DDL_LOCK_TIMEOUT",
                                   callbackDDLLockTimeOut);
 
+    idp::setupAfterUpdateCallback("__USE_TEMP_FOR_PREPARE_LOGFILE",
+                                  callbackUseTempForPrepareLogFile);
+    
     idp::setupAfterUpdateCallback("LOGFILE_PRECREATE_INTERVAL",
                                   callbackLogFilePreCreateInterval);
-
+    
     idp::setupAfterUpdateCallback("REPLICATION_LOCK_TIMEOUT",
                                   callbackReplLockTimeOut);
 
@@ -2221,6 +2324,9 @@ void smuProperty::registCallbacks()
     idp::setupBeforeUpdateCallback("TABLESPACE_LOCK_ENABLE",
                                    callbackTablespaceLockEnable);
 
+    idp::setupBeforeUpdateCallback("__SKIP_LOCKED_TABLE_AT_FIXED_TABLE",
+                                   callbackSkipLockedTableAtFixedTable);
+
     idp::setupBeforeUpdateCallback("CHECKPOINT_BULK_WRITE_PAGE_COUNT",
                                    callbackChkptBulkWritePageCount);
 
@@ -2232,6 +2338,10 @@ void smuProperty::registCallbacks()
 
     idp::setupBeforeUpdateCallback("TRANS_ALLOC_WAIT_TIME",
                                    callbackTransAllocWaitTime);
+
+    // BUG-47655
+    idp::setupBeforeUpdateCallback("__TRANSACTION_TABLE_FULL_TRCLOG_CYCLE",
+                                   callbackTransTableFullTrcLogCycle);
 
     idp::setupAfterUpdateCallback("DATAFILE_WRITE_UNIT_SIZE",
                                   callbackDataFileWriteUnitSize);
@@ -2248,13 +2358,13 @@ void smuProperty::registCallbacks()
     idp::setupAfterUpdateCallback("SORT_AREA_SIZE",
                                   callbackSortAreaSize);
 
-    // BUG-29506 TBTê°€ TBKë¡œ ì „í™˜ì‹œ ë³€ê²½ëœ offsetì„ CTSì— ë°˜ì˜í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
-    // ì¬í˜„í•˜ê¸° ìœ„í•´ CTS í• ë‹¹ ì—¬ë¶€ë¥¼ ì„ì˜ë¡œ ì œì–´í•˜ê¸° ìœ„í•œ PROPERTYë¥¼ ì¶”ê°€
+    // BUG-29506 TBT°¡ TBK·Î ÀüÈ¯½Ã º¯°æµÈ offsetÀ» CTS¿¡ ¹İ¿µÇÏÁö ¾Ê½À´Ï´Ù.
+    // ÀçÇöÇÏ±â À§ÇØ CTS ÇÒ´ç ¿©ºÎ¸¦ ÀÓÀÇ·Î Á¦¾îÇÏ±â À§ÇÑ PROPERTY¸¦ Ãß°¡
     idp::setupAfterUpdateCallback("__DISABLE_TRANSACTION_BOUND_IN_CTS",
                                   callbackDisableTransactionBoundInCTS);
 
-    // BUG-29839 ì¬ì‚¬ìš©ëœ undo pageì—ì„œ ì´ì „ CTSë¥¼ ë³´ë ¤ê³  í•  ìˆ˜ ìˆìŒ.
-    // ì¬í˜„í•˜ê¸° ìœ„í•´ transactionì— íŠ¹ì • segment entryë¥¼ bindingí•˜ëŠ” ê¸°ëŠ¥ ì¶”ê°€
+    // BUG-29839 Àç»ç¿ëµÈ undo page¿¡¼­ ÀÌÀü CTS¸¦ º¸·Á°í ÇÒ ¼ö ÀÖÀ½.
+    // ÀçÇöÇÏ±â À§ÇØ transaction¿¡ Æ¯Á¤ segment entry¸¦ bindingÇÏ´Â ±â´É Ãß°¡
     idp::setupAfterUpdateCallback("__MANUAL_BINDING_TRANSACTION_SEGMENT_BY_ENTRY_ID",
                                   callbackManualBindingTXSegByEntryID);
 
@@ -2275,8 +2385,8 @@ void smuProperty::registCallbacks()
     idp::setupAfterUpdateCallback("__DISK_INDEX_RTREE_SPLIT_MODE",
                                   callbackDiskIndexRTreeSplitMode);
 
-    /* BUG-18725: Writable Propertyì— Update Callback Functionì´ ì„¤ì •ë˜ì§€
-     * ì•Šì€ ê²ƒì´ ìˆìŠµë‹ˆë‹¤. */
+    /* BUG-18725: Writable Property¿¡ Update Callback FunctionÀÌ ¼³Á¤µÇÁö
+     * ¾ÊÀº °ÍÀÌ ÀÖ½À´Ï´Ù. */
 #if 0 //not used
     idp::setupAfterUpdateCallback("TSS_CNT_PCT_TO_BUFFER_POOL",
                                   callbackTssCntPctToBufferPool);
@@ -2308,7 +2418,7 @@ void smuProperty::registCallbacks()
     idp::setupAfterUpdateCallback("SYNC_INTERVAL_MSEC_",
                                   callbackSyncIntervalMSec );
 
-    // BUG-45598: CHECKSUM_METHOD ìˆ˜ì •
+    // BUG-45598: CHECKSUM_METHOD ¼öÁ¤ 
     idp::setupAfterUpdateCallback("CHECKSUM_METHOD",
                                   callbackSMChecksumMethod );
 
@@ -2341,12 +2451,6 @@ void smuProperty::registCallbacks()
     idp::setupAfterUpdateCallback("__CRASH_TOLERANCE",                
                                   callbackCrashTolerance );
     /*PROJ-2162 RestartRiskReduction End */
-
-
-    // PROJ-1629 : Memory Index Build
-    // BUG-19249 : ë‚´ë¶€ propertyë¡œ ë³€ê²½
-    idp::setupAfterUpdateCallback("__MEMORY_INDEX_BUILD_RUN_COUNT_AT_UNION_MERGE",
-                                  callbackMemoryIndexBuildRunCountAtUnionMerge);
 
     // PROJ-1629 : Memory Index Build
     idp::setupAfterUpdateCallback("MEMORY_INDEX_BUILD_VALUE_LENGTH_THRESHOLD",
@@ -2410,9 +2514,12 @@ void smuProperty::registCallbacks()
                                   callbackTouchTimeInterval);
     idp::setupAfterUpdateCallback("CHECKPOINT_FLUSH_MAX_WAIT_SEC",
                                   callbackCheckpointFlushMaxWaitSec);
+#if 0
     idp::setupAfterUpdateCallback( "TRANS_WAIT_TIME_FOR_TTS",
                                    callbackTransWaitTime4TTS );
-
+#endif
+    idp::setupAfterUpdateCallback( "TRANS_WAIT_TIME",
+                                   callbackTransWaitTime );
     idp::setupAfterUpdateCallback("BLOCK_ALL_TX_TIME_OUT",
                                   callbackBlockAllTxTimeOut);
     // PROJ-1568 Buffer Manager Renewal end
@@ -2435,7 +2542,7 @@ void smuProperty::registCallbacks()
     idp::setupAfterUpdateCallback( "__DISK_TMS_MAX_SLOT_CNT_PER_EXTDIR",
                                    callbackTmsMaxSlotCntPerExtDir);
 
-    /* PROJ-2037 TMS ì•ˆì •í™” */
+    /* PROJ-2037 TMS ¾ÈÁ¤È­ */
     idp::setupAfterUpdateCallback( "DEFAULT_EXTENT_CNT_FOR_EXTENT_GROUP",
                                    callbackDefaulExtCntForExtentGroup );
 
@@ -2462,7 +2569,7 @@ void smuProperty::registCallbacks()
     idp::setupAfterUpdateCallback( "TABLE_COMPACT_AT_SHUTDOWN",
                                    callbackTableCompactAtShutdown);
 
-    // BUG-27126 INDEX_BUILD_THREAD_COUNTë¥¼ alter system ìœ¼ë¡œ ë³€ê²½ê°€ëŠ¥ í•´ì•¼...
+    // BUG-27126 INDEX_BUILD_THREAD_COUNT¸¦ alter system À¸·Î º¯°æ°¡´É ÇØ¾ß...
     idp::setupAfterUpdateCallback( "INDEX_BUILD_THREAD_COUNT",
                                    callbackIndexBuildThreadCount);
 
@@ -2470,7 +2577,7 @@ void smuProperty::registCallbacks()
     idp::setupAfterUpdateCallback( "MEMORY_INDEX_UNBALANCED_SPLIT_RATE",
                                    callbackMemoryIndexUnbalancedSplitRate );
 
-    /* Proj-2059 DB Upgrade ê¸°ëŠ¥ */ 
+    /* Proj-2059 DB Upgrade ±â´É */ 
     idp::setupAfterUpdateCallback( "__DATAPORT_FILE_BLOCK_SIZE",
                                    callbackDataPortFileBlockSize);
 
@@ -2560,6 +2667,22 @@ void smuProperty::registCallbacks()
 
     idp::setupAfterUpdateCallback( "__GATHER_INDEX_STAT_ON_DDL",
                                    callbackGatherIndexStatOnDDL);
+    /* BUG-45744 */
+    idp::setupAfterUpdateCallback( "__LOG_COMPRESSION_ACCELERATION",
+                                   callbackLogCompAcceleration );
+
+    /* PROJ-2734 */
+    idp::setupAfterUpdateCallback( "DISTRIBUTION_DEADLOCK_ENABLE",
+                                   callbackDistributionDeadlockEnable );
+    idp::setupAfterUpdateCallback( "DISTRIBUTION_DEADLOCK_RISK_LOW_WAIT_TIME",
+                                   callbackDistributionDeadlockRiskLowWaitTime );
+    idp::setupAfterUpdateCallback( "DISTRIBUTION_DEADLOCK_RISK_MID_WAIT_TIME",
+                                   callbackDistributionDeadlockRiskMidWaitTime );
+    idp::setupAfterUpdateCallback( "DISTRIBUTION_DEADLOCK_RISK_HIGH_WAIT_TIME",
+                                   callbackDistributionDeadlockRiskHighWaitTime );
+    /* PROJ-2733 */
+    idp::setupAfterUpdateCallback( "VERSIONING_MIN_TIME",
+                                   callbackVersioningMinTime );
 }
 
 IDE_RC smuProperty::checkDuplecateMultiplexDirPath(
@@ -2574,7 +2697,7 @@ IDE_RC smuProperty::checkDuplecateMultiplexDirPath(
     IDE_DASSERT( aArchMultiplexDirPath != NULL );
     IDE_DASSERT( aLogMultiplexDirPath  != NULL );
 
-    /* ë‹¤ì¤‘í™” ARCH PATHì™€ ì¤‘ë³µë˜ëŠ” LOG, ARCH LOG DIRì´ ìˆëŠ”ì§€ ê²€ì‚¬ */
+    /* ´ÙÁßÈ­ ARCH PATH¿Í Áßº¹µÇ´Â LOG, ARCH LOG DIRÀÌ ÀÖ´ÂÁö °Ë»ç */
     for( i = 0; i < aArchMultiplexDirCnt; i++)
     {
         IDE_TEST_RAISE( idlOS::strncmp( aArchMultiplexDirPath[i],
@@ -2587,7 +2710,7 @@ IDE_RC smuProperty::checkDuplecateMultiplexDirPath(
                                         IDP_MAX_VALUE_LEN )
                         == 0, error_duplicate_arch_multiplex_dir_path )
 
-        /*ArchLog ë‹¤ì¤‘í™” ë””ë ‰í† ì¤‘ ì¤‘ë³µë˜ëŠ” ë””ë ‰í† ë¦¬ê°€ ìˆëŠ”ì§€ ê²€ì‚¬ */
+        /*ArchLog ´ÙÁßÈ­ µğ·ºÅäÁß Áßº¹µÇ´Â µğ·ºÅä¸®°¡ ÀÖ´ÂÁö °Ë»ç */
         for( j = 0; j < aArchMultiplexDirCnt; j++ )
         {
             if ( i != j )
@@ -2600,7 +2723,7 @@ IDE_RC smuProperty::checkDuplecateMultiplexDirPath(
         }
     }
 
-    /* ë‹¤ì¤‘í™” LOG PATHì™€ ì¤‘ë³µë˜ëŠ” LOG, ARCH LOG DIRì´ ìˆëŠ”ì§€ ê²€ì‚¬ */
+    /* ´ÙÁßÈ­ LOG PATH¿Í Áßº¹µÇ´Â LOG, ARCH LOG DIRÀÌ ÀÖ´ÂÁö °Ë»ç */
     for( i = 0; i < aLogMultiplexDirCnt; i++ )
     {
         IDE_TEST_RAISE( idlOS::strncmp( aLogMultiplexDirPath[i],
@@ -2613,7 +2736,7 @@ IDE_RC smuProperty::checkDuplecateMultiplexDirPath(
                                         IDP_MAX_VALUE_LEN )
                         == 0, error_duplicate_log_multiplex_dir_path )
 
-        /* Log ë‹¤ì¤‘í™” ë””ë ‰í† ì¤‘ ì¤‘ë³µë˜ëŠ” ë””ë ‰í† ë¦¬ê°€ ìˆëŠ”ì§€ ê²€ì‚¬ */
+        /* Log ´ÙÁßÈ­ µğ·ºÅäÁß Áßº¹µÇ´Â µğ·ºÅä¸®°¡ ÀÖ´ÂÁö °Ë»ç */
         for( j = 0; j < aLogMultiplexDirCnt; j++ )
         {
             if ( i != j )
@@ -2626,7 +2749,7 @@ IDE_RC smuProperty::checkDuplecateMultiplexDirPath(
         }
     }
 
-    /* Logì™€ ArchLog ë‹¤ì¤‘í™” ë””ë ‰í† ì¤‘ ì¤‘ë³µë˜ëŠ” ë””ë ‰í† ë¦¬ê°€ ìˆëŠ”ì§€ ê²€ì‚¬ */
+    /* Log¿Í ArchLog ´ÙÁßÈ­ µğ·ºÅäÁß Áßº¹µÇ´Â µğ·ºÅä¸®°¡ ÀÖ´ÂÁö °Ë»ç */
     for( i = 0; i < aLogMultiplexDirCnt; i++ )
     {
         for( j = 0; j < aArchMultiplexDirCnt; j++ )
@@ -2665,7 +2788,7 @@ IDE_RC smuProperty::checkConstraints()
        does not support keeping a memory mapped file in sync with the disk
        if you use read/write to modify the file. */
 
-    /* QNXì™€ WinCEëŠ” mmapì„ ì§€ì›í•˜ì§€ ì•ŠëŠ”ë‹¤. ë•Œë¬¸ì— ë‹¤ìŒê³¼ ê°™ì´ ì²˜ë¦¬í•œë‹¤.*/
+    /* QNX¿Í WinCE´Â mmapÀ» Áö¿øÇÏÁö ¾Ê´Â´Ù. ¶§¹®¿¡ ´ÙÀ½°ú °°ÀÌ Ã³¸®ÇÑ´Ù.*/
     IDE_TEST_RAISE( mLogBufferType == SMU_LOG_BUFFER_TYPE_MMAP , err_not_support_mmap );
 #endif
 
@@ -2687,7 +2810,7 @@ IDE_RC smuProperty::checkConstraints()
         mPerListDistPageCount = mExpandChunkPageCount / (mPageListGroupCount * 2);
     }
 
-    /* LogFile í¬ê¸°ëŠ” DIRECT_IO_PAGE_SIZEì˜ ë°°ìˆ˜ì´ì–´ì•¼ í•œë‹¤. */
+    /* LogFile Å©±â´Â DIRECT_IO_PAGE_SIZEÀÇ ¹è¼öÀÌ¾î¾ß ÇÑ´Ù. */
     IDE_TEST_RAISE( mLogFileSize % iduProperty::getDirectIOPageSize()
                     != 0, err_invalid_logfile_size );
 
@@ -2696,18 +2819,18 @@ IDE_RC smuProperty::checkConstraints()
                     err_too_large_logfile_size );
 
     /*
-      Direct IO Pageí¬ê¸°ì²´í¬.
+      Direct IO PageÅ©±âÃ¼Å©.
 
-      ì¶”í›„ file offsetê³¼ data sizeë¥¼ Pageë‹¨ìœ„ë¡œ Align í• ë•Œ
-      ë¹„ìš©ì´ ë¹„ì‹¼ ê³±ì…ˆ/ë‚˜ëˆ—ì…ˆ ëŒ€ì‹  ë¹„ìš©ì´ ì €ë ´í•œ
-      Bit Mask Andì—°ì‚°ì„ ì‚¬ìš©í•˜ê¸° ìœ„í•¨
+      ÃßÈÄ file offset°ú data size¸¦ Page´ÜÀ§·Î Align ÇÒ¶§
+      ºñ¿ëÀÌ ºñ½Ñ °ö¼À/³ª´°¼À ´ë½Å ºñ¿ëÀÌ Àú·ÅÇÑ
+      Bit Mask And¿¬»êÀ» »ç¿ëÇÏ±â À§ÇÔ
     */
 
     // PR-14475 Group Commit
-    // ë¡œê·¸íŒŒì¼ í¬ê¸°ê°€ Direct I/O Page ìµœëŒ€í¬ê¸°ì¸ 8Kë¡œ Alignë˜ì–´ìˆëŠ”ì§€
-    // ê²€ì‚¬í•œë‹¤. idp::read ì‹œì— idlOS::getpagesize()ë‚˜
-    // Direct I/OìµœëŒ€ Pageí¬ê¸° ì¤‘ í° ê°’ìœ¼ë¡œ Aligní•˜ë„ë¡ ë˜ì–´ìˆë‹¤.
-    // aligní•˜ëŠ” ì´ìœ ì— ëŒ€í•´ì„œëŠ” idpDescResource.cppì˜ LOG_FILE_SIZE ì°¸ê³ 
+    // ·Î±×ÆÄÀÏ Å©±â°¡ Direct I/O Page ÃÖ´ëÅ©±âÀÎ 8K·Î AlignµÇ¾îÀÖ´ÂÁö
+    // °Ë»çÇÑ´Ù. idp::read ½Ã¿¡ idlOS::getpagesize()³ª
+    // Direct I/OÃÖ´ë PageÅ©±â Áß Å« °ªÀ¸·Î AlignÇÏµµ·Ï µÇ¾îÀÖ´Ù.
+    // alignÇÏ´Â ÀÌÀ¯¿¡ ´ëÇØ¼­´Â idpDescResource.cppÀÇ LOG_FILE_SIZE Âü°í
     sLogFileAlignSize = (UInt) ((idlOS::getpagesize() > ID_MAX_DIO_PAGE_SIZE) ?
                                 idlOS::getpagesize() : ID_MAX_DIO_PAGE_SIZE );
 
@@ -2736,8 +2859,8 @@ IDE_RC smuProperty::checkConstraints()
     IDE_TEST_RAISE( mExportColumnChainingThreshold*2  >  mDataPortFileBlockSize,
                     ERR_COLUMN_CHAINING_THRESHOLD_LAGER_THAN_BLOCK_SIZE );
 
-    // BUG-29566 í…Œì´í„° íŒŒì¼ì˜ í¬ê¸°ë¥¼ 32G ë¥¼ ì´ˆê³¼í•˜ì—¬ ì§€ì •í•´ë„ ì—ëŸ¬ë¥¼ ì¶œë ¥í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
-    // 32Gë¿ë§Œ ì•„ë‹ˆë¼ OS Limit File Sizeë„ ê²€ì‚¬í•©ë‹ˆë‹¤.
+    // BUG-29566 Å×ÀÌÅÍ ÆÄÀÏÀÇ Å©±â¸¦ 32G ¸¦ ÃÊ°úÇÏ¿© ÁöÁ¤ÇØµµ ¿¡·¯¸¦ Ãâ·ÂÇÏÁö ¾Ê½À´Ï´Ù.
+    // 32G»Ó¸¸ ¾Æ´Ï¶ó OS Limit File Sizeµµ °Ë»çÇÕ´Ï´Ù.
 
     IDE_TEST( checkFileSizeProperty( "SYS_DATA_FILE_INIT_SIZE",
                                      "SYS_DATA_FILE_MAX_SIZE",
@@ -2770,23 +2893,10 @@ IDE_RC smuProperty::checkConstraints()
               != IDE_SUCCESS );
 
     /* BUG-31862 resize transaction table without db migration
-     * TRANSACTION_TABLE_SIZE ê°’ì€ 16 ~ 16384(2^14) ê¹Œì§€ì˜ 2^n ê°’ë§Œ ê°€ëŠ¥í•˜ë‹¤
+     * TRANSACTION_TABLE_SIZE °ªÀº 16 ~ 16384(2^14) ±îÁöÀÇ 2^n °ª¸¸ °¡´ÉÇÏ´Ù
      */
     IDE_TEST_RAISE( (mTransTblSize & (mTransTblSize -1)) != 0,
                     invalid_trans_tbl_size);
-
-
-    /*******************************************************************
-     * PROJ-2201 Innovation in sorting and hashing(temp)
-     *******************************************************************/
-    IDE_TEST_RAISE( ( mTempMaxPageCount / SDT_WAEXTENT_PAGECOUNT
-                      * ID_SIZEOF( sdpExtDesc ) ) 
-                    > ( mSortAreaSize / 2 ),
-                    error_invalid_sortareasize );
-    IDE_TEST_RAISE( ( mTempMaxPageCount / SDT_WAEXTENT_PAGECOUNT
-                      * ID_SIZEOF( sdpExtDesc ) )  
-                    > ( mHashAreaSize / 2 ),
-                    error_invalid_hashareasize );
 
     /*******************************************************************
      * PROJ-2102 Fast Secondary Buffer 
@@ -2817,14 +2927,6 @@ IDE_RC smuProperty::checkConstraints()
         IDE_SET(ideSetErrorCode( smERR_ABORT_Not_Support_MMap ));
     }
 #endif
-    IDE_EXCEPTION( error_invalid_hashareasize );
-    {
-        IDE_SET(ideSetErrorCode(smERR_ABORT_INVALID_HASHAREASIZE ) );
-    }
-    IDE_EXCEPTION( error_invalid_sortareasize );
-    {
-        IDE_SET(ideSetErrorCode(smERR_ABORT_INVALID_SORTAREASIZE ) );
-    }
     IDE_EXCEPTION( error_wrong_arch_multiplex_dir_count );
     {
         IDE_SET(ideSetErrorCode(smERR_ABORT_WrongArchMultiplexDirCount,
@@ -2841,7 +2943,7 @@ IDE_RC smuProperty::checkConstraints()
     {
         IDE_SET(ideSetErrorCode(
                     smERR_ABORT_DefaultDBFileSizeNotAlignedToChunkSize,
-                    // KB ë‹¨ìœ„ì˜ Expand Chunk Page í¬ê¸°
+                    // KB ´ÜÀ§ÀÇ Expand Chunk Page Å©±â
                     ((ULong)mExpandChunkPageCount * SM_PAGE_SIZE ) / 1024 ));
     }
     IDE_EXCEPTION(err_max_ager_count_lt_min_ager_count );
@@ -2902,19 +3004,20 @@ IDE_RC smuProperty::checkConstraints()
         IDE_SET(ideSetErrorCode( smERR_ABORT_NOT_SUPPORT_FALLOCATE ));
     }    
 #endif
+
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 }
 
 /*
-  File Sizeì´ OSì˜  Limitë³´ë‹¤ í°ì§€ ì²´í¬í•œë‹¤.
+  File SizeÀÌ OSÀÇ  Limitº¸´Ù Å«Áö Ã¼Å©ÇÑ´Ù.
 
-  [IN] aUserKeyword - ì‚¬ìš©ìê°€ íŒŒì¼ì˜ í¬ê¸°ë¥¼ ì§€ì •í•  ë•Œ ì‚¬ìš©í•œ í‚¤ì›Œë“œ
-  ì—ëŸ¬ë©”ì„¸ì§€ì™€ í•¨ê»˜ ì¶œë ¥í•œë‹¤.
+  [IN] aUserKeyword - »ç¿ëÀÚ°¡ ÆÄÀÏÀÇ Å©±â¸¦ ÁöÁ¤ÇÒ ¶§ »ç¿ëÇÑ Å°¿öµå
+  ¿¡·¯¸Ş¼¼Áö¿Í ÇÔ²² Ãâ·ÂÇÑ´Ù.
   ex> DEFAULT_MEM_MAX_DB_FILE_SIZE property
   ex> SPLIT EACH clause
-  [IN] aFileSize - ì‚¬ìš©ìê°€ ì§€ì •í•œ íŒŒì¼ì˜ í¬ê¸°
+  [IN] aFileSize - »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ ÆÄÀÏÀÇ Å©±â
 */
 IDE_RC smuProperty::checkFileSizeLimit( const SChar  * aUserKeyword, ULong aFileSize )
 {
@@ -2952,18 +3055,18 @@ IDE_RC smuProperty::checkFileSizeLimit( const SChar  * aUserKeyword, ULong aFile
 }
 
 /**********************************************************************
- * Description: Data Fileê´€ë ¨ Propertyë¥¼ ê²€ì‚¬í•´ì„œ OS Limitì„ ë„˜ì–´ê°€ëŠ”ì§€,
- *              init Sizeê°€ Max Sizeë³´ë‹¤ í¬ì§€ëŠ” ì•Šì€ì§€ ê²€ì‚¬í•œë‹¤.
- *              32Gì œí•œì— ëŒ€í•´ì„œëŠ” idpPropertyì—ì„œ ê²€ì¦ëœë‹¤.
- *              í•´ë‹¹ TBSë“¤ì€ ëª¨ë‘ Autoextend onìƒíƒœì´ë‹¤.
- *              ( BUG-29599 ë°ì´í„° íŒŒì¼ì˜ í¬ê¸°ë¥¼ 32G ë¥¼ ì´ˆê³¼í•˜ì—¬ ì§€ì •í•´ë„
- *                          ì—ëŸ¬ë¥¼ ì¶œë ¥í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. )
+ * Description: Data File°ü·Ã Property¸¦ °Ë»çÇØ¼­ OS LimitÀ» ³Ñ¾î°¡´ÂÁö,
+ *              init Size°¡ Max Sizeº¸´Ù Å©Áö´Â ¾ÊÀºÁö °Ë»çÇÑ´Ù.
+ *              32GÁ¦ÇÑ¿¡ ´ëÇØ¼­´Â idpProperty¿¡¼­ °ËÁõµÈ´Ù.
+ *              ÇØ´ç TBSµéÀº ¸ğµÎ Autoextend on»óÅÂÀÌ´Ù.
+ *              ( BUG-29599 µ¥ÀÌÅÍ ÆÄÀÏÀÇ Å©±â¸¦ 32G ¸¦ ÃÊ°úÇÏ¿© ÁöÁ¤ÇØµµ
+ *                          ¿¡·¯¸¦ Ãâ·ÂÇÏÁö ¾Ê½À´Ï´Ù. )
  *
- *     [ ê²€ì‚¬ìˆœì„œ ]
- *      1. autoextend on ì—ì„œ init size < max sizeì¸ì§€
- *      2. max size ê°€ 32G or OS Limitì„ ë„˜ì§€ ì•ŠëŠ”ì§€
+ *     [ °Ë»ç¼ø¼­ ]
+ *      1. autoextend on ¿¡¼­ init size < max sizeÀÎÁö
+ *      2. max size °¡ 32G or OS LimitÀ» ³ÑÁö ¾Ê´ÂÁö
  *
- * aPropertyName - [IN] ì˜¤ë¥˜ ë°œìƒì‹œ ì‚¬ìš©ìê°€ í™•ì¸í•´ì•¼ í•  Propertyì˜ Name
+ * aPropertyName - [IN] ¿À·ù ¹ß»ı½Ã »ç¿ëÀÚ°¡ È®ÀÎÇØ¾ß ÇÒ PropertyÀÇ Name
  * aInitFileSize - [IN] Init File Size
  * aMaxFileSize  - [IN] Max File SIze
  **********************************************************************/
@@ -3016,7 +3119,7 @@ IDE_RC smuProperty::checkFileSizeProperty( const SChar  * aInitSizePropName,
 }
 
 /*******************************************************************
-* Secondary Bufferì˜ Properyë¥¼ í™•ì¸  
+* Secondary BufferÀÇ Propery¸¦ È®ÀÎ  
 *******************************************************************/
 IDE_RC smuProperty::checkSBufferPropery()
 {
@@ -3042,7 +3145,7 @@ IDE_RC smuProperty::checkSBufferPropery()
         IDE_TEST( mSBufferSize == 0 );
         IDE_TEST( idlOS::strcmp( mSBufferFileDirectory, "" )== 0 );
 
-        /* Os level ì˜ limit ê²€ì‚¬ë§Œ ìˆ˜í–‰ ê¸°íƒ€ëŠ” sdsFileì—ì„œ í•¨ */
+        /* Os level ÀÇ limit °Ë»ç¸¸ ¼öÇà ±âÅ¸´Â sdsFile¿¡¼­ ÇÔ */
         IDE_TEST( checkFileSizeLimit( "SECONDARY_BUFFER_SIZE property",
                                       mSBufferSize )
                   != IDE_SUCCESS );
@@ -3060,101 +3163,245 @@ IDE_RC smuProperty::checkSBufferPropery()
     return IDE_FAILURE;
 }
 
-/* BUG-44194 :HASH_AREA_SIZE í”„ë¡œí¼í‹° ê°’ì„ ë³€ê²½ í•  ë•Œ,
- * TEMP_MAX_PAGE_COUNT ê°’ì„ ê³ ë ¤í•˜ì—¬ ë³€ê²½ ê°€ëŠ¥í•œ ê°’ì¸ì§€ 
- * í™•ì¸ í•˜ë„ë¡ í•œë‹¤.
- */  
+IDE_RC smuProperty::callbackInitTotalWASize( idvSQL * /*aStatistics*/,
+                                             SChar  * /*aName*/,
+                                             void   * /*aOldValue*/,
+                                             void   * aNewValue,
+                                             void   * /*aArg*/ )
+{
+    ULong  sNewInitSize = *((ULong *)aNewValue);
+    ULong  sMaxSize;
+    UInt   sState = 0;
+
+    sdtWAExtentMgr::lock();
+    sState = 1;
+    sMaxSize = getMaxTotalWASize();
+
+    // »õ·Î¿î Init Size¿Í Max Total WA Size Áß ÀÛÀº°ªÀ¸·Î ±¸¼º º¯°æ
+    if ( sNewInitSize < sMaxSize )
+    {
+        IDE_TEST( sdtWAExtentMgr::resizeWAExtentPool( sNewInitSize ) != IDE_SUCCESS );
+    }
+    else
+    {
+        IDE_TEST( sdtWAExtentMgr::resizeWAExtentPool( sMaxSize ) != IDE_SUCCESS );
+    }
+
+    mInitTotalWASize = sNewInitSize;
+
+    sState = 0;
+    sdtWAExtentMgr::unlock();
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    if( sState != 0 )
+    {
+        sState = 0;
+        sdtWAExtentMgr::unlock();
+    }
+
+    return IDE_FAILURE;
+}
+
+IDE_RC smuProperty::callbackMaxTotalWASize( idvSQL * /*aStatistics*/,
+                                             SChar  * /*aName*/,
+                                             void   * /*aOldValue*/,
+                                             void   * aNewValue,
+                                             void   * /*aArg*/ )
+{
+    ULong  sNewMaxSize = *((ULong *)aNewValue);
+    ULong  sInitSize;
+    UInt   sState   = 0;
+
+#if defined(_SC_PHYS_PAGES) && defined(_SC_PAGESIZE)
+    IDE_TEST_RAISE( sNewMaxSize >
+                    ( idlOS::sysconf(_SC_PHYS_PAGES) * idlOS::sysconf(_SC_PAGESIZE) ),
+                    ERR_ABORT_INTERNAL_MAXSIZE );
+#endif
+
+    sdtWAExtentMgr::lock();
+    sState = 1;
+
+    sInitSize = mInitTotalWASize;
+
+    // Init Size¿Í »õ·Î¿î Max Total WA Size Áß ÀÛÀº°ªÀ¸·Î ±¸¼º º¯°æ
+    if ( sInitSize < sNewMaxSize )
+    {
+        // ¸¸¾à Old max Total WA Size°¡ ÀÛ¾Æ¼­ Total WA Size°ªÀ¸·Î ¼³Á¤ µÇ¾î ÀÖ¾ú´Ù¸é
+        // init size ¸¸Å­ Total WA Size¸¦ ´Ã¸± °ÍÀÌ´Ù.
+        IDE_TEST( sdtWAExtentMgr::resizeWAExtentPool( sInitSize ) != IDE_SUCCESS );
+    }
+    else // sNewMaxSize < sInitSize
+    {
+        // »õ·Î¿î New Max Size°¡ Init Sizeº¸´Ù ÀÛÀº °æ¿ì·Î New max Size¿¡ ¸ÂÃá´Ù.
+        IDE_TEST( sdtWAExtentMgr::resizeWAExtentPool( sNewMaxSize ) != IDE_SUCCESS );
+    }
+
+    mMaxTotalWASize = sNewMaxSize;
+    sState = 0;
+    sdtWAExtentMgr::unlock();
+
+    return IDE_SUCCESS;
+
+#if defined(_SC_PHYS_PAGES) && defined(_SC_PAGESIZE)
+    IDE_EXCEPTION( ERR_ABORT_INTERNAL_MAXSIZE )
+    {
+        IDE_SET( ideSetErrorCode( idERR_ABORT_InternalServerErrorWithString, 
+                                  " The supplied value was beyond the bounds of MaxTotalWASize" ) );
+    }
+#endif
+    IDE_EXCEPTION_END;
+
+    if( sState != 0 )
+    {
+        sState = 0;
+        sdtWAExtentMgr::unlock();
+    }
+
+    return IDE_FAILURE;
+}
+
+IDE_RC smuProperty::callbackSortAreaSize( idvSQL * /*aStatistics*/,
+                                          SChar  * /*aName*/,
+                                          void   * /*aOldValue*/,
+                                          void   * aNewValue,
+                                          void   * /*aArg*/ )
+{
+    ULong   sSortAreaSize = *((ULong *)aNewValue);
+    UInt    sState = 0;
+
+    if( mSortAreaSize != sSortAreaSize )
+    {
+        sdtSortSegment::lock();
+        sState = 1;
+
+        IDE_TEST( sdtSortSegment::resetWASegmentSize( sSortAreaSize ) != IDE_SUCCESS );
+        mSortAreaSize = sSortAreaSize;
+
+        sState = 0;
+        sdtSortSegment::unlock();
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    if( sState != 0 )
+    {
+        sState = 0;
+        sdtSortSegment::unlock();
+    }
+
+    return IDE_FAILURE;
+}
+
 IDE_RC smuProperty::callbackHashAreaSize( idvSQL * /*aStatistics*/,
                                           SChar  * /*aName*/,
                                           void   * /*aOldValue*/,
                                           void   * aNewValue,
                                           void   * /*aArg*/ )
 {
-    IDE_TEST_RAISE( ( mTempMaxPageCount / SDT_WAEXTENT_PAGECOUNT
-                      * ID_SIZEOF( sdpExtDesc ) )
-                    > ( *((ULong *)aNewValue) / 2 ),
-                    error_invalid_hashareasize );
+    ULong   sHashAreaSize = *((ULong *)aNewValue);
+    UInt    sState = 0;
 
-    mHashAreaSize = *((ULong *)aNewValue);
+    if( mHashAreaSize != sHashAreaSize )
+    {
+        sdtHashModule::lock();
+        sState = 1;
+
+        IDE_TEST( sdtHashModule::resetWASegmentSize( sHashAreaSize ) != IDE_SUCCESS );
+        mHashAreaSize = sHashAreaSize;
+
+        sState = 0;
+        sdtHashModule::unlock();
+    }
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION( error_invalid_hashareasize );
-    {
-        IDE_SET(ideSetErrorCode( smERR_ABORT_TooManySlotIndiskTempTable ));
-    }
     IDE_EXCEPTION_END;
+
+    if( sState != 0 )
+    {
+        sState = 0;
+        sdtHashModule::unlock();
+    }
 
     return IDE_FAILURE;
 }
 
-IDE_RC smuProperty::callbackTotalWASize( idvSQL * /*aStatistics*/,
-                                         SChar  * /*aName*/,
-                                         void   * /*aOldValue*/,
-                                         void   * aNewValue,    
-                                         void   * /*aArg*/ )
-{
-    mTotalWASize  = *((ULong *)aNewValue);
-
-    /* ì´ë¯¸ WAë¥¼ ì‚¬ìš©ì¤‘ì¼ ìˆ˜ ìˆê¸°ì—, Resetì„ ìˆ˜í–‰í•¨ */
-    return sdtWorkArea::resetWA();
-}
-
-/* BUG-44194 : TEMP_MAX_PAGE_COUNT í”„ë¡œí¼í‹° ê°’ì„ ë³€ê²½ í•  ë•Œ, 
- * SORT/HASH_AREA_SIZE ê°’ì„ ê³ ë ¤í•˜ì—¬ ë³€ê²½ ê°€ëŠ¥í•œ ê°’ì¸ì§€ 
- * í™•ì¸ í•˜ë„ë¡ í•œë‹¤.  
+/* TEMP_HASH_SLOT_RATIO ÇÁ·ÎÆÛÆ¼ °ªÀ» º¯°æ ÇÒ ¶§,
+ * TEMP_HASH_GROUP_RATIO µîÀ» °í·ÁÇÏ¿© º¯°æ °¡´ÉÇÑ °ªÀÎÁö
+ * È®ÀÎ ÇÏµµ·Ï ÇÑ´Ù.
  */
-IDE_RC smuProperty::callbackTempMaxPageCount( idvSQL * /*aStatistics*/,
-                                              SChar  * /*aName*/,
-                                              void   * /*aOldValue*/,
-                                              void   * aNewValue,
-                                              void   * /*aArg*/ )
+IDE_RC smuProperty::callbackTempSubHashGroupRatio( idvSQL * /*aStatistics*/,
+                                                  SChar  * /*aName*/,
+                                                  void   * /*aOldValue*/,
+                                                  void   * aNewValue,
+                                                  void   * /*aArg*/ )
 {
-    IDE_TEST_RAISE( ( *((UInt *)aNewValue) / SDT_WAEXTENT_PAGECOUNT
-                      * ID_SIZEOF( sdpExtDesc ) )
-                    > ( mSortAreaSize / 2 ),
-                    error_invalid_tempmaxpagecount );
+    UInt   sTempSubHashGroupRatio = *((UInt *)aNewValue);
 
-    IDE_TEST_RAISE( ( *((UInt *)aNewValue) / SDT_WAEXTENT_PAGECOUNT
-                      * ID_SIZEOF( sdpExtDesc ) )
-                    > ( mHashAreaSize / 2 ),
-                    error_invalid_tempmaxpagecount );
+    if( mTempSubHashGroupRatio != sTempSubHashGroupRatio )
+    {
+        sdtHashModule::lock();
 
-    mTempMaxPageCount = *((UInt *)aNewValue);
+        mTempSubHashGroupRatio = sTempSubHashGroupRatio;
+
+        sdtHashModule::resetTempSubHashGroupPageCount();
+
+        sdtHashModule::unlock();
+    }
 
     return IDE_SUCCESS;
-
-    IDE_EXCEPTION( error_invalid_tempmaxpagecount );
-    {
-        IDE_SET(ideSetErrorCode( smERR_ABORT_TooManySlotIndiskTempTable ));
-    }
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
 }
 
-IDE_RC smuProperty::callbackTempFlusherCount( idvSQL * /*aStatistics*/,
-                                              SChar  * /*aName*/,
-                                              void   * /*aOldValue*/,
-                                              void   * aNewValue,    
-                                              void   * /*aArg*/ )
-{
-    mTempFlusherCount  = *((UInt *)aNewValue);
 
-    /* Flusherê°€ ë™ì‘ì¤‘ì¼ ìˆ˜ ìˆê¸° ë•Œë¬¸ì—, Resetì„ ìˆ˜í–‰í•¨ */
-    return sdtWorkArea::resetWA();
-}
-
-IDE_RC smuProperty::callbackTempFlushQueueSize( idvSQL * /*aStatistics*/,
+/* TEMP_HASH_SLOT_RATIO ÇÁ·ÎÆÛÆ¼ °ªÀ» º¯°æ ÇÒ ¶§,
+ * TEMP_HASH_GROUP_RATIO µîÀ» °í·ÁÇÏ¿© º¯°æ °¡´ÉÇÑ °ªÀÎÁö
+ * È®ÀÎ ÇÏµµ·Ï ÇÑ´Ù.
+ */
+IDE_RC smuProperty::callbackTempHashGroupRatio( idvSQL * /*aStatistics*/,
                                                 SChar  * /*aName*/,
                                                 void   * /*aOldValue*/,
-                                                void   * aNewValue,    
+                                                void   * aNewValue,
                                                 void   * /*aArg*/ )
 {
-    mTempFlushQueueSize = *((UInt *)aNewValue);
+    UInt   sTempHashGroupRatio = *((UInt *)aNewValue);
 
-    /* FlushQueue ê´€ë ¨ëœ ë©”ëª¨ë¦¬ë¥¼ ì „ë¶€ ì¬í• ë‹¹ í•´ì•¼í•¨ */
-    return sdtWorkArea::resetWA();
+    if( mTempHashGroupRatio != sTempHashGroupRatio )
+    {
+        sdtHashModule::lock();
+
+        mTempHashGroupRatio = sTempHashGroupRatio;
+
+        sdtHashModule::resetTempHashGroupPageCount();
+        sdtHashModule::resetTempSubHashGroupPageCount();
+
+        sdtHashModule::unlock();
+    }
+
+    return IDE_SUCCESS;
+}
+
+
+IDE_RC smuProperty::callbackTmpInitWASegCnt( idvSQL * /*aStatistics*/,
+                                             SChar  * /*aName*/,
+                                             void   * /*aOldValue*/,
+                                             void   * aNewValue,    
+                                             void   * /*aArg*/ )
+{
+    UInt  sNewCount = *((UInt *)aNewValue);
+
+    IDE_TEST( sdtHashModule::resizeWASegmentPool( sNewCount ) != IDE_SUCCESS );
+    IDE_TEST( sdtSortSegment::resizeWASegmentPool( sNewCount ) != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
 //smi
@@ -3372,7 +3619,18 @@ IDE_RC smuProperty::callbackLockTimeOut( idvSQL * /*aStatistics*/,
                                          void   * aNewValue,
                                          void   * /*aArg*/ )
 {
-    mLockTimeOut = *((SLong *)aNewValue);
+    mLockTimeOut = *((ULong *)aNewValue);
+
+    return IDE_SUCCESS;
+}
+
+IDE_RC smuProperty::callbackUseTempForPrepareLogFile( idvSQL * /*aStatistics*/,
+                                                      SChar  * /*aName*/,
+                                                      void   * /*aOldValue*/,
+                                                      void   * aNewValue,
+                                                      void   * /*aArg*/ )
+{
+    mUseTempForPrepareLogFile = (*((UInt *)aNewValue) == 0 ) ? ID_FALSE : ID_TRUE;
 
     return IDE_SUCCESS;
 }
@@ -3568,17 +3826,6 @@ IDE_RC smuProperty::callbackLogReadMethodType ( idvSQL * /*aStatistics*/,
     return IDE_SUCCESS;
 }
 
-IDE_RC smuProperty::callbackCheckSumMethod( idvSQL * /*aStatistics*/,
-                                            SChar  * /*aName*/,
-                                            void   * /*aOldValue*/,
-                                            void   * aNewValue,
-                                            void   * /*aArg*/ )
-{
-    mCheckSumMethod = *((UInt *)aNewValue);
-
-    return IDE_SUCCESS;
-}
-
 IDE_RC smuProperty::callbackTableLockEnable( idvSQL * aStatistics,
                                              SChar  * /*aName*/,
                                              void   * /*aOldValue*/,
@@ -3596,9 +3843,9 @@ IDE_RC smuProperty::callbackTableLockEnable( idvSQL * aStatistics,
 
     /*
      * BUG-42927
-     * BLOCK_ALL_TIME_OUT(default 3ì´ˆ)ë™ì•ˆ
-     * ìƒˆë¡œìš´ active transactionì„ BLOCK í•˜ê³  active transaciontì´ ëª¨ë‘ ì¢…ë£Œë˜ì—ˆëŠ”ì§€ í™•ì¸í•œë‹¤.
-     * BLOCKëœ ì‹œê°„ì•ˆì— active transactionì´ ëª¨ë‘ ì¢…ë£Œë˜ì—ˆë‹¤ë©´, TABLE_LOCK_ENABLE ê°’ì„ ë³€ê²½í•œë‹¤. 
+     * BLOCK_ALL_TIME_OUT(default 3ÃÊ)µ¿¾È
+     * »õ·Î¿î active transactionÀ» BLOCK ÇÏ°í active transaciontÀÌ ¸ğµÎ Á¾·áµÇ¾ú´ÂÁö È®ÀÎÇÑ´Ù.
+     * BLOCKµÈ ½Ã°£¾È¿¡ active transactionÀÌ ¸ğµÎ Á¾·áµÇ¾ú´Ù¸é, TABLE_LOCK_ENABLE °ªÀ» º¯°æÇÑ´Ù. 
      */
     if ( mTableLockEnable != *((UInt *)aNewValue) )
     {
@@ -3650,17 +3897,17 @@ IDE_RC smuProperty::callbackTablespaceLockEnable( idvSQL * aStatistics,
     sTrans=  (smiTrans *)(sArgObj->getArgValue(aStatistics, sArgObj,IDP_ARG_TRANSID));
     IDE_ASSERT( sTrans != NULL);
 
-    //1.ë¨¼ì € active transactionì´ ìˆëŠ”ì§€ ë¨¼ì € ê²€ì‚¬í•œë‹¤.
+    //1.¸ÕÀú active transactionÀÌ ÀÖ´ÂÁö ¸ÕÀú °Ë»çÇÑ´Ù.
     IDE_TEST_RAISE(smxTransMgr::existActiveTrans((smxTrans*) sTrans->getTrans()) == ID_TRUE,
                    error_active_trans_exits);
 
-    // 2. active íŠ¸ëœì­ì…˜ì´ ì—†ëŠ” ê²ƒì„í™•ì¸í•˜ê³  ë‚˜ì„œ
-    //íŠ¸ëœì­ì…˜ beginì„ ëª»í•˜ê²Œ í•œë‹¤.
+    // 2. active Æ®·£Àè¼ÇÀÌ ¾ø´Â °ÍÀ»È®ÀÎÇÏ°í ³ª¼­
+    //Æ®·£Àè¼Ç beginÀ» ¸øÇÏ°Ô ÇÑ´Ù.
     smxTransMgr::disableTransBegin();
     sState =1;
     IDL_MEM_BARRIER;
 
-    // 3. ë‹¤ì‹œ í™•ì¸. 1~2ì‚¬ì´ì— ìƒˆë¡œìš´ íŠ¸ëœì­ì…˜ì´ beginë ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë‹¤.
+    // 3. ´Ù½Ã È®ÀÎ. 1~2»çÀÌ¿¡ »õ·Î¿î Æ®·£Àè¼ÇÀÌ beginµÉ¼ö ÀÖ±â ¶§¹®ÀÌ´Ù.
     IDE_TEST_RAISE(smxTransMgr::existActiveTrans((smxTrans*)sTrans->getTrans()) == ID_TRUE,
                    error_active_trans_exits);
 
@@ -3683,6 +3930,16 @@ IDE_RC smuProperty::callbackTablespaceLockEnable( idvSQL * aStatistics,
     return IDE_FAILURE;
 }
 
+IDE_RC smuProperty::callbackSkipLockedTableAtFixedTable( idvSQL * /*aStatistics*/,
+                                                         SChar  * /*aName*/,
+                                                         void   * /*aOldValue*/,
+                                                         void   * aNewValue,
+                                                         void   * /*aArg*/ )
+{
+    mSkipLockedTableAtFixedTable  = *((UInt *)aNewValue);
+
+    return IDE_SUCCESS;
+}
 
 IDE_RC smuProperty::callbackTransAllocWaitTime( idvSQL * /*aStatistics*/,
                                                 SChar  * /*aName*/,
@@ -3695,6 +3952,17 @@ IDE_RC smuProperty::callbackTransAllocWaitTime( idvSQL * /*aStatistics*/,
     return IDE_SUCCESS;
 }
 
+// BUG-47655
+IDE_RC smuProperty::callbackTransTableFullTrcLogCycle( idvSQL * /*aStatistics*/,
+                                                       SChar  * /*aName*/,
+                                                       void   * /*aOldValue*/,
+                                                       void   * aNewValue,
+                                                       void   * /*aArg*/ )
+{
+    mTransTableFullTrcLogCycle = *((UInt *)aNewValue);
+
+    return IDE_SUCCESS;
+}
 
 // PROJ-1568
 IDE_RC smuProperty::callbackHotTouchCnt( idvSQL * /*aStatistics*/,
@@ -3800,19 +4068,19 @@ IDE_RC smuProperty::callbackHotListPct( idvSQL * /*aStatistics*/,
     return IDE_SUCCESS;
 }
 
-IDE_RC smuProperty::callbackBufferAreaSize( idvSQL * /*aStatistics*/,
+IDE_RC smuProperty::callbackBufferAreaSize( idvSQL * aStatistics,
                                             SChar  * /*aName*/,
                                             void   * /*aOldValue*/,
                                             void   * aNewValue,
                                             void   * /*aArg*/ )
 
 {
-    ULong sNewSize;
-    idBool sLocked = ID_FALSE;
-    smxTrans *sTrans;
-    smSCN   sDummy;
+    ULong      sNewSize;
+    idBool     sLocked = ID_FALSE;
+    smxTrans * sTrans;
 
-    IDE_TEST( smxTransMgr::alloc(&sTrans) !=  IDE_SUCCESS );
+    IDE_TEST( smxTransMgr::alloc( &sTrans,
+                                  aStatistics ) !=  IDE_SUCCESS );
 
     IDE_ASSERT( sTrans->begin( NULL,
                                (SMI_TRANSACTION_REPL_NONE |
@@ -3828,7 +4096,7 @@ IDE_RC smuProperty::callbackBufferAreaSize( idvSQL * /*aStatistics*/,
                                     &sNewSize)
               != IDE_SUCCESS );
 
-    IDE_TEST( sTrans->commit(&sDummy) != IDE_SUCCESS );
+    IDE_TEST( sTrans->commit() != IDE_SUCCESS );
     IDE_TEST( smxTransMgr::freeTrans( sTrans) != IDE_SUCCESS );
 
     mBufferAreaSize = sNewSize;
@@ -3943,7 +4211,7 @@ IDE_RC smuProperty::callbackTouchTimeInterval( idvSQL * /*aStatistics*/,
                                                void   * /*aArg*/ )
 {
     sdbBufferMgr::lockBufferMgrMutex(NULL);
-    //BUG-21621 [PRJ-1568] LRU-touch_time_interval.sqlì—ì„œ diffë°œìƒ
+    //BUG-21621 [PRJ-1568] LRU-touch_time_interval.sql¿¡¼­ diff¹ß»ı
     mTouchTimeInterval = *((UInt *) aNewValue);
     sdbBCB::mTouchUSecInterval = mTouchTimeInterval * 1000000;
     sdbBufferMgr::unlockBufferMgrMutex();
@@ -4073,7 +4341,7 @@ IDE_RC smuProperty::callbackLogPreReadThread( idvSQL * /*aStatistics*/,
 /*
   PROJ-1548
 
-  ê¸°ëŠ¥ : DDL_LOCK_TIMEOUT ì„ ìœ„í•œ Callback í•¨ìˆ˜
+  ±â´É : DDL_LOCK_TIMEOUT À» À§ÇÑ Callback ÇÔ¼ö
 
 */
 IDE_RC smuProperty::callbackDDLLockTimeOut( idvSQL * /*aStatistics*/,
@@ -4090,7 +4358,7 @@ IDE_RC smuProperty::callbackDDLLockTimeOut( idvSQL * /*aStatistics*/,
 }
 
 // BUG-17226
-// ë°ì´í„° íŒŒì¼ ìƒì„±ì‹œ ì“°ê¸° ë‹¨ìœ„ ì‚¬ìš©
+// µ¥ÀÌÅÍ ÆÄÀÏ »ı¼º½Ã ¾²±â ´ÜÀ§ »ç¿ë
 IDE_RC smuProperty::callbackDataFileWriteUnitSize( idvSQL * /*aStatistics*/,
                                                    SChar  * /*aName*/,
                                                    void   * /*aOldValue*/,
@@ -4198,36 +4466,10 @@ IDE_RC smuProperty::callbackDiskIndexBuildMergePageCount( idvSQL * /*aStatistics
     return IDE_SUCCESS;
 }
 
-/* BUG-44194 : SORT_AREA_SIZE í”„ë¡œí¼í‹° ê°’ì„ ë³€ê²½ í•  ë•Œ, 
- * TEMP_MAX_PAGE_COUNT ê°’ì„ ê³ ë ¤í•˜ì—¬ ë³€ê²½ ê°€ëŠ¥í•œ ê°’ì¸ì§€ 
- * í™•ì¸ í•˜ë„ë¡ í•œë‹¤.  
- */
-IDE_RC smuProperty::callbackSortAreaSize( idvSQL * /*aStatistics*/,
-                                          SChar  * /*aName*/,
-                                          void   * /*aOldValue*/,
-                                          void   * aNewValue,
-                                          void   * /*aArg*/ )
-{
-    IDE_TEST_RAISE( ( mTempMaxPageCount / SDT_WAEXTENT_PAGECOUNT
-                      * ID_SIZEOF( sdpExtDesc ) )
-                    > ( *((ULong *)aNewValue) / 2 ),
-                    error_invalid_sortareasize );
 
-    mSortAreaSize = *((ULong *)aNewValue);
 
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION( error_invalid_sortareasize );
-    {
-        IDE_SET(ideSetErrorCode( smERR_ABORT_TooManySlotIndiskTempTable ));
-    }
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-// BUG-29506 TBTê°€ TBKë¡œ ì „í™˜ì‹œ ë³€ê²½ëœ offsetì„ CTSì— ë°˜ì˜í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
-// ì¬í˜„í•˜ê¸° ìœ„í•´ CTS í• ë‹¹ ì—¬ë¶€ë¥¼ ì„ì˜ë¡œ ì œì–´í•˜ê¸° ìœ„í•œ PROPERTYë¥¼ ì¶”ê°€
+// BUG-29506 TBT°¡ TBK·Î ÀüÈ¯½Ã º¯°æµÈ offsetÀ» CTS¿¡ ¹İ¿µÇÏÁö ¾Ê½À´Ï´Ù.
+// ÀçÇöÇÏ±â À§ÇØ CTS ÇÒ´ç ¿©ºÎ¸¦ ÀÓÀÇ·Î Á¦¾îÇÏ±â À§ÇÑ PROPERTY¸¦ Ãß°¡
 IDE_RC smuProperty::callbackDisableTransactionBoundInCTS( idvSQL * /*aStatistics*/,
                                                           SChar  * /*aName*/,
                                                           void   * /*aOldValue*/,
@@ -4239,8 +4481,8 @@ IDE_RC smuProperty::callbackDisableTransactionBoundInCTS( idvSQL * /*aStatistics
     return IDE_SUCCESS;
 }
 
-// BUG-29839 ì¬ì‚¬ìš©ëœ undo pageì—ì„œ ì´ì „ CTSë¥¼ ë³´ë ¤ê³  í•  ìˆ˜ ìˆìŒ.
-// ì¬í˜„í•˜ê¸° ìœ„í•´ transactionì— íŠ¹ì • segment entryë¥¼ bindingí•˜ëŠ” ê¸°ëŠ¥ ì¶”ê°€
+// BUG-29839 Àç»ç¿ëµÈ undo page¿¡¼­ ÀÌÀü CTS¸¦ º¸·Á°í ÇÒ ¼ö ÀÖÀ½.
+// ÀçÇöÇÏ±â À§ÇØ transaction¿¡ Æ¯Á¤ segment entry¸¦ bindingÇÏ´Â ±â´É Ãß°¡
 IDE_RC smuProperty::callbackManualBindingTXSegByEntryID( idvSQL * /*aStatistics*/,
                                                          SChar  * /*aName*/,
                                                          void   * /*aOldValue*/,
@@ -4295,18 +4537,6 @@ IDE_RC smuProperty::callbackMemoryIndexBuildRunSize(
     void   * /*aArg*/ )
 {
     mMemoryIndexBuildRunSize = *((ULong *)aNewValue);
-    return IDE_SUCCESS;
-}
-
-// PROJ-1629 : Memory Index Build
-IDE_RC smuProperty::callbackMemoryIndexBuildRunCountAtUnionMerge(
-    idvSQL * /*aStatistics*/,
-    SChar  * /*aName*/,
-    void   * /*aOldValue*/,
-    void   * aNewValue,
-    void   * /*aArg*/ )
-{
-    mMemoryIndexBuildRunCountAtUnionMerge = *((ULong *)aNewValue);
     return IDE_SUCCESS;
 }
 
@@ -4371,8 +4601,7 @@ IDE_RC smuProperty::callbackSyncIntervalMSec( idvSQL * /*aStatistics*/,
     mSyncIntervalMSec = *((UInt *)aNewValue);
     return IDE_SUCCESS;
 }
-
-// BUG-45598: CHECKSUM_METHOD ì½œë°±
+// BUG-45598: CHECKSUM_METHOD Äİ¹é 
 IDE_RC smuProperty::callbackSMChecksumMethod( idvSQL * /*aStatistics*/,
                                               SChar  * /*aName*/,
                                               void   * /*aOldValue*/,
@@ -4382,7 +4611,6 @@ IDE_RC smuProperty::callbackSMChecksumMethod( idvSQL * /*aStatistics*/,
     mCheckSumMethod  = *((UInt *)aNewValue);
     return IDE_SUCCESS;
 }
-
 IDE_RC smuProperty::callbackSMChecksumDisable( idvSQL * /*aStatistics*/,
                                                SChar  * /*aName*/,
                                                void   * /*aOldValue*/,
@@ -4483,7 +4711,7 @@ IDE_RC smuProperty::callbackCrashTolerance( idvSQL * /*aStatistics*/,
     mCrashTolerance = *((UInt *)aNewValue);
     return IDE_SUCCESS;
 }
-
+#if 0
 IDE_RC smuProperty::callbackTransWaitTime4TTS( idvSQL * /*aStatistics*/,
                                                SChar  * /*aName*/,
                                                void   * /*aOldValue*/,
@@ -4491,6 +4719,18 @@ IDE_RC smuProperty::callbackTransWaitTime4TTS( idvSQL * /*aStatistics*/,
                                                void   * /*aArg*/ )
 {
     mTransWaitTime4TTS = *((ULong *)aNewValue);
+
+    return IDE_SUCCESS;
+}
+#endif
+
+IDE_RC smuProperty::callbackTransWaitTime( idvSQL * /*aStatistics*/,
+                                           SChar  * /*aName*/,
+                                           void   * /*aOldValue*/,
+                                           void   * aNewValue,
+                                           void   * /*aArg*/ )
+{
+    mTransWaitTime = *((ULong *)aNewValue);
 
     return IDE_SUCCESS;
 }
@@ -4719,7 +4959,7 @@ IDE_RC smuProperty::callbackTableCompactAtShutdown( idvSQL * /*aStatistics*/,
     return IDE_SUCCESS;
 }
 
-// PROJ-1704 Disk MVCC ë¦¬ë‰´ì–¼
+// PROJ-1704 Disk MVCC ¸®´º¾ó
 IDE_RC smuProperty::callbackTSSegSizeShrinkThreshold( idvSQL * /*aStatistics*/,
                                                       SChar  * /*aName*/,
                                                       void   * /*aOldValue*/,
@@ -4766,7 +5006,7 @@ IDE_RC smuProperty::callbackRetryStealCount( idvSQL * /*aStatistics*/,
     return IDE_SUCCESS;
 }
 
-// BUG-27126 INDEX_BUILD_THREAD_COUNTë¥¼ alter system ìœ¼ë¡œ ë³€ê²½ê°€ëŠ¥ í•´ì•¼...
+// BUG-27126 INDEX_BUILD_THREAD_COUNT¸¦ alter system À¸·Î º¯°æ°¡´É ÇØ¾ß...
 IDE_RC smuProperty::callbackIndexBuildThreadCount( idvSQL * /*aStatistics*/,
                                                    SChar  * /*aName*/,
                                                    void   * /*aOldValue*/,
@@ -4791,7 +5031,7 @@ IDE_RC smuProperty::callbackMemoryIndexUnbalancedSplitRate( idvSQL  * /*aStatist
     return IDE_SUCCESS;
 }
 
-/* Proj-2059 DB Upgrade ê¸°ëŠ¥ */
+/* Proj-2059 DB Upgrade ±â´É */
 IDE_RC smuProperty::callbackDataPortFileBlockSize  ( idvSQL * /*aStatistics*/,
                                                      SChar  * /*aName*/,
                                                      void   * /*aOldValue*/,
@@ -4806,7 +5046,7 @@ IDE_RC smuProperty::callbackDataPortFileBlockSize  ( idvSQL * /*aStatistics*/,
                     > sNewValue,
                     ERR_COLUMN_CHAINING_THRESHOLD_LAGER_THAN_BLOCK_SIZE );
 
-    // DirectIOë¥¼ ìœ„í•´ Alignì„ ë§ì¶°ì¤˜ì•¼ í•©ë‹ˆë‹¤.
+    // DirectIO¸¦ À§ÇØ AlignÀ» ¸ÂÃçÁà¾ß ÇÕ´Ï´Ù.
     mDataPortFileBlockSize = idlOS::align( *((UInt *)aNewValue),
                                            ID_MAX_DIO_PAGE_SIZE );
     return IDE_SUCCESS;
@@ -4940,3 +5180,68 @@ IDE_RC smuProperty::callbackGatherIndexStatOnDDL( idvSQL * /*aStatistics*/,
     return IDE_SUCCESS;
 }
 
+IDE_RC smuProperty::callbackLogCompAcceleration( idvSQL * /*aStatistics*/,
+                                                 SChar  * /*aName*/,
+                                                 void   * /*aOldValue*/,
+                                                 void   * aNewValue,
+                                                 void   * /*aArg*/ )
+{
+    mLogCompAcceleration = *((UInt *)aNewValue);
+
+    return IDE_SUCCESS;
+}
+
+/* PROJ-2734 */
+IDE_RC smuProperty::callbackDistributionDeadlockEnable( idvSQL * /*aStatistics*/,
+                                                        SChar  * /*aName*/,
+                                                        void   * /*aOldValue*/,
+                                                        void   * aNewValue,
+                                                        void   * /*aArg*/ )
+{
+    mDistributionDeadlockEnable = ( *((UInt *)aNewValue) == 1 ) ? ID_TRUE : ID_FALSE;
+
+    return IDE_SUCCESS;
+}
+IDE_RC smuProperty::callbackDistributionDeadlockRiskLowWaitTime( idvSQL * /*aStatistics*/,
+                                                                 SChar  * /*aName*/,
+                                                                 void   * /*aOldValue*/,
+                                                                 void   * aNewValue,
+                                                                 void   * /*aArg*/ )
+{
+    mDistributionDeadlockRiskLowWaitTime = *((ULong *)aNewValue);
+
+    return IDE_SUCCESS;
+}
+IDE_RC smuProperty::callbackDistributionDeadlockRiskMidWaitTime( idvSQL * /*aStatistics*/,
+                                                                 SChar  * /*aName*/,
+                                                                 void   * /*aOldValue*/,
+                                                                 void   * aNewValue,
+                                                                 void   * /*aArg*/ )
+{
+    mDistributionDeadlockRiskMidWaitTime = *((ULong *)aNewValue);
+
+    return IDE_SUCCESS;
+}
+IDE_RC smuProperty::callbackDistributionDeadlockRiskHighWaitTime( idvSQL * /*aStatistics*/,
+                                                                  SChar  * /*aName*/,
+                                                                  void   * /*aOldValue*/,
+                                                                  void   * aNewValue,
+                                                                  void   * /*aArg*/ )
+{
+    mDistributionDeadlockRiskHighWaitTime = *((ULong *)aNewValue);
+
+    return IDE_SUCCESS;
+}
+
+IDE_RC smuProperty::callbackVersioningMinTime( idvSQL * /*aStatistics*/,
+                                               SChar  * /*aName*/,
+                                               void   * /*aOldValue*/,
+                                               void   * aNewValue,
+                                               void   * /*aArg*/ )
+{
+    mVersioningMinTime = *((ULong *)aNewValue);
+
+    smxTransMgr::resetVersioningMinTime();
+
+    return IDE_SUCCESS;
+}

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxSenderSync.cpp 84317 2018-11-12 00:39:24Z minku.kang $
+ * $Id: rpxSenderSync.cpp 88081 2020-07-16 02:09:16Z yoonhee.kim $
  **********************************************************************/
 
 #include <idl.h>
@@ -47,21 +47,24 @@
 IDE_RC 
 rpxSender::syncStart()
 {
-    setStatus(RP_SENDER_SYNC);
-
     SInt sOld = mMeta.mReplication.mIsStarted;
+    
+    if( mMeta.mReplication.mItemCount != 0 )
+    {
+        setStatus(RP_SENDER_SYNC);
 
-    IDE_TEST( sendSyncStart() != IDE_SUCCESS );
-    ideLog::log(IDE_RP_0, "Succeeded to send information of tables.\n");
+        IDE_TEST( sendSyncStart() != IDE_SUCCESS );
+        ideLog::log(IDE_RP_0, "Succeeded to send information of tables.\n");
 
-    IDE_TEST_RAISE( syncParallel() != IDE_SUCCESS, ERR_SYNC );
-    ideLog::log(IDE_RP_0, "Succeeded to insert data.\n");
+        IDE_TEST_RAISE( syncParallel() != IDE_SUCCESS, ERR_SYNC );
+        ideLog::log(IDE_RP_0, "Succeeded to insert data.\n");
 
-    mMeta.mReplication.mIsStarted = sOld;
+        mMeta.mReplication.mIsStarted = sOld;
 
-    /* PROJ-2184 RP sync ÏÑ±Îä•Í∞úÏÑ† */
-    IDE_TEST_RAISE( sendRebuildIndicesRemoteSyncTables() != IDE_SUCCESS, ERR_SYNC );
-    ideLog::log(IDE_RP_0, "Succeeded to rebuild indexes.\n");
+        /* PROJ-2184 RP sync º∫¥…∞≥º± */
+        IDE_TEST_RAISE( sendSyncEnd() != IDE_SUCCESS, ERR_SYNC );
+        ideLog::log(IDE_RP_0, "Succeeded to rebuild indexes.\n");
+    }
 
     if(mMeta.mReplication.mReplMode == RP_EAGER_MODE)
     {
@@ -71,9 +74,6 @@ rpxSender::syncStart()
     {
         mCurrentType = RP_NORMAL;
     }
-
-    /* Îçî Ïù¥ÏÉÅ Service ThreadÍ∞Ä ÎåÄÍ∏∞ÌïòÏßÄ ÏïäÎäîÎã§. */
-    mSvcThrRootStmt = NULL;
 
     return IDE_SUCCESS;
 
@@ -105,53 +105,56 @@ rpxSender::syncALAStart()
     idBool         sIsAllocSCN        = ID_FALSE;
     SInt           sOld;
     ULong          sSyncedTuples      = 0;
-
-    setStatus( RP_SENDER_SYNC );
-
+    
     sOld = mMeta.mReplication.mIsStarted;
-
-    IDE_TEST( allocSCN( &sParallelStmts, &sSyncParallelTrans )
-              != IDE_SUCCESS );
-    sIsAllocSCN = ID_TRUE;
-
-    rpdMeta::setReplFlagStartSyncApply( &(mMeta.mReplication) );
     
-    for ( i = 0 ; i < mMeta.mReplication.mItemCount ; i++ )
+    if( mMeta.mReplication.mItemCount != 0 )
     {
-        sUsername  = mMeta.mItemsOrderByTableOID[i]->mItem.mLocalUsername;
-        sTablename = mMeta.mItemsOrderByTableOID[i]->mItem.mLocalTablename;
-        sPartitionname = mMeta.mItemsOrderByTableOID[i]->mItem.mLocalPartname;
+        setStatus( RP_SENDER_SYNC );
 
-        // Replication TableÏù¥ ÏßÄÏ†ïÌïú Sync TableÏù∏ Í≤ΩÏö∞ÏóêÎßå Í≥ÑÏÜç ÏßÑÌñâÌïúÎã§.
-        if ( isSyncItem( mSyncItems,
-                         sUsername,
-                         sTablename,
-                         sPartitionname )
-             == ID_TRUE )
-       {
-            IDE_TEST( rpxSync::syncTable( &(sParallelStmts[0]),
-                                          &mMessenger,
-                                          mMeta.mItemsOrderByTableOID[i],
-                                          &mExitFlag,
-                                          1, /* mChild Count for Parallel Scan */
-                                          1, /* mChild Number for Parallel Scan */
-                                          &sSyncedTuples, /* V$REPSYNC.SYNC_RECORD_COUNT */
-                                          ID_TRUE /* aIsALA */ )
-                      != IDE_SUCCESS );
-        }
-        else
+        IDE_TEST( allocSCN( &sParallelStmts, &sSyncParallelTrans )
+                  != IDE_SUCCESS );
+        sIsAllocSCN = ID_TRUE;
+
+        rpdMeta::setReplFlagStartSyncApply( &(mMeta.mReplication) );
+
+        for ( i = 0 ; i < mMeta.mReplication.mItemCount ; i++ )
         {
-            /* do nothing */
-        }
-    }
-    rpdMeta::clearReplFlagStartSyncApply( &(mMeta.mReplication) );
+            sUsername  = mMeta.mItemsOrderByTableOID[i]->mItem.mLocalUsername;
+            sTablename = mMeta.mItemsOrderByTableOID[i]->mItem.mLocalTablename;
+            sPartitionname = mMeta.mItemsOrderByTableOID[i]->mItem.mLocalPartname;
 
-    sIsAllocSCN = ID_FALSE;
-    destroySCN( sParallelStmts, sSyncParallelTrans );
-    sParallelStmts     = NULL;
-    sSyncParallelTrans = NULL;
-    
-    mMeta.mReplication.mIsStarted = sOld;
+            // Replication Table¿Ã ¡ˆ¡§«— Sync Table¿Œ ∞ÊøÏø°∏∏ ∞Ëº” ¡¯«‡«—¥Ÿ.
+            if ( isSyncItem( mSyncInsertItems,
+                             sUsername,
+                             sTablename,
+                             sPartitionname )
+                 == ID_TRUE )
+            {
+                IDE_TEST( rpxSync::syncTable( &(sParallelStmts[0]),
+                                              &mMessenger,
+                                              mMeta.mItemsOrderByTableOID[i],
+                                              &mExitFlag,
+                                              1, /* mChild Count for Parallel Scan */
+                                              1, /* mChild Number for Parallel Scan */
+                                              &sSyncedTuples, /* V$REPSYNC.SYNC_RECORD_COUNT */
+                                              ID_TRUE /* aIsALA */ )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* do nothing */
+            }
+        }
+        rpdMeta::clearReplFlagStartSyncApply( &(mMeta.mReplication) );
+
+        sIsAllocSCN = ID_FALSE;
+        destroySCN( sParallelStmts, sSyncParallelTrans );
+        sParallelStmts     = NULL;
+        sSyncParallelTrans = NULL;
+
+        mMeta.mReplication.mIsStarted = sOld;
+    }
 
     if( mMeta.mReplication.mReplMode == RP_EAGER_MODE )
     {
@@ -189,17 +192,17 @@ rpxSender::syncALAStart()
 }
 
 /***********************************************************************
- * Description : ÌååÎùºÎØ∏ÌÑ∞Î°ú Ï£ºÏñ¥ÏßÑ User NameÍ≥º Table NameÏù¥
- *               ÏÇ¨Ïö©ÏûêÍ∞Ä ÏßÄÏ†ïÌïú Sync ItemÏóê ÏÜçÌï¥ ÏûàÎäîÏßÄ ÌôïÏù∏ÌïúÎã§.
+ * Description : ∆ƒ∂ÛπÃ≈Õ∑Œ ¡÷æÓ¡¯ User Name∞˙ Table Name¿Ã
+ *               ªÁøÎ¿⁄∞° ¡ˆ¡§«— Sync Itemø° º”«ÿ ¿÷¥¬¡ˆ »Æ¿Œ«—¥Ÿ.
  *
  **********************************************************************/
-idBool rpxSender::isSyncItem( qciSyncItems *aSyncItems,
+idBool rpxSender::isSyncItem( rpdReplSyncItem *aSyncItems,
                               const SChar  *aUsername,
                               const SChar  *aTablename,
                               const SChar  *aPartname )
 {
     idBool        sResult   = ID_FALSE;
-    qciSyncItems *sSyncItem = NULL;
+    rpdReplSyncItem *sSyncItem = NULL;
 
     if ( aSyncItems != NULL )
     {
@@ -210,15 +213,15 @@ idBool rpxSender::isSyncItem( qciSyncItems *aSyncItems,
         {
 
             if ( ( idlOS::strncmp( aUsername,
-                                   sSyncItem->syncUserName,
+                                   sSyncItem->mUserName,
                                    QC_MAX_OBJECT_NAME_LEN )
                    == 0 ) &&
                  ( idlOS::strncmp( aTablename,
-                                   sSyncItem->syncTableName,
+                                   sSyncItem->mTableName,
                                    QC_MAX_OBJECT_NAME_LEN )
                    == 0 ) &&
                  ( idlOS::strncmp( aPartname,
-                                   sSyncItem->syncPartitionName,
+                                   sSyncItem->mPartitionName,
                                    QC_MAX_OBJECT_NAME_LEN )
                    == 0 ) )
             {
@@ -233,7 +236,7 @@ idBool rpxSender::isSyncItem( qciSyncItems *aSyncItems,
     }
     else
     {
-        // Sync ItemÏùÑ Î™ÖÏãúÏ†ÅÏúºÎ°ú ÏßÄÏ†ïÌïòÏßÄ ÏïäÏùÄ Í≤ΩÏö∞, Î™®Îëê Sync ItemÏúºÎ°ú Í∞ÑÏ£ºÌïúÎã§.
+        // Sync Item¿ª ∏ÌΩ√¿˚¿∏∑Œ ¡ˆ¡§«œ¡ˆ æ ¿∫ ∞ÊøÏ, ∏µŒ Sync Item¿∏∑Œ ∞£¡÷«—¥Ÿ.
         sResult = ID_TRUE;
     }
 
@@ -242,17 +245,17 @@ idBool rpxSender::isSyncItem( qciSyncItems *aSyncItems,
 
 /*******************************************************************************
  *
- * Description : smÏúºÎ°úÎ∂ÄÌÑ∞ Î†àÏΩîÎìúÌå®ÏπòÏãú Î≥µÏÇ¨Í∞Ä ÌïÑÏöîÌïú Ïª¨ÎüºÏ†ïÎ≥¥ÏÉùÏÑ±
+ * Description : sm¿∏∑Œ∫Œ≈Õ ∑πƒ⁄µÂ∆–ƒ°Ω√ ∫πªÁ∞° « ø‰«— ƒ√∑≥¡§∫∏ª˝º∫
  *
  * Implementation :  PROJ-1705
  *
- *   PROJ-1705 Ï†ÅÏö©ÏúºÎ°ú smÏóêÏÑú Î†àÏΩîÎìú Ìå®ÏπòÎ∞©Î≤ïÏù¥
- *   Ïù¥Ï†Ñ Î†àÏΩîÎìúÎã®ÏúÑÏùò Ìå®ÏπòÏóêÏÑú Ïª¨ÎüºÎã®ÏúÑÏùò Ìå®ÏπòÎ°ú Ìå®ÏπòÎ∞©Î≤ïÏù¥ Î≥ÄÍ≤ΩÎê®.
- *   smÏóêÏÑú Ïª¨ÎüºÎã®ÏúÑÏùò Ìå®ÏπòÍ∞Ä Ïù¥Î£®Ïñ¥Ïßà Ïàò ÏûàÎèÑÎ°ù
- *   Ïª§ÏÑú Ïò§ÌîàÏãú,
- *   Ìå®ÏπòÌï† Ïª¨ÎüºÏ†ïÎ≥¥Î•º Íµ¨ÏÑ±Ìï¥ÏÑú Ïù¥ Ï†ïÎ≥¥Î•º smiCursorPropertiesÎ°ú ÎÑòÍ≤®Ï§ÄÎã§.
+ *   PROJ-1705 ¿˚øÎ¿∏∑Œ smø°º≠ ∑πƒ⁄µÂ ∆–ƒ°πÊπ˝¿Ã
+ *   ¿Ã¿¸ ∑πƒ⁄µÂ¥‹¿ß¿« ∆–ƒ°ø°º≠ ƒ√∑≥¥‹¿ß¿« ∆–ƒ°∑Œ ∆–ƒ°πÊπ˝¿Ã ∫Ø∞Êµ .
+ *   smø°º≠ ƒ√∑≥¥‹¿ß¿« ∆–ƒ°∞° ¿Ã∑ÁæÓ¡˙ ºˆ ¿÷µµ∑œ
+ *   ƒøº≠ ø¿«¬Ω√,
+ *   ∆–ƒ°«“ ƒ√∑≥¡§∫∏∏¶ ±∏º∫«ÿº≠ ¿Ã ¡§∫∏∏¶ smiCursorProperties∑Œ ≥—∞‹¡ÿ¥Ÿ.
  *
- *   Ìïú ÌÖåÏù¥Î∏î Ï†ÑÏ≤¥ Ïª¨ÎüºÏóê ÎåÄÌïú Ìå®ÏπòÏª¨ÎüºÎ¶¨Ïä§Ìä∏ ÏÉùÏÑ±
+ *   «— ≈◊¿Ã∫Ì ¿¸√º ƒ√∑≥ø° ¥Î«— ∆–ƒ°ƒ√∑≥∏ÆΩ∫∆Æ ª˝º∫
  *
  ******************************************************************************/
 IDE_RC rpxSender::makeFetchColumnList(const smOID          aTableOID,
@@ -324,8 +327,8 @@ IDE_RC rpxSender::makeFetchColumnList(const smOID          aTableOID,
 }
 
 /***********************************************************************
- * Description : ÌäπÏ†ï Column ArrayÎ°ú Key RangeÎ•º ÎßåÎì†Îã§.
- *               Ìï¥Îãπ TableÏóê IS LockÏùÑ Ïû°ÏïòÎã§Í≥† Í∞ÄÏ†ïÌïúÎã§.
+ * Description : ∆Ø¡§ Column Array∑Œ Key Range∏¶ ∏∏µÁ¥Ÿ.
+ *               «ÿ¥Á Tableø° IS Lock¿ª ¿‚æ“¥Ÿ∞Ì ∞°¡§«—¥Ÿ.
  *
  **********************************************************************/
 IDE_RC rpxSender::getKeyRange(smOID               aTableOID,
@@ -345,9 +348,9 @@ IDE_RC rpxSender::getKeyRange(smOID               aTableOID,
 
     sItemInfo = (qcmTableInfo *)rpdCatalog::rpdGetTableTempInfo(smiGetTable( aTableOID ));
 
-    /* Proj-1872 DiskIndex ÏµúÏ†ÅÌôî
-     * RangeÎ•º Ï†ÅÏö©ÌïòÎäî ÎåÄÏÉÅÏù¥ DiskIndexÏùº Í≤ΩÏö∞, Stored ÌÉÄÏûÖÏùÑ Í≥†Î†§Ìïú
-     * RangeÍ∞Ä Ï†ÅÏö© ÎêòÏñ¥Ïïº ÌïúÎã§. */
+    /* Proj-1872 DiskIndex √÷¿˚»≠
+     * Range∏¶ ¿˚øÎ«œ¥¬ ¥ÎªÛ¿Ã DiskIndex¿œ ∞ÊøÏ, Stored ≈∏¿‘¿ª ∞Ì∑¡«—
+     * Range∞° ¿˚øÎ µ«æÓæﬂ «—¥Ÿ. */
     sFlag = (sItemInfo->primaryKey->keyColumns)->column.flag;
     if(((sFlag & SMI_COLUMN_STORAGE_MASK) == SMI_COLUMN_STORAGE_DISK) &&
        ((sFlag & SMI_COLUMN_USAGE_MASK)   == SMI_COLUMN_USAGE_INDEX))
@@ -395,11 +398,11 @@ IDE_RC rpxSender::sendSyncStart()
     return IDE_FAILURE;
 }
 
-IDE_RC rpxSender::sendRebuildIndicesRemoteSyncTables()
+IDE_RC rpxSender::sendSyncEnd()
 {
-    IDE_TEST_RAISE( mMessenger.sendRebuildIndex() != IDE_SUCCESS, ERR_REBUILD_INDEX );
+    IDE_TEST_RAISE( mMessenger.sendSyncEnd() != IDE_SUCCESS, ERR_REBUILD_INDEX );
 
-    /* receiverÍ∞Ä drop indicesÎ•º Î™®Îëê ÎÅùÎÇºÎïåÍπåÏßÄ Í∏∞Îã§Î¶∞Îã§ */
+    /* receiver∞° drop indices∏¶ ∏µŒ ≥°≥æ∂ß±Ó¡ˆ ±‚¥Ÿ∏∞¥Ÿ */
     while ( ( mSenderInfo->getFlagRebuildIndex() == ID_FALSE ) &&
             ( checkInterrupt() == RP_INTR_NONE ) )
     {
@@ -426,17 +429,17 @@ IDE_RC rpxSender::sendSyncTableInfo()
     SChar * sUsername  = NULL;
     SChar * sTablename = NULL;
     SChar * sPartname = NULL;
-    qciSyncItems * sSyncTables;
+    rpdReplSyncItem * sSyncTables;
     SInt sSyncTableNumber = 0;
     SInt i;
 
-    if ( mSyncItems == NULL ) /* sync tableÏù¥ ÏßÄÏ†ïÎêòÏßÄ ÏïäÏùÄÍ≤ΩÏö∞ */
+    if ( mSyncInsertItems == NULL ) /* sync table¿Ã ¡ˆ¡§µ«¡ˆ æ ¿∫∞ÊøÏ */
     {
         sSyncTableNumber = mMeta.mReplication.mItemCount;
     }
     else
     {
-        for ( sSyncTables = mSyncItems; sSyncTables != NULL; sSyncTables = sSyncTables->next)
+        for ( sSyncTables = mSyncInsertItems; sSyncTables != NULL; sSyncTables = sSyncTables->next)
         {
             sSyncTableNumber++;
         }
@@ -451,8 +454,8 @@ IDE_RC rpxSender::sendSyncTableInfo()
         sUsername  = mMeta.mItemsOrderByTableOID[i]->mItem.mLocalUsername;
         sTablename = mMeta.mItemsOrderByTableOID[i]->mItem.mLocalTablename;
         sPartname = mMeta.mItemsOrderByTableOID[i]->mItem.mLocalPartname;
-        // Replication TableÏù¥ ÏßÄÏ†ïÌïú Sync TableÏù∏ Í≤ΩÏö∞ÏóêÎßå Í≥ÑÏÜç ÏßÑÌñâÌïúÎã§.
-        if ( isSyncItem( mSyncItems,
+        // Replication Table¿Ã ¡ˆ¡§«— Sync Table¿Œ ∞ÊøÏø°∏∏ ∞Ëº” ¡¯«‡«—¥Ÿ.
+        if ( isSyncItem( mSyncInsertItems,
                          sUsername,
                          sTablename,
                          sPartname )
@@ -474,6 +477,7 @@ IDE_RC rpxSender::sendSyncTableInfo()
     IDE_EXCEPTION( ERR_SYNC_TABLE_NUMBER )
     {
         IDE_SET( ideSetErrorCode( rpERR_ABORT_INVALID_SYNC_TABLE_NUMBER ) );
+        IDE_ERRLOG( IDE_RP_0 );
     }
     IDE_EXCEPTION_END;
 

@@ -114,8 +114,39 @@ IDE_RC ideLogEntry::append( const acp_char_t *aStr )
     if ( mChkFlag != 0 )
     {
         sStrLen = acpCStrLen(aStr, ACP_ULONG_MAX);
+        IDE_TEST( ACP_RC_NOT_SUCCESS( acpCStrCpy( mBuffer + mLength,
+                                                  IDE_MESSAGE_SIZE - mLength,
+                                                  aStr,
+                                                  sStrLen ) ) );
+        mLength += sStrLen;
+    }
+    else
+    {
+        /* do nothing */
+    }
 
-        IDE_TEST( sStrLen >= IDE_MESSAGE_SIZE - mLength );
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;    
+    
+    mLength = IDE_MESSAGE_SIZE;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC ideLogEntry::appendForce( const acp_char_t *aStr )
+{
+    acp_size_t sStrLen;
+
+    if ( mChkFlag != 0 )
+    {
+        sStrLen = acpCStrLen(aStr, IDE_MESSAGE_SIZE - 1 );
+
+        if ( sStrLen >= IDE_MESSAGE_SIZE - mLength )
+        {
+            /* -1 for null terminator */
+            mLength = IDE_MESSAGE_SIZE - sStrLen - 1;
+        }
 
         IDE_TEST( ACP_RC_NOT_SUCCESS( acpCStrCpy( mBuffer + mLength,
                                                   IDE_MESSAGE_SIZE - mLength,
@@ -131,8 +162,13 @@ IDE_RC ideLogEntry::append( const acp_char_t *aStr )
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    mLength = IDE_MESSAGE_SIZE;
+
     return IDE_FAILURE;
 }
+
+
 
 IDE_RC ideLogEntry::appendArgs( const acp_char_t *aFormat, va_list aArgs )
 {
@@ -141,16 +177,19 @@ IDE_RC ideLogEntry::appendArgs( const acp_char_t *aFormat, va_list aArgs )
 
     if ( mChkFlag != 0 )
     {
-        va_copy( sArgsCopy, aArgs );
-        sWritten = vsnprintf( mBuffer + mLength,
-                              IDE_MESSAGE_SIZE - mLength,
-                              aFormat,
-                              sArgsCopy );
-        va_end( sArgsCopy );
+        if ( IDE_MESSAGE_SIZE - mLength > 0 )
+        {
+            va_copy( sArgsCopy, aArgs );
 
-        IDE_TEST ( mLength + sWritten >= IDE_MESSAGE_SIZE );
+            sWritten = vsnprintf( mBuffer + mLength,
+                                  IDE_MESSAGE_SIZE - mLength,
+                                  aFormat,
+                                  sArgsCopy );
 
-        mLength += sWritten;
+            va_end( sArgsCopy );
+
+            mLength = IDL_MIN( mLength + sWritten, IDE_MESSAGE_SIZE );
+        }
     }
     else
     {
@@ -158,10 +197,6 @@ IDE_RC ideLogEntry::appendArgs( const acp_char_t *aFormat, va_list aArgs )
     }
 
     return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-    mLength = IDE_MESSAGE_SIZE;
-    return IDE_FAILURE;
 }
 
 void ideLogEntry::logOpen()
@@ -173,7 +208,7 @@ void ideLogEntry::logOpen()
 
     getTimeString(sTimeBuf, ID_SIZEOF( sTimeBuf ));
 
-    (void)append(IDE_MSGLOG_BEGIN_BLOCK);
+    (void)appendForce(IDE_MSGLOG_BEGIN_BLOCK);
 
     if ( IDL_LIKELY_TRUE( mNewLine ) )
     {
@@ -189,7 +224,7 @@ void ideLogEntry::logOpen()
     else
     {
         // bug-24840 divide xa log
-        // XA logë¥¼ í•œì¤„ë¡œ ë‚¨ê¸°ê¸° ìœ„í•´ ì¶”ê°€
+        // XA log¸¦ ÇÑÁÙ·Î ³²±â±â À§ÇØ Ãß°¡
         sFormat = 
             IDE_MSGLOG_SUBBEGIN_BLOCK"%s %llX"IDE_MSGLOG_SUBEND_BLOCK
             IDE_MSGLOG_SUBBEGIN_BLOCK"PID:%llu"IDE_MSGLOG_SUBEND_BLOCK
@@ -218,7 +253,7 @@ IDE_RC ideLogEntry::logClose()
     {
         if ( IDL_LIKELY_TRUE( !mIsTailless ) )
         {
-            IDE_TEST( IDE_SUCCESS != this->append("\n"IDE_MSGLOG_END_BLOCK) );
+            IDE_TEST( IDE_SUCCESS != this->appendForce("\n"IDE_MSGLOG_END_BLOCK) );
         }
         else
         {
@@ -304,7 +339,7 @@ IDE_RC ideLogEntry::dumpHex(const UChar*    aPtr,
     /* ==========================================
      * Converting
      * ========================================== */
-    // Loopë¥¼ ëŒë©° í•œì¤„ì”© ì¶œë ¥í•´ì¤€ë‹¤. í•œì¤„ë‹¹ LineSizeë§Œí¼ ì¶œë ¥í•œë‹¤.
+    // Loop¸¦ µ¹¸ç ÇÑÁÙ¾¿ Ãâ·ÂÇØÁØ´Ù. ÇÑÁÙ´ç LineSize¸¸Å­ Ãâ·ÂÇÑ´Ù.
     for( i = 0 ; i < sSize; i += sLineSize )
     {
         /* ==========================================
@@ -346,8 +381,8 @@ IDE_RC ideLogEntry::dumpHex(const UChar*    aPtr,
         case IDE_DUMP_FORMAT_BODY_HEX:
             for( j = 0 ; ( j < sLineSize ) && ( i + j < sSize ) ; j += sBlockSize )
             {
-                //Blockë‚´ ê°’ë“¤ì„ í•˜ë‚˜í•˜ë‚˜ ì¶œë ¥í•œë‹¤. ì „ë‹¬ë°›ì€ ë©”ëª¨ë¦¬ ì£¼ì†Œê°€
-                //Align ë§ëŠ”ë‹¤ëŠ” ë³´ì¥ì´ ì—†ê¸° ë•Œë¬¸ì— í•œë°”ì´íŠ¸ì”© ì°ì–´ì¤€ë‹¤.
+                //Block³» °ªµéÀ» ÇÏ³ªÇÏ³ª Ãâ·ÂÇÑ´Ù. Àü´Ş¹ŞÀº ¸Ş¸ğ¸® ÁÖ¼Ò°¡
+                //Align ¸Â´Â´Ù´Â º¸ÀåÀÌ ¾ø±â ¶§¹®¿¡ ÇÑ¹ÙÀÌÆ®¾¿ Âï¾îÁØ´Ù.
                 for( k = 0 ;
                      ( k < sBlockSize ) &&
                      ( j < sLineSize )  &&
@@ -361,8 +396,8 @@ IDE_RC ideLogEntry::dumpHex(const UChar*    aPtr,
                     sDstSize    -= sWrittenLength;
                 }
 
-                // BlockSizeë§Œí¼ HexStrì„ ì¶œë ¥í–ˆìœ¼ë©°,
-                // Lineì˜ ë§ˆì§€ë§‰ì´ ì•„ë‹ ê²½ìš°, ê³µë°± ì¶œë ¥
+                // BlockSize¸¸Å­ HexStrÀ» Ãâ·ÂÇßÀ¸¸ç,
+                // LineÀÇ ¸¶Áö¸·ÀÌ ¾Æ´Ò °æ¿ì, °ø¹é Ãâ·Â
                 if ( ( k == sBlockSize ) && ( j != sLineSize ) )
                 {
                     sWrittenLength = idlOS::snprintf( sDstPtr, sDstSize, " " );
@@ -390,8 +425,8 @@ IDE_RC ideLogEntry::dumpHex(const UChar*    aPtr,
 
             for( j = 0 ; ( j < sLineSize ) && ( i + j < sSize ) ; j ++ )
             {
-                //ê³µë°±(32)ì™€ ~(126)ì‚¬ì´ì˜ ê°’ë“¤ì€ Asciië¡œ ì¶œë ¥ê°€ëŠ¥í•œ ê²ƒë“¤
-                //ì´ë‹¤. ê·¸ëŸ° ê²ƒë“¤ë§Œ ì°ì–´ì¤€ë‹¤.
+                //°ø¹é(32)¿Í ~(126)»çÀÌÀÇ °ªµéÀº Ascii·Î Ãâ·Â°¡´ÉÇÑ °Íµé
+                //ÀÌ´Ù. ±×·± °Íµé¸¸ Âï¾îÁØ´Ù.
                 sWrittenLength = idlOS::snprintf( sDstPtr, sDstSize,
                                      "%c",
                                      ( isprint( aPtr[ i + j] ) != 0 )
@@ -406,7 +441,7 @@ IDE_RC ideLogEntry::dumpHex(const UChar*    aPtr,
             break;
         }
 
-        // aSrcì˜ ë§ˆì§€ë§‰ì´ ì•„ë‹ ê²½ìš°, ê°œí–‰í•¨
+        // aSrcÀÇ ¸¶Áö¸·ÀÌ ¾Æ´Ò °æ¿ì, °³ÇàÇÔ
         if ( (i + sLineSize) < sSize )
         {
             sWrittenLength = idlOS::snprintf( sDstPtr, sDstSize, "\n" );
@@ -415,18 +450,20 @@ IDE_RC ideLogEntry::dumpHex(const UChar*    aPtr,
         }
     }
             
-    /* ë§ˆì§€ë§‰ì— ê°œí–‰ ì¶”ê°€ */
+    /* ¸¶Áö¸·¿¡ °³Çà Ãß°¡ */
     (void)idlOS::snprintf( sDstPtr, sDstSize, "\n" );
+
+    mDumpLength -= (sDstSize - 1); /* BUG-47898 */
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( err_fail_alloc );
     {
-        // ë©”ëª¨ë¦¬ í• ë‹¹ ì‹¤íŒ¨
-        // Heap ì˜ì—­ ë©”ëª¨ë¦¬ ë¶€ì¡±ìœ¼ë¡œ Dumpê²°ê³¼ë¥¼ ì €ì¥í•  ë²„í¼ë¥¼ í™•ë³´í•˜ì§€ ëª»í•˜ì˜€ìŠµë‹ˆë‹¤.
+        // ¸Ş¸ğ¸® ÇÒ´ç ½ÇÆĞ
+        // Heap ¿µ¿ª ¸Ş¸ğ¸® ºÎÁ·À¸·Î Dump°á°ú¸¦ ÀúÀåÇÒ ¹öÆÛ¸¦ È®º¸ÇÏÁö ¸øÇÏ¿´½À´Ï´Ù.
         appendFormat( "%s", ideGetErrorMsg(ideGetErrorCode()) );
     }
-    // fix BUG-29682 IDE_EXCEPTION_ENDê°€ ì˜ëª»ë˜ì–´ ë¬´í•œë£¨í”„ê°€ ìˆìŠµë‹ˆë‹¤.
+    // fix BUG-29682 IDE_EXCEPTION_END°¡ Àß¸øµÇ¾î ¹«ÇÑ·çÇÁ°¡ ÀÖ½À´Ï´Ù.
     IDE_EXCEPTION_END;
     mHexDump = NULL;
     mDumpLength = 0;

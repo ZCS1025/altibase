@@ -25,17 +25,17 @@ import Altibase.jdbc.driver.cm.CmBufferWriter;
 //PROJ-2368
 /**
  * @author pss4you
- * Batch Operation - List Protocol ì‚¬ìš©ì‹œì— ì „ì†¡í•  Data ë¥¼ ë‹´ì•„ë‘˜ ByteBuffer Handler 
+ * Batch Operation - List Protocol »ç¿ë½Ã¿¡ Àü¼ÛÇÒ Data ¸¦ ´ã¾ÆµÑ ByteBuffer Handler 
  */
 
-public class ListBufferHandle extends CmBufferWriter implements BatchDataHandle
+public class ListBufferHandle extends CmBufferWriter implements BatchRowHandle
 {
-    private static final int BUFFER_INIT_SIZE_4_BATCH   = 524288;   // batchì²˜ë¦¬ë¥¼ ìœ„í•œ Buffer ì´ˆê¸° í¬ê¸°
-    private static final int BUFFER_ALLOC_UNIT_4_BATCH  = 524288;   // batchì²˜ë¦¬ë¥¼ ìœ„í•œ Buffer ì¦ê°€ëŸ‰ ë‹¨ìœ„
-    public  static final int BUFFER_INIT_SIZE_4_SIMPLE  = 64000;    // ì¼ë°˜ executeë¥¼ ìœ„í•œ Buffer ì´ˆê¸° í¬ê¸°
-    public  static final int BUFFER_ALLOC_UNIT_4_SIMPLE = 64000;    // ì¼ë°˜ executeë¥¼ ìœ„í•œ Buffer ì¦ê°€ëŸ‰ ë‹¨ìœ„
+    private static final int BUFFER_INIT_SIZE_4_BATCH   = 524288;   // batchÃ³¸®¸¦ À§ÇÑ Buffer ÃÊ±â Å©±â
+    private static final int BUFFER_ALLOC_UNIT_4_BATCH  = 524288;   // batchÃ³¸®¸¦ À§ÇÑ Buffer Áõ°¡·® ´ÜÀ§
+    public  static final int BUFFER_INIT_SIZE_4_SIMPLE  = 64000;    // ÀÏ¹İ execute¸¦ À§ÇÑ Buffer ÃÊ±â Å©±â
+    public  static final int BUFFER_ALLOC_UNIT_4_SIMPLE = 64000;    // ÀÏ¹İ execute¸¦ À§ÇÑ Buffer Áõ°¡·® ´ÜÀ§
 
-    // BUG-46443 buffer ì´ˆê¸°ì‚¬ì´ì¦ˆì™€ ì¦ê°€ì‚¬ì´ì¦ˆë¥¼ ë©¤ë²„ë³€ìˆ˜ë¡œ ì„ ì–¸
+    // BUG-46443 buffer ÃÊ±â»çÀÌÁî¿Í Áõ°¡»çÀÌÁî¸¦ ¸â¹öº¯¼ö·Î ¼±¾ğ
     private int              mBufferInitSize;
     private int              mBufferAllocUnitSize;
     private List<Column>     mColumns;
@@ -104,7 +104,7 @@ public class ListBufferHandle extends CmBufferWriter implements BatchDataHandle
     {
         for (Column sColumn : mColumns)
         {
-            // BUG-46443 Column Typeì´ In ì¼ ê²½ìš°ì—ë§Œ ë²„í¼ì— writeí•œë‹¤.
+            // BUG-46443 Column TypeÀÌ In ÀÏ °æ¿ì¿¡¸¸ ¹öÆÛ¿¡ writeÇÑ´Ù.
             if (sColumn.getColumnInfo().hasInType())
             {
                 sColumn.storeTo(this);
@@ -116,12 +116,12 @@ public class ListBufferHandle extends CmBufferWriter implements BatchDataHandle
 
     public void checkWritable(int aNeedToWrite)
     {
-        // ë§Œì•½, Data ë¥¼ ê¸°ë¡í•  ê³µê°„ì´ ì¶©ë¶„í•˜ì§€ ì•Šë‹¤ë©´, BUFFER_ALLOC_UNIT ë§Œí¼ ì¦ê°€ëœ í¬ê¸°ì˜ Buffer ë¥¼ ìƒˆë¡œ í• ë‹¹ 
+        // ¸¸¾à, Data ¸¦ ±â·ÏÇÒ °ø°£ÀÌ ÃæºĞÇÏÁö ¾Ê´Ù¸é, BUFFER_ALLOC_UNIT ¸¸Å­ Áõ°¡µÈ Å©±âÀÇ Buffer ¸¦ »õ·Î ÇÒ´ç 
         if (mBuffer.remaining() < aNeedToWrite)
         {
             int sPosition = mBuffer.position();
             ByteBuffer sNewBuf = ByteBuffer.allocate(mBuffer.limit() * 2);  /* BUG-46550 */
-            // ìƒˆë¡œìš´ Buffer ì— ê¸°ì¡´ Buffer ë‚´ìš© ì‚½ì…
+            // »õ·Î¿î Buffer ¿¡ ±âÁ¸ Buffer ³»¿ë »ğÀÔ
             mBuffer.position(0);
             sNewBuf.put(mBuffer);
             // Position Recovery

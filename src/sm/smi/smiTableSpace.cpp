@@ -16,19 +16,19 @@
  
 
 /***********************************************************************
- * $Id: smiTableSpace.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smiTableSpace.cpp 86110 2019-09-02 04:52:04Z et16 $
  **********************************************************************/
 
 /***********************************************************************
  * FILE DESCRIPTION : smiTableSpace.cpp
- *   ë³¸ íŒŒì¼ì€ smiTableSpace í´ë˜ìŠ¤ì˜ êµ¬í˜„ íŒŒì¼ì´ë‹¤.
- *   smiTableSpace í´ë˜ìŠ¤ëŠ” Disk Resident DBì—ì„œ ì‚¬ìš©ë˜ëŠ”
- *   user table spaceì„ ìƒì„±, ì‚­ì œ ë° íŒŒì¼ì„ ì¶”ê°€í•˜
- *   ëŠ” ë£¨í‹´ì„ í¬í•¨í•˜ê³  ìˆë‹¤.
- *   í˜„ì¬ TableSpaceì˜ ì •ë³´ëŠ” Meta(Catalog)ì— ì €ì¥ë˜ì§€ ì•Šê³ 
- *   sdpTableSpace ë‚´ë¶€ì ìœ¼ë¡œ ì •ì˜ëœ íŠ¹ì • ë©”ëª¨ë¦¬ êµ¬ì¡°ì²´ì— ì €ì¥ë  ì˜ˆì •
- *   ì´ë‹¤. ì´ ë©”ëª¨ë¦¬ êµ¬ì¡°ì²´ëŠ” Log Anchor Fileì— ì •ì˜ëœ ì •ë³´ë“¤ì„ ê·¸ëŒ€ë¡œ
- *   ì €ì¥í•œë‹¤.
+ *   º» ÆÄÀÏÀº smiTableSpace Å¬·¡½ºÀÇ ±¸Çö ÆÄÀÏÀÌ´Ù.
+ *   smiTableSpace Å¬·¡½º´Â Disk Resident DB¿¡¼­ »ç¿ëµÇ´Â
+ *   user table spaceÀ» »ı¼º, »èÁ¦ ¹× ÆÄÀÏÀ» Ãß°¡ÇÏ
+ *   ´Â ·çÆ¾À» Æ÷ÇÔÇÏ°í ÀÖ´Ù.
+ *   ÇöÀç TableSpaceÀÇ Á¤º¸´Â Meta(Catalog)¿¡ ÀúÀåµÇÁö ¾Ê°í
+ *   sdpTableSpace ³»ºÎÀûÀ¸·Î Á¤ÀÇµÈ Æ¯Á¤ ¸Ş¸ğ¸® ±¸Á¶Ã¼¿¡ ÀúÀåµÉ ¿¹Á¤
+ *   ÀÌ´Ù. ÀÌ ¸Ş¸ğ¸® ±¸Á¶Ã¼´Â Log Anchor File¿¡ Á¤ÀÇµÈ Á¤º¸µéÀ» ±×´ë·Î
+ *   ÀúÀåÇÑ´Ù.
  **********************************************************************/
 
 #include <idl.h>
@@ -51,8 +51,8 @@
 #include <smpTBSAlterOnOff.h>
 #include <smuProperty.h>
 
-/* (ì°¸ê³ ) Memory Tablespaceì— ëŒ€í•´ì„œëŠ” ì´ Function Pointer Arrayê°€
-          ì „í˜€ ì°¸ì¡°ë˜ì§€ ì•Šë„ë¡ êµ¬í˜„ë˜ì–´ìˆë‹¤
+/* (Âü°í) Memory Tablespace¿¡ ´ëÇØ¼­´Â ÀÌ Function Pointer Array°¡
+          ÀüÇô ÂüÁ¶µÇÁö ¾Êµµ·Ï ±¸ÇöµÇ¾îÀÖ´Ù
 */
 static const smiCreateDiskTBSFunc smiCreateDiskTBSFunctions[SMI_TABLESPACE_TYPE_MAX]=
 {
@@ -76,21 +76,21 @@ static const smiCreateDiskTBSFunc smiCreateDiskTBSFunctions[SMI_TABLESPACE_TYPE_
 
 /***********************************************************************
  * FUNCTION DESCRIPTION : smiTableSpace::createDiskTBS()
- *   ë³¸ í•¨ìˆ˜ëŠ” create tablespace êµ¬ë¬¸ì— ì˜í•˜ì—¬ ë¶ˆë¦¬ë©°
- *   ìƒˆë¡œìš´ Disk TableSpaceë¥¼ ìƒì„±í•œë‹¤.
- *   ì¸ìë¡œ ë„˜ì–´ì˜¨ í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ ì†ì„±ê³¼ ë°ì´íƒ€ íŒŒì¼ ì†ì„±ì˜
- *   listë¥¼ ë°›ì•„ì„œ sdpTableSpaceì˜ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
- *   ê·¸ ê²°ê³¼ë¡œ table spaceì˜ idë¥¼ aTableSpaceAttr.mIDì—
- *   assigní•˜ê²Œ ëœë‹¤.
- *   í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤ typeì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
- *   1> ì¼ë°˜í…Œì´ë¸” ìŠ¤í˜ì´ìŠ¤   :  SMI_DISK_USER_DATA
- *   2> system temp table ìŠ¤í˜ì´ìŠ¤ :  SMI_DISK_SYSTEM_TEMP
- *   3> user   temp table ìŠ¤í˜ì´ìŠ¤ :  SMI_DISK_USER_TEMP
- *   4> undo table ìŠ¤í˜ì´ìŠ¤   :  SMI_DISK_SYSTEM_UNDO
- *   5> system table ìŠ¤í˜ì´ìŠ¤ :  SMI_DISK_SYSTEM_DATA
- * BUGBUG : ext page countê°€ attrì˜ ì†ì„±ì´ ë˜ì—ˆìœ¼ë¯€ë¡œ
- * ì´ë¥¼ ì¸ìë¡œ ë”°ë¡œ ë°›ì„ í•„ìš”ê°€ ì—†ë‹¤. QPì˜ ë§ì€ ë¶€ë¶„ì´ ë°”ë€Œì–´ì•¼ í•˜ë¯€ë¡œ
- * ì‘ì—…ì´ ëë‚œ í›„ ë”°ë¡œ ìˆ˜ì •í•  ì˜ˆì •ì„.
+ *   º» ÇÔ¼ö´Â create tablespace ±¸¹®¿¡ ÀÇÇÏ¿© ºÒ¸®¸ç
+ *   »õ·Î¿î Disk TableSpace¸¦ »ı¼ºÇÑ´Ù.
+ *   ÀÎÀÚ·Î ³Ñ¾î¿Â Å×ÀÌºí ½ºÆäÀÌ½º ¼Ó¼º°ú µ¥ÀÌÅ¸ ÆÄÀÏ ¼Ó¼ºÀÇ
+ *   list¸¦ ¹Ş¾Æ¼­ sdpTableSpaceÀÇ ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+ *   ±× °á°ú·Î table spaceÀÇ id¸¦ aTableSpaceAttr.mID¿¡
+ *   assignÇÏ°Ô µÈ´Ù.
+ *   Å×ÀÌºí ½ºÆäÀÌ½º typeÀº ´ÙÀ½°ú °°´Ù.
+ *   1> ÀÏ¹İÅ×ÀÌºí ½ºÆäÀÌ½º   :  SMI_DISK_USER_DATA
+ *   2> system temp table ½ºÆäÀÌ½º :  SMI_DISK_SYSTEM_TEMP
+ *   3> user   temp table ½ºÆäÀÌ½º :  SMI_DISK_USER_TEMP
+ *   4> undo table ½ºÆäÀÌ½º   :  SMI_DISK_SYSTEM_UNDO
+ *   5> system table ½ºÆäÀÌ½º :  SMI_DISK_SYSTEM_DATA
+ * BUGBUG : ext page count°¡ attrÀÇ ¼Ó¼ºÀÌ µÇ¾úÀ¸¹Ç·Î
+ * ÀÌ¸¦ ÀÎÀÚ·Î µû·Î ¹ŞÀ» ÇÊ¿ä°¡ ¾ø´Ù. QPÀÇ ¸¹Àº ºÎºĞÀÌ ¹Ù²î¾î¾ß ÇÏ¹Ç·Î
+ * ÀÛ¾÷ÀÌ ³¡³­ ÈÄ µû·Î ¼öÁ¤ÇÒ ¿¹Á¤ÀÓ.
  **********************************************************************/
 IDE_RC smiTableSpace::createDiskTBS(idvSQL            * aStatistics,
                                     smiTrans          * aTrans,
@@ -113,7 +113,7 @@ IDE_RC smiTableSpace::createDiskTBS(idvSQL            * aStatistics,
 		    ( smiGetPageSize(aTableSpaceAttr->mType) * smiGetMinExtPageCnt()),
 		      ERR_INVALID_EXTENTSIZE);
 
-    // BUGBUG-1548 CONTROL/PROCESSë‹¨ê³„ì´ë©´ ì—ëŸ¬ë¥¼ ë‚´ë„ë¡ ì²˜ë¦¬í•´ì•¼í•¨
+    // BUGBUG-1548 CONTROL/PROCESS´Ü°èÀÌ¸é ¿¡·¯¸¦ ³»µµ·Ï Ã³¸®ÇØ¾ßÇÔ
     aTableSpaceAttr->mDiskAttr.mExtPageCount = aExtPageCnt;
 
     IDE_TEST( smiCreateDiskTBSFunctions[aTableSpaceAttr->mType](
@@ -137,20 +137,20 @@ IDE_RC smiTableSpace::createDiskTBS(idvSQL            * aStatistics,
 }
 
 /*
-     ë©”ëª¨ë¦¬ Tablespaceë¥¼ ìƒì„±í•œë‹¤.
-     [IN] aTrans          - Tablespaceë¥¼ ìƒì„±í•˜ë ¤ëŠ” Transaction
-     [IN] aName           - Tablespaceì˜ ì´ë¦„
-     [IN] aAttrFlag       - Tablespaceì˜ ì†ì„± Flag
-     [IN] aChkptPathList  - Tablespaceì˜ Checkpoint Imageë“¤ì„ ì €ì¥í•  Pathë“¤
-     [IN] aSplitFileSize  - Checkpoint Image Fileì˜ í¬ê¸°
-     [IN] aInitSize       - Tablespaceì˜ ì´ˆê¸°í¬ê¸°
-     [IN] aIsAutoExtend   - Tablespaceì˜ ìë™í™•ì¥ ì—¬ë¶€
-     [IN] aNextSize       - Tablespaceì˜ ìë™í™•ì¥ í¬ê¸°
-     [IN] aMaxSize        - Tablespaceì˜ ìµœëŒ€í¬ê¸°
-     [IN] aIsOnline       - Tablespaceì˜ ì´ˆê¸° ìƒíƒœ (ONLINEì´ë©´ ID_TRUE)
-     [IN] aDBCharSet      - ë°ì´í„°ë² ì´ìŠ¤ ìºë¦­í„° ì…‹
-     [IN] aNationalCharSet- ë‚´ì…”ë„ ìºë¦­í„° ì…‹
-     [OUT] aTBSID         - ìƒì„±í•œ Tablespaceì˜ ID
+     ¸Ş¸ğ¸® Tablespace¸¦ »ı¼ºÇÑ´Ù.
+     [IN] aTrans          - Tablespace¸¦ »ı¼ºÇÏ·Á´Â Transaction
+     [IN] aName           - TablespaceÀÇ ÀÌ¸§
+     [IN] aAttrFlag       - TablespaceÀÇ ¼Ó¼º Flag
+     [IN] aChkptPathList  - TablespaceÀÇ Checkpoint ImageµéÀ» ÀúÀåÇÒ Pathµé
+     [IN] aSplitFileSize  - Checkpoint Image FileÀÇ Å©±â
+     [IN] aInitSize       - TablespaceÀÇ ÃÊ±âÅ©±â
+     [IN] aIsAutoExtend   - TablespaceÀÇ ÀÚµ¿È®Àå ¿©ºÎ
+     [IN] aNextSize       - TablespaceÀÇ ÀÚµ¿È®Àå Å©±â
+     [IN] aMaxSize        - TablespaceÀÇ ÃÖ´ëÅ©±â
+     [IN] aIsOnline       - TablespaceÀÇ ÃÊ±â »óÅÂ (ONLINEÀÌ¸é ID_TRUE)
+     [IN] aDBCharSet      - µ¥ÀÌÅÍº£ÀÌ½º Ä³¸¯ÅÍ ¼Â
+     [IN] aNationalCharSet- ³»¼Å³Î Ä³¸¯ÅÍ ¼Â
+     [OUT] aTBSID         - »ı¼ºÇÑ TablespaceÀÇ ID
  */
 IDE_RC smiTableSpace::createMemoryTBS(
                           smiTrans             * aTrans,
@@ -167,13 +167,13 @@ IDE_RC smiTableSpace::createMemoryTBS(
 {
     IDE_DASSERT( aTrans != NULL );
     IDE_DASSERT( aName != NULL );
-    // aChkptPathListëŠ” ì‚¬ìš©ìê°€ ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš° NULLì´ë‹¤.
-    // aSplitFileSizeëŠ” ì‚¬ìš©ìê°€ ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš° 0ì´ë‹¤.
-    // aInitSizeëŠ” ì‚¬ìš©ìê°€ ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš° 0ì´ë‹¤.
-    // aNextSizeëŠ” ì‚¬ìš©ìê°€ ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš° 0ì´ë‹¤.
-    // aMaxSizeëŠ” ì‚¬ìš©ìê°€ ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš° 0ì´ë‹¤.
+    // aChkptPathList´Â »ç¿ëÀÚ°¡ ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì NULLÀÌ´Ù.
+    // aSplitFileSize´Â »ç¿ëÀÚ°¡ ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì 0ÀÌ´Ù.
+    // aInitSize´Â »ç¿ëÀÚ°¡ ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì 0ÀÌ´Ù.
+    // aNextSize´Â »ç¿ëÀÚ°¡ ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì 0ÀÌ´Ù.
+    // aMaxSize´Â »ç¿ëÀÚ°¡ ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì 0ÀÌ´Ù.
 
-    // BUGBUG-1548 CONTROL/PROCESSë‹¨ê³„ì´ë©´ ì—ëŸ¬ë¥¼ ë‚´ë„ë¡ ì²˜ë¦¬í•´ì•¼í•¨
+    // BUGBUG-1548 CONTROL/PROCESS´Ü°èÀÌ¸é ¿¡·¯¸¦ ³»µµ·Ï Ã³¸®ÇØ¾ßÇÔ
     
     IDE_TEST( smmTBSCreate::createTBS( aTrans->getTrans(),
                                        smmDatabase::getDBName(),
@@ -200,16 +200,16 @@ IDE_RC smiTableSpace::createMemoryTBS(
 }
 
 /*   PROJ-1594 Volatile TBS
-     Volatile Tablespaceë¥¼ ìƒì„±í•œë‹¤.
-     [IN] aTrans          - Tablespaceë¥¼ ìƒì„±í•˜ë ¤ëŠ” Transaction
-     [IN] aName           - Tablespaceì˜ ì´ë¦„
-     [IN] aAttrFlag       - Tablespaceì˜ ì†ì„± Flag
-     [IN] aInitSize       - Tablespaceì˜ ì´ˆê¸°í¬ê¸°
-     [IN] aIsAutoExtend   - Tablespaceì˜ ìë™í™•ì¥ ì—¬ë¶€
-     [IN] aNextSize       - Tablespaceì˜ ìë™í™•ì¥ í¬ê¸°
-     [IN] aMaxSize        - Tablespaceì˜ ìµœëŒ€í¬ê¸°
-     [IN] aState          - Tablespaceì˜ ìƒíƒœ
-     [OUT] aTBSID         - ìƒì„±í•œ Tablespaceì˜ ID
+     Volatile Tablespace¸¦ »ı¼ºÇÑ´Ù.
+     [IN] aTrans          - Tablespace¸¦ »ı¼ºÇÏ·Á´Â Transaction
+     [IN] aName           - TablespaceÀÇ ÀÌ¸§
+     [IN] aAttrFlag       - TablespaceÀÇ ¼Ó¼º Flag
+     [IN] aInitSize       - TablespaceÀÇ ÃÊ±âÅ©±â
+     [IN] aIsAutoExtend   - TablespaceÀÇ ÀÚµ¿È®Àå ¿©ºÎ
+     [IN] aNextSize       - TablespaceÀÇ ÀÚµ¿È®Àå Å©±â
+     [IN] aMaxSize        - TablespaceÀÇ ÃÖ´ëÅ©±â
+     [IN] aState          - TablespaceÀÇ »óÅÂ
+     [OUT] aTBSID         - »ı¼ºÇÑ TablespaceÀÇ ID
 */
 IDE_RC smiTableSpace::createVolatileTBS(
                           smiTrans             * aTrans,
@@ -224,9 +224,9 @@ IDE_RC smiTableSpace::createVolatileTBS(
 {
     IDE_DASSERT( aTrans != NULL );
     IDE_DASSERT( aName != NULL );
-    // aInitSizeëŠ” ì‚¬ìš©ìê°€ ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš° 0ì´ë‹¤.
-    // aNextSizeëŠ” ì‚¬ìš©ìê°€ ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš° 0ì´ë‹¤.
-    // aMaxSizeëŠ” ì‚¬ìš©ìê°€ ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš° 0ì´ë‹¤.
+    // aInitSize´Â »ç¿ëÀÚ°¡ ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì 0ÀÌ´Ù.
+    // aNextSize´Â »ç¿ëÀÚ°¡ ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì 0ÀÌ´Ù.
+    // aMaxSize´Â »ç¿ëÀÚ°¡ ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì 0ÀÌ´Ù.
 
     IDE_TEST( svmTBSCreate::createTBS(aTrans->getTrans(),
                                        smmDatabase::getDBName(),
@@ -250,44 +250,37 @@ IDE_RC smiTableSpace::createVolatileTBS(
 
 /***********************************************************************
   FUNCTION DESCRIPTION : smiTableSpace::drop()
-    ë³¸ í•¨ìˆ˜ëŠ” drop tablespace êµ¬ë¬¸ì— ì˜í•˜ì—¬ ë¶ˆë¦¬ë©°,
-     ê¸°ì¡´ì˜ TableSpaceë¥¼ ì‚­ì œí• ë•Œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
-    touch modeì˜ ê°’ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
+    º» ÇÔ¼ö´Â drop tablespace ±¸¹®¿¡ ÀÇÇÏ¿© ºÒ¸®¸ç,
+     ±âÁ¸ÀÇ TableSpace¸¦ »èÁ¦ÇÒ¶§ È£ÃâµÇ´Â ÇÔ¼öÀÌ´Ù.
+    touch modeÀÇ °ªÀº ´ÙÀ½°ú °°´Ù.
 
- SMI_ALL_TOUCH = 0,  ->tablespaceì˜ ëª¨ë“  datafile ë…¸ë“œì˜
-                          datafileì„ ê±´ë“œë¦°ë‹¤.
- SMI_ALL_NOTOUCH,   ->tablespaceì˜ ëª¨ë“  datafile ë…¸ë“œì˜
-                          datafileì„ ê±´ë“œë¦¬ì§€ ì•ŠëŠ”ë‹¤.
- SMI_EACH_BYMODE    -> ê° datafile ë…¸ë“œì˜ create ëª¨ë“œì— ë”°ë¥¸ë‹¤.
+ SMI_ALL_TOUCH = 0,  ->tablespaceÀÇ ¸ğµç datafile ³ëµåÀÇ
+                          datafileÀ» °Çµå¸°´Ù.
+ SMI_ALL_NOTOUCH,   ->tablespaceÀÇ ¸ğµç datafile ³ëµåÀÇ
+                          datafileÀ» °Çµå¸®Áö ¾Ê´Â´Ù.
+ SMI_EACH_BYMODE    -> °¢ datafile ³ëµåÀÇ create ¸ğµå¿¡ µû¸¥´Ù.
  **********************************************************************/
-IDE_RC smiTableSpace::drop( idvSQL       *aStatistics,
+IDE_RC smiTableSpace::drop( idvSQL       */*aStatistics*/,
                             smiTrans*     aTrans,
                             scSpaceID     aTableSpaceID,
                             smiTouchMode  aTouchMode )
 {
-    UInt sStage = 0;
     sctTableSpaceNode * sTBSNode;
 
     IDE_DASSERT( aTrans != NULL );
 
     // fix bug-9563.
-    // system tablespaceëŠ” dropí• ìˆ˜ ì—†ë‹¤.
+    // system tablespace´Â dropÇÒ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( aTableSpaceID <= SMI_ID_TABLESPACE_SYSTEM_DISK_TEMP,
                     error_drop_system_tablespace);
 
-    // BUGBUG-1548 CONTROL/PROCESSë‹¨ê³„ì´ë©´ ì—ëŸ¬ë¥¼ ë‚´ë„ë¡ ì²˜ë¦¬í•´ì•¼í•¨
+    // BUGBUG-1548 CONTROL/PROCESS´Ü°èÀÌ¸é ¿¡·¯¸¦ ³»µµ·Ï Ã³¸®ÇØ¾ßÇÔ
 
-    // TBSIDë¡œ TBSNodeë¥¼ ì•Œì•„ë‚¸ë‹¤.
-    IDE_TEST( sctTableSpaceMgr::lock( aStatistics ) != IDE_SUCCESS );
-    sStage = 1;
-
+    // TBSID·Î TBSNode¸¦ ¾Ë¾Æ³½´Ù.
     IDE_TEST( sctTableSpaceMgr::findSpaceNodeBySpaceID(
                                           aTableSpaceID,
                                           (void**) & sTBSNode )
               != IDE_SUCCESS );
-
-    sStage = 0;
-    IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS );
 
     switch ( sTBSNode->mType )
     {
@@ -306,9 +299,9 @@ IDE_RC smiTableSpace::drop( idvSQL       *aStatistics,
             break;
         case SMI_DISK_USER_DATA:
         case SMI_DISK_USER_TEMP:
-            //sddTableSpaceì˜ TableSpaceë¥¼ ì‚­ì œí•˜ëŠ” í•¨ìˆ˜ í˜¸ì¶œ
+            //sddTableSpaceÀÇ TableSpace¸¦ »èÁ¦ÇÏ´Â ÇÔ¼ö È£Ãâ
             IDE_TEST(sdpTableSpace::dropTBS(
-                         NULL, // BUGBUG : ì¶”ê°€ ìš”ë§ from QP
+                         NULL, // BUGBUG : Ãß°¡ ¿ä¸Á from QP
                          aTrans->getTrans(),
                          aTableSpaceID,
                          aTouchMode)
@@ -321,8 +314,8 @@ IDE_RC smiTableSpace::drop( idvSQL       *aStatistics,
         case SMI_DISK_SYSTEM_UNDO:
         case SMI_DISK_SYSTEM_DATA:
         default :
-            // ìœ„ì—ì„œ Dropë¶ˆê°€ëŠ¥í•œ TBSì¸ì§€ ì²´í¬í•˜ì˜€ìœ¼ë¯€ë¡œ
-            // ì—¬ê¸°ì—ì„œëŠ” Dropë¶ˆê°€ëŠ¥í•œ TBSëŠ” ë“¤ì–´ì˜¬ ìˆ˜ ì—†ë‹¤
+            // À§¿¡¼­ DropºÒ°¡´ÉÇÑ TBSÀÎÁö Ã¼Å©ÇÏ¿´À¸¹Ç·Î
+            // ¿©±â¿¡¼­´Â DropºÒ°¡´ÉÇÑ TBS´Â µé¾î¿Ã ¼ö ¾ø´Ù
             IDE_ASSERT(0);
             break;
     }
@@ -334,36 +327,23 @@ IDE_RC smiTableSpace::drop( idvSQL       *aStatistics,
         IDE_SET(ideSetErrorCode(smERR_ABORT_CannotDropTableSpace));
     }
     IDE_EXCEPTION_END;
-
-    IDE_PUSH();
-    
-    switch ( sStage )
-    {
-        case 1 :
-            IDE_ASSERT( sctTableSpaceMgr::unlock() == IDE_SUCCESS );
-            break;
-        default :
-            break;
-    }
-
-    IDE_POP();
     
     return IDE_FAILURE;
 }
 
 /***********************************************************************
  * FUNCTION DESCRIPTION : smiTableSpace::alterStatus()
- *   ALTER TABLESPACE ONLINE/OFFLINEì„ ìˆ˜í–‰ 
+ *   ALTER TABLESPACE ONLINE/OFFLINEÀ» ¼öÇà 
  *
  *
- *   ë³¸ í•¨ìˆ˜ëŠ” alter tablespace tablespaceì´ë¦„ [online| offline]
- *   êµ¬ë¬¸ì— ì˜í•˜ì—¬ ë¶ˆë¦¬ë©°, íŠ¹ì • TableSpaceì˜ ìƒíƒœë¥¼
- *   online/offlineìœ¼ë¡œ ë³€ê²½í•œë‹¤.
- *   íŒŒì¼ì˜ ì¶”ê°€ë¥¼ ì œì™¸í•œ ëª¨ë“  ì‘ì—…ë“¤ì€ online ìƒíƒœì—ì„œë§Œ ê°€ëŠ¥í•˜ë‹¤.
+ *   º» ÇÔ¼ö´Â alter tablespace tablespaceÀÌ¸§ [online| offline]
+ *   ±¸¹®¿¡ ÀÇÇÏ¿© ºÒ¸®¸ç, Æ¯Á¤ TableSpaceÀÇ »óÅÂ¸¦
+ *   online/offlineÀ¸·Î º¯°æÇÑ´Ù.
+ *   ÆÄÀÏÀÇ Ãß°¡¸¦ Á¦¿ÜÇÑ ¸ğµç ÀÛ¾÷µéÀº online »óÅÂ¿¡¼­¸¸ °¡´ÉÇÏ´Ù.
  *
- * [IN] aTrans        - ìƒíƒœë¥¼ ë³€ê²½í•˜ë ¤ëŠ” Transaction
- * [IN] aTableSpaceID - ìƒíƒœë¥¼ ë³€ê²½í•˜ë ¤ëŠ” Tablespaceì˜ ID
- * [IN] aState        - ìƒˆë¡œ ì „ì´í•  ìƒíƒœ ( Online or Offline )
+ * [IN] aTrans        - »óÅÂ¸¦ º¯°æÇÏ·Á´Â Transaction
+ * [IN] aTableSpaceID - »óÅÂ¸¦ º¯°æÇÏ·Á´Â TablespaceÀÇ ID
+ * [IN] aState        - »õ·Î ÀüÀÌÇÒ »óÅÂ ( Online or Offline )
  **********************************************************************/
 IDE_RC smiTableSpace::alterStatus(idvSQL*     aStatistics,
                                   smiTrans  * aTrans,
@@ -380,7 +360,7 @@ IDE_RC smiTableSpace::alterStatus(idvSQL*     aStatistics,
         IDE_RAISE( error_alter_tbs_onoff_allowed_only_at_meta_service_phase);
     }
     
-    // TBSIDë¡œ TBSNodeë¥¼ ì•Œì•„ë‚¸ë‹¤.
+    // TBSID·Î TBSNode¸¦ ¾Ë¾Æ³½´Ù.
     IDE_TEST( sctTableSpaceMgr::findSpaceNodeBySpaceID( aTableSpaceID,
                                                         (void**) & sTBSNode )
               != IDE_SUCCESS );
@@ -410,8 +390,8 @@ IDE_RC smiTableSpace::alterStatus(idvSQL*     aStatistics,
         case SMI_DISK_SYSTEM_UNDO:
         case SMI_DISK_SYSTEM_DATA:
         default :
-            // ìœ„ì—ì„œ Dropë¶ˆê°€ëŠ¥í•œ TBSì¸ì§€ ì²´í¬í•˜ì˜€ìœ¼ë¯€ë¡œ
-            // ì—¬ê¸°ì—ì„œëŠ” Dropë¶ˆê°€ëŠ¥í•œ TBSëŠ” ë“¤ì–´ì˜¬ ìˆ˜ ì—†ë‹¤
+            // À§¿¡¼­ DropºÒ°¡´ÉÇÑ TBSÀÎÁö Ã¼Å©ÇÏ¿´À¸¹Ç·Î
+            // ¿©±â¿¡¼­´Â DropºÒ°¡´ÉÇÑ TBS´Â µé¾î¿Ã ¼ö ¾ø´Ù
             IDE_ASSERT(0);
             break;
             
@@ -429,12 +409,12 @@ IDE_RC smiTableSpace::alterStatus(idvSQL*     aStatistics,
 }
 
 /**
-    Tablespaceì˜ Attribute Flagë¥¼ ë³€ê²½í•œë‹¤.
+    TablespaceÀÇ Attribute Flag¸¦ º¯°æÇÑ´Ù.
     
     [IN] aTrans - Transaction
-    [IN] aTableSpaceID - Tablespaceì˜ ID
-    [IN] aAttrFlagMask  - Attribute Flagì˜ Mask
-    [IN] aAttrFlagValue - Attribute Flagì˜ Value
+    [IN] aTableSpaceID - TablespaceÀÇ ID
+    [IN] aAttrFlagMask  - Attribute FlagÀÇ Mask
+    [IN] aAttrFlagValue - Attribute FlagÀÇ Value
  */
 IDE_RC smiTableSpace::alterTBSAttrFlag(smiTrans  * aTrans,
                                        scSpaceID   aTableSpaceID,
@@ -443,11 +423,11 @@ IDE_RC smiTableSpace::alterTBSAttrFlag(smiTrans  * aTrans,
 {
     IDE_DASSERT( aTrans != NULL );
 
-    // Attribute Maskê°€ 0ì¼ ìˆ˜ ì—†ë‹¤.
+    // Attribute Mask°¡ 0ÀÏ ¼ö ¾ø´Ù.
     IDE_ASSERT( aAttrFlagMask != 0 );
     
-    // Attribute Maskì™¸ì˜ ë¹„íŠ¸ê°€
-    // Attribute Valueì— ì„¸íŒ…ë  ìˆ˜ ì—†ë‹¤.
+    // Attribute Mask¿ÜÀÇ ºñÆ®°¡
+    // Attribute Value¿¡ ¼¼ÆÃµÉ ¼ö ¾ø´Ù.
     IDE_ASSERT( (~aAttrFlagMask & aAttrFlagValue) == 0 );
     
     IDE_TEST( sctTBSAlter::alterTBSAttrFlag(
@@ -466,8 +446,8 @@ IDE_RC smiTableSpace::alterTBSAttrFlag(smiTrans  * aTrans,
 
 /***********************************************************************
  * FUNCTION DESCRIPTION : smiTableSpace::addFile()
- *   ë³¸ í•¨ìˆ˜ëŠ” alter tablespace add datafile ..êµ¬ë¬¸ì— ì˜í•˜ì—¬ ë¶ˆë¦¬ë©°,
- *   íŠ¹ì • TableSpaceì— ë°ì´íƒ€ íŒŒì¼ë“¤ì„ ì¶”ê°€í•œë‹¤.
+ *   º» ÇÔ¼ö´Â alter tablespace add datafile ..±¸¹®¿¡ ÀÇÇÏ¿© ºÒ¸®¸ç,
+ *   Æ¯Á¤ TableSpace¿¡ µ¥ÀÌÅ¸ ÆÄÀÏµéÀ» Ãß°¡ÇÑ´Ù.
  **********************************************************************/
 IDE_RC smiTableSpace::addDataFile( idvSQL          * aStatistics,
                                    smiTrans*         aTrans,
@@ -493,8 +473,8 @@ IDE_RC smiTableSpace::addDataFile( idvSQL          * aStatistics,
 
 /***********************************************************************
  * FUNCTION DESCRIPTION : smiTableSpace::alterDataFileAutoExtend()
- *   ë³¸ í•¨ìˆ˜ëŠ” alter tablespace modify datafile ì ˆì— ì˜í•˜ì—¬
- *   ë¶ˆë¦¬ë©°,autoextendê´€ë ¨ ì†ì„±ì„ ë³€ê²½í•œë‹¤.
+ *   º» ÇÔ¼ö´Â alter tablespace modify datafile Àı¿¡ ÀÇÇÏ¿©
+ *   ºÒ¸®¸ç,autoextend°ü·Ã ¼Ó¼ºÀ» º¯°æÇÑ´Ù.
  *   next size, max size, autoextend on/off.
  **********************************************************************/
 IDE_RC  smiTableSpace::alterDataFileAutoExtend(smiTrans*   aTrans,
@@ -509,7 +489,7 @@ IDE_RC  smiTableSpace::alterDataFileAutoExtend(smiTrans*   aTrans,
     IDE_DASSERT( aFileName != NULL );
     IDE_DASSERT( aFileName != NULL );
     
-    IDE_TEST( sdpTableSpace::alterDataFileAutoExtend(NULL, // BUGBUG : ì¶”ê°€ ìš”ë§ from QP
+    IDE_TEST( sdpTableSpace::alterDataFileAutoExtend(NULL, // BUGBUG : Ãß°¡ ¿ä¸Á from QP
                                                      aTrans->getTrans(),
                                                      aSpaceID,
                                                      aFileName,
@@ -527,15 +507,15 @@ IDE_RC  smiTableSpace::alterDataFileAutoExtend(smiTrans*   aTrans,
 
 /***********************************************************************
  * FUNCTION DESCRIPTION : smiTableSpace::alterDataFileOnlineMode()
- *   ë³¸ í•¨ìˆ˜ëŠ” alter tablespace modify datafile ì ˆì— ì˜í•˜ì—¬
- *   ë¶ˆë¦¬ë©°,onlineê´€ë ¨ ì†ì„±ì„ ë³€ê²½í•œë‹¤.
+ *   º» ÇÔ¼ö´Â alter tablespace modify datafile Àı¿¡ ÀÇÇÏ¿©
+ *   ºÒ¸®¸ç,online°ü·Ã ¼Ó¼ºÀ» º¯°æÇÑ´Ù.
  **********************************************************************/
 IDE_RC smiTableSpace::alterDataFileOnLineMode( scSpaceID  /* aSpaceID */,
                                                SChar *    /* aFileName */,
                                                UInt       /* aOnline */)
 {
-    // datafile  offline /onlineì€ altibase 4ì—ì„œëŠ”
-    // ì˜ë¯¸ê°€ ì—†ë‹¤((BUG-11341).
+    // datafile  offline /onlineÀº altibase 4¿¡¼­´Â
+    // ÀÇ¹Ì°¡ ¾ø´Ù((BUG-11341).
     IDE_SET(ideSetErrorCode(smERR_ABORT_NotSupport,"DATAFILE ONLINE/OFFLINE"));
     
     return IDE_FAILURE;
@@ -543,8 +523,8 @@ IDE_RC smiTableSpace::alterDataFileOnLineMode( scSpaceID  /* aSpaceID */,
 
 /***********************************************************************
  * FUNCTION DESCRIPTION : smiTableSpace:resizeDataFileSize()
- *   ë³¸ í•¨ìˆ˜ëŠ” alter tablespace modify datafile.. resize ì ˆì— ì˜í•˜ì—¬
- *   ë¶ˆë¦¬ë©°, íŠ¹ì • TableSpaceì— ì†í•œ ë°ì´íƒ€íŒŒì¼ì˜ í¬ê¸°ë¥¼ ì¡°ì •í•œë‹¤.
+ *   º» ÇÔ¼ö´Â alter tablespace modify datafile.. resize Àı¿¡ ÀÇÇÏ¿©
+ *   ºÒ¸®¸ç, Æ¯Á¤ TableSpace¿¡ ¼ÓÇÑ µ¥ÀÌÅ¸ÆÄÀÏÀÇ Å©±â¸¦ Á¶Á¤ÇÑ´Ù.
  **********************************************************************/
 IDE_RC smiTableSpace::resizeDataFile(idvSQL    * aStatistics,
                                      smiTrans  * aTrans,
@@ -574,8 +554,8 @@ IDE_RC smiTableSpace::resizeDataFile(idvSQL    * aStatistics,
 
 /***********************************************************************
  * FUNCTION DESCRIPTION : smiTableSpace::renameDataFile()
- * ë³¸ í•¨ìˆ˜ëŠ” alter tablespace rename datafile ì ˆì— ì˜í•˜ì—¬
-   ë¶ˆë¦¬ë©°, íŠ¹ì • TableSpaceì— ì†í•œ íŒŒì¼ì˜ ì´ë¦„ì„ ë³€ê²½í•œë‹¤.
+ * º» ÇÔ¼ö´Â alter tablespace rename datafile Àı¿¡ ÀÇÇÏ¿©
+   ºÒ¸®¸ç, Æ¯Á¤ TableSpace¿¡ ¼ÓÇÑ ÆÄÀÏÀÇ ÀÌ¸§À» º¯°æÇÑ´Ù.
  **********************************************************************/
 IDE_RC smiTableSpace::renameDataFile( scSpaceID  aTblSpaceID,
                                       SChar*     aOldFileName,
@@ -604,9 +584,9 @@ IDE_RC smiTableSpace::renameDataFile( scSpaceID  aTblSpaceID,
 
 /***********************************************************************
  * FUNCTION DESCRIPTION : smiTableSpace::removeDataFile()
- *   ë³¸ í•¨ìˆ˜ëŠ” alter tablespace drop datafileì ˆì— ì˜í•˜ì—¬
- *   ë¶ˆë¦¬ë©° íŠ¹ì • TableSpaceì— ì†í•œ ë°ì´íƒ€íŒŒì¼ ë…¸ë“œë¥¼ ì‚­ì œí•œë‹¤.
- *   !! íŒŒì¼ì€ ì‚­ì œí•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *   º» ÇÔ¼ö´Â alter tablespace drop datafileÀı¿¡ ÀÇÇÏ¿©
+ *   ºÒ¸®¸ç Æ¯Á¤ TableSpace¿¡ ¼ÓÇÑ µ¥ÀÌÅ¸ÆÄÀÏ ³ëµå¸¦ »èÁ¦ÇÑ´Ù.
+ *   !! ÆÄÀÏÀº »èÁ¦ÇÏÁö ¾Ê´Â´Ù.
  **********************************************************************/
 IDE_RC smiTableSpace::removeDataFile( smiTrans* aTrans,
                                       scSpaceID aTblSpaceID,
@@ -615,7 +595,7 @@ IDE_RC smiTableSpace::removeDataFile( smiTrans* aTrans,
 {                                     
     IDE_DASSERT( aTrans != NULL );
     
-    IDE_TEST(sdpTableSpace::removeDataFile(NULL, // BUGBUG : ì¶”ê°€ ìš”ë§ from QP
+    IDE_TEST(sdpTableSpace::removeDataFile(NULL, // BUGBUG : Ãß°¡ ¿ä¸Á from QP
                                            aTrans->getTrans(),
                                            aTblSpaceID,
                                            aFileName,
@@ -633,23 +613,23 @@ IDE_RC smiTableSpace::removeDataFile( smiTrans* aTrans,
  *
  * Description :
  *
- * ìƒëŒ€ ê²½ë¡œë¥¼ ë°›ì•„ì„œ ì ˆëŒ€ ê²½ë¡œë¥¼ ë¦¬í„´í•œë‹¤.
- * ìƒëŒ€ ê²½ë¡œë¡œ ì§€ì •ëœ í™”ì¼ì€ ALTIBASE_HOME/dbs ë””ë ‰í† ë¦¬ì˜ í™”ì¼ë¡œ ì·¨ê¸‰ëœë‹¤.
+ * »ó´ë °æ·Î¸¦ ¹Ş¾Æ¼­ Àı´ë °æ·Î¸¦ ¸®ÅÏÇÑ´Ù.
+ * »ó´ë °æ·Î·Î ÁöÁ¤µÈ È­ÀÏÀº ALTIBASE_HOME/dbs µğ·ºÅä¸®ÀÇ È­ÀÏ·Î Ãë±ŞµÈ´Ù.
  * Abs : Absolute
  * Rel : Relative
- * space IDëŠ” system, undo, tempë€ ì˜ˆì•½ì–´ê°€ fileì˜ ì´ë¦„ìœ¼ë¡œ ì‚¬ìš©ë  ìˆ˜
- * ìˆëŠ” ì§€ ê²°ì •í•˜ê¸° ìœ„í•´ í•„ìš”í•˜ë‹¤ user í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì˜ datafileì€
- * ì‹œìŠ¤í…œ ì˜ˆì•½ì–´ê°€ ë“¤ì–´ê°„ í™”ì¼ì„ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+ * space ID´Â system, undo, temp¶õ ¿¹¾à¾î°¡ fileÀÇ ÀÌ¸§À¸·Î »ç¿ëµÉ ¼ö
+ * ÀÖ´Â Áö °áÁ¤ÇÏ±â À§ÇØ ÇÊ¿äÇÏ´Ù user Å×ÀÌºí½ºÆäÀÌ½ºÀÇ datafileÀº
+ * ½Ã½ºÅÛ ¿¹¾à¾î°¡ µé¾î°£ È­ÀÏÀ» »ç¿ëÇÒ ¼ö ¾ø´Ù.
  * 
- * tablespace IDë¥¼ ì•Œ ìˆ˜ ì—†ëŠ” ê²½ìš°ì—
- * ì´ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•´ì„œëŠ” 
- * SMI_ID_TABLESPACE_SYSTEM_TEMPë³´ë‹¤ í° ê°’ì„ ë„˜ê¸°ë©´ ëœë‹¤.
+ * tablespace ID¸¦ ¾Ë ¼ö ¾ø´Â °æ¿ì¿¡
+ * ÀÌ ÇÔ¼ö¸¦ »ç¿ëÇÏ±â À§ÇØ¼­´Â 
+ * SMI_ID_TABLESPACE_SYSTEM_TEMPº¸´Ù Å« °ªÀ» ³Ñ±â¸é µÈ´Ù.
  *
  * BUG-29812
- * getAbsPath í•¨ìˆ˜ë¥¼ Memory/Disk TBSì—ì„œ ëª¨ë‘ ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡ ë³€ê²½í•œë‹¤.
+ * getAbsPath ÇÔ¼ö¸¦ Memory/Disk TBS¿¡¼­ ¸ğµÎ »ç¿ëÇÒ ¼ö ÀÖµµ·Ï º¯°æÇÑ´Ù.
  *
- * Memory TBSì˜ ê²½ìš° í•œ ê°œì˜ ë²„í¼ì— ìƒëŒ€ê²½ë¡œë¥¼ ì¸ìë¡œ ë„˜ê²¨ì£¼ê³ ,
- * ì ˆëŒ€ê²½ë¡œë¥¼ ë°›ê¸° ë•Œë¬¸ì— aRelNameê³¼ aAbsNameì´ ë™ì¼í•œ ì£¼ì†Œì´ë‹¤.
+ * Memory TBSÀÇ °æ¿ì ÇÑ °³ÀÇ ¹öÆÛ¿¡ »ó´ë°æ·Î¸¦ ÀÎÀÚ·Î ³Ñ°ÜÁÖ°í,
+ * Àı´ë°æ·Î¸¦ ¹Ş±â ¶§¹®¿¡ aRelName°ú aAbsNameÀÌ µ¿ÀÏÇÑ ÁÖ¼ÒÀÌ´Ù.
  * 
  * ----------------------------------------------*/
 IDE_RC smiTableSpace::getAbsPath( SChar         * aRelName, 
@@ -688,8 +668,8 @@ IDE_RC smiTableSpace::getAbsPath( SChar         * aRelName,
 /* ------------------------------------------------
  *
  * Description :
- * tablespace idë¡œ tablespaceë¥¼ ì°¾ì•„
- * ê·¸ ì†ì„±ì„ ë°˜í™˜í•œë‹¤.
+ * tablespace id·Î tablespace¸¦ Ã£¾Æ
+ * ±× ¼Ó¼ºÀ» ¹İÈ¯ÇÑ´Ù.
  *
  * ----------------------------------------------*/
 IDE_RC smiTableSpace::getAttrByID( scSpaceID           aTableSpaceID,
@@ -698,8 +678,9 @@ IDE_RC smiTableSpace::getAttrByID( scSpaceID           aTableSpaceID,
     
     IDE_DASSERT( aTBSAttr != NULL );
 
-    IDE_TEST( sctTableSpaceMgr::getTBSAttrByID(aTableSpaceID,
-                                         aTBSAttr)
+    IDE_TEST( sctTableSpaceMgr::getTBSAttrByID( NULL,
+                                                aTableSpaceID,
+                                                aTBSAttr )
               != IDE_SUCCESS );
     
     return IDE_SUCCESS;
@@ -712,8 +693,8 @@ IDE_RC smiTableSpace::getAttrByID( scSpaceID           aTableSpaceID,
 /* ------------------------------------------------
  *
  * Description :
- * tablespace nameìœ¼ë¡œ tablespaceë¥¼ ì°¾ì•„
- * ê·¸ ì†ì„±ì„ ë°˜í™˜í•œë‹¤.
+ * tablespace nameÀ¸·Î tablespace¸¦ Ã£¾Æ
+ * ±× ¼Ó¼ºÀ» ¹İÈ¯ÇÑ´Ù.
  * ----------------------------------------------*/
 IDE_RC smiTableSpace::getAttrByName( SChar             * aTableSpaceName,
                                      smiTableSpaceAttr * aTBSAttr )
@@ -736,8 +717,8 @@ IDE_RC smiTableSpace::getAttrByName( SChar             * aTableSpaceName,
  *
  * Description :
  *
- * tablespace idì™€ datafileì˜ ì´ë¦„ì„ ë°›ì•„
- * í•´ë‹¹ datafileì´ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+ * tablespace id¿Í datafileÀÇ ÀÌ¸§À» ¹Ş¾Æ
+ * ÇØ´ç datafileÀÌ Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù.
  * ----------------------------------------------*/
 IDE_RC smiTableSpace::existDataFile( scSpaceID         aTableSpaceID,
                                      SChar*            aDataFileName,
@@ -764,8 +745,8 @@ IDE_RC smiTableSpace::existDataFile( scSpaceID         aTableSpaceID,
  *
  * Description :
  *
- * ëª¨ë“  í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ì— ëŒ€í•´ datafileì´
- * ì´ë¯¸ ì¡´ì¬í•˜ëŠ”ì§€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
+ * ¸ğµç Å×ÀÌºí½ºÆäÀÌ½º¿¡ ´ëÇØ datafileÀÌ
+ * ÀÌ¹Ì Á¸ÀçÇÏ´ÂÁö Á¸ÀçÇÏ´ÂÁö °Ë»çÇÑ´Ù.
  * ----------------------------------------------*/
 IDE_RC smiTableSpace::existDataFile( SChar*            aDataFileName,
                                      idBool*           aExist)
@@ -796,9 +777,9 @@ IDE_RC smiTableSpace::getExtentAnTotalPageCnt(scSpaceID  aTableSpaceID,
                                                aTotalPageCount);
 }
 /*
- * ì‹œìŠ¤í…œ í…Œì´ë¸”ìŠ¤í˜ì´ìŠ¤ ì—¬ë¶€ ë°˜í™˜
+ * ½Ã½ºÅÛ Å×ÀÌºí½ºÆäÀÌ½º ¿©ºÎ ¹İÈ¯
  *
- * [IN] aSpaceID - Tablespaceì˜ ID
+ * [IN] aSpaceID - TablespaceÀÇ ID
  */
 idBool smiTableSpace::isSystemTableSpace( scSpaceID aSpaceID )
 {
@@ -827,72 +808,41 @@ idBool smiTableSpace::isTempTableSpace( scSpaceID  aTableSpaceID )
 
 idBool smiTableSpace::isMemTableSpaceType( smiTableSpaceType  aType )
 {
-    if( (aType == SMI_MEMORY_SYSTEM_DICTIONARY) ||
-        (aType == SMI_MEMORY_SYSTEM_DATA) ||
-        (aType == SMI_MEMORY_USER_DATA) )
-    {
-        return ID_TRUE;
-    }
-    return ID_FALSE;
+    return sctTableSpaceMgr::isMemTableSpaceType( aType );
 }
 
 idBool smiTableSpace::isVolatileTableSpaceType( smiTableSpaceType aType )
 {
-    if(aType == SMI_VOLATILE_USER_DATA)
-    {
-        return ID_TRUE;
-    }
-    return ID_FALSE;
+    return sctTableSpaceMgr::isVolatileTableSpaceType( aType );
 }
 
 idBool smiTableSpace::isDiskTableSpaceType( smiTableSpaceType  aType )
 {
-    if( (aType == SMI_DISK_SYSTEM_DATA) ||
-        (aType == SMI_DISK_USER_DATA)   ||
-        (aType == SMI_DISK_SYSTEM_TEMP) ||
-        (aType == SMI_DISK_USER_TEMP)   ||
-        (aType == SMI_DISK_SYSTEM_UNDO) )
-    {
-        return ID_TRUE;
-    }
-    return ID_FALSE;
+    return sctTableSpaceMgr::isDiskTableSpaceType( aType );
 }
 
 idBool smiTableSpace::isTempTableSpaceType( smiTableSpaceType  aType )
 {
-    if( (aType == SMI_DISK_SYSTEM_TEMP) ||
-        (aType == SMI_DISK_USER_TEMP) )
-    {
-        return ID_TRUE;
-    }
-    return ID_FALSE;
+    return sctTableSpaceMgr::isTempTableSpaceType( aType );
 }
 
 idBool smiTableSpace::isDataTableSpaceType( smiTableSpaceType  aType )
 {
-    if( (aType == SMI_MEMORY_SYSTEM_DATA) ||
-        (aType == SMI_MEMORY_USER_DATA)   ||
-        (aType == SMI_VOLATILE_USER_DATA) ||
-        (aType == SMI_DISK_SYSTEM_DATA)   ||
-        (aType == SMI_DISK_USER_DATA) )
-    {
-        return ID_TRUE;
-    }
-    return ID_FALSE;
+    return sctTableSpaceMgr::isDataTableSpaceType( aType );
 }
 
 /*
-    ALTER TABLESPACE TBSNAME ADD CHECKPOINT PATH ... ë¥¼ ì‹¤í–‰
+    ALTER TABLESPACE TBSNAME ADD CHECKPOINT PATH ... ¸¦ ½ÇÇà
 
     [IN] aSpaceID   - Tablespace ID
-    [IN] aChkptPath - ì¶”ê°€í•  Checkpoint Path
+    [IN] aChkptPath - Ãß°¡ÇÒ Checkpoint Path
 */
 IDE_RC  smiTableSpace::alterMemoryTBSAddChkptPath( scSpaceID      aSpaceID,
                                                    SChar        * aChkptPath )
 {
     IDE_DASSERT( aChkptPath != NULL );
 
-    // ë‹¤ë‹¨ê³„startupë‹¨ê³„ì¤‘ control ë‹¨ê³„ì—ì„œë§Œ ë¶ˆë¦´ìˆ˜ ìˆë‹¤.
+    // ´Ù´Ü°èstartup´Ü°èÁß control ´Ü°è¿¡¼­¸¸ ºÒ¸±¼ö ÀÖ´Ù.
     IDE_TEST_RAISE(smiGetStartupPhase() != SMI_STARTUP_CONTROL,
                    err_startup_phase);
 
@@ -913,11 +863,11 @@ IDE_RC  smiTableSpace::alterMemoryTBSAddChkptPath( scSpaceID      aSpaceID,
 }
 
 /*
-    ALTER TABLESPACE TBSNAME RENAME CHECKPOINT PATH ... ë¥¼ ì‹¤í–‰
+    ALTER TABLESPACE TBSNAME RENAME CHECKPOINT PATH ... ¸¦ ½ÇÇà
 
     [IN] aSpaceID      - Tablespace ID
-    [IN] aOrgChkptPath - ë³€ê²½ì „ Checkpoint Path
-    [IN] aNEwChkptPath - ë³€ê²½í›„ Checkpoint Path
+    [IN] aOrgChkptPath - º¯°æÀü Checkpoint Path
+    [IN] aNEwChkptPath - º¯°æÈÄ Checkpoint Path
 */
 IDE_RC  smiTableSpace::alterMemoryTBSRenameChkptPath( scSpaceID   aSpaceID,
                                                       SChar     * aOrgChkptPath,
@@ -926,7 +876,7 @@ IDE_RC  smiTableSpace::alterMemoryTBSRenameChkptPath( scSpaceID   aSpaceID,
     IDE_DASSERT( aOrgChkptPath != NULL );
     IDE_DASSERT( aNewChkptPath != NULL );
     
-    // ë‹¤ë‹¨ê³„startupë‹¨ê³„ì¤‘ control ë‹¨ê³„ì—ì„œë§Œ ë¶ˆë¦´ìˆ˜ ìˆë‹¤.
+    // ´Ù´Ü°èstartup´Ü°èÁß control ´Ü°è¿¡¼­¸¸ ºÒ¸±¼ö ÀÖ´Ù.
     IDE_TEST_RAISE(smiGetStartupPhase() != SMI_STARTUP_CONTROL,
                    err_startup_phase);
     
@@ -948,17 +898,17 @@ IDE_RC  smiTableSpace::alterMemoryTBSRenameChkptPath( scSpaceID   aSpaceID,
 
 
 /*
-    ALTER TABLESPACE TBSNAME DROP CHECKPOINT PATH ... ë¥¼ ì‹¤í–‰
+    ALTER TABLESPACE TBSNAME DROP CHECKPOINT PATH ... ¸¦ ½ÇÇà
 
     [IN] aSpaceID   - Tablespace ID
-    [IN] aChkptPath - ì œê±°í•  Checkpoint Path
+    [IN] aChkptPath - Á¦°ÅÇÒ Checkpoint Path
 */
 IDE_RC  smiTableSpace::alterMemoryTBSDropChkptPath( scSpaceID      aSpaceID,
                                                     SChar        * aChkptPath )
 {
     IDE_DASSERT( aChkptPath != NULL );
 
-    // ë‹¤ë‹¨ê³„startupë‹¨ê³„ì¤‘ control ë‹¨ê³„ì—ì„œë§Œ ë¶ˆë¦´ìˆ˜ ìˆë‹¤.
+    // ´Ù´Ü°èstartup´Ü°èÁß control ´Ü°è¿¡¼­¸¸ ºÒ¸±¼ö ÀÖ´Ù.
     IDE_TEST_RAISE(smiGetStartupPhase() != SMI_STARTUP_CONTROL,
                    err_startup_phase);
     
@@ -981,9 +931,9 @@ IDE_RC  smiTableSpace::alterMemoryTBSDropChkptPath( scSpaceID      aSpaceID,
 
 
 /*
-    ALTER TABLESPACE TBSNAME AUTOEXTEND ... ë¥¼ ìˆ˜í–‰í•œë‹¤ 
+    ALTER TABLESPACE TBSNAME AUTOEXTEND ... ¸¦ ¼öÇàÇÑ´Ù 
 
-   ë“¤ì–´ì˜¬ ìˆ˜ ìˆëŠ” ë¬¸ì¥ ì¢…ë¥˜:
+   µé¾î¿Ã ¼ö ÀÖ´Â ¹®Àå Á¾·ù:
      - ALTER TABLESPACE TBSNAME AUTOEXTEND OFF
      - ALTER TABLESPACE TBSNAME AUTOEXTEND ON NEXT 10M
      - ALTER TABLESPACE TBSNAME AUTOEXTEND ON MAXSIZE 10M/UNLIMITTED
@@ -998,7 +948,7 @@ IDE_RC  smiTableSpace::alterMemoryTBSAutoExtend(smiTrans*   aTrans,
 {
     IDE_DASSERT( aTrans != NULL );
 
-    // dictionary tablespaceëŠ” alter autoextendí• ìˆ˜ ì—†ë‹¤.
+    // dictionary tablespace´Â alter autoextendÇÒ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( aSpaceID == SMI_ID_TABLESPACE_SYSTEM_MEMORY_DIC,
                     error_alter_autoextend_dictionary_tablespace);
     
@@ -1024,7 +974,7 @@ IDE_RC  smiTableSpace::alterMemoryTBSAutoExtend(smiTrans*   aTrans,
 }
 
 /*  PROJ-1594 Volatile TBS
-    ALTER TABLESPACE TBSNAME AUTOEXTEND ... ë¥¼ ìˆ˜í–‰í•œë‹¤
+    ALTER TABLESPACE TBSNAME AUTOEXTEND ... ¸¦ ¼öÇàÇÑ´Ù
 */
 IDE_RC  smiTableSpace::alterVolatileTBSAutoExtend(smiTrans*   aTrans,
                                                   scSpaceID   aSpaceID,
@@ -1051,17 +1001,17 @@ IDE_RC  smiTableSpace::alterVolatileTBSAutoExtend(smiTrans*   aTrans,
 
 /***********************************************************************
  * FUNCTION DESCRIPTION : smiTableSpace::alterDiscard
- *   ALTER TABLESPACE DISCARDì„ ìˆ˜í–‰ 
+ *   ALTER TABLESPACE DISCARDÀ» ¼öÇà 
  *
- *   ë³¸ í•¨ìˆ˜ëŠ” íŠ¹ì • tablespaceë¥¼ disacrd ìƒíƒœë¡œ ë³€ê²½í•œë‹¤.
- *   startup control ë‹¨ê³„ì—ì„œë§Œ ê°€ëŠ¥í•˜ë‹¤. 
+ *   º» ÇÔ¼ö´Â Æ¯Á¤ tablespace¸¦ disacrd »óÅÂ·Î º¯°æÇÑ´Ù.
+ *   startup control ´Ü°è¿¡¼­¸¸ °¡´ÉÇÏ´Ù. 
  *
- *   DISCARDëœ TablespaceëŠ” ì‚¬ìš©í•  ìˆ˜ ì—†ê²Œ ë˜ë©° ì˜¤ì§ Dropë§Œ ê°€ëŠ¥í•˜ë‹¤.
- *   ê·¸ ì•ˆì˜ Table, Dataì—­ì‹œ Dropë§Œ ê°€ëŠ¥í•˜ë‹¤.
+ *   DISCARDµÈ Tablespace´Â »ç¿ëÇÒ ¼ö ¾ø°Ô µÇ¸ç ¿ÀÁ÷ Drop¸¸ °¡´ÉÇÏ´Ù.
+ *   ±× ¾ÈÀÇ Table, Data¿ª½Ã Drop¸¸ °¡´ÉÇÏ´Ù.
  *
- *   ë™ì‹œì„± ì œì–´ - CONTROLë‹¨ê³„ì—ë§Œ í˜¸ì¶œë˜ë¯€ë¡œ í•„ìš”í•˜ì§€ ì•Šë‹¤
+ *   µ¿½Ã¼º Á¦¾î - CONTROL´Ü°è¿¡¸¸ È£ÃâµÇ¹Ç·Î ÇÊ¿äÇÏÁö ¾Ê´Ù
  *
- * [IN] aTableSpaceID - ìƒíƒœë¥¼ ë³€ê²½í•˜ë ¤ëŠ” Tablespaceì˜ ID
+ * [IN] aTableSpaceID - »óÅÂ¸¦ º¯°æÇÏ·Á´Â TablespaceÀÇ ID
  **********************************************************************/
 IDE_RC smiTableSpace::alterDiscard( scSpaceID aTableSpaceID )
 {
@@ -1070,11 +1020,11 @@ IDE_RC smiTableSpace::alterDiscard( scSpaceID aTableSpaceID )
     IDE_TEST_RAISE( smiGetStartupPhase() != SMI_STARTUP_CONTROL,
                     err_startup_phase );        
     
-    // system tablespaceëŠ” online/offlineí• ìˆ˜ ì—†ë‹¤.
+    // system tablespace´Â online/offlineÇÒ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( aTableSpaceID <= SMI_ID_TABLESPACE_SYSTEM_DISK_TEMP,
                     error_discard_system_tablespace);
     
-    // TBSIDë¡œ TBSNodeë¥¼ ì•Œì•„ë‚¸ë‹¤.
+    // TBSID·Î TBSNode¸¦ ¾Ë¾Æ³½´Ù.
     IDE_TEST( sctTableSpaceMgr::findSpaceNodeBySpaceID(  
                                     aTableSpaceID,
                                     (void**) & sTBSNode )
@@ -1100,8 +1050,8 @@ IDE_RC smiTableSpace::alterDiscard( scSpaceID aTableSpaceID )
         case SMI_DISK_SYSTEM_UNDO:
         case SMI_DISK_SYSTEM_DATA:
         default :
-            // ìœ„ì—ì„œ Discardë¶ˆê°€ëŠ¥í•œ TBSì¸ì§€ ì²´í¬í•˜ì˜€ìœ¼ë¯€ë¡œ
-            // ì—¬ê¸°ì—ì„œëŠ” Discardë¶ˆê°€ëŠ¥í•œ TBSëŠ” ë“¤ì–´ì˜¬ ìˆ˜ ì—†ë‹¤
+            // À§¿¡¼­ DiscardºÒ°¡´ÉÇÑ TBSÀÎÁö Ã¼Å©ÇÏ¿´À¸¹Ç·Î
+            // ¿©±â¿¡¼­´Â DiscardºÒ°¡´ÉÇÑ TBS´Â µé¾î¿Ã ¼ö ¾ø´Ù
             IDE_ASSERT(0);
             break;
             
@@ -1128,124 +1078,124 @@ ULong smiTableSpace::getSysDataTBSExtentSize()
     return smuProperty::getSysDataTBSExtentSize();
 }
 
-// BUG-14897 - ì†ì„± SYS_DATA_FILE_INIT_SIZE ê°’ ë¦¬í„´.
+// BUG-14897 - ¼Ó¼º SYS_DATA_FILE_INIT_SIZE °ª ¸®ÅÏ.
 ULong smiTableSpace::getSysDataFileInitSize()
 {
     return getValidSize4Disk( smuProperty::getSysDataFileInitSize() );
 }
 
-// BUG-14897 - ì†ì„± SYS_DATA_FILE_MAX_SIZE ê°’ ë¦¬í„´.
+// BUG-14897 - ¼Ó¼º SYS_DATA_FILE_MAX_SIZE °ª ¸®ÅÏ.
 ULong smiTableSpace::getSysDataFileMaxSize()
 {
     return getValidSize4Disk( smuProperty::getSysDataFileMaxSize() );
 }
 
-// BUG-14897 - ì†ì„± SYS_DATA_FILE_NEXT_SIZE ê°’ ë¦¬í„´.
+// BUG-14897 - ¼Ó¼º SYS_DATA_FILE_NEXT_SIZE °ª ¸®ÅÏ.
 ULong smiTableSpace::getSysDataFileNextSize()
 {
     return smuProperty::getSysDataFileNextSize();
 }
 
-// BUG-14897 - ì†ì„± SYS_UNDO_TBS_EXTENT_SIZE ê°’ ë¦¬í„´.
+// BUG-14897 - ¼Ó¼º SYS_UNDO_TBS_EXTENT_SIZE °ª ¸®ÅÏ.
 ULong smiTableSpace::getSysUndoTBSExtentSize()
 {
     return smuProperty::getSysUndoTBSExtentSize();
 }
 
-// BUG-14897 - ì†ì„± SYS_UNDO_FILE_INIT_SIZE ê°’ ë¦¬í„´.
+// BUG-14897 - ¼Ó¼º SYS_UNDO_FILE_INIT_SIZE °ª ¸®ÅÏ.
 ULong smiTableSpace::getSysUndoFileInitSize()
 {
     return getValidSize4Disk( smuProperty::getSysUndoFileInitSize() );
 }
 
-// BUG-14897 - ì†ì„± SYS_UNDO_FILE_MAX_SIZE ê°’ ë¦¬í„´.
+// BUG-14897 - ¼Ó¼º SYS_UNDO_FILE_MAX_SIZE °ª ¸®ÅÏ.
 ULong smiTableSpace::getSysUndoFileMaxSize()
 {
     return getValidSize4Disk( smuProperty::getSysUndoFileMaxSize() );
 }
 
-// BUG-14897 - ì†ì„± SYS_UNDO_FILE_NEXT_SIZE ê°’ ë¦¬í„´.
+// BUG-14897 - ¼Ó¼º SYS_UNDO_FILE_NEXT_SIZE °ª ¸®ÅÏ.
 ULong smiTableSpace::getSysUndoFileNextSize()
 {
     return smuProperty::getSysUndoFileNextSize();
 }
 
-// BUG-14897 - ì†ì„± SYS_TEMP_TBS_EXTENT_SIZE ê°’ ë¦¬í„´.
+// BUG-14897 - ¼Ó¼º SYS_TEMP_TBS_EXTENT_SIZE °ª ¸®ÅÏ.
 ULong smiTableSpace::getSysTempTBSExtentSize()
 {
     return smuProperty::getSysTempTBSExtentSize();
 }
 
-// BUG-14897 - ì†ì„± SYS_TEMP_FILE_INIT_SIZE ê°’ ë¦¬í„´.
+// BUG-14897 - ¼Ó¼º SYS_TEMP_FILE_INIT_SIZE °ª ¸®ÅÏ.
 ULong smiTableSpace::getSysTempFileInitSize()
 {
     return getValidSize4Disk( smuProperty::getSysTempFileInitSize() );
 }
 
-// BUG-14897 - ì†ì„± SYS_TEMP_FILE_MAX_SIZE ê°’ ë¦¬í„´.
+// BUG-14897 - ¼Ó¼º SYS_TEMP_FILE_MAX_SIZE °ª ¸®ÅÏ.
 ULong smiTableSpace::getSysTempFileMaxSize()
 {
     return getValidSize4Disk( smuProperty::getSysTempFileMaxSize() );
 }
 
-// BUG-14897 - ì†ì„± SYS_TEMP_FILE_NEXT_SIZE ê°’ ë¦¬í„´.
+// BUG-14897 - ¼Ó¼º SYS_TEMP_FILE_NEXT_SIZE °ª ¸®ÅÏ.
 ULong smiTableSpace::getSysTempFileNextSize()
 {
     return smuProperty::getSysTempFileNextSize();
 }
 
-// BUG-14897 - ì†ì„± USER_DATA_TBS_EXTENT_SIZE ê°’ ë¦¬í„´.
+// BUG-14897 - ¼Ó¼º USER_DATA_TBS_EXTENT_SIZE °ª ¸®ÅÏ.
 ULong smiTableSpace::getUserDataTBSExtentSize()
 {
     return smuProperty::getUserDataTBSExtentSize();
 }
 
-// BUG-14897 - ì†ì„± USER_DATA_FILE_INIT_SIZE ê°’ ë¦¬í„´.
+// BUG-14897 - ¼Ó¼º USER_DATA_FILE_INIT_SIZE °ª ¸®ÅÏ.
 ULong smiTableSpace::getUserDataFileInitSize()
 {
     return getValidSize4Disk( smuProperty::getUserDataFileInitSize() );
 }
 
-// BUG-14897 - ì†ì„± USER_DATA_FILE_MAX_SIZE ê°’ ë¦¬í„´.
+// BUG-14897 - ¼Ó¼º USER_DATA_FILE_MAX_SIZE °ª ¸®ÅÏ.
 ULong smiTableSpace::getUserDataFileMaxSize()
 {
     return getValidSize4Disk( smuProperty::getUserDataFileMaxSize() );
 }
 
-// BUG-14897 - ì†ì„± USER_DATA_FILE_NEXT_SIZE ê°’ ë¦¬í„´.
+// BUG-14897 - ¼Ó¼º USER_DATA_FILE_NEXT_SIZE °ª ¸®ÅÏ.
 ULong smiTableSpace::getUserDataFileNextSize()
 {
     return smuProperty::getUserDataFileNextSize();
 }
 
-// BUG-14897 - ì†ì„± USER_TEMP_TBS_EXTENT_SIZE ê°’ ë¦¬í„´.
+// BUG-14897 - ¼Ó¼º USER_TEMP_TBS_EXTENT_SIZE °ª ¸®ÅÏ.
 ULong smiTableSpace::getUserTempTBSExtentSize()
 {
     return smuProperty::getUserTempTBSExtentSize();
 }
 
-// BUG-14897 - ì†ì„± USER_TEMP_FILE_INIT_SIZE ê°’ ë¦¬í„´.
+// BUG-14897 - ¼Ó¼º USER_TEMP_FILE_INIT_SIZE °ª ¸®ÅÏ.
 ULong smiTableSpace::getUserTempFileInitSize()
 {
     return getValidSize4Disk( smuProperty::getUserTempFileInitSize() );
 }
 
-// BUG-14897 - ì†ì„± USER_TEMP_FILE_MAX_SIZE ê°’ ë¦¬í„´.
+// BUG-14897 - ¼Ó¼º USER_TEMP_FILE_MAX_SIZE °ª ¸®ÅÏ.
 ULong smiTableSpace::getUserTempFileMaxSize()
 {
     return getValidSize4Disk( smuProperty::getUserTempFileMaxSize() );
 }
 
-// BUG-14897 - ì†ì„± USER_TEMP_FILE_NEXT_SIZE ê°’ ë¦¬í„´.
+// BUG-14897 - ¼Ó¼º USER_TEMP_FILE_NEXT_SIZE °ª ¸®ÅÏ.
 ULong smiTableSpace::getUserTempFileNextSize()
 {
     return smuProperty::getUserTempFileNextSize();
 }
 
 /**********************************************************************
- * Description:OS limit,file headerë¥¼ ê³ ë ¤í•œ ì ì ˆí•œ í¬ê¸°ë¥¼ ì–»ì–´ë‚´ë„ë¡ í•¨.
+ * Description:OS limit,file header¸¦ °í·ÁÇÑ ÀûÀıÇÑ Å©±â¸¦ ¾ò¾î³»µµ·Ï ÇÔ.
  *
- * aSizeInBytes       - [IN]   ë°”ì´íŠ¸ë‹¨ìœ„ì˜ í¬ê¸° 
+ * aSizeInBytes       - [IN]   ¹ÙÀÌÆ®´ÜÀ§ÀÇ Å©±â 
  **********************************************************************/
 ULong  smiTableSpace::getValidSize4Disk( ULong aSizeInBytes )
 {
@@ -1254,7 +1204,7 @@ ULong  smiTableSpace::getValidSize4Disk( ULong aSizeInBytes )
     UInt  sFileHdrSizeInBytes;
     UInt  sFileHdrPageCnt;
 
-    // BUG-27911 file header í¬ê¸°ë¥¼ define ì •ì˜ë¬¸ìœ¼ë¡œ ëŒ€ì²´.
+    // BUG-27911 file header Å©±â¸¦ define Á¤ÀÇ¹®À¸·Î ´ëÃ¼.
     sFileHdrSizeInBytes = idlOS::align( SM_DBFILE_METAHDR_PAGE_SIZE, SD_PAGE_SIZE );
     sFileHdrPageCnt = sFileHdrSizeInBytes / SD_PAGE_SIZE;
 

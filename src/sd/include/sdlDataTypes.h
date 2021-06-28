@@ -75,10 +75,14 @@ typedef struct sdlDataTypeMap
     ulnMTypeID mULN_MTYPE;
     UInt       mMTD_Type;
     UShort     mSDL_MTYPE;
+    UShort     mSQL_CType;
+    UShort     mSQL_Type;
 }sdlDataTypeMap;
 
 UInt   sdlMType_to_MTDType( UShort aSdlMType);
 UInt   mtype_to_MTDType(    UShort aMType   );
 UShort mtdType_to_SDLMType( UInt   aMTDType );
+UShort mtdType_to_SQLCType( UInt aMTDType );
+UShort mtdType_to_SQLType( UInt aMTDType );
 
 #endif /* _O_SDL_DATA_TYPES_H_ */

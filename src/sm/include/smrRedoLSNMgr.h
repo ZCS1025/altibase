@@ -26,29 +26,29 @@
 #include <smrLogFile.h>
 #include <iduMemoryHandle.h>
 
-/* Parallel Logging : ì´ì •ë³´ë¥¼ Redoì‹œ
-   smrRedoLSNMgrì—ì„œ ìœ ì§€í•œë‹¤. smrRedoLSNMgrì€ smrRedoInfoë¥¼
-   mSNìœ¼ë¡œ Sortingí•˜ê³  Redoì‹œ ê°€ì¥ì‘ì€
-   mSNê°’ì„ ê°€ì§€ëŠ” smrRedoInfoì˜ mRedoLSNì´ ê°€ì§€í‚¤ëŠ” Logë¶€í„°
-   Redoë¥¼ í•œë‹¤.*/
+/* Parallel Logging : ÀÌÁ¤º¸¸¦ Redo½Ã
+   smrRedoLSNMgr¿¡¼­ À¯ÁöÇÑ´Ù. smrRedoLSNMgrÀº smrRedoInfo¸¦
+   mSNÀ¸·Î SortingÇÏ°í Redo½Ã °¡ÀåÀÛÀº
+   mSN°ªÀ» °¡Áö´Â smrRedoInfoÀÇ mRedoLSNÀÌ °¡ÁöÅ°´Â LogºÎÅÍ
+   Redo¸¦ ÇÑ´Ù.*/
 typedef struct smrRedoInfo
 {
-    /* Redoí•  Log LSN */
+    /* RedoÇÒ Log LSN */
     smLSN       mRedoLSN;
-    /* mRedoLSNì´ ê°€ë¦¬í‚¤ëŠ” Logì˜ LogHead */
+    /* mRedoLSNÀÌ °¡¸®Å°´Â LogÀÇ LogHead */
     smrLogHead  mLogHead;
-    /* mRedoLSNì´ ê°€ë¦¬í‚¤ëŠ” Logì˜ LogBuffer Ptr */
+    /* mRedoLSNÀÌ °¡¸®Å°´Â LogÀÇ LogBuffer Ptr */
     SChar*      mLogPtr;
-    /* mRedoLSNì´ ê°€ë¦¬í‚¤ëŠ” Logê°€ ìˆëŠ” logfile Ptr */
+    /* mRedoLSNÀÌ °¡¸®Å°´Â Log°¡ ÀÖ´Â logfile Ptr */
     smrLogFile* mLogFilePtr;
-    /* mRedoLSNì´ ê°€ë¦¬í‚¤ëŠ” Logê°€ Validí•˜ë©´ ID_TRUE, ì•„ë‹ˆë©´ ID_FALSE */
+    /* mRedoLSNÀÌ °¡¸®Å°´Â Log°¡ ValidÇÏ¸é ID_TRUE, ¾Æ´Ï¸é ID_FALSE */
     idBool      mIsValid;
 
-    /* ë¡œê·¸ ì••ì¶•í•´ì œë²„í¼ í•¸ë“¤*/
+    /* ·Î±× ¾ĞÃàÇØÁ¦¹öÆÛ ÇÚµé*/
     iduMemoryHandle * mDecompBufferHandle;
 
-    /* ë¡œê·¸íŒŒì¼ë¡œ ë¶€í„° ì½ì€ ë¡œê·¸ì˜ í¬ê¸°
-       ì••ì¶•ëœ ë¡œê·¸ì˜ ê²½ìš° ë¡œê·¸ì˜ í¬ê¸°ì™€ ë¡œê·¸íŒŒì¼ìƒì˜ ë¡œê·¸í¬ê¸°ê°€ ë‹¤ë¥´ë‹¤
+    /* ·Î±×ÆÄÀÏ·Î ºÎÅÍ ÀĞÀº ·Î±×ÀÇ Å©±â
+       ¾ĞÃàµÈ ·Î±×ÀÇ °æ¿ì ·Î±×ÀÇ Å©±â¿Í ·Î±×ÆÄÀÏ»óÀÇ ·Î±×Å©±â°¡ ´Ù¸£´Ù
      */
     UInt         mLogSizeAtDisk;
 } smrRedoInfo;
@@ -60,15 +60,15 @@ public:
     static IDE_RC destroy();
 
 
-    // Decompress Log Buffer í¬ê¸°ë¥¼ ì–»ì–´ì˜¨ë‹¤
+    // Decompress Log Buffer Å©±â¸¦ ¾ò¾î¿Â´Ù
     static ULong getDecompBufferSize();
 
-    // Decompress Log Bufferê°€ í• ë‹¹í•œ ëª¨ë“  ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤.
+    // Decompress Log Buffer°¡ ÇÒ´çÇÑ ¸ğµç ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÑ´Ù.
     static IDE_RC clearDecompBuffer();
 
    /*
-    mSortRedoInfoì— ë“¤ì–´ìˆëŠ” smrRedoInfoì¤‘ì—ì„œ ê°€ì¥ ì‘ì€ mSNê°’ì„
-    ê°€ì§„ Logë¥¼ ì½ì–´ë“¤ì¸ë‹¤.
+    mSortRedoInfo¿¡ µé¾îÀÖ´Â smrRedoInfoÁß¿¡¼­ °¡Àå ÀÛÀº mSN°ªÀ»
+    °¡Áø Log¸¦ ÀĞ¾îµéÀÎ´Ù.
    */
     static IDE_RC readLog(smLSN         ** aLSN,
                           smrLogHead    ** aLogHead,
@@ -76,20 +76,20 @@ public:
                           UInt           * aLogSizeAtDisk,
                           idBool         * aIsValid);
 
-    /* Checkí•œ ë˜ëŠ” Checkí•  logì˜ LSNê°’ ë¦¬í„´*/
-    /* í˜¸ì¶œ ì‹œì ì— ë”°ë¼ ë‹¬ë¼ì§ */
+    /* CheckÇÑ ¶Ç´Â CheckÇÒ logÀÇ LSN°ª ¸®ÅÏ*/
+    /* È£Ãâ ½ÃÁ¡¿¡ µû¶ó ´Ş¶óÁü */
     static inline smLSN getLstCheckLogLSN()
     {
         return mRedoInfo.mRedoLSN;
     }
 
-    /* ë§ˆì§€ë§‰ Redo ë¡œê·¸ì˜ LSNê°’ì„ ë¦¬í„´*/
+    /* ¸¶Áö¸· Redo ·Î±×ÀÇ LSN°ªÀ» ¸®ÅÏ*/
     static inline smLSN getNextLogLSNOfLstRedoLog()
     {
         return mCurRedoInfoPtr->mRedoLSN;
     }
 
-    /* smrRedoInfoë¥¼ Invalidí•˜ê²Œ ë§Œë“ ë‹¤.*/
+    /* smrRedoInfo¸¦ InvalidÇÏ°Ô ¸¸µç´Ù.*/
     static void setRedoLSNToBeInvalid();
 
     smrRedoLSNMgr();
@@ -98,19 +98,19 @@ public:
 private:
     static SInt   compare(const void *arg1,const void *arg2);
 
-    // Redo Infoë¥¼ ì´ˆê¸°í™”í•œë‹¤
+    // Redo Info¸¦ ÃÊ±âÈ­ÇÑ´Ù
     static IDE_RC initializeRedoInfo( smrRedoInfo * aRedoInfo );
 
-    // Redo Infoë¥¼ íŒŒê´´í•œë‹¤
+    // Redo Info¸¦ ÆÄ±«ÇÑ´Ù
     static IDE_RC destroyRedoInfo( smrRedoInfo * aRedoInfo );
 
 
-    // Redo Infoë¥¼ Sort Arrayì— Pushí•œë‹¤.
+    // Redo Info¸¦ Sort Array¿¡ PushÇÑ´Ù.
     static IDE_RC pushRedoInfo( smrRedoInfo * aRedoInfo,
                                 smLSN *aRedoLSN );
 
 
-    // ë©”ëª¨ë¦¬ í•¸ë“¤ë¡œë¶€í„° í• ë‹¹í•œ ë©”ëª¨ë¦¬ì— ë¡œê·¸ë¥¼ ë³µì‚¬í•œë‹¤.
+    // ¸Ş¸ğ¸® ÇÚµé·ÎºÎÅÍ ÇÒ´çÇÑ ¸Ş¸ğ¸®¿¡ ·Î±×¸¦ º¹»çÇÑ´Ù.
     static IDE_RC makeCopyOfDiskLog( iduMemoryHandle * aMemoryHandle,
                                      SChar *      aOrgLogPtr,
                                      UInt         aOrgLogSize,
@@ -121,16 +121,16 @@ private:
                           iduMemoryHandle * aDecompBufferHandle,
                           ULong             aOrgDecompBufferSize );
 private:
-    /* Redoì •ë³´ë¥¼ ê°€ì§€ê³  ìˆë‹¤. */
+    /* RedoÁ¤º¸¸¦ °¡Áö°í ÀÖ´Ù. */
     static smrRedoInfo   mRedoInfo;
-    /* í˜„ì¬ Redoë¥¼ ìˆ˜í–‰ì¤‘ì¸ smrRedoInfo */
+    /* ÇöÀç Redo¸¦ ¼öÇàÁßÀÎ smrRedoInfo */
     static smrRedoInfo * mCurRedoInfoPtr;
-    /* ë§ˆì§€ë§‰ Redoë¥¼ ìˆ˜í–‰í•œ Redo Logì˜ mLSN */
+    /* ¸¶Áö¸· Redo¸¦ ¼öÇàÇÑ Redo LogÀÇ mLSN */
     static smLSN         mLstLSN;
 
 };
 
-/* smrRedoInfoë¥¼ Invalidí•˜ê²Œ ë§Œë“ ë‹¤.*/
+/* smrRedoInfo¸¦ InvalidÇÏ°Ô ¸¸µç´Ù.*/
 inline void smrRedoLSNMgr::setRedoLSNToBeInvalid()
 {
     mRedoInfo.mIsValid = ID_FALSE;

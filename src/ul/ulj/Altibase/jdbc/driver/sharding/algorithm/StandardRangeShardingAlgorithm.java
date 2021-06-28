@@ -25,7 +25,9 @@ import Altibase.jdbc.driver.sharding.core.ShardRangeList;
 import Altibase.jdbc.driver.sharding.util.Range;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static Altibase.jdbc.driver.sharding.util.ShardingTraceLogger.shard_log;
@@ -40,20 +42,20 @@ public class StandardRangeShardingAlgorithm<T extends Comparable<T>> implements 
     }
 
     @SuppressWarnings("unchecked")
-    public Set<DataNode> doSharding(PreciseShardingValue<T> aShardingValue, DataNode aDefaultNode)
-            throws SQLException
+    public List<DataNode> doSharding(Comparable<?> aShardingValue, DataNode aDefaultNode) throws SQLException
     {
-        if (mShardRangeList.getRangeList().isEmpty())
+        // BUG-46790 rangeÁ¤º¸°¡ ¾ø´õ¶óµµ default node°¡ ÀÖ´Â °æ¿ì Á¤»óÀ¸·Î Ã³¸®ÇØ¾ß ÇÑ´Ù.
+        if (mShardRangeList.getRangeList().isEmpty() && aDefaultNode == null)
         {
             Error.throwSQLException(ErrorDef.SHARD_RANGE_NOT_FOUNDED);
         }
-        Set<DataNode> sResult = new HashSet<DataNode>();
+        List<DataNode> sResult = new ArrayList<DataNode>();
 
         for (ShardRange sShardRange : mShardRangeList.getRangeList())
         {
             Range sRange = sShardRange.getRange();
-            // PROJ-2690 rangeê°€ ìˆœì°¨ì ìœ¼ë¡œ ì •ë ¬ë˜ì–´ ìˆê¸° ë•Œë¬¸ì— ì•ì—ì„œ ë¶€í„° maxê°’ë§Œ ë¹„êµí•˜ë©´ ëœë‹¤.
-            if (sRange.containsEndedBy(aShardingValue.getValue()))
+            // PROJ-2690 range°¡ ¼øÂ÷ÀûÀ¸·Î Á¤·ÄµÇ¾î ÀÖ±â ¶§¹®¿¡ ¾Õ¿¡¼­ ºÎÅÍ max°ª¸¸ ºñ±³ÇÏ¸é µÈ´Ù.
+            if (sRange.containsEndedBy(aShardingValue))
             {
                 sResult.add(sShardRange.getNode());
                 break;

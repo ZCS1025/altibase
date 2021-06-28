@@ -31,7 +31,7 @@ public class ClobReader extends Reader implements ConnectionSharable
 {
     private final long           mLocatorId;
     private final long           mServByteLength;
-    private long                 mServBytePos;
+    private long                 mOffset4Server;
     private boolean              mIsClosed;
     private CmProtocolContextLob mContext;
     private final byte[]         mByteCache;
@@ -47,23 +47,23 @@ public class ClobReader extends Reader implements ConnectionSharable
         mServByteLength = aLobByteLength;
         mByteCache = aLobByteCache;
         mCharCache = aLobCharCache;
-        mIsClosed = true; // open ì „ê¹Œì§„ closed
+        mIsClosed = true; // open Àü±îÁø closed
     }
 
     void open(CmChannel aChannel) throws SQLException
     {
-        // ë¶ˆí•„ìš”í•œ íŒ¨í‚· ë¶„í• ì„ ì¤„ì´ê¸° ìœ„í•´ 1íŒ¨í‚·ì— ë‹´ì„ ìˆ˜ ìˆëŠ” ìµœëŒ€ í¬ê¸°ë§Œí¼ì”©ë§Œ ì–»ëŠ”ë‹¤.
+        // ºÒÇÊ¿äÇÑ ÆĞÅ¶ ºĞÇÒÀ» ÁÙÀÌ±â À§ÇØ 1ÆĞÅ¶¿¡ ´ãÀ» ¼ö ÀÖ´Â ÃÖ´ë Å©±â¸¸Å­¾¿¸¸ ¾ò´Â´Ù.
         mMaxCharLengthPerPacket = LobConst.LOB_BUFFER_SIZE / aChannel.getByteLengthPerChar();
         mCharBuf = new char[mMaxCharLengthPerPacket];
         if (mCharCache != null)
         {
-            mServBytePos = mByteCache.length;
+            mOffset4Server = mByteCache.length;
             mCharBufRemain = mCharCache.length;
             System.arraycopy(mCharCache, 0, mCharBuf, 0, mCharCache.length);
         }
         else
         {
-            mServBytePos = 0;
+            mOffset4Server = 0;
             mCharBufRemain = 0;
         }
         mCharBufPos = 0;
@@ -97,7 +97,7 @@ public class ClobReader extends Reader implements ConnectionSharable
 
     private boolean isServerDataRemain()
     {
-        return mServBytePos < mServByteLength;
+        return mOffset4Server < mServByteLength;
     }
 
     private boolean isReadDataRemain()
@@ -129,22 +129,22 @@ public class ClobReader extends Reader implements ConnectionSharable
     }
 
     /**
-     * ì„œë²„ì—ì„œ ì§€ì •í•œ ê¸¸ì´ë§Œí¼ì˜ ë¬¸ìì—´ì„ ì–»ì–´ì˜¨ë‹¤.
+     * ¼­¹ö¿¡¼­ ÁöÁ¤ÇÑ ±æÀÌ¸¸Å­ÀÇ ¹®ÀÚ¿­À» ¾ò¾î¿Â´Ù.
      * 
-     * @param aFetchLength ì„œë²„ë¡œë¶€í„° ì–»ì–´ì˜¬ ë¬¸ìì—´ ê¸¸ì´
-     * @return ì‹¤ì œë¡œ ì–»ì€ ë¬¸ìì—´ ê¸¸ì´
-     * @throws IOException ì„œë²„ë¡œë¶€í„° ë¬¸ìì—´ì„ ì–»ëŠ”ë° ì‹¤íŒ¨í–ˆì„ ê²½ìš°
+     * @param aFetchLength ¼­¹ö·ÎºÎÅÍ ¾ò¾î¿Ã ¹®ÀÚ¿­ ±æÀÌ
+     * @return ½ÇÁ¦·Î ¾òÀº ¹®ÀÚ¿­ ±æÀÌ
+     * @throws IOException ¼­¹ö·ÎºÎÅÍ ¹®ÀÚ¿­À» ¾ò´Âµ¥ ½ÇÆĞÇßÀ» °æ¿ì
      */
     private long fetchFromServer(long aFetchLength) throws IOException
     {
         long sFetchedCharLen = 0;
         try
         {
-            CmProtocol.getClobBytePos(mContext, mServBytePos, aFetchLength);
+            CmProtocol.getClobBytePos(mContext, mOffset4Server, aFetchLength);
             Error.processServerError(null, mContext.getError());
             CmClobGetResult sResult = mContext.getClobGetResult();
             sFetchedCharLen = sResult.getCharLength();
-            mServBytePos = sResult.getOffset() + sResult.getByteLength();
+            mOffset4Server = sResult.getOffset() + sResult.getByteLength();
         } 
         catch (SQLException sEx)
         {
@@ -248,6 +248,11 @@ public class ClobReader extends Reader implements ConnectionSharable
             fillCharBufFromServer();
         }
     }
-
+    
     // #endregion
+
+    public void setOffset4Server(long aOffset4Server)
+    {
+        this.mOffset4Server = aOffset4Server;
+    }
 }

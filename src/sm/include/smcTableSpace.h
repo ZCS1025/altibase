@@ -32,12 +32,12 @@
 
 
 /*
-   Table Spaceì•ˆì— ìžˆëŠ” ê°ê°ì˜ Tableì— ëŒ€í•´ ìˆ˜í–‰í•  Actioní•¨ìˆ˜
+   Table Space¾È¿¡ ÀÖ´Â °¢°¢ÀÇ Table¿¡ ´ëÇØ ¼öÇàÇÒ ActionÇÔ¼ö
 
-   aSlotFlag     - Table Headerê°€ ì €ìž¥ëœ Catalog Slotì˜ Drop Flag
-   aSlotSCN      - Table Headerê°€ ì €ìž¥ëœ Catalog Slotì˜ SCN
-   aTableHeader  - Tableì˜ Header
-   aActionArg    - Action í•¨ìˆ˜ Argument
+   aSlotFlag     - Table Header°¡ ÀúÀåµÈ Catalog SlotÀÇ Drop Flag
+   aSlotSCN      - Table Header°¡ ÀúÀåµÈ Catalog SlotÀÇ SCN
+   aTableHeader  - TableÀÇ Header
+   aActionArg    - Action ÇÔ¼ö Argument
 
 */
 typedef IDE_RC (*smcAction4Table)( idvSQL*          aStatistics,
@@ -46,31 +46,31 @@ typedef IDE_RC (*smcAction4Table)( idvSQL*          aStatistics,
                                    smcTableHeader * aTableHeader,
                                    void           * aActionArg );
 /*
-   Tablespaceê´€ë ¨ ì½”ë“œì¤‘ catalog tableì— ì ‘ê·¼ì´ í•„ìš”í•œ ì—°ì‚°ì„ êµ¬í˜„
+   Tablespace°ü·Ã ÄÚµåÁß catalog table¿¡ Á¢±ÙÀÌ ÇÊ¿äÇÑ ¿¬»êÀ» ±¸Çö
 
 
-   [ Offline Tablespaceì— ì•ˆì˜ Tableì— ëŒ€í•´ ìœ ì§€í•˜ëŠ” ì •ë³´ ]
+   [ Offline Tablespace¿¡ ¾ÈÀÇ Table¿¡ ´ëÇØ À¯ÁöÇÏ´Â Á¤º¸ ]
      - smcTableHeader
        - mLock
-         - Offline/Online Tablespaceëª¨ë‘ Table Lockì„ íšë“í›„
-           Tablespaceê°€ ì‚¬ìš©ê°€ëŠ¥(Online)ì¸ì§€ ì²´í¬í•´ì•¼ í•˜ê¸° ë•Œë¬¸
+         - Offline/Online Tablespace¸ðµÎ Table LockÀ» È¹µæÈÄ
+           Tablespace°¡ »ç¿ë°¡´É(Online)ÀÎÁö Ã¼Å©ÇØ¾ß ÇÏ±â ¶§¹®
        - mRuntimeInfo
-         - QPì—ì„œ ì„¤ì •í•˜ëŠ” ìžë£Œ
-         - Tableì˜ qcmTableInfoë‚˜ Stored Procedureì˜ Plan Tree
-         - Tablespaceì˜ Page Memoryë¥¼ ê°€ë¦¬í‚¤ì§€ ì•Šìœ¼ë¯€ë¡œ ê·¸ëŒ€ë¡œ ë‘”ë‹¤.
+         - QP¿¡¼­ ¼³Á¤ÇÏ´Â ÀÚ·á
+         - TableÀÇ qcmTableInfo³ª Stored ProcedureÀÇ Plan Tree
+         - TablespaceÀÇ Page Memory¸¦ °¡¸®Å°Áö ¾ÊÀ¸¹Ç·Î ±×´ë·Î µÐ´Ù.
 
-       - ë‹¤ìŒ í•„ë“œëŠ” NULLë¡œ ì„¤ì •ë¨ ( ì°¸ì¡°ë˜ì–´ì„œëŠ” ì•ˆë¨ )
+       - ´ÙÀ½ ÇÊµå´Â NULL·Î ¼³Á¤µÊ ( ÂüÁ¶µÇ¾î¼­´Â ¾ÈµÊ )
          - mDropIndexLst, mDropIndex
-           - Dropë˜ì—ˆì§€ë§Œ dropIndexPndingì´ ì•„ì§ ìˆ˜í–‰ë˜ì§€ ì•Šì€ Indexì— ëŒ€í•´
-             Catalog Tableì˜ smnIndexHeaderë¥¼ ë³µì‚¬í•˜ê³  ìžˆëŠ” ì •ë³´
+           - DropµÇ¾úÁö¸¸ dropIndexPndingÀÌ ¾ÆÁ÷ ¼öÇàµÇÁö ¾ÊÀº Index¿¡ ´ëÇØ
+             Catalog TableÀÇ smnIndexHeader¸¦ º¹»çÇÏ°í ÀÖ´Â Á¤º¸
 
          - mFixed.mMRDB.mRuntimeEntry
-           - Tablespaceì˜ Page Memoryë¥¼ ì§ì ‘ ê°€ë¦¬í‚¤ëŠ” ìžë£Œêµ¬ì¡°
-           - í•´ë‹¹ ë©”ëª¨ë¦¬/ê°ì²´ê°€ ëª¨ë‘ Destroyë˜ê³  NULLë¡œ ì„¸íŒ…ëœë‹¤.
-           - Offline Tablespaceì— ì†í•œ Tableì˜ ê²½ìš°
-             ì´ Fieldë¥¼ ì ‘ê·¼í•´ì„œëŠ” ì•ˆë¨
+           - TablespaceÀÇ Page Memory¸¦ Á÷Á¢ °¡¸®Å°´Â ÀÚ·á±¸Á¶
+           - ÇØ´ç ¸Þ¸ð¸®/°´Ã¼°¡ ¸ðµÎ DestroyµÇ°í NULL·Î ¼¼ÆÃµÈ´Ù.
+           - Offline Tablespace¿¡ ¼ÓÇÑ TableÀÇ °æ¿ì
+             ÀÌ Field¸¦ Á¢±ÙÇØ¼­´Â ¾ÈµÊ
 
-   [ Online Tablespaceì— ì•ˆì˜ Tableì— ëŒ€í•´ ìœ ì§€í•˜ëŠ” ì •ë³´ ]
+   [ Online Tablespace¿¡ ¾ÈÀÇ Table¿¡ ´ëÇØ À¯ÁöÇÏ´Â Á¤º¸ ]
      - smcTableHeader.mLock
        - mLock
        - mFixed.mMRDB.mRuntimeEntry
@@ -79,56 +79,56 @@ typedef IDE_RC (*smcAction4Table)( idvSQL*          aStatistics,
        - mDropIndex
 
 
-   [ Alter Tablespace Offlineì‹œ Destroyí•  í•„ë“œë“¤ ]
+   [ Alter Tablespace Offline½Ã DestroyÇÒ ÇÊµåµé ]
      - mDropIndexLst, mDropIndex
-       - Tablespace Xë½ì„ ìž¡ì€ ìƒíƒœë¼ë©´ ì´ ë‘ í•„ë“œëŠ” NULL, 0 ì´ì–´ì•¼ í•¨
-         - Drop Indexë¥¼ ìˆ˜í•­í•œ Txì˜ Commit/Abortì‹œì—
-           smxTrans::addListToAgerì—ì„œ
-           smcTable::dropIndexListë¥¼ í˜¸ì¶œí•˜ì—¬ dropIndexPending ìˆ˜í–‰í•˜ê³ 
-           ì´ ë‘ í•„ë“œë¥¼ ì´ˆê¸°í™” í•˜ê¸° ë•Œë¬¸
+       - Tablespace X¶ôÀ» ÀâÀº »óÅÂ¶ó¸é ÀÌ µÎ ÇÊµå´Â NULL, 0 ÀÌ¾î¾ß ÇÔ
+         - Drop Index¸¦ ¼öÇ×ÇÑ TxÀÇ Commit/Abort½Ã¿¡
+           smxTrans::addListToAger¿¡¼­
+           smcTable::dropIndexList¸¦ È£ÃâÇÏ¿© dropIndexPending ¼öÇàÇÏ°í
+           ÀÌ µÎ ÇÊµå¸¦ ÃÊ±âÈ­ ÇÏ±â ¶§¹®
 
      - mFixed.mMRDB.mRuntimeEntry
-       - Alloced Page List, Free Page Listì™€ ê°™ì´ Tablespaceì˜
-         Page Memoryë¥¼ ì°¸ì¡°í•˜ëŠ” ìžë£Œêµ¬ì¡°ì´ë‹¤.
-       - Offlineìœ¼ë¡œ ë³€í•˜ëŠ” Tablespaceì˜ Page Memoryê°€
-         ëª¨ë‘ Freeë  ê²ƒì´ë¯€ë¡œ ì´ ìžë£Œêµ¬ì¡°ì˜ ë°ì´í„°ê°€ ì•„ë¬´ ì˜ë¯¸ê°€ ì—†ë‹¤.
+       - Alloced Page List, Free Page List¿Í °°ÀÌ TablespaceÀÇ
+         Page Memory¸¦ ÂüÁ¶ÇÏ´Â ÀÚ·á±¸Á¶ÀÌ´Ù.
+       - OfflineÀ¸·Î º¯ÇÏ´Â TablespaceÀÇ Page Memory°¡
+         ¸ðµÎ FreeµÉ °ÍÀÌ¹Ç·Î ÀÌ ÀÚ·á±¸Á¶ÀÇ µ¥ÀÌÅÍ°¡ ¾Æ¹« ÀÇ¹Ì°¡ ¾ø´Ù.
 
-   [ Alter Tablespace Onlineì‹œ ì´ˆê¸°í™”í•  í•„ë“œë“¤ ]
+   [ Alter Tablespace Online½Ã ÃÊ±âÈ­ÇÒ ÇÊµåµé ]
      - mFixed.mMRDB.mRuntimeEntry
-       - Tablespaceë¥¼ Disk Checkpoint Image -> Memoryë¡œ Restore í•œ í›„
-         Tablespaceì•ˆì˜ Page Memoryì ‘ê·¼ì´ ê°€ëŠ¥í•´ì§„ë‹¤.
-       - Tableì˜ Page Memoryë¥¼ ë°”íƒ•ìœ¼ë¡œ Refineìž‘ì—…ì„ ìˆ˜í–‰í•˜ì—¬
-         mRuntimeEntryë¥¼ ìƒˆë¡œ êµ¬ì¶•í•œë‹¤.
+       - Tablespace¸¦ Disk Checkpoint Image -> Memory·Î Restore ÇÑ ÈÄ
+         Tablespace¾ÈÀÇ Page MemoryÁ¢±ÙÀÌ °¡´ÉÇØÁø´Ù.
+       - TableÀÇ Page Memory¸¦ ¹ÙÅÁÀ¸·Î RefineÀÛ¾÷À» ¼öÇàÇÏ¿©
+         mRuntimeEntry¸¦ »õ·Î ±¸ÃàÇÑ´Ù.
 
  */
 class smcTableSpace
 {
 public :
-    // ìƒì„±ìž (ì•„ë¬´ê²ƒë„ ì•ˆí•¨)
+    // »ý¼ºÀÚ (¾Æ¹«°Íµµ ¾ÈÇÔ)
     smcTableSpace();
 
 
-    // Tablespaceì•ˆì˜ ê°ê°ì˜ Tableì— ëŒ€í•´ íŠ¹ì • ìž‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+    // Tablespace¾ÈÀÇ °¢°¢ÀÇ Table¿¡ ´ëÇØ Æ¯Á¤ ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
     static IDE_RC run4TablesInTBS( idvSQL*           aStatistics,
                                    scSpaceID         aTBSID,
                                    smcAction4Table   aActionFunc,
                                    void            * aActionArg);
 
 
-    // Online->Offlineìœ¼ë¡œ ë³€í•˜ëŠ” Tablespaceì— ì†í•œ Tableë“¤ì— ëŒ€í•œ ì²˜ë¦¬
+    // Online->OfflineÀ¸·Î º¯ÇÏ´Â Tablespace¿¡ ¼ÓÇÑ Tableµé¿¡ ´ëÇÑ Ã³¸®
     static IDE_RC alterTBSOffline4Tables(idvSQL*      aStatistics,
                                          scSpaceID    aTBSID );
 
 
-    // Offline->Onlineìœ¼ë¡œ ë³€í•˜ëŠ” Tablespaceì— ì†í•œ Tableë“¤ì— ëŒ€í•œ ì²˜ë¦¬
+    // Offline->OnlineÀ¸·Î º¯ÇÏ´Â Tablespace¿¡ ¼ÓÇÑ Tableµé¿¡ ´ëÇÑ Ã³¸®
     static IDE_RC alterTBSOnline4Tables(idvSQL     * aStatistics,
                                         void       * aTrans,
                                         scSpaceID    aTBSID );
 
 
 private:
-    // Catalog Tableì•ˆì˜ íŠ¹ì • Tablespaceì— ì €ìž¥ëœ Tableì— ëŒ€í•´
-    // Actioní•¨ìˆ˜ë¥¼ ìˆ˜í–‰í•œë‹¤.
+    // Catalog Table¾ÈÀÇ Æ¯Á¤ Tablespace¿¡ ÀúÀåµÈ Table¿¡ ´ëÇØ
+    // ActionÇÔ¼ö¸¦ ¼öÇàÇÑ´Ù.
     static IDE_RC run4TablesInTBS( idvSQL*           aStatistics,
                                    smcTableHeader  * aCatTableHeader,
                                    scSpaceID         aTBSID,
@@ -136,7 +136,7 @@ private:
                                    void            * aActionArg);
 
 
-    // Online->Offlineìœ¼ë¡œ ë³€í•˜ëŠ” Tablespaceì— ì†í•œ Tableì— ëŒ€í•œ Actioní•¨ìˆ˜
+    // Online->OfflineÀ¸·Î º¯ÇÏ´Â Tablespace¿¡ ¼ÓÇÑ Table¿¡ ´ëÇÑ ActionÇÔ¼ö
     static IDE_RC alterTBSOfflineAction( idvSQL*          aStatistics,
                                          ULong            aSlotFlag,
                                          smSCN            aSlotSCN,
@@ -144,7 +144,7 @@ private:
                                          void           * aActionArg );
 
 
-    // Offline->Online ìœ¼ë¡œ ë³€í•˜ëŠ” Tablespaceì— ì†í•œ Tableì— ëŒ€í•œ Actioní•¨ìˆ˜
+    // Offline->Online À¸·Î º¯ÇÏ´Â Tablespace¿¡ ¼ÓÇÑ Table¿¡ ´ëÇÑ ActionÇÔ¼ö
     static IDE_RC alterTBSOnlineAction( idvSQL*          aStatistics,
                                         ULong            aSlotFlag,
                                         smSCN            aSlotSCN,
@@ -152,8 +152,8 @@ private:
                                         void           * aActionArg );
 
 
-    // Offline->Online ìœ¼ë¡œ ë³€í•˜ëŠ” Disk Tablespaceì— ì†í•œ
-    // Tableì— ëŒ€í•œ Actioní•¨ìˆ˜
+    // Offline->Online À¸·Î º¯ÇÏ´Â Disk Tablespace¿¡ ¼ÓÇÑ
+    // Table¿¡ ´ëÇÑ ActionÇÔ¼ö
     static IDE_RC alterDiskTBSOnlineAction( idvSQL*          aStatistics,
                                             ULong            aSlotFlag,
                                             smSCN            aSlotSCN,
@@ -161,24 +161,24 @@ private:
                                             void           * aActionArg );
 
 
-    // Online->Offline ìœ¼ë¡œ ë³€í•˜ëŠ” Disk Tablespaceì— ì†í•œ
-    // Tableì— ëŒ€í•œ Actioní•¨ìˆ˜
+    // Online->Offline À¸·Î º¯ÇÏ´Â Disk Tablespace¿¡ ¼ÓÇÑ
+    // Table¿¡ ´ëÇÑ ActionÇÔ¼ö
     static IDE_RC alterDiskTBSOfflineAction( ULong            aSlotFlag,
                                              smSCN            aSlotSCN,
                                              smcTableHeader * aTableHeader,
                                              void           * aActionArg );
 
 
-    // Offline->Online ìœ¼ë¡œ ë³€í•˜ëŠ” Memory Tablespaceì— ì†í•œ
-    // Tableì— ëŒ€í•œ Actioní•¨ìˆ˜
+    // Offline->Online À¸·Î º¯ÇÏ´Â Memory Tablespace¿¡ ¼ÓÇÑ
+    // Table¿¡ ´ëÇÑ ActionÇÔ¼ö
     static IDE_RC alterMemTBSOnlineAction( ULong            aSlotFlag,
                                            smSCN            aSlotSCN,
                                            smcTableHeader * aTableHeader,
                                            void           * aActionArg );
 
 
-    // Online->Offline ìœ¼ë¡œ ë³€í•˜ëŠ” Memory Tablespaceì— ì†í•œ
-    // Tableì— ëŒ€í•œ Actioní•¨ìˆ˜
+    // Online->Offline À¸·Î º¯ÇÏ´Â Memory Tablespace¿¡ ¼ÓÇÑ
+    // Table¿¡ ´ëÇÑ ActionÇÔ¼ö
     static IDE_RC alterMemTBSOfflineAction( smcTableHeader * aTableHeader );
 };
 

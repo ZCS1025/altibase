@@ -39,8 +39,8 @@ public:
     
     inline void   getPlanState(mmcChildPCOPlanState* aPlanState);
     inline mmcChildPCOPlanState getPlanState();
-    //fix BUG-24607 hard-prepareëŒ€ê¸° ì™„ë£Œí›„ì— child PCOê°€
-    //old PCO listìœ¼ë¡œ ì˜®ê²¨ì§ˆìˆ˜ ìˆë‹¤.
+    //fix BUG-24607 hard-prepare´ë±â ¿Ï·áÈÄ¿¡ child PCO°¡
+    //old PCO listÀ¸·Î ¿Å°ÜÁú¼ö ÀÖ´Ù.
     void   wait4HardPrepare(idvSQL* aStatistics);
     void   freePreparedPrivateTemplate();
     void   assignEnv(qciPlanProperty *aEnvironment,

@@ -89,7 +89,7 @@ public class BlobTest extends AltibaseTestCase
             throw new IOException("File not found. " + aInputBinaryFileName);
         }
 
-        // Oracleì€ ê·¸ëƒ¥ setXXX()ë¥¼ ì“´ë‹¤. CallableStatementë¡œ ë³€íƒœì§“ ì•ˆí•œë‹¤.
+        // OracleÀº ±×³É setXXX()¸¦ ¾´´Ù. CallableStatement·Î º¯ÅÂÁş ¾ÈÇÑ´Ù.
         switch (aTestType)
         {
             case TEST_TYPE_BY_OUTPARAM:
@@ -318,7 +318,7 @@ public class BlobTest extends AltibaseTestCase
         loadBlob(1, DAT_32_VAL1);
         loadBlob(2, DAT_32_VAL2);
 
-        // 2ë²ˆì§¸ rowì˜ blobì„ 1ë²ˆì§¸ blobì˜ ê°’ìœ¼ë¡œ update
+        // 2¹øÂ° rowÀÇ blobÀ» 1¹øÂ° blobÀÇ °ªÀ¸·Î update
         Statement sUpdStmt = connection().createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE, ResultSet.CLOSE_CURSORS_AT_COMMIT);
         ResultSet sUpdRS = sUpdStmt.executeQuery("SELECT id, image FROM t1");
         assertEquals(true, sUpdRS.next());
@@ -398,7 +398,7 @@ public class BlobTest extends AltibaseTestCase
         loadBlob(1, DAT_32_VAL1);
         loadBlob(2, DAT_32_VAL2);
 
-        // 2ë²ˆì§¸ rowì˜ blobì„ 1ë²ˆì§¸ blobì˜ ê°’ìœ¼ë¡œ update
+        // 2¹øÂ° rowÀÇ blobÀ» 1¹øÂ° blobÀÇ °ªÀ¸·Î update
         Statement sUpdStmt = connection().createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE, ResultSet.CLOSE_CURSORS_AT_COMMIT);
         ResultSet sUpdRS = sUpdStmt.executeQuery("SELECT id, image FROM t1");
         assertEquals(true, sUpdRS.next());

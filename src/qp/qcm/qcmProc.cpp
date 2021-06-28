@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qcmProc.cpp 84060 2018-09-21 02:18:40Z khkwak $
+ * $Id: qcmProc.cpp 90009 2021-02-17 06:54:43Z khkwak $
  **********************************************************************/
 
 #include <idl.h>
@@ -44,7 +44,7 @@ const void * gQcmProcParasIndex  [ QCM_MAX_META_INDICES ];
 const void * gQcmProcParseIndex  [ QCM_MAX_META_INDICES ];
 const void * gQcmProcRelatedIndex[ QCM_MAX_META_INDICES ];
 
-/* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
+/* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
 const void * gQcmConstraintRelated;
 const void * gQcmIndexRelated;
 const void * gQcmConstraintRelatedIndex[ QCM_MAX_META_INDICES ];
@@ -139,8 +139,8 @@ IDE_RC qcmProc::insert (
 
 
     /* PROJ-2197 PSM Renewal
-     * aStatement->spvEnv->relatedObjects ëŒ€ì‹ 
-     * aProcParse->procInfo->relatedObjectsë¥¼ ì‚¬ìš©í•œë‹¤. */
+     * aStatement->spvEnv->relatedObjects ´ë½Å
+     * aProcParse->procInfo->relatedObjects¸¦ »ç¿ëÇÑ´Ù. */
     for ( sRelObjs = aProcParse->procInfo->relatedObjects;
           sRelObjs != NULL;
           sRelObjs = sRelObjs->next )
@@ -209,7 +209,7 @@ IDE_RC qcmProc::insert (
             else
             {
                 // Nothing to do.
-                //  packageë§Œ specê³¼ bodyë¡œ ë¶„ë¥˜ëœë‹¤.
+                //  package¸¸ spec°ú body·Î ºĞ·ùµÈ´Ù.
             }
         }
         else
@@ -281,7 +281,7 @@ IDE_RC qcmProc::remove (
                   QS_FUNC )
               != IDE_SUCCESS );
 
-    // PROJ-1075 TYPESET ì¶”ê°€.
+    // PROJ-1075 TYPESET Ãß°¡.
     IDE_TEST( qcmProc::relSetInvalidProcOfRelated (
                   aStatement,
                   aUserID,
@@ -317,7 +317,7 @@ IDE_RC qcmProc::remove (
 
     //-----------------------------------------------
     // related view
-    // PROJ-1075 TYPESETì€ viewì™€ ë¬´ê´€í•¨.
+    // PROJ-1075 TYPESETÀº view¿Í ¹«°üÇÔ.
     //-----------------------------------------------
     IDE_TEST( qcmView::setInvalidViewOfRelated(
                   aStatement,
@@ -381,11 +381,11 @@ IDE_RC qcmProc::procInsert(
 /***********************************************************************
  *
  * Description :
- *    createProcOrFunc ì‹œì— ë©”íƒ€ í…Œì´ë¸”ì— ì…ë ¥
+ *    createProcOrFunc ½Ã¿¡ ¸ŞÅ¸ Å×ÀÌºí¿¡ ÀÔ·Â
  *
  * Implementation :
- *    ëª…ì‹œëœ ParseTree ë¡œë¶€í„° SYS_PROCEDURES_ ë©”íƒ€ í…Œì´ë¸”ì— ì…ë ¥í•  ë°ì´í„°ë¥¼
- *    ì¶”ì¶œí•œ í›„ì— ì…ë ¥ ì¿¼ë¦¬ë¥¼ ë§Œë“¤ì–´ì„œ ìˆ˜í–‰
+ *    ¸í½ÃµÈ ParseTree ·ÎºÎÅÍ SYS_PROCEDURES_ ¸ŞÅ¸ Å×ÀÌºí¿¡ ÀÔ·ÂÇÒ µ¥ÀÌÅÍ¸¦
+ *    ÃßÃâÇÑ ÈÄ¿¡ ÀÔ·Â Äõ¸®¸¦ ¸¸µé¾î¼­ ¼öÇà
  *
  ***********************************************************************/
 
@@ -470,7 +470,9 @@ IDE_RC qcmProc::procInsert(
                      QCM_OID_TO_BIGINT( aProcParse->procOID ),       // 2
                      sProcName,                                      // 3
                      (SInt) aProcParse->objType,                     // 4
-                     (SInt) QCM_PROC_VALID,                          // 5
+                     (SInt)
+                         (aProcParse->procInfo->isValid == ID_TRUE)
+                         ? QCM_PROC_VALID : QCM_PROC_INVALID,        // 5
                      (SInt) sParaCount,                              // 6
                      sReturnTypeType,                                // 7
                      sReturnTypeLang,                                // 8
@@ -520,8 +522,8 @@ IDE_RC qcmSetProcOIDOfQcmProcedures(
         aRow,
         sProcIDMtcColumn,
         & sSLongID );
-    // BUGBUG 32bit machineì—ì„œ ë™ì‘ ì‹œ SLong(64bit)ë³€ìˆ˜ë¥¼ uVLong(32bit)ë³€ìˆ˜ë¡œ
-    // ë³€í™˜í•˜ë¯€ë¡œ ë°ì´í„° ì†ì‹¤ ê°€ëŠ¥ì„± ìˆìŒ
+    // BUGBUG 32bit machine¿¡¼­ µ¿ÀÛ ½Ã SLong(64bit)º¯¼ö¸¦ uVLong(32bit)º¯¼ö·Î
+    // º¯È¯ÇÏ¹Ç·Î µ¥ÀÌÅÍ ¼Õ½Ç °¡´É¼º ÀÖÀ½
     *aProcID = (qsOID)sSLongID;
 
     return IDE_SUCCESS;
@@ -663,11 +665,11 @@ IDE_RC qcmProc::procUpdateStatus(
 /***********************************************************************
  *
  * Description :
- *    alterProcOrFunc, recompile, rebuild ì‹œì— ë©”íƒ€ í…Œì´ë¸” ë³€ê²½
+ *    alterProcOrFunc, recompile, rebuild ½Ã¿¡ ¸ŞÅ¸ Å×ÀÌºí º¯°æ
  *
  * Implementation :
- *    ëª…ì‹œëœ ProcOID, status ê°’ìœ¼ë¡œ SYS_PROCEDURES_ ë©”íƒ€ í…Œì´ë¸”ì˜
- *    STATUS ê°’ì„ ë³€ê²½í•œë‹¤.
+ *    ¸í½ÃµÈ ProcOID, status °ªÀ¸·Î SYS_PROCEDURES_ ¸ŞÅ¸ Å×ÀÌºíÀÇ
+ *    STATUS °ªÀ» º¯°æÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -710,8 +712,6 @@ IDE_RC qcmProc::procUpdateStatusTx(
     smiTrans       sSmiTrans;
     smiStatement * sDummySmiStmt = NULL;
     smiStatement   sSmiStmt;
-    //PROJ-1677 DEQ
-    smSCN          sDummySCN;
     smiStatement * sSmiStmtOrg   = NULL;
     SInt           sState        = 0;
     UInt           sSmiStmtFlag  = 0;
@@ -778,7 +778,7 @@ retry:
 
     // transaction commit
     sState = 1;
-    IDE_TEST( sSmiTrans.commit(&sDummySCN) != IDE_SUCCESS );
+    IDE_TEST( sSmiTrans.commit() != IDE_SUCCESS );
 
     // transaction destroy
     sState = 0;
@@ -810,11 +810,11 @@ IDE_RC qcmProc::procRemove(
 /***********************************************************************
  *
  * Description :
- *    replace, drop ì‹œì— ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ì‚­ì œ
+ *    replace, drop ½Ã¿¡ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ »èÁ¦
  *
  * Implementation :
- *    ëª…ì‹œëœ ProcOID ì— í•´ë‹¹í•˜ëŠ” ë°ì´í„°ë¥¼ SYS_PROCEDURES_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ
- *    ì‚­ì œí•œë‹¤.
+ *    ¸í½ÃµÈ ProcOID ¿¡ ÇØ´çÇÏ´Â µ¥ÀÌÅÍ¸¦ SYS_PROCEDURES_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­
+ *    »èÁ¦ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1015,11 +1015,11 @@ IDE_RC qcmProc::paraInsert(
 /***********************************************************************
  *
  * Description :
- *    create ì‹œì— ë©”íƒ€ í…Œì´ë¸”ì— í”„ë¡œì‹œì ¸ì˜ ì¸ì ì •ë³´ ì…ë ¥
+ *    create ½Ã¿¡ ¸ŞÅ¸ Å×ÀÌºí¿¡ ÇÁ·Î½ÃÁ®ÀÇ ÀÎÀÚ Á¤º¸ ÀÔ·Â
  *
  * Implementation :
- *    ëª…ì‹œëœ ParseTree ë¡œë¶€í„° ì¸ìì •ë³´ë¥¼ ì¶”ì¶œí•˜ì—¬ SYS_PROC_PARAS_
- *    ë©”íƒ€ í…Œì´ë¸”ì— ì…ë ¥í•˜ëŠ” ì¿¼ë¦¬ë¬¸ì„ ë§Œë“  í›„ ìˆ˜í–‰
+ *    ¸í½ÃµÈ ParseTree ·ÎºÎÅÍ ÀÎÀÚÁ¤º¸¸¦ ÃßÃâÇÏ¿© SYS_PROC_PARAS_
+ *    ¸ŞÅ¸ Å×ÀÌºí¿¡ ÀÔ·ÂÇÏ´Â Äõ¸®¹®À» ¸¸µç ÈÄ ¼öÇà
  *
  ***********************************************************************/
 
@@ -1128,11 +1128,11 @@ IDE_RC qcmProc::paraRemoveAll(
 /***********************************************************************
  *
  * Description :
- *    ì‚­ì œì‹œì— ë©”íƒ€ í…Œì´ë¸”ì— í”„ë¡œì‹œì ¸ì˜ ì¸ì ì •ë³´ ì‚­ì œ
+ *    »èÁ¦½Ã¿¡ ¸ŞÅ¸ Å×ÀÌºí¿¡ ÇÁ·Î½ÃÁ®ÀÇ ÀÎÀÚ Á¤º¸ »èÁ¦
  *
  * Implementation :
- *    ëª…ì‹œëœ ProcOID ì— í•´ë‹¹í•œëŠ” ë°ì´í„°ë¥¼ SYS_PROC_PARAS_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ
- *    ì‚­ì œí•˜ëŠ” ì¿¼ë¦¬ë¬¸ì„ ë§Œë“  í›„ ìˆ˜í–‰
+ *    ¸í½ÃµÈ ProcOID ¿¡ ÇØ´çÇÑ´Â µ¥ÀÌÅÍ¸¦ SYS_PROC_PARAS_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­
+ *    »èÁ¦ÇÏ´Â Äõ¸®¹®À» ¸¸µç ÈÄ ¼öÇà
  *
  ***********************************************************************/
 
@@ -1191,15 +1191,15 @@ IDE_RC qcmProc::prsInsert(
     sNcharList = aProcParse->ncharList;
 
     /* PROJ-2550 PSM Encryption
-       system_.sys_proc_parse_ì˜ ë©”íƒ€í…Œì´ë¸”ì—ì„œëŠ”
-       ì…ë ¥ë°›ì€ ì¿¼ë¦¬ê°€ insertë˜ì–´ì•¼ í•œë‹¤.
-       ì¦‰, encrypted textë¡œ ì…ë ¥ë°›ì•˜ìœ¼ë©´, encrypted textê°€
-       ì¼ë°˜ ì¿¼ë¦¬ë¡œ ì…ë ¥ë°›ì•˜ìœ¼ë©´, í•´ë‹¹ ì¿¼ë¦¬ê°€ insert ëœë‹¤. */
+       system_.sys_proc_parse_ÀÇ ¸ŞÅ¸Å×ÀÌºí¿¡¼­´Â
+       ÀÔ·Â¹ŞÀº Äõ¸®°¡ insertµÇ¾î¾ß ÇÑ´Ù.
+       Áï, encrypted text·Î ÀÔ·Â¹Ş¾ÒÀ¸¸é, encrypted text°¡
+       ÀÏ¹İ Äõ¸®·Î ÀÔ·Â¹Ş¾ÒÀ¸¸é, ÇØ´ç Äõ¸®°¡ insert µÈ´Ù. */
     if ( aStatement->myPlan->encryptedText == NULL )
     {
         // PROJ-1579 NCHAR
-        // ë©”íƒ€í…Œì´ë¸”ì— ì €ì¥í•˜ê¸° ìœ„í•´ ìŠ¤íŠ¸ë§ì„ ë¶„í• í•˜ê¸° ì „ì—
-        // N íƒ€ì…ì´ ìˆëŠ” ê²½ìš° U íƒ€ì…ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
+        // ¸ŞÅ¸Å×ÀÌºí¿¡ ÀúÀåÇÏ±â À§ÇØ ½ºÆ®¸µÀ» ºĞÇÒÇÏ±â Àü¿¡
+        // N Å¸ÀÔÀÌ ÀÖ´Â °æ¿ì U Å¸ÀÔÀ¸·Î º¯È¯ÇÑ´Ù.
         if ( sNcharList != NULL )
         {
             for ( sTempNamePosList = sNcharList;
@@ -1208,14 +1208,14 @@ IDE_RC qcmProc::prsInsert(
             {
                 sNamePos = sTempNamePosList->namePos;
 
-                // U íƒ€ì…ìœ¼ë¡œ ë³€í™˜í•˜ë©´ì„œ ëŠ˜ì–´ë‚˜ëŠ” ì‚¬ì´ì¦ˆ ê³„ì‚°
-                // N'ì•ˆ' => U'\C548' ìœ¼ë¡œ ë³€í™˜ëœë‹¤ë©´
-                // 'ì•ˆ'ì˜ ìºë¦­í„° ì…‹ì´ KSC5601ì´ë¼ê³  ê°€ì •í–ˆì„ ë•Œ,
-                // single-quoteì•ˆì˜ ë¬¸ìëŠ” 2 byte -> 5byteë¡œ ë³€ê²½ëœë‹¤.
-                // ì¦‰, 1.5ë°°ê°€ ëŠ˜ì–´ë‚˜ëŠ” ê²ƒì´ë‹¤.
-                //(ì „ì²´ ì‚¬ì´ì¦ˆê°€ ì•„ë‹ˆë¼ ì¦ê°€í•˜ëŠ” ì‚¬ì´ì¦ˆë§Œ ê³„ì‚°í•˜ëŠ” ê²ƒì„)
-                // í•˜ì§€ë§Œ, ì–´ë–¤ ì˜ˆì™¸ì ì¸ ìºë¦­í„° ì…‹ì´ ë“¤ì–´ì˜¬ì§€ ëª¨ë¥´ë¯€ë¡œ
-                // * 2ë¡œ ì¶©ë¶„íˆ ì¡ëŠ”ë‹¤.
+                // U Å¸ÀÔÀ¸·Î º¯È¯ÇÏ¸é¼­ ´Ã¾î³ª´Â »çÀÌÁî °è»ê
+                // N'¾È' => U'\C548' À¸·Î º¯È¯µÈ´Ù¸é
+                // '¾È'ÀÇ Ä³¸¯ÅÍ ¼ÂÀÌ KSC5601ÀÌ¶ó°í °¡Á¤ÇßÀ» ¶§,
+                // single-quote¾ÈÀÇ ¹®ÀÚ´Â 2 byte -> 5byte·Î º¯°æµÈ´Ù.
+                // Áï, 1.5¹è°¡ ´Ã¾î³ª´Â °ÍÀÌ´Ù.
+                //(ÀüÃ¼ »çÀÌÁî°¡ ¾Æ´Ï¶ó Áõ°¡ÇÏ´Â »çÀÌÁî¸¸ °è»êÇÏ´Â °ÍÀÓ)
+                // ÇÏÁö¸¸, ¾î¶² ¿¹¿ÜÀûÀÎ Ä³¸¯ÅÍ ¼ÂÀÌ µé¾î¿ÃÁö ¸ğ¸£¹Ç·Î
+                // * 2·Î ÃæºĞÈ÷ Àâ´Â´Ù.
                 sAddSize += (sNamePos.size - 3) * 2;
             }
 
@@ -1254,10 +1254,10 @@ IDE_RC qcmProc::prsInsert(
     sIndex = sStartIndex;
 
     // To fix BUG-21299
-    // 100bytes ë‹¨ìœ„ë¡œ ìë¥´ë˜, ìºë¦­í„°ì…‹ì— ë§ê²Œ ë¬¸ìë¥¼ ìë¥¸ë‹¤.
-    // ì¦‰, ë‹¤ìŒ ìºë¦­í„°ë¥¼ ì½ì—ˆì„ ë•Œ 100ë°”ì´íŠ¸ë¥¼ ë„˜ëŠ” ê²½ìš°ê°€ ìƒê¸°ëŠ”ë°,
-    // ì´ë•ŒëŠ” ê·¸ ì´ì „ ìºë¦­í„°ë¥¼ ì½ì—ˆì„ ë•Œë¡œ ëŒì•„ê°€ì„œ ê±°ê¸°ê¹Œì§€ë§Œ ì˜ë¼ì„œ ê¸°ë¡ì„ í•˜ê³ ,
-    // ê·¸ ë‹¤ìŒì— ì´ì–´ì„œ ê¸°ë¡ì„ í•œë‹¤.
+    // 100bytes ´ÜÀ§·Î ÀÚ¸£µÇ, Ä³¸¯ÅÍ¼Â¿¡ ¸Â°Ô ¹®ÀÚ¸¦ ÀÚ¸¥´Ù.
+    // Áï, ´ÙÀ½ Ä³¸¯ÅÍ¸¦ ÀĞ¾úÀ» ¶§ 100¹ÙÀÌÆ®¸¦ ³Ñ´Â °æ¿ì°¡ »ı±â´Âµ¥,
+    // ÀÌ¶§´Â ±× ÀÌÀü Ä³¸¯ÅÍ¸¦ ÀĞ¾úÀ» ¶§·Î µ¹¾Æ°¡¼­ °Å±â±îÁö¸¸ Àß¶ó¼­ ±â·ÏÀ» ÇÏ°í,
+    // ±× ´ÙÀ½¿¡ ÀÌ¾î¼­ ±â·ÏÀ» ÇÑ´Ù.
     while (1)
     {
         sPrevIndex = sIndex;
@@ -1269,8 +1269,8 @@ IDE_RC qcmProc::prsInsert(
         if( (sStmtBuffer +
              sStmtBufferLen) <= sIndex )
         {
-            // ëê¹Œì§€ ê°„ ê²½ìš°.
-            // ê¸°ë¡ì„ í•œ í›„ break.
+            // ³¡±îÁö °£ °æ¿ì.
+            // ±â·ÏÀ» ÇÑ ÈÄ break.
             sSeqNo++;
 
             sCurrPos = sStartIndex - sStmtBuffer;
@@ -1291,19 +1291,19 @@ IDE_RC qcmProc::prsInsert(
         {
             if( sIndex - sStartIndex >= QCM_MAX_PROC_LEN )
             {
-                // ì•„ì§ ëê°€ì§€ ì•ˆ ê°”ê³ , ì½ë‹¤ë³´ë‹ˆ 100ë°”ì´íŠ¸ ë˜ëŠ” ì´ˆê³¼í•œ ê°’ì´
-                // ë˜ì—ˆì„ ë•Œ ì˜ë¼ì„œ ê¸°ë¡
+                // ¾ÆÁ÷ ³¡°¡Áö ¾È °¬°í, ÀĞ´Ùº¸´Ï 100¹ÙÀÌÆ® ¶Ç´Â ÃÊ°úÇÑ °ªÀÌ
+                // µÇ¾úÀ» ¶§ Àß¶ó¼­ ±â·Ï
                 sCurrPos = sStartIndex - sStmtBuffer;
                 
                 if( sIndex - sStartIndex == QCM_MAX_PROC_LEN )
                 {
-                    // ë”± ë–¨ì–´ì§€ëŠ” ê²½ìš°
+                    // µü ¶³¾îÁö´Â °æ¿ì
                     sCurrLen = QCM_MAX_PROC_LEN;
                     sStartIndex = sIndex;
                 }
                 else
                 {
-                    // ì‚ì ¸ë‚˜ê°„ ê²½ìš° ê·¸ ì´ì „ ìºë¦­í„° ìœ„ì¹˜ê¹Œì§€ ê¸°ë¡
+                    // »ßÁ®³ª°£ °æ¿ì ±× ÀÌÀü Ä³¸¯ÅÍ À§Ä¡±îÁö ±â·Ï
                     sCurrLen = sPrevIndex - sStartIndex;
                     sStartIndex = sPrevIndex;
                 }
@@ -1369,11 +1369,11 @@ IDE_RC qcmProc::prsInsertFragment(
 /***********************************************************************
  *
  * Description :
- *    ìƒì„±ì‹œì— ì‚¬ìš©ëœ ì¿¼ë¦¬ë¬¸ì¥ì„ SYS_PROC_PARSE_ ì— ì €ì¥
+ *    »ı¼º½Ã¿¡ »ç¿ëµÈ Äõ¸®¹®ÀåÀ» SYS_PROC_PARSE_ ¿¡ ÀúÀå
  *
  * Implementation :
- *    ìƒì„±ì‹œì— ì‚¬ìš©ëœ ì¿¼ë¦¬ë¬¸ì¥ì´ ì ì ˆí•œ ì‚¬ì´ì¦ˆë¡œ ì‹œí€€ìŠ¤ì™€ í•¨ê»˜ ì „ë‹¬ë˜ë©´,
- *    SYS_PROC_PARSE_ ë©”íƒ€ í…Œì´ë¸”ì— ì…ë ¥í•˜ëŠ” ì¿¼ë¦¬ë¥¼ ë§Œë“¤ì–´ì„œ ìˆ˜í–‰
+ *    »ı¼º½Ã¿¡ »ç¿ëµÈ Äõ¸®¹®ÀåÀÌ ÀûÀıÇÑ »çÀÌÁî·Î ½ÃÄö½º¿Í ÇÔ²² Àü´ŞµÇ¸é,
+ *    SYS_PROC_PARSE_ ¸ŞÅ¸ Å×ÀÌºí¿¡ ÀÔ·ÂÇÏ´Â Äõ¸®¸¦ ¸¸µé¾î¼­ ¼öÇà
  *
  ***********************************************************************/
 
@@ -1439,10 +1439,10 @@ IDE_RC qcmProc::prsRemoveAll(
 /***********************************************************************
  *
  * Description :
- *    drop ì‹œì— SYS_PROC_PARSE_ í…Œì´ë¸”ë¡œë¶€í„° ì‚­ì œ
+ *    drop ½Ã¿¡ SYS_PROC_PARSE_ Å×ÀÌºí·ÎºÎÅÍ »èÁ¦
  *
  * Implementation :
- *    SYS_PROC_PARSE_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ëª…ì‹œëœ ProcID ì˜ ë°ì´í„°ë¥¼ ì‚­ì œí•œë‹¤.
+ *    SYS_PROC_PARSE_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ ¸í½ÃµÈ ProcID ÀÇ µ¥ÀÌÅÍ¸¦ »èÁ¦ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1486,28 +1486,28 @@ IDE_RC qcmProc::convertToUTypeString( qcStatement   * aStatement,
  * Description :
  *      PROJ-1579 NCHAR
  *
- *      N'ì•ˆ'ê³¼ ê°™ì€ ìŠ¤íŠ¸ë§ì„ ë©”íƒ€í…Œì´ë¸”ì— ì €ì¥í•  ê²½ìš°
- *      ALTIBASE_NLS_NCHAR_LITERAL_REPLACE = 1 ì¸ ê²½ìš°
- *      U'\C548'ê³¼ ê°™ì´ ì €ì¥ëœë‹¤.
+ *      N'¾È'°ú °°Àº ½ºÆ®¸µÀ» ¸ŞÅ¸Å×ÀÌºí¿¡ ÀúÀåÇÒ °æ¿ì
+ *      ALTIBASE_NLS_NCHAR_LITERAL_REPLACE = 1 ÀÎ °æ¿ì
+ *      U'\C548'°ú °°ÀÌ ÀúÀåµÈ´Ù.
  *
  * Implementation :
  *
- *      aStatement->namePosListê°€ stmtì— ë‚˜ì˜¨ ìˆœì„œëŒ€ë¡œ ì •ë ¬ë˜ì–´ ìˆë‹¤ê³ 
- *      ê°€ì •í•œë‹¤.
+ *      aStatement->namePosList°¡ stmt¿¡ ³ª¿Â ¼ø¼­´ë·Î Á¤·ÄµÇ¾î ÀÖ´Ù°í
+ *      °¡Á¤ÇÑ´Ù.
  *
  *      EX) create view v1 
- *          as select * from t1 where i1 = n'ì•ˆ' and i2 = n'ë…•' and i3 = 'A';
+ *          as select * from t1 where i1 = n'¾È' and i2 = n'³ç' and i3 = 'A';
  *
- *      1. loop(n typeì´ ìˆëŠ” ë™ì•ˆ)
- *          1-1. 'n'-1ê¹Œì§€ memcpy
+ *      1. loop(n typeÀÌ ÀÖ´Â µ¿¾È)
+ *          1-1. 'n'-1±îÁö memcpy
  *          1-2. u' memcpy
  *
- *          1-3. loop(n type literalì„ ìºë¦­í„° ë‹¨ìœ„ë¡œ ë°˜ë³µ)
- *              1) \ ë³µì‚¬
- *              2) ì•ˆ => C548ì™€ ê°™ì´ ìœ ë‹ˆì½”ë“œ í¬ì¸íŠ¸ í˜•íƒœë¡œ ë³€í˜•í•´ì„œ ë³µì‚¬
- *                 (ASCIIëŠ” ê·¸ëŒ€ë¡œ ë³µì‚¬í•œë‹¤.)
+ *          1-3. loop(n type literalÀ» Ä³¸¯ÅÍ ´ÜÀ§·Î ¹İº¹)
+ *              1) \ º¹»ç
+ *              2) ¾È => C548¿Í °°ÀÌ À¯´ÏÄÚµå Æ÷ÀÎÆ® ÇüÅÂ·Î º¯ÇüÇØ¼­ º¹»ç
+ *                 (ASCII´Â ±×´ë·Î º¹»çÇÑ´Ù.)
  *
- *      2. stmtì˜ ë§¨ ë’·ë¶€ë¶„ ë³µì‚¬
+ *      2. stmtÀÇ ¸Ç µŞºÎºĞ º¹»ç
  *
  ***********************************************************************/
 
@@ -1543,7 +1543,7 @@ IDE_RC qcmProc::convertToUTypeString( qcStatement   * aStatement,
             sNamePos = sTempNamePosList->namePos;
 
             // -----------------------------------
-            // N ë°”ë¡œ ì „ê¹Œì§€ ë³µì‚¬
+            // N ¹Ù·Î Àü±îÁö º¹»ç
             // -----------------------------------
             idlOS::memcpy( aDest + sDestOffset,
                            sSrcVal + sSrcValOffset,
@@ -1552,7 +1552,7 @@ IDE_RC qcmProc::convertToUTypeString( qcStatement   * aStatement,
             sDestOffset += (sNamePos.offset - sSrcValOffset );
 
             // -----------------------------------
-            // U'\ ë³µì‚¬
+            // U'\ º¹»ç
             // -----------------------------------
             idlOS::memcpy( aDest + sDestOffset,
                            "U\'",
@@ -1561,8 +1561,8 @@ IDE_RC qcmProc::convertToUTypeString( qcStatement   * aStatement,
             sDestOffset += 2;
 
             // -----------------------------------
-            // N íƒ€ì… ë¦¬í„°ëŸ´ì˜ ìºë¦­í„° ì…‹ ë³€í™˜
-            // í´ë¼ì´ì–¸íŠ¸ ìºë¦­í„° ì…‹ => ë‚´ì…”ë„ ìºë¦­í„° ì…‹
+            // N Å¸ÀÔ ¸®ÅÍ·²ÀÇ Ä³¸¯ÅÍ ¼Â º¯È¯
+            // Å¬¶óÀÌ¾ğÆ® Ä³¸¯ÅÍ ¼Â => ³»¼Å³Î Ä³¸¯ÅÍ ¼Â
             // -----------------------------------
             sNTypeVal = aStatement->myPlan->stmtText + sNamePos.offset + 2;
             sNTypeLen = sNamePos.size - 3;
@@ -1582,7 +1582,7 @@ IDE_RC qcmProc::convertToUTypeString( qcStatement   * aStatement,
         }
 
         // -----------------------------------
-        // 'ë¶€í„° ëê¹Œì§€ ë³µì‚¬
+        // 'ºÎÅÍ ³¡±îÁö º¹»ç
         // -----------------------------------
         idlOS::memcpy( aDest + sDestOffset,
                        sSrcVal + sNamePos.offset + sNamePos.size - 1,
@@ -1594,7 +1594,7 @@ IDE_RC qcmProc::convertToUTypeString( qcStatement   * aStatement,
     }
     else
     {
-        // Në¦¬í„°ëŸ´ì´ ì—†ìœ¼ë¯€ë¡œ memcpyí•¨.
+        // N¸®ÅÍ·²ÀÌ ¾øÀ¸¹Ç·Î memcpyÇÔ.
         idlOS::memcpy( aDest, sSrcVal, sSrcLen );
         
         aDest[sSrcLen] = '\0';
@@ -1619,10 +1619,10 @@ IDE_RC qcmProc::relInsert(
 /***********************************************************************
  *
  * Description :
- *    í”„ë¡œì‹œì ¸ ìƒì„±ê³¼ ê´€ë ¨ëœ ì˜¤ë¸Œì íŠ¸ì— ëŒ€í•œ ì •ë³´ë¥¼ ì…ë ¥í•œë‹¤.
+ *    ÇÁ·Î½ÃÁ® »ı¼º°ú °ü·ÃµÈ ¿ÀºêÁ§Æ®¿¡ ´ëÇÑ Á¤º¸¸¦ ÀÔ·ÂÇÑ´Ù.
  *
  * Implementation :
- *    SYS_PROC_RELATED_ ë©”íƒ€ í…Œì´ë¸”ì— ëª…ì‹œí•œ ì˜¤ë¸Œì íŠ¸ë“¤ì„ ì…ë ¥í•œë‹¤.
+ *    SYS_PROC_RELATED_ ¸ŞÅ¸ Å×ÀÌºí¿¡ ¸í½ÃÇÑ ¿ÀºêÁ§Æ®µéÀ» ÀÔ·ÂÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1631,7 +1631,7 @@ IDE_RC qcmProc::relInsert(
     SChar  sRelObjectName [ QC_MAX_OBJECT_NAME_LEN + 1 ];
     SChar *sBuffer;
 
-    // BUG-46395 public synonymì„ ê³ ë ¤í•œë‹¤.
+    // BUG-46395 public synonymÀ» °í·ÁÇÑ´Ù.
     if ( ( aRelatedObjList->objectType == QS_SYNONYM ) &&
          ( aRelatedObjList->userName.size == 0 ) )
     {
@@ -1728,8 +1728,8 @@ IDE_RC qcmModifyStatusOfRelatedProcToInvalid (
         aRow,
         sProcIDMtcColumn,
         & sSLongOID );
-    // BUGBUG 32bit machineì—ì„œ ë™ì‘ ì‹œ SLong(64bit)ë³€ìˆ˜ë¥¼ uVLong(32bit)ë³€ìˆ˜ë¡œ
-    // ë³€í™˜í•˜ë¯€ë¡œ ë°ì´í„° ì†ì‹¤ ê°€ëŠ¥ì„± ìˆìŒ
+    // BUGBUG 32bit machine¿¡¼­ µ¿ÀÛ ½Ã SLong(64bit)º¯¼ö¸¦ uVLong(32bit)º¯¼ö·Î
+    // º¯È¯ÇÏ¹Ç·Î µ¥ÀÌÅÍ ¼Õ½Ç °¡´É¼º ÀÖÀ½
     sProcOID = (qsOID)sSLongOID;
 
     IDE_TEST( qsxProc::makeStatusInvalid( aStatement,
@@ -1762,8 +1762,8 @@ IDE_RC qcmModifyStatusOfRelatedProcToInvalidTx (
         aRow,
         sProcIDMtcColumn,
         & sSLongOID );
-    // BUGBUG 32bit machineì—ì„œ ë™ì‘ ì‹œ SLong(64bit)ë³€ìˆ˜ë¥¼ uVLong(32bit)ë³€ìˆ˜ë¡œ
-    // ë³€í™˜í•˜ë¯€ë¡œ ë°ì´í„° ì†ì‹¤ ê°€ëŠ¥ì„± ìˆìŒ
+    // BUGBUG 32bit machine¿¡¼­ µ¿ÀÛ ½Ã SLong(64bit)º¯¼ö¸¦ uVLong(32bit)º¯¼ö·Î
+    // º¯È¯ÇÏ¹Ç·Î µ¥ÀÌÅÍ ¼Õ½Ç °¡´É¼º ÀÖÀ½
     sProcOID = (qsOID)sSLongOID;
 
     IDE_TEST( qsxProc::makeStatusInvalidTx( aStatement,
@@ -1823,9 +1823,9 @@ IDE_RC qcmProc::relSetInvalidProcOfRelated(
                                   (const smiColumn**)&sThirdMtcColumn )
               != IDE_SUCCESS );
 
-    // BUG-46395 public synonymì„ ê³ ë ¤í•œë‹¤.
-    // Public synonymì€ user idê°€ NULLì´ë‹¤.
-    // ê²€ìƒ‰ ì¡°ê±´
+    // BUG-46395 public synonymÀ» °í·ÁÇÑ´Ù.
+    // Public synonymÀº user id°¡ NULLÀÌ´Ù.
+    // °Ë»ö Á¶°Ç
     qtc::initializeMetaRange( &sRange,
                               MTD_COMPARE_MTDVAL_MTDVAL );  // Meta is memory table
 
@@ -1901,11 +1901,11 @@ IDE_RC qcmProc::relRemoveAll(
 /***********************************************************************
  *
  * Description :
- *    í”„ë¡œì‹œì ¸ì™€ ê´€ë ¨ëœ ì˜¤ë¸Œì íŠ¸ì— ëŒ€í•œ ì •ë³´ë¥¼ ì‚­ì œí•œë‹¤.
+ *    ÇÁ·Î½ÃÁ®¿Í °ü·ÃµÈ ¿ÀºêÁ§Æ®¿¡ ´ëÇÑ Á¤º¸¸¦ »èÁ¦ÇÑ´Ù.
  *
  * Implementation :
- *    SYS_PROC_RELATED_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ëª…ì‹œí•œ ProcOID ì— í•´ë‹¹í•˜ëŠ”
- *    ë°ì´í„°ë¥¼ ì‚­ì œí•œë‹¤.
+ *    SYS_PROC_RELATED_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ ¸í½ÃÇÑ ProcOID ¿¡ ÇØ´çÇÏ´Â
+ *    µ¥ÀÌÅÍ¸¦ »èÁ¦ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -1948,10 +1948,10 @@ IDE_RC qcmProc::relInsertRelatedToConstraint(
 /***********************************************************************
  *
  * Description :
- *    Constraintì™€ ê´€ë ¨ëœ Procedureì— ëŒ€í•œ ì •ë³´ë¥¼ ì…ë ¥í•œë‹¤.
+ *    Constraint¿Í °ü·ÃµÈ Procedure¿¡ ´ëÇÑ Á¤º¸¸¦ ÀÔ·ÂÇÑ´Ù.
  *
  * Implementation :
- *    SYS_CONSTRAINT_RELATED_ ë©”íƒ€ í…Œì´ë¸”ì— ë°ì´í„°ë¥¼ ì…ë ¥í•œë‹¤.
+ *    SYS_CONSTRAINT_RELATED_ ¸ŞÅ¸ Å×ÀÌºí¿¡ µ¥ÀÌÅÍ¸¦ ÀÔ·ÂÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -2005,11 +2005,11 @@ IDE_RC qcmProc::relRemoveRelatedToConstraintByUserID( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Constraintì™€ ê´€ë ¨ëœ Procedureì— ëŒ€í•œ ì •ë³´ë¥¼ ì‚­ì œí•œë‹¤.
+ *    Constraint¿Í °ü·ÃµÈ Procedure¿¡ ´ëÇÑ Á¤º¸¸¦ »èÁ¦ÇÑ´Ù.
  *
  * Implementation :
- *    ëª…ì‹œí•œ User IDì— í•´ë‹¹í•˜ëŠ” ë°ì´í„°ë¥¼ SYS_CONSTRAINT_RELATED_
- *    ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ì‚­ì œí•œë‹¤.
+ *    ¸í½ÃÇÑ User ID¿¡ ÇØ´çÇÏ´Â µ¥ÀÌÅÍ¸¦ SYS_CONSTRAINT_RELATED_
+ *    ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ »èÁ¦ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -2047,11 +2047,11 @@ IDE_RC qcmProc::relRemoveRelatedToConstraintByTableID( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Constraintì™€ ê´€ë ¨ëœ Procedureì— ëŒ€í•œ ì •ë³´ë¥¼ ì‚­ì œí•œë‹¤.
+ *    Constraint¿Í °ü·ÃµÈ Procedure¿¡ ´ëÇÑ Á¤º¸¸¦ »èÁ¦ÇÑ´Ù.
  *
  * Implementation :
- *    ëª…ì‹œí•œ Table IDì— í•´ë‹¹í•˜ëŠ” ë°ì´í„°ë¥¼ SYS_CONSTRAINT_RELATED_
- *    ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ì‚­ì œí•œë‹¤.
+ *    ¸í½ÃÇÑ Table ID¿¡ ÇØ´çÇÏ´Â µ¥ÀÌÅÍ¸¦ SYS_CONSTRAINT_RELATED_
+ *    ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ »èÁ¦ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -2089,11 +2089,11 @@ IDE_RC qcmProc::relRemoveRelatedToConstraintByConstraintID( qcStatement * aState
 /***********************************************************************
  *
  * Description :
- *    Constraintì™€ ê´€ë ¨ëœ Procedureì— ëŒ€í•œ ì •ë³´ë¥¼ ì‚­ì œí•œë‹¤.
+ *    Constraint¿Í °ü·ÃµÈ Procedure¿¡ ´ëÇÑ Á¤º¸¸¦ »èÁ¦ÇÑ´Ù.
  *
  * Implementation :
- *    ëª…ì‹œí•œ Constraint IDì— í•´ë‹¹í•˜ëŠ” ë°ì´í„°ë¥¼ SYS_CONSTRAINT_RELATED_
- *    ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ì‚­ì œí•œë‹¤.
+ *    ¸í½ÃÇÑ Constraint ID¿¡ ÇØ´çÇÏ´Â µ¥ÀÌÅÍ¸¦ SYS_CONSTRAINT_RELATED_
+ *    ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ »èÁ¦ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -2133,10 +2133,10 @@ IDE_RC qcmProc::relIsUsedProcByConstraint( qcStatement    * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Procedureê°€ Constraintì—ì„œ ì‚¬ìš© ì¤‘ì¸ì§€ í™•ì¸í•œë‹¤.
+ *    Procedure°¡ Constraint¿¡¼­ »ç¿ë ÁßÀÎÁö È®ÀÎÇÑ´Ù.
  *
  * Implementation :
- *    SYS_CONSTRAINT_RELATED_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ Procedureë¥¼ ê²€ìƒ‰í•œë‹¤.
+ *    SYS_CONSTRAINT_RELATED_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ Procedure¸¦ °Ë»öÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -2241,10 +2241,10 @@ IDE_RC qcmProc::relInsertRelatedToIndex(
 /***********************************************************************
  *
  * Description :
- *    Indexì™€ ê´€ë ¨ëœ Procedureì— ëŒ€í•œ ì •ë³´ë¥¼ ì…ë ¥í•œë‹¤.
+ *    Index¿Í °ü·ÃµÈ Procedure¿¡ ´ëÇÑ Á¤º¸¸¦ ÀÔ·ÂÇÑ´Ù.
  *
  * Implementation :
- *    SYS_INDEX_RELATED_ ë©”íƒ€ í…Œì´ë¸”ì— ë°ì´í„°ë¥¼ ì…ë ¥í•œë‹¤.
+ *    SYS_INDEX_RELATED_ ¸ŞÅ¸ Å×ÀÌºí¿¡ µ¥ÀÌÅÍ¸¦ ÀÔ·ÂÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -2298,11 +2298,11 @@ IDE_RC qcmProc::relRemoveRelatedToIndexByUserID( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Indexì™€ ê´€ë ¨ëœ Procedureì— ëŒ€í•œ ì •ë³´ë¥¼ ì‚­ì œí•œë‹¤.
+ *    Index¿Í °ü·ÃµÈ Procedure¿¡ ´ëÇÑ Á¤º¸¸¦ »èÁ¦ÇÑ´Ù.
  *
  * Implementation :
- *    ëª…ì‹œí•œ User IDì— í•´ë‹¹í•˜ëŠ” ë°ì´í„°ë¥¼ SYS_INDEX_RELATED_
- *    ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ì‚­ì œí•œë‹¤.
+ *    ¸í½ÃÇÑ User ID¿¡ ÇØ´çÇÏ´Â µ¥ÀÌÅÍ¸¦ SYS_INDEX_RELATED_
+ *    ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ »èÁ¦ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -2340,11 +2340,11 @@ IDE_RC qcmProc::relRemoveRelatedToIndexByTableID( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Indexì™€ ê´€ë ¨ëœ Procedureì— ëŒ€í•œ ì •ë³´ë¥¼ ì‚­ì œí•œë‹¤.
+ *    Index¿Í °ü·ÃµÈ Procedure¿¡ ´ëÇÑ Á¤º¸¸¦ »èÁ¦ÇÑ´Ù.
  *
  * Implementation :
- *    ëª…ì‹œí•œ Table IDì— í•´ë‹¹í•˜ëŠ” ë°ì´í„°ë¥¼ SYS_INDEX_RELATED_
- *    ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ì‚­ì œí•œë‹¤.
+ *    ¸í½ÃÇÑ Table ID¿¡ ÇØ´çÇÏ´Â µ¥ÀÌÅÍ¸¦ SYS_INDEX_RELATED_
+ *    ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ »èÁ¦ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -2382,11 +2382,11 @@ IDE_RC qcmProc::relRemoveRelatedToIndexByIndexID( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Indexì™€ ê´€ë ¨ëœ Procedureì— ëŒ€í•œ ì •ë³´ë¥¼ ì‚­ì œí•œë‹¤.
+ *    Index¿Í °ü·ÃµÈ Procedure¿¡ ´ëÇÑ Á¤º¸¸¦ »èÁ¦ÇÑ´Ù.
  *
  * Implementation :
- *    ëª…ì‹œí•œ Index IDì— í•´ë‹¹í•˜ëŠ” ë°ì´í„°ë¥¼ SYS_INDEX_RELATED_
- *    ë©”íƒ€ í…Œì´ë¸”ì—ì„œ ì‚­ì œí•œë‹¤.
+ *    ¸í½ÃÇÑ Index ID¿¡ ÇØ´çÇÏ´Â µ¥ÀÌÅÍ¸¦ SYS_INDEX_RELATED_
+ *    ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ »èÁ¦ÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -2426,10 +2426,10 @@ IDE_RC qcmProc::relIsUsedProcByIndex( qcStatement    * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Procedureê°€ Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ì§€ í™•ì¸í•œë‹¤.
+ *    Procedure°¡ Index¿¡¼­ »ç¿ë ÁßÀÎÁö È®ÀÎÇÑ´Ù.
  *
  * Implementation :
- *    SYS_INDEX_RELATED_ ë©”íƒ€ í…Œì´ë¸”ì—ì„œ Procedureë¥¼ ê²€ìƒ‰í•œë‹¤.
+ *    SYS_INDEX_RELATED_ ¸ŞÅ¸ Å×ÀÌºí¿¡¼­ Procedure¸¦ °Ë»öÇÑ´Ù.
  *
  ***********************************************************************/
 
@@ -2531,7 +2531,7 @@ IDE_RC qcmSetProcUserIDOfQcmProcedures(
 {
 /*******************************************************************
  * Description : To Fix BUG-19839
- *               Procedure oid ë¥¼ ì‚¬ìš©í•´ ì†Œìœ ìì˜ UserIDë¥¼ ê²€ìƒ‰
+ *               Procedure oid ¸¦ »ç¿ëÇØ ¼ÒÀ¯ÀÚÀÇ UserID¸¦ °Ë»ö
  *
  * Implementation : 
  ********************************************************************/
@@ -2587,7 +2587,7 @@ IDE_RC qcmProc::getProcUserID ( qcStatement * aStatement,
 {
 /*******************************************************************
  * Description : To Fix BUG-19839
- *               Procedure oid ë¥¼ ì‚¬ìš©í•´ ì†Œìœ ìì˜ UserIDë¥¼ ê²€ìƒ‰
+ *               Procedure oid ¸¦ »ç¿ëÇØ ¼ÒÀ¯ÀÚÀÇ UserID¸¦ °Ë»ö
  *
  * Implementation : 
  ********************************************************************/
@@ -2646,9 +2646,9 @@ IDE_RC qcmProc::getProcObjType( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :  PROJ-1075 TYPESET
- *                procedure oidë¥¼ í†µí•´ object typeì„ ê²€ìƒ‰.
- *                typeset ì¶”ê°€ë¡œ object typeì— ë”°ë¼
- *                ddl ìˆ˜í–‰ì—¬ë¶€ë¥¼ êµ¬ë¶„í•˜ê¸° ìœ„í•¨.
+ *                procedure oid¸¦ ÅëÇØ object typeÀ» °Ë»ö.
+ *                typeset Ãß°¡·Î object type¿¡ µû¶ó
+ *                ddl ¼öÇà¿©ºÎ¸¦ ±¸ºĞÇÏ±â À§ÇÔ.
  * Implementation :
  *
  ***********************************************************************/
@@ -2660,7 +2660,7 @@ IDE_RC qcmProc::getProcObjType( qcStatement * aStatement,
     mtcColumn        * sProcIDMtcColumn;
 
     // To fix BUG-14439
-    // OIDë¥¼ keyrangeë¡œ ì‚¬ìš©í•  ë•ŒëŠ” bigint íƒ€ì…ìœ¼ë¡œ ì‚¬ìš©í•´ì•¼ í•¨.
+    // OID¸¦ keyrange·Î »ç¿ëÇÒ ¶§´Â bigint Å¸ÀÔÀ¸·Î »ç¿ëÇØ¾ß ÇÔ.
     sProcOID = QCM_OID_TO_BIGINT( aProcOID );
 
     IDE_TEST( smiGetTableColumns( gQcmProcedures,
@@ -2734,8 +2734,8 @@ IDE_RC qcmProc::procSetMember(
         aRow,
         sProcIDMtcColumn,
         & sSLongOID);
-    // BUGBUG 32bit machineì—ì„œ ë™ì‘ ì‹œ SLong(64bit)ë³€ìˆ˜ë¥¼ uVLong(32bit)ë³€ìˆ˜ë¡œ
-    // ë³€í™˜í•˜ë¯€ë¡œ ë°ì´í„° ì†ì‹¤ ê°€ëŠ¥ì„± ìˆìŒ
+    // BUGBUG 32bit machine¿¡¼­ µ¿ÀÛ ½Ã SLong(64bit)º¯¼ö¸¦ uVLong(32bit)º¯¼ö·Î
+    // º¯È¯ÇÏ¹Ç·Î µ¥ÀÌÅÍ ¼Õ½Ç °¡´É¼º ÀÖÀ½
     aProcedures->procOID = (qsOID)sSLongOID;
 
     IDE_TEST( smiGetTableColumns( gQcmProcedures,
@@ -2816,7 +2816,7 @@ static iduFixedTableColDesc gPROCTEXTColDesc[] =
             For Fixed Table
 **************************************************************/
 
-// ì¸ìë¥¼ ì„ì‹œë¡œ ë„˜ê¸°ê¸° ìœ„í•¨.
+// ÀÎÀÚ¸¦ ÀÓ½Ã·Î ³Ñ±â±â À§ÇÔ.
 typedef struct qcmTempFixedTableInfo
 {
     void                  *mHeader;
@@ -2873,7 +2873,6 @@ IDE_RC qcmProc::buildProcText( idvSQL        * aStatistics,
     smiStatement * sDummySmiStmt;
     smiStatement   sSmiStmt;
     UInt           sProcState = 0;
-    smSCN          sDummySCN;
     qcmTempFixedTableInfo * sFixedTableInfo;
 
     void         * sIndexValues[1];
@@ -2917,19 +2916,19 @@ IDE_RC qcmProc::buildProcText( idvSQL        * aStatistics,
         aRow,
         sProcIDMtcColumn,
         & sSLongOID);
-    // BUGBUG 32bit machineì—ì„œ ë™ì‘ ì‹œ SLong(64bit)ë³€ìˆ˜ë¥¼ uVLong(32bit)ë³€ìˆ˜ë¡œ
-    // ë³€í™˜í•˜ë¯€ë¡œ ë°ì´í„° ì†ì‹¤ ê°€ëŠ¥ì„± ìˆìŒ
+    // BUGBUG 32bit machine¿¡¼­ µ¿ÀÛ ½Ã SLong(64bit)º¯¼ö¸¦ uVLong(32bit)º¯¼ö·Î
+    // º¯È¯ÇÏ¹Ç·Î µ¥ÀÌÅÍ ¼Õ½Ç °¡´É¼º ÀÖÀ½
     sOID = (qsOID)sSLongOID;
     sIndexValues[0] = &sOID;
     sFixedTableInfo = (qcmTempFixedTableInfo *)aFixedTableInfo;
 
     /* BUG-43006 FixedTable Indexing Filter
-     * Column Index ë¥¼ ì‚¬ìš©í•´ì„œ ì „ì²´ Recordë¥¼ ìƒì„±í•˜ì§€ì•Šê³ 
-     * ë¶€ë¶„ë§Œ ìƒì„±í•´ Filtering í•œë‹¤.
-     * 1. void * ë°°ì—´ì— IDU_FT_COLUMN_INDEX ë¡œ ì§€ì •ëœ ì»¬ëŸ¼ì—
-     * í•´ë‹¹í•˜ëŠ” ê°’ì„ ìˆœì„œëŒ€ë¡œ ë„£ì–´ì£¼ì–´ì•¼ í•œë‹¤.
-     * 2. IDU_FT_COLUMN_INDEXì˜ ì»¬ëŸ¼ì— í•´ë‹¹í•˜ëŠ” ê°’ì„ ëª¨ë‘ ë„£
-     * ì–´ ì£¼ì–´ì•¼í•œë‹¤.
+     * Column Index ¸¦ »ç¿ëÇØ¼­ ÀüÃ¼ Record¸¦ »ı¼ºÇÏÁö¾Ê°í
+     * ºÎºĞ¸¸ »ı¼ºÇØ Filtering ÇÑ´Ù.
+     * 1. void * ¹è¿­¿¡ IDU_FT_COLUMN_INDEX ·Î ÁöÁ¤µÈ ÄÃ·³¿¡
+     * ÇØ´çÇÏ´Â °ªÀ» ¼ø¼­´ë·Î ³Ö¾îÁÖ¾î¾ß ÇÑ´Ù.
+     * 2. IDU_FT_COLUMN_INDEXÀÇ ÄÃ·³¿¡ ÇØ´çÇÏ´Â °ªÀ» ¸ğµÎ ³Ö
+     * ¾î ÁÖ¾î¾ßÇÑ´Ù.
      */
     if ( iduFixedTable::checkKeyRange( sFixedTableInfo->mMemory,
                                        gPROCTEXTColDesc,
@@ -2975,8 +2974,8 @@ IDE_RC qcmProc::buildProcText( idvSQL        * aStatistics,
 
                 if (( sProcBuf + sProcLen ) <= sIndex )
                 {
-                    // ëê¹Œì§€ ê°„ ê²½ìš°.
-                    // ê¸°ë¡ì„ í•œ í›„ break.
+                    // ³¡±îÁö °£ °æ¿ì.
+                    // ±â·ÏÀ» ÇÑ ÈÄ break.
                     sSeqNo++;
 
                     sCurrPos = sStartIndex - sProcBuf;
@@ -2999,19 +2998,19 @@ IDE_RC qcmProc::buildProcText( idvSQL        * aStatistics,
                 {
                     if( sIndex - sStartIndex >= QCM_PROC_TEXT_LEN )
                     {
-                        // ì•„ì§ ëê°€ì§€ ì•ˆ ê°”ê³ , ì½ë‹¤ë³´ë‹ˆ 64ë°”ì´íŠ¸ ë˜ëŠ” ì´ˆê³¼í•œ ê°’ì´
-                        // ë˜ì—ˆì„ ë•Œ ì˜ë¼ì„œ ê¸°ë¡
+                        // ¾ÆÁ÷ ³¡°¡Áö ¾È °¬°í, ÀĞ´Ùº¸´Ï 64¹ÙÀÌÆ® ¶Ç´Â ÃÊ°úÇÑ °ªÀÌ
+                        // µÇ¾úÀ» ¶§ Àß¶ó¼­ ±â·Ï
                         sCurrPos = sStartIndex - sProcBuf;
                 
                         if( sIndex - sStartIndex == QCM_PROC_TEXT_LEN )
                         {
-                            // ë”± ë–¨ì–´ì§€ëŠ” ê²½ìš°
+                            // µü ¶³¾îÁö´Â °æ¿ì
                             sCurrLen = QCM_PROC_TEXT_LEN;
                             sStartIndex = sIndex;
                         }
                         else
                         {
-                            // ì‚ì ¸ë‚˜ê°„ ê²½ìš° ê·¸ ì´ì „ ìºë¦­í„° ìœ„ì¹˜ê¹Œì§€ ê¸°ë¡
+                            // »ßÁ®³ª°£ °æ¿ì ±× ÀÌÀü Ä³¸¯ÅÍ À§Ä¡±îÁö ±â·Ï
                             sCurrLen = sPrevIndex - sStartIndex;
                             sStartIndex = sPrevIndex;
                         }
@@ -3062,7 +3061,7 @@ IDE_RC qcmProc::buildProcText( idvSQL        * aStatistics,
     IDE_TEST(sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
 
     sProcState = 1;
-    IDE_TEST(sMetaTx.commit(&sDummySCN) != IDE_SUCCESS);
+    IDE_TEST(sMetaTx.commit() != IDE_SUCCESS);
 
     sProcState = 0;
     IDE_TEST(sMetaTx.destroy( aStatistics ) != IDE_SUCCESS);
@@ -3076,7 +3075,7 @@ IDE_RC qcmProc::buildProcText( idvSQL        * aStatistics,
         case 2:
             IDE_ASSERT(qcg::freeStatement(&sStatement) == IDE_SUCCESS);
         case 1:
-            /* PROJ-2446 ONE SOURCE XDB BUGBUG statement pointerë¥¼ ë„˜ê²¨ì•¼í•œë‹¤. */
+            /* PROJ-2446 ONE SOURCE XDB BUGBUG statement pointer¸¦ ³Ñ°Ü¾ßÇÑ´Ù. */
             IDE_ASSERT(qsxProc::unlatch( sOID )
                        == IDE_SUCCESS);
         case 0:
@@ -3092,7 +3091,7 @@ IDE_RC qcmProc::buildProcText( idvSQL        * aStatistics,
             IDE_ASSERT(sSmiStmt.end(SMI_STATEMENT_RESULT_FAILURE) == IDE_SUCCESS);
 
         case 2:
-            IDE_ASSERT(sMetaTx.commit(&sDummySCN) == IDE_SUCCESS);
+            IDE_ASSERT(sMetaTx.commit() == IDE_SUCCESS);
 
         case 1:
             IDE_ASSERT(sMetaTx.destroy( aStatistics ) == IDE_SUCCESS);
@@ -3117,8 +3116,6 @@ IDE_RC qcmProc::buildRecordForPROCTEXT( idvSQL      * aStatistics,
     smiStatement           sStatement;
     vSLong                 sRecCount;
     qcmTempFixedTableInfo  sInfo;
-    //PROJ-1677 DEQ
-    smSCN          sDummySCN;
     UInt                   sState = 0;
 
     sInfo.mHeader = aHeader;
@@ -3156,7 +3153,7 @@ IDE_RC qcmProc::buildRecordForPROCTEXT( idvSQL      * aStatistics,
     IDE_TEST(sStatement.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
 
     sState = 1;
-    IDE_TEST(sMetaTx.commit(&sDummySCN) != IDE_SUCCESS);
+    IDE_TEST(sMetaTx.commit() != IDE_SUCCESS);
 
     sState = 0;
     IDE_TEST(sMetaTx.destroy( aStatistics ) != IDE_SUCCESS);
@@ -3171,7 +3168,7 @@ IDE_RC qcmProc::buildRecordForPROCTEXT( idvSQL      * aStatistics,
                 IDE_ASSERT(sStatement.end(SMI_STATEMENT_RESULT_FAILURE) == IDE_SUCCESS);
 
             case 2:
-                IDE_ASSERT(sMetaTx.commit(&sDummySCN) == IDE_SUCCESS);
+                IDE_ASSERT(sMetaTx.commit() == IDE_SUCCESS);
 
             case 1:
                 IDE_ASSERT(sMetaTx.destroy( aStatistics ) == IDE_SUCCESS);
@@ -3198,3 +3195,354 @@ iduFixedTableDesc gPROCTEXTTableDesc =
     IDU_FT_DESC_TRANS_NOT_USE,
     NULL
 };
+
+
+typedef struct qcmProcInfo
+{
+    ULong mProcOID;
+    UInt  mModifyCount;
+    UInt  mStatus;
+    UInt  mSessionID;
+    UInt  mProcType;
+    UInt  mShardSplitMethod; // TASK-7244 Set shard split method to PSM info
+}qcmProcInfo;
+
+// PROJ-2717 Internal procedure
+//   X$PROCINFO
+//     PROC_OID
+//     MODIFY_COUNT
+//     Status [VALID(0), INVALID(1)]
+//     SESSION_ID
+//     PROC_TYPE [NORMAL(0), EXTERNAL_C(1), INTERNAL_C(2)]
+//     SHARD_SPLIT_METHOD [NONE(0), HASH(1), RANGE(2), LIST(3), CLONE(4), SOLO(5)]
+
+static iduFixedTableColDesc gPROCInfoColDesc[] =
+{
+    {
+        (SChar *)"PROC_OID",
+        offsetof(qcmProcInfo, mProcOID),
+        IDU_FT_SIZEOF(qcmProcInfo, mProcOID),
+        IDU_FT_TYPE_UBIGINT,
+        NULL,
+        0, 0,NULL // for internal use
+    },
+
+    {
+        (SChar *)"MODIFY_COUNT",
+        offsetof(qcmProcInfo, mModifyCount),
+        IDU_FT_SIZEOF(qcmProcInfo, mModifyCount),
+        IDU_FT_TYPE_UINTEGER,
+        NULL,
+        0, 0,NULL // for internal use
+    },
+
+    {
+        (SChar *)"STATUS",
+        offsetof(qcmProcInfo, mStatus),
+        IDU_FT_SIZEOF(qcmProcInfo, mStatus),
+        IDU_FT_TYPE_UINTEGER,
+        NULL,
+        0, 0,NULL // for internal use
+    },
+
+    {
+        (SChar *)"SESSION_ID",
+        offsetof(qcmProcInfo, mSessionID),
+        IDU_FT_SIZEOF(qcmProcInfo, mSessionID),
+        IDU_FT_TYPE_UINTEGER,
+        NULL,
+        0, 0,NULL // for internal use
+    },
+
+    {
+        (SChar *)"PROC_TYPE",
+        offsetof(qcmProcInfo, mProcType),
+        IDU_FT_SIZEOF(qcmProcInfo, mProcType),
+        IDU_FT_TYPE_UINTEGER,
+        NULL,
+        0, 0,NULL // for internal use
+    },
+
+    // TASK-7244 Set shard split method to PSM info
+    {
+        (SChar *)"SHARD_SPLIT_METHOD",
+        offsetof(qcmProcInfo, mShardSplitMethod),
+        IDU_FT_SIZEOF(qcmProcInfo, mShardSplitMethod),
+        IDU_FT_TYPE_UINTEGER,
+        NULL,
+        0, 0,NULL // for internal use
+    },
+
+    {
+        NULL,
+        0,
+        0,
+        IDU_FT_TYPE_CHAR,
+        NULL,
+        0, 0,NULL // for internal use
+    }
+};
+
+iduFixedTableDesc gPROCInfoDesc =
+{
+    (SChar *)"X$PROCINFO",
+    qcmProc::buildRecordForPROCInfo,
+    gPROCInfoColDesc,
+    IDU_STARTUP_META,
+    0,
+    0,
+    IDU_FT_DESC_TRANS_NOT_USE,
+    NULL
+};
+
+
+
+IDE_RC qcmProc::buildRecordForPROCInfo( idvSQL      * aStatistics,
+                                        void        * aHeader,
+                                        void        * /* aDumpObj */,
+                                        iduFixedTableMemory   *aMemory)
+{
+    smiTrans               sMetaTx;
+    smiStatement          *sDummySmiStmt;
+    smiStatement           sStatement;
+    vSLong                 sRecCount;
+    qcmTempFixedTableInfo  sInfo;
+    UInt                   sState = 0;
+
+    sInfo.mHeader = aHeader;
+    sInfo.mMemory = aMemory;
+
+    /* ------------------------------------------------
+     *  Build Info Record
+     * ----------------------------------------------*/
+
+    IDE_TEST(sMetaTx.initialize( ) != IDE_SUCCESS);
+    sState = 1;
+
+    IDE_TEST(sMetaTx.begin(&sDummySmiStmt,
+                           aStatistics,
+                           (SMI_TRANSACTION_UNTOUCHABLE |
+                            SMI_ISOLATION_CONSISTENT    |
+                            SMI_COMMIT_WRITE_NOWAIT))
+             != IDE_SUCCESS);
+    sState = 2;
+
+    IDE_TEST(sStatement.begin( aStatistics,
+                               sDummySmiStmt,
+                               SMI_STATEMENT_UNTOUCHABLE |
+                               SMI_STATEMENT_MEMORY_CURSOR)
+             != IDE_SUCCESS);
+    sState = 3;
+
+
+    IDE_TEST(procSelectAllForBuildProcInfo(&sStatement,
+                                           ID_UINT_MAX,
+                                           &sRecCount,
+                                           &sInfo) != IDE_SUCCESS);
+
+    sState = 2;
+    IDE_TEST(sStatement.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
+
+    sState = 1;
+    IDE_TEST(sMetaTx.commit() != IDE_SUCCESS);
+
+    sState = 0;
+    IDE_TEST(sMetaTx.destroy( aStatistics ) != IDE_SUCCESS);
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+    {
+        switch(sState)
+        {
+            case 3:
+                IDE_ASSERT(sStatement.end(SMI_STATEMENT_RESULT_FAILURE) == IDE_SUCCESS);
+
+            case 2:
+                IDE_ASSERT(sMetaTx.commit() == IDE_SUCCESS);
+
+            case 1:
+                IDE_ASSERT(sMetaTx.destroy( aStatistics ) == IDE_SUCCESS);
+
+            case 0:
+                //nothing
+                break;
+            default:
+                IDE_CALLBACK_FATAL("Can't be here");
+        }
+        return IDE_FAILURE;
+    }
+}
+
+
+IDE_RC qcmProc::procSelectAllForBuildProcInfo(
+    smiStatement         * aSmiStmt,
+    vSLong                 aMaxProcedureCount,
+    vSLong               * aSelectedProcedureCount,
+    void                 * aFixedTableInfo )
+{
+    vSLong selectedRowCount;
+
+    IDE_TEST( qcm::selectRow
+              (
+                  aSmiStmt,
+                  gQcmProcedures,
+                  smiGetDefaultFilter(), /* a_callback */
+                  smiGetDefaultKeyRange(), /* a_range */
+                  NULL, /* a_index */
+                  (qcmSetStructMemberFunc ) qcmProc::buildProcInfo,
+                  aFixedTableInfo,
+                  0, /* distance */
+                  aMaxProcedureCount,
+                  &selectedRowCount
+                  ) != IDE_SUCCESS );
+
+    *aSelectedProcedureCount = (vSLong) selectedRowCount;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qcmProc::buildProcInfo( idvSQL        * aStatistics,
+                               const void    * aRow,
+                               void          * aFixedTableInfo )
+{
+    UInt           sState = 0;
+    qsOID          sOID;
+    SLong          sSLongOID;
+    mtcColumn    * sProcIDMtcColumn;
+    // PROJ-2446
+    smiTrans       sMetaTx;
+    smiStatement * sDummySmiStmt;
+    smiStatement   sSmiStmt;
+    UInt           sProcState = 0;
+    qsxProcInfo  * sProcInfo;
+    qcmProcInfo    sQcmProcInfo;
+         
+    IDE_TEST(sMetaTx.initialize( ) != IDE_SUCCESS);
+    sProcState = 1;
+
+    IDE_TEST(sMetaTx.begin(&sDummySmiStmt,
+                           aStatistics,
+                           (SMI_TRANSACTION_UNTOUCHABLE |
+                            SMI_ISOLATION_CONSISTENT    |
+                            SMI_COMMIT_WRITE_NOWAIT))
+             != IDE_SUCCESS);
+    sProcState = 2;
+
+    IDE_TEST(sSmiStmt.begin( aStatistics,
+                             sDummySmiStmt,
+                             SMI_STATEMENT_UNTOUCHABLE |
+                             SMI_STATEMENT_MEMORY_CURSOR)
+             != IDE_SUCCESS);
+    sProcState = 3;
+
+    /* ------------------------------------------------
+     *  Get Proc OID
+     * ----------------------------------------------*/
+    IDE_TEST( smiGetTableColumns( gQcmProcedures,
+                                  QCM_PROCEDURES_PROCOID_COL_ORDER,
+                                  (const smiColumn**)&sProcIDMtcColumn )
+              != IDE_SUCCESS );
+
+    qcm::getBigintFieldValue (
+        aRow,
+        sProcIDMtcColumn,
+        & sSLongOID);
+    // BUGBUG 32bit machine¿¡¼­ µ¿ÀÛ ½Ã SLong(64bit)º¯¼ö¸¦ uVLong(32bit)º¯¼ö·Î
+    // º¯È¯ÇÏ¹Ç·Î µ¥ÀÌÅÍ ¼Õ½Ç °¡´É¼º ÀÖÀ½
+    sOID = (qsOID)sSLongOID;
+
+    /* ------------------------------------------------
+     *  Generate Proc Info 
+     * ----------------------------------------------*/
+
+    if (qsxProc::latchS( sOID ) == IDE_SUCCESS)
+    {
+        sState = 1;
+
+        IDE_TEST(qsxProc::getProcInfo( sOID,
+                                       &sProcInfo)
+                 != IDE_SUCCESS);
+
+        sQcmProcInfo.mProcOID     = sProcInfo->procOID;
+        sQcmProcInfo.mModifyCount = sProcInfo->modifyCount;
+        sQcmProcInfo.mStatus      = (sProcInfo->isValid == ID_TRUE)?0:1;
+        sQcmProcInfo.mSessionID   = sProcInfo->sessionID;
+        // TASK-7244 Set shard split method to PSM info
+        sQcmProcInfo.mShardSplitMethod = sProcInfo->shardSplitMethod;
+
+        if ( sProcInfo->planTree!= NULL )
+        {
+            sQcmProcInfo.mProcType = sProcInfo->planTree->procType;
+        }
+        else
+        {
+            sQcmProcInfo.mProcType = ID_UINT_MAX;
+        }
+
+        IDE_TEST(iduFixedTable::buildRecord(((qcmTempFixedTableInfo *)aFixedTableInfo)->mHeader,
+                                            ((qcmTempFixedTableInfo *)aFixedTableInfo)->mMemory,
+                                            (void *) &sQcmProcInfo)
+                 != IDE_SUCCESS);
+
+        sState = 0;
+        IDE_TEST(qsxProc::unlatch( sOID )
+                 != IDE_SUCCESS);
+    }
+    else
+    {
+#if defined(DEBUG)
+        ideLog::log(IDE_QP_0, "Latch Error \n");
+#endif
+    }
+
+    sProcState = 2;
+    IDE_TEST(sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
+
+    sProcState = 1;
+    IDE_TEST(sMetaTx.commit() != IDE_SUCCESS);
+
+    sProcState = 0;
+    IDE_TEST(sMetaTx.destroy( aStatistics ) != IDE_SUCCESS);
+
+    return IDE_SUCCESS;
+    IDE_EXCEPTION_END;
+
+    switch(sState)
+    {
+        case 1:
+            /* PROJ-2446 ONE SOURCE XDB BUGBUG statement pointer¸¦ ³Ñ°Ü¾ßÇÑ´Ù. */
+            IDE_ASSERT(qsxProc::unlatch( sOID )
+                       == IDE_SUCCESS);
+        case 0:
+            //nothing
+            break;
+        default:
+            IDE_CALLBACK_FATAL("Can't be here");
+    }
+
+    switch(sProcState)
+    {
+        case 3:
+            IDE_ASSERT(sSmiStmt.end(SMI_STATEMENT_RESULT_FAILURE) == IDE_SUCCESS);
+
+        case 2:
+            IDE_ASSERT(sMetaTx.commit() == IDE_SUCCESS);
+
+        case 1:
+            IDE_ASSERT(sMetaTx.destroy( aStatistics ) == IDE_SUCCESS);
+
+        case 0:
+            //nothing
+            break;
+        default:
+            IDE_CALLBACK_FATAL("Can't be here");
+    }
+
+    return IDE_FAILURE ;
+}
+

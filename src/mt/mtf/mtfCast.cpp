@@ -42,7 +42,7 @@ mtfModule mtfCast = {
     1|MTC_NODE_OPERATOR_FUNCTION|
         MTC_NODE_PRINT_FMT_MISC,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfCastFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -92,14 +92,14 @@ IDE_RC mtfCastEstimate( mtcNode*     aNode,
     sColumn = aTemplate->rows[sNode->table].columns + sNode->column;
 
     // PROJ-2002 Column Security
-    // ë³´ì•ˆ íƒ€ìž…ìœ¼ë¡œëŠ” cast ì—°ì‚°ì„ ìˆ˜í–‰í•  ìˆ˜ ì—†ë‹¤.
+    // º¸¾È Å¸ÀÔÀ¸·Î´Â cast ¿¬»êÀ» ¼öÇàÇÒ ¼ö ¾ø´Ù.
     IDE_TEST_RAISE( (sColumn->module->id == MTD_ECHAR_ID) ||
                     (sColumn->module->id == MTD_EVARCHAR_ID) ||
                     (sColumn->module->id == MTD_UNDEF_ID),
                     ERR_CONVERSION_NOT_APPLICABLE );
 
     // BUG-23102
-    // mtcColumnìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
+    // mtcColumnÀ¸·Î ÃÊ±âÈ­ÇÑ´Ù.
     mtc::initializeColumn( aStack[0].column, sColumn );
 
     aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
@@ -112,7 +112,7 @@ IDE_RC mtfCastEstimate( mtcNode*     aNode,
                                         &(aStack[0].column->module) )
               != IDE_SUCCESS );
 
-    // BUG-43858 ì¸ìžê°€ undef typeì´ë”ë¼ë„ castì—°ì‚°ìžëŠ” ë¬´ì‹œí•œë‹¤.
+    // BUG-43858 ÀÎÀÚ°¡ undef typeÀÌ´õ¶óµµ cast¿¬»êÀÚ´Â ¹«½ÃÇÑ´Ù.
     if ( ( aNode->lflag & MTC_NODE_UNDEF_TYPE_MASK )
          == MTC_NODE_UNDEF_TYPE_EXIST )
     {
@@ -196,9 +196,9 @@ IDE_RC mtfCastCalculate( mtcNode*     aNode,
                           aTemplate )
                       != IDE_SUCCESS );
 
-            // canonizeê°€ í•„ìš”ì—†ì–´ì„œ sDstValueì˜ ê°’ì„
-            // source pointerë¡œ ë³€ê²½í•´ì„œ ë¦¬í„´í•œ ê²½ìš° (sDstValue == aStack[1].value)
-            // stack[0].valueì— stack[1].valueì˜ ê°’ì„ ë³µì‚¬í•´ì¤€ë‹¤.
+            // canonize°¡ ÇÊ¿ä¾ø¾î¼­ sDstValueÀÇ °ªÀ»
+            // source pointer·Î º¯°æÇØ¼­ ¸®ÅÏÇÑ °æ¿ì (sDstValue == aStack[1].value)
+            // stack[0].value¿¡ stack[1].valueÀÇ °ªÀ» º¹»çÇØÁØ´Ù.
             if ( sDstValue != aStack[0].value ) 
             {
                 sSrcLen = aStack[1].column->module->actualSize( aStack[1].column,

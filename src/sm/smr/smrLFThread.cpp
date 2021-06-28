@@ -15,23 +15,14 @@
  */
  
 /***********************************************************************
- * $Id: smrLFThread.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smrLFThread.cpp 82426 2018-03-09 05:12:27Z emlee $
  **********************************************************************/
 
-#include <idl.h>
-#include <ide.h>
-#include <idu.h>
 #include <smErrorCode.h>
 #include <smDef.h>
 #include <smm.h>
 #include <smr.h>
 #include <smrReq.h>
-#include <smrDef.h>
-//#include <smrLFThread.h>
-//#include <smrLogFileMgr.h>
-//#include <smrCompareLSN.h>
-//#include <smrArchThread.h>
-//#include <smrLogMultiplexThread.h>
 #include <smxTransMgr.h> /* BUG-35392 */
 
 smrLFThread::smrLFThread() : idtBaseThread()
@@ -42,10 +33,10 @@ smrLFThread::~smrLFThread()
 {
 }
 
-/* ì¸ìŠ¤í„´ìŠ¤ë¥¼ ì´ˆê¸°í™”í•˜ê³  ë¡œê·¸ Flush ì“°ë ˆë“œë¥¼ ì‹œì‘í•¨
+/* ÀÎ½ºÅÏ½º¸¦ ÃÊ±âÈ­ÇÏ°í ·Î±× Flush ¾²·¹µå¸¦ ½ÃÀÛÇÔ
  *
- * ì´ ë¡œê·¸ Flush ì“°ë ˆë“œê°€ Flushí•˜ëŠ” ë¡œê·¸íŒŒì¼ë“¤ì„
- * ê´€ë¦¬í•˜ëŠ” ë¡œê·¸íŒŒì¼ ê´€ë¦¬ì.
+ * ÀÌ ·Î±× Flush ¾²·¹µå°¡ FlushÇÏ´Â ·Î±×ÆÄÀÏµéÀ»
+ * °ü¸®ÇÏ´Â ·Î±×ÆÄÀÏ °ü¸®ÀÚ.
  */
 IDE_RC smrLFThread::initialize( smrLogFileMgr   * aLogFileMgr,
                                 smrArchThread   * aArchThread)
@@ -57,7 +48,7 @@ IDE_RC smrLFThread::initialize( smrLogFileMgr   * aLogFileMgr,
     
     mFinish     = ID_FALSE;
     
-    // mSyncLogFileList ì˜ head,tail := NULL
+    // mSyncLogFileList ÀÇ head,tail := NULL
     mSyncLogFileList.mSyncPrvLogFile = &mSyncLogFileList;
     mSyncLogFileList.mSyncNxtLogFile = &mSyncLogFileList;
 
@@ -69,10 +60,10 @@ IDE_RC smrLFThread::initialize( smrLogFileMgr   * aLogFileMgr,
                                    IDU_MUTEX_KIND_POSIX,
                                    IDV_WAIT_INDEX_NULL) != IDE_SUCCESS);
 
-    /* fix BUG-17602 íŠ¹ì • LSNì´ syncë˜ê¸°ë¥¼ ëŒ€ê¸°í•˜ëŠ” ê²½ìš° ë‹¨ìœ„ syncê°€ ì™„ë£Œë ë•Œ
-     * ê¹Œì§€ sync ì—¬ë¶€ë¥¼ í™•ì¸í•  ìˆ˜ ì—†ìŒ
-     * 64bitì—ì„œëŠ” SyncWait Mutexë¡œ ì‚¬ìš©ë¨.
-     * 32bitì—ì„œëŠ” SyncedLSN ì„¤ì • ë° íŒë…ê³¼ SyncWait Mutexë¡œ ì‚¬ìš©ë¨ */
+    /* fix BUG-17602 Æ¯Á¤ LSNÀÌ syncµÇ±â¸¦ ´ë±âÇÏ´Â °æ¿ì ´ÜÀ§ sync°¡ ¿Ï·áµÉ¶§
+     * ±îÁö sync ¿©ºÎ¸¦ È®ÀÎÇÒ ¼ö ¾øÀ½
+     * 64bit¿¡¼­´Â SyncWait Mutex·Î »ç¿ëµÊ.
+     * 32bit¿¡¼­´Â SyncedLSN ¼³Á¤ ¹× ÆÇµ¶°ú SyncWait Mutex·Î »ç¿ëµÊ */
     IDE_TEST(mMtxSyncLSN.initialize((SChar*)"SYNC_LSN_MUTEX",
                                     IDU_MUTEX_KIND_POSIX,
                                     IDV_WAIT_INDEX_NULL) != IDE_SUCCESS);
@@ -80,12 +71,12 @@ IDE_RC smrLFThread::initialize( smrLogFileMgr   * aLogFileMgr,
     mLstLSN.mLSN.mFileNo = 0;
     mLstLSN.mLSN.mOffset = 0;
 
-    // ë§ˆì§€ë§‰ìœ¼ë¡œ Syncí•œ ì‹œê°ì„ í˜„ì¬ ì‹œê°ìœ¼ë¡œ ì´ˆê¸°í™”
+    // ¸¶Áö¸·À¸·Î SyncÇÑ ½Ã°¢À» ÇöÀç ½Ã°¢À¸·Î ÃÊ±âÈ­
     IDV_TIME_GET(&mLastSyncTime);
 
     mThreadCntWaitForSync = 0;
     
-    // V$LFG ì— ë³´ì—¬ì¤„ Group Commit í†µê³„ì¹˜ ì´ˆê¸°í™”
+    // V$LFG ¿¡ º¸¿©ÁÙ Group Commit Åë°èÄ¡ ÃÊ±âÈ­
     mGCWaitCount = 0;
     mGCAlreadySyncCount = 0;
     mGCRealSyncCount = 0;
@@ -132,21 +123,21 @@ IDE_RC smrLFThread::destroy()
     return IDE_FAILURE;
 }
 
-/* SyncëŒ€ìƒ ë¡œê·¸íŒŒì¼ ë¦¬ìŠ¤íŠ¸ì— ë¡œê·¸íŒŒì¼ì„ ì¶”ê°€
+/* Sync´ë»ó ·Î±×ÆÄÀÏ ¸®½ºÆ®¿¡ ·Î±×ÆÄÀÏÀ» Ãß°¡
 */
 
 IDE_RC smrLFThread::addSyncLogFile(smrLogFile*   aLogFile)
 {
     IDE_TEST(lockListMtx() != IDE_SUCCESS);
 
-    // ì¶”ê°€í•˜ë ¤ëŠ” ë¡œê·¸íŒŒì¼ì˜ ì´ì „ := ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ì˜ tail
+    // Ãß°¡ÇÏ·Á´Â ·Î±×ÆÄÀÏÀÇ ÀÌÀü := ¸µÅ©µå ¸®½ºÆ®ÀÇ tail
     aLogFile->mSyncPrvLogFile = mSyncLogFileList.mSyncPrvLogFile;
-    // ì¶”ê°€í•˜ë ¤ëŠ” ë¡œê·¸íŒŒì¼ì˜ ë‹¤ìŒ := NULL
+    // Ãß°¡ÇÏ·Á´Â ·Î±×ÆÄÀÏÀÇ ´ÙÀ½ := NULL
     aLogFile->mSyncNxtLogFile = &mSyncLogFileList;
 
-    // ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ì˜ tail.next := ì¶”ê°€í•˜ë ¤ëŠ” ë¡œê·¸íŒŒì¼
+    // ¸µÅ©µå ¸®½ºÆ®ÀÇ tail.next := Ãß°¡ÇÏ·Á´Â ·Î±×ÆÄÀÏ
     mSyncLogFileList.mSyncPrvLogFile->mSyncNxtLogFile = aLogFile;
-    // ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ì˜ tail := ì¶”ê°€ í•˜ë ¤ëŠ” ë¡œê·¸íŒŒì¼
+    // ¸µÅ©µå ¸®½ºÆ®ÀÇ tail := Ãß°¡ ÇÏ·Á´Â ·Î±×ÆÄÀÏ
     mSyncLogFileList.mSyncPrvLogFile = aLogFile;
 
     IDE_TEST(unlockListMtx() != IDE_SUCCESS);
@@ -158,27 +149,27 @@ IDE_RC smrLFThread::addSyncLogFile(smrLogFile*   aLogFile)
     return IDE_FAILURE;
 }
 
-/* SyncëŒ€ìƒ ë¡œê·¸íŒŒì¼ ë¦¬ìŠ¤íŠ¸ì—ì„œ ë¡œê·¸íŒŒì¼ì„ ì œê±°
+/* Sync´ë»ó ·Î±×ÆÄÀÏ ¸®½ºÆ®¿¡¼­ ·Î±×ÆÄÀÏÀ» Á¦°Å
  */
 IDE_RC smrLFThread::removeSyncLogFile(smrLogFile*  aLogFile)
 {
     IDE_TEST(lockListMtx() != IDE_SUCCESS);
 
-    /*     LF2ì œê±° ì´ì „ì˜ ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸
+    /*     LF2Á¦°Å ÀÌÀüÀÇ ¸µÅ©µå ¸®½ºÆ®
      *
      *         (1) ->       (2) ->
      *     LF1         LF2          LF3
      *         <- (3)       <- (4)
      *
      *---------------------------------------
-     *     LF2 ì œê±° í›„ì˜ ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸
+     *     LF2 Á¦°Å ÈÄÀÇ ¸µÅ©µå ¸®½ºÆ®
      *
      *         (1) ->                       
      *     LF1         LF3             
      *         <- (4)                  
      *
      *---------------------------------------
-     *     ì œê±°ë˜ì–´ ë–¨ì–´ì ¸ ë‚˜ì˜¨ LF2
+     *     Á¦°ÅµÇ¾î ¶³¾îÁ® ³ª¿Â LF2
      *
      *                        (2)->
      *       NULL         LF2         NULL
@@ -205,19 +196,19 @@ IDE_RC smrLFThread::removeSyncLogFile(smrLogFile*  aLogFile)
 
 IDE_RC smrLFThread::getSyncedLSN( smLSN *aLSN )
 {
-    smrLstLSN   sTmpLSN;
+    smrLSN4Union   sTmpLSN;
 
 #ifndef COMPILE_64BIT     
-    // BUGBUG lock/unlockì‚¬ì´ì— ì—ëŸ¬ ë°œìƒí•˜ì§€ ì•Šìœ¼ë¯€ë¡œ,
-    // sStateê´€ë ¨ ì½”ë“œ ì œê±°í•´ë„ ë¬´ê´€í•¨.
+    // BUGBUG lock/unlock»çÀÌ¿¡ ¿¡·¯ ¹ß»ıÇÏÁö ¾ÊÀ¸¹Ç·Î,
+    // sState°ü·Ã ÄÚµå Á¦°ÅÇØµµ ¹«°üÇÔ.
     SInt    sState = 0;
 
 
     IDE_TEST( lockSyncLSNMtx() != IDE_SUCCESS );
     sState = 1;
 #endif
-    // 64ë¹„íŠ¸ì˜ ê²½ìš° atomic í•˜ê²Œ mLSNì„ í•œë²ˆ ì½ì–´ì˜¨ í›„
-    // aLSNì˜ ë©¤ë²„ë“¤ì„ ì„¤ì •í•œë‹¤.
+    // 64ºñÆ®ÀÇ °æ¿ì atomic ÇÏ°Ô mLSNÀ» ÇÑ¹ø ÀĞ¾î¿Â ÈÄ
+    // aLSNÀÇ ¸â¹öµéÀ» ¼³Á¤ÇÑ´Ù.
     ID_SERIAL_BEGIN( sTmpLSN.mSync = mLstLSN.mSync );
 
     ID_SERIAL_END( SM_SET_LSN( *aLSN,
@@ -245,15 +236,15 @@ IDE_RC smrLFThread::getSyncedLSN( smLSN *aLSN )
     
 }
 
-/* íŠ¹ì • LSNê¹Œì§€ ë¡œê·¸ê°€ Flushë˜ì—ˆëŠ”ì§€ í™•ì¸í•œë‹¤.
+/* Æ¯Á¤ LSN±îÁö ·Î±×°¡ FlushµÇ¾ú´ÂÁö È®ÀÎÇÑ´Ù.
  *
- * aIsSynced - [OUT] í•´ë‹¹ LSNê¹Œì§€ syncê°€ ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€.
+ * aIsSynced - [OUT] ÇØ´ç LSN±îÁö sync°¡ µÇ¾ú´ÂÁö ¿©ºÎ.
  */
 IDE_RC smrLFThread::isSynced( UInt    aFileNo,
                               UInt    aOffset,
                               idBool* aIsSynced )
 {
-    smrLstLSN    sTmpLSN;
+    smrLSN4Union sTmpLSN;
     UInt         sFileNo = ID_UINT_MAX;
     UInt         sOffset = ID_UINT_MAX;
 #ifndef COMPILE_64BIT
@@ -271,7 +262,7 @@ IDE_RC smrLFThread::isSynced( UInt    aFileNo,
     ID_SERIAL_EXEC(  sFileNo = sTmpLSN.mLSN.mFileNo, 1 );
     ID_SERIAL_END(   sOffset = sTmpLSN.mLSN.mOffset );
     
-    // aFileNo,aFileOffsetê¹Œì§€ ë¡œê·¸ê°€ ì´ë¯¸ Flushë˜ì—ˆëŠ”ì§€ ì²´í¬
+    // aFileNo,aFileOffset±îÁö ·Î±×°¡ ÀÌ¹Ì FlushµÇ¾ú´ÂÁö Ã¼Å©
     if ( aFileNo < sFileNo )
     {
         *aIsSynced = ID_TRUE;
@@ -306,15 +297,15 @@ IDE_RC smrLFThread::isSynced( UInt    aFileNo,
 #endif
 }
 
-/* í˜„ì¬ê¹Œì§€ syncëœ ìœ„ì¹˜ë¥¼ mLSN ì— ê°±ì‹ í•œë‹¤.
+/* ÇöÀç±îÁö syncµÈ À§Ä¡¸¦ mLSN ¿¡ °»½ÅÇÑ´Ù.
  *
- * ìš°ì„ , mLSNì„ ì½ì–´ì„œ ì´ë¯¸ syncëœ ìœ„ì¹˜ë¥¼ í™•ì¸í•˜ê³ 
- * ì´ë³´ë‹¤ ë” í° LSNì¸ ê²½ìš°ì—ë§Œ mLSNì— ê°±ì‹ ì„ ì‹¤ì‹œí•œë‹¤.
+ * ¿ì¼±, mLSNÀ» ÀĞ¾î¼­ ÀÌ¹Ì syncµÈ À§Ä¡¸¦ È®ÀÎÇÏ°í
+ * ÀÌº¸´Ù ´õ Å« LSNÀÎ °æ¿ì¿¡¸¸ mLSN¿¡ °»½ÅÀ» ½Ç½ÃÇÑ´Ù.
  */
 IDE_RC smrLFThread::setSyncedLSN(UInt    aFileNo,
                                  UInt    aOffset)
 {
-    smrLstLSN sTmpLSN;
+    smrLSN4Union sTmpLSN;
 
     sTmpLSN.mLSN.mFileNo = aFileNo;
     sTmpLSN.mLSN.mOffset = aOffset;
@@ -352,7 +343,7 @@ IDE_RC smrLFThread::waitForCV( UInt aWaitUS )
     PDL_Time_Value sUntilWaitTV;
     PDL_Time_Value sWaitTV;
 
-    // USec ë‹¨ìœ„ë¡œ Timed Wait ë“¤ì–´ê°„ë‹¤.
+    // USec ´ÜÀ§·Î Timed Wait µé¾î°£´Ù.
     sWaitTV.set(0, aWaitUS );
 
     sUntilWaitTV.set( idlOS::time(0) );
@@ -393,29 +384,29 @@ IDE_RC smrLFThread::waitForCV( UInt aWaitUS )
     return IDE_FAILURE;
 }
 
-/* mSyncLogFileList ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ì˜ ì‘ë™ë°©ì‹
- * ( mTBFileList ë„ ë™ì¼í•˜ê²Œ ì ìš©ë¨ )
+/* mSyncLogFileList ¸µÅ©µå ¸®½ºÆ®ÀÇ ÀÛµ¿¹æ½Ä
+ * ( mTBFileList µµ µ¿ÀÏÇÏ°Ô Àû¿ëµÊ )
  * 
  * 
- * 1. ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¡œ ì„ ì–¸ëœ smrLogFile ê°ì²´(mSyncLogFileList)ëŠ”
- *    ì‹¤ì œ ë¡œê·¸íŒŒì¼ì„ ì €ì¥í•˜ëŠ”ë° ì‚¬ìš©ë˜ì§€ ì•ŠëŠ”ë‹¤.
+ * 1. ¸µÅ©µå ¸®½ºÆ®·Î ¼±¾ğµÈ smrLogFile °´Ã¼(mSyncLogFileList)´Â
+ *    ½ÇÁ¦ ·Î±×ÆÄÀÏÀ» ÀúÀåÇÏ´Âµ¥ »ç¿ëµÇÁö ¾Ê´Â´Ù.
  *
- * 2. mSyncLogFileList ì•ˆì˜ prv, nxt í¬ì¸í„°ë¡œ ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ ì•ˆì˜
- *    ë¡œê·¸íŒŒì¼ë“¤ì„ ê°€ë¦¬í‚¤ëŠ” ìš©ë„ë¡œë§Œ ì‚¬ìš©ë  ë¿ì´ë‹¤..
+ * 2. mSyncLogFileList ¾ÈÀÇ prv, nxt Æ÷ÀÎÅÍ·Î ¸µÅ©µå ¸®½ºÆ® ¾ÈÀÇ
+ *    ·Î±×ÆÄÀÏµéÀ» °¡¸®Å°´Â ¿ëµµ·Î¸¸ »ç¿ëµÉ »ÓÀÌ´Ù..
  *
- * 3. nxtí¬ì¸í„°ëŠ” ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ì˜ head ë¥¼ ê°€ë¦¬í‚¨ë‹¤.
+ * 3. nxtÆ÷ÀÎÅÍ´Â ¸µÅ©µå ¸®½ºÆ®ÀÇ head ¸¦ °¡¸®Å²´Ù.
  *
- * 4. prví¬ì¸í„°ëŠ” ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ì˜ tail ì„ ê°€ë¦¬í‚¨ë‹¤.
+ * 4. prvÆ÷ÀÎÅÍ´Â ¸µÅ©µå ¸®½ºÆ®ÀÇ tail À» °¡¸®Å²´Ù.
  *
- * 5. ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¡œ ì„ ì–¸ëœ mSyncLogFileListì˜ ì£¼ì†Œ(&mSyncLogFileList)ëŠ”
- *    nxt, prví¬ì¸í„°ì— í• ë‹¹ë  ê²½ìš°, ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ì—ì„œ NULLí¬ì¸í„°ì˜ ì—­í• ì„ í•œë‹¤.
+ * 5. ¸µÅ©µå ¸®½ºÆ®·Î ¼±¾ğµÈ mSyncLogFileListÀÇ ÁÖ¼Ò(&mSyncLogFileList)´Â
+ *    nxt, prvÆ÷ÀÎÅÍ¿¡ ÇÒ´çµÉ °æ¿ì, ¸µÅ©µå ¸®½ºÆ®¿¡¼­ NULLÆ÷ÀÎÅÍÀÇ ¿ªÇÒÀ» ÇÑ´Ù.
  *
  */
 IDE_RC smrLFThread::wakeupWaiterForSync()
 {
     SInt sState = 0;
 
-    // Syncë¥¼ ê¸°ë‹¤ë¦¬ëŠ” Threadê°€ ìˆì„ ê²½ìš°ì—ë§Œ ê¹¨ìš´ë‹¤.
+    // Sync¸¦ ±â´Ù¸®´Â Thread°¡ ÀÖÀ» °æ¿ì¿¡¸¸ ±ú¿î´Ù.
     if ( mThreadCntWaitForSync != 0 )
     {
         IDE_TEST( lockSyncLSNMtx() != IDE_SUCCESS );
@@ -449,12 +440,12 @@ IDE_RC smrLFThread::wakeupWaiterForSync()
     return IDE_FAILURE;
 }
 
-/* aFileNo, aOffsetê¹Œì§€ ë¡œê·¸ê°€ syncë˜ì—ˆìŒì„ ë³´ì¥í•œë‹¤.
+/* aFileNo, aOffset±îÁö ·Î±×°¡ syncµÇ¾úÀ½À» º¸ÀåÇÑ´Ù.
  *
- * 1. Commit Transactionì˜ Durabilityë¥¼ ë³´ì¥í•˜ê¸° ìœ„í•´ í˜¸ì¶œ
- * 2. Log syncë¥¼ ë³´ì¥í•˜ê¸° ìœ„í•´ LogSwitch ê³¼ì •ì—ì„œ í˜¸ì¶œ
- * 3. ë²„í¼ ê´€ë¦¬ìì— ì˜í•´ í˜¸ì¶œë˜ë©°, ê¸°ë³¸ì ì¸ ë™ì‘ì€
- *    noWaitForLogSync ì™€ ê°™ë‹¤.
+ * 1. Commit TransactionÀÇ Durability¸¦ º¸ÀåÇÏ±â À§ÇØ È£Ãâ
+ * 2. Log sync¸¦ º¸ÀåÇÏ±â À§ÇØ LogSwitch °úÁ¤¿¡¼­ È£Ãâ
+ * 3. ¹öÆÛ °ü¸®ÀÚ¿¡ ÀÇÇØ È£ÃâµÇ¸ç, ±âº»ÀûÀÎ µ¿ÀÛÀº
+ *    noWaitForLogSync ¿Í °°´Ù.
  */
 IDE_RC smrLFThread::syncOrWait4SyncLogToLSN( smrSyncByWho  aSyncWho,
                                              UInt          aFileNo,
@@ -474,12 +465,12 @@ IDE_RC smrLFThread::syncOrWait4SyncLogToLSN( smrSyncByWho  aSyncWho,
                 aOffset );
 
     /* BUG-35392
-     * ì§€ì •ëœ LSN ê¹Œì§€ syncê°€ ì™„ë£Œë˜ê¸°ë¥¼ ëŒ€ê¸°í•œë‹¤. */
+     * ÁöÁ¤µÈ LSN ±îÁö sync°¡ ¿Ï·áµÇ±â¸¦ ´ë±âÇÑ´Ù. */
     smrLogMgr::waitLogSyncToLSN( &sSyncLSN,
                                  smuProperty::getLFGMgrSyncWaitMin(),
                                  smuProperty::getLFGMgrSyncWaitMax() );
 
-    // LSNì´ syncê°€ ì•ˆëœ ê²½ìš°
+    // LSNÀÌ sync°¡ ¾ÈµÈ °æ¿ì
     while ( 1 )
     {
         IDE_TEST( isSynced( aFileNo, aOffset, &sSynced ) != IDE_SUCCESS );
@@ -493,7 +484,7 @@ IDE_RC smrLFThread::syncOrWait4SyncLogToLSN( smrSyncByWho  aSyncWho,
 
         if ( sLocked == ID_TRUE )
         {
-            // ìì‹ ì´ ì§ì ‘ LSNì„ Syncí•´ì•¼í•˜ëŠ” ê²½ìš°
+            // ÀÚ½ÅÀÌ Á÷Á¢ LSNÀ» SyncÇØ¾ßÇÏ´Â °æ¿ì
             sState = 1;
 
             IDE_TEST( syncLogToDiskByGroup( aSyncWho,
@@ -506,17 +497,17 @@ IDE_RC smrLFThread::syncOrWait4SyncLogToLSN( smrSyncByWho  aSyncWho,
             sState = 0;
             IDE_TEST( unlockThreadMtx() != IDE_SUCCESS );
 
-            // syncë˜ì—ˆë‹¤ë©´ ì™„ë£Œí•œë‹¤.
+            // syncµÇ¾ú´Ù¸é ¿Ï·áÇÑ´Ù.
             if ( sSynced == ID_TRUE )
             {
                 break;
             }
         }
 
-        // ë‹¤ë¥¸ Threadê°€ Syncë¥¼ ìˆ˜í–‰í•˜ê³  ìˆëŠ” ê²½ìš°
-        // Cond_timewaití•˜ë‹¤ê°€ Signalì„ ë°›ê±°ë‚˜,
-        // íŠ¹ì • ì‹œê°„ì´ í˜ëŸ¬ì„œ ë‹¤ì‹œí•˜ë²ˆ Syncë˜ì—ˆëŠ”ì§€
-        // í™•ì¸í•œë‹¤.
+        // ´Ù¸¥ Thread°¡ Sync¸¦ ¼öÇàÇÏ°í ÀÖ´Â °æ¿ì
+        // Cond_timewaitÇÏ´Ù°¡ SignalÀ» ¹Ş°Å³ª,
+        // Æ¯Á¤ ½Ã°£ÀÌ Èê·¯¼­ ´Ù½ÃÇÏ¹ø SyncµÇ¾ú´ÂÁö
+        // È®ÀÎÇÑ´Ù.
         IDE_TEST( waitForCV( smuProperty::getLFGGroupCommitRetryUSec() )
                   != IDE_SUCCESS );
     }
@@ -538,7 +529,7 @@ IDE_RC smrLFThread::syncOrWait4SyncLogToLSN( smrSyncByWho  aSyncWho,
 }
 
 IDE_RC smrLFThread::syncToLSN( smrSyncByWho aWhoSync,
-                               idBool       aNoFlushLstPageInLstLF,
+                               idBool       aSyncLstPageInLstLF,
                                UInt         aFileNo,
                                UInt         aOffset,
                                UInt       * aSyncLFCnt )
@@ -551,13 +542,13 @@ IDE_RC smrLFThread::syncToLSN( smrSyncByWho aWhoSync,
     UInt          sFstSyncLFNo  = 0;
     UInt          sSyncedLFCnt  = 0;
     idBool        sIsSwitchLF;
-    idBool        sNoFlushLstPage;
+    idBool        sSyncLstPage;
     smLSN         sSyncLSN;
 
     /* BUG-35392 */
     if ( ( aFileNo == ID_UINT_MAX ) || ( aOffset == ID_UINT_MAX ))
     {
-        IDE_TEST( smrLogMgr::getLstLSN( &sSyncLSN ) != IDE_SUCCESS );
+        smrLogMgr::getLstLSN( &sSyncLSN );
     }
     else
     {
@@ -567,13 +558,13 @@ IDE_RC smrLFThread::syncToLSN( smrSyncByWho aWhoSync,
     }
 
     /* BUG-35392
-     * ì§€ì •ëœ LSN ê¹Œì§€ syncê°€ ì™„ë£Œë˜ê¸°ë¥¼ ëŒ€ê¸°í•œë‹¤. */
+     * ÁöÁ¤µÈ LSN ±îÁö sync°¡ ¿Ï·áµÇ±â¸¦ ´ë±âÇÑ´Ù. */
     smrLogMgr::waitLogSyncToLSN( &sSyncLSN,
                                  smuProperty::getLFThrSyncWaitMin(),
                                  smuProperty::getLFThrSyncWaitMax() );
 
-    // ì•„ì§ syncë˜ì§€ ì•Šì€ ê²½ìš°ì´ë‹¤.
-    // ë¡œê·¸íŒŒì¼ í•˜ë‚˜ì”© sync ì‹¤ì‹œ.
+    // ¾ÆÁ÷ syncµÇÁö ¾ÊÀº °æ¿ìÀÌ´Ù.
+    // ·Î±×ÆÄÀÏ ÇÏ³ª¾¿ sync ½Ç½Ã.
     IDE_TEST( lockListMtx() != IDE_SUCCESS );
     sState = 1;
 
@@ -584,20 +575,20 @@ IDE_RC smrLFThread::syncToLSN( smrSyncByWho aWhoSync,
 
     /* 
      * PROJ-2232 log multiplex
-     * ë‹¤ì¤‘í™” ë¡œê·¸ì— ëŒ€í•œ WALì´ ê¹¨ì§€ëŠ”ê²ƒì„ ë°©ì§€í•˜ê¸° ìœ„í•´ 
-     * ë¡œê·¸ ë‹¤ì¤‘í™” ì“°ë ˆë“œë¥¼ ê¹¨ìš´ë‹¤.
+     * ´ÙÁßÈ­ ·Î±×¿¡ ´ëÇÑ WALÀÌ ±úÁö´Â°ÍÀ» ¹æÁöÇÏ±â À§ÇØ 
+     * ·Î±× ´ÙÁßÈ­ ¾²·¹µå¸¦ ±ú¿î´Ù.
      */ 
     IDE_TEST( smrLogMultiplexThread::wakeUpSyncThread(
                                             smrLogFileMgr::mSyncThread,
                                             aWhoSync,
-                                            aNoFlushLstPageInLstLF,
+                                            aSyncLstPageInLstLF,
                                             sSyncLSN.mFileNo,
                                             sSyncLSN.mOffset )
               != IDE_SUCCESS );
 
     /* BUG-39953 [PROJ-2506] Insure++ Warning
-     * - í˜„ì¬ íŒŒì¼ì´ ë¦¬ìŠ¤íŠ¸ í—¤ë”ì¸ì§€ ê²€ì‚¬í•œ í›„ ì ‘ê·¼í•©ë‹ˆë‹¤.
-     * - ë˜ëŠ”, mSyncLogFileList ì´ˆê¸°í™” ì‹œ, mFileNoë¥¼ ì´ˆê¸°í™”í•˜ëŠ” ë°©ì•ˆì´ ìˆìŠµë‹ˆë‹¤.
+     * - ÇöÀç ÆÄÀÏÀÌ ¸®½ºÆ® Çì´õÀÎÁö °Ë»çÇÑ ÈÄ Á¢±ÙÇÕ´Ï´Ù.
+     * - ¶Ç´Â, mSyncLogFileList ÃÊ±âÈ­ ½Ã, mFileNo¸¦ ÃÊ±âÈ­ÇÏ´Â ¹æ¾ÈÀÌ ÀÖ½À´Ï´Ù.
      */
     if ( sCurLogFile != &mSyncLogFileList )
     {
@@ -617,53 +608,53 @@ IDE_RC smrLFThread::syncToLSN( smrSyncByWho aWhoSync,
         {
             sIsSwitchLF = sCurLogFile->mSwitch;
 
-            // sSyncLSN.mFileNoëŠ” ì•„ì§ syncë˜ì§€ ì•Šì€ ë¡œê·¸íŒŒì¼ë²ˆí˜¸ë¡œ
-            // mSyncLogFileListì— ë“¤ì–´ìˆì„ ìˆ˜ ë°–ì— ì—†ë‹¤.
-            // sSyncLSN.mFileNoì™€ ì¼ì¹˜í•˜ëŠ” ë¡œê·¸íŒŒì¼ì„ ë§Œë‚˜ê¸° ì „ê¹Œì§€ëŠ”
-            // í•´ë‹¹ ë¡œê·¸íŒŒì¼ë“¤ì„ ëª¨ë‘ syncí•œë‹¤.
+            // sSyncLSN.mFileNo´Â ¾ÆÁ÷ syncµÇÁö ¾ÊÀº ·Î±×ÆÄÀÏ¹øÈ£·Î
+            // mSyncLogFileList¿¡ µé¾îÀÖÀ» ¼ö ¹Û¿¡ ¾ø´Ù.
+            // sSyncLSN.mFileNo¿Í ÀÏÄ¡ÇÏ´Â ·Î±×ÆÄÀÏÀ» ¸¸³ª±â Àü±îÁö´Â
+            // ÇØ´ç ·Î±×ÆÄÀÏµéÀ» ¸ğµÎ syncÇÑ´Ù.
             if ( sSyncLSN.mFileNo == sCurFileNo )
             {
-                // íŠ¹ì • ìœ„ì¹˜ê¹Œì§€ syncë¥¼ ìš”ì²­ ë°›ì€ ê²½ìš°ì—ì„œ
-                // ë§ˆì§€ë§‰ LogFileì¸ ê²½ìš°ì´ë‹¤.
-                sSyncOffset     = sSyncLSN.mOffset;
-                sNoFlushLstPage = aNoFlushLstPageInLstLF;
+                // Æ¯Á¤ À§Ä¡±îÁö sync¸¦ ¿äÃ» ¹ŞÀº °æ¿ì¿¡¼­
+                // ¸¶Áö¸· LogFileÀÎ °æ¿ìÀÌ´Ù.
+                sSyncOffset  = sSyncLSN.mOffset;
+                sSyncLstPage = aSyncLstPageInLstLF;
             }
             else
             {
-                // 1. aFileNoê°€ UInt Maxì¸ ê²½ìš°
-                // 2. íŠ¹ì • ìœ„ì¹˜ê¹Œì§€ syncë¥¼ ìš”ì²­ ë°›ì•˜ëŠ”ë°
-                //    ì•„ì§ ë„ë‹¬í•˜ì§€ ëª»í•œ ê²½ìš°
+                // 1. aFileNo°¡ UInt MaxÀÎ °æ¿ì
+                // 2. Æ¯Á¤ À§Ä¡±îÁö sync¸¦ ¿äÃ» ¹Ş¾Ò´Âµ¥
+                //    ¾ÆÁ÷ µµ´ŞÇÏÁö ¸øÇÑ °æ¿ì
                 // BUG-35392
-                // ê¸°ì¡´ì— ë§ˆì§€ë§‰ íŒŒì¼ì´ë¼ í•˜ë”ë¼ë„ switch ë˜ì—ˆìœ¼ë©´
-                // ì—¬ê¸°ë¡œ ì™”ëŠ”ë° ì´ìœ ëŠ” Log Fileì´ switch ë˜ì—ˆìœ¼ë©´
-                // ê·¸ëƒ¥ mOffsetê¹Œì§€ sync í•˜ë©´ ë˜ê¸° ë•Œë¬¸ì´ë‹¤.
-                // í•˜ì§€ë§Œ BUG-28856  ë§ˆì§€ë§‰ Log Fileì´ ì•„ë‹ˆë”ë¼ë„
-                // ì•„ì§ log Copyê°€ ì™„ë£Œ ë˜ì§€ ì•Šì•˜ì„ ìˆ˜ ìˆë‹¤.
-                sSyncOffset = sCurLogFile->mOffset;
-                sNoFlushLstPage = ID_TRUE;
+                // ±âÁ¸¿¡ ¸¶Áö¸· ÆÄÀÏÀÌ¶ó ÇÏ´õ¶óµµ switch µÇ¾úÀ¸¸é
+                // ¿©±â·Î ¿Ô´Âµ¥ ÀÌÀ¯´Â Log FileÀÌ switch µÇ¾úÀ¸¸é
+                // ±×³É mOffset±îÁö sync ÇÏ¸é µÇ±â ¶§¹®ÀÌ´Ù.
+                // ÇÏÁö¸¸ BUG-28856  ¸¶Áö¸· Log FileÀÌ ¾Æ´Ï´õ¶óµµ
+                // ¾ÆÁ÷ log Copy°¡ ¿Ï·á µÇÁö ¾Ê¾ÒÀ» ¼ö ÀÖ´Ù.
+                sSyncOffset  = sCurLogFile->mOffset;
+                sSyncLstPage = ID_TRUE;
             }
 
-            // ì´ì œ ìœ„ì—ì„œ isSyncë¥¼ í˜¸ì¶œí•˜ì—¬ ê¹¨ìš´ ë¡œê·¸ Flush ì“°ë ˆë“œê°€
-            // í•´ë‹¹ ë¡œê·¸íŒŒì¼ë“¤ì„ í•œë²ˆ ë” syncí•˜ê³  mSyncLogFileList ì—ì„œ ì§€ì›Œì¤€ë‹¤.
-            // ë¡œê·¸ Flush ì“°ë ˆë“œê°€ ë¡œê·¸íŒŒì¼ë“¤ì„ í•œë²ˆì”© ë” syncí•˜ë„ë¡
-            // smrLogFile.syncLogë¥¼ ì—¬ëŸ¬ë²ˆ í˜¸ì¶œí•˜ì—¬ë„
-            // smrLogFile.syncLogì—ì„œëŠ” í•œë²ˆë§Œ ì‹±í¬í•˜ë„ë¡ êµ¬í˜„ë˜ì–´ ìˆë‹¤.
-            IDE_TEST( sCurLogFile->syncLog( sNoFlushLstPage,
+            // ÀÌÁ¦ À§¿¡¼­ isSync¸¦ È£ÃâÇÏ¿© ±ú¿î ·Î±× Flush ¾²·¹µå°¡
+            // ÇØ´ç ·Î±×ÆÄÀÏµéÀ» ÇÑ¹ø ´õ syncÇÏ°í mSyncLogFileList ¿¡¼­ Áö¿öÁØ´Ù.
+            // ·Î±× Flush ¾²·¹µå°¡ ·Î±×ÆÄÀÏµéÀ» ÇÑ¹ø¾¿ ´õ syncÇÏµµ·Ï
+            // smrLogFile.syncLog¸¦ ¿©·¯¹ø È£ÃâÇÏ¿©µµ
+            // smrLogFile.syncLog¿¡¼­´Â ÇÑ¹ø¸¸ ½ÌÅ©ÇÏµµ·Ï ±¸ÇöµÇ¾î ÀÖ´Ù.
+            IDE_TEST( sCurLogFile->syncLog( sSyncLstPage,
                                             sSyncOffset )
                       != IDE_SUCCESS );
 
-            // mLSN ì— í˜„ì¬ê¹Œì§€ syncí•œ LSN ê°±ì‹ .
+            // mLSN ¿¡ ÇöÀç±îÁö syncÇÑ LSN °»½Å.
             IDE_TEST( setSyncedLSN( sCurLogFile->mFileNo,
                                     sCurLogFile->mSyncOffset )
                       != IDE_SUCCESS );
 
-            // Log Syncë¥¼ ê¸°ë‹¤ë¦¬ëŠ” Threadë“¤ì„ ê¹¨ìš´ë‹¤.
+            // Log Sync¸¦ ±â´Ù¸®´Â ThreadµéÀ» ±ú¿î´Ù.
             IDE_TEST( wakeupWaiterForSync() != IDE_SUCCESS );
 
             if ( ( sSyncedLFCnt % 100 == 0 ) && ( sSyncedLFCnt != 0 )  )
             {
-                // í•œë²ˆ ê¹¨ì–´ë‚œ ë‹¤ìŒ Syncë¥¼ ìˆ˜í–‰í•œ ë¡œê·¸íŒŒì¼ ê°œìˆ˜ê°€
-                // 100ê°œì´ìƒì¸ ê²½ìš°ì— ë©”ì‹œì§€ë¥¼ ë‚¨ê¸´ë‹¤.
+                // ÇÑ¹ø ±ú¾î³­ ´ÙÀ½ Sync¸¦ ¼öÇàÇÑ ·Î±×ÆÄÀÏ °³¼ö°¡
+                // 100°³ÀÌ»óÀÎ °æ¿ì¿¡ ¸Ş½ÃÁö¸¦ ³²±ä´Ù.
                 ideLog::log( SM_TRC_LOG_LEVEL_WARNNING,
                              SM_TRC_MRECOVERY_LFTHREAD_INFO_FOR_SYNC_LOGFILE,
                              sFstSyncLFNo,
@@ -680,19 +671,19 @@ IDE_RC smrLFThread::syncToLSN( smrSyncByWho aWhoSync,
                 {
                     sSyncedLFCnt++;
 
-                    /* ë” ì´ìƒ ë¡œê·¸íŒŒì¼ì— ë””ìŠ¤í¬ì— ê¸°ë¡í•  ë¡œê·¸ê°€ ì—†ì´
-                     * ëª¨ë‘ ë””ìŠ¤í¬ì— ë°˜ì˜ì´ ë˜ì—ˆë‹¤. */
+                    /* ´õ ÀÌ»ó ·Î±×ÆÄÀÏ¿¡ µğ½ºÅ©¿¡ ±â·ÏÇÒ ·Î±×°¡ ¾øÀÌ
+                     * ¸ğµÎ µğ½ºÅ©¿¡ ¹İ¿µÀÌ µÇ¾ú´Ù. */
                     sCurLogFile->setEndLogFlush( ID_TRUE );
                 }
                 else
                 {
-                    /* ë§ˆì§€ë§‰ íŒŒì¼ì€ ì•„ë‹ˆì§€ë§Œ Log Copyê°€ ì™„ë£Œ ë˜ì§€ ì•Šì€ ê²½ìš° */
+                    /* ¸¶Áö¸· ÆÄÀÏÀº ¾Æ´ÏÁö¸¸ Log Copy°¡ ¿Ï·á µÇÁö ¾ÊÀº °æ¿ì */
                     break;
                 }
             }
             else
             {
-                /* ì•„ì§ ê¸°ë¡í•  ê²ƒì´ ë‚¨ì€ ë§ˆì§€ë§‰ íŒŒì¼ì¸ ê²½ìš° */
+                /* ¾ÆÁ÷ ±â·ÏÇÒ °ÍÀÌ ³²Àº ¸¶Áö¸· ÆÄÀÏÀÎ °æ¿ì */
                 break;
             }
         }
@@ -700,9 +691,9 @@ IDE_RC smrLFThread::syncToLSN( smrSyncByWho aWhoSync,
         if ( ( sCurLogFile->getEndLogFlush() == ID_TRUE ) &&
              ( aWhoSync == SMR_LOG_SYNC_BY_LFT ) )
         {
-            /* PROJ-2232 log ë¡œê·¸ ë‹¤ì¤‘í™”ê°€ ì™„ë£Œ ë ë•Œê¹Œì§€ ëŒ€ê¸°í•œë‹¤. */ 
+            /* PROJ-2232 log ·Î±× ´ÙÁßÈ­°¡ ¿Ï·á µÉ¶§±îÁö ´ë±âÇÑ´Ù. */ 
             wait4MultiplexLogFileSwitch( sCurLogFile );
-            /* Sync Threadë§Œì´ logfileì„ close í•œë‹¤. */
+            /* Sync Thread¸¸ÀÌ logfileÀ» close ÇÑ´Ù. */
             IDE_TEST( closeLogFile( sCurLogFile ) != IDE_SUCCESS );
         }
 
@@ -716,8 +707,8 @@ IDE_RC smrLFThread::syncToLSN( smrSyncByWho aWhoSync,
 
     if ( ( sSyncedLFCnt % 100 != 0 ) && ( sSyncedLFCnt > 100 ) )
     {
-        // í•œë²ˆ ê¹¨ì–´ë‚œ ë‹¤ìŒ Syncë¥¼ ìˆ˜í–‰í•œ ë¡œê·¸íŒŒì¼ ê°œìˆ˜ê°€
-        // 100ê°œì´ìƒì¸ ê²½ìš°ì— ë©”ì‹œì§€ë¥¼ ë‚¨ê¸´ë‹¤. 
+        // ÇÑ¹ø ±ú¾î³­ ´ÙÀ½ Sync¸¦ ¼öÇàÇÑ ·Î±×ÆÄÀÏ °³¼ö°¡
+        // 100°³ÀÌ»óÀÎ °æ¿ì¿¡ ¸Ş½ÃÁö¸¦ ³²±ä´Ù. 
         ideLog::log( SM_TRC_LOG_LEVEL_WARNNING,
                      SM_TRC_MRECOVERY_LFTHREAD_INFO_FOR_SYNC_LOGFILE,
                      sFstSyncLFNo,
@@ -730,7 +721,7 @@ IDE_RC smrLFThread::syncToLSN( smrSyncByWho aWhoSync,
         *aSyncLFCnt = sSyncedLFCnt;
     }
 
-    /* PROJ-2232 ë‹¤ì¤‘í™”ë¡œê·¸ê°€ íŒŒì¼ë¡œ ë°˜ì˜ë ë•Œê¹Œì§€ ëŒ€ê¸°í•œë‹¤. */
+    /* PROJ-2232 ´ÙÁßÈ­·Î±×°¡ ÆÄÀÏ·Î ¹İ¿µµÉ¶§±îÁö ´ë±âÇÑ´Ù. */
     IDE_TEST( smrLogMultiplexThread::wait( smrLogFileMgr::mSyncThread ) 
               != IDE_SUCCESS );
 
@@ -749,10 +740,10 @@ IDE_RC smrLFThread::syncToLSN( smrSyncByWho aWhoSync,
     return IDE_FAILURE;
 }
 
-/* aFileNo, aOffsetê¹Œì§€ ë¡œê·¸ê°€ syncë˜ì—ˆìŒì„ ë³´ì¥í•œë‹¤.
+/* aFileNo, aOffset±îÁö ·Î±×°¡ syncµÇ¾úÀ½À» º¸ÀåÇÑ´Ù.
  *
- * [ ì£¼ì˜ì‚¬í•­ ]
- * mMtxThread ê°€ íšë“ëœ ìƒíƒœì—ì„œ í˜¸ì¶œë˜ì–´ì•¼ í•œë‹¤.
+ * [ ÁÖÀÇ»çÇ× ]
+ * mMtxThread °¡ È¹µæµÈ »óÅÂ¿¡¼­ È£ÃâµÇ¾î¾ß ÇÑ´Ù.
  */
 IDE_RC smrLFThread::syncLogToDiskByGroup( smrSyncByWho aWhoSync,
                                           UInt         aFileNo,
@@ -764,9 +755,9 @@ IDE_RC smrLFThread::syncLogToDiskByGroup( smrSyncByWho aWhoSync,
     idvTime        sCurTime;
     ULong          sTimeDiff;
     
-    // ì´ ì†ì—ì„œ ë¡œê·¸ Flush ì“°ë ˆë“œë¥¼ ê¹¨ìš°ê²Œ ë˜ëŠ”ë°,
-    // ìœ„ì—ì„œ ë¡œê·¸ Flush ì“°ë ˆë“œ ë˜ì¹˜ë¥¼ ì¡ì•˜ê¸° ë•Œë¬¸ì—,
-    // ì´ ë˜ì¹˜ë¥¼ í’€ê¸°ê¹Œì§€ ë¡œê·¸ Flush ì“°ë ˆë“œëŠ” ê¸°ë‹¤ë ¤ì•¼ í•œë‹¤.
+    // ÀÌ ¼Ó¿¡¼­ ·Î±× Flush ¾²·¹µå¸¦ ±ú¿ì°Ô µÇ´Âµ¥,
+    // À§¿¡¼­ ·Î±× Flush ¾²·¹µå ·¡Ä¡¸¦ Àâ¾Ò±â ¶§¹®¿¡,
+    // ÀÌ ·¡Ä¡¸¦ Ç®±â±îÁö ·Î±× Flush ¾²·¹µå´Â ±â´Ù·Á¾ß ÇÑ´Ù.
     IDE_TEST( isSynced( aFileNo,
                         aOffset,
                         &sSynced ) != IDE_SUCCESS);
@@ -779,12 +770,12 @@ IDE_RC smrLFThread::syncLogToDiskByGroup( smrSyncByWho aWhoSync,
         }
         else
         {
-            // LFG_GROUP_COMMIT_UPDATE_TX_COUNT == 0 ì´ë©´
-            // Group Commitì„ Disableì‹œí‚¨ë‹¤.
+            // LFG_GROUP_COMMIT_UPDATE_TX_COUNT == 0 ÀÌ¸é
+            // Group CommitÀ» Disable½ÃÅ²´Ù.
             if ( (smuProperty::getLFGGroupCommitUpdateTxCount() != 0 ) &&
-                // ì´ LFGì˜ Update Transaction ìˆ˜ê°€
-                // LFG_GROUP_COMMIT_UPDATE_TX_COUNTë³´ë‹¤ í´ ë•Œ
-                // Group Commitì„ ë™ì‘ì‹œí‚¨ë‹¤.
+                // ÀÌ LFGÀÇ Update Transaction ¼ö°¡
+                // LFG_GROUP_COMMIT_UPDATE_TX_COUNTº¸´Ù Å¬ ¶§
+                // Group CommitÀ» µ¿ÀÛ½ÃÅ²´Ù.
                 ( smrLogMgr::getUpdateTxCount() >=
                   smuProperty::getLFGGroupCommitUpdateTxCount() ) )
             {
@@ -792,9 +783,9 @@ IDE_RC smrLFThread::syncLogToDiskByGroup( smrSyncByWho aWhoSync,
                 sTimeDiff = IDV_TIME_DIFF_MICRO(&mLastSyncTime,
                                                 &sCurTime);
 
-                // ë§Œì•½ ë§ˆì§€ë§‰ Syncí•œ ì´í›„ë¡œ í˜„ì¬ ì‹œê°ì´
-                // LFG_GROUP_COMMIT_INTERVAL_USEC ë§Œí¼ ì§€ë‚˜ì§€ ì•Šì•˜ë‹¤ë©´
-                // ë¡œê·¸íŒŒì¼ Syncë¥¼ ì§€ì—°ì‹œí‚¨ë‹¤.
+                // ¸¸¾à ¸¶Áö¸· SyncÇÑ ÀÌÈÄ·Î ÇöÀç ½Ã°¢ÀÌ
+                // LFG_GROUP_COMMIT_INTERVAL_USEC ¸¸Å­ Áö³ªÁö ¾Ê¾Ò´Ù¸é
+                // ·Î±×ÆÄÀÏ Sync¸¦ Áö¿¬½ÃÅ²´Ù.
                 if ( sTimeDiff < smuProperty::getLFGGroupCommitIntervalUSec() ) 
                 {
                     mGCWaitCount++;
@@ -821,7 +812,7 @@ IDE_RC smrLFThread::syncLogToDiskByGroup( smrSyncByWho aWhoSync,
     }
     else
     {
-        // ì´ë¯¸ syncë˜ì—ˆë‹¤ë©´ ë” ì´ìƒ í• ì¼ì´ ì—†ë‹¤.
+        // ÀÌ¹Ì syncµÇ¾ú´Ù¸é ´õ ÀÌ»ó ÇÒÀÏÀÌ ¾ø´Ù.
     }
 
     *aIsSyncLogToLSN  = ID_TRUE;
@@ -833,10 +824,10 @@ IDE_RC smrLFThread::syncLogToDiskByGroup( smrSyncByWho aWhoSync,
     return IDE_FAILURE;
 }
 
-/* ë¡œê·¸ Flush ì“°ë ˆë“œì˜ runí•¨ìˆ˜
- * ì£¼ê¸°ì ìœ¼ë¡œ, í˜¹ì€ ëª…ì‹œì ì¸ ìš”ì²­ì— ì˜í•´ ê¹¨ì–´ë‚˜ì„œ 
- * ë¡œê·¸íŒŒì¼ì„ Flushí•˜ê³  ì™„ì „íˆ Flushëœ ë¡œê·¸íŒŒì¼ì„
- * SyncëŒ€ìƒ ë¡œê·¸íŒŒì¼ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°í•œë‹¤.
+/* ·Î±× Flush ¾²·¹µåÀÇ runÇÔ¼ö
+ * ÁÖ±âÀûÀ¸·Î, È¤Àº ¸í½ÃÀûÀÎ ¿äÃ»¿¡ ÀÇÇØ ±ú¾î³ª¼­ 
+ * ·Î±×ÆÄÀÏÀ» FlushÇÏ°í ¿ÏÀüÈ÷ FlushµÈ ·Î±×ÆÄÀÏÀ»
+ * Sync´ë»ó ·Î±×ÆÄÀÏ ¸®½ºÆ®¿¡¼­ Á¦°ÅÇÑ´Ù.
  */
 void smrLFThread::run()
 {
@@ -875,7 +866,7 @@ void smrLFThread::run()
         if ( smuProperty::isRunLogFlushThread() == SMU_THREAD_OFF )
         {
             // To Fix PR-14783
-            // System Threadì˜ ì‘ì—…ì„ ìˆ˜í–‰í•˜ì§€ ì•Šë„ë¡ í•œë‹¤.
+            // System ThreadÀÇ ÀÛ¾÷À» ¼öÇàÇÏÁö ¾Êµµ·Ï ÇÑ´Ù.
             continue;
         }
         else
@@ -885,8 +876,8 @@ void smrLFThread::run()
         
         IDE_TEST_RAISE( rc != IDE_SUCCESS, err_cond_wait );
 
-        // ë¡œê·¸íŒŒì¼ì„ Flushí•˜ê³  ì™„ì „íˆ Flushëœ ë¡œê·¸íŒŒì¼ì„
-        // SyncëŒ€ìƒ ë¡œê·¸íŒŒì¼ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°í•œë‹¤.
+        // ·Î±×ÆÄÀÏÀ» FlushÇÏ°í ¿ÏÀüÈ÷ FlushµÈ ·Î±×ÆÄÀÏÀ»
+        // Sync´ë»ó ·Î±×ÆÄÀÏ ¸®½ºÆ®¿¡¼­ Á¦°ÅÇÑ´Ù.
         IDE_TEST( syncToLSN( SMR_LOG_SYNC_BY_LFT,
                              ID_FALSE,
                              ID_UINT_MAX,
@@ -901,10 +892,10 @@ void smrLFThread::run()
         }
     }
 
-    // ì“°ë ˆë“œ ì¢…ë£Œí•˜ê¸° ì „ì— ë¡œê·¸íŒŒì¼ì„ ë‹¤ì‹œí•œë²ˆ Flushí•œë‹¤.
+    // ¾²·¹µå Á¾·áÇÏ±â Àü¿¡ ·Î±×ÆÄÀÏÀ» ´Ù½ÃÇÑ¹ø FlushÇÑ´Ù.
     //
-    // BUGBUG ì´ ì½”ë“œì™€ í•¨ê»˜ ìœ„ì—ì„œ mFinish == ID_TRUE ì²´í¬í•˜ì—¬ breakí•˜ëŠ” ì½”ë“œ
-    // ë¹¼ë„ í˜„ì¬ ì½”ë“œì™€ ë™ì‘ì€ ê°™ë‹¤.
+    // BUGBUG ÀÌ ÄÚµå¿Í ÇÔ²² À§¿¡¼­ mFinish == ID_TRUE Ã¼Å©ÇÏ¿© breakÇÏ´Â ÄÚµå
+    // »©µµ ÇöÀç ÄÚµå¿Í µ¿ÀÛÀº °°´Ù.
 
     IDE_TEST( syncToLSN( SMR_LOG_SYNC_BY_LFT,
                          ID_TRUE,
@@ -937,23 +928,23 @@ void smrLFThread::run()
     goto startPos;
 }
 
-/* ë¡œê·¸ Flush ì“°ë ˆë“œë¥¼ ì¢…ë£Œì‹œí‚¨ë‹¤.
+/* ·Î±× Flush ¾²·¹µå¸¦ Á¾·á½ÃÅ²´Ù.
  */
 IDE_RC smrLFThread::shutdown()
 {
     UInt           sState = 0;
 
-    // ì“°ë ˆë“œê°€ ì ìê³  ìˆë‹¤ëŠ” ê²ƒì„ ë³´ì¥í•˜ê¸° ìœ„í•´ ì“°ë ˆë“œ ë˜ì¹˜ë¥¼ ì¡ìŒ
+    // ¾²·¹µå°¡ ÀáÀÚ°í ÀÖ´Ù´Â °ÍÀ» º¸ÀåÇÏ±â À§ÇØ ¾²·¹µå ·¡Ä¡¸¦ ÀâÀ½
     IDE_TEST(lockThreadMtx() != IDE_SUCCESS);
     sState = 1;
 
-    // ì“°ë ˆë“œ ì¢…ë£Œí•˜ë„ë¡ í”Œë˜ê·¸ ì„¤ì •
+    // ¾²·¹µå Á¾·áÇÏµµ·Ï ÇÃ·¡±× ¼³Á¤
     mFinish = ID_TRUE;
 
-    // ì“°ë ˆë“œë¥¼ ê¹¨ìš´ë‹¤.
+    // ¾²·¹µå¸¦ ±ú¿î´Ù.
     IDE_TEST_RAISE(mCV.signal() != IDE_SUCCESS, err_cond_signal);
 
-    // ì“°ë ˆë“œê°€ ê¹¨ì–´ë‚  ìˆ˜ ìˆë„ë¡ ì“°ë ˆë“œ ë˜ì¹˜ í•´ì œ
+    // ¾²·¹µå°¡ ±ú¾î³¯ ¼ö ÀÖµµ·Ï ¾²·¹µå ·¡Ä¡ ÇØÁ¦
     sState = 0;
     IDE_TEST( unlockThreadMtx() != IDE_SUCCESS );
 
@@ -982,22 +973,22 @@ IDE_RC smrLFThread::shutdown()
 }
 
 /***********************************************************************
- * Description : ë¡œê·¸ íŒŒì¼ì„ closeí•œë‹¤.
+ * Description : ·Î±× ÆÄÀÏÀ» closeÇÑ´Ù.
  *
- * 1. sync logfile listì—ì„œ ì œê±°
- * 2. Archive Modeì´ë©´ Archive Listì— ì¶”ê°€
- * 3. logfile closeìš”ì²­.
+ * 1. sync logfile list¿¡¼­ Á¦°Å
+ * 2. Archive ModeÀÌ¸é Archive List¿¡ Ãß°¡
+ * 3. logfile close¿äÃ».
  *
  * aLogFile - [IN] logfile pointer
  *
  **********************************************************************/
 IDE_RC smrLFThread::closeLogFile( smrLogFile *aLogFile )
 {
-    // íŒŒì¼ì„ í†µì±„ë¡œ Flushí–ˆìœ¼ë¯€ë¡œ syncí•  ë¡œê·¸íŒŒì¼ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°.
+    // ÆÄÀÏÀ» ÅëÃ¤·Î FlushÇßÀ¸¹Ç·Î syncÇÒ ·Î±×ÆÄÀÏ ¸®½ºÆ®¿¡¼­ Á¦°Å.
     IDE_TEST( removeSyncLogFile( aLogFile )
               != IDE_SUCCESS);
 
-    // ì•„ì¹´ì´ë¸Œ ëª¨ë“œì¼ ë•Œ, ì•„ì¹´ì´ë¸Œ ë¡œê·¸ë¡œ ì¶”ê°€.
+    // ¾ÆÄ«ÀÌºê ¸ğµåÀÏ ¶§, ¾ÆÄ«ÀÌºê ·Î±×·Î Ãß°¡.
     if (smrRecoveryMgr::getArchiveMode()
         == SMI_LOG_ARCHIVE)
     {

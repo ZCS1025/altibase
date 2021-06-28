@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smrLogFile.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smrLogFile.h 89697 2021-01-05 10:29:13Z et16 $
  **********************************************************************/
 
 #ifndef _O_SMR_LOG_FILE_H_
@@ -29,7 +29,7 @@
 #include <smrLogHeadI.h>
 
 /*
- * í•˜ë‚˜ì˜ ë¡œê·¸íŒŒì¼ì— ëŒ€í•œ operationë“¤ì„ êµ¬í˜„í•œ ê°ì²´
+ * ÇÏ³ªÀÇ ·Î±×ÆÄÀÏ¿¡ ´ëÇÑ operationµéÀ» ±¸ÇöÇÑ °´Ã¼
  *
  */
 class smrLogFile
@@ -51,11 +51,16 @@ public:
                    SChar  * aInitBuffer,
                    UInt     aSize );
 
+    IDE_RC prepare( SChar   * aStrFilename,
+                    SChar   * aTempFileName,
+                    SChar   * aInitBuffer,
+                    SInt      aSize );
+
     IDE_RC backup(SChar   * aBackupFullFilePath);
 
-    /* ë¡œê·¸íŒŒì¼ì„ DISKì—ì„œ ì œê±°í•œë‹¤.
-     * checkpointë„ì¤‘ ë¡œê·¸íŒŒì¼ ì‚­ì œê°€ ì‹¤íŒ¨í•˜ë©´ ì—ëŸ¬ìƒí™©ìœ¼ë¡œ ì²˜ë¦¬í•˜ê³ ,
-     * restart recoveryì‹œì— ë¡œê·¸íŒŒì¼ ì‚­ì œê°€ ì‹¤íŒ¨í•˜ë©´ ì •ìƒìƒí™©ìœ¼ë¡œ ì²˜ë¦¬í•œë‹¤.
+    /* ·Î±×ÆÄÀÏÀ» DISK¿¡¼­ Á¦°ÅÇÑ´Ù.
+     * checkpointµµÁß ·Î±×ÆÄÀÏ »èÁ¦°¡ ½ÇÆÐÇÏ¸é ¿¡·¯»óÈ²À¸·Î Ã³¸®ÇÏ°í,
+     * restart recovery½Ã¿¡ ·Î±×ÆÄÀÏ »èÁ¦°¡ ½ÇÆÐÇÏ¸é Á¤»ó»óÈ²À¸·Î Ã³¸®ÇÑ´Ù.
      */
     static IDE_RC remove( SChar   * aStrFileName,
                           idBool    aIsCheckpoint );
@@ -64,14 +69,10 @@ public:
     inline void append( SChar   * aStrData,
                         UInt      aSize );
 
-    /* BUG-35392 */
-    void appendDummyHead( SChar * aStrData,
-                          UInt    aSize,
-                          UInt  * aOffset );
-    
-    void   writeLog( SChar    * aStrData,
-                     UInt       aSize,
-                     UInt       aOffset );
+    /* BUG-45711 */
+    inline void scribble( SChar  * aStrData,
+                           UInt     aSize,
+                           UInt     aOffset );
 
     void   read( UInt     aOffset,
                  SChar  * aStrBuffer,
@@ -87,10 +88,10 @@ public:
     void   clear( UInt aBegin );
     inline IDE_RC sync() { return mFile.sync(); }
 
-    // ë¡œê·¸ ê¸°ë¡ì‹œ Aligní•  Pageì˜ í¬ê¸° ë¦¬í„´ 
+    // ·Î±× ±â·Ï½Ã AlignÇÒ PageÀÇ Å©±â ¸®ÅÏ 
     UInt getLogPageSize();
 
-    // ë¡œê·¸ë¥¼ íŠ¹ì • Offsetê¹Œì§€ Syncí•œë‹¤.
+    // ·Î±×¸¦ Æ¯Á¤ Offset±îÁö SyncÇÑ´Ù.
     IDE_RC syncLog( idBool  aSyncLastPage,
                     UInt    aOffsetToSync );
 
@@ -113,43 +114,43 @@ public:
 
     static void   getMemoryStatus() { mLogBufferPool.status(); }
 
-    inline UInt getFileNo() 
-        {
-            return mFileNo;
-        }
+    inline UInt getFileNo() { return mFileNo; }
 
-    // mmapëœ ì˜ì—­ì„ file cacheì— ì˜¬ë ¤ë†“ìŒ.
-    SInt touchMMapArea();
+#if defined(IA64_HP_HPUX)
+   SInt touchMMapArea();
+#else
+   void touchMMapArea();
+#endif
 
-    // Log Bufferì˜ aStartOffsetì—ì„œ aEndOffsetê¹Œì§€ Diskì— ë‚´ë¦°ë‹¤.
+    // Log BufferÀÇ aStartOffset¿¡¼­ aEndOffset±îÁö Disk¿¡ ³»¸°´Ù.
     IDE_RC syncToDisk( UInt aStartOffset, UInt aEndOffset );
 
-    // í•˜ë‚˜ì˜ ë¡œê·¸ ë ˆì½”ë“œê°€ Validí•œì§€ ì—¬ë¶€ë¥¼ íŒë³„í•œë‹¤.
+    // ÇÏ³ªÀÇ ·Î±× ·¹ÄÚµå°¡ ValidÇÑÁö ¿©ºÎ¸¦ ÆÇº°ÇÑ´Ù.
     static idBool isValidLog( smLSN       * aLSN,
                               smrLogHead  * aLogHeadPtr,
                               SChar       * aLogPtr,
                               UInt          aLogSizeAtDisk);
 
-    // ë¡œê·¸íŒŒì¼ë²ˆí˜¸ì™€ ë¡œê·¸ë ˆì½”ë“œ ì˜¤í”„ì…‹ìœ¼ë¡œ ë§¤ì§ë„˜ë²„ë¥¼ ìƒì„±í•œë‹¤.
+    // ·Î±×ÆÄÀÏ¹øÈ£¿Í ·Î±×·¹ÄÚµå ¿ÀÇÁ¼ÂÀ¸·Î ¸ÅÁ÷³Ñ¹ö¸¦ »ý¼ºÇÑ´Ù.
     static inline smMagic makeMagicNumber( UInt     aFileNo,
                                            UInt     aOffset );
 
-    // BUG-37018 logì˜ magic nunberê°€ ìœ íš¨í•œì§€ ê²€ì‚¬í•œë‹¤.
+    // BUG-37018 logÀÇ magic nunber°¡ À¯È¿ÇÑÁö °Ë»çÇÑ´Ù.
     static inline idBool isValidMagicNumber( smLSN       * aLSN,
                                              smrLogHead  * aLogHeadPtr );
 
 
-    //* ë¡œê·¸íŒŒì¼ì˜ File Begin Logê°€ ì •ìƒì¸ì§€ ì²´í¬í•œë‹¤.
+    //* ·Î±×ÆÄÀÏÀÇ File Begin Log°¡ Á¤»óÀÎÁö Ã¼Å©ÇÑ´Ù.
     IDE_RC checkFileBeginLog( UInt aFileNo );
     idBool isOpened() { return mIsOpened; };
 
     SChar* getFileName() { return mFile.getFileName(); }
 
-    // Direct I/Oë¥¼ ì‚¬ìš©í•  ê²½ìš° Direct I/O Pageí¬ê¸°ë¡œ
-    // Alignëœ ì£¼ì†Œë¥¼ mBaseì— ì„¸íŒ…
+    // Direct I/O¸¦ »ç¿ëÇÒ °æ¿ì Direct I/O PageÅ©±â·Î
+    // AlignµÈ ÁÖ¼Ò¸¦ mBase¿¡ ¼¼ÆÃ
     IDE_RC allocAndAlignLogBuffer();
 
-    // allocAndAlignLogBuffer ë¡œ í• ë‹¹í•œ ë¡œê·¸ë²„í¼ë¥¼ Freeí•œë‹¤.
+    // allocAndAlignLogBuffer ·Î ÇÒ´çÇÑ ·Î±×¹öÆÛ¸¦ FreeÇÑ´Ù.
     IDE_RC freeLogBuffer();
 
     inline void   setEndLogFlush( idBool aFinished );
@@ -160,7 +161,7 @@ public:
     smrLogFile();
     virtual ~smrLogFile();
 
-    // ë¡œê·¸íŒŒì¼ì„ opení•œë‹¤.
+    // ·Î±×ÆÄÀÏÀ» openÇÑ´Ù.
     IDE_RC open( UInt     aFileNo,
                  SChar  * aStrFilename,
                  idBool   aIsMultiplexLogFile,
@@ -177,72 +178,72 @@ private:
     
 //For Member
 public:
-    //ë¡œê·¸íŒŒì¼ì˜ ë‚´ìš©ì„ ë”ì´ìƒ ë””ìŠ¤í¬ì— ê¸°ë¡í•  í•„ìš”ê°€ ì—†ë‹¤ë©´
+    //·Î±×ÆÄÀÏÀÇ ³»¿ëÀ» ´õÀÌ»ó µð½ºÅ©¿¡ ±â·ÏÇÒ ÇÊ¿ä°¡ ¾ø´Ù¸é
     //ID_TRUE, else ID_FALSE
     idBool       mEndLogFlush;
 
-    //Openë˜ì—ˆìœ¼ë©´ ID_TRUE, else ID_FALSE
+    //OpenµÇ¾úÀ¸¸é ID_TRUE, else ID_FALSE
     idBool       mIsOpened;
     
-    // ë””ìŠ¤í¬ìƒì˜ ë¡œê·¸íŒŒì¼
+    // µð½ºÅ©»óÀÇ ·Î±×ÆÄÀÏ
     iduFile      mFile;
 
-    /* Logfileì˜ FileNo */
+    /* LogfileÀÇ FileNo */
     UInt         mFileNo;
-    /* Logfileì˜ ë¡œê·¸ê°€ ê¸°ë¡ë  ìœ„ì¹˜ */
+    /* LogfileÀÇ ·Î±×°¡ ±â·ÏµÉ À§Ä¡ */
     UInt         mOffset;
     
-    // í˜„ìž¬ê¹Œì§€ syncê°€ ì™„ë£Œëœ í¬ê¸°
-    // ì¦‰, ë‹¤ìŒë²ˆì— syncë¥¼ ì‹œìž‘í•´ì•¼í•  offset
+    // ÇöÀç±îÁö sync°¡ ¿Ï·áµÈ Å©±â
+    // Áï, ´ÙÀ½¹ø¿¡ sync¸¦ ½ÃÀÛÇØ¾ßÇÒ offset
     UInt         mSyncOffset;
 
-    // Syncìš”ì²­ì´ ë“¤ì–´ì™”ìœ¼ë‚˜ ë§ˆì§€ë§‰ íŽ˜ì´ì§€ë¼ì„œ syncí•˜ì§€ ëª» í•œ ê²½ìš°
-    // mSyncOffsetì„ mPreSyncOffsetì„ ê¸°ë¡í•´ë‘”ë‹¤.
-    // syncLogí•¨ìˆ˜ì—ì„œëŠ” mPreSyncOffsetì„ ë³´ê³ ,
-    // ì´ì „ì— ë§ˆì§€ë§‰ íŽ˜ì´ì§€ë¼ì„œ syncëª»í•œ ê²½ìš°ì—ëŠ”
-    // ë§ˆì§€ë§‰ íŽ˜ì´ì§€ë¼ë„ syncë¥¼ í•˜ë„ë¡ í•œë‹¤.
+    // Sync¿äÃ»ÀÌ µé¾î¿ÔÀ¸³ª ¸¶Áö¸· ÆäÀÌÁö¶ó¼­ syncÇÏÁö ¸ø ÇÑ °æ¿ì
+    // mSyncOffsetÀ» mPreSyncOffsetÀ» ±â·ÏÇØµÐ´Ù.
+    // syncLogÇÔ¼ö¿¡¼­´Â mPreSyncOffsetÀ» º¸°í,
+    // ÀÌÀü¿¡ ¸¶Áö¸· ÆäÀÌÁö¶ó¼­ sync¸øÇÑ °æ¿ì¿¡´Â
+    // ¸¶Áö¸· ÆäÀÌÁö¶óµµ sync¸¦ ÇÏµµ·Ï ÇÑ´Ù.
     UInt         mPreSyncOffset;
     UInt         mFreeSize;
     UInt         mSize;
 
-    // í•˜ë‚˜ì˜ ë¡œê·¸íŒŒì¼ì˜ ë‚´ìš©ì„ ì§€ë‹ˆëŠ” ë²„í¼
+    // ÇÏ³ªÀÇ ·Î±×ÆÄÀÏÀÇ ³»¿ëÀ» Áö´Ï´Â ¹öÆÛ
     //
-    // Durability Level 5ì—ì„œ 
-    // Direct I/Oì‹œ í•œë‹¤ë©´ Log Bufferì˜ ì‹œìž‘ ì£¼ì†Œ ë˜í•œ
-    // Direct I/O Pageí¬ê¸°ì— ë§žê²Œ Alignì„ í•´ì£¼ì–´ì•¼ í•œë‹¤.
-    //  - mBaseAlloced : mLogBufferPoolì—ì„œ í• ë‹¹ë°›ì€ Alignë˜ì§€ ì•Šì€ ë¡œê·¸ë²„í¼
-    //  - mBase        : mBaseAllocedë¥¼ Direct I/O Pageí¬ê¸° ë¡œ Aligní•œ ë¡œê·¸ë²„í¼
+    // Durability Level 5¿¡¼­ 
+    // Direct I/O½Ã ÇÑ´Ù¸é Log BufferÀÇ ½ÃÀÛ ÁÖ¼Ò ¶ÇÇÑ
+    // Direct I/O PageÅ©±â¿¡ ¸Â°Ô AlignÀ» ÇØÁÖ¾î¾ß ÇÑ´Ù.
+    //  - mBaseAlloced : mLogBufferPool¿¡¼­ ÇÒ´ç¹ÞÀº AlignµÇÁö ¾ÊÀº ·Î±×¹öÆÛ
+    //  - mBase        : mBaseAlloced¸¦ Direct I/O PageÅ©±â ·Î AlignÇÑ ·Î±×¹öÆÛ
     void        *mBaseAlloced;
     void        *mBase;
 
-    // ì´ ë¡œê·¸íŒŒì¼ì˜ reference count
+    // ÀÌ ·Î±×ÆÄÀÏÀÇ reference count
     UInt         mRef;
 
-    // ì´ ë¡œê·¸íŒŒì¼ì— ëŒ€í•œ ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•œ Mutex
+    // ÀÌ ·Î±×ÆÄÀÏ¿¡ ´ëÇÑ µ¿½Ã¼º Á¦¾î¸¦ À§ÇÑ Mutex
     iduMutex     mMutex;
-    // ì´ ë¡œê·¸íŒŒì¼ì„ ë‹¤ ì¨ì„œ ë‹¤ë¥¸ ë¡œê·¸íŒŒì¼ë¡œ switchë˜ì—ˆëŠ”ì§€ ì—¬ë¶€
+    // ÀÌ ·Î±×ÆÄÀÏÀ» ´Ù ½á¼­ ´Ù¸¥ ·Î±×ÆÄÀÏ·Î switchµÇ¾ú´ÂÁö ¿©ºÎ
     idBool       mSwitch;
-    // ì´ ë¡œê·¸íŒŒì¼ì— ì“°ê¸°ê°€ ê°€ëŠ¥í•œì§€ ì—¬ë¶€
+    // ÀÌ ·Î±×ÆÄÀÏ¿¡ ¾²±â°¡ °¡´ÉÇÑÁö ¿©ºÎ
     idBool       mWrite;
-    // ì´ ë¡œê·¸íŒŒì¼ì„ mmapìœ¼ë¡œ ì—´ì—ˆëŠ”ì§€ ì—¬ë¶€
+    // ÀÌ ·Î±×ÆÄÀÏÀ» mmapÀ¸·Î ¿­¾ú´ÂÁö ¿©ºÎ
     idBool       mMemmap;
-    // ë””ìŠ¤í¬ì˜ ë¡œê·¸íŒŒì¼ì„ mFileë¡œ ì—´ì—ˆëŠ”ì§€ ì—¬ë¶€ 
+    // µð½ºÅ©ÀÇ ·Î±×ÆÄÀÏÀ» mFile·Î ¿­¾ú´ÂÁö ¿©ºÎ 
     idBool       mOnDisk;
 
-    // smrLogFleMgrì—ì„œ openëœ ë¡œê·¸íŒŒì¼ ë¦¬ìŠ¤íŠ¸ë¥¼ ê´€ë¦¬í•  ë•Œ ì‚¬ìš©
+    // smrLogFleMgr¿¡¼­ openµÈ ·Î±×ÆÄÀÏ ¸®½ºÆ®¸¦ °ü¸®ÇÒ ¶§ »ç¿ë
     smrLogFile  *mPrvLogFile;
     smrLogFile  *mNxtLogFile;
 
-    // smrLFThreadì—ì„œ flushí•  ë¡œê·¸íŒŒì¼ ë¦¬ìŠ¤íŠ¸ë¥¼ ê´€ë¦¬í•  ë•Œ ì‚¬ìš©
+    // smrLFThread¿¡¼­ flushÇÒ ·Î±×ÆÄÀÏ ¸®½ºÆ®¸¦ °ü¸®ÇÒ ¶§ »ç¿ë
     smrLogFile  *mSyncPrvLogFile;
     smrLogFile  *mSyncNxtLogFile;
 
     //PROJ-2232 log multiplex
-    //ë‹¤ì¤‘í™” ë¡œê·¸ë²„í¼ì— SMR_LT_FILE_ENDê¹Œì§€ ë³µì‚¬ë˜ì—ˆê³  ë‹¤ì¤‘í™” ë¡œê·¸íŒŒì¼ì´
-    //ë‹¤ìŒ ë¡œê·¸íŒŒì¼ë¡œ switchë˜ì—ˆëŠ”ì§€ í™•ì¸
+    //´ÙÁßÈ­ ·Î±×¹öÆÛ¿¡ SMR_LT_FILE_END±îÁö º¹»çµÇ¾ú°í ´ÙÁßÈ­ ·Î±×ÆÄÀÏÀÌ
+    //´ÙÀ½ ·Î±×ÆÄÀÏ·Î switchµÇ¾ú´ÂÁö È®ÀÎ
     volatile idBool   mMultiplexSwitch[ SM_LOG_MULTIPLEX_PATH_MAX_CNT ]; 
 
-    // ë¡œê·¸íŒŒì¼ ë²„í¼ë¥¼ í• ë‹¹ë°›ì„ ë©”ëª¨ë¦¬ í’€
+    // ·Î±×ÆÄÀÏ ¹öÆÛ¸¦ ÇÒ´ç¹ÞÀ» ¸Þ¸ð¸® Ç®
     static iduMemPool mLogBufferPool;
 
 //For Test
@@ -264,29 +265,29 @@ inline IDE_RC smrLogFile::unlock()
 }
 
 /*
- * ë¡œê·¸íŒŒì¼ ë²ˆí˜¸ì™€ ë¡œê·¸ë ˆì½”ë“œ ì˜¤í”„ì…‹ì„ ì´ìš©í•˜ì—¬
- * ë¡œê·¸íŒŒì¼ì— ê¸°ë¡í•  ë§¤ì§ë„˜ë²„ë¥¼ ìƒì„±í•œë‹¤.
+ * ·Î±×ÆÄÀÏ ¹øÈ£¿Í ·Î±×·¹ÄÚµå ¿ÀÇÁ¼ÂÀ» ÀÌ¿ëÇÏ¿©
+ * ·Î±×ÆÄÀÏ¿¡ ±â·ÏÇÒ ¸ÅÁ÷³Ñ¹ö¸¦ »ý¼ºÇÑ´Ù.
  *
- * [ ë§¤ì§ë„˜ë²„ì˜ ì—­í•  ]
- * ë§¤ì§ë„˜ë²„ëŠ” 32ë¹„íŠ¸ ê°’ìœ¼ë¡œ ëª¨ë“  ë¡œê·¸ì˜ í—¤ë”ì— ê¸°ë¡ëœë‹¤.
+ * [ ¸ÅÁ÷³Ñ¹öÀÇ ¿ªÇÒ ]
+ * ¸ÅÁ÷³Ñ¹ö´Â 32ºñÆ® °ªÀ¸·Î ¸ðµç ·Î±×ÀÇ Çì´õ¿¡ ±â·ÏµÈ´Ù.
  * +--------------------+-------------------------+
- * | ìƒìœ„ë¹„íŠ¸           |  í•˜ìœ„ë¹„íŠ¸               |
- * | 9 ë¹„íŠ¸ ( 0~ 511 )  |  23 ë¹„íŠ¸ ( 0 ~ 8M - 1 ) |
- * | ë¡œê·¸íŒŒì¼ë²ˆí˜¸       |  ë¡œê·¸ë ˆì½”ë“œ offset      |
+ * | »óÀ§ºñÆ®           |  ÇÏÀ§ºñÆ®               |
+ * | 9 ºñÆ® ( 0~ 511 )  |  23 ºñÆ® ( 0 ~ 8M - 1 ) |
+ * | ·Î±×ÆÄÀÏ¹øÈ£       |  ·Î±×·¹ÄÚµå offset      |
  * +--------------------+-------------------------+
  *
- * SYNC_CREATE_ = 0 ìœ¼ë¡œ ì£¼ì–´ ë¡œê·¸íŒŒì¼ì„ 0ìœ¼ë¡œ memsetë˜ì§€ ì•Šë„ë¡ ìƒì„±í•  ê²½ìš°
- * Invalidí•œ Logë¥¼ Validí•œ ë¡œê·¸ë¡œ íŒë³„í•  í™•ë¥ ì„ ë‚®ì¶”ì–´ì¤€ë‹¤.
+ * SYNC_CREATE_ = 0 À¸·Î ÁÖ¾î ·Î±×ÆÄÀÏÀ» 0À¸·Î memsetµÇÁö ¾Êµµ·Ï »ý¼ºÇÒ °æ¿ì
+ * InvalidÇÑ Log¸¦ ValidÇÑ ·Î±×·Î ÆÇº°ÇÒ È®·üÀ» ³·Ãß¾îÁØ´Ù.
  */
 
 
 /*
- * ë¡œê·¸íŒŒì¼ë²ˆí˜¸ì™€ ë¡œê·¸ë ˆì½”ë“œ ì˜¤í”„ì…‹ìœ¼ë¡œ ë§¤ì§ë„˜ë²„ë¥¼ ìƒì„±í•œë‹¤.
+ * ·Î±×ÆÄÀÏ¹øÈ£¿Í ·Î±×·¹ÄÚµå ¿ÀÇÁ¼ÂÀ¸·Î ¸ÅÁ÷³Ñ¹ö¸¦ »ý¼ºÇÑ´Ù.
  *
- * aFileNo [IN] ë¡œê·¸íŒŒì¼ë²ˆí˜¸
- * aOffset [IN] ë¡œê·¸íŒŒì¼ ì˜¤í”„ì…‹
+ * aFileNo [IN] ·Î±×ÆÄÀÏ¹øÈ£
+ * aOffset [IN] ·Î±×ÆÄÀÏ ¿ÀÇÁ¼Â
  *
- * return       ë¡œê·¸íŒŒì¼ ë²ˆí˜¸ì™€ ì˜¤í”„ì…‹ì„ ì´ìš©í•˜ì—¬ ìƒì„±í•œ ë§¤ì§ë„˜ë²„ë¥¼ ë¦¬í„´í•œë‹¤.
+ * return       ·Î±×ÆÄÀÏ ¹øÈ£¿Í ¿ÀÇÁ¼ÂÀ» ÀÌ¿ëÇÏ¿© »ý¼ºÇÑ ¸ÅÁ÷³Ñ¹ö¸¦ ¸®ÅÏÇÑ´Ù.
  */
 inline smMagic smrLogFile::makeMagicNumber( UInt    aFileNo,
                                             UInt    aOffset )
@@ -304,8 +305,8 @@ inline smMagic smrLogFile::makeMagicNumber( UInt    aFileNo,
                ( aOffset & LOG_RECORD_OFFSET_MASK );
 
     /* BUG-35392
-     * ë§¤ì§ë„˜ë²„ëŠ” 2ë°”ì´íŠ¸ smMagic(UShort)ìœ¼ë¡œë§Œ ì‚¬ìš©í•˜ë¯€ë¡œ
-     * UIntê°€ ì•„ë‹Œ 2ë°”ì´íŠ¸(smMagic)ë¥¼ ë¦¬í„´ í•˜ë„ë¡ í•œë‹¤. */
+     * ¸ÅÁ÷³Ñ¹ö´Â 2¹ÙÀÌÆ® smMagic(UShort)À¸·Î¸¸ »ç¿ëÇÏ¹Ç·Î
+     * UInt°¡ ¾Æ´Ñ 2¹ÙÀÌÆ®(smMagic)¸¦ ¸®ÅÏ ÇÏµµ·Ï ÇÑ´Ù. */
     sMagic &= 0x0000FFFF;
 
     return (smMagic)sMagic;
@@ -323,9 +324,9 @@ void smrLogFile::setEndLogFlush( idBool aFinished )
 
 /***********************************************************************
  * BUG-35392 
- * Description : LogFileì´ ëª¨ë‘ Syncë˜ì—ˆëŠ”ì§€ì˜ ì—¬ë¶€ë¥¼ ë°˜í™˜í•œë‹¤.
- *               switchëŒ€ìƒ ë¡œê·¸ì— ëŒ€í•´ì„œë§Œ í˜¸ì¶œ ë˜ë¯€ë¡œ
- *               mSyncOffset, mOffset ì˜ ë™ì‹œì„±ì€ ê±±ì •í•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
+ * Description : LogFileÀÌ ¸ðµÎ SyncµÇ¾ú´ÂÁöÀÇ ¿©ºÎ¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ *               switch´ë»ó ·Î±×¿¡ ´ëÇØ¼­¸¸ È£Ãâ µÇ¹Ç·Î
+ *               mSyncOffset, mOffset ÀÇ µ¿½Ã¼ºÀº °ÆÁ¤ÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
  ***********************************************************************/
 idBool smrLogFile::isAllLogSynced()
 {
@@ -346,10 +347,10 @@ idBool smrLogFile::getEndLogFlush()
 
 /***********************************************************************
  * BUG-37018
- * Description : code ì¤‘ë³µì„ ë°©ì§€í•˜ê¸° ìœ„í•´ ì¶”ê°€ëœ inline í•¨ìˆ˜
- *               dummy logì˜ validê²€ì‚¬ëŠ” magic numberë¡œë§Œ ê²€ì¦ê°€ëŠ¥
- *               í•˜ê¸°ë•Œë¬¸ì— ë³¸ í•¨ìˆ˜ë¡œ ê²€ì¦í•œë‹¤.
- *               (ì¼ë°˜ ë¡œê·¸ì˜ validê²€ì‚¬í• ë•Œë„ ì‚¬ìš©ëœë‹¤) 
+ * Description : code Áßº¹À» ¹æÁöÇÏ±â À§ÇØ Ãß°¡µÈ inline ÇÔ¼ö
+ *               dummy logÀÇ valid°Ë»ç´Â magic number·Î¸¸ °ËÁõ°¡´É
+ *               ÇÏ±â¶§¹®¿¡ º» ÇÔ¼ö·Î °ËÁõÇÑ´Ù.
+ *               (ÀÏ¹Ý ·Î±×ÀÇ valid°Ë»çÇÒ¶§µµ »ç¿ëµÈ´Ù) 
  **********************************************************************/
 idBool smrLogFile::isValidMagicNumber( smLSN       * aLSN,
                                        smrLogHead  * aLogHeadPtr )
@@ -384,13 +385,27 @@ inline void smrLogFile::append( SChar  * aStrData,
     IDE_ASSERT( ( aSize != 0 ) && ( mFreeSize >= (UInt)aSize ) );
 
     idlOS::memcpy( (SChar*)mBase + mOffset,
-                   aStrData,
-                   aSize );
+                    aStrData,
+                    aSize );
 
+    /* BUG-45916 MEM_BARRIER Á¦°Å½Ã AIX Àåºñ¿¡¼­
+     * Log Multiplex Thread°¡ memcpy ¿Ï·á ÀÌÀü¿¡
+     * Log¸¦ Copy ÇÏ´Â °æ¿ì°¡ ¹ß»ýÇÔ. */
     IDL_MEM_BARRIER;
 
     mFreeSize -= aSize;
     mOffset   += aSize;
+}
+
+/* BUG-45711 */
+inline void smrLogFile::scribble( SChar  * aStrData,
+                                  UInt     aSize,
+                                  UInt     aOffset )
+{
+    /* ·Î±× ¾²±â */
+    idlOS::memcpy( (SChar *)mBase + aOffset,
+                    aStrData,
+                    aSize );
 }
 
 #endif /* _O_SMR_LOG_FILE_H_ */
